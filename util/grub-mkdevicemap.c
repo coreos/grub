@@ -55,7 +55,7 @@ make_device_map (const char *device_map, int floppy_disks)
     fp = stdout;
   else
     fp = fopen (device_map, "w");
-  
+
   if (! fp)
     grub_util_error ("cannot open %s", device_map);
 
@@ -98,7 +98,7 @@ Generate a device map file automatically.\n\
 Report bugs to <%s>.\n\
 ",
 	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
-  
+
   exit (status);
 }
 
@@ -107,14 +107,14 @@ main (int argc, char *argv[])
 {
   char *dev_map = 0;
   int floppy_disks = 1;
-  
+
   progname = "grub-mkdevicemap";
-  
+
   /* Check for options.  */
   while (1)
     {
       int c = getopt_long (argc, argv, "snm:r:hVv", options, 0);
-      
+
       if (c == -1)
 	break;
       else
@@ -134,7 +134,7 @@ main (int argc, char *argv[])
 	  case 's':
 	    floppy_disks = 2;
 	    break;
-	    
+
 	  case 'h':
 	    usage (0);
 	    break;
@@ -156,6 +156,6 @@ main (int argc, char *argv[])
   make_device_map (dev_map ? : DEFAULT_DEVICE_MAP, floppy_disks);
 
   free (dev_map);
-  
+
   return 0;
 }

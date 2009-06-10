@@ -52,7 +52,7 @@ class Image
     objs_str = objs.join(' ')
     deps = objs.collect {|obj| obj.suffix('d')}
     deps_str = deps.join(' ')
-    
+
     "CLEANFILES += #{@name} #{exe} #{objs_str}
 MOSTLYCLEANFILES += #{deps_str}
 
@@ -79,7 +79,7 @@ endif
       flag = if /\.c$/ =~ src then 'CFLAGS' else 'ASFLAGS' end
       extra_flags = if /\.S$/ =~ src then '-DASM_FILE=1' else '' end
       dir = File.dirname(src)
-      
+
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
 	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
 -include #{dep}
@@ -113,7 +113,7 @@ class PModule
     undsym = 'und-' + @name.suffix('lst')
     mod_name = File.basename(@name, '.mod')
     symbolic_name = mod_name.sub(/\.[^\.]*$/, '')
-    
+
     "CLEANFILES += #{@name} #{mod_obj} #{mod_src} #{pre_obj} #{objs_str} #{undsym}
 ifneq ($(#{prefix}_EXPORTS),no)
 CLEANFILES += #{defsym}
@@ -304,7 +304,7 @@ class Script
     end
     src = sources[0]
     if /\.in$/ !~ src
-      raise "unknown source file `#{src}'" 
+      raise "unknown source file `#{src}'"
     end
 
     "CLEANFILES += #{@name}
@@ -340,7 +340,7 @@ while l = gets
   cont = (/\\$/ =~ l)
   unless cont
     str.gsub!(/\\\n/, ' ')
-    
+
     if /^([a-zA-Z0-9_]+)\s*\+?=\s*(.*?)\s*$/ =~ str
       var, args = $1, $2
 
@@ -357,7 +357,7 @@ while l = gets
 	  pmodules += args.split(/\s+/).collect do |pmod|
 	    PModule.new(prefix, pmod)
 	  end
-	  
+
 	when 'UTILITIES'
 	  utils += args.split(/\s+/).collect do |util|
 	    Utility.new(prefix, util)
@@ -387,10 +387,10 @@ while l = gets
 	  end
 	end
       end
-      
+
     end
-    
+
   end
-  
+
 end
 

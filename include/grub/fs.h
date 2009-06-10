@@ -43,18 +43,18 @@ struct grub_fs
 
   /* Call HOOK with each file under DIR.  */
   grub_err_t (*dir) (grub_device_t device, const char *path,
-		     int (*hook) (const char *filename, 
+		     int (*hook) (const char *filename,
 				  const struct grub_dirhook_info *info));
-  
+
   /* Open a file named NAME and initialize FILE.  */
   grub_err_t (*open) (struct grub_file *file, const char *name);
-  
+
   /* Read LEN bytes data from FILE into BUF.  */
   grub_ssize_t (*read) (struct grub_file *file, char *buf, grub_size_t len);
-  
+
   /* Close the file FILE.  */
   grub_err_t (*close) (struct grub_file *file);
-  
+
   /* Return the label of the device DEVICE in LABEL.  The label is
      returned in a grub_malloc'ed buffer and should be freed by the
      caller.  */

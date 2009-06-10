@@ -41,7 +41,7 @@ grub_get_tsc (void)
 			"pop %%rbx\n"
 #else
 			"pop %%ebx\n"
-#endif	
+#endif
 			:::"%rax", "%rcx", "%rdx");
 #else
   __asm__ __volatile__ ("xorl %%eax, %%eax\n\t"

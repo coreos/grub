@@ -327,7 +327,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
      not going to support developer area & extensions at this point.  */
 
   /* Read TGA header from beginning of file.  */
-  if (grub_file_read (file, (char*)&header, sizeof (header)) 
+  if (grub_file_read (file, (char*)&header, sizeof (header))
       != sizeof (header))
     {
       grub_file_close (file);
@@ -460,7 +460,7 @@ grub_cmd_tgatest (struct grub_arg_list *state __attribute__ ((unused)),
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
-  grub_video_reader_tga (&bitmap, args[0]);  
+  grub_video_reader_tga (&bitmap, args[0]);
   if (grub_errno != GRUB_ERR_NONE)
     return grub_errno;
 

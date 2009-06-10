@@ -38,7 +38,7 @@
 /* Alignment of the multiboot info structure.  */
 #define MULTIBOOT_INFO_ALIGN		 0x00000004
 
-/* 
+/*
  * Flags set in the 'flags' member of the multiboot header.
  */
 

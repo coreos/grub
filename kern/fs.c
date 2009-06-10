@@ -65,7 +65,7 @@ grub_fs_t
 grub_fs_probe (grub_device_t device)
 {
   grub_fs_t p;
-  auto int dummy_func (const char *filename, 
+  auto int dummy_func (const char *filename,
 		       const struct grub_dirhook_info *info);
 
   int dummy_func (const char *filename __attribute__ ((unused)),
@@ -100,24 +100,24 @@ grub_fs_probe (grub_device_t device)
       if (grub_fs_autoload_hook && count == 0)
 	{
 	  count++;
-	  
+
 	  while (grub_fs_autoload_hook ())
 	    {
 	      p = grub_fs_list;
-	      
+
 	      (p->dir) (device, "/", dummy_func);
 	      if (grub_errno == GRUB_ERR_NONE)
 		{
 		  count--;
 		  return p;
 		}
-	      
+
 	      if (grub_errno != GRUB_ERR_BAD_FS)
 		{
 		  count--;
 		  return 0;
 		}
-	      
+
 	      grub_errno = GRUB_ERR_NONE;
 	    }
 
@@ -149,7 +149,7 @@ grub_fs_blocklist_open (grub_file_t file, const char *name)
   unsigned i;
   grub_disk_t disk = file->device->disk;
   struct grub_fs_block *blocks;
-  
+
   /* First, count the number of blocks.  */
   do
     {
@@ -198,14 +198,14 @@ grub_fs_blocklist_open (grub_file_t file, const char *name)
 	  grub_error (GRUB_ERR_BAD_FILENAME, "beyond the total sectors");
 	  goto fail;
 	}
-      
+
       file->size += (blocks[i].length << GRUB_DISK_SECTOR_BITS);
       p++;
     }
 
   blocks[i].length = 0;
   file->data = blocks;
-  
+
   return GRUB_ERR_NONE;
 
  fail:
@@ -236,11 +236,11 @@ grub_fs_blocklist_read (grub_file_t file, char *buf, grub_size_t len)
 	  if (((size + offset + GRUB_DISK_SECTOR_SIZE - 1)
 	       >> GRUB_DISK_SECTOR_BITS) > p->length - sector)
 	    size = ((p->length - sector) << GRUB_DISK_SECTOR_BITS) - offset;
-	  
+
 	  if (grub_disk_read (file->device->disk, p->offset + sector, offset,
 			      size, buf) != GRUB_ERR_NONE)
 	    return -1;
-	  
+
 	  ret += size;
 	  len -= size;
 	  sector -= ((size + offset) >> GRUB_DISK_SECTOR_BITS);

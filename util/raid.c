@@ -51,7 +51,7 @@ grub_util_getdiskname (int major, int minor)
     sprintf (name, "/dev/sd%c", 'a' + minor / 16);
   else
     grub_util_error ("Unknown device number: %d, %d", major, minor);
-    
+
   return name;
 }
 
@@ -83,7 +83,7 @@ grub_util_raid_getmembers (char *name)
   if (version.major != 0 || version.minor != 90)
     grub_util_error ("Unsupported RAID version: %d.%d",
 		     version.major, version.minor);
-  
+
   ret = ioctl (fd, GET_ARRAY_INFO, &info);
   if (ret != 0)
     grub_util_error ("ioctl GET_ARRAY_INFO error: %s", strerror (errno));
@@ -105,7 +105,7 @@ grub_util_raid_getmembers (char *name)
     }
 
   devicelist[j] = NULL;
-  
+
   return devicelist;
 }
 

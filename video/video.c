@@ -402,7 +402,7 @@ grub_video_set_mode (char *modestring,
   next_mode = modevar;
 
   if (! modevar)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "couldn't allocate space for local modevar copy");
 
   if (grub_memcmp (next_mode, "keep", sizeof ("keep")) == 0
@@ -412,7 +412,7 @@ grub_video_set_mode (char *modestring,
       struct grub_video_mode_info mode_info;
       int suitable = 1;
       grub_err_t err;
-      
+
       grub_memset (&mode_info, 0, sizeof (mode_info));
 
       if (grub_video_adapter_active)
@@ -438,11 +438,11 @@ grub_video_set_mode (char *modestring,
       if (! *next_mode)
 	{
 	  grub_free (modevar);
-  
+
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
 			     "No suitable mode found.");
 	}
-      
+
       /* Skip separator. */
       next_mode++;
     }
@@ -454,23 +454,23 @@ grub_video_set_mode (char *modestring,
       grub_video_adapter_active->fini ();
       if (grub_errno != GRUB_ERR_NONE)
 	grub_errno = GRUB_ERR_NONE;
-      
+
       /* Mark active adapter as not set.  */
       grub_video_adapter_active = 0;
     }
-    
+
   /* Loop until all modes has been tested out.  */
   while (next_mode != NULL)
     {
       /* Use last next_mode as current mode.  */
       tmp = next_mode;
-      
+
       /* Reset video mode settings.  */
       width = -1;
       height = -1;
       depth = -1;
       flags = 0;
-      
+
       /* Save position of next mode and separate modes.  */
       for (; *next_mode; next_mode++)
 	if (*next_mode == ',' || *next_mode == ';')
@@ -482,22 +482,22 @@ grub_video_set_mode (char *modestring,
 	}
       else
 	next_mode = 0;
-      
+
       /* Skip whitespace.  */
       while (grub_isspace (*tmp))
 	tmp++;
-      
+
       /* Initialize token holders.  */
       current_mode = tmp;
       param = tmp;
       value = NULL;
 
-      /* XXX: we assume that we're in pure text mode if 
+      /* XXX: we assume that we're in pure text mode if
 	 no video mode is initialized. Is it always true? */
       if (grub_strcmp (param, "text") == 0)
 	{
 	  struct grub_video_mode_info mode_info;
-	  
+
 	  grub_memset (&mode_info, 0, sizeof (mode_info));
 	  mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_PURE_TEXT;
 
@@ -515,44 +515,44 @@ grub_video_set_mode (char *modestring,
 	}
 
       /* Parse <width>x<height>[x<depth>]*/
-      
+
       /* Find width value.  */
       value = param;
       param = grub_strchr(param, 'x');
       if (param == NULL)
 	{
 	  grub_err_t rc;
-          
+
 	  /* First setup error message.  */
 	  rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
 			   "Invalid mode: %s\n",
 			   current_mode);
-          
+
 	  /* Free memory before returning.  */
 	  grub_free (modevar);
-	  
+
 	  return rc;
 	}
-      
+
       *param = 0;
       param++;
-      
+
       width = grub_strtoul (value, 0, 0);
       if (grub_errno != GRUB_ERR_NONE)
 	{
 	  grub_err_t rc;
-          
+
 	  /* First setup error message.  */
 	  rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
 			   "Invalid mode: %s\n",
 			   current_mode);
-	  
+
 	  /* Free memory before returning.  */
 	  grub_free (modevar);
-          
+
 	  return rc;
 	}
-      
+
       /* Find height value.  */
       value = param;
       param = grub_strchr(param, 'x');
@@ -562,15 +562,15 @@ grub_video_set_mode (char *modestring,
 	  if (grub_errno != GRUB_ERR_NONE)
 	    {
 	      grub_err_t rc;
-	      
+
 	      /* First setup error message.  */
 	      rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
 			       "Invalid mode: %s\n",
 			       current_mode);
-	      
+
 	      /* Free memory before returning.  */
 	      grub_free (modevar);
-	      
+
 	      return rc;
 	    }
 	}
@@ -579,35 +579,35 @@ grub_video_set_mode (char *modestring,
 	  /* We have optional color depth value.  */
 	  *param = 0;
 	  param++;
-	  
+
 	  height = grub_strtoul (value, 0, 0);
 	  if (grub_errno != GRUB_ERR_NONE)
 	    {
 	      grub_err_t rc;
-	      
+
 	      /* First setup error message.  */
 	      rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
 			       "Invalid mode: %s\n",
 			       current_mode);
-	      
+
 	      /* Free memory before returning.  */
 	      grub_free (modevar);
-	      
+
 	      return rc;
 	    }
-	  
+
 	  /* Convert color depth value.  */
 	  value = param;
 	  depth = grub_strtoul (value, 0, 0);
 	  if (grub_errno != GRUB_ERR_NONE)
 	    {
 	      grub_err_t rc;
-	      
+
 	      /* First setup error message.  */
 	      rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
 			       "Invalid mode: %s\n",
 			       current_mode);
-	      
+
 	      /* Free memory before returning.  */
 	      grub_free (modevar);
 
@@ -616,7 +616,7 @@ grub_video_set_mode (char *modestring,
 	}
 
       /* Try out video mode.  */
-      
+
       /* If we have 8 or less bits, then assume that it is indexed color mode.  */
       if ((depth <= 8) && (depth != -1))
 	flags |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
@@ -624,12 +624,12 @@ grub_video_set_mode (char *modestring,
       /* We have more than 8 bits, then assume that it is RGB color mode.  */
       if (depth > 8)
 	flags |= GRUB_VIDEO_MODE_TYPE_RGB;
-      
+
       /* If user requested specific depth, forward that information to driver.  */
       if (depth != -1)
 	flags |= (depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
 	  & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
-      
+
       /* Try to initialize requested mode.  Ignore any errors.  */
       grub_video_adapter_t p;
 
@@ -638,7 +638,7 @@ grub_video_set_mode (char *modestring,
 	{
 	  grub_err_t err;
 	  struct grub_video_mode_info mode_info;
-	  
+
 	  grub_memset (&mode_info, 0, sizeof (mode_info));
 
 	  /* Try to initialize adapter, if it fails, skip to next adapter.  */
@@ -672,14 +672,14 @@ grub_video_set_mode (char *modestring,
 	      grub_errno = GRUB_ERR_NONE;
 	      continue;
 	    }
-	    
+
 	  /* Valid mode found from adapter, and it has been activated.
 	     Specify it as active adapter.  */
 	  grub_video_adapter_active = p;
-	  
+
 	  /* Free memory.  */
 	  grub_free (modevar);
-	  
+
 	  return GRUB_ERR_NONE;
 	}
 
@@ -687,7 +687,7 @@ grub_video_set_mode (char *modestring,
 
   /* Free memory.  */
   grub_free (modevar);
-  
+
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		     "No suitable mode found.");
 }

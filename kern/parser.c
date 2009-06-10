@@ -74,7 +74,7 @@ grub_parser_cmdline_state (grub_parser_state_t state, char c, char *result)
       if (transition->input == c)
 	break;
 
-      if (transition->input == ' ' && ! grub_isalpha (c) 
+      if (transition->input == ' ' && ! grub_isalpha (c)
 	  && ! grub_isdigit (c) && c != '_')
 	break;
 
@@ -136,7 +136,7 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
       vp = varname;
       if (! val)
 	return;
-      
+
       /* Insert the contents of the variable in the buffer.  */
       for (; *val; val++)
 	*(bp++) = *val;
@@ -156,7 +156,7 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
 	{
 	  grub_parser_state_t newstate;
 	  char use;
-	  
+
 	  newstate = grub_parser_cmdline_state (state, *rd, &use);
 
 	  /* If a variable was being processed and this character does
@@ -193,14 +193,14 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
   /* A special case for when the last character was part of a
      variable.  */
   add_var (GRUB_PARSER_STATE_TEXT);
-  
+
 
   /* Reserve memory for the return values.  */
   args = grub_malloc (bp - buffer);
   if (! args)
     return grub_errno;
   grub_memcpy (args, buffer, bp - buffer);
-  
+
   *argv = grub_malloc (sizeof (char *) * (*argc + 1));
   if (! *argv)
     {

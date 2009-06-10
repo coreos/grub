@@ -180,13 +180,13 @@ grub_ohci_pci_iter (int bus, int device, int func,
   /* Setup the HCCA.  */
   grub_ohci_writereg32 (o, GRUB_OHCI_REG_HCCA, (grub_uint32_t) o->hcca);
   grub_dprintf ("ohci", "OHCI HCCA\n");
- 
+
   /* Enable the OHCI.  */
   grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROL,
 			(2 << 6));
   grub_dprintf ("ohci", "OHCI enable: 0x%02x\n",
 		(grub_ohci_readreg32 (o, GRUB_OHCI_REG_CONTROL) >> 6) & 3);
- 
+
   /* Link to ohci now that initialisation is successful.  */
   o->next = ohci;
   ohci = o;
@@ -227,7 +227,7 @@ grub_ohci_iterate (int (*hook) (grub_usb_controller_t dev))
 }
 
 static void
-grub_ohci_transaction (grub_ohci_td_t td, 
+grub_ohci_transaction (grub_ohci_td_t td,
 		       grub_transfer_type_t type, unsigned int toggle,
 		       grub_size_t size, char *data)
 {
@@ -305,7 +305,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
       grub_usb_transaction_t tr = &transfer->transactions[i];
 
       grub_ohci_transaction (&td_list[i], tr->pid, tr->toggle,
-			     tr->size, tr->data); 
+			     tr->size, tr->data);
 
       td_list[i].next_td = grub_cpu_to_le32 (&td_list[i + 1]);
     }
@@ -607,5 +607,5 @@ GRUB_MOD_INIT(ohci)
 
 GRUB_MOD_FINI(ohci)
 {
-  grub_usb_controller_dev_unregister (&usb_controller);  
+  grub_usb_controller_dev_unregister (&usb_controller);
 }

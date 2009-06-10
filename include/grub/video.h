@@ -74,7 +74,7 @@ enum grub_video_blit_format
 
     /* When needed, decode color or just use value as is.  */
     GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR,
-    
+
     /* Two color bitmap; bits packed: rows are not padded to byte boundary.  */
     GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED
   };

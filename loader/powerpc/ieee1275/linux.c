@@ -238,7 +238,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   /* Specify the boot file.  */
   dest = grub_stpcpy (linux_args, "BOOT_IMAGE=");
   dest = grub_stpcpy (dest, argv[0]);
-  
+
   for (i = 1; i < argc; i++)
     {
       *dest++ = ' ';
@@ -297,9 +297,9 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   /* Attempt to claim at a series of addresses until successful in
      the same way that grub_rescue_cmd_linux does.  */
-  for (addr = first_addr; addr < first_addr + 200 * 0x100000; addr += 0x100000) 
+  for (addr = first_addr; addr < first_addr + 200 * 0x100000; addr += 0x100000)
     {
-      grub_dprintf ("loader", "Attempting to claim at 0x%x, size 0x%x.\n", 
+      grub_dprintf ("loader", "Attempting to claim at 0x%x, size 0x%x.\n",
 		    addr, size);
       found_addr = grub_claimmap (addr, size);
       if (found_addr != -1)

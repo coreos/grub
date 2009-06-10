@@ -77,7 +77,7 @@ static int
 grub_raid_iterate (int (*hook) (const char *name))
 {
   struct grub_raid_array *array;
-  
+
   for (array = array_list; array != NULL; array = array->next)
     {
       if (grub_is_array_readable (array))
@@ -95,7 +95,7 @@ grub_raid_memberlist (grub_disk_t disk)
   struct grub_raid_array *array = disk->data;
   grub_disk_memberlist_t list = NULL, tmp;
   unsigned int i;
-  
+
   for (i = 0; i < array->total_devs; i++)
     if (array->device[i])
       {
@@ -104,7 +104,7 @@ grub_raid_memberlist (grub_disk_t disk)
         tmp->next = list;
         list = tmp;
       }
-  
+
   return list;
 }
 #endif
@@ -114,7 +114,7 @@ grub_raid_open (const char *name, grub_disk_t disk)
 {
   struct grub_raid_array *array;
   unsigned n;
-  
+
   for (array = array_list; array != NULL; array = array->next)
     {
       if (!grub_strcmp (array->name, name))
@@ -161,7 +161,7 @@ grub_raid_open (const char *name, grub_disk_t disk)
 
   grub_dprintf ("raid", "%s: level=%d, total_sectors=%lld\n", name,
 		array->level, (unsigned long long) disk->total_sectors);
-  
+
   return 0;
 }
 
@@ -348,7 +348,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
           p = array->total_devs - n;
 
 	read_sector *= array->chunk_size;
-	
+
 	while (1)
 	  {
             grub_size_t read_size;
@@ -405,7 +405,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
                 if (err)
                   break;
               }
-	    
+
 	    buf += read_size << GRUB_DISK_SECTOR_BITS;
 	    size -= read_size;
 	    if (! size)
@@ -460,7 +460,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
       }
       break;
     }
-  
+
   return err;
 }
 
@@ -478,7 +478,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
               const char *scanner_name)
 {
   struct grub_raid_array *array = 0, *p;
-  
+
   /* See whether the device is part of an array we have already seen a
      device from. */
   for (p = array_list; p != NULL; p = p->next)
@@ -524,7 +524,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
       *array = *new_array;
       array->nr_devs = 0;
       grub_memset (&array->device, 0, sizeof (array->device));
-      
+
       /* Check whether we don't have multiple arrays with the same number. */
       for (p = array_list; p != NULL; p = p->next)
         {
@@ -635,7 +635,7 @@ grub_raid_scan_device (int head_only)
 
       return 0;
     }
-  
+
   grub_device_iterate (&hook);
 }
 
@@ -649,7 +649,7 @@ free_array (void)
     {
       struct grub_raid_array *p;
       int i;
-	  
+
       p = array;
       array = array->next;
 
@@ -664,7 +664,7 @@ free_array (void)
 
   array_list = 0;
 }
-  
+
 void
 grub_raid_register (grub_raid_t raid)
 {

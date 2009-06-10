@@ -40,7 +40,7 @@ grub_efiemu_get_section_addr (grub_efiemu_segment_t segs, unsigned n,
     if (seg->section == n)
       {
 	*handle = seg->handle;
-	*off = seg->off;	
+	*off = seg->off;
 	return GRUB_ERR_NONE;
       }
 
@@ -86,7 +86,7 @@ grub_efiemu_load_segments (grub_efiemu_segment_t segs, const Elf_Ehdr *e)
   grub_efiemu_segment_t cur;
 
   grub_dprintf ("efiemu", "loading segments\n");
-  
+
   for (cur=segs; cur; cur = cur->next)
     {
       s = (Elf_Shdr *)cur->srcptr;
@@ -94,10 +94,10 @@ grub_efiemu_load_segments (grub_efiemu_segment_t segs, const Elf_Ehdr *e)
       if ((s->sh_flags & SHF_ALLOC) && s->sh_size)
 	{
 	  void *addr;
-	  
-	  addr = (grub_uint8_t *) grub_efiemu_mm_obtain_request (cur->handle) 
+
+	  addr = (grub_uint8_t *) grub_efiemu_mm_obtain_request (cur->handle)
 	    + cur->off;
-	  
+
 	  switch (s->sh_type)
 	    {
 	    case SHT_PROGBITS:
@@ -145,11 +145,11 @@ grub_efiemu_init_segments (grub_efiemu_segment_t *segs, const Elf_Ehdr *e)
 	  seg = (grub_efiemu_segment_t) grub_malloc (sizeof (*seg));
 	  if (! seg)
 	    return grub_errno;
-	  
+
 	  if (s->sh_size)
 	    {
-	      seg->handle 
-		= grub_efiemu_request_memalign 
+	      seg->handle
+		= grub_efiemu_request_memalign
 		(s->sh_addralign, s->sh_size,
 		 s->sh_flags & SHF_EXECINSTR ? GRUB_EFI_RUNTIME_SERVICES_CODE
 		 : GRUB_EFI_RUNTIME_SERVICES_DATA);
@@ -157,12 +157,12 @@ grub_efiemu_init_segments (grub_efiemu_segment_t *segs, const Elf_Ehdr *e)
 		return grub_errno;
 	      seg->off = 0;
 	    }
-	  
-	  /* 
+
+	  /*
 	     .text-physical doesn't need to be relocated when switching to
 	     virtual mode
 	   */
-	  if (!grub_strcmp (grub_efiemu_get_string (s->sh_name, e), 
+	  if (!grub_strcmp (grub_efiemu_get_string (s->sh_name, e),
 			    ".text-physical"))
 	    seg->ptv_rel_needed = 0;
 	  else
@@ -174,7 +174,7 @@ grub_efiemu_init_segments (grub_efiemu_segment_t *segs, const Elf_Ehdr *e)
 	  *segs = seg;
 	}
     }
-  
+
   return GRUB_ERR_NONE;
 }
 
@@ -185,7 +185,7 @@ grub_efiemu_count_symbols (const Elf_Ehdr *e)
   unsigned i;
   Elf_Shdr *s;
   int num = 0;
-  
+
   /* Symbols */
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
@@ -197,7 +197,7 @@ grub_efiemu_count_symbols (const Elf_Ehdr *e)
     return grub_error (GRUB_ERR_BAD_OS, "no symbol table");
 
   grub_efiemu_nelfsyms = (unsigned) s->sh_size / (unsigned) s->sh_entsize;
-  grub_efiemu_elfsyms = (struct grub_efiemu_elf_sym *) 
+  grub_efiemu_elfsyms = (struct grub_efiemu_elf_sym *)
     grub_malloc (sizeof (struct grub_efiemu_elf_sym) * grub_efiemu_nelfsyms);
 
   /* Relocators */
@@ -221,7 +221,7 @@ grub_efiemu_resolve_symbols (grub_efiemu_segment_t segs, Elf_Ehdr *e)
   Elf_Sym *sym;
   const char *str;
   Elf_Word size, entsize;
-  
+
   grub_dprintf ("efiemu", "resolving symbols\n");
 
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
@@ -267,7 +267,7 @@ grub_efiemu_resolve_symbols (grub_efiemu_segment_t segs, Elf_Ehdr *e)
 	  break;
 
 	case STT_OBJECT:
-	  if ((err = grub_efiemu_get_section_addr 
+	  if ((err = grub_efiemu_get_section_addr
 	       (segs, sym->st_shndx, &handle, &off)))
 	    return err;
 
@@ -280,7 +280,7 @@ grub_efiemu_resolve_symbols (grub_efiemu_segment_t segs, Elf_Ehdr *e)
 	  break;
 
 	case STT_FUNC:
-	  if ((err = grub_efiemu_get_section_addr 
+	  if ((err = grub_efiemu_get_section_addr
 	       (segs, sym->st_shndx, &handle, &off)))
 	    return err;
 
@@ -293,12 +293,12 @@ grub_efiemu_resolve_symbols (grub_efiemu_segment_t segs, Elf_Ehdr *e)
 	  break;
 
 	case STT_SECTION:
-	  if ((err = grub_efiemu_get_section_addr 
+	  if ((err = grub_efiemu_get_section_addr
 	       (segs, sym->st_shndx, &handle, &off)))
 	    {
 	      grub_efiemu_elfsyms[i].handle = 0;
 	      grub_efiemu_elfsyms[i].off = 0;
-	      grub_errno = GRUB_ERR_NONE; 
+	      grub_errno = GRUB_ERR_NONE;
 	      break;
 	    }
 
@@ -346,8 +346,8 @@ SUFFIX (grub_efiemu_loadcore_init) (void *core, grub_size_t core_size,
 
 /* Load runtime definitively */
 grub_err_t
-SUFFIX (grub_efiemu_loadcore_load) (void *core, 
-				    grub_size_t core_size 
+SUFFIX (grub_efiemu_loadcore_load) (void *core,
+				    grub_size_t core_size
 				    __attribute__ ((unused)),
 				    grub_efiemu_segment_t segments)
 {
@@ -356,10 +356,10 @@ SUFFIX (grub_efiemu_loadcore_load) (void *core,
     return err;
   if ((err = grub_efiemu_resolve_symbols (segments, core)))
     return err;
-  if ((err = SUFFIX (grub_arch_efiemu_relocate_symbols) (segments, 
+  if ((err = SUFFIX (grub_arch_efiemu_relocate_symbols) (segments,
 							 grub_efiemu_elfsyms,
 							 core)))
     return err;
-    
+
   return GRUB_ERR_NONE;
 }

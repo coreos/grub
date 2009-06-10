@@ -53,13 +53,13 @@ grub_xnu_resume (char *imagename)
   file = grub_file_open (imagename);
   if (! file)
     return 0;
-  
+
   /* Read the header. */
   if (grub_file_read (file, (char *) &hibhead, sizeof (hibhead))
       !=sizeof (hibhead))
     {
       grub_file_close (file);
-      return grub_error (GRUB_ERR_READ_ERROR, 
+      return grub_error (GRUB_ERR_READ_ERROR,
 			 "cannot read the hibernate header");
     }
 
@@ -67,13 +67,13 @@ grub_xnu_resume (char *imagename)
   if (hibhead.magic != GRUB_XNU_HIBERNATE_MAGIC)
     {
       grub_file_close (file);
-      return grub_error (GRUB_ERR_BAD_OS, 
+      return grub_error (GRUB_ERR_BAD_OS,
 			 "hibernate header has incorrect magic number");
     }
   if (hibhead.encoffset)
     {
       grub_file_close (file);
-      return grub_error (GRUB_ERR_BAD_OS, 
+      return grub_error (GRUB_ERR_BAD_OS,
 			 "encrypted images aren't supported yet");
     }
 
@@ -91,19 +91,19 @@ grub_xnu_resume (char *imagename)
   if (grub_xnu_hibernate_image)
     grub_free (grub_xnu_hibernate_image);
 
-  /* Try to allocate necessary space. 
+  /* Try to allocate necessary space.
      FIXME: mm isn't good enough yet to handle huge allocations.
    */
   grub_xnu_hibernate_image = buf = grub_malloc (hibhead.image_size);
   if (! buf)
     {
       grub_file_close (file);
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 			 "not enough memory to load image");
     }
 
   /* Read image. */
-  if (grub_file_seek (file, 0) == (grub_off_t)-1 
+  if (grub_file_seek (file, 0) == (grub_off_t)-1
       || grub_file_read (file, buf, hibhead.image_size)
       != (grub_ssize_t) hibhead.image_size)
     {
@@ -123,11 +123,11 @@ grub_xnu_resume (char *imagename)
 
   /* Prepare asm helper. */
   grub_memcpy (codetmp, ((grub_uint8_t *) buf) + total_header_size, codesize);
-  grub_memcpy (codetmp + codesize, grub_xnu_launcher_start, 
-	       grub_xnu_launcher_end - grub_xnu_launcher_start);  
+  grub_memcpy (codetmp + codesize, grub_xnu_launcher_start,
+	       grub_xnu_launcher_end - grub_xnu_launcher_start);
 
   /* We're ready now. */
-  grub_loader_set ((grub_err_t (*) (void)) (codetmp + codesize), 
+  grub_loader_set ((grub_err_t (*) (void)) (codetmp + codesize),
 		   grub_xnu_resume_unload, 0);
 
   /* Prevent module from unloading. */

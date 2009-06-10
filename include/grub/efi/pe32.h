@@ -98,7 +98,7 @@ struct grub_pe32_optional_header
   grub_uint32_t bss_size;
   grub_uint32_t entry_addr;
   grub_uint32_t code_base;
-  
+
 #if GRUB_TARGET_SIZEOF_VOID_P == 4
   grub_uint32_t data_base;
   grub_uint32_t image_base;
@@ -139,7 +139,7 @@ struct grub_pe32_optional_header
 
   grub_uint32_t loader_flags;
   grub_uint32_t num_data_directories;
-  
+
   /* Data directories.  */
   struct grub_pe32_data_directory export_table;
   struct grub_pe32_data_directory import_table;
@@ -210,7 +210,7 @@ struct grub_pe32_header
 {
   /* This should be filled in with GRUB_PE32_MSDOS_STUB.  */
   grub_uint8_t msdos_stub[GRUB_PE32_MSDOS_STUB_SIZE];
-  
+
   /* This is always PE\0\0.  */
   char signature[4];
 

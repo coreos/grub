@@ -106,7 +106,7 @@ grub_ncurses_putchar (grub_uint32_t c)
 	c = '?';
       break;
     }
-  
+
   addch (c | grub_console_attr);
 }
 
@@ -119,7 +119,7 @@ grub_ncurses_getcharwidth (grub_uint32_t code __attribute__ ((unused)))
 static void
 grub_ncurses_setcolorstate (grub_term_color_state state)
 {
-  switch (state) 
+  switch (state)
     {
     case GRUB_TERM_COLOR_STANDARD:
       grub_console_cur_color = grub_console_standard_color;
@@ -170,12 +170,12 @@ static int
 grub_ncurses_checkkey (void)
 {
   int c;
-  
+
   /* Check for SAVED_CHAR. This should not be true, because this
      means checkkey is called twice continuously.  */
   if (saved_char != ERR)
     return saved_char;
-  
+
   wtimeout (stdscr, 100);
   c = getch ();
   /* If C is not ERR, then put it back in the input queue.  */
@@ -192,7 +192,7 @@ static int
 grub_ncurses_getkey (void)
 {
   int c;
-  
+
   /* If checkkey has already got a character, then return it.  */
   if (saved_char != ERR)
     {
@@ -214,7 +214,7 @@ grub_ncurses_getkey (void)
     case KEY_RIGHT:
       c = 6;
       break;
-      
+
     case KEY_UP:
       c = 16;
       break;
@@ -234,7 +234,7 @@ grub_ncurses_getkey (void)
     case KEY_BACKSPACE:
       /* XXX: For some reason ncurses on xterm does not return
 	 KEY_BACKSPACE.  */
-    case 127: 
+    case 127:
       c = 8;
       break;
 

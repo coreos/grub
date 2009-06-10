@@ -45,7 +45,7 @@ static grub_err_t
 grub_chainloader_unload (void)
 {
   grub_efi_boot_services_t *b;
-  
+
   b = grub_efi_system_table->boot_services;
   efi_call_1 (b->unload_image, image_handle);
   efi_call_2 (b->free_pages, address, pages);
@@ -53,7 +53,7 @@ grub_chainloader_unload (void)
   grub_free (file_path);
   grub_free (cmdline);
   cmdline = 0;
-  
+
   grub_dl_unref (my_mod);
   return GRUB_ERR_NONE;
 }
@@ -65,7 +65,7 @@ grub_chainloader_boot (void)
   grub_efi_status_t status;
   grub_efi_uintn_t exit_data_size;
   grub_efi_char16_t *exit_data;
-  
+
   b = grub_efi_system_table->boot_services;
   status = efi_call_3 (b->start_image, image_handle, &exit_data_size, &exit_data);
   if (status != GRUB_EFI_SUCCESS)
@@ -73,13 +73,13 @@ grub_chainloader_boot (void)
       if (exit_data)
 	{
 	  char *buf;
-	  
+
 	  buf = grub_malloc (exit_data_size * 4 + 1);
 	  if (buf)
 	    {
 	      *grub_utf16_to_utf8 ((grub_uint8_t *) buf,
 				   exit_data, exit_data_size) = 0;
-	      
+
 	      grub_error (GRUB_ERR_BAD_OS, buf);
 	      grub_free (buf);
 	    }
@@ -92,7 +92,7 @@ grub_chainloader_boot (void)
     efi_call_1 (b->free_pool, exit_data);
 
   grub_chainloader_unload ();
-  
+
   return grub_errno;
 }
 
@@ -102,7 +102,7 @@ copy_file_path (grub_efi_file_path_device_path_t *fp,
 {
   grub_efi_char16_t *p;
   grub_efi_uint16_t size;
-  
+
   fp->header.type = GRUB_EFI_MEDIA_DEVICE_PATH_TYPE;
   fp->header.subtype = GRUB_EFI_FILE_PATH_DEVICE_PATH_SUBTYPE;
   size = len * sizeof (grub_efi_char16_t) + sizeof (*fp);
@@ -135,7 +135,7 @@ make_file_path (grub_efi_device_path_t *dp, const char *filename)
       grub_error (GRUB_ERR_BAD_FILENAME, "invalid EFI file path");
       return 0;
     }
-  
+
   size = 0;
   d = dp;
   while (1)
@@ -145,7 +145,7 @@ make_file_path (grub_efi_device_path_t *dp, const char *filename)
 	break;
       d = GRUB_EFI_NEXT_DEVICE_PATH (d);
     }
-  
+
   file_path = grub_malloc (size
 			   + ((grub_strlen (dir_start) + 1)
 			      * sizeof (grub_efi_char16_t))
@@ -154,7 +154,7 @@ make_file_path (grub_efi_device_path_t *dp, const char *filename)
     return 0;
 
   grub_memcpy (file_path, dp, size);
-  
+
   /* Fill the file path for the directory.  */
   d = (grub_efi_device_path_t *) ((char *) file_path
 				  + ((char *) d - (char *) dp));
@@ -194,14 +194,14 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
   filename = argv[0];
-  
+
   grub_dl_ref (my_mod);
 
   /* Initialize some global variables.  */
   address = 0;
   image_handle = 0;
   file_path = 0;
-  
+
   b = grub_efi_system_table->boot_services;
 
   file = grub_file_open (filename);
@@ -219,7 +219,7 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
       if (dev_handle)
 	dp = grub_efi_get_device_path (dev_handle);
     }
-  
+
   if (! dev->disk || ! dev_handle || ! dp)
     {
       grub_error (GRUB_ERR_BAD_DEVICE, "not a valid root device");
@@ -232,10 +232,10 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
 
   grub_printf ("file path: ");
   grub_efi_print_device_path (file_path);
-  
+
   size = grub_file_size (file);
   pages = (((grub_efi_uintn_t) size + ((1 << 12) - 1)) >> 12);
-  
+
   status = efi_call_4 (b->allocate_pages, GRUB_EFI_ALLOCATE_ANY_PAGES,
 			      GRUB_EFI_LOADER_CODE,
 			      pages, &address);
@@ -262,7 +262,7 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
 	grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of resources");
       else
 	grub_error (GRUB_ERR_BAD_OS, "cannot load image");
-      
+
       goto fail;
     }
 
@@ -276,7 +276,7 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
   loaded_image->device_handle = dev_handle;
-  
+
   grub_file_close (file);
 
   if (argc > 1)
@@ -310,21 +310,21 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
 
   grub_loader_set (grub_chainloader_boot, grub_chainloader_unload, 0);
   return 0;
-  
+
  fail:
 
   if (dev)
     grub_device_close (dev);
-  
+
   if (file)
     grub_file_close (file);
 
   if (file_path)
     grub_free (file_path);
-  
+
   if (address)
     efi_call_2 (b->free_pages, address, pages);
-  
+
   grub_dl_unref (my_mod);
 
   return grub_errno;

@@ -140,7 +140,7 @@ acorn_partition_map_probe (grub_disk_t disk, const char *str)
   grub_disk_addr_t sector;
   grub_err_t err;
   grub_partition_t p;
-  
+
   /* Enforce raw disk access.  */
   raw.partition = 0;
 

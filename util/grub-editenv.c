@@ -95,7 +95,7 @@ create_envblk_file (const char *name)
 {
   FILE *fp;
   char *buf;
-  
+
   buf = malloc (DEFAULT_ENVBLK_SIZE);
   if (! buf)
     grub_util_error ("out of memory");
@@ -107,7 +107,7 @@ create_envblk_file (const char *name)
   memcpy (buf, GRUB_ENVBLK_SIGNATURE, sizeof (GRUB_ENVBLK_SIGNATURE) - 1);
   memset (buf + sizeof (GRUB_ENVBLK_SIGNATURE) - 1, '#',
           DEFAULT_ENVBLK_SIZE - sizeof (GRUB_ENVBLK_SIGNATURE) + 1);
-  
+
   if (fwrite (buf, 1, DEFAULT_ENVBLK_SIZE, fp) != DEFAULT_ENVBLK_SIZE)
     grub_util_error ("cannot write to the file %s", name);
 
@@ -123,7 +123,7 @@ open_envblk_file (const char *name)
   char *buf;
   size_t size;
   grub_envblk_t envblk;
-  
+
   fp = fopen (name, "rb");
   if (! fp)
     {
@@ -145,12 +145,12 @@ open_envblk_file (const char *name)
   buf = malloc (size);
   if (! buf)
     grub_util_error ("out of memory");
-  
+
   if (fread (buf, 1, size, fp) != size)
     grub_util_error ("cannot read the file %s", name);
 
   fclose (fp);
-  
+
   envblk = grub_envblk_open (buf, size);
   if (! envblk)
     grub_util_error ("invalid environment block");
@@ -162,7 +162,7 @@ static void
 list_variables (const char *name)
 {
   grub_envblk_t envblk;
-  
+
   auto int print_var (const char *name, const char *value);
   int print_var (const char *name, const char *value)
     {
@@ -179,11 +179,11 @@ static void
 write_envblk (const char *name, grub_envblk_t envblk)
 {
   FILE *fp;
-  
+
   fp = fopen (name, "wb");
   if (! fp)
     grub_util_error ("cannot open the file %s", name);
-  
+
   if (fwrite (grub_envblk_buffer (envblk), 1, grub_envblk_size (envblk), fp)
       != grub_envblk_size (envblk))
     grub_util_error ("cannot write to the file %s", name);
@@ -196,7 +196,7 @@ static void
 set_variables (const char *name, int argc, char *argv[])
 {
   grub_envblk_t envblk;
-  
+
   envblk = open_envblk_file (name);
   while (argc)
     {
@@ -223,7 +223,7 @@ static void
 unset_variables (const char *name, int argc, char *argv[])
 {
   grub_envblk_t envblk;
-  
+
   envblk = open_envblk_file (name);
   while (argc)
     {
@@ -242,9 +242,9 @@ main (int argc, char *argv[])
 {
   char *filename;
   char *command;
-  
+
   progname = "grub-editenv";
-  
+
   /* Check for options.  */
   while (1)
     {
@@ -285,7 +285,7 @@ main (int argc, char *argv[])
       fprintf (stderr, "no command specified\n");
       usage (1);
     }
-  
+
   filename = argv[optind];
   command = argv[optind + 1];
 

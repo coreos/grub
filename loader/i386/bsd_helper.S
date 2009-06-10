@@ -17,9 +17,9 @@
  */
 
 #include <grub/symbol.h>
-	
+
 	.p2align	2
-	
+
 
 	.code32
 

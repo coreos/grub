@@ -6,22 +6,22 @@ typedef grub_uint32_t grub_xnu_ptr_t;
 
 struct grub_xnu_boot_params
 {
-  grub_uint16_t verminor; 
-  grub_uint16_t vermajor; 
+  grub_uint16_t verminor;
+  grub_uint16_t vermajor;
   /* Command line passed to xnu. */
-  grub_uint8_t cmdline[1024]; 
+  grub_uint8_t cmdline[1024];
 
   /* Later are the same as EFI's get_memory_map (). */
-  grub_xnu_ptr_t efi_mmap;               
-  grub_uint32_t efi_mmap_size;          
-  grub_uint32_t efi_mem_desc_size;      
-  grub_uint32_t efi_mem_desc_version;   
+  grub_xnu_ptr_t efi_mmap;
+  grub_uint32_t efi_mmap_size;
+  grub_uint32_t efi_mem_desc_size;
+  grub_uint32_t efi_mem_desc_version;
 
   /* Later are video parameters. */
   grub_xnu_ptr_t lfb_base;
 #define GRUB_XNU_VIDEO_SPLASH 1
 #define GRUB_XNU_VIDEO_TEXT_IN_VIDEO 2
-  grub_uint32_t lfb_mode; 
+  grub_uint32_t lfb_mode;
   grub_uint32_t lfb_line_len;
   grub_uint32_t lfb_width;
   grub_uint32_t lfb_height;
@@ -30,12 +30,12 @@ struct grub_xnu_boot_params
   /* Pointer to device tree and its len. */
   grub_xnu_ptr_t devtree;
   grub_uint32_t devtreelen;
-  
+
   /* First used address by kernel or boot structures. */
   grub_xnu_ptr_t heap_start;
-  /* Last used address by kernel or boot structures minus previous value. */  
+  /* Last used address by kernel or boot structures minus previous value. */
   grub_uint32_t heap_size;
-  
+
   /* First memory page containing runtime code or data. */
   grub_uint32_t efi_runtime_first_page;
   /* First memory page containing runtime code or data minus previous value. */

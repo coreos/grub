@@ -354,7 +354,7 @@ if test "$target_cpu"-"$platform" = x86_64-efi; then
   ])
   if test "x$grub_cv_cc_mcmodel" = xno; then
     CFLAGS="$SAVED_CFLAGS -m64 -DMCMODEL_SMALL=1"
-    TARGET_CFLAGS="$TARGET_CFLAGS -DMCMODEL_SMALL=1"    
+    TARGET_CFLAGS="$TARGET_CFLAGS -DMCMODEL_SMALL=1"
     AC_MSG_WARN([-mcmodel=large not supported. You wan't be able to use the memory over 4GiB. Upgrade your gcc])
   else
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large"
@@ -451,7 +451,7 @@ LIBS="$tmp_LIBS"
 #
 
 # Memory manager debugging.
-AC_ARG_ENABLE([mm-debug], 
+AC_ARG_ENABLE([mm-debug],
 	      AS_HELP_STRING([--enable-mm-debug],
                              [include memory manager debugging]),
               [AC_DEFINE([MM_DEBUG], [1],

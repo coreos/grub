@@ -39,7 +39,7 @@ grub_cmd_blocklist (grub_command_t cmd __attribute__ ((unused)),
 			    unsigned length);
   auto void NESTED_FUNC_ATTR print_blocklist (grub_disk_addr_t sector, unsigned num,
 			     unsigned offset, unsigned length);
-  
+
   void NESTED_FUNC_ATTR read_blocklist (grub_disk_addr_t sector, unsigned offset,
 		       unsigned length)
     {
@@ -51,7 +51,7 @@ grub_cmd_blocklist (grub_command_t cmd __attribute__ ((unused)),
 	      num_sectors++;
 	      return;
 	    }
-	  
+
 	  print_blocklist (start_sector, num_sectors, 0, 0);
 	  num_sectors = 0;
 	}
@@ -64,7 +64,7 @@ grub_cmd_blocklist (grub_command_t cmd __attribute__ ((unused)),
       else
 	print_blocklist (sector, 0, offset, length);
     }
-  
+
   void NESTED_FUNC_ATTR print_blocklist (grub_disk_addr_t sector, unsigned num,
 			unsigned offset, unsigned length)
     {
@@ -77,7 +77,7 @@ grub_cmd_blocklist (grub_command_t cmd __attribute__ ((unused)),
       if (offset != 0 || length != 0)
 	grub_printf ("[%u-%u]", offset, offset + length);
     }
-  
+
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
 
@@ -91,7 +91,7 @@ grub_cmd_blocklist (grub_command_t cmd __attribute__ ((unused)),
 
   if (file->device->disk->partition)
     part_start = grub_partition_get_start (file->device->disk->partition);
-  
+
   file->read_hook = read_blocklist;
 
   while (grub_file_read (file, buf, sizeof (buf)) > 0)
@@ -99,7 +99,7 @@ grub_cmd_blocklist (grub_command_t cmd __attribute__ ((unused)),
 
   if (num_sectors > 0)
     print_blocklist (start_sector, num_sectors, 0, 0);
-  
+
   grub_file_close (file);
 
   return grub_errno;

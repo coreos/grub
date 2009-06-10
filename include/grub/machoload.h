@@ -54,7 +54,7 @@ grub_uint32_t grub_macho32_get_entry_point (grub_macho_t macho);
 #define GRUB_MACHO_NOBSS 0x1
 grub_err_t grub_macho32_load (grub_macho_t macho, char *offset, int flags);
 
-/* Like filesize and file_read but take only 32-bit part 
+/* Like filesize and file_read but take only 32-bit part
    for current architecture. */
 grub_size_t grub_macho32_filesize (grub_macho_t macho);
 grub_err_t grub_macho32_readfile (grub_macho_t macho, void *dest);

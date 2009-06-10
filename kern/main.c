@@ -39,7 +39,7 @@ grub_module_iterate (int (*hook) (struct grub_module_header *header))
 
   modbase = grub_arch_modules_addr ();
   modinfo = (struct grub_module_info *) modbase;
-  
+
   /* Check if there are any modules.  */
   if ((modinfo == 0) || modinfo->magic != GRUB_MODULE_MAGIC)
     return;
@@ -100,7 +100,7 @@ grub_env_write_root (struct grub_env_var *var __attribute__ ((unused)),
 {
   /* XXX Is it better to check the existence of the device?  */
   grub_size_t len = grub_strlen (val);
-  
+
   if (val[0] == '(' && val[len - 1] == ')')
     return grub_strndup (val + 1, len - 2);
 
@@ -115,9 +115,9 @@ grub_set_root_dev (void)
 
   grub_register_variable_hook ("root", 0, grub_env_write_root);
   grub_env_export ("root");
-  
+
   prefix = grub_env_get ("prefix");
-  
+
   if (prefix)
     {
       char *dev;
@@ -137,7 +137,7 @@ grub_load_normal_mode (void)
 {
   /* Load the module.  */
   grub_dl_load ("normal");
-  
+
   /* Something went wrong.  Print errors here to let user know why we're entering rescue mode.  */
   grub_print_error ();
   grub_errno = 0;
@@ -170,7 +170,7 @@ grub_main (void)
   grub_register_core_commands ();
   grub_register_rescue_parser ();
   grub_register_rescue_reader ();
-  
+
   grub_load_config ();
   grub_load_normal_mode ();
   grub_reader_loop (0);

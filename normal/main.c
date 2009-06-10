@@ -112,7 +112,7 @@ grub_file_getline (grub_file_t file)
       grub_free (cmdline);
       cmdline = 0;
     }
-  
+
   return cmdline;
 }
 
@@ -291,7 +291,7 @@ read_config_file (const char *config)
 {
   grub_file_t file;
   grub_parser_t old_parser = 0;
-  
+
   auto grub_err_t getline (char **line, int cont);
   grub_err_t getline (char **line, int cont __attribute__ ((unused)))
     {
@@ -406,7 +406,7 @@ grub_normal_execute (const char *config, int nested, int batch)
   grub_command_execute ("parser.sh", 0, 0);
 
   reader_nested = nested;
-  
+
   if (config)
     {
       menu = read_config_file (config);
@@ -446,7 +446,7 @@ grub_cmd_normal (struct grub_command *cmd,
 	 so that it won't get broken by longjmp.  */
       static char *config;
       const char *prefix;
-      
+
       prefix = grub_env_get ("prefix");
       if (prefix)
 	{

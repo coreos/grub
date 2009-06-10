@@ -1,4 +1,4 @@
-/* Prepare efiemu. E.g. allocate memory, load the runtime 
+/* Prepare efiemu. E.g. allocate memory, load the runtime
    to appropriate place, etc */
 /*
  *  GRUB  --  GRand Unified Bootloader
@@ -26,7 +26,7 @@
 
 grub_err_t
 SUFFIX (grub_efiemu_prepare) (struct grub_efiemu_prepare_hook *prepare_hooks,
-			      struct grub_efiemu_configuration_table 
+			      struct grub_efiemu_configuration_table
 			      *config_tables)
 {
   grub_err_t err;
@@ -46,8 +46,8 @@ SUFFIX (grub_efiemu_prepare) (struct grub_efiemu_prepare_hook *prepare_hooks,
   /* Request space for the list of configuration tables */
   for (cur = config_tables; cur; cur = cur->next)
     cntconftables++;
-  conftable_handle 
-    = grub_efiemu_request_memalign (GRUB_EFIEMU_PAGESIZE, 
+  conftable_handle
+    = grub_efiemu_request_memalign (GRUB_EFIEMU_PAGESIZE,
 				    cntconftables * sizeof (*conftables),
 				    GRUB_EFI_RUNTIME_SERVICES_DATA);
 
@@ -69,31 +69,31 @@ SUFFIX (grub_efiemu_prepare) (struct grub_efiemu_prepare_hook *prepare_hooks,
       return err;
     }
 
-  if ((err = grub_efiemu_resolve_symbol ("efiemu_system_table", 
+  if ((err = grub_efiemu_resolve_symbol ("efiemu_system_table",
 					 &handle, &off)))
     {
       grub_efiemu_unload ();
       return err;
     }
 
-  SUFFIX (grub_efiemu_system_table)  
-    = (TYPE (grub_efi_system_table) *) 
+  SUFFIX (grub_efiemu_system_table)
+    = (TYPE (grub_efi_system_table) *)
     ((grub_uint8_t *)grub_efiemu_mm_obtain_request (handle) + off);
 
   /* compute CRC32 of runtime_services */
-  if ((err = grub_efiemu_resolve_symbol ("efiemu_runtime_services", 
+  if ((err = grub_efiemu_resolve_symbol ("efiemu_runtime_services",
 					 &handle, &off)))
     return err;
   runtime_services = (TYPE (grub_efiemu_runtime_services) *)
 	((grub_uint8_t *)grub_efiemu_mm_obtain_request (handle) + off);
   runtime_services->hdr.crc32 = 0;
-  runtime_services->hdr.crc32 = grub_getcrc32 
+  runtime_services->hdr.crc32 = grub_getcrc32
     (0, runtime_services, runtime_services->hdr.header_size);
 
   /* Put pointer to the list of configuration tables in system table */
   grub_efiemu_write_value
-    (&(SUFFIX (grub_efiemu_system_table)->configuration_table), 0, 
-     conftable_handle, 0, 1, 
+    (&(SUFFIX (grub_efiemu_system_table)->configuration_table), 0,
+     conftable_handle, 0, 1,
      sizeof (SUFFIX (grub_efiemu_system_table)->configuration_table));
   SUFFIX(grub_efiemu_system_table)->num_table_entries = cntconftables;
 
@@ -103,7 +103,7 @@ SUFFIX (grub_efiemu_prepare) (struct grub_efiemu_prepare_hook *prepare_hooks,
   i = 0;
   for (cur = config_tables; cur; cur = cur->next, i++)
     {
-      grub_memcpy (&(conftables[i].vendor_guid), &(cur->guid), 
+      grub_memcpy (&(conftables[i].vendor_guid), &(cur->guid),
 		       sizeof (cur->guid));
       if (cur->get_table)
 	conftables[i].vendor_table
@@ -114,13 +114,13 @@ SUFFIX (grub_efiemu_prepare) (struct grub_efiemu_prepare_hook *prepare_hooks,
 
   /* compute CRC32 of system table */
   SUFFIX (grub_efiemu_system_table)->hdr.crc32 = 0;
-  SUFFIX (grub_efiemu_system_table)->hdr.crc32 
-    = grub_getcrc32 (0, SUFFIX (grub_efiemu_system_table), 
+  SUFFIX (grub_efiemu_system_table)->hdr.crc32
+    = grub_getcrc32 (0, SUFFIX (grub_efiemu_system_table),
 		     SUFFIX (grub_efiemu_system_table)->hdr.header_size);
 
   grub_dprintf ("efiemu","system_table = %p, runtime_services = %p,"
 		" conftables = %p (%d entries)\n",
-		SUFFIX (grub_efiemu_system_table), runtime_services, 
+		SUFFIX (grub_efiemu_system_table), runtime_services,
 		conftables, cntconftables);
 
   return GRUB_ERR_NONE;

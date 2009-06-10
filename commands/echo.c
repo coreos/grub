@@ -90,7 +90,7 @@ grub_cmd_echo (grub_extcmd_t cmd, int argc, char **args)
 	      arg++;
 	      continue;
 	    }
-	  
+
 	  /* This was not an escaped character, or escaping is not
 	     enabled.  */
 	  grub_printf ("%c", *arg);

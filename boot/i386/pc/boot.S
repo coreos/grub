@@ -19,7 +19,7 @@
 
 #include <grub/boot.h>
 #include <grub/machine/boot.h>
-	
+
 /*
  *  defines for the code go here
  */
@@ -44,7 +44,7 @@
 	   in real mode. */
 	.code16
 
-.globl _start, start; 
+.globl _start, start;
 _start:
 start:
 	/*
@@ -70,7 +70,7 @@ start:
 	/* scratch space */
 mode:
 	.byte	0
-disk_address_packet:	
+disk_address_packet:
 sectors:
 	.long	0
 heads:
@@ -91,7 +91,7 @@ cylinder_start:
 	 * End of BIOS parameter block.
 	 */
 
-boot_version:	
+boot_version:
 	.byte	GRUB_BOOT_VERSION_MAJOR, GRUB_BOOT_VERSION_MINOR
 kernel_address:
 	.word	GRUB_BOOT_MACHINE_KERNEL_ADDR
@@ -99,7 +99,7 @@ kernel_segment:
 	.word	GRUB_BOOT_MACHINE_KERNEL_SEG
 kernel_sector:
 	.long	1, 0
-boot_drive:	
+boot_drive:
 	.byte 0xff	/* the disk to load kernel from */
 			/* 0xff means use the boot drive */
 root_drive:
@@ -124,7 +124,7 @@ boot_drive_check:
         jnz     1f
         movb    $0x80, %dl
 1:
-	
+
 	/*
 	 * ljmp to the next instruction because some bogus BIOSes
 	 * jump to 07C0:0000 instead of 0000:7C00.
@@ -136,7 +136,7 @@ boot_drive_check:
 	ljmp	$0, $ABS(real_start)
 #endif
 
-real_start:	
+real_start:
 
 	/* set up %ds and %ss as offset from 0 */
 	xorw	%ax, %ax
@@ -176,17 +176,17 @@ real_start:
 #else
 	movw	$ABS(disk_address_packet), %si
 #endif
-	
+
 	/* do not probe LBA if the drive is a floppy */
 	testb	$GRUB_BOOT_MACHINE_BIOS_HD_FLAG, %dl
 	jz	chs_mode
-			
+
 	/* check if LBA is supported */
 	movb	$0x41, %ah
 	movw	$0x55aa, %bx
 	int	$0x13
 
-	/* 
+	/*
 	 *  %dl may have been clobbered by INT 13, AH=41H.
 	 *  This happens, for example, with AST BIOS 1.04.
 	 */
@@ -200,15 +200,15 @@ real_start:
 
 	andw	$1, %cx
 	jz	chs_mode
-	
+
 lba_mode:
 	xorw	%ax, %ax
 	movw	%ax, 4(%si)
 
-	incw	%ax	
+	incw	%ax
 	/* set the mode to non-zero */
 	movb	%al, -1(%si)
-	
+
 	/* the blocks */
 	movw	%ax, 2(%si)
 
@@ -249,8 +249,8 @@ lba_mode:
 
 	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
 	jmp	copy_buffer
-		
-chs_mode:	
+
+chs_mode:
 	/*
 	 *  Determine the hard disk geometry from the BIOS!
 	 *  We do this first, so that LS-120 IDE floppies work correctly.
@@ -272,7 +272,7 @@ final_init:
 	/* set the mode to zero */
 	movzbl	%dh, %eax
 	movb	%ah, -1(%si)
-	
+
 	/* save number of heads */
 	incw	%ax
 	movl	%eax, 4(%si)
@@ -303,7 +303,7 @@ setup_sectors:
 
 	orl	%eax, %eax
 	jnz	geometry_error
-	
+
 	/* load logical sector start (bottom half) */
 #ifdef APPLE_CC
 	movl	(kernel_sector_abs), %eax
@@ -371,7 +371,7 @@ setup_sectors:
 	jc	read_error
 
 	movw	%es, %bx
-	
+
 copy_buffer:
 #ifdef APPLE_CC
 	kernel_segment_abs = ABS (kernel_segment)
@@ -386,14 +386,14 @@ copy_buffer:
 	 */
 	pusha
 	pushw	%ds
-	
+
 	movw	$0x100, %cx
 	movw	%bx, %ds
 	xorw	%si, %si
 	xorw	%di, %di
-	
+
 	cld
-	
+
 	rep
 	movsw
 
@@ -472,7 +472,7 @@ message:
 	 */
 
 	. = _start + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC
-nt_magic:	
+nt_magic:
 	.long 0
 	.word 0
 
@@ -482,7 +482,7 @@ nt_magic:
 	 *  sneaky, huh?
 	 */
 
-part_start:	
+part_start:
 	. = _start + GRUB_BOOT_MACHINE_PART_START
 
 probe_values:

@@ -36,14 +36,14 @@ grub_biosdisk_get_drive (const char *name)
 
   if ((name[0] != 'f' && name[0] != 'h') || name[1] != 'd')
     goto fail;
-    
+
   drive = grub_strtoul (name + 2, 0, 10);
   if (grub_errno != GRUB_ERR_NONE)
     goto fail;
 
   if (name[0] == 'h')
     drive += 0x80;
-  
+
   return (int) drive ;
 
  fail:
@@ -75,7 +75,7 @@ grub_biosdisk_iterate (int (*hook) (const char *name))
 	  grub_dprintf ("disk", "Read error when probing drive 0x%2x\n", drive);
 	  break;
 	}
-      
+
       if (grub_biosdisk_call_hook (hook, drive))
 	return 1;
     }
@@ -108,11 +108,11 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
 
   disk->has_partitions = ((drive & 0x80) && (drive != cd_drive));
   disk->id = drive;
-  
+
   data = (struct grub_biosdisk_data *) grub_malloc (sizeof (*data));
   if (! data)
     return grub_errno;
-  
+
   data->drive = drive;
   data->flags = 0;
 
@@ -126,7 +126,7 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
     {
       /* HDD */
       int version;
-      
+
       version = grub_biosdisk_check_int13_extensions (drive);
       if (version)
 	{
@@ -162,9 +162,9 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
 	    {
 	      data->sectors = 63;
 	      data->heads = 255;
-	      data->cylinders 
-		= grub_divmod64 (total_sectors 
-				 + data->heads * data->sectors - 1, 
+	      data->cylinders
+		= grub_divmod64 (total_sectors
+				 + data->heads * data->sectors - 1,
 				 data->heads * data->sectors, 0);
 	    }
 	  else
@@ -180,7 +180,7 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
 
   disk->total_sectors = total_sectors;
   disk->data = data;
-  
+
   return GRUB_ERR_NONE;
 }
 
@@ -202,11 +202,11 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 		  unsigned segment)
 {
   struct grub_biosdisk_data *data = disk->data;
-  
+
   if (data->flags & GRUB_BIOSDISK_FLAG_LBA)
     {
       struct grub_biosdisk_dap *dap;
-      
+
       dap = (struct grub_biosdisk_dap *) (GRUB_MEMORY_MACHINE_SCRATCH_ADDR
 					  + (data->sectors
 					     << GRUB_DISK_SECTOR_BITS));
@@ -246,7 +246,7 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
     {
       unsigned coff, hoff, soff;
       unsigned head;
-      
+
       /* It is impossible to reach over 8064 MiB (a bit less than LBA24) with
 	 the traditional CHS access.  */
       if (sector >

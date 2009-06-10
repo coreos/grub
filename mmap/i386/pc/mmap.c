@@ -50,13 +50,13 @@ struct grub_e820_mmap_entry
 } __attribute__((packed));
 
 
-static grub_err_t 
+static grub_err_t
 preboot (int noreturn __attribute__ ((unused)))
 {
   struct grub_e820_mmap_entry *hookmmap, *hookmmapcur;
-  auto int NESTED_FUNC_ATTR fill_hook (grub_uint64_t, grub_uint64_t, 
+  auto int NESTED_FUNC_ATTR fill_hook (grub_uint64_t, grub_uint64_t,
 				       grub_uint32_t);
-  int NESTED_FUNC_ATTR fill_hook (grub_uint64_t addr, grub_uint64_t size, 
+  int NESTED_FUNC_ATTR fill_hook (grub_uint64_t addr, grub_uint64_t size,
 				  grub_uint32_t type)
   {
     grub_dprintf ("mmap", "mmap chunk %llx-%llx:%x\n", addr, addr + size, type);
@@ -68,22 +68,22 @@ preboot (int noreturn __attribute__ ((unused)))
   }
 
   if (! hooktarget)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "no space is allocated for memory hook");
 
   grub_dprintf ("mmap", "installing preboot handlers\n");
 
-  hookmmapcur = hookmmap = (struct grub_e820_mmap_entry *) 
-    ((grub_uint8_t *) hooktarget + (&grub_machine_mmaphook_end 
+  hookmmapcur = hookmmap = (struct grub_e820_mmap_entry *)
+    ((grub_uint8_t *) hooktarget + (&grub_machine_mmaphook_end
 				    - &grub_machine_mmaphook_start));
 
-  grub_mmap_iterate (fill_hook);  
+  grub_mmap_iterate (fill_hook);
   grub_machine_mmaphook_mmap_num = hookmmapcur - hookmmap;
 
   grub_machine_mmaphook_kblow = grub_mmap_get_lower () >> 10;
-  grub_machine_mmaphook_kbin16mb 
+  grub_machine_mmaphook_kbin16mb
     = min (grub_mmap_get_upper (),0x3f00000ULL) >> 10;
-  grub_machine_mmaphook_64kbin4gb 
+  grub_machine_mmaphook_64kbin4gb
     = min (grub_mmap_get_post64 (), 0xfc000000ULL) >> 16;
 
   /* Correct BDA. */
@@ -103,7 +103,7 @@ preboot (int noreturn __attribute__ ((unused)))
 
   *((grub_uint16_t *) 0x4a) = PTR_TO_UINT32 (hooktarget) >> 4;
   *((grub_uint16_t *) 0x56) = PTR_TO_UINT32 (hooktarget) >> 4;
-  *((grub_uint16_t *) 0x48) = &grub_machine_mmaphook_int12 
+  *((grub_uint16_t *) 0x48) = &grub_machine_mmaphook_int12
     - &grub_machine_mmaphook_start;
   *((grub_uint16_t *) 0x54) = &grub_machine_mmaphook_int15
     - &grub_machine_mmaphook_start;
@@ -123,7 +123,7 @@ preboot_rest (void)
   return GRUB_ERR_NONE;
 }
 
-static grub_err_t 
+static grub_err_t
 malloc_hook (void)
 {
   static int reentry = 0;
@@ -131,10 +131,10 @@ malloc_hook (void)
   static int slots_available = 0;
   int hooksize;
   int regcount = 0;
-  auto int NESTED_FUNC_ATTR count_hook (grub_uint64_t, grub_uint64_t, 
+  auto int NESTED_FUNC_ATTR count_hook (grub_uint64_t, grub_uint64_t,
 					grub_uint32_t);
-  int NESTED_FUNC_ATTR count_hook (grub_uint64_t addr __attribute__ ((unused)), 
-				   grub_uint64_t size __attribute__ ((unused)), 
+  int NESTED_FUNC_ATTR count_hook (grub_uint64_t addr __attribute__ ((unused)),
+				   grub_uint64_t size __attribute__ ((unused)),
 				   grub_uint32_t type __attribute__ ((unused)))
   {
     regcount++;
@@ -165,13 +165,13 @@ malloc_hook (void)
     + regcount * sizeof (struct grub_e820_mmap_entry);
   /* Allocate an integer number of KiB. */
   hooksize = ((hooksize - 1) | 0x3ff) + 1;
-  slots_available = (hooksize - (&grub_machine_mmaphook_end 
+  slots_available = (hooksize - (&grub_machine_mmaphook_end
 				 - &grub_machine_mmaphook_start))
     / sizeof (struct grub_e820_mmap_entry);
 
   reentry = 1;
-  hooktarget 
-    = grub_mmap_malign_and_register (16, hooksize, &mmapregion, 
+  hooktarget
+    = grub_mmap_malign_and_register (16, hooksize, &mmapregion,
 				     GRUB_MACHINE_MEMORY_RESERVED,
 				     GRUB_MMAP_MALLOC_LOW);
   reentry = 0;
@@ -185,8 +185,8 @@ malloc_hook (void)
 }
 
 grub_err_t
-grub_machine_mmap_register (grub_uint64_t start __attribute__ ((unused)), 
-			    grub_uint64_t size __attribute__ ((unused)), 
+grub_machine_mmap_register (grub_uint64_t start __attribute__ ((unused)),
+			    grub_uint64_t size __attribute__ ((unused)),
 			    int type __attribute__ ((unused)),
 			    int handle  __attribute__ ((unused)))
 {
@@ -200,8 +200,8 @@ grub_machine_mmap_register (grub_uint64_t start __attribute__ ((unused)),
   if (! preb_handle)
     {
       grub_dprintf ("mmap", "adding preboot\n");
-      preb_handle 
-	= grub_loader_register_preboot_hook (preboot, preboot_rest, 
+      preb_handle
+	= grub_loader_register_preboot_hook (preboot, preboot_rest,
 					     GRUB_LOADER_PREBOOT_HOOK_PRIO_MEMORY);
       if (! preb_handle)
 	return grub_errno;

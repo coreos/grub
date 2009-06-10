@@ -25,7 +25,7 @@ grub_stop_floppy (void)
 {
 }
 
-void 
+void
 grub_arch_sync_caches (void *address __attribute__ ((unused)),
 		       grub_size_t len __attribute__ ((unused)))
 {

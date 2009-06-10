@@ -95,12 +95,12 @@ get_map_mask (void)
 {
   unsigned char old_addr;
   unsigned char old_data;
-  
+
   old_addr = grub_inb (SEQUENCER_ADDR_PORT);
   grub_outb (MAP_MASK_REGISTER, SEQUENCER_ADDR_PORT);
-  
+
   old_data = grub_inb (SEQUENCER_DATA_PORT);
-  
+
   grub_outb (old_addr, SEQUENCER_ADDR_PORT);
 
   return old_data;
@@ -111,12 +111,12 @@ static void
 set_map_mask (unsigned char mask)
 {
   unsigned char old_addr;
-  
+
   old_addr = grub_inb (SEQUENCER_ADDR_PORT);
   grub_outb (MAP_MASK_REGISTER, SEQUENCER_ADDR_PORT);
-  
+
   grub_outb (mask, SEQUENCER_DATA_PORT);
-  
+
   grub_outb (old_addr, SEQUENCER_ADDR_PORT);
 }
 
@@ -125,7 +125,7 @@ static void
 set_read_map (unsigned char map)
 {
   unsigned char old_addr;
-  
+
   old_addr = grub_inb (GRAPHICS_ADDR_PORT);
 
   grub_outb (READ_MAP_REGISTER, GRAPHICS_ADDR_PORT);
@@ -139,12 +139,12 @@ static void
 set_start_address (unsigned int start)
 {
   unsigned char old_addr;
-  
+
   old_addr = grub_inb (CRTC_ADDR_PORT);
-  
+
   grub_outb (START_ADDR_LOW_REGISTER, CRTC_ADDR_PORT);
   grub_outb (start & 0xFF, CRTC_DATA_PORT);
-  
+
   grub_outb (START_ADDR_HIGH_REGISTER, CRTC_ADDR_PORT);
   grub_outb (start >> 8, CRTC_DATA_PORT);
 
@@ -164,7 +164,7 @@ grub_vga_mod_init (void)
   font = grub_font_get ("");  /* Choose any font, for now. */
   if (!font)
     return grub_error (GRUB_ERR_BAD_FONT, "No font loaded.");
-  
+
   return GRUB_ERR_NONE;
 }
 
@@ -192,13 +192,13 @@ write_char (void)
   unsigned char *mem_base;
   unsigned plane;
 
-  mem_base = (VGA_MEM + xpos + 
+  mem_base = (VGA_MEM + xpos +
 	      ypos * CHAR_HEIGHT * TEXT_WIDTH + PAGE_OFFSET (page)) - p->index;
   p -= p->index;
 
   /* Get glyph for character.  */
   glyph = grub_font_get_glyph (font, p->code);
-  
+
   for (plane = 0x01; plane <= 0x08; plane <<= 1)
     {
       unsigned y;
@@ -219,7 +219,7 @@ write_char (void)
 	  for (i = 0; i < char_width && offset < 32; i++)
 	    {
 	      unsigned char fg_mask, bg_mask;
-	      
+
 	      fg_mask = (p->fg_color & plane) ? glyph->bitmap[offset] : 0;
 	      bg_mask = (p->bg_color & plane) ? ~(glyph->bitmap[offset]) : 0;
 	      offset++;
@@ -227,7 +227,7 @@ write_char (void)
 	      if (check_vga_mem (mem + i))
 		mem[i] = (fg_mask | bg_mask);
 	    }
-#endif /* 0 */ 
+#endif /* 0 */
 	}
     }
 
@@ -241,7 +241,7 @@ write_cursor (void)
 			+ (ypos * CHAR_HEIGHT + CHAR_HEIGHT - 3) * TEXT_WIDTH);
   if (check_vga_mem (mem))
     *mem = 0xff;
-  
+
   mem += TEXT_WIDTH;
   if (check_vga_mem (mem))
     *mem = 0xff;
@@ -252,11 +252,11 @@ scroll_up (void)
 {
   unsigned i;
   unsigned plane;
-  
+
   /* Do all the work in the other page.  */
   grub_memmove (text_buf, text_buf + TEXT_WIDTH,
 		sizeof (struct colored_char) * TEXT_WIDTH * (TEXT_HEIGHT - 1));
-      
+
   for (i = TEXT_WIDTH * (TEXT_HEIGHT - 1); i < TEXT_WIDTH * TEXT_HEIGHT; i++)
     {
       text_buf[i].code = ' ';
@@ -279,7 +279,7 @@ scroll_up (void)
   grub_memset (VGA_MEM + PAGE_OFFSET (1 - page)
 	       + VGA_WIDTH * (VGA_HEIGHT - CHAR_HEIGHT) / 8, 0,
 	       VGA_WIDTH * CHAR_HEIGHT / 8);
-  
+
   /* Activate the other page.  */
   page = 1 - page;
   wait_vretrace ();
@@ -292,7 +292,7 @@ grub_vga_putchar (grub_uint32_t c)
 #if DEBUG_VGA
   static int show = 1;
 #endif
-  
+
   if (c == '\a')
     /* FIXME */
     return;
@@ -302,21 +302,21 @@ grub_vga_putchar (grub_uint32_t c)
       /* Erase current cursor, if any.  */
       if (cursor_state)
 	write_char ();
-  
+
       switch (c)
 	{
 	case '\b':
 	  if (xpos > 0)
 	    xpos--;
 	  break;
-	  
+
 	case '\n':
 	  if (ypos >= TEXT_HEIGHT - 1)
 	    scroll_up ();
 	  else
 	    ypos++;
 	  break;
-	  
+
 	case '\r':
 	  xpos = 0;
 	  break;
@@ -330,7 +330,7 @@ grub_vga_putchar (grub_uint32_t c)
       struct grub_font_glyph *glyph;
       struct colored_char *p;
       unsigned char_width = 1;
-      
+
       glyph = grub_font_get_glyph(font, c);
 
       if (xpos + char_width > TEXT_WIDTH)
@@ -354,14 +354,14 @@ grub_vga_putchar (grub_uint32_t c)
 	      p[i].index = i;
 	    }
 	}
-	  
+
       write_char ();
-  
+
       xpos += char_width;
       if (xpos >= TEXT_WIDTH)
 	{
 	  xpos = 0;
-	  
+
 	  if (ypos >= TEXT_HEIGHT - 1)
 	    scroll_up ();
 	  else
@@ -391,9 +391,9 @@ grub_vga_getcharwidth (grub_uint32_t c)
 {
 #if 0
   struct grub_font_glyph glyph;
-  
+
   glyph = grub_font_get_glyph (c);
-  
+
   return glyph.char_width;
 #else
   (void) c;   /* Prevent warning.  */

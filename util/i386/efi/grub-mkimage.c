@@ -92,7 +92,7 @@ read_kernel_module (const char *dir, size_t *size)
 {
   char *kernel_image;
   char *kernel_path;
-  
+
   kernel_path = grub_util_get_path (dir, "kernel.mod");
   *size = grub_util_get_image_size (kernel_path);
   kernel_image = grub_util_read_image (kernel_path);
@@ -162,7 +162,7 @@ locate_sections (Elf_Shdr *sections, Elf_Half section_entsize,
   Elf_Addr current_address;
   Elf_Addr *section_addresses;
   Elf_Shdr *s;
-  
+
   section_addresses = xmalloc (sizeof (*section_addresses) * num_sections);
   memset (section_addresses, 0, sizeof (*section_addresses) * num_sections);
 
@@ -176,10 +176,10 @@ locate_sections (Elf_Shdr *sections, Elf_Half section_entsize,
       {
 	Elf_Word align = grub_le_to_cpu32 (s->sh_addralign);
 	const char *name = strtab + grub_le_to_cpu32 (s->sh_name);
-	
+
 	if (align)
 	  current_address = align_address (current_address, align);
-	
+
 	grub_util_info ("locating the section %s at 0x%x",
 			name, current_address);
 	section_addresses[i] = current_address;
@@ -196,10 +196,10 @@ locate_sections (Elf_Shdr *sections, Elf_Half section_entsize,
       {
 	Elf_Word align = grub_le_to_cpu32 (s->sh_addralign);
 	const char *name = strtab + grub_le_to_cpu32 (s->sh_name);
-	
+
 	if (align)
 	  current_address = align_address (current_address, align);
-	
+
 	grub_util_info ("locating the section %s at 0x%x",
 			name, current_address);
 	section_addresses[i] = current_address;
@@ -216,7 +216,7 @@ find_symtab_section (Elf_Shdr *sections,
 {
   int i;
   Elf_Shdr *s;
-  
+
   for (i = 0, s = sections;
        i < num_sections;
        i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
@@ -232,7 +232,7 @@ find_strtab (Elf_Ehdr *e, Elf_Shdr *sections, Elf_Half section_entsize)
 {
   Elf_Shdr *s;
   char *strtab;
-  
+
   s = (Elf_Shdr *) ((char *) sections
 		      + grub_le_to_cpu16 (e->e_shstrndx) * section_entsize);
   strtab = (char *) e + grub_le_to_cpu32 (s->sh_offset);
@@ -253,13 +253,13 @@ relocate_symbols (Elf_Ehdr *e, Elf_Shdr *sections,
   Elf_Word i;
   Elf_Shdr *strtab_section;
   const char *strtab;
-  
+
   strtab_section
     = (Elf_Shdr *) ((char *) sections
 		      + (grub_le_to_cpu32 (symtab_section->sh_link)
 			 * section_entsize));
   strtab = (char *) e + grub_le_to_cpu32 (strtab_section->sh_offset);
-  
+
   symtab_size = grub_le_to_cpu32 (symtab_section->sh_size);
   sym_size = grub_le_to_cpu32 (symtab_section->sh_entsize);
   symtab_offset = grub_le_to_cpu32 (symtab_section->sh_offset);
@@ -271,9 +271,9 @@ relocate_symbols (Elf_Ehdr *e, Elf_Shdr *sections,
     {
       Elf_Section index;
       const char *name;
-      
+
       name = strtab + grub_le_to_cpu32 (sym->st_name);
-      
+
       index = grub_le_to_cpu16 (sym->st_shndx);
       if (index == STN_ABS)
         {
@@ -288,7 +288,7 @@ relocate_symbols (Elf_Ehdr *e, Elf_Shdr *sections,
 	}
       else if (index >= num_sections)
 	grub_util_error ("section %d does not exist", index);
-      
+
       sym->st_value = (grub_le_to_cpu32 (sym->st_value)
 		       + section_addresses[index]);
       grub_util_info ("locating %s at 0x%x", name, sym->st_value);
@@ -306,7 +306,7 @@ static Elf_Addr
 get_symbol_address (Elf_Ehdr *e, Elf_Shdr *s, Elf_Word i)
 {
   Elf_Sym *sym;
-  
+
   sym = (Elf_Sym *) ((char *) e
 		       + grub_le_to_cpu32 (s->sh_offset)
 		       + i * grub_le_to_cpu32 (s->sh_entsize));
@@ -332,7 +332,7 @@ relocate_addresses (Elf_Ehdr *e, Elf_Shdr *sections,
 {
   Elf_Half i;
   Elf_Shdr *s;
-  
+
   for (i = 0, s = sections;
        i < num_sections;
        i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
@@ -375,7 +375,7 @@ relocate_addresses (Elf_Ehdr *e, Elf_Shdr *sections,
 	    Elf_Addr sym_addr;
 	    Elf_Addr *target;
 	    Elf_Addr addend;
-	    
+
 	    offset = grub_le_to_cpu (r->r_offset);
 	    target = get_target_address (e, target_section, offset);
 	    info = grub_le_to_cpu (r->r_info);
@@ -414,7 +414,7 @@ relocate_addresses (Elf_Ehdr *e, Elf_Shdr *sections,
                 break;
 
               case R_X86_64_64:
-		*target = grub_cpu_to_le64 (grub_le_to_cpu64 (*target) 
+		*target = grub_cpu_to_le64 (grub_le_to_cpu64 (*target)
 					    + addend + sym_addr);
 		grub_util_info ("relocating an R_X86_64_64 entry to 0x%llx at the offset 0x%llx",
 				*target, offset);
@@ -470,7 +470,7 @@ add_fixup_entry (struct grub_pe32_fixup_block **block, grub_uint16_t type,
 		 FILE *out)
 {
   struct grub_pe32_fixup_block *b = *block;
-  
+
   /* First, check if it is necessary to write out the current block.  */
   if (b)
     {
@@ -485,7 +485,7 @@ add_fixup_entry (struct grub_pe32_fixup_block **block, grub_uint16_t type,
 	      Elf_Addr next_address;
 	      unsigned padding_size;
               size_t index;
-	      
+
 	      next_address = current_address + b->block_size;
 	      padding_size = ((align_pe32_section (next_address)
 			       - next_address)
@@ -528,7 +528,7 @@ add_fixup_entry (struct grub_pe32_fixup_block **block, grub_uint16_t type,
     {
       grub_uint16_t entry;
       size_t index;
-      
+
       /* If not allocated yet, allocate a block with enough entries.  */
       if (! b)
 	{
@@ -559,7 +559,7 @@ static Elf_Addr
 make_header_space (FILE *out)
 {
   Elf_Addr addr;
-  
+
   addr = get_starting_section_address ();
   write_padding (out, addr);
 
@@ -576,7 +576,7 @@ write_text_sections (FILE *out, Elf_Addr current_address,
   Elf_Half i;
   Elf_Shdr *s;
   Elf_Addr addr;
-  
+
   for (i = 0, s = sections;
        i < num_sections;
        i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
@@ -586,7 +586,7 @@ write_text_sections (FILE *out, Elf_Addr current_address,
 	Elf_Off offset = grub_le_to_cpu32 (s->sh_offset);
 	Elf_Word size = grub_le_to_cpu32 (s->sh_size);
 	const char *name = strtab + grub_le_to_cpu32 (s->sh_name);
-	
+
 	if (align)
 	  {
 	    addr = align_address (current_address, align);
@@ -598,13 +598,13 @@ write_text_sections (FILE *out, Elf_Addr current_address,
 		current_address = addr;
 	      }
 	  }
-	
+
 	grub_util_info ("writing the text section %s at 0x%x",
 			name, current_address);
-	
+
 	if (fwrite ((char *) e + offset, size, 1, out) != 1)
 	  grub_util_error ("write failed");
-	
+
 	current_address += size;
       }
 
@@ -615,7 +615,7 @@ write_text_sections (FILE *out, Elf_Addr current_address,
 		      addr - current_address);
       write_padding (out, addr - current_address);
     }
-  
+
   return addr;
 }
 
@@ -629,7 +629,7 @@ write_data_sections (FILE *out, Elf_Addr current_address,
   Elf_Half i;
   Elf_Shdr *s;
   Elf_Addr addr;
-  
+
   for (i = 0, s = sections;
        i < num_sections;
        i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
@@ -639,7 +639,7 @@ write_data_sections (FILE *out, Elf_Addr current_address,
 	Elf_Off offset = grub_le_to_cpu32 (s->sh_offset);
 	Elf_Word size = grub_le_to_cpu32 (s->sh_size);
 	const char *name = strtab + grub_le_to_cpu32 (s->sh_name);
-	
+
 	if (align)
 	  {
 	    addr = align_address (current_address, align);
@@ -651,19 +651,19 @@ write_data_sections (FILE *out, Elf_Addr current_address,
 		current_address = addr;
 	      }
 	  }
-	
+
 	grub_util_info ("writing the data section %s at 0x%x",
 			name, current_address);
-	
+
 	if (s->sh_type == grub_cpu_to_le32 (SHT_NOBITS))
 	  write_padding (out, size);
 	else
 	  if (fwrite ((char *) e + offset, size, 1, out) != 1)
 	    grub_util_error ("write failed");
-	
+
 	current_address += size;
       }
-  
+
   addr = align_pe32_section (current_address);
   if (addr != current_address)
     {
@@ -671,7 +671,7 @@ write_data_sections (FILE *out, Elf_Addr current_address,
 		      addr - current_address);
       write_padding (out, addr - current_address);
     }
-  
+
   return addr;
 }
 
@@ -689,7 +689,7 @@ make_mods_section (FILE *out, Elf_Addr current_address,
   memset (&modinfo, 0, sizeof (modinfo));
 
   path_list = grub_util_resolve_dependencies (dir, "moddep.lst", mods);
-  
+
   total_module_size = sizeof (struct grub_module_info);
   for (p = path_list; p; p = p->next)
     {
@@ -711,15 +711,15 @@ make_mods_section (FILE *out, Elf_Addr current_address,
       struct grub_module_header header;
       size_t mod_size;
       char *mod_image;
-      
+
       memset (&header, 0, sizeof (header));
-      
+
       grub_util_info ("adding module %s", p->name);
-      
+
       mod_size = grub_util_get_image_size (p->name);
       header.type = grub_cpu_to_le32 (OBJ_TYPE_ELF);
       header.size = grub_cpu_to_le32 (mod_size + sizeof (header));
-      
+
       mod_image = grub_util_read_image (p->name);
 
       if (fwrite (&header, sizeof (header), 1, out) != 1
@@ -728,7 +728,7 @@ make_mods_section (FILE *out, Elf_Addr current_address,
 
       free (mod_image);
     }
-  
+
   for (p = path_list; p; )
     {
       struct grub_util_path_list *q;
@@ -737,9 +737,9 @@ make_mods_section (FILE *out, Elf_Addr current_address,
       free (p);
       p = q;
     }
-      
+
   current_address += total_module_size;
-  
+
   addr = align_pe32_section (current_address);
   if (addr != current_address)
     {
@@ -761,7 +761,7 @@ make_reloc_section (FILE *out, Elf_Addr current_address, Elf_Ehdr *e,
   Elf_Half i;
   Elf_Shdr *s;
   struct grub_pe32_fixup_block *fixup_block = 0;
-  
+
   for (i = 0, s = sections;
        i < num_sections;
        i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
@@ -773,15 +773,15 @@ make_reloc_section (FILE *out, Elf_Addr current_address, Elf_Ehdr *e,
 	Elf_Off rtab_offset;
 	Elf_Addr section_address;
 	Elf_Word j;
-	
+
 	grub_util_info ("translating the relocation section %s",
 			strtab + grub_le_to_cpu32 (s->sh_name));
-			
+
 	rtab_size = grub_le_to_cpu32 (s->sh_size);
 	r_size = grub_le_to_cpu32 (s->sh_entsize);
 	rtab_offset = grub_le_to_cpu32 (s->sh_offset);
 	num_rs = rtab_size / r_size;
-	
+
 	section_address = section_addresses[grub_le_to_cpu32 (s->sh_info)];
 
 	for (j = 0, r = (Elf_Rel *) ((char *) e + rtab_offset);
@@ -888,7 +888,7 @@ make_header (FILE *out, Elf_Addr text_address, Elf_Addr data_address,
   o->image_size = grub_cpu_to_le32 (end_address);
   o->header_size = grub_cpu_to_le32 (text_address);
   o->subsystem = grub_cpu_to_le16 (GRUB_PE32_SUBSYSTEM_EFI_APPLICATION);
-  
+
   /* Do these really matter? */
   o->stack_reserve_size = grub_cpu_to_le32 (0x10000);
   o->stack_commit_size = grub_cpu_to_le32 (0x10000);
@@ -896,7 +896,7 @@ make_header (FILE *out, Elf_Addr text_address, Elf_Addr data_address,
   o->heap_commit_size = grub_cpu_to_le32 (0x10000);
 
   o->num_data_directories = grub_cpu_to_le32 (GRUB_PE32_NUM_DATA_DIRECTORIES);
-  
+
   o->base_relocation_table.rva = grub_cpu_to_le32 (reloc_address);
   o->base_relocation_table.size = grub_cpu_to_le32 (end_address
 						    - reloc_address);
@@ -982,7 +982,7 @@ convert_elf (const char *dir, char *prefix, FILE *out, char *mods[])
   e = (Elf_Ehdr *) kernel_image;
   if (! check_elf_header (e, kernel_size))
     grub_util_error ("invalid ELF header");
-  
+
   section_offset = grub_cpu_to_le32 (e->e_shoff);
   section_entsize = grub_cpu_to_le16 (e->e_shentsize);
   num_sections = grub_cpu_to_le16 (e->e_shnum);
@@ -1002,20 +1002,20 @@ convert_elf (const char *dir, char *prefix, FILE *out, char *mods[])
 
 	  if (GRUB_KERNEL_MACHINE_PREFIX + strlen (prefix) + 1 > GRUB_KERNEL_MACHINE_DATA_END)
 	    grub_util_error ("prefix too long");
-	  
+
 	  strcpy (kernel_image + offset + GRUB_KERNEL_MACHINE_PREFIX, prefix);
 	  break;
       }
-	
+
   /* Relocate sections then symbols in the virtual address space.  */
   section_addresses = locate_sections (sections, section_entsize,
 				       num_sections, strtab);
-  
+
   symtab_section = find_symtab_section (sections,
 					section_entsize, num_sections);
   if (! symtab_section)
     grub_util_error ("no symbol table");
-  
+
   start_address = relocate_symbols (e, sections, symtab_section,
 				    section_addresses, section_entsize,
 				    num_sections);

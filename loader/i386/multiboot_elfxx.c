@@ -63,10 +63,10 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
       || ehdr->e_ident[EI_DATA] != ELFDATA2LSB
       || ehdr->e_machine != E_MACHINE)
     return grub_error(GRUB_ERR_UNKNOWN_OS, "no valid ELF header found");
-  
+
   if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN)
     return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF file type");
-  
+
   /* FIXME: Should we support program headers at strange locations?  */
   if (ehdr->e_phoff + ehdr->e_phnum * ehdr->e_phentsize > MULTIBOOT_SEARCH)
     return grub_error (GRUB_ERR_BAD_OS, "program header at a too high offset");
@@ -84,7 +84,7 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
     if (phdr(i)->p_type == PT_LOAD && phdr(i)->p_filesz != 0)
       {
 	/* Beware that segment 0 isn't necessarily loadable */
-	if (lowest_segment == -1 
+	if (lowest_segment == -1
 	    || phdr(i)->p_paddr < phdr(lowest_segment)->p_paddr)
 	  lowest_segment = i;
 	if (highest_segment == -1
@@ -132,7 +132,7 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
     }
 
   for (i = 0; i < ehdr->e_phnum; i++)
-    if (phdr(i)->p_vaddr <= ehdr->e_entry 
+    if (phdr(i)->p_vaddr <= ehdr->e_entry
 	&& phdr(i)->p_vaddr + phdr(i)->p_memsz > ehdr->e_entry)
       {
 	grub_multiboot_payload_entry_offset = (ehdr->e_entry - phdr(i)->p_vaddr)

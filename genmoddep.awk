@@ -40,7 +40,7 @@ FNR == 1 {
 END {
   if (error == 1)
     exit 1;
-  
+
   for (mod in modtab) {
     # Remove duplications.
     split(modtab[mod], depmods, " ");

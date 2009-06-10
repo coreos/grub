@@ -450,7 +450,7 @@ grub_uhci_transfer (grub_usb_controller_t dev,
 
       td = grub_uhci_transaction (u, transfer->endpoint, tr->pid,
 				  transfer->devaddr, tr->toggle,
-				  tr->size, tr->data); 
+				  tr->size, tr->data);
       if (! td)
 	{
 	  /* Terminate and free.  */
@@ -517,7 +517,7 @@ grub_uhci_transfer (grub_usb_controller_t dev,
 	  /* Check if a babble error occurred.  */
 	  if (errtd->ctrl_status & (1 << 20))
 	    err = GRUB_USB_ERR_BABBLE;
- 
+
 	  /* Check if a NAK occurred.  */
 	  if (errtd->ctrl_status & (1 << 19))
 	    err = GRUB_USB_ERR_NAK;

@@ -32,7 +32,7 @@ grub_file_get_device_name (const char *name)
     {
       char *p = grub_strchr (name, ')');
       char *ret;
-      
+
       if (! p)
 	{
 	  grub_error (GRUB_ERR_BAD_FILENAME, "missing `)'");
@@ -42,7 +42,7 @@ grub_file_get_device_name (const char *name)
       ret = (char *) grub_malloc (p - name);
       if (! ret)
 	return 0;
-      
+
       grub_memcpy (ret, name + 1, p - name - 1);
       ret[p - name - 1] = '\0';
       return ret;
@@ -74,16 +74,16 @@ grub_file_open (const char *name)
   grub_free (device_name);
   if (! device)
     goto fail;
-  
+
   file = (grub_file_t) grub_malloc (sizeof (*file));
   if (! file)
     goto fail;
-  
+
   file->device = device;
   file->offset = 0;
   file->data = 0;
   file->read_hook = 0;
-    
+
   if (device->disk && file_name[0] != '/')
     /* This is a block list.  */
     file->fs = &grub_fs_blocklist;
@@ -106,7 +106,7 @@ grub_file_open (const char *name)
   /* if (net) grub_net_close (net);  */
 
   grub_free (file);
-  
+
   return 0;
 }
 
@@ -114,17 +114,17 @@ grub_ssize_t
 grub_file_read (grub_file_t file, char *buf, grub_size_t len)
 {
   grub_ssize_t res;
-  
+
   if (len == 0 || len > file->size - file->offset)
     len = file->size - file->offset;
 
   /* Prevent an overflow.  */
   if ((grub_ssize_t) len < 0)
     len >>= 1;
-  
+
   if (len == 0)
     return 0;
-  
+
   res = (file->fs->read) (file, buf, len);
   if (res > 0)
     file->offset += res;
@@ -155,7 +155,7 @@ grub_file_seek (grub_file_t file, grub_off_t offset)
 		  "attempt to seek outside of the file");
       return -1;
     }
-  
+
   old = file->offset;
   file->offset = offset;
   return old;

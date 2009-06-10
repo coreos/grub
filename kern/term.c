@@ -35,12 +35,12 @@ struct grub_handler_class grub_term_input_class =
       {
     .name = "terminal_input"
   };
-  
+
 struct grub_handler_class grub_term_output_class =
       {
     .name = "terminal_output"
   };
-  
+
 #define grub_cur_term_input	grub_term_get_current_input ()
 #define grub_cur_term_output	grub_term_get_current_output ()
 
@@ -53,16 +53,16 @@ grub_putcode (grub_uint32_t code)
   if (code == '\t' && grub_cur_term_output->getxy)
     {
       int n;
-      
+
       n = 8 - ((grub_getxy () >> 8) & 7);
       while (n--)
 	grub_putcode (' ');
 
       return;
     }
-  
+
   (grub_cur_term_output->putchar) (code);
-  
+
   if (code == '\n')
     {
       grub_putcode ('\r');
@@ -81,12 +81,12 @@ grub_putcode (grub_uint32_t code)
 	  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 
 	  key = grub_getkey ();
-	  
+
 	  /* Remove the message.  */
 	  grub_gotoxy (1, height - 1);
 	  grub_printf ("        ");
 	  grub_gotoxy (pos >> 8, pos & 0xFF);
-	  
+
 	  /* Scroll one lines or an entire page, depending on the key.  */
 	  if (key == '\r' || key =='\n')
 	    grub_more_lines--;
@@ -108,7 +108,7 @@ grub_putchar (int c)
 
   buf[size++] = c;
   ret = grub_utf8_to_ucs4 (&code, 1, buf, size, 0);
-  
+
   if (ret > 0)
     {
       size = 0;
@@ -201,7 +201,7 @@ grub_setcursor (int on)
       (grub_cur_term_output->setcursor) (on);
       cursor_state = on;
     }
-  
+
   return ret;
 }
 

@@ -60,7 +60,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   char *dest;
 
   grub_dl_ref (my_mod);
-  
+
   if (argc == 0)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
@@ -100,27 +100,27 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_linux_is_bzimage = 0;
   setup_sects = lh.setup_sects;
   linux_mem_size = 0;
-  
+
   if (lh.header == grub_cpu_to_le32 (GRUB_LINUX_MAGIC_SIGNATURE)
       && grub_le_to_cpu16 (lh.version) >= 0x0200)
     {
       grub_linux_is_bzimage = (lh.loadflags & GRUB_LINUX_FLAG_BIG_KERNEL);
       lh.type_of_loader = GRUB_LINUX_BOOT_LOADER_TYPE;
-      
+
       /* Put the real mode part at as a high location as possible.  */
-      grub_linux_real_addr 
+      grub_linux_real_addr
 	= (char *) UINT_TO_PTR (grub_mmap_get_lower ()
 				- GRUB_LINUX_SETUP_MOVE_SIZE);
       /* But it must not exceed the traditional area.  */
       if (grub_linux_real_addr > (char *) GRUB_LINUX_OLD_REAL_MODE_ADDR)
 	grub_linux_real_addr = (char *) GRUB_LINUX_OLD_REAL_MODE_ADDR;
-      
+
       if (grub_le_to_cpu16 (lh.version) >= 0x0201)
 	{
 	  lh.heap_end_ptr = grub_cpu_to_le16 (GRUB_LINUX_HEAP_END_OFFSET);
 	  lh.loadflags |= GRUB_LINUX_FLAG_CAN_USE_HEAP;
 	}
-      
+
       if (grub_le_to_cpu16 (lh.version) >= 0x0202)
 	lh.cmd_line_ptr = grub_linux_real_addr + GRUB_LINUX_CL_OFFSET;
       else
@@ -135,19 +135,19 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       /* Your kernel is quite old...  */
       lh.cl_magic = grub_cpu_to_le16 (GRUB_LINUX_CL_MAGIC);
       lh.cl_offset = grub_cpu_to_le16 (GRUB_LINUX_CL_OFFSET);
-      
+
       setup_sects = GRUB_LINUX_DEFAULT_SETUP_SECTS;
-      
+
       grub_linux_real_addr = (char *) GRUB_LINUX_OLD_REAL_MODE_ADDR;
     }
-  
+
   /* If SETUP_SECTS is not set, set it to the default (4).  */
   if (! setup_sects)
     setup_sects = GRUB_LINUX_DEFAULT_SETUP_SECTS;
-  
+
   real_size = setup_sects << GRUB_DISK_SECTOR_BITS;
   prot_size = grub_file_size (file) - real_size - GRUB_DISK_SECTOR_SIZE;
-  
+
   grub_linux_tmp_addr = (char *) GRUB_LINUX_BZIMAGE_ADDR + prot_size;
 
   if (! grub_linux_is_bzimage
@@ -158,7 +158,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		  (grub_size_t) grub_linux_real_addr);
       goto fail;
     }
-  
+
   if (grub_linux_real_addr + GRUB_LINUX_SETUP_MOVE_SIZE
       > (char *) UINT_TO_PTR (grub_mmap_get_lower ()))
     {
@@ -196,9 +196,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     else if (grub_memcmp (argv[i], "mem=", 4) == 0)
       {
 	char *val = argv[i] + 4;
-	  
+
 	linux_mem_size = grub_strtoul (val, &val, 0);
-	
+
 	if (grub_errno)
 	  {
 	    grub_errno = GRUB_ERR_NONE;
@@ -207,7 +207,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	else
 	  {
 	    int shift = 0;
-	    
+
 	    switch (grub_tolower (val[0]))
 	      {
 	      case 'g':
@@ -251,7 +251,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   dest = grub_stpcpy (grub_linux_tmp_addr + GRUB_LINUX_CL_OFFSET,
 		      "BOOT_IMAGE=");
   dest = grub_stpcpy (dest, argv[0]);
-  
+
   /* Copy kernel parameters.  */
   for (i = 1;
        i < argc
@@ -266,7 +266,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   len = prot_size;
   if (grub_file_read (file, (char *) GRUB_LINUX_BZIMAGE_ADDR, len) != len)
     grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
- 
+
   if (grub_errno == GRUB_ERR_NONE)
     {
       grub_linux_prot_size = prot_size;
@@ -275,7 +275,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     }
 
  fail:
-  
+
   if (file)
     grub_file_close (file);
 
@@ -302,7 +302,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
       goto fail;
     }
-  
+
   if (!loaded)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
@@ -369,7 +369,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   lh->ramdisk_image = addr;
   lh->ramdisk_size = size;
-  
+
  fail:
   if (file)
     grub_file_close (file);

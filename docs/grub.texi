@@ -664,7 +664,7 @@ from GRUB and you don't have to make a floppy or hard disk image file,
 which can cause compatibility problems.
 
 For booting from a CD-ROM, GRUB uses a special Stage 2 called
-@file{stage2_eltorito}. The only GRUB files you need to have in your 
+@file{stage2_eltorito}. The only GRUB files you need to have in your
 bootable CD-ROM are this @file{stage2_eltorito} and optionally a config file
 @file{menu.lst}. You don't need to use @file{stage1} or @file{stage2},
 because El Torito is quite different from the standard boot process.
@@ -702,13 +702,13 @@ $ @kbd{mkisofs -R -b boot/grub/stage2_eltorito -no-emul-boot \
 
 This produces a file named @file{grub.iso}, which then can be burned
 into a CD (or a DVD).  @kbd{mkisofs} has already set up the disc to boot
-from the @kbd{boot/grub/stage2_eltorito} file, so there is no need to 
+from the @kbd{boot/grub/stage2_eltorito} file, so there is no need to
 setup GRUB on the disc.  (Note that the @kbd{-boot-load-size 4} bit is
 required for compatibility with the BIOS on many older machines.)
 
 You can use the device @samp{(cd)} to access a CD-ROM in your
-config file. This is not required; GRUB automatically sets the root device 
-to @samp{(cd)} when booted from a CD-ROM. It is only necessary to refer to 
+config file. This is not required; GRUB automatically sets the root device
+to @samp{(cd)} when booted from a CD-ROM. It is only necessary to refer to
 @samp{(cd)} if you want to access other drives as well.
 
 
@@ -2414,7 +2414,7 @@ is to be found; if specified it takes precedence over @var{unit}.
 be in the range 5-8 and stop bits must be 1 or 2. Default is 8 data
 bits and one stop bit. @var{parity} is one of @samp{no}, @samp{odd},
 @samp{even} and defaults to @samp{no}. The option @option{--device}
-can only be used in the grub shell and is used to specify the 
+can only be used in the grub shell and is used to specify the
 tty device to be used in the host operating system (@pxref{Invoking the
 grub shell}).
 
@@ -2431,8 +2431,8 @@ support. See also @ref{Serial terminal}.
 
 @deffn Command setkey [to_key from_key]
 Change the keyboard map. The key @var{from_key} is mapped to the key
-@var{to_key}. If no argument is specified, reset key mappings. Note that 
-this command @emph{does not} exchange the keys. If you want to exchange 
+@var{to_key}. If no argument is specified, reset key mappings. Note that
+this command @emph{does not} exchange the keys. If you want to exchange
 the keys, run this command again with the arguments exchanged, like this:
 
 @example

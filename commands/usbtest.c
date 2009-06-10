@@ -51,7 +51,7 @@ static const char *usb_endp_type[] =
     "Interrupt"
   };
 
-static const char *usb_devspeed[] = 
+static const char *usb_devspeed[] =
   {
     "",
     "Low",
@@ -84,7 +84,7 @@ usb_iterate (grub_usb_device_t dev)
   usb_print_str ("Product", dev, descdev->strprod);
   usb_print_str ("Vendor", dev, descdev->strvendor);
   usb_print_str ("Serial", dev, descdev->strserial);
-  
+
   if (descdev->class > 0 && descdev->class <= 0x0E)
     grub_printf ("Class: (0x%02x) %s, Subclass: 0x%02x, Protocol: 0x%02x\n",
 		 descdev->class, usb_classes[descdev->class],

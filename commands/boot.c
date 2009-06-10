@@ -38,7 +38,7 @@ struct grub_preboot_t
 };
 
 static int grub_loader_loaded;
-static struct grub_preboot_t *preboots_head = 0, 
+static struct grub_preboot_t *preboots_head = 0,
   *preboots_tail = 0;
 
 int
@@ -58,7 +58,7 @@ grub_loader_register_preboot_hook (grub_err_t (*preboot_func) (int noreturn),
   if (! preboot_func && ! preboot_rest_func)
     return 0;
 
-  new_preboot = (struct grub_preboot_t *) 
+  new_preboot = (struct grub_preboot_t *)
     grub_malloc (sizeof (struct grub_preboot_t));
   if (! new_preboot)
     {
@@ -92,7 +92,7 @@ grub_loader_register_preboot_hook (grub_err_t (*preboot_func) (int noreturn),
   return new_preboot;
 }
 
-void 
+void
 grub_loader_unregister_preboot_hook (void *hnd)
 {
   struct grub_preboot_t *preb = hnd;
@@ -116,11 +116,11 @@ grub_loader_set (grub_err_t (*boot) (void),
 {
   if (grub_loader_loaded && grub_loader_unload_func)
     grub_loader_unload_func ();
-  
+
   grub_loader_boot_func = boot;
   grub_loader_unload_func = unload;
   grub_loader_noreturn = noreturn;
-  
+
   grub_loader_loaded = 1;
 }
 
@@ -129,7 +129,7 @@ grub_loader_unset(void)
 {
   if (grub_loader_loaded && grub_loader_unload_func)
     grub_loader_unload_func ();
-  
+
   grub_loader_boot_func = 0;
   grub_loader_unload_func = 0;
 
@@ -161,7 +161,7 @@ grub_loader_boot (void)
   err = (grub_loader_boot_func) ();
 
   for (cur = preboots_tail; cur; cur = cur->prev)
-    if (! err) 
+    if (! err)
       err = cur->preboot_rest_func ();
     else
       cur->preboot_rest_func ();

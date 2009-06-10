@@ -36,7 +36,7 @@ struct grub_xnu_hibernate_header
   /* %esp at start. */
   grub_uint32_t stack;
   grub_uint8_t unknown2[44];
-#define GRUB_XNU_HIBERNATE_MAGIC 0x73696d65  
+#define GRUB_XNU_HIBERNATE_MAGIC 0x73696d65
   grub_uint32_t magic;
   grub_uint8_t unknown3[28];
   /* This value is non-zero if page is encrypted. Unsupported. */
@@ -51,7 +51,7 @@ struct grub_xnu_hibernate_header
 /* In-memory structure for temporary keeping device tree. */
 struct grub_xnu_devtree_key
 {
-  char *name; 
+  char *name;
   int datasize; /* -1 for not leaves. */
   union
   {
@@ -62,7 +62,7 @@ struct grub_xnu_devtree_key
 };
 
 /* A structure used in memory-map values. */
-struct 
+struct
 grub_xnu_extdesc
 {
   grub_uint32_t addr;
@@ -95,9 +95,9 @@ grub_err_t grub_xnu_resume (char *imagename);
 struct grub_xnu_devtree_key *grub_xnu_find_key (struct grub_xnu_devtree_key *parent,
 						char *name);
 grub_err_t grub_xnu_align_heap (int align);
-grub_err_t grub_xnu_scan_dir_for_kexts (char *dirname, char *osbundlerequired, 
+grub_err_t grub_xnu_scan_dir_for_kexts (char *dirname, char *osbundlerequired,
 					int maxrecursion);
-grub_err_t grub_xnu_load_kext_from_dir (char *dirname, char *osbundlerequired, 
+grub_err_t grub_xnu_load_kext_from_dir (char *dirname, char *osbundlerequired,
 					int maxrecursion);
 void *grub_xnu_heap_malloc (int size);
 extern grub_uint32_t grub_xnu_heap_real_start;

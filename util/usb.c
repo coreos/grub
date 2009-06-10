@@ -82,7 +82,7 @@ grub_libusb_init (void)
   if (grub_libusb_devices ())
     return grub_errno;
 
-  grub_usb_controller_dev_register (&usb_controller);  
+  grub_usb_controller_dev_register (&usb_controller);
 
   return 0;
 }

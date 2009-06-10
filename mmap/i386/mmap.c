@@ -32,9 +32,9 @@ grub_mmap_malign_and_register (grub_uint64_t align, grub_uint64_t size,
 {
   grub_uint64_t highestlow = 0;
 
-  auto int NESTED_FUNC_ATTR find_hook (grub_uint64_t, grub_uint64_t, 
+  auto int NESTED_FUNC_ATTR find_hook (grub_uint64_t, grub_uint64_t,
 				       grub_uint32_t);
-  int NESTED_FUNC_ATTR find_hook (grub_uint64_t start, grub_uint64_t rangesize, 
+  int NESTED_FUNC_ATTR find_hook (grub_uint64_t start, grub_uint64_t rangesize,
 				  grub_uint32_t memtype)
   {
     grub_uint64_t end = start + rangesize;
@@ -69,7 +69,7 @@ grub_mmap_malign_and_register (grub_uint64_t align, grub_uint64_t size,
     {
       grub_free (ret);
       return 0;
-    }    
+    }
 
   return ret;
 }
@@ -88,7 +88,7 @@ grub_mmap_free_and_unregister (int handle)
     return;
 
   addr = cur->start;
-    
+
   grub_mmap_unregister (handle);
 
   if (addr >= 0x100000)

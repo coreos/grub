@@ -28,7 +28,7 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 {
   int cnt = 0;
   char *currarg;
-  
+
   auto int print_command_info (grub_command_t cmd);
   auto int print_command_help (grub_command_t cmd);
 
@@ -61,7 +61,7 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 	    {
 	      if (cnt++ > 0)
 		grub_printf ("\n\n");
-	      
+
 	      if (cmd->flags & GRUB_COMMAND_FLAG_EXTCMD)
 		grub_arg_show_help ((grub_extcmd_t) cmd->data);
 	      else
@@ -71,20 +71,20 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 	}
       return 0;
     }
-  
+
   if (argc == 0)
     grub_command_iterate (print_command_info);
   else
     {
       int i;
-      
+
       for (i = 0; i < argc; i++)
 	{
 	  currarg = args[i];
 	  grub_command_iterate (print_command_help);
 	}
     }
-  
+
   return 0;
 }
 

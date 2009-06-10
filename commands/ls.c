@@ -51,10 +51,10 @@ grub_ls_list_devices (int longlist)
 	grub_normal_print_device_info (name);
       else
 	grub_printf ("(%s) ", name);
-  
+
       return 0;
     }
-  
+
   grub_device_iterate (grub_ls_print_devices);
   grub_putchar ('\n');
   grub_refresh ();
@@ -70,20 +70,20 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
   const char *path;
   grub_device_t dev;
 
-  auto int print_files (const char *filename, 
+  auto int print_files (const char *filename,
 			const struct grub_dirhook_info *info);
-  auto int print_files_long (const char *filename, 
+  auto int print_files_long (const char *filename,
 			     const struct grub_dirhook_info *info);
-  
+
   int print_files (const char *filename, const struct grub_dirhook_info *info)
     {
       if (all || filename[0] != '.')
 	grub_printf ("%s%s ", filename, info->dir ? "/" : "");
-      
+
       return 0;
     }
-     
-  int print_files_long (const char *filename, 
+
+  int print_files_long (const char *filename,
 			const struct grub_dirhook_info *info)
     {
       char pathname[grub_strlen (dirname) + grub_strlen (filename) + 1];
@@ -94,7 +94,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
       if (! info->dir)
 	{
 	  grub_file_t file;
-	  
+
 	  if (dirname[grub_strlen (dirname) - 1] == '/')
 	    grub_sprintf (pathname, "%s%s", dirname, filename);
 	  else
@@ -117,7 +117,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	      int fsz = file->size;
 	      int units = 0;
 	      char buf[20];
-	      
+
 	      while (fsz / 1024)
 		{
 		  fsize = (fsize + 512) / 1024;
@@ -136,7 +136,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 		}
 	      else
 		grub_printf ("%-12llu", (unsigned long long) file->size);
-	      
+
 	    }
 	  grub_file_close (file);
 	}
@@ -150,13 +150,13 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	  if (human)
 	    grub_printf (" %d-%02d-%02d %02d:%02d:%02d %-11s ",
 			 datetime.year, datetime.month, datetime.day,
-			 datetime.hour, datetime.minute, 
+			 datetime.hour, datetime.minute,
 			 datetime.second,
 			 grub_get_weekday_name (&datetime));
 	  else
 	    grub_printf (" %04d%02d%02d%02d%02d%02d ",
-			 datetime.year, datetime.month, 
-			 datetime.day, datetime.hour, 
+			 datetime.year, datetime.month,
+			 datetime.day, datetime.hour,
 			 datetime.minute, datetime.second);
 	}
       grub_printf ("%s%s\n", filename, info->dir ? "/" : "");
@@ -175,13 +175,13 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
     path = dirname;
   else
     path++;
-  
+
   if (! path && ! device_name)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
       goto fail;
     }
-      
+
   if (! *path)
     {
       if (grub_errno == GRUB_ERR_UNKNOWN_FS)
@@ -204,13 +204,13 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	  grub_file_t file;
 	  struct grub_dirhook_info info;
 	  grub_errno = 0;
-	  
+
 	  file = grub_file_open (dirname);
 	  if (! file)
 	    goto fail;
-	  
+
 	  grub_file_close (file);
-	  
+
 	  p = grub_strrchr (dirname, '/') + 1;
 	  dirname = grub_strndup (dirname, p - dirname);
 	  if (! dirname)
@@ -228,14 +228,14 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 
       if (grub_errno == GRUB_ERR_NONE)
 	grub_putchar ('\n');
-      
+
       grub_refresh ();
     }
 
  fail:
   if (dev)
     grub_device_close (dev);
-      
+
   grub_free (device_name);
 
   return 0;

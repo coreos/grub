@@ -59,7 +59,7 @@ grub_machine_efiemu_init_tables ()
 	return err;
     }
 
-  for (ptr = (grub_uint8_t *) 0xf0000; ptr < (grub_uint8_t *) 0x100000; 
+  for (ptr = (grub_uint8_t *) 0xf0000; ptr < (grub_uint8_t *) 0x100000;
        ptr += 16)
     if (grub_memcmp (ptr, "_SM_", 4) == 0
 	&& grub_byte_checksum (ptr, *(ptr + 5)) == 0)

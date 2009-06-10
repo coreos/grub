@@ -24,7 +24,7 @@
 #include <multiboot.h>
 
         .file   "lnxboot.S"
-		
+
 #ifdef APPLE_CC
 #error Building lnxboot.img with Apple's as results in an unusable image
 #endif
@@ -50,7 +50,7 @@ data_start:
 	. = data_start + 0x1F1
 
 setup_sects:
-/* Apple's cc can't fill this value.  */ 
+/* Apple's cc can't fill this value.  */
 #ifdef APPLE_CC
 	.byte	0
 #else
@@ -135,8 +135,8 @@ data_leng:
 linux_init:
 
 #ifdef APPLE_CC
-	reg_edx_rel = reg_edx - start 
-	code32_start_rel = code32_start - start 
+	reg_edx_rel = reg_edx - start
+	code32_start_rel = code32_start - start
 	movw	%cs:(reg_edx_rel), %dx
 	movl	%cs:(code32_start_rel), %ebp
 #else

@@ -37,7 +37,7 @@ grub_normal_print_device_info (const char *name)
     grub_printf ("\tPartition %s: ", name);
   else
     grub_printf ("Device %s: ", name);
-  
+
   dev = grub_device_open (name);
   if (! dev)
     grub_printf ("Filesystem cannot be accessed");
@@ -98,7 +98,7 @@ grub_normal_print_device_info (const char *name)
 	grub_printf ("Unknown filesystem");
       else
 	grub_printf ("Partition table");
-	  
+
       grub_device_close (dev);
     }
 

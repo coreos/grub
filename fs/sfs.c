@@ -194,7 +194,7 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
 	      /* We found a correct leaf.  */
 	      *size = grub_be_to_cpu16 (extent->size);
 	      *nextext = grub_be_to_cpu32 (extent->next);
-	      
+
 	      grub_free (treeblock);
 	      return 0;
 	    }
@@ -370,7 +370,7 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
       node->data = data;
       node->size = size;
       node->block = block;
-      
+
       return hook (name, type, node);
     }
 
@@ -451,18 +451,18 @@ grub_sfs_open (struct grub_file *file, const char *name)
 {
   struct grub_sfs_data *data;
   struct grub_fshelp_node *fdiro = 0;
-  
+
   grub_dl_ref (my_mod);
-  
+
   data = grub_sfs_mount (file->device->disk);
   if (!data)
     goto fail;
-  
+
   grub_fshelp_find_file (name, &data->diropen, &fdiro, grub_sfs_iterate_dir,
 			 grub_sfs_read_symlink, GRUB_FSHELP_REG);
   if (grub_errno)
     goto fail;
-  
+
   file->size = fdiro->size;
   data->diropen = *fdiro;
   grub_free (fdiro);
@@ -478,7 +478,7 @@ grub_sfs_open (struct grub_file *file, const char *name)
   if (data)
     grub_free (data->label);
   grub_free (data);
-  
+
   grub_dl_unref (my_mod);
 
   return grub_errno;
@@ -510,13 +510,13 @@ grub_sfs_read (grub_file_t file, char *buf, grub_size_t len)
 
 
 static grub_err_t
-grub_sfs_dir (grub_device_t device, const char *path, 
-	       int (*hook) (const char *filename, 
+grub_sfs_dir (grub_device_t device, const char *path,
+	       int (*hook) (const char *filename,
 			    const struct grub_dirhook_info *info))
 {
   struct grub_sfs_data *data = 0;
   struct grub_fshelp_node *fdiro = 0;
-  
+
   auto int NESTED_FUNC_ATTR iterate (const char *filename,
 				     enum grub_fshelp_filetype filetype,
 				     grub_fshelp_node_t node);
@@ -533,7 +533,7 @@ grub_sfs_dir (grub_device_t device, const char *path,
     }
 
   grub_dl_ref (my_mod);
-  
+
   data = grub_sfs_mount (device->disk);
   if (!data)
     goto fail;
@@ -544,7 +544,7 @@ grub_sfs_dir (grub_device_t device, const char *path,
     goto fail;
 
   grub_sfs_iterate_dir (fdiro, iterate);
-  
+
  fail:
   if (data && fdiro != &data->diropen)
     grub_free (fdiro);

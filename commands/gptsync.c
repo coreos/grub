@@ -30,33 +30,33 @@
 
 /* Convert a LBA address to a CHS address in the INT 13 format.  */
 /* Taken from grub1. */
-/* XXX: use hardcoded geometry of C = 1024, H = 255, S = 63. 
+/* XXX: use hardcoded geometry of C = 1024, H = 255, S = 63.
    Is it a problem?
 */
-static void 
-lba_to_chs (int lba, grub_uint8_t *cl, grub_uint8_t *ch, 
+static void
+lba_to_chs (int lba, grub_uint8_t *cl, grub_uint8_t *ch,
 	    grub_uint8_t *dh)
 {
   int cylinder, head, sector;
   int sectors = 63, heads = 255, cylinders = 1024;
-  
+
   sector = lba % sectors + 1;
   head = (lba / sectors) % heads;
   cylinder = lba / (sectors * heads);
-  
+
   if (cylinder >= cylinders)
     {
       *cl = *ch = *dh = 0xff;
       return;
     }
-  
+
   *cl = sector | ((cylinder & 0x300) >> 2);
   *ch = cylinder & 0xFF;
   *dh = head;
 }
 
 static grub_err_t
-grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)), 
+grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
 		  int argc, char **args)
 {
   grub_device_t dev;
@@ -74,11 +74,11 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
   if (args[0][0] == '(' && args[0][grub_strlen (args[0]) - 1] == ')')
     {
       args[0][grub_strlen (args[0]) - 1] = 0;
-      dev = grub_device_open (args[0] + 1); 
+      dev = grub_device_open (args[0] + 1);
       args[0][grub_strlen (args[0])] = ')';
     }
   else
-    dev = grub_device_open (args[0]); 
+    dev = grub_device_open (args[0]);
 
   if (! dev)
     return grub_errno;
@@ -99,7 +99,7 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
   /* Check if it is valid.  */
   if (mbr.signature != grub_cpu_to_le16 (GRUB_PC_PARTITION_SIGNATURE))
     {
-      grub_device_close (dev);    
+      grub_device_close (dev);
       return grub_error (GRUB_ERR_BAD_PART_TABLE, "no signature");
     }
 
@@ -109,7 +109,7 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
       grub_device_close (dev);
       return grub_error (GRUB_ERR_BAD_PART_TABLE, "no GPT partition map found");
     }
-  
+
   int i;
   first_sector = dev->disk->total_sectors;
   for (i = 1; i < argc; i++)
@@ -128,19 +128,19 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
       if (separator)
 	*separator = csep;
       if (! partition)
-	{  
+	{
 	  grub_device_close (dev);
 	  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such partition");
 	}
 
       if (partition->start + partition->len > 0xffffffff)
-	{  
+	{
 	  grub_device_close (dev);
-	  return grub_error (GRUB_ERR_OUT_OF_RANGE, 
+	  return grub_error (GRUB_ERR_OUT_OF_RANGE,
 			     "only partitions resding in the first 2TB "
 			     "can be presen in hybrid MBR");
 	}
-	
+
 
       if (first_sector > partition->start)
 	first_sector = partition->start;
@@ -182,17 +182,17 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
 	  if (numactive == 2)
 	    {
 	      grub_device_close (dev);
-	      return grub_error (GRUB_ERR_BAD_ARGUMENT, 
+	      return grub_error (GRUB_ERR_BAD_ARGUMENT,
 				 "only one partition can be active");
 	    }
 	}
       mbr.entries[i].type = type;
       mbr.entries[i].start = grub_cpu_to_le32 (partition->start);
-      lba_to_chs (partition->start, 
+      lba_to_chs (partition->start,
 		  &(mbr.entries[i].start_sector),
 		  &(mbr.entries[i].start_cylinder),
 		  &(mbr.entries[i].start_head));
-      lba_to_chs (partition->start + partition->len - 1, 
+      lba_to_chs (partition->start + partition->len - 1,
 		  &(mbr.entries[i].end_sector),
 		  &(mbr.entries[i].end_cylinder),
 		  &(mbr.entries[i].end_head));
@@ -210,11 +210,11 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
   mbr.entries[0].flag = 0;
   mbr.entries[0].type = GRUB_PC_PARTITION_TYPE_GPT_DISK;
   mbr.entries[0].start = grub_cpu_to_le32 (1);
-  lba_to_chs (1, 
+  lba_to_chs (1,
 	      &(mbr.entries[0].start_sector),
 	      &(mbr.entries[0].start_cylinder),
 	      &(mbr.entries[0].start_head));
-  lba_to_chs (first_sector, 
+  lba_to_chs (first_sector,
 	      &(mbr.entries[0].end_sector),
 	      &(mbr.entries[0].end_cylinder),
 	      &(mbr.entries[0].end_head));
@@ -239,8 +239,8 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(gptsync)
 {
   (void) mod;			/* To stop warning. */
-  cmd = grub_register_command ("gptsync", grub_cmd_gptsync, 
-			       "gptsync DEVICE [PARTITION[+/-[TYPE]]] ...", 
+  cmd = grub_register_command ("gptsync", grub_cmd_gptsync,
+			       "gptsync DEVICE [PARTITION[+/-[TYPE]]] ...",
 			       "Fill hybrid MBR of GPT drive DEVICE. "
 			       "specified partitions will be a part "
 			       "of hybrid mbr. Up to 3 partitions are "

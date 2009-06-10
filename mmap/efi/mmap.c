@@ -29,8 +29,8 @@
   ((grub_efi_memory_descriptor_t *) ((char *) (desc) + (size)))
 
 grub_err_t
-grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, 
-							 grub_uint64_t, 
+grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
+							 grub_uint64_t,
 							 grub_uint32_t))
 {
   grub_efi_uintn_t mmap_size = 0;
@@ -62,13 +62,13 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
        desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size))
     {
       grub_dprintf ("mmap", "EFI memory region 0x%llx-0x%llx: %d\n",
-		    (unsigned long long) desc->physical_start, 
+		    (unsigned long long) desc->physical_start,
 		    (unsigned long long) desc->physical_start
 		    + desc->num_pages * 4096, desc->type);
       switch (desc->type)
 	{
 	case GRUB_EFI_RUNTIME_SERVICES_CODE:
-	  hook (desc->physical_start, desc->num_pages * 4096, 
+	  hook (desc->physical_start, desc->num_pages * 4096,
 		GRUB_MACHINE_MEMORY_CODE);
 	  break;
 
@@ -82,7 +82,7 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
 	case GRUB_EFI_MEMORY_MAPPED_IO:
 	case GRUB_EFI_MEMORY_MAPPED_IO_PORT_SPACE:
 	case GRUB_EFI_PAL_CODE:
-	  hook (desc->physical_start, desc->num_pages * 4096, 
+	  hook (desc->physical_start, desc->num_pages * 4096,
 		GRUB_MACHINE_MEMORY_RESERVED);
 	  break;
 
@@ -91,17 +91,17 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
 	case GRUB_EFI_BOOT_SERVICES_CODE:
 	case GRUB_EFI_BOOT_SERVICES_DATA:
 	case GRUB_EFI_CONVENTIONAL_MEMORY:
-	  hook (desc->physical_start, desc->num_pages * 4096, 
+	  hook (desc->physical_start, desc->num_pages * 4096,
 		GRUB_MACHINE_MEMORY_AVAILABLE);
 	  break;
 
 	case GRUB_EFI_ACPI_RECLAIM_MEMORY:
-	  hook (desc->physical_start, desc->num_pages * 4096, 
+	  hook (desc->physical_start, desc->num_pages * 4096,
 		GRUB_MACHINE_MEMORY_ACPI);
 	  break;
 
 	case GRUB_EFI_ACPI_MEMORY_NVS:
-	  hook (desc->physical_start, desc->num_pages * 4096, 
+	  hook (desc->physical_start, desc->num_pages * 4096,
 		GRUB_MACHINE_MEMORY_NVS);
 	  break;
 	}
@@ -110,7 +110,7 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
   return GRUB_ERR_NONE;
 }
 
-static inline grub_efi_memory_type_t 
+static inline grub_efi_memory_type_t
 make_efi_memtype (int type)
 {
   switch (type)
@@ -118,10 +118,10 @@ make_efi_memtype (int type)
     case GRUB_MACHINE_MEMORY_CODE:
       return GRUB_EFI_RUNTIME_SERVICES_CODE;
 
-      /* No way to remove a chunk of memory from EFI mmap. 
+      /* No way to remove a chunk of memory from EFI mmap.
 	 So mark it as unusable. */
     case GRUB_MACHINE_MEMORY_HOLE:
-      
+
     default:
 
     case GRUB_MACHINE_MEMORY_RESERVED:
@@ -135,7 +135,7 @@ make_efi_memtype (int type)
 
     case GRUB_MACHINE_MEMORY_NVS:
       return GRUB_EFI_ACPI_RECLAIM_MEMORY;
-      
+
     }
 
 }
@@ -164,7 +164,7 @@ grub_mmap_register (grub_uint64_t start, grub_uint64_t size, int type)
   curover = (struct overlay *) grub_malloc (sizeof (struct overlay));
   if (! curover)
     return 0;
-      
+
   b = grub_efi_system_table->boot_services;
   address = start & (~0x3ffULL);
   pages = (end - address  + 0x3ff) >> 12;
@@ -174,7 +174,7 @@ grub_mmap_register (grub_uint64_t start, grub_uint64_t size, int type)
       grub_free (curover);
       return 0;
     }
-  status = efi_call_4 (b->allocate_pages, GRUB_EFI_ALLOCATE_ADDRESS, 
+  status = efi_call_4 (b->allocate_pages, GRUB_EFI_ALLOCATE_ADDRESS,
 		       make_efi_memtype (type), pages, &address);
   if (status != GRUB_EFI_SUCCESS)
     {
@@ -190,7 +190,7 @@ grub_mmap_register (grub_uint64_t start, grub_uint64_t size, int type)
   return curover->handle;
 }
 
-grub_err_t 
+grub_err_t
 grub_mmap_unregister (int handle)
 {
   struct overlay *curover, *prevover;
@@ -199,8 +199,8 @@ grub_mmap_unregister (int handle)
 
   b = grub_efi_system_table->boot_services;
 
-  
-  for (curover = overlays, prevover = 0; curover; 
+
+  for (curover = overlays, prevover = 0; curover;
        prevover = curover, curover = curover->next)
     {
       if (curover->handle == handle)
@@ -219,9 +219,9 @@ grub_mmap_unregister (int handle)
 
 /* Result is always page-aligned. */
 void *
-grub_mmap_malign_and_register (grub_uint64_t align __attribute__ ((unused)), 
+grub_mmap_malign_and_register (grub_uint64_t align __attribute__ ((unused)),
 			       grub_uint64_t size,
-			       int *handle, int type, 
+			       int *handle, int type,
 			       int flags __attribute__ ((unused)))
 {
   grub_efi_physical_address_t address;
@@ -234,7 +234,7 @@ grub_mmap_malign_and_register (grub_uint64_t align __attribute__ ((unused)),
   curover = (struct overlay *) grub_malloc (sizeof (struct overlay));
   if (! curover)
     return 0;
-      
+
   b = grub_efi_system_table->boot_services;
 
   address = 0xffffffff;
@@ -247,7 +247,7 @@ grub_mmap_malign_and_register (grub_uint64_t align __attribute__ ((unused)),
 #endif
 
   pages = (size + 0x3ff) >> 12;
-  status = efi_call_4 (b->allocate_pages, atype, 
+  status = efi_call_4 (b->allocate_pages, atype,
 		       make_efi_memtype (type), pages, &address);
   if (status != GRUB_EFI_SUCCESS)
     {
@@ -260,13 +260,13 @@ grub_mmap_malign_and_register (grub_uint64_t align __attribute__ ((unused)),
       /* Uggh, the address 0 was allocated... This is too annoying,
 	 so reallocate another one.  */
       address = 0xffffffff;
-      status = efi_call_4 (b->allocate_pages, atype, 
+      status = efi_call_4 (b->allocate_pages, atype,
 			   make_efi_memtype (type), pages, &address);
       grub_efi_free_pages (0, pages);
       if (status != GRUB_EFI_SUCCESS)
 	return 0;
     }
-  
+
   curover->next = overlays;
   curover->handle = curhandle++;
   curover->address = address;
@@ -277,7 +277,7 @@ grub_mmap_malign_and_register (grub_uint64_t align __attribute__ ((unused)),
   return UINT_TO_PTR (curover->address);
 }
 
-void 
+void
 grub_mmap_free_and_unregister (int handle)
 {
   grub_mmap_unregister (handle);

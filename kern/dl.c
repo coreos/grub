@@ -72,7 +72,7 @@ grub_dl_add (grub_dl_t mod)
   if (grub_dl_get (mod->name))
     return grub_error (GRUB_ERR_BAD_MODULE,
 		       "`%s' is already loaded", mod->name);
-  
+
   l = (grub_dl_list_t) grub_malloc (sizeof (*l));
   if (! l)
     return grub_errno;
@@ -169,7 +169,7 @@ grub_dl_register_symbol (const char *name, void *addr, grub_dl_t mod)
 {
   grub_symbol_t sym;
   unsigned k;
-  
+
   sym = (grub_symbol_t) grub_malloc (sizeof (*sym));
   if (! sym)
     return grub_errno;
@@ -185,10 +185,10 @@ grub_dl_register_symbol (const char *name, void *addr, grub_dl_t mod)
     }
   else
     sym->name = name;
-  
+
   sym->addr = addr;
   sym->mod = mod;
-  
+
   k = grub_symbol_hash (name);
   sym->next = grub_symtab[k];
   grub_symtab[k] = sym;
@@ -204,7 +204,7 @@ grub_dl_unregister_symbols (grub_dl_t mod)
 
   if (! mod)
     grub_fatal ("core symbols cannot be unregistered");
-  
+
   for (i = 0; i < GRUB_SYMTAB_SIZE; i++)
     {
       grub_symbol_t sym, *p, q;
@@ -266,7 +266,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 {
   unsigned i;
   Elf_Shdr *s;
-  
+
   for (i = 0, s = (Elf_Shdr *)((char *) e + e->e_shoff);
        i < e->e_shnum;
        i++, s = (Elf_Shdr *)((char *) s + e->e_shentsize))
@@ -278,7 +278,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	  seg = (grub_dl_segment_t) grub_malloc (sizeof (*seg));
 	  if (! seg)
 	    return grub_errno;
-	  
+
 	  if (s->sh_size)
 	    {
 	      void *addr;
@@ -323,7 +323,7 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
   Elf_Sym *sym;
   const char *str;
   Elf_Word size, entsize;
-  
+
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
        i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
@@ -336,7 +336,7 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
   sym = (Elf_Sym *) ((char *) e + s->sh_offset);
   size = s->sh_size;
   entsize = s->sh_entsize;
-  
+
   s = (Elf_Shdr *) ((char *) e + e->e_shoff + e->e_shentsize * s->sh_link);
   str = (char *) e + s->sh_offset;
 
@@ -347,7 +347,7 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
       unsigned char type = ELF_ST_TYPE (sym->st_info);
       unsigned char bind = ELF_ST_BIND (sym->st_info);
       const char *name = str + sym->st_name;
-      
+
       switch (type)
 	{
 	case STT_NOTYPE:
@@ -377,7 +377,7 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 	  if (bind != STB_LOCAL)
 	    if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
 	      return grub_errno;
-	  
+
 	  if (grub_strcmp (name, "grub_mod_init") == 0)
 	    mod->init = (void (*) (grub_dl_t)) sym->st_value;
 	  else if (grub_strcmp (name, "grub_mod_fini") == 0)
@@ -445,7 +445,7 @@ grub_dl_resolve_dependencies (grub_dl_t mod, Elf_Ehdr *e)
 
   s = (Elf_Shdr *) ((char *) e + e->e_shoff + e->e_shstrndx * e->e_shentsize);
   str = (char *) e + s->sh_offset;
-  
+
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
        i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
@@ -458,21 +458,21 @@ grub_dl_resolve_dependencies (grub_dl_t mod, Elf_Ehdr *e)
 	  {
 	    grub_dl_t m;
 	    grub_dl_dep_t dep;
-	    
+
 	    m = grub_dl_load (name);
 	    if (! m)
 	      return grub_errno;
 
 	    grub_dl_ref (m);
-	    
+
 	    dep = (grub_dl_dep_t) grub_malloc (sizeof (*dep));
 	    if (! dep)
 	      return grub_errno;
-	    
+
 	    dep->mod = m;
 	    dep->next = mod->dep;
 	    mod->dep = dep;
-	    
+
 	    name += grub_strlen (name) + 1;
 	  }
       }
@@ -488,7 +488,7 @@ grub_dl_ref (grub_dl_t mod)
 
   for (dep = mod->dep; dep; dep = dep->next)
     grub_dl_ref (dep->mod);
-  
+
   return ++mod->ref_count;
 }
 
@@ -499,7 +499,7 @@ grub_dl_unref (grub_dl_t mod)
 
   for (dep = mod->dep; dep; dep = dep->next)
     grub_dl_unref (dep->mod);
-  
+
   return --mod->ref_count;
 }
 #endif
@@ -590,7 +590,7 @@ grub_dl_load_file (const char *filename)
   grub_ssize_t size;
   void *core = 0;
   grub_dl_t mod = 0;
-  
+
   file = grub_file_open (filename);
   if (! file)
     return 0;
@@ -621,7 +621,7 @@ grub_dl_load_file (const char *filename)
       grub_free (core);
       return 0;
     }
-  
+
   mod->ref_count = 0;
   return mod;
 }
@@ -637,7 +637,7 @@ grub_dl_load (const char *name)
   mod = grub_dl_get (name);
   if (mod)
     return mod;
-  
+
   if (! grub_dl_dir) {
     grub_error (GRUB_ERR_FILE_NOT_FOUND, "\"prefix\" is not set");
     return 0;
@@ -647,17 +647,17 @@ grub_dl_load (const char *name)
 				   + grub_strlen (name) + 4 + 1);
   if (! filename)
     return 0;
-  
+
   grub_sprintf (filename, "%s/%s.mod", grub_dl_dir, name);
   mod = grub_dl_load_file (filename);
   grub_free (filename);
 
   if (! mod)
     return 0;
-  
+
   if (grub_strcmp (mod->name, name) != 0)
     grub_error (GRUB_ERR_BAD_MODULE, "mismatched names");
-  
+
   return mod;
 }
 
@@ -673,17 +673,17 @@ grub_dl_unload (grub_dl_t mod)
 
   if (mod->fini)
     (mod->fini) ();
-  
+
   grub_dl_remove (mod);
   grub_dl_unregister_symbols (mod);
-  
+
   for (dep = mod->dep; dep; dep = depn)
     {
       depn = dep->next;
-      
+
       if (! grub_dl_unref (dep->mod))
 	grub_dl_unload (dep->mod);
-      
+
       grub_free (dep);
     }
 
@@ -693,7 +693,7 @@ grub_dl_unload (grub_dl_t mod)
       grub_free (seg->addr);
       grub_free (seg);
     }
-  
+
   grub_free (mod->name);
   grub_free (mod);
   return 1;
@@ -706,7 +706,7 @@ grub_dl_unload_unneeded (void)
   /* Because grub_dl_remove modifies the list of modules, this
      implementation is tricky.  */
   grub_dl_list_t p = grub_dl_head;
-  
+
   while (p)
     {
       if (grub_dl_unload (p->mod))
@@ -726,7 +726,7 @@ grub_dl_unload_all (void)
   while (grub_dl_head)
     {
       grub_dl_list_t p;
-      
+
       grub_dl_unload_unneeded ();
 
       /* Force to decrement the ref count. This will purge pre-loaded

@@ -19,9 +19,9 @@
 #include <grub/symbol.h>
 
 	.file	"setjmp.S"
-	
+
 	.text
-	
+
 /*
  * int grub_setjmp (grub_jmp_buf env)
  */
@@ -36,7 +36,7 @@ FUNCTION(grub_setjmp)
 	xorl	%eax, %eax
 	jmp	*%ecx
 
-		
+
 /*
  * int grub_longjmp (grub_jmp_buf env, int val)
  */
@@ -53,4 +53,4 @@ FUNCTION(grub_longjmp)
 	jnz	1f
 	incl	%eax
 1:	jmp	*%ecx
-	
+

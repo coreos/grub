@@ -51,16 +51,16 @@ grub_macho_parse32 (grub_macho_t macho)
 
   /* Read header and check magic*/
   if (grub_file_seek (macho->file, macho->offset32) == (grub_off_t) -1
-      || grub_file_read (macho->file, (char *) &head, sizeof (head)) 
+      || grub_file_read (macho->file, (char *) &head, sizeof (head))
       != sizeof(head))
     {
-      grub_error (GRUB_ERR_READ_ERROR, "Cannot read Mach-O header.");  
+      grub_error (GRUB_ERR_READ_ERROR, "Cannot read Mach-O header.");
       macho->offset32 = -1;
       return;
     }
   if (head.magic != GRUB_MACHO_MAGIC32)
     {
-      grub_error (GRUB_ERR_BAD_OS, "Invalid Mach-O 32-bit header.");  
+      grub_error (GRUB_ERR_BAD_OS, "Invalid Mach-O 32-bit header.");
       macho->offset32 = -1;
       return;
     }
@@ -74,17 +74,17 @@ grub_macho_parse32 (grub_macho_t macho)
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "not enough memory to read commands");
       return;
     }
-  if (grub_file_read (macho->file, (char *) macho->cmds32, 
-		      (grub_size_t) macho->cmdsize32) 
+  if (grub_file_read (macho->file, (char *) macho->cmds32,
+		      (grub_size_t) macho->cmdsize32)
       != (grub_ssize_t) macho->cmdsize32)
     {
-      grub_error (GRUB_ERR_READ_ERROR, "Cannot read Mach-O header.");  
+      grub_error (GRUB_ERR_READ_ERROR, "Cannot read Mach-O header.");
       macho->offset32 = -1;
     }
 }
 
 typedef int NESTED_FUNC_ATTR (*grub_macho_iter_hook_t)
-(grub_macho_t , struct grub_macho_cmd *, 
+(grub_macho_t , struct grub_macho_cmd *,
 	       void *);
 
 static grub_err_t
@@ -120,7 +120,7 @@ grub_macho32_readfile (grub_macho_t macho, void *dest)
 {
   grub_ssize_t read;
   if (! grub_macho_contains_macho32 (macho))
-    return grub_error (GRUB_ERR_BAD_OS, 
+    return grub_error (GRUB_ERR_BAD_OS,
 		       "Couldn't read architecture-specific part");
 
   if (grub_file_seek (macho->file, macho->offset32) == (grub_off_t) -1)
@@ -130,12 +130,12 @@ grub_macho32_readfile (grub_macho_t macho, void *dest)
 			 "Invalid offset in program header.");
     }
 
-  read = grub_file_read (macho->file, dest, 
+  read = grub_file_read (macho->file, dest,
 			 macho->end32 - macho->offset32);
   if (read != (grub_ssize_t) (macho->end32 - macho->offset32))
     {
       grub_error_push ();
-      return grub_error (GRUB_ERR_BAD_OS, 
+      return grub_error (GRUB_ERR_BAD_OS,
 			 "Couldn't read architecture-specific part");
     }
   return GRUB_ERR_NONE;
@@ -150,9 +150,9 @@ grub_macho32_size (grub_macho_t macho, grub_addr_t *segments_start,
 
   /* Run through the program headers to calculate the total memory size we
      should claim.  */
-  auto int NESTED_FUNC_ATTR calcsize (grub_macho_t _macho, 
+  auto int NESTED_FUNC_ATTR calcsize (grub_macho_t _macho,
 				      struct grub_macho_cmd *phdr, void *_arg);
-  int NESTED_FUNC_ATTR calcsize (grub_macho_t UNUSED _macho, 
+  int NESTED_FUNC_ATTR calcsize (grub_macho_t UNUSED _macho,
 				 struct grub_macho_cmd *hdr0, void UNUSED *_arg)
     {
       struct grub_macho_segment32 *hdr = (struct grub_macho_segment32 *) hdr0;
@@ -189,24 +189,24 @@ grub_err_t
 grub_macho32_load (grub_macho_t macho, char *offset, int flags)
 {
   grub_err_t err = 0;
-  auto int NESTED_FUNC_ATTR do_load(grub_macho_t _macho, 
-			       struct grub_macho_cmd *hdr0, 
+  auto int NESTED_FUNC_ATTR do_load(grub_macho_t _macho,
+			       struct grub_macho_cmd *hdr0,
 			       void UNUSED *_arg);
-  int NESTED_FUNC_ATTR do_load(grub_macho_t _macho, 
-			       struct grub_macho_cmd *hdr0, 
+  int NESTED_FUNC_ATTR do_load(grub_macho_t _macho,
+			       struct grub_macho_cmd *hdr0,
 			       void UNUSED *_arg)
   {
     struct grub_macho_segment32 *hdr = (struct grub_macho_segment32 *) hdr0;
 
     if (hdr->cmd != GRUB_MACHO_CMD_SEGMENT32)
       return 0;
-    
+
     if (! hdr->filesize && (flags & GRUB_MACHO_NOBSS))
       return 0;
     if (! hdr->vmsize)
       return 0;
-    
-    if (grub_file_seek (_macho->file, hdr->fileoff 
+
+    if (grub_file_seek (_macho->file, hdr->fileoff
 			+ _macho->offset32) == (grub_off_t) -1)
       {
 	grub_error_push ();
@@ -214,11 +214,11 @@ grub_macho32_load (grub_macho_t macho, char *offset, int flags)
 		    "Invalid offset in program header.");
 	return 1;
       }
-    
+
     if (hdr->filesize)
       {
 	grub_ssize_t read;
-	read = grub_file_read (_macho->file, offset + hdr->vmaddr, 
+	read = grub_file_read (_macho->file, offset + hdr->vmaddr,
 				   min (hdr->filesize, hdr->vmsize));
 	if (read != (grub_ssize_t) min (hdr->filesize, hdr->vmsize))
 	  {
@@ -231,7 +231,7 @@ grub_macho32_load (grub_macho_t macho, char *offset, int flags)
 	    return 1;
 	  }
       }
-    
+
     if (hdr->filesize < hdr->vmsize)
       grub_memset (offset + hdr->vmaddr + hdr->filesize,
 		   0, hdr->vmsize - hdr->filesize);
@@ -247,11 +247,11 @@ grub_uint32_t
 grub_macho32_get_entry_point (grub_macho_t macho)
 {
   grub_uint32_t entry_point = 0;
-  auto int NESTED_FUNC_ATTR hook(grub_macho_t _macho, 
-			       struct grub_macho_cmd *hdr, 
+  auto int NESTED_FUNC_ATTR hook(grub_macho_t _macho,
+			       struct grub_macho_cmd *hdr,
 			       void UNUSED *_arg);
-  int NESTED_FUNC_ATTR hook(grub_macho_t UNUSED _macho, 
-			       struct grub_macho_cmd *hdr, 
+  int NESTED_FUNC_ATTR hook(grub_macho_t UNUSED _macho,
+			       struct grub_macho_cmd *hdr,
 			       void UNUSED *_arg)
   {
     if (hdr->cmd == GRUB_MACHO_CMD_THREAD)
@@ -316,13 +316,13 @@ grub_macho_file (grub_file_t file)
 
       /* Load architecture description. */
       narchs = grub_be_to_cpu32 (filestart.fat.nfat_arch);
-      if (grub_file_seek (macho->file, sizeof (struct grub_macho_fat_header)) 
+      if (grub_file_seek (macho->file, sizeof (struct grub_macho_fat_header))
 	  == (grub_off_t) -1)
 	goto fail;
       archs = grub_malloc (sizeof (struct grub_macho_fat_arch) * narchs);
       if (!archs)
 	goto fail;
-      if (grub_file_read (macho->file, (char *) archs, 
+      if (grub_file_read (macho->file, (char *) archs,
 			  sizeof (struct grub_macho_fat_arch) * narchs)
 	  != (grub_ssize_t)sizeof(struct grub_macho_fat_arch) * narchs)
 	{
@@ -334,18 +334,18 @@ grub_macho_file (grub_file_t file)
 
       for (i = 0; i < narchs; i++)
 	{
-	  if (GRUB_MACHO_CPUTYPE_IS_HOST32 
+	  if (GRUB_MACHO_CPUTYPE_IS_HOST32
 	      (grub_be_to_cpu32 (archs[i].cputype)))
 	    {
 	      macho->offset32 = grub_be_to_cpu32 (archs[i].offset);
-	      macho->end32 = grub_be_to_cpu32 (archs[i].offset) 
+	      macho->end32 = grub_be_to_cpu32 (archs[i].offset)
 		+ grub_be_to_cpu32 (archs[i].size);
 	    }
 	  if (GRUB_MACHO_CPUTYPE_IS_HOST64
 	      (grub_be_to_cpu32 (archs[i].cputype)))
 	    {
 	      macho->offset64 = grub_be_to_cpu32 (archs[i].offset);
-	      macho->end64 = grub_be_to_cpu32 (archs[i].offset) 
+	      macho->end64 = grub_be_to_cpu32 (archs[i].offset)
 		+ grub_be_to_cpu32 (archs[i].size);
 	    }
 	}
@@ -369,7 +369,7 @@ grub_macho_file (grub_file_t file)
   grub_macho_parse32 (macho);
   /* FIXME: implement 64-bit.*/
   /*  grub_macho_parse64 (macho); */
-  
+
   return macho;
 
 fail:

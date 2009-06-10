@@ -56,7 +56,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
   if (i == e->e_shnum)
     return grub_error (GRUB_ERR_BAD_MODULE, "no symtab found");
-  
+
   symtab = (Elf32_Sym *) ((char *) e + s->sh_offset);
   entsize = s->sh_entsize;
 
@@ -75,7 +75,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 	if (seg)
 	  {
 	    Elf32_Rel *rel, *max;
-	    
+
 	    for (rel = (Elf32_Rel *) ((char *) e + s->sh_offset),
 		   max = rel + s->sh_size / s->sh_entsize;
 		 rel < max;
@@ -83,15 +83,15 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 	      {
 		Elf32_Word *addr;
 		Elf32_Sym *sym;
-		
+
 		if (seg->size < rel->r_offset)
 		  return grub_error (GRUB_ERR_BAD_MODULE,
 				     "reloc offset is out of the segment");
-		
+
 		addr = (Elf32_Word *) ((char *) seg->addr + rel->r_offset);
 		sym = (Elf32_Sym *) ((char *) symtab
 				     + entsize * ELF32_R_SYM (rel->r_info));
-		
+
 		switch (ELF32_R_TYPE (rel->r_info))
 		  {
 		  case R_386_32:

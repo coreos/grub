@@ -125,7 +125,7 @@ grub_ieee1275_next_property (grub_ieee1275_phandle_t phandle, char *prev_prop,
 }
 
 int
-grub_ieee1275_get_property_length (grub_ieee1275_phandle_t phandle, 
+grub_ieee1275_get_property_length (grub_ieee1275_phandle_t phandle,
 				   const char *prop, grub_ssize_t *length)
 {
   struct get_property_args
@@ -164,7 +164,7 @@ grub_ieee1275_instance_to_package (grub_ieee1275_ihandle_t ihandle,
 
   INIT_IEEE1275_COMMON (&args.common, "instance-to-package", 1, 1);
   args.ihandle = ihandle;
-  
+
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
   *phandlep = args.phandle;
@@ -192,7 +192,7 @@ grub_ieee1275_package_to_path (grub_ieee1275_phandle_t phandle,
   args.phandle = phandle;
   args.buf = (grub_ieee1275_cell_t) path;
   args.buflen = (grub_ieee1275_cell_t) len;
-  
+
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
   if (actual)
@@ -221,7 +221,7 @@ grub_ieee1275_instance_to_path (grub_ieee1275_ihandle_t ihandle,
   args.ihandle = ihandle;
   args.buf = (grub_ieee1275_cell_t) path;
   args.buflen = (grub_ieee1275_cell_t) len;
-  
+
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
   if (actual)
@@ -232,7 +232,7 @@ grub_ieee1275_instance_to_path (grub_ieee1275_ihandle_t ihandle,
 }
 
 int
-grub_ieee1275_write (grub_ieee1275_ihandle_t ihandle, void *buffer, 
+grub_ieee1275_write (grub_ieee1275_ihandle_t ihandle, void *buffer,
 		     grub_size_t len, grub_ssize_t *actualp)
 {
   struct write_args
@@ -517,7 +517,7 @@ grub_ieee1275_release (grub_addr_t addr, grub_size_t size)
   INIT_IEEE1275_COMMON (&args.common, "release", 2, 0);
   args.addr = addr;
   args.size = size;
-  
+
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
   return 0;

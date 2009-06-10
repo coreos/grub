@@ -63,9 +63,9 @@ test_parse (char **args, int *argn, int argc)
     grub_device_t dev;
 
     /* A hook for iterating directories. */
-    auto int find_file (const char *cur_filename, 
+    auto int find_file (const char *cur_filename,
 			const struct grub_dirhook_info *info);
-    int find_file (const char *cur_filename, 
+    int find_file (const char *cur_filename,
 		   const struct grub_dirhook_info *info)
     {
       if ((info->case_insensitive ? grub_strcasecmp (cur_filename, filename)
@@ -77,7 +77,7 @@ test_parse (char **args, int *argn, int argc)
 	}
       return 0;
     }
-    
+
     file_exists = 0;
     device_name = grub_file_get_device_name (path);
     dev = grub_device_open (device_name);
@@ -93,7 +93,7 @@ test_parse (char **args, int *argn, int argc)
       pathname = path;
     else
       pathname++;
-    
+
     /* Remove trailing '/'. */
     while (*pathname && pathname[grub_strlen (pathname) - 1] == '/')
       pathname[grub_strlen (pathname) - 1] = 0;
@@ -132,7 +132,7 @@ test_parse (char **args, int *argn, int argc)
     else
       (fs->dir) (dev, path, find_file);
 
-    grub_device_close (dev); 
+    grub_device_close (dev);
     grub_free (path);
     grub_free (device_name);
   }
@@ -158,7 +158,7 @@ test_parse (char **args, int *argn, int argc)
 	      (*argn) += 3;
 	      continue;
 	    }
-	  
+
 	  /* GRUB extension: lexicographical sorting. */
 	  if (grub_strcmp (args[*argn + 1], "<") == 0)
 	    {
@@ -166,21 +166,21 @@ test_parse (char **args, int *argn, int argc)
 	      (*argn) += 3;
 	      continue;
 	    }
-	  
+
 	  if (grub_strcmp (args[*argn + 1], "<=") == 0)
 	    {
 	      update_val (grub_strcmp (args[*argn], args[*argn + 2]) <= 0);
 	      (*argn) += 3;
 	      continue;
 	    }
-	  
+
 	  if (grub_strcmp (args[*argn + 1], ">") == 0)
 	    {
 	      update_val (grub_strcmp (args[*argn], args[*argn + 2]) > 0);
 	      (*argn) += 3;
 	      continue;
 	    }
-	  
+
 	  if (grub_strcmp (args[*argn + 1], ">=") == 0)
 	    {
 	      update_val (grub_strcmp (args[*argn], args[*argn + 2]) >= 0);
@@ -191,7 +191,7 @@ test_parse (char **args, int *argn, int argc)
 	  /* Number tests. */
 	  if (grub_strcmp (args[*argn + 1], "-eq") == 0)
 	    {
-	      update_val (grub_strtosl (args[*argn], 0, 0) 
+	      update_val (grub_strtosl (args[*argn], 0, 0)
 			  == grub_strtosl (args[*argn + 2], 0, 0));
 	      (*argn) += 3;
 	      continue;
@@ -199,15 +199,15 @@ test_parse (char **args, int *argn, int argc)
 
 	  if (grub_strcmp (args[*argn + 1], "-ge") == 0)
 	    {
-	      update_val (grub_strtosl (args[*argn], 0, 0) 
+	      update_val (grub_strtosl (args[*argn], 0, 0)
 			  >= grub_strtosl (args[*argn + 2], 0, 0));
 	      (*argn) += 3;
 	      continue;
 	    }
-	  
+
 	  if (grub_strcmp (args[*argn + 1], "-gt") == 0)
 	    {
-	      update_val (grub_strtosl (args[*argn], 0, 0) 
+	      update_val (grub_strtosl (args[*argn], 0, 0)
 			  > grub_strtosl (args[*argn + 2], 0, 0));
 	      (*argn) += 3;
 	      continue;
@@ -215,55 +215,55 @@ test_parse (char **args, int *argn, int argc)
 
 	  if (grub_strcmp (args[*argn + 1], "-le") == 0)
 	    {
-	      update_val (grub_strtosl (args[*argn], 0, 0) 
+	      update_val (grub_strtosl (args[*argn], 0, 0)
 		      <= grub_strtosl (args[*argn + 2], 0, 0));
 	      (*argn) += 3;
 	      continue;
 	    }
-	  
+
 	  if (grub_strcmp (args[*argn + 1], "-lt") == 0)
 	    {
-	      update_val (grub_strtosl (args[*argn], 0, 0) 
+	      update_val (grub_strtosl (args[*argn], 0, 0)
 			  < grub_strtosl (args[*argn + 2], 0, 0));
 	      (*argn) += 3;
 	      continue;
 	    }
-	  
+
 	  if (grub_strcmp (args[*argn + 1], "-ne") == 0)
 	    {
-	      update_val (grub_strtosl (args[*argn], 0, 0) 
+	      update_val (grub_strtosl (args[*argn], 0, 0)
 			  != grub_strtosl (args[*argn + 2], 0, 0));
 	      (*argn) += 3;
 	      continue;
 	    }
 
-	  /* GRUB extension: compare numbers skipping prefixes. 
+	  /* GRUB extension: compare numbers skipping prefixes.
 	     Useful for comparing versions. E.g. vmlinuz-2 -plt vmlinuz-11. */
 	  if (grub_strcmp (args[*argn + 1], "-pgt") == 0
 	      || grub_strcmp (args[*argn + 1], "-plt") == 0)
 	    {
 	      int i;
 	      /* Skip common prefix. */
-	      for (i = 0; args[*argn][i] == args[*argn + 2][i] 
+	      for (i = 0; args[*argn][i] == args[*argn + 2][i]
 		     && args[*argn][i]; i++);
-	      
+
 	      /* Go the digits back. */
 	      i--;
 	      while (grub_isdigit (args[*argn][i]) && i > 0)
 		i--;
 	      i++;
-	      
+
 	      if (grub_strcmp (args[*argn + 1], "-pgt") == 0)
-		update_val (grub_strtoul (args[*argn] + i, 0, 0) 
+		update_val (grub_strtoul (args[*argn] + i, 0, 0)
 			    > grub_strtoul (args[*argn + 2] + i, 0, 0));
 	      else
-		update_val (grub_strtoul (args[*argn] + i, 0, 0) 
+		update_val (grub_strtoul (args[*argn] + i, 0, 0)
 			    < grub_strtoul (args[*argn + 2] + i, 0, 0));
 	      (*argn) += 3;
 	      continue;
 	    }
 
-	  /* -nt and -ot tests. GRUB extension: when doing -?t<bias> bias 
+	  /* -nt and -ot tests. GRUB extension: when doing -?t<bias> bias
 	     will be added to the first mtime. */
 	  if (grub_memcmp (args[*argn + 1], "-nt", 3) == 0
 	      || grub_memcmp (args[*argn + 1], "-ot", 3) == 0)
@@ -271,16 +271,16 @@ test_parse (char **args, int *argn, int argc)
 	      struct grub_dirhook_info file1;
 	      int file1exists;
 	      int bias = 0;
-	      
+
 	      /* Fetch fileinfo. */
 	      get_fileinfo (args[*argn]);
 	      file1 = file_info;
 	      file1exists = file_exists;
 	      get_fileinfo (args[*argn + 2]);
-	      
+
 	      if (args[*argn + 1][3])
 		bias = grub_strtosl (args[*argn + 1] + 3, 0, 0);
-	      
+
 	      if (grub_memcmp (args[*argn + 1], "-nt", 3) == 0)
 		update_val ((file1exists && ! file_exists)
 			    || (file1.mtimeset && file_info.mtimeset
@@ -305,7 +305,7 @@ test_parse (char **args, int *argn, int argc)
 	      (*argn) += 2;
 	      return ret;
 	    }
-	  
+
 	  if (grub_strcmp (args[*argn], "-e") == 0)
 	    {
 	      get_fileinfo (args[*argn + 1]);
@@ -322,7 +322,7 @@ test_parse (char **args, int *argn, int argc)
 	      (*argn) += 2;
 	      return ret;
 	    }
-	  
+
 	  if (grub_strcmp (args[*argn], "-s") == 0)
 	    {
 	      grub_file_t file;
@@ -334,12 +334,12 @@ test_parse (char **args, int *argn, int argc)
 	      (*argn) += 2;
 	      return ret;
 	    }
-	  
+
 	  /* String tests. */
 	  if (grub_strcmp (args[*argn], "-n") == 0)
 	    {
 	      update_val (args[*argn + 1][0]);
-	      
+
 	      (*argn) += 2;
 	      continue;
 	    }
@@ -352,7 +352,7 @@ test_parse (char **args, int *argn, int argc)
 	}
 
       /* Special modifiers. */
-      
+
       /* End of expression. return to parent. */
       if (grub_strcmp (args[*argn], ")") == 0)
 	{
@@ -366,7 +366,7 @@ test_parse (char **args, int *argn, int argc)
 	  update_val (test_parse (args, argn, argc));
 	  continue;
 	}
-      
+
       if (grub_strcmp (args[*argn], "!") == 0)
 	{
 	  invert = ! invert;
@@ -404,7 +404,7 @@ grub_cmd_test (grub_command_t cmd __attribute__ ((unused)),
   if (argc >= 1 && grub_strcmp (args[argc - 1], "]") == 0)
     argc--;
 
-  return test_parse (args, &argn, argc) ? GRUB_ERR_NONE 
+  return test_parse (args, &argn, argc) ? GRUB_ERR_NONE
     : grub_error (GRUB_ERR_TEST_FAILURE, "false");
 }
 

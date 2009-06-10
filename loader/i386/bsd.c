@@ -168,7 +168,7 @@ grub_freebsd_add_mmap (void)
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size,
 			     grub_uint32_t type)
     {
-      /* FreeBSD assumes that first 64KiB are available. 
+      /* FreeBSD assumes that first 64KiB are available.
 	 Not always true but try to prevent panic somehow. */
       if (isfirstrun && addr != 0)
 	{
@@ -180,7 +180,7 @@ grub_freebsd_add_mmap (void)
 	      mmap++;
 	    }
 	  else
-	    len += sizeof (struct grub_e820_mmap);	  
+	    len += sizeof (struct grub_e820_mmap);
 	}
       isfirstrun = 0;
       if (mmap)
@@ -242,9 +242,9 @@ grub_freebsd_add_mmap (void)
   for (i = 0; i < mmap - mmap_buf; i++)
     grub_dprintf ("bsd", "smap %d, %d:%llx - %llx\n", i,
 		  mmap_buf[i].type,
-		  (unsigned long long) mmap_buf[i].addr, 
+		  (unsigned long long) mmap_buf[i].addr,
 		  (unsigned long long) mmap_buf[i].size);
-       
+
   grub_dprintf ("bsd", "%d entries in smap\n", mmap - mmap_buf);
   grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA |
 			 FREEBSD_MODINFOMD_SMAP, mmap_buf, len);
@@ -286,12 +286,12 @@ grub_freebsd_add_meta_module (int is_kern, int argc, char **argv,
 
   if (is_64bit)
     {
-      grub_uint64_t addr64 = addr, size64 = size; 
+      grub_uint64_t addr64 = addr, size64 = size;
       if ((grub_freebsd_add_meta (FREEBSD_MODINFO_TYPE, type,
 			      grub_strlen (type) + 1)) ||
-	  (grub_freebsd_add_meta (FREEBSD_MODINFO_ADDR, &addr64, 
+	  (grub_freebsd_add_meta (FREEBSD_MODINFO_ADDR, &addr64,
 				  sizeof (addr64))) ||
-	  (grub_freebsd_add_meta (FREEBSD_MODINFO_SIZE, &size64, 
+	  (grub_freebsd_add_meta (FREEBSD_MODINFO_SIZE, &size64,
 				  sizeof (size64))))
 	return grub_errno;
     }
@@ -299,9 +299,9 @@ grub_freebsd_add_meta_module (int is_kern, int argc, char **argv,
     {
       if ((grub_freebsd_add_meta (FREEBSD_MODINFO_TYPE, type,
 				  grub_strlen (type) + 1)) ||
-	  (grub_freebsd_add_meta (FREEBSD_MODINFO_ADDR, &addr, 
+	  (grub_freebsd_add_meta (FREEBSD_MODINFO_ADDR, &addr,
 				  sizeof (addr))) ||
-	  (grub_freebsd_add_meta (FREEBSD_MODINFO_SIZE, &size, 
+	  (grub_freebsd_add_meta (FREEBSD_MODINFO_SIZE, &size,
 				  sizeof (size))))
 	return grub_errno;
     }
@@ -502,22 +502,22 @@ grub_freebsd_boot (void)
       gdtdesc->base = gdt;
 
       /* Prepare trampoline. */
-      trampoline = (grub_uint8_t *) (kern_end - 4096 + 24 
+      trampoline = (grub_uint8_t *) (kern_end - 4096 + 24
 				     + sizeof (struct gdt_descriptor));
-      launch_trampoline = (void  __attribute__ ((cdecl, regparm (0))) 
+      launch_trampoline = (void  __attribute__ ((cdecl, regparm (0)))
 			   (*) (grub_addr_t entry, ...)) trampoline;
       grub_bsd64_trampoline_gdt = (grub_uint32_t) gdtdesc;
-      grub_bsd64_trampoline_selfjump 
+      grub_bsd64_trampoline_selfjump
 	= (grub_uint32_t) (trampoline + 6
-			   + ((grub_uint8_t *) &grub_bsd64_trampoline_selfjump 
+			   + ((grub_uint8_t *) &grub_bsd64_trampoline_selfjump
 			      - &grub_bsd64_trampoline_start));
 
       /* Copy trampoline. */
-      grub_memcpy (trampoline, &grub_bsd64_trampoline_start, 
+      grub_memcpy (trampoline, &grub_bsd64_trampoline_start,
 		   &grub_bsd64_trampoline_end - &grub_bsd64_trampoline_start);
 
       /* Launch trampoline. */
-      launch_trampoline (entry, entry_hi, pagetable, bi.bi_modulep, 
+      launch_trampoline (entry, entry_hi, pagetable, bi.bi_modulep,
 			 kern_end);
     }
   else
@@ -547,7 +547,7 @@ grub_openbsd_boot (void)
         case GRUB_MACHINE_MEMORY_AVAILABLE:
 	  pm->type = OPENBSD_MMAP_AVAILABLE;
 	  break;
-	  
+
 	default:
 	  pm->type = OPENBSD_MMAP_RESERVED;
 	  break;
@@ -574,7 +574,7 @@ grub_openbsd_boot (void)
 	     (part << OPENBSD_B_PARTSHIFT));
 
   grub_unix_real_boot (entry, bootflags, bootdev, OPENBSD_BOOTARG_APIVER,
-		       0, grub_mmap_get_upper () >> 10, 
+		       0, grub_mmap_get_upper () >> 10,
 		       grub_mmap_get_lower () >> 10,
 		       (char *) pa - buf, buf);
 
@@ -603,7 +603,7 @@ grub_netbsd_boot (void)
   bootinfo->bi_data[0] = rootdev;
 
   grub_unix_real_boot (entry, bootflags, 0, bootinfo,
-		       0, grub_mmap_get_upper () >> 10, 
+		       0, grub_mmap_get_upper () >> 10,
 		       grub_mmap_get_lower () >> 10);
 
   /* Not reached.  */

@@ -21,7 +21,7 @@
  * Note: These functions defined in this file may be called from C.
  *       Be careful of that you must not modify some registers. Quote
  *       from gcc-2.95.2/gcc/config/i386/i386.h:
-	
+
    1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
    registers that can be used without being saved.
@@ -84,7 +84,7 @@ gdt:
 
 	/* -- data segment --
 	 * base = 0x00000000, limit 0xFFFFF (4 KiB Granularity), present
-	 * type = 32 bit data read/write, DPL = 0 
+	 * type = 32 bit data read/write, DPL = 0
 	 */
 	.word	0xFFFF, 0
 	.byte	0, 0x92, 0xCF, 0

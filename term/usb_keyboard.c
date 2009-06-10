@@ -67,7 +67,7 @@ grub_usb_hid (void)
   int usb_iterate (grub_usb_device_t dev)
     {
       descdev = &dev->descdev;
-      
+
       grub_dprintf ("usb_keyboard", "%x %x %x\n",
 		   descdev->class, descdev->subclass, descdev->protocol);
 

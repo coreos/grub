@@ -357,7 +357,7 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
   /* Try to detect if the port is in use by writing to it,
      waiting for a while and reading it again.  If the value
      was preserved, there is a device connected.  */
-  grub_ata_regset (dev, GRUB_ATA_REG_SECTORS, 0x5A);  
+  grub_ata_regset (dev, GRUB_ATA_REG_SECTORS, 0x5A);
   grub_ata_wait ();
   grub_uint8_t sec = grub_ata_regget (dev, GRUB_ATA_REG_SECTORS);
   grub_dprintf ("ata", "sectors=0x%x\n", sec);
@@ -435,7 +435,7 @@ grub_ata_pciinit (int bus, int device, int func,
 	  bar2 = grub_pci_read (addr);
 
 	  /* Check if the BARs describe an IO region.  */
-	  if ((bar1 & 1) && (bar2 & 1))   
+	  if ((bar1 & 1) && (bar2 & 1))
 	    {
 	      rega = bar1 & ~3;
 	      regb = bar2 & ~3;
@@ -682,7 +682,7 @@ grub_ata_open (const char *name, grub_disk_t disk)
   disk->total_sectors = dev->size;
 
   disk->id = (unsigned long) dev;
-  
+
   disk->has_partitions = 1;
   disk->data = dev;
 
@@ -692,7 +692,7 @@ grub_ata_open (const char *name, grub_disk_t disk)
 static void
 grub_ata_close (grub_disk_t disk __attribute__((unused)))
 {
-  
+
 }
 
 static grub_err_t
@@ -841,7 +841,7 @@ static struct grub_scsi_dev grub_atapi_dev =
     .close = grub_atapi_close,
     .read = grub_atapi_read,
     .write = grub_atapi_write
-  }; 
+  };
 
 
 
@@ -854,7 +854,7 @@ GRUB_MOD_INIT(ata)
       grub_disk_firmware_fini ();
       grub_disk_firmware_fini = NULL;
     }
-  
+
   /* ATA initialization.  */
   grub_ata_initialize ();
 

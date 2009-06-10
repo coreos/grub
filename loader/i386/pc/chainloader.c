@@ -62,7 +62,7 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
   void *part_addr = 0;
 
   grub_dl_ref (my_mod);
-  
+
   file = grub_file_open (filename);
   if (! file)
     goto fail;
@@ -93,11 +93,11 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
   if (dev)
     {
       grub_disk_t disk = dev->disk;
-      
+
       if (disk)
 	{
 	  grub_partition_t p = disk->partition;
-	  
+
 	  /* In i386-pc, the id is equal to the BIOS drive number.  */
 	  drive = (int) disk->id;
 
@@ -112,21 +112,21 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
 
       grub_device_close (dev);
     }
-  
+
   /* Ignore errors. Perhaps it's not fatal.  */
   grub_errno = GRUB_ERR_NONE;
 
   boot_drive = drive;
   boot_part_addr = part_addr;
-  
+
   grub_loader_set (grub_chainloader_boot, grub_chainloader_unload, 1);
   return;
-  
+
  fail:
 
   if (file)
     grub_file_close (file);
-  
+
   grub_dl_unref (my_mod);
 }
 
@@ -142,7 +142,7 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
       argc--;
       argv++;
     }
-  
+
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
   else

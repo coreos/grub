@@ -122,7 +122,7 @@ gpt_partition_map_probe (grub_disk_t disk, const char *str)
   char *s = (char *) str;
 
   auto int find_func (grub_disk_t d, const grub_partition_t partition);
-    
+
   int find_func (grub_disk_t d __attribute__ ((unused)),
 		 const grub_partition_t partition)
     {
@@ -131,14 +131,14 @@ gpt_partition_map_probe (grub_disk_t disk, const char *str)
 	  p = (grub_partition_t) grub_malloc (sizeof (*p));
 	  if (! p)
 	    return 1;
-	  
+
 	  grub_memcpy (p, partition, sizeof (*p));
 	  return 1;
 	}
-      
+
       return 0;
     }
-  
+
   /* Get the partition number.  */
   partnum = grub_strtoul (s, 0, 10) - 1;
   if (grub_errno)

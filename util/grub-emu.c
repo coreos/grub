@@ -105,7 +105,7 @@ static struct option options[] =
     { 0, 0, 0, 0 }
   };
 
-static int 
+static int
 usage (int status)
 {
   if (status)
@@ -138,7 +138,7 @@ main (int argc, char *argv[])
   char *dev_map = DEFAULT_DEVICE_MAP;
   volatile int hold = 0;
   int opt;
-  
+
   progname = "grub-emu";
 
   while ((opt = getopt_long (argc, argv, "r:d:m:vH:hV", options, 0)) != -1)
@@ -185,7 +185,7 @@ main (int argc, char *argv[])
 
       sleep (1);
     }
-  
+
   signal (SIGINT, SIG_IGN);
   grub_console_init ();
 
@@ -218,7 +218,7 @@ main (int argc, char *argv[])
   prefix = xmalloc (strlen (root_dev) + 2 + strlen (dir) + 1);
   sprintf (prefix, "(%s)%s", root_dev, dir);
   free (dir);
-  
+
   /* Start GRUB!  */
   if (setjmp (main_env) == 0)
     grub_main ();
@@ -226,6 +226,6 @@ main (int argc, char *argv[])
   grub_fini_all ();
 
   grub_machine_fini ();
-  
+
   return 0;
 }

@@ -35,11 +35,11 @@ grub_dl_t my_mod;
 /* This tracks which version of multiboot to use when using
  * the module command. By default use multiboot version 1.
  * values:
- *      1 - Multiboot version 1 
+ *      1 - Multiboot version 1
  *      2 - Multiboot version 2
  */
 
-static unsigned int module_version_status = 1; 
+static unsigned int module_version_status = 1;
 
 static int
 find_multi_boot1_header (grub_file_t file)
@@ -48,7 +48,7 @@ find_multi_boot1_header (grub_file_t file)
   char buffer[MULTIBOOT_SEARCH];
   int found_status = 0;
   grub_ssize_t len;
- 
+
   len = grub_file_read (file, buffer, MULTIBOOT_SEARCH);
   if (len < 32)
     return found_status;
@@ -77,7 +77,7 @@ find_multi_boot2_header (grub_file_t file)
   char buffer[MULTIBOOT_SEARCH];
   int found_status = 0;
   grub_ssize_t len;
- 
+
   len = grub_file_read (file, buffer, MULTIBOOT_SEARCH);
   if (len < 32)
     return found_status;
@@ -137,7 +137,7 @@ grub_cmd_multiboot_loader (grub_command_t cmd __attribute__ ((unused)),
 
   /* Launch multi boot with header */
 
-  /* XXX Find a better way to identify this. 
+  /* XXX Find a better way to identify this.
      This is for i386-pc */
 #if defined(GRUB_MACHINE_PCBIOS) || defined(GRUB_MACHINE_LINUXBIOS)
   if (header_multi_ver_found == 1)

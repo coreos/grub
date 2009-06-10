@@ -662,38 +662,38 @@ typedef struct grub_efi_table_header grub_efi_table_header_t;
 struct grub_efi_boot_services
 {
   grub_efi_table_header_t hdr;
-  
+
   grub_efi_tpl_t
   (*raise_tpl) (grub_efi_tpl_t new_tpl);
-  
+
   void
   (*restore_tpl) (grub_efi_tpl_t old_tpl);
-  
+
   grub_efi_status_t
   (*allocate_pages) (grub_efi_allocate_type_t type,
 		     grub_efi_memory_type_t memory_type,
 		     grub_efi_uintn_t pages,
 		     grub_efi_physical_address_t *memory);
-  
+
   grub_efi_status_t
   (*free_pages) (grub_efi_physical_address_t memory,
 		 grub_efi_uintn_t pages);
-  
+
   grub_efi_status_t
   (*get_memory_map) (grub_efi_uintn_t *memory_map_size,
 		     grub_efi_memory_descriptor_t *memory_map,
 		     grub_efi_uintn_t *map_key,
 		     grub_efi_uintn_t *descriptor_size,
 		     grub_efi_uint32_t *descriptor_version);
-  
+
   grub_efi_status_t
   (*allocate_pool) (grub_efi_memory_type_t pool_type,
 		    grub_efi_uintn_t size,
 		    void **buffer);
-  
+
   grub_efi_status_t
   (*free_pool) (void *buffer);
-  
+
   grub_efi_status_t
   (*create_event) (grub_efi_uint32_t type,
 		   grub_efi_tpl_t notify_tpl,
@@ -706,7 +706,7 @@ struct grub_efi_boot_services
   (*set_timer) (grub_efi_event_t event,
 		grub_efi_timer_delay_t type,
 		grub_efi_uint64_t trigger_time);
-  
+
    grub_efi_status_t
    (*wait_for_event) (grub_efi_uintn_t num_events,
 		      grub_efi_event_t *event,
@@ -714,10 +714,10 @@ struct grub_efi_boot_services
 
   grub_efi_status_t
   (*signal_event) (grub_efi_event_t event);
-  
+
   grub_efi_status_t
   (*close_event) (grub_efi_event_t event);
-  
+
   grub_efi_status_t
   (*check_event) (grub_efi_event_t event);
 
@@ -726,13 +726,13 @@ struct grub_efi_boot_services
 				  grub_efi_guid_t *protocol,
 				  grub_efi_interface_type_t interface_type,
 				  void *interface);
-  
+
   grub_efi_status_t
   (*reinstall_protocol_interface) (grub_efi_handle_t handle,
 				   grub_efi_guid_t *protocol,
 				   void *old_interface,
 				   void *new_interface);
-  
+
   grub_efi_status_t
   (*uninstall_protocol_interface) (grub_efi_handle_t handle,
 				   grub_efi_guid_t *protocol,
@@ -742,9 +742,9 @@ struct grub_efi_boot_services
   (*handle_protocol) (grub_efi_handle_t handle,
 		      grub_efi_guid_t *protocol,
 		      void **interface);
-  
+
   void *reserved;
-  
+
   grub_efi_status_t
   (*register_protocol_notify) (grub_efi_guid_t *protocol,
 			       grub_efi_event_t event,
@@ -874,7 +874,7 @@ struct grub_efi_runtime_services
 {
   grub_efi_table_header_t hdr;
 
-  grub_efi_status_t 
+  grub_efi_status_t
   (*get_time) (grub_efi_time_t *time,
 	       grub_efi_time_capabilities_t *capabilities);
 
@@ -944,11 +944,11 @@ struct grub_efi_simple_input_interface
   grub_efi_status_t
   (*reset) (struct grub_efi_simple_input_interface *this,
 	    grub_efi_boolean_t extended_verification);
-  
+
   grub_efi_status_t
   (*read_key_stroke) (struct grub_efi_simple_input_interface *this,
 		      grub_efi_input_key_t *key);
-  
+
   grub_efi_event_t wait_for_key;
 };
 typedef struct grub_efi_simple_input_interface grub_efi_simple_input_interface_t;
@@ -973,7 +973,7 @@ struct grub_efi_simple_text_output_interface
 		 grub_efi_uintn_t *columns,
 		 grub_efi_uintn_t *rows);
 
-  grub_efi_status_t 
+  grub_efi_status_t
   (*set_mode) (struct grub_efi_simple_text_output_interface *this,
 	       grub_efi_uintn_t mode_number);
 
@@ -992,7 +992,7 @@ struct grub_efi_simple_text_output_interface
   grub_efi_status_t
   (*enable_cursor) (struct grub_efi_simple_text_output_interface *this,
 		    grub_efi_boolean_t visible);
-  
+
   grub_efi_simple_text_output_mode_t *mode;
 };
 typedef struct grub_efi_simple_text_output_interface grub_efi_simple_text_output_interface_t;

@@ -64,7 +64,7 @@ grub_efi_allocate_pages (grub_efi_physical_address_t address,
   if (address > 0xffffffff)
     return 0;
 #endif
-  
+
 #if GRUB_TARGET_SIZEOF_VOID_P < 8 || defined (MCMODEL_SMALL)
   if (address == 0)
     {
@@ -95,7 +95,7 @@ grub_efi_allocate_pages (grub_efi_physical_address_t address,
       if (status != GRUB_EFI_SUCCESS)
 	return 0;
     }
-      
+
   if (allocated_pages)
     {
       unsigned i;
@@ -111,7 +111,7 @@ grub_efi_allocate_pages (grub_efi_physical_address_t address,
       if (i == MAX_ALLOCATED_PAGES)
 	grub_fatal ("too many page allocations");
     }
-  
+
   return (void *) ((grub_addr_t) address);
 }
 
@@ -127,7 +127,7 @@ grub_efi_free_pages (grub_efi_physical_address_t address,
 	  != address))
     {
       unsigned i;
-      
+
       for (i = 0; i < MAX_ALLOCATED_PAGES; i++)
 	if (allocated_pages[i].addr == address)
 	  {
@@ -135,7 +135,7 @@ grub_efi_free_pages (grub_efi_physical_address_t address,
 	    break;
 	  }
     }
-  
+
   b = grub_efi_system_table->boot_services;
   efi_call_2 (b->free_pages, address, pages);
 }
@@ -159,7 +159,7 @@ grub_efi_get_memory_map (grub_efi_uintn_t *memory_map_size,
     map_key = &key;
   if (! descriptor_version)
     descriptor_version = &version;
-  
+
   b = grub_efi_system_table->boot_services;
   status = efi_call_5 (b->get_memory_map, memory_map_size, memory_map, map_key,
 			      descriptor_size, descriptor_version);
@@ -179,13 +179,13 @@ sort_memory_map (grub_efi_memory_descriptor_t *memory_map,
 {
   grub_efi_memory_descriptor_t *d1;
   grub_efi_memory_descriptor_t *d2;
-  
+
   for (d1 = memory_map;
        d1 < memory_map_end;
        d1 = NEXT_MEMORY_DESCRIPTOR (d1, desc_size))
     {
       grub_efi_memory_descriptor_t *max_desc = d1;
-      
+
       for (d2 = NEXT_MEMORY_DESCRIPTOR (d1, desc_size);
 	   d2 < memory_map_end;
 	   d2 = NEXT_MEMORY_DESCRIPTOR (d2, desc_size))
@@ -227,7 +227,7 @@ filter_memory_map (grub_efi_memory_descriptor_t *memory_map,
 	  && desc->num_pages != 0)
 	{
 	  grub_memcpy (filtered_desc, desc, desc_size);
-	  
+
 	  /* Avoid less than 1MB, because some loaders seem to be confused.  */
 	  if (desc->physical_start < 0x100000)
 	    {
@@ -235,7 +235,7 @@ filter_memory_map (grub_efi_memory_descriptor_t *memory_map,
 						 - desc->physical_start);
 	      desc->physical_start = 0x100000;
 	    }
-	  
+
 #if GRUB_TARGET_SIZEOF_VOID_P < 8 || defined (MCMODEL_SMALL)
 	  if (BYTES_TO_PAGES (filtered_desc->physical_start)
 	      + filtered_desc->num_pages
@@ -244,10 +244,10 @@ filter_memory_map (grub_efi_memory_descriptor_t *memory_map,
 	      = (BYTES_TO_PAGES (0x100000000LL)
 		 - BYTES_TO_PAGES (filtered_desc->physical_start));
 #endif
-	  
+
 	  if (filtered_desc->num_pages == 0)
 	    continue;
-	  
+
 	  filtered_desc = NEXT_MEMORY_DESCRIPTOR (filtered_desc, desc_size);
 	}
     }
@@ -263,7 +263,7 @@ get_total_pages (grub_efi_memory_descriptor_t *memory_map,
 {
   grub_efi_memory_descriptor_t *desc;
   grub_efi_uint64_t total = 0;
-  
+
   for (desc = memory_map;
        desc < memory_map_end;
        desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size))
@@ -280,7 +280,7 @@ add_memory_regions (grub_efi_memory_descriptor_t *memory_map,
 		    grub_efi_uint64_t required_pages)
 {
   grub_efi_memory_descriptor_t *desc;
-  
+
   for (desc = memory_map;
        desc < memory_map_end;
        desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size))
@@ -323,7 +323,7 @@ print_memory_map (grub_efi_memory_descriptor_t *memory_map,
 {
   grub_efi_memory_descriptor_t *desc;
   int i;
-  
+
   for (desc = memory_map, i = 0;
        desc < memory_map_end;
        desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size), i++)
@@ -354,7 +354,7 @@ grub_efi_mm_init (void)
     grub_fatal ("cannot allocate memory");
 
   grub_memset (allocated_pages, 0, ALLOCATED_PAGES_SIZE);
-  
+
   /* Prepare a memory region to store two memory maps.  */
   memory_map = grub_efi_allocate_pages (0,
 					2 * BYTES_TO_PAGES (MEMORY_MAP_SIZE));
@@ -370,10 +370,10 @@ grub_efi_mm_init (void)
     grub_fatal ("cannot get memory map");
 
   memory_map_end = NEXT_MEMORY_DESCRIPTOR (memory_map, map_size);
-  
+
   filtered_memory_map_end = filter_memory_map (memory_map, filtered_memory_map,
 					       desc_size, memory_map_end);
-  
+
   /* By default, request a quarter of the available memory.  */
   total_pages = get_total_pages (filtered_memory_map, desc_size,
 				 filtered_memory_map_end);
@@ -403,7 +403,7 @@ grub_efi_mm_init (void)
 		    NEXT_MEMORY_DESCRIPTOR (memory_map, map_size));
   grub_abort ();
 #endif
-  
+
   /* Release the memory maps.  */
   grub_efi_free_pages ((grub_addr_t) memory_map,
 		       2 * BYTES_TO_PAGES (MEMORY_MAP_SIZE));

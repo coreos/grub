@@ -49,7 +49,7 @@ grub_cmd_cmp (grub_command_t cmd __attribute__ ((unused)),
     goto cleanup;
 
   if (grub_file_size (file1) != grub_file_size (file2))
-    grub_printf ("Differ in size: %llu [%s], %llu [%s]\n", 
+    grub_printf ("Differ in size: %llu [%s], %llu [%s]\n",
 		 (unsigned long long) grub_file_size (file1), args[0],
 		 (unsigned long long) grub_file_size (file2), args[1]);
   else
@@ -58,14 +58,14 @@ grub_cmd_cmp (grub_command_t cmd __attribute__ ((unused)),
 
       buf1 = grub_malloc (BUFFER_SIZE);
       buf2 = grub_malloc (BUFFER_SIZE);
-      
+
       if (! buf1 || ! buf2)
         goto cleanup;
-      
+
       do
 	{
 	  int i;
-	  
+
 	  rd1 = grub_file_read (file1, buf1, BUFFER_SIZE);
 	  rd2 = grub_file_read (file2, buf2, BUFFER_SIZE);
 
@@ -83,15 +83,15 @@ grub_cmd_cmp (grub_command_t cmd __attribute__ ((unused)),
 		}
 	    }
 	  pos += BUFFER_SIZE;
-	  
+
 	}
       while (rd2);
-      
+
       grub_printf ("The files are identical.\n");
     }
 
 cleanup:
-  
+
   if (buf1)
     grub_free (buf1);
   if (buf2)

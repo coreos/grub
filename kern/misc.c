@@ -37,11 +37,11 @@ grub_memmove (void *dest, const void *src, grub_size_t n)
     {
       d += n;
       s += n;
-      
+
       while (n--)
 	*--d = *--s;
     }
-  
+
   return dest;
 }
 
@@ -77,7 +77,7 @@ char *
 grub_strncpy (char *dest, const char *src, int c)
 {
   char *p = dest;
-  
+
   while ((*p++ = *src++) != '\0' && --c)
     ;
 
@@ -138,13 +138,13 @@ grub_printf (const char *fmt, ...)
 {
   va_list ap;
   int ret;
-  
+
   va_start (ap, fmt);
   ret = grub_vprintf (fmt, ap);
   va_end (ap);
 
   return ret;
-}  
+}
 
 #if defined (APPLE_CC) && ! defined (GRUB_UTIL)
 int
@@ -152,13 +152,13 @@ grub_err_printf (const char *fmt, ...)
 {
 	va_list ap;
 	int ret;
-	
+
 	va_start (ap, fmt);
 	ret = grub_vprintf (fmt, ap);
 	va_end (ap);
-	
+
 	return ret;
-}  
+}
 #endif
 
 #if ! defined (APPLE_CC) && ! defined (GRUB_UTIL)
@@ -172,10 +172,10 @@ grub_real_dprintf (const char *file, const int line, const char *condition,
 {
   va_list args;
   const char *debug = grub_env_get ("debug");
-  
+
   if (! debug)
     return;
-  
+
   if (grub_strword (debug, "all") || grub_strword (debug, condition))
     {
       grub_printf ("%s:%d: ", file, line);
@@ -200,7 +200,7 @@ grub_memcmp (const void *s1, const void *s2, grub_size_t n)
 {
   const char *t1 = s1;
   const char *t2 = s2;
-  
+
   while (n--)
     {
       if (*t1 != *t2)
@@ -224,7 +224,7 @@ grub_strcmp (const char *s1, const char *s2)
     {
       if (*s1 != *s2)
 	break;
-      
+
       s1++;
       s2++;
     }
@@ -237,12 +237,12 @@ grub_strncmp (const char *s1, const char *s2, grub_size_t n)
 {
   if (n == 0)
     return 0;
-  
+
   while (*s1 && *s2 && --n)
     {
       if (*s1 != *s2)
 	break;
-      
+
       s1++;
       s2++;
     }
@@ -275,7 +275,7 @@ grub_strncasecmp (const char *s1, const char *s2, grub_size_t n)
     {
       if (grub_tolower (*s1) != grub_tolower (*s2))
 	break;
-      
+
       s1++;
       s2++;
     }
@@ -326,7 +326,7 @@ grub_strstr (const char *haystack, const char *needle)
       /* Speed up the following searches of needle by caching its first
 	 character.  */
       char b = *needle++;
-      
+
       for (;; haystack++)
 	{
 	  if (*haystack == '\0')
@@ -460,11 +460,11 @@ grub_strtoull (const char *str, char **end, int base)
 {
   unsigned long long num = 0;
   int found = 0;
-  
+
   /* Skip white spaces.  */
   while (*str && grub_isspace (*str))
     str++;
-  
+
   /* Guess the base, if not specified. The prefix `0x' means 16, and
      the prefix `0' means 8.  */
   if (str[0] == '0')
@@ -480,7 +480,7 @@ grub_strtoull (const char *str, char **end, int base)
       else if (base == 0 && str[1] >= '0' && str[1] <= '7')
 	base = 8;
     }
-  
+
   if (base == 0)
     base = 10;
 
@@ -514,7 +514,7 @@ grub_strtoull (const char *str, char **end, int base)
       grub_error (GRUB_ERR_BAD_NUMBER, "unrecognized number");
       return 0;
     }
-  
+
   if (end)
     *end = (char *) str;
 
@@ -526,7 +526,7 @@ grub_strdup (const char *s)
 {
   grub_size_t len;
   char *p;
-  
+
   len = grub_strlen (s) + 1;
   p = (char *) grub_malloc (len);
   if (! p)
@@ -540,14 +540,14 @@ grub_strndup (const char *s, grub_size_t n)
 {
   grub_size_t len;
   char *p;
-  
+
   len = grub_strlen (s);
   if (len > n)
     len = n;
   p = (char *) grub_malloc (len + 1);
   if (! p)
     return 0;
-  
+
   grub_memcpy (p, s, len);
   p[len] = '\0';
   return p;
@@ -616,17 +616,17 @@ grub_divmod64 (grub_uint64_t n, grub_uint32_t d, grub_uint32_t *r)
 
       return ((grub_uint32_t) n) / d;
     }
-  
+
   while (bits--)
     {
       m <<= 1;
-      
+
       if (n & (1ULL << 63))
 	m |= 1;
-      
+
       q <<= 1;
       n <<= 1;
-      
+
       if (m >= d)
 	{
 	  q |= 1;
@@ -636,7 +636,7 @@ grub_divmod64 (grub_uint64_t n, grub_uint32_t d, grub_uint32_t *r)
 
   if (r)
     *r = m;
-  
+
   return q;
 }
 
@@ -647,7 +647,7 @@ grub_lltoa (char *str, int c, unsigned long long n)
 {
   unsigned base = (c == 'x') ? 16 : 10;
   char *p;
-  
+
   if ((long long) n < 0 && c == 'd')
     {
       n = (unsigned long long) (-((long long) n));
@@ -668,12 +668,12 @@ grub_lltoa (char *str, int c, unsigned long long n)
     do
       {
 	unsigned m;
-	
+
 	n = grub_divmod64 (n, 10, &m);
 	*p++ = m + '0';
       }
     while (n);
-  
+
   *p = 0;
 
   grub_reverse (str);
@@ -688,7 +688,7 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
   auto void write_char (unsigned char ch);
   auto void write_str (const char *s);
   auto void write_fill (const char ch, int n);
-  
+
   void write_char (unsigned char ch)
     {
       if (str)
@@ -711,7 +711,7 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
       for (i = 0; i < n; i++)
 	write_char (ch);
     }
-  
+
   while ((c = *fmt++) != 0)
     {
       if (c != '%')
@@ -825,7 +825,7 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 	      if (rightfill && grub_strlen (tmp) < format1)
 		write_fill (zerofill, format1 - grub_strlen (tmp));
 	      break;
-	      
+
 	    case 'c':
 	      n = va_arg (args, int);
 	      write_char (n & 0xff);
@@ -836,7 +836,7 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 		grub_uint32_t code = va_arg (args, grub_uint32_t);
 		int shift;
 		unsigned mask;
-		
+
 		if (code <= 0x7f)
 		  {
 		    shift = 0;
@@ -875,7 +875,7 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 		  }
 
 		write_char (mask | (code >> shift));
-		
+
 		for (shift -= 6; shift >= 0; shift -= 6)
 		  write_char (0x80 | (0x3f & (code >> shift)));
 	      }
@@ -901,7 +901,7 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 		}
 	      else
 		write_str ("(null)");
-	      
+
 	      break;
 
 	    default:
@@ -916,7 +916,7 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 
   if (count && !str)
     grub_refresh ();
-  
+
   return count;
 }
 
@@ -925,7 +925,7 @@ grub_sprintf (char *str, const char *fmt, ...)
 {
   va_list ap;
   int ret;
-  
+
   va_start (ap, fmt);
   ret = grub_vsprintf (str, fmt, ap);
   va_end (ap);
@@ -950,7 +950,7 @@ grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
 	    {
 	      /* Surrogate pair.  */
 	      code = ((code_high - 0xD800) << 12) + (code - 0xDC00) + 0x10000;
-	      
+
 	      *dest++ = (code >> 18) | 0xF0;
 	      *dest++ = ((code >> 12) & 0x3F) | 0x80;
 	      *dest++ = ((code >> 6) & 0x3F) | 0x80;
@@ -1009,7 +1009,7 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
   grub_uint32_t *p = dest;
   int count = 0;
   grub_uint32_t code = 0;
-  
+
   if (srcend)
     *srcend = src;
 
@@ -1036,7 +1036,7 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 	{
 	  if (c == 0)
 	    break;
-	  
+
 	  if ((c & 0x80) == 0x00)
 	    code = c;
 	  else if ((c & 0xe0) == 0xc0)

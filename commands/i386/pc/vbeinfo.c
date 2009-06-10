@@ -66,14 +66,14 @@ grub_cmd_vbeinfo (grub_command_t cmd __attribute__ ((unused)),
   p = video_mode_list = real2pm (controller_info.video_mode_ptr);
   while (*p++ != 0xFFFF)
     ;
-  
+
   video_mode_list_size = (grub_addr_t) p - (grub_addr_t) video_mode_list;
   saved_video_mode_list = grub_malloc (video_mode_list_size);
   if (! saved_video_mode_list)
     return grub_errno;
 
   grub_memcpy (saved_video_mode_list, video_mode_list, video_mode_list_size);
-  
+
   grub_printf ("List of compatible video modes:\n");
   grub_printf ("Legend: P=Packed pixel, D=Direct color, "
 	       "mask/pos=R/G/B/reserved\n");
@@ -83,7 +83,7 @@ grub_cmd_vbeinfo (grub_command_t cmd __attribute__ ((unused)),
     {
       const char *memory_model = 0;
       grub_uint32_t mode = (grub_uint32_t) *p;
-      
+
       err = grub_vbe_get_video_mode_info (mode, &mode_info_tmp);
       if (err != GRUB_ERR_NONE)
 	{
@@ -127,7 +127,7 @@ grub_cmd_vbeinfo (grub_command_t cmd __attribute__ ((unused)),
       if (! memory_model)
 	continue;
 
-      grub_printf ("0x%03x:  %4d x %4d x %2d  %s", 
+      grub_printf ("0x%03x:  %4d x %4d x %2d  %s",
                    mode,
                    mode_info_tmp.x_resolution,
                    mode_info_tmp.y_resolution,
@@ -149,7 +149,7 @@ grub_cmd_vbeinfo (grub_command_t cmd __attribute__ ((unused)),
     }
 
   grub_free (saved_video_mode_list);
-  
+
   /* Check existence of vbe_mode environment variable.  */
   modevar = grub_env_get ("vbe_mode");
 

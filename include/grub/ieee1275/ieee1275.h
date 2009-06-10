@@ -33,7 +33,7 @@ struct grub_ieee1275_devalias
   char *type;
 };
 
-struct grub_ieee1275_mem_region 
+struct grub_ieee1275_mem_region
 {
   unsigned int start;
   unsigned int size;
@@ -46,9 +46,9 @@ struct grub_ieee1275_mem_region
 #define IEEE1275_CALL_ENTRY_FN(args) (*grub_ieee1275_entry_fn) (args)
 #endif
 
-/* All backcalls to the firmware is done by calling an entry function 
-   which was passed to us from the bootloader.  When doing the backcall, 
-   a structure is passed which specifies what the firmware should do.  
+/* All backcalls to the firmware is done by calling an entry function
+   which was passed to us from the bootloader.  When doing the backcall,
+   a structure is passed which specifies what the firmware should do.
    NAME is the requested service.  NR_INS and NR_OUTS is the number of
    passed arguments and the expected number of return values, resp. */
 struct grub_ieee1275_common_hdr
@@ -122,14 +122,14 @@ int EXPORT_FUNC(grub_ieee1275_get_integer_property) (grub_ieee1275_phandle_t pha
 						     grub_ssize_t *actual);
 int EXPORT_FUNC(grub_ieee1275_next_property) (grub_ieee1275_phandle_t phandle,
 					      char *prev_prop, char *prop);
-int EXPORT_FUNC(grub_ieee1275_get_property_length) 
+int EXPORT_FUNC(grub_ieee1275_get_property_length)
      (grub_ieee1275_phandle_t phandle, const char *prop, grub_ssize_t *length);
-int EXPORT_FUNC(grub_ieee1275_instance_to_package) 
+int EXPORT_FUNC(grub_ieee1275_instance_to_package)
      (grub_ieee1275_ihandle_t ihandle, grub_ieee1275_phandle_t *phandlep);
 int EXPORT_FUNC(grub_ieee1275_package_to_path) (grub_ieee1275_phandle_t phandle,
 						char *path, grub_size_t len,
 						grub_ssize_t *actual);
-int EXPORT_FUNC(grub_ieee1275_instance_to_path) 
+int EXPORT_FUNC(grub_ieee1275_instance_to_path)
      (grub_ieee1275_ihandle_t ihandle, char *path, grub_size_t len,
       grub_ssize_t *actual);
 int EXPORT_FUNC(grub_ieee1275_write) (grub_ieee1275_ihandle_t ihandle,

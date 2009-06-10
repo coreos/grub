@@ -17,10 +17,10 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 /*
-  To keep efiemu runtime contiguous this mm is special. 
+  To keep efiemu runtime contiguous this mm is special.
   It uses deferred allocation.
   In the first stage you may request memory with grub_efiemu_request_memalign
-  It will give you a handle with which in the second phase you can access your 
+  It will give you a handle with which in the second phase you can access your
   memory with grub_efiemu_mm_obtain_request (handle). It's guaranteed that
   subsequent calls with the same handle return the same result. You can't request any additional memory once you're in the second phase
 */
@@ -32,7 +32,7 @@
 #include <grub/machine/memory.h>
 #include <grub/efiemu/efiemu.h>
 
-struct grub_efiemu_memrequest 
+struct grub_efiemu_memrequest
 {
   struct grub_efiemu_memrequest *next;
   grub_efi_memory_type_t type;
@@ -54,7 +54,7 @@ static int mmap_reserved_size = 0, mmap_num = 0;
 
 /* Add a memory region to map*/
 static grub_err_t
-grub_efiemu_add_to_mmap (grub_uint64_t start, grub_uint64_t size, 
+grub_efiemu_add_to_mmap (grub_uint64_t start, grub_uint64_t size,
 			 grub_efi_memory_type_t type)
 {
   grub_uint64_t page_start, npages;
@@ -63,10 +63,10 @@ grub_efiemu_add_to_mmap (grub_uint64_t start, grub_uint64_t size,
   if (mmap_num >= mmap_reserved_size)
     {
       efiemu_mmap = (grub_efi_memory_descriptor_t *)
-	grub_realloc (efiemu_mmap, (++mmap_reserved_size) 
+	grub_realloc (efiemu_mmap, (++mmap_reserved_size)
 		      * sizeof (grub_efi_memory_descriptor_t));
       if (!efiemu_mmap)
-	return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+	return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 			   "Not enough space for memory map");
     }
 
@@ -74,9 +74,9 @@ grub_efiemu_add_to_mmap (grub_uint64_t start, grub_uint64_t size,
   page_start = start - (start % GRUB_EFIEMU_PAGESIZE);
   npages = (size + (start % GRUB_EFIEMU_PAGESIZE) + GRUB_EFIEMU_PAGESIZE - 1)
     / GRUB_EFIEMU_PAGESIZE;
-  efiemu_mmap[mmap_num].physical_start = page_start; 
-  efiemu_mmap[mmap_num].virtual_start = page_start; 
-  efiemu_mmap[mmap_num].num_pages = npages; 
+  efiemu_mmap[mmap_num].physical_start = page_start;
+  efiemu_mmap[mmap_num].virtual_start = page_start;
+  efiemu_mmap[mmap_num].num_pages = npages;
   efiemu_mmap[mmap_num].type = type;
   mmap_num++;
 
@@ -84,11 +84,11 @@ grub_efiemu_add_to_mmap (grub_uint64_t start, grub_uint64_t size,
 }
 
 /* Request a resident memory of type TYPE of size SIZE aligned at ALIGN
-   ALIGN must be a divisor of page size (if it's a divisor of 4096 
+   ALIGN must be a divisor of page size (if it's a divisor of 4096
    it should be ok on all platforms)
  */
 int
-grub_efiemu_request_memalign (grub_size_t align, grub_size_t size, 
+grub_efiemu_request_memalign (grub_size_t align, grub_size_t size,
 			      grub_efi_memory_type_t type)
 {
   grub_size_t align_overhead;
@@ -113,8 +113,8 @@ grub_efiemu_request_memalign (grub_size_t align, grub_size_t size,
   ret->val = 0;
   ret->next = 0;
   prev = 0;
-  
-  /* Add request to the end of the chain. 
+
+  /* Add request to the end of the chain.
      It should be at the end because otherwise alignment isn't guaranteed */
   for (cur = memrequests; cur; prev = cur, cur = cur->next);
   if (prev)
@@ -155,20 +155,20 @@ efiemu_alloc_requests (void)
       GRUB_EFI_RUNTIME_SERVICES_CODE,
       GRUB_EFI_RUNTIME_SERVICES_DATA,
       GRUB_EFI_ACPI_MEMORY_NVS,
-      
-      /* And then unavailable memory types. This is more for a completeness. 
+
+      /* And then unavailable memory types. This is more for a completeness.
 	 You should double think before allocating memory of any of these types
        */
       GRUB_EFI_UNUSABLE_MEMORY,
       GRUB_EFI_MEMORY_MAPPED_IO,
       GRUB_EFI_MEMORY_MAPPED_IO_PORT_SPACE,
-      GRUB_EFI_PAL_CODE 
+      GRUB_EFI_PAL_CODE
     };
 
   /* Compute total memory needed */
   for (i = 0; i < sizeof (reqorder) / sizeof (reqorder[0]); i++)
     {
-      align_overhead = GRUB_EFIEMU_PAGESIZE 
+      align_overhead = GRUB_EFIEMU_PAGESIZE
 	- (requested_memory[reqorder[i]] % GRUB_EFIEMU_PAGESIZE);
       if (align_overhead == GRUB_EFIEMU_PAGESIZE)
 	align_overhead = 0;
@@ -178,7 +178,7 @@ efiemu_alloc_requests (void)
   /* Allocate the whole memory in one block */
   resident_memory = grub_memalign (GRUB_EFIEMU_PAGESIZE, total_alloc);
   if (!resident_memory)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "couldn't allocate resident memory");
 
   /* Split the memory into blocks by type */
@@ -199,14 +199,14 @@ efiemu_alloc_requests (void)
 	  }
 
       /* Ensure that the regions are page-aligned */
-      align_overhead = GRUB_EFIEMU_PAGESIZE 
+      align_overhead = GRUB_EFIEMU_PAGESIZE
 	- (requested_memory[reqorder[i]] % GRUB_EFIEMU_PAGESIZE);
       if (align_overhead == GRUB_EFIEMU_PAGESIZE)
 	align_overhead = 0;
       curptr = ((grub_uint8_t *)curptr) + align_overhead;
-      
+
       /* Add the region to memory map */
-      grub_efiemu_add_to_mmap (PTR_TO_UINT64 (typestart), 
+      grub_efiemu_add_to_mmap (PTR_TO_UINT64 (typestart),
 			       curptr - typestart, reqorder[i]);
     }
 
@@ -270,7 +270,7 @@ grub_efiemu_mm_return_request (int handle)
 static grub_err_t
 grub_efiemu_mmap_init (void)
 {
-  auto int NESTED_FUNC_ATTR bounds_hook (grub_uint64_t, grub_uint64_t, 
+  auto int NESTED_FUNC_ATTR bounds_hook (grub_uint64_t, grub_uint64_t,
 					 grub_uint32_t);
   int NESTED_FUNC_ATTR bounds_hook (grub_uint64_t addr __attribute__ ((unused)),
 				    grub_uint64_t size __attribute__ ((unused)),
@@ -302,7 +302,7 @@ grub_efiemu_get_memory_map (grub_efi_uintn_t *memory_map_size,
 {
   if (!efiemu_mmap)
     {
-      grub_error (GRUB_ERR_INVALID_COMMAND, 
+      grub_error (GRUB_ERR_INVALID_COMMAND,
 		  "you need to first launch efiemu_prepare");
       return -1;
     }
@@ -373,26 +373,26 @@ grub_efiemu_mmap_fill (void)
       switch (type)
 	{
 	case GRUB_MACHINE_MEMORY_AVAILABLE:
-	  return grub_efiemu_add_to_mmap (addr, size, 
+	  return grub_efiemu_add_to_mmap (addr, size,
 					  GRUB_EFI_CONVENTIONAL_MEMORY);
 
 #ifdef GRUB_MACHINE_MEMORY_ACPI
 	case GRUB_MACHINE_MEMORY_ACPI:
-	  return grub_efiemu_add_to_mmap (addr, size, 
+	  return grub_efiemu_add_to_mmap (addr, size,
 					  GRUB_EFI_ACPI_RECLAIM_MEMORY);
 #endif
 
 #ifdef GRUB_MACHINE_MEMORY_NVS
 	case GRUB_MACHINE_MEMORY_NVS:
-	  return grub_efiemu_add_to_mmap (addr, size, 
+	  return grub_efiemu_add_to_mmap (addr, size,
 					  GRUB_EFI_ACPI_MEMORY_NVS);
 #endif
 
 	default:
 	  grub_printf ("Unknown memory type %d. Marking as unusable\n", type);
 	case GRUB_MACHINE_MEMORY_RESERVED:
-	  return grub_efiemu_add_to_mmap (addr, size, 
-					  GRUB_EFI_UNUSABLE_MEMORY);	  
+	  return grub_efiemu_add_to_mmap (addr, size,
+					  GRUB_EFI_UNUSABLE_MEMORY);
 	}
     }
 
@@ -404,8 +404,8 @@ grub_efiemu_mmap_fill (void)
 }
 
 grub_err_t
-grub_efiemu_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, 
-							grub_uint64_t, 
+grub_efiemu_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
+							grub_uint64_t,
 							grub_uint32_t))
 {
   unsigned i;
@@ -414,10 +414,10 @@ grub_efiemu_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
     switch (efiemu_mmap[i].type)
       {
       case GRUB_EFI_RUNTIME_SERVICES_CODE:
-	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096, 
+	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
 	      GRUB_EFIEMU_MEMORY_CODE);
 	break;
-	
+
       case GRUB_EFI_RESERVED_MEMORY_TYPE:
       case GRUB_EFI_RUNTIME_SERVICES_DATA:
       case GRUB_EFI_UNUSABLE_MEMORY:
@@ -425,30 +425,30 @@ grub_efiemu_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
       case GRUB_EFI_MEMORY_MAPPED_IO_PORT_SPACE:
       case GRUB_EFI_PAL_CODE:
       case GRUB_EFI_MAX_MEMORY_TYPE:
-	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096, 
+	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
 	      GRUB_EFIEMU_MEMORY_RESERVED);
 	break;
-	
+
       case GRUB_EFI_LOADER_CODE:
       case GRUB_EFI_LOADER_DATA:
       case GRUB_EFI_BOOT_SERVICES_CODE:
       case GRUB_EFI_BOOT_SERVICES_DATA:
       case GRUB_EFI_CONVENTIONAL_MEMORY:
-	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096, 
+	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
 	      GRUB_EFIEMU_MEMORY_AVAILABLE);
 	break;
-	
+
       case GRUB_EFI_ACPI_RECLAIM_MEMORY:
-	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096, 
+	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
 	      GRUB_EFIEMU_MEMORY_ACPI);
 	break;
-	
+
       case GRUB_EFI_ACPI_MEMORY_NVS:
-	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096, 
+	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
 	      GRUB_EFIEMU_MEMORY_NVS);
 	break;
       }
-  
+
   return 0;
 }
 
@@ -459,8 +459,8 @@ grub_efiemu_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
 static grub_err_t
 grub_efiemu_mmap_sort_and_uniq (void)
 {
-  /* If same page is used by multiple types it's resolved 
-     according to priority 
+  /* If same page is used by multiple types it's resolved
+     according to priority
      0 - free memory
      1 - memory immediately usable after ExitBootServices
      2 - memory usable after loading ACPI tables
@@ -512,20 +512,20 @@ grub_efiemu_mmap_sort_and_uniq (void)
 
   /* Initialize variables*/
   grub_memset (present, 0, sizeof (int) * GRUB_EFI_MAX_MEMORY_TYPE);
-  scanline_events = (struct grub_efiemu_mmap_scan *) 
+  scanline_events = (struct grub_efiemu_mmap_scan *)
     grub_malloc (sizeof (struct grub_efiemu_mmap_scan) * 2 * mmap_num);
 
   /* Number of chunks can't increase more than by factor of 2 */
-  result = (grub_efi_memory_descriptor_t *) 
+  result = (grub_efi_memory_descriptor_t *)
     grub_malloc (sizeof (grub_efi_memory_descriptor_t) * 2 * mmap_num);
   if (!result || !scanline_events)
     {
       grub_free (result);
       grub_free (scanline_events);
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 			 "couldn't allocate space for new memory map");
     }
-   
+
   /* Register scanline events */
   for (i = 0; i < mmap_num; i++)
     {
@@ -538,8 +538,8 @@ grub_efiemu_mmap_sort_and_uniq (void)
       scanline_events[2 * i + 1].memtype = efiemu_mmap[i].type;
     }
 
-  /* Primitive bubble sort. It has complexity O(n^2) but since we're 
-     unlikely to have more than 100 chunks it's probably one of the 
+  /* Primitive bubble sort. It has complexity O(n^2) but since we're
+     unlikely to have more than 100 chunks it's probably one of the
      fastest for one purpose */
   done = 1;
   while (done)
@@ -574,29 +574,29 @@ grub_efiemu_mmap_sort_and_uniq (void)
 	  curtype = k;
 
       /* Add memory region to resulting map if necessary */
-      if ((curtype == -1 || curtype != lasttype) 
+      if ((curtype == -1 || curtype != lasttype)
 	  && lastaddr != scanline_events[i].pos
 	  && lasttype != -1)
 	{
 	  result[j].virtual_start = result[j].physical_start = lastaddr;
-	  result[j].num_pages = (scanline_events[i].pos - lastaddr) 
+	  result[j].num_pages = (scanline_events[i].pos - lastaddr)
 	    / GRUB_EFIEMU_PAGESIZE;
 	  result[j].type = lasttype;
 
 	  /* We set runtime attribute on pages we need to be mapped */
-	  result[j].attribute 
+	  result[j].attribute
 	    = (lasttype == GRUB_EFI_RUNTIME_SERVICES_CODE
 		   || lasttype == GRUB_EFI_RUNTIME_SERVICES_DATA)
 	    ? GRUB_EFI_MEMORY_RUNTIME : 0;
-	  grub_dprintf ("efiemu", 
-			"mmap entry: type %d start 0x%llx 0x%llx pages\n", 
+	  grub_dprintf ("efiemu",
+			"mmap entry: type %d start 0x%llx 0x%llx pages\n",
 			result[j].type,
 			result[j].physical_start, result[j].num_pages);
 	  j++;
 	}
 
       /* Update last values if necessary */
-      if (curtype == -1 || curtype != lasttype) 
+      if (curtype == -1 || curtype != lasttype)
 	{
 	  lasttype = curtype;
 	  lastaddr = scanline_events[i].pos;
@@ -605,7 +605,7 @@ grub_efiemu_mmap_sort_and_uniq (void)
 
   grub_free (scanline_events);
 
-  /* Shrink resulting memory map to really used size and replace efiemu_mmap 
+  /* Shrink resulting memory map to really used size and replace efiemu_mmap
      by new value */
   grub_free (efiemu_mmap);
   efiemu_mmap = grub_realloc (result, j * sizeof (*result));
@@ -619,7 +619,7 @@ grub_efiemu_mm_do_alloc (void)
   grub_err_t err;
 
   /* Preallocate mmap */
-  efiemu_mmap = (grub_efi_memory_descriptor_t *) 
+  efiemu_mmap = (grub_efi_memory_descriptor_t *)
     grub_malloc (mmap_reserved_size * sizeof (grub_efi_memory_descriptor_t));
   if (!efiemu_mmap)
     {
@@ -632,4 +632,4 @@ grub_efiemu_mm_do_alloc (void)
   if ((err = grub_efiemu_mmap_fill ()))
     return err;
   return grub_efiemu_mmap_sort_and_uniq ();
-} 
+}

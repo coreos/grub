@@ -33,27 +33,27 @@ grub_partition_parse (const char *str)
 {
   grub_partition_t p;
   struct grub_pc_partition *pcdata;
-  
+
   char *s = (char *) str;
-  
+
   p = (grub_partition_t) grub_malloc (sizeof (*p));
   if (! p)
     return 0;
-  
+
   pcdata = (struct grub_pc_partition *) grub_malloc (sizeof (*pcdata));
   if (! pcdata)
     goto fail;
-  
+
   p->data = pcdata;
   p->partmap = &grub_pc_partition_map;
-  
+
   /* Initialize some of the fields with invalid values.  */
   pcdata->bsd_part = pcdata->dos_type = pcdata->bsd_type = p->index = -1;
 
   /* Get the DOS partition number. The number is counted from one for
      the user interface, and from zero internally.  */
   pcdata->dos_part = grub_strtoul (s, &s, 0) - 1;
-  
+
   if (grub_errno)
     {
       /* Not found. Maybe only a BSD label is specified.  */
@@ -79,7 +79,7 @@ grub_partition_parse (const char *str)
     goto fail;
 
   return p;
-  
+
  fail:
   grub_free (p);
   grub_free (pcdata);
@@ -101,18 +101,18 @@ pc_partition_map_iterate (grub_disk_t disk,
   /* Enforce raw disk access.  */
   raw = *disk;
   raw.partition = 0;
-  
+
   p.offset = 0;
   pcdata.ext_offset = 0;
   pcdata.dos_part = -1;
   p.data = &pcdata;
   p.partmap = &grub_pc_partition_map;
-  
+
   while (1)
     {
       int i;
       struct grub_pc_partition_entry *e;
-      
+
       /* Read the MBR.  */
       if (grub_disk_read (&raw, p.offset, 0, sizeof (mbr), &mbr))
 	goto finish;
@@ -125,7 +125,7 @@ pc_partition_map_iterate (grub_disk_t disk,
       for (p.index = 0; p.index < 4; p.index++)
 	{
 	  e = mbr.entries + p.index;
-	  
+
 	  p.start = p.offset + grub_le_to_cpu32 (e->start);
 	  p.len = grub_le_to_cpu32 (e->length);
 	  pcdata.bsd_part = -1;
@@ -147,7 +147,7 @@ pc_partition_map_iterate (grub_disk_t disk,
 	      && ! grub_pc_partition_is_extended (e->type))
 	    {
 	      pcdata.dos_part++;
-	      
+
 	      if (hook (disk, &p))
 		return 1;
 
@@ -188,7 +188,7 @@ pc_partition_map_iterate (grub_disk_t disk,
 		      p.start = grub_le_to_cpu32 (be->offset);
 		      p.len = grub_le_to_cpu32 (be->size);
 		      pcdata.bsd_type = be->fs_type;
-		      
+
 		      if (be->fs_type != GRUB_PC_PARTITION_BSD_TYPE_UNUSED)
 			if (hook (disk, &p))
 			  return 1;
@@ -205,7 +205,7 @@ pc_partition_map_iterate (grub_disk_t disk,
       for (i = 0; i < 4; i++)
 	{
 	  e = mbr.entries + i;
-	  
+
 	  if (grub_pc_partition_is_extended (e->type))
 	    {
 	      p.offset = pcdata.ext_offset + grub_le_to_cpu32 (e->start);
@@ -231,7 +231,7 @@ pc_partition_map_probe (grub_disk_t disk, const char *str)
 {
   grub_partition_t p;
   struct grub_pc_partition *pcdata;
-  
+
   auto int find_func (grub_disk_t d, const grub_partition_t partition);
 
   int find_func (grub_disk_t d __attribute__ ((unused)),
@@ -247,14 +247,14 @@ pc_partition_map_probe (grub_disk_t disk, const char *str)
 	  grub_memcpy (pcdata, partdata, sizeof (*pcdata));
 	  return 1;
 	}
-      
+
       return 0;
     }
-  
+
   p = grub_partition_parse (str);
   if (! p)
     return 0;
-  
+
   pcdata = p->data;
   pc_partition_map_iterate (disk, find_func);
   if (grub_errno)
@@ -280,7 +280,7 @@ pc_partition_map_get_name (const grub_partition_t p)
 {
   char *name;
   struct grub_pc_partition *pcdata = p->data;
-  
+
   name = grub_malloc (13);
   if (! name)
     return 0;

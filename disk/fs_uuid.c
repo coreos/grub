@@ -42,12 +42,12 @@ search_fs_uuid (const char *key, unsigned long *count)
       if (dev)
 	{
 	  grub_fs_t fs;
-	  
+
 	  fs = grub_fs_probe (dev);
 	  if (fs && fs->uuid)
 	    {
 	      char *uuid;
-	      
+
 	      (fs->uuid) (dev, &uuid);
 	      if (grub_errno == GRUB_ERR_NONE && uuid)
 		{
@@ -62,16 +62,16 @@ search_fs_uuid (const char *key, unsigned long *count)
 		  grub_free (uuid);
 		}
 	    }
-	  
+
 	  grub_device_close (dev);
 	}
 
       grub_errno = GRUB_ERR_NONE;
       return 0;
     }
-  
+
   grub_device_iterate (iterate_device);
-  
+
   return ret;
 }
 

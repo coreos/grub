@@ -162,7 +162,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	commands/parttool.c parttool/pcpart.c				\
 	grub_emu_init.c
 
-grub_emu_LDFLAGS = $(LIBCURSES) 
+grub_emu_LDFLAGS = $(LIBCURSES)
 
 ifeq ($(enable_grub_emu_usb), yes)
 grub_emu_SOURCES += disk/usbms.c util/usb.c bus/usb/usb.c	\

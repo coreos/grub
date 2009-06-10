@@ -90,7 +90,7 @@ grub_terminfo_set_current (const char *str)
   grub_terminfo_free (&term.reverse_video_off);
   grub_terminfo_free (&term.cursor_on);
   grub_terminfo_free (&term.cursor_off);
-  
+
   if (grub_strcmp ("vt100", str) == 0)
     {
       term.name              = grub_strdup ("vt100");
@@ -102,7 +102,7 @@ grub_terminfo_set_current (const char *str)
       term.cursor_off        = grub_strdup ("\e[?25l");
       return grub_errno;
     }
-  
+
   return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminfo type.");
 }
 

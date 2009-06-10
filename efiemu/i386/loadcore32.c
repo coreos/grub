@@ -38,7 +38,7 @@ grub_arch_efiemu_check_header32 (void *ehdr)
 
 /* Relocate symbols.  */
 grub_err_t
-grub_arch_efiemu_relocate_symbols32 (grub_efiemu_segment_t segs, 
+grub_arch_efiemu_relocate_symbols32 (grub_efiemu_segment_t segs,
 				     struct grub_efiemu_elf_sym *elfsyms,
 				     void *ehdr)
 {
@@ -66,7 +66,7 @@ grub_arch_efiemu_relocate_symbols32 (grub_efiemu_segment_t segs,
 	if (seg)
 	  {
 	    Elf32_Rel *rel, *max;
-	    
+
 	    for (rel = (Elf32_Rel *) ((char *) e + s->sh_offset),
 		   max = rel + s->sh_size / s->sh_entsize;
 		 rel < max;
@@ -77,31 +77,31 @@ grub_arch_efiemu_relocate_symbols32 (grub_efiemu_segment_t segs,
 		if (seg->size < rel->r_offset)
 		  return grub_error (GRUB_ERR_BAD_MODULE,
 				     "reloc offset is out of the segment");
-		
-		addr = (Elf32_Word *) 
-		  ((char *) grub_efiemu_mm_obtain_request (seg->handle) 
+
+		addr = (Elf32_Word *)
+		  ((char *) grub_efiemu_mm_obtain_request (seg->handle)
 		   + seg->off + rel->r_offset);
 		sym = elfsyms[ELF32_R_SYM (rel->r_info)];
-		
+
 		switch (ELF32_R_TYPE (rel->r_info))
 		  {
 		  case R_386_32:
-		    if ((err = grub_efiemu_write_value 
-			 (addr, sym.off + *addr, sym.handle, 0, 
+		    if ((err = grub_efiemu_write_value
+			 (addr, sym.off + *addr, sym.handle, 0,
 			  seg->ptv_rel_needed, sizeof (grub_uint32_t))))
 		      return err;
-		    
+
 		    break;
 
 		  case R_386_PC32:
 		    if ((err = grub_efiemu_write_value
-			 (addr, sym.off + *addr - rel->r_offset 
-			  - seg->off, sym.handle, seg->handle, 
+			 (addr, sym.off + *addr - rel->r_offset
+			  - seg->off, sym.handle, seg->handle,
 			  seg->ptv_rel_needed, sizeof (grub_uint32_t))))
 		      return err;
 		    break;
 		  default:
-		    return grub_error (GRUB_ERR_BAD_OS, 
+		    return grub_error (GRUB_ERR_BAD_OS,
 				       "unrecognised relocation");
 		  }
 	      }

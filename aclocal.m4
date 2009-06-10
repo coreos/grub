@@ -232,7 +232,7 @@ AC_MSG_CHECKING(dnl
 [whether an absolute indirect call/jump must not be prefixed with an asterisk])
 AC_CACHE_VAL(grub_cv_i386_asm_absolute_without_asterisk,
 [cat > conftest.s <<\EOF
-	lcall	*(offset)	
+	lcall	*(offset)
 offset:
 	.long	0
 	.word	0

@@ -24,7 +24,7 @@
 #include <stdlib.h>
 
 /* XXX: this file assumes particular Mach-O layout and does no checks. */
-/* However as build system ensures correct usage of this tool this 
+/* However as build system ensures correct usage of this tool this
    shouldn't be a problem. */
 
 int
@@ -71,7 +71,7 @@ main (int argc, char **argv)
       fclose (out);
       printf ("Couldn't allocate buffer\n");
       return 3;
-    }	
+    }
   fread (buf, 1, bufsize, in);
   head = (struct grub_macho_header32 *) buf;
   if (grub_le_to_cpu32 (head->magic) != GRUB_MACHO_MAGIC32)
@@ -81,22 +81,22 @@ main (int argc, char **argv)
       free (buf);
       printf ("Invalid Mach-O fle\n");
       return 4;
-    }	
+    }
   curcmd = (struct grub_macho_segment32 *) (buf + sizeof (*head));
-  for (i = 0; i < grub_le_to_cpu32 (head->ncmds); i++, 
-	 curcmd = (struct grub_macho_segment32 *) 
+  for (i = 0; i < grub_le_to_cpu32 (head->ncmds); i++,
+	 curcmd = (struct grub_macho_segment32 *)
 	 (((char *) curcmd) + curcmd->cmdsize))
     {
       if (curcmd->cmd != GRUB_MACHO_CMD_SEGMENT32)
 	continue;
-      fwrite (buf + grub_le_to_cpu32 (curcmd->fileoff), 1, 
+      fwrite (buf + grub_le_to_cpu32 (curcmd->fileoff), 1,
 	      grub_le_to_cpu32 (curcmd->filesize), out);
-      if (grub_le_to_cpu32 (curcmd->vmsize) 
+      if (grub_le_to_cpu32 (curcmd->vmsize)
 	  > grub_le_to_cpu32 (curcmd->filesize))
 	{
-	  bssstart = grub_le_to_cpu32 (curcmd->vmaddr) 
+	  bssstart = grub_le_to_cpu32 (curcmd->vmaddr)
 	    + grub_le_to_cpu32 (curcmd->filesize) ;
-	  bssend = grub_le_to_cpu32 (curcmd->vmaddr) 
+	  bssend = grub_le_to_cpu32 (curcmd->vmaddr)
 	    + grub_le_to_cpu32 (curcmd->vmsize) ;
 	}
     }

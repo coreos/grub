@@ -45,7 +45,7 @@ grub_efiemu_sizeof_uintn_t (void)
 
 /* Check the header and set mode */
 static grub_err_t
-grub_efiemu_check_header (void *ehdr, grub_size_t size, 
+grub_efiemu_check_header (void *ehdr, grub_size_t size,
 			  grub_efiemu_mode_t *mode)
 {
   /* Check the magic numbers.  */
@@ -91,7 +91,7 @@ grub_efiemu_loadcore_unload(void)
     case GRUB_EFIEMU64:
       grub_efiemu_loadcore_unload64 ();
       break;
-      
+
     default:
       break;
     }
@@ -109,7 +109,7 @@ grub_efiemu_loadcore_unload(void)
   return GRUB_ERR_NONE;
 }
 
-/* Load runtime file and do some initial preparations */ 
+/* Load runtime file and do some initial preparations */
 grub_err_t
 grub_efiemu_loadcore_init (grub_file_t file)
 {
@@ -121,7 +121,7 @@ grub_efiemu_loadcore_init (grub_file_t file)
   if (! efiemu_core)
     return grub_errno;
 
-  if (grub_file_read (file, efiemu_core, efiemu_core_size) 
+  if (grub_file_read (file, efiemu_core, efiemu_core_size)
       != (int) efiemu_core_size)
     {
       grub_free (efiemu_core);
@@ -129,7 +129,7 @@ grub_efiemu_loadcore_init (grub_file_t file)
       return grub_errno;
     }
 
-  if (grub_efiemu_check_header (efiemu_core, efiemu_core_size, 
+  if (grub_efiemu_check_header (efiemu_core, efiemu_core_size,
 				&grub_efiemu_mode))
     {
       grub_free (efiemu_core);
@@ -160,7 +160,7 @@ grub_efiemu_loadcore_init (grub_file_t file)
 	  return err;
 	}
       break;
-      
+
     default:
       return grub_error (GRUB_ERR_BAD_OS, "unknown EFI runtime");
     }

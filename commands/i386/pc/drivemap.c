@@ -184,7 +184,7 @@ list_mappings (void)
     {
       grub_printf ("%cD #%-3u (0x%02x)       %cd%d\n",
 		   (curnode->newdrive & 0x80) ? 'H' : 'F',
-		   curnode->newdrive & 0x7F, curnode->newdrive, 
+		   curnode->newdrive & 0x7F, curnode->newdrive,
 		   (curnode->redirto & 0x80) ? 'h' : 'f',
 		   curnode->redirto & 0x7F
 		   );

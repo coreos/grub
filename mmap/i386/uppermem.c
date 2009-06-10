@@ -21,7 +21,7 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 
-grub_uint64_t 
+grub_uint64_t
 grub_mmap_get_lower (void)
 {
   grub_uint64_t lower = 0;
@@ -43,7 +43,7 @@ grub_mmap_get_lower (void)
   return lower;
 }
 
-grub_uint64_t 
+grub_uint64_t
 grub_mmap_get_upper (void)
 {
   grub_uint64_t upper = 0;
@@ -64,7 +64,7 @@ grub_mmap_get_upper (void)
 }
 
 /* Count the continuous bytes after 64 MiB. */
-grub_uint64_t 
+grub_uint64_t
 grub_mmap_get_post64 (void)
 {
   grub_uint64_t post64 = 0;

@@ -57,16 +57,16 @@ grub_efiemu_free_syms (void)
 }
 
 /* Announce that the module will need NUM allocators */
-/* Because of deferred memory allocation all the relocators have to be 
+/* Because of deferred memory allocation all the relocators have to be
    announced during phase 1*/
 grub_err_t
 grub_efiemu_request_symbols (int num)
 {
   if (ptv_alloc)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "symbols have already been allocated");
   if (num < 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "can't request negative symbols");
   ptv_requested += num;
   return GRUB_ERR_NONE;
@@ -111,15 +111,15 @@ grub_err_t
 grub_efiemu_alloc_syms (void)
 {
   ptv_alloc = ptv_requested;
-  ptv_handle = grub_efiemu_request_memalign 
-    (1, (ptv_requested + 1) * sizeof (struct grub_efiemu_ptv_rel), 
+  ptv_handle = grub_efiemu_request_memalign
+    (1, (ptv_requested + 1) * sizeof (struct grub_efiemu_ptv_rel),
      GRUB_EFI_RUNTIME_SERVICES_DATA);
   grub_efiemu_register_symbol ("efiemu_ptv_relloc", ptv_handle, 0);
   return grub_errno;
 }
 
-/* Write value (pointer to memory PLUS_HANDLE) 
-   - (pointer to memory MINUS_HANDLE) + VALUE to ADDR assuming that the 
+/* Write value (pointer to memory PLUS_HANDLE)
+   - (pointer to memory MINUS_HANDLE) + VALUE to ADDR assuming that the
    size SIZE bytes. If PTV_NEEDED is 1 then announce it to runtime that this
    value needs to be recomputed before going to virtual mode
 */
@@ -130,22 +130,22 @@ grub_efiemu_write_value (void *addr, grub_uint32_t value, int plus_handle,
   /* Announce relocator to runtime */
   if (ptv_needed)
     {
-      struct grub_efiemu_ptv_rel *ptv_rels 
+      struct grub_efiemu_ptv_rel *ptv_rels
 	= grub_efiemu_mm_obtain_request (ptv_handle);
 
       if (ptv_needed && ptv_written >= ptv_alloc)
-	return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+	return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 			   "your module didn't declare efiemu "
 			   " relocators correctly");
 
       if (minus_handle)
-	ptv_rels[ptv_written].minustype 
+	ptv_rels[ptv_written].minustype
 	  = grub_efiemu_mm_get_type (minus_handle);
       else
 	ptv_rels[ptv_written].minustype = 0;
 
       if (plus_handle)
-	ptv_rels[ptv_written].plustype 
+	ptv_rels[ptv_written].plustype
 	  = grub_efiemu_mm_get_type (plus_handle);
       else
 	ptv_rels[ptv_written].plustype = 0;
@@ -153,7 +153,7 @@ grub_efiemu_write_value (void *addr, grub_uint32_t value, int plus_handle,
       ptv_rels[ptv_written].addr = PTR_TO_UINT64 (addr);
       ptv_rels[ptv_written].size = size;
       ptv_written++;
-      
+
       /* memset next value to zero to mark the end */
       grub_memset (&ptv_rels[ptv_written], 0, sizeof (ptv_rels[ptv_written]));
     }

@@ -143,9 +143,9 @@ struct grub_vbe_mode_info_block
   grub_uint8_t lin_rsvd_field_position;
   grub_uint32_t max_pixel_clock;
 
-  /* Reserved field to make structure to be 256 bytes long, VESA BIOS 
-     Extension 3.0 Specification says to reserve 189 bytes here but 
-     that doesn't make structure to be 256 bytes.  So additional one is 
+  /* Reserved field to make structure to be 256 bytes long, VESA BIOS
+     Extension 3.0 Specification says to reserve 189 bytes here but
+     that doesn't make structure to be 256 bytes.  So additional one is
      added here.  */
   grub_uint8_t reserved4[189 + 1];
 } __attribute__ ((packed));

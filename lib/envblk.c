@@ -35,14 +35,14 @@ grub_envblk_open (char *buf, grub_size_t size)
       grub_error (GRUB_ERR_BAD_FILE_TYPE, "invalid environment block");
       return 0;
     }
-  
+
   envblk = grub_malloc (sizeof (*envblk));
   if (envblk)
     {
       envblk->buf = buf;
       envblk->size = size;
     }
-  
+
   return envblk;
 }
 
@@ -58,7 +58,7 @@ escaped_value_len (const char *value)
 {
   int n = 0;
   char *p;
-  
+
   for (p = (char *) value; *p; p++)
     {
       if (*p == '\\' || *p == '\n')
@@ -66,7 +66,7 @@ escaped_value_len (const char *value)
       else
         n++;
     }
-  
+
   return n;
 }
 
@@ -82,7 +82,7 @@ find_next_line (char *p, const char *pend)
       else
         p++;
     }
-  
+
   return p + 1;
 }
 
@@ -100,7 +100,7 @@ grub_envblk_set (grub_envblk_t envblk, const char *name, const char *value)
   vl = escaped_value_len (value);
   p = envblk->buf + sizeof (GRUB_ENVBLK_SIGNATURE) - 1;
   pend = envblk->buf + envblk->size;
-  
+
   /* First, look at free space.  */
   for (space = pend - 1; *space == '#'; space--)
     ;
@@ -116,10 +116,10 @@ grub_envblk_set (grub_envblk_t envblk, const char *name, const char *value)
       if (grub_memcmp (p, name, nl) == 0 && p[nl] == '=')
         {
           int len;
-          
+
           /* Found the same name.  */
           p += nl + 1;
-          
+
           /* Check the length of the current value.  */
           len = 0;
           while (p + len < pend && p[len] != '\n')
@@ -159,7 +159,7 @@ grub_envblk_set (grub_envblk_t envblk, const char *name, const char *value)
   if (! found)
     {
       /* Append a new variable.  */
-      
+
       if (pend - space < nl + 1 + vl + 1)
         /* No space.  */
         return 0;
@@ -174,7 +174,7 @@ grub_envblk_set (grub_envblk_t envblk, const char *name, const char *value)
     {
       if (value[i] == '\\' || value[i] == '\n')
         *p++ = '\\';
-      
+
       *p++ = value[i];
     }
 
@@ -220,7 +220,7 @@ grub_envblk_delete (grub_envblk_t envblk, const char *name)
         }
 
       p = find_next_line (p, pend);
-    }      
+    }
 }
 
 void
@@ -261,7 +261,7 @@ grub_envblk_iterate (grub_envblk_t envblk,
               else
                 p++;
             }
-          
+
           if (p >= pend)
             /* Broken.  */
             return;
@@ -272,10 +272,10 @@ grub_envblk_iterate (grub_envblk_t envblk,
             return;
 
           value = name + (value_start - name_start);
-          
+
           grub_memcpy (name, name_start, name_end - name_start);
           name[name_end - name_start] = '\0';
-          
+
           for (p = value_start, q = value; *p != '\n'; ++p)
             {
               if (*p == '\\')
@@ -284,13 +284,13 @@ grub_envblk_iterate (grub_envblk_t envblk,
                 *q++ = *p;
             }
           *q = '\0';
-          
+
           ret = hook (name, value);
           grub_free (name);
           if (ret)
             return;
         }
-      
+
       p = find_next_line (p, pend);
     }
 }

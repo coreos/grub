@@ -80,21 +80,21 @@ probe_partmap (grub_disk_t disk)
 {
   char *name;
   char *underscore;
-  
+
   if (disk->partition == NULL)
     {
       grub_util_info ("No partition map found for %s", disk->name);
       return;
     }
-  
+
   name = strdup (disk->partition->partmap->name);
   if (! name)
     grub_util_error ("Not enough memory");
-  
+
   underscore = strchr (name, '_');
   if (! underscore)
     grub_util_error ("Invalid partition map %s", name);
-  
+
   *underscore = '\0';
   printf ("%s\n", name);
   free (name);
@@ -109,7 +109,7 @@ probe (const char *path, char *device_name)
   int abstraction_type;
   grub_device_t dev = NULL;
   grub_fs_t fs;
-  
+
   if (path == NULL)
     {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
@@ -134,7 +134,7 @@ probe (const char *path, char *device_name)
 
   abstraction_type = grub_util_get_dev_abstraction (device_name);
   /* No need to check for errors; lack of abstraction is permissible.  */
-  
+
   if (print == PRINT_ABSTRACTION)
     {
       char *abstraction_name;
@@ -157,7 +157,7 @@ probe (const char *path, char *device_name)
   drive_name = grub_util_get_grub_dev (device_name);
   if (! drive_name)
     grub_util_error ("Cannot find a GRUB drive for %s.  Check your device.map.\n", device_name);
-  
+
   if (print == PRINT_DRIVE)
     {
       printf ("(%s)\n", drive_name);
@@ -206,15 +206,15 @@ probe (const char *path, char *device_name)
 	  grub_file_t file;
 	  grub_util_info ("reading %s via OS facilities", path);
 	  filebuf_via_sys = grub_util_read_image (path);
-	  
+
 	  grub_util_info ("reading %s via GRUB facilities", path);
 	  asprintf (&grub_path, "(%s)%s", drive_name, path);
 	  file = grub_file_open (grub_path);
 	  filebuf_via_grub = xmalloc (file->size);
 	  grub_file_read (file, filebuf_via_grub, file->size);
-	  
+
 	  grub_util_info ("comparing");
-	  
+
 	  if (memcmp (filebuf_via_grub, filebuf_via_sys, file->size))
 	    grub_util_error ("files differ");
 	}
@@ -275,7 +275,7 @@ Probe device information for a given path (or device, if the -d option is given)
 Report bugs to <%s>.\n\
 ",
 	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
-  
+
   exit (status);
 }
 
@@ -284,14 +284,14 @@ main (int argc, char *argv[])
 {
   char *dev_map = 0;
   char *argument;
-  
+
   progname = "grub-probe";
-  
+
   /* Check for options.  */
   while (1)
     {
       int c = getopt_long (argc, argv, "dm:t:hVv", options, 0);
-      
+
       if (c == -1)
 	break;
       else
@@ -360,10 +360,10 @@ main (int argc, char *argv[])
     }
 
   argument = argv[optind];
-  
+
   /* Initialize the emulated biosdisk driver.  */
   grub_util_biosdisk_init (dev_map ? : DEFAULT_DEVICE_MAP);
-  
+
   /* Initialize all modules. */
   grub_init_all ();
 
@@ -372,12 +372,12 @@ main (int argc, char *argv[])
     probe (NULL, argument);
   else
     probe (argument, NULL);
-  
+
   /* Free resources.  */
   grub_fini_all ();
   grub_util_biosdisk_fini ();
-  
+
   free (dev_map);
-  
+
   return 0;
 }

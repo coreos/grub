@@ -171,7 +171,7 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
                          sizeof (struct note)) == sizeof (struct note)
          && buf.pitch != T_FINE && grub_checkkey () < 0)
     {
-      
+
       grub_dprintf ("play", "pitch = %d, duration = %d\n", buf.pitch,
                     buf.duration);
 

@@ -36,22 +36,22 @@
 #endif
 
 static const struct grub_arg_option options[] = {
-  {"exclude", 'x', 0, 
-   "Don't load host tables specified by comma-separated list", 
+  {"exclude", 'x', 0,
+   "Don't load host tables specified by comma-separated list",
    0, ARG_TYPE_STRING},
-  {"load-only", 'n', 0, 
+  {"load-only", 'n', 0,
    "Load only tables specified by comma-separated list", 0, ARG_TYPE_STRING},
   {"v1", '1', 0, "Expose v1 tables", 0, ARG_TYPE_NONE},
   {"v2", '2', 0, "Expose v2 and v3 tables", 0, ARG_TYPE_NONE},
   {"oemid", 'o', 0, "Set OEMID of RSDP, XSDT and RSDT", 0, ARG_TYPE_STRING},
-  {"oemtable", 't', 0, 
-   "Set OEMTABLE ID of RSDP, XSDT and RSDT", 0, ARG_TYPE_STRING},  
-  {"oemtablerev", 'r', 0, 
-   "Set OEMTABLE revision of RSDP, XSDT and RSDT", 0, ARG_TYPE_INT},  
-  {"oemtablecreator", 'c', 0, 
-   "Set creator field of RSDP, XSDT and RSDT", 0, ARG_TYPE_STRING},  
-  {"oemtablecreatorrev", 'd', 0, 
-   "Set creator revision of RSDP, XSDT and RSDT", 0, ARG_TYPE_INT},  
+  {"oemtable", 't', 0,
+   "Set OEMTABLE ID of RSDP, XSDT and RSDT", 0, ARG_TYPE_STRING},
+  {"oemtablerev", 'r', 0,
+   "Set OEMTABLE revision of RSDP, XSDT and RSDT", 0, ARG_TYPE_INT},
+  {"oemtablecreator", 'c', 0,
+   "Set creator field of RSDP, XSDT and RSDT", 0, ARG_TYPE_STRING},
+  {"oemtablecreatorrev", 'd', 0,
+   "Set creator revision of RSDP, XSDT and RSDT", 0, ARG_TYPE_INT},
   {"no-ebda", 'e', 0, "Don't update EBDA. May fix failures or hangs on some"
    " BIOSes but makes it ineffective with OS not receiving RSDP from GRUB",
    0, ARG_TYPE_NONE},
@@ -59,7 +59,7 @@ static const struct grub_arg_option options[] = {
 };
 
 /* Simple checksum by summing all bytes. Used by ACPI and SMBIOS. */
-grub_uint8_t 
+grub_uint8_t
 grub_byte_checksum (void *base, grub_size_t size)
 {
   grub_uint8_t *ptr;
@@ -70,7 +70,7 @@ grub_byte_checksum (void *base, grub_size_t size)
   return ret;
 }
 
-/* rev1 is 1 if ACPIv1 is to be generated, 0 otherwise. 
+/* rev1 is 1 if ACPIv1 is to be generated, 0 otherwise.
    rev2 contains the revision of ACPIv2+ to generate or 0 if none. */
 static int rev1, rev2;
 /* OEMID of RSDP, RSDT and XSDT. */
@@ -128,7 +128,7 @@ grub_acpi_get_rsdpv1 (void)
   return grub_machine_acpi_get_rsdpv1 ();
 }
 
-static inline int 
+static inline int
 iszero (grub_uint8_t *reg, int size)
 {
   int i;
@@ -138,7 +138,7 @@ iszero (grub_uint8_t *reg, int size)
   return 1;
 }
 
-grub_err_t 
+grub_err_t
 grub_acpi_create_ebda (void)
 {
   int ebda_kb_len;
@@ -149,9 +149,9 @@ grub_acpi_create_ebda (void)
   grub_uint8_t *targetebda, *target;
   struct grub_acpi_rsdp_v10 *v1;
   struct grub_acpi_rsdp_v20 *v2;
-  auto int NESTED_FUNC_ATTR find_hook (grub_uint64_t, grub_uint64_t, 
+  auto int NESTED_FUNC_ATTR find_hook (grub_uint64_t, grub_uint64_t,
 				       grub_uint32_t);
-  int NESTED_FUNC_ATTR find_hook (grub_uint64_t start, grub_uint64_t size, 
+  int NESTED_FUNC_ATTR find_hook (grub_uint64_t start, grub_uint64_t size,
 				  grub_uint32_t type)
   {
     grub_uint64_t end = start + size;
@@ -164,7 +164,7 @@ grub_acpi_create_ebda (void)
       highestlow = (end - ebda_len) & (~0xf);
     return 0;
   }
-  
+
   ebda = (grub_uint8_t *) UINT_TO_PTR ((*((grub_uint16_t *)0x40e)) << 4);
   ebda_kb_len = *(grub_uint16_t *) ebda;
   if (! ebda || ebda_kb_len > 16)
@@ -177,10 +177,10 @@ grub_acpi_create_ebda (void)
   grub_dprintf ("acpi", "creating ebda @%llx\n",
 		(unsigned long long) highestlow);
   if (! highestlow)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "couldn't find space for the new EBDA");
 
-  mmapregion = grub_mmap_register (PTR_TO_UINT64 (targetebda), ebda_len, 
+  mmapregion = grub_mmap_register (PTR_TO_UINT64 (targetebda), ebda_len,
 				   GRUB_MACHINE_MEMORY_RESERVED);
   if (! mmapregion)
     return grub_errno;
@@ -198,13 +198,13 @@ grub_acpi_create_ebda (void)
   if (v2 && v2->length > 40)
     v2 = 0;
 
-  /* First try to replace already existing rsdp. */ 
+  /* First try to replace already existing rsdp. */
   if (v2)
     {
       grub_dprintf ("acpi", "Scanning EBDA for old rsdpv2\n");
       for (; target < targetebda + 0x400 - v2->length; target += 0x10)
 	if (grub_memcmp (target, "RSD PTR ", 8) == 0
-	    && grub_byte_checksum (target, 
+	    && grub_byte_checksum (target,
 				   sizeof (struct grub_acpi_rsdp_v10)) == 0
 	    && ((struct grub_acpi_rsdp_v10 *) target)->revision != 0
 	    && ((struct grub_acpi_rsdp_v20 *) target)->length <= v2->length)
@@ -222,10 +222,10 @@ grub_acpi_create_ebda (void)
   if (v1)
     {
       grub_dprintf ("acpi", "Scanning EBDA for old rsdpv1\n");
-      for (; target < targetebda + 0x400 - sizeof (struct grub_acpi_rsdp_v10); 
+      for (; target < targetebda + 0x400 - sizeof (struct grub_acpi_rsdp_v10);
 	   target += 0x10)
 	if (grub_memcmp (target, "RSD PTR ", 8) == 0
-	    && grub_byte_checksum (target, 
+	    && grub_byte_checksum (target,
 				   sizeof (struct grub_acpi_rsdp_v10)) == 0)
 	  {
 	    grub_memcpy (target, v1, sizeof (struct grub_acpi_rsdp_v10));
@@ -260,7 +260,7 @@ grub_acpi_create_ebda (void)
   if (v1)
     {
       grub_dprintf ("acpi", "Scanning EBDA for block of zeros\n");
-      for (; target < targetebda + 0x400 - sizeof (struct grub_acpi_rsdp_v10); 
+      for (; target < targetebda + 0x400 - sizeof (struct grub_acpi_rsdp_v10);
 	   target += 0x10)
 	if (iszero (target, sizeof (struct grub_acpi_rsdp_v10)))
 	  {
@@ -277,16 +277,16 @@ grub_acpi_create_ebda (void)
   if (v1 || v2)
     {
       grub_mmap_unregister (mmapregion);
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 			 "Couldn't find suitable spot in EBDA");
     }
 
   /* Remove any other RSDT. */
-  for (target = targetebda; 
-       target < targetebda + 0x400 - sizeof (struct grub_acpi_rsdp_v10); 
+  for (target = targetebda;
+       target < targetebda + 0x400 - sizeof (struct grub_acpi_rsdp_v10);
        target += 0x10)
     if (grub_memcmp (target, "RSD PTR ", 8) == 0
-	&& grub_byte_checksum (target, 
+	&& grub_byte_checksum (target,
 			       sizeof (struct grub_acpi_rsdp_v10)) == 0
 	&& target != v1inebda && target != v2inebda)
       *target = 0;
@@ -312,7 +312,7 @@ setup_common_tables (void)
   grub_free (table_dsdt);
   table_dsdt = playground_ptr;
   playground_ptr += dsdt_size;
-  
+
   /* Treat other tables. */
   for (cur = acpi_tables; cur; cur = cur->next)
     {
@@ -342,7 +342,7 @@ setup_common_tables (void)
 	  fadt->hdr.checksum = 1 + ~grub_byte_checksum (fadt, fadt->hdr.length);
 	}
     }
- 
+
   /* Fill RSDT entries. */
   numoftables = 0;
   for (cur = acpi_tables; cur; cur = cur->next)
@@ -365,7 +365,7 @@ setup_common_tables (void)
 
   for (cur = acpi_tables; cur; cur = cur->next)
     *(rsdt_entry++) = PTR_TO_UINT32 (cur->addr);
-  
+
   /* Recompute checksum. */
   rsdt->checksum = 0;
   rsdt->checksum = 1 + ~grub_byte_checksum (rsdt, rsdt->length);
@@ -383,8 +383,8 @@ setv1table (void)
   rsdpv1_new->revision = 0;
   rsdpv1_new->rsdt_addr = PTR_TO_UINT32 (rsdt_addr);
   rsdpv1_new->checksum = 0;
-  rsdpv1_new->checksum = 1 + ~grub_byte_checksum (rsdpv1_new, 
-						  sizeof (*rsdpv1_new));  
+  rsdpv1_new->checksum = 1 + ~grub_byte_checksum (rsdpv1_new,
+						  sizeof (*rsdpv1_new));
   grub_dprintf ("acpi", "Generated ACPIv1 tables\n");
 }
 
@@ -421,19 +421,19 @@ setv2table (void)
   /* Create RSDPv2. */
   rsdpv2_new = (struct grub_acpi_rsdp_v20 *) playground_ptr;
   playground_ptr += sizeof (struct grub_acpi_rsdp_v20);
-  grub_memcpy (&(rsdpv2_new->rsdpv1.signature), "RSD PTR ", 
+  grub_memcpy (&(rsdpv2_new->rsdpv1.signature), "RSD PTR ",
 	       sizeof (rsdpv2_new->rsdpv1.signature));
-  grub_memcpy (&(rsdpv2_new->rsdpv1.oemid), root_oemid, 
+  grub_memcpy (&(rsdpv2_new->rsdpv1.oemid), root_oemid,
 	       sizeof (rsdpv2_new->rsdpv1.oemid));
   rsdpv2_new->rsdpv1.revision = rev2;
   rsdpv2_new->rsdpv1.rsdt_addr = PTR_TO_UINT32 (rsdt_addr);
   rsdpv2_new->rsdpv1.checksum = 0;
-  rsdpv2_new->rsdpv1.checksum = 1 + ~grub_byte_checksum 
+  rsdpv2_new->rsdpv1.checksum = 1 + ~grub_byte_checksum
     (&(rsdpv2_new->rsdpv1), sizeof (rsdpv2_new->rsdpv1));
   rsdpv2_new->length = sizeof (*rsdpv2_new);
   rsdpv2_new->xsdt_addr = PTR_TO_UINT64 (xsdt);
   rsdpv2_new->checksum = 0;
-  rsdpv2_new->checksum = 1 + ~grub_byte_checksum (rsdpv2_new, 
+  rsdpv2_new->checksum = 1 + ~grub_byte_checksum (rsdpv2_new,
 						  rsdpv2_new->length);
   grub_dprintf ("acpi", "Generated ACPIv2 tables\n");
 }
@@ -465,7 +465,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
   grub_err_t err;
   int i, mmapregion;
   int numoftables;
-  
+
   /* Default values if no RSDP is found. */
   rev1 = 1;
   rev2 = 3;
@@ -473,7 +473,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
   facs_addr = 0;
   playground = playground_ptr = 0;
   playground_size = 0;
-  
+
   rsdp = (struct grub_acpi_rsdp_v10 *) grub_machine_acpi_get_rsdpv2 ();
 
   if (! rsdp)
@@ -508,37 +508,37 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
       rsdt = (struct grub_acpi_table_header *) UINT_TO_PTR (rsdp->rsdt_addr);
       /* Load host tables. */
       for (entry_ptr = (grub_uint32_t *) (rsdt + 1);
-	   entry_ptr < (grub_uint32_t *) (((grub_uint8_t *) rsdt) 
+	   entry_ptr < (grub_uint32_t *) (((grub_uint8_t *) rsdt)
 					  + rsdt->length);
 	   entry_ptr++)
 	{
 	  char signature[5];
 	  struct efiemu_acpi_table *table;
-	  struct grub_acpi_table_header *curtable 
+	  struct grub_acpi_table_header *curtable
 	    = (struct grub_acpi_table_header *) UINT_TO_PTR (*entry_ptr);
 	  signature[4] = 0;
 	  for (i = 0; i < 4;i++)
 	    signature[i] = grub_tolower (curtable->signature[i]);
-	  
+
 	  /* If it's FADT it contains addresses of DSDT and FACS. */
 	  if (grub_strcmp (signature, "facp") == 0)
 	    {
 	      struct grub_acpi_table_header *dsdt;
 	      struct grub_acpi_fadt *fadt = (struct grub_acpi_fadt *) curtable;
 
-	      /* Set root header variables to the same values 
+	      /* Set root header variables to the same values
 		 as FACP by default. */
-	      grub_memcpy (&root_oemid, &(fadt->hdr.oemid), 
+	      grub_memcpy (&root_oemid, &(fadt->hdr.oemid),
 			   sizeof (root_oemid));
-	      grub_memcpy (&root_oemtable, &(fadt->hdr.oemtable), 
+	      grub_memcpy (&root_oemtable, &(fadt->hdr.oemtable),
 			   sizeof (root_oemtable));
 	      root_oemrev = fadt->hdr.oemrev;
-	      grub_memcpy (&root_creator_id, &(fadt->hdr.creator_id), 
+	      grub_memcpy (&root_creator_id, &(fadt->hdr.creator_id),
 			   sizeof (root_creator_id));
 	      root_creator_rev = fadt->hdr.creator_rev;
 
 	      /* Load DSDT if not excluded. */
-	      dsdt = (struct grub_acpi_table_header *) 
+	      dsdt = (struct grub_acpi_table_header *)
 		UINT_TO_PTR (fadt->dsdt_addr);
 	      if (dsdt && (! exclude || ! grub_strword (exclude, "dsdt"))
 		  && (! load_only || grub_strword (load_only, "dsdt"))
@@ -551,7 +551,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 		      free_tables ();
 		      grub_free (exclude);
 		      grub_free (load_only);
-		      return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+		      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 					 "Could allocate table");
 		    }
 		  grub_memcpy (table_dsdt, dsdt, dsdt->length);
@@ -560,7 +560,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	      /* Save FACS address. FACS shouldn't be overridden. */
 	      facs_addr = fadt->facs_addr;
 	    }
-  
+
 	  /* Skip excluded tables. */
 	  if (exclude && grub_strword (exclude, signature))
 	    continue;
@@ -570,15 +570,15 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	  /* Sanity check. */
 	  if (curtable->length < sizeof (*curtable))
 	    continue;
-	  
-	  table = (struct efiemu_acpi_table *) grub_malloc 
+
+	  table = (struct efiemu_acpi_table *) grub_malloc
 	    (sizeof (struct efiemu_acpi_table));
 	  if (! table)
 	    {
 	      free_tables ();
 	      grub_free (exclude);
 	      grub_free (load_only);
-	      return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 				 "Could allocate table structure");
 	    }
 	  table->size = curtable->length;
@@ -587,7 +587,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	  if (! table->addr)
 	    {
 	      free_tables ();
-	      return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 				 "Could allocate table");
 	    }
 	  table->next = acpi_tables;
@@ -595,7 +595,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	  grub_memcpy (table->addr, curtable, table->size);
 	}
       grub_free (exclude);
-      grub_free (load_only);      
+      grub_free (load_only);
     }
 
   /* Does user specify versions to generate? */
@@ -647,7 +647,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	{
 	  grub_file_close (file);
 	  free_tables ();
-	  return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+	  return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 			     "couldn't read file %s", args[i]);
 	}
 
@@ -657,9 +657,9 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	  free_tables ();
 	  return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", args[i]);
 	}
-      grub_file_close (file);      
+      grub_file_close (file);
 
-      if (grub_memcmp (((struct grub_acpi_table_header *) buf)->signature, 
+      if (grub_memcmp (((struct grub_acpi_table_header *) buf)->signature,
 		       "DSDT", 4) == 0)
 	{
 	  grub_free (table_dsdt);
@@ -669,12 +669,12 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
       else
 	{
 	  struct efiemu_acpi_table *table;
-	  table = (struct efiemu_acpi_table *) grub_malloc 
+	  table = (struct efiemu_acpi_table *) grub_malloc
 	    (sizeof (struct efiemu_acpi_table));
 	  if (! table)
 	    {
 	      free_tables ();
-	      return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 				 "Could allocate table structure");
 	    }
 
@@ -698,15 +698,15 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
   playground_size += sizeof (struct grub_acpi_table_header) + 8 * numoftables;
   /* RSDPv2. */
   playground_size += sizeof (struct grub_acpi_rsdp_v20);
-  
-  playground = playground_ptr 
+
+  playground = playground_ptr
     = grub_mmap_malign_and_register (1, playground_size, &mmapregion,
 				     GRUB_MACHINE_MEMORY_ACPI, 0);
 
   if (! playground)
     {
       free_tables ();
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 			 "Couldn't allocate space for ACPI tables");
     }
 
@@ -741,9 +741,9 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
     struct grub_efi_guid acpi = GRUB_EFI_ACPI_TABLE_GUID;
     struct grub_efi_guid acpi20 = GRUB_EFI_ACPI_20_TABLE_GUID;
 
-    grub_efi_system_table->boot_services->install_configuration_table 
+    grub_efi_system_table->boot_services->install_configuration_table
       (&acpi20, grub_acpi_get_rsdpv2 ());
-    grub_efi_system_table->boot_services->install_configuration_table 
+    grub_efi_system_table->boot_services->install_configuration_table
       (&acpi, grub_acpi_get_rsdpv1 ());
   }
 #endif
@@ -755,13 +755,13 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(acpi)
 {
-  cmd = grub_register_extcmd ("acpi", grub_cmd_acpi, 
+  cmd = grub_register_extcmd ("acpi", grub_cmd_acpi,
 			      GRUB_COMMAND_FLAG_BOTH,
 			      "acpi [-1|-2] [--exclude=table1,table2|"
 			      "--load-only=table1,table2] filename1 "
 			      " [filename2] [...]",
 			      "Load host acpi tables and tables "
-			      "specified by arguments", 
+			      "specified by arguments",
 			      options);
 }
 

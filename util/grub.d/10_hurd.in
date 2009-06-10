@@ -50,7 +50,7 @@ case "${GRUB_FS}" in
 esac
 
 for i in /hurd/${hurd_fs}.static /hurd/exec ; do
-  if test -e "$i" ; then 
+  if test -e "$i" ; then
     echo "Found Hurd module: $i" >&2
     at_least_one=true
   else

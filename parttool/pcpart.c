@@ -37,7 +37,7 @@ static struct grub_parttool_argdesc grub_pcpart_bootargs[] =
   {0, 0, 0}
 };
 
-static grub_err_t grub_pcpart_boot (const grub_device_t dev, 
+static grub_err_t grub_pcpart_boot (const grub_device_t dev,
 				    const struct grub_parttool_args *args)
 {
   int i, index;
@@ -86,7 +86,7 @@ static struct grub_parttool_argdesc grub_pcpart_typeargs[] =
   {0, 0, 0}
 };
 
-static grub_err_t grub_pcpart_type (const grub_device_t dev, 
+static grub_err_t grub_pcpart_type (const grub_device_t dev,
 				    const struct grub_parttool_args *args)
 {
   int index;
@@ -99,7 +99,7 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
   dev->disk->partition = 0;
 
   /* Read the parttable.  */
-  if (grub_disk_read (dev->disk, part->offset, 0, 
+  if (grub_disk_read (dev->disk, part->offset, 0,
 		      sizeof (mbr), &mbr))
     {
       dev->disk->partition = part;
@@ -119,7 +119,7 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
 	type &= ~GRUB_PC_PARTITION_TYPE_HIDDEN_FLAG;
     }
 
-  if (grub_pc_partition_is_empty (type) 
+  if (grub_pc_partition_is_empty (type)
       || grub_pc_partition_is_extended (type))
     {
       dev->disk->partition = part;
@@ -130,7 +130,7 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
   grub_printf ("Setting partition type to 0x%x\n", type);
 
    /* Write the parttable.  */
-  grub_disk_write (dev->disk, part->offset, 0, 
+  grub_disk_write (dev->disk, part->offset, 0,
 		   sizeof (mbr), &mbr);
 
   dev->disk->partition = part;
@@ -140,13 +140,13 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
 
 GRUB_MOD_INIT (pcpart)
 {
-  activate_table_handle = grub_parttool_register ("pc_partition_map", 
+  activate_table_handle = grub_parttool_register ("pc_partition_map",
 						  grub_pcpart_boot,
 						  grub_pcpart_bootargs);
-  type_table_handle = grub_parttool_register ("pc_partition_map", 
+  type_table_handle = grub_parttool_register ("pc_partition_map",
 					      grub_pcpart_type,
 					      grub_pcpart_typeargs);
- 
+
 }
 GRUB_MOD_FINI(pcpart)
 {

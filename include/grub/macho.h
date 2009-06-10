@@ -73,7 +73,7 @@ union grub_macho_filestart
 {
   struct grub_macho_fat_header fat;
   struct grub_macho_header32 thin32;
-  struct grub_macho_header64 thin64;  
+  struct grub_macho_header64 thin64;
 } __attribute__ ((packed));
 
 /* Common header of Mach-O commands. */

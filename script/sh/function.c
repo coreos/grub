@@ -24,7 +24,7 @@
 static grub_script_function_t grub_script_function_list;
 
 grub_script_function_t
-grub_script_function_create (struct grub_script_arg *functionname_arg, 
+grub_script_function_create (struct grub_script_arg *functionname_arg,
 			     struct grub_script *cmd)
 {
   grub_script_function_t func;

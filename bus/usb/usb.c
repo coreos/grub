@@ -236,7 +236,7 @@ grub_usb_device_initialize (grub_usb_device_t dev)
 
       /* Skip the configuration descriptor.  */
       pos = sizeof (struct grub_usb_desc_config);
-      
+
       /* Read all interfaces.  */
       for (currif = 0; currif < dev->config[i].descconf->numif; currif++)
 	{

@@ -50,7 +50,7 @@ struct grub_acpi_table_header
   grub_uint8_t oemtable[8];
   grub_uint32_t oemrev;
   grub_uint8_t creator_id[4];
-  grub_uint32_t creator_rev;  
+  grub_uint32_t creator_rev;
 } __attribute__ ((packed));
 
 struct grub_acpi_fadt

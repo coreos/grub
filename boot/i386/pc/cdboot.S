@@ -88,7 +88,7 @@ bi_reserved:
 
         /* Root drive will default to boot drive */
         movb    $0xFF, %dh
-        
+
 	ljmp	$(DATA_ADDR >> 4), $0
 
 /*

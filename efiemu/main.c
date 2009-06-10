@@ -17,8 +17,8 @@
  */
 
 /* This is an emulation of EFI runtime services.
-   This allows a more uniform boot on i386 machines. 
-   As it emulates only runtime service it isn't able 
+   This allows a more uniform boot on i386 machines.
+   As it emulates only runtime service it isn't able
    to chainload EFI bootloader on non-EFI system. */
 
 
@@ -112,7 +112,7 @@ grub_efiemu_unregister_configuration_table (grub_efi_guid_t guid)
 
 grub_err_t
 grub_efiemu_register_prepare_hook (grub_err_t (*hook) (void *data),
-				   void (*unload) (void *data), 
+				   void (*unload) (void *data),
 				   void *data)
 {
   struct grub_efiemu_prepare_hook *nhook;
@@ -129,20 +129,20 @@ grub_efiemu_register_prepare_hook (grub_err_t (*hook) (void *data),
   return GRUB_ERR_NONE;
 }
 
-/* Register a configuration table either supplying the address directly 
+/* Register a configuration table either supplying the address directly
    or with a hook
 */
 grub_err_t
-grub_efiemu_register_configuration_table (grub_efi_guid_t guid, 
+grub_efiemu_register_configuration_table (grub_efi_guid_t guid,
 					  void * (*get_table) (void *data),
-					  void (*unload) (void *data), 
+					  void (*unload) (void *data),
 					  void *data)
 {
   struct grub_efiemu_configuration_table *tbl;
   grub_err_t err;
- 
+
  if (! get_table && ! data)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "you must set at least get_table or data");
   if ((err = grub_efiemu_unregister_configuration_table (guid)))
     return err;
@@ -163,7 +163,7 @@ grub_efiemu_register_configuration_table (grub_efi_guid_t guid,
 
 static grub_err_t
 grub_cmd_efiemu_unload (grub_command_t cmd __attribute__ ((unused)),
-			int argc __attribute__ ((unused)), 
+			int argc __attribute__ ((unused)),
 			char *args[] __attribute__ ((unused)))
 {
   return grub_efiemu_unload ();
@@ -171,7 +171,7 @@ grub_cmd_efiemu_unload (grub_command_t cmd __attribute__ ((unused)),
 
 static grub_err_t
 grub_cmd_efiemu_prepare (grub_command_t cmd __attribute__ ((unused)),
-			 int argc __attribute__ ((unused)), 
+			 int argc __attribute__ ((unused)),
 			 char *args[] __attribute__ ((unused)))
 {
   return grub_efiemu_prepare ();
@@ -180,15 +180,15 @@ grub_cmd_efiemu_prepare (grub_command_t cmd __attribute__ ((unused)),
 
 
 
-int 
-grub_efiemu_exit_boot_services (grub_efi_uintn_t map_key 
+int
+grub_efiemu_exit_boot_services (grub_efi_uintn_t map_key
 				__attribute__ ((unused)))
 {
   /* Nothing to do here yet */
   return 1;
 }
 
-int 
+int
 grub_efiemu_finish_boot_services (void)
 {
   /* Nothing to do here yet */
@@ -201,11 +201,11 @@ grub_efiemu_load_file (const char *filename)
 {
   grub_file_t file;
   grub_err_t err;
-  
+
   file = grub_file_open (filename);
   if (! file)
     return 0;
-  
+
   err = grub_efiemu_mm_init ();
   if (err)
     {
@@ -244,19 +244,19 @@ grub_efiemu_autocore (void)
     return GRUB_ERR_NONE;
 
   prefix = grub_env_get ("prefix");
-  
+
   if (! prefix)
-    return grub_error (GRUB_ERR_FILE_NOT_FOUND, 
+    return grub_error (GRUB_ERR_FILE_NOT_FOUND,
 		       "couldn't find efiemu core because prefix "
 		       "isn't set");
-  
+
   suffix = grub_efiemu_get_default_core_name ();
-  
+
   filename = grub_malloc (grub_strlen (prefix) + grub_strlen (suffix) + 2);
   if (! filename)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "couldn't allocate temporary space");
-  
+
   grub_sprintf (filename, "%s/%s", prefix, suffix);
 
   err = grub_efiemu_load_file (filename);
@@ -277,7 +277,7 @@ grub_efiemu_prepare (void)
 {
   grub_err_t err;
 
-  grub_dprintf ("efiemu", "Preparing %d-bit efiemu\n", 
+  grub_dprintf ("efiemu", "Preparing %d-bit efiemu\n",
 		8 * grub_efiemu_sizeof_uintn_t ());
 
   err = grub_efiemu_autocore ();
@@ -321,16 +321,16 @@ grub_efiemu_pnvram_cmd_register (void);
 
 GRUB_MOD_INIT(efiemu)
 {
-  cmd_loadcore = grub_register_command ("efiemu_loadcore", 
-					grub_cmd_efiemu_load, 
-				       "efiemu_loadcore FILE", 
+  cmd_loadcore = grub_register_command ("efiemu_loadcore",
+					grub_cmd_efiemu_load,
+				       "efiemu_loadcore FILE",
 				       "Load and initialize EFI emulator");
-  cmd_prepare = grub_register_command ("efiemu_prepare", 
-				       grub_cmd_efiemu_prepare, 
-				       "efiemu_prepare", 
+  cmd_prepare = grub_register_command ("efiemu_prepare",
+				       grub_cmd_efiemu_prepare,
+				       "efiemu_prepare",
 				       "Finalize loading of EFI emulator");
-  cmd_unload = grub_register_command ("efiemu_unload", grub_cmd_efiemu_unload, 
-				      "efiemu_unload", 
+  cmd_unload = grub_register_command ("efiemu_unload", grub_cmd_efiemu_unload,
+				      "efiemu_unload",
 				      "Unload  EFI emulator");
   grub_efiemu_pnvram_cmd_register ();
 }

@@ -19,7 +19,7 @@
 #include <grub/symbol.h>
 #include <multiboot.h>
 #include <multiboot2.h>
-	
+
 	.p2align	2	/* force 4-byte alignment */
 
 /*
@@ -91,7 +91,7 @@ FUNCTION(grub_multiboot_real_boot)
 
 	/* Move the magic value into eax.  */
 	movl	$MULTIBOOT_MAGIC2, %eax
-				
+
 	/* Jump to the relocator.  */
 	popl	%ebp
 	jmp 	*%ebp

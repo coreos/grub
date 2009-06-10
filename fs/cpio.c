@@ -181,7 +181,7 @@ fail:
 
 static grub_err_t
 grub_cpio_dir (grub_device_t device, const char *path,
-	       int (*hook) (const char *filename, 
+	       int (*hook) (const char *filename,
 			    const struct grub_dirhook_info *info))
 {
   struct grub_cpio_data *data;
@@ -286,13 +286,13 @@ grub_cpio_open (grub_file_t file, const char *name)
 	{
 	  if (name[i] != fn[j])
 	    goto no_match;
-	  
+
 	  if (name[i] == '\0')
 	    break;
-	  
+
 	  if (name[i] == '/' && name[i+1] == '/')
 	    i++;
-	  
+
 	  i++;
 	  j++;
 	}
@@ -304,7 +304,7 @@ grub_cpio_open (grub_file_t file, const char *name)
       return GRUB_ERR_NONE;
 
     no_match:
-      
+
       grub_free (fn);
       data->hofs = ofs;
     }

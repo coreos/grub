@@ -17,8 +17,8 @@
  */
 
 /* This is an emulation of EFI runtime services.
-   This allows a more uniform boot on i386 machines. 
-   As it emulates only runtime serviceit isn't able 
+   This allows a more uniform boot on i386 machines.
+   As it emulates only runtime serviceit isn't able
    to chainload EFI bootloader on non-EFI system (TODO) */
 
 #include <grub/symbol.h>
@@ -26,7 +26,7 @@
 #include <grub/efi/api.h>
 #include <grub/efiemu/runtime.h>
 
-grub_efi_status_t 
+grub_efi_status_t
 efiemu_get_time (grub_efi_time_t *time,
 		 grub_efi_time_capabilities_t *capabilities);
 grub_efi_status_t
@@ -54,7 +54,7 @@ efiemu_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
   PHYSICAL_ATTRIBUTE;
 
 grub_efi_status_t
-efiemu_convert_pointer (grub_efi_uintn_t debug_disposition, 
+efiemu_convert_pointer (grub_efi_uintn_t debug_disposition,
 			void **address)
   PHYSICAL_ATTRIBUTE;
 
@@ -84,14 +84,14 @@ efiemu_reset_system (grub_efi_reset_type_t reset_type,
 		     grub_efi_uintn_t data_size,
 		     grub_efi_char16_t *reset_data);
 
-grub_efi_status_t 
+grub_efi_status_t
 EFI_FUNC (efiemu_set_virtual_address_map) (grub_efi_uintn_t,
 					      grub_efi_uintn_t,
 					      grub_efi_uint32_t,
 					      grub_efi_memory_descriptor_t *)
      PHYSICAL_ATTRIBUTE;
 grub_efi_status_t
-EFI_FUNC (efiemu_convert_pointer) (grub_efi_uintn_t debug_disposition, 
+EFI_FUNC (efiemu_convert_pointer) (grub_efi_uintn_t debug_disposition,
 				      void **address)
      PHYSICAL_ATTRIBUTE;
 static grub_uint32_t
@@ -100,15 +100,15 @@ efiemu_getcrc32 (grub_uint32_t crc, void *buf, int size)
 static void
 init_crc32_table (void)
      PHYSICAL_ATTRIBUTE;
-static grub_uint32_t 
+static grub_uint32_t
 reflect (grub_uint32_t ref, int len)
      PHYSICAL_ATTRIBUTE;
-			     
+
 /*
   The log. It's used when examining memory dump
-*/				     
+*/
 static grub_uint8_t loge[1000] = "EFIEMULOG";
-static int logn = 9; 
+static int logn = 9;
 #define LOG(x)   { if (logn<900) loge[logn++]=x; }
 
 static int ptv_relocated = 0;
@@ -189,7 +189,7 @@ int __stack_chk_fail ()
   return 0;
 }
 
-/* The function that implement runtime services as specified in 
+/* The function that implement runtime services as specified in
    EFI specification */
 static inline grub_uint8_t
 bcd_to_hex (grub_uint8_t in)
@@ -197,7 +197,7 @@ bcd_to_hex (grub_uint8_t in)
   return 10 * ((in & 0xf0) >> 4) + (in & 0x0f);
 }
 
-grub_efi_status_t 
+grub_efi_status_t
 EFI_FUNC (efiemu_get_time) (grub_efi_time_t *time,
 			       grub_efi_time_capabilities_t *capabilities)
 {
@@ -279,19 +279,19 @@ EFI_FUNC (efiemu_set_wakeup_time) (grub_efi_boolean_t enabled,
 
 static grub_uint32_t crc32_table [256];
 
-static grub_uint32_t 
+static grub_uint32_t
 reflect (grub_uint32_t ref, int len)
 {
   grub_uint32_t result = 0;
   int i;
-  
+
   for (i = 1; i <= len; i++)
     {
       if (ref & 1)
 	result |= 1 << (len - i);
       ref >>= 1;
     }
-  
+
   return result;
 }
 
@@ -332,7 +332,7 @@ efiemu_getcrc32 (grub_uint32_t crc, void *buf, int size)
 }
 
 
-grub_efi_status_t EFI_FUNC 
+grub_efi_status_t EFI_FUNC
 (efiemu_set_virtual_address_map) (grub_efi_uintn_t memory_map_size,
 				  grub_efi_uintn_t descriptor_size,
 				  grub_efi_uint32_t descriptor_version,
@@ -341,12 +341,12 @@ grub_efi_status_t EFI_FUNC
   struct grub_efiemu_ptv_rel *cur_relloc;
 
   LOG ('e');
-  
+
   /* Ensure that we are called only once */
   if (ptv_relocated)
     return GRUB_EFI_UNSUPPORTED;
   ptv_relocated = 1;
-  
+
   /* Correct addresses using information supplied by grub */
   for (cur_relloc = efiemu_ptv_relloc; cur_relloc->size;cur_relloc++)
     {
@@ -354,8 +354,8 @@ grub_efi_status_t EFI_FUNC
       grub_efi_memory_descriptor_t *descptr;
 
       /* Compute correction */
-      for (descptr = virtual_map;  
-	   ((grub_uint8_t *) descptr - (grub_uint8_t *) virtual_map) 
+      for (descptr = virtual_map;
+	   ((grub_uint8_t *) descptr - (grub_uint8_t *) virtual_map)
 	     < memory_map_size;
 	   descptr = (grub_efi_memory_descriptor_t *)
 	     ((grub_uint8_t *) descptr + descriptor_size))
@@ -386,27 +386,27 @@ grub_efi_status_t EFI_FUNC
 
   /* Recompute crc32 of system table and runtime services */
   efiemu_system_table.hdr.crc32 = 0;
-  efiemu_system_table.hdr.crc32 = efiemu_getcrc32 
+  efiemu_system_table.hdr.crc32 = efiemu_getcrc32
     (0, &efiemu_system_table, sizeof (efiemu_system_table));
 
   efiemu_runtime_services.hdr.crc32 = 0;
-  efiemu_runtime_services.hdr.crc32 = efiemu_getcrc32 
+  efiemu_runtime_services.hdr.crc32 = efiemu_getcrc32
     (0, &efiemu_runtime_services, sizeof (efiemu_runtime_services));
 
   return GRUB_EFI_SUCCESS;
 }
 
-/* since efiemu_set_virtual_address_map corrects all the pointers 
+/* since efiemu_set_virtual_address_map corrects all the pointers
    we don't need efiemu_convert_pointer */
 grub_efi_status_t
-EFI_FUNC (efiemu_convert_pointer) (grub_efi_uintn_t debug_disposition, 
+EFI_FUNC (efiemu_convert_pointer) (grub_efi_uintn_t debug_disposition,
 				      void **address)
 {
   LOG ('f');
   return GRUB_EFI_UNSUPPORTED;
 }
 
-/* Next comes variable services. Because we have no vendor-independent 
+/* Next comes variable services. Because we have no vendor-independent
    way to store these variables we have no non-volatility */
 
 /* Find variable by name and GUID. */
@@ -423,7 +423,7 @@ find_variable (grub_efi_guid_t *vendor_guid,
       if (!efivar->namelen)
 	return 0;
       if (efiemu_str16equal((grub_efi_char16_t *)(efivar + 1), variable_name)
-	  && efiemu_memequal (&(efivar->guid), vendor_guid, 
+	  && efiemu_memequal (&(efivar->guid), vendor_guid,
 			      sizeof (efivar->guid)))
 	return efivar;
       ptr += efivar->namelen + efivar->size + sizeof (*efivar);
@@ -452,11 +452,11 @@ EFI_FUNC (efiemu_get_variable) (grub_efi_char16_t *variable_name,
   efiemu_memcpy (data, (grub_uint8_t *)(efivar + 1) + efivar->namelen,
 		 efivar->size);
   *attributes = efivar->attributes;
-  
+
   return GRUB_EFI_SUCCESS;
 }
 
-grub_efi_status_t EFI_FUNC 
+grub_efi_status_t EFI_FUNC
 (efiemu_get_next_variable_name) (grub_efi_uintn_t *variable_name_size,
 				 grub_efi_char16_t *variable_name,
 				 grub_efi_guid_t *vendor_guid)
@@ -471,15 +471,15 @@ grub_efi_status_t EFI_FUNC
       efivar = find_variable (vendor_guid, variable_name);
       if (!efivar)
 	return GRUB_EFI_NOT_FOUND;
-      efivar = (struct efi_variable *)((grub_uint8_t *)efivar 
-				       + efivar->namelen 
+      efivar = (struct efi_variable *)((grub_uint8_t *)efivar
+				       + efivar->namelen
 				       + efivar->size + sizeof (*efivar));
     }
   else
     efivar = (struct efi_variable *) (efiemu_variables);
 
   LOG ('m');
-  if ((grub_uint8_t *)efivar >= efiemu_variables + efiemu_varsize 
+  if ((grub_uint8_t *)efivar >= efiemu_variables + efiemu_varsize
       || !efivar->namelen)
     return GRUB_EFI_NOT_FOUND;
   if (*variable_name_size < efivar->namelen)
@@ -489,7 +489,7 @@ grub_efi_status_t EFI_FUNC
     }
 
   efiemu_memcpy (variable_name, efivar + 1, efivar->namelen);
-  efiemu_memcpy (vendor_guid, &(efivar->guid), 
+  efiemu_memcpy (vendor_guid, &(efivar->guid),
 		 sizeof (efivar->guid));
 
   LOG('h');
@@ -513,12 +513,12 @@ EFI_FUNC (efiemu_set_variable) (grub_efi_char16_t *variable_name,
   /* Delete variable if any */
   if (efivar)
     {
-      efiemu_memcpy (efivar, (grub_uint8_t *)(efivar + 1) 
-		     + efivar->namelen + efivar->size, 
+      efiemu_memcpy (efivar, (grub_uint8_t *)(efivar + 1)
+		     + efivar->namelen + efivar->size,
 		     (efiemu_variables + efiemu_varsize)
-		     - ((grub_uint8_t *)(efivar + 1) 
+		     - ((grub_uint8_t *)(efivar + 1)
 			+ efivar->namelen + efivar->size));
-      efiemu_memset (efiemu_variables + efiemu_varsize 
+      efiemu_memset (efiemu_variables + efiemu_varsize
 		     - (sizeof (*efivar) + efivar->namelen + efivar->size),
 		     0, (sizeof (*efivar) + efivar->namelen + efivar->size));
     }
@@ -533,8 +533,8 @@ EFI_FUNC (efiemu_set_variable) (grub_efi_char16_t *variable_name,
       if (!efivar->namelen)
 	break;
     }
-  if ((grub_uint8_t *)(efivar + 1) + data_size 
-      + 2 * (efiemu_str16len (variable_name) + 1) 
+  if ((grub_uint8_t *)(efivar + 1) + data_size
+      + 2 * (efiemu_str16len (variable_name) + 1)
       >= efiemu_variables + efiemu_varsize)
     return GRUB_EFI_OUT_OF_RESOURCES;
 
@@ -542,16 +542,16 @@ EFI_FUNC (efiemu_set_variable) (grub_efi_char16_t *variable_name,
   efivar->namelen = 2 * (efiemu_str16len (variable_name) + 1);
   efivar->size = data_size;
   efivar->attributes = attributes;
-  efiemu_memcpy (efivar + 1, variable_name, 
+  efiemu_memcpy (efivar + 1, variable_name,
 		 2 * (efiemu_str16len (variable_name) + 1));
-  efiemu_memcpy ((grub_uint8_t *)(efivar + 1) 
-		 + 2 * (efiemu_str16len (variable_name) + 1), 
+  efiemu_memcpy ((grub_uint8_t *)(efivar + 1)
+		 + 2 * (efiemu_str16len (variable_name) + 1),
 		 data, data_size);
 
   return GRUB_EFI_SUCCESS;
 }
 
-grub_efi_status_t EFI_FUNC 
+grub_efi_status_t EFI_FUNC
 (efiemu_get_next_high_monotonic_count) (grub_efi_uint32_t *high_count)
 {
   LOG ('j');
@@ -574,9 +574,9 @@ EFI_FUNC (efiemu_reset_system) (grub_efi_reset_type_t reset_type,
   LOG ('k');
 }
 
-struct grub_efi_runtime_services efiemu_runtime_services = 
+struct grub_efi_runtime_services efiemu_runtime_services =
 {
-  .hdr = 
+  .hdr =
   {
     .signature = GRUB_EFIEMU_RUNTIME_SERVICES_SIGNATURE,
     .revision = 0x0001000a,
@@ -596,18 +596,18 @@ struct grub_efi_runtime_services efiemu_runtime_services =
   .get_next_variable_name = efiemu_get_next_variable_name,
   .set_variable = efiemu_set_variable,
   .get_next_high_monotonic_count = efiemu_get_next_high_monotonic_count,
-  
+
   .reset_system = efiemu_reset_system
 };
 
 
-static grub_uint16_t efiemu_vendor[] = 
+static grub_uint16_t efiemu_vendor[] =
   {'G', 'R', 'U', 'B', ' ', 'E', 'F', 'I', ' ',
    'R', 'U', 'N', 'T', 'I', 'M', 'E', 0};
 
 struct grub_efi_system_table efiemu_system_table =
 {
-  .hdr = 
+  .hdr =
   {
     .signature = GRUB_EFIEMU_SYSTEM_TABLE_SIGNATURE,
     .revision = 0x0001000a,

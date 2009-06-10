@@ -24,8 +24,8 @@
 #include <grub/err.h>
 #include <grub/machine/memory.h>
 
-grub_err_t grub_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, 
-							    grub_uint64_t, 
+grub_err_t grub_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
+							    grub_uint64_t,
 							    grub_uint32_t));
 int grub_mmap_register (grub_uint64_t start, grub_uint64_t size, int type);
 grub_err_t grub_mmap_unregister (int handle);

@@ -58,11 +58,11 @@ compress_kernel (char *kernel_img, size_t kernel_size,
 {
   lzo_uint size;
   char *wrkmem;
-  
+
   grub_util_info ("kernel_img=%p, kernel_size=0x%x", kernel_img, kernel_size);
   if (kernel_size < GRUB_KERNEL_MACHINE_RAW_SIZE)
     grub_util_error ("the core image is too small");
-  
+
   if (lzo_init () != LZO_E_OK)
     grub_util_error ("cannot initialize LZO");
 
@@ -70,7 +70,7 @@ compress_kernel (char *kernel_img, size_t kernel_size,
   wrkmem = xmalloc (LZO1X_999_MEM_COMPRESS);
 
   memcpy (*core_img, kernel_img, GRUB_KERNEL_MACHINE_RAW_SIZE);
-  
+
   grub_util_info ("compressing the core image");
   if (lzo1x_999_compress ((const lzo_byte *) (kernel_img
 					      + GRUB_KERNEL_MACHINE_RAW_SIZE),
@@ -189,7 +189,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       size_t mod_size;
 
       mod_size = grub_util_get_image_size (p->name);
-      
+
       header = (struct grub_module_header *) (kernel_img + offset);
       header->type = grub_cpu_to_le32 (OBJ_TYPE_ELF);
       header->size = grub_cpu_to_le32 (mod_size + sizeof (*header));
@@ -202,7 +202,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   if (memdisk_path)
     {
       struct grub_module_header *header;
-      
+
       header = (struct grub_module_header *) (kernel_img + offset);
       header->type = grub_cpu_to_le32 (OBJ_TYPE_MEMDISK);
       header->size = grub_cpu_to_le32 (memdisk_size + sizeof (*header));
@@ -230,7 +230,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 		   &core_img, &core_size);
 
   grub_util_info ("the core size is 0x%x", core_size);
-  
+
   num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
   if (num > 0xffff)
     grub_util_error ("the core image is too big");
@@ -239,9 +239,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   boot_size = grub_util_get_image_size (boot_path);
   if (boot_size != GRUB_DISK_SECTOR_SIZE)
     grub_util_error ("diskboot.img is not one sector size");
-  
+
   boot_img = grub_util_read_image (boot_path);
-  
+
   /* i386 is a little endian architecture.  */
   *((grub_uint16_t *) (boot_img + GRUB_DISK_SECTOR_SIZE
 		       - GRUB_BOOT_MACHINE_LIST_SIZE + 8))
@@ -250,7 +250,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   grub_util_write_image (boot_img, boot_size, out);
   free (boot_img);
   free (boot_path);
-  
+
   module_addr = (path_list
 		 ? (GRUB_BOOT_MACHINE_KERNEL_ADDR + GRUB_DISK_SECTOR_SIZE
 		    + kernel_size)
@@ -277,7 +277,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   if (core_size > GRUB_MEMORY_MACHINE_UPPER - GRUB_MEMORY_MACHINE_LINK_ADDR)
     grub_util_error ("Core image is too big (%p > %p)\n", core_size,
 		     GRUB_MEMORY_MACHINE_UPPER - GRUB_MEMORY_MACHINE_LINK_ADDR);
-  
+
   grub_util_write_image (core_img, core_size, out);
   free (kernel_img);
   free (core_img);
@@ -344,7 +344,7 @@ main (int argc, char *argv[])
   FILE *fp = stdout;
 
   progname = "grub-mkimage";
-  
+
   while (1)
     {
       int c = getopt_long (argc, argv, "d:p:m:c:o:hVv", options, 0);
@@ -357,7 +357,7 @@ main (int argc, char *argv[])
 	  case 'o':
 	    if (output)
 	      free (output);
-	    
+
 	    output = xstrdup (optarg);
 	    break;
 
@@ -373,7 +373,7 @@ main (int argc, char *argv[])
 	      free (memdisk);
 
 	    memdisk = xstrdup (optarg);
-	
+
 	    if (prefix)
 	      free (prefix);
 

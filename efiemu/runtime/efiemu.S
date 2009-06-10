@@ -29,10 +29,10 @@
  *   %rcx,  %rdx,  %r8,  %r9,  32(%rsp), 40(%rsp), 48(%rsp), ...
  *
  */
-	
+
         .file   "efiemu.S"
 	.text
-	
+
 FUNCTION (efiemu_get_time)
 	push %rdi
 	push %rsi
@@ -104,7 +104,7 @@ FUNCTION (efiemu_set_variable)
 	mov %rcx, %rdi
 	mov %rdx, %rsi
 	mov %r8, %rdx
-	mov %r9, %rcx	
+	mov %r9, %rcx
 	mov 56(%rsp), %r8
 	call efiemu_set_variable_real
 	pop %rsi
@@ -133,8 +133,8 @@ FUNCTION (efiemu_reset_system)
 	ret
 
 	/* The following functions are always called in physical mode */
-	.section ".text-physical", "ax"		
-	
+	.section ".text-physical", "ax"
+
 FUNCTION (efiemu_set_virtual_address_map)
 	push %rdi
 	push %rsi

@@ -71,7 +71,7 @@ GRUB_MOD_INIT(font_manager)
 
 GRUB_MOD_FINI(font_manager)
 {
-  /* TODO: Determine way to free allocated resources.  
+  /* TODO: Determine way to free allocated resources.
      Warning: possible pointer references could be in use.  */
 
   grub_unregister_command (cmd_loadfont);

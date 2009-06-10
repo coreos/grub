@@ -33,7 +33,7 @@ grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr, UNUSED grub_addr_t *addr)
 
   if ((paddr < grub_os_area_addr)
       || (paddr + phdr->p_memsz > grub_os_area_addr + grub_os_area_size))
-    return grub_error(GRUB_ERR_OUT_OF_RANGE,"Address 0x%x is out of range", 
+    return grub_error(GRUB_ERR_OUT_OF_RANGE,"Address 0x%x is out of range",
                       paddr);
 
   return GRUB_ERR_NONE;
@@ -82,7 +82,7 @@ void
 grub_mb2_arch_unload (struct multiboot_tag_header *tags)
 {
    struct multiboot_tag_header *tag;
-   
+
    /* Free all module memory in the tag list.  */
    for_each_tag (tag, tags)
      {

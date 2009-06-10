@@ -54,7 +54,7 @@ grub_usb_control_msg (grub_usb_device_t dev,
     max = 64;
 
   datablocks = (size + max - 1) / max;
-  
+
   /* XXX: Discriminate between different types of control
      messages.  */
   transfer->transcnt = datablocks + 2;
@@ -110,7 +110,7 @@ grub_usb_control_msg (grub_usb_device_t dev,
     transfer->transactions[datablocks + 1].pid = GRUB_USB_TRANSFER_TYPE_OUT;
   else
     transfer->transactions[datablocks + 1].pid = GRUB_USB_TRANSFER_TYPE_IN;
-  
+
   transfer->transactions[datablocks + 1].toggle = 1;
 
   err = dev->controller.dev->transfer (&dev->controller, transfer);
@@ -184,7 +184,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
       tr->data = &data[i * max];
       size -= tr->size;
     }
- 
+
   err = dev->controller.dev->transfer (&dev->controller, transfer);
   grub_dprintf ("usb", "toggle=%d\n", toggle);
   dev->toggle[endpoint] = toggle;

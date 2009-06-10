@@ -17,7 +17,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Based on the code from FreeBSD originally distributed under the 
+/* Based on the code from FreeBSD originally distributed under the
    following terms: */
 
 /*-
@@ -63,12 +63,12 @@ fill_bsd64_pagetable (grub_uint8_t *target)
   pt4 = (grub_uint64_t *) target;
   pt3 = (grub_uint64_t *) (target + 4096);
   pt2 = (grub_uint64_t *) (target + 8192);
-  
+
   grub_memset ((char *) target, 0, 4096 * 3);
 
   /*
    * This is kinda brutal, but every single 1GB VM memory segment points to
-   * the same first 1GB of physical memory.  But it is how BSD expects 
+   * the same first 1GB of physical memory.  But it is how BSD expects
    * it to be.
    */
   for (i = 0; i < 512; i++)
@@ -80,7 +80,7 @@ fill_bsd64_pagetable (grub_uint8_t *target)
       /* Each slot of the level 3 pages points to the same level 2 page */
       pt3[i] = (grub_addr_t) &pt2[0];
       pt3[i] |= PG_V | PG_RW | PG_U;
-      
+
       /* The level 2 page slots are mapped with 2MB pages for 1GB. */
       pt2[i] = i * (2 * 1024 * 1024);
       pt2[i] |= PG_V | PG_RW | PG_PS | PG_U;

@@ -83,7 +83,7 @@ struct grub_e820_mmap
 
 /* For the Linux/i386 boot protocol version 2.03.  */
 struct linux_kernel_header
-{ 
+{
   grub_uint8_t code1[0x0020];
   grub_uint16_t cl_magic;		/* Magic number 0xA33F */
   grub_uint16_t cl_offset;		/* The offset of command line */
@@ -135,21 +135,21 @@ struct linux_kernel_params
   grub_uint8_t video_cursor_y;
 
   grub_uint16_t ext_mem;		/* 2 */
-  
+
   grub_uint16_t video_page;		/* 4 */
   grub_uint8_t video_mode;		/* 6 */
   grub_uint8_t video_width;		/* 7 */
-  
+
   grub_uint8_t padding1[0xa - 0x8];
-  
+
   grub_uint16_t video_ega_bx;		/* a */
-  
+
   grub_uint8_t padding2[0xe - 0xc];
-  
+
   grub_uint8_t video_height;		/* e */
   grub_uint8_t have_vga;		/* f */
   grub_uint16_t font_size;		/* 10 */
-  
+
   grub_uint16_t lfb_width;		/* 12 */
   grub_uint16_t lfb_height;		/* 14 */
   grub_uint16_t lfb_depth;		/* 16 */
@@ -183,16 +183,16 @@ struct linux_kernel_params
   grub_uint16_t apm_flags;		/* 4c */
   grub_uint32_t apm_code_len;		/* 4e */
   grub_uint16_t apm_data_len;		/* 52 */
-  
+
   grub_uint8_t padding4[0x60 - 0x54];
-  
+
   grub_uint32_t ist_signature;		/* 60 */
   grub_uint32_t ist_command;		/* 64 */
   grub_uint32_t ist_event;		/* 68 */
   grub_uint32_t ist_perf_level;		/* 6c */
 
   grub_uint8_t padding5[0x80 - 0x70];
-  
+
   grub_uint8_t hd0_drive_info[0x10];	/* 80 */
   grub_uint8_t hd1_drive_info[0x10];	/* 90 */
   grub_uint16_t rom_config_len;		/* a0 */
@@ -232,15 +232,15 @@ struct linux_kernel_params
           grub_uint32_t efi_mmap_hi;		/* 1dc */
         } v0206;
     };
-  
+
   grub_uint32_t alt_mem;		/* 1e0 */
-  
+
   grub_uint8_t padding8[0x1e8 - 0x1e4];
-  
+
   grub_uint32_t mmap_size;		/* 1e8 */
 
   grub_uint8_t padding9[0x1f1 - 0x1ec];
-  
+
   grub_uint8_t setup_sects;		/* The size of the setup in sectors */
   grub_uint16_t root_flags;		/* If the root is mounted readonly */
   grub_uint16_t syssize;		/* obsolete */

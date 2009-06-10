@@ -36,7 +36,7 @@ struct char_index_entry
   grub_uint32_t code;
   grub_uint8_t storage_flags;
   grub_uint32_t offset;
-  
+
   /* Glyph if loaded, or NULL otherwise.  */
   struct grub_font_glyph *glyph;
 };
@@ -72,13 +72,13 @@ struct font_file_section
 {
   /* The file this section is in.  */
   grub_file_t file;
-  
+
   /* FOURCC name of the section.  */
   char name[4];
-  
+
   /* Length of the section contents.  */
   grub_uint32_t length;
-  
+
   /* Set by open_section() on EOF.  */
   int eof;
 };
@@ -170,10 +170,10 @@ font_init (grub_font_t font)
   font->family = 0;
   font->point_size = 0;
   font->weight = 0;
-  
+
   /* Default leading value, not in font file yet.  */
   font->leading = 1;
-  
+
   font->max_char_width = 0;
   font->max_char_height = 0;
   font->ascent = 0;
@@ -646,7 +646,7 @@ grub_font_get_glyph_internal (grub_font_t font, grub_uint32_t code)
 
       if (! font->file)
         /* No open file, can't load any glyphs.  */
-        return 0;     
+        return 0;
 
       /* Make sure we can find glyphs for error messages.  Push active
          error message to error stack and reset error message.  */
@@ -900,7 +900,7 @@ get_font_diversity(grub_font_t a, grub_font_t b)
   else
     /* Penalty for missing attributes.  */
     d += 50;
-  
+
   /* Weight is a minor factor. */
   d += (a->weight != b->weight) ? 5 : 0;
 
@@ -991,13 +991,13 @@ grub_font_draw_glyph (struct grub_font_glyph *glyph,
     | GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP;
   glyph_bitmap.mode_info.blit_format = GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED;
   glyph_bitmap.mode_info.bpp = 1;
-  
+
   /* Really 1 bit per pixel.  */
   glyph_bitmap.mode_info.bytes_per_pixel = 0;
-  
+
   /* Packed densely as bits.  */
   glyph_bitmap.mode_info.pitch = glyph->width;
-  
+
   glyph_bitmap.mode_info.number_of_colors = 2;
   glyph_bitmap.mode_info.bg_red = 0;
   glyph_bitmap.mode_info.bg_green = 0;

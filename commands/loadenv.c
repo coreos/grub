@@ -51,7 +51,7 @@ open_envblk_file (char *filename)
           filename = grub_malloc (len + 1 + sizeof (GRUB_ENVBLK_DEFCFG));
           if (! filename)
             return 0;
-          
+
           grub_strcpy (filename, prefix);
           filename[len] = '/';
           grub_strcpy (filename + len + 1, GRUB_ENVBLK_DEFCFG);
@@ -80,7 +80,7 @@ read_envblk_file (grub_file_t file)
   buf = grub_malloc (size);
   if (! buf)
     return 0;
-  
+
   while (size > 0)
     {
       grub_ssize_t ret;
@@ -124,7 +124,7 @@ grub_cmd_load_env (grub_extcmd_t cmd,
     grub_env_set (name, value);
     return 0;
   }
-  
+
   file = open_envblk_file ((state[0].set) ? state[0].arg : 0);
   if (! file)
     return grub_errno;
@@ -135,7 +135,7 @@ grub_cmd_load_env (grub_extcmd_t cmd,
 
   grub_envblk_iterate (envblk, set_var);
   grub_envblk_close (envblk);
-  
+
  fail:
   grub_file_close (file);
   return grub_errno;
@@ -157,7 +157,7 @@ grub_cmd_list_env (grub_extcmd_t cmd,
       grub_printf ("%s=%s\n", name, value);
       return 0;
     }
- 
+
   file = open_envblk_file ((state[0].set) ? state[0].arg : 0);
   if (! file)
     return grub_errno;
@@ -168,7 +168,7 @@ grub_cmd_list_env (grub_extcmd_t cmd,
 
   grub_envblk_iterate (envblk, print_var);
   grub_envblk_close (envblk);
-  
+
  fail:
   grub_file_close (file);
   return grub_errno;
@@ -205,7 +205,7 @@ check_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
   grub_disk_addr_t part_start;
   struct blocklist *p;
   char *buf;
-  
+
   /* Sanity checks.  */
   total_length = 0;
   for (p = blocklists; p; p = p->next)
@@ -222,10 +222,10 @@ check_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
               return 0;
             }
         }
-      
+
       total_length += p->length;
     }
-  
+
   if (total_length != grub_file_size (file))
     {
       /* Maybe sparse, unallocated sectors. No way in GRUB.  */
@@ -245,7 +245,7 @@ check_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
   for (p = blocklists, index = 0; p; p = p->next, index += p->length)
     {
       char blockbuf[GRUB_DISK_SECTOR_SIZE];
-      
+
       if (grub_disk_read (disk, p->sector - part_start,
                           p->offset, p->length, blockbuf))
         return 0;
@@ -269,7 +269,7 @@ write_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
   grub_disk_addr_t part_start;
   struct blocklist *p;
   grub_size_t index;
-  
+
   buf = grub_envblk_buffer (envblk);
   disk = file->device->disk;
   if (disk->partition)
@@ -296,7 +296,7 @@ grub_cmd_save_env (grub_extcmd_t cmd, int argc, char **args)
   grub_envblk_t envblk;
   struct blocklist *head = 0;
   struct blocklist *tail = 0;
-  
+
   /* Store blocklists in a linked list.  */
   auto void NESTED_FUNC_ATTR read_hook (grub_disk_addr_t sector,
                                         unsigned offset,
@@ -309,7 +309,7 @@ grub_cmd_save_env (grub_extcmd_t cmd, int argc, char **args)
       if (offset + length > GRUB_DISK_SECTOR_SIZE)
         /* Seemingly a bug.  */
         return;
-      
+
       block = grub_malloc (sizeof (*block));
       if (! block)
         return;
@@ -348,7 +348,7 @@ grub_cmd_save_env (grub_extcmd_t cmd, int argc, char **args)
 
   if (! check_blocklists (envblk, head, file))
     goto fail;
-  
+
   while (argc)
     {
       char *value;
@@ -368,7 +368,7 @@ grub_cmd_save_env (grub_extcmd_t cmd, int argc, char **args)
     }
 
   write_blocklists (envblk, head, file);
-  
+
  fail:
   if (envblk)
     grub_envblk_close (envblk);

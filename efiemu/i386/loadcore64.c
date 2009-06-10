@@ -37,7 +37,7 @@ grub_arch_efiemu_check_header64 (void *ehdr)
 
 /* Relocate symbols.  */
 grub_err_t
-grub_arch_efiemu_relocate_symbols64 (grub_efiemu_segment_t segs, 
+grub_arch_efiemu_relocate_symbols64 (grub_efiemu_segment_t segs,
 				     struct grub_efiemu_elf_sym *elfsyms,
 				     void *ehdr)
 {
@@ -62,9 +62,9 @@ grub_arch_efiemu_relocate_symbols64 (grub_efiemu_segment_t segs,
 	if (seg)
 	  {
 	    Elf64_Rela *rel, *max;
-	    
+
 	    for (rel = (Elf64_Rela *) ((char *) e + s->sh_offset),
-		   max = rel + (unsigned long) s->sh_size 
+		   max = rel + (unsigned long) s->sh_size
 		   / (unsigned long)s->sh_entsize;
 		 rel < max;
 		 rel++)
@@ -76,40 +76,40 @@ grub_arch_efiemu_relocate_symbols64 (grub_efiemu_segment_t segs,
 		if (seg->size < rel->r_offset)
 		  return grub_error (GRUB_ERR_BAD_MODULE,
 				     "reloc offset is out of the segment");
-		
+
 		addr =
-		  ((char *) grub_efiemu_mm_obtain_request (seg->handle) 
+		  ((char *) grub_efiemu_mm_obtain_request (seg->handle)
 		   + seg->off + rel->r_offset);
 		addr32 = (grub_uint32_t *) addr;
 		addr64 = (grub_uint64_t *) addr;
 		sym = elfsyms[ELF64_R_SYM (rel->r_info)];
-		
+
 		switch (ELF64_R_TYPE (rel->r_info))
 		  {
 		  case R_X86_64_64:
-		    if ((err = grub_efiemu_write_value 
-			 (addr, *addr64 + rel->r_addend + sym.off, sym.handle, 
+		    if ((err = grub_efiemu_write_value
+			 (addr, *addr64 + rel->r_addend + sym.off, sym.handle,
 			  0, seg->ptv_rel_needed, sizeof (grub_uint64_t))))
 		      return err;
 		    break;
 
 		  case R_X86_64_PC32:
 		    if ((err = grub_efiemu_write_value
-			 (addr, *addr32 + rel->r_addend + sym.off 
-			  - rel->r_offset - seg->off, sym.handle, seg->handle, 
+			 (addr, *addr32 + rel->r_addend + sym.off
+			  - rel->r_offset - seg->off, sym.handle, seg->handle,
 			  seg->ptv_rel_needed, sizeof (grub_uint32_t))))
 		      return err;
 		    break;
 
                   case R_X86_64_32:
                   case R_X86_64_32S:
-		    if ((err = grub_efiemu_write_value 
-			 (addr, *addr32 + rel->r_addend + sym.off, sym.handle, 
+		    if ((err = grub_efiemu_write_value
+			 (addr, *addr32 + rel->r_addend + sym.off, sym.handle,
 			  0, seg->ptv_rel_needed, sizeof (grub_uint32_t))))
 		      return err;
                     break;
 		  default:
-		    return grub_error (GRUB_ERR_BAD_OS, 
+		    return grub_error (GRUB_ERR_BAD_OS,
 				       "unrecognised relocation");
 		  }
 	      }

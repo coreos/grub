@@ -321,7 +321,7 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 	 code above used this memory, it can be freed now.  */
       grub_free (nnode);
       nnode = 0;
-      
+
       if (blk != -1)
 	return (blk
 		+ (node->data->embedded_offset >> (node->data->log2blksize
@@ -455,7 +455,7 @@ grub_hfsplus_mount (grub_disk_t disk)
   grub_memcpy (&data->catalog_tree.file.extents,
 	       data->volheader.catalog_file.extents,
 	       sizeof data->volheader.catalog_file.extents);
-  data->catalog_tree.file.size = 
+  data->catalog_tree.file.size =
     grub_be_to_cpu64 (data->volheader.catalog_file.size);
 
   /* Make a new node for the extent overflow file.  */
@@ -465,7 +465,7 @@ grub_hfsplus_mount (grub_disk_t disk)
 	       data->volheader.extents_file.extents,
 	       sizeof data->volheader.catalog_file.extents);
 
-  data->extoverflow_tree.file.size = 
+  data->extoverflow_tree.file.size =
     grub_be_to_cpu64 (data->volheader.extents_file.size);
 
   /* Read the essential information about the trees.  */
@@ -518,10 +518,10 @@ grub_hfsplus_cmp_catkey (struct grub_hfsplus_key *keya,
   char *filename;
   int i;
   int diff;
-  
+
   diff = grub_be_to_cpu32 (catkey_a->parent) - catkey_b->parent;
   if (diff)
-    return diff; 
+    return diff;
 
   /* Change the filename in keya so the endianness is correct.  */
   for (i = 0; i < grub_be_to_cpu16 (catkey_a->namelen); i++)
@@ -592,7 +592,7 @@ grub_hfsplus_btree_iterate_node (struct grub_hfsplus_btree *btree,
 				 int first_rec,
 				 int (*hook) (void *record))
 {
-  int rec;  
+  int rec;
 
   for (;;)
     {
@@ -661,8 +661,8 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
       for (rec = 0; rec < grub_be_to_cpu16 (nodedesc->count); rec++)
 	{
 	  struct grub_hfsplus_key *currkey;
-	  currkey = grub_hfsplus_btree_recptr (btree, nodedesc, rec);	
-  
+	  currkey = grub_hfsplus_btree_recptr (btree, nodedesc, rec);
+
 	  /* The action that has to be taken depend on the type of
 	     record.  */
 	  if (nodedesc->type == GRUB_HFSPLUS_BTNODE_TYPE_LEAF
@@ -716,7 +716,7 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
 				   grub_fshelp_node_t node))
 {
   int ret = 0;
-  
+
   auto int list_nodes (void *record);
   int list_nodes (void *record)
     {
@@ -730,7 +730,7 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
       catkey = (struct grub_hfsplus_catkey *) record;
 
       fileinfo =
-	(struct grub_hfsplus_catfile *) ((char *) record 
+	(struct grub_hfsplus_catfile *) ((char *) record
 					 + grub_be_to_cpu16 (catkey->keylen)
 					 + 2 + (grub_be_to_cpu16(catkey->keylen)
 						% 2));
@@ -796,7 +796,7 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
 	     callback function.  */
 	  node = grub_malloc (sizeof (*node));
 	  node->data = dir->data;
-	  
+
 	  grub_memcpy (node->extents, fileinfo->data.extents,
 		       sizeof (node->extents));
 	  node->mtime = grub_be_to_cpu32 (fileinfo->mtime) - 2082844800;
@@ -839,9 +839,9 @@ grub_hfsplus_open (struct grub_file *file, const char *name)
 {
   struct grub_hfsplus_data *data;
   struct grub_fshelp_node *fdiro = 0;
-  
+
   grub_dl_ref (my_mod);
-  
+
   data = grub_hfsplus_mount (file->device->disk);
   if (!data)
     goto fail;
@@ -865,7 +865,7 @@ grub_hfsplus_open (struct grub_file *file, const char *name)
   if (data && fdiro != &data->dirroot)
     grub_free (fdiro);
   grub_free (data);
-  
+
   grub_dl_unref (my_mod);
 
   return grub_errno;
@@ -887,7 +887,7 @@ grub_hfsplus_close (grub_file_t file)
 static grub_ssize_t
 grub_hfsplus_read (grub_file_t file, char *buf, grub_size_t len)
 {
-  struct grub_hfsplus_data *data = 
+  struct grub_hfsplus_data *data =
     (struct grub_hfsplus_data *) file->data;
 
   int size = grub_hfsplus_read_file (&data->opened_file, file->read_hook,
@@ -898,13 +898,13 @@ grub_hfsplus_read (grub_file_t file, char *buf, grub_size_t len)
 
 
 static grub_err_t
-grub_hfsplus_dir (grub_device_t device, const char *path, 
-		  int (*hook) (const char *filename, 
+grub_hfsplus_dir (grub_device_t device, const char *path,
+		  int (*hook) (const char *filename,
 			       const struct grub_dirhook_info *info))
 {
   struct grub_hfsplus_data *data = 0;
   struct grub_fshelp_node *fdiro = 0;
-  
+
   auto int NESTED_FUNC_ATTR iterate (const char *filename,
 				     enum grub_fshelp_filetype filetype,
 				     grub_fshelp_node_t node);
@@ -924,7 +924,7 @@ grub_hfsplus_dir (grub_device_t device, const char *path,
     }
 
   grub_dl_ref (my_mod);
-  
+
   data = grub_hfsplus_mount (device->disk);
   if (!data)
     goto fail;
@@ -938,7 +938,7 @@ grub_hfsplus_dir (grub_device_t device, const char *path,
 
   /* Iterate over all entries in this directory.  */
   grub_hfsplus_iterate_dir (fdiro, iterate);
-  
+
  fail:
   if (data && fdiro != &data->dirroot)
     grub_free (fdiro);
@@ -961,7 +961,7 @@ grub_hfsplus_label (grub_device_t device __attribute__((unused))
 }
 
 /* Get mtime.  */
-static grub_err_t 
+static grub_err_t
 grub_hfsplus_mtime (grub_device_t device, grub_int32_t *tm)
 {
   struct grub_hfsplus_data *data;
@@ -972,7 +972,7 @@ grub_hfsplus_mtime (grub_device_t device, grub_int32_t *tm)
   data = grub_hfsplus_mount (disk);
   if (!data)
     *tm = 0;
-  else 
+  else
     *tm = grub_be_to_cpu32 (data->volheader.utime) - 2082844800;
 
   grub_dl_unref (my_mod);
@@ -995,8 +995,8 @@ grub_hfsplus_uuid (grub_device_t device, char **uuid)
   if (data)
     {
       *uuid = grub_malloc (16 + sizeof ('\0'));
-      grub_sprintf (*uuid, "%016llx", 
-		    (unsigned long long) 
+      grub_sprintf (*uuid, "%016llx",
+		    (unsigned long long)
 		    grub_be_to_cpu64 (data->volheader.num_serial));
     }
   else

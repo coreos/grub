@@ -44,10 +44,10 @@ struct tbl_alias table_aliases[] =
     {GRUB_EFI_ACPI_TABLE_GUID, "ACPI"},
   };
 
-/* The following function is used to be able to debug xnu loader 
+/* The following function is used to be able to debug xnu loader
    with grub-emu. */
 #ifdef GRUB_UTIL
-static grub_err_t 
+static grub_err_t
 grub_xnu_launch (void)
 {
   grub_printf ("Fake launch %x:%p:%p", grub_xnu_entry_point, grub_xnu_arg1,
@@ -78,7 +78,7 @@ readfrequency (const char *str)
   while (*str)
     {
       unsigned long digit;
-      
+
       digit = grub_tolower (*str) - '0';
       if (digit > 9)
 	break;
@@ -95,7 +95,7 @@ readfrequency (const char *str)
       while (*str)
 	{
 	  unsigned long digit;
-	  
+
 	  digit = grub_tolower (*str) - '0';
 	  if (digit > 9)
 	    break;
@@ -125,7 +125,7 @@ guessfsb (void)
 
   if (! grub_cpu_is_cpuid_supported ())
     return sane_value;
-	
+
 #ifdef APPLE_CC
   asm volatile ("movl $0, %%eax\n"
 #ifdef __x86_64__
@@ -138,18 +138,18 @@ guessfsb (void)
 		"pop %%rbx\n"
 #else
 		"pop %%ebx\n"
-#endif				  
-		: "=a" (max_cpuid), 
+#endif
+		: "=a" (max_cpuid),
 		  "=d" (manufacturer[1]), "=c" (manufacturer[2]));
-  
+
   /* Only Intel for now is done. */
   if (grub_memcmp (manufacturer + 1, "ineIntel", 12) != 0)
     return sane_value;
-  
+
 #else
   asm volatile ("movl $0, %%eax\n"
 		"cpuid"
-		: "=a" (max_cpuid), "=b" (manufacturer[0]), 
+		: "=a" (max_cpuid), "=b" (manufacturer[0]),
 		  "=d" (manufacturer[1]), "=c" (manufacturer[2]));
 
   /* Only Intel for now is done. */
@@ -167,7 +167,7 @@ guessfsb (void)
 		"push %%rbx\n"
 #else
 		"push %%ebx\n"
-#endif				  
+#endif
 		"cpuid\n"
 #ifdef __x86_64__
 		"pop %%rbx\n"
@@ -175,7 +175,7 @@ guessfsb (void)
 		"pop %%ebx\n"
 #endif
 		: "=c" (capabilities):
-		: "%rax", "%rdx");	
+		: "%rax", "%rdx");
 #else
   asm volatile ("movl $1, %%eax\n"
 		"cpuid"
@@ -201,7 +201,7 @@ guessfsb (void)
 		:
 		: "%ecx", "%eax");
 
-  return grub_divmod64 (2000 * tsc_ticks_per_ms, 
+  return grub_divmod64 (2000 * tsc_ticks_per_ms,
 			((msrlow >> 7) & 0x3e) + ((msrlow >> 14) & 1), 0);
 }
 
@@ -254,7 +254,7 @@ grub_cpu_xnu_fill_devicetree (void)
   curval = grub_xnu_create_value (&(efikey->first_child), "firmware-vendor");
   if (! curval)
     return grub_errno;
-  curval->datasize = 
+  curval->datasize =
     2 * (utf16_strlen (SYSTEM_TABLE_PTR (firmware_vendor)) + 1);
   curval->data = grub_malloc (curval->datasize);
   if (! curval->data)
@@ -275,7 +275,7 @@ grub_cpu_xnu_fill_devicetree (void)
     grub_memcpy (curval->data, "EFI64", curval->datasize);
 
   /* The key "platform". */
-  platformkey = grub_xnu_create_key (&(efikey->first_child), 
+  platformkey = grub_xnu_create_key (&(efikey->first_child),
 				     "platform");
   if (! platformkey)
     return grub_errno;
@@ -292,16 +292,16 @@ grub_cpu_xnu_fill_devicetree (void)
   /* First see if user supplies the value. */
   char *fsbvar = grub_env_get ("fsb");
   if (! fsbvar)
-    *((grub_uint64_t *) curval->data) = 0; 
+    *((grub_uint64_t *) curval->data) = 0;
   else
     *((grub_uint64_t *) curval->data) = readfrequency (fsbvar);
   /* Try autodetect. */
   if (! *((grub_uint64_t *) curval->data))
-    *((grub_uint64_t *) curval->data) = guessfsb (); 
-  grub_dprintf ("xnu", "fsb autodetected as %llu\n", 
+    *((grub_uint64_t *) curval->data) = guessfsb ();
+  grub_dprintf ("xnu", "fsb autodetected as %llu\n",
 		(unsigned long long) *((grub_uint64_t *) curval->data));
 
-  cfgtablekey = grub_xnu_create_key (&(efikey->first_child), 
+  cfgtablekey = grub_xnu_create_key (&(efikey->first_child),
 				     "configuration-table");
   if (!cfgtablekey)
     return grub_errno;
@@ -317,11 +317,11 @@ grub_cpu_xnu_fill_devicetree (void)
       /* Retrieve current key. */
 #ifdef GRUB_MACHINE_EFI
       {
-	ptr = (void *) 
+	ptr = (void *)
 	  grub_efi_system_table->configuration_table[i].vendor_table;
 	guid = grub_efi_system_table->configuration_table[i].vendor_guid;
       }
-#else 
+#else
       if (SIZEOF_OF_UINTN == 4)
 	{
 	  ptr = UINT_TO_PTR (((grub_efiemu_configuration_table32_t *)
@@ -336,7 +336,7 @@ grub_cpu_xnu_fill_devicetree (void)
 	  ptr = UINT_TO_PTR (((grub_efiemu_configuration_table64_t *)
 			      SYSTEM_TABLE_PTR (configuration_table))[i]
 			     .vendor_table);
-	  guid = 
+	  guid =
 	    ((grub_efiemu_configuration_table64_t *)
 	     SYSTEM_TABLE_PTR (configuration_table))[i].vendor_guid;
 	}
@@ -362,7 +362,7 @@ grub_cpu_xnu_fill_devicetree (void)
       curval->datasize = sizeof (guid);
       curval->data = grub_malloc (curval->datasize);
       if (! curval->data)
-	return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+	return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 			   "couldn't create device tree");
       grub_memcpy (curval->data, &guid, curval->datasize);
 
@@ -373,7 +373,7 @@ grub_cpu_xnu_fill_devicetree (void)
       curval->datasize = SIZEOF_OF_UINTN;
       curval->data = grub_malloc (curval->datasize);
       if (! curval->data)
-	return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+	return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 			   "couldn't create device tree");
       if (SIZEOF_OF_UINTN == 4)
 	*((grub_uint32_t *)curval->data) = PTR_TO_UINT32 (ptr);
@@ -392,14 +392,14 @@ grub_cpu_xnu_fill_devicetree (void)
 	  curval->datasize = grub_strlen (table_aliases[j].name) + 1;
 	  curval->data = grub_malloc (curval->datasize);
 	  if (!curval->data)
-	    return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+	    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 			       "couldn't create device tree");
 	  grub_memcpy (curval->data, table_aliases[j].name, curval->datasize);
 	}
     }
-  
+
   /* Create and fill "runtime-services" key. */
-  runtimesrvkey = grub_xnu_create_key (&(efikey->first_child), 
+  runtimesrvkey = grub_xnu_create_key (&(efikey->first_child),
 				       "runtime-services");
   if (! runtimesrvkey)
     return grub_errno;
@@ -409,20 +409,20 @@ grub_cpu_xnu_fill_devicetree (void)
   curval->datasize = SIZEOF_OF_UINTN;
   curval->data = grub_malloc (curval->datasize);
   if (! curval->data)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "couldn't create device tree");
   if (SIZEOF_OF_UINTN == 4)
-    *((grub_uint32_t *) curval->data) 
+    *((grub_uint32_t *) curval->data)
       = PTR_TO_UINT32 (SYSTEM_TABLE_PTR (runtime_services));
   else
-    *((grub_uint64_t *) curval->data) 
+    *((grub_uint64_t *) curval->data)
       = PTR_TO_UINT64 (SYSTEM_TABLE_PTR (runtime_services));
-  
+
   return GRUB_ERR_NONE;
 }
 
 /* Boot xnu. */
-grub_err_t 
+grub_err_t
 grub_xnu_boot (void)
 {
   struct grub_xnu_boot_params *bootparams_relloc;
@@ -464,17 +464,17 @@ grub_xnu_boot (void)
 				   &map_key, &descriptor_size,
 				   &descriptor_version) <= 0)
     return grub_errno;
-  mmap_relloc_off = (grub_uint8_t *) memory_map 
+  mmap_relloc_off = (grub_uint8_t *) memory_map
     - (grub_uint8_t *) grub_xnu_heap_start;
 
-  firstruntimeaddr = (grub_uint64_t) (-1); 
+  firstruntimeaddr = (grub_uint64_t) (-1);
   lastruntimeaddr = 0;
   for (i = 0; (unsigned) i < memory_map_size / descriptor_size; i++)
     {
-      grub_efi_memory_descriptor_t *curdesc = (grub_efi_memory_descriptor_t *) 
+      grub_efi_memory_descriptor_t *curdesc = (grub_efi_memory_descriptor_t *)
 	((char *) memory_map + descriptor_size * i);
 
-      /* Some EFI implementations set physical_start to 0 which 
+      /* Some EFI implementations set physical_start to 0 which
 	 causes XNU crash. */
       curdesc->virtual_start = curdesc->physical_start;
 
@@ -494,7 +494,7 @@ grub_xnu_boot (void)
   bootparams_relloc = grub_xnu_heap_malloc (sizeof (*bootparams_relloc));
   if (! bootparams_relloc)
     return grub_errno;
-  bootparams_relloc_off = (grub_uint8_t *) bootparams_relloc 
+  bootparams_relloc_off = (grub_uint8_t *) bootparams_relloc
     - (grub_uint8_t *) grub_xnu_heap_start;
   err = grub_xnu_writetree_toheap (&devtree, &devtreelen);
   if (err)
@@ -502,10 +502,10 @@ grub_xnu_boot (void)
   bootparams_relloc = (struct grub_xnu_boot_params *)
     (bootparams_relloc_off + (grub_uint8_t *) grub_xnu_heap_start);
 
-  grub_memcpy (bootparams_relloc->cmdline, grub_xnu_cmdline, 
+  grub_memcpy (bootparams_relloc->cmdline, grub_xnu_cmdline,
 	       sizeof (bootparams_relloc->cmdline));
 
-  bootparams_relloc->devtree = ((char *) devtree - grub_xnu_heap_start) 
+  bootparams_relloc->devtree = ((char *) devtree - grub_xnu_heap_start)
     + grub_xnu_heap_will_be_at;
   bootparams_relloc->devtreelen = devtreelen;
 
@@ -513,41 +513,41 @@ grub_xnu_boot (void)
   bootparams_relloc->heap_size = grub_xnu_heap_size;
 
   bootparams_relloc->efi_mmap = grub_xnu_heap_will_be_at + mmap_relloc_off;
-  bootparams_relloc->efi_mmap_size = memory_map_size;          
-  bootparams_relloc->efi_mem_desc_size = descriptor_size;      
-  bootparams_relloc->efi_mem_desc_version = descriptor_version;   
+  bootparams_relloc->efi_mmap_size = memory_map_size;
+  bootparams_relloc->efi_mem_desc_size = descriptor_size;
+  bootparams_relloc->efi_mem_desc_version = descriptor_version;
 
-  bootparams_relloc->efi_runtime_first_page = firstruntimeaddr 
+  bootparams_relloc->efi_runtime_first_page = firstruntimeaddr
     / GRUB_XNU_PAGESIZE;
-  bootparams_relloc->efi_runtime_npages 
-    = ((lastruntimeaddr + GRUB_XNU_PAGESIZE - 1) / GRUB_XNU_PAGESIZE) 
+  bootparams_relloc->efi_runtime_npages
+    = ((lastruntimeaddr + GRUB_XNU_PAGESIZE - 1) / GRUB_XNU_PAGESIZE)
     - (firstruntimeaddr / GRUB_XNU_PAGESIZE);
   bootparams_relloc->efi_uintnbits = SIZEOF_OF_UINTN * 8;
-  bootparams_relloc->efi_system_table 
+  bootparams_relloc->efi_system_table
     = PTR_TO_UINT32 (grub_autoefi_system_table);
 
-  bootparams_relloc->verminor = GRUB_XNU_BOOTARGS_VERMINOR;  
+  bootparams_relloc->verminor = GRUB_XNU_BOOTARGS_VERMINOR;
   bootparams_relloc->vermajor = GRUB_XNU_BOOTARGS_VERMAJOR;
 
   /* Parameters for asm helper. */
-  grub_xnu_stack = bootparams_relloc->heap_start 
+  grub_xnu_stack = bootparams_relloc->heap_start
     + bootparams_relloc->heap_size + GRUB_XNU_PAGESIZE;
   grub_xnu_arg1 = bootparams_relloc_off + grub_xnu_heap_will_be_at;
 #ifndef GRUB_UTIL
-  grub_xnu_launch = (void (*) (void)) 
+  grub_xnu_launch = (void (*) (void))
     (grub_xnu_heap_start + grub_xnu_heap_size);
 #endif
   grub_dprintf ("xnu", "eip=%x\n", grub_xnu_entry_point);
   grub_dprintf ("xnu", "launch=%p\n", grub_xnu_launch);
 
   const char *debug = grub_env_get ("debug");
-    
+
   if (debug && (grub_strword (debug, "all") || grub_strword (debug, "xnu")))
     {
       grub_printf ("Press any key to launch xnu\n");
       grub_getkey ();
     }
-  
+
   /* Set video. */
   err = grub_xnu_set_video (bootparams_relloc);
   if (err != GRUB_ERR_NONE)
@@ -564,8 +564,8 @@ grub_xnu_boot (void)
       bootparams_relloc->lfb_base = 0;
     }
 
-  grub_memcpy (grub_xnu_heap_start + grub_xnu_heap_size, 
-	       grub_xnu_launcher_start, 
+  grub_memcpy (grub_xnu_heap_start + grub_xnu_heap_size,
+	       grub_xnu_launcher_start,
 	       grub_xnu_launcher_end - grub_xnu_launcher_start);
 
 

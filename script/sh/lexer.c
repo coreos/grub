@@ -157,7 +157,7 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 
   for (;! state->done && (*state->script || firstrun); firstrun = 0)
     {
-      
+
       if (! *state->script)
 	{
 	  /* Check if more tokens are requested by the parser.  */
@@ -200,7 +200,7 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 	}
 
       newstate = grub_parser_cmdline_state (state->state, *state->script, &use);
-      
+
       /* Check if it is a text.  */
       if (check_textstate (newstate))
 	{
@@ -253,19 +253,19 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 	  buffer = grub_script_malloc (parsestate, 2048);
 	  if (! buffer)
 	    return 0;
-	  
+
 	  bp = buffer;
-	  
+
 	  /* Read one token, possible quoted.  */
 	  while (*state->script)
 	    {
 	      newstate = grub_parser_cmdline_state (state->state,
 						    *state->script, &use);
-	      
+
 	      /* Check if a variable name starts.  */
 	      if (check_varstate (newstate))
 		break;
-	      
+
 	      /* If the string is not quoted or escaped, stop processing
 		 when a special token was found.  It will be recognized
 		 next time when this function is called.  */
@@ -273,7 +273,7 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 		  && state->state != GRUB_PARSER_STATE_ESC)
 		{
 		  int breakout = 0;
-		  
+
 		  switch (use)
 		    {
 		    case ' ':
@@ -290,7 +290,7 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 		}
 	      else if (use)
 		*(bp++) = use;
-	      
+
 	      state->state = newstate;
 	      nextchar (state);
 	    }
@@ -300,7 +300,7 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 	  grub_dprintf ("scripting", "token=`%s'\n", buffer);
 	  yylval->arg = grub_script_arg_add (parsestate, yylval->arg,
 					     GRUB_SCRIPT_ARG_TYPE_STR, buffer);
-	  
+
 	}
       else if (newstate == GRUB_PARSER_STATE_VAR
 	       || newstate == GRUB_PARSER_STATE_QVAR)
@@ -309,15 +309,15 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 	  buffer = grub_script_malloc (parsestate, 2096);
 	  if (! buffer)
 	    return 0;
-	  
+
 	  bp = buffer;
-	  
+
 	  /* This is a variable, read the variable name.  */
 	  while (*state->script)
 	    {
 	      newstate = grub_parser_cmdline_state (state->state,
 						    *state->script, &use);
-	      
+
 	      /* Check if this character is not part of the variable name
 		 anymore.  */
 	      if (! (check_varstate (newstate)))
@@ -328,18 +328,18 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 		  state->state = newstate;
 		  break;
 		}
-	      
+
 	      if (use)
 		*(bp++) = use;
 	      nextchar (state);
 	      state->state = newstate;
 	    }
-	  
+
 	  *bp = '\0';
 	  state->state = newstate;
 	  yylval->arg = grub_script_arg_add (parsestate, yylval->arg,
 					     GRUB_SCRIPT_ARG_TYPE_VAR, buffer);
-	  grub_dprintf ("scripting", "vartoken=`%s'\n", buffer);	  
+	  grub_dprintf ("scripting", "vartoken=`%s'\n", buffer);
 	}
       else
 	{
@@ -349,7 +349,7 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 	  return 0;
 	}
     }
-  
+
   if (yylval->arg == 0)
     {
       int token = state->tokenonhold;

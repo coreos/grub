@@ -33,7 +33,7 @@ sbin_UTILITIES = grub-mkdevicemap
 ifeq ($(enable_grub_emu), yes)
 sbin_UTILITIES += grub-emu
 endif
- 
+
 # For grub-mkdevicemap.
 grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/deviceiter.c \
 	util/devicemap.c util/misc.c
@@ -144,7 +144,7 @@ multiboot_mod_SOURCES = loader/ieee1275/multiboot2.c \
                          loader/multiboot2.c \
                          loader/multiboot_loader.c
 multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
-multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS) 
+multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For memdisk.mod.
 memdisk_mod_SOURCES = disk/memdisk.c

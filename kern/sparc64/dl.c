@@ -47,7 +47,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
   Elf64_Sym *symtab;
   Elf64_Word entsize;
   unsigned i;
-  
+
   /* Find a symbol table.  */
   for (i = 0, s = (Elf64_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
@@ -57,10 +57,10 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
   if (i == e->e_shnum)
     return grub_error (GRUB_ERR_BAD_MODULE, "no symtab found");
-  
+
   symtab = (Elf64_Sym *) ((char *) e + s->sh_offset);
   entsize = s->sh_entsize;
-  
+
   for (i = 0, s = (Elf64_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
        i++, s = (Elf64_Shdr *) ((char *) s + e->e_shentsize))
@@ -76,7 +76,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 	if (seg)
 	  {
 	    Elf64_Rela *rel, *max;
-	    
+
 	    for (rel = (Elf64_Rela *) ((char *) e + s->sh_offset),
 		   max = rel + s->sh_size / s->sh_entsize;
 		 rel < max;
@@ -85,11 +85,11 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		Elf64_Word *addr;
 		Elf64_Sym *sym;
 		Elf64_Addr value;
-		
+
 		if (seg->size < rel->r_offset)
 		  return grub_error (GRUB_ERR_BAD_MODULE,
 				     "reloc offset is out of the segment");
-		
+
 		addr = (Elf64_Word *) ((char *) seg->addr + rel->r_offset);
 		sym = (Elf64_Sym *) ((char *) symtab
 				     + entsize * ELF64_R_SYM (rel->r_info));
@@ -139,6 +139,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 	      }
 	  }
       }
-  
+
   return GRUB_ERR_NONE;
 }

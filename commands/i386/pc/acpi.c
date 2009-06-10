@@ -26,7 +26,7 @@ grub_machine_acpi_get_rsdpv1 (void)
   int ebda_len;
   grub_uint8_t *ebda, *ptr;
 
-  grub_dprintf ("acpi", "Looking for RSDP. Scanning EBDA\n");  
+  grub_dprintf ("acpi", "Looking for RSDP. Scanning EBDA\n");
   ebda = (grub_uint8_t *) ((* ((grub_uint16_t *) 0x40e)) << 4);
   ebda_len = * (grub_uint16_t *) ebda;
   if (! ebda_len)
@@ -37,7 +37,7 @@ grub_machine_acpi_get_rsdpv1 (void)
 	&& ((struct grub_acpi_rsdp_v10 *) ptr)->revision == 0)
       return (struct grub_acpi_rsdp_v10 *) ptr;
 
-  grub_dprintf ("acpi", "Looking for RSDP. Scanning BIOS\n");  
+  grub_dprintf ("acpi", "Looking for RSDP. Scanning BIOS\n");
   for (ptr = (grub_uint8_t *) 0xe0000; ptr < (grub_uint8_t *) 0x100000;
        ptr += 16)
     if (grub_memcmp (ptr, "RSD PTR ", 8) == 0
@@ -53,7 +53,7 @@ grub_machine_acpi_get_rsdpv2 (void)
   int ebda_len;
   grub_uint8_t *ebda, *ptr;
 
-  grub_dprintf ("acpi", "Looking for RSDP. Scanning EBDA\n");  
+  grub_dprintf ("acpi", "Looking for RSDP. Scanning EBDA\n");
   ebda = (grub_uint8_t *) ((* ((grub_uint16_t *) 0x40e)) << 4);
   ebda_len = * (grub_uint16_t *) ebda;
   if (! ebda_len)
@@ -67,7 +67,7 @@ grub_machine_acpi_get_rsdpv2 (void)
 	== 0)
       return (struct grub_acpi_rsdp_v20 *) ptr;
 
-  grub_dprintf ("acpi", "Looking for RSDP. Scanning BIOS\n");  
+  grub_dprintf ("acpi", "Looking for RSDP. Scanning BIOS\n");
   for (ptr = (grub_uint8_t *) 0xe0000; ptr < (grub_uint8_t *) 0x100000;
        ptr += 16)
     if (grub_memcmp (ptr, "RSD PTR ", 8) == 0

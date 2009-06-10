@@ -127,7 +127,7 @@ serial_translate_key_sequence (void)
       {'H', 1},
       {'4', 4}
     };
-  
+
   static struct
   {
       short key;
@@ -148,7 +148,7 @@ serial_translate_key_sequence (void)
   if (npending >= 3)
     {
       unsigned int i;
-      
+
       for (i = 0;
 	   i < sizeof (three_code_table) / sizeof (three_code_table[0]);
 	   i++)
@@ -165,7 +165,7 @@ serial_translate_key_sequence (void)
     {
       unsigned int i;
       short key = *((short *) (input_buf + 2));
-      
+
       for (i = 0;
 	   i < sizeof (four_code_table) / sizeof (four_code_table[0]);
 	   i++)
@@ -187,16 +187,16 @@ fill_input_buf (const int nowait)
   for (i = 0; i < 10000 && npending < sizeof (input_buf); i++)
     {
       int c;
-      
+
       c = serial_hw_fetch ();
       if (c >= 0)
 	{
 	  input_buf[npending++] = c;
-	  
+
 	  /* Reset the counter to zero, to wait for the same interval.  */
 	  i = 0;
 	}
-      
+
       if (nowait)
 	break;
     }
@@ -324,60 +324,60 @@ grub_serial_putchar (grub_uint32_t c)
 	    case GRUB_TERM_DISP_LEFT:
 	      c = '<';
 	      break;
-	      
+
 	    case GRUB_TERM_DISP_UP:
 	      c = '^';
 	      break;
-	      
+
 	    case GRUB_TERM_DISP_RIGHT:
 	      c = '>';
 	      break;
-	      
+
 	    case GRUB_TERM_DISP_DOWN:
 	      c = 'v';
 	      break;
-	      
+
 	    case GRUB_TERM_DISP_HLINE:
 	      c = '-';
 	      break;
-	      
+
 	    case GRUB_TERM_DISP_VLINE:
 	      c = '|';
 	      break;
-	      
+
 	    case GRUB_TERM_DISP_UL:
 	    case GRUB_TERM_DISP_UR:
 	    case GRUB_TERM_DISP_LL:
 	    case GRUB_TERM_DISP_LR:
 	      c = '+';
 	      break;
-	      
+
 	    default:
 	      c = '?';
 	      break;
 	    }
 	}
-      
+
       switch (c)
 	{
 	case '\a':
 	  break;
-	  
+
 	case '\b':
 	case 127:
 	  if (xpos > 0)
 	    xpos--;
 	  break;
-	  
+
 	case '\n':
 	  if (ypos < TEXT_HEIGHT)
 	    ypos++;
 	  break;
-	  
+
 	case '\r':
 	  xpos = 0;
 	  break;
-	  
+
 	default:
 	  if (xpos >= TEXT_WIDTH)
 	    {
@@ -388,7 +388,7 @@ grub_serial_putchar (grub_uint32_t c)
 	  break;
 	}
     }
-  
+
   serial_hw_put (c);
 }
 
@@ -422,7 +422,7 @@ grub_serial_gotoxy (grub_uint8_t x, grub_uint8_t y)
       keep_track = 0;
       grub_terminfo_gotoxy (x, y);
       keep_track = 1;
-      
+
       xpos = x;
       ypos = y;
     }
@@ -507,10 +507,10 @@ grub_cmd_serial (grub_extcmd_t cmd,
       if (!serial_settings.port)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad unit number.");
     }
-  
+
   if (state[1].set)
     serial_settings.port = (unsigned short) grub_strtoul (state[1].arg, 0, 0);
-  
+
   if (state[2].set)
     {
       unsigned long speed;
@@ -523,7 +523,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad speed");
 	}
     }
-  
+
   if (state[3].set)
     {
       if (! grub_strcmp (state[3].arg, "5"))
@@ -540,7 +540,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad word length");
 	}
     }
-  
+
   if (state[4].set)
     {
       if (! grub_strcmp (state[4].arg, "no"))
@@ -555,7 +555,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad parity");
 	}
     }
-  
+
   if (state[5].set)
     {
       if (! grub_strcmp (state[5].arg, "1"))
@@ -571,7 +571,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
 
   /* Initialize with new settings.  */
   hwiniterr = serial_hw_init ();
-  
+
   if (hwiniterr == GRUB_ERR_NONE)
     {
       /* Register terminal if not yet registered.  */
@@ -599,7 +599,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
 	    }
 	}
     }
-  
+
   return hwiniterr;
 }
 

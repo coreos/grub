@@ -41,11 +41,11 @@ grub_device_open (const char *name)
 	  goto fail;
 	}
     }
-    
+
   dev = grub_malloc (sizeof (*dev));
   if (! dev)
     goto fail;
-  
+
   /* Try to open a disk.  */
   disk = grub_disk_open (name);
   if (! disk)
@@ -59,7 +59,7 @@ grub_device_open (const char *name)
  fail:
   if (disk)
     grub_disk_close (disk);
-  
+
   grub_free (dev);
 
   return 0;
@@ -82,7 +82,7 @@ grub_device_iterate (int (*hook) (const char *name))
   auto int iterate_disk (const char *disk_name);
   auto int iterate_partition (grub_disk_t disk,
 			      const grub_partition_t partition);
-  
+
   struct part_ent
   {
     struct part_ent *next;
@@ -95,11 +95,11 @@ grub_device_iterate (int (*hook) (const char *name))
 
       if (hook (disk_name))
 	return 1;
-      
+
       dev = grub_device_open (disk_name);
       if (! dev)
 	return 0;
-      
+
       if (dev->disk && dev->disk->has_partitions)
 	{
 	  struct part_ent *p;
@@ -127,12 +127,12 @@ grub_device_iterate (int (*hook) (const char *name))
       grub_device_close (dev);
       return 0;
     }
-  
+
   int iterate_partition (grub_disk_t disk, const grub_partition_t partition)
     {
       char *partition_name;
       struct part_ent *p;
-      
+
       partition_name = grub_partition_get_name (partition);
       if (! partition_name)
 	return 1;

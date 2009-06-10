@@ -151,10 +151,10 @@ struct grub_term_input
 
   /* Clean up the terminal.  */
   grub_err_t (*fini) (void);
-  
+
   /* Check if any input character is available.  */
   int (*checkkey) (void);
-  
+
   /* Get a character.  */
   int (*getkey) (void);
 };
@@ -173,37 +173,37 @@ struct grub_term_output
 
   /* Clean up the terminal.  */
   grub_err_t (*fini) (void);
-  
+
   /* Put a character. C is encoded in Unicode.  */
   void (*putchar) (grub_uint32_t c);
 
   /* Get the number of columns occupied by a given character C. C is
      encoded in Unicode.  */
   grub_ssize_t (*getcharwidth) (grub_uint32_t c);
-  
+
   /* Get the screen size. The return value is ((Width << 8) | Height).  */
   grub_uint16_t (*getwh) (void);
 
   /* Get the cursor position. The return value is ((X << 8) | Y).  */
   grub_uint16_t (*getxy) (void);
-  
+
   /* Go to the position (X, Y).  */
   void (*gotoxy) (grub_uint8_t x, grub_uint8_t y);
-  
+
   /* Clear the screen.  */
   void (*cls) (void);
-  
+
   /* Set the current color to be used */
   void (*setcolorstate) (grub_term_color_state state);
-  
+
   /* Set the normal color and the highlight color. The format of each
      color is VGA's.  */
   void (*setcolor) (grub_uint8_t normal_color, grub_uint8_t highlight_color);
-  
+
   /* Get the normal color and the highlight color. The format of each
      color is VGA's.  */
   void (*getcolor) (grub_uint8_t *normal_color, grub_uint8_t *highlight_color);
-  
+
   /* Turn on/off the cursor.  */
   void (*setcursor) (int on);
 

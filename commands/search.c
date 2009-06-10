@@ -42,7 +42,7 @@ search_fs (const char *key, const char *var, int no_floppy, int is_uuid)
 {
   int count = 0;
   auto int iterate_device (const char *name);
-  
+
   int iterate_device (const char *name)
     {
       grub_device_t dev;
@@ -53,12 +53,12 @@ search_fs (const char *key, const char *var, int no_floppy, int is_uuid)
 	  name[0] == 'f' && name[1] == 'd' &&
 	  name[2] >= '0' && name[2] <= '9')
 	return 0;
-      
+
       dev = grub_device_open (name);
       if (dev)
 	{
 	  grub_fs_t fs;
-	  
+
 	  fs = grub_fs_probe (dev);
 
 #define QUID(x)	(is_uuid ? (x)->uuid : (x)->label)
@@ -66,7 +66,7 @@ search_fs (const char *key, const char *var, int no_floppy, int is_uuid)
 	  if (fs && QUID(fs))
 	    {
 	      char *quid;
-	      
+
 	      (QUID(fs)) (dev, &quid);
 	      if (grub_errno == GRUB_ERR_NONE && quid)
 		{
@@ -82,20 +82,20 @@ search_fs (const char *key, const char *var, int no_floppy, int is_uuid)
 		      else
 			  grub_printf (" %s", name);
 		    }
-		  
+
 		  grub_free (quid);
 		}
 	    }
-	  
+
 	  grub_device_close (dev);
 	}
-      
+
       grub_errno = GRUB_ERR_NONE;
       return abort;
     }
-  
+
   grub_device_iterate (iterate_device);
-  
+
   if (count == 0)
     grub_error (GRUB_ERR_FILE_NOT_FOUND, "no such device: %s", key);
 }
@@ -113,13 +113,13 @@ search_file (const char *key, const char *var, int no_floppy)
       char *p;
       grub_file_t file;
       int abort = 0;
-      
+
       /* Skip floppy drives when requested.  */
       if (no_floppy &&
 	  name[0] == 'f' && name[1] == 'd' &&
 	  name[2] >= '0' && name[2] <= '9')
 	return 0;
-      
+
       len = grub_strlen (name) + 2 + grub_strlen (key) + 1;
       p = grub_realloc (buf, len);
       if (! p)
@@ -127,7 +127,7 @@ search_file (const char *key, const char *var, int no_floppy)
 
       buf = p;
       grub_sprintf (buf, "(%s)%s", name, key);
-      
+
       file = grub_file_open (buf);
       if (file)
 	{
@@ -143,15 +143,15 @@ search_file (const char *key, const char *var, int no_floppy)
 
 	  grub_file_close (file);
 	}
-      
+
       grub_errno = GRUB_ERR_NONE;
       return abort;
     }
-  
+
   grub_device_iterate (iterate_device);
-  
+
   grub_free (buf);
-  
+
   if (grub_errno == GRUB_ERR_NONE && count == 0)
     grub_error (GRUB_ERR_FILE_NOT_FOUND, "no such device");
 }
@@ -161,13 +161,13 @@ grub_cmd_search (grub_extcmd_t cmd, int argc, char **args)
 {
   struct grub_arg_list *state = cmd->state;
   const char *var = 0;
-  
+
   if (argc == 0)
     return grub_error (GRUB_ERR_INVALID_COMMAND, "no argument specified");
 
   if (state[3].set)
     var = state[3].arg ? state[3].arg : "root";
-  
+
   if (state[1].set)
     search_fs (args[0], var, state[4].set, 0);
   else if (state[2].set)

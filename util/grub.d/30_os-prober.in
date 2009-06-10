@@ -52,7 +52,7 @@ EOF
     ;;
     linux)
       LINUXPROBED="`linux-boot-prober ${DEVICE} 2> /dev/null | tr ' ' '^' | paste -s -d ' '`"
- 
+
       for LINUX in ${LINUXPROBED} ; do
         LROOT="`echo ${LINUX} | cut -d ':' -f 1`"
         LBOOT="`echo ${LINUX} | cut -d ':' -f 2`"

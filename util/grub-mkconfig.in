@@ -60,7 +60,7 @@ for option in "$@"; do
 	;;
     --output=)
 	grub_cfg=`echo "$option" | sed 's/--output=//'`
-	;;	
+	;;
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage

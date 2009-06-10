@@ -60,10 +60,10 @@ grub_unixtime2datetime (grub_int32_t nix, struct grub_datetime *datetime)
 {
   int i;
   int div;
-  grub_uint8_t months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}; 
-  /* In the period of validity of unixtime all years divisible by 4 
+  grub_uint8_t months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  /* In the period of validity of unixtime all years divisible by 4
      are bissextile*/
-  /* Convenience: let's have 3 consecutive non-bissextile years 
+  /* Convenience: let's have 3 consecutive non-bissextile years
      at the beginning of the epoch. So count from 1973 instead of 1970 */
   nix -= 3*SECPERYEAR + SECPERDAY;
   /* Transform C divisions and modulos to mathematical ones */
@@ -85,15 +85,15 @@ grub_unixtime2datetime (grub_int32_t nix, struct grub_datetime *datetime)
       datetime->year += nix / SECPERYEAR;
       nix %= SECPERYEAR;
     }
-  for (i = 0; i < 12 
-	 && nix >= ((grub_int32_t) (i==1 && datetime->year % 4 == 0 
+  for (i = 0; i < 12
+	 && nix >= ((grub_int32_t) (i==1 && datetime->year % 4 == 0
 				    ? 29 : months[i]))*SECPERDAY; i++)
-    nix -= ((grub_int32_t) (i==1 && datetime->year % 4 == 0 
+    nix -= ((grub_int32_t) (i==1 && datetime->year % 4 == 0
 			    ? 29 : months[i]))*SECPERDAY;
-  datetime->month = i + 1; 
+  datetime->month = i + 1;
   datetime->day = 1 + (nix / SECPERDAY);
   nix %= SECPERDAY;
-  datetime->hour = (nix / SECPERHOUR);  
+  datetime->hour = (nix / SECPERHOUR);
   nix %= SECPERHOUR;
   datetime->minute = nix / SECPERMIN;
   datetime->second = nix % SECPERMIN;

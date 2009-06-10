@@ -251,7 +251,7 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   if (actual != actual)
     return grub_error (GRUB_ERR_READ_ERROR, "Read error on block: %llu",
 		       (long long) sector);
-    
+
   return 0;
 }
 

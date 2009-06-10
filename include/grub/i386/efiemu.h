@@ -20,11 +20,11 @@
 #define GRUB_ARCH_EFI_EMU_HEADER	1
 
 grub_err_t
-grub_arch_efiemu_relocate_symbols32 (grub_efiemu_segment_t segs, 
+grub_arch_efiemu_relocate_symbols32 (grub_efiemu_segment_t segs,
 				     struct grub_efiemu_elf_sym *elfsyms,
 				     void *ehdr);
 grub_err_t
-grub_arch_efiemu_relocate_symbols64 (grub_efiemu_segment_t segs, 
+grub_arch_efiemu_relocate_symbols64 (grub_efiemu_segment_t segs,
 				     struct grub_efiemu_elf_sym *elfsyms,
 				     void *ehdr);
 

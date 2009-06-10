@@ -103,21 +103,21 @@ find_mmap_size (void)
 
   if (mmap_size != 0)
     return mmap_size;
-  
+
   mmap_size = (1 << 12);
   while (1)
     {
       int ret;
       grub_efi_memory_descriptor_t *mmap;
       grub_efi_uintn_t desc_size;
-      
+
       mmap = grub_malloc (mmap_size);
       if (! mmap)
 	return 0;
 
       ret = grub_efi_get_memory_map (&mmap_size, mmap, 0, &desc_size, 0);
       grub_free (mmap);
-      
+
       if (ret < 0)
 	grub_fatal ("cannot get memory map");
       else if (ret > 0)
@@ -147,7 +147,7 @@ free_pages (void)
       grub_efi_free_pages ((grub_addr_t) prot_mode_mem, prot_mode_pages);
       prot_mode_mem = 0;
     }
-  
+
   if (initrd_mem)
     {
       grub_efi_free_pages ((grub_addr_t) initrd_mem, initrd_pages);
@@ -165,7 +165,7 @@ allocate_pages (grub_size_t prot_size)
   grub_efi_uintn_t mmap_size, tmp_mmap_size;
   grub_efi_memory_descriptor_t *desc;
   grub_size_t real_size;
-  
+
   /* Make sure that each size is aligned to a page boundary.  */
   real_size = GRUB_LINUX_CL_END_OFFSET;
   prot_size = page_align (prot_size);
@@ -173,16 +173,16 @@ allocate_pages (grub_size_t prot_size)
 
   grub_dprintf ("linux", "real_size = %x, prot_size = %x, mmap_size = %x\n",
 		(unsigned) real_size, (unsigned) prot_size, (unsigned) mmap_size);
-  
+
   /* Calculate the number of pages; Combine the real mode code with
      the memory map buffer for simplicity.  */
   real_mode_pages = ((real_size + mmap_size) >> 12);
   prot_mode_pages = (prot_size >> 12);
-  
+
   /* Initialize the memory pointers with NULL for convenience.  */
   real_mode_mem = 0;
   prot_mode_mem = 0;
-  
+
   /* Read the memory map temporarily, to find free space.  */
   mmap = grub_malloc (mmap_size);
   if (! mmap)
@@ -193,7 +193,7 @@ allocate_pages (grub_size_t prot_size)
     grub_fatal ("cannot get memory map");
 
   mmap_end = NEXT_MEMORY_DESCRIPTOR (mmap, tmp_mmap_size);
-  
+
   /* First, find free pages for the real mode code
      and the memory map buffer.  */
   for (desc = mmap;
@@ -208,7 +208,7 @@ allocate_pages (grub_size_t prot_size)
 	{
 	  grub_efi_physical_address_t physical_end;
 	  grub_efi_physical_address_t addr;
-	  
+
 	  physical_end = desc->physical_start + (desc->num_pages << 12);
 	  if (physical_end > 0x90000)
 	    physical_end = 0x90000;
@@ -225,7 +225,7 @@ allocate_pages (grub_size_t prot_size)
 	  real_mode_mem = grub_efi_allocate_pages (addr, real_mode_pages);
 	  if (! real_mode_mem)
 	    grub_fatal ("cannot allocate pages");
-	  
+
 	  desc->num_pages -= real_mode_pages;
 	  break;
 	}
@@ -238,7 +238,7 @@ allocate_pages (grub_size_t prot_size)
     }
 
   mmap_buf = (void *) ((char *) real_mode_mem + real_size);
-	      
+
   /* Next, find free pages for the protected mode code.  */
   /* XXX what happens if anything is using this address?  */
   prot_mode_mem = grub_efi_allocate_pages (0x100000, prot_mode_pages + 1);
@@ -299,7 +299,7 @@ grub_linux_boot (void)
   grub_efi_uintn_t desc_size;
   grub_efi_uint32_t desc_version;
   int e820_num;
-  
+
   params = real_mode_mem;
 
   grub_dprintf ("linux", "code32_start = %x, idt_desc = %lx, gdt_desc = %lx\n",
@@ -382,12 +382,12 @@ grub_linux_boot (void)
     }
 
 #ifdef __x86_64__
-  
-  grub_memcpy ((char *) prot_mode_mem + (prot_mode_pages << 12), 
-	       grub_linux_trampoline_start, 
+
+  grub_memcpy ((char *) prot_mode_mem + (prot_mode_pages << 12),
+	       grub_linux_trampoline_start,
 	       grub_linux_trampoline_end - grub_linux_trampoline_start);
-  
-  ((void (*) (unsigned long, void *)) ((char *) prot_mode_mem 
+
+  ((void (*) (unsigned long, void *)) ((char *) prot_mode_mem
                                      + (prot_mode_pages << 12)))
     (params->code32_start, real_mode_mem);
 
@@ -395,7 +395,7 @@ grub_linux_boot (void)
 
   /* Hardware interrupts are not safe any longer.  */
   asm volatile ("cli" : : );
-  
+
   /* Load the IDT and the GDT for the bootstrap.  */
   asm volatile ("lidt %0" : : "m" (idt_desc));
   asm volatile ("lgdt %0" : : "m" (gdt_desc));
@@ -408,7 +408,7 @@ grub_linux_boot (void)
 
   /* Enter Linux.  */
   asm volatile ("jmp *%%ecx" : : );
-  
+
 #endif
 
   /* Never reach here.  */
@@ -605,7 +605,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   char *dest;
 
   grub_dl_ref (my_mod);
-  
+
   if (argc == 0)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
@@ -650,17 +650,17 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     }
 
   setup_sects = lh.setup_sects;
-  
+
   /* If SETUP_SECTS is not set, set it to the default (4).  */
   if (! setup_sects)
     setup_sects = GRUB_LINUX_DEFAULT_SETUP_SECTS;
 
   real_size = setup_sects << GRUB_DISK_SECTOR_BITS;
   prot_size = grub_file_size (file) - real_size - GRUB_DISK_SECTOR_SIZE;
-  
+
   if (! allocate_pages (prot_size))
     goto fail;
-  
+
   params = (struct linux_kernel_params *) real_mode_mem;
   grub_memset (params, 0, GRUB_LINUX_CL_END_OFFSET);
   grub_memcpy (&params->setup_sects, &lh.setup_sects, sizeof (lh) - 0x1F1);
@@ -691,7 +691,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
      space.  */
   params->ext_mem = ((32 * 0x100000) >> 10);
   params->alt_mem = ((32 * 0x100000) >> 10);
-  
+
   params->video_cursor_x = grub_getxy () >> 8;
   params->video_cursor_y = grub_getxy () & 0xff;
   params->video_page = 0; /* ??? */
@@ -778,7 +778,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_memset (params->padding7, 0, sizeof (params->padding7));
   grub_memset (params->padding8, 0, sizeof (params->padding8));
   grub_memset (params->padding9, 0, sizeof (params->padding9));
-  
+
 #endif
 
   /* The other EFI parameters are filled when booting.  */
@@ -797,9 +797,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     if (grub_memcmp (argv[i], "mem=", 4) == 0)
       {
 	char *val = argv[i] + 4;
-	  
+
 	linux_mem_size = grub_strtoul (val, &val, 0);
-	
+
 	if (grub_errno)
 	  {
 	    grub_errno = GRUB_ERR_NONE;
@@ -808,7 +808,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	else
 	  {
 	    int shift = 0;
-	    
+
 	    switch (grub_tolower (val[0]))
 	      {
 	      case 'g':
@@ -838,7 +838,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   dest = grub_stpcpy ((char *) real_mode_mem + GRUB_LINUX_CL_OFFSET,
 		      "BOOT_IMAGE=");
   dest = grub_stpcpy (dest, argv[0]);
-  
+
   /* Copy kernel parameters.  */
   for (i = 1;
        i < argc
@@ -861,7 +861,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     }
 
  fail:
-  
+
   if (file)
     grub_file_close (file);
 
@@ -886,13 +886,13 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_efi_memory_descriptor_t *desc;
   grub_efi_uintn_t desc_size;
   struct linux_kernel_header *lh;
-  
+
   if (argc == 0)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
       goto fail;
     }
-  
+
   if (! loaded)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
@@ -907,11 +907,11 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   initrd_pages = (page_align (size) >> 12);
 
   lh = (struct linux_kernel_header *) real_mode_mem;
-  
+
   addr_max = (grub_cpu_to_le32 (lh->initrd_addr_max) << 10);
   if (linux_mem_size != 0 && linux_mem_size < addr_max)
     addr_max = linux_mem_size;
-  
+
   /* Linux 2.3.xx has a bug in the memory range check, so avoid
      the last page.
      Linux 2.2.xx has a bug in the memory range check, which is
@@ -921,7 +921,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   /* Usually, the compression ratio is about 50%.  */
   addr_min = (grub_addr_t) prot_mode_mem + ((prot_mode_pages * 3) << 12)
 	     + page_align (size);
-  
+
   /* Find the highest address to put the initrd.  */
   mmap_size = find_mmap_size ();
   if (grub_efi_get_memory_map (&mmap_size, mmap_buf, 0, &desc_size, 0) <= 0)
@@ -936,7 +936,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 	  && desc->num_pages >= initrd_pages)
 	{
 	  grub_efi_physical_address_t physical_end;
-	  
+
 	  physical_end = desc->physical_start + (desc->num_pages << 12);
 	  if (physical_end > addr_max)
 	    physical_end = addr_max;
@@ -958,11 +958,11 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "no free pages available");
       goto fail;
     }
-  
+
   initrd_mem = grub_efi_allocate_pages (addr, initrd_pages);
   if (! initrd_mem)
     grub_fatal ("cannot allocate pages");
-  
+
   if (grub_file_read (file, initrd_mem, size) != size)
     {
       grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
@@ -971,11 +971,11 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   grub_printf ("   [Initrd, addr=0x%x, size=0x%x]\n",
 	       (unsigned) addr, (unsigned) size);
-  
+
   lh->ramdisk_image = addr;
   lh->ramdisk_size = size;
   lh->root_dev = 0x0100; /* XXX */
-  
+
  fail:
   if (file)
     grub_file_close (file);

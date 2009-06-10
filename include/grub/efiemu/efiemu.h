@@ -155,10 +155,10 @@ grub_err_t grub_efiemu_loadcore_init32 (void *core, grub_size_t core_size,
 					grub_efiemu_segment_t *segments);
 grub_err_t grub_efiemu_loadcore_init64 (void *core, grub_size_t core_size,
 					grub_efiemu_segment_t *segments);
-grub_err_t grub_efiemu_loadcore_load32 (void *core, 
+grub_err_t grub_efiemu_loadcore_load32 (void *core,
 					grub_size_t core_size,
 					grub_efiemu_segment_t segments);
-grub_err_t grub_efiemu_loadcore_load64 (void *core, 
+grub_err_t grub_efiemu_loadcore_load64 (void *core,
 					grub_size_t core_size,
 					grub_efiemu_segment_t segments);
 grub_err_t grub_efiemu_loadcore_unload32 (void);
@@ -189,14 +189,14 @@ struct grub_efiemu_configuration_table64
 } __attribute__ ((packed));
 typedef struct grub_efiemu_configuration_table32 grub_efiemu_configuration_table64_t;
 grub_err_t grub_efiemu_unregister_configuration_table (grub_efi_guid_t guid);
-grub_err_t 
-grub_efiemu_register_configuration_table (grub_efi_guid_t guid, 
+grub_err_t
+grub_efiemu_register_configuration_table (grub_efi_guid_t guid,
 					  void * (*get_table) (void *data),
-					  void (*unload) (void *data), 
+					  void (*unload) (void *data),
 					  void *data);
 
 /* Memory management functions */
-int grub_efiemu_request_memalign (grub_size_t align, grub_size_t size, 
+int grub_efiemu_request_memalign (grub_size_t align, grub_size_t size,
 				  grub_efi_memory_type_t type);
 void *grub_efiemu_mm_obtain_request (int handle);
 int grub_efiemu_get_memory_map (grub_efi_uintn_t *memory_map_size,
@@ -218,8 +218,8 @@ int grub_efiemu_get_memory_map (grub_efi_uintn_t *memory_map_size,
 				grub_efi_uintn_t *descriptor_size,
 				grub_efi_uint32_t *descriptor_version);
 grub_err_t
-grub_efiemu_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, 
-							grub_uint64_t, 
+grub_efiemu_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
+							grub_uint64_t,
 							grub_uint32_t));
 int grub_efiemu_sizeof_uintn_t (void);
 int grub_efiemu_exit_boot_services (grub_efi_uintn_t map_key);
@@ -242,30 +242,30 @@ struct grub_efiemu_prepare_hook
   void (*unload) (void *data);
   void *data;
 };
-grub_err_t grub_efiemu_prepare32 (struct grub_efiemu_prepare_hook 
+grub_err_t grub_efiemu_prepare32 (struct grub_efiemu_prepare_hook
 				  *prepare_hooks,
-				  struct grub_efiemu_configuration_table 
+				  struct grub_efiemu_configuration_table
 				  *config_tables);
-grub_err_t grub_efiemu_prepare64 (struct grub_efiemu_prepare_hook 
+grub_err_t grub_efiemu_prepare64 (struct grub_efiemu_prepare_hook
 				  *prepare_hooks,
-				  struct grub_efiemu_configuration_table 
+				  struct grub_efiemu_configuration_table
 				  *config_tables);
 grub_err_t grub_efiemu_unload (void);
 grub_err_t grub_efiemu_prepare (void);
 grub_err_t
 grub_efiemu_register_prepare_hook (grub_err_t (*hook) (void *data),
-				   void (*unload) (void *data), 
+				   void (*unload) (void *data),
 				   void *data);
 
 /* symbols and pointers */
 grub_err_t grub_efiemu_alloc_syms (void);
 grub_err_t grub_efiemu_request_symbols (int num);
-grub_err_t grub_efiemu_resolve_symbol (const char *name, 
+grub_err_t grub_efiemu_resolve_symbol (const char *name,
 				       int *handle, grub_off_t *off);
-grub_err_t grub_efiemu_register_symbol (const char *name, 
+grub_err_t grub_efiemu_register_symbol (const char *name,
 					int handle, grub_off_t off);
 void grub_efiemu_free_syms (void);
-grub_err_t grub_efiemu_write_value (void * addr, grub_uint32_t value, 
+grub_err_t grub_efiemu_write_value (void * addr, grub_uint32_t value,
 				    int plus_handle,
 				    int minus_handle, int ptv_needed, int size);
 grub_err_t grub_efiemu_pnvram (void);

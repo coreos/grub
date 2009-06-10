@@ -766,7 +766,7 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
 
 static grub_err_t
 grub_udf_dir (grub_device_t device, const char *path,
-	      int (*hook) (const char *filename, 
+	      int (*hook) (const char *filename,
 			   const struct grub_dirhook_info *info))
 {
   struct grub_udf_data *data = 0;

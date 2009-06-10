@@ -124,7 +124,7 @@ PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
 SCRIPTS = $(bin_SCRIPTS) $(sbin_SCRIPTS) $(grub-mkconfig_SCRIPTS)
 
 CLEANFILES =
-MOSTLYCLEANFILES = 
+MOSTLYCLEANFILES =
 DISTCLEANFILES = config.status config.cache config.log config.h \
 	Makefile stamp-h include/grub/cpu include/grub/machine \
 	gensymlist.sh genkernsyms.sh build_env.mk

@@ -41,7 +41,7 @@ grub_err_t grub_set_datetime (struct grub_datetime *datetime);
 int grub_get_weekday (struct grub_datetime *datetime);
 char *grub_get_weekday_name (struct grub_datetime *datetime);
 
-void grub_unixtime2datetime (grub_int32_t nix, 
+void grub_unixtime2datetime (grub_int32_t nix,
 			     struct grub_datetime *datetime);
 
 

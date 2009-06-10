@@ -73,12 +73,12 @@ grub_sun_is_valid (struct grub_sun_block *label)
 {
   grub_uint16_t *pos;
   grub_uint16_t sum = 0;
-  
+
   for (pos = (grub_uint16_t *) label;
        pos < (grub_uint16_t *) (label + 1);
        pos++)
     sum ^= *pos;
-  
+
   return ! sum;
 }
 
@@ -91,10 +91,10 @@ sun_partition_map_iterate (grub_disk_t disk,
   struct grub_disk raw;
   struct grub_sun_block block;
   int partnum;
-  
+
   raw = *disk;
   raw.partition = 0;
-  
+
   p = (grub_partition_t) grub_malloc (sizeof (struct grub_partition));
   if (! p)
     return grub_errno;
@@ -107,16 +107,16 @@ sun_partition_map_iterate (grub_disk_t disk,
     {
       if (GRUB_PARTMAP_SUN_MAGIC != grub_be_to_cpu16 (block.magic))
 	grub_error (GRUB_ERR_BAD_PART_TABLE, "not a sun partition table");
-      
+
       if (! grub_sun_is_valid (&block))
 	grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid checksum");
-      
+
       /* Maybe another error value would be better, because partition
 	 table _is_ recognized but invalid.  */
       for (partnum = 0; partnum < GRUB_PARTMAP_SUN_MAX_PARTS; partnum++)
 	{
 	  struct grub_sun_partition_descriptor *desc;
-	  
+
 	  if (block.infos[partnum].id == 0
 	      || block.infos[partnum].id == GRUB_PARTMAP_SUN_WHOLE_DISK_ID)
 	    continue;
@@ -134,7 +134,7 @@ sun_partition_map_iterate (grub_disk_t disk,
 	    }
 	}
     }
-  
+
   grub_free (p);
 
   return grub_errno;
@@ -148,7 +148,7 @@ sun_partition_map_probe (grub_disk_t disk, const char *str)
   char *s = (char *) str;
 
   auto int find_func (grub_disk_t d, const grub_partition_t partition);
-  
+
   int find_func (grub_disk_t d __attribute__ ((unused)),
 		 const grub_partition_t partition)
     {
@@ -157,10 +157,10 @@ sun_partition_map_probe (grub_disk_t disk, const char *str)
           p = (grub_partition_t) grub_malloc (sizeof (*p));
           if (p)
             grub_memcpy (p, partition, sizeof (*p));
-	  
+
           return 1;
         }
-      
+
       return 0;
     }
 
@@ -179,7 +179,7 @@ sun_partition_map_probe (grub_disk_t disk, const char *str)
       grub_error (GRUB_ERR_BAD_FILENAME, "invalid partition");
       p = 0;
     }
-  
+
   return p;
 }
 
@@ -187,11 +187,11 @@ static char *
 sun_partition_map_get_name (const grub_partition_t p)
 {
   char *name;
-  
+
   name = grub_malloc (13);
   if (name)
     grub_sprintf (name, "%d", p->index + 1);
-  
+
   return name;
 }
 

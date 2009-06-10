@@ -32,7 +32,7 @@ grub_util_lvm_isvolume (char *name)
   char *devname;
   struct stat st;
   int err;
-  
+
   devname = xmalloc (strlen (name) + 13);
 
   strcpy (devname, "/dev/mapper/");

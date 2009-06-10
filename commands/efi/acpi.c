@@ -34,7 +34,7 @@ grub_machine_acpi_get_rsdpv1 (void)
 	&grub_efi_system_table->configuration_table[i].vendor_guid;
 
       if (! grub_memcmp (guid, &acpi_guid, sizeof (grub_efi_guid_t)))
-	return (struct grub_acpi_rsdp_v10 *) 
+	return (struct grub_acpi_rsdp_v10 *)
 	  grub_efi_system_table->configuration_table[i].vendor_table;
     }
   return 0;
@@ -52,7 +52,7 @@ grub_machine_acpi_get_rsdpv2 (void)
 	&grub_efi_system_table->configuration_table[i].vendor_guid;
 
       if (! grub_memcmp (guid, &acpi20_guid, sizeof (grub_efi_guid_t)))
-	return (struct grub_acpi_rsdp_v20 *) 
+	return (struct grub_acpi_rsdp_v20 *)
 	  grub_efi_system_table->configuration_table[i].vendor_table;
     }
   return 0;

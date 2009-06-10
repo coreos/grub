@@ -21,7 +21,7 @@
 
 #define DS(x) ((x) - segstart)
 
-segstart:	
+segstart:
 VARIABLE(grub_machine_mmaphook_start)
 	.code16
 VARIABLE(grub_machine_mmaphook_int12)
@@ -52,7 +52,7 @@ VARIABLE (grub_machine_mmaphook_int15offset)
 	.word	0
 VARIABLE (grub_machine_mmaphook_int15segment)
 	.word	0
-	
+
 e801:
 	popf
 	push %ds
@@ -128,8 +128,8 @@ e820:
 	cmpw DS(EXT_C(grub_machine_mmaphook_mmap_num)), %bx
 #endif
 	jb noclean
-	xor %bx, %bx	
-noclean:	
+	xor %bx, %bx
+noclean:
 	mov $0x534d4150, %eax
 	pop %ds
 	clc
@@ -139,8 +139,8 @@ errexit:
 	pop %ds
 	stc
 	xor %bx, %bx
-	iret	
-	
+	iret
+
 VARIABLE(grub_machine_mmaphook_mmap_num)
 	.word 0
 VARIABLE(grub_machine_mmaphook_kblow)

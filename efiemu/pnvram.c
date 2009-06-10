@@ -45,13 +45,13 @@ static grub_uint32_t accuracy;
 static const struct grub_arg_option options[] = {
   {"size", 's', 0, "number of bytes to reserve for pseudo NVRAM", 0,
    ARG_TYPE_INT},
-  {"high-monotonic-count", 'm', 0, 
+  {"high-monotonic-count", 'm', 0,
    "Initial value of high monotonic count", 0, ARG_TYPE_INT},
-  {"timezone", 't', 0, 
+  {"timezone", 't', 0,
    "Timezone, offset in minutes from GMT", 0, ARG_TYPE_INT},
-  {"accuracy", 'a', 0, 
+  {"accuracy", 'a', 0,
    "Accuracy of clock, in 1e-12 units", 0, ARG_TYPE_INT},
-  {"daylight", 'd', 0, 
+  {"daylight", 'd', 0,
    "Daylight value, as per EFI specifications", 0, ARG_TYPE_INT},
   {0, 0, 0, 0, 0, 0}
 };
@@ -68,14 +68,14 @@ grub_strtosl (char *arg, char **end, int base)
 /* Export stuff for efiemu */
 static grub_err_t
 nvram_set (void * data __attribute__ ((unused)))
-{      
+{
   /* Take definitive pointers */
   grub_uint8_t *nvram_def = grub_efiemu_mm_obtain_request (nvram_handle);
-  grub_uint32_t *nvramsize_def 
+  grub_uint32_t *nvramsize_def
     = grub_efiemu_mm_obtain_request (nvramsize_handle);
   grub_uint32_t *high_monotonic_count_def
     = grub_efiemu_mm_obtain_request (high_monotonic_count_handle);
-  grub_int16_t *timezone_def 
+  grub_int16_t *timezone_def
     = grub_efiemu_mm_obtain_request (timezone_handle);
   grub_uint8_t *daylight_def
     = grub_efiemu_mm_obtain_request (daylight_handle);
@@ -94,11 +94,11 @@ nvram_set (void * data __attribute__ ((unused)))
   /* Register symbols */
   grub_efiemu_register_symbol ("efiemu_variables", nvram_handle, 0);
   grub_efiemu_register_symbol ("efiemu_varsize", nvramsize_handle, 0);
-  grub_efiemu_register_symbol ("efiemu_high_monotonic_count", 
+  grub_efiemu_register_symbol ("efiemu_high_monotonic_count",
 			       high_monotonic_count_handle, 0);
   grub_efiemu_register_symbol ("efiemu_time_zone", timezone_handle, 0);
   grub_efiemu_register_symbol ("efiemu_time_daylight", daylight_handle, 0);
-  grub_efiemu_register_symbol ("efiemu_time_accuracy", 
+  grub_efiemu_register_symbol ("efiemu_time_accuracy",
 			       accuracy_handle, 0);
 
   return GRUB_ERR_NONE;
@@ -134,7 +134,7 @@ read_pnvram (char *filename)
   struct efi_variable *efivar;
   grub_size_t guidlen, datalen;
   unsigned i, j;
-  
+
   file = grub_file_open (filename);
   if (!file)
     return grub_error (GRUB_ERR_BAD_OS, "couldn't read pnvram");
@@ -157,17 +157,17 @@ read_pnvram (char *filename)
 
       efivar = (struct efi_variable *) nvramptr;
       if (nvramptr - nvram + sizeof (struct efi_variable) > nvramsize)
-	return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+	return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 			   "file is too large for reserved variable space");
 
       nvramptr += sizeof (struct efi_variable);
 
       /* look ahow long guid field is*/
-      guidlen = 0;      
-      for (ptr2 = ptr; (grub_isspace (*ptr2) 
+      guidlen = 0;
+      for (ptr2 = ptr; (grub_isspace (*ptr2)
 			|| (*ptr2 >= '0' && *ptr2 <= '9')
 			|| (*ptr2 >= 'a' && *ptr2 <= 'f')
-			|| (*ptr2 >= 'A' && *ptr2 <= 'F')); 
+			|| (*ptr2 >= 'A' && *ptr2 <= 'F'));
 	   ptr2++)
 	if (!grub_isspace (*ptr2))
 	  guidlen++;
@@ -175,7 +175,7 @@ read_pnvram (char *filename)
 
       /* Read guid */
       if (guidlen != sizeof (efivar->guid))
-	{   
+	{
 	  grub_free (buf);
 	  return grub_error (GRUB_ERR_BAD_OS, "can't parse %s", filename);
 	}
@@ -190,14 +190,14 @@ read_pnvram (char *filename)
 	    hex = *ptr - 'a' + 10;
 	  if (*ptr >= 'A' && *ptr <= 'F')
 	    hex = *ptr - 'A' + 10;
-	  
+
 	  if (i%2 == 0)
 	    ((grub_uint8_t *)&(efivar->guid))[i/2] = hex << 4;
 	  else
 	    ((grub_uint8_t *)&(efivar->guid))[i/2] |= hex;
 	  ptr++;
 	}
-      
+
       while (grub_isspace (*ptr))
 	ptr++;
       if (*ptr != ':')
@@ -230,23 +230,23 @@ read_pnvram (char *filename)
 	{
 	  /* Look the length */
 	  datalen = 0;
-	  for (ptr2 = ptr; *ptr2 && (grub_isspace (*ptr2) 
+	  for (ptr2 = ptr; *ptr2 && (grub_isspace (*ptr2)
 				     || (*ptr2 >= '0' && *ptr2 <= '9')
 				     || (*ptr2 >= 'a' && *ptr2 <= 'f')
-				     || (*ptr2 >= 'A' && *ptr2 <= 'F')); 
+				     || (*ptr2 >= 'A' && *ptr2 <= 'F'));
 	       ptr2++)
 	    if (!grub_isspace (*ptr2))
 	      datalen++;
 	  datalen /= 2;
-	 
+
 	  if (nvramptr - nvram + datalen > nvramsize)
 	    {
 	      grub_free (buf);
-	      return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 				 "file is too large for reserved "
 				 " variable space");
 	    }
-	  
+
 	  for (i = 0; i < 2 * datalen; i++)
 	    {
 	      int hex = 0;
@@ -258,7 +258,7 @@ read_pnvram (char *filename)
 		hex = *ptr - 'a' + 10;
 	      if (*ptr >= 'A' && *ptr <= 'F')
 		hex = *ptr - 'A' + 10;
-	      
+
 	      if (i%2 == 0)
 		nvramptr[i/2] = hex << 4;
 	      else
@@ -278,7 +278,7 @@ read_pnvram (char *filename)
 	    efivar->size = datalen;
 	  else
 	    efivar->namelen = datalen;
-	  
+
 	  ptr++;
 	}
     }
@@ -304,23 +304,23 @@ grub_efiemu_make_nvram (void)
       grub_free (nvram);
       return err;
     }
-  nvram_handle 
-    = grub_efiemu_request_memalign (1, nvramsize, 
+  nvram_handle
+    = grub_efiemu_request_memalign (1, nvramsize,
 				    GRUB_EFI_RUNTIME_SERVICES_DATA);
-  nvramsize_handle 
-    = grub_efiemu_request_memalign (1, sizeof (grub_uint32_t), 
+  nvramsize_handle
+    = grub_efiemu_request_memalign (1, sizeof (grub_uint32_t),
 				    GRUB_EFI_RUNTIME_SERVICES_DATA);
   high_monotonic_count_handle
-    = grub_efiemu_request_memalign (1, sizeof (grub_uint32_t), 
+    = grub_efiemu_request_memalign (1, sizeof (grub_uint32_t),
 				    GRUB_EFI_RUNTIME_SERVICES_DATA);
   timezone_handle
-    = grub_efiemu_request_memalign (1, sizeof (grub_uint16_t), 
+    = grub_efiemu_request_memalign (1, sizeof (grub_uint16_t),
 				    GRUB_EFI_RUNTIME_SERVICES_DATA);
   daylight_handle
-    = grub_efiemu_request_memalign (1, sizeof (grub_uint8_t), 
+    = grub_efiemu_request_memalign (1, sizeof (grub_uint8_t),
 				    GRUB_EFI_RUNTIME_SERVICES_DATA);
   accuracy_handle
-    = grub_efiemu_request_memalign (1, sizeof (grub_uint32_t), 
+    = grub_efiemu_request_memalign (1, sizeof (grub_uint32_t),
 				    GRUB_EFI_RUNTIME_SERVICES_DATA);
 
   grub_efiemu_request_symbols (6);
@@ -341,7 +341,7 @@ grub_efiemu_pnvram (void)
 
   nvram = grub_malloc (nvramsize);
   if (!nvram)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "Couldn't allocate space for temporary pnvram storage");
   grub_memset (nvram, 0, nvramsize);
 
@@ -360,16 +360,16 @@ grub_cmd_efiemu_pnvram (struct grub_extcmd *cmd,
 
   nvramsize = state[0].set ? grub_strtoul (state[0].arg, 0, 0) : 2048;
   high_monotonic_count = state[1].set ? grub_strtoul (state[1].arg, 0, 0) : 1;
-  timezone = state[2].set ? grub_strtosl (state[2].arg, 0, 0) 
+  timezone = state[2].set ? grub_strtosl (state[2].arg, 0, 0)
     : GRUB_EFI_UNSPECIFIED_TIMEZONE;
   accuracy = state[3].set ? grub_strtoul (state[3].arg, 0, 0) : 50000000;
   daylight = state[4].set ? grub_strtoul (state[4].arg, 0, 0) : 0;
-  
+
   nvram = grub_malloc (nvramsize);
   if (!nvram)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, 
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "Couldn't allocate space for temporary pnvram storage");
-  grub_memset (nvram, 0, nvramsize);  
+  grub_memset (nvram, 0, nvramsize);
 
   if (argc == 1 && (err = read_pnvram (args[0])))
     {
@@ -387,11 +387,11 @@ void grub_efiemu_pnvram_cmd_unregister (void);
 void
 grub_efiemu_pnvram_cmd_register (void)
 {
-  cmd = grub_register_extcmd ("efiemu_pnvram", grub_cmd_efiemu_pnvram, 
+  cmd = grub_register_extcmd ("efiemu_pnvram", grub_cmd_efiemu_pnvram,
 			      GRUB_COMMAND_FLAG_BOTH,
 			      "efiemu_pnvram [FILENAME]",
 			      "Initialise pseudo-NVRAM and load variables "
-			      "from FILE", 
+			      "from FILE",
 			      options);
 }
 
