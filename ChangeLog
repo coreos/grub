@@ -1,3 +1,8 @@
+2009-06-10  Pavel Roskin  <proski@gnu.org>
+
+	* kern/i386/coreboot/init.c: Include grub/cpu/tsc.h to fix
+	compiler warnings.
+
 2009-06-10  Felix Zielcke  <fzielcke@z-51.de>
 
 	* gendistlist.sh (EXTRA_DISTFILES): Add `genhandlerlist.sh' and

@@ -34,6 +34,7 @@
 #include <grub/symbol.h>
 #include <grub/cpu/io.h>
 #include <grub/cpu/kernel.h>
+#include <grub/cpu/tsc.h>
 
 #define GRUB_FLOPPY_REG_DIGITAL_OUTPUT		0x3f2
 
