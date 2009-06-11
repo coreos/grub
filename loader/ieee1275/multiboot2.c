@@ -27,6 +27,9 @@
 #include <grub/mm.h>
 #include <grub/machine/kernel.h>
 #include <grub/machine/loader.h>
+#ifdef __i386__
+#include <grub/cpu/multiboot.h>
+#endif
 
 typedef void (*kernel_entry_t) (unsigned long, void *, int (void *),
                                 unsigned long, unsigned long);
