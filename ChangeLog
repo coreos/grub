@@ -1,3 +1,7 @@
+2009-06-11  Felix Zielcke  <fzielcke@z-51.de>
+
+	* conf/i386-ieee1275.rmk (COMMON_LDFLAGS): Remove `-static -lgcc'.
+
 2009-06-11  Pavel Roskin  <proski@gnu.org>
 
 	* Makefile.in: Don't rely on any scripts being executable.
