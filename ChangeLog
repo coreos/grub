@@ -1,5 +1,8 @@
 2009-06-11  Pavel Roskin  <proski@gnu.org>
 
+	* Makefile.in: Don't rely on any scripts being executable.
+	Always use $(SHELL) to run shell scripts.
+
 	* configure.ac: Always define ___main if using -nostdlib.  This
 	fixes tests on Cygwin.
 

@@ -211,20 +211,20 @@ all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(MKFILES)
 install: install-local
 
 install-local: all
-	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
+	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(pkglibdir)
 	@list='$(PKGLIB)'; \
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkglibdir)/$$dest; \
 	done
-	$(mkinstalldirs) $(DESTDIR)$(includedir)
+	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(includedir)
 	@list='$(include_DATA)'; \
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,include/,,'`"; \
 	  destdir="`echo $$dest | sed 's,[^/]*$$,,g'`"; \
-	  $(mkinstalldirs) $(DESTDIR)$(includedir)/$$destdir; \
+	  $(SHELL) $(mkinstalldirs) $(DESTDIR)$(includedir)/$$destdir; \
 	  if test -f "$$dir$$file"; then \
 	    $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(includedir)/$$dest; \
 	  elif test -L "$$dir$$file"; then \
@@ -232,21 +232,21 @@ install-local: all
 	    cp -fP $$dir$$file $(DESTDIR)$(includedir)/$$dest; \
 	  fi; \
 	done
-	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
+	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	@list='$(PKGDATA)'; \
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkgdatadir)/$$dest; \
 	done
-	$(mkinstalldirs) $(DESTDIR)$(bindir) $(DESTDIR)$(mandir)/man1
+	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(bindir) $(DESTDIR)$(mandir)/man1
 	@list='$(bin_UTILITIES)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
 	  $(HELP2MAN) --section=1 -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
 	done
-	$(mkinstalldirs) $(DESTDIR)$(sbindir) $(DESTDIR)$(mandir)/man8
+	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(sbindir) $(DESTDIR)$(mandir)/man8
 	@list='$(sbin_UTILITIES)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
@@ -265,7 +265,7 @@ install-local: all
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
 	  $(HELP2MAN) --section=8 -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
 	done
-	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/grub.d
+	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(sysconfdir)/grub.d
 	@list='$(grub-mkconfig_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
@@ -276,7 +276,7 @@ install-local: all
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
 	done
-	$(mkinstalldirs) $(DESTDIR)$(libdir)/grub
+	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(libdir)/grub
 	@list='$(lib_DATA)'; \
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
@@ -342,15 +342,15 @@ dvi:
 distdir=$(PACKAGE_TARNAME)-$(PACKAGE_VERSION)
 
 DISTLIST: gendistlist.sh
-	sh $(srcdir)/gendistlist.sh > $(srcdir)/DISTLIST
+	$(SHELL) $(srcdir)/gendistlist.sh > $(srcdir)/DISTLIST
 
 distdir: DISTLIST
 	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
-	$(mkinstalldirs) $(distdir)
+	$(SHELL) $(mkinstalldirs) $(distdir)
 	for i in `cat $(srcdir)/DISTLIST`; do \
 	  dir=`echo "$$i" | sed 's:/[^/]*$$::'`; \
 	  if test -d $(srcdir)/$$dir; then \
-	    $(mkinstalldirs) $(distdir)/$$dir; \
+	    $(SHELL) $(mkinstalldirs) $(distdir)/$$dir; \
 	  fi; \
 	  cp -p $(srcdir)/$$i $(distdir)/$$i || exit 1; \
 	done
@@ -372,7 +372,7 @@ distcheck: dist
 	chmod a-w $(distdir)
 	dc_instdir=`CDPATH=: && cd $(distdir)/=inst && pwd` \
 	  && cd $(distdir)/=build \
-	  && ../configure --srcdir=.. --prefix=$$dc_instdir \
+	  && $(SHELL) ../configure --srcdir=.. --prefix=$$dc_instdir \
 	  && $(MAKE) all dvi check install && $(MAKE) uninstall \
 	  && (test `find $$dc_instdir -type f -print | wc -l` -le 1 \
 	     || (echo "Error: files left after uninstall" 1>&2; \
@@ -402,19 +402,19 @@ $(srcdir)/stamp-h.in: configure.ac aclocal.m4
 
 config.h: stamp-h
 stamp-h: config.h.in config.status
-	./config.status
+	$(SHELL) ./config.status
 
 Makefile: Makefile.in config.status
-	./config.status
+	$(SHELL) ./config.status
 
 config.status: configure
-	./config.status --recheck
+	$(SHELL) ./config.status --recheck
 
 gensymlist.sh: gensymlist.sh.in config.status
-	./config.status
+	$(SHELL) ./config.status
 
 genkernsyms.sh: genkernsyms.sh.in config.status
-	./config.status
+	$(SHELL) ./config.status
 
 .PHONY: all install install-strip uninstall clean mostlyclean distclean
 .PHONY: maintainer-clean info dvi dist check
