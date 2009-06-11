@@ -1,5 +1,8 @@
 2009-06-11  Pavel Roskin  <proski@gnu.org>
 
+	* kern/efi/efi.c (grub_exit): Add infinite loop at the end to
+	fix a gcc warning and ensure that the function won't ever exit.
+
 	* kern/i386/ieee1275/init.c: Add missing prototype for
 	grub_stop_floppy().
 
