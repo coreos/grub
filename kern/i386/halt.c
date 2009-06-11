@@ -25,7 +25,7 @@ const char bochs_shutdown[] = "Shutdown";
 void
 grub_halt (void)
 {
-  int i;
+  unsigned int i;
 
   /* Disable interrupts.  */
   __asm__ __volatile__ ("cli");

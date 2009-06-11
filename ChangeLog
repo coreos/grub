@@ -1,3 +1,8 @@
+2009-06-11  Pavel Roskin  <proski@gnu.org>
+
+	* kern/i386/halt.c (grub_halt): Make `i' unsigned to fix a
+	warning.
+
 2009-06-11  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/grub.d/30_os-prober.in: Fix a comment. Source
