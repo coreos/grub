@@ -1,5 +1,8 @@
 2009-06-11  Pavel Roskin  <proski@gnu.org>
 
+	* kern/i386/ieee1275/init.c: Add missing prototype for
+	grub_stop_floppy().
+
 	* loader/ieee1275/multiboot2.c [__i386__]: Include
 	grub/cpu/multiboot.h.
 

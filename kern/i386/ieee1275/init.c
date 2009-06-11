@@ -20,6 +20,8 @@
 #include <grub/types.h>
 #include <grub/cache.h>
 
+void grub_stop_floppy (void);
+
 void
 grub_stop_floppy (void)
 {
