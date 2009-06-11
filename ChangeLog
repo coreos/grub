@@ -1,3 +1,10 @@
+2009-06-11  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub.d/30_os-prober.in: Fix a comment. Source
+	${libdir}/grub/grub-mkconfig_lib.  Use prepare_grub_to_access_device
+	to set the root device.  Place drivemap command in the generated
+	chain entry.
+
 2009-06-11  Pavel Roskin  <proski@gnu.org>
 
 	* configure.ac: Remove host_m32.  Issues with 64-bit utilities
@@ -55,6 +62,7 @@
 	* loader/i386/multiboot.c (grub_multiboot_get_bootdev): likewise
 	* loader/i386/pc/chainloader.c (grub_chainloader_cmd): likewise
 
+>>>>>>> .r2306
 2009-06-10  Pavel Roskin  <proski@gnu.org>
 
 	* io/gzio.c (test_header): Don't reuse one buffer for all data.
