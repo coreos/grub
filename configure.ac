@@ -43,10 +43,6 @@ AC_CANONICAL_TARGET
 # Program name transformations
 AC_ARG_PROGRAM
 
-case "$host_cpu" in
-  powerpc64) host_m32=1 ;;
-esac
-
 case "$target_cpu" in
   i[[3456]]86) target_cpu=i386 ;;
 esac
@@ -171,11 +167,6 @@ grub_apple_cc
 if test x$grub_cv_apple_cc == xyes ; then
   CFLAGS="$CFLAGS -DAPPLE_CC=1 -fnested-functions"
   ASFLAGS="$ASFLAGS -DAPPLE_CC=1"
-fi
-if test "x$host_m32" = x1; then
-  # Force 32-bit mode.
-  CFLAGS="$CFLAGS -m32"
-  LDFLAGS="$LDFLAGS -m32"
 fi
 
 # Check LZO when compiling for the i386-pc.
