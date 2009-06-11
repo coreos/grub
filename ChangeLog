@@ -13,7 +13,7 @@
 	(grub_get_root_biosnumber_saved): new variable
 	(GRUB_MOD_INIT): register grub_get_root_biosnumber_drivemap
 	(GRUB_MOD_FINI): unregister grub_get_root_biosnumber_drivemap
-	* commands/i386/pc/drivemap_int13h.S (grub_drivemap_handler): restore 
+	* commands/i386/pc/drivemap_int13h.S (grub_drivemap_handler): restore
 	%dx after the call if necessary
 	* conf/common.rmk (pkglib_MODULES): remove boot.mod
 	(boot_mod_SOURCES): remove
@@ -34,7 +34,7 @@
 	* loader/i386/bsd.c (grub_bsd_get_device): use grub_get_root_biosnumber
 	* loader/i386/multiboot.c (grub_multiboot_get_bootdev): likewise
 	* loader/i386/pc/chainloader.c (grub_chainloader_cmd): likewise
-	
+
 2009-06-10  Pavel Roskin  <proski@gnu.org>
 
 	* io/gzio.c (test_header): Don't reuse one buffer for all data.
