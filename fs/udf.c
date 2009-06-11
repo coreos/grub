@@ -407,6 +407,7 @@ grub_udf_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
   char *ptr;
   int len;
+  grub_disk_addr_t filebytes;
 
   if (U16 (node->fe.tag.tag_ident) == GRUB_UDF_TAG_IDENT_FE)
     {
@@ -425,16 +426,17 @@ grub_udf_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       struct grub_udf_short_ad *ad = (struct grub_udf_short_ad *) ptr;
 
       len /= sizeof (struct grub_udf_short_ad);
+      filebytes = fileblock * GRUB_UDF_BLKSZ;
       while (len > 0)
 	{
-	  if (fileblock < U32 (ad->length))
+	  if (filebytes < U32 (ad->length))
 	    return ((U32 (ad->position) & GRUB_UDF_EXT_MASK) ? 0 :
                     (grub_udf_get_block (node->data,
                                          node->part_ref,
                                          ad->position)
-                     + fileblock));
+                     + (filebytes / GRUB_UDF_BLKSZ)));
 
-	  fileblock -= U32 (ad->length);
+	  filebytes -= U32 (ad->length);
 	  ad++;
 	  len--;
 	}
@@ -444,16 +446,17 @@ grub_udf_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       struct grub_udf_long_ad *ad = (struct grub_udf_long_ad *) ptr;
 
       len /= sizeof (struct grub_udf_long_ad);
+      filebytes = fileblock * GRUB_UDF_BLKSZ;
       while (len > 0)
 	{
-	  if (fileblock < U32 (ad->length))
+	  if (filebytes < U32 (ad->length))
 	    return ((U32 (ad->block.block_num) & GRUB_UDF_EXT_MASK) ?  0 :
                     (grub_udf_get_block (node->data,
                                          ad->block.part_ref,
                                          ad->block.block_num)
-                    + fileblock));
+		     + (filebytes / GRUB_UDF_BLKSZ)));
 
-	  fileblock -= U32 (ad->length);
+	  filebytes -= U32 (ad->length);
 	  ad++;
 	  len--;
 	}

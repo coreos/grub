@@ -1,3 +1,10 @@
+2009-06-11  Giuseppe Caizzone  <acaizzo@gmail.com>
+
+	UDF fix
+
+	* fs/udf.c (grub_udf_read_block): handle the fact that ad->length 
+	is in bytes and not in blocks
+	
 2009-06-11  Pavel Roskin  <proski@gnu.org>
 
 	* kern/i386/halt.c (grub_halt): Make `i' unsigned to fix a
