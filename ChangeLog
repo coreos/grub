@@ -1,5 +1,9 @@
 2009-06-10  Pavel Roskin  <proski@gnu.org>
 
+	* io/gzio.c (test_header): Don't reuse one buffer for all data.
+	Use separate variables.  Read only the file size at the end, but
+	not the checksum that we don't use.
+
 	* kern/file.c (grub_file_read): Use void pointer for the buffer.
 	Adjust all callers.
 

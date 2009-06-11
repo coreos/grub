@@ -164,7 +164,16 @@ typedef unsigned long ulg;
 static int
 test_header (grub_file_t file)
 {
-  unsigned char buf[10] __attribute__ ((aligned));
+  struct {
+    grub_uint16_t magic;
+    grub_uint8_t method;
+    grub_uint8_t flags;
+    grub_uint32_t timestamp;
+    grub_uint8_t extra_flags;
+    grub_uint8_t os_type;
+  } hdr;
+  grub_uint16_t extra_len;
+  grub_uint32_t orig_len;
   grub_gzio_t gzio = file->data;
 
   if (grub_file_tell (gzio->file) != 0)
@@ -175,9 +184,9 @@ test_header (grub_file_t file)
    *  (other than a real error with the disk) then we don't think it
    *  is a compressed file, and simply mark it as such.
    */
-  if (grub_file_read (gzio->file, buf, 10) != 10
-      || ((*((grub_uint16_t *) buf) != GZIP_MAGIC)
-	  && (*((grub_uint16_t *) buf) != OLD_GZIP_MAGIC)))
+  if (grub_file_read (gzio->file, &hdr, 10) != 10
+      || ((hdr.magic != GZIP_MAGIC)
+	  && (hdr.magic != OLD_GZIP_MAGIC)))
     {
       grub_error (GRUB_ERR_BAD_FILE_TYPE, "no gzip magic found");
       return 0;
@@ -188,14 +197,14 @@ test_header (grub_file_t file)
    *  problem occurs from here on, then we have corrupt or otherwise
    *  bad data, and the error should be reported to the user.
    */
-  if (buf[2] != DEFLATED
-      || (buf[3] & UNSUPPORTED_FLAGS)
-      || ((buf[3] & EXTRA_FIELD)
-	  && (grub_file_read (gzio->file, buf, 2) != 2
+  if (hdr.method != DEFLATED
+      || (hdr.flags & UNSUPPORTED_FLAGS)
+      || ((hdr.flags & EXTRA_FIELD)
+	  && (grub_file_read (gzio->file, &extra_len, 2) != 2
 	      || eat_field (gzio->file,
-			    grub_le_to_cpu16 (*((grub_uint16_t *) buf)))))
-      || ((buf[3] & ORIG_NAME) && eat_field (gzio->file, -1))
-      || ((buf[3] & COMMENT) && eat_field (gzio->file, -1)))
+			    grub_le_to_cpu16 (extra_len))))
+      || ((hdr.flags & ORIG_NAME) && eat_field (gzio->file, -1))
+      || ((hdr.flags & COMMENT) && eat_field (gzio->file, -1)))
     {
       grub_error (GRUB_ERR_BAD_GZIP_DATA, "unsupported gzip format");
       return 0;
@@ -203,9 +212,9 @@ test_header (grub_file_t file)
 
   gzio->data_offset = grub_file_tell (gzio->file);
 
-  grub_file_seek (gzio->file, grub_file_size (gzio->file) - 8);
+  grub_file_seek (gzio->file, grub_file_size (gzio->file) - 4);
 
-  if (grub_file_read (gzio->file, buf, 8) != 8)
+  if (grub_file_read (gzio->file, &orig_len, 4) != 4)
     {
       grub_error (GRUB_ERR_BAD_FILE_TYPE, "unsupported gzip format");
       return 0;
@@ -213,7 +222,7 @@ test_header (grub_file_t file)
 
   /* FIXME: this does not handle files whose original size is over 4GB.
      But how can we know the real original size?  */
-  file->size = grub_le_to_cpu32 (*((grub_uint32_t *) (buf + 4)));
+  file->size = grub_le_to_cpu32 (orig_len);
 
   initialize_tables (file);
 
