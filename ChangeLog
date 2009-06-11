@@ -1,3 +1,8 @@
+2009-06-11  Christian Franke  <franke@computer.org>
+
+	* kern/misc.c (__enable_execute_stack): Add missing return type
+	to prevent gcc warning.
+
 2009-06-11  Felix Zielcke  <fzielcke@z-51.de>
 
 	* conf/i386-ieee1275.rmk (COMMON_LDFLAGS): Remove `-static -lgcc'.
