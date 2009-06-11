@@ -40,10 +40,10 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-editenv --help'' for more information.\n");
+    fprintf (stderr, "Try ``grub-pe2elf --help'' for more information.\n");
   else
     printf ("\
-Usage: grub-editenv [OPTIONS] input [output]\n\
+Usage: grub-pe2elf [OPTIONS] input [output]\n\
 \n\
 Tool to convert pe image to elf.\n\
 \nOptions:\n\
