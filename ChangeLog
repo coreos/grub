@@ -1,3 +1,9 @@
+2009-06-11  Pavel Roskin  <proski@gnu.org>
+
+	* term/i386/pc/serial.c (serial_translate_key_sequence): Avoid
+	casts to short - they are not portable and cause warnings.  Fix
+	use of uninitialized values in input_buf.  Use ARRAY_SIZE.
+
 2009-06-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Drivemap fixes

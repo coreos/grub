@@ -112,6 +112,7 @@ serial_hw_put (const int c)
 static void
 serial_translate_key_sequence (void)
 {
+  unsigned int i;
   static struct
   {
     char key;
@@ -141,34 +142,27 @@ serial_translate_key_sequence (void)
       {('6' | ('~' << 8)), 3}
     };
 
-  /* The buffer must start with "ESC [".  */
-  if (*((unsigned short *) input_buf) != ('\e' | ('[' << 8)))
+  if (npending < 3)
     return;
 
-  if (npending >= 3)
-    {
-      unsigned int i;
+  /* The buffer must start with "ESC [".  */
+  if (input_buf[0] != '\e' || input_buf[1] != '[')
+    return;
 
-      for (i = 0;
-	   i < sizeof (three_code_table) / sizeof (three_code_table[0]);
-	   i++)
-	if (three_code_table[i].key == input_buf[2])
-	  {
-	    input_buf[0] = three_code_table[i].ascii;
-	    npending -= 2;
-	    grub_memmove (input_buf + 1, input_buf + 3, npending - 1);
-	    return;
-	  }
-    }
+  for (i = 0; ARRAY_SIZE (three_code_table); i++)
+    if (three_code_table[i].key == input_buf[2])
+      {
+	input_buf[0] = three_code_table[i].ascii;
+	npending -= 2;
+	grub_memmove (input_buf + 1, input_buf + 3, npending - 1);
+	return;
+      }
 
   if (npending >= 4)
     {
-      unsigned int i;
-      short key = *((short *) (input_buf + 2));
+      short key = input_buf[3] | (input_buf[4] << 8);
 
-      for (i = 0;
-	   i < sizeof (four_code_table) / sizeof (four_code_table[0]);
-	   i++)
+      for (i = 0; i < ARRAY_SIZE (four_code_table); i++)
 	if (four_code_table[i].key == key)
 	  {
 	    input_buf[0] = four_code_table[i].ascii;
