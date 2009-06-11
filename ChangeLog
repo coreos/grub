@@ -1,3 +1,8 @@
+2009-06-11  Pavel Roskin  <proski@gnu.org>
+
+	* loader/i386/bsd.c (grub_freebsd_boot): Rename `entry' to
+	`entry_lo' to fix variable shadowing.
+
 2009-06-11  Christian Franke  <franke@computer.org>
 
 	* kern/misc.c (__enable_execute_stack): Add missing return type

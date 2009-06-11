@@ -485,7 +485,7 @@ grub_freebsd_boot (void)
     {
       grub_uint32_t *gdt;
       grub_uint8_t *trampoline;
-      void (*launch_trampoline) (grub_addr_t entry, ...)
+      void (*launch_trampoline) (grub_addr_t entry_lo, ...)
 	__attribute__ ((cdecl, regparm (0)));
       grub_uint8_t *pagetable;
 
@@ -512,7 +512,7 @@ grub_freebsd_boot (void)
       trampoline = (grub_uint8_t *) (kern_end - 4096 + 24
 				     + sizeof (struct gdt_descriptor));
       launch_trampoline = (void  __attribute__ ((cdecl, regparm (0)))
-			   (*) (grub_addr_t entry, ...)) trampoline;
+			   (*) (grub_addr_t entry_lo, ...)) trampoline;
       grub_bsd64_trampoline_gdt = (grub_uint32_t) gdtdesc;
       grub_bsd64_trampoline_selfjump
 	= (grub_uint32_t) (trampoline + 6
