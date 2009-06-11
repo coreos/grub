@@ -109,6 +109,12 @@ pkglib_MODULES = linux.mod multiboot.mod 		\
 	halt.mod datetime.mod date.mod datehook.mod	\
 	lsmmap.mod mmap.mod
 
+# For boot.mod.
+pkglib_MODULES += boot.mod 
+boot_mod_SOURCES = commands/boot.c
+boot_mod_CFLAGS = $(COMMON_CFLAGS)
+boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For mmap.mod.
 mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c
 mmap_mod_CFLAGS = $(COMMON_CFLAGS)

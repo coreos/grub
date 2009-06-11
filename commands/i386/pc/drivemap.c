@@ -23,8 +23,9 @@
 #include <grub/misc.h>
 #include <grub/disk.h>
 #include <grub/loader.h>
+#include <grub/env.h>
 #include <grub/machine/memory.h>
-
+#include <grub/machine/biosnum.h>
 
 
 /* Real mode IVT slot (seg:off far pointer) for interrupt 0x13.  */
@@ -356,10 +357,49 @@ uninstall_int13_handler (void)
   return GRUB_ERR_NONE;
 }
 
+static int
+grub_get_root_biosnumber_drivemap (void)
+{
+  char *biosnum;
+  int ret = -1;
+  grub_device_t dev;
+
+  biosnum = grub_env_get ("biosnum");
+
+  if (biosnum)
+    return grub_strtoul (biosnum, 0, 0);
+
+  dev = grub_device_open (0);
+  if (dev && dev->disk && dev->disk->dev 
+      && dev->disk->dev->id == GRUB_DISK_DEVICE_BIOSDISK_ID)
+    {
+      drivemap_node_t *curnode = map_head;
+      ret = (int) dev->disk->id;
+      while (curnode)
+	{
+	  if (curnode->redirto == ret)
+	    {
+	      ret = curnode->newdrive;
+	      break;
+	    }
+	  curnode = curnode->next;
+	}
+
+    }
+
+  if (dev)
+    grub_device_close (dev);
+
+  return ret;
+}
+
 static grub_extcmd_t cmd;
+static int (*grub_get_root_biosnumber_saved) (void);
 
 GRUB_MOD_INIT (drivemap)
 {
+  grub_get_root_biosnumber_saved = grub_get_root_biosnumber;
+  grub_get_root_biosnumber = grub_get_root_biosnumber_drivemap;
   cmd = grub_register_extcmd ("drivemap", grub_cmd_drivemap,
 					GRUB_COMMAND_FLAG_BOTH,
 					"drivemap"
@@ -374,6 +414,7 @@ GRUB_MOD_INIT (drivemap)
 
 GRUB_MOD_FINI (drivemap)
 {
+  grub_get_root_biosnumber = grub_get_root_biosnumber_saved;
   grub_loader_unregister_preboot_hook (drivemap_hook);
   drivemap_hook = 0;
   grub_unregister_extcmd (cmd);

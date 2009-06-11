@@ -1,3 +1,34 @@
+2009-06-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Drivemap fixes
+
+	* commands/i386/pc/drivemap.c (grub_get_root_biosnumber_drivemap):
+	new function
+	(grub_get_root_biosnumber_saved): new variable
+	(GRUB_MOD_INIT): register grub_get_root_biosnumber_drivemap
+	(GRUB_MOD_FINI): unregister grub_get_root_biosnumber_drivemap
+	* commands/i386/pc/drivemap_int13h.S (grub_drivemap_handler): restore 
+	%dx after the call if necessary
+	* conf/common.rmk (pkglib_MODULES): remove boot.mod
+	(boot_mod_SOURCES): remove
+	(boot_mod_CFLAGS): remove
+	(boot_mod_LDFLAGS): remove
+	* conf/i386-coreboot.rmk (pkglib_MODULES): add boot.mod
+	(boot_mod_SOURCES): new variable
+	(boot_mod_CFLAGS): likewise
+	(boot_mod_LDFLAGS): likewise
+	* conf/i386-efi.rmk: likewise
+	* conf/i386-ieee1275.rmk: likewise
+	* conf/i386-pc.rmk: likewise
+	* conf/powerpc-ieee1275.rmk: likewise
+	* conf/sparc64-ieee1275.rmk: likewise
+	* conf/x86_64-efi.rmk: likewise
+	* include/grub/i386/pc/biosnum.h: new file
+	* lib/i386/pc/biosnum.c: likewise
+	* loader/i386/bsd.c (grub_bsd_get_device): use grub_get_root_biosnumber
+	* loader/i386/multiboot.c (grub_multiboot_get_bootdev): likewise
+	* loader/i386/pc/chainloader.c (grub_chainloader_cmd): likewise
+	
 2009-06-10  Pavel Roskin  <proski@gnu.org>
 
 	* io/gzio.c (test_header): Don't reuse one buffer for all data.

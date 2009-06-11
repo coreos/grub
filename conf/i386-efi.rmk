@@ -117,6 +117,12 @@ symlist.c: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h gensymlist.
 kernel_syms.lst: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h genkernsyms.sh
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
+# For boot.mod.
+pkglib_MODULES += boot.mod 
+boot_mod_SOURCES = commands/boot.c
+boot_mod_CFLAGS = $(COMMON_CFLAGS)
+boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For acpi.mod.
 acpi_mod_SOURCES = commands/acpi.c commands/efi/acpi.c
 acpi_mod_CFLAGS = $(COMMON_CFLAGS)

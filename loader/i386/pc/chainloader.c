@@ -31,6 +31,7 @@
 #include <grub/machine/memory.h>
 #include <grub/dl.h>
 #include <grub/command.h>
+#include <grub/machine/biosnum.h>
 
 static grub_dl_t my_mod;
 static int boot_drive;
@@ -89,30 +90,19 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
   grub_file_close (file);
 
   /* Obtain the partition table from the root device.  */
+  drive = grub_get_root_biosnumber ();
   dev = grub_device_open (0);
-  if (dev)
+  if (dev && dev->disk && dev->disk->partition)
     {
-      grub_disk_t disk = dev->disk;
-
-      if (disk)
-	{
-	  grub_partition_t p = disk->partition;
-
-	  /* In i386-pc, the id is equal to the BIOS drive number.  */
-	  drive = (int) disk->id;
-
-	  if (p)
-	    {
-	      grub_disk_read (disk, p->offset, 446, 64,
-			      (void *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
-	      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
-				    + (p->index << 4));
-	    }
-	}
-
-      grub_device_close (dev);
+      grub_disk_read (dev->disk, dev->disk->partition->offset, 446, 64,
+		      (void *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
+      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
+			    + (dev->disk->partition->index << 4));
     }
 
+  if (dev)
+    grub_device_close (dev);
+  
   /* Ignore errors. Perhaps it's not fatal.  */
   grub_errno = GRUB_ERR_NONE;
 

@@ -33,6 +33,12 @@
 #include <grub/gzio.h>
 #include <grub/aout.h>
 #include <grub/command.h>
+#ifdef GRUB_MACHINE_PCBIOS
+#include <grub/machine/biosnum.h>
+#include <grub/disk.h>
+#include <grub/device.h>
+#include <grub/partition.h>
+#endif
 
 #define ALIGN_DWORD(a)	ALIGN_UP (a, 4)
 #define ALIGN_QWORD(a)	ALIGN_UP (a, 8)
@@ -81,23 +87,22 @@ grub_bsd_get_device (grub_uint32_t * biosdev,
 		     grub_uint32_t * slice, grub_uint32_t * part)
 {
   char *p;
+  grub_device_t dev; 
 
-  *biosdev = *unit = *slice = *part = 0;
-  p = grub_env_get ("root");
-  if ((p) && ((p[0] == 'h') || (p[0] == 'f')) && (p[1] == 'd') &&
-      (p[2] >= '0') && (p[2] <= '9'))
+  *biosdev = grub_get_root_biosnumber () & 0xff;
+  *unit = (*biosdev & 0x7f);
+  *slice = 0xff;
+  *part = 0xff;
+  dev = grub_device_open (0);
+  if (dev && dev->disk && dev->disk->partition)
     {
-      if (p[0] == 'h')
-	*biosdev = 0x80;
 
-      *unit = grub_strtoul (p + 2, &p, 0);
-      *biosdev += *unit;
-
-      if ((p) && (p[0] == ','))
+      p = dev->disk->partition->partmap->get_name (dev->disk->partition);
+      if (p)
 	{
-	  if ((p[1] >= '0') && (p[1] <= '9'))
+	  if ((p[0] >= '0') && (p[0] <= '9'))
 	    {
-	      *slice = grub_strtoul (p + 1, &p, 0);
+	      *slice = grub_strtoul (p, &p, 0);
 
 	      if ((p) && (p[0] == ','))
 		p++;
@@ -107,6 +112,8 @@ grub_bsd_get_device (grub_uint32_t * biosdev,
 	    *part = p[0] - 'a';
 	}
     }
+  if (dev)
+    grub_device_close (dev);
 }
 
 static grub_err_t

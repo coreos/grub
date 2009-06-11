@@ -189,6 +189,12 @@ pkglib_MODULES = biosdisk.mod chain.mod \
 	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod usb_keyboard.mod \
 	efiemu.mod mmap.mod acpi.mod drivemap.mod
 
+# For boot.mod.
+pkglib_MODULES += boot.mod 
+boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
+boot_mod_CFLAGS = $(COMMON_CFLAGS)
+boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For drivemap.mod.
 drivemap_mod_SOURCES = commands/i386/pc/drivemap.c \
                        commands/i386/pc/drivemap_int13h.S
