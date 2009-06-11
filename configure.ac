@@ -396,7 +396,7 @@ AC_SUBST(TARGET_LDFLAGS)
 
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"
-CFLAGS="$TARGET_CFLAGS -nostdlib"
+CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100"
 CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
 
