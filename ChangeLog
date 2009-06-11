@@ -1,5 +1,8 @@
 2009-06-11  Pavel Roskin  <proski@gnu.org>
 
+	* disk/usbms.c (grub_usbms_transfer): Initialize `err' to fix
+	a compiler warning.
+
 	* loader/i386/bsd.c (grub_freebsd_boot): Rename `entry' to
 	`entry_lo' to fix variable shadowing.
 
