@@ -56,6 +56,7 @@ not_found:
 	pop	%bx
 	pop	%ax
 
+	/* If the call isn't ah=0x8 or ah=0x15 we must restore %dx.  */
 	cmpb	$0x8, %ah
 	jz	norestore
 	cmpb	$0x15, %ah
@@ -71,7 +72,7 @@ not_found:
 	mov	%sp, %bp
 
 tail:
-
+	/* Save new flags below %esp so the caller will recieve new flags.  */
 	pushf
 	pop	%dx
 	mov	%dx, 8(%bp)
@@ -93,7 +94,7 @@ norestore:
 	push	%bp
 	mov	%sp, %bp
 
-	/* Save %dx.  */
+	/* Save %dx. So it won't be restored to original value.  */
 	mov	%dx, 2(%bp)
 
 	jmp tail
