@@ -119,7 +119,7 @@ MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
 PKGLIB = $(pkglib_IMAGES) $(pkglib_MODULES) $(pkglib_PROGRAMS) \
 	$(pkglib_DATA) $(pkglib_BUILDDIR)
-PKGDATA = $(pkgdata_DATA) $(pkgdata_SRCDIR)
+PKGDATA = $(pkgdata_DATA)
 PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
 SCRIPTS = $(bin_SCRIPTS) $(sbin_SCRIPTS) $(grub-mkconfig_SCRIPTS) \
 	$(lib_SCRIPTS)
@@ -204,7 +204,6 @@ build_env.mk: Makefile
 	echo "COMMON_LDFLAGS=$(COMMON_LDFLAGS)"\
 	) > $@
 pkglib_BUILDDIR += config.h grub_script.tab.h
-pkgdata_SRCDIR += genmodsrc.sh genmk.rb
 include_DATA += $(shell find $(srcdir)/include -name \*.h | sed -e "s,^$(srcdir)/,,g") include/grub/cpu
 
 all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(MKFILES)

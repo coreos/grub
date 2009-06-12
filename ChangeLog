@@ -1,3 +1,8 @@
+2009-06-12  Pavel Roskin  <proski@gnu.org>
+
+	* Makefile.in (pkgdata_SRCDIR): Remove.  genmodsrc.sh and
+	genmk.rb don't need to be generated or installed.
+
 2009-06-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* commands/i386/pc/drivemap_int13h.S: add more comments
