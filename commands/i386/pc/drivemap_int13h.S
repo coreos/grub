@@ -28,7 +28,7 @@
 /* The replacement int13 handler.   Preserve all registers.  */
 FUNCTION(grub_drivemap_handler)
 	/* Save %dx for future restore. */
-	push 	%dx
+	push	%dx
 	/* Push flags. Used to simulate interrupt with original flags. */
 	pushf
 
@@ -56,9 +56,9 @@ not_found:
 	pop	%bx
 	pop	%ax
 
-	cmpb 	$0x8, %ah
+	cmpb	$0x8, %ah
 	jz	norestore
-	cmpb 	$0x15, %ah
+	cmpb	$0x15, %ah
 	jz	norestore
 
 	/* Restore flags.  */
@@ -66,20 +66,20 @@ not_found:
 	pushf
 
 	lcall *%cs:INT13H_OFFSET (EXT_C (grub_drivemap_oldhandler))
-	
-	push 	%bp
-	mov 	%sp, %bp
+
+	push	%bp
+	mov	%sp, %bp
 
 tail:
-	
+
 	pushf
-	pop 	%dx
-	mov 	%dx, 8(%bp)
+	pop	%dx
+	mov	%dx, 8(%bp)
 
 	pop	%bp
-	
+
 	/* Restore %dx.  */
-	pop 	%dx
+	pop	%dx
 	iret
 
 norestore:
@@ -90,14 +90,14 @@ norestore:
 
 	lcall *%cs:INT13H_OFFSET (EXT_C (grub_drivemap_oldhandler))
 
-	push 	%bp
-	mov 	%sp, %bp
-	
+	push	%bp
+	mov	%sp, %bp
+
 	/* Save %dx.  */
-	mov 	%dx, 2(%bp)
+	mov	%dx, 2(%bp)
 
 	jmp tail
-	
+
 /* Far pointer to the old handler.  Stored as a CS:IP in the style of real-mode
    IVT entries (thus PI:SC in mem).  */
 VARIABLE(grub_drivemap_oldhandler)
