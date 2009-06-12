@@ -1,5 +1,7 @@
 2009-06-11  Pavel Roskin  <proski@gnu.org>
 
+	* Makefile.in (uninstall): Uninstall manuals.
+
 	* Makefile.in: Rename lib_DATA to lib_SCRIPTS, move it from
 	PKGLIB to SCRIPTS.  This fixes installation of grub-mkconfig_lib
 	and update-grub_lib in two places.

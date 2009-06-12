@@ -302,10 +302,12 @@ uninstall:
 	@list='$(bin_UTILITIES) $(bin_SCRIPTS)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(bindir)/$$dest; \
+	  rm -f $(DESTDIR)$(mandir)/man1/$$dest.1; \
 	done
 	@list='$(sbin_UTILITIES) $(sbin_SCRIPTS)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(sbindir)/$$dest; \
+	  rm -f $(DESTDIR)$(mandir)/man8/$$dest.8; \
 	done
 	@list='$(grub-mkconfig_SCRIPTS) $(grub-mkconfig_DATA)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
