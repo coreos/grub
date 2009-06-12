@@ -145,13 +145,13 @@ CLEANFILES += grub-mkconfig
 grub-mkconfig_lib: util/grub-mkconfig_lib.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@
-lib_DATA += grub-mkconfig_lib
+lib_SCRIPTS += grub-mkconfig_lib
 CLEANFILES += grub-mkconfig_lib
 
 update-grub_lib: util/update-grub_lib.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@
-lib_DATA += update-grub_lib
+lib_SCRIPTS += update-grub_lib
 CLEANFILES += update-grub_lib
 
 %: util/grub.d/%.in config.status

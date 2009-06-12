@@ -118,10 +118,11 @@ RMKFILES = $(addprefix conf/,common.rmk i386-coreboot.rmk i386-efi.rmk \
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
 PKGLIB = $(pkglib_IMAGES) $(pkglib_MODULES) $(pkglib_PROGRAMS) \
-	$(pkglib_DATA) $(lib_DATA) $(pkglib_BUILDDIR)
+	$(pkglib_DATA) $(pkglib_BUILDDIR)
 PKGDATA = $(pkgdata_DATA) $(pkgdata_SRCDIR)
 PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
-SCRIPTS = $(bin_SCRIPTS) $(sbin_SCRIPTS) $(grub-mkconfig_SCRIPTS)
+SCRIPTS = $(bin_SCRIPTS) $(sbin_SCRIPTS) $(grub-mkconfig_SCRIPTS) \
+	$(lib_SCRIPTS)
 
 CLEANFILES =
 MOSTLYCLEANFILES =
@@ -277,7 +278,7 @@ install-local: all
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(libdir)/grub
-	@list='$(lib_DATA)'; \
+	@list='$(lib_SCRIPTS)'; \
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
@@ -315,7 +316,7 @@ uninstall:
 	  dest="`echo $$file | sed 's,include/,,'`"; \
 	  rm -f $(DESTDIR)$(includedir)/$$dest; \
 	done
-	@list='$(lib_DATA)'; \
+	@list='$(lib_SCRIPTS)'; \
 	for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  echo rm -f $(DESTDIR)$(libdir)/$$dest; \
