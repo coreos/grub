@@ -1,3 +1,7 @@
+2009-06-13  Jun Inoue <jun.lambda@gmail.com>
+
+	* util/grub-mkconfig.in: Fix parsing of --output option.
+
 2009-06-12  Pavel Roskin  <proski@gnu.org>
 
 	* Makefile.in (pkgdata_SRCDIR): Remove.  genmodsrc.sh and

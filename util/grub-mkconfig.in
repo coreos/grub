@@ -58,7 +58,7 @@ for option in "$@"; do
 	shift
 	grub_cfg=$1
 	;;
-    --output=)
+    --output=*)
 	grub_cfg=`echo "$option" | sed 's/--output=//'`
 	;;
     -*)
