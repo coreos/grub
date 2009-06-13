@@ -1,3 +1,8 @@
+2009-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/multiboot.c (grub_multiboot_get_bootdev): fix partition 
+	handling
+	
 2009-06-13  Jun Inoue <jun.lambda@gmail.com>
 
 	* util/grub-mkconfig.in: Fix parsing of --output option.

@@ -170,7 +170,7 @@ grub_multiboot_get_bootdev (grub_uint32_t *bootdev)
 	{
 	  if ((p[0] >= '0') && (p[0] <= '9'))
 	    {
-	      slice = grub_strtoul (p, &p, 0);
+	      slice = grub_strtoul (p, &p, 0) - 1;
 
 	      if ((p) && (p[0] == ','))
 		p++;
@@ -184,7 +184,7 @@ grub_multiboot_get_bootdev (grub_uint32_t *bootdev)
     grub_device_close (dev);
 
   *bootdev = ((biosdev & 0xff) << 24) | ((slice & 0xff) << 16) 
-    | ((part & 0xff) << 16) | 0xff;
+    | ((part & 0xff) << 8) | 0xff;
   return (biosdev != ~0UL);
 #else
   *bootdev = 0xffffffff;
