@@ -1,3 +1,19 @@
+2009-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	xnu_uuid command
+
+	* commands/xnu_uuid.c: new file
+	* conf/common.rmk (pkglib_MODULES): add xnu_uuid.mod
+	(xnu_uuid_mod_SOURCES): new variable
+	(xnu_uuid_mod_CFLAGS): likewise
+	(xnu_uuid_mod_LDFLAGS): likewise
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): add commands/probe.c
+	* conf/i386-ieee1275.rmk: likewise
+	* conf/i386-pc.rmk: likewise
+	* conf/powerpc-ieee1275.rmk: likewise
+	* conf/sparc64-ieee1275.rmk: likewise
+	* util/grub.d/30_os-prober.in: use UUID for Mac OS X/Darwin
+
 2009-06-16  Pavel Roskin  <proski@gnu.org>
 
 	* configure.ac: Avoid '==' in test command, it's not portable.

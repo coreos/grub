@@ -61,6 +61,15 @@ int EXPORT_FUNC(grub_isalpha) (int c);
 int EXPORT_FUNC(grub_isgraph) (int c);
 int EXPORT_FUNC(grub_isdigit) (int c);
 int EXPORT_FUNC(grub_tolower) (int c);
+static inline int
+grub_toupper (int c)
+{
+  if (c >= 'a' && c <= 'z')
+    return c - 'a' + 'A';
+
+  return c;
+}
+
 unsigned long EXPORT_FUNC(grub_strtoul) (const char *str, char **end, int base);
 unsigned long long EXPORT_FUNC(grub_strtoull) (const char *str, char **end, int base);
 char *EXPORT_FUNC(grub_strdup) (const char *s);

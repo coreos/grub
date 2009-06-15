@@ -93,9 +93,7 @@ EOF
       done
     ;;
     macosx)
-      OSXROOT="`grub-probe --target=drive --device ${DEVICE} 2> /dev/null`"
-      # FIXME: use UUID
-      OSXDISK=disk"`echo ${OSXROOT} | awk -F , '{ print $1 ; }' | sed 's/(hd//;'`"s"`echo ${OSXROOT} | awk -F , '{ print $2 ; }' | sed 's/)//;'`"
+      OSXUUID="`grub-probe --target=fs_uuid --device ${DEVICE} 2> /dev/null`"
         cat << EOF
 menuentry "${LONGNAME} (on ${DEVICE})" {
 EOF
@@ -109,10 +107,11 @@ EOF
            fi
         fi
         if [ \$do_resume == 0 ]; then
+           xnu_uuid ${OSXUUID} uuid
            if [ -f /Extra/DSDT.aml ]; then
               acpi -e /Extra/DSDT.aml
            fi
-           xnu_kernel /mach_kernel rd=$OSXDISK
+           xnu_kernel /mach_kernel boot-uuid=\${uuid} rd=*uuid
            if [ /System/Library/Extensions.mkext -nt /System/Library/Extensions ]; then
               xnu_mkext /System/Library/Extensions.mkext
            else

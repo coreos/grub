@@ -586,3 +586,10 @@ bufio_mod_SOURCES = io/bufio.c
 bufio_mod_CFLAGS = $(COMMON_CFLAGS)
 bufio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# Misc.
+pkglib_MODULES += xnu_uuid.mod
+
+# For elf.mod.
+xnu_uuid_mod_SOURCES = commands/xnu_uuid.c
+xnu_uuid_mod_CFLAGS = $(COMMON_CFLAGS)
+xnu_uuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
