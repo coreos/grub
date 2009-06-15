@@ -1,3 +1,7 @@
+2009-06-16  Pavel Roskin  <proski@gnu.org>
+
+	* configure.ac: Avoid '==' in test command, it's not portable.
+
 2009-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Probe command

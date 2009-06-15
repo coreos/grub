@@ -164,7 +164,7 @@ AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long)
 
 grub_apple_cc
-if test x$grub_cv_apple_cc == xyes ; then
+if test x$grub_cv_apple_cc = xyes ; then
   CFLAGS="$CFLAGS -DAPPLE_CC=1 -fnested-functions"
   ASFLAGS="$ASFLAGS -DAPPLE_CC=1"
 fi
@@ -273,7 +273,7 @@ if test "x$TARGET_CFLAGS" = x; then
 fi
 
 grub_apple_target_cc
-if test x$grub_cv_apple_target_cc == xyes ; then
+if test x$grub_cv_apple_target_cc = xyes ; then
   TARGET_CFLAGS="$TARGET_CFLAGS -DAPPLE_CC=1 -fnested-functions"
   CFLAGS="$CFLAGS -DAPPLE_CC=1 -fnested-functions"
   TARGET_ASFLAGS="$TARGET_ASFLAGS -DAPPLE_CC=1"
