@@ -102,8 +102,6 @@ kernel_sector:
 boot_drive:
 	.byte 0xff	/* the disk to load kernel from */
 			/* 0xff means use the boot drive */
-root_drive:
-        .byte 0xff
 
 after_BPB:
 
@@ -118,6 +116,7 @@ after_BPB:
          * possible boot drive. If GRUB is installed into a floppy,
          * this does nothing (only jump).
          */
+	. = _start + GRUB_BOOT_MACHINE_DRIVE_CHECK
 boot_drive_check:
         jmp     1f	/* grub-setup may overwrite this jump */
         testb   $0x80, %dl
@@ -151,14 +150,12 @@ real_start:
 	/*
 	 *  Check if we have a forced disk reference here
 	 */
-        /* assign root_drive at the same time */
 #ifdef APPLE_CC
 	boot_drive_abs = ABS (boot_drive)
-	movw    boot_drive_abs, %ax
+	movb    boot_drive_abs, %al
 #else
-	movw    ABS(boot_drive), %ax
+	movb   ABS(boot_drive), %al
 #endif
-        movb    %ah, %dh
 	cmpb	$0xff, %al
 	je	1f
 	movb	%al, %dl
@@ -343,7 +340,6 @@ setup_sectors:
 
 	/* restore %dl */
 	popw	%dx
-        pushw   %dx
 
 	/* head start */
 	movb	%al, %dh
@@ -399,7 +395,6 @@ copy_buffer:
 
 	popw	%ds
 	popa
-        popw    %dx
 
 	/* boot kernel */
 #ifdef APPLE_CC

@@ -1,3 +1,19 @@
+2009-06-16  Pavel Roskin  <proski@gnu.org>
+
+	* boot/i386/pc/boot.S: Remove root_drive.  Assert offset of
+	boot_drive_check by using GRUB_BOOT_MACHINE_DRIVE_CHECK.  Don't
+	save %dx, we only need %dl and we never change it.
+	* boot/i386/pc/cdboot.S: Don't set the root drive.
+	* boot/i386/pc/pxeboot.S: Likewise.
+	* include/grub/i386/pc/boot.h: Remove
+	GRUB_BOOT_MACHINE_ROOT_DRIVE, adjust
+	GRUB_BOOT_MACHINE_DRIVE_CHECK.
+	* include/grub/i386/pc/kernel.h: Remove grub_root_drive.
+	* kern/i386/pc/init.c (make_install_device): Remove references
+	to grub_root_drive.
+	* kern/i386/pc/startup.S: Likewise.
+	* util/i386/pc/grub-setup.c (setup): Don't set root_drive.
+
 2009-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	xnu_uuid command

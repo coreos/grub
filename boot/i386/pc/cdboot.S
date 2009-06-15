@@ -86,9 +86,6 @@ bi_reserved:
 
 	call	read_cdrom
 
-        /* Root drive will default to boot drive */
-        movb    $0xFF, %dh
-
 	ljmp	$(DATA_ADDR >> 4), $0
 
 /*

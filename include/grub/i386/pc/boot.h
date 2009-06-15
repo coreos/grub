@@ -34,9 +34,6 @@
 /* The offset of BOOT_DRIVE.  */
 #define GRUB_BOOT_MACHINE_BOOT_DRIVE	0x4c
 
-/* The offset of ROOT_DRIVE.  */
-#define GRUB_BOOT_MACHINE_ROOT_DRIVE	0x4d
-
 /* The offset of KERNEL_ADDRESS.  */
 #define GRUB_BOOT_MACHINE_KERNEL_ADDRESS	0x40
 
@@ -47,7 +44,7 @@
 #define GRUB_BOOT_MACHINE_KERNEL_SEGMENT	0x42
 
 /* The offset of BOOT_DRIVE_CHECK.  */
-#define GRUB_BOOT_MACHINE_DRIVE_CHECK	0x4f
+#define GRUB_BOOT_MACHINE_DRIVE_CHECK	0x4e
 
 /* The offset of a magic number used by Windows NT.  */
 #define GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC	0x1b8

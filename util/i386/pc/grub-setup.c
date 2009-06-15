@@ -94,7 +94,7 @@ setup (const char *dir,
   grub_uint16_t core_sectors;
   grub_device_t root_dev, dest_dev;
   const char *dest_partmap;
-  grub_uint8_t *boot_drive, *root_drive;
+  grub_uint8_t *boot_drive;
   grub_disk_addr_t *kernel_sector;
   grub_uint16_t *boot_drive_check;
   struct boot_blocklist *first_block, *block;
@@ -207,7 +207,6 @@ setup (const char *dir,
 
   /* Set the addresses of variables in the boot image.  */
   boot_drive = (grub_uint8_t *) (boot_img + GRUB_BOOT_MACHINE_BOOT_DRIVE);
-  root_drive = (grub_uint8_t *) (boot_img + GRUB_BOOT_MACHINE_ROOT_DRIVE);
   kernel_sector = (grub_disk_addr_t *) (boot_img
 				     + GRUB_BOOT_MACHINE_KERNEL_SECTOR);
   boot_drive_check = (grub_uint16_t *) (boot_img
@@ -379,7 +378,6 @@ setup (const char *dir,
 
   /* FIXME: can this be skipped?  */
   *boot_drive = 0xFF;
-  *root_drive = 0xFF;
 
   *kernel_sector = grub_cpu_to_le64 (embed_region.start);
 
@@ -513,7 +511,6 @@ unable_to_embed:
 
   /* FIXME: can this be skipped?  */
   *boot_drive = 0xFF;
-  *root_drive = 0xFF;
 
   *install_dos_part = grub_cpu_to_le32 (dos_part);
   *install_bsd_part = grub_cpu_to_le32 (bsd_part);

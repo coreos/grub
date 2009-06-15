@@ -27,8 +27,7 @@
 _start:
 start:
 
-        /* Root drive will default to boot drive */
-        movb	$0xFF, %dh
+	/* Use drive number 0x7F for PXE */
         movb	$0x7F, %dl
 
 	/* Jump to the real world */

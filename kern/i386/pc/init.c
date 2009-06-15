@@ -60,13 +60,10 @@ make_install_device (void)
 
   if (grub_prefix[0] != '(')
     {
-      /* If the root drive is not set explicitly, assume that it is identical
-         to the boot drive.  */
-      if (grub_root_drive == 0xFF)
-        grub_root_drive = grub_boot_drive;
-
-      grub_sprintf (dev, "(%cd%u", (grub_root_drive & 0x80) ? 'h' : 'f',
-                    grub_root_drive & 0x7f);
+      /* No hardcoded root partition - make it from the boot drive and the
+	 partition number encoded at the install time.  */
+      grub_sprintf (dev, "(%cd%u", (grub_boot_drive & 0x80) ? 'h' : 'f',
+		    grub_boot_drive & 0x7f);
 
       if (grub_install_dos_part >= 0)
 	grub_sprintf (dev + grub_strlen (dev), ",%u", grub_install_dos_part + 1);

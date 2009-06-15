@@ -71,9 +71,6 @@ extern char grub_prefix[];
 /* The boot BIOS drive number.  */
 extern grub_uint8_t EXPORT_VAR(grub_boot_drive);
 
-/* The root BIOS drive number.  */
-extern grub_uint8_t grub_root_drive;
-
 #endif /* ! ASM_FILE */
 
 #endif /* ! KERNEL_MACHINE_HEADER */

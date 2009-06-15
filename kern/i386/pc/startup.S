@@ -195,9 +195,8 @@ codestart:
 
 	sti		/* we're safe again */
 
-	/* save boot and root drive references */
+	/* save the boot drive */
 	ADDR32	movb	%dl, EXT_C(grub_boot_drive)
-	ADDR32	movb	%dh, EXT_C(grub_root_drive)
 
 	/* reset disk system (%ah = 0) */
 	int	$0x13
@@ -298,9 +297,6 @@ codestart:
  */
 
 VARIABLE(grub_boot_drive)
-	.byte	0
-
-VARIABLE(grub_root_drive)
 	.byte	0
 
 	.p2align	2	/* force 4-byte alignment */
