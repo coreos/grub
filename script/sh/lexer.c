@@ -156,18 +156,20 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
       return token;
     }
 
-  for (;! state->done && (*state->script || firstrun); firstrun = 0)
+  for (;! state->done; firstrun = 0)
     {
 
       if (! *state->script)
 	{
 	  /* Check if more tokens are requested by the parser.  */
 	  if (((state->refs && ! parsestate->err)
-	       || state->state == GRUB_PARSER_STATE_ESC)
+	       || state->state == GRUB_PARSER_STATE_ESC
+	       || state->state == GRUB_PARSER_STATE_QUOTE
+	       || state->state == GRUB_PARSER_STATE_DQUOTE)
 	      && state->getline)
 	    {
 	      int doexit = 0;
-	      while (!state->script || ! grub_strlen (state->script))
+	      while (!state->script || ! *state->script)
 		{
 		  grub_free (state->newscript);
 		  state->newscript = 0;
