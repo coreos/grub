@@ -185,11 +185,18 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 		break;
 	      grub_dprintf ("scripting", "token=`\\n'\n");
 	      recordchar (state, '\n');
-	      if (state->state != GRUB_PARSER_STATE_ESC)
+	      if (state->state != GRUB_PARSER_STATE_ESC
+		  && state->state != GRUB_PARSER_STATE_DQUOTE
+		  && state->state != GRUB_PARSER_STATE_QUOTE)
 		{
 		  state->tokenonhold = '\n';
 		  break;
 		}
+	      if (state->state == GRUB_PARSER_STATE_DQUOTE
+		  || state->state == GRUB_PARSER_STATE_QUOTE)
+		yylval->arg = grub_script_arg_add (parsestate, yylval->arg,
+						   GRUB_SCRIPT_ARG_TYPE_STR,
+						   "\n");
 	    }
 	  else
 	    {
