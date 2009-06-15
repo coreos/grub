@@ -280,7 +280,9 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 		 when a special token was found.  It will be recognized
 		 next time when this function is called.  */
 	      if (newstate == GRUB_PARSER_STATE_TEXT
-		  && state->state != GRUB_PARSER_STATE_ESC)
+		  && state->state != GRUB_PARSER_STATE_ESC
+		  && state->state != GRUB_PARSER_STATE_QUOTE
+		  && state->state != GRUB_PARSER_STATE_DQUOTE)
 		{
 		  int breakout = 0;
 
