@@ -39,6 +39,7 @@ static int
 check_textstate (grub_parser_state_t state)
 {
   return (state == GRUB_PARSER_STATE_TEXT
+	  || state == GRUB_PARSER_STATE_ESC
 	  || state == GRUB_PARSER_STATE_QUOTE
 	  || state == GRUB_PARSER_STATE_DQUOTE);
 }

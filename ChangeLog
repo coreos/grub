@@ -1,3 +1,11 @@
+2009-06-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix handling of string like \"hello\" and "a
+	b"
+
+	* script/sh/lexer.c (check_textstate): accept GRUB_PARSER_STATE_ESC
+	(grub_script_yylex): fix parsing of quoting, escaping and newline
+
 2009-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* loader/i386/multiboot.c (grub_multiboot_get_bootdev): fix partition 
