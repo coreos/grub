@@ -354,7 +354,7 @@ pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod loadenv.mod crc.mod parttool.mod	\
 	pcpart.mod memrw.mod normal.mod sh.mod lua.mod	\
-	gptsync.mod true.mod
+	gptsync.mod true.mod probe.mod
 
 # For gptsync.mod.
 gptsync_mod_SOURCES = commands/gptsync.c
@@ -486,6 +486,11 @@ true_mod_SOURCES = commands/true.c
 true_mod_CFLAGS = $(COMMON_CFLAGS)
 true_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For probe.mod.
+probe_mod_SOURCES = commands/probe.c
+probe_mod_CFLAGS = $(COMMON_CFLAGS)
+probe_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For normal.mod.
 normal_mod_SOURCES = normal/main.c normal/cmdline.c normal/dyncmd.c \
 	normal/autofs.c normal/handler.c \
@@ -580,3 +585,4 @@ gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 bufio_mod_SOURCES = io/bufio.c
 bufio_mod_CFLAGS = $(COMMON_CFLAGS)
 bufio_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
