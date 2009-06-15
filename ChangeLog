@@ -132,7 +132,6 @@
 	* loader/i386/multiboot.c (grub_multiboot_get_bootdev): likewise
 	* loader/i386/pc/chainloader.c (grub_chainloader_cmd): likewise
 
->>>>>>> .r2306
 2009-06-10  Pavel Roskin  <proski@gnu.org>
 
 	* io/gzio.c (test_header): Don't reuse one buffer for all data.
