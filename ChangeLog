@@ -1,3 +1,8 @@
+2009-06-16  James Jarvis  <James.Jarvis@ed.ac.uk>
+
+	* commands/help.c GRUB_MOD_INIT(echo): Fix the help output of
+	`echo' command.
+
 2009-06-16  Pavel Roskin  <proski@gnu.org>
 
 	* boot/i386/pc/boot.S: Remove root_drive.  Assert offset of
@@ -62,7 +67,7 @@
 	* loader/i386/multiboot.c (grub_multiboot_get_bootdev): fix partition 
 	handling
 	
-2009-06-13  Jun Inoue <jun.lambda@gmail.com>
+2009-06-13  Jun Inoue  <jun.lambda@gmail.com>
 
 	* util/grub-mkconfig.in: Fix parsing of --output option.
 
