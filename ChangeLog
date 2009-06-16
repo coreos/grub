@@ -1,3 +1,8 @@
+2009-06-16  Pavel Roskin  <proski@gnu.org>
+
+	* kern/i386/halt.c: Include grub/machine/init.h.
+	* kern/i386/reboot.c: Include grub/cpu/reboot.h.
+
 2009-06-16  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/grub.d/30_os-prober.in: Use ${root} in the generated

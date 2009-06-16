@@ -18,6 +18,7 @@
 
 #include <grub/cpu/io.h>
 #include <grub/cpu/halt.h>
+#include <grub/machine/init.h>
 #include <grub/misc.h>
 
 const char bochs_shutdown[] = "Shutdown";
