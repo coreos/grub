@@ -55,7 +55,7 @@ EOF
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
 
       cat << EOF
-	drivemap -s (hd0) \$root
+	drivemap -s (hd0) \${root}
 	chainloader +1
 }
 EOF

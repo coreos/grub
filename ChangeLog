@@ -1,3 +1,8 @@
+2009-06-16  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub.d/30_os-prober.in: Use ${root} in the generated
+	drivemap menuentry.
+
 2009-06-16  James Jarvis  <James.Jarvis@ed.ac.uk>
 
 	* commands/help.c GRUB_MOD_INIT(echo): Fix the help output of
