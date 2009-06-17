@@ -1,3 +1,12 @@
+2009-06-17  Pavel Roskin  <proski@gnu.org>
+
+	* conf/i386-coreboot.rmk (kernel_elf_SOURCES): Remove
+	term/i386/pc/at_keyboard.c, it doesn't need to be compiled into
+	the kernel.
+	* kern/i386/coreboot/init.c: Don't call grub_at_keyboard_init()
+	and grub_at_keyboard_fini(), it's done on module load and
+	unload.
+
 2009-06-17  Felix Zielcke  <fzielcke@z-51.de>
 
 	* loader/i386/linux.c (grub_cmd_linux): Set grub_error if the

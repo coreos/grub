@@ -75,7 +75,6 @@ grub_machine_init (void)
 {
   /* Initialize the console as early as possible.  */
   grub_vga_text_init ();
-  grub_at_keyboard_init ();
 
   auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
@@ -137,7 +136,6 @@ grub_machine_set_prefix (void)
 void
 grub_machine_fini (void)
 {
-  grub_at_keyboard_fini ();
   grub_vga_text_fini ();
   grub_stop_floppy ();
 }
