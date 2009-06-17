@@ -542,10 +542,17 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	{
 	  char tmp_buf[GRUB_DISK_SECTOR_SIZE];
 	  grub_size_t len;
+	  grub_partition_t part;
 
+	  part = disk->partition;
+	  disk->partition = 0;
 	  if (grub_disk_read (disk, sector, 0, GRUB_DISK_SECTOR_SIZE, tmp_buf)
 	      != GRUB_ERR_NONE)
-	    goto finish;
+	    {
+	      disk->partition = part;
+	      goto finish;
+	    }
+	  disk->partition = part;
 
 	  len = GRUB_DISK_SECTOR_SIZE - real_offset;
 	  if (len > size)
