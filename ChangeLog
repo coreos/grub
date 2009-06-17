@@ -1,5 +1,9 @@
 2009-06-17  Pavel Roskin  <proski@gnu.org>
 
+	* include/grub/i386/coreboot/console.h: Don't use the i386-pc
+	version, use declarations needed to use vga_text as the startup
+	console.
+
 	* conf/i386-coreboot.rmk (kernel_elf_SOURCES): Remove
 	term/i386/pc/at_keyboard.c, it doesn't need to be compiled into
 	the kernel.
