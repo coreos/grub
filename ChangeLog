@@ -1,3 +1,9 @@
+2009-06-17  Felix Zielcke  <fzielcke@z-51.de>
+
+	* loader/i386/linux.c (grub_cmd_linux): Set grub_error if the
+	file can't be found.
+	* loader/i386/pc/linux.c (grub_cmd_linux): Likewise.
+
 2009-06-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix newline handling

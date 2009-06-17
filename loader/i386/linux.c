@@ -600,7 +600,10 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   file = grub_file_open (argv[0]);
   if (! file)
-    goto fail;
+    {
+      grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+      goto fail;
+    }
 
   if (grub_file_read (file, &lh, sizeof (lh)) != sizeof (lh))
     {
