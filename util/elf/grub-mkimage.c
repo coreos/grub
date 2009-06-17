@@ -332,14 +332,14 @@ Usage: grub-mkimage -o FILE [OPTION]... [MODULES]\n\
 \n\
 Make a bootable image of GRUB.\n\
 \n\
--d, --directory=DIR     use images and modules under DIR [default=%s]\n\
--p, --prefix=DIR        set grub_prefix directory\n\
--m, --memdisk=FILE      embed FILE as a memdisk image\n\
--o, --output=FILE       output a generated image to FILE\n\
--h, --help              display this message and exit\n\
--n, --note              add NOTE segment for CHRP Open Firmware\n\
--V, --version           print version information and exit\n\
--v, --verbose           print verbose messages\n\
+  -d, --directory=DIR     use images and modules under DIR [default=%s]\n\
+  -p, --prefix=DIR        set grub_prefix directory\n\
+  -m, --memdisk=FILE      embed FILE as a memdisk image\n\
+  -o, --output=FILE       output a generated image to FILE\n\
+  -h, --help              display this message and exit\n\
+  -n, --note              add NOTE segment for CHRP Open Firmware\n\
+  -V, --version           print version information and exit\n\
+  -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
 ", GRUB_LIBDIR, PACKAGE_BUGREPORT);

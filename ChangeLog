@@ -1,3 +1,9 @@
+2009-06-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/elf/grub-mkimage.c (usage): Prefix each option line with two
+	spaces, for the benefit of help2man.
+	* util/i386/efi/grub-mkimage.c (usage): Likewise.
+
 2009-06-16  Pavel Roskin  <proski@gnu.org>
 
 	* kern/i386/halt.c: Include grub/machine/init.h.
