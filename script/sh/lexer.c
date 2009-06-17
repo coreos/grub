@@ -64,6 +64,7 @@ grub_script_lexer_init (char *script, grub_reader_getline_t getline)
   param->recordpos = 0;
   param->recordlen = 0;
   param->tokenonhold = 0;
+  param->was_newline = 0;
 
   return param;
 }
@@ -158,8 +159,7 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 
   for (;! state->done; firstrun = 0)
     {
-
-      if (! *state->script)
+      if (! state->script || ! *state->script)
 	{
 	  /* Check if more tokens are requested by the parser.  */
 	  if (((state->refs && ! parsestate->err)
@@ -169,7 +169,16 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 	      && state->getline)
 	    {
 	      int doexit = 0;
-	      while (!state->script || ! *state->script)
+	      if (state->state != GRUB_PARSER_STATE_ESC
+		  && state->state != GRUB_PARSER_STATE_QUOTE
+		  && state->state != GRUB_PARSER_STATE_DQUOTE
+		  && ! state->was_newline)
+		{
+		  state->was_newline = 1;
+		  state->tokenonhold = '\n';
+		  break;
+		}
+	      while (! state->script || ! *state->script)
 		{
 		  grub_free (state->newscript);
 		  state->newscript = 0;
@@ -185,13 +194,10 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 		break;
 	      grub_dprintf ("scripting", "token=`\\n'\n");
 	      recordchar (state, '\n');
-	      if (state->state != GRUB_PARSER_STATE_ESC
-		  && state->state != GRUB_PARSER_STATE_DQUOTE
-		  && state->state != GRUB_PARSER_STATE_QUOTE)
-		{
-		  state->tokenonhold = '\n';
-		  break;
-		}
+	      if (state->state == GRUB_PARSER_STATE_VARNAME)
+		state->state = GRUB_PARSER_STATE_TEXT;
+	      if (state->state == GRUB_PARSER_STATE_QVARNAME)
+		state->state = GRUB_PARSER_STATE_DQUOTE;
 	      if (state->state == GRUB_PARSER_STATE_DQUOTE
 		  || state->state == GRUB_PARSER_STATE_QUOTE)
 		yylval->arg = grub_script_arg_add (parsestate, yylval->arg,
@@ -208,6 +214,7 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 	      break;
 	    }
 	}
+      state->was_newline = 0;
 
       newstate = grub_parser_cmdline_state (state->state, *state->script, &use);
 

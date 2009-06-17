@@ -1,5 +1,14 @@
 2009-06-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix newline handling
+
+	* include/grub/script_sh.h (grub_lexer_param): new field was_newline
+	* script/sh/lexer.c (grub_script_lexer_init): initilaise was_newline
+	(grub_script_yylex): don't segfault on unterminated script
+	newline terminates command and variable
+
+2009-06-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	avoid double grub_adjust_range call. Bug reported by David Simner
 
 	* kern/disk.c (grub_disk_write): change to raw disk access before

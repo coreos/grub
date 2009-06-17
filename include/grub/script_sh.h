@@ -159,6 +159,9 @@ struct grub_lexer_param
 
   /* The token that is already parsed but not yet returned. */
   int tokenonhold;
+
+  /* Was the last token a newline? */
+  int was_newline;
 };
 
 /* State of the parser as passes to the parser.  */
