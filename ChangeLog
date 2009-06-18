@@ -1,3 +1,11 @@
+2009-06-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix warnings
+
+	* fs/ntfscomp.c (decomp_get16): initialize c1 and c2
+	(decomp_block): initialize ch
+	use grub_memcpy instead of memcpy
+
 2009-06-17  Pavel Roskin  <proski@gnu.org>
 
 	* include/grub/i386/coreboot/console.h: Don't use the i386-pc
