@@ -308,7 +308,6 @@ fi
 AC_SUBST(TARGET_IMG_LDSCRIPT)
 AC_SUBST(TARGET_IMG_LDFLAGS)
 AC_SUBST(TARGET_IMG_CFLAGS)
-AC_MSG_RESULT([$TARGET_IMG_LDFLAGS_AC])
 
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])
@@ -396,7 +395,11 @@ AC_SUBST(TARGET_LDFLAGS)
 
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"
+if test "x$TARGET_APPLE_CC" = x1 ; then
+CFLAGS="$TARGET_CFLAGS -nostdlib"
+else
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100"
+fi
 CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
 

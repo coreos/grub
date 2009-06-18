@@ -1,5 +1,15 @@
 2009-06-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix build with Apple's toolchain. Part 1
+
+	* commands/i386/pc/drivemap_int13h.S: use assembly-time constants
+	for long calls
+	* configure.ac: remove a leftover AC_MSG_RESULT
+	(CFLAGS): don't add -Wl,--defsym,___main=0x8100 when building with 
+	Apple's toolchain
+
+2009-06-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix warnings
 
 	* fs/ntfscomp.c (decomp_get16): initialize c1 and c2

@@ -66,7 +66,12 @@ not_found:
 	popf
 	pushf
 
+#ifdef APPLE_CC
+	grub_drivemap_oldhandler_ofs = INT13H_OFFSET (EXT_C (grub_drivemap_oldhandler))
+	lcall *%cs:grub_drivemap_oldhandler_ofs
+#else
 	lcall *%cs:INT13H_OFFSET (EXT_C (grub_drivemap_oldhandler))
+#endif
 
 	push	%bp
 	mov	%sp, %bp
@@ -89,7 +94,11 @@ norestore:
 	popf
 	pushf
 
+#ifdef APPLE_CC
+	lcall *%cs:grub_drivemap_oldhandler_ofs
+#else
 	lcall *%cs:INT13H_OFFSET (EXT_C (grub_drivemap_oldhandler))
+#endif
 
 	push	%bp
 	mov	%sp, %bp
