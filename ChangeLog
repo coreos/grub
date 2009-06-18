@@ -1,5 +1,12 @@
 2009-06-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix build with Apple's toolchain. Part 2
+
+	* aclocal.m4 (grub_PROG_TARGET_CC): add missing prototype for main and
+	a fake start
+
+2009-06-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix build with Apple's toolchain. Part 1
 
 	* commands/i386/pc/drivemap_int13h.S: use assembly-time constants

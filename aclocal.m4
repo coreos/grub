@@ -2,7 +2,10 @@ dnl Check whether target compiler is working
 AC_DEFUN(grub_PROG_TARGET_CC,
 [AC_MSG_CHECKING([whether target compiler is working])
 AC_CACHE_VAL(grub_cv_prog_target_cc,
-[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+asm (".globl start; start: nop");
+int main (void);
+]], [[]])],
   		[grub_cv_prog_target_cc=yes],
 		[grub_cv_prog_target_cc=no])
 ])
