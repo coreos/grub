@@ -1,3 +1,10 @@
+2009-06-18  Pavel Roskin  <proski@gnu.org>
+
+	* conf/common.rmk: Add fs_file.mod.
+	* disk/fs_file.c: New file.
+	* include/grub/disk.h (enum grub_disk_dev_id): Add
+	GRUB_DISK_DEVICE_FILE_ID.
+
 2009-06-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix build with Apple's toolchain. Part 2
