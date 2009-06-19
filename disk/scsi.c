@@ -246,66 +246,65 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 
   for (p = grub_scsi_dev_list; p; p = p->next)
     {
-      if (! p->open (name, scsi))
+      if (p->open (name, scsi))
+	continue;
+      disk->id = (unsigned long) "scsi"; /* XXX */
+      disk->data = scsi;
+      scsi->dev = p;
+      scsi->lun = lun;
+      scsi->name = grub_strdup (name);
+      if (! scsi->name)
 	{
-	  disk->id = (unsigned long) "scsi"; /* XXX */
-	  disk->data = scsi;
-	  scsi->dev = p;
-	  scsi->lun = lun;
-	  scsi->name = grub_strdup (name);
-	  if (! scsi->name)
-	    {
-	      grub_free (scsi);
-	      return grub_errno;
-	    }
-
-	  grub_dprintf ("scsi", "dev opened\n");
-
-	  err = grub_scsi_inquiry (scsi);
-	  if (err)
-	    {
-	      grub_free (scsi);
-	      grub_dprintf ("scsi", "inquiry failed\n");
-	      return grub_errno;
-	    }
-
-	  grub_dprintf ("scsi", "inquiry: devtype=0x%02x removable=%d\n",
-			scsi->devtype, scsi->removable);
-
-	  /* Try to be conservative about the device types
-	     supported.  */
-	  if (scsi->devtype != grub_scsi_devtype_direct
-	      && scsi->devtype != grub_scsi_devtype_cdrom)
-	    {
-	      grub_free (scsi);
-	      return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-				 "unknown SCSI device");
-	    }
-
-	  if (scsi->devtype == grub_scsi_devtype_cdrom)
-	    disk->has_partitions = 0;
-	  else
-	    disk->has_partitions = 1;
-
-	  err = grub_scsi_read_capacity (scsi);
-	  if (err)
-	    {
-	      grub_free (scsi);
-	      grub_dprintf ("scsi", "READ CAPACITY failed\n");
-	      return grub_errno;
-	    }
-
-	  /* SCSI blocks can be something else than 512, although GRUB
-	     wants 512 byte blocks.  */
-	  disk->total_sectors = ((scsi->size * scsi->blocksize)
-				 << GRUB_DISK_SECTOR_BITS);
-
-	  grub_dprintf ("scsi", "capacity=%llu, blksize=%d\n",
-			(unsigned long long) disk->total_sectors,
-			scsi->blocksize);
-
-	  return GRUB_ERR_NONE;
+	  grub_free (scsi);
+	  return grub_errno;
 	}
+
+      grub_dprintf ("scsi", "dev opened\n");
+
+      err = grub_scsi_inquiry (scsi);
+      if (err)
+	{
+	  grub_free (scsi);
+	  grub_dprintf ("scsi", "inquiry failed\n");
+	  return grub_errno;
+	}
+
+      grub_dprintf ("scsi", "inquiry: devtype=0x%02x removable=%d\n",
+		    scsi->devtype, scsi->removable);
+
+      /* Try to be conservative about the device types
+	 supported.  */
+      if (scsi->devtype != grub_scsi_devtype_direct
+	  && scsi->devtype != grub_scsi_devtype_cdrom)
+	{
+	  grub_free (scsi);
+	  return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+			     "unknown SCSI device");
+	}
+
+      if (scsi->devtype == grub_scsi_devtype_cdrom)
+	disk->has_partitions = 0;
+      else
+	disk->has_partitions = 1;
+
+      err = grub_scsi_read_capacity (scsi);
+      if (err)
+	{
+	  grub_free (scsi);
+	  grub_dprintf ("scsi", "READ CAPACITY failed\n");
+	  return grub_errno;
+	}
+
+      /* SCSI blocks can be something else than 512, although GRUB
+	 wants 512 byte blocks.  */
+      disk->total_sectors = ((scsi->size * scsi->blocksize)
+			     << GRUB_DISK_SECTOR_BITS);
+
+      grub_dprintf ("scsi", "capacity=%llu, blksize=%d\n",
+		    (unsigned long long) disk->total_sectors,
+		    scsi->blocksize);
+
+      return GRUB_ERR_NONE;
     }
 
   grub_free (scsi);
