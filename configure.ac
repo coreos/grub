@@ -292,7 +292,6 @@ if test x$grub_cv_apple_target_cc = xyes ; then
 else
   TARGET_APPLE_CC=0
 # Use linker script if present, otherwise use builtin -N script.
-AC_MSG_CHECKING([for option to link raw image])
 if test -f "${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"; then
   TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
   TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}  -Wl,-Ttext,"

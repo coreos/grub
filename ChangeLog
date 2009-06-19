@@ -1,3 +1,7 @@
+2009-06-19  Pavel Roskin  <proski@gnu.org>
+
+	* configure.ac: Remove stray AC_MSG_CHECKING.
+
 2009-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* disk/scsi.c (grub_scsi_open): use continue instead of big if
