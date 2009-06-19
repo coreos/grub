@@ -1,7 +1,7 @@
 2009-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* disk/scsi.c (grub_scsi_open): use continue instead of big if
-	
+
 2009-06-18  Pavel Roskin  <proski@gnu.org>
 
 	* conf/common.rmk: Add fs_file.mod.
@@ -23,7 +23,7 @@
 	* commands/i386/pc/drivemap_int13h.S: use assembly-time constants
 	for long calls
 	* configure.ac: remove a leftover AC_MSG_RESULT
-	(CFLAGS): don't add -Wl,--defsym,___main=0x8100 when building with 
+	(CFLAGS): don't add -Wl,--defsym,___main=0x8100 when building with
 	Apple's toolchain
 
 2009-06-18  Vladimir Serbinenko  <phcoder@gmail.com>
@@ -58,7 +58,7 @@
 	Fix newline handling
 
 	* include/grub/script_sh.h (grub_lexer_param): new field was_newline
-	* script/sh/lexer.c (grub_script_lexer_init): initilaise was_newline
+	* script/sh/lexer.c (grub_script_lexer_init): initialize was_newline
 	(grub_script_yylex): don't segfault on unterminated script
 	newline terminates command and variable
 
@@ -151,9 +151,9 @@
 
 2009-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* loader/i386/multiboot.c (grub_multiboot_get_bootdev): fix partition 
+	* loader/i386/multiboot.c (grub_multiboot_get_bootdev): fix partition
 	handling
-	
+
 2009-06-13  Jun Inoue  <jun.lambda@gmail.com>
 
 	* util/grub-mkconfig.in: Fix parsing of --output option.
