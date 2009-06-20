@@ -1,3 +1,16 @@
+2009-06-20  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/loader.h (grub_linux_prot_size)
+	(grub_linux_tmp_addr, grub_linux_real_addr)
+	(grub_linux_is_bzimage, grub_linux16_boot): Declare only on
+	GRUB_MACHINE_PCBIOS.
+	* util/i386/pc/grub-mkimage.c (compress_kernel): Move
+	common grub_util_info() call to ...
+	(generate_image): ... here.
+	Fix use of uninitialized memory, comparison of signed with
+	unsigned integers and memory leak.
+	Remove bogus module address message.
+
 2009-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* disk/mdraid_linux.c (GRUB_MOD_FINI): use grub_raid_unregister and not

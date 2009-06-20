@@ -22,14 +22,17 @@
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/symbol.h>
+#include <grub/machine/machine.h>
 
+extern grub_addr_t EXPORT_VAR(grub_os_area_addr);
+extern grub_size_t EXPORT_VAR(grub_os_area_size);
+
+#ifdef GRUB_MACHINE_PCBIOS
 extern grub_uint32_t EXPORT_VAR(grub_linux_prot_size);
 extern char *EXPORT_VAR(grub_linux_tmp_addr);
 extern char *EXPORT_VAR(grub_linux_real_addr);
 extern grub_int32_t EXPORT_VAR(grub_linux_is_bzimage);
-extern grub_addr_t EXPORT_VAR(grub_os_area_addr);
-extern grub_size_t EXPORT_VAR(grub_os_area_size);
-
 grub_err_t EXPORT_FUNC(grub_linux16_boot) (void);
+#endif
 
 #endif /* ! GRUB_LOADER_CPU_HEADER */
