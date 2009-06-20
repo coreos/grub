@@ -161,5 +161,5 @@ GRUB_MOD_INIT(dm_nv)
 
 GRUB_MOD_FINI(dm_nv)
 {
-  grub_raid_register (&grub_dmraid_nv_dev);
+  grub_raid_unregister (&grub_dmraid_nv_dev);
 }

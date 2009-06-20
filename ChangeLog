@@ -1,3 +1,9 @@
+2009-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/mdraid_linux.c (GRUB_MOD_FINI): use grub_raid_unregister and not
+	grub_raid_register
+	* disk/dmraid_nvidia.c (GRUB_MOD_FINI): likewise
+
 2009-06-19  Pavel Roskin  <proski@gnu.org>
 
 	* configure.ac: Remove stray AC_MSG_CHECKING.

@@ -229,5 +229,5 @@ GRUB_MOD_INIT (mdraid)
 
 GRUB_MOD_FINI (mdraid)
 {
-  grub_raid_register (&grub_mdraid_dev);
+  grub_raid_unregister (&grub_mdraid_dev);
 }
