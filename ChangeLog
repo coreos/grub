@@ -1,5 +1,10 @@
 2009-06-20  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/i386/pc/grub-mkimage.c (main): Oops, free `output' only
+	after it's no longer needed.
+
+2009-06-20  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/grub/i386/loader.h (grub_linux_prot_size)
 	(grub_linux_tmp_addr, grub_linux_real_addr)
 	(grub_linux_is_bzimage, grub_linux16_boot): Declare only on

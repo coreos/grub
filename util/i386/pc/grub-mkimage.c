@@ -411,9 +411,9 @@ main (int argc, char *argv[])
   if (output)
     {
       fp = fopen (output, "wb");
-      free (output);
       if (! fp)
 	grub_util_error ("cannot open %s", output);
+      free (output);
     }
 
   generate_image (dir ? : GRUB_LIBDIR, prefix ? : DEFAULT_DIRECTORY, fp,
