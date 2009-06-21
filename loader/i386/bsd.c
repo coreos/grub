@@ -116,7 +116,7 @@ grub_bsd_get_device (grub_uint32_t * biosdev,
     grub_device_close (dev);
 }
 
-static grub_err_t
+grub_err_t
 grub_freebsd_add_meta (grub_uint32_t type, void *data, grub_uint32_t len)
 {
   if (mod_buf_max < mod_buf_len + len + 8)
@@ -261,35 +261,20 @@ grub_freebsd_add_mmap (void)
   return grub_errno;
 }
 
-static grub_err_t
-grub_freebsd_add_meta_module (int is_kern, int argc, char **argv,
+grub_err_t
+grub_freebsd_add_meta_module (char *filename, char *type, int argc, char **argv,
 			      grub_addr_t addr, grub_uint32_t size)
 {
-  char *name, *type;
-
-  name = grub_strrchr (argv[0], '/');
+  char *name;
+  name = grub_strrchr (filename, '/');
   if (name)
     name++;
   else
-    name = argv[0];
+    name = filename;
 
   if (grub_freebsd_add_meta (FREEBSD_MODINFO_NAME, name,
 			     grub_strlen (name) + 1))
     return grub_errno;
-
-  argc--;
-  argv++;
-
-  if ((argc) && (!grub_memcmp (argv[0], "type=", 5)))
-    {
-      type = &argv[0][5];
-      argc--;
-      argv++;
-    }
-  else
-    type = ((is_kern) ?
-	    ((is_64bit) ? FREEBSD_MODTYPE_KERNEL64 : FREEBSD_MODTYPE_KERNEL)
-	    : FREEBSD_MODTYPE_RAW);
 
   if (is_64bit)
     {
@@ -339,23 +324,6 @@ grub_freebsd_add_meta_module (int is_kern, int argc, char **argv,
 	  if (grub_freebsd_add_meta (FREEBSD_MODINFO_ARGS, cmdline, n))
 	    return grub_errno;
 	}
-    }
-
-  if (is_kern)
-    {
-      int len = (is_64bit) ? 8 : 4;
-      grub_uint64_t data = 0;
-
-      if ((grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA |
-				  FREEBSD_MODINFOMD_HOWTO, &data, 4)) ||
-	  (grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA |
-				  FREEBSD_MODINFOMD_ENVP, &data, len)) ||
-	  (grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA |
-				  FREEBSD_MODINFOMD_KERNEND, &data, len)))
-	return grub_errno;
-      kern_end_mdofs = mod_buf_len - len;
-
-      return grub_freebsd_add_mmap ();
     }
 
   return GRUB_ERR_NONE;
@@ -688,10 +656,18 @@ grub_bsd_load_aout (grub_file_t file)
 }
 
 static grub_err_t
-grub_bsd_elf32_hook (Elf32_Phdr * phdr, grub_addr_t * addr)
+grub_bsd_elf32_hook (Elf32_Phdr * phdr, grub_addr_t * addr, int *do_load)
 {
   Elf32_Addr paddr;
 
+  if (phdr->p_type != PT_LOAD
+      && phdr->p_type != PT_DYNAMIC)
+    {
+      *do_load = 0;
+      return 0;
+    }
+
+  *do_load = 1;
   phdr->p_paddr &= 0xFFFFFF;
   paddr = phdr->p_paddr;
 
@@ -712,10 +688,18 @@ grub_bsd_elf32_hook (Elf32_Phdr * phdr, grub_addr_t * addr)
 }
 
 static grub_err_t
-grub_bsd_elf64_hook (Elf64_Phdr * phdr, grub_addr_t * addr)
+grub_bsd_elf64_hook (Elf64_Phdr * phdr, grub_addr_t * addr, int *do_load)
 {
   Elf64_Addr paddr;
 
+  if (phdr->p_type != PT_LOAD
+      && phdr->p_type != PT_DYNAMIC)
+    {
+      *do_load = 0;
+      return 0;
+    }
+
+  *do_load = 1;
   paddr = phdr->p_paddr & 0xffffff;
 
   if ((paddr < grub_os_area_addr)
@@ -838,10 +822,54 @@ grub_cmd_freebsd (grub_command_t cmd __attribute__ ((unused)),
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     {
       kern_end = ALIGN_PAGE (kern_end);
-      if ((is_elf_kernel) &&
-	  (grub_freebsd_add_meta_module (1, argc, argv, kern_start,
-					 kern_end - kern_start)))
-	return grub_errno;
+      if (is_elf_kernel)
+	{
+	  grub_err_t err;
+	  grub_uint64_t data = 0;
+	  grub_file_t file;
+	  int len = is_64bit ? 8 : 4;
+
+	  err = grub_freebsd_add_meta_module (argv[0], is_64bit
+					      ? FREEBSD_MODTYPE_KERNEL64
+					      : FREEBSD_MODTYPE_KERNEL,
+					      argc - 1, argv + 1,
+					      kern_start,
+					      kern_end - kern_start);
+	  if (err)
+	    return err;
+
+	  file = grub_gzfile_open (argv[0], 1);
+	  if (! file)
+	    return grub_errno;
+
+	  if (is_64bit)
+	    err = grub_freebsd_load_elf_meta64 (file, &kern_end);
+	  else
+	    err = grub_freebsd_load_elf_meta32 (file, &kern_end);
+	  if (err)
+	    return err;
+
+	  err = grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA |
+				       FREEBSD_MODINFOMD_HOWTO, &data, 4);
+	  if (err)
+	    return err;
+
+	  err = grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA |
+				       FREEBSD_MODINFOMD_ENVP, &data, len);
+	  if (err)
+	    return err;
+
+	  err = grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA |
+				       FREEBSD_MODINFOMD_KERNEND, &data, len);
+	  if (err)
+	    return err;
+
+	  kern_end_mdofs = mod_buf_len - len;
+
+	  err = grub_freebsd_add_mmap ();
+	  if (err)
+	    return err;
+	}
       grub_loader_set (grub_freebsd_boot, grub_bsd_unload, 1);
     }
 
@@ -969,6 +997,10 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
 			 int argc, char *argv[])
 {
   grub_file_t file = 0;
+  grub_err_t err;
+  int modargc;
+  char **modargv;
+  char *type;
 
   if (kernel_type != KERNEL_TYPE_FREEBSD)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
@@ -996,9 +1028,27 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
     }
 
   grub_file_read (file, (void *) kern_end, file->size);
-  if ((!grub_errno) &&
-      (!grub_freebsd_add_meta_module (0, argc, argv, kern_end, file->size)))
-    kern_end = ALIGN_PAGE (kern_end + file->size);
+  if (grub_errno)
+    goto fail;
+
+  modargc = argc - 1;
+  modargv = argv + 1;
+
+  if (modargc && (! grub_memcmp (modargv[0], "type=", 5)))
+    {
+      type = &modargv[0][5];
+      modargc--;
+      modargv++;
+    }
+  else
+    type = FREEBSD_MODTYPE_RAW;
+
+  err = grub_freebsd_add_meta_module (argv[0], type, modargc, modargv,
+				      kern_end, file->size);
+  if (err)
+    goto fail;
+
+  kern_end = ALIGN_PAGE (kern_end + file->size);
 
 fail:
   if (file)
@@ -1007,8 +1057,50 @@ fail:
   return grub_errno;
 }
 
+static grub_err_t
+grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
+			     int argc, char *argv[])
+{
+  grub_file_t file = 0;
+  grub_err_t err;
+
+  if (kernel_type != KERNEL_TYPE_FREEBSD)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "only freebsd support module");
+
+  if (! is_elf_kernel)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "only elf kernel support module");
+
+  /* List the current modules if no parameter.  */
+  if (! argc)
+    {
+      grub_freebsd_list_modules ();
+      return 0;
+    }
+
+  file = grub_gzfile_open (argv[0], 1);
+  if (!file)
+    return grub_errno;
+  if (!file->size)
+    {
+      grub_file_close (file);
+      return grub_errno;
+    }
+
+  if (is_64bit)
+    err = grub_freebsd_load_elfmodule_obj64 (file, argc, argv, &kern_end);
+  else
+    err = grub_freebsd_load_elfmodule32 (file, argc, argv, &kern_end);
+  grub_file_close (file);
+
+  return err;
+}
+
+
 static grub_command_t cmd_freebsd, cmd_openbsd, cmd_netbsd;
 static grub_command_t cmd_freebsd_loadenv, cmd_freebsd_module;
+static grub_command_t cmd_freebsd_module_elf;
 
 GRUB_MOD_INIT (bsd)
 {
@@ -1027,6 +1119,9 @@ GRUB_MOD_INIT (bsd)
   cmd_freebsd_module =
     grub_register_command ("freebsd_module", grub_cmd_freebsd_module,
 			   0, "load freebsd module");
+  cmd_freebsd_module_elf =
+    grub_register_command ("freebsd_module_elf", grub_cmd_freebsd_module_elf,
+			   0, "load freebsd ELF module");
 
   my_mod = mod;
 }
@@ -1039,6 +1134,7 @@ GRUB_MOD_FINI (bsd)
 
   grub_unregister_command (cmd_freebsd_loadenv);
   grub_unregister_command (cmd_freebsd_module);
+  grub_unregister_command (cmd_freebsd_module_elf);
 
   if (mod_buf)
     {

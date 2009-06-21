@@ -27,9 +27,17 @@
 #include <grub/cpu/multiboot.h>
 
 grub_err_t
-grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr, UNUSED grub_addr_t *addr)
+grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr, UNUSED grub_addr_t *addr,
+			  int *do_load)
 {
   Elf32_Addr paddr = phdr->p_paddr;
+
+  if (phdr->p_type != PT_LOAD)
+    {
+      *do_load = 0;
+      return 0;
+    }
+  *do_load = 1;
 
   if ((paddr < grub_os_area_addr)
       || (paddr + phdr->p_memsz > grub_os_area_addr + grub_os_area_size))
@@ -40,9 +48,17 @@ grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr, UNUSED grub_addr_t *addr)
 }
 
 grub_err_t
-grub_mb2_arch_elf64_hook (Elf64_Phdr *phdr, UNUSED grub_addr_t *addr)
+grub_mb2_arch_elf64_hook (Elf64_Phdr *phdr, UNUSED grub_addr_t *addr,
+			  int *do_load)
 {
   Elf64_Addr paddr = phdr->p_paddr;
+
+  if (phdr->p_type != PT_LOAD)
+    {
+      *do_load = 0;
+      return 0;
+    }
+  *do_load = 1;
 
   if ((paddr < grub_os_area_addr)
       || (paddr + phdr->p_memsz > grub_os_area_addr + grub_os_area_size))

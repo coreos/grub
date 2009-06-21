@@ -272,8 +272,15 @@ grub_linux_load64 (grub_elf_t elf)
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr);
-  grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr)
+  grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load)
     {
+      if (phdr->p_type != PT_LOAD)
+	{
+	  *do_load = 0;
+	  return 0;
+	}
+      *do_load = 1;
+
       /* Adjust the program load address to linux_addr.  */
       *addr = (phdr->p_paddr - base) + (linux_addr - off);
       return 0;

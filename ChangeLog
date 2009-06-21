@@ -1,3 +1,37 @@
+2009-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Load BSD ELF modules
+
+	* conf/i386-pc.rmk (bsd_mod_SOURCES): Add loader/i386/bsd32.c
+	and loader/i386/bsd64.c
+	* include/grub/i386/bsd.h (FREEBSD_MODTYPE_MODULE): Remove
+	(FREEBSD_MODTYPE_ELF_MODULE): New definition
+	(FREEBSD_MODTYPE_ELF_MODULE_OBJ): Likewise
+	(grub_freebsd_load_elfmodule32): New declaration
+	(grub_freebsd_load_elfmoduleobj64): Likewise
+	(grub_freebsd_load_elf_meta32): Likewise
+	(grub_freebsd_load_elf_meta64): Likewise
+	(grub_freebsd_add_meta): Likewise
+	(grub_freebsd_add_meta_module): Likewise
+	* loader/i386/bsd.c (grub_freebsd_add_meta): Make global
+	(grub_freebsd_add_meta_module): Likewise and move module-specific
+	parts to grub_cmd_freebsd and grub_cmd_freebsd_module
+	(grub_cmd_freebsd): Add elf-kernel specific parts
+	based on grub_freebsd_add_meta_module
+	(grub_cmd_freebsd_module): Add type parsing moved from
+	grub_freebsd_add_meta_module
+	(grub_cmd_freebsd_module_elf): New function
+	(cmd_freebsd_module_elf): New variable
+	(GRUB_MOD_INIT): Register freebsd_module_elf
+	* loader/i386/bsd32.c: New file
+	* loader/i386/bsd64.c: Likewise
+	* loader/i386/bsdXX.c: Likewise
+	* kern/elf.c (grub_elf32_load): Let hook decide which pheaders to load
+	(grub_elf64_load): Likewise
+	* include/grub/elfload.h (grub_elf32_load_hook_t): New parameter do_load
+	All users updated
+	(grub_elf64_load_hook_t): Likewise
+
 2009-06-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig.in (GRUB_DISABLE_LINUX_RECOVERY): Export

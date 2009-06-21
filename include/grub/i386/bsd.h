@@ -86,7 +86,8 @@
 
 #define FREEBSD_MODTYPE_KERNEL		"elf kernel"
 #define FREEBSD_MODTYPE_KERNEL64	"elf64 kernel"
-#define FREEBSD_MODTYPE_MODULE		"elf module"
+#define FREEBSD_MODTYPE_ELF_MODULE	"elf module"
+#define FREEBSD_MODTYPE_ELF_MODULE_OBJ	"elf obj module"
 #define FREEBSD_MODTYPE_RAW		"raw"
 
 struct grub_freebsd_bootinfo
@@ -229,6 +230,21 @@ struct grub_netbsd_btinfo_bootdisk
 
 void grub_unix_real_boot (grub_addr_t entry, ...)
      __attribute__ ((cdecl,noreturn));
+grub_err_t grub_freebsd_load_elfmodule32 (grub_file_t file, int argc,
+					  char *argv[], grub_addr_t *kern_end);
+grub_err_t grub_freebsd_load_elfmodule_obj64 (grub_file_t file, int argc,
+					      char *argv[],
+					      grub_addr_t *kern_end);
+grub_err_t grub_freebsd_load_elf_meta32 (grub_file_t file,
+					 grub_addr_t *kern_end);
+grub_err_t grub_freebsd_load_elf_meta64 (grub_file_t file,
+					 grub_addr_t *kern_end);
+
+grub_err_t grub_freebsd_add_meta (grub_uint32_t type, void *data,
+				  grub_uint32_t len);
+grub_err_t grub_freebsd_add_meta_module (char *filename, char *type,
+					 int argc, char **argv,
+					 grub_addr_t addr, grub_uint32_t size);
 
 extern grub_uint8_t grub_bsd64_trampoline_start, grub_bsd64_trampoline_end;
 extern grub_uint32_t grub_bsd64_trampoline_selfjump;
