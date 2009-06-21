@@ -131,7 +131,7 @@ grub_linux_load32 (grub_elf_t elf)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Could not claim memory.");
 
   /* Now load the segments into the area we claimed.  */
-  auto grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr);
+  auto grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr, int *do_load);
   grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr, int *do_load)
     {
       if (phdr->p_type != PT_LOAD)
@@ -181,7 +181,7 @@ grub_linux_load64 (grub_elf_t elf)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Could not claim memory.");
 
   /* Now load the segments into the area we claimed.  */
-  auto grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr);
+  auto grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load);
   grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load)
     {
       if (phdr->p_type != PT_LOAD)

@@ -1,5 +1,9 @@
 2009-06-21  Pavel Roskin  <proski@gnu.org>
 
+	* loader/powerpc/ieee1275/linux.c (offset_phdr): Fix prototypes
+	to match nested functions.
+	* loader/sparc64/ieee1275/linux.c: Likewise.
+
 	* conf/i386-ieee1275.rmk: Define kernel_elf_ASFLAGS.
 
 2009-06-21  Robert Millan  <rmh.grub@aybabtu.com>
