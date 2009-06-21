@@ -1,5 +1,10 @@
 2009-06-21  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* configure.ac: Enable `END_SYMBOL' / `BSS_START_SYMBOL' test on
+	all i386 platforms.
+
+2009-06-21  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Fix asm file handling on ELF, and remove workarounds.
 
 	* genmk.rb (class Programs): Detect assembly files, and set ASFLAGS
