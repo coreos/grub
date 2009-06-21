@@ -33,6 +33,7 @@ kernel_elf_HEADERS = cache.h device.h disk.h dl.h elf.h elfload.h \
 	ieee1275/ieee1275.h machine/kernel.h machine/loader.h machine/memory.h \
 	list.h handler.h command.h
 kernel_elf_CFLAGS = $(COMMON_CFLAGS)
+kernel_elf_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_elf_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x10000,-Bstatic
 
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
