@@ -1,3 +1,12 @@
+2009-06-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix asm file handling on ELF, and remove workarounds.
+
+	* genmk.rb (class Programs): Detect assembly files, and set ASFLAGS
+	and -DASM_FILE=1 appropiately (copied from `class Images' stanza).
+	* kern/i386/ieee1275/startup.S (ASM_FILE): Remove macro.
+	* kern/i386/coreboot/startup.S (ASM_FILE): Likewise.
+
 2009-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Load BSD ELF modules

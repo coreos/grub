@@ -280,10 +280,12 @@ MOSTLYCLEANFILES += #{deps_str}
       src = sources[i]
       fake_obj = File.basename(src).suffix('o')
       dep = deps[i]
+      flag = if /\.c$/ =~ src then 'CFLAGS' else 'ASFLAGS' end
+      extra_flags = if /\.S$/ =~ src then '-DASM_FILE=1' else '' end
       dir = File.dirname(src)
 
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
-	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(#{prefix}_CFLAGS) -MD -c -o $@ $<
+	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
 -include #{dep}
 
 "

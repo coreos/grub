@@ -16,8 +16,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define ASM_FILE	1
-
 #include <grub/symbol.h>
 #include <grub/machine/memory.h>
 #include <grub/cpu/linux.h>
