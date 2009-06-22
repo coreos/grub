@@ -290,8 +290,6 @@ codestart:
 	 */
 	call EXT_C(grub_main)
 
-#include "../realmode.S"
-
 /*
  *  This is the area for all of the special variables.
  */
@@ -301,62 +299,7 @@ VARIABLE(grub_boot_drive)
 
 	.p2align	2	/* force 4-byte alignment */
 
-/*
- *  These next two routines, "real_to_prot" and "prot_to_real" are structured
- *  in a very specific way.  Be very careful when changing them.
- *
- *  NOTE:  Use of either one messes up %eax and %ebp.
- */
-
-real_to_prot:
-	.code16
-	cli
-
-	/* load the GDT register */
-#ifdef APPLE_CC
-	mov %cs, %ax
-	mov %ax, %ds
-	DATA32	ADDR32	lgdt	gdtdesc
-#else
-	DATA32	ADDR32	lgdt	%cs:gdtdesc
-#endif
-
-	/* turn on protected mode */
-	movl	%cr0, %eax
-	orl	$GRUB_MEMORY_MACHINE_CR0_PE_ON, %eax
-	movl	%eax, %cr0
-
-	/* jump to relocation, flush prefetch queue, and reload %cs */
-	DATA32	ljmp	$GRUB_MEMORY_MACHINE_PROT_MODE_CSEG, $protcseg
-
-	.code32
-protcseg:
-	/* reload other segment registers */
-	movw	$GRUB_MEMORY_MACHINE_PROT_MODE_DSEG, %ax
-	movw	%ax, %ds
-	movw	%ax, %es
-	movw	%ax, %fs
-	movw	%ax, %gs
-	movw	%ax, %ss
-
-	/* put the return address in a known safe location */
-	movl	(%esp), %eax
-	movl	%eax, GRUB_MEMORY_MACHINE_REAL_STACK
-
-	/* get protected mode stack */
-	movl	protstack, %eax
-	movl	%eax, %esp
-	movl	%eax, %ebp
-
-	/* get return address onto the right stack */
-	movl	GRUB_MEMORY_MACHINE_REAL_STACK, %eax
-	movl	%eax, (%esp)
-
-	/* zero %eax */
-	xorl	%eax, %eax
-
-	/* return on the old (or initialized) stack! */
-	ret
+#include "../realmode.S"
 
 /*
  * grub_gate_a20(int on)

@@ -1,5 +1,10 @@
 2009-06-22  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* kern/i386/pc/startup.S (real_to_prot): Move from here ...
+	* kern/i386/realmode.S (real_to_prot): ... to here.
+
+2009-06-22  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* conf/i386-ieee1275.rmk (pkglib_PROGRAMS): Replace `kernel.elf'
 	with `kernel.img'.
 	(kernel_elf_SOURCES): Rename to ...
