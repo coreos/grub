@@ -1,5 +1,10 @@
 2009-06-22  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/grub/i386/kernel.h: Include `<grub/machine/machine.h>'.
+	[! GRUB_MACHINE_IEEE1275]: Set `GRUB_MOD_ALIGN' to 0x1.
+
+2009-06-22  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* commands/search.c (grub_cmd_search): Macroify hardcoded args[]
 	indexes.  Check for -f explicitly.
 	(search_file): Improve error message.
