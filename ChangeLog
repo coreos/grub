@@ -2,6 +2,8 @@
 
 	* commands/search.c (grub_cmd_search): Macroify hardcoded args[]
 	indexes.  Check for -f explicitly.
+	(search_file): Improve error message.
+	(GRUB_MOD_INIT(search)): Add missing `-n' to help output.
 
 2009-06-22  Robert Millan  <rmh.grub@aybabtu.com>
 

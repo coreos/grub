@@ -162,7 +162,7 @@ search_file (const char *key, const char *var, int no_floppy)
   grub_free (buf);
 
   if (grub_errno == GRUB_ERR_NONE && count == 0)
-    grub_error (GRUB_ERR_FILE_NOT_FOUND, "no such device");
+    grub_error (GRUB_ERR_FILE_NOT_FOUND, "no such file: %s", key);
 }
 
 static grub_err_t
@@ -196,7 +196,7 @@ GRUB_MOD_INIT(search)
   cmd =
     grub_register_extcmd ("search", grub_cmd_search,
 			  GRUB_COMMAND_FLAG_BOTH,
-			  "search [-f|-l|-u|-s] NAME",
+			  "search [-f|-l|-u|-s|-n] NAME",
 			  "Search devices by file, filesystem label or filesystem UUID."
 			  " If --set is specified, the first device found is"
 			  " set to a variable. If no variable name is"
