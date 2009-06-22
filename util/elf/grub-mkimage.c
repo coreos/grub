@@ -193,7 +193,7 @@ add_segments (char *dir, char *prefix, FILE *out, int chrp, char *mods[], char *
   int i, phdr_size;
 
   /* Read ELF header.  */
-  kernel_path = grub_util_get_path (dir, "kernel.elf");
+  kernel_path = grub_util_get_path (dir, "kernel.img");
   in = fopen (kernel_path, "rb");
   if (! in)
     grub_util_error ("cannot open %s", kernel_path);

@@ -1,3 +1,23 @@
+2009-06-22  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/i386-ieee1275.rmk (pkglib_PROGRAMS): Replace `kernel.elf'
+	with `kernel.img'.
+	(kernel_elf_SOURCES): Rename to ...
+	(kernel_img_SOURCES): ... this.
+	(kernel_elf_HEADERS): Rename to ...
+	(kernel_img_HEADERS): ... this.  Update all users.
+	(kernel_elf_ASFLAGS): Rename to ...
+	(kernel_img_ASFLAGS): ... this.
+	(kernel_elf_CFLAGS): Rename to ...
+	(kernel_img_CFLAGS): ... this.
+	(kernel_elf_LDFLAGS): Rename to ...
+	(kernel_img_LDFLAGS): ... this.
+	* conf/i386-coreboot.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+
+	* util/elf/grub-mkimage.c (add_segments): Replace "kernel.elf"
+	with "kernel.img".
+
 2009-06-21  Pavel Roskin  <proski@gnu.org>
 
 	* loader/powerpc/ieee1275/linux.c (offset_phdr): Fix prototypes
