@@ -37,6 +37,15 @@ static const struct grub_arg_option options[] =
     {0, 0, 0, 0, 0, 0}
   };
 
+enum options
+  {
+    SEARCH_FILE,
+    SEARCH_LABEL,
+    SEARCH_FS_UUID,
+    SEARCH_SET,
+    SEARCH_NO_FLOPPY,
+ };
+
 static void
 search_fs (const char *key, const char *var, int no_floppy, int is_uuid)
 {
@@ -165,15 +174,17 @@ grub_cmd_search (grub_extcmd_t cmd, int argc, char **args)
   if (argc == 0)
     return grub_error (GRUB_ERR_INVALID_COMMAND, "no argument specified");
 
-  if (state[3].set)
-    var = state[3].arg ? state[3].arg : "root";
+  if (state[SEARCH_SET].set)
+    var = state[SEARCH_SET].arg ? state[SEARCH_SET].arg : "root";
 
-  if (state[1].set)
-    search_fs (args[0], var, state[4].set, 0);
-  else if (state[2].set)
-    search_fs (args[0], var, state[4].set, 1);
+  if (state[SEARCH_LABEL].set)
+    search_fs (args[0], var, state[SEARCH_NO_FLOPPY].set, 0);
+  else if (state[SEARCH_FS_UUID].set)
+    search_fs (args[0], var, state[SEARCH_NO_FLOPPY].set, 1);
+  else if (state[SEARCH_FILE].set)
+    search_file (args[0], var, state[SEARCH_NO_FLOPPY].set);
   else
-    search_file (args[0], var, state[4].set);
+    return grub_error (GRUB_ERR_INVALID_COMMAND, "unspecified search type");
 
   return grub_errno;
 }
