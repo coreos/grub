@@ -1,5 +1,16 @@
 2009-06-22  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Add `kern/i386/misc.S'.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-coreboot.rmk: Likewise.
+
+	* kern/i386/pc/startup.S (grub_stop): Remove function.
+	* kern/i386/ieee1275/startup.S: Likewise.
+	* kern/i386/coreboot/startup.S: Likewise.
+	* kern/i386/misc.S (grub_stop): New function.
+
+2009-06-22  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* kern/i386/pc/startup.S (real_to_prot): Move from here ...
 	* kern/i386/realmode.S (real_to_prot): ... to here.
 

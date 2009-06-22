@@ -11,7 +11,9 @@ script/sh/lexer.c_DEPENDENCIES = grub_script.tab.h
 pkglib_PROGRAMS = kernel.img
 
 # For kernel.img.
-kernel_img_SOURCES = kern/i386/ieee1275/startup.S kern/i386/ieee1275/init.c \
+kernel_img_SOURCES = kern/i386/ieee1275/startup.S \
+	kern/i386/misc.S \
+	kern/i386/ieee1275/init.c \
 	kern/ieee1275/init.c \
 	kern/ieee1275/mmap.c \
 	kern/ieee1275/cmain.c kern/ieee1275/openfw.c \

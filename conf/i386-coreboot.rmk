@@ -12,6 +12,7 @@ pkglib_PROGRAMS = kernel.img
 
 # For kernel.img.
 kernel_img_SOURCES = kern/i386/coreboot/startup.S \
+	kern/i386/misc.S \
 	kern/i386/coreboot/init.c \
 	kern/i386/multiboot_mmap.c \
 	kern/main.c kern/device.c \

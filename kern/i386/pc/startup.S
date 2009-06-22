@@ -463,14 +463,6 @@ gate_a20_check_state:
  */
 	. = _start + GRUB_KERNEL_MACHINE_RAW_SIZE
 
-/*
- *  This call is special...  it never returns...  in fact it should simply
- *  hang at this point!
- */
-
-FUNCTION(grub_stop)
-	call	prot_to_real
-
 	/*
 	 * This next part is sort of evil.  It takes advantage of the
 	 * byte ordering on the x86 to work in either 16-bit or 32-bit

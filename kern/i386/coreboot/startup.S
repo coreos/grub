@@ -78,14 +78,6 @@ codestart:
 	jmp EXT_C(grub_main)
 
 /*
- *  This call is special...  it never returns...  in fact it should simply
- *  hang at this point!
- */
-FUNCTION(grub_stop)
-	hlt
-	jmp EXT_C(grub_stop)
-
-/*
  *  prot_to_real and associated structures (but NOT real_to_prot, that is
  *  only needed for BIOS gates).
  */
