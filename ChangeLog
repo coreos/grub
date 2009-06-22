@@ -1,5 +1,10 @@
 2009-06-22  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* conf/i386-pc.rmk (GRUB_MEMORY_MACHINE_LINK_ADDR): Rename to ...
+	(GRUB_KERNEL_MACHINE_LINK_ADDR): ... this.  Update all users.
+
+2009-06-22  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* conf/i386-pc.rmk (kernel_img_SOURCES): Add `kern/i386/misc.S'.
 	* conf/i386-ieee1275.rmk: Likewise.
 	* conf/i386-coreboot.rmk: Likewise.

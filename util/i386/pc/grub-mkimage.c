@@ -270,9 +270,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	= grub_cpu_to_le32 (-2);
     }
 
-  if (GRUB_MEMORY_MACHINE_LINK_ADDR + core_size > GRUB_MEMORY_MACHINE_UPPER)
+  if (GRUB_KERNEL_MACHINE_LINK_ADDR + core_size > GRUB_MEMORY_MACHINE_UPPER)
     grub_util_error ("Core image is too big (%p > %p)\n",
- 		     GRUB_MEMORY_MACHINE_LINK_ADDR + core_size, GRUB_MEMORY_MACHINE_UPPER);
+ 		     GRUB_KERNEL_MACHINE_LINK_ADDR + core_size, GRUB_MEMORY_MACHINE_UPPER);
 
   grub_util_write_image (core_img, core_size, out);
   free (kernel_img);
