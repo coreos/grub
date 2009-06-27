@@ -1,3 +1,17 @@
+2009-06-26  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/types.h: Define GRUB_TARGET_WORDSIZE.
+	* include/grub/elf.h: Define symbols without "32" or "64" based
+	on GRUB_TARGET_WORDSIZE.
+	* include/grub/multiboot2.h: Use GRUB_TARGET_WORDSIZE.
+	* efiemu/loadcore32.c: Redefine GRUB_TARGET_WORDSIZE, remove own
+	ELF definitions.
+	* efiemu/loadcore64.c: Likewise.
+	* loader/i386/bsd32.c: Likewise.
+	* loader/i386/bsd64.c: Likewise.
+	* kern/dl.c: Remove own ELF definitions.
+	* util/i386/efi/grub-mkimage.c: Likewise.
+
 2009-06-23  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* kern/i386/pc/startup.S (real_to_prot): Access `gdtdesc' using

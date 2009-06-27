@@ -31,44 +31,10 @@
 #include <grub/efi/pe32.h>
 #include <grub/machine/kernel.h>
 
-#if GRUB_TARGET_SIZEOF_VOID_P == 4
-
-typedef Elf32_Word Elf_Word;
-typedef Elf32_Addr Elf_Addr;
-typedef Elf32_Ehdr Elf_Ehdr;
-typedef Elf32_Shdr Elf_Shdr;
-typedef Elf32_Sym Elf_Sym;
-typedef Elf32_Half Elf_Half;
-typedef Elf32_Off Elf_Off;
-typedef Elf32_Section Elf_Section;
-typedef Elf32_Rel Elf_Rel;
-typedef Elf32_Rela Elf_Rela;
-
-#define ELF_R_SYM	ELF32_R_SYM
-#define ELF_R_TYPE	ELF32_R_TYPE
-#define ELF_R_INFO	ELF32_R_INFO
-
-#define grub_le_to_cpu	grub_le_to_cpu32
-
-#elif GRUB_TARGET_SIZEOF_VOID_P == 8
-
-typedef Elf64_Word Elf_Word;
-typedef Elf64_Addr Elf_Addr;
-typedef Elf64_Ehdr Elf_Ehdr;
-typedef Elf64_Shdr Elf_Shdr;
-typedef Elf64_Sym Elf_Sym;
-typedef Elf64_Half Elf_Half;
-typedef Elf64_Off Elf_Off;
-typedef Elf64_Section Elf_Section;
-typedef Elf64_Rel Elf_Rel;
-typedef Elf64_Rela Elf_Rela;
-
-#define ELF_R_SYM	ELF64_R_SYM
-#define ELF_R_TYPE	ELF64_R_TYPE
-#define ELF_R_INFO	ELF64_R_INFO
-
-#define grub_le_to_cpu	grub_le_to_cpu64
-
+#if GRUB_TARGET_WORDSIZE == 32
+# define grub_le_to_cpu(val) grub_le_to_cpu32(val)
+#elif GRUB_TARGET_WORDSIZE == 64
+# define grub_le_to_cpu(val) grub_le_to_cpu64(val)
 #endif
 
 static const grub_uint8_t stub[] = GRUB_PE32_MSDOS_STUB;

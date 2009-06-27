@@ -50,6 +50,14 @@
 # error "This architecture is not supported because sizeof(void *) != 4 and sizeof(void *) != 8"
 #endif
 
+#ifndef GRUB_TARGET_WORDSIZE
+# if GRUB_TARGET_SIZEOF_VOID_P == 4
+#  define GRUB_TARGET_WORDSIZE 32
+# elif GRUB_TARGET_SIZEOF_VOID_P == 8
+#  define GRUB_TARGET_WORDSIZE 64
+# endif
+#endif
+
 /* Define various wide integers.  */
 typedef signed char		grub_int8_t;
 typedef short			grub_int16_t;

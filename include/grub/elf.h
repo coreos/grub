@@ -2330,4 +2330,44 @@ typedef Elf32_Addr Elf32_Conflict;
 
 #define R_X86_64_NUM		24
 
+#if GRUB_TARGET_WORDSIZE == 32
+
+typedef Elf32_Addr Elf_Addr;
+typedef Elf32_Ehdr Elf_Ehdr;
+typedef Elf32_Half Elf_Half;
+typedef Elf32_Off Elf_Off;
+typedef Elf32_Rel Elf_Rel;
+typedef Elf32_Rela Elf_Rela;
+typedef Elf32_Section Elf_Section;
+typedef Elf32_Shdr Elf_Shdr;
+typedef Elf32_Sym Elf_Sym;
+typedef Elf32_Word Elf_Word;
+
+#define ELF_ST_BIND(val)	ELF32_ST_BIND(val)
+#define ELF_ST_TYPE(val)	ELF32_ST_TYPE(val)
+#define ELF_R_SYM(val)		ELF32_R_SYM(val)
+#define ELF_R_TYPE(val)		ELF32_R_TYPE(val)
+#define ELF_R_INFO(sym, type)	ELF32_R_INFO(sym, type)
+
+#elif GRUB_TARGET_WORDSIZE == 64
+
+typedef Elf64_Addr Elf_Addr;
+typedef Elf64_Ehdr Elf_Ehdr;
+typedef Elf64_Half Elf_Half;
+typedef Elf64_Off Elf_Off;
+typedef Elf64_Rel Elf_Rel;
+typedef Elf64_Rela Elf_Rela;
+typedef Elf64_Section Elf_Section;
+typedef Elf64_Shdr Elf_Shdr;
+typedef Elf64_Sym Elf_Sym;
+typedef Elf64_Word Elf_Word;
+
+#define ELF_ST_BIND(val)	ELF64_ST_BIND (val)
+#define ELF_ST_TYPE(val)	ELF64_ST_TYPE (val)
+#define ELF_R_SYM(val)		ELF64_R_SYM(val)
+#define ELF_R_TYPE(val)		ELF64_R_TYPE(val)
+#define ELF_R_INFO(sym, type)	ELF64_R_INFO(sym, type)
+
+#endif /* GRUB_TARGET_WORDSIZE == 64 */
+
 #endif /* ! GRUB_ELF_H */

@@ -18,10 +18,5 @@
  */
 
 #define SUFFIX(x) x ## 64
-#define Elf_Ehdr Elf64_Ehdr
-#define Elf_Shdr Elf64_Shdr
-#define Elf_Sym Elf64_Sym
-#define Elf_Word Elf64_Word
-#define ELF_ST_TYPE ELF64_ST_TYPE
-#define ELF_ST_BIND ELF64_ST_BIND
+#define GRUB_TARGET_WORDSIZE 64
 #include "loadcore.c"
