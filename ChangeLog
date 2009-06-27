@@ -1,5 +1,10 @@
 2009-06-27  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* loader/i386/linux.c (grub_linux_boot): Fix uninitialized use of
+	`err'.
+
+2009-06-27  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Revert r2338.
 
 	* loader/i386/linux.c (grub_cmd_linux): Don't call grub_error when

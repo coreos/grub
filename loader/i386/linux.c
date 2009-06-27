@@ -444,7 +444,7 @@ grub_linux_boot (void)
 {
   struct linux_kernel_params *params;
   int e820_num;
-  grub_err_t err;
+  grub_err_t err = 0;
   char *modevar, *tmp;
 
   params = real_mode_mem;
