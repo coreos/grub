@@ -69,10 +69,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   file = grub_file_open (argv[0]);
   if (! file)
-    {
-      grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
-      goto fail;
-    }
+    goto fail;
 
   if ((grub_size_t) grub_file_size (file) > grub_os_area_size)
     {

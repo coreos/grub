@@ -1,3 +1,12 @@
+2009-06-27  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Revert r2338.
+
+	* loader/i386/linux.c (grub_cmd_linux): Don't call grub_error when
+	file can't be opened.  grub_file_open() is already supposed to set
+	grub_errno / grub_errmsg appropiately.
+	* loader/i386/pc/linux.c (grub_cmd_linux): Likewise.
+
 2009-06-27  Pavel Roskin  <proski@gnu.org>
 2009-06-27  Robert Millan  <rmh.grub@aybabtu.com>
 
