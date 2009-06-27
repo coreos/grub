@@ -18,6 +18,5 @@
  */
 
 #define SUFFIX(x) x ## 64
-#define TYPE(x) x ## 64_t
 
 #include "prepare.c"
