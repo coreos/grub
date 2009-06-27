@@ -1,7 +1,7 @@
 /* dl.h - types and prototypes for loadable module support */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2004,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <grub/symbol.h>
 #include <grub/err.h>
 #include <grub/types.h>
+#include <grub/elf.h>
 
 #define GRUB_MOD_INIT(name)	\
 static void grub_mod_init (grub_dl_t mod __attribute__ ((unused))) __attribute__ ((used)); \
@@ -78,6 +79,7 @@ struct grub_dl
   int ref_count;
   grub_dl_dep_t dep;
   grub_dl_segment_t segment;
+  Elf_Sym *symtab;
   void (*init) (struct grub_dl *mod);
   void (*fini) (void);
 };

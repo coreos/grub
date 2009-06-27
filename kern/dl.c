@@ -1,7 +1,7 @@
 /* dl.c - loadable module support */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,6 +28,12 @@
 #include <grub/file.h>
 #include <grub/env.h>
 #include <grub/cache.h>
+#include <grub/machine/machine.h>
+
+/* Platforms where modules are in a readonly area of memory.  */
+#if defined(GRUB_MACHINE_QEMU)
+#define GRUB_MODULES_MACHINE_READONLY
+#endif
 
 
 
@@ -309,7 +315,13 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
   if (i == e->e_shnum)
     return grub_error (GRUB_ERR_BAD_MODULE, "no symbol table");
 
-  sym = (Elf_Sym *) ((char *) e + s->sh_offset);
+#ifdef GRUB_MODULES_MACHINE_READONLY
+  mod->symtab = grub_malloc (s->sh_size);
+  memcpy (mod->symtab, (char *) e + s->sh_offset, s->sh_size);
+#else
+  mod->symtab = (Elf_Sym *) ((char *) e + s->sh_offset);
+#endif
+  sym = mod->symtab;
   size = s->sh_size;
   entsize = s->sh_entsize;
 
@@ -671,6 +683,9 @@ grub_dl_unload (grub_dl_t mod)
     }
 
   grub_free (mod->name);
+#ifdef GRUB_MODULES_MACHINE_READONLY
+  grub_free (mod->symtab);
+#endif
   grub_free (mod);
   return 1;
 }

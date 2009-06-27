@@ -85,6 +85,7 @@ case "$target_cpu"-"$platform" in
   i386-coreboot) ;;
   i386-linuxbios) platform=coreboot ;;
   i386-ieee1275) ;;
+  i386-qemu) ;;
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;

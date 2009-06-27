@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/machine.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/dl.h>
@@ -144,5 +145,9 @@ grub_machine_fini (void)
 grub_addr_t
 grub_arch_modules_addr (void)
 {
+#ifdef GRUB_MACHINE_QEMU
+  return grub_core_entry_addr + grub_kernel_image_size;
+#else
   return ALIGN_UP((grub_addr_t) _end, GRUB_MOD_ALIGN);
+#endif
 }

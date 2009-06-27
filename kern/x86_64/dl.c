@@ -43,7 +43,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 {
   Elf64_Ehdr *e = ehdr;
   Elf64_Shdr *s;
-  Elf64_Sym *symtab;
   Elf64_Word entsize;
   unsigned i;
 
@@ -57,7 +56,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
   if (i == e->e_shnum)
     return grub_error (GRUB_ERR_BAD_MODULE, "no symtab found");
 
-  symtab = (Elf64_Sym *) ((char *) e + s->sh_offset);
   entsize = s->sh_entsize;
 
   for (i = 0, s = (Elf64_Shdr *) ((char *) e + e->e_shoff);
@@ -91,7 +89,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
 		addr32 = (Elf64_Word *) ((char *) seg->addr + rel->r_offset);
 		addr64 = (Elf64_Xword *) addr32;
-		sym = (Elf64_Sym *) ((char *) symtab
+		sym = (Elf64_Sym *) ((char *) mod->symtab
 				     + entsize * ELF64_R_SYM (rel->r_info));
 
 		switch (ELF64_R_TYPE (rel->r_info))

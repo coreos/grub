@@ -124,6 +124,17 @@ compress_kernel (char *kernel_img, size_t kernel_size,
   *core_size += GRUB_KERNEL_MACHINE_RAW_SIZE;
 }
 
+#else
+
+static void
+compress_kernel (char *kernel_img, size_t kernel_size,
+               char **core_img, size_t *core_size)
+{
+  *core_img = xmalloc (kernel_size);
+  memcpy (*core_img, kernel_img, kernel_size);
+  *core_size = kernel_size;
+}
+
 #endif
 
 static void
@@ -237,6 +248,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   if (num > 0xffff)
     grub_util_error ("the core image is too big");
 
+#if defined(GRUB_MACHINE_PCBIOS)
+
   boot_path = grub_util_get_path (dir, "diskboot.img");
   boot_size = grub_util_get_image_size (boot_path);
   if (boot_size != GRUB_DISK_SECTOR_SIZE)
@@ -253,13 +266,54 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   free (boot_img);
   free (boot_path);
 
+#elif defined(GRUB_MACHINE_QEMU)
+
+  {
+    char *rom_img;
+    size_t rom_size;
+
+    boot_path = grub_util_get_path (dir, "boot.img");
+    boot_size = grub_util_get_image_size (boot_path);
+    boot_img = grub_util_read_image (boot_path);
+
+    /* Rom sizes must be 64k-aligned.  */
+    rom_size = ALIGN_UP (core_size + boot_size, 64 * 1024);
+
+    rom_img = xmalloc (rom_size);
+    memset (rom_img, 0, rom_size);
+
+    *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_CORE_ENTRY_ADDR))
+      = grub_cpu_to_le32 ((grub_uint32_t) -rom_size);
+
+    memcpy (rom_img, core_img, core_size);
+
+    *((grub_int32_t *) (boot_img + GRUB_BOOT_MACHINE_CORE_ENTRY_ADDR))
+      = grub_cpu_to_le32 ((grub_uint32_t) -rom_size);
+
+    memcpy (rom_img + rom_size - boot_size, boot_img, boot_size);
+
+    free (core_img);
+    core_img = rom_img;
+    core_size = rom_size;
+
+    free (boot_img);
+    free (boot_path);
+  }
+
+#endif
+
+#ifdef GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
   *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE))
     = grub_cpu_to_le32 (total_module_size);
+#endif
   *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE))
     = grub_cpu_to_le32 (kernel_size);
+#ifdef GRUB_KERNEL_MACHINE_COMPRESSED_SIZE
   *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE))
     = grub_cpu_to_le32 (core_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
+#endif
 
+#if defined(GRUB_KERNEL_MACHINE_INSTALL_DOS_PART) && defined(GRUB_KERNEL_MACHINE_INSTALL_BSD_PART)
   /* If we included a drive in our prefix, let GRUB know it doesn't have to
      prepend the drive told by BIOS.  */
   if (prefix[0] == '(')
@@ -269,10 +323,13 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART))
 	= grub_cpu_to_le32 (-2);
     }
+#endif
 
+#ifdef GRUB_MACHINE_PCBIOS
   if (GRUB_KERNEL_MACHINE_LINK_ADDR + core_size > GRUB_MEMORY_MACHINE_UPPER)
     grub_util_error ("Core image is too big (%p > %p)\n",
  		     GRUB_KERNEL_MACHINE_LINK_ADDR + core_size, GRUB_MEMORY_MACHINE_UPPER);
+#endif
 
   grub_util_write_image (core_img, core_size, out);
   free (kernel_img);

@@ -1,4 +1,54 @@
 2009-06-27  Pavel Roskin  <proski@gnu.org>
+2009-06-27  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/dl.h: Include grub/elf.h.
+	(struct grub_dl): Add symtab field.
+	* kern/dl.c [GRUB_MACHINE_QEMU]: Define
+	GRUB_MODULES_MACHINE_READONLY.
+	(grub_dl_resolve_symbols): Populate mod->symtab, making a copy
+	of the header for read-only modules.
+	(grub_dl_unload): Free mod->symtab for read-only modules.
+	* kern/i386/dl.c: Use mod->symtab.
+	* kern/powerpc/dl.c: Likewise.
+	* kern/sparc64/dl.c: Likewise.
+	* kern/x86_64/dl.c: Likewise.
+
+	* conf/i386-qemu.rmk: New file.
+	* kern/i386/qemu/startup.S: Likewise.
+	* kern/i386/qemu/mmap.c: Likewise.
+	* boot/i386/qemu/boot.S: Likewise.
+	* include/grub/i386/qemu/time.h: Likewise.
+	* include/grub/i386/qemu/serial.h: Likewise.
+	* include/grub/i386/qemu/kernel.h: Likewise.
+	* include/grub/i386/qemu/console.h: Likewise.
+	* include/grub/i386/qemu/boot.h: Likewise.
+	* include/grub/i386/qemu/init.h: Likewise.
+	* include/grub/i386/qemu/machine.h: Likewise.
+	* include/grub/i386/qemu/loader.h: Likewise.
+	* include/grub/i386/qemu/memory.h: Likewise.
+
+	* conf/i386-coreboot.rmk (GRUB_BOOT_MACHINE_LINK_ADDR)
+	(GRUB_KERNEL_MACHINE_LINK_ADDR): New variables.
+	[qemu] (pkglib_IMAGES): Add `boot.img'.
+	[qemu] (boot_img_SOURCES, boot_img_ASFLAGS, boot_img_LDFLAGS)
+	[qemu] (boot_img_FORMAT): New variables.
+	[qemu] (bin_UTILITIES): Add `grub-mkimage'.
+	[qemu] (grub_mkimage_SOURCES, grub_mkimage_CFLAGS): New variables.
+	[qemu] (kernel_img_SOURCES, kernel_img_HEADERS, kernel_img_CFLAGS)
+	[qemu] (kernel_img_ASFLAGS, kernel_img_LDFLAGS)
+	[qemu] (kernel_img_FORMAT): New variables.
+
+	* configure.ac: Recognise `i386-qemu'.
+
+	* util/i386/pc/grub-mkimage.c (compress_kernel): Add dummy variant
+	(for no compression).
+	[GRUB_MACHINE_QEMU] (generate_image): Misc adjustments to produce
+	a valid i386 ROM image.  Make `GRUB_KERNEL_MACHINE_COMPRESSED_SIZE',
+	`GRUB_KERNEL_MACHINE_INSTALL_DOS_PART' and
+	`GRUB_KERNEL_MACHINE_INSTALL_BSD_PART' optional features (with
+	ifdefs).
+
+2009-06-27  Pavel Roskin  <proski@gnu.org>
 
 	* efiemu/prepare.c: Eliminate TYPE macro, it makes code hard to
 	read.
