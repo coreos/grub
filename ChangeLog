@@ -1,7 +1,20 @@
 2009-06-29  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/grub/i386/linux.h (GRUB_VIDEO_TYPE_TEXT): New macro.
+
 	* loader/i386/linux.c [__i386__] (grub_linux_boot): Simplify inline
 	assembly in final jump, using register constraints.
+
+	(grub_linux_boot): For text mode, initialize `have_vga' using
+	GRUB_VIDEO_TYPE_TEXT rather than 0 (this changes its value to 1).
+
+	Initialize `video_cursor_x' and `video_cursor_y' as late as possible,
+	right before the final jump.
+
+	Set `video_mode' to 0x3.
+
+	Document initialization of `video_page', `video_mode' and
+	`video_ega_bx'.
 
 2009-06-29  Robert Millan  <rmh.grub@aybabtu.com>
 

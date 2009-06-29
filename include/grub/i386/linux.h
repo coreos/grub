@@ -79,6 +79,7 @@ struct grub_e820_mmap
   grub_uint32_t type;
 } __attribute__((packed));
 
+#define GRUB_VIDEO_TYPE_TEXT	0x01
 #define GRUB_VIDEO_TYPE_VLFB	0x23    /* VESA VGA in graphic mode     */
 #define GRUB_VIDEO_TYPE_EFI	0x70
 
