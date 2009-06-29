@@ -1,3 +1,7 @@
+2009-06-28  Pavel Roskin  <proski@gnu.org>
+
+	* util/grub.d/10_linux.in: Match SUSE style initrd names.
+
 2009-06-27  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* loader/i386/linux.c (grub_linux_boot): Fix uninitialized use of
