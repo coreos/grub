@@ -1,5 +1,8 @@
 2009-06-28  Pavel Roskin  <proski@gnu.org>
 
+	* kern/i386/qemu/mmap.c (grub_machine_mmap_iterate): Use cast to
+	fix a warning.
+
 	* util/grub.d/10_linux.in: Match SUSE style initrd names.
 
 2009-06-27  Robert Millan  <rmh.grub@aybabtu.com>
