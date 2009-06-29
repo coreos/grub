@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 
 #define GRUB_LINUX_MAGIC_SIGNATURE	0x53726448      /* "HdrS" */
 #define GRUB_LINUX_DEFAULT_SETUP_SECTS	4
-#define GRUB_LINUX_FLAG_CAN_USE_HEAP	0x80
 #define GRUB_LINUX_INITRD_MAX_ADDRESS	0x37FFFFFF
 #define GRUB_LINUX_MAX_SETUP_SECTS	64
 #define GRUB_LINUX_BOOT_LOADER_TYPE	0x72
@@ -33,6 +32,8 @@
 #define GRUB_LINUX_SETUP_STACK		0x9000
 
 #define GRUB_LINUX_FLAG_BIG_KERNEL	0x1
+#define GRUB_LINUX_FLAG_QUIET		0x20
+#define GRUB_LINUX_FLAG_CAN_USE_HEAP	0x80
 
 /* Linux's video mode selection support. Actually I hate it!  */
 #define GRUB_LINUX_VID_MODE_NORMAL	0xFFFF

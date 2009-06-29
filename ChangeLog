@@ -1,5 +1,11 @@
 2009-06-29  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/grub/i386/linux.h (GRUB_LINUX_FLAG_QUIET): New macro.
+	* loader/i386/linux.c (grub_cmd_linux): Recognize "quiet" option,
+	and set GRUB_LINUX_FLAG_QUIET appropiately.
+
+2009-06-29  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Fix build on Debian / sparc.
 
 	* configure.ac: Recognize `sparc' target_cpu (as sparc64).

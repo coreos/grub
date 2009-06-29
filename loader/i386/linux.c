@@ -820,6 +820,11 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	      linux_mem_size <<= shift;
 	  }
       }
+    else if (grub_memcmp (argv[i], "quiet", sizeof ("quiet") - 1) == 0)
+      {
+	params->loadflags |= GRUB_LINUX_FLAG_QUIET;
+      }
+
 
   /* Specify the boot file.  */
   dest = grub_stpcpy ((char *) real_mode_mem + GRUB_LINUX_CL_OFFSET,
