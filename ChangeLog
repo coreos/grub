@@ -1,5 +1,10 @@
 2009-06-29  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* loader/i386/linux.c [__i386__] (grub_linux_boot): Simplify inline
+	assembly in final jump, using register constraints.
+
+2009-06-29  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/grub/i386/linux.h (GRUB_LINUX_FLAG_QUIET): New macro.
 	* loader/i386/linux.c (grub_cmd_linux): Recognize "quiet" option,
 	and set GRUB_LINUX_FLAG_QUIET appropiately.

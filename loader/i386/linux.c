@@ -554,14 +554,8 @@ grub_linux_boot (void)
   asm volatile ("lidt %0" : : "m" (idt_desc));
   asm volatile ("lgdt %0" : : "m" (gdt_desc));
 
-  /* Pass parameters.  */
-  asm volatile ("movl %0, %%ecx" : : "m" (params->code32_start));
-  asm volatile ("movl %0, %%esi" : : "m" (real_mode_mem));
-
-  asm volatile ("xorl %%ebx, %%ebx" : : );
-
   /* Enter Linux.  */
-  asm volatile ("jmp *%%ecx" : : );
+  asm volatile ("jmp *%2" : : "b" (0), "S" (real_mode_mem), "g" (params->code32_start));
 
 #endif
 
