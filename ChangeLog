@@ -1,3 +1,9 @@
+2009-06-29  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build on Debian / sparc.
+
+	* configure.ac: Recognize `sparc' target_cpu (as sparc64).
+
 2009-06-28  Pavel Roskin  <proski@gnu.org>
 
 	* kern/i386/qemu/mmap.c (grub_machine_mmap_iterate): Use cast to

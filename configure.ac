@@ -44,7 +44,8 @@ AC_CANONICAL_TARGET
 AC_ARG_PROGRAM
 
 case "$target_cpu" in
-  i[[3456]]86) target_cpu=i386 ;;
+  i[[3456]]86)	target_cpu=i386 ;;
+  sparc)	target_cpu=sparc64 ;;
 esac
 
 # Specify the platform (such as firmware).
