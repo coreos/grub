@@ -1047,7 +1047,8 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
     if (strncmp ("/dev/", os_dev, 5) == 0)
       {
-        char *p, *q;
+        const char *p;
+        char *q;
         long int n;
 
         for (p = os_dev + 5; *p; ++p)

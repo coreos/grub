@@ -1,5 +1,8 @@
 2009-07-01  Pavel Roskin  <proski@gnu.org>
 
+	* util/hostdisk.c (grub_util_biosdisk_get_grub_dev): Make `p'
+	constant to avoid a warning on FreeBSD.
+
 	* util/hostdisk.c (device_is_wholedisk): Compile only on systems
 	where it's needed.
 
