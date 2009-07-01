@@ -1,5 +1,7 @@
 2009-07-01  Pavel Roskin  <proski@gnu.org>
 
+	* Makefile.in: Install include/grub/machine symlink.
+
 	* Makefile.in: When installing symlinks, use "cp -fR", which
 	works on FreeBSD and MacOSX.
 	From Yves Blusseau <cl7m42e02@sneakemail.com>

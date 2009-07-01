@@ -204,7 +204,8 @@ build_env.mk: Makefile
 	echo "COMMON_LDFLAGS=$(COMMON_LDFLAGS)"\
 	) > $@
 pkglib_BUILDDIR += config.h grub_script.tab.h
-include_DATA += $(shell find $(srcdir)/include -name \*.h | sed -e "s,^$(srcdir)/,,g") include/grub/cpu
+include_DATA += $(shell find $(srcdir)/include -name \*.h | sed -e "s,^$(srcdir)/,,g") \
+	include/grub/cpu include/grub/machine
 
 all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(MKFILES)
 
