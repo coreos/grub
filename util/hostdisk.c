@@ -833,6 +833,7 @@ convert_system_partition_to_system_disk (const char *os_dev)
 #endif
 }
 
+#if defined(__linux__) || defined(__CYGWIN__)
 static int
 device_is_wholedisk (const char *os_dev)
 {
@@ -842,6 +843,7 @@ device_is_wholedisk (const char *os_dev)
     return 1;
   return 0;
 }
+#endif
 
 static int
 find_system_device (const char *os_dev)
