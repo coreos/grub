@@ -133,7 +133,7 @@ grub_symbol_hash (const char *s)
 
 /* Resolve the symbol name NAME and return the address.
    Return NULL, if not found.  */
-void *
+static void *
 grub_dl_resolve_symbol (const char *name)
 {
   grub_symbol_t sym;
