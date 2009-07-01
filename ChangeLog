@@ -1,5 +1,14 @@
 2009-07-01  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/misc.c: Include `<setjmp.h>' and `<grub/machine/machine.h>'.
+	(grub_reboot, grub_halt): New functions.
+
+	* util/i386/pc/misc.c: Delete.  Update all users.
+	* util/sparc64/ieee1275/misc.c: Likewise.
+	* util/powerpc/ieee1275/misc.c: Likewise.
+
+2009-07-01  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* conf/i386.rmk (setjmp_mod_SOURCES)
 	(setjmp_mod_ASFLAGS, setjmp_mod_LDFLAGS): Move to ...
 	* conf/common.rmk (setjmp_mod_SOURCES)

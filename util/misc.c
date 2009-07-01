@@ -18,6 +18,7 @@
 
 #include <config.h>
 
+#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -36,6 +37,7 @@
 #include <grub/term.h>
 #include <grub/time.h>
 #include <grub/machine/time.h>
+#include <grub/machine/machine.h>
 
 /* Include malloc.h, only if memalign is available. It is known that
    memalign is declared in malloc.h in all systems, if present.  */
@@ -436,4 +438,20 @@ fail:
   return size;
 }
 
+#endif /* __MINGW32__ */
+
+void
+grub_reboot (void)
+{
+  longjmp (main_env, 1);
+}
+
+void
+grub_halt (
+#ifdef GRUB_MACHINE_PCBIOS
+	   int no_apm __attribute__ ((unused))
 #endif
+	   )
+{
+  grub_reboot ();
+}
