@@ -239,9 +239,9 @@ struct linux_kernel_params
 
   grub_uint8_t padding8[0x1e8 - 0x1e4];
 
-  grub_uint32_t mmap_size;		/* 1e8 */
+  grub_uint8_t mmap_size;		/* 1e8 */
 
-  grub_uint8_t padding9[0x1f1 - 0x1ec];
+  grub_uint8_t padding9[0x1f1 - 0x1e9];
 
   grub_uint8_t setup_sects;		/* The size of the setup in sectors */
   grub_uint16_t root_flags;		/* If the root is mounted readonly */

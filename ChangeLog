@@ -1,3 +1,8 @@
+2009-07-01  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/linux.h (linux_kernel_params): Change `mmap_size'
+	type to `grub_uint8_t', and adjust `padding9' accordingly.
+
 2009-06-29  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/i386/linux.h (GRUB_VIDEO_TYPE_TEXT): New macro.
