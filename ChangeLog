@@ -1,5 +1,9 @@
 2009-07-01  Pavel Roskin  <proski@gnu.org>
 
+	* util/misc.c: Move grub_reboot() and grub_halt() ...
+	* util/grub-emu.c: ... here.  Make main_env static.
+	* include/grub/util/misc.h: Remove main_env.
+
 	* kern/mm.c: Use correct format to print size_t.
 
 	* include/grub/elf.h: Define Elf_Sword and Elf_Xword.

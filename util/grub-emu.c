@@ -40,7 +40,7 @@
 #include <grub_emu_init.h>
 
 /* Used for going back to the main function.  */
-jmp_buf main_env;
+static jmp_buf main_env;
 
 /* Store the prefix specified by an argument.  */
 static char *prefix = 0;
@@ -66,6 +66,22 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
   (void) ehdr;
 
   return GRUB_ERR_BAD_MODULE;
+}
+
+void
+grub_reboot (void)
+{
+  longjmp (main_env, 1);
+}
+
+void
+grub_halt (
+#ifdef GRUB_MACHINE_PCBIOS
+	   int no_apm __attribute__ ((unused))
+#endif
+	   )
+{
+  grub_reboot ();
 }
 
 void

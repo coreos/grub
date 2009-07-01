@@ -439,19 +439,3 @@ fail:
 }
 
 #endif /* __MINGW32__ */
-
-void
-grub_reboot (void)
-{
-  longjmp (main_env, 1);
-}
-
-void
-grub_halt (
-#ifdef GRUB_MACHINE_PCBIOS
-	   int no_apm __attribute__ ((unused))
-#endif
-	   )
-{
-  grub_reboot ();
-}
