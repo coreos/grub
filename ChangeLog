@@ -1,5 +1,8 @@
 2009-07-01  Pavel Roskin  <proski@gnu.org>
 
+	* include/grub/types.h: Define GRUB_LONG_MAX and GRUB_LONG_MIN
+	using signed long int constants.
+
 	* util/hostdisk.c (grub_util_biosdisk_get_grub_dev): Make `p'
 	constant to avoid a warning on FreeBSD.
 
