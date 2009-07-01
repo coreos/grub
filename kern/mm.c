@@ -515,7 +515,7 @@ grub_debug_malloc (const char *file, int line, grub_size_t size)
   void *ptr;
 
   if (grub_mm_debug)
-    grub_printf ("%s:%d: malloc (0x%x) = ", file, line, size);
+    grub_printf ("%s:%d: malloc (0x%zx) = ", file, line, size);
   ptr = grub_malloc (size);
   if (grub_mm_debug)
     grub_printf ("%p\n", ptr);
@@ -534,7 +534,7 @@ void *
 grub_debug_realloc (const char *file, int line, void *ptr, grub_size_t size)
 {
   if (grub_mm_debug)
-    grub_printf ("%s:%d: realloc (%p, 0x%x) = ", file, line, ptr, size);
+    grub_printf ("%s:%d: realloc (%p, 0x%zx) = ", file, line, ptr, size);
   ptr = grub_realloc (ptr, size);
   if (grub_mm_debug)
     grub_printf ("%p\n", ptr);
@@ -548,7 +548,7 @@ grub_debug_memalign (const char *file, int line, grub_size_t align,
   void *ptr;
 
   if (grub_mm_debug)
-    grub_printf ("%s:%d: memalign (0x%x, 0x%x) = ",
+    grub_printf ("%s:%d: memalign (0x%zx, 0x%zx) = ",
 		 file, line, align, size);
   ptr = grub_memalign (align, size);
   if (grub_mm_debug)
