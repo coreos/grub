@@ -1,5 +1,28 @@
 2009-07-01  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* conf/i386.rmk (setjmp_mod_SOURCES)
+	(setjmp_mod_ASFLAGS, setjmp_mod_LDFLAGS): Move to ...
+	* conf/common.rmk (setjmp_mod_SOURCES)
+	(setjmp_mod_ASFLAGS, setjmp_mod_LDFLAGS): ... here, and modify
+	to use $(target_cpu).
+	* conf/x86_64-efi.rmk (setjmp_mod_SOURCES)
+	(setjmp_mod_ASFLAGS, setjmp_mod_LDFLAGS): Remove.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Use
+	$(target_cpu) for kern/$(target_cpu)/dl.c.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+	* conf/i386-coreboot.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk (kernel_img_SOURCES): Use
+	$(target_cpu) for kern/$(target_cpu)/dl.c and for
+	kern/$(target_cpu)/cache.S.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+
+2009-07-01  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/grub/i386/linux.h (linux_kernel_params): Change `mmap_size'
 	type to `grub_uint8_t', and adjust `padding9' accordingly.
 

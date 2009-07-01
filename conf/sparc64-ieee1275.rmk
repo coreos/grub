@@ -43,9 +43,9 @@ kernel_img_SOURCES = kern/sparc64/ieee1275/crt0.S kern/ieee1275/cmain.c	\
 	kern/ieee1275/mmap.c						\
 	term/ieee1275/ofconsole.c 					\
 	kern/ieee1275/openfw.c disk/ieee1275/ofdisk.c 			\
-	kern/parser.c kern/partition.c kern/env.c kern/sparc64/dl.c	\
+	kern/parser.c kern/partition.c kern/env.c kern/$(target_cpu)/dl.c	\
 	kern/generic/millisleep.c kern/time.c				\
-	symlist.c kern/sparc64/cache.S
+	symlist.c kern/$(target_cpu)/cache.S
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,0x200000,-Bstatic,-melf64_sparc -static-libgcc -lgcc
@@ -180,11 +180,5 @@ memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
 lsmmap_mod_SOURCES = commands/lsmmap.c
 lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
 lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For setjmp.mod
-pkglib_MODULES += setjmp.mod
-setjmp_mod_SOURCES = lib/sparc64/setjmp.S
-setjmp_mod_ASFLAGS = $(COMMON_ASFLAGS)
-setjmp_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

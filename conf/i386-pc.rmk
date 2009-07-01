@@ -53,7 +53,7 @@ kernel_img_SOURCES = kern/i386/pc/startup.S \
 	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
-	kern/i386/dl.c kern/i386/pc/init.c kern/i386/pc/mmap.c \
+	kern/$(target_cpu)/dl.c kern/i386/pc/init.c kern/i386/pc/mmap.c \
 	kern/parser.c kern/partition.c \
 	kern/i386/tsc.c kern/i386/pit.c \
 	kern/generic/rtc_get_time_ms.c \

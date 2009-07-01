@@ -92,7 +92,7 @@ kernel_mod_SOURCES = kern/i386/efi/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
-	kern/i386/dl.c kern/i386/efi/init.c kern/parser.c kern/partition.c \
+	kern/$(target_cpu)/dl.c kern/i386/efi/init.c kern/parser.c kern/partition.c \
 	kern/env.c symlist.c kern/efi/efi.c kern/efi/init.c kern/efi/mm.c \
 	term/efi/console.c disk/efi/efidisk.c \
 	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
