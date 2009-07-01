@@ -344,7 +344,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 #else /* ! __linux__ */
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
   int sysctl_flags, sysctl_oldflags;
-  const size_t sysctl_size = sizeof (sysctl_flags);
+  size_t sysctl_size = sizeof (sysctl_flags);
 
   if (sysctlbyname ("kern.geom.debugflags", &sysctl_oldflags, &sysctl_size, NULL, 0))
     {
