@@ -1,5 +1,9 @@
 2009-07-01  Pavel Roskin  <proski@gnu.org>
 
+	* Makefile.in: When installing symlinks, use "cp -fR", which
+	works on FreeBSD and MacOSX.
+	From Yves Blusseau <cl7m42e02@sneakemail.com>
+
 	* kern/dl.c (grub_dl_resolve_symbol): Make static.
 	* include/grub/dl.h: Remove grub_dl_resolve_symbol().
 

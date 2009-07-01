@@ -229,7 +229,7 @@ install-local: all
 	    $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(includedir)/$$dest; \
 	  elif test -L "$$dir$$file"; then \
 	    rm -rf $(DESTDIR)$(includedir)/$$dest && \
-	    cp -fP $$dir$$file $(DESTDIR)$(includedir)/$$dest; \
+	    cp -fR $$dir$$file $(DESTDIR)$(includedir)/$$dest; \
 	  fi; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
