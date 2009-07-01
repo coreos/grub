@@ -1,5 +1,12 @@
 2009-07-01  Robert Millan  <rmh.grub@aybabtu.com>
 
+	Fix grub-emu build on sparc64-ieee1275.
+
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Syncronize with ...
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): ... this.
+
+2009-07-01  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* util/misc.c: Include `<setjmp.h>' and `<grub/machine/machine.h>'.
 	(grub_reboot, grub_halt): New functions.
 
