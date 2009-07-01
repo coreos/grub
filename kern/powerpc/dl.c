@@ -26,7 +26,7 @@
 grub_err_t
 grub_arch_dl_check_header (void *ehdr)
 {
-  Elf32_Ehdr *e = ehdr;
+  Elf_Ehdr *e = ehdr;
 
   /* Check the magic numbers.  */
   if (e->e_ident[EI_CLASS] != ELFCLASS32
@@ -42,15 +42,15 @@ grub_arch_dl_check_header (void *ehdr)
 grub_err_t
 grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 {
-  Elf32_Ehdr *e = ehdr;
-  Elf32_Shdr *s;
-  Elf32_Word entsize;
+  Elf_Ehdr *e = ehdr;
+  Elf_Shdr *s;
+  Elf_Word entsize;
   unsigned i;
 
   /* Find a symbol table.  */
-  for (i = 0, s = (Elf32_Shdr *) ((char *) e + e->e_shoff);
+  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
-       i++, s = (Elf32_Shdr *) ((char *) s + e->e_shentsize))
+       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
     if (s->sh_type == SHT_SYMTAB)
       break;
 
@@ -59,9 +59,9 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
   entsize = s->sh_entsize;
 
-  for (i = 0, s = (Elf32_Shdr *) ((char *) e + e->e_shoff);
+  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
-       i++, s = (Elf32_Shdr *) ((char *) s + e->e_shentsize))
+       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
     if (s->sh_type == SHT_RELA)
       {
 	grub_dl_segment_t seg;
@@ -73,37 +73,37 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
 	if (seg)
 	  {
-	    Elf32_Rela *rel, *max;
+	    Elf_Rela *rel, *max;
 
-	    for (rel = (Elf32_Rela *) ((char *) e + s->sh_offset),
+	    for (rel = (Elf_Rela *) ((char *) e + s->sh_offset),
 		   max = rel + s->sh_size / s->sh_entsize;
 		 rel < max;
 		 rel++)
 	      {
-		Elf32_Word *addr;
-		Elf32_Sym *sym;
+		Elf_Word *addr;
+		Elf_Sym *sym;
 		grub_uint32_t value;
 
 		if (seg->size < rel->r_offset)
 		  return grub_error (GRUB_ERR_BAD_MODULE,
 				     "reloc offset is out of the segment");
 
-		addr = (Elf32_Word *) ((char *) seg->addr + rel->r_offset);
-		sym = (Elf32_Sym *) ((char *) mod->symtab
-				     + entsize * ELF32_R_SYM (rel->r_info));
+		addr = (Elf_Word *) ((char *) seg->addr + rel->r_offset);
+		sym = (Elf_Sym *) ((char *) mod->symtab
+				     + entsize * ELF_R_SYM (rel->r_info));
 
 		/* On the PPC the value does not have an explicit
 		   addend, add it.  */
 		value = sym->st_value + rel->r_addend;
-		switch (ELF32_R_TYPE (rel->r_info))
+		switch (ELF_R_TYPE (rel->r_info))
 		  {
 		  case R_PPC_ADDR16_LO:
-		    *(Elf32_Half *) addr = value;
+		    *(Elf_Half *) addr = value;
 		    break;
 
 		  case R_PPC_REL24:
 		    {
-		      Elf32_Sword delta = value - (Elf32_Word) addr;
+		      Elf_Sword delta = value - (Elf_Word) addr;
 
 		      if (delta << 6 >> 6 != delta)
 			return grub_error (GRUB_ERR_BAD_MODULE, "Relocation overflow");
@@ -112,7 +112,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    }
 
 		  case R_PPC_ADDR16_HA:
-		    *(Elf32_Half *) addr = (value + 0x8000) >> 16;
+		    *(Elf_Half *) addr = (value + 0x8000) >> 16;
 		    break;
 
 		  case R_PPC_ADDR32:
@@ -120,13 +120,13 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    break;
 
 		  case R_PPC_REL32:
-		    *addr = value - (Elf32_Word) addr;
+		    *addr = value - (Elf_Word) addr;
 		    break;
 
 		  default:
 		    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 				       "This relocation (%d) is not implemented yet",
-				       ELF32_R_TYPE (rel->r_info));
+				       ELF_R_TYPE (rel->r_info));
 		  }
 	      }
 	  }

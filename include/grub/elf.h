@@ -2340,8 +2340,10 @@ typedef Elf32_Rel Elf_Rel;
 typedef Elf32_Rela Elf_Rela;
 typedef Elf32_Section Elf_Section;
 typedef Elf32_Shdr Elf_Shdr;
+typedef Elf32_Sword Elf_Sword;
 typedef Elf32_Sym Elf_Sym;
 typedef Elf32_Word Elf_Word;
+typedef Elf32_Xword Elf_Xword;
 
 #define ELF_ST_BIND(val)	ELF32_ST_BIND(val)
 #define ELF_ST_TYPE(val)	ELF32_ST_TYPE(val)
@@ -2359,8 +2361,10 @@ typedef Elf64_Rel Elf_Rel;
 typedef Elf64_Rela Elf_Rela;
 typedef Elf64_Section Elf_Section;
 typedef Elf64_Shdr Elf_Shdr;
+typedef Elf64_Sword Elf_Sword;
 typedef Elf64_Sym Elf_Sym;
 typedef Elf64_Word Elf_Word;
+typedef Elf64_Xword Elf_Xword;
 
 #define ELF_ST_BIND(val)	ELF64_ST_BIND (val)
 #define ELF_ST_TYPE(val)	ELF64_ST_TYPE (val)

@@ -90,9 +90,9 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		addr32 = (Elf64_Word *) ((char *) seg->addr + rel->r_offset);
 		addr64 = (Elf64_Xword *) addr32;
 		sym = (Elf64_Sym *) ((char *) mod->symtab
-				     + entsize * ELF64_R_SYM (rel->r_info));
+				     + entsize * ELF_R_SYM (rel->r_info));
 
-		switch (ELF64_R_TYPE (rel->r_info))
+		switch (ELF_R_TYPE (rel->r_info))
 		  {
 		  case R_X86_64_64:
 		    *addr64 += rel->r_addend + sym->st_value;
@@ -109,7 +109,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
                     break;
 
                   default:
-                    grub_fatal ("Unrecognized relocation: %d\n", ELF64_R_TYPE (rel->r_info));
+                    grub_fatal ("Unrecognized relocation: %d\n", ELF_R_TYPE (rel->r_info));
 		  }
 	      }
 	  }
