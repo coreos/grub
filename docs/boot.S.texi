@@ -77,4 +77,3 @@ halt_message:
 
         /* @r{Our stack area.} */
         .comm   stack, STACK_SIZE
-        
