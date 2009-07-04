@@ -174,8 +174,7 @@ struct linux_kernel_params
   grub_uint16_t vesapm_offset;		/* 30 */
   grub_uint16_t lfb_pages;		/* 32 */
   grub_uint16_t vesa_attrib;		/* 34 */
-
-  grub_uint8_t padding3[0x40 - 0x36];
+  grub_uint32_t capabilities;		/* 36 */
 
   grub_uint16_t apm_version;		/* 40 */
   grub_uint16_t apm_code_segment;	/* 42 */

@@ -1,3 +1,8 @@
+2009-07-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/linux.h (struct linux_kernel_params): Add
+	`capabilities' member.
+
 2009-07-02  Pavel Roskin  <proski@gnu.org>
 
 	* genparttoollist.sh: Add missing newline at the end.
