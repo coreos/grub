@@ -1,3 +1,9 @@
+2009-07-05  Pavel Roskin  <proski@gnu.org>
+
+	* util/grub.d/10_freebsd.in: Fix spelling of `device.hints' on
+	FreeBSD.
+	* util/osdetect.lua: Likewise.
+
 2009-07-05  Bean  <bean123ch@gmail.com>
 
 	* conf/common.rmk (lua_mode_SOURCES): Add script/lua/lstrlib.c.

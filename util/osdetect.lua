@@ -59,7 +59,7 @@ function enum_device (device, fs, uuid)
   elseif (grub.file_exist (root .. "kernel.sys")) then
     title = "FreeDOS"
   elseif (grub.file_exist (root .. "boot/loader") and
-	  grub.file_exist (root .. "boot/devices.hints")) then
+	  grub.file_exist (root .. "boot/device.hints")) then
     source = "root (" .. device .. ")\nfreebsd /boot/loader" ..
       "\nfreebsd_loadenv /boot/device.hints"
     title = "FreeBSD"

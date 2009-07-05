@@ -26,8 +26,8 @@ case "${GRUB_DISTRIBUTOR}" in
   *)		OS="FreeBSD" ;;
 esac
 
-if test -e /boot/devices.hints ; then
-  devices=/boot/devices.hints
+if test -e /boot/device.hints ; then
+  devices=/boot/device.hints
 fi
 
 if test -e /boot/kernel/kernel ; then
