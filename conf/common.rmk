@@ -519,15 +519,14 @@ lua_mod_SOURCES = script/lua/lapi.c script/lua/lcode.c script/lua/ldebug.c \
 	script/lua/lstate.c script/lua/lstring.c script/lua/ltable.c \
 	script/lua/ltm.c script/lua/lundump.c script/lua/lvm.c \
 	script/lua/lzio.c script/lua/lauxlib.c script/lua/lbaselib.c \
-	script/lua/linit.c script/lua/ltablib.c \
+	script/lua/linit.c script/lua/ltablib.c script/lua/lstrlib.c \
 	script/lua/grub_main.c script/lua/grub_lib.c
 lua_mod_CFLAGS = $(COMMON_CFLAGS)
 lua_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Extra libraries for lua
 # script/lua/lmathlib.c script/lua/loslib.c script/lua/liolib.c
-# script/lua/lstrlib.c script/lua/ldblib.c script/lua/ltablib.c
-# script/lua/loadlib.c
+# script/lua/ldblib.c script/lua/loadlib.c
 
 # Common Video Subsystem specific modules.
 pkglib_MODULES += video.mod videotest.mod bitmap.mod tga.mod jpeg.mod	\

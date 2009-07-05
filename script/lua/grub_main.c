@@ -24,6 +24,61 @@
 #include <grub/dl.h>
 #include <grub/parser.h>
 
+static const char *
+scan_str (const char *s1, const char *s2)
+{
+  while (*s1)
+    {
+      const char *p = s2;
+
+      while (*p)
+	{
+	  if (*s1 == *p)
+	    return s1;
+	  p++;
+	}
+
+      s1++;
+    }
+
+  return s1;
+}
+
+int
+strcspn (const char *s1, const char *s2)
+{
+  const char *r;
+
+  r = scan_str (s1, s2);
+  return r - s1;
+}
+
+char *
+strpbrk (const char *s1, const char *s2)
+{
+  const char *r;
+
+  r = scan_str (s1, s2);
+  return (*r) ? (char *) r : 0;
+}
+
+void *
+memchr (const void *s, int c, size_t n)
+{
+  const unsigned char *p = s;
+
+  while (n)
+    {
+      if (*p == c)
+	return (void *) p;
+
+      n--;
+      p++;
+    }
+
+  return 0;
+}
+
 static lua_State *state;
 
 /* Call `grub_error' to report a Lua error.  The error message string must be

@@ -77,26 +77,28 @@ iscntrl (int c)
 }
 
 static inline int
-strcspn(const char *s1, const char *s2)
+isupper (int c)
 {
-  int size = 0;
+  return ((c >= 'A') && (c <= 'Z'));
+}
 
-  while (*s1)
-    {
-      const char *p = s2;
+static inline int
+islower (int c)
+{
+  return ((c >= 'a') && (c <= 'z'));
+}
 
-      while (*p)
-	{
-	  if (*s1 == *p)
-	    return size;
-	  p++;
-	}
+static inline int
+ispunct (int c)
+{
+  return ((! isspace (c)) && (! isalnum (c)));
+}
 
-      s1++;
-      size++;
-    }
-
-  return size;
+static inline int
+isxdigit (int c)
+{
+  return (isdigit (c) || ((c >= 'a') && (c <= 'f')) ||
+	  ((c >= 'A') && (c <= 'F')));
 }
 
 static inline int
@@ -104,5 +106,9 @@ abs (int c)
 {
   return (c >= 0) ? : -c;
 }
+
+int strcspn (const char *s1, const char *s2);
+char *strpbrk (const char *s1, const char *s2);
+void *memchr (const void *s, int c, size_t n);
 
 #endif
