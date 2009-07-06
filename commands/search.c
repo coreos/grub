@@ -67,8 +67,10 @@ search_fs (const char *key, const char *var, int no_floppy, int is_uuid)
       if (dev)
 	{
 	  grub_fs_t fs;
+	  int (*compare_fn) (const char *, const char *);
 
 	  fs = grub_fs_probe (dev);
+	  compare_fn = is_uuid ? grub_strcasecmp : grub_strcmp;
 
 #define QUID(x)	(is_uuid ? (x)->uuid : (x)->label)
 
@@ -79,7 +81,7 @@ search_fs (const char *key, const char *var, int no_floppy, int is_uuid)
 	      (QUID(fs)) (dev, &quid);
 	      if (grub_errno == GRUB_ERR_NONE && quid)
 		{
-		  if (grub_strcmp (quid, key) == 0)
+		  if (compare_fn (quid, key) == 0)
 		    {
 		      /* Found!  */
 		      count++;
