@@ -176,6 +176,8 @@ struct linux_kernel_params
   grub_uint16_t vesa_attrib;		/* 34 */
   grub_uint32_t capabilities;		/* 36 */
 
+  grub_uint8_t padding3[0x40 - 0x3a];
+
   grub_uint16_t apm_version;		/* 40 */
   grub_uint16_t apm_code_segment;	/* 42 */
   grub_uint32_t apm_entry;		/* 44 */
