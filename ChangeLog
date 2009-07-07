@@ -1,5 +1,9 @@
 2009-07-07  Pavel Roskin  <proski@gnu.org>
 
+	* commands/search.c (search_file): Merge into ...
+	(search_fs): ... this.  Accept search type as argument.
+	(grub_cmd_search): Pass search type to search_fs().
+
 	* include/grub/util/console.h: New file.
 	* util/console.c: Use it instead of grub/machine/console.h.
 	* util/grub-emu.c: Likewise.

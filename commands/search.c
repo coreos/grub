@@ -47,126 +47,96 @@ enum options
  };
 
 static void
-search_fs (const char *key, const char *var, int no_floppy, int is_uuid)
+search_fs (const char *key, const char *var, int no_floppy, enum options type)
 {
   int count = 0;
+  char *buf = NULL;
+
   auto int iterate_device (const char *name);
-
   int iterate_device (const char *name)
-    {
-      grub_device_t dev;
-      int abort = 0;
+  {
+    int found = 0;
 
-      /* Skip floppy drives when requested.  */
-      if (no_floppy &&
-	  name[0] == 'f' && name[1] == 'd' &&
-	  name[2] >= '0' && name[2] <= '9')
-	return 0;
+    /* Skip floppy drives when requested.  */
+    if (no_floppy &&
+	name[0] == 'f' && name[1] == 'd' && name[2] >= '0' && name[2] <= '9')
+      return 0;
 
-      dev = grub_device_open (name);
-      if (dev)
-	{
-	  grub_fs_t fs;
-	  int (*compare_fn) (const char *, const char *);
+    if (type == SEARCH_FILE)
+      {
+	grub_size_t len;
+	char *p;
+	grub_file_t file;
 
-	  fs = grub_fs_probe (dev);
-	  compare_fn = is_uuid ? grub_strcasecmp : grub_strcmp;
+	len = grub_strlen (name) + 2 + grub_strlen (key) + 1;
+	p = grub_realloc (buf, len);
+	if (! p)
+	  return 1;
 
-	  if (fs && (is_uuid ? fs->uuid : fs->label))
-	    {
-	      char *quid;
+	buf = p;
+	grub_sprintf (buf, "(%s)%s", name, key);
 
-	      if (is_uuid)
-		fs->uuid (dev, &quid);
-	      else
-		fs->label (dev, &quid);
+	file = grub_file_open (buf);
+	if (file)
+	  {
+	    found = 1;
+	    grub_file_close (file);
+	  }
+      }
+    else
+      {
+	/* type is SEARCH_FS_UUID or SEARCH_LABEL */
+	grub_device_t dev;
+	grub_fs_t fs;
+	int (*compare_fn) (const char *, const char *);
+	char *quid;
 
-	      if (grub_errno == GRUB_ERR_NONE && quid)
-		{
-		  if (compare_fn (quid, key) == 0)
-		    {
-		      /* Found!  */
-		      count++;
-		      if (var)
-			{
-			  grub_env_set (var, name);
-			  abort = 1;
-			}
-		      else
-			  grub_printf (" %s", name);
-		    }
+	dev = grub_device_open (name);
+	if (dev)
+	  {
+	    fs = grub_fs_probe (dev);
+	    compare_fn =
+	      (type == SEARCH_FS_UUID) ? grub_strcasecmp : grub_strcmp;
 
-		  grub_free (quid);
-		}
-	    }
+	    if (fs && ((type == SEARCH_FS_UUID) ? fs->uuid : fs->label))
+	      {
+		if (type == SEARCH_FS_UUID)
+		  fs->uuid (dev, &quid);
+		else
+		  fs->label (dev, &quid);
 
-	  grub_device_close (dev);
-	}
+		if (grub_errno == GRUB_ERR_NONE && quid)
+		  {
+		    if (compare_fn (quid, key) == 0)
+		      found = 1;
 
-      grub_errno = GRUB_ERR_NONE;
-      return abort;
-    }
+		    grub_free (quid);
+		  }
+	      }
 
-  grub_device_iterate (iterate_device);
+	    grub_device_close (dev);
+	  }
+      }
 
-  if (count == 0)
-    grub_error (GRUB_ERR_FILE_NOT_FOUND, "no such device: %s", key);
-}
+    if (found)
+      {
+	count++;
+	if (var)
+	  grub_env_set (var, name);
+	else
+	  grub_printf (" %s", name);
+      }
 
-static void
-search_file (const char *key, const char *var, int no_floppy)
-{
-  int count = 0;
-  char *buf = 0;
-  auto int iterate_device (const char *name);
-
-  int iterate_device (const char *name)
-    {
-      grub_size_t len;
-      char *p;
-      grub_file_t file;
-      int abort = 0;
-
-      /* Skip floppy drives when requested.  */
-      if (no_floppy &&
-	  name[0] == 'f' && name[1] == 'd' &&
-	  name[2] >= '0' && name[2] <= '9')
-	return 0;
-
-      len = grub_strlen (name) + 2 + grub_strlen (key) + 1;
-      p = grub_realloc (buf, len);
-      if (! p)
-	return 1;
-
-      buf = p;
-      grub_sprintf (buf, "(%s)%s", name, key);
-
-      file = grub_file_open (buf);
-      if (file)
-	{
-	  /* Found!  */
-	  count++;
-	  if (var)
-	    {
-	      grub_env_set (var, name);
-	      abort = 1;
-	    }
-	  else
-	    grub_printf (" %s", name);
-
-	  grub_file_close (file);
-	}
-
-      grub_errno = GRUB_ERR_NONE;
-      return abort;
-    }
+    grub_errno = GRUB_ERR_NONE;
+    return (found && var);
+  }
 
   grub_device_iterate (iterate_device);
 
   grub_free (buf);
 
   if (grub_errno == GRUB_ERR_NONE && count == 0)
-    grub_error (GRUB_ERR_FILE_NOT_FOUND, "no such file: %s", key);
+    grub_error (GRUB_ERR_FILE_NOT_FOUND, "no such device: %s", key);
 }
 
 static grub_err_t
@@ -182,11 +152,11 @@ grub_cmd_search (grub_extcmd_t cmd, int argc, char **args)
     var = state[SEARCH_SET].arg ? state[SEARCH_SET].arg : "root";
 
   if (state[SEARCH_LABEL].set)
-    search_fs (args[0], var, state[SEARCH_NO_FLOPPY].set, 0);
+    search_fs (args[0], var, state[SEARCH_NO_FLOPPY].set, SEARCH_LABEL);
   else if (state[SEARCH_FS_UUID].set)
-    search_fs (args[0], var, state[SEARCH_NO_FLOPPY].set, 1);
+    search_fs (args[0], var, state[SEARCH_NO_FLOPPY].set, SEARCH_FS_UUID);
   else if (state[SEARCH_FILE].set)
-    search_file (args[0], var, state[SEARCH_NO_FLOPPY].set);
+    search_fs (args[0], var, state[SEARCH_NO_FLOPPY].set, SEARCH_FILE);
   else
     return grub_error (GRUB_ERR_INVALID_COMMAND, "unspecified search type");
 
