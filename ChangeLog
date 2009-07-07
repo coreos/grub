@@ -1,5 +1,9 @@
 2009-07-07  Pavel Roskin  <proski@gnu.org>
 
+	* include/grub/util/console.h: New file.
+	* util/console.c: Use it instead of grub/machine/console.h.
+	* util/grub-emu.c: Likewise.
+
 	* lib/arg.c (find_long_option): Remove.
 	(find_long): Add `len' argument, make `s' const char *.
 	(grub_arg_parse): Parse long options in place, not in a
