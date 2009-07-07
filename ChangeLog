@@ -1,5 +1,8 @@
 2009-07-06  Pavel Roskin  <proski@gnu.org>
 
+	* commands/search.c (search_fs): Fix potential NULL pointer
+	dereference.
+
 	* commands/search.c (search_fs): Replace QUID macro with quid_fn
 	function pointer.
 
