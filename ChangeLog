@@ -1,3 +1,10 @@
+2009-07-10  Bean  <bean123ch@gmail.com>
+2009-07-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* kern/ieee1275/openfw.c (grub_children_iterate)
+	(grub_devalias_iterate): Fix size evaluation for property or path
+	strings, which was broken since r2132.
+
 2009-07-07  Pavel Roskin  <proski@gnu.org>
 
 	* commands/search.c (search_file): Merge into ...

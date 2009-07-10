@@ -78,15 +78,15 @@ grub_children_iterate (char *devpath,
       grub_ssize_t actual;
 
       if (grub_ieee1275_get_property (child, "device_type", childtype,
-				      sizeof childtype, &actual))
+				      IEEE1275_MAX_PROP_LEN, &actual))
 	continue;
 
-      if (grub_ieee1275_package_to_path (child, childpath, sizeof childpath,
-					 &actual))
+      if (grub_ieee1275_package_to_path (child, childpath,
+					 IEEE1275_MAX_PATH_LEN, &actual))
 	continue;
 
       if (grub_ieee1275_get_property (child, "name", childname,
-				      sizeof childname, &actual))
+				      IEEE1275_MAX_PATH_LEN, &actual))
 	continue;
 
       grub_sprintf (fullname, "%s/%s", devpath, childname);
@@ -176,7 +176,7 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 	}
 
       if (grub_ieee1275_get_property (dev, "device_type", devtype,
-				      sizeof devtype, &actual))
+				      IEEE1275_MAX_PROP_LEN, &actual))
 	{
 	  /* NAND device don't have device_type property.  */
           devtype[0] = 0;
