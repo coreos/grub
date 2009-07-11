@@ -86,7 +86,7 @@ grub_children_iterate (char *devpath,
 	continue;
 
       if (grub_ieee1275_get_property (child, "name", childname,
-				      IEEE1275_MAX_PATH_LEN, &actual))
+				      IEEE1275_MAX_PROP_LEN, &actual))
 	continue;
 
       grub_sprintf (fullname, "%s/%s", devpath, childname);
