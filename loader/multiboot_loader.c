@@ -139,7 +139,8 @@ grub_cmd_multiboot_loader (grub_command_t cmd __attribute__ ((unused)),
 
   /* XXX Find a better way to identify this.
      This is for i386-pc */
-#if defined(GRUB_MACHINE_PCBIOS) || defined(GRUB_MACHINE_LINUXBIOS)
+#if defined(GRUB_MACHINE_PCBIOS) || defined(GRUB_MACHINE_COREBOOT) || \
+    defined(GRUB_MACHINE_QEMU)
   if (header_multi_ver_found == 1)
     {
       grub_dprintf ("multiboot_loader",
@@ -172,7 +173,8 @@ grub_cmd_module_loader (grub_command_t cmd __attribute__ ((unused)),
 			int argc, char *argv[])
 {
 
-#if defined(GRUB_MACHINE_PCBIOS) || defined(GRUB_MACHINE_LINUXBIOS)
+#if defined(GRUB_MACHINE_PCBIOS) || defined(GRUB_MACHINE_COREBOOT) || \
+    defined(GRUB_MACHINE_QEMU)
   if (module_version_status == 1)
     {
       grub_dprintf("multiboot_loader",

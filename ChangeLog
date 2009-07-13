@@ -1,5 +1,10 @@
 2009-07-13  Pavel Roskin  <proski@gnu.org>
 
+	* include/grub/i386/coreboot/machine.h: Rename
+	GRUB_MACHINE_LINUXBIOS to GRUB_MACHINE_COREBOOT.
+	* loader/multiboot_loader.c (grub_cmd_multiboot_loader): Allow
+	multiboot 1 for GRUB_MACHINE_COREBOOT and GRUB_MACHINE_QEMU.
+
 	* kern/dl.c: Force native word size to suppress warnings when
 	compiling grub-emu.
 
