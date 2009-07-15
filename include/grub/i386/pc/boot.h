@@ -31,17 +31,11 @@
 /* The offset of the major version.  */
 #define GRUB_BOOT_MACHINE_VER_MAJ	0x3e
 
-/* The offset of BOOT_DRIVE.  */
-#define GRUB_BOOT_MACHINE_BOOT_DRIVE	0x4c
-
-/* The offset of KERNEL_ADDRESS.  */
-#define GRUB_BOOT_MACHINE_KERNEL_ADDRESS	0x40
-
 /* The offset of KERNEL_SECTOR.  */
 #define GRUB_BOOT_MACHINE_KERNEL_SECTOR	0x44
 
-/* The offset of KERNEL_SEGMENT.  */
-#define GRUB_BOOT_MACHINE_KERNEL_SEGMENT	0x42
+/* The offset of BOOT_DRIVE.  */
+#define GRUB_BOOT_MACHINE_BOOT_DRIVE	0x4c
 
 /* The offset of BOOT_DRIVE_CHECK.  */
 #define GRUB_BOOT_MACHINE_DRIVE_CHECK	0x4e

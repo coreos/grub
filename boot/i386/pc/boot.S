@@ -65,6 +65,7 @@ start:
 	 * this area.
 	 */
 
+	. = _start + GRUB_BOOT_MACHINE_BPB_START
 	. = _start + 4
 
 	/* scratch space */
@@ -91,14 +92,19 @@ cylinder_start:
 	 * End of BIOS parameter block.
 	 */
 
+	. = _start + GRUB_BOOT_MACHINE_VER_MAJ
 boot_version:
 	.byte	GRUB_BOOT_VERSION_MAJOR, GRUB_BOOT_VERSION_MINOR
 kernel_address:
 	.word	GRUB_BOOT_MACHINE_KERNEL_ADDR
 kernel_segment:
 	.word	GRUB_BOOT_MACHINE_KERNEL_SEG
+
+	. = _start + GRUB_BOOT_MACHINE_KERNEL_SECTOR
 kernel_sector:
 	.long	1, 0
+
+	. = _start + GRUB_BOOT_MACHINE_BOOT_DRIVE
 boot_drive:
 	.byte 0xff	/* the disk to load kernel from */
 			/* 0xff means use the boot drive */
@@ -477,8 +483,8 @@ nt_magic:
 	 *  sneaky, huh?
 	 */
 
-part_start:
 	. = _start + GRUB_BOOT_MACHINE_PART_START
+part_start:
 
 probe_values:
 	.byte	36, 18, 15, 9, 0
