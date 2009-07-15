@@ -94,8 +94,6 @@ cylinder_start:
 
 kernel_address:
 	.word	GRUB_BOOT_MACHINE_KERNEL_ADDR
-kernel_segment:
-	.word	GRUB_BOOT_MACHINE_KERNEL_SEG
 
 	. = _start + GRUB_BOOT_MACHINE_KERNEL_SECTOR
 kernel_sector:
@@ -372,13 +370,6 @@ setup_sectors:
 	movw	%es, %bx
 
 copy_buffer:
-#ifdef APPLE_CC
-	kernel_segment_abs = ABS (kernel_segment)
-	movw	(kernel_segment_abs), %es
-#else
-	movw	ABS(kernel_segment), %es
-#endif
-
 	/*
 	 * We need to save %cx and %si because the startup code in
 	 * kernel uses them without initializing them.
@@ -389,7 +380,8 @@ copy_buffer:
 	movw	$0x100, %cx
 	movw	%bx, %ds
 	xorw	%si, %si
-	xorw	%di, %di
+	movw	$GRUB_BOOT_MACHINE_KERNEL_ADDR, %di
+	movw	%si, %es
 
 	cld
 

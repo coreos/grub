@@ -1,5 +1,9 @@
 2009-07-15  Pavel Roskin  <proski@gnu.org>
 
+	* boot/i386/pc/boot.S (kernel_segment): Remove.
+	(copy_buffer): Use GRUB_BOOT_MACHINE_KERNEL_ADDR in segment 0
+	for destination.
+
 	* boot/i386/pc/boot.S (boot_version): Remove.
 	* include/grub/i386/pc/boot.h (GRUB_BOOT_MACHINE_VER_MAJ):
 	Remove.
