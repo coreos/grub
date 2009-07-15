@@ -271,6 +271,8 @@ grub_freebsd_add_meta_module (char *filename, char *type, int argc, char **argv,
     name++;
   else
     name = filename;
+  if (grub_strcmp (type, "/boot/zfs/zpool.cache") == 0)
+    name = "/boot/zfs/zpool.cache";
 
   if (grub_freebsd_add_meta (FREEBSD_MODINFO_NAME, name,
 			     grub_strlen (name) + 1))
