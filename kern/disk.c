@@ -34,7 +34,7 @@ static grub_uint64_t grub_last_time = 0;
 /* Disk cache.  */
 struct grub_disk_cache
 {
-  unsigned long dev_id;
+  enum grub_disk_dev_id dev_id;
   unsigned long disk_id;
   grub_disk_addr_t sector;
   char *data;
