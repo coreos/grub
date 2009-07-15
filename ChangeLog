@@ -1,5 +1,7 @@
 2009-07-15  Pavel Roskin  <proski@gnu.org>
 
+	* commands/probe.c (options): Typo fix.
+
 	* include/grub/i386/pc/boot.h (GRUB_BOOT_MACHINE_BPB_END):
 	Increase to 0x5a to accommodate FAT32.  Adjust other offsets
 	accordingly.
