@@ -433,7 +433,7 @@ notification_string:	.asciz "GRUB "
 geometry_error_string:	.asciz "Geom"
 hd_probe_error_string:	.asciz "Hard Disk"
 read_error_string:	.asciz "Read"
-general_error_string:	.asciz " Error"
+general_error_string:	.asciz " Error\r\n"
 
 /*
  * message: write the string pointed to by %si

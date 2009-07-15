@@ -1,5 +1,8 @@
 2009-07-15  Pavel Roskin  <proski@gnu.org>
 
+	* boot/i386/pc/boot.S (general_error_string): Add DOS newline at
+	the end of "Error" to make the message more readable.
+
 	* boot/i386/pc/boot.S (kernel_segment): Remove.
 	(copy_buffer): Use GRUB_BOOT_MACHINE_KERNEL_ADDR in segment 0
 	for destination.
