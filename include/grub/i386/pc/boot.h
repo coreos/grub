@@ -28,9 +28,6 @@
 /* The offset of the end of BPB (BIOS Parameter Block).  */
 #define GRUB_BOOT_MACHINE_BPB_END	0x3e
 
-/* The offset of the major version.  */
-#define GRUB_BOOT_MACHINE_VER_MAJ	0x3e
-
 /* The offset of KERNEL_SECTOR.  */
 #define GRUB_BOOT_MACHINE_KERNEL_SECTOR	0x44
 

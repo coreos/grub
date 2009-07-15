@@ -92,9 +92,6 @@ cylinder_start:
 	 * End of BIOS parameter block.
 	 */
 
-	. = _start + GRUB_BOOT_MACHINE_VER_MAJ
-boot_version:
-	.byte	GRUB_BOOT_VERSION_MAJOR, GRUB_BOOT_VERSION_MINOR
 kernel_address:
 	.word	GRUB_BOOT_MACHINE_KERNEL_ADDR
 kernel_segment:
