@@ -187,7 +187,7 @@ struct grub_efiemu_configuration_table64
   grub_efi_guid_t vendor_guid;
   grub_efi_uint64_t vendor_table;
 } __attribute__ ((packed));
-typedef struct grub_efiemu_configuration_table32 grub_efiemu_configuration_table64_t;
+typedef struct grub_efiemu_configuration_table64 grub_efiemu_configuration_table64_t;
 grub_err_t grub_efiemu_unregister_configuration_table (grub_efi_guid_t guid);
 grub_err_t
 grub_efiemu_register_configuration_table (grub_efi_guid_t guid,

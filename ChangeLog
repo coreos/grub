@@ -1,3 +1,11 @@
+2009-07-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix 64-bit efiemu
+
+	* include/grub/efiemu/efiemu.h (grub_efiemu_configuration_table64_t):
+	correct wrong typedef
+	* efiemu/prepare.c (SUFFIX (grub_efiemu_prepare)): minor style fixes
+
 2009-07-15  Pavel Roskin  <proski@gnu.org>
 
 	* include/grub/disk.h (struct grub_disk_dev): Use enum for id.

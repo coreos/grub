@@ -63,14 +63,15 @@ SUFFIX (grub_efiemu_prepare) (struct grub_efiemu_prepare_hook *prepare_hooks,
     curhook->hook (curhook->data);
 
   /* Move runtime to its due place */
-  if ((err = grub_efiemu_loadcore_load ()))
+  err = grub_efiemu_loadcore_load ();
+  if (err)
     {
       grub_efiemu_unload ();
       return err;
     }
 
-  if ((err = grub_efiemu_resolve_symbol ("efiemu_system_table",
-					 &handle, &off)))
+  err = grub_efiemu_resolve_symbol ("efiemu_system_table", &handle, &off);
+  if (err)
     {
       grub_efiemu_unload ();
       return err;
@@ -78,14 +79,14 @@ SUFFIX (grub_efiemu_prepare) (struct grub_efiemu_prepare_hook *prepare_hooks,
 
   SUFFIX (grub_efiemu_system_table)
     = (struct SUFFIX (grub_efi_system_table) *)
-    ((grub_uint8_t *)grub_efiemu_mm_obtain_request (handle) + off);
+    ((grub_uint8_t *) grub_efiemu_mm_obtain_request (handle) + off);
 
   /* compute CRC32 of runtime_services */
   if ((err = grub_efiemu_resolve_symbol ("efiemu_runtime_services",
 					 &handle, &off)))
     return err;
   runtime_services = (struct SUFFIX (grub_efiemu_runtime_services) *)
-	((grub_uint8_t *)grub_efiemu_mm_obtain_request (handle) + off);
+	((grub_uint8_t *) grub_efiemu_mm_obtain_request (handle) + off);
   runtime_services->hdr.crc32 = 0;
   runtime_services->hdr.crc32 = grub_getcrc32
     (0, runtime_services, runtime_services->hdr.header_size);
