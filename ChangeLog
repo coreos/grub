@@ -1,5 +1,8 @@
 2009-07-16  Pavel Roskin  <proski@gnu.org>
 
+	* configure.ac: Fix wrong use of grub_cv_cc_no_red_zone where
+	grub_cv_cc_efiemu should be used.
+
 	* configure.ac: Typo fixes.
 
 	* kern/mm.c (grub_zalloc): New function.

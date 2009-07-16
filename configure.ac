@@ -441,7 +441,7 @@ if test x"$enable_efiemu" = xno ; then
   efiemu_excuse="explicitly disabled"
 fi
 if test x"$efiemu_excuse" = x ; then
-  AC_CACHE_CHECK([whether options required for efiemu work], grub_cv_cc_no_red_zone, [
+  AC_CACHE_CHECK([whether options required for efiemu work], grub_cv_cc_efiemu, [
     CFLAGS="$CFLAGS -m64 -mcmodel=large -mno-red-zone -nostdlib -c"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		      [grub_cv_cc_efiemu=yes],
