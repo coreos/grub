@@ -442,13 +442,13 @@ if test x"$enable_efiemu" = xno ; then
 fi
 if test x"$efiemu_excuse" = x ; then
   AC_CACHE_CHECK([whether options required for efiemu work], grub_cv_cc_efiemu, [
-    CFLAGS="$CFLAGS -m64 -mcmodel=large -mno-red-zone -nostdlib -c"
+    CFLAGS="$CFLAGS -m64 -mcmodel=large -mno-red-zone -nostdlib"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		      [grub_cv_cc_efiemu=yes],
 		      [grub_cv_cc_efiemu=no])
   ])
   if test x$grub_cv_cc_efiemu = xno; then
-     efiemu_excuse="compiler doesn't support compiling with -m64 -mcmodel=large -mno-red-zone -nostdlib -c"
+     efiemu_excuse="compiler doesn't support compiling with -m64 -mcmodel=large -mno-red-zone -nostdlib"
   fi
 fi
 if test x"$enable_efiemu" = xyes && test x"$efiemu_excuse" != x ; then
