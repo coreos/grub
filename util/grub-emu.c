@@ -208,10 +208,6 @@ main (int argc, char *argv[])
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (dev_map);
 
-#if HAVE_USB_H
-  grub_libusb_init ();
-#endif
-
   grub_init_all ();
 
   /* Make sure that there is a root device.  */

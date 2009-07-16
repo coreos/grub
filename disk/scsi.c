@@ -248,6 +248,7 @@ grub_scsi_open (const char *name, grub_disk_t disk)
     {
       if (p->open (name, scsi))
 	continue;
+
       disk->id = (unsigned long) "scsi"; /* XXX */
       disk->data = scsi;
       scsi->dev = p;
@@ -266,7 +267,7 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 	{
 	  grub_free (scsi);
 	  grub_dprintf ("scsi", "inquiry failed\n");
-	  return grub_errno;
+	  return err;
 	}
 
       grub_dprintf ("scsi", "inquiry: devtype=0x%02x removable=%d\n",
@@ -292,7 +293,7 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 	{
 	  grub_free (scsi);
 	  grub_dprintf ("scsi", "READ CAPACITY failed\n");
-	  return grub_errno;
+	  return err;
 	}
 
       /* SCSI blocks can be something else than 512, although GRUB

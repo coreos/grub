@@ -222,11 +222,12 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
   struct grub_usbms_csw status;
   static grub_uint32_t tag = 0;
   grub_usb_err_t err = GRUB_USB_ERR_NONE;
-  int retrycnt = 3;
+  int retrycnt = 3 + 1;
 
  retry:
+  retrycnt--;
   if (retrycnt == 0)
-    return err;
+    return grub_error (GRUB_ERR_IO, "USB Mass Storage stalled");
 
   /* Setup the request.  */
   grub_memset (&cbw, 0, sizeof (cbw));
@@ -305,9 +306,7 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
       grub_usb_clear_halt (dev->dev, dev->in->endp_addr);
       grub_usb_clear_halt (dev->dev, dev->out->endp_addr);
 
-      retrycnt--;
-      if (retrycnt)
-	goto retry;
+      goto retry;
     }
 
   if (status.status)

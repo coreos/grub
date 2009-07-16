@@ -1,5 +1,23 @@
 2009-07-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix hang and segmentation fault in grub-emu-usb
+
+	* disk/scsi.c (grub_scsi_open): return err and not grub_errno
+	* util/usb.c (grub_libusb_devices): likewise
+	(grub_libusb_init): rename to ...
+	(GRUB_MOD_INIT (libusb)):...this
+	(grub_libusb_fini): rename to ..
+	(GRUB_MOD_FINI (libusb)):...this
+	* disk/usbms.c (grub_usbms_transfer): fix retry logic
+	* include/grub/disk.h (grub_raid_init): removed, it's useless
+	(grub_raid_fini): likewise
+	(grub_lvm_init): likewise
+	(grub_lvm_fini): likewise
+	* util/grub-emu.c (main): don't call grub_libusb_init, it's done
+	by grub_init_all
+
+2009-07-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix libusb
 
 	* Makefile.in (LIBUSB): new macro

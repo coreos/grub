@@ -173,11 +173,4 @@ struct grub_disk_ata_pass_through_parms
 extern grub_err_t (* EXPORT_VAR(grub_disk_ata_pass_through)) (grub_disk_t,
 		   struct grub_disk_ata_pass_through_parms *);
 
-#ifdef GRUB_UTIL
-void grub_raid_init (void);
-void grub_raid_fini (void);
-void grub_lvm_init (void);
-void grub_lvm_fini (void);
-#endif
-
 #endif /* ! GRUB_DISK_HEADER */
