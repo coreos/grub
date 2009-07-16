@@ -1,3 +1,10 @@
+2009-06-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Enable all targets that can be built by default
+
+	* configure.c: enable efiemu runtime, grub-emu, grub-emu-usb,
+	grub-mkfont and grub-fstest if they can be built
+
 2009-07-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix hang and segmentation fault in grub-emu-usb
