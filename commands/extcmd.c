@@ -40,8 +40,7 @@ grub_extcmd_dispatcher (struct grub_command *cmd,
     maxargs++;
 
   /* Set up the option state.  */
-  state = grub_malloc (sizeof (struct grub_arg_list) * maxargs);
-  grub_memset (state, 0, sizeof (struct grub_arg_list) * maxargs);
+  state = grub_zalloc (sizeof (struct grub_arg_list) * maxargs);
 
   if (grub_arg_parse (ext, argc, args, state, &new_args, &new_argc))
     {

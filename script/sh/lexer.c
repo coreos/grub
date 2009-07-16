@@ -49,22 +49,13 @@ grub_script_lexer_init (char *script, grub_reader_getline_t getline)
 {
   struct grub_lexer_param *param;
 
-  param = grub_malloc (sizeof (*param));
+  param = grub_zalloc (sizeof (*param));
   if (! param)
     return 0;
 
   param->state = GRUB_PARSER_STATE_TEXT;
   param->getline = getline;
-  param->refs = 0;
-  param->done = 0;
-  param->newscript = 0;
   param->script = script;
-  param->record = 0;
-  param->recording = 0;
-  param->recordpos = 0;
-  param->recordlen = 0;
-  param->tokenonhold = 0;
-  param->was_newline = 0;
 
   return param;
 }

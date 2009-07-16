@@ -257,6 +257,16 @@ grub_malloc (grub_size_t size)
   return xmalloc (size);
 }
 
+void *
+grub_zalloc (grub_size_t size)
+{
+  void *ret;
+
+  ret = xmalloc (size);
+  memset (ret, 0, size);
+  return ret;
+}
+
 void
 grub_free (void *ptr)
 {

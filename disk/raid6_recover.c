@@ -96,20 +96,17 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
   char *pbuf = 0, *qbuf = 0;
 
   size <<= GRUB_DISK_SECTOR_BITS;
-  pbuf = grub_malloc (size);
+  pbuf = grub_zalloc (size);
   if (!pbuf)
     goto quit;
 
-  qbuf = grub_malloc (size);
+  qbuf = grub_zalloc (size);
   if (!qbuf)
     goto quit;
 
   q = p + 1;
   if (q == (int) array->total_devs)
     q = 0;
-
-  grub_memset (pbuf, 0, size);
-  grub_memset (qbuf, 0, size);
 
   pos = q + 1;
   if (pos == (int) array->total_devs)

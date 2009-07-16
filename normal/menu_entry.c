@@ -416,18 +416,11 @@ make_screen (grub_menu_entry_t entry)
   struct screen *screen;
 
   /* Initialize the screen.  */
-  screen = grub_malloc (sizeof (*screen));
+  screen = grub_zalloc (sizeof (*screen));
   if (! screen)
     return 0;
 
   screen->num_lines = 1;
-  screen->column = 0;
-  screen->real_column = 0;
-  screen->line = 0;
-  screen->x = 0;
-  screen->y = 0;
-  screen->killed_text = 0;
-  screen->completion_shown = 0;
   screen->lines = grub_malloc (sizeof (struct line));
   if (! screen->lines)
     goto fail;

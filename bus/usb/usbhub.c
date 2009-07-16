@@ -33,13 +33,11 @@ grub_usb_hub_add_dev (grub_usb_controller_t controller, grub_usb_speed_t speed)
   grub_usb_device_t dev;
   int i;
 
-  dev = grub_malloc (sizeof (struct grub_usb_device));
+  dev = grub_zalloc (sizeof (struct grub_usb_device));
   if (! dev)
     return NULL;
 
   dev->controller = *controller;
-  dev->addr = 0;
-  dev->initialized = 0;
   dev->speed = speed;
 
   grub_usb_device_initialize (dev);

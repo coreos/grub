@@ -170,14 +170,11 @@ grub_uhci_pci_iter (int bus, int device, int func,
     return 0;
 
   /* Allocate memory for the controller and register it.  */
-  u = grub_malloc (sizeof (*u));
+  u = grub_zalloc (sizeof (*u));
   if (! u)
     return 1;
 
   u->iobase = base & GRUB_UHCI_IOMASK;
-  u->framelist = 0;
-  u->qh = 0;
-  u->td = 0;
   grub_dprintf ("uhci", "class=0x%02x 0x%02x interface 0x%02x base=0x%x\n",
 		class, subclass, interf, u->iobase);
 

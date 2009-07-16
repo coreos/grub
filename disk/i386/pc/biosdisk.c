@@ -109,12 +109,11 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
   disk->has_partitions = ((drive & 0x80) && (drive != cd_drive));
   disk->id = drive;
 
-  data = (struct grub_biosdisk_data *) grub_malloc (sizeof (*data));
+  data = (struct grub_biosdisk_data *) grub_zalloc (sizeof (*data));
   if (! data)
     return grub_errno;
 
   data->drive = drive;
-  data->flags = 0;
 
   if ((cd_drive) && (drive == cd_drive))
     {

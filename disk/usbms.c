@@ -107,14 +107,12 @@ grub_usbms_finddevs (void)
 	    }
 
 	  devcnt++;
-	  usbms = grub_malloc (sizeof (struct grub_usbms_dev));
+	  usbms = grub_zalloc (sizeof (struct grub_usbms_dev));
 	  if (! usbms)
 	    return 1;
 
 	  usbms->dev = usbdev;
 	  usbms->interface = i;
-	  usbms->in = NULL;
-	  usbms->out = NULL;
 
 	  /* Iterate over all endpoints of this interface, at least a
 	     IN and OUT bulk endpoint are required.  */

@@ -456,13 +456,12 @@ grub_module  (int argc, char *argv[])
     }
   else
     {
-      struct grub_mod_list *modlist = grub_malloc (sizeof (struct grub_mod_list));
+      struct grub_mod_list *modlist = grub_zalloc (sizeof (struct grub_mod_list));
       if (! modlist)
 	goto fail;
       modlist->mod_start = (grub_uint32_t) module;
       modlist->mod_end = (grub_uint32_t) module + size;
       modlist->cmdline = (grub_uint32_t) cmdline;
-      modlist->pad = 0;
       mbi->mods_count = 1;
       mbi->mods_addr = (grub_uint32_t) modlist;
       mbi->flags |= MULTIBOOT_INFO_MODS;

@@ -80,11 +80,10 @@ grub_env_context_open (int export)
   struct grub_env_context *context;
   int i;
 
-  context = grub_malloc (sizeof (*context));
+  context = grub_zalloc (sizeof (*context));
   if (! context)
     return grub_errno;
 
-  grub_memset (context, 0, sizeof (*context));
   context->prev = current_context;
   current_context = context;
 
@@ -204,11 +203,9 @@ grub_env_set (const char *name, const char *val)
     }
 
   /* The variable does not exist, so create a new one.  */
-  var = grub_malloc (sizeof (*var));
+  var = grub_zalloc (sizeof (*var));
   if (! var)
     return grub_errno;
-
-  grub_memset (var, 0, sizeof (*var));
 
   /* This is not necessary, because GRUB_ENV_VAR_LOCAL == 0. But leave
      this for readability.  */
@@ -379,11 +376,9 @@ grub_env_set_data_slot (const char *name, const void *ptr)
     }
 
   /* The variable does not exist, so create a new one.  */
-  var = grub_malloc (sizeof (*var));
+  var = grub_zalloc (sizeof (*var));
   if (! var)
     goto fail;
-
-  grub_memset (var, 0, sizeof (*var));
 
   var->type = GRUB_ENV_VAR_DATA;
   var->name = mangled_name;

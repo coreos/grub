@@ -667,12 +667,11 @@ grub_video_reader_jpeg (struct grub_video_bitmap **bitmap,
   if (!file)
     return grub_errno;
 
-  data = grub_malloc (sizeof (*data));
+  data = grub_zalloc (sizeof (*data));
   if (data != NULL)
     {
       int i;
 
-      grub_memset (data, 0, sizeof (*data));
       data->file = file;
       data->bitmap = bitmap;
       grub_jpeg_decode_jpeg (data);

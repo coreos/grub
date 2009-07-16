@@ -32,11 +32,9 @@ grub_raid5_recover (struct grub_raid_array *array, int disknr,
   int i;
 
   size <<= GRUB_DISK_SECTOR_BITS;
-  buf2 = grub_malloc (size);
+  buf2 = grub_zalloc (size);
   if (!buf2)
     return grub_errno;
-
-  grub_memset (buf, 0, size);
 
   for (i = 0; i < (int) array->total_devs; i++)
     {

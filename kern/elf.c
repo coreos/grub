@@ -61,12 +61,11 @@ grub_elf_file (grub_file_t file)
 {
   grub_elf_t elf;
 
-  elf = grub_malloc (sizeof (*elf));
+  elf = grub_zalloc (sizeof (*elf));
   if (! elf)
     return 0;
 
   elf->file = file;
-  elf->phdrs = 0;
 
   if (grub_file_seek (elf->file, 0) == (grub_off_t) -1)
     goto fail;

@@ -601,11 +601,10 @@ list_file (struct grub_ntfs_file *diro, char *pos,
 	    (u32at (pos, 0x48) & ATTR_DIRECTORY) ? GRUB_FSHELP_DIR :
 	    GRUB_FSHELP_REG;
 
-	  fdiro = grub_malloc (sizeof (struct grub_ntfs_file));
+	  fdiro = grub_zalloc (sizeof (struct grub_ntfs_file));
 	  if (!fdiro)
 	    return 0;
 
-	  grub_memset (fdiro, 0, sizeof (*fdiro));
 	  fdiro->data = diro->data;
 	  fdiro->ino = u32at (pos, 0);
 
@@ -791,11 +790,9 @@ grub_ntfs_mount (grub_disk_t disk)
   if (!disk)
     goto fail;
 
-  data = (struct grub_ntfs_data *) grub_malloc (sizeof (*data));
+  data = (struct grub_ntfs_data *) grub_zalloc (sizeof (*data));
   if (!data)
     goto fail;
-
-  grub_memset (data, 0, sizeof (*data));
 
   data->disk = disk;
 

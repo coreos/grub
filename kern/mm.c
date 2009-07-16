@@ -68,6 +68,7 @@
 
 #ifdef MM_DEBUG
 # undef grub_malloc
+# undef grub_zalloc
 # undef grub_realloc
 # undef grub_free
 # undef grub_memalign
@@ -348,6 +349,19 @@ grub_malloc (grub_size_t size)
   return grub_memalign (0, size);
 }
 
+/* Allocate SIZE bytes, clear them and return the pointer.  */
+void *
+grub_zalloc (grub_size_t size)
+{
+  void *ret;
+
+  ret = grub_memalign (0, size);
+  if (ret)
+    grub_memset (ret, 0, size);
+
+  return ret;
+}
+
 /* Deallocate the pointer PTR.  */
 void
 grub_free (void *ptr)
@@ -517,6 +531,19 @@ grub_debug_malloc (const char *file, int line, grub_size_t size)
   if (grub_mm_debug)
     grub_printf ("%s:%d: malloc (0x%zx) = ", file, line, size);
   ptr = grub_malloc (size);
+  if (grub_mm_debug)
+    grub_printf ("%p\n", ptr);
+  return ptr;
+}
+
+void *
+grub_debug_zalloc (const char *file, int line, grub_size_t size)
+{
+  void *ptr;
+
+  if (grub_mm_debug)
+    grub_printf ("%s:%d: zalloc (0x%zx) = ", file, line, size);
+  ptr = grub_zalloc (size);
   if (grub_mm_debug)
     grub_printf ("%p\n", ptr);
   return ptr;

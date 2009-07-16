@@ -242,8 +242,7 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
     if (grub_strcmp (args[i], "help") == 0)
       return show_help ();
 
-  parsed = (int *) grub_malloc (argc * sizeof (int));
-  grub_memset (parsed, 0, argc * sizeof (int));
+  parsed = (int *) grub_zalloc (argc * sizeof (int));
 
   for (i = 1; i < argc; i++)
     if (! parsed[i])
@@ -272,9 +271,7 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
 			     args[i]);
 	ptool = cur;
 	pargs = (struct grub_parttool_args *)
-	  grub_malloc (ptool->nargs * sizeof (struct grub_parttool_args));
-	grub_memset (pargs, 0,
-		     ptool->nargs * sizeof (struct grub_parttool_args));
+	  grub_zalloc (ptool->nargs * sizeof (struct grub_parttool_args));
 	for (j = i; j < argc; j++)
 	  if (! parsed[j])
 	    {

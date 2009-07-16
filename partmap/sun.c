@@ -95,12 +95,10 @@ sun_partition_map_iterate (grub_disk_t disk,
   raw = *disk;
   raw.partition = 0;
 
-  p = (grub_partition_t) grub_malloc (sizeof (struct grub_partition));
+  p = (grub_partition_t) grub_zalloc (sizeof (struct grub_partition));
   if (! p)
     return grub_errno;
 
-  p->offset = 0;
-  p->data = 0;
   p->partmap = &grub_sun_partition_map;
   if (grub_disk_read (&raw, 0, 0, sizeof (struct grub_sun_block),
 		      &block) == GRUB_ERR_NONE)

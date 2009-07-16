@@ -1,3 +1,50 @@
+2009-07-16  Pavel Roskin  <proski@gnu.org>
+
+	* kern/mm.c (grub_zalloc): New function.
+	(grub_debug_zalloc): Likewise.
+	* include/grub/mm.h: Declare grub_zalloc() and
+	grub_debug_zalloc().
+	* util/misc.c (grub_zalloc): New function.
+	* bus/usb/uhci.c (grub_uhci_pci_iter): Use grub_zalloc()
+	instead of grub_malloc(), remove unneeded initializations.
+	* bus/usb/usbhub.c (grub_usb_hub_add_dev): Likewise.
+	* commands/extcmd.c (grub_extcmd_dispatcher): Likewise.
+	* commands/parttool.c (grub_cmd_parttool): Likewise.
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_open): Likewise.
+	* disk/raid5_recover.c (grub_raid5_recover): Likewise.
+	* disk/raid6_recover.c (grub_raid6_recover): Likewise.
+	* disk/usbms.c (grub_usbms_finddevs): Likewise.
+	* efiemu/mm.c (grub_efiemu_request_memalign): Likewise.
+	* efiemu/pnvram.c (grub_efiemu_pnvram): Likewise.
+	(grub_cmd_efiemu_pnvram): Likewise.
+	* fs/i386/pc/pxe.c (grub_pxefs_open): Likewise.
+	* fs/iso9660.c (grub_iso9660_mount): Likewise.
+	(grub_iso9660_iterate_dir): Likewise.
+	* fs/jfs.c (grub_jfs_opendir): Likewise.
+	* fs/ntfs.c (list_file): Likewise.
+	(grub_ntfs_mount): Likewise.
+	* kern/disk.c (grub_disk_open): Likewise.
+	* kern/dl.c (grub_dl_load_core): Likewise.
+	* kern/elf.c (grub_elf_file): Likewise.
+	* kern/env.c (grub_env_context_open): Likewise.
+	(grub_env_set): Likewise.
+	(grub_env_set_data_slot): Likewise.
+	* kern/file.c (grub_file_open): Likewise.
+	* kern/fs.c (grub_fs_blocklist_open): Likewise.
+	* loader/i386/multiboot.c (grub_module): Likewise.
+	* loader/xnu.c (grub_xnu_create_key): Likewise.
+	(grub_xnu_create_value): Likewise.
+	* normal/main.c (grub_normal_add_menu_entry): Likewise.
+	(read_config_file): Likewise.
+	* normal/menu_entry.c (make_screen): Likewise.
+	* partmap/sun.c (sun_partition_map_iterate): Likewise.
+	* script/sh/lexer.c (grub_script_lexer_init): Likewise.
+	* script/sh/script.c (grub_script_parse): Likewise.
+	* video/bitmap.c (grub_video_bitmap_create): Likewise.
+	* video/readers/jpeg.c (grub_video_reader_jpeg): Likewise.
+	* video/readers/png.c (grub_png_output_byte): Likewise.
+	(grub_video_reader_png): Likewise.
+
 2009-07-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Enable all targets that can be built by default

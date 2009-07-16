@@ -304,14 +304,9 @@ grub_script_parse (char *script, grub_reader_getline_t getline)
   if (! parsed)
     return 0;
 
-  parsestate = grub_malloc (sizeof (*parsestate));
+  parsestate = grub_zalloc (sizeof (*parsestate));
   if (! parsestate)
     return 0;
-
-  parsestate->err = 0;
-  parsestate->func_mem = 0;
-  parsestate->memused = 0;
-  parsestate->parsed = 0;
 
   /* Initialize the lexer.  */
   lexstate = grub_script_lexer_init (script, getline);

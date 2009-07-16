@@ -161,7 +161,7 @@ grub_fs_blocklist_open (grub_file_t file, const char *name)
   while (p);
 
   /* Allocate a block list.  */
-  blocks = grub_malloc (sizeof (struct grub_fs_block) * (num + 1));
+  blocks = grub_zalloc (sizeof (struct grub_fs_block) * (num + 1));
   if (! blocks)
     return 0;
 
@@ -179,8 +179,6 @@ grub_fs_blocklist_open (grub_file_t file, const char *name)
 	      goto fail;
 	    }
 	}
-      else
-	blocks[i].offset = 0;
 
       p++;
       blocks[i].length = grub_strtoul (p, &p, 0);
@@ -203,7 +201,6 @@ grub_fs_blocklist_open (grub_file_t file, const char *name)
       p++;
     }
 
-  blocks[i].length = 0;
   file->data = blocks;
 
   return GRUB_ERR_NONE;

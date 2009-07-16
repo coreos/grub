@@ -104,14 +104,12 @@ grub_efiemu_request_memalign (grub_size_t align, grub_size_t size,
   requested_memory[type] += align_overhead + size;
 
   /* Remember the request */
-  ret = grub_malloc (sizeof (*ret));
+  ret = grub_zalloc (sizeof (*ret));
   if (!ret)
     return -1;
   ret->type = type;
   ret->size = size;
   ret->align_overhead = align_overhead;
-  ret->val = 0;
-  ret->next = 0;
   prev = 0;
 
   /* Add request to the end of the chain.

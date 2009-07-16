@@ -137,7 +137,7 @@ grub_video_bitmap_create (struct grub_video_bitmap **bitmap,
   /* Calculate size needed for the data.  */
   size = (width * mode_info->bytes_per_pixel) * height;
 
-  (*bitmap)->data = grub_malloc (size);
+  (*bitmap)->data = grub_zalloc (size);
   if (! (*bitmap)->data)
     {
       grub_free (*bitmap);
@@ -145,9 +145,6 @@ grub_video_bitmap_create (struct grub_video_bitmap **bitmap,
 
       return grub_errno;
     }
-
-  /* Clear bitmap.  */
-  grub_memset ((*bitmap)->data, 0, size);
 
   return GRUB_ERR_NONE;
 }

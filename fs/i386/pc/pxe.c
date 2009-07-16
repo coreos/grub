@@ -146,11 +146,10 @@ grub_pxefs_open (struct grub_file *file, const char *name)
   if (c.c2.status)
     return grub_error (GRUB_ERR_BAD_FS, "open fails");
 
-  data = grub_malloc (sizeof (struct grub_pxe_data) + grub_strlen (name) + 1);
+  data = grub_zalloc (sizeof (struct grub_pxe_data) + grub_strlen (name) + 1);
   if (! data)
     return grub_errno;
 
-  data->packet_number = 0;
   data->block_size = grub_pxe_blksize;
   grub_strcpy (data->filename, name);
 

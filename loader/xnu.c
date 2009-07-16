@@ -278,7 +278,7 @@ grub_xnu_create_key (struct grub_xnu_devtree_key **parent, char *name)
   ret = grub_xnu_find_key (*parent, name);
   if (ret)
     return ret;
-  ret = (struct grub_xnu_devtree_key *) grub_malloc (sizeof (*ret));
+  ret = (struct grub_xnu_devtree_key *) grub_zalloc (sizeof (*ret));
   if (! ret)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "can't create key %s", name);
@@ -292,7 +292,6 @@ grub_xnu_create_key (struct grub_xnu_devtree_key **parent, char *name)
       return 0;
     }
   ret->datasize = -1;
-  ret->first_child = 0;
   ret->next = *parent;
   *parent = ret;
   return ret;
@@ -313,7 +312,7 @@ grub_xnu_create_value (struct grub_xnu_devtree_key **parent, char *name)
       ret->data = 0;
       return ret;
     }
-  ret = (struct grub_xnu_devtree_key *) grub_malloc (sizeof (*ret));
+  ret = (struct grub_xnu_devtree_key *) grub_zalloc (sizeof (*ret));
   if (! ret)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "can't create value %s", name);
@@ -326,8 +325,6 @@ grub_xnu_create_value (struct grub_xnu_devtree_key **parent, char *name)
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "can't create value %s", name);
       return 0;
     }
-  ret->datasize = 0;
-  ret->data = 0;
   ret->next = *parent;
   *parent = ret;
   return ret;

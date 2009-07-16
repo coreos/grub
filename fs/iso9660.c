@@ -263,13 +263,11 @@ grub_iso9660_mount (grub_disk_t disk)
       return 0;
     }
 
-  data = grub_malloc (sizeof (struct grub_iso9660_data));
+  data = grub_zalloc (sizeof (struct grub_iso9660_data));
   if (! data)
     return 0;
 
   data->disk = disk;
-  data->rockridge = 0;
-  data->joliet = 0;
 
   block = 16;
   do
@@ -509,8 +507,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	      else
 		{
 		  size = entry->len - 5;
-		  filename = grub_malloc (size + 1);
-		  filename[0] = '\0';
+		  filename = grub_zalloc (size + 1);
 		}
 	      filename_alloc = 1;
 	      grub_strncpy (filename, (char *) &entry->data[1], size);

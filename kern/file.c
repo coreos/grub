@@ -75,14 +75,11 @@ grub_file_open (const char *name)
   if (! device)
     goto fail;
 
-  file = (grub_file_t) grub_malloc (sizeof (*file));
+  file = (grub_file_t) grub_zalloc (sizeof (*file));
   if (! file)
     goto fail;
 
   file->device = device;
-  file->offset = 0;
-  file->data = 0;
-  file->read_hook = 0;
 
   if (device->disk && file_name[0] != '/')
     /* This is a block list.  */

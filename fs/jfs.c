@@ -382,11 +382,10 @@ grub_jfs_opendir (struct grub_jfs_data *data, struct grub_jfs_inode *inode)
       return 0;
     }
 
-  diro = grub_malloc (sizeof (struct grub_jfs_diropen));
+  diro = grub_zalloc (sizeof (struct grub_jfs_diropen));
   if (!diro)
     return 0;
 
-  diro->index = 0;
   diro->data = data;
   diro->inode = inode;
 
@@ -397,7 +396,6 @@ grub_jfs_opendir (struct grub_jfs_data *data, struct grub_jfs_inode *inode)
       diro->next_leaf = (struct grub_jfs_leaf_next_dirent *) de;
       diro->sorted = (char *) (inode->dir.header.sorted);
       diro->count = inode->dir.header.count;
-      diro->dirpage = 0;
 
       return diro;
     }

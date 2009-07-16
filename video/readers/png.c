@@ -543,11 +543,10 @@ grub_png_output_byte (struct grub_png_data *data, grub_uint8_t n)
 
       if (data->first_line)
 	{
-	  blank_line = grub_malloc (row_bytes);
+	  blank_line = grub_zalloc (row_bytes);
 	  if (blank_line == NULL)
 	    return grub_errno;
 
-	  grub_memset (blank_line, 0, row_bytes);
 	  up = blank_line;
 	}
       else
@@ -843,10 +842,9 @@ grub_video_reader_png (struct grub_video_bitmap **bitmap,
   if (!file)
     return grub_errno;
 
-  data = grub_malloc (sizeof (*data));
+  data = grub_zalloc (sizeof (*data));
   if (data != NULL)
     {
-      grub_memset (data, 0, sizeof (*data));
       data->file = file;
       data->bitmap = bitmap;
 

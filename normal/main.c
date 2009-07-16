@@ -166,11 +166,9 @@ grub_normal_add_menu_entry (int argc, const char **args,
   struct grub_menu_entry_class *classes_tail;
 
   /* Allocate dummy head node for class list.  */
-  classes_head = grub_malloc (sizeof (struct grub_menu_entry_class));
+  classes_head = grub_zalloc (sizeof (struct grub_menu_entry_class));
   if (! classes_head)
     return grub_errno;
-  classes_head->name = 0;
-  classes_head->next = 0;
   classes_tail = classes_head;
 
   menu = grub_env_get_data_slot ("menu");
@@ -206,7 +204,7 @@ grub_normal_add_menu_entry (int argc, const char **args,
 		}
 
 	      /* Create a new class and add it at the tail of the list.  */
-	      new_class = grub_malloc (sizeof (struct grub_menu_entry_class));
+	      new_class = grub_zalloc (sizeof (struct grub_menu_entry_class));
 	      if (! new_class)
 		{
 		  grub_free (class_name);
@@ -215,7 +213,6 @@ grub_normal_add_menu_entry (int argc, const char **args,
 		}
 	      /* Fill in the new class node.  */
 	      new_class->name = class_name;
-	      new_class->next = 0;
 	      /* Link the tail to it, and make it the new tail.  */
 	      classes_tail->next = new_class;
 	      classes_tail = new_class;
@@ -267,7 +264,7 @@ grub_normal_add_menu_entry (int argc, const char **args,
   while (*last)
     last = &(*last)->next;
 
-  *last = grub_malloc (sizeof (**last));
+  *last = grub_zalloc (sizeof (**last));
   if (! *last)
     {
       free_menu_entry_classes (classes_head);
@@ -278,7 +275,6 @@ grub_normal_add_menu_entry (int argc, const char **args,
 
   (*last)->title = menutitle;
   (*last)->classes = classes_head;
-  (*last)->next = 0;
   (*last)->sourcecode = menusourcecode;
 
   menu->size++;
@@ -346,11 +342,9 @@ read_config_file (const char *config)
   newmenu = grub_env_get_data_slot ("menu");
   if (! newmenu)
     {
-      newmenu = grub_malloc (sizeof (*newmenu));
+      newmenu = grub_zalloc (sizeof (*newmenu));
       if (! newmenu)
 	return 0;
-      newmenu->size = 0;
-      newmenu->entry_list = 0;
 
       grub_env_set_data_slot ("menu", newmenu);
     }

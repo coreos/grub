@@ -339,11 +339,10 @@ grub_efiemu_pnvram (void)
   accuracy = 50000000;
   daylight = 0;
 
-  nvram = grub_malloc (nvramsize);
+  nvram = grub_zalloc (nvramsize);
   if (!nvram)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "Couldn't allocate space for temporary pnvram storage");
-  grub_memset (nvram, 0, nvramsize);
 
   return grub_efiemu_make_nvram ();
 }
@@ -365,11 +364,10 @@ grub_cmd_efiemu_pnvram (struct grub_extcmd *cmd,
   accuracy = state[3].set ? grub_strtoul (state[3].arg, 0, 0) : 50000000;
   daylight = state[4].set ? grub_strtoul (state[4].arg, 0, 0) : 0;
 
-  nvram = grub_malloc (nvramsize);
+  nvram = grub_zalloc (nvramsize);
   if (!nvram)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "Couldn't allocate space for temporary pnvram storage");
-  grub_memset (nvram, 0, nvramsize);
 
   if (argc == 1 && (err = read_pnvram (args[0])))
     {
