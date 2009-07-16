@@ -346,7 +346,7 @@ if test "$target_cpu"-"$platform" = x86_64-efi; then
   if test "x$grub_cv_cc_mcmodel" = xno; then
     CFLAGS="$SAVED_CFLAGS -m64 -DMCMODEL_SMALL=1"
     TARGET_CFLAGS="$TARGET_CFLAGS -DMCMODEL_SMALL=1"
-    AC_MSG_WARN([-mcmodel=large not supported. You wan't be able to use the memory over 4GiB. Upgrade your gcc])
+    AC_MSG_WARN([-mcmodel=large not supported. You won't be able to use the memory over 4GiB. Upgrade your gcc])
   else
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large"
   fi
@@ -438,7 +438,7 @@ AC_ARG_ENABLE([efiemu],
 	      [AS_HELP_STRING([--enable-efiemu],
                              [build and install the efiemu runtimes (default=guessed)])])
 if test x"$enable_efiemu" = xno ; then
-  efiemu_excuse="explicitely disabled"
+  efiemu_excuse="explicitly disabled"
 fi
 if test x"$efiemu_excuse" = x ; then
   AC_CACHE_CHECK([whether options required for efiemu work], grub_cv_cc_no_red_zone, [
@@ -452,7 +452,7 @@ if test x"$efiemu_excuse" = x ; then
   fi
 fi
 if test x"$enable_efiemu" = xyes && test x"$efiemu_excuse" != x ; then
-  AC_MSG_ERROR([efiemu runtime was explicitely requested but can't be compiled])
+  AC_MSG_ERROR([efiemu runtime was explicitly requested but can't be compiled])
 fi
 if test x"$efiemu_excuse" = x ; then
 enable_efiemu=yes
@@ -487,7 +487,7 @@ AC_ARG_ENABLE([grub-emu-usb],
 	      [AS_HELP_STRING([--enable-grub-emu-usb],
                              [build and install the `grub-emu' debugging utility with USB support (default=guessed)])])
 if test x"$enable_grub_emu" = xno ; then
-  grub_emu_excuse="explicitely disabled"
+  grub_emu_excuse="explicitly disabled"
 fi
 
   [# Check for curses libraries.]
@@ -506,7 +506,7 @@ fi
 [fi]
 
 if test x"$enable_grub_emu" = xyes && test x"$grub_emu_excuse" != x ; then
-  AC_MSG_ERROR([grub-emu was explicitely requested but can't be compiled])
+  AC_MSG_ERROR([grub-emu was explicitly requested but can't be compiled])
 fi
 if test x"$grub_emu_excuse" = x ; then
 enable_grub_emu=yes
@@ -515,7 +515,7 @@ enable_grub_emu=no
 grub_emu_usb_excuse="grub-emu isn't built"
 fi
 if test x"$enable_grub_emu_usb" = xno ; then
-  grub_emu_usb_excuse="explicitely disabled"
+  grub_emu_usb_excuse="explicitly disabled"
 fi
 [if [ x"$grub_emu_usb_excuse" = x ]; then
     # Check for libusb libraries.]
@@ -529,7 +529,7 @@ AC_CHECK_LIB([usb], [usb_claim_interface], [LIBUSB="-lusb"],
       [grub_emu_usb_excuse=["libusb header file is required to build \`grub-emu' with USB support"]])
 [fi]
 if test x"enable_grub_emu_usb" = xyes && test x"$grub_emu_usb_excuse" != x ; then
-  AC_MSG_ERROR([USB support for grub-emu was explicitely requested but can't be compiled])
+  AC_MSG_ERROR([USB support for grub-emu was explicitly requested but can't be compiled])
 fi
 if test x"$grub_emu_usb_excuse" = x ; then
 enable_grub_emu_usb=yes
@@ -544,7 +544,7 @@ AC_ARG_ENABLE([grub-fstest],
 	      [AS_HELP_STRING([--enable-grub-fstest],
                              [build and install the `grub-fstest' debugging utility (default=guessed)])])
 if test x"$enable_grub_fstest" = xno ; then
-  grub_fstest_excuse="explicitely disabled"
+  grub_fstest_excuse="explicitly disabled"
 fi
 if test x"$grub_fstest_excuse" = x ; then
 enable_grub_fstest=yes
@@ -562,7 +562,7 @@ AC_ARG_ENABLE([grub-mkfont],
 	      [AS_HELP_STRING([--enable-grub-mkfont],
                              [build and install the `grub-mkfont' utility (default=guessed)])])
 if test x"$enable_grub_mkfont" = xno ; then
-  grub_mkfont_excuse="explicitely disabled"
+  grub_mkfont_excuse="explicitly disabled"
 fi
 
 if test x"$grub_mkfont_excuse" = x ; then
@@ -575,7 +575,7 @@ if test x"$grub_mkfont_excuse" = x ; then
   freetype_libs=`freetype-config --libs`
 fi
 if test x"$enable_grub_mkfont" = xyes && test x"$grub_mkfont_excuse" != x ; then
-  AC_MSG_ERROR([grub-mkfont was explicitely requested but can't be compiled])
+  AC_MSG_ERROR([grub-mkfont was explicitly requested but can't be compiled])
 fi
 if test x"$grub_mkfont_excuse" = x ; then
 enable_grub_mkfont=yes
