@@ -220,6 +220,13 @@ class Utility
     @dir = dir
     @name = name
   end
+  def print_tail()
+    prefix = @name.to_var
+    print "#{@name}: $(#{prefix}_DEPENDENCIES) $(#{prefix}_OBJECTS)
+	$(CC) -o $@ $(#{prefix}_OBJECTS) $(LDFLAGS) $(#{prefix}_LDFLAGS)
+
+"
+  end
   attr_reader :dir, :name
 
   def rule(sources)
@@ -234,9 +241,7 @@ class Utility
 
     "CLEANFILES += #{@name}$(EXEEXT) #{objs_str}
 MOSTLYCLEANFILES += #{deps_str}
-
-#{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
-	$(CC) -o $@ #{objs_str} $(LDFLAGS) $(#{prefix}_LDFLAGS)
+#{prefix}_OBJECTS += #{objs_str}
 
 " + objs.collect_with_index do |obj, i|
       src = sources[i]
@@ -395,4 +400,5 @@ while l = gets
   end
 
 end
+utils.each {|util| util.print_tail()}
 

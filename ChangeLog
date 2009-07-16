@@ -1,5 +1,14 @@
 2009-07-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix libusb
+
+	* Makefile.in (LIBUSB): new macro
+	* genmk.rb (Utility/print_tail): new method
+	(Utility/rule): use intermediary variable #{prefix}_OBJECTS
+	(top level): call util.print_tail at the end.
+
+2009-07-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make FreeBSD accept zpool.cache
 
 	* loader/i386/bsd.c (grub_freebsd_add_meta_module): spoof filename if
