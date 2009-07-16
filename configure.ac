@@ -447,7 +447,7 @@ if test x"$efiemu_excuse" = x ; then
 		      [grub_cv_cc_efiemu=yes],
 		      [grub_cv_cc_efiemu=no])
   ])
-  if test x$grub_cv_cc_efiemu = x$no; then
+  if test x$grub_cv_cc_efiemu = xno; then
      efiemu_excuse="compiler doesn't support compiling with -m64 -mcmodel=large -mno-red-zone -nostdlib -c"
   fi
 fi
