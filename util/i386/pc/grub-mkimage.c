@@ -36,56 +36,8 @@
 #define _GNU_SOURCE	1
 #include <getopt.h>
 
-#if defined(ENABLE_LZO)
-
-#if defined(HAVE_LZO_LZO1X_H)
-# include <lzo/lzo1x.h>
-#elif defined(HAVE_LZO1X_H)
-# include <lzo1x.h>
-#endif
-
-#elif defined(ENABLE_LZMA)
-
+#ifdef ENABLE_LZMA
 #include <grub/lib/LzmaEnc.h>
-
-#endif
-
-#if defined(ENABLE_LZO)
-
-static void
-compress_kernel (char *kernel_img, size_t kernel_size,
-		 char **core_img, size_t *core_size)
-{
-  lzo_uint size;
-  char *wrkmem;
-
-  if (kernel_size < GRUB_KERNEL_MACHINE_RAW_SIZE)
-    grub_util_error ("the core image is too small");
-
-  if (lzo_init () != LZO_E_OK)
-    grub_util_error ("cannot initialize LZO");
-
-  *core_img = xmalloc (kernel_size + kernel_size / 64 + 16 + 3);
-  wrkmem = xmalloc (LZO1X_999_MEM_COMPRESS);
-
-  memcpy (*core_img, kernel_img, GRUB_KERNEL_MACHINE_RAW_SIZE);
-
-  grub_util_info ("compressing the core image");
-  if (lzo1x_999_compress ((const lzo_byte *) (kernel_img
-					      + GRUB_KERNEL_MACHINE_RAW_SIZE),
-			  kernel_size - GRUB_KERNEL_MACHINE_RAW_SIZE,
-			  (lzo_byte *) (*core_img
-					+ GRUB_KERNEL_MACHINE_RAW_SIZE),
-			  &size, wrkmem)
-      != LZO_E_OK)
-    grub_util_error ("cannot compress the kernel image");
-
-  free (wrkmem);
-
-  *core_size = (size_t) size + GRUB_KERNEL_MACHINE_RAW_SIZE;
-}
-
-#elif defined(ENABLE_LZMA)
 
 static void *SzAlloc(void *p, size_t size) { p = p; return xmalloc(size); }
 static void SzFree(void *p, void *address) { p = p; free(address); }
@@ -124,7 +76,7 @@ compress_kernel (char *kernel_img, size_t kernel_size,
   *core_size += GRUB_KERNEL_MACHINE_RAW_SIZE;
 }
 
-#else
+#else	/* No lzma compression */
 
 static void
 compress_kernel (char *kernel_img, size_t kernel_size,
@@ -135,7 +87,7 @@ compress_kernel (char *kernel_img, size_t kernel_size,
   *core_size = kernel_size;
 }
 
-#endif
+#endif	/* No lzma compression */
 
 static void
 generate_image (const char *dir, char *prefix, FILE *out, char *mods[],

@@ -26,7 +26,7 @@ New in 1.97 - :
 
 * Add x86_64 EFI support.
 
-* Add support for LZMA compression.
+* Use LZMA compression instead of LZO.
 
 * Support for saving the environment from and loading the environment
   from a file.

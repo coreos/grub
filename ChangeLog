@@ -1,3 +1,14 @@
+2009-07-19  Pavel Roskin  <proski@gnu.org>
+
+	* Makefile.in: Remove LIBLZO and enable_lzo.
+	* conf/i386-pc.rmk: Remove lzo support.
+	* configure.ac: Remove checks for lzo, don't define ENABLE_LZMA.
+	* include/grub/i386/pc/kernel.h: Define ENABLE_LZMA.  Remove lzo
+	support.
+	* kern/i386/pc/lzo1x.S: Remove.
+	* kern/i386/pc/startup.S: Remove lzo support.
+	* util/i386/pc/grub-mkimage.c: Likewise.
+
 2009-07-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* disk/usbms.c (grub_usbms_transfer): Fix double semicolon.
