@@ -247,7 +247,7 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 	  grub_usb_clear_halt (dev->dev, dev->out->endp_addr);
 	  goto retry;
 	}
-      return grub_error (GRUB_ERR_IO, "USB Mass Storage request failed");;
+      return grub_error (GRUB_ERR_IO, "USB Mass Storage request failed");
     }
 
   /* Read/write the data.  */

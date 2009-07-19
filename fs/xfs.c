@@ -621,7 +621,7 @@ grub_xfs_dir (grub_device_t device, const char *path,
 	      int (*hook) (const char *filename,
 			   const struct grub_dirhook_info *info))
 {
-  struct grub_xfs_data *data = 0;;
+  struct grub_xfs_data *data = 0;
   struct grub_fshelp_node *fdiro = 0;
 
   auto int NESTED_FUNC_ATTR iterate (const char *filename,

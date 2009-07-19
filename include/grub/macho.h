@@ -39,7 +39,7 @@ struct grub_macho_fat_arch
   grub_uint32_t offset;
   grub_uint32_t size;
   grub_uint32_t align;
-} __attribute__ ((packed));;
+} __attribute__ ((packed));
 
 /* File header for 32-bit. Always in native-endian. */
 struct grub_macho_header32

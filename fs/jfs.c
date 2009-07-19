@@ -808,7 +808,7 @@ grub_jfs_open (struct grub_file *file, const char *name)
 
   grub_free (data);
 
-  return grub_errno;;
+  return grub_errno;
 }
 
 

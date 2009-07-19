@@ -1,3 +1,15 @@
+2009-07-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/usbms.c (grub_usbms_transfer): Fix double semicolon.
+	* fs/xfs.c (grub_xfs_dir): Likewise.
+	* fs/afs.c (grub_afs_dir): Likewise.
+	* fs/iso9660.c (grub_iso9660_iterate_dir): Likewise.
+	(grub_iso9660_open): Likewise.
+	* fs/jfs.c (grub_jfs_open): Likewise.
+	* fs/ext2.c (grub_ext2_dir): Likewise.
+	* include/grub/macho.h (grub_macho_fat_arch): Likewise.
+	* script/sh/lexer.c (grub_script_yylex): Likewise.
+	
 2009-07-16  Pavel Roskin  <proski@gnu.org>
 
 	* configure.ac: Never add "-c" to CFLAGS.

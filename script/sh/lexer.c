@@ -246,7 +246,7 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 		  {
 		    char c;
 		    grub_dprintf ("scripting", "token=`%c'\n", *state->script);
-		    c = *state->script;;
+		    c = *state->script;
 		    nextchar (state);
 		    state->tokenonhold = c;
 		    doexit = 1;
