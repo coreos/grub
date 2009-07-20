@@ -422,7 +422,7 @@ if test x"$efiemu_excuse" = x ; then
 		      [grub_cv_cc_efiemu=no])
   ])
   if test x$grub_cv_cc_efiemu = xno; then
-     efiemu_excuse="compiler doesn't support compiling with -m64 -mcmodel=large -mno-red-zone -nostdlib"
+     efiemu_excuse="cannot compile with -m64 -mcmodel=large -mno-red-zone -nostdlib"
   fi
 fi
 if test x"$enable_efiemu" = xyes && test x"$efiemu_excuse" != x ; then
@@ -468,7 +468,7 @@ fi
 [if [ x"$grub_emu_excuse" = x ]; then ]
   AC_CHECK_LIB([ncurses], [wgetch], [LIBCURSES="-lncurses"],
     [AC_CHECK_LIB([curses], [wgetch], [LIBCURSES="-lcurses"],
-      [grub_emu_excuse=["(n)curses libraries are required to build \`grub-emu'"]])])
+      [grub_emu_excuse=["need (n)curses libraries"]])])
   AC_SUBST([LIBCURSES])
 [fi]
 [if [ x"$grub_emu_excuse" = x ]; then ]
@@ -476,7 +476,7 @@ fi
   AC_CHECK_HEADERS([ncurses/curses.h], [],
     [AC_CHECK_HEADERS([ncurses.h], [],
       [AC_CHECK_HEADERS([curses.h], [],
-	[grub_emu_excuse=["(n)curses header files are required to build \`grub-emu'"]])])])
+	[grub_emu_excuse=["need (n)curses headers"]])])])
 [fi]
 
 if test x"$enable_grub_emu" = xyes && test x"$grub_emu_excuse" != x ; then
@@ -494,13 +494,13 @@ fi
 [if [ x"$grub_emu_usb_excuse" = x ]; then
     # Check for libusb libraries.]
 AC_CHECK_LIB([usb], [usb_claim_interface], [LIBUSB="-lusb"],
-    [grub_emu_usb_excuse=["libusb libraries are required to build \`grub-emu' with USB support"]])
+    [grub_emu_usb_excuse=["need libusb library"]])
     AC_SUBST([LIBUSB])
 [fi]
 [if [ x"$grub_emu_usb_excuse" = x ]; then
     # Check for headers.]
     AC_CHECK_HEADERS([usb.h], [],
-      [grub_emu_usb_excuse=["libusb header file is required to build \`grub-emu' with USB support"]])
+      [grub_emu_usb_excuse=["need libusb headers"]])
 [fi]
 if test x"enable_grub_emu_usb" = xyes && test x"$grub_emu_usb_excuse" != x ; then
   AC_MSG_ERROR([USB support for grub-emu was explicitly requested but can't be compiled])
@@ -543,7 +543,7 @@ if test x"$grub_mkfont_excuse" = x ; then
   # Check for freetype libraries.
   AC_CHECK_PROGS([FREETYPE], [freetype-config])
   if test "x$FREETYPE" = x ; then
-    grub_mkfont_excuse=["freetype2 libraries are required to build \`grub-mkfont'"]
+    grub_mkfont_excuse=["need freetype2 library"]
   fi
   freetype_cflags=`freetype-config --cflags`
   freetype_libs=`freetype-config --libs`
