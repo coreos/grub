@@ -170,6 +170,8 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
                            unsigned int width, unsigned int height,
                            const char *font_name)
 {
+  unsigned int i;
+
   /* Free old virtual screen.  */
   grub_virtual_screen_free ();
 
@@ -224,6 +226,16 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
   set_term_color (virtual_screen.term_color);
 
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
+
+  /* Clear out text buffer. */
+  for(i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
+    {
+      virtual_screen.text_buffer[i].code = ' ';
+      virtual_screen.text_buffer[i].fg_color = virtual_screen.fg_color;
+      virtual_screen.text_buffer[i].bg_color = virtual_screen.bg_color;
+      virtual_screen.text_buffer[i].width = 0;
+      virtual_screen.text_buffer[i].index = 0;
+    }
 
   return grub_errno;
 }
