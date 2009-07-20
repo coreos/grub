@@ -92,6 +92,10 @@ struct hd_geometry
 # include <sys/sysctl.h>
 #endif
 
+#if defined(__APPLE__)
+# include <sys/disk.h>
+#endif
+
 struct
 {
   char *drive;
@@ -185,7 +189,8 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 
     return GRUB_ERR_NONE;
   }
-#elif defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#elif defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || \
+      defined(__FreeBSD_kernel__) || defined(__APPLE__)
   {
     unsigned long long nr;
     int fd;
@@ -194,7 +199,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     if (fd == -1)
       return grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' while attempting to get disk size", map[drive].device);
 
-# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
     if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))
 # else
     if (fstat (fd, &st) < 0 || ! S_ISBLK (st.st_mode))
@@ -206,6 +211,8 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 
 # if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     if (ioctl (fd, DIOCGMEDIASIZE, &nr))
+# elif defined(__APPLE__)
+    if (ioctl (fd, DKIOCGETBLOCKCOUNT, &nr))
 # else
     if (ioctl (fd, BLKGETSIZE64, &nr))
 # endif
@@ -215,10 +222,15 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
       }
 
     close (fd);
+
+#if defined (__APPLE__)
+    disk->total_sectors = nr;
+#else
     disk->total_sectors = nr / 512;
 
     if (nr % 512)
       grub_util_error ("unaligned device size");
+#endif
 
     grub_util_info ("the size of %s is %llu", name, disk->total_sectors);
 
@@ -369,6 +381,12 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
       grub_error (GRUB_ERR_BAD_DEVICE, "cannot set flags back to the old value for sysctl kern.geom.debugflags");
       return -1;
     }
+#endif
+
+#if defined(__APPLE__)
+  /* If we can't have exclusive access, try shared access */
+  if (fd < 0)
+    fd = open(map[disk->id].device, flags | O_SHLOCK);
 #endif
 
   if (fd < 0)
@@ -811,7 +829,7 @@ convert_system_partition_to_system_disk (const char *os_dev)
     path[8] = 0;
   return path;
 
-#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
   char *path = xstrdup (os_dev);
   if (strncmp ("/dev/", path, 5) == 0)
     {
@@ -890,7 +908,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       == 0)
     return make_device_name (drive, -1, -1);
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
   if (! S_ISCHR (st.st_mode))
 #else
   if (! S_ISBLK (st.st_mode))
@@ -1039,7 +1057,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     return make_device_name (drive, dos_part, bsd_part);
   }
 
-#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
   /* FreeBSD uses "/dev/[a-z]+[0-9]+(s[0-9]+[a-z]?)?".  */
   {
     int dos_part = -1;
