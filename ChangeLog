@@ -1,3 +1,40 @@
+2009-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add BFS support
+
+	* conf/common.rmk (grub_probe_SOURCES): Add fs/befs.c.
+	(grub_fstest_SOURCES): Likewise.
+	(pkglib_MODULES): Add befs.mod.
+	(befs_mod_SOURCES): New variable.
+	(befs_mod_CFLAGS): Likewise.
+	(befs_mod_LDFLAGS): Likewise.
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Likewise.
+	(grub_setup_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	(grub_setup_SOURCES): Likewise.
+	* fs/befs.c: New file.
+	* fs/afs.c (GRUB_AFS_FSNAME): New declaration.
+	(GRUB_AFS_SBLOCK_SECTOR): Likewise.
+	(GRUB_AFS_SBLOCK_MAGIC1) [MODE_BFS]: New conditional declaration.
+	(GRUB_AFS_BTREE_MAGIC) [MODE_BFS]: Likewise
+	(B_KEY_INDEX_ALIGN): New declaration.
+	(B_KEY_INDEX_OFFSET): Use B_KEY_INDEX_ALIGN.
+	(grub_afs_bnode) [MODE_BFS]: Make key_count and key_size 16-bit
+	(grub_afs_btree) [MODE_BFS]: New conditional declaration.
+	(grub_afs_sblock) [MODE_BFS]: Remove link_count.
+	(grub_afs_validate_sblock) [MODE_BFS]: Support BFS
+	(grub_afs_mount) [MODE_BFS]: Likewise.
+	(grub_afs_dir) [MODE_BFS]: Divide mtime by 65536 and not 1000000.
+	(grub_afs_fs): Use GRUB_AFS_FSNAME
+	(GRUB_MOD_INIT (afs)) [MODE_BFS]: Rename to ...
+	(GRUB_MOD_INIT (befs)) [MODE_BFS]: ... this
+	(GRUB_MOD_FINI (afs)) [MODE_BFS]: Rename to ...
+	(GRUB_MOD_FINI (befs)) [MODE_BFS]: ... this
+
 2009-07-19  Yves BLUSSEAU  <yves.grub-devel@zetam.org>
 
 	* util/getroot.c (find_root_device): Add support for MacOSX.

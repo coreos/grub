@@ -116,7 +116,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c  fs/hfs.c		\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c		\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
-	fs/ufs.c fs/xfs.c fs/afs.c fs/tar.c				\
+	fs/ufs.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c				\
 	\
 	fs/fshelp.c							\
 	io/gzio.c							\
