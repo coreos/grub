@@ -2,8 +2,8 @@
 
 	* font/font.c (find_glyph): Check whether a font is present to avoid
 	segmentation fault.
-	
-2009-07-20  Joe Auricchio <jauricchio@gmail.com>
+
+2009-07-20  Joe Auricchio  <jauricchio@gmail.com>
 
 	* term/gfxterm.c (grub_virtual_screen_setup): Clear virtual_screen.
 
@@ -39,7 +39,7 @@
 	Change void *vnode to grub_uint32_t unused.
 	(grub_afs_iterate_dir): Check that key_size is positive.
 	(grub_afs_mount): Don't read superblock twice.
-	(grub_afs_dir): Don't free node in case of errorx
+	(grub_afs_dir): Don't free node in case of error,
 	grub_fshelp_find_file already handles this.
 	(grub_afs_open): Likewise.
 
@@ -65,7 +65,7 @@
 	* fs/ext2.c (grub_ext2_dir): Likewise.
 	* include/grub/macho.h (grub_macho_fat_arch): Likewise.
 	* script/sh/lexer.c (grub_script_yylex): Likewise.
-	
+
 2009-07-16  Pavel Roskin  <proski@gnu.org>
 
 	* configure.ac: Never add "-c" to CFLAGS.
@@ -354,7 +354,7 @@
 
 	Fix grub-emu build on sparc64-ieee1275.
 
-	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Syncronize with ...
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Synchronize with ...
 	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): ... this.
 
 2009-07-01  Robert Millan  <rmh.grub@aybabtu.com>
@@ -416,7 +416,7 @@
 
 	* include/grub/i386/linux.h (GRUB_LINUX_FLAG_QUIET): New macro.
 	* loader/i386/linux.c (grub_cmd_linux): Recognize "quiet" option,
-	and set GRUB_LINUX_FLAG_QUIET appropiately.
+	and set GRUB_LINUX_FLAG_QUIET appropriately.
 
 2009-06-29  Robert Millan  <rmh.grub@aybabtu.com>
 
@@ -442,7 +442,7 @@
 
 	* loader/i386/linux.c (grub_cmd_linux): Don't call grub_error when
 	file can't be opened.  grub_file_open() is already supposed to set
-	grub_errno / grub_errmsg appropiately.
+	grub_errno / grub_errmsg appropriately.
 	* loader/i386/pc/linux.c (grub_cmd_linux): Likewise.
 
 2009-06-27  Pavel Roskin  <proski@gnu.org>
@@ -593,7 +593,7 @@
 	Fix asm file handling on ELF, and remove workarounds.
 
 	* genmk.rb (class Programs): Detect assembly files, and set ASFLAGS
-	and -DASM_FILE=1 appropiately (copied from `class Images' stanza).
+	and -DASM_FILE=1 appropriately (copied from `class Images' stanza).
 	* kern/i386/ieee1275/startup.S (ASM_FILE): Remove macro.
 	* kern/i386/coreboot/startup.S (ASM_FILE): Likewise.
 
