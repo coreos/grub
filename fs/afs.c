@@ -115,7 +115,7 @@ struct grub_afs_btree
 
 struct grub_afs_sblock
 {
-  grub_uint8_t name[32];
+  char name[32];
   grub_uint32_t magic1;
   grub_uint32_t byte_order;
   grub_uint32_t	block_size;
@@ -297,6 +297,30 @@ grub_afs_read_file (grub_fshelp_node_t node,
                                 - GRUB_DISK_SECTOR_BITS);
 }
 
+static char *
+grub_afs_read_symlink (grub_fshelp_node_t node)
+{
+  char *ret;
+  struct grub_afs_sblock *sb = &node->data->sblock;
+  grub_afs_off_t size = U64 (sb, node->inode.stream.size);
+
+  if (size == 0)
+    {
+      size = sizeof (node->inode.stream);
+      ret = grub_zalloc (size + 1);
+      if (! ret)
+	return 0;
+      grub_memcpy (ret, (char *) &(node->inode.stream),
+		   sizeof (node->inode.stream));
+      return ret;
+    }
+  ret = grub_zalloc (size + 1);
+  if (! ret)
+    return 0;
+  grub_afs_read_file (node, 0, 0, size, ret);
+  return ret;
+}
+
 static int
 grub_afs_iterate_dir (grub_fshelp_node_t dir,
                       int NESTED_FUNC_ATTR
@@ -370,6 +394,8 @@ grub_afs_iterate_dir (grub_fshelp_node_t dir,
                 type = GRUB_FSHELP_DIR;
               else if (mode == GRUB_AFS_S_IFREG)
                 type = GRUB_FSHELP_REG;
+	      else if (mode == GRUB_AFS_S_IFLNK)
+		type = GRUB_FSHELP_SYMLINK;
               else
                 type = GRUB_FSHELP_UNKNOWN;
 
@@ -506,7 +532,7 @@ grub_afs_open (struct grub_file *file, const char *name)
     goto fail;
 
   grub_fshelp_find_file (name, &data->diropen, &fdiro, grub_afs_iterate_dir,
-			 0, GRUB_FSHELP_REG);
+			 grub_afs_read_symlink, GRUB_FSHELP_REG);
   if (grub_errno)
     goto fail;
 
@@ -565,6 +591,9 @@ grub_afs_dir (grub_device_t device, const char *path,
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      info.mtimeset = 1;
+      info.mtime = grub_divmod64 (U64 (&data->sblock,
+				       node->inode.modified_time), 1000000, 0);
       grub_free (node);
       return hook (filename, &info);
     }
@@ -576,7 +605,7 @@ grub_afs_dir (grub_device_t device, const char *path,
     goto fail;
 
   grub_fshelp_find_file (path, &data->diropen, &fdiro, grub_afs_iterate_dir,
-			 0, GRUB_FSHELP_DIR);
+			 grub_afs_read_symlink, GRUB_FSHELP_DIR);
   if (grub_errno)
     goto fail;
 
@@ -593,13 +622,35 @@ grub_afs_dir (grub_device_t device, const char *path,
   return grub_errno;
 }
 
+static grub_err_t
+grub_afs_label (grub_device_t device, char **label)
+{
+  struct grub_afs_data *data;
+  grub_disk_t disk = device->disk;
+
+  grub_dl_ref (my_mod);
+
+  data = grub_afs_mount (disk);
+  if (data)
+    *label = grub_strndup (data->sblock.name, sizeof (data->sblock.name));
+  else
+    *label = NULL;
+
+  grub_dl_unref (my_mod);
+
+  grub_free (data);
+
+  return grub_errno;
+}
+
+
 static struct grub_fs grub_afs_fs = {
   .name = "afs",
   .dir = grub_afs_dir,
   .open = grub_afs_open,
   .read = grub_afs_read,
   .close = grub_afs_close,
-  .label = 0,
+  .label = grub_afs_label,
   .next = 0
 };
 
