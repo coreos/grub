@@ -607,6 +607,9 @@ find_glyph (const grub_font_t font, grub_uint32_t code)
   lo = 0;
   hi = font->num_chars - 1;
 
+  if (! table)
+    return 0;
+
   while (lo <= hi)
     {
       mid = lo + (hi - lo) / 2;
