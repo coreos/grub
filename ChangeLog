@@ -1,3 +1,22 @@
+2009-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix AtheFS support.
+
+	* fs/afs.c: Fix comments style.
+	(grub_afs_blockrun): Declare as packed.
+	(grub_afs_datastream): Likewise.
+	(grub_afs_bnode): Likewise.
+	(grub_afs_btree): Likewise.
+	(grub_afs_sblock): Likewise.
+	Declare `name' as char.
+	(grub_afs_inode): Declare as packed.
+	Change void *vnode to grub_uint32_t unused.
+	(grub_afs_iterate_dir): Check that key_size is positive.
+	(grub_afs_mount): Don't read superblock twice.
+	(grub_afs_dir): Don't free node in case of errorx
+	grub_fshelp_find_file already handles this.
+	(grub_afs_open): Likewise.
+
 2009-07-19  Pavel Roskin  <proski@gnu.org>
 
 	* Makefile.in: Remove LIBLZO and enable_lzo.
