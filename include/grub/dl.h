@@ -85,7 +85,6 @@ struct grub_dl
 };
 typedef struct grub_dl *grub_dl_t;
 
-grub_err_t EXPORT_FUNC(grub_dl_check_header) (void *ehdr, grub_size_t size);
 grub_dl_t EXPORT_FUNC(grub_dl_load_file) (const char *filename);
 grub_dl_t EXPORT_FUNC(grub_dl_load) (const char *name);
 grub_dl_t grub_dl_load_core (void *addr, grub_size_t size);

@@ -223,7 +223,7 @@ grub_dl_get_section_addr (grub_dl_t mod, unsigned n)
 }
 
 /* Check if EHDR is a valid ELF header.  */
-grub_err_t
+static grub_err_t
 grub_dl_check_header (void *ehdr, grub_size_t size)
 {
   Elf_Ehdr *e = ehdr;
