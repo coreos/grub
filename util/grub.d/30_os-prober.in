@@ -47,15 +47,18 @@ for OS in ${OSPROBED} ; do
 
   case ${BOOT} in
     chain)
-      CHAINROOT="`grub-probe --target=drive --device ${DEVICE} 2> /dev/null`"
 
       cat << EOF
 menuentry "${LONGNAME} (on ${DEVICE})" {
 EOF
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
 
-      cat << EOF
+      if [ "${LONGNAME}" != "Windows Vista (loader)" ] ; then
+        cat << EOF
 	drivemap -s (hd0) \${root}
+EOF
+      fi
+      cat <<EOF
 	chainloader +1
 }
 EOF
