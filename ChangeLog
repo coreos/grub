@@ -1,3 +1,8 @@
+2009-07-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/ufs.c (grub_ufs_sblock): Fix offset of mtime2 which was off by
+	128 bytes
+
 2009-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Add BFS support

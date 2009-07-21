@@ -99,10 +99,10 @@ struct grub_ufs_sblock
 
   /* Volume name for UFS2.  */
   grub_uint8_t volume_name[GRUB_UFS_VOLNAME_LEN];
-  grub_uint8_t unused8[232];
+  grub_uint8_t unused8[360];
 
   grub_uint64_t mtime2;
-  grub_uint8_t unused9[420];
+  grub_uint8_t unused9[292];
 
   /* Magic value to check if this is really a UFS filesystem.  */
   grub_uint32_t magic;
