@@ -87,7 +87,10 @@ struct grub_ufs_sblock
 
   /* The size of filesystem blocks to disk blocks.  */
   grub_uint32_t log2_blksz;
-  grub_uint8_t unused6[80];
+  grub_uint8_t unused6[40];
+  grub_uint32_t uuidhi;
+  grub_uint32_t uuidlow;
+  grub_uint8_t unused7[32];
 
   /* Inodes stored per cylinder group.  */
   grub_uint32_t ino_per_group;
@@ -95,14 +98,14 @@ struct grub_ufs_sblock
   /* The frags per cylinder group.  */
   grub_uint32_t frags_per_group;
 
-  grub_uint8_t unused7[488];
+  grub_uint8_t unused8[488];
 
   /* Volume name for UFS2.  */
   grub_uint8_t volume_name[GRUB_UFS_VOLNAME_LEN];
-  grub_uint8_t unused8[360];
+  grub_uint8_t unused9[360];
 
   grub_uint64_t mtime2;
-  grub_uint8_t unused9[292];
+  grub_uint8_t unused10[292];
 
   /* Magic value to check if this is really a UFS filesystem.  */
   grub_uint32_t magic;
@@ -736,6 +739,33 @@ grub_ufs_label (grub_device_t device, char **label)
   return grub_errno;
 }
 
+static grub_err_t
+grub_ufs_uuid (grub_device_t device, char **uuid)
+{
+  struct grub_ufs_data *data;
+  grub_disk_t disk = device->disk;
+
+  grub_dl_ref (my_mod);
+
+  data = grub_ufs_mount (disk);
+  if (data)
+    {
+      *uuid = grub_malloc (16 + sizeof ('\0'));
+      grub_sprintf (*uuid, "%08x%08x",
+		    (unsigned) grub_le_to_cpu32 (data->sblock.uuidhi),
+		    (unsigned) grub_le_to_cpu32 (data->sblock.uuidlow));
+    }
+  else
+    *uuid = NULL;
+
+  grub_dl_unref (my_mod);
+
+  grub_free (data);
+
+  return grub_errno;
+}
+
+
 /* Get mtime.  */
 static grub_err_t
 grub_ufs_mtime (grub_device_t device, grub_int32_t *tm)
@@ -769,6 +799,7 @@ static struct grub_fs grub_ufs_fs =
     .read = grub_ufs_read,
     .close = grub_ufs_close,
     .label = grub_ufs_label,
+    .uuid = grub_ufs_uuid,
     .mtime = grub_ufs_mtime,
     .next = 0
   };
