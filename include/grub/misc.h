@@ -25,7 +25,8 @@
 #include <grub/symbol.h>
 #include <grub/err.h>
 
-#define ALIGN_UP(addr, align) (((grub_uint64_t)addr + align - 1) & ~(align - 1))
+#define ALIGN_UP(addr, align) \
+	((addr + (typeof (addr)) align - 1) & ~((typeof (addr)) align - 1))
 #define ARRAY_SIZE(array) (sizeof (array) / sizeof (array[0]))
 
 #define grub_dprintf(condition, fmt, args...) grub_real_dprintf(__FILE__, __LINE__, condition, fmt, ## args)
