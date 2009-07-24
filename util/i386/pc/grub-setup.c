@@ -329,10 +329,18 @@ setup (const char *dir,
       dest_partmap = p->partmap->name;
       return 1;
     }
+  dest_partmap = 0;
   grub_partition_iterate (dest_dev->disk, identify_partmap);
+
+  if (! dest_partmap)
+    {
+      grub_util_warn ("Attempting to install GRUB to a partitionless disk.  This is a BAD idea.");
+      goto unable_to_embed;
+    }
 
   grub_partition_iterate (dest_dev->disk, (strcmp (dest_partmap, "pc_partition_map") ?
 					   find_usable_region_gpt : find_usable_region_msdos));
+
   if (embed_region.end == embed_region.start)
     {
       if (! strcmp (dest_partmap, "pc_partition_map"))
