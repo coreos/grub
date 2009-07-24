@@ -1,5 +1,11 @@
 2009-07-23  Pavel Roskin  <proski@gnu.org>
 
+	* commands/xnu_uuid.c (transform): Use GRUB_CPU_WORDS_BIGENDIAN
+	instead of WORDS_BIGENDIAN.  Use grub_le_to_cpu32(), so that the
+	case of little endian words becomes just an optimization.
+	Respect const modifier.
+	(md5_final): Use code that doesn't depend on endianess.
+
 	* include/grub/misc.h (ALIGN_UP): Cast align to the type of addr
 	to avoid loss of upper bits if align is unsigned and shorter
 	than addr.

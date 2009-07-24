@@ -91,20 +91,16 @@ transform ( MD5_CONTEXT *ctx, const unsigned char *data )
   register grub_uint32_t D = ctx->D;
   grub_uint32_t *cwp = correct_words;
 
-#ifdef WORDS_BIGENDIAN
-  { 
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+  {
     int i;
-    grub_uint8_t *p2, *p1;
-    for(i=0, p1=data, p2=(grub_uint8_t*)correct_words; i < 16; i++, p2 += 4 )
-    {
-      p2[3] = *p1++;
-      p2[2] = *p1++;
-      p2[1] = *p1++;
-      p2[0] = *p1++;
-    }
+    const grub_uint32_t *p = (const grub_uint32_t *) data;
+
+    for (i = 0; i < 16; i++)
+      correct_words[i] = grub_le_to_cpu32 (p[i]);
   }
 #else
-  memcpy( correct_words, data, 64 );
+  memcpy (correct_words, data, 64);
 #endif
 
 #define OP(a, b, c, d, s, T) \
@@ -266,7 +262,7 @@ md5_final( void *context)
 {
   MD5_CONTEXT *hd = context;
   grub_uint32_t t, msb, lsb;
-  grub_uint8_t *p;
+  grub_uint32_t *p;
 
   md5_write(hd, NULL, 0); /* flush */;
 
@@ -310,13 +306,8 @@ md5_final( void *context)
   transform( hd, hd->buf );
   //  _gcry_burn_stack (80+6*sizeof(void*));
 
-  p = hd->buf;
-#ifdef WORDS_BIGENDIAN
-#define X(a) do { *p++ = hd->a      ; *p++ = hd->a >> 8;      \
-  *p++ = hd->a >> 16; *p++ = hd->a >> 24; } while(0)
-#else /* little endian */
-#define X(a) do { *(grub_uint32_t*)p = (*hd).a ; p += 4; } while(0)
-#endif
+  p = (grub_uint32_t *) hd->buf;
+#define X(a) do { *p = grub_le_to_cpu32 (hd->a); p++; } while (0)
   X(A);
   X(B);
   X(C);
