@@ -245,10 +245,12 @@ grub_parser_execute (char *source)
 
       p = grub_strchr (source, '\n');
       if (p)
-	*(p++) = 0;
+	*p = 0;
 
       *line = grub_strdup (source);
-      source = p;
+      if (p)
+	*p = '\n';
+      source = p ? p + 1 : 0;
       return 0;
     }
 

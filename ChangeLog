@@ -1,3 +1,8 @@
+2009-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/parser.c (grub_parser_execute): Fix a bug causing truncated
+	entries on failed boot.
+
 2009-07-25  Felix Zielcke  <fzielcke@z-51.de>
 
 	* kern/file.c (grub_file_open): Fix an error check.
