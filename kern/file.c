@@ -60,8 +60,8 @@ grub_file_open (const char *name)
   char *file_name;
 
   device_name = grub_file_get_device_name (name);
-  if (! device_name)
-    goto fail;
+  if (grub_errno)
+    return 0;
 
   /* Get the file part of NAME.  */
   file_name = grub_strchr (name, ')');
