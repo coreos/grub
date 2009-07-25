@@ -1,3 +1,7 @@
+2009-07-25  Felix Zielcke  <fzielcke@z-51.de>
+
+	* kern/file.c (grub_file_open): Fix an error check.
+
 2009-07-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/i386/pc/grub-setup.c (setup): Fix segmentation fault when
