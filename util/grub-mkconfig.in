@@ -23,6 +23,7 @@ exec_prefix=@exec_prefix@
 sbindir=@sbindir@
 libdir=@libdir@
 sysconfdir=@sysconfdir@
+package_version=@PACKAGE_VERSION@
 grub_prefix=`echo /boot/grub | sed ${transform}`
 grub_cfg=""
 grub_mkconfig_dir=${sysconfdir}/grub.d
@@ -52,7 +53,7 @@ for option in "$@"; do
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "$0 (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$0 (GNU GRUB ${package_version})"
 	exit 0 ;;
     -o)
 	shift
