@@ -1,3 +1,9 @@
+2009-07-28  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/linux.c (grub_cmd_linux): Use ',' rather than ';' as
+	separator for the suggested gfxpayload string (';' collides with the
+	parser and needs escaping).
+
 2009-07-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* loader/i386/multiboot_helper.S (grub_multiboot_backward_relocator):

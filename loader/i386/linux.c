@@ -776,7 +776,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	    linux_mode
 	      = &linux_vesafb_modes[vid_mode - GRUB_LINUX_VID_MODE_VESA_START];
 
-	    grub_sprintf (buf, "%ux%ux%u;%ux%u",
+	    grub_sprintf (buf, "%ux%ux%u,%ux%u",
 			  linux_vesafb_res[linux_mode->res_index].width,
 			  linux_vesafb_res[linux_mode->res_index].height,
 			  linux_mode->depth,
