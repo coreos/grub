@@ -71,6 +71,7 @@ VARIABLE(grub_multiboot_backward_relocator)
 	rep
 	movsb
 
+	cld
 	jmp	*%edx
 VARIABLE(grub_multiboot_backward_relocator_end)
 
@@ -112,4 +113,6 @@ FUNCTION(grub_multiboot2_real_boot)
         /* Move the magic value into eax and jump to the kernel.  */
         movl    $MULTIBOOT2_BOOTLOADER_MAGIC,%eax
         popl    %ecx
+
+        cld
         jmp     *%ecx
