@@ -352,9 +352,9 @@ setup (const char *dir,
 
   if ((unsigned long) core_sectors > embed_region.end - embed_region.start)
     {
-      if (core_sectors > 62 * 512)
+      if (core_sectors > 62)
 	grub_util_warn ("Your core.img is unusually large.  It won't fit in the embedding area.");
-      else if (embed_region.end - embed_region.start < 62 * 512)
+      else if (embed_region.end - embed_region.start < 62)
 	grub_util_warn ("Your embedding area is unusually small.  core.img won't fit in it.");
       else
 	grub_util_warn ("Embedding area is too small for core.img.");
