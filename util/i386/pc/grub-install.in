@@ -119,7 +119,7 @@ for option in "$@"; do
 	recheck=yes ;;
     --disk-module=*)
 	if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
-           disk_module=`echo "$option" | sed 's/--disk-module//'`
+           disk_module=`echo "$option" | sed 's/--disk-module=//'`
         fi ;;
     # This is an undocumented feature...
     --debug)
