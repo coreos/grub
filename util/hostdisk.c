@@ -743,6 +743,16 @@ convert_system_partition_to_system_disk (const char *os_dev)
 	  return path;
 	}
 
+      /* If this is a Mylex AcceleRAID Array.  */
+      if (strncmp ("rs/c", p, 4) == 0)
+	{
+	  /* /dev/rd/c[0-9]+d[0-9]+(p[0-9]+)? */
+	  p = strchr (p, 'p');
+	  if (p)
+	    *p = '\0';
+
+	  return path;
+	}
       /* If this is a CCISS disk.  */
       if (strncmp ("cciss/c", p, sizeof ("cciss/c") - 1) == 0)
 	{

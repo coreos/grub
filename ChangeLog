@@ -1,3 +1,10 @@
+2009-07-29  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/deviceiter.c (get_acceleraid_disk_name): New static
+	function.
+	(grub_util_iterate_devices): Handle Accelraid devices.
+	* util/hostdisk.c (convert_system_partition_to_system_disk): Likewise.
+
 2009-07-28  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* loader/i386/linux.c (grub_cmd_linux): Use ',' rather than ';' as
