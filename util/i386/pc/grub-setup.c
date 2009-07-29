@@ -132,7 +132,7 @@ setup (const char *dir,
 	  && embed_region.end > p->start)
 	embed_region.end = p->start;
 
-      return 1;
+      return 0;
     }
 
   auto int NESTED_FUNC_ATTR find_usable_region_gpt (grub_disk_t disk,

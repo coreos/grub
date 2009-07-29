@@ -1,3 +1,8 @@
+2009-07-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/i386/pc/grub-setup.c (setup): Check that no partition is in
+	embeding zone, not only the first one.
+
 2009-07-29  Joe Auricchio  <jauricchio@gmail.com>
 
 	* term/gfxterm.c (clear_char): New function.
