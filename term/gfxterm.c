@@ -151,6 +151,16 @@ set_term_color (grub_uint8_t term_color)
 }
 
 static void
+clear_char (struct grub_colored_char *c)
+{
+  c->code = ' ';
+  c->fg_color = virtual_screen.fg_color;
+  c->bg_color = virtual_screen.bg_color;
+  c->width = 0;
+  c->index = 0;
+}
+
+static void
 grub_virtual_screen_free (void)
 {
   /* If virtual screen has been allocated, free it.  */
@@ -228,14 +238,8 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
   /* Clear out text buffer. */
-  for(i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
-    {
-      virtual_screen.text_buffer[i].code = ' ';
-      virtual_screen.text_buffer[i].fg_color = virtual_screen.fg_color;
-      virtual_screen.text_buffer[i].bg_color = virtual_screen.bg_color;
-      virtual_screen.text_buffer[i].width = 0;
-      virtual_screen.text_buffer[i].index = 0;
-    }
+  for (i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
+    clear_char (&(virtual_screen.text_buffer[i]));
 
   return grub_errno;
 }
@@ -580,13 +584,7 @@ scroll_up (void)
   for (i = virtual_screen.columns * (virtual_screen.rows - 1);
        i < virtual_screen.columns * virtual_screen.rows;
        i++)
-    {
-      virtual_screen.text_buffer[i].code = ' ';
-      virtual_screen.text_buffer[i].fg_color = virtual_screen.fg_color;
-      virtual_screen.text_buffer[i].bg_color = virtual_screen.bg_color;
-      virtual_screen.text_buffer[i].width = 0;
-      virtual_screen.text_buffer[i].index = 0;
-    }
+    clear_char (&(virtual_screen.text_buffer[i]));
 
   /* Scroll physical screen.  */
   grub_video_set_active_render_target (text_layer);
@@ -800,13 +798,7 @@ grub_virtual_screen_cls (void)
   grub_uint32_t i;
 
   for (i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
-    {
-      virtual_screen.text_buffer[i].code = ' ';
-      virtual_screen.text_buffer[i].fg_color = virtual_screen.fg_color;
-      virtual_screen.text_buffer[i].bg_color = virtual_screen.bg_color;
-      virtual_screen.text_buffer[i].width = 0;
-      virtual_screen.text_buffer[i].index = 0;
-    }
+    clear_char (&(virtual_screen.text_buffer[i]));
 
   virtual_screen.cursor_x = virtual_screen.cursor_y = 0;
 }
