@@ -1,5 +1,22 @@
 2009-07-31  Bean  <bean123ch@gmail.com>
 
+	* fs/xfs.c (grub_xfs_sblock): Change unused5 field to log2_sect and
+	log2_inode.
+	(grub_fshelp_node): Move inode field to the end.
+	(grub_xfs_data): Remove inode field.
+	(grub_xfs_inode_block): Calculate inode size using sblock.
+	(grub_xfs_inode_offset): Likewise.
+	(grub_xfs_read_inode): Calculate inode size using sblock.
+	(grub_xfs_read_block): Replace XFS_INODE_EXTENTS with nrec.
+	(grub_xfs_iterate_dir): Calculate inode size using sblock.
+	(grub_xfs_mount): Use grub_zalloc instead of grub_malloc. Realloc data
+	to match inode size.
+	(grub_xfs_dir): goto mount_fail when mount fails, as data->diropen is
+	not accessible when data is null.
+	(grub_xfs_open): Likewise.
+
+2009-07-31  Bean  <bean123ch@gmail.com>
+
 	* disk/lvm.c (grub_lvm_scan_device): Ignore extra copy of metadata.
 	Don't change pv->disk if it's already set.
 

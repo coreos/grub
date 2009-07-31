@@ -46,7 +46,8 @@ struct grub_xfs_sblock
   grub_uint8_t unused4[20];
   grub_uint8_t label[12];
   grub_uint8_t log2_bsize;
-  grub_uint8_t unused5[2];
+  grub_uint8_t log2_sect;
+  grub_uint8_t log2_inode;
   grub_uint8_t log2_inop;
   grub_uint8_t log2_agblk;
   grub_uint8_t unused6[67];
@@ -131,21 +132,19 @@ struct grub_xfs_dirblock_tail
 struct grub_fshelp_node
 {
   struct grub_xfs_data *data;
-  struct grub_xfs_inode inode;
   grub_uint64_t ino;
   int inode_read;
+  struct grub_xfs_inode inode;
 };
 
 struct grub_xfs_data
 {
   struct grub_xfs_sblock sblock;
-  struct grub_xfs_inode *inode;
   grub_disk_t disk;
   int pos;
   int bsize;
   int agsize;
   struct grub_fshelp_node diropen;
-
 };
 
 static grub_dl_t my_mod;
@@ -194,7 +193,7 @@ grub_xfs_inode_block (struct grub_xfs_data *data,
   long long ag = GRUB_XFS_INO_AG (data, ino);
   long long block;
 
-  block = (inoinag >> 4) + ag * data->agsize;
+  block = (inoinag >> data->sblock.log2_inop) + ag * data->agsize;
   block <<= (data->sblock.log2_bsize - GRUB_DISK_SECTOR_BITS);
   return block;
 }
@@ -205,7 +204,8 @@ grub_xfs_inode_offset (struct grub_xfs_data *data,
 		       grub_uint64_t ino)
 {
   int inoag = GRUB_XFS_INO_INOINAG (data, ino);
-  return (inoag & ((1 << 4) - 1)) << 8;
+  return ((inoag & ((1 << data->sblock.log2_inop) - 1)) <<
+	  data->sblock.log2_inode);
 }
 
 
@@ -218,7 +218,7 @@ grub_xfs_read_inode (struct grub_xfs_data *data, grub_uint64_t ino,
 
   /* Read the inode.  */
   if (grub_disk_read (data->disk, block, offset,
-		      sizeof (struct grub_xfs_inode), inode))
+		      1 << data->sblock.log2_inode, inode))
     return grub_errno;
 
   if (grub_strncmp ((char *) inode->magic, "IN", 2))
@@ -264,7 +264,7 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
             }
 
           if (grub_disk_read (node->data->disk,
-                              grub_be_to_cpu64 (keys[i - 1 + XFS_INODE_EXTENTS])
+                              grub_be_to_cpu64 (keys[i - 1 + nrec])
                               << (node->data->sblock.log2_bsize
                                   - GRUB_DISK_SECTOR_BITS),
                               0, node->data->sblock.bsize, leaf))
@@ -400,7 +400,9 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
     {
       struct grub_fshelp_node *fdiro;
 
-      fdiro = grub_malloc (sizeof (struct grub_fshelp_node));
+      fdiro = grub_malloc (sizeof (struct grub_fshelp_node)
+			   - sizeof (struct grub_xfs_inode)
+			   + (1 << diro->data->sblock.log2_inode));
       if (!fdiro)
 	return 0;
 
@@ -577,7 +579,7 @@ grub_xfs_mount (grub_disk_t disk)
 {
   struct grub_xfs_data *data = 0;
 
-  data = grub_malloc (sizeof (struct grub_xfs_data));
+  data = grub_zalloc (sizeof (struct grub_xfs_data));
   if (!data)
     return 0;
 
@@ -592,6 +594,14 @@ grub_xfs_mount (grub_disk_t disk)
       goto fail;
     }
 
+  data = grub_realloc (data,
+		       sizeof (struct grub_xfs_data)
+		       - sizeof (struct grub_xfs_inode)
+		       + (1 << data->sblock.log2_inode));
+
+  if (! data)
+    goto fail;
+
   data->diropen.data = data;
   data->diropen.ino = data->sblock.rootino;
   data->diropen.inode_read = 1;
@@ -599,10 +609,9 @@ grub_xfs_mount (grub_disk_t disk)
   data->agsize = grub_be_to_cpu32 (data->sblock.agsize);
 
   data->disk = disk;
-  data->inode = &data->diropen.inode;
   data->pos = 0;
 
-  grub_xfs_read_inode (data, data->diropen.ino, data->inode);
+  grub_xfs_read_inode (data, data->diropen.ino, &data->diropen.inode);
 
   return data;
  fail:
@@ -643,7 +652,7 @@ grub_xfs_dir (grub_device_t device, const char *path,
 
   data = grub_xfs_mount (device->disk);
   if (!data)
-    goto fail;
+    goto mount_fail;
 
   grub_fshelp_find_file (path, &data->diropen, &fdiro, grub_xfs_iterate_dir,
 			 grub_xfs_read_symlink, GRUB_FSHELP_DIR);
@@ -657,11 +666,11 @@ grub_xfs_dir (grub_device_t device, const char *path,
     grub_free (fdiro);
   grub_free (data);
 
+ mount_fail:
+
   grub_dl_unref (my_mod);
 
   return grub_errno;
-
-  return 0;
 }
 
 
@@ -676,7 +685,7 @@ grub_xfs_open (struct grub_file *file, const char *name)
 
   data = grub_xfs_mount (file->device->disk);
   if (!data)
-    goto fail;
+    goto mount_fail;
 
   grub_fshelp_find_file (name, &data->diropen, &fdiro, grub_xfs_iterate_dir,
 			 grub_xfs_read_symlink, GRUB_FSHELP_REG);
@@ -690,12 +699,13 @@ grub_xfs_open (struct grub_file *file, const char *name)
 	goto fail;
     }
 
-  grub_memcpy (data->inode,
-	       &fdiro->inode,
-	       sizeof (struct grub_xfs_inode));
-  grub_free (fdiro);
+  if (fdiro != &data->diropen)
+    grub_memcpy (&data->diropen, fdiro,
+		 sizeof (struct grub_fshelp_node)
+		 - sizeof (struct grub_xfs_inode)
+		 + (1 << data->sblock.log2_inode));
 
-  file->size = grub_be_to_cpu64 (data->inode->size);
+  file->size = grub_be_to_cpu64 (data->diropen.inode.size);
   file->data = data;
   file->offset = 0;
 
@@ -706,6 +716,7 @@ grub_xfs_open (struct grub_file *file, const char *name)
     grub_free (fdiro);
   grub_free (data);
 
+ mount_fail:
   grub_dl_unref (my_mod);
 
   return grub_errno;
