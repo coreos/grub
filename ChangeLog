@@ -1,3 +1,23 @@
+2009-07-31  Bean  <bean123ch@gmail.com>
+
+	* disk/lvm.c (grub_lvm_scan_device): Ignore extra copy of metadata.
+	Don't change pv->disk if it's already set.
+
+	* disk/raid.c (grub_raid_scan_device): Merge this function into ...
+	(grub_raid_register): ... here.
+	(grub_raid_rescan): Removed.
+
+	* include/grub/raid.h (grub_raid_rescan): Removed.
+
+	* util/grub-fstest.c: Remove include file <grub/raid.h>.
+	(fstest): Replace grub_raid_rescan with module fini function followed
+	by init function.
+
+	* util/grub-probe.c: Add include file <grub/raid.h>.
+	(probe_raid_level): New function.
+	(probe): Detect abstraction by walking the disk device, support two
+	level of abstraction (LVM on RAID) when detecting partition map.
+
 2009-07-31  Pavel Roskin  <proski@gnu.org>
 
 	* disk/raid5_recover.c (grub_raid5_recover): Revert conversion

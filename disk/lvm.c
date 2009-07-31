@@ -271,15 +271,9 @@ grub_lvm_scan_device (const char *name)
   dlocn++;
   mda_offset = grub_le_to_cpu64 (dlocn->offset);
   mda_size = grub_le_to_cpu64 (dlocn->size);
-  dlocn++;
 
-  if (dlocn->offset)
-    {
-      grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "We don't support multiple LVM metadata areas");
-
-      goto fail;
-    }
+  /* It's possible to have multiple copies of metadata areas, we just use the
+     first one.  */
 
   /* Allocate buffer space for the circular worst-case scenario. */
   metadatabuf = grub_malloc (2 * mda_size);
@@ -564,7 +558,10 @@ grub_lvm_scan_device (const char *name)
       {
 	if (! grub_memcmp (pv->id, pv_id, GRUB_LVM_ID_STRLEN))
 	  {
-	    pv->disk = grub_disk_open (name);
+	    /* This could happen to LVM on RAID, pv->disk points to the
+	       raid device, we shouldn't change it.  */
+	    if (! pv->disk)
+	      pv->disk = grub_disk_open (name);
 	    break;
 	  }
       }

@@ -67,7 +67,6 @@ typedef struct grub_raid *grub_raid_t;
 void grub_raid_register (grub_raid_t raid);
 void grub_raid_unregister (grub_raid_t raid);
 
-void grub_raid_rescan (void);
 void grub_raid_block_xor (char *buf1, const char *buf2, int size);
 
 typedef grub_err_t (*grub_raid5_recover_func_t) (struct grub_raid_array *array,

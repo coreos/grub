@@ -30,6 +30,7 @@
 #include <grub/util/getroot.h>
 #include <grub/term.h>
 #include <grub/env.h>
+#include <grub/raid.h>
 
 #include <grub_probe_init.h>
 
@@ -100,13 +101,21 @@ probe_partmap (grub_disk_t disk)
   free (name);
 }
 
+static int
+probe_raid_level (grub_disk_t disk)
+{
+  if (disk->dev->id != GRUB_DISK_DEVICE_RAID_ID)
+    return -1;
+
+  return ((struct grub_raid_array *) disk->data)->level;
+}
+
 static void
 probe (const char *path, char *device_name)
 {
   char *drive_name = NULL;
   char *grub_path = NULL;
   char *filebuf_via_grub = NULL, *filebuf_via_sys = NULL;
-  int abstraction_type;
   grub_device_t dev = NULL;
   grub_fs_t fs;
 
@@ -132,28 +141,6 @@ probe (const char *path, char *device_name)
       goto end;
     }
 
-  abstraction_type = grub_util_get_dev_abstraction (device_name);
-  /* No need to check for errors; lack of abstraction is permissible.  */
-
-  if (print == PRINT_ABSTRACTION)
-    {
-      char *abstraction_name;
-      switch (abstraction_type)
-	{
-	case GRUB_DEV_ABSTRACTION_LVM:
-	  abstraction_name = "lvm";
-	  break;
-	case GRUB_DEV_ABSTRACTION_RAID:
-	  abstraction_name = "raid mdraid";
-	  break;
-	default:
-	  grub_util_info ("did not find LVM/RAID in %s, assuming raw device", device_name);
-	  goto end;
-	}
-      printf ("%s\n", abstraction_name);
-      goto end;
-    }
-
   drive_name = grub_util_get_grub_dev (device_name);
   if (! drive_name)
     grub_util_error ("Cannot find a GRUB drive for %s.  Check your device.map.\n", device_name);
@@ -169,6 +156,58 @@ probe (const char *path, char *device_name)
   if (! dev)
     grub_util_error ("%s", grub_errmsg);
 
+  if (print == PRINT_ABSTRACTION)
+    {
+      grub_disk_memberlist_t list = NULL, tmp;
+      const int is_lvm = (dev->disk->dev->id == GRUB_DISK_DEVICE_LVM_ID);
+      int is_raid = 0;
+      int is_raid5 = 0;
+      int is_raid6 = 0;
+      int raid_level;
+
+      raid_level = probe_raid_level (dev->disk);
+      if (raid_level >= 0)
+	{
+	  is_raid = 1;
+	  is_raid5 |= (raid_level == 5);
+	  is_raid6 |= (raid_level == 6);
+	}
+
+      if ((is_lvm) && (dev->disk->dev->memberlist))
+	list = dev->disk->dev->memberlist (dev->disk);
+      while (list)
+	{
+	  raid_level = probe_raid_level (list->disk);
+	  if (raid_level >= 0)
+	    {
+	      is_raid = 1;
+	      is_raid5 |= (raid_level == 5);
+	      is_raid6 |= (raid_level == 6);
+	    }
+
+	  tmp = list->next;
+	  free (list);
+	  list = tmp;
+	}
+
+      if (is_raid)
+	{
+	  printf ("raid ");
+	  if (is_raid5)
+	    printf ("raid5rec ");
+	  if (is_raid6)
+	    printf ("raid6rec ");
+	  printf ("mdraid ");
+	}
+
+      if (is_lvm)
+	printf ("lvm ");
+
+      printf ("\n");
+
+      goto end;
+    }
+
   if (print == PRINT_PARTMAP)
     {
       grub_disk_memberlist_t list = NULL, tmp;
@@ -182,6 +221,20 @@ probe (const char *path, char *device_name)
       while (list)
 	{
 	  probe_partmap (list->disk);
+	  /* LVM on RAID  */
+	  if (list->disk->dev->memberlist)
+	    {
+	      grub_disk_memberlist_t sub_list;
+
+	      sub_list = list->disk->dev->memberlist (list->disk);
+	      while (sub_list)
+		{
+		  probe_partmap (sub_list->disk);
+		  tmp = sub_list->next;
+		  free (sub_list);
+		  sub_list = tmp;
+		}
+	    }
 	  tmp = list->next;
 	  free (list);
 	  list = tmp;

@@ -590,56 +590,6 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 static grub_raid_t grub_raid_list;
 
 static void
-grub_raid_scan_device (int head_only)
-{
-  auto int hook (const char *name);
-  int hook (const char *name)
-    {
-      grub_disk_t disk;
-      struct grub_raid_array array;
-      struct grub_raid *p;
-
-      grub_dprintf ("raid", "Scanning for RAID devices on disk %s\n", name);
-
-      disk = grub_disk_open (name);
-      if (!disk)
-        return 0;
-
-      if (disk->total_sectors == GRUB_ULONG_MAX)
-        {
-          grub_disk_close (disk);
-          return 0;
-        }
-
-      for (p = grub_raid_list; p; p = p->next)
-        {
-          if (! p->detect (disk, &array))
-            {
-              if (! insert_array (disk, &array, p->name))
-                return 0;
-
-              break;
-            }
-
-          /* This error usually means it's not raid, no need to display
-             it.  */
-          if (grub_errno != GRUB_ERR_OUT_OF_RANGE)
-            grub_print_error ();
-
-          grub_errno = GRUB_ERR_NONE;
-          if (head_only)
-            break;
-        }
-
-      grub_disk_close (disk);
-
-      return 0;
-    }
-
-  grub_device_iterate (&hook);
-}
-
-static void
 free_array (void)
 {
   struct grub_raid_array *array;
@@ -668,9 +618,38 @@ free_array (void)
 void
 grub_raid_register (grub_raid_t raid)
 {
+  auto int hook (const char *name);
+  int hook (const char *name)
+    {
+      grub_disk_t disk;
+      struct grub_raid_array array;
+
+      grub_dprintf ("raid", "Scanning for RAID devices on disk %s\n", name);
+
+      disk = grub_disk_open (name);
+      if (!disk)
+        return 0;
+
+      if ((disk->total_sectors != GRUB_ULONG_MAX) &&
+	  (! grub_raid_list->detect (disk, &array)) &&
+	  (! insert_array (disk, &array, grub_raid_list->name)))
+	return 0;
+
+      /* This error usually means it's not raid, no need to display
+	 it.  */
+      if (grub_errno != GRUB_ERR_OUT_OF_RANGE)
+	grub_print_error ();
+
+      grub_errno = GRUB_ERR_NONE;
+
+      grub_disk_close (disk);
+
+      return 0;
+    }
+
   raid->next = grub_raid_list;
   grub_raid_list = raid;
-  grub_raid_scan_device (1);
+  grub_device_iterate (&hook);
 }
 
 void
@@ -684,13 +663,6 @@ grub_raid_unregister (grub_raid_t raid)
 	*p = q->next;
 	break;
       }
-}
-
-void
-grub_raid_rescan (void)
-{
-  free_array ();
-  grub_raid_scan_device (0);
 }
 
 static struct grub_disk_dev grub_raid_dev =
