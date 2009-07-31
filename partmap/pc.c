@@ -121,6 +121,10 @@ pc_partition_map_iterate (grub_disk_t disk,
       if (mbr.signature != grub_cpu_to_le16 (GRUB_PC_PARTITION_SIGNATURE))
 	return grub_error (GRUB_ERR_BAD_PART_TABLE, "no signature");
 
+      for (i = 0; i < 4; i++)
+	if (mbr.entries[i].flag & 0x7f)
+	  return grub_error (GRUB_ERR_BAD_PART_TABLE, "bad boot flag");
+
       /* Analyze DOS partitions.  */
       for (p.index = 0; p.index < 4; p.index++)
 	{
