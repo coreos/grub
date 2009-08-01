@@ -1,3 +1,8 @@
+2009-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/hostfs.c (grub_hostfs_dir): Don't use DT_DIR: It doesn't work
+	on XFS or ReiserFS.
+
 2009-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support Apple partition map with sector size different from 512 bytes.
