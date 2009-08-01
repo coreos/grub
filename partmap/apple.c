@@ -30,6 +30,7 @@ struct grub_apple_header
   /* The magic number to identify the partition map, it should have
      the value `0x4552'.  */
   grub_uint16_t magic;
+  grub_uint16_t blocksize;
 };
 
 struct grub_apple_part
@@ -105,8 +106,8 @@ apple_partition_map_iterate (grub_disk_t disk,
   struct grub_apple_header aheader;
   struct grub_apple_part apart;
   struct grub_disk raw;
-  int partno = 0;
-  unsigned pos = GRUB_DISK_SECTOR_SIZE;
+  int partno = 0, partnum = 0;
+  unsigned pos;
 
   /* Enforce raw disk access.  */
   raw = *disk;
@@ -126,7 +127,9 @@ apple_partition_map_iterate (grub_disk_t disk,
       goto fail;
     }
 
-  for (;;)
+  pos = grub_be_to_cpu16 (aheader.blocksize);
+
+  do
     {
       if (grub_disk_read (&raw, pos / GRUB_DISK_SECTOR_SIZE,
 			  pos % GRUB_DISK_SECTOR_SIZE,
@@ -142,8 +145,15 @@ apple_partition_map_iterate (grub_disk_t disk,
 	  break;
 	}
 
-      part.start = grub_be_to_cpu32 (apart.first_phys_block);
-      part.len = grub_be_to_cpu32 (apart.blockcnt);
+      if (partnum == 0)
+	partnum = grub_be_to_cpu32 (apart.partmap_size);
+
+      part.start = ((grub_disk_addr_t) grub_be_to_cpu32 (apart.first_phys_block)
+		    * grub_be_to_cpu16 (aheader.blocksize))
+	/ GRUB_DISK_SECTOR_SIZE;
+      part.len = ((grub_disk_addr_t) grub_be_to_cpu32 (apart.blockcnt)
+		  * grub_be_to_cpu16 (aheader.blocksize))
+	/ GRUB_DISK_SECTOR_SIZE;
       part.offset = pos;
       part.index = partno;
 
@@ -156,15 +166,12 @@ apple_partition_map_iterate (grub_disk_t disk,
       if (hook (disk, &part))
 	return grub_errno;
 
-      if (grub_be_to_cpu32 (apart.first_phys_block)
-	  == GRUB_DISK_SECTOR_SIZE * 2)
-	return 0;
-
-      pos += sizeof (struct grub_apple_part);
+      pos += grub_be_to_cpu16 (aheader.blocksize);
       partno++;
     }
+  while (partno < partnum);
 
-  if (pos != GRUB_DISK_SECTOR_SIZE)
+  if (partno != 0)
     return 0;
 
  fail:

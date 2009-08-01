@@ -1,4 +1,12 @@
 2009-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support Apple partition map with sector size different from 512 bytes.
+
+	* partmap/apple.c (grub_apple_header): New field 'blocksize'.
+	(apple_partition_map_iterate): Respect 'aheader.blocksize'
+	and 'apart.partmap_size'.
+
+2009-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
 2009-08-01  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Fix cpuid command.
