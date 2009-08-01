@@ -1,3 +1,12 @@
+2009-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
+2009-08-01  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix cpuid command.
+
+	* commands/i386/cpuid.c (options): New variable.
+	(grub_cmd_cpuid): Return real error.
+	(GRUB_MOD_INIT(cpuid)): Declare options.
+
 2009-07-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* partmap/pc.c (pc_partition_map_iterate): Check that boot flags are
