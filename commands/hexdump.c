@@ -22,7 +22,6 @@
 #include <grub/disk.h>
 #include <grub/misc.h>
 #include <grub/gzio.h>
-#include <grub/partition.h>
 #include <grub/lib/hexdump.h>
 #include <grub/extcmd.h>
 
@@ -62,25 +61,20 @@ grub_cmd_hexdump (grub_extcmd_t cmd, int argc, char **args)
       if (! disk)
         return 0;
 
-      if (disk->partition)
-        skip += grub_partition_get_start (disk->partition) << GRUB_DISK_SECTOR_BITS;
-
       sector = (skip >> (GRUB_DISK_SECTOR_BITS + 2)) * 4;
       ofs = skip & (GRUB_DISK_SECTOR_SIZE * 4 - 1);
       while (length)
         {
-          grub_size_t len, n;
+          grub_size_t len;
 
           len = length;
-          if (ofs + len > sizeof (buf))
-            len = sizeof (buf) - ofs;
+          if (len > sizeof (buf))
+            len = sizeof (buf);
 
-          n = ((ofs + len + GRUB_DISK_SECTOR_SIZE - 1)
-               >> GRUB_DISK_SECTOR_BITS);
-          if (disk->dev->read (disk, sector, n, buf))
+          if (grub_disk_read (disk, sector, ofs, len, buf))
             break;
 
-          hexdump (skip, &buf[ofs], len);
+          hexdump (skip, buf, len);
 
           ofs = 0;
           skip += len;

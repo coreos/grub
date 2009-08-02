@@ -1,3 +1,8 @@
+2009-08-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/hexdump.c (grub_cmd_hexdump): Use grub_disk_read instead
+	of homegrown code.
+
 2009-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/hostfs.c (grub_hostfs_dir): Don't use DT_DIR: It doesn't work
