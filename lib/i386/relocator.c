@@ -68,22 +68,23 @@ grub_relocator32_alloc (grub_size_t size)
 {
   char *playground;
 
-  playground = grub_malloc ((RELOCATOR_SIZEOF(forward) + RELOCATOR_ALIGN)
-			    + size 
-			    + (RELOCATOR_SIZEOF(backward) + RELOCATOR_ALIGN));
-  if (! playground)
+  playground = grub_malloc ((RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
+			    + size
+			    + (RELOCATOR_SIZEOF (backward) +
+			       RELOCATOR_ALIGN));
+  if (!playground)
     return 0;
 
   *(grub_size_t *) playground = size;
 
-  return playground + RELOCATOR_SIZEOF(forward);
+  return playground + RELOCATOR_SIZEOF (forward);
 }
 
 void
 grub_relocator32_free (void *relocator)
 {
   if (relocator)
-    grub_free ((char *) relocator - RELOCATOR_SIZEOF(forward));
+    grub_free ((char *) relocator - RELOCATOR_SIZEOF (forward));
 }
 
 
@@ -95,14 +96,16 @@ grub_relocator32_boot (void *relocator, grub_uint32_t dest,
   char *playground;
   void (*entry) ();
 
-  playground = (char *) relocator - RELOCATOR_SIZEOF(forward);
+  playground = (char *) relocator - RELOCATOR_SIZEOF (forward);
   size = *(grub_size_t *) playground;
 
   if (UINT_TO_PTR (dest) >= relocator)
     {
       int overhead;
 
-      overhead = ALIGN_UP (dest - RELOCATOR_SIZEOF(backward) - RELOCATOR_ALIGN, RELOCATOR_ALIGN);
+      overhead =
+	ALIGN_UP (dest - RELOCATOR_SIZEOF (backward) - RELOCATOR_ALIGN,
+		  RELOCATOR_ALIGN);
       grub_relocator32_backward_dest = dest - overhead;
       grub_relocator32_backward_src = PTR_TO_UINT64 (relocator - overhead);
       grub_relocator32_backward_size = size + overhead;
@@ -116,15 +119,15 @@ grub_relocator32_boot (void *relocator, grub_uint32_t dest,
 
       grub_memmove (relocator - overhead,
 		    &grub_relocator32_backward_start,
-		    RELOCATOR_SIZEOF(backward));
-      entry = (void (*) ()) (relocator - overhead);
+		    RELOCATOR_SIZEOF (backward));
+      entry = (void (*)()) (relocator - overhead);
     }
   else
     {
       int overhead;
 
-      overhead = ALIGN_UP (dest + size, RELOCATOR_ALIGN) 
-	+ RELOCATOR_SIZEOF(forward) - (dest + size);
+      overhead = ALIGN_UP (dest + size, RELOCATOR_ALIGN)
+	+ RELOCATOR_SIZEOF (forward) - (dest + size);
 
       grub_relocator32_forward_dest = dest;
       grub_relocator32_forward_src = PTR_TO_UINT64 (relocator);
@@ -137,9 +140,12 @@ grub_relocator32_boot (void *relocator, grub_uint32_t dest,
       grub_relocator32_forward_eip = state.eip;
       grub_relocator32_forward_esp = state.esp;
 
-      grub_memmove (relocator + size + overhead - RELOCATOR_SIZEOF(forward),
-		    &grub_relocator32_forward_start, RELOCATOR_SIZEOF(forward));
-      entry = (void (*) ()) (relocator + size + overhead - RELOCATOR_SIZEOF(forward));
+      grub_memmove (relocator + size + overhead - RELOCATOR_SIZEOF (forward),
+		    &grub_relocator32_forward_start,
+		    RELOCATOR_SIZEOF (forward));
+      entry =
+	(void (*)()) (relocator + size + overhead -
+		      RELOCATOR_SIZEOF (forward));
     }
   entry ();
 
