@@ -80,6 +80,25 @@ grub_relocator32_alloc (grub_size_t size)
   return playground + RELOCATOR_SIZEOF (forward);
 }
 
+void *
+grub_relocator32_realloc (void *relocator, grub_size_t size)
+{
+  char *playground;
+
+  playground = (char *) relocator - RELOCATOR_SIZEOF (forward);
+
+  playground = grub_realloc (playground,
+			     (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
+			     + size
+			     + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN));
+  if (!playground)
+    return 0;
+
+  *(grub_size_t *) playground = size;
+
+  return playground + RELOCATOR_SIZEOF (forward);
+}
+
 void
 grub_relocator32_free (void *relocator)
 {

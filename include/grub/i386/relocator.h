@@ -19,6 +19,9 @@
 #ifndef GRUB_RELOCATOR_CPU_HEADER
 #define GRUB_RELOCATOR_CPU_HEADER	1
 
+#include <grub/types.h>
+#include <grub/err.h>
+
 struct grub_relocator32_state
 {
   grub_uint32_t esp;
@@ -29,12 +32,10 @@ struct grub_relocator32_state
   grub_uint32_t eip;
 };
 
-void *
-grub_relocator32_alloc (grub_size_t size);
-grub_err_t
-grub_relocator32_boot (void *relocator, grub_uint32_t dest,
-		       struct grub_relocator32_state state);
-void
-grub_relocator32_free (void *relocator);
+void *grub_relocator32_alloc (grub_size_t size);
+grub_err_t grub_relocator32_boot (void *relocator, grub_uint32_t dest,
+				  struct grub_relocator32_state state);
+void *grub_relocator32_realloc (void *relocator, grub_size_t size);
+void grub_relocator32_free (void *relocator);
 
 #endif /* ! GRUB_RELOCATOR_CPU_HEADER */
