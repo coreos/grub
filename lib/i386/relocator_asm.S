@@ -89,12 +89,13 @@ RELOCATOR_VARIABLE(dest)
 	mov %eax, %edi
 
 	/* mov imm64, %rax */
+	.byte	0x48
 	.byte	0xb8
 RELOCATOR_VARIABLE(src)
 	.long 0, 0
 	mov %rax, %rsi
 
-	xorl %rcx, %rcx
+	xorq %rcx, %rcx
 	/* mov imm32, %ecx */
 	.byte	0xb9
 RELOCATOR_VARIABLE(size)
@@ -109,13 +110,13 @@ RELOCATOR_VARIABLE(size)
 
 #ifdef BACKWARD
 	/* Backward movsl is implicitly off-by-four.  compensate that.  */
-	subl	$4,	%rsi
-	subl	$4,	%rdi
+	subq	$4,	%rsi
+	subq	$4,	%rdi
 
 	/* Backward copy.  */
 	std
-	addl	%rcx, %rsi
-	addl	%rcx, %rdi
+	addq	%rcx, %rsi
+	addq	%rcx, %rdi
 
 	rep
 	movsl
@@ -230,7 +231,11 @@ RELOCATOR_VARIABLE (edx)
 	.byte 0xea
 RELOCATOR_VARIABLE (eip)
 	.long 0
+#ifdef __x86_64__
+	.word 0x10
+#else
 	.word 0x08
+#endif
 
 #ifdef __x86_64__
 	/* GDT. Copied from loader/i386/linux.c. */
