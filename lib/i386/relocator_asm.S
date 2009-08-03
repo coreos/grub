@@ -17,12 +17,12 @@
  */
 
 #include <grub/symbol.h>
-	
+
 #ifdef BACKWARD
 #define RELOCATOR_VARIABLE(x) VARIABLE(grub_relocator32_backward_ ## x)
 #else
 #define RELOCATOR_VARIABLE(x) VARIABLE(grub_relocator32_forward_ ## x)
-#endif	
+#endif
 	.p2align	4	/* force 16-byte alignment */
 
 RELOCATOR_VARIABLE(start)
@@ -201,9 +201,9 @@ cont2:
 	.byte	0xb8
 RELOCATOR_VARIABLE (esp)
 	.long 0
-	
+
 	movl %eax, %esp
-	
+
 	/* mov imm32, %eax */
 	.byte	0xb8
 RELOCATOR_VARIABLE (eax)
@@ -270,5 +270,4 @@ jump_vector:
 base:
 #endif
 
-	
 RELOCATOR_VARIABLE(end)
