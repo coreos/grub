@@ -1,6 +1,6 @@
 2009-08-04  Felix Zielcke  <fzielcke@z-51.de>
 
-	* commands/search.c: Fix help output to match actual code.
+	* commands/search.c (options): Fix help output to match actual code.
 
 2009-08-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
