@@ -1,3 +1,24 @@
+2009-08-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix a bug resulting in black screen when loading Linux using a
+	packed video mode.
+
+	* kern/i386/pc/startup.S (grub_vbe_bios_getset_dac_palette_width): New
+	function.
+
+	* include/grub/i386/pc/vbe.h (GRUB_VBE_CAPABILITY_DACWIDTH): New macro.
+	(grub_vbe_bios_getset_dac_palette_width): New function.
+	(grub_vbe_bios_get_dac_palette_width)
+	(grub_vbe_bios_set_dac_palette_width): New macros (act as wrappers for
+	grub_vbe_bios_getset_dac_palette_width()).
+
+	* video/i386/pc/vbe.c (grub_vbe_probe): Use `GRUB_VBE_STATUS_OK' to
+	check for return status.
+	(grub_vbe_get_video_mode_info): When getting information for a packed
+	mode (<= 8 bpp), obtain DAC palette width using
+	grub_vbe_bios_getset_dac_palette_width(), and use that for initializing
+	{red,green,blue}_mark_size.
+
 2009-08-04  Felix Zielcke  <fzielcke@z-51.de>
 
 	* commands/search.c (options): Fix help output to match actual code.

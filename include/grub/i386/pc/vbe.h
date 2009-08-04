@@ -30,6 +30,8 @@
 /* VBE status codes.  */
 #define GRUB_VBE_STATUS_OK		0x004f
 
+#define GRUB_VBE_CAPABILITY_DACWIDTH	(1 << 0)
+
 /* Bits from the GRUB_VBE "mode_attributes" field in the mode info struct.  */
 #define GRUB_VBE_MODEATTR_SUPPORTED                 (1 << 0)
 #define GRUB_VBE_MODEATTR_RESERVED_1                (1 << 1)
@@ -180,6 +182,11 @@ grub_vbe_status_t EXPORT_FUNC(grub_vbe_bios_get_controller_info) (struct grub_vb
 /* Call VESA BIOS 0x4f01 to get VBE Mode Information, return status.  */
 grub_vbe_status_t EXPORT_FUNC(grub_vbe_bios_get_mode_info) (grub_uint32_t mode,
                                                             struct grub_vbe_mode_info_block *mode_info);
+
+grub_vbe_status_t EXPORT_FUNC(grub_vbe_bios_getset_dac_palette_width) (int set, int *width);
+
+#define grub_vbe_bios_get_dac_palette_width(width)	grub_vbe_bios_getset_dac_palette_width(0, (width))
+#define grub_vbe_bios_set_dac_palette_width(width)	grub_vbe_bios_getset_dac_palette_width(1, (width))
 
 /* Call VESA BIOS 0x4f02 to set video mode, return status.  */
 grub_vbe_status_t EXPORT_FUNC(grub_vbe_bios_set_mode) (grub_uint32_t mode,
