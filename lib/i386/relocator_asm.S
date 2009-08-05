@@ -17,12 +17,35 @@
  */
 
 #include <grub/symbol.h>
+#include <grub/i386/memory.h>
 
 #ifdef BACKWARD
 #define RELOCATOR_VARIABLE(x) VARIABLE(grub_relocator32_backward_ ## x)
 #else
 #define RELOCATOR_VARIABLE(x) VARIABLE(grub_relocator32_forward_ ## x)
 #endif
+#ifdef __x86_64__
+#define RAX %rax
+#define RCX %rcx
+#define RDI %rdi
+#define RSI %rdi
+#else
+#define RAX %eax
+#define RCX %ecx
+#define RDI %edi	
+#define RSI %esi	
+#endif
+
+/* Apple's linker has a problem with 64-bit relocations.  */
+#if defined (__apple__) || ! defined (__x86_64__)
+#define RSIA %esi
+#define RAXA %eax
+#else
+#define RSIA %rsi
+#define RAXA %rax
+#endif
+
+	
 	.p2align	4	/* force 16-byte alignment */
 
 RELOCATOR_VARIABLE(start)
@@ -35,88 +58,64 @@ base:
 	/* mov imm32, %eax */
 	.byte	0xb8
 RELOCATOR_VARIABLE(dest)
-	.long 0
-	mov %eax, %edi
+	.long	0
+	movl	%eax, %edi
 
 	/* mov imm32, %eax */
 	.byte	0xb8
 RELOCATOR_VARIABLE(src)
-	.long 0
-	mov %eax, %esi
+	.long	0
+	movl	%eax, %esi
 
 	/* mov imm32, %ecx */
 	.byte	0xb9
 RELOCATOR_VARIABLE(size)
-	.long 0
-	mov %edi, %eax
-#ifndef BACKWARD
-	add %ecx, %eax
-#endif
-	add $0x3, %ecx
-	shr $2, %ecx
-
-#ifdef BACKWARD
-	/* Backward movsl is implicitly off-by-four.  compensate that.  */
-	subl	$4,	%esi
-	subl	$4,	%edi
-
-	/* Backward copy.  */
-	std
-	addl	%ecx, %esi
-	addl	%ecx, %edi
-
-	rep
-	movsl
-
+	.long	0
 #else
-	/* Forward copy.  */
-	cld
-	rep
-	movsl
-#endif
-	/* %eax contains now our new base.  */
-	mov %eax, %esi
-	add $(cont0 - base), %eax
-	jmp *%eax
-cont0:
-#else
-	xorq %rax, %rax
+	xorq	%rax, %rax
 
 	/* mov imm32, %eax */
 	.byte	0xb8
 RELOCATOR_VARIABLE(dest)
-	.long 0
-	mov %eax, %edi
+	.long	0
+	movq	%rax, %rdi
 
 	/* mov imm64, %rax */
 	.byte	0x48
 	.byte	0xb8
 RELOCATOR_VARIABLE(src)
-	.long 0, 0
-	mov %rax, %rsi
+	.long	0, 0
+	movq	%rax, %rsi
 
-	xorq %rcx, %rcx
+	xorq	%rcx, %rcx
 	/* mov imm32, %ecx */
 	.byte	0xb9
 RELOCATOR_VARIABLE(size)
-	.long 0
+	.long	0
 
-	mov %rdi, %rax
-#ifndef BACKWARD
-	add %rcx, %rax
 #endif
-	add $0x3, %rcx
-	shr $2, %rcx
 
+	mov	RDI, RAX
+	
+#ifdef BACKWARD
+	add	RCX, RSI
+	add	RDX, RDI
+#endif
+
+#ifndef BACKWARD
+	add	RCX, RAX
+#endif
+	addq	$0x3, RCX
+	shrq	$2, RCX
+
+	
 #ifdef BACKWARD
 	/* Backward movsl is implicitly off-by-four.  compensate that.  */
-	subq	$4,	%rsi
-	subq	$4,	%rdi
+	subq	$4,	RSI
+	subq	$4,	RDI
 
 	/* Backward copy.  */
 	std
-	addq	%rcx, %rsi
-	addq	%rcx, %rdi
 
 	rep
 	movsl
@@ -129,142 +128,141 @@ RELOCATOR_VARIABLE(size)
 #endif
 
 	/* %rax contains now our new 'base'.  */
-	mov %rax, %rsi
-#ifdef APPLE_CC
-	add $(cont0 - base), %eax
-#else
-	add $(cont0 - base), %rax
-#endif
-	jmp *%rax
+	mov	RAX, RSI
+	add	$(cont0 - base), RAXA
+	jmp	*RAX
 cont0:
-#ifdef APPLE_CC
-	lea (cont1 - base) (%esi, 1), %eax
-	mov %eax, (jump_vector - base) (%esi, 1)
+	lea	(cont1 - base) (RSIA, 1), RAXA
+	movl	%eax, (jump_vector - base) (RSIA, 1)
 
-	lea (gdt - base) (%esi, 1), %eax
-	mov %eax, (gdt_addr - base) (%esi, 1)
-
-	/* Switch to compatibility mode. */
-
-	lgdt (gdtdesc - base) (%esi, 1)
-
-	/* Update %cs. Thanks to David Miller for pointing this mistake out. */
-	ljmp *(jump_vector - base) (%esi,1)
-#else
-	lea (cont1 - base) (%rsi, 1), %rax
-	mov %eax, (jump_vector - base) (%rsi, 1)
-
-	lea (gdt - base) (%rsi, 1), %rax
-	mov %rax, (gdt_addr - base) (%rsi, 1)
+	lea	(gdt - base) (RSIA, 1), RAXA
+	mov	RAXA, (gdt_addr - base) (RSIA, 1)
 
 	/* Switch to compatibility mode. */
 
-	lgdt (gdtdesc - base) (%rsi, 1)
+	lgdt	(gdtdesc - base) (RSIA, 1)
 
 	/* Update %cs. Thanks to David Miller for pointing this mistake out. */
-	ljmp *(jump_vector - base) (%rsi, 1)
-#endif
+	ljmp	*(jump_vector - base) (RSIA, 1)
 
 cont1:
 	.code32
 
 	/* Update other registers. */
-	mov $0x18, %eax
-	mov %eax, %ds
-	mov %eax, %es
-	mov %eax, %fs
-	mov %eax, %gs
-	mov %eax, %ss
+	movl	$GRUB_MEMORY_MACHINE_PROT_MODE_DSEG, %eax
+	movl	%eax, %ds
+	movl	%eax, %es
+	movl	%eax, %fs
+	movl	%eax, %gs
+	movl	%eax, %ss
 
 	/* Disable paging. */
-	mov %cr0, %eax
-	and $0x7fffffff, %eax
-	mov %eax, %cr0
+	movl	%cr0, %eax
+	andl	$0x7fffffff, %eax
+	movl	%eax, %cr0
 
 	/* Disable amd64. */
-	mov $0xc0000080, %ecx
+	movl	$0xc0000080, %ecx
 	rdmsr
-	and $0xfffffeff, %eax
+	andl	$0xfffffeff, %eax
 	wrmsr
 
 	/* Turn off PAE. */
-	movl %cr4, %eax
-	and $0xffffffcf, %eax
-	mov %eax, %cr4
+	movl	%cr4, %eax
+	andl	$0xffffffcf, %eax
+	movl	%eax, %cr4
 
-	jmp cont2
+	jmp	cont2
 cont2:
-#endif
 	.code32
 
 	/* mov imm32, %eax */
 	.byte	0xb8
 RELOCATOR_VARIABLE (esp)
-	.long 0
+	.long	0
 
-	movl %eax, %esp
+	movl	%eax, %esp
 
 	/* mov imm32, %eax */
 	.byte	0xb8
 RELOCATOR_VARIABLE (eax)
-	.long 0
+	.long	0
 
 	/* mov imm32, %ebx */
 	.byte	0xbb
 RELOCATOR_VARIABLE (ebx)
-	.long 0
+	.long	0
 
 	/* mov imm32, %ecx */
 	.byte	0xb9
 RELOCATOR_VARIABLE (ecx)
-	.long 0
+	.long	0
 
 	/* mov imm32, %edx */
 	.byte	0xba
 RELOCATOR_VARIABLE (edx)
-	.long 0
+	.long	0
 
 	/* Cleared direction flag is of no problem with any current
 	   payload and makes this implementation easier.  */
 	cld
 
-	.byte 0xea
+	.byte	0xea
 RELOCATOR_VARIABLE (eip)
-	.long 0
-#ifdef __x86_64__
-	.word 0x10
-#else
-	.word 0x08
-#endif
+	.long	0
+	.word	0x08
 
-#ifdef __x86_64__
-	/* GDT. Copied from loader/i386/linux.c. */
-	.p2align 4
+	/* GDT. The same as is used in 32-bit GRUB. */
+	.p2align	4
 gdt:
-	/* NULL.  */
-	.byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	.word	0, 0
+	.byte	0, 0, 0, 0
 
-	/* Reserved.  */
-	.byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	/* -- code segment --
+	 * base = 0x00000000, limit = 0xFFFFF (4 KiB Granularity), present
+	 * type = 32bit code execute/read, DPL = 0
+	 */
+	.word	0xFFFF, 0
+	.byte	0, 0x9A, 0xCF, 0
 
-	/* Code segment.  */
-	.byte 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x9A, 0xCF, 0x00
+	/* -- data segment --
+	 * base = 0x00000000, limit 0xFFFFF (4 KiB Granularity), present
+	 * type = 32 bit data read/write, DPL = 0
+	 */
+	.word	0xFFFF, 0
+	.byte	0, 0x92, 0xCF, 0
 
-	/* Data segment.  */
-	.byte 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x92, 0xCF, 0x00
+	/* -- 16 bit real mode CS --
+	 * base = 0x00000000, limit 0x0FFFF (1 B Granularity), present
+	 * type = 16 bit code execute/read only/conforming, DPL = 0
+	 */
+	.word	0xFFFF, 0
+	.byte	0, 0x9E, 0, 0
 
+	/* -- 16 bit real mode DS --
+	 * base = 0x00000000, limit 0x0FFFF (1 B Granularity), present
+	 * type = 16 bit data read/write, DPL = 0
+	 */
+	.word	0xFFFF, 0
+	.byte	0, 0x92, 0, 0
+
+	.p2align	4
 gdtdesc:
-	.word 31
+	.word	0x27
 gdt_addr:
+#ifdef __x86_64__
 	/* Filled by the code. */
-	.quad 0
-
-	.p2align 4
+	.quad	0
+#else
+	/* Filled by the code. */
+	.long	0
+#endif
+	
+	.p2align	4
 jump_vector:
 	/* Jump location. Is filled by the code */
-	.long 0
-	.long 0x10
-#endif
+	.long	0
+	.long	GRUB_MEMORY_MACHINE_PROT_MODE_CSEG
 
 #ifndef BACKWARD
 base:

@@ -32,19 +32,11 @@ extern grub_uint8_t grub_relocator32_backward_end;
 
 extern grub_uint32_t grub_relocator32_backward_dest;
 extern grub_uint32_t grub_relocator32_backward_size;
-#ifdef __x86_64__
-extern grub_uint64_t grub_relocator32_backward_src;
-#else
-extern grub_uint32_t grub_relocator32_backward_src;
-#endif
+extern grub_addr_t grub_relocator32_backward_src;
 
 extern grub_uint32_t grub_relocator32_forward_dest;
 extern grub_uint32_t grub_relocator32_forward_size;
-#ifdef __x86_64__
-extern grub_uint64_t grub_relocator32_forward_src;
-#else
-extern grub_uint32_t grub_relocator32_forward_src;
-#endif
+extern grub_addr_t grub_relocator32_forward_src;
 
 extern grub_uint32_t grub_relocator32_forward_eax;
 extern grub_uint32_t grub_relocator32_forward_ebx;
