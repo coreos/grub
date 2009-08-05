@@ -65,6 +65,18 @@
 /* The address where another boot loader is loaded.  */
 #define GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR	0x7c00
 
+/* The code segment of the protected mode.  */
+#define GRUB_MEMORY_MACHINE_PROT_MODE_CSEG	0x8
+
+/* The data segment of the protected mode.  */
+#define GRUB_MEMORY_MACHINE_PROT_MODE_DSEG	0x10
+
+/* The code segment of the pseudo real mode.  */
+#define GRUB_MEMORY_MACHINE_PSEUDO_REAL_CSEG	0x18
+
+/* The data segment of the pseudo real mode.  */
+#define GRUB_MEMORY_MACHINE_PSEUDO_REAL_DSEG	0x20
+
 #ifndef ASM_FILE
 
 struct grub_machine_mmap_entry
