@@ -136,9 +136,9 @@ prepare_grub_to_access_device ()
 
   # Abstraction modules aren't auto-loaded.
   abstraction="`${grub_probe} --device ${device} --target=abstraction`"
-  if [ "x${abstraction}" = "x" ] ; then : ; else
-    echo "insmod ${abstraction}"
-  fi
+  for module in ${abstraction} ; do 
+    echo "insmod ${module}"
+  done
 
   # If there's a filesystem UUID that GRUB is capable of identifying, use it;
   # otherwise set root as per value in device.map.

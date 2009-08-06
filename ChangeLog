@@ -1,3 +1,8 @@
+2009-08-06  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Fix
+	handling of multiple abstraction modules.
+
 2009-08-04  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Fix a bug resulting in black screen when loading Linux using a
