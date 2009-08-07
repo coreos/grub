@@ -176,3 +176,54 @@ grub_file_is_not_garbage ()
   fi
   return 0
 }
+
+version_test_numeric ()
+{
+  local a=$1
+  local cmp=$2
+  local b=$3
+  if [ "$a" = "$b" ] ; then
+    case $cmp in
+      ge|eq|le) return 0 ;;
+      gt|lt) return 1 ;;
+    esac
+  fi
+  if [ "$cmp" = "lt" ] ; then
+    c=$a
+    a=$b
+    b=$c
+  fi
+  if (echo $a ; echo $b) | sort -n | head -n 1 | grep -qx $b ; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+version_test_gt ()
+{
+  local a=`echo $1 | sed -e "s/[^-]*-//g"`
+  local b=`echo $2 | sed -e "s/[^-]*-//g"`
+  local cmp=gt
+  if [ "x$b" = "x" ] ; then
+    return 0
+  fi
+  case $a:$b in
+    *.old:*.old) ;;
+    *.old:*) a=`echo -n $a | sed -e s/\.old$//g` ; cmp=gt ;;
+    *:*.old) b=`echo -n $b | sed -e s/\.old$//g` ; cmp=ge ;;
+  esac
+  version_test_numeric $a $cmp $b
+  return $?
+}
+
+version_find_latest ()
+{
+  local a=""
+  for i in $@ ; do
+    if version_test_gt "$i" "$a" ; then
+      a="$i"
+    fi
+  done
+  echo "$a"
+}
