@@ -1,5 +1,11 @@
 2009-08-07  Felix Zielcke  <fzielcke@z-51.de>
 
+	* fs/uuid.c (grub_jfs_superblock): New fields unused2 and uuid.
+	(grub_jfs_uuid): New function.
+	(grub_jfs_fs): Set uuid field to grub_jfs_uuid.
+
+2009-08-07  Felix Zielcke  <fzielcke@z-51.de>
+
 	* util/grub-mkconfig_lib.in (font_path): Move the functionality
 	of it to ...
 	* util/grub-mkconfig.in: ... here.  Prefer unicode.pf2 and
