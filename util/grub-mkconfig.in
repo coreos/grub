@@ -172,7 +172,6 @@ case ${GRUB_TERMINAL_OUTPUT} in
         # fallback to the native terminal for this platform
         unset GRUB_TERMINAL_OUTPUT
       fi
-    fi
   ;;
   *)
     # make sure all our children behave in conformance with ascii..
