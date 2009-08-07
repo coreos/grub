@@ -1,3 +1,10 @@
+2009-08-07  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkconfig_lib.in (font_path): Move the functionality
+	of it to ...
+	* util/grub-mkconfig.in: ... here.  Prefer unicode.pf2 and
+	unifont.pf2 over ascii.pf2.  Export LANG=C in case ascii.pf2 gets used.
+
 2009-08-07  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/grub.d/10_linux.in (test_numeric): Moved from here ...

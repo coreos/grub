@@ -148,23 +148,6 @@ prepare_grub_to_access_device ()
   fi
 }
 
-font_path ()
-{
-  for dir in ${pkgdatadir} /boot/grub /usr/share/grub ; do
-    # FIXME: We prefer ascii because loading complete fonts is too slow (and
-    # we don't yet provide the gettext magic that would make unicode useful).
-    for basename in ascii unicode unifont ; do
-      path="${dir}/${basename}.pf2"
-      if is_path_readable_by_grub ${path} > /dev/null ; then
-        echo "${path}"
-        return 0
-      fi
-    done
-  done
-
-  return 1
-}
-
 grub_file_is_not_garbage ()
 {
   if test -f "$1" ; then
