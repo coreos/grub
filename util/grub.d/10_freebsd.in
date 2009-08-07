@@ -50,8 +50,6 @@ if [ "x$kfreebsd" != "x" ] ; then
     devices_rel_dirname=`make_system_path_relative_to_its_root $devices_dirname`
   fi
 
-  root_device=`basename ${GRUB_DEVICE}`
-
   # For "ufs" it's the same.  Do we care about the others?
   kfreebsd_fs=${GRUB_FS}
 
@@ -69,7 +67,8 @@ EOF
 EOF
   fi
   cat << EOF
-	set FreeBSD.vfs.root.mountfrom=${kfreebsd_fs}:${root_device}
+	set FreeBSD.vfs.root.mountfrom=${kfreebsd_fs}:${GRUB_DEVICE}
+	set FreeBSD.vfs.root.mountfrom.options=rw
 }
 EOF
 fi

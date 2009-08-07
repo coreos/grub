@@ -1,3 +1,8 @@
+2009-08-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub.d/10_freebsd.in: Use an absolute device path for
+	`vfs.root.mountfrom'.  Set `vfs.root.mountfrom.options=rw'.
+
 2009-08-06  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Fix
