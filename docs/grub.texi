@@ -3854,13 +3854,8 @@ just do:
 @end group
 @end example
 
-This will install the grub shell @file{grub} (@pxref{Invoking the grub
-shell}), the Multiboot checker @file{mbchk} (@pxref{Invoking mbchk}),
-and the GRUB images. This will also install the GRUB manual.
-
-Also, the latest version is available from the CVS. See
-@uref{http://savannah.gnu.org/cvs/?group=grub} for more information.
-
+Also, the latest version is available from the SVN. See
+@uref{http://savannah.gnu.org/svn/?group=grub} for more information.
 
 @node Reporting bugs
 @appendix Reporting bugs
@@ -3932,7 +3927,7 @@ Once we get your report, we will try to fix the bugs.
 @node Future
 @appendix Where GRUB will go
 
-We started the next generation of GRUB, GRUB 2. This will include
+We started the next generation of GRUB, GRUB 2. GRUB 2 includes
 internationalization, dynamic module loading, real memory management,
 multiple architecture support, a scripting language, and many other
 nice feature. If you are interested in the development of GRUB 2, take
