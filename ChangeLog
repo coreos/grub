@@ -1,5 +1,10 @@
 2009-08-07  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* docs/version.texi: New file.  Provides version information for
+	grub.texi.
+
+2009-08-07  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* docs/grub.texi: Update CVS information to SVN.
 	Replace outdated "GRUB 2 will include" phrase with "GRUB 2 includes".
 
