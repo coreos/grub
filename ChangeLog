@@ -1,3 +1,8 @@
+2009-08-08  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkconfig.in: Allow the user to specify the used font
+	with GRUB_FONT.
+
 2009-08-08  Pavel Roskin  <proski@gnu.org>
 
 	* include/grub/powerpc/libgcc.h: Export __ashrdi3() if
