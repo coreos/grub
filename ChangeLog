@@ -1,5 +1,12 @@
 2009-08-08  Felix Zielcke  <fzielcke@z-51.de>
 
+	* util/grub.d/00_header.in: Fix a comment.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/10_windows.in: Likewise.
+	* util/grub.d/10_hurd.in: Likewise.
+
+2009-08-08  Felix Zielcke  <fzielcke@z-51.de>
+
 	* util/grub-mkconfig.in: Allow the user to specify the used font
 	with GRUB_FONT.
 
