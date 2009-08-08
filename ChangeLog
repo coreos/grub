@@ -1,3 +1,9 @@
+2009-08-08  Pavel Roskin  <proski@gnu.org>
+
+	* util/grub-mkconfig.in: Define datarootdir, datadir may depend
+	on it.  Add missing space before closing bracket.  Fix
+	misleading formatting.
+
 2009-08-07  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* docs/grub.texi: Major overhaul.  Remove all sections that are

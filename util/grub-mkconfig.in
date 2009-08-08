@@ -24,6 +24,7 @@ sbindir=@sbindir@
 libdir=@libdir@
 sysconfdir=@sysconfdir@
 package_version=@PACKAGE_VERSION@
+datarootdir=@datarootdir@
 datadir=@datadir@
 pkgdatadir=${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`
 grub_prefix=`echo /boot/grub | sed ${transform}`
@@ -161,17 +162,17 @@ case ${GRUB_TERMINAL_OUTPUT} in
 	else
 	  continue
 	fi
-	if [ "${basename}" = "ascii"] ; then
+	if [ "${basename}" = "ascii" ] ; then
 	  # make sure all our children behave in conformance with ascii..
 	  export LANG=C
 	fi
 	break 2
       done
     done
-      if [ -z "${GRUB_FONT_PATH}" ] ; then
-        # fallback to the native terminal for this platform
-        unset GRUB_TERMINAL_OUTPUT
-      fi
+    if [ -z "${GRUB_FONT_PATH}" ] ; then
+      # fallback to the native terminal for this platform
+      unset GRUB_TERMINAL_OUTPUT
+    fi
   ;;
   *)
     # make sure all our children behave in conformance with ascii..
