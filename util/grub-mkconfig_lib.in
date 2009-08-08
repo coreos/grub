@@ -185,16 +185,16 @@ version_test_numeric ()
 
 version_test_gt ()
 {
-  local a=`echo $1 | sed -e "s/[^-]*-//g"`
-  local b=`echo $2 | sed -e "s/[^-]*-//g"`
+  local a=`echo $1 | sed -e "s/[^-]*-//"`
+  local b=`echo $2 | sed -e "s/[^-]*-//"`
   local cmp=gt
   if [ "x$b" = "x" ] ; then
     return 0
   fi
   case $a:$b in
     *.old:*.old) ;;
-    *.old:*) a=`echo -n $a | sed -e s/\.old$//g` ; cmp=gt ;;
-    *:*.old) b=`echo -n $b | sed -e s/\.old$//g` ; cmp=ge ;;
+    *.old:*) a=`echo -n $a | sed -e s/\.old$//` ; cmp=gt ;;
+    *:*.old) b=`echo -n $b | sed -e s/\.old$//` ; cmp=ge ;;
   esac
   version_test_numeric $a $cmp $b
   return $?
