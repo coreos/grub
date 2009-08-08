@@ -18,6 +18,7 @@
 
 void EXPORT_FUNC (memset) (void) __attribute__ ((weak));
 void EXPORT_FUNC (__ashldi3) (void) __attribute__ ((weak));
+void EXPORT_FUNC (__ashrdi3) (void) __attribute__ ((weak));
 void EXPORT_FUNC (__lshrdi3) (void) __attribute__ ((weak));
 void EXPORT_FUNC (__trampoline_setup) (void) __attribute__ ((weak));
 void EXPORT_FUNC (__ucmpdi2) (void) __attribute__ ((weak));

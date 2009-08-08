@@ -1,5 +1,8 @@
 2009-08-08  Pavel Roskin  <proski@gnu.org>
 
+	* include/grub/powerpc/libgcc.h: Export __ashrdi3() if
+	available, xfs.mod needs it now.
+
 	* util/grub-mkconfig_lib.in (version_test_numeric): Don't use
 	the "g" modifier in sed when the intention is to strip something
 	once.  This fixes comparison of kernels with multiple dashes.
