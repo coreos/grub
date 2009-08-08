@@ -1,5 +1,13 @@
 2009-08-08  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/grub-dumpdevtree: Moved from here ...
+	* util/i386/efi/grub-dumpdevtree: ... to here.
+	(hexify): New function.  Converts a string to its hex version.
+	Generate hex versions of "efi" and "device-properties" by calling
+	hexify() on the ASCII strings rather than by hardcoding numbers.
+
+2009-08-08  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* fs/jfs.c: Update copyright year.
 
 2009-08-08  Felix Zielcke  <fzielcke@z-51.de>
