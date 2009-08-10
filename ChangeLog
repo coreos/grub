@@ -1,3 +1,18 @@
+2009-08-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/bsd.h (KERNEL_TYPE_NONE, KERNEL_TYPE_FREEBSD)
+	(KERNEL_TYPE_OPENBSD, KERNEL_TYPE_NETBSD): Convert to ...
+	(bsd_kernel_types): ... this enum.
+
+	* loader/i386/bsd.c (grub_cmd_freebsd_loadenv, grub_cmd_freebsd_module)
+	(grub_cmd_freebsd_module_elf): Abort with "You need to load the
+	kernel first." when `kernel_type' is set to KERNEL_TYPE_NONE.
+
+	(grub_bsd_load_aout, grub_bsd_load, grub_cmd_freebsd_loadenv)
+	(grub_cmd_freebsd_module, grub_cmd_freebsd_module_elf)
+	(GRUB_MOD_INIT (bsd)): Fix capitalization in a few error
+	messages.
+
 2009-08-08  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/grub-dumpdevtree: Moved from here ...
