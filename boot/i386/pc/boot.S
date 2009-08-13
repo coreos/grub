@@ -24,13 +24,8 @@
  *  defines for the code go here
  */
 
-	/* Absolute addresses
-	   This makes the assembler generate the address without support
-	   from the linker. (ELF can't relocate 16-bit addresses!) */
-#define ABS(x) (x-_start+0x7c00)
-
 	/* Print message string */
-#define MSG(x)	movw $ABS(x), %si; call L_message
+#define MSG(x)	movw $x, %si; call L_message
 
 	.file	"boot.S"
 
@@ -125,7 +120,7 @@ boot_drive_check:
 	 * ljmp to the next instruction because some bogus BIOSes
 	 * jump to 07C0:0000 instead of 0000:7C00.
 	 */
-	ljmp	$0, $ABS(real_start)
+	ljmp	$0, $real_start
 
 real_start:
 
@@ -142,7 +137,7 @@ real_start:
 	/*
 	 *  Check if we have a forced disk reference here
 	 */
-	movb   ABS(boot_drive), %al
+	movb   boot_drive, %al
 	cmpb	$0xff, %al
 	je	1f
 	movb	%al, %dl
@@ -154,7 +149,7 @@ real_start:
 	MSG(notification_string)
 
 	/* set %si to the disk address packet */
-	movw	$ABS(disk_address_packet), %si
+	movw	$disk_address_packet, %si
 
 	/* do not probe LBA if the drive is a floppy */
 	testb	$GRUB_BOOT_MACHINE_BIOS_HD_FLAG, %dl
@@ -195,9 +190,9 @@ lba_mode:
 	movw	$0x0010, (%si)
 
 	/* the absolute address */
-	movl	ABS(kernel_sector), %ebx
+	movl	kernel_sector, %ebx
 	movl	%ebx, 8(%si)
-	movl	ABS(kernel_sector + 4), %ebx
+	movl	kernel_sector + 4, %ebx
 	movl	%ebx, 12(%si)
 
 	/* the segment of buffer address */
@@ -265,13 +260,13 @@ L_final_init:
 
 setup_sectors:
 	/* load logical sector start (top half) */
-	movl	ABS(kernel_sector + 4), %eax
+	movl	kernel_sector + 4, %eax
 
 	orl	%eax, %eax
 	jnz	L_geometry_error
 
 	/* load logical sector start (bottom half) */
-	movl	ABS(kernel_sector), %eax
+	movl	kernel_sector, %eax
 
 	/* zero %edx */
 	xorl	%edx, %edx
@@ -442,7 +437,7 @@ L_floppy_probe:
  *  Perform floppy probe.
  */
 
-	movw	$ABS(probe_values-1), %si
+	movw	$probe_values - 1, %si
 
 L_probe_loop:
 	/* reset floppy controller INT 13h AH=0 */

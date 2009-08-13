@@ -1,5 +1,8 @@
 2009-08-13  Pavel Roskin  <proski@gnu.org>
 
+	* boot/i386/pc/boot.S: Remove ABS macro, it's not required by
+	any modern compilers we support.
+
 	* boot/i386/pc/boot.S: Remove all code dependent on APPLE_CC.
 	Use local labels starting with "L_" so that Apple assembler
 	knows they are local.
