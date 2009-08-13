@@ -1,3 +1,9 @@
+2009-08-13  Yves Blusseau  <blusseau@zetam.org>
+
+	* include/grub/symbol.h: Add the LOCAL macro.
+	* boot/i386/pc/boot.S: Use the LOCAL macro for all labels
+	starting with "L_".
+
 2009-08-13  Pavel Roskin  <proski@gnu.org>
 
 	* boot/i386/pc/boot.S: Remove ABS macro, it's not required by

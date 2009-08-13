@@ -21,6 +21,9 @@
 
 #include <config.h>
 
+/* Apple assembler requires local labels to start with a capital L */
+#define LOCAL(sym)	L_ ## sym
+
 /* Add an underscore to a C symbol in assembler code if needed. */
 #ifdef HAVE_ASM_USCORE
 # define EXT_C(sym)	_ ## sym

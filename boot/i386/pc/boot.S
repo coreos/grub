@@ -17,6 +17,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/symbol.h>
 #include <grub/boot.h>
 #include <grub/machine/boot.h>
 
@@ -25,7 +26,7 @@
  */
 
 	/* Print message string */
-#define MSG(x)	movw $x, %si; call L_message
+#define MSG(x)	movw $x, %si; call LOCAL(message)
 
 	.file	"boot.S"
 
@@ -47,7 +48,7 @@ start:
 	 * parameter block.
 	 */
 
-	jmp	L_after_BPB
+	jmp	LOCAL(after_BPB)
 	nop	/* do I care about this ??? */
 
 	/*
@@ -95,7 +96,7 @@ boot_drive:
 	.byte 0xff	/* the disk to load kernel from */
 			/* 0xff means use the boot drive */
 
-L_after_BPB:
+LOCAL(after_BPB):
 
 /* general setup */
 	cli		/* we're not safe here! */
@@ -153,7 +154,7 @@ real_start:
 
 	/* do not probe LBA if the drive is a floppy */
 	testb	$GRUB_BOOT_MACHINE_BIOS_HD_FLAG, %dl
-	jz	L_chs_mode
+	jz	LOCAL(chs_mode)
 
 	/* check if LBA is supported */
 	movb	$0x41, %ah
@@ -168,12 +169,12 @@ real_start:
 	pushw	%dx
 
 	/* use CHS if fails */
-	jc	L_chs_mode
+	jc	LOCAL(chs_mode)
 	cmpw	$0xaa55, %bx
-	jne	L_chs_mode
+	jne	LOCAL(chs_mode)
 
 	andw	$1, %cx
-	jz	L_chs_mode
+	jz	LOCAL(chs_mode)
 
 lba_mode:
 	xorw	%ax, %ax
@@ -211,30 +212,30 @@ lba_mode:
 	int	$0x13
 
 	/* LBA read is not supported, so fallback to CHS.  */
-	jc	L_chs_mode
+	jc	LOCAL(chs_mode)
 
 	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
-	jmp	L_copy_buffer
+	jmp	LOCAL(copy_buffer)
 
-L_chs_mode:
+LOCAL(chs_mode):
 	/*
 	 *  Determine the hard disk geometry from the BIOS!
 	 *  We do this first, so that LS-120 IDE floppies work correctly.
 	 */
 	movb	$8, %ah
 	int	$0x13
-	jnc	L_final_init
+	jnc	LOCAL(final_init)
 
 	/*
 	 *  The call failed, so maybe use the floppy probe instead.
 	 */
 	testb	$GRUB_BOOT_MACHINE_BIOS_HD_FLAG, %dl
-	jz	L_floppy_probe
+	jz	LOCAL(floppy_probe)
 
 	/* Nope, we definitely have a hard disk, and we're screwed. */
-	jmp	L_hd_probe_error
+	jmp	LOCAL(hd_probe_error)
 
-L_final_init:
+LOCAL(final_init):
 	/* set the mode to zero */
 	movzbl	%dh, %eax
 	movb	%ah, -1(%si)
@@ -263,7 +264,7 @@ setup_sectors:
 	movl	kernel_sector + 4, %eax
 
 	orl	%eax, %eax
-	jnz	L_geometry_error
+	jnz	LOCAL(geometry_error)
 
 	/* load logical sector start (bottom half) */
 	movl	kernel_sector, %eax
@@ -282,7 +283,7 @@ setup_sectors:
 
 	/* do we need too many cylinders? */
 	cmpw	8(%si), %ax
-	jge	L_geometry_error
+	jge	LOCAL(geometry_error)
 
 	/* normalize sector start (1-based) */
 	incb	%cl
@@ -324,11 +325,11 @@ setup_sectors:
 	movw	$0x0201, %ax	/* function 2 */
 	int	$0x13
 
-	jc	L_read_error
+	jc	LOCAL(read_error)
 
 	movw	%es, %bx
 
-L_copy_buffer:
+LOCAL(copy_buffer):
 	/*
 	 * We need to save %cx and %si because the startup code in
 	 * kernel uses them without initializing them.
@@ -358,30 +359,31 @@ L_copy_buffer:
 /*
  * BIOS Geometry translation error (past the end of the disk geometry!).
  */
-L_geometry_error:
+LOCAL(geometry_error):
 	MSG(geometry_error_string)
-	jmp	L_general_error
+	jmp	LOCAL(general_error)
 
 /*
  * Disk probe failure.
  */
-L_hd_probe_error:
+LOCAL(hd_probe_error):
 	MSG(hd_probe_error_string)
-	jmp	L_general_error
+	jmp	LOCAL(general_error)
 
 /*
  * Read error on the disk.
  */
-L_read_error:
+LOCAL(read_error):
 	MSG(read_error_string)
 
-L_general_error:
+LOCAL(general_error):
 	MSG(general_error_string)
 
 /* go here when you need to stop the machine hard after an error condition */
         /* tell the BIOS a boot failure, which may result in no effect */
         int	$0x18
-L_stop:	jmp	L_stop
+LOCAL(stop):
+	jmp	LOCAL(stop)
 
 notification_string:	.asciz "GRUB "
 geometry_error_string:	.asciz "Geom"
@@ -404,7 +406,7 @@ general_error_string:	.asciz " Error\r\n"
 	movw	$0x0001, %bx
 	movb	$0xe, %ah
 	int	$0x10		/* display a byte */
-L_message:
+LOCAL(message):
 	lodsb
 	cmpb	$0, %al
 	jne	1b	/* if not end of string, jmp to display */
@@ -432,14 +434,14 @@ part_start:
 probe_values:
 	.byte	36, 18, 15, 9, 0
 
-L_floppy_probe:
+LOCAL(floppy_probe):
 /*
  *  Perform floppy probe.
  */
 
 	movw	$probe_values - 1, %si
 
-L_probe_loop:
+LOCAL(probe_loop):
 	/* reset floppy controller INT 13h AH=0 */
 	xorw	%ax, %ax
 	int	$0x13
@@ -455,7 +457,7 @@ L_probe_loop:
  * Floppy disk probe failure.
  */
 	MSG(fd_probe_error_string)
-	jmp	L_general_error
+	jmp	LOCAL(general_error)
 
 /* "Floppy" */
 fd_probe_error_string:	.asciz "Floppy"
@@ -468,14 +470,14 @@ fd_probe_error_string:	.asciz "Floppy"
 	movb	$0, %dh
 	int	$0x13
 
-	/* if error, jump to "L_probe_loop" */
-	jc	L_probe_loop
+	/* if error, jump to "LOCAL(probe_loop)" */
+	jc	LOCAL(probe_loop)
 
 	/* %cl is already the correct value! */
 	movb	$1, %dh
 	movb	$79, %ch
 
-	jmp	L_final_init
+	jmp	LOCAL(final_init)
 
 	. = _start + GRUB_BOOT_MACHINE_PART_END
 
