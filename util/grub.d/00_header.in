@@ -37,7 +37,6 @@ if [ "x${GRUB_GFXMODE}" = "x" ] ; then GRUB_GFXMODE=640x480 ; fi
 
 cat << EOF
 set default=${GRUB_DEFAULT}
-set timeout=${GRUB_TIMEOUT}
 EOF
 
 case ${GRUB_TERMINAL_INPUT}:${GRUB_TERMINAL_OUTPUT} in
@@ -112,3 +111,20 @@ fi
 EOF
   ;;
 esac
+
+if [ "x${GRUB_HIDDEN_TIMEOUT}" != "x" ] ; then
+  if [ "x${GRUB_HIDDEN_TIMEOUT_QUIET}" = "xtrue" ] ; then 
+    verbose=
+  else
+    verbose=" --verbose"
+  fi
+  cat << EOF
+if sleep$verbose --interruptible ${GRUB_HIDDEN_TIMEOUT} ; then
+  set timeout=${GRUB_TIMEOUT}
+fi
+EOF
+else
+  cat << EOF
+set timeout=${GRUB_TIMEOUT}
+EOF
+fi
