@@ -10,7 +10,8 @@ COMMON_LDFLAGS = -m32 -nostdlib
 script/sh/lexer.c_DEPENDENCIES = grub_script.tab.h
 
 # Images.
-pkglib_IMAGES = boot.img diskboot.img kernel.img pxeboot.img cdboot.img
+pkglib_IMAGES = boot.img cdboot.img diskboot.img kernel.img lnxboot.img \
+	pxeboot.img
 
 # For boot.img.
 boot_img_SOURCES = boot/i386/pc/boot.S
@@ -31,9 +32,6 @@ diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)8000
 diskboot_img_FORMAT = binary
 
 # For lnxboot.img.
-ifeq ($(TARGET_APPLE_CC), 0)
-pkglib_IMAGES += lnxboot.img
-endif
 lnxboot_img_SOURCES = boot/i386/pc/lnxboot.S
 lnxboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 lnxboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)6000

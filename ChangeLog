@@ -1,3 +1,13 @@
+2009-08-14  Pavel Roskin  <proski@gnu.org>
+
+	* boot/i386/pc/cdboot.S: Use LOCAL for local labels.  Eliminate
+	ABS and APPLE_CC.
+	* boot/i386/pc/diskboot.S: Likewise.
+	* boot/i386/pc/lnxboot.S: Likewise.  Hardcode the number of code
+	sectors allow compilation on MacOSX.
+	* conf/i386-pc.rmk: Enable unconditional compilation of
+	lnxboot.img.
+
 2009-08-13  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig.in: Export GRUB_HIDDEN_TIMEOUT.
