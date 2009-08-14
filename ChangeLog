@@ -1,3 +1,57 @@
+2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Framebuffer split.
+
+	* commands/i386/pc/vbetest.c (grub_cmd_vbetest): Restore video
+	subsystem at the end.
+	* conf/common.rmk (pkglib_MODULES): Add video_fb.mod.
+	(video_fb_mod_SOURCES): New variable.
+	(video_fb_mod_CFLAGS): Likewise.
+	(video_fb_mod_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk (vbe_mod_SOURCES): Remove video/i386/pc/vbeblit.c,
+	video/i386/pc/vbefill.c and video/i386/pc/vbeutil.c.
+	* video/i386/pc/vbeblit.c: Moved from here ...
+	* video/fb/fbblit.c: ..here. Replaced 'vbe' with 'fb'.
+	* video/i386/pc/vbefill.c: Moved from here ...
+	* video/fb/fbfill.c: ..here. Replaced 'vbe' with 'fb'.
+	* video/i386/pc/vbeutil.c: Moved from here ...
+	* video/fb/fbutil.c: ..here. Replaced 'vbe' with 'fb'.
+	* include/grub/i386/pc/vbeblit.h: Moved from here ...
+	* include/grub/fbblit.h: ... here. Replaced 'vbe' with 'fb'.
+	* include/grub/i386/pc/vbefill.h: Moved from here ...
+	* include/grub/fbfill.h: ... here. Replaced 'vbe' with 'fb'.
+	* include/grub/i386/pc/vbeutil.h: Moved from here ...
+	* include/grub/fbutil.h: ... here. Replaced 'vbe' with 'fb'.
+	* include/grub/i386/pc/vbe.h: Moved framebuffer part ...
+	* include/grub/video_fb.h: ... here. Replaced 'vbe' with 'fb'.
+	* include/grub/video.h (GRUB_VIDEO_RENDER_TARGET_FRONT_BUFFER): Removed.
+	(GRUB_VIDEO_RENDER_TARGET_BACK_BUFFER): Likewise.
+	(grub_video_adapter): Added 'get_info_and_fini'.
+	(grub_video_get_info_and_fini): New prototype.
+	(grub_video_set_mode): make modestring const char *.
+	* loader/i386/linux.c (grub_linux_setup_video): Use
+	grub_video_get_info_and_fini.
+	(grub_linux_boot): Move modesetting just before booting.
+	* loader/i386/pc/xnu.c (grub_xnu_set_video): Use
+	grub_video_get_info_and_fini.
+	* video/i386/pc/vbe.c: Moved framebuffer part ...
+	* video/fb/video_fb.c: ... here. Replaced 'vbe' with 'fb'.
+	* video/i386/pc/vbe.c (grub_vbe_set_video_mode): Use
+	grub_video_fbstd_colors and grub_video_fb_set_palette.
+	(grub_video_vbe_init): Clear 'framebuffer' variable and use
+	grub_video_fb_init.
+	(grub_video_vbe_fini): Use grub_video_fb_fini.
+	(grub_video_vbe_setup): Use framebuffer.render_target instead of
+	render_target and use grub_video_fb_set_active_render_target and
+	grub_video_fb_set_palette.
+	(grub_video_vbe_set_palette): Use grub_video_fb_set_palette.
+	(grub_video_vbe_set_viewport): Use grub_video_fb_set_viewport.
+	(grub_video_vbe_adapter): Use framebuffer.
+	* video/video.c (grub_video_get_info_and_fini): New function.
+	(grub_video_set_mode): Make modestring const char *.
+	(GRUB_MOD_INIT(video_video)): Don't set variables to 0 since these
+	values are already initialised.
+
 2009-08-14  Pavel Roskin  <proski@gnu.org>
 
 	* boot/i386/pc/cdboot.S: Use LOCAL for local labels.  Eliminate

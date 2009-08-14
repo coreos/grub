@@ -16,12 +16,12 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/vbeutil.h>
+#include <grub/fbutil.h>
 #include <grub/types.h>
 #include <grub/video.h>
 
 grub_uint8_t *
-get_data_ptr (struct grub_video_i386_vbeblit_info *source,
+get_data_ptr (struct grub_video_fbblit_info *source,
               unsigned int x, unsigned int y)
 {
   grub_uint8_t *ptr = 0;
@@ -64,7 +64,7 @@ get_data_ptr (struct grub_video_i386_vbeblit_info *source,
 }
 
 grub_video_color_t
-get_pixel (struct grub_video_i386_vbeblit_info *source,
+get_pixel (struct grub_video_fbblit_info *source,
            unsigned int x, unsigned int y)
 {
   grub_video_color_t color = 0;
@@ -111,7 +111,7 @@ get_pixel (struct grub_video_i386_vbeblit_info *source,
 }
 
 void
-set_pixel (struct grub_video_i386_vbeblit_info *source,
+set_pixel (struct grub_video_fbblit_info *source,
            unsigned int x, unsigned int y, grub_video_color_t color)
 {
   switch (source->mode_info->bpp)

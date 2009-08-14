@@ -535,12 +535,17 @@ lua_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Common Video Subsystem specific modules.
 pkglib_MODULES += video.mod videotest.mod bitmap.mod tga.mod jpeg.mod	\
-	png.mod	font.mod gfxterm.mod
+	png.mod	font.mod gfxterm.mod video_fb.mod
 
 # For video.mod.
 video_mod_SOURCES = video/video.c
 video_mod_CFLAGS = $(COMMON_CFLAGS)
 video_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+video_fb_mod_SOURCES = video/fb/video_fb.c video/fb/fbblit.c \
+		  video/fb/fbfill.c video/fb/fbutil.c
+video_fb_mod_CFLAGS = $(COMMON_CFLAGS)
+video_fb_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For videotest.mod.
 videotest_mod_SOURCES = commands/videotest.c
