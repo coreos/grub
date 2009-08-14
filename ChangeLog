@@ -1,5 +1,12 @@
 2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Handle group offset on UFS1.
+
+	* fs/ufs.c (grub_ufs_sblock): New field 'cylg_mask'.
+	(grub_ufs_read_inode) [!MODE_UFS2]: handle cylg_offset and cylg_mask.
+
+2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Split ufs.mod into ufs1.mod and ufs2.mod.
 
 	* conf/common.rmk (grub_probe_SOURCES): Add fs/ufs2.c.

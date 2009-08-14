@@ -88,7 +88,7 @@ struct grub_ufs_sblock
 
   /* The start of the cylinder group.  */
   grub_uint32_t cylg_offset;
-  grub_uint8_t unused3[4];
+  grub_uint32_t cylg_mask;
 
   grub_uint32_t mtime;
   grub_uint8_t unused4[12];
@@ -359,6 +359,11 @@ grub_ufs_read_inode (struct grub_ufs_data *data, int ino, char *inode)
 
   /* The first block of the group.  */
   int grpblk = group * (grub_le_to_cpu32 (sblock->frags_per_group));
+
+#ifndef MODE_UFS2
+  grpblk += grub_le_to_cpu32 (sblock->cylg_offset)
+    * (group & (~grub_le_to_cpu32 (sblock->cylg_mask)));
+#endif
 
   if (!inode)
     {
