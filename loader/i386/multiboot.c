@@ -53,7 +53,7 @@ extern grub_dl_t my_mod;
 static struct grub_multiboot_info *mbi, *mbi_dest;
 static grub_addr_t entry;
 
-static char *playground;
+static char *playground = 0;
 static grub_size_t code_size;
 
 static grub_err_t
@@ -68,7 +68,7 @@ grub_multiboot_boot (void)
 static grub_err_t
 grub_multiboot_unload (void)
 {
-  if (mbi)
+  if (playground)
     {
       unsigned int i;
       for (i = 0; i < mbi->mods_count; i++)
@@ -79,11 +79,11 @@ grub_multiboot_unload (void)
 		     ((struct grub_mod_list *) mbi->mods_addr)[i].cmdline);
 	}
       grub_free ((void *) mbi->mods_addr);
-      grub_free ((void *) mbi->cmdline);
-      grub_free (mbi);
+      grub_free (playground);
     }
 
-  mbi = 0;
+  mbi = NULL;
+  playground = NULL;
   grub_dl_unref (my_mod);
 
   return GRUB_ERR_NONE;

@@ -1,5 +1,10 @@
 2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* loader/i386/multiboot.c (grub_multiboot_unload): Don't free mbi and
+	mbi->cmdline but free playground.
+
+2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Handle group offset on UFS1.
 
 	* fs/ufs.c (grub_ufs_sblock): New field 'cylg_mask'.
