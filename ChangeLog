@@ -11,9 +11,9 @@
 	(ufs1_mod_SOURCES): New variable.
 	(ufs1_mod_CFLAGS): Likewise.
 	(ufs1_mod_LDFLAGS): Likewise.
-	(ufs1_mod_SOURCES): New variable.
-	(ufs1_mod_CFLAGS): Likewise.
-	(ufs1_mod_LDFLAGS): Likewise.
+	(ufs2_mod_SOURCES): New variable.
+	(ufs2_mod_CFLAGS): Likewise.
+	(ufs2_mod_LDFLAGS): Likewise.
 	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Add fs/ufs2.c.
 	* conf/i386-efi.rmk (util/i386/efi/grub-mkimage.c_DEPENDENCIES):
 	Likewise.
