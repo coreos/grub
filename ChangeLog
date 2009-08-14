@@ -1,5 +1,11 @@
 2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* loader/i386/multiboot.c (grub_multiboot): Don't pass filename to
+	payload.
+	(grub_module): Likewise.
+
+2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* loader/i386/multiboot.c (grub_multiboot_unload): Don't free mbi and
 	mbi->cmdline but free playground.
 

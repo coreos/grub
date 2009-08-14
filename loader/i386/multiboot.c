@@ -201,6 +201,8 @@ grub_multiboot (int argc, char *argv[])
   grub_ssize_t len, cmdline_length, boot_loader_name_length;
   grub_uint32_t mmap_length;
   int i;
+  int cmdline_argc;
+  char **cmdline_argv;
 
   grub_loader_unset ();
 
@@ -257,8 +259,15 @@ grub_multiboot (int argc, char *argv[])
   mmap_length = grub_get_multiboot_mmap_len ();
 
   /* Figure out cmdline length.  */
-  for (i = 0, cmdline_length = 0; i < argc; i++)
-    cmdline_length += grub_strlen (argv[i]) + 1;
+  /* Skip filename.  */
+  cmdline_argc = argc - 1;
+  cmdline_argv = argv + 1;
+
+  for (i = 0, cmdline_length = 0; i < cmdline_argc; i++)
+    cmdline_length += grub_strlen (cmdline_argv[i]) + 1;
+
+  if (cmdline_length == 0)
+    cmdline_length = 1;
 
   boot_loader_name_length = sizeof(PACKAGE_STRING);
 
@@ -351,14 +360,16 @@ grub_multiboot (int argc, char *argv[])
   if (! cmdline)
     goto fail;
 
-  for (i = 0; i < argc; i++)
+  for (i = 0; i < cmdline_argc; i++)
     {
-      p = grub_stpcpy (p, argv[i]);
+      p = grub_stpcpy (p, cmdline_argv[i]);
       *(p++) = ' ';
     }
 
   /* Remove the space after the last word.  */
-  *(--p) = '\0';
+  if (p != cmdline)
+    p--;
+  *p = 0;
 
   mbi->flags |= MULTIBOOT_INFO_CMDLINE;
   mbi->cmdline = (grub_uint32_t) cmdline_addr (grub_multiboot_payload_dest);
@@ -393,6 +404,8 @@ grub_module  (int argc, char *argv[])
   grub_ssize_t size, len = 0;
   char *module = 0, *cmdline = 0, *p;
   int i;
+  int cmdline_argc;
+  char **cmdline_argv;
 
   if (argc == 0)
     {
@@ -422,21 +435,30 @@ grub_module  (int argc, char *argv[])
       goto fail;
     }
 
-  for (i = 0; i < argc; i++)
-    len += grub_strlen (argv[i]) + 1;
+  /* Skip module name.  */
+  cmdline_argc = argc - 1;
+  cmdline_argv = argv + 1;
+
+  for (i = 0; i < cmdline_argc; i++)
+    len += grub_strlen (cmdline_argv[i]) + 1;
+
+  if (len == 0)
+    len = 1;
 
   cmdline = p = grub_malloc (len);
   if (! cmdline)
     goto fail;
 
-  for (i = 0; i < argc; i++)
+  for (i = 0; i < cmdline_argc; i++)
     {
-      p = grub_stpcpy (p, argv[i]);
+      p = grub_stpcpy (p, cmdline_argv[i]);
       *(p++) = ' ';
     }
 
   /* Remove the space after the last word.  */
-  *(--p) = '\0';
+  if (p != cmdline)
+    p--;
+  *p = '\0';
 
   if (mbi->flags & MULTIBOOT_INFO_MODS)
     {
