@@ -1,5 +1,36 @@
 2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Split ufs.mod into ufs1.mod and ufs2.mod.
+
+	* conf/common.rmk (grub_probe_SOURCES): Add fs/ufs2.c.
+	(grub_fstest_SOURCES): Likewise.
+	(pkglib_MODULES): Remove ufs.mod. Add ufs1.mod and ufs2.mod.
+	(ufs_mod_SOURCES): Remove.
+	(ufs_mod_CFLAGS): Likewise.
+	(ufs_mod_LDFLAGS): Likewise.
+	(ufs1_mod_SOURCES): New variable.
+	(ufs1_mod_CFLAGS): Likewise.
+	(ufs1_mod_LDFLAGS): Likewise.
+	(ufs1_mod_SOURCES): New variable.
+	(ufs1_mod_CFLAGS): Likewise.
+	(ufs1_mod_LDFLAGS): Likewise.
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Add fs/ufs2.c.
+	* conf/i386-efi.rmk (util/i386/efi/grub-mkimage.c_DEPENDENCIES):
+	Likewise.
+	(grub_emu_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Likewise.
+	(grub_setup_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/sparc64.rmk (grub_emu_SOURCES): Likewise.
+	(grub_setup_SOURCES): Likewise.
+	* conf/x86_64-efi.rmk (util/i386/efi/grub-mkimage.c_DEPENDENCIES):
+	Likewise.
+	* fs/ufs2.c: New file.
+	* fs/ufs.c: Separate UFS1 from UFS2 by using preprocessor.
+
+2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Framebuffer split.
 
 	* commands/i386/pc/vbetest.c (grub_cmd_vbetest): Restore video
