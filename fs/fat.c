@@ -423,8 +423,8 @@ grub_fat_read_data (grub_disk_t disk, struct grub_fat_data *data,
 	    }
 
 #if 0
-	  grub_printf ("%s:%d: fat_size=%d, next_cluster=%u\n",
-		       __FILE__, __LINE__, data->fat_size, next_cluster);
+	  grub_dprintf ("fat", "fat_size=%d, next_cluster=%u\n",
+			data->fat_size, next_cluster);
 #endif
 
 	  /* Check the end.  */

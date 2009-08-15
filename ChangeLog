@@ -1,3 +1,9 @@
+2009-08-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/affs.c (grub_affs_read_symlink): Change leftover grub_printf into
+	grub_dprintf.
+	* fs/fat.c (grub_fat_read_data): Likewise.
+
 2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* loader/i386/multiboot.c (grub_multiboot): Don't pass filename to
