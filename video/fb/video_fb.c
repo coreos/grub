@@ -83,44 +83,6 @@ grub_video_fb_get_info (struct grub_video_mode_info *mode_info)
   return GRUB_ERR_NONE;
 }
 
-
-grub_uint8_t *
-grub_video_fb_get_video_ptr (struct grub_video_fbblit_info *source,
-			     grub_uint32_t x, grub_uint32_t y)
-{
-  grub_uint8_t *ptr = 0;
-
-  switch (source->mode_info->bpp)
-    {
-    case 32:
-      ptr = (grub_uint8_t *)source->data
-            + y * source->mode_info->pitch
-            + x * 4;
-      break;
-
-    case 24:
-      ptr = (grub_uint8_t *)source->data
-            + y * source->mode_info->pitch
-            + x * 3;
-      break;
-
-    case 16:
-    case 15:
-      ptr = (grub_uint8_t *)source->data
-            + y * source->mode_info->pitch
-            + x * 2;
-      break;
-
-    case 8:
-      ptr = (grub_uint8_t *)source->data
-            + y * source->mode_info->pitch
-            + x;
-      break;
-    }
-
-  return ptr;
-}
-
 grub_err_t
 grub_video_fb_get_palette (unsigned int start, unsigned int count,
 			   struct grub_video_palette_data *palette_data)

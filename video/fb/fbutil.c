@@ -16,12 +16,23 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* SPECIAL NOTES!
+
+   Please note following when reading the code below:
+
+   - In this driver we assume that every memory can be accessed by same memory
+     bus.  If there are different address spaces do not use this code as a base
+     code for other archs.
+
+   - Every function in this code assumes that bounds checking has been done in
+     previous phase and they are opted out in here.  */
+
 #include <grub/fbutil.h>
 #include <grub/types.h>
 #include <grub/video.h>
 
 grub_uint8_t *
-get_data_ptr (struct grub_video_fbblit_info *source,
+grub_video_fb_get_video_ptr (struct grub_video_fbblit_info *source,
               unsigned int x, unsigned int y)
 {
   grub_uint8_t *ptr = 0;
@@ -72,24 +83,24 @@ get_pixel (struct grub_video_fbblit_info *source,
   switch (source->mode_info->bpp)
     {
     case 32:
-      color = *(grub_uint32_t *)get_data_ptr (source, x, y);
+      color = *(grub_uint32_t *)grub_video_fb_get_video_ptr (source, x, y);
       break;
 
     case 24:
       {
         grub_uint8_t *ptr;
-        ptr = get_data_ptr (source, x, y);
+        ptr = grub_video_fb_get_video_ptr (source, x, y);
         color = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16);
       }
       break;
 
     case 16:
     case 15:
-      color = *(grub_uint16_t *)get_data_ptr (source, x, y);
+      color = *(grub_uint16_t *)grub_video_fb_get_video_ptr (source, x, y);
       break;
 
     case 8:
-      color = *(grub_uint8_t *)get_data_ptr (source, x, y);
+      color = *(grub_uint8_t *)grub_video_fb_get_video_ptr (source, x, y);
       break;
 
     case 1:
@@ -120,7 +131,7 @@ set_pixel (struct grub_video_fbblit_info *source,
       {
         grub_uint32_t *ptr;
 
-        ptr = (grub_uint32_t *)get_data_ptr (source, x, y);
+        ptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (source, x, y);
 
         *ptr = color;
       }
@@ -131,7 +142,7 @@ set_pixel (struct grub_video_fbblit_info *source,
         grub_uint8_t *ptr;
         grub_uint8_t *colorptr = (grub_uint8_t *)&color;
 
-        ptr = get_data_ptr (source, x, y);
+        ptr = grub_video_fb_get_video_ptr (source, x, y);
 
         ptr[0] = colorptr[0];
         ptr[1] = colorptr[1];
@@ -144,7 +155,7 @@ set_pixel (struct grub_video_fbblit_info *source,
       {
         grub_uint16_t *ptr;
 
-        ptr = (grub_uint16_t *)get_data_ptr (source, x, y);
+        ptr = (grub_uint16_t *)grub_video_fb_get_video_ptr (source, x, y);
 
         *ptr = (grub_uint16_t) (color & 0xFFFF);
       }
@@ -154,7 +165,7 @@ set_pixel (struct grub_video_fbblit_info *source,
       {
         grub_uint8_t *ptr;
 
-        ptr = (grub_uint8_t *)get_data_ptr (source, x, y);
+        ptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (source, x, y);
 
         *ptr = (grub_uint8_t) (color & 0xFF);
       }

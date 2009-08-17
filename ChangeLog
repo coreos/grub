@@ -1,3 +1,15 @@
+2009-08-17  Michal Suchanek  <hramrach@centrum.cz>
+
+	Remove duplicate grub_video_fb_get_video_ptr.
+
+	* include/grub/fbutil.h (get_data_ptr): Rename to ...
+	(grub_video_fb_get_video_ptr): ... this.
+	* include/grub/video_fb.h (grub_video_fb_get_video_ptr): Removed.
+	* video/fb/fbutil.c: Add comment about addressing.
+	(get_data_ptr): Rename to ...
+	(grub_video_fb_get_video_ptr): ... this. All users updated.
+	* video/fb/video_fb.c (grub_video_fb_get_video_ptr): Remove.
+
 2009-08-17  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* fs/fat.c (grub_fat_read_data): Remove `#if 0' braces around the

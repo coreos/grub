@@ -33,9 +33,6 @@ struct grub_video_fbrender_target;
 #define GRUB_VIDEO_FBSTD_NUMCOLORS 16
 extern struct grub_video_palette_data grub_video_fbstd_colors[GRUB_VIDEO_FBSTD_NUMCOLORS];
 
-grub_uint8_t * grub_video_fb_get_video_ptr (struct grub_video_fbblit_info *source,
-                                             grub_uint32_t x, grub_uint32_t y);
-
 grub_err_t
 grub_video_fb_init (void);
 

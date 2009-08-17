@@ -83,8 +83,8 @@ grub_video_fbblit_replace_directN (struct grub_video_fbblit_info *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint32_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       grub_memmove (dstptr, srcptr, width * bpp);
     }
@@ -110,8 +110,8 @@ grub_video_fbblit_replace_BGRX8888_RGBX8888 (struct grub_video_fbblit_info *dst,
   srcrowskip = src->mode_info->pitch - src->mode_info->bytes_per_pixel * width;
   dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
-  srcptr = (grub_uint8_t *) get_data_ptr (src, offset_x, offset_y);
-  dstptr = (grub_uint8_t *) get_data_ptr (dst, x, y);
+  srcptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -153,8 +153,8 @@ grub_video_fbblit_replace_BGRX8888_RGB888 (struct grub_video_fbblit_info *dst,
   srcrowskip = src->mode_info->pitch - src->mode_info->bytes_per_pixel * width;
   dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
-  srcptr = (grub_uint8_t *) get_data_ptr (src, offset_x, offset_y);
-  dstptr = (grub_uint8_t *) get_data_ptr (dst, x, y);
+  srcptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -197,8 +197,8 @@ grub_video_fbblit_replace_BGR888_RGBX8888 (struct grub_video_fbblit_info *dst,
   srcrowskip = src->mode_info->pitch - src->mode_info->bytes_per_pixel * width;
   dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
-  srcptr = (grub_uint32_t *) get_data_ptr (src, offset_x, offset_y);
-  dstptr = (grub_uint8_t *) get_data_ptr (dst, x, y);
+  srcptr = (grub_uint32_t *) grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -245,8 +245,8 @@ grub_video_fbblit_replace_BGR888_RGB888 (struct grub_video_fbblit_info *dst,
   srcrowskip = src->mode_info->pitch - src->mode_info->bytes_per_pixel * width;
   dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
-  srcptr = (grub_uint8_t *) get_data_ptr (src, offset_x, offset_y);
-  dstptr = (grub_uint8_t *) get_data_ptr (dst, x, y);
+  srcptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -285,8 +285,8 @@ grub_video_fbblit_replace_RGBX8888_RGB888 (struct grub_video_fbblit_info *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint8_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint32_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -321,8 +321,8 @@ grub_video_fbblit_replace_RGB888_RGBX8888 (struct grub_video_fbblit_info *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
 	{
@@ -358,8 +358,8 @@ grub_video_fbblit_replace_index_RGBX8888 (struct grub_video_fbblit_info *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
 	{
@@ -394,8 +394,8 @@ grub_video_fbblit_replace_index_RGB888 (struct grub_video_fbblit_info *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint8_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -491,8 +491,8 @@ grub_video_fbblit_blend_BGRA8888_RGBA8888 (struct grub_video_fbblit_info *dst,
   srcrowskip = src->mode_info->pitch - src->mode_info->bytes_per_pixel * width;
   dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
-  srcptr = (grub_uint32_t *) get_data_ptr (src, offset_x, offset_y);
-  dstptr = (grub_uint32_t *) get_data_ptr (dst, x, y);
+  srcptr = (grub_uint32_t *) grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = (grub_uint32_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -572,8 +572,8 @@ grub_video_fbblit_blend_BGR888_RGBA8888 (struct grub_video_fbblit_info *dst,
   srcrowskip = src->mode_info->pitch - src->mode_info->bytes_per_pixel * width;
   dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
-  srcptr = (grub_uint32_t *) get_data_ptr (src, offset_x, offset_y);
-  dstptr = (grub_uint8_t *) get_data_ptr (dst, x, y);
+  srcptr = (grub_uint32_t *) grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -656,8 +656,8 @@ grub_video_fbblit_blend_RGBA8888_RGBA8888 (struct grub_video_fbblit_info *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint32_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -721,8 +721,8 @@ grub_video_fbblit_blend_RGB888_RGBA8888 (struct grub_video_fbblit_info *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -788,8 +788,8 @@ grub_video_fbblit_blend_index_RGBA8888 (struct grub_video_fbblit_info *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
