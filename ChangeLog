@@ -1,3 +1,10 @@
+2009-08-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/linux.c (GRUB_ASSUME_LINUX_HAS_FB_SUPPORT)
+	(DEFAULT_VIDEO_MODE): Remove macros.
+	(grub_linux_boot): Remove assumption that Linux has FB support,
+	and use "text" as default video mode.
+
 2009-08-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* fs/affs.c (grub_affs_read_symlink): Change leftover grub_printf into

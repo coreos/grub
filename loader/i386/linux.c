@@ -37,16 +37,6 @@
 #define GRUB_LINUX_CL_OFFSET		0x1000
 #define GRUB_LINUX_CL_END_OFFSET	0x2000
 
-/* This macro is useful for distributors, who can be certain they built FB support
-   into Linux, and therefore can benefit from seamless mode transition between
-   GRUB and Linux (saving boot time and visual glitches).  Official GRUB, OTOH,
-   needs to be conservative.  */
-#ifdef GRUB_ASSUME_LINUX_HAS_FB_SUPPORT
-#define DEFAULT_VIDEO_MODE "keep,1024x768,800x600,640x480"
-#else
-#define DEFAULT_VIDEO_MODE "text"
-#endif
-
 static grub_dl_t my_mod;
 
 static grub_size_t linux_mem_size;
@@ -501,17 +491,15 @@ grub_linux_boot (void)
   if (modevar && *modevar != 0)
     {
       tmp = grub_malloc (grub_strlen (modevar)
-			 + sizeof (DEFAULT_VIDEO_MODE) + 1);
+			 + sizeof (";text"));
       if (! tmp)
 	return grub_errno;
-      grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
+      grub_sprintf (tmp, "%s;text", modevar);
       err = grub_video_set_mode (tmp, 0);
       grub_free (tmp);
     }
-#ifndef GRUB_ASSUME_LINUX_HAS_FB_SUPPORT
   else
-    err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0);
-#endif
+    err = grub_video_set_mode ("text", 0);
 
   if (err)
     {
