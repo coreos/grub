@@ -46,7 +46,6 @@ static struct
 } framebuffer;
 
 static grub_uint32_t initial_vbe_mode;
-static grub_uint32_t vbe_mode_in_use = 0x55aa;
 static grub_uint16_t *vbe_mode_list;
 
 static void *
@@ -111,10 +110,11 @@ grub_vbe_probe (struct grub_vbe_info_block *info_block)
 
 grub_err_t
 grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
-                         struct grub_vbe_mode_info_block *vbe_mode_info)
+			 struct grub_vbe_mode_info_block *vbe_mode_info)
 {
   grub_vbe_status_t status;
   grub_uint32_t old_vbe_mode;
+  struct grub_vbe_mode_info_block new_vbe_mode_info;
   grub_err_t err;
 
   /* Make sure that VBE is supported.  */
@@ -123,7 +123,7 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
     return grub_errno;
 
   /* Try to get mode info.  */
-  grub_vbe_get_video_mode_info (vbe_mode, &active_vbe_mode_info);
+  grub_vbe_get_video_mode_info (vbe_mode, &new_vbe_mode_info);
   if (grub_errno != GRUB_ERR_NONE)
     return grub_errno;
 
@@ -134,7 +134,7 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
       vbe_mode |= 1 << 14;
 
       /* Determine frame buffer pixel format.  */
-      switch (active_vbe_mode_info.memory_model)
+      switch (new_vbe_mode_info.memory_model)
         {
         case GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL:
           framebuffer.index_color_mode = 1;
@@ -147,7 +147,7 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
         default:
           return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
                              "unsupported pixel format 0x%x",
-                             active_vbe_mode_info.memory_model);
+                             new_vbe_mode_info.memory_model);
         }
     }
 
@@ -163,6 +163,7 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
 
   /* Save information for later usage.  */
   framebuffer.active_vbe_mode = vbe_mode;
+  grub_memcpy (&active_vbe_mode_info, &new_vbe_mode_info, sizeof (active_vbe_mode_info));
 
   if (vbe_mode < 0x100)
     {
@@ -172,16 +173,16 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
     }
   else
     {
-      framebuffer.ptr = (grub_uint8_t *) active_vbe_mode_info.phys_base_addr;
+      framebuffer.ptr = (grub_uint8_t *) new_vbe_mode_info.phys_base_addr;
 
       if (controller_info.version >= 0x300)
-        framebuffer.bytes_per_scan_line = active_vbe_mode_info.lin_bytes_per_scan_line;
+        framebuffer.bytes_per_scan_line = new_vbe_mode_info.lin_bytes_per_scan_line;
       else
-        framebuffer.bytes_per_scan_line = active_vbe_mode_info.bytes_per_scan_line;
+        framebuffer.bytes_per_scan_line = new_vbe_mode_info.bytes_per_scan_line;
     }
 
   /* Check whether mode is text mode or graphics mode.  */
-  if (active_vbe_mode_info.memory_model == GRUB_VBE_MEMORY_MODEL_TEXT)
+  if (new_vbe_mode_info.memory_model == GRUB_VBE_MEMORY_MODEL_TEXT)
     {
       /* Text mode.  */
 
@@ -193,7 +194,7 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
       /* Graphics mode.  */
 
       /* Calculate bytes_per_pixel value.  */
-      switch(active_vbe_mode_info.bits_per_pixel)
+      switch(new_vbe_mode_info.bits_per_pixel)
 	{
 	case 32: framebuffer.bytes_per_pixel = 4; break;
 	case 24: framebuffer.bytes_per_pixel = 3; break;
@@ -238,7 +239,7 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
 
   /* Copy mode info for caller.  */
   if (vbe_mode_info)
-    grub_memcpy (vbe_mode_info, &active_vbe_mode_info, sizeof (*vbe_mode_info));
+    grub_memcpy (vbe_mode_info, &new_vbe_mode_info, sizeof (*vbe_mode_info));
 
   return GRUB_ERR_NONE;
 }
@@ -468,13 +469,10 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
       grub_err_t err;
       /* If this fails, then we have mode selection heuristics problem,
          or adapter failure.  */
-      grub_vbe_set_video_mode (best_vbe_mode, &active_vbe_mode_info);
+      /* grub_vbe_set_video_mode already sets active_vbe_mode_info. */
+      grub_vbe_set_video_mode (best_vbe_mode, NULL);
       if (grub_errno != GRUB_ERR_NONE)
         return grub_errno;
-
-      /* Now we are happily in requested video mode.  Cache some info
-         in order to fasten later operations.  */
-      vbe_mode_in_use = best_vbe_mode;
 
       /* Fill mode info details.  */
       framebuffer.mode_info.width = active_vbe_mode_info.x_resolution;

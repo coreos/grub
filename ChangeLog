@@ -1,5 +1,15 @@
 2009-08-17  Michal Suchanek  <hramrach@centrum.cz>
 
+	VBE cleanup.
+
+	* video/i386/pc/vbe.c (vbe_mode_in_use): Removed (duplicate).
+	(grub_vbe_set_video_mode): Save active mode info
+	only after setting the mode.
+	(grub_video_vbe_setup): Call 'grub_vbe_set_video_mode' with NULL as
+	second argument.
+
+2009-08-17  Michal Suchanek  <hramrach@centrum.cz>
+
 	Rename variables for clarity.
 
 	* video/i386/pc/vbe.c (active_mode_info): Renamed to ...
