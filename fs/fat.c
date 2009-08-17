@@ -422,10 +422,8 @@ grub_fat_read_data (grub_disk_t disk, struct grub_fat_data *data,
 	      break;
 	    }
 
-#if 0
 	  grub_dprintf ("fat", "fat_size=%d, next_cluster=%u\n",
 			data->fat_size, next_cluster);
-#endif
 
 	  /* Check the end.  */
 	  if (next_cluster >= data->cluster_eof_mark)
