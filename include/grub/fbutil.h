@@ -28,7 +28,7 @@
 struct grub_video_fbblit_info
 {
   struct grub_video_mode_info *mode_info;
-  void *data;
+  grub_uint8_t *data;
 };
 
 grub_uint8_t *grub_video_fb_get_video_ptr (struct grub_video_fbblit_info *source,

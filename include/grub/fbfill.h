@@ -44,7 +44,7 @@ struct grub_video_fbrender_target
 
   /* Pointer to data.  Can either be in video card memory or in local host's
      memory.  */
-  void *data;
+  grub_uint8_t *data;
 };
 
 void

@@ -40,28 +40,20 @@ grub_video_fb_get_video_ptr (struct grub_video_fbblit_info *source,
   switch (source->mode_info->bpp)
     {
     case 32:
-      ptr = (grub_uint8_t *)source->data
-            + y * source->mode_info->pitch
-            + x * 4;
+      ptr = source->data + y * source->mode_info->pitch + x * 4;
       break;
 
     case 24:
-      ptr = (grub_uint8_t *)source->data
-            + y * source->mode_info->pitch
-            + x * 3;
+      ptr = source->data + y * source->mode_info->pitch + x * 3;
       break;
 
     case 16:
     case 15:
-      ptr = (grub_uint8_t *)source->data
-            + y * source->mode_info->pitch
-            + x * 2;
+      ptr = source->data + y * source->mode_info->pitch + x * 2;
       break;
 
     case 8:
-      ptr = (grub_uint8_t *)source->data
-            + y * source->mode_info->pitch
-            + x;
+      ptr = source->data + y * source->mode_info->pitch + x;
       break;
 
     case 1:
@@ -107,8 +99,7 @@ get_pixel (struct grub_video_fbblit_info *source,
       if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED)
         {
           int bit_index = y * source->mode_info->width + x;
-          grub_uint8_t *ptr = (grub_uint8_t *)source->data
-                              + bit_index / 8;
+          grub_uint8_t *ptr = source->data + bit_index / 8;
           int bit_pos = 7 - bit_index % 8;
           color = (*ptr >> bit_pos) & 0x01;
         }
@@ -175,8 +166,7 @@ set_pixel (struct grub_video_fbblit_info *source,
       if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED)
         {
           int bit_index = y * source->mode_info->width + x;
-          grub_uint8_t *ptr = (grub_uint8_t *)source->data
-                              + bit_index / 8;
+          grub_uint8_t *ptr = source->data + bit_index / 8;
           int bit_pos = 7 - bit_index % 8;
           *ptr = (*ptr & ~(1 << bit_pos)) | ((color & 0x01) << bit_pos);
         }

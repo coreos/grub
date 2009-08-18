@@ -1,3 +1,11 @@
+2009-08-18  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/fbfill.h (struct grub_video_fbrender_target): Use
+	grub_uint8_t pointer for data.
+	* include/grub/fbutil.h (struct grub_video_fbblit_info):
+	Likewise.
+	* video/fb/fbutil.c: Remove unnecessary casts.
+
 2009-08-17  Michal Suchanek  <hramrach@centrum.cz>
 
 	VBE cleanup.
