@@ -1,5 +1,10 @@
 2009-08-18  Felix Zielcke  <fzielcke@z-51.de>
 
+	* util/powerpc/ieee1275/grub-mkrescue.in (grub_mkimage): Use
+	grub-mkelfimage.
+
+2009-08-18  Felix Zielcke  <fzielcke@z-51.de>
+
 	* util/grub-mkconfig.in: Don't use gfxterm by default if not
 	explicitly specified by the user.
 
