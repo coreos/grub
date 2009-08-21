@@ -1,5 +1,8 @@
 2009-08-21  Pavel Roskin  <proski@gnu.org>
 
+	* Makefile.in (install-local): When checking if a file is in the
+	build directory, use "test -e" to detect symlinks.
+
 	* Makefile.in (install-local): Remove all files in
 	$(DESTDIR)$(pkglibdir) before installing new files there.
 
