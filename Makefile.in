@@ -212,6 +212,7 @@ install: install-local
 
 install-local: all
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(pkglibdir)
+	rm -f $(DESTDIR)$(pkglibdir)/*
 	@list='$(PKGLIB)'; \
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
