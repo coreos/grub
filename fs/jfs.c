@@ -1,7 +1,7 @@
 /* jfs.c - JFS.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -51,6 +51,8 @@ struct grub_jfs_sblock
 
   grub_uint8_t unused[71];
   grub_uint8_t volname[11];
+  grub_uint8_t unused2[32];
+  grub_uint8_t uuid[16];
 };
 
 struct grub_jfs_extent
@@ -832,6 +834,38 @@ grub_jfs_close (grub_file_t file)
   return GRUB_ERR_NONE;
 }
 
+static grub_err_t
+grub_jfs_uuid (grub_device_t device, char **uuid)
+{
+  struct grub_jfs_data *data;
+  grub_disk_t disk = device->disk;
+
+  grub_dl_ref (my_mod);
+
+  data = grub_jfs_mount (disk);
+  if (data)
+    {
+      *uuid = grub_malloc (40 + sizeof ('\0'));
+
+      grub_sprintf (*uuid, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+		    data->sblock.uuid[0], data->sblock.uuid[1],
+		    data->sblock.uuid[2], data->sblock.uuid[3],
+		    data->sblock.uuid[4], data->sblock.uuid[5],
+		    data->sblock.uuid[6], data->sblock.uuid[7],
+		    data->sblock.uuid[8], data->sblock.uuid[9],
+		    data->sblock.uuid[10], data->sblock.uuid[11],
+		    data->sblock.uuid[12], data->sblock.uuid[13],
+		    data->sblock.uuid[14], data->sblock.uuid[15]);
+    }
+  else
+    *uuid = NULL;
+
+  grub_dl_unref (my_mod);
+
+  grub_free (data);
+
+  return grub_errno;
+}
 
 static grub_err_t
 grub_jfs_label (grub_device_t device, char **label)
@@ -856,6 +890,7 @@ static struct grub_fs grub_jfs_fs =
     .read = grub_jfs_read,
     .close = grub_jfs_close,
     .label = grub_jfs_label,
+    .uuid = grub_jfs_uuid,
     .next = 0
   };
 

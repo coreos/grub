@@ -155,6 +155,8 @@ grub_cmd_vbetest (grub_command_t cmd __attribute__ ((unused)),
 
   grub_getkey ();
 
+  grub_video_restore ();
+
   /* Restore old video mode.  */
   grub_vbe_set_video_mode (old_mode, 0);
 

@@ -47,7 +47,7 @@
 
 #define MOD_BUF_ALLOC_UNIT	4096
 
-static int kernel_type;
+static int kernel_type = KERNEL_TYPE_NONE;
 static grub_dl_t my_mod;
 static grub_addr_t entry, entry_hi, kern_start, kern_end;
 static grub_uint32_t bootflags;
@@ -614,10 +614,10 @@ grub_bsd_load_aout (grub_file_t file)
     return grub_errno;
 
   if (grub_file_read (file, &ah, sizeof (ah)) != sizeof (ah))
-    return grub_error (GRUB_ERR_READ_ERROR, "cannot read the a.out header");
+    return grub_error (GRUB_ERR_READ_ERROR, "Cannot read the a.out header");
 
   if (grub_aout_get_type (&ah) != AOUT_TYPE_AOUT32)
-    return grub_error (GRUB_ERR_BAD_OS, "invalid a.out header");
+    return grub_error (GRUB_ERR_BAD_OS, "Invalid a.out header");
 
   entry = ah.aout32.a_entry & 0xFFFFFF;
 
@@ -635,7 +635,7 @@ grub_bsd_load_aout (grub_file_t file)
     }
 
   if (load_addr < 0x100000)
-    return grub_error (GRUB_ERR_BAD_OS, "load address below 1M");
+    return grub_error (GRUB_ERR_BAD_OS, "Load address below 1M");
 
   kern_start = load_addr;
   kern_end = load_addr + ah.aout32.a_text + ah.aout32.a_data;
@@ -738,7 +738,7 @@ grub_bsd_load_elf (grub_elf_t elf)
       return grub_elf64_load (elf, grub_bsd_elf64_hook, 0, 0);
     }
   else
-    return grub_error (GRUB_ERR_BAD_OS, "invalid elf");
+    return grub_error (GRUB_ERR_BAD_OS, "Invalid elf");
 }
 
 static grub_err_t
@@ -753,7 +753,7 @@ grub_bsd_load (int argc, char *argv[])
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "No kernel specified");
       goto fail;
     }
 
@@ -914,13 +914,17 @@ grub_cmd_freebsd_loadenv (grub_command_t cmd __attribute__ ((unused)),
   char *buf = 0, *curr, *next;
   int len;
 
+  if (kernel_type == KERNEL_TYPE_NONE)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "You need to load the kernel first.");
+
   if (kernel_type != KERNEL_TYPE_FREEBSD)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "only freebsd support environment");
+		       "Only FreeBSD support environment");
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no filename");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "No filename");
       goto fail;
     }
 
@@ -1004,13 +1008,17 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
   char **modargv;
   char *type;
 
+  if (kernel_type == KERNEL_TYPE_NONE)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "You need to load the kernel first.");
+
   if (kernel_type != KERNEL_TYPE_FREEBSD)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "only freebsd support module");
+		       "Only FreeBSD support module");
 
   if (!is_elf_kernel)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "only elf kernel support module");
+		       "Only ELF kernel support module");
 
   /* List the current modules if no parameter.  */
   if (!argc)
@@ -1066,13 +1074,17 @@ grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
   grub_file_t file = 0;
   grub_err_t err;
 
+  if (kernel_type == KERNEL_TYPE_NONE)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "You need to load the kernel first.");
+
   if (kernel_type != KERNEL_TYPE_FREEBSD)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "only freebsd support module");
+		       "Only FreeBSD support module");
 
   if (! is_elf_kernel)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "only elf kernel support module");
+		       "Only ELF kernel support module");
 
   /* List the current modules if no parameter.  */
   if (! argc)
@@ -1108,22 +1120,22 @@ GRUB_MOD_INIT (bsd)
 {
   cmd_freebsd =
     grub_register_command ("freebsd", grub_cmd_freebsd,
-			   0, "load freebsd kernel");
+			   0, "load kernel of FreeBSD");
   cmd_openbsd =
     grub_register_command ("openbsd", grub_cmd_openbsd,
-			   0, "load openbsd kernel");
+			   0, "load kernel of OpenBSD");
   cmd_netbsd =
     grub_register_command ("netbsd", grub_cmd_netbsd,
-			   0, "load netbsd kernel");
+			   0, "load kernel of NetBSD");
   cmd_freebsd_loadenv =
     grub_register_command ("freebsd_loadenv", grub_cmd_freebsd_loadenv,
-			   0, "load freebsd env");
+			   0, "load FreeBSD env");
   cmd_freebsd_module =
     grub_register_command ("freebsd_module", grub_cmd_freebsd_module,
-			   0, "load freebsd module");
+			   0, "load FreeBSD kernel module");
   cmd_freebsd_module_elf =
     grub_register_command ("freebsd_module_elf", grub_cmd_freebsd_module_elf,
-			   0, "load freebsd ELF module");
+			   0, "load FreeBSD kernel module (ELF)");
 
   my_mod = mod;
 }

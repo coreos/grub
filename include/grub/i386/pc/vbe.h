@@ -19,16 +19,15 @@
 #ifndef GRUB_VBE_MACHINE_HEADER
 #define GRUB_VBE_MACHINE_HEADER	1
 
-#include <grub/symbol.h>
-#include <grub/types.h>
-#include <grub/err.h>
-#include <grub/video.h>
+#include <grub/video_fb.h>
 
 /* Default video mode to be used.  */
 #define GRUB_VBE_DEFAULT_VIDEO_MODE     0x101
 
 /* VBE status codes.  */
 #define GRUB_VBE_STATUS_OK		0x004f
+
+#define GRUB_VBE_CAPABILITY_DACWIDTH	(1 << 0)
 
 /* Bits from the GRUB_VBE "mode_attributes" field in the mode info struct.  */
 #define GRUB_VBE_MODEATTR_SUPPORTED                 (1 << 0)
@@ -181,6 +180,11 @@ grub_vbe_status_t EXPORT_FUNC(grub_vbe_bios_get_controller_info) (struct grub_vb
 grub_vbe_status_t EXPORT_FUNC(grub_vbe_bios_get_mode_info) (grub_uint32_t mode,
                                                             struct grub_vbe_mode_info_block *mode_info);
 
+grub_vbe_status_t EXPORT_FUNC(grub_vbe_bios_getset_dac_palette_width) (int set, int *width);
+
+#define grub_vbe_bios_get_dac_palette_width(width)	grub_vbe_bios_getset_dac_palette_width(0, (width))
+#define grub_vbe_bios_set_dac_palette_width(width)	grub_vbe_bios_getset_dac_palette_width(1, (width))
+
 /* Call VESA BIOS 0x4f02 to set video mode, return status.  */
 grub_vbe_status_t EXPORT_FUNC(grub_vbe_bios_set_mode) (grub_uint32_t mode,
                                                        struct grub_vbe_crtc_info_block *crtc_info);
@@ -224,54 +228,5 @@ grub_err_t grub_vbe_get_video_mode (grub_uint32_t *mode);
 grub_err_t grub_vbe_get_video_mode_info (grub_uint32_t mode,
                                          struct grub_vbe_mode_info_block *mode_info);
 
-/* VBE module internal prototypes (should not be used from elsewhere).  */
-struct grub_video_i386_vbeblit_info;
-
-struct grub_video_render_target
-{
-  /* Copy of the screen's mode info structure, except that width, height and
-     mode_type has been re-adjusted to requested render target settings.  */
-  struct grub_video_mode_info mode_info;
-
-  struct
-  {
-    unsigned int x;
-    unsigned int y;
-    unsigned int width;
-    unsigned int height;
-  } viewport;
-
-  /* Indicates whether the data has been allocated by us and must be freed
-     when render target is destroyed.  */
-  int is_allocated;
-
-  /* Pointer to data.  Can either be in video card memory or in local host's
-     memory.  */
-  void *data;
-};
-
-grub_uint8_t * grub_video_vbe_get_video_ptr (struct grub_video_i386_vbeblit_info *source,
-                                             grub_uint32_t x, grub_uint32_t y);
-
-grub_video_color_t grub_video_vbe_map_rgb (grub_uint8_t red, grub_uint8_t green,
-                                           grub_uint8_t blue);
-
-grub_video_color_t grub_video_vbe_map_rgba (grub_uint8_t red,
-                                            grub_uint8_t green,
-                                            grub_uint8_t blue,
-                                            grub_uint8_t alpha);
-
-grub_err_t grub_video_vbe_unmap_color (grub_video_color_t color,
-                                       grub_uint8_t *red,
-                                       grub_uint8_t *green,
-                                       grub_uint8_t *blue,
-                                       grub_uint8_t *alpha);
-
-void grub_video_vbe_unmap_color_int (struct grub_video_i386_vbeblit_info *source,
-                                     grub_video_color_t color,
-                                     grub_uint8_t *red,
-                                     grub_uint8_t *green,
-                                     grub_uint8_t *blue,
-                                     grub_uint8_t *alpha);
 
 #endif /* ! GRUB_VBE_MACHINE_HEADER */

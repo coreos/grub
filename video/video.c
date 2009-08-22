@@ -93,6 +93,24 @@ grub_video_get_info (struct grub_video_mode_info *mode_info)
   return grub_video_adapter_active->get_info (mode_info);
 }
 
+/* Get information about active video mode.  */
+grub_err_t
+grub_video_get_info_and_fini (struct grub_video_mode_info *mode_info,
+			      void **framebuffer)
+{
+  grub_err_t err;
+
+  if (! grub_video_adapter_active)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+
+  err = grub_video_adapter_active->get_info_and_fini (mode_info, framebuffer);
+  if (err)
+    return err;
+
+  grub_video_adapter_active = 0;
+  return GRUB_ERR_NONE;
+}
+
 /* Determine optimized blitting formation for specified video mode info.  */
 enum grub_video_blit_format
 grub_video_get_blit_format (struct grub_video_mode_info *mode_info)
@@ -380,7 +398,7 @@ grub_video_get_active_render_target (struct grub_video_render_target **target)
 }
 
 grub_err_t
-grub_video_set_mode (char *modestring,
+grub_video_set_mode (const char *modestring,
 		     int NESTED_FUNC_ATTR (*hook) (grub_video_adapter_t p,
 						   struct grub_video_mode_info *mode_info))
 {
@@ -695,8 +713,6 @@ grub_video_set_mode (char *modestring,
 /* Initialize Video API module.  */
 GRUB_MOD_INIT(video_video)
 {
-  grub_video_adapter_active = 0;
-  grub_video_adapter_list = 0;
 }
 
 /* Finalize Video API module.  */

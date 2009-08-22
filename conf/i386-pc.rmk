@@ -10,7 +10,8 @@ COMMON_LDFLAGS = -m32 -nostdlib
 script/sh/lexer.c_DEPENDENCIES = grub_script.tab.h
 
 # Images.
-pkglib_IMAGES = boot.img diskboot.img kernel.img pxeboot.img cdboot.img
+pkglib_IMAGES = boot.img cdboot.img diskboot.img kernel.img lnxboot.img \
+	pxeboot.img
 
 # For boot.img.
 boot_img_SOURCES = boot/i386/pc/boot.S
@@ -31,9 +32,6 @@ diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)8000
 diskboot_img_FORMAT = binary
 
 # For lnxboot.img.
-ifeq ($(TARGET_APPLE_CC), 0)
-pkglib_IMAGES += lnxboot.img
-endif
 lnxboot_img_SOURCES = boot/i386/pc/lnxboot.S
 lnxboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 lnxboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)6000
@@ -104,7 +102,7 @@ grub_setup_SOURCES = util/i386/pc/grub-setup.c util/hostdisk.c	\
 	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c		\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c	\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
-	fs/ufs.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c			\
+	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c			\
 	\
 	partmap/pc.c partmap/gpt.c				\
 	\
@@ -148,7 +146,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	fs/affs.c fs/cpio.c  fs/fat.c fs/ext2.c fs/hfs.c		\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c		\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
-	fs/ufs.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c				\
+	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c				\
 	\
 	util/console.c util/hostfs.c util/grub-emu.c util/misc.c	\
 	util/hostdisk.c util/getroot.c					\
@@ -273,8 +271,7 @@ multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 multiboot_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For vbe.mod.
-vbe_mod_SOURCES = video/i386/pc/vbe.c video/i386/pc/vbeblit.c \
-		  video/i386/pc/vbefill.c video/i386/pc/vbeutil.c
+vbe_mod_SOURCES = video/i386/pc/vbe.c
 vbe_mod_CFLAGS = $(COMMON_CFLAGS)
 vbe_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

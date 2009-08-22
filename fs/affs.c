@@ -273,7 +273,7 @@ grub_affs_read_symlink (grub_fshelp_node_t node)
       grub_free (symlink);
       return 0;
     }
-  grub_printf ("Symlink: `%s'\n", symlink);
+  grub_dprintf ("affs", "Symlink: `%s'\n", symlink);
   return symlink;
 }
 

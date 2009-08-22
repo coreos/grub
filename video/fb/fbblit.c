@@ -27,19 +27,19 @@
    - Every function in this code assumes that bounds checking has been done in
    previous phase and they are opted out in here.  */
 
-#include <grub/machine/vbe.h>
-#include <grub/machine/vbeblit.h>
-#include <grub/machine/vbeutil.h>
+#include <grub/video_fb.h>
+#include <grub/fbblit.h>
+#include <grub/fbutil.h>
 #include <grub/misc.h>
 #include <grub/types.h>
 #include <grub/video.h>
 
 /* Generic replacing blitter (slow).  Works for every supported format.  */
 void
-grub_video_i386_vbeblit_replace (struct grub_video_i386_vbeblit_info *dst,
-				 struct grub_video_i386_vbeblit_info *src,
-				 int x, int y, int width, int height,
-				 int offset_x, int offset_y)
+grub_video_fbblit_replace (struct grub_video_fbblit_info *dst,
+			   struct grub_video_fbblit_info *src,
+			   int x, int y, int width, int height,
+			   int offset_x, int offset_y)
 {
   int i;
   int j;
@@ -56,11 +56,11 @@ grub_video_i386_vbeblit_replace (struct grub_video_i386_vbeblit_info *dst,
 	{
 	  src_color = get_pixel (src, i + offset_x, j + offset_y);
 
-	  grub_video_vbe_unmap_color_int (src, src_color, &src_red, &src_green,
-					  &src_blue, &src_alpha);
+	  grub_video_fb_unmap_color_int (src, src_color, &src_red, &src_green,
+					 &src_blue, &src_alpha);
 
-	  dst_color = grub_video_vbe_map_rgba (src_red, src_green,
-					       src_blue, src_alpha);
+	  dst_color = grub_video_fb_map_rgba (src_red, src_green,
+					      src_blue, src_alpha);
 
 	  set_pixel (dst, x + i, y + j, dst_color);
 	}
@@ -69,10 +69,10 @@ grub_video_i386_vbeblit_replace (struct grub_video_i386_vbeblit_info *dst,
 
 /* Block copy replacing blitter.  Works with modes multiple of 8 bits.  */
 void
-grub_video_i386_vbeblit_replace_directN (struct grub_video_i386_vbeblit_info *dst,
-					 struct grub_video_i386_vbeblit_info *src,
-					 int x, int y, int width, int height,
-					 int offset_x, int offset_y)
+grub_video_fbblit_replace_directN (struct grub_video_fbblit_info *dst,
+				   struct grub_video_fbblit_info *src,
+				   int x, int y, int width, int height,
+				   int offset_x, int offset_y)
 {
   int j;
   grub_uint32_t *srcptr;
@@ -83,8 +83,8 @@ grub_video_i386_vbeblit_replace_directN (struct grub_video_i386_vbeblit_info *ds
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint32_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       grub_memmove (dstptr, srcptr, width * bpp);
     }
@@ -92,11 +92,11 @@ grub_video_i386_vbeblit_replace_directN (struct grub_video_i386_vbeblit_info *ds
 
 /* Optimized replacing blitter for RGBX8888 to BGRX8888.  */
 void
-grub_video_i386_vbeblit_replace_BGRX8888_RGBX8888 (struct grub_video_i386_vbeblit_info *dst,
-						   struct grub_video_i386_vbeblit_info *src,
-						   int x, int y,
-						   int width, int height,
-						   int offset_x, int offset_y)
+grub_video_fbblit_replace_BGRX8888_RGBX8888 (struct grub_video_fbblit_info *dst,
+					     struct grub_video_fbblit_info *src,
+					     int x, int y,
+					     int width, int height,
+					     int offset_x, int offset_y)
 {
   int i;
   int j;
@@ -110,8 +110,8 @@ grub_video_i386_vbeblit_replace_BGRX8888_RGBX8888 (struct grub_video_i386_vbebli
   srcrowskip = src->mode_info->pitch - src->mode_info->bytes_per_pixel * width;
   dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
-  srcptr = (grub_uint8_t *) get_data_ptr (src, offset_x, offset_y);
-  dstptr = (grub_uint8_t *) get_data_ptr (dst, x, y);
+  srcptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -135,11 +135,11 @@ grub_video_i386_vbeblit_replace_BGRX8888_RGBX8888 (struct grub_video_i386_vbebli
 
 /* Optimized replacing blitter for RGB888 to BGRX8888.  */
 void
-grub_video_i386_vbeblit_replace_BGRX8888_RGB888 (struct grub_video_i386_vbeblit_info *dst,
-						 struct grub_video_i386_vbeblit_info *src,
-						 int x, int y,
-						 int width, int height,
-						 int offset_x, int offset_y)
+grub_video_fbblit_replace_BGRX8888_RGB888 (struct grub_video_fbblit_info *dst,
+					   struct grub_video_fbblit_info *src,
+					   int x, int y,
+					   int width, int height,
+					   int offset_x, int offset_y)
 {
   int i;
   int j;
@@ -153,8 +153,8 @@ grub_video_i386_vbeblit_replace_BGRX8888_RGB888 (struct grub_video_i386_vbeblit_
   srcrowskip = src->mode_info->pitch - src->mode_info->bytes_per_pixel * width;
   dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
-  srcptr = (grub_uint8_t *) get_data_ptr (src, offset_x, offset_y);
-  dstptr = (grub_uint8_t *) get_data_ptr (dst, x, y);
+  srcptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -179,11 +179,11 @@ grub_video_i386_vbeblit_replace_BGRX8888_RGB888 (struct grub_video_i386_vbeblit_
 
 /* Optimized replacing blitter for RGBX8888 to BGR888.  */
 void
-grub_video_i386_vbeblit_replace_BGR888_RGBX8888 (struct grub_video_i386_vbeblit_info *dst,
-						 struct grub_video_i386_vbeblit_info *src,
-						 int x, int y,
-						 int width, int height,
-						 int offset_x, int offset_y)
+grub_video_fbblit_replace_BGR888_RGBX8888 (struct grub_video_fbblit_info *dst,
+					   struct grub_video_fbblit_info *src,
+					   int x, int y,
+					   int width, int height,
+					   int offset_x, int offset_y)
 {
   grub_uint32_t *srcptr;
   grub_uint8_t *dstptr;
@@ -197,8 +197,8 @@ grub_video_i386_vbeblit_replace_BGR888_RGBX8888 (struct grub_video_i386_vbeblit_
   srcrowskip = src->mode_info->pitch - src->mode_info->bytes_per_pixel * width;
   dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
-  srcptr = (grub_uint32_t *) get_data_ptr (src, offset_x, offset_y);
-  dstptr = (grub_uint8_t *) get_data_ptr (dst, x, y);
+  srcptr = (grub_uint32_t *) grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -227,11 +227,11 @@ grub_video_i386_vbeblit_replace_BGR888_RGBX8888 (struct grub_video_i386_vbeblit_
 
 /* Optimized replacing blitter for RGB888 to BGR888.  */
 void
-grub_video_i386_vbeblit_replace_BGR888_RGB888 (struct grub_video_i386_vbeblit_info *dst,
-					       struct grub_video_i386_vbeblit_info *src,
-					       int x, int y,
-					       int width, int height,
-					       int offset_x, int offset_y)
+grub_video_fbblit_replace_BGR888_RGB888 (struct grub_video_fbblit_info *dst,
+					 struct grub_video_fbblit_info *src,
+					 int x, int y,
+					 int width, int height,
+					 int offset_x, int offset_y)
 {
   int i;
   int j;
@@ -245,8 +245,8 @@ grub_video_i386_vbeblit_replace_BGR888_RGB888 (struct grub_video_i386_vbeblit_in
   srcrowskip = src->mode_info->pitch - src->mode_info->bytes_per_pixel * width;
   dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
-  srcptr = (grub_uint8_t *) get_data_ptr (src, offset_x, offset_y);
-  dstptr = (grub_uint8_t *) get_data_ptr (dst, x, y);
+  srcptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -268,11 +268,11 @@ grub_video_i386_vbeblit_replace_BGR888_RGB888 (struct grub_video_i386_vbeblit_in
 
 /* Optimized replacing blitter for RGB888 to RGBX8888.  */
 void
-grub_video_i386_vbeblit_replace_RGBX8888_RGB888 (struct grub_video_i386_vbeblit_info *dst,
-						 struct grub_video_i386_vbeblit_info *src,
-						 int x, int y,
-						 int width, int height,
-						 int offset_x, int offset_y)
+grub_video_fbblit_replace_RGBX8888_RGB888 (struct grub_video_fbblit_info *dst,
+					   struct grub_video_fbblit_info *src,
+					   int x, int y,
+					   int width, int height,
+					   int offset_x, int offset_y)
 {
   grub_uint32_t color;
   int i;
@@ -285,8 +285,8 @@ grub_video_i386_vbeblit_replace_RGBX8888_RGB888 (struct grub_video_i386_vbeblit_
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint8_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint32_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -304,11 +304,11 @@ grub_video_i386_vbeblit_replace_RGBX8888_RGB888 (struct grub_video_i386_vbeblit_
 
 /* Optimized replacing blitter for RGBX8888 to RGB888.  */
 void
-grub_video_i386_vbeblit_replace_RGB888_RGBX8888 (struct grub_video_i386_vbeblit_info *dst,
-						 struct grub_video_i386_vbeblit_info *src,
-						 int x, int y,
-						 int width, int height,
-						 int offset_x, int offset_y)
+grub_video_fbblit_replace_RGB888_RGBX8888 (struct grub_video_fbblit_info *dst,
+					   struct grub_video_fbblit_info *src,
+					   int x, int y,
+					   int width, int height,
+					   int offset_x, int offset_y)
 {
   grub_uint32_t color;
   int i;
@@ -321,8 +321,8 @@ grub_video_i386_vbeblit_replace_RGB888_RGBX8888 (struct grub_video_i386_vbeblit_
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
 	{
@@ -341,11 +341,11 @@ grub_video_i386_vbeblit_replace_RGB888_RGBX8888 (struct grub_video_i386_vbeblit_
 
 /* Optimized replacing blitter for RGBX8888 to indexed color.  */
 void
-grub_video_i386_vbeblit_replace_index_RGBX8888 (struct grub_video_i386_vbeblit_info *dst,
-						struct grub_video_i386_vbeblit_info *src,
-						int x, int y,
-						int width, int height,
-						int offset_x, int offset_y)
+grub_video_fbblit_replace_index_RGBX8888 (struct grub_video_fbblit_info *dst,
+					  struct grub_video_fbblit_info *src,
+					  int x, int y,
+					  int width, int height,
+					  int offset_x, int offset_y)
 {
   grub_uint32_t color;
   int i;
@@ -358,8 +358,8 @@ grub_video_i386_vbeblit_replace_index_RGBX8888 (struct grub_video_i386_vbeblit_i
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
 	{
@@ -369,7 +369,7 @@ grub_video_i386_vbeblit_replace_index_RGBX8888 (struct grub_video_i386_vbeblit_i
 	  sg = (color >> 8) & 0xFF;
 	  sb = (color >> 16) & 0xFF;
 
-	  color = grub_video_vbe_map_rgb(sr, sg, sb);
+	  color = grub_video_fb_map_rgb(sr, sg, sb);
 	  *dstptr++ = color & 0xFF;
 	}
     }
@@ -377,11 +377,11 @@ grub_video_i386_vbeblit_replace_index_RGBX8888 (struct grub_video_i386_vbeblit_i
 
 /* Optimized replacing blitter for RGB888 to indexed color.  */
 void
-grub_video_i386_vbeblit_replace_index_RGB888 (struct grub_video_i386_vbeblit_info *dst,
-					      struct grub_video_i386_vbeblit_info *src,
-					      int x, int y,
-					      int width, int height,
-					      int offset_x, int offset_y)
+grub_video_fbblit_replace_index_RGB888 (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+					int offset_x, int offset_y)
 {
   grub_uint32_t color;
   int i;
@@ -394,8 +394,8 @@ grub_video_i386_vbeblit_replace_index_RGB888 (struct grub_video_i386_vbeblit_inf
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint8_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -403,7 +403,7 @@ grub_video_i386_vbeblit_replace_index_RGB888 (struct grub_video_i386_vbeblit_inf
           sg = *srcptr++;
           sb = *srcptr++;
 
-          color = grub_video_vbe_map_rgb(sr, sg, sb);
+          color = grub_video_fb_map_rgb(sr, sg, sb);
 
           *dstptr++ = color & 0xFF;
         }
@@ -412,10 +412,10 @@ grub_video_i386_vbeblit_replace_index_RGB888 (struct grub_video_i386_vbeblit_inf
 
 /* Generic blending blitter.  Works for every supported format.  */
 void
-grub_video_i386_vbeblit_blend (struct grub_video_i386_vbeblit_info *dst,
-                               struct grub_video_i386_vbeblit_info *src,
-                               int x, int y, int width, int height,
-                               int offset_x, int offset_y)
+grub_video_fbblit_blend (struct grub_video_fbblit_info *dst,
+			 struct grub_video_fbblit_info *src,
+			 int x, int y, int width, int height,
+			 int offset_x, int offset_y)
 {
   int i;
   int j;
@@ -436,24 +436,24 @@ grub_video_i386_vbeblit_blend (struct grub_video_i386_vbeblit_info *dst,
           grub_video_color_t dst_color;
 
           src_color = get_pixel (src, i + offset_x, j + offset_y);
-          grub_video_vbe_unmap_color_int (src, src_color, &src_red, &src_green,
-                                      &src_blue, &src_alpha);
+          grub_video_fb_unmap_color_int (src, src_color, &src_red, &src_green,
+					 &src_blue, &src_alpha);
 
           if (src_alpha == 0)
             continue;
 
           if (src_alpha == 255)
             {
-              dst_color = grub_video_vbe_map_rgba (src_red, src_green,
-                                                   src_blue, src_alpha);
+              dst_color = grub_video_fb_map_rgba (src_red, src_green,
+						  src_blue, src_alpha);
               set_pixel (dst, x + i, y + j, dst_color);
               continue;
             }
 
           dst_color = get_pixel (dst, x + i, y + j);
 
-          grub_video_vbe_unmap_color_int (dst, dst_color, &dst_red,
-                                      &dst_green, &dst_blue, &dst_alpha);
+          grub_video_fb_unmap_color_int (dst, dst_color, &dst_red,
+					 &dst_green, &dst_blue, &dst_alpha);
 
           dst_red = (((src_red * src_alpha)
                       + (dst_red * (255 - src_alpha))) / 255);
@@ -463,8 +463,8 @@ grub_video_i386_vbeblit_blend (struct grub_video_i386_vbeblit_info *dst,
                        + (dst_blue * (255 - src_alpha))) / 255);
 
           dst_alpha = src_alpha;
-          dst_color = grub_video_vbe_map_rgba (dst_red, dst_green, dst_blue,
-                                               dst_alpha);
+          dst_color = grub_video_fb_map_rgba (dst_red, dst_green, dst_blue,
+					      dst_alpha);
 
           set_pixel (dst, x + i, y + j, dst_color);
         }
@@ -473,11 +473,11 @@ grub_video_i386_vbeblit_blend (struct grub_video_i386_vbeblit_info *dst,
 
 /* Optimized blending blitter for RGBA8888 to BGRA8888.  */
 void
-grub_video_i386_vbeblit_blend_BGRA8888_RGBA8888 (struct grub_video_i386_vbeblit_info *dst,
-						 struct grub_video_i386_vbeblit_info *src,
-						 int x, int y,
-						 int width, int height,
-						 int offset_x, int offset_y)
+grub_video_fbblit_blend_BGRA8888_RGBA8888 (struct grub_video_fbblit_info *dst,
+					   struct grub_video_fbblit_info *src,
+					   int x, int y,
+					   int width, int height,
+					   int offset_x, int offset_y)
 {
   grub_uint32_t *srcptr;
   grub_uint32_t *dstptr;
@@ -491,8 +491,8 @@ grub_video_i386_vbeblit_blend_BGRA8888_RGBA8888 (struct grub_video_i386_vbeblit_
   srcrowskip = src->mode_info->pitch - src->mode_info->bytes_per_pixel * width;
   dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
-  srcptr = (grub_uint32_t *) get_data_ptr (src, offset_x, offset_y);
-  dstptr = (grub_uint32_t *) get_data_ptr (dst, x, y);
+  srcptr = (grub_uint32_t *) grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = (grub_uint32_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -554,11 +554,11 @@ grub_video_i386_vbeblit_blend_BGRA8888_RGBA8888 (struct grub_video_i386_vbeblit_
 
 /* Optimized blending blitter for RGBA8888 to BGR888.  */
 void
-grub_video_i386_vbeblit_blend_BGR888_RGBA8888 (struct grub_video_i386_vbeblit_info *dst,
-					       struct grub_video_i386_vbeblit_info *src,
-					       int x, int y,
-					       int width, int height,
-					       int offset_x, int offset_y)
+grub_video_fbblit_blend_BGR888_RGBA8888 (struct grub_video_fbblit_info *dst,
+					 struct grub_video_fbblit_info *src,
+					 int x, int y,
+					 int width, int height,
+					 int offset_x, int offset_y)
 {
   grub_uint32_t *srcptr;
   grub_uint8_t *dstptr;
@@ -572,8 +572,8 @@ grub_video_i386_vbeblit_blend_BGR888_RGBA8888 (struct grub_video_i386_vbeblit_in
   srcrowskip = src->mode_info->pitch - src->mode_info->bytes_per_pixel * width;
   dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
-  srcptr = (grub_uint32_t *) get_data_ptr (src, offset_x, offset_y);
-  dstptr = (grub_uint8_t *) get_data_ptr (dst, x, y);
+  srcptr = (grub_uint32_t *) grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -635,11 +635,11 @@ grub_video_i386_vbeblit_blend_BGR888_RGBA8888 (struct grub_video_i386_vbeblit_in
 
 /* Optimized blending blitter for RGBA888 to RGBA8888.  */
 void
-grub_video_i386_vbeblit_blend_RGBA8888_RGBA8888 (struct grub_video_i386_vbeblit_info *dst,
-						 struct grub_video_i386_vbeblit_info *src,
-						 int x, int y,
-						 int width, int height,
-						 int offset_x, int offset_y)
+grub_video_fbblit_blend_RGBA8888_RGBA8888 (struct grub_video_fbblit_info *dst,
+					   struct grub_video_fbblit_info *src,
+					   int x, int y,
+					   int width, int height,
+					   int offset_x, int offset_y)
 {
   grub_uint32_t color;
   int i;
@@ -656,8 +656,8 @@ grub_video_i386_vbeblit_blend_RGBA8888_RGBA8888 (struct grub_video_i386_vbeblit_
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint32_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -700,11 +700,11 @@ grub_video_i386_vbeblit_blend_RGBA8888_RGBA8888 (struct grub_video_i386_vbeblit_
 
 /* Optimized blending blitter for RGBA8888 to RGB888.  */
 void
-grub_video_i386_vbeblit_blend_RGB888_RGBA8888 (struct grub_video_i386_vbeblit_info *dst,
-					       struct grub_video_i386_vbeblit_info *src,
-					       int x, int y,
-					       int width, int height,
-					       int offset_x, int offset_y)
+grub_video_fbblit_blend_RGB888_RGBA8888 (struct grub_video_fbblit_info *dst,
+					 struct grub_video_fbblit_info *src,
+					 int x, int y,
+					 int width, int height,
+					 int offset_x, int offset_y)
 {
   grub_uint32_t color;
   int i;
@@ -721,8 +721,8 @@ grub_video_i386_vbeblit_blend_RGB888_RGBA8888 (struct grub_video_i386_vbeblit_in
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -766,11 +766,11 @@ grub_video_i386_vbeblit_blend_RGB888_RGBA8888 (struct grub_video_i386_vbeblit_in
 
 /* Optimized blending blitter for RGBA8888 to indexed color.  */
 void
-grub_video_i386_vbeblit_blend_index_RGBA8888 (struct grub_video_i386_vbeblit_info *dst,
-					      struct grub_video_i386_vbeblit_info *src,
-					      int x, int y,
-					      int width, int height,
-					      int offset_x, int offset_y)
+grub_video_fbblit_blend_index_RGBA8888 (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+					int offset_x, int offset_y)
 {
   grub_uint32_t color;
   int i;
@@ -788,8 +788,8 @@ grub_video_i386_vbeblit_blend_index_RGBA8888 (struct grub_video_i386_vbeblit_inf
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
-      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)grub_video_fb_get_video_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)grub_video_fb_get_video_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -809,18 +809,18 @@ grub_video_i386_vbeblit_blend_index_RGBA8888 (struct grub_video_i386_vbeblit_inf
 
           if (a == 255)
             {
-              color = grub_video_vbe_map_rgb(sr, sg, sb);
+              color = grub_video_fb_map_rgb(sr, sg, sb);
               *dstptr++ = color & 0xFF;
               continue;
             }
 
-          grub_video_vbe_unmap_color_int (dst, *dstptr, &dr, &dg, &db, &da);
+          grub_video_fb_unmap_color_int (dst, *dstptr, &dr, &dg, &db, &da);
 
           dr = (dr * (255 - a) + sr * a) / 255;
           dg = (dg * (255 - a) + sg * a) / 255;
           db = (db * (255 - a) + sb * a) / 255;
 
-          color = grub_video_vbe_map_rgb(dr, dg, db);
+          color = grub_video_fb_map_rgb(dr, dg, db);
 
           *dstptr++ = color & 0xFF;
         }

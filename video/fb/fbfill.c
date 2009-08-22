@@ -27,32 +27,32 @@
    - Every function in this code assumes that bounds checking has been done in
      previous phase and they are opted out in here.  */
 
-#include <grub/machine/vbe.h>
-#include <grub/machine/vbefill.h>
-#include <grub/machine/vbeutil.h>
+#include <grub/video_fb.h>
+#include <grub/fbfill.h>
+#include <grub/fbutil.h>
 #include <grub/types.h>
 #include <grub/video.h>
 
 /* Generic filler that works for every supported mode.  */
 void
-grub_video_i386_vbefill (struct grub_video_i386_vbeblit_info *dst,
-                         grub_video_color_t color, int x, int y,
-                         int width, int height)
+grub_video_fbfill (struct grub_video_fbblit_info *dst,
+		   grub_video_color_t color, int x, int y,
+		   int width, int height)
 {
   int i;
   int j;
 
   for (j = 0; j < height; j++)
     for (i = 0; i < width; i++)
-      set_pixel (dst, x+i, y+j, color);
+      set_pixel (dst, x + i, y + j, color);
 }
 
 /* Optimized filler for direct color 32 bit modes.  It is assumed that color
    is already mapped to destination format.  */
 void
-grub_video_i386_vbefill_direct32 (struct grub_video_i386_vbeblit_info *dst,
-                                  grub_video_color_t color, int x, int y,
-                                  int width, int height)
+grub_video_fbfill_direct32 (struct grub_video_fbblit_info *dst,
+			    grub_video_color_t color, int x, int y,
+			    int width, int height)
 {
   int i;
   int j;
@@ -64,7 +64,7 @@ grub_video_i386_vbefill_direct32 (struct grub_video_i386_vbeblit_info *dst,
   rowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
   /* Get the start address.  */
-  dstptr = (grub_uint32_t *) grub_video_vbe_get_video_ptr (dst, x, y);
+  dstptr = (grub_uint32_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -79,9 +79,9 @@ grub_video_i386_vbefill_direct32 (struct grub_video_i386_vbeblit_info *dst,
 /* Optimized filler for direct color 24 bit modes.  It is assumed that color
    is already mapped to destination format.  */
 void
-grub_video_i386_vbefill_direct24 (struct grub_video_i386_vbeblit_info *dst,
-                                  grub_video_color_t color, int x, int y,
-                                  int width, int height)
+grub_video_fbfill_direct24 (struct grub_video_fbblit_info *dst,
+			    grub_video_color_t color, int x, int y,
+			    int width, int height)
 {
   int i;
   int j;
@@ -96,7 +96,7 @@ grub_video_i386_vbefill_direct24 (struct grub_video_i386_vbeblit_info *dst,
   rowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
   /* Get the start address.  */
-  dstptr = (grub_uint8_t *) grub_video_vbe_get_video_ptr (dst, x, y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -115,9 +115,9 @@ grub_video_i386_vbefill_direct24 (struct grub_video_i386_vbeblit_info *dst,
 /* Optimized filler for direct color 16 bit modes.  It is assumed that color
    is already mapped to destination format.  */
 void
-grub_video_i386_vbefill_direct16 (struct grub_video_i386_vbeblit_info *dst,
-                                  grub_video_color_t color, int x, int y,
-                                  int width, int height)
+grub_video_fbfill_direct16 (struct grub_video_fbblit_info *dst,
+			    grub_video_color_t color, int x, int y,
+			    int width, int height)
 {
   int i;
   int j;
@@ -131,7 +131,7 @@ grub_video_i386_vbefill_direct16 (struct grub_video_i386_vbeblit_info *dst,
   rowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
   /* Get the start address.  */
-  dstptr = (grub_uint8_t *) grub_video_vbe_get_video_ptr (dst, x, y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {
@@ -149,9 +149,9 @@ grub_video_i386_vbefill_direct16 (struct grub_video_i386_vbeblit_info *dst,
 /* Optimized filler for index color.  It is assumed that color
    is already mapped to destination format.  */
 void
-grub_video_i386_vbefill_direct8 (struct grub_video_i386_vbeblit_info *dst,
-				 grub_video_color_t color, int x, int y,
-				 int width, int height)
+grub_video_fbfill_direct8 (struct grub_video_fbblit_info *dst,
+			   grub_video_color_t color, int x, int y,
+			   int width, int height)
 {
   int i;
   int j;
@@ -164,7 +164,7 @@ grub_video_i386_vbefill_direct8 (struct grub_video_i386_vbeblit_info *dst,
   rowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
 
   /* Get the start address.  */
-  dstptr = (grub_uint8_t *) grub_video_vbe_get_video_ptr (dst, x, y);
+  dstptr = (grub_uint8_t *) grub_video_fb_get_video_ptr (dst, x, y);
 
   for (j = 0; j < height; j++)
     {

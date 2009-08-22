@@ -1,3 +1,365 @@
+2009-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/xnu_uuid.c (transform): Use grub_memcpy instead of memcpy.
+
+2009-08-21  Pavel Roskin  <proski@gnu.org>
+
+	* Makefile.in (install-local): When checking if a file is in the
+	build directory, use "test -e" to detect symlinks.
+
+	* Makefile.in (install-local): Remove all files in
+	$(DESTDIR)$(pkglibdir) before installing new files there.
+
+2009-08-18  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/powerpc/ieee1275/grub-mkrescue.in (grub_mkimage): Use
+	grub-mkelfimage.
+
+2009-08-18  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkconfig.in: Don't use gfxterm by default if not
+	explicitly specified by the user.
+
+2009-08-18  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/fbfill.h (struct grub_video_fbrender_target): Use
+	grub_uint8_t pointer for data.
+	* include/grub/fbutil.h (struct grub_video_fbblit_info):
+	Likewise.
+	* video/fb/fbutil.c: Remove unnecessary casts.
+
+2009-08-17  Michal Suchanek  <hramrach@centrum.cz>
+
+	VBE cleanup.
+
+	* video/i386/pc/vbe.c (vbe_mode_in_use): Removed (duplicate).
+	(grub_vbe_set_video_mode): Save active mode info
+	only after setting the mode.
+	(grub_video_vbe_setup): Call 'grub_vbe_set_video_mode' with NULL as
+	second argument.
+
+2009-08-17  Michal Suchanek  <hramrach@centrum.cz>
+
+	Rename variables for clarity.
+
+	* video/i386/pc/vbe.c (active_mode_info): Renamed to ...
+	(active_vbe_mode_info): ... this. All users updated.
+	(framebuffer): Rename 'active_mode' to 'active_vbe_mode'.
+	All users updated.
+	(initial_mode): Rename to ...
+	(initial_vbe_mode): ... this. All users updated.
+	(mode_in_use): Rename to ..
+	(vbe_mode_in_use): ... this. All users updated.
+	(mode_list): Rename to ..
+	(vbe_mode_list): ... this. All users updated.
+	(grub_vbe_set_video_mode): Rename 'mode' to 'vbe_mode', 'mode_info' to
+	'vbe_mode_info' and 'old_mode' to 'old_vbe_mode'.
+	(grub_video_vbe_init): Rename 'rm_mode_list' to 'rm_vbe_mode_list' and
+	'mode_list_size' to 'vbe_mode_list_size'.
+	(grub_video_vbe_setup): Rename 'mode_info' to 'vbe_mode_info',
+	'best_mode_info' to 'best_vbe_mode_info' and
+	'best_mode' to 'best_vbe_mode'
+
+2009-08-17  Michal Suchanek  <hramrach@centrum.cz>
+
+	Remove duplicate grub_video_fb_get_video_ptr.
+
+	* include/grub/fbutil.h (get_data_ptr): Rename to ...
+	(grub_video_fb_get_video_ptr): ... this.
+	* include/grub/video_fb.h (grub_video_fb_get_video_ptr): Removed.
+	* video/fb/fbutil.c: Add comment about addressing.
+	(get_data_ptr): Rename to ...
+	(grub_video_fb_get_video_ptr): ... this. All users updated.
+	* video/fb/video_fb.c (grub_video_fb_get_video_ptr): Remove.
+
+2009-08-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* fs/fat.c (grub_fat_read_data): Remove `#if 0' braces around the
+	grub_dprintf() that was just added.
+
+2009-08-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/linux.c (GRUB_ASSUME_LINUX_HAS_FB_SUPPORT)
+	(DEFAULT_VIDEO_MODE): Remove macros.
+	(grub_linux_boot): Remove assumption that Linux has FB support,
+	and use "text" as default video mode.
+
+2009-08-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/affs.c (grub_affs_read_symlink): Change leftover grub_printf into
+	grub_dprintf.
+	* fs/fat.c (grub_fat_read_data): Likewise.
+
+2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/multiboot.c (grub_multiboot): Don't pass filename to
+	payload.
+	(grub_module): Likewise.
+
+2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/multiboot.c (grub_multiboot_unload): Don't free mbi and
+	mbi->cmdline but free playground.
+
+2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Handle group offset on UFS1.
+
+	* fs/ufs.c (grub_ufs_sblock): New field 'cylg_mask'.
+	(grub_ufs_read_inode) [!MODE_UFS2]: handle cylg_offset and cylg_mask.
+
+2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Split ufs.mod into ufs1.mod and ufs2.mod.
+
+	* conf/common.rmk (grub_probe_SOURCES): Add fs/ufs2.c.
+	(grub_fstest_SOURCES): Likewise.
+	(pkglib_MODULES): Remove ufs.mod. Add ufs1.mod and ufs2.mod.
+	(ufs_mod_SOURCES): Remove.
+	(ufs_mod_CFLAGS): Likewise.
+	(ufs_mod_LDFLAGS): Likewise.
+	(ufs1_mod_SOURCES): New variable.
+	(ufs1_mod_CFLAGS): Likewise.
+	(ufs1_mod_LDFLAGS): Likewise.
+	(ufs2_mod_SOURCES): New variable.
+	(ufs2_mod_CFLAGS): Likewise.
+	(ufs2_mod_LDFLAGS): Likewise.
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Add fs/ufs2.c.
+	* conf/i386-efi.rmk (util/i386/efi/grub-mkimage.c_DEPENDENCIES):
+	Likewise.
+	(grub_emu_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Likewise.
+	(grub_setup_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/sparc64.rmk (grub_emu_SOURCES): Likewise.
+	(grub_setup_SOURCES): Likewise.
+	* conf/x86_64-efi.rmk (util/i386/efi/grub-mkimage.c_DEPENDENCIES):
+	Likewise.
+	* fs/ufs2.c: New file.
+	* fs/ufs.c: Separate UFS1 from UFS2 by using preprocessor.
+
+2009-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Framebuffer split.
+
+	* commands/i386/pc/vbetest.c (grub_cmd_vbetest): Restore video
+	subsystem at the end.
+	* conf/common.rmk (pkglib_MODULES): Add video_fb.mod.
+	(video_fb_mod_SOURCES): New variable.
+	(video_fb_mod_CFLAGS): Likewise.
+	(video_fb_mod_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk (vbe_mod_SOURCES): Remove video/i386/pc/vbeblit.c,
+	video/i386/pc/vbefill.c and video/i386/pc/vbeutil.c.
+	* video/i386/pc/vbeblit.c: Moved from here ...
+	* video/fb/fbblit.c: ..here. Replaced 'vbe' with 'fb'.
+	* video/i386/pc/vbefill.c: Moved from here ...
+	* video/fb/fbfill.c: ..here. Replaced 'vbe' with 'fb'.
+	* video/i386/pc/vbeutil.c: Moved from here ...
+	* video/fb/fbutil.c: ..here. Replaced 'vbe' with 'fb'.
+	* include/grub/i386/pc/vbeblit.h: Moved from here ...
+	* include/grub/fbblit.h: ... here. Replaced 'vbe' with 'fb'.
+	* include/grub/i386/pc/vbefill.h: Moved from here ...
+	* include/grub/fbfill.h: ... here. Replaced 'vbe' with 'fb'.
+	* include/grub/i386/pc/vbeutil.h: Moved from here ...
+	* include/grub/fbutil.h: ... here. Replaced 'vbe' with 'fb'.
+	* include/grub/i386/pc/vbe.h: Moved framebuffer part ...
+	* include/grub/video_fb.h: ... here. Replaced 'vbe' with 'fb'.
+	* include/grub/video.h (GRUB_VIDEO_RENDER_TARGET_FRONT_BUFFER): Removed.
+	(GRUB_VIDEO_RENDER_TARGET_BACK_BUFFER): Likewise.
+	(grub_video_adapter): Added 'get_info_and_fini'.
+	(grub_video_get_info_and_fini): New prototype.
+	(grub_video_set_mode): make modestring const char *.
+	* loader/i386/linux.c (grub_linux_setup_video): Use
+	grub_video_get_info_and_fini.
+	(grub_linux_boot): Move modesetting just before booting.
+	* loader/i386/pc/xnu.c (grub_xnu_set_video): Use
+	grub_video_get_info_and_fini.
+	* video/i386/pc/vbe.c: Moved framebuffer part ...
+	* video/fb/video_fb.c: ... here. Replaced 'vbe' with 'fb'.
+	* video/i386/pc/vbe.c (grub_vbe_set_video_mode): Use
+	grub_video_fbstd_colors and grub_video_fb_set_palette.
+	(grub_video_vbe_init): Clear 'framebuffer' variable and use
+	grub_video_fb_init.
+	(grub_video_vbe_fini): Use grub_video_fb_fini.
+	(grub_video_vbe_setup): Use framebuffer.render_target instead of
+	render_target and use grub_video_fb_set_active_render_target and
+	grub_video_fb_set_palette.
+	(grub_video_vbe_set_palette): Use grub_video_fb_set_palette.
+	(grub_video_vbe_set_viewport): Use grub_video_fb_set_viewport.
+	(grub_video_vbe_adapter): Use framebuffer.
+	* video/video.c (grub_video_get_info_and_fini): New function.
+	(grub_video_set_mode): Make modestring const char *.
+	(GRUB_MOD_INIT(video_video)): Don't set variables to 0 since these
+	values are already initialised.
+
+2009-08-14  Pavel Roskin  <proski@gnu.org>
+
+	* boot/i386/pc/cdboot.S: Use LOCAL for local labels.  Eliminate
+	ABS and APPLE_CC.
+	* boot/i386/pc/diskboot.S: Likewise.
+	* boot/i386/pc/lnxboot.S: Likewise.  Hardcode the number of code
+	sectors allow compilation on MacOSX.
+	* conf/i386-pc.rmk: Enable unconditional compilation of
+	lnxboot.img.
+
+2009-08-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig.in: Export GRUB_HIDDEN_TIMEOUT.
+	* util/grub.d/00_header.in: Enter interruptible sleep if
+	GRUB_HIDDEN_TIMEOUT is set.
+
+2009-08-13  Yves Blusseau  <blusseau@zetam.org>
+
+	* include/grub/symbol.h: Add the LOCAL macro.
+	* boot/i386/pc/boot.S: Use the LOCAL macro for all labels
+	starting with "L_".
+
+2009-08-13  Pavel Roskin  <proski@gnu.org>
+
+	* boot/i386/pc/boot.S: Remove ABS macro, it's not required by
+	any modern compilers we support.
+
+	* boot/i386/pc/boot.S: Remove all code dependent on APPLE_CC.
+	Use local labels starting with "L_" so that Apple assembler
+	knows they are local.
+
+2009-08-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/bsd.h (KERNEL_TYPE_NONE, KERNEL_TYPE_FREEBSD)
+	(KERNEL_TYPE_OPENBSD, KERNEL_TYPE_NETBSD): Convert to ...
+	(bsd_kernel_types): ... this enum.
+
+	* loader/i386/bsd.c (grub_cmd_freebsd_loadenv, grub_cmd_freebsd_module)
+	(grub_cmd_freebsd_module_elf): Abort with "You need to load the
+	kernel first." when `kernel_type' is set to KERNEL_TYPE_NONE.
+
+	(grub_bsd_load_aout, grub_bsd_load, grub_cmd_freebsd_loadenv)
+	(grub_cmd_freebsd_module, grub_cmd_freebsd_module_elf)
+	(GRUB_MOD_INIT (bsd)): Fix capitalization in a few error
+	messages.
+
+2009-08-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-dumpdevtree: Moved from here ...
+	* util/i386/efi/grub-dumpdevtree: ... to here.
+	(hexify): New function.  Converts a string to its hex version.
+	Generate hex versions of "efi" and "device-properties" by calling
+	hexify() on the ASCII strings rather than by hardcoding numbers.
+
+2009-08-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* fs/jfs.c: Update copyright year.
+
+2009-08-08  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub.d/00_header.in: Fix a comment.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/10_windows.in: Likewise.
+	* util/grub.d/10_hurd.in: Likewise.
+
+2009-08-08  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkconfig.in: Allow the user to specify the used font
+	with GRUB_FONT.
+
+2009-08-08  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/powerpc/libgcc.h: Export __ashrdi3() if
+	available, xfs.mod needs it now.
+
+	* util/grub-mkconfig_lib.in (version_test_numeric): Don't use
+	the "g" modifier in sed when the intention is to strip something
+	once.  This fixes comparison of kernels with multiple dashes.
+
+	* util/grub-mkconfig.in: Define datarootdir, datadir may depend
+	on it.  Add missing space before closing bracket.  Fix
+	misleading formatting.
+
+2009-08-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* docs/grub.texi: Major overhaul.  Remove all sections that are
+	specific to GRUB Legacy, or mostly composed of Legacy-specific
+	information.
+
+2009-08-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* docs/version.texi: New file.  Provides version information for
+	grub.texi.
+
+2009-08-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* docs/grub.texi: Update CVS information to SVN.
+	Replace outdated "GRUB 2 will include" phrase with "GRUB 2 includes".
+
+2009-08-07  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkconfig.in: Remove a wrong `fi'.
+
+2009-08-07  Felix Zielcke  <fzielcke@z-51.de>
+
+	* fs/uuid.c (grub_jfs_superblock): New fields unused2 and uuid.
+	(grub_jfs_uuid): New function.
+	(grub_jfs_fs): Set uuid field to grub_jfs_uuid.
+
+2009-08-07  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkconfig_lib.in (font_path): Move the functionality
+	of it to ...
+	* util/grub-mkconfig.in: ... here.  Prefer unicode.pf2 and
+	unifont.pf2 over ascii.pf2.  Export LANG=C in case ascii.pf2 gets used.
+
+2009-08-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub.d/10_linux.in (test_numeric): Moved from here ...
+	* util/grub-mkconfig_lib.in (version_test_numeric): ... to here.
+	Update all users.
+
+	* util/grub.d/10_linux.in (test_gt): Strip any basename prefix,
+	not just "vmlinu[zx]".
+	Moved from here ...
+	* util/grub-mkconfig_lib.in (version_test_gt): ... to here.  Update
+	all users.
+
+	* util/grub.d/10_linux.in (find_latest): Moved from here ...
+	* util/grub-mkconfig_lib.in (version_find_latest): ... to here.  Update
+	all users.
+
+2009-08-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub.d/10_freebsd.in: Use an absolute device path for
+	`vfs.root.mountfrom'.  Set `vfs.root.mountfrom.options=rw'.
+
+2009-08-06  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Fix
+	handling of multiple abstraction modules.
+
+2009-08-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix a bug resulting in black screen when loading Linux using a
+	packed video mode.
+
+	* kern/i386/pc/startup.S (grub_vbe_bios_getset_dac_palette_width): New
+	function.
+
+	* include/grub/i386/pc/vbe.h (GRUB_VBE_CAPABILITY_DACWIDTH): New macro.
+	(grub_vbe_bios_getset_dac_palette_width): New function.
+	(grub_vbe_bios_get_dac_palette_width)
+	(grub_vbe_bios_set_dac_palette_width): New macros (act as wrappers for
+	grub_vbe_bios_getset_dac_palette_width()).
+
+	* video/i386/pc/vbe.c (grub_vbe_probe): Use `GRUB_VBE_STATUS_OK' to
+	check for return status.
+	(grub_vbe_get_video_mode_info): When getting information for a packed
+	mode (<= 8 bpp), obtain DAC palette width using
+	grub_vbe_bios_getset_dac_palette_width(), and use that for initializing
+	{red,green,blue}_mark_size.
+
+2009-08-04  Felix Zielcke  <fzielcke@z-51.de>
+
+	* commands/search.c (options): Fix help output to match actual code.
+
 2009-08-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* commands/hexdump.c (grub_cmd_hexdump): Use grub_disk_read instead

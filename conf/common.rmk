@@ -17,7 +17,7 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c		\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c	\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
-	fs/ufs.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c		\
+	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c		\
 	\
 	partmap/pc.c partmap/apple.c partmap/sun.c partmap/gpt.c\
 	kern/fs.c kern/env.c fs/fshelp.c			\
@@ -38,7 +38,7 @@ grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c			\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c		\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
-	fs/ufs.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c			\
+	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c			\
 	\
 	kern/partition.c partmap/pc.c partmap/apple.c partmap/sun.c	\
 	partmap/gpt.c							\
@@ -174,7 +174,7 @@ sbin_SCRIPTS += grub-dumpbios
 CLEANFILES += grub-dumpbios
 
 # Filing systems.
-pkglib_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod ntfs.mod		\
+pkglib_MODULES += fshelp.mod fat.mod ufs1.mod ufs2.mod ext2.mod ntfs.mod \
 	ntfscomp.mod minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod	\
 	affs.mod sfs.mod hfsplus.mod reiserfs.mod cpio.mod tar.mod	\
 	udf.mod	afs.mod befs.mod
@@ -189,10 +189,15 @@ fat_mod_SOURCES = fs/fat.c
 fat_mod_CFLAGS = $(COMMON_CFLAGS)
 fat_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For ufs.mod.
-ufs_mod_SOURCES = fs/ufs.c
-ufs_mod_CFLAGS = $(COMMON_CFLAGS)
-ufs_mod_LDFLAGS = $(COMMON_LDFLAGS)
+# For ufs1.mod.
+ufs1_mod_SOURCES = fs/ufs.c
+ufs1_mod_CFLAGS = $(COMMON_CFLAGS)
+ufs1_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For ufs2.mod.
+ufs2_mod_SOURCES = fs/ufs2.c
+ufs2_mod_CFLAGS = $(COMMON_CFLAGS)
+ufs2_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For ext2.mod.
 ext2_mod_SOURCES = fs/ext2.c
@@ -535,12 +540,17 @@ lua_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Common Video Subsystem specific modules.
 pkglib_MODULES += video.mod videotest.mod bitmap.mod tga.mod jpeg.mod	\
-	png.mod	font.mod gfxterm.mod
+	png.mod	font.mod gfxterm.mod video_fb.mod
 
 # For video.mod.
 video_mod_SOURCES = video/video.c
 video_mod_CFLAGS = $(COMMON_CFLAGS)
 video_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+video_fb_mod_SOURCES = video/fb/video_fb.c video/fb/fbblit.c \
+		  video/fb/fbfill.c video/fb/fbutil.c
+video_fb_mod_CFLAGS = $(COMMON_CFLAGS)
+video_fb_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For videotest.mod.
 videotest_mod_SOURCES = commands/videotest.c

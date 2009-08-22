@@ -25,19 +25,19 @@
 #include <grub/types.h>
 #include <grub/video.h>
 
-struct grub_video_i386_vbeblit_info
+struct grub_video_fbblit_info
 {
   struct grub_video_mode_info *mode_info;
-  void *data;
+  grub_uint8_t *data;
 };
 
-grub_uint8_t *get_data_ptr (struct grub_video_i386_vbeblit_info *source,
+grub_uint8_t *grub_video_fb_get_video_ptr (struct grub_video_fbblit_info *source,
                             unsigned int x, unsigned int y);
 
-grub_video_color_t get_pixel (struct grub_video_i386_vbeblit_info *source,
+grub_video_color_t get_pixel (struct grub_video_fbblit_info *source,
                               unsigned int x, unsigned int y);
 
-void set_pixel (struct grub_video_i386_vbeblit_info *source,
+void set_pixel (struct grub_video_fbblit_info *source,
                 unsigned int x, unsigned int y, grub_video_color_t color);
 
 #endif /* ! GRUB_VBEUTIL_MACHINE_HEADER */

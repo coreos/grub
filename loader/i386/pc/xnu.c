@@ -21,8 +21,7 @@
 #include <grub/xnu.h>
 #include <grub/mm.h>
 #include <grub/cpu/xnu.h>
-#include <grub/machine/vbe.h>
-#include <grub/machine/vga.h>
+#include <grub/video_fb.h>
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #define max(a,b) (((a) > (b)) ? (a) : (b))
@@ -43,10 +42,10 @@ grub_err_t
 grub_xnu_set_video (struct grub_xnu_boot_params *params)
 {
   struct grub_video_mode_info mode_info;
-  struct grub_video_render_target *render_target;
   int ret;
   int x,y;
   char *tmp, *modevar;
+  void *framebuffer;
   grub_err_t err;
 
   modevar = grub_env_get ("gfxpayload");
@@ -67,11 +66,7 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
   if (err)
     return err;
 
-  ret = grub_video_get_info (&mode_info);
-  if (ret)
-    return grub_error (GRUB_ERR_IO, "couldn't retrieve video parameters");
-
-  ret = grub_video_get_active_render_target (&render_target);
+  ret = grub_video_get_info_and_fini (&mode_info, &framebuffer);
   if (ret)
     return grub_error (GRUB_ERR_IO, "couldn't retrieve video parameters");
 
@@ -102,7 +97,7 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
   params->lfb_depth = mode_info.bpp;
   params->lfb_line_len = mode_info.pitch;
 
-  params->lfb_base = PTR_TO_UINT32 (render_target->data);
+  params->lfb_base = PTR_TO_UINT32 (framebuffer);
   params->lfb_mode = grub_xnu_bitmap
     ? GRUB_XNU_VIDEO_SPLASH : GRUB_XNU_VIDEO_TEXT_IN_VIDEO;
 

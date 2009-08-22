@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,10 +21,13 @@
 
 #include <grub/types.h>
 
-#define KERNEL_TYPE_NONE	0
-#define KERNEL_TYPE_FREEBSD	1
-#define KERNEL_TYPE_OPENBSD	2
-#define KERNEL_TYPE_NETBSD	3
+enum bsd_kernel_types
+  {
+    KERNEL_TYPE_NONE,
+    KERNEL_TYPE_FREEBSD,
+    KERNEL_TYPE_OPENBSD,
+    KERNEL_TYPE_NETBSD,
+  };
 
 #define GRUB_BSD_TEMP_BUFFER	0x68000
 

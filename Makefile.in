@@ -212,6 +212,7 @@ install: install-local
 
 install-local: all
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(pkglibdir)
+	rm -f $(DESTDIR)$(pkglibdir)/*
 	@list='$(PKGLIB)'; \
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
@@ -221,7 +222,7 @@ install-local: all
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(includedir)
 	@list='$(include_DATA)'; \
 	for file in $$list; do \
-	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
+	  if test -e "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,include/,,'`"; \
 	  destdir="`echo $$dest | sed 's,[^/]*$$,,g'`"; \
 	  $(SHELL) $(mkinstalldirs) $(DESTDIR)$(includedir)/$$destdir; \

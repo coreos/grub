@@ -48,10 +48,8 @@ struct grub_video_bitmap;
 #define GRUB_VIDEO_MODE_TYPE_DEPTH_MASK		0x0000ff00
 #define GRUB_VIDEO_MODE_TYPE_DEPTH_POS		8
 
-/* Defined predefined render targets.  */
-#define GRUB_VIDEO_RENDER_TARGET_DISPLAY	((struct grub_video_render_target *) 0)
-#define GRUB_VIDEO_RENDER_TARGET_FRONT_BUFFER	((struct grub_video_render_target *) 0)
-#define GRUB_VIDEO_RENDER_TARGET_BACK_BUFFER	((struct grub_video_render_target *) 1)
+#define GRUB_VIDEO_RENDER_TARGET_DISPLAY \
+  ((struct grub_video_render_target *) 0)
 
 /* Defined blitting formats.  */
 enum grub_video_blit_format
@@ -177,6 +175,9 @@ struct grub_video_adapter
 
   grub_err_t (*get_info) (struct grub_video_mode_info *mode_info);
 
+  grub_err_t (*get_info_and_fini) (struct grub_video_mode_info *mode_info,
+				   void **framebuffer);
+
   grub_err_t (*set_palette) (unsigned int start, unsigned int count,
                              struct grub_video_palette_data *palette_data);
 
@@ -241,6 +242,14 @@ grub_err_t grub_video_restore (void);
 
 grub_err_t grub_video_get_info (struct grub_video_mode_info *mode_info);
 
+/* Framebuffer address may change as a part of normal operation
+   (e.g. double buffering). That's why you need to stop video subsystem to be
+   sure that framebuffer address doesn't change. To ensure this abstraction
+   grub_video_get_info_and_fini is the only function supplying framebuffer
+   address. */
+grub_err_t grub_video_get_info_and_fini (struct grub_video_mode_info *mode_info,
+					 void **framebuffer);
+
 enum grub_video_blit_format grub_video_get_blit_format (struct grub_video_mode_info *mode_info);
 
 grub_err_t grub_video_set_palette (unsigned int start, unsigned int count,
@@ -297,7 +306,7 @@ grub_err_t grub_video_set_active_render_target (struct grub_video_render_target 
 
 grub_err_t grub_video_get_active_render_target (struct grub_video_render_target **target);
 
-grub_err_t grub_video_set_mode (char *modestring,
+grub_err_t grub_video_set_mode (const char *modestring,
 				int NESTED_FUNC_ATTR (*hook) (grub_video_adapter_t p,
 							      struct grub_video_mode_info *mode_info));
 
