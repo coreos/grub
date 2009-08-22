@@ -100,7 +100,7 @@ transform ( MD5_CONTEXT *ctx, const unsigned char *data )
       correct_words[i] = grub_le_to_cpu32 (p[i]);
   }
 #else
-  memcpy (correct_words, data, 64);
+  grub_memcpy (correct_words, data, 64);
 #endif
 
 #define OP(a, b, c, d, s, T) \

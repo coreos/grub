@@ -1,3 +1,7 @@
+2009-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/xnu_uuid.c (transform): Use grub_memcpy instead of memcpy.
+
 2009-08-21  Pavel Roskin  <proski@gnu.org>
 
 	* Makefile.in (install-local): When checking if a file is in the
