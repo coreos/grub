@@ -1,3 +1,9 @@
+2009-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/search.c (search_fs): Try searching without autoload first.
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Load
+	filesystem module explicitly for faster booting.
+
 2009-08-23  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig.in: Export GRUB_DISABLE_OS_PROBER.
