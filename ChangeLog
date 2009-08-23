@@ -3,6 +3,8 @@
 	Fix grub-install.
 
 	* util/i386/pc/grub-install.in: Add 'part_' to partmap_module.
+	* util/i386/efi/grub-install.in: Likewise.
+	* util/sparc64/ieee1275/grub-install.in: Likewise.
 
 2009-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
