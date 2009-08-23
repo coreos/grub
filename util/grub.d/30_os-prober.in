@@ -22,6 +22,10 @@ libdir=@libdir@
 
 . ${libdir}/grub/grub-mkconfig_lib
 
+if [ "x${GRUB_DISABLE_OS_PROBER}" = "xtrue" ]; then
+  exit 0
+fi
+
 if [ -z "`which os-prober 2> /dev/null`" -o -z "`which linux-boot-prober 2> /dev/null`" ] ; then
   # missing os-prober and/or linux-boot-prober
   exit 0
