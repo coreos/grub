@@ -19,7 +19,7 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c		\
 	\
-	partmap/pc.c partmap/apple.c partmap/sun.c partmap/gpt.c\
+	partmap/msdos.c partmap/apple.c partmap/sun.c partmap/gpt.c\
 	kern/fs.c kern/env.c fs/fshelp.c			\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c grub_probe_init.c
 
@@ -40,7 +40,7 @@ grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c			\
 	\
-	kern/partition.c partmap/pc.c partmap/apple.c partmap/sun.c	\
+	kern/partition.c partmap/msdos.c partmap/apple.c partmap/sun.c	\
 	partmap/gpt.c							\
 	kern/fs.c kern/env.c fs/fshelp.c disk/raid.c			\
 	disk/raid5_recover.c disk/raid6_recover.c 			\
@@ -285,37 +285,36 @@ befs_mod_CFLAGS = $(COMMON_CFLAGS)
 befs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Partition maps.
-pkglib_MODULES += amiga.mod apple.mod pc.mod sun.mod acorn.mod gpt.mod
 
-# For amiga.mod
-amiga_mod_SOURCES = partmap/amiga.c
-amiga_mod_CFLAGS = $(COMMON_CFLAGS)
-amiga_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_MODULES += part_amiga.mod
+part_amiga_mod_SOURCES = partmap/amiga.c
+part_amiga_mod_CFLAGS = $(COMMON_CFLAGS)
+part_amiga_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For apple.mod
-apple_mod_SOURCES = partmap/apple.c
-apple_mod_CFLAGS = $(COMMON_CFLAGS)
-apple_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_MODULES += part_apple.mod
+part_apple_mod_SOURCES = partmap/apple.c
+part_apple_mod_CFLAGS = $(COMMON_CFLAGS)
+part_apple_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For pc.mod
-pc_mod_SOURCES = partmap/pc.c
-pc_mod_CFLAGS = $(COMMON_CFLAGS)
-pc_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_MODULES += part_msdos.mod
+part_msdos_mod_SOURCES = partmap/msdos.c
+part_msdos_mod_CFLAGS = $(COMMON_CFLAGS)
+part_msdos_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For sun.mod
-sun_mod_SOURCES = partmap/sun.c
-sun_mod_CFLAGS = $(COMMON_CFLAGS)
-sun_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_MODULES += part_sun.mod
+part_sun_mod_SOURCES = partmap/sun.c
+part_sun_mod_CFLAGS = $(COMMON_CFLAGS)
+part_sun_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For acorn.mod
-acorn_mod_SOURCES = partmap/acorn.c
-acorn_mod_CFLAGS = $(COMMON_CFLAGS)
-acorn_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_MODULES += part_acorn.mod
+part_acorn_mod_SOURCES = partmap/acorn.c
+part_acorn_mod_CFLAGS = $(COMMON_CFLAGS)
+part_acorn_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For gpt.mod
-gpt_mod_SOURCES = partmap/gpt.c
-gpt_mod_CFLAGS = $(COMMON_CFLAGS)
-gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_MODULES += part_gpt.mod
+part_gpt_mod_SOURCES = partmap/gpt.c
+part_gpt_mod_CFLAGS = $(COMMON_CFLAGS)
+part_gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Special disk structures and generic drivers
 
@@ -363,7 +362,7 @@ pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
 	fs_file.mod fs_uuid.mod configfile.mod echo.mod		\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod loadenv.mod crc.mod parttool.mod	\
-	pcpart.mod memrw.mod normal.mod sh.mod lua.mod	\
+	msdospart.mod memrw.mod normal.mod sh.mod lua.mod	\
 	gptsync.mod true.mod probe.mod
 
 # For gptsync.mod.
@@ -391,10 +390,10 @@ parttool_mod_SOURCES = commands/parttool.c
 parttool_mod_CFLAGS = $(COMMON_CFLAGS)
 parttool_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For pcpart.mod.
-pcpart_mod_SOURCES = parttool/pcpart.c
-pcpart_mod_CFLAGS = $(COMMON_CFLAGS)
-pcpart_mod_LDFLAGS = $(COMMON_LDFLAGS)
+# For msdospart.mod.
+msdospart_mod_SOURCES = parttool/msdospart.c
+msdospart_mod_CFLAGS = $(COMMON_CFLAGS)
+msdospart_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For handler.mod.
 handler_mod_SOURCES = commands/handler.c

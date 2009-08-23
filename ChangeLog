@@ -1,3 +1,53 @@
+2009-08-23  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* partmap/pc.c: Rename to ...
+	* partmap/msdos.c: ... this.  Update all users.
+	(grub_pc_partition_map): Rename to ...
+	(grub_msdos_partition_map): ... this.  Update all users.
+
+	* parttool/pcpart.c: Rename to ...
+	* parttool/msdospart.c: ... this.  Update all users.
+
+	* include/grub/pc_partition.h: Rename to ...
+	* include/grub/msdos_partition.h: ... this.  Update all users.
+	(grub_pc_partition_bsd_entry): Rename to ...
+	(grub_msdos_partition_bsd_entry): ... this.  Update all users.
+	(grub_pc_partition_disk_label): Rename to ...
+	(grub_msdos_partition_disk_label): ... this.  Update all users.
+	(grub_pc_partition_entry): Rename to ...
+	(grub_msdos_partition_entry): ... this.  Update all users.
+	(grub_pc_partition_mbr): Rename to ...
+	(grub_msdos_partition_mbr): ... this.  Update all users.
+	(grub_pc_partition): Rename to ...
+	(grub_msdos_partition): ... this.  Update all users.
+	(grub_pc_partition_is_empty): Rename to ...
+	(grub_msdos_partition_is_empty): ... this.  Update all users.
+	(grub_pc_partition_is_extended): Rename to ...
+	(grub_msdos_partition_is_extended): ... this.  Update all users.
+	(grub_pc_partition_is_bsd): Rename to ...
+	(grub_msdos_partition_is_bsd): ... this.  Update all users.
+
+	* conf/common.rmk (amiga_mod_SOURCES, amiga_mod_CFLAGS)
+	(amiga_mod_LDFLAGS, apple_mod_SOURCES, apple_mod_CFLAGS)
+	(apple_mod_LDFLAGS, msdos_mod_SOURCES, msdos_mod_CFLAGS)
+	(msdos_mod_LDFLAGS, sun_mod_SOURCES, sun_mod_CFLAGS)
+	(sun_mod_LDFLAGS, acorn_mod_SOURCES, acorn_mod_CFLAGS)
+	(acorn_mod_LDFLAGS, gpt_mod_SOURCES, gpt_mod_CFLAGS)
+	(gpt_mod_LDFLAGS): Rename to ...
+	(part_amiga_mod_SOURCES, part_amiga_mod_CFLAGS, part_amiga_mod_LDFLAGS)
+	(part_apple_mod_SOURCES, part_apple_mod_CFLAGS, part_apple_mod_LDFLAGS)
+	(part_msdos_mod_SOURCES, part_msdos_mod_CFLAGS, part_msdos_mod_LDFLAGS)
+	(part_sun_mod_SOURCES, part_sun_mod_CFLAGS, part_sun_mod_LDFLAGS)
+	(part_acorn_mod_SOURCES, part_acorn_mod_CFLAGS, part_acorn_mod_LDFLAGS)
+	(part_gpt_mod_SOURCES, part_gpt_mod_CFLAGS)
+	(part_gpt_mod_LDFLAGS): ... this.
+	(pkglib_MODULES): Prefix partition modules with `part_'.  Rename
+	`pcpart.mod' to `msdospart.mod'.
+	(pcpart_mod_SOURCES, pcpart_mod_CFLAGS, pcpart_mod_LDFLAGS): Rename
+	to ...
+	(msdospart_mod_SOURCES, msdospart_mod_CFLAGS)
+	(msdospart_mod_LDFLAGS): ... this.
+
 2009-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* loader/i386/bsd.c (freebsd_opts): Rewritten to use extcmd.

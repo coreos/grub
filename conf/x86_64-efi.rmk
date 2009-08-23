@@ -22,7 +22,7 @@ grub_mkimage_SOURCES = util/i386/efi/grub-mkimage.c util/misc.c \
 #grub_setup_SOURCES = util/i386/pc/grub-setup.c util/hostdisk.c	\
 #	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
 #	kern/err.c kern/misc.c fs/fat.c fs/ext2.c fs/xfs.c fs/affs.c	\
-#	fs/sfs.c kern/parser.c kern/partition.c partmap/pc.c		\
+#	fs/sfs.c kern/parser.c kern/partition.c partmap/msdos.c		\
 #	fs/ufs.c fs/ufs2.c fs/minix.c fs/hfs.c fs/jfs.c fs/hfsplus.c kern/file.c	\
 #	kern/fs.c kern/env.c fs/fshelp.c
 
@@ -58,14 +58,14 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 	normal/color.c							\
 	script/sh/main.c script/sh/execute.c script/sh/function.c	\
 	script/sh/lexer.c script/sh/script.c grub_script.tab.c		\
-	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
+	partmap/amiga.c	partmap/apple.c partmap/msdos.c partmap/sun.c	\
 	partmap/acorn.c partmap/gpt.c					\
 	util/console.c util/hostfs.c util/grub-emu.c util/misc.c	\
 	util/hostdisk.c util/getroot.c					\
 	\
 	disk/raid.c disk/raid5_recover.c disk/raid6_recover.c		\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c		\
-	commands/parttool.c parttool/pcpart.c				\
+	commands/parttool.c parttool/msdospart.c				\
 	grub_emu_init.c
 
 grub_emu_LDFLAGS = $(LIBCURSES)
@@ -97,7 +97,7 @@ kernel_mod_SOURCES = kern/x86_64/efi/startup.S kern/x86_64/efi/callwrap.S \
 	term/efi/console.c disk/efi/efidisk.c
 kernel_mod_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
-	partition.h pc_partition.h reader.h symbol.h term.h time.h types.h \
+	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
 	efi/efi.h efi/time.h efi/disk.h machine/loader.h i386/pit.h list.h \
 	handler.h command.h
 kernel_mod_CFLAGS = $(COMMON_CFLAGS)

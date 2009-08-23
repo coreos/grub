@@ -61,7 +61,7 @@ kernel_img_SOURCES = kern/i386/pc/startup.S \
 	symlist.c
 kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
-	partition.h pc_partition.h reader.h symbol.h term.h time.h types.h \
+	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
 	machine/biosdisk.h machine/boot.h machine/console.h machine/init.h \
 	machine/memory.h machine/loader.h machine/vga.h machine/vbe.h \
 	machine/kernel.h machine/pxe.h i386/pit.h list.h handler.h command.h
@@ -104,7 +104,7 @@ grub_setup_SOURCES = util/i386/pc/grub-setup.c util/hostdisk.c	\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c			\
 	\
-	partmap/pc.c partmap/gpt.c				\
+	partmap/msdos.c partmap/gpt.c				\
 	\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c		\
 	util/raid.c util/lvm.c					\
@@ -140,7 +140,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	normal/menu_text.c						\
 	script/sh/main.c script/sh/execute.c script/sh/function.c	\
 	script/sh/lexer.c script/sh/script.c grub_script.tab.c		\
-	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
+	partmap/amiga.c	partmap/apple.c partmap/msdos.c partmap/sun.c	\
 	partmap/acorn.c partmap/gpt.c					\
 	\
 	fs/affs.c fs/cpio.c  fs/fat.c fs/ext2.c fs/hfs.c		\
@@ -153,7 +153,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	\
 	disk/raid.c disk/raid5_recover.c disk/raid6_recover.c		\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c		\
-	commands/parttool.c parttool/pcpart.c				\
+	commands/parttool.c parttool/msdospart.c				\
 	grub_emu_init.c
 
 grub_emu_LDFLAGS = $(LIBCURSES)

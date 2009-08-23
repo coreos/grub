@@ -28,7 +28,7 @@ DEFSYMFILES += kernel_syms.lst
 
 kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
-	partition.h pc_partition.h reader.h symbol.h term.h time.h types.h \
+	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
 	list.h handler.h command.h \
 	sparc64/libgcc.h ieee1275/ieee1275.h machine/kernel.h \
 	sparc64/ieee1275/ieee1275.h
@@ -80,7 +80,7 @@ grub_setup_SOURCES = util/sparc64/ieee1275/grub-setup.c util/hostdisk.c	\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c			\
 	\
-	partmap/amiga.c	partmap/apple.c partmap/pc.c		\
+	partmap/amiga.c	partmap/apple.c partmap/msdos.c		\
 	partmap/sun.c partmap/acorn.c				\
 	\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c		\
@@ -126,14 +126,14 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 	normal/color.c							\
 	script/sh/main.c script/sh/execute.c script/sh/function.c	\
 	script/sh/lexer.c script/sh/script.c				\
-	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
+	partmap/amiga.c	partmap/apple.c partmap/msdos.c partmap/sun.c	\
 	partmap/acorn.c							\
 	util/console.c util/hostfs.c util/grub-emu.c util/misc.c	\
 	util/hostdisk.c util/getroot.c					\
 	\
 	disk/raid.c disk/raid5_recover.c disk/raid6_recover.c		\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c		\
-	commands/parttool.c parttool/pcpart.c				\
+	commands/parttool.c parttool/msdospart.c				\
 	grub_script.tab.c grub_emu_init.c
 
 grub_emu_LDFLAGS = $(LIBCURSES)
