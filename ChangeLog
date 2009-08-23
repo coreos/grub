@@ -1,3 +1,23 @@
+2009-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/bsd.c (freebsd_opts): Rewritten to use extcmd.
+	(openbsd_opts): Likewise.
+	(netbsd_opts): Likewise.
+	(freebsd_flags): Added 0 terminator.
+	(openbsd_flags): Likewise.
+	(netbsd_flags): Likewise.
+	(grub_bsd_parse_flags): Rewritten to use extcmd. All users updated.
+	(grub_cmd_freebsd): Transformed into extended command.
+	(grub_cmd_openbsd): Likewise.
+	(grub_cmd_netbsd): Likewise.
+	(cmd_freebsd): Changed type to grub_extcmd_t.
+	(cmd_openbsd): Likewise.
+	(cmd_netbsd): Likewise.
+	(GRUB_MOD_INIT (bsd)): Register grub_cmd_freebsd, grub_cmd_netbsd and
+	grub_cmd_openbsd as extended commands.
+	(GRUB_MOD_FINI (bsd)): Use grub_unregister_extcmd for cmd_freebsd,
+	cmd_netbsd and cmd_openbsd
+
 2009-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* commands/xnu_uuid.c (transform): Use grub_memcpy instead of memcpy.

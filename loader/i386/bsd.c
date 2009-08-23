@@ -33,6 +33,8 @@
 #include <grub/gzio.h>
 #include <grub/aout.h>
 #include <grub/command.h>
+#include <grub/extcmd.h>
+
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>
 #include <grub/disk.h>
@@ -55,30 +57,71 @@ static char *mod_buf;
 static grub_uint32_t mod_buf_len, mod_buf_max, kern_end_mdofs;
 static int is_elf_kernel, is_64bit;
 
-static const char freebsd_opts[] = "DhaCcdgmnpqrsv";
+static const struct grub_arg_option freebsd_opts[] =
+  {
+    {"dual", 'D', 0, "Display output on all consoles.", 0, 0},
+    {"serial", 'h', 0, "Use serial console.", 0, 0},
+    {"askname", 'a', 0, "Ask for file name to reboot from.", 0, 0},
+    {"cdrom", 'C', 0, "Use cdrom as root.", 0, 0},
+    {"config", 'c', 0, "Invoke user configuration routing.", 0, 0},
+    {"kdb", 'd', 0, "Enter in KDB on boot.", 0, 0},
+    {"gdb", 'g', 0, "Use GDB remote debugger instead of DDB.", 0, 0},
+    {"mute", 'm', 0, "Disable all boot output.", 0, 0},
+    {"nointr", 'n', 0, "", 0, 0},
+    {"pause", 'p', 0, "Wait for keypress after every line of output.", 0, 0},
+    {"quiet", 'q', 0, "", 0, 0},
+    {"dfltroot", 'r', 0, "Use compiled-in rootdev.", 0, 0},
+    {"single", 's', 0, "Boot into single mode.", 0, 0},
+    {"verbose", 'v', 0, "Boot with verbose messages.", 0, 0},
+    {0, 0, 0, 0, 0, 0}
+  };
+
 static const grub_uint32_t freebsd_flags[] =
 {
   FREEBSD_RB_DUAL, FREEBSD_RB_SERIAL, FREEBSD_RB_ASKNAME,
   FREEBSD_RB_CDROM, FREEBSD_RB_CONFIG, FREEBSD_RB_KDB,
   FREEBSD_RB_GDB, FREEBSD_RB_MUTE, FREEBSD_RB_NOINTR,
   FREEBSD_RB_PAUSE, FREEBSD_RB_QUIET, FREEBSD_RB_DFLTROOT,
-  FREEBSD_RB_SINGLE, FREEBSD_RB_VERBOSE
+  FREEBSD_RB_SINGLE, FREEBSD_RB_VERBOSE, 0
 };
 
-static const char openbsd_opts[] = "abcsd";
+static const struct grub_arg_option openbsd_opts[] =
+  {
+    {"askname", 'a', 0, "Ask for file name to reboot from.", 0, 0},
+    {"halt", 'b', 0, "Don't reboot, just halt.", 0, 0},
+    {"config", 'c', 0, "Change configured devices.", 0, 0},
+    {"single", 's', 0, "Boot into single mode.", 0, 0},
+    {"kdb", 'd', 0, "Enter in KDB on boot.", 0, 0},
+    {0, 0, 0, 0, 0, 0}
+  };
+
 static const grub_uint32_t openbsd_flags[] =
 {
   OPENBSD_RB_ASKNAME, OPENBSD_RB_HALT, OPENBSD_RB_CONFIG,
-  OPENBSD_RB_SINGLE, OPENBSD_RB_KDB
+  OPENBSD_RB_SINGLE, OPENBSD_RB_KDB, 0
 };
 
-static const char netbsd_opts[] = "abcdmqsvxz";
+static const struct grub_arg_option netbsd_opts[] =
+  {
+    {"askname", 'a', 0, "Ask for file name to reboot from.", 0, 0},
+    {"halt", 'b', 0, "Don't reboot, just halt.", 0, 0},
+    {"config", 'c', 0, "Change configured devices.", 0, 0},
+    {"kdb", 'd', 0, "Enter in KDB on boot.", 0, 0},
+    {"miniroot", 'm', 0, "", 0, 0},
+    {"quiet", 'q', 0, "Don't display boot diagnostic messages.", 0, 0},
+    {"single", 's', 0, "Boot into single mode.", 0, 0},
+    {"verbose", 'v', 0, "Boot with verbose messages.", 0, 0},
+    {"debug", 'x', 0, "Boot with debug messages.", 0, 0},
+    {"silent", 'z', 0, "Supress normal output (warnings remain).", 0, 0},
+    {0, 0, 0, 0, 0, 0}
+  };
+
 static const grub_uint32_t netbsd_flags[] =
 {
   NETBSD_RB_ASKNAME, NETBSD_RB_HALT, NETBSD_RB_USERCONFIG,
   NETBSD_RB_KDB, NETBSD_RB_MINIROOT, NETBSD_AB_QUIET,
   NETBSD_RB_SINGLE, NETBSD_AB_VERBOSE, NETBSD_AB_DEBUG,
-  NETBSD_AB_SILENT
+  NETBSD_AB_SILENT, 0
 };
 
 static void
@@ -785,41 +828,24 @@ fail:
 }
 
 static grub_uint32_t
-grub_bsd_parse_flags (char *str, const char *opts,
+grub_bsd_parse_flags (const struct grub_arg_list *state,
 		      const grub_uint32_t * flags)
 {
   grub_uint32_t result = 0;
+  unsigned i;
 
-  while (*str)
-    {
-      const char *po;
-      const grub_uint32_t *pf;
-
-      po = opts;
-      pf = flags;
-      while (*po)
-	{
-	  if (*str == *po)
-	    {
-	      result |= *pf;
-	      break;
-	    }
-	  po++;
-	  pf++;
-	}
-      str++;
-    }
+  for (i = 0; flags[i]; i++)
+    if (state[i].set)
+      result |= flags[i];
 
   return result;
 }
 
 static grub_err_t
-grub_cmd_freebsd (grub_command_t cmd __attribute__ ((unused)),
-		  int argc, char *argv[])
+grub_cmd_freebsd (grub_extcmd_t cmd, int argc, char *argv[])
 {
   kernel_type = KERNEL_TYPE_FREEBSD;
-  bootflags = ((argc <= 1) ? 0 :
-	       grub_bsd_parse_flags (argv[1], freebsd_opts, freebsd_flags));
+  bootflags = grub_bsd_parse_flags (cmd->state, freebsd_flags);
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     {
@@ -879,12 +905,10 @@ grub_cmd_freebsd (grub_command_t cmd __attribute__ ((unused)),
 }
 
 static grub_err_t
-grub_cmd_openbsd (grub_command_t cmd __attribute__ ((unused)),
-		  int argc, char *argv[])
+grub_cmd_openbsd (grub_extcmd_t cmd, int argc, char *argv[])
 {
   kernel_type = KERNEL_TYPE_OPENBSD;
-  bootflags = ((argc <= 1) ? 0 :
-	       grub_bsd_parse_flags (argv[1], openbsd_opts, openbsd_flags));
+  bootflags = grub_bsd_parse_flags (cmd->state, openbsd_flags);
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     grub_loader_set (grub_openbsd_boot, grub_bsd_unload, 1);
@@ -893,12 +917,10 @@ grub_cmd_openbsd (grub_command_t cmd __attribute__ ((unused)),
 }
 
 static grub_err_t
-grub_cmd_netbsd (grub_command_t cmd __attribute__ ((unused)),
-		 int argc, char *argv[])
+grub_cmd_netbsd (grub_extcmd_t cmd, int argc, char *argv[])
 {
   kernel_type = KERNEL_TYPE_NETBSD;
-  bootflags = ((argc <= 1) ? 0 :
-	       grub_bsd_parse_flags (argv[1], netbsd_opts, netbsd_flags));
+  bootflags = grub_bsd_parse_flags (cmd->state, netbsd_flags);
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     grub_loader_set (grub_netbsd_boot, grub_bsd_unload, 1);
@@ -1112,21 +1134,24 @@ grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
 }
 
 
-static grub_command_t cmd_freebsd, cmd_openbsd, cmd_netbsd;
+static grub_extcmd_t cmd_freebsd, cmd_openbsd, cmd_netbsd;
 static grub_command_t cmd_freebsd_loadenv, cmd_freebsd_module;
 static grub_command_t cmd_freebsd_module_elf;
 
 GRUB_MOD_INIT (bsd)
 {
-  cmd_freebsd =
-    grub_register_command ("freebsd", grub_cmd_freebsd,
-			   0, "load kernel of FreeBSD");
-  cmd_openbsd =
-    grub_register_command ("openbsd", grub_cmd_openbsd,
-			   0, "load kernel of OpenBSD");
-  cmd_netbsd =
-    grub_register_command ("netbsd", grub_cmd_netbsd,
-			   0, "load kernel of NetBSD");
+  cmd_freebsd = grub_register_extcmd ("freebsd", grub_cmd_freebsd,
+				      GRUB_COMMAND_FLAG_BOTH,
+				      "freebsd FILE", "Load kernel of FreeBSD.",
+				      freebsd_opts);
+  cmd_openbsd = grub_register_extcmd ("openbsd", grub_cmd_openbsd,
+				      GRUB_COMMAND_FLAG_BOTH,
+				      "openbsd FILE", "Load kernel of OpenBSD.",
+				      openbsd_opts);
+  cmd_netbsd = grub_register_extcmd ("netbsd", grub_cmd_netbsd,
+				     GRUB_COMMAND_FLAG_BOTH,
+				     "netbsd FILE", "Load kernel of NetBSD.",
+				     netbsd_opts);
   cmd_freebsd_loadenv =
     grub_register_command ("freebsd_loadenv", grub_cmd_freebsd_loadenv,
 			   0, "load FreeBSD env");
@@ -1142,9 +1167,9 @@ GRUB_MOD_INIT (bsd)
 
 GRUB_MOD_FINI (bsd)
 {
-  grub_unregister_command (cmd_freebsd);
-  grub_unregister_command (cmd_openbsd);
-  grub_unregister_command (cmd_netbsd);
+  grub_unregister_extcmd (cmd_freebsd);
+  grub_unregister_extcmd (cmd_openbsd);
+  grub_unregister_extcmd (cmd_netbsd);
 
   grub_unregister_command (cmd_freebsd_loadenv);
   grub_unregister_command (cmd_freebsd_module);
