@@ -1,5 +1,11 @@
 2009-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix grub-install.
+
+	* util/i386/pc/grub-install.in: Add 'part_' to partmap_module.
+
+2009-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* fs/hfsplus.c (grub_hfsplus_mount): Don't ignore grub_hfsplus_read_file
 	errors.
 	(grub_hfsplus_btree_iterate_node): Don't ignore grub_hfsplus_read_file
