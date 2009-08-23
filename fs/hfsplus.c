@@ -469,9 +469,9 @@ grub_hfsplus_mount (grub_disk_t disk)
     grub_be_to_cpu64 (data->volheader.extents_file.size);
 
   /* Read the essential information about the trees.  */
-  if (! grub_hfsplus_read_file (&data->catalog_tree.file, 0,
-				sizeof (struct grub_hfsplus_btnode),
-				sizeof (header), (char *) &header))
+  if (grub_hfsplus_read_file (&data->catalog_tree.file, 0,
+			      sizeof (struct grub_hfsplus_btnode),
+			      sizeof (header), (char *) &header) <= 0)
     goto fail;
 
   data->catalog_tree.root = grub_be_to_cpu32 (header.root);
@@ -479,15 +479,15 @@ grub_hfsplus_mount (grub_disk_t disk)
   data->case_sensitive = ((magic == GRUB_HFSPLUSX_MAGIC) &&
 			  (header.key_compare == GRUB_HFSPLUSX_BINARYCOMPARE));
 
-  if (! grub_hfsplus_read_file (&data->extoverflow_tree.file, 0,
-				sizeof (struct grub_hfsplus_btnode),
-				sizeof (header), (char *) &header))
+  if (grub_hfsplus_read_file (&data->extoverflow_tree.file, 0,
+			      sizeof (struct grub_hfsplus_btnode),
+			      sizeof (header), (char *) &header) <= 0)
     goto fail;
 
   data->extoverflow_tree.root = grub_be_to_cpu32 (header.root);
 
-  if (! grub_hfsplus_read_file (&data->extoverflow_tree.file, 0, 0,
-				sizeof (node), (char *) &node))
+  if (grub_hfsplus_read_file (&data->extoverflow_tree.file, 0, 0,
+			      sizeof (node), (char *) &node) <= 0)
     goto fail;
 
   data->extoverflow_tree.root = grub_be_to_cpu32 (header.root);
@@ -608,10 +608,10 @@ grub_hfsplus_btree_iterate_node (struct grub_hfsplus_btree *btree,
       if (! first_node->next)
 	break;
 
-      if (! grub_hfsplus_read_file (&btree->file, 0,
-				    (grub_be_to_cpu32 (first_node->next)
-				     * btree->nodesize),
-				    btree->nodesize, cnode))
+      if (grub_hfsplus_read_file (&btree->file, 0,
+				  (grub_be_to_cpu32 (first_node->next)
+				   * btree->nodesize),
+				  btree->nodesize, cnode) <= 0)
 	return 1;
 
       /* Don't skip any record in the next iteration.  */
@@ -647,12 +647,12 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
       int match = 0;
 
       /* Read a node.  */
-      if (! grub_hfsplus_read_file (&btree->file, 0,
-				    (long)currnode * (long)btree->nodesize,
-				    btree->nodesize, (char *) node))
+      if (grub_hfsplus_read_file (&btree->file, 0,
+				  (long)currnode * (long)btree->nodesize,
+				  btree->nodesize, (char *) node) <= 0)
 	{
 	  grub_free (node);
-	  return grub_errno;
+	  return grub_error (GRUB_ERR_BAD_FS, "Couldn't read i-node.");
 	}
 
       nodedesc = (struct grub_hfsplus_btnode *) node;
