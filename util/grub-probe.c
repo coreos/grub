@@ -97,7 +97,7 @@ probe_partmap (grub_disk_t disk)
     grub_util_error ("Invalid partition map %s", name);
 
   *underscore = '\0';
-  printf ("%s\n", name);
+  printf ("part_%s\n", name);
   free (name);
 }
 
