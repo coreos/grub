@@ -778,8 +778,18 @@ grub_bsd_load_elf (grub_elf_t elf)
   else if (grub_elf_is_elf64 (elf))
     {
       is_64bit = 1;
-      entry = elf->ehdr.ehdr64.e_entry & 0xffffffff;
-      entry_hi = (elf->ehdr.ehdr64.e_entry >> 32) & 0xffffffff;
+
+      /* FreeBSD has 64-bit entry point.  */
+      if (kernel_type == KERNEL_TYPE_FREEBSD)
+	{
+	  entry = elf->ehdr.ehdr64.e_entry & 0xffffffff;
+	  entry_hi = (elf->ehdr.ehdr64.e_entry >> 32) & 0xffffffff;
+	}
+      else
+	{
+	  entry = elf->ehdr.ehdr64.e_entry & 0x0fffffff;
+	  entry_hi = 0;
+	}
       return grub_elf64_load (elf, grub_bsd_elf64_hook, 0, 0);
     }
   else

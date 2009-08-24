@@ -1,5 +1,12 @@
 2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support for 64-bit NetBSD.
+
+	* loader/i386/bsd.c (grub_bsd_load_elf): Apply correct mask to entry
+	point when booting non-FreeBSD.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support --no-smp and --no-acpi for NetBSD.
 
 	* include/grub/i386/bsd.h (NETBSD_AB_NOSMP): New definition.
