@@ -196,7 +196,7 @@ sun_partition_map_get_name (const grub_partition_t p)
 /* Partition map type.  */
 static struct grub_partition_map grub_sun_partition_map =
   {
-    .name = "sun_partition_map",
+    .name = "part_sun",
     .iterate = sun_partition_map_iterate,
     .probe = sun_partition_map_probe,
     .get_name = sun_partition_map_get_name

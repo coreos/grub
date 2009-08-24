@@ -1,5 +1,20 @@
 2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Rename *_partition_map to part_*
+
+	* partmap/acorn.c (grub_acorn_partition_map): Set name to 'part_acorn'.
+	* partmap/amiga.c (grub_amiga_partition_map): Set name to 'part_amiga'.
+	* partmap/apple.c (grub_apple_partition_map): Set name to 'part_apple'.
+	* partmap/gpt.c (grub_gpt_partition_map): Set name to 'part_gpt'.
+	All users updated.
+	* partmap/msdos.c (grub_msdos_partition_map): Set name to 'part_msdos'.
+	All users updated.
+	* partmap/sun.c (grub_sun_partition_map): Set name to 'part_sun'.
+	* util/grub-probe.c (probe_partmap): Don't transform partition name
+	to get module name.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix OpenBSD and NetBSD support.
 
 	* include/grub/i386/bsd.h (GRUB_BSD_TEMP_BUFFER): Change to resolve
@@ -38,12 +53,6 @@
 	(NETBSD_AB_NOACPI): Likewise.
 	* loader/i386/bsd.c (netbsd_opts): New entries no-smp and no-acpi.
 	(netbsd_flags): Add NETBSD_AB_NOSMP, NETBSD_AB_NOACPI.
-
-2009-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
-
-	Fix grub-install.
-
-	* util/grub-probe.c (probe_partmap): Prefix partmap with 'part_'.
 
 2009-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
 

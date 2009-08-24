@@ -303,7 +303,7 @@ pc_partition_map_get_name (const grub_partition_t p)
 /* Partition map type.  */
 static struct grub_partition_map grub_msdos_partition_map =
   {
-    .name = "msdos_partition_map",
+    .name = "part_msdos",
     .iterate = pc_partition_map_iterate,
     .probe = pc_partition_map_probe,
     .get_name = pc_partition_map_get_name

@@ -279,7 +279,7 @@ setup (const char *dir,
       if (root_dev->disk->partition)
 	{
 	  if (strcmp (root_dev->disk->partition->partmap->name,
-		      "msdos_partition_map") == 0)
+		      "part_msdos") == 0)
 	    {
 	      struct grub_msdos_partition *pcdata =
 		root_dev->disk->partition->data;
@@ -287,7 +287,7 @@ setup (const char *dir,
 	      bsd_part = pcdata->bsd_part;
 	    }
 	  else if (strcmp (root_dev->disk->partition->partmap->name,
-			   "gpt_partition_map") == 0)
+			   "part_gpt") == 0)
 	    {
 	      dos_part = root_dev->disk->partition->index;
 	      bsd_part = -1;

@@ -241,7 +241,7 @@ apple_partition_map_get_name (const grub_partition_t p)
 /* Partition map type.  */
 static struct grub_partition_map grub_apple_partition_map =
   {
-    .name = "apple_partition_map",
+    .name = "part_apple",
     .iterate = apple_partition_map_iterate,
     .probe = apple_partition_map_probe,
     .get_name = apple_partition_map_get_name

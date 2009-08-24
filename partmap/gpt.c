@@ -176,7 +176,7 @@ gpt_partition_map_get_name (const grub_partition_t p)
 /* Partition map type.  */
 static struct grub_partition_map grub_gpt_partition_map =
   {
-    .name = "gpt_partition_map",
+    .name = "part_gpt",
     .iterate = gpt_partition_map_iterate,
     .probe = gpt_partition_map_probe,
     .get_name = gpt_partition_map_get_name

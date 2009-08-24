@@ -79,26 +79,13 @@ grub_refresh (void)
 static void
 probe_partmap (grub_disk_t disk)
 {
-  char *name;
-  char *underscore;
-
   if (disk->partition == NULL)
     {
       grub_util_info ("No partition map found for %s", disk->name);
       return;
     }
 
-  name = strdup (disk->partition->partmap->name);
-  if (! name)
-    grub_util_error ("Not enough memory");
-
-  underscore = strchr (name, '_');
-  if (! underscore)
-    grub_util_error ("Invalid partition map %s", name);
-
-  *underscore = '\0';
-  printf ("part_%s\n", name);
-  free (name);
+  printf ("%s\n", disk->partition->partmap->name);
 }
 
 static int

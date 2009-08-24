@@ -949,7 +949,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       {
  	struct grub_msdos_partition *pcdata = NULL;
 
-	if (strcmp (partition->partmap->name, "msdos_partition_map") == 0)
+	if (strcmp (partition->partmap->name, "part_msdos") == 0)
 	  pcdata = partition->data;
 
 	if (pcdata)
