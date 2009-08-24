@@ -1,5 +1,16 @@
 2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Let user specify NetBSD root device.
+
+	* loader/i386/bsd.c (netbsd_root): New variable.
+	(netbsd_opts): New option 'root'.
+	(NETBSD_ROOT_ARG): New macro.
+	(grub_netbsd_boot): Use 'netbsd_root'.
+	(grub_bsd_unload): Free 'netbsd_root'.
+	(grub_cmd_netbsd): Fill 'netbsd_root'.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support for 64-bit NetBSD.
 
 	* loader/i386/bsd.c (grub_bsd_load_elf): Apply correct mask to entry

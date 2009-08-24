@@ -56,6 +56,7 @@ static grub_uint32_t bootflags;
 static char *mod_buf;
 static grub_uint32_t mod_buf_len, mod_buf_max, kern_end_mdofs;
 static int is_elf_kernel, is_64bit;
+static char *netbsd_root = NULL;
 
 static const struct grub_arg_option freebsd_opts[] =
   {
@@ -115,6 +116,7 @@ static const struct grub_arg_option netbsd_opts[] =
     {"verbose", 'v', 0, "Boot with verbose messages.", 0, 0},
     {"debug", 'x', 0, "Boot with debug messages.", 0, 0},
     {"silent", 'z', 0, "Supress normal output (warnings remain).", 0, 0},
+    {"root", 'r', 0, "Set root device.", "DEVICE", ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -125,6 +127,8 @@ static const grub_uint32_t netbsd_flags[] =
   NETBSD_RB_MINIROOT, NETBSD_AB_QUIET, NETBSD_RB_SINGLE,
   NETBSD_AB_VERBOSE, NETBSD_AB_DEBUG, NETBSD_AB_SILENT, 0
 };
+
+#define NETBSD_ROOT_ARG (ARRAY_SIZE (netbsd_flags) - 1)
 
 static void
 grub_bsd_get_device (grub_uint32_t * biosdev,
@@ -607,22 +611,35 @@ grub_openbsd_boot (void)
 static grub_err_t
 grub_netbsd_boot (void)
 {
-  struct grub_netbsd_btinfo_rootdevice *rootdev;
   struct grub_netbsd_bootinfo *bootinfo;
   grub_uint32_t biosdev, unit, slice, part;
 
   grub_bsd_get_device (&biosdev, &unit, &slice, &part);
 
-  rootdev = (struct grub_netbsd_btinfo_rootdevice *) GRUB_BSD_TEMP_BUFFER;
+  if (kern_end + sizeof (struct grub_netbsd_btinfo_rootdevice)
+      + sizeof (struct grub_netbsd_bootinfo) > grub_os_area_addr
+      + grub_os_area_size)
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "No memory fo boot info.");
 
-  rootdev->common.len = sizeof (struct grub_netbsd_btinfo_rootdevice);
-  rootdev->common.type = NETBSD_BTINFO_ROOTDEVICE;
-  grub_sprintf (rootdev->devname, "%cd%d%c", (biosdev & 0x80) ? 'w' : 'f',
-		unit, 'a' + part);
+  if (netbsd_root)
+    {
+      struct grub_netbsd_btinfo_rootdevice *rootdev;
 
-  bootinfo = (struct grub_netbsd_bootinfo *) (rootdev + 1);
-  bootinfo->bi_count = 1;
-  bootinfo->bi_data[0] = rootdev;
+      rootdev = (struct grub_netbsd_btinfo_rootdevice *) kern_end;
+
+      rootdev->common.len = sizeof (struct grub_netbsd_btinfo_rootdevice);
+      rootdev->common.type = NETBSD_BTINFO_ROOTDEVICE;
+      grub_strncpy (rootdev->devname, netbsd_root, sizeof (rootdev->devname));
+
+      bootinfo = (struct grub_netbsd_bootinfo *) (rootdev + 1);
+      bootinfo->bi_count = 1;
+      bootinfo->bi_data[0] = rootdev;
+    }
+  else
+    {
+      bootinfo = (struct grub_netbsd_bootinfo *) kern_end;
+      bootinfo->bi_count = 0;
+    }
 
   grub_unix_real_boot (entry, bootflags, 0, bootinfo,
 		       0, grub_mmap_get_upper () >> 10,
@@ -644,6 +661,9 @@ grub_bsd_unload (void)
 
   kernel_type = KERNEL_TYPE_NONE;
   grub_dl_unref (my_mod);
+
+  grub_free (netbsd_root);
+  netbsd_root = NULL;
 
   return GRUB_ERR_NONE;
 }
@@ -935,7 +955,11 @@ grub_cmd_netbsd (grub_extcmd_t cmd, int argc, char *argv[])
   bootflags = grub_bsd_parse_flags (cmd->state, netbsd_flags);
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
-    grub_loader_set (grub_netbsd_boot, grub_bsd_unload, 1);
+    {
+      grub_loader_set (grub_netbsd_boot, grub_bsd_unload, 1);
+      if (cmd->state[NETBSD_ROOT_ARG].set)
+	netbsd_root = grub_strdup (cmd->state[NETBSD_ROOT_ARG].arg);
+    }
 
   return grub_errno;
 }
