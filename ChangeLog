@@ -1,5 +1,19 @@
 2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix OpenBSD and NetBSD support.
+
+	* include/grub/i386/bsd.h (GRUB_BSD_TEMP_BUFFER): Change to resolve
+	memory address conflict.
+	(OPENBSD_MMAP_ACPI): New definition.
+	(OPENBSD_MMAP_NVS): Likewise.
+	* loader/i386/bsd.c (grub_openbsd_boot): Support OPENBSD_MMAP_ACPI
+	and OPENBSD_MMAP_NVS.
+	Add memory map terminator
+	Explicit cast when calling grub_unix_real_boot.
+	(grub_nebsd_boot): Explicit cast when calling grub_unix_real_boot.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Let user specify NetBSD root device.
 
 	* loader/i386/bsd.c (netbsd_root): New variable.

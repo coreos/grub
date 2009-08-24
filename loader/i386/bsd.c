@@ -574,6 +574,14 @@ grub_openbsd_boot (void)
 	  pm->type = OPENBSD_MMAP_AVAILABLE;
 	  break;
 
+        case GRUB_MACHINE_MEMORY_ACPI:
+	  pm->type = OPENBSD_MMAP_ACPI;
+	  break;
+
+        case GRUB_MACHINE_MEMORY_NVS:
+	  pm->type = OPENBSD_MMAP_NVS;
+	  break;
+
 	default:
 	  pm->type = OPENBSD_MMAP_RESERVED;
 	  break;
@@ -589,6 +597,12 @@ grub_openbsd_boot (void)
   pm = (struct grub_openbsd_bios_mmap *) (pa + 1);
   grub_mmap_iterate (hook);
 
+  /* Memory map terminator.  */
+  pm->addr = 0;
+  pm->len = 0;
+  pm->type = 0;
+  pm++;
+
   pa->ba_size = (char *) pm - (char *) pa;
   pa->ba_next = (struct grub_openbsd_bootargs *) pm;
   pa = pa->ba_next;
@@ -600,8 +614,8 @@ grub_openbsd_boot (void)
 	     (part << OPENBSD_B_PARTSHIFT));
 
   grub_unix_real_boot (entry, bootflags, bootdev, OPENBSD_BOOTARG_APIVER,
-		       0, grub_mmap_get_upper () >> 10,
-		       grub_mmap_get_lower () >> 10,
+		       0, (grub_uint32_t) (grub_mmap_get_upper () >> 10),
+		       (grub_uint32_t) (grub_mmap_get_lower () >> 10),
 		       (char *) pa - buf, buf);
 
   /* Not reached.  */
@@ -642,8 +656,8 @@ grub_netbsd_boot (void)
     }
 
   grub_unix_real_boot (entry, bootflags, 0, bootinfo,
-		       0, grub_mmap_get_upper () >> 10,
-		       grub_mmap_get_lower () >> 10);
+		       0, (grub_uint32_t) (grub_mmap_get_upper () >> 10),
+		       (grub_uint32_t) (grub_mmap_get_lower () >> 10));
 
   /* Not reached.  */
   return GRUB_ERR_NONE;

@@ -29,7 +29,7 @@ enum bsd_kernel_types
     KERNEL_TYPE_NETBSD,
   };
 
-#define GRUB_BSD_TEMP_BUFFER	0x68000
+#define GRUB_BSD_TEMP_BUFFER   0x80000
 
 #define FREEBSD_RB_ASKNAME	(1 << 0)  /* ask for file name to reboot from */
 #define FREEBSD_RB_SINGLE       (1 << 1)  /* reboot to single user only */
@@ -157,6 +157,8 @@ struct grub_openbsd_bios_mmap
   grub_uint64_t len;
 #define	OPENBSD_MMAP_AVAILABLE	1
 #define	OPENBSD_MMAP_RESERVED 2
+#define	OPENBSD_MMAP_ACPI	3
+#define	OPENBSD_MMAP_NVS 	4
   grub_uint32_t type;
 };
 
