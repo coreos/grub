@@ -97,7 +97,7 @@ grub_usb_hid (void)
 }
 
 static grub_err_t
-grub_usb_keyboard_getreport (grub_usb_device_t dev, unsigned char *report)
+grub_usb_keyboard_getreport (grub_usb_device_t dev, grub_uint8_t *report)
 {
   return grub_usb_control_msg (dev, (1 << 7) | (1 << 5) | 1, 0x01, 0, 0,
 			       8, (char *) report);
@@ -108,20 +108,24 @@ grub_usb_keyboard_getreport (grub_usb_device_t dev, unsigned char *report)
 static int
 grub_usb_keyboard_checkkey (void)
 {
-  unsigned char data[8];
+  grub_uint8_t data[8];
   int key;
-  int i;
   grub_err_t err;
+  grub_uint64_t currtime;
+  int timeout = 50;
 
   data[2] = 0;
-  for (i = 0; i < 50; i++)
+  currtime = grub_get_time_ms ();
+  do
     {
       /* Get_Report.  */
       err = grub_usb_keyboard_getreport (usbdev, data);
 
-      if (! err && data[2])
+      /* Implement a timeout.  */
+      if (grub_get_time_ms () > currtime + timeout)
 	break;
     }
+  while (err || !data[2]);
 
   if (err || !data[2])
     return -1;
@@ -174,7 +178,7 @@ grub_usb_keyboard_getkey (void)
 {
   int key;
   grub_err_t err;
-  unsigned char data[8];
+  grub_uint8_t data[8];
   grub_uint64_t currtime;
   int timeout;
   static grub_usb_keyboard_repeat_t repeat = GRUB_HIDBOOT_REPEAT_NONE;
