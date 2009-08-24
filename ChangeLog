@@ -1,5 +1,27 @@
 2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Save space by inlining misc.c functions.
+
+	* kern/misc.c (grub_iswordseparator): Made static.
+	* kern/misc.c (grub_strcat): Moved from here ...
+	* include/grub/misc.h (grub_strcat): ... here. Inlined.
+	* kern/misc.c (grub_strncat): Moved from here ...
+	* include/grub/misc.h (grub_strncat): ... here. Inlined.
+	* kern/misc.c (grub_strcasecmp): Moved from here ...
+	* include/grub/misc.h (grub_strcasecmp): ... here. Inlined.
+	* kern/misc.c (grub_strncasecmp): Moved from here ...
+	* include/grub/misc.h (grub_strncasecmp): ... here. Inlined.
+	* kern/misc.c (grub_isalpha): Moved from here ...
+	* include/grub/misc.h (grub_isalpha): ... here. Inlined.
+	* kern/misc.c (grub_isdigit): Moved from here ...
+	* include/grub/misc.h (grub_isdigit): ... here. Inlined.
+	* kern/misc.c (grub_isgraph): Moved from here ...
+	* include/grub/misc.h (grub_isgraph): ... here. Inlined.
+	* kern/misc.c (grub_tolower): Moved from here ...
+	* include/grub/misc.h (grub_tolower): ... here. Inlined.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* script/sh/function.c (grub_script_function_find): Cut error message
 	not to flood terminal.
 	* script/sh/lexer.c (grub_script_yylex): Remove command line length
