@@ -103,6 +103,8 @@ static const grub_uint32_t openbsd_flags[] =
 
 static const struct grub_arg_option netbsd_opts[] =
   {
+    {"no-smp", '1', 0, "Disable SMP.", 0, 0},
+    {"no-acpi", '2', 0, "Disable ACPI.", 0, 0},
     {"askname", 'a', 0, "Ask for file name to reboot from.", 0, 0},
     {"halt", 'b', 0, "Don't reboot, just halt.", 0, 0},
     {"config", 'c', 0, "Change configured devices.", 0, 0},
@@ -118,10 +120,10 @@ static const struct grub_arg_option netbsd_opts[] =
 
 static const grub_uint32_t netbsd_flags[] =
 {
-  NETBSD_RB_ASKNAME, NETBSD_RB_HALT, NETBSD_RB_USERCONFIG,
-  NETBSD_RB_KDB, NETBSD_RB_MINIROOT, NETBSD_AB_QUIET,
-  NETBSD_RB_SINGLE, NETBSD_AB_VERBOSE, NETBSD_AB_DEBUG,
-  NETBSD_AB_SILENT, 0
+  NETBSD_AB_NOSMP, NETBSD_AB_NOACPI, NETBSD_RB_ASKNAME,
+  NETBSD_RB_HALT, NETBSD_RB_USERCONFIG, NETBSD_RB_KDB,
+  NETBSD_RB_MINIROOT, NETBSD_AB_QUIET, NETBSD_RB_SINGLE,
+  NETBSD_AB_VERBOSE, NETBSD_AB_DEBUG, NETBSD_AB_SILENT, 0
 };
 
 static void

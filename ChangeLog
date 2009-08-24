@@ -1,3 +1,12 @@
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support --no-smp and --no-acpi for NetBSD.
+
+	* include/grub/i386/bsd.h (NETBSD_AB_NOSMP): New definition.
+	(NETBSD_AB_NOACPI): Likewise.
+	* loader/i386/bsd.c (netbsd_opts): New entries no-smp and no-acpi.
+	(netbsd_flags): Add NETBSD_AB_NOSMP, NETBSD_AB_NOACPI.
+
 2009-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix grub-install.

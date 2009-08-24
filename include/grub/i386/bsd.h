@@ -189,6 +189,8 @@ struct grub_openbsd_bootargs
 #define NETBSD_AB_VERBOSE	(1 << 17) /* boot verbosely */
 #define NETBSD_AB_SILENT	(1 << 18) /* boot silently */
 #define NETBSD_AB_DEBUG		(1 << 19) /* boot with debug messages */
+#define NETBSD_AB_NOSMP		(1 << 28) /* Boot without SMP support.  */
+#define NETBSD_AB_NOACPI        (1 << 29) /* Boot without ACPI support.  */
 
 struct grub_netbsd_bootinfo
 {
