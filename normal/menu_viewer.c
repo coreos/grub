@@ -21,6 +21,7 @@
 #include <grub/env.h>
 #include <grub/menu_viewer.h>
 #include <grub/menu.h>
+#include <grub/auth.h>
 
 /* The list of menu viewers.  */
 static grub_menu_viewer_t menu_viewer_list;
@@ -55,9 +56,26 @@ grub_err_t
 grub_menu_viewer_show_menu (grub_menu_t menu, int nested)
 {
   grub_menu_viewer_t cur = get_current_menu_viewer ();
+  grub_err_t err1, err2;
   if (!cur)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "No menu viewer available.");
 
-  return cur->show_menu (menu, nested);
+  while (1)
+    {
+      err1 = cur->show_menu (menu, nested);
+      grub_print_error ();
+
+      err2 = grub_auth_check_authentication (NULL);
+      if (err2)
+	{
+	  grub_print_error ();
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
+
+      break;
+    }
+
+  return err1;
 }
 

@@ -110,6 +110,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	commands/handler.c commands/ls.c commands/test.c 		\
 	commands/search.c commands/blocklist.c commands/hexdump.c	\
 	commands/gptsync.c commands/probe.c commands/xnu_uuid.c		\
+	commands/password.c						\
 	lib/hexdump.c commands/i386/cpuid.c				\
 	disk/host.c disk/loopback.c					\
 	\
@@ -127,7 +128,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	kern/partition.c kern/reader.c kern/term.c			\
 	kern/rescue_reader.c kern/rescue_parser.c                       \
 	lib/arg.c normal/cmdline.c normal/misc.c			\
-	normal/handler.c normal/autofs.c				\
+	normal/handler.c normal/auth.c normal/autofs.c			\
 	normal/completion.c normal/datetime.c normal/main.c 		\
 	normal/menu_text.c						\
 	normal/menu.c normal/menu_entry.c normal/menu_viewer.c		\

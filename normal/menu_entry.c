@@ -23,6 +23,7 @@
 #include <grub/loader.h>
 #include <grub/command.h>
 #include <grub/parser.h>
+#include <grub/auth.h>
 
 enum update_mode
   {
@@ -1026,6 +1027,16 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 {
   struct screen *screen;
   int prev_c;
+  grub_err_t err = GRUB_ERR_NONE;
+
+  err = grub_auth_check_authentication (NULL);
+
+  if (err)
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
 
   screen = make_screen (entry);
   if (! screen)

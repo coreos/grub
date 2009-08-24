@@ -56,7 +56,7 @@ void grub_cmdline_run (int nested);
 
 /* Defined in `cmdline.c'.  */
 int grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
-		      int echo_char, int readline);
+		      int echo_char, int readline, int history);
 grub_err_t grub_set_history (int newsize);
 
 /* Defined in `completion.c'.  */

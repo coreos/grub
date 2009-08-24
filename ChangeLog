@@ -1,3 +1,39 @@
+2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Authentication support.
+
+	* commands/password.c: New file.
+	* conf/common.rmk (pkglib_MODULES): Add password.mod.
+	(password_mod_SOURCES): New variable.
+	(password_mod_CFLAGS): Likewise.
+	(password_mod_LDFLAGS): Likewise.
+	(normal_mod_SOURCES): Add normal/auth.c.
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Add commands/password.c and
+	normal/auth.c.
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
+	* include/grub/auth.h: New file.
+	* include/grub/err.h (grub_err_t): New enum value
+	GRUB_ERR_ACCESS_DENIED.
+	* include/grub/menu.h (grub_menu_entry): New fields 'restricted' and
+	'users'.
+	* include/grub/normal.h (grub_cmdline_get): New argument 'history'.
+	* normal/cmdline.c (grub_cmdline_get): New argument 'history'. All
+	users updated.
+	* normal/auth.c: New file.
+	* normal/main.c (grub_normal_add_menu_entry): Handle --users option.
+	(grub_cmdline_run): Don't allow to go to command line without
+	authentication.
+	* normal/menu.c (grub_menu_execute_entry): Handle restricted entries.
+	* normal/menu_entry.c (grub_menu_entry_run): Don't allow editing
+	menuentry without superuser rights.
+	* normal/menu_viewer.c (grub_menu_viewer_show_menu): Don't exit if
+	user isn't a superuser.
+
 2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Save space by inlining misc.c functions.

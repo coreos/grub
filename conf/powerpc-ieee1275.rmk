@@ -46,6 +46,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 	commands/ls.c commands/blocklist.c commands/hexdump.c		\
 	lib/hexdump.c commands/halt.c commands/reboot.c 		\
 	commands/gptsync.c commands/probe.c commands/xnu_uuid.c		\
+	commands/password.c						\
 	disk/loopback.c							\
 	\
 	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c			\
@@ -62,7 +63,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 	kern/command.c kern/corecmd.c commands/extcmd.c			\
 	lib/arg.c normal/cmdline.c normal/datetime.c 			\
 	normal/completion.c normal/misc.c		 		\
-	normal/handler.c normal/autofs.c normal/main.c			\
+	normal/handler.c normal/auth.c normal/autofs.c normal/main.c	\
 	normal/menu.c 							\
 	normal/menu_text.c						\
 	normal/menu_entry.c normal/menu_viewer.c 	 		\
