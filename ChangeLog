@@ -1,5 +1,11 @@
 2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix breakage in normal/auth.c.
+
+	* normal/auth.c (grub_iswordseparator): New function.
+
+2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Authentication support.
 
 	* commands/password.c: New file.

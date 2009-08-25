@@ -48,6 +48,12 @@ grub_auth_strcmp (const char *user_input, const char *template)
   return !ok;
 }
 
+static int
+grub_iswordseparator (int c)
+{
+  return (grub_isspace (c) || c == ',' || c == ';' || c == '|' || c == '&');
+}
+
 int
 grub_auth_strword (const char *haystack, const char *needle)
 {
