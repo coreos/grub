@@ -1,5 +1,17 @@
 2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Enable bsd.mod on coreboot.
+
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Add bsd.mod.
+	(bsd_mod_SOURCES): New variable.
+	(bsd_mod_CFLAGS): Likewise.
+	(bsd_mod_LDFLAGS): Likewise.
+	(bsd_mod_ASFLAGS): Likewise.
+	* loader/i386/bsd.c [!GRUB_MACHINE_PCBIOS]: Fix includes.
+	(grub_bsd_get_device) [!GRUB_MACHINE_PCBIOS]: Set *biosdev to 0xff.
+
+2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Cleanup NetBSD root support.
 
 	* loader/i386/bsd.c (grub_netbsd_boot): Remove call to

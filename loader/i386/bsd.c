@@ -37,10 +37,10 @@
 
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>
+#endif
 #include <grub/disk.h>
 #include <grub/device.h>
 #include <grub/partition.h>
-#endif
 
 #define ALIGN_DWORD(a)	ALIGN_UP (a, 4)
 #define ALIGN_QWORD(a)	ALIGN_UP (a, 8)
@@ -138,7 +138,11 @@ grub_bsd_get_device (grub_uint32_t * biosdev,
   char *p;
   grub_device_t dev; 
 
+#ifdef GRUB_MACHINE_PCBIOS
   *biosdev = grub_get_root_biosnumber () & 0xff;
+#else
+  *biosdev = 0xff;
+#endif
   *unit = (*biosdev & 0x7f);
   *slice = 0xff;
   *part = 0xff;
