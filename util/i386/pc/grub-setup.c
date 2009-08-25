@@ -338,12 +338,12 @@ setup (const char *dir,
       goto unable_to_embed;
     }
 
-  grub_partition_iterate (dest_dev->disk, (strcmp (dest_partmap, "msdos_partition_map") ?
+  grub_partition_iterate (dest_dev->disk, (strcmp (dest_partmap, "part_msdos") ?
 					   find_usable_region_gpt : find_usable_region_msdos));
 
   if (embed_region.end == embed_region.start)
     {
-      if (! strcmp (dest_partmap, "msdos_partition_map"))
+      if (! strcmp (dest_partmap, "part_msdos"))
 	grub_util_warn ("This msdos-style partition label has no post-MBR gap; embedding won't be possible!");
       else
 	grub_util_warn ("This GPT partition label has no BIOS Boot Partition; embedding won't be possible!");

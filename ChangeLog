@@ -1,5 +1,12 @@
 2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix breakage in grub-setup.
+
+	* util/i386/pc/grub-setup.c (setup): Use "part_msdos" instead of
+	"msdos_partition_map".
+
+2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix breakage in normal/auth.c.
 
 	* normal/auth.c (grub_iswordseparator): New function.
