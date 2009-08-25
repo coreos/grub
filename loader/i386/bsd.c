@@ -626,14 +626,11 @@ static grub_err_t
 grub_netbsd_boot (void)
 {
   struct grub_netbsd_bootinfo *bootinfo;
-  grub_uint32_t biosdev, unit, slice, part;
-
-  grub_bsd_get_device (&biosdev, &unit, &slice, &part);
 
   if (kern_end + sizeof (struct grub_netbsd_btinfo_rootdevice)
       + sizeof (struct grub_netbsd_bootinfo) > grub_os_area_addr
       + grub_os_area_size)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "No memory fo boot info.");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "No memory for boot info.");
 
   if (netbsd_root)
     {
