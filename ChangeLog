@@ -1,3 +1,11 @@
+2009-08-26  Bean  <bean123ch@gmail.com>
+
+	* fs/xfs.c (GRUB_XFS_INO_INOINAG): Replace 1L with 1LL to support
+	64-bit number.
+	(GRUB_XFS_FSB_TO_BLOCK): Likewise.
+	(grub_xfs_inode_block): Change return type to grub_uint64_t.
+	(grub_xfs_read_inode): Change type of block to grub_uint64_t.
+
 2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	NetBSD memory map support.
