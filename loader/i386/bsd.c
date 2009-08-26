@@ -630,30 +630,87 @@ static grub_err_t
 grub_netbsd_boot (void)
 {
   struct grub_netbsd_bootinfo *bootinfo;
+  int count = 0;
+  struct grub_netbsd_btinfo_mmap_header *mmap;
+  struct grub_netbsd_btinfo_mmap_entry *pm;
+  void *curarg;
+
+  auto int NESTED_FUNC_ATTR count_hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR count_hook (grub_uint64_t addr __attribute__ ((unused)),
+				   grub_uint64_t size __attribute__ ((unused)),
+				   grub_uint32_t type __attribute__ ((unused)))
+  {
+    count++;
+    return 0;
+  }
+
+  auto int NESTED_FUNC_ATTR fill_hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR fill_hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+  {
+    pm->addr = addr;
+    pm->len = size;
+
+    switch (type)
+      {
+      case GRUB_MACHINE_MEMORY_AVAILABLE:
+	pm->type = NETBSD_MMAP_AVAILABLE;
+	break;
+
+      case GRUB_MACHINE_MEMORY_ACPI:
+	pm->type = NETBSD_MMAP_ACPI;
+	break;
+
+      case GRUB_MACHINE_MEMORY_NVS:
+	pm->type = NETBSD_MMAP_NVS;
+	break;
+
+      default:
+	pm->type = NETBSD_MMAP_RESERVED;
+	break;
+      }
+    pm++;
+
+    return 0;
+  }
+
+  grub_mmap_iterate (count_hook);
 
   if (kern_end + sizeof (struct grub_netbsd_btinfo_rootdevice)
-      + sizeof (struct grub_netbsd_bootinfo) > grub_os_area_addr
-      + grub_os_area_size)
+      + sizeof (struct grub_netbsd_bootinfo)
+      + sizeof (struct grub_netbsd_btinfo_mmap_header)
+      + count * sizeof (struct grub_netbsd_btinfo_mmap_entry)
+      > grub_os_area_addr + grub_os_area_size)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "No memory for boot info.");
+
+  curarg = mmap = (struct grub_netbsd_btinfo_mmap_header *) kern_end;
+  pm = (struct grub_netbsd_btinfo_mmap_entry *) (mmap + 1);
+
+  grub_mmap_iterate (fill_hook);
+  mmap->common.type = NETBSD_BTINFO_MEMMAP;
+  mmap->common.len = (char *) pm - (char *) mmap;
+  mmap->count = count;
+  curarg = pm;
 
   if (netbsd_root)
     {
       struct grub_netbsd_btinfo_rootdevice *rootdev;
 
-      rootdev = (struct grub_netbsd_btinfo_rootdevice *) kern_end;
+      rootdev = (struct grub_netbsd_btinfo_rootdevice *) curarg;
 
       rootdev->common.len = sizeof (struct grub_netbsd_btinfo_rootdevice);
       rootdev->common.type = NETBSD_BTINFO_ROOTDEVICE;
       grub_strncpy (rootdev->devname, netbsd_root, sizeof (rootdev->devname));
 
       bootinfo = (struct grub_netbsd_bootinfo *) (rootdev + 1);
-      bootinfo->bi_count = 1;
-      bootinfo->bi_data[0] = rootdev;
+      bootinfo->bi_count = 2;
+      bootinfo->bi_data[0] = mmap;
+      bootinfo->bi_data[1] = rootdev;
     }
   else
     {
-      bootinfo = (struct grub_netbsd_bootinfo *) kern_end;
-      bootinfo->bi_count = 0;
+      bootinfo = (struct grub_netbsd_bootinfo *) curarg;
+      bootinfo->bi_count = 1;
+      bootinfo->bi_data[0] = mmap;
     }
 
   grub_unix_real_boot (entry, bootflags, 0, bootinfo,

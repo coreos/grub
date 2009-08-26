@@ -1,5 +1,14 @@
 2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	NetBSD memory map support.
+
+	* include/grub/i386/bsd.h (NETBSD_BTINFO_MEMMAP): New definition.
+	(grub_netbsd_btinfo_mmap_header): New structure.
+	(grub_netbsd_btinfo_mmap_entry): Likewise.
+	* loader/i386/bsd.c (grub_netbsd_boot): Pass memory map.
+
+2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Enable bsd.mod on coreboot.
 
 	* conf/i386-coreboot.rmk (pkglib_MODULES): Add bsd.mod.
