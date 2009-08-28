@@ -17,7 +17,8 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c		\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c	\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
-	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c		\
+	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c	\
+	fs/befs.c fs/befs_be.c fs/tar.c		\
 	\
 	partmap/msdos.c partmap/apple.c partmap/sun.c partmap/gpt.c\
 	kern/fs.c kern/env.c fs/fshelp.c			\
@@ -38,7 +39,8 @@ grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c			\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c		\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
-	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/befs.c fs/tar.c			\
+	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c fs/befs.c 	\
+	fs/befs_be.c fs/tar.c			\
 	\
 	kern/partition.c partmap/msdos.c partmap/apple.c partmap/sun.c	\
 	partmap/gpt.c							\
@@ -177,7 +179,7 @@ CLEANFILES += grub-dumpbios
 pkglib_MODULES += fshelp.mod fat.mod ufs1.mod ufs2.mod ext2.mod ntfs.mod \
 	ntfscomp.mod minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod	\
 	affs.mod sfs.mod hfsplus.mod reiserfs.mod cpio.mod tar.mod	\
-	udf.mod	afs.mod befs.mod
+	udf.mod	afs.mod afs_be.mod befs.mod befs_be.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -279,10 +281,20 @@ afs_mod_SOURCES = fs/afs.c
 afs_mod_CFLAGS = $(COMMON_CFLAGS)
 afs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For afs_be.mod.
+afs_be_mod_SOURCES = fs/afs_be.c
+afs_be_mod_CFLAGS = $(COMMON_CFLAGS)
+afs_be_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For befs.mod.
 befs_mod_SOURCES = fs/befs.c
 befs_mod_CFLAGS = $(COMMON_CFLAGS)
 befs_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For befs_be.mod.
+befs_be_mod_SOURCES = fs/befs_be.c
+befs_be_mod_CFLAGS = $(COMMON_CFLAGS)
+befs_be_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Partition maps.
 

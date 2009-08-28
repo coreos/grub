@@ -1,3 +1,46 @@
+2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Split befs.mod and afs.mod into *_be.mod and *.mod
+
+	* conf/common.rmk (grub_probe_SOURCES): Add afs_be.c and befs_be.c.
+	(grub_fstest_SOURCES): Likewise.
+	(pkglib_MODULES): Add afs_be.mod and befs_be.mod.
+	(afs_be_mod_SOURCES): New variable.
+	(afs_be_mod_CFLAGS): Likewise.
+	(afs_be_mod_LDFLAGS): Likewise.
+	(befs_be_mod_SOURCES): Likewise.
+	(befs_be_mod_CFLAGS): Likewise.
+	(befs_be_mod_LDFLAGS): Likewise.
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Add afs_be.c and befs_be.c.
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Likewise.
+	(grub_emu_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
+	* fs/afs_be.c: New file.
+	* fs/befs_be.c: New file.
+	* fs/afs.c (GRUB_AFS_FSNAME_SUFFIX): New definition.
+	(GRUB_AFS_FSNAME): Use GRUB_AFS_FSNAME_SUFFIX.
+	(U16): Replaced with ...
+	(grub_afs_to_cpu16): ...this. All users updated.
+	(U32): Replaced with ...
+	(grub_afs_to_cpu32): ...this. All users updated.
+	(U64): Replaced with ...
+	(grub_afs_to_cpu64): ...this. All users updated.
+	(GRUB_AFS_BO_LITTLE_ENDIAN): Remove.
+	(GRUB_AFS_BO_BIG_ENDIAN): Likewise.
+	(grub_afs_validate_sblock): Check only one endiannness.
+	(GRUB_MOD_INIT (befs)) [MODE_BIGENDIAN && MODE_BFS]: Rename to ..
+	(GRUB_MOD_INIT (befs_be)) [MODE_BIGENDIAN && MODE_BFS]: ... this.
+	(GRUB_MOD_INIT (afs)) [MODE_BIGENDIAN && !MODE_BFS]: Rename to ..
+	(GRUB_MOD_INIT (afs_be)) [MODE_BIGENDIAN && !MODE_BFS]: ... this.
+	(GRUB_MOD_FINI (befs)) [MODE_BIGENDIAN && MODE_BFS]: Rename to ..
+	(GRUB_MOD_FINI (befs_be)) [MODE_BIGENDIAN && MODE_BFS]: ... this.
+	(GRUB_MOD_FINI (afs)) [MODE_BIGENDIAN && !MODE_BFS]: Rename to ..
+	(GRUB_MOD_FINI (afs_be)) [MODE_BIGENDIAN && !MODE_BFS]: ... this.
+
 2009-08-26  Bean  <bean123ch@gmail.com>
 
 	* fs/xfs.c (GRUB_XFS_INO_INOINAG): Replace 1L with 1LL to support
