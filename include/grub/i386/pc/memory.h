@@ -78,7 +78,18 @@
 /* The data segment of the pseudo real mode.  */
 #define GRUB_MEMORY_MACHINE_PSEUDO_REAL_DSEG	0x20
 
+#define GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR	0x400
+
 #ifndef ASM_FILE
+
+/* See http://heim.ifi.uio.no/~stanisls/helppc/bios_data_area.html for a
+   description of the BIOS Data Area layout.  */
+struct grub_machine_bios_data_area
+{
+  grub_uint8_t unused1[0x17];
+  grub_uint8_t keyboard_flag_lower; /* 0x17 */ 
+  grub_uint8_t unused2[0xf0 - 0x18];
+};
 
 struct grub_machine_mmap_entry
 {

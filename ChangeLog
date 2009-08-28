@@ -1,3 +1,44 @@
+2009-08-28  Colin Watson  <cjwatson@ubuntu.com>
+2009-08-28  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Add `getkeystatus' terminal method.  Add a new `keystatus' command
+	to query it.
+
+	* include/grub/term.h (GRUB_TERM_STATUS_SHIFT,
+	GRUB_TERM_STATUS_CTRL, GRUB_TERM_STATUS_ALT): Definitions for
+	modifier key bitmasks.
+	(struct grub_term_input): Add `getkeystatus' member.
+	(grub_getkeystatus): Add prototype.
+	* kern/term.c (grub_getkeystatus): New function.
+
+	* include/grub/i386/pc/memory.h
+	(GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR): New macro.
+	(struct grub_machine_bios_data_area): Define necessary parts of BIOS
+	Data Area layout.
+	* term/i386/pc/console.c (grub_console_getkeystatus): New function.
+	(grub_console_term_input): Set `getkeystatus' member.
+	* term/usb_keyboard.c (grub_usb_hid): Macroify HID protocol
+	constants.
+	(grub_usb_keyboard_getreport): Likewise.
+	(grub_usb_keyboard_checkkey): Likewise.
+	(grub_usb_keyboard_getkeystatus): New function.
+	(grub_usb_keyboard_term): Set `getkeystatus' member.
+
+	* commands/keystatus.c: New file.
+	* conf/common.rmk (pkglib_MODULES): Add keystatus.mod.
+	(keystatus_mod_SOURCES): New variable.
+	(keystatus_mod_CFLAGS): Likewise.
+	(keystatus_mod_LDFLAGS): Likewise.
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Add
+	commands/keystatus.c.
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
+	* DISTLIST: Add commands/keystatus.c.
+
 2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Split befs.mod and afs.mod into *_be.mod and *.mod

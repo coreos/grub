@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -70,6 +70,12 @@ grub_term_color_state;
 #define GRUB_TERM_DUMB		(1 << 2)
 /* Set when the terminal needs to be initialized.  */
 #define GRUB_TERM_NEED_INIT	(1 << 16)
+
+
+/* Bitmasks for modifier keys returned by grub_getkeystatus.  */
+#define GRUB_TERM_STATUS_SHIFT	(1 << 0)
+#define GRUB_TERM_STATUS_CTRL	(1 << 1)
+#define GRUB_TERM_STATUS_ALT	(1 << 2)
 
 
 /* Unicode characters for fancy graphics.  */
@@ -157,6 +163,9 @@ struct grub_term_input
 
   /* Get a character.  */
   int (*getkey) (void);
+
+  /* Get keyboard modifier status.  */
+  int (*getkeystatus) (void);
 };
 typedef struct grub_term_input *grub_term_input_t;
 
@@ -275,6 +284,7 @@ void EXPORT_FUNC(grub_putcode) (grub_uint32_t code);
 grub_ssize_t EXPORT_FUNC(grub_getcharwidth) (grub_uint32_t code);
 int EXPORT_FUNC(grub_getkey) (void);
 int EXPORT_FUNC(grub_checkkey) (void);
+int EXPORT_FUNC(grub_getkeystatus) (void);
 grub_uint16_t EXPORT_FUNC(grub_getwh) (void);
 grub_uint16_t EXPORT_FUNC(grub_getxy) (void);
 void EXPORT_FUNC(grub_gotoxy) (grub_uint8_t x, grub_uint8_t y);

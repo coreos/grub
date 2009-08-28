@@ -37,7 +37,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/help.c				\
 	commands/handler.c commands/ls.c commands/test.c 		\
 	commands/search.c commands/hexdump.c lib/hexdump.c		\
-	commands/halt.c commands/reboot.c				\
+	commands/halt.c commands/reboot.c commands/keystatus.c		\
 	commands/i386/cpuid.c						\
 	commands/password.c						\
 	disk/loopback.c							\
