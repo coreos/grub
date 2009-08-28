@@ -21,7 +21,8 @@
 #include <grub/term.h>
 #include <grub/types.h>
 
-static const struct grub_machine_bios_data_area *bios_data_area = GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR;
+static const struct grub_machine_bios_data_area *bios_data_area =
+  (struct grub_machine_bios_data_area *) GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR;
 
 #define KEYBOARD_LEFT_SHIFT	(1 << 0)
 #define KEYBOARD_RIGHT_SHIFT	(1 << 1)

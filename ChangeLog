@@ -1,3 +1,8 @@
+2009-08-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* term/i386/pc/console.c (bios_data_area): Cast
+	GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR explicitly.
+
 2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	1-bit optimised blitters.
