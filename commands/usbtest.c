@@ -19,6 +19,7 @@
 
 #include <grub/types.h>
 #include <grub/misc.h>
+#include <grub/charset.h>
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/dl.h>
