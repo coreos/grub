@@ -1,5 +1,12 @@
 2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/misc.c (grub_utf16_to_utf8): Move from here ...
+	* include/grub/charset.h (grub_utf16_to_utf8): ... to here. Inlined.
+	All users updated.
+	* include/grub/misc.h (grub_utf16_to_utf8): Removed.
+
+2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* bus/usb/usb.c (grub_usb_get_string): Move from here ...
 	* commands/usbtest.c (grub_usb_get_string): ... move here.
 	(usb_print_str): Fix error handling.
