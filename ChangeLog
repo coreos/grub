@@ -1,5 +1,12 @@
 2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* bus/usb/usb.c (grub_usb_get_string): Move from here ...
+	* commands/usbtest.c (grub_usb_get_string): ... move here.
+	(usb_print_str): Fix error handling.
+	* include/grub/usb.h (grub_usb_get_string): Remove.
+
+2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/file.c (grub_file_read): Check offset.
 	* fs/hfs.c (grub_hfs_read_file): Remove unnecessary offset check.
 	* fs/jfs.c (grub_jfs_read_file): Likewise.
