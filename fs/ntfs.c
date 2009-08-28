@@ -24,6 +24,7 @@
 #include <grub/dl.h>
 #include <grub/fshelp.h>
 #include <grub/ntfs.h>
+#include <grub/charset.h>
 
 static grub_dl_t my_mod;
 

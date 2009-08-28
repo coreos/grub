@@ -18,6 +18,7 @@
  */
 
 #include <grub/misc.h>
+#include <grub/charset.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
 #include <grub/efi/console_control.h>

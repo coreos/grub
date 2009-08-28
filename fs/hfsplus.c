@@ -28,6 +28,7 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 #include <grub/hfs.h>
+#include <grub/charset.h>
 
 #define GRUB_HFSPLUS_MAGIC 0x482B
 #define GRUB_HFSPLUSX_MAGIC 0x4858
