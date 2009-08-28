@@ -970,15 +970,6 @@ grub_ntfs_read (grub_file_t file, char *buf, grub_size_t len)
   if (file->read_hook)
     mft->attr.save_pos = 1;
 
-  if (file->offset > file->size)
-    {
-      grub_error (GRUB_ERR_BAD_FS, "Bad offset");
-      return -1;
-    }
-
-  if (file->offset + len > file->size)
-    len = file->size - file->offset;
-
   read_attr (&mft->attr, buf, file->offset, len, 1, file->read_hook);
   return (grub_errno) ? 0 : len;
 }

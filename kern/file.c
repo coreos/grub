@@ -112,6 +112,13 @@ grub_file_read (grub_file_t file, void *buf, grub_size_t len)
 {
   grub_ssize_t res;
 
+  if (file->offset > file->size)
+    {
+      grub_error (GRUB_ERR_OUT_OF_RANGE,
+		  "Attempt to read pat the end of file.");
+      return -1;
+    }
+
   if (len == 0 || len > file->size - file->offset)
     len = file->size - file->offset;
 

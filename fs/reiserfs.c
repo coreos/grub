@@ -1077,9 +1077,6 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
   grub_disk_addr_t block;
   grub_off_t offset;
 
-  if (file->offset >= file->size)
-    return 0;
-
   key.directory_id = node->header.key.directory_id;
   key.object_id = node->header.key.object_id;
   key.u.v2.offset_type = 0;

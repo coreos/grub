@@ -1,3 +1,13 @@
+2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/file.c (grub_file_read): Check offset.
+	* fs/hfs.c (grub_hfs_read_file): Remove unnecessary offset check.
+	* fs/jfs.c (grub_jfs_read_file): Likewise.
+	* fs/ntfs.c (grub_ntfs_read): Likewise.
+	* fs/reiserfs.c (grub_reiserfs_read): Likewise.
+	* fs/minix.c (grub_minix_read_file): Correct offset check.
+	* fs/ufs.c (grub_ufs_read_file): Likewise.
+
 2009-08-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	* term/i386/pc/console.c (bios_data_area): Cast

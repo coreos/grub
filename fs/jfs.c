@@ -544,10 +544,6 @@ grub_jfs_read_file (struct grub_jfs_data *data,
   int i;
   int blockcnt;
 
-  /* Adjust len so it we can't read past the end of the file.  */
-  if (len > data->currinode.size)
-    len = data->currinode.size;
-
   blockcnt = ((len + pos + grub_le_to_cpu32 (data->sblock.blksz) - 1)
 	      / grub_le_to_cpu32 (data->sblock.blksz));
 
