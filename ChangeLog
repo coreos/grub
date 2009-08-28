@@ -1,4 +1,9 @@
 2009-08-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* normal/cmdline.c (grub_cmdline_get): Supply a format string as
+	the first argument to grub_printf.
+
+2009-08-28  Colin Watson  <cjwatson@ubuntu.com>
 2009-08-28  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Add `getkeystatus' terminal method.  Add a new `keystatus' command
