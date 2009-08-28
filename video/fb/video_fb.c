@@ -587,6 +587,37 @@ common_blitter (struct grub_video_fbblit_info *target,
 	      return;
 	    }
 	}
+      else if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED)
+	{
+	  if (target->mode_info->bpp == 32)
+	    {
+	      grub_video_fbblit_replace_32bit_1bit (target, source,
+						    x, y, width, height,
+						    offset_x, offset_y);
+	      return;
+	    }
+	  else if (target->mode_info->bpp == 24)
+	    {
+	      grub_video_fbblit_replace_24bit_1bit (target, source,
+						    x, y, width, height,
+						    offset_x, offset_y);
+	      return;
+	    }
+	  else if (target->mode_info->bpp == 16)
+	    {
+	      grub_video_fbblit_replace_16bit_1bit (target, source,
+						    x, y, width, height,
+						    offset_x, offset_y);
+	      return;
+	    }
+	  else if (target->mode_info->bpp == 8)
+	    {
+	      grub_video_fbblit_replace_8bit_1bit (target, source,
+						   x, y, width, height,
+						   offset_x, offset_y);
+	      return;
+	    }
+	}
 
       /* No optimized replace operator found, use default (slow) blitter.  */
       grub_video_fbblit_replace (target, source, x, y, width, height,
@@ -674,6 +705,41 @@ common_blitter (struct grub_video_fbblit_info *target,
 	      return;
 	    }
 	}
+      else if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED)
+	{
+	  if (target->mode_info->blit_format
+	      == GRUB_VIDEO_BLIT_FORMAT_BGRA_8888
+	      || target->mode_info->blit_format
+	      == GRUB_VIDEO_BLIT_FORMAT_RGBA_8888)
+	    {
+	      grub_video_fbblit_blend_XXXA8888_1bit (target, source,
+						     x, y, width, height,
+						     offset_x, offset_y);
+	      return;
+	    }
+	  else if (target->mode_info->blit_format
+		   == GRUB_VIDEO_BLIT_FORMAT_BGR_888
+		   || target->mode_info->blit_format
+		   == GRUB_VIDEO_BLIT_FORMAT_RGB_888)
+	    {
+	      grub_video_fbblit_blend_XXX888_1bit (target, source,
+						   x, y, width, height,
+						   offset_x, offset_y);
+	      return;
+	    }
+	  else if (target->mode_info->blit_format
+		   == GRUB_VIDEO_BLIT_FORMAT_BGR_565
+		   || target->mode_info->blit_format
+		   == GRUB_VIDEO_BLIT_FORMAT_RGB_565)
+	    {
+	      grub_video_fbblit_blend_XXX565_1bit (target, source,
+						   x, y, width, height,
+						   offset_x, offset_y);
+	      return;
+	    }
+
+	}
+
 
       /* No optimized blend operation found, use default (slow) blitter.  */
       grub_video_fbblit_blend (target, source, x, y, width, height,

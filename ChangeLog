@@ -1,3 +1,28 @@
+2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	1-bit optimised blitters.
+
+	* include/grub/fbblit.h (grub_video_fbblit_replace_32bit_1bit): New
+	prototype.
+	(grub_video_fbblit_replace_24bit_1bit): Likewise.
+	(grub_video_fbblit_replace_16bit_1bit): Likewise.
+	(grub_video_fbblit_replace_8bit_1bit): Likewise.
+	(grub_video_fbblit_blend_XXXA8888_1bit): Likewise.
+	(grub_video_fbblit_blend_XXX888_1bit): Likewise.
+	(grub_video_fbblit_blend_XXX565_1bit): Likewise.
+	* video/fb/fbblit.c (grub_video_fbblit_replace_32bit_1bit): New
+	function.
+	(grub_video_fbblit_replace_24bit_1bit): Likewise.
+	(grub_video_fbblit_replace_16bit_1bit): Likewise.
+	(grub_video_fbblit_replace_8bit_1bit): Likewise.
+	(grub_video_fbblit_blend_XXXA8888_1bit): Likewise.
+	(grub_video_fbblit_blend_XXX888_1bit): Likewise.
+	(grub_video_fbblit_blend_XXX565_1bit): Likewise.
+	* video/fb/video_fb.c (common_blitter): Use 1-bit optimised blitters
+	when possible.
+	* video/video.c (grub_video_get_blit_format): Return
+	GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED if bpp = 1.
+
 2009-08-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	* normal/cmdline.c (grub_cmdline_get): Supply a format string as
