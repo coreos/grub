@@ -1,5 +1,10 @@
 2009-08-29  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/grub.d/10_freebsd.in: Detect `ufs1' and `ufs2' and map them
+	to `ufs' in the vfs.root.mountfrom kernel parameter.
+
+2009-08-29  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* term/i386/pc/serial.c: Include `<grub/machine/memory.h>'.
 
 	[GRUB_MACHINE_PCBIOS] (serial_hw_io_addr): Macroify initialization

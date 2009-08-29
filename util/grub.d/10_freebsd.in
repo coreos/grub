@@ -50,8 +50,10 @@ if [ "x$kfreebsd" != "x" ] ; then
     devices_rel_dirname=`make_system_path_relative_to_its_root $devices_dirname`
   fi
 
-  # For "ufs" it's the same.  Do we care about the others?
-  kfreebsd_fs=${GRUB_FS}
+  case ${GRUB_FS} in
+    ufs1 | ufs2)	kfreebsd_fs=ufs ;;
+    *)			kfreebsd_fs=${GRUB_FS} ;;
+  esac
 
   cat << EOF
 menuentry "${OS}" {
