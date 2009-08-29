@@ -1,3 +1,8 @@
+2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i386/xnu.h: Add license header.
+	include grub/err.h explicitly.
+
 2009-08-29  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/grub.d/10_freebsd.in: Detect `ufs1' and `ufs2' and map them
