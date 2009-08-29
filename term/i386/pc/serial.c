@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000,2001,2002,2003,2004,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include <grub/machine/machine.h>
+#include <grub/machine/memory.h>
 #include <grub/machine/serial.h>
 #include <grub/machine/console.h>
 #include <grub/term.h>
@@ -64,12 +65,11 @@ struct serial_port
 static struct serial_port serial_settings;
 
 #ifdef GRUB_MACHINE_PCBIOS
-/* The BIOS data area.  */
-static const unsigned short *serial_hw_io_addr = (const unsigned short *) 0x0400;
+static const unsigned short *serial_hw_io_addr = (const unsigned short *) GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR;
 #define GRUB_SERIAL_PORT_NUM 4
 #else
 static const unsigned short serial_hw_io_addr[] = { 0x3f8, 0x2f8, 0x3e8, 0x2e8 };
-#define GRUB_SERIAL_PORT_NUM (sizeof(serial_hw_io_addr)/sizeof(serial_hw_io_addr[0]))
+#define GRUB_SERIAL_PORT_NUM (ARRAY_SIZE(serial_hw_io_addr))
 #endif
 
 /* Return the port number for the UNITth serial device.  */

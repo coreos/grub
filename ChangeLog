@@ -1,3 +1,13 @@
+2009-08-29  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* term/i386/pc/serial.c: Include `<grub/machine/memory.h>'.
+
+	[GRUB_MACHINE_PCBIOS] (serial_hw_io_addr): Macroify initialization
+	value (0x0400 -> GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR).
+
+	[! GRUB_MACHINE_PCBIOS] (GRUB_SERIAL_PORT_NUM): Calculate using
+	`ARRAY_SIZE' macro.
+
 2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/file.c (grub_file_read): Check offset.
