@@ -197,15 +197,15 @@ SUFFIX (grub_freebsd_load_elfmodule) (grub_file_t file, int argc, char *argv[],
   if (curload < module + sizeof (e))
     curload = module + sizeof (e);
 
-  load (file, UINT_TO_PTR (module + e.e_shoff), e.e_shoff,
+  load (file, UINT_TO_PTR (curload), e.e_shoff,
 	e.e_shnum * e.e_shentsize);
-  if (curload < module + e.e_shoff + e.e_shnum * e.e_shentsize)
-    curload = module + e.e_shoff + e.e_shnum * e.e_shentsize;
+  e.e_shoff = curload - module;
+  curload +=  e.e_shnum * e.e_shentsize;
 
-  load (file, UINT_TO_PTR (module + e.e_phoff), e.e_phoff,
+  load (file, UINT_TO_PTR (curload), e.e_phoff,
 	e.e_phnum * e.e_phentsize);
-  if (curload < module + e.e_phoff + e.e_phnum * e.e_phentsize)
-    curload = module + e.e_phoff + e.e_phnum * e.e_phentsize;
+  e.e_phoff = curload - module;
+  curload +=  e.e_phnum * e.e_phentsize;
 
   *kern_end = curload;
 

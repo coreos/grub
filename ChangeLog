@@ -1,3 +1,8 @@
+2009-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/bsdXX.c (SUFFIX (grub_freebsd_load_elfmodule)): Fix
+	loading of headers in some cases.
+
 2009-08-30  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* configure.ac: Bump version to 1.97~beta1.
