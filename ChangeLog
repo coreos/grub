@@ -1,4 +1,4 @@
-2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+2009-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/i386/xnu.h: Add license header.
 	include grub/err.h explicitly.
