@@ -1,5 +1,9 @@
 2009-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/file.c (grub_file_read): Spelling fix
+
+2009-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* loader/i386/bsdXX.c (SUFFIX (grub_freebsd_load_elfmodule)): Fix
 	loading of headers in some cases.
 
