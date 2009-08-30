@@ -1,3 +1,8 @@
+2009-08-30  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Bump version to 1.97~beta1.
+	* docs/version.texi: Likewise.
+
 2009-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/i386/xnu.h: Add license header.
