@@ -76,6 +76,8 @@ struct grub_xnu_extheader
   grub_uint32_t infoplistsize;
   grub_uint32_t binaryaddr;
   grub_uint32_t binarysize;
+  grub_uint32_t nameaddr;
+  grub_uint32_t namesize;
 } __attribute__ ((packed));
 
 struct grub_xnu_devtree_key *grub_xnu_create_key (struct grub_xnu_devtree_key **parent,

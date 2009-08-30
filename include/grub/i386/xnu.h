@@ -64,7 +64,7 @@ struct grub_xnu_boot_params
   /* Size of grub_efi_uintn_t in bits. */
   grub_uint8_t efi_uintnbits;
 } __attribute__ ((packed));
-#define GRUB_XNU_BOOTARGS_VERMINOR 4
+#define GRUB_XNU_BOOTARGS_VERMINOR 5
 #define GRUB_XNU_BOOTARGS_VERMAJOR 1
 
 extern grub_uint32_t grub_xnu_entry_point;

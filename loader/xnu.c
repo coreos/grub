@@ -494,6 +494,34 @@ grub_xnu_register_memory (char *prefix, int *suffix,
   return GRUB_ERR_NONE;
 }
 
+static inline char *
+get_name_ptr (char *name)
+{
+  char *p = name, *p2;
+  /* Skip Info.plist.  */
+  p2 = grub_strrchr (p, '/');
+  if (!p2)
+    return name;
+  if (p2 == name)
+    return name + 1;
+  p = p2 - 1;
+
+  p2 = grub_strrchr (p, '/');
+  if (!p2)
+    return name;
+  if (p2 == name)
+    return name + 1;
+  if (grub_memcmp (p2, "/Contents/", sizeof ("/Contents/") - 1) != 0)
+    return p2 + 1;
+
+  p = p2 - 1;
+
+  p2 = grub_strrchr (p, '/');
+  if (!p2)
+    return name;
+  return p2 + 1;
+}
+
 /* Load .kext. */
 static grub_err_t
 grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
@@ -505,6 +533,18 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
   int neededspace = sizeof (*exthead);
   char *buf;
   grub_size_t infoplistsize = 0, machosize = 0;
+  char *name, *nameend;
+  int namelen;
+
+  name = get_name_ptr (infoplistname);
+  nameend = grub_strchr (name, '/');
+
+  if (nameend)
+    namelen = nameend - name;
+  else
+    namelen = grub_strlen (name);
+
+  neededspace += namelen + 1;
 
   if (! grub_xnu_heap_size)
     return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
@@ -581,8 +621,15 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
 	}
       grub_file_close (infoplist);
       buf[infoplistsize] = 0;
+      buf += infoplistsize + 1;
     }
   grub_errno = GRUB_ERR_NONE;
+
+  exthead->nameaddr = (buf - grub_xnu_heap_start) + grub_xnu_heap_will_be_at;
+  exthead->namesize = namelen + 1;
+  grub_memcpy (buf, name, namelen);
+  buf[namelen] = 0;
+  buf += namelen + 1;
 
   /* Announce to kernel */
   return grub_xnu_register_memory ("Driver-", &driversnum, exthead,
