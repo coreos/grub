@@ -1,7 +1,7 @@
-2009-01-01  Felix Zielcke  <fzielcke@z-51.de>
+2009-09-01  Felix Zielcke  <fzielcke@z-51.de>
 
 	* genmk.rb: Add quotes around $(TARGET_OBJ2ELF) to cope with
-        non GNU test.
+	 non GNU test.
 
 2009-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
