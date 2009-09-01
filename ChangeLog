@@ -1,3 +1,8 @@
+2009-01-01  Felix Zielcke  <fzielcke@z-51.de>
+
+	* genmk.rb: Add quotes around $(TARGET_OBJ2ELF) to cope with
+        non GNU test.
+
 2009-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/file.c (grub_file_read): Spelling fix
