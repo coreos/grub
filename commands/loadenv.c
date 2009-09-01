@@ -242,7 +242,7 @@ check_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
     part_start = 0;
 
   buf = grub_envblk_buffer (envblk);
-  for (p = blocklists, index = 0; p; p = p->next, index += p->length)
+  for (p = blocklists, index = 0; p; index += p->length, p = p->next)
     {
       char blockbuf[GRUB_DISK_SECTOR_SIZE];
 
@@ -278,7 +278,7 @@ write_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
     part_start = 0;
 
   index = 0;
-  for (p = blocklists; p; p = p->next, index += p->length)
+  for (p = blocklists; p; index += p->length, p = p->next)
     {
       if (grub_disk_write (disk, p->sector - part_start,
                            p->offset, p->length, buf + index))
