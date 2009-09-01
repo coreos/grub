@@ -126,7 +126,6 @@
 	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
 	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
 	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
-	* DISTLIST: Add commands/keystatus.c.
 
 2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
