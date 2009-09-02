@@ -1,3 +1,16 @@
+2009-09-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Naming convention): Describe one-based partition
+	numbering.
+	(Device syntax): Likewise.
+	(File name syntax): Likewise.
+	(Block list syntax): Likewise.
+	(Making a GRUB bootable CD-ROM): Talk about grub.cfg rather than
+	menu.lst.
+	(File name syntax): Likewise.
+	(Command-line and menu entry commands): Document acpi, blocklist,
+	crc, export, insmod, keystatus, ls, set, and unset commands.
+
 2009-09-02  Colin Watson  <cjwatson@ubuntu.com>
 
 	* commands/keystatus.c (GRUB_MOD_INIT (keystatus)): Adjust summary
