@@ -35,7 +35,7 @@
 struct grub_xnu_devtree_key *grub_xnu_devtree_root = 0;
 static int driverspackagenum = 0;
 static int driversnum = 0;
-static int is_64bit;
+int grub_xnu_is_64bit = 0;
 
 /* Allocate heap by 32MB-blocks. */
 #define GRUB_XNU_HEAP_ALLOC_BLOCK 0x2000000
@@ -444,7 +444,7 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
   grub_loader_set (grub_xnu_boot, grub_xnu_unload, 0);
 
   grub_xnu_lock ();
-  is_64bit = 0;
+  grub_xnu_is_64bit = 0;
 
   return 0;
 }
@@ -549,7 +549,7 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
   grub_loader_set (grub_xnu_boot, grub_xnu_unload, 0);
 
   grub_xnu_lock ();
-  is_64bit = 1;
+  grub_xnu_is_64bit = 1;
 
   return 0;
 }
@@ -668,7 +668,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
 	  return grub_error (GRUB_ERR_BAD_OS,
 			     "Extension doesn't contain suitable architecture");
 	}
-      if (is_64bit)
+      if (grub_xnu_is_64bit)
 	machosize = grub_macho_filesize64 (macho);
       else
 	machosize = grub_macho_filesize32 (macho);
@@ -706,7 +706,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
       exthead->binaryaddr = (buf - grub_xnu_heap_start)
 	+ grub_xnu_heap_will_be_at;
       exthead->binarysize = machosize;
-      if (is_64bit)
+      if (grub_xnu_is_64bit)
 	err = grub_macho_readfile64 (macho, buf);
       else
 	err = grub_macho_readfile32 (macho, buf);
@@ -810,13 +810,13 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
 	}
       for (i = 0; i < narchs; i++)
 	{
-	  if (!is_64bit && GRUB_MACHO_CPUTYPE_IS_HOST32
+	  if (!grub_xnu_is_64bit && GRUB_MACHO_CPUTYPE_IS_HOST32
 	      (grub_be_to_cpu32 (archs[i].cputype)))
 	    {
 	      readoff = grub_be_to_cpu32 (archs[i].offset);
 	      readlen = grub_be_to_cpu32 (archs[i].size);
 	    }
-	  if (is_64bit && GRUB_MACHO_CPUTYPE_IS_HOST64
+	  if (grub_xnu_is_64bit && GRUB_MACHO_CPUTYPE_IS_HOST64
 	      (grub_be_to_cpu32 (archs[i].cputype)))
 	    {
 	      readoff = grub_be_to_cpu32 (archs[i].offset);

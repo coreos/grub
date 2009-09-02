@@ -106,4 +106,5 @@ extern grub_uint32_t grub_xnu_heap_real_start;
 extern grub_size_t grub_xnu_heap_size;
 extern char *grub_xnu_heap_start;
 extern struct grub_video_bitmap *grub_xnu_bitmap;
+extern int grub_xnu_is_64bit;
 #endif

@@ -474,13 +474,15 @@ grub_xnu_boot (void)
       grub_efi_memory_descriptor_t *curdesc = (grub_efi_memory_descriptor_t *)
 	((char *) memory_map + descriptor_size * i);
 
-      /* Some EFI implementations set physical_start to 0 which
-	 causes XNU crash. */
       curdesc->virtual_start = curdesc->physical_start;
 
       if (curdesc->type == GRUB_EFI_RUNTIME_SERVICES_DATA
 	  || curdesc->type == GRUB_EFI_RUNTIME_SERVICES_CODE)
 	{
+	  if (grub_xnu_is_64bit && (SIZEOF_OF_UINTN == 8))
+	    curdesc->virtual_start |= 0xffffff8000000000ULL;
+	  else
+	    curdesc->virtual_start &= 0x000000007fffffffULL;
 	  if (firstruntimeaddr > curdesc->physical_start)
 	    firstruntimeaddr = curdesc->physical_start;
 	  if (lastruntimeaddr < curdesc->physical_start
@@ -571,6 +573,9 @@ grub_xnu_boot (void)
 
   if (! grub_autoefi_finish_boot_services ())
     return grub_error (GRUB_ERR_IO, "can't exit boot services");
+
+  grub_autoefi_set_virtual_address_map (memory_map_size, descriptor_size,
+					descriptor_version,memory_map);
 
   grub_xnu_launch ();
 

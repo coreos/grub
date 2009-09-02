@@ -57,6 +57,10 @@ int EXPORT_FUNC(grub_efi_exit_boot_services) (grub_efi_uintn_t map_key);
 void EXPORT_FUNC (grub_reboot) (void);
 void EXPORT_FUNC (grub_halt) (void);
 int EXPORT_FUNC (grub_efi_finish_boot_services) (void);
+grub_err_t EXPORT_FUNC (grub_efiemu_set_virtual_address_map) (grub_efi_uintn_t memory_map_size,
+							      grub_efi_uintn_t descriptor_size,
+							      grub_efi_uint32_t descriptor_version,
+							      grub_efi_memory_descriptor_t *virtual_map);
 
 void grub_efi_mm_init (void);
 void grub_efi_mm_fini (void);
