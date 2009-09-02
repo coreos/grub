@@ -239,7 +239,7 @@ probe (const char *path, char *device_name)
 
       stat (path, &st);
 
-      if (st.st_mode == S_IFREG)
+      if (S_ISREG (st.st_mode))
 	{
 	  /* Regular file.  Verify that we can read it properly.  */
 
