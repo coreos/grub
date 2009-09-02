@@ -352,13 +352,18 @@ SUFFIX (grub_efiemu_loadcore_load) (void *core,
 				    grub_efiemu_segment_t segments)
 {
   grub_err_t err;
-  if ((err = grub_efiemu_load_segments (segments, core)))
+  err = grub_efiemu_load_segments (segments, core);
+  if (err)
     return err;
-  if ((err = grub_efiemu_resolve_symbols (segments, core)))
+
+  err = grub_efiemu_resolve_symbols (segments, core);
+  if (err)
     return err;
-  if ((err = SUFFIX (grub_arch_efiemu_relocate_symbols) (segments,
-							 grub_efiemu_elfsyms,
-							 core)))
+
+  err = SUFFIX (grub_arch_efiemu_relocate_symbols) (segments,
+						    grub_efiemu_elfsyms,
+						    core);
+  if (err)
     return err;
 
   return GRUB_ERR_NONE;

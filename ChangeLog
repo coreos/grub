@@ -1,4 +1,9 @@
-2009-09-02  Colin Watson  <cjwatson@ubuntu.com>
+2009-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* efiemu/loadcore.c (SUFFIX (grub_efiemu_loadcore_load)): Fix style
+	according to GCS.
+
+2009-09-02  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Naming convention): Describe one-based partition
 	numbering.
