@@ -1,5 +1,11 @@
 2009-09-02  Colin Watson  <cjwatson@ubuntu.com>
 
+	* commands/keystatus.c (GRUB_MOD_INIT (keystatus)): Adjust summary
+	to avoid implying that only one of --shift, --ctrl, or --alt may be
+	used.
+
+2009-09-02  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub-probe.c (probe): Test st.st_mode using S_ISREG macro
 	rather than comparing against S_IFREG, which will almost never work.
 
