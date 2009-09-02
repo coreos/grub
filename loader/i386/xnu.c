@@ -435,6 +435,7 @@ grub_xnu_boot (void)
   grub_efi_uintn_t descriptor_size = 0;
   grub_efi_uint32_t descriptor_version = 0;
   grub_uint64_t firstruntimeaddr, lastruntimeaddr;
+  grub_uint64_t curruntimeaddr;
   void *devtree;
   grub_size_t devtreelen;
   int i;
@@ -467,31 +468,6 @@ grub_xnu_boot (void)
   mmap_relloc_off = (grub_uint8_t *) memory_map
     - (grub_uint8_t *) grub_xnu_heap_start;
 
-  firstruntimeaddr = (grub_uint64_t) (-1);
-  lastruntimeaddr = 0;
-  for (i = 0; (unsigned) i < memory_map_size / descriptor_size; i++)
-    {
-      grub_efi_memory_descriptor_t *curdesc = (grub_efi_memory_descriptor_t *)
-	((char *) memory_map + descriptor_size * i);
-
-      curdesc->virtual_start = curdesc->physical_start;
-
-      if (curdesc->type == GRUB_EFI_RUNTIME_SERVICES_DATA
-	  || curdesc->type == GRUB_EFI_RUNTIME_SERVICES_CODE)
-	{
-	  if (grub_xnu_is_64bit && (SIZEOF_OF_UINTN == 8))
-	    curdesc->virtual_start |= 0xffffff8000000000ULL;
-	  else
-	    curdesc->virtual_start &= 0x000000007fffffffULL;
-	  if (firstruntimeaddr > curdesc->physical_start)
-	    firstruntimeaddr = curdesc->physical_start;
-	  if (lastruntimeaddr < curdesc->physical_start
-	      + curdesc->num_pages * 4096)
-	    lastruntimeaddr = curdesc->physical_start
-	      + curdesc->num_pages * 4096;
-	}
-    }
-
   /* Relocate the boot parameters to heap. */
   bootparams_relloc = grub_xnu_heap_malloc (sizeof (*bootparams_relloc));
   if (! bootparams_relloc)
@@ -511,22 +487,52 @@ grub_xnu_boot (void)
     + grub_xnu_heap_will_be_at;
   bootparams_relloc->devtreelen = devtreelen;
 
-  bootparams_relloc->heap_start = grub_xnu_heap_will_be_at;
-  bootparams_relloc->heap_size = grub_xnu_heap_size;
-
+  bootparams_relloc->efi_system_table
+    = PTR_TO_UINT32 (grub_autoefi_system_table);
   bootparams_relloc->efi_mmap = grub_xnu_heap_will_be_at + mmap_relloc_off;
   bootparams_relloc->efi_mmap_size = memory_map_size;
   bootparams_relloc->efi_mem_desc_size = descriptor_size;
   bootparams_relloc->efi_mem_desc_version = descriptor_version;
 
+  memory_map = (grub_efi_memory_descriptor_t *)
+    ((grub_uint8_t *) grub_xnu_heap_start + mmap_relloc_off);
+  firstruntimeaddr = ALIGN_UP (((grub_addr_t) grub_xnu_heap_start
+				+ grub_xnu_heap_size + 4096), 4096);
+  curruntimeaddr = firstruntimeaddr;
+  for (i = 0; (unsigned) i < memory_map_size / descriptor_size; i++)
+    {
+      grub_efi_memory_descriptor_t *curdesc = (grub_efi_memory_descriptor_t *)
+	((char *) memory_map + descriptor_size * i);
+
+      curdesc->virtual_start = curdesc->physical_start;
+
+      if (curdesc->type == GRUB_EFI_RUNTIME_SERVICES_DATA
+	  || curdesc->type == GRUB_EFI_RUNTIME_SERVICES_CODE)
+	{
+	  curdesc->virtual_start = ALIGN_UP (curruntimeaddr, 4096);
+	  curruntimeaddr += curdesc->num_pages << 12;
+	  if (curdesc->physical_start
+	      <= PTR_TO_UINT64 (grub_autoefi_system_table)
+	      && curdesc->physical_start + (curdesc->num_pages << 12)
+	      > PTR_TO_UINT64 (grub_autoefi_system_table))
+	    bootparams_relloc->efi_system_table
+	      = PTR_TO_UINT64 (grub_autoefi_system_table)
+	      - curdesc->physical_start + curdesc->virtual_start;
+	  if (SIZEOF_OF_UINTN == 8)
+	    curdesc->virtual_start |= 0xffffff8000000000ULL;
+	}
+    }
+
+  lastruntimeaddr = curruntimeaddr;
+
+  bootparams_relloc->heap_start = grub_xnu_heap_will_be_at;
+  bootparams_relloc->heap_size = grub_xnu_heap_size;
   bootparams_relloc->efi_runtime_first_page = firstruntimeaddr
     / GRUB_XNU_PAGESIZE;
   bootparams_relloc->efi_runtime_npages
     = ((lastruntimeaddr + GRUB_XNU_PAGESIZE - 1) / GRUB_XNU_PAGESIZE)
     - (firstruntimeaddr / GRUB_XNU_PAGESIZE);
   bootparams_relloc->efi_uintnbits = SIZEOF_OF_UINTN * 8;
-  bootparams_relloc->efi_system_table
-    = PTR_TO_UINT32 (grub_autoefi_system_table);
 
   bootparams_relloc->verminor = GRUB_XNU_BOOTARGS_VERMINOR;
   bootparams_relloc->vermajor = GRUB_XNU_BOOTARGS_VERMAJOR;
