@@ -20,7 +20,7 @@
 This manual is for GNU GRUB (version @value{VERSION},
 @value{UPDATED}).
 
-Copyright @copyright{} 1999,2000,2001,2002,2004,2006,2008 Free Software Foundation, Inc.
+Copyright @copyright{} 1999,2000,2001,2002,2004,2006,2008,2009 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -356,25 +356,25 @@ disk. The number @samp{0} is the drive number, which is counted from
 disk.
 
 @example
-(hd0,1)
+(hd0,2)
 @end example
 
 Here, @samp{hd} means it is a hard disk drive. The first integer
 @samp{0} indicates the drive number, that is, the first hard disk, while
 the second integer, @samp{1}, indicates the partition number (or the
-@sc{pc} slice number in the BSD terminology). Once again, please note
-that the partition numbers are counted from @emph{zero}, not from
-one. This expression means the second partition of the first hard disk
-drive. In this case, GRUB uses one partition of the disk, instead of the
-whole disk.
+@sc{pc} slice number in the BSD terminology). The partition numbers are
+counted from @emph{one}, not from zero (as was the case in previous
+versions of GRUB). This expression means the second partition of the
+first hard disk drive. In this case, GRUB uses one partition of the
+disk, instead of the whole disk.
 
 @example
-(hd0,4)
+(hd0,5)
 @end example
 
 This specifies the first @dfn{extended partition} of the first hard disk
 drive. Note that the partition numbers for extended partitions are
-counted from @samp{4}, regardless of the actual number of primary
+counted from @samp{5}, regardless of the actual number of primary
 partitions on your hard disk.
 
 @example
@@ -383,13 +383,13 @@ partitions on your hard disk.
 
 This means the BSD @samp{a} partition of the second hard disk. If you
 need to specify which @sc{pc} slice number should be used, use something
-like this: @samp{(hd1,0,a)}. If the @sc{pc} slice number is omitted,
+like this: @samp{(hd1,1,a)}. If the @sc{pc} slice number is omitted,
 GRUB searches for the first @sc{pc} slice which has a BSD @samp{a}
 partition.
 
 Of course, to actually access the disks or partitions with GRUB, you
 need to use the device specification in a command, like @samp{root
-(fd0)} or @samp{unhide (hd0,2)}. To help you find out which number
+(fd0)} or @samp{unhide (hd0,3)}. To help you find out which number
 specifies a partition you want, the GRUB command-line
 (@pxref{Command-line interface}) options have argument
 completion. This means that, for example, you only need to type
@@ -413,7 +413,7 @@ Now the question is, how to specify a file? Again, consider an
 example:
 
 @example
-(hd0,0)/vmlinuz
+(hd0,1)/vmlinuz
 @end example
 
 This specifies the file named @samp{vmlinuz}, found on the first
@@ -550,7 +550,7 @@ which can cause compatibility problems.
 For booting from a CD-ROM, GRUB uses a special Stage 2 called
 @file{stage2_eltorito}. The only GRUB files you need to have in your
 bootable CD-ROM are this @file{stage2_eltorito} and optionally a config file
-@file{menu.lst}. You don't need to use @file{stage1} or @file{stage2},
+@file{grub.cfg}. You don't need to use @file{stage1} or @file{stage2},
 because El Torito is quite different from the standard boot process.
 
 Here is an example of procedures to make a bootable CD-ROM
@@ -573,7 +573,7 @@ Copy the file @file{stage2_eltorito}:
 $ @kbd{cp /usr/lib/grub/i386-pc/stage2_eltorito iso/boot/grub}
 @end example
 
-If desired, make the config file @file{menu.lst} under @file{iso/boot/grub}
+If desired, make the config file @file{grub.cfg} under @file{iso/boot/grub}
 (@pxref{Configuration}), and copy any files and directories for the disc to the
 directory @file{iso/}.
 
@@ -786,7 +786,7 @@ which is a BIOS drive number, so the following are equivalent:
 @end example
 
 @var{part-num} represents the partition number of @var{device}, starting
-from zero for primary partitions and from four for extended partitions,
+from one for primary partitions and from five for extended partitions,
 and @var{bsd-subpart-letter} represents the BSD disklabel subpartition,
 such as @samp{a} or @samp{e}.
 
@@ -800,7 +800,7 @@ finds the subpartition @var{bsd-subpart-letter}. Here is an example:
 @end example
 
 The syntax @samp{(hd0)} represents using the entire disk (or the
-MBR when installing GRUB), while the syntax @samp{(hd0,0)}
+MBR when installing GRUB), while the syntax @samp{(hd0,1)}
 represents using the first partition of the disk (or the boot sector
 of the partition when installing GRUB).
 
@@ -820,12 +820,12 @@ There are two ways to specify files, by @dfn{absolute file name} and by
 
 An absolute file name resembles a Unix absolute file name, using
 @samp{/} for the directory separator (not @samp{\} as in DOS). One
-example is @samp{(hd0,0)/boot/grub/menu.lst}. This means the file
-@file{/boot/grub/menu.lst} in the first partition of the first hard
+example is @samp{(hd0,1)/boot/grub/grub.cfg}. This means the file
+@file{/boot/grub/grub.cfg} in the first partition of the first hard
 disk. If you omit the device name in an absolute file name, GRUB uses
 GRUB's @dfn{root device} implicitly. So if you set the root device to,
-say, @samp{(hd1,0)} by the command @command{root} (@pxref{root}), then
-@code{/boot/kernel} is the same as @code{(hd1,0)/boot/kernel}.
+say, @samp{(hd1,1)} by the command @command{root} (@pxref{root}), then
+@code{/boot/kernel} is the same as @code{(hd1,1)/boot/kernel}.
 
 
 @node Block list syntax
@@ -846,8 +846,8 @@ the offset is zero.
 
 Like the file name syntax (@pxref{File name syntax}), if a blocklist
 does not contain a device name, then GRUB uses GRUB's @dfn{root
-device}. So @code{(hd0,1)+1} is the same as @code{+1} when the root
-device is @samp{(hd0,1)}.
+device}. So @code{(hd0,2)+1} is the same as @code{+1} when the root
+device is @samp{(hd0,2)}.
 
 
 @node Interface
@@ -1110,15 +1110,54 @@ you forget a command, you can run the command @command{help}
 (@pxref{help}).
 
 @menu
+* acpi::                        Load ACPI tables
+* blocklist::                   Print a block list
 * boot::                        Start up your operating system
 * cat::                         Show the contents of a file
 * chainloader::                 Chain-load another boot loader
 * cmp::                         Compare two files
 * configfile::                  Load a configuration file
+* crc::                         Calculate CRC32 checksums
+* export::                      Export an environment variable
 * halt::                        Shut down your computer
 * help::                        Show help messages
+* insmod::                      Insert a module
+* keystatus::                   Check key modifier status
+* ls::                          List devices or files
 * reboot::                      Reboot your computer
+* set::                         Set an environment variable
+* unset::                       Unset an environment variable
 @end menu
+
+
+@node acpi
+@subsection acpi
+
+@deffn Command acpi [@option{-1}|@option{-2}] @
+ [@option{--exclude=table1,@dots{}}|@option{--load-only=table1,@dots{}}] @
+ [@option{--oemid=id}] [@option{--oemtable=table}] @
+ [@option{--oemtablerev=rev}] [@option{--oemtablecreator=creator}] @
+ [@option{--oemtablecreatorrev=rev}] [@option{--no-ebda}] @
+ filename @dots{}
+Modern BIOS systems normally implement the Advanced Configuration and Power
+Interface (ACPI), and define various tables that describe the interface
+between an ACPI-compliant operating system and the firmware. In some cases,
+the tables provided by default only work well with certain operating
+systems, and it may be necessary to replace some of them.
+
+Normally, this command will replace the Root System Description Pointer
+(RSDP) in the Extended BIOS Data Area to point to the new tables. If the
+@option{--no-ebda} option is used, the new tables will be known only to
+GRUB, but may be used by GRUB's EFI emulation.
+@end deffn
+
+
+@node blocklist
+@subsection blocklist
+
+@deffn Command blocklist file
+Print a block list (@pxref{Block list syntax}) for @var{file}.
+@end deffn
 
 
 @node boot
@@ -1187,6 +1226,23 @@ Load @var{file} as a configuration file.
 @end deffn
 
 
+@node crc
+@subsection crc
+
+@deffn Command crc file
+Display the CRC32 checksum of @var{file}.
+@end deffn
+
+
+@node export
+@subsection export
+
+@deffn Command export envvar
+Export the environment variable @var{envvar}. Exported variables are visible
+to subsidiary configuration files loaded using @command{configfile}.
+@end deffn
+
+
 @node halt
 @subsection halt
 
@@ -1212,11 +1268,66 @@ about each of the commands which match those @var{patterns}.
 @end deffn
 
 
+@node insmod
+@subsection insmod
+
+@deffn Command insmod module
+Insert the dynamic GRUB module called @var{module}.
+@end deffn
+
+
+@node keystatus
+@subsection keystatus
+
+@deffn Command keystatus [@option{--shift}] [@option{--ctrl}] [@option{--alt}]
+Return true if the Shift, Control, or Alt modifier keys are held down, as
+requested by options. This is useful in scripting, to allow some user
+control over behaviour without having to wait for a keypress.
+
+Checking key modifier status is only supported on some platforms. If invoked
+without any options, the @command{keystatus} command returns true if and
+only if checking key modifier status is supported.
+@end deffn
+
+
+@node ls
+@subsection ls
+
+@deffn Command ls [arg]
+List devices or files.
+
+With no arguments, print all devices known to GRUB.
+
+If the argument is a device name enclosed in parentheses (@pxref{Device
+syntax}), then list all files at the root directory of that device.
+
+If the argument is a directory given as an absolute file name (@pxref{File
+name syntax}), then list the contents of that directory.
+@end deffn
+
+
 @node reboot
 @subsection reboot
 
 @deffn Command reboot
 Reboot the computer.
+@end deffn
+
+
+@node set
+@subsection set
+
+@deffn Command set [envvar=value]
+Set the environment variable @var{envvar} to @var{value}. If invoked with no
+arguments, print all environment variables with their values.
+@end deffn
+
+
+@node unset
+@subsection unset
+
+@deffn Command unset envvar
+Unset the environment variable @var{envvar}.
 @end deffn
 
 
