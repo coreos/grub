@@ -35,6 +35,7 @@
 struct grub_xnu_devtree_key *grub_xnu_devtree_root = 0;
 static int driverspackagenum = 0;
 static int driversnum = 0;
+static int is_64bit;
 
 /* Allocate heap by 32MB-blocks. */
 #define GRUB_XNU_HEAP_ALLOC_BLOCK 0x2000000
@@ -352,7 +353,7 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_err_t err;
   grub_macho_t macho;
-  grub_addr_t startcode, endcode;
+  grub_uint32_t startcode, endcode;
   int i;
   char *ptr, *loadaddr;
 
@@ -368,10 +369,10 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
     {
       grub_macho_close (macho);
       return grub_error (GRUB_ERR_BAD_OS,
-			 "Kernel doesn't contain suitable architecture");
+			 "Kernel doesn't contain suitable 32-bit architecture");
     }
 
-  err = grub_macho32_size (macho, &startcode, &endcode, GRUB_MACHO_NOBSS);
+  err = grub_macho_size32 (macho, &startcode, &endcode, GRUB_MACHO_NOBSS);
   if (err)
     {
       grub_macho_close (macho);
@@ -394,7 +395,7 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
     }
 
   /* Load kernel. */
-  err = grub_macho32_load (macho, loadaddr - startcode, GRUB_MACHO_NOBSS);
+  err = grub_macho_load32 (macho, loadaddr - startcode, GRUB_MACHO_NOBSS);
   if (err)
     {
       grub_macho_close (macho);
@@ -402,7 +403,7 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
       return err;
     }
 
-  grub_xnu_entry_point = grub_macho32_get_entry_point (macho);
+  grub_xnu_entry_point = grub_macho_get_entry_point32 (macho);
   if (! grub_xnu_entry_point)
     {
       grub_macho_close (macho);
@@ -443,6 +444,113 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
   grub_loader_set (grub_xnu_boot, grub_xnu_unload, 0);
 
   grub_xnu_lock ();
+  is_64bit = 0;
+
+  return 0;
+}
+
+static grub_err_t
+grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
+		       int argc, char *args[])
+{
+  grub_err_t err;
+  grub_macho_t macho;
+  grub_uint64_t startcode, endcode;
+  int i;
+  char *ptr, *loadaddr;
+
+  if (argc < 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
+
+  grub_xnu_unload ();
+
+  macho = grub_macho_open (args[0]);
+  if (! macho)
+    return grub_errno;
+  if (! grub_macho_contains_macho64 (macho))
+    {
+      grub_macho_close (macho);
+      return grub_error (GRUB_ERR_BAD_OS,
+			 "Kernel doesn't contain suitable 64-bit architecture");
+    }
+
+  err = grub_macho_size64 (macho, &startcode, &endcode, GRUB_MACHO_NOBSS);
+  if (err)
+    {
+      grub_macho_close (macho);
+      grub_xnu_unload ();
+      return err;
+    }
+
+  startcode &= 0x0fffffff;
+  endcode &= 0x0fffffff;
+
+  grub_dprintf ("xnu", "endcode = %lx, startcode = %lx\n",
+		(unsigned long) endcode, (unsigned long) startcode);
+
+  loadaddr = grub_xnu_heap_malloc (endcode - startcode);
+  grub_xnu_heap_will_be_at = startcode;
+
+  if (! loadaddr)
+    {
+      grub_macho_close (macho);
+      grub_xnu_unload ();
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
+			 "not enough memory to load kernel");
+    }
+
+  /* Load kernel. */
+  err = grub_macho_load64 (macho, loadaddr - startcode, GRUB_MACHO_NOBSS);
+  if (err)
+    {
+      grub_macho_close (macho);
+      grub_xnu_unload ();
+      return err;
+    }
+
+  grub_xnu_entry_point = grub_macho_get_entry_point64 (macho) & 0x0fffffff;
+  if (! grub_xnu_entry_point)
+    {
+      grub_macho_close (macho);
+      grub_xnu_unload ();
+      return grub_error (GRUB_ERR_BAD_OS, "couldn't find entry point");
+    }
+
+  grub_macho_close (macho);
+
+  err = grub_xnu_align_heap (GRUB_XNU_PAGESIZE);
+  if (err)
+    {
+      grub_xnu_unload ();
+      return err;
+    }
+
+  /* Copy parameters to kernel command line. */
+  ptr = grub_xnu_cmdline;
+  for (i = 1; i < argc; i++)
+    {
+      if (ptr + grub_strlen (args[i]) + 1
+	  >= grub_xnu_cmdline + sizeof (grub_xnu_cmdline))
+	break;
+      grub_memcpy (ptr, args[i], grub_strlen (args[i]));
+      ptr += grub_strlen (args[i]);
+      *ptr = ' ';
+      ptr++;
+    }
+
+  /* Replace last space by '\0'. */
+  if (ptr != grub_xnu_cmdline)
+    *(ptr - 1) = 0;
+
+  err = grub_cpu_xnu_fill_devicetree ();
+  if (err)
+    return err;
+
+  grub_loader_set (grub_xnu_boot, grub_xnu_unload, 0);
+
+  grub_xnu_lock ();
+  is_64bit = 1;
+
   return 0;
 }
 
@@ -560,7 +668,10 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
 	  return grub_error (GRUB_ERR_BAD_OS,
 			     "Extension doesn't contain suitable architecture");
 	}
-      machosize = grub_macho32_filesize (macho);
+      if (is_64bit)
+	machosize = grub_macho_filesize64 (macho);
+      else
+	machosize = grub_macho_filesize32 (macho);
       neededspace += machosize;
     }
   else
@@ -595,7 +706,11 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
       exthead->binaryaddr = (buf - grub_xnu_heap_start)
 	+ grub_xnu_heap_will_be_at;
       exthead->binarysize = machosize;
-      if ((err = grub_macho32_readfile (macho, buf)))
+      if (is_64bit)
+	err = grub_macho_readfile64 (macho, buf);
+      else
+	err = grub_macho_readfile32 (macho, buf);
+      if (err)
 	{
 	  grub_macho_close (macho);
 	  return err;
@@ -695,7 +810,13 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
 	}
       for (i = 0; i < narchs; i++)
 	{
-	  if (GRUB_MACHO_CPUTYPE_IS_HOST32
+	  if (!is_64bit && GRUB_MACHO_CPUTYPE_IS_HOST32
+	      (grub_be_to_cpu32 (archs[i].cputype)))
+	    {
+	      readoff = grub_be_to_cpu32 (archs[i].offset);
+	      readlen = grub_be_to_cpu32 (archs[i].size);
+	    }
+	  if (is_64bit && GRUB_MACHO_CPUTYPE_IS_HOST64
 	      (grub_be_to_cpu32 (archs[i].cputype)))
 	    {
 	      readoff = grub_be_to_cpu32 (archs[i].offset);
@@ -1363,13 +1484,16 @@ grub_xnu_unlock ()
   locked = 0;
 }
 
-static grub_command_t cmd_kernel, cmd_mkext, cmd_kext, cmd_kextdir,
-  cmd_ramdisk, cmd_devtree, cmd_resume, cmd_splash;
+static grub_command_t cmd_kernel64, cmd_kernel, cmd_mkext, cmd_kext;
+static grub_command_t cmd_kextdir, cmd_ramdisk, cmd_devtree, cmd_resume;
+static grub_command_t cmd_splash;
 
 GRUB_MOD_INIT(xnu)
 {
   cmd_kernel = grub_register_command ("xnu_kernel", grub_cmd_xnu_kernel, 0,
 				      "load a xnu kernel");
+  cmd_kernel64 = grub_register_command ("xnu_kernel64", grub_cmd_xnu_kernel64,
+					0, "load a 64-bit xnu kernel");
   cmd_mkext = grub_register_command ("xnu_mkext", grub_cmd_xnu_mkext, 0,
 				     "Load XNU extension package.");
   cmd_kext = grub_register_command ("xnu_kext", grub_cmd_xnu_kext, 0,
@@ -1403,5 +1527,6 @@ GRUB_MOD_FINI(xnu)
   grub_unregister_command (cmd_devtree);
   grub_unregister_command (cmd_ramdisk);
   grub_unregister_command (cmd_kernel);
+  grub_unregister_command (cmd_kernel64);
   grub_unregister_command (cmd_splash);
 }

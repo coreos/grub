@@ -102,6 +102,23 @@ struct grub_macho_segment32
   grub_uint32_t flags;
 } __attribute__ ((packed));
 
+/* 64-bit segment command. */
+struct grub_macho_segment64
+{
+#define GRUB_MACHO_CMD_SEGMENT64  0x19
+  grub_uint32_t cmd;
+  grub_uint32_t cmdsize;
+  grub_uint8_t segname[16];
+  grub_uint64_t vmaddr;
+  grub_uint64_t vmsize;
+  grub_uint64_t fileoff;
+  grub_uint64_t filesize;
+  grub_macho_vmprot_t maxprot;
+  grub_macho_vmprot_t initprot;
+  grub_uint32_t nsects;
+  grub_uint32_t flags;
+} __attribute__ ((packed));
+
 #define GRUB_MACHO_CMD_THREAD     5
 
 #endif
