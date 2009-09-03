@@ -1,3 +1,7 @@
+2009-09-03  Felix Zielcke  <fzielcke@z-51.de>
+
+	* INSTALL: Note that GNU Bison 2.3 or later is required.
+
 2009-09-03  Colin Watson  <cjwatson@ubuntu.com>
 
 	* kern/i386/pc/startup.S: Fix typo.

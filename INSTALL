@@ -13,7 +13,7 @@ configuring the GRUB.
 
 * GCC 2.95 or later
 * GNU Make
-* GNU Bison
+* GNU Bison 2.3 or later
 * GNU binutils 2.9.1.0.23 or later
 * Other standard GNU/Unix tools
 * Ruby 1.6 or later
