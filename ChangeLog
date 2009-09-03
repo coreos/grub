@@ -1,3 +1,7 @@
+2009-09-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/i386/pc/startup.S: Fix typo.
+
 2009-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* efiemu/loadcore.c (SUFFIX (grub_efiemu_loadcore_load)): Fix style
