@@ -27,6 +27,7 @@
 # include <grub/efi/efi.h>
 # define grub_autoefi_get_memory_map grub_efi_get_memory_map
 # define grub_autoefi_finish_boot_services grub_efi_finish_boot_services
+# define grub_autoefi_exit_boot_services grub_efi_exit_boot_services
 # define grub_autoefi_system_table grub_efi_system_table
 # define grub_autoefi_mmap_iterate grub_machine_mmap_iterate
 # define grub_autoefi_set_virtual_address_map grub_efi_set_virtual_address_map
@@ -55,6 +56,7 @@ static inline grub_err_t grub_autoefi_prepare (void)
 # include <grub/efiemu/efiemu.h>
 # define grub_autoefi_get_memory_map grub_efiemu_get_memory_map
 # define grub_autoefi_finish_boot_services grub_efiemu_finish_boot_services
+# define grub_autoefi_exit_boot_services grub_efiemu_exit_boot_services
 # define grub_autoefi_system_table grub_efiemu_system_table
 # define grub_autoefi_mmap_iterate grub_efiemu_mmap_iterate
 # define grub_autoefi_prepare grub_efiemu_prepare

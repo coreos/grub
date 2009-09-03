@@ -189,10 +189,10 @@ grub_efi_exit_boot_services (grub_efi_uintn_t map_key)
 }
 
 grub_err_t
-grub_efiemu_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
-				     grub_efi_uintn_t descriptor_size,
-				     grub_efi_uint32_t descriptor_version,
-				     grub_efi_memory_descriptor_t *virtual_map)
+grub_efi_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
+				  grub_efi_uintn_t descriptor_size,
+				  grub_efi_uint32_t descriptor_version,
+				  grub_efi_memory_descriptor_t *virtual_map)
 {
   grub_efi_runtime_services_t *r;
   grub_efi_status_t status;
@@ -204,7 +204,7 @@ grub_efiemu_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
   if (status == GRUB_EFI_SUCCESS)
     return GRUB_ERR_NONE;
 
-  return grub_errno (GRUB_ERR_IO, "set_virtual_address_map failed");
+  return grub_error (GRUB_ERR_IO, "set_virtual_address_map failed");
 }
 
 grub_uint32_t
