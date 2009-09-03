@@ -246,6 +246,23 @@ if test "x$TARGET_CFLAGS" = x; then
       TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
     fi
   fi
+
+  # By default, GCC 4.4 generates .eh_frame sections containing unwind
+  # information in some cases where it previously did not. GRUB doesn't need
+  # these and they just use up vital space. Restore the old compiler
+  # behaviour.
+  AC_CACHE_CHECK([whether -fno-dwarf2-cfi-asm works], [grub_cv_cc_fno_dwarf2_cfi_asm], [
+    SAVE_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS -fno-dwarf2-cfi-asm"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		      [grub_cv_cc_fno_dwarf2_cfi_asm=yes],
+		      [grub_cv_cc_fno_dwarf2_cfi_asm=no])
+    CFLAGS="$SAVE_CFLAGS"
+  ])
+
+  if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
+    TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
+  fi
 fi
 
 grub_apple_target_cc

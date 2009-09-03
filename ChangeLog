@@ -1,3 +1,11 @@
+2009-09-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: By default, GCC 4.4 generates .eh_frame sections
+	containing unwind information in some cases where it previously did
+	not. Use -fno-dwarf2-cfi-asm if available to restore the old
+	behaviour. See http://patchwork.kernel.org/patch/8555/ for related
+	discussion.
+
 2009-09-02  Yves BLUSSEAU  <blusseau@zetam.org>
 
 	Embedding loadenv module into grub-emu
