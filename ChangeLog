@@ -1,3 +1,16 @@
+2009-09-02  Yves BLUSSEAU  <blusseau@zetam.org>
+
+	Embedding loadenv module into grub-emu
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): add lib/envblk.c and
+	commands/loadenv.c
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Likewise
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise
+
 2009-09-03  Magnus Granberg  <zorry@ume.nu>
 
 	* aclocal.m4: Add grub_CHECK_PIE. It check if the compiler
