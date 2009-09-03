@@ -413,3 +413,31 @@ else
 [fi
 rm -rf testdir]
 ])
+
+dnl Check if the C compiler supports `-fPIE'.
+AC_DEFUN(grub_CHECK_PIE,[
+[# Position independent executable.
+pie_possible=yes]
+AC_MSG_CHECKING([whether `$CC' has `-fPIE' as default])
+# Is this a reliable test case?
+AC_LANG_CONFTEST([[
+#ifdef __PIE__
+int main() {
+	return 0;
+}
+#else
+#error NO __PIE__ DEFINED
+#endif
+]])
+
+[# `$CC -c -o ...' might not be portable.  But, oh, well...  Is calling
+# `ac_compile' like this correct, after all?
+if eval "$ac_compile -S -o conftest.s" 2> /dev/null; then]
+  AC_MSG_RESULT([yes])
+  [# Should we clear up other files as well, having called `AC_LANG_CONFTEST'?
+  rm -f conftest.s
+else
+  pie_possible=no]
+  AC_MSG_RESULT([no])
+[fi]
+])

@@ -346,6 +346,14 @@ fi
 # Need __enable_execute_stack() for nested function trampolines?
 grub_CHECK_ENABLE_EXECUTE_STACK
 
+# Position independent executable.
+grub_CHECK_PIE
+[# Need that, because some distributions ship compilers that include
+# `-fPIE' in the default specs.
+if [ x"$pie_possible" = xyes ]; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIE"
+fi]
+
 # Smashing stack protector.
 grub_CHECK_STACK_PROTECTOR
 # Need that, because some distributions ship compilers that include

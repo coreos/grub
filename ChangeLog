@@ -1,3 +1,10 @@
+2009-09-03  Magnus Granberg  <zorry@ume.nu>
+
+	* aclocal.m4: Add grub_CHECK_PIE. It check if the compiler
+	include -fPIE in the default specs.
+	* configure.ac: Check if pie_possible is yes and add -fno-PIE
+	to TARGET_CFLAGS.
+
 2009-09-03  Felix Zielcke  <fzielcke@z-51.de>
 
 	* INSTALL: Note that GNU Bison 2.3 or later is required.
