@@ -1,3 +1,7 @@
+2009-09-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* NEWS: Mention `keystatus' and Unicode fonts.
+
 2009-09-04  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* configure.ac: Bump version to 1.97~beta2.

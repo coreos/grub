@@ -1,5 +1,9 @@
 New in 1.97 - :
 
+* Add `keystatus' command.
+
+* Unicode fonts are now used by default.
+
 * Add `hdparm' command.
 
 * Add support for getting the current date and time from CMOS as variables.
