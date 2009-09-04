@@ -1,3 +1,8 @@
+2009-09-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Bump version to 1.97~beta2.
+	* docs/version.texi: Likewise.
+
 2009-09-03  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac: By default, GCC 4.4 generates .eh_frame sections
