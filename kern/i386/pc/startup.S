@@ -37,7 +37,7 @@
  * Note: GRUB is compiled with the options -mrtd and -mregparm=3.
  *       So the first three arguments are passed in %eax, %edx, and %ecx,
  *       respectively, and if a function has a fixed number of arguments
- *       and the number if greater than three, the function must return
+ *       and the number is greater than three, the function must return
  *       with "ret $N" where N is ((the number of arguments) - 3) * 4.
  */
 
