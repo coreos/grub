@@ -258,7 +258,7 @@ grub_cpu_xnu_fill_devicetree (void)
     2 * (utf16_strlen (SYSTEM_TABLE_PTR (firmware_vendor)) + 1);
   curval->data = grub_malloc (curval->datasize);
   if (! curval->data)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't create device tree");
+    return grub_errno;
   grub_memcpy (curval->data, SYSTEM_TABLE_PTR (firmware_vendor),
 	       curval->datasize);
 
@@ -362,8 +362,7 @@ grub_cpu_xnu_fill_devicetree (void)
       curval->datasize = sizeof (guid);
       curval->data = grub_malloc (curval->datasize);
       if (! curval->data)
-	return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			   "couldn't create device tree");
+	return grub_errno;
       grub_memcpy (curval->data, &guid, curval->datasize);
 
       /* The value "table". */
