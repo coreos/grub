@@ -1,3 +1,8 @@
+2009-09-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/xnu.c (grub_cpu_xnu_fill_devicetree): Remove
+	unnecessary calls to grub_error.
+
 2009-09-04  Colin Watson  <cjwatson@ubuntu.com>
 
 	* NEWS: Mention `keystatus' and Unicode fonts.
