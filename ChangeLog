@@ -1,3 +1,9 @@
+2009-09-05  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-probe.c (probe): Comment out buggy codepath, which
+	was unexpectedly enabled by Colin Watson's 2009-09-02 fix.  This
+	should be re-enabled after 1.97.
+
 2009-09-05  Felix Zielcke  <fzielcke@z-51.de>
 
 	* gendistlist.sh: Add `grub-dumpdevtree' and `*.lua' to the list
