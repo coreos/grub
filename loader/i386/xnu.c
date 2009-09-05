@@ -511,9 +511,6 @@ grub_xnu_boot (void)
 
   memory_map = (grub_efi_memory_descriptor_t *)
     ((grub_uint8_t *) grub_xnu_heap_start + mmap_relloc_off);
-  firstruntimeaddr = ALIGN_UP (((grub_addr_t) grub_xnu_heap_start
-				+ grub_xnu_heap_size + 4096), 4096);
-  curruntimeaddr = firstruntimeaddr;
 
   if (grub_autoefi_get_memory_map (&memory_map_size, memory_map,
 				   &map_key, &descriptor_size,
@@ -561,11 +558,9 @@ grub_xnu_boot (void)
 
   bootparams_relloc->heap_start = grub_xnu_heap_will_be_at;
   bootparams_relloc->heap_size = grub_xnu_heap_size;
-  bootparams_relloc->efi_runtime_first_page = firstruntimeaddr
-    / GRUB_XNU_PAGESIZE;
-  bootparams_relloc->efi_runtime_npages
-    = ((lastruntimeaddr + GRUB_XNU_PAGESIZE - 1) / GRUB_XNU_PAGESIZE)
-    - (firstruntimeaddr / GRUB_XNU_PAGESIZE);
+  bootparams_relloc->efi_runtime_first_page = firstruntimepage;
+
+  bootparams_relloc->efi_runtime_npages = lastruntimepage - firstruntimepage;
   bootparams_relloc->efi_uintnbits = SIZEOF_OF_UINTN * 8;
 
   bootparams_relloc->verminor = GRUB_XNU_BOOTARGS_VERMINOR;
