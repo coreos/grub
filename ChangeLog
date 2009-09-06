@@ -1,3 +1,9 @@
+2009-09-06  Yves Blusseau  <blusseau@zetam.org>
+
+	* Makefile.in (RMKFILES): add i386-qemu.rmk
+	(MAINTAINER_CLEANFILES): add $(srcdir)/DISTLIST $(srcdir)/config.h.in
+	$(srcdir)/stamp-h.in
+
 2009-09-05  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/grub-probe.c (probe): Comment out buggy codepath, which
