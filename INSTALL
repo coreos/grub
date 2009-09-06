@@ -11,7 +11,7 @@ GRUB depends on some software packages installed into your system. If
 you don't have any of them, please obtain and install them before
 configuring the GRUB.
 
-* GCC 2.95 or later
+* GCC 4.1.3 or later
 * GNU Make
 * GNU Bison 2.3 or later
 * GNU binutils 2.9.1.0.23 or later

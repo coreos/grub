@@ -1,3 +1,7 @@
+2009-09-06  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* INSTALL: Require GCC 4.1.3 or later.
+
 2009-09-06  Yves Blusseau  <blusseau@zetam.org>
 
 	* Makefile.in (RMKFILES): add i386-qemu.rmk
