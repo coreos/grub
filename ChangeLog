@@ -1,3 +1,8 @@
+2009-09-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* script/sh/execute.c (grub_script_execute_cmdline): Set "?" in
+	unknown-command case.  Fixes bug #27320.
+
 2009-09-08  Felix Zielcke  <fzielcke@z-51.de>
 
 	* kern/rescue_parser.c (grub_rescue_parse_line): Only suggest to try
