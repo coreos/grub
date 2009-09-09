@@ -280,7 +280,7 @@
 	(grub_afs_to_cpu64): ...this. All users updated.
 	(GRUB_AFS_BO_LITTLE_ENDIAN): Remove.
 	(GRUB_AFS_BO_BIG_ENDIAN): Likewise.
-	(grub_afs_validate_sblock): Check only one endiannness.
+	(grub_afs_validate_sblock): Check only one endianness.
 	(GRUB_MOD_INIT (befs)) [MODE_BIGENDIAN && MODE_BFS]: Rename to ..
 	(GRUB_MOD_INIT (befs_be)) [MODE_BIGENDIAN && MODE_BFS]: ... this.
 	(GRUB_MOD_INIT (afs)) [MODE_BIGENDIAN && !MODE_BFS]: Rename to ..
@@ -449,7 +449,7 @@
 	and OPENBSD_MMAP_NVS.
 	Add memory map terminator
 	Explicit cast when calling grub_unix_real_boot.
-	(grub_nebsd_boot): Explicit cast when calling grub_unix_real_boot.
+	(grub_netbsd_boot): Explicit cast when calling grub_unix_real_boot.
 
 2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
@@ -1010,7 +1010,7 @@
 2009-07-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/i386/pc/grub-setup.c (setup): Check that no partition is in
-	embeding zone, not only the first one.
+	embedding zone, not only the first one.
 
 2009-07-29  Joe Auricchio  <jauricchio@gmail.com>
 
@@ -1083,7 +1083,7 @@
 	instead of WORDS_BIGENDIAN.  Use grub_le_to_cpu32(), so that the
 	case of little endian words becomes just an optimization.
 	Respect const modifier.
-	(md5_final): Use code that doesn't depend on endianess.
+	(md5_final): Use code that doesn't depend on endianness.
 
 	* include/grub/misc.h (ALIGN_UP): Cast align to the type of addr
 	to avoid loss of upper bits if align is unsigned and shorter
