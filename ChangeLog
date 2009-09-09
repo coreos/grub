@@ -1,3 +1,7 @@
+2009-09-10  Felix Zielcke  <fzielcke@z-51.de>
+
+	* docs/grub.cfg: Add an example menu entry for memtest86+.
+
 2009-09-09  Felix Zielcke  <fzielcke@z-51.de>
 
 	* config.guess: Update to latest version from config git.
