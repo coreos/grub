@@ -1,6 +1,6 @@
 2009-09-09  Felix Zielcke  <fzielcke@z-51.de>
 
-	* config.guess: Update to lastest versiom from config git.
+	* config.guess: Update to latest version from config git.
 	* config.sub: Likewise.
 
 2009-09-08  Colin Watson  <cjwatson@ubuntu.com>
