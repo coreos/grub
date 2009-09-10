@@ -1,3 +1,8 @@
+2009-09-10  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkconfig.in: Make the created config mode 400 and
+	print a warning if it fails.
+
 2009-09-10  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/grub.d/40_custom.in: Ask user to type custom entries below
