@@ -1,3 +1,8 @@
+2009-09-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub.d/40_custom.in: Ask user to type custom entries below
+	comment, rather than below 'exec tail' line.
+
 2009-09-10  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub.d/40_custom.in: Make sure that the explanatory text is
