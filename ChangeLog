@@ -1,5 +1,10 @@
 2009-09-10  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub.d/40_custom.in: Make sure that the explanatory text is
+	visible in grub.cfg.
+
+2009-09-10  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub.d/40_custom.in: Make it a little clearer how to use this
 	file.
 
