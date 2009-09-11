@@ -1,3 +1,8 @@
+2009-09-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: Don't look for help2man when cross-compiling.  Fixes
+	part of bug #27349.
+
 2009-09-10  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/grub-mkconfig.in: Make the created config mode 400 and
