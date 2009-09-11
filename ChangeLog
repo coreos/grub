@@ -1,5 +1,12 @@
 2009-09-11  Colin Watson  <cjwatson@ubuntu.com>
 
+	* include/grub/ntfs.h (struct grub_fshelp_node): Change `size'
+	to grub_uint64_t.
+	* fs/ntfs.c (init_file): Understand 64-bit sizes for
+	non-resident files.
+
+2009-09-11  Colin Watson  <cjwatson@ubuntu.com>
+
 	* configure.ac: Don't look for help2man when cross-compiling.  Fixes
 	part of bug #27349.
 

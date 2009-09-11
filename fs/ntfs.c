@@ -543,7 +543,7 @@ init_file (struct grub_ntfs_file *mft, grub_uint32_t mftno)
       if (!pa[8])
 	mft->size = u32at (pa, 0x10);
       else
-	mft->size = u32at (pa, 0x30);
+	mft->size = u64at (pa, 0x30);
 
       if ((mft->attr.flags & AF_ALST) == 0)
 	mft->attr.attr_end = 0;	/*  Don't jump to attribute list */
