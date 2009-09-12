@@ -1,3 +1,11 @@
+2009-09-12  Yves Blusseau  <blusseau@zetam.org>
+
+	Change clean rules to properly remove files
+
+	* genmk.rb: add new clean rules
+	* Makefile.in (clean): add the new targets
+	(mostlyclean): likewise
+
 2009-09-11  Colin Watson  <cjwatson@ubuntu.com>
 
 	* include/grub/ntfs.h (struct grub_fshelp_node): Change `size'

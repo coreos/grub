@@ -326,10 +326,10 @@ uninstall:
 	  rm -f $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
 
-clean:
+clean: $(CLEAN_IMAGE_TARGETS) $(CLEAN_MODULE_TARGETS) $(CLEAN_UTILITY_TARGETS)
 	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
-mostlyclean: clean
+mostlyclean: clean $(MOSTLYCLEAN_IMAGE_TARGETS) $(MOSTLYCLEAN_MODULE_TARGETS) $(MOSTLYCLEAN_UTILITY_TARGETS)
 	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 distclean: mostlyclean

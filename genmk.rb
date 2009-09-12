@@ -39,11 +39,13 @@ class Image
   def initialize(dir, name)
     @dir = dir
     @name = name
+    @rule_count = 0
   end
   attr_reader :dir, :name
 
   def rule(sources)
     prefix = @name.to_var
+    @rule_count += 1
     exe = @name.suffix('exec')
     objs = sources.collect do |src|
       raise "unknown source file `#{src}'" if /\.[cS]$/ !~ src
@@ -53,8 +55,16 @@ class Image
     deps = objs.collect {|obj| obj.suffix('d')}
     deps_str = deps.join(' ')
 
-    "CLEANFILES += #{@name} #{exe} #{objs_str}
-MOSTLYCLEANFILES += #{deps_str}
+"
+clean-image-#{@name}.#{@rule_count}:
+	rm -f #{@name} #{exe} #{objs_str}
+
+CLEAN_IMAGE_TARGETS += clean-image-#{@name}.#{@rule_count}
+
+mostlyclean-image-#{@name}.#{@rule_count}:
+	rm -f #{deps_str}
+
+MOSTLYCLEAN_IMAGE_TARGETS += mostlyclean-image-#{@name}.#{@rule_count}
 
 ifneq ($(TARGET_APPLE_CC),1)
 #{@name}: #{exe}
@@ -94,11 +104,13 @@ class PModule
   def initialize(dir, name)
     @dir = dir
     @name = name
+    @rule_count = 0
   end
   attr_reader :dir, :name
 
   def rule(sources)
     prefix = @name.to_var
+    @rule_count += 1
     objs = sources.collect do |src|
       raise "unknown source file `#{src}'" if /\.[cS]$/ !~ src
       prefix + '-' + src.to_obj
@@ -114,12 +126,23 @@ class PModule
     mod_name = File.basename(@name, '.mod')
     symbolic_name = mod_name.sub(/\.[^\.]*$/, '')
 
-    "CLEANFILES += #{@name} #{mod_obj} #{mod_src} #{pre_obj} #{objs_str} #{undsym}
+"
+clean-module-#{@name}.#{@rule_count}:
+	rm -f #{@name} #{mod_obj} #{mod_src} #{pre_obj} #{objs_str} #{undsym}
+
+CLEAN_MODULE_TARGETS += clean-module-#{@name}.#{@rule_count}
+
 ifneq ($(#{prefix}_EXPORTS),no)
-CLEANFILES += #{defsym}
+clean-module-#{@name}-symbol.#{@rule_count}:
+	rm -f #{defsym}
+
+CLEAN_MODULE_TARGETS += clean-module-#{@name}-symbol.#{@rule_count}
 DEFSYMFILES += #{defsym}
 endif
-MOSTLYCLEANFILES += #{deps_str}
+mostlyclean-module-#{@name}.#{@rule_count}:
+	rm -f #{deps_str}
+
+MOSTLYCLEAN_MODULE_TARGETS += mostlyclean-module-#{@name}.#{@rule_count}
 UNDSYMFILES += #{undsym}
 
 ifneq ($(TARGET_APPLE_CC),1)
@@ -164,6 +187,7 @@ endif
 " + objs.collect_with_index do |obj, i|
       src = sources[i]
       fake_obj = File.basename(src).suffix('o')
+      extra_target = obj.sub(/\.[^\.]*$/, '') + '-extra'
       command = 'cmd-' + obj.suffix('lst')
       fs = 'fs-' + obj.suffix('lst')
       partmap = 'partmap-' + obj.suffix('lst')
@@ -178,7 +202,11 @@ endif
 	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
 -include #{dep}
 
-CLEANFILES += #{command} #{fs} #{partmap} #{handler} #{parttool}
+clean-module-#{extra_target}.#{@rule_count}:
+	rm -f #{command} #{fs} #{partmap} #{handler} #{parttool}
+
+CLEAN_MODULE_TARGETS += clean-module-#{extra_target}.#{@rule_count}
+
 COMMANDFILES += #{command}
 FSFILES += #{fs}
 PARTTOOLFILES += #{parttool}
@@ -219,6 +247,7 @@ class Utility
   def initialize(dir, name)
     @dir = dir
     @name = name
+    @rule_count = 0
   end
   def print_tail()
     prefix = @name.to_var
@@ -231,6 +260,7 @@ class Utility
 
   def rule(sources)
     prefix = @name.to_var
+    @rule_count += 1
     objs = sources.collect do |src|
       raise "unknown source file `#{src}'" if /\.[cS]$/ !~ src
       prefix + '-' + src.to_obj
@@ -239,8 +269,17 @@ class Utility
     deps = objs.collect {|obj| obj.suffix('d')}
     deps_str = deps.join(' ');
 
-    "CLEANFILES += #{@name}$(EXEEXT) #{objs_str}
-MOSTLYCLEANFILES += #{deps_str}
+    "
+clean-utility-#{@name}.#{@rule_count}:
+	rm -f #{@name}$(EXEEXT) #{objs_str}
+
+CLEAN_UTILITY_TARGETS += clean-utility-#{@name}.#{@rule_count}
+
+mostlyclean-utility-#{@name}.#{@rule_count}:
+	rm -f #{deps_str}
+
+MOSTLYCLEAN_UTILITY_TARGETS += mostlyclean-utility-#{@name}.#{@rule_count}
+
 #{prefix}_OBJECTS += #{objs_str}
 
 " + objs.collect_with_index do |obj, i|
