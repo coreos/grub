@@ -1,3 +1,11 @@
+2009-09-12  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix memory corruption issue (spotted by Colin Watson).
+
+	* kern/i386/pc/startup.S (grub_vbe_bios_getset_dac_palette): Fix bug
+	causing returned size to be stored in an incorrect memory location.
+	Fix use of uninitialized value when storing the returned size.
+
 2009-09-12  Yves Blusseau  <blusseau@zetam.org>
 
 	Change clean rules to properly remove files

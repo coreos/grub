@@ -1761,18 +1761,18 @@ FUNCTION(grub_vbe_bios_getset_dac_palette_width)
 	movw	$0x4f08, %ax
 	int	$0x10
 
-	movw	%ax, %dx	/* real_to_prot destroys %eax.  */
+	movw	%ax, %cx	/* real_to_prot destroys %eax.  */
 
 	DATA32 call	real_to_prot
 	.code32
 
 	/* Move result back to *dac_mask_size.  */
+	xorl	%eax, %eax
 	movb	%bh, %al
 	movl	%eax, (%edx)
 
 	/* Return value in %eax.  */
-	xorl	%eax, %eax
-	movw	%dx, %ax
+	movw	%cx, %ax
 
 	popl	%ebx
 	popl	%ebp
