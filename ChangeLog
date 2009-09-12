@@ -1,5 +1,13 @@
 2009-09-12  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* video/i386/pc/vbe.c (grub_vbe_get_video_mode_info): Move packed
+	mode special handling (grub_vbe_bios_set_dac_palette_width() call)
+	from here ...
+	* loader/i386/linux.c [GRUB_MACHINE_PCBIOS]
+	(grub_linux_setup_video): ... to here (with some adjustments).
+
+2009-09-12  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Fix memory corruption issue (spotted by Colin Watson).
 
 	* kern/i386/pc/startup.S (grub_vbe_bios_getset_dac_palette): Fix bug

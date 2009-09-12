@@ -286,24 +286,6 @@ grub_vbe_get_video_mode_info (grub_uint32_t mode,
 
       /* Make copy of mode info block.  */
       grub_memcpy (mode_info, mi_tmp, sizeof (*mode_info));
-
-      /* Packed mode.  Query DAC Palette width for color sizes.  */
-      if (mode_info->bits_per_pixel <= 8)
-	{
-	  int width = 8;
-	  status = 0;
-
-	  if (controller_info.capabilities & GRUB_VBE_CAPABILITY_DACWIDTH)
-	    status = grub_vbe_bios_set_dac_palette_width (& width);
-
-	  if (status != GRUB_VBE_STATUS_OK)
-	    /* 6 is default after mode reset.  */
-	    width = 6;
-
-	  mode_info->red_mask_size = mode_info->green_mask_size
-	    = mode_info->blue_mask_size = width;
-	  mode_info->rsvd_mask_size = 0;
-	}
     }
   else
     /* Just clear mode info block if it isn't a VESA mode.  */
