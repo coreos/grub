@@ -1,3 +1,9 @@
+2009-09-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Remove --enable-grub-pe2elf.  Only build
+	grub-pe2elf when needed by the build system itself.
+	* conf/common.rmk: Remove $(enable_grub_pe2elf) check.
+
 2009-09-12  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* configure.ac: Bump version to 1.97~beta3.

@@ -119,21 +119,14 @@ bin_UTILITIES += grub-editenv
 grub_editenv_SOURCES = util/grub-editenv.c lib/envblk.c util/misc.c kern/misc.c kern/err.c
 CLEANFILES += grub-editenv
 
-# for grub-pe2elf
-ifeq ($(enable_grub_pe2elf), yes)
-bin_UTILITIES += grub-pe2elf
+# Needed for genmk.rb to work
+ifeq (0,1)
+bin_UTILITIES += grub-macho2img grub-pe2elf
 endif
 
 grub_pe2elf_SOURCES = util/grub-pe2elf.c util/misc.c
 CLEANFILES += grub-pe2elf
 
-# grub_macho2img assumes a lot about source file.
-# So installing it definitively is useless
-# But adding to bin_UTILITIES is needed for
-# genmk.rb to work
-ifeq (0,1)
-bin_UTILITIES += grub-macho2img
-endif
 grub_macho2img_SOURCES = util/grub-macho2img.c
 CLEANFILES += grub-macho2img
 
