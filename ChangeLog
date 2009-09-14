@@ -1,3 +1,8 @@
+2009-09-14  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/test.c (get_fileinfo): Return immediately if
+	grub_fs_probe fails.
+
 2009-09-14  José Martínez  <xosemp@gmail.com>
 
 	* commands/acpi.c (grub_cmd_acpi): Fix loading ACPI tables from file.
