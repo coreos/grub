@@ -681,6 +681,9 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	  table->size = size;
 	  table->addr = buf;
 	  playground_size += table->size;
+
+	  table->next = acpi_tables;
+	  acpi_tables = table;
 	}
     }
 
