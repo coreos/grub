@@ -57,11 +57,16 @@ menuentry "${LONGNAME} (on ${DEVICE})" {
 EOF
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
 
-      if [ "${LONGNAME}" != "Windows Vista (loader)" ] ; then
-        cat << EOF
+      case ${LONGNAME} in
+	Windows\ Vista*|Windows\ 7*)
+	;;
+	*)
+	  cat << EOF
 	drivemap -s (hd0) \${root}
 EOF
-      fi
+	;;
+      esac
+
       cat <<EOF
 	chainloader +1
 }
