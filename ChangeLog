@@ -1,5 +1,15 @@
 2009-09-16  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* aclocal.m4 (AC_LANG_PROGRAM): New macro.  Overrides stock
+	AC_LANG_PROGRAM from autoconf.
+	(grub_ASM_USCORE, grub_PROG_OBJCOPY_ABSOLUTE): Add missing
+	prototypes (fixes warning).
+
+	* configure.ac: Add `-Werror' to TARGET_CFLAGS unless
+	`--disable-werror' was used.
+
+2009-09-16  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* partmap/msdos.c (pc_partition_map_iterate): Fix possible use of
 	uninitialized `lastaddr'.
 

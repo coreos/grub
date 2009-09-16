@@ -390,6 +390,13 @@ if test x"$sap_possible" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -mno-stack-arg-probe"
 fi
 
+AC_ARG_ENABLE([werror],
+	      [AS_HELP_STRING([--disable-werror],
+                             [do not use -Werror when building GRUB])])
+if test x"$enable_werror" != xno ; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -Werror"
+fi
+
 AC_SUBST(TARGET_CFLAGS)
 AC_SUBST(TARGET_MODULE_FORMAT)
 AC_SUBST(OBJCONV)

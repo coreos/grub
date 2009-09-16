@@ -1,3 +1,18 @@
+dnl Redefine AC_LANG_PROGRAM with a "-Wstrict-prototypes -Werror"-friendly
+dnl version.  Patch submitted to bug-autoconf in 2009-09-16.
+m4_define([AC_LANG_PROGRAM(C)],
+[$1
+int
+main (void)
+{
+dnl Do *not* indent the following line: there may be CPP directives.
+dnl Don't move the `;' right after for the same reason.
+$2
+  ;
+  return 0;
+}])
+
+
 dnl Check whether target compiler is working
 AC_DEFUN(grub_PROG_TARGET_CC,
 [AC_MSG_CHECKING([whether target compiler is working])
@@ -26,6 +41,7 @@ AC_DEFUN(grub_ASM_USCORE,
 AC_MSG_CHECKING([if C symbols get an underscore after compilation])
 AC_CACHE_VAL(grub_cv_asm_uscore,
 [cat > conftest.c <<\EOF
+int func (int *);
 int
 func (int *list)
 {
@@ -63,6 +79,7 @@ AC_DEFUN(grub_PROG_OBJCOPY_ABSOLUTE,
 [AC_MSG_CHECKING([whether ${OBJCOPY} works for absolute addresses])
 AC_CACHE_VAL(grub_cv_prog_objcopy_absolute,
 [cat > conftest.c <<\EOF
+void cmain (void);
 void
 cmain (void)
 {
