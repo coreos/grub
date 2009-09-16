@@ -1,6 +1,6 @@
 2009-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* partmap/pc.c (pc_partition_map_iterate): Detect and break loops.
+	* partmap/msdos.c (pc_partition_map_iterate): Detect and break loops.
 
 2009-09-14  Colin Watson  <cjwatson@ubuntu.com>
 
