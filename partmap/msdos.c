@@ -110,6 +110,10 @@ pc_partition_map_iterate (grub_disk_t disk,
   p.data = &pcdata;
   p.partmap = &grub_msdos_partition_map;
 
+  /* Any value different than `p.offset' will satisfy the check during
+     first loop.  */
+  lastaddr = !p.offset;
+
   while (1)
     {
       int i;

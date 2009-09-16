@@ -1,3 +1,8 @@
+2009-09-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* partmap/msdos.c (pc_partition_map_iterate): Fix possible use of
+	uninitialized `lastaddr'.
+
 2009-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* partmap/msdos.c (pc_partition_map_iterate): Detect and break loops.
