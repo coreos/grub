@@ -129,6 +129,10 @@ SUFFIX (grub_macho_size) (grub_macho_t macho, grub_macho_addr_t *segments_start,
       grub_macho_segment_t *hdr = (grub_macho_segment_t *) hdr0;
       if (hdr->cmd != GRUB_MACHO_CMD_SEGMENT)
 	return 0;
+
+      if (! hdr->vmsize)
+	return 0;
+
       if (! hdr->filesize && (flags & GRUB_MACHO_NOBSS))
 	return 0;
 
