@@ -31,7 +31,7 @@ if [ -z "`which os-prober 2> /dev/null`" -o -z "`which linux-boot-prober 2> /dev
   exit 0
 fi
 
-OSPROBED="`os-prober 2> /dev/null | tr ' ' '^' | paste -s -d ' '`"
+OSPROBED="`os-prober | tr ' ' '^' | paste -s -d ' '`"
 if [ -z "${OSPROBED}" ] ; then
   # empty os-prober output, nothing doing
   exit 0
