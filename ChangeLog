@@ -1,9 +1,9 @@
 2009-09-19  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub.d/30_os-prober.in: Don't throw away stderr from
-	  os-prober. Under normal operation, it does not print anything to
-	  stderr; if it does, we need to debug it, and throwing away stderr
-	  makes that excessively difficult.
+	os-prober. Under normal operation, it does not print anything to
+	stderr; if it does, we need to debug it, and throwing away stderr
+	makes that excessively difficult.
 
 2009-09-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
