@@ -31,7 +31,7 @@ SUFFIX (grub_macho_parse) (grub_macho_t macho)
     }
   if (head.magic != GRUB_MACHO_MAGIC)
     {
-      grub_error (GRUB_ERR_BAD_OS, "Invalid Mach-O 32-bit header.");
+      grub_error (GRUB_ERR_BAD_OS, "Invalid Mach-O " XX "-bit header.");
       macho->offsetXX = -1;
       return;
     }
@@ -94,7 +94,7 @@ SUFFIX (grub_macho_readfile) (grub_macho_t macho, void *dest)
     return grub_error (GRUB_ERR_BAD_OS,
 		       "Couldn't read architecture-specific part");
 
-  if (grub_file_seek (macho->file, macho->offset32) == (grub_off_t) -1)
+  if (grub_file_seek (macho->file, macho->offsetXX) == (grub_off_t) -1)
     {
       grub_error_push ();
       return grub_error (GRUB_ERR_BAD_OS,
@@ -102,8 +102,8 @@ SUFFIX (grub_macho_readfile) (grub_macho_t macho, void *dest)
     }
 
   read = grub_file_read (macho->file, dest,
-			 macho->end32 - macho->offset32);
-  if (read != (grub_ssize_t) (macho->end32 - macho->offset32))
+			 macho->endXX - macho->offsetXX);
+  if (read != (grub_ssize_t) (macho->endXX - macho->offsetXX))
     {
       grub_error_push ();
       return grub_error (GRUB_ERR_BAD_OS,
