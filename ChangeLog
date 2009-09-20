@@ -1,3 +1,10 @@
+2009-09-20  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix regression introduced in r2539.
+
+	* term/usb_keyboard.c (USB_HID_DEVICE_TO_HOST): Change from 0x61
+	to 0xA1.
+
 2009-09-19  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub.d/30_os-prober.in: Don't throw away stderr from
