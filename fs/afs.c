@@ -26,10 +26,16 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
-#ifdef MODE_BFS
-#define GRUB_AFS_FSNAME "befs"
+#ifdef MODE_BIGENDIAN
+#define GRUB_AFS_FSNAME_SUFFIX "_be"
 #else
-#define GRUB_AFS_FSNAME "afs"
+#define GRUB_AFS_FSNAME_SUFFIX ""
+#endif
+
+#ifdef MODE_BFS
+#define GRUB_AFS_FSNAME "befs" GRUB_AFS_FSNAME_SUFFIX
+#else
+#define GRUB_AFS_FSNAME "afs" GRUB_AFS_FSNAME_SUFFIX
 #endif
 
 #define	GRUB_AFS_DIRECT_BLOCK_COUNT	12
@@ -65,14 +71,15 @@
 
 #define GRUB_AFS_NULL_VAL	((grub_afs_bvalue_t)-1)
 
-#define U16(sb, u) (((sb)->byte_order == GRUB_AFS_BO_LITTLE_ENDIAN) ? \
-                    grub_le_to_cpu16 (u) : grub_be_to_cpu16 (u))
-
-#define U32(sb, u) (((sb)->byte_order == GRUB_AFS_BO_LITTLE_ENDIAN) ? \
-                    grub_le_to_cpu32 (u) : grub_be_to_cpu32 (u))
-
-#define U64(sb, u) (((sb)->byte_order == GRUB_AFS_BO_LITTLE_ENDIAN) ? \
-                    grub_le_to_cpu64 (u) : grub_be_to_cpu64 (u))
+#ifdef MODE_BIGENDIAN
+#define grub_afs_to_cpu16(x) grub_be_to_cpu16 (x)
+#define grub_afs_to_cpu32(x) grub_be_to_cpu32 (x)
+#define grub_afs_to_cpu64(x) grub_be_to_cpu64 (x)
+#else
+#define grub_afs_to_cpu16(x) grub_le_to_cpu16 (x)
+#define grub_afs_to_cpu32(x) grub_le_to_cpu32 (x)
+#define grub_afs_to_cpu64(x) grub_le_to_cpu64 (x)
+#endif
 
 #ifdef MODE_BFS
 #define B_KEY_INDEX_ALIGN 8
@@ -89,12 +96,6 @@
 #define B_KEY_VALUE_OFFSET(node) ((grub_afs_bvalue_t *) \
                                    ((char *) B_KEY_INDEX_OFFSET (node) + \
                                     node->key_count * 2))
-
-enum
-{
-  GRUB_AFS_BO_LITTLE_ENDIAN,
-  GRUB_AFS_BO_BIG_ENDIAN
-};
 
 typedef grub_uint64_t grub_afs_off_t;
 typedef grub_uint64_t grub_afs_bigtime;
@@ -154,6 +155,9 @@ struct grub_afs_btree
 } __attribute__ ((packed));
 #endif
 
+/* Beware that following structure describes AtheFS and if you write code
+   which uses currently unused fields check it with both AtheFS and BeFS.
+ */
 struct grub_afs_sblock
 {
   char name[32];
@@ -227,8 +231,8 @@ static grub_afs_off_t
 grub_afs_run_to_num (struct grub_afs_sblock *sb,
                      struct grub_afs_blockrun *run)
 {
-  return ((grub_afs_off_t) U32 (sb, run->group) * sb->block_per_group +
-          U16 (sb, run->start));
+  return ((grub_afs_off_t) grub_afs_to_cpu32 (run->group)
+	  * sb->block_per_group + grub_afs_to_cpu16 (run->start));
 }
 
 static grub_err_t
@@ -248,25 +252,25 @@ grub_afs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
   struct grub_afs_sblock *sb = &node->data->sblock;
   struct grub_afs_datastream *ds = &node->inode.stream;
 
-  if (fileblock < U64 (sb, ds->max_direct_range))
+  if (fileblock < grub_afs_to_cpu64 (ds->max_direct_range))
     {
       int i;
 
       for (i = 0; i < GRUB_AFS_DIRECT_BLOCK_COUNT; i++)
         {
-          if (fileblock < U16 (sb, ds->direct[i].len))
+          if (fileblock < grub_afs_to_cpu16 (ds->direct[i].len))
             return grub_afs_run_to_num (sb, &ds->direct[i]) + fileblock;
-          fileblock -= U16 (sb, ds->direct[i].len);
+          fileblock -= grub_afs_to_cpu16 (ds->direct[i].len);
         }
     }
-  else if (fileblock < U64 (sb, ds->max_indirect_range))
+  else if (fileblock < grub_afs_to_cpu64 (ds->max_indirect_range))
     {
       int ptrs_per_blk = sb->block_size / sizeof (struct grub_afs_blockrun);
       struct grub_afs_blockrun indir[ptrs_per_blk];
       grub_afs_off_t blk = grub_afs_run_to_num (sb, &ds->indirect);
       int i;
 
-      fileblock -= U64 (sb, ds->max_direct_range);
+      fileblock -= grub_afs_to_cpu64 (ds->max_direct_range);
       for (i = 0; i < ds->indirect.len; i++, blk++)
         {
           int j;
@@ -279,10 +283,10 @@ grub_afs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
           for (j = 0; j < ptrs_per_blk; j++)
             {
-              if (fileblock < U16 (sb, indir[j].len))
+              if (fileblock < grub_afs_to_cpu16 (indir[j].len))
                 return grub_afs_run_to_num (sb, &indir[j]) + fileblock;
 
-              fileblock -= U16 (sb, indir[j].len);
+              fileblock -= grub_afs_to_cpu16 (indir[j].len);
             }
         }
     }
@@ -292,7 +296,7 @@ grub_afs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       struct grub_afs_blockrun indir[ptrs_per_blk];
 
       /* ([idblk][idptr]) ([dblk][dptr]) [blk]  */
-      int cur_pos = fileblock - U64 (sb, ds->max_indirect_range);
+      int cur_pos = fileblock - grub_afs_to_cpu64 (ds->max_indirect_range);
 
       int dptr_size = GRUB_AFS_BLOCKS_PER_DI_RUN;
       int dblk_size = dptr_size * ptrs_per_blk;
@@ -334,8 +338,7 @@ grub_afs_read_file (grub_fshelp_node_t node,
 {
   return grub_fshelp_read_file (node->data->disk, node, read_hook,
 				pos, len, buf, grub_afs_read_block,
-                                U64 (&node->data->sblock,
-                                     node->inode.stream.size),
+                                grub_afs_to_cpu64 (node->inode.stream.size),
 				node->data->sblock.block_shift
                                 - GRUB_DISK_SECTOR_BITS);
 }
@@ -344,8 +347,7 @@ static char *
 grub_afs_read_symlink (grub_fshelp_node_t node)
 {
   char *ret;
-  struct grub_afs_sblock *sb = &node->data->sblock;
-  grub_afs_off_t size = U64 (sb, node->inode.stream.size);
+  grub_afs_off_t size = grub_afs_to_cpu64 (node->inode.stream.size);
 
   if (size == 0)
     {
@@ -374,27 +376,27 @@ grub_afs_iterate_dir (grub_fshelp_node_t dir,
   struct grub_afs_btree head;
   char node_data [GRUB_AFS_BNODE_SIZE];
   struct grub_afs_bnode *node = (struct grub_afs_bnode *) node_data;
-  struct grub_afs_sblock *sb = &dir->data->sblock;
   int i;
 
   if ((dir->inode.stream.size == 0)
-      || ((U32 (sb, dir->inode.mode) & GRUB_AFS_S_IFMT) != GRUB_AFS_S_IFDIR))
+      || ((grub_afs_to_cpu32 (dir->inode.mode) & GRUB_AFS_S_IFMT)
+	  != GRUB_AFS_S_IFDIR))
     return 0;
 
   grub_afs_read_file (dir, 0, 0, sizeof (head), (char *) &head);
   if (grub_errno)
     return 0;
 
-  grub_afs_read_file (dir, 0, U64 (sb, head.root),
+  grub_afs_read_file (dir, 0, grub_afs_to_cpu64 (head.root),
                       GRUB_AFS_BNODE_SIZE, (char *) node);
   if (grub_errno)
     return 0;
 
-  for (i = 0; i < (int) U32 (sb, head.tree_depth) - 1; i++)
+  for (i = 0; i < (int) grub_afs_to_cpu32 (head.tree_depth) - 1; i++)
     {
       grub_afs_bvalue_t blk;
 
-      blk = U64(sb, B_KEY_VALUE_OFFSET (node) [0]);
+      blk = grub_afs_to_cpu64(B_KEY_VALUE_OFFSET (node) [0]);
       grub_afs_read_file (dir, 0, blk, GRUB_AFS_BNODE_SIZE, (char *) node);
       if (grub_errno)
         return 0;
@@ -411,8 +413,9 @@ grub_afs_iterate_dir (grub_fshelp_node_t dir,
 
           index = B_KEY_INDEX_OFFSET (node);
 
-          key_start = U16 (sb, (cur_key > 0) ? index[cur_key - 1] : 0);
-          key_size = U16 (sb, index[cur_key]) - key_start;
+	  key_start = (cur_key > 0)
+	    ? grub_afs_to_cpu16 (index[cur_key - 1]) : 0;
+          key_size = grub_afs_to_cpu16 (index[cur_key]) - key_start;
           if (key_size > 0)
             {
               char filename [key_size + 1];
@@ -425,14 +428,15 @@ grub_afs_iterate_dir (grub_fshelp_node_t dir,
 
               fdiro->data = dir->data;
               if (grub_afs_read_inode (dir->data,
-                                       U64 (sb, B_KEY_VALUE_OFFSET (node) [cur_key]),
+                                       grub_afs_to_cpu64
+				       (B_KEY_VALUE_OFFSET (node) [cur_key]),
                                        &fdiro->inode))
                 return 0;
 
               grub_memcpy (filename, &node->key_data[key_start], key_size);
               filename [key_size] = 0;
 
-              mode = (U32 (sb, fdiro->inode.mode) & GRUB_AFS_S_IFMT);
+              mode = (grub_afs_to_cpu32 (fdiro->inode.mode) & GRUB_AFS_S_IFMT);
               if (mode == GRUB_AFS_S_IFDIR)
                 type = GRUB_FSHELP_DIR;
               else if (mode == GRUB_AFS_S_IFREG)
@@ -447,12 +451,12 @@ grub_afs_iterate_dir (grub_fshelp_node_t dir,
             }
 
           cur_key++;
-          if (cur_key >= U32 (sb, node->key_count))
+          if (cur_key >= grub_afs_to_cpu32 (node->key_count))
             {
               if (node->right == GRUB_AFS_NULL_VAL)
                 break;
 
-              grub_afs_read_file (dir, 0, U64 (sb, node->right),
+              grub_afs_read_file (dir, 0, grub_afs_to_cpu64 (node->right),
                                   GRUB_AFS_BNODE_SIZE, (char *) node);
               if (grub_errno)
                 return 0;
@@ -468,47 +472,20 @@ grub_afs_iterate_dir (grub_fshelp_node_t dir,
 static int
 grub_afs_validate_sblock (struct grub_afs_sblock *sb)
 {
-  if (grub_le_to_cpu32 (sb->magic1) == GRUB_AFS_SBLOCK_MAGIC1)
+  if (grub_afs_to_cpu32 (sb->magic1) == GRUB_AFS_SBLOCK_MAGIC1)
     {
-#ifndef MODE_BFS
-      if (grub_le_to_cpu32 (sb->byte_order) != GRUB_AFS_BO_LITTLE_ENDIAN)
-        return 0;
-#endif
-
-      sb->byte_order = GRUB_AFS_BO_LITTLE_ENDIAN;
-      sb->magic2 = grub_le_to_cpu32 (sb->magic2);
-      sb->magic3 = grub_le_to_cpu32 (sb->magic3);
-      sb->block_shift = grub_le_to_cpu32 (sb->block_shift);
-      sb->block_size = grub_le_to_cpu32 (sb->block_size);
-      sb->used_blocks = grub_le_to_cpu64 (sb->used_blocks);
-      sb->num_blocks = grub_le_to_cpu64 (sb->num_blocks);
-      sb->inode_size = grub_le_to_cpu32 (sb->inode_size);
-      sb->alloc_group_count = grub_le_to_cpu32 (sb->alloc_group_count);
-      sb->alloc_group_shift = grub_le_to_cpu32 (sb->alloc_group_shift);
-      sb->block_per_group = grub_le_to_cpu32 (sb->block_per_group);
-      sb->alloc_group_count = grub_le_to_cpu32 (sb->alloc_group_count);
-      sb->log_size = grub_le_to_cpu32 (sb->log_size);
-    }
-  else if (grub_be_to_cpu32 (sb->magic1) == GRUB_AFS_SBLOCK_MAGIC1)
-    {
-#ifndef MODE_BFS
-      if (grub_be_to_cpu32 (sb->byte_order) != GRUB_AFS_BO_BIG_ENDIAN)
-        return 0;
-#endif
-
-      sb->byte_order = GRUB_AFS_BO_BIG_ENDIAN;
-      sb->magic2 = grub_be_to_cpu32 (sb->magic2);
-      sb->magic3 = grub_be_to_cpu32 (sb->magic3);
-      sb->block_shift = grub_be_to_cpu32 (sb->block_shift);
-      sb->block_size = grub_be_to_cpu32 (sb->block_size);
-      sb->used_blocks = grub_be_to_cpu64 (sb->used_blocks);
-      sb->num_blocks = grub_be_to_cpu64 (sb->num_blocks);
-      sb->inode_size = grub_be_to_cpu32 (sb->inode_size);
-      sb->alloc_group_count = grub_be_to_cpu32 (sb->alloc_group_count);
-      sb->alloc_group_shift = grub_be_to_cpu32 (sb->alloc_group_shift);
-      sb->block_per_group = grub_be_to_cpu32 (sb->block_per_group);
-      sb->alloc_group_count = grub_be_to_cpu32 (sb->alloc_group_count);
-      sb->log_size = grub_be_to_cpu32 (sb->log_size);
+      sb->magic2 = grub_afs_to_cpu32 (sb->magic2);
+      sb->magic3 = grub_afs_to_cpu32 (sb->magic3);
+      sb->block_shift = grub_afs_to_cpu32 (sb->block_shift);
+      sb->block_size = grub_afs_to_cpu32 (sb->block_size);
+      sb->used_blocks = grub_afs_to_cpu64 (sb->used_blocks);
+      sb->num_blocks = grub_afs_to_cpu64 (sb->num_blocks);
+      sb->inode_size = grub_afs_to_cpu32 (sb->inode_size);
+      sb->alloc_group_count = grub_afs_to_cpu32 (sb->alloc_group_count);
+      sb->alloc_group_shift = grub_afs_to_cpu32 (sb->alloc_group_shift);
+      sb->block_per_group = grub_afs_to_cpu32 (sb->block_per_group);
+      sb->alloc_group_count = grub_afs_to_cpu32 (sb->alloc_group_count);
+      sb->log_size = grub_afs_to_cpu32 (sb->log_size);
     }
   else
     return 0;
@@ -529,8 +506,8 @@ grub_afs_validate_sblock (struct grub_afs_sblock *sb)
       || ((grub_uint32_t) (1 << sb->alloc_group_shift) !=
 	  sb->block_per_group * sb->block_size)
       || (sb->alloc_group_count * sb->block_per_group < sb->num_blocks)
-      || (U16 (sb, sb->log_block.len) != sb->log_size)
-      || (U32 (sb, sb->valid_log_blocks) > sb->log_size)
+      || (grub_afs_to_cpu16 (sb->log_block.len) != sb->log_size)
+      || (grub_afs_to_cpu32 (sb->valid_log_blocks) > sb->log_size)
 #endif
       )
     return 0;
@@ -594,7 +571,7 @@ grub_afs_open (struct grub_file *file, const char *name)
   grub_memcpy (data->inode, &fdiro->inode, sizeof (struct grub_afs_inode));
   grub_free (fdiro);
 
-  file->size = U64 (&data->sblock, data->inode->stream.size);
+  file->size = grub_afs_to_cpu64 (data->inode->stream.size);
   file->data = data;
   file->offset = 0;
 
@@ -648,10 +625,10 @@ grub_afs_dir (grub_device_t device, const char *path,
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
       info.mtimeset = 1;
 #ifdef MODE_BFS
-      info.mtime = U64 (&data->sblock, node->inode.modified_time) >> 16;
+      info.mtime = grub_afs_to_cpu64 (node->inode.modified_time) >> 16;
 #else
-      info.mtime = grub_divmod64 (U64 (&data->sblock,
-				       node->inode.modified_time), 1000000, 0);
+      info.mtime = grub_divmod64 (grub_afs_to_cpu64 (node->inode.modified_time),
+				  1000000, 0);
 #endif
       grub_free (node);
       return hook (filename, &info);
@@ -713,8 +690,12 @@ static struct grub_fs grub_afs_fs = {
   .next = 0
 };
 
-#ifdef MODE_BFS
+#if defined (MODE_BIGENDIAN) && defined (MODE_BFS)
+GRUB_MOD_INIT (befs_be)
+#elif defined (MODE_BFS)
 GRUB_MOD_INIT (befs)
+#elif defined (MODE_BIGENDIAN)
+GRUB_MOD_INIT (afs_be)
 #else
 GRUB_MOD_INIT (afs)
 #endif
@@ -723,8 +704,12 @@ GRUB_MOD_INIT (afs)
   my_mod = mod;
 }
 
-#ifdef MODE_BFS
+#if defined (MODE_BIGENDIAN) && defined (MODE_BFS)
+GRUB_MOD_FINI (befs_be)
+#elif defined (MODE_BFS)
 GRUB_MOD_FINI (befs)
+#elif defined (MODE_BIGENDIAN)
+GRUB_MOD_FINI (afs_be)
 #else
 GRUB_MOD_FINI (afs)
 #endif

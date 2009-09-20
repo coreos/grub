@@ -73,23 +73,11 @@ case x${GRUB_TERMINAL_OUTPUT} in
     # Make the font accessible
     prepare_grub_to_access_device `${grub_probe} --target=device ${GRUB_FONT_PATH}`
 
-    # Pick a video backend
-    video_backend=
-    for i in vbe ; do
-      if test -e ${grub_prefix}/$i.mod ; then
-        video_backend=$i
-        break
-      fi
-    done
-    if ! [ "${video_backend}" ] ; then
-      echo "No suitable backend could be found for gfxterm." >&2 ; exit 1
-    fi
-
     cat << EOF
 if loadfont `make_system_path_relative_to_its_root ${GRUB_FONT_PATH}` ; then
   set gfxmode=${GRUB_GFXMODE}
   insmod gfxterm
-  insmod ${video_backend}
+  insmod ${GRUB_VIDEO_BACKEND}
   if terminal_output gfxterm ; then true ; else
     # For backward compatibility with versions of terminal.mod that don't
     # understand terminal_output

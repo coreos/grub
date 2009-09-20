@@ -131,4 +131,52 @@ grub_video_fbblit_blend_index_RGBA8888 (struct grub_video_fbblit_info *dst,
 					int width, int height,
 					int offset_x, int offset_y);
 
+void
+grub_video_fbblit_replace_32bit_1bit (struct grub_video_fbblit_info *dst,
+				      struct grub_video_fbblit_info *src,
+				      int x, int y,
+				      int width, int height,
+				      int offset_x, int offset_y);
+
+void
+grub_video_fbblit_replace_24bit_1bit (struct grub_video_fbblit_info *dst,
+				      struct grub_video_fbblit_info *src,
+				      int x, int y,
+				      int width, int height,
+				      int offset_x, int offset_y);
+
+void
+grub_video_fbblit_replace_16bit_1bit (struct grub_video_fbblit_info *dst,
+				      struct grub_video_fbblit_info *src,
+				      int x, int y,
+				      int width, int height,
+				      int offset_x, int offset_y);
+
+void
+grub_video_fbblit_replace_8bit_1bit (struct grub_video_fbblit_info *dst,
+				     struct grub_video_fbblit_info *src,
+				     int x, int y,
+				     int width, int height,
+				     int offset_x, int offset_y);
+
+void
+grub_video_fbblit_blend_XXXA8888_1bit (struct grub_video_fbblit_info *dst,
+				       struct grub_video_fbblit_info *src,
+				       int x, int y,
+				       int width, int height,
+				       int offset_x, int offset_y);
+
+void
+grub_video_fbblit_blend_XXX888_1bit (struct grub_video_fbblit_info *dst,
+				       struct grub_video_fbblit_info *src,
+				       int x, int y,
+				       int width, int height,
+				       int offset_x, int offset_y);
+
+void
+grub_video_fbblit_blend_XXX565_1bit (struct grub_video_fbblit_info *dst,
+				     struct grub_video_fbblit_info *src,
+				     int x, int y,
+				     int width, int height,
+				     int offset_x, int offset_y);
 #endif /* ! GRUB_FBBLIT_HEADER */

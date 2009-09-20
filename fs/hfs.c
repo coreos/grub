@@ -243,10 +243,6 @@ grub_hfs_read_file (struct grub_hfs_data *data,
   int i;
   int blockcnt;
 
-  /* Adjust len so it we can't read past the end of the file.  */
-  if (len > grub_le_to_cpu32 (data->size))
-    len = grub_le_to_cpu32 (data->size);
-
   blockcnt = ((len + pos)
 	      + data->blksz - 1) / data->blksz;
 

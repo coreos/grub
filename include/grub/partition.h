@@ -84,8 +84,8 @@ void EXPORT_FUNC(grub_partition_map_register) (grub_partition_map_t partmap);
 void EXPORT_FUNC(grub_partition_map_unregister) (grub_partition_map_t partmap);
 
 #ifdef GRUB_UTIL
-void grub_pc_partition_map_init (void);
-void grub_pc_partition_map_fini (void);
+void grub_msdos_partition_map_init (void);
+void grub_msdos_partition_map_fini (void);
 void grub_amiga_partition_map_init (void);
 void grub_amiga_partition_map_fini (void);
 void grub_apple_partition_map_init (void);

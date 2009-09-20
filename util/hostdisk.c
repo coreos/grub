@@ -19,7 +19,7 @@
 
 #include <grub/disk.h>
 #include <grub/partition.h>
-#include <grub/pc_partition.h>
+#include <grub/msdos_partition.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/util/misc.h>
@@ -947,9 +947,9 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     int find_partition (grub_disk_t disk __attribute__ ((unused)),
 			const grub_partition_t partition)
       {
- 	struct grub_pc_partition *pcdata = NULL;
+ 	struct grub_msdos_partition *pcdata = NULL;
 
-	if (strcmp (partition->partmap->name, "pc_partition_map") == 0)
+	if (strcmp (partition->partmap->name, "part_msdos") == 0)
 	  pcdata = partition->data;
 
 	if (pcdata)

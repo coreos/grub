@@ -122,6 +122,10 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 	      grub_errno = GRUB_ERR_NONE;
 	    }
 	  grub_free (assign);
+
+	  grub_sprintf (errnobuf, "%d", grub_errno);
+	  grub_env_set ("?", errnobuf);
+
 	  return 0;
 	}
     }

@@ -189,7 +189,7 @@ acorn_partition_map_get_name (const grub_partition_t p)
 /* Partition map type.  */
 static struct grub_partition_map grub_acorn_partition_map =
 {
-  .name = "Linux/ADFS partition map",
+  .name = "part_acorn",
   .iterate = acorn_partition_map_iterate,
   .probe = acorn_partition_map_probe,
   .get_name = acorn_partition_map_get_name

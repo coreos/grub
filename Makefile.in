@@ -111,7 +111,7 @@ enable_efiemu = @enable_efiemu@
 ### General variables.
 
 RMKFILES = $(addprefix conf/,common.rmk i386-coreboot.rmk i386-efi.rmk \
-	i386-ieee1275.rmk i386-pc.rmk i386.rmk powerpc-ieee1275.rmk \
+	i386-qemu.rmk i386-ieee1275.rmk i386-pc.rmk i386.rmk powerpc-ieee1275.rmk \
 	sparc64-ieee1275.rmk x86_64-efi.rmk)
 
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
@@ -128,7 +128,8 @@ MOSTLYCLEANFILES =
 DISTCLEANFILES = config.status config.cache config.log config.h \
 	Makefile stamp-h include/grub/cpu include/grub/machine \
 	gensymlist.sh genkernsyms.sh build_env.mk
-MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES))
+MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES)) \
+	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in
 
 # The default target.
 all: all-local
@@ -325,10 +326,10 @@ uninstall:
 	  rm -f $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
 
-clean:
+clean: $(CLEAN_IMAGE_TARGETS) $(CLEAN_MODULE_TARGETS) $(CLEAN_UTILITY_TARGETS)
 	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
-mostlyclean: clean
+mostlyclean: clean $(MOSTLYCLEAN_IMAGE_TARGETS) $(MOSTLYCLEAN_MODULE_TARGETS) $(MOSTLYCLEAN_UTILITY_TARGETS)
 	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 distclean: mostlyclean

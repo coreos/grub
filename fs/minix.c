@@ -193,8 +193,8 @@ grub_minix_read_file (struct grub_minix_data *data,
   int blockcnt;
 
   /* Adjust len so it we can't read past the end of the file.  */
-  if (len > GRUB_MINIX_INODE_SIZE (data))
-    len = GRUB_MINIX_INODE_SIZE (data);
+  if (len + pos > GRUB_MINIX_INODE_SIZE (data))
+    len = GRUB_MINIX_INODE_SIZE (data) - pos;
 
   blockcnt = (len + pos + GRUB_MINIX_BSIZE - 1) / GRUB_MINIX_BSIZE;
 

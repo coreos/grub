@@ -140,6 +140,11 @@ prepare_grub_to_access_device ()
     echo "insmod ${module}"
   done
 
+  fs="`${grub_probe} --device ${device} --target=fs`"
+  for module in ${fs} ; do
+    echo "insmod ${module}"
+  done
+
   # If there's a filesystem UUID that GRUB is capable of identifying, use it;
   # otherwise set root as per value in device.map.
   echo "set root=`${grub_probe} --device ${device} --target=drive`"

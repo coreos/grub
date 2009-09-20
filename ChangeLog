@@ -1,3 +1,683 @@
+2009-09-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* mmap/mmap.c (grub_cmd_badram): Fix off-by-one error.
+
+2009-09-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* aclocal.m4 (AC_LANG_PROGRAM): New macro.  Overrides stock
+	AC_LANG_PROGRAM from autoconf.
+	(grub_ASM_USCORE, grub_PROG_OBJCOPY_ABSOLUTE): Add missing
+	prototypes (fixes warning).
+
+	* configure.ac: Add `-Werror' to TARGET_CFLAGS unless
+	`--disable-werror' was used.
+
+2009-09-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* partmap/msdos.c (pc_partition_map_iterate): Fix possible use of
+	uninitialized `lastaddr'.
+
+2009-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* partmap/msdos.c (pc_partition_map_iterate): Detect and break loops.
+
+2009-09-14  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/test.c (get_fileinfo): Return immediately if
+	grub_fs_probe fails.
+
+2009-09-14  José Martínez  <xosemp@gmail.com>
+
+	* commands/acpi.c (grub_cmd_acpi): Fix loading ACPI tables from file.
+
+2009-09-14  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/30_os-prober.in: Cope with Windows 7 in os-prober
+	output.
+
+2009-09-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Remove --enable-grub-pe2elf.  Only build
+	grub-pe2elf when needed by the build system itself.
+	* conf/common.rmk: Remove $(enable_grub_pe2elf) check.
+
+2009-09-12  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Bump version to 1.97~beta3.
+	* docs/version.texi: Likewise.
+
+2009-09-12  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* video/i386/pc/vbe.c (grub_vbe_get_video_mode_info): Move packed
+	mode special handling (grub_vbe_bios_set_dac_palette_width() call)
+	from here ...
+	* loader/i386/linux.c [GRUB_MACHINE_PCBIOS]
+	(grub_linux_setup_video): ... to here (with some adjustments).
+
+2009-09-12  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix memory corruption issue (spotted by Colin Watson).
+
+	* kern/i386/pc/startup.S (grub_vbe_bios_getset_dac_palette): Fix bug
+	causing returned size to be stored in an incorrect memory location.
+	Fix use of uninitialized value when storing the returned size.
+
+2009-09-12  Yves Blusseau  <blusseau@zetam.org>
+
+	Change clean rules to properly remove files
+
+	* genmk.rb: add new clean rules
+	* Makefile.in (clean): add the new targets
+	(mostlyclean): likewise
+
+2009-09-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/ntfs.h (struct grub_fshelp_node): Change `size'
+	to grub_uint64_t.
+	* fs/ntfs.c (init_file): Understand 64-bit sizes for
+	non-resident files.
+
+2009-09-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: Don't look for help2man when cross-compiling.  Fixes
+	part of bug #27349.
+
+2009-09-10  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkconfig.in: Make the created config mode 400 and
+	print a warning if it fails.
+
+2009-09-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub.d/40_custom.in: Ask user to type custom entries below
+	comment, rather than below 'exec tail' line.
+
+2009-09-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/40_custom.in: Make sure that the explanatory text is
+	visible in grub.cfg.
+
+2009-09-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/40_custom.in: Make it a little clearer how to use this
+	file.
+
+2009-09-10  Felix Zielcke  <fzielcke@z-51.de>
+
+	* docs/grub.cfg: Add an example menu entry for memtest86+.
+
+2009-09-09  Felix Zielcke  <fzielcke@z-51.de>
+
+	* config.guess: Update to latest version from config git.
+	* config.sub: Likewise.
+
+2009-09-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* script/sh/execute.c (grub_script_execute_cmdline): Set "?" in
+	unknown-command case.  Fixes bug #27320.
+
+2009-09-08  Felix Zielcke  <fzielcke@z-51.de>
+
+	* kern/rescue_parser.c (grub_rescue_parse_line): Only suggest to try
+	`help' if the command exists.
+
+2009-09-06  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* INSTALL: Require GCC 4.1.3 or later.
+
+2009-09-06  Yves Blusseau  <blusseau@zetam.org>
+
+	* Makefile.in (RMKFILES): add i386-qemu.rmk
+	(MAINTAINER_CLEANFILES): add $(srcdir)/DISTLIST $(srcdir)/config.h.in
+	$(srcdir)/stamp-h.in
+
+2009-09-05  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-probe.c (probe): Comment out buggy codepath, which
+	was unexpectedly enabled by Colin Watson's 2009-09-02 fix.  This
+	should be re-enabled after 1.97.
+
+2009-09-05  Felix Zielcke  <fzielcke@z-51.de>
+
+	* gendistlist.sh: Add `grub-dumpdevtree' and `*.lua' to the list
+	find searches for.
+
+2009-09-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/xnu.c (grub_cpu_xnu_fill_devicetree): Remove
+	unnecessary calls to grub_error.
+
+2009-09-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* NEWS: Mention `keystatus' and Unicode fonts.
+
+2009-09-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Bump version to 1.97~beta2.
+	* docs/version.texi: Likewise.
+
+2009-09-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: By default, GCC 4.4 generates .eh_frame sections
+	containing unwind information in some cases where it previously did
+	not. Use -fno-dwarf2-cfi-asm if available to restore the old
+	behaviour. See http://patchwork.kernel.org/patch/8555/ for related
+	discussion.
+
+2009-09-02  Yves BLUSSEAU  <blusseau@zetam.org>
+
+	Embedding loadenv module into grub-emu
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): add lib/envblk.c and
+	commands/loadenv.c
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Likewise
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise
+
+2009-09-03  Magnus Granberg  <zorry@ume.nu>
+
+	* aclocal.m4: Add grub_CHECK_PIE. It check if the compiler
+	include -fPIE in the default specs.
+	* configure.ac: Check if pie_possible is yes and add -fno-PIE
+	to TARGET_CFLAGS.
+
+2009-09-03  Felix Zielcke  <fzielcke@z-51.de>
+
+	* INSTALL: Note that GNU Bison 2.3 or later is required.
+
+2009-09-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/i386/pc/startup.S: Fix typo.
+
+2009-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* efiemu/loadcore.c (SUFFIX (grub_efiemu_loadcore_load)): Fix style
+	according to GCS.
+
+2009-09-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Naming convention): Describe one-based partition
+	numbering.
+	(Device syntax): Likewise.
+	(File name syntax): Likewise.
+	(Block list syntax): Likewise.
+	(Making a GRUB bootable CD-ROM): Talk about grub.cfg rather than
+	menu.lst.
+	(File name syntax): Likewise.
+	(Command-line and menu entry commands): Document acpi, blocklist,
+	crc, export, insmod, keystatus, ls, set, and unset commands.
+
+2009-09-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/keystatus.c (GRUB_MOD_INIT (keystatus)): Adjust summary
+	to avoid implying that only one of --shift, --ctrl, or --alt may be
+	used.
+
+2009-09-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-probe.c (probe): Test st.st_mode using S_ISREG macro
+	rather than comparing against S_IFREG, which will almost never work.
+
+2009-09-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/loadenv.c (check_blocklists): Fix off-by-one error.
+	(write_blocklists): Likewise.
+
+2009-09-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* script/lua/grub_lua.h (fputs): Supply a format string as the first
+	argument to grub_printf.
+
+2009-09-01  Felix Zielcke  <fzielcke@z-51.de>
+
+	* genmk.rb: Add quotes around $(TARGET_OBJ2ELF) to cope with
+	 non GNU test.
+
+2009-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/file.c (grub_file_read): Spelling fix
+
+2009-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/bsdXX.c (SUFFIX (grub_freebsd_load_elfmodule)): Fix
+	loading of headers in some cases.
+
+2009-08-30  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Bump version to 1.97~beta1.
+	* docs/version.texi: Likewise.
+
+2009-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i386/xnu.h: Add license header.
+	include grub/err.h explicitly.
+
+2009-08-29  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub.d/10_freebsd.in: Detect `ufs1' and `ufs2' and map them
+	to `ufs' in the vfs.root.mountfrom kernel parameter.
+
+2009-08-29  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* term/i386/pc/serial.c: Include `<grub/machine/memory.h>'.
+
+	[GRUB_MACHINE_PCBIOS] (serial_hw_io_addr): Macroify initialization
+	value (0x0400 -> GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR).
+
+	[! GRUB_MACHINE_PCBIOS] (GRUB_SERIAL_PORT_NUM): Calculate using
+	`ARRAY_SIZE' macro.
+
+2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/file.c (grub_file_read): Check offset.
+	* fs/hfs.c (grub_hfs_read_file): Remove unnecessary offset check.
+	* fs/jfs.c (grub_jfs_read_file): Likewise.
+	* fs/ntfs.c (grub_ntfs_read): Likewise.
+	* fs/reiserfs.c (grub_reiserfs_read): Likewise.
+	* fs/minix.c (grub_minix_read_file): Correct offset check.
+	* fs/ufs.c (grub_ufs_read_file): Likewise.
+
+2009-08-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* term/i386/pc/console.c (bios_data_area): Cast
+	GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR explicitly.
+
+2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	1-bit optimised blitters.
+
+	* include/grub/fbblit.h (grub_video_fbblit_replace_32bit_1bit): New
+	prototype.
+	(grub_video_fbblit_replace_24bit_1bit): Likewise.
+	(grub_video_fbblit_replace_16bit_1bit): Likewise.
+	(grub_video_fbblit_replace_8bit_1bit): Likewise.
+	(grub_video_fbblit_blend_XXXA8888_1bit): Likewise.
+	(grub_video_fbblit_blend_XXX888_1bit): Likewise.
+	(grub_video_fbblit_blend_XXX565_1bit): Likewise.
+	* video/fb/fbblit.c (grub_video_fbblit_replace_32bit_1bit): New
+	function.
+	(grub_video_fbblit_replace_24bit_1bit): Likewise.
+	(grub_video_fbblit_replace_16bit_1bit): Likewise.
+	(grub_video_fbblit_replace_8bit_1bit): Likewise.
+	(grub_video_fbblit_blend_XXXA8888_1bit): Likewise.
+	(grub_video_fbblit_blend_XXX888_1bit): Likewise.
+	(grub_video_fbblit_blend_XXX565_1bit): Likewise.
+	* video/fb/video_fb.c (common_blitter): Use 1-bit optimised blitters
+	when possible.
+	* video/video.c (grub_video_get_blit_format): Return
+	GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED if bpp = 1.
+
+2009-08-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* normal/cmdline.c (grub_cmdline_get): Supply a format string as
+	the first argument to grub_printf.
+
+2009-08-28  Colin Watson  <cjwatson@ubuntu.com>
+2009-08-28  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Add `getkeystatus' terminal method.  Add a new `keystatus' command
+	to query it.
+
+	* include/grub/term.h (GRUB_TERM_STATUS_SHIFT,
+	GRUB_TERM_STATUS_CTRL, GRUB_TERM_STATUS_ALT): Definitions for
+	modifier key bitmasks.
+	(struct grub_term_input): Add `getkeystatus' member.
+	(grub_getkeystatus): Add prototype.
+	* kern/term.c (grub_getkeystatus): New function.
+
+	* include/grub/i386/pc/memory.h
+	(GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR): New macro.
+	(struct grub_machine_bios_data_area): Define necessary parts of BIOS
+	Data Area layout.
+	* term/i386/pc/console.c (grub_console_getkeystatus): New function.
+	(grub_console_term_input): Set `getkeystatus' member.
+	* term/usb_keyboard.c (grub_usb_hid): Macroify HID protocol
+	constants.
+	(grub_usb_keyboard_getreport): Likewise.
+	(grub_usb_keyboard_checkkey): Likewise.
+	(grub_usb_keyboard_getkeystatus): New function.
+	(grub_usb_keyboard_term): Set `getkeystatus' member.
+
+	* commands/keystatus.c: New file.
+	* conf/common.rmk (pkglib_MODULES): Add keystatus.mod.
+	(keystatus_mod_SOURCES): New variable.
+	(keystatus_mod_CFLAGS): Likewise.
+	(keystatus_mod_LDFLAGS): Likewise.
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Add
+	commands/keystatus.c.
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
+
+2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Split befs.mod and afs.mod into *_be.mod and *.mod
+
+	* conf/common.rmk (grub_probe_SOURCES): Add afs_be.c and befs_be.c.
+	(grub_fstest_SOURCES): Likewise.
+	(pkglib_MODULES): Add afs_be.mod and befs_be.mod.
+	(afs_be_mod_SOURCES): New variable.
+	(afs_be_mod_CFLAGS): Likewise.
+	(afs_be_mod_LDFLAGS): Likewise.
+	(befs_be_mod_SOURCES): Likewise.
+	(befs_be_mod_CFLAGS): Likewise.
+	(befs_be_mod_LDFLAGS): Likewise.
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Add afs_be.c and befs_be.c.
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Likewise.
+	(grub_emu_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
+	* fs/afs_be.c: New file.
+	* fs/befs_be.c: New file.
+	* fs/afs.c (GRUB_AFS_FSNAME_SUFFIX): New definition.
+	(GRUB_AFS_FSNAME): Use GRUB_AFS_FSNAME_SUFFIX.
+	(U16): Replaced with ...
+	(grub_afs_to_cpu16): ...this. All users updated.
+	(U32): Replaced with ...
+	(grub_afs_to_cpu32): ...this. All users updated.
+	(U64): Replaced with ...
+	(grub_afs_to_cpu64): ...this. All users updated.
+	(GRUB_AFS_BO_LITTLE_ENDIAN): Remove.
+	(GRUB_AFS_BO_BIG_ENDIAN): Likewise.
+	(grub_afs_validate_sblock): Check only one endianness.
+	(GRUB_MOD_INIT (befs)) [MODE_BIGENDIAN && MODE_BFS]: Rename to ..
+	(GRUB_MOD_INIT (befs_be)) [MODE_BIGENDIAN && MODE_BFS]: ... this.
+	(GRUB_MOD_INIT (afs)) [MODE_BIGENDIAN && !MODE_BFS]: Rename to ..
+	(GRUB_MOD_INIT (afs_be)) [MODE_BIGENDIAN && !MODE_BFS]: ... this.
+	(GRUB_MOD_FINI (befs)) [MODE_BIGENDIAN && MODE_BFS]: Rename to ..
+	(GRUB_MOD_FINI (befs_be)) [MODE_BIGENDIAN && MODE_BFS]: ... this.
+	(GRUB_MOD_FINI (afs)) [MODE_BIGENDIAN && !MODE_BFS]: Rename to ..
+	(GRUB_MOD_FINI (afs_be)) [MODE_BIGENDIAN && !MODE_BFS]: ... this.
+
+2009-08-26  Bean  <bean123ch@gmail.com>
+
+	* fs/xfs.c (GRUB_XFS_INO_INOINAG): Replace 1L with 1LL to support
+	64-bit number.
+	(GRUB_XFS_FSB_TO_BLOCK): Likewise.
+	(grub_xfs_inode_block): Change return type to grub_uint64_t.
+	(grub_xfs_read_inode): Change type of block to grub_uint64_t.
+
+2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	NetBSD memory map support.
+
+	* include/grub/i386/bsd.h (NETBSD_BTINFO_MEMMAP): New definition.
+	(grub_netbsd_btinfo_mmap_header): New structure.
+	(grub_netbsd_btinfo_mmap_entry): Likewise.
+	* loader/i386/bsd.c (grub_netbsd_boot): Pass memory map.
+
+2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Enable bsd.mod on coreboot.
+
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Add bsd.mod.
+	(bsd_mod_SOURCES): New variable.
+	(bsd_mod_CFLAGS): Likewise.
+	(bsd_mod_LDFLAGS): Likewise.
+	(bsd_mod_ASFLAGS): Likewise.
+	* loader/i386/bsd.c [!GRUB_MACHINE_PCBIOS]: Fix includes.
+	(grub_bsd_get_device) [!GRUB_MACHINE_PCBIOS]: Set *biosdev to 0xff.
+
+2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Cleanup NetBSD root support.
+
+	* loader/i386/bsd.c (grub_netbsd_boot): Remove call to
+	grub_bsd_get_device.
+	Fix typo.
+
+2009-08-25  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub.d/00_header.in: Move check for the video backend of
+	gfxterm from here ...
+	* util/grub-mkconfig.in: ... to here.  Enable gfxterm if there's
+	a suitable video backend.
+
+2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix breakage in grub-setup.
+
+	* util/i386/pc/grub-setup.c (setup): Use "part_msdos" instead of
+	"msdos_partition_map".
+
+2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix breakage in normal/auth.c.
+
+	* normal/auth.c (grub_iswordseparator): New function.
+
+2009-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Authentication support.
+
+	* commands/password.c: New file.
+	* conf/common.rmk (pkglib_MODULES): Add password.mod.
+	(password_mod_SOURCES): New variable.
+	(password_mod_CFLAGS): Likewise.
+	(password_mod_LDFLAGS): Likewise.
+	(normal_mod_SOURCES): Add normal/auth.c.
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Add commands/password.c and
+	normal/auth.c.
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
+	* include/grub/auth.h: New file.
+	* include/grub/err.h (grub_err_t): New enum value
+	GRUB_ERR_ACCESS_DENIED.
+	* include/grub/menu.h (grub_menu_entry): New fields 'restricted' and
+	'users'.
+	* include/grub/normal.h (grub_cmdline_get): New argument 'history'.
+	* normal/cmdline.c (grub_cmdline_get): New argument 'history'. All
+	users updated.
+	* normal/auth.c: New file.
+	* normal/main.c (grub_normal_add_menu_entry): Handle --users option.
+	(grub_cmdline_run): Don't allow to go to command line without
+	authentication.
+	* normal/menu.c (grub_menu_execute_entry): Handle restricted entries.
+	* normal/menu_entry.c (grub_menu_entry_run): Don't allow editing
+	menuentry without superuser rights.
+	* normal/menu_viewer.c (grub_menu_viewer_show_menu): Don't exit if
+	user isn't a superuser.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Save space by inlining misc.c functions.
+
+	* kern/misc.c (grub_iswordseparator): Made static.
+	* kern/misc.c (grub_strcat): Moved from here ...
+	* include/grub/misc.h (grub_strcat): ... here. Inlined.
+	* kern/misc.c (grub_strncat): Moved from here ...
+	* include/grub/misc.h (grub_strncat): ... here. Inlined.
+	* kern/misc.c (grub_strcasecmp): Moved from here ...
+	* include/grub/misc.h (grub_strcasecmp): ... here. Inlined.
+	* kern/misc.c (grub_strncasecmp): Moved from here ...
+	* include/grub/misc.h (grub_strncasecmp): ... here. Inlined.
+	* kern/misc.c (grub_isalpha): Moved from here ...
+	* include/grub/misc.h (grub_isalpha): ... here. Inlined.
+	* kern/misc.c (grub_isdigit): Moved from here ...
+	* include/grub/misc.h (grub_isdigit): ... here. Inlined.
+	* kern/misc.c (grub_isgraph): Moved from here ...
+	* include/grub/misc.h (grub_isgraph): ... here. Inlined.
+	* kern/misc.c (grub_tolower): Moved from here ...
+	* include/grub/misc.h (grub_tolower): ... here. Inlined.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* script/sh/function.c (grub_script_function_find): Cut error message
+	not to flood terminal.
+	* script/sh/lexer.c (grub_script_yylex): Remove command line length
+	limit.
+	* script/sh/script.c (grub_script_arg_add): Duplicate string.
+
+2009-08-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	* term/usb_keyboard.c (grub_usb_keyboard_getreport): Make
+	`report' grub_uint8_t *.
+	(grub_usb_keyboard_checkkey): Make `data' elements grub_uint8_t.
+	Use a 50-millisecond timeout rather than just repeating
+	grub_usb_keyboard_getreport 50 times.
+	(grub_usb_keyboard_getkey): Make `data' elements grub_uint8_t.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Rename *_partition_map to part_*
+
+	* partmap/acorn.c (grub_acorn_partition_map): Set name to 'part_acorn'.
+	* partmap/amiga.c (grub_amiga_partition_map): Set name to 'part_amiga'.
+	* partmap/apple.c (grub_apple_partition_map): Set name to 'part_apple'.
+	* partmap/gpt.c (grub_gpt_partition_map): Set name to 'part_gpt'.
+	All users updated.
+	* partmap/msdos.c (grub_msdos_partition_map): Set name to 'part_msdos'.
+	All users updated.
+	* partmap/sun.c (grub_sun_partition_map): Set name to 'part_sun'.
+	* util/grub-probe.c (probe_partmap): Don't transform partition name
+	to get module name.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix OpenBSD and NetBSD support.
+
+	* include/grub/i386/bsd.h (GRUB_BSD_TEMP_BUFFER): Change to resolve
+	memory address conflict.
+	(OPENBSD_MMAP_ACPI): New definition.
+	(OPENBSD_MMAP_NVS): Likewise.
+	* loader/i386/bsd.c (grub_openbsd_boot): Support OPENBSD_MMAP_ACPI
+	and OPENBSD_MMAP_NVS.
+	Add memory map terminator
+	Explicit cast when calling grub_unix_real_boot.
+	(grub_netbsd_boot): Explicit cast when calling grub_unix_real_boot.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Let user specify NetBSD root device.
+
+	* loader/i386/bsd.c (netbsd_root): New variable.
+	(netbsd_opts): New option 'root'.
+	(NETBSD_ROOT_ARG): New macro.
+	(grub_netbsd_boot): Use 'netbsd_root'.
+	(grub_bsd_unload): Free 'netbsd_root'.
+	(grub_cmd_netbsd): Fill 'netbsd_root'.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support for 64-bit NetBSD.
+
+	* loader/i386/bsd.c (grub_bsd_load_elf): Apply correct mask to entry
+	point when booting non-FreeBSD.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support --no-smp and --no-acpi for NetBSD.
+
+	* include/grub/i386/bsd.h (NETBSD_AB_NOSMP): New definition.
+	(NETBSD_AB_NOACPI): Likewise.
+	* loader/i386/bsd.c (netbsd_opts): New entries no-smp and no-acpi.
+	(netbsd_flags): Add NETBSD_AB_NOSMP, NETBSD_AB_NOACPI.
+
+2009-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/hfsplus.c (grub_hfsplus_mount): Don't ignore grub_hfsplus_read_file
+	errors.
+	(grub_hfsplus_btree_iterate_node): Don't ignore grub_hfsplus_read_file
+	errors. Call grub_error when needed.
+
+2009-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/search.c (search_fs): Try searching without autoload first.
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Load
+	filesystem module explicitly for faster booting.
+
+2009-08-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig.in: Export GRUB_DISABLE_OS_PROBER.
+
+2009-08-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/30_os-prober.in: Disable os-prober if
+	`GRUB_DISABLE_OS_PROBER' was set to true.
+
+2009-08-23  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* partmap/pc.c: Rename to ...
+	* partmap/msdos.c: ... this.  Update all users.
+	(grub_pc_partition_map): Rename to ...
+	(grub_msdos_partition_map): ... this.  Update all users.
+
+	* parttool/pcpart.c: Rename to ...
+	* parttool/msdospart.c: ... this.  Update all users.
+
+	* include/grub/pc_partition.h: Rename to ...
+	* include/grub/msdos_partition.h: ... this.  Update all users.
+	(grub_pc_partition_bsd_entry): Rename to ...
+	(grub_msdos_partition_bsd_entry): ... this.  Update all users.
+	(grub_pc_partition_disk_label): Rename to ...
+	(grub_msdos_partition_disk_label): ... this.  Update all users.
+	(grub_pc_partition_entry): Rename to ...
+	(grub_msdos_partition_entry): ... this.  Update all users.
+	(grub_pc_partition_mbr): Rename to ...
+	(grub_msdos_partition_mbr): ... this.  Update all users.
+	(grub_pc_partition): Rename to ...
+	(grub_msdos_partition): ... this.  Update all users.
+	(grub_pc_partition_is_empty): Rename to ...
+	(grub_msdos_partition_is_empty): ... this.  Update all users.
+	(grub_pc_partition_is_extended): Rename to ...
+	(grub_msdos_partition_is_extended): ... this.  Update all users.
+	(grub_pc_partition_is_bsd): Rename to ...
+	(grub_msdos_partition_is_bsd): ... this.  Update all users.
+
+	* conf/common.rmk (amiga_mod_SOURCES, amiga_mod_CFLAGS)
+	(amiga_mod_LDFLAGS, apple_mod_SOURCES, apple_mod_CFLAGS)
+	(apple_mod_LDFLAGS, msdos_mod_SOURCES, msdos_mod_CFLAGS)
+	(msdos_mod_LDFLAGS, sun_mod_SOURCES, sun_mod_CFLAGS)
+	(sun_mod_LDFLAGS, acorn_mod_SOURCES, acorn_mod_CFLAGS)
+	(acorn_mod_LDFLAGS, gpt_mod_SOURCES, gpt_mod_CFLAGS)
+	(gpt_mod_LDFLAGS): Rename to ...
+	(part_amiga_mod_SOURCES, part_amiga_mod_CFLAGS, part_amiga_mod_LDFLAGS)
+	(part_apple_mod_SOURCES, part_apple_mod_CFLAGS, part_apple_mod_LDFLAGS)
+	(part_msdos_mod_SOURCES, part_msdos_mod_CFLAGS, part_msdos_mod_LDFLAGS)
+	(part_sun_mod_SOURCES, part_sun_mod_CFLAGS, part_sun_mod_LDFLAGS)
+	(part_acorn_mod_SOURCES, part_acorn_mod_CFLAGS, part_acorn_mod_LDFLAGS)
+	(part_gpt_mod_SOURCES, part_gpt_mod_CFLAGS)
+	(part_gpt_mod_LDFLAGS): ... this.
+	(pkglib_MODULES): Prefix partition modules with `part_'.  Rename
+	`pcpart.mod' to `msdospart.mod'.
+	(pcpart_mod_SOURCES, pcpart_mod_CFLAGS, pcpart_mod_LDFLAGS): Rename
+	to ...
+	(msdospart_mod_SOURCES, msdospart_mod_CFLAGS)
+	(msdospart_mod_LDFLAGS): ... this.
+
+2009-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/bsd.c (freebsd_opts): Rewritten to use extcmd.
+	(openbsd_opts): Likewise.
+	(netbsd_opts): Likewise.
+	(freebsd_flags): Added 0 terminator.
+	(openbsd_flags): Likewise.
+	(netbsd_flags): Likewise.
+	(grub_bsd_parse_flags): Rewritten to use extcmd. All users updated.
+	(grub_cmd_freebsd): Transformed into extended command.
+	(grub_cmd_openbsd): Likewise.
+	(grub_cmd_netbsd): Likewise.
+	(cmd_freebsd): Changed type to grub_extcmd_t.
+	(cmd_openbsd): Likewise.
+	(cmd_netbsd): Likewise.
+	(GRUB_MOD_INIT (bsd)): Register grub_cmd_freebsd, grub_cmd_netbsd and
+	grub_cmd_openbsd as extended commands.
+	(GRUB_MOD_FINI (bsd)): Use grub_unregister_extcmd for cmd_freebsd,
+	cmd_netbsd and cmd_openbsd
+
 2009-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* commands/xnu_uuid.c (transform): Use grub_memcpy instead of memcpy.
@@ -438,7 +1118,7 @@
 2009-07-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/i386/pc/grub-setup.c (setup): Check that no partition is in
-	embeding zone, not only the first one.
+	embedding zone, not only the first one.
 
 2009-07-29  Joe Auricchio  <jauricchio@gmail.com>
 
@@ -511,7 +1191,7 @@
 	instead of WORDS_BIGENDIAN.  Use grub_le_to_cpu32(), so that the
 	case of little endian words becomes just an optimization.
 	Respect const modifier.
-	(md5_final): Use code that doesn't depend on endianess.
+	(md5_final): Use code that doesn't depend on endianness.
 
 	* include/grub/misc.h (ALIGN_UP): Cast align to the type of addr
 	to avoid loss of upper bits if align is unsigned and shorter

@@ -28,6 +28,7 @@
 #include <grub/parser.h>
 #include <grub/reader.h>
 #include <grub/menu_viewer.h>
+#include <grub/auth.h>
 
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
@@ -164,6 +165,7 @@ grub_normal_add_menu_entry (int argc, const char **args,
   int i;
   struct grub_menu_entry_class *classes_head;  /* Dummy head node for list.  */
   struct grub_menu_entry_class *classes_tail;
+  char *users = NULL;
 
   /* Allocate dummy head node for class list.  */
   classes_head = grub_zalloc (sizeof (struct grub_menu_entry_class));
@@ -216,6 +218,18 @@ grub_normal_add_menu_entry (int argc, const char **args,
 	      /* Link the tail to it, and make it the new tail.  */
 	      classes_tail->next = new_class;
 	      classes_tail = new_class;
+	      continue;
+	    }
+	  else if (grub_strcmp(arg, "users") == 0)
+	    {
+	      i++;
+	      users = grub_strdup (args[i]);
+	      if (! users)
+		{
+		  failed = 1;
+		  break;
+		}
+
 	      continue;
 	    }
 	  else
@@ -275,6 +289,9 @@ grub_normal_add_menu_entry (int argc, const char **args,
 
   (*last)->title = menutitle;
   (*last)->classes = classes_head;
+  if (users)
+    (*last)->restricted = 1;
+  (*last)->users = users;
   (*last)->sourcecode = menusourcecode;
 
   menu->size++;
@@ -465,7 +482,19 @@ quit:
 void
 grub_cmdline_run (int nested)
 {
-  grub_reader_t reader = grub_reader_get_current ();
+  grub_reader_t reader;
+  grub_err_t err = GRUB_ERR_NONE;
+
+  err = grub_auth_check_authentication (NULL);
+
+  if (err)
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+
+  reader = grub_reader_get_current ();
 
   reader_nested = nested;
   if (reader->init)
@@ -501,7 +530,7 @@ grub_normal_read_line (char **line, int cont)
   while (1)
     {
       cmdline[0] = 0;
-      if (grub_cmdline_get (prompt, cmdline, sizeof (cmdline), 0, 1))
+      if (grub_cmdline_get (prompt, cmdline, sizeof (cmdline), 0, 1, 1))
 	break;
 
       if ((reader_nested) || (cont))

@@ -140,6 +140,15 @@ grub_checkkey (void)
   return (grub_cur_term_input->checkkey) ();
 }
 
+int
+grub_getkeystatus (void)
+{
+  if (grub_cur_term_input->getkeystatus)
+    return (grub_cur_term_input->getkeystatus) ();
+  else
+    return 0;
+}
+
 grub_uint16_t
 grub_getxy (void)
 {

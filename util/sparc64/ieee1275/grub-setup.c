@@ -25,7 +25,7 @@
 #include <grub/file.h>
 #include <grub/fs.h>
 #include <grub/partition.h>
-#include <grub/pc_partition.h>
+#include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
 #include <grub/env.h>
 #include <grub/util/hostdisk.h>

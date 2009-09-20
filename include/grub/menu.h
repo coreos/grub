@@ -32,6 +32,12 @@ struct grub_menu_entry
   /* The title name.  */
   const char *title;
 
+  /* If set means not everybody is allowed to boot this entry.  */
+  int restricted;
+
+  /* Allowed users.  */
+  const char *users;
+
   /* The classes associated with the menu entry:
      used to choose an icon or other style attributes.
      This is a dummy head node for the linked list, so for an entry E,

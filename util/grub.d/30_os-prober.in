@@ -22,6 +22,10 @@ libdir=@libdir@
 
 . ${libdir}/grub/grub-mkconfig_lib
 
+if [ "x${GRUB_DISABLE_OS_PROBER}" = "xtrue" ]; then
+  exit 0
+fi
+
 if [ -z "`which os-prober 2> /dev/null`" -o -z "`which linux-boot-prober 2> /dev/null`" ] ; then
   # missing os-prober and/or linux-boot-prober
   exit 0
@@ -53,11 +57,16 @@ menuentry "${LONGNAME} (on ${DEVICE})" {
 EOF
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
 
-      if [ "${LONGNAME}" != "Windows Vista (loader)" ] ; then
-        cat << EOF
+      case ${LONGNAME} in
+	Windows\ Vista*|Windows\ 7*)
+	;;
+	*)
+	  cat << EOF
 	drivemap -s (hd0) \${root}
 EOF
-      fi
+	;;
+      esac
+
       cat <<EOF
 	chainloader +1
 }

@@ -290,8 +290,8 @@ grub_ufs_read_file (struct grub_ufs_data *data,
   int blockcnt;
 
   /* Adjust len so it we can't read past the end of the file.  */
-  if (len > INODE_SIZE (data))
-    len = INODE_SIZE (data);
+  if (len + pos > INODE_SIZE (data))
+    len = INODE_SIZE (data) - pos;
 
   blockcnt = (len + pos + UFS_BLKSZ (sblock) - 1) / UFS_BLKSZ (sblock);
 

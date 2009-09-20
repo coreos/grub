@@ -33,6 +33,7 @@
 #include <grub/video.h>
 #include <grub/video_fb.h>
 #include <grub/command.h>
+#include <grub/i386/pc/vbe.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
 #define GRUB_LINUX_CL_END_OFFSET	0x2000
@@ -415,6 +416,33 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   params->blue_field_pos = mode_info.blue_field_pos;
   params->reserved_mask_size = mode_info.reserved_mask_size;
   params->reserved_field_pos = mode_info.reserved_field_pos;
+
+
+#ifdef GRUB_MACHINE_PCBIOS
+  /* VESA packed modes may come with zeroed mask sizes, which need
+     to be set here according to DAC Palette width.  If we don't,
+     this results in Linux displaying a black screen.  */
+  if (mode_info.bpp <= 8)
+    {
+      struct grub_vbe_info_block controller_info;
+      int status;
+      int width = 8;
+
+      status = grub_vbe_bios_get_controller_info (&controller_info);
+
+      if (status == GRUB_VBE_STATUS_OK &&
+	  (controller_info.capabilities & GRUB_VBE_CAPABILITY_DACWIDTH))
+	status = grub_vbe_bios_set_dac_palette_width (&width);
+
+      if (status != GRUB_VBE_STATUS_OK)
+	/* 6 is default after mode reset.  */
+	width = 6;
+
+      params->red_mask_size = params->green_mask_size
+	= params->blue_mask_size = width;
+      params->reserved_mask_size = 0;
+    }
+#endif
 
   return 0;
 }

@@ -22,7 +22,7 @@
 #include <grub/mm.h>
 #include <grub/partition.h>
 #include <grub/dl.h>
-#include <grub/pc_partition.h>
+#include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
 
 static grub_uint8_t grub_gpt_magic[8] =
@@ -45,7 +45,7 @@ gpt_partition_map_iterate (grub_disk_t disk,
   struct grub_gpt_header gpt;
   struct grub_gpt_partentry entry;
   struct grub_disk raw;
-  struct grub_pc_partition_mbr mbr;
+  struct grub_msdos_partition_mbr mbr;
   grub_uint64_t entries;
   unsigned int i;
   int last_offset = 0;
@@ -176,7 +176,7 @@ gpt_partition_map_get_name (const grub_partition_t p)
 /* Partition map type.  */
 static struct grub_partition_map grub_gpt_partition_map =
   {
-    .name = "gpt_partition_map",
+    .name = "part_gpt",
     .iterate = gpt_partition_map_iterate,
     .probe = gpt_partition_map_probe,
     .get_name = gpt_partition_map_get_name

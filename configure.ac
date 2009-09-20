@@ -31,7 +31,7 @@ dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
 dnl type.
 
 
-AC_INIT([GRUB],[1.96],[bug-grub@gnu.org])
+AC_INIT([GRUB],[1.97~beta3],[bug-grub@gnu.org])
 AC_PREREQ(2.59)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
@@ -147,7 +147,6 @@ AC_PROG_MAKE_SET
 
 # These are not a "must".
 AC_PATH_PROG(RUBY, ruby)
-AC_PATH_PROG(HELP2MAN, help2man)
 
 #
 # Checks for host programs.
@@ -169,6 +168,12 @@ grub_apple_cc
 if test x$grub_cv_apple_cc = xyes ; then
   CFLAGS="$CFLAGS -DAPPLE_CC=1 -fnested-functions"
   ASFLAGS="$ASFLAGS -DAPPLE_CC=1"
+fi
+
+if test "x$cross_compiling" = xyes; then
+  AC_MSG_WARN([cannot generate manual pages while cross compiling])
+else
+  AC_PATH_PROG(HELP2MAN, help2man)
 fi
 
 # Check for functions.
@@ -245,6 +250,23 @@ if test "x$TARGET_CFLAGS" = x; then
     else
       TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
     fi
+  fi
+
+  # By default, GCC 4.4 generates .eh_frame sections containing unwind
+  # information in some cases where it previously did not. GRUB doesn't need
+  # these and they just use up vital space. Restore the old compiler
+  # behaviour.
+  AC_CACHE_CHECK([whether -fno-dwarf2-cfi-asm works], [grub_cv_cc_fno_dwarf2_cfi_asm], [
+    SAVE_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS -fno-dwarf2-cfi-asm"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		      [grub_cv_cc_fno_dwarf2_cfi_asm=yes],
+		      [grub_cv_cc_fno_dwarf2_cfi_asm=no])
+    CFLAGS="$SAVE_CFLAGS"
+  ])
+
+  if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
+    TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
   fi
 fi
 
@@ -346,6 +368,14 @@ fi
 # Need __enable_execute_stack() for nested function trampolines?
 grub_CHECK_ENABLE_EXECUTE_STACK
 
+# Position independent executable.
+grub_CHECK_PIE
+[# Need that, because some distributions ship compilers that include
+# `-fPIE' in the default specs.
+if [ x"$pie_possible" = xyes ]; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIE"
+fi]
+
 # Smashing stack protector.
 grub_CHECK_STACK_PROTECTOR
 # Need that, because some distributions ship compilers that include
@@ -358,6 +388,13 @@ grub_CHECK_STACK_ARG_PROBE
 # stack allocations above some threshold.
 if test x"$sap_possible" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -mno-stack-arg-probe"
+fi
+
+AC_ARG_ENABLE([werror],
+	      [AS_HELP_STRING([--disable-werror],
+                             [do not use -Werror when building GRUB])])
+if test x"$enable_werror" != xno ; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -Werror"
 fi
 
 AC_SUBST(TARGET_CFLAGS)
@@ -527,11 +564,6 @@ enable_grub_fstest=no
 fi
 AC_SUBST([enable_grub_fstest])
 
-AC_ARG_ENABLE([grub-pe2elf],
-	      [AS_HELP_STRING([--enable-grub-pe2elf],
-                             [build and install the `grub-pe2elf' conversion utility])])
-AC_SUBST([enable_grub_pe2elf])
-
 AC_ARG_ENABLE([grub-mkfont],
 	      [AS_HELP_STRING([--enable-grub-mkfont],
                              [build and install the `grub-mkfont' utility (default=guessed)])])
@@ -595,13 +627,6 @@ if [ x"$enable_mm_debug" = xyes ]; then
 echo With memory debugging: Yes
 else
 echo With memory debugging: No
-fi
-if [ x"$enable_grub_pe2elf" = xyes ]; then
-echo grub-pe2elf will be built and installed
-elif [ x$TARGET_OBJ2ELF = xgrub-pe2elf ]; then
-echo grub-pe2elf will be built but not installed
-else
-echo grub-pe2elf will not be built
 fi
 if [ x"$efiemu_excuse" = x ]; then
 echo efiemu runtime: Yes

@@ -53,7 +53,8 @@ typedef enum
     GRUB_ERR_BAD_GZIP_DATA,
     GRUB_ERR_MENU,
     GRUB_ERR_TIMEOUT,
-    GRUB_ERR_IO
+    GRUB_ERR_IO,
+    GRUB_ERR_ACCESS_DENIED
   }
 grub_err_t;
 

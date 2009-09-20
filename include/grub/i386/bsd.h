@@ -29,7 +29,7 @@ enum bsd_kernel_types
     KERNEL_TYPE_NETBSD,
   };
 
-#define GRUB_BSD_TEMP_BUFFER	0x68000
+#define GRUB_BSD_TEMP_BUFFER   0x80000
 
 #define FREEBSD_RB_ASKNAME	(1 << 0)  /* ask for file name to reboot from */
 #define FREEBSD_RB_SINGLE       (1 << 1)  /* reboot to single user only */
@@ -157,6 +157,8 @@ struct grub_openbsd_bios_mmap
   grub_uint64_t len;
 #define	OPENBSD_MMAP_AVAILABLE	1
 #define	OPENBSD_MMAP_RESERVED 2
+#define	OPENBSD_MMAP_ACPI	3
+#define	OPENBSD_MMAP_NVS 	4
   grub_uint32_t type;
 };
 
@@ -189,6 +191,8 @@ struct grub_openbsd_bootargs
 #define NETBSD_AB_VERBOSE	(1 << 17) /* boot verbosely */
 #define NETBSD_AB_SILENT	(1 << 18) /* boot silently */
 #define NETBSD_AB_DEBUG		(1 << 19) /* boot with debug messages */
+#define NETBSD_AB_NOSMP		(1 << 28) /* Boot without SMP support.  */
+#define NETBSD_AB_NOACPI        (1 << 29) /* Boot without ACPI support.  */
 
 struct grub_netbsd_bootinfo
 {
@@ -199,11 +203,29 @@ struct grub_netbsd_bootinfo
 #define NETBSD_BTINFO_BOOTPATH		0
 #define NETBSD_BTINFO_ROOTDEVICE	1
 #define NETBSD_BTINFO_BOOTDISK		3
+#define NETBSD_BTINFO_MEMMAP		9
 
 struct grub_netbsd_btinfo_common
 {
   int len;
   int type;
+};
+
+struct grub_netbsd_btinfo_mmap_header
+{
+  struct grub_netbsd_btinfo_common common;
+  grub_uint32_t count;
+};
+
+struct grub_netbsd_btinfo_mmap_entry
+{
+  grub_uint64_t addr;
+  grub_uint64_t len;
+#define	NETBSD_MMAP_AVAILABLE	1
+#define	NETBSD_MMAP_RESERVED 	2
+#define	NETBSD_MMAP_ACPI	3
+#define	NETBSD_MMAP_NVS 	4
+  grub_uint32_t type;
 };
 
 struct grub_netbsd_btinfo_bootpath

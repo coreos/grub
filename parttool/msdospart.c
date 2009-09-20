@@ -22,7 +22,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/err.h>
-#include <grub/pc_partition.h>
+#include <grub/msdos_partition.h>
 #include <grub/device.h>
 #include <grub/disk.h>
 #include <grub/partition.h>
@@ -42,7 +42,7 @@ static grub_err_t grub_pcpart_boot (const grub_device_t dev,
 {
   int i, index;
   grub_partition_t part;
-  struct grub_pc_partition_mbr mbr;
+  struct grub_msdos_partition_mbr mbr;
 
   if (dev->disk->partition->offset)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "not a primary partition");
@@ -92,7 +92,7 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
   int index;
   grub_uint8_t type;
   grub_partition_t part;
-  struct grub_pc_partition_mbr mbr;
+  struct grub_msdos_partition_mbr mbr;
 
   index = dev->disk->partition->index;
   part = dev->disk->partition;
@@ -119,8 +119,8 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
 	type &= ~GRUB_PC_PARTITION_TYPE_HIDDEN_FLAG;
     }
 
-  if (grub_pc_partition_is_empty (type)
-      || grub_pc_partition_is_extended (type))
+  if (grub_msdos_partition_is_empty (type)
+      || grub_msdos_partition_is_extended (type))
     {
       dev->disk->partition = part;
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid type");
@@ -140,10 +140,10 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
 
 GRUB_MOD_INIT (pcpart)
 {
-  activate_table_handle = grub_parttool_register ("pc_partition_map",
+  activate_table_handle = grub_parttool_register ("part_msdos",
 						  grub_pcpart_boot,
 						  grub_pcpart_bootargs);
-  type_table_handle = grub_parttool_register ("pc_partition_map",
+  type_table_handle = grub_parttool_register ("part_msdos",
 					      grub_pcpart_type,
 					      grub_pcpart_typeargs);
 

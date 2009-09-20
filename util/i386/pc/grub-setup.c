@@ -25,7 +25,7 @@
 #include <grub/file.h>
 #include <grub/fs.h>
 #include <grub/partition.h>
-#include <grub/pc_partition.h>
+#include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
 #include <grub/env.h>
 #include <grub/util/hostdisk.h>
@@ -121,14 +121,14 @@ setup (const char *dir,
   int NESTED_FUNC_ATTR find_usable_region_msdos (grub_disk_t disk __attribute__ ((unused)),
 						 const grub_partition_t p)
     {
-      struct grub_pc_partition *pcdata = p->data;
+      struct grub_msdos_partition *pcdata = p->data;
 
       /* There's always an embed region, and it starts right after the MBR.  */
       embed_region.start = 1;
 
       /* For its end offset, include as many dummy partitions as we can.  */
-      if (! grub_pc_partition_is_empty (pcdata->dos_type)
-	  && ! grub_pc_partition_is_bsd (pcdata->dos_type)
+      if (! grub_msdos_partition_is_empty (pcdata->dos_type)
+	  && ! grub_msdos_partition_is_bsd (pcdata->dos_type)
 	  && embed_region.end > p->start)
 	embed_region.end = p->start;
 
@@ -279,15 +279,15 @@ setup (const char *dir,
       if (root_dev->disk->partition)
 	{
 	  if (strcmp (root_dev->disk->partition->partmap->name,
-		      "pc_partition_map") == 0)
+		      "part_msdos") == 0)
 	    {
-	      struct grub_pc_partition *pcdata =
+	      struct grub_msdos_partition *pcdata =
 		root_dev->disk->partition->data;
 	      dos_part = pcdata->dos_part;
 	      bsd_part = pcdata->bsd_part;
 	    }
 	  else if (strcmp (root_dev->disk->partition->partmap->name,
-			   "gpt_partition_map") == 0)
+			   "part_gpt") == 0)
 	    {
 	      dos_part = root_dev->disk->partition->index;
 	      bsd_part = -1;
@@ -338,12 +338,12 @@ setup (const char *dir,
       goto unable_to_embed;
     }
 
-  grub_partition_iterate (dest_dev->disk, (strcmp (dest_partmap, "pc_partition_map") ?
+  grub_partition_iterate (dest_dev->disk, (strcmp (dest_partmap, "part_msdos") ?
 					   find_usable_region_gpt : find_usable_region_msdos));
 
   if (embed_region.end == embed_region.start)
     {
-      if (! strcmp (dest_partmap, "pc_partition_map"))
+      if (! strcmp (dest_partmap, "part_msdos"))
 	grub_util_warn ("This msdos-style partition label has no post-MBR gap; embedding won't be possible!");
       else
 	grub_util_warn ("This GPT partition label has no BIOS Boot Partition; embedding won't be possible!");

@@ -543,7 +543,7 @@ init_file (struct grub_ntfs_file *mft, grub_uint32_t mftno)
       if (!pa[8])
 	mft->size = u32at (pa, 0x10);
       else
-	mft->size = u32at (pa, 0x30);
+	mft->size = u64at (pa, 0x30);
 
       if ((mft->attr.flags & AF_ALST) == 0)
 	mft->attr.attr_end = 0;	/*  Don't jump to attribute list */
@@ -969,15 +969,6 @@ grub_ntfs_read (grub_file_t file, char *buf, grub_size_t len)
   mft = &((struct grub_ntfs_data *) file->data)->cmft;
   if (file->read_hook)
     mft->attr.save_pos = 1;
-
-  if (file->offset > file->size)
-    {
-      grub_error (GRUB_ERR_BAD_FS, "Bad offset");
-      return -1;
-    }
-
-  if (file->offset + len > file->size)
-    len = file->size - file->offset;
 
   read_attr (&mft->attr, buf, file->offset, len, 1, file->read_hook);
   return (grub_errno) ? 0 : len;

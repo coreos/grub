@@ -18,13 +18,13 @@
  */
 
 #include <grub/partition.h>
-#include <grub/pc_partition.h>
+#include <grub/msdos_partition.h>
 #include <grub/disk.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/dl.h>
 
-static struct grub_partition_map grub_pc_partition_map;
+static struct grub_partition_map grub_msdos_partition_map;
 
 
 /* Parse the partition representation in STR and return a partition.  */
@@ -32,7 +32,7 @@ static grub_partition_t
 grub_partition_parse (const char *str)
 {
   grub_partition_t p;
-  struct grub_pc_partition *pcdata;
+  struct grub_msdos_partition *pcdata;
 
   char *s = (char *) str;
 
@@ -40,12 +40,12 @@ grub_partition_parse (const char *str)
   if (! p)
     return 0;
 
-  pcdata = (struct grub_pc_partition *) grub_malloc (sizeof (*pcdata));
+  pcdata = (struct grub_msdos_partition *) grub_malloc (sizeof (*pcdata));
   if (! pcdata)
     goto fail;
 
   p->data = pcdata;
-  p->partmap = &grub_pc_partition_map;
+  p->partmap = &grub_msdos_partition_map;
 
   /* Initialize some of the fields with invalid values.  */
   pcdata->bsd_part = pcdata->dos_type = pcdata->bsd_type = p->index = -1;
@@ -93,10 +93,12 @@ pc_partition_map_iterate (grub_disk_t disk,
 				       const grub_partition_t partition))
 {
   struct grub_partition p;
-  struct grub_pc_partition pcdata;
-  struct grub_pc_partition_mbr mbr;
-  struct grub_pc_partition_disk_label label;
+  struct grub_msdos_partition pcdata;
+  struct grub_msdos_partition_mbr mbr;
+  struct grub_msdos_partition_disk_label label;
   struct grub_disk raw;
+  int labeln = 0;
+  grub_disk_addr_t lastaddr;
 
   /* Enforce raw disk access.  */
   raw = *disk;
@@ -106,16 +108,32 @@ pc_partition_map_iterate (grub_disk_t disk,
   pcdata.ext_offset = 0;
   pcdata.dos_part = -1;
   p.data = &pcdata;
-  p.partmap = &grub_pc_partition_map;
+  p.partmap = &grub_msdos_partition_map;
+
+  /* Any value different than `p.offset' will satisfy the check during
+     first loop.  */
+  lastaddr = !p.offset;
 
   while (1)
     {
       int i;
-      struct grub_pc_partition_entry *e;
+      struct grub_msdos_partition_entry *e;
 
       /* Read the MBR.  */
       if (grub_disk_read (&raw, p.offset, 0, sizeof (mbr), &mbr))
 	goto finish;
+
+      /* This is our loop-detection algorithm. It works the following way:
+	 It saves last position which was a power of two. Then it compares the
+	 saved value with a current one. This way it's guaranteed that the loop
+	 will be broken by at most third walk.
+       */
+      if (labeln && lastaddr == p.offset)
+	return grub_error (GRUB_ERR_BAD_PART_TABLE, "loop detected");
+
+      labeln++;
+      if ((labeln & (labeln - 1)) == 0)
+	lastaddr = p.offset;
 
       /* Check if it is valid.  */
       if (mbr.signature != grub_cpu_to_le16 (GRUB_PC_PARTITION_SIGNATURE))
@@ -147,8 +165,8 @@ pc_partition_map_iterate (grub_disk_t disk,
 	    return grub_error (GRUB_ERR_BAD_PART_TABLE, "dummy mbr");
 
 	  /* If this partition is a normal one, call the hook.  */
-	  if (! grub_pc_partition_is_empty (e->type)
-	      && ! grub_pc_partition_is_extended (e->type))
+	  if (! grub_msdos_partition_is_empty (e->type)
+	      && ! grub_msdos_partition_is_extended (e->type))
 	    {
 	      pcdata.dos_part++;
 
@@ -156,7 +174,7 @@ pc_partition_map_iterate (grub_disk_t disk,
 		return 1;
 
 	      /* Check if this is a BSD partition.  */
-	      if (grub_pc_partition_is_bsd (e->type))
+	      if (grub_msdos_partition_is_bsd (e->type))
 		{
 		  /* Check if the BSD label is within the DOS partition.  */
 		  if (p.len <= GRUB_PC_PARTITION_BSD_LABEL_SECTOR)
@@ -186,7 +204,7 @@ pc_partition_map_iterate (grub_disk_t disk,
 		       pcdata.bsd_part < grub_cpu_to_le16 (label.num_partitions);
 		       pcdata.bsd_part++)
 		    {
-		      struct grub_pc_partition_bsd_entry *be
+		      struct grub_msdos_partition_bsd_entry *be
 			= label.entries + pcdata.bsd_part;
 
 		      p.start = grub_le_to_cpu32 (be->offset);
@@ -210,7 +228,7 @@ pc_partition_map_iterate (grub_disk_t disk,
 	{
 	  e = mbr.entries + i;
 
-	  if (grub_pc_partition_is_extended (e->type))
+	  if (grub_msdos_partition_is_extended (e->type))
 	    {
 	      p.offset = pcdata.ext_offset + grub_le_to_cpu32 (e->start);
 	      if (! pcdata.ext_offset)
@@ -234,14 +252,14 @@ static grub_partition_t
 pc_partition_map_probe (grub_disk_t disk, const char *str)
 {
   grub_partition_t p;
-  struct grub_pc_partition *pcdata;
+  struct grub_msdos_partition *pcdata;
 
   auto int find_func (grub_disk_t d, const grub_partition_t partition);
 
   int find_func (grub_disk_t d __attribute__ ((unused)),
 		 const grub_partition_t partition)
     {
-      struct grub_pc_partition *partdata = partition->data;
+      struct grub_msdos_partition *partdata = partition->data;
 
       if ((pcdata->dos_part == partdata->dos_part || pcdata->dos_part == -1)
 	  && pcdata->bsd_part == partdata->bsd_part)
@@ -283,7 +301,7 @@ static char *
 pc_partition_map_get_name (const grub_partition_t p)
 {
   char *name;
-  struct grub_pc_partition *pcdata = p->data;
+  struct grub_msdos_partition *pcdata = p->data;
 
   name = grub_malloc (13);
   if (! name)
@@ -301,9 +319,9 @@ pc_partition_map_get_name (const grub_partition_t p)
 
 
 /* Partition map type.  */
-static struct grub_partition_map grub_pc_partition_map =
+static struct grub_partition_map grub_msdos_partition_map =
   {
-    .name = "pc_partition_map",
+    .name = "part_msdos",
     .iterate = pc_partition_map_iterate,
     .probe = pc_partition_map_probe,
     .get_name = pc_partition_map_get_name
@@ -311,10 +329,10 @@ static struct grub_partition_map grub_pc_partition_map =
 
 GRUB_MOD_INIT(pc_partition_map)
 {
-  grub_partition_map_register (&grub_pc_partition_map);
+  grub_partition_map_register (&grub_msdos_partition_map);
 }
 
 GRUB_MOD_FINI(pc_partition_map)
 {
-  grub_partition_map_unregister (&grub_pc_partition_map);
+  grub_partition_map_unregister (&grub_msdos_partition_map);
 }

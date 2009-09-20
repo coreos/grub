@@ -25,7 +25,7 @@
 #include <grub/file.h>
 #include <grub/fs.h>
 #include <grub/partition.h>
-#include <grub/pc_partition.h>
+#include <grub/msdos_partition.h>
 #include <grub/util/hostdisk.h>
 #include <grub/util/getroot.h>
 #include <grub/term.h>
@@ -79,26 +79,13 @@ grub_refresh (void)
 static void
 probe_partmap (grub_disk_t disk)
 {
-  char *name;
-  char *underscore;
-
   if (disk->partition == NULL)
     {
       grub_util_info ("No partition map found for %s", disk->name);
       return;
     }
 
-  name = strdup (disk->partition->partmap->name);
-  if (! name)
-    grub_util_error ("Not enough memory");
-
-  underscore = strchr (name, '_');
-  if (! underscore)
-    grub_util_error ("Invalid partition map %s", name);
-
-  *underscore = '\0';
-  printf ("%s\n", name);
-  free (name);
+  printf ("%s\n", disk->partition->partmap->name);
 }
 
 static int
@@ -248,11 +235,14 @@ probe (const char *path, char *device_name)
 
   if (print == PRINT_FS)
     {
+      /* FIXME: `path' can't be used to read a file via GRUB facilities,
+         because it's not relative to its root.  */
+#if 0
       struct stat st;
 
       stat (path, &st);
 
-      if (st.st_mode == S_IFREG)
+      if (S_ISREG (st.st_mode))
 	{
 	  /* Regular file.  Verify that we can read it properly.  */
 
@@ -271,6 +261,8 @@ probe (const char *path, char *device_name)
 	  if (memcmp (filebuf_via_grub, filebuf_via_sys, file->size))
 	    grub_util_error ("files differ");
 	}
+#endif
+
       printf ("%s\n", fs->name);
     }
 

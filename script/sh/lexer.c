@@ -134,8 +134,6 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 {
   grub_parser_state_t newstate;
   char use;
-  char *buffer;
-  char *bp;
   struct grub_lexer_param *state = parsestate->lexerstate;
   int firstrun = 1;
 
@@ -212,6 +210,14 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
       /* Check if it is a text.  */
       if (check_textstate (newstate))
 	{
+	  char *buffer = NULL;
+	  int bufpos = 0;
+	  /* Buffer is initially large enough to hold most commands
+	     but extends automatically when needed.  */
+	  int bufsize = 128;
+
+	  buffer = grub_malloc (bufsize);
+
 	  /* In case the string is not quoted, this can be a one char
 	     length symbol.  */
 	  if (newstate == GRUB_PARSER_STATE_TEXT)
@@ -254,15 +260,11 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 		  }
 		}
 	      if (doexit)
-		break;
+		{
+		  grub_free (buffer);
+		  break;
+		}
 	    }
-
-	  /* XXX: Use a better size.  */
-	  buffer = grub_script_malloc (parsestate, 2048);
-	  if (! buffer)
-	    return 0;
-
-	  bp = buffer;
 
 	  /* Read one token, possible quoted.  */
 	  while (*state->script)
@@ -295,32 +297,47 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 		    }
 		  if (breakout)
 		    break;
-		  if (use)
-		    *(bp++) = use;
 		}
-	      else if (use)
-		*(bp++) = use;
+
+	      if (use)
+		{
+		  if (bufsize <= bufpos + 1)
+		    {
+		      bufsize <<= 1;
+		      buffer = grub_realloc (buffer, bufsize);
+		    }
+		  buffer[bufpos++] = use;
+		}
 
 	      state->state = newstate;
 	      nextchar (state);
 	    }
 
 	  /* A string of text was read in.  */
-	  *bp = '\0';
+	  if (bufsize <= bufpos + 1)
+	    {
+	      bufsize <<= 1;
+	      buffer = grub_realloc (buffer, bufsize);
+	    }
+
+	  buffer[bufpos++] = 0;
+
 	  grub_dprintf ("scripting", "token=`%s'\n", buffer);
 	  yylval->arg = grub_script_arg_add (parsestate, yylval->arg,
 					     GRUB_SCRIPT_ARG_TYPE_STR, buffer);
 
+	  grub_free (buffer);
 	}
       else if (newstate == GRUB_PARSER_STATE_VAR
 	       || newstate == GRUB_PARSER_STATE_QVAR)
 	{
-	  /* XXX: Use a better size.  */
-	  buffer = grub_script_malloc (parsestate, 2096);
-	  if (! buffer)
-	    return 0;
+	  char *buffer = NULL;
+	  int bufpos = 0;
+	  /* Buffer is initially large enough to hold most commands
+	     but extends automatically when needed.  */
+	  int bufsize = 128;
 
-	  bp = buffer;
+	  buffer = grub_malloc (bufsize);
 
 	  /* This is a variable, read the variable name.  */
 	  while (*state->script)
@@ -340,16 +357,33 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 		}
 
 	      if (use)
-		*(bp++) = use;
+		{
+		  if (bufsize <= bufpos + 1)
+		    {
+		      bufsize <<= 1;
+		      buffer = grub_realloc (buffer, bufsize);
+		    }
+		  buffer[bufpos++] = use;
+		}
+
 	      nextchar (state);
 	      state->state = newstate;
 	    }
 
-	  *bp = '\0';
+	  if (bufsize <= bufpos + 1)
+	    {
+	      bufsize <<= 1;
+	      buffer = grub_realloc (buffer, bufsize);
+	    }
+
+	  buffer[bufpos++] = 0;
+
 	  state->state = newstate;
 	  yylval->arg = grub_script_arg_add (parsestate, yylval->arg,
 					     GRUB_SCRIPT_ARG_TYPE_VAR, buffer);
 	  grub_dprintf ("scripting", "vartoken=`%s'\n", buffer);
+
+	  grub_free (buffer);
 	}
       else
 	{

@@ -37,8 +37,42 @@ void *EXPORT_FUNC(grub_memmove) (void *dest, const void *src, grub_size_t n);
 char *EXPORT_FUNC(grub_strcpy) (char *dest, const char *src);
 char *EXPORT_FUNC(grub_strncpy) (char *dest, const char *src, int c);
 char *EXPORT_FUNC(grub_stpcpy) (char *dest, const char *src);
-char *EXPORT_FUNC(grub_strcat) (char *dest, const char *src);
-char *EXPORT_FUNC(grub_strncat) (char *dest, const char *src, int c);
+
+static inline char *
+grub_strcat (char *dest, const char *src)
+{
+  char *p = dest;
+
+  while (*p)
+    p++;
+
+  while ((*p = *src) != '\0')
+    {
+      p++;
+      src++;
+    }
+
+  return dest;
+}
+
+static inline char *
+grub_strncat (char *dest, const char *src, int c)
+{
+  char *p = dest;
+
+  while (*p)
+    p++;
+
+  while ((*p = *src) != '\0' && c--)
+    {
+      p++;
+      src++;
+    }
+
+  *p = '\0';
+
+  return dest;
+}
 
 /* Prototypes for aliases.  */
 #if !defined (GRUB_UTIL) || !defined (APPLE_CC)
@@ -49,19 +83,41 @@ void *EXPORT_FUNC(memcpy) (void *dest, const void *src, grub_size_t n);
 int EXPORT_FUNC(grub_memcmp) (const void *s1, const void *s2, grub_size_t n);
 int EXPORT_FUNC(grub_strcmp) (const char *s1, const char *s2);
 int EXPORT_FUNC(grub_strncmp) (const char *s1, const char *s2, grub_size_t n);
-int EXPORT_FUNC(grub_strcasecmp) (const char *s1, const char *s2);
-int EXPORT_FUNC(grub_strncasecmp) (const char *s1, const char *s2, grub_size_t n);
+
 char *EXPORT_FUNC(grub_strchr) (const char *s, int c);
 char *EXPORT_FUNC(grub_strrchr) (const char *s, int c);
 int EXPORT_FUNC(grub_strword) (const char *s, const char *w);
 char *EXPORT_FUNC(grub_strstr) (const char *haystack, const char *needle);
-int EXPORT_FUNC(grub_iswordseparator) (int c);
 int EXPORT_FUNC(grub_isspace) (int c);
 int EXPORT_FUNC(grub_isprint) (int c);
-int EXPORT_FUNC(grub_isalpha) (int c);
-int EXPORT_FUNC(grub_isgraph) (int c);
-int EXPORT_FUNC(grub_isdigit) (int c);
-int EXPORT_FUNC(grub_tolower) (int c);
+
+static inline int
+grub_isalpha (int c)
+{
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
+
+static inline int
+grub_isgraph (int c)
+{
+  return (c >= '!' && c <= '~');
+}
+
+static inline int
+grub_isdigit (int c)
+{
+  return (c >= '0' && c <= '9');
+}
+
+static inline int
+grub_tolower (int c)
+{
+  if (c >= 'A' && c <= 'Z')
+    return c - 'A' + 'a';
+
+  return c;
+}
+
 static inline int
 grub_toupper (int c)
 {
@@ -70,6 +126,40 @@ grub_toupper (int c)
 
   return c;
 }
+
+static inline int
+grub_strcasecmp (const char *s1, const char *s2)
+{
+  while (*s1 && *s2)
+    {
+      if (grub_tolower (*s1) != grub_tolower (*s2))
+	break;
+
+      s1++;
+      s2++;
+    }
+
+  return (int) grub_tolower (*s1) - (int) grub_tolower (*s2);
+}
+
+static inline int
+grub_strncasecmp (const char *s1, const char *s2, grub_size_t n)
+{
+  if (n == 0)
+    return 0;
+
+  while (*s1 && *s2 && --n)
+    {
+      if (grub_tolower (*s1) != grub_tolower (*s2))
+	break;
+
+      s1++;
+      s2++;
+    }
+
+  return (int) grub_tolower (*s1) - (int) grub_tolower (*s2);
+}
+
 
 unsigned long EXPORT_FUNC(grub_strtoul) (const char *str, char **end, int base);
 unsigned long long EXPORT_FUNC(grub_strtoull) (const char *str, char **end, int base);

@@ -22,7 +22,7 @@
 #include <grub/dl.h>
 #include <grub/device.h>
 #include <grub/disk.h>
-#include <grub/pc_partition.h>
+#include <grub/msdos_partition.h>
 #include <grub/partition.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
@@ -60,7 +60,7 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
 		  int argc, char **args)
 {
   grub_device_t dev;
-  struct grub_pc_partition_mbr mbr;
+  struct grub_msdos_partition_mbr mbr;
   struct grub_partition *partition;
   grub_disk_addr_t first_sector;
   int numactive = 0;

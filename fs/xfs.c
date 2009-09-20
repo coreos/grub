@@ -160,13 +160,13 @@ static grub_dl_t my_mod;
 #define GRUB_XFS_INO_AGBITS(data)		\
   ((data)->sblock.log2_agblk + (data)->sblock.log2_inop)
 #define GRUB_XFS_INO_INOINAG(data, ino)		\
-  (grub_be_to_cpu64 (ino) & ((1 << GRUB_XFS_INO_AGBITS (data)) - 1))
+  (grub_be_to_cpu64 (ino) & ((1LL << GRUB_XFS_INO_AGBITS (data)) - 1))
 #define GRUB_XFS_INO_AG(data,ino)		\
   (grub_be_to_cpu64 (ino) >> GRUB_XFS_INO_AGBITS (data))
 
 #define GRUB_XFS_FSB_TO_BLOCK(data, fsb) \
   (((fsb) >> (data)->sblock.log2_agblk) * (data)->agsize \
- + ((fsb) & ((1 << (data)->sblock.log2_agblk) - 1)))
+ + ((fsb) & ((1LL << (data)->sblock.log2_agblk) - 1)))
 
 #define GRUB_XFS_EXTENT_OFFSET(exts,ex) \
 	((grub_be_to_cpu32 (exts[ex][0]) & ~(1 << 31)) << 23 \
@@ -185,7 +185,7 @@ static grub_dl_t my_mod;
 #define GRUB_XFS_NEXT_DIRENT(pos,len)		\
   (pos) + GRUB_XFS_ROUND_TO_DIRENT (8 + 1 + len + 2)
 
-static inline int
+static inline grub_uint64_t
 grub_xfs_inode_block (struct grub_xfs_data *data,
 		      grub_uint64_t ino)
 {
@@ -213,7 +213,7 @@ static grub_err_t
 grub_xfs_read_inode (struct grub_xfs_data *data, grub_uint64_t ino,
 		     struct grub_xfs_inode *inode)
 {
-  int block = grub_xfs_inode_block (data, ino);
+  grub_uint64_t block = grub_xfs_inode_block (data, ino);
   int offset = grub_xfs_inode_offset (data, ino);
 
   /* Read the inode.  */

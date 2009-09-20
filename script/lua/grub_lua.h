@@ -58,7 +58,7 @@
 #define setjmp		grub_setjmp
 #define longjmp		grub_longjmp
 
-#define fputs(s,f)	grub_printf(s)
+#define fputs(s,f)	grub_printf("%s", s)
 
 #define isdigit		grub_isdigit
 #define isalpha		grub_isalpha

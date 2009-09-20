@@ -99,7 +99,7 @@ grub_script_function_find (char *functionname)
       break;
 
   if (! func)
-    grub_error (GRUB_ERR_UNKNOWN_COMMAND, "unknown command `%s'", functionname);
+    grub_error (GRUB_ERR_UNKNOWN_COMMAND, "unknown command `%.20s'", functionname);
 
   return func;
 }

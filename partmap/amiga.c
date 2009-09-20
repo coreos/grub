@@ -198,7 +198,7 @@ amiga_partition_map_get_name (const grub_partition_t p)
 /* Partition map type.  */
 static struct grub_partition_map grub_amiga_partition_map =
   {
-    .name = "amiga_partition_map",
+    .name = "part_amiga",
     .iterate = amiga_partition_map_iterate,
     .probe = amiga_partition_map_probe,
     .get_name = amiga_partition_map_get_name
