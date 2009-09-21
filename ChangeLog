@@ -1,3 +1,7 @@
+2009-09-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/hostdisk.c: Fix a comment.
+
 2009-09-20  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Fix regression introduced in r2539.
