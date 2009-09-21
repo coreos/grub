@@ -1,5 +1,9 @@
 2009-09-21  Felix Zielcke  <fzielcke@z-51.de>
 
+	* kern/term.c: Fix indentation.
+
+2009-09-21  Felix Zielcke  <fzielcke@z-51.de>
+
 	* util/hostdisk.c: Fix a comment.
 
 2009-09-20  Robert Millan  <rmh.grub@aybabtu.com>
