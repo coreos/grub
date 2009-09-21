@@ -1,3 +1,22 @@
+2009-09-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	Build info documentation.  Some code borrowed from Automake.
+
+	* configure.ac: Check for makeinfo.
+	* Makefile.in (MAKEINFO, INFOS, info_INFOS): New variables.
+	(MAINTAINER_CLEANFILES): Add $(INFOS), docs/stamp-vti, and
+	docs/version.texi.
+	(MOSTLYCLEANFILES): Add vti.tmp.
+	(docs/version.texi, docs/stamp-vti): Update automatically.
+	(docs/grub.info): Build info documentation.  Use --force and ignore
+	errors for now.
+	(all-local): Add $(INFOS).
+	(install-local): Install info files.
+	(uninstall): Uninstall info files.
+	* docs/version.texi: Remove from revision control.  This file is
+	automatically generated on build now.
+	* gendistlist.sh: Add `*.info'.
+
 2009-09-21  Felix Zielcke  <fzielcke@z-51.de>
 
 	* kern/term.c: Fix indentation.

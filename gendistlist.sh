@@ -38,7 +38,8 @@ for dir in $DISTDIRS; do
   for d in `find $dir -type d | sed '/\/\.svn$/d;\/\.svn\//d' | sort`; do
     find $d -maxdepth 1 -name '*.[chSy]' -o -name '*.mk' -o -name '*.rmk' \
       -o -name '*.rb' -o -name '*.in' -o -name '*.tex' -o -name '*.texi' \
-      -o -name 'grub.cfg' -o -name 'README' -o -name '*.sc' -o -name 'mdate-sh' \
-      -o -name '*.sh' -o -name 'grub-dumpdevtree' -o -name '*.lua' | sort
+      -o -name '*.info' -o -name 'grub.cfg' -o -name 'README' \
+      -o -name '*.sc' -o -name 'mdate-sh' -o -name '*.sh' \
+      -o -name 'grub-dumpdevtree' -o -name '*.lua' | sort
   done
 done

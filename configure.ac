@@ -147,6 +147,7 @@ AC_PROG_MAKE_SET
 
 # These are not a "must".
 AC_PATH_PROG(RUBY, ruby)
+AC_PATH_PROG(MAKEINFO, makeinfo)
 
 #
 # Checks for host programs.

@@ -86,6 +86,10 @@ OBJCOPY = @OBJCOPY@
 STRIP = @STRIP@
 NM = @NM@
 RUBY = @RUBY@
+MAKEINFO = @MAKEINFO@
+ifeq (, $(MAKEINFO))
+MAKEINFO = true
+endif
 HELP2MAN = @HELP2MAN@
 ifeq (, $(HELP2MAN))
 HELP2MAN = true
@@ -122,6 +126,7 @@ PKGDATA = $(pkgdata_DATA)
 PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
 SCRIPTS = $(bin_SCRIPTS) $(sbin_SCRIPTS) $(grub-mkconfig_SCRIPTS) \
 	$(lib_SCRIPTS)
+INFOS = $(info_INFOS)
 
 CLEANFILES =
 MOSTLYCLEANFILES =
@@ -129,7 +134,7 @@ DISTCLEANFILES = config.status config.cache config.log config.h \
 	Makefile stamp-h include/grub/cpu include/grub/machine \
 	gensymlist.sh genkernsyms.sh build_env.mk
 MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES)) \
-	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in
+	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in $(INFOS)
 
 # The default target.
 all: all-local
@@ -167,6 +172,27 @@ handler.lst: $(HANDLERFILES)
 
 parttool.lst: $(PARTTOOLFILES)
 	cat $^ /dev/null | sort | uniq > $@
+
+info_INFOS += docs/grub.info
+
+MOSTLYCLEANFILES += vti.tmp
+MAINTAINER_CLEANFILES += docs/stamp-vti docs/version.texi
+docs/version.texi: docs/stamp-vti
+docs/stamp-vti: docs/grub.texi
+	(set `$(SHELL) $(srcdir)/docs/mdate-sh $<`; \
+	echo "@set UPDATED $$1 $$2 $$3"; \
+	echo "@set UPDATED-MONTH $$2 $$3"; \
+	echo "@set EDITION $(PACKAGE_VERSION)"; \
+	echo "@set VERSION $(PACKAGE_VERSION)") > vti.tmp
+	@cmp -s vti.tmp $(srcdir)/docs/version.texi \
+	  || (echo "Updating $(srcdir)/docs/version.texi"; \
+	      cp vti.tmp $(srcdir)/docs/version.texi)
+	-@rm -f vti.tmp
+	@cp $(srcdir)/docs/version.texi $@
+
+# Use --force until such time as the documentation is cleaned up.
+docs/grub.info: docs/grub.texi docs/version.texi docs/fdl.texi
+	$(MAKEINFO) --no-split --force $< -o $@ || :
 
 ifeq (, $(UNIFONT_BDF))
 else
@@ -207,7 +233,7 @@ pkglib_BUILDDIR += config.h grub_script.tab.h
 include_DATA += $(shell find $(srcdir)/include -name \*.h | sed -e "s,^$(srcdir)/,,g") \
 	include/grub/cpu include/grub/machine
 
-all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(MKFILES)
+all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES)
 
 install: install-local
 
@@ -285,6 +311,17 @@ install-local: all
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
+	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(infodir)
+	@list='$(info_INFOS)'; \
+	for file in $$list; do \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
+	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(infodir); \
+	  if (install-info --version && \
+	       install-info --version 2>&1 | sed 1q | grep -i -v debian) >/dev/null 2>&1; then \
+	    install-info --info-dir="$(DESTDIR)$(infodir)" "$(DESTDIR)$(infodir)/$$dest" || :; \
+	  fi; \
+	done
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" install
@@ -324,6 +361,19 @@ uninstall:
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  echo rm -f $(DESTDIR)$(libdir)/$$dest; \
 	  rm -f $(DESTDIR)$(libdir)/grub/$$dest; \
+	done
+	@list='$(info_INFOS)'; \
+	for file in $$list; do \
+	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  if (install-info --version && \
+	       install-info --version 2>&1 | sed 1q | grep -i -v debian) >/dev/null 2>&1; then \
+	    if install-info --info-dir="$(DESTDIR)$(infodir)" --remove "$(DESTDIR)$(infodir)/$$dest"; then \
+	      :; \
+	    else \
+	      test ! -f "$(DESTDIR)$(infodir)/$$dest" || exit 1; \
+	    fi; \
+	  fi; \
+	  rm -f $(DESTDIR)$(infodir)/$$dest; \
 	done
 
 clean: $(CLEAN_IMAGE_TARGETS) $(CLEAN_MODULE_TARGETS) $(CLEAN_UTILITY_TARGETS)
