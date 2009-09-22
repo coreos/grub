@@ -271,6 +271,7 @@ modules="$modules $disk_module"
 modules="$modules $fs_module $partmap_module $devabstraction_module"
 
 prefix_drive=
+config=
 if [ "x${devabstraction_module}" = "x" ] ; then
     if echo "${install_device}" | grep -qx "(.*)" ; then
       install_drive="${install_device}"
@@ -289,16 +290,16 @@ if [ "x${devabstraction_module}" = "x" ] ; then
           echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
           exit 1
         fi
-        prefix_drive="(UUID=${uuid})"
-        modules="$modules fs_uuid"
+        config="search_fs_uuid ${uuid} root"
+        modules="$modules search_fs_uuid"
     elif [ "x${grub_drive}" != "x${install_drive}" ] ; then
         uuid="`$grub_probe --target=fs_uuid --device ${grub_device}`"
         if [ "x${uuid}" = "x" ] ; then
           echo "You attempted a cross-disk install, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
           exit 1
         fi
-        prefix_drive="(UUID=${uuid})"
-        modules="$modules fs_uuid"
+        config="search_fs_uuid ${uuid} root"
+        modules="$modules search_fs_uuid"
     fi
 else
     prefix_drive=`$grub_probe --target=drive --device ${grub_device}`
@@ -309,14 +310,20 @@ if [ "x${relative_grubdir}" = "x" ] ; then
     relative_grubdir=/
 fi
 
+config_opt=
+echo $config > ${grubdir}/load.cfg
+if [ x$config != x ]; then
+    config_opt="-c $config "
+fi
+
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
-    $grub_mkimage --output=${grubdir}/core.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
+    $grub_mkimage ${config_opt} --output=${grubdir}/core.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 
     # Now perform the installation.
     $grub_setup ${setup_verbose} ${setup_force} --directory=${grubdir} --device-map=${device_map} \
         ${install_device} || exit 1
 else
-    $grub_mkimage -d ${pkglibdir} --output=/boot/multiboot.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
+    $grub_mkimage ${config_opt} -d ${pkglibdir} --output=/boot/multiboot.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 fi
 
 # Prompt the user to check if the device map is correct.
