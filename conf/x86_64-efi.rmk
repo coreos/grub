@@ -34,7 +34,7 @@ util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
 grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/help.c				\
 	commands/handler.c commands/ls.c commands/test.c 		\
-	commands/search.c commands/hexdump.c lib/hexdump.c		\
+	commands/search_file.c commands/search_label.c commands/search_uuid.c commands/search_wrap.c commands/hexdump.c lib/hexdump.c		\
 	commands/halt.c commands/reboot.c				\
 	commands/i386/cpuid.c						\
 	commands/password.c commands/keystatus.c			\
