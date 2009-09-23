@@ -59,6 +59,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+MKDIR_P = @MKDIR_P@
 
 mkinstalldirs = $(srcdir)/mkinstalldirs
 
@@ -179,20 +180,22 @@ MOSTLYCLEANFILES += vti.tmp
 MAINTAINER_CLEANFILES += docs/stamp-vti docs/version.texi
 docs/version.texi: docs/stamp-vti
 docs/stamp-vti: docs/grub.texi
+	$(MKDIR_P) docs
 	(set `$(SHELL) $(srcdir)/docs/mdate-sh $<`; \
 	echo "@set UPDATED $$1 $$2 $$3"; \
 	echo "@set UPDATED-MONTH $$2 $$3"; \
 	echo "@set EDITION $(PACKAGE_VERSION)"; \
 	echo "@set VERSION $(PACKAGE_VERSION)") > vti.tmp
-	@cmp -s vti.tmp $(srcdir)/docs/version.texi \
-	  || (echo "Updating $(srcdir)/docs/version.texi"; \
-	      cp vti.tmp $(srcdir)/docs/version.texi)
+	@cmp -s vti.tmp $(builddir)/docs/version.texi \
+	  || (echo "Updating $(builddir)/docs/version.texi"; \
+	      cp vti.tmp $(builddir)/docs/version.texi)
 	-@rm -f vti.tmp
-	@cp $(srcdir)/docs/version.texi $@
+	@cp $(builddir)/docs/version.texi $@
 
 # Use --force until such time as the documentation is cleaned up.
 docs/grub.info: docs/grub.texi docs/version.texi docs/fdl.texi
-	$(MAKEINFO) --no-split --force $< -o $@ || :
+	$(MKDIR_P) docs
+	$(MAKEINFO) -P $(builddir)/docs --no-split --force $< -o $@ || :
 
 ifeq (, $(UNIFONT_BDF))
 else

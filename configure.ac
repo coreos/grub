@@ -144,6 +144,7 @@ done
 AC_PROG_INSTALL
 AC_PROG_AWK
 AC_PROG_MAKE_SET
+AC_PROG_MKDIR_P
 
 # These are not a "must".
 AC_PATH_PROG(RUBY, ruby)
