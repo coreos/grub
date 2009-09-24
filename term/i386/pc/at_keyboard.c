@@ -190,6 +190,13 @@ grub_at_keyboard_getkey_noblock (void)
 }
 
 static int
+grub_at_keyboard_checkkey (void)
+{
+  /* FIXME: this will be triggered by BREAK events.  */
+  return KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)) ? 1 : -1;
+}
+
+static int
 grub_at_keyboard_getkey (void)
 {
   int key;
@@ -220,8 +227,7 @@ static struct grub_term_input grub_at_keyboard_term =
     .name = "at_keyboard",
     .init = grub_keyboard_controller_init,
     .fini = grub_keyboard_controller_fini,
-    /* FIXME: This routine flushes input buffer, and it shouldn't.  */
-    .checkkey = grub_at_keyboard_getkey_noblock,
+    .checkkey = grub_at_keyboard_checkkey,
     .getkey = grub_at_keyboard_getkey,
   };
 

@@ -1,5 +1,14 @@
 2009-09-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	Fix "lost keypress" bug in at_keyboard.
+
+	* term/i386/pc/at_keyboard.c (grub_at_keyboard_checkkey): New function.
+	Checks for readyness of input buffer (without flushing it).
+	(grub_at_keyboard_term): Use grub_at_keyboard_checkkey() rather
+	than grub_at_keyboard_getkey_noblock() for `checkkey' struct member.
+
+2009-09-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* util/i386/pc/grub-mkimage.c (generate_image): Enclose BIOS-specific
 	size check within GRUB_MACHINE_PCBIOS section.
 
