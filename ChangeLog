@@ -1,5 +1,10 @@
 2009-09-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/i386/pc/grub-mkimage.c (generate_image): Enclose BIOS-specific
+	size check within GRUB_MACHINE_PCBIOS section.
+
+2009-09-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/grub/i386/at_keyboard.h (KEYBOARD_ISREADY): Negate
 	return value.
 	* term/i386/pc/at_keyboard.c (grub_keyboard_getkey): Negate
