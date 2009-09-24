@@ -152,8 +152,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = grub_cpu_to_le32 (OBJ_TYPE_ELF);
-      header->size = grub_cpu_to_le32 (mod_size + sizeof (*header));
+      header->type = OBJ_TYPE_ELF;
+      header->size = grub_host_to_target32 (mod_size + sizeof (*header));
       offset += sizeof (*header);
 
       grub_util_load_image (p->name, kernel_img + offset);
@@ -166,8 +166,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = grub_cpu_to_le32 (OBJ_TYPE_MEMDISK);
-      header->size = grub_cpu_to_le32 (memdisk_size + sizeof (*header));
+      header->type = OBJ_TYPE_MEMDISK;
+      header->size = grub_host_to_target32 (memdisk_size + sizeof (*header));
       offset += sizeof (*header);
 
       grub_util_load_image (memdisk_path, kernel_img + offset);
@@ -180,8 +180,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = grub_cpu_to_le32 (OBJ_TYPE_CONFIG);
-      header->size = grub_cpu_to_le32 (config_size + sizeof (*header));
+      header->type = OBJ_TYPE_CONFIG;
+      header->size = grub_host_to_target32 (config_size + sizeof (*header));
       offset += sizeof (*header);
 
       grub_util_load_image (config_path, kernel_img + offset);

@@ -1,3 +1,14 @@
+2009-09-24  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/kernel.h (struct grub_module_header): Remove
+	`grub_module_header_types'.  Make `type' unsigned.  Make `size'
+	32-bit on all platforms.
+	* util/elf/grub-mkimage.c (load_modules): Treat `type' as an
+	8-bit field.  Use grub_host_to_target32() for `size'.
+	* util/i386/efi/grub-mkimage.c (make_mods_section): Likewise.
+	* util/i386/pc/grub-mkimage.c (generate_image): Likewise.
+	* util/sparc64/ieee1275/grub-mkimage.c (generate_image): Likewise.
+
 2009-09-24  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Fix "lost keypress" bug in at_keyboard.

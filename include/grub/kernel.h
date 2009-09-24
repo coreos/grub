@@ -22,20 +22,20 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 
+enum
+{
+  OBJ_TYPE_ELF,
+  OBJ_TYPE_MEMDISK,
+  OBJ_TYPE_CONFIG
+};
+
 /* The module header.  */
 struct grub_module_header
 {
   /* The type of object.  */
-  grub_int8_t type;
-  enum
-  {
-    OBJ_TYPE_ELF,
-    OBJ_TYPE_MEMDISK,
-    OBJ_TYPE_CONFIG
-  }  grub_module_header_types;
-
+  grub_uint8_t type;
   /* The size of object (including this header).  */
-  grub_target_size_t size;
+  grub_uint32_t size;
 };
 
 /* "gmim" (GRUB Module Info Magic).  */
