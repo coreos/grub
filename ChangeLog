@@ -1,3 +1,8 @@
+2009-09-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Command-line and menu entry commands): Document
+	date and echo commands.
+
 2009-09-24  Pavel Roskin  <proski@gnu.org>
 
 	* include/grub/kernel.h (struct grub_module_header): Remove
