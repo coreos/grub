@@ -1,3 +1,66 @@
+2009-09-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (pkglib_MODULES): Remove `lua.mod'.
+	(lua_mod_SOURCES, lua_mod_CFLAGS, lua_mod_LDFLAGS): Remove.
+
+	* util/osdetect.lua: Remove.
+	* script/lua/lauxlib.c: Likewise.
+	* script/lua/ldebug.c: Likewise.
+	* script/lua/grub_main.c: Likewise.
+	* script/lua/lauxlib.h: Likewise.
+	* script/lua/ldebug.h: Likewise.
+	* script/lua/ltablib.c: Likewise.
+	* script/lua/liolib.c: Likewise.
+	* script/lua/lstrlib.c: Likewise.
+	* script/lua/lualib.h: Likewise.
+	* script/lua/ldo.c: Likewise.
+	* script/lua/ldump.c: Likewise.
+	* script/lua/ldo.h: Likewise.
+	* script/lua/loslib.c: Likewise.
+	* script/lua/lundump.c: Likewise.
+	* script/lua/grub_lib.c: Likewise.
+	* script/lua/ldblib.c: Likewise.
+	* script/lua/lundump.h: Likewise.
+	* script/lua/lmem.c: Likewise.
+	* script/lua/grub_lib.h: Likewise.
+	* script/lua/lmathlib.c: Likewise.
+	* script/lua/lstate.c: Likewise.
+	* script/lua/ltm.c: Likewise.
+	* script/lua/lvm.c: Likewise.
+	* script/lua/lmem.h: Likewise.
+	* script/lua/lstate.h: Likewise.
+	* script/lua/ltm.h: Likewise.
+	* script/lua/ltable.c: Likewise.
+	* script/lua/lvm.h: Likewise.
+	* script/lua/llex.c: Likewise.
+	* script/lua/lgc.c: Likewise.
+	* script/lua/grub_lua.h: Likewise.
+	* script/lua/loadlib.c: Likewise.
+	* script/lua/lfunc.c: Likewise.
+	* script/lua/lopcodes.c: Likewise.
+	* script/lua/lparser.c: Likewise.
+	* script/lua/ltable.h: Likewise.
+	* script/lua/llex.h: Likewise.
+	* script/lua/lgc.h: Likewise.
+	* script/lua/lfunc.h: Likewise.
+	* script/lua/lbaselib.c: Likewise.
+	* script/lua/lopcodes.h: Likewise.
+	* script/lua/lparser.h: Likewise.
+	* script/lua/lzio.c: Likewise.
+	* script/lua/linit.c: Likewise.
+	* script/lua/lobject.c: Likewise.
+	* script/lua/llimits.h: Likewise.
+	* script/lua/lstring.c: Likewise.
+	* script/lua/lzio.h: Likewise.
+	* script/lua/lapi.c: Likewise.
+	* script/lua/lcode.c: Likewise.
+	* script/lua/lua.h: Likewise.
+	* script/lua/lobject.h: Likewise.
+	* script/lua/lstring.h: Likewise.
+	* script/lua/lapi.h: Likewise.
+	* script/lua/lcode.h: Likewise.
+	* script/lua/luaconf.h: Likewise.
+
 2009-09-26  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Command-line and menu entry commands): Document
