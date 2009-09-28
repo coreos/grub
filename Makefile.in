@@ -233,8 +233,6 @@ build_env.mk: Makefile
 	echo "COMMON_LDFLAGS=$(COMMON_LDFLAGS)"\
 	) > $@
 pkglib_BUILDDIR += config.h grub_script.tab.h
-include_DATA += $(shell find $(srcdir)/include -name \*.h | sed -e "s,^$(srcdir)/,,g") \
-	include/grub/cpu include/grub/machine
 
 all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES)
 
@@ -248,20 +246,6 @@ install-local: all
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkglibdir)/$$dest; \
-	done
-	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(includedir)
-	@list='$(include_DATA)'; \
-	for file in $$list; do \
-	  if test -e "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
-	  dest="`echo $$file | sed 's,include/,,'`"; \
-	  destdir="`echo $$dest | sed 's,[^/]*$$,,g'`"; \
-	  $(SHELL) $(mkinstalldirs) $(DESTDIR)$(includedir)/$$destdir; \
-	  if test -f "$$dir$$file"; then \
-	    $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(includedir)/$$dest; \
-	  elif test -L "$$dir$$file"; then \
-	    rm -rf $(DESTDIR)$(includedir)/$$dest && \
-	    cp -fR $$dir$$file $(DESTDIR)$(includedir)/$$dest; \
-	  fi; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	@list='$(PKGDATA)'; \
@@ -353,11 +337,6 @@ uninstall:
 	@list='$(grub-mkconfig_SCRIPTS) $(grub-mkconfig_DATA)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
-	done
-	@list='$(include_DATA)'; \
-	for file in $$list; do \
-	  dest="`echo $$file | sed 's,include/,,'`"; \
-	  rm -f $(DESTDIR)$(includedir)/$$dest; \
 	done
 	@list='$(lib_SCRIPTS)'; \
 	for file in $$list; do \
