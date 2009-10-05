@@ -174,7 +174,9 @@ handler.lst: $(HANDLERFILES)
 parttool.lst: $(PARTTOOLFILES)
 	cat $^ /dev/null | sort | uniq > $@
 
+ifneq (true, $(MAKEINFO))
 info_INFOS += docs/grub.info
+endif
 
 MOSTLYCLEANFILES += vti.tmp
 MAINTAINER_CLEANFILES += docs/stamp-vti docs/version.texi

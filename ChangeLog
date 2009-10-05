@@ -1,5 +1,10 @@
 2009-10-06  Colin Watson  <cjwatson@ubuntu.com>
 
+	* Makefile.in: Don't set info_INFOS unless makeinfo was found.
+	Fixes bug #27602.
+
+2009-10-06  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/i386/pc/grub-install.in: Source
 	${libdir}/grub/grub-mkconfig_lib before option processing, in order
 	that the --grub-probe option will work.
