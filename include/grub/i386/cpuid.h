@@ -16,4 +16,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef GRUB_CPU_CPUID_HEADER
+#define GRUB_CPU_CPUID_HEADER 1
+
 extern unsigned char grub_cpuid_has_longmode;
+
+#endif

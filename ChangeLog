@@ -1,5 +1,9 @@
 2009-10-09  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/grub/i386/cpuid.h: Add header protection.
+
+2009-10-09  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Fail gracefuly when attempting to load 64-bit kFreeBSD on IA32 CPU.
 
 	* include/grub/i386/cpuid.h: New file.
