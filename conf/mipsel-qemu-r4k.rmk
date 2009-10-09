@@ -1,0 +1,4 @@
+# -*- makefile -*-
+LINK_BASE = 0x80010000
+target_machine=qemu-r4k
+include $(srcdir)/conf/mips.mk
