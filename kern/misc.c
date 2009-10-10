@@ -598,7 +598,7 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
       if (str)
 	*str++ = ch;
       else
-      	grub_putchar (ch);
+	grub_putchar (ch);
 
       count++;
     }
