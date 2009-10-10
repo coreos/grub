@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2006,2007,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2007  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,16 +16,11 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_TYPES_CPU_HEADER
-#define GRUB_TYPES_CPU_HEADER	1
-
-/* The size of void *.  */
-#define GRUB_TARGET_SIZEOF_VOID_P	4
-
-/* The size of long.  */
-#define GRUB_TARGET_SIZEOF_LONG		4
-
-/* mipsEL is little-endian.  */
-#undef GRUB_TARGET_WORDS_BIGENDIAN
-
-#endif /* ! GRUB_TYPES_CPU_HEADER */
+void *EXPORT_FUNC (memset) (void *s, int c, int n) __attribute__ ((weak));
+void EXPORT_FUNC (__ashldi3) (void) __attribute__ ((weak));
+void EXPORT_FUNC (__ashrdi3) (void) __attribute__ ((weak));
+void EXPORT_FUNC (__lshrdi3) (void) __attribute__ ((weak));
+void EXPORT_FUNC (__trampoline_setup) (void) __attribute__ ((weak));
+void EXPORT_FUNC (__ucmpdi2) (void) __attribute__ ((weak));
+void EXPORT_FUNC (__bswapsi2) (void) __attribute__ ((weak));
+void EXPORT_FUNC (__bswapdi2) (void) __attribute__ ((weak));

@@ -135,21 +135,24 @@ grub_getcharwidth (grub_uint32_t code)
 int
 grub_getkey (void)
 {
-  return (grub_cur_term_input->getkey) ();
+  while (!(*((grub_uint8_t *)0x140003f8+5) & 0x01));
+  return *((grub_uint8_t *)0x140003f8);
+  //  return (grub_cur_term_input->getkey) ();
 }
 
 int
 grub_checkkey (void)
 {
-  return (grub_cur_term_input->checkkey) ();
+  return !!(*((grub_uint8_t *)0x140003f8+5) & 0x01);
+  //return (grub_cur_term_input->checkkey) ();
 }
 
 int
 grub_getkeystatus (void)
 {
-  if (grub_cur_term_input->getkeystatus)
+  /*  if (grub_cur_term_input->getkeystatus)
     return (grub_cur_term_input->getkeystatus) ();
-  else
+    else*/
     return 0;
 }
 

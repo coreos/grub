@@ -92,6 +92,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
 		switch (ELF_R_TYPE (rel->r_info))
 		  {
+#if 0
 		  case R_386_32:
 		    *addr += sym->st_value;
 		    break;
@@ -100,6 +101,11 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    *addr += (sym->st_value - (Elf_Word) seg->addr
 			      - rel->r_offset);
 		    break;
+#endif
+		  default:
+		    grub_printf ("Unknown relocation type %d\n",
+				 ELF_R_TYPE (rel->r_info));
+		    break
 		  }
 	      }
 	  }

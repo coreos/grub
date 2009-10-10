@@ -84,7 +84,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 
-kernel_img_SOURCES = kern/mipsel/qemu-r4k/startup.S \
+kernel_img_SOURCES = kern/mips/qemu-r4k/startup.S \
 	kern/main.c kern/device.c kern/$(target_cpu)/$(target_machine)/init.c 		\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
 	kern/misc.c kern/mm.c kern/reader.c kern/term.c 	\
