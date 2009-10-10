@@ -19,6 +19,7 @@
 #include <grub/loader.h>
 #include <grub/cpu/loader.h>
 #include <grub/cpu/bsd.h>
+#include <grub/i386/cpuid.h>
 #include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/memory.h>
@@ -870,6 +871,9 @@ grub_bsd_load_elf (grub_elf_t elf)
   else if (grub_elf_is_elf64 (elf))
     {
       is_64bit = 1;
+
+      if (! grub_cpuid_has_longmode)
+	return grub_error (GRUB_ERR_BAD_OS, "Your CPU does not implement AMD64 architecture.");
 
       /* FreeBSD has 64-bit entry point.  */
       if (kernel_type == KERNEL_TYPE_FREEBSD)
