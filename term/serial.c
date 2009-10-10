@@ -54,7 +54,7 @@ static const struct grub_arg_option options[] =
 /* Serial port settings.  */
 struct serial_port
 {
-  unsigned short port;
+  grub_port_t port;
   unsigned short divisor;
   unsigned short word_len;
   unsigned int   parity;
@@ -68,12 +68,12 @@ static struct serial_port serial_settings;
 static const unsigned short *serial_hw_io_addr = (const unsigned short *) GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR;
 #define GRUB_SERIAL_PORT_NUM 4
 #else
-static const unsigned short serial_hw_io_addr[] = { 0x3f8, 0x2f8, 0x3e8, 0x2e8 };
+static const grub_port_t serial_hw_io_addr[] = { 0x3f8, 0x2f8, 0x3e8, 0x2e8 };
 #define GRUB_SERIAL_PORT_NUM (ARRAY_SIZE(serial_hw_io_addr))
 #endif
 
 /* Return the port number for the UNITth serial device.  */
-static inline unsigned short
+static inline grub_port_t
 serial_hw_get_port (const unsigned int unit)
 {
   if (unit < GRUB_SERIAL_PORT_NUM)
@@ -503,7 +503,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
     }
 
   if (state[1].set)
-    serial_settings.port = (unsigned short) grub_strtoul (state[1].arg, 0, 0);
+    serial_settings.port = (grub_port_t) grub_strtoul (state[1].arg, 0, 0);
 
   if (state[2].set)
     {
