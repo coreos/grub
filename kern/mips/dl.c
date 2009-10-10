@@ -105,7 +105,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		  default:
 		    grub_printf ("Unknown relocation type %d\n",
 				 ELF_R_TYPE (rel->r_info));
-		    break
+		    break;
 		  }
 	      }
 	  }

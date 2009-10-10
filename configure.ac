@@ -97,8 +97,14 @@ esac
 case "$target_cpu" in
   i386 | powerpc) target_m32=1 ;;
   x86_64 | sparc64) target_m64=1 ;;
-  mipsel) TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPSEL=1"; target_cpu=mips ;;
-  mips) TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPS=1" ;;
+  mipsel) 
+    TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPSEL=1"; 
+    CFLAGS="$CFLAGS -DGRUB_CPU_MIPSEL=1";
+    target_cpu=mips ;;
+  mips) 
+    TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPS=1"; 
+    CFLAGS="$CFLAGS -DGRUB_CPU_MIPS=1";
+    target_cpu=mips ;;
 esac
 
 case "$host_os" in
