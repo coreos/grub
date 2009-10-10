@@ -21,6 +21,7 @@
 #include <grub/elf.h>
 #include <grub/misc.h>
 #include <grub/err.h>
+#include <grub/cpu/types.h>
 
 /* Check if EHDR is a valid ELF header.  */
 grub_err_t
@@ -29,9 +30,15 @@ grub_arch_dl_check_header (void *ehdr)
   Elf_Ehdr *e = ehdr;
 
   /* Check the magic numbers.  */
+#ifdef WORDS_BIGENDIAN
+  if (e->e_ident[EI_CLASS] != ELFCLASS32
+      || e->e_ident[EI_DATA] != ELFDATA2MSB
+      || e->e_machine != EM_MIPS)
+#else
   if (e->e_ident[EI_CLASS] != ELFCLASS32
       || e->e_ident[EI_DATA] != ELFDATA2LSB
-      || e->e_machine != EM_386)
+      || e->e_machine != EM_MIPS)
+#endif
     return grub_error (GRUB_ERR_BAD_OS, "invalid arch specific ELF magic");
 
   return GRUB_ERR_NONE;
