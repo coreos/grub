@@ -149,17 +149,27 @@ grub_load_normal_mode (void)
 void
 grub_main (void)
 {
+  *((grub_uint8_t *)0x140003f8) = '1';
+
   /* First of all, initialize the machine.  */
   grub_machine_init ();
 
+  *((grub_uint8_t *)0x140003f8) = '2';
+
   /* Hello.  */
   grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
+  *((grub_uint8_t *)0x140003f8) = 'a';
   grub_printf ("Welcome to GRUB!\n\n");
+  *((grub_uint8_t *)0x140003f8) = 'b';
   grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
+
+  *((grub_uint8_t *)0x140003f8) = '3';
 
   /* Load pre-loaded modules and free the space.  */
   grub_register_exported_symbols ();
   grub_load_modules ();
+
+  *((grub_uint8_t *)0x140003f8) = '4';
 
   /* It is better to set the root device as soon as possible,
      for convenience.  */
@@ -167,11 +177,17 @@ grub_main (void)
   grub_env_export ("prefix");
   grub_set_root_dev ();
 
+  *((grub_uint8_t *)0x140003f8) = '5';
+
   grub_register_core_commands ();
   grub_register_rescue_parser ();
   grub_register_rescue_reader ();
 
+  *((grub_uint8_t *)0x140003f8) = '6';
+
   grub_load_config ();
+  *((grub_uint8_t *)0x140003f8) = '7';
   grub_load_normal_mode ();
+  *((grub_uint8_t *)0x140003f8) = '8';
   grub_reader_loop (0);
 }

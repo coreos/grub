@@ -2,7 +2,7 @@
 # -*- makefile -*-
 
 COMMON_ASFLAGS = -nostdinc
-COMMON_CFLAGS = 
+COMMON_CFLAGS = -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
 COMMON_LDFLAGS += -nostdlib
 
 # Used by various components.  These rules need to precede them.
@@ -17,7 +17,7 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h reader.h \
 	symbol.h term.h time.h types.h loader.h partition.h \
 	msdos_partition.h machine/kernel.h handler.h list.h \
-	command.h
+	command.h machine/memory.h cpu/libgcc.h cpu/cache.h
 
 symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
@@ -99,8 +99,8 @@ kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
 	-Wl,-N,-S,-Ttext,$(LINK_BASE),-Bstatic
 
 # Scripts.
-sbin_SCRIPTS = grub-install
-bin_SCRIPTS = grub-mkrescue
+sbin_SCRIPTS = 
+bin_SCRIPTS = 
 
 # Modules.
 pkglib_MODULES = memdisk.mod \

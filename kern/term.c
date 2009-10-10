@@ -48,8 +48,9 @@ struct grub_handler_class grub_term_output_class =
 void
 grub_putcode (grub_uint32_t code)
 {
-  int height = grub_getwh () & 255;
+  //  int height = grub_getwh () & 255;
 
+#if 0
   if (code == '\t' && grub_cur_term_output->getxy)
     {
       int n;
@@ -60,13 +61,15 @@ grub_putcode (grub_uint32_t code)
 
       return;
     }
+#endif
 
-  (grub_cur_term_output->putchar) (code);
+  //  (grub_cur_term_output->putchar) (code);
+  *((grub_uint8_t *)0x140003f8) = code;
 
   if (code == '\n')
     {
       grub_putcode ('\r');
-
+#if 0
       grub_more_lines++;
 
       if (grub_more && grub_more_lines == height - 1)
@@ -93,6 +96,7 @@ grub_putcode (grub_uint32_t code)
 	  else
 	    grub_more_lines = 0;
 	}
+#endif
     }
 }
 
@@ -182,14 +186,14 @@ grub_cls (void)
 void
 grub_setcolorstate (grub_term_color_state state)
 {
-  if (grub_cur_term_output->setcolorstate)
+  if (grub_cur_term_output && grub_cur_term_output->setcolorstate)
     (grub_cur_term_output->setcolorstate) (state);
 }
 
 void
 grub_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
 {
-  if (grub_cur_term_output->setcolor)
+  if (grub_cur_term_output && grub_cur_term_output->setcolor)
     (grub_cur_term_output->setcolor) (normal_color, highlight_color);
 }
 

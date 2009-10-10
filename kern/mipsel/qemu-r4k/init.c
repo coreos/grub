@@ -4,8 +4,12 @@
 #include <grub/time.h>
 #include <grub/types.h>
 #include <grub/misc.h>
+#include <grub/mm.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/memory.h>
 #include <grub/cpu/kernel.h>
+
+#define RAMSIZE (*(grub_uint32_t *) ((16 << 20) - 264))
 
 grub_uint32_t
 grub_get_rtc (void)
@@ -17,6 +21,8 @@ grub_get_rtc (void)
 void
 grub_machine_init (void)
 {
+  grub_mm_init_region ((void *) GRUB_MACHINE_MEMORY_STACK_HIGH,
+		       RAMSIZE - GRUB_MACHINE_MEMORY_STACK_HIGH);
 }
 
 void
@@ -55,4 +61,14 @@ grub_addr_t
 grub_arch_modules_addr (void)
 {
   return ALIGN_UP((grub_addr_t) _end + GRUB_MOD_GAP, GRUB_MOD_ALIGN);
+}
+
+grub_err_t 
+grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, 
+							 grub_uint64_t, 
+							 grub_uint32_t))
+{
+  hook (0, RAMSIZE,
+	GRUB_MACHINE_MEMORY_AVAILABLE);
+  return GRUB_ERR_NONE;
 }
