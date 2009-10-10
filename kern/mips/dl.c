@@ -22,6 +22,8 @@
 #include <grub/misc.h>
 #include <grub/err.h>
 #include <grub/cpu/types.h>
+#include <grub/mm.h>
+#include <grub/cpu/dl.h>
 
 /* Check if EHDR is a valid ELF header.  */
 grub_err_t
@@ -52,6 +54,9 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
   Elf_Shdr *s;
   Elf_Word entsize;
   unsigned i;
+  grub_size_t gp_size = 0;
+  /* FIXME: suboptimal.  */
+  grub_uint32_t *gp, *gpptr;
 
   /* Find a symbol table.  */
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
@@ -85,6 +90,45 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		   max = rel + s->sh_size / s->sh_entsize;
 		 rel < max;
 		 rel++)
+		switch (ELF_R_TYPE (rel->r_info))
+		  {
+		  case R_MIPS_GOT16:
+		  case R_MIPS_CALL16:
+		  case R_MIPS_GPREL32:
+		    gp_size += 4;
+		    break;
+		  }
+	  }
+      }
+
+  if (gp_size > 0x08000)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, "__gnu_local_gp is too big\n");
+
+  gpptr = gp = grub_malloc (gp_size);
+  if (!gp)
+    return grub_errno;
+  grub_printf ("gp=%p\n", gp);
+
+  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
+    if (s->sh_type == SHT_REL)
+      {
+	grub_dl_segment_t seg;
+
+	/* Find the target segment.  */
+	for (seg = mod->segment; seg; seg = seg->next)
+	  if (seg->section == s->sh_info)
+	    break;
+
+	if (seg)
+	  {
+	    Elf_Rel *rel, *max;
+
+	    for (rel = (Elf_Rel *) ((char *) e + s->sh_offset),
+		   max = rel + s->sh_size / s->sh_entsize;
+		 rel < max;
+		 rel++)
 	      {
 		Elf_Word *addr;
 		Elf_Sym *sym;
@@ -96,19 +140,62 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		addr = (Elf_Word *) ((char *) seg->addr + rel->r_offset);
 		sym = (Elf_Sym *) ((char *) mod->symtab
 				     + entsize * ELF_R_SYM (rel->r_info));
+		if (sym->st_value == (grub_addr_t) &__gnu_local_gp)
+		  sym->st_value = (grub_addr_t) gp;
 
 		switch (ELF_R_TYPE (rel->r_info))
 		  {
-#if 0
-		  case R_386_32:
-		    *addr += sym->st_value;
+		  case R_MIPS_HI16:
+		    {
+		      grub_uint32_t value;
+		      
+		      /* Handle partner lo16 relocation. Lower part is
+			 treated as signed. Hence add 0x8000 to compensate. 
+		       */
+		      value = (*(grub_uint16_t *) addr << 16)
+			+ sym->st_value + 0x8000;
+		      if (rel + 1 < max && ELF_R_SYM (rel[1].r_info) 
+			  == ELF_R_SYM (rel[0].r_info)
+			  && ELF_R_TYPE (rel[1].r_info) == R_MIPS_LO16)
+			value += *(grub_uint16_t *)
+			((char *) seg->addr + rel[1].r_offset);
+		      *(grub_uint16_t *) addr += (value >> 16) & 0xffff;
+		    }
 		    break;
-
-		  case R_386_PC32:
-		    *addr += (sym->st_value - (Elf_Word) seg->addr
-			      - rel->r_offset);
+		  case R_MIPS_LO16:
+		    *(grub_uint16_t *) addr += (sym->st_value) & 0xffff;
 		    break;
-#endif
+		  case R_MIPS_32:
+		    *(grub_uint32_t *) addr = sym->st_value;
+		    break;
+		  case R_MIPS_26:
+		    {
+		      grub_uint32_t value;
+		      grub_uint32_t raw;
+		      raw = (*(grub_uint32_t *) addr) & 0x3ffffff;
+		      value = raw << 2;
+		      value += sym->st_value;
+		      raw = (value >> 2) & 0x3ffffff;
+			
+		      *(grub_uint32_t *) addr = 
+			raw | ((*(grub_uint32_t *) addr) & 0xfc000000);
+		    }
+		    break;
+		  case R_MIPS_GOT16:
+		  case R_MIPS_CALL16:
+		    /* FIXME: reuse*/
+		    *gpptr = sym->st_value + *(grub_uint16_t *) addr;
+		    *(grub_uint16_t *) addr
+		      = sizeof (grub_uint32_t) * (gpptr - gp);
+		    gpptr++;
+		    break;
+		  case R_MIPS_GPREL32:
+		    grub_printf ("gp32\n");
+		    *gpptr = sym->st_value + *(grub_uint16_t *) addr;
+		    *(grub_uint32_t *) addr
+		      = sizeof (grub_uint32_t) * (gpptr - gp);
+		    gpptr++;
+		    break;
 		  default:
 		    grub_printf ("Unknown relocation type %d\n",
 				 ELF_R_TYPE (rel->r_info));

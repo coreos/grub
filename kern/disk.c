@@ -267,12 +267,15 @@ grub_disk_open (const char *name)
 
   for (dev = grub_disk_dev_list; dev; dev = dev->next)
     {
+      grub_printf ("open: %p\n", dev->open);
+      grub_getkey ();
       if ((dev->open) (raw, disk) == GRUB_ERR_NONE)
 	break;
       else if (grub_errno == GRUB_ERR_UNKNOWN_DEVICE)
 	grub_errno = GRUB_ERR_NONE;
       else
 	goto fail;
+      grub_printf ("survived\n");
     }
 
   if (! dev)

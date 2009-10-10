@@ -24,8 +24,7 @@ grub_machine_init (void)
   void *tst;
   grub_mm_init_region ((void *) GRUB_MACHINE_MEMORY_STACK_HIGH,
 		       RAMSIZE - (GRUB_MACHINE_MEMORY_STACK_HIGH & 0x7fffffff));
-  tst = grub_malloc (10);
-  grub_free (tst);
+  grub_install_get_time_ms (grub_rtc_get_time_ms);
 }
 
 void
