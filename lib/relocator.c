@@ -72,7 +72,6 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
   if (UINT_TO_PTR (dest) >= relocator)
     {
       int overhead;
-      void *reldest = relocator - overhead;
       overhead =
 	ALIGN_UP (dest - RELOCATOR_SIZEOF (backward) - RELOCATOR_ALIGN,
 		  RELOCATOR_ALIGN);
