@@ -29,7 +29,7 @@
 #include <grub/extcmd.h>
 
 #define TEXT_WIDTH	80
-#define TEXT_HEIGHT	25
+#define TEXT_HEIGHT	24
 
 static unsigned int xpos, ypos;
 static unsigned int keep_track = 1;
@@ -370,7 +370,7 @@ grub_serial_putchar (grub_uint32_t c)
 	  break;
 
 	case '\n':
-	  if (ypos < TEXT_HEIGHT)
+	  if (ypos < TEXT_HEIGHT - 1)
 	    ypos++;
 	  break;
 

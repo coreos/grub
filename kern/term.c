@@ -136,7 +136,6 @@ grub_getcharwidth (grub_uint32_t code)
 int
 grub_getkey (void)
 {
-  int c;
   if (!grub_cur_term_input)
     return 0;
   return (grub_cur_term_input->getkey) ();

@@ -31,7 +31,7 @@
 #elif defined (GRUB_CPU_MIPS)
 /* mips is big-endian.  */
 #define GRUB_TARGET_WORDS_BIGENDIAN
-#else
+#elif !defined (GRUB_SYMBOL_GENERATOR)
 #error Neither GRUB_CPU_MIPS nor GRUB_CPU_MIPSEL is defined
 #endif
 
