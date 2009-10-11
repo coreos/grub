@@ -48,9 +48,11 @@ struct grub_handler_class grub_term_output_class =
 void
 grub_putcode (grub_uint32_t code)
 {
-  //  int height = grub_getwh () & 255;
+  int height = grub_getwh () & 255;
 
-#if 0
+  if (!grub_cur_term_output)
+    return;
+
   if (code == '\t' && grub_cur_term_output->getxy)
     {
       int n;
@@ -61,15 +63,13 @@ grub_putcode (grub_uint32_t code)
 
       return;
     }
-#endif
 
-  //  (grub_cur_term_output->putchar) (code);
-  *((grub_uint8_t *)0x140003f8) = code;
+  (grub_cur_term_output->putchar) (code);
 
   if (code == '\n')
     {
       grub_putcode ('\r');
-#if 0
+
       grub_more_lines++;
 
       if (grub_more && grub_more_lines == height - 1)
@@ -96,7 +96,6 @@ grub_putcode (grub_uint32_t code)
 	  else
 	    grub_more_lines = 0;
 	}
-#endif
     }
 }
 
@@ -129,54 +128,66 @@ grub_putchar (int c)
 grub_ssize_t
 grub_getcharwidth (grub_uint32_t code)
 {
+  if (!grub_cur_term_output)
+    return 1;
   return (grub_cur_term_output->getcharwidth) (code);
 }
 
 int
 grub_getkey (void)
 {
-  while (!(*((grub_uint8_t *)0x140003f8+5) & 0x01));
-  return *((grub_uint8_t *)0x140003f8);
-  //  return (grub_cur_term_input->getkey) ();
+  int c;
+  if (!grub_cur_term_input)
+    return 0;
+  return (grub_cur_term_input->getkey) ();
 }
 
 int
 grub_checkkey (void)
 {
-  return !!(*((grub_uint8_t *)0x140003f8+5) & 0x01);
-  //return (grub_cur_term_input->checkkey) ();
+  if (!grub_cur_term_input)
+    return 0;
+  return (grub_cur_term_input->checkkey) ();
 }
 
 int
 grub_getkeystatus (void)
 {
-  /*  if (grub_cur_term_input->getkeystatus)
+  if (grub_cur_term_input && grub_cur_term_input->getkeystatus)
     return (grub_cur_term_input->getkeystatus) ();
-    else*/
+  else
     return 0;
 }
 
 grub_uint16_t
 grub_getxy (void)
 {
+  if (!grub_cur_term_output)
+    return 0;
   return (grub_cur_term_output->getxy) ();
 }
 
 grub_uint16_t
 grub_getwh (void)
 {
+  if (!grub_cur_term_output)
+    return (80 << 8) | 25;
   return (grub_cur_term_output->getwh) ();
 }
 
 void
 grub_gotoxy (grub_uint8_t x, grub_uint8_t y)
 {
-  (grub_cur_term_output->gotoxy) (x, y);
+  if (grub_cur_term_output && grub_cur_term_output->gotoxy)
+    (grub_cur_term_output->gotoxy) (x, y);
 }
 
 void
 grub_cls (void)
 {
+  if (!grub_cur_term_output)
+    return;
+
   if ((grub_cur_term_output->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
     {
       grub_putchar ('\n');
@@ -189,20 +200,29 @@ grub_cls (void)
 void
 grub_setcolorstate (grub_term_color_state state)
 {
-  if (grub_cur_term_output && grub_cur_term_output->setcolorstate)
+  if (!grub_cur_term_output)
+    return;
+
+  if (grub_cur_term_output->setcolorstate)
     (grub_cur_term_output->setcolorstate) (state);
 }
 
 void
 grub_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
 {
-  if (grub_cur_term_output && grub_cur_term_output->setcolor)
+  if (!grub_cur_term_output)
+    return;
+
+  if (grub_cur_term_output->setcolor)
     (grub_cur_term_output->setcolor) (normal_color, highlight_color);
 }
 
 void
 grub_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
 {
+  if (!grub_cur_term_output)
+    return;
+
   if (grub_cur_term_output->getcolor)
     (grub_cur_term_output->getcolor) (normal_color, highlight_color);
 }
@@ -212,7 +232,7 @@ grub_setcursor (int on)
 {
   int ret = cursor_state;
 
-  if (grub_cur_term_output->setcursor)
+  if (grub_cur_term_output && grub_cur_term_output->setcursor)
     {
       (grub_cur_term_output->setcursor) (on);
       cursor_state = on;
@@ -230,7 +250,7 @@ grub_getcursor (void)
 void
 grub_refresh (void)
 {
-  if (grub_cur_term_output->refresh)
+  if (grub_cur_term_output && grub_cur_term_output->refresh)
     (grub_cur_term_output->refresh) ();
 }
 

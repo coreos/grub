@@ -18,8 +18,8 @@
 
 #include <grub/machine/machine.h>
 #include <grub/machine/memory.h>
-#include <grub/machine/serial.h>
-#include <grub/machine/console.h>
+#include <grub/serial.h>
+//#include <grub/machine/console.h>
 #include <grub/term.h>
 #include <grub/types.h>
 #include <grub/dl.h>
@@ -67,6 +67,9 @@ static struct serial_port serial_settings;
 #ifdef GRUB_MACHINE_PCBIOS
 static const unsigned short *serial_hw_io_addr = (const unsigned short *) GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR;
 #define GRUB_SERIAL_PORT_NUM 4
+#elif defined (GRUB_MACHINE_MIPS_QEMU)
+static const grub_port_t serial_hw_io_addr[] = { 0x140003f8 };
+#define GRUB_SERIAL_PORT_NUM (ARRAY_SIZE(serial_hw_io_addr))
 #else
 static const grub_port_t serial_hw_io_addr[] = { 0x3f8, 0x2f8, 0x3e8, 0x2e8 };
 #define GRUB_SERIAL_PORT_NUM (ARRAY_SIZE(serial_hw_io_addr))
@@ -149,7 +152,7 @@ serial_translate_key_sequence (void)
   if (input_buf[0] != '\e' || input_buf[1] != '[')
     return;
 
-  for (i = 0; ARRAY_SIZE (three_code_table); i++)
+  for (i = 0; i < ARRAY_SIZE (three_code_table); i++)
     if (three_code_table[i].key == input_buf[2])
       {
 	input_buf[0] = three_code_table[i].ascii;
@@ -254,6 +257,9 @@ grub_serial_getkey (void)
     ;
 
   c = input_buf[0];
+  if (c == 0x7f)
+    c = GRUB_TERM_BACKSPACE;
+
   grub_memmove (input_buf, input_buf + 1, --npending);
 
   return c;

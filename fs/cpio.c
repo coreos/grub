@@ -280,8 +280,10 @@ grub_cpio_open (grub_file_t file, const char *name)
 
       /* Compare NAME and FN by hand in order to cope with duplicate
 	 slashes.  */
-      i = 1;
+      i = 0;
       j = 0;
+      while (name[i] == '/')
+	i++;
       while (1)
 	{
 	  if (name[i] != fn[j])
@@ -290,12 +292,15 @@ grub_cpio_open (grub_file_t file, const char *name)
 	  if (name[i] == '\0')
 	    break;
 
-	  if (name[i] == '/' && name[i+1] == '/')
+	  while (name[i] == '/' && name[i+1] == '/')
 	    i++;
 
 	  i++;
 	  j++;
 	}
+
+      if (name[i] != fn[j])
+	goto no_match;
 
       file->data = data;
       file->size = data->size;

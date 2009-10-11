@@ -57,6 +57,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
   grub_size_t gp_size = 0;
   /* FIXME: suboptimal.  */
   grub_uint32_t *gp, *gpptr;
+  grub_uint32_t gp0;
 
   /* Find a symbol table.  */
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
@@ -69,6 +70,18 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
     return grub_error (GRUB_ERR_BAD_MODULE, "no symtab found");
 
   entsize = s->sh_entsize;
+
+  /* Find reginfo. */
+  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
+    if (s->sh_type == SHT_MIPS_REGINFO)
+      break;
+
+  if (i == e->e_shnum)
+    return grub_error (GRUB_ERR_BAD_MODULE, "no reginfo found");
+
+  gp0 = ((grub_uint32_t *)((char *) e + s->sh_offset))[5];
 
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
@@ -107,7 +120,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
   gpptr = gp = grub_malloc (gp_size);
   if (!gp)
     return grub_errno;
-  grub_printf ("gp=%p\n", gp);
 
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
@@ -166,8 +178,13 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    *(grub_uint16_t *) addr += (sym->st_value) & 0xffff;
 		    break;
 		  case R_MIPS_32:
-		    *(grub_uint32_t *) addr = sym->st_value;
+		    *(grub_uint32_t *) addr += sym->st_value;
 		    break;
+		  case R_MIPS_GPREL32:
+		    *(grub_uint32_t *) addr = sym->st_value
+		      + *(grub_uint32_t *) addr + gp0 - (grub_uint32_t)gp;
+		    break;
+
 		  case R_MIPS_26:
 		    {
 		      grub_uint32_t value;
@@ -189,16 +206,13 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		      = sizeof (grub_uint32_t) * (gpptr - gp);
 		    gpptr++;
 		    break;
-		  case R_MIPS_GPREL32:
-		    grub_printf ("gp32\n");
-		    *gpptr = sym->st_value + *(grub_uint16_t *) addr;
-		    *(grub_uint32_t *) addr
-		      = sizeof (grub_uint32_t) * (gpptr - gp);
-		    gpptr++;
-		    break;
 		  default:
-		    grub_printf ("Unknown relocation type %d\n",
-				 ELF_R_TYPE (rel->r_info));
+		    {
+		      grub_free (gp);
+		      return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+					 "Unknown relocation type %d\n",
+					 ELF_R_TYPE (rel->r_info));
+		    }
 		    break;
 		  }
 	      }

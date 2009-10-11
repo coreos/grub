@@ -91,7 +91,7 @@ kernel_img_SOURCES = kern/mips/qemu-r4k/startup.S \
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/list.c kern/handler.c kern/command.c kern/corecmd.c	\
 	kern/parser.c kern/partition.c kern/env.c kern/$(target_cpu)/dl.c 	\
-	kern/generic/millisleep.c kern/time.c                            \
+	kern/generic/millisleep.c kern/generic/rtc_get_time_ms.c kern/time.c    \
 	symlist.c kern/$(target_cpu)/cache.S
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
@@ -121,5 +121,11 @@ memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
 lsmmap_mod_SOURCES = commands/lsmmap.c
 lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
 lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For serial.mod.
+pkglib_MODULES += serial.mod
+serial_mod_SOURCES = term/serial.c
+serial_mod_CFLAGS = $(COMMON_CFLAGS)
+serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk
