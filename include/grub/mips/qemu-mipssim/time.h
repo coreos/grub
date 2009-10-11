@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2007  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,20 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_MACHINE_MACHINE_HEADER
-#define GRUB_MACHINE_MACHINE_HEADER	1
+#ifndef KERNEL_MACHINE_TIME_HEADER
+#define KERNEL_MACHINE_TIME_HEADER	1
 
-#define GRUB_MACHINE_MIPS_QEMU_R4K	1
+#include <grub/symbol.h>
 
-#endif /* ! GRUB_MACHINE_MACHINE_HEADER */
+#define GRUB_TICKS_PER_SECOND	1000
+
+/* Return the real time in ticks.  */
+grub_uint32_t EXPORT_FUNC (grub_get_rtc) (void);
+
+static inline void
+grub_cpu_idle(void)
+{
+  /*  asm volatile ("wait");*/
+}
+
+#endif /* ! KERNEL_MACHINE_TIME_HEADER */

@@ -91,6 +91,8 @@ case "$target_cpu"-"$platform" in
   sparc64-ieee1275) ;;
   mipsel-qemu-r4k) ;;
   mips-qemu-r4k) ;;
+  mipsel-qemu-mipssim) ;;
+  mips-qemu-mipssim) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
 

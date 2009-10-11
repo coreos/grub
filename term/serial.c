@@ -67,7 +67,10 @@ static struct serial_port serial_settings;
 #ifdef GRUB_MACHINE_PCBIOS
 static const unsigned short *serial_hw_io_addr = (const unsigned short *) GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR;
 #define GRUB_SERIAL_PORT_NUM 4
-#elif defined (GRUB_MACHINE_MIPS_QEMU)
+#elif defined (GRUB_MACHINE_MIPS_QEMU_MIPSSIM)
+static const grub_port_t serial_hw_io_addr[] = { 0x1fd003f8 };
+#define GRUB_SERIAL_PORT_NUM (ARRAY_SIZE(serial_hw_io_addr))
+#elif defined (GRUB_MACHINE_MIPS_QEMU_R4K)
 static const grub_port_t serial_hw_io_addr[] = { 0x140003f8 };
 #define GRUB_SERIAL_PORT_NUM (ARRAY_SIZE(serial_hw_io_addr))
 #else

@@ -16,11 +16,10 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void *EXPORT_FUNC (memset) (void *s, int c, int n) __attribute__ ((weak));
-void EXPORT_FUNC (__ashldi3) (void) __attribute__ ((weak));
-void EXPORT_FUNC (__ashrdi3) (void) __attribute__ ((weak));
-void EXPORT_FUNC (__lshrdi3) (void) __attribute__ ((weak));
-void EXPORT_FUNC (__trampoline_setup) (void) __attribute__ ((weak));
-void EXPORT_FUNC (__ucmpdi2) (void) __attribute__ ((weak));
-void EXPORT_FUNC (__bswapsi2) (void) __attribute__ ((weak));
-void EXPORT_FUNC (__bswapdi2) (void) __attribute__ ((weak));
+void *EXPORT_FUNC (memset) (void *s, int c, int n);
+void EXPORT_FUNC (__ashldi3) (void);
+void EXPORT_FUNC (__ashrdi3) (void);
+void EXPORT_FUNC (__lshrdi3) (void);
+void EXPORT_FUNC (__ucmpdi2) (void);
+void EXPORT_FUNC (__bswapsi2) (void);
+void EXPORT_FUNC (__bswapdi2) (void);
