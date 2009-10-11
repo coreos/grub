@@ -1,4 +1,3 @@
-/* startup.S - Startup code for the MIPS.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2009  Free Software Foundation, Inc.
@@ -17,39 +16,24 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/symbol.h>
-#include <grub/cpu/kernel.h>
-#include <grub/machine/memory.h>
+#ifndef GRUB_RELOCATOR_CPU_HEADER
+#define GRUB_RELOCATOR_CPU_HEADER	1
 
-.extern __bss_start
-.extern _end
-	
-	.globl __start, _start, start
-__start:
-_start:
-start:	
-	b codestart
-	. = _start + GRUB_KERNEL_CPU_PREFIX
+#include <grub/types.h>
+#include <grub/err.h>
 
-VARIABLE(grub_prefix)
-	/* to be filled by grub-mkelfimage */
+struct grub_relocator32_state
+{
+  /* gpr[0] is ignored since it's hardwired to 0.  */
+  grub_uint32_t gpr[32];
+  /* Register holding target $pc.  */
+  int jumpreg;
+};
 
-	/*
-	 *  Leave some breathing room for the prefix.
-	 */
+void *grub_relocator32_alloc (grub_size_t size);
+grub_err_t grub_relocator32_boot (void *relocator, grub_uint32_t dest,
+				  struct grub_relocator32_state state);
+void *grub_relocator32_realloc (void *relocator, grub_size_t size);
+void grub_relocator32_free (void *relocator);
 
-	. = _start + GRUB_KERNEL_CPU_DATA_END
-codestart:
-	lui $t1, %hi(__bss_start)
-	addiu $t1, %lo(__bss_start)
-	lui $t2, %hi(_end)
-	addiu $t2, %lo(_end)
-
-bsscont:
-	sb $0,0($t1)
-	addiu $t1,$t1,1
-	sltu $t3,$t1,$t2
-	bne $t3, $t0, bsscont
-
-	li $sp, GRUB_MACHINE_MEMORY_STACK_HIGH
-	b grub_main
+#endif /* ! GRUB_RELOCATOR_CPU_HEADER */

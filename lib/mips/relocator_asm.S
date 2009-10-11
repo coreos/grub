@@ -1,4 +1,3 @@
-/* startup.S - Startup code for the MIPS.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2009  Free Software Foundation, Inc.
@@ -18,38 +17,34 @@
  */
 
 #include <grub/symbol.h>
-#include <grub/cpu/kernel.h>
-#include <grub/machine/memory.h>
 
-.extern __bss_start
-.extern _end
+#ifdef BACKWARD
+#define RELOCATOR_VARIABLE(x) VARIABLE(grub_relocator32_backward_ ## x)
+#else
+#define RELOCATOR_VARIABLE(x) VARIABLE(grub_relocator32_forward_ ## x)
+#endif
 	
-	.globl __start, _start, start
-__start:
-_start:
-start:	
-	b codestart
-	. = _start + GRUB_KERNEL_CPU_PREFIX
+	.p2align	4	/* force 16-byte alignment */
 
-VARIABLE(grub_prefix)
-	/* to be filled by grub-mkelfimage */
+VARIABLE (grub_relocator32_forward_start)
+copycont1:	
+	lb $4,0($1)
+	sb $4,0($2)
+	addiu $3, $3, 0xffff
+	subu $4,$3,$0
+	bne $4, $0, copycont1
+VARIABLE (grub_relocator32_forward_end)
 
-	/*
-	 *  Leave some breathing room for the prefix.
-	 */
-
-	. = _start + GRUB_KERNEL_CPU_DATA_END
-codestart:
-	lui $t1, %hi(__bss_start)
-	addiu $t1, %lo(__bss_start)
-	lui $t2, %hi(_end)
-	addiu $t2, %lo(_end)
-
-bsscont:
-	sb $0,0($t1)
-	addiu $t1,$t1,1
-	sltu $t3,$t1,$t2
-	bne $t3, $t0, bsscont
-
-	li $sp, GRUB_MACHINE_MEMORY_STACK_HIGH
-	b grub_main
+VARIABLE (grub_relocator32_backward_start)
+	addu $2, $2, $3
+	addu $1, $1, $3
+	/* Backward movsl is implicitly off-by-one.  compensate that.  */
+	addiu $2, $2, 0xffff
+	addiu $1, $1, 0xffff
+copycont2:	
+	lb $4,0($1)
+	sb $4,0($2)
+	addiu $3, 0xffff
+	subu $4,$3,$0
+	bne $4, $0, copycont2
+VARIABLE (grub_relocator32_backward_end)
