@@ -1,3 +1,7 @@
+2009-10-12  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* term/tparm.c: Switch to GPLv3.
+
 2009-10-09  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/i386/cpuid.h: Add header protection.
