@@ -444,9 +444,9 @@ grub_freebsd_boot (void)
   auto int iterate_env (struct grub_env_var *var);
   int iterate_env (struct grub_env_var *var)
   {
-    if ((!grub_memcmp (var->name, "FreeBSD.", 8)) && (var->name[8]))
+    if ((!grub_memcmp (var->name, "kFreeBSD.", sizeof("kFreeBSD.") - 1)) && (var->name[sizeof("kFreeBSD.") - 1]))
       {
-	grub_strcpy (p, &var->name[8]);
+	grub_strcpy (p, &var->name[sizeof("kFreeBSD.") - 1]);
 	p += grub_strlen (p);
 	*(p++) = '=';
 	grub_strcpy (p, var->value);
@@ -1112,12 +1112,12 @@ grub_cmd_freebsd_loadenv (grub_command_t cmd __attribute__ ((unused)),
 
       if (*curr)
 	{
-	  char name[grub_strlen (curr) + 8 + 1];
+	  char name[grub_strlen (curr) + sizeof("kFreeBSD.")];
 
 	  if (*p == '"')
 	    p++;
 
-	  grub_sprintf (name, "FreeBSD.%s", curr);
+	  grub_sprintf (name, "kFreeBSD.%s", curr);
 	  if (grub_env_set (name, p))
 	    goto fail;
 	}
@@ -1252,26 +1252,26 @@ static grub_command_t cmd_freebsd_module_elf;
 
 GRUB_MOD_INIT (bsd)
 {
-  cmd_freebsd = grub_register_extcmd ("freebsd", grub_cmd_freebsd,
+  cmd_freebsd = grub_register_extcmd ("kfreebsd", grub_cmd_freebsd,
 				      GRUB_COMMAND_FLAG_BOTH,
-				      "freebsd FILE", "Load kernel of FreeBSD.",
+				      "kfreebsd FILE", "Load kernel of FreeBSD.",
 				      freebsd_opts);
-  cmd_openbsd = grub_register_extcmd ("openbsd", grub_cmd_openbsd,
+  cmd_openbsd = grub_register_extcmd ("kopenbsd", grub_cmd_openbsd,
 				      GRUB_COMMAND_FLAG_BOTH,
-				      "openbsd FILE", "Load kernel of OpenBSD.",
+				      "kopenbsd FILE", "Load kernel of OpenBSD.",
 				      openbsd_opts);
-  cmd_netbsd = grub_register_extcmd ("netbsd", grub_cmd_netbsd,
+  cmd_netbsd = grub_register_extcmd ("knetbsd", grub_cmd_netbsd,
 				     GRUB_COMMAND_FLAG_BOTH,
-				     "netbsd FILE", "Load kernel of NetBSD.",
+				     "knetbsd FILE", "Load kernel of NetBSD.",
 				     netbsd_opts);
   cmd_freebsd_loadenv =
-    grub_register_command ("freebsd_loadenv", grub_cmd_freebsd_loadenv,
+    grub_register_command ("kfreebsd_loadenv", grub_cmd_freebsd_loadenv,
 			   0, "load FreeBSD env");
   cmd_freebsd_module =
-    grub_register_command ("freebsd_module", grub_cmd_freebsd_module,
+    grub_register_command ("kfreebsd_module", grub_cmd_freebsd_module,
 			   0, "load FreeBSD kernel module");
   cmd_freebsd_module_elf =
-    grub_register_command ("freebsd_module_elf", grub_cmd_freebsd_module_elf,
+    grub_register_command ("kfreebsd_module_elf", grub_cmd_freebsd_module_elf,
 			   0, "load FreeBSD kernel module (ELF)");
 
   my_mod = mod;
