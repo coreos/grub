@@ -143,8 +143,6 @@ grub_lspci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
 
   grub_printf ("\n");
 
-  grub_pci_close (dev);
-
   return 0;
 }
 
@@ -159,13 +157,13 @@ grub_cmd_lspci (grub_command_t cmd __attribute__ ((unused)),
 
 static grub_command_t cmd;
 
-GRUB_MOD_INIT(pci)
+GRUB_MOD_INIT(lspci)
 {
   cmd = grub_register_command ("lspci", grub_cmd_lspci,
 			       0, "List PCI devices");
 }
 
-GRUB_MOD_FINI(pci)
+GRUB_MOD_FINI(lspci)
 {
   grub_unregister_command (cmd);
 }

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,55 +16,73 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef	GRUB_CPU_PCI_H
-#define	GRUB_CPU_PCI_H	1
+#ifndef	GRUB_PCIUTILS_H
+#define	GRUB_PCIUTILS_H	1
 
-#include <grub/types.h>
-#include <grub/i386/io.h>
+#include <pci/pci.h>
 
-#define GRUB_PCI_ADDR_REG	0xcf8
-#define GRUB_PCI_DATA_REG	0xcfc
+typedef struct pci_dev *grub_pci_device_t;
+
+static inline int
+grub_pci_get_bus (grub_pci_device_t dev)
+{
+  return dev->bus;
+}
+
+static inline int
+grub_pci_get_device (grub_pci_device_t dev)
+{
+  return dev->dev;
+}
+
+static inline int
+grub_pci_get_function (grub_pci_device_t dev)
+{
+  return dev->func;
+}
+
+struct grub_pci_address
+{
+  grub_pci_device_t dev;
+  int pos;
+};
+
+typedef struct grub_pci_address grub_pci_address_t;
 
 static inline grub_uint32_t
 grub_pci_read (grub_pci_address_t addr)
 {
-  grub_outl (addr, GRUB_PCI_ADDR_REG);
-  return grub_inl (GRUB_PCI_DATA_REG);
+  return pci_read_long (addr.dev, addr.pos);
 }
 
 static inline grub_uint16_t
 grub_pci_read_word (grub_pci_address_t addr)
 {
-  grub_outl (addr & ~3, GRUB_PCI_ADDR_REG);
-  return grub_inw (GRUB_PCI_DATA_REG + (addr & 3));
+  return pci_read_word (addr.dev, addr.pos);
 }
 
 static inline grub_uint8_t
 grub_pci_read_byte (grub_pci_address_t addr)
 {
-  grub_outl (addr & ~3, GRUB_PCI_ADDR_REG);
-  return grub_inb (GRUB_PCI_DATA_REG + (addr & 3));
+  return pci_read_byte (addr.dev, addr.pos);
 }
 
 static inline void
 grub_pci_write (grub_pci_address_t addr, grub_uint32_t data)
 {
-  grub_outl (addr, GRUB_PCI_ADDR_REG);
-  grub_outl (data, GRUB_PCI_DATA_REG);
+  pci_write_long (addr.dev, addr.pos, data);
 }
 
 static inline void
 grub_pci_write_word (grub_pci_address_t addr, grub_uint16_t data)
 {
-  grub_outl (addr & ~3, GRUB_PCI_ADDR_REG);
-  grub_outw (data, GRUB_PCI_DATA_REG + (addr & 3));
+  pci_write_word (addr.dev, addr.pos, data);
 }
 
 static inline void
 grub_pci_write_byte (grub_pci_address_t addr, grub_uint8_t data)
 {
-  grub_outl (addr & ~3, GRUB_PCI_ADDR_REG);
-  grub_outb (data, GRUB_PCI_DATA_REG + (addr & 3));
+  pci_write_byte (addr.dev, addr.pos, data);
 }
 
-#endif /* GRUB_CPU_PCI_H */
+#endif /* GRUB_PCIUTILS_H */

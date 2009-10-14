@@ -32,12 +32,6 @@ grub_pci_make_address (grub_pci_device_t dev, int reg)
 }
 
 void
-grub_pci_close (grub_pci_device_t dev)
-{
-  pci_free_dev (dev);
-}
-
-void
 grub_pci_iterate (grub_pci_iteratefunc_t hook)
 {
   grub_pci_device_t cur;
@@ -49,6 +43,7 @@ GRUB_MOD_INIT (pci)
 {
   acc = pci_alloc ();
   pci_init (acc);
+  pci_scan_bus (acc);
 }
 
 GRUB_MOD_FINI (pci)

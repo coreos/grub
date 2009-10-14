@@ -531,9 +531,14 @@ else
 enable_grub_emu=no
 grub_emu_usb_excuse="grub-emu isn't built"
 fi
+if test x"$enable_grub_emu_pci" = xyes ; then
+   grub_emu_usb_excuse="conflicts with PCI support"
+fi
+
 if test x"$enable_grub_emu_usb" = xno ; then
   grub_emu_usb_excuse="explicitly disabled"
 fi
+
 [if [ x"$grub_emu_usb_excuse" = x ]; then
     # Check for libusb libraries.]
 AC_CHECK_LIB([usb], [usb_claim_interface], [LIBUSB="-lusb"],
@@ -555,7 +560,29 @@ enable_grub_emu_usb=no
 fi
 
 if test x"$enable_grub_emu_pci" != xyes ; then
-   enable_grub_emu_pci = no
+   grub_emu_pci_excuse="not enabled"
+fi
+
+if test x"$enable_grub_emu_usb" = xyes ; then
+   grub_emu_pci_excuse="conflicts with USB support"
+fi
+
+[if [ x"$grub_emu_pci_excuse" = x ]; then
+      # Check for libpci libraries.]
+   AC_CHECK_LIB([pci], [pci_alloc], [LIBPCI="-lpci"],
+      [grub_emu_pci_excuse=["need libpci library"]])
+    AC_SUBST([LIBPCI])
+[fi]
+[if [ x"$grub_emu_pci_excuse" = x ]; then
+    # Check for headers.]
+    AC_CHECK_HEADERS([pci/pci.h], [],
+      [grub_emu_pci_excuse=["need libpci headers"]])
+[fi]
+
+if test x"$grub_emu_pci_excuse" = x ; then
+enable_grub_emu_pci=yes
+else
+enable_grub_emu_pci=no
 fi
 
 AC_SUBST([enable_grub_emu])
@@ -634,6 +661,12 @@ echo USB support for grub-emu: Yes
 else
 echo USB support for grub-emu: No "($grub_emu_usb_excuse)"
 fi
+if [ x"$grub_emu_pci_excuse" = x ]; then
+echo PCI support for grub-emu: Yes
+else
+echo PCI support for grub-emu: No "($grub_emu_pci_excuse)"
+fi
+
 if [ x"$enable_mm_debug" = xyes ]; then
 echo With memory debugging: Yes
 else
