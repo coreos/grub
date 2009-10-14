@@ -1,5 +1,11 @@
 2009-10-14  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* conf/common.rmk (grub-dumpbios): Remove rule.
+	(sbin_SCRIPTS, CLEANFILES): Remove `grub-dumpbios'.
+	* util/grub-dumpbios.in: Remove file.
+
+2009-10-14  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Refer to kernel of FreeBSD "kFreeBSD" to avoid confusion between
 	the Operating System (FreeBSD) and its kernel (kernel of FreeBSD).
 
