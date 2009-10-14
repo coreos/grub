@@ -388,7 +388,7 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
 }
 
 static int NESTED_FUNC_ATTR
-grub_ata_pciinit (int bus, int device, int func,
+grub_ata_pciinit (grub_pci_device_t dev,
 		  grub_pci_id_t pciid __attribute__((unused)))
 {
   static int compat_use[2] = { 0 };
@@ -402,7 +402,7 @@ grub_ata_pciinit (int bus, int device, int func,
   static int controller = 0;
 
   /* Read class.  */
-  addr = grub_pci_make_address (bus, device, func, 2);
+  addr = grub_pci_make_address (dev, 2);
   class = grub_pci_read (addr);
 
   /* Check if this class ID matches that of a PCI IDE Controller.  */
@@ -429,9 +429,9 @@ grub_ata_pciinit (int bus, int device, int func,
 	{
 	  /* Read the BARs, which either contain a mmapped IO address
 	     or the IO port address.  */
-	  addr = grub_pci_make_address (bus, device, func, 4 + 2 * i);
+	  addr = grub_pci_make_address (dev, 4 + 2 * i);
 	  bar1 = grub_pci_read (addr);
-	  addr = grub_pci_make_address (bus, device, func, 5 + 2 * i);
+	  addr = grub_pci_make_address (dev, 5 + 2 * i);
 	  bar2 = grub_pci_read (addr);
 
 	  /* Check if the BARs describe an IO region.  */
@@ -444,7 +444,8 @@ grub_ata_pciinit (int bus, int device, int func,
 
       grub_dprintf ("ata",
 		    "PCI dev (%d,%d,%d) compat=%d rega=0x%x regb=0x%x\n",
-		    bus, device, func, compat, rega, regb);
+		    grub_pci_get_bus (dev), grub_pci_get_device (dev),
+		    grub_pci_get_function (dev), compat, rega, regb);
 
       if (rega && regb)
 	{

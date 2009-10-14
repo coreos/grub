@@ -499,6 +499,10 @@ AC_ARG_ENABLE([grub-emu],
 AC_ARG_ENABLE([grub-emu-usb],
 	      [AS_HELP_STRING([--enable-grub-emu-usb],
                              [build and install the `grub-emu' debugging utility with USB support (default=guessed)])])
+AC_ARG_ENABLE([grub-emu-pci],
+	      [AS_HELP_STRING([--enable-grub-emu-pci],
+                             [build and install the `grub-emu' debugging utility with PCI support (potentially dangerous) (default=no)])])
+
 if test x"$enable_grub_emu" = xno ; then
   grub_emu_excuse="explicitly disabled"
 fi
@@ -541,7 +545,7 @@ AC_CHECK_LIB([usb], [usb_claim_interface], [LIBUSB="-lusb"],
     AC_CHECK_HEADERS([usb.h], [],
       [grub_emu_usb_excuse=["need libusb headers"]])
 [fi]
-if test x"enable_grub_emu_usb" = xyes && test x"$grub_emu_usb_excuse" != x ; then
+if test x"$enable_grub_emu_usb" = xyes && test x"$grub_emu_usb_excuse" != x ; then
   AC_MSG_ERROR([USB support for grub-emu was explicitly requested but can't be compiled])
 fi
 if test x"$grub_emu_usb_excuse" = x ; then
@@ -550,8 +554,13 @@ else
 enable_grub_emu_usb=no
 fi
 
+if test x"$enable_grub_emu_pci" != xyes ; then
+   enable_grub_emu_pci = no
+fi
+
 AC_SUBST([enable_grub_emu])
 AC_SUBST([enable_grub_emu_usb])
+AC_SUBST([enable_grub_emu_pci])
 
 AC_ARG_ENABLE([grub-fstest],
 	      [AS_HELP_STRING([--enable-grub-fstest],

@@ -67,4 +67,9 @@ grub_pci_write_byte (grub_pci_address_t addr, grub_uint8_t data)
   grub_outb (data, GRUB_PCI_DATA_REG + (addr & 3));
 }
 
+static inline void
+grub_pci_close (grub_pci_device_t dev __attribute__ ((unused)))
+{
+}
+
 #endif /* GRUB_CPU_PCI_H */
