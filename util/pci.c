@@ -19,8 +19,7 @@
 
 #include <grub/pci.h>
 #include <grub/dl.h>
-
-struct pci_access *acc = 0;
+#include <grub/util/misc.h>
 
 grub_pci_address_t
 grub_pci_make_address (grub_pci_device_t dev, int reg)
@@ -34,19 +33,44 @@ grub_pci_make_address (grub_pci_device_t dev, int reg)
 void
 grub_pci_iterate (grub_pci_iteratefunc_t hook)
 {
-  grub_pci_device_t cur;
-  for (cur = acc->devices; cur; cur = cur->next)
-    hook (cur, cur->vendor_id|(cur->device_id << 16));
+  struct pci_device_iterator *iter;
+  struct pci_slot_match slot;
+  struct pci_device *dev;
+  slot.domain = PCI_MATCH_ANY;
+  slot.bus = PCI_MATCH_ANY;
+  slot.dev = PCI_MATCH_ANY;
+  slot.func = PCI_MATCH_ANY;
+  iter = pci_slot_match_iterator_create (&slot);
+  while ((dev = pci_device_next (iter)))
+    hook (dev, dev->vendor_id | (dev->device_id << 16));
+  pci_iterator_destroy (iter);
+}
+
+void *
+grub_pci_device_map_range (grub_pci_device_t dev, grub_addr_t base,
+			   grub_size_t size)
+{
+  void *addr;
+  int err;
+  err = pci_device_map_range(dev, base, size, PCI_DEV_MAP_FLAG_WRITABLE, &addr);
+  if (err)
+    grub_util_error ("mapping 0x%x failed (error %d)\n", base, err);
+  return addr;
+}
+
+void
+grub_pci_device_unmap_range (grub_pci_device_t dev, void *mem,
+			     grub_size_t size)
+{
+  pci_device_unmap_range (dev, mem, size);
 }
 
 GRUB_MOD_INIT (pci)
 {
-  acc = pci_alloc ();
-  pci_init (acc);
-  pci_scan_bus (acc);
+  pci_system_init ();
 }
 
 GRUB_MOD_FINI (pci)
 {
-  pci_cleanup (acc);
+  pci_system_cleanup ();
 }

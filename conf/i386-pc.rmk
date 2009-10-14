@@ -170,7 +170,7 @@ endif
 
 ifeq ($(enable_grub_emu_pci), yes)
 grub_emu_SOURCES += util/pci.c commands/lspci.c
-grub_emu_LDFLAGS += $(LIBPCI)
+grub_emu_LDFLAGS += $(LIBPCIACCESS)
 endif
 
 # Scripts.

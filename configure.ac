@@ -569,14 +569,14 @@ fi
 
 [if [ x"$grub_emu_pci_excuse" = x ]; then
       # Check for libpci libraries.]
-   AC_CHECK_LIB([pci], [pci_alloc], [LIBPCI="-lpci"],
-      [grub_emu_pci_excuse=["need libpci library"]])
-    AC_SUBST([LIBPCI])
+   AC_CHECK_LIB([pciaccess], [pci_system_init], [LIBPCIACCESS="-lpciaccess"],
+      [grub_emu_pci_excuse=["need libpciaccess library"]])
+    AC_SUBST([LIBPCIACCESS])
 [fi]
 [if [ x"$grub_emu_pci_excuse" = x ]; then
     # Check for headers.]
     AC_CHECK_HEADERS([pci/pci.h], [],
-      [grub_emu_pci_excuse=["need libpci headers"]])
+      [grub_emu_pci_excuse=["need libpciaccess headers"]])
 [fi]
 
 if test x"$grub_emu_pci_excuse" = x ; then
