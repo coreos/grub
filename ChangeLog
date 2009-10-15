@@ -1,5 +1,9 @@
 2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add missing dollar.
+
+2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
         Revert 2009-06-10  Pavel Roskin  <proski@gnu.org>
 
 	* configure.ac: Put checks for __bswapsi2 and __bswapdi2.
