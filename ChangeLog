@@ -1,3 +1,9 @@
+2009-10-15  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Make entry text a bit more readable.
+
+	* util/grub.d/10_linux.in: Add `with' before `Linux'.
+
 2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* loader/i386/pc/xnu.c (grub_xnu_set_video): Fix loading splash image.
