@@ -1,3 +1,13 @@
+2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+        Revert 2009-06-10  Pavel Roskin  <proski@gnu.org>
+
+	* configure.ac: Put checks for __bswapsi2 and __bswapdi2.
+	* include/grub/powerpc/libgcc.h: Don't use weak attribute for all
+	exports.
+	* include/grub/sparc64/libgcc.h: Likewise.  Use
+	preprocessor conditionals.
+
 2009-10-14  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* conf/common.rmk (grub-dumpbios): Remove rule.
