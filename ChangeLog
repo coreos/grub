@@ -1,5 +1,9 @@
 2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* loader/i386/pc/xnu.c (grub_xnu_set_video): Fix loading splash image.
+
+2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* commands/xnu_uuid.c (grub_cmd_xnu_uuid): Remove duplicated bitwise
 	operations.
 
