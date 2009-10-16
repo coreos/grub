@@ -58,6 +58,7 @@ static char *mod_buf;
 static grub_uint32_t mod_buf_len, mod_buf_max, kern_end_mdofs;
 static int is_elf_kernel, is_64bit;
 static char *netbsd_root = NULL;
+static grub_uint32_t openbsd_root;
 
 static const struct grub_arg_option freebsd_opts[] =
   {
@@ -94,6 +95,7 @@ static const struct grub_arg_option openbsd_opts[] =
     {"config", 'c', 0, "Change configured devices.", 0, 0},
     {"single", 's', 0, "Boot into single mode.", 0, 0},
     {"kdb", 'd', 0, "Enter in KDB on boot.", 0, 0},
+    {"root", 'r', 0, "Set root device.", "wdXY", ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -102,6 +104,8 @@ static const grub_uint32_t openbsd_flags[] =
   OPENBSD_RB_ASKNAME, OPENBSD_RB_HALT, OPENBSD_RB_CONFIG,
   OPENBSD_RB_SINGLE, OPENBSD_RB_KDB, 0
 };
+
+#define OPENBSD_ROOT_ARG (ARRAY_SIZE (openbsd_flags) - 1)
 
 static const struct grub_arg_option netbsd_opts[] =
   {
@@ -565,7 +569,6 @@ grub_openbsd_boot (void)
   char *buf = (char *) GRUB_BSD_TEMP_BUFFER;
   struct grub_openbsd_bios_mmap *pm;
   struct grub_openbsd_bootargs *pa;
-  grub_uint32_t bootdev, biosdev, unit, slice, part;
 
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
@@ -614,11 +617,7 @@ grub_openbsd_boot (void)
   pa->ba_type = OPENBSD_BOOTARG_END;
   pa++;
 
-  grub_bsd_get_device (&biosdev, &unit, &slice, &part);
-  bootdev = (OPENBSD_B_DEVMAGIC + (unit << OPENBSD_B_UNITSHIFT) +
-	     (part << OPENBSD_B_PARTSHIFT));
-
-  grub_unix_real_boot (entry, bootflags, bootdev, OPENBSD_BOOTARG_APIVER,
+  grub_unix_real_boot (entry, bootflags, openbsd_root, OPENBSD_BOOTARG_APIVER,
 		       0, (grub_uint32_t) (grub_mmap_get_upper () >> 10),
 		       (grub_uint32_t) (grub_mmap_get_lower () >> 10),
 		       (char *) pa - buf, buf);
@@ -1015,11 +1014,39 @@ grub_cmd_freebsd (grub_extcmd_t cmd, int argc, char *argv[])
 static grub_err_t
 grub_cmd_openbsd (grub_extcmd_t cmd, int argc, char *argv[])
 {
+  grub_uint32_t bootdev;
+
   kernel_type = KERNEL_TYPE_OPENBSD;
   bootflags = grub_bsd_parse_flags (cmd->state, openbsd_flags);
 
+  if (cmd->state[OPENBSD_ROOT_ARG].set)
+    {
+      const char *arg = cmd->state[OPENBSD_ROOT_ARG].arg;
+      int unit, part;
+      if (*(arg++) != 'w' || *(arg++) != 'd')
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   "Only device specifications of form "
+			   "wd<number><lowercase letter> are supported.");
+
+      unit = grub_strtoul (arg, (char **) &arg, 10);
+      if (! (arg && *arg >= 'a' && *arg <= 'z'))
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   "Only device specifications of form "
+			   "wd<number><lowercase letter> are supported.");
+
+      part = *arg - 'a';
+
+      bootdev = (OPENBSD_B_DEVMAGIC + (unit << OPENBSD_B_UNITSHIFT) +
+		 (part << OPENBSD_B_PARTSHIFT));
+    }
+  else
+    bootdev = 0;
+
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
-    grub_loader_set (grub_openbsd_boot, grub_bsd_unload, 1);
+    {
+      grub_loader_set (grub_openbsd_boot, grub_bsd_unload, 1);
+      openbsd_root = bootdev;
+    }
 
   return grub_errno;
 }

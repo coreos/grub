@@ -1,3 +1,13 @@
+2009-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Let user specify OpenBSD root device.
+
+	* loader/i386/bsd.c (openbsd_root): New variable.
+	(openbsd_opts): New option 'root'.
+	(OPENBSD_ROOT_ARG): New macro.
+	(grub_openbsd_boot): Use 'openbsd_root'.
+	(grub_cmd_openbsd): Fill 'openbsd_root'.
+
 2009-10-16  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* NEWS: Misc adjustments.
