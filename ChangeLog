@@ -1,3 +1,10 @@
+2009-10-16  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac (TARGET_CFLAGS): Add -mno-mmx -mno-sse -mno-sse2
+	-mno-3dnow on x86 architectures.  Some toolchains enable these
+	features by default, but they rely on registers that aren't enabled
+	in GRUB.  Thanks to Vladimir Serbinenko for the suggestion.
+
 2009-10-15  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Make entry text a bit more readable.

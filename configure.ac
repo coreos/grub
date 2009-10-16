@@ -252,6 +252,10 @@ if test "x$TARGET_CFLAGS" = x; then
     else
       TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
     fi
+
+    # Some toolchains enable these features by default, but they need
+    # registers that aren't set up properly in GRUB.
+    TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
   fi
 
   # By default, GCC 4.4 generates .eh_frame sections containing unwind
