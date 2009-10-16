@@ -28,23 +28,23 @@
 
 VARIABLE (grub_relocator32_forward_start)
 copycont1:	
-	lb $4,0($1)
-	sb $4,0($2)
-	addiu $3, $3, 0xffff
-	subu $4,$3,$0
-	bne $4, $0, copycont1
+	lb $5,0($2)
+	sb $5,0($3)
+	addiu $4, $4, 0xffff
+	subu $5,$4,$0
+	bne $5, $0, copycont1
 VARIABLE (grub_relocator32_forward_end)
 
 VARIABLE (grub_relocator32_backward_start)
-	addu $2, $2, $3
-	addu $1, $1, $3
+	addu $3, $3, $4
+	addu $2, $2, $4
 	/* Backward movsl is implicitly off-by-one.  compensate that.  */
+	addiu $3, $3, 0xffff
 	addiu $2, $2, 0xffff
-	addiu $1, $1, 0xffff
 copycont2:	
-	lb $4,0($1)
-	sb $4,0($2)
-	addiu $3, 0xffff
-	subu $4,$3,$0
-	bne $4, $0, copycont2
+	lb $5,0($2)
+	sb $5,0($3)
+	addiu $4, 0xffff
+	subu $5,$4,$0
+	bne $5, $0, copycont2
 VARIABLE (grub_relocator32_backward_end)

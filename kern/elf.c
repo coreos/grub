@@ -172,7 +172,7 @@ grub_elf32_phdr_iterate (grub_elf_t elf,
 
 /* Calculate the amount of memory spanned by the segments.  */
 grub_size_t
-grub_elf32_size (grub_elf_t elf)
+grub_elf32_size (grub_elf_t elf, Elf32_Addr *base)
 {
   Elf32_Addr segments_start = (Elf32_Addr) -1;
   Elf32_Addr segments_end = 0;
@@ -196,6 +196,9 @@ grub_elf32_size (grub_elf_t elf)
 
   grub_elf32_phdr_iterate (elf, calcsize, 0);
 
+  if (base)
+    *base = 0;
+
   if (nr_phdrs == 0)
     {
       grub_error (GRUB_ERR_BAD_OS, "No program headers present");
@@ -209,9 +212,11 @@ grub_elf32_size (grub_elf_t elf)
       return 0;
     }
 
+  if (base)
+    *base = segments_start;
+
   return segments_end - segments_start;
 }
-
 
 /* Load every loadable segment into memory specified by `_load_hook'.  */
 grub_err_t
@@ -351,7 +356,7 @@ grub_elf64_phdr_iterate (grub_elf_t elf,
 
 /* Calculate the amount of memory spanned by the segments.  */
 grub_size_t
-grub_elf64_size (grub_elf_t elf)
+grub_elf64_size (grub_elf_t elf, Elf64_Addr *base)
 {
   Elf64_Addr segments_start = (Elf64_Addr) -1;
   Elf64_Addr segments_end = 0;
@@ -375,6 +380,9 @@ grub_elf64_size (grub_elf_t elf)
 
   grub_elf64_phdr_iterate (elf, calcsize, 0);
 
+  if (base)
+    *base = 0;
+
   if (nr_phdrs == 0)
     {
       grub_error (GRUB_ERR_BAD_OS, "No program headers present");
@@ -387,6 +395,9 @@ grub_elf64_size (grub_elf_t elf)
       grub_error (GRUB_ERR_BAD_OS, "Bad program header load addresses");
       return 0;
     }
+
+  if (base)
+    *base = segments_start;
 
   return segments_end - segments_start;
 }
