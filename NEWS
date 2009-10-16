@@ -1,5 +1,15 @@
 New in 1.97 - :
 
+* Add support for XNU kernels.
+
+* ACPI override support.
+
+* Integrated gptsync.
+
+* Password protection support.
+
+* Partition manipulation tool.
+
 * Add `keystatus' command.
 
 * Unicode fonts are now used by default.
