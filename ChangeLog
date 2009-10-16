@@ -1,3 +1,7 @@
+2009-10-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Bump version to 1.97.
+
 2009-10-16  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac (TARGET_CFLAGS): Add -mno-mmx -mno-sse -mno-sse2
