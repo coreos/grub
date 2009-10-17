@@ -75,8 +75,8 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
       overhead =
 	ALIGN_UP (dest - RELOCATOR_SIZEOF (backward) - RELOCATOR_ALIGN,
 		  RELOCATOR_ALIGN);
-      write_call_relocator_bw (relocator - overhead,
-			       relocator - overhead,
+      write_call_relocator_bw ((char *) relocator - overhead,
+			       (char *) relocator - overhead,
 			       dest - overhead, size + overhead, state);
     }
   else
@@ -86,7 +86,7 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
       overhead = ALIGN_UP (dest + size, RELOCATOR_ALIGN)
 	+ RELOCATOR_SIZEOF (forward) - (dest + size);
 
-      write_call_relocator_fw (relocator + size + overhead
+      write_call_relocator_fw ((char *) relocator + size + overhead
 			       - RELOCATOR_SIZEOF (forward),
 			       relocator, dest, size + overhead, state);
     }

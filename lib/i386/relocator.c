@@ -57,11 +57,9 @@ extern grub_uint32_t grub_relocator32_backward_esp;
 #define PREFIX(x) grub_relocator32_ ## x
 
 static void
-write_relocator_bw (void *ptr, void *src, grub_uint32_t dest,
-		    grub_size_t size, struct grub_relocator32_state state)
+write_call_relocator_bw (void *ptr, void *src, grub_uint32_t dest,
+			 grub_size_t size, struct grub_relocator32_state state)
 {
-  void (*entry) ();
-
   grub_relocator32_backward_dest = dest;
   grub_relocator32_backward_src = PTR_TO_UINT64 (src);
   grub_relocator32_backward_size = size;
@@ -76,13 +74,12 @@ write_relocator_bw (void *ptr, void *src, grub_uint32_t dest,
   grub_memmove (ptr,
 		&grub_relocator32_backward_start,
 		RELOCATOR_SIZEOF (backward));
-  entry = (void (*)()) (ptr);
-  entry ();
+  ((void (*)()) ptr) ();
 }
 
 static void
-write_relocator_bw (void *ptr, void *src, grub_uint32_t dest,
-		    grub_size_t size, struct grub_relocator32_state state)
+write_call_relocator_fw (void *ptr, void *src, grub_uint32_t dest,
+			 grub_size_t size, struct grub_relocator32_state state)
 {
 
   grub_relocator32_forward_dest = dest;
@@ -99,6 +96,7 @@ write_relocator_bw (void *ptr, void *src, grub_uint32_t dest,
   grub_memmove (ptr,
 		&grub_relocator32_forward_start,
 		RELOCATOR_SIZEOF (forward));
-  entry = (void (*)()) ptr;
-  entry ();
+  ((void (*)()) ptr) ();
 }
+
+#include "../relocator.c"
