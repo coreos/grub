@@ -25,14 +25,12 @@
 /* The size of long.  */
 #define GRUB_TARGET_SIZEOF_LONG		4
 
-#ifdef GRUB_CPU_MIPSEL
+#ifdef __MIPSEL__
 /* mipsEL is little-endian.  */
 #undef GRUB_TARGET_WORDS_BIGENDIAN
-#elif defined (GRUB_CPU_MIPS)
+#else
 /* mips is big-endian.  */
 #define GRUB_TARGET_WORDS_BIGENDIAN
-#elif !defined (GRUB_SYMBOL_GENERATOR)
-#error Neither GRUB_CPU_MIPS nor GRUB_CPU_MIPSEL is defined
 #endif
 
 #endif /* ! GRUB_TYPES_CPU_HEADER */
