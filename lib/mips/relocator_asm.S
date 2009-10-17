@@ -30,6 +30,8 @@ VARIABLE (grub_relocator32_forward_start)
 copycont1:	
 	lb $5,0($2)
 	sb $5,0($3)
+	addiu $2, $2, 0x1
+	addiu $3, $3, 0x1
 	addiu $4, $4, 0xffff
 	subu $5,$4,$0
 	bne $5, $0, copycont1
@@ -44,6 +46,8 @@ VARIABLE (grub_relocator32_backward_start)
 copycont2:	
 	lb $5,0($2)
 	sb $5,0($3)
+	addiu $2, $2, 0xffff
+	addiu $3, $3, 0xffff
 	addiu $4, 0xffff
 	subu $5,$4,$0
 	bne $5, $0, copycont2

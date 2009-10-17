@@ -45,7 +45,6 @@ static grub_addr_t target_addr, entry_addr, initrd_addr, args_addr;
 static grub_err_t
 grub_linux_boot (void)
 {
-  grub_ssize_t actual;
   struct grub_relocator32_state state;
 
   /* Boot the kernel.  */
@@ -81,7 +80,6 @@ static grub_err_t
 grub_linux_load32 (grub_elf_t elf, char *args)
 {
   Elf32_Addr base;
-  int found_addr = 0;
   int argsoff;
 
   /* Linux's entry point incorrectly contains a virtual address.  */
@@ -116,17 +114,16 @@ grub_linux_load32 (grub_elf_t elf, char *args)
 
       /* Linux's program headers incorrectly contain virtual addresses.
        * Translate those to physical, and offset to the area we claimed.  */
-      *addr = phdr->p_paddr - base + playground;
+      *addr = (grub_addr_t) (phdr->p_paddr - base + playground);
       return 0;
     }
   return grub_elf32_load (elf, offset_phdr, 0, 0);
 }
 
 static grub_err_t
-grub_linux_load64 (grub_elf_t elf)
+grub_linux_load64 (grub_elf_t elf, char *args)
 {
   Elf64_Addr base;
-  int found_addr = 0;
   int argsoff;
 
   /* Linux's entry point incorrectly contains a virtual address.  */
@@ -160,7 +157,7 @@ grub_linux_load64 (grub_elf_t elf)
       *do_load = 1;
       /* Linux's program headers incorrectly contain virtual addresses.
        * Translate those to physical, and offset to the area we claimed.  */
-      *addr = phdr->p_paddr - base + playground;
+      *addr = (grub_addr_t) (phdr->p_paddr - base + playground);
       return 0;
     }
   return grub_elf64_load (elf, offset_phdr, 0, 0);
@@ -254,19 +251,12 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_file_t file = 0;
   grub_ssize_t size;
   grub_addr_t addr;
-  int found_addr = 0;
 
   if (argc == 0)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
-      goto fail;
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
 
   if (!loaded)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
-      goto fail;
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
 
   file = grub_file_open (argv[0]);
   if (! file)

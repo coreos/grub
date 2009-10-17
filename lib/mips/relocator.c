@@ -53,7 +53,7 @@ write_reg (int regn, grub_uint32_t val, void **target)
   *target = ((grub_uint32_t *) *target) + 1;
   /* addiu $r, $r, val. */
   *(grub_uint32_t *) *target = (((0x2400 | regn << 5 | regn) << 16)
-				| ((val + 0x8000) >> 16));
+				| (val & 0xffff));
   *target = ((grub_uint32_t *) *target) + 1;
 }
 
@@ -76,10 +76,11 @@ write_call_relocator_bw (void *ptr0, void *src, grub_uint32_t dest,
   write_reg (4, size, &ptr);
   grub_memcpy (ptr, &grub_relocator32_backward_start,
 	       RELOCATOR_SRC_SIZEOF (backward));
+  ptr = (grub_uint8_t *) ptr + RELOCATOR_SRC_SIZEOF (backward);
   for (i = 1; i < 32; i++)
     write_reg (i, state.gpr[i], &ptr);
   write_jump (state.jumpreg, &ptr);
-  ((void (*) ())ptr0) ();
+  ((void (*) ()) ptr0) ();
 }
 
 static void
@@ -93,10 +94,11 @@ write_call_relocator_fw (void *ptr0, void *src, grub_uint32_t dest,
   write_reg (4, size, &ptr);
   grub_memcpy (ptr, &grub_relocator32_forward_start,
 	       RELOCATOR_SRC_SIZEOF (forward));
+  ptr = (grub_uint8_t *) ptr + RELOCATOR_SRC_SIZEOF (forward);
   for (i = 1; i < 32; i++)
     write_reg (i, state.gpr[i], &ptr);
   write_jump (state.jumpreg, &ptr);
-  ((void (*) ())ptr0) ();
+  ((void (*) ()) ptr0) ();
 }
 
 #include "../relocator.c"
