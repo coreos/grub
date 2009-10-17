@@ -250,7 +250,6 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_file_t file = 0;
   grub_ssize_t size;
-  grub_addr_t addr;
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
@@ -270,8 +269,6 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       grub_file_close (file);
       return grub_errno;
     }
-
-  grub_dprintf ("loader", "Loading initrd at 0x%x, size 0x%x\n", addr, size);
 
   if (grub_file_read (file, playground + linux_size, size) != size)
     {

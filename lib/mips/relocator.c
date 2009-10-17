@@ -80,7 +80,7 @@ write_call_relocator_bw (void *ptr0, void *src, grub_uint32_t dest,
   for (i = 1; i < 32; i++)
     write_reg (i, state.gpr[i], &ptr);
   write_jump (state.jumpreg, &ptr);
-  ((void (*) ()) ptr0) ();
+  ((void (*) (void)) ptr0) ();
 }
 
 static void
@@ -98,7 +98,7 @@ write_call_relocator_fw (void *ptr0, void *src, grub_uint32_t dest,
   for (i = 1; i < 32; i++)
     write_reg (i, state.gpr[i], &ptr);
   write_jump (state.jumpreg, &ptr);
-  ((void (*) ()) ptr0) ();
+  ((void (*) (void)) ptr0) ();
 }
 
 #include "../relocator.c"
