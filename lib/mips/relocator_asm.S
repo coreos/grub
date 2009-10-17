@@ -35,6 +35,9 @@ copycont1:
 	addiu $4, $4, 0xffff
 	subu $5,$4,$0
 	bne $5, $0, copycont1
+#if __mips >= 2
+	sync
+#endif
 VARIABLE (grub_relocator32_forward_end)
 
 VARIABLE (grub_relocator32_backward_start)
@@ -51,4 +54,7 @@ copycont2:
 	addiu $4, 0xffff
 	subu $5,$4,$0
 	bne $5, $0, copycont2
+#if __mips >= 2
+	sync
+#endif
 VARIABLE (grub_relocator32_backward_end)
