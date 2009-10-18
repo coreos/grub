@@ -46,6 +46,7 @@ AC_ARG_PROGRAM
 case "$target_cpu" in
   i[[3456]]86)	target_cpu=i386 ;;
   sparc)	target_cpu=sparc64 ;;
+  mipsel)	target_cpu=mips ;;
 esac
 
 # Specify the platform (such as firmware).
@@ -89,9 +90,7 @@ case "$target_cpu"-"$platform" in
   i386-qemu) ;;
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;
-  mipsel-qemu-r4k) ;;
   mips-qemu-r4k) ;;
-  mipsel-qemu-mipssim) ;;
   mips-qemu-mipssim) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
@@ -99,10 +98,6 @@ esac
 case "$target_cpu" in
   i386 | powerpc) target_m32=1 ;;
   x86_64 | sparc64) target_m64=1 ;;
-  mipsel) 
-    target_cpu=mips ;;
-  mips) 
-    target_cpu=mips ;;
 esac
 
 case "$host_os" in
