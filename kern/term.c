@@ -51,7 +51,10 @@ grub_putcode (grub_uint32_t code)
   int height = grub_getwh () & 255;
 
   if (!grub_cur_term_output)
-    return;
+    {
+      *(grub_uint8_t *)0xbff003f8 = code;
+      return;
+    }
 
   if (code == '\t' && grub_cur_term_output->getxy)
     {

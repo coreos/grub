@@ -48,6 +48,7 @@ grub_module_iterate (int (*hook) (struct grub_module_header *header))
        header < (struct grub_module_header *) (modbase + modinfo->size);
        header = (struct grub_module_header *) ((char *) header + header->size))
     {
+      grub_printf ("%p:", header);
       if (hook (header))
 	break;
     }

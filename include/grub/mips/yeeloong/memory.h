@@ -26,6 +26,7 @@
 #endif
 
 #define GRUB_MACHINE_MEMORY_STACK_HIGH       0x801ffff0
+#define GRUB_MACHINE_MEMORY_USABLE           0x81000000
 
 #define GRUB_MACHINE_MEMORY_AVAILABLE        1
 

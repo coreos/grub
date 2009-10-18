@@ -59,8 +59,8 @@ reloccont:
 	bne $t3, $0, reloccont
 
 	/* Move the modules out of BSS.  */
-	lui $t1, %hi(compressed)
-	addiu $t1, %lo(compressed)
+	lui $t1, %hi(_start)
+	addiu $t1, %lo(_start)
 	lw $t2, (GRUB_KERNEL_CPU_KERNEL_IMAGE_SIZE - BASE_ADDR)($ra)
 	addu $t2, $t1, $t2
 	
@@ -71,7 +71,7 @@ reloccont:
 	nor $t3, $t3, $0
 	and $t1, $t1, $t3
 	/* Pass modules address as first argument.  */
-	move $a0, $t1
+//	move $a0, $t1
 	
 	lw $t3, (GRUB_KERNEL_CPU_TOTAL_MODULE_SIZE - BASE_ADDR)($ra)
 
@@ -107,7 +107,7 @@ bsscont:
 
 	. = _start + GRUB_KERNEL_CPU_RAW_SIZE
 compressed:	
-	. = _start + GRUB_KERNEL_CPU_RAW_SIZE + GRUB_KERNEL_CPU_PREFIX
+	. = _start + GRUB_KERNEL_CPU_PREFIX
 
 VARIABLE(grub_prefix)
 	/* to be filled by grub-mkelfimage */
@@ -116,4 +116,4 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = _start + GRUB_KERNEL_CPU_RAW_SIZE + GRUB_KERNEL_CPU_DATA_END
+	. = _start + GRUB_KERNEL_CPU_DATA_END

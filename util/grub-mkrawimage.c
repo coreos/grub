@@ -93,10 +93,10 @@ static void
 generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 		char *memdisk_path, char *config_path)
 {
-  char *kernel_img, *boot_img, *core_img;
-  size_t kernel_size, boot_size, total_module_size, core_size;
+  char *kernel_img, *core_img;
+  size_t kernel_size, total_module_size, core_size;
   size_t memdisk_size = 0, config_size = 0;
-  char *kernel_path, *boot_path;
+  char *kernel_path;
   size_t offset;
   struct grub_util_path_list *path_list, *p, *next;
   struct grub_module_info *modinfo;
@@ -198,6 +198,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 #if defined(GRUB_MACHINE_PCBIOS)
   {
     unsigned num;
+    char *boot_path, *boot_img;
+    size_t boot_size;
     num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
     if (num > 0xffff)
       grub_util_error ("the core image is too big");
@@ -222,6 +224,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   {
     char *rom_img;
     size_t rom_size;
+    char *boot_path, *boot_img;
+    size_t boot_size;
 
     boot_path = grub_util_get_path (dir, "boot.img");
     boot_size = grub_util_get_image_size (boot_path);
