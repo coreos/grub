@@ -21,6 +21,8 @@
 #include <grub/cpu/kernel.h>
 #include <grub/machine/memory.h>
 
+#define BASE_ADDR 8
+	
 .extern __bss_start
 .extern _end
 	
@@ -28,8 +30,84 @@
 __start:
 _start:
 start:	
-	b codestart
-	. = _start + GRUB_KERNEL_CPU_PREFIX
+	bal codestart
+	. = _start + GRUB_KERNEL_CPU_COMPRESSED_SIZE
+compressed_size:
+	.long 0
+	. = _start + GRUB_KERNEL_CPU_TOTAL_MODULE_SIZE
+total_module_size:
+	.long 0
+	. = _start + GRUB_KERNEL_CPU_KERNEL_IMAGE_SIZE
+kernel_image_size:	
+	.long	0
+codestart:
+	/* Decompress the payload. */
+	addiu $t2, $ra, GRUB_KERNEL_CPU_RAW_SIZE - BASE_ADDR
+	lui $t1, %hi(compressed)
+	addiu $t1, %lo(compressed)
+	lw $t3, (GRUB_KERNEL_CPU_COMPRESSED_SIZE - BASE_ADDR)($ra)
+
+	/* $t2 contains source compressed address, $t1 is destination,
+	   $t3 is compressed size. FIXME: put LZMA here. Don't clober $ra
+	*/
+reloccont:
+	lb $t4, 0($t2)
+	sb $t4, 0($t1)
+	addiu $t1,$t1,1
+	addiu $t2,$t2,1
+	addiu $t3, 0xffff
+	bne $t3, $0, reloccont
+
+	/* Move the modules out of BSS.  */
+	lui $t1, %hi(compressed)
+	addiu $t1, %lo(compressed)
+	lw $t2, (GRUB_KERNEL_CPU_KERNEL_IMAGE_SIZE - BASE_ADDR)($ra)
+	addu $t2, $t1, $t2
+	
+	lui $t1, %hi(_end)
+	addiu $t1, %lo(_end)
+	addiu $t1, (GRUB_MOD_ALIGN-1)
+	li $t3, (GRUB_MOD_ALIGN-1)
+	nor $t3, $t3, $0
+	and $t1, $t1, $t3
+	/* Pass modules address as first argument.  */
+	move $a0, $t1
+	
+	lw $t3, (GRUB_KERNEL_CPU_TOTAL_MODULE_SIZE - BASE_ADDR)($ra)
+
+	/* $t2 is source. $t1 is destination. $t3 is size.  */
+modulesmovcont:
+	lb $t4, 0($t2)
+	sb $t4, 0($t1)
+	addiu $t1,$t1,1
+	addiu $t2,$t2,1
+	addiu $t3, 0xffff
+	bne $t3, $0, modulesmovcont
+
+	/* Clean BSS.  */
+	
+	lui $t1, %hi(__bss_start)
+	addiu $t1, %lo(__bss_start)
+	lui $t2, %hi(_end)
+	addiu $t2, %lo(_end)
+bsscont:
+	sb $0,0($t1)
+	addiu $t1,$t1,1
+	sltu $t3,$t1,$t2
+	bne $t3, $0, bsscont
+
+	li $sp, GRUB_MACHINE_MEMORY_STACK_HIGH
+	lui $t1, %hi(grub_main)
+	addiu $t1, %lo(grub_main)
+
+#if __mips >= 2
+	sync
+#endif
+	jr $t1
+
+	. = _start + GRUB_KERNEL_CPU_RAW_SIZE
+compressed:	
+	. = _start + GRUB_KERNEL_CPU_RAW_SIZE + GRUB_KERNEL_CPU_PREFIX
 
 VARIABLE(grub_prefix)
 	/* to be filled by grub-mkelfimage */
@@ -38,18 +116,4 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = _start + GRUB_KERNEL_CPU_DATA_END
-codestart:
-	lui $t1, %hi(__bss_start)
-	addiu $t1, %lo(__bss_start)
-	lui $t2, %hi(_end)
-	addiu $t2, %lo(_end)
-
-bsscont:
-	sb $0,0($t1)
-	addiu $t1,$t1,1
-	sltu $t3,$t1,$t2
-	bne $3, $0, bsscont
-
-	li $sp, GRUB_MACHINE_MEMORY_STACK_HIGH
-	b grub_main
+	. = _start + GRUB_KERNEL_CPU_RAW_SIZE + GRUB_KERNEL_CPU_DATA_END

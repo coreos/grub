@@ -26,7 +26,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genke
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # Programs
-pkglib_PROGRAMS = kernel.img
+pkglib_IMAGES = kernel.img
 
 # Utilities.
 sbin_UTILITIES = grub-mkdevicemap
@@ -84,7 +84,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 
-kernel_img_SOURCES = kern/$(target_cpu)/$(target_machine)/startup.S \
+kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
 	kern/main.c kern/device.c kern/$(target_cpu)/$(target_machine)/init.c 		\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
 	kern/misc.c kern/mm.c kern/reader.c kern/term.c 	\
@@ -97,6 +97,7 @@ kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
 	-Wl,-N,-S,-Ttext,$(LINK_BASE),-Bstatic
+kernel_img_FORMAT = binary
 
 # Scripts.
 sbin_SCRIPTS = 

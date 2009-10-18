@@ -68,7 +68,7 @@ MOSTLYCLEAN_IMAGE_TARGETS += mostlyclean-image-#{@name}.#{@rule_count}
 
 ifneq ($(TARGET_APPLE_CC),1)
 #{@name}: #{exe}
-	$(OBJCOPY) -O $(#{prefix}_FORMAT) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id $< $@
+	$(OBJCOPY) -O $(#{prefix}_FORMAT) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@
 else
 ifneq (#{exe},kernel.exec)
 #{@name}: #{exe} ./grub-macho2img

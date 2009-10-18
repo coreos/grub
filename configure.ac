@@ -64,6 +64,7 @@ if test "x$with_platform" = x; then
     powerpc-*) platform=ieee1275 ;;
     powerpc64-*) platform=ieee1275 ;;
     sparc64-*) platform=ieee1275 ;;
+    mips-*) platform=yeeloong ;;
     *) AC_MSG_ERROR([unsupported CPU: "$target_cpu"]) ;;
   esac
 else
@@ -92,6 +93,7 @@ case "$target_cpu"-"$platform" in
   sparc64-ieee1275) ;;
   mips-qemu-r4k) ;;
   mips-qemu-mipssim) ;;
+  mips-yeeloong) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
 
