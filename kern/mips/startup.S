@@ -75,12 +75,18 @@ reloccont:
 	
 	lw $t3, (GRUB_KERNEL_CPU_TOTAL_MODULE_SIZE - BASE_ADDR)($ra)
 
+	/* Backward copy.  */
+	add $t1, $t1, $t3
+	add $t2, $t2, $t3
+	addiu $t1, $t1, 0xffff
+	addiu $t2, $t2, 0xffff
+
 	/* $t2 is source. $t1 is destination. $t3 is size.  */
 modulesmovcont:
 	lb $t4, 0($t2)
 	sb $t4, 0($t1)
-	addiu $t1,$t1,1
-	addiu $t2,$t2,1
+	addiu $t1,$t1,0xffff
+	addiu $t2,$t2,0xffff
 	addiu $t3, 0xffff
 	bne $t3, $0, modulesmovcont
 
