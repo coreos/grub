@@ -349,8 +349,6 @@ grub_cmd_xnu_uuid (grub_command_t cmd __attribute__ ((unused)),
   grub_memcpy (hashme.prefix, hash_prefix, sizeof (hashme.prefix));
 
   md5 ((char *) &hashme, sizeof (hashme), (char *) xnu_uuid);
-  xnu_uuid[6] = (xnu_uuid[6] & 0xf) | 0x30;
-  xnu_uuid[8] = (xnu_uuid[8] & 0x3f) | 0x80;
   grub_sprintf (uuid_string,
 		"%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
 		(unsigned int) xnu_uuid[0], (unsigned int) xnu_uuid[1],

@@ -1,3 +1,86 @@
+2009-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Let user specify OpenBSD root device.
+
+	* loader/i386/bsd.c (openbsd_root): New variable.
+	(openbsd_opts): New option 'root'.
+	(OPENBSD_ROOT_ARG): New macro.
+	(grub_openbsd_boot): Use 'openbsd_root'.
+	(grub_cmd_openbsd): Fill 'openbsd_root'.
+
+2009-10-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* NEWS: Misc adjustments.
+
+2009-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* NEWS: Mentioned XNU, ACPI, gptsync, password and parttool.
+
+2009-10-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Bump version to 1.97.
+
+2009-10-16  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac (TARGET_CFLAGS): Add -mno-mmx -mno-sse -mno-sse2
+	-mno-3dnow on x86 architectures.  Some toolchains enable these
+	features by default, but they rely on registers that aren't enabled
+	in GRUB.  Thanks to Vladimir Serbinenko for the suggestion.
+
+2009-10-15  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Make entry text a bit more readable.
+
+	* util/grub.d/10_linux.in: Add `with' before `Linux'.
+
+2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/pc/xnu.c (grub_xnu_set_video): Fix loading splash image.
+
+2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/xnu_uuid.c (grub_cmd_xnu_uuid): Remove duplicated bitwise
+	operations.
+
+2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Add missing dollar.
+
+2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+        Revert 2009-06-10  Pavel Roskin  <proski@gnu.org>
+
+	* configure.ac: Put checks for __bswapsi2 and __bswapdi2.
+	* include/grub/powerpc/libgcc.h: Don't use weak attribute for all
+	exports.
+	* include/grub/sparc64/libgcc.h: Likewise.  Use
+	preprocessor conditionals.
+
+2009-10-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (grub-dumpbios): Remove rule.
+	(sbin_SCRIPTS, CLEANFILES): Remove `grub-dumpbios'.
+	* util/grub-dumpbios.in: Remove file.
+
+2009-10-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Refer to kernel of FreeBSD "kFreeBSD" to avoid confusion between
+	the Operating System (FreeBSD) and its kernel (kernel of FreeBSD).
+
+	* loader/i386/bsd.c (grub_freebsd_boot): Read kernel environment
+	from "kFreeBSD" namespace (rather than "FreeBSD").  Update all
+	users.
+
+	(GRUB_MOD_INIT (bsd)): Rename "freebsd" command to "kfreebsd",
+	"openbsd" to "kopenbsd", "netbsd" to "knetbsd", "freebsd_loadenv"
+	to "kfreebsd_loadenv", "freebsd_module" to "kfreebsd_module",
+	and "freebsd_module_elf" to "kfreebsd_module_elf".  Update all
+	users.
+
+2009-10-12  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* term/tparm.c: Switch to GPLv3.
+
 2009-10-09  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/i386/cpuid.h: Add header protection.

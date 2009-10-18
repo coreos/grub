@@ -91,10 +91,10 @@ while [ "x$list" != "x" ] ; do
     linux_root_device_thisversion=${GRUB_DEVICE}
   fi
 
-  linux_entry "${OS}, Linux ${version}" \
+  linux_entry "${OS}, with Linux ${version}" \
       "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
   if [ "x${GRUB_DISABLE_LINUX_RECOVERY}" != "xtrue" ]; then
-    linux_entry "${OS}, Linux ${version} (recovery mode)" \
+    linux_entry "${OS}, with Linux ${version} (recovery mode)" \
 	"single ${GRUB_CMDLINE_LINUX}"
   fi
 
