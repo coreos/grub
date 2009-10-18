@@ -46,7 +46,16 @@ AC_ARG_PROGRAM
 case "$target_cpu" in
   i[[3456]]86)	target_cpu=i386 ;;
   sparc)	target_cpu=sparc64 ;;
-  mipsel)	target_cpu=mips ;;
+  mipsel)
+                target_cpu=mips;    
+		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPSEL=1"; 
+		CFLAGS="$CFLAGS -DGRUB_CPU_MIPSEL=1";
+		;;
+  mips)
+                target_cpu=mips;    
+		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPS=1"; 
+		CFLAGS="$CFLAGS -DGRUB_CPU_MIPS=1";
+		;;
 esac
 
 # Specify the platform (such as firmware).
