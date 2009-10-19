@@ -71,9 +71,9 @@ write_call_relocator_bw (void *ptr0, void *src, grub_uint32_t dest,
 {
   void *ptr = ptr0;
   int i;
-  write_reg (2, (grub_uint32_t) src, &ptr);
-  write_reg (3, dest, &ptr);
-  write_reg (4, size, &ptr);
+  write_reg (8, (grub_uint32_t) src, &ptr);
+  write_reg (9, dest, &ptr);
+  write_reg (10, size, &ptr);
   grub_memcpy (ptr, &grub_relocator32_backward_start,
 	       RELOCATOR_SRC_SIZEOF (backward));
   ptr = (grub_uint8_t *) ptr + RELOCATOR_SRC_SIZEOF (backward);
@@ -89,9 +89,9 @@ write_call_relocator_fw (void *ptr0, void *src, grub_uint32_t dest,
 {
   void *ptr = ptr0;
   int i;
-  write_reg (2, (grub_uint32_t) src, &ptr);
-  write_reg (3, dest, &ptr);
-  write_reg (4, size, &ptr);
+  write_reg (8, (grub_uint32_t) src, &ptr);
+  write_reg (9, dest, &ptr);
+  write_reg (10, size, &ptr);
   grub_memcpy (ptr, &grub_relocator32_forward_start,
 	       RELOCATOR_SRC_SIZEOF (forward));
   ptr = (grub_uint8_t *) ptr + RELOCATOR_SRC_SIZEOF (forward);
