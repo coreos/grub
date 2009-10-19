@@ -28,6 +28,7 @@
 #include <grub/time.h>
 
 #define vtop(x) ((x) & 0x7fffffff)
+#define ptov(x) ((x) | 0x80000000)
 
 struct grub_ohci_hcca
 {
@@ -154,7 +155,7 @@ grub_ohci_pci_iter (int bus, int device, int func,
   if (! o)
     return 1;
 
-  o->iobase = (grub_uint32_t *) base;
+  o->iobase = (grub_uint32_t *) ptov (base);
 
   /* Reserve memory for the HCCA.  */
   o->hcca = (struct grub_ohci_hcca *) grub_memalign (256, 256);
