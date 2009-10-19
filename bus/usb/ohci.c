@@ -310,7 +310,8 @@ grub_ohci_transfer (grub_usb_controller_t dev,
       grub_ohci_transaction (&td_list[i], tr->pid, tr->toggle,
 			     tr->size, tr->data);
 
-      td_list[i].next_td = grub_cpu_to_le32 (vtop (&td_list[i + 1]));
+      td_list[i].next_td = grub_cpu_to_le32 (vtop ((grub_addr_t)
+						   &td_list[i + 1]));
     }
 
   /* Setup the Endpoint Descriptor.  */
