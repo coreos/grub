@@ -42,13 +42,14 @@ kernel_image_size:
 	.long	0
 codestart:
 	/* Decompress the payload. */
-	addiu $t2, $ra, GRUB_KERNEL_CPU_RAW_SIZE - BASE_ADDR
+	move $t9, $ra
+	addiu $t2, $t9, GRUB_KERNEL_CPU_RAW_SIZE - BASE_ADDR
 	lui $t1, %hi(compressed)
 	addiu $t1, %lo(compressed)
-	lw $t3, (GRUB_KERNEL_CPU_COMPRESSED_SIZE - BASE_ADDR)($ra)
+	lw $t3, (GRUB_KERNEL_CPU_COMPRESSED_SIZE - BASE_ADDR)($t9)
 
 	/* $t2 contains source compressed address, $t1 is destination,
-	   $t3 is compressed size. FIXME: put LZMA here. Don't clober $ra
+	   $t3 is compressed size. FIXME: put LZMA here. Don't clober $t9
 	*/
 reloccont:
 	lb $t4, 0($t2)
@@ -61,7 +62,7 @@ reloccont:
 	/* Move the modules out of BSS.  */
 	lui $t1, %hi(_start)
 	addiu $t1, %lo(_start)
-	lw $t2, (GRUB_KERNEL_CPU_KERNEL_IMAGE_SIZE - BASE_ADDR)($ra)
+	lw $t2, (GRUB_KERNEL_CPU_KERNEL_IMAGE_SIZE - BASE_ADDR)($t9)
 	addu $t2, $t1, $t2
 	
 	lui $t1, %hi(_end)
@@ -73,7 +74,7 @@ reloccont:
 	/* Pass modules address as first argument.  */
 //	move $a0, $t1
 	
-	lw $t3, (GRUB_KERNEL_CPU_TOTAL_MODULE_SIZE - BASE_ADDR)($ra)
+	lw $t3, (GRUB_KERNEL_CPU_TOTAL_MODULE_SIZE - BASE_ADDR)($t9)
 
 	/* Backward copy.  */
 	add $t1, $t1, $t3
