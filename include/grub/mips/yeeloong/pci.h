@@ -23,7 +23,7 @@
 #include <grub/cpu/io.h>
 
 #define GRUB_MACHINE_PCI_IOSPACE        0xbfe80000
-#define GRUB_MACHINE_PCI_CONTROL_REG    (*(grub_uint32_t *) 0x1fe00118)
+#define GRUB_MACHINE_PCI_CONTROL_REG    (*(grub_uint32_t *) 0xbfe00118)
 
 
 static inline grub_uint32_t
