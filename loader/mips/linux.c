@@ -38,7 +38,8 @@ static grub_size_t initrd_size;
 static grub_size_t linux_size;
 
 static grub_uint8_t *playground;
-static grub_addr_t target_addr, entry_addr, initrd_addr, argc_addr, argv_addr;
+static grub_addr_t target_addr, entry_addr, initrd_addr, argc_addr;
+static grub_addr_t argv_addr, envp_addr;
 
 static grub_err_t
 grub_linux_boot (void)
@@ -49,6 +50,7 @@ grub_linux_boot (void)
   state.gpr[1] = entry_addr;
   state.gpr[4] = argc_addr;
   state.gpr[5] = argv_addr;
+  state.gpr[6] = envp_addr;
   state.jumpreg = 1;
   grub_relocator32_boot (playground, target_addr, state);
 
@@ -171,7 +173,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   int i;
   int size;
   void *extra;
-  grub_uint32_t *linux_argv;
+  grub_uint32_t *linux_argv, *linux_envp;
   char *linux_args;
   grub_err_t err;
 
@@ -194,7 +196,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   loaded = 0;
 
   size = sizeof (grub_uint32_t) * argc + ALIGN_UP (sizeof ("g"), 4)
-    + sizeof (grub_uint32_t);
+    + sizeof (grub_uint32_t) + (0 + 1) * sizeof (grub_uint32_t);
   for (i = 1; i < argc; i++)
     size += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
 
@@ -221,18 +223,26 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   extra = linux_argv + argc;
   linux_args = extra;
 
-  *linux_argv = (grub_uint32_t) linux_args;
+  *linux_argv = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground
+    + target_addr;
   grub_memcpy (linux_args, "g", sizeof ("g"));
   linux_args += ALIGN_UP (sizeof ("g"), 4);
   linux_argv++;
 
   for (i = 1; i < argc; i++)
     {
-      *linux_argv = (grub_uint32_t) linux_args;
+      *linux_argv = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground
+	+ target_addr;
       grub_memcpy (linux_args, argv[i], grub_strlen (argv[i]) + 1);
       linux_args += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
       linux_argv++;
     }
+
+  extra = linux_args;
+  linux_envp = extra;
+  envp_addr = (grub_uint8_t *) linux_envp - (grub_uint8_t *) playground
+    + target_addr;
+  linux_envp[0] = 0;
 
   grub_loader_set (grub_linux_boot, grub_linux_unload, 1);
   initrd_addr = 0;
