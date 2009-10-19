@@ -19,7 +19,6 @@
 
 #include <grub/term.h>
 #include <grub/machine/machine.h>
-#include <grub/machine/console.h>
 #include <grub/time.h>
 #include <grub/cpu/io.h>
 #include <grub/misc.h>

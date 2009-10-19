@@ -27,6 +27,8 @@
 #include <grub/i386/io.h>
 #include <grub/time.h>
 
+#define vtop(x) ((x) & 0x7fffffff)
+
 struct grub_ohci_hcca
 {
   /* Pointers to Interrupt Endpoint Descriptors.  Not used by
@@ -178,7 +180,7 @@ grub_ohci_pci_iter (int bus, int device, int func,
   grub_ohci_writereg32 (o, GRUB_OHCI_REG_FRAME_INTERVAL, frame_interval);
 
   /* Setup the HCCA.  */
-  grub_ohci_writereg32 (o, GRUB_OHCI_REG_HCCA, (grub_uint32_t) o->hcca);
+  grub_ohci_writereg32 (o, GRUB_OHCI_REG_HCCA, vtop ((grub_uint32_t) o->hcca));
   grub_dprintf ("ohci", "OHCI HCCA\n");
 
   /* Enable the OHCI.  */
@@ -264,10 +266,10 @@ grub_ohci_transaction (grub_ohci_td_t td,
   buffer = (grub_uint32_t) data;
   buffer_end = buffer + size - 1;
 
-  td->token = grub_cpu_to_le32 (token);
-  td->buffer = grub_cpu_to_le32 (buffer);
+  td->token = grub_cpu_to_le32 (vtop (token));
+  td->buffer = grub_cpu_to_le32 (vtop (buffer));
   td->next_td = 0;
-  td->buffer_end = grub_cpu_to_le32 (buffer_end);
+  td->buffer_end = grub_cpu_to_le32 (vtop (buffer_end));
 }
 
 static grub_usb_err_t
@@ -307,7 +309,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
       grub_ohci_transaction (&td_list[i], tr->pid, tr->toggle,
 			     tr->size, tr->data);
 
-      td_list[i].next_td = grub_cpu_to_le32 (&td_list[i + 1]);
+      td_list[i].next_td = grub_cpu_to_le32 (vtop (&td_list[i + 1]));
     }
 
   /* Setup the Endpoint Descriptor.  */
@@ -324,9 +326,9 @@ grub_ohci_transfer (grub_usb_controller_t dev,
   /* Set the maximum packet size.  */
   target |= transfer->max << 16;
 
-  td_head = (grub_uint32_t) td_list;
+  td_head = vtop ((grub_uint32_t) td_list);
 
-  td_tail = (grub_uint32_t) &td_list[transfer->transcnt];
+  td_tail = vtop ((grub_uint32_t) &td_list[transfer->transcnt]);
 
   ed->target = grub_cpu_to_le32 (target);
   ed->td_head = grub_cpu_to_le32 (td_head);
@@ -353,7 +355,8 @@ grub_ohci_transfer (grub_usb_controller_t dev,
 	status &= ~(1 << 2);
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CMDSTATUS, status);
 
-	grub_ohci_writereg32 (o, GRUB_OHCI_REG_BULKHEAD, (grub_uint32_t) ed);
+	grub_ohci_writereg32 (o, GRUB_OHCI_REG_BULKHEAD,
+			      vtop ((grub_uint32_t) ed));
 
 	/* Enable the Bulk list.  */
 	control |= 1 << 5;
@@ -381,9 +384,9 @@ grub_ohci_transfer (grub_usb_controller_t dev,
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CMDSTATUS, status);
 
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROLHEAD,
-			      (grub_uint32_t) ed);
+			      vtop ((grub_uint32_t) ed));
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROLHEAD+1,
-			      (grub_uint32_t) ed);
+			      vtop ((grub_uint32_t) ed));
 
 	/* Enable the Control list.  */
 	control |= 1 << 4;
