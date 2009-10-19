@@ -30,42 +30,42 @@ static inline grub_uint32_t
 grub_pci_read (grub_pci_address_t addr)
 {
   GRUB_MACHINE_PCI_CONTROL_REG = addr >> 16;
-  return *(grub_uint32_t *) (GRUB_PCI_IOSPACE | (addr & 0xffff));
+  return *(grub_uint32_t *) (GRUB_MACHINE_PCI_IOSPACE | (addr & 0xffff));
 }
 
 static inline grub_uint16_t
 grub_pci_read_word (grub_pci_address_t addr)
 {
   GRUB_MACHINE_PCI_CONTROL_REG = addr >> 16;
-  return *(grub_uint16_t *) (GRUB_PCI_IOSPACE | (addr & 0xffff));
+  return *(grub_uint16_t *) (GRUB_MACHINE_PCI_IOSPACE | (addr & 0xffff));
 }
 
 static inline grub_uint8_t
 grub_pci_read_byte (grub_pci_address_t addr)
 {
   GRUB_MACHINE_PCI_CONTROL_REG = addr >> 16;
-  return *(grub_uint8_t *) (GRUB_PCI_IOSPACE | (addr & 0xffff));
+  return *(grub_uint8_t *) (GRUB_MACHINE_PCI_IOSPACE | (addr & 0xffff));
 }
 
 static inline void
 grub_pci_write (grub_pci_address_t addr, grub_uint32_t data)
 {
   GRUB_MACHINE_PCI_CONTROL_REG = addr >> 16;
-  *(grub_uint32_t *) (GRUB_PCI_IOSPACE | (addr & 0xffff)) = data;
+  *(grub_uint32_t *) (GRUB_MACHINE_PCI_IOSPACE | (addr & 0xffff)) = data;
 }
 
 static inline void
 grub_pci_write_word (grub_pci_address_t addr, grub_uint16_t data)
 {
   GRUB_MACHINE_PCI_CONTROL_REG = addr >> 16;
-  *(grub_uint16_t *) (GRUB_PCI_IOSPACE | (addr & 0xffff)) = data;
+  *(grub_uint16_t *) (GRUB_MACHINE_PCI_IOSPACE | (addr & 0xffff)) = data;
 }
 
 static inline void
 grub_pci_write_byte (grub_pci_address_t addr, grub_uint8_t data)
 {
   GRUB_MACHINE_PCI_CONTROL_REG = addr >> 16;
-  *(grub_uint8_t *) (GRUB_PCI_IOSPACE | (addr & 0xffff)) = data;
+  *(grub_uint8_t *) (GRUB_MACHINE_PCI_IOSPACE | (addr & 0xffff)) = data;
 }
 
 #endif /* GRUB_MACHINE_PCI_H */
