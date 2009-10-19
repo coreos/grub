@@ -37,10 +37,8 @@ static int loaded;
 static grub_size_t initrd_size;
 static grub_size_t linux_size;
 
-static char *linux_args;
-
 static grub_uint8_t *playground;
-static grub_addr_t target_addr, entry_addr, initrd_addr, args_addr;
+static grub_addr_t target_addr, entry_addr, initrd_addr, argc_addr, argv_addr;
 
 static grub_err_t
 grub_linux_boot (void)
@@ -49,6 +47,8 @@ grub_linux_boot (void)
 
   /* Boot the kernel.  */
   state.gpr[1] = entry_addr;
+  state.gpr[4] = argc_addr;
+  state.gpr[5] = argv_addr;
   state.jumpreg = 1;
   grub_relocator32_boot (playground, target_addr, state);
 
@@ -77,10 +77,10 @@ grub_linux_unload (void)
 }
 
 static grub_err_t
-grub_linux_load32 (grub_elf_t elf, char *args)
+grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
 {
   Elf32_Addr base;
-  int argsoff;
+  int extraoff;
 
   /* Linux's entry point incorrectly contains a virtual address.  */
   entry_addr = elf->ehdr.ehdr32.e_entry & ~ELF32_LOADMASK;
@@ -91,15 +91,15 @@ grub_linux_load32 (grub_elf_t elf, char *args)
   target_addr = base;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
   linux_size += 0x100000;
-  argsoff = linux_size;
-  args_addr = target_addr + argsoff;
-  linux_size += grub_strlen (args) + 1;
+  linux_size = ALIGN_UP (base + linux_size, 4) - base;
+  extraoff = linux_size;
+  linux_size += extra_size;
 
   playground = grub_relocator32_alloc (linux_size);
   if (!playground)
     return grub_errno;
 
-  grub_memcpy (playground + argsoff, args, grub_strlen (args) + 1);
+  *extra_mem = playground + extraoff;
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr, int *do_load);
@@ -121,10 +121,10 @@ grub_linux_load32 (grub_elf_t elf, char *args)
 }
 
 static grub_err_t
-grub_linux_load64 (grub_elf_t elf, char *args)
+grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
 {
   Elf64_Addr base;
-  int argsoff;
+  int extraoff;
 
   /* Linux's entry point incorrectly contains a virtual address.  */
   entry_addr = elf->ehdr.ehdr64.e_entry & ~ELF64_LOADMASK;
@@ -135,15 +135,15 @@ grub_linux_load64 (grub_elf_t elf, char *args)
   target_addr = base;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
   linux_size += 0x100000;
-  argsoff = linux_size;
-  args_addr = target_addr + argsoff;
-  linux_size += grub_strlen (args) + 1;
+  linux_size = ALIGN_UP (base + linux_size, 4) - base;
+  extraoff = linux_size;
+  linux_size += extra_size;
 
   playground = grub_relocator32_alloc (linux_size);
   if (!playground)
     return grub_errno;
 
-  grub_memcpy (playground + argsoff, args, grub_strlen (args) + 1);
+  *extra_mem = playground + extraoff;
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load);
@@ -170,78 +170,76 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_elf_t elf = 0;
   int i;
   int size;
-  char *dest;
-
-  grub_dl_ref (my_mod);
+  void *extra;
+  grub_uint32_t *linux_argv;
+  char *linux_args;
+  grub_err_t err;
 
   if (argc == 0)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
-      goto out;
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
 
   elf = grub_elf_open (argv[0]);
   if (! elf)
-    goto out;
+    return grub_errno;
 
   if (elf->ehdr.ehdr32.e_type != ET_EXEC)
     {
-      grub_error (GRUB_ERR_UNKNOWN_OS,
-		  "This ELF file is not of the right type\n");
-      goto out;
+      grub_elf_close (elf);
+      return grub_error (GRUB_ERR_UNKNOWN_OS,
+			 "This ELF file is not of the right type\n");
     }
 
   /* Release the previously used memory.  */
   grub_loader_unset ();
+  loaded = 0;
 
-  size = sizeof ("BOOT_IMAGE=") + grub_strlen (argv[0]);
-  for (i = 0; i < argc; i++)
-    size += grub_strlen (argv[i]) + 1;
+  size = sizeof (grub_uint32_t) * argc + ALIGN_UP (sizeof ("g"), 4)
+    + sizeof (grub_uint32_t);
+  for (i = 1; i < argc; i++)
+    size += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
 
-  linux_args = grub_malloc (size);
-  if (! linux_args)
-    goto out;
+  if (grub_elf_is_elf32 (elf))
+    err = grub_linux_load32 (elf, &extra, size);
+  else
+  if (grub_elf_is_elf64 (elf))
+    err = grub_linux_load64 (elf, &extra, size);
+  else
+    err = grub_error (GRUB_ERR_BAD_FILE_TYPE, "Unknown ELF class");
 
-  /* Specify the boot file.  */
-  dest = grub_stpcpy (linux_args, "BOOT_IMAGE=");
-  dest = grub_stpcpy (dest, argv[0]);
+  grub_elf_close (elf);
+
+  if (err)
+    return err;
+  
+  *(grub_uint32_t *) extra = argc;
+  argc_addr = (grub_uint8_t *) extra - (grub_uint8_t *) playground
+    + target_addr;
+  extra = (grub_uint32_t *) extra + 1;
+  linux_argv = extra;
+  argv_addr = (grub_uint8_t *) linux_argv - (grub_uint8_t *) playground
+    + target_addr;
+  extra = linux_argv + argc;
+  linux_args = extra;
+
+  *linux_argv = (grub_uint32_t) linux_args;
+  grub_memcpy (linux_args, "g", sizeof ("g"));
+  linux_args += ALIGN_UP (sizeof ("g"), 4);
+  linux_argv++;
 
   for (i = 1; i < argc; i++)
     {
-      *dest++ = ' ';
-      dest = grub_stpcpy (dest, argv[i]);
+      *linux_argv = (grub_uint32_t) linux_args;
+      grub_memcpy (linux_args, argv[i], grub_strlen (argv[i]) + 1);
+      linux_args += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
+      linux_argv++;
     }
 
-  if (grub_elf_is_elf32 (elf))
-    grub_linux_load32 (elf, linux_args);
-  else
-  if (grub_elf_is_elf64 (elf))
-    grub_linux_load64 (elf, linux_args);
-  else
-    {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "Unknown ELF class");
-      goto out;
-    }
+  grub_loader_set (grub_linux_boot, grub_linux_unload, 1);
+  initrd_addr = 0;
+  loaded = 1;
+  grub_dl_ref (my_mod);
 
-out:
-
-  if (elf)
-    grub_elf_close (elf);
-
-  if (grub_errno != GRUB_ERR_NONE)
-    {
-      grub_linux_release_mem ();
-      grub_dl_unref (my_mod);
-      loaded = 0;
-    }
-  else
-    {
-      grub_loader_set (grub_linux_boot, grub_linux_unload, 1);
-      initrd_addr = 0;
-      loaded = 1;
-    }
-
-  return grub_errno;
+  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
