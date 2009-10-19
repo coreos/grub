@@ -15,8 +15,9 @@
 grub_uint32_t
 grub_get_rtc (void)
 {
-  static int calln = 0;
-  return calln++;
+  static grub_uint64_t calln = 0;
+
+  return (calln++) >> 8;
 }
 
 void
