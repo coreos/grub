@@ -1,3 +1,10 @@
+2009-10-20  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build on sparc64.
+
+	* configure.ac: Perform checks for libgcc symbols before
+	adding `-nostdlib' to LDFLAGS.
+
 2009-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Let user specify OpenBSD root device.
