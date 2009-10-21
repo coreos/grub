@@ -1,3 +1,9 @@
+2009-10-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* config.guess: Update to latest version from config git
+	repository.
+	* config.sub: Likewise.
+
 2009-10-20  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Fix build on sparc64.
