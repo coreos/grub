@@ -165,7 +165,12 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 ifeq ($(enable_grub_emu_usb), yes)
 grub_emu_SOURCES += disk/usbms.c util/usb.c bus/usb/usb.c	\
 		commands/usbtest.c
-grub_emu_LDFLAGS += $(LIBCURSES) $(LIBUSB)
+grub_emu_LDFLAGS += $(LIBUSB)
+endif
+
+ifeq ($(enable_grub_emu_pci), yes)
+grub_emu_SOURCES += util/pci.c commands/lspci.c
+grub_emu_LDFLAGS += $(LIBPCIACCESS)
 endif
 
 # Scripts.

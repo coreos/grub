@@ -67,4 +67,20 @@ grub_pci_write_byte (grub_pci_address_t addr, grub_uint8_t data)
   grub_outb (data, GRUB_PCI_DATA_REG + (addr & 3));
 }
 
+static inline void *
+grub_pci_device_map_range (grub_pci_device_t dev __attribute__ ((unused)),
+			   grub_addr_t base,
+			   grub_size_t size __attribute__ ((unused)))
+{
+  return (void *) base;
+}
+
+static inline void
+grub_pci_device_unmap_range (grub_pci_device_t dev __attribute__ ((unused)),
+			     void *mem __attribute__ ((unused)),
+			     grub_size_t size __attribute__ ((unused)))
+{
+}
+
+
 #endif /* GRUB_CPU_PCI_H */
