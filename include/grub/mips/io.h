@@ -26,37 +26,37 @@ typedef grub_addr_t grub_port_t;
 static __inline unsigned char
 grub_inb (grub_port_t port)
 {
-  return *(grub_uint8_t *) port;
+  return *(volatile grub_uint8_t *) port;
 }
 
 static __inline unsigned short int
 grub_inw (grub_port_t port)
 {
-  return *(grub_uint16_t *) port;
+  return *(volatile grub_uint16_t *) port;
 }
 
 static __inline unsigned int
 grub_inl (grub_port_t port)
 {
-  return *(grub_uint32_t *) port;
+  return *(volatile grub_uint32_t *) port;
 }
 
 static __inline void
 grub_outb (unsigned char value, grub_port_t port)
 {
-  *(grub_uint8_t *) port = value;
+  *(volatile grub_uint8_t *) port = value;
 }
 
 static __inline void
 grub_outw (unsigned short int value, grub_port_t port)
 {
-  *(grub_uint16_t *) port = value;
+  *(volatile grub_uint16_t *) port = value;
 }
 
 static __inline void
 grub_outl (unsigned int value, grub_port_t port)
 {
-  *(grub_uint32_t *) port = value;
+  *(volatile grub_uint32_t *) port = value;
 }
 
 #endif /* _SYS_IO_H */
