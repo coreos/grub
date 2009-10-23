@@ -22,6 +22,8 @@
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
+#include <grub/machine/machine.h>
+#include <grub/elf.h>
 #include <grub/kernel.h>
 #include <grub/disk.h>
 #include <grub/util/misc.h>
@@ -91,7 +93,14 @@ compress_kernel (char *kernel_img, size_t kernel_size,
 
 static void
 generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
-		char *memdisk_path, char *config_path)
+		char *memdisk_path, char *config_path,
+#ifdef GRUB_PLATFORM_IMAGE_DEFAULT
+		grub_platform_image_format_t format
+#else
+		int dummy __attribute__ ((unused))
+#endif
+
+)
 {
   char *kernel_img, *core_img;
   size_t kernel_size, total_module_size, core_size;
@@ -211,10 +220,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     
     boot_img = grub_util_read_image (boot_path);
     
-    /* i386 is a little endian architecture.  */
     *((grub_uint16_t *) (boot_img + GRUB_DISK_SECTOR_SIZE
 			 - GRUB_BOOT_MACHINE_LIST_SIZE + 8))
-      = grub_cpu_to_le16 (num);
+      = grub_host_to_target16 (num);
     
     grub_util_write_image (boot_img, boot_size, out);
     free (boot_img);
@@ -238,12 +246,12 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     memset (rom_img, 0, rom_size);
 
     *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_CORE_ENTRY_ADDR))
-      = grub_cpu_to_le32 ((grub_uint32_t) -rom_size);
+      = grub_host_to_target32 ((grub_uint32_t) -rom_size);
 
     memcpy (rom_img, core_img, core_size);
 
     *((grub_int32_t *) (boot_img + GRUB_BOOT_MACHINE_CORE_ENTRY_ADDR))
-      = grub_cpu_to_le32 ((grub_uint32_t) -rom_size);
+      = grub_host_to_target32 ((grub_uint32_t) -rom_size);
 
     memcpy (rom_img + rom_size - boot_size, boot_img, boot_size);
 
@@ -254,18 +262,17 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     free (boot_img);
     free (boot_path);
   }
-
 #endif
 
 #ifdef GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
   *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE))
-    = grub_cpu_to_le32 (total_module_size);
+    = grub_host_to_target32 (total_module_size);
 #endif
   *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE))
-    = grub_cpu_to_le32 (kernel_size);
+    = grub_host_to_target32 (kernel_size);
 #ifdef GRUB_KERNEL_MACHINE_COMPRESSED_SIZE
   *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE))
-    = grub_cpu_to_le32 (core_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
+    = grub_host_to_target32 (core_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
 #endif
 
 #if defined(GRUB_KERNEL_MACHINE_INSTALL_DOS_PART) && defined(GRUB_KERNEL_MACHINE_INSTALL_BSD_PART)
@@ -274,9 +281,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   if (prefix[0] == '(')
     {
       *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART))
-	= grub_cpu_to_le32 (-2);
+	= grub_host_to_target32 (-2);
       *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART))
-	= grub_cpu_to_le32 (-2);
+	= grub_host_to_target32 (-2);
     }
 #endif
 
@@ -284,6 +291,68 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   if (GRUB_KERNEL_MACHINE_LINK_ADDR + core_size > GRUB_MEMORY_MACHINE_UPPER)
     grub_util_error ("Core image is too big (%p > %p)\n",
  		     GRUB_KERNEL_MACHINE_LINK_ADDR + core_size, GRUB_MEMORY_MACHINE_UPPER);
+#endif
+
+#if defined(GRUB_MACHINE_MIPS)
+  if (format == GRUB_PLATFORM_IMAGE_ELF)
+    {
+      char *elf_img;
+      size_t program_size;
+      Elf32_Ehdr *ehdr;
+      Elf32_Phdr *phdr;
+      grub_uint32_t target_addr;
+
+      program_size = ALIGN_UP (core_size, 4);
+
+      elf_img = xmalloc (program_size + sizeof (*ehdr) + sizeof (*phdr));
+      memset (elf_img, 0, program_size + sizeof (*ehdr) + sizeof (*phdr));
+      memcpy (elf_img  + sizeof (*ehdr) + sizeof (*phdr), core_img, core_size);
+      ehdr = (void *) elf_img;
+      phdr = (void *) (elf_img + sizeof (*ehdr));
+      memcpy (ehdr->e_ident, ELFMAG, SELFMAG);
+      ehdr->e_ident[EI_CLASS] = ELFCLASS32;
+#ifdef GRUB_CPU_MIPSEL
+      ehdr->e_ident[EI_DATA] = ELFDATA2LSB;
+#else
+      ehdr->e_ident[EI_DATA] = ELFDATA2MSB;
+#endif
+      ehdr->e_ident[EI_VERSION] = EV_CURRENT;
+      ehdr->e_ident[EI_OSABI] = ELFOSABI_NONE;
+      ehdr->e_type = grub_host_to_target16 (ET_EXEC);
+      ehdr->e_machine = grub_host_to_target16 (EM_MIPS);
+      ehdr->e_version = grub_host_to_target32 (EV_CURRENT);
+
+      ehdr->e_phoff = grub_host_to_target32 ((char *) phdr - (char *) ehdr);
+      ehdr->e_phentsize = grub_host_to_target16 (sizeof (*phdr));
+      ehdr->e_phnum = grub_host_to_target16 (1);
+
+      /* No section headers.  */
+      ehdr->e_shoff = grub_host_to_target32 (0);
+      ehdr->e_shentsize = grub_host_to_target16 (0);
+      ehdr->e_shnum = grub_host_to_target16 (0);
+      ehdr->e_shstrndx = grub_host_to_target16 (0);
+      
+      ehdr->e_ehsize = grub_host_to_target16 (sizeof (*ehdr));
+      
+      phdr->p_type = grub_host_to_target32 (PT_LOAD);
+      phdr->p_offset = grub_host_to_target32 (sizeof (*ehdr) + sizeof (*phdr));
+      phdr->p_flags = grub_host_to_target32 (PF_R | PF_W | PF_X);
+      
+      target_addr = ALIGN_UP (GRUB_KERNEL_MACHINE_LINK_ADDR 
+			      + kernel_size + total_module_size, 32);
+      ehdr->e_entry = grub_host_to_target32 (target_addr);
+      phdr->p_vaddr = grub_host_to_target32 (target_addr);
+      phdr->p_paddr = grub_host_to_target32 (target_addr);
+      phdr->p_align = grub_host_to_target32 (GRUB_KERNEL_MACHINE_LINK_ALIGN);
+      ehdr->e_flags = grub_host_to_target32 (0x1000 | EF_MIPS_NOREORDER 
+					     | EF_MIPS_PIC | EF_MIPS_CPIC);
+      phdr->p_filesz = grub_host_to_target32 (core_size);
+      phdr->p_memsz = grub_host_to_target32 (core_size);
+
+      free (core_img);
+      core_img = elf_img;
+      core_size = program_size  + sizeof (*ehdr) + sizeof (*phdr);
+  }
 #endif
 
   grub_util_write_image (core_img, core_size, out);
@@ -309,6 +378,9 @@ static struct option options[] =
     {"memdisk", required_argument, 0, 'm'},
     {"config", required_argument, 0, 'c'},
     {"output", required_argument, 0, 'o'},
+#ifdef GRUB_PLATFORM_IMAGE_DEFAULT
+    {"format", required_argument, 0, 'f'},
+#endif
     {"help", no_argument, 0, 'h'},
     {"version", no_argument, 0, 'V'},
     {"verbose", no_argument, 0, 'v'},
@@ -330,7 +402,15 @@ Make a bootable image of GRUB.\n\
   -p, --prefix=DIR        set grub_prefix directory [default=%s]\n\
   -m, --memdisk=FILE      embed FILE as a memdisk image\n\
   -c, --config=FILE       embed FILE as boot config\n\
-  -o, --output=FILE       output a generated image to FILE [default=stdout]\n\
+  -o, --output=FILE       output a generated image to FILE [default=stdout]\n"
+#ifdef GRUB_PLATFORM_IMAGE_DEFAULT
+	    "\
+  -f, --format=FORMAT     generate an image in format [default=" 
+	    GRUB_PLATFORM_IMAGE_DEFAULT_FORMAT "]\n	\
+	                available formats: "
+	    GRUB_PLATFORM_IMAGE_FORMATS "\n"
+#endif
+	    "\
   -h, --help              display this message and exit\n\
   -V, --version           print version information and exit\n\
   -v, --verbose           print verbose messages\n\
@@ -350,12 +430,15 @@ main (int argc, char *argv[])
   char *memdisk = NULL;
   char *config = NULL;
   FILE *fp = stdout;
+#ifdef GRUB_PLATFORM_IMAGE_DEFAULT
+  grub_platform_image_format_t format = GRUB_PLATFORM_IMAGE_DEFAULT;
+#endif
 
   progname = "grub-mkimage";
 
   while (1)
     {
-      int c = getopt_long (argc, argv, "d:p:m:c:o:hVv", options, 0);
+      int c = getopt_long (argc, argv, "d:p:m:c:o:f:hVv", options, 0);
 
       if (c == -1)
 	break;
@@ -368,6 +451,22 @@ main (int argc, char *argv[])
 
 	    output = xstrdup (optarg);
 	    break;
+
+#ifdef GRUB_PLATFORM_IMAGE_DEFAULT
+	  case 'f':
+#ifdef GRUB_PLATFORM_IMAGE_RAW
+	    if (strcmp (optarg, "raw") == 0)
+	      format = GRUB_PLATFORM_IMAGE_RAW;
+	    else 
+#endif
+#ifdef GRUB_PLATFORM_IMAGE_ELF
+	    if (strcmp (optarg, "elf") == 0)
+	      format = GRUB_PLATFORM_IMAGE_ELF;
+	    else 
+#endif
+	      usage (1);
+	    break;
+#endif
 
 	  case 'd':
 	    if (dir)
@@ -429,7 +528,13 @@ main (int argc, char *argv[])
     }
 
   generate_image (dir ? : GRUB_LIBDIR, prefix ? : DEFAULT_DIRECTORY, fp,
-		  argv + optind, memdisk, config);
+		  argv + optind, memdisk, config,
+#ifdef GRUB_PLATFORM_IMAGE_DEFAULT
+		  format
+#else
+		  0
+#endif
+		  );
 
   fclose (fp);
 
