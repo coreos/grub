@@ -17,7 +17,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/bufio.h>
 #include <grub/dl.h>
 #include <grub/file.h>
 #include <grub/font.h>
@@ -374,24 +373,11 @@ read_section_as_short (struct font_file_section *section, grub_int16_t *value)
 /* Load a font and add it to the beginning of the global font list.
    Returns 0 upon success, nonzero upon failure.  */
 int
-grub_font_load (const char *filename)
+grub_font_load (grub_file_t file)
 {
-  grub_file_t file = 0;
   struct font_file_section section;
   char magic[4];
   grub_font_t font = 0;
-
-#if FONT_DEBUG >= 1
-  grub_printf("add_font(%s)\n", filename);
-#endif
-
-  file = grub_buffile_open (filename, 1024);
-  if (!file)
-    goto fail;
-
-#if FONT_DEBUG >= 3
-  grub_printf("file opened\n");
-#endif
 
   /* Read the FILE section.  It indicates the file format.  */
   if (open_section (file, &section) != 0)

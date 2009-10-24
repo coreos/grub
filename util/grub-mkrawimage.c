@@ -93,7 +93,7 @@ compress_kernel (char *kernel_img, size_t kernel_size,
 
 static void
 generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
-		char *memdisk_path, char *config_path,
+		char *memdisk_path, char *font_path, char *config_path,
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
 		grub_platform_image_format_t format
 #else
@@ -104,7 +104,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 {
   char *kernel_img, *core_img;
   size_t kernel_size, total_module_size, core_size;
-  size_t memdisk_size = 0, config_size = 0;
+  size_t memdisk_size = 0, font_size = 0, config_size = 0;
   char *kernel_path;
   size_t offset;
   struct grub_util_path_list *path_list, *p, *next;
@@ -122,6 +122,12 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       memdisk_size = ALIGN_UP(grub_util_get_image_size (memdisk_path), 512);
       grub_util_info ("the size of memory disk is 0x%x", memdisk_size);
       total_module_size += memdisk_size + sizeof (struct grub_module_header);
+    }
+
+  if (font_path)
+    {
+      font_size = ALIGN_UP(grub_util_get_image_size (font_path), 4);
+      total_module_size += font_size + sizeof (struct grub_module_header);
     }
 
   if (config_path)
@@ -181,6 +187,20 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       grub_util_load_image (memdisk_path, kernel_img + offset);
       offset += memdisk_size;
+    }
+
+  if (font_path)
+    {
+      struct grub_module_header *header;
+
+      header = (struct grub_module_header *) (kernel_img + offset);
+      memset (header, 0, sizeof (struct grub_module_header));
+      header->type = OBJ_TYPE_FONT;
+      header->size = grub_host_to_target32 (font_size + sizeof (*header));
+      offset += sizeof (*header);
+
+      grub_util_load_image (font_path, kernel_img + offset);
+      offset += font_size;
     }
 
   if (config_path)
@@ -339,7 +359,10 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       phdr->p_flags = grub_host_to_target32 (PF_R | PF_W | PF_X);
       
       target_addr = ALIGN_UP (GRUB_KERNEL_MACHINE_LINK_ADDR 
-			      + kernel_size + total_module_size, 32);
+			      + kernel_size + total_module_size
+			      + 0x100000
+			      //			      + BSS_SIZE
+			      , 32);
       ehdr->e_entry = grub_host_to_target32 (target_addr);
       phdr->p_vaddr = grub_host_to_target32 (target_addr);
       phdr->p_paddr = grub_host_to_target32 (target_addr);
@@ -376,10 +399,11 @@ static struct option options[] =
     {"directory", required_argument, 0, 'd'},
     {"prefix", required_argument, 0, 'p'},
     {"memdisk", required_argument, 0, 'm'},
+    {"font", required_argument, 0, 'f'},
     {"config", required_argument, 0, 'c'},
     {"output", required_argument, 0, 'o'},
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
-    {"format", required_argument, 0, 'f'},
+    {"format", required_argument, 0, 'O'},
 #endif
     {"help", no_argument, 0, 'h'},
     {"version", no_argument, 0, 'V'},
@@ -401,11 +425,12 @@ Make a bootable image of GRUB.\n\
   -d, --directory=DIR     use images and modules under DIR [default=%s]\n\
   -p, --prefix=DIR        set grub_prefix directory [default=%s]\n\
   -m, --memdisk=FILE      embed FILE as a memdisk image\n\
+  -f, --font=FILE         embed FILE as a boot font\n\
   -c, --config=FILE       embed FILE as boot config\n\
   -o, --output=FILE       output a generated image to FILE [default=stdout]\n"
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
 	    "\
-  -f, --format=FORMAT     generate an image in format [default=" 
+  -O, --format=FORMAT     generate an image in format [default=" 
 	    GRUB_PLATFORM_IMAGE_DEFAULT_FORMAT "]\n	\
 	                available formats: "
 	    GRUB_PLATFORM_IMAGE_FORMATS "\n"
@@ -428,6 +453,7 @@ main (int argc, char *argv[])
   char *dir = NULL;
   char *prefix = NULL;
   char *memdisk = NULL;
+  char *font = NULL;
   char *config = NULL;
   FILE *fp = stdout;
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
@@ -438,7 +464,7 @@ main (int argc, char *argv[])
 
   while (1)
     {
-      int c = getopt_long (argc, argv, "d:p:m:c:o:f:hVv", options, 0);
+      int c = getopt_long (argc, argv, "d:p:m:c:o:O:f:hVv", options, 0);
 
       if (c == -1)
 	break;
@@ -453,7 +479,7 @@ main (int argc, char *argv[])
 	    break;
 
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
-	  case 'f':
+	  case 'O':
 #ifdef GRUB_PLATFORM_IMAGE_RAW
 	    if (strcmp (optarg, "raw") == 0)
 	      format = GRUB_PLATFORM_IMAGE_RAW;
@@ -485,6 +511,13 @@ main (int argc, char *argv[])
 	      free (prefix);
 
 	    prefix = xstrdup ("(memdisk)/boot/grub");
+	    break;
+
+	  case 'f':
+	    if (font)
+	      free (font);
+
+	    font = xstrdup (optarg);
 	    break;
 
 	  case 'c':
@@ -528,7 +561,7 @@ main (int argc, char *argv[])
     }
 
   generate_image (dir ? : GRUB_LIBDIR, prefix ? : DEFAULT_DIRECTORY, fp,
-		  argv + optind, memdisk, config,
+		  argv + optind, memdisk, font, config,
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
 		  format
 #else
