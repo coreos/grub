@@ -1,5 +1,11 @@
 2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* fs/cpio.c [MODE_USTAR]: Finish `tar' module instead of
+	`cpio'.
+	[! MODE_USTAR]: Finish `cpio' module instead of `tar'.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Patch from Samuel Thibault <samuel.thibault@ens-lyon.org>
 	* docs/grub.cfg: Compensate for recent change in multiboot
 	loader (since 2009-08-14 it won't pass filename to payload).
