@@ -1,8 +1,8 @@
 
 # -*- makefile -*-
 
-COMMON_ASFLAGS = -nostdinc
-COMMON_CFLAGS = -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
+COMMON_ASFLAGS += -nostdinc
+COMMON_CFLAGS += -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
 COMMON_LDFLAGS += -nostdlib
 
 # Used by various components.  These rules need to precede them.
@@ -85,7 +85,8 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 grub_emu_LDFLAGS = $(LIBCURSES)
 
 kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
-	kern/main.c kern/device.c kern/$(target_cpu)/$(target_machine)/init.c 		\
+	kern/main.c kern/device.c kern/$(target_cpu)/init.c \
+	kern/$(target_cpu)/$(target_machine)/init.c 		\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
 	kern/misc.c kern/mm.c kern/reader.c kern/term.c 	\
 	kern/rescue_parser.c kern/rescue_reader.c \
@@ -107,7 +108,7 @@ bin_SCRIPTS =
 bin_UTILITIES += grub-mkimage
 grub_mkimage_SOURCES = util/grub-mkrawimage.c util/misc.c \
 	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
-grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
+grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(LINK_BASE)
 util/i386/pc/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # Modules.
@@ -177,7 +178,6 @@ pkglib_MODULES += usb_keyboard.mod
 usb_keyboard_mod_SOURCES = term/usb_keyboard.c
 usb_keyboard_mod_CFLAGS = $(COMMON_CFLAGS)
 usb_keyboard_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 
 # For relocator.mod.
 pkglib_MODULES += relocator.mod
