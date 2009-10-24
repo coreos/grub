@@ -1,5 +1,12 @@
 2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* configure.ac: Check for `__ashldi3', `__ashrdi3', `__lshrdi3',
+	`__trampoline_setup' and `__ucmpdi2'.
+	* include/grub/powerpc/libgcc.h: Only export symbols for functions
+	that libgcc provides.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/grub/powerpc/libgcc.h (memset): Remove function prototype.
 	* include/grub/sparc64/libgcc.h (memset): Likewise.
 	* include/grub/misc.h (memset, memcmp): New function prototypes.
