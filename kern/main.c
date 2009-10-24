@@ -152,14 +152,15 @@ grub_main (void)
   /* First of all, initialize the machine.  */
   grub_machine_init ();
 
-  /* Hello.  */
-  grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
-  grub_printf ("Welcome to GRUB!\n\n");
-  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
-
   /* Load pre-loaded modules and free the space.  */
   grub_register_exported_symbols ();
   grub_load_modules ();
+
+  /* Hello.  */
+  grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
+  grub_printf ("Welcome to GRUB!\n\n");
+  grub_refresh ();
+  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 
   /* It is better to set the root device as soon as possible,
      for convenience.  */
