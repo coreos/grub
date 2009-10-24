@@ -1,4 +1,10 @@
 2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+2009-10-25  Vasily Averin  <vvs@parallels.com>
+
+	* fs/ext2.c (grub_ext2_iterate_dir): Avoid infinite loop when
+	`dirent.direntlen == 0'.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* fs/cpio.c [MODE_USTAR]: Initialize `tar' module instead of
 	`cpio'.
