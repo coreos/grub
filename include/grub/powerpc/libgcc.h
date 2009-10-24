@@ -16,7 +16,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void EXPORT_FUNC (memset) (void);
 void EXPORT_FUNC (__ashldi3) (void);
 void EXPORT_FUNC (__ashrdi3) (void);
 void EXPORT_FUNC (__lshrdi3) (void);

@@ -18,8 +18,6 @@
 
 #include <config.h>
 
-void EXPORT_FUNC (memset) (void);
-
 #ifdef HAVE___BSWAPSI2
 typedef int SItype __attribute__ ((mode (SI)));
 SItype EXPORT_FUNC (__bswapsi2) (SItype);

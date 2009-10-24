@@ -1,5 +1,11 @@
 2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/grub/powerpc/libgcc.h (memset): Remove function prototype.
+	* include/grub/sparc64/libgcc.h (memset): Likewise.
+	* include/grub/misc.h (memset, memcmp): New function prototypes.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* fs/cpio.c [MODE_USTAR]: Finish `tar' module instead of
 	`cpio'.
 	[! MODE_USTAR]: Finish `cpio' module instead of `tar'.
