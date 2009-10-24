@@ -1,3 +1,10 @@
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Patch from Samuel Thibault <samuel.thibault@ens-lyon.org>
+	* docs/grub.cfg: Compensate for recent change in multiboot
+	loader (since 2009-08-14 it won't pass filename to payload).
+	* util/grub.d/10_hurd.in: Likewise.
+
 2009-10-21  Felix Zielcke  <fzielcke@z-51.de>
 
 	* config.guess: Update to latest version from config git
