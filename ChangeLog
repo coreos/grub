@@ -1,5 +1,11 @@
 2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* fs/cpio.c [MODE_USTAR]: Initialize `tar' module instead of
+	`cpio'.
+	[! MODE_USTAR]: Initialize `cpio' module instead of `tar'.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* configure.ac: Check for `__ashldi3', `__ashrdi3', `__lshrdi3',
 	`__trampoline_setup' and `__ucmpdi2'.
 	* include/grub/powerpc/libgcc.h: Only export symbols for functions
