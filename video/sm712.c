@@ -92,10 +92,8 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   framebuffer.mode_info.reserved_mask_size = 0;
   framebuffer.mode_info.reserved_field_pos = 0;
   framebuffer.mode_info.blit_format = grub_video_get_blit_format (&framebuffer.mode_info);
-  *(volatile grub_uint32_t *) 0xbfe00110 = 1;
-  framebuffer.ptr = (void *) 0xb0000000;
-  //  framebuffer.ptr = grub_pci_device_map_range (framebuffer.dev, 1 << 26,
-  //					       1024 * 600 * 2);
+  framebuffer.ptr = grub_pci_device_map_range (framebuffer.dev, 1 << 26,
+					       1024 * 600 * 2);
   framebuffer.mapped = 1;
 
   err = grub_video_fb_create_render_target_from_pointer (&framebuffer.render_target, &framebuffer.mode_info, framebuffer.ptr);
