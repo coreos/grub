@@ -1,4 +1,9 @@
 2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/misc.h: Fix wrong evaluation of APPLE_CC.
+	(memset): Fix function prototype.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
 2009-10-25  Vasily Averin  <vvs@parallels.com>
 
 	* fs/ext2.c (grub_ext2_iterate_dir): Avoid infinite loop when

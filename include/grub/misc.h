@@ -75,11 +75,11 @@ grub_strncat (char *dest, const char *src, int c)
 }
 
 /* Prototypes for aliases.  */
-#if !defined (GRUB_UTIL) || !defined (APPLE_CC)
+#if !defined (GRUB_UTIL) && !defined (APPLE_CC)
 int EXPORT_FUNC(memcmp) (const void *s1, const void *s2, grub_size_t n);
 void *EXPORT_FUNC(memmove) (void *dest, const void *src, grub_size_t n);
 void *EXPORT_FUNC(memcpy) (void *dest, const void *src, grub_size_t n);
-void EXPORT_FUNC (memset) (void);
+void *EXPORT_FUNC(memset) (void *s, int c, grub_size_t n);
 #endif
 
 int EXPORT_FUNC(grub_memcmp) (const void *s1, const void *s2, grub_size_t n);
