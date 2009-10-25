@@ -1,5 +1,10 @@
 2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/i386/pc/grub-setup.c (setup): Add missing parameter to
+	grub_util_error() call.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/grub/fs.h [GRUB_UTIL] (struct grub_fs): Add
 	`reserved_first_sector' member.
 	* fs/ext2.c [GRUB_UTIL] (grub_ext2_fs): Initialize

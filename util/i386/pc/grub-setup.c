@@ -256,7 +256,8 @@ setup (const char *dir,
       grub_fs_t fs;
       fs = grub_fs_probe (dest_dev);
       if (! fs)
-	grub_util_error ("Unable to identify a filesystem in %s; safety check can't be performed.");
+	grub_util_error ("Unable to identify a filesystem in %s; safety check can't be performed.",
+			 dest_dev->disk->name);
 
       if (! fs->reserved_first_sector)
 	grub_util_error ("%s appears to contain a %s filesystem which isn't known to "
