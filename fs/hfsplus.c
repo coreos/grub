@@ -1021,6 +1021,9 @@ static struct grub_fs grub_hfsplus_fs =
     .label = grub_hfsplus_label,
     .mtime = grub_hfsplus_mtime,
     .uuid = grub_hfsplus_uuid,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 1,
+#endif
     .next = 0
   };
 

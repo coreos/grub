@@ -1,5 +1,19 @@
 2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/grub/fs.h [GRUB_UTIL] (struct grub_fs): Add
+	`reserved_first_sector' member.
+	* fs/ext2.c [GRUB_UTIL] (grub_ext2_fs): Initialize
+	`reserved_first_sector' to 1.
+	* fs/fat.c [GRUB_UTIL] (grub_fat_fs): Likewise.
+	* fs/ntfs.c [GRUB_UTIL] (grub_ntfs_fs): Likewise.
+	* fs/hfsplus.c [GRUB_UTIL] (grub_hfsplus_fs): Likewise.
+	* util/i386/pc/grub-setup.c (setup): Add safety check that probes for
+	filesystems which begin at first sector.
+	(options): New option --skip-fs-probe.
+	(main): Handle --skip-fs-probe and pass it to setup().
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/grub/misc.h: Fix wrong evaluation of APPLE_CC.
 	(memset): Fix function prototype.
 

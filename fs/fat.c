@@ -855,6 +855,9 @@ static struct grub_fs grub_fat_fs =
     .close = grub_fat_close,
     .label = grub_fat_label,
     .uuid = grub_fat_uuid,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 1,
+#endif
     .next = 0
   };
 

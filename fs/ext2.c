@@ -927,6 +927,9 @@ static struct grub_fs grub_ext2_fs =
     .label = grub_ext2_label,
     .uuid = grub_ext2_uuid,
     .mtime = grub_ext2_mtime,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 1,
+#endif
     .next = 0
   };
 
