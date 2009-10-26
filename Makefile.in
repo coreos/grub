@@ -148,6 +148,9 @@ $(addprefix $(srcdir)/,$(MKFILES)): %.mk: %.rmk genmk.rb
 
 include $(srcdir)/conf/$(target_cpu)-$(platform).mk
 
+# For external modules.
+-include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
+
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA)

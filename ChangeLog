@@ -1,5 +1,11 @@
 2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* autogen.sh: Support addition of external modules via `GRUB_CONTRIB'
+	variable.
+	* Makefile.in: Likewise.
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* gendistlist.sh: Simplify .svn check.  Skip .bzr as well.
 
 2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
