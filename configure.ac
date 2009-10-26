@@ -107,7 +107,7 @@ esac
 case "$host_os" in
   gnu*)				host_kernel=hurd ;;
   linux*)			host_kernel=linux ;;
-  freebsd* | kfreebsd*-gnu)	host_kernel=freebsd ;;
+  freebsd* | kfreebsd*-gnu)	host_kernel=kfreebsd ;;
   cygwin)			host_kernel=windows ;;
 esac
 

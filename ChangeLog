@@ -1,5 +1,11 @@
 2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/grub.d/10_freebsd.in: Remove.
+	* util/grub.d/10_kfreebsd.in: New file (based on 10_linux.in).
+	* configure.ac: Set host_kernel=kfreebsd for FreeBSD and GNU/kFreeBSD.
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* docs/grub.cfg: Fix example usage of *BSD loaders.
 
 2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
