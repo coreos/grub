@@ -1,5 +1,11 @@
 2009-10-26  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub-editenv.c (main): If only a command is given, use
+	DEFAULT_DIRECTORY "/" GRUB_ENVBLK_DEFCFG as a default file name.
+	(usage): FILENAME is now optional and has a default.
+
+2009-10-26  Colin Watson  <cjwatson@ubuntu.com>
+
 	Improve grub-mkconfig performance when there are several menu
 	entries on a single filesystem.
 
