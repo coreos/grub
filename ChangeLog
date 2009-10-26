@@ -1,5 +1,9 @@
 2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* Makefile.in (RMKFILES): Rewrite using $(wildcard).
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* disk/scsi.c: Remove `<grub/machine/kernel.h>' (not needed).
 
 2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>

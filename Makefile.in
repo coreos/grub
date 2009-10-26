@@ -115,9 +115,7 @@ enable_efiemu = @enable_efiemu@
 
 ### General variables.
 
-RMKFILES = $(addprefix conf/,common.rmk i386-coreboot.rmk i386-efi.rmk \
-	i386-qemu.rmk i386-ieee1275.rmk i386-pc.rmk i386.rmk powerpc-ieee1275.rmk \
-	sparc64-ieee1275.rmk x86_64-efi.rmk)
+RMKFILES = $(wildcard conf/*.rmk)
 
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
