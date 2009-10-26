@@ -31,7 +31,10 @@ kfreebsd_entry ()
   cat << EOF
 menuentry "$1" {
 EOF
-  prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
+  if [ -z "${prepare_boot_cache}" ]; then
+    prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
+  fi
+  printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
 	kfreebsd			${rel_dirname}/${basename}
 EOF
@@ -58,6 +61,7 @@ EOF
 list=`for i in /boot/kfreebsd-* /boot/kernel/kernel ; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
+prepare_boot_cache=
 
 while [ "x$list" != "x" ] ; do
   kfreebsd=`version_find_latest $list`
