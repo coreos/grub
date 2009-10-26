@@ -1,5 +1,11 @@
 2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* Makefile.in (docs/grub.info): Use make syntax to ignore errors
+	in $(MAKEINFO) invocation.  This makes it clear in output that
+	errors are being ignored.
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* conf/i386-coreboot.rmk (script/sh/lexer.c_DEPENDENCIES): Moved
 	from here ...
 	* conf/common.rmk (script/sh/lexer.c_DEPENDENCIES): ... to here.
