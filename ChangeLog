@@ -1,3 +1,7 @@
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub.d/10_freebsd.in: Remove.
+
 2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/i386/pc/grub-setup.c (setup): Add missing parameter to
