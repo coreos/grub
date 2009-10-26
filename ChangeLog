@@ -1,5 +1,11 @@
 2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* gensymlist.sh.in (COMPILE_TIME_ASSERT): Copy macro declaration
+	from here ...
+	* include/grub/misc.h (COMPILE_TIME_ASSERT): ... to here.
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* Makefile.in (docs/grub.info): Use make syntax to ignore errors
 	in $(MAKEINFO) invocation.  This makes it clear in output that
 	errors are being ignored.
