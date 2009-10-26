@@ -1,6 +1,6 @@
 2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
 
-	* util/grub.d/10_freebsd.in: Remove.
+	* docs/grub.cfg: Fix example usage of *BSD loaders.
 
 2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
 
