@@ -1,5 +1,9 @@
 2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* gendistlist.sh: Simplify .svn check.  Skip .bzr as well.
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* Makefile.in (RMKFILES): Rewrite using $(wildcard).
 
 2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
