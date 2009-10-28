@@ -1,5 +1,9 @@
 2009-10-28  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/grub/misc.h: Stop checking for APPLE_CC.
+
+2009-10-28  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* kern/i386/coreboot/init.c (grub_exit): Reimplement in a way that
 	doesn't cause an infinite call loop.
 
