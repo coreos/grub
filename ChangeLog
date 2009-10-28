@@ -1,3 +1,8 @@
+2009-10-28  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* kern/i386/coreboot/init.c (grub_exit): Reimplement in a way that
+	doesn't cause an infinite call loop.
+
 2009-10-28  Felix Zielcke  <fzielcke@z-51.de>
 
 	* commands/acpi.c (grub_cmd_acpi): Fix the out of memory error
