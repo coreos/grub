@@ -1,3 +1,8 @@
+2009-10-28  Felix Zielcke  <fzielcke@z-51.de>
+
+	* commands/acpi.c (grub_cmd_acpi): Fix the out of memory error
+	strings.
+
 2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* autogen.sh: Support addition of external modules via `GRUB_CONTRIB'
