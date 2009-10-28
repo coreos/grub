@@ -1,5 +1,9 @@
 2009-10-28  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* Makefile.in (TARGET_CPPFLAGS): Add `-nostdinc'.
+
+2009-10-28  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/grub/misc.h: Stop checking for APPLE_CC.
 
 2009-10-28  Robert Millan  <rmh.grub@aybabtu.com>
