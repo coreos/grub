@@ -1,3 +1,16 @@
+2009-10-29  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Revert SVN r2660.
+
+	* conf/common.rmk (script/sh/lexer.c_DEPENDENCIES): Moved from here ...
+	* conf/i386-coreboot.rmk (script/sh/lexer.c_DEPENDENCIES): ... to here.
+	* conf/i386-efi.rmk (script/sh/lexer.c_DEPENDENCIES): ... and here.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+
 2009-10-28  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* Makefile.in (TARGET_CPPFLAGS): Add `-nostdinc'.

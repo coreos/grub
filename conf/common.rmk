@@ -1,7 +1,5 @@
 # -*- makefile -*-
 
-script/sh/lexer.c_DEPENDENCIES = grub_script.tab.h
-
 # For grub-mkelfimage.
 bin_UTILITIES += grub-mkelfimage
 grub_mkelfimage_SOURCES = util/elf/grub-mkimage.c util/misc.c \
