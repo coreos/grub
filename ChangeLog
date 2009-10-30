@@ -1,3 +1,8 @@
+2009-10-30  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-install.in: Remove hint that device.map should be
+	checked (grub-install doesn't currently rely on it).
+
 2009-10-29  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Revert SVN r2660.
