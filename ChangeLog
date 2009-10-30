@@ -1,5 +1,12 @@
 2009-10-30  Robert Millan  <rmh.grub@aybabtu.com>
 
+	Fix build problem.
+
+	* Makefile.in (TARGET_CPPFLAGS): Replace `-nostdinc' with
+	`-isystem=$(srcdir)/include'.
+
+2009-10-30  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* util/i386/pc/grub-install.in: Remove hint that device.map should be
 	checked (grub-install doesn't currently rely on it).
 
