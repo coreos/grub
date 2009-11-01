@@ -223,12 +223,12 @@ grub_strncmp (const char *s1, const char *s2, grub_size_t n)
 char *
 grub_strchr (const char *s, int c)
 {
-  while (*s)
+  do
     {
       if (*s == c)
 	return (char *) s;
-      s++;
     }
+  while (*s++);
 
   return 0;
 }
@@ -236,14 +236,14 @@ grub_strchr (const char *s, int c)
 char *
 grub_strrchr (const char *s, int c)
 {
-  char *p = 0;
+  char *p = NULL;
 
-  while (*s)
+  do
     {
       if (*s == c)
 	p = (char *) s;
-      s++;
     }
+  while (*s++);
 
   return p;
 }
