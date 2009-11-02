@@ -1,3 +1,8 @@
+2009-11-02  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/grub.d/10_hurd.in: Call prepare_grub_to_access_device
+	${GRUB_DEVICE_BOOT} before loading /boot kernel.
+
 2009-11-01  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Based on patch from BVK Chaitanya  <bvk.groups@gmail.com>

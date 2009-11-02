@@ -71,9 +71,12 @@ fi
 cat << EOF
 menuentry "${OS}" {
 EOF
-prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/"
+prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
 cat << EOF
 	multiboot ${kernel} root=device:${GRUB_DEVICE}
+EOF
+prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/"
+cat << EOF
 	module /hurd/${hurd_fs}.static ${hurd_fs} --readonly \\
 			--multiboot-command-line='\${kernel-command-line}' \\
 			--host-priv-port='\${host-port}' \\
