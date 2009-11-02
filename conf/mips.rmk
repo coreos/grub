@@ -192,4 +192,10 @@ linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_ASFLAGS = $(COMMON_ASFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For at_keyboard.mod.
+pkglib_MODULES += at_keyboard.mod
+at_keyboard_mod_SOURCES = term/at_keyboard.c
+at_keyboard_mod_CFLAGS = $(COMMON_CFLAGS)
+at_keyboard_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 include $(srcdir)/conf/common.mk

@@ -17,9 +17,9 @@
  */
 
 #include <grub/dl.h>
-#include <grub/i386/pc/console.h>
-#include <grub/i386/at_keyboard.h>
-#include <grub/i386/io.h>
+#include <grub/at_keyboard.h>
+#include <grub/cpu/at_keyboard.h>
+#include <grub/cpu/io.h>
 #include <grub/misc.h>
 #include <grub/term.h>
 
