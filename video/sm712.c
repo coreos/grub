@@ -37,6 +37,7 @@ static struct
   grub_uint8_t *ptr;
   int index_color_mode;
   int mapped;
+  grub_uint32_t base;
   grub_pci_device_t dev;
 } framebuffer;
 
@@ -65,6 +66,27 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
 {
   int depth;
   grub_err_t err;
+  int found = 0;
+
+  int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid __attribute__ ((unused)))
+    {
+      grub_pci_address_t addr;
+      grub_uint32_t class;
+
+      addr = grub_pci_make_address (dev, 2);
+      class = grub_pci_read (addr);
+
+      if (((class >> 16) & 0xffff) != 0x0300 || pciid != 0x0712126f)
+	return 0;
+      
+      found = 1;
+
+      addr = grub_pci_make_address (dev, 4);
+      framebuffer.base = grub_pci_read (addr);
+      framebuffer.dev = dev;
+
+      return 1;
+    }
 
   /* Decode depth from mode_type.  If it is zero, then autodetect.  */
   depth = (mode_type & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK)
@@ -74,6 +96,15 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
       || (16 != depth && depth != 0))
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "Only 1024x600x16 is supported");
+
+  grub_pci_iterate (find_card);
+  if (!found)
+    return grub_error (GRUB_ERR_IO, "Couldn't find graphics card");
+
+  if (found && framebuffer.base == 0)
+    {
+      /* FIXME: change framebuffer base */
+    }
 
   /* Fill mode info details.  */
   framebuffer.mode_info.width = 1024;
@@ -92,8 +123,10 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   framebuffer.mode_info.reserved_mask_size = 0;
   framebuffer.mode_info.reserved_field_pos = 0;
   framebuffer.mode_info.blit_format = grub_video_get_blit_format (&framebuffer.mode_info);
-  framebuffer.ptr = grub_pci_device_map_range (framebuffer.dev, 1 << 26,
-					       1024 * 600 * 2);
+  /* We can safely discard volatile attribute.  */
+  framebuffer.ptr = (void *) grub_pci_device_map_range (framebuffer.dev,
+							framebuffer.base,
+							1024 * 600 * 2);
   framebuffer.mapped = 1;
 
   err = grub_video_fb_create_render_target_from_pointer (&framebuffer.render_target, &framebuffer.mode_info, framebuffer.ptr);
