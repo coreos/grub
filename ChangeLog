@@ -1,5 +1,9 @@
 2009-11-02  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
+	* util/grub.d/30_os-prober.in: Add GNU/Hurd support
+
+2009-11-02  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
 	* util/grub.d/10_hurd.in: Drop /dev/ prefix from root device path before
 	giving it to GNU Mach.
 
