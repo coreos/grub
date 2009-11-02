@@ -47,7 +47,10 @@ linux_entry ()
   cat << EOF
 menuentry "$1" {
 EOF
-  prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
+  if [ -z "${prepare_boot_cache}" ]; then
+    prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
+  fi
+  printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
 	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro $2
 EOF
@@ -64,6 +67,7 @@ EOF
 list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
+prepare_boot_cache=
 
 while [ "x$list" != "x" ] ; do
   linux=`version_find_latest $list`

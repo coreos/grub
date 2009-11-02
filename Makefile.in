@@ -75,7 +75,7 @@ TARGET_ASFLAGS = @TARGET_ASFLAGS@
 TARGET_MODULE_FORMAT = @TARGET_MODULE_FORMAT@
 TARGET_APPLE_CC = @TARGET_APPLE_CC@
 OBJCONV = @OBJCONV@
-TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/include \
+TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -isystem=$(srcdir)/include -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
 	-Wall -W
 TARGET_LDFLAGS = @TARGET_LDFLAGS@
 TARGET_IMG_LDSCRIPT = @TARGET_IMG_LDSCRIPT@
@@ -117,9 +117,7 @@ enable_efiemu = @enable_efiemu@
 
 ### General variables.
 
-RMKFILES = $(addprefix conf/,common.rmk i386-coreboot.rmk i386-efi.rmk \
-	i386-qemu.rmk i386-ieee1275.rmk i386-pc.rmk i386.rmk powerpc-ieee1275.rmk \
-	sparc64-ieee1275.rmk x86_64-efi.rmk)
+RMKFILES = $(wildcard conf/*.rmk)
 
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
@@ -151,6 +149,9 @@ $(addprefix $(srcdir)/,$(MKFILES)): %.mk: %.rmk genmk.rb
 	fi
 
 include $(srcdir)/conf/$(target_cpu)-$(platform).mk
+
+# For external modules.
+-include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
 
 ### General targets.
 
@@ -199,7 +200,7 @@ docs/stamp-vti: docs/grub.texi configure.ac
 # Use --force until such time as the documentation is cleaned up.
 docs/grub.info: docs/grub.texi docs/version.texi docs/fdl.texi
 	$(MKDIR_P) docs
-	$(MAKEINFO) -P $(builddir)/docs --no-split --force $< -o $@ || :
+	-$(MAKEINFO) -P $(builddir)/docs --no-split --force $< -o $@
 
 ifeq (, $(UNIFONT_BDF))
 else

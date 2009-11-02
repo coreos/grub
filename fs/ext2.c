@@ -649,6 +649,9 @@ grub_ext2_iterate_dir (grub_fshelp_node_t dir,
       if (grub_errno)
 	return 0;
 
+      if (dirent.direntlen == 0)
+        return 0;
+
       if (dirent.namelen != 0)
 	{
 	  char filename[dirent.namelen + 1];
@@ -924,6 +927,9 @@ static struct grub_fs grub_ext2_fs =
     .label = grub_ext2_label,
     .uuid = grub_ext2_uuid,
     .mtime = grub_ext2_mtime,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 1,
+#endif
     .next = 0
   };
 

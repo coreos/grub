@@ -319,14 +319,7 @@ else
     $grub_mkimage -d ${pkglibdir} --output=/boot/multiboot.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 fi
 
-# Prompt the user to check if the device map is correct.
 echo "Installation finished. No error reported."
-echo "This is the contents of the device map $device_map."
-echo "Check if this is correct or not. If any of the lines is incorrect,"
-echo "fix it and re-run the script \`grub-install'."
-echo
-
-cat $device_map
 
 # Bye.
 exit 0

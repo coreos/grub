@@ -1081,15 +1081,19 @@ grub_ntfs_uuid (grub_device_t device, char **uuid)
   return grub_errno;
 }
 
-static struct grub_fs grub_ntfs_fs = {
-  .name = "ntfs",
-  .dir = grub_ntfs_dir,
-  .open = grub_ntfs_open,
-  .read = grub_ntfs_read,
-  .close = grub_ntfs_close,
-  .label = grub_ntfs_label,
-  .uuid = grub_ntfs_uuid,
-  .next = 0
+static struct grub_fs grub_ntfs_fs =
+  {
+    .name = "ntfs",
+    .dir = grub_ntfs_dir,
+    .open = grub_ntfs_open,
+    .read = grub_ntfs_read,
+    .close = grub_ntfs_close,
+    .label = grub_ntfs_label,
+    .uuid = grub_ntfs_uuid,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 1,
+#endif
+    .next = 0
 };
 
 GRUB_MOD_INIT (ntfs)

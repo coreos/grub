@@ -86,7 +86,7 @@ grub_refresh (void)
 static void
 setup (const char *dir,
        const char *boot_file, const char *core_file,
-       const char *root, const char *dest, int must_embed, int force)
+       const char *root, const char *dest, int must_embed, int force, int fs_probe)
 {
   char *boot_path, *core_path, *core_path_dev;
   char *boot_img, *core_img;
@@ -250,6 +250,22 @@ setup (const char *dir,
   tmp_img = xmalloc (GRUB_DISK_SECTOR_SIZE);
   if (grub_disk_read (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE, tmp_img))
     grub_util_error ("%s", grub_errmsg);
+
+  if (dest_dev->disk->partition && fs_probe)
+    {
+      grub_fs_t fs;
+      fs = grub_fs_probe (dest_dev);
+      if (! fs)
+	grub_util_error ("Unable to identify a filesystem in %s; safety check can't be performed.",
+			 dest_dev->disk->name);
+
+      if (! fs->reserved_first_sector)
+	grub_util_error ("%s appears to contain a %s filesystem which isn't known to "
+			 "reserve space for DOS-style boot.  Installing GRUB there could "
+			 "result in FILESYSTEM DESTRUCTION if valuable data is overwritten "
+			 "by grub-setup (--skip-fs-probe disables this "
+			 "check, use at your own risk).", dest_dev->disk->name, fs->name);
+    }
 
   /* Copy the possible DOS BPB.  */
   memcpy (boot_img + GRUB_BOOT_MACHINE_BPB_START,
@@ -556,6 +572,7 @@ static struct option options[] =
     {"device-map", required_argument, 0, 'm'},
     {"root-device", required_argument, 0, 'r'},
     {"force", no_argument, 0, 'f'},
+    {"skip-fs-probe", no_argument, 0, 's'},
     {"help", no_argument, 0, 'h'},
     {"version", no_argument, 0, 'V'},
     {"verbose", no_argument, 0, 'v'},
@@ -580,6 +597,7 @@ DEVICE must be a GRUB device (e.g. ``(hd0,1)'').\n\
   -m, --device-map=FILE   use FILE as the device map [default=%s]\n\
   -r, --root-device=DEV   use DEV as the root device [default=guessed]\n\
   -f, --force             install even if problems are detected\n\
+  -s, --skip-fs-probe     do not probe for filesystems in DEVICE\n\
   -h, --help              display this message and exit\n\
   -V, --version           print version information and exit\n\
   -v, --verbose           print verbose messages\n\
@@ -613,7 +631,7 @@ main (int argc, char *argv[])
   char *dev_map = 0;
   char *root_dev = 0;
   char *dest_dev;
-  int must_embed = 0, force = 0;
+  int must_embed = 0, force = 0, fs_probe = 1;
 
   progname = "grub-setup";
 
@@ -664,6 +682,10 @@ main (int argc, char *argv[])
 
 	  case 'f':
 	    force = 1;
+	    break;
+
+	  case 's':
+	    fs_probe = 0;
 	    break;
 
 	  case 'h':
@@ -767,7 +789,7 @@ main (int argc, char *argv[])
 	  setup (dir ? : DEFAULT_DIRECTORY,
 		 boot_file ? : DEFAULT_BOOT_FILE,
 		 core_file ? : DEFAULT_CORE_FILE,
-		 root_dev, grub_util_get_grub_dev (devicelist[i]), 1, force);
+		 root_dev, grub_util_get_grub_dev (devicelist[i]), 1, force, fs_probe);
 	}
     }
   else
@@ -776,7 +798,7 @@ main (int argc, char *argv[])
     setup (dir ? : DEFAULT_DIRECTORY,
 	   boot_file ? : DEFAULT_BOOT_FILE,
 	   core_file ? : DEFAULT_CORE_FILE,
-	   root_dev, dest_dev, must_embed, force);
+	   root_dev, dest_dev, must_embed, force, fs_probe);
 
   /* Free resources.  */
   grub_fini_all ();
