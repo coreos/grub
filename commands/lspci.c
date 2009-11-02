@@ -84,6 +84,7 @@ static const struct grub_pci_classname grub_pci_classes[] =
     { 11, 0x30, "MIPS Processor" },
     { 11, 0x40, "Co-Processor" },
     { 11, 0x80, "Unknown Processor" },
+    { 12, 3, "USB Controller" },
     { 12, 0x80, "Serial Bus Controller" },
     { 13, 0x80, "Wireless Controller" },
     { 14, 0, "I2O" },
@@ -120,6 +121,7 @@ grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
   grub_uint32_t class;
   const char *sclass;
   grub_pci_address_t addr;
+  int i, reg;
 
   grub_printf ("%02x:%02x.%x %04x:%04x", bus, dev, func, pciid & 0xFFFF,
 	       pciid >> 16);
@@ -141,6 +143,46 @@ grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
     grub_printf (" [PI %02x]", pi);
 
   grub_printf ("\n");
+
+  reg = 4;
+  for (i = 0; i < 6; i++)
+    {
+      grub_uint64_t space;
+      addr = grub_pci_make_address (dev, reg);
+      space = grub_pci_read (addr);
+
+      reg++;
+
+      if (space == 0)
+	continue;
+
+      switch (space & GRUB_PCI_ADDR_SPACE_MASK)
+	{
+	case GRUB_PCI_ADDR_SPACE_IO:
+	  grub_printf ("IO space %d at 0x%llx\n", i,
+		       (unsigned long long) (space & GRUB_PCI_ADDR_IO_MASK));
+	  break;
+	case GRUB_PCI_ADDR_SPACE_MEMORY:
+	  if ((space & GRUB_PCI_ADDR_MEM_TYPE_MASK) 
+	    == GRUB_PCI_ADDR_MEM_TYPE_64)
+	    {
+	      space |= grub_pci_make_address (dev, reg);
+	      reg++;
+	      grub_printf ("64-bit memory space %d at 0x%16llx [%s]\n", i,
+			   (unsigned long long) (space & GRUB_PCI_ADDR_MEM_MASK),
+			   space & GRUB_PCI_ADDR_MEM_PREFETCH
+			   ? "prefetchable" : "non-prefetchable");
+
+	    }
+	  else
+	    grub_printf ("32-bit memory space %d at 0x%16llx [%s]\n", i,
+			 (unsigned long long) (space & GRUB_PCI_ADDR_MEM_MASK),
+			 space & GRUB_PCI_ADDR_MEM_PREFETCH
+			 ? "prefetchable" : "non-prefetchable");
+	  break;
+	}
+    }
+
 
   return 0;
 }
