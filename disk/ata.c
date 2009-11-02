@@ -27,8 +27,10 @@
 #include <grub/machine/machine.h>
 
 /* At the moment, only two IDE ports are supported.  */
-static const grub_port_t grub_ata_ioaddress[] = { 0x1f0, 0x170 };
-static const grub_port_t grub_ata_ioaddress2[] = { 0x3f6, 0x376 };
+static const grub_port_t grub_ata_ioaddress[] = { 0xbfd001f0};
+static const grub_port_t grub_ata_ioaddress2[] = { 0xbfd003f6};
+//static const grub_port_t grub_ata_ioaddress[] = { 0x1f0, 0x170 };
+//static const grub_port_t grub_ata_ioaddress2[] = { 0x3f6, 0x376 };
 
 static struct grub_ata_device *grub_ata_devices;
 
@@ -388,6 +390,7 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
   return 0;
 }
 
+#if 0
 static int NESTED_FUNC_ATTR
 grub_ata_pciinit (grub_pci_device_t dev,
 		  grub_pci_id_t pciid __attribute__((unused)))
@@ -483,6 +486,48 @@ static grub_err_t
 grub_ata_initialize (void)
 {
   grub_pci_iterate (grub_ata_pciinit);
+  return 0;
+}
+#endif
+
+static grub_err_t
+grub_ata_initialize (void)
+{
+  int rega;
+  int regb;
+
+  rega = grub_ata_ioaddress[0];
+  regb = grub_ata_ioaddress2[0];
+
+  grub_dprintf ("ata",
+		"rega=0x%x regb=0x%x\n",
+		rega, regb);
+
+  if (rega && regb)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      grub_ata_device_initialize (0, 0, rega, regb);
+      
+      /* Most errors raised by grub_ata_device_initialize() are harmless.
+	 They just indicate this particular drive is not responding, most
+	 likely because it doesn't exist.  We might want to ignore specific
+	 error types here, instead of printing them.  */
+      if (grub_errno)
+	{
+	  grub_print_error ();
+	  grub_errno = GRUB_ERR_NONE;
+	}
+      
+      grub_ata_device_initialize (0, 1, rega, regb);
+      
+	  /* Likewise.  */
+      if (grub_errno)
+	{
+	  grub_print_error ();
+	  grub_errno = GRUB_ERR_NONE;
+	}
+    }
+
   return 0;
 }
 
