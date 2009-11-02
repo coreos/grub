@@ -22,6 +22,9 @@
 #include <grub/types.h>
 #include <grub/cpu/io.h>
 
+#define GRUB_PCI_NUM_BUS        1
+#define GRUB_PCI_NUM_DEVICES    16
+
 #define GRUB_MACHINE_PCI_CONFSPACE        0xbfe80000
 #define GRUB_MACHINE_PCI_CONF_CTRL_REG    (*(volatile grub_uint32_t *) 0xbfe00118)
 #define GRUB_MACHINE_PCI_IO_CTRL_REG      (*(volatile grub_uint32_t *) 0xbfe00110)
@@ -45,57 +48,57 @@
 static inline grub_uint32_t
 grub_pci_read (grub_pci_address_t addr)
 {
-  GRUB_MACHINE_PCI_CONF_CTRL_REG = addr >> 16;
+  GRUB_MACHINE_PCI_CONF_CTRL_REG = 1 << ((addr >> 11) & 0xf);
   return *(volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONFSPACE
-				      | (addr & 0xffff));
+				      | (addr & 0x03ff));
 }
 
 static inline grub_uint16_t
 grub_pci_read_word (grub_pci_address_t addr)
 {
-  GRUB_MACHINE_PCI_CONF_CTRL_REG = addr >> 16;
+  GRUB_MACHINE_PCI_CONF_CTRL_REG = 1 << ((addr >> 11) & 0xf);
   return *(volatile grub_uint16_t *) (GRUB_MACHINE_PCI_CONFSPACE
-				      | (addr & 0xffff));
+				      | (addr & 0x03ff));
 }
 
 static inline grub_uint8_t
 grub_pci_read_byte (grub_pci_address_t addr)
 {
-  GRUB_MACHINE_PCI_CONF_CTRL_REG = addr >> 16;
+  GRUB_MACHINE_PCI_CONF_CTRL_REG = 1 << ((addr >> 11) & 0xf);
   return *(volatile grub_uint8_t *) (GRUB_MACHINE_PCI_CONFSPACE
-				     | (addr & 0xffff));
+				     | (addr & 0x03ff));
 }
 
 static inline void
 grub_pci_write (grub_pci_address_t addr, grub_uint32_t data)
 {
-  GRUB_MACHINE_PCI_CONF_CTRL_REG = addr >> 16;
+  GRUB_MACHINE_PCI_CONF_CTRL_REG = 1 << ((addr >> 11) & 0xf);
   *(volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONFSPACE
-			       | (addr & 0xffff)) = data;
+			       | (addr & 0x03ff)) = data;
 }
 
 static inline void
 grub_pci_write_word (grub_pci_address_t addr, grub_uint16_t data)
 {
-  GRUB_MACHINE_PCI_CONF_CTRL_REG = addr >> 16;
+  GRUB_MACHINE_PCI_CONF_CTRL_REG = 1 << ((addr >> 11) & 0xf);
   *(volatile grub_uint16_t *) (GRUB_MACHINE_PCI_CONFSPACE
-			       | (addr & 0xffff)) = data;
+			       | (addr & 0x03ff)) = data;
 }
 
 static inline void
 grub_pci_write_byte (grub_pci_address_t addr, grub_uint8_t data)
 {
-  GRUB_MACHINE_PCI_CONF_CTRL_REG = addr >> 16;
+  GRUB_MACHINE_PCI_CONF_CTRL_REG = 1 << ((addr >> 11) & 0xf);
   *(volatile grub_uint8_t *) (GRUB_MACHINE_PCI_CONFSPACE
-			      | (addr & 0xffff)) = data;
+			      | (addr & 0x03ff)) = data;
 }
 
-void *
+volatile void *
 grub_pci_device_map_range (grub_pci_device_t dev __attribute__ ((unused)),
 			   grub_addr_t base, grub_size_t size);
 void
 grub_pci_device_unmap_range (grub_pci_device_t dev __attribute__ ((unused)),
-			     void *mem,
+			     volatile void *mem,
 			     grub_size_t size __attribute__ ((unused)));
 
 #endif /* GRUB_MACHINE_PCI_H */
