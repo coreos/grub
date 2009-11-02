@@ -1,5 +1,10 @@
 2009-11-02  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
+	* util/grub.d/10_hurd.in: Drop /dev/ prefix from root device path before
+	giving it to GNU Mach.
+
+2009-11-02  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
 	* util/hostdisk.c (grub_util_biosdisk_get_grub_dev): Subtract 1 from
 	GNU partition number to get internal GRUB partition number.
 

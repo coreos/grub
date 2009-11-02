@@ -73,7 +73,7 @@ menuentry "${OS}" {
 EOF
 prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
 cat << EOF
-	multiboot ${kernel} root=device:${GRUB_DEVICE}
+	multiboot ${kernel} root=device:${GRUB_DEVICE#/dev/}
 EOF
 prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/"
 cat << EOF
