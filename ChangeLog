@@ -1,3 +1,9 @@
+2009-11-04  Felix Zielcke  <fzielcke@z-51.de>
+
+	* configure.ac (AC_PREREQ): Bump to 2.59d.
+	* INSTALL: Make it more clear when Autoconf and Ruby are
+	needed and when to run `./autogen.sh'.
+
 2009-11-03  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* util/grub.d/30_os-prober.in: Restore default behavior for unsupported
