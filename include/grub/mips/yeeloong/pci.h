@@ -25,6 +25,7 @@
 #define GRUB_PCI_NUM_BUS        1
 #define GRUB_PCI_NUM_DEVICES    16
 
+#define GRUB_MACHINE_PCI_IO_BASE          0xbfd00000
 #define GRUB_MACHINE_PCI_CONFSPACE        0xbfe80000
 #define GRUB_MACHINE_PCI_CONF_CTRL_REG    (*(volatile grub_uint32_t *) 0xbfe00118)
 #define GRUB_MACHINE_PCI_IO_CTRL_REG      (*(volatile grub_uint32_t *) 0xbfe00110)

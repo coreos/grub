@@ -22,6 +22,7 @@
 #include <grub/types.h>
 #include <grub/i386/io.h>
 
+#define GRUB_MACHINE_PCI_IO_BASE          0
 #define GRUB_PCI_ADDR_REG	0xcf8
 #define GRUB_PCI_DATA_REG	0xcfc
 #define GRUB_PCI_NUM_BUS        256
