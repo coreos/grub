@@ -20,7 +20,7 @@
 #include <grub/pci.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
-#include <grub/command.h>
+#include <grub/extcmd.h>
 
 struct grub_pci_classname
 {
@@ -178,7 +178,7 @@ grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
 		{
 		  space |= grub_pci_make_address (dev, reg);
 		  reg++;
-		  grub_printf ("\t64-bit memory space %d at 0x0%16llx [%s]\n",
+		  grub_printf ("\t64-bit memory space %d at 0x%016llx [%s]\n",
 			       i, (unsigned long long)
 			       (space & GRUB_PCI_ADDR_MEM_MASK),
 			       space & GRUB_PCI_ADDR_MEM_PREFETCH
@@ -186,7 +186,7 @@ grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
 		  
 		}
 	      else
-		grub_printf ("\t32-bit memory space %d at 0x0%16llx [%s]\n", i,
+		grub_printf ("\t32-bit memory space %d at 0x%016llx [%s]\n", i,
 			     (unsigned long long) 
 			     (space & GRUB_PCI_ADDR_MEM_MASK),
 			     space & GRUB_PCI_ADDR_MEM_PREFETCH
