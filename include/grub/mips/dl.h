@@ -20,6 +20,6 @@
 #define GRUB_CPU_DL_H	1
 
 /* Dummy __gnu_local_gp. Resolved by linker.  */
-char EXPORT_VAR (__gnu_local_gp);
+extern char EXPORT_VAR (__gnu_local_gp);
 
 #endif /* ! GRUB_CPU_DL_H */

@@ -25,6 +25,9 @@
 #include <grub/mm.h>
 #include <grub/cpu/dl.h>
 
+/* Dummy __gnu_local_gp. Resolved by linker.  */
+char __gnu_local_gp;
+
 /* Check if EHDR is a valid ELF header.  */
 grub_err_t
 grub_arch_dl_check_header (void *ehdr)
