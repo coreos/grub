@@ -115,6 +115,14 @@ grub_pci_get_class (int class, int subclass)
   return 0;
 }
 
+static const struct grub_arg_option options[] =
+  {
+    {"iospace", 'i', 0, "show I/O spaces", 0, 0},
+    {0, 0, 0, 0, 0, 0}
+  };
+
+static int iospace;
+
 static int NESTED_FUNC_ATTR
 grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
 {
@@ -144,42 +152,47 @@ grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
 
   grub_printf ("\n");
 
-  reg = 4;
-  for (i = 0; i < 6; i++)
+  if (iospace)
     {
-      grub_uint64_t space;
-      addr = grub_pci_make_address (dev, reg);
-      space = grub_pci_read (addr);
-
-      reg++;
-
-      if (space == 0)
-	continue;
-
-      switch (space & GRUB_PCI_ADDR_SPACE_MASK)
+      reg = 4;
+      for (i = 0; i < 6; i++)
 	{
-	case GRUB_PCI_ADDR_SPACE_IO:
-	  grub_printf ("IO space %d at 0x%llx\n", i,
-		       (unsigned long long) (space & GRUB_PCI_ADDR_IO_MASK));
-	  break;
-	case GRUB_PCI_ADDR_SPACE_MEMORY:
-	  if ((space & GRUB_PCI_ADDR_MEM_TYPE_MASK) 
-	    == GRUB_PCI_ADDR_MEM_TYPE_64)
-	    {
-	      space |= grub_pci_make_address (dev, reg);
-	      reg++;
-	      grub_printf ("64-bit memory space %d at 0x%16llx [%s]\n", i,
-			   (unsigned long long) (space & GRUB_PCI_ADDR_MEM_MASK),
-			   space & GRUB_PCI_ADDR_MEM_PREFETCH
-			   ? "prefetchable" : "non-prefetchable");
+	  grub_uint64_t space;
+	  addr = grub_pci_make_address (dev, reg);
+	  space = grub_pci_read (addr);
 
+	  reg++;
+	  
+	  if (space == 0)
+	    continue;
+	  
+	  switch (space & GRUB_PCI_ADDR_SPACE_MASK)
+	    {
+	    case GRUB_PCI_ADDR_SPACE_IO:
+	      grub_printf ("\tIO space %d at 0x%llx\n", i, (unsigned long long) 
+			   (space & GRUB_PCI_ADDR_IO_MASK));
+	      break;
+	    case GRUB_PCI_ADDR_SPACE_MEMORY:
+	      if ((space & GRUB_PCI_ADDR_MEM_TYPE_MASK) 
+		  == GRUB_PCI_ADDR_MEM_TYPE_64)
+		{
+		  space |= grub_pci_make_address (dev, reg);
+		  reg++;
+		  grub_printf ("\t64-bit memory space %d at 0x0%16llx [%s]\n",
+			       i, (unsigned long long)
+			       (space & GRUB_PCI_ADDR_MEM_MASK),
+			       space & GRUB_PCI_ADDR_MEM_PREFETCH
+			       ? "prefetchable" : "non-prefetchable");
+		  
+		}
+	      else
+		grub_printf ("\t32-bit memory space %d at 0x0%16llx [%s]\n", i,
+			     (unsigned long long) 
+			     (space & GRUB_PCI_ADDR_MEM_MASK),
+			     space & GRUB_PCI_ADDR_MEM_PREFETCH
+			     ? "prefetchable" : "non-prefetchable");
+	      break;
 	    }
-	  else
-	    grub_printf ("32-bit memory space %d at 0x%16llx [%s]\n", i,
-			 (unsigned long long) (space & GRUB_PCI_ADDR_MEM_MASK),
-			 space & GRUB_PCI_ADDR_MEM_PREFETCH
-			 ? "prefetchable" : "non-prefetchable");
-	  break;
 	}
     }
 
@@ -188,23 +201,24 @@ grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
 }
 
 static grub_err_t
-grub_cmd_lspci (grub_command_t cmd __attribute__ ((unused)),
+grub_cmd_lspci (grub_extcmd_t cmd,
 		int argc __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {
+  iospace = cmd->state[0].set;
   grub_pci_iterate (grub_lspci_iter);
   return GRUB_ERR_NONE;
 }
 
-static grub_command_t cmd;
+static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(pci)
 {
-  cmd = grub_register_command ("lspci", grub_cmd_lspci,
-			       0, "List PCI devices");
+  cmd = grub_register_extcmd ("lspci", grub_cmd_lspci, GRUB_COMMAND_FLAG_BOTH,
+			      "lspci [-i]", "List PCI devices", options);
 }
 
 GRUB_MOD_FINI(pci)
 {
-  grub_unregister_command (cmd);
+  grub_unregister_extcmd (cmd);
 }
