@@ -1,3 +1,13 @@
+2009-11-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build with GNU gold.
+
+	* conf/i386-pc.rmk (boot_img_LDFLAGS, pxeboot_img_LDFLAGS)
+	(diskboot_img_LDFLAGS, lnxboot_img_LDFLAGS)
+	(cdboot_img_LDFLAGS): Prepend `0x' qualifier to hexadecimal
+	link addresses.
+	* aclocal.m4: Likewise.
+
 2009-11-04  Felix Zielcke  <fzielcke@z-51.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.59d.
