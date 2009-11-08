@@ -31,12 +31,13 @@ platform=@platform@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
 grub_mkimage=${bindir}/`echo grub-mkelfimage | sed ${transform}`
+grub_mkisofs=${bindir}/`echo grub-mkisofs | sed ${transform}`
 
 # Usage: usage
 # Print the usage.
 usage () {
     cat <<EOF
-Usage: grub-mkrescue [OPTION] output_image
+Usage: $0 [OPTION] output_image
 Make GRUB rescue image.
 
   -h, --help              print this message and exit
@@ -46,8 +47,9 @@ Make GRUB rescue image.
                           (may be specified multiple times)
   --pkglibdir=DIR         use images from directory DIR instead of ${pkglibdir}
   --grub-mkimage=FILE     use FILE as grub-mkimage
+  --grub-mkisofs=FILE     use FILE as grub-mkisofs
 
-grub-mkimage generates a bootable rescue image of the specified type.
+$0 generates a bootable rescue image.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
@@ -62,7 +64,7 @@ for option in "$@"; do
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-mkrescue (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$0 (GNU GRUB ${PACKAGE_VERSION})"
 	exit 0 ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
@@ -72,6 +74,8 @@ for option in "$@"; do
 	input_dir=`echo "$option" | sed 's/--pkglibdir=//'` ;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+    --grub-mkisofs=*)
+	grub_mkisofs=`echo "$option" | sed 's/--grub-mkisofs=//'` ;;
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage
@@ -137,7 +141,7 @@ for i in ${modules} ; do
 done > ${iso9660_dir}/boot/grub/grub.cfg
 
 # build iso image
-grub-mkisofs \
+${grub_mkisofs} \
   --modification-date=$(echo ${iso_uuid} | sed -e s/-//g) \
   -o ${output_image} -r -J ${iso9660_dir}
 
