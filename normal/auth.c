@@ -40,7 +40,7 @@ grub_auth_strcmp (const char *user_input, const char *template)
   int ok = 1;
   const char *ptr1, *ptr2;
 
-  if (ptr2 == NULL)
+  if (template == NULL)
     ok = 0;
 
   for (ptr1 = user_input, ptr2 = template; *ptr1; ptr1++)
