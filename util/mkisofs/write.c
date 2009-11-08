@@ -5,9 +5,11 @@
 
    Copyright 1993 Yggdrasil Computing, Incorporated
 
+   Copyright (C) 2009  Free Software Foundation, Inc.
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -16,7 +18,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 static char rcsid[] ="$Id: write.c,v 1.21 1999/03/07 17:41:19 eric Exp $";
@@ -1181,6 +1183,11 @@ static int FDECL1(file_write, FILE *, outfile)
 
 } /* iso_write(... */
 
+char *creation_date = NULL;
+char *modification_date = NULL;
+char *expiration_date = NULL;
+char *effective_date = NULL;
+
 /*
  * Function to write the PVD for the disc.
  */
@@ -1282,10 +1289,10 @@ static int FDECL1(pvd_write, FILE *, outfile)
   vol_desc.file_structure_version[0] = 1;
   FILL_SPACE(application_data);
 
-  memcpy(vol_desc.creation_date,  iso_time, 17);
-  memcpy(vol_desc.modification_date,  iso_time, 17);
-  memcpy(vol_desc.expiration_date, "0000000000000000", 17);
-  memcpy(vol_desc.effective_date,  iso_time,  17);
+  memcpy(vol_desc.creation_date, creation_date ? creation_date : iso_time, 17);
+  memcpy(vol_desc.modification_date, modification_date ? modification_date : iso_time, 17);
+  memcpy(vol_desc.expiration_date, expiration_date ? expiration_date : "0000000000000000", 17);
+  memcpy(vol_desc.effective_date, effective_date ? effective_date : iso_time, 17);
 
   /*
    * if not a bootable cd do it the old way 

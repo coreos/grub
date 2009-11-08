@@ -5,9 +5,11 @@
 
    Copyright 1993 Yggdrasil Computing, Incorporated
 
+   Copyright (C) 2009  Free Software Foundation, Inc.
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -16,7 +18,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /*
@@ -322,6 +324,15 @@ extern void DECL(xfwrite, (void * buffer, int count, int size, FILE * file));
 extern void DECL(set_732, (char * pnt, unsigned int i));
 extern void DECL(set_722, (char * pnt, unsigned int i));
 extern void DECL(outputlist_insert, (struct output_fragment * frag));
+
+/*
+ * Set by user command-line to override default date values
+ */
+
+extern char *creation_date;
+extern char *modification_date;
+extern char *expiration_date;
+extern char *effective_date;
 
 /* multi.c */
 

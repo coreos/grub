@@ -6,9 +6,11 @@
 
    Copyright 1993 Yggdrasil Computing, Incorporated
 
+   Copyright (C) 2009  Free Software Foundation, Inc.
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -17,7 +19,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 static char rcsid[] ="$Id: mkisofs.c,v 1.32 1999/03/07 21:48:49 eric Exp $";
@@ -182,6 +184,11 @@ struct ld_option
 #define OPTION_J_HIDE			164
 #define OPTION_LOG_FILE			165
 
+#define OPTION_CREAT_DATE		166
+#define OPTION_MODIF_DATE		167
+#define OPTION_EXPIR_DATE		168
+#define OPTION_EFFEC_DATE		169
+
 static const struct ld_option ld_options[] =
 {
   { {"all-files", no_argument, NULL, 'a'},
@@ -263,11 +270,19 @@ static const struct ld_option ld_options[] =
   { {"volset-seqno", required_argument, NULL, OPTION_VOLSET_SEQ_NUM},
       '\0', "#", "Set Volume set sequence number" , ONE_DASH },
   { {"old-exclude", required_argument, NULL, 'x'},
-      'x', "FILE", "Exclude file name(depreciated)" , ONE_DASH }
+    'x', "FILE", "Exclude file name(depreciated)" , ONE_DASH },
 #ifdef ERIC_neverdef
   { {"transparent-compression", no_argument, NULL, 'z'},
       'z', NULL, "Enable transparent compression of files", ONE_DASH },
 #endif
+  { {"creation-date", required_argument, NULL, OPTION_CREAT_DATE },
+    '\0', NULL, "Override creation date", TWO_DASHES },
+  { {"modification-date", required_argument, NULL, OPTION_MODIF_DATE },
+   '\0', NULL, "Override modification date", TWO_DASHES },
+  { {"expiration-date", required_argument, NULL, OPTION_EXPIR_DATE },
+   '\0', NULL, "Override expiration date", TWO_DASHES },
+  { {"effective-date", required_argument, NULL, OPTION_EFFEC_DATE },
+   '\0', NULL, "Override effective date", TWO_DASHES },
 };
 
 #define OPTION_COUNT (sizeof ld_options / sizeof ld_options[0])
@@ -854,6 +869,26 @@ int FDECL2(main, int, argc, char **, argv){
 	break;
       case OPTION_NOSPLIT_SL_FIELD:
 	split_SL_field = 0;
+	break;
+      case OPTION_CREAT_DATE:
+	if (creation_date)
+	  free(creation_date);
+	creation_date = strdup(optarg);
+	break;
+      case OPTION_MODIF_DATE:
+	if (modification_date)
+	  free(modification_date);
+	modification_date = strdup(optarg);
+	break;
+      case OPTION_EXPIR_DATE:
+	if (expiration_date)
+	  free(expiration_date);
+	expiration_date = strdup(optarg);
+	break;
+      case OPTION_EFFEC_DATE:
+	if (effective_date)
+	  free(effective_date);
+	effective_date = strdup(optarg);
 	break;
       default:
 	usage();
