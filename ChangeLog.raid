@@ -1,0 +1,11 @@
+2009-11-06  Felix Zielcke  <fzielcke@z-51.de>
+
+	* disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Set array->name to NULL.
+	* disk/mdraid_linux.c (grub_raid_super_1x): New structure.
+	(WriteMostly1): New macro.
+	Set array->name to NULL for metadata format 0.90.  Add support for
+	metadata 1.x.  Fix some comments.
+	* disk/raid.c (): Add support for name based RAID arrays.  Fix a
+	few comments.
+	* util/getroot.c (grub_util_get_grub_dev): Add support for
+	/dev/md/name style devices.

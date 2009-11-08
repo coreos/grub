@@ -498,6 +498,20 @@ grub_util_get_grub_dev (const char *os_dev)
 	  asprintf (&grub_dev, "md%s", p);
 	  free (p);
 	}
+      else if (os_dev[7] == '/')
+	{
+	  /* mdraid 1.x with a free name.  */
+	  char *p , *q;
+
+	  p = strdup (os_dev + sizeof ("/dev/md/") - 1);
+
+	  q = strchr (p, 'p');
+	  if (q)
+	    *q = ',';
+
+	  asprintf (&grub_dev, "%s", p);
+	  free (p);
+	}
       else
 	grub_util_error ("Unknown kind of RAID device `%s'", os_dev);
 

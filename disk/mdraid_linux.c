@@ -1,7 +1,7 @@
-/* mdraid_linux.c - module to handle linux softraid.  */
+/* mdraid_linux.c - module to handle Linux Software RAID.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -159,32 +159,146 @@ struct grub_raid_super_09
   struct grub_raid_disk_09 this_disk;
 } __attribute__ ((packed));
 
+/*
+ * The version-1 superblock :
+ * All numeric fields are little-endian.
+ *
+ * Total size: 256 bytes plus 2 per device.
+ * 1K allows 384 devices.
+ */
+
+struct grub_raid_super_1x
+{
+  /* Constant array information - 128 bytes.  */
+  grub_uint32_t magic;		/* MD_SB_MAGIC: 0xa92b4efc - little endian.  */
+  grub_uint32_t major_version;	/* 1.  */
+  grub_uint32_t feature_map;	/* Bit 0 set if 'bitmap_offset' is meaningful.   */
+  grub_uint32_t pad0;		/* Always set to 0 when writing.  */
+
+  grub_uint8_t set_uuid[16];	/* User-space generated.  */
+  char set_name[32];		/* Set and interpreted by user-space.  */
+
+  grub_uint64_t ctime;		/* Lo 40 bits are seconds, top 24 are microseconds or 0.  */
+  grub_uint32_t level;		/* -4 (multipath), -1 (linear), 0,1,4,5.  */
+  grub_uint32_t layout;		/* only for raid5 and raid10 currently.  */
+  grub_uint64_t size;		/* Used size of component devices, in 512byte sectors.  */
+
+  grub_uint32_t chunksize;	/* In 512byte sectors.  */
+  grub_uint32_t raid_disks;
+  grub_uint32_t bitmap_offset;	/* Sectors after start of superblock that bitmap starts
+				 * NOTE: signed, so bitmap can be before superblock
+				 * only meaningful of feature_map[0] is set.
+				 */
+
+  /* These are only valid with feature bit '4'.  */
+  grub_uint32_t new_level;	/* New level we are reshaping to.  */
+  grub_uint64_t reshape_position;	/* Next address in array-space for reshape.  */
+  grub_uint32_t delta_disks;	/* Change in number of raid_disks.  */
+  grub_uint32_t new_layout;	/* New layout.  */
+  grub_uint32_t new_chunk;	/* New chunk size (512byte sectors).  */
+  grub_uint8_t pad1[128 - 124];	/* Set to 0 when written.  */
+
+  /* Constant this-device information - 64 bytes.  */
+  grub_uint64_t data_offset;	/* Sector start of data, often 0.  */
+  grub_uint64_t data_size;	/* Sectors in this device that can be used for data.  */
+  grub_uint64_t super_offset;	/* Sector start of this superblock.  */
+  grub_uint64_t recovery_offset;	/* Sectors before this offset (from data_offset) have been recovered.  */
+  grub_uint32_t dev_number;	/* Permanent identifier of this  device - not role in raid.  */
+  grub_uint32_t cnt_corrected_read;	/* Number of read errors that were corrected by re-writing.  */
+  grub_uint8_t device_uuid[16];	/* User-space setable, ignored by kernel.  */
+  grub_uint8_t devflags;	/* Per-device flags.  Only one defined...  */
+  grub_uint8_t pad2[64 - 57];	/* Set to 0 when writing.  */
+
+  /* Array state information - 64 bytes.  */
+  grub_uint64_t utime;		/* 40 bits second, 24 btes microseconds.  */
+  grub_uint64_t events;		/* Incremented when superblock updated.  */
+  grub_uint64_t resync_offset;	/* Data before this offset (from data_offset) known to be in sync.  */
+  grub_uint32_t sb_csum;	/* Checksum upto devs[max_dev].  */
+  grub_uint32_t max_dev;	/* Size of devs[] array to consider.  */
+  grub_uint8_t pad3[64 - 32];	/* Set to 0 when writing.  */
+
+  /* Device state information. Indexed by dev_number.
+   * 2 bytes per device.
+   * Note there are no per-device state flags. State information is rolled
+   * into the 'roles' value.  If a device is spare or faulty, then it doesn't
+   * have a meaningful role.
+   */
+  grub_uint16_t dev_roles[0];	/* Role in array, or 0xffff for a spare, or 0xfffe for faulty.  */
+} __attribute__ ((packed));
+
+#define WriteMostly1    1	/* Mask for writemostly flag in above devflags.  */
+
 static grub_err_t
 grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array)
 {
   grub_disk_addr_t sector;
-  grub_uint64_t size;
+  grub_uint64_t size, sb_size;
   struct grub_raid_super_09 sb;
+  struct grub_raid_super_1x *sb_1x;
   grub_uint32_t *uuid;
+  grub_uint8_t minor_version;
 
-  /* The sector where the RAID superblock is stored, if available. */
+  /* The sector where the mdraid 0.90 superblock is stored, if available.  */
   size = grub_disk_get_size (disk);
   sector = NEW_SIZE_SECTORS (size);
 
   if (grub_disk_read (disk, sector, 0, SB_BYTES, &sb))
     return grub_errno;
 
-  /* Look whether there is a RAID superblock. */
-  if (sb.md_magic != SB_MAGIC)
+  /* Look whether there is a mdraid 0.90 superblock.  */
+  if (sb.md_magic == SB_MAGIC)
+    goto superblock_0_90;
+
+  /* Check for an 1.x superblock.
+   * It's always aligned to a 4K boundary
+   * and depending on the minor version it can be:
+   * 0: At least 8K, but less than 12K, from end of device
+   * 1: At start of device
+   * 2: 4K from start of device.
+   */
+
+  sb_1x = grub_malloc (sizeof (struct grub_raid_super_1x));
+  if (!sb_1x)
+    return grub_errno;
+
+  for (minor_version = 0; minor_version < 3; ++minor_version)
+    {
+      switch (minor_version)
+	{
+	case 0:
+	  sector = (size - 8 * 2) & ~(4 * 2 - 1);
+	  break;
+	case 1:
+	  sector = 0;
+	  break;
+	case 2:
+	  sector = 4 * 2;
+	  break;
+	}
+
+      if (grub_disk_read
+	  (disk, sector, 0, sizeof (struct grub_raid_super_1x), sb_1x))
+	{
+	  grub_free (sb_1x);
+	  return grub_errno;
+	}
+
+      if (sb_1x->magic == SB_MAGIC)
+	goto superblock_1_x;
+    }
+
+  /* Neither 0.90 nor 1.x.  */
+  if (grub_le_to_cpu32 (sb_1x->magic) != SB_MAGIC)
     return grub_error (GRUB_ERR_OUT_OF_RANGE, "not raid");
 
-  /* FIXME: Also support version 1.0. */
+superblock_0_90:
+
   if (sb.major_version != 0 || sb.minor_version != 90)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "Unsupported RAID version: %d.%d",
 		       sb.major_version, sb.minor_version);
 
-  /* FIXME: Check the checksum. */
+  /* FIXME: Check the checksum.  */
 
   /* Multipath.  */
   if ((int) sb.level == -4)
@@ -195,6 +309,7 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "Unsupported RAID level: %d", sb.level);
 
+  array->name = NULL;
   array->number = sb.md_minor;
   array->level = sb.level;
   array->layout = sb.layout;
@@ -205,7 +320,10 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array)
   array->uuid_len = 16;
   array->uuid = grub_malloc (16);
   if (!array->uuid)
-    return grub_errno;
+    {
+      grub_free (sb_1x);
+      return grub_errno;
+    }
 
   uuid = (grub_uint32_t *) array->uuid;
   uuid[0] = sb.set_uuid0;
@@ -213,6 +331,63 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array)
   uuid[2] = sb.set_uuid2;
   uuid[3] = sb.set_uuid3;
 
+  return 0;
+
+ superblock_1_x:
+
+  if (sb_1x->major_version != 1)
+    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		       "Unsupported RAID version: %d",
+		       sb_1x->major_version);
+  /* Multipath.  */
+  if ((int) sb_1x->level == -4)
+    sb_1x->level = 1;
+
+  if (sb_1x->level != 0 && sb_1x->level != 1 && sb_1x->level != 4 &&
+      sb_1x->level != 5 && sb_1x->level != 6 && sb_1x->level != 10)
+    {
+      grub_free (sb_1x);
+      return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			 "Unsupported RAID level: %d", sb.level);
+    }
+  /* 1.x superblocks don't have a fixed size on disk.  So we have to
+     read it again now that we now the max device count.  */
+  sb_size = sizeof (struct grub_raid_super_1x) + 2 * grub_le_to_cpu32 (sb_1x->max_dev);
+  sb_1x = grub_realloc (sb_1x, sb_size);
+  if (! sb_1x)
+    return grub_errno;
+
+  if (grub_disk_read (disk, sector, 0, sb_size, sb_1x))
+    {
+      grub_free (sb_1x);
+      return grub_errno;
+    }
+
+  array->name = grub_strdup (sb_1x->set_name);
+  if (! array->name)
+    {
+      grub_free (sb_1x);
+      return grub_errno;
+    }
+
+  array->number = 0;
+  array->level = grub_le_to_cpu32 (sb_1x->level);
+  array->layout = grub_le_to_cpu32 (sb_1x->layout);
+  array->total_devs = grub_le_to_cpu32 (sb_1x->raid_disks);
+  array->disk_size = grub_le_to_cpu64 (sb_1x->size) * 2;
+  array->chunk_size = grub_le_to_cpu32 (sb_1x->chunksize) >> 9;
+  array->index = grub_le_to_cpu32 (sb_1x->dev_number);
+  array->uuid_len = 16;
+  array->uuid = grub_malloc (16);
+  if (!array->uuid)
+    {
+      grub_free (sb_1x);
+      return grub_errno;
+    }
+
+  grub_memcpy (array->uuid, sb_1x->set_uuid, 16);
+
+  grub_free (sb_1x);
   return 0;
 }
 

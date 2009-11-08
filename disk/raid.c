@@ -1,7 +1,7 @@
 /* raid.c - module to read RAID arrays.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -480,7 +480,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
   struct grub_raid_array *array = 0, *p;
 
   /* See whether the device is part of an array we have already seen a
-     device from. */
+     device from.  */
   for (p = array_list; p != NULL; p = p->next)
     if ((p->uuid_len == new_array->uuid_len) &&
         (! grub_memcmp (p->uuid, new_array->uuid, p->uuid_len)))
@@ -491,7 +491,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
         /* Do some checks before adding the device to the array.  */
 
         /* FIXME: Check whether the update time of the superblocks are
-           the same. */
+           the same.  */
 
         if (array->total_devs == array->nr_devs)
           /* We found more members of the array than the array
@@ -502,7 +502,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 
         if (array->device[new_array->index] != NULL)
           /* We found multiple devices with the same number. Again,
-             this shouldn't happen.*/
+             this shouldn't happen.  */
           grub_dprintf ("raid", "Found two disks with the number %d?!?",
 			new_array->number);
 
@@ -525,47 +525,55 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
       array->nr_devs = 0;
       grub_memset (&array->device, 0, sizeof (array->device));
 
-      /* Check whether we don't have multiple arrays with the same number. */
+      if (array->name)
+	goto skip_duplicate_check;
+      /* Check whether we don't have multiple arrays with the same number.  */
       for (p = array_list; p != NULL; p = p->next)
         {
-          if (p->number == array->number)
-            break;
+          if (p->number == array->number) 
+	    break;
         }
 
       if (p)
         {
-          /* The number is already in use, so we need to find an new number. */
+          /* The number is already in use, so we need to find a new one.  */
           int i = 0;
 
-          while (1)
-            {
-              for (p = array_list; p != NULL; p = p->next)
-                {
-                  if (p->number == i)
-                    break;
-                }
+	  while (1)
+	    {
+	      for (p = array_list; p != NULL; p = p->next)
+		{
+		  if (p->number == i)
+		    break;
+		}
 
-              if (!p)
-                {
-                  /* We found an unused number.  */
-                  array->number = i;
-                  break;
-                }
+	      if (! p)
+		{
+		  /* We found an unused number.  */
+		  array->number = i;
+		  break;
+		}
 
-              i++;
-            }
-        }
-
-      array->name = grub_malloc (13);
+	      i++;
+	    }
+	}
+    skip_duplicate_check:
+      /* mdraid 1.x superblocks have only a name stored not a number.
+	 Use it directly as GRUB device.  */
       if (! array->name)
-        {
-          grub_free (array->uuid);
-          grub_free (array);
+	{
+	array->name = grub_malloc (13);
+	if (! array->name)
+	  {
+	    grub_free (array->uuid);
+	    grub_free (array);
 
-          return grub_errno;
-        }
-
-      grub_sprintf (array->name, "md%d", array->number);
+	    return grub_errno;
+	  }
+	grub_sprintf (array->name, "md%d", array->number);
+      }
+      else
+	grub_sprintf (array->name, "%s", array->name);
 
       grub_dprintf ("raid", "Found array %s (%s)\n", array->name,
                     scanner_name);

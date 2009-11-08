@@ -1,7 +1,7 @@
 /* dmraid_nvidia.c - module to handle Nvidia fakeraid.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -132,6 +132,7 @@ grub_dmraid_nv_detect (grub_disk_t disk, struct grub_raid_array *array)
                          "Unsupported RAID level: %d", sb.array.raid_level);
     }
 
+  array->name = NULL;
   array->number = 0;
   array->total_devs = sb.array.total_volumes;
   array->chunk_size = sb.array.stripe_block_size;
