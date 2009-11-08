@@ -1,4 +1,4 @@
-2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/i386/coreboot/grub-mkrescue.in: New file.
 	* conf/i386-coreboot.rmk (bin_SCRIPTS, grub_mkrescue_SOURCES): New
@@ -8,3 +8,25 @@
 	(grub_mkisofs_SOURCES, grub_mkisofs_CFLAGS): New variables.
 	* configure.ac: Add header and function checks to satisfy grub-mkisofs
 	requirements.
+	* util/mkisofs/defaults.h: New file.
+	* util/mkisofs/eltorito.c: Likewise.
+	* util/mkisofs/exclude.h: Likewise.
+	* util/mkisofs/fnmatch.c: Likewise.
+	* util/mkisofs/getopt.c: Likewise.
+	* util/mkisofs/getopt1.c: Likewise.
+	* util/mkisofs/hash.c: Likewise.
+	* util/mkisofs/include/fctldefs.h: Likewise.
+	* util/mkisofs/include/mconfig.h: Likewise.
+	* util/mkisofs/include/prototyp.h: Likewise.
+	* util/mkisofs/include/statdefs.h: Likewise.
+	* util/mkisofs/iso9660.h: Likewise.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/match.c: Likewise.
+	* util/mkisofs/match.h: Likewise.
+	* util/mkisofs/mkisofs.c: Likewise.
+	* util/mkisofs/mkisofs.h: Likewise.
+	* util/mkisofs/multi.c: Likewise.
+	* util/mkisofs/name.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
