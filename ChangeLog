@@ -1,3 +1,8 @@
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (grub_mkisofs_CFLAGS): Prefix include
+	path with $(srcdir).
+
 2009-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* normal/auth.c (grub_auth_strcmp): Fixed incorrect variable usage.

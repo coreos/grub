@@ -36,7 +36,7 @@ grub_mkisofs_SOURCES = util/mkisofs/eltorito.c util/mkisofs/fnmatch.c	\
 	util/mkisofs/multi.c util/mkisofs/name.c			\
 	util/mkisofs/rock.c util/mkisofs/tree.c				\
 	util/mkisofs/write.c
-grub_mkisofs_CFLAGS = -Iutil/mkisofs/include -Wno-all -Werror
+grub_mkisofs_CFLAGS = -I$(srcdir)/util/mkisofs/include -Wno-all -Werror
 
 # For grub-fstest.
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
