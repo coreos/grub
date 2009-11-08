@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ void
 grub_machine_mmap_init ()
 {
   if (! startup_multiboot_info)
-    grub_fatal ("Must be loaded using Multiboot specification (is this an old version of coreboot?)");
+    grub_fatal ("Unable to find Multiboot Information (is CONFIG_MULTIBOOT disabled in coreboot?)");
 
   /* Move MBI to a safe place.  */
   grub_memmove (&kern_multiboot_info, startup_multiboot_info, sizeof (struct grub_multiboot_info));
