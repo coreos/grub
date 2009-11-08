@@ -20,10 +20,11 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /*
- * 	$Id: mkisofs.h,v 1.17 1998/06/02 02:40:38 eric Exp $
+ * 	$Id: mkisofs.h,v 1.20 1999/03/02 04:16:41 eric Exp $
  */
 
 #include <stdio.h>
+#include <prototyp.h>
 
 /* This symbol is used to indicate that we do not have things like
    symlinks, devices, and so forth available.  Just files and dirs */
@@ -108,7 +109,7 @@ extern char *strdup();
 #endif
 
 
-#ifdef __svr4__
+#ifdef __SVR4
 #include <stdlib.h>
 #else
 extern int optind;
@@ -138,6 +139,7 @@ struct directory_entry{
   unsigned char * rr_attributes;
   unsigned int rr_attr_size;
   unsigned int total_rr_attr_size;
+  unsigned int got_rr_name;
 };
 
 struct file_hash{
@@ -173,9 +175,15 @@ struct file_hash{
 struct	output_fragment
 {
   struct output_fragment * of_next;
+#ifdef __STDC__
   int                      (*of_size)(int);
   int	                   (*of_generate)(void);
   int	                   (*of_write)(FILE *);
+#else
+  int                      (*of_size)();
+  int	                   (*of_generate)();
+  int	                   (*of_write)();
+#endif
 };
 
 extern struct output_fragment * out_list;
@@ -332,6 +340,8 @@ extern int
 	DECL(merge_previous_session, (struct directory *, 
 				      struct iso_directory_record *));
 
+extern int  DECL(get_session_start, (int *));
+
 /* joliet.c */
 int DECL(joliet_sort_tree, (struct directory * node));
 
@@ -370,8 +380,13 @@ extern int    DECL(check_prev_session, (struct directory_entry **, int len,
 
 #ifdef	USE_SCG
 /* scsi.c */
+#ifdef __STDC__
 extern	int	readsecs(int startsecno, void *buffer, int sectorcount);
 extern	int	scsidev_open(char *path);
+#else
+extern	int	readsecs();
+extern	int	scsidev_open();
+#endif
 #endif
 
 extern char * extension_record;
@@ -392,6 +407,8 @@ extern char * system_id;
 extern char * volume_id;
 extern char * boot_catalog;
 extern char * boot_image;
+extern int volume_set_size;
+extern int volume_sequence_number;
 
 extern void * DECL(e_malloc,(size_t));
 
@@ -432,6 +449,7 @@ extern void * DECL(e_malloc,(size_t));
 #define INHIBIT_JOLIET_ENTRY	   0x08
 #define INHIBIT_RR_ENTRY	   0x10
 #define RELOCATED_DIRECTORY	   0x20
+#define INHIBIT_ISO9660_ENTRY	   0x40
 
 /*
  * Volume sequence number to use in all of the iso directory records.

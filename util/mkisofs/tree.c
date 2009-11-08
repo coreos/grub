@@ -20,7 +20,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: tree.c,v 1.26 1998/06/02 03:14:58 eric Exp $";
+static char rcsid[] ="$Id: tree.c,v 1.29 1999/03/07 17:41:19 eric Exp $";
 
 /* ADD_FILES changes made by Ross Biro biro@yggdrasil.com 2/23/95 */
 
@@ -39,6 +39,7 @@ static char rcsid[] ="$Id: tree.c,v 1.26 1998/06/02 03:14:58 eric Exp $";
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include <fctldefs.h>
 
 #if defined(MAJOR_IN_MKDEV)
 #include <sys/types.h>
@@ -61,10 +62,13 @@ extern char * strdup(const char *);
 
 #include "mkisofs.h"
 #include "iso9660.h"
+#include "match.h"
 
 #include <sys/stat.h>
 
 #include "exclude.h"
+
+#ifdef	DOESNT_WORK
 
 #ifdef NON_UNIXFS
 #define S_ISLNK(m)	(0)
@@ -83,11 +87,20 @@ extern char * strdup(const char *);
 #endif
 #endif
 
-#ifdef __svr4__
+#else
+#include <statdefs.h>
+#endif
+
+
+#ifdef __SVR4
 extern char * strdup(const char *);
 #endif
 
 static unsigned char symlink_buff[256];
+
+static void stat_fix	__PR((struct stat * st));
+static void generate_reloc_directory __PR((void));
+
 static void DECL(attach_dot_entries, (struct directory * dirnode,
 		   struct stat * parent_stat));
 static void DECL(delete_directory, (struct directory * parent, struct directory * child));
@@ -100,7 +113,7 @@ struct stat root_statbuf = {0, };  /* Stat buffer for root directory */
 
 struct directory * reloc_dir = NULL;
 
-void
+static void
 FDECL1(stat_fix, struct stat *, st)
 {
   /* Remove the uid and gid, they will only be useful on the author's
@@ -159,6 +172,12 @@ static int FDECL1(sort_n_finish, struct directory *, this_dir)
   /* Here we can take the opportunity to toss duplicate entries from the
      directory.  */
 
+  /* ignore if it's hidden */
+  if(this_dir->dir_flags & INHIBIT_ISO9660_ENTRY)
+    {
+      return 0;
+    }
+
   table = NULL;
 
   init_fstatbuf();
@@ -178,6 +197,12 @@ static int FDECL1(sort_n_finish, struct directory *, this_dir)
   s_entry = this_dir->contents;
   while(s_entry)
     {
+    /* ignore if it's hidden */
+    if (s_entry->de_flags & INHIBIT_ISO9660_ENTRY)
+      {
+	s_entry = s_entry->next;
+	continue;
+      }
 	  
       /*
        * First assume no conflict, and handle this case 
@@ -319,6 +344,7 @@ got_valid_name:
 	{
 	  if(strcmp(s_entry->name, ".") == 0  ||
 	     strcmp(s_entry->name, "..") == 0) continue; 
+	  if(s_entry->de_flags & INHIBIT_ISO9660_ENTRY) continue;
 	  if(s_entry->table) tablesize += 35 + strlen(s_entry->table);
 	}
     }
@@ -338,7 +364,7 @@ got_valid_name:
       iso9660_date(table->isorec.date, fstatbuf.st_mtime);
       table->inode = TABLE_INODE;
       table->dev = (dev_t) UNCACHED_DEVICE;
-      set_723(table->isorec.volume_sequence_number, DEF_VSN);
+      set_723(table->isorec.volume_sequence_number, volume_sequence_number);
       set_733((char *) table->isorec.size, tablesize);
       table->size = tablesize;
       table->filedir = this_dir;
@@ -366,6 +392,12 @@ got_valid_name:
    */
   for(s_entry = this_dir->contents; s_entry; s_entry = s_entry->next)
     {
+      /* skip if it's hidden */
+      if (s_entry->de_flags & INHIBIT_ISO9660_ENTRY)
+	{
+	  continue;
+	}
+
       new_reclen = strlen(s_entry->isorec.name);
 	  
       /*
@@ -429,15 +461,16 @@ got_valid_name:
 	if(!s_entry->table) continue;
 	if(strcmp(s_entry->name, ".") == 0  ||
 	   strcmp(s_entry->name, "..") == 0) continue;
-#if (defined(__sun) && !defined(__svr4__))
-	count += strlen(sprintf(table->table + count, "%c %-34s%s",
-			 s_entry->table[0],
-			 s_entry->isorec.name, s_entry->table+1));
-#else
-	count += sprintf(table->table + count, "%c %-34s%s",
-			 s_entry->table[0],
-			 s_entry->isorec.name, s_entry->table+1);
-#endif /* __sun && !__svr4__ */
+	if(s_entry->de_flags & INHIBIT_ISO9660_ENTRY) continue;
+	/*
+	 * Warning: we cannot use the return value of sprintf because
+	 * old BSD based sprintf() implementations will return
+	 * a pointer to the result instead of a count.
+	 */
+	sprintf(table->table + count, "%c %-34s%s",
+		s_entry->table[0],
+		s_entry->isorec.name, s_entry->table+1);
+	count += strlen(table->table + count);
 	free(s_entry->table);
 	s_entry->table = NULL;
       }
@@ -458,6 +491,12 @@ got_valid_name:
   this_dir->ce_bytes = 0;
   while(s_entry)
     {
+      /* skip if it's hidden */
+      if (s_entry->de_flags & INHIBIT_ISO9660_ENTRY) {
+	s_entry = s_entry->next;
+	continue;
+      }
+
       new_reclen = s_entry->isorec.length[0];
       if ((this_dir->size & (SECTOR_SIZE - 1)) + new_reclen >= SECTOR_SIZE)
 	this_dir->size = (this_dir->size + (SECTOR_SIZE - 1)) & 
@@ -542,7 +581,7 @@ static void generate_reloc_directory()
 	iso9660_date(root->contents->isorec.date, current_time);
 	root->contents->inode = UNCACHED_INODE;
 	root->contents->dev = (dev_t) UNCACHED_DEVICE;
-	set_723(root->contents->isorec.volume_sequence_number, DEF_VSN);
+	set_723(root->contents->isorec.volume_sequence_number, volume_sequence_number);
 	iso9660_file_length (reloc_dir->de_name, root->contents, 1);
 
 	if(use_RockRidge){
@@ -689,9 +728,17 @@ void finish_cl_pl_entries(){
   struct directory_entry  *s_entry, *s_entry1;
   struct directory *  d_entry;
 
+  /* if the reloc_dir is hidden (empty), then return */
+  if (reloc_dir->dir_flags & INHIBIT_ISO9660_ENTRY)
+    return;
+
   s_entry = reloc_dir->contents;
    s_entry  = s_entry->next->next;  /* Skip past . and .. */
   for(; s_entry; s_entry = s_entry->next){
+	  /* skip if it's hidden */
+	  if(s_entry->de_flags & INHIBIT_ISO9660_ENTRY) {
+	    continue;
+	  }
 	  d_entry = reloc_dir->subdir;
 	  while(d_entry){
 		  if(d_entry->self == s_entry) break;
@@ -748,6 +795,11 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
   int				  dflag;
   char				* old_path;
 
+    if (verbose > 1)
+    {
+      fprintf(stderr, "Scanning %s\n", path);
+    }
+
   current_dir = opendir(path);
   d_entry = NULL;
 
@@ -774,6 +826,14 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
   vms_path_fixup(path);
 #endif
 
+  /*
+   * if entry for this sub-directory is hidden, then hide this directory
+   */
+  if (de->de_flags & INHIBIT_ISO9660_ENTRY)
+    this_dir->dir_flags |= INHIBIT_ISO9660_ENTRY;
+  
+  if (de->de_flags & INHIBIT_JOLIET_ENTRY)
+    this_dir->dir_flags |= INHIBIT_JOLIET_ENTRY;
   
   /* 
    * Now we scan the directory itself, and look at what is inside of it. 
@@ -1120,8 +1180,36 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
   
   s_entry->name = strdup(short_name);
   s_entry->whole_name = strdup (whole_path);
-  
+
   s_entry->de_flags = 0;
+
+  /*
+   * If the current directory is hidden, then hide all it's members
+   * otherwise check if this entry needs to be hidden as well */
+  if (this_dir->dir_flags & INHIBIT_ISO9660_ENTRY) {
+    s_entry->de_flags |= INHIBIT_ISO9660_ENTRY;
+  }
+  else if (strcmp(short_name,".") && strcmp(short_name,"..")) {
+    if (i_matches(short_name) || i_matches(whole_path)) {
+      if (verbose > 1) {
+	fprintf(stderr, "Hidden from ISO9660 tree: %s\n", whole_path);
+      }
+      s_entry->de_flags |= INHIBIT_ISO9660_ENTRY;
+    }
+  }
+
+  if (this_dir != reloc_dir && this_dir->dir_flags & INHIBIT_JOLIET_ENTRY) {
+    s_entry->de_flags |= INHIBIT_JOLIET_ENTRY;
+  }
+  else if (strcmp(short_name,".") && strcmp(short_name,"..")) {
+    if (j_matches(short_name) || j_matches(whole_path)) {
+      if (verbose > 1) {
+	fprintf(stderr, "Hidden from Joliet tree: %s\n", whole_path);
+      }
+      s_entry->de_flags |= INHIBIT_JOLIET_ENTRY;
+    }
+  }
+
   s_entry->filedir = this_dir;
   s_entry->isorec.flags[0] = 0;
   s_entry->isorec.ext_attr_length[0] = 0;
@@ -1152,7 +1240,7 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
       s_entry->inode = STAT_INODE(statbuf);
       s_entry->dev = statbuf.st_dev;
     }
-  set_723(s_entry->isorec.volume_sequence_number, DEF_VSN);
+  set_723(s_entry->isorec.volume_sequence_number, volume_sequence_number);
   iso9660_file_length(short_name, s_entry, S_ISDIR(statbuf.st_mode));
   s_entry->rr_attr_size = 0;
   s_entry->total_rr_attr_size = 0;
@@ -1244,38 +1332,61 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 	  sprintf(buffer,"D\t%s\n",
 		  s_entry->name);
 	  break;
-#ifndef NON_UNIXFS
+#ifdef S_IFBLK
+/* extra for WIN32 - if it doesn't have the major/minor defined, then
+   S_IFBLK and S_IFCHR type files are unlikely to exist anyway ...
+   code similar to that in rock.c */
+
+/* for some reason, MAJOR_IN_SYSMACROS isn't defined on a SunOS when
+   it should be, so see if major() is defined instead  */
+/*
+#if !(defined(MAJOR_IN_SYSMACROS) || defined(MAJOR_IN_MKDEV))
+*/
+#ifndef major
+#define major(dev) (sizeof(dev_t) <= 2 ? ((dev) >> 8) : \
+	(sizeof(dev_t) <= 4 ? (((dev) >> 8) >> 8) : \
+	(((dev) >> 16) >> 16)))
+#define minor(dev) (sizeof(dev_t) <= 2 ? (dev) & 0xff : \
+	(sizeof(dev_t) <= 4 ? (dev) & 0xffff : \
+	(dev) & 0xffffffff))
+#endif
 	case S_IFBLK:
 	  sprintf(buffer,"B\t%s\t%lu %lu\n",
 		  s_entry->name,
 		  (unsigned long) major(statbuf.st_rdev),
 		  (unsigned long) minor(statbuf.st_rdev));
 	  break;
+#endif
+#ifdef S_IFIFO
 	case S_IFIFO:
 	  sprintf(buffer,"P\t%s\n",
 		  s_entry->name);
 	  break;
+#endif
+#ifdef S_IFCHR
 	case S_IFCHR:
 	  sprintf(buffer,"C\t%s\t%lu %lu\n",
 		  s_entry->name,
 		  (unsigned long) major(statbuf.st_rdev),
 		  (unsigned long) minor(statbuf.st_rdev));
 	  break;
+#endif
+#ifdef S_IFLNK
 	case S_IFLNK:
 	  nchar = readlink(whole_path, 
-			   symlink_buff, 
+			   (char *)symlink_buff, 
 			   sizeof(symlink_buff));
 	  symlink_buff[nchar < 0 ? 0 : nchar] = 0;
 	  sprintf(buffer,"L\t%s\t%s\n",
 		  s_entry->name, symlink_buff);
 	  break;
+#endif
 #ifdef S_IFSOCK
 	case S_IFSOCK:
 	  sprintf(buffer,"S\t%s\n",
 		  s_entry->name);
 	  break;
 #endif
-#endif /* NON_UNIXFS */
 	case S_IFREG:
 	default:
 	  sprintf(buffer,"F\t%s\n",
@@ -1408,7 +1519,7 @@ struct directory * FDECL4(find_or_create_directory, struct directory *, parent,
       de->priority        = 32768;
       de->inode           = UNCACHED_INODE;
       de->dev             = (dev_t) UNCACHED_DEVICE;
-      set_723(de->isorec.volume_sequence_number, DEF_VSN);
+      set_723(de->isorec.volume_sequence_number, volume_sequence_number);
       iso9660_file_length (pnt, de, 1);
 
       init_fstatbuf();
@@ -1574,13 +1685,13 @@ static void FDECL2(delete_directory, struct directory *, parent, struct director
 
 int FDECL1(sort_tree, struct directory *, node){
   struct directory * dpnt;
-  int goof = 0;
+  int ret = 0;
 
   dpnt = node;
 
   while (dpnt){
-    goof = sort_n_finish(dpnt);
-    if( goof )
+    ret = sort_n_finish(dpnt);
+    if( ret )
       {
 	break;
       }
@@ -1588,7 +1699,7 @@ int FDECL1(sort_tree, struct directory *, node){
     if(dpnt->subdir) sort_tree(dpnt->subdir);
     dpnt = dpnt->next;
   }
-  return goof;
+  return ret;
 }
 
 void FDECL1(dump_tree, struct directory *, node){
@@ -1614,12 +1725,17 @@ void FDECL1(update_nlink_field, struct directory *, node)
     
     while (dpnt)
     {
+	if (dpnt->dir_flags & INHIBIT_ISO9660_ENTRY) {
+	    dpnt = dpnt->next;
+	    continue;
+	}
+
 	/*
 	 * First, count up the number of subdirectories this guy has.
 	 */
-	for(i=0, xpnt = dpnt->subdir; xpnt; xpnt = xpnt->next, i++)
-	    continue;
-
+        for(i=0, xpnt = dpnt->subdir; xpnt; xpnt = xpnt->next)
+            if ((xpnt->dir_flags & INHIBIT_ISO9660_ENTRY) == 0)
+                i++;
 	/*
 	 * Next check to see if we have any relocated directories
 	 * in this directory.   The nlink field will include these
@@ -1630,7 +1746,8 @@ void FDECL1(update_nlink_field, struct directory *, node)
 	 */
 	for(s_entry = dpnt->contents; s_entry; s_entry = s_entry->next)
 	{
-		if( (s_entry->de_flags  & RELOCATED_DIRECTORY) != 0 )
+		if( (s_entry->de_flags  & RELOCATED_DIRECTORY) != 0 &&
+			(s_entry->de_flags  & INHIBIT_ISO9660_ENTRY) == 0)
 		{
 			i++;
 		}

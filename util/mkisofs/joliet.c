@@ -17,7 +17,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: joliet.c,v 1.12 1998/06/02 02:40:37 eric Exp $";
+static char rcsid[] ="$Id: joliet.c,v 1.14 1999/03/07 17:41:19 eric Exp $";
 
 
 /*
@@ -77,13 +77,15 @@ static char rcsid[] ="$Id: joliet.c,v 1.12 1998/06/02 02:40:37 eric Exp $";
 #include <stdlib.h>
 #include <time.h>
 
-static jpath_table_index;
+static int jpath_table_index;
 static struct directory ** jpathlist;
-static     next_jpath_index  = 1;
+static int next_jpath_index  = 1;
 static int sort_goof;
 
+static int generate_joliet_path_tables	__PR((void));
 static int DECL(joliet_sort_directory, (struct directory_entry ** sort_dir));
 static void DECL(assign_joliet_directory_addresses, (struct directory * node));
+static int jroot_gen	__PR((void));
 
 /* 
  * Function:		convert_to_unicode
@@ -121,7 +123,14 @@ static void FDECL3(convert_to_unicode, unsigned char *, buffer, int, size, char 
   for(i=0; i < size ; i += 2, j++)
     {
       buffer[i]       = 0;
-      if( tmpbuf[j] < 0x1f && tmpbuf[j] != 0 )
+	/*
+	 * JS integrated from: Achim_Kaiser@t-online.de
+	 *
+	 * Let all valid unicode characters pass through (assuming ISO-8859-1).
+	 * Others are set to '_' . 
+	 */ 
+	if( tmpbuf[j] != 0 &&  
+	   (tmpbuf[j] <= 0x1f || (tmpbuf[j] >= 0x7F && tmpbuf[j] <= 0xA0)) )
 	{
 	  buffer[i+1]     = '_';
 	}
@@ -166,7 +175,6 @@ static void FDECL3(convert_to_unicode, unsigned char *, buffer, int, size, char 
 static int FDECL1(joliet_strlen, const char *, string)
 {
   int rtn;
-  struct iso_directory_record foobar;
 
   rtn = strlen(string) << 1;
 
@@ -192,32 +200,36 @@ static int FDECL1(joliet_strlen, const char *, string)
  *			already present in the buffer.  Just modifiy the
  *			appropriate fields.
  */
-static void FDECL1(get_joliet_vol_desc, struct iso_primary_descriptor *, vol_desc)
+static void FDECL1(get_joliet_vol_desc, struct iso_primary_descriptor *, jvol_desc)
 {
-  vol_desc->type[0] = ISO_VD_SUPPLEMENTARY;
+  jvol_desc->type[0] = ISO_VD_SUPPLEMENTARY;
 
   /*
    * For now, always do Unicode level 3.  I don't really know what 1 and 2
    * are - perhaps a more limited Unicode set.
    *
-   * FIXME(eric) - how does Romeo fit in here?
+   * FIXME(eric) - how does Romeo fit in here?  As mkisofs just
+   * "expands" 8 bit character codes to 16 bits and does nothing
+   * special with the Unicode characters, therefore shouldn't mkisofs
+   * really be stating that it's using UCS-2 Level 1, not Level 3 for
+   * the Joliet directory tree.  
    */
-  strcpy(vol_desc->escape_sequences, "%/E");
+  strcpy(jvol_desc->escape_sequences, "%/@");
 
   /*
    * Until we have Unicode path tables, leave these unset.
    */
-  set_733((char *) vol_desc->path_table_size, jpath_table_size);
-  set_731(vol_desc->type_l_path_table,     jpath_table[0]);
-  set_731(vol_desc->opt_type_l_path_table, jpath_table[1]);
-  set_732(vol_desc->type_m_path_table,     jpath_table[2]);
-  set_732(vol_desc->opt_type_m_path_table, jpath_table[3]);
+  set_733((char *) jvol_desc->path_table_size, jpath_table_size);
+  set_731(jvol_desc->type_l_path_table,     jpath_table[0]);
+  set_731(jvol_desc->opt_type_l_path_table, jpath_table[1]);
+  set_732(jvol_desc->type_m_path_table,     jpath_table[2]);
+  set_732(jvol_desc->opt_type_m_path_table, jpath_table[3]);
 
   /*
    * Set this one up.
    */
-  memcpy(vol_desc->root_directory_record, &jroot_record, 
-	 sizeof(struct iso_directory_record) + 1);
+  memcpy(jvol_desc->root_directory_record, &jroot_record, 
+	 sizeof(struct iso_directory_record));
 
   /*
    * Finally, we have a bunch of strings to convert to Unicode.
@@ -225,15 +237,15 @@ static void FDECL1(get_joliet_vol_desc, struct iso_primary_descriptor *, vol_des
    * just be really lazy and do a char -> short conversion.  We probably
    * will want to filter any characters >= 0x80.
    */
-  convert_to_unicode((u_char *)vol_desc->system_id, sizeof(vol_desc->system_id), NULL);
-  convert_to_unicode((u_char *)vol_desc->volume_id, sizeof(vol_desc->volume_id), NULL);
-  convert_to_unicode((u_char *)vol_desc->volume_set_id, sizeof(vol_desc->volume_set_id), NULL);
-  convert_to_unicode((u_char *)vol_desc->publisher_id, sizeof(vol_desc->publisher_id), NULL);
-  convert_to_unicode((u_char *)vol_desc->preparer_id, sizeof(vol_desc->preparer_id), NULL);
-  convert_to_unicode((u_char *)vol_desc->application_id, sizeof(vol_desc->application_id), NULL);
-  convert_to_unicode((u_char *)vol_desc->copyright_file_id, sizeof(vol_desc->copyright_file_id), NULL);
-  convert_to_unicode((u_char *)vol_desc->abstract_file_id, sizeof(vol_desc->abstract_file_id), NULL);
-  convert_to_unicode((u_char *)vol_desc->bibliographic_file_id, sizeof(vol_desc->bibliographic_file_id), NULL);
+  convert_to_unicode((u_char *)jvol_desc->system_id, sizeof(jvol_desc->system_id), NULL);
+  convert_to_unicode((u_char *)jvol_desc->volume_id, sizeof(jvol_desc->volume_id), NULL);
+  convert_to_unicode((u_char *)jvol_desc->volume_set_id, sizeof(jvol_desc->volume_set_id), NULL);
+  convert_to_unicode((u_char *)jvol_desc->publisher_id, sizeof(jvol_desc->publisher_id), NULL);
+  convert_to_unicode((u_char *)jvol_desc->preparer_id, sizeof(jvol_desc->preparer_id), NULL);
+  convert_to_unicode((u_char *)jvol_desc->application_id, sizeof(jvol_desc->application_id), NULL);
+  convert_to_unicode((u_char *)jvol_desc->copyright_file_id, sizeof(jvol_desc->copyright_file_id), NULL);
+  convert_to_unicode((u_char *)jvol_desc->abstract_file_id, sizeof(jvol_desc->abstract_file_id), NULL);
+  convert_to_unicode((u_char *)jvol_desc->bibliographic_file_id, sizeof(jvol_desc->bibliographic_file_id), NULL);
 
 
 }
@@ -261,8 +273,9 @@ static void FDECL1(assign_joliet_directory_addresses, struct directory *, node)
 		 last_extent += dir_size;
 	     }
 	 }
-	 
-	 if(dpnt->subdir) 
+
+	 /* skip if hidden - but not for the rr_moved dir */
+	 if(dpnt->subdir && (!(dpnt->dir_flags & INHIBIT_JOLIET_ENTRY) || dpnt == reloc_dir)) 
 	 {
 	     assign_joliet_directory_addresses(dpnt->subdir);
 	 }
@@ -341,6 +354,12 @@ static int generate_joliet_path_tables()
   memset(jpath_table_l, 0, tablesize);
   memset(jpath_table_m, 0, tablesize);
 
+  if( next_jpath_index > 0xffff )
+  {
+      fprintf(stderr, "Unable to generate sane path tables - too many directories (%d)\n",
+	      next_jpath_index);
+      exit(1);
+  }
   /*
    * Now start filling in the path tables.  Start with root directory 
    */
@@ -353,8 +372,13 @@ static int generate_joliet_path_tables()
   do
   {
        fix = 0;
+#ifdef	__STDC__
        qsort(&jpathlist[1], next_jpath_index-1, sizeof(struct directory *), 
 	     (int (*)(const void *, const void *))joliet_compare_paths);
+#else
+       qsort(&jpathlist[1], next_jpath_index-1, sizeof(struct directory *), 
+	     joliet_compare_paths);
+#endif
 
        for(j=1; j<next_jpath_index; j++)
        {
@@ -478,8 +502,11 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
      s_entry = dpnt->jcontents;
      while(s_entry) 
      {
-	 if( (s_entry->de_flags & INHIBIT_JOLIET_ENTRY) == 0 )
-	 {
+	     if(s_entry->de_flags & INHIBIT_JOLIET_ENTRY) {
+		s_entry = s_entry->jnext;
+		continue;
+	     }
+		
 	     /*
 	      * If this entry was a directory that was relocated, we have a bit
 	      * of trouble here.  We need to dig out the real thing and put it
@@ -617,8 +644,8 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
 	     {
 		 directory_buffer[dir_index++] = 0;
 	     }
-	 }
-	 s_entry = s_entry->jnext;
+
+	     s_entry = s_entry->jnext;
      }
      
      if(dpnt->jsize != dir_index)
@@ -637,8 +664,15 @@ static int FDECL1(joliet_sort_n_finish, struct directory *, this_dir)
   struct directory_entry  * s_entry;
   int			    status = 0;
 
+  /* don't want to skip this directory if it's the reloc_dir at the moment */
+  if(this_dir != reloc_dir && this_dir->dir_flags & INHIBIT_JOLIET_ENTRY)
+    {
+      return 0;
+    }
+
   for(s_entry = this_dir->contents; s_entry; s_entry = s_entry->next)
     {
+      /* skip hidden entries */
       if(  (s_entry->de_flags & INHIBIT_JOLIET_ENTRY) != 0 )
 	{
 	  continue;
@@ -707,6 +741,10 @@ static int FDECL1(joliet_sort_n_finish, struct directory *, this_dir)
    * Do not split a directory entry across a sector boundary 
    */
   s_entry = this_dir->jcontents;
+/*
+ * XXX Is it ok to comment this out?
+ */
+/*XXX JS  this_dir->ce_bytes = 0;*/
   for(s_entry = this_dir->jcontents; s_entry; s_entry = s_entry->jnext)
     {
       int jreclen;
@@ -798,14 +836,16 @@ static int FDECL2(joliet_compare_dirs, const void *, rr, const void *, ll)
 static int FDECL1(joliet_sort_directory, struct directory_entry **, sort_dir)
 {
      int dcount = 0;
-     int i, len;
+     int i;
      struct directory_entry * s_entry;
      struct directory_entry ** sortlist;
      
      s_entry = *sort_dir;
      while(s_entry)
      {
-	  dcount++;
+	  /* skip hidden entries */
+	  if (!(s_entry->de_flags & INHIBIT_JOLIET_ENTRY))
+	    dcount++;
 	  s_entry = s_entry->next;
      }
 
@@ -819,14 +859,22 @@ static int FDECL1(joliet_sort_directory, struct directory_entry **, sort_dir)
      s_entry = *sort_dir;
      while(s_entry)
      {
-	  sortlist[dcount] = s_entry;
-	  dcount++;
+	  /* skip hidden entries */
+	  if (!(s_entry->de_flags & INHIBIT_JOLIET_ENTRY)) {
+	    sortlist[dcount] = s_entry;
+	    dcount++;
+	  }
 	  s_entry = s_entry->next;
      }
   
      sort_goof = 0;
+#ifdef	__STDC__
      qsort(sortlist, dcount, sizeof(struct directory_entry *), 
 	   (int (*)(const void *, const void *))joliet_compare_dirs);
+#else
+     qsort(sortlist, dcount, sizeof(struct directory_entry *), 
+	   joliet_compare_dirs);
+#endif
      
      /* 
       * Now reassemble the linked list in the proper sorted order 
@@ -846,24 +894,24 @@ static int FDECL1(joliet_sort_directory, struct directory_entry **, sort_dir)
 int FDECL1(joliet_sort_tree, struct directory *, node)
 {
   struct directory * dpnt;
-  int goof = 0;
+  int ret = 0;
 
   dpnt = node;
 
   while (dpnt){
-    goof = joliet_sort_n_finish(dpnt);
-    if( goof )
+    ret = joliet_sort_n_finish(dpnt);
+    if( ret )
       {
 	break;
       }
-    if(dpnt->subdir) goof = joliet_sort_tree(dpnt->subdir);
-    if( goof )
+    if(dpnt->subdir) ret = joliet_sort_tree(dpnt->subdir);
+    if( ret )
       {
 	break;
       }
     dpnt = dpnt->next;
   }
-  return goof;
+  return ret;
 }
 
 static void FDECL2(generate_joliet_directories, struct directory *, node, FILE*, outfile){
@@ -879,12 +927,14 @@ static void FDECL2(generate_joliet_directories, struct directory *, node, FILE*,
 	   * In theory we should never reuse a directory, so this doesn't
 	   * make much sense.
 	   */
-	  if( dpnt->extent > session_start )
+	  if( dpnt->jextent > session_start )
 	    {
 	      generate_one_joliet_directory(dpnt, outfile);
 	    }
 	}
-      if(dpnt->subdir) generate_joliet_directories(dpnt->subdir, outfile);
+      /* skip if hidden - but not for the rr_moved dir */
+      if(dpnt->subdir && (!(dpnt->dir_flags & INHIBIT_JOLIET_ENTRY) || dpnt == reloc_dir)) 
+	generate_joliet_directories(dpnt->subdir, outfile);
       dpnt = dpnt->next;
     }
 }
@@ -925,7 +975,7 @@ static int jroot_gen()
      jroot_record.flags[0] = 2;
      jroot_record.file_unit_size[0] = 0;
      jroot_record.interleave[0] = 0;
-     set_723(jroot_record.volume_sequence_number, DEF_VSN);
+     set_723(jroot_record.volume_sequence_number, volume_sequence_number);
      jroot_record.name_len[0] = 1;
      return 0;
 }

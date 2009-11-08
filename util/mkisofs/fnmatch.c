@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: fnmatch.c,v 1.3 1997/03/22 02:53:13 eric Rel $";
+static char rcsid[] ="$Id: fnmatch.c,v 1.4 1999/03/02 03:41:25 eric Exp $";
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -25,6 +25,10 @@ static char rcsid[] ="$Id: fnmatch.c,v 1.3 1997/03/22 02:53:13 eric Rel $";
 
 #include <errno.h>
 #include <fnmatch.h>
+
+#ifndef	__STDC__
+#define	const
+#endif
 
 #ifndef FNM_FILE_NAME
 #define	FNM_FILE_NAME	FNM_PATHNAME /* Preferred GNU name.  */
@@ -81,7 +85,7 @@ fnmatch (pattern, string, flags)
 
   while ((c = *p++) != '\0')
     {
-      c = FOLD (c);
+      c = FOLD ((unsigned char)c);
 
       switch (c)
 	{
@@ -99,9 +103,9 @@ fnmatch (pattern, string, flags)
 	  if (!(flags & FNM_NOESCAPE))
 	    {
 	      c = *p++;
-	      c = FOLD (c);
+	      c = FOLD ((unsigned char )c);
 	    }
-	  if (FOLD (*n) != c)
+	  if (FOLD ((unsigned char )*n) != c)
 	    return FNM_NOMATCH;
 	  break;
 
@@ -120,9 +124,9 @@ fnmatch (pattern, string, flags)
 
 	  {
 	    char c1 = (!(flags & FNM_NOESCAPE) && c == '\\') ? *p : c;
-	    c1 = FOLD (c1);
+	    c1 = FOLD ((unsigned char )c1);
 	    for (--p; *n != '\0'; ++n)
-	      if ((c == '[' || FOLD (*n) == c1) &&
+	      if ((c == '[' || FOLD ((unsigned char )*n) == c1) &&
 		  fnmatch (p, n, flags & ~FNM_PERIOD) == 0)
 		return 0;
 	    return FNM_NOMATCH;
@@ -152,14 +156,14 @@ fnmatch (pattern, string, flags)
 		if (!(flags & FNM_NOESCAPE) && c == '\\')
 		  cstart = cend = *p++;
 
-		cstart = cend = FOLD (cstart);
+		cstart = cend = FOLD ((unsigned char)cstart);
 
 		if (c == '\0')
 		  /* [ (unterminated) loses.  */
 		  return FNM_NOMATCH;
 
 		c = *p++;
-		c = FOLD (c);
+		c = FOLD ((unsigned char)c);
 
 		if ((flags & FNM_FILE_NAME) && c == '/')
 		  /* [/] can never match.  */
@@ -172,12 +176,12 @@ fnmatch (pattern, string, flags)
 		      cend = *p++;
 		    if (cend == '\0')
 		      return FNM_NOMATCH;
-		    cend = FOLD (cend);
+		    cend = FOLD ((unsigned char)cend);
 
 		    c = *p++;
 		  }
 
-		if (FOLD (*n) >= cstart && FOLD (*n) <= cend)
+		if (FOLD ((unsigned char)*n) >= cstart && FOLD ((unsigned char)*n) <= cend)
 		  goto matched;
 
 		if (c == ']')
@@ -206,7 +210,7 @@ fnmatch (pattern, string, flags)
 	  break;
 
 	default:
-	  if (c != FOLD (*n))
+	  if (c != FOLD ((unsigned char)*n))
 	    return FNM_NOMATCH;
 	}
 

@@ -19,7 +19,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: write.c,v 1.18 1998/06/02 02:40:39 eric Exp $";
+static char rcsid[] ="$Id: write.c,v 1.21 1999/03/07 17:41:19 eric Exp $";
 
 #include <string.h>
 #include <stdlib.h>
@@ -37,7 +37,7 @@ static char rcsid[] ="$Id: write.c,v 1.18 1998/06/02 02:40:39 eric Exp $";
 #include <unistd.h>
 #endif
  
-#ifdef __svr4__
+#ifdef __SVR4
 extern char * strdup(const char *);
 #endif
 
@@ -55,13 +55,18 @@ static int table_size       = 0;
 static int total_dir_size   = 0;
 static int rockridge_size   = 0;
 static struct directory ** pathlist;
-static     next_path_index  = 1;
+static int next_path_index  = 1;
 static int sort_goof;
 
 struct output_fragment * out_tail;
 struct output_fragment * out_list;
 
 struct iso_primary_descriptor vol_desc;
+
+static int root_gen	__PR((void));
+static int generate_path_tables	__PR((void));
+static int file_gen	__PR((void));
+static int dirtree_dump	__PR((void));
 
 /* Routines to actually write the disc.  We write sequentially so that
    we could write a tape, or write the disc directly */
@@ -121,30 +126,33 @@ void FDECL2(set_733, char *, pnt, unsigned int, i)
 
 void FDECL4(xfwrite, void *, buffer, int, count, int, size, FILE *, file)
 {
-    /*
-     * This is a hack that could be made better. XXXIs this the only place?
-     * It is definitely needed on Operating Systems that do not
-     * allow to write files that are > 2GB.
-     * If the system is fast enough to be able to feed 1400 KB/s
-     * writing speed of a DVD-R drive, use stdout.
-     * If the system cannot do this reliable, you need to use this
-     * hacky option.
-     */
-    if (split_output != 0 && ftell(file) > (1024 * 1024 * 1024) ) {
-	static int	idx = 0;
-	char	nbuf[128];
-	
-	sprintf(nbuf, "part_%02d", idx++);
-	file = freopen(nbuf, "w", file);
-	if (file == NULL) {
-	    fprintf(stderr, "Cannot open '%s'.\n", nbuf);
-	    exit(1);
-	}
-	
-    }
+	/*
+	 * This is a hack that could be made better. XXXIs this the only place?
+	 * It is definitely needed on Operating Systems that do not
+	 * allow to write files that are > 2GB.
+	 * If the system is fast enough to be able to feed 1400 KB/s
+	 * writing speed of a DVD-R drive, use stdout.
+	 * If the system cannot do this reliable, you need to use this
+	 * hacky option.
+	 */
+	static	int	idx = 0;
+	if (split_output != 0 &&
+	    (idx == 0 || ftell(file) >= (1024 * 1024 * 1024) )) {
+			char	nbuf[512];
+		extern	char	*outfile;
 
-    while(count) 
-    {
+		if (idx == 0)
+			unlink(outfile);
+		sprintf(nbuf, "%s_%02d", outfile, idx++);
+		file = freopen(nbuf, "wb", file);
+		if (file == NULL) {
+			fprintf(stderr, "Cannot open '%s'.\n", nbuf);
+			exit(1);
+		}
+
+	}
+     while(count) 
+     {
 	  int got = fwrite(buffer,size,count,file);
 
 	  if(got<=0) 
@@ -168,7 +176,7 @@ struct deferred_write
 static struct deferred_write * dw_head = NULL, * dw_tail = NULL;
 
 unsigned int last_extent_written  =0;
-static path_table_index;
+static int path_table_index;
 static time_t begun;
 
 /* We recursively walk through all of the directories and assign extent
@@ -184,6 +192,12 @@ static int FDECL1(assign_directory_addresses, struct directory *, node)
      
      while (dpnt)
      {
+	  /* skip if it's hidden */
+	  if(dpnt->dir_flags & INHIBIT_ISO9660_ENTRY) {
+	     dpnt = dpnt->next;
+	     continue;
+	  }
+
 	  /*
 	   * If we already have an extent for this (i.e. it came from
 	   * a multisession disc), then don't reassign a new extent.
@@ -346,11 +360,26 @@ static int FDECL2(compare_dirs, const void *, rr, const void *, ll)
       * and thus should always be sorted correctly.   I need to figure
       * out why I thought I needed this in the first place.
       */
+#if 0
      if( strcmp(rpnt, ".") == 0 ) return -1;
      if( strcmp(lpnt, ".") == 0 ) return  1;
 
      if( strcmp(rpnt, "..") == 0 ) return -1;
      if( strcmp(lpnt, "..") == 0 ) return  1;
+#else
+     /*
+      * The code above is wrong (as explained in Eric's comment), leading to incorrect
+      * sort order iff the -L option ("allow leading dots") is in effect and a directory
+      * contains entries that start with a dot.
+      *
+      * (TF, Tue Dec 29 13:49:24 CET 1998)
+      */
+     if((*r)->isorec.name_len[0] == 1 && *rpnt == 0) return -1; /* '.' */
+     if((*l)->isorec.name_len[0] == 1 && *lpnt == 0) return 1;
+
+     if((*r)->isorec.name_len[0] == 1 && *rpnt == 1) return -1; /* '..' */
+     if((*l)->isorec.name_len[0] == 1 && *lpnt == 1) return 1;
+#endif
 
      while(*rpnt && *lpnt) 
      {
@@ -382,13 +411,18 @@ static int FDECL2(compare_dirs, const void *, rr, const void *, ll)
 int FDECL1(sort_directory, struct directory_entry **, sort_dir)
 {
      int dcount = 0;
+     int xcount = 0;
+     int j;
      int i, len;
      struct directory_entry * s_entry;
      struct directory_entry ** sortlist;
      
+     /* need to keep a count of how many entries are hidden */
      s_entry = *sort_dir;
      while(s_entry)
      {
+	  if (s_entry->de_flags & INHIBIT_ISO9660_ENTRY)
+	    xcount++;
 	  dcount++;
 	  s_entry = s_entry->next;
      }
@@ -404,15 +438,24 @@ int FDECL1(sort_directory, struct directory_entry **, sort_dir)
      sortlist =   (struct directory_entry **) 
 	  e_malloc(sizeof(struct directory_entry *) * dcount);
 
+     j = dcount - 1;
      dcount = 0;
      s_entry = *sort_dir;
      while(s_entry)
      {
+	if(s_entry->de_flags & INHIBIT_ISO9660_ENTRY)
+	 {
+	  /* put any hidden entries at the end of the vector */
+	  sortlist[j--] = s_entry;
+	 }
+	else
+	 {
 	  sortlist[dcount] = s_entry;
-	  len = s_entry->isorec.name_len[0];
-	  s_entry->isorec.name[len] = 0;
 	  dcount++;
-	  s_entry = s_entry->next;
+	 }
+	 len = s_entry->isorec.name_len[0];
+	 s_entry->isorec.name[len] = 0;
+	 s_entry = s_entry->next;
      }
   
      /*
@@ -425,19 +468,27 @@ int FDECL1(sort_directory, struct directory_entry **, sort_dir)
        }
      else
        {
+	 /* only sort the non-hidden entries */
 	 sort_goof = 0;
+#ifdef __STDC__
 	 qsort(sortlist, dcount, sizeof(struct directory_entry *), 
 	       (int (*)(const void *, const void *))compare_dirs);
+#else
+	 qsort(sortlist, dcount, sizeof(struct directory_entry *), 
+	       compare_dirs);
+#endif
 	 
 	 /* 
 	  * Now reassemble the linked list in the proper sorted order 
+	  * We still need the hidden entries, as they may be used in the
+	  * Joliet tree.
 	  */
-	 for(i=0; i<dcount-1; i++)
+	 for(i=0; i<dcount+xcount-1; i++)
 	   {
 	     sortlist[i]->next = sortlist[i+1];
 	   }
 	 
-	 sortlist[dcount-1]->next = NULL;
+	 sortlist[dcount+xcount-1]->next = NULL;
 	 *sort_dir = sortlist[0];
        }
 
@@ -458,7 +509,7 @@ static int root_gen()
      root_record.flags[0] = 2;
      root_record.file_unit_size[0] = 0;
      root_record.interleave[0] = 0;
-     set_723(root_record.volume_sequence_number, DEF_VSN);
+     set_723(root_record.volume_sequence_number, volume_sequence_number);
      root_record.name_len[0] = 1;
      return 0;
 }
@@ -470,13 +521,12 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
      struct file_hash *s_hash;
      struct deferred_write * dwpnt;
      char whole_path[1024];
-     
+
      while (dpnt)
      {
 	  s_entry = dpnt->contents;
 	  for(s_entry = dpnt->contents; s_entry; s_entry = s_entry->next)
 	  {
-	       
 	       /*
 		* If we already have an  extent for this entry,
 		* then don't assign a new one.  It must have come
@@ -495,7 +545,7 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 	       s_hash = find_hash(s_entry->dev, s_entry->inode);
 	       if(s_hash)
 	       {
-		    if(verbose > 1)
+		    if(verbose > 2)
 		    {
 			 fprintf(stderr, "Cache hit for %s%s%s\n",s_entry->filedir->de_name, 
 				 SPATH_SEPARATOR, s_entry->name);
@@ -618,7 +668,7 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 		    s_entry->starting_block = last_extent;
 		    add_hash(s_entry);
 		    last_extent += ROUND_UP(s_entry->size) >> 11;
-		    if(verbose > 1)
+		    if(verbose > 2)
 		    {
 			 fprintf(stderr,"%d %d %s\n", s_entry->starting_block,
 				 last_extent-1, whole_path);
@@ -633,6 +683,7 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 		    }
 #endif
 #ifdef	NOT_NEEDED	/* Never use this code if you like to create a DVD */
+
 		    if(last_extent > (800000000 >> 11)) 
 		    { 
 			 /*
@@ -640,7 +691,7 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 			  */
 			 fprintf(stderr,"Extent overflow processing file %s\n", whole_path);
 			 fprintf(stderr,"Starting block is %d\n", s_entry->starting_block);
-			 fprintf(stderr,"Reported file size is %d bytes\n", s_entry->size);
+			 fprintf(stderr,"Reported file size is %d extents\n", s_entry->size);
 			 exit(1);
 		    }
 #endif
@@ -735,6 +786,11 @@ void FDECL2(generate_one_directory, struct directory *, dpnt, FILE *, outfile)
      s_entry = dpnt->contents;
      while(s_entry) 
      {
+	  /* skip if it's hidden */
+	  if(s_entry->de_flags & INHIBIT_ISO9660_ENTRY) {
+	    s_entry = s_entry->next;
+	    continue;
+	  }
 
 	  /* 
 	   * We do not allow directory entries to cross sector boundaries.  
@@ -878,9 +934,12 @@ void FDECL1(build_pathlist, struct directory *, node)
      
      while (dpnt)
      {
+	/* skip if it's hidden */
+	if( (dpnt->dir_flags & INHIBIT_ISO9660_ENTRY) == 0 )
 	  pathlist[dpnt->path_index] = dpnt;
-	  if(dpnt->subdir) build_pathlist(dpnt->subdir);
-	  dpnt = dpnt->next;
+
+	if(dpnt->subdir) build_pathlist(dpnt->subdir);
+	dpnt = dpnt->next;
      }
 } /* build_pathlist(... */
 
@@ -927,6 +986,13 @@ static int generate_path_tables()
   /*
    * Now start filling in the path tables.  Start with root directory 
    */
+  if( next_path_index > 0xffff )
+  {
+      fprintf(stderr, "Unable to generate sane path tables - too many directories (%d)\n",
+	      next_path_index);
+      exit(1);
+  }
+
   path_table_index = 0;
   pathlist = (struct directory **) e_malloc(sizeof(struct directory *) 
 					    * next_path_index);
@@ -936,8 +1002,13 @@ static int generate_path_tables()
   do
   {
        fix = 0;
+#ifdef __STDC__
        qsort(&pathlist[1], next_path_index-1, sizeof(struct directory *), 
 	     (int (*)(const void *, const void *))compare_paths);
+#else
+       qsort(&pathlist[1], next_path_index-1, sizeof(struct directory *), 
+	     compare_paths);
+#endif
 
        for(j=1; j<next_path_index; j++)
        {
@@ -1061,8 +1132,7 @@ static int FDECL1(file_write, FILE *, outfile)
 	      last_extent - session_start);
 	exit(0);
     }
-
-  if( verbose > 0 )
+  if( verbose > 2 )
     {
 #ifdef DBG_ISO
       fprintf(stderr,"Total directory extents being written = %d\n", last_extent);
@@ -1156,8 +1226,8 @@ static int FDECL1(pvd_write, FILE *, outfile)
   
   should_write = last_extent - session_start;
   set_733((char *) vol_desc.volume_space_size, should_write);
-  set_723(vol_desc.volume_set_size, 1);
-  set_723(vol_desc.volume_sequence_number, DEF_VSN);
+  set_723(vol_desc.volume_set_size, volume_set_size);
+  set_723(vol_desc.volume_sequence_number, volume_sequence_number);
   set_723(vol_desc.logical_block_size, 2048);
   
   /*
@@ -1175,7 +1245,7 @@ static int FDECL1(pvd_write, FILE *, outfile)
    * Now we copy the actual root directory record 
    */
   memcpy(vol_desc.root_directory_record, &root_record, 
-	 sizeof(struct iso_directory_record));
+	 sizeof(struct iso_directory_record) + 1);
 
   /*
    * The rest is just fluff.  It looks nice to fill in many of these fields,
@@ -1230,16 +1300,16 @@ static int FDECL1(pvd_write, FILE *, outfile)
  */
 static int FDECL1(evd_write, FILE *, outfile)
 {
-  struct iso_primary_descriptor vol_desc;
+  struct iso_primary_descriptor evol_desc;
 
   /*
    * Now write the end volume descriptor.  Much simpler than the other one 
    */
-  memset(&vol_desc, 0, sizeof(vol_desc));
-  vol_desc.type[0] = ISO_VD_END;
-  memcpy(vol_desc.id, ISO_STANDARD_ID, sizeof(ISO_STANDARD_ID));
-  vol_desc.version[0] = 1;
-  xfwrite(&vol_desc, 1, 2048, outfile);
+  memset(&evol_desc, 0, sizeof(evol_desc));
+  evol_desc.type[0] = ISO_VD_END;
+  memcpy(evol_desc.id, ISO_STANDARD_ID, sizeof(ISO_STANDARD_ID));
+  evol_desc.version[0] = 1;
+  xfwrite(&evol_desc, 1, 2048, outfile);
   last_extent_written += 1;
   return 0;
 }
@@ -1306,8 +1376,10 @@ static int file_gen()
 
 static int dirtree_dump()
 {
-  if (verbose > 1)
-    dump_tree(root);
+  if (verbose > 2)
+  {
+      dump_tree(root);
+  }
   return 0;
 }
 

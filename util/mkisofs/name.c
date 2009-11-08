@@ -21,7 +21,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: name.c,v 1.10 1998/06/02 02:40:38 eric Exp $";
+static char rcsid[] ="$Id: name.c,v 1.11 1999/03/02 03:41:26 eric Exp $";
 
 #include "config.h"
 #include "mkisofs.h"
@@ -219,7 +219,7 @@ int FDECL3(iso9660_file_length,
 		}
 	      else
 		{
-		  *result++ = (islower(*pnt) ? toupper(*pnt) : *pnt);
+		  *result++ = (islower((unsigned char)*pnt) ? toupper((unsigned char)*pnt) : *pnt);
 		}
 	    }
 	}
@@ -287,7 +287,7 @@ int FDECL3(iso9660_file_length,
 			    }
 			  else
 			    {
-			      *result++ = islower(*pnt) ? toupper(*pnt) : *pnt;
+			      *result++ = islower((unsigned char)*pnt) ? toupper((unsigned char)*pnt) : *pnt;
 			    }
 			  break;
 

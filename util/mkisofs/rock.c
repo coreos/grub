@@ -19,7 +19,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: rock.c,v 1.7 1998/02/18 04:48:23 eric Exp $";
+static char rcsid[] ="$Id: rock.c,v 1.8 1999/03/02 03:41:26 eric Exp $";
 
 #include <stdlib.h>
 
@@ -44,12 +44,18 @@ static char rcsid[] ="$Id: rock.c,v 1.7 1998/02/18 04:48:23 eric Exp $";
 #include "iso9660.h"
 #include <string.h>
 
+#ifdef	DOESNT_WORK
+
 #ifdef NON_UNIXFS
 #define S_ISLNK(m)	(0)
 #else
 #ifndef S_ISLNK
 #define S_ISLNK(m)	(((m) & S_IFMT) == S_IFLNK)
 #endif
+#endif
+
+#else
+#include <statdefs.h>
 #endif
 
 #define SU_VERSION 1
@@ -94,6 +100,8 @@ static int currlen = 0;
 static int mainrec = 0;
 static int reclimit;
 
+static void add_CE_entry	__PR((void));
+
 static void add_CE_entry(){
           if(recstart)
 	    set_733((char*)Rock + recstart - 8, ipnt + 28 - recstart);
@@ -136,6 +144,10 @@ int deep_opt;
   statbuf = statbuf;        /* this shuts up unreferenced compiler warnings */
   mainrec = recstart = ipnt = 0;
   reclimit = 0xf8;
+
+  /* no need to fill in the RR stuff if we won't see the file */
+  if (s_entry->de_flags & INHIBIT_ISO9660_ENTRY)
+    return 0;
 
   /* Obtain the amount of space that is currently used for the directory
      record.  Assume max for name, since name conflicts may cause us
@@ -266,7 +278,7 @@ int deep_opt;
     int lenpos, lenval, j0, j1;
     int nchar;
     unsigned char * cpnt, *cpnt1;
-    nchar = readlink(whole_name, symlink_buff, sizeof(symlink_buff));
+    nchar = readlink(whole_name, (char *)symlink_buff, sizeof(symlink_buff));
     symlink_buff[nchar < 0 ? 0 : nchar] = 0;
     nchar = strlen((char *) symlink_buff);
     set_733(s_entry->isorec.size, 0);
@@ -465,7 +477,7 @@ int deep_opt;
     file_size = 0;
     OK_flag = 1;
 
-    zipfile = fopen(whole_name, "r");
+    zipfile = fopen(whole_name, "rb");
     fread(header, 1, sizeof(header), zipfile);
 
     /* Check some magic numbers from gzip. */
@@ -497,7 +509,7 @@ int deep_opt;
 
     checkname = strdup(whole_name);
     checkname[strlen(whole_name)-3] = 0;
-    zipfile = fopen(checkname, "r");
+    zipfile = fopen(checkname, "rb");
     if(zipfile) {
       OK_flag = 0;
       fprintf(stderr,"Unable to insert transparent compressed file - name conflict\n");
@@ -548,38 +560,38 @@ int deep_opt;
 
 char * FDECL4(generate_rr_extension_record, char *, id,  char  *, descriptor,
 				    char *, source, int  *, size){
-  int ipnt = 0;
+  int lipnt = 0;
   char * pnt;
   int len_id, len_des, len_src;
 
   len_id = strlen(id);
   len_des =  strlen(descriptor);
   len_src = strlen(source);
-  Rock[ipnt++] ='E';
-  Rock[ipnt++] ='R';
-  Rock[ipnt++] = ER_SIZE + len_id + len_des + len_src;
-  Rock[ipnt++] = 1;
-  Rock[ipnt++] = len_id;
-  Rock[ipnt++] = len_des;
-  Rock[ipnt++] = len_src;
-  Rock[ipnt++] = 1;
+  Rock[lipnt++] ='E';
+  Rock[lipnt++] ='R';
+  Rock[lipnt++] = ER_SIZE + len_id + len_des + len_src;
+  Rock[lipnt++] = 1;
+  Rock[lipnt++] = len_id;
+  Rock[lipnt++] = len_des;
+  Rock[lipnt++] = len_src;
+  Rock[lipnt++] = 1;
 
-  memcpy(Rock  + ipnt, id, len_id);
-  ipnt += len_id;
+  memcpy(Rock  + lipnt, id, len_id);
+  lipnt += len_id;
 
-  memcpy(Rock  + ipnt, descriptor, len_des);
-  ipnt += len_des;
+  memcpy(Rock  + lipnt, descriptor, len_des);
+  lipnt += len_des;
 
-  memcpy(Rock  + ipnt, source, len_src);
-  ipnt += len_src;
+  memcpy(Rock  + lipnt, source, len_src);
+  lipnt += len_src;
 
-  if(ipnt  > SECTOR_SIZE) {
+  if(lipnt  > SECTOR_SIZE) {
 	  fprintf(stderr,"Extension record too  long\n");
 	  exit(1);
   };
   pnt = (char *) e_malloc(SECTOR_SIZE);
   memset(pnt, 0,  SECTOR_SIZE);
-  memcpy(pnt, Rock, ipnt);
-  *size = ipnt;
+  memcpy(pnt, Rock, lipnt);
+  *size = lipnt;
   return pnt;
 }

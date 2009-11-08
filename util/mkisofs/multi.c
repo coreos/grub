@@ -19,7 +19,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  
  */
 
-static char rcsid[] ="$Id: multi.c,v 1.12 1998/06/02 02:40:38 eric Exp $";
+static char rcsid[] ="$Id: multi.c,v 1.14 1999/03/02 04:16:41 eric Exp $";
 
 #include <stdlib.h>
 #include <string.h>
@@ -51,24 +51,46 @@ extern char * strdup(const char *);
 #define TF_ACCESS 4
 #define TF_ATTRIBUTES 8
 
-static int  DECL(get_session_start, (int *));
+static int  isonum_711 __PR((unsigned char * p));
+static int  isonum_721 __PR((unsigned char * p));
+static int  isonum_723 __PR((unsigned char * p));
+static int  isonum_731 __PR((unsigned char * p));
+
 static int  DECL(merge_old_directory_into_tree, (struct directory_entry *,
 						 struct directory *));
 
+#ifdef	__STDC__
 static int
 isonum_711 (unsigned char * p)
+#else
+static int
+isonum_711 (p)
+	unsigned char * p;
+#endif
 {
 	return (*p & 0xff);
 }
 
-int
+#ifdef	__STDC__
+static int
 isonum_721 (unsigned char * p)
+#else
+static int
+isonum_721 (p)
+	unsigned char * p;
+#endif
 {
 	return ((p[0] & 0xff) | ((p[1] & 0xff) << 8));
 }
 
+#ifdef	__STDC__
 static int
 isonum_723 (unsigned char * p)
+#else
+static int
+isonum_723 (p)
+	unsigned char * p;
+#endif
 {
 #if 0
 	if (p[0] != p[3] || p[1] != p[2]) {
@@ -79,8 +101,14 @@ isonum_723 (unsigned char * p)
 	return (isonum_721 (p));
 }
 
-int
+#ifdef	__STDC__
+static int
 isonum_731 (unsigned char * p)
+#else
+static int
+isonum_731 (p)
+	unsigned char * p;
+#endif
 {
 	return ((p[0] & 0xff)
 		| ((p[1] & 0xff) << 8)
@@ -88,8 +116,14 @@ isonum_731 (unsigned char * p)
 		| ((p[3] & 0xff) << 24));
 }
 
+#ifdef	__STDC__
 int
 isonum_733 (unsigned char * p)
+#else
+int
+isonum_733 (p)
+	unsigned char * p;
+#endif
 {
 	return (isonum_731 (p));
 }
@@ -111,8 +145,16 @@ FILE * in_image = NULL;
  * Anyways, this allows the use of a scsi-generics type of interface on
  * Solaris.
  */
+#ifdef	__STDC__
 static int
 readsecs(int startsecno, void *buffer, int sectorcount)
+#else
+static int
+readsecs(startsecno, buffer, sectorcount)
+	int	startsecno;
+	void	*buffer;
+	int	sectorcount;
+#endif
 {
 	int	f = fileno(in_image);
 
@@ -144,6 +186,7 @@ FDECL3(parse_rr, unsigned char *, pnt, int, len, struct directory_entry *,dpnt)
 		  strncpy(name_buf, (char *) pnt+5, pnt[2] - 5);
 		  name_buf[pnt[2] - 5] = 0;
 		  dpnt->name = strdup(name_buf);
+		  dpnt->got_rr_name = 1;
 		  return 0;
 		}
 
@@ -161,8 +204,22 @@ FDECL3(parse_rr, unsigned char *, pnt, int, len, struct directory_entry *,dpnt)
 		  parse_rr(&sector[cont_offset], cont_size, dpnt);
 		};
 	};
+
+	/* Fall back to the iso name if no RR name found */
+	if (dpnt->name == NULL) {
+	  char *cp;
+
+	  strcpy(name_buf, dpnt->isorec.name);
+	  cp = strchr(name_buf, ';');
+	  if (cp != NULL) {
+	    *cp = '\0';
+	  }
+
+	  dpnt->name = strdup(name_buf);
+	}
+
 	return 0;
-}
+} /* parse_rr */
 
 
 static int 
@@ -275,6 +332,8 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
   int				  tt_extent;
   int				  tt_size;
 
+  static int warning_given = 0;
+
   /*
    * First, allocate a buffer large enough to read in the entire
    * directory.
@@ -334,6 +393,7 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
       (*pnt)->size = isonum_733((unsigned char *)idr->size);
       (*pnt)->priority = 0;
       (*pnt)->name = NULL;
+      (*pnt)->got_rr_name = 0;
       (*pnt)->table = NULL;
       (*pnt)->whole_name = NULL;
       (*pnt)->filedir = NULL;
@@ -410,6 +470,10 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
 	    }
 	}
 
+#ifdef DEBUG
+      fprintf(stderr, "got DE name: %s\n", (*pnt)->name);
+#endif
+
       if( strncmp(idr->name, "TRANS.TBL", 9) == 0)
 	{
 	  if( (*pnt)->name != NULL )
@@ -457,11 +521,14 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
 			  rlen) == 0 
 		  && cpnt[2+rlen] == ' ')
 		{
-		  (*pnt)->table = e_malloc(strlen((char*)cpnt) - 34);
+		  (*pnt)->table = e_malloc(strlen((char*)cpnt) - 33);
 		  sprintf((*pnt)->table, "%c\t%s\n",
 			  *cpnt, cpnt+37);
-		  if( (*pnt)->name == NULL )
+		  if( !(*pnt)->got_rr_name )
 		    {
+		      if ((*pnt)->name != NULL) {
+			free((*pnt)->name);
+		      }
 		      (*pnt)->name = strdup((char *) cpnt+37);
 		    }
 		  break;
@@ -473,19 +540,16 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
       
       free(tt_buf);
     }
-  else if( !seen_rockridge )
+  else if( !seen_rockridge && !warning_given )
     {
       /*
-       * This is a fatal error right now because we must have some mechanism
-       * for taking the 8.3 names back to the original unix names.
-       * In principle we could do this the hard way, and try and translate
-       * the unix names that we have seen forwards, but this would be
-       * a real pain in the butt.
+       * Warn the user that iso (8.3) names were used because neither
+       * Rock Ridge (-R) nor TRANS.TBL (-T) name translations were found.
        */
-      fprintf(stderr,"Previous session must have either Rock Ridge (-R) or\n");
-      fprintf(stderr,"TRANS.TBL (-T) for mkisofs to be able to correctly\n");
-      fprintf(stderr,"generate additional sessions.\n");
-      exit(3);
+      fprintf(stderr,"Warning: Neither Rock Ridge (-R) nor TRANS.TBL (-T) \n");
+      fprintf(stderr,"name translations were found on previous session.\n");
+      fprintf(stderr,"ISO (8.3) file names have been used instead.\n");
+      warning_given = 1;
     }
 
   if( dirbuff != NULL )
@@ -494,7 +558,7 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
     }
   
   return rtn;
-}
+} /* read_merging_directory */
 
 /*
  * Free any associated data related to the structures.
@@ -1000,7 +1064,7 @@ FDECL2(merge_old_directory_into_tree, struct directory_entry *, dpnt,
 
 char * cdwrite_data = NULL;
 
-static int
+int
 FDECL1(get_session_start, int *, file_addr) 
 {
   char * pnt;
@@ -1039,7 +1103,9 @@ FDECL1(get_session_start, int *, file_addr)
     }
 
   *pnt = '\0';
-  *file_addr = atol(cdwrite_data) * SECTOR_SIZE;
+  if (file_addr != NULL) {
+    *file_addr = atol(cdwrite_data) * SECTOR_SIZE;
+  }
   pnt++;
 
   session_start = last_extent = last_extent_written = atol(pnt);
@@ -1065,7 +1131,6 @@ FDECL2(merge_previous_session,struct directory *, this_dir,
   struct directory_entry        * odpnt = NULL;
   int				  n_orig;
   struct directory_entry	* s_entry;
-  int				  dflag;
   int				  status, lstatus;
   struct stat			  statbuf, lstatbuf;
 
@@ -1082,7 +1147,6 @@ FDECL2(merge_previous_session,struct directory *, this_dir,
 
 /* Now we scan the directory itself, and look at what is inside of it. */
 
-  dflag = 0;
   for(s_entry = this_dir->contents; s_entry; s_entry = s_entry->next)
     {
       status  =  stat_filter(s_entry->whole_name, &statbuf);

@@ -20,11 +20,12 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: mkisofs.c,v 1.29 1998/06/02 03:43:45 eric Exp $";
+static char rcsid[] ="$Id: mkisofs.c,v 1.32 1999/03/07 21:48:49 eric Exp $";
 
 #include <errno.h>
 #include "config.h"
 #include "mkisofs.h"
+#include "match.h"
 
 #ifdef linux
 #include <getopt.h>
@@ -50,6 +51,7 @@ static char rcsid[] ="$Id: mkisofs.c,v 1.29 1998/06/02 03:43:45 eric Exp $";
 #include <unistd.h>
 #endif
 #endif
+#include <fctldefs.h>
 
 #include "exclude.h"
 
@@ -60,8 +62,9 @@ static char rcsid[] ="$Id: mkisofs.c,v 1.29 1998/06/02 03:43:45 eric Exp $";
 
 struct directory * root = NULL;
 
-static char version_string[] = "mkisofs 1.12b4";
+static char version_string[] = "mkisofs 1.12b5";
 
+char * outfile;
 FILE * discimage;
 unsigned int next_extent = 0;
 unsigned int last_extent = 0;
@@ -104,6 +107,8 @@ char * volume_id = VOLUME_ID_DEFAULT;
 char * system_id = SYSTEM_ID_DEFAULT;
 char * boot_catalog = BOOT_CATALOG_DEFAULT;
 char * boot_image = BOOT_IMAGE_DEFAULT;
+int volume_set_size = 1;
+int volume_sequence_number = 1;
 
 int omit_period = 0;             /* Violates iso9660, but these are a pain */
 int transparent_compression = 0; /* So far only works with linux */
@@ -166,19 +171,35 @@ struct ld_option
 #define OPTION_NOSPLIT_SL_FIELD		153
 #define OPTION_PRINT_SIZE		154
 #define OPTION_SPLIT_OUTPUT		155
+#define OPTION_ABSTRACT			156
+#define OPTION_BIBLIO			157
+#define OPTION_COPYRIGHT		158
+#define OPTION_SYSID			159
+#define OPTION_VOLSET			160
+#define OPTION_VOLSET_SIZE		161
+#define OPTION_VOLSET_SEQ_NUM		162
+#define OPTION_I_HIDE			163
+#define OPTION_J_HIDE			164
+#define OPTION_LOG_FILE			165
 
 static const struct ld_option ld_options[] =
 {
   { {"all-files", no_argument, NULL, 'a'},
       'a', NULL, "Process all files (don't skip backup files)", ONE_DASH },
+  { {"abstract", required_argument, NULL, OPTION_ABSTRACT},
+      '\0', "FILE", "Set Abstract filename" , ONE_DASH },
   { {"appid", required_argument, NULL, 'A'},
       'A', "ID", "Set Application ID" , ONE_DASH },
+  { {"biblio", required_argument, NULL, OPTION_BIBLIO},
+      '\0', "FILE", "Set Bibliographic filename" , ONE_DASH },
+  { {"copyright", required_argument, NULL, OPTION_COPYRIGHT},
+      '\0', "FILE", "Set Copyright filename" , ONE_DASH },
   { {"eltorito-boot", required_argument, NULL, 'b'},
       'b', "FILE", "Set El Torito boot image name" , ONE_DASH },
   { {"eltorito-catalog", required_argument, NULL, 'c'},
       'c', "FILE", "Set El Torito boot catalog name" , ONE_DASH },
   { {"cdwrite-params", required_argument, NULL, 'C'},
-      'C', "PARAMS", "Magic paramters from cdwrite" , ONE_DASH },
+      'C', "PARAMS", "Magic paramters from cdrecord" , ONE_DASH },
   { {"omit-period", no_argument, NULL, 'd'},
       'd', NULL, "Omit trailing periods from filenames", ONE_DASH },
   { {"disable-deep-relocation", no_argument, NULL, 'D'},
@@ -187,6 +208,10 @@ static const struct ld_option ld_options[] =
       'f', NULL, "Follow symbolic links", ONE_DASH },
   { {"help", no_argument, NULL, OPTION_HELP},
       '\0', NULL, "Print option help", ONE_DASH },
+  { {"hide", required_argument, NULL, OPTION_I_HIDE},
+      '\0', "GLOBFILE", "Hide ISO9660/RR file" , ONE_DASH },
+  { {"hide-joliet", required_argument, NULL, OPTION_J_HIDE},
+      '\0', "GLOBFILE", "Hide Joliet file" , ONE_DASH },
   { {NULL, required_argument, NULL, 'i'},
       'i', "ADD_FILES", "No longer supported" , TWO_DASHES },
   { {"joliet", no_argument, NULL, 'J'},
@@ -195,6 +220,8 @@ static const struct ld_option ld_options[] =
       'l', NULL, "Allow full 32 character filenames for iso9660 names", ONE_DASH },
   { {"allow-leading-dots", no_argument, NULL, 'L'},
       'L', NULL, "Allow iso9660 filenames to start with '.'", ONE_DASH },
+  { {"log-file", required_argument, NULL, OPTION_LOG_FILE},
+      '\0', "LOG_FILE", "Re-direct messages to LOG_FILE", ONE_DASH },
   { {"exclude", required_argument, NULL, 'm'},
       'm', "GLOBFILE", "Exclude file name" , ONE_DASH },
   { {"prev-session", required_argument, NULL, 'M'},
@@ -221,12 +248,20 @@ static const struct ld_option ld_options[] =
       'R', NULL, "Generate Rock Ridge directory information", ONE_DASH },
   { {"split-output", no_argument, NULL, OPTION_SPLIT_OUTPUT},
       '\0', NULL, "Split output into files of approx. 1GB size", ONE_DASH },
+  { {"sysid", required_argument, NULL, OPTION_SYSID},
+      '\0', "ID", "Set System ID" , ONE_DASH },
   { {"translation-table", no_argument, NULL, 'T'},
       'T', NULL, "Generate translation tables for systems that don't understand long filenames", ONE_DASH },
   { {"verbose", no_argument, NULL, 'v'},
       'v', NULL, "Verbose", ONE_DASH },
   { {"volid", required_argument, NULL, 'V'},
       'V', "ID", "Set Volume ID" , ONE_DASH },
+  { {"volset", required_argument, NULL, OPTION_VOLSET},
+      '\0', "ID", "Set Volume set ID" , ONE_DASH },
+  { {"volset-size", required_argument, NULL, OPTION_VOLSET_SIZE},
+      '\0', "#", "Set Volume set size" , ONE_DASH },
+  { {"volset-seqno", required_argument, NULL, OPTION_VOLSET_SEQ_NUM},
+      '\0', "#", "Set Volume set sequence number" , ONE_DASH },
   { {"old-exclude", required_argument, NULL, 'x'},
       'x', "FILE", "Exclude file name(depreciated)" , ONE_DASH }
 #ifdef ERIC_neverdef
@@ -241,6 +276,10 @@ static const struct ld_option ld_options[] =
 char *strdup(s)
 char *s;{char *c;if(c=(char *)malloc(strlen(s)+1))strcpy(c,s);return c;}
 #endif
+
+	void read_rcfile	__PR((char * appname));
+	void usage		__PR((void));
+static	void hide_reloc_dir	__PR((void));
 
 void FDECL1(read_rcfile, char *, appname)
 {
@@ -318,10 +357,10 @@ void FDECL1(read_rcfile, char *, appname)
       /* The name should begin in the left margin.  Make sure it is in
 	 upper case.  Stop when we see white space or a comment. */
 	name = pnt;
-      while (*pnt && isalpha(*pnt))
+      while (*pnt && isalpha((unsigned char)*pnt))
 	{
-	  if(islower(*pnt))
-	    *pnt = toupper(*pnt);
+	  if(islower((unsigned char)*pnt))
+	    *pnt = toupper((unsigned char)*pnt);
 	  pnt++;
 	}
       if (name == pnt)
@@ -408,7 +447,7 @@ void usage(){
 #endif
 
   int i;
-  const char **targets, **pp;
+/*  const char **targets, **pp;*/
 
   fprintf (stderr, "Usage: %s [options] file...\n", program_name);
 
@@ -500,9 +539,9 @@ void usage(){
  * with DST,  I guess).  The Linux iso9660 filesystem has had the sign
  * of this wrong for ages (mkisofs had it wrong too for the longest time).
  */
-int FDECL2(iso9660_date,char *, result, time_t, ctime){
+int FDECL2(iso9660_date,char *, result, time_t, crtime){
   struct tm *local;
-  local = localtime(&ctime);
+  local = localtime(&crtime);
   result[0] = local->tm_year;
   result[1] = local->tm_mon + 1;
   result[2] = local->tm_mday;
@@ -515,7 +554,7 @@ int FDECL2(iso9660_date,char *, result, time_t, ctime){
    * as some files use daylight savings time and some don't... 
    */
   result[6] = local->tm_yday;	/* save yday 'cause gmtime zaps it */
-  local = gmtime(&ctime);
+  local = gmtime(&crtime);
   local->tm_year -= result[0];
   local->tm_yday -= result[6];
   local->tm_hour -= result[3];
@@ -534,11 +573,28 @@ int FDECL2(iso9660_date,char *, result, time_t, ctime){
   return 0;
 }
 
+/* hide "./rr_moved" if all its contents are hidden */
+static void
+hide_reloc_dir()
+{
+	struct directory_entry * s_entry;
+
+	for (s_entry = reloc_dir->contents; s_entry; s_entry = s_entry->next) {
+	    if(strcmp(s_entry->name,".")==0 || strcmp(s_entry->name,"..")==0)
+		continue;
+
+	    if((s_entry->de_flags & INHIBIT_ISO9660_ENTRY) == 0)
+		return;
+	}
+
+	/* all entries are hidden, so hide this directory */
+	reloc_dir->dir_flags |= INHIBIT_ISO9660_ENTRY;
+	reloc_dir->self->de_flags |= INHIBIT_ISO9660_ENTRY;
+}
 
 extern char * cdwrite_data;
 
 int FDECL2(main, int, argc, char **, argv){
-  char * outfile;
   struct directory_entry de;
 #ifdef HAVE_SBRK
   unsigned long mem_start;
@@ -552,6 +608,7 @@ int FDECL2(main, int, argc, char **, argv){
   char shortopts[OPTION_COUNT * 3 + 2];
   struct option longopts[OPTION_COUNT + 1];
   int c;
+  char *log_file = 0;
 
   if (argc < 2)
     usage();
@@ -643,10 +700,31 @@ int FDECL2(main, int, argc, char **, argv){
 		exit(1);
 	}
 	break;
+      case OPTION_ABSTRACT:
+	abstract = optarg;
+	if(strlen(abstract) > 37) {
+		fprintf(stderr,"Abstract filename string too long\n");
+		exit(1);
+	};
+	break;
       case 'A':
 	appid = optarg;
 	if(strlen(appid) > 128) {
 		fprintf(stderr,"Application-id string too long\n");
+		exit(1);
+	};
+	break;
+      case OPTION_BIBLIO:
+	biblio = optarg;
+	if(strlen(biblio) > 37) {
+		fprintf(stderr,"Bibliographic filename string too long\n");
+		exit(1);
+	};
+	break;
+      case OPTION_COPYRIGHT:
+	copyright = optarg;
+	if(strlen(copyright) > 37) {
+		fprintf(stderr,"Copyright filename string too long\n");
 		exit(1);
 	};
 	break;
@@ -665,6 +743,9 @@ int FDECL2(main, int, argc, char **, argv){
       case 'L':
         allow_leading_dots++;
         break;
+     case OPTION_LOG_FILE:
+	log_file = optarg;
+	break;
       case 'M':
 	merge_image = optarg;
 	break;
@@ -704,11 +785,39 @@ int FDECL2(main, int, argc, char **, argv){
       case OPTION_SPLIT_OUTPUT:
 	split_output++;
 	break;
+      case OPTION_SYSID:
+	system_id = optarg;
+	if(strlen(system_id) > 32) {
+		fprintf(stderr,"System ID string too long\n");
+		exit(1);
+	};
+	break;
       case 'T':
 	generate_tables++;
 	break;
       case 'V':
 	volume_id = optarg;
+	if(strlen(volume_id) > 32) {
+		fprintf(stderr,"Volume ID string too long\n");
+		exit(1);
+	};
+	break;
+      case OPTION_VOLSET:
+	volset_id = optarg;
+	if(strlen(volset_id) > 128) {
+		fprintf(stderr,"Volume set ID string too long\n");
+		exit(1);
+	};
+	break;
+      case OPTION_VOLSET_SIZE:
+	volume_set_size = atoi(optarg);
+	break;
+      case OPTION_VOLSET_SEQ_NUM:
+	volume_sequence_number = atoi(optarg);
+	if (volume_sequence_number > volume_set_size) {
+		fprintf(stderr,"Volume set sequence number too big\n");
+		exit(1);
+	}
 	break;
       case 'v':
 	verbose++;
@@ -729,6 +838,12 @@ int FDECL2(main, int, argc, char **, argv){
 	 * that got selected.  Unfortunately the 'x' switch is probably more intuitive.
 	 */
         add_match(optarg);
+	break;
+      case OPTION_I_HIDE:
+	i_add_match(optarg);
+	break;
+      case OPTION_J_HIDE:
+	j_add_match(optarg);
 	break;
       case OPTION_HELP:
 	usage ();
@@ -764,13 +879,21 @@ parse_input_files:
   mem_start = (unsigned long) sbrk(0);
 #endif
 
+  /* if the -hide-joliet option has been given, set the Joliet option */
+  if (!use_Joliet && j_ishidden())
+    use_Joliet++;
+
   if(verbose > 1) fprintf(stderr,"%s\n", version_string);
 
-  if(     (cdwrite_data != NULL && merge_image == NULL)
-       || (cdwrite_data == NULL && merge_image != NULL) )
+  if(cdwrite_data == NULL && merge_image != NULL)
     {
-      fprintf(stderr,"Multisession usage bug - both -C and -M must be specified.\n");
+      fprintf(stderr,"Multisession usage bug: Must specify -C if -M is used.\n");
       exit(0);
+    }
+
+  if(cdwrite_data != NULL && merge_image == NULL)
+    {
+      fprintf(stderr,"Warning: -C specified without -M: old session data will not be merged.\n");
     }
 
   /*  The first step is to scan the directory tree, and take some notes */
@@ -803,6 +926,34 @@ parse_input_files:
 #endif
   }
 
+  if (log_file) {
+    FILE *lfp;
+    int i;
+
+    /* open log file - test that we can open OK */
+    if ((lfp = fopen(log_file, "w")) == NULL) {
+      fprintf(stderr,"can't open logfile: %s\n", log_file);
+      exit (1);
+    }
+    fclose(lfp);
+
+    /* redirect all stderr message to log_file */
+    fprintf(stderr, "re-directing all messages to %s\n", log_file);
+    fflush(stderr);
+
+    /* associate stderr with the log file */
+    if (freopen(log_file, "w", stderr) == NULL) {
+      fprintf(stderr,"can't open logfile: %s\n", log_file);
+      exit (1);
+    }
+    if(verbose > 1) {
+      for (i=0;i<argc;i++)
+       fprintf(stderr,"%s ", argv[i]);
+
+      fprintf(stderr,"\n%s\n", version_string);
+    }
+  }
+
   /*
    * See if boot catalog file exists in root directory, if not
    * we will create it.
@@ -821,6 +972,11 @@ parse_input_files:
   memset(&de, 0, sizeof(de));
 
   de.filedir = root;  /* We need this to bootstrap */
+
+  if (cdwrite_data != NULL && merge_image == NULL) {
+    /* in case we want to add a new session, but don't want to merge old one */
+    get_session_start(NULL);
+  }
 
   if( merge_image != NULL )
     {
@@ -988,6 +1144,10 @@ parse_input_files:
       merge_previous_session(root, mrootp);
     }
 
+  /* hide "./rr_moved" if all its contents have been hidden */
+  if (reloc_dir && i_ishidden())
+    hide_reloc_dir();
+
   /*
    * Sort the directories in the required order (by ISO9660).  Also,
    * choose the names for the 8.3 filesystem if required, and do
@@ -1000,7 +1160,11 @@ parse_input_files:
       goof += joliet_sort_tree(root);
     }
 
-  if (goof) exit(1);
+  if (goof)
+    {
+      fprintf(stderr, "Joliet tree sort failed.\n");
+      exit(1);
+    }
   
   /*
    * Fix a couple of things in the root directory so that everything
@@ -1013,20 +1177,25 @@ parse_input_files:
    * OK, ready to write the file.  Open it up, and generate the thing.
    */
   if (print_size){
-	  discimage = fopen("/dev/null", "w");
+	  discimage = fopen("/dev/null", "wb");
 	  if (!discimage){
 		  fprintf(stderr,"Unable to open /dev/null\n");
 		  exit(1);
 	  }
   } else if (outfile){
-	  discimage = fopen(outfile, "w");
+	  discimage = fopen(outfile, "wb");
 	  if (!discimage){
 		  fprintf(stderr,"Unable to open disc image file\n");
 		  exit(1);
 
 	  };
-  } else
+  } else {
 	  discimage =  stdout;
+
+#if	defined(__CYGWIN32__)
+	setmode(fileno(stdout), O_BINARY);
+#endif
+  }
 
   /* Now assign addresses on the disc for the path table. */
 

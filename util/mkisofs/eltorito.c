@@ -21,7 +21,7 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.   */
 
 
-static char rcsid[] ="$Id: eltorito.c,v 1.12 1998/06/02 02:40:37 eric Exp $";
+static char rcsid[] ="$Id: eltorito.c,v 1.13 1999/03/02 03:41:25 eric Exp $";
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -44,8 +44,9 @@ static char rcsid[] ="$Id: eltorito.c,v 1.12 1998/06/02 02:40:37 eric Exp $";
 
 static struct eltorito_validation_entry valid_desc;
 static struct eltorito_defaultboot_entry default_desc;
-static struct eltorito_boot_descriptor boot_desc;
+static struct eltorito_boot_descriptor gboot_desc;
 
+static int tvd_write	__PR((FILE * outfile));
 
 /*
  * Check for presence of boot catalog. If it does not exist then make it 
@@ -275,13 +276,13 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
 /*
  * Function to write the EVD for the disc.
  */
-int FDECL1(tvd_write, FILE *, outfile)
+static int FDECL1(tvd_write, FILE *, outfile)
 {
   /*
    * Next we write out the boot volume descriptor for the disc 
    */
-  get_torito_desc(&boot_desc);
-  xfwrite(&boot_desc, 1, 2048, outfile);
+  get_torito_desc(&gboot_desc);
+  xfwrite(&gboot_desc, 1, 2048, outfile);
   last_extent_written ++;
   return 0;
 }
