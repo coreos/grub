@@ -2,7 +2,7 @@
  * Header file defaults.h - assorted default values for character strings in
  * the volume descriptor.
  *
- * 	$Id: defaults.h,v 1.4 1997/04/10 03:31:53 eric Rel $
+ * 	$Id: defaults.h,v 1.6 1998/06/02 02:40:37 eric Exp $
  */
 
 #define  PREPARER_DEFAULT 	NULL
@@ -24,7 +24,11 @@
 #endif
 
 #ifdef __sun
-#define  SYSTEM_ID_DEFAULT 	"Solaris"
+#ifdef __svr4__
+#define  SYSTEM_ID_DEFAULT    "Solaris"
+#else
+#define  SYSTEM_ID_DEFAULT    "SunOS"
+#endif
 #endif
 
 #ifdef __hpux
@@ -38,6 +42,10 @@
 #ifdef _AIX
 #define  SYSTEM_ID_DEFAULT 	"AIX"
 #endif
+
+#ifdef _WIN
+#define	SYSTEM_ID_DEFAULT       "Win32"
+#endif /* _WIN */
 
 #ifndef SYSTEM_ID_DEFAULT
 #define  SYSTEM_ID_DEFAULT 	"LINUX"

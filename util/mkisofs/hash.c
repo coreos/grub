@@ -19,9 +19,10 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: hash.c,v 1.2 1997/02/23 16:11:15 eric Rel $";
+static char rcsid[] ="$Id: hash.c,v 1.4 1997/12/06 21:05:04 eric Exp $";
 
 #include <stdlib.h>
+#include "config.h"
 #include "mkisofs.h"
 
 #define NR_HASH 1024
@@ -44,7 +45,7 @@ void FDECL1(add_hash, struct directory_entry *, spnt){
   hash_number = HASH_FN((unsigned int) spnt->dev, (unsigned int) spnt->inode);
 
 #if 0
-  if (verbose) fprintf(stderr,"%s ",spnt->name);
+  if (verbose > 1) fprintf(stderr,"%s ",spnt->name);
 #endif
   s_hash = (struct file_hash *) e_malloc(sizeof(struct file_hash));
   s_hash->next = hash_table[hash_number];

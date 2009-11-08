@@ -20,10 +20,8 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /*
- * 	$Id: mkisofs.h,v 1.5 1997/05/17 15:50:28 eric Exp $
+ * 	$Id: mkisofs.h,v 1.17 1998/06/02 02:40:38 eric Exp $
  */
-
-/* ADD_FILES changes made by Ross Biro biro@yggdrasil.com 2/23/95 */
 
 #include <stdio.h>
 
@@ -41,16 +39,39 @@
 #ifdef VMS
 #include <sys/dir.h>
 #define dirent direct
-#else
-#include <dirent.h>
 #endif
+
+#ifdef _WIN32
+#define NON_UNIXFS
+#endif /* _WIN32 */
 
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef linux
-#include <sys/dir.h>
+#if defined(HAVE_DIRENT_H)
+# include <dirent.h>
+# define NAMLEN(dirent) strlen((dirent)->d_name)
+#else
+# define dirent direct
+# define NAMLEN(dirent) (dirent)->d_namlen
+# if defined(HAVE_SYS_NDIR_H)
+#  include <sys/ndir.h>
+# endif
+# if defined(HAVE_SYS_DIR_H)
+#  include <sys/dir.h>
+# endif
+# if defined(HAVE_NDIR_H)
+#  include <ndir.h>
+# endif
+#endif
+
+#if defined(HAVE_STRING_H)
+#include <string.h>
+#else
+#if defined(HAVE_STRINGS_H)
+#include <strings.h>
+#endif
 #endif
 
 #ifdef ultrix
@@ -100,10 +121,12 @@ extern char *optarg;
 
 struct directory_entry{
   struct directory_entry * next;
+  struct directory_entry * jnext;
   struct iso_directory_record isorec;
   unsigned int starting_block;
   unsigned int size;
-  unsigned int priority;
+  unsigned short priority;
+  unsigned char jreclen;	/* Joliet record len */
   char * name;
   char * table;
   char * whole_name;
@@ -125,6 +148,52 @@ struct file_hash{
   unsigned int size;
 };
   
+
+/*
+ * This structure is used to control the output of fragments to the cdrom
+ * image.  Everything that will be written to the output image will eventually
+ * go through this structure.   There are two pieces - first is the sizing where
+ * we establish extent numbers for everything, and the second is when we actually
+ * generate the contents and write it to the output image.
+ *
+ * This makes it trivial to extend mkisofs to write special things in the image.
+ * All you need to do is hook an additional structure in the list, and the rest
+ * works like magic.
+ *
+ * The three passes each do the following:
+ *
+ * The 'size' pass determines the size of each component and assigns the extent number
+ * for that component.
+ *
+ * The 'generate' pass will adjust the contents and pointers as required now that extent
+ * numbers are assigned.   In some cases, the contents of the record are also generated.
+ *
+ * The 'write' pass actually writes the data to the disc.
+ */
+struct	output_fragment
+{
+  struct output_fragment * of_next;
+  int                      (*of_size)(int);
+  int	                   (*of_generate)(void);
+  int	                   (*of_write)(FILE *);
+};
+
+extern struct output_fragment * out_list;
+extern struct output_fragment * out_tail;
+
+extern struct output_fragment padblock_desc;
+extern struct output_fragment voldesc_desc;
+extern struct output_fragment joliet_desc;
+extern struct output_fragment torito_desc;
+extern struct output_fragment end_vol;
+extern struct output_fragment pathtable_desc;
+extern struct output_fragment jpathtable_desc;
+extern struct output_fragment dirtree_desc;
+extern struct output_fragment dirtree_clean;
+extern struct output_fragment jdirtree_desc;
+extern struct output_fragment extension_desc;
+extern struct output_fragment files_desc;
+
 /* 
  * This structure describes one complete directory.  It has pointers
  * to other directories in the overall tree so that it is clear where
@@ -138,6 +207,7 @@ struct directory{
   struct directory * subdir; /* First subdirectory in this directory */
   struct directory * parent;
   struct directory_entry * contents;
+  struct directory_entry * jcontents;
   struct directory_entry * self;
   char * whole_name;  /* Entire path */
   char * de_name;  /* Entire path */
@@ -145,7 +215,12 @@ struct directory{
   unsigned int depth;
   unsigned int size;
   unsigned int extent;
+  unsigned int jsize;
+  unsigned int jextent;
   unsigned short path_index;
+  unsigned short jpath_index;
+  unsigned short dir_flags;
+  unsigned short dir_nlink;
 };
 
 struct deferred{
@@ -163,57 +238,82 @@ extern unsigned int next_extent;
 extern unsigned int last_extent;
 extern unsigned int last_extent_written;
 extern unsigned int session_start;
+
 extern unsigned int path_table_size;
 extern unsigned int path_table[4];
 extern unsigned int path_blocks;
 extern char * path_table_l;
 extern char * path_table_m;
+
+extern unsigned int jpath_table_size;
+extern unsigned int jpath_table[4];
+extern unsigned int jpath_blocks;
+extern char * jpath_table_l;
+extern char * jpath_table_m;
+
 extern struct iso_directory_record root_record;
+extern struct iso_directory_record jroot_record;
 
 extern int use_eltorito;
 extern int use_RockRidge;
+extern int use_Joliet;
 extern int rationalize;
 extern int follow_links;
 extern int verbose;
 extern int all_files;
 extern int generate_tables;
+extern int print_size;
+extern int split_output;
 extern int omit_period;
 extern int omit_version_number;
 extern int transparent_compression;
 extern int RR_relocation_depth;
 extern int full_iso9660_filenames;
+extern int split_SL_component;
+extern int split_SL_field;
 
 /* tree.c */
 extern int DECL(stat_filter, (char *, struct stat *));
-extern void DECL(sort_n_finish,(struct directory *));
-extern void finish_cl_pl_entries();
-extern int DECL(scan_directory_tree,(char * path, 
-				     struct directory_entry * self,
-				     struct iso_directory_record *));
+extern int DECL(lstat_filter, (char *, struct stat *));
+extern int DECL(sort_tree,(struct directory *));
+extern struct directory *
+           DECL(find_or_create_directory,(struct directory *, const char *,
+					  struct directory_entry * self, int));
+extern void DECL (finish_cl_pl_entries, (void));
+extern int DECL(scan_directory_tree,(struct directory * this_dir,
+				     char * path, 
+				     struct directory_entry * self));
+extern int DECL(insert_file_entry,(struct directory *, char *, 
+				   char *));
+
 extern void DECL(generate_iso9660_directories,(struct directory *, FILE*));
 extern void DECL(dump_tree,(struct directory * node));
 extern struct directory_entry * DECL(search_tree_file, (struct 
 				directory * node,char * filename));
+extern void DECL(update_nlink_field,(struct directory * node));
+extern void DECL (init_fstatbuf, (void));
+extern struct stat root_statbuf;
 
 /* eltorito.c */
 extern void DECL(init_boot_catalog, (const char * path ));
 extern void DECL(get_torito_desc, (struct eltorito_boot_descriptor * path ));
 
 /* write.c */
-extern void DECL(assign_directory_addresses,(struct directory * root));
 extern int DECL(get_733,(char *));
 extern int DECL(isonum_733,(unsigned char *));
 extern void DECL(set_723,(char *, unsigned int));
 extern void DECL(set_731,(char *, unsigned int));
 extern void DECL(set_721,(char *, unsigned int));
 extern void DECL(set_733,(char *, unsigned int));
-extern void DECL(sort_directory,(struct directory_entry **));
-extern void generate_root_record();
+extern int  DECL(sort_directory,(struct directory_entry **));
 extern void DECL(generate_one_directory,(struct directory *, FILE*));
-extern void generate_path_tables();
-extern int DECL(iso_write,(FILE * outfile));
 extern void DECL(memcpy_max, (char *, char *, int));
-
+extern int DECL(oneblock_size, (int starting_extent));
+extern struct iso_primary_descriptor vol_desc;
+extern void DECL(xfwrite, (void * buffer, int count, int size, FILE * file));
+extern void DECL(set_732, (char * pnt, unsigned int i));
+extern void DECL(set_722, (char * pnt, unsigned int i));
+extern void DECL(outputlist_insert, (struct output_fragment * frag));
 
 /* multi.c */
 
@@ -228,6 +328,12 @@ extern struct directory_entry **
 extern void 
 	DECL(merge_remaining_entries, (struct directory *, 
 				       struct directory_entry **, int));
+extern int 
+	DECL(merge_previous_session, (struct directory *, 
+				      struct iso_directory_record *));
+
+/* joliet.c */
+int DECL(joliet_sort_tree, (struct directory * node));
 
 /* match.c */
 extern int DECL(matches, (char *));
@@ -245,7 +351,7 @@ extern void DECL(add_hash,(struct directory_entry *));
 extern struct file_hash * DECL(find_hash,(dev_t, ino_t));
 extern void DECL(add_directory_hash,(dev_t, ino_t));
 extern struct file_hash * DECL(find_directory_hash,(dev_t, ino_t));
-extern void flush_file_hash();
+extern void DECL (flush_file_hash, (void));
 extern int DECL(delete_file_hash,(struct directory_entry *));
 extern struct directory_entry * DECL(find_file_hash,(char *));
 extern void DECL(add_file_hash,(struct directory_entry *));
@@ -320,7 +426,13 @@ extern void * DECL(e_malloc,(size_t));
  * is set for all entries in a directory, it means we can just
  * reuse the TRANS.TBL and not generate a new one.
  */
-#define SAFE_TO_REUSE_TABLE_ENTRY  1
+#define SAFE_TO_REUSE_TABLE_ENTRY  0x01
+#define DIR_HAS_DOT		   0x02
+#define DIR_HAS_DOTDOT		   0x04
+#define INHIBIT_JOLIET_ENTRY	   0x08
+#define INHIBIT_RR_ENTRY	   0x10
+#define RELOCATED_DIRECTORY	   0x20
+
 /*
  * Volume sequence number to use in all of the iso directory records.
  */

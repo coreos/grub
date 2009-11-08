@@ -21,7 +21,7 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /*
- * 	$Id: iso9660.h,v 1.1 1997/02/23 15:55:25 eric Rel $
+ * 	$Id: iso9660.h,v 1.2 1997/05/17 15:46:44 eric Exp $
  */
 
 #ifndef _ISOFS_FS_H
@@ -42,8 +42,9 @@ struct iso_volume_descriptor {
 };
 
 /* volume descriptor types */
-#define ISO_VD_PRIMARY 1
-#define ISO_VD_END 255
+#define ISO_VD_PRIMARY       1
+#define ISO_VD_SUPPLEMENTARY 2     /* Used by Joliet */
+#define ISO_VD_END           255
 
 #define ISO_STANDARD_ID "CD001"
 
@@ -67,7 +68,7 @@ struct iso_primary_descriptor {
 	char volume_id			[ISODCL ( 41,  72)]; /* dchars */
 	char unused2			[ISODCL ( 73,  80)];
 	char volume_space_size		[ISODCL ( 81,  88)]; /* 733 */
-	char unused3			[ISODCL ( 89, 120)];
+	char escape_sequences		[ISODCL ( 89, 120)];
 	char volume_set_size		[ISODCL (121, 124)]; /* 723 */
 	char volume_sequence_number	[ISODCL (125, 128)]; /* 723 */
 	char logical_block_size		[ISODCL (129, 132)]; /* 723 */

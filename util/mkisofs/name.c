@@ -21,8 +21,9 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: name.c,v 1.7 1997/11/09 16:42:51 eric Exp $";
+static char rcsid[] ="$Id: name.c,v 1.10 1998/06/02 02:40:38 eric Exp $";
 
+#include "config.h"
 #include "mkisofs.h"
 
 #include <ctype.h>
@@ -105,8 +106,7 @@ int FDECL3(iso9660_file_length,
   last_dot = strrchr (pnt,'.');
   if(    (last_dot != NULL)
       && (    (last_dot[1] == '~')
-	   || (last_dot[1] == '\0')
-	   || (last_dot[1] == '\0')) )
+ 	   || (last_dot[1] == '\0')) )
     {
       c = last_dot;
       *c = '\0';
@@ -154,13 +154,19 @@ int FDECL3(iso9660_file_length,
        * a silly thing to do on a Unix box, but we check for it
        * anyways.  If we see this, then we don't have to add our
        * own version number at the end.
+       * UNLESS the ';' is part of the filename and no version
+       * number is following. [VK]
        */
-      if(*pnt == ';') 
-	{
-	  seen_semic = 1; 
-	  *result++ = *pnt++; 
-	  continue; 
-	}
+       if(*pnt == ';')
+	 {
+	   /* [VK] */
+	   if (pnt[1] != '\0' && (pnt[1] < '0' || pnt[1] > '9'))
+	     {
+	       pnt++;
+	       ignore++;
+	       continue;
+	     }
+	 }
 
       /*
        * If we have a name with multiple '.' characters, we ignore everything

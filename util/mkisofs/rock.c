@@ -19,7 +19,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: rock.c,v 1.3 1997/05/17 15:45:26 eric Exp $";
+static char rcsid[] ="$Id: rock.c,v 1.7 1998/02/18 04:48:23 eric Exp $";
 
 #include <stdlib.h>
 
@@ -225,7 +225,7 @@ int deep_opt;
     Rock[ipnt++] = PN_SIZE;
     Rock[ipnt++] = SU_VERSION;  
     flagval |= (1<<1);
-#if !defined(MAJOR_IN_SYSMACROS) && !defined(MAJOR_IN_MKDEV)
+#if defined(MAJOR_IN_SYSMACROS) || defined(MAJOR_IN_MKDEV)
     set_733((char*)Rock + ipnt, major(lstatbuf->st_rdev ));
     ipnt += 8;
     set_733((char*)Rock + ipnt, minor(lstatbuf->st_rdev));
@@ -268,9 +268,35 @@ int deep_opt;
     unsigned char * cpnt, *cpnt1;
     nchar = readlink(whole_name, symlink_buff, sizeof(symlink_buff));
     symlink_buff[nchar < 0 ? 0 : nchar] = 0;
+    nchar = strlen((char *) symlink_buff);
     set_733(s_entry->isorec.size, 0);
     cpnt = &symlink_buff[0];
     flagval |= (1<<2);
+
+    if (! split_SL_field) 
+      {
+	int sl_bytes = 0;
+	for (cpnt1 = cpnt; *cpnt1 != '\0'; cpnt1++) 
+	  {
+	    if (*cpnt1 == '/') 
+	      {
+		sl_bytes += 4;
+	      } 
+	    else 
+	      {
+		sl_bytes += 1;
+	      }
+	  }
+	if (sl_bytes > 250) 
+	  {
+	    /* 
+	     * the symbolic link won't fit into one SL System Use Field
+	     * print an error message and continue with splited one 
+	     */
+	    fprintf(stderr,"symbolic link ``%s'' to long for one SL System Use Field, splitting", cpnt);
+	  }
+       if(MAYBE_ADD_CE_ENTRY(SL_SIZE + sl_bytes)) add_CE_entry();
+     }
 
     while(nchar){
       if(MAYBE_ADD_CE_ENTRY(SL_SIZE)) add_CE_entry();
@@ -309,15 +335,18 @@ int deep_opt;
 	} else {
 	  /* If we do not have enough room for a component, start
 	     a new continuations segment now */
-	  if(MAYBE_ADD_CE_ENTRY(6)) {
-	    add_CE_entry();
-	    if(cpnt1){
-	      *cpnt1 = '/';
-              nchar++;
-	      cpnt1 = NULL; /* A kluge so that we can restart properly */
-	    }
-	    break;
-	  }
+         if(split_SL_component ? MAYBE_ADD_CE_ENTRY(6) :
+                                 MAYBE_ADD_CE_ENTRY(6 + strlen ((char *) cpnt))) 
+	   {
+	     add_CE_entry();
+	     if(cpnt1)
+	       {
+		 *cpnt1 = '/';
+		 nchar++;
+		 cpnt1 = NULL; /* A kluge so that we can restart properly */
+	       }
+	     break;
+	   }
 	  j0 = strlen((char *) cpnt);
 	  while(j0) {
 	    j1 = j0;

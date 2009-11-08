@@ -19,7 +19,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  
  */
 
-static char rcsid[] ="$Id: multi.c,v 1.6.1.3 1998/06/02 03:00:25 eric Exp $";
+static char rcsid[] ="$Id: multi.c,v 1.12 1998/06/02 02:40:38 eric Exp $";
 
 #include <stdlib.h>
 #include <string.h>
@@ -137,7 +137,7 @@ FDECL3(parse_rr, unsigned char *, pnt, int, len, struct directory_entry *,dpnt)
 
 	while(len >= 4){
 		if(pnt[3] != 1) {
-		  printf("**BAD RRVERSION");
+		  fprintf(stderr,"**BAD RRVERSION");
 		  return -1;
 		};
 		if(strncmp((char *) pnt, "NM", 2) == 0) {
@@ -193,7 +193,7 @@ FDECL4(check_rr_dates, struct directory_entry *, dpnt,
 	 */
 	while(len >= 4){
 		if(pnt[3] != 1) {
-		  printf("**BAD RRVERSION");
+		  fprintf(stderr,"**BAD RRVERSION");
 		  return -1;
 		};
 
@@ -750,6 +750,7 @@ void FDECL3(merge_remaining_entries, struct directory *, this_dir,
   struct directory_entry * s_entry;
   unsigned int ttbl_extent = 0;
   unsigned int ttbl_index  = 0;
+  char whole_path[1024];
 
   /*
    * Whatever is leftover in the list needs to get merged back
@@ -762,6 +763,18 @@ void FDECL3(merge_remaining_entries, struct directory *, this_dir,
 	  continue;
 	}
       
+      if( pnt[i]->name != NULL && pnt[i]->whole_name == NULL)
+       {
+         /*
+          * Set the name for this directory.
+          */
+         strcpy(whole_path, this_dir->de_name);
+         strcat(whole_path, SPATH_SEPARATOR);
+         strcat(whole_path, pnt[i]->name);
+
+         pnt[i]->whole_name = strdup(whole_path);
+       }
+
       if( pnt[i]->name != NULL
 	  && strcmp(pnt[i]->name, "<translation table>") == 0 )
 	{
@@ -884,6 +897,7 @@ FDECL2(merge_old_directory_into_tree, struct directory_entry *, dpnt,
   char				  whole_path[1024];
 
   this_dir = (struct directory *) e_malloc(sizeof(struct directory));
+  memset(this_dir, 0, sizeof(struct directory));
   this_dir->next = NULL;
   this_dir->subdir = NULL;
   this_dir->self = dpnt;
@@ -939,7 +953,22 @@ FDECL2(merge_old_directory_into_tree, struct directory_entry *, dpnt,
       if( (contents[i]->isorec.flags[0] & 2) != 0 )
 	{
 	  memset(contents[i]->isorec.extent, 0, 8);
+
+	  if( strcmp(contents[i]->name, ".") == 0 )
+	      this_dir->dir_flags |= DIR_HAS_DOT;
+
+	  if( strcmp(contents[i]->name, "..") == 0 )
+	      this_dir->dir_flags |= DIR_HAS_DOTDOT;
 	}
+
+      /*
+       * Set the whole name for this file.
+       */
+      strcpy(whole_path, this_dir->whole_name);
+      strcat(whole_path, SPATH_SEPARATOR);
+      strcat(whole_path, contents[i]->name);
+
+      contents[i]->whole_name = strdup(whole_path);
 
       contents[i]->next = this_dir->contents;
       contents[i]->filedir = this_dir;
@@ -957,7 +986,13 @@ FDECL2(merge_old_directory_into_tree, struct directory_entry *, dpnt,
    */
   merge_remaining_entries(this_dir, contents, n_orig);
   free_mdinfo(contents, n_orig);
+#if 0
+  /*
+   * This is no longer required.  The post-scan sort will handle
+   * all of this for us.
+   */
   sort_n_finish(this_dir);
+#endif
 
   return 0;
 }
@@ -1014,5 +1049,101 @@ FDECL1(get_session_start, int *, file_addr)
 
 #endif
   return 0;
+}
+
+/*
+ * This function scans the directory tree, looking for files, and it makes
+ * note of everything that is found.  We also begin to construct the ISO9660
+ * directory entries, so that we can determine how large each directory is.
+ */
+
+int
+FDECL2(merge_previous_session,struct directory *, this_dir,
+       struct iso_directory_record *, mrootp)
+{
+  struct directory_entry	**orig_contents = NULL;
+  struct directory_entry        * odpnt = NULL;
+  int				  n_orig;
+  struct directory_entry	* s_entry;
+  int				  dflag;
+  int				  status, lstatus;
+  struct stat			  statbuf, lstatbuf;
+
+  /*
+   * Parse the same directory in the image that we are merging
+   * for multisession stuff.
+   */
+  orig_contents = read_merging_directory(mrootp, &n_orig);
+  if( orig_contents == NULL )
+    {
+      return 0;
+    }
+
+
+/* Now we scan the directory itself, and look at what is inside of it. */
+
+  dflag = 0;
+  for(s_entry = this_dir->contents; s_entry; s_entry = s_entry->next)
+    {
+      status  =  stat_filter(s_entry->whole_name, &statbuf);
+      lstatus = lstat_filter(s_entry->whole_name, &lstatbuf);
+
+      /*
+       * We always should create an entirely new directory tree whenever
+       * we generate a new session, unless there were *no* changes whatsoever
+       * to any of the directories, in which case it would be kind of pointless
+       * to generate a new session.
+       *
+       * I believe it is possible to rigorously prove that any change anywhere
+       * in the filesystem will force the entire tree to be regenerated
+       * because the modified directory will get a new extent number.  Since
+       * each subdirectory of the changed directory has a '..' entry, all of
+       * them will need to be rewritten too, and since the parent directory
+       * of the modified directory will have an extent pointer to the directory
+       * it too will need to be rewritten.  Thus we will never be able to reuse
+       * any directory information when writing new sessions.
+       *
+       * We still check the previous session so we can mark off the equivalent
+       * entry in the list we got from the original disc, however.
+       */
+
+      /*
+       * The check_prev_session function looks for an identical entry in
+       * the previous session.  If we see it, then we copy the extent
+       * number to s_entry, and cross it off the list.
+       */
+      check_prev_session(orig_contents, n_orig, s_entry,
+			 &statbuf, &lstatbuf, &odpnt);
+
+      if(S_ISDIR(statbuf.st_mode) && odpnt != NULL)
+	{
+	  int dflag;
+
+	  if (strcmp(s_entry->name,".") && strcmp(s_entry->name,"..")) 
+	    {
+	      struct directory * child;
+
+	      child = find_or_create_directory(this_dir, 
+					       s_entry->whole_name, 
+					       s_entry, 1);
+	      dflag = merge_previous_session(child, 
+					     &odpnt->isorec);
+	      /* If unable to scan directory, mark this as a non-directory */
+	      if(!dflag)
+		lstatbuf.st_mode = (lstatbuf.st_mode & ~S_IFMT) | S_IFREG;
+	      free(odpnt);
+	      odpnt = NULL;
+	    }
+	}
+    }
+  
+  /*
+   * Whatever is left over, are things which are no longer in the tree
+   * on disk.  We need to also merge these into the tree.
+   */
+   merge_remaining_entries(this_dir, orig_contents, n_orig);
+   free_mdinfo(orig_contents, n_orig);
+  
+  return 1;
 }
 

@@ -21,7 +21,7 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.   */
 
 
-static char rcsid[] ="$Id: eltorito.c,v 1.7 1997/05/17 15:44:31 eric Exp $";
+static char rcsid[] ="$Id: eltorito.c,v 1.12 1998/06/02 02:40:37 eric Exp $";
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -30,14 +30,22 @@ static char rcsid[] ="$Id: eltorito.c,v 1.7 1997/05/17 15:44:31 eric Exp $";
 #include <fcntl.h>
 #include <stdlib.h>
 
+#include "config.h"
 #include "mkisofs.h"
 #include "iso9660.h"
+
+/* used by Win32 for opening binary file - not used by Unix */
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif /* O_BINARY */
 
 #undef MIN
 #define MIN(a, b) (((a) < (b))? (a): (b))
 
 static struct eltorito_validation_entry valid_desc;
 static struct eltorito_defaultboot_entry default_desc;
+static struct eltorito_boot_descriptor boot_desc;
+
 
 /*
  * Check for presence of boot catalog. If it does not exist then make it 
@@ -63,7 +71,7 @@ void FDECL1(init_boot_catalog, const char *, path)
      * check for the file existing 
      */
 #ifdef DEBUG_TORITO
-    printf("Looking for boot catalog file %s\n",bootpath);
+    fprintf(stderr,"Looking for boot catalog file %s\n",bootpath);
 #endif
     
     if (!stat_filter(bootpath, &statbuf)) 
@@ -93,7 +101,7 @@ void FDECL1(init_boot_catalog, const char *, path)
      * file does not exist, so we create it 
      * make it one CD sector long
      */
-    bcat = open(bootpath, O_WRONLY | O_CREAT, S_IROTH | S_IRGRP | S_IRWXU );
+    bcat = open(bootpath, O_WRONLY | O_CREAT | O_BINARY, S_IROTH | S_IRGRP | S_IRWXU );
     if (bcat == -1) 
     {
 	fprintf(stderr, "Error creating boot catalog, exiting...\n");
@@ -207,7 +215,7 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
      * assume 512 bytes/sector on a bootable floppy
      */
     nsectors = ((de->size + 511) & ~(511))/512;
-    printf("\nSize of boot image is %d sectors -> ", nsectors); 
+    fprintf(stderr, "\nSize of boot image is %d sectors -> ", nsectors); 
     
     /*
      * choose size of emulated floppy based on boot image size 
@@ -215,17 +223,17 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
     if (nsectors == 2880 ) 
     {
 	default_desc.boot_media[0] = EL_TORITO_MEDIA_144FLOP;
-	printf("Emulating a 1.44 meg floppy\n");
+	fprintf(stderr, "Emulating a 1.44 meg floppy\n");
     }
     else if (nsectors == 5760 ) 
     {
 	default_desc.boot_media[0] = EL_TORITO_MEDIA_288FLOP;
-	printf("Emulating a 2.88 meg floppy\n");
+	fprintf(stderr,"Emulating a 2.88 meg floppy\n");
     }
     else if (nsectors == 2400 ) 
     {
 	default_desc.boot_media[0] = EL_TORITO_MEDIA_12FLOP;
-	printf("Emulating a 1.2 meg floppy\n");
+	fprintf(stderr,"Emulating a 1.2 meg floppy\n");
     }
     else 
     {
@@ -240,7 +248,7 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
     nsectors = 1;
     set_721(default_desc.nsect, (unsigned int) nsectors );
 #ifdef DEBUG_TORITO
-    printf("Extent of boot images is %d\n",get_733(de->isorec.extent));
+    fprintf(stderr,"Extent of boot images is %d\n",get_733(de->isorec.extent));
 #endif
     set_731(default_desc.bootoff, 
 	    (unsigned int) get_733(de->isorec.extent));
@@ -248,7 +256,7 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
     /*
      * now write it to disk 
      */
-    bootcat = open(de2->whole_name, O_RDWR);
+    bootcat = open(de2->whole_name, O_RDWR | O_BINARY);
     if (bootcat == -1) 
     {
 	fprintf(stderr,"Error opening boot catalog for update.\n");
@@ -263,3 +271,19 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
     write(bootcat, &default_desc, 32);
     close(bootcat);
 } /* get_torito_desc(... */
+
+/*
+ * Function to write the EVD for the disc.
+ */
+int FDECL1(tvd_write, FILE *, outfile)
+{
+  /*
+   * Next we write out the boot volume descriptor for the disc 
+   */
+  get_torito_desc(&boot_desc);
+  xfwrite(&boot_desc, 1, 2048, outfile);
+  last_extent_written ++;
+  return 0;
+}
+
+struct output_fragment torito_desc    = {NULL, oneblock_size, NULL,     tvd_write};
