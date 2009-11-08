@@ -1,0 +1,5 @@
+2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/coreboot/grub-mkrescue.in: New file.
+	* conf/i386-coreboot.rmk (bin_SCRIPTS, grub_mkrescue_SOURCES): New
+	variables.
