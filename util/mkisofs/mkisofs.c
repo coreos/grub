@@ -871,21 +871,37 @@ int FDECL2(main, int, argc, char **, argv){
 	split_SL_field = 0;
 	break;
       case OPTION_CREAT_DATE:
+	if (strlen (optarg) != 16) {
+	  fprintf (stderr, "date string must be 16 characters.\n");
+	  exit (1);
+	}
 	if (creation_date)
 	  free(creation_date);
 	creation_date = strdup(optarg);
 	break;
       case OPTION_MODIF_DATE:
+	if (strlen (optarg) != 16) {
+	  fprintf (stderr, "date string must be 16 characters.\n");
+	  exit (1);
+	}
 	if (modification_date)
 	  free(modification_date);
 	modification_date = strdup(optarg);
 	break;
       case OPTION_EXPIR_DATE:
+	if (strlen (optarg) != 16) {
+	  fprintf (stderr, "date string must be 16 characters.\n");
+	  exit (1);
+	}
 	if (expiration_date)
 	  free(expiration_date);
 	expiration_date = strdup(optarg);
 	break;
       case OPTION_EFFEC_DATE:
+	if (strlen (optarg) != 16) {
+	  fprintf (stderr, "date string must be 16 characters.\n");
+	  exit (1);
+	}
 	if (effective_date)
 	  free(effective_date);
 	effective_date = strdup(optarg);
