@@ -28,22 +28,7 @@
 #ifndef _MCONFIG_H
 #define _MCONFIG_H
 
-/*
- * This hack that is needed as long as VMS has no POSIX shell.
- */
-#ifdef	VMS
-#	define	USE_STATIC_CONF
-#endif
-
-#ifdef  VANILLA_AUTOCONF
 #include <config.h>
-#else
-#ifdef	USE_STATIC_CONF
-#include <xmconfig.h>	/* This is the current static autoconf stuff */
-#else
-#include <xconfig.h>	/* This is the current dynamic autoconf stuff */
-#endif
-#endif
 
 #ifdef __cplusplus
 extern "C" {
