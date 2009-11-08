@@ -1,5 +1,10 @@
 2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* kern/i386/multiboot_mmap.c (grub_machine_mmap_init): Improve
+	error message for excessively large memory map.
+
+2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* autogen.sh: Use `sh gendistlist.sh' to avoid reliing on
 	executable bit.
 

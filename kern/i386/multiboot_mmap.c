@@ -51,7 +51,8 @@ grub_machine_mmap_init ()
   /* Move the memory map to a safe place.  */
   if (kern_multiboot_info.mmap_length > sizeof (mmap_entries))
     {
-      grub_printf ("WARNING: Memory map size exceeds limit; it will be truncated\n");
+      grub_printf ("WARNING: Memory map size exceeds limit (0x%x > 0x%x); it will be truncated\n",
+		   kern_multiboot_info.mmap_length, sizeof (mmap_entries));
       kern_multiboot_info.mmap_length = sizeof (mmap_entries);
     }
   grub_memmove (mmap_entries, (void *) kern_multiboot_info.mmap_addr, kern_multiboot_info.mmap_length);
