@@ -1,5 +1,10 @@
 2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/i386/pc/grub-mkrescue.in: Fix miss-identification as
+	`grub-mkimage' (and use $0 when possible).
+
+2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* kern/i386/multiboot_mmap.c (grub_machine_mmap_init): Improve
 	error message for excessively large memory map.
 

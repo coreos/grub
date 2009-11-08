@@ -36,7 +36,7 @@ grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 # Print the usage.
 usage () {
     cat <<EOF
-Usage: grub-mkrescue [OPTION] output_image
+Usage: $0 [OPTION] output_image
 Make GRUB rescue image.
 
   -h, --help              print this message and exit
@@ -50,7 +50,7 @@ Make GRUB rescue image.
   --emulation=TYPE        select El Torito boot emulation type floppy
                           or none (default) (cdrom only)
 
-grub-mkimage generates a bootable rescue image of the specified type.
+$0 generates a bootable rescue image of the specified type.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
@@ -67,7 +67,7 @@ for option in "$@"; do
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-mkrescue (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$0 (GNU GRUB ${PACKAGE_VERSION})"
 	exit 0 ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
