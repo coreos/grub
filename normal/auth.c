@@ -39,11 +39,18 @@ grub_auth_strcmp (const char *user_input, const char *template)
 {
   int ok = 1;
   const char *ptr1, *ptr2;
+
+  if (ptr2 == NULL)
+    ok = 0;
+
   for (ptr1 = user_input, ptr2 = template; *ptr1; ptr1++)
-    if (*ptr1 == (ptr2 ? *ptr2 : ptr1[1]) && ok && ptr2 != NULL)
+    if (*ptr1 == (ptr2 ? *ptr2 : ptr1[1]) && ok)
       ptr2++;
     else
       ok = 0;
+
+  if (ptr2 == NULL || *ptr2 != 0)
+    ok = 0;
 
   return !ok;
 }

@@ -1,3 +1,8 @@
+2009-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/auth.c (grub_auth_strcmp): Fix bug which resulted in function
+	being insecure.
+
 2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/i386/pc/grub-mkrescue.in: Fix miss-identification as
