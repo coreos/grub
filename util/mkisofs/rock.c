@@ -5,9 +5,11 @@
 
    Copyright 1993 Yggdrasil Computing, Incorporated
 
+   Copyright (C) 2009  Free Software Foundation, Inc.
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -16,7 +18,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 static char rcsid[] ="$Id: rock.c,v 1.8 1999/03/02 03:41:26 eric Exp $";
@@ -86,7 +88,7 @@ static char rcsid[] ="$Id: rock.c,v 1.8 1999/03/02 03:41:26 eric Exp $";
    a CE entry for the continuation record */
 
 #define MAYBE_ADD_CE_ENTRY(BYTES) \
-    (BYTES + CE_SIZE + currlen + (ipnt - recstart) > reclimit ? 1 : 0) 
+    ((unsigned) ((BYTES) + CE_SIZE + currlen + ipnt) > (unsigned) (recstart + reclimit) ? 1 : 0) 
 
 /*
  * Buffer to build RR attributes

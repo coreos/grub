@@ -98,7 +98,7 @@ char * fn;
 
 int i_ishidden()
 {
-  return((int)i_mat[0]);
+  return (i_mat[0] != NULL);
 }
 
 /* Joliet hide */
@@ -142,6 +142,6 @@ char * fn;
 
 int j_ishidden()
 {
-  return((int)j_mat[0]);
+  return (j_mat[0] != NULL);
 }
 

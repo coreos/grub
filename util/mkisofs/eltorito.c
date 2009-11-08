@@ -123,7 +123,7 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
     unsigned char		      * checksum_ptr;
     struct directory_entry      * de;
     struct directory_entry      * de2;
-    int				i;
+    unsigned int		i;
     int				nsectors;
     
     memset(boot_desc, 0, sizeof(*boot_desc));

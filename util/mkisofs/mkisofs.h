@@ -277,7 +277,7 @@ extern int split_output;
 extern int omit_period;
 extern int omit_version_number;
 extern int transparent_compression;
-extern int RR_relocation_depth;
+extern unsigned int RR_relocation_depth;
 extern int full_iso9660_filenames;
 extern int split_SL_component;
 extern int split_SL_field;

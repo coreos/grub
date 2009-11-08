@@ -3,13 +3,13 @@
    "Keep this file name-space clean" means, talk to roland@gnu.ai.mit.edu
    before changing it!
 
-   Copyright (C) 1987, 88, 89, 90, 91, 92, 93, 94, 95
+   Copyright (C) 1987, 88, 89, 90, 91, 92, 93, 94, 95, 2009
    	Free Software Foundation, Inc.
 
 This file is part of the libiberty library.  This library is free
 software; you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the
-Free Software Foundation; either version 2, or (at your option)
+Free Software Foundation; either version 3, or (at your option)
 any later version.
 
 This library is distributed in the hope that it will be useful,
@@ -53,6 +53,7 @@ the executable file might be covered by the GNU General Public License. */
 #endif
 
 #include <stdio.h>
+#include <assert.h>
 
 /* Comment out all this code if we are using the GNU C Library, and are not
    actually compiling the library itself.  This code is part of the GNU C
@@ -498,7 +499,8 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
       for (p = longopts, option_index = 0; p->name; p++, option_index++)
 	if (!strncmp (p->name, nextchar, nameend - nextchar))
 	  {
-	    if (nameend - nextchar == strlen (p->name))
+	    assert (nameend > nextchar);
+	    if (nameend == strlen (p->name) + nextchar)
 	      {
 		/* Exact match found.  */
 		pfound = p;

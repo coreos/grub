@@ -107,9 +107,9 @@ static void DECL(delete_directory, (struct directory * parent, struct directory 
 
 extern int verbose;
 
-struct stat fstatbuf = {0,};  /* We use this for the artificial entries we create */
+struct stat fstatbuf;  /* We use this for the artificial entries we create */
 
-struct stat root_statbuf = {0, };  /* Stat buffer for root directory */
+struct stat root_statbuf;  /* Stat buffer for root directory */
 
 struct directory * reloc_dir = NULL;
 
@@ -1269,7 +1269,7 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
     }
   
   if (strcmp(short_name,".") && strcmp(short_name,"..") && 
-      S_ISDIR(statbuf.st_mode) && this_dir->depth >  RR_relocation_depth)
+      S_ISDIR(statbuf.st_mode) && this_dir->depth > RR_relocation_depth)
     {
       struct directory * child;
 
@@ -1612,7 +1612,7 @@ struct directory * FDECL4(find_or_create_directory, struct directory *, parent,
 #ifdef DEBUG
       fprintf(stderr,"%s(%d) ", path, dpnt->depth);
 #endif
-      if(parent->depth >  RR_relocation_depth) 
+      if(parent->depth > RR_relocation_depth) 
 	{
 	  fprintf(stderr,"Directories too deep  %s\n", path);
 	  exit(1);

@@ -115,7 +115,7 @@ int volume_sequence_number = 1;
 int omit_period = 0;             /* Violates iso9660, but these are a pain */
 int transparent_compression = 0; /* So far only works with linux */
 int omit_version_number = 0;     /* May violate iso9660, but noone uses vers*/
-int RR_relocation_depth = 6;     /* Violates iso9660, but most systems work */
+unsigned int RR_relocation_depth = 6;     /* Violates iso9660, but most systems work */
 int full_iso9660_filenames = 0;  /* Used with Amiga.  Disc will not work with
 				  DOS */
 int allow_leading_dots = 0;	 /* DOS cannot read names with leading dots */
@@ -461,7 +461,7 @@ void usage(){
 [-x path -x path ...] path\n");
 #endif
 
-  int i;
+  unsigned int i;
 /*  const char **targets, **pp;*/
 
   fprintf (stderr, "Usage: %s [options] file...\n", program_name);
@@ -473,7 +473,7 @@ void usage(){
 	{
 	  int comma;
 	  int len;
-	  int j;
+	  unsigned int j;
 
 	  fprintf (stderr, "  ");
 
@@ -641,7 +641,8 @@ int FDECL2(main, int, argc, char **, argv){
      the ordering of the two.  We describe each non-option ARGV-element
      as if it were the argument of an option with character code 1.  */
   {
-    int i, is, il;
+    unsigned int i;
+    int is, il;
     shortopts[0] = '-';
     is = 1;
     il = 0;

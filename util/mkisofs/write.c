@@ -34,6 +34,7 @@ static char rcsid[] ="$Id: write.c,v 1.21 1999/03/07 17:41:19 eric Exp $";
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <assert.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -178,7 +179,7 @@ struct deferred_write
 static struct deferred_write * dw_head = NULL, * dw_tail = NULL;
 
 unsigned int last_extent_written  =0;
-static int path_table_index;
+static unsigned int path_table_index;
 static time_t begun;
 
 /* We recursively walk through all of the directories and assign extent
@@ -239,7 +240,7 @@ static void FDECL3(write_one_file, char *, filename,
      char		  buffer[SECTOR_SIZE * NSECT];
      FILE		* infile;
      int		  remain;
-     int		  use;
+     unsigned int		  use;
 
 
      if ((infile = fopen(filename, "rb")) == NULL) 
@@ -1163,7 +1164,8 @@ static int FDECL1(file_write, FILE *, outfile)
   /* 
    * Hard links throw us off here 
    */
-  if(should_write != last_extent - session_start)
+  assert (last_extent > session_start);
+  if(should_write + session_start != last_extent)
     {
       fprintf(stderr,"Number of extents written not what was predicted.  Please fix.\n");
       fprintf(stderr,"Predicted = %d, written = %d\n", should_write, last_extent);

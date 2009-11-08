@@ -77,7 +77,7 @@ static char rcsid[] ="$Id: joliet.c,v 1.14 1999/03/07 17:41:19 eric Exp $";
 #include <stdlib.h>
 #include <time.h>
 
-static int jpath_table_index;
+static unsigned int jpath_table_index;
 static struct directory ** jpathlist;
 static int next_jpath_index  = 1;
 static int sort_goof;
