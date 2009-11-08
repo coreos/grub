@@ -28,7 +28,7 @@ ifeq ($(enable_grub_fstest), yes)
 bin_UTILITIES += grub-fstest
 endif
 
-bin_SCRIPTS += grub-mkisofs
+bin_UTILITIES += grub-mkisofs
 grub_mkisofs_SOURCES = util/mkisofs/eltorito.c util/mkisofs/fnmatch.c	\
 	util/mkisofs/getopt1.c util/mkisofs/getopt.c			\
 	util/mkisofs/hash.c util/mkisofs/joliet.c			\

@@ -4,7 +4,7 @@
 	* conf/i386-coreboot.rmk (bin_SCRIPTS, grub_mkrescue_SOURCES): New
 	variables.
 
-	* conf/common.rmk (bin_SCRIPTS): Add `grub-mkisofs'.
+	* conf/common.rmk (bin_UTILITIES): Add `grub-mkisofs'.
 	(grub_mkisofs_SOURCES, grub_mkisofs_CFLAGS): New variables.
 	* configure.ac: Add header and function checks to satisfy grub-mkisofs
 	requirements.
