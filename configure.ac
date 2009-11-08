@@ -181,6 +181,13 @@ fi
 # Check for functions.
 AC_CHECK_FUNCS(posix_memalign memalign asprintf)
 
+# For grub-mkisofs
+AC_HEADER_MAJOR
+AC_HEADER_DIRENT
+AC_CHECK_FUNCS(memmove sbrk strdup)
+AC_CHECK_HEADERS(sys/mkdev.h sys/sysmacros.h malloc.h termios.h sys/types.h)
+AC_CHECK_HEADERS(unistd.h string.h strings.h sys/stat.h sys/fcntl.h)
+
 #
 # Check for target programs.
 #
