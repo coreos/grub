@@ -61,8 +61,15 @@ read_fs_list (void)
       if (filename)
 	{
 	  grub_file_t file;
+	  grub_fs_autoload_hook_t tmp_autoload_hook;
 
 	  grub_sprintf (filename, "%s/fs.lst", prefix);
+
+	  /* This rules out the possibility that read_fs_list() is invoked
+	     recursively when we call grub_file_open() below.  */
+	  tmp_autoload_hook = grub_fs_autoload_hook;
+	  grub_fs_autoload_hook = NULL;
+
 	  file = grub_file_open (filename);
 	  if (file)
 	    {
@@ -116,6 +123,7 @@ read_fs_list (void)
 		}
 
 	      grub_file_close (file);
+	      grub_fs_autoload_hook = tmp_autoload_hook;
 	    }
 
 	  grub_free (filename);
