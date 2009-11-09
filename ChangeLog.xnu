@@ -1,0 +1,43 @@
+2009-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/misc.c (grub_utf16_to_utf8): Move from here ...
+	* include/grub/charset.h (grub_utf16_to_utf8): ... to here. Inlined.
+	All users updated.
+	* include/grub/misc.h (grub_utf16_to_utf8): Removed.
+
+2009-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* bus/usb/usb.c (grub_usb_get_string): Move from here ...
+	* commands/usbtest.c (grub_usb_get_string): ... move here.
+	(usb_print_str): Fix error handling.
+	* include/grub/usb.h (grub_usb_get_string): Remove.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Eliminate ad-hoc tree format in XNU and EfiEmu.
+
+	* efiemu/main.c (grub_efiemu_prepare): Update comment.
+	* efiemu/pnvram.c: Rewritten to use environment variables.
+	All users updated.
+	* include/grub/xnu.h (grub_xnu_fill_devicetree): New prototype.
+	* loader/i386/xnu.c (grub_xnu_boot): Call grub_cpu_xnu_fill_devicetree
+	and grub_xnu_fill_devicetree.
+	* loader/xnu.c (grub_cmd_xnu_kernel): Don't call
+	grub_cpu_xnu_fill_devicetree.
+	(grub_xnu_parse_devtree): Removed.
+	(grub_cmd_xnu_devtree): Likewise.
+	(hextoval): New function.
+	(unescape): Likewise.
+	(grub_xnu_fill_devicetree): Likewise.
+
+2009-08-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	UTF-8 to UTF-16 transformation.
+
+	* conf/common.rmk (pkglib_MODULES): Add utf.mod
+	(utf_mod_SOURCES): New variable.
+	(utf_mod_CFLAGS): Likewise.
+	(utf_mod_LDFLAGS): Likewise.
+	* include/grub/utf.h: New file.
+	* lib/utf.c: New file. (Based on grub_utf8_to_ucs4 from kern/misc.c)
+
