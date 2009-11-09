@@ -51,12 +51,6 @@ void
 read_fs_list (void)
 {
   const char *prefix;
-  static int first_time = 1;
-
-  /* Make sure that this function does not get executed twice.  */
-  if (! first_time)
-    return;
-  first_time = 0;
 
   prefix = grub_env_get ("prefix");
   if (prefix)
@@ -72,6 +66,15 @@ read_fs_list (void)
 	  file = grub_file_open (filename);
 	  if (file)
 	    {
+	      /* Override previous fs.lst.  */
+	      while (fs_module_list)
+		{
+		  grub_named_list_t tmp;
+		  tmp = fs_module_list->next;
+		  grub_free (fs_module_list);
+		  fs_module_list = tmp;
+		}
+
 	      while (1)
 		{
 		  char *buf;
