@@ -1069,9 +1069,10 @@ EXT (INT opt, const CHAR *pattern, const CHAR *string, const CHAR *string_end,
 	    size_t plensize;						      \
 	    size_t newpsize;						      \
 									      \
+	    assert (p > startp);					      \
 	    plen = (opt == L_('?') || opt == L_('@')			      \
 		    ? pattern_len					      \
-		    : p - startp + 1);					      \
+		    : (unsigned) (p - startp) + 1);			      \
 	    plensize = plen * sizeof (CHAR);				      \
 	    newpsize = offsetof (struct patternlist, str) + plensize;	      \
 	    if ((size_t) -1 / sizeof (CHAR) < plen			      \

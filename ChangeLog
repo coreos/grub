@@ -1,5 +1,10 @@
 2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* gnulib/fnmatch_loop.c (EXT): Fix warning (signed and unsigned type in
+	conditional expression).
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Import from Gnulib.
 
 	* gnulib/fnmatch.c: New file.
