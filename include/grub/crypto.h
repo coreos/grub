@@ -63,6 +63,7 @@ typedef enum
     GPG_ERR_WRONG_KEY_USAGE,
     GPG_ERR_WRONG_PUBKEY_ALGO,
   } gcry_err_code_t;
+#define gpg_err_code_t gcry_err_code_t
 
 enum gcry_cipher_modes 
   {
@@ -123,6 +124,53 @@ typedef struct gcry_cipher_spec
   gcry_cipher_stencrypt_t stencrypt;
   gcry_cipher_stdecrypt_t stdecrypt;
 } gcry_cipher_spec_t;
+
+/* Definition of a function used to report selftest failures. 
+   DOMAIN is a string describing the function block:
+          "cipher", "digest", "pubkey or "random",
+   ALGO   is the algorithm under test,
+   WHAT   is a string describing what has been tested,
+   DESC   is a string describing the error. */
+typedef void (*selftest_report_func_t)(const char *domain,
+                                       int algo, 
+                                       const char *what,
+                                       const char *errdesc);
+
+/* Definition of the selftest functions.  */
+typedef gpg_err_code_t (*selftest_func_t)
+     (int algo, int extended, selftest_report_func_t report);
+
+/* The type used to convey additional information to a cipher.  */
+typedef gpg_err_code_t (*cipher_set_extra_info_t)
+     (void *c, int what, const void *buffer, grub_size_t buflen);
+
+
+/* Extra module specification structures.  These are used for internal
+   modules which provide more functions than available through the
+   public algorithm register APIs.  */
+typedef struct cipher_extra_spec
+{
+  selftest_func_t selftest;
+  cipher_set_extra_info_t set_extra_info;
+} cipher_extra_spec_t;
+
+/* (Forward declaration.)  */
+struct gcry_md_context;
+
+/* This object is used to hold a handle to a message digest object.
+   This structure is private - only to be used by the public gcry_md_*
+   macros.  */
+typedef struct gcry_md_handle 
+{
+  /* Actual context.  */
+  struct gcry_md_context *ctx;
+  
+  /* Buffer management.  */
+  int  bufpos;
+  int  bufsize;
+  unsigned char buf[1];
+} *gcry_md_hd_t;
+
 
 struct grub_cipher
 {

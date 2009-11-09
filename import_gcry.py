@@ -77,8 +77,8 @@ for cipher_file in cipher_files:
             conf.write ("pkglib_MODULES += %s.mod\n" % modname)
             conf.write ("%s_mod_SOURCES = gcry/cipher/%s\n" %\
                             (modname, cipher_file))
-            conf.write ("%s_mod_CFLAGS = $(COMMON_CFLAGS) -Wno-error\n" % modname)
-            conf.write ("%s_mod_LDFLAGS = $(COMMON_ASFLAGS)\n\n" % modname)
+            conf.write ("%s_mod_CFLAGS = $(COMMON_CFLAGS) -Wno-missing-field-initializers -Wno-error\n" % modname)
+            conf.write ("%s_mod_LDFLAGS = $(COMMON_LDFLAGS)\n\n" % modname)
         elif isc:
             print ("WARNING: c file isn't a module: %s" % cipher_file)
         f.close ()

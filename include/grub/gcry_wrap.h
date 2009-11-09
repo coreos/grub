@@ -25,6 +25,8 @@
 #include <grub/dl.h>
 #include <grub/crypto.h>
 
+#define __GNU_LIBRARY__
+
 typedef grub_uint32_t u32;
 typedef grub_uint16_t u16;
 typedef grub_uint8_t byte;
