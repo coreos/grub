@@ -206,7 +206,7 @@ static const struct ld_option ld_options[] =
   { {"eltorito-catalog", required_argument, NULL, 'c'},
       'c', "FILE", "Set El Torito boot catalog name" , ONE_DASH },
   { {"cdwrite-params", required_argument, NULL, 'C'},
-      'C', "PARAMS", "Magic paramters from cdrecord" , ONE_DASH },
+      'C', "PARAMS", "Magic parameters from cdrecord" , ONE_DASH },
   { {"omit-period", no_argument, NULL, 'd'},
       'd', NULL, "Omit trailing periods from filenames", ONE_DASH },
   { {"disable-deep-relocation", no_argument, NULL, 'D'},

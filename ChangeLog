@@ -1,3 +1,7 @@
+2009-11-09  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/mkisofs/mkisofs.c (ld_options): Fix a spelling mistake.
+
 2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/mkisofs/fnmatch.c: Remove.
