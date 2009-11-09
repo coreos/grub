@@ -1,6 +1,6 @@
 2009-11-04  Felix Zielcke  <fzielcke@z-51.de>
 
-	* util//grub-mkconfig_lib.in (bindir): New variable.
+	* util/grub-mkconfig_lib.in (bindir): New variable.
 	(grub_mkrelpath): Likewise.
 	Properly set path variable.  Use ${grub_mkrelpath} instead of
 	calling it directly.
