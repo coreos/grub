@@ -1,5 +1,10 @@
 2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* normal/auth.c (punishment_delay): Moved from here ...
+	(grub_auth_strcmp): ... to here (inside function).
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/grub/list.h (struct grub_named_list): Remove `const'
 	qualifier from `name'.
 	(struct grub_prio_list): Likewise.

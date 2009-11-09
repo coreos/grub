@@ -34,7 +34,6 @@ struct grub_auth_user
 };
 
 struct grub_auth_user *users = NULL;
-static unsigned long punishment_delay = 1;
 
 int
 grub_auth_strcmp (const char *s1, const char *s2)
@@ -212,6 +211,7 @@ grub_auth_check_authentication (const char *userlist)
   char login[1024];
   struct grub_auth_user *cur = NULL;
   grub_err_t err;
+  static unsigned long punishment_delay = 1;
 
   auto int hook (grub_list_t item);
   int hook (grub_list_t item)
