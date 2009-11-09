@@ -39,7 +39,7 @@
 #define KEYBOARD_SCANCODE_SET1		0x40
 
 #define KEYBOARD_ISMAKE(x)	!((x) & 0x80)
-#define KEYBOARD_ISREADY(x)	(((x) & 0x01) == 0)
+#define KEYBOARD_ISREADY(x)	((x) & 0x01)
 #define KEYBOARD_SCANCODE(x)	((x) & 0x7f)
 
 #ifdef GRUB_MACHINE_IEEE1275

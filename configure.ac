@@ -31,7 +31,7 @@ dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
 dnl type.
 
 
-AC_INIT([GRUB],[1.97~beta2],[bug-grub@gnu.org])
+AC_INIT([GRUB],[1.97],[bug-grub@gnu.org])
 AC_PREREQ(2.59)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
@@ -107,7 +107,7 @@ esac
 case "$host_os" in
   gnu*)				host_kernel=hurd ;;
   linux*)			host_kernel=linux ;;
-  freebsd* | kfreebsd*-gnu)	host_kernel=freebsd ;;
+  freebsd* | kfreebsd*-gnu)	host_kernel=kfreebsd ;;
   cygwin)			host_kernel=windows ;;
 esac
 
@@ -144,10 +144,11 @@ done
 AC_PROG_INSTALL
 AC_PROG_AWK
 AC_PROG_MAKE_SET
+AC_PROG_MKDIR_P
 
 # These are not a "must".
 AC_PATH_PROG(RUBY, ruby)
-AC_PATH_PROG(HELP2MAN, help2man)
+AC_PATH_PROG(MAKEINFO, makeinfo)
 
 #
 # Checks for host programs.
@@ -169,6 +170,12 @@ grub_apple_cc
 if test x$grub_cv_apple_cc = xyes ; then
   CFLAGS="$CFLAGS -DAPPLE_CC=1 -fnested-functions"
   ASFLAGS="$ASFLAGS -DAPPLE_CC=1"
+fi
+
+if test "x$cross_compiling" = xyes; then
+  AC_MSG_WARN([cannot generate manual pages while cross compiling])
+else
+  AC_PATH_PROG(HELP2MAN, help2man)
 fi
 
 # Check for functions.
@@ -245,6 +252,10 @@ if test "x$TARGET_CFLAGS" = x; then
     else
       TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
     fi
+
+    # Some toolchains enable these features by default, but they need
+    # registers that aren't set up properly in GRUB.
+    TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
   fi
 
   # By default, GCC 4.4 generates .eh_frame sections containing unwind
@@ -385,6 +396,13 @@ if test x"$sap_possible" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -mno-stack-arg-probe"
 fi
 
+AC_ARG_ENABLE([werror],
+	      [AS_HELP_STRING([--disable-werror],
+                             [do not use -Werror when building GRUB])])
+if test x"$enable_werror" != xno ; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -Werror"
+fi
+
 AC_SUBST(TARGET_CFLAGS)
 AC_SUBST(TARGET_MODULE_FORMAT)
 AC_SUBST(OBJCONV)
@@ -392,6 +410,9 @@ AC_SUBST(TARGET_APPLE_CC)
 AC_SUBST(TARGET_ASFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)
 AC_SUBST(TARGET_LDFLAGS)
+
+# Check for libgcc symbols (must be performed before we add -nostdlib to LDFLAGS)
+AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2)
 
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"
@@ -527,7 +548,7 @@ AC_CHECK_LIB([usb], [usb_claim_interface], [LIBUSB="-lusb"],
     AC_CHECK_HEADERS([usb.h], [],
       [grub_emu_usb_excuse=["need libusb headers"]])
 [fi]
-if test x"enable_grub_emu_usb" = xyes && test x"$grub_emu_usb_excuse" != x ; then
+if test x"$enable_grub_emu_usb" = xyes && test x"$grub_emu_usb_excuse" != x ; then
   AC_MSG_ERROR([USB support for grub-emu was explicitly requested but can't be compiled])
 fi
 if test x"$grub_emu_usb_excuse" = x ; then
@@ -551,11 +572,6 @@ else
 enable_grub_fstest=no
 fi
 AC_SUBST([enable_grub_fstest])
-
-AC_ARG_ENABLE([grub-pe2elf],
-	      [AS_HELP_STRING([--enable-grub-pe2elf],
-                             [build and install the `grub-pe2elf' conversion utility])])
-AC_SUBST([enable_grub_pe2elf])
 
 AC_ARG_ENABLE([grub-mkfont],
 	      [AS_HELP_STRING([--enable-grub-mkfont],
@@ -620,13 +636,6 @@ if [ x"$enable_mm_debug" = xyes ]; then
 echo With memory debugging: Yes
 else
 echo With memory debugging: No
-fi
-if [ x"$enable_grub_pe2elf" = xyes ]; then
-echo grub-pe2elf will be built and installed
-elif [ x$TARGET_OBJ2ELF = xgrub-pe2elf ]; then
-echo grub-pe2elf will be built but not installed
-else
-echo grub-pe2elf will not be built
 fi
 if [ x"$efiemu_excuse" = x ]; then
 echo efiemu runtime: Yes

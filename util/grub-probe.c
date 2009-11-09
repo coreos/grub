@@ -235,6 +235,9 @@ probe (const char *path, char *device_name)
 
   if (print == PRINT_FS)
     {
+      /* FIXME: `path' can't be used to read a file via GRUB facilities,
+         because it's not relative to its root.  */
+#if 0
       struct stat st;
 
       stat (path, &st);
@@ -258,6 +261,8 @@ probe (const char *path, char *device_name)
 	  if (memcmp (filebuf_via_grub, filebuf_via_sys, file->size))
 	    grub_util_error ("files differ");
 	}
+#endif
+
       printf ("%s\n", fs->name);
     }
 

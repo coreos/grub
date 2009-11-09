@@ -97,6 +97,8 @@ pc_partition_map_iterate (grub_disk_t disk,
   struct grub_msdos_partition_mbr mbr;
   struct grub_msdos_partition_disk_label label;
   struct grub_disk raw;
+  int labeln = 0;
+  grub_disk_addr_t lastaddr;
 
   /* Enforce raw disk access.  */
   raw = *disk;
@@ -108,6 +110,10 @@ pc_partition_map_iterate (grub_disk_t disk,
   p.data = &pcdata;
   p.partmap = &grub_msdos_partition_map;
 
+  /* Any value different than `p.offset' will satisfy the check during
+     first loop.  */
+  lastaddr = !p.offset;
+
   while (1)
     {
       int i;
@@ -116,6 +122,18 @@ pc_partition_map_iterate (grub_disk_t disk,
       /* Read the MBR.  */
       if (grub_disk_read (&raw, p.offset, 0, sizeof (mbr), &mbr))
 	goto finish;
+
+      /* This is our loop-detection algorithm. It works the following way:
+	 It saves last position which was a power of two. Then it compares the
+	 saved value with a current one. This way it's guaranteed that the loop
+	 will be broken by at most third walk.
+       */
+      if (labeln && lastaddr == p.offset)
+	return grub_error (GRUB_ERR_BAD_PART_TABLE, "loop detected");
+
+      labeln++;
+      if ((labeln & (labeln - 1)) == 0)
+	lastaddr = p.offset;
 
       /* Check if it is valid.  */
       if (mbr.signature != grub_cpu_to_le16 (GRUB_PC_PARTITION_SIGNATURE))

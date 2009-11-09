@@ -368,8 +368,8 @@ grub_cmd_badram (grub_command_t cmd __attribute__ ((unused)),
 	 iterator++)
       {
 	grub_dprintf ("badram", "%llx (size %llx) is a badram range\n",
-		      (long long) cur, (long long) (1ULL << tail) - 1);
-	grub_mmap_register (cur, (1ULL << tail) - 1, GRUB_MACHINE_MEMORY_HOLE);
+		      (unsigned long long) cur, (1ULL << tail));
+	grub_mmap_register (cur, (1ULL << tail), GRUB_MACHINE_MEMORY_HOLE);
       }
     return 0;
   }

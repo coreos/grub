@@ -97,7 +97,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   size_t kernel_size, boot_size, total_module_size, core_size;
   size_t memdisk_size = 0, config_size = 0;
   char *kernel_path, *boot_path;
-  unsigned num;
   size_t offset;
   struct grub_util_path_list *path_list, *p, *next;
   struct grub_module_info *modinfo;
@@ -153,8 +152,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = grub_cpu_to_le32 (OBJ_TYPE_ELF);
-      header->size = grub_cpu_to_le32 (mod_size + sizeof (*header));
+      header->type = OBJ_TYPE_ELF;
+      header->size = grub_host_to_target32 (mod_size + sizeof (*header));
       offset += sizeof (*header);
 
       grub_util_load_image (p->name, kernel_img + offset);
@@ -167,8 +166,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = grub_cpu_to_le32 (OBJ_TYPE_MEMDISK);
-      header->size = grub_cpu_to_le32 (memdisk_size + sizeof (*header));
+      header->type = OBJ_TYPE_MEMDISK;
+      header->size = grub_host_to_target32 (memdisk_size + sizeof (*header));
       offset += sizeof (*header);
 
       grub_util_load_image (memdisk_path, kernel_img + offset);
@@ -181,8 +180,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = grub_cpu_to_le32 (OBJ_TYPE_CONFIG);
-      header->size = grub_cpu_to_le32 (config_size + sizeof (*header));
+      header->type = OBJ_TYPE_CONFIG;
+      header->size = grub_host_to_target32 (config_size + sizeof (*header));
       offset += sizeof (*header);
 
       grub_util_load_image (config_path, kernel_img + offset);
@@ -196,30 +195,30 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
   grub_util_info ("the core size is 0x%x", core_size);
 
-  num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
-  if (num > 0xffff)
-    grub_util_error ("the core image is too big");
-
 #if defined(GRUB_MACHINE_PCBIOS)
-
-  boot_path = grub_util_get_path (dir, "diskboot.img");
-  boot_size = grub_util_get_image_size (boot_path);
-  if (boot_size != GRUB_DISK_SECTOR_SIZE)
-    grub_util_error ("diskboot.img is not one sector size");
-
-  boot_img = grub_util_read_image (boot_path);
-
-  /* i386 is a little endian architecture.  */
-  *((grub_uint16_t *) (boot_img + GRUB_DISK_SECTOR_SIZE
-		       - GRUB_BOOT_MACHINE_LIST_SIZE + 8))
-    = grub_cpu_to_le16 (num);
-
-  grub_util_write_image (boot_img, boot_size, out);
-  free (boot_img);
-  free (boot_path);
-
+  {
+    unsigned num;
+    num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
+    if (num > 0xffff)
+      grub_util_error ("the core image is too big");
+    
+    boot_path = grub_util_get_path (dir, "diskboot.img");
+    boot_size = grub_util_get_image_size (boot_path);
+    if (boot_size != GRUB_DISK_SECTOR_SIZE)
+      grub_util_error ("diskboot.img is not one sector size");
+    
+    boot_img = grub_util_read_image (boot_path);
+    
+    /* i386 is a little endian architecture.  */
+    *((grub_uint16_t *) (boot_img + GRUB_DISK_SECTOR_SIZE
+			 - GRUB_BOOT_MACHINE_LIST_SIZE + 8))
+      = grub_cpu_to_le16 (num);
+    
+    grub_util_write_image (boot_img, boot_size, out);
+    free (boot_img);
+    free (boot_path);
+  }
 #elif defined(GRUB_MACHINE_QEMU)
-
   {
     char *rom_img;
     size_t rom_size;

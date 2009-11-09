@@ -32,12 +32,12 @@ static int grub_more;
 static int cursor_state = 1;
 
 struct grub_handler_class grub_term_input_class =
-      {
+  {
     .name = "terminal_input"
   };
 
 struct grub_handler_class grub_term_output_class =
-      {
+  {
     .name = "terminal_output"
   };
 

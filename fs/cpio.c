@@ -352,9 +352,9 @@ static struct grub_fs grub_cpio_fs = {
 };
 
 #ifdef MODE_USTAR
-GRUB_MOD_INIT (cpio)
-#else
 GRUB_MOD_INIT (tar)
+#else
+GRUB_MOD_INIT (cpio)
 #endif
 {
   grub_fs_register (&grub_cpio_fs);
@@ -362,9 +362,9 @@ GRUB_MOD_INIT (tar)
 }
 
 #ifdef MODE_USTAR
-GRUB_MOD_FINI (cpio)
-#else
 GRUB_MOD_FINI (tar)
+#else
+GRUB_MOD_FINI (cpio)
 #endif
 {
   grub_fs_unregister (&grub_cpio_fs);

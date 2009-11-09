@@ -61,7 +61,7 @@ static grub_usb_device_t usbdev;
 /* Valid values for bmRequestType.  See HID definition version 1.11 section
    7.2.  */
 #define USB_HID_HOST_TO_DEVICE	0x21
-#define USB_HID_DEVICE_TO_HOST	0x61
+#define USB_HID_DEVICE_TO_HOST	0xA1
 
 /* Valid values for bRequest.  See HID definition version 1.11 section 7.2. */
 #define USB_HID_GET_REPORT	0x01

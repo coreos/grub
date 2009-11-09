@@ -232,7 +232,8 @@ if test "x${grub_cfg}" != "x"; then
 
   # Allow this to fail, since /boot/grub/ might need to be fatfs to support some
   # firmware implementations (e.g. OFW or EFI).
-  chmod 444 ${grub_cfg}.new || true
+  chmod 400 ${grub_cfg}.new || grub_warn "Could not make ${grub_cfg}.new readable by only root.\
+  This means that if the generated config contains a password it is readable by everyone"
 fi
 echo "Generating grub.cfg ..." >&2
 

@@ -1,4 +1,4 @@
-/* biosdisk.c - emulate biosdisk */
+/* hostdisk.c - emulate biosdisk */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002,2003,2004,2006,2007,2008,2009  Free Software Foundation, Inc.
@@ -1057,7 +1057,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	n = strtol (p, &q, 10);
 	if (p != q && n != GRUB_LONG_MIN && n != GRUB_LONG_MAX)
 	  {
-	    dos_part = (int) n;
+	    dos_part = (int) n - 1;
 
 	    if (*q >= 'a' && *q <= 'g')
 	      bsd_part = *q - 'a';
