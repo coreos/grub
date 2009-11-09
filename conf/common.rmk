@@ -618,3 +618,5 @@ pkglib_MODULES += setjmp.mod
 setjmp_mod_SOURCES = lib/$(target_cpu)/setjmp.S
 setjmp_mod_ASFLAGS = $(COMMON_ASFLAGS)
 setjmp_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+include $(srcdir)/conf/gcry.mk

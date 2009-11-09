@@ -1,0 +1,52 @@
+# -*- makefile -*-
+
+pkglib_MODULES += seed.mod
+seed_mod_SOURCES = gcry/cipher/seed.c
+seed_mod_ASFLAGS = $(COMMON_ASFLAGS)
+seed_mod_LDFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += twofish.mod
+twofish_mod_SOURCES = gcry/cipher/twofish.c
+twofish_mod_ASFLAGS = $(COMMON_ASFLAGS)
+twofish_mod_LDFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += des.mod
+des_mod_SOURCES = gcry/cipher/des.c
+des_mod_ASFLAGS = $(COMMON_ASFLAGS)
+des_mod_LDFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += arcfour.mod
+arcfour_mod_SOURCES = gcry/cipher/arcfour.c
+arcfour_mod_ASFLAGS = $(COMMON_ASFLAGS)
+arcfour_mod_LDFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += rfc2268.mod
+rfc2268_mod_SOURCES = gcry/cipher/rfc2268.c
+rfc2268_mod_ASFLAGS = $(COMMON_ASFLAGS)
+rfc2268_mod_LDFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += cast5.mod
+cast5_mod_SOURCES = gcry/cipher/cast5.c
+cast5_mod_ASFLAGS = $(COMMON_ASFLAGS)
+cast5_mod_LDFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += camellia-glue.mod
+camellia-glue_mod_SOURCES = gcry/cipher/camellia-glue.c
+camellia-glue_mod_ASFLAGS = $(COMMON_ASFLAGS)
+camellia-glue_mod_LDFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += rijndael.mod
+rijndael_mod_SOURCES = gcry/cipher/rijndael.c
+rijndael_mod_ASFLAGS = $(COMMON_ASFLAGS)
+rijndael_mod_LDFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += serpent.mod
+serpent_mod_SOURCES = gcry/cipher/serpent.c
+serpent_mod_ASFLAGS = $(COMMON_ASFLAGS)
+serpent_mod_LDFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += blowfish.mod
+blowfish_mod_SOURCES = gcry/cipher/blowfish.c
+blowfish_mod_ASFLAGS = $(COMMON_ASFLAGS)
+blowfish_mod_LDFLAGS = $(COMMON_ASFLAGS)
+
