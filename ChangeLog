@@ -1,5 +1,18 @@
 2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
 
+	Import from Gnulib.
+
+	* gnulib/fnmatch.c: New file.
+	* gnulib/fnmatch.h: Likewise.
+	* gnulib/fnmatch_loop.c: Likewise.
+	* gnulib/getopt.c: Likewise.
+	* gnulib/getopt.h: Likewise.
+	* gnulib/getopt1.c: Likewise.
+	* gnulib/getopt_int.h: Likewise.
+	* gnulib/gettext.h: Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* normal/dyncmd.c (read_command_list): Replace `0' with `NULL'.
 	* normal/handler.c (read_handler_list): Likewise.
 
