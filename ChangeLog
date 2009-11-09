@@ -1,5 +1,10 @@
 2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* normal/dyncmd.c (read_command_list): Replace `0' with `NULL'.
+	* normal/handler.c (read_handler_list): Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Misc cleanup.
 
 	* kern/command.c (grub_register_command_prio): Use
