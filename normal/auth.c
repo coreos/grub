@@ -22,6 +22,7 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/normal.h>
+#include <grub/time.h>
 
 struct grub_auth_user
 {
@@ -42,7 +43,7 @@ grub_auth_strcmp (const char *s1, const char *s2)
   grub_uint64_t end;
 
   end = grub_get_time_ms () + 100;
-  ret = strcmp (s1, s2);
+  ret = grub_strcmp (s1, s2);
 
   /* This prevents an attacker from deriving information about the
      password from the time it took to execute this function.  */
