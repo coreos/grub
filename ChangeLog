@@ -1,5 +1,11 @@
 2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/grub/list.h (struct grub_named_list): Remove `const'
+	qualifier from `name'.
+	(struct grub_prio_list): Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* normal/auth.c: Include `<grub/time.h>'.
 	(grub_auth_strcmp): Replace `strcmp' with `grub_strcmp'.
 
