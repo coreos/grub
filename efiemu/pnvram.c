@@ -109,6 +109,8 @@ nvram_set (void * data __attribute__ ((unused)))
     char *guid, *attr, *name, *varname;
     struct efi_variable *efivar;
     int len = 0;
+    int i;
+    grub_uint64_t guidcomp;
 
     if (grub_memcmp (var->name, "EfiEmu.pnvram.",
 		     sizeof ("EfiEmu.pnvram.") - 1) != 0)
@@ -152,8 +154,9 @@ nvram_set (void * data __attribute__ ((unused)))
       return 0;
     guid++;
 
-    *(grub_uint64_t *) &(efivar->guid.data4)
-      = grub_cpu_to_be64 (grub_strtoull (guid, 0, 16));
+    guidcomp = grub_strtoull (guid, 0, 16);
+    for (i = 0; i < 8; i++)
+      efivar->guid.data4[i] = (guidcomp >> (56 - 8 * i)) & 0xff;
 
     efivar->attributes = grub_strtoull (attr, 0, 16);
 
