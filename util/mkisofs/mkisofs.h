@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <prototyp.h>
+#include <sys/stat.h>
 
 /* This symbol is used to indicate that we do not have things like
    symlinks, devices, and so forth available.  Just files and dirs */
@@ -47,6 +48,38 @@
 #ifdef _WIN32
 #define NON_UNIXFS
 #endif /* _WIN32 */
+
+#ifndef S_IROTH
+#define S_IROTH 0
+#endif
+
+#ifndef S_IRGRP
+#define S_IRGRP 0
+#endif
+
+#ifndef HAVE_GETUID
+static inline int
+getuid ()
+{
+  return 0;
+}
+#endif
+
+#ifndef HAVE_GETGID
+static inline int
+getgid ()
+{
+  return 0;
+}
+#endif
+
+#ifndef HAVE_LSTAT
+static inline int
+lstat (const char *filename, struct stat *buf)
+{
+  return stat (filename, buf);
+}
+#endif
 
 #include <string.h>
 #include <sys/types.h>

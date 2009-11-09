@@ -1,5 +1,29 @@
 2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/mkisofs/fnmatch.c: Remove.
+	* util/mkisofs/getopt1.c: Likewise.
+	* util/mkisofs/getopt.c: Likewise.
+	* conf/common.rmk (grub_mkisofs_SOURCES): Replace
+	`util/mkisofs/fnmatch.c', `util/mkisofs/getopt1.c' and
+	`util/mkisofs/getopt.c' with `gnulib/fnmatch.c',
+	`gnulib/getopt1.c' and `gnulib/getopt.c'.
+	(grub_mkisofs_CFLAGS): Add `-I$(srcdir)/gnulib'.
+
+	* configure.ac: Detect `mingw32msvc' host_os.
+	Check for lstat(), getuid() and getgid().
+
+	* util/mkisofs/joliet.c: Include `<stdint.h>'.  Replace all
+	instances of `u_char' with `uint8_t'.
+
+	* util/mkisofs/mkisofs.h: Include `<sys/stat.h>'.
+	[!HAVE_GETUID] (getuid): New function (stub).
+	[!HAVE_GETGID] (getgid): Likewise.
+	[!HAVE_LSTAT] (lstat): Likewise.
+	[!S_IROTH] (S_IROTH): New macro (dummy).
+	[!S_IRGRP] (S_IRGRP): Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* gnulib/fnmatch_loop.c (EXT): Fix warning (signed and unsigned type in
 	conditional expression).
 
