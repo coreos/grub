@@ -102,6 +102,7 @@ grub_err_t grub_xnu_scan_dir_for_kexts (char *dirname, char *osbundlerequired,
 grub_err_t grub_xnu_load_kext_from_dir (char *dirname, char *osbundlerequired,
 					int maxrecursion);
 void *grub_xnu_heap_malloc (int size);
+grub_err_t grub_xnu_fill_devicetree (void);
 extern grub_uint32_t grub_xnu_heap_real_start;
 extern grub_size_t grub_xnu_heap_size;
 extern char *grub_xnu_heap_start;

@@ -94,10 +94,8 @@ grub_normal_print_device_info (const char *name)
 	      grub_errno = GRUB_ERR_NONE;
 	    }
 	}
-      else if (! dev->disk->has_partitions || dev->disk->partition)
-	grub_printf ("Unknown filesystem");
       else
-	grub_printf ("Partition table");
+	grub_printf ("Unknown filesystem");
 
       grub_device_close (dev);
     }

@@ -31,6 +31,7 @@
 #include <grub/gzio.h>
 #include <grub/command.h>
 #include <grub/misc.h>
+#include <grub/env.h>
 
 struct grub_xnu_devtree_key *grub_xnu_devtree_root = 0;
 static int driverspackagenum = 0;
@@ -334,6 +335,8 @@ grub_xnu_create_value (struct grub_xnu_devtree_key **parent, char *name)
 static grub_err_t
 grub_xnu_unload (void)
 {
+  grub_cpu_xnu_unload ();
+
   grub_xnu_free_devtree (grub_xnu_devtree_root);
   grub_xnu_devtree_root = 0;
 
@@ -437,10 +440,6 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
   if (ptr != grub_xnu_cmdline)
     *(ptr - 1) = 0;
 
-  err = grub_cpu_xnu_fill_devicetree ();
-  if (err)
-    return err;
-
   grub_loader_set (grub_xnu_boot, grub_xnu_unload, 0);
 
   grub_xnu_lock ();
@@ -541,10 +540,6 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
   /* Replace last space by '\0'. */
   if (ptr != grub_xnu_cmdline)
     *(ptr - 1) = 0;
-
-  err = grub_cpu_xnu_fill_devicetree ();
-  if (err)
-    return err;
 
   grub_loader_set (grub_xnu_boot, grub_xnu_unload, 0);
 
@@ -907,135 +902,6 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
   return grub_xnu_register_memory ("RAMDisk", 0, loadto, size);
 }
 
-/* Parse a devtree file. It uses the following format:
-   valuename:valuedata;
-   keyname{
-     contents
-   }
-   keyname, valuename and valuedata are in hex.
- */
-static char *
-grub_xnu_parse_devtree (struct grub_xnu_devtree_key **parent,
-			char *start, char *end)
-{
-  char *ptr, *ptr2;
-  char *name, *data;
-  int namelen, datalen, i;
-  for (ptr = start; ptr && ptr < end; )
-    {
-      if (grub_isspace (*ptr))
-	{
-	  ptr++;
-	  continue;
-	}
-      if (*ptr == '}')
-	return ptr + 1;
-      namelen = 0;
-
-      /* Parse the name. */
-      for (ptr2 = ptr; ptr2 < end && (grub_isspace (*ptr2)
-				      || (*ptr2 >= '0' && *ptr2 <= '9')
-				      || (*ptr2 >= 'a' && *ptr2 <= 'f')
-				      || (*ptr2 >= 'A' && *ptr2 <= 'F'));
-	   ptr2++)
-	if (! grub_isspace (*ptr2))
-	  namelen++;
-      if (ptr2 == end)
-	return 0;
-      namelen /= 2;
-      name = grub_malloc (namelen + 1);
-      if (!name)
-	return 0;
-      for (i = 0; i < 2 * namelen; i++)
-	{
-	  int hex = 0;
-	  while (grub_isspace (*ptr))
-	    ptr++;
-	  if (*ptr >= '0' && *ptr <= '9')
-	    hex = *ptr - '0';
-	  if (*ptr >= 'a' && *ptr <= 'f')
-	    hex = *ptr - 'a' + 10;
-	  if (*ptr >= 'A' && *ptr <= 'F')
-	    hex = *ptr - 'A' + 10;
-
-	  if (i % 2 == 0)
-	    name[i / 2] = hex << 4;
-	  else
-	    name[i / 2] |= hex;
-	  ptr++;
-	}
-      name [namelen] = 0;
-      while (grub_isspace (*ptr))
-	ptr++;
-
-      /* If it describes a key recursively invoke the function. */
-      if (*ptr == '{')
-	{
-	  struct grub_xnu_devtree_key *newkey
-	    = grub_xnu_create_key (parent, name);
-	  grub_free (name);
-	  if (! newkey)
-	    return 0;
-	  ptr = grub_xnu_parse_devtree (&(newkey->first_child), ptr + 1, end);
-	  continue;
-	}
-
-      /* Parse the data. */
-      if (*ptr != ':')
-	return 0;
-      ptr++;
-      datalen = 0;
-      for (ptr2 = ptr; ptr2 < end && (grub_isspace (*ptr2)
-				      || (*ptr2 >= '0' && *ptr2 <= '9')
-				      || (*ptr2 >= 'a' && *ptr2 <= 'f')
-				      || (*ptr2 >= 'A' && *ptr2 <= 'F'));
-	   ptr2++)
-	if (! grub_isspace (*ptr2))
-	  datalen++;
-      if (ptr2 == end)
-	return 0;
-      datalen /= 2;
-      data = grub_malloc (datalen);
-      if (! data)
-	return 0;
-      for (i = 0; i < 2 * datalen; i++)
-	{
-	  int hex = 0;
-	  while (grub_isspace (*ptr))
-	    ptr++;
-	  if (*ptr >= '0' && *ptr <= '9')
-	    hex = *ptr - '0';
-	  if (*ptr >= 'a' && *ptr <= 'f')
-	    hex = *ptr - 'a' + 10;
-	  if (*ptr >= 'A' && *ptr <= 'F')
-	    hex = *ptr - 'A' + 10;
-
-	  if (i % 2 == 0)
-	    data[i / 2] = hex << 4;
-	  else
-	    data[i / 2] |= hex;
-	  ptr++;
-	}
-      while (ptr < end && grub_isspace (*ptr))
-	ptr++;
-      {
-	struct grub_xnu_devtree_key *newkey
-	  = grub_xnu_create_value (parent, name);
-	grub_free (name);
-	if (! newkey)
-	  return 0;
-	newkey->datasize = datalen;
-	newkey->data = data;
-      }
-      if (*ptr != ';')
-	return 0;
-      ptr++;
-    }
-  if (ptr >= end && *parent != grub_xnu_devtree_root)
-    return 0;
-  return ptr;
-}
-
 /* Returns true if the kext should be loaded according to plist
    and osbundlereq. Also fill BINNAME. */
 static int
@@ -1332,53 +1198,6 @@ grub_xnu_load_kext_from_dir (char *dirname, char *osbundlerequired,
   return GRUB_ERR_NONE;
 }
 
-/* Load devtree file. */
-static grub_err_t
-grub_cmd_xnu_devtree (grub_command_t cmd __attribute__ ((unused)),
-		      int argc, char *args[])
-{
-  grub_file_t file;
-  char *data, *endret;
-  grub_size_t datalen;
-
-  if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Filename required");
-
-  if (! grub_xnu_heap_size)
-    return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
-
-  /* Load the file. */
-  file = grub_gzfile_open (args[0], 1);
-  if (! file)
-    return grub_error (GRUB_ERR_FILE_NOT_FOUND, "Couldn't load device tree");
-  datalen = grub_file_size (file);
-  data = grub_malloc (datalen + 1);
-  if (! data)
-    {
-      grub_file_close (file);
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			 "Could load device tree into memory");
-    }
-  if (grub_file_read (file, data, datalen) != (grub_ssize_t) datalen)
-    {
-      grub_file_close (file);
-      grub_free (data);
-      grub_error_push ();
-      return grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s", args[0]);
-    }
-  grub_file_close (file);
-  data[datalen] = 0;
-
-  /* Parse the file. */
-  endret = grub_xnu_parse_devtree (&grub_xnu_devtree_root,
-				   data, data + datalen);
-  grub_free (data);
-
-  if (! endret)
-    return grub_error (GRUB_ERR_BAD_OS, "Couldn't parse devtree");
-
-  return GRUB_ERR_NONE;
-}
 
 static int locked=0;
 static grub_dl_t my_mod;
@@ -1439,6 +1258,107 @@ grub_cmd_xnu_kextdir (grub_command_t cmd __attribute__ ((unused)),
     }
 }
 
+static inline int
+hextoval (char c)
+{
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  if (c >= 'a' && c <= 'z')
+    return c - 'a' + 10;
+  if (c >= 'A' && c <= 'Z')
+    return c - 'A' + 10;
+  return 0;
+}
+
+static inline void
+unescape (char *name, char *curdot, char *nextdot, int *len)
+{
+  char *ptr, *dptr;
+  dptr = name;
+  for (ptr = curdot; ptr < nextdot;)
+    if (ptr + 2 < nextdot && *ptr == '%')
+      {
+	*dptr = (hextoval (ptr[1]) << 4) | (hextoval (ptr[2]));
+	ptr += 3;
+	dptr++;
+      }
+    else
+      {
+	*dptr = *ptr;
+	ptr++;
+	dptr++;
+      }
+  *len = dptr - name;
+}
+
+grub_err_t
+grub_xnu_fill_devicetree (void)
+{
+  auto int iterate_env (struct grub_env_var *var);
+  int iterate_env (struct grub_env_var *var)
+  {
+    char *nextdot = 0, *curdot;
+    struct grub_xnu_devtree_key **curkey = &grub_xnu_devtree_root;
+    struct grub_xnu_devtree_key *curvalue;
+    char *name = 0, *data;
+    int len;
+
+    if (grub_memcmp (var->name, "XNU.DeviceTree.",
+		     sizeof ("XNU.DeviceTree.") - 1) != 0)
+      return 0;
+
+    curdot = var->name + sizeof ("XNU.DeviceTree.") - 1;
+    nextdot = grub_strchr (curdot, '.');
+    if (nextdot)
+      nextdot++;
+    while (nextdot)
+      {
+	name = grub_realloc (name, nextdot - curdot + 1);
+
+	if (!name)
+	  return 1;
+
+	unescape (name, curdot, nextdot, &len);
+	name[len - 1] = 0;
+
+	curkey = &(grub_xnu_create_key (curkey, name)->first_child);
+
+	curdot = nextdot;
+	nextdot = grub_strchr (nextdot, '.');
+	if (nextdot)
+	  nextdot++;
+      }
+
+    nextdot = curdot + grub_strlen (curdot) + 1;
+
+    name = grub_realloc (name, nextdot - curdot + 1);
+    
+    if (!name)
+      return 1;
+    
+    unescape (name, curdot, nextdot, &len);
+    name[len] = 0;
+
+    curvalue = grub_xnu_create_value (curkey, name);
+    grub_free (name);
+    
+    data = grub_malloc (grub_strlen (var->value) + 1);
+    if (!data)
+      return 1;
+    
+    unescape (data, var->value, var->value + grub_strlen (var->value),
+	      &len);
+    curvalue->datasize = len;
+    curvalue->data = data;
+
+    return 0;
+  }
+
+  grub_env_iterate (iterate_env);
+
+  return grub_errno;
+}
+
 struct grub_video_bitmap *grub_xnu_bitmap = 0;
 
 static grub_err_t
@@ -1485,8 +1405,7 @@ grub_xnu_unlock ()
 }
 
 static grub_command_t cmd_kernel64, cmd_kernel, cmd_mkext, cmd_kext;
-static grub_command_t cmd_kextdir, cmd_ramdisk, cmd_devtree, cmd_resume;
-static grub_command_t cmd_splash;
+static grub_command_t cmd_kextdir, cmd_ramdisk, cmd_resume, cmd_splash;
 
 GRUB_MOD_INIT(xnu)
 {
@@ -1504,8 +1423,6 @@ GRUB_MOD_INIT(xnu)
   cmd_ramdisk = grub_register_command ("xnu_ramdisk", grub_cmd_xnu_ramdisk, 0,
 				       "Load XNU ramdisk. "
 				       "It will be seen as md0");
-  cmd_devtree = grub_register_command ("xnu_devtree", grub_cmd_xnu_devtree, 0,
-				       "Load XNU devtree");
   cmd_splash = grub_register_command ("xnu_splash", grub_cmd_xnu_splash, 0,
 				      "Load a splash image for XNU");
 
@@ -1513,7 +1430,10 @@ GRUB_MOD_INIT(xnu)
   cmd_resume = grub_register_command ("xnu_resume", grub_cmd_xnu_resume,
 				      0, "Load XNU hibernate image.");
 #endif
-  my_mod=mod;
+
+  grub_cpu_xnu_init ();
+
+  my_mod = mod;
 }
 
 GRUB_MOD_FINI(xnu)
@@ -1524,9 +1444,10 @@ GRUB_MOD_FINI(xnu)
   grub_unregister_command (cmd_mkext);
   grub_unregister_command (cmd_kext);
   grub_unregister_command (cmd_kextdir);
-  grub_unregister_command (cmd_devtree);
   grub_unregister_command (cmd_ramdisk);
   grub_unregister_command (cmd_kernel);
   grub_unregister_command (cmd_kernel64);
   grub_unregister_command (cmd_splash);
+
+  grub_cpu_xnu_fini ();
 }
