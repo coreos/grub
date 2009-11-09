@@ -182,7 +182,7 @@ read_handler_list (void)
 	  if (file)
 	    {
 	      char *buf = 0;
-	      for (;; grub_free(buf))
+	      for (;; grub_free (buf))
 		{
 		  char *p;
 

@@ -1,5 +1,20 @@
 2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
 
+	Misc cleanup.
+
+	* kern/command.c (grub_register_command_prio): Use
+	grub_zalloc() instead of explicitly zeroing data.
+	* kern/list.c: Include `<grub/mm.h>'.
+	(grub_named_list_find): Replace `0' with `NULL'.
+	* normal/autofs.c (struct grub_fs_module_list): Remove ad-hoc type.
+	(fs_module_list): Change type to `grub_named_list_t'.  Update all
+	users.
+	* normal/dyncmd.c (read_command_list): Add space between function
+	call and parenthesis.
+	* normal/handler.c (read_handler_list): Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* normal/auth.c (punishment_delay): Moved from here ...
 	(grub_auth_strcmp): ... to here (inside function).
 
