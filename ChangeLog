@@ -1,5 +1,12 @@
 2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* normal/auth.c (punishment_delay): New variable.
+	(grub_auth_strcmp): Rewrite using grub_get_time_ms ().
+	(grub_auth_check_authentication): Punish failed login attempts with
+	an incremental (2^N) delay.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* conf/common.rmk (grub_mkisofs_CFLAGS): Prefix include
 	path with $(srcdir).
 

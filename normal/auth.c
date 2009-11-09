@@ -33,26 +33,22 @@ struct grub_auth_user
 };
 
 struct grub_auth_user *users = NULL;
+static unsigned long punishment_delay = 1;
 
 int
-grub_auth_strcmp (const char *user_input, const char *template)
+grub_auth_strcmp (const char *s1, const char *s2)
 {
-  int ok = 1;
-  const char *ptr1, *ptr2;
+  int ret;
+  grub_uint64_t end;
 
-  if (template == NULL)
-    ok = 0;
+  end = grub_get_time_ms () + 100;
+  ret = strcmp (s1, s2);
 
-  for (ptr1 = user_input, ptr2 = template; *ptr1; ptr1++)
-    if (*ptr1 == (ptr2 ? *ptr2 : ptr1[1]) && ok)
-      ptr2++;
-    else
-      ok = 0;
+  /* This prevents an attacker from deriving information about the
+     password from the time it took to execute this function.  */
+  while (grub_get_time_ms () < end);
 
-  if (ptr2 == NULL || *ptr2 != 0)
-    ok = 0;
-
-  return !ok;
+  return ret;
 }
 
 static int
@@ -235,11 +231,14 @@ grub_auth_check_authentication (const char *userlist)
   grub_memset (login, 0, sizeof (login));
 
   if (is_authenticated (userlist))
-    return GRUB_ERR_NONE;
+    {
+      punishment_delay = 1;
+      return GRUB_ERR_NONE;
+    }
 
   if (!grub_cmdline_get ("Enter username: ", login, sizeof (login) - 1,
 			 0, 0, 0))
-    return GRUB_ACCESS_DENIED;
+    goto access_denied;
 
   grub_list_iterate (GRUB_AS_LIST (users), hook);
 
@@ -249,15 +248,25 @@ grub_auth_check_authentication (const char *userlist)
 
       /* No users present at all.  */
       if (!cur)
-	return GRUB_ACCESS_DENIED;
+	goto access_denied;
 
       /* Display any of available authentication schemes.  */
       err = cur->callback (login, 0);
 
-      return GRUB_ACCESS_DENIED;
+      goto access_denied;
     }
   err = cur->callback (login, cur->arg);
   if (is_authenticated (userlist))
-    return GRUB_ERR_NONE;
+    {
+      punishment_delay = 1;
+      return GRUB_ERR_NONE;
+    }
+
+ access_denied:
+  grub_sleep (punishment_delay);
+
+  if (punishment_delay < GRUB_ULONG_MAX / 2)
+    punishment_delay *= 2;
+
   return GRUB_ACCESS_DENIED;
 }
