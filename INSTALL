@@ -16,8 +16,12 @@ configuring the GRUB.
 * GNU Bison 2.3 or later
 * GNU binutils 2.9.1.0.23 or later
 * Other standard GNU/Unix tools
+
+If you use a development snapshot or want to hack on GRUB you may
+need the following.
+
 * Ruby 1.6 or later
-* Autoconf 2.59 or later
+* Autoconf 2.59d or later
 
 Configuring the GRUB
 ====================
@@ -48,11 +52,12 @@ Building the GRUB
 
 The simplest way to compile this package is:
 
-  1. `cd' to the directory containing the package's source code and
-     type `./autogen.sh' and then `./configure' to configure the
-     package for your system.  If you're using `csh' on an old version
-     of System V, you might need to type `sh ./configure' instead to
-     prevent `csh' from trying to execute `configure' itself.
+  1. `cd' to the directory containing the package's source code.  If
+     you don't use a release tarball you have to type `./autogen.sh'.
+     Type `./configure' to configure the package for your system.
+     If you're using `csh' on an old version of System V, you might
+     need to type `sh ./configure' instead to prevent `csh' from trying
+     to execute `configure' itself.
 
      Running `configure' takes awhile.  While running, it prints some
      messages telling which features it is checking for.

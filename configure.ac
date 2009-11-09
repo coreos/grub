@@ -32,7 +32,7 @@ dnl type.
 
 
 AC_INIT([GRUB],[1.97],[bug-grub@gnu.org])
-AC_PREREQ(2.59)
+AC_PREREQ(2.59d)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
 
@@ -194,6 +194,13 @@ fi
 
 # Check for functions.
 AC_CHECK_FUNCS(posix_memalign memalign asprintf)
+
+# For grub-mkisofs
+AC_HEADER_MAJOR
+AC_HEADER_DIRENT
+AC_CHECK_FUNCS(memmove sbrk strdup)
+AC_CHECK_HEADERS(sys/mkdev.h sys/sysmacros.h malloc.h termios.h sys/types.h)
+AC_CHECK_HEADERS(unistd.h string.h strings.h sys/stat.h sys/fcntl.h)
 
 #
 # Check for target programs.

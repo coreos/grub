@@ -1,3 +1,147 @@
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Import from Gnulib.
+
+	* gnulib/fnmatch.c: New file.
+	* gnulib/fnmatch.h: Likewise.
+	* gnulib/fnmatch_loop.c: Likewise.
+	* gnulib/getopt.c: Likewise.
+	* gnulib/getopt.h: Likewise.
+	* gnulib/getopt1.c: Likewise.
+	* gnulib/getopt_int.h: Likewise.
+	* gnulib/gettext.h: Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/dyncmd.c (read_command_list): Replace `0' with `NULL'.
+	* normal/handler.c (read_handler_list): Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Misc cleanup.
+
+	* kern/command.c (grub_register_command_prio): Use
+	grub_zalloc() instead of explicitly zeroing data.
+	* kern/list.c: Include `<grub/mm.h>'.
+	(grub_named_list_find): Replace `0' with `NULL'.
+	* normal/autofs.c (struct grub_fs_module_list): Remove ad-hoc type.
+	(fs_module_list): Change type to `grub_named_list_t'.  Update all
+	users.
+	* normal/dyncmd.c (read_command_list): Add space between function
+	call and parenthesis.
+	* normal/handler.c (read_handler_list): Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/auth.c (punishment_delay): Moved from here ...
+	(grub_auth_strcmp): ... to here (inside function).
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/list.h (struct grub_named_list): Remove `const'
+	qualifier from `name'.
+	(struct grub_prio_list): Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/auth.c: Include `<grub/time.h>'.
+	(grub_auth_strcmp): Replace `strcmp' with `grub_strcmp'.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/auth.c (punishment_delay): New variable.
+	(grub_auth_strcmp): Rewrite using grub_get_time_ms ().
+	(grub_auth_check_authentication): Punish failed login attempts with
+	an incremental (2^N) delay.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (grub_mkisofs_CFLAGS): Prefix include
+	path with $(srcdir).
+
+2009-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/auth.c (grub_auth_strcmp): Fixed incorrect variable usage.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/coreboot/grub-mkrescue.in: New file.
+	* conf/i386-coreboot.rmk (bin_SCRIPTS, grub_mkrescue_SOURCES): New
+	variables.
+
+	* conf/common.rmk (bin_UTILITIES): Add `grub-mkisofs'.
+	(grub_mkisofs_SOURCES, grub_mkisofs_CFLAGS): New variables.
+	* configure.ac: Add header and function checks to satisfy grub-mkisofs
+	requirements.
+	* util/mkisofs/defaults.h: New file.
+	* util/mkisofs/eltorito.c: Likewise.
+	* util/mkisofs/exclude.h: Likewise.
+	* util/mkisofs/fnmatch.c: Likewise.
+	* util/mkisofs/getopt.c: Likewise.
+	* util/mkisofs/getopt1.c: Likewise.
+	* util/mkisofs/hash.c: Likewise.
+	* util/mkisofs/include/fctldefs.h: Likewise.
+	* util/mkisofs/include/mconfig.h: Likewise.
+	* util/mkisofs/include/prototyp.h: Likewise.
+	* util/mkisofs/include/statdefs.h: Likewise.
+	* util/mkisofs/iso9660.h: Likewise.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/match.c: Likewise.
+	* util/mkisofs/match.h: Likewise.
+	* util/mkisofs/mkisofs.c: Likewise.
+	* util/mkisofs/mkisofs.h: Likewise.
+	* util/mkisofs/multi.c: Likewise.
+	* util/mkisofs/name.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+
+2009-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/auth.c (grub_auth_strcmp): Fix bug which resulted in function
+	being insecure.
+
+2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-mkrescue.in: Fix miss-identification as
+	`grub-mkimage' (and use $0 when possible).
+
+2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* kern/i386/multiboot_mmap.c (grub_machine_mmap_init): Improve
+	error message for excessively large memory map.
+
+2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* autogen.sh: Use `sh gendistlist.sh' to avoid reliing on
+	executable bit.
+
+2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* kern/i386/multiboot_mmap.c (grub_machine_mmap_init): Improve error
+	message for coreboot users.
+
+2009-11-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build with GNU gold.
+
+	* conf/i386-pc.rmk (boot_img_LDFLAGS, pxeboot_img_LDFLAGS)
+	(diskboot_img_LDFLAGS, lnxboot_img_LDFLAGS)
+	(cdboot_img_LDFLAGS): Prepend `0x' qualifier to hexadecimal
+	link addresses.
+	* aclocal.m4: Likewise.
+
+2009-11-04  Felix Zielcke  <fzielcke@z-51.de>
+
+	* configure.ac (AC_PREREQ): Bump to 2.59d.
+	* INSTALL: Make it more clear when Autoconf and Ruby are
+	needed and when to run `./autogen.sh'.
+
+2009-11-03  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/grub.d/30_os-prober.in: Restore default behavior for unsupported
+	OSes.
+
 2009-11-02  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* util/grub.d/30_os-prober.in: Add GNU/Hurd support

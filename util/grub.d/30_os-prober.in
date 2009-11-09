@@ -158,7 +158,7 @@ EOF
 }
 EOF
     ;;
-    hurd|*)
+    hurd)
       cat << EOF
 menuentry "${LONGNAME} (on ${DEVICE})" {
 EOF
@@ -181,6 +181,9 @@ EOF
 	module /lib/ld.so.1 exec /hurd/exec '\$(exec-task=task-create)'
 }
 EOF
+    ;;
+    *)
+      echo "  ${LONGNAME} is not yet supported by grub-mkconfig." >&2
     ;;
   esac
 done

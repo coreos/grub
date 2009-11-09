@@ -1,7 +1,7 @@
 #! /bin/sh -e
 
 # Make GRUB rescue image
-# Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+# Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,8 @@ target_cpu=@target_cpu@
 platform=@platform@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
-grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
+grub_mkimage=${bindir}/`echo grub-mkelfimage | sed ${transform}`
+grub_mkisofs=${bindir}/`echo grub-mkisofs | sed ${transform}`
 
 # Usage: usage
 # Print the usage.
@@ -46,19 +47,15 @@ Make GRUB rescue image.
                           (may be specified multiple times)
   --pkglibdir=DIR         use images from directory DIR instead of ${pkglibdir}
   --grub-mkimage=FILE     use FILE as grub-mkimage
-  --image-type=TYPE       select floppy or cdrom (default)
-  --emulation=TYPE        select El Torito boot emulation type floppy
-                          or none (default) (cdrom only)
+  --grub-mkisofs=FILE     use FILE as grub-mkisofs
 
-$0 generates a bootable rescue image of the specified type.
+$0 generates a bootable rescue image.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 
-image_type=cdrom
 input_dir=${pkglibdir}
-emulation=none
 
 # Check the arguments.
 for option in "$@"; do
@@ -77,22 +74,8 @@ for option in "$@"; do
 	input_dir=`echo "$option" | sed 's/--pkglibdir=//'` ;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
-    --image-type=*)
-    	image_type=`echo "$option" | sed 's/--image-type=//'`
-        case "$image_type" in
-          floppy|cdrom) ;;
-          *)
-            echo "Unknown image type \`$image_type'" 1>&2
-            exit 1 ;;
-        esac ;;
-    --emulation=*)
-    	emulation=`echo "$option" | sed 's/--emulation=//'`
-        case "$emulation" in
-          floppy|none) ;;
-          *)
-            echo "Unknown emulation type \`$emulation'" 1>&2
-            exit 1 ;;
-        esac ;;
+    --grub-mkisofs=*)
+	grub_mkisofs=`echo "$option" | sed 's/--grub-mkisofs=//'` ;;
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage
@@ -113,68 +96,53 @@ if test "x$output_image" = x; then
   exit 1
 fi
 
-aux_dir=`mktemp -d`
-mkdir -p ${aux_dir}/boot/grub
+memdisk_dir=`mktemp -d`
+iso9660_dir=`mktemp -d`
+mkdir -p ${memdisk_dir}/boot/grub ${iso9660_dir}/boot/grub
 
 for file in ${input_dir}/*.mod ${input_dir}/efiemu??.o \
   ${input_dir}/command.lst ${input_dir}/moddep.lst ${input_dir}/fs.lst \
   ${input_dir}/handler.lst ${input_dir}/parttool.lst; do
   if test -f "$file"; then
-    cp -f "$file" ${aux_dir}/boot/grub/
+    cp -f "$file" ${iso9660_dir}/boot/grub/
   fi
 done
 
-modules="biosdisk `cat ${input_dir}/partmap.lst` ${modules}"
-for i in ${modules} ; do
-  echo "insmod $i"
-done > ${aux_dir}/boot/grub/grub.cfg
+# obtain date-based UUID
+iso_uuid=$(date +%Y-%m-%d-%H-%M-%S-00)
+
+# first-stage grub.cfg
+cat << EOF >> ${memdisk_dir}/boot/grub/grub.cfg
+search --fs-uuid --set ${iso_uuid}
+set prefix=(\${root})/boot/grub
+source /boot/grub/grub.cfg
+EOF
+
+# build memdisk
+memdisk_img=`mktemp`
+tar -C ${memdisk_dir} -cf ${memdisk_img} boot
+rm -rf ${memdisk_dir}
+
+# build core.img
+mkdir -p ${iso9660_dir}/boot/grub
+${grub_mkimage} -d ${input_dir}/ -m ${memdisk_img} -o ${iso9660_dir}/boot/multiboot.img \
+  at_keyboard memdisk tar ata search iso9660 configfile sh
+rm -f ${memdisk_img}
 
 for d in ${overlay}; do
   echo "Overlaying $d"
-  cp -dpR "${d}"/* "${aux_dir}"/
+  cp -dpR "${d}"/* "${iso9660_dir}"/
 done
 
-if [ "x${image_type}" = xfloppy -o "x${emulation}" = xfloppy ] ; then
-  # build memdisk
-  memdisk_img=`mktemp`
-  tar -C ${aux_dir} -cf ${memdisk_img} boot
-  rm -rf ${aux_dir}
+# second-stage grub.cfg
+modules="`cat ${input_dir}/partmap.lst` ${modules}"
+for i in ${modules} ; do
+  echo "insmod $i"
+done > ${iso9660_dir}/boot/grub/grub.cfg
 
-  # build core.img
-  core_img=`mktemp`
-  ${grub_mkimage} -d ${input_dir}/ -m ${memdisk_img} -o ${core_img} memdisk tar
-  rm -f ${memdisk_img}
-
-  # build floppy image
-  if [ "x${image_type}" = xcdrom ] ; then
-    floppy_dir=`mktemp -d`
-    floppy_img=${floppy_dir}/grub_floppy.img
-  else
-    floppy_img=${output_image}
-  fi
-  cat ${input_dir}/boot.img ${core_img} /dev/zero | dd bs=1024 count=1440 > ${floppy_img}
-  rm -f ${core_img}
-
-  if [ "x${image_type}" = xcdrom ] ; then
-    # build iso image
-    genisoimage -b grub_floppy.img \
-      -o ${output_image} -r -J ${floppy_dir}
-    rm -rf ${floppy_dir}
-  fi
-else
-  # build core.img
-  core_img=`mktemp`
-  ${grub_mkimage} -d ${input_dir}/ -o ${core_img} biosdisk iso9660
-
-  # build grub_eltorito image
-  cat ${input_dir}/cdboot.img ${core_img} > ${aux_dir}/boot/grub/grub_eltorito
-  rm -f ${core_img}
-
-  # build iso image
-  genisoimage -b boot/grub/grub_eltorito \
-    -no-emul-boot -boot-load-size 4 -boot-info-table \
-    -o ${output_image} -r -J ${aux_dir}
-  rm -rf ${aux_dir}
-fi
+# build iso image
+${grub_mkisofs} \
+  --modification-date=$(echo ${iso_uuid} | sed -e s/-//g) \
+  -o ${output_image} -r -J ${iso9660_dir}
 
 exit 0

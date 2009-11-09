@@ -92,7 +92,7 @@ else
   AC_MSG_ERROR([${CC-cc} cannot compile C source code])
 fi
 grub_cv_prog_objcopy_absolute=yes
-for link_addr in 2000 8000 7C00; do
+for link_addr in 0x2000 0x8000 0x7C00; do
   if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -nostdlib ${TARGET_IMG_LDFLAGS_AC} -Wl,-Ttext -Wl,$link_addr conftest.o -o conftest.exec]); then :
   else
     AC_MSG_ERROR([${CC-cc} cannot link at address $link_addr])
