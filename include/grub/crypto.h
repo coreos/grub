@@ -64,6 +64,7 @@ typedef enum
     GPG_ERR_WRONG_PUBKEY_ALGO,
   } gcry_err_code_t;
 #define gpg_err_code_t gcry_err_code_t
+#define gpg_error_t gcry_err_code_t
 
 enum gcry_cipher_modes 
   {

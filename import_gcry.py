@@ -10,10 +10,17 @@ indir = sys.argv[1]
 outdir = sys.argv[2]
 
 basedir = os.path.join (outdir, "gcry")
-os.makedirs (basedir)
+try:
+    os.makedirs (basedir)
+except:
+    print ("WARNING: %s already exists" % basedir)
 cipher_dir_in = os.path.join (indir, "cipher")
 cipher_dir_out = os.path.join (basedir, "cipher")
-os.makedirs (cipher_dir_out)
+try:
+    os.makedirs (cipher_dir_out)
+except:
+    print ("WARNING: %s already exists" % cipher_dir_out)
+
 cipher_files = os.listdir (cipher_dir_in)
 conf = open (os.path.join (outdir, "conf", "gcry.rmk"), "w")
 conf.write ("# -*- makefile -*-\n\n")
@@ -34,7 +41,33 @@ for cipher_file in cipher_files:
         fw.write ("   import_gcry.py. Please don't modify it */\n");
         ciphernames = []
         mdnames = []
+        hold = False
+        skip = False
+        skip2 = False
         for line in f:
+            if skip:
+                if line[0] == "}":
+                    skip = False
+                continue
+            if skip2:
+                if not re.search (" *};", line) is None:
+                    skip2 = False
+                continue
+            if hold:
+                hold = False
+                # We're optimising for size.
+                elif not re.match ("(run_selftests|selftest|_gcry_aes_c.._..c|_gcry_[a-z0-9]*_hash_buffer)", line) is None:
+                    skip = True
+                    fname = re.match ("[a-zA-Z0-9_]*", line).group ()
+                    chmsg = "(%s): Removed." % fname
+                    if nch:
+                        chlognew = "%s\n	%s" % (chlognew, chmsg)
+                    else:
+                        chlognew = "%s %s" % (chlognew, chmsg)
+                        nch = True
+                    continue
+                else:
+                    fw.write (holdline)
             m = re.match ("#include <.*>", line)
             if not m is None:
                 chmsg = "Removed including of %s" % \
@@ -55,6 +88,46 @@ for cipher_file in cipher_files:
                 mdname = line [len ("gcry_md_spec_t"):].strip ()
                 mdname = re.match("[a-zA-Z0-9_]*",mdname).group ()
                 mdnames.append (mdname)
+            m = re.match ("static const char \*selftest.*;$", line)
+            if not m is None:
+                fname = line[len ("static const char \*"):]
+                fname = re.match ("[a-zA-Z0-9_]*", fname).group ()
+                chmsg = "(%s): Removed declaration." % fname
+                if nch:
+                    chlognew = "%s\n	%s" % (chlognew, chmsg)
+                else:
+                    chlognew = "%s %s" % (chlognew, chmsg)
+                    nch = True
+                continue
+            m = re.match ("(static const char( |)\*|static gpg_err_code_t|void)$", line)
+            if not m is None:
+                hold = True
+                holdline = line
+                continue
+            m = re.match ("cipher_extra_spec_t", line)
+            if isc and not m is None:
+                skip2 = True
+                fname = line[len ("cipher_extra_spec_t "):]
+                fname = re.match ("[a-zA-Z0-9_]*", fname).group ()
+                chmsg = "(%s): Removed." % fname
+                if nch:
+                    chlognew = "%s\n	%s" % (chlognew, chmsg)
+                else:
+                    chlognew = "%s %s" % (chlognew, chmsg)
+                    nch = True
+                continue
+            m = re.match ("md_extra_spec_t", line)
+            if isc and not m is None:
+                skip2 = True
+                fname = line[len ("md_extra_spec_t "):]
+                fname = re.match ("[a-zA-Z0-9_]*", fname).group ()
+                chmsg = "(%s): Removed." % fname
+                if nch:
+                    chlognew = "%s\n	%s" % (chlognew, chmsg)
+                else:
+                    chlognew = "%s %s" % (chlognew, chmsg)
+                    nch = True
+                continue
             fw.write (line)
         if len (ciphernames) > 0 or len (mdnames) > 0:
             modname = cipher_file [0:len(cipher_file) - 2]
@@ -120,20 +193,27 @@ for cipher_file in cipher_files:
 outfile = os.path.join (cipher_dir_out, "types.h")
 fw=open (outfile, "w")
 fw.write ("#include <grub/types.h>\n")
-fw.write ("#include <grub/gcry_wrap.h>\n")
+fw.write ("#include <grub/cipher_wrap.h>\n")
 chlog = "%s	* types.h: New file.\n" % chlog
 fw.close ()
+
+outfile = os.path.join (cipher_dir_out, "memory.h")
+fw=open (outfile, "w")
+fw.write ("#include <grub/cipher_wrap.h>\n")
+chlog = "%s	* memory.h: New file.\n" % chlog
+fw.close ()
+
 
 outfile = os.path.join (cipher_dir_out, "cipher.h")
 fw=open (outfile, "w")
 fw.write ("#include <grub/crypto.h>\n")
-fw.write ("#include <grub/gcry_wrap.h>\n")
+fw.write ("#include <grub/cipher_wrap.h>\n")
 chlog = "%s	* cipher.h: Likewise.\n" % chlog
 fw.close ()
 
 outfile = os.path.join (cipher_dir_out, "g10lib.h")
 fw=open (outfile, "w")
-fw.write ("#include <grub/gcry_wrap.h>\n")
+fw.write ("#include <grub/cipher_wrap.h>\n")
 chlog = "%s	* g10lib.h: Likewise.\n" % chlog
 fw.close ()
 

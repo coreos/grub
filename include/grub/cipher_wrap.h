@@ -68,4 +68,17 @@ grub_assert_real (const char *file, int line, int cond)
     grub_fatal ("Assertion failed at %s:%d\n", file, line);
 }
 
+/* Selftests are in separate modules.  */
+static inline char *
+selftest (void)
+{
+  return NULL;
+}
+
+static inline int
+fips_mode (void)
+{
+  return 0;
+}
+
 #endif
