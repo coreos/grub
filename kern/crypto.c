@@ -30,7 +30,6 @@ grub_burn_stack (grub_size_t size)
   char buf[64];
 
   grub_memset (buf, 0, sizeof (buf));
-  size -= sizeof (buf);
-  if (size > 0)
-    grub_burn_stack (size);
+  if (size > sizeof (buf))
+    grub_burn_stack (size - sizeof (buf));
 }
