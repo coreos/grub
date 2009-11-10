@@ -33,6 +33,7 @@ for cipher_file in cipher_files:
         fw.write ("/* This file was automatically imported with \n")
         fw.write ("   import_gcry.py. Please don't modify it */\n");
         ciphernames = []
+        mdnames = []
         for line in f:
             m = re.match ("#include <.*>", line)
             if not m is None:
@@ -49,9 +50,21 @@ for cipher_file in cipher_files:
                 ciphername = line [len ("gcry_cipher_spec_t"):].strip ()
                 ciphername = re.match("[a-zA-Z0-9_]*",ciphername).group ()
                 ciphernames.append (ciphername)
+            m = re.match ("gcry_md_spec_t", line)
+            if isc and not m is None:
+                mdname = line [len ("gcry_md_spec_t"):].strip ()
+                mdname = re.match("[a-zA-Z0-9_]*",mdname).group ()
+                mdnames.append (mdname)
             fw.write (line)
-        if len (ciphernames) > 0:
+        if len (ciphernames) > 0 or len (mdnames) > 0:
             modname = cipher_file [0:len(cipher_file) - 2]
+            if re.match (".*-glue$", modname):
+                modfiles = "gcry/cipher/%s gcry/cipher/%s" \
+                    % (cipher_file, cipher_file.replace ("-glue.c", ".c"))
+                modname = modname.replace ("-glue", "")
+            else:
+                modfiles = "gcry/cipher/%s" % cipher_file
+            modname = "gcry_%s" % modname
             chmsg = "(GRUB_MOD_INIT(%s)): New function\n" % modname
             if nch:
                 chlognew = "%s\n	%s" % (chlognew, chmsg)
@@ -64,6 +77,10 @@ for cipher_file in cipher_files:
                 chmsg = "Register cipher %s" % ciphername
                 chlognew = "%s\n	%s" % (chlognew, chmsg)
                 fw.write ("  grub_cipher_register (&%s);\n" % ciphername)
+            for mdname in mdnames:
+                chmsg = "Register digest %s" % mdname
+                chlognew = "%s\n	%s" % (chlognew, chmsg)
+                fw.write ("  grub_md_register (&%s);\n" % mdname)
             fw.write ("}")
             chmsg = "(GRUB_MOD_FINI(%s)): New function\n" % modname
             chlognew = "%s\n	%s" % (chlognew, chmsg)
@@ -73,14 +90,18 @@ for cipher_file in cipher_files:
                 chmsg = "Unregister cipher %s" % ciphername
                 chlognew = "%s\n	%s" % (chlognew, chmsg)
                 fw.write ("  grub_cipher_unregister (&%s);\n" % ciphername)
+            for mdname in mdnames:
+                chmsg = "Unregister MD %s" % mdname
+                chlognew = "%s\n	%s" % (chlognew, chmsg)
+                fw.write ("  grub_md_unregister (&%s);\n" % mdname)
             fw.write ("}\n")
             conf.write ("pkglib_MODULES += %s.mod\n" % modname)
-            conf.write ("%s_mod_SOURCES = gcry/cipher/%s\n" %\
-                            (modname, cipher_file))
+            conf.write ("%s_mod_SOURCES = %s\n" %\
+                            (modname, modfiles))
             conf.write ("%s_mod_CFLAGS = $(COMMON_CFLAGS) -Wno-missing-field-initializers -Wno-error\n" % modname)
             conf.write ("%s_mod_LDFLAGS = $(COMMON_LDFLAGS)\n\n" % modname)
-        elif isc:
-            print ("WARNING: c file isn't a module: %s" % cipher_file)
+        elif isc and cipher_file != "camellia.c":
+            print ("WARNING: C file isn't a module: %s" % cipher_file)
         f.close ()
         fw.close ()
         if nch:

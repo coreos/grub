@@ -123,6 +123,7 @@ typedef struct gcry_cipher_spec
   gcry_cipher_decrypt_t decrypt;
   gcry_cipher_stencrypt_t stencrypt;
   gcry_cipher_stdecrypt_t stdecrypt;
+  struct gcry_cipher_spec *next;
 } gcry_cipher_spec_t;
 
 /* Definition of a function used to report selftest failures. 
@@ -154,33 +155,75 @@ typedef struct cipher_extra_spec
   cipher_set_extra_info_t set_extra_info;
 } cipher_extra_spec_t;
 
-/* (Forward declaration.)  */
-struct gcry_md_context;
+/* Type for the md_init function.  */
+typedef void (*gcry_md_init_t) (void *c);
 
-/* This object is used to hold a handle to a message digest object.
-   This structure is private - only to be used by the public gcry_md_*
-   macros.  */
-typedef struct gcry_md_handle 
+/* Type for the md_write function.  */
+typedef void (*gcry_md_write_t) (void *c, const void *buf, grub_size_t nbytes);
+
+/* Type for the md_final function.  */
+typedef void (*gcry_md_final_t) (void *c);
+
+/* Type for the md_read function.  */
+typedef unsigned char *(*gcry_md_read_t) (void *c);
+
+typedef struct gcry_md_oid_spec
 {
-  /* Actual context.  */
-  struct gcry_md_context *ctx;
-  
-  /* Buffer management.  */
-  int  bufpos;
-  int  bufsize;
-  unsigned char buf[1];
-} *gcry_md_hd_t;
+  const char *oidstring;
+} gcry_md_oid_spec_t;
 
-
-struct grub_cipher
+/* Module specification structure for message digests.  */
+typedef struct gcry_md_spec
 {
-  struct grub_cipher *next;
   const char *name;
-};
-typedef struct grub_cipher *grub_cipher_t;
+  unsigned char *asnoid;
+  int asnlen;
+  gcry_md_oid_spec_t *oids;
+  int mdlen;
+  gcry_md_init_t init;
+  gcry_md_write_t write;
+  gcry_md_final_t final;
+  gcry_md_read_t read;
+  grub_size_t contextsize; /* allocate this amount of context */
+  struct gcry_md_spec *next;
+} gcry_md_spec_t;
 
-extern grub_cipher_t EXPORT_VAR (grub_ciphers);
+extern gcry_cipher_spec_t *EXPORT_VAR (grub_ciphers);
+extern gcry_md_spec_t *EXPORT_VAR (grub_digests);
+
+static inline void 
+grub_cipher_register (gcry_cipher_spec_t *cipher)
+{
+  cipher->next = grub_ciphers;
+  grub_ciphers = cipher;
+}
+
+static inline void 
+grub_cipher_unregister (gcry_cipher_spec_t *cipher)
+{
+  gcry_cipher_spec_t **ciph;
+  for (ciph = &grub_ciphers; *ciph; ciph = &((*ciph)->next))
+    if (*ciph == cipher)
+      *ciph = (*ciph)->next;
+}
+
+static inline void 
+grub_md_register (gcry_md_spec_t *digest)
+{
+  digest->next = grub_digests;
+  grub_digests = digest;
+}
+
+static inline void 
+grub_md_unregister (gcry_md_spec_t *cipher)
+{
+  gcry_md_spec_t **ciph;
+  for (ciph = &grub_digests; *ciph; ciph = &((*ciph)->next))
+    if (*ciph == cipher)
+      *ciph = (*ciph)->next;
+}
+
+
 void EXPORT_FUNC(grub_burn_stack) (grub_size_t size);
-
 
 #endif

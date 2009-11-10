@@ -27,12 +27,45 @@
 
 #define __GNU_LIBRARY__
 
+#define DIM ARRAY_SIZE
+
+typedef grub_uint64_t u64;
 typedef grub_uint32_t u32;
 typedef grub_uint16_t u16;
 typedef grub_uint8_t byte;
 typedef grub_size_t size_t;
 
+#define U64_C(c) (c ## ULL)
+
 #define _gcry_burn_stack grub_burn_stack
 #define log_error(fmt, args...) grub_dprintf ("crypto", fmt, ## args)
+
+
+#define PUBKEY_FLAG_NO_BLINDING    (1 << 0)
+
+#define CIPHER_INFO_NO_WEAK_KEY    1
+
+#define HAVE_U64_TYPEDEF 1
+
+typedef union {
+    int a;
+    short b;
+    char c[1];
+    long d;
+#ifdef HAVE_U64_TYPEDEF
+    u64 e;
+#endif
+    float f;
+    double g;
+} PROPERLY_ALIGNED_TYPE;
+
+#define gcry_assert(x) grub_assert_real(__FILE__, __LINE__, x)
+
+static inline void
+grub_assert_real (const char *file, int line, int cond)
+{
+  if (cond)
+    grub_fatal ("Assertion failed at %s:%d\n", file, line);
+}
 
 #endif

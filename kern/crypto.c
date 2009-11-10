@@ -18,8 +18,10 @@
  */
 #include <grub/crypto.h>
 #include <grub/misc.h>
+#include <grub/mm.h>
 
-grub_cipher_t grub_ciphers;
+gcry_cipher_spec_t *grub_ciphers = NULL;
+gcry_md_spec_t *grub_digests = NULL;
 
 /* Based on libgcrypt-1.4.4/src/misc.c.  */
 void
