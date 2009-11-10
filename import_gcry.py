@@ -56,7 +56,7 @@ for cipher_file in cipher_files:
             if hold:
                 hold = False
                 # We're optimising for size.
-                elif not re.match ("(run_selftests|selftest|_gcry_aes_c.._..c|_gcry_[a-z0-9]*_hash_buffer)", line) is None:
+                if not re.match ("(run_selftests|selftest|_gcry_aes_c.._..c|_gcry_[a-z0-9]*_hash_buffer)", line) is None:
                     skip = True
                     fname = re.match ("[a-zA-Z0-9_]*", line).group ()
                     chmsg = "(%s): Removed." % fname
