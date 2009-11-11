@@ -6,9 +6,11 @@
 
    Copyright 1993 Yggdrasil Computing, Incorporated
 
+   Copyright (C) 2009  Free Software Foundation, Inc.
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -17,7 +19,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 static char rcsid[] ="$Id: tree.c,v 1.29 1999/03/07 17:41:19 eric Exp $";
@@ -141,6 +143,10 @@ FDECL2(stat_filter, char *, path, struct stat *, st)
   int result = stat(path, st);
   if (result >= 0 && rationalize)
     stat_fix(st);
+
+  if ((unsigned) st->st_size > UINT32_MAX)
+    result = -1;
+
   return result;
 }
 
@@ -150,6 +156,10 @@ FDECL2(lstat_filter, char *, path, struct stat *, st)
   int result = lstat(path, st);
   if (result >= 0 && rationalize)
     stat_fix(st);
+
+  if ((unsigned) st->st_size > UINT32_MAX)
+    result = -1;
+
   return result;
 }
 

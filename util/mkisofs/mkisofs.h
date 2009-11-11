@@ -26,6 +26,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <prototyp.h>
 #include <sys/stat.h>
 
@@ -159,8 +160,8 @@ struct directory_entry{
   struct directory_entry * next;
   struct directory_entry * jnext;
   struct iso_directory_record isorec;
-  unsigned int starting_block;
-  unsigned int size;
+  uint64_t starting_block;
+  uint64_t size;
   unsigned short priority;
   unsigned char jreclen;	/* Joliet record len */
   char * name;
@@ -266,21 +267,13 @@ struct directory{
   unsigned short dir_nlink;
 };
 
-struct deferred{
-  struct deferred * next;
-  unsigned int starting_block;
-  char * name;
-  struct directory * filedir;
-  unsigned int flags;
-};
-
 extern int goof;
 extern struct directory * root;
 extern struct directory * reloc_dir;
-extern unsigned int next_extent;
-extern unsigned int last_extent;
-extern unsigned int last_extent_written;
-extern unsigned int session_start;
+extern uint64_t next_extent;
+extern uint64_t last_extent;
+extern uint64_t last_extent_written;
+extern uint64_t session_start;
 
 extern unsigned int path_table_size;
 extern unsigned int path_table[4];
@@ -353,7 +346,7 @@ extern void DECL(generate_one_directory,(struct directory *, FILE*));
 extern void DECL(memcpy_max, (char *, char *, int));
 extern int DECL(oneblock_size, (int starting_extent));
 extern struct iso_primary_descriptor vol_desc;
-extern void DECL(xfwrite, (void * buffer, int count, int size, FILE * file));
+extern void DECL(xfwrite, (void * buffer, uint64_t count, uint64_t size, FILE * file));
 extern void DECL(set_732, (char * pnt, unsigned int i));
 extern void DECL(set_722, (char * pnt, unsigned int i));
 extern void DECL(outputlist_insert, (struct output_fragment * frag));

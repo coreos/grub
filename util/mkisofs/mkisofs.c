@@ -68,9 +68,9 @@ static char version_string[] = "mkisofs 1.12b5";
 
 char * outfile;
 FILE * discimage;
-unsigned int next_extent = 0;
-unsigned int last_extent = 0;
-unsigned int session_start = 0;
+uint64_t next_extent = 0;
+uint64_t last_extent = 0;
+uint64_t session_start = 0;
 unsigned int path_table_size = 0;
 unsigned int path_table[4] = {0,};
 unsigned int path_blocks = 0;
@@ -1365,7 +1365,7 @@ parse_input_files:
       fprintf(stderr,"Max brk space used %x\n", 
 	      (unsigned int)(((unsigned long)sbrk(0)) - mem_start));
 #endif
-      fprintf(stderr,"%d extents written (%d Mb)\n", last_extent, last_extent >> 9);
+      fprintf (stderr, "%llu extents written (%llu MiB)\n", last_extent, last_extent >> 9);
     }
 
 #ifdef VMS

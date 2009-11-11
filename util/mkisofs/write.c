@@ -127,7 +127,7 @@ void FDECL2(set_733, char *, pnt, unsigned int, i)
      pnt[4] = pnt[3] = (i >> 24) &  0xff;
 }
 
-void FDECL4(xfwrite, void *, buffer, int, count, int, size, FILE *, file)
+void FDECL4(xfwrite, void *, buffer, uint64_t, count, uint64_t, size, FILE *, file)
 {
 	/*
 	 * This is a hack that could be made better. XXXIs this the only place?
@@ -156,11 +156,11 @@ void FDECL4(xfwrite, void *, buffer, int, count, int, size, FILE *, file)
 	}
      while(count) 
      {
-	  int got = fwrite(buffer,size,count,file);
+	  size_t got = fwrite (buffer, size, count, file);
 
-	  if(got<=0) 
+	  if (got != count)
 	  {
-	       fprintf(stderr,"cannot fwrite %d*%d\n",size,count);
+	       fprintf(stderr,"cannot fwrite %llu*%llu\n",size,count);
 	       exit(1);
 	  }
 	  count-=got,*(char**)&buffer+=size*got;
@@ -171,14 +171,14 @@ struct deferred_write
 {
   struct deferred_write * next;
   char			* table;
-  unsigned int		  extent;
-  unsigned int		  size;
+  uint64_t		  extent;
+  uint64_t		  size;
   char			* name;
 };
 
 static struct deferred_write * dw_head = NULL, * dw_tail = NULL;
 
-unsigned int last_extent_written  =0;
+uint64_t last_extent_written = 0;
 static unsigned int path_table_index;
 static time_t begun;
 
@@ -235,12 +235,12 @@ static int FDECL1(assign_directory_addresses, struct directory *, node)
 }
 
 static void FDECL3(write_one_file, char *, filename, 
-		   unsigned int, size, FILE *, outfile)
+		   uint64_t, size, FILE *, outfile)
 {
      char		  buffer[SECTOR_SIZE * NSECT];
      FILE		* infile;
-     int		  remain;
-     unsigned int		  use;
+     int64_t		  remain;
+     size_t		  use;
 
 
      if ((infile = fopen(filename, "rb")) == NULL) 
@@ -260,10 +260,7 @@ static void FDECL3(write_one_file, char *, filename,
 	  use = ROUND_UP(use); /* Round up to nearest sector boundary */
 	  memset(buffer, 0, use);
 	  if (fread(buffer, 1, use, infile) == 0) 
-	  {
-		fprintf(stderr,"cannot read from %s\n",filename); 
-		exit(1);
-	  }
+	    error (1, errno, "cannot read %llu bytes from %s", use, filename); 
 	  xfwrite(buffer, 1, use, outfile);
 	  last_extent_written += use/SECTOR_SIZE;
 #if 0
@@ -298,12 +295,10 @@ static void FDECL1(write_files, FILE *, outfile)
      {
 	  if(dwpnt->table) 
 	  {
-	       xfwrite(dwpnt->table,  1, ROUND_UP(dwpnt->size), outfile);
-	       last_extent_written += ROUND_UP(dwpnt->size) / SECTOR_SIZE;
-	       table_size += dwpnt->size;
-/*		  fprintf(stderr,"Size %d ", dwpnt->size); */
-	       free(dwpnt->table);
-	  } 
+	    write_one_file (dwpnt->table, dwpnt->size, outfile);
+	    table_size += dwpnt->size;
+	    free (dwpnt->table);
+	  }
 	  else 
 	  {
 
@@ -673,7 +668,7 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 		    last_extent += ROUND_UP(s_entry->size) >> 11;
 		    if(verbose > 2)
 		    {
-			 fprintf(stderr,"%d %d %s\n", s_entry->starting_block,
+			 fprintf(stderr,"%llu %llu %s\n", s_entry->starting_block,
 				 last_extent-1, whole_path);
 		    }
 #ifdef DBG_ISO
@@ -1131,17 +1126,17 @@ static int FDECL1(file_write, FILE *, outfile)
 
   if( print_size > 0 )
     {
-      fprintf(stderr,"Total extents scheduled to be written = %d\n", 
+      fprintf(stderr,"Total extents scheduled to be written = %llu\n", 
 	      last_extent - session_start);
 	exit(0);
     }
   if( verbose > 2 )
     {
 #ifdef DBG_ISO
-      fprintf(stderr,"Total directory extents being written = %d\n", last_extent);
+      fprintf(stderr,"Total directory extents being written = %llu\n", last_extent);
 #endif
       
-      fprintf(stderr,"Total extents scheduled to be written = %d\n", 
+      fprintf(stderr,"Total extents scheduled to be written = %llu\n", 
 	      last_extent - session_start);
     }
 
@@ -1158,7 +1153,7 @@ static int FDECL1(file_write, FILE *, outfile)
       return 0;
     }
 
-  fprintf(stderr,"Total extents actually written = %d\n", 
+  fprintf(stderr,"Total extents actually written = %llu\n", 
 	  last_extent_written - session_start);
 
   /* 
@@ -1168,7 +1163,7 @@ static int FDECL1(file_write, FILE *, outfile)
   if(should_write + session_start != last_extent)
     {
       fprintf(stderr,"Number of extents written not what was predicted.  Please fix.\n");
-      fprintf(stderr,"Predicted = %d, written = %d\n", should_write, last_extent);
+      fprintf(stderr,"Predicted = %d, written = %llu\n", should_write, last_extent);
     }
 
   fprintf(stderr,"Total translation table size: %d\n", table_size);

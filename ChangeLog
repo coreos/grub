@@ -1,3 +1,31 @@
+2009-11-11  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Large file support for grub-mkisofs.
+
+	* conf/common.rmk (grub_mkisofs_CFLAGS): Add `-D_FILE_OFFSET_BITS=64'.
+	* util/mkisofs/mkisofs.c (next_extent, last_extent)
+	(session_start): Upgrade type to `uint64_t'.  Update all users.
+	* util/mkisofs/mkisofs.h: Include `<stdint.h>'.
+	(struct directory_entry): Upgrade type of `starting_block' and
+	`size' to `uint64_t'.  Update all users.
+	(struct deferred): Remove unused structure.
+	(xfwrite): Upgrade type of `count' and `size' to `uint64_t'.
+	Update all users.
+	* util/mkisofs/tree.c (stat_filter, lstat_filter): Return -1 when
+	file is larger than `UINT32_MAX'.
+	* util/mkisofs/write.c (xfwrite): Upgrade type of `count' and
+	`size' to `uint64_t'.  Update all users.  Fix handling of fwrite()
+	return value.
+	(struct deferred_write): Upgrade type of `extent' and `size' to
+	`uint64_t'.  Update all users.
+	(last_extent_written): Upgrade type to `uint64_t'.  Update all
+	users.
+	(write_one_file): Upgrade type of `count' and `size' to `uint64_t'.
+	Update all users.  Upgrade type of `remain' to `int64_t' and
+	`use' to `size_t'.  Use error() to handle fread() errors.
+	(write_files): Rely on write_one_file() rather than calling
+	xfwrite() directly.
+
 2009-11-09  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/mkisofs/mkisofs.c (ld_options): Fix a spelling mistake.
