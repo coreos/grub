@@ -1,5 +1,10 @@
 2009-11-11  Felix Zielcke  <fzielcke@z-51.de>
 
+	* util/grub-probe.c (probe): Abort with an error if file can't be
+	opened via GRUB facilities.
+
+2009-11-11  Felix Zielcke  <fzielcke@z-51.de>
+
 	* util/i386/pc/grub-setup.c (setup): Make core.img path relative
 	to its root.
 
