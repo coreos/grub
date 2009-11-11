@@ -1,3 +1,10 @@
+2009-11-11  Felix Zielcke  <fzielcke@z-51.de>
+
+	Fix the generation of the man page.
+
+	* util/pc/i386/grub-install.in: Source
+	`${libdir}/grub/grub-mkconfig_lib' after options have been parsed.
+
 2009-11-11  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Large file support for grub-mkisofs.
