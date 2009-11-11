@@ -1,3 +1,7 @@
+2009-11-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/powerpc/ieee1275/grub-mkrescue.in: Fix --version output.
+
 2009-11-11  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Support for El Torito without floppy emulation.
