@@ -6,9 +6,14 @@
 
    Copyright 1996 RedHat Software, Incorporated
 
+   Copyright (C) 2009  Free Software Foundation, Inc.
+
+   Boot Info Table generation based on code from genisoimage.c
+   (from cdrkit 1.1.9), which was originally licensed under GPLv2+.
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -17,8 +22,8 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.   */
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
+   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 static char rcsid[] ="$Id: eltorito.c,v 1.13 1999/03/02 03:41:25 eric Exp $";
@@ -29,6 +34,7 @@ static char rcsid[] ="$Id: eltorito.c,v 1.13 1999/03/02 03:41:25 eric Exp $";
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "config.h"
 #include "mkisofs.h"
@@ -103,12 +109,8 @@ void FDECL1(init_boot_catalog, const char *, path)
      * make it one CD sector long
      */
     bcat = open(bootpath, O_WRONLY | O_CREAT | O_BINARY, S_IROTH | S_IRGRP | S_IRWXU );
-    if (bcat == -1) 
-    {
-	fprintf(stderr, "Error creating boot catalog, exiting...\n");
-	perror("");
-	exit(1);
-    }
+    if (bcat == -1)
+      error (1, errno, "Error creating boot catalog (%s)", bootpath);
     
     buf = (char *) e_malloc( 2048 );
     write(bcat, buf, 2048);
@@ -217,31 +219,35 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
      */
     nsectors = ((de->size + 511) & ~(511))/512;
     fprintf(stderr, "\nSize of boot image is %d sectors -> ", nsectors); 
-    
-    /*
-     * choose size of emulated floppy based on boot image size 
-     */
-    if (nsectors == 2880 ) 
-    {
+
+    if (! use_eltorito_emul_floppy)
+      {
+	default_desc.boot_media[0] = EL_TORITO_MEDIA_NOEMUL;
+	fprintf (stderr, "No emulation\n");
+      }
+    else if (nsectors == 2880 ) 
+      /*
+       * choose size of emulated floppy based on boot image size 
+       */
+      {
 	default_desc.boot_media[0] = EL_TORITO_MEDIA_144FLOP;
 	fprintf(stderr, "Emulating a 1.44 meg floppy\n");
-    }
+      }
     else if (nsectors == 5760 ) 
-    {
+      {
 	default_desc.boot_media[0] = EL_TORITO_MEDIA_288FLOP;
 	fprintf(stderr,"Emulating a 2.88 meg floppy\n");
-    }
+      }
     else if (nsectors == 2400 ) 
-    {
+      {
 	default_desc.boot_media[0] = EL_TORITO_MEDIA_12FLOP;
 	fprintf(stderr,"Emulating a 1.2 meg floppy\n");
-    }
+      }
     else 
-    {
+      {
 	fprintf(stderr,"\nError - boot image is not the an allowable size.\n");
 	exit(1);
-    }
-    
+      }
     
     /* 
      * FOR NOW LOAD 1 SECTOR, JUST LIKE FLOPPY BOOT!!! 
@@ -271,6 +277,53 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
     write(bootcat, &valid_desc, 32);
     write(bootcat, &default_desc, 32);
     close(bootcat);
+
+    /* If the user has asked for it, patch the boot image */
+    if (use_boot_info_table)
+      {
+	int bootimage;
+	uint32_t bi_checksum;
+	unsigned int total_len;
+	static char csum_buffer[SECTOR_SIZE];
+	int len;
+	struct eltorito_boot_info bi_table;
+	bootimage = open (de->whole_name, O_RDWR | O_BINARY);
+	if (bootimage == -1)
+	  error (1, errno, "Error opening boot image file '%s' for update",
+		 de->whole_name);
+	/* Compute checksum of boot image, sans 64 bytes */
+	total_len = 0;
+	bi_checksum = 0;
+	while ((len = read (bootimage, csum_buffer, SECTOR_SIZE)) > 0)
+	  {
+	    if (total_len & 3)
+	      error (1, 0, "Odd alignment at non-end-of-file in boot image '%s'",
+		     de->whole_name);
+	    if (total_len < 64)
+	      memset (csum_buffer, 0, 64 - total_len);
+	    if (len < SECTOR_SIZE)
+	      memset (csum_buffer + len, 0, SECTOR_SIZE - len);
+	    for (i = 0; i < SECTOR_SIZE; i += 4)
+	      bi_checksum += get_731 (&csum_buffer[i]);
+	    total_len += len;
+	  }
+
+	if (total_len != de->size)
+	  error (1, 0, "Boot image file '%s' changed underneath us",
+		 de->whole_name);
+	/* End of file, set position to byte 8 */
+	lseek (bootimage, (off_t) 8, SEEK_SET);
+	memset (&bi_table, 0, sizeof (bi_table));
+	/* Is it always safe to assume PVD is at session_start+16? */
+	set_731 (bi_table.pvd_addr, session_start + 16);
+	set_731 (bi_table.file_addr, de->starting_block);
+	set_731 (bi_table.file_length, de->size);
+	set_731 (bi_table.file_checksum, bi_checksum);
+
+	write (bootimage, &bi_table, sizeof (bi_table)); /* FIXME: check return value */
+	close (bootimage);
+      }
+
 } /* get_torito_desc(... */
 
 /*

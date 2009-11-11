@@ -291,6 +291,8 @@ extern struct iso_directory_record root_record;
 extern struct iso_directory_record jroot_record;
 
 extern int use_eltorito;
+extern int use_eltorito_emul_floppy;
+extern int use_boot_info_table;
 extern int use_RockRidge;
 extern int use_Joliet;
 extern int rationalize;
@@ -335,6 +337,7 @@ extern void DECL(init_boot_catalog, (const char * path ));
 extern void DECL(get_torito_desc, (struct eltorito_boot_descriptor * path ));
 
 /* write.c */
+extern int DECL(get_731,(char *));
 extern int DECL(get_733,(char *));
 extern int DECL(isonum_733,(unsigned char *));
 extern void DECL(set_723,(char *, unsigned int));

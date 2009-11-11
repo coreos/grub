@@ -89,6 +89,8 @@ int extension_record_size = 0;
 
 /* These variables are associated with command line options */
 int use_eltorito = 0;
+int use_eltorito_emul_floppy = 0;
+int use_boot_info_table = 0;
 int use_RockRidge = 0;
 int use_Joliet = 0;
 int verbose = 1;
@@ -189,6 +191,10 @@ struct ld_option
 #define OPTION_EXPIR_DATE		168
 #define OPTION_EFFEC_DATE		169
 
+#define OPTION_BOOT_INFO_TABLE		170
+#define OPTION_NO_EMUL_BOOT		171
+#define OPTION_ELTORITO_EMUL_FLOPPY	172
+
 static const struct ld_option ld_options[] =
 {
   { {"all-files", no_argument, NULL, 'a'},
@@ -205,6 +211,12 @@ static const struct ld_option ld_options[] =
       'b', "FILE", "Set El Torito boot image name" , ONE_DASH },
   { {"eltorito-catalog", required_argument, NULL, 'c'},
       'c', "FILE", "Set El Torito boot catalog name" , ONE_DASH },
+  { {"boot-info-table", no_argument, NULL, OPTION_BOOT_INFO_TABLE },
+      '\0', NULL, "Patch Boot Info Table in El Torito boot image" , ONE_DASH },
+  { {"no-emul-boot", no_argument, NULL, OPTION_NO_EMUL_BOOT },
+      '\0', NULL, "Dummy option for backward compatibility" , ONE_DASH },
+  { {"eltorito-emul-floppy", no_argument, NULL, OPTION_ELTORITO_EMUL_FLOPPY },
+      '\0', NULL, "Enable floppy drive emulation for El Torito" , TWO_DASHES },
   { {"cdwrite-params", required_argument, NULL, 'C'},
       'C', "PARAMS", "Magic parameters from cdrecord" , ONE_DASH },
   { {"omit-period", no_argument, NULL, 'd'},
@@ -715,6 +727,15 @@ int FDECL2(main, int, argc, char **, argv){
 	        fprintf(stderr,"Required boot catalog pathname missing\n");
 		exit(1);
 	}
+	break;
+      case OPTION_BOOT_INFO_TABLE:
+	use_boot_info_table = 1;
+	break;
+      case OPTION_NO_EMUL_BOOT:
+	fprintf (stderr, "Ignoring -no-emul-boot (no-emulation is the default behaviour)\n");
+	break;
+      case OPTION_ELTORITO_EMUL_FLOPPY:
+	use_eltorito_emul_floppy = 1;
 	break;
       case OPTION_ABSTRACT:
 	abstract = optarg;

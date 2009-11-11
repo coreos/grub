@@ -111,6 +111,14 @@ void FDECL2(set_732, char *, pnt, unsigned int, i)
      pnt[0] = (i >> 24) &  0xff;
 }
 
+int FDECL1(get_731, char *, p)
+{
+  return ((p[0] & 0xff)
+	  | ((p[1] & 0xff) << 8)
+	  | ((p[2] & 0xff) << 16)
+	  | ((p[3] & 0xff) << 24));
+}
+
 int FDECL1(get_733, char *, p)
 {
      return ((p[0] & 0xff)
