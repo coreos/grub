@@ -1,3 +1,8 @@
+2009-11-12  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-install.in: Move from here ...
+	* util/grub-install.in: ... to here.  Update all users.
+
 2009-11-11  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/powerpc/ieee1275/grub-mkrescue.in: Fix --version output.
