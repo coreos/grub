@@ -20,13 +20,14 @@
 /* Contains elements based on gcrypt-module.h and gcrypt.h.in.
    If it's changed please update this file.  */
 
-#ifndef GRUB_CIPHER_HEADER
-#define GRUB_CIPHER_HEADER 1
+#ifndef GRUB_CRYPTO_HEADER
+#define GRUB_CRYPTO_HEADER 1
 
 #include <grub/symbol.h>
 #include <grub/types.h>
-#include <grub/misc.h>
-#include <grub/mm.h>
+#include <grub/err.h>
+/* For GRUB_ACCESS_DENIED.  */
+#include <grub/auth.h>
 
 typedef enum 
   {
@@ -64,6 +65,7 @@ typedef enum
     GPG_ERR_WEAK_KEY,
     GPG_ERR_WRONG_KEY_USAGE,
     GPG_ERR_WRONG_PUBKEY_ALGO,
+    GPG_ERR_OUT_OF_MEMORY
   } gcry_err_code_t;
 #define gpg_err_code_t gcry_err_code_t
 #define gpg_error_t gcry_err_code_t
@@ -186,25 +188,22 @@ grub_crypto_cipher_close (grub_crypto_cipher_handle_t cipher);
 
 void
 grub_crypto_xor (void *out, const void *in1, const void *in2, grub_size_t size);
-grub_err_t
+
+gcry_err_code_t
 grub_crypto_ecb_decrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, void *in, grub_size_t size);
 
-grub_err_t
+gcry_err_code_t
 grub_crypto_ecb_encrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, void *in, grub_size_t size);
-grub_err_t
+gcry_err_code_t
 grub_crypto_cbc_encrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, void *in, grub_size_t size,
 			 void *iv_in);
-grub_err_t
+gcry_err_code_t
 grub_crypto_cbc_decrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, void *in, grub_size_t size,
 			 void *iv);
-void 
-grub_cipher_register (gcry_cipher_spec_t *cipher);
-void
-grub_cipher_unregister (gcry_cipher_spec_t *cipher);
 void 
 grub_md_register (gcry_md_spec_t *digest);
 void 
@@ -214,6 +213,9 @@ grub_crypto_hash (const gcry_md_spec_t *hash, void *out, void *in,
 		  grub_size_t inlen);
 const gcry_md_spec_t *
 grub_crypto_lookup_md_by_name (const char *name);
+
+grub_err_t
+grub_crypto_gcry_error (gcry_err_code_t in);
 
 void grub_burn_stack (grub_size_t size);
 

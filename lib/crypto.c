@@ -149,46 +149,49 @@ grub_crypto_xor (void *out, const void *in1, const void *in2, grub_size_t size)
     }
 }
 
-grub_err_t
+gcry_err_code_t
 grub_crypto_ecb_decrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, void *in, grub_size_t size)
 {
   grub_uint8_t *inptr, *outptr, *end;
+  if (!cipher->cipher->decrypt)
+    return GPG_ERR_NOT_SUPPORTED;
   if (size % cipher->cipher->blocksize != 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
-		       "This encryption can't decrypt partial blocks");
+    return GPG_ERR_INV_ARG;
   end = (grub_uint8_t *) in + size;
   for (inptr = in, outptr = out; inptr < end;
        inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
     cipher->cipher->decrypt (cipher->ctx, outptr, inptr);
-  return GRUB_ERR_NONE;
+  return GPG_ERR_NO_ERROR;
 }
 
-grub_err_t
+gcry_err_code_t
 grub_crypto_ecb_encrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, void *in, grub_size_t size)
 {
   grub_uint8_t *inptr, *outptr, *end;
+  if (!cipher->cipher->encrypt)
+    return GPG_ERR_NOT_SUPPORTED;
   if (size % cipher->cipher->blocksize != 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
-		       "This encryption can't decrypt partial blocks");
+    return GPG_ERR_INV_ARG;
   end = (grub_uint8_t *) in + size;
   for (inptr = in, outptr = out; inptr < end;
        inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
     cipher->cipher->encrypt (cipher->ctx, outptr, inptr);
-  return GRUB_ERR_NONE;
+  return GPG_ERR_NO_ERROR;
 }
 
-grub_err_t
+gcry_err_code_t
 grub_crypto_cbc_encrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, void *in, grub_size_t size,
 			 void *iv_in)
 {
   grub_uint8_t *inptr, *outptr, *end;
   void *iv;
+  if (!cipher->cipher->decrypt)
+    return GPG_ERR_NOT_SUPPORTED;
   if (size % cipher->cipher->blocksize != 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
-		       "This encryption can't decrypt partial blocks");
+    return GPG_ERR_INV_ARG;
   end = (grub_uint8_t *) in + size;
   iv = iv_in;
   for (inptr = in, outptr = out; inptr < end;
@@ -199,19 +202,20 @@ grub_crypto_cbc_encrypt (grub_crypto_cipher_handle_t cipher,
       iv = outptr;
     }
   grub_memcpy (iv_in, iv, cipher->cipher->blocksize);
-  return GRUB_ERR_NONE;
+  return GPG_ERR_NO_ERROR;
 }
 
-grub_err_t
+gcry_err_code_t
 grub_crypto_cbc_decrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, void *in, grub_size_t size,
 			 void *iv)
 {
   grub_uint8_t *inptr, *outptr, *end;
   grub_uint8_t ivt[cipher->cipher->blocksize];
+  if (!cipher->cipher->decrypt)
+    return GPG_ERR_NOT_SUPPORTED;
   if (size % cipher->cipher->blocksize != 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
-		       "This encryption can't decrypt partial blocks");
+    return GPG_ERR_INV_ARG;
   end = (grub_uint8_t *) in + size;
   for (inptr = in, outptr = out; inptr < end;
        inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
@@ -221,5 +225,13 @@ grub_crypto_cbc_decrypt (grub_crypto_cipher_handle_t cipher,
       grub_crypto_xor (outptr, outptr, iv, cipher->cipher->blocksize);
       grub_memcpy (iv, ivt, cipher->cipher->blocksize);
     }
-  return GRUB_ERR_NONE;
+  return GPG_ERR_NO_ERROR;
+}
+
+grub_err_t
+grub_crypto_gcry_error (gcry_err_code_t in)
+{
+  if (in == GPG_ERR_NO_ERROR)
+    return GRUB_ERR_NONE;
+  return GRUB_ACCESS_DENIED;
 }
