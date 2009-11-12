@@ -45,6 +45,7 @@ static char rcsid[] ="$Id: rock.c,v 1.8 1999/03/02 03:41:26 eric Exp $";
 #include "mkisofs.h"
 #include "iso9660.h"
 #include <string.h>
+#include <errno.h>
 
 #ifdef	DOESNT_WORK
 
@@ -480,7 +481,8 @@ int deep_opt;
     OK_flag = 1;
 
     zipfile = fopen(whole_name, "rb");
-    fread(header, 1, sizeof(header), zipfile);
+    if (fread (header, 1, sizeof (header), zipfile) != sizeof(header))
+      error (1, errno, "fread");
 
     /* Check some magic numbers from gzip. */
     if(header[0] != 0x1f || header[1] != 0x8b || header[2] != 8) OK_flag = 0;

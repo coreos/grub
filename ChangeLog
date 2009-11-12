@@ -1,5 +1,12 @@
 2009-11-12  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/mkisofs/eltorito.c (init_boot_catalog): Handle return code
+	of write calls (converting them to fwrite() if they aren't already).
+	(get_torito_desc): Likewise.
+	* util/mkisofs/rock.c (generate_rock_ridge_attributes): Likewise.
+
+2009-11-12  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* util/i386/pc/grub-install.in: Move from here ...
 	* util/grub-install.in: ... to here.  Update all users.
 

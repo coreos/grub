@@ -59,8 +59,7 @@ static int tvd_write	__PR((FILE * outfile));
  */
 void FDECL1(init_boot_catalog, const char *, path)
 {
-
-    int		  bcat;
+    FILE *bcat;
     char		* bootpath;                /* filename of boot catalog */
     char		* buf;
     struct stat	  statbuf;
@@ -108,19 +107,22 @@ void FDECL1(init_boot_catalog, const char *, path)
      * file does not exist, so we create it 
      * make it one CD sector long
      */
-    bcat = open(bootpath, O_WRONLY | O_CREAT | O_BINARY, S_IROTH | S_IRGRP | S_IRWXU );
-    if (bcat == -1)
+    bcat = fopen (bootpath, "wb");
+    if (bcat == NULL)
       error (1, errno, "Error creating boot catalog (%s)", bootpath);
     
     buf = (char *) e_malloc( 2048 );
-    write(bcat, buf, 2048);
-    close(bcat);
+    if (fwrite (buf, 1, 2048, bcat) != 2048)
+      error (1, errno, "Error writing to boot catalog (%s)", bootpath);
+    fclose (bcat);
+    chmod (bootpath, S_IROTH | S_IRGRP | S_IRWXU);
+
     free(bootpath);
 } /* init_boot_catalog(... */
 
 void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
 {
-    int				bootcat;
+    FILE *bootcat;
     int				checksum;
     unsigned char		      * checksum_ptr;
     struct directory_entry      * de;
@@ -263,38 +265,36 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
     /*
      * now write it to disk 
      */
-    bootcat = open(de2->whole_name, O_RDWR | O_BINARY);
-    if (bootcat == -1) 
-    {
-	fprintf(stderr,"Error opening boot catalog for update.\n");
-	perror("");
-	exit(1);
-    }
-    
+    bootcat = fopen (de2->whole_name, "r+b");
+    if (bootcat == NULL) 
+      error (1, errno, "Error opening boot catalog for update");
+
     /* 
      * write out 
      */
-    write(bootcat, &valid_desc, 32);
-    write(bootcat, &default_desc, 32);
-    close(bootcat);
+    if (fwrite (&valid_desc, 1, 32, bootcat) != 32)
+      error (1, errno, "Error writing to boot catalog");
+    if (fwrite (&default_desc, 1, 32, bootcat) != 32)
+      error (1, errno, "Error writing to boot catalog");
+    fclose (bootcat);
 
     /* If the user has asked for it, patch the boot image */
     if (use_boot_info_table)
       {
-	int bootimage;
+	FILE *bootimage;
 	uint32_t bi_checksum;
 	unsigned int total_len;
 	static char csum_buffer[SECTOR_SIZE];
 	int len;
 	struct eltorito_boot_info bi_table;
-	bootimage = open (de->whole_name, O_RDWR | O_BINARY);
-	if (bootimage == -1)
+	bootimage = fopen (de->whole_name, "r+b");
+	if (bootimage == NULL)
 	  error (1, errno, "Error opening boot image file '%s' for update",
 		 de->whole_name);
 	/* Compute checksum of boot image, sans 64 bytes */
 	total_len = 0;
 	bi_checksum = 0;
-	while ((len = read (bootimage, csum_buffer, SECTOR_SIZE)) > 0)
+	while ((len = fread (csum_buffer, 1, SECTOR_SIZE, bootimage)) > 0)
 	  {
 	    if (total_len & 3)
 	      error (1, 0, "Odd alignment at non-end-of-file in boot image '%s'",
@@ -312,7 +312,7 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
 	  error (1, 0, "Boot image file '%s' changed underneath us",
 		 de->whole_name);
 	/* End of file, set position to byte 8 */
-	lseek (bootimage, (off_t) 8, SEEK_SET);
+	fseeko (bootimage, (off_t) 8, SEEK_SET);
 	memset (&bi_table, 0, sizeof (bi_table));
 	/* Is it always safe to assume PVD is at session_start+16? */
 	set_731 (bi_table.pvd_addr, session_start + 16);
@@ -320,8 +320,9 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
 	set_731 (bi_table.file_length, de->size);
 	set_731 (bi_table.file_checksum, bi_checksum);
 
-	write (bootimage, &bi_table, sizeof (bi_table)); /* FIXME: check return value */
-	close (bootimage);
+	if (fwrite (&bi_table, 1, sizeof (bi_table), bootimage) != sizeof (bi_table))
+	  error (1, errno, "Error writing to boot image (%s)", bootimage);
+	fclose (bootimage);
       }
 
 } /* get_torito_desc(... */
