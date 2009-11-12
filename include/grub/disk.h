@@ -42,6 +42,7 @@ enum grub_disk_dev_id
     GRUB_DISK_DEVICE_PXE_ID,
     GRUB_DISK_DEVICE_SCSI_ID,
     GRUB_DISK_DEVICE_FILE_ID,
+    GRUB_DISK_DEVICE_LUKS_ID
   };
 
 struct grub_disk;

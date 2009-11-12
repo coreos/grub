@@ -33,8 +33,6 @@
 #include <grub/command.h>
 #include <grub/crypto.h>
 
-extern gcry_md_spec_t _gcry_digest_spec_md5;
-
 /* This prefix is used by xnu and boot-132 to hash 
    together with volume serial. */
 static grub_uint8_t hash_prefix[16] 
@@ -49,18 +47,18 @@ grub_cmd_xnu_uuid (grub_command_t cmd __attribute__ ((unused)),
   grub_uint8_t *xnu_uuid;
   char uuid_string[sizeof ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")];
   char *ptr;
-  grub_uint8_t ctx[_gcry_digest_spec_md5.contextsize];
+  grub_uint8_t ctx[GRUB_MD_MD5->contextsize];
 
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "UUID required");
 
   serial = grub_cpu_to_be64 (grub_strtoull (args[0], 0, 16));
 
-  _gcry_digest_spec_md5.init (&ctx);
-  _gcry_digest_spec_md5.write (&ctx, hash_prefix, sizeof (hash_prefix));
-  _gcry_digest_spec_md5.write (&ctx, &serial, sizeof (serial));
-  _gcry_digest_spec_md5.final (&ctx);
-  xnu_uuid = _gcry_digest_spec_md5.read (&ctx);
+  GRUB_MD_MD5->init (&ctx);
+  GRUB_MD_MD5->write (&ctx, hash_prefix, sizeof (hash_prefix));
+  GRUB_MD_MD5->write (&ctx, &serial, sizeof (serial));
+  GRUB_MD_MD5->final (&ctx);
+  xnu_uuid = GRUB_MD_MD5->read (&ctx);
 
   grub_sprintf (uuid_string,
 		"%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",

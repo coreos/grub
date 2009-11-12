@@ -26,6 +26,20 @@ conf = open (os.path.join (outdir, "conf", "gcry.rmk"), "w")
 conf.write ("# -*- makefile -*-\n\n")
 chlog = ""
 
+mdblocksizes = {"_gcry_digest_spec_crc32" : 1,
+                "_gcry_digest_spec_crc32_rfc1510" : 1,
+                "_gcry_digest_spec_crc24_rfc2440" : 1,
+                "_gcry_digest_spec_md4" : 64,
+                "_gcry_digest_spec_md5" : 64,
+                "_gcry_digest_spec_rmd160" : 64,
+                "_gcry_digest_spec_sha1" : 64,
+                "_gcry_digest_spec_sha224" : 64,
+                "_gcry_digest_spec_sha256" : 64,
+                "_gcry_digest_spec_sha384" : 128,
+                "_gcry_digest_spec_sha512" : 128,
+                "_gcry_digest_spec_tiger" : 64,
+                "_gcry_digest_spec_whirlpool" : 64}
+
 for cipher_file in cipher_files:
     infile = os.path.join (cipher_dir_in, cipher_file)
     outfile = os.path.join (cipher_dir_out, cipher_file)
@@ -44,6 +58,8 @@ for cipher_file in cipher_files:
         hold = False
         skip = False
         skip2 = False
+        ismd = False
+        iscomma = False
         for line in f:
             if skip:
                 if line[0] == "}":
@@ -53,6 +69,16 @@ for cipher_file in cipher_files:
                 if not re.search (" *};", line) is None:
                     skip2 = False
                 continue
+            if ismd:
+                if not re.search (" *};", line) is None:
+                    if not mdblocksizes.has_key (mdname):
+                        print ("ERROR: Unknown digest blocksize: %s\n" % mdname)
+                        exit (1)
+                    if not iscomma:
+                        fw.write ("    ,\n")
+                    fw.write ("    .blocksize = %s\n" % mdblocksizes [mdname])
+                    ismd = False
+                iscomma = not re.search (",$", line) is None
             if hold:
                 hold = False
                 # We're optimising for size.
@@ -85,9 +111,11 @@ for cipher_file in cipher_files:
                 ciphernames.append (ciphername)
             m = re.match ("gcry_md_spec_t", line)
             if isc and not m is None:
+                assert (not ismd)
                 mdname = line [len ("gcry_md_spec_t"):].strip ()
                 mdname = re.match("[a-zA-Z0-9_]*",mdname).group ()
                 mdnames.append (mdname)
+                ismd = True
             m = re.match ("static const char \*selftest.*;$", line)
             if not m is None:
                 fname = line[len ("static const char \*"):]

@@ -25,6 +25,8 @@
 
 #include <grub/symbol.h>
 #include <grub/types.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
 
 typedef enum 
   {
@@ -127,35 +129,6 @@ typedef struct gcry_cipher_spec
   struct gcry_cipher_spec *next;
 } gcry_cipher_spec_t;
 
-/* Definition of a function used to report selftest failures. 
-   DOMAIN is a string describing the function block:
-          "cipher", "digest", "pubkey or "random",
-   ALGO   is the algorithm under test,
-   WHAT   is a string describing what has been tested,
-   DESC   is a string describing the error. */
-typedef void (*selftest_report_func_t)(const char *domain,
-                                       int algo, 
-                                       const char *what,
-                                       const char *errdesc);
-
-/* Definition of the selftest functions.  */
-typedef gpg_err_code_t (*selftest_func_t)
-     (int algo, int extended, selftest_report_func_t report);
-
-/* The type used to convey additional information to a cipher.  */
-typedef gpg_err_code_t (*cipher_set_extra_info_t)
-     (void *c, int what, const void *buffer, grub_size_t buflen);
-
-
-/* Extra module specification structures.  These are used for internal
-   modules which provide more functions than available through the
-   public algorithm register APIs.  */
-typedef struct cipher_extra_spec
-{
-  selftest_func_t selftest;
-  cipher_set_extra_info_t set_extra_info;
-} cipher_extra_spec_t;
-
 /* Type for the md_init function.  */
 typedef void (*gcry_md_init_t) (void *c);
 
@@ -180,12 +153,14 @@ typedef struct gcry_md_spec
   unsigned char *asnoid;
   int asnlen;
   gcry_md_oid_spec_t *oids;
-  int mdlen;
+  grub_size_t mdlen;
   gcry_md_init_t init;
   gcry_md_write_t write;
   gcry_md_final_t final;
   gcry_md_read_t read;
   grub_size_t contextsize; /* allocate this amount of context */
+  /* Block size, needed for HMAC.  */
+  grub_size_t blocksize;
   struct gcry_md_spec *next;
 } gcry_md_spec_t;
 
@@ -199,7 +174,7 @@ grub_cipher_register (gcry_cipher_spec_t *cipher)
   grub_ciphers = cipher;
 }
 
-static inline void 
+static inline void
 grub_cipher_unregister (gcry_cipher_spec_t *cipher)
 {
   gcry_cipher_spec_t **ciph;
@@ -224,7 +199,172 @@ grub_md_unregister (gcry_md_spec_t *cipher)
       *ciph = (*ciph)->next;
 }
 
+static inline void
+grub_crypto_hash (const gcry_md_spec_t *hash, void *out, void *in,
+		  grub_size_t inlen)
+{
+  grub_uint8_t ctx[hash->contextsize];
+  hash->init (&ctx);
+  hash->write (&ctx, in, inlen);
+  hash->final (&ctx);
+  grub_memcpy (out, hash->read (&ctx), hash->mdlen);
+}
+
+static inline const gcry_md_spec_t *
+grub_crypto_lookup_md_by_name (const char *name)
+{
+  const gcry_md_spec_t *md;
+  for (md = grub_digests; md; md = md->next)
+    if (grub_strcasecmp (name, md->name) == 0)
+      return md;
+  return NULL;
+}
+
+typedef struct grub_crypto_cipher_handle
+{
+  const struct gcry_cipher_spec *cipher;
+  char ctx[0];
+} *grub_crypto_cipher_handle_t;
+
+static inline const gcry_cipher_spec_t *
+grub_crypto_lookup_cipher_by_name (const char *name)
+{
+  const gcry_cipher_spec_t *ciph;
+  for (ciph = grub_ciphers; ciph; ciph = ciph->next)
+    {
+      const char **alias;
+      if (grub_strcasecmp (name, ciph->name) == 0)
+	return ciph;
+      if (!ciph->aliases)
+	continue;
+      for (alias = ciph->aliases; *alias; alias++)
+	if (grub_strcasecmp (name, *alias) == 0)
+	  return ciph;
+    }
+  return NULL;
+}
+
+
+static inline grub_crypto_cipher_handle_t
+grub_crypto_cipher_open (const struct gcry_cipher_spec *cipher)
+{
+  grub_crypto_cipher_handle_t ret;
+  ret = grub_malloc (sizeof (*ret) + cipher->contextsize);
+  if (!ret)
+    return NULL;
+  ret->cipher = cipher;
+  return ret;
+}
+
+static inline gcry_err_code_t
+grub_crypto_cipher_set_key (grub_crypto_cipher_handle_t cipher,
+			    const unsigned char *key,
+			    unsigned keylen)
+{
+  return cipher->cipher->setkey (cipher->ctx, key, keylen);
+}
+
+
+static inline void
+grub_crypto_cipher_close (grub_crypto_cipher_handle_t cipher)
+{
+  grub_free (cipher);
+}
+
+
+static inline void
+grub_crypto_xor (void *out, const void *in1, const void *in2, grub_size_t size)
+{
+  const grub_uint8_t *in1ptr = in1, *in2ptr = in2;
+  grub_uint8_t *outptr = out;
+  while (size--)
+    {
+      *outptr = *in1ptr ^ *in2ptr;
+      in1ptr++;
+      in2ptr++;
+      outptr++;
+    }
+}
+
+static inline grub_err_t
+grub_crypto_ecb_decrypt (grub_crypto_cipher_handle_t cipher,
+			 void *out, void *in, grub_size_t size)
+{
+  grub_uint8_t *inptr, *outptr, *end;
+  if (size % cipher->cipher->blocksize != 0)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
+		       "This encryption can't decrypt partial blocks");
+  end = (grub_uint8_t *) in + size;
+  for (inptr = in, outptr = out; inptr < end;
+       inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
+    cipher->cipher->decrypt (cipher->ctx, outptr, inptr);
+  return GRUB_ERR_NONE;
+}
+
+static inline grub_err_t
+grub_crypto_ecb_encrypt (grub_crypto_cipher_handle_t cipher,
+			 void *out, void *in, grub_size_t size)
+{
+  grub_uint8_t *inptr, *outptr, *end;
+  if (size % cipher->cipher->blocksize != 0)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
+		       "This encryption can't decrypt partial blocks");
+  end = (grub_uint8_t *) in + size;
+  for (inptr = in, outptr = out; inptr < end;
+       inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
+    cipher->cipher->encrypt (cipher->ctx, outptr, inptr);
+  return GRUB_ERR_NONE;
+}
+
+static inline grub_err_t
+grub_crypto_cbc_encrypt (grub_crypto_cipher_handle_t cipher,
+			 void *out, void *in, grub_size_t size,
+			 void *iv_in)
+{
+  grub_uint8_t *inptr, *outptr, *end;
+  void *iv;
+  if (size % cipher->cipher->blocksize != 0)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
+		       "This encryption can't decrypt partial blocks");
+  end = (grub_uint8_t *) in + size;
+  iv = iv_in;
+  for (inptr = in, outptr = out; inptr < end;
+       inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
+    {
+      grub_crypto_xor (outptr, inptr, iv, cipher->cipher->blocksize);
+      cipher->cipher->encrypt (cipher->ctx, outptr, outptr);
+      iv = outptr;
+    }
+  grub_memcpy (iv_in, iv, cipher->cipher->blocksize);
+  return GRUB_ERR_NONE;
+}
+
+static inline grub_err_t
+grub_crypto_cbc_decrypt (grub_crypto_cipher_handle_t cipher,
+			 void *out, void *in, grub_size_t size,
+			 void *iv)
+{
+  grub_uint8_t *inptr, *outptr, *end;
+  grub_uint8_t ivt[cipher->cipher->blocksize];
+  if (size % cipher->cipher->blocksize != 0)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
+		       "This encryption can't decrypt partial blocks");
+  end = (grub_uint8_t *) in + size;
+  for (inptr = in, outptr = out; inptr < end;
+       inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
+    {
+      grub_memcpy (ivt, inptr, cipher->cipher->blocksize);
+      cipher->cipher->decrypt (cipher->ctx, outptr, inptr);
+      grub_crypto_xor (outptr, outptr, iv, cipher->cipher->blocksize);
+      grub_memcpy (iv, ivt, cipher->cipher->blocksize);
+    }
+  return GRUB_ERR_NONE;
+}
+
 
 void EXPORT_FUNC(grub_burn_stack) (grub_size_t size);
+
+extern gcry_md_spec_t _gcry_digest_spec_md5;
+#define GRUB_MD_MD5 ((const gcry_md_spec_t *) &_gcry_digest_spec_md5)
 
 #endif
