@@ -181,8 +181,8 @@ read_handler_list (void)
 	  file = grub_file_open (filename);
 	  if (file)
 	    {
-	      char *buf = 0;
-	      for (;; grub_free(buf))
+	      char *buf = NULL;
+	      for (;; grub_free (buf))
 		{
 		  char *p;
 

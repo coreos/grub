@@ -25,22 +25,15 @@
 #include <grub/normal.h>
 
 /* This is used to store the names of filesystem modules for auto-loading.  */
-struct grub_fs_module_list
-{
-  char *name;
-  struct grub_fs_module_list *next;
-};
-typedef struct grub_fs_module_list *grub_fs_module_list_t;
-
-static grub_fs_module_list_t fs_module_list = 0;
+static grub_named_list_t fs_module_list;
 
 /* The auto-loading hook for filesystems.  */
 static int
 autoload_fs_module (void)
 {
-  grub_fs_module_list_t p;
+  grub_named_list_t p;
 
-  while ((p = fs_module_list) != 0)
+  while ((p = fs_module_list) != NULL)
     {
       if (! grub_dl_get (p->name) && grub_dl_load (p->name))
 	return 1;
@@ -84,7 +77,7 @@ read_fs_list (void)
 		  char *buf;
 		  char *p;
 		  char *q;
-		  grub_fs_module_list_t fs_mod;
+		  grub_named_list_t fs_mod;
 
 		  buf = grub_file_getline (file);
 		  if (! buf)
