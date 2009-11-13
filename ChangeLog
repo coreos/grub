@@ -1,5 +1,24 @@
 2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/grub/multiboot.h (struct grub_multiboot_header): Move
+	from here ...
+	* include/multiboot.h (struct multiboot_header): ... to here.  Update
+	all users.
+	* include/grub/multiboot.h (struct grub_multiboot_info): Move
+	from here ...
+	* include/multiboot.h (struct multiboot_info): ... to here.  Update
+	all users.
+	* include/grub/multiboot.h (struct grub_multiboot_mmap_entry): Move
+	from here ...
+	* include/multiboot.h (struct multiboot_mmap_entry): ... to here.
+	Update all users.
+	* include/grub/multiboot.h (struct grub_mod_list): Move
+	from here ...
+	* include/multiboot.h (struct multiboot_mod_list): ... to here.
+	Update all users.
+
+2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/multiboot2.h (multiboot_word): Rename from this ...
 	(multiboot2_word): ... to this.  Update all users.
 	(multiboot_header): Rename from this ...
