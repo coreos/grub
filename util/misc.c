@@ -522,9 +522,9 @@ make_system_path_relative_to_its_root (const char *path)
   free (buf2);
 
   len = strlen (buf3);
-  while (buf2[len - 1] == '/' && len > 1)
+  while (buf3[len - 1] == '/' && len > 1)
     {
-      buf2[len - 1] = '\0';
+      buf3[len - 1] = '\0';
       len--;
     }
 
