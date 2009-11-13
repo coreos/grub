@@ -95,11 +95,11 @@ while [ "x$list" != "x" ] ; do
     linux_root_device_thisversion=${GRUB_DEVICE}
   fi
 
-  linux_entry "${OS}, with Linux ${version}" \
-      "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
+  linux_entry $eval_gettext ("${OS}, with Linux ${version}" \
+      "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}")
   if [ "x${GRUB_DISABLE_LINUX_RECOVERY}" != "xtrue" ]; then
-    linux_entry "${OS}, with Linux ${version} (recovery mode)" \
-	"single ${GRUB_CMDLINE_LINUX}"
+    linux_entry $eval_gettext ("${OS}, with Linux ${version} (recovery mode)" \
+	"single ${GRUB_CMDLINE_LINUX}")
   fi
 
   list=`echo $list | tr ' ' '\n' | grep -vx $linux | tr '\n' ' '`

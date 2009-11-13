@@ -93,8 +93,8 @@ print_message (int nested, int edit)
     }
   else
     {
-      grub_printf ("\n\
-      Use the %C and %C keys to select which entry is highlighted.\n",
+      grub_printf (_("\n\
+      Use the %C and %C keys to select which entry is highlighted.\n"),
 		   (grub_uint32_t) GRUB_TERM_DISP_UP, (grub_uint32_t) GRUB_TERM_DISP_DOWN);
       grub_printf ("\
       Press enter to boot the selected OS, \'e\' to edit the\n\

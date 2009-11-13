@@ -1,0 +1,285 @@
+/* gettext.c - gettext module */
+/*
+ *  GRUB  --  GRand Unified Bootloader
+ *  Copyright (C) 2009 Free Software Foundation, Inc.
+ *
+ *  GRUB is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  GRUB is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <grub/types.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
+#include <grub/err.h>
+#include <grub/dl.h>
+#include <grub/normal.h>
+#include <grub/file.h>
+#include <grub/kernel.h>
+
+/* 
+   .mo file information from: 
+   http://www.gnu.org/software/autoconf/manual/gettext/MO-Files.html .
+*/
+
+
+static grub_file_t grub_mofile_open (const char *name);
+static grub_file_t fd_mo;
+
+static int grub_gettext_offsetoriginal;
+static int grub_gettext_max;
+
+static const char* (*grub_gettext_original) (const char *s);
+
+#define GETTEXT_MAGIC_NUMBER 0
+#define GETTEXT_FILE_FORMAT 4
+#define GETTEXT_NUMBER_OF_STRINGS 8
+#define GETTEXT_OFFSET_ORIGINAL 12
+#define GETTEXT_OFFSET_TRANSLATION 16
+
+#define MO_MAGIC_NUMBER 0x950412de
+
+static grub_uint32_t
+grub_gettext_get_info (int offset)
+{
+  grub_uint32_t value;
+
+  grub_file_seek (fd_mo, offset);
+  grub_file_read (fd_mo, (char*) &value, 4);
+  value = grub_cpu_to_le32 (value);
+  return value;
+}
+
+static void
+grub_gettext_getstring_from_offset (grub_uint32_t offset, grub_uint32_t length, char *translation)
+{
+  grub_file_seek (fd_mo, offset);
+  grub_file_read (fd_mo, translation, length);
+  translation[length] = '\0';
+}
+
+static char*
+grub_gettext_gettranslation_from_position (int position)
+{
+  int offsettranslation;
+  int internal_position;
+  grub_uint32_t length, offset;
+  char *translation;
+
+  offsettranslation = grub_gettext_get_info (GETTEXT_OFFSET_TRANSLATION);
+
+  internal_position = offsettranslation + position * 8;
+
+  grub_file_seek (fd_mo, internal_position);
+  grub_file_read (fd_mo, (char*) &length, 4);
+  length = grub_cpu_to_le32 (length);
+  
+  grub_file_seek (fd_mo, internal_position + 4),
+  grub_file_read (fd_mo, (char*) &offset, 4);
+  offset = grub_cpu_to_le32 (offset);
+
+  translation = grub_malloc(length + 1);
+  grub_gettext_getstring_from_offset (offset, length, translation);
+
+  return translation;
+}
+
+static char*
+grub_gettext_getstring_from_position (int position)
+{
+  int internal_position;
+  int length, offset;
+  char *original;
+
+  /* Get position for string i.  */
+  internal_position = grub_gettext_offsetoriginal + (position * 8);
+
+  /* Get the length of the string i.  */
+  grub_file_seek (fd_mo, internal_position);
+  grub_file_read (fd_mo, (char *) &length, 4);
+
+  /* Get the offset of the string i.  */
+  grub_file_seek (fd_mo, internal_position + 4);
+  grub_file_read (fd_mo, (char *) &offset, 4);
+
+  /* Get the string i.  */
+  original = grub_malloc (length + 1);
+  grub_gettext_getstring_from_offset (offset, length, original);
+
+  return original;
+}
+
+static const char*
+grub_gettext_translate (const char *orig)
+{
+  char *current_string;
+  char *ret;
+
+  int min,max,current;
+
+  if (fd_mo == 0)
+    return orig;
+
+  min = 0;
+  max = grub_gettext_max;
+
+  current = (max + min) / 2;
+
+  while (current != min && current != max)
+    {
+      current_string = grub_gettext_getstring_from_position (current);
+
+      /* Search by bisection.  */
+      if (grub_strcmp (current_string, orig) < 0)
+        {
+          grub_free(current_string);
+          min=current;
+        }
+      else if (grub_strcmp (current_string, orig) > 0)
+        {
+          grub_free(current_string);
+          max=current;
+        }
+      else if (grub_strcmp (current_string, orig) == 0)
+        {
+          grub_free(current_string);
+          return grub_gettext_gettranslation_from_position (current);
+        }
+    current = (max+min)/2;
+    }
+
+  ret = grub_malloc(grub_strlen(orig) + 1);
+  grub_strcpy(ret,orig);
+  return ret;
+}
+
+/* This is similar to grub_gzfile_open. */
+static grub_file_t
+grub_mofile_open (const char *filename)
+{
+  int unsigned magic;
+  int version;
+
+  /* Using fd_mo and not another variable because
+     it's needed for grub_gettext_get_info.  */
+
+  fd_mo = grub_file_open (filename);
+  if (! fd_mo)
+    {
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "Cannot read %s",filename);
+      return 0;
+    }
+
+  magic = grub_gettext_get_info (GETTEXT_MAGIC_NUMBER);
+
+  if (magic != MO_MAGIC_NUMBER)
+    {
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, "mo: invalid mo file: %s", filename);
+      grub_file_close (fd_mo);
+      fd_mo = 0;
+      return 0;
+    }
+  
+  version = grub_gettext_get_info (GETTEXT_FILE_FORMAT);
+
+  if (version != 0)
+    {
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, "mo: invalid mo version in file: %s", filename);
+      fd_mo = 0;
+      return 0;
+    }
+  
+  /*
+  Do we want .mo.gz files? Then, the code:
+  file = grub_gzio_open (io, 0); // 0: transparent
+  if (! file)
+    {
+      grub_printf("Problems opening the file\n");
+      grub_file_close (io);
+      return 0;
+    }
+  */
+
+  return fd_mo;
+}
+
+static void
+grub_gettext_init_ext (const char *lang)
+{
+  char *mo_file;
+  char *grub_prefix;
+
+  grub_prefix = grub_env_get ("prefix");
+  
+  fd_mo = 0;
+      
+  // mo_file e.g.: /boot/grub/locale/ca.mo
+
+  mo_file = grub_malloc (grub_strlen (grub_prefix) + sizeof ("/locale/") + grub_strlen (lang) + sizeof(".mo"));
+ 
+  // Warning: if changing some paths in the below line, change the grub_malloc
+  // contents below
+ 
+  grub_sprintf (mo_file, "%s/locale/%s.mo", grub_prefix, lang);
+  grub_dprintf(" -------------- %s ",mo_file);
+
+  fd_mo = grub_mofile_open(mo_file);
+  grub_free (mo_file);
+
+  if (fd_mo)
+    {
+      grub_gettext_offsetoriginal = grub_gettext_get_info(GETTEXT_OFFSET_ORIGINAL);
+      grub_gettext_max = grub_gettext_get_info(GETTEXT_NUMBER_OF_STRINGS);
+
+      grub_gettext_original = grub_gettext;
+      grub_gettext = grub_gettext_translate;
+    }
+}
+
+static char*
+grub_gettext_env_write_lang (struct grub_env_var *var __attribute__ ((unused)),
+			     const char *val)
+{
+  grub_gettext_init_ext (val);
+
+  return grub_strdup (val);
+}
+
+GRUB_MOD_INIT(gettext)
+{
+  (void)mod;			/* To stop warning.  */
+ 
+  const char *lang;
+
+  lang = grub_env_get ("lang"); 
+
+  grub_gettext_init_ext (lang);
+
+  /* Testing:
+  grub_register_command ("_", grub_cmd_translate, GRUB_COMMAND_FLAG_BOTH,
+			 "_", "internalization support trans", 0);
+  */
+
+  /* Reload .mo file information if lang changes.  */
+  grub_register_variable_hook ("lang", NULL, grub_gettext_env_write_lang);
+
+  /* Preserve hooks after context changes.  */
+  grub_env_export ("lang");
+}
+
+GRUB_MOD_FINI(gettext)
+{
+  if (fd_mo != 0)
+    grub_file_close(fd_mo);
+
+  grub_gettext = grub_gettext_original;
+}
