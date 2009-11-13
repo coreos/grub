@@ -1,5 +1,5 @@
 dnl Configure script for GRUB.
-dnl Copyright 1999,2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+dnl Copyright 1999,2000,2001,2002,2003,2004,2005,2008,2009 Free Software Foundation, Inc.
 
 dnl Permission to use, copy, modify and distribute this software and its
 dnl documentation is hereby granted, provided that both the copyright
@@ -13,42 +13,12 @@ dnl LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
 dnl USE OF THIS SOFTWARE.
 
 AC_PREREQ(2.57)
-AC_INIT([GRUB], [0.97], [bug-grub@gnu.org])
-AC_CONFIG_SRCDIR([stage2/stage2.c])
+AC_INIT([Multiboot], [0.6.95], [bug-grub@gnu.org])
+AC_CONFIG_SRCDIR([docs/multiboot.texi])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
 
-AC_CANONICAL_HOST
-
-case "$host_cpu" in
-i[[3456]]86) host_cpu=i386 ;;
-x86_64) host_cpu=x86_64 ;;
-*) AC_MSG_ERROR([unsupported CPU type]) ;;
-esac
-
-AC_SUBST(host_cpu)
-AC_SUBST(host_vendor)
-
-#
-# Options
-#
-
-AM_MAINTAINER_MODE
-if test "x$enable_maintainer_mode" = xyes; then
-  AC_PATH_PROG(PERL,perl)
-  if test -z "$PERL"; then
-    AC_MSG_ERROR([perl not found])
-  fi
-fi
-
-# This should be checked before AC_PROG_CC
-if test "x$CFLAGS" = x; then
-  default_CFLAGS=yes
-fi
-
-if test "x$host_cpu" = xx86_64; then
-  CFLAGS="-m32 $CFLAGS"
-fi
+CFLAGS="-m32 $CFLAGS"
 
 #
 # Programs
@@ -56,6 +26,7 @@ fi
 
 AC_CHECK_TOOL(CC, gcc)
 AC_PROG_CC
+AM_PROG_AS
 # We need this for older versions of Autoconf.
 _AM_DEPENDENCIES(CC)
 
@@ -331,341 +302,11 @@ if test "x$enable_packet_retransmission" != xno; then
   NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCONGESTED=1"
 fi
 
-AC_ARG_ENABLE(pci-direct,
-  [  --enable-pci-direct     access PCI directly instead of using BIOS])
-if test "x$enable_pci_direct" = xyes; then
-  NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCONFIG_PCI_DIRECT=1"
-fi
-
-dnl Device drivers.
-AC_ARG_ENABLE(3c509,
-  [  --enable-3c509          enable 3Com509 driver])
-if test "x$enable_3c509" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C509"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c509.o"
-fi
-
-AC_ARG_ENABLE(3c529,
-  [  --enable-3c529          enable 3Com529 driver])
-if test "x$enable_3c529" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C529=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c529.o"
-fi
-
-AC_ARG_ENABLE(3c595,
-  [  --enable-3c595          enable 3Com595 driver])
-if test "x$enable_3c595" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C595=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c595.o"
-fi
-
-AC_ARG_ENABLE(3c90x,
-  [  --enable-3c90x          enable 3Com90x driver])
-if test "x$enable_3c90x" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C90X=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c90x.o"
-fi
-
-AC_ARG_ENABLE(cs89x0,
-  [  --enable-cs89x0         enable CS89x0 driver])
-if test "x$enable_cs89x0" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_CS89X0=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS cs89x0.o"
-fi
-
-AC_ARG_ENABLE(davicom,
-  [  --enable-davicom        enable Davicom driver])
-if test "x$enable_davicom" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_DAVICOM=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS davicom.o"
-fi
-
-AC_ARG_ENABLE(depca,
-  [  --enable-depca          enable DEPCA and EtherWORKS driver])
-if test "x$enable_depca" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_DEPCA=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS depca.o"
-fi
-
-AC_ARG_ENABLE(eepro,
-  [  --enable-eepro          enable Etherexpress Pro/10 driver])
-if test "x$enable_eepro" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_EEPRO=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS eepro.o"
-fi
-
-AC_ARG_ENABLE(eepro100,
-  [  --enable-eepro100       enable Etherexpress Pro/100 driver])
-if test "x$enable_eepro100" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_EEPRO100=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS eepro100.o"
-fi
-
-AC_ARG_ENABLE(epic100,
-  [  --enable-epic100        enable SMC 83c170 EPIC/100 driver])
-if test "x$enable_epic100" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_EPIC100=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS epic100.o"
-fi
-
-AC_ARG_ENABLE(3c507,
-  [  --enable-3c507          enable 3Com507 driver])
-if test "x$enable_3c507" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C507=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c507.o"
-fi
-
-AC_ARG_ENABLE(exos205,
-  [  --enable-exos205        enable EXOS205 driver])
-if test "x$enable_exos205" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_EXOS205=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS exos205.o"
-fi
-
-AC_ARG_ENABLE(ni5210,
-  [  --enable-ni5210         enable Racal-Interlan NI5210 driver])
-if test "x$enable_ni5210" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NI5210=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ni5210.o"
-fi
-
-AC_ARG_ENABLE(lance,
-  [  --enable-lance          enable Lance PCI PCNet/32 driver])
-if test "x$enable_lance" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_LANCE=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS lance.o"
-fi
-
-AC_ARG_ENABLE(ne2100,
-  [  --enable-ne2100         enable Novell NE2100 driver])
-if test "x$enable_ne2100" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NE2100=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ne2100.o"
-fi
-
-AC_ARG_ENABLE(ni6510,
-  [  --enable-ni6510         enable Racal-Interlan NI6510 driver])
-if test "x$enable_ni6510" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NI6510=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ni6510.o"
-fi
-
-AC_ARG_ENABLE(natsemi,
-  [  --enable-natsemi        enable NatSemi DP8381x driver])
-if test "x$enable_natsemi" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NATSEMI=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS natsemi.o"
-fi
-
-AC_ARG_ENABLE(ni5010,
-  [  --enable-ni5010         enable Racal-Interlan NI5010 driver])
-if test "x$enable_ni5010" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NI5010=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ni5010.o"
-fi
-
-AC_ARG_ENABLE(3c503,
-  [  --enable-3c503          enable 3Com503 driver])
-if test "x$enable_3c503" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C503=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c503.o"
-fi
-
-AC_ARG_ENABLE(ne,
-  [  --enable-ne             enable NE1000/2000 ISA driver])
-if test "x$enable_ne" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NE=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ne.o"
-fi
-
-AC_ARG_ENABLE(ns8390,
-  [  --enable-ns8390         enable NE2000 PCI driver])
-if test "x$enable_ns8390" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NS8390=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ns8390.o"
-fi
-
-AC_ARG_ENABLE(wd,
-  [  --enable-wd             enable WD8003/8013, SMC8216/8416 driver])
-if test "x$enable_wd" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_WD=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS wd.o"
-fi
-
-AC_ARG_ENABLE(otulip,
-  [  --enable-otulip         enable old Tulip driver])
-if test "x$enable_otulip" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_OTULIP=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS otulip.o"
-fi
-
-AC_ARG_ENABLE(rtl8139,
-  [  --enable-rtl8139        enable Realtek 8139 driver])
-if test "x$enable_rtl8139" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_RTL8139=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS rtl8139.o"
-fi
-
-AC_ARG_ENABLE(sis900,
-  [  --enable-sis900         enable SIS 900 and SIS 7016 driver])
-if test "x$enable_sis900" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_SIS900=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS sis900.o"
-fi
-
-AC_ARG_ENABLE(sk-g16,
-  [  --enable-sk-g16         enable Schneider and Koch G16 driver])
-if test "x$enable_sk_g16" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_SK_G16=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS sk_g16.o"
-fi
-
-AC_ARG_ENABLE(smc9000,
-  [  --enable-smc9000        enable SMC9000 driver])
-if test "x$enable_smc9000" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_SMC9000=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS smc9000.o"
-fi
-
-AC_ARG_ENABLE(tiara,
-  [  --enable-tiara          enable Tiara driver])
-if test "x$enable_tiara" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_TIARA=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS tiara.o"
-fi
-
-AC_ARG_ENABLE(tulip,
-  [  --enable-tulip          enable Tulip driver])
-if test "x$enable_tulip" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_TULIP=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS tulip.o"
-fi
-
-AC_ARG_ENABLE(via-rhine,
-  [  --enable-via-rhine      enable Rhine-I/II driver])
-if test "x$enable_via_rhine" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_VIA_RHINE=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS via_rhine.o"
-fi
-
-AC_ARG_ENABLE(w89c840,
-  [  --enable-w89c840        enable Winbond W89c840, Compex RL100-ATX driver])
-if test "x$enable_w89c840" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_W89C840=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS w89c840.o"
-fi
-
-dnl Check if the netboot support is turned on.
-AM_CONDITIONAL(NETBOOT_SUPPORT, test "x$NET_CFLAGS" != x)
-if test "x$NET_CFLAGS" != x; then
-  FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_TFTP=1"
-fi
-
-dnl Extra options.
-AC_ARG_ENABLE(3c503-shmem,
-  [  --enable-3c503-shmem    use 3c503 shared memory mode])
-if test "x$enable_3c503_shmem" = xyes; then
-  NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DT503_SHMEM=1"
-fi
-
-AC_ARG_ENABLE(3c503-aui,
-  [  --enable-3c503-aui      use AUI by default on 3c503 cards])
-if test "x$enable_3c503_aui" = xyes; then
-  NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DT503_AUI=1"
-fi
-
-AC_ARG_ENABLE(compex-rl2000-fix,
-  [  --enable-compex-rl2000-fix
-                          specify this if you have a Compex RL2000 PCI])
-if test "x$enable_compex_rl2000_fix" = xyes; then
-  NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCOMPEX_RL2000_FIX=1"
-fi
-
-AC_ARG_ENABLE(smc9000-scan,
-  [  --enable-smc9000-scan=LIST
-                          probe for SMC9000 I/O addresses using LIST],
-  [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DSMC9000_SCAN=$enable_smc9000_scan"])
-
-AC_ARG_ENABLE(ne-scan,
-  [  --enable-ne-scan=LIST   probe for NE base address using LIST],
-  [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DNE_SCAN=$enable_ne_scan"],
-  [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DNE_SCAN=0x280,0x300,0x320,0x340"])
-
-AC_ARG_ENABLE(wd-default-mem,
-  [  --enable-wd-default-mem=MEM
-                          set the default memory location for WD/SMC],
-  [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DWD_DEFAULT_MEM=$enable_wd_default_mem"],
-  [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DWD_DEFAULT_MEM=0xCC000"])
-
-AC_ARG_ENABLE(cs-scan,
-  [  --enable-cs-scan=LIST   probe for CS89x0 base address using LIST],
-  [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCS_SCAN=$enable_cs_scan"])
-
-dnl Diskless
-AC_ARG_ENABLE(diskless,
-  [  --enable-diskless       enable diskless support])
-AM_CONDITIONAL(DISKLESS_SUPPORT, test "x$enable_diskless" = xyes)
-
-dnl Hercules terminal
-AC_ARG_ENABLE(hercules,
-  [  --disable-hercules      disable hercules terminal support])
-AM_CONDITIONAL(HERCULES_SUPPORT, test "x$enable_hercules" != xno)
-
-dnl Serial terminal
-AC_ARG_ENABLE(serial,
-  [  --disable-serial        disable serial terminal support])
-AM_CONDITIONAL(SERIAL_SUPPORT, test "x$enable_serial" != xno)
-
-dnl Simulation of the slowness of a serial device.
-AC_ARG_ENABLE(serial-speed-simulation,
-  [  --enable-serial-speed-simulation
-                          simulate the slowness of a serial device])
-AM_CONDITIONAL(SERIAL_SPEED_SIMULATION,
-  test "x$enable_serial_speed_simulation" = xyes)
-
-# Sanity check.
-if test "x$enable_diskless" = xyes; then
-  if test "x$NET_CFLAGS" = x; then
-    AC_MSG_ERROR([You must enable at least one network driver])
-  fi
-fi
-
-dnl Embed a menu string in GRUB itself.
-AC_ARG_ENABLE(preset-menu,
-  [  --enable-preset-menu=FILE
-                          preset a menu file FILE in Stage 2])
-if test "x$enable_preset_menu" = x; then
-  :
-else
-  if test -r $enable_preset_menu; then
-    grub_DEFINE_FILE(PRESET_MENU_STRING, [$enable_preset_menu],
-    		     [Define if there is user specified preset menu string])
-  else
-    AC_MSG_ERROR([Cannot read the preset menu file $enable_preset_menu])
-  fi
-fi
-
 dnl Build the example Multiboot kernel.
 AC_ARG_ENABLE(example-kernel,
   [  --enable-example-kernel
                           build the example Multiboot kernel])
 AM_CONDITIONAL(BUILD_EXAMPLE_KERNEL, test "x$enable_example_kernel" = xyes)
-
-dnl Automatic Linux mem= option.
-AC_ARG_ENABLE(auto-linux-mem-opt,
-  [  --disable-auto-linux-mem-opt
-                          don't pass Linux mem= option automatically])
-if test "x$enable_auto_linux_mem_opt" = xno; then
-  :
-else
-  AC_DEFINE(AUTO_LINUX_MEM_OPT, 1, [Define if you don't want to pass the mem= option to Linux])
-fi
-
-dnl Now substitute the variables.
-AC_SUBST(FSYS_CFLAGS)
-AC_SUBST(NET_CFLAGS)
-AC_SUBST(NET_EXTRAFLAGS)
-AC_SUBST(NETBOOT_DRIVERS)
 
 dnl Because recent automake complains about CCASFLAGS, set it here.
 CCASFLAGS='$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)'
@@ -673,9 +314,5 @@ AC_SUBST(CCASFLAGS)
 
 
 dnl Output.
-AC_CONFIG_FILES([Makefile stage1/Makefile stage2/Makefile \
-		 docs/Makefile lib/Makefile util/Makefile \
-		 grub/Makefile netboot/Makefile util/grub-image \
-		 util/grub-install util/grub-md5-crypt \
-		 util/grub-terminfo util/grub-set-default])
+AC_CONFIG_FILES([Makefile docs/Makefile])
 AC_OUTPUT
