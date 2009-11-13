@@ -6,7 +6,6 @@
 
 	* AUTHORS: Remove GRUB-specific bits.
 	* Makefile.am: Likewise.
-	* THANKS: Likewise.
 	* autogen.sh: Likewise.
 	* configure.ac: Likewise.
 	* docs/Makefile.am: Likewise.
