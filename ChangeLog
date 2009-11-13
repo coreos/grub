@@ -1,5 +1,9 @@
 2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* autogen.sh: New file.
+
+2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Remove everything not related to Multiboot.  A huge number of files
 	was removed (too many to list them here).  The following files were
 	modified:
