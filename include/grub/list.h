@@ -68,7 +68,7 @@ extern void* grub_assert_fail (void);
 struct grub_named_list
 {
   struct grub_named_list *next;
-  const char *name;
+  char *name;
 };
 typedef struct grub_named_list *grub_named_list_t;
 
@@ -91,7 +91,7 @@ void * EXPORT_FUNC(grub_named_list_find) (grub_named_list_t head,
 struct grub_prio_list
 {
   struct grub_prio_list *next;
-  const char *name;
+  char *name;
   int prio;
 };
 typedef struct grub_prio_list *grub_prio_list_t;
