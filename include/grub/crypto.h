@@ -205,6 +205,10 @@ grub_crypto_cbc_decrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, void *in, grub_size_t size,
 			 void *iv);
 void 
+grub_cipher_register (gcry_cipher_spec_t *cipher);
+void
+grub_cipher_unregister (gcry_cipher_spec_t *cipher);
+void 
 grub_md_register (gcry_md_spec_t *digest);
 void 
 grub_md_unregister (gcry_md_spec_t *cipher);
