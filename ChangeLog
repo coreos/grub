@@ -1,3 +1,12 @@
+2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Disable Multiboot2 in i386-ieee1275.  It didn't actually work, and on
+	this platform we should support Multiboot1 first.
+
+	* conf/i386-ieee1275.rmk (pkglib_MODULES): Remove `multiboot.mod'.
+	(multiboot_mod_SOURCES, multiboot_mod_CFLAGS)
+	(multiboot_mod_LDFLAGS, multiboot_mod_ASFLAGS): Remove.
+
 2009-11-12  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/mkisofs/eltorito.c (init_boot_catalog): Handle return code
