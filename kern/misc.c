@@ -161,7 +161,6 @@ grub_vprintf (const char *fmt, va_list args)
   int ret;
 
   ret = grub_vsprintf (0, fmt, args);
-  grub_refresh ();
   return ret;
 }
 
@@ -817,9 +816,6 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 
   if (str)
     *str = '\0';
-
-  if (count && !str)
-    grub_refresh ();
 
   return count;
 }

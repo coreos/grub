@@ -124,6 +124,8 @@ static unsigned int calculate_normal_character_width (grub_font_t font);
 
 static unsigned char calculate_character_width (struct grub_font_glyph *glyph);
 
+static void grub_gfxterm_refresh (void);
+
 static void
 set_term_color (grub_uint8_t term_color)
 {
@@ -815,6 +817,9 @@ grub_gfxterm_cls (void)
 
   /* Mark virtual screen to be redrawn.  */
   dirty_region_add_virtualscreen ();
+
+  dirty_region_redraw ();
+  grub_gfxterm_refresh ();
 }
 
 static void
@@ -877,6 +882,8 @@ grub_gfxterm_refresh (void)
 {
   /* Redraw only changed regions.  */
   dirty_region_redraw ();
+
+  grub_video_swap_buffers ();
 }
 
 static grub_err_t

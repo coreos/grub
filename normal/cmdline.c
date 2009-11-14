@@ -199,8 +199,6 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
       xpos = (plen + lpos) % 79;
       ypos = ystart + (plen + lpos) / 79;
       grub_gotoxy (xpos, ypos);
-
-      grub_refresh ();
     }
 
   void cl_print (int pos, int c)
@@ -241,8 +239,6 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	  cl_print (lpos - len, echo_char);
 	  cl_set_pos ();
 	}
-
-      grub_refresh ();
     }
 
   void cl_delete (unsigned len)
@@ -262,8 +258,6 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	  cl_print (lpos, echo_char);
 	  cl_set_pos ();
 	}
-
-      grub_refresh ();
     }
 
   plen = grub_strlen (prompt);
@@ -282,6 +276,8 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 
   if (history && hist_used == 0)
     grub_history_add (buf);
+
+  grub_refresh ();
 
   while ((key = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != '\n' && key != '\r')
     {
@@ -457,6 +453,8 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	    }
 	  break;
 	}
+
+      grub_refresh ();
     }
 
   grub_putchar ('\n');
