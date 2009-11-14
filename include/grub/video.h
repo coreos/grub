@@ -157,6 +157,16 @@ struct grub_video_mode_info
   grub_uint8_t fg_alpha;
 };
 
+/* A 2D rectangle type.  */
+struct grub_video_rect
+{
+  int x;
+  int y;
+  int width;
+  int height;
+};
+typedef struct grub_video_rect grub_video_rect_t;
+
 struct grub_video_palette_data
 {
   grub_uint8_t r; /* Red color value (0-255).  */
