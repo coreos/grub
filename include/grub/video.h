@@ -34,9 +34,10 @@ struct grub_video_render_target;
 struct grub_video_bitmap;
 
 /* Defines used to describe video mode or rendering target.  */
-/* If following is set render target contains previously displayed image
-   after swapping buffers (otherwise it contains newly displayedd image).
+/* If following is set render target contains currenly displayed image
+   after swapping buffers (otherwise it contains previously displayed image).
  */
+#define GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP	0x00000080
 #define GRUB_VIDEO_MODE_TYPE_PURE_TEXT		0x00000040
 #define GRUB_VIDEO_MODE_TYPE_ALPHA		0x00000020
 #define GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED	0x00000010

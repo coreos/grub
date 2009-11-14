@@ -418,10 +418,11 @@ doublebuf_pageflipping_update_screen (struct grub_video_fbrender_target *front
       return err;
     }
 
-  grub_memcpy (framebuffer.ptr + framebuffer.render_page
-	       * framebuffer.page_size, framebuffer.ptr
-	       + framebuffer.displayed_page * framebuffer.page_size,
-	       framebuffer.page_size);
+  if (framebuffer.mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP)
+    grub_memcpy (framebuffer.ptr + framebuffer.render_page
+		 * framebuffer.page_size, framebuffer.ptr
+		 + framebuffer.displayed_page * framebuffer.page_size,
+		 framebuffer.page_size);
 
   target = framebuffer.back_target;
   framebuffer.back_target = framebuffer.front_target;
@@ -486,19 +487,38 @@ static grub_err_t
 double_buffering_init (unsigned int mode_type, unsigned int mode_mask)
 {
   grub_err_t err;
+  int updating_swap_needed;
 
+  updating_swap_needed
+    = grub_video_check_mode_flag (mode_type, mode_mask,
+				  GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP, 0);
+
+  /* Do double buffering only if it's either requested or efficient.  */
   if (grub_video_check_mode_flag (mode_type, mode_mask,
-				  GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED, 1))
+				  GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED,
+				  !updating_swap_needed))
     {
+      framebuffer.mode_info.mode_type |= GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED;
+      if (updating_swap_needed)
+	framebuffer.mode_info.mode_type |= GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP;
       err = doublebuf_pageflipping_init ();
       if (!err)
-	{
-	  framebuffer.mode_info.mode_type
-	    |= GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED;
-	  return GRUB_ERR_NONE;
-	}
+	return GRUB_ERR_NONE;
+      
+      framebuffer.mode_info.mode_type
+	&= ~(GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED
+	     | GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
 
       grub_errno = GRUB_ERR_NONE;
+    }
+
+  if (grub_video_check_mode_flag (mode_type, mode_mask,
+				  GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED,
+				  0))
+    {
+      framebuffer.mode_info.mode_type 
+	|= (GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED
+	    | GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
 
       err = grub_video_fb_doublebuf_blit_init (&framebuffer.front_target,
 					       &framebuffer.back_target,
@@ -507,11 +527,11 @@ double_buffering_init (unsigned int mode_type, unsigned int mode_mask)
 					       framebuffer.ptr);
 
       if (!err)
-	{
-	  framebuffer.mode_info.mode_type
-	    |= GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED;
-	  return GRUB_ERR_NONE;
-	}
+	return GRUB_ERR_NONE;
+
+      framebuffer.mode_info.mode_type
+	&= ~(GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED
+	     | GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
 
       grub_errno = GRUB_ERR_NONE;
     }

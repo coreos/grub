@@ -474,8 +474,6 @@ dirty_region_redraw (void)
   height = dirty_region.bottom_right_y - y + 1;
 
   redraw_screen_rect (x, y, width, height);
-
-  dirty_region_reset ();
 }
 
 static void
@@ -566,9 +564,6 @@ scroll_up (void)
     {
       /* Remove cursor.  */
       draw_cursor (0);
-
-      /* Redraw only changed regions.  */
-      dirty_region_redraw ();
     }
 
   /* Scroll text buffer with one line to up.  */
@@ -584,27 +579,51 @@ scroll_up (void)
        i++)
     clear_char (&(virtual_screen.text_buffer[i]));
 
-  /* Scroll physical screen.  */
-  grub_video_set_active_render_target (text_layer);
-  color = virtual_screen.bg_color;
-  grub_video_scroll (color, 0, -virtual_screen.normal_char_height);
-  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
-
   /* If we have bitmap, re-draw screen, otherwise scroll physical screen too.  */
   if (bitmap)
     {
+      /* Scroll physical screen.  */
+      grub_video_set_active_render_target (text_layer);
+      color = virtual_screen.bg_color;
+      grub_video_scroll (color, 0, -virtual_screen.normal_char_height);
+
       /* Mark virtual screen to be redrawn.  */
       dirty_region_add_virtualscreen ();
     }
   else
     {
-      /* Clear new border area.  */
-      grub_video_fill_rect (color,
-                            virtual_screen.offset_x, virtual_screen.offset_y,
-                            virtual_screen.width, virtual_screen.normal_char_height);
+      int i = 1;
+      if (mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED
+	  && !(mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP))
+	i++;
+
+      color = virtual_screen.bg_color;
+
+      while (i--)
+	{
+	  /* Clear new border area.  */
+	  grub_video_fill_rect (color,
+				virtual_screen.offset_x,
+				virtual_screen.offset_y,
+				virtual_screen.width,
+				virtual_screen.normal_char_height);
+
+	  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
+	  dirty_region_redraw ();
+
+	  /* Scroll physical screen.  */
+	  grub_video_scroll (color, 0, -virtual_screen.normal_char_height);
+
+	  if (i)
+	    grub_video_swap_buffers ();
+	}
+      dirty_region_reset ();
 
       /* Scroll physical screen.  */
+      grub_video_set_active_render_target (text_layer);
+      color = virtual_screen.bg_color;
       grub_video_scroll (color, 0, -virtual_screen.normal_char_height);
+
 
       /* Draw cursor if visible.  */
       if (virtual_screen.cursor_state)
@@ -818,7 +837,6 @@ grub_gfxterm_cls (void)
   /* Mark virtual screen to be redrawn.  */
   dirty_region_add_virtualscreen ();
 
-  dirty_region_redraw ();
   grub_gfxterm_refresh ();
 }
 
@@ -884,6 +902,11 @@ grub_gfxterm_refresh (void)
   dirty_region_redraw ();
 
   grub_video_swap_buffers ();
+
+  if (mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED
+      && !(mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP))
+    dirty_region_redraw ();
+  dirty_region_reset ();
 }
 
 static grub_err_t
