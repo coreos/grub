@@ -227,6 +227,8 @@ static const struct ld_option ld_options[] =
       'f', NULL, "Follow symbolic links", ONE_DASH },
   { {"help", no_argument, NULL, OPTION_HELP},
       '\0', NULL, "Print option help", ONE_DASH },
+  { {"help", no_argument, NULL, OPTION_HELP},
+      '\0', NULL, "Print option help", TWO_DASHES },
   { {"hide", required_argument, NULL, OPTION_I_HIDE},
       '\0', "GLOBFILE", "Hide ISO9660/RR file" , ONE_DASH },
   { {"hide-joliet", required_argument, NULL, OPTION_J_HIDE},
@@ -476,9 +478,9 @@ void usage(){
   unsigned int i;
 /*  const char **targets, **pp;*/
 
-  fprintf (stderr, "Usage: %s [options] file...\n", program_name);
+  printf ("Usage: %s [options] file...\n", program_name);
 
-  fprintf (stderr, "Options:\n");
+  printf ("Options:\n");
   for (i = 0; i < OPTION_COUNT; i++)
     {
       if (ld_options[i].doc != NULL)
@@ -487,7 +489,7 @@ void usage(){
 	  int len;
 	  unsigned int j;
 
-	  fprintf (stderr, "  ");
+	  printf ("  ");
 
 	  comma = FALSE;
 	  len = 2;
@@ -498,16 +500,16 @@ void usage(){
 	      if (ld_options[j].shortopt != '\0'
 		  && ld_options[j].control != NO_HELP)
 		{
-		  fprintf (stderr, "%s-%c", comma ? ", " : "", ld_options[j].shortopt);
+		  printf ("%s-%c", comma ? ", " : "", ld_options[j].shortopt);
 		  len += (comma ? 2 : 0) + 2;
 		  if (ld_options[j].arg != NULL)
 		    {
 		      if (ld_options[j].opt.has_arg != optional_argument)
 			{
-			  fprintf (stderr, " ");
+			  putchar (' ');
 			  ++len;
 			}
-		      fprintf (stderr, "%s", ld_options[j].arg);
+		      printf ("%s", ld_options[j].arg);
 		      len += strlen (ld_options[j].arg);
 		    }
 		  comma = TRUE;
@@ -522,7 +524,7 @@ void usage(){
 	      if (ld_options[j].opt.name != NULL
 		  && ld_options[j].control != NO_HELP)
 		{
-		  fprintf (stderr, "%s-%s%s",
+		  printf ("%s-%s%s",
 			  comma ? ", " : "",
 			  ld_options[j].control == TWO_DASHES ? "-" : "",
 			  ld_options[j].opt.name);
@@ -532,7 +534,7 @@ void usage(){
 			  + strlen (ld_options[j].opt.name));
 		  if (ld_options[j].arg != NULL)
 		    {
-		      fprintf (stderr, " %s", ld_options[j].arg);
+		      printf (" %s", ld_options[j].arg);
 		      len += 1 + strlen (ld_options[j].arg);
 		    }
 		  comma = TRUE;
@@ -543,14 +545,14 @@ void usage(){
 
 	  if (len >= 30)
 	    {
-	      fprintf (stderr, "\n");
+	      printf ("\n");
 	      len = 0;
 	    }
 
 	  for (; len < 30; len++)
-	    fputc (' ', stderr);
+	    putchar (' ');
 
-	  fprintf (stderr, "%s\n", ld_options[i].doc);
+	  printf ("%s\n", ld_options[i].doc);
 	}
     }
   exit(1);

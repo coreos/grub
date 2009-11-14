@@ -1,5 +1,12 @@
 2009-11-14  Robert Millan  <rmh.grub@aybabtu.com>
 
+	Fix help2man generation for mkisofs.
+
+	* util/mkisofs/mkisofs.c (ld_options): Recognize --help.
+	(usage): Send output to stdout (rather than stderr).
+
+2009-11-14  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* conf/i386-coreboot.rmk (grub_mkrescue_SOURCES): Replace
 	`util/i386/coreboot/grub-mkrescue.in' with `util/grub-mkrescue.in'.
 	* conf/i386-pc.rmk (grub_mkrescue_SOURCES): Replace
