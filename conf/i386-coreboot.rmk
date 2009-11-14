@@ -153,7 +153,7 @@ sbin_SCRIPTS += grub-install
 grub_install_SOURCES = util/grub-install.in
 
 bin_SCRIPTS += grub-mkrescue
-grub_mkrescue_SOURCES = util/i386/coreboot/grub-mkrescue.in
+grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 # Modules.
 pkglib_MODULES = linux.mod multiboot.mod 		\

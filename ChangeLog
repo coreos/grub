@@ -1,3 +1,18 @@
+2009-11-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/i386-coreboot.rmk (grub_mkrescue_SOURCES): Replace
+	`util/i386/coreboot/grub-mkrescue.in' with `util/grub-mkrescue.in'.
+	* conf/i386-pc.rmk (grub_mkrescue_SOURCES): Replace
+	`util/i386/pc/grub-mkrescue.in' with `util/grub-mkrescue.in'.
+	(bin_SCRIPTS): Add `grub-mkfloppy'.
+	(grub_mkfloppy_SOURCES): New variable.
+
+	* util/grub-mkrescue.in: New file.
+	* util/i386/pc/grub-mkfloppy.in: New file.
+
+	* util/i386/coreboot/grub-mkrescue.in: Remove.
+	* util/i386/pc/grub-mkrescue.in: Remove.
+
 2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/multiboot.h (struct grub_multiboot_header): Move
