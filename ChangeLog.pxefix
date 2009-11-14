@@ -1,0 +1,6 @@
+2009-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/i386/pc/pxe.c (grub_pxefs_open): Correctly handle PXE choosing
+	blocksize different from specified.
+	(grub_pxefs_read): Likewise.
+
