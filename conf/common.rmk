@@ -28,6 +28,16 @@ ifeq ($(enable_grub_fstest), yes)
 bin_UTILITIES += grub-fstest
 endif
 
+bin_UTILITIES += grub-mkisofs
+grub_mkisofs_SOURCES = util/mkisofs/eltorito.c util/mkisofs/fnmatch.c	\
+	util/mkisofs/getopt1.c util/mkisofs/getopt.c			\
+	util/mkisofs/hash.c util/mkisofs/joliet.c			\
+	util/mkisofs/match.c util/mkisofs/mkisofs.c			\
+	util/mkisofs/multi.c util/mkisofs/name.c			\
+	util/mkisofs/rock.c util/mkisofs/tree.c				\
+	util/mkisofs/write.c
+grub_mkisofs_CFLAGS = -I$(srcdir)/util/mkisofs/include -Wno-all -Werror
+
 # For grub-fstest.
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
 grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
