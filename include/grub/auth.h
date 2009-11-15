@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GRUB_AURH_HEADER
+#ifndef GRUB_AUTH_HEADER
 #define GRUB_AUTH_HEADER	1
 
 #include <grub/err.h>
@@ -25,11 +25,6 @@
 #define GRUB_GET_PASSWORD(string, len) grub_cmdline_get ("Enter password: ", \
 							 string, len,	\
 							 '*', 0, 0)
-
-/* Like strcmp but untimeable. Accepts NULL as second argument.  */
-int grub_auth_strcmp (const char *user_input, const char *template);
-/* Like strcmp but untimeable and ignores commas in needle.  */
-int grub_auth_strword (const char *haystack, const char *needle);
 
 typedef grub_err_t (*grub_auth_callback_t) (const char*, void *);
 
