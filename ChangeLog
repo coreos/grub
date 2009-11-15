@@ -1,3 +1,8 @@
+2009-11-15  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in (TARGET_CPPFLAGS): Replace `-isystem=$(srcdir)/include'
+	with `-nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include)'.
+
 2009-11-14  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Fix help2man generation for mkisofs.
