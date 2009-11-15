@@ -1,3 +1,9 @@
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Relicense multiboot.h, with RMS' blessing.
+
+	* include/multiboot.h: Change to X11 license.
+
 2009-11-15  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Support --version in grub-mkisofs.
