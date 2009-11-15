@@ -41,6 +41,8 @@ includedir = @includedir@
 pkgdatadir = $(datadir)/`echo @PACKAGE_TARNAME@ | sed '$(transform)'`
 pkglibdir =  $(libdir)/`echo @PACKAGE_TARNAME@/$(target_cpu)-$(platform) | sed '$(transform)'`
 
+LINGUAS = ca
+
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
@@ -153,7 +155,7 @@ include $(srcdir)/conf/$(target_cpu)-$(platform).mk
 
 ### General targets.
 
-CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA)
+CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
 pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
@@ -237,7 +239,7 @@ build_env.mk: Makefile
 	) > $@
 pkglib_BUILDDIR += config.h grub_script.tab.h
 
-all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES)
+all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES) $(foreach lang, $(LINGUAS), po/$(lang).mo)
 
 install: install-local
 
@@ -301,6 +303,13 @@ install-local: all
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
+	$(foreach lang, $(LINGUAS), \
+	$(SHELL) $(mkinstalldirs) $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES
+	@list='po/$(lang).mo'; \
+	for file in $$list; do \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
+	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES/grub.mo; \
+	done)
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(infodir)
 	@list='$(info_INFOS)'; \
 	for file in $$list; do \
@@ -454,6 +463,16 @@ gensymlist.sh: gensymlist.sh.in config.status
 
 genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
+
+po/messages.pot: po/POTFILES
+	xgettext --from-code=utf-8 --keyword=_ -f $< -o $@
+
+po/*.po: po/messages.pot
+	msgmerge -U $@ po/messages.pot
+
+po/%.mo: po/%.po
+	$(MKDIR_P) $$(dirname $@)
+	msgfmt -c --statistics -o $@ $^
 
 .PHONY: all install install-strip uninstall clean mostlyclean distclean
 .PHONY: maintainer-clean info dvi dist check

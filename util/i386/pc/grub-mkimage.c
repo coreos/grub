@@ -33,6 +33,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <locale.h>
+#include <libintl.h>
+#define _(str) gettext(str)
+
 #define _GNU_SOURCE	1
 #include <getopt.h>
 
@@ -315,7 +319,7 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-mkimage --help'' for more information.\n");
+    fprintf (stderr, _("Try ``%s --help'' for more information.\n"), progname);
   else
     printf ("\
 Usage: grub-mkimage [OPTION]... [MODULES]\n\
@@ -348,6 +352,8 @@ main (int argc, char *argv[])
   FILE *fp = stdout;
 
   progname = "grub-mkimage";
+
+  textdomain ("grub");
 
   while (1)
     {
