@@ -22,7 +22,7 @@
    along with this program; if not, see <http://www.gnu.org/licenses/>.
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: mkisofs.c,v 1.32 1999/03/07 21:48:49 eric Exp $";
+static const char *program_name = "grub-mkisofs";
 
 #include <errno.h>
 #include "config.h"
@@ -195,6 +195,8 @@ struct ld_option
 #define OPTION_NO_EMUL_BOOT		171
 #define OPTION_ELTORITO_EMUL_FLOPPY	172
 
+#define OPTION_VERSION			173
+
 static const struct ld_option ld_options[] =
 {
   { {"all-files", no_argument, NULL, 'a'},
@@ -229,6 +231,8 @@ static const struct ld_option ld_options[] =
       '\0', NULL, "Print option help", ONE_DASH },
   { {"help", no_argument, NULL, OPTION_HELP},
       '\0', NULL, "Print option help", TWO_DASHES },
+  { {"version", no_argument, NULL, OPTION_VERSION},
+      '\0', NULL, "Print version information and exit", TWO_DASHES },
   { {"hide", required_argument, NULL, OPTION_I_HIDE},
       '\0', "GLOBFILE", "Hide ISO9660/RR file" , ONE_DASH },
   { {"hide-joliet", required_argument, NULL, OPTION_J_HIDE},
@@ -464,17 +468,6 @@ int goof = 0;
 #endif
 
 void usage(){
-  const char * program_name = "mkisofs";
-#if 0
-	fprintf(stderr,"Usage:\n");
-	fprintf(stderr,
-"mkisofs [-o outfile] [-R] [-V volid] [-v] [-a] \
-[-T]\n [-l] [-d] [-V] [-D] [-L] [-p preparer]"
-"[-P publisher] [ -A app_id ] [-z] \n \
-[-b boot_image_name] [-c boot_catalog-name] \
-[-x path -x path ...] path\n");
-#endif
-
   unsigned int i;
 /*  const char **targets, **pp;*/
 
@@ -886,6 +879,10 @@ int FDECL2(main, int, argc, char **, argv){
 	break;
       case OPTION_HELP:
 	usage ();
+	exit (0);
+	break;
+      case OPTION_VERSION:
+	printf ("%s (%s %s)\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 	exit (0);
 	break;
       case OPTION_NOSPLIT_SL_COMPONENT:

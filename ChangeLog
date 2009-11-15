@@ -1,3 +1,14 @@
+2009-11-15  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Support --version in grub-mkisofs.
+
+	* util/mkisofs/mkisofs.c (rcsid): Remove variable.
+	(OPTION_VERSION): New macro.
+	(ld_options): Recognize --version.
+	(usage): Move `program_name' from here ...
+	(program_name): ... to here.  Add `static' qualifier.
+	(main): Recognize `OPTION_VERSION'.
+
 2009-11-15  Felix Zielcke  <fzielcke@z-51.de>
 
 	* Makefile.in (TARGET_CPPFLAGS): Replace `-isystem=$(srcdir)/include'
