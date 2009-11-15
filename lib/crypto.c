@@ -370,3 +370,18 @@ grub_crypto_gcry_error (gcry_err_code_t in)
     return GRUB_ERR_NONE;
   return GRUB_ACCESS_DENIED;
 }
+
+int
+grub_crypto_memcmp (void *a, void *b, grub_size_t n)
+{
+  register grub_size_t counter = 0;
+  grub_uint8_t *pa, *pb;
+
+  for (pa = a, pb = b; n; pa++, pb++, n--)
+    {
+      if (*pa != *pb)
+	counter++;
+    }
+
+  return !!counter;
+}

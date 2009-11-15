@@ -242,8 +242,11 @@ grub_crypto_hmac_buffer (const struct gcry_md_spec *md,
 			 void *data, grub_size_t datalen, void *out);
 
 extern gcry_md_spec_t _gcry_digest_spec_md5;
+extern gcry_md_spec_t _gcry_digest_spec_sha1;
+extern gcry_md_spec_t _gcry_digest_spec_sha256;
 #define GRUB_MD_MD5 ((const gcry_md_spec_t *) &_gcry_digest_spec_md5)
 #define GRUB_MD_SHA1 ((const gcry_md_spec_t *) &_gcry_digest_spec_sha1)
+#define GRUB_MD_SHA256 ((const gcry_md_spec_t *) &_gcry_digest_spec_sha256)
 
 /* Implement PKCS#5 PBKDF2 as per RFC 2898.  The PRF to use is HMAC variant
    of digest supplied by MD.  Inputs are the password P of length PLEN,
@@ -257,5 +260,8 @@ grub_crypto_pbkdf2 (const struct gcry_md_spec *md,
 		    const grub_uint8_t *S, grub_size_t Slen,
 		    unsigned int c,
 		    grub_uint8_t *DK, grub_size_t dkLen);
+
+int
+grub_crypto_memcmp (void *a, void *b, grub_size_t n);
 
 #endif
