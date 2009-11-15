@@ -164,7 +164,7 @@ grub_auth_check_authentication (const char *userlist)
   auto int hook (grub_list_t item);
   int hook (grub_list_t item)
   {
-    if (grub_auth_strcmp (login, ((struct grub_auth_user *) item)->name) == 0)
+    if (grub_strcmp (login, ((struct grub_auth_user *) item)->name) == 0)
       cur = (struct grub_auth_user *) item;
     return 0;
   }

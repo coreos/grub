@@ -17,6 +17,7 @@
  */
 
 #include <grub/auth.h>
+#include <grub/crypto.h>
 #include <grub/list.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
@@ -61,10 +62,10 @@ grub_cmd_password (grub_command_t cmd __attribute__ ((unused)),
   pass = grub_zalloc (MAX_PASSLEN);
   if (!pass)
     return grub_errno;
-  copylen = grub_strlen (argv[1]);
+  copylen = grub_strlen (args[1]);
   if (copylen >= MAX_PASSLEN)
     copylen = MAX_PASSLEN - 1;
-  grub_memcpy (pass, argv[1], copylen);
+  grub_memcpy (pass, args[1], copylen);
 
   err = grub_auth_register_authentication (args[0], check_password, pass);
   if (err)
