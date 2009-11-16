@@ -353,7 +353,7 @@ main (int argc, char *argv[])
 
   progname = "grub-mkimage";
 
-  textdomain ("grub");
+  textdomain (PACKAGE);
 
   while (1)
     {

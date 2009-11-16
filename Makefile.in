@@ -49,6 +49,8 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 
+PACKAGE = @PACKAGE@
+
 host_os = @host_os@
 host_kernel = @host_kernel@
 host_cpu = @host_cpu@
@@ -308,7 +310,7 @@ install-local: all
 	@list='po/$(lang).mo'; \
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
-	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES/grub.mo; \
+	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES/$(PACKAGE).mo; \
 	done)
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(infodir)
 	@list='$(info_INFOS)'; \
