@@ -1,3 +1,9 @@
+2009-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/i386/pc/pxe.c (grub_pxefs_open): Correctly handle PXE choosing
+	blocksize different from specified.
+	(grub_pxefs_read): Likewise.
+
 2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
 
 	Enable ata.mod on x86_64-efi, i386-efi and i386-ieee1275.
