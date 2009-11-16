@@ -320,10 +320,7 @@ superblock_0_90:
   array->uuid_len = 16;
   array->uuid = grub_malloc (16);
   if (!array->uuid)
-    {
-      grub_free (sb_1x);
       return grub_errno;
-    }
 
   uuid = (grub_uint32_t *) array->uuid;
   uuid[0] = sb.set_uuid0;

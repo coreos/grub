@@ -1,7 +1,12 @@
 2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
 
-	* disk/mdraid_linux.c: Fix the unsupported RAID version error
-	with metadata 1.x.
+	* disk/mdraid_linux.c (grub_mdraid_detect): Remove a wrong call
+	of free().
+
+2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
+
+	* disk/mdraid_linux.c (grub_mdraid_detect): Fix the unsupported
+	RAID version error with metadata 1.x.
 
 2009-11-06  Felix Zielcke  <fzielcke@z-51.de>
 
