@@ -464,11 +464,11 @@ gensymlist.sh: gensymlist.sh.in config.status
 genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
 
-po/messages.pot: po/POTFILES
+po/$(PACKAGE).pot: po/POTFILES
 	xgettext --from-code=utf-8 --keyword=_ -f $< -o $@
 
-po/*.po: po/messages.pot
-	msgmerge -U $@ po/messages.pot
+po/*.po: po/$(PACKAGE).pot
+	msgmerge -U $@ po/$(PACKAGE).pot
 
 po/%.mo: po/%.po
 	$(MKDIR_P) $$(dirname $@)
