@@ -346,9 +346,9 @@ superblock_0_90:
   if (sb_1x->level != 0 && sb_1x->level != 1 && sb_1x->level != 4 &&
       sb_1x->level != 5 && sb_1x->level != 6 && sb_1x->level != 10)
     {
-      grub_free (sb_1x);
       return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			 "Unsupported RAID level: %d", sb.level);
+			 "Unsupported RAID level: %d", sb_1x->level);
+      grub_free (sb_1x);
     }
   /* 1.x superblocks don't have a fixed size on disk.  So we have to
      read it again now that we now the max device count.  */

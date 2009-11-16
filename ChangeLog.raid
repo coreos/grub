@@ -1,3 +1,8 @@
+2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
+
+	* disk/mdraid_linux.c: Fix the unsupported RAID version error
+	with metadata 1.x.
+
 2009-11-06  Felix Zielcke  <fzielcke@z-51.de>
 
 	* disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Set array->name to NULL.
