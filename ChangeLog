@@ -1,3 +1,13 @@
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build for systems without error().
+
+	* gnulib/error.c: New file (imported from Gnulib).
+	* gnulib/error.h: Likewise.
+	* conf/common.rmk (grub_mkisofs_SOURCES): Add `gnulib/error.c'.
+	* util/mkisofs/mkisofs.c (program_name): Remove `static' qualifier
+	(this variable is now used by error()).
+
 2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/mkisofs/name.c (FDECL3): Use isascii macro instead of
