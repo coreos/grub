@@ -1,3 +1,21 @@
+2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
+
+	Enable ata.mod on x86_64-efi, i386-efi and i386-ieee1275.
+
+	* disk/ata.c (grub_ata_dumpinfo): Add a cast.
+	(grub_ata_readwrite): Likewise.  Update 2 format strings.
+	(grub_atapi_read): Likewise.
+
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Move `ata.mod' from here ...
+	* conf/i386.rmk (pkglib_MODULES): ... to here ...
+	* conf/x86_64-efi.rmk (pkglib_MODULES): ... and here.
+	* conf/i386-coreboot.rmk (ata_mod_SOURCES, ata_mod_CFLAGS)
+	(ata_mod_LDFLAGS): Move from here ...
+	* conf/i386.rmk: ... to here ...
+	* conf/x86_64-efi.rmk: ... and here.
+	* conf/i386-pc.rmk (pkglib_MODULES): Remove `ata.mod'
+	(ata_mod_SOURCES, ata_mod_CFLAGS, ata_mod_LDFLAGS): Remove.
+
 2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Relicense multiboot.h, with RMS' blessing.

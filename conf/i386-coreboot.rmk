@@ -157,7 +157,7 @@ grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 # Modules.
 pkglib_MODULES = linux.mod multiboot.mod 		\
-	aout.mod play.mod serial.mod ata.mod		\
+	aout.mod play.mod serial.mod 			\
 	memdisk.mod pci.mod lspci.mod reboot.mod	\
 	halt.mod datetime.mod date.mod datehook.mod	\
 	lsmmap.mod mmap.mod
@@ -220,11 +220,6 @@ bsd_mod_ASFLAGS = $(COMMON_ASFLAGS)
 play_mod_SOURCES = commands/i386/pc/play.c
 play_mod_CFLAGS = $(COMMON_CFLAGS)
 play_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For ata.mod.
-ata_mod_SOURCES = disk/ata.c
-ata_mod_CFLAGS = $(COMMON_CFLAGS)
-ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For memdisk.mod.
 memdisk_mod_SOURCES = disk/memdisk.c

@@ -177,12 +177,12 @@ grub_mkrescue_SOURCES = util/grub-mkrescue.in
 bin_SCRIPTS += grub-mkfloppy
 grub_mkfloppy_SOURCES = util/i386/pc/grub-mkfloppy.in
 
-pkglib_MODULES = biosdisk.mod chain.mod \
-	multiboot.mod reboot.mod halt.mod	\
-	vbe.mod vbetest.mod vbeinfo.mod play.mod serial.mod	\
-	ata.mod vga.mod memdisk.mod pci.mod lspci.mod	\
-	aout.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod \
-	datehook.mod lsmmap.mod ata_pthru.mod hdparm.mod \
+pkglib_MODULES = biosdisk.mod chain.mod 				\
+	multiboot.mod reboot.mod halt.mod				\
+	vbe.mod vbetest.mod vbeinfo.mod play.mod serial.mod		\
+	vga.mod memdisk.mod pci.mod lspci.mod				\
+	aout.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod 	\
+	datehook.mod lsmmap.mod ata_pthru.mod hdparm.mod 		\
 	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod usb_keyboard.mod \
 	efiemu.mod mmap.mod acpi.mod drivemap.mod
 
@@ -292,11 +292,6 @@ vbetest_mod_LDFLAGS = $(COMMON_LDFLAGS)
 play_mod_SOURCES = commands/i386/pc/play.c
 play_mod_CFLAGS = $(COMMON_CFLAGS)
 play_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For ata.mod.
-ata_mod_SOURCES = disk/ata.c
-ata_mod_CFLAGS = $(COMMON_CFLAGS)
-ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vga.mod.
 vga_mod_SOURCES = term/i386/pc/vga.c
