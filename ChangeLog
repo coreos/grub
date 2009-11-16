@@ -10,8 +10,8 @@
 
 2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
 
-	* util/mkisofs/name.c (FDECL3): Use isascii macro instead of
-	relying that char is signed.
+	* util/mkisofs/name.c (iso9660_file_length): Use isascii macro
+	instead of relying that char is signed.
 
 2009-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
