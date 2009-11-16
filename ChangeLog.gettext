@@ -1,0 +1,6 @@
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* aclocal.m4: Move from here ...
+	* acinclude.m4: ... to here.
+	* autogen.sh: Add call to `aclocal'.
+	* configure.ac: Add AM_INIT_AUTOMAKE() after AC_INIT() call.
