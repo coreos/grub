@@ -1,3 +1,126 @@
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build for systems without error().
+
+	* gnulib/error.c: New file (imported from Gnulib).
+	* gnulib/error.h: Likewise.
+	* conf/common.rmk (grub_mkisofs_SOURCES): Add `gnulib/error.c'.
+	* util/mkisofs/mkisofs.c (program_name): Remove `static' qualifier
+	(this variable is now used by error()).
+
+2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/mkisofs/name.c (iso9660_file_length): Use isascii macro
+	instead of relying that char is signed.
+
+2009-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/i386/pc/pxe.c (grub_pxefs_open): Correctly handle PXE choosing
+	blocksize different from specified.
+	(grub_pxefs_read): Likewise.
+
+2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
+
+	Enable ata.mod on x86_64-efi, i386-efi and i386-ieee1275.
+
+	* disk/ata.c (grub_ata_dumpinfo): Add a cast.
+	(grub_ata_readwrite): Likewise.  Update 2 format strings.
+	(grub_atapi_read): Likewise.
+
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Move `ata.mod' from here ...
+	* conf/i386.rmk (pkglib_MODULES): ... to here ...
+	* conf/x86_64-efi.rmk (pkglib_MODULES): ... and here.
+	* conf/i386-coreboot.rmk (ata_mod_SOURCES, ata_mod_CFLAGS)
+	(ata_mod_LDFLAGS): Move from here ...
+	* conf/i386.rmk: ... to here ...
+	* conf/x86_64-efi.rmk: ... and here.
+	* conf/i386-pc.rmk (pkglib_MODULES): Remove `ata.mod'
+	(ata_mod_SOURCES, ata_mod_CFLAGS, ata_mod_LDFLAGS): Remove.
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Relicense multiboot.h, with RMS' blessing.
+
+	* include/multiboot.h: Change to X11 license.
+
+2009-11-15  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Support --version in grub-mkisofs.
+
+	* util/mkisofs/mkisofs.c (rcsid): Remove variable.
+	(OPTION_VERSION): New macro.
+	(ld_options): Recognize --version.
+	(usage): Move `program_name' from here ...
+	(program_name): ... to here.  Add `static' qualifier.
+	(main): Recognize `OPTION_VERSION'.
+
+2009-11-15  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in (TARGET_CPPFLAGS): Replace `-isystem=$(srcdir)/include'
+	with `-nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include)'.
+
+2009-11-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix help2man generation for mkisofs.
+
+	* util/mkisofs/mkisofs.c (ld_options): Recognize --help.
+	(usage): Send output to stdout (rather than stderr).
+
+2009-11-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/i386-coreboot.rmk (grub_mkrescue_SOURCES): Replace
+	`util/i386/coreboot/grub-mkrescue.in' with `util/grub-mkrescue.in'.
+	* conf/i386-pc.rmk (grub_mkrescue_SOURCES): Replace
+	`util/i386/pc/grub-mkrescue.in' with `util/grub-mkrescue.in'.
+	(bin_SCRIPTS): Add `grub-mkfloppy'.
+	(grub_mkfloppy_SOURCES): New variable.
+
+	* util/grub-mkrescue.in: New file.
+	* util/i386/pc/grub-mkfloppy.in: New file.
+
+	* util/i386/coreboot/grub-mkrescue.in: Remove.
+	* util/i386/pc/grub-mkrescue.in: Remove.
+
+2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/multiboot.h (struct grub_multiboot_header): Move
+	from here ...
+	* include/multiboot.h (struct multiboot_header): ... to here.  Update
+	all users.
+	* include/grub/multiboot.h (struct grub_multiboot_info): Move
+	from here ...
+	* include/multiboot.h (struct multiboot_info): ... to here.  Update
+	all users.
+	* include/grub/multiboot.h (struct grub_multiboot_mmap_entry): Move
+	from here ...
+	* include/multiboot.h (struct multiboot_mmap_entry): ... to here.
+	Update all users.
+	* include/grub/multiboot.h (struct grub_mod_list): Move
+	from here ...
+	* include/multiboot.h (struct multiboot_mod_list): ... to here.
+	Update all users.
+
+2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot2.h (multiboot_word): Rename from this ...
+	(multiboot2_word): ... to this.  Update all users.
+	(multiboot_header): Rename from this ...
+	(multiboot2_header): ... to this.  Update all users.
+	(multiboot_tag_header): Rename from this ...
+	(multiboot2_tag_header): ... to this.  Update all users.
+	(multiboot_tag_start): Rename from this ...
+	(multiboot2_tag_start): ... to this.  Update all users.
+	(multiboot_tag_name): Rename from this ...
+	(multiboot2_tag_name): ... to this.  Update all users.
+	(multiboot_tag_module): Rename from this ...
+	(multiboot2_tag_module): ... to this.  Update all users.
+	(multiboot_tag_memory): Rename from this ...
+	(multiboot2_tag_memory): ... to this.  Update all users.
+	(multiboot_tag_unused): Rename from this ...
+	(multiboot2_tag_unused): ... to this.  Update all users.
+	(multiboot_tag_end): Rename from this ...
+	(multiboot2_tag_end): ... to this.  Update all users.
+
 2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Disable Multiboot2 in i386-ieee1275.  It didn't actually work, and on
