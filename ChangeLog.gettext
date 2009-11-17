@@ -4,3 +4,7 @@
 	* acinclude.m4: ... to here.
 	* autogen.sh: Add call to `aclocal'.
 	* configure.ac: Add AM_INIT_AUTOMAKE() after AC_INIT() call.
+
+	* conf/common.rmk (grub_mkisofs_CFLAGS): Move `-I$(srcdir)/gnulib'
+	from here ...
+	* Makefile.in (CPPFLAGS): ... to here.
