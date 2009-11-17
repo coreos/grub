@@ -1,0 +1,48 @@
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* import_gcry.py: New file (written by Vladimir with minor
+	adjustments).
+	* autogen.sh: Use import_gcry.py to auto-generate GRUB-ified
+	ciphers.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Import ciphers from libgcrypt 1.4.4.
+
+	 * lib/libgcrypt/cipher/ChangeLog
+	 * lib/libgcrypt/cipher/ac.c
+	 * lib/libgcrypt/cipher/arcfour.c
+	 * lib/libgcrypt/cipher/bithelp.h
+	 * lib/libgcrypt/cipher/blowfish.c
+	 * lib/libgcrypt/cipher/camellia-glue.c
+	 * lib/libgcrypt/cipher/camellia.c
+	 * lib/libgcrypt/cipher/camellia.h
+	 * lib/libgcrypt/cipher/cast5.c
+	 * lib/libgcrypt/cipher/cipher.c
+	 * lib/libgcrypt/cipher/crc.c
+	 * lib/libgcrypt/cipher/des.c
+	 * lib/libgcrypt/cipher/dsa.c
+	 * lib/libgcrypt/cipher/ecc.c
+	 * lib/libgcrypt/cipher/elgamal.c
+	 * lib/libgcrypt/cipher/hash-common.c
+	 * lib/libgcrypt/cipher/hash-common.h
+	 * lib/libgcrypt/cipher/hmac-tests.c
+	 * lib/libgcrypt/cipher/md.c
+	 * lib/libgcrypt/cipher/md4.c
+	 * lib/libgcrypt/cipher/md5.c
+	 * lib/libgcrypt/cipher/primegen.c
+	 * lib/libgcrypt/cipher/pubkey.c
+	 * lib/libgcrypt/cipher/rfc2268.c
+	 * lib/libgcrypt/cipher/rijndael-tables.h
+	 * lib/libgcrypt/cipher/rijndael.c
+	 * lib/libgcrypt/cipher/rmd.h
+	 * lib/libgcrypt/cipher/rmd160.c
+	 * lib/libgcrypt/cipher/rsa.c
+	 * lib/libgcrypt/cipher/seed.c
+	 * lib/libgcrypt/cipher/serpent.c
+	 * lib/libgcrypt/cipher/sha1.c
+	 * lib/libgcrypt/cipher/sha256.c
+	 * lib/libgcrypt/cipher/sha512.c
+	 * lib/libgcrypt/cipher/tiger.c
+	 * lib/libgcrypt/cipher/twofish.c
+	 * lib/libgcrypt/cipher/whirlpool.c
