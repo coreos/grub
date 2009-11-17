@@ -4,6 +4,7 @@
 	adjustments).
 	* autogen.sh: Use import_gcry.py to auto-generate GRUB-ified
 	ciphers.
+	* INSTALL: Document that Python is required for bootstrap.
 
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
