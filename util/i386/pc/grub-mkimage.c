@@ -22,6 +22,7 @@
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
+#include <grub/i18n.h>
 #include <grub/kernel.h>
 #include <grub/disk.h>
 #include <grub/util/misc.h>
@@ -32,10 +33,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-
-#include <locale.h>
-#include <libintl.h>
-#define _(str) gettext(str)
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
