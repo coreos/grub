@@ -8,10 +8,11 @@
 
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
-	* Makefile.in (XGETTEXT, MSGMERGE, MSGFMT, LINGUAS): New variables.
+	* Makefile.in (XGETTEXT, MSGMERGE, MSGFMT): New variables.
 	(po/$(PACKAGE).pot): Replace `xgettext' with `$(XGETTEXT)'.
 	(po/*.po): Replace `msgmerge' with `$(MSGMERGE)'.
 	(po/%.mo): Replace `msgfmt' with `$(MSGFMT)'.
+	(LINGUAS): Auto-generate using `po/LINGUAS'.
 	* po/LINGUAS: New file.
 
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
@@ -43,3 +44,20 @@
 	* acinclude.m4: ... to here.
 	* autogen.sh: Add call to `aclocal'.
 	* configure.ac: Add AM_INIT_AUTOMAKE() after AC_INIT() call.
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (CLEANFILES): Add `po/*.mo'.
+	(LINGUAS): New variable.
+	(all-local): Add `$(foreach lang, $(LINGUAS), po/$(lang).mo)'.
+	(install-local): Install MO files.
+	(po/$(PACKAGE).pot, po/*.po, po/%.mo): New rules.
+	* include/grub/i18n.h: New file.
+	* po/POTFILES: New file.
+	* po/ca.po: New file.
+	* util/grub.d/10_linux.in (bindir): New variable.
+	Add gettext initialization.
+	(linux_entry): Make menuentry output translatable.
+	* util/i386/pc/grub-mkimage.c: Include `<grub/i18n.h>'.
+	(usage): Make --help output translatable.
+	(main): Initialize gettext.
