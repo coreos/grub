@@ -27,7 +27,7 @@ if len (sys.argv) < 3:
 indir = sys.argv[1]
 outdir = sys.argv[2]
 
-basedir = os.path.join (outdir, "gcry")
+basedir = os.path.join (outdir, "lib/libgcrypt-grub")
 try:
     os.makedirs (basedir)
 except:
@@ -181,11 +181,11 @@ for cipher_file in cipher_files:
         if len (ciphernames) > 0 or len (mdnames) > 0:
             modname = cipher_file [0:len(cipher_file) - 2]
             if re.match (".*-glue$", modname):
-                modfiles = "gcry/cipher/%s gcry/cipher/%s" \
+                modfiles = "libgcrypt-grub/cipher/%s libgcrypt-grub/cipher/%s" \
                     % (cipher_file, cipher_file.replace ("-glue.c", ".c"))
                 modname = modname.replace ("-glue", "")
             else:
-                modfiles = "gcry/cipher/%s" % cipher_file
+                modfiles = "libgcrypt-grub/cipher/%s" % cipher_file
             modname = "gcry_%s" % modname
             chmsg = "(GRUB_MOD_INIT(%s)): New function\n" % modname
             if nch:
