@@ -21,6 +21,7 @@ If you use a development snapshot or want to hack on GRUB you may
 need the following.
 
 * Ruby 1.6 or later
+* Python 2.5.2 or later
 * Autoconf 2.59d or later
 
 Configuring the GRUB
