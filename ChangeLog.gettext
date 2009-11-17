@@ -1,5 +1,13 @@
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* Makefile.in (XGETTEXT, MSGMERGE, MSGFMT, LINGUAS): New variables.
+	(po/$(PACKAGE).pot): Replace `xgettext' with `$(XGETTEXT)'.
+	(po/*.po): Replace `msgmerge' with `$(MSGMERGE)'.
+	(po/%.mo): Replace `msgfmt' with `$(MSGFMT)'.
+	* po/LINGUAS: New file.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* configure.ac: Call AM_GNU_GETTEXT() (defines localedir, among
 	other things).
 	* Makefile.in (CPPFLAGS): Add `-DLOCALEDIR=\"$(localedir)\"'.

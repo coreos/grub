@@ -41,7 +41,11 @@ includedir = @includedir@
 pkgdatadir = $(datadir)/`echo @PACKAGE_TARNAME@ | sed '$(transform)'`
 pkglibdir =  $(libdir)/`echo @PACKAGE_TARNAME@/$(target_cpu)-$(platform) | sed '$(transform)'`
 
-LINGUAS = ca
+XGETTEXT = @XGETTEXT@
+MSGMERGE = @MSGMERGE@
+MSGFMT = @MSGFMT@
+
+LINGUAS = $(shell tr '\n' ' ' < $(srcdir)/po/LINGUAS)
 
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
@@ -467,14 +471,14 @@ genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
 
 po/$(PACKAGE).pot: po/POTFILES
-	xgettext --from-code=utf-8 --keyword=_ -f $< -o $@
+	$(XGETTEXT) --from-code=utf-8 --keyword=_ -f $< -o $@
 
 po/*.po: po/$(PACKAGE).pot
-	msgmerge -U $@ po/$(PACKAGE).pot
+	$(MSGMERGE) -U $@ po/$(PACKAGE).pot
 
 po/%.mo: po/%.po
 	$(MKDIR_P) $$(dirname $@)
-	msgfmt -c --statistics -o $@ $^
+	$(MSGFMT) -c --statistics -o $@ $^
 
 .PHONY: all install install-strip uninstall clean mostlyclean distclean
 .PHONY: maintainer-clean info dvi dist check
