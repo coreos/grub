@@ -18,11 +18,13 @@
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
+bindir=@bindir@
 libdir=@libdir@
 . ${libdir}/grub/grub-mkconfig_lib
 
-. /usr/bin/gettext.sh
+. ${bindir}/gettext.sh
 export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR=@LOCALEDIR@
 
 if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS=GNU/Linux
