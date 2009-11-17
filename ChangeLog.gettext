@@ -1,4 +1,4 @@
-2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* gnulib/progname.c: New file (imported from Gnulib).
 	* gnulib/progname.h: Likewise.
@@ -7,11 +7,15 @@
 	(usage): Replace `progname' with `program_name'.
 	(main): Use set_program_name() for program name initialization.
 
-	* aclocal.m4: Move from here ...
-	* acinclude.m4: ... to here.
-	* autogen.sh: Add call to `aclocal'.
-	* configure.ac: Add AM_INIT_AUTOMAKE() after AC_INIT() call.
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* conf/common.rmk (grub_mkisofs_CFLAGS): Move `-I$(srcdir)/gnulib'
 	from here ...
 	* Makefile.in (CPPFLAGS): ... to here.
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* aclocal.m4: Move from here ...
+	* acinclude.m4: ... to here.
+	* autogen.sh: Add call to `aclocal'.
+	* configure.ac: Add AM_INIT_AUTOMAKE() after AC_INIT() call.
