@@ -39,7 +39,7 @@ grub_mkisofs_SOURCES = util/mkisofs/eltorito.c 				\
 	gnulib/fnmatch.c gnulib/getopt1.c gnulib/getopt.c		\
 	gnulib/error.c
 grub_mkisofs_CFLAGS = -D_FILE_OFFSET_BITS=64 				\
-	-I$(srcdir)/util/mkisofs/include -I$(srcdir)/gnulib		\
+	-I$(srcdir)/util/mkisofs/include				\
 	-Wno-all -Werror
 
 # For grub-fstest.

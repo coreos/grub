@@ -2,6 +2,7 @@
 
 set -e
 
+aclocal
 autoconf
 autoheader
 

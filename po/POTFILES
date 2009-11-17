@@ -1,0 +1,2 @@
+# List of files which contain translatable strings.
+util/i386/pc/grub-mkimage.c

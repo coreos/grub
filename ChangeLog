@@ -1,5 +1,69 @@
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* INSTALL: Document Automake is needed for bootstrap.
+	* po/ca.po: Fix PO-Revision-Date and Language-Team fields.
+	* util/grub.d/10_kfreebsd.in (bindir): New variable.
+	Add gettext initialization.
+	(kfreebsd_entry): Make menuentry output translatable.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (XGETTEXT, MSGMERGE, MSGFMT): New variables.
+	(po/$(PACKAGE).pot): Replace `xgettext' with `$(XGETTEXT)'.
+	(po/*.po): Replace `msgmerge' with `$(MSGMERGE)'.
+	(po/%.mo): Replace `msgfmt' with `$(MSGFMT)'.
+	(LINGUAS): Auto-generate using `po/LINGUAS'.
+	* po/LINGUAS: New file.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Call AM_GNU_GETTEXT() (defines localedir, among
+	other things).
+	* Makefile.in (CPPFLAGS): Add `-DLOCALEDIR=\"$(localedir)\"'.
+	* util/i386/pc/grub-mkimage.c (main): Issue setlocale() and
+	bindtextdomain() calls for gettext initialization.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* gnulib/progname.c: New file (imported from Gnulib).
+	* gnulib/progname.h: Likewise.
+	* conf/i386-pc.rmk (grub_mkimage_SOURCES): Add `gnulib/progname.c'.
+	* util/i386/pc/grub-mkimage.c: Include `"progname.h"'.
+	(usage): Replace `progname' with `program_name'.
+	(main): Use set_program_name() for program name initialization.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (grub_mkisofs_CFLAGS): Move `-I$(srcdir)/gnulib'
+	from here ...
+	* Makefile.in (CPPFLAGS): ... to here.
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* aclocal.m4: Move from here ...
+	* acinclude.m4: ... to here.
+	* autogen.sh: Add call to `aclocal'.
+	* configure.ac: Add AM_INIT_AUTOMAKE() after AC_INIT() call.
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (CLEANFILES): Add `po/*.mo'.
+	(LINGUAS): New variable.
+	(all-local): Add `$(foreach lang, $(LINGUAS), po/$(lang).mo)'.
+	(install-local): Install MO files.
+	(po/$(PACKAGE).pot, po/*.po, po/%.mo): New rules.
+	* include/grub/i18n.h: New file.
+	* po/POTFILES: New file.
+	* po/ca.po: New file.
+	* util/grub.d/10_linux.in (bindir): New variable.
+	Add gettext initialization.
+	(linux_entry): Make menuentry output translatable.
+	* util/i386/pc/grub-mkimage.c: Include `<grub/i18n.h>'.
+	(usage): Make --help output translatable.
+	(main): Initialize gettext.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* import_gcry.py: New file (written by Vladimir with minor
 	adjustments).
 	* autogen.sh: Use import_gcry.py to auto-generate GRUB-ified

@@ -87,7 +87,7 @@ sbin_UTILITIES += grub-emu
 endif
 
 # For grub-mkimage.
-grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
+grub_mkimage_SOURCES = gnulib/progname.c util/i386/pc/grub-mkimage.c util/misc.c \
 	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
 grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
 util/i386/pc/grub-mkimage.c_DEPENDENCIES = Makefile
