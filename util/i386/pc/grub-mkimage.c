@@ -351,6 +351,8 @@ main (int argc, char *argv[])
   FILE *fp = stdout;
 
   set_program_name (argv[0]);
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
 
   while (1)

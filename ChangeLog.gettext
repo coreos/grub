@@ -1,5 +1,13 @@
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* configure.ac: Call AM_GNU_GETTEXT() (defines localedir, among
+	other things).
+	* Makefile.in (CPPFLAGS): Add `-DLOCALEDIR=\"$(localedir)\"'.
+	* util/i386/pc/grub-mkimage.c (main): Issue setlocale() and
+	bindtextdomain() calls for gettext initialization.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* gnulib/progname.c: New file (imported from Gnulib).
 	* gnulib/progname.h: Likewise.
 	* conf/i386-pc.rmk (grub_mkimage_SOURCES): Add `gnulib/progname.c'.

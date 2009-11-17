@@ -72,7 +72,7 @@ CFLAGS = @CFLAGS@
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
-	 -DGRUB_LIBDIR=\"$(pkglibdir)\"
+	 -DGRUB_LIBDIR=\"$(pkglibdir)\" -DLOCALEDIR=\"$(localedir)\"
 TARGET_CC = @TARGET_CC@
 TARGET_CFLAGS = @TARGET_CFLAGS@
 TARGET_ASFLAGS = @TARGET_ASFLAGS@
