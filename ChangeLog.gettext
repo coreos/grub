@@ -1,5 +1,12 @@
 2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* gnulib/progname.c: New file (imported from Gnulib).
+	* gnulib/progname.h: Likewise.
+	* conf/i386-pc.rmk (grub_mkimage_SOURCES): Add `gnulib/progname.c'.
+	* util/i386/pc/grub-mkimage.c: Include `"progname.h"'.
+	(usage): Replace `progname' with `program_name'.
+	(main): Use set_program_name() for program name initialization.
+
 	* aclocal.m4: Move from here ...
 	* acinclude.m4: ... to here.
 	* autogen.sh: Add call to `aclocal'.

@@ -37,6 +37,8 @@
 #define _GNU_SOURCE	1
 #include <getopt.h>
 
+#include "progname.h"
+
 #ifdef ENABLE_LZMA
 #include <grub/lib/LzmaEnc.h>
 
@@ -316,7 +318,7 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, _("Try ``%s --help'' for more information.\n"), progname);
+    fprintf (stderr, _("Try ``%s --help'' for more information.\n"), program_name);
   else
     printf ("\
 Usage: grub-mkimage [OPTION]... [MODULES]\n\
@@ -348,8 +350,7 @@ main (int argc, char *argv[])
   char *config = NULL;
   FILE *fp = stdout;
 
-  progname = "grub-mkimage";
-
+  set_program_name (argv[0]);
   textdomain (PACKAGE);
 
   while (1)
