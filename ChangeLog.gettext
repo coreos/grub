@@ -1,5 +1,13 @@
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* INSTALL: Document Automake is needed for bootstrap.
+	* po/ca.po: Fix PO-Revision-Date and Language-Team fields.
+	* util/grub.d/10_kfreebsd.in (bindir): New variable.
+	Add gettext initialization.
+	(kfreebsd_entry): Make menuentry output translatable.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* Makefile.in (XGETTEXT, MSGMERGE, MSGFMT, LINGUAS): New variables.
 	(po/$(PACKAGE).pot): Replace `xgettext' with `$(XGETTEXT)'.
 	(po/*.po): Replace `msgmerge' with `$(MSGMERGE)'.
