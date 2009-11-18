@@ -17,10 +17,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
-static char rcsid[] ="$Id: joliet.c,v 1.14 1999/03/07 17:41:19 eric Exp $";
-
+ */
 
 /*
  * Joliet extensions for ISO9660.  These are spottily documented by

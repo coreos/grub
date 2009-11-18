@@ -19,9 +19,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
-static char rcsid[] ="$Id: write.c,v 1.21 1999/03/07 17:41:19 eric Exp $";
+ */
 
 #include <string.h>
 #include <stdlib.h>

@@ -19,7 +19,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+ */
 
 /*
  * 	$Id: mkisofs.h,v 1.20 1999/03/02 04:16:41 eric Exp $

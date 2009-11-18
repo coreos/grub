@@ -1,5 +1,24 @@
 2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/mkisofs/eltorito.c: Fix minor mistake in license text.
+	* util/mkisofs/iso9660.h: Likewise.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/mkisofs.c: Likewise.
+	* util/mkisofs/mkisofs.h: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+
+	* util/mkisofs/eltorito.c (rcsid): Remove.
+	* util/mkisofs/hash.c: Likewise.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/name.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+
+2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* util/mkisofs/match.c: Rewrite from scratch, using a linked list
 	instead of static allocation.
 	* util/mkisofs/match.h: Likewise.
