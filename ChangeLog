@@ -1,5 +1,12 @@
 2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* po/POTFILES-shell: New file.  List `util/grub.d/10_kfreebsd.in'
+	and `util/grub.d/10_linux.in'.
+	* Makefile.in (po/$(PACKAGE).pot): Process `po/POTFILES-shell' for
+	translatable Shell files.
+
+2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* Makefile.in ($(srcdir)/aclocal.m4): New target.
 
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>

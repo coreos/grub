@@ -472,8 +472,9 @@ gensymlist.sh: gensymlist.sh.in config.status
 genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
 
-po/$(PACKAGE).pot: po/POTFILES
-	$(XGETTEXT) --from-code=utf-8 --keyword=_ -f $< -o $@
+po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
+	$(XGETTEXT) --from-code=utf-8 -o $@ -f $< --keyword=_
+	$(XGETTEXT) --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
 
 po/*.po: po/$(PACKAGE).pot
 	$(MSGMERGE) -U $@ po/$(PACKAGE).pot
