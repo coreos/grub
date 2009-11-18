@@ -1,5 +1,11 @@
 2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/mkisofs/match.c: Rewrite from scratch, using a linked list
+	instead of static allocation.
+	* util/mkisofs/match.h: Likewise.
+
+2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* po/POTFILES-shell: New file.  List `util/grub.d/10_kfreebsd.in'
 	and `util/grub.d/10_linux.in'.
 	* Makefile.in (po/$(PACKAGE).pot): Process `po/POTFILES-shell' for
