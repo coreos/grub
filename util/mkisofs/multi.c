@@ -4,9 +4,11 @@
  *
  * Written by Eric Youngdale (1996).
  *
+ * Copyright (C) 2009  Free Software Foundation, Inc.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
+ * the Free Software Foundation; either version 3, or (at your option)
  * any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -15,11 +17,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
-
-static char rcsid[] ="$Id: multi.c,v 1.14 1999/03/02 04:16:41 eric Exp $";
 
 #include <stdlib.h>
 #include <string.h>
@@ -158,10 +157,8 @@ readsecs(startsecno, buffer, sectorcount)
 {
 	int	f = fileno(in_image);
 
-	if (lseek(f, (off_t)startsecno * SECTOR_SIZE, 0) == (off_t)-1) {
-		fprintf(stderr," Seek error on old image\n");
-		exit(10);
-	}
+	if (lseek(f, (off_t)startsecno * SECTOR_SIZE, 0) == (off_t)-1)
+	  error (10, errno, _("Seek error on old image\n"));
 	return (read(f, buffer, sectorcount * SECTOR_SIZE));
 }
 #endif
@@ -179,7 +176,7 @@ FDECL3(parse_rr, unsigned char *, pnt, int, len, struct directory_entry *,dpnt)
 
 	while(len >= 4){
 		if(pnt[3] != 1) {
-		  fprintf(stderr,"**BAD RRVERSION");
+		  fprintf (stderr, _("**Bad RR version attribute"));
 		  return -1;
 		};
 		if(strncmp((char *) pnt, "NM", 2) == 0) {
@@ -250,7 +247,7 @@ FDECL4(check_rr_dates, struct directory_entry *, dpnt,
 	 */
 	while(len >= 4){
 		if(pnt[3] != 1) {
-		  fprintf(stderr,"**BAD RRVERSION");
+		  fprintf (stderr, _("**Bad RR version attribute"));
 		  return -1;
 		};
 
@@ -546,9 +543,9 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
        * Warn the user that iso (8.3) names were used because neither
        * Rock Ridge (-R) nor TRANS.TBL (-T) name translations were found.
        */
-      fprintf(stderr,"Warning: Neither Rock Ridge (-R) nor TRANS.TBL (-T) \n");
-      fprintf(stderr,"name translations were found on previous session.\n");
-      fprintf(stderr,"ISO (8.3) file names have been used instead.\n");
+      fprintf (stderr, _("Warning: Neither Rock Ridge (-R) nor TRANS.TBL (-T) "
+			 "name translations were found on previous session. "
+			 "ISO (8.3) file names have been used instead.\n"));
       warning_given = 1;
     }
 
@@ -764,10 +761,7 @@ struct iso_directory_record * FDECL1(merge_isofs, char *, path)
     {
       if (readsecs(file_addr/SECTOR_SIZE, &buffer,
 		   sizeof(buffer)/SECTOR_SIZE) != sizeof(buffer))
-	{
-	  fprintf(stderr," Read error on old image %s\n", path);
-	  exit(10);
-	}
+	error (10, errno, _("Read error on old image %s\n"), path);
 
       vdp = (struct iso_volume_descriptor *)buffer;
 
@@ -928,7 +922,7 @@ void FDECL3(merge_remaining_entries, struct directory *, this_dir,
     {
       if( strcmp(s_entry->name, "<translation table>") == 0)
 	{
-	  fprintf(stderr,"Should never get here\n");
+	  fprintf (stderr, "Should never get here\n");
 	  set_733(s_entry->isorec.extent, ttbl_extent);
 	  return;
 	}
@@ -1087,20 +1081,14 @@ FDECL1(get_session_start, int *, file_addr)
 #else
 
   if( cdwrite_data == NULL )
-    {
-      fprintf(stderr,"Special parameters for cdwrite not specified with -C\n");
-      exit(1);
-    }
+    error (1, 0, _("Special parameters for cdwrite not specified with -C\n"));
 
   /*
    * Next try and find the ',' in there which delimits the two numbers.
    */
   pnt = strchr(cdwrite_data, ',');
   if( pnt == NULL )
-    {
-      fprintf(stderr, "Malformed cdwrite parameters\n");
-      exit(1);
-    }
+    error (1, 0, _("Malformed cdwrite parameters\n"));
 
   *pnt = '\0';
   if (file_addr != NULL) {

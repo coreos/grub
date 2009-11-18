@@ -356,9 +356,9 @@ static int generate_joliet_path_tables()
 
   if( next_jpath_index > 0xffff )
   {
-      fprintf(stderr, "Unable to generate sane path tables - too many directories (%d)\n",
-	      next_jpath_index);
-      exit(1);
+      fprintf (stderr, _("Unable to generate sane path tables - too many directories (%d)\n"),
+	       next_jpath_index);
+      exit (1);
   }
   /*
    * Now start filling in the path tables.  Start with root directory 
@@ -395,8 +395,8 @@ static int generate_joliet_path_tables()
        dpnt = jpathlist[j];
        if(!dpnt)
        {
-	    fprintf(stderr,"Entry %d not in path tables\n", j);
-	    exit(1);
+	    fprintf (stderr, _("Entry %d not in path tables\n"), j);
+	    exit (1);
        }
        npnt = dpnt->de_name;
        
@@ -409,8 +409,8 @@ static int generate_joliet_path_tables()
        de = dpnt->self;
        if(!de) 
        {
-	    fprintf(stderr,"Fatal goof - directory has amnesia\n"); 
-	    exit(1);
+	    fprintf (stderr, _("Fatal goof - directory has amnesia\n")); 
+	    exit (1);
        }
        
        namelen = joliet_strlen(de->name);
@@ -475,7 +475,7 @@ static int generate_joliet_path_tables()
   free(jpathlist);
   if(jpath_table_index != jpath_table_size)
   {
-       fprintf(stderr,"Joliet path table lengths do not match %d %d\n",
+       fprintf(stderr, _("Joliet path table lengths do not match %d %d\n"),
 	       jpath_table_index,
 	       jpath_table_size);
   }
@@ -527,8 +527,8 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
 		     /*
 		      * We got trouble.
 		      */
-		     fprintf(stderr, "Unable to locate relocated directory\n");
-		     exit(1);
+		     fprintf (stderr, _("Unable to locate relocated directory\n"));
+		     exit (1);
 		 }
 	     }
 	     else
@@ -602,7 +602,8 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
 			 finddir = finddir->next;
 			 if(!finddir) 
 			 {
-			     fprintf(stderr,"Fatal goof - unable to find directory location\n"); exit(1);
+			     fprintf (stderr, _("Fatal goof - unable to find directory location\n"));
+			     exit (1);
 			 }
 		     }
 		     set_733((char *) jrec.extent, finddir->jextent);
@@ -650,8 +651,8 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
      
      if(dpnt->jsize != dir_index)
      {
-	 fprintf(stderr,"Unexpected joliet directory length %d %d %s\n",dpnt->jsize, 
-		 dir_index, dpnt->de_name);
+	 fprintf (stderr, _("Unexpected joliet directory length %d %d %s\n"),
+		  dpnt->jsize, dir_index, dpnt->de_name);
      }
      
      xfwrite(directory_buffer, 1, total_size, outfile);

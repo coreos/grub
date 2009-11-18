@@ -30,6 +30,10 @@
 #include <prototyp.h>
 #include <sys/stat.h>
 
+#include <locale.h>
+#include <libintl.h>
+#define _(str) gettext(str)
+
 /* This symbol is used to indicate that we do not have things like
    symlinks, devices, and so forth available.  Just files and dirs */
 
