@@ -4,11 +4,13 @@
 	* util/mkisofs/mkisofs.c: Include `"progname.h"'.
 	(program_name): Remove.
 	(main): Initialize gettext support.
+	* util/mkisofs/mkisofs.h: Include `<locale.h>'.
+	Include `<libintl.h>'.
+	(_): New macro.
 
 	* util/mkisofs/eltorito.c: Gettexttize.
 	* util/mkisofs/joliet.c: Likewise.
 	* util/mkisofs/mkisofs.c: Likewise.
-	* util/mkisofs/mkisofs.h: Likewise.
 	* util/mkisofs/multi.c: Likewise.
 	* util/mkisofs/rock.c: Likewise.
 	* util/mkisofs/tree.c: Likewise.
