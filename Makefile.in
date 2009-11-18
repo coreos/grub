@@ -445,6 +445,9 @@ check:
 .SUFFIX: .c .o .S .d
 
 # Regenerate configure and Makefile automatically.
+$(srcdir)/aclocal.m4: configure.ac acinclude.m4
+	cd $(srcdir) && aclocal
+
 $(srcdir)/configure: configure.ac aclocal.m4
 	cd $(srcdir) && autoconf
 

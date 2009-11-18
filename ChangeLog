@@ -1,3 +1,7 @@
+2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in ($(srcdir)/aclocal.m4): New target.
+
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* INSTALL: Document Automake is needed for bootstrap.
