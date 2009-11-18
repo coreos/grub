@@ -1,5 +1,19 @@
 2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add `gnulib/progname.c'.
+	* util/i386/pc/grub-setup.c: Include `<grub/i18n.h>'.
+	Include `"progname.h"'.
+	(main): Initialize gettext.
+	* util/i386/pc/grub-setup.c: Gettexttize.
+	* util/i386/pc/grub-mkimage.c: Likewise.
+
+	* Makefile.in (po/*.po): Redefine as ...
+	($(foreach lang, $(LINGUAS), po/$(lang).po)): ... this.
+
+	* po/POTFILES: Add `util/i386/pc/grub-setup.c'.
+
+2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* conf/common.rmk (grub_mkisofs_SOURCES): Add `gnulib/progname.c'.
 	* util/mkisofs/mkisofs.c: Include `"progname.h"'.
 	(program_name): Remove.

@@ -94,7 +94,8 @@ util/i386/pc/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-setup.
 util/i386/pc/grub-setup.c_DEPENDENCIES = grub_setup_init.h
-grub_setup_SOURCES = util/i386/pc/grub-setup.c util/hostdisk.c	\
+grub_setup_SOURCES = gnulib/progname.c \
+	util/i386/pc/grub-setup.c util/hostdisk.c	\
 	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
 	kern/err.c kern/misc.c kern/parser.c kern/partition.c	\
 	kern/file.c kern/fs.c kern/env.c fs/fshelp.c		\

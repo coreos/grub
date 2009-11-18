@@ -476,7 +476,7 @@ po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
 	$(XGETTEXT) --from-code=utf-8 -o $@ -f $< --keyword=_
 	$(XGETTEXT) --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
 
-po/*.po: po/$(PACKAGE).pot
+$(foreach lang, $(LINGUAS), po/$(lang).po): po/$(PACKAGE).pot
 	$(MSGMERGE) -U $@ po/$(PACKAGE).pot
 
 po/%.mo: po/%.po
