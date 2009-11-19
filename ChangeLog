@@ -1,3 +1,285 @@
+2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Patch from Joe Auricchio <jauricchio@gmail.com>
+	* commands/minicmd.c (grub_mini_cmd_clear): New function.
+	(GRUB_MOD_INIT(minicmd)): Register grub_mini_cmd_clear().
+	(GRUB_MOD_FINI(minicmd)): Unregister grub_mini_cmd_clear().
+
+2009-11-19  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in (install-local): Add a missing backslash.
+
+2009-11-19  Felix Zielcke  <fzielcke@z-51.de>
+
+	* include/grub/x86_64/io.h: New file.
+
+2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add `gnulib/progname.c'.
+	* util/i386/pc/grub-setup.c: Include `<grub/i18n.h>'.
+	Include `"progname.h"'.
+	(main): Initialize gettext.
+	* util/i386/pc/grub-setup.c: Gettexttize.
+	* util/i386/pc/grub-mkimage.c: Likewise.
+
+	* Makefile.in (po/*.po): Redefine as ...
+	($(foreach lang, $(LINGUAS), po/$(lang).po)): ... this.
+
+	* po/POTFILES: Add `util/i386/pc/grub-setup.c'.
+
+2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (grub_mkisofs_SOURCES): Add `gnulib/progname.c'.
+	* util/mkisofs/mkisofs.c: Include `"progname.h"'.
+	(program_name): Remove.
+	(main): Initialize gettext support.
+	* util/mkisofs/mkisofs.h: Include `<locale.h>'.
+	Include `<libintl.h>'.
+	(_): New macro.
+
+	* util/mkisofs/eltorito.c: Gettexttize.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/mkisofs.c: Likewise.
+	* util/mkisofs/multi.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+
+	* po/POTFILES: Update with new files.
+
+2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/eltorito.c: Fix minor mistake in license text.
+	* util/mkisofs/iso9660.h: Likewise.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/mkisofs.c: Likewise.
+	* util/mkisofs/mkisofs.h: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+
+	* util/mkisofs/eltorito.c (rcsid): Remove.
+	* util/mkisofs/hash.c: Likewise.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/name.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+
+2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/match.c: Rewrite from scratch, using a linked list
+	instead of static allocation.
+	* util/mkisofs/match.h: Likewise.
+
+2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* po/POTFILES-shell: New file.  List `util/grub.d/10_kfreebsd.in'
+	and `util/grub.d/10_linux.in'.
+	* Makefile.in (po/$(PACKAGE).pot): Process `po/POTFILES-shell' for
+	translatable Shell files.
+
+2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in ($(srcdir)/aclocal.m4): New target.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* INSTALL: Document Automake is needed for bootstrap.
+	* po/ca.po: Fix PO-Revision-Date and Language-Team fields.
+	* util/grub.d/10_kfreebsd.in (bindir): New variable.
+	Add gettext initialization.
+	(kfreebsd_entry): Make menuentry output translatable.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (XGETTEXT, MSGMERGE, MSGFMT): New variables.
+	(po/$(PACKAGE).pot): Replace `xgettext' with `$(XGETTEXT)'.
+	(po/*.po): Replace `msgmerge' with `$(MSGMERGE)'.
+	(po/%.mo): Replace `msgfmt' with `$(MSGFMT)'.
+	(LINGUAS): Auto-generate using `po/LINGUAS'.
+	* po/LINGUAS: New file.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Call AM_GNU_GETTEXT() (defines localedir, among
+	other things).
+	* Makefile.in (CPPFLAGS): Add `-DLOCALEDIR=\"$(localedir)\"'.
+	* util/i386/pc/grub-mkimage.c (main): Issue setlocale() and
+	bindtextdomain() calls for gettext initialization.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* gnulib/progname.c: New file (imported from Gnulib).
+	* gnulib/progname.h: Likewise.
+	* conf/i386-pc.rmk (grub_mkimage_SOURCES): Add `gnulib/progname.c'.
+	* util/i386/pc/grub-mkimage.c: Include `"progname.h"'.
+	(usage): Replace `progname' with `program_name'.
+	(main): Use set_program_name() for program name initialization.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (grub_mkisofs_CFLAGS): Move `-I$(srcdir)/gnulib'
+	from here ...
+	* Makefile.in (CPPFLAGS): ... to here.
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* aclocal.m4: Move from here ...
+	* acinclude.m4: ... to here.
+	* autogen.sh: Add call to `aclocal'.
+	* configure.ac: Add AM_INIT_AUTOMAKE() after AC_INIT() call.
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (CLEANFILES): Add `po/*.mo'.
+	(LINGUAS): New variable.
+	(all-local): Add `$(foreach lang, $(LINGUAS), po/$(lang).mo)'.
+	(install-local): Install MO files.
+	(po/$(PACKAGE).pot, po/*.po, po/%.mo): New rules.
+	* include/grub/i18n.h: New file.
+	* po/POTFILES: New file.
+	* po/ca.po: New file.
+	* util/grub.d/10_linux.in (bindir): New variable.
+	Add gettext initialization.
+	(linux_entry): Make menuentry output translatable.
+	* util/i386/pc/grub-mkimage.c: Include `<grub/i18n.h>'.
+	(usage): Make --help output translatable.
+	(main): Initialize gettext.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* import_gcry.py: New file (written by Vladimir with minor
+	adjustments).
+	* autogen.sh: Use import_gcry.py to auto-generate GRUB-ified
+	ciphers.
+	* INSTALL: Document that Python is required for bootstrap.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Import ciphers from libgcrypt 1.4.4.
+
+	 * lib/libgcrypt/cipher/ChangeLog
+	 * lib/libgcrypt/cipher/ac.c
+	 * lib/libgcrypt/cipher/arcfour.c
+	 * lib/libgcrypt/cipher/bithelp.h
+	 * lib/libgcrypt/cipher/blowfish.c
+	 * lib/libgcrypt/cipher/camellia-glue.c
+	 * lib/libgcrypt/cipher/camellia.c
+	 * lib/libgcrypt/cipher/camellia.h
+	 * lib/libgcrypt/cipher/cast5.c
+	 * lib/libgcrypt/cipher/cipher.c
+	 * lib/libgcrypt/cipher/crc.c
+	 * lib/libgcrypt/cipher/des.c
+	 * lib/libgcrypt/cipher/dsa.c
+	 * lib/libgcrypt/cipher/ecc.c
+	 * lib/libgcrypt/cipher/elgamal.c
+	 * lib/libgcrypt/cipher/hash-common.c
+	 * lib/libgcrypt/cipher/hash-common.h
+	 * lib/libgcrypt/cipher/hmac-tests.c
+	 * lib/libgcrypt/cipher/md.c
+	 * lib/libgcrypt/cipher/md4.c
+	 * lib/libgcrypt/cipher/md5.c
+	 * lib/libgcrypt/cipher/primegen.c
+	 * lib/libgcrypt/cipher/pubkey.c
+	 * lib/libgcrypt/cipher/rfc2268.c
+	 * lib/libgcrypt/cipher/rijndael-tables.h
+	 * lib/libgcrypt/cipher/rijndael.c
+	 * lib/libgcrypt/cipher/rmd.h
+	 * lib/libgcrypt/cipher/rmd160.c
+	 * lib/libgcrypt/cipher/rsa.c
+	 * lib/libgcrypt/cipher/seed.c
+	 * lib/libgcrypt/cipher/serpent.c
+	 * lib/libgcrypt/cipher/sha1.c
+	 * lib/libgcrypt/cipher/sha256.c
+	 * lib/libgcrypt/cipher/sha512.c
+	 * lib/libgcrypt/cipher/tiger.c
+	 * lib/libgcrypt/cipher/twofish.c
+	 * lib/libgcrypt/cipher/whirlpool.c
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build for systems without error().
+
+	* gnulib/error.c: New file (imported from Gnulib).
+	* gnulib/error.h: Likewise.
+	* conf/common.rmk (grub_mkisofs_SOURCES): Add `gnulib/error.c'.
+	* util/mkisofs/mkisofs.c (program_name): Remove `static' qualifier
+	(this variable is now used by error()).
+
+2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/mkisofs/name.c (iso9660_file_length): Use isascii macro
+	instead of relying that char is signed.
+
+2009-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/i386/pc/pxe.c (grub_pxefs_open): Correctly handle PXE choosing
+	blocksize different from specified.
+	(grub_pxefs_read): Likewise.
+
+2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
+
+	Enable ata.mod on x86_64-efi, i386-efi and i386-ieee1275.
+
+	* disk/ata.c (grub_ata_dumpinfo): Add a cast.
+	(grub_ata_readwrite): Likewise.  Update 2 format strings.
+	(grub_atapi_read): Likewise.
+
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Move `ata.mod' from here ...
+	* conf/i386.rmk (pkglib_MODULES): ... to here ...
+	* conf/x86_64-efi.rmk (pkglib_MODULES): ... and here.
+	* conf/i386-coreboot.rmk (ata_mod_SOURCES, ata_mod_CFLAGS)
+	(ata_mod_LDFLAGS): Move from here ...
+	* conf/i386.rmk: ... to here ...
+	* conf/x86_64-efi.rmk: ... and here.
+	* conf/i386-pc.rmk (pkglib_MODULES): Remove `ata.mod'
+	(ata_mod_SOURCES, ata_mod_CFLAGS, ata_mod_LDFLAGS): Remove.
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Relicense multiboot.h, with RMS' blessing.
+
+	* include/multiboot.h: Change to X11 license.
+
+2009-11-15  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Support --version in grub-mkisofs.
+
+	* util/mkisofs/mkisofs.c (rcsid): Remove variable.
+	(OPTION_VERSION): New macro.
+	(ld_options): Recognize --version.
+	(usage): Move `program_name' from here ...
+	(program_name): ... to here.  Add `static' qualifier.
+	(main): Recognize `OPTION_VERSION'.
+
+2009-11-15  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in (TARGET_CPPFLAGS): Replace `-isystem=$(srcdir)/include'
+	with `-nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include)'.
+
+2009-11-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix help2man generation for mkisofs.
+
+	* util/mkisofs/mkisofs.c (ld_options): Recognize --help.
+	(usage): Send output to stdout (rather than stderr).
+
+2009-11-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/i386-coreboot.rmk (grub_mkrescue_SOURCES): Replace
+	`util/i386/coreboot/grub-mkrescue.in' with `util/grub-mkrescue.in'.
+	* conf/i386-pc.rmk (grub_mkrescue_SOURCES): Replace
+	`util/i386/pc/grub-mkrescue.in' with `util/grub-mkrescue.in'.
+	(bin_SCRIPTS): Add `grub-mkfloppy'.
+	(grub_mkfloppy_SOURCES): New variable.
+
+	* util/grub-mkrescue.in: New file.
+	* util/i386/pc/grub-mkfloppy.in: New file.
+
+	* util/i386/coreboot/grub-mkrescue.in: Remove.
+	* util/i386/pc/grub-mkrescue.in: Remove.
+
 2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/multiboot.h (struct grub_multiboot_header): Move

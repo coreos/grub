@@ -20,9 +20,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
-static char rcsid[] ="$Id: mkisofs.c,v 1.32 1999/03/07 21:48:49 eric Exp $";
+ */
 
 #include <errno.h>
 #include "config.h"
@@ -65,6 +63,8 @@ static char rcsid[] ="$Id: mkisofs.c,v 1.32 1999/03/07 21:48:49 eric Exp $";
 struct directory * root = NULL;
 
 static char version_string[] = "mkisofs 1.12b5";
+
+#include "progname.h"
 
 char * outfile;
 FILE * discimage;
@@ -195,6 +195,8 @@ struct ld_option
 #define OPTION_NO_EMUL_BOOT		171
 #define OPTION_ELTORITO_EMUL_FLOPPY	172
 
+#define OPTION_VERSION			173
+
 static const struct ld_option ld_options[] =
 {
   { {"all-files", no_argument, NULL, 'a'},
@@ -227,6 +229,10 @@ static const struct ld_option ld_options[] =
       'f', NULL, "Follow symbolic links", ONE_DASH },
   { {"help", no_argument, NULL, OPTION_HELP},
       '\0', NULL, "Print option help", ONE_DASH },
+  { {"help", no_argument, NULL, OPTION_HELP},
+      '\0', NULL, "Print option help", TWO_DASHES },
+  { {"version", no_argument, NULL, OPTION_VERSION},
+      '\0', NULL, "Print version information and exit", TWO_DASHES },
   { {"hide", required_argument, NULL, OPTION_I_HIDE},
       '\0', "GLOBFILE", "Hide ISO9660/RR file" , ONE_DASH },
   { {"hide-joliet", required_argument, NULL, OPTION_J_HIDE},
@@ -364,7 +370,7 @@ void FDECL1(read_rcfile, char *, appname)
     return;
   if ( verbose > 0 )
     {
-      fprintf(stderr, "Using \"%s\"\n", filename);
+      fprintf (stderr, _("Using \"%s\"\n"), filename);
     }
 
   /* OK, we got it.  Now read in the lines and parse them */
@@ -392,7 +398,7 @@ void FDECL1(read_rcfile, char *, appname)
 	}
       if (name == pnt)
 	{
-	  fprintf(stderr, "%s:%d: name required\n", filename, linum);
+	  fprintf(stderr, _("%s:%d: name required\n"), filename, linum);
 	  continue;
 	}
       name_end = pnt;
@@ -402,7 +408,7 @@ void FDECL1(read_rcfile, char *, appname)
       /* silently ignore errors in the rc file. */
       if (*pnt != '=')
 	{
-	  fprintf(stderr, "%s:%d: equals sign required\n", filename, linum);
+	  fprintf (stderr, _("%s:%d: equals sign required\n"), filename, linum);
 	  continue;
 	}
       /* Skip pas the = sign, and any white space following it */
@@ -436,8 +442,8 @@ void FDECL1(read_rcfile, char *, appname)
       }
       if (rco->tag == NULL)
 	{
-	  fprintf(stderr, "%s:%d: field name \"%s\" unknown\n", filename, linum,
-		  name);
+	  fprintf (stderr, _("%s:%d: field name \"%s\" unknown\n"), filename, linum,
+			     name);
 	}
      }
   if (ferror(rcfile))
@@ -462,23 +468,12 @@ int goof = 0;
 #endif
 
 void usage(){
-  const char * program_name = "mkisofs";
-#if 0
-	fprintf(stderr,"Usage:\n");
-	fprintf(stderr,
-"mkisofs [-o outfile] [-R] [-V volid] [-v] [-a] \
-[-T]\n [-l] [-d] [-V] [-D] [-L] [-p preparer]"
-"[-P publisher] [ -A app_id ] [-z] \n \
-[-b boot_image_name] [-c boot_catalog-name] \
-[-x path -x path ...] path\n");
-#endif
-
   unsigned int i;
 /*  const char **targets, **pp;*/
 
-  fprintf (stderr, "Usage: %s [options] file...\n", program_name);
+  printf (_("Usage: %s [options] file...\n"), program_name);
 
-  fprintf (stderr, "Options:\n");
+  printf (_("Options:\n"));
   for (i = 0; i < OPTION_COUNT; i++)
     {
       if (ld_options[i].doc != NULL)
@@ -487,7 +482,7 @@ void usage(){
 	  int len;
 	  unsigned int j;
 
-	  fprintf (stderr, "  ");
+	  printf ("  ");
 
 	  comma = FALSE;
 	  len = 2;
@@ -498,16 +493,16 @@ void usage(){
 	      if (ld_options[j].shortopt != '\0'
 		  && ld_options[j].control != NO_HELP)
 		{
-		  fprintf (stderr, "%s-%c", comma ? ", " : "", ld_options[j].shortopt);
+		  printf ("%s-%c", comma ? ", " : "", ld_options[j].shortopt);
 		  len += (comma ? 2 : 0) + 2;
 		  if (ld_options[j].arg != NULL)
 		    {
 		      if (ld_options[j].opt.has_arg != optional_argument)
 			{
-			  fprintf (stderr, " ");
+			  putchar (' ');
 			  ++len;
 			}
-		      fprintf (stderr, "%s", ld_options[j].arg);
+		      printf ("%s", ld_options[j].arg);
 		      len += strlen (ld_options[j].arg);
 		    }
 		  comma = TRUE;
@@ -522,7 +517,7 @@ void usage(){
 	      if (ld_options[j].opt.name != NULL
 		  && ld_options[j].control != NO_HELP)
 		{
-		  fprintf (stderr, "%s-%s%s",
+		  printf ("%s-%s%s",
 			  comma ? ", " : "",
 			  ld_options[j].control == TWO_DASHES ? "-" : "",
 			  ld_options[j].opt.name);
@@ -532,7 +527,7 @@ void usage(){
 			  + strlen (ld_options[j].opt.name));
 		  if (ld_options[j].arg != NULL)
 		    {
-		      fprintf (stderr, " %s", ld_options[j].arg);
+		      printf (" %s", ld_options[j].arg);
 		      len += 1 + strlen (ld_options[j].arg);
 		    }
 		  comma = TRUE;
@@ -543,14 +538,14 @@ void usage(){
 
 	  if (len >= 30)
 	    {
-	      fprintf (stderr, "\n");
+	      printf ("\n");
 	      len = 0;
 	    }
 
 	  for (; len < 30; len++)
-	    fputc (' ', stderr);
+	    putchar (' ');
 
-	  fprintf (stderr, "%s\n", ld_options[i].doc);
+	  printf ("%s\n", ld_options[i].doc);
 	}
     }
   exit(1);
@@ -637,6 +632,11 @@ int FDECL2(main, int, argc, char **, argv){
   int c;
   char *log_file = 0;
 
+  set_program_name (argv[0]);
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
+
   if (argc < 2)
     usage();
 
@@ -703,7 +703,7 @@ int FDECL2(main, int, argc, char **, argv){
 	cdwrite_data = optarg;
 	break;
       case 'i':
-	fprintf(stderr, "-i option no longer supported.\n");
+	fprintf (stderr, _("-i option no longer supported.\n"));
 	exit(1);
 	break;
       case 'J':
@@ -715,55 +715,61 @@ int FDECL2(main, int, argc, char **, argv){
       case 'b':
 	use_eltorito++;
 	boot_image = optarg;  /* pathname of the boot image on cd */
-	if (boot_image == NULL) {
-	        fprintf(stderr,"Required boot image pathname missing\n");
-		exit(1);
-	}
+	if (boot_image == NULL)
+	  {
+	    fprintf (stderr, _("Required boot image pathname missing\n"));
+	    exit (1);
+	  }
 	break;
       case 'c':
 	use_eltorito++;
 	boot_catalog = optarg;  /* pathname of the boot image on cd */
-	if (boot_catalog == NULL) {
-	        fprintf(stderr,"Required boot catalog pathname missing\n");
-		exit(1);
-	}
+	if (boot_catalog == NULL)
+	  {
+	    fprintf (stderr, _("Required boot catalog pathname missing\n"));
+	    exit (1);
+	  }
 	break;
       case OPTION_BOOT_INFO_TABLE:
 	use_boot_info_table = 1;
 	break;
       case OPTION_NO_EMUL_BOOT:
-	fprintf (stderr, "Ignoring -no-emul-boot (no-emulation is the default behaviour)\n");
+	fprintf (stderr, _("Ignoring -no-emul-boot (no-emulation is the default behaviour)\n"));
 	break;
       case OPTION_ELTORITO_EMUL_FLOPPY:
 	use_eltorito_emul_floppy = 1;
 	break;
       case OPTION_ABSTRACT:
 	abstract = optarg;
-	if(strlen(abstract) > 37) {
-		fprintf(stderr,"Abstract filename string too long\n");
-		exit(1);
-	};
+	if(strlen(abstract) > 37)
+	  {
+	    fprintf (stderr, _("Abstract filename string too long\n"));
+	    exit (1);
+	  };
 	break;
       case 'A':
 	appid = optarg;
-	if(strlen(appid) > 128) {
-		fprintf(stderr,"Application-id string too long\n");
-		exit(1);
-	};
+	if(strlen(appid) > 128)
+	  {
+	    fprintf (stderr, _("Application-id string too long\n"));
+	    exit (1);
+	  };
 	break;
       case OPTION_BIBLIO:
 	biblio = optarg;
-	if(strlen(biblio) > 37) {
-		fprintf(stderr,"Bibliographic filename string too long\n");
-		exit(1);
-	};
+	if(strlen(biblio) > 37)
+	  {
+	    fprintf (stderr, _("Bibliographic filename string too long\n"));
+	    exit (1);
+	  };
 	break;
       case OPTION_COPYRIGHT:
 	copyright = optarg;
-	if(strlen(copyright) > 37) {
-		fprintf(stderr,"Copyright filename string too long\n");
-		exit(1);
-	};
+	if(strlen(copyright) > 37)
+	  {
+	    fprintf (stderr, _("Copyright filename string too long\n"));
+	    exit (1);
+	  };
 	break;
       case 'd':
 	omit_period++;
@@ -794,20 +800,22 @@ int FDECL2(main, int, argc, char **, argv){
 	break;
       case 'p':
 	preparer = optarg;
-	if(strlen(preparer) > 128) {
-		fprintf(stderr,"Preparer string too long\n");
-		exit(1);
-	};
+	if(strlen(preparer) > 128)
+	  {
+	    fprintf (stderr, _("Preparer string too long\n"));
+	    exit (1);
+	  };
 	break;
       case OPTION_PRINT_SIZE:
 	print_size++;
 	break;
       case 'P':
 	publisher = optarg;
-	if(strlen(publisher) > 128) {
-		fprintf(stderr,"Publisher string too long\n");
-		exit(1);
-	};
+	if(strlen(publisher) > 128)
+	  {
+	    fprintf (stderr, _("Publisher string too long\n"));
+	    exit (1);
+	  };
 	break;
       case OPTION_QUIET:
 	verbose = 0;
@@ -824,48 +832,47 @@ int FDECL2(main, int, argc, char **, argv){
 	break;
       case OPTION_SYSID:
 	system_id = optarg;
-	if(strlen(system_id) > 32) {
-		fprintf(stderr,"System ID string too long\n");
-		exit(1);
-	};
+	if(strlen(system_id) > 32)
+	  {
+	    fprintf (stderr, _("System ID string too long\n"));
+	    exit (1);
+	  };
 	break;
       case 'T':
 	generate_tables++;
 	break;
       case 'V':
 	volume_id = optarg;
-	if(strlen(volume_id) > 32) {
-		fprintf(stderr,"Volume ID string too long\n");
-		exit(1);
-	};
+	if(strlen(volume_id) > 32)
+	  {
+	    fprintf (stderr, _("Volume ID string too long\n"));
+	    exit (1);
+	  };
 	break;
       case OPTION_VOLSET:
 	volset_id = optarg;
-	if(strlen(volset_id) > 128) {
-		fprintf(stderr,"Volume set ID string too long\n");
-		exit(1);
-	};
+	if(strlen(volset_id) > 128)
+	  {
+	    fprintf (stderr, _("Volume set ID string too long\n"));
+	    exit (1);
+	  };
 	break;
       case OPTION_VOLSET_SIZE:
 	volume_set_size = atoi(optarg);
 	break;
       case OPTION_VOLSET_SEQ_NUM:
 	volume_sequence_number = atoi(optarg);
-	if (volume_sequence_number > volume_set_size) {
-		fprintf(stderr,"Volume set sequence number too big\n");
-		exit(1);
-	}
+	if (volume_sequence_number > volume_set_size)
+	  {
+	    fprintf (stderr, _("Volume set sequence number too big\n"));
+	    exit (1);
+	  }
 	break;
       case 'v':
 	verbose++;
 	break;
       case 'z':
-#ifdef VMS
-	fprintf(stderr,"Transparent compression not supported with VMS\n");
-	exit(1);
-#else
 	transparent_compression++;
-#endif
 	break;
       case 'x':
       case 'm':
@@ -886,6 +893,10 @@ int FDECL2(main, int, argc, char **, argv){
 	usage ();
 	exit (0);
 	break;
+      case OPTION_VERSION:
+	printf ("%s (%s %s)\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
+	exit (0);
+	break;
       case OPTION_NOSPLIT_SL_COMPONENT:
 	split_SL_component = 0;
 	break;
@@ -893,37 +904,41 @@ int FDECL2(main, int, argc, char **, argv){
 	split_SL_field = 0;
 	break;
       case OPTION_CREAT_DATE:
-	if (strlen (optarg) != 16) {
-	  fprintf (stderr, "date string must be 16 characters.\n");
-	  exit (1);
-	}
+	if (strlen (optarg) != 16)
+	  {
+	    fprintf (stderr, _("date string must be 16 characters.\n"));
+	    exit (1);
+	  }
 	if (creation_date)
 	  free(creation_date);
 	creation_date = strdup(optarg);
 	break;
       case OPTION_MODIF_DATE:
-	if (strlen (optarg) != 16) {
-	  fprintf (stderr, "date string must be 16 characters.\n");
-	  exit (1);
-	}
+	if (strlen (optarg) != 16)
+	  {
+	    fprintf (stderr, _("date string must be 16 characters.\n"));
+	    exit (1);
+	  }
 	if (modification_date)
 	  free(modification_date);
 	modification_date = strdup(optarg);
 	break;
       case OPTION_EXPIR_DATE:
-	if (strlen (optarg) != 16) {
-	  fprintf (stderr, "date string must be 16 characters.\n");
-	  exit (1);
-	}
+	if (strlen (optarg) != 16)
+	  {
+	    fprintf (stderr, _("date string must be 16 characters.\n"));
+	    exit (1);
+	  }
 	if (expiration_date)
 	  free(expiration_date);
 	expiration_date = strdup(optarg);
 	break;
       case OPTION_EFFEC_DATE:
-	if (strlen (optarg) != 16) {
-	  fprintf (stderr, "date string must be 16 characters.\n");
-	  exit (1);
-	}
+	if (strlen (optarg) != 16)
+	  {
+	    fprintf (stderr, _("date string must be 16 characters.\n"));
+	    exit (1);
+	  }
 	if (effective_date)
 	  free(effective_date);
 	effective_date = strdup(optarg);
@@ -940,11 +955,11 @@ parse_input_files:
 	int resource;
     struct rlimit rlp;
 	if (getrlimit(RLIMIT_DATA,&rlp) == -1) 
-		perror("Warning: getrlimit");
+		perror (_("Warning: getrlimit"));
 	else {
 		rlp.rlim_cur=33554432;
 		if (setrlimit(RLIMIT_DATA,&rlp) == -1)
-			perror("Warning: setrlimit");
+			perror (_("Warning: setrlimit"));
 		}
 	}
 #endif
@@ -960,13 +975,13 @@ parse_input_files:
 
   if(cdwrite_data == NULL && merge_image != NULL)
     {
-      fprintf(stderr,"Multisession usage bug: Must specify -C if -M is used.\n");
-      exit(0);
+      fprintf (stderr, _("Multisession usage bug: Must specify -C if -M is used.\n"));
+      exit (0);
     }
 
   if(cdwrite_data != NULL && merge_image == NULL)
     {
-      fprintf(stderr,"Warning: -C specified without -M: old session data will not be merged.\n");
+      fprintf (stderr, _("Warning: -C specified without -M: old session data will not be merged.\n"));
     }
 
   /*  The first step is to scan the directory tree, and take some notes */
@@ -1004,21 +1019,17 @@ parse_input_files:
     int i;
 
     /* open log file - test that we can open OK */
-    if ((lfp = fopen(log_file, "w")) == NULL) {
-      fprintf(stderr,"can't open logfile: %s\n", log_file);
-      exit (1);
-    }
+    if ((lfp = fopen(log_file, "w")) == NULL)
+      error (1, errno, _("can't open logfile: %s"), log_file);
     fclose(lfp);
 
     /* redirect all stderr message to log_file */
-    fprintf(stderr, "re-directing all messages to %s\n", log_file);
+    fprintf (stderr, _("re-directing all messages to %s\n"), log_file);
     fflush(stderr);
 
     /* associate stderr with the log file */
-    if (freopen(log_file, "w", stderr) == NULL) {
-      fprintf(stderr,"can't open logfile: %s\n", log_file);
-      exit (1);
-    }
+    if (freopen(log_file, "w", stderr) == NULL)
+      error (1, errno, _("can't open logfile: %s\n"), log_file);
     if(verbose > 1) {
       for (i=0;i<argc;i++)
        fprintf(stderr,"%s ", argv[i]);
@@ -1059,9 +1070,8 @@ parse_input_files:
 	  /*
 	   * Complain and die.
 	   */
-	  fprintf(stderr,"Unable to open previous session image %s\n",
-		  merge_image);
-	  exit(1);
+	  error (1, 0, _("Unable to open previous session image %s\n"),
+		 merge_image);
 	}
 
       memcpy(&de.isorec.extent, mrootp->extent, 8);      
@@ -1171,8 +1181,7 @@ parse_input_files:
 	   * This is a fatal error - the user won't be getting what
 	   * they want if we were to proceed.
 	   */
-	  fprintf(stderr, "Invalid node - %s\n", node);
-	  exit(1);
+	  error (1, 0, _("Invalid node - %s\n"), node);
 	}
       else
 	{
@@ -1234,10 +1243,7 @@ parse_input_files:
     }
 
   if (goof)
-    {
-      fprintf(stderr, "Joliet tree sort failed.\n");
-      exit(1);
-    }
+    error (1, 0, _("Joliet tree sort failed.\n"));
   
   /*
    * Fix a couple of things in the root directory so that everything
@@ -1251,17 +1257,12 @@ parse_input_files:
    */
   if (print_size){
 	  discimage = fopen("/dev/null", "wb");
-	  if (!discimage){
-		  fprintf(stderr,"Unable to open /dev/null\n");
-		  exit(1);
-	  }
+	  if (!discimage)
+	    error (1, errno, _("Unable to open /dev/null\n"));
   } else if (outfile){
 	  discimage = fopen(outfile, "wb");
-	  if (!discimage){
-		  fprintf(stderr,"Unable to open disc image file\n");
-		  exit(1);
-
-	  };
+	  if (!discimage)
+	    error (1, errno, _("Unable to open disc image file\n"));
   } else {
 	  discimage =  stdout;
 
@@ -1383,10 +1384,10 @@ parse_input_files:
   if( verbose > 0 )
     {
 #ifdef HAVE_SBRK
-      fprintf(stderr,"Max brk space used %x\n", 
-	      (unsigned int)(((unsigned long)sbrk(0)) - mem_start));
+      fprintf (stderr, _("Max brk space used %x\n"), 
+	       (unsigned int)(((unsigned long)sbrk(0)) - mem_start));
 #endif
-      fprintf (stderr, "%llu extents written (%llu MiB)\n", last_extent, last_extent >> 9);
+      fprintf (stderr, _("%llu extents written (%llu MiB)\n"), last_extent, last_extent >> 9);
     }
 
 #ifdef VMS
@@ -1399,10 +1400,8 @@ parse_input_files:
 void *
 FDECL1(e_malloc, size_t, size)
 {
-void* pt = 0;
-	if( (size > 0) && ((pt=malloc(size))==NULL) ) {
-		fprintf(stderr, "Not enough memory\n");
-		exit (1);
-		}
+  void* pt = 0;
+  if( (size > 0) && ((pt = malloc (size)) == NULL))
+    error (1, errno, "malloc");
 return pt;
 }
