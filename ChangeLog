@@ -1,3 +1,7 @@
+2009-11-19  Felix Zielcke  <fzielcke@z-51.de>
+
+	* include/grub/x86_64/io.h: New file.
+
 2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* conf/i386-pc.rmk (grub_setup_SOURCES): Add `gnulib/progname.c'.
