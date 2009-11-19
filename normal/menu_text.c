@@ -25,6 +25,7 @@
 #include <grub/time.h>
 #include <grub/env.h>
 #include <grub/menu_viewer.h>
+#include <grub/i18n_grub.h>
 
 /* Time to delay after displaying an error message about a default/fallback
    entry failing to boot.  */

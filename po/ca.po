@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU GRUB\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-19 00:16+0100\n"
+"POT-Creation-Date: 2009-11-19 21:37+0000\n"
 "PO-Revision-Date: 2009-11-17 12:26+0100\n"
 "Last-Translator: Robert Millan <rmh.grub@aybabtu.com>\n"
 "Language-Team: None <no-team-yet@li.org>\n"
@@ -881,6 +881,15 @@ msgstr ""
 #, c-format
 msgid "Path table size(bytes): %d\n"
 msgstr ""
+
+#: normal/menu_text.c:97
+#, c-format
+msgid ""
+"\n"
+"      Use the %C and %C keys to select which entry is highlighted.\n"
+msgstr ""
+"\n"
+"      Utilitzeu les tecles %C i %C per a seleccionar l'entrada.\n"
 
 #: util/grub.d/10_kfreebsd.in:40
 msgid "%s, with kFreeBSD %s"
