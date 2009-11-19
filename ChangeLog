@@ -1,3 +1,10 @@
+2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Patch from Joe Auricchio <jauricchio@gmail.com>
+	* commands/minicmd.c (grub_mini_cmd_clear): New function.
+	(GRUB_MOD_INIT(minicmd)): Register grub_mini_cmd_clear().
+	(GRUB_MOD_FINI(minicmd)): Unregister grub_mini_cmd_clear().
+
 2009-11-19  Felix Zielcke  <fzielcke@z-51.de>
 
 	* Makefile.in (install-local): Add a missing backslash.
