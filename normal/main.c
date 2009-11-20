@@ -584,6 +584,8 @@ GRUB_MOD_INIT(normal)
   /* Preserve hooks after context changes.  */
   grub_env_export ("color_normal");
   grub_env_export ("color_highlight");
+
+  grub_menu_viewer_init ();
 }
 
 GRUB_MOD_FINI(normal)

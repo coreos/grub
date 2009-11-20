@@ -36,8 +36,13 @@ struct grub_menu_viewer
 };
 typedef struct grub_menu_viewer *grub_menu_viewer_t;
 
+void grub_menu_viewer_init (void);
+
 void grub_menu_viewer_register (grub_menu_viewer_t viewer);
 
 grub_err_t grub_menu_viewer_show_menu (grub_menu_t menu, int nested);
+
+/* Return nonzero iff the menu viewer should clean up and return ASAP.  */
+int grub_menu_viewer_should_return (void);
 
 #endif /* GRUB_MENU_VIEWER_HEADER */

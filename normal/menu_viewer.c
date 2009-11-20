@@ -26,6 +26,9 @@
 /* The list of menu viewers.  */
 static grub_menu_viewer_t menu_viewer_list;
 
+static int should_return;
+static int menu_viewer_changed;
+
 void
 grub_menu_viewer_register (grub_menu_viewer_t viewer)
 {
@@ -55,15 +58,22 @@ static grub_menu_viewer_t get_current_menu_viewer (void)
 grub_err_t
 grub_menu_viewer_show_menu (grub_menu_t menu, int nested)
 {
-  grub_menu_viewer_t cur = get_current_menu_viewer ();
   grub_err_t err1, err2;
-  if (!cur)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "No menu viewer available.");
 
   while (1)
     {
+      grub_menu_viewer_t cur = get_current_menu_viewer ();
+      if (!cur)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "No menu viewer available.");
+
+      menu_viewer_changed = 0;
+      should_return = 0;
+
       err1 = cur->show_menu (menu, nested);
       grub_print_error ();
+
+      if (menu_viewer_changed)
+	continue;
 
       err2 = grub_auth_check_authentication (NULL);
       if (err2)
@@ -77,5 +87,26 @@ grub_menu_viewer_show_menu (grub_menu_t menu, int nested)
     }
 
   return err1;
+}
+
+int
+grub_menu_viewer_should_return (void)
+{
+  return should_return;
+}
+
+static char *
+menuviewer_write_hook (struct grub_env_var *var __attribute__ ((unused)),
+                       const char *val)
+{
+  menu_viewer_changed = 1;
+  should_return = 1;
+  return grub_strdup (val);
+}
+
+void
+grub_menu_viewer_init (void)
+{
+  grub_register_variable_hook ("menuviewer", 0, menuviewer_write_hook);
 }
 

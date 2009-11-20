@@ -300,7 +300,7 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
   if (timeout > 0)
     print_timeout (timeout, offset, 0);
 
-  while (1)
+  while (! grub_menu_viewer_should_return ())
     {
       int c;
       timeout = grub_menu_get_timeout ();
@@ -473,6 +473,10 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 		}
 	      goto refresh;
 
+	    case 't':
+	      grub_env_set ("menuviewer", "gfxmenu");
+	      goto refresh;
+
 	    default:
 	      break;
 	    }
@@ -481,7 +485,8 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	}
     }
 
-  /* Never reach here.  */
+  /* Exit menu without activating an item.  This occurs if the user presses
+   * 't', switching to the graphical menu viewer.  */
   return -1;
 }
 
