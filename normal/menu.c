@@ -137,6 +137,8 @@ grub_menu_execute_entry(grub_menu_entry_t entry)
       return;
     }
 
+  grub_env_set ("chosen", entry->title);
+
   grub_parser_execute ((char *) entry->sourcecode);
 
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
