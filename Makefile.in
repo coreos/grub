@@ -107,12 +107,14 @@ endif
 AWK = @AWK@
 LIBCURSES = @LIBCURSES@
 LIBUSB = @LIBUSB@
+LIBSDL = @LIBSDL@
 YACC = @YACC@
 UNIFONT_BDF = @UNIFONT_BDF@
 
 # Options.
 enable_grub_emu = @enable_grub_emu@
 enable_grub_emu_usb = @enable_grub_emu_usb@
+enable_grub_emu_sdl = @enable_grub_emu_sdl@
 enable_grub_fstest = @enable_grub_fstest@
 enable_grub_pe2elf = @enable_grub_pe2elf@
 enable_grub_mkfont = @enable_grub_mkfont@

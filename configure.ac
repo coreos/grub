@@ -519,6 +519,10 @@ if test x"$enable_grub_emu" = xno ; then
   grub_emu_excuse="explicitly disabled"
 fi
 
+AC_ARG_ENABLE([grub-emu-sdl],
+	      [AS_HELP_STRING([--enable-grub-emu-sdl],
+                             [build and install the `grub-emu' debugging utility with SDL support (default=guessed)])])
+
   [# Check for curses libraries.]
 [if [ x"$grub_emu_excuse" = x ]; then ]
   AC_CHECK_LIB([ncurses], [wgetch], [LIBCURSES="-lncurses"],
@@ -567,6 +571,31 @@ enable_grub_emu_usb=no
 fi
 
 AC_SUBST([enable_grub_emu])
+
+if test x"$enable_grub_emu_sdl" = xno ; then
+  grub_emu_sdl_excuse="explicitely disabled"
+fi
+[if [ x"$grub_emu_sdl_excuse" = x ]; then
+    # Check for libSDL libraries.]
+AC_CHECK_LIB([SDL], [SDL_Init], [LIBSDL="-lSDL"],
+    [grub_emu_sdl_excuse=["libSDL libraries are required to build \`grub-emu' with SDL support"]])
+    AC_SUBST([LIBSDL])
+[fi]
+[if [ x"$grub_emu_sdl_excuse" = x ]; then
+    # Check for headers.]
+    AC_CHECK_HEADERS([SDL/SDL.h], [],
+      [grub_emu_sdl_excuse=["libSDL header file is required to build \`grub-emu' with SDL support"]])
+[fi]
+if test x"enable_grub_emu_sdl" = xyes && test x"$grub_emu_sdl_excuse" != x ; then
+  AC_MSG_ERROR([SDL support for grub-emu was explicitely requested but can't be compiled])
+fi
+if test x"$grub_emu_sdl_excuse" = x ; then
+enable_grub_emu_sdl=yes
+else
+enable_grub_emu_sdl=no
+fi
+
+AC_SUBST([enable_grub_emu_sdl])
 AC_SUBST([enable_grub_emu_usb])
 
 AC_ARG_ENABLE([grub-fstest],
@@ -640,6 +669,11 @@ if [ x"$grub_emu_usb_excuse" = x ]; then
 echo USB support for grub-emu: Yes
 else
 echo USB support for grub-emu: No "($grub_emu_usb_excuse)"
+fi
+if [ x"$grub_emu_sdl_excuse" = x ]; then
+echo SDL support for grub-emu: Yes
+else
+echo SDL support for grub-emu: No "($grub_emu_sdl_excuse)"
 fi
 if [ x"$enable_mm_debug" = xyes ]; then
 echo With memory debugging: Yes

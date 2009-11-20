@@ -153,6 +153,12 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c		\
 	fs/befs.c fs/befs_be.c fs/tar.c				\
 	\
+	video/video.c video/fb/video_fb.c video/fb/fbblit.c             \
+        video/fb/fbfill.c video/fb/fbutil.c commands/videotest.c        \
+	video/bitmap.c video/readers/tga.c video/readers/jpeg.c         \
+	video/readers/png.c font/font_cmd.c font/font.c term/gfxterm.c  \
+	io/bufio.c							\
+	\
 	util/console.c util/hostfs.c util/grub-emu.c util/misc.c	\
 	util/hostdisk.c util/getroot.c					\
 	\
