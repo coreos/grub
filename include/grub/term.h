@@ -261,7 +261,7 @@ grub_term_set_current_input (grub_term_input_t term)
 }
 
 static inline grub_err_t
-grub_term_set_current_output (grub_term_output_t term)
+grub_term_set_current_output (const struct grub_term_output *term)
 {
   return grub_handler_set_current (&grub_term_output_class,
 				   GRUB_AS_HANDLER (term));
