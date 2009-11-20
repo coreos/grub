@@ -32,11 +32,19 @@ for i in ${GRUB_PRELOAD_MODULES} ; do
 done
 
 if [ "x${GRUB_DEFAULT}" = "x" ] ; then GRUB_DEFAULT=0 ; fi
+if [ "x${GRUB_DEFAULT}" = "xsaved" ] ; then GRUB_DEFAULT='${saved_entry}' ; fi
 if [ "x${GRUB_TIMEOUT}" = "x" ] ; then GRUB_TIMEOUT=5 ; fi
 if [ "x${GRUB_GFXMODE}" = "x" ] ; then GRUB_GFXMODE=640x480 ; fi
 
 cat << EOF
+load_env
 set default=${GRUB_DEFAULT}
+if [ \${prev_saved_entry} ]; then
+  saved_entry=\${prev_saved_entry}
+  save_env saved_entry
+  prev_saved_entry=
+  save_env prev_saved_entry
+fi
 EOF
 
 case ${GRUB_TERMINAL_INPUT}:${GRUB_TERMINAL_OUTPUT} in

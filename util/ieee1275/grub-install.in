@@ -37,6 +37,7 @@ pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${t
 grub_mkimage=${bindir}/`echo grub-mkelfimage | sed ${transform}`
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
+grub_editenv=${bindir}/`echo grub-editenv | sed ${transform}`
 rootdir=
 grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
@@ -162,6 +163,10 @@ done
 for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst ; do
     cp -f $file ${grubdir} || exit 1
 done
+
+if ! test -f ${grubdir}/grubenv; then
+    $grub_editenv ${grubdir}/grubenv create
+fi
 
 # Create the core image. First, auto-detect the filesystem module.
 fs_module=`$grub_probe --target=fs --device-map=${device_map} ${grubdir}`

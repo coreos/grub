@@ -38,6 +38,7 @@ grub_setup=${sbindir}/`echo grub-setup | sed ${transform}`
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
+grub_editenv=${bindir}/`echo grub-editenv | sed ${transform}`
 rootdir=
 grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
@@ -205,6 +206,10 @@ done
 for file in ${pkglibdir}/*.img; do
     cp -f $file ${grubdir} || exit 1
 done
+
+if ! test -f ${grubdir}/grubenv; then
+    $grub_editenv ${grubdir}/grubenv create
+fi
 
 # Write device to a variable so we don't have to traverse /dev every time.
 grub_device=`$grub_probe --target=device ${grubdir}`
