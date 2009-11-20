@@ -151,7 +151,7 @@ label_get_preferred_size (void *vself, int *width, int *height)
     *height = self->preferred_height;
 }
 
-static void
+static grub_err_t
 label_set_property (void *vself, const char *name, const char *value)
 {
   grub_gui_label_t self = vself;
@@ -204,6 +204,7 @@ label_set_property (void *vself, const char *name, const char *value)
       else
         self->id = 0;
     }
+  return GRUB_ERR_NONE;
 }
 
 static struct grub_gui_component_ops label_ops =
