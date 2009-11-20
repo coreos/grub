@@ -1,0 +1,9 @@
+2009-11-20  Colin D Bennett  <colin@gibibit.com>
+
+	* normal/menu_text.c (get_entry_number): Move from here ...
+	* normal/menu.c (get_entry_number): ... moved here.
+	* include/grub/menu.h (grub_menu_get_default_entry_index):
+	New prototype.
+	* normal/menu.c (grub_menu_get_default_entry_index): New function.
+	* normal/menu_text.c (run_menu): Use grub_menu_get_default_entry_index.
+

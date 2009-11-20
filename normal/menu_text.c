@@ -235,54 +235,6 @@ grub_menu_init_page (int nested, int edit)
   print_message (nested, edit);
 }
 
-/* Get the entry number from the variable NAME.  */
-static int
-get_entry_number (grub_menu_t menu, const char *name)
-{
-  char *val;
-  int entry;
-
-  val = grub_env_get (name);
-  if (! val)
-    return -1;
-
-  grub_error_push ();
-
-  entry = (int) grub_strtoul (val, 0, 0);
-
-  if (grub_errno == GRUB_ERR_BAD_NUMBER)
-    {
-      /* See if the variable matches the title of a menu entry.  */
-      grub_menu_entry_t e = menu->entry_list;
-      int i;
-
-      grub_errno = GRUB_ERR_NONE;
-
-      for (i = 0; e; i++)
-	{
-	  if (grub_strcmp (e->title, val) == 0)
-	    {
-	      entry = i;
-	      break;
-	    }
-	  e = e->next;
-	}
-
-      if (! e)
-	entry = -1;
-    }
-
-  if (grub_errno != GRUB_ERR_NONE)
-    {
-      grub_errno = GRUB_ERR_NONE;
-      entry = -1;
-    }
-
-  grub_error_pop ();
-
-  return entry;
-}
-
 static void
 print_timeout (int timeout, int offset, int second_stage)
 {
@@ -313,7 +265,7 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
   first = 0;
 
-  default_entry = get_entry_number (menu, "default");
+  default_entry = grub_menu_get_default_entry_index (menu);
 
   /* If DEFAULT_ENTRY is not within the menu entries, fall back to
      the first entry.  */
