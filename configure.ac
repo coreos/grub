@@ -138,7 +138,7 @@ fi
 
 for file in /usr/src/unifont.bdf /usr/share/fonts/X11/misc/unifont.pcf.gz ; do
   if test -e $file ; then
-    AC_SUBST([UNIFONT_INPUTFILE], [$file])
+    AC_SUBST([UNIFONT_BDF], [$file])
     break
   fi
 done
