@@ -1,0 +1,11 @@
+2009-11-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	SDL support.
+
+	* Makefile.in (LIBSDL): New variable.
+	(enable_grub_emu_sdl): Likewise.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add video files.
+	(grub_emu_SOURCES) [enable_grub_emu_sdl]: Add util/sdl.c.
+	(grub_emu_LDFLAGS) [enable_grub_emu_sdl]: Add $(LIBSDL).
+	* configure.ac: Detect SDL availability and add --enable-grub-emu-sdl
+	* util/sdl.c: New file.

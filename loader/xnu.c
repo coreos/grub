@@ -1336,7 +1336,7 @@ grub_xnu_unlock ()
   locked = 0;
 }
 
-static grub_command_t cmd_kernel, cmd_mkext, cmd_kext, ;
+static grub_command_t cmd_kernel, cmd_mkext, cmd_kext;
 static grub_command_t cmd_devtree;
 static grub_command_t cmd_kextdir, cmd_ramdisk, cmd_resume;
 static grub_extcmd_t cmd_splash;
