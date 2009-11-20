@@ -323,6 +323,7 @@ grub_gfxterm_init (void)
   struct grub_video_mode_info mode_info;
   char *tmp;
   grub_err_t err;
+  grub_video_color_t color;
 
   /* If gfxterm has already been initialized by calling the init_window
      function, then leave it alone when it is set as the current terminal.  */
@@ -702,7 +703,6 @@ scroll_up (void)
   else
     {
       grub_video_rect_t saved_view;
-      int i;
 
       grub_video_set_active_render_target (render_target);
       /* Save viewport and set it to our window.  */

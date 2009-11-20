@@ -624,7 +624,6 @@ grub_video_set_mode (const char *modestring,
       /* Loop thru all possible video adapter trying to find requested mode.  */
       for (p = grub_video_adapter_list; p; p = p->next)
 	{
-	  grub_err_t err;
 	  struct grub_video_mode_info mode_info;
 
 	  grub_memset (&mode_info, 0, sizeof (mode_info));
