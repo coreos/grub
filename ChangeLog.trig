@@ -1,0 +1,11 @@
+2009-11-14  Colin D Bennet <colin@gibibit.com>
+
+	Trigonometry support.
+
+	* include/grub/trig.h: New file.
+	* lib/trig.c: Likewise.
+	* maintainance/gentrigtables.py: Likewise.
+	* conf/common.rmk (pkglib_MODULES): Add trig.mod.
+	(trig_mod_SOURCES): New variable.
+	(trig_mod_CFLAGS): Likewise.
+	(trig_mod_LDFLAGS): Likewise.
