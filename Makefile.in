@@ -108,7 +108,7 @@ AWK = @AWK@
 LIBCURSES = @LIBCURSES@
 LIBUSB = @LIBUSB@
 YACC = @YACC@
-UNIFONT_BDF = @UNIFONT_BDF@
+FONT_SOURCE = @FONT_SOURCE@
 
 # Options.
 enable_grub_emu = @enable_grub_emu@
@@ -207,7 +207,7 @@ docs/grub.info: docs/grub.texi docs/version.texi docs/fdl.texi
 	$(MKDIR_P) docs
 	-$(MAKEINFO) -P $(builddir)/docs --no-split --force $< -o $@
 
-ifeq (, $(UNIFONT_BDF))
+ifeq (, $(FONT_SOURCE))
 else
 
 ifeq ($(enable_grub_mkfont),yes)
@@ -218,11 +218,11 @@ pkgdata_DATA += unicode.pf2 ascii.pf2
 UNICODE_ARROWS=0x2190-0x2193
 UNICODE_LINES=0x2501-0x251B
 
-unicode.pf2: $(UNIFONT_BDF) grub-mkfont
-	$(builddir)/grub-mkfont -o $@ $(UNIFONT_BDF)
+unicode.pf2: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE)
 
-ascii.pf2: $(UNIFONT_BDF) grub-mkfont
-	$(builddir)/grub-mkfont -o $@ $(UNIFONT_BDF) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
+ascii.pf2: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
 endif
 endif
 

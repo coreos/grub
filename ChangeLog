@@ -1,5 +1,10 @@
 2009-11-20  Felix Zielcke  <fzielcke@z-51.de>
 
+	* configure.ac (UNIFONT_BDF): Rename to ...
+	(FONT_SOURCE): ... this.  Update all users.
+
+2009-11-20  Felix Zielcke  <fzielcke@z-51.de>
+
 	* configure.ac: Add `/usr/share/fonts/X11/misc/unifont.pcf.gz'
 	to the list of unifont files to look for.
 
