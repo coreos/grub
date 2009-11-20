@@ -567,6 +567,12 @@ bitmap_mod_SOURCES = video/bitmap.c
 bitmap_mod_CFLAGS = $(COMMON_CFLAGS)
 bitmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For bitmap_scale.mod
+pkglib_MODULES += bitmap_scale.mod
+bitmap_scale_mod_SOURCES = video/bitmap_scale.c
+bitmap_scale_mod_CFLAGS = $(COMMON_CFLAGS)
+bitmap_scale_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For tga.mod
 tga_mod_SOURCES = video/readers/tga.c
 tga_mod_CFLAGS = $(COMMON_CFLAGS)

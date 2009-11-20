@@ -26,6 +26,8 @@
 #include <grub/video.h>
 #include <grub/bitmap.h>
 #include <grub/command.h>
+#include <grub/extcmd.h>
+#include <grub/bitmap_scale.h>
 
 #define DEFAULT_VIDEO_MODE "auto"
 #define DEFAULT_BORDER_WIDTH	10
@@ -909,11 +911,23 @@ grub_gfxterm_refresh (void)
   dirty_region_reset ();
 }
 
+/* Option array indices.  */
+#define BACKGROUND_CMD_ARGINDEX_MODE 0
+
+static const struct grub_arg_option background_image_cmd_options[] =
+  {
+    {"mode", 'm', 0, "Background image mode.", "stretch|normal",
+     ARG_TYPE_STRING},
+    {0, 0, 0, 0, 0, 0}
+  };
+
 static grub_err_t
-grub_gfxterm_background_image_cmd (grub_command_t cmd __attribute__ ((unused)),
+grub_gfxterm_background_image_cmd (grub_extcmd_t cmd __attribute__ ((unused)),
                                    int argc,
                                    char **args)
 {
+  struct grub_arg_list *state = cmd->state;
+
   /* Check that we have video adapter active.  */
   if (grub_video_get_info(NULL) != GRUB_ERR_NONE)
     return grub_errno;
@@ -936,6 +950,29 @@ grub_gfxterm_background_image_cmd (grub_command_t cmd __attribute__ ((unused)),
     grub_video_bitmap_load (&bitmap, args[0]);
     if (grub_errno != GRUB_ERR_NONE)
       return grub_errno;
+
+    /* Determine if the bitmap should be scaled to fit the screen.  */
+    if (!state[BACKGROUND_CMD_ARGINDEX_MODE].set
+        || grub_strcmp (state[BACKGROUND_CMD_ARGINDEX_MODE].arg,
+                        "stretch") == 0)
+        {
+          if (mode_info.width != grub_video_bitmap_get_width (bitmap)
+              || mode_info.height != grub_video_bitmap_get_height (bitmap))
+            {
+              struct grub_video_bitmap *scaled_bitmap;
+              grub_video_bitmap_create_scaled (&scaled_bitmap,
+                                               mode_info.width,
+                                               mode_info.height,
+                                               bitmap,
+                                               GRUB_VIDEO_BITMAP_SCALE_METHOD_BEST);
+              if (grub_errno == GRUB_ERR_NONE)
+                {
+                  /* Replace the original bitmap with the scaled one.  */
+                  grub_video_bitmap_destroy (bitmap);
+                  bitmap = scaled_bitmap;
+                }
+            }
+        }
 
     /* If bitmap was loaded correctly, display it.  */
     if (bitmap)
@@ -975,18 +1012,22 @@ static struct grub_term_output grub_video_term =
     .next = 0
   };
 
-static grub_command_t cmd;
+static grub_extcmd_t background_image_cmd_handle;
 
 GRUB_MOD_INIT(term_gfxterm)
 {
   grub_term_register_output ("gfxterm", &grub_video_term);
-  cmd = grub_register_command ("background_image",
-			       grub_gfxterm_background_image_cmd,
-			       0, "Load background image for active terminal");
+  background_image_cmd_handle =
+    grub_register_extcmd ("background_image",
+                          grub_gfxterm_background_image_cmd,
+                          GRUB_COMMAND_FLAG_BOTH,
+                          "background_image [-m (stretch|normal)] FILE",
+                          "Load background image for active terminal.",
+                          background_image_cmd_options);
 }
 
 GRUB_MOD_FINI(term_gfxterm)
 {
-  grub_unregister_command (cmd);
+  grub_unregister_extcmd (background_image_cmd_handle);
   grub_term_unregister_output (&grub_video_term);
 }

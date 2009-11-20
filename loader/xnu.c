@@ -31,6 +31,7 @@
 #include <grub/gzio.h>
 #include <grub/command.h>
 #include <grub/misc.h>
+#include <grub/extcmd.h>
 
 struct grub_xnu_devtree_key *grub_xnu_devtree_root = 0;
 static int driverspackagenum = 0;
@@ -1272,18 +1273,37 @@ grub_cmd_xnu_kextdir (grub_command_t cmd __attribute__ ((unused)),
 }
 
 struct grub_video_bitmap *grub_xnu_bitmap = 0;
+grub_xnu_bitmap_mode_t grub_xnu_bitmap_mode;
+
+/* Option array indices.  */
+#define XNU_SPLASH_CMD_ARGINDEX_MODE 0
+
+static const struct grub_arg_option xnu_splash_cmd_options[] =
+  {
+    {"mode", 'm', 0, "Background image mode.", "stretch|normal",
+     ARG_TYPE_STRING},
+    {0, 0, 0, 0, 0, 0}
+  };
 
 static grub_err_t
-grub_cmd_xnu_splash (grub_command_t cmd __attribute__ ((unused)),
+grub_cmd_xnu_splash (grub_extcmd_t cmd,
 		     int argc, char *args[])
 {
   grub_err_t err;
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
+  if (cmd->state[XNU_SPLASH_CMD_ARGINDEX_MODE].set &&
+      grub_strcmp (cmd->state[XNU_SPLASH_CMD_ARGINDEX_MODE].arg,
+		   "stretch") == 0)
+    grub_xnu_bitmap_mode = GRUB_XNU_BITMAP_STRETCH;
+  else
+    grub_xnu_bitmap_mode = GRUB_XNU_BITMAP_CENTER;
+
   err = grub_video_bitmap_load (&grub_xnu_bitmap, args[0]);
   if (err)
     grub_xnu_bitmap = 0;
+
   return err;
 }
 
@@ -1316,8 +1336,10 @@ grub_xnu_unlock ()
   locked = 0;
 }
 
-static grub_command_t cmd_kernel, cmd_mkext, cmd_kext, cmd_kextdir,
-  cmd_ramdisk, cmd_devtree, cmd_resume, cmd_splash;
+static grub_command_t cmd_kernel, cmd_mkext, cmd_kext, ;
+static grub_command_t cmd_devtree;
+static grub_command_t cmd_kextdir, cmd_ramdisk, cmd_resume;
+static grub_extcmd_t cmd_splash;
 
 GRUB_MOD_INIT(xnu)
 {
@@ -1335,8 +1357,11 @@ GRUB_MOD_INIT(xnu)
 				       "It will be seen as md0");
   cmd_devtree = grub_register_command ("xnu_devtree", grub_cmd_xnu_devtree, 0,
 				       "Load XNU devtree");
-  cmd_splash = grub_register_command ("xnu_splash", grub_cmd_xnu_splash, 0,
-				      "Load a splash image for XNU");
+  cmd_splash = grub_register_extcmd ("xnu_splash",
+				     grub_cmd_xnu_splash,
+				     GRUB_COMMAND_FLAG_BOTH, 0,
+				     "Load a splash image for XNU",
+				     xnu_splash_cmd_options);
 
 #ifndef GRUB_UTIL
   cmd_resume = grub_register_command ("xnu_resume", grub_cmd_xnu_resume,
@@ -1356,5 +1381,5 @@ GRUB_MOD_FINI(xnu)
   grub_unregister_command (cmd_devtree);
   grub_unregister_command (cmd_ramdisk);
   grub_unregister_command (cmd_kernel);
-  grub_unregister_command (cmd_splash);
+  grub_unregister_extcmd (cmd_splash);
 }
