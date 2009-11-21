@@ -46,12 +46,12 @@ AC_ARG_PROGRAM
 case "$target_cpu" in
   i[[3456]]86)	target_cpu=i386 ;;
   sparc)	target_cpu=sparc64 ;;
-  mipsel)
+  mipsel|mips64el)
                 target_cpu=mips;    
 		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPSEL=1"; 
 		CFLAGS="$CFLAGS -DGRUB_CPU_MIPSEL=1";
 		;;
-  mips)
+  mips|mips64)
                 target_cpu=mips;    
 		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPS=1"; 
 		CFLAGS="$CFLAGS -DGRUB_CPU_MIPS=1";
