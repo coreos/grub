@@ -1,3 +1,9 @@
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Use source directory direcly (without copiing
+	or hardlinking it).  Remove -J option, Joliet is not compatible with
+	multiple source directories.
+
 2009-11-21  Carles Pina i Estany <carles@pina.cat>
 2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
 
