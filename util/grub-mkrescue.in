@@ -142,13 +142,6 @@ EOF
     grub_mkisofs_arguments="${grub_mkisofs_arguments} --modification-date=$(echo ${iso_uuid} | sed -e s/-//g)"
 fi
 
-if [ "${source}" != "" ] ; then
-    for d in ${source}; do
-      echo "Processing $d"
-      cp -dpRl "${d}" ${iso9660_dir}/
-    done
-fi
-
 # build eltorito core.img
 if test -e "${pc_dir}" ; then
     echo "Generates eltorito"
@@ -170,7 +163,7 @@ if test -e "${pc_dir}" ; then
 fi
 
 # build iso image
-grub-mkisofs ${grub_mkisofs_arguments} -o ${output_image} -r -J ${iso9660_dir}
+grub-mkisofs ${grub_mkisofs_arguments} -o ${output_image} -r ${iso9660_dir} ${source}
 rm -rf ${iso9660_dir}
 
 exit 0

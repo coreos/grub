@@ -4,6 +4,23 @@
 	* util/grub.d/30_os-prober.in: Cope with Linux entries where
 	root and /boot are on different devices.
 
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build for srcdir != objdir.
+
+	* Makefile.in (po/$(PACKAGE).pot): Rename to ...
+	($(srcdir)/po/$(PACKAGE).pot): ... this.  Run $(XGETTEXT) from
+	$(srcdir).
+	($(foreach lang, $(LINGUAS), po/$(lang).po)): Rename to ...
+	($(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): ... this. Use $^
+	reference for input.
+
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Use source directory direcly (without copiing
+	or hardlinking it).  Remove -J option, Joliet is not compatible with
+	multiple source directories.
+
 2009-11-21  Carles Pina i Estany <carles@pina.cat>
 2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
 
