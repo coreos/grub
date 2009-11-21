@@ -215,14 +215,3 @@ version_find_latest ()
   done
   echo "$a"
 }
-
-get_locale_lang ()
-{
-  lang="`echo ${LANG} | cut -d _ -f 1`"
-  if [ "x${lang}" = "x" ] ; then
-    return 1
-  else
-    echo "${lang}"
-    return 0
-  fi
-}
