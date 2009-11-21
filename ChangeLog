@@ -1,3 +1,10 @@
+2009-11-21  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/getroot.c [__GNU__]: Include <hurd.h>, <hurd/lookup.h>, and
+	<hurd/fs.h>
+	[__GNU__] (grub_guess_root_device): Call file_name_lookup and
+	file_get_storage_info to implement grub_guess_root_device.
+
 2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/grub-mkrescue.in: Print an error and usage if output option
