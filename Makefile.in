@@ -309,7 +309,7 @@ install-local: all
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
 	$(foreach lang, $(LINGUAS), \
-	$(SHELL) $(mkinstalldirs) $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES \
+	$(shell $(mkinstalldirs) $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES) \
 	@list='po/$(lang).mo'; \
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
