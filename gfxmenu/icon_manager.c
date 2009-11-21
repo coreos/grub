@@ -26,6 +26,7 @@
 #include <grub/bitmap_scale.h>
 #include <grub/menu.h>
 #include <grub/icon_manager.h>
+#include <grub/env.h>
 
 /* Currently hard coded to '.png' extension.  */
 static const char icon_extension[] = ".png";
@@ -200,19 +201,16 @@ get_icon_by_class (grub_gfxmenu_icon_manager_t mgr, const char *class_name)
       icon = try_loading_icon (mgr, icons_dir, class_name);
       grub_free (icons_dir);
     }
+
+  grub_free (theme_dir);
   if (! icon)
     {
-      /* If the theme doesn't have an appropriate icon, check in
-         "grub/themes/icons".  */
-      /* TODO use GRUB prefix "/icons" */
-      icons_dir = grub_resolve_relative_path (theme_dir, "../icons/");
-      if (icons_dir)
-        {
-          icon = try_loading_icon (mgr, icons_dir, class_name);
-          grub_free (icons_dir);
-        }
+      const char *icondir;
+
+      icondir = grub_env_get ("icondir");
+      if (icondir)
+	icon = try_loading_icon (mgr, icondir, class_name);
     }
-  grub_free (theme_dir);
 
   /* No icon was found.  */
   /* This should probably be noted in the cache, so that a search is not

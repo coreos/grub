@@ -150,18 +150,25 @@ grub_resolve_relative_path (const char *base, const char *path)
   char *abspath;
   char *canonpath;
   char *p;
+  grub_size_t l;
 
   /* If PATH is an absolute path, then just use it as is.  */
   if (path[0] == '/' || path[0] == '(')
     return canonicalize_path (path);
 
-  abspath = grub_malloc (grub_strlen (base) + grub_strlen (path) + 1);
+  abspath = grub_malloc (grub_strlen (base) + grub_strlen (path) + 3);
   if (! abspath)
     return 0;
 
-  /* Concatenate BASE and PATH.
-     Note that BASE is expected to have a trailing slash.  */
+  /* Concatenate BASE and PATH.  */
   p = grub_stpcpy (abspath, base);
+  l = grub_strlen (abspath);
+  if (l == 0 || abspath[l-1] != '/')
+    {
+      *p = '/';
+      p++;
+      *p = 0;
+    }
   grub_stpcpy (p, path);
 
   canonpath = canonicalize_path (abspath);
