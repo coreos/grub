@@ -1,0 +1,15 @@
+YYYY-MM-DD  Carles Pina i Estany <carles@pina.cat>
+
+	* conf/common.rmk: Add grub-gettext_lib target, dependency and
+	  SOURCES, CFLAGS, LDFLAGS
+	* gettext/gettext.c: New file with gettext implementation
+	* include/grub/i18n_grub.h: New file with grub_gettext macros
+	* include/grub/misc.h: Define macro _(char *s). Declare
+	  grub_gettext_dummy and grub_gettext
+	* kern/misc.c: Define grub_gettext symbol implementation of the
+	  grub_gettext_dummy function
+	* normal/menu_text.c: Gettextize one message in print_message
+	* po/POTFILES: Adds normal/menu_text.c
+	* po/ca.po: Adds the new string
+	* util/grub.d/00_header.in: defines gettext variables and loads
+	  the module
