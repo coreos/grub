@@ -51,7 +51,7 @@ grub_mb2_tags_free (void)
 grub_err_t
 grub_mb2_tag_alloc (grub_addr_t *addr, int key, grub_size_t len)
 {
-  struct multiboot_tag_header *tag;
+  struct multiboot2_tag_header *tag;
   grub_size_t used;
   grub_size_t needed;
 
@@ -59,7 +59,7 @@ grub_mb2_tag_alloc (grub_addr_t *addr, int key, grub_size_t len)
 		key, (unsigned long) len);
 
   used = grub_mb2_tags_pos - grub_mb2_tags;
-  len = ALIGN_UP (len, sizeof (multiboot_word));
+  len = ALIGN_UP (len, sizeof (multiboot2_word));
 
   needed = used + len;
 
@@ -83,7 +83,7 @@ grub_mb2_tag_alloc (grub_addr_t *addr, int key, grub_size_t len)
       grub_mb2_tags_pos = newarea + used;
     }
 
-  tag = (struct multiboot_tag_header *) grub_mb2_tags_pos;
+  tag = (struct multiboot2_tag_header *) grub_mb2_tags_pos;
   grub_mb2_tags_pos += len;
 
   tag->key = key;
@@ -103,24 +103,24 @@ static grub_err_t
 grub_mb2_tag_start_create (void)
 {
   return grub_mb2_tag_alloc (0, MULTIBOOT2_TAG_START,
-			    sizeof (struct multiboot_tag_start));
+			    sizeof (struct multiboot2_tag_start));
 }
 
 static grub_err_t
 grub_mb2_tag_name_create (void)
 {
-  struct multiboot_tag_name *name;
+  struct multiboot2_tag_name *name;
   grub_addr_t name_addr;
   grub_err_t err;
   const char *grub_version = PACKAGE_STRING;
 
   err = grub_mb2_tag_alloc (&name_addr, MULTIBOOT2_TAG_NAME,
-			   sizeof (struct multiboot_tag_name) +
+			   sizeof (struct multiboot2_tag_name) +
 			   sizeof (grub_version) + 1);
   if (err)
     return err;
 
-  name = (struct multiboot_tag_name *) name_addr;
+  name = (struct multiboot2_tag_name *) name_addr;
   grub_strcpy (name->name, grub_version);
 
   return GRUB_ERR_NONE;
@@ -159,17 +159,17 @@ error:
 static grub_err_t
 grub_mb2_tags_finish (void)
 {
-  struct multiboot_tag_start *start;
+  struct multiboot2_tag_start *start;
   grub_err_t err;
 
   /* Create the `end' tag.  */
   err = grub_mb2_tag_alloc (0, MULTIBOOT2_TAG_END,
-			   sizeof (struct multiboot_tag_end));
+			   sizeof (struct multiboot2_tag_end));
   if (err)
     goto error;
 
   /* We created the `start' tag first.  Update it now.  */
-  start = (struct multiboot_tag_start *) grub_mb2_tags;
+  start = (struct multiboot2_tag_start *) grub_mb2_tags;
   start->size = grub_mb2_tags_pos - grub_mb2_tags;
   return GRUB_ERR_NONE;
 
@@ -195,17 +195,17 @@ grub_mb2_boot (void)
 static grub_err_t
 grub_mb2_unload (void)
 {
-  struct multiboot_tag_header *tag;
-  struct multiboot_tag_header *tags =
-    (struct multiboot_tag_header *) grub_mb2_tags;
+  struct multiboot2_tag_header *tag;
+  struct multiboot2_tag_header *tags =
+    (struct multiboot2_tag_header *) grub_mb2_tags;
 
   /* Free all module memory in the tag list.  */
   for_each_tag (tag, tags)
     {
       if (tag->key == MULTIBOOT2_TAG_MODULE)
 	{
-	  struct multiboot_tag_module *module =
-	      (struct multiboot_tag_module *) tag;
+	  struct multiboot2_tag_module *module =
+	      (struct multiboot2_tag_module *) tag;
 	  grub_free ((void *) module->addr);
 	}
     }
@@ -233,7 +233,7 @@ static grub_err_t
 grub_mb2_tag_module_create (grub_addr_t modaddr, grub_size_t modsize,
 			    char *type, int key, int argc, char *argv[])
 {
-  struct multiboot_tag_module *module;
+  struct multiboot2_tag_module *module;
   grub_ssize_t argslen = 0;
   grub_err_t err;
   char *p;
@@ -246,11 +246,11 @@ grub_mb2_tag_module_create (grub_addr_t modaddr, grub_size_t modsize,
 
   /* Note: includes implicit 1-byte cmdline.  */
   err = grub_mb2_tag_alloc (&module_addr, key,
-			   sizeof (struct multiboot_tag_module) + argslen);
+			   sizeof (struct multiboot2_tag_module) + argslen);
   if (err)
     return grub_errno;
 
-  module = (struct multiboot_tag_module *) module_addr;
+  module = (struct multiboot2_tag_module *) module_addr;
   module->addr = modaddr;
   module->size = modsize;
   grub_strcpy(module->type, type);
@@ -308,7 +308,7 @@ grub_multiboot2 (int argc, char *argv[])
   char *buffer;
   grub_file_t file = 0;
   grub_elf_t elf = 0;
-  struct multiboot_header *header = 0;
+  struct multiboot2_header *header = 0;
   char *p;
   grub_ssize_t len;
   grub_err_t err;
@@ -344,7 +344,7 @@ grub_multiboot2 (int argc, char *argv[])
      be at least 8 bytes and aligned on a 8-byte boundary.  */
   for (p = buffer; p <= buffer + len - 8; p += 8)
     {
-      header = (struct multiboot_header *) p;
+      header = (struct multiboot2_header *) p;
       if (header->magic == MULTIBOOT2_HEADER_MAGIC)
 	{
 	  header_found = 1;

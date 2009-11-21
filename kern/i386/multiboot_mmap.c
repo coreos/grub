@@ -26,15 +26,15 @@
 grub_size_t grub_lower_mem, grub_upper_mem;
 
 /* A pointer to the MBI in its initial location.  */
-struct grub_multiboot_info *startup_multiboot_info;
+struct multiboot_info *startup_multiboot_info;
 
 /* The MBI has to be copied to our BSS so that it won't be
    overwritten.  This is its final location.  */
-static struct grub_multiboot_info kern_multiboot_info;
+static struct multiboot_info kern_multiboot_info;
 
 /* Unfortunately we can't use heap at this point.  But 32 looks like a sane
    limit (used by memtest86).  */
-static grub_uint8_t mmap_entries[sizeof (struct grub_multiboot_mmap_entry) * 32];
+static grub_uint8_t mmap_entries[sizeof (struct multiboot_mmap_entry) * 32];
 
 void
 grub_machine_mmap_init ()
@@ -43,7 +43,7 @@ grub_machine_mmap_init ()
     grub_fatal ("Unable to find Multiboot Information (is CONFIG_MULTIBOOT disabled in coreboot?)");
 
   /* Move MBI to a safe place.  */
-  grub_memmove (&kern_multiboot_info, startup_multiboot_info, sizeof (struct grub_multiboot_info));
+  grub_memmove (&kern_multiboot_info, startup_multiboot_info, sizeof (struct multiboot_info));
 
   if ((kern_multiboot_info.flags & MULTIBOOT_INFO_MEM_MAP) == 0)
     grub_fatal ("Missing Multiboot memory information");
@@ -73,7 +73,7 @@ grub_machine_mmap_init ()
 grub_err_t
 grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t))
 {
-  struct grub_multiboot_mmap_entry *entry = (void *) kern_multiboot_info.mmap_addr;
+  struct multiboot_mmap_entry *entry = (void *) kern_multiboot_info.mmap_addr;
 
   while ((unsigned long) entry < kern_multiboot_info.mmap_addr + kern_multiboot_info.mmap_length)
     {

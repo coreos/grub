@@ -1,22 +1,29 @@
 /*
- * 27th March 1996. Added by Jan-Piet Mens for matching regular expressions
- * 		    in paths.
- * 
+ *  Copyright (C) 2009  Free Software Foundation, Inc.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * 	$Id: match.h,v 1.2 1999/03/02 03:41:25 eric Exp $
- */
+#include "config.h"
 
-#include "fnmatch.h"
+extern void add_match (char *);
+extern void i_add_match (char *);
+extern void j_add_match (char *);
 
-void add_match	__PR((char *fn));
-int matches	__PR((char *fn));
+extern int matches (char *);
+extern int i_matches (char *);
+extern int j_matches (char *);
 
-void i_add_match __PR((char *fn));
-int i_matches	__PR((char *fn));
-int i_ishidden	__PR((void));
-
-void j_add_match __PR((char *fn));
-int j_matches	__PR((char *fn));
-int j_ishidden	__PR((void));
+extern int i_ishidden ();
+extern int j_ishidden ();

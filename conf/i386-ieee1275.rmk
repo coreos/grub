@@ -110,7 +110,7 @@ grub_install_SOURCES = util/ieee1275/grub-install.in
 
 # Modules.
 pkglib_MODULES = halt.mod reboot.mod suspend.mod		\
-	multiboot.mod aout.mod serial.mod linux.mod		\
+	aout.mod serial.mod linux.mod		\
 	nand.mod memdisk.mod pci.mod lspci.mod datetime.mod	\
 	date.mod datehook.mod lsmmap.mod mmap.mod
 
@@ -125,15 +125,6 @@ mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c
 mmap_mod_CFLAGS = $(COMMON_CFLAGS)
 mmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 mmap_mod_ASFLAGS = $(COMMON_ASFLAGS)
-
-# For multiboot.mod.
-multiboot_mod_SOURCES = loader/ieee1275/multiboot2.c \
-			loader/i386/multiboot_helper.S \
-			 loader/multiboot2.c \
-			 loader/multiboot_loader.c
-multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
-multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
-multiboot_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For aout.mod.
 aout_mod_SOURCES = loader/aout.c

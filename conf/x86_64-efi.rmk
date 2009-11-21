@@ -81,10 +81,10 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/i386/efi/grub-install.in
 
 # Modules.
-pkglib_MODULES = kernel.mod chain.mod appleldr.mod \
+pkglib_MODULES = kernel.mod chain.mod appleldr.mod 	\
 	halt.mod reboot.mod linux.mod pci.mod lspci.mod \
 	datetime.mod date.mod datehook.mod loadbios.mod \
-	fixvideo.mod mmap.mod acpi.mod
+	fixvideo.mod mmap.mod acpi.mod ata.mod
 
 # For kernel.mod.
 kernel_mod_EXPORTS = no
@@ -128,6 +128,11 @@ boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 acpi_mod_SOURCES = commands/acpi.c commands/efi/acpi.c
 acpi_mod_CFLAGS = $(COMMON_CFLAGS)
 acpi_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For ata.mod
+ata_mod_SOURCES = disk/ata.c
+ata_mod_CFLAGS = $(COMMON_CFLAGS)
+ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For mmap.mod.
 mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c \

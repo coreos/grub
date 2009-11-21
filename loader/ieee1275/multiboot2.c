@@ -115,17 +115,17 @@ grub_mb2_tags_arch_create (void)
 
 /* Release the memory we claimed from Open Firmware above.  */
 void
-grub_mb2_arch_unload (struct multiboot_tag_header *tags)
+grub_mb2_arch_unload (struct multiboot2_tag_header *tags)
 {
-  struct multiboot_tag_header *tag;
+  struct multiboot2_tag_header *tag;
 
   /* Free all module memory in the tag list.  */
   for_each_tag (tag, tags)
     {
       if (tag->key == MULTIBOOT2_TAG_MODULE)
 	{
-	  struct multiboot_tag_module *module =
-	      (struct multiboot_tag_module *) tag;
+	  struct multiboot2_tag_module *module =
+	      (struct multiboot2_tag_module *) tag;
 	  grub_ieee1275_release (module->addr, module->size);
 	}
     }

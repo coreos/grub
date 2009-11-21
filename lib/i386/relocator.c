@@ -74,7 +74,7 @@ write_call_relocator_bw (void *ptr, void *src, grub_uint32_t dest,
   grub_memmove (ptr,
 		&grub_relocator32_backward_start,
 		RELOCATOR_SIZEOF (backward));
-  ((void (*)()) ptr) ();
+  ((void (*) (void)) ptr) ();
 }
 
 static void
@@ -96,7 +96,7 @@ write_call_relocator_fw (void *ptr, void *src, grub_uint32_t dest,
   grub_memmove (ptr,
 		&grub_relocator32_forward_start,
 		RELOCATOR_SIZEOF (forward));
-  ((void (*)()) ptr) ();
+  ((void (*) (void)) ptr) ();
 }
 
 #include "../relocator.c"
