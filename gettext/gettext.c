@@ -216,21 +216,22 @@ static void
 grub_gettext_init_ext (const char *lang)
 {
   char *mo_file;
-  char *grub_prefix;
+  char *locale_dir;
 
-  grub_prefix = grub_env_get ("prefix");
+  locale_dir = grub_env_get ("locale_dir");
   
   fd_mo = 0;
       
   // mo_file e.g.: /boot/grub/locale/ca.mo
 
-  mo_file = grub_malloc (grub_strlen (grub_prefix) + sizeof ("/locale/") + grub_strlen (lang) + sizeof(".mo"));
+  mo_file = grub_malloc (grub_strlen (locale_dir) + sizeof ("/") + grub_strlen (lang) + sizeof(".mo"));
  
   // Warning: if changing some paths in the below line, change the grub_malloc
   // contents below
  
-  grub_sprintf (mo_file, "%s/locale/%s.mo", grub_prefix, lang);
-  grub_dprintf(" -------------- %s ",mo_file);
+  grub_sprintf (mo_file, "%s/%s.mo", locale_dir, lang);
+
+  grub_dprintf("gettext", "Will try to open file: %s " ,mo_file);
 
   fd_mo = grub_mofile_open(mo_file);
   grub_free (mo_file);

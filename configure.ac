@@ -136,9 +136,9 @@ if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
 fi
 
-for file in /usr/src/unifont.bdf ; do
+for file in /usr/src/unifont.bdf /usr/share/fonts/X11/misc/unifont.pcf.gz ; do
   if test -e $file ; then
-    AC_SUBST([UNIFONT_BDF], [$file])
+    AC_SUBST([FONT_SOURCE], [$file])
     break
   fi
 done

@@ -1,3 +1,56 @@
+2009-11-21  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/getroot.c [__GNU__]: Include <hurd.h>, <hurd/lookup.h>, and
+	<hurd/fs.h>
+	[__GNU__] (grub_guess_root_device): Call file_name_lookup and
+	file_get_storage_info to implement grub_guess_root_device.
+
+2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkrescue.in: Print an error and usage if output option
+	has not been given.
+
+2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	Patch from Loïc Minier <loic.minier@ubuntu.com>.
+	* util/grub.d/30_os-prober.in: Cope with Linux entries where
+	root and /boot are on different devices.
+
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build for srcdir != objdir.
+
+	* Makefile.in (po/$(PACKAGE).pot): Rename to ...
+	($(srcdir)/po/$(PACKAGE).pot): ... this.  Run $(XGETTEXT) from
+	$(srcdir).
+	($(foreach lang, $(LINGUAS), po/$(lang).po)): Rename to ...
+	($(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): ... this. Use $^
+	reference for input.
+
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Use source directory direcly (without copiing
+	or hardlinking it).  Remove -J option, Joliet is not compatible with
+	multiple source directories.
+
+2009-11-21  Carles Pina i Estany <carles@pina.cat>
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Recognize `--override-directory' option.
+	(process_input_dir): New function.  Process an arbitrary input
+	directory.
+	Misc adjustments to support both "override mode" and system-wide mode.
+
+2009-11-20  Felix Zielcke  <fzielcke@z-51.de>
+
+	* configure.ac (UNIFONT_BDF): Rename to ...
+	(FONT_SOURCE): ... this.  Update all users.
+
+2009-11-20  Felix Zielcke  <fzielcke@z-51.de>
+
+	* configure.ac: Add `/usr/share/fonts/X11/misc/unifont.pcf.gz'
+	to the list of unifont files to look for.
+
 2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Patch from Joe Auricchio <jauricchio@gmail.com>
