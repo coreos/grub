@@ -1,5 +1,18 @@
 2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* maintainance/gentrigtables.py: Remove.
+	* lib/trig.c: Likewise.
+
+	* gentrigtables.c: New file.  C rewrite of gentrigtables.py.
+
+	* conf/common.rmk (trig_mod_SOURCES): Replace `lib/trig.c' with
+	`trigtables.c'.
+	(trigtables.c): New rule.
+	(gentrigtables): Likewise.
+	(DISTCLEANFILES): Add `trigtables.c' and `gentrigtables'.
+
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* maintainance/gentrigtables.py: Avoid duplicate hardcoding of
 	integer constants.
 
