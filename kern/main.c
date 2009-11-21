@@ -154,6 +154,9 @@ grub_main (void)
 
   /* Load pre-loaded modules and free the space.  */
   grub_register_exported_symbols ();
+#ifdef GRUB_LINKER_HAVE_INIT
+  grub_arch_dl_init_linker ();
+#endif  
   grub_load_modules ();
 
   /* Hello.  */

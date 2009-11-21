@@ -23,10 +23,9 @@
 #include <grub/err.h>
 #include <grub/cpu/types.h>
 #include <grub/mm.h>
-#include <grub/cpu/dl.h>
 
 /* Dummy __gnu_local_gp. Resolved by linker.  */
-char __gnu_local_gp;
+static char __gnu_local_gp_dummy;
 
 /* Check if EHDR is a valid ELF header.  */
 grub_err_t
@@ -155,7 +154,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		addr = (Elf_Word *) ((char *) seg->addr + rel->r_offset);
 		sym = (Elf_Sym *) ((char *) mod->symtab
 				     + entsize * ELF_R_SYM (rel->r_info));
-		if (sym->st_value == (grub_addr_t) &__gnu_local_gp)
+		if (sym->st_value == (grub_addr_t) &__gnu_local_gp_dummy)
 		  sym->st_value = (grub_addr_t) gp;
 
 		switch (ELF_R_TYPE (rel->r_info))
@@ -224,3 +223,10 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
   return GRUB_ERR_NONE;
 }
+
+void 
+grub_arch_dl_init_linker (void)
+{
+  grub_dl_register_symbol ("__gnu_local_gp", &__gnu_local_gp_dummy, 0);
+}
+
