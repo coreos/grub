@@ -1,5 +1,10 @@
 2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
 
+	* util/grub-mkrescue.in: Print an error and usage if output option
+	has not been given.
+
+2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
+
 	Patch from Loïc Minier <loic.minier@ubuntu.com>.
 	* util/grub.d/30_os-prober.in: Cope with Linux entries where
 	root and /boot are on different devices.

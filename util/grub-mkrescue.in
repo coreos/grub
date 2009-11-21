@@ -42,7 +42,7 @@ Make GRUB rescue image.
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
   --modules=MODULES       pre-load specified modules MODULES
-  --output=FILE           save output in FILE
+  --output=FILE           save output in FILE [required]
 
 $0 generates a bootable rescue image with specified source files or directories.
 
@@ -78,6 +78,12 @@ for option in "$@"; do
 	source="${source} ${option}" ;;
     esac
 done
+
+if [ "x${output_image}" = x ] ; then
+  echo "output file must be given" >&2
+  usage
+  exit 1
+fi
 
 iso9660_dir=`mktemp -d`
 mkdir -p ${iso9660_dir}/boot/grub
