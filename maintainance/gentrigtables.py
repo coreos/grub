@@ -2,7 +2,7 @@
 # Script to generate trigonometric function tables.
 #
 #  GRUB  --  GRand Unified Bootloader
-#  Copyright (C) 2008  Free Software Foundation, Inc.
+#  Copyright (C) 2008, 2009  Free Software Foundation, Inc.
 #
 #  GRUB is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -41,14 +41,16 @@ def writeTable(arr, name):
 def main():
     sintab = []
     costab = []
-    for i in range(256):
+    angle_max = 256
+    fraction_scale = 16384
+    for i in range(angle_max):
         # Convert to an angle in 1/256 of a circle.
-        x = i * 2 * pi / 256
-        sintab.append(int(round(sin(x) * 16384)))
-        costab.append(int(round(cos(x) * 16384)))
+        x = i * 2 * pi / angle_max
+        sintab.append(int(round(sin(x) * fraction_scale)))
+        costab.append(int(round(cos(x) * fraction_scale)))
 
-    write("#define TRIG_ANGLE_MAX 256\n")
-    write("#define TRIG_FRACTION_SCALE 16384\n")
+    write("#define TRIG_ANGLE_MAX " + str (angle_max) + "\n")
+    write("#define TRIG_FRACTION_SCALE " + str (fraction_scale) + "\n")
     writeTable(sintab, "sintab")
     writeTable(costab, "costab")
 

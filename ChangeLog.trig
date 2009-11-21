@@ -1,3 +1,8 @@
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* maintainance/gentrigtables.py: Avoid duplicate hardcoding of
+	integer constants.
+
 2009-11-14  Colin D Bennet <colin@gibibit.com>
 
 	Trigonometry support.
