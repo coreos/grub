@@ -1,0 +1,5 @@
+2009-11-22  Carles Pina i Estany <carles@pina.cat>
+
+	* normal/menu_text.c: Gettexttize but not print_timeout function.
+	* normal/main.c: Gettexttize.
+	* normal/menu_entry.c: Likewise.

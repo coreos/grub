@@ -39,7 +39,7 @@ static grub_uint8_t grub_color_menu_highlight;
 void
 grub_wait_after_message (void)
 {
-  grub_printf ("\nPress any key to continue...");
+  grub_printf (_("\nPress any key to continue..."));
   (void) grub_getkey ();
   grub_putchar ('\n');
 }
@@ -87,22 +87,22 @@ print_message (int nested, int edit)
 
   if (edit)
     {
-      grub_printf ("\n\
+      grub_printf (_("\n\
       Minimum Emacs-like screen editing is supported. TAB lists\n\
       completions. Press Ctrl-x to boot, Ctrl-c for a command-line\n\
-      or ESC to return menu.");
+      or ESC to return menu."));
     }
   else
     {
       grub_printf (_("\n\
       Use the %C and %C keys to select which entry is highlighted.\n"),
 		   (grub_uint32_t) GRUB_TERM_DISP_UP, (grub_uint32_t) GRUB_TERM_DISP_DOWN);
-      grub_printf ("\
+      grub_printf (_("\
       Press enter to boot the selected OS, \'e\' to edit the\n\
-      commands before booting or \'c\' for a command-line.");
+      commands before booting or \'c\' for a command-line."));
       if (nested)
-	grub_printf ("\n\
-      ESC to return previous menu.");
+	grub_printf (_("\n\
+      ESC to return previous menu."));
     }
 }
 
@@ -517,7 +517,7 @@ static void
 notify_booting (grub_menu_entry_t entry,
 		void *userdata __attribute__((unused)))
 {
-  grub_printf ("  Booting \'%s\'\n\n", entry->title);
+  grub_printf (_("  Booting \'%s\'\n\n"), entry->title);
 }
 
 /* Callback invoked when a default menu entry executed because of a timeout
@@ -527,7 +527,7 @@ static void
 notify_fallback (grub_menu_entry_t entry,
 		 void *userdata __attribute__((unused)))
 {
-  grub_printf ("\n  Falling back to \'%s\'\n\n", entry->title);
+  grub_printf (_("\n  Falling back to \'%s\'\n\n"), entry->title);
   grub_millisleep (DEFAULT_ENTRY_ERROR_DELAY_MS);
 }
 
@@ -541,7 +541,7 @@ notify_execution_failure (void *userdata __attribute__((unused)))
       grub_print_error ();
       grub_errno = GRUB_ERR_NONE;
     }
-  grub_printf ("\n  Failed to boot default entries.\n");
+  grub_printf (_("\n  Failed to boot default entries.\n"));
   grub_wait_after_message ();
 }
 
