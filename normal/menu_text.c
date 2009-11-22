@@ -267,7 +267,7 @@ print_timeout (int timeout, int offset, int second_stage)
 {
   /* NOTE: Do not remove the trailing space characters.
      They are required to clear the line.  */
-  const char *msg = _("   The highlighted entry will be booted automatically in %ds.    ");
+  char *msg = "   The highlighted entry will be booted automatically in %ds.    ";
   char *msg_end = grub_strchr (msg, '%');
 
   grub_gotoxy (second_stage ? (msg_end - msg) : 0, GRUB_TERM_HEIGHT - 3);
