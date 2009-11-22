@@ -164,3 +164,13 @@ grub_file_seek (grub_file_t file, grub_off_t offset)
   file->offset = offset;
   return old;
 }
+
+grub_ssize_t
+grub_file_pread (grub_file_t file, void *buf, grub_size_t len, grub_off_t offset)
+{
+  if (grub_file_seek (file, offset) == (grub_off_t)-1)
+  {
+    return -1;
+  }
+  return grub_file_read (file, buf, len);
+}

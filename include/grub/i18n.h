@@ -24,7 +24,7 @@
 # include <libintl.h>
 # define _(str) gettext(str)
 #else
-# define _(str) str
+# define _(str) grub_gettext(str)
 #endif
 
 #endif /* GRUB_I18N_H */

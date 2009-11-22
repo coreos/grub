@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU GRUB\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-19 21:37+0000\n"
+"POT-Creation-Date: 2009-11-22 11:45+0000\n"
 "PO-Revision-Date: 2009-11-17 12:26+0100\n"
 "Last-Translator: Robert Millan <rmh.grub@aybabtu.com>\n"
 "Language-Team: None <no-team-yet@li.org>\n"
@@ -890,6 +890,11 @@ msgid ""
 msgstr ""
 "\n"
 "      Utilitzeu les tecles %C i %C per a seleccionar l'entrada.\n"
+
+#: normal/menu_text.c:270
+#, c-format
+msgid "   The highlighted entry will be booted automatically in %ds.    "
+msgstr "   L entrada seleccionada sera arrancada automaticament en %ds.  "
 
 #: util/grub.d/10_kfreebsd.in:40
 msgid "%s, with kFreeBSD %s"
