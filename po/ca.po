@@ -63,7 +63,7 @@ msgstr ""
 #: util/i386/pc/grub-mkimage.c:321 util/i386/pc/grub-setup.c:587
 #, c-format
 msgid "Try ``%s --help'' for more information.\n"
-msgstr "Proveu Â«%s --helpÂ» per a obtenir mÃ©s informaciÃ³.\n"
+msgstr "Proveu «%s --help» per a obtenir més informació.\n"
 
 #: util/i386/pc/grub-mkimage.c:323
 #, c-format
@@ -889,12 +889,12 @@ msgid ""
 "      Use the %C and %C keys to select which entry is highlighted.\n"
 msgstr ""
 "\n"
-"      Utilitzeu les tecles %C i %C per a seleccionar l'entrada.\n"
+"      Utilitzeu les tecles %C i %C per a seleccionar l'entrada ressaltada.\n"
 
 #: normal/menu_text.c:270
 #, c-format
 msgid "   The highlighted entry will be booted automatically in %ds.    "
-msgstr "   L' entrada seleccionada sera arrancada automaticament en %ds.  "
+msgstr "   L' entrada seleccionada arrencarà automàticament en %ds.      "
 
 #: util/grub.d/10_kfreebsd.in:40
 msgid "%s, with kFreeBSD %s"

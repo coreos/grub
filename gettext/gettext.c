@@ -184,7 +184,7 @@ grub_mofile_open (const char *filename)
 
   if (!fd_mo)
     {
-      grub_dprintf ("gettext", "Cannot read %s", filename);
+      grub_dprintf ("gettext", "Cannot read %s\n", filename);
       return 0;
     }
 
@@ -204,7 +204,7 @@ grub_mofile_open (const char *filename)
   if (version != 0)
     {
       grub_error (GRUB_ERR_BAD_FILE_TYPE,
-		  "mo: invalid mo version in file: %s", filename);
+		  "mo: invalid mo version in file: %s\n", filename);
       fd_mo = 0;
       return 0;
     }
@@ -267,6 +267,19 @@ grub_gettext_env_write_lang (struct grub_env_var *var
   return grub_strdup (val);
 }
 
+static grub_err_t
+grub_cmd_translate (grub_command_t cmd __attribute__ ((unused)),
+		    int argc, char **args)
+{
+  if (argc != 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "text to translate required");
+
+  const char *translation;
+  translation = grub_gettext_translate (args[0]);
+  grub_printf ("%s\n", translation);
+  return 0;
+}
+
 GRUB_MOD_INIT (gettext)
 {
   (void) mod;			/* To stop warning.  */
@@ -276,6 +289,10 @@ GRUB_MOD_INIT (gettext)
   lang = grub_env_get ("lang");
 
   grub_gettext_init_ext (lang);
+
+  grub_register_command_p1 ("gettext", grub_cmd_translate,
+			    "gettext STRING",
+			    "Translates the string with the current settings.");
 
   /* Reload .mo file information if lang changes.  */
   grub_register_variable_hook ("lang", NULL, grub_gettext_env_write_lang);
