@@ -81,7 +81,7 @@ write_call_relocator_bw (void *ptr0, void *src, grub_uint32_t dest,
   for (i = 1; i < 32; i++)
     write_reg (i, state.gpr[i], &ptr);
   write_jump (state.jumpreg, &ptr);
-  grub_arch_sync_caches (ptr0, ptr - ptr0);
+  grub_arch_sync_caches (ptr0, (grub_uint8_t *) ptr -  (grub_uint8_t *) ptr0);
   grub_dprintf ("relocator", "Backward relocator: about to jump to %p\n", ptr0);
   ((void (*) (void)) ptr0) ();
 }
@@ -101,7 +101,7 @@ write_call_relocator_fw (void *ptr0, void *src, grub_uint32_t dest,
   for (i = 1; i < 32; i++)
     write_reg (i, state.gpr[i], &ptr);
   write_jump (state.jumpreg, &ptr);
-  grub_arch_sync_caches (ptr0, ptr - ptr0);
+  grub_arch_sync_caches (ptr0, (grub_uint8_t *) ptr -  (grub_uint8_t *) ptr0);
   grub_dprintf ("relocator", "Forward relocator: about to jump to %p\n", ptr0);
   ((void (*) (void)) ptr0) ();
 }
