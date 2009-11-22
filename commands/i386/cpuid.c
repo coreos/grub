@@ -1,7 +1,7 @@
 /* cpuid.c - test for CPU features */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006, 2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2006, 2007, 2009  Free Software Foundation, Inc.
  *  Based on gcc/gcc/config/i386/driver-i386.c
  *
  *  GRUB is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include <grub/env.h>
 #include <grub/command.h>
 #include <grub/extcmd.h>
+#include <grub/i386/cpuid.h>
 
 #define cpuid(num,a,b,c,d) \
   asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1" \
@@ -38,14 +39,14 @@ static const struct grub_arg_option options[] =
 
 #define bit_LM (1 << 29)
 
-static unsigned char has_longmode = 0;
+unsigned char grub_cpuid_has_longmode = 0;
 
 static grub_err_t
 grub_cmd_cpuid (grub_extcmd_t cmd __attribute__ ((unused)),
 		int argc __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {
-  return has_longmode ? GRUB_ERR_NONE
+  return grub_cpuid_has_longmode ? GRUB_ERR_NONE
     : grub_error (GRUB_ERR_TEST_FAILURE, "false");
 }
 
@@ -55,7 +56,7 @@ GRUB_MOD_INIT(cpuid)
 {
 #ifdef __x86_64__
   /* grub-emu */
-  has_longmode = 1;
+  grub_cpuid_has_longmode = 1;
 #else
   unsigned int eax, ebx, ecx, edx;
   unsigned int max_level;
@@ -82,7 +83,7 @@ GRUB_MOD_INIT(cpuid)
     goto done;
 
   cpuid (0x80000001, eax, ebx, ecx, edx);
-  has_longmode = !!(edx & bit_LM);
+  grub_cpuid_has_longmode = !!(edx & bit_LM);
 done:
 #endif
 

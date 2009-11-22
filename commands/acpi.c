@@ -552,7 +552,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 		      grub_free (exclude);
 		      grub_free (load_only);
 		      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-					 "Could allocate table");
+					 "Couldn't allocate table");
 		    }
 		  grub_memcpy (table_dsdt, dsdt, dsdt->length);
 		}
@@ -579,7 +579,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	      grub_free (exclude);
 	      grub_free (load_only);
 	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-				 "Could allocate table structure");
+				 "Couldn't allocate table structure");
 	    }
 	  table->size = curtable->length;
 	  table->addr = grub_malloc (table->size);
@@ -588,7 +588,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	    {
 	      free_tables ();
 	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-				 "Could allocate table");
+				 "Couldn't allocate table");
 	    }
 	  table->next = acpi_tables;
 	  acpi_tables = table;
@@ -675,7 +675,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	    {
 	      free_tables ();
 	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-				 "Could allocate table structure");
+				 "Couldn't allocate table structure");
 	    }
 
 	  table->size = size;

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,24 +26,24 @@
 grub_size_t grub_lower_mem, grub_upper_mem;
 
 /* A pointer to the MBI in its initial location.  */
-struct grub_multiboot_info *startup_multiboot_info;
+struct multiboot_info *startup_multiboot_info;
 
 /* The MBI has to be copied to our BSS so that it won't be
    overwritten.  This is its final location.  */
-static struct grub_multiboot_info kern_multiboot_info;
+static struct multiboot_info kern_multiboot_info;
 
 /* Unfortunately we can't use heap at this point.  But 32 looks like a sane
    limit (used by memtest86).  */
-static grub_uint8_t mmap_entries[sizeof (struct grub_multiboot_mmap_entry) * 32];
+static grub_uint8_t mmap_entries[sizeof (struct multiboot_mmap_entry) * 32];
 
 void
 grub_machine_mmap_init ()
 {
   if (! startup_multiboot_info)
-    grub_fatal ("Must be loaded using Multiboot specification (is this an old version of coreboot?)");
+    grub_fatal ("Unable to find Multiboot Information (is CONFIG_MULTIBOOT disabled in coreboot?)");
 
   /* Move MBI to a safe place.  */
-  grub_memmove (&kern_multiboot_info, startup_multiboot_info, sizeof (struct grub_multiboot_info));
+  grub_memmove (&kern_multiboot_info, startup_multiboot_info, sizeof (struct multiboot_info));
 
   if ((kern_multiboot_info.flags & MULTIBOOT_INFO_MEM_MAP) == 0)
     grub_fatal ("Missing Multiboot memory information");
@@ -51,7 +51,8 @@ grub_machine_mmap_init ()
   /* Move the memory map to a safe place.  */
   if (kern_multiboot_info.mmap_length > sizeof (mmap_entries))
     {
-      grub_printf ("WARNING: Memory map size exceeds limit; it will be truncated\n");
+      grub_printf ("WARNING: Memory map size exceeds limit (0x%x > 0x%x); it will be truncated\n",
+		   kern_multiboot_info.mmap_length, sizeof (mmap_entries));
       kern_multiboot_info.mmap_length = sizeof (mmap_entries);
     }
   grub_memmove (mmap_entries, (void *) kern_multiboot_info.mmap_addr, kern_multiboot_info.mmap_length);
@@ -72,7 +73,7 @@ grub_machine_mmap_init ()
 grub_err_t
 grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t))
 {
-  struct grub_multiboot_mmap_entry *entry = (void *) kern_multiboot_info.mmap_addr;
+  struct multiboot_mmap_entry *entry = (void *) kern_multiboot_info.mmap_addr;
 
   while ((unsigned long) entry < kern_multiboot_info.mmap_addr + kern_multiboot_info.mmap_length)
     {

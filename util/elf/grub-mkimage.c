@@ -144,7 +144,7 @@ load_modules (grub_addr_t modbase, Elf32_Phdr *phdr, const char *dir,
       mod_size = grub_util_get_image_size (p->name);
 
       header = (struct grub_module_header *) (module_img + offset);
-      header->type = grub_host_to_target32 (OBJ_TYPE_ELF);
+      header->type = OBJ_TYPE_ELF;
       header->size = grub_host_to_target32 (mod_size + sizeof (*header));
 
       grub_util_load_image (p->name, module_img + offset + sizeof (*header));
@@ -157,8 +157,8 @@ load_modules (grub_addr_t modbase, Elf32_Phdr *phdr, const char *dir,
       struct grub_module_header *header;
 
       header = (struct grub_module_header *) (module_img + offset);
-      header->type = grub_cpu_to_le32 (OBJ_TYPE_MEMDISK);
-      header->size = grub_cpu_to_le32 (memdisk_size + sizeof (*header));
+      header->type = OBJ_TYPE_MEMDISK;
+      header->size = grub_host_to_target32 (memdisk_size + sizeof (*header));
       offset += sizeof (*header);
 
       grub_util_load_image (memdisk_path, module_img + offset);

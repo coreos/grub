@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -135,7 +135,7 @@ static int
 grub_keyboard_getkey (void)
 {
   grub_uint8_t key;
-  if (KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
+  if (! KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
     return -1;
   key = grub_inb (KEYBOARD_REG_DATA);
   /* FIXME */ grub_keyboard_isr (key);
@@ -146,7 +146,7 @@ grub_keyboard_getkey (void)
 
 /* If there is a character pending, return it; otherwise return -1.  */
 static int
-grub_at_keyboard_checkkey (void)
+grub_at_keyboard_getkey_noblock (void)
 {
   int code, key;
   code = grub_keyboard_getkey ();
@@ -186,7 +186,14 @@ grub_at_keyboard_checkkey (void)
 	      key += 'a' - 'A';
 	  }
     }
-  return (int) key;
+  return key;
+}
+
+static int
+grub_at_keyboard_checkkey (void)
+{
+  /* FIXME: this will be triggered by BREAK events.  */
+  return KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)) ? 1 : -1;
 }
 
 static int
@@ -195,7 +202,7 @@ grub_at_keyboard_getkey (void)
   int key;
   do
     {
-      key = grub_at_keyboard_checkkey ();
+      key = grub_at_keyboard_getkey_noblock ();
     } while (key == -1);
   return key;
 }

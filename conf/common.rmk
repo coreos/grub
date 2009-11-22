@@ -28,6 +28,20 @@ ifeq ($(enable_grub_fstest), yes)
 bin_UTILITIES += grub-fstest
 endif
 
+bin_UTILITIES += grub-mkisofs
+grub_mkisofs_SOURCES = util/mkisofs/eltorito.c 				\
+	util/mkisofs/hash.c util/mkisofs/joliet.c			\
+	util/mkisofs/match.c util/mkisofs/mkisofs.c			\
+	util/mkisofs/multi.c util/mkisofs/name.c			\
+	util/mkisofs/rock.c util/mkisofs/tree.c				\
+	util/mkisofs/write.c						\
+	\
+	gnulib/fnmatch.c gnulib/getopt1.c gnulib/getopt.c		\
+	gnulib/error.c gnulib/progname.c
+grub_mkisofs_CFLAGS = -D_FILE_OFFSET_BITS=64 				\
+	-I$(srcdir)/util/mkisofs/include				\
+	-Wno-all -Werror
+
 # For grub-fstest.
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
 grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
@@ -160,13 +174,6 @@ endif
 CLEANFILES += $(grub-mkconfig_SCRIPTS)
 
 grub-mkconfig_DATA += util/grub.d/README
-
-# For grub-dumpbios
-grub-dumpbios: util/grub-dumpbios.in config.status
-	./config.status --file=$@:$<
-	chmod +x $@
-sbin_SCRIPTS += grub-dumpbios
-CLEANFILES += grub-dumpbios
 
 # Filing systems.
 pkglib_MODULES += fshelp.mod fat.mod ufs1.mod ufs2.mod ext2.mod ntfs.mod \
@@ -368,7 +375,7 @@ pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
 	configfile.mod echo.mod		\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod loadenv.mod crc.mod parttool.mod	\
-	msdospart.mod memrw.mod normal.mod sh.mod lua.mod	\
+	msdospart.mod memrw.mod normal.mod sh.mod 		\
 	gptsync.mod true.mod probe.mod password.mod		\
 	keystatus.mod
 
@@ -541,23 +548,6 @@ sh_mod_SOURCES = script/sh/main.c script/sh/script.c script/sh/execute.c \
 	script/sh/function.c script/sh/lexer.c grub_script.tab.c
 sh_mod_CFLAGS = $(COMMON_CFLAGS)
 sh_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For lua.mod.
-lua_mod_SOURCES = script/lua/lapi.c script/lua/lcode.c script/lua/ldebug.c \
-	script/lua/ldo.c script/lua/ldump.c script/lua/lfunc.c \
-	script/lua/lgc.c script/lua/llex.c script/lua/lmem.c \
-	script/lua/lobject.c script/lua/lopcodes.c script/lua/lparser.c \
-	script/lua/lstate.c script/lua/lstring.c script/lua/ltable.c \
-	script/lua/ltm.c script/lua/lundump.c script/lua/lvm.c \
-	script/lua/lzio.c script/lua/lauxlib.c script/lua/lbaselib.c \
-	script/lua/linit.c script/lua/ltablib.c script/lua/lstrlib.c \
-	script/lua/grub_main.c script/lua/grub_lib.c
-lua_mod_CFLAGS = $(COMMON_CFLAGS)
-lua_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# Extra libraries for lua
-# script/lua/lmathlib.c script/lua/loslib.c script/lua/liolib.c
-# script/lua/ldblib.c script/lua/loadlib.c
 
 # Common Video Subsystem specific modules.
 pkglib_MODULES += video.mod videotest.mod bitmap.mod tga.mod jpeg.mod	\

@@ -16,31 +16,31 @@ pkglib_IMAGES = boot.img cdboot.img diskboot.img kernel.img lnxboot.img \
 # For boot.img.
 boot_img_SOURCES = boot/i386/pc/boot.S
 boot_img_ASFLAGS = $(COMMON_ASFLAGS)
-boot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)7C00
+boot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)0x7C00
 boot_img_FORMAT = binary
 
 # For pxeboot.img
 pxeboot_img_SOURCES = boot/i386/pc/pxeboot.S
 pxeboot_img_ASFLAGS = $(COMMON_ASFLAGS)
-pxeboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)7C00
+pxeboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)0x7C00
 pxeboot_img_FORMAT = binary
 
 # For diskboot.img.
 diskboot_img_SOURCES = boot/i386/pc/diskboot.S
 diskboot_img_ASFLAGS = $(COMMON_ASFLAGS)
-diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)8000
+diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)0x8000
 diskboot_img_FORMAT = binary
 
 # For lnxboot.img.
 lnxboot_img_SOURCES = boot/i386/pc/lnxboot.S
 lnxboot_img_ASFLAGS = $(COMMON_ASFLAGS)
-lnxboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)6000
+lnxboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)0x6000
 lnxboot_img_FORMAT = binary
 
 # For cdboot.img.
 cdboot_img_SOURCES = boot/i386/pc/cdboot.S
 cdboot_img_ASFLAGS = $(COMMON_ASFLAGS)
-cdboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)7C00
+cdboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)0x7C00
 cdboot_img_FORMAT = binary
 
 # For kernel.img.
@@ -87,14 +87,15 @@ sbin_UTILITIES += grub-emu
 endif
 
 # For grub-mkimage.
-grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
+grub_mkimage_SOURCES = gnulib/progname.c util/i386/pc/grub-mkimage.c util/misc.c \
 	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
 grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
 util/i386/pc/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-setup.
 util/i386/pc/grub-setup.c_DEPENDENCIES = grub_setup_init.h
-grub_setup_SOURCES = util/i386/pc/grub-setup.c util/hostdisk.c	\
+grub_setup_SOURCES = gnulib/progname.c \
+	util/i386/pc/grub-setup.c util/hostdisk.c	\
 	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
 	kern/err.c kern/misc.c kern/parser.c kern/partition.c	\
 	kern/file.c kern/fs.c kern/env.c fs/fshelp.c		\
@@ -168,22 +169,21 @@ grub_emu_SOURCES += disk/usbms.c util/usb.c bus/usb/usb.c	\
 grub_emu_LDFLAGS += $(LIBCURSES) $(LIBUSB)
 endif
 
-# Scripts.
-sbin_SCRIPTS = grub-install
-bin_SCRIPTS = grub-mkrescue
+sbin_SCRIPTS += grub-install
+grub_install_SOURCES = util/grub-install.in
 
-# For grub-install.
-grub_install_SOURCES = util/i386/pc/grub-install.in
+bin_SCRIPTS += grub-mkrescue
+grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
-# For grub-mkrescue.
-grub_mkrescue_SOURCES = util/i386/pc/grub-mkrescue.in
+bin_SCRIPTS += grub-mkfloppy
+grub_mkfloppy_SOURCES = util/i386/pc/grub-mkfloppy.in
 
-pkglib_MODULES = biosdisk.mod chain.mod \
-	multiboot.mod reboot.mod halt.mod	\
-	vbe.mod vbetest.mod vbeinfo.mod play.mod serial.mod	\
-	ata.mod vga.mod memdisk.mod pci.mod lspci.mod	\
-	aout.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod \
-	datehook.mod lsmmap.mod ata_pthru.mod hdparm.mod \
+pkglib_MODULES = biosdisk.mod chain.mod 				\
+	multiboot.mod reboot.mod halt.mod				\
+	vbe.mod vbetest.mod vbeinfo.mod play.mod serial.mod		\
+	vga.mod memdisk.mod pci.mod lspci.mod				\
+	aout.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod 	\
+	datehook.mod lsmmap.mod ata_pthru.mod hdparm.mod 		\
 	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod usb_keyboard.mod \
 	efiemu.mod mmap.mod acpi.mod drivemap.mod
 
@@ -293,11 +293,6 @@ vbetest_mod_LDFLAGS = $(COMMON_LDFLAGS)
 play_mod_SOURCES = commands/i386/pc/play.c
 play_mod_CFLAGS = $(COMMON_CFLAGS)
 play_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For ata.mod.
-ata_mod_SOURCES = disk/ata.c
-ata_mod_CFLAGS = $(COMMON_CFLAGS)
-ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vga.mod.
 vga_mod_SOURCES = term/i386/pc/vga.c

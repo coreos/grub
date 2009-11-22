@@ -1,5 +1,15 @@
 New in 1.97 - :
 
+* Add support for loading XNU (MacOS X kernel).
+
+* ACPI override support.
+
+* Integrated gptsync.
+
+* Password protection support.
+
+* Partition manipulation tool.
+
 * Add `keystatus' command.
 
 * Unicode fonts are now used by default.
@@ -12,9 +22,7 @@ New in 1.97 - :
 
 * Add support for RAID levels 4,6 and 10.
 
-* Add support for lua scripts.
-
-* update-grub is renamed to grub-mkconfig.
+* update-grub is replaced by grub-mkconfig.
 
 * When booting from PXE, PXE can be used to load files.
 
@@ -25,8 +33,6 @@ New in 1.97 - :
 * Add `crc' command.
 
 * Add Cygwin support.
-
-* Add grub-pe2elf to convert PE modules to ELF modules.
 
 * Add x86_64 EFI support.
 
@@ -47,13 +53,13 @@ New in 1.97 - :
 * grub-mkconfig supports os-prober to add operating systems to the
   boot menu.
 
-* The ATA driver supports filesystems bigger than 2TB.
+* The ATA driver supports devices bigger than 2 TiB.
 
 * Add support for the UDF, AFS and EXT4 filesystems.
 
 * The ISO9660 filesystem supports the Joliet extension
 
-* Add aout and BSD kernel loaders.
+* Add support for loading kernels of FreeBSD, NetBSD and OpenBSD.
 
 * Add new command `sleep'.
 

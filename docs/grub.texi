@@ -1118,6 +1118,8 @@ you forget a command, you can run the command @command{help}
 * cmp::                         Compare two files
 * configfile::                  Load a configuration file
 * crc::                         Calculate CRC32 checksums
+* date::                        Display or set current date and time
+* echo::                        Display a line of text
 * export::                      Export an environment variable
 * halt::                        Shut down your computer
 * help::                        Show help messages
@@ -1231,6 +1233,62 @@ Load @var{file} as a configuration file.
 
 @deffn Command crc file
 Display the CRC32 checksum of @var{file}.
+@end deffn
+
+
+@node date
+@subsection date
+
+@deffn Command date [[year-]month-day] [hour:minute[:second]]
+With no arguments, print the current date and time.
+
+Otherwise, take the current date and time, change any elements specified as
+arguments, and set the result as the new date and time.  For example, `date
+01-01' will set the current month and day to January 1, but leave the year,
+hour, minute, and second unchanged.
+@end deffn
+
+
+@node echo
+@subsection echo
+
+@deffn Command echo [@option{-n}] [@option{-e}] string @dots{}
+Display the requested text and, unless the @option{-n} option is used, a
+trailing new line.  If there is more than one string, they are separated by
+spaces in the output.  As usual in GRUB commands, variables may be
+substituted using @samp{$@{var@}}.
+
+The @option{-e} option enables interpretation of backslash escapes.  The
+following sequences are recognised:
+
+@table @code
+@item \\
+backslash
+
+@item \a
+alert (BEL)
+
+@item \c
+suppress trailing new line
+
+@item \f
+form feed
+
+@item \n
+new line
+
+@item \r
+carriage return
+
+@item \t
+horizontal tab
+
+@item \v
+vertical tab
+@end table
+
+When interpreting backslash escapes, backslash followed by any other
+character will print that character.
 @end deffn
 
 

@@ -41,6 +41,13 @@ includedir = @includedir@
 pkgdatadir = $(datadir)/`echo @PACKAGE_TARNAME@ | sed '$(transform)'`
 pkglibdir =  $(libdir)/`echo @PACKAGE_TARNAME@/$(target_cpu)-$(platform) | sed '$(transform)'`
 
+XGETTEXT = @XGETTEXT@
+MSGMERGE = @MSGMERGE@
+MSGFMT = @MSGFMT@
+
+LINGUAS = $(shell tr '\n' ' ' < $(srcdir)/po/LINGUAS)
+
+PACKAGE = @PACKAGE@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
@@ -59,6 +66,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+MKDIR_P = @MKDIR_P@
 
 mkinstalldirs = $(srcdir)/mkinstalldirs
 
@@ -66,15 +74,15 @@ CC = @CC@
 CFLAGS = @CFLAGS@
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@
-CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/include -Wall -W \
-	 -DGRUB_LIBDIR=\"$(pkglibdir)\"
+CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
+	 -DGRUB_LIBDIR=\"$(pkglibdir)\" -DLOCALEDIR=\"$(localedir)\"
 TARGET_CC = @TARGET_CC@
 TARGET_CFLAGS = @TARGET_CFLAGS@
 TARGET_ASFLAGS = @TARGET_ASFLAGS@
 TARGET_MODULE_FORMAT = @TARGET_MODULE_FORMAT@
 TARGET_APPLE_CC = @TARGET_APPLE_CC@
 OBJCONV = @OBJCONV@
-TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/include \
+TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include) -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
 	-Wall -W
 TARGET_LDFLAGS = @TARGET_LDFLAGS@
 TARGET_IMG_LDSCRIPT = @TARGET_IMG_LDSCRIPT@
@@ -100,7 +108,7 @@ AWK = @AWK@
 LIBCURSES = @LIBCURSES@
 LIBUSB = @LIBUSB@
 YACC = @YACC@
-UNIFONT_BDF = @UNIFONT_BDF@
+FONT_SOURCE = @FONT_SOURCE@
 
 # Options.
 enable_grub_emu = @enable_grub_emu@
@@ -114,9 +122,7 @@ enable_efiemu = @enable_efiemu@
 
 ### General variables.
 
-RMKFILES = $(addprefix conf/,common.rmk i386-coreboot.rmk i386-efi.rmk \
-	i386-qemu.rmk i386-ieee1275.rmk i386-pc.rmk i386.rmk powerpc-ieee1275.rmk \
-	sparc64-ieee1275.rmk x86_64-efi.rmk)
+RMKFILES = $(wildcard conf/*.rmk)
 
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
@@ -149,9 +155,12 @@ $(addprefix $(srcdir)/,$(MKFILES)): %.mk: %.rmk genmk.rb
 
 include $(srcdir)/conf/$(target_cpu)-$(platform).mk
 
+# For external modules.
+-include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
+
 ### General targets.
 
-CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA)
+CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
 pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
@@ -173,28 +182,32 @@ handler.lst: $(HANDLERFILES)
 parttool.lst: $(PARTTOOLFILES)
 	cat $^ /dev/null | sort | uniq > $@
 
+ifneq (true, $(MAKEINFO))
 info_INFOS += docs/grub.info
+endif
 
 MOSTLYCLEANFILES += vti.tmp
 MAINTAINER_CLEANFILES += docs/stamp-vti docs/version.texi
 docs/version.texi: docs/stamp-vti
-docs/stamp-vti: docs/grub.texi
+docs/stamp-vti: docs/grub.texi configure.ac
+	$(MKDIR_P) docs
 	(set `$(SHELL) $(srcdir)/docs/mdate-sh $<`; \
 	echo "@set UPDATED $$1 $$2 $$3"; \
 	echo "@set UPDATED-MONTH $$2 $$3"; \
 	echo "@set EDITION $(PACKAGE_VERSION)"; \
 	echo "@set VERSION $(PACKAGE_VERSION)") > vti.tmp
-	@cmp -s vti.tmp $(srcdir)/docs/version.texi \
-	  || (echo "Updating $(srcdir)/docs/version.texi"; \
-	      cp vti.tmp $(srcdir)/docs/version.texi)
+	@cmp -s vti.tmp $(builddir)/docs/version.texi \
+	  || (echo "Updating $(builddir)/docs/version.texi"; \
+	      cp vti.tmp $(builddir)/docs/version.texi)
 	-@rm -f vti.tmp
-	@cp $(srcdir)/docs/version.texi $@
+	@cp $(builddir)/docs/version.texi $@
 
 # Use --force until such time as the documentation is cleaned up.
 docs/grub.info: docs/grub.texi docs/version.texi docs/fdl.texi
-	$(MAKEINFO) --no-split --force $< -o $@ || :
+	$(MKDIR_P) docs
+	-$(MAKEINFO) -P $(builddir)/docs --no-split --force $< -o $@
 
-ifeq (, $(UNIFONT_BDF))
+ifeq (, $(FONT_SOURCE))
 else
 
 ifeq ($(enable_grub_mkfont),yes)
@@ -205,11 +218,11 @@ pkgdata_DATA += unicode.pf2 ascii.pf2
 UNICODE_ARROWS=0x2190-0x2193
 UNICODE_LINES=0x2501-0x251B
 
-unicode.pf2: $(UNIFONT_BDF) grub-mkfont
-	$(builddir)/grub-mkfont -o $@ $(UNIFONT_BDF)
+unicode.pf2: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE)
 
-ascii.pf2: $(UNIFONT_BDF) grub-mkfont
-	$(builddir)/grub-mkfont -o $@ $(UNIFONT_BDF) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
+ascii.pf2: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
 endif
 endif
 
@@ -230,10 +243,8 @@ build_env.mk: Makefile
 	echo "COMMON_LDFLAGS=$(COMMON_LDFLAGS)"\
 	) > $@
 pkglib_BUILDDIR += config.h grub_script.tab.h
-include_DATA += $(shell find $(srcdir)/include -name \*.h | sed -e "s,^$(srcdir)/,,g") \
-	include/grub/cpu include/grub/machine
 
-all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES)
+all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES) $(foreach lang, $(LINGUAS), po/$(lang).mo)
 
 install: install-local
 
@@ -245,20 +256,6 @@ install-local: all
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkglibdir)/$$dest; \
-	done
-	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(includedir)
-	@list='$(include_DATA)'; \
-	for file in $$list; do \
-	  if test -e "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
-	  dest="`echo $$file | sed 's,include/,,'`"; \
-	  destdir="`echo $$dest | sed 's,[^/]*$$,,g'`"; \
-	  $(SHELL) $(mkinstalldirs) $(DESTDIR)$(includedir)/$$destdir; \
-	  if test -f "$$dir$$file"; then \
-	    $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(includedir)/$$dest; \
-	  elif test -L "$$dir$$file"; then \
-	    rm -rf $(DESTDIR)$(includedir)/$$dest && \
-	    cp -fR $$dir$$file $(DESTDIR)$(includedir)/$$dest; \
-	  fi; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	@list='$(PKGDATA)'; \
@@ -311,6 +308,13 @@ install-local: all
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
+	$(foreach lang, $(LINGUAS), \
+	$(shell $(mkinstalldirs) $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES) \
+	@list='po/$(lang).mo'; \
+	for file in $$list; do \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
+	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES/$(PACKAGE).mo; \
+	done)
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(infodir)
 	@list='$(info_INFOS)'; \
 	for file in $$list; do \
@@ -350,11 +354,6 @@ uninstall:
 	@list='$(grub-mkconfig_SCRIPTS) $(grub-mkconfig_DATA)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
-	done
-	@list='$(include_DATA)'; \
-	for file in $$list; do \
-	  dest="`echo $$file | sed 's,include/,,'`"; \
-	  rm -f $(DESTDIR)$(includedir)/$$dest; \
 	done
 	@list='$(lib_SCRIPTS)'; \
 	for file in $$list; do \
@@ -446,6 +445,9 @@ check:
 .SUFFIX: .c .o .S .d
 
 # Regenerate configure and Makefile automatically.
+$(srcdir)/aclocal.m4: configure.ac acinclude.m4
+	cd $(srcdir) && aclocal
+
 $(srcdir)/configure: configure.ac aclocal.m4
 	cd $(srcdir) && autoconf
 
@@ -469,6 +471,17 @@ gensymlist.sh: gensymlist.sh.in config.status
 
 genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
+
+$(srcdir)/po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
+	cd $(srcdir) && $(XGETTEXT) --from-code=utf-8 -o $@ -f $< --keyword=_
+	cd $(srcdir) && $(XGETTEXT) --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
+
+$(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): po/$(PACKAGE).pot
+	$(MSGMERGE) -U $@ $^
+
+po/%.mo: po/%.po
+	$(MKDIR_P) $$(dirname $@)
+	$(MSGFMT) -c --statistics -o $@ $^
 
 .PHONY: all install install-strip uninstall clean mostlyclean distclean
 .PHONY: maintainer-clean info dvi dist check
