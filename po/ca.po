@@ -894,7 +894,7 @@ msgstr ""
 #: normal/menu_text.c:270
 #, c-format
 msgid "   The highlighted entry will be booted automatically in %ds.    "
-msgstr "   L' entrada seleccionada serà arrancada automàticament en %ds.  "
+msgstr "   L' entrada seleccionada sera arrancada automaticament en %ds.  "
 
 #: util/grub.d/10_kfreebsd.in:40
 msgid "%s, with kFreeBSD %s"
