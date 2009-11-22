@@ -175,21 +175,18 @@ grub_mofile_open (const char *filename)
 {
   int unsigned magic;
   int version;
-  grub_file_t new_fd;
 
   /* Using fd_mo and not another variable because
      it's needed for grub_gettext_get_info.  */
 
-  new_fd = grub_gzfile_open (filename, 1);
+  fd_mo = grub_gzfile_open (filename, 1);
   grub_errno = GRUB_ERR_NONE;
 
-  if (!new_fd)
+  if (!fd_mo)
     {
-      grub_dprintf ("gettext: Cannot read %s", filename);
+      grub_dprintf ("gettext", "Cannot read %s", filename);
       return 0;
     }
-
-  fd_mo = new_fd;
 
   magic = grub_gettext_get_info (GETTEXT_MAGIC_NUMBER);
 
