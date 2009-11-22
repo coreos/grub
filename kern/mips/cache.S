@@ -6,8 +6,6 @@ FUNCTION (grub_arch_sync_caches)
 repeat:
 	cache 1, 0($a0)
 	cache 0, 0($a0)
-	cache 3, 0($a0)
-	cache 0, 0($a0)
 	addiu $a0, $a0, 1
 	addiu $a1, $a1, 0xffff
 	bne $a1, $zero, repeat

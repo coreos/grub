@@ -30,14 +30,13 @@ VARIABLE (grub_relocator32_forward_start)
 copycont1:	
 	lb $11,0($8)
 	sb $11,0($9)
+	cache 1, 0($9)
+	cache 0, 0($9)
 	addiu $8, $8, 0x1
 	addiu $9, $9, 0x1
 	addiu $10, $10, 0xffff
 	subu $11,$10,$0
 	bne $11, $0, copycont1
-#if __mips >= 2
-	sync
-#endif
 VARIABLE (grub_relocator32_forward_end)
 
 VARIABLE (grub_relocator32_backward_start)
@@ -49,12 +48,11 @@ VARIABLE (grub_relocator32_backward_start)
 copycont2:	
 	lb $11,0($8)
 	sb $11,0($9)
+	cache 1, 0($9)
+	cache 0, 0($9)
 	addiu $8, $8, 0xffff
 	addiu $9, $9, 0xffff
 	addiu $10, 0xffff
 	subu $11,$10,$0
 	bne $11, $0, copycont2
-#if __mips >= 2
-	sync
-#endif
 VARIABLE (grub_relocator32_backward_end)
