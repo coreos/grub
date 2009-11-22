@@ -262,12 +262,34 @@ get_entry_number (const char *name)
   return entry;
 }
 
+static char*
+get_spaces (int number_spaces)
+{
+  char* spaces = grub_malloc(number_spaces + 1);
+  int i;
+
+  spaces[0] = '\0';
+  
+  for (i=0;i<number_spaces;i++)
+    {
+      grub_strcat(spaces, " ");
+    }
+  return spaces;
+}
+  
 static void
 print_timeout (int timeout, int offset, int second_stage)
 {
-  /* NOTE: Do not remove the trailing space characters.
-     They are required to clear the line.  */
-  char *msg = "   The highlighted entry will be booted automatically in %ds.    ";
+  const char *msg_localized = _("   The highlighted entry will be booted automatically in %ds.");
+  const int msg_localized_len = grub_strlen (msg_localized);
+  const int number_spaces = GRUB_TERM_WIDTH - msg_localized_len;
+  
+  char *msg = grub_malloc (msg_localized_len + number_spaces + 1);
+  char *spaces = get_spaces (number_spaces);
+
+  grub_sprintf (msg,"%s%s", msg_localized, spaces);
+  grub_free (spaces);
+
   char *msg_end = grub_strchr (msg, '%');
 
   grub_gotoxy (second_stage ? (msg_end - msg) : 0, GRUB_TERM_HEIGHT - 3);
