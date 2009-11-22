@@ -891,11 +891,6 @@ msgstr ""
 "\n"
 "      Utilitzeu les tecles %C i %C per a seleccionar l'entrada ressaltada.\n"
 
-#: normal/menu_text.c:270
-#, c-format
-msgid "   The highlighted entry will be booted automatically in %ds.    "
-msgstr "   L' entrada seleccionada arrencarà automàticament en %ds.      "
-
 #: util/grub.d/10_kfreebsd.in:40
 msgid "%s, with kFreeBSD %s"
 msgstr ""
