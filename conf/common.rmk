@@ -370,8 +370,7 @@ scsi_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Commands.
 pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
-	ls.mod cmp.mod cat.mod help.mod search_file.mod \
-	search_fs_uuid.mod search_fs_label.mod search.mod loopback.mod	\
+	ls.mod cmp.mod cat.mod help.mod search.mod loopback.mod	\
 	configfile.mod echo.mod		\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod loadenv.mod crc.mod parttool.mod	\
@@ -449,10 +448,12 @@ search_mod_SOURCES = commands/search_wrap.c
 search_mod_CFLAGS = $(COMMON_CFLAGS)
 search_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += search_fs_file.mod search_fs_uuid.mod search_label.mod
+
 # For search.mod.
-search_file_mod_SOURCES = commands/search_file.c
-search_file_mod_CFLAGS = $(COMMON_CFLAGS)
-search_file_mod_LDFLAGS = $(COMMON_LDFLAGS)
+search_fs_file_mod_SOURCES = commands/search_file.c
+search_fs_file_mod_CFLAGS = $(COMMON_CFLAGS)
+search_fs_file_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For search.mod.
 search_label_mod_SOURCES = commands/search_label.c
@@ -460,9 +461,9 @@ search_label_mod_CFLAGS = $(COMMON_CFLAGS)
 search_label_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For search.mod.
-search_uuid_mod_SOURCES = commands/search_uuid.c
-search_uuid_mod_CFLAGS = $(COMMON_CFLAGS)
-search_uuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
+search_fs_uuid_mod_SOURCES = commands/search_uuid.c
+search_fs_uuid_mod_CFLAGS = $(COMMON_CFLAGS)
+search_fs_uuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For test.mod.
 test_mod_SOURCES = commands/test.c

@@ -17,6 +17,14 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/types.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
+#include <grub/err.h>
+#include <grub/dl.h>
+#include <grub/env.h>
+#include <grub/extcmd.h>
+
 static const struct grub_arg_option options[] =
   {
     {"file",		'f', 0, "search devices by a file", 0, 0},
@@ -35,6 +43,10 @@ enum options
     SEARCH_SET,
     SEARCH_NO_FLOPPY,
  };
+
+void grub_search_fs_file (const char *key, const char *var, int no_floppy);
+void grub_search_fs_uuid (const char *key, const char *var, int no_floppy);
+void grub_search_label (const char *key, const char *var, int no_floppy);
 
 static grub_err_t
 grub_cmd_search (grub_extcmd_t cmd, int argc, char **args)

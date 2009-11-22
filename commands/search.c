@@ -25,7 +25,7 @@
 #include <grub/device.h>
 #include <grub/file.h>
 #include <grub/env.h>
-#include <grub/extcmd.h>
+#include <grub/command.h>
 
 void
 FUNC_NAME (const char *key, const char *var, int no_floppy)
