@@ -1,3 +1,8 @@
+2009-11-22  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-mkimage.c: Ungettextize grub_util_info() strings.
+	* util/i386/pc/grub-setup.c: Likewise.
+
 2009-11-21  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* util/getroot.c [__GNU__]: Include <hurd.h>, <hurd/lookup.h>, and
