@@ -17,29 +17,35 @@
  */
 
 #include <grub/symbol.h>
-
-#ifdef BACKWARD
-#define RELOCATOR_VARIABLE(x) VARIABLE(grub_relocator32_backward_ ## x)
-#else
-#define RELOCATOR_VARIABLE(x) VARIABLE(grub_relocator32_forward_ ## x)
-#endif
 	
 	.p2align	4	/* force 16-byte alignment */
 
 VARIABLE (grub_relocator32_forward_start)
+	move $12, $9
+	move $13, $10
+
 copycont1:	
 	lb $11,0($8)
 	sb $11,0($9)
-	cache 1, 0($9)
-	cache 0, 0($9)
 	addiu $8, $8, 0x1
 	addiu $9, $9, 0x1
 	addiu $10, $10, 0xffff
 	subu $11,$10,$0
 	bne $11, $0, copycont1
+
+cachecont1:	
+	cache 1,0($12)
+	cache 0,0($12)
+	addiu $12, $12, 0x1
+	addiu $13, $13, 0xffff
+	subu $11,$13,$0
+	bne $11, $0, cachecont1
 VARIABLE (grub_relocator32_forward_end)
 
 VARIABLE (grub_relocator32_backward_start)
+	move $12, $9
+	move $13, $10
+
 	addu $9, $9, $10
 	addu $8, $8, $10
 	/* Backward movsl is implicitly off-by-one.  compensate that.  */
@@ -55,4 +61,11 @@ copycont2:
 	addiu $10, 0xffff
 	subu $11,$10,$0
 	bne $11, $0, copycont2
+cachecont2:
+	cache 1,0($12)
+	cache 0,0($12)
+	addiu $12, $12, 0x1
+	addiu $13, $13, 0xffff
+	subu $11,$13,$0
+	bne $11, $0, cachecont2
 VARIABLE (grub_relocator32_backward_end)
