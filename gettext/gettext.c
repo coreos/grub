@@ -48,12 +48,23 @@ static const char *(*grub_gettext_original) (const char *s);
 
 #define MO_MAGIC_NUMBER 		0x950412de
 
+static grub_ssize_t
+grub_gettext_pread (grub_file_t file, void *buf, grub_size_t len,
+		    grub_off_t offset)
+{
+  if (grub_file_seek (file, offset) == (grub_off_t) - 1)
+    {
+      return -1;
+    }
+  return grub_file_read (file, buf, len);
+}
+
 static grub_uint32_t
 grub_gettext_get_info (int offset)
 {
   grub_uint32_t value;
 
-  grub_file_pread (fd_mo, (char *) &value, 4, offset);
+  grub_gettext_pread (fd_mo, (char *) &value, 4, offset);
 
   value = grub_cpu_to_le32 (value);
   return value;
@@ -63,7 +74,7 @@ static void
 grub_gettext_getstring_from_offset (grub_uint32_t offset,
 				    grub_uint32_t length, char *translation)
 {
-  grub_file_pread (fd_mo, translation, length, offset);
+  grub_gettext_pread (fd_mo, translation, length, offset);
   translation[length] = '\0';
 }
 
@@ -79,10 +90,10 @@ grub_gettext_gettranslation_from_position (int position)
 
   internal_position = offsettranslation + position * 8;
 
-  grub_file_pread (fd_mo, (char *) &length, 4, internal_position);
+  grub_gettext_pread (fd_mo, (char *) &length, 4, internal_position);
   length = grub_cpu_to_le32 (length);
 
-  grub_file_pread (fd_mo, (char *) &offset, 4, internal_position + 4);
+  grub_gettext_pread (fd_mo, (char *) &offset, 4, internal_position + 4);
   offset = grub_cpu_to_le32 (offset);
 
   translation = grub_malloc (length + 1);
@@ -102,10 +113,10 @@ grub_gettext_getstring_from_position (int position)
   internal_position = grub_gettext_offsetoriginal + (position * 8);
 
   /* Get the length of the string i.  */
-  grub_file_pread (fd_mo, (char *) &length, 4, internal_position);
+  grub_gettext_pread (fd_mo, (char *) &length, 4, internal_position);
 
   /* Get the offset of the string i.  */
-  grub_file_pread (fd_mo, (char *) &offset, 4, internal_position + 4);
+  grub_gettext_pread (fd_mo, (char *) &offset, 4, internal_position + 4);
 
   /* Get the string i.  */
   original = grub_malloc (length + 1);

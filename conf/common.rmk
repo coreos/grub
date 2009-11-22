@@ -185,7 +185,7 @@ grub-mkconfig_DATA += util/grub.d/README
 pkglib_MODULES += fshelp.mod fat.mod ufs1.mod ufs2.mod ext2.mod ntfs.mod \
 	ntfscomp.mod minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod	\
 	affs.mod sfs.mod hfsplus.mod reiserfs.mod cpio.mod tar.mod	\
-	udf.mod	afs.mod afs_be.mod befs.mod befs_be.mod 
+	udf.mod	afs.mod afs_be.mod befs.mod befs_be.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c

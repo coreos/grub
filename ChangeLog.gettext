@@ -1,15 +1,18 @@
 YYYY-MM-DD  Carles Pina i Estany <carles@pina.cat>
 
-	* conf/common.rmk: Add grub-gettext_lib target, dependency and
-	  SOURCES, CFLAGS, LDFLAGS
-	* gettext/gettext.c: New file with gettext implementation
-	* include/grub/i18n_grub.h: New file with grub_gettext macros
-	* include/grub/misc.h: Define macro _(char *s). Declare
-	  grub_gettext_dummy and grub_gettext
-	* kern/misc.c: Define grub_gettext symbol implementation of the
-	  grub_gettext_dummy function
-	* normal/menu_text.c: Gettextize one message in print_message
-	* po/POTFILES: Adds normal/menu_text.c
-	* po/ca.po: Adds the new string
-	* util/grub.d/00_header.in: defines gettext variables and loads
-	  the module
+	* conf/common.rmk: Add grub-gettext_lib target and updates
+	  lib_DATA and CLEANFILES. Adds gettext.mod SOURCES, CFLAGS,
+	  LDFLAGS.
+	* gettext/gettext.c: New file. (Reads mo files).
+	* include/grub/file.h (grub_file_pread): New prototype.
+	* include/grub/i18n.h (_): New prototype.
+	* include/grub/misc.h (grub_gettext_dummy, grub_gettext): New 
+	  prototypes.
+	* kern/misc.c (grub_gettext_dummy): New function.
+	* menu/menu_text.c: Include <grub/i18n.h>.
+	* menu/menu_text.c (print_timeout): Gettexttize string.
+	* menu/menu_text.c (print_message): Gettexttize string.
+	* po/POTFILES: Add `normal/menu_text.c'.
+	* po/ca.po: Add new translations.
+	* util/grub.d/00_header.in: Define locale_dir and lang. insmod 
+	  gettext module and defines locale_dir and lang in grub.cfg.

@@ -192,7 +192,7 @@ grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint32_t d, grub_uint32_t *r);
 
 const char *EXPORT_FUNC(grub_gettext_dummy) (const char *s);
-extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);// = grub_gettext_dummy;
+extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
 
 #ifdef NEED_ENABLE_EXECUTE_STACK
 void EXPORT_FUNC(__enable_execute_stack) (void *addr);
