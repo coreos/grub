@@ -1,3 +1,8 @@
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* po/id.po: New file.
+	* LINGUAS: Add `id'.
+
 2009-11-23  Carles Pina i Estany <carles@pina.cat>
 
 	* conf/common.rmk: Add grub-gettext_lib target and updates
