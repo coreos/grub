@@ -1,4 +1,4 @@
-2009-11-22  Carles Pina i Estany <carles@pina.cat>
+2009-11-23  Carles Pina i Estany <carles@pina.cat>
 
 	* conf/common.rmk: Add grub-gettext_lib target and updates
 	  lib_DATA and CLEANFILES. Adds gettext.mod SOURCES, CFLAGS,
