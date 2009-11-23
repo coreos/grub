@@ -23,7 +23,6 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/types.h>
-#include <grub/machine/kernel.h>
 #include <grub/scsi.h>
 #include <grub/scsicmd.h>
 

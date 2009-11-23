@@ -31,9 +31,6 @@ target_cpu=@target_cpu@
 platform=@platform@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
-# for make_system_path_relative_to_its_root()
-. ${libdir}/grub/grub-mkconfig_lib
-
 grub_setup=${sbindir}/`echo grub-setup | sed ${transform}`
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
     grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
@@ -143,6 +140,9 @@ for option in "$@"; do
 	install_device="${option}" ;;
     esac
 done
+
+# for make_system_path_relative_to_its_root()
+. ${libdir}/grub/grub-mkconfig_lib
 
 if test "x$install_device" = x; then
     echo "install_device not specified." 1>&2
@@ -319,14 +319,7 @@ else
     $grub_mkimage -d ${pkglibdir} --output=/boot/multiboot.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 fi
 
-# Prompt the user to check if the device map is correct.
 echo "Installation finished. No error reported."
-echo "This is the contents of the device map $device_map."
-echo "Check if this is correct or not. If any of the lines is incorrect,"
-echo "fix it and re-run the script \`grub-install'."
-echo
-
-cat $device_map
 
 # Bye.
 exit 0

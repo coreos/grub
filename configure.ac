@@ -31,8 +31,10 @@ dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
 dnl type.
 
 
-AC_INIT([GRUB],[1.97~beta4],[bug-grub@gnu.org])
-AC_PREREQ(2.59)
+AC_INIT([GRUB],[1.97],[bug-grub@gnu.org])
+AM_INIT_AUTOMAKE()
+AM_GNU_GETTEXT()
+AC_PREREQ(2.59d)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
 
@@ -98,7 +100,7 @@ case "$target_cpu" in
 esac
 
 case "$host_os" in
-  mingw32) host_os=cygwin ;;
+  mingw32*) host_os=cygwin ;;
 esac
 
 # This normalizes the names, and creates a new variable ("host_kernel")
@@ -107,7 +109,7 @@ esac
 case "$host_os" in
   gnu*)				host_kernel=hurd ;;
   linux*)			host_kernel=linux ;;
-  freebsd* | kfreebsd*-gnu)	host_kernel=freebsd ;;
+  freebsd* | kfreebsd*-gnu)	host_kernel=kfreebsd ;;
   cygwin)			host_kernel=windows ;;
 esac
 
@@ -134,9 +136,9 @@ if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
 fi
 
-for file in /usr/src/unifont.bdf ; do
+for file in /usr/src/unifont.bdf /usr/share/fonts/X11/misc/unifont.pcf.gz ; do
   if test -e $file ; then
-    AC_SUBST([UNIFONT_BDF], [$file])
+    AC_SUBST([FONT_SOURCE], [$file])
     break
   fi
 done
@@ -180,6 +182,13 @@ fi
 
 # Check for functions.
 AC_CHECK_FUNCS(posix_memalign memalign asprintf)
+
+# For grub-mkisofs
+AC_HEADER_MAJOR
+AC_HEADER_DIRENT
+AC_CHECK_FUNCS(memmove sbrk strdup lstat getuid getgid)
+AC_CHECK_HEADERS(sys/mkdev.h sys/sysmacros.h malloc.h termios.h sys/types.h)
+AC_CHECK_HEADERS(unistd.h string.h strings.h sys/stat.h sys/fcntl.h)
 
 #
 # Check for target programs.
@@ -252,6 +261,10 @@ if test "x$TARGET_CFLAGS" = x; then
     else
       TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
     fi
+
+    # Some toolchains enable these features by default, but they need
+    # registers that aren't set up properly in GRUB.
+    TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
   fi
 
   # By default, GCC 4.4 generates .eh_frame sections containing unwind
@@ -406,6 +419,9 @@ AC_SUBST(TARGET_APPLE_CC)
 AC_SUBST(TARGET_ASFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)
 AC_SUBST(TARGET_LDFLAGS)
+
+# Check for libgcc symbols (must be performed before we add -nostdlib to LDFLAGS)
+AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2)
 
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"

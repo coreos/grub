@@ -28,6 +28,7 @@
 #define ALIGN_UP(addr, align) \
 	((addr + (typeof (addr)) align - 1) & ~((typeof (addr)) align - 1))
 #define ARRAY_SIZE(array) (sizeof (array) / sizeof (array[0]))
+#define COMPILE_TIME_ASSERT(cond) switch (0) { case 1: case !(cond): ; }
 
 #define grub_dprintf(condition, fmt, args...) grub_real_dprintf(__FILE__, __LINE__, condition, fmt, ## args)
 /* XXX: If grub_memmove is too slow, we must implement grub_memcpy.  */
@@ -75,9 +76,11 @@ grub_strncat (char *dest, const char *src, int c)
 }
 
 /* Prototypes for aliases.  */
-#if !defined (GRUB_UTIL) || !defined (APPLE_CC)
+#ifndef GRUB_UTIL
+int EXPORT_FUNC(memcmp) (const void *s1, const void *s2, grub_size_t n);
 void *EXPORT_FUNC(memmove) (void *dest, const void *src, grub_size_t n);
 void *EXPORT_FUNC(memcpy) (void *dest, const void *src, grub_size_t n);
+void *EXPORT_FUNC(memset) (void *s, int c, grub_size_t n);
 #endif
 
 int EXPORT_FUNC(grub_memcmp) (const void *s1, const void *s2, grub_size_t n);

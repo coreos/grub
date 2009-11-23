@@ -1057,7 +1057,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	n = strtol (p, &q, 10);
 	if (p != q && n != GRUB_LONG_MIN && n != GRUB_LONG_MAX)
 	  {
-	    dos_part = (int) n;
+	    dos_part = (int) n - 1;
 
 	    if (*q >= 'a' && *q <= 'g')
 	      bsd_part = *q - 'a';

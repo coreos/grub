@@ -43,7 +43,6 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
 {
   struct grub_video_mode_info mode_info;
   int ret;
-  int x,y;
   char *tmp, *modevar;
   void *framebuffer;
   grub_err_t err;
@@ -66,31 +65,36 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
   if (err)
     return err;
 
+  if (grub_xnu_bitmap)
+    {
+      int x, y;
+
+      x = mode_info.width - grub_xnu_bitmap->mode_info.width;
+      x /= 2;
+      y = mode_info.height - grub_xnu_bitmap->mode_info.height;
+      y /= 2;
+      err = grub_video_blit_bitmap (grub_xnu_bitmap,
+				    GRUB_VIDEO_BLIT_REPLACE,
+				    x > 0 ? x : 0,
+				    y > 0 ? y : 0,
+				    x < 0 ? -x : 0,
+				    y < 0 ? -y : 0,
+				    min (grub_xnu_bitmap->mode_info.width,
+					 mode_info.width),
+				    min (grub_xnu_bitmap->mode_info.height,
+					 mode_info.height));
+      if (err)
+	{
+	  grub_print_error ();
+	  grub_errno = GRUB_ERR_NONE;
+	  grub_xnu_bitmap = 0;
+	}
+      err = GRUB_ERR_NONE;
+    }
+
   ret = grub_video_get_info_and_fini (&mode_info, &framebuffer);
   if (ret)
     return grub_error (GRUB_ERR_IO, "couldn't retrieve video parameters");
-
-  err = GRUB_ERR_NONE;
-  x = mode_info.width - grub_xnu_bitmap->mode_info.width;
-  x /= 2;
-  y = mode_info.height - grub_xnu_bitmap->mode_info.height;
-  y /= 2;
-  err = grub_video_blit_bitmap (grub_xnu_bitmap,
-				GRUB_VIDEO_BLIT_REPLACE,
-				x > 0 ? x : 0,
-				y > 0 ? y : 0,
-				x < 0 ? -x : 0,
-				y < 0 ? -y : 0,
-				min (grub_xnu_bitmap->mode_info.width,
-				     mode_info.width),
-				min (grub_xnu_bitmap->mode_info.height,
-				     mode_info.height));
-  if (err)
-    {
-      grub_print_error ();
-      grub_errno = GRUB_ERR_NONE;
-      grub_xnu_bitmap = 0;
-    }
 
   params->lfb_width = mode_info.width;
   params->lfb_height = mode_info.height;

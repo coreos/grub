@@ -1,3 +1,942 @@
+2009-11-22  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-mkimage.c: Ungettextize grub_util_info() strings.
+	* util/i386/pc/grub-setup.c: Likewise.
+
+2009-11-21  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/getroot.c [__GNU__]: Include <hurd.h>, <hurd/lookup.h>, and
+	<hurd/fs.h>
+	[__GNU__] (grub_guess_root_device): Call file_name_lookup and
+	file_get_storage_info to implement grub_guess_root_device.
+
+2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in (target): Use make's builtin $(shell) function
+	instead of calling directly $(SHELL) to create the locale directories,
+	inside the $(foreach) function.
+
+2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkrescue.in: Print an error and usage if output option
+	has not been given.
+
+2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	Patch from Loïc Minier <loic.minier@ubuntu.com>.
+	* util/grub.d/30_os-prober.in: Cope with Linux entries where
+	root and /boot are on different devices.
+
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build for srcdir != objdir.
+
+	* Makefile.in (po/$(PACKAGE).pot): Rename to ...
+	($(srcdir)/po/$(PACKAGE).pot): ... this.  Run $(XGETTEXT) from
+	$(srcdir).
+	($(foreach lang, $(LINGUAS), po/$(lang).po)): Rename to ...
+	($(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): ... this. Use $^
+	reference for input.
+
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Use source directory direcly (without copiing
+	or hardlinking it).  Remove -J option, Joliet is not compatible with
+	multiple source directories.
+
+2009-11-21  Carles Pina i Estany <carles@pina.cat>
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Recognize `--override-directory' option.
+	(process_input_dir): New function.  Process an arbitrary input
+	directory.
+	Misc adjustments to support both "override mode" and system-wide mode.
+
+2009-11-20  Felix Zielcke  <fzielcke@z-51.de>
+
+	* configure.ac (UNIFONT_BDF): Rename to ...
+	(FONT_SOURCE): ... this.  Update all users.
+
+2009-11-20  Felix Zielcke  <fzielcke@z-51.de>
+
+	* configure.ac: Add `/usr/share/fonts/X11/misc/unifont.pcf.gz'
+	to the list of unifont files to look for.
+
+2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Patch from Joe Auricchio <jauricchio@gmail.com>
+	* commands/minicmd.c (grub_mini_cmd_clear): New function.
+	(GRUB_MOD_INIT(minicmd)): Register grub_mini_cmd_clear().
+	(GRUB_MOD_FINI(minicmd)): Unregister grub_mini_cmd_clear().
+
+2009-11-19  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in (install-local): Add a missing backslash.
+
+2009-11-19  Felix Zielcke  <fzielcke@z-51.de>
+
+	* include/grub/x86_64/io.h: New file.
+
+2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add `gnulib/progname.c'.
+	* util/i386/pc/grub-setup.c: Include `<grub/i18n.h>'.
+	Include `"progname.h"'.
+	(main): Initialize gettext.
+	* util/i386/pc/grub-setup.c: Gettexttize.
+	* util/i386/pc/grub-mkimage.c: Likewise.
+
+	* Makefile.in (po/*.po): Redefine as ...
+	($(foreach lang, $(LINGUAS), po/$(lang).po)): ... this.
+
+	* po/POTFILES: Add `util/i386/pc/grub-setup.c'.
+
+2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (grub_mkisofs_SOURCES): Add `gnulib/progname.c'.
+	* util/mkisofs/mkisofs.c: Include `"progname.h"'.
+	(program_name): Remove.
+	(main): Initialize gettext support.
+	* util/mkisofs/mkisofs.h: Include `<locale.h>'.
+	Include `<libintl.h>'.
+	(_): New macro.
+
+	* util/mkisofs/eltorito.c: Gettexttize.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/mkisofs.c: Likewise.
+	* util/mkisofs/multi.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+
+	* po/POTFILES: Update with new files.
+
+2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/eltorito.c: Fix minor mistake in license text.
+	* util/mkisofs/iso9660.h: Likewise.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/mkisofs.c: Likewise.
+	* util/mkisofs/mkisofs.h: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+
+	* util/mkisofs/eltorito.c (rcsid): Remove.
+	* util/mkisofs/hash.c: Likewise.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/name.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+
+2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/match.c: Rewrite from scratch, using a linked list
+	instead of static allocation.
+	* util/mkisofs/match.h: Likewise.
+
+2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* po/POTFILES-shell: New file.  List `util/grub.d/10_kfreebsd.in'
+	and `util/grub.d/10_linux.in'.
+	* Makefile.in (po/$(PACKAGE).pot): Process `po/POTFILES-shell' for
+	translatable Shell files.
+
+2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in ($(srcdir)/aclocal.m4): New target.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* INSTALL: Document Automake is needed for bootstrap.
+	* po/ca.po: Fix PO-Revision-Date and Language-Team fields.
+	* util/grub.d/10_kfreebsd.in (bindir): New variable.
+	Add gettext initialization.
+	(kfreebsd_entry): Make menuentry output translatable.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (XGETTEXT, MSGMERGE, MSGFMT): New variables.
+	(po/$(PACKAGE).pot): Replace `xgettext' with `$(XGETTEXT)'.
+	(po/*.po): Replace `msgmerge' with `$(MSGMERGE)'.
+	(po/%.mo): Replace `msgfmt' with `$(MSGFMT)'.
+	(LINGUAS): Auto-generate using `po/LINGUAS'.
+	* po/LINGUAS: New file.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Call AM_GNU_GETTEXT() (defines localedir, among
+	other things).
+	* Makefile.in (CPPFLAGS): Add `-DLOCALEDIR=\"$(localedir)\"'.
+	* util/i386/pc/grub-mkimage.c (main): Issue setlocale() and
+	bindtextdomain() calls for gettext initialization.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* gnulib/progname.c: New file (imported from Gnulib).
+	* gnulib/progname.h: Likewise.
+	* conf/i386-pc.rmk (grub_mkimage_SOURCES): Add `gnulib/progname.c'.
+	* util/i386/pc/grub-mkimage.c: Include `"progname.h"'.
+	(usage): Replace `progname' with `program_name'.
+	(main): Use set_program_name() for program name initialization.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (grub_mkisofs_CFLAGS): Move `-I$(srcdir)/gnulib'
+	from here ...
+	* Makefile.in (CPPFLAGS): ... to here.
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* aclocal.m4: Move from here ...
+	* acinclude.m4: ... to here.
+	* autogen.sh: Add call to `aclocal'.
+	* configure.ac: Add AM_INIT_AUTOMAKE() after AC_INIT() call.
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (CLEANFILES): Add `po/*.mo'.
+	(LINGUAS): New variable.
+	(all-local): Add `$(foreach lang, $(LINGUAS), po/$(lang).mo)'.
+	(install-local): Install MO files.
+	(po/$(PACKAGE).pot, po/*.po, po/%.mo): New rules.
+	* include/grub/i18n.h: New file.
+	* po/POTFILES: New file.
+	* po/ca.po: New file.
+	* util/grub.d/10_linux.in (bindir): New variable.
+	Add gettext initialization.
+	(linux_entry): Make menuentry output translatable.
+	* util/i386/pc/grub-mkimage.c: Include `<grub/i18n.h>'.
+	(usage): Make --help output translatable.
+	(main): Initialize gettext.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* import_gcry.py: New file (written by Vladimir with minor
+	adjustments).
+	* autogen.sh: Use import_gcry.py to auto-generate GRUB-ified
+	ciphers.
+	* INSTALL: Document that Python is required for bootstrap.
+
+2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Import ciphers from libgcrypt 1.4.4.
+
+	 * lib/libgcrypt/cipher/ChangeLog
+	 * lib/libgcrypt/cipher/ac.c
+	 * lib/libgcrypt/cipher/arcfour.c
+	 * lib/libgcrypt/cipher/bithelp.h
+	 * lib/libgcrypt/cipher/blowfish.c
+	 * lib/libgcrypt/cipher/camellia-glue.c
+	 * lib/libgcrypt/cipher/camellia.c
+	 * lib/libgcrypt/cipher/camellia.h
+	 * lib/libgcrypt/cipher/cast5.c
+	 * lib/libgcrypt/cipher/cipher.c
+	 * lib/libgcrypt/cipher/crc.c
+	 * lib/libgcrypt/cipher/des.c
+	 * lib/libgcrypt/cipher/dsa.c
+	 * lib/libgcrypt/cipher/ecc.c
+	 * lib/libgcrypt/cipher/elgamal.c
+	 * lib/libgcrypt/cipher/hash-common.c
+	 * lib/libgcrypt/cipher/hash-common.h
+	 * lib/libgcrypt/cipher/hmac-tests.c
+	 * lib/libgcrypt/cipher/md.c
+	 * lib/libgcrypt/cipher/md4.c
+	 * lib/libgcrypt/cipher/md5.c
+	 * lib/libgcrypt/cipher/primegen.c
+	 * lib/libgcrypt/cipher/pubkey.c
+	 * lib/libgcrypt/cipher/rfc2268.c
+	 * lib/libgcrypt/cipher/rijndael-tables.h
+	 * lib/libgcrypt/cipher/rijndael.c
+	 * lib/libgcrypt/cipher/rmd.h
+	 * lib/libgcrypt/cipher/rmd160.c
+	 * lib/libgcrypt/cipher/rsa.c
+	 * lib/libgcrypt/cipher/seed.c
+	 * lib/libgcrypt/cipher/serpent.c
+	 * lib/libgcrypt/cipher/sha1.c
+	 * lib/libgcrypt/cipher/sha256.c
+	 * lib/libgcrypt/cipher/sha512.c
+	 * lib/libgcrypt/cipher/tiger.c
+	 * lib/libgcrypt/cipher/twofish.c
+	 * lib/libgcrypt/cipher/whirlpool.c
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build for systems without error().
+
+	* gnulib/error.c: New file (imported from Gnulib).
+	* gnulib/error.h: Likewise.
+	* conf/common.rmk (grub_mkisofs_SOURCES): Add `gnulib/error.c'.
+	* util/mkisofs/mkisofs.c (program_name): Remove `static' qualifier
+	(this variable is now used by error()).
+
+2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/mkisofs/name.c (iso9660_file_length): Use isascii macro
+	instead of relying that char is signed.
+
+2009-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/i386/pc/pxe.c (grub_pxefs_open): Correctly handle PXE choosing
+	blocksize different from specified.
+	(grub_pxefs_read): Likewise.
+
+2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
+
+	Enable ata.mod on x86_64-efi, i386-efi and i386-ieee1275.
+
+	* disk/ata.c (grub_ata_dumpinfo): Add a cast.
+	(grub_ata_readwrite): Likewise.  Update 2 format strings.
+	(grub_atapi_read): Likewise.
+
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Move `ata.mod' from here ...
+	* conf/i386.rmk (pkglib_MODULES): ... to here ...
+	* conf/x86_64-efi.rmk (pkglib_MODULES): ... and here.
+	* conf/i386-coreboot.rmk (ata_mod_SOURCES, ata_mod_CFLAGS)
+	(ata_mod_LDFLAGS): Move from here ...
+	* conf/i386.rmk: ... to here ...
+	* conf/x86_64-efi.rmk: ... and here.
+	* conf/i386-pc.rmk (pkglib_MODULES): Remove `ata.mod'
+	(ata_mod_SOURCES, ata_mod_CFLAGS, ata_mod_LDFLAGS): Remove.
+
+2009-11-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Relicense multiboot.h, with RMS' blessing.
+
+	* include/multiboot.h: Change to X11 license.
+
+2009-11-15  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Support --version in grub-mkisofs.
+
+	* util/mkisofs/mkisofs.c (rcsid): Remove variable.
+	(OPTION_VERSION): New macro.
+	(ld_options): Recognize --version.
+	(usage): Move `program_name' from here ...
+	(program_name): ... to here.  Add `static' qualifier.
+	(main): Recognize `OPTION_VERSION'.
+
+2009-11-15  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in (TARGET_CPPFLAGS): Replace `-isystem=$(srcdir)/include'
+	with `-nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include)'.
+
+2009-11-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix help2man generation for mkisofs.
+
+	* util/mkisofs/mkisofs.c (ld_options): Recognize --help.
+	(usage): Send output to stdout (rather than stderr).
+
+2009-11-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/i386-coreboot.rmk (grub_mkrescue_SOURCES): Replace
+	`util/i386/coreboot/grub-mkrescue.in' with `util/grub-mkrescue.in'.
+	* conf/i386-pc.rmk (grub_mkrescue_SOURCES): Replace
+	`util/i386/pc/grub-mkrescue.in' with `util/grub-mkrescue.in'.
+	(bin_SCRIPTS): Add `grub-mkfloppy'.
+	(grub_mkfloppy_SOURCES): New variable.
+
+	* util/grub-mkrescue.in: New file.
+	* util/i386/pc/grub-mkfloppy.in: New file.
+
+	* util/i386/coreboot/grub-mkrescue.in: Remove.
+	* util/i386/pc/grub-mkrescue.in: Remove.
+
+2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/multiboot.h (struct grub_multiboot_header): Move
+	from here ...
+	* include/multiboot.h (struct multiboot_header): ... to here.  Update
+	all users.
+	* include/grub/multiboot.h (struct grub_multiboot_info): Move
+	from here ...
+	* include/multiboot.h (struct multiboot_info): ... to here.  Update
+	all users.
+	* include/grub/multiboot.h (struct grub_multiboot_mmap_entry): Move
+	from here ...
+	* include/multiboot.h (struct multiboot_mmap_entry): ... to here.
+	Update all users.
+	* include/grub/multiboot.h (struct grub_mod_list): Move
+	from here ...
+	* include/multiboot.h (struct multiboot_mod_list): ... to here.
+	Update all users.
+
+2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot2.h (multiboot_word): Rename from this ...
+	(multiboot2_word): ... to this.  Update all users.
+	(multiboot_header): Rename from this ...
+	(multiboot2_header): ... to this.  Update all users.
+	(multiboot_tag_header): Rename from this ...
+	(multiboot2_tag_header): ... to this.  Update all users.
+	(multiboot_tag_start): Rename from this ...
+	(multiboot2_tag_start): ... to this.  Update all users.
+	(multiboot_tag_name): Rename from this ...
+	(multiboot2_tag_name): ... to this.  Update all users.
+	(multiboot_tag_module): Rename from this ...
+	(multiboot2_tag_module): ... to this.  Update all users.
+	(multiboot_tag_memory): Rename from this ...
+	(multiboot2_tag_memory): ... to this.  Update all users.
+	(multiboot_tag_unused): Rename from this ...
+	(multiboot2_tag_unused): ... to this.  Update all users.
+	(multiboot_tag_end): Rename from this ...
+	(multiboot2_tag_end): ... to this.  Update all users.
+
+2009-11-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Disable Multiboot2 in i386-ieee1275.  It didn't actually work, and on
+	this platform we should support Multiboot1 first.
+
+	* conf/i386-ieee1275.rmk (pkglib_MODULES): Remove `multiboot.mod'.
+	(multiboot_mod_SOURCES, multiboot_mod_CFLAGS)
+	(multiboot_mod_LDFLAGS, multiboot_mod_ASFLAGS): Remove.
+
+2009-11-12  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/eltorito.c (init_boot_catalog): Handle return code
+	of write calls (converting them to fwrite() if they aren't already).
+	(get_torito_desc): Likewise.
+	* util/mkisofs/rock.c (generate_rock_ridge_attributes): Likewise.
+
+2009-11-12  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-install.in: Move from here ...
+	* util/grub-install.in: ... to here.  Update all users.
+
+2009-11-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/powerpc/ieee1275/grub-mkrescue.in: Fix --version output.
+
+2009-11-11  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Support for El Torito without floppy emulation.
+
+	* util/mkisofs/eltorito.c: Include `<errno.h>'.
+	(init_boot_catalog): Improve error handling.
+	(get_torito_desc): Don't use floppy emulation unless requested by
+	user. Patch boot information table when requested via
+	`-boot-info-table'.
+	* util/mkisofs/iso9660.h (struct eltorito_boot_info): New struct.
+	* util/mkisofs/mkisofs.c (use_eltorito_emul_floppy)
+	(use_boot_info_table): New variables.
+	(OPTION_BOOT_INFO_TABLE, OPTION_NO_EMUL_BOOT)
+	(OPTION_ELTORITO_EMUL_FLOPPY): New macros.
+	(ld_options): Handle `-boot-info-table', `-no-emul-boot' and
+	`--eltorito-emul-floppy'.
+	(main): Handle `OPTION_BOOT_INFO_TABLE', `OPTION_NO_EMUL_BOOT'
+	and `OPTION_ELTORITO_EMUL_FLOPPY'.
+	* util/mkisofs/mkisofs.h (use_eltorito_emul_floppy)
+	(use_boot_info_table, get_731): New prototypes.
+	* util/mkisofs/write.c (get_731): New function.
+
+2009-11-11  Felix Zielcke  <fzielcke@z-51.de>
+
+	Fix the generation of the man page.
+
+	* util/pc/i386/grub-install.in: Source
+	`${libdir}/grub/grub-mkconfig_lib' after options have been parsed.
+
+2009-11-11  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Large file support for grub-mkisofs.
+
+	* conf/common.rmk (grub_mkisofs_CFLAGS): Add `-D_FILE_OFFSET_BITS=64'.
+	* util/mkisofs/mkisofs.c (next_extent, last_extent)
+	(session_start): Upgrade type to `uint64_t'.  Update all users.
+	* util/mkisofs/mkisofs.h: Include `<stdint.h>'.
+	(struct directory_entry): Upgrade type of `starting_block' and
+	`size' to `uint64_t'.  Update all users.
+	(struct deferred): Remove unused structure.
+	(xfwrite): Upgrade type of `count' and `size' to `uint64_t'.
+	Update all users.
+	* util/mkisofs/tree.c (stat_filter, lstat_filter): Return -1 when
+	file is larger than `UINT32_MAX'.
+	* util/mkisofs/write.c (xfwrite): Upgrade type of `count' and
+	`size' to `uint64_t'.  Update all users.  Fix handling of fwrite()
+	return value.
+	(struct deferred_write): Upgrade type of `extent' and `size' to
+	`uint64_t'.  Update all users.
+	(last_extent_written): Upgrade type to `uint64_t'.  Update all
+	users.
+	(write_one_file): Upgrade type of `count' and `size' to `uint64_t'.
+	Update all users.  Upgrade type of `remain' to `int64_t' and
+	`use' to `size_t'.  Use error() to handle fread() errors.
+	(write_files): Rely on write_one_file() rather than calling
+	xfwrite() directly.
+
+2009-11-09  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/mkisofs/mkisofs.c (ld_options): Fix a spelling mistake.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/fnmatch.c: Remove.
+	* util/mkisofs/getopt1.c: Likewise.
+	* util/mkisofs/getopt.c: Likewise.
+	* conf/common.rmk (grub_mkisofs_SOURCES): Replace
+	`util/mkisofs/fnmatch.c', `util/mkisofs/getopt1.c' and
+	`util/mkisofs/getopt.c' with `gnulib/fnmatch.c',
+	`gnulib/getopt1.c' and `gnulib/getopt.c'.
+	(grub_mkisofs_CFLAGS): Add `-I$(srcdir)/gnulib'.
+
+	* configure.ac: Detect `mingw32msvc' host_os.
+	Check for lstat(), getuid() and getgid().
+
+	* util/mkisofs/joliet.c: Include `<stdint.h>'.  Replace all
+	instances of `u_char' with `uint8_t'.
+
+	* util/mkisofs/mkisofs.h: Include `<sys/stat.h>'.
+	[!HAVE_GETUID] (getuid): New function (stub).
+	[!HAVE_GETGID] (getgid): Likewise.
+	[!HAVE_LSTAT] (lstat): Likewise.
+	[!S_IROTH] (S_IROTH): New macro (dummy).
+	[!S_IRGRP] (S_IRGRP): Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* gnulib/fnmatch_loop.c (EXT): Fix warning (signed and unsigned type in
+	conditional expression).
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Import from Gnulib.
+
+	* gnulib/fnmatch.c: New file.
+	* gnulib/fnmatch.h: Likewise.
+	* gnulib/fnmatch_loop.c: Likewise.
+	* gnulib/getopt.c: Likewise.
+	* gnulib/getopt.h: Likewise.
+	* gnulib/getopt1.c: Likewise.
+	* gnulib/getopt_int.h: Likewise.
+	* gnulib/gettext.h: Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/dyncmd.c (read_command_list): Replace `0' with `NULL'.
+	* normal/handler.c (read_handler_list): Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Misc cleanup.
+
+	* kern/command.c (grub_register_command_prio): Use
+	grub_zalloc() instead of explicitly zeroing data.
+	* kern/list.c: Include `<grub/mm.h>'.
+	(grub_named_list_find): Replace `0' with `NULL'.
+	* normal/autofs.c (struct grub_fs_module_list): Remove ad-hoc type.
+	(fs_module_list): Change type to `grub_named_list_t'.  Update all
+	users.
+	* normal/dyncmd.c (read_command_list): Add space between function
+	call and parenthesis.
+	* normal/handler.c (read_handler_list): Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/auth.c (punishment_delay): Moved from here ...
+	(grub_auth_strcmp): ... to here (inside function).
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/list.h (struct grub_named_list): Remove `const'
+	qualifier from `name'.
+	(struct grub_prio_list): Likewise.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/auth.c: Include `<grub/time.h>'.
+	(grub_auth_strcmp): Replace `strcmp' with `grub_strcmp'.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/auth.c (punishment_delay): New variable.
+	(grub_auth_strcmp): Rewrite using grub_get_time_ms ().
+	(grub_auth_check_authentication): Punish failed login attempts with
+	an incremental (2^N) delay.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (grub_mkisofs_CFLAGS): Prefix include
+	path with $(srcdir).
+
+2009-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/auth.c (grub_auth_strcmp): Fixed incorrect variable usage.
+
+2009-11-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/coreboot/grub-mkrescue.in: New file.
+	* conf/i386-coreboot.rmk (bin_SCRIPTS, grub_mkrescue_SOURCES): New
+	variables.
+
+	* conf/common.rmk (bin_UTILITIES): Add `grub-mkisofs'.
+	(grub_mkisofs_SOURCES, grub_mkisofs_CFLAGS): New variables.
+	* configure.ac: Add header and function checks to satisfy grub-mkisofs
+	requirements.
+	* util/mkisofs/defaults.h: New file.
+	* util/mkisofs/eltorito.c: Likewise.
+	* util/mkisofs/exclude.h: Likewise.
+	* util/mkisofs/fnmatch.c: Likewise.
+	* util/mkisofs/getopt.c: Likewise.
+	* util/mkisofs/getopt1.c: Likewise.
+	* util/mkisofs/hash.c: Likewise.
+	* util/mkisofs/include/fctldefs.h: Likewise.
+	* util/mkisofs/include/mconfig.h: Likewise.
+	* util/mkisofs/include/prototyp.h: Likewise.
+	* util/mkisofs/include/statdefs.h: Likewise.
+	* util/mkisofs/iso9660.h: Likewise.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/match.c: Likewise.
+	* util/mkisofs/match.h: Likewise.
+	* util/mkisofs/mkisofs.c: Likewise.
+	* util/mkisofs/mkisofs.h: Likewise.
+	* util/mkisofs/multi.c: Likewise.
+	* util/mkisofs/name.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+
+2009-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/auth.c (grub_auth_strcmp): Fix bug which resulted in function
+	being insecure.
+
+2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-mkrescue.in: Fix miss-identification as
+	`grub-mkimage' (and use $0 when possible).
+
+2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* kern/i386/multiboot_mmap.c (grub_machine_mmap_init): Improve
+	error message for excessively large memory map.
+
+2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* autogen.sh: Use `sh gendistlist.sh' to avoid reliing on
+	executable bit.
+
+2009-11-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* kern/i386/multiboot_mmap.c (grub_machine_mmap_init): Improve error
+	message for coreboot users.
+
+2009-11-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build with GNU gold.
+
+	* conf/i386-pc.rmk (boot_img_LDFLAGS, pxeboot_img_LDFLAGS)
+	(diskboot_img_LDFLAGS, lnxboot_img_LDFLAGS)
+	(cdboot_img_LDFLAGS): Prepend `0x' qualifier to hexadecimal
+	link addresses.
+	* aclocal.m4: Likewise.
+
+2009-11-04  Felix Zielcke  <fzielcke@z-51.de>
+
+	* configure.ac (AC_PREREQ): Bump to 2.59d.
+	* INSTALL: Make it more clear when Autoconf and Ruby are
+	needed and when to run `./autogen.sh'.
+
+2009-11-03  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/grub.d/30_os-prober.in: Restore default behavior for unsupported
+	OSes.
+
+2009-11-02  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/grub.d/30_os-prober.in: Add GNU/Hurd support
+
+2009-11-02  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/grub.d/10_hurd.in: Drop /dev/ prefix from root device path before
+	giving it to GNU Mach.
+
+2009-11-02  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/hostdisk.c (grub_util_biosdisk_get_grub_dev): Subtract 1 from
+	GNU partition number to get internal GRUB partition number.
+
+2009-11-02  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/grub.d/10_hurd.in: Call prepare_grub_to_access_device
+	${GRUB_DEVICE_BOOT} before loading /boot kernel.
+
+2009-11-01  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Based on patch from BVK Chaitanya  <bvk.groups@gmail.com>
+	* kern/misc.c (grub_strchr, grub_strrchr): Fix to handle c == '\0'
+	case.
+
+2009-11-01  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in (TARGET_CPPFLAGS): Add `-I$(srcdir)/include'.
+
+2009-10-30  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build problem.
+
+	* Makefile.in (TARGET_CPPFLAGS): Replace `-nostdinc' with
+	`-isystem=$(srcdir)/include'.
+
+2009-10-30  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-install.in: Remove hint that device.map should be
+	checked (grub-install doesn't currently rely on it).
+
+2009-10-29  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Revert SVN r2660.
+
+	* conf/common.rmk (script/sh/lexer.c_DEPENDENCIES): Moved from here ...
+	* conf/i386-coreboot.rmk (script/sh/lexer.c_DEPENDENCIES): ... to here.
+	* conf/i386-efi.rmk (script/sh/lexer.c_DEPENDENCIES): ... and here.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+
+2009-10-28  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (TARGET_CPPFLAGS): Add `-nostdinc'.
+
+2009-10-28  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/misc.h: Stop checking for APPLE_CC.
+
+2009-10-28  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* kern/i386/coreboot/init.c (grub_exit): Reimplement in a way that
+	doesn't cause an infinite call loop.
+
+2009-10-28  Felix Zielcke  <fzielcke@z-51.de>
+
+	* commands/acpi.c (grub_cmd_acpi): Fix the out of memory error
+	strings.
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* autogen.sh: Support addition of external modules via `GRUB_CONTRIB'
+	variable.
+	* Makefile.in: Likewise.
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* gendistlist.sh: Simplify .svn check.  Skip .bzr as well.
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (RMKFILES): Rewrite using $(wildcard).
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* disk/scsi.c: Remove `<grub/machine/kernel.h>' (not needed).
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* gensymlist.sh.in (COMPILE_TIME_ASSERT): Copy macro declaration
+	from here ...
+	* include/grub/misc.h (COMPILE_TIME_ASSERT): ... to here.
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (docs/grub.info): Use make syntax to ignore errors
+	in $(MAKEINFO) invocation.  This makes it clear in output that
+	errors are being ignored.
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/i386-coreboot.rmk (script/sh/lexer.c_DEPENDENCIES): Moved
+	from here ...
+	* conf/common.rmk (script/sh/lexer.c_DEPENDENCIES): ... to here.
+	* conf/i386-efi.rmk (script/sh/lexer.c_DEPENDENCIES): Remove.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+
+2009-10-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-editenv.c (main): If only a command is given, use
+	DEFAULT_DIRECTORY "/" GRUB_ENVBLK_DEFCFG as a default file name.
+	(usage): FILENAME is now optional and has a default.
+
+2009-10-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	Improve grub-mkconfig performance when there are several menu
+	entries on a single filesystem.
+
+	* util/grub.d/10_linux.in (linux_entry): Cache the output of
+	prepare_grub_to_access_device.
+	* util/grub.d/10_kfreebsd.in (kfreebsd_entry): Likewise.
+	* util/grub.d/30_os-prober.in: Likewise.
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub.d/10_freebsd.in: Remove.
+	* util/grub.d/10_kfreebsd.in: New file (based on 10_linux.in).
+	* configure.ac: Set host_kernel=kfreebsd for FreeBSD and GNU/kFreeBSD.
+
+2009-10-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* docs/grub.cfg: Fix example usage of *BSD loaders.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-setup.c (setup): Add missing parameter to
+	grub_util_error() call.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/fs.h [GRUB_UTIL] (struct grub_fs): Add
+	`reserved_first_sector' member.
+	* fs/ext2.c [GRUB_UTIL] (grub_ext2_fs): Initialize
+	`reserved_first_sector' to 1.
+	* fs/fat.c [GRUB_UTIL] (grub_fat_fs): Likewise.
+	* fs/ntfs.c [GRUB_UTIL] (grub_ntfs_fs): Likewise.
+	* fs/hfsplus.c [GRUB_UTIL] (grub_hfsplus_fs): Likewise.
+	* util/i386/pc/grub-setup.c (setup): Add safety check that probes for
+	filesystems which begin at first sector.
+	(options): New option --skip-fs-probe.
+	(main): Handle --skip-fs-probe and pass it to setup().
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/misc.h: Fix wrong evaluation of APPLE_CC.
+	(memset): Fix function prototype.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+2009-10-25  Vasily Averin  <vvs@parallels.com>
+
+	* fs/ext2.c (grub_ext2_iterate_dir): Avoid infinite loop when
+	`dirent.direntlen == 0'.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* fs/cpio.c [MODE_USTAR]: Initialize `tar' module instead of
+	`cpio'.
+	[! MODE_USTAR]: Initialize `cpio' module instead of `tar'.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Check for `__ashldi3', `__ashrdi3', `__lshrdi3',
+	`__trampoline_setup' and `__ucmpdi2'.
+	* include/grub/powerpc/libgcc.h: Only export symbols for functions
+	that libgcc provides.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/powerpc/libgcc.h (memset): Remove function prototype.
+	* include/grub/sparc64/libgcc.h (memset): Likewise.
+	* include/grub/misc.h (memset, memcmp): New function prototypes.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* fs/cpio.c [MODE_USTAR]: Finish `tar' module instead of
+	`cpio'.
+	[! MODE_USTAR]: Finish `cpio' module instead of `tar'.
+
+2009-10-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Patch from Samuel Thibault <samuel.thibault@ens-lyon.org>
+	* docs/grub.cfg: Compensate for recent change in multiboot
+	loader (since 2009-08-14 it won't pass filename to payload).
+	* util/grub.d/10_hurd.in: Likewise.
+
+2009-10-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* config.guess: Update to latest version from config git
+	repository.
+	* config.sub: Likewise.
+
+2009-10-20  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build on sparc64.
+
+	* configure.ac: Perform checks for libgcc symbols before
+	adding `-nostdlib' to LDFLAGS.
+
+2009-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Let user specify OpenBSD root device.
+
+	* loader/i386/bsd.c (openbsd_root): New variable.
+	(openbsd_opts): New option 'root'.
+	(OPENBSD_ROOT_ARG): New macro.
+	(grub_openbsd_boot): Use 'openbsd_root'.
+	(grub_cmd_openbsd): Fill 'openbsd_root'.
+
+2009-10-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* NEWS: Misc adjustments.
+
+2009-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* NEWS: Mentioned XNU, ACPI, gptsync, password and parttool.
+
+2009-10-16  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Bump version to 1.97.
+
+2009-10-16  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac (TARGET_CFLAGS): Add -mno-mmx -mno-sse -mno-sse2
+	-mno-3dnow on x86 architectures.  Some toolchains enable these
+	features by default, but they rely on registers that aren't enabled
+	in GRUB.  Thanks to Vladimir Serbinenko for the suggestion.
+
+2009-10-15  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Make entry text a bit more readable.
+
+	* util/grub.d/10_linux.in: Add `with' before `Linux'.
+
+2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/pc/xnu.c (grub_xnu_set_video): Fix loading splash image.
+
+2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/xnu_uuid.c (grub_cmd_xnu_uuid): Remove duplicated bitwise
+	operations.
+
+2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Add missing dollar.
+
+2009-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+        Revert 2009-06-10  Pavel Roskin  <proski@gnu.org>
+
+	* configure.ac: Put checks for __bswapsi2 and __bswapdi2.
+	* include/grub/powerpc/libgcc.h: Don't use weak attribute for all
+	exports.
+	* include/grub/sparc64/libgcc.h: Likewise.  Use
+	preprocessor conditionals.
+
+2009-10-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (grub-dumpbios): Remove rule.
+	(sbin_SCRIPTS, CLEANFILES): Remove `grub-dumpbios'.
+	* util/grub-dumpbios.in: Remove file.
+
+2009-10-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Refer to kernel of FreeBSD "kFreeBSD" to avoid confusion between
+	the Operating System (FreeBSD) and its kernel (kernel of FreeBSD).
+
+	* loader/i386/bsd.c (grub_freebsd_boot): Read kernel environment
+	from "kFreeBSD" namespace (rather than "FreeBSD").  Update all
+	users.
+
+	(GRUB_MOD_INIT (bsd)): Rename "freebsd" command to "kfreebsd",
+	"openbsd" to "kopenbsd", "netbsd" to "knetbsd", "freebsd_loadenv"
+	to "kfreebsd_loadenv", "freebsd_module" to "kfreebsd_module",
+	and "freebsd_module_elf" to "kfreebsd_module_elf".  Update all
+	users.
+
 2009-10-12  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* term/tparm.c: Switch to GPLv3.
