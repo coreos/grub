@@ -150,6 +150,12 @@ update-grub_lib: util/update-grub_lib.in config.status
 lib_SCRIPTS += update-grub_lib
 CLEANFILES += update-grub_lib
 
+grub-gettext_lib: util/grub-gettext_lib.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+lib_DATA += grub-gettext_lib
+CLEANFILES += grub-gettext_lib
+
 %: util/grub.d/%.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@
@@ -596,6 +602,12 @@ gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 bufio_mod_SOURCES = io/bufio.c
 bufio_mod_CFLAGS = $(COMMON_CFLAGS)
 bufio_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For gettext.mod.
+pkglib_MODULES += gettext.mod
+gettext_mod_SOURCES = gettext/gettext.c
+gettext_mod_CFLAGS = $(COMMON_CFLAGS)
+gettext_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
 pkglib_MODULES += xnu_uuid.mod
