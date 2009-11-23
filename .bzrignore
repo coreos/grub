@@ -13,6 +13,7 @@ config.log
 config.status
 configure
 conf/*.mk
+conf/gcry.rmk
 *.d
 DISTLIST
 docs/*.info
@@ -44,6 +45,7 @@ grub_setup_init.h
 *.img
 include/grub/cpu
 include/grub/machine
+lib/libgcrypt-grub
 *.lst
 Makefile
 *.mod

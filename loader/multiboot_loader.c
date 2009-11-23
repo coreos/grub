@@ -17,7 +17,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/machine.h>
 #include <grub/multiboot.h>
 #include <grub/multiboot2.h>
 #include <multiboot2.h>

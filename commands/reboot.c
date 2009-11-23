@@ -18,7 +18,6 @@
  */
 
 #include <grub/dl.h>
-#include <grub/machine/machine.h>
 #include <grub/command.h>
 
 #if defined(GRUB_MACHINE_IEEE1275)

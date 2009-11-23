@@ -36,8 +36,6 @@
 #include <grub/mm.h>
 #include <grub/term.h>
 #include <grub/time.h>
-#include <grub/machine/time.h>
-#include <grub/machine/machine.h>
 
 /* Include malloc.h, only if memalign is available. It is known that
    memalign is declared in malloc.h in all systems, if present.  */
