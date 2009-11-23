@@ -1,3 +1,14 @@
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Based on patch from Bean
+	(http://lists.gnu.org/archive/html/grub-devel/2009-08/msg00384.html)
+
+	* video/efi_fb.c: New file.
+	* conf/i386-efi.rmk (pkglib_MODULES): Add `efi_fb.mod'.
+	(efi_fb_mod_SOURCES, efi_fb_mod_CFLAGS, efi_fb_mod_LDFLAGS): New
+	variables.
+	* conf/x86_64-efi.rmk: Likewise.
+
 2009-11-22  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/i386/pc/grub-mkimage.c: Ungettextize grub_util_info() strings.

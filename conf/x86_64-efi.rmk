@@ -201,6 +201,11 @@ fixvideo_mod_SOURCES = commands/efi/fixvideo.c
 fixvideo_mod_CFLAGS = $(COMMON_CFLAGS)
 fixvideo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += efi_fb.mod
+efi_fb_mod_SOURCES = video/efi_fb.c
+efi_fb_mod_CFLAGS = $(COMMON_CFLAGS)
+efi_fb_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 pkglib_MODULES += xnu.mod
 xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c loader/i386/efi/xnu.c\
 	 loader/macho.c loader/xnu.c loader/i386/xnu_helper.S
