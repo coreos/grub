@@ -1,5 +1,15 @@
 2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/hostdisk.c: Include `<grub/i18n.h>'.
+	(find_grub_drive): Use ARRAY_SIZE for map size calculation.
+	(make_device_name): Rewrite using asprintf.
+	(convert_system_partition_to_system_disk): Replace 0 with NULL.
+	(find_system_device): If a device is not found, generate one just
+	by reusing the OS path name.
+	(read_device_map): Make it permissible for device.map not to exist.
+
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* script/sh/execute.c: Move from here ...
 	* script/execute.c: ... to here.  Update all users.
 	* script/sh/function.c: Move from here ...
