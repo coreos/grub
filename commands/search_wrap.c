@@ -24,6 +24,7 @@
 #include <grub/dl.h>
 #include <grub/env.h>
 #include <grub/extcmd.h>
+#include <grub/search.h>
 
 static const struct grub_arg_option options[] =
   {
@@ -43,10 +44,6 @@ enum options
     SEARCH_SET,
     SEARCH_NO_FLOPPY,
  };
-
-void grub_search_fs_file (const char *key, const char *var, int no_floppy);
-void grub_search_fs_uuid (const char *key, const char *var, int no_floppy);
-void grub_search_label (const char *key, const char *var, int no_floppy);
 
 static grub_err_t
 grub_cmd_search (grub_extcmd_t cmd, int argc, char **args)

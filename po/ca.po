@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU GRUB\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-19 00:16+0100\n"
+"POT-Creation-Date: 2009-11-23 21:07+0100\n"
 "PO-Revision-Date: 2009-11-17 12:26+0100\n"
 "Last-Translator: Robert Millan <rmh.grub@aybabtu.com>\n"
 "Language-Team: None <no-team-yet@li.org>\n"
@@ -22,28 +22,8 @@ msgstr ""
 msgid "cannot compress the kernel image"
 msgstr ""
 
-#: util/i386/pc/grub-mkimage.c:117
-#, c-format
-msgid "the size of memory disk is 0x%x"
-msgstr ""
-
-#: util/i386/pc/grub-mkimage.c:124
-#, c-format
-msgid "the size of config file is 0x%x"
-msgstr ""
-
-#: util/i386/pc/grub-mkimage.c:132
-#, c-format
-msgid "the total module size is 0x%x"
-msgstr ""
-
 #: util/i386/pc/grub-mkimage.c:138
 msgid "prefix is too long"
-msgstr ""
-
-#: util/i386/pc/grub-mkimage.c:199
-#, c-format
-msgid "the core size is 0x%x"
 msgstr ""
 
 #: util/i386/pc/grub-mkimage.c:206
@@ -89,18 +69,8 @@ msgstr ""
 msgid "cannot open %s"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:162
-#, c-format
-msgid "the first sector is <%llu,%u,%u>"
-msgstr ""
-
 #: util/i386/pc/grub-setup.c:166
 msgid "The first sector of the core file is not sector-aligned"
-msgstr ""
-
-#: util/i386/pc/grub-setup.c:176
-#, c-format
-msgid "saving <%llu,%u,%u> with the segment 0x%x"
 msgstr ""
 
 #: util/i386/pc/grub-setup.c:180
@@ -126,11 +96,6 @@ msgstr ""
 msgid "The size of `%s' is too large"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:247
-#, c-format
-msgid "setting the root device to `%s'"
-msgstr ""
-
 #: util/i386/pc/grub-setup.c:261
 #, c-format
 msgid "Unable to identify a filesystem in %s; safety check can't be performed"
@@ -147,11 +112,6 @@ msgstr ""
 
 #: util/i386/pc/grub-setup.c:314
 msgid "No DOS-style partitions found"
-msgstr ""
-
-#: util/i386/pc/grub-setup.c:325
-#, c-format
-msgid "dos partition is %d, bsd partition is %d"
 msgstr ""
 
 #: util/i386/pc/grub-setup.c:330 util/i386/pc/grub-setup.c:355
@@ -185,11 +145,6 @@ msgstr ""
 msgid "Your embedding area is unusually small.  core.img won't fit in it."
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:381
-#, c-format
-msgid "the core image will be embedded at sector 0x%llx"
-msgstr ""
-
 #: util/i386/pc/grub-setup.c:418
 msgid ""
 "Embedding is not possible, but this is required when the root device is on a "
@@ -217,30 +172,6 @@ msgstr ""
 msgid "attempting to read the core image `%s' from GRUB again"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:449
-#, c-format
-msgid ""
-"succeeded in opening the core image but the size is different (%d != %d)"
-msgstr ""
-
-#: util/i386/pc/grub-setup.c:453
-#, c-format
-msgid "succeeded in opening the core image but cannot read %d bytes"
-msgstr ""
-
-#: util/i386/pc/grub-setup.c:476
-msgid "succeeded in opening the core image but the data is different"
-msgstr ""
-
-#: util/i386/pc/grub-setup.c:487
-msgid "couldn't open the core image"
-msgstr ""
-
-#: util/i386/pc/grub-setup.c:490
-#, c-format
-msgid "error message = %s"
-msgstr ""
-
 #: util/i386/pc/grub-setup.c:498
 #, c-format
 msgid "Cannot read `%s' correctly"
@@ -256,11 +187,6 @@ msgstr ""
 
 #: util/i386/pc/grub-setup.c:528
 msgid "Failed to read the rest sectors of the core image"
-msgstr ""
-
-#: util/i386/pc/grub-setup.c:544
-#, c-format
-msgid "opening the core image `%s'"
 msgstr ""
 
 #: util/i386/pc/grub-setup.c:547
@@ -308,11 +234,6 @@ msgstr ""
 #: util/i386/pc/grub-setup.c:755
 #, c-format
 msgid "Invalid root device `%s'"
-msgstr ""
-
-#: util/i386/pc/grub-setup.c:766
-#, c-format
-msgid "guessing the root device failed, because of `%s'"
 msgstr ""
 
 #: util/i386/pc/grub-setup.c:768

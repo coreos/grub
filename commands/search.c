@@ -26,6 +26,7 @@
 #include <grub/file.h>
 #include <grub/env.h>
 #include <grub/command.h>
+#include <grub/search.h>
 
 void
 FUNC_NAME (const char *key, const char *var, int no_floppy)
@@ -153,9 +154,9 @@ grub_cmd_do_search (grub_command_t cmd __attribute__ ((unused)), int argc,
 
 static grub_command_t cmd;
 
-#ifdef SEARCH_FILE
+#ifdef DO_SEARCH_FILE
 GRUB_MOD_INIT(search_file)
-#elif defined (SEARCH_FS_UUID)
+#elif defined (DO_SEARCH_FS_UUID)
 GRUB_MOD_INIT(search_fs_uuid)
 #else
 GRUB_MOD_INIT(search_fs_label)
@@ -169,9 +170,9 @@ GRUB_MOD_INIT(search_fs_label)
 			  " set to a variable.");
 }
 
-#ifdef SEARCH_FILE
+#ifdef DO_SEARCH_FILE
 GRUB_MOD_FINI(search_file)
-#elif defined (SEARCH_FS_UUID)
+#elif defined (DO_SEARCH_FS_UUID)
 GRUB_MOD_FINI(search_fs_uuid)
 #else
 GRUB_MOD_FINI(search_fs_label)
