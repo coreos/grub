@@ -1,5 +1,58 @@
 2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* configure.ac: Detect all `emu' platforms.  Define
+	GRUB_MACHINE_* macros in TARGET_CFLAGS.  Remove
+	--enable-grub-emu logic.  Disable include/grub/machine
+	symlink on `emu' platforms.
+
+	* genkernsyms.sh.in: Use @TARGET_CFLAGS@ during symbol generation.
+	* gensymlist.sh.in: Likewise.
+
+	* include/grub/i386/coreboot/machine.h: Remove file.
+	* include/grub/i386/efi/machine.h: Likewise.
+	* include/grub/i386/ieee1275/machine.h: Likewise.
+	* include/grub/i386/pc/machine.h: Likewise.
+	* include/grub/i386/qemu/machine.h: Likewise.
+	* include/grub/powerpc/ieee1275/machine.h: Likewise.
+	* include/grub/sparc64/ieee1275/machine.h: Likewise.
+	* include/grub/x86_64/efi/machine.h: Likewise.
+
+	* commands/acpi.c: Remove `<grub/machine/machine.h>'.
+	* commands/halt.c: Likewise.
+	* commands/reboot.c: Likewise.
+	* include/grub/autoefi.h: Likewise.
+	* include/grub/i386/at_keyboard.h: Likewise.
+	* include/grub/i386/kernel.h: Likewise.
+	* include/grub/i386/loader.h: Likewise.
+	* include/grub/i386/pc/memory.h: Likewise.
+        * kern/dl.c: Likewise.
+	* kern/i386/coreboot/init.c: Likewise.
+	* loader/i386/bsd.c: Likewise.
+	* loader/i386/linux.c: Likewise.
+	* loader/multiboot_loader.c: Likewise.
+	* term/i386/pc/serial.c: Likewise.
+	* term/usb_keyboard.c: Likewise.
+
+	* include/grub/time.h [!GRUB_MACHINE_EMU]: Remove
+	`<grub/machine/machine.h>'
+	[!GRUB_MACHINE_EMU] (GRUB_TICKS_PER_SECOND): New macro.
+	* util/misc.c: Remove `<grub/machine/machine.h>' and
+	`<grub/machine/time.h>'.
+
+	* Makefile.in (enable_grub_emu): Remove variable.
+	Include $(srcdir)/conf/any-emu.mk for the `emu' platform.
+
+	* conf/any-emu.rmk: New file.
+	* conf/common.rmk (grub_emu_init.lst, grub_emu_init.h)
+	(grub_emu_init.c): Move from here ...
+	* conf/any-emu.rmk: ... to here.
+
+	* conf/i386-coreboot.rmk (sbin_UTILITIES): Remove `grub-emu'.
+	(grub_emu_SOURCES, grub_emu_LDFLAGS): Move from here ...
+	* conf/any-emu.rmk: ... to here.
+
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/grub/parser.h (grub_parser_register): Document need
 	of `name' parameter.
 	* normal/main.c (grub_normal_read_line): Simplify prompt string.

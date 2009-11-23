@@ -76,19 +76,6 @@ grub_script.tab.c grub_script.tab.h: script/sh/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/sh/parser.y
 DISTCLEANFILES += grub_script.tab.c grub_script.tab.h
 
-# For grub-emu.
-grub_emu_init.lst: geninit.sh $(filter-out grub_emu_init.c,$(grub_emu_SOURCES))
-	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
-DISTCLEANFILES += grub_emu_init.lst
-
-grub_emu_init.h: grub_emu_init.lst $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninitheader.sh
-	rm -f $@; sh $(srcdir)/geninitheader.sh $< > $@
-DISTCLEANFILES += grub_emu_init.h
-
-grub_emu_init.c: grub_emu_init.lst $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninit.sh grub_emu_init.h
-	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
-DISTCLEANFILES += grub_emu_init.c
-
 # For grub-probe.
 grub_probe_init.lst: geninit.sh $(filter-out grub_probe_init.c,$(grub_probe_SOURCES))
 	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@

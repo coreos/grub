@@ -111,7 +111,6 @@ YACC = @YACC@
 FONT_SOURCE = @FONT_SOURCE@
 
 # Options.
-enable_grub_emu = @enable_grub_emu@
 enable_grub_emu_usb = @enable_grub_emu_usb@
 enable_grub_fstest = @enable_grub_fstest@
 enable_grub_pe2elf = @enable_grub_pe2elf@
@@ -153,7 +152,11 @@ $(addprefix $(srcdir)/,$(MKFILES)): %.mk: %.rmk genmk.rb
 	  $(RUBY) $(srcdir)/genmk.rb < $< > $@; \
 	fi
 
+ifeq ($(platform), emu)
+include $(srcdir)/conf/any-emu.mk
+else
 include $(srcdir)/conf/$(target_cpu)-$(platform).mk
+endif
 
 # For external modules.
 -include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
