@@ -48,7 +48,7 @@
 
 RELOCATOR_VARIABLE(start)
 #ifdef BACKWARD
-L_base:
+LOCAL(base):
 #endif
 	cli
 
@@ -127,23 +127,23 @@ RELOCATOR_VARIABLE(size)
 
 	/* %rax contains now our new 'base'.  */
 	mov	RAX, RSI
-	add	$(L_cont0 - L_base), RAX
+	add	$(LOCAL(cont0) - LOCAL(base)), RAX
 	jmp	*RAX
-L_cont0:
-	lea	(L_cont1 - L_base) (RSI, 1), RAX
-	movl	%eax, (L_jump_vector - L_base) (RSI, 1)
+LOCAL(cont0):
+	lea	(LOCAL(cont1) - LOCAL(base)) (RSI, 1), RAX
+	movl	%eax, (LOCAL(jump_vector) - LOCAL(base)) (RSI, 1)
 
-	lea	(L_gdt - L_base) (RSI, 1), RAX
-	mov	RAX, (L_gdt_addr - L_base) (RSI, 1)
+	lea	(LOCAL(gdt) - LOCAL(base)) (RSI, 1), RAX
+	mov	RAX, (LOCAL(gdt_addr) - LOCAL(base)) (RSI, 1)
 
 	/* Switch to compatibility mode. */
 
-	lgdt	(L_gdtdesc - L_base) (RSI, 1)
+	lgdt	(LOCAL(gdtdesc) - LOCAL(base)) (RSI, 1)
 
 	/* Update %cs. Thanks to David Miller for pointing this mistake out. */
-	ljmp	*(L_jump_vector - L_base) (RSI, 1)
+	ljmp	*(LOCAL(jump_vector) - LOCAL(base)) (RSI, 1)
 
-L_cont1:
+LOCAL(cont1):
 	.code32
 
 	/* Update other registers. */
@@ -170,8 +170,8 @@ L_cont1:
 	andl	$GRUB_MEMORY_CPU_CR4_PAE_ON, %eax
 	movl	%eax, %cr4
 
-	jmp	L_cont2
-L_cont2:
+	jmp	LOCAL(cont2)
+LOCAL(cont2):
 	.code32
 
 	/* mov imm32, %eax */
@@ -212,7 +212,7 @@ RELOCATOR_VARIABLE (eip)
 
 	/* GDT. Copied from loader/i386/linux.c. */
 	.p2align	4
-L_gdt:
+LOCAL(gdt):
 	/* NULL.  */
 	.byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 	
@@ -226,9 +226,9 @@ L_gdt:
 	.byte 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x92, 0xCF, 0x00
 
 	.p2align	4
-L_gdtdesc:
+LOCAL(gdtdesc):
 	.word	0x27
-L_gdt_addr:
+LOCAL(gdt_addr):
 #ifdef __x86_64__
 	/* Filled by the code. */
 	.quad	0
@@ -238,13 +238,13 @@ L_gdt_addr:
 #endif
 	
 	.p2align	4
-L_jump_vector:
+LOCAL(jump_vector):
 	/* Jump location. Is filled by the code */
 	.long	0
 	.long	CODE_SEGMENT
 
 #ifndef BACKWARD
-L_base:
+LOCAL(base):
 #endif
 
 RELOCATOR_VARIABLE(end)
