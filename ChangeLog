@@ -1,9 +1,20 @@
+2009-11-22  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-mkimage.c: Ungettextize grub_util_info() strings.
+	* util/i386/pc/grub-setup.c: Likewise.
+
 2009-11-21  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* util/getroot.c [__GNU__]: Include <hurd.h>, <hurd/lookup.h>, and
 	<hurd/fs.h>
 	[__GNU__] (grub_guess_root_device): Call file_name_lookup and
 	file_get_storage_info to implement grub_guess_root_device.
+
+2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in (target): Use make's builtin $(shell) function
+	instead of calling directly $(SHELL) to create the locale directories,
+	inside the $(foreach) function.
 
 2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
 
