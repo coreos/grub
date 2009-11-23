@@ -1,5 +1,15 @@
 2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* Makefile.in ($(srcdir)/po/$(PACKAGE).pot): Pass --keyword=N_ to
+	`$(XGETTEXT)'.
+	* include/grub/i18n.h (N_): New macro.
+	* util/mkisofs/mkisofs.h: Likewise.
+	* util/mkisofs/mkisofs.c (ld_options): Wrap all translatable strings
+	around N_().
+	(usage): Use gettext() to translate help strings when printing them.
+
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Based on patch from Bean
 	(http://lists.gnu.org/archive/html/grub-devel/2009-08/msg00384.html)
 
