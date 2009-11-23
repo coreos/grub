@@ -523,9 +523,9 @@ static grub_err_t
 grub_normal_read_line (char **line, int cont)
 {
   grub_parser_t parser = grub_parser_get_current ();
-  char prompt[8 + grub_strlen (parser->name)];
+  char prompt[sizeof("> ") - 1 + grub_strlen (parser->name)];
 
-  grub_sprintf (prompt, "%s:%s> ", parser->name, (cont) ? "" : "grub");
+  grub_sprintf (prompt, "%s> ", parser->name);
 
   while (1)
     {

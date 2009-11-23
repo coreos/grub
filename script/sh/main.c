@@ -42,13 +42,13 @@ grub_normal_parse_line (char *line, grub_reader_getline_t getline)
 
 static struct grub_parser grub_sh_parser =
   {
-    .name = "sh",
+    .name = "grub",
     .parse_line = grub_normal_parse_line
   };
 
 GRUB_MOD_INIT(sh)
 {
-  grub_parser_register ("sh", &grub_sh_parser);
+  grub_parser_register ("grub", &grub_sh_parser);
 }
 
 GRUB_MOD_FINI(sh)

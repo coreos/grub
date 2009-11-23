@@ -1,5 +1,13 @@
 2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/grub/parser.h (grub_parser_register): Document need
+	of `name' parameter.
+	* normal/main.c (grub_normal_read_line): Simplify prompt string.
+	* script/sh/main.c (grub_sh_parser, GRUB_MOD_INIT(sh)): Rename
+	"sh" to "grub".
+
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* Makefile.in ($(srcdir)/po/$(PACKAGE).pot): Pass --keyword=N_ to
 	`$(XGETTEXT)'.
 	* include/grub/i18n.h (N_): New macro.
