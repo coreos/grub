@@ -1,22 +1,3 @@
-2009-11-22  Carles Pina i Estany <carles@pina.cat>
-
-	* conf/common.rmk: Add grub-gettext_lib target and updates
-	  lib_DATA and CLEANFILES. Adds gettext.mod SOURCES, CFLAGS,
-	  LDFLAGS.
-	* gettext/gettext.c: New file. (Reads mo files).
-	* include/grub/file.h (grub_file_pread): New prototype.
-	* include/grub/i18n.h (_): New prototype.
-	* include/grub/misc.h (grub_gettext_dummy, grub_gettext): New 
-	  prototypes.
-	* kern/misc.c (grub_gettext_dummy): New function.
-	* menu/menu_text.c: Include <grub/i18n.h>.
-	* menu/menu_text.c (print_timeout): Gettexttize string.
-	* menu/menu_text.c (print_message): Gettexttize string.
-	* po/POTFILES: Add `normal/menu_text.c'.
-	* po/ca.po: Add new translations.
-	* util/grub.d/00_header.in: Define locale_dir and lang. insmod 
-	  gettext module and defines locale_dir and lang in grub.cfg.
-
 2009-11-22  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/i386/pc/grub-mkimage.c: Ungettextize grub_util_info() strings.
