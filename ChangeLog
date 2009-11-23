@@ -1,5 +1,20 @@
 2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* script/sh/execute.c: Move from here ...
+	* script/execute.c: ... to here.  Update all users.
+	* script/sh/function.c: Move from here ...
+	* script/function.c: ... to here.  Update all users.
+	* script/sh/lexer.c: Move from here ...
+	* script/lexer.c: ... to here.  Update all users.
+	* script/sh/main.c: Move from here ...
+	* script/main.c: ... to here.  Update all users.
+	* script/sh/parser.y: Move from here ...
+	* script/parser.y: ... to here.  Update all users.
+	* script/sh/script.c: Move from here ...
+	* script/script.c: ... to here.  Update all users.
+
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* configure.ac: Detect all `emu' platforms.  Define
 	GRUB_MACHINE_* macros in TARGET_CFLAGS.  Remove
 	--enable-grub-emu logic.  Disable include/grub/machine

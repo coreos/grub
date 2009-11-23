@@ -72,8 +72,8 @@ grub_mkfont_LDFLAGS = $(freetype_libs)
 endif
 
 # For the parser.
-grub_script.tab.c grub_script.tab.h: script/sh/parser.y
-	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/sh/parser.y
+grub_script.tab.c grub_script.tab.h: script/parser.y
+	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/parser.y
 DISTCLEANFILES += grub_script.tab.c grub_script.tab.h
 
 # For grub-probe.
@@ -525,8 +525,8 @@ normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For sh.mod.
-sh_mod_SOURCES = script/sh/main.c script/sh/script.c script/sh/execute.c \
-	script/sh/function.c script/sh/lexer.c grub_script.tab.c
+sh_mod_SOURCES = script/main.c script/script.c script/execute.c \
+	script/function.c script/lexer.c grub_script.tab.c
 sh_mod_CFLAGS = $(COMMON_CFLAGS)
 sh_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
