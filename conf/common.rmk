@@ -629,4 +629,13 @@ pbkdf2_mod_SOURCES = lib/pbkdf2.c
 pbkdf2_mod_CFLAGS = $(COMMON_CFLAGS)
 pbkdf2_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For password_pbkdf2.mod.
+pkglib_MODULES += password_pbkdf2.mod
+password_pbkdf2_mod_SOURCES = commands/password_pbkdf2.c
+password_pbkdf2_mod_CFLAGS = $(COMMON_CFLAGS)
+password_pbkdf2_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+bin_UTILITIES += grub-pbkdf2
+grub_pbkdf2_SOURCES = util/grub-pbkdf2.c lib/crypto.c gcry/cipher/sha512.c lib/pbkdf2.c util/misc.c kern/err.c
+
 include $(srcdir)/conf/gcry.mk
