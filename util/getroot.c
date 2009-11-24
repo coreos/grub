@@ -494,7 +494,7 @@ grub_util_get_dev_abstraction (const char *os_dev UNUSED)
   /* Check for LVM.  */
   if (!strncmp (os_dev, "/dev/mapper/", 12)
       && ! grub_util_is_dmraid (os_dev)
-      && strncmp (os_dev, "/dev/mapper/mpath" != 0)
+      && strncmp (os_dev, "/dev/mapper/mpath", 17) != 0)
     return GRUB_DEV_ABSTRACTION_LVM;
 
   /* Check for RAID.  */
