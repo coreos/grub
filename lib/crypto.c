@@ -21,6 +21,13 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 
+struct grub_crypto_hmac_handle
+{
+  const struct gcry_md_spec *md;
+  void *ctx;
+  void *opad;
+};
+
 static gcry_cipher_spec_t *grub_ciphers = NULL;
 static gcry_md_spec_t *grub_digests = NULL;
 
@@ -69,7 +76,7 @@ grub_md_unregister (gcry_md_spec_t *cipher)
 }
 
 void
-grub_crypto_hash (const gcry_md_spec_t *hash, void *out, void *in,
+grub_crypto_hash (const gcry_md_spec_t *hash, void *out, const void *in,
 		  grub_size_t inlen)
 {
   grub_uint8_t ctx[hash->contextsize];
@@ -227,6 +234,134 @@ grub_crypto_cbc_decrypt (grub_crypto_cipher_handle_t cipher,
     }
   return GPG_ERR_NO_ERROR;
 }
+
+/* Based on gcry/cipher/md.c.  */
+struct grub_crypto_hmac_handle *
+grub_crypto_hmac_init (const struct gcry_md_spec *md,
+		       const void *key, grub_size_t keylen)
+{
+  grub_uint8_t *helpkey = NULL;
+  grub_uint8_t *ipad = NULL, *opad = NULL;
+  void *ctx = NULL;
+  struct grub_crypto_hmac_handle *ret = NULL;
+  unsigned i;
+
+  if (md->mdlen > md->blocksize)
+    return NULL;
+
+  ctx = grub_malloc (md->contextsize);
+  if (!ctx)
+    goto err;
+
+  if ( keylen > md->blocksize ) 
+    {
+      helpkey = grub_malloc (md->mdlen);
+      if (!helpkey)
+	goto err;
+      grub_crypto_hash (md, helpkey, key, keylen);
+
+      key = helpkey;
+      keylen = md->mdlen;
+    }
+
+  ipad = grub_zalloc (md->blocksize);
+  if (!ipad)
+    goto err;
+
+  opad = grub_zalloc (md->blocksize);
+  if (!opad)
+    goto err;
+
+  grub_memcpy ( ipad, key, keylen );
+  grub_memcpy ( opad, key, keylen );
+  for (i=0; i < md->blocksize; i++ ) 
+    {
+      ipad[i] ^= 0x36;
+      opad[i] ^= 0x5c;
+    }
+  grub_free (helpkey);
+  helpkey = NULL;
+
+  md->init (ctx);
+
+  md->write (ctx, ipad, md->blocksize); /* inner pad */
+  grub_memset (ipad, 0, md->blocksize);
+  grub_free (ipad);
+  ipad = NULL;
+
+  ret = grub_malloc (sizeof (*ret));
+  if (!ret)
+    goto err;
+
+  ret->md = md;
+  ret->ctx = ctx;
+  ret->opad = opad;
+
+  return ret;
+
+ err:
+  grub_free (helpkey);
+  grub_free (ctx);
+  grub_free (ipad);
+  grub_free (opad);
+  return NULL;
+}
+
+void
+grub_crypto_hmac_write (struct grub_crypto_hmac_handle *hnd, void *data,
+			grub_size_t datalen)
+{
+  hnd->md->write (hnd->ctx, data, datalen);
+}
+
+gcry_err_code_t
+grub_crypto_hmac_fini (struct grub_crypto_hmac_handle *hnd, void *out)
+{
+  grub_uint8_t *p;
+  grub_uint8_t *ctx2;
+
+  ctx2 = grub_malloc (hnd->md->contextsize);
+  if (!ctx2)
+    return GPG_ERR_OUT_OF_MEMORY;
+
+  hnd->md->final (hnd->ctx);
+  hnd->md->read (hnd->ctx);
+  p = hnd->md->read (hnd->ctx);
+
+  hnd->md->init (ctx2);
+  hnd->md->write (ctx2, hnd->opad, hnd->md->blocksize);
+  hnd->md->write (ctx2, p, hnd->md->mdlen);
+  hnd->md->final (ctx2);
+  grub_memset (hnd->opad, 0, hnd->md->blocksize);
+  grub_free (hnd->opad);
+  grub_memset (hnd->ctx, 0, hnd->md->contextsize);
+  grub_free (hnd->ctx);
+
+  grub_memcpy (out, hnd->md->read (ctx2), hnd->md->mdlen);
+  grub_memset (ctx2, 0, hnd->md->contextsize);
+  grub_free (ctx2);
+
+  grub_memset (hnd, 0, sizeof (*hnd));
+  grub_free (hnd);
+
+  return GPG_ERR_NO_ERROR;
+}
+
+gcry_err_code_t
+grub_crypto_hmac_buffer (const struct gcry_md_spec *md,
+			 const void *key, grub_size_t keylen,
+			 void *data, grub_size_t datalen, void *out)
+{
+  struct grub_crypto_hmac_handle *hnd;
+
+  hnd = grub_crypto_hmac_init (md, key, keylen);
+  if (!hnd)
+    return GPG_ERR_OUT_OF_MEMORY;
+
+  grub_crypto_hmac_write (hnd, data, datalen);
+  return grub_crypto_hmac_fini (hnd, out);
+}
+
 
 grub_err_t
 grub_crypto_gcry_error (gcry_err_code_t in)

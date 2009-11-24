@@ -166,11 +166,15 @@ typedef struct gcry_md_spec
   struct gcry_md_spec *next;
 } gcry_md_spec_t;
 
-typedef struct grub_crypto_cipher_handle
+struct grub_crypto_cipher_handle
 {
   const struct gcry_cipher_spec *cipher;
   char ctx[0];
-} *grub_crypto_cipher_handle_t;
+};
+
+typedef struct grub_crypto_cipher_handle *grub_crypto_cipher_handle_t;
+
+struct grub_crypto_hmac_handle;
 
 const gcry_cipher_spec_t *
 grub_crypto_lookup_cipher_by_name (const char *name);
@@ -213,7 +217,7 @@ grub_md_register (gcry_md_spec_t *digest);
 void 
 grub_md_unregister (gcry_md_spec_t *cipher);
 void
-grub_crypto_hash (const gcry_md_spec_t *hash, void *out, void *in,
+grub_crypto_hash (const gcry_md_spec_t *hash, void *out, const void *in,
 		  grub_size_t inlen);
 const gcry_md_spec_t *
 grub_crypto_lookup_md_by_name (const char *name);
@@ -223,7 +227,35 @@ grub_crypto_gcry_error (gcry_err_code_t in);
 
 void grub_burn_stack (grub_size_t size);
 
+struct grub_crypto_hmac_handle *
+grub_crypto_hmac_init (const struct gcry_md_spec *md,
+		       const void *key, grub_size_t keylen);
+void
+grub_crypto_hmac_write (struct grub_crypto_hmac_handle *hnd, void *data,
+			grub_size_t datalen);
+gcry_err_code_t
+grub_crypto_hmac_fini (struct grub_crypto_hmac_handle *hnd, void *out);
+
+gcry_err_code_t
+grub_crypto_hmac_buffer (const struct gcry_md_spec *md,
+			 const void *key, grub_size_t keylen,
+			 void *data, grub_size_t datalen, void *out);
+
 extern gcry_md_spec_t _gcry_digest_spec_md5;
 #define GRUB_MD_MD5 ((const gcry_md_spec_t *) &_gcry_digest_spec_md5)
+#define GRUB_MD_SHA1 ((const gcry_md_spec_t *) &_gcry_digest_spec_sha1)
+
+/* Implement PKCS#5 PBKDF2 as per RFC 2898.  The PRF to use is HMAC variant
+   of digest supplied by MD.  Inputs are the password P of length PLEN,
+   the salt S of length SLEN, the iteration counter C (> 0), and the
+   desired derived output length DKLEN.  Output buffer is DK which
+   must have room for at least DKLEN octets.  The output buffer will
+   be filled with the derived data.  */
+gcry_err_code_t
+grub_crypto_pbkdf2 (const struct gcry_md_spec *md,
+		    const grub_uint8_t *P, grub_size_t Plen,
+		    const grub_uint8_t *S, grub_size_t Slen,
+		    unsigned int c,
+		    grub_uint8_t *DK, grub_size_t dkLen);
 
 #endif

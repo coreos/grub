@@ -1,3 +1,21 @@
+#*
+#*  GRUB  --  GRand Unified Bootloader
+#*  Copyright (C) 2009  Free Software Foundation, Inc.
+#*
+#*  GRUB is free software: you can redistribute it and/or modify
+#*  it under the terms of the GNU General Public License as published by
+#*  the Free Software Foundation, either version 3 of the License, or
+#*  (at your option) any later version.
+#*
+#*  GRUB is distributed in the hope that it will be useful,
+#*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#*  GNU General Public License for more details.
+#*
+#*  You should have received a copy of the GNU General Public License
+#*  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+#*
+
 import re
 import sys
 import os
@@ -26,9 +44,12 @@ conf = open (os.path.join (outdir, "conf", "gcry.rmk"), "w")
 conf.write ("# -*- makefile -*-\n\n")
 chlog = ""
 
-mdblocksizes = {"_gcry_digest_spec_crc32" : 1,
-                "_gcry_digest_spec_crc32_rfc1510" : 1,
-                "_gcry_digest_spec_crc24_rfc2440" : 1,
+# Strictly speaking CRC32/CRC24 work on bytes so this value should be 1
+# But libgcrypt uses 64. Let's keep the value for compatibility. Since
+# noone uses CRC24/CRC32 for HMAC this is no problem
+mdblocksizes = {"_gcry_digest_spec_crc32" : 64,
+                "_gcry_digest_spec_crc32_rfc1510" : 64,
+                "_gcry_digest_spec_crc24_rfc2440" : 64,
                 "_gcry_digest_spec_md4" : 64,
                 "_gcry_digest_spec_md5" : 64,
                 "_gcry_digest_spec_rmd160" : 64,
