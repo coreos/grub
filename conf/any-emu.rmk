@@ -45,6 +45,14 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	video/readers/jpeg.c video/readers/png.c font/font_cmd.c 	\
 	font/font.c term/gfxterm.c io/bufio.c				\
 	\
+	gfxmenu/gfxmenu.c gfxmenu/model.c gfxmenu/view.c 		\
+	gfxmenu/icon_manager.c gfxmenu/theme_loader.c 			\
+	gfxmenu/widget-box.c gfxmenu/gui_canvas.c 			\
+	gfxmenu/gui_circular_progress.c gfxmenu/gui_box.c 		\
+	gfxmenu/gui_label.c gfxmenu/gui_list.c gfxmenu/gui_image.c 	\
+	gfxmenu/gui_progress_bar.c gfxmenu/gui_util.c 			\
+	gfxmenu/gui_string_util.c gfxmenu/named_colors.c trigtables.c   \
+	\
 	util/console.c util/hostfs.c util/grub-emu.c util/misc.c	\
 	util/hostdisk.c util/getroot.c					\
 	\
@@ -86,6 +94,13 @@ DISTCLEANFILES += grub_emu_init.c
 
 
 # FIXME: this could be shared with common.rmk
+
+trigtables.c: gentrigtables
+	./gentrigtables > $@
+DISTCLEANFILES += trigtables.c
+gentrigtables: gentrigtables.c
+	$(CC) -o $@ $^ $(CPPFLAGS) -lm
+DISTCLEANFILES += gentrigtables
 
 # For grub-mkfont.
 ifeq ($(enable_grub_mkfont), yes)
