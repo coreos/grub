@@ -1,3 +1,8 @@
+2009-11-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* zh_CN.po: New file.
+	* LINGUAS: Add `zh_CN'.
+
 2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* id.po: New file.
