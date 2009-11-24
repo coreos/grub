@@ -33,6 +33,7 @@
 #include <locale.h>
 #include <libintl.h>
 #define _(str) gettext(str)
+#define N_(str) str
 
 /* This symbol is used to indicate that we do not have things like
    symlinks, devices, and so forth available.  Just files and dirs */

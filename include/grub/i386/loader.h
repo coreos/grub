@@ -22,7 +22,6 @@
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/symbol.h>
-#include <grub/machine/machine.h>
 
 extern grub_addr_t EXPORT_VAR(grub_os_area_addr);
 extern grub_size_t EXPORT_VAR(grub_os_area_size);

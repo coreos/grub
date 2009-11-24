@@ -1,7 +1,7 @@
 /* misc.h - prototypes for misc functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -239,6 +239,9 @@ grub_ssize_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
 					     const grub_uint8_t **srcend);
 grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint32_t d, grub_uint32_t *r);
+
+const char *EXPORT_FUNC(grub_gettext_dummy) (const char *s);
+extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
 
 #ifdef NEED_ENABLE_EXECUTE_STACK
 void EXPORT_FUNC(__enable_execute_stack) (void *addr);

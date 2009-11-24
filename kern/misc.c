@@ -30,6 +30,8 @@ grub_iswordseparator (int c)
   return (grub_isspace (c) || c == ',' || c == ';' || c == '|' || c == '&');
 }
 
+const char* (*grub_gettext) (const char *s) = grub_gettext_dummy;
+
 void *
 grub_memmove (void *dest, const void *src, grub_size_t n)
 {
@@ -978,6 +980,13 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
   if (srcend)
     *srcend = src;
   return p - dest;
+}
+
+/* grub_gettext_dummy is not translating anything.  */
+const char *
+grub_gettext_dummy (const char *s)
+{
+  return s;
 }
 
 /* Abort GRUB. This function does not return.  */

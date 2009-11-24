@@ -22,6 +22,8 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 grub_prefix=`echo /boot/grub | sed ${transform}`
+locale_dir=`echo /boot/grub/locale | sed ${transform}`
+grub_lang=`echo $LANG | cut -d _ -f 1`
 
 . ${libdir}/grub/grub-mkconfig_lib
 
@@ -107,6 +109,15 @@ fi
 EOF
   ;;
 esac
+
+# Gettext variables and module
+if [ "x${LANG}" != "xC" ] ; then
+  cat << EOF
+set locale_dir=${locale_dir}
+set lang=${grub_lang}
+insmod gettext 
+EOF
+fi
 
 if [ "x${GRUB_HIDDEN_TIMEOUT}" != "x" ] ; then
   if [ "x${GRUB_HIDDEN_TIMEOUT_QUIET}" = "xtrue" ] ; then 

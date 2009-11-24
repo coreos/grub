@@ -72,22 +72,9 @@ grub_mkfont_LDFLAGS = $(freetype_libs)
 endif
 
 # For the parser.
-grub_script.tab.c grub_script.tab.h: script/sh/parser.y
-	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/sh/parser.y
+grub_script.tab.c grub_script.tab.h: script/parser.y
+	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/parser.y
 DISTCLEANFILES += grub_script.tab.c grub_script.tab.h
-
-# For grub-emu.
-grub_emu_init.lst: geninit.sh $(filter-out grub_emu_init.c,$(grub_emu_SOURCES))
-	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
-DISTCLEANFILES += grub_emu_init.lst
-
-grub_emu_init.h: grub_emu_init.lst $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninitheader.sh
-	rm -f $@; sh $(srcdir)/geninitheader.sh $< > $@
-DISTCLEANFILES += grub_emu_init.h
-
-grub_emu_init.c: grub_emu_init.lst $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninit.sh grub_emu_init.h
-	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
-DISTCLEANFILES += grub_emu_init.c
 
 # For grub-probe.
 grub_probe_init.lst: geninit.sh $(filter-out grub_probe_init.c,$(grub_probe_SOURCES))
@@ -162,6 +149,12 @@ update-grub_lib: util/update-grub_lib.in config.status
 	chmod +x $@
 lib_SCRIPTS += update-grub_lib
 CLEANFILES += update-grub_lib
+
+grub-gettext_lib: util/grub-gettext_lib.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+lib_DATA += grub-gettext_lib
+CLEANFILES += grub-gettext_lib
 
 %: util/grub.d/%.in config.status
 	./config.status --file=$@:$<
@@ -574,8 +567,8 @@ normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For sh.mod.
-sh_mod_SOURCES = script/sh/main.c script/sh/script.c script/sh/execute.c \
-	script/sh/function.c script/sh/lexer.c grub_script.tab.c
+sh_mod_SOURCES = script/main.c script/script.c script/execute.c \
+	script/function.c script/lexer.c grub_script.tab.c
 sh_mod_CFLAGS = $(COMMON_CFLAGS)
 sh_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
@@ -651,6 +644,12 @@ gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 bufio_mod_SOURCES = io/bufio.c
 bufio_mod_CFLAGS = $(COMMON_CFLAGS)
 bufio_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For gettext.mod.
+pkglib_MODULES += gettext.mod
+gettext_mod_SOURCES = gettext/gettext.c
+gettext_mod_CFLAGS = $(COMMON_CFLAGS)
+gettext_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
 pkglib_MODULES += xnu_uuid.mod

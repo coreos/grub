@@ -114,14 +114,14 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   if (memdisk_path)
     {
       memdisk_size = ALIGN_UP(grub_util_get_image_size (memdisk_path), 512);
-      grub_util_info (_("the size of memory disk is 0x%x"), memdisk_size);
+      grub_util_info ("the size of memory disk is 0x%x", memdisk_size);
       total_module_size += memdisk_size + sizeof (struct grub_module_header);
     }
 
   if (config_path)
     {
       config_size = grub_util_get_image_size (config_path) + 1;
-      grub_util_info (_("the size of config file is 0x%x"), config_size);
+      grub_util_info ("the size of config file is 0x%x", config_size);
       total_module_size += config_size + sizeof (struct grub_module_header);
     }
 
@@ -129,7 +129,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     total_module_size += (grub_util_get_image_size (p->name)
 			  + sizeof (struct grub_module_header));
 
-  grub_util_info (_("the total module size is 0x%x"), total_module_size);
+  grub_util_info ("the total module size is 0x%x", total_module_size);
 
   kernel_img = xmalloc (kernel_size + total_module_size);
   grub_util_load_image (kernel_path, kernel_img);
@@ -196,7 +196,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   compress_kernel (kernel_img, kernel_size + total_module_size,
 		   &core_img, &core_size);
 
-  grub_util_info (_("the core size is 0x%x"), core_size);
+  grub_util_info ("the core size is 0x%x", core_size);
 
 #if defined(GRUB_MACHINE_PCBIOS)
   {

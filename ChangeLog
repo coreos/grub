@@ -1,3 +1,199 @@
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* po/id.po: New file.
+	* LINGUAS: Add `id'.
+
+2009-11-23  Carles Pina i Estany <carles@pina.cat>
+
+	* conf/common.rmk: Add grub-gettext_lib target and updates
+	  lib_DATA and CLEANFILES. Adds gettext.mod SOURCES, CFLAGS,
+	  LDFLAGS.
+	* gettext/gettext.c: New file. (Reads mo files).
+	* include/grub/file.h (grub_file_pread): New prototype.
+	* include/grub/i18n.h (_): New prototype.
+	* include/grub/misc.h (grub_gettext_dummy, grub_gettext): New
+	  prototypes.
+	* kern/misc.c (grub_gettext_dummy): New function.
+	* normal/menu_text.c: Include <grub/i18n.h>.
+	* normal/menu_text.c (print_timeout): Gettexttize string.
+	* normal/menu_text.c (print_message): Gettexttize string.
+	* po/POTFILES: Add `normal/menu_text.c'.
+	* po/ca.po: Add new translations.
+	* util/grub.d/00_header.in: Define locale_dir and lang. insmod
+	  gettext module and defines locale_dir and lang in grub.cfg.
+	* NEWS: Add gettext support.
+
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/hostdisk.c: Include `<grub/i18n.h>'.
+	(find_grub_drive): Use ARRAY_SIZE for map size calculation.
+	(make_device_name): Rewrite using asprintf.
+	(convert_system_partition_to_system_disk): Replace 0 with NULL.
+	(find_system_device): If a device is not found, generate one just
+	by reusing the OS path name.
+	(read_device_map): Make it permissible for device.map not to exist.
+
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* script/sh/execute.c: Move from here ...
+	* script/execute.c: ... to here.  Update all users.
+	* script/sh/function.c: Move from here ...
+	* script/function.c: ... to here.  Update all users.
+	* script/sh/lexer.c: Move from here ...
+	* script/lexer.c: ... to here.  Update all users.
+	* script/sh/main.c: Move from here ...
+	* script/main.c: ... to here.  Update all users.
+	* script/sh/parser.y: Move from here ...
+	* script/parser.y: ... to here.  Update all users.
+	* script/sh/script.c: Move from here ...
+	* script/script.c: ... to here.  Update all users.
+
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Detect all `emu' platforms.  Define
+	GRUB_MACHINE_* macros in TARGET_CFLAGS.  Remove
+	--enable-grub-emu logic.  Disable include/grub/machine
+	symlink on `emu' platforms.
+
+	* genkernsyms.sh.in: Use @TARGET_CFLAGS@ during symbol generation.
+	* gensymlist.sh.in: Likewise.
+
+	* include/grub/i386/coreboot/machine.h: Remove file.
+	* include/grub/i386/efi/machine.h: Likewise.
+	* include/grub/i386/ieee1275/machine.h: Likewise.
+	* include/grub/i386/pc/machine.h: Likewise.
+	* include/grub/i386/qemu/machine.h: Likewise.
+	* include/grub/powerpc/ieee1275/machine.h: Likewise.
+	* include/grub/sparc64/ieee1275/machine.h: Likewise.
+	* include/grub/x86_64/efi/machine.h: Likewise.
+
+	* commands/acpi.c: Remove `<grub/machine/machine.h>'.
+	* commands/halt.c: Likewise.
+	* commands/reboot.c: Likewise.
+	* include/grub/autoefi.h: Likewise.
+	* include/grub/i386/at_keyboard.h: Likewise.
+	* include/grub/i386/kernel.h: Likewise.
+	* include/grub/i386/loader.h: Likewise.
+	* include/grub/i386/pc/memory.h: Likewise.
+        * kern/dl.c: Likewise.
+	* kern/i386/coreboot/init.c: Likewise.
+	* loader/i386/bsd.c: Likewise.
+	* loader/i386/linux.c: Likewise.
+	* loader/multiboot_loader.c: Likewise.
+	* term/i386/pc/serial.c: Likewise.
+	* term/usb_keyboard.c: Likewise.
+
+	* include/grub/time.h [!GRUB_MACHINE_EMU]: Remove
+	`<grub/machine/machine.h>'
+	[!GRUB_MACHINE_EMU] (GRUB_TICKS_PER_SECOND): New macro.
+	* util/misc.c: Remove `<grub/machine/machine.h>' and
+	`<grub/machine/time.h>'.
+
+	* Makefile.in (enable_grub_emu): Remove variable.
+	Include $(srcdir)/conf/any-emu.mk for the `emu' platform.
+
+	* conf/any-emu.rmk: New file.
+	* conf/common.rmk (grub_emu_init.lst, grub_emu_init.h)
+	(grub_emu_init.c): Move from here ...
+	* conf/any-emu.rmk: ... to here.
+
+	* conf/i386-coreboot.rmk (sbin_UTILITIES): Remove `grub-emu'.
+	(grub_emu_SOURCES, grub_emu_LDFLAGS): Move from here ...
+	* conf/any-emu.rmk: ... to here.
+
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/parser.h (grub_parser_register): Document need
+	of `name' parameter.
+	* normal/main.c (grub_normal_read_line): Simplify prompt string.
+	* script/sh/main.c (grub_sh_parser, GRUB_MOD_INIT(sh)): Rename
+	"sh" to "grub".
+
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in ($(srcdir)/po/$(PACKAGE).pot): Pass --keyword=N_ to
+	`$(XGETTEXT)'.
+	* include/grub/i18n.h (N_): New macro.
+	* util/mkisofs/mkisofs.h: Likewise.
+	* util/mkisofs/mkisofs.c (ld_options): Wrap all translatable strings
+	around N_().
+	(usage): Use gettext() to translate help strings when printing them.
+
+2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Based on patch from Bean
+	(http://lists.gnu.org/archive/html/grub-devel/2009-08/msg00384.html)
+
+	* video/efi_fb.c: New file.
+	* conf/i386-efi.rmk (pkglib_MODULES): Add `efi_fb.mod'.
+	(efi_fb_mod_SOURCES, efi_fb_mod_CFLAGS, efi_fb_mod_LDFLAGS): New
+	variables.
+	* conf/x86_64-efi.rmk: Likewise.
+
+2009-11-22  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-mkimage.c: Ungettextize grub_util_info() strings.
+	* util/i386/pc/grub-setup.c: Likewise.
+
+2009-11-21  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/getroot.c [__GNU__]: Include <hurd.h>, <hurd/lookup.h>, and
+	<hurd/fs.h>
+	[__GNU__] (grub_guess_root_device): Call file_name_lookup and
+	file_get_storage_info to implement grub_guess_root_device.
+
+2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in (target): Use make's builtin $(shell) function
+	instead of calling directly $(SHELL) to create the locale directories,
+	inside the $(foreach) function.
+
+2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkrescue.in: Print an error and usage if output option
+	has not been given.
+
+2009-11-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	Patch from Loïc Minier <loic.minier@ubuntu.com>.
+	* util/grub.d/30_os-prober.in: Cope with Linux entries where
+	root and /boot are on different devices.
+
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix build for srcdir != objdir.
+
+	* Makefile.in (po/$(PACKAGE).pot): Rename to ...
+	($(srcdir)/po/$(PACKAGE).pot): ... this.  Run $(XGETTEXT) from
+	$(srcdir).
+	($(foreach lang, $(LINGUAS), po/$(lang).po)): Rename to ...
+	($(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): ... this. Use $^
+	reference for input.
+
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Use source directory direcly (without copiing
+	or hardlinking it).  Remove -J option, Joliet is not compatible with
+	multiple source directories.
+
+2009-11-21  Carles Pina i Estany <carles@pina.cat>
+2009-11-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Recognize `--override-directory' option.
+	(process_input_dir): New function.  Process an arbitrary input
+	directory.
+	Misc adjustments to support both "override mode" and system-wide mode.
+
+2009-11-20  Felix Zielcke  <fzielcke@z-51.de>
+
+	* configure.ac (UNIFONT_BDF): Rename to ...
+	(FONT_SOURCE): ... this.  Update all users.
+
+2009-11-20  Felix Zielcke  <fzielcke@z-51.de>
+
+	* configure.ac: Add `/usr/share/fonts/X11/misc/unifont.pcf.gz'
+	to the list of unifont files to look for.
+
 2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Patch from Joe Auricchio <jauricchio@gmail.com>
