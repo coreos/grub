@@ -42,6 +42,8 @@
    status changes.  */
 #define TIMEOUT_COMPONENT_ID "__timeout__"
 
+static grub_gfxmenu_view_t term_view;
+
 static void init_terminal (grub_gfxmenu_view_t view);
 static void destroy_terminal (void);
 static grub_err_t set_graphics_mode (void);
@@ -310,86 +312,82 @@ set_text_mode (void)
 
 static int term_target_width;
 static int term_target_height;
-static struct grub_video_render_target *term_target;
 static int term_initialized;
 static grub_term_output_t term_original;
-static grub_gfxmenu_view_t term_view;
 
 static void
-repaint_terminal (int x __attribute ((unused)),
-                  int y __attribute ((unused)),
-                  int width __attribute ((unused)),
-                  int height __attribute ((unused)))
+draw_terminal_box (void)
 {
-  if (! term_view)
+  grub_gfxmenu_box_t term_box;
+  int termx;
+  int termy;
+
+  term_box = term_view->terminal_box;
+  if (!term_box)
     return;
 
-  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
-  grub_gfxmenu_view_draw (term_view);
-  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
-
-  int termx = term_view->screen.x
-    + term_view->screen.width * (10 - 7) / 10 / 2;
-  int termy = term_view->screen.y
-    + term_view->screen.height * (10 - 7) / 10 / 2;
-
-  grub_gfxmenu_box_t term_box = term_view->terminal_box;
-  if (term_box)
-    {
-      term_box->set_content_size (term_box,
-                                  term_target_width, term_target_height);
-
-      term_box->draw (term_box,
-                      termx - term_box->get_left_pad (term_box),
-                      termy - term_box->get_top_pad (term_box));
-    }
-
-  grub_video_blit_render_target (term_target, GRUB_VIDEO_BLIT_REPLACE,
-                                 termx, termy,
-                                 0, 0, term_target_width, term_target_height);
-  grub_video_swap_buffers ();
+  termx = term_view->screen.x + term_view->screen.width * (10 - 7) / 10 / 2;
+  termy = term_view->screen.y + term_view->screen.height * (10 - 7) / 10 / 2;
+  
+  term_box->set_content_size (term_box, term_target_width,
+			      term_target_height);
+  
+  term_box->draw (term_box,
+		  termx - term_box->get_left_pad (term_box),
+		  termy - term_box->get_top_pad (term_box));
 }
 
 static void
 init_terminal (grub_gfxmenu_view_t view)
 {
+  int termx;
+  int termy;
+  struct grub_video_mode_info mode_info;
+  grub_err_t err;
+  int double_repaint;
+
   term_original = grub_term_get_current_output ();
 
   term_target_width = view->screen.width * 7 / 10;
   term_target_height = view->screen.height * 7 / 10;
 
-  grub_video_create_render_target (&term_target,
-                                   term_target_width,
-                                   term_target_height,
-                                   GRUB_VIDEO_MODE_TYPE_RGB
-                                   | GRUB_VIDEO_MODE_TYPE_ALPHA);
-  if (grub_errno != GRUB_ERR_NONE)
-    return;
+  termx = view->screen.x + view->screen.width * (10 - 7) / 10 / 2;
+  termy = view->screen.y + view->screen.height * (10 - 7) / 10 / 2;
+
+  err = grub_video_get_info (&mode_info);
+  if (err)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      double_repaint = 1;
+    }
+  else
+    double_repaint = (mode_info.mode_type
+		      & GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED)
+      && !(mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
 
   /* Note: currently there is no API for changing the gfxterm font
      on the fly, so whatever font the initially loaded theme specifies
      will be permanent.  */
-  grub_gfxterm_init_window (term_target, 0, 0,
-                            term_target_width, term_target_height, 0,
-                            view->terminal_font_name, 3);
+  grub_gfxterm_init_window (GRUB_VIDEO_RENDER_TARGET_DISPLAY, termx, termy,
+                            term_target_width, term_target_height,
+			    double_repaint, view->terminal_font_name, 3);
   if (grub_errno != GRUB_ERR_NONE)
     return;
   term_initialized = 1;
 
-  /* XXX: store static pointer to the 'view' object so the repaint callback can access it.  */
+  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
+  grub_gfxmenu_view_draw (view);
+  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
+
   term_view = view;
-  grub_gfxterm_set_repaint_callback (repaint_terminal);
+
   grub_term_set_current_output (grub_gfxterm_get_term ());
 }
 
 static void destroy_terminal (void)
 {
-  term_view = 0;
   if (term_initialized)
     grub_gfxterm_destroy_window ();
-  grub_gfxterm_set_repaint_callback (0);
-  if (term_target)
-    grub_video_delete_render_target (term_target);
   if (term_original)
     grub_term_set_current_output (term_original);
 }
@@ -493,5 +491,6 @@ grub_gfxmenu_view_execute_entry (grub_gfxmenu_view_t view,
 void
 grub_gfxmenu_view_run_terminal (grub_gfxmenu_view_t view __attribute__((unused)))
 {
+  draw_terminal_box ();
   grub_cmdline_run (1);
 }
