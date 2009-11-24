@@ -25,6 +25,10 @@
 # define _(str) gettext(str)
 #else
 # define _(str) grub_gettext(str)
+
+const char *EXPORT_FUNC(grub_gettext_dummy) (const char *s);
+extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
+
 #endif
 
 #define N_(str) str

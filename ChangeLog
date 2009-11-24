@@ -1,3 +1,20 @@
+2009-11-24  Carles Pina i Estany <carles@pina.cat>
+
+	* conf/i386-coreboot.rmk (kernel_img_HEADERS): Add i18n.h.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+	* gettext/gettex.c: Include <grub/i18n.h>.
+	* include/grub/misc.h (grub_gettext_dummy, grub_gettext): Move from
+ 	  here ...
+	* include/grub/i18n.h: ... to here
+	* include/grub/i18n.h: ... to here.
+	* kern/misc.c: Include <grub/i18n.h>
+	(grub_gettext_dummy): Move above user. 
+
 2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/Makefile.in (install-local): Convert a `for' into a normal
