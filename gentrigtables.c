@@ -44,5 +44,5 @@ main ()
   TAB(sin);
   TAB(cos);
 
-  exit (0);
+  return 0;
 }
