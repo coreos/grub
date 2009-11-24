@@ -92,26 +92,6 @@ process_key_press (int c,
       switch_to_text_menu ();
       *should_exit = 1;
     }
-  else if (c == '1')
-    {
-      grub_gfxmenu_view_load_theme (view,
-                                    "/boot/grub/themes/proto/theme.txt");
-    }
-  else if (c == '2')
-    {
-      grub_gfxmenu_view_load_theme (view,
-                                    "/boot/grub/themes/winter/theme.txt");
-    }
-  else if (c == '3')
-    {
-      grub_gfxmenu_view_load_theme (view,
-                                    "/boot/grub/themes/ubuntu1/theme.txt");
-    }
-  else if (c == '4')
-    {
-      grub_gfxmenu_view_load_theme (view,
-                                    "/boot/grub/themes/ubuntu2/theme.txt");
-    }
   else if (nested && c == GRUB_TERM_ESC)
     {
       *should_exit = 1;
