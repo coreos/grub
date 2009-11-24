@@ -51,50 +51,63 @@ process_key_press (int c,
   /* When a key is pressed, stop the timeout.  */
   grub_gfxmenu_model_clear_timeout (model);
 
-  if (c == 'j' || c == GRUB_TERM_DOWN)
+  switch (c)
     {
-      int i = grub_gfxmenu_model_get_selected_index (model);
-      int num_items = grub_gfxmenu_model_get_num_entries (model);
-      if (i < num_items - 1)
-        {
-          i++;
-          grub_gfxmenu_model_set_selected_index (model, i);
-        }
-    }
-  else if (c == 'k' || c == GRUB_TERM_UP)
-    {
-      int i = grub_gfxmenu_model_get_selected_index (model);
-      if (i > 0)
-        {
-          i--;
-          grub_gfxmenu_model_set_selected_index (model, i);
-        }
-    }
-  else if (c == '\r' || c == '\n' || c == GRUB_TERM_RIGHT)
-    {
-      int selected = grub_gfxmenu_model_get_selected_index (model);
-      int num_entries = grub_gfxmenu_model_get_num_entries (model);
-      if (selected >= 0 && selected < num_entries)
-        {
-          grub_menu_entry_t entry =
-            grub_gfxmenu_model_get_entry (model, selected);
-          grub_gfxmenu_view_execute_entry (view, entry);
-        }
-    }
-  else if (c == 'c')
-    {
+    case 'j':
+    case GRUB_TERM_DOWN:
+      {
+	int i = grub_gfxmenu_model_get_selected_index (model);
+	int num_items = grub_gfxmenu_model_get_num_entries (model);
+	if (i < num_items - 1)
+	  {
+	    i++;
+	    grub_gfxmenu_model_set_selected_index (model, i);
+	  }
+      }
+    break;
+
+    case 'k':
+    case GRUB_TERM_UP:
+      {
+	int i = grub_gfxmenu_model_get_selected_index (model);
+	if (i > 0)
+	  {
+	    i--;
+	    grub_gfxmenu_model_set_selected_index (model, i);
+	  }
+      }
+    break;
+
+    case '\r':
+    case '\n':
+    case GRUB_TERM_RIGHT:
+      {
+	int selected = grub_gfxmenu_model_get_selected_index (model);
+	int num_entries = grub_gfxmenu_model_get_num_entries (model);
+	if (selected >= 0 && selected < num_entries)
+	  {
+	    grub_menu_entry_t entry =
+	      grub_gfxmenu_model_get_entry (model, selected);
+	    grub_gfxmenu_view_execute_entry (view, entry);
+	  }
+      }
+    break;
+
+    case 'c':
       grub_gfxmenu_view_run_terminal (view);
-    }
-  else if (c == 't')
-    {
+      break;
+
+    case 't':
       /* The write hook for 'menuviewer' will cause
        * grub_menu_viewer_should_return to return nonzero. */
       switch_to_text_menu ();
       *should_exit = 1;
-    }
-  else if (nested && c == GRUB_TERM_ESC)
-    {
-      *should_exit = 1;
+      break;
+
+    case GRUB_TERM_ESC:
+      if (nested)
+	*should_exit = 1;
+      break;
     }
 
   if (grub_errno != GRUB_ERR_NONE)
@@ -119,32 +132,29 @@ static grub_err_t
 show_menu (grub_menu_t menu, int nested)
 {
   grub_gfxmenu_model_t model;
+  grub_gfxmenu_view_t view;
+  const char *theme_path;
+
+  theme_path = grub_env_get ("theme");
+  if (! theme_path)
+    {
+      switch_to_text_menu ();
+      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "no theme specified");
+    }
 
   model = grub_gfxmenu_model_new (menu);
   if (! model)
     {
-      grub_print_error ();
-      grub_printf ("Initializing menu data for graphical menu failed;\n"
-                   "falling back to text based menu.\n");
-      grub_wait_after_message ();
       switch_to_text_menu ();
       return grub_errno;
     }
 
-  grub_gfxmenu_view_t view;
-
   /* Create the view.  */
-  const char *theme_path = grub_env_get ("theme");
-  if (! theme_path)
-    theme_path = "/boot/grub/themes/proto/theme.txt";
-
   view = grub_gfxmenu_view_new (theme_path, model);
+
   if (! view)
     {
       grub_print_error ();
-      grub_printf ("Starting graphical menu failed;\n"
-                   "falling back to text based menu.\n");
-      grub_wait_after_message ();
       grub_gfxmenu_model_destroy (model);
       switch_to_text_menu ();
       return grub_errno;
@@ -159,6 +169,7 @@ show_menu (grub_menu_t menu, int nested)
 
   /* Main event loop.  */
   int exit_requested = 0;
+
   while ((! exit_requested) && (! grub_menu_viewer_should_return ()))
     {
       if (grub_gfxmenu_model_timeout_expired (model))
