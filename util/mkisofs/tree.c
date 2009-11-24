@@ -6,9 +6,11 @@
 
    Copyright 1993 Yggdrasil Computing, Incorporated
 
+   Copyright (C) 2009  Free Software Foundation, Inc.
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -17,10 +19,8 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
-static char rcsid[] ="$Id: tree.c,v 1.29 1999/03/07 17:41:19 eric Exp $";
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 /* ADD_FILES changes made by Ross Biro biro@yggdrasil.com 2/23/95 */
 
@@ -141,6 +141,10 @@ FDECL2(stat_filter, char *, path, struct stat *, st)
   int result = stat(path, st);
   if (result >= 0 && rationalize)
     stat_fix(st);
+
+  if ((unsigned) st->st_size > UINT32_MAX)
+    result = -1;
+
   return result;
 }
 
@@ -150,6 +154,10 @@ FDECL2(lstat_filter, char *, path, struct stat *, st)
   int result = lstat(path, st);
   if (result >= 0 && rationalize)
     stat_fix(st);
+
+  if ((unsigned) st->st_size > UINT32_MAX)
+    result = -1;
+
   return result;
 }
 
@@ -215,10 +223,7 @@ static int FDECL1(sort_n_finish, struct directory *, this_dir)
 	}
 	  
       if(s_entry1 == s_entry)
-	{
-	  fprintf(stderr,"Fatal goof\n");
-	  exit(1);
-	}
+	error (1, 0, _("Fatal goof\n"));
       
       /* 
        * OK, handle the conflicts.  Try substitute names until we come
@@ -276,8 +281,7 @@ static int FDECL1(sort_n_finish, struct directory *, this_dir)
       /*
        * If we fell off the bottom here, we were in real trouble.
        */
-      fprintf(stderr,"Unable to  generate unique  name for file %s\n", s_entry->name);
-      exit(1);
+      error (1, 0, _("Unable to  generate unique  name for file %s\n"), s_entry->name);
 
 got_valid_name:      
       /* 
@@ -288,9 +292,9 @@ got_valid_name:
 	{
 	  if( verbose > 0 )
 	    {
-	      fprintf(stderr,"Using %s for  %s%s%s (%s)\n", newname,  
-		      this_dir->whole_name, SPATH_SEPARATOR, 
-		      s_entry->name, s_entry1->name);
+	      fprintf (stderr, _("Using %s for %s%s%s (%s)\n"), newname,  
+		       this_dir->whole_name, SPATH_SEPARATOR, 
+		       s_entry->name, s_entry1->name);
 	    }
 	  s_entry->isorec.name_len[0] =  strlen(newname);
 	  new_reclen =  sizeof(struct iso_directory_record) -
@@ -310,7 +314,7 @@ got_valid_name:
 	  delete_file_hash(s_entry1);
 	  if( verbose > 0 )
 	    {
-	      fprintf(stderr,"Using %s for  %s%s%s (%s)\n", newname,  
+	      fprintf(stderr, _("Using %s for %s%s%s (%s)\n"), newname,  
 		      this_dir->whole_name, SPATH_SEPARATOR, 
 		      s_entry1->name, s_entry->name);
 	    }
@@ -434,19 +438,16 @@ got_valid_name:
       if (new_reclen & 1) new_reclen++;
       
       if(new_reclen > 0xff) 
-	{
-	  fprintf(stderr,"Fatal error - RR overflow for file %s\n",
-		  s_entry->name);
-	  exit(1);
-	}
+	error (1, 0, _("Fatal error - RR overflow for file %s\n"),
+	       s_entry->name);
       s_entry->isorec.length[0] = new_reclen;
     }
 
   status = sort_directory(&this_dir->contents);
   if( status > 0 )
     {
-      fprintf(stderr, "Unable to sort directory %s\n", 
-	      this_dir->whole_name);
+      fprintf (stderr, _("Unable to sort directory %s\n"),
+			this_dir->whole_name);
     }
 
   /*
@@ -475,12 +476,9 @@ got_valid_name:
 	s_entry->table = NULL;
       }
 
-      if(count !=  tablesize) 
-	{
-	  fprintf(stderr,"Translation table size mismatch %d %d\n",
-		  count, tablesize);
-	  exit(1);
-	}
+      if(count != tablesize) 
+	error (1, 0, _("Translation table size mismatch %d %d\n"),
+	       count, tablesize);
     }
 
   /* 
@@ -744,10 +742,8 @@ void finish_cl_pl_entries(){
 		  if(d_entry->self == s_entry) break;
 		  d_entry = d_entry->next;
 	  };
-	  if(!d_entry){
-		  fprintf(stderr,"Unable to locate directory parent\n");
-		  exit(1);
-	  };
+	  if(!d_entry)
+	    error (1, 0, _("Unable to locate directory parent\n"));
 
 	  /* First fix the PL pointer in the directory in the rr_reloc dir */
 	  s_entry1 = d_entry->contents->next;
@@ -797,7 +793,7 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
 
     if (verbose > 1)
     {
-      fprintf(stderr, "Scanning %s\n", path);
+      fprintf (stderr, _("Scanning %s\n"), path);
     }
 
   current_dir = opendir(path);
@@ -812,7 +808,7 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
 
   if(!current_dir || !d_entry) 
     {
-      fprintf(stderr,"Unable to open directory %s\n", path);
+      fprintf (stderr, _("Unable to open directory %s\n"), path);
       de->isorec.flags[0] &= ~2; /* Mark as not a directory */
       if(current_dir) closedir(current_dir);
       return 0;
@@ -857,16 +853,14 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
 	      {
 		if( verbose > 0 )
 		  {
-		    fprintf(stderr, "Ignoring file %s\n", d_entry->d_name);
+		    fprintf (stderr, _("Ignoring file %s\n"), d_entry->d_name);
 		  }
 		continue;
 	      }
     }
 
-    if(strlen(path)+strlen(d_entry->d_name) + 2 > sizeof(whole_path)){
-      fprintf(stderr, "Overflow of stat buffer\n");
-      exit(1);
-    };
+    if(strlen(path)+strlen(d_entry->d_name) + 2 > sizeof(whole_path))
+      error (1, 0, _("Overflow of stat buffer\n"));
 
     /* Generate the complete ASCII path for this file */
     strcpy(whole_path, path);
@@ -879,7 +873,7 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
     /** Should we exclude this file ? */
     if (matches(d_entry->d_name) || matches(whole_path)) {
       if (verbose > 1) {
-	fprintf(stderr, "Excluded by match: %s\n", whole_path);
+	fprintf (stderr, _("Excluded by match: %s\n"), whole_path);
       }
       continue;
     }
@@ -894,7 +888,7 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
 	 */
 	if (verbose > 1) 
 	  {
-	    fprintf(stderr, "Excluded: %s\n",whole_path);
+	    fprintf (stderr, _("Excluded: %s\n"), whole_path);
 	  }
 	continue;
       }
@@ -964,7 +958,7 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
        * This means that the file doesn't exist, or isn't accessible.
        * Sometimes this is because of NFS permissions problems.
        */
-      fprintf(stderr, "Non-existant or inaccessible: %s\n",whole_path);
+      fprintf (stderr, _("Non-existant or inaccessible: %s\n"),whole_path);
       return 0;
     }
   
@@ -999,15 +993,15 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 	    } else {
 	      if(follow_links) 
 		{
-		  fprintf(stderr,
-			  "Unable to stat file %s - ignoring and continuing.\n",
-			  whole_path);
+		  fprintf (stderr,
+			   _("Unable to stat file %s - ignoring and continuing.\n"),
+			   whole_path);
 		}
 	      else
 		{
-		  fprintf(stderr,
-			  "Symlink %s ignored - continuing.\n",
-			  whole_path);
+		  fprintf (stderr,
+			   _("Symlink %s ignored - continuing.\n"),
+			   whole_path);
 		  return 0;  /* Non Rock Ridge discs - ignore all symlinks */
 		}
 	    }
@@ -1031,8 +1025,8 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 		{
 		  if(!use_RockRidge) 
 		    {
-		      fprintf(stderr, "Already cached directory seen (%s)\n", 
-			      whole_path);
+		      fprintf (stderr, _("Already cached directory seen (%s)\n"),
+			       whole_path);
 		      return 0;
 		    }
 		  statbuf.st_size = 0;
@@ -1070,19 +1064,11 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
     {
       add_directory_hash(statbuf.st_dev, STAT_INODE(statbuf));
     }
-#ifdef VMS
-  if(!S_ISDIR(lstatbuf.st_mode) && (statbuf.st_fab_rfm != FAB$C_FIX && 
-				    statbuf.st_fab_rfm != FAB$C_STMLF)) {
-    fprintf(stderr,"Warning - file %s has an unsupported VMS record"
-	    " format (%d)\n",
-	    whole_path, statbuf.st_fab_rfm);
-  }
-#endif
-  
+
   if(S_ISREG(lstatbuf.st_mode) && (status = access(whole_path, R_OK)))
     {
-      fprintf(stderr, "File %s is not readable (errno = %d) - ignoring\n", 
-	      whole_path, errno);
+      fprintf (stderr, _("File %s is not readable (%s) - ignoring\n"),
+	       whole_path, strerror (errno));
       return 0;
     }
   
@@ -1093,12 +1079,10 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 	&& strcmp(short_name, ".") 
 	&& strcmp(short_name, "..") ) 
     {
-      if(find_directory_hash(statbuf.st_dev, STAT_INODE(statbuf))) {
-	fprintf(stderr,"Directory loop - fatal goof (%s %lx %lu).\n",
-		whole_path, (unsigned long) statbuf.st_dev,
-		(unsigned long) STAT_INODE(statbuf));
-	exit(1);
-      }
+      if(find_directory_hash(statbuf.st_dev, STAT_INODE(statbuf)))
+	error (1, 0, _("Directory loop - fatal goof (%s %lx %lu).\n"),
+	       whole_path, (unsigned long) statbuf.st_dev,
+	       (unsigned long) STAT_INODE(statbuf));
       add_directory_hash(statbuf.st_dev, STAT_INODE(statbuf));
     }
   
@@ -1106,8 +1090,8 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
       !S_ISFIFO(lstatbuf.st_mode) && !S_ISSOCK(lstatbuf.st_mode)
       && !S_ISLNK(lstatbuf.st_mode) && !S_ISREG(lstatbuf.st_mode) &&
       !S_ISDIR(lstatbuf.st_mode)) {
-    fprintf(stderr,"Unknown file type %s - ignoring and continuing.\n",
-	    whole_path);
+    fprintf (stderr, _("Unknown file type %s - ignoring and continuing.\n"),
+	     whole_path);
     return 0;
   }
   
@@ -1115,9 +1099,9 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
   
   if(status) 
     {
-      fprintf(stderr,
-	      "Unable to stat file %s - ignoring and continuing.\n",
-	      whole_path);
+      fprintf (stderr,
+	       _("Unable to stat file %s - ignoring and continuing.\n"),
+	       whole_path);
       return 0; 
     }
   
@@ -1192,7 +1176,7 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
   else if (strcmp(short_name,".") && strcmp(short_name,"..")) {
     if (i_matches(short_name) || i_matches(whole_path)) {
       if (verbose > 1) {
-	fprintf(stderr, "Hidden from ISO9660 tree: %s\n", whole_path);
+	fprintf (stderr, _("Hidden from ISO9660 tree: %s\n"), whole_path);
       }
       s_entry->de_flags |= INHIBIT_ISO9660_ENTRY;
     }
@@ -1204,7 +1188,7 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
   else if (strcmp(short_name,".") && strcmp(short_name,"..")) {
     if (j_matches(short_name) || j_matches(whole_path)) {
       if (verbose > 1) {
-	fprintf(stderr, "Hidden from Joliet tree: %s\n", whole_path);
+	fprintf (stderr, _("Hidden from Joliet tree: %s\n"), whole_path);
       }
       s_entry->de_flags |= INHIBIT_JOLIET_ENTRY;
     }
@@ -1613,10 +1597,7 @@ struct directory * FDECL4(find_or_create_directory, struct directory *, parent,
       fprintf(stderr,"%s(%d) ", path, dpnt->depth);
 #endif
       if(parent->depth > RR_relocation_depth) 
-	{
-	  fprintf(stderr,"Directories too deep  %s\n", path);
-	  exit(1);
-	}
+	error (1, 0, _("Directories too deep  %s\n"), path);
       
       dpnt->parent = parent; 
       dpnt->depth = parent->depth + 1;
@@ -1648,10 +1629,7 @@ static void FDECL2(delete_directory, struct directory *, parent, struct director
   struct directory		* tdir;
 
   if( child->contents != NULL )
-    {
-      fprintf(stderr, "Unable to delete non-empty directory\n");
-      exit(1);
-    }
+    error (1, 0, _("Unable to delete non-empty directory\n"));
 
   free(child->whole_name);
   child->whole_name = NULL;
@@ -1674,10 +1652,7 @@ static void FDECL2(delete_directory, struct directory *, parent, struct director
 	    }
 	}
       if( tdir == NULL )
-	{
-	  fprintf(stderr, "Unable to locate child directory in parent list\n");
-	  exit(1);
-	}
+	error (1, 0, _("Unable to locate child directory in parent list\n"));
     }
   free(child);
   return;
@@ -1794,8 +1769,8 @@ struct directory_entry * FDECL2(search_tree_file, struct directory *,
 
   if( (p1=strchr(subdir, '/')) == subdir )
     {
-      fprintf(stderr,"call to search_tree_file with an absolute path, stripping\n");
-      fprintf(stderr,"initial path separator. Hope this was intended...\n");
+      fprintf (stderr, _("call to search_tree_file with an absolute path, stripping\n"));
+      fprintf (stderr, _("initial path separator. Hope this was intended...\n"));
       memmove(subdir, subdir+1, strlen(subdir)-1);
       p1 = strchr(subdir, '/');
     }
@@ -1863,7 +1838,7 @@ struct directory_entry * FDECL2(search_tree_file, struct directory *,
        */
       return (NULL);
     }
-  fprintf(stderr,"We cant get here in search_tree_file :-/ \n");
+  fprintf (stderr, "We cant get here in search_tree_file :-/ \n");
 }
 
 void init_fstatbuf()

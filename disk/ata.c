@@ -140,7 +140,7 @@ grub_ata_dumpinfo (struct grub_ata_device *dev, char *info)
   if (! dev->atapi)
     {
       grub_dprintf ("ata", "Addressing: %d\n", dev->addr);
-      grub_dprintf ("ata", "Sectors: %lld\n", dev->size);
+      grub_dprintf ("ata", "Sectors: %lld\n", (unsigned long long) dev->size);
     }
 }
 
@@ -569,7 +569,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 {
   struct grub_ata_device *dev = (struct grub_ata_device *) disk->data;
 
-  grub_dprintf("ata", "grub_ata_readwrite (size=%u, rw=%d)\n", size, rw);
+  grub_dprintf("ata", "grub_ata_readwrite (size=%llu, rw=%d)\n", (unsigned long long) size, rw);
 
   grub_ata_addressing_t addressing = dev->addr;
   grub_size_t batch;
@@ -596,7 +596,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
       if (size - nsectors < batch)
 	batch = size - nsectors;
 
-      grub_dprintf("ata", "rw=%d, sector=%llu, batch=%u\n", rw, sector, batch);
+      grub_dprintf("ata", "rw=%d, sector=%llu, batch=%llu\n", rw, (unsigned long long) sector, (unsigned long long) batch);
 
       /* Send read/write command.  */
       if (grub_ata_setaddress (dev, addressing, sector, batch))
@@ -755,7 +755,7 @@ grub_atapi_read (struct grub_scsi *scsi,
 {
   struct grub_ata_device *dev = (struct grub_ata_device *) scsi->data;
 
-  grub_dprintf("ata", "grub_atapi_read (size=%u)\n", size);
+  grub_dprintf("ata", "grub_atapi_read (size=%llu)\n", (unsigned long long) size);
 
   if (grub_atapi_packet (dev, cmd, size))
     return grub_errno;

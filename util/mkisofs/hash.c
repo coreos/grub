@@ -19,8 +19,6 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: hash.c,v 1.4 1997/12/06 21:05:04 eric Exp $";
-
 #include <stdlib.h>
 #include "config.h"
 #include "mkisofs.h"

@@ -2,6 +2,7 @@
 10_*
 30_os-prober
 40_custom
+aclocal.m4
 autom4te.cache
 build_env.mk
 .bzrignore
@@ -12,6 +13,7 @@ config.log
 config.status
 configure
 conf/*.mk
+conf/gcry.rmk
 *.d
 DISTLIST
 docs/*.info
@@ -44,11 +46,14 @@ grub_setup_init.h
 *.img
 include/grub/cpu
 include/grub/machine
+lib/libgcrypt-grub
 *.lst
 Makefile
 *.mod
 mod-*.c
 *.pf2
+po/*.mo
+po/grub.pot
 stamp-h
 stamp-h1
 stamp-h.in

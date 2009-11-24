@@ -81,4 +81,6 @@ fips_mode (void)
   return 0;
 }
 
+#define memset grub_memset
+
 #endif
