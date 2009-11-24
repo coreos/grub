@@ -77,11 +77,14 @@ label_is_instance (void *vself __attribute__((unused)), const char *type)
 }
 
 static void
-label_paint (void *vself)
+label_paint (void *vself, const grub_video_rect_t *region)
 {
   grub_gui_label_t self = vself;
 
   if (! self->visible)
+    return;
+
+  if (!grub_video_have_common_points (region, &self->bounds))
     return;
 
   /* Calculate the starting x coordinate.  */

@@ -35,6 +35,7 @@
 #include <grub/menu_viewer.h>
 #include <grub/gfxmenu_model.h>
 #include <grub/gfxmenu_view.h>
+#include <grub/time.h>
 
 static void switch_to_text_menu (void)
 {
@@ -62,6 +63,7 @@ process_key_press (int c,
 	  {
 	    i++;
 	    grub_gfxmenu_model_set_selected_index (model, i);
+	    grub_gfxmenu_redraw_menu (view);
 	  }
       }
     break;
@@ -74,6 +76,7 @@ process_key_press (int c,
 	  {
 	    i--;
 	    grub_gfxmenu_model_set_selected_index (model, i);
+	    grub_gfxmenu_redraw_menu (view);
 	  }
       }
     break;
@@ -170,8 +173,14 @@ show_menu (grub_menu_t menu, int nested)
   /* Main event loop.  */
   int exit_requested = 0;
 
+  grub_gfxmenu_view_draw (view);
+  grub_video_swap_buffers ();
+  if (view->double_repaint)
+    grub_gfxmenu_view_draw (view);
+
   while ((! exit_requested) && (! grub_menu_viewer_should_return ()))
     {
+      grub_gfxmenu_redraw_timeout (view);
       if (grub_gfxmenu_model_timeout_expired (model))
         {
           grub_gfxmenu_model_clear_timeout (model);
@@ -181,9 +190,8 @@ show_menu (grub_menu_t menu, int nested)
           continue;
         }
 
-      grub_gfxmenu_view_draw (view);
-      grub_video_swap_buffers ();
       handle_key_events (model, view, nested, &exit_requested);
+      grub_cpu_idle ();
     }
 
   grub_gfxmenu_view_destroy (view);

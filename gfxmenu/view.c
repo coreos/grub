@@ -55,6 +55,8 @@ grub_gfxmenu_view_t
 grub_gfxmenu_view_new (const char *theme_path, grub_gfxmenu_model_t model)
 {
   grub_gfxmenu_view_t view;
+  grub_err_t err;
+  struct grub_video_mode_info mode_info;
 
   view = grub_malloc (sizeof (*view));
   if (! view)
@@ -66,6 +68,18 @@ grub_gfxmenu_view_new (const char *theme_path, grub_gfxmenu_model_t model)
                            (unsigned *) &view->screen.y,
                            (unsigned *) &view->screen.width,
                            (unsigned *) &view->screen.height);
+
+  err = grub_video_get_info (&mode_info);
+  if (err)
+    {
+      grub_free (view);
+      return 0;
+    }
+  else
+    view->double_repaint = (mode_info.mode_type
+			    & GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED)
+      && !(mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
+
 
   /* Clear the screen; there may be garbage left over in video memory, and
      loading the menu style (particularly the background) can take a while. */
@@ -97,6 +111,15 @@ grub_gfxmenu_view_new (const char *theme_path, grub_gfxmenu_model_t model)
   view->title_text = grub_strdup ("GRUB Boot Menu");
   view->progress_message_text = 0;
   view->theme_path = 0;
+  view->last_seconds_remaining = -2;
+
+  /* Set the timeout bar's frame.  */
+  view->progress_message_frame.width = view->screen.width * 4 / 5;
+  view->progress_message_frame.height = 50;
+  view->progress_message_frame.x = view->screen.x
+    + (view->screen.width - view->progress_message_frame.width) / 2;
+  view->progress_message_frame.y = view->screen.y
+    + view->screen.height - 90 - 20 - view->progress_message_frame.height;
 
   if (grub_gfxmenu_view_load_theme (view, theme_path) != 0)
     {
@@ -141,21 +164,23 @@ set_progress_message (grub_gfxmenu_view_t view, const char *message)
 }
 
 static void
-draw_background (grub_gfxmenu_view_t view)
+redraw_background (grub_gfxmenu_view_t view,
+		   const grub_video_rect_t *bounds)
 {
   if (view->desktop_image)
     {
       struct grub_video_bitmap *img = view->desktop_image;
       grub_video_blit_bitmap (img, GRUB_VIDEO_BLIT_REPLACE,
-                              view->screen.x, view->screen.y, 0, 0,
-                              grub_video_bitmap_get_width (img),
-                              grub_video_bitmap_get_height (img));
+                              bounds->x, bounds->y,
+			      bounds->x - view->screen.x,
+			      bounds->y - view->screen.y,
+			      bounds->width, bounds->height);
     }
   else
     {
       grub_video_fill_rect (grub_gui_map_color (view->desktop_color),
-                            view->screen.x, view->screen.y,
-                            view->screen.width, view->screen.height);
+                            bounds->x, bounds->y,
+                            bounds->width, bounds->height);
     }
 }
 
@@ -191,6 +216,7 @@ update_timeout_visit (grub_gui_component_t component,
 {
   struct progress_value_data *pv;
   pv = (struct progress_value_data *) userdata;
+
   component->ops->set_property (component, "visible", pv->visible);
   component->ops->set_property (component, "start", pv->start);
   component->ops->set_property (component, "end", pv->end);
@@ -198,16 +224,43 @@ update_timeout_visit (grub_gui_component_t component,
   component->ops->set_property (component, "text", pv->text);
 }
 
-static void
-update_timeout (grub_gfxmenu_view_t view)
+
+static inline void
+update_timeout (grub_gfxmenu_view_t view, int is_init)
 {
   char startbuf[20];
   char valuebuf[20];
   char msgbuf[120];
 
-  int timeout = grub_gfxmenu_model_get_timeout_ms (view->model);
-  int remaining = grub_gfxmenu_model_get_timeout_remaining_ms (view->model);
+  int timeout;
+  int remaining;
   struct progress_value_data pv;
+  int seconds_remaining_rounded_up;
+
+  auto void redraw_timeout_visit (grub_gui_component_t component,
+				  void *userdata __attribute__ ((unused)));
+
+  auto void redraw_timeout_visit (grub_gui_component_t component,
+				  void *userdata __attribute__ ((unused)))
+  {
+    grub_video_rect_t bounds;
+    component->ops->get_bounds (component, &bounds);
+    grub_gfxmenu_view_redraw (view, &bounds);
+  }
+
+  timeout = grub_gfxmenu_model_get_timeout_ms (view->model);
+  if (timeout > 0)
+    {
+      remaining = grub_gfxmenu_model_get_timeout_remaining_ms (view->model);
+      seconds_remaining_rounded_up = (remaining + 999) / 1000;
+    }
+  else
+    seconds_remaining_rounded_up = -1;
+
+  if (view->last_seconds_remaining == seconds_remaining_rounded_up && !is_init)
+    return;
+
+  view->last_seconds_remaining = seconds_remaining_rounded_up;
 
   pv.visible = timeout > 0 ? "true" : "false";
   grub_sprintf (startbuf, "%d", -timeout);
@@ -216,7 +269,6 @@ update_timeout (grub_gfxmenu_view_t view)
   grub_sprintf (valuebuf, "%d", remaining > 0 ? -remaining : 0);
   pv.value = valuebuf;
 
-  int seconds_remaining_rounded_up = (remaining + 999) / 1000;
   grub_sprintf (msgbuf,
                 "The highlighted entry will be booted automatically in %d s.",
                 seconds_remaining_rounded_up);
@@ -224,6 +276,21 @@ update_timeout (grub_gfxmenu_view_t view)
 
   grub_gui_find_by_id ((grub_gui_component_t) view->canvas,
                        TIMEOUT_COMPONENT_ID, update_timeout_visit, &pv);
+  if (!is_init)
+    {
+      grub_gui_find_by_id ((grub_gui_component_t) view->canvas,
+			   TIMEOUT_COMPONENT_ID, redraw_timeout_visit, &pv);
+      grub_video_swap_buffers ();
+      if (view->double_repaint)
+	grub_gui_find_by_id ((grub_gui_component_t) view->canvas,
+			     TIMEOUT_COMPONENT_ID, redraw_timeout_visit, &pv);
+    }
+}
+
+void
+grub_gfxmenu_redraw_timeout (grub_gfxmenu_view_t view)
+{
+  update_timeout (view, 0);
 }
 
 static void
@@ -252,18 +319,12 @@ static void
 draw_message (grub_gfxmenu_view_t view)
 {
   char *text = view->progress_message_text;
+  grub_video_rect_t f = view->progress_message_frame;
   if (! text)
     return;
 
   grub_font_t font = view->message_font;
   grub_video_color_t color = grub_gui_map_color (view->message_color);
-
-  /* Set the timeout bar's frame.  */
-  grub_video_rect_t f;
-  f.width = view->screen.width * 4 / 5;
-  f.height = 50;
-  f.x = view->screen.x + (view->screen.width - f.width) / 2;
-  f.y = view->screen.y + view->screen.height - 90 - 20 - f.height;
 
   /* Border.  */
   grub_video_fill_rect (color,
@@ -280,19 +341,62 @@ draw_message (grub_gfxmenu_view_t view)
   grub_font_draw_string (text, font, color, x, y);
 }
 
+void
+grub_gfxmenu_view_redraw (grub_gfxmenu_view_t view,
+			  const grub_video_rect_t *region)
+{
+  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
+
+  redraw_background (view, region);
+  if (view->canvas)
+    view->canvas->ops->component.paint (view->canvas, region);
+  draw_title (view);
+  if (grub_video_have_common_points (&view->progress_message_frame, region))
+    draw_message (view);
+}
 
 void
 grub_gfxmenu_view_draw (grub_gfxmenu_view_t view)
 {
-  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
-  update_timeout (view);
+  update_timeout (view, 1);
   update_menu_components (view);
 
-  draw_background (view);
-  if (view->canvas)
-    view->canvas->ops->component.paint (view->canvas);
-  draw_title (view);
-  draw_message (view);
+  grub_gfxmenu_view_redraw (view, &view->screen);
+  grub_video_swap_buffers ();
+  if (view->double_repaint)
+    grub_gfxmenu_view_redraw (view, &view->screen);
+}
+
+static void
+redraw_menu_visit (grub_gui_component_t component,
+                   void *userdata)
+{
+  grub_gfxmenu_view_t view;
+  view = userdata;
+  if (component->ops->is_instance (component, "list"))
+    {
+      grub_gui_list_t list;
+      grub_video_rect_t bounds;
+
+      list = (grub_gui_list_t) component;
+      component->ops->get_bounds (component, &bounds);
+      grub_gfxmenu_view_redraw (view, &bounds);
+    }
+}
+
+void
+grub_gfxmenu_redraw_menu (grub_gfxmenu_view_t view)
+{
+  update_menu_components (view);
+
+  grub_gui_iterate_recursively ((grub_gui_component_t) view->canvas,
+                                redraw_menu_visit, view);
+  grub_video_swap_buffers ();
+  if (view->double_repaint)
+    {
+      grub_gui_iterate_recursively ((grub_gui_component_t) view->canvas,
+				    redraw_menu_visit, view);
+    }
 }
 
 static grub_err_t
@@ -316,7 +420,7 @@ static int term_initialized;
 static grub_term_output_t term_original;
 
 static void
-draw_terminal_box (void)
+draw_terminal_box (grub_gfxmenu_view_t view)
 {
   grub_gfxmenu_box_t term_box;
   int termx;
@@ -335,6 +439,11 @@ draw_terminal_box (void)
   term_box->draw (term_box,
 		  termx - term_box->get_left_pad (term_box),
 		  termy - term_box->get_top_pad (term_box));
+  grub_video_swap_buffers ();
+  if (view->double_repaint)
+    term_box->draw (term_box,
+		    termx - term_box->get_left_pad (term_box),
+		    termy - term_box->get_top_pad (term_box));
 }
 
 static void
@@ -342,9 +451,6 @@ init_terminal (grub_gfxmenu_view_t view)
 {
   int termx;
   int termy;
-  struct grub_video_mode_info mode_info;
-  grub_err_t err;
-  int double_repaint;
 
   term_original = grub_term_get_current_output ();
 
@@ -354,34 +460,20 @@ init_terminal (grub_gfxmenu_view_t view)
   termx = view->screen.x + view->screen.width * (10 - 7) / 10 / 2;
   termy = view->screen.y + view->screen.height * (10 - 7) / 10 / 2;
 
-  err = grub_video_get_info (&mode_info);
-  if (err)
-    {
-      grub_errno = GRUB_ERR_NONE;
-      double_repaint = 1;
-    }
-  else
-    double_repaint = (mode_info.mode_type
-		      & GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED)
-      && !(mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
-
   /* Note: currently there is no API for changing the gfxterm font
      on the fly, so whatever font the initially loaded theme specifies
      will be permanent.  */
   grub_gfxterm_init_window (GRUB_VIDEO_RENDER_TARGET_DISPLAY, termx, termy,
                             term_target_width, term_target_height,
-			    double_repaint, view->terminal_font_name, 3);
+			    view->double_repaint, view->terminal_font_name, 3);
   if (grub_errno != GRUB_ERR_NONE)
     return;
   term_initialized = 1;
 
-  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
-  grub_gfxmenu_view_draw (view);
-  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
-
   term_view = view;
 
   grub_term_set_current_output (grub_gfxterm_get_term ());
+  grub_refresh ();
 }
 
 static void destroy_terminal (void)
@@ -405,8 +497,10 @@ notify_booting (grub_menu_entry_t entry, void *userdata)
   grub_sprintf (s, "Booting '%s'", entry->title);
   set_progress_message (view, s);
   grub_free (s);
-  grub_gfxmenu_view_draw (view);
+  grub_gfxmenu_view_redraw (view, &view->progress_message_frame);
   grub_video_swap_buffers ();
+  if (view->double_repaint)
+    grub_gfxmenu_view_redraw (view, &view->progress_message_frame);
 }
 
 static void
@@ -421,8 +515,10 @@ notify_fallback (grub_menu_entry_t entry, void *userdata)
   grub_sprintf (s, "Falling back to '%s'", entry->title);
   set_progress_message (view, s);
   grub_free (s);
-  grub_gfxmenu_view_draw (view);
+  grub_gfxmenu_view_redraw (view, &view->progress_message_frame);
   grub_video_swap_buffers ();
+  if (view->double_repaint)
+    grub_gfxmenu_view_redraw (view, &view->progress_message_frame);
 }
 
 static void
@@ -442,6 +538,8 @@ int
 grub_gfxmenu_view_execute_with_fallback (grub_gfxmenu_view_t view,
                                          grub_menu_entry_t entry)
 {
+  draw_terminal_box (view);
+
   grub_menu_execute_with_fallback (grub_gfxmenu_model_get_menu (view->model),
                                    entry, &execute_callback, (void *) view);
 
@@ -453,13 +551,17 @@ grub_gfxmenu_view_execute_with_fallback (grub_gfxmenu_view_t view,
                         "Unable to automatically boot.  "
                         "Press SPACE to continue.");
   grub_gfxmenu_view_draw (view);
-  grub_video_swap_buffers ();
   while (GRUB_TERM_ASCII_CHAR(grub_getkey ()) != ' ')
     {
       /* Wait for SPACE to be pressed.  */
     }
 
   set_progress_message (view, 0);   /* Clear the message.  */
+
+  grub_gfxmenu_view_redraw (view, &view->progress_message_frame);
+  grub_video_swap_buffers ();
+  if (view->double_repaint)
+    grub_gfxmenu_view_redraw (view, &view->progress_message_frame);
 
   return 1;   /* Ok.  */
 }
@@ -468,14 +570,7 @@ int
 grub_gfxmenu_view_execute_entry (grub_gfxmenu_view_t view,
                                  grub_menu_entry_t entry)
 {
-  /* Currently we switch back to text mode by restoring
-     the original terminal before executing the menu entry.
-     It is hard to make it work when executing a menu entry
-     that switches video modes -- it using gfxterm in a
-     window, the repaint callback seems to crash GRUB. */
-  /* TODO: Determine if this works when 'gfxterm' was set as
-     the current terminal before invoking the gfxmenu. */
-  destroy_terminal ();
+  draw_terminal_box (view);
 
   grub_menu_execute_entry (entry);
   if (grub_errno != GRUB_ERR_NONE)
@@ -484,13 +579,14 @@ grub_gfxmenu_view_execute_entry (grub_gfxmenu_view_t view,
   if (set_graphics_mode () != GRUB_ERR_NONE)
     return 0;  /* Failure.  */
 
-  init_terminal (view);
+  grub_gfxmenu_view_draw (view);
   return 1;   /* Ok.  */
 }
 
 void
-grub_gfxmenu_view_run_terminal (grub_gfxmenu_view_t view __attribute__((unused)))
+grub_gfxmenu_view_run_terminal (grub_gfxmenu_view_t view)
 {
-  draw_terminal_box ();
+  draw_terminal_box (view);
   grub_cmdline_run (1);
+  grub_gfxmenu_view_draw (view);
 }

@@ -311,16 +311,18 @@ draw_menu (list_impl_t self)
 }
 
 static void
-list_paint (void *vself)
+list_paint (void *vself, const grub_video_rect_t *region)
 {
   list_impl_t self = vself;
+  grub_video_rect_t vpsave;
 
   if (! self->visible)
+    return;
+  if (!grub_video_have_common_points (region, &self->bounds))
     return;
 
   check_boxes (self);
 
-  grub_video_rect_t vpsave;
   grub_gui_set_viewport (&self->bounds, &vpsave);
   draw_menu (self);
   grub_gui_restore_viewport (&vpsave);

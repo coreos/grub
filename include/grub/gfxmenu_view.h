@@ -54,7 +54,15 @@ int grub_gfxmenu_view_execute_entry (grub_gfxmenu_view_t view,
 
 void grub_gfxmenu_view_run_terminal (grub_gfxmenu_view_t view);
 
+void
+grub_gfxmenu_redraw_menu (grub_gfxmenu_view_t view);
 
+void
+grub_gfxmenu_redraw_timeout (grub_gfxmenu_view_t view);
+
+void
+grub_gfxmenu_view_redraw (grub_gfxmenu_view_t view,
+			  const grub_video_rect_t *region);
 
 /* Implementation details -- this should not be used outside of the
    view itself.  */
@@ -86,6 +94,12 @@ struct grub_gfxmenu_view
   grub_gui_container_t canvas;
 
   grub_gfxmenu_model_t model;
+
+  int last_seconds_remaining;
+
+  int double_repaint;
+
+  grub_video_rect_t progress_message_frame;
 };
 
 #endif /* ! GRUB_GFXMENU_VIEW_HEADER */

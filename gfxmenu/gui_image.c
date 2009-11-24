@@ -67,12 +67,16 @@ image_is_instance (void *vself __attribute__((unused)), const char *type)
 }
 
 static void
-image_paint (void *vself)
+image_paint (void *vself, const grub_video_rect_t *region)
 {
   grub_gui_image_t self = vself;
+  grub_video_rect_t vpsave;
+
   if (! self->bitmap)
     return;
-  grub_video_rect_t vpsave;
+  if (!grub_video_have_common_points (region, &self->bounds))
+    return;
+
   grub_gui_set_viewport (&self->bounds, &vpsave);
   grub_video_blit_bitmap (self->bitmap, GRUB_VIDEO_BLIT_BLEND,
                           0, 0, 0, 0,

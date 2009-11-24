@@ -166,7 +166,7 @@ layout_vertically (grub_gui_box_t self, int modify_layout,
 }
 
 static void
-box_paint (void *vself)
+box_paint (void *vself, const grub_video_rect_t *region)
 {
   grub_gui_box_t self = vself;
   struct component_node *cur;
@@ -176,7 +176,7 @@ box_paint (void *vself)
   for (cur = self->chead.next; cur != &self->ctail; cur = cur->next)
     {
       grub_gui_component_t comp = cur->component;
-      comp->ops->paint (comp);
+      comp->ops->paint (comp, region);
     }
   grub_gui_restore_viewport (&vpsave);
 }

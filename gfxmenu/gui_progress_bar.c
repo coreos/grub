@@ -171,10 +171,12 @@ draw_text (grub_gui_progress_bar_t self)
 }
 
 static void
-progress_bar_paint (void *vself)
+progress_bar_paint (void *vself, const grub_video_rect_t *region)
 {
   grub_gui_progress_bar_t self = vself;
   if (! self->visible)
+    return;
+  if (!grub_video_have_common_points (region, &self->bounds))
     return;
 
   grub_video_rect_t vpsave;

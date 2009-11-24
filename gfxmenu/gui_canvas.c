@@ -79,7 +79,7 @@ canvas_is_instance (void *vself __attribute__((unused)), const char *type)
 }
 
 static void
-canvas_paint (void *vself)
+canvas_paint (void *vself, const grub_video_rect_t *region)
 {
   grub_gui_canvas_t self = vself;
   struct component_node *cur;
@@ -106,7 +106,8 @@ canvas_paint (void *vself)
         }
 
       /* Paint the child.  */
-      comp->ops->paint (comp);
+      if (grub_video_have_common_points (region, &r))
+	comp->ops->paint (comp, region);
     }
   grub_gui_restore_viewport (&vpsave);
 }

@@ -50,13 +50,14 @@ struct grub_gui_component_ops
   void (*destroy) (void *self);
   const char * (*get_id) (void *self);
   int (*is_instance) (void *self, const char *type);
-  void (*paint) (void *self);
+  void (*paint) (void *self, const grub_video_rect_t *bounds);
   void (*set_parent) (void *self, grub_gui_container_t parent);
   grub_gui_container_t (*get_parent) (void *self);
   void (*set_bounds) (void *self, const grub_video_rect_t *bounds);
   void (*get_bounds) (void *self, grub_video_rect_t *bounds);
   void (*get_preferred_size) (void *self, int *width, int *height);
   grub_err_t (*set_property) (void *self, const char *name, const char *value);
+  void (*repaint) (void *self, int second_pass);
 };
 
 struct grub_gui_container_ops
@@ -160,6 +161,19 @@ static __inline grub_video_color_t
 grub_gui_map_color (grub_gui_color_t c)
 {
   return grub_video_map_rgba (c.red, c.green, c.blue, c.alpha);
+}
+
+static inline int
+grub_video_have_common_points (const grub_video_rect_t *a,
+			       const grub_video_rect_t *b)
+{
+  if (!((a->x <= b->x && b->x <= a->x + a->width)
+	|| (b->x <= a->x && a->x <= b->x + b->width)))
+    return 0;
+  if (!((a->y <= b->y && b->y <= a->y + a->height)
+	|| (b->y <= a->y && a->y <= b->y + b->height)))
+    return 0;
+  return 1;
 }
 
 #endif /* ! GRUB_GUI_H */

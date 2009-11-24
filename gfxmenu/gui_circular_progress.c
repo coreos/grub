@@ -112,12 +112,16 @@ check_pixmaps (circular_progress_t self)
 }
 
 static void
-circprog_paint (void *vself)
+circprog_paint (void *vself, const grub_video_rect_t *region)
 {
   circular_progress_t self = vself;
 
   if (! self->visible)
     return;
+
+  if (!grub_video_have_common_points (region, &self->bounds))
+    return;
+
   if (! check_pixmaps (self))
     return;
 
