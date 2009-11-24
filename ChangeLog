@@ -1,5 +1,10 @@
 2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
 
+	* Makefile.in: Don't include GRUB_CONTRIB makefiles with emu
+	platform.
+
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
 	* util/getroot.c (grub_util_get_dev_abstraction): Properly use
 	strncmp().
 

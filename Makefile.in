@@ -156,10 +156,9 @@ ifeq ($(platform), emu)
 include $(srcdir)/conf/any-emu.mk
 else
 include $(srcdir)/conf/$(target_cpu)-$(platform).mk
-endif
-
 # For external modules.
 -include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
+endif
 
 ### General targets.
 
