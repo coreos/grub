@@ -1,3 +1,10 @@
+2009-11-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* autogen.sh: Add automake call.
+	* config.guess: Remove.
+	* config.sub: Likewise.
+	* install-sh: Likewise.
+
 2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/Makefile.in (install-local): Fix the use of $lang shell variable.
