@@ -1,5 +1,9 @@
 2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
 
+	* conf/i386-coreboot.rmk (grub_mkimage_SOURCES): Add `gnulib/progname.c'.
+
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
 	* util/grub-mkrelpath.c: New file.
 	* conf/common.rmk (bin_UTILITIES): Add grub-mkrelpath.
 	(grub_mkrelpath_SOURCES): New variable.

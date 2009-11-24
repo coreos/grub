@@ -53,7 +53,7 @@ boot_img_FORMAT = binary
 
 bin_UTILITIES += grub-mkimage
 grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
-	util/resolve.c
+	util/resolve.c gnulib/progname.c
 grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
 
 pkglib_IMAGES += kernel.img
