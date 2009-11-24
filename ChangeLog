@@ -1,5 +1,24 @@
 2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
 
+	* util/grub-mkrelpath.c: New file.
+	* conf/common.rmk (bin_UTILITIES): Add grub-mkrelpath.
+	(grub_mkrelpath_SOURCES): New variable.
+	* include/grub/util/misc.h: New function prototype.
+	* util/misc.c (make_system_path_relative_to_its_root): New function.
+
+	* util/grub-mkconfig_lib.in (bindir): New variable.
+	(grub_mkrelpath): Likewise.
+	(make_system_path_relative_to_its_root): Use grub-mkrelpath.
+
+	* util/probe.c (probe): Make the file path relative to its root.
+	Change a info message to use the GRUB path.  Enable again the
+	check if we can read the file with GRUB facilities.
+
+	* util/i386/pc/grub-setup.c (setup): Make core.img path relative
+	to its root.
+
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
 	* Makefile.in: Don't include GRUB_CONTRIB makefiles with emu
 	platform.
 

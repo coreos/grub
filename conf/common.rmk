@@ -71,6 +71,10 @@ grub_mkfont_CFLAGS = $(freetype_cflags)
 grub_mkfont_LDFLAGS = $(freetype_libs)
 endif
 
+# For grub-mkrelpath.
+bin_UTILITIES += grub-mkrelpath
+grub_mkrelpath_SOURCES = util/grub-mkrelpath.c util/misc.c
+
 # For the parser.
 grub_script.tab.c grub_script.tab.h: script/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/parser.y
