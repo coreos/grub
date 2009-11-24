@@ -1,3 +1,8 @@
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/Makefile.in (install-local): Convert a `for' into a normal
+	shell expansion.
+
 2009-11-24  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* autogen.sh: Add automake call.
