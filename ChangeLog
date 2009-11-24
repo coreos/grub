@@ -1,5 +1,10 @@
 2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
 
+	* util/Makefile.in (install-local): Convert a make `$(foreach)'
+	function to a normal shell `for'.
+
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
 	* conf/i386-coreboot.rmk (grub_mkimage_SOURCES): Add `gnulib/progname.c'.
 
 2009-11-24  Felix Zielcke  <fzielcke@z-51.de>

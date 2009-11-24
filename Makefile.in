@@ -310,13 +310,15 @@ install-local: all
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
-	$(foreach lang, $(LINGUAS), \
-	$(shell $(mkinstalldirs) $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES) \
-	@list='po/$(lang).mo'; \
-	for file in $$list; do \
-	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
-	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES/$(PACKAGE).mo; \
-	done)
+	@langs='$(LINGUAS)'; \
+	for lang in $$langs; do \
+	  $(SHELL) $(mkinstalldirs) $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES \
+	  list='po/$(liang).mo'; \
+	  for file in $$list; do \
+	    if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
+	    $(INSTALL_DATA) $$dir$$file $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES/$(PACKAGE).mo; \
+	  done \
+	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(infodir)
 	@list='$(info_INFOS)'; \
 	for file in $$list; do \
