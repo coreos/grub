@@ -90,7 +90,7 @@ setup (const char *dir,
        const char *boot_file, const char *core_file,
        const char *root, const char *dest, int must_embed, int force, int fs_probe)
 {
-  char *boot_path, *core_path, *core_path_dev;
+  char *boot_path, *core_path, *core_path_dev, *core_path_dev_full;
   char *boot_img, *core_img;
   size_t boot_size, core_size;
   grub_uint16_t core_sectors;
@@ -426,7 +426,9 @@ unable_to_embed:
 
   /* Make sure that GRUB reads the identical image as the OS.  */
   tmp_img = xmalloc (core_size);
-  core_path_dev = grub_util_get_path (dir, core_file);
+  core_path_dev_full = grub_util_get_path (dir, core_file);
+  core_path_dev = make_system_path_relative_to_its_root (core_path_dev_full);
+  free (core_path_dev_full);
 
   /* It is a Good Thing to sync two times.  */
   sync ();
