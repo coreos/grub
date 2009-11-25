@@ -1,3 +1,8 @@
+2009-11-25  Yves Blusseau  <yves.blusseau@zetam.org>
+
+	* configure.ac: move the call to AM_GNU_GETTEXT to avoid warnings when
+	aclocal is run.
+
 2009-11-25  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* normal/main.c (grub_normal_read_line): Fix off-by-one
