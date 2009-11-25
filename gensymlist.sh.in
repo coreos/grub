@@ -59,7 +59,7 @@ cat <<EOF
     {
 EOF
 
-$CC -DGRUB_SYMBOL_GENERATOR=1 -E -I. -Iinclude -I"$srcdir/include" $* \
+$CC @TARGET_CFLAGS@ -DGRUB_SYMBOL_GENERATOR=1 -E -I. -Iinclude -I"$srcdir/include" $* \
   | grep -v '^#' \
   | sed -n \
         -e '/EXPORT_FUNC *([a-zA-Z0-9_]*)/{s/.*EXPORT_FUNC *(\([a-zA-Z0-9_]*\)).*/      {"\1", \1},/;p;}' \
