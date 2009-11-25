@@ -1,3 +1,8 @@
+2009-11-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/main.c (grub_normal_execute): Replace "parser.sh" with
+	"parser.grub" in grub_command_execute() call.
+
 2009-11-24  Carles Pina i Estany <carles@pina.cat>
 
 	* conf/i386-coreboot.rmk (kernel_img_HEADERS): Add i18n.h.
