@@ -460,13 +460,41 @@ grub_guess_root_device (const char *dir)
 
   return os_dev;
 }
+int
+grub_util_is_dmraid (const char *os_dev)
+{
+  if (! strncmp (os_dev, "/dev/mapper/nvidia_", 19))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/isw_", 16))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/hpt37x_", 19))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/hpt45x_", 19))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/via_", 16))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/lsi_", 16))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/pdc_", 16))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/jmicron_", 20))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/asr_", 16))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/sil_", 16))
+    return 1;
+ 
+  return 0;
+}
 
 int
 grub_util_get_dev_abstraction (const char *os_dev UNUSED)
 {
 #ifdef __linux__
   /* Check for LVM.  */
-  if (!strncmp (os_dev, "/dev/mapper/", 12))
+  if (!strncmp (os_dev, "/dev/mapper/", 12)
+      && ! grub_util_is_dmraid (os_dev)
+      && strncmp (os_dev, "/dev/mapper/mpath", 17) != 0)
     return GRUB_DEV_ABSTRACTION_LVM;
 
   /* Check for RAID.  */

@@ -16,7 +16,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/machine.h>
 #include <grub/machine/memory.h>
 #include <grub/serial.h>
 #include <grub/term.h>

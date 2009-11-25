@@ -10,3 +10,5 @@ util/mkisofs/multi.c
 util/mkisofs/rock.c
 util/mkisofs/tree.c
 util/mkisofs/write.c
+
+normal/menu_text.c

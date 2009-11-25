@@ -24,7 +24,6 @@
 #include <grub/time.h>
 #include <grub/pci.h>
 #include <grub/scsi.h>
-#include <grub/machine/machine.h>
 
 /* At the moment, only two IDE ports are supported.  */
 static const grub_port_t grub_ata_ioaddress[] = { 0x1f0, 0x170 };

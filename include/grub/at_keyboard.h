@@ -19,8 +19,6 @@
 #ifndef GRUB_AT_KEYBOARD_HEADER
 #define GRUB_AT_KEYBOARD_HEADER	1
 
-#include <grub/machine/machine.h>
-
 #define SHIFT_L		0x2a
 #define SHIFT_R		0x36
 #define CTRL		0x1d

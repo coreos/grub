@@ -22,7 +22,6 @@
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
-#include <grub/machine/machine.h>
 #include <grub/elf.h>
 #include <grub/i18n.h>
 #include <grub/kernel.h>
