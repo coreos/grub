@@ -1,5 +1,10 @@
 2009-11-25  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* normal/main.c (grub_normal_read_line): Fix off-by-one
+	buffer overflow.
+
+2009-11-25  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* normal/main.c (grub_normal_execute): Replace "parser.sh" with
 	"parser.grub" in grub_command_execute() call.
 
