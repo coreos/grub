@@ -24,7 +24,7 @@ libdir=@libdir@
 
 . ${bindir}/gettext.sh
 export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR=@LOCALEDIR@
+export TEXTDOMAINDIR=@localedir@
 
 case "${GRUB_DISTRIBUTOR}" in
   Debian)	OS="${GRUB_DISTRIBUTOR} GNU/kFreeBSD" ;;

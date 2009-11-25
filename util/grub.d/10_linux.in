@@ -24,7 +24,7 @@ libdir=@libdir@
 
 . ${bindir}/gettext.sh
 export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR=@LOCALEDIR@
+export TEXTDOMAINDIR=@localedir@
 
 if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS=GNU/Linux

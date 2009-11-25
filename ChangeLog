@@ -1,3 +1,12 @@
+2009-11-25  Felix Zielcke  <fzielcke@z-51.de>
+
+	autoconf >= 2.60 support $(localedir).
+
+	* INSTALL: Note that autoconf 2.60 is required.
+	* configure.ac (AC_PREREQ): Bump to 2.60.
+	* util/grub.d/10_kfreebsd.in (TEXTDOMAINDIR): Set to lowercased @localedir@.
+	* util/grub.d/10_linux.in (TEXTDOMAINDIR): Likewise.
+
 2009-11-25  Yves Blusseau  <yves.blusseau@zetam.org>
 
 	* configure.ac: move the call to AM_GNU_GETTEXT to avoid warnings when
