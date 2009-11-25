@@ -31,6 +31,7 @@
 #include <grub/term.h>
 #include <grub/env.h>
 #include <grub/raid.h>
+#include <grub/i18n.h>
 
 #include <grub_probe_init.h>
 
@@ -42,6 +43,8 @@
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
+
+#include "progname.h"
 
 enum {
   PRINT_FS,
@@ -303,10 +306,10 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try ``grub-probe --help'' for more information.\n");
+	     "Try ``%s --help'' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-probe [OPTION]... [PATH|DEVICE]\n\
+Usage: %s [OPTION]... [PATH|DEVICE]\n\
 \n\
 Probe device information for a given path (or device, if the -d option is given).\n\
 \n\
@@ -319,7 +322,7 @@ Probe device information for a given path (or device, if the -d option is given)
   -v, --verbose             print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-",
+", program_name,
 	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
 
   exit (status);
@@ -331,7 +334,10 @@ main (int argc, char *argv[])
   char *dev_map = 0;
   char *argument;
 
-  progname = "grub-probe";
+  set_program_name (argv[0]);
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
 
   /* Check for options.  */
   while (1)
@@ -376,7 +382,7 @@ main (int argc, char *argv[])
 	    break;
 
 	  case 'V':
-	    printf ("%s (%s) %s\n", progname, PACKAGE_NAME, PACKAGE_VERSION);
+	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 	    return 0;
 
 	  case 'v':

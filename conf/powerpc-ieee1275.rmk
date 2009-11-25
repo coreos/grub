@@ -29,10 +29,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genke
 pkglib_PROGRAMS = kernel.img
 
 # Utilities.
-sbin_UTILITIES = grub-mkdevicemap
 
-# For grub-mkdevicemap.
-grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/deviceiter.c \
 	util/devicemap.c util/misc.c
 
 kernel_img_SOURCES = kern/powerpc/ieee1275/startup.S kern/ieee1275/cmain.c \
