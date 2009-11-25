@@ -1,3 +1,7 @@
+2009-11-26  Felix Zielcke  <fzielcke@z-51.de>
+
+	* conf/any-emu.rmk (grub_mkfont_SOURCES): Add `gnulib/progname.c'.
+
 2009-11-26  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* conf/common.rmk (sbin_UTILITIES): Add `grub-mkdevicemap'.
