@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU GRUB\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-22 11:45+0000\n"
+"POT-Creation-Date: 2009-11-25 23:35+0100\n"
 "PO-Revision-Date: 2009-11-17 12:26+0100\n"
 "Last-Translator: Robert Millan <rmh.grub@aybabtu.com>\n"
 "Language-Team: None <no-team-yet@li.org>\n"
@@ -40,7 +40,7 @@ msgstr ""
 msgid "Core image is too big (%p > %p)\n"
 msgstr ""
 
-#: util/i386/pc/grub-mkimage.c:321 util/i386/pc/grub-setup.c:587
+#: util/i386/pc/grub-mkimage.c:321 util/i386/pc/grub-setup.c:589
 #, c-format
 msgid "Try ``%s --help'' for more information.\n"
 msgstr "Proveu «%s --help» per a obtenir més informació.\n"
@@ -162,39 +162,39 @@ msgstr ""
 msgid "If you really want blocklists, use --force."
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:439
+#: util/i386/pc/grub-setup.c:441
 #, c-format
 msgid "attempting to read the core image `%s' from GRUB"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:440
+#: util/i386/pc/grub-setup.c:442
 #, c-format
 msgid "attempting to read the core image `%s' from GRUB again"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:498
+#: util/i386/pc/grub-setup.c:500
 #, c-format
 msgid "Cannot read `%s' correctly"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:511
+#: util/i386/pc/grub-setup.c:513
 msgid "No terminator in the core image"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:522
+#: util/i386/pc/grub-setup.c:524
 msgid "Failed to read the first sector of the core image"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:528
+#: util/i386/pc/grub-setup.c:530
 msgid "Failed to read the rest sectors of the core image"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:547
+#: util/i386/pc/grub-setup.c:549
 #, c-format
 msgid "Cannot open `%s'"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:589
+#: util/i386/pc/grub-setup.c:591
 #, c-format
 msgid ""
 "Usage: grub-setup [OPTION]... DEVICE\n"
@@ -216,27 +216,27 @@ msgid ""
 "Report bugs to <%s>.\n"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:719
+#: util/i386/pc/grub-setup.c:721
 #, c-format
 msgid "No device is specified.\n"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:725
+#: util/i386/pc/grub-setup.c:727
 #, c-format
 msgid "Unknown extra argument `%s'.\n"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:742
+#: util/i386/pc/grub-setup.c:744
 #, c-format
 msgid "Invalid device `%s'.\n"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:755
+#: util/i386/pc/grub-setup.c:757
 #, c-format
 msgid "Invalid root device `%s'"
 msgstr ""
 
-#: util/i386/pc/grub-setup.c:768
+#: util/i386/pc/grub-setup.c:770
 msgid "Cannot guess the root device. Specify the option ``--root-device''."
 msgstr ""
 
