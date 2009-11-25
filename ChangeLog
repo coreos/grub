@@ -1,5 +1,11 @@
 2009-11-25  Felix Zielcke  <fzielcke@z-51.de>
 
+	* util/grub.d/10_linux.in (linux_entry): Quote the arguments to
+	printf and print a newline after the menuentry header line.
+	* util/grub.d/10_kfreebsd.in (kfreebsd_entry): Likewise.
+
+2009-11-25  Felix Zielcke  <fzielcke@z-51.de>
+
 	autoconf >= 2.60 support $(localedir).
 
 	* INSTALL: Note that autoconf 2.60 is required.
