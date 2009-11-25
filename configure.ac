@@ -33,7 +33,6 @@ dnl type.
 
 AC_INIT([GRUB],[1.97],[bug-grub@gnu.org])
 AM_INIT_AUTOMAKE()
-AM_GNU_GETTEXT()
 AC_PREREQ(2.59d)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
@@ -173,6 +172,7 @@ AC_PROG_CC
 test "x$GCC" = xyes || AC_MSG_ERROR([GCC is required])
 
 AC_GNU_SOURCE
+AM_GNU_GETTEXT
 AC_SYS_LARGEFILE
 
 # Identify characteristics of the host architecture.

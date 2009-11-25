@@ -1,7 +1,94 @@
-2009-11-23  Robert Millan  <rmh.grub@aybabtu.com>
+2009-11-25  Yves Blusseau  <yves.blusseau@zetam.org>
 
-	* po/id.po: New file.
-	* LINGUAS: Add `id'.
+	* configure.ac: move the call to AM_GNU_GETTEXT to avoid warnings when
+	aclocal is run.
+
+2009-11-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/main.c (grub_normal_read_line): Fix off-by-one
+	buffer overflow.
+
+2009-11-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/main.c (grub_normal_execute): Replace "parser.sh" with
+	"parser.grub" in grub_command_execute() call.
+
+2009-11-24  Carles Pina i Estany <carles@pina.cat>
+
+	* conf/i386-coreboot.rmk (kernel_img_HEADERS): Add i18n.h.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+	* gettext/gettex.c: Include <grub/i18n.h>.
+	* include/grub/misc.h (grub_gettext_dummy, grub_gettext): Move from
+ 	  here ...
+	* include/grub/i18n.h: ... to here
+	* include/grub/i18n.h: ... to here.
+	* kern/misc.c: Include <grub/i18n.h>
+	(grub_gettext_dummy): Move above user. 
+
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/Makefile.in (install-local): Convert a `for' into a normal
+	shell expansion.
+
+2009-11-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* autogen.sh: Add automake call.
+	* config.guess: Remove.
+	* config.sub: Likewise.
+	* install-sh: Likewise.
+
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/Makefile.in (install-local): Fix the use of $lang shell variable.
+
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/Makefile.in (install-local): Convert a make `$(foreach)'
+	function to a normal shell `for'.
+
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
+	* conf/i386-coreboot.rmk (grub_mkimage_SOURCES): Add `gnulib/progname.c'.
+
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkrelpath.c: New file.
+	* conf/common.rmk (bin_UTILITIES): Add grub-mkrelpath.
+	(grub_mkrelpath_SOURCES): New variable.
+	* include/grub/util/misc.h: New function prototype.
+	* util/misc.c (make_system_path_relative_to_its_root): New function.
+
+	* util/grub-mkconfig_lib.in (bindir): New variable.
+	(grub_mkrelpath): Likewise.
+	(make_system_path_relative_to_its_root): Use grub-mkrelpath.
+
+	* util/probe.c (probe): Make the file path relative to its root.
+	Change a info message to use the GRUB path.  Enable again the
+	check if we can read the file with GRUB facilities.
+
+	* util/i386/pc/grub-setup.c (setup): Make core.img path relative
+	to its root.
+
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in: Don't include GRUB_CONTRIB makefiles with emu
+	platform.
+
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/getroot.c (grub_util_get_dev_abstraction): Properly use
+	strncmp().
+
+2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/getroot.c (grub_util_is_dmraid): New function.
+	(grub_util_get_dev_abstraction): Treat dmraid and multipath
+	devices as normal ones, not as LVM.
 
 2009-11-23  Carles Pina i Estany <carles@pina.cat>
 
@@ -17,8 +104,6 @@
 	* normal/menu_text.c: Include <grub/i18n.h>.
 	* normal/menu_text.c (print_timeout): Gettexttize string.
 	* normal/menu_text.c (print_message): Gettexttize string.
-	* po/POTFILES: Add `normal/menu_text.c'.
-	* po/ca.po: Add new translations.
 	* util/grub.d/00_header.in: Define locale_dir and lang. insmod
 	  gettext module and defines locale_dir and lang in grub.cfg.
 	* NEWS: Add gettext support.
@@ -221,8 +306,6 @@
 	* Makefile.in (po/*.po): Redefine as ...
 	($(foreach lang, $(LINGUAS), po/$(lang).po)): ... this.
 
-	* po/POTFILES: Add `util/i386/pc/grub-setup.c'.
-
 2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* conf/common.rmk (grub_mkisofs_SOURCES): Add `gnulib/progname.c'.
@@ -240,8 +323,6 @@
 	* util/mkisofs/rock.c: Likewise.
 	* util/mkisofs/tree.c: Likewise.
 	* util/mkisofs/write.c: Likewise.
-
-	* po/POTFILES: Update with new files.
 
 2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
 
@@ -270,8 +351,6 @@
 
 2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
 
-	* po/POTFILES-shell: New file.  List `util/grub.d/10_kfreebsd.in'
-	and `util/grub.d/10_linux.in'.
 	* Makefile.in (po/$(PACKAGE).pot): Process `po/POTFILES-shell' for
 	translatable Shell files.
 
@@ -282,7 +361,6 @@
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* INSTALL: Document Automake is needed for bootstrap.
-	* po/ca.po: Fix PO-Revision-Date and Language-Team fields.
 	* util/grub.d/10_kfreebsd.in (bindir): New variable.
 	Add gettext initialization.
 	(kfreebsd_entry): Make menuentry output translatable.
@@ -294,7 +372,6 @@
 	(po/*.po): Replace `msgmerge' with `$(MSGMERGE)'.
 	(po/%.mo): Replace `msgfmt' with `$(MSGFMT)'.
 	(LINGUAS): Auto-generate using `po/LINGUAS'.
-	* po/LINGUAS: New file.
 
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
@@ -334,8 +411,6 @@
 	(install-local): Install MO files.
 	(po/$(PACKAGE).pot, po/*.po, po/%.mo): New rules.
 	* include/grub/i18n.h: New file.
-	* po/POTFILES: New file.
-	* po/ca.po: New file.
 	* util/grub.d/10_linux.in (bindir): New variable.
 	Add gettext initialization.
 	(linux_entry): Make menuentry output translatable.

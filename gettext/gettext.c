@@ -26,6 +26,7 @@
 #include <grub/file.h>
 #include <grub/kernel.h>
 #include <grub/gzio.h>
+#include <grub/i18n.h>
 
 /* 
    .mo file information from: 

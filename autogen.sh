@@ -6,6 +6,9 @@ aclocal
 autoconf
 autoheader
 
+# FIXME: automake doesn't like that there's no Makefile.am
+automake -a -c -f || true
+
 echo timestamp > stamp-h.in
 
 python util/import_gcry.py lib/libgcrypt/ .
