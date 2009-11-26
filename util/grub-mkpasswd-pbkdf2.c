@@ -120,7 +120,7 @@ main (int argc, char *argv[])
   struct termios s, t;
   int tty_changed;
 
-  progname = "grub-pbkdf2";
+  progname = "grub-mkpasswd-pbkdf2";
 
   /* Check for options.  */
   while (1)
