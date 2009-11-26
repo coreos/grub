@@ -1,5 +1,9 @@
 2009-11-26  Felix Zielcke  <fzielcke@z-51.de>
 
+	* conf/any-emu.rmk (grub_emu_SOURCES): Add `gnulib/progname.c'.
+
+2009-11-26  Felix Zielcke  <fzielcke@z-51.de>
+
 	* conf/any-emu.rmk (grub_mkfont_SOURCES): Add `gnulib/progname.c'.
 
 2009-11-26  Robert Millan  <rmh.grub@aybabtu.com>
