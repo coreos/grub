@@ -1,3 +1,13 @@
+2009-11-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/i386-coreboot.rmk: Cleanup stale filenames from my previous
+	commit.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+
 2009-11-26  Felix Zielcke  <fzielcke@z-51.de>
 
 	* conf/any-emu.rmk (grub_emu_SOURCES): Add `gnulib/progname.c'.

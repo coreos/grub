@@ -47,10 +47,6 @@ symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.
 kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
-# Utilities.
-
-	util/devicemap.c util/misc.c
-
 # Scripts.
 sbin_SCRIPTS = grub-install
 

@@ -85,8 +85,6 @@ grub_setup_SOURCES = util/sparc64/ieee1275/grub-setup.c util/hostdisk.c	\
 	util/raid.c util/lvm.c					\
 	grub_setup_init.c
 
-	util/ieee1275/ofpath.c util/ieee1275/devicemap.c util/misc.c
-
 # For grub-ofpathname.
 grub_ofpathname_SOURCES = util/sparc64/ieee1275/grub-ofpathname.c \
 	util/ieee1275/ofpath.c util/misc.c
