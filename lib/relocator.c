@@ -75,9 +75,9 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
   /* Very unlikely condition: Relocator may risk overwrite itself.
      Just move it a bit up.  */
   if ((grub_uint8_t *) UINT_TO_PTR (dest) - (grub_uint8_t *) relocator
-      < RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN
+      < (signed) (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN)
       && (grub_uint8_t *) UINT_TO_PTR (dest) - (grub_uint8_t *) relocator
-      > -(RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN))
+      > - (signed) (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN))
     {
       void *relocator_new = ((grub_uint8_t *) relocator)
 	+ (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
