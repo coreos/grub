@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU GRUB\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-25 23:02+0100\n"
+"POT-Creation-Date: 2009-11-25 23:35+0100\n"
 "PO-Revision-Date: 2009-11-17 12:26+0100\n"
 "Last-Translator: Robert Millan <rmh.grub@aybabtu.com>\n"
 "Language-Team: None <no-team-yet@li.org>\n"
@@ -14,33 +14,38 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: util/grub-mkrawimage.c:66
+#: util/i386/pc/grub-mkimage.c:65
 msgid "the core image is too small"
 msgstr ""
 
-#: util/grub-mkrawimage.c:78
+#: util/i386/pc/grub-mkimage.c:77
 msgid "cannot compress the kernel image"
 msgstr ""
 
-#: util/grub-mkrawimage.c:152
-msgid "prefix too long"
+#: util/i386/pc/grub-mkimage.c:138
+msgid "prefix is too long"
 msgstr ""
 
-#: util/grub-mkrawimage.c:236
+#: util/i386/pc/grub-mkimage.c:206
 msgid "the core image is too big"
 msgstr ""
 
-#: util/grub-mkrawimage.c:241
+#: util/i386/pc/grub-mkimage.c:211
 #, c-format
 msgid "diskboot.img size must be %u bytes"
 msgstr ""
 
-#: util/grub-mkrawimage.c:315
+#: util/i386/pc/grub-mkimage.c:284
 #, c-format
 msgid "Core image is too big (%p > %p)\n"
 msgstr ""
 
-#: util/grub-mkrawimage.c:424
+#: util/i386/pc/grub-mkimage.c:321 util/i386/pc/grub-setup.c:589
+#, c-format
+msgid "Try ``%s --help'' for more information.\n"
+msgstr "Proveu «%s --help» per a obtenir més informació.\n"
+
+#: util/i386/pc/grub-mkimage.c:323
 #, c-format
 msgid ""
 "Usage: grub-mkimage [OPTION]... [MODULES]\n"
@@ -50,13 +55,16 @@ msgid ""
 "  -d, --directory=DIR     use images and modules under DIR [default=%s]\n"
 "  -p, --prefix=DIR        set grub_prefix directory [default=%s]\n"
 "  -m, --memdisk=FILE      embed FILE as a memdisk image\n"
-"  -f, --font=FILE         embed FILE as a boot font\n"
 "  -c, --config=FILE       embed FILE as boot config\n"
 "  -o, --output=FILE       output a generated image to FILE [default=stdout]\n"
-"  -O, --format=FORMAT     generate an image in format [default="
+"  -h, --help              display this message and exit\n"
+"  -V, --version           print version information and exit\n"
+"  -v, --verbose           print verbose messages\n"
+"\n"
+"Report bugs to <%s>.\n"
 msgstr ""
 
-#: util/grub-mkrawimage.c:566
+#: util/i386/pc/grub-mkimage.c:429
 #, c-format
 msgid "cannot open %s"
 msgstr ""
@@ -185,11 +193,6 @@ msgstr ""
 #, c-format
 msgid "Cannot open `%s'"
 msgstr ""
-
-#: util/i386/pc/grub-setup.c:589
-#, c-format
-msgid "Try ``%s --help'' for more information.\n"
-msgstr "Proveu «%s --help» per a obtenir més informació.\n"
 
 #: util/i386/pc/grub-setup.c:591
 #, c-format

@@ -16,15 +16,17 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define MAX_OVERHEAD ((RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN) \
+		      + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN) \
+		      + (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)	\
+		      + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN))
+
 void *
 PREFIX (alloc) (grub_size_t size)
 {
   char *playground;
 
-  playground = grub_malloc ((RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
-			    + size
-			    + (RELOCATOR_SIZEOF (backward) +
-			       RELOCATOR_ALIGN));
+  playground = grub_malloc (size + MAX_OVERHEAD);
   if (!playground)
     return 0;
 
@@ -40,10 +42,7 @@ PREFIX (realloc) (void *relocator, grub_size_t size)
 
   playground = (char *) relocator - RELOCATOR_SIZEOF (forward);
 
-  playground = grub_realloc (playground,
-			     (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
-			     + size
-			     + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN));
+  playground = grub_realloc (playground, size + MAX_OVERHEAD);
   if (!playground)
     return 0;
 
@@ -72,6 +71,25 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
   grub_dprintf ("relocator",
 		"Relocator: source: %p, destination: 0x%x, size: 0x%x\n",
 		relocator, dest, size);
+
+  /* Very unlikely condition: Relocator may risk overwrite itself.
+     Just move it a bit up.  */
+  if ((grub_uint8_t *) UINT_TO_PTR (dest) - (grub_uint8_t *) relocator
+      < (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN)
+      && (grub_uint8_t *) UINT_TO_PTR (dest) - (grub_uint8_t *) relocator
+      > - (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN))
+    {
+      void *relocator_new = ((grub_uint8_t *) relocator)
+	+ (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
+	+ (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN);
+      grub_dprintf ("relocator", "Overwrite condition detected moving "
+		    "relocator from %p to %p\n", relocator, relocator_new);
+      grub_memmove (relocator_new, relocator,
+		    (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
+		    + size
+		    + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN));
+      relocator = relocator_new;
+    }
 
   if (UINT_TO_PTR (dest) >= relocator)
     {

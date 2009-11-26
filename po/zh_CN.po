@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: grub 1.97+20091122\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-25 23:02+0100\n"
+"POT-Creation-Date: 2009-11-25 23:35+0100\n"
 "PO-Revision-Date: 2009-11-23 18:36+0800\n"
 "Last-Translator: Aron Xu <happyaron.xu@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists."
@@ -17,34 +17,38 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: util/grub-mkrawimage.c:66
+#: util/i386/pc/grub-mkimage.c:65
 msgid "the core image is too small"
 msgstr "核心映像太小"
 
-#: util/grub-mkrawimage.c:78
+#: util/i386/pc/grub-mkimage.c:77
 msgid "cannot compress the kernel image"
 msgstr "无法压缩内核映像"
 
-#: util/grub-mkrawimage.c:152
-#, fuzzy
-msgid "prefix too long"
+#: util/i386/pc/grub-mkimage.c:138
+msgid "prefix is too long"
 msgstr "前缀太长"
 
-#: util/grub-mkrawimage.c:236
+#: util/i386/pc/grub-mkimage.c:206
 msgid "the core image is too big"
 msgstr "核心映像太大"
 
-#: util/grub-mkrawimage.c:241
+#: util/i386/pc/grub-mkimage.c:211
 #, c-format
 msgid "diskboot.img size must be %u bytes"
 msgstr "diskboot.img 的大小必须为 %u 字节"
 
-#: util/grub-mkrawimage.c:315
+#: util/i386/pc/grub-mkimage.c:284
 #, c-format
 msgid "Core image is too big (%p > %p)\n"
 msgstr "核心映像太大(%p > %p)\n"
 
-#: util/grub-mkrawimage.c:424
+#: util/i386/pc/grub-mkimage.c:321 util/i386/pc/grub-setup.c:589
+#, c-format
+msgid "Try ``%s --help'' for more information.\n"
+msgstr "请尝试运行 ``%s --help'' 以获得更多信息。\n"
+
+#: util/i386/pc/grub-mkimage.c:323
 #, c-format
 msgid ""
 "Usage: grub-mkimage [OPTION]... [MODULES]\n"
@@ -54,13 +58,16 @@ msgid ""
 "  -d, --directory=DIR     use images and modules under DIR [default=%s]\n"
 "  -p, --prefix=DIR        set grub_prefix directory [default=%s]\n"
 "  -m, --memdisk=FILE      embed FILE as a memdisk image\n"
-"  -f, --font=FILE         embed FILE as a boot font\n"
 "  -c, --config=FILE       embed FILE as boot config\n"
 "  -o, --output=FILE       output a generated image to FILE [default=stdout]\n"
-"  -O, --format=FORMAT     generate an image in format [default="
+"  -h, --help              display this message and exit\n"
+"  -V, --version           print version information and exit\n"
+"  -v, --verbose           print verbose messages\n"
+"\n"
+"Report bugs to <%s>.\n"
 msgstr ""
 
-#: util/grub-mkrawimage.c:566
+#: util/i386/pc/grub-mkimage.c:429
 #, c-format
 msgid "cannot open %s"
 msgstr "无法打开 %s"
@@ -189,11 +196,6 @@ msgstr ""
 #, c-format
 msgid "Cannot open `%s'"
 msgstr "无法打开 `%s'"
-
-#: util/i386/pc/grub-setup.c:589
-#, c-format
-msgid "Try ``%s --help'' for more information.\n"
-msgstr "请尝试运行 ``%s --help'' 以获得更多信息。\n"
 
 #: util/i386/pc/grub-setup.c:591
 #, c-format
