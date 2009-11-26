@@ -27,13 +27,11 @@
 #ifdef __x86_64__
 #define RAX %rax
 #define RCX %rcx
-#define RDX %rdx
 #define RDI %rdi
 #define RSI %rdi
 #else
 #define RAX %eax
 #define RCX %ecx
-#define RDX %edx
 #define RDI %edi	
 #define RSI %esi	
 #endif
@@ -97,7 +95,7 @@ RELOCATOR_VARIABLE(size)
 	
 #ifdef BACKWARD
 	add	RCX, RSI
-	add	RDX, RDI
+	add	RCX, RDI
 #endif
 
 #ifndef BACKWARD

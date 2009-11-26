@@ -20,6 +20,7 @@
 		      + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN) \
 		      + (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)	\
 		      + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN))
+#define PRE_REGION_SIZE (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN)
 
 void *
 PREFIX (alloc) (grub_size_t size)
@@ -32,7 +33,7 @@ PREFIX (alloc) (grub_size_t size)
 
   *(grub_size_t *) playground = size;
 
-  return playground + RELOCATOR_SIZEOF (forward);
+  return playground + PRE_REGION_SIZE;
 }
 
 void *
@@ -40,7 +41,7 @@ PREFIX (realloc) (void *relocator, grub_size_t size)
 {
   char *playground;
 
-  playground = (char *) relocator - RELOCATOR_SIZEOF (forward);
+  playground = (char *) relocator - PRE_REGION_SIZE;
 
   playground = grub_realloc (playground, size + MAX_OVERHEAD);
   if (!playground)
@@ -48,14 +49,14 @@ PREFIX (realloc) (void *relocator, grub_size_t size)
 
   *(grub_size_t *) playground = size;
 
-  return playground + RELOCATOR_SIZEOF (forward);
+  return playground + PRE_REGION_SIZE;
 }
 
 void
 PREFIX(free) (void *relocator)
 {
   if (relocator)
-    grub_free ((char *) relocator - RELOCATOR_SIZEOF (forward));
+    grub_free ((char *) relocator - PRE_REGION_SIZE);
 }
 
 grub_err_t
@@ -65,7 +66,7 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
   grub_size_t size;
   char *playground;
 
-  playground = (char *) relocator - RELOCATOR_SIZEOF (forward);
+  playground = (char *) relocator - PRE_REGION_SIZE;
   size = *(grub_size_t *) playground;
 
   grub_dprintf ("relocator",
@@ -75,9 +76,9 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
   /* Very unlikely condition: Relocator may risk overwrite itself.
      Just move it a bit up.  */
   if ((grub_uint8_t *) UINT_TO_PTR (dest) - (grub_uint8_t *) relocator
-      < (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN)
+      < (signed) (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN)
       && (grub_uint8_t *) UINT_TO_PTR (dest) - (grub_uint8_t *) relocator
-      > - (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN))
+      > - (signed) (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN))
     {
       void *relocator_new = ((grub_uint8_t *) relocator)
 	+ (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
@@ -94,7 +95,7 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
   if (UINT_TO_PTR (dest) >= relocator)
     {
       int overhead;
-      overhead =
+      overhead = dest -
 	ALIGN_UP (dest - RELOCATOR_SIZEOF (backward) - RELOCATOR_ALIGN,
 		  RELOCATOR_ALIGN);
       grub_dprintf ("relocator",

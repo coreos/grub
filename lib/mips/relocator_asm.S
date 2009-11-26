@@ -30,16 +30,28 @@ copycont1:
 	addiu $8, $8, 0x1
 	addiu $9, $9, 0x1
 	addiu $10, $10, 0xffff
-	subu $11,$10,$0
-	bne $11, $0, copycont1
+	bne $10, $0, copycont1
 
-cachecont1:	
+	move $9, $12
+	move $10, $13
+cachecont1a:	
 	cache 1,0($12)
+	addiu $12, $12, 0x1
+	addiu $13, $13, 0xffff
+	bne $13, $0, cachecont1a
+
+	sync
+
+	move $12, $9
+	move $13, $10
+cachecont1b:	
 	cache 0,0($12)
 	addiu $12, $12, 0x1
 	addiu $13, $13, 0xffff
-	subu $11,$13,$0
-	bne $11, $0, cachecont1
+	bne $13, $0, cachecont1b
+
+	sync
+
 VARIABLE (grub_relocator32_forward_end)
 
 VARIABLE (grub_relocator32_backward_start)
@@ -54,18 +66,28 @@ VARIABLE (grub_relocator32_backward_start)
 copycont2:	
 	lb $11,0($8)
 	sb $11,0($9)
-	cache 1, 0($9)
-	cache 0, 0($9)
 	addiu $8, $8, 0xffff
 	addiu $9, $9, 0xffff
 	addiu $10, 0xffff
-	subu $11,$10,$0
-	bne $11, $0, copycont2
-cachecont2:
+	bne $10, $0, copycont2
+
+	move $9, $12
+	move $10, $13
+cachecont2a:	
 	cache 1,0($12)
+	addiu $12, $12, 0x1
+	addiu $13, $13, 0xffff
+	bne $13, $0, cachecont2a
+
+	sync
+
+	move $12, $9
+	move $13, $10
+cachecont2b:	
 	cache 0,0($12)
 	addiu $12, $12, 0x1
 	addiu $13, $13, 0xffff
-	subu $11,$13,$0
-	bne $11, $0, cachecont2
+	bne $13, $0, cachecont2b
+
+	sync
 VARIABLE (grub_relocator32_backward_end)
