@@ -197,7 +197,7 @@ grub_video_efi_fini (void)
 
 static grub_err_t
 grub_video_efi_setup (unsigned int width, unsigned int height,
-		      unsigned int mode_type)
+		      unsigned int mode_type, unsigned int mode_mask __attribute__ ((unused)))
 {
   unsigned int depth;
   int found = 0;
