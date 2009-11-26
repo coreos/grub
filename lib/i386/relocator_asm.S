@@ -208,7 +208,7 @@ RELOCATOR_VARIABLE (edx)
 	.byte	0xea
 RELOCATOR_VARIABLE (eip)
 	.long	0
-	.word	0x08
+	.word	CODE_SEGMENT
 
 	/* GDT. Copied from loader/i386/linux.c. */
 	.p2align	4
