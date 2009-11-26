@@ -1,3 +1,8 @@
+2009-11-26  Felix Zielcke  <fzielcke@z-51.de>
+
+	* conf/i386-efi.rmk (grub_mkimage_SOURCES): Add `gnulib/progname.c'.
+	* conf/x86_64-efi.rmk (grub_mkimage_SOURCES): Likewise.
+
 2009-11-26  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* conf/i386-coreboot.rmk: Cleanup stale filenames from my previous
