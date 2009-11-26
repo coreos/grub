@@ -1,3 +1,8 @@
+2009-11-26 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/i386/efi/grub-mkimage.c: Include "progname.h".
+	(main): Use `program_name' instead of nonexistent `progname'.
+
 2009-11-26  Felix Zielcke  <fzielcke@z-51.de>
 
 	* conf/i386-efi.rmk (grub_mkimage_SOURCES): Add `gnulib/progname.c'.
