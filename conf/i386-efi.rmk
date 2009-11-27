@@ -148,6 +148,11 @@ efi_uga_mod_SOURCES = video/efi_uga.c
 efi_uga_mod_CFLAGS = $(COMMON_CFLAGS)
 efi_uga_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += efi_gop.mod
+efi_gop_mod_SOURCES = video/efi_gop.c
+efi_gop_mod_CFLAGS = $(COMMON_CFLAGS)
+efi_gop_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 pkglib_MODULES += xnu.mod
 xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c loader/i386/efi/xnu.c\
 	 loader/macho.c loader/xnu.c loader/i386/xnu_helper.S

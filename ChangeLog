@@ -1,5 +1,17 @@
 2009-11-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	GOP support. Based on patch from Bean
+	(http://lists.gnu.org/archive/html/grub-devel/2009-08/msg00384.html)
+
+	* video/efi_gop.c: New file.
+	* include/grub/efi/graphics_output.h: Likewise.
+	* conf/i386-efi.rmk (pkglib_MODULES): Add `efi_gop.mod'.
+	(efi_fb_mod_SOURCES, efi_fb_mod_CFLAGS, efi_fb_mod_LDFLAGS): New
+	variables.
+	* conf/x86_64-efi.rmk: Likewise.
+
+2009-11-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Rename efi_fb to efi_uga.
 
 	* conf/i386-efi.rmk (pkglib_MODULES): Rename 'efi_fb.mod' to
