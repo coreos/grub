@@ -1,5 +1,9 @@
 2009-11-27  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* po/README: New file.  Explain our PO file workflow.
+
+2009-11-27  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* po/ChangeLog: Remove.  Move relevant entries back to ...
 	* ChangeLog: ... here.
 	* po/ca.po: Remove (now handled by TLP).
