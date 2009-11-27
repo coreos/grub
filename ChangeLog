@@ -1,5 +1,15 @@
 2009-11-27  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* po/ChangeLog: Remove.  Move relevant entries back to ...
+	* ChangeLog: ... here.
+	* po/ca.po: Remove (now handled by TLP).
+	* po/id.po: Likewise.
+	* po/zh_CN.po: Likewise.
+	* Makefile.in (LINGUAS): Initialize in a way that supports
+	empty set.
+
+2009-11-27  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* Makefile.in (LINGUAS): Rewrite by scanning po/ directory instead of
 	reliing on po/LINGUAS.
 	($(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po)): Rewrite as ...
@@ -188,6 +198,8 @@
 	* normal/menu_text.c: Include <grub/i18n.h>.
 	* normal/menu_text.c (print_timeout): Gettexttize string.
 	* normal/menu_text.c (print_message): Gettexttize string.
+	* po/POTFILES: Add `normal/menu_text.c'.
+	* po/ca.po: Add new translations.
 	* util/grub.d/00_header.in: Define locale_dir and lang. insmod
 	  gettext module and defines locale_dir and lang in grub.cfg.
 	* NEWS: Add gettext support.
@@ -390,6 +402,8 @@
 	* Makefile.in (po/*.po): Redefine as ...
 	($(foreach lang, $(LINGUAS), po/$(lang).po)): ... this.
 
+	* po/POTFILES: Add `util/i386/pc/grub-setup.c'.
+
 2009-11-19  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* conf/common.rmk (grub_mkisofs_SOURCES): Add `gnulib/progname.c'.
@@ -407,6 +421,8 @@
 	* util/mkisofs/rock.c: Likewise.
 	* util/mkisofs/tree.c: Likewise.
 	* util/mkisofs/write.c: Likewise.
+
+	* po/POTFILES: Update with new files.
 
 2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
 
@@ -435,6 +451,8 @@
 
 2009-11-18  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* po/POTFILES-shell: New file.  List `util/grub.d/10_kfreebsd.in'
+	and `util/grub.d/10_linux.in'.
 	* Makefile.in (po/$(PACKAGE).pot): Process `po/POTFILES-shell' for
 	translatable Shell files.
 
@@ -445,6 +463,7 @@
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* INSTALL: Document Automake is needed for bootstrap.
+	* po/ca.po: Fix PO-Revision-Date and Language-Team fields.
 	* util/grub.d/10_kfreebsd.in (bindir): New variable.
 	Add gettext initialization.
 	(kfreebsd_entry): Make menuentry output translatable.
@@ -456,6 +475,7 @@
 	(po/*.po): Replace `msgmerge' with `$(MSGMERGE)'.
 	(po/%.mo): Replace `msgfmt' with `$(MSGFMT)'.
 	(LINGUAS): Auto-generate using `po/LINGUAS'.
+	* po/LINGUAS: New file.
 
 2009-11-17  Robert Millan  <rmh.grub@aybabtu.com>
 
@@ -495,6 +515,8 @@
 	(install-local): Install MO files.
 	(po/$(PACKAGE).pot, po/*.po, po/%.mo): New rules.
 	* include/grub/i18n.h: New file.
+	* po/POTFILES: New file.
+	* po/ca.po: New file.
 	* util/grub.d/10_linux.in (bindir): New variable.
 	Add gettext initialization.
 	(linux_entry): Make menuentry output translatable.
