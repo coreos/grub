@@ -45,7 +45,7 @@ grub_xnu_resume (char *imagename)
   grub_file_t file;
   grub_size_t total_header_size;
   struct grub_xnu_hibernate_header hibhead;
-  char *buf, *codetmp;
+  grub_uint8_t *buf;
 
   grub_uint32_t codedest;
   grub_uint32_t codesize;
@@ -94,12 +94,11 @@ grub_xnu_resume (char *imagename)
   /* Try to allocate necessary space.
      FIXME: mm isn't good enough yet to handle huge allocations.
    */
-  grub_xnu_hibernate_image = buf = grub_malloc (hibhead.image_size);
+  grub_xnu_hibernate_image = buf = XNU_RELOCATOR (alloc) (hibhead.image_size);
   if (! buf)
     {
       grub_file_close (file);
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			 "not enough memory to load image");
+      return grub_errno;
     }
 
   /* Read image. */
@@ -112,22 +111,16 @@ grub_xnu_resume (char *imagename)
     }
   grub_file_close (file);
 
-  codetmp = grub_memalign (GRUB_XNU_PAGESIZE, codesize + GRUB_XNU_PAGESIZE);
   /* Setup variables needed by asm helper. */
   grub_xnu_heap_will_be_at = codedest;
-  grub_xnu_heap_start = codetmp;
+  grub_xnu_heap_start = buf;
   grub_xnu_heap_size = codesize;
   grub_xnu_stack = (codedest + hibhead.stack);
   grub_xnu_entry_point = (codedest + hibhead.entry_point);
   grub_xnu_arg1 = (long) buf;
 
-  /* Prepare asm helper. */
-  grub_memcpy (codetmp, ((grub_uint8_t *) buf) + total_header_size, codesize);
-  grub_memcpy (codetmp + codesize, grub_xnu_launcher_start,
-	       grub_xnu_launcher_end - grub_xnu_launcher_start);
-
   /* We're ready now. */
-  grub_loader_set ((grub_err_t (*) (void)) (codetmp + codesize),
+  grub_loader_set (grub_xnu_boot_resume,
 		   grub_xnu_resume_unload, 0);
 
   /* Prevent module from unloading. */
