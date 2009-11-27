@@ -73,8 +73,8 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
   size = *(grub_size_t *) playground;
 
   grub_dprintf ("relocator",
-		"Relocator: source: %p, destination: 0x%x, size: 0x%x\n",
-		relocator, dest, size);
+		"Relocator: source: %p, destination: 0x%x, size: 0x%lx\n",
+		relocator, (unsigned) dest, (unsigned long) size);
 
   /* Very unlikely condition: Relocator may risk overwrite itself.
      Just move it a bit up.  */
@@ -103,10 +103,11 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
 		  RELOCATOR_ALIGN);
       grub_dprintf ("relocator",
 		    "Backward relocator: code %p, source: %p, "
-		    "destination: 0x%x, size: 0x%x\n",
+		    "destination: 0x%x, size: 0x%lx\n",
 		    (char *) relocator - overhead,
 		    (char *) relocator - overhead, 
-		    dest - overhead, size + overhead);
+		    (unsigned) dest - overhead,
+		    (unsigned long) size + overhead);
 
       write_call_relocator_bw ((char *) relocator - overhead,
 			       (char *) relocator - overhead,
@@ -120,10 +121,11 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
 	+ RELOCATOR_SIZEOF (forward) - (dest + size);
       grub_dprintf ("relocator",
 		    "Forward relocator: code %p, source: %p, "
-		    "destination: 0x%x, size: 0x%x\n",
+		    "destination: 0x%x, size: 0x%lx\n",
 		    (char *) relocator + size + overhead
 		    - RELOCATOR_SIZEOF (forward),
-		    relocator, dest, size + overhead);
+		    relocator, (unsigned) dest,
+		    (unsigned long) size + overhead);
 
       write_call_relocator_fw ((char *) relocator + size + overhead
 			       - RELOCATOR_SIZEOF (forward),
