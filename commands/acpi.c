@@ -26,7 +26,6 @@
 #include <grub/gzio.h>
 #include <grub/acpi.h>
 #include <grub/mm.h>
-#include <grub/machine/machine.h>
 #include <grub/machine/memory.h>
 #include <grub/memory.h>
 

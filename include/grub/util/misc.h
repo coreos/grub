@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -75,5 +75,8 @@ void sleep(int s);
 grub_int64_t grub_util_get_disk_size (char *name);
 
 #endif
+
+
+char *make_system_path_relative_to_its_root (const char *path);
 
 #endif /* ! GRUB_UTIL_MISC_HEADER */

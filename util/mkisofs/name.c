@@ -21,8 +21,6 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-static char rcsid[] ="$Id: name.c,v 1.11 1999/03/02 03:41:26 eric Exp $";
-
 #include "config.h"
 #include "mkisofs.h"
 
@@ -213,7 +211,7 @@ int FDECL3(iso9660_file_length,
 	    }
 	  if(current_length < 30) 
 	    {
-	      if( *pnt < 0 )
+	      if( !isascii (*pnt))
 		{
 		  *result++ = '_';
 		}
@@ -281,7 +279,7 @@ int FDECL3(iso9660_file_length,
 		      switch (*pnt) 
 			{
 			default:
-			  if( *pnt < 0 )
+			  if( !isascii (*pnt) )
 			    {
 			      *result++ = '_';
 			    }

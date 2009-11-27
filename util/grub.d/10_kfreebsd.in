@@ -18,8 +18,13 @@
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
+bindir=@bindir@
 libdir=@libdir@
 . ${libdir}/grub/grub-mkconfig_lib
+
+. ${bindir}/gettext.sh
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR=@localedir@
 
 case "${GRUB_DISTRIBUTOR}" in
   Debian)	OS="${GRUB_DISTRIBUTOR} GNU/kFreeBSD" ;;
@@ -28,9 +33,12 @@ esac
 
 kfreebsd_entry ()
 {
-  cat << EOF
-menuentry "$1" {
-EOF
+  os="$1"
+  version="$2"
+  recovery="$3"	# not used yet
+  args="$4"	# not used yet
+  title="$(gettext "%s, with kFreeBSD %s")"
+  printf "menuentry \"${title}\" {\n" "${os}" "${version}"
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
@@ -100,7 +108,7 @@ while [ "x$list" != "x" ] ; do
     acpi_ko_rel_dirname=`make_system_path_relative_to_its_root $acpi_ko_dirname`
   fi
 
-  kfreebsd_entry "${OS}, kFreeBSD ${version}"
+  kfreebsd_entry "${OS}" "${version}"
 
   list=`echo $list | tr ' ' '\n' | grep -vx $kfreebsd | tr '\n' ' '`
 done
