@@ -1,3 +1,70 @@
+2009-11-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/i386-coreboot.rmk: Cleanup stale filenames from my previous
+	commit.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+
+2009-11-26  Felix Zielcke  <fzielcke@z-51.de>
+
+	* conf/any-emu.rmk (grub_emu_SOURCES): Add `gnulib/progname.c'.
+
+2009-11-26  Felix Zielcke  <fzielcke@z-51.de>
+
+	* conf/any-emu.rmk (grub_mkfont_SOURCES): Add `gnulib/progname.c'.
+
+2009-11-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (sbin_UTILITIES): Add `grub-mkdevicemap'.
+	(grub_mkdevicemap_SOURCES): New variable.
+	(grub_probe_SOURCES, grub_fstest_SOURCES, grub_mkfont_SOURCES)
+	(grub_mkrelpath_SOURCES, grub_editenv_SOURCES)
+	(grub_pe2elf_SOURCES): Add `gnulib/progname.c'.
+	* conf/i386-coreboot.rmk (sbin_UTILITIES): Remove `grub-mkdevicemap'.
+	(grub_mkdevicemap_SOURCES): Remove.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+	* util/elf/grub-mkimage.c: Include `<grub/i18n.h>' and `"progname.h"'.
+	(usage): Fix strings to use `program_name'.
+	(main): Initialize gettext.
+	* util/grub-editenv.c: Likewise.
+	* util/grub-emu.c: Likewise.
+	* util/grub-fstest.c: Likewise.
+	* util/grub-mkdevicemap.c: Likewise.
+	* util/grub-mkfont.c: Likewise.
+	* util/grub-mkrelpath.c: Likewise.
+	* util/grub-pe2elf.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/sparc64/ieee1275/grub-mkimage.c: Likewise.
+	* util/sparc64/ieee1275/grub-ofpathname.c: Likewise.
+	* util/sparc64/ieee1275/grub-setup.c: Likewise.
+
+	* util/misc.c: Include `"progname.h"'.
+	(progname): Remove variable.
+	(grub_util_warn, grub_util_info, grub_util_error): Use `program_name'.
+
+2009-11-25  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub.d/10_linux.in (linux_entry): Quote the arguments to
+	printf and print a newline after the menuentry header line.
+	* util/grub.d/10_kfreebsd.in (kfreebsd_entry): Likewise.
+
+2009-11-25  Felix Zielcke  <fzielcke@z-51.de>
+
+	autoconf >= 2.60 support $(localedir).
+
+	* INSTALL: Note that autoconf 2.60 is required.
+	* configure.ac (AC_PREREQ): Bump to 2.60.
+	* util/grub.d/10_kfreebsd.in (TEXTDOMAINDIR): Set to lowercased @localedir@.
+	* util/grub.d/10_linux.in (TEXTDOMAINDIR): Likewise.
+
 2009-11-25  Yves Blusseau  <yves.blusseau@zetam.org>
 
 	* configure.ac: move the call to AM_GNU_GETTEXT to avoid warnings when

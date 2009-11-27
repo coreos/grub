@@ -39,6 +39,8 @@
 #include <grub/term.h>
 #include <grub/time.h>
 
+#include "progname.h"
+
 /* Include malloc.h, only if memalign is available. It is known that
    memalign is declared in malloc.h in all systems, if present.  */
 #ifdef HAVE_MEMALIGN
@@ -50,7 +52,6 @@
 #include <winioctl.h>
 #endif
 
-char *progname = 0;
 int verbosity = 0;
 
 void
@@ -58,7 +59,7 @@ grub_util_warn (const char *fmt, ...)
 {
   va_list ap;
 
-  fprintf (stderr, "%s: warn: ", progname);
+  fprintf (stderr, "%s: warn: ", program_name);
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   va_end (ap);
@@ -73,7 +74,7 @@ grub_util_info (const char *fmt, ...)
     {
       va_list ap;
 
-      fprintf (stderr, "%s: info: ", progname);
+      fprintf (stderr, "%s: info: ", program_name);
       va_start (ap, fmt);
       vfprintf (stderr, fmt, ap);
       va_end (ap);
@@ -87,7 +88,7 @@ grub_util_error (const char *fmt, ...)
 {
   va_list ap;
 
-  fprintf (stderr, "%s: error: ", progname);
+  fprintf (stderr, "%s: error: ", program_name);
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   va_end (ap);
