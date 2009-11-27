@@ -288,7 +288,7 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
       return err;
     }
 
-  framebuffer.ptr = (void *) gop->mode->fb_base;
+  framebuffer.ptr = (void *) (grub_addr_t) gop->mode->fb_base;
 
   grub_dprintf ("video", "GOP: initialising FB @ %p %dx%dx%d\n",
 		framebuffer.ptr, framebuffer.mode_info.width,

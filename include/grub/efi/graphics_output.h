@@ -67,7 +67,7 @@ typedef grub_efi_status_t
 (*grub_efi_gop_query_mode_t) (struct grub_efi_gop *this,
 			      grub_efi_uint32_t mode_number,
 			      grub_efi_uintn_t *size_of_info,
-			      struct grub_efi_gop_mode_info *info);
+			      struct grub_efi_gop_mode_info **info);
 
 typedef grub_efi_status_t
 (*grub_efi_gop_set_mode_t) (struct grub_efi_gop *this,
