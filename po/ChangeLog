@@ -1,3 +1,7 @@
+2009-11-27  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* LINGUAS: Remove.
+
 2009-11-24  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* zh_CN.po: New file.

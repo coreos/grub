@@ -1,3 +1,10 @@
+2009-11-27  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (LINGUAS): Rewrite by scanning po/ directory instead of
+	reliing on po/LINGUAS.
+	($(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po)): Rewrite as ...
+	(po/%.po): ... this.
+
 2009-11-26 Felix Zielcke <fzielcke@z-51.de>
 
 	* util/i386/efi/grub-mkimage.c: Include "progname.h".
