@@ -255,7 +255,10 @@ update_timeout (grub_gfxmenu_view_t view, int is_init)
       seconds_remaining_rounded_up = (remaining + 999) / 1000;
     }
   else
-    seconds_remaining_rounded_up = -1;
+    {
+      seconds_remaining_rounded_up = -1;
+      remaining = -1;
+    }
 
   if (view->last_seconds_remaining == seconds_remaining_rounded_up && !is_init)
     return;
