@@ -41,6 +41,9 @@ PREFIX (realloc) (void *relocator, grub_size_t size)
 {
   char *playground;
 
+  if (!relocator)
+    return PREFIX (alloc) (size);
+
   playground = (char *) relocator - PRE_REGION_SIZE;
 
   playground = grub_realloc (playground, size + MAX_OVERHEAD);
