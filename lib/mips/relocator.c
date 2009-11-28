@@ -64,6 +64,9 @@ write_jump (int regn, void **target)
   /* j $r.  */
   *(grub_uint32_t *) *target = (regn<<21) | 0x8;
   *target = ((grub_uint32_t *) *target) + 1;
+  /* nop.  */
+  *(grub_uint32_t *) *target = 0;
+  *target = ((grub_uint32_t *) *target) + 1;
 }
 
 static void
