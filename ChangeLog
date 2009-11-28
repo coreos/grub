@@ -1,3 +1,10 @@
+2009-11-28  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/mkisofs.c (ld_options): Mark all `arg' strings as
+	translatable.
+	(usage): Translate `arg' strings using gettext().
+	Thanks to Jordi Mallach for the suggestion.
+
 2009-11-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	GOP support. Based on patch from Bean
