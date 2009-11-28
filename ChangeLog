@@ -1,3 +1,16 @@
+2009-11-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Correct module naming.
+
+	* video/efi_uga.c (GRUB_MOD_INIT(efi_fb)): Renamed from this ...
+	(GRUB_MOD_INIT(efi_uga)): ... to this
+	(GRUB_MOD_FINI(efi_fb)): Renamed from this ...
+	(GRUB_MOD_FINI(efi_uga)): ... to this
+	* video/efi_gop.c (GRUB_MOD_INIT(efi_fb)): Renamed from this ...
+	(GRUB_MOD_INIT(efi_gop)): ... to this
+	(GRUB_MOD_FINI(efi_fb)): Renamed from this ...
+	(GRUB_MOD_FINI(efi_gop)): ... to this
+
 2009-11-28  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/mkisofs/mkisofs.c (ld_options): Mark all `arg' strings as

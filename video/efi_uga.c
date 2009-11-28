@@ -324,13 +324,13 @@ static struct grub_video_adapter grub_video_uga_adapter =
     .get_active_render_target = grub_video_fb_get_active_render_target,
   };
 
-GRUB_MOD_INIT(efi_fb)
+GRUB_MOD_INIT(efi_uga)
 {
   if (check_protocol ())
     grub_video_register (&grub_video_uga_adapter);
 }
 
-GRUB_MOD_FINI(efi_fb)
+GRUB_MOD_FINI(efi_uga)
 {
   if (uga)
     grub_video_unregister (&grub_video_uga_adapter);

@@ -380,13 +380,13 @@ static struct grub_video_adapter grub_video_gop_adapter =
     .next = 0
   };
 
-GRUB_MOD_INIT(efi_fb)
+GRUB_MOD_INIT(efi_gop)
 {
   if (check_protocol ())
     grub_video_register (&grub_video_gop_adapter);
 }
 
-GRUB_MOD_FINI(efi_fb)
+GRUB_MOD_FINI(efi_gop)
 {
   if (restore_needed)
     {
