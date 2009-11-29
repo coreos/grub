@@ -36,7 +36,7 @@ extern grub_uint8_t grub_relocator32_backward_start;
 extern grub_uint8_t grub_relocator32_backward_end;
 
 #define REGW_SIZEOF (2 * sizeof (grub_uint32_t))
-#define JUMP_SIZEOF (sizeof (grub_uint32_t))
+#define JUMP_SIZEOF (2 * sizeof (grub_uint32_t))
 
 #define RELOCATOR_SRC_SIZEOF(x) (&grub_relocator32_##x##_end \
 				 - &grub_relocator32_##x##_start)
