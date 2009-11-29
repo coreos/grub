@@ -38,7 +38,8 @@ static grub_size_t initrd_size;
 static grub_size_t linux_size;
 
 static grub_uint8_t *playground;
-static grub_addr_t target_addr, entry_addr, initrd_addr, argc_addr;
+static grub_addr_t target_addr, entry_addr, initrd_addr;
+static int linux_argc;
 static grub_addr_t argv_addr, envp_addr;
 
 static grub_err_t
@@ -48,7 +49,7 @@ grub_linux_boot (void)
 
   /* Boot the kernel.  */
   state.gpr[1] = entry_addr;
-  state.gpr[4] = argc_addr;
+  state.gpr[4] = linux_argc;
   state.gpr[5] = argv_addr;
   state.gpr[6] = envp_addr;
   state.jumpreg = 1;
@@ -195,10 +196,15 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_loader_unset ();
   loaded = 0;
 
-  size = sizeof (grub_uint32_t) * argc + ALIGN_UP (sizeof ("g"), 4)
-    + sizeof (grub_uint32_t) + (0 + 1) * sizeof (grub_uint32_t);
+  /* For arguments.  */
+  linux_argc = argc;
+  size = (linux_argc + 1) * sizeof (grub_uint32_t); 
+  size += ALIGN_UP (sizeof ("g"), 4);
   for (i = 1; i < argc; i++)
     size += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
+
+  /* For the environment.  */
+  size += sizeof (grub_uint32_t); 
 
   if (grub_elf_is_elf32 (elf))
     err = grub_linux_load32 (elf, &extra, size);
@@ -212,33 +218,29 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (err)
     return err;
-  
-  *(grub_uint32_t *) extra = argc;
-  argc_addr = (grub_uint8_t *) extra - (grub_uint8_t *) playground
-    + target_addr;
-  extra = (grub_uint32_t *) extra + 1;
+
   linux_argv = extra;
   argv_addr = (grub_uint8_t *) linux_argv - (grub_uint8_t *) playground
     + target_addr;
-  extra = linux_argv + argc;
+  extra = linux_argv + (linux_argc + 1);
   linux_args = extra;
-
+  grub_memcpy (linux_args, "g", sizeof ("g"));
   *linux_argv = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground
     + target_addr;
-  grub_memcpy (linux_args, "g", sizeof ("g"));
-  linux_args += ALIGN_UP (sizeof ("g"), 4);
   linux_argv++;
+  linux_args += ALIGN_UP (sizeof ("g"), 4);
 
   for (i = 1; i < argc; i++)
     {
+      grub_memcpy (linux_args, argv[i], grub_strlen (argv[i]) + 1);
       *linux_argv = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground
 	+ target_addr;
-      grub_memcpy (linux_args, argv[i], grub_strlen (argv[i]) + 1);
-      linux_args += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
       linux_argv++;
+      linux_args += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
     }
-
+  *linux_argv = 0;
   extra = linux_args;
+
   linux_envp = extra;
   envp_addr = (grub_uint8_t *) linux_envp - (grub_uint8_t *) playground
     + target_addr;
