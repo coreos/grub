@@ -19,7 +19,6 @@
 #ifndef GRUB_KERNEL_CPU_HEADER
 #define GRUB_KERNEL_CPU_HEADER	1
 
-#include <grub/machine/machine.h>
 
 #ifdef GRUB_MACHINE_IEEE1275
 #define GRUB_MOD_ALIGN	0x1000

@@ -19,7 +19,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+ */
 
 /*
  * 	$Id: mkisofs.h,v 1.20 1999/03/02 04:16:41 eric Exp $
@@ -29,6 +29,11 @@
 #include <stdint.h>
 #include <prototyp.h>
 #include <sys/stat.h>
+
+#include <locale.h>
+#include <libintl.h>
+#define _(str) gettext(str)
+#define N_(str) str
 
 /* This symbol is used to indicate that we do not have things like
    symlinks, devices, and so forth available.  Just files and dirs */

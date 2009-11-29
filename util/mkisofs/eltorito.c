@@ -23,10 +23,8 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+ */
 
-
-static char rcsid[] ="$Id: eltorito.c,v 1.13 1999/03/02 03:41:25 eric Exp $";
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -95,11 +93,11 @@ void FDECL1(init_boot_catalog, const char *, path)
 	}
 	else 
 	{
-	    fprintf(stderr, "A boot catalog exists and appears corrupted.\n");
-	    fprintf(stderr, "Please check the following file: %s.\n",bootpath);
-	    fprintf(stderr, "This file must be removed before a bootable CD can be done.\n");
-	    free(bootpath);
-	    exit(1);
+	  fprintf (stderr, _("A boot catalog exists and appears corrupted.\n"));
+	  fprintf (stderr, _("Please check the following file: %s.\n"), bootpath);
+	  fprintf (stderr, _("This file must be removed before a bootable CD can be done.\n"));
+	  free (bootpath);
+	  exit (1);
 	}
     }
     
@@ -109,11 +107,11 @@ void FDECL1(init_boot_catalog, const char *, path)
      */
     bcat = fopen (bootpath, "wb");
     if (bcat == NULL)
-      error (1, errno, "Error creating boot catalog (%s)", bootpath);
+      error (1, errno, _("Error creating boot catalog (%s)"), bootpath);
     
     buf = (char *) e_malloc( 2048 );
     if (fwrite (buf, 1, 2048, bcat) != 2048)
-      error (1, errno, "Error writing to boot catalog (%s)", bootpath);
+      error (1, errno, _("Error writing to boot catalog (%s)"), bootpath);
     fclose (bcat);
     chmod (bootpath, S_IROTH | S_IRGRP | S_IRWXU);
 
@@ -143,8 +141,8 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
     de2 = search_tree_file(root, boot_catalog);
     if (!de2) 
     {
-	fprintf(stderr,"Uh oh, I cant find the boot catalog!\n");
-	exit(1);
+      fprintf (stderr, _("Boot catalog cannot be found!\n"));
+      exit (1);
     }
     
     set_731(boot_desc->bootcat_ptr,
@@ -157,8 +155,8 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
     de=search_tree_file(root, boot_image);
     if (!de) 
     {
-	fprintf(stderr,"Uh oh, I cant find the boot image!\n");
-	exit(1);
+      fprintf (stderr, _("Boot image cannot be found!\n"));
+      exit (1);
     } 
     
     /* 
@@ -220,12 +218,13 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
      * assume 512 bytes/sector on a bootable floppy
      */
     nsectors = ((de->size + 511) & ~(511))/512;
-    fprintf(stderr, "\nSize of boot image is %d sectors -> ", nsectors); 
+    fprintf (stderr, _("\nSize of boot image is %d sectors"), nsectors); 
+    fprintf (stderr, " -> "); 
 
     if (! use_eltorito_emul_floppy)
       {
 	default_desc.boot_media[0] = EL_TORITO_MEDIA_NOEMUL;
-	fprintf (stderr, "No emulation\n");
+	fprintf (stderr, _("No emulation\n"));
       }
     else if (nsectors == 2880 ) 
       /*
@@ -233,22 +232,22 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
        */
       {
 	default_desc.boot_media[0] = EL_TORITO_MEDIA_144FLOP;
-	fprintf(stderr, "Emulating a 1.44 meg floppy\n");
+	fprintf (stderr, _("Emulating a 1.44 meg floppy\n"));
       }
     else if (nsectors == 5760 ) 
       {
 	default_desc.boot_media[0] = EL_TORITO_MEDIA_288FLOP;
-	fprintf(stderr,"Emulating a 2.88 meg floppy\n");
+	fprintf (stderr, _("Emulating a 2.88 meg floppy\n"));
       }
     else if (nsectors == 2400 ) 
       {
 	default_desc.boot_media[0] = EL_TORITO_MEDIA_12FLOP;
-	fprintf(stderr,"Emulating a 1.2 meg floppy\n");
+	fprintf (stderr, _("Emulating a 1.2 meg floppy\n"));
       }
     else 
       {
-	fprintf(stderr,"\nError - boot image is not the an allowable size.\n");
-	exit(1);
+	fprintf (stderr, _("\nError - boot image is not the an allowable size.\n"));
+	exit (1);
       }
     
     /* 
@@ -267,15 +266,15 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
      */
     bootcat = fopen (de2->whole_name, "r+b");
     if (bootcat == NULL) 
-      error (1, errno, "Error opening boot catalog for update");
+      error (1, errno, _("Error opening boot catalog for update"));
 
     /* 
      * write out 
      */
     if (fwrite (&valid_desc, 1, 32, bootcat) != 32)
-      error (1, errno, "Error writing to boot catalog");
+      error (1, errno, _("Error writing to boot catalog"));
     if (fwrite (&default_desc, 1, 32, bootcat) != 32)
-      error (1, errno, "Error writing to boot catalog");
+      error (1, errno, _("Error writing to boot catalog"));
     fclose (bootcat);
 
     /* If the user has asked for it, patch the boot image */
@@ -289,7 +288,7 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
 	struct eltorito_boot_info bi_table;
 	bootimage = fopen (de->whole_name, "r+b");
 	if (bootimage == NULL)
-	  error (1, errno, "Error opening boot image file '%s' for update",
+	  error (1, errno, _("Error opening boot image file '%s' for update"),
 		 de->whole_name);
 	/* Compute checksum of boot image, sans 64 bytes */
 	total_len = 0;
@@ -297,7 +296,7 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
 	while ((len = fread (csum_buffer, 1, SECTOR_SIZE, bootimage)) > 0)
 	  {
 	    if (total_len & 3)
-	      error (1, 0, "Odd alignment at non-end-of-file in boot image '%s'",
+	      error (1, 0, _("Odd alignment at non-end-of-file in boot image '%s'"),
 		     de->whole_name);
 	    if (total_len < 64)
 	      memset (csum_buffer, 0, 64 - total_len);
@@ -309,7 +308,7 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
 	  }
 
 	if (total_len != de->size)
-	  error (1, 0, "Boot image file '%s' changed underneath us",
+	  error (1, 0, _("Boot image file '%s' changed unexpectedly"),
 		 de->whole_name);
 	/* End of file, set position to byte 8 */
 	fseeko (bootimage, (off_t) 8, SEEK_SET);
@@ -321,7 +320,7 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
 	set_731 (bi_table.file_checksum, bi_checksum);
 
 	if (fwrite (&bi_table, 1, sizeof (bi_table), bootimage) != sizeof (bi_table))
-	  error (1, errno, "Error writing to boot image (%s)", bootimage);
+	  error (1, errno, _("Error writing to boot image (%s)"), bootimage);
 	fclose (bootimage);
       }
 

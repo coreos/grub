@@ -188,10 +188,10 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-mkimage --help'' for more information.\n");
+    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-mkimage [OPTION]... [MODULES]\n\
+Usage: %s [OPTION]... [MODULES]\n\
 \n\
 Make a bootable image of GRUB.\n\
 \n\
@@ -204,7 +204,7 @@ Make a bootable image of GRUB.\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-", GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+", program_name, GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -218,7 +218,11 @@ main (int argc, char *argv[])
   char *memdisk = NULL;
   FILE *fp = stdout;
 
-  progname = "grub-mkimage";
+  set_program_name (argv[0]);
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
+
   while (1)
     {
       int c = getopt_long (argc, argv, "d:p:m:o:hVv", options, 0);

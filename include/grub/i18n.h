@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,21 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_MACHINE_MACHINE_HEADER
-#define GRUB_MACHINE_MACHINE_HEADER	1
+#ifndef	GRUB_I18N_H
+#define	GRUB_I18N_H	1
 
-#define GRUB_MACHINE_EFI	1
+#ifdef GRUB_UTIL
+# include <locale.h>
+# include <libintl.h>
+# define _(str) gettext(str)
+#else
+# define _(str) grub_gettext(str)
 
-#endif /* ! GRUB_MACHINE_MACHINE_HEADER */
+const char *EXPORT_FUNC(grub_gettext_dummy) (const char *s);
+extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
+
+#endif
+
+#define N_(str) str
+
+#endif /* GRUB_I18N_H */

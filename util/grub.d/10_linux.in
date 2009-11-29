@@ -18,8 +18,13 @@
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
+bindir=@bindir@
 libdir=@libdir@
 . ${libdir}/grub/grub-mkconfig_lib
+
+. ${bindir}/gettext.sh
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR=@localedir@
 
 if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS=GNU/Linux
@@ -44,15 +49,22 @@ fi
 
 linux_entry ()
 {
-  cat << EOF
-menuentry "$1" {
-EOF
+  os="$1"
+  version="$2"
+  recovery="$3"
+  args="$4"
+  if ${recovery} ; then
+    title="$(gettext "%s, with Linux %s (recovery mode)")"
+  else
+    title="$(gettext "%s, with Linux %s")"
+  fi
+  printf "menuentry \"${title}\" {\n" "${os}" "${version}"
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
   printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
-	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro $2
+	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro ${args}
 EOF
   if test -n "${initrd}" ; then
     cat << EOF
@@ -95,10 +107,10 @@ while [ "x$list" != "x" ] ; do
     linux_root_device_thisversion=${GRUB_DEVICE}
   fi
 
-  linux_entry "${OS}, with Linux ${version}" \
+  linux_entry "${OS}" "${version}" false \
       "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
   if [ "x${GRUB_DISABLE_LINUX_RECOVERY}" != "xtrue" ]; then
-    linux_entry "${OS}, with Linux ${version} (recovery mode)" \
+    linux_entry "${OS}" "${version}" true \
 	"single ${GRUB_CMDLINE_LINUX}"
   fi
 
