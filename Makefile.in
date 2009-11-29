@@ -45,7 +45,9 @@ XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
 MSGFMT = @MSGFMT@
 
-LINGUAS = $(shell tr '\n' ' ' < $(srcdir)/po/LINGUAS)
+LINGUAS = $(shell for i in $(srcdir)/po/*.po ; do \
+			if test -e $$i ; then echo $$i ; fi ; \
+		done | sed -e "s,.*/po/\(.*\)\.po$$,\1,")
 
 PACKAGE = @PACKAGE@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -480,7 +482,7 @@ $(srcdir)/po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
 	cd $(srcdir) && $(XGETTEXT) --from-code=utf-8 -o $@ -f $< --keyword=_ --keyword=N_
 	cd $(srcdir) && $(XGETTEXT) --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
 
-$(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): po/$(PACKAGE).pot
+po/%.po: po/$(PACKAGE).pot
 	$(MSGMERGE) -U $@ $^
 
 po/%.mo: po/%.po
