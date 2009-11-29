@@ -34,13 +34,14 @@ static grub_dl_t my_mod;
 
 static int loaded;
 
-static grub_size_t initrd_size;
 static grub_size_t linux_size;
 
 static grub_uint8_t *playground;
-static grub_addr_t target_addr, entry_addr, initrd_addr;
+static grub_addr_t target_addr, entry_addr;
 static int linux_argc;
-static grub_addr_t argv_addr, envp_addr;
+static grub_off_t argv_off, envp_off;
+static grub_off_t rd_addr_arg_off, rd_size_arg_off;
+static int initrd_loaded = 0;
 
 static grub_err_t
 grub_linux_boot (void)
@@ -50,8 +51,8 @@ grub_linux_boot (void)
   /* Boot the kernel.  */
   state.gpr[1] = entry_addr;
   state.gpr[4] = linux_argc;
-  state.gpr[5] = argv_addr;
-  state.gpr[6] = envp_addr;
+  state.gpr[5] = target_addr + argv_off;
+  state.gpr[6] = target_addr + envp_off;
   state.jumpreg = 1;
   grub_relocator32_boot (playground, target_addr, state);
 
@@ -198,10 +199,23 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   /* For arguments.  */
   linux_argc = argc;
+  /* Main arguments.  */
   size = (linux_argc + 1) * sizeof (grub_uint32_t); 
-  size += ALIGN_UP (sizeof ("g"), 4);
+  /* Initrd address and size.  */
+  size += 2 * sizeof (grub_uint32_t); 
+  /* NULL terminator.  */
+  size += sizeof (grub_uint32_t); 
+
+  /* First arguments are always "a0" and "a1".  */
+  size += ALIGN_UP (sizeof ("a0"), 4);
+  size += ALIGN_UP (sizeof ("a1"), 4);
+  /* Normal arguments.  */
   for (i = 1; i < argc; i++)
     size += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
+  
+  /* rd arguments.  */
+  size += ALIGN_UP (sizeof ("rd_start=0xXXXXXXXXXXXXXXXX"), 4);
+  size += ALIGN_UP (sizeof ("rd_size=0xXXXXXXXXXXXXXXXX"), 4);
 
   /* For the environment.  */
   size += sizeof (grub_uint32_t); 
@@ -220,15 +234,21 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     return err;
 
   linux_argv = extra;
-  argv_addr = (grub_uint8_t *) linux_argv - (grub_uint8_t *) playground
-    + target_addr;
-  extra = linux_argv + (linux_argc + 1);
+  argv_off = (grub_uint8_t *) linux_argv - (grub_uint8_t *) playground;
+  extra = linux_argv + (linux_argc + 1 + 1 + 2);
   linux_args = extra;
-  grub_memcpy (linux_args, "g", sizeof ("g"));
+
+  grub_memcpy (linux_args, "a0", sizeof ("a0"));
   *linux_argv = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground
     + target_addr;
   linux_argv++;
-  linux_args += ALIGN_UP (sizeof ("g"), 4);
+  linux_args += ALIGN_UP (sizeof ("a0"), 4);
+
+  grub_memcpy (linux_args, "a1", sizeof ("a1"));
+  *linux_argv = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground
+    + target_addr;
+  linux_argv++;
+  linux_args += ALIGN_UP (sizeof ("a1"), 4);
 
   for (i = 1; i < argc; i++)
     {
@@ -238,16 +258,28 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       linux_argv++;
       linux_args += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
     }
+
+  /* Reserve space for rd arguments.  */
+  rd_addr_arg_off = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground;
+  linux_args += ALIGN_UP (sizeof ("rd_start=0xXXXXXXXXXXXXXXXX"), 4);
   *linux_argv = 0;
+  linux_argv++;
+
+  rd_size_arg_off = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground;
+  linux_args += ALIGN_UP (sizeof ("rd_size=0xXXXXXXXXXXXXXXXX"), 4);
+  *linux_argv = 0;
+  linux_argv++;
+
+  *linux_argv = 0;
+
   extra = linux_args;
 
   linux_envp = extra;
-  envp_addr = (grub_uint8_t *) linux_envp - (grub_uint8_t *) playground
-    + target_addr;
+  envp_off = (grub_uint8_t *) linux_envp - (grub_uint8_t *) playground;
   linux_envp[0] = 0;
 
   grub_loader_set (grub_linux_boot, grub_linux_unload, 1);
-  initrd_addr = 0;
+  initrd_loaded = 0;
   loaded = 1;
   grub_dl_ref (my_mod);
 
@@ -260,6 +292,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_file_t file = 0;
   grub_ssize_t size;
+  grub_size_t overhead;
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
@@ -267,20 +300,28 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   if (!loaded)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
 
+  if (initrd_loaded)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Only one initrd can be loaded.");
+
   file = grub_file_open (argv[0]);
   if (! file)
     return grub_errno;
 
   size = grub_file_size (file);
 
-  playground = grub_relocator32_realloc (playground, linux_size + size);
+  overhead = ALIGN_UP (target_addr + linux_size + 0x10000, 0x10000)
+    - (target_addr + linux_size);
+
+  playground = grub_relocator32_realloc (playground,
+					 linux_size + overhead + size);
+
   if (!playground)
     {
       grub_file_close (file);
       return grub_errno;
     }
 
-  if (grub_file_read (file, playground + linux_size, size) != size)
+  if (grub_file_read (file, playground + linux_size + overhead, size) != size)
     {
       grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
       grub_file_close (file);
@@ -288,8 +329,19 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       return grub_errno;
     }
 
-  initrd_addr = target_addr + linux_size;
-  initrd_size = size;
+  grub_sprintf ((char *) playground + rd_addr_arg_off, "rd_start=0x%llx",
+		(unsigned long long) target_addr + linux_size  + overhead);
+  ((grub_uint32_t *) (playground + argv_off))[linux_argc]
+    = target_addr + rd_addr_arg_off;
+  linux_argc++;
+
+  grub_sprintf ((char *) playground + rd_size_arg_off, "rd_size=0x%llx",
+		(unsigned long long) size);
+  ((grub_uint32_t *) (playground + argv_off))[linux_argc]
+    = target_addr + rd_size_arg_off;
+  linux_argc++;
+
+  initrd_loaded = 1;
 
   grub_file_close (file);
 
