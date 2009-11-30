@@ -9,11 +9,10 @@ script/lexer.c_DEPENDENCIES = grub_script.tab.h
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
-sbin_UTILITIES = grub-mkdevicemap
 
 # For grub-mkimage.
-grub_mkimage_SOURCES = util/i386/efi/grub-mkimage.c util/misc.c \
-	util/resolve.c
+grub_mkimage_SOURCES = gnulib/progname.c util/i386/efi/grub-mkimage.c \
+	util/misc.c util/resolve.c
 util/i386/efi/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-setup.
@@ -23,10 +22,6 @@ util/i386/efi/grub-mkimage.c_DEPENDENCIES = Makefile
 #	fs/sfs.c kern/parser.c kern/partition.c partmap/msdos.c		\
 #	fs/ufs.c fs/ufs2.c fs/minix.c fs/hfs.c fs/jfs.c fs/hfsplus.c kern/file.c	\
 #	kern/fs.c kern/env.c fs/fshelp.c
-
-# For grub-mkdevicemap.
-grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/deviceiter.c \
-	util/devicemap.c util/misc.c
 
 # Scripts.
 sbin_SCRIPTS = grub-install
@@ -148,10 +143,15 @@ fixvideo_mod_SOURCES = commands/efi/fixvideo.c
 fixvideo_mod_CFLAGS = $(COMMON_CFLAGS)
 fixvideo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-pkglib_MODULES += efi_fb.mod
-efi_fb_mod_SOURCES = video/efi_fb.c
-efi_fb_mod_CFLAGS = $(COMMON_CFLAGS)
-efi_fb_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_MODULES += efi_uga.mod
+efi_uga_mod_SOURCES = video/efi_uga.c
+efi_uga_mod_CFLAGS = $(COMMON_CFLAGS)
+efi_uga_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += efi_gop.mod
+efi_gop_mod_SOURCES = video/efi_gop.c
+efi_gop_mod_CFLAGS = $(COMMON_CFLAGS)
+efi_gop_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += xnu.mod
 xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c loader/i386/efi/xnu.c\

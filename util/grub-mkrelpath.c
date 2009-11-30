@@ -18,7 +18,10 @@
  */
 
 #include <grub/util/misc.h>
+#include <grub/i18n.h>
 #include <getopt.h>
+
+#include "progname.h"
 
 static struct option options[] =
   {
@@ -30,10 +33,10 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-mkrelpath --help'' for more information.\n");
+    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-mkrelpath [OPTIONS] PATH\n\
+Usage: %s [OPTIONS] PATH\n\
 \n\
 Make a system path relative to it's root.\n\
 \n\
@@ -41,7 +44,7 @@ Options:\n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
 \n\
-Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
+Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -51,7 +54,10 @@ main (int argc, char *argv[])
 {
   char *argument, *relpath;
 
-  progname = "grub-mkrelpath";
+  set_program_name (argv[0]);
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
 
   /* Check for options.  */
   while (1)
@@ -68,7 +74,7 @@ main (int argc, char *argv[])
 	    break;
 
 	  case 'V':
-	    printf ("%s (%s) %s\n", progname, PACKAGE_NAME, PACKAGE_VERSION);
+	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 	    return 0;
 
 	  default:
