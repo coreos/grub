@@ -1,0 +1,4 @@
+2009-11-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* video/fb/video_fb.c (grub_video_fb_scroll): Optimise by avoiding
+	unnecessary calls.
