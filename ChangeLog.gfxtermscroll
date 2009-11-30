@@ -1,0 +1,18 @@
+2009-11-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Agglomerate scrolling in gfxterm.
+
+	* term/gfxterm.c (grub_virtual_screen): New member 'total_screen'.
+	(grub_virtual_screen_setup): Initialise 'total_screen'.
+	(write_char): Split to ...
+	(paint_char): ... this ...
+	(write_char): ... and this.
+	(paint_char): Handle delayed scrolling.
+	(draw_cursor): Likewise.
+	(scroll_up): Split to ...
+	(real_scroll): ... this ...
+	(scroll_up): ... and this.
+	(real_scroll): Handle multi-line scroll and draw below-the-bottom
+	characters.
+	(grub_gfxterm_refresh): Call real_scroll.
+
