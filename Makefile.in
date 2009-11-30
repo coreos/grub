@@ -480,7 +480,7 @@ $(srcdir)/po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
 	cd $(srcdir) && $(XGETTEXT) --from-code=utf-8 -o $@ -f $< --keyword=_ --keyword=N_
 	cd $(srcdir) && $(XGETTEXT) --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
 
-po/%.po: po/$(PACKAGE).pot
+$(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): po/$(PACKAGE).pot
 	$(MSGMERGE) -U $@ $^
 
 po/%.mo: po/%.po

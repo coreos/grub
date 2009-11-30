@@ -1,3 +1,10 @@
+2009-11-30  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix $srcdir != $objdir build.
+
+	* Makefile.in (po/%.po):  Rewrite as ...
+	($(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po)): ... this.
+
 2009-11-29  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	Fix GNU/Hurd grub-install crash.
