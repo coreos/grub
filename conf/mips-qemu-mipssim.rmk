@@ -1,4 +1,0 @@
-# -*- makefile -*-
-LINK_BASE = 0x80010000
-target_machine=qemu-mipssim
-include $(srcdir)/conf/mips.mk

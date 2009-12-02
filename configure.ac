@@ -102,7 +102,6 @@ case "$target_cpu"-"$platform" in
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;
   mips-qemu-r4k) ;;
-  mips-qemu-mipssim) ;;
   mips-yeeloong) ;;
   *-emu) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
