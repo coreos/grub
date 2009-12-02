@@ -33,7 +33,7 @@ dnl type.
 
 AC_INIT([GRUB],[1.97],[bug-grub@gnu.org])
 AM_INIT_AUTOMAKE()
-AC_PREREQ(2.59d)
+AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
 
