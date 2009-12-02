@@ -1,4 +1,6 @@
 # -*- makefile -*-
 LINK_BASE = 0x80010000
 target_machine=qemu-r4k
+COMMON_CFLAGS += -march=mips3
+COMMON_ASFLAGS += -march=mips3
 include $(srcdir)/conf/mips.mk

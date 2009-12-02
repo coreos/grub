@@ -137,48 +137,6 @@ serial_mod_SOURCES = term/serial.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For ata.mod.
-pkglib_MODULES += ata.mod
-ata_mod_SOURCES = disk/ata.c
-ata_mod_CFLAGS = $(COMMON_CFLAGS)
-ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For lspci.mod
-pkglib_MODULES += lspci.mod
-lspci_mod_SOURCES = commands/lspci.c
-lspci_mod_CFLAGS = $(COMMON_CFLAGS)
-lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For ohci.mod
-pkglib_MODULES += ohci.mod
-ohci_mod_SOURCES = bus/usb/ohci.c
-ohci_mod_CFLAGS = $(COMMON_CFLAGS)
-ohci_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For usb.mod
-pkglib_MODULES += usb.mod
-usb_mod_SOURCES = bus/usb/usb.c bus/usb/usbtrans.c bus/usb/usbhub.c
-usb_mod_CFLAGS = $(COMMON_CFLAGS)
-usb_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For usbtest.mod
-pkglib_MODULES += usbtest.mod
-usbtest_mod_SOURCES = commands/usbtest.c
-usbtest_mod_CFLAGS = $(COMMON_CFLAGS)
-usbtest_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For usbms.mod
-pkglib_MODULES += usbms.mod
-usbms_mod_SOURCES = disk/usbms.c
-usbms_mod_CFLAGS = $(COMMON_CFLAGS)
-usbms_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For usb_keyboard.mod
-pkglib_MODULES += usb_keyboard.mod
-usb_keyboard_mod_SOURCES = term/usb_keyboard.c
-usb_keyboard_mod_CFLAGS = $(COMMON_CFLAGS)
-usb_keyboard_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For relocator.mod.
 pkglib_MODULES += relocator.mod
 relocator_mod_SOURCES = lib/$(target_cpu)/relocator.c lib/$(target_cpu)/relocator_asm.S
@@ -191,17 +149,5 @@ linux_mod_SOURCES = loader/$(target_cpu)/linux.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_ASFLAGS = $(COMMON_ASFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For at_keyboard.mod.
-pkglib_MODULES += at_keyboard.mod
-at_keyboard_mod_SOURCES = term/at_keyboard.c
-at_keyboard_mod_CFLAGS = $(COMMON_CFLAGS)
-at_keyboard_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For ata_pthru.mod.
-pkglib_MODULES += ata_pthru.mod
-ata_pthru_mod_SOURCES = disk/ata_pthru.c
-ata_pthru_mod_CFLAGS = $(COMMON_CFLAGS)
-ata_pthru_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

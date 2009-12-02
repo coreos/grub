@@ -50,21 +50,6 @@ grub_reboot (void)
   while (1);
 }
 
-void
-grub_machine_set_prefix (void)
-{
-  grub_env_set ("prefix", grub_prefix);
-}
-
-extern char _start[];
-extern char _end[];
-
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return ALIGN_UP((grub_addr_t) _end + GRUB_MOD_GAP, GRUB_MOD_ALIGN);
-}
-
 grub_err_t 
 grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, 
 							 grub_uint64_t, 
