@@ -71,8 +71,6 @@ reloccont:
 	li $t3, (GRUB_MOD_ALIGN-1)
 	nor $t3, $t3, $0
 	and $t1, $t1, $t3
-	/* Pass modules address as first argument.  */
-//	move $a0, $t1
 	
 	lw $t3, (GRUB_KERNEL_CPU_TOTAL_MODULE_SIZE - BASE_ADDR)($t9)
 
