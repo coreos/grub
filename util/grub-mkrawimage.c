@@ -149,7 +149,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   grub_util_load_image (kernel_path, kernel_img);
 
   if (GRUB_KERNEL_MACHINE_PREFIX + strlen (prefix) + 1 > GRUB_KERNEL_MACHINE_DATA_END)
-    grub_util_error (_("prefix too long"));
+    grub_util_error (_("prefix is too long"));
   strcpy (kernel_img + GRUB_KERNEL_MACHINE_PREFIX, prefix);
 
   /* Fill in the grub_module_info structure.  */
@@ -419,7 +419,7 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-mkimage --help'' for more information.\n");
+    fprintf (stderr, _("Try ``%s --help'' for more information.\n"), program_name);
   else
     printf (_("\
 Usage: grub-mkimage [OPTION]... [MODULES]\n\
