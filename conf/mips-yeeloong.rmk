@@ -29,36 +29,6 @@ lspci_mod_SOURCES = commands/lspci.c
 lspci_mod_CFLAGS = $(COMMON_CFLAGS)
 lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For ohci.mod
-pkglib_MODULES += ohci.mod
-ohci_mod_SOURCES = bus/usb/ohci.c
-ohci_mod_CFLAGS = $(COMMON_CFLAGS)
-ohci_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For usb.mod
-pkglib_MODULES += usb.mod
-usb_mod_SOURCES = bus/usb/usb.c bus/usb/usbtrans.c bus/usb/usbhub.c
-usb_mod_CFLAGS = $(COMMON_CFLAGS)
-usb_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For usbtest.mod
-pkglib_MODULES += usbtest.mod
-usbtest_mod_SOURCES = commands/usbtest.c
-usbtest_mod_CFLAGS = $(COMMON_CFLAGS)
-usbtest_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For usbms.mod
-pkglib_MODULES += usbms.mod
-usbms_mod_SOURCES = disk/usbms.c
-usbms_mod_CFLAGS = $(COMMON_CFLAGS)
-usbms_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For usb_keyboard.mod
-pkglib_MODULES += usb_keyboard.mod
-usb_keyboard_mod_SOURCES = term/usb_keyboard.c
-usb_keyboard_mod_CFLAGS = $(COMMON_CFLAGS)
-usb_keyboard_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For at_keyboard.mod.
 pkglib_MODULES += at_keyboard.mod
 at_keyboard_mod_SOURCES = term/at_keyboard.c
