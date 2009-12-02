@@ -6,7 +6,7 @@ COMMON_CFLAGS += -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
 COMMON_LDFLAGS += -nostdlib
 
 # Used by various components.  These rules need to precede them.
-script/sh/lexer.c_DEPENDENCIES = grub_script.tab.h
+script/lexer.c_DEPENDENCIES = grub_script.tab.h
 
 # Images.
 
