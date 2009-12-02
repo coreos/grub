@@ -1,3 +1,18 @@
+2009-12-02  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Use the same reboot approach on i386 coreboot and qemu as we do on
+	BIOS.
+
+	* conf/i386-coreboot.rmk (kernel_img_HEADERS): Add `cpu/reboot.h'.
+	(reboot_mod_SOURCES): Remove `kern/i386/reboot.c'.
+	* kern/i386/reboot.c: Remove.
+	* include/grub/i386/reboot.h (grub_reboot): Export function.
+	* kern/i386/pc/startup.S (grub_reboot): Move from here ...
+	* kern/i386/realmode.S (grub_reboot): ... to here.  Jump to
+	0xf000:0xfff0 instead of 0xffff:0x0000.
+	[!GRUB_MACHINE_PCBIOS] (prot_to_real): Do not restore interrupts.
+	* kern/i386/qemu/startup.S: Include `"../realmode.S"'.
+
 2009-11-30  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Fix $srcdir != $objdir build.

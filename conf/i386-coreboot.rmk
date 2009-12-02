@@ -33,6 +33,7 @@ kernel_img_SOURCES = kern/i386/coreboot/startup.S \
 kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
+	cpu/reboot.h \
 	machine/boot.h machine/console.h machine/init.h \
 	machine/memory.h machine/loader.h list.h handler.h command.h i18n.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
@@ -76,6 +77,7 @@ kernel_img_SOURCES = kern/i386/qemu/startup.S \
 kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
+	cpu/reboot.h \
 	machine/boot.h machine/console.h machine/init.h \
 	machine/memory.h machine/loader.h list.h handler.h command.h i18n.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS) -DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)
@@ -124,7 +126,7 @@ linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod.
-reboot_mod_SOURCES = commands/reboot.c kern/i386/reboot.c
+reboot_mod_SOURCES = commands/reboot.c
 reboot_mod_CFLAGS = $(COMMON_CFLAGS)
 reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

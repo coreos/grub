@@ -16,4 +16,4 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-extern void grub_reboot (void);
+extern void EXPORT_FUNC(grub_reboot) (void);
