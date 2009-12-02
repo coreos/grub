@@ -92,8 +92,8 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   depth = (mode_type & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK)
           >> GRUB_VIDEO_MODE_TYPE_DEPTH_POS;
 
-  if ((1024 != width && width != 0) || (600 != height && height != 0)
-      || (16 != depth && depth != 0))
+  if ((width != 1024 && width != 0) || (height != 600 && height != 0)
+      || (depth != 16 && depth != 0))
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "Only 1024x600x16 is supported");
 
