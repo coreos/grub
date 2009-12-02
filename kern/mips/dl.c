@@ -162,18 +162,23 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		  case R_MIPS_HI16:
 		    {
 		      grub_uint32_t value;
+		      Elf_Rel *rel2;
 		      
 		      /* Handle partner lo16 relocation. Lower part is
 			 treated as signed. Hence add 0x8000 to compensate. 
 		       */
 		      value = (*(grub_uint16_t *) addr << 16)
 			+ sym->st_value + 0x8000;
-		      if (rel + 1 < max && ELF_R_SYM (rel[1].r_info) 
-			  == ELF_R_SYM (rel[0].r_info)
-			  && ELF_R_TYPE (rel[1].r_info) == R_MIPS_LO16)
-			value += *(grub_uint16_t *)
-			((char *) seg->addr + rel[1].r_offset);
-		      *(grub_uint16_t *) addr += (value >> 16) & 0xffff;
+		      for (rel2 = rel + 1; rel2 < max; rel2++)
+			if (ELF_R_SYM (rel2->r_info)
+			    == ELF_R_SYM (rel->r_info)
+			    && ELF_R_TYPE (rel2->r_info) == R_MIPS_LO16)
+			  {
+			    value += *(grub_int16_t *)
+			      ((char *) seg->addr + rel2->r_offset);
+			    break;
+			  }
+		      *(grub_uint16_t *) addr = (value >> 16) & 0xffff;
 		    }
 		    break;
 		  case R_MIPS_LO16:
