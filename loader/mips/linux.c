@@ -174,7 +174,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_elf_t elf = 0;
   int i;
   int size;
-  void *extra;
+  void *extra = NULL;
   grub_uint32_t *linux_argv, *linux_envp;
   char *linux_args;
   grub_err_t err;
