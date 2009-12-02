@@ -754,18 +754,21 @@ real_scroll (void)
 
     }
 
-  /* Draw cursor if visible.  */
-  if (virtual_screen.cursor_state)
-    draw_cursor (1);
-
   was_scroll = virtual_screen.total_scroll;
   virtual_screen.total_scroll = 0;
+
+  if (was_scroll > virtual_screen.rows)
+    was_scroll = virtual_screen.rows;
 
   /* Draw shadow part.  */
   for (i = virtual_screen.rows - was_scroll;
        i < virtual_screen.rows; i++)
     for (j = 0; j < virtual_screen.columns; j++)
       paint_char (j, i);
+
+  /* Draw cursor if visible.  */
+  if (virtual_screen.cursor_state)
+    draw_cursor (1);
 
   if (repaint_callback)
     repaint_callback (window.x, window.y, window.width, window.height);
