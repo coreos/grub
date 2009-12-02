@@ -206,7 +206,7 @@ grub_get_dirname (const char *file_path)
 }
 
 static __inline int
-isxdigit (char c)
+my_isxdigit (char c)
 {
   return ((c >= '0' && c <= '9')
           || (c >= 'a' && c <= 'f')
@@ -261,7 +261,7 @@ grub_gui_parse_color (const char *s, grub_gui_color_t *color)
       /* Count the hexits to determine the format.  */
       int hexits = 0;
       const char *end = s;
-      while (isxdigit (*end))
+      while (my_isxdigit (*end))
         {
           end++;
           hexits++;
