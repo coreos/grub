@@ -1,0 +1,140 @@
+2009-12-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	MIPS support.
+
+	* bus/bonito.c: New file.
+	* bus/pci.c (grub_pci_iterate): Use GRUB_PCI_NUM_BUS and
+	GRUB_PCI_NUM_DEVICES.
+	* term/i386/pc/serial.c: Move to ...
+	* term/serial.c: ... here. All users updated.
+	* util/i386/pc/grub-mkimage.c: Move to ...
+	* util/grub-mkrawimage.c: ... here. All users updated.
+	* term/i386/pc/at_keyboard.c: Move to ...
+	* term/at_keyboard.c: ... here. All users updated.
+	* conf/mips-qemu-mips.rmk: New file.
+	* conf/mips-yeeloong.rmk: Likewise.
+	* conf/mips.rmk: Likewise.
+	* configure.ac: New platforms mipsel-yeeloong, mips-qemu-mips and
+	mipsel-qemu-mips.
+	* disk/ata.c (grub_ata_device_initialize): Add GRUB_MACHINE_PCI_IO_BASE
+	to port addresses.
+	(grub_ata_pciinit): Support CS5536.
+	* font/font.c (grub_font_load): Use grub_file_t instead of filename.
+	* font/font_cmd.c (loadfont_command): Open file before passing it to
+	grub_font_load.
+	(pseudo_file_read): New function.
+	(pseudo_file_close): Likewise.
+	(pseudo_fs): New structure.
+	(load_font_module): New function.
+	(GRUB_MOD_INIT(font_manager)): Load embedded font.
+	* fs/cpio.c (grub_cpio_open): Handle partial matches correctly.
+	* genmk.rb: Strip .rel.dyn, .reginfo, .note and .comment.
+	* genmoddep.awk: Ignore __gnu_local_gp. It's defined by linker.
+	* include/grub/i386/at_keyboard.h: Split into ...
+	* include/grub/at_keyboard.h: ... this ...
+	* include/grub/i386/at_keyboard.h: ... and this.
+	* include/grub/dl.h (grub_arch_dl_init_linker) [_mips && !GRUB_UTIL]:
+	New prototype.
+	* include/grub/elfload.h (grub_elf32_size): New parameter. All users
+	updated.
+	(grub_elf64_size): Likewise.
+	* include/grub/font.h (grub_font_load): Use grub_file_t instead of
+	filename.
+	* include/grub/i386/io.h (grub_port_t): New type. All users updated.
+	* include/grub/i386/coreboot/serial.h: Rewritten.
+	* include/grub/i386/ieee1275/serial.h: Include
+	grub/i386/coreboot/serial.h instead of grub/i386/pc/serial.h.
+	* include/grub/i386/pc/serial.h: Moved from here ...
+	* include/grub/serial.h: ... to here. All users updated.
+	* include/grub/i386/pci.h (GRUB_MACHINE_PCI_IO_BASE): New definition.
+	(GRUB_PCI_NUM_BUS): Likewise.
+	(GRUB_PCI_NUM_DEVICES): Likewise.
+	(grub_pci_device_map_range): Add missing volatile keyword.
+	* include/grub/kernel.h (OBJ_TYPE_FONT): New enum value.
+	* include/grub/mips/at_keyboard.h: New file.
+        * include/grub/mips/cache.h: Likewise.
+        * include/grub/mips/io.h: Likewise.
+        * include/grub/mips/kernel.h: Likewise.
+        * include/grub/mips/libgcc.h: Likewise.
+        * include/grub/mips/pci.h: Likewise.
+        * include/grub/mips/qemu-mips/boot.h: Likewise.
+        * include/grub/mips/qemu-mips/kernel.h: Likewise.
+        * include/grub/mips/qemu-mips/loader.h: Likewise.
+        * include/grub/mips/qemu-mips/memory.h: Likewise.
+        * include/grub/mips/qemu-mips/serial.h: Likewise.
+        * include/grub/mips/qemu-mips/time.h: Likewise.
+        * include/grub/mips/reboot.h: Likewise.
+        * include/grub/mips/relocator.h: Likewise.
+        * include/grub/mips/time.h: Likewise.
+        * include/grub/mips/types.h: Likewise.
+        * include/grub/mips/yeeloong/at_keyboard.h: Likewise.
+        * include/grub/mips/yeeloong/boot.h: Likewise.
+        * include/grub/mips/yeeloong/kernel.h: Likewise.
+        * include/grub/mips/yeeloong/loader.h: Likewise.
+        * include/grub/mips/yeeloong/memory.h: Likewise.
+        * include/grub/mips/yeeloong/pci.h: Likewise.
+        * include/grub/mips/yeeloong/serial.h: Likewise.
+        * include/grub/mips/yeeloong/time.h: Likewise.
+	* kern/dl.c (grub_dl_resolve_symbols): Handle STT_OBJECT correctly.
+	* kern/elf.c (grub_elf32_size): New parameter. All users
+	updated.
+	(grub_elf64_size): Likewise.
+	* kern/main.c (grub_main): Call grub_arch_dl_init_linker if necessary.
+	Load modules before saying "Welcome to GRUB!".
+	Call grub_refresh after saying "Welcome to GRUB!".
+        * kern/mips/cache.S: New file.
+        * kern/mips/cache_flush.S: Likewise.
+        * kern/mips/dl.c: Likewise.
+        * kern/mips/init.c: Likewise.
+        * kern/mips/qemu-mips/init.c: Likewise.
+        * kern/mips/startup.S: Likewise.
+        * kern/mips/yeeloong/init.c: Likewise.
+	* kern/term.c (grub_putcode): Handle NULL terminal.
+	(grub_getcharwidth): Likewise.
+	(grub_getkey): Likewise.
+	(grub_checkkey): Likewise.
+	(grub_getkeystatus): Likewise.
+	(grub_getxy): Likewise.
+	(grub_getwh): Likewise.
+	(grub_gotoxy): Likewise.
+	(grub_cls): Likewise.
+	(grub_setcolorstate): Likewise.
+	(grub_setcolor): Likewise.
+	(grub_getcolor): Likewise.
+	(grub_refresh): Likewise.
+	* lib/mips/relocator.c (JUMP_SIZEOF): Fix incorrect value.
+	(write_jump): Add hatch nop.
+	* lib/mips/relocator_asm.S: Use kern/mips/cache_flush.S.
+        * lib/mips/setjmp.S: New file.
+        * loader/mips/linux.c: Likewise.
+	* term/i386/pc/at_keyboard.c: Move from here ...
+	* term/at_keyboard.c: ... to here.
+	* term/i386/pc/serial.c: Moved from here ...
+	* term/serial.c: ... to here. All users updated.
+	(TEXT_HEIGHT): Set to 24 to fit linux terminal.
+	(serial_hw_io_addr): Use GRUB_MACHINE_SERIAL_PORTS.
+	(serial_translate_key_sequence): Avoid deadlock.
+	(grub_serial_getkey): Handle backspace.
+	(grub_serial_putchar): Fix newline handling.
+	* util/i386/pc/grub-mkimage.c: Move from here ...
+	* util/grub-mkrawimage.c: ... to here. All users updated.
+	(generate_image): New parameters 'font_path' and 'format'.
+	Support embedding font.
+	Use grub_host_to_target* instead of grub_cpu_to_le*.
+	(generate_image) [GRUB_MACHINE_MIPS]: Support ELF encapsulation.
+	(options) [GRUB_PLATFORM_IMAGE_DEFAULT]: New option "--format".
+	(options): New option "--font".
+	(usage): Likewise.
+	(main) [GRUB_PLATFORM_IMAGE_DEFAULT]: Handle "--format".
+	(main): Handle "--font".
+	* term/gfxterm.c (grub_virtual_screen): New member bg_color_display.
+	(grub_virtual_screen_setup): Set bg_color_display.
+	(redraw_screen_rect): Use bg_color_display instead of incorrect
+	bg_color.
+	(grub_gfxterm_cls): Likewise.
+	* util/elf/grub-mkimage.c (load_modules): New parameter 'config_path'.
+	Support embedding config file.
+	(add_segments): Likewise.
+	(options): New option "--config".
+	(main): Handle "--config".
+	* video/sm712.c: New file.
