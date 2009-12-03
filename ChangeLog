@@ -1,3 +1,26 @@
+2009-12-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* commands/halt.c: Replace misc arch-specific headers with
+	`<grub/misc.h>'.
+	* commands/reboot.c: Likewise.
+	* commands/i386/pc/halt.c: Replace `<grub/machine/init.h>' with
+	`<grub/misc.h>'.
+	* conf/i386-coreboot.rmk (kernel_img_HEADERS): Remove `cpu/reboot.h'.
+	(halt_mod_SOURCES): Move `kern/i386/halt.c' from here ...
+	(kernel_img_SOURCES): ... to here.
+
+	* include/grub/efi/efi.h (grub_reboot, grub_halt): Remove prototypes.
+	* include/grub/i386/pc/init.h: Likewise.
+	* include/grub/powerpc/ieee1275/kernel.h: Likewise.
+	* include/grub/sparc64/ieee1275/kernel.h: Likewise.
+
+	* include/grub/misc.h (grub_reboot, grub_halt): New prototypes.
+
+	* include/grub/i386/halt.h: Remove.
+	* include/grub/i386/reboot.h: Likewise.
+
+	* kern/i386/halt.c: Remove `<grub/cpu/halt.h>'.
+
 2009-12-03  David S. Miller  <davem@sunset.davemloft.net>
 
 	* conf/sparc64-ieee1275.rmk (grub_mkimage_SOURCES,

@@ -18,7 +18,7 @@
  */
 
 #include <grub/dl.h>
-#include <grub/machine/init.h>
+#include <grub/misc.h>
 #include <grub/extcmd.h>
 
 static const struct grub_arg_option options[] =

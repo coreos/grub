@@ -222,4 +222,15 @@ grub_div_roundup (unsigned int x, unsigned int y)
   return (x + y - 1) / y;
 }
 
+/* Reboot the machine.  */
+void EXPORT_FUNC (grub_reboot) (void);
+
+#ifdef GRUB_MACHINE_PCBIOS
+/* Halt the system, using APM if possible. If NO_APM is true, don't
+ * use APM even if it is available.  */
+void EXPORT_FUNC (grub_halt) (int no_apm);
+#else
+void EXPORT_FUNC (grub_halt) (void);
+#endif
+
 #endif /* ! GRUB_MISC_HEADER */
