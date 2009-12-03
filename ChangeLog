@@ -1,3 +1,13 @@
+2009-12-03  David S. Miller  <davem@sunset.davemloft.net>
+
+	* conf/sparc64-ieee1275.rmk (grub_mkimage_SOURCES,
+	grub_setup_SOURCES, grub_ofpathname_SOURCES): Add gnulib/progname.c
+	* util/sparc64/ieee1275/grub-mkimage.c: Include <grub/i18n.h> and
+	"progname.h"
+	* util/sparc64/ieee1275/grub-ofpathname.c: Likewise.
+	* util/sparc64/ieee1275/grub-setup.c: Likewise.
+	(usage): Add missing comma in printf.
+
 2009-12-02  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Use the same reboot approach on i386 coreboot and qemu as we do on
