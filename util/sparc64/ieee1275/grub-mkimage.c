@@ -21,6 +21,7 @@
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <grub/kernel.h>
+#include <grub/i18n.h>
 #include <grub/disk.h>
 #include <grub/util/misc.h>
 #include <grub/util/resolve.h>
@@ -33,6 +34,8 @@
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
+
+#include "progname.h"
 
 static void
 compress_kernel (char *kernel_img, size_t kernel_size,

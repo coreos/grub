@@ -1,3 +1,51 @@
+2009-12-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* commands/halt.c: Replace misc arch-specific headers with
+	`<grub/misc.h>'.
+	* commands/reboot.c: Likewise.
+	* commands/i386/pc/halt.c: Replace `<grub/machine/init.h>' with
+	`<grub/misc.h>'.
+	* conf/i386-coreboot.rmk (kernel_img_HEADERS): Remove `cpu/reboot.h'.
+	(halt_mod_SOURCES): Move `kern/i386/halt.c' from here ...
+	(kernel_img_SOURCES): ... to here.
+
+	* include/grub/efi/efi.h (grub_reboot, grub_halt): Remove prototypes.
+	* include/grub/i386/pc/init.h: Likewise.
+	* include/grub/powerpc/ieee1275/kernel.h: Likewise.
+	* include/grub/sparc64/ieee1275/kernel.h: Likewise.
+
+	* include/grub/misc.h (grub_reboot, grub_halt): New prototypes.
+
+	* include/grub/i386/halt.h: Remove.
+	* include/grub/i386/reboot.h: Likewise.
+
+	* kern/i386/halt.c: Remove `<grub/cpu/halt.h>'.
+
+2009-12-03  David S. Miller  <davem@sunset.davemloft.net>
+
+	* conf/sparc64-ieee1275.rmk (grub_mkimage_SOURCES,
+	grub_setup_SOURCES, grub_ofpathname_SOURCES): Add gnulib/progname.c
+	* util/sparc64/ieee1275/grub-mkimage.c: Include <grub/i18n.h> and
+	"progname.h"
+	* util/sparc64/ieee1275/grub-ofpathname.c: Likewise.
+	* util/sparc64/ieee1275/grub-setup.c: Likewise.
+	(usage): Add missing comma in printf.
+
+2009-12-02  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Use the same reboot approach on i386 coreboot and qemu as we do on
+	BIOS.
+
+	* conf/i386-coreboot.rmk (kernel_img_HEADERS): Add `cpu/reboot.h'.
+	(reboot_mod_SOURCES): Remove `kern/i386/reboot.c'.
+	* kern/i386/reboot.c: Remove.
+	* include/grub/i386/reboot.h (grub_reboot): Export function.
+	* kern/i386/pc/startup.S (grub_reboot): Move from here ...
+	* kern/i386/realmode.S (grub_reboot): ... to here.  Jump to
+	0xf000:0xfff0 instead of 0xffff:0x0000.
+	[!GRUB_MACHINE_PCBIOS] (prot_to_real): Do not restore interrupts.
+	* kern/i386/qemu/startup.S: Include `"../realmode.S"'.
+
 2009-11-30  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Fix $srcdir != $objdir build.

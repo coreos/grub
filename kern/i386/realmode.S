@@ -215,10 +215,27 @@ realcseg:
 	movw	%ax, %gs
 	movw	%ax, %ss
 
+#ifdef GRUB_MACHINE_PCBIOS
 	/* restore interrupts */
 	sti
+#endif
 
 	/* return on new stack! */
 	DATA32	ret
 
+	.code32
+
+/*
+ * grub_reboot()
+ *
+ * Reboot the system. At the moment, rely on BIOS.
+ */
+FUNCTION(grub_reboot)
+	call	prot_to_real
+	.code16
+cold_reboot:
+	/* set 0x472 to 0x0000 for cold boot (0x1234 for warm boot) */
+	movw	$0x0472, %di
+	movw	%ax, (%di)
+	ljmp	$0xf000, $0xfff0
 	.code32
