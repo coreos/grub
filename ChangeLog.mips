@@ -63,7 +63,6 @@
         * include/grub/mips/qemu-mips/memory.h: Likewise.
         * include/grub/mips/qemu-mips/serial.h: Likewise.
         * include/grub/mips/qemu-mips/time.h: Likewise.
-        * include/grub/mips/reboot.h: Likewise.
         * include/grub/mips/relocator.h: Likewise.
         * include/grub/mips/time.h: Likewise.
         * include/grub/mips/types.h: Likewise.
