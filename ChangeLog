@@ -1,3 +1,8 @@
+2009-12-05  Carles Pina i Estany  <carles@pina.cat>
+
+	* gettext/gettext.c (grub_gettext_init_ext): Replace grub_printf with
+	grub_dprintf.
+
 2009-12-05  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* kern/ieee1275/openfw.c (grub_reboot): Disable for i386.  The

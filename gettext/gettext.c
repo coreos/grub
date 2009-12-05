@@ -222,7 +222,7 @@ grub_gettext_init_ext (const char *lang)
   locale_dir = grub_env_get ("locale_dir");
   if (locale_dir == NULL)
     {
-      grub_printf ("locale_dir variable is not set up.");
+      grub_dprintf ("gettext", "locale_dir variable is not set up.");
       return;
     }
 
