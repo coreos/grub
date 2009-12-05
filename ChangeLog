@@ -1,3 +1,22 @@
+2009-12-05  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/menu_text.c (grub_color_menu_high): Gettexttize string.
+	(print_spaces): New function.
+	(grub_print_ucs4): New function.
+	(getstringwidth): New function.
+	(print_message_indented): New function.
+	(print_message): Gettexttize strings using print_message_indented.
+	(run_menu): Replaces grub_printf by print_spaces and dynamic terminal
+	width.
+	(get_entry_number): Gettextize and uses dynamic terminal width.
+	(notify_booting, notify_fallback, notify_execution_failure): 
+	Gettextize.
+	* normal/menu_entry.c (store_completion): Cleanup the gettextized
+	string.
+	(run): Likewise.
+	(grub_menu_entry_run): Likewise.
+	* PO/POTFILES: Add normal/menu_entry.c.
+
 2009-12-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac (TARGET_ASFLAGS): Add "-D<MACHINE>".

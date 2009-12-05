@@ -836,7 +836,9 @@ store_completion (const char *item, grub_completion_type_t type, int count)
 	}
 
       grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
-      grub_printf ("   Possible %s are:\n    ", what);
+      grub_printf ("   ");
+      grub_printf (_("Possible %s are:"), what);
+      grub_printf ("\n    ");
     }
 
   /* Make sure that the completion buffer has enough room.  */
@@ -997,7 +999,9 @@ run (struct screen *screen)
     }
 
   grub_cls ();
-  grub_printf (_("  Booting a command list\n\n"));
+  grub_printf ("  ");
+  grub_printf (_("Booting a command list"));
+  grub_printf ("\n\n");
 
 
   /* Execute the script, line for line.  */
@@ -1177,6 +1181,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
   grub_cls ();
   grub_print_error ();
   grub_errno = GRUB_ERR_NONE;
-  grub_printf (_("\nPress any key to continue..."));
+  grub_putchar ('\n');
+  grub_printf (_("Press any key to continue..."));
   (void) grub_getkey ();
 }
