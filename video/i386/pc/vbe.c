@@ -158,8 +158,10 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
 
   /* Try to set video mode.  */
   status = grub_vbe_bios_set_mode (vbe_mode, 0);
+#if 0
   if (status != GRUB_VBE_STATUS_OK)
     return grub_error (GRUB_ERR_BAD_DEVICE, "cannot set VBE mode %x", vbe_mode);
+#endif
 
   /* Save information for later usage.  */
   framebuffer.active_vbe_mode = vbe_mode;
@@ -387,6 +389,7 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
           break;
         }
 
+#if 0
       if ((vbe_mode_info.mode_attributes & 0x001) == 0)
         /* If not available, skip it.  */
         continue;
@@ -411,6 +414,7 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
           && (vbe_mode_info.memory_model != GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR))
         /* Not compatible memory model.  */
         continue;
+#endif
 
       if ((vbe_mode_info.x_resolution != width)
           || (vbe_mode_info.y_resolution != height))
