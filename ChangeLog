@@ -1,3 +1,17 @@
+2009-12-05  Carles Pina i Estany <carles@pina.cat>
+
+	* gettext/gettext.c: Include `<grub/list.h>'. Define grub_gettext_msg,
+	grub_gettext_msg_list.
+	(grub_gettext_gettranslation_from_position): Return const char *
+	and not char *.
+	(grub_gettext_translate): Add the translated strings into a list, 
+	returns from the list if existing there.
+	(grub_gettext_init_ext): Add \n at the end of grub_dprintf string.
+	(grub_gettext_delete_list): Delete the list.
+	(grub_gettext_env_write_lang): Call grub_gettext_delete_list when
+	lang environment variable is changed.
+	(GRUB_MOD_FINI): Call grub_gettext_delete_list.
+
 2009-12-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Rename kernel.mod to kernel.img.
