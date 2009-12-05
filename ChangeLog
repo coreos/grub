@@ -1,3 +1,7 @@
+2009-12-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac (TARGET_ASFLAGS): Add "-D<MACHINE>".
+
 2009-12-05  Carles Pina i Estany  <carles@pina.cat>
 
 	* util/grub-install.in: Install gettext .mo files.

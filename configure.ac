@@ -122,6 +122,7 @@ case "$platform" in
   emu)		machine_CFLAGS="-DGRUB_MACHINE_EMU=1" ;;
 esac
 CFLAGS="$CFLAGS $machine_CFLAGS"
+TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
 TARGET_CFLAGS="$TARGET_CFLAGS $machine_CFLAGS"
 
 AC_SUBST(host_cpu)
