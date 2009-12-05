@@ -19,6 +19,7 @@
 #include <grub/types.h>
 #include <grub/crypto.h>
 #include <grub/util/misc.h>
+#include <grub/i18n.h>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -27,6 +28,7 @@
 #include <getopt.h>
 #include <termios.h>
 
+#include "progname.h"
 
 /* Few functions to make crypto happy.  */
 void *
@@ -120,7 +122,10 @@ main (int argc, char *argv[])
   struct termios s, t;
   int tty_changed;
 
-  progname = "grub-mkpasswd-pbkdf2";
+  set_program_name (argv[0]);
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
 
   /* Check for options.  */
   while (1)
@@ -149,7 +154,7 @@ main (int argc, char *argv[])
 	  return 0;
 	  
 	case 'V':
-	  printf ("%s (%s) %s\n", progname,
+	  printf ("%s (%s) %s\n", program_name,
 		  PACKAGE_NAME, PACKAGE_VERSION);
 	  return 0;
 	    
