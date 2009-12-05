@@ -45,7 +45,9 @@ XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
 MSGFMT = @MSGFMT@
 
-LINGUAS = $(shell tr '\n' ' ' < $(srcdir)/po/LINGUAS)
+LINGUAS = $(shell for i in $(srcdir)/po/*.po ; do \
+			if test -e $$i ; then echo $$i ; fi ; \
+		done | sed -e "s,.*/po/\(.*\)\.po$$,\1,")
 
 PACKAGE = @PACKAGE@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -156,10 +158,9 @@ ifeq ($(platform), emu)
 include $(srcdir)/conf/any-emu.mk
 else
 include $(srcdir)/conf/$(target_cpu)-$(platform).mk
-endif
-
 # For external modules.
 -include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
+endif
 
 ### General targets.
 
@@ -311,13 +312,13 @@ install-local: all
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
-	$(foreach lang, $(LINGUAS), \
-	$(shell $(mkinstalldirs) $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES) \
-	@list='po/$(lang).mo'; \
-	for file in $$list; do \
+	@langs='$(LINGUAS)'; \
+	for lang in $$langs; do \
+	  $(SHELL) $(mkinstalldirs) $(DESTDIR)/$(datadir)/locale/$$lang/LC_MESSAGES; \
+	  file="po/$$lang.mo"; \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
-	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES/$(PACKAGE).mo; \
-	done)
+	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)/$(datadir)/locale/$$lang/LC_MESSAGES/$(PACKAGE).mo; \
+	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(infodir)
 	@list='$(info_INFOS)'; \
 	for file in $$list; do \

@@ -7,10 +7,12 @@ autom4te.cache
 build_env.mk
 .bzrignore
 config.cache
+config.guess
 config.h
 config.h.in
 config.log
 config.status
+config.sub
 configure
 conf/*.mk
 conf/gcry.rmk
@@ -46,11 +48,13 @@ grub_setup_init.h
 *.img
 include/grub/cpu
 include/grub/machine
+install-sh
 lib/libgcrypt-grub
 *.lst
 Makefile
 *.mod
 mod-*.c
+missing
 *.pf2
 po/*.mo
 po/grub.pot

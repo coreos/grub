@@ -18,10 +18,12 @@
 
 #include <config.h>
 
+#include <errno.h>
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -37,6 +39,8 @@
 #include <grub/term.h>
 #include <grub/time.h>
 
+#include "progname.h"
+
 /* Include malloc.h, only if memalign is available. It is known that
    memalign is declared in malloc.h in all systems, if present.  */
 #ifdef HAVE_MEMALIGN
@@ -48,7 +52,6 @@
 #include <winioctl.h>
 #endif
 
-char *progname = 0;
 int verbosity = 0;
 
 void
@@ -56,7 +59,7 @@ grub_util_warn (const char *fmt, ...)
 {
   va_list ap;
 
-  fprintf (stderr, "%s: warn: ", progname);
+  fprintf (stderr, "%s: warn: ", program_name);
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   va_end (ap);
@@ -71,7 +74,7 @@ grub_util_info (const char *fmt, ...)
     {
       va_list ap;
 
-      fprintf (stderr, "%s: info: ", progname);
+      fprintf (stderr, "%s: info: ", program_name);
       va_start (ap, fmt);
       vfprintf (stderr, fmt, ap);
       va_end (ap);
@@ -85,7 +88,7 @@ grub_util_error (const char *fmt, ...)
 {
   va_list ap;
 
-  fprintf (stderr, "%s: error: ", progname);
+  fprintf (stderr, "%s: error: ", program_name);
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   va_end (ap);
@@ -447,3 +450,82 @@ fail:
 }
 
 #endif /* __MINGW32__ */
+
+/* This function never prints trailing slashes (so that its output
+   can be appended a slash unconditionally).  */
+char *
+make_system_path_relative_to_its_root (const char *path)
+{
+  struct stat st;
+  char *p, *buf, *buf2, *buf3;
+  uintptr_t offset = 0;
+  dev_t num;
+  size_t len;
+
+  /* canonicalize.  */
+  p = realpath (path, NULL);
+
+  if (p == NULL)
+    {
+      if (errno != EINVAL)
+	grub_util_error ("failed to get realpath of %s", path);
+      else
+	grub_util_error ("realpath not supporting (path, NULL)");
+    }
+  len = strlen (p) + 1;
+  buf = strdup (p);
+  free (p);
+
+  if (stat (buf, &st) < 0)
+    grub_util_error ("can not stat %s: %s", buf, strerror (errno));
+
+  buf2 = strdup (buf);
+  num = st.st_dev;
+
+  /* This loop sets offset to the number of chars of the root
+     directory we're inspecting.  */
+  while (1)
+    {
+      p = strrchr (buf, '/');
+      if (p == NULL)
+	/* This should never happen.  */
+	grub_util_error ("FIXME: no / in buf. (make_system_path_relative_to_its_root)");
+      if (p != buf)
+	*p = 0;
+      else
+	*++p = 0;
+
+      if (stat (buf, &st) < 0)
+	grub_util_error ("can not stat %s: %s", buf, strerror (errno));
+
+      /* buf is another filesystem; we found it.  */
+      if (st.st_dev != num)
+	break;
+
+      offset = p - buf;
+      /* offset == 1 means root directory.  */
+      if (offset == 1)
+	{
+	  free (buf);
+	  len = strlen (buf2);
+	  while (buf2[len - 1] == '/' && len > 1)
+	    {
+	      buf2[len - 1] = '\0';
+	      len--;
+	    }
+	  return buf2;
+	}
+    }
+  free (buf);
+  buf3 = strdup (buf2 + offset);
+  free (buf2);
+
+  len = strlen (buf3);
+  while (buf3[len - 1] == '/' && len > 1)
+    {
+      buf3[len - 1] = '\0';
+      len--;
+    }
+
+  return buf3;
+}

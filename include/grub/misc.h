@@ -191,9 +191,6 @@ grub_ssize_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
 grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint32_t d, grub_uint32_t *r);
 
-const char *EXPORT_FUNC(grub_gettext_dummy) (const char *s);
-extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
-
 #ifdef NEED_ENABLE_EXECUTE_STACK
 void EXPORT_FUNC(__enable_execute_stack) (void *addr);
 #endif
@@ -224,5 +221,16 @@ grub_div_roundup (unsigned int x, unsigned int y)
 {
   return (x + y - 1) / y;
 }
+
+/* Reboot the machine.  */
+void EXPORT_FUNC (grub_reboot) (void);
+
+#ifdef GRUB_MACHINE_PCBIOS
+/* Halt the system, using APM if possible. If NO_APM is true, don't
+ * use APM even if it is available.  */
+void EXPORT_FUNC (grub_halt) (int no_apm);
+#else
+void EXPORT_FUNC (grub_halt) (void);
+#endif
 
 #endif /* ! GRUB_MISC_HEADER */

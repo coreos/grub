@@ -100,6 +100,13 @@ process_input_dir ()
             cp -f "$file" ${iso9660_dir}/boot/grub/${target_cpu}-${platform}/
         fi
     done
+
+    mkdir -p ${iso9660_dir}/boot/grub/locale
+    for file in ${input_dir}/po/*.mo; do
+        if test -f "$file"; then
+	    cp -f "$file" ${iso9660_dir}/boot/grub/locale/
+	fi
+    done
 }
 
 if [ "${override_dir}" = "" ] ; then

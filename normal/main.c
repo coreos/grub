@@ -415,7 +415,7 @@ grub_normal_execute (const char *config, int nested, int batch)
   read_command_list ();
   read_fs_list ();
   read_handler_list ();
-  grub_command_execute ("parser.sh", 0, 0);
+  grub_command_execute ("parser.grub", 0, 0);
 
   reader_nested = nested;
 
@@ -524,7 +524,7 @@ static grub_err_t
 grub_normal_read_line (char **line, int cont)
 {
   grub_parser_t parser = grub_parser_get_current ();
-  char prompt[sizeof("> ") - 1 + grub_strlen (parser->name)];
+  char prompt[sizeof("> ") + grub_strlen (parser->name)];
 
   grub_sprintf (prompt, "%s> ", parser->name);
 

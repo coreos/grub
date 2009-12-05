@@ -26,6 +26,7 @@
 #include <grub/file.h>
 #include <grub/kernel.h>
 #include <grub/gzio.h>
+#include <grub/i18n.h>
 
 /* 
    .mo file information from: 
@@ -221,7 +222,7 @@ grub_gettext_init_ext (const char *lang)
   locale_dir = grub_env_get ("locale_dir");
   if (locale_dir == NULL)
     {
-      grub_printf ("locale_dir variable is not set up.");
+      grub_dprintf ("gettext", "locale_dir variable is not set up.");
       return;
     }
 

@@ -33,8 +33,7 @@ dnl type.
 
 AC_INIT([GRUB],[1.97],[bug-grub@gnu.org])
 AM_INIT_AUTOMAKE()
-AM_GNU_GETTEXT()
-AC_PREREQ(2.59d)
+AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
 
@@ -123,6 +122,7 @@ case "$platform" in
   emu)		machine_CFLAGS="-DGRUB_MACHINE_EMU=1" ;;
 esac
 CFLAGS="$CFLAGS $machine_CFLAGS"
+TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
 TARGET_CFLAGS="$TARGET_CFLAGS $machine_CFLAGS"
 
 AC_SUBST(host_cpu)
@@ -173,6 +173,7 @@ AC_PROG_CC
 test "x$GCC" = xyes || AC_MSG_ERROR([GCC is required])
 
 AC_GNU_SOURCE
+AM_GNU_GETTEXT
 AC_SYS_LARGEFILE
 
 # Identify characteristics of the host architecture.

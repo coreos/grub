@@ -23,11 +23,19 @@
 #include <stdarg.h>
 #include <grub/term.h>
 #include <grub/env.h>
+#include <grub/i18n.h>
 
 static int
 grub_iswordseparator (int c)
 {
   return (grub_isspace (c) || c == ',' || c == ';' || c == '|' || c == '&');
+}
+
+/* grub_gettext_dummy is not translating anything.  */
+const char *
+grub_gettext_dummy (const char *s)
+{
+  return s;
 }
 
 const char* (*grub_gettext) (const char *s) = grub_gettext_dummy;
@@ -984,13 +992,6 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
   if (srcend)
     *srcend = src;
   return p - dest;
-}
-
-/* grub_gettext_dummy is not translating anything.  */
-const char *
-grub_gettext_dummy (const char *s)
-{
-  return s;
 }
 
 /* Abort GRUB. This function does not return.  */

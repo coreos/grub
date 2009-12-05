@@ -64,7 +64,7 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
 	machine/biosdisk.h machine/boot.h machine/console.h machine/init.h \
 	machine/memory.h machine/loader.h machine/vga.h machine/vbe.h \
-	machine/kernel.h machine/pxe.h i386/pit.h list.h handler.h command.h
+	machine/kernel.h machine/pxe.h i386/pit.h list.h handler.h command.h i18n.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)  $(TARGET_IMG_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_KERNEL_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
@@ -81,7 +81,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genke
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
-sbin_UTILITIES = grub-setup grub-mkdevicemap
+sbin_UTILITIES = grub-setup
 
 # For grub-mkimage.
 grub_mkimage_SOURCES = gnulib/progname.c util/i386/pc/grub-mkimage.c util/misc.c \
@@ -108,10 +108,6 @@ grub_setup_SOURCES = gnulib/progname.c \
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c		\
 	util/raid.c util/lvm.c					\
 	grub_setup_init.c
-
-# For grub-mkdevicemap.
-grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/deviceiter.c \
-	util/devicemap.c util/misc.c
 
 sbin_SCRIPTS += grub-install
 grub_install_SOURCES = util/grub-install.in

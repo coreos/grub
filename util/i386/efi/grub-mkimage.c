@@ -30,6 +30,7 @@
 #include <grub/kernel.h>
 #include <grub/efi/pe32.h>
 #include <grub/machine/kernel.h>
+#include "progname.h"
 
 #if GRUB_TARGET_WORDSIZE == 32
 # define grub_le_to_cpu(val) grub_le_to_cpu32(val)
@@ -1056,7 +1057,7 @@ main (int argc, char *argv[])
   char *dir = NULL;
   char *prefix = NULL;
 
-  progname = "grub-mkimage";
+  program_name = "grub-mkimage";
 
   while (1)
     {
