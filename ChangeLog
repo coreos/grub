@@ -1,5 +1,10 @@
 2009-12-05  Carles Pina i Estany  <carles@pina.cat>
 
+	* util/grub-install.in: Install gettext .mo files.
+	* util/grub-mkrescue.in (process_input_dir): Copy gettext .mo files.
+
+2009-12-05  Carles Pina i Estany  <carles@pina.cat>
+
 	* gettext/gettext.c (grub_gettext_init_ext): Replace grub_printf with
 	grub_dprintf.
 
