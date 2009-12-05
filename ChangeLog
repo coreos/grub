@@ -1,3 +1,63 @@
+2009-12-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Rename kernel.mod to kernel.img.
+
+	* conf/i386-efi.rmk (pkglib_MODULES): Change kernel.mod to kernel.img.
+	(kernel_mod_EXPORTS): Rename to ...
+	(kernel_img_EXPORTS): ... this.
+	(kernel_mod_SOURCES): Rename to ...
+	(kernel_img_SOURCES): ... this.
+	(kernel_mod_HEADERS): Rename to ...
+	(kernel_img_HEADERS): ... this. All users updated.
+	(kernel_mod_CFLAGS): Rename to ...
+	(kernel_img_CFLAGS): ... this.
+	(kernel_mod_ASFLAGS): Rename to ...
+	(kernel_img_ASFLAGS): ... this.
+	(kernel_mod_LDFLAGS): Rename to ...
+	(kernel_img_LDFLAGS): ... this.
+	* conf/x86_64-efi.rmk: Likewise.
+	* util/i386/efi/grub-mkimage.c (read_kernel_module): Rename to ...
+	(read_kernel_image): ... this. All users updated.
+	(read_kernel_image): Read "kernel.img" instead of "kernel.mod".
+
+2009-12-05  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/menu_text.c (grub_color_menu_high): Gettexttize string.
+	(print_spaces): New function.
+	(grub_print_ucs4): New function.
+	(getstringwidth): New function.
+	(print_message_indented): New function.
+	(print_message): Gettexttize strings using print_message_indented.
+	(run_menu): Replaces grub_printf by print_spaces and dynamic terminal
+	width.
+	(get_entry_number): Gettextize and uses dynamic terminal width.
+	(notify_booting, notify_fallback, notify_execution_failure): 
+	Gettextize.
+	* normal/menu_entry.c (store_completion): Cleanup the gettextized
+	string.
+	(run): Likewise.
+	(grub_menu_entry_run): Likewise.
+	* PO/POTFILES: Add normal/menu_entry.c.
+
+2009-12-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac (TARGET_ASFLAGS): Add "-D<MACHINE>".
+
+2009-12-05  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/grub-install.in: Install gettext .mo files.
+	* util/grub-mkrescue.in (process_input_dir): Copy gettext .mo files.
+
+2009-12-05  Carles Pina i Estany  <carles@pina.cat>
+
+	* gettext/gettext.c (grub_gettext_init_ext): Replace grub_printf with
+	grub_dprintf.
+
+2009-12-05  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* kern/ieee1275/openfw.c (grub_reboot): Disable for i386.  The
+	non-firmware-dependant one in realmode.S takes precedence.
+
 2009-12-04  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* commands/halt.c: Replace misc arch-specific headers with
