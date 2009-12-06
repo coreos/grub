@@ -363,10 +363,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       phdr->p_flags = grub_host_to_target32 (PF_R | PF_W | PF_X);
       
       target_addr = ALIGN_UP (GRUB_KERNEL_MACHINE_LINK_ADDR 
-			      + kernel_size + total_module_size
-			      + 0x100000
-			      //			      + BSS_SIZE
-			      , 32);
+			      + kernel_size + total_module_size, 32);
       ehdr->e_entry = grub_host_to_target32 (target_addr);
       phdr->p_vaddr = grub_host_to_target32 (target_addr);
       phdr->p_paddr = grub_host_to_target32 (target_addr);
