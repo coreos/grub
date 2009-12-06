@@ -160,6 +160,7 @@ grub_auth_check_authentication (const char *userlist)
   struct grub_auth_user *cur = NULL;
   grub_err_t err;
   static unsigned long punishment_delay = 1;
+  char entered[GRUB_AUTH_MAX_PASSLEN];
 
   auto int hook (grub_list_t item);
   int hook (grub_list_t item)
@@ -189,22 +190,17 @@ grub_auth_check_authentication (const char *userlist)
 			 0, 0, 0))
     goto access_denied;
 
+  grub_printf ("Enter password: ");
+
+  if (!grub_password_get (entered, GRUB_AUTH_MAX_PASSLEN))
+    goto access_denied;
+
   grub_list_iterate (GRUB_AS_LIST (users), hook);
 
   if (!cur || ! cur->callback)
-    {
-      grub_list_iterate (GRUB_AS_LIST (users), hook_any);
+    goto access_denied;
 
-      /* No users present at all.  */
-      if (!cur)
-	goto access_denied;
-
-      /* Display any of available authentication schemes.  */
-      err = cur->callback (login, 0);
-
-      goto access_denied;
-    }
-  err = cur->callback (login, cur->arg);
+  err = cur->callback (login, entered, cur->arg);
   if (is_authenticated (userlist))
     {
       punishment_delay = 1;

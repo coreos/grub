@@ -19,14 +19,11 @@
 #define GRUB_AUTH_HEADER	1
 
 #include <grub/err.h>
+#include <grub/crypto.h>
 
-/* Macros for indistinguishibility.  */
-#define GRUB_ACCESS_DENIED grub_error (GRUB_ERR_ACCESS_DENIED, "Access denied.")
-#define GRUB_GET_PASSWORD(string, len) grub_cmdline_get ("Enter password: ", \
-							 string, len,	\
-							 '*', 0, 0)
+#define GRUB_AUTH_MAX_PASSLEN 1024
 
-typedef grub_err_t (*grub_auth_callback_t) (const char*, void *);
+typedef grub_err_t (*grub_auth_callback_t) (const char *, const char *, void *);
 
 grub_err_t grub_auth_register_authentication (const char *user,
 					      grub_auth_callback_t callback,

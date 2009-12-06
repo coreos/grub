@@ -20,6 +20,7 @@
 #include <grub/crypto.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
+#include <grub/term.h>
 
 struct grub_crypto_hmac_handle
 {
@@ -372,10 +373,10 @@ grub_crypto_gcry_error (gcry_err_code_t in)
 }
 
 int
-grub_crypto_memcmp (void *a, void *b, grub_size_t n)
+grub_crypto_memcmp (const void *a, const void *b, grub_size_t n)
 {
   register grub_size_t counter = 0;
-  grub_uint8_t *pa, *pb;
+  const grub_uint8_t *pa, *pb;
 
   for (pa = a, pb = b; n; pa++, pb++, n--)
     {
@@ -385,3 +386,44 @@ grub_crypto_memcmp (void *a, void *b, grub_size_t n)
 
   return !!counter;
 }
+
+#ifndef GRUB_MKPASSWD
+int
+grub_password_get (char buf[], unsigned buf_size)
+{
+  unsigned cur_len = 0;
+  int key;
+
+  while (1)
+    {
+      key = GRUB_TERM_ASCII_CHAR (grub_getkey ()); 
+      if (key == '\n' || key == '\r')
+	break;
+
+      if (key == '\e')
+	{
+	  cur_len = 0;
+	  break;
+	}
+
+      if (key == '\b')
+	{
+	  cur_len--;
+	  continue;
+	}
+
+      if (!grub_isprint (key))
+	continue;
+
+      if (cur_len + 2 < buf_size)
+	buf[cur_len++] = key;
+    }
+
+  grub_memset (buf + cur_len, 0, buf_size - cur_len);
+
+  grub_putchar ('\n');
+  grub_refresh ();
+
+  return (key != '\e');
+}
+#endif

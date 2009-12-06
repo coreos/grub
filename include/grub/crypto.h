@@ -26,8 +26,6 @@
 #include <grub/symbol.h>
 #include <grub/types.h>
 #include <grub/err.h>
-/* For GRUB_ACCESS_DENIED.  */
-#include <grub/auth.h>
 
 typedef enum 
   {
@@ -264,6 +262,12 @@ grub_crypto_pbkdf2 (const struct gcry_md_spec *md,
 		    grub_uint8_t *DK, grub_size_t dkLen);
 
 int
-grub_crypto_memcmp (void *a, void *b, grub_size_t n);
+grub_crypto_memcmp (const void *a, const void *b, grub_size_t n);
+
+int
+grub_password_get (char buf[], unsigned buf_size);
+
+/* For indistinguishibility.  */
+#define GRUB_ACCESS_DENIED grub_error (GRUB_ERR_ACCESS_DENIED, "Access denied.")
 
 #endif

@@ -16,6 +16,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/auth.h>
 #include <grub/crypto.h>
 #include <grub/list.h>
 #include <grub/mm.h>
@@ -36,23 +37,17 @@ struct pbkdf2_password
 };
 
 static grub_err_t
-check_password (const char *user, void *pin)
+check_password (const char *user, const char *entered, void *pin)
 {
-  char entered[1024];
   grub_uint8_t *buf;
   struct pbkdf2_password *pass = pin;
   gcry_err_code_t err;
-
-  grub_memset (entered, 0, sizeof (entered));
-
-  if (!GRUB_GET_PASSWORD (entered, sizeof (entered) - 1))
-    return GRUB_ACCESS_DENIED;
 
   buf = grub_malloc (pass->buflen);
   if (!buf)
     return grub_crypto_gcry_error (GPG_ERR_OUT_OF_MEMORY);
 
-  err = grub_crypto_pbkdf2 (GRUB_MD_SHA512, (grub_uint8_t *) &entered,
+  err = grub_crypto_pbkdf2 (GRUB_MD_SHA512, (grub_uint8_t *) entered,
 			    grub_strlen (entered),
 			    pass->salt, pass->saltlen, pass->c,
 			    buf, pass->buflen);
