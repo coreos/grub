@@ -1,3 +1,8 @@
+2009-12-06 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/misc.c (make_system_path_relative_to_its_root): Correctly cope with
+	mount points.
+
 2009-12-05  Carles Pina i Estany <carles@pina.cat>
 
 	* gettext/gettext.c: Include `<grub/list.h>'. Define grub_gettext_msg,

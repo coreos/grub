@@ -500,7 +500,17 @@ make_system_path_relative_to_its_root (const char *path)
 
       /* buf is another filesystem; we found it.  */
       if (st.st_dev != num)
-	break;
+	{
+	  /* offset == 0 means path given is the mount point.  */
+	  if (offset == 0)
+	    {
+	      free (buf);
+	      free (buf2);
+	      return strdup ("/");
+	    }
+	  else
+	    break;
+	}
 
       offset = p - buf;
       /* offset == 1 means root directory.  */
