@@ -40,3 +40,10 @@ pkglib_MODULES += ata_pthru.mod
 ata_pthru_mod_SOURCES = disk/ata_pthru.c
 ata_pthru_mod_CFLAGS = $(COMMON_CFLAGS)
 ata_pthru_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For mmap.mod.
+pkglib_MODULES += mmap.mod
+mmap_mod_SOURCES = mmap/mmap.c mmap/mips/yeeloong/uppermem.c
+mmap_mod_CFLAGS = $(COMMON_CFLAGS)
+mmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+mmap_mod_ASFLAGS = $(COMMON_ASFLAGS)

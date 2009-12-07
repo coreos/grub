@@ -28,8 +28,6 @@
 #include <grub/machine/memory.h>
 #include <grub/cpu/kernel.h>
 
-#define RAMSIZE (64 << 20)
-
 grub_uint32_t
 grub_get_rtc (void)
 {
@@ -38,11 +36,48 @@ grub_get_rtc (void)
   return (calln++) >> 8;
 }
 
+grub_err_t
+grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
+							 grub_uint64_t,
+							 grub_uint32_t))
+{
+  hook (GRUB_ARCH_LOWMEMPSTART, grub_arch_memsize << 20,
+	GRUB_MACHINE_MEMORY_AVAILABLE);
+  hook (GRUB_ARCH_HIGHMEMPSTART, grub_arch_highmemsize << 20,
+	GRUB_MACHINE_MEMORY_AVAILABLE);
+  return GRUB_ERR_NONE;
+}
+
+
+static void *
+get_modules_end (void)
+{
+  struct grub_module_info *modinfo;
+  struct grub_module_header *header;
+  grub_addr_t modbase;
+
+  modbase = grub_arch_modules_addr ();
+  modinfo = (struct grub_module_info *) modbase;
+
+  /* Check if there are any modules.  */
+  if ((modinfo == 0) || modinfo->magic != GRUB_MODULE_MAGIC)
+    return modinfo;
+
+  for (header = (struct grub_module_header *) (modbase + modinfo->offset);
+       header < (struct grub_module_header *) (modbase + modinfo->size);
+       header = (struct grub_module_header *) ((char *) header + header->size));
+
+  return header;
+}
+
 void
 grub_machine_init (void)
 {
-  grub_mm_init_region ((void *) GRUB_MACHINE_MEMORY_USABLE,
-		       RAMSIZE - (GRUB_MACHINE_MEMORY_USABLE & 0x7fffffff));
+  void *modend;
+  modend = get_modules_end ();
+  grub_mm_init_region (modend, (grub_arch_memsize << 20)
+		       - (((grub_addr_t) modend) - GRUB_ARCH_LOWMEMVSTART));
+  /* FIXME: use upper memory as well.  */
   grub_install_get_time_ms (grub_rtc_get_time_ms);
 }
 
@@ -69,11 +104,3 @@ grub_reboot (void)
   while (1);
 }
 
-grub_err_t 
-grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, 
-							 grub_uint64_t, 
-							 grub_uint32_t))
-{
-  hook (0, RAMSIZE, GRUB_MACHINE_MEMORY_AVAILABLE);
-  return GRUB_ERR_NONE;
-}

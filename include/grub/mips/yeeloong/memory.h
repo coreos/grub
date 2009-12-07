@@ -26,15 +26,22 @@
 #endif
 
 #define GRUB_MACHINE_MEMORY_STACK_HIGH       0x801ffff0
-#define GRUB_MACHINE_MEMORY_USABLE           0x81000000
+#define GRUB_ARCH_LOWMEMVSTART 0x80000000
+#define GRUB_ARCH_LOWMEMPSTART 0x00000000
+#define GRUB_ARCH_LOWMEMMAXSIZE 0x10000000
+#define GRUB_ARCH_HIGHMEMPSTART 0x10000000
+
 
 #define GRUB_MACHINE_MEMORY_AVAILABLE        1
+#define GRUB_MACHINE_MEMORY_MAX_TYPE         1
+  /* This one is special: it's used internally but is never reported
+     by firmware. */
+#define GRUB_MACHINE_MEMORY_HOLE 	2
+#define GRUB_MACHINE_MEMORY_RESERVED GRUB_MACHINE_MEMORY_HOLE
 
 #ifndef ASM_FILE
 grub_err_t EXPORT_FUNC (grub_machine_mmap_iterate)
 (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));
-grub_err_t EXPORT_FUNC(grub_machine_mmap_iterate)
-     (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));
 
 static inline grub_err_t
 grub_machine_mmap_register (grub_uint64_t start __attribute__ ((unused)),
@@ -49,6 +56,15 @@ grub_machine_mmap_unregister (int handle  __attribute__ ((unused)))
 {
   return GRUB_ERR_NONE;
 }
+
+grub_uint64_t grub_mmap_get_lower (void);
+grub_uint64_t grub_mmap_get_upper (void);
+
+extern grub_uint32_t EXPORT_VAR (grub_arch_memsize);
+extern grub_uint32_t EXPORT_VAR (grub_arch_highmemsize);
+extern grub_uint32_t EXPORT_VAR (grub_arch_busclock);
+extern grub_uint32_t EXPORT_VAR (grub_arch_cpuclock);
+
 #endif
 
 #endif
