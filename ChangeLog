@@ -1,3 +1,16 @@
+2009-12-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: Check for vasprintf.
+	* util/misc.c (asprintf): Move allocation from here ...
+	(vasprintf): ... to here.  New function.
+	(xasprintf): New function.
+	* include/grub/util/misc.h (vasprintf, xasprintf): Add
+	prototypes.
+	* util/getroot.c (grub_util_get_grub_dev): Use xasprintf.
+	* util/grub-mkfont.c (write_font): Likewise.
+	* util/grub-probe.c (probe): Likewise.
+	* util/hostdisk.c (make_device_name): Likewise.
+
 2009-12-06  David S. Miller  <davem@sunset.davemloft.net>
 
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Recognize

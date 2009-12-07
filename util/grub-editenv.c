@@ -107,7 +107,7 @@ create_envblk_file (const char *name)
   if (! buf)
     grub_util_error ("out of memory");
 
-  asprintf (&namenew, "%s.new", name);
+  namenew = xasprintf ("%s.new", name);
   fp = fopen (namenew, "wb");
   if (! fp)
     grub_util_error ("cannot open the file %s", namenew);

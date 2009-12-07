@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <setjmp.h>
 #include <unistd.h>
 
@@ -57,11 +58,19 @@ void grub_util_write_image (const char *img, size_t size, FILE *out);
 void grub_util_write_image_at (const void *img, size_t size, off_t offset,
 			       FILE *out);
 
+#ifndef HAVE_VASPRINTF
+
+int vasprintf (char **buf, const char *fmt, va_list ap);
+
+#endif
+
 #ifndef  HAVE_ASPRINTF
 
 int asprintf (char **buf, const char *fmt, ...);
 
 #endif
+
+char *xasprintf (const char *fmt, ...);
 
 #ifdef __MINGW32__
 
