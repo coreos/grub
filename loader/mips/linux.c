@@ -204,15 +204,14 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   /* For arguments.  */
   linux_argc = argc;
   /* Main arguments.  */
-  size = (linux_argc + 1) * sizeof (grub_uint32_t); 
+  size = (linux_argc) * sizeof (grub_uint32_t); 
   /* Initrd address and size.  */
   size += 2 * sizeof (grub_uint32_t); 
   /* NULL terminator.  */
   size += sizeof (grub_uint32_t); 
 
-  /* First arguments are always "a0" and "a1".  */
+  /* First argument is always "a0".  */
   size += ALIGN_UP (sizeof ("a0"), 4);
-  size += ALIGN_UP (sizeof ("a1"), 4);
   /* Normal arguments.  */
   for (i = 1; i < argc; i++)
     size += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
@@ -244,7 +243,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   linux_argv = extra;
   argv_off = (grub_uint8_t *) linux_argv - (grub_uint8_t *) playground;
-  extra = linux_argv + (linux_argc + 1 + 1 + 2);
+  extra = linux_argv + (linux_argc + 1 + 2);
   linux_args = extra;
 
   grub_memcpy (linux_args, "a0", sizeof ("a0"));
@@ -252,12 +251,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     + target_addr;
   linux_argv++;
   linux_args += ALIGN_UP (sizeof ("a0"), 4);
-
-  grub_memcpy (linux_args, "a1", sizeof ("a1"));
-  *linux_argv = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground
-    + target_addr;
-  linux_argv++;
-  linux_args += ALIGN_UP (sizeof ("a1"), 4);
 
   for (i = 1; i < argc; i++)
     {
