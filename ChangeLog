@@ -1,3 +1,8 @@
+2009-12-06  David S. Miller  <davem@sunset.davemloft.net>
+
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Recognize
+	anything even prefixed with 'cdrom' as a cdrom.
+
 2009-12-06 Felix Zielcke <fzielcke@z-51.de>
 
 	* util/misc.c (make_system_path_relative_to_its_root): Correctly cope with
