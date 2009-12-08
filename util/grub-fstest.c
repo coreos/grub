@@ -1,7 +1,7 @@
 /* grub-fstest.c - debug tool for filesystem driver */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008 Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include <grub/lib/hexdump.h>
 #include <grub/lib/crc.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 #include <grub_fstest_init.h>
 
@@ -39,6 +40,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
+
+#include "progname.h"
 
 void
 grub_putchar (int c)
@@ -346,10 +349,10 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-fstest --help'' for more information.\n");
+    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-fstest [OPTION]... IMAGE_PATH COMMANDS\n\
+Usage: %s [OPTION]... IMAGE_PATH COMMANDS\n\
 \n\
 Debug tool for filesystem driver.\n\
 \nCommands:\n\
@@ -369,7 +372,7 @@ Debug tool for filesystem driver.\n\
   -V, --version             print version information and exit\n\
   -v, --verbose             print verbose messages\n\
 \n\
-Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
+Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -377,10 +380,13 @@ Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
 int
 main (int argc, char *argv[])
 {
-  char *debug_str = 0, *root = 0, *default_root, *alloc_root;
+  char *debug_str = NULL, *root = NULL, *default_root, *alloc_root;
   int i, cmd, num_opts, image_index, num_disks = 1;
 
-  progname = "grub-fstest";
+  set_program_name (argv[0]);
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
 
   /* Find the first non option entry.  */
   for (num_opts = 1; num_opts < argc; num_opts++)
@@ -442,7 +448,7 @@ main (int argc, char *argv[])
 	    break;
 
 	  case 'V':
-	    printf ("%s (%s) %s\n", progname, PACKAGE_NAME, PACKAGE_VERSION);
+	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 	    return 0;
 
 	  case 'v':

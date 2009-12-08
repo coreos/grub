@@ -90,7 +90,7 @@ setup (const char *dir,
        const char *boot_file, const char *core_file,
        const char *root, const char *dest, int must_embed, int force, int fs_probe)
 {
-  char *boot_path, *core_path, *core_path_dev;
+  char *boot_path, *core_path, *core_path_dev, *core_path_dev_full;
   char *boot_img, *core_img;
   size_t boot_size, core_size;
   grub_uint16_t core_sectors;
@@ -159,7 +159,7 @@ setup (const char *dir,
   void NESTED_FUNC_ATTR save_first_sector (grub_disk_addr_t sector, unsigned offset,
 			  unsigned length)
     {
-      grub_util_info (_("the first sector is <%llu,%u,%u>"),
+      grub_util_info ("the first sector is <%llu,%u,%u>",
 		      sector, offset, length);
 
       if (offset != 0 || length != GRUB_DISK_SECTOR_SIZE)
@@ -173,7 +173,7 @@ setup (const char *dir,
     {
       struct boot_blocklist *prev = block + 1;
 
-      grub_util_info (_("saving <%llu,%u,%u> with the segment 0x%x"),
+      grub_util_info ("saving <%llu,%u,%u> with the segment 0x%x",
 		      sector, offset, length, (unsigned) current_segment);
 
       if (offset != 0 || last_length != GRUB_DISK_SECTOR_SIZE)
@@ -244,7 +244,7 @@ setup (const char *dir,
   if (! dest_dev)
     grub_util_error ("%s", grub_errmsg);
 
-  grub_util_info (_("setting the root device to `%s'"), root);
+  grub_util_info ("setting the root device to `%s'", root);
   if (grub_env_set ("root", root) != GRUB_ERR_NONE)
     grub_util_error ("%s", grub_errmsg);
 
@@ -322,7 +322,7 @@ setup (const char *dir,
       bsd_part = grub_le_to_cpu32 (*install_bsd_part);
     }
 
-  grub_util_info (_("dos partition is %d, bsd partition is %d"),
+  grub_util_info ("dos partition is %d, bsd partition is %d",
 		  dos_part, bsd_part);
 
   if (! dest_dev->disk->has_partitions)
@@ -378,7 +378,7 @@ setup (const char *dir,
     }
 
 
-  grub_util_info (_("the core image will be embedded at sector 0x%llx"), embed_region.start);
+  grub_util_info ("the core image will be embedded at sector 0x%llx", embed_region.start);
 
   *install_dos_part = grub_cpu_to_le32 (dos_part);
   *install_bsd_part = grub_cpu_to_le32 (bsd_part);
@@ -426,7 +426,9 @@ unable_to_embed:
 
   /* Make sure that GRUB reads the identical image as the OS.  */
   tmp_img = xmalloc (core_size);
-  core_path_dev = grub_util_get_path (dir, core_file);
+  core_path_dev_full = grub_util_get_path (dir, core_file);
+  core_path_dev = make_system_path_relative_to_its_root (core_path_dev_full);
+  free (core_path_dev_full);
 
   /* It is a Good Thing to sync two times.  */
   sync ();
@@ -446,11 +448,11 @@ unable_to_embed:
       if (file)
 	{
 	  if (grub_file_size (file) != core_size)
-	    grub_util_info (_("succeeded in opening the core image but the size is different (%d != %d)"),
+	    grub_util_info ("succeeded in opening the core image but the size is different (%d != %d)",
 			    (int) grub_file_size (file), (int) core_size);
 	  else if (grub_file_read (file, tmp_img, core_size)
 		   != (grub_ssize_t) core_size)
-	    grub_util_info (_("succeeded in opening the core image but cannot read %d bytes"),
+	    grub_util_info ("succeeded in opening the core image but cannot read %d bytes",
 			    (int) core_size);
 	  else if (memcmp (core_img, tmp_img, core_size) != 0)
 	    {
@@ -473,7 +475,7 @@ unable_to_embed:
 		}
 
 #endif
-	      grub_util_info (_("succeeded in opening the core image but the data is different"));
+	      grub_util_info ("succeeded in opening the core image but the data is different");
 	    }
 	  else
 	    {
@@ -484,10 +486,10 @@ unable_to_embed:
 	  grub_file_close (file);
 	}
       else
-	grub_util_info (_("couldn't open the core image"));
+	grub_util_info ("couldn't open the core image");
 
       if (grub_errno)
-	grub_util_info (_("error message = %s"), grub_errmsg);
+	grub_util_info ("error message = %s", grub_errmsg);
 
       grub_errno = GRUB_ERR_NONE;
       sync ();
@@ -541,7 +543,7 @@ unable_to_embed:
   *install_bsd_part = grub_cpu_to_le32 (bsd_part);
 
   /* Write the first two sectors of the core image onto the disk.  */
-  grub_util_info (_("opening the core image `%s'"), core_path);
+  grub_util_info ("opening the core image `%s'", core_path);
   fp = fopen (core_path, "r+b");
   if (! fp)
     grub_util_error (_("Cannot open `%s'"), core_path);
@@ -763,7 +765,7 @@ main (int argc, char *argv[])
       root_dev = grub_util_get_grub_dev (grub_guess_root_device (dir ? : DEFAULT_DIRECTORY));
       if (! root_dev)
 	{
-	  grub_util_info (_("guessing the root device failed, because of `%s'"),
+	  grub_util_info ("guessing the root device failed, because of `%s'",
 			  grub_errmsg);
 	  grub_util_error (_("Cannot guess the root device. Specify the option ``--root-device''."));
 	}

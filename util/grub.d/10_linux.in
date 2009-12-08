@@ -24,7 +24,7 @@ libdir=@libdir@
 
 . ${bindir}/gettext.sh
 export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR=@LOCALEDIR@
+export TEXTDOMAINDIR=@localedir@
 
 if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS=GNU/Linux
@@ -58,7 +58,7 @@ linux_entry ()
   else
     title="$(gettext "%s, with Linux %s")"
   fi
-  printf "menuentry \"${title}\" {" ${os} ${version}
+  printf "menuentry \"${title}\" {\n" "${os}" "${version}"
   save_default_entry | sed -e "s/^/\t/"
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"

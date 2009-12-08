@@ -1,7 +1,7 @@
 /* grub-pe2elf.c - tool to convert pe image to elf.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008 Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -40,10 +40,10 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-pe2elf --help'' for more information.\n");
+    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-pe2elf [OPTIONS] input [output]\n\
+Usage: %s [OPTIONS] input [output]\n\
 \n\
 Tool to convert pe image to elf.\n\
 \nOptions:\n\
@@ -51,7 +51,7 @@ Tool to convert pe image to elf.\n\
   -V, --version             print version information and exit\n\
   -v, --verbose             print verbose messages\n\
 \n\
-Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
+Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -467,7 +467,7 @@ main (int argc, char *argv[])
   char *image;
   FILE* fp;
 
-  progname = "grub-pe2elf";
+  set_program_name (argv[0]);
 
     /* Check for options.  */
   while (1)
@@ -484,7 +484,7 @@ main (int argc, char *argv[])
 	    break;
 
 	  case 'V':
-	    printf ("%s (%s) %s\n", progname, PACKAGE_NAME, PACKAGE_VERSION);
+	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 	    return 0;
 
 	  case 'v':

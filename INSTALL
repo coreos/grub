@@ -22,7 +22,7 @@ need the following.
 
 * Ruby 1.6 or later
 * Python 2.5.2 or later
-* Autoconf 2.59d or later
+* Autoconf 2.60 or later
 * Automake 1.10.1 or later
 
 Configuring the GRUB

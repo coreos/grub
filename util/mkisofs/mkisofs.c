@@ -200,107 +200,107 @@ struct ld_option
 static const struct ld_option ld_options[] =
 {
   { {"all-files", no_argument, NULL, 'a'},
-      'a', NULL, "Process all files (don't skip backup files)", ONE_DASH },
+      'a', NULL, N_("Process all files (don't skip backup files)"), ONE_DASH },
   { {"abstract", required_argument, NULL, OPTION_ABSTRACT},
-      '\0', "FILE", "Set Abstract filename" , ONE_DASH },
+      '\0', N_("FILE"), N_("Set Abstract filename"), ONE_DASH },
   { {"appid", required_argument, NULL, 'A'},
-      'A', "ID", "Set Application ID" , ONE_DASH },
+      'A', N_("ID"), N_("Set Application ID"), ONE_DASH },
   { {"biblio", required_argument, NULL, OPTION_BIBLIO},
-      '\0', "FILE", "Set Bibliographic filename" , ONE_DASH },
+      '\0', N_("FILE"), N_("Set Bibliographic filename"), ONE_DASH },
   { {"copyright", required_argument, NULL, OPTION_COPYRIGHT},
-      '\0', "FILE", "Set Copyright filename" , ONE_DASH },
+      '\0', N_("FILE"), N_("Set Copyright filename"), ONE_DASH },
   { {"eltorito-boot", required_argument, NULL, 'b'},
-      'b', "FILE", "Set El Torito boot image name" , ONE_DASH },
+      'b', N_("FILE"), N_("Set El Torito boot image name"), ONE_DASH },
   { {"eltorito-catalog", required_argument, NULL, 'c'},
-      'c', "FILE", "Set El Torito boot catalog name" , ONE_DASH },
+      'c', N_("FILE"), N_("Set El Torito boot catalog name"), ONE_DASH },
   { {"boot-info-table", no_argument, NULL, OPTION_BOOT_INFO_TABLE },
-      '\0', NULL, "Patch Boot Info Table in El Torito boot image" , ONE_DASH },
+      '\0', NULL, N_("Patch Boot Info Table in El Torito boot image"), ONE_DASH },
   { {"no-emul-boot", no_argument, NULL, OPTION_NO_EMUL_BOOT },
-      '\0', NULL, "Dummy option for backward compatibility" , ONE_DASH },
+      '\0', NULL, N_("Dummy option for backward compatibility"), ONE_DASH },
   { {"eltorito-emul-floppy", no_argument, NULL, OPTION_ELTORITO_EMUL_FLOPPY },
-      '\0', NULL, "Enable floppy drive emulation for El Torito" , TWO_DASHES },
+      '\0', NULL, N_("Enable floppy drive emulation for El Torito"), TWO_DASHES },
   { {"cdwrite-params", required_argument, NULL, 'C'},
-      'C', "PARAMS", "Magic parameters from cdrecord" , ONE_DASH },
+      'C', N_("PARAMS"), N_("Magic parameters from cdrecord"), ONE_DASH },
   { {"omit-period", no_argument, NULL, 'd'},
-      'd', NULL, "Omit trailing periods from filenames", ONE_DASH },
+      'd', NULL, N_("Omit trailing periods from filenames"), ONE_DASH },
   { {"disable-deep-relocation", no_argument, NULL, 'D'},
-      'D', NULL, "Disable deep directory relocation", ONE_DASH },
+      'D', NULL, N_("Disable deep directory relocation"), ONE_DASH },
   { {"follow-links", no_argument, NULL, 'f'},
-      'f', NULL, "Follow symbolic links", ONE_DASH },
+      'f', NULL, N_("Follow symbolic links"), ONE_DASH },
   { {"help", no_argument, NULL, OPTION_HELP},
-      '\0', NULL, "Print option help", ONE_DASH },
+      '\0', NULL, N_("Print option help"), ONE_DASH },
   { {"help", no_argument, NULL, OPTION_HELP},
-      '\0', NULL, "Print option help", TWO_DASHES },
+      '\0', NULL, N_("Print option help"), TWO_DASHES },
   { {"version", no_argument, NULL, OPTION_VERSION},
-      '\0', NULL, "Print version information and exit", TWO_DASHES },
+      '\0', NULL, N_("Print version information and exit"), TWO_DASHES },
   { {"hide", required_argument, NULL, OPTION_I_HIDE},
-      '\0', "GLOBFILE", "Hide ISO9660/RR file" , ONE_DASH },
+      '\0', N_("GLOBFILE"), N_("Hide ISO9660/RR file"), ONE_DASH },
   { {"hide-joliet", required_argument, NULL, OPTION_J_HIDE},
-      '\0', "GLOBFILE", "Hide Joliet file" , ONE_DASH },
+      '\0', N_("GLOBFILE"), N_("Hide Joliet file"), ONE_DASH },
   { {NULL, required_argument, NULL, 'i'},
-      'i', "ADD_FILES", "No longer supported" , TWO_DASHES },
+      'i', N_("ADD_FILES"), N_("No longer supported"), TWO_DASHES },
   { {"joliet", no_argument, NULL, 'J'},
-      'J', NULL, "Generate Joliet directory information", ONE_DASH },
+      'J', NULL, N_("Generate Joliet directory information"), ONE_DASH },
   { {"full-iso9660-filenames", no_argument, NULL, 'l'},
-      'l', NULL, "Allow full 32 character filenames for iso9660 names", ONE_DASH },
+      'l', NULL, N_("Allow full 32 character filenames for iso9660 names"), ONE_DASH },
   { {"allow-leading-dots", no_argument, NULL, 'L'},
-      'L', NULL, "Allow iso9660 filenames to start with '.'", ONE_DASH },
+      'L', NULL, N_("Allow iso9660 filenames to start with '.'"), ONE_DASH },
   { {"log-file", required_argument, NULL, OPTION_LOG_FILE},
-      '\0', "LOG_FILE", "Re-direct messages to LOG_FILE", ONE_DASH },
+      '\0', N_("LOG_FILE"), N_("Re-direct messages to LOG_FILE"), ONE_DASH },
   { {"exclude", required_argument, NULL, 'm'},
-      'm', "GLOBFILE", "Exclude file name" , ONE_DASH },
+      'm', N_("GLOBFILE"), N_("Exclude file name"), ONE_DASH },
   { {"prev-session", required_argument, NULL, 'M'},
-      'M', "FILE", "Set path to previous session to merge" , ONE_DASH },
+      'M', N_("FILE"), N_("Set path to previous session to merge"), ONE_DASH },
   { {"omit-version-number", no_argument, NULL, 'N'},
-      'N', NULL, "Omit version number from iso9660 filename", ONE_DASH },
+      'N', NULL, N_("Omit version number from iso9660 filename"), ONE_DASH },
   { {"no-split-symlink-components", no_argument, NULL, 0},
-      0, NULL, "Inhibit splitting symlink components" , ONE_DASH },
+      0, NULL, N_("Inhibit splitting symlink components"), ONE_DASH },
   { {"no-split-symlink-fields", no_argument, NULL, 0},
-      0, NULL, "Inhibit splitting symlink fields" , ONE_DASH },
+      0, NULL, N_("Inhibit splitting symlink fields"), ONE_DASH },
   { {"output", required_argument, NULL, 'o'},
-      'o', "FILE", "Set output file name" , ONE_DASH },
+      'o', N_("FILE"), N_("Set output file name"), ONE_DASH },
   { {"preparer", required_argument, NULL, 'p'},
-      'p', "PREP", "Set Volume preparer" , ONE_DASH },
+      'p', N_("PREP"), N_("Set Volume preparer"), ONE_DASH },
   { {"print-size", no_argument, NULL, OPTION_PRINT_SIZE},
-      '\0', NULL, "Print estimated filesystem size and exit", ONE_DASH },
+      '\0', NULL, N_("Print estimated filesystem size and exit"), ONE_DASH },
   { {"publisher", required_argument, NULL, 'P'},
-      'P', "PUB", "Set Volume publisher" , ONE_DASH },
+      'P', N_("PUB"), N_("Set Volume publisher"), ONE_DASH },
   { {"quiet", no_argument, NULL, OPTION_QUIET},
-      '\0', NULL, "Run quietly", ONE_DASH },
+      '\0', NULL, N_("Run quietly"), ONE_DASH },
   { {"rational-rock", no_argument, NULL, 'r'},
-      'r', NULL, "Generate rationalized Rock Ridge directory information", ONE_DASH },
+      'r', NULL, N_("Generate rationalized Rock Ridge directory information"), ONE_DASH },
   { {"rock", no_argument, NULL, 'R'},
-      'R', NULL, "Generate Rock Ridge directory information", ONE_DASH },
+      'R', NULL, N_("Generate Rock Ridge directory information"), ONE_DASH },
   { {"split-output", no_argument, NULL, OPTION_SPLIT_OUTPUT},
-      '\0', NULL, "Split output into files of approx. 1GB size", ONE_DASH },
+      '\0', NULL, N_("Split output into files of approx. 1GB size"), ONE_DASH },
   { {"sysid", required_argument, NULL, OPTION_SYSID},
-      '\0', "ID", "Set System ID" , ONE_DASH },
+      '\0', N_("ID"), N_("Set System ID"), ONE_DASH },
   { {"translation-table", no_argument, NULL, 'T'},
-      'T', NULL, "Generate translation tables for systems that don't understand long filenames", ONE_DASH },
+      'T', NULL, N_("Generate translation tables for systems that don't understand long filenames"), ONE_DASH },
   { {"verbose", no_argument, NULL, 'v'},
-      'v', NULL, "Verbose", ONE_DASH },
+      'v', NULL, N_("Verbose"), ONE_DASH },
   { {"volid", required_argument, NULL, 'V'},
-      'V', "ID", "Set Volume ID" , ONE_DASH },
+      'V', N_("ID"), N_("Set Volume ID"), ONE_DASH },
   { {"volset", required_argument, NULL, OPTION_VOLSET},
-      '\0', "ID", "Set Volume set ID" , ONE_DASH },
+      '\0', N_("ID"), N_("Set Volume set ID"), ONE_DASH },
   { {"volset-size", required_argument, NULL, OPTION_VOLSET_SIZE},
-      '\0', "#", "Set Volume set size" , ONE_DASH },
+      '\0', "#", N_("Set Volume set size"), ONE_DASH },
   { {"volset-seqno", required_argument, NULL, OPTION_VOLSET_SEQ_NUM},
-      '\0', "#", "Set Volume set sequence number" , ONE_DASH },
+      '\0', "#", N_("Set Volume set sequence number"), ONE_DASH },
   { {"old-exclude", required_argument, NULL, 'x'},
-    'x', "FILE", "Exclude file name(depreciated)" , ONE_DASH },
+    'x', N_("FILE"), N_("Exclude file name (deprecated)"), ONE_DASH },
 #ifdef ERIC_neverdef
   { {"transparent-compression", no_argument, NULL, 'z'},
       'z', NULL, "Enable transparent compression of files", ONE_DASH },
 #endif
   { {"creation-date", required_argument, NULL, OPTION_CREAT_DATE },
-    '\0', NULL, "Override creation date", TWO_DASHES },
+    '\0', NULL, N_("Override creation date"), TWO_DASHES },
   { {"modification-date", required_argument, NULL, OPTION_MODIF_DATE },
-   '\0', NULL, "Override modification date", TWO_DASHES },
+   '\0', NULL, N_("Override modification date"), TWO_DASHES },
   { {"expiration-date", required_argument, NULL, OPTION_EXPIR_DATE },
-   '\0', NULL, "Override expiration date", TWO_DASHES },
+   '\0', NULL, N_("Override expiration date"), TWO_DASHES },
   { {"effective-date", required_argument, NULL, OPTION_EFFEC_DATE },
-   '\0', NULL, "Override effective date", TWO_DASHES },
+   '\0', NULL, N_("Override effective date"), TWO_DASHES },
 };
 
 #define OPTION_COUNT (sizeof ld_options / sizeof ld_options[0])
@@ -481,6 +481,7 @@ void usage(){
 	  int comma;
 	  int len;
 	  unsigned int j;
+	  char *arg;
 
 	  printf ("  ");
 
@@ -502,8 +503,9 @@ void usage(){
 			  putchar (' ');
 			  ++len;
 			}
-		      printf ("%s", ld_options[j].arg);
-		      len += strlen (ld_options[j].arg);
+		      arg = gettext (ld_options[j].arg);
+		      printf ("%s", arg);
+		      len += strlen (arg);
 		    }
 		  comma = TRUE;
 		}
@@ -527,8 +529,9 @@ void usage(){
 			  + strlen (ld_options[j].opt.name));
 		  if (ld_options[j].arg != NULL)
 		    {
-		      printf (" %s", ld_options[j].arg);
-		      len += 1 + strlen (ld_options[j].arg);
+		      arg = gettext (ld_options[j].arg);
+		      printf (" %s", arg);
+		      len += 1 + strlen (arg);
 		    }
 		  comma = TRUE;
 		}
@@ -545,7 +548,7 @@ void usage(){
 	  for (; len < 30; len++)
 	    putchar (' ');
 
-	  printf ("%s\n", ld_options[i].doc);
+	  printf ("%s\n", gettext (ld_options[i].doc));
 	}
     }
   exit(1);

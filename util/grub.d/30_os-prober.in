@@ -89,11 +89,16 @@ EOF
           LLABEL="${LONGNAME}"
         fi
 
+	if [ "${LROOT}" != "${LBOOT}" ]; then
+	  LKERNEL="${LKERNEL#/boot}"
+	  LINITRD="${LINITRD#/boot}"
+	fi
+
         cat << EOF
 menuentry "${LLABEL} (on ${DEVICE})" {
 EOF
 	if [ -z "${prepare_boot_cache}" ]; then
-	  prepare_boot_cache="$(prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/")"
+	  prepare_boot_cache="$(prepare_grub_to_access_device ${LBOOT} | sed -e "s/^/\t/")"
 	fi
 	printf '%s\n' "${prepare_boot_cache}"
 	cat <<  EOF

@@ -1,5 +1,7 @@
 New in 1.97 - :
 
+* Add support for gettext.
+
 * Add support for loading XNU (MacOS X kernel).
 
 * ACPI override support.
