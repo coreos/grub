@@ -44,9 +44,9 @@ if [ -s \$prefix/grubenv ]; then
 fi
 set default="${GRUB_DEFAULT}"
 if [ \${prev_saved_entry} ]; then
-  saved_entry=\${prev_saved_entry}
+  set saved_entry=\${prev_saved_entry}
   save_env saved_entry
-  prev_saved_entry=
+  set prev_saved_entry=
   save_env prev_saved_entry
 fi
 EOF
