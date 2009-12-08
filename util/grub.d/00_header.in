@@ -40,7 +40,7 @@ if [ "x${GRUB_GFXMODE}" = "x" ] ; then GRUB_GFXMODE=640x480 ; fi
 
 cat << EOF
 load_env
-set default=${GRUB_DEFAULT}
+set default="${GRUB_DEFAULT}"
 if [ \${prev_saved_entry} ]; then
   saved_entry=\${prev_saved_entry}
   save_env saved_entry
