@@ -51,7 +51,7 @@ for option in "$@"; do
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-install (GNU GRUB ${PACKAGE_VERSION})"
+	echo "grub-set-default (GNU GRUB ${PACKAGE_VERSION})"
 	exit 0 ;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
