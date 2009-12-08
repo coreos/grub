@@ -1,3 +1,17 @@
+2009-12-08  Carles Pina i Estany  <carles@pina.cat>
+
+	* include/grub/misc.h (grub_printf_): New declaration.
+	* kern/misc.c (grub_printf_): New definition.
+	* normal/main.c (grub_normal_reader_init): Use `grub_printf_' and `N_'
+	instead of `grub_printf' and `_'.
+	* normal/menu_entry.c (store_completion): Likewise.
+	(run): Likewise.
+	(grub_menu_entry_run): Likewise.
+	* normal/menu_text.c (grub_wait_after_message): Likewise.
+	(notify_booting): Likewise.
+	(notify_fallback): Likewise.
+	(notify_execution_failure): Likewise.
+
 2009-12-07  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac: Check for vasprintf.
