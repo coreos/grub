@@ -1,3 +1,9 @@
+2009-12-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk [sparc64-ieee1275] (grub_mkdevicemap_SOURCES): Use
+	`util/ieee1275/ofpath.c' and `util/ieee1275/devicemap.c' instead of
+	`util/devicemap.c'.
+
 2009-12-08  Carles Pina i Estany  <carles@pina.cat>
 
 	* include/grub/misc.h (grub_printf_): New declaration.
