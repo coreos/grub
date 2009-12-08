@@ -39,7 +39,9 @@ if [ "x${GRUB_TIMEOUT}" = "x" ] ; then GRUB_TIMEOUT=5 ; fi
 if [ "x${GRUB_GFXMODE}" = "x" ] ; then GRUB_GFXMODE=640x480 ; fi
 
 cat << EOF
-load_env
+if [ -s \$prefix/grubenv ]; then
+  load_env
+fi
 set default="${GRUB_DEFAULT}"
 if [ \${prev_saved_entry} ]; then
   saved_entry=\${prev_saved_entry}

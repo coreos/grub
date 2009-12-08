@@ -1,5 +1,10 @@
 2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub.d/00_header.in: Silently ignore zero-sized environment
+	blocks.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub.d/00_header.in: Quote the value assigned to `default',
 	in case it contains spaces.
 
