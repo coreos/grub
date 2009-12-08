@@ -170,6 +170,7 @@ EOF
       cat << EOF
 menuentry "${LONGNAME} (on ${DEVICE})" {
 EOF
+      save_default_entry | sed -e "s/^/\t/"
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
       grub_device="`${grub_probe} --device ${DEVICE} --target=drive`"
       mach_device="`echo "${grub_device}" | tr -d '()' | tr , s`"

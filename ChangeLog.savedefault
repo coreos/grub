@@ -1,5 +1,9 @@
 2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub.d/30_os-prober.in: Call save_default_entry for hurd.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub.d/00_header.in: Use `set var=val' rather than plain
 	`var=val'.
 	* util/grub-mkconfig_lib.in (save_default_entry): Likewise.
