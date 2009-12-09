@@ -1,3 +1,9 @@
+2009-12-09  Bruce Dubbs  <bruce.dubbs@gmail.com>
+
+	Remove miscellaneous files in distclean target.
+
+	* Makefile.in: Remove docs/{grub.info,version.texi,stamp-vti}
+
 2009-12-09  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig_lib.in: Don't set grub_probe or grub_mkrelpath
