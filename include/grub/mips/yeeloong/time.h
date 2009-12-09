@@ -21,10 +21,13 @@
 
 #include <grub/symbol.h>
 
-#define GRUB_TICKS_PER_SECOND	1000
+#define GRUB_TICKS_PER_SECOND	(grub_arch_cpuclock / 2)
 
 /* Return the real time in ticks.  */
-grub_uint32_t EXPORT_FUNC (grub_get_rtc) (void);
+grub_uint64_t EXPORT_FUNC (grub_get_rtc) (void);
+
+extern grub_uint32_t EXPORT_VAR (grub_arch_busclock);
+extern grub_uint32_t EXPORT_VAR (grub_arch_cpuclock);
 
 static inline void
 grub_cpu_idle(void)

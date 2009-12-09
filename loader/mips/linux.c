@@ -30,6 +30,7 @@
 
 /* For frequencies.  */
 #include <grub/pci.h>
+#include <grub/machine/time.h>
 
 #define ELF32_LOADMASK (0x00000000UL)
 #define ELF64_LOADMASK (0x0000000000000000ULL)

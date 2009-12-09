@@ -28,12 +28,20 @@
 #include <grub/machine/memory.h>
 #include <grub/cpu/kernel.h>
 
-grub_uint32_t
+/* FIXME: use interrupt to count high.  */
+grub_uint64_t
 grub_get_rtc (void)
 {
-  static grub_uint64_t calln = 0;
+  static grub_uint32_t high = 0;
+  static grub_uint32_t last = 0;
+  grub_uint32_t low;
 
-  return (calln++) >> 8;
+  asm volatile ("mfc0 %0, $9": "=r" (low));
+  if (low < last)
+    high++;
+  last = low;
+
+  return (((grub_uint64_t) high) << 32) | low;
 }
 
 grub_err_t

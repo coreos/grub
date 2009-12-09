@@ -62,8 +62,6 @@ grub_uint64_t grub_mmap_get_upper (void);
 
 extern grub_uint32_t EXPORT_VAR (grub_arch_memsize);
 extern grub_uint32_t EXPORT_VAR (grub_arch_highmemsize);
-extern grub_uint32_t EXPORT_VAR (grub_arch_busclock);
-extern grub_uint32_t EXPORT_VAR (grub_arch_cpuclock);
 
 #endif
 
