@@ -145,7 +145,7 @@ int
 grub_checkkey (void)
 {
   if (!grub_cur_term_input)
-    return 0;
+    return -1;
   return (grub_cur_term_input->checkkey) ();
 }
 
