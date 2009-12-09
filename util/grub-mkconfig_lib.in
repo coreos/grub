@@ -24,8 +24,12 @@ bindir=@bindir@
 sbindir=@sbindir@
 pkgdatadir=${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`
 
-grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
-grub_mkrelpath=${bindir}/`echo grub-mkrelpath | sed ${transform}`
+if test "x$grub_probe" = x; then
+  grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
+fi
+if test "x$grub_mkrelpath" = x; then
+  grub_mkrelpath=${bindir}/`echo grub-mkrelpath | sed ${transform}`
+fi
 
 grub_warn ()
 {

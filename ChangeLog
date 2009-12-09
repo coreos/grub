@@ -1,3 +1,13 @@
+2009-12-09  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in: Don't set grub_probe or grub_mkrelpath
+	if they're already set.  This resolves the conflict between my
+	grub-install change on 2009-10-06 and Felix' change on 2009-11-11,
+	fixing the --grub-probe option again.
+	* util/sparc64/ieee1275/grub-install.in: Revert the last piece of my
+	change on 2009-10-06, so that we now once again source
+	`${libdir}/grub/grub-mkconfig_lib' after options have been parsed.
+
 2009-12-08  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* conf/common.rmk [sparc64-ieee1275] (grub_mkdevicemap_SOURCES): Use
