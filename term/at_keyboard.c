@@ -24,6 +24,7 @@
 #include <grub/term.h>
 
 static short at_keyboard_status = 0;
+static int pending_key = -1;
 
 #define KEYBOARD_STATUS_SHIFT_L		(1 << 0)
 #define KEYBOARD_STATUS_SHIFT_R		(1 << 1)
@@ -192,14 +193,27 @@ grub_at_keyboard_getkey_noblock (void)
 static int
 grub_at_keyboard_checkkey (void)
 {
-  /* FIXME: this will be triggered by BREAK events.  */
-  return KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)) ? 1 : -1;
+  if (pending_key != -1)
+    return 1;
+
+  pending_key = grub_at_keyboard_getkey_noblock ();
+
+  if (pending_key != -1)
+    return 1;
+
+  return -1;
 }
 
 static int
 grub_at_keyboard_getkey (void)
 {
   int key;
+  if (pending_key != -1)
+    {
+      key = pending_key;
+      pending_key = -1;
+      return key;
+    }
   do
     {
       key = grub_at_keyboard_getkey_noblock ();
@@ -210,6 +224,8 @@ grub_at_keyboard_getkey (void)
 static grub_err_t
 grub_keyboard_controller_init (void)
 {
+  pending_key = -1;
+  at_keyboard_status = 0;
   grub_keyboard_controller_orig = grub_keyboard_controller_read ();
   grub_keyboard_controller_write (grub_keyboard_controller_orig | KEYBOARD_SCANCODE_SET1);
   return GRUB_ERR_NONE;
