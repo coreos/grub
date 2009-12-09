@@ -47,3 +47,7 @@ mmap_mod_SOURCES = mmap/mmap.c mmap/mips/yeeloong/uppermem.c
 mmap_mod_CFLAGS = $(COMMON_CFLAGS)
 mmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 mmap_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+sbin_SCRIPTS += grub-install
+grub_install_SOURCES = util/grub-install.in
+

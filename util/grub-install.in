@@ -29,10 +29,11 @@ PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
 platform=@platform@
+font=@datadir@/@PACKAGE_TARNAME@/ascii.pf2
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
 grub_setup=${sbindir}/`echo grub-setup | sed ${transform}`
-if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
+if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "mips-yeeloong" ] ; then
     grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 else
     grub_mkimage=${bindir}/`echo grub-mkelfimage | sed ${transform}`
@@ -80,6 +81,11 @@ if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
   --disk-module=MODULE    disk module to use
 EOF
 fi
+if [ "${target_cpu}-${platform}" = "mips-yeeloong" ] ; then
+    cat <<EOF
+  --font=FILE             font file to use
+EOF
+fi
     cat <<EOF
 
 INSTALL_DEVICE can be a GRUB device name or a system device filename.
@@ -103,6 +109,8 @@ for option in "$@"; do
 	exit 0 ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
+    --font=*)
+	font=`echo "$option" | sed 's/--font=//'` ;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
     --grub-setup=*)
@@ -144,7 +152,7 @@ done
 # for make_system_path_relative_to_its_root()
 . ${libdir}/grub/grub-mkconfig_lib
 
-if test "x$install_device" = x; then
+if test "x$install_device" = x && test "${target_cpu}-${platform}" != "mips-yeeloong"; then
     echo "install_device not specified." 1>&2
     usage
     exit 1
@@ -274,21 +282,27 @@ partmap_module=`$grub_probe --target=partmap --device ${grub_device} 2> /dev/nul
 # Device abstraction module, if any (lvm, raid).
 devabstraction_module=`$grub_probe --target=abstraction --device ${grub_device}`
 
+if [ "${target_cpu}-${platform}" = "mips-yeeloong" ] ; then
+    modules="sm712 gfxterm at_keyboard $modules"
+fi
+
 # The order in this list is critical.  Be careful when modifying it.
 modules="$modules $disk_module"
 modules="$modules $fs_module $partmap_module $devabstraction_module"
 
 prefix_drive=
 if [ "x${devabstraction_module}" = "x" ] ; then
-    if echo "${install_device}" | grep -qx "(.*)" ; then
-      install_drive="${install_device}"
-    else
-      install_drive="`$grub_probe --target=drive --device ${install_device}`"
+    if [ x"${install_device}" != x ]; then
+      if echo "${install_device}" | grep -qx "(.*)" ; then
+        install_drive="${install_device}"
+      else
+        install_drive="`$grub_probe --target=drive --device ${install_device}`"
+      fi
+      install_drive="`echo ${install_drive} | sed -e s/,[0-9]*[a-z]*//g`"
     fi
     grub_drive="`$grub_probe --target=drive --device ${grub_device}`"
 
     # Strip partition number
-    install_drive="`echo ${install_drive} | sed -e s/,[0-9]*[a-z]*//g`"
     grub_drive="`echo ${grub_drive} | sed -e s/,[0-9]*[a-z]*//g`"
     if [ "$disk_module" = ata ] ; then
         # generic method (used on coreboot and ata mod)
@@ -323,6 +337,8 @@ if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
     # Now perform the installation.
     $grub_setup ${setup_verbose} ${setup_force} --directory=${grubdir} --device-map=${device_map} \
         ${install_device} || exit 1
+elif [ "${target_cpu}-${platform}" = "mips-yeeloong" ] ; then
+    $grub_mkimage -f ${font} -d ${pkglibdir} -O elf --output=/boot/grub.elf --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 else
     $grub_mkimage -d ${pkglibdir} --output=/boot/multiboot.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 fi
