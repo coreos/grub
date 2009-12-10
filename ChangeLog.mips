@@ -1,3 +1,8 @@
+2009-12-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/mips/libgcc.h: Only export symbols for functions
+	that libgcc provides.
+
 2009-12-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	MIPS support.
