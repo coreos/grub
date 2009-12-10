@@ -1,3 +1,8 @@
+2009-12-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/device.c (grub_device_iterate): Ignore errors during first scan.
+	Fixes amarsh bug.
+
 2009-12-09  Bruce Dubbs  <bruce.dubbs@gmail.com>
 
 	Remove miscellaneous files in distclean target.
