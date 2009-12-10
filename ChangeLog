@@ -1,5 +1,12 @@
 2009-12-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Eliminate grub-fstest 4Gib barrier.
+
+	* util/grub-fstest.c (skip, leng): Use grub_disk_addr_t.
+	(read_file): Fix error reporting.
+
+2009-12-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Eliminate hexdump 4Gib barrier.
 
 	* commands/hexdump.c (grub_cmd_hexdump): Use grub_disk_addr_t.
