@@ -1,5 +1,12 @@
 2009-12-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Eliminate hexdump 4Gib barrier.
+
+	* commands/hexdump.c (grub_cmd_hexdump): Use grub_disk_addr_t.
+	* lib/arg.c (grub_arg_parse): Use grub_strtoull.
+
+2009-12-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/device.c (grub_device_iterate): Ignore errors during first scan.
 	Fixes amarsh bug.
 
