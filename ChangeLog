@@ -1,3 +1,9 @@
+2009-12-10 Felix Zielcke <fzielcke@z-51.de>
+
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_open): Show the disk
+	name in an error message.
+	(grub_biosdisk_rw): Likewise.
+
 2009-12-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Eliminate NTFS 4Gib barrier.
