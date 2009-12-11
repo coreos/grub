@@ -30,7 +30,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <time.h>
-#include <errno.h>
 
 #include <grub/kernel.h>
 #include <grub/misc.h>
