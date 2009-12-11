@@ -202,5 +202,11 @@ lsmmap_mod_SOURCES = commands/lsmmap.c
 lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
 lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For cmostest.mod
+pkglib_MODULES += cmostest.mod
+cmostest_mod_SOURCES = commands/i386/cmostest.c
+cmostest_mod_CFLAGS = $(COMMON_CFLAGS)
+cmostest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk

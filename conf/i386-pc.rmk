@@ -335,6 +335,12 @@ hdparm_mod_SOURCES = commands/hdparm.c lib/hexdump.c
 hdparm_mod_CFLAGS = $(COMMON_CFLAGS)
 hdparm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For cmostest.mod
+pkglib_MODULES += cmostest.mod
+cmostest_mod_SOURCES = commands/i386/cmostest.c
+cmostest_mod_CFLAGS = $(COMMON_CFLAGS)
+cmostest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 ifeq ($(enable_efiemu), yes)
 
 efiemu32.o: efiemu/runtime/efiemu.c $(TARGET_OBJ2ELF)
