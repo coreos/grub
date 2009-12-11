@@ -2,7 +2,6 @@
 
 	Relocator framework
 
-	* THANKS: Add David Miller.
 	* loader/i386/xnu_helper.S: Removed. All users updated.
 	* conf/i386.rmk (pkglib_MODULES): Add relocator.mod.
 	(relocator_mod_SOURCES): New variable.
