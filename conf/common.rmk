@@ -3,7 +3,13 @@
 sbin_UTILITIES += grub-mkdevicemap
 grub_mkdevicemap_SOURCES = gnulib/progname.c util/grub-mkdevicemap.c \
 	util/deviceiter.c \
-	util/devicemap.c util/misc.c
+	util/misc.c
+
+ifeq ($(target_cpu)-$(platform), sparc64-ieee1275)
+grub_mkdevicemap_SOURCES += util/ieee1275/ofpath.c util/ieee1275/devicemap.c
+else
+grub_mkdevicemap_SOURCES += util/devicemap.c
+endif
 
 # For grub-mkelfimage.
 bin_UTILITIES += grub-mkelfimage

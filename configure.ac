@@ -209,7 +209,7 @@ else
 fi
 
 # Check for functions.
-AC_CHECK_FUNCS(posix_memalign memalign asprintf)
+AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf)
 
 # For grub-mkisofs
 AC_HEADER_MAJOR

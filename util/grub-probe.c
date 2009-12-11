@@ -254,7 +254,7 @@ probe (const char *path, char *device_name)
 	      filebuf_via_sys = grub_util_read_image (path);
 
 	      rel_path = make_system_path_relative_to_its_root (path);
-	      asprintf (&grub_path, "(%s)%s", drive_name, rel_path);
+	      grub_path = xasprintf ("(%s)%s", drive_name, rel_path);
 	      free (rel_path);
 	      grub_util_info ("reading %s via GRUB facilities", grub_path);
 	      file = grub_file_open (grub_path);
