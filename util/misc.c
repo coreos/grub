@@ -39,6 +39,8 @@
 #include <grub/term.h>
 #include <grub/time.h>
 
+#include "progname.h"
+
 /* Include malloc.h, only if memalign is available. It is known that
    memalign is declared in malloc.h in all systems, if present.  */
 #ifdef HAVE_MEMALIGN
@@ -50,7 +52,6 @@
 #include <winioctl.h>
 #endif
 
-char *progname = 0;
 int verbosity = 0;
 
 void
@@ -58,7 +59,7 @@ grub_util_warn (const char *fmt, ...)
 {
   va_list ap;
 
-  fprintf (stderr, "%s: warn: ", progname);
+  fprintf (stderr, "%s: warn: ", program_name);
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   va_end (ap);
@@ -73,7 +74,7 @@ grub_util_info (const char *fmt, ...)
     {
       va_list ap;
 
-      fprintf (stderr, "%s: info: ", progname);
+      fprintf (stderr, "%s: info: ", program_name);
       va_start (ap, fmt);
       vfprintf (stderr, fmt, ap);
       va_end (ap);
@@ -87,7 +88,7 @@ grub_util_error (const char *fmt, ...)
 {
   va_list ap;
 
-  fprintf (stderr, "%s: error: ", progname);
+  fprintf (stderr, "%s: error: ", program_name);
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   va_end (ap);
@@ -369,6 +370,19 @@ grub_arch_sync_caches (void *address __attribute__ ((unused)),
 {
 }
 
+#ifndef HAVE_VASPRINTF
+
+int
+vasprintf (char **buf, const char *fmt, va_list ap)
+{
+  /* Should be large enough.  */
+  *buf = xmalloc (512);
+
+  return vsprintf (*buf, fmt, ap);
+}
+
+#endif
+
 #ifndef  HAVE_ASPRINTF
 
 int
@@ -377,17 +391,31 @@ asprintf (char **buf, const char *fmt, ...)
   int status;
   va_list ap;
 
-  /* Should be large enough.  */
-  *buf = xmalloc (512);
-
   va_start (ap, fmt);
-  status = vsprintf (*buf, fmt, ap);
+  status = vasprintf (*buf, fmt, ap);
   va_end (ap);
 
   return status;
 }
 
 #endif
+
+char *
+xasprintf (const char *fmt, ...)
+{
+  va_list ap;
+  char *result;
+
+  va_start (ap, fmt);
+  if (vasprintf (&result, fmt, ap) < 0)
+    {
+      if (errno == ENOMEM)
+	grub_util_error ("out of memory");
+      return NULL;
+    }
+
+  return result;
+}
 
 #ifdef __MINGW32__
 
@@ -499,7 +527,17 @@ make_system_path_relative_to_its_root (const char *path)
 
       /* buf is another filesystem; we found it.  */
       if (st.st_dev != num)
-	break;
+	{
+	  /* offset == 0 means path given is the mount point.  */
+	  if (offset == 0)
+	    {
+	      free (buf);
+	      free (buf2);
+	      return strdup ("/");
+	    }
+	  else
+	    break;
+	}
 
       offset = p - buf;
       /* offset == 1 means root directory.  */

@@ -485,21 +485,6 @@ FUNCTION(grub_exit)
 	.code32
 
 /*
- * grub_reboot()
- *
- * Reboot the system. At the moment, rely on BIOS.
- */
-FUNCTION(grub_reboot)
-	call	prot_to_real
-	.code16
-cold_reboot:
-	/* cold boot */
-	movw	$0x0472, %di
-	movw	%ax, (%di)
-	ljmp	$0xFFFF, $0x0000
-	.code32
-
-/*
  * grub_halt(int no_apm)
  *
  * Halt the system, using APM if possible. If NO_APM is true, don't use

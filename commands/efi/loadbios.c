@@ -41,6 +41,7 @@ enable_rom_area (void)
 {
   grub_pci_address_t addr;
   grub_uint32_t *rom_ptr;
+  grub_pci_device_t dev = { .bus = 0, .device = 0, .function = 0};
 
   rom_ptr = (grub_uint32_t *) VBIOS_ADDR;
   if (*rom_ptr != BLANK_MEM)
@@ -49,7 +50,7 @@ enable_rom_area (void)
       return 0;
     }
 
-  addr = grub_pci_make_address (0, 0, 0, 36);
+  addr = grub_pci_make_address (dev, 36);
   grub_pci_write_byte (addr++, 0x30);
   grub_pci_write_byte (addr++, 0x33);
   grub_pci_write_byte (addr++, 0x33);
@@ -73,8 +74,9 @@ static void
 lock_rom_area (void)
 {
   grub_pci_address_t addr;
+  grub_pci_device_t dev = { .bus = 0, .device = 0, .function = 0};
 
-  addr = grub_pci_make_address (0, 0, 0, 36);
+  addr = grub_pci_make_address (dev, 36);
   grub_pci_write_byte (addr++, 0x10);
   grub_pci_write_byte (addr++, 0x11);
   grub_pci_write_byte (addr++, 0x11);

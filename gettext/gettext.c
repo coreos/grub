@@ -17,6 +17,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/list.h>
 #include <grub/types.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
@@ -40,6 +41,16 @@ static int grub_gettext_offsetoriginal;
 static int grub_gettext_max;
 
 static const char *(*grub_gettext_original) (const char *s);
+
+struct grub_gettext_msg
+{
+  struct grub_gettext_msg *next;
+  const char *name;
+
+  const char *translated;
+};
+
+struct grub_gettext_msg *grub_gettext_msg_list = NULL;
 
 #define GETTEXT_MAGIC_NUMBER 		0
 #define GETTEXT_FILE_FORMAT		4
@@ -79,7 +90,7 @@ grub_gettext_getstring_from_offset (grub_uint32_t offset,
   translation[length] = '\0';
 }
 
-static char *
+static const char *
 grub_gettext_gettranslation_from_position (int position)
 {
   int offsettranslation;
@@ -130,9 +141,18 @@ static const char *
 grub_gettext_translate (const char *orig)
 {
   char *current_string;
-  char *ret;
+  const char *ret;
 
   int min, max, current;
+  int found = 0;
+
+  struct grub_gettext_msg *cur;
+
+  cur = grub_named_list_find (GRUB_AS_NAMED_LIST (grub_gettext_msg_list),
+			      orig);
+
+  if (cur)
+    return cur->translated;
 
   if (fd_mo == 0)
     return orig;
@@ -142,7 +162,7 @@ grub_gettext_translate (const char *orig)
 
   current = (max + min) / 2;
 
-  while (current != min && current != max)
+  while (current != min && current != max && found == 0)
     {
       current_string = grub_gettext_getstring_from_position (current);
 
@@ -160,13 +180,31 @@ grub_gettext_translate (const char *orig)
       else if (grub_strcmp (current_string, orig) == 0)
 	{
 	  grub_free (current_string);
-	  return grub_gettext_gettranslation_from_position (current);
+	  found = 1;
 	}
       current = (max + min) / 2;
     }
 
-  ret = grub_malloc (grub_strlen (orig) + 1);
-  grub_strcpy (ret, orig);
+  ret = found ? grub_gettext_gettranslation_from_position (current) : orig;
+
+  if (found)
+    {
+      cur = grub_zalloc (sizeof (*cur));
+
+      if (cur)
+	{
+	  cur->name = grub_strdup (orig);
+	  if (cur->name)
+	    {
+	      cur->translated = ret;
+	      grub_list_push (GRUB_AS_LIST_P (&grub_gettext_msg_list),
+			      GRUB_AS_LIST (cur));
+	    }
+	}
+      else
+	grub_errno = GRUB_ERR_NONE;
+    }
+
   return ret;
 }
 
@@ -222,7 +260,7 @@ grub_gettext_init_ext (const char *lang)
   locale_dir = grub_env_get ("locale_dir");
   if (locale_dir == NULL)
     {
-      grub_printf ("locale_dir variable is not set up.");
+      grub_dprintf ("gettext", "locale_dir variable is not set up.\n");
       return;
     }
 
@@ -259,11 +297,28 @@ grub_gettext_init_ext (const char *lang)
     }
 }
 
+static void
+grub_gettext_delete_list ()
+{
+  struct grub_gettext_msg *item;
+
+  while ((item =
+	  grub_list_pop (GRUB_AS_LIST_P (&grub_gettext_msg_list))) != 0)
+    {
+      char *original = (char *) ((struct grub_gettext_msg *) item)->name;
+      grub_free (original);
+
+      // Don't delete the translated message because could be in use.
+    }
+}
+
 static char *
 grub_gettext_env_write_lang (struct grub_env_var *var
 			     __attribute__ ((unused)), const char *val)
 {
   grub_gettext_init_ext (val);
+
+  grub_gettext_delete_list ();
 
   return grub_strdup (val);
 }
@@ -306,6 +361,8 @@ GRUB_MOD_FINI (gettext)
 {
   if (fd_mo != 0)
     grub_file_close (fd_mo);
+
+  grub_gettext_delete_list ();
 
   grub_gettext = grub_gettext_original;
 }

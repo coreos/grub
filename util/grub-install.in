@@ -247,6 +247,14 @@ if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
     done
 fi
 
+# Copy gettext files
+mkdir -p ${grubdir}/locale/
+for file in ${grubdir}/locale/*.mo ${pkglibdir}/locale/*.mo; do
+    if test -f "$file"; then
+        cp -f "$file" ${grubdir}/locale/
+    fi
+done
+
 # Write device to a variable so we don't have to traverse /dev every time.
 grub_device=`$grub_probe --target=device ${grubdir}`
 

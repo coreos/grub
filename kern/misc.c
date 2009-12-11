@@ -126,6 +126,19 @@ grub_printf (const char *fmt, ...)
   return ret;
 }
 
+int
+grub_printf_ (const char *fmt, ...)
+{
+  va_list ap;
+  int ret;
+
+  va_start (ap, fmt);
+  ret = grub_vprintf (_(fmt), ap);
+  va_end (ap);
+
+  return ret;
+}
+
 #if defined (APPLE_CC) && ! defined (GRUB_UTIL)
 int
 grub_err_printf (const char *fmt, ...)

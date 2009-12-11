@@ -19,6 +19,7 @@
 #include <config.h>
 #include <grub/types.h>
 #include <grub/util/misc.h>
+#include <grub/i18n.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +29,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <freetype/ftsynth.h>
+
+#include "progname.h"
 
 #define GRUB_FONT_DEFAULT_SIZE		16
 
@@ -90,10 +93,10 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-mkfont --help'' for more information.\n");
+    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-mkfont [OPTIONS] FONT_FILES\n\
+Usage: %s [OPTIONS] FONT_FILES\n\
 \nOptions:\n\
   -o, --output=FILE_NAME    set output file name\n\
   -i, --index=N             set face index\n\
@@ -109,7 +112,7 @@ Usage: grub-mkfont [OPTIONS] FONT_FILES\n\
   -V, --version             print version information and exit\n\
   -v, --verbose             print verbose messages\n\
 \n\
-Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
+Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -363,8 +366,8 @@ write_font (struct grub_font_info *font_info, char *output_file)
   if (! style_name[0])
     strcpy (style_name, " Regular");
 
-  asprintf (&font_name, "%s %s %d", font_info->name, &style_name[1],
-	    font_info->size);
+  font_name = xasprintf ("%s %s %d", font_info->name, &style_name[1],
+			 font_info->size);
 
   write_string_section ("NAME", font_name, &offset, file);
   write_string_section ("FAMI", font_info->name, &offset, file);
@@ -472,7 +475,10 @@ main (int argc, char *argv[])
 
   memset (&font_info, 0, sizeof (font_info));
 
-  progname = "grub-mkfont";
+  set_program_name (argv[0]);
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
 
   /* Check for options.  */
   while (1)
@@ -560,7 +566,7 @@ main (int argc, char *argv[])
 	    break;
 
 	  case 'V':
-	    printf ("%s (%s) %s\n", progname, PACKAGE_NAME, PACKAGE_VERSION);
+	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 	    return 0;
 
 	  case 'v':
