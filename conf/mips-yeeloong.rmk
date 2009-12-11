@@ -48,6 +48,25 @@ mmap_mod_CFLAGS = $(COMMON_CFLAGS)
 mmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 mmap_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
+# For datetime.mod
+pkglib_MODULES += datetime.mod
+datetime_mod_SOURCES = lib/cmos_datetime.c
+datetime_mod_CFLAGS = $(COMMON_CFLAGS)
+datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For date.mod
+pkglib_MODULES += date.mod
+date_mod_SOURCES = commands/date.c
+date_mod_CFLAGS = $(COMMON_CFLAGS)
+date_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datehook.mod
+pkglib_MODULES += datehook.mod
+datehook_mod_SOURCES = hook/datehook.c
+datehook_mod_CFLAGS = $(COMMON_CFLAGS)
+datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+
 sbin_SCRIPTS += grub-install
 grub_install_SOURCES = util/grub-install.in
 

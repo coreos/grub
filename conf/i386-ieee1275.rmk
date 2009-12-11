@@ -122,7 +122,7 @@ lspci_mod_CFLAGS = $(COMMON_CFLAGS)
 lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For datetime.mod
-datetime_mod_SOURCES = lib/i386/datetime.c
+datetime_mod_SOURCES = lib/cmos_datetime.c
 datetime_mod_CFLAGS = $(COMMON_CFLAGS)
 datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

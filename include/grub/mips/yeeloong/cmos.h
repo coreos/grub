@@ -22,7 +22,7 @@
 #include <grub/types.h>
 #include <grub/cpu/io.h>
 
-#define GRUB_CMOS_ADDR_REG	0x70
-#define GRUB_CMOS_DATA_REG	0x71
+#define GRUB_CMOS_ADDR_REG	0xbfd00070
+#define GRUB_CMOS_DATA_REG	0xbfd00071
 
 #endif /* GRUB_CPU_CMOS_H */
