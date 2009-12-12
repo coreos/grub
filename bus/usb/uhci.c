@@ -138,7 +138,7 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
 /* Iterate over all PCI devices.  Determine if a device is an UHCI
    controller.  If this is the case, initialize it.  */
 static int NESTED_FUNC_ATTR
-grub_uhci_pci_iter (int bus, int device, int func,
+grub_uhci_pci_iter (grub_pci_device_t dev,
 		    grub_pci_id_t pciid __attribute__((unused)))
 {
   grub_uint32_t class_code;
@@ -151,7 +151,7 @@ grub_uhci_pci_iter (int bus, int device, int func,
   struct grub_uhci *u;
   int i;
 
-  addr = grub_pci_make_address (bus, device, func, 2);
+  addr = grub_pci_make_address (dev, 2);
   class_code = grub_pci_read (addr) >> 8;
 
   interf = class_code & 0xFF;
@@ -163,7 +163,7 @@ grub_uhci_pci_iter (int bus, int device, int func,
     return 0;
 
   /* Determine IO base address.  */
-  addr = grub_pci_make_address (bus, device, func, 8);
+  addr = grub_pci_make_address (dev, 8);
   base = grub_pci_read (addr);
   /* Stop if there is no IO space base address defined.  */
   if (! (base & 1))

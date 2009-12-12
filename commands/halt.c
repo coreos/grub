@@ -19,15 +19,7 @@
 
 #include <grub/dl.h>
 #include <grub/command.h>
-
-#if defined(GRUB_MACHINE_IEEE1275)
-#include <grub/machine/kernel.h>
-#elif defined(GRUB_MACHINE_EFI)
-#include <grub/efi/efi.h>
-#else
-/* Platforms shipping standalone halt, such as coreboot.  */
-#include <grub/cpu/halt.h>
-#endif
+#include <grub/misc.h>
 
 static grub_err_t
 grub_cmd_halt (grub_command_t cmd __attribute__ ((unused)),

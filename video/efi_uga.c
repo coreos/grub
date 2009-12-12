@@ -84,21 +84,22 @@ find_framebuf (grub_uint32_t *fb_base, grub_uint32_t *line_len)
 {
   int found = 0;
 
-  auto int NESTED_FUNC_ATTR find_card (int bus, int dev, int func,
+  auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev,
 				       grub_pci_id_t pciid);
 
-  int NESTED_FUNC_ATTR find_card (int bus, int dev, int func,
+  int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev,
 				  grub_pci_id_t pciid)
     {
       grub_pci_address_t addr;
 
-      addr = grub_pci_make_address (bus, dev, func, 2);
+      addr = grub_pci_make_address (dev, 2);
       if (grub_pci_read (addr) >> 24 == 0x3)
 	{
 	  int i;
 
 	  grub_dprintf ("fb", "Display controller: %d:%d.%d\nDevice id: %x\n",
-			bus, dev, func, pciid);
+			grub_pci_get_bus (dev), grub_pci_get_device (dev),
+			grub_pci_get_function (dev), pciid);
 	  addr += 8;
 	  for (i = 0; i < 6; i++, addr += 4)
 	    {
@@ -183,20 +184,20 @@ check_protocol (void)
 }
 
 static grub_err_t
-grub_video_efi_init (void)
+grub_video_uga_init (void)
 {
   grub_memset (&framebuffer, 0, sizeof(framebuffer));
   return grub_video_fb_init ();
 }
 
 static grub_err_t
-grub_video_efi_fini (void)
+grub_video_uga_fini (void)
 {
   return grub_video_fb_fini ();
 }
 
 static grub_err_t
-grub_video_efi_setup (unsigned int width, unsigned int height,
+grub_video_uga_setup (unsigned int width, unsigned int height,
 		      unsigned int mode_type)
 {
   unsigned int depth;
@@ -269,14 +270,14 @@ grub_video_efi_setup (unsigned int width, unsigned int height,
 }
 
 static grub_err_t
-grub_video_efi_swap_buffers (void)
+grub_video_uga_swap_buffers (void)
 {
   /* TODO: Implement buffer swapping.  */
   return GRUB_ERR_NONE;
 }
 
 static grub_err_t
-grub_video_efi_set_active_render_target (struct grub_video_render_target *target)
+grub_video_uga_set_active_render_target (struct grub_video_render_target *target)
 {
   if (target == GRUB_VIDEO_RENDER_TARGET_DISPLAY)
     target = framebuffer.render_target;
@@ -285,7 +286,7 @@ grub_video_efi_set_active_render_target (struct grub_video_render_target *target
 }
 
 static grub_err_t
-grub_video_efi_get_info_and_fini (struct grub_video_mode_info *mode_info,
+grub_video_uga_get_info_and_fini (struct grub_video_mode_info *mode_info,
 				  void **framebuf)
 {
   grub_memcpy (mode_info, &(framebuffer.mode_info), sizeof (*mode_info));
@@ -296,15 +297,15 @@ grub_video_efi_get_info_and_fini (struct grub_video_mode_info *mode_info,
   return GRUB_ERR_NONE;
 }
 
-static struct grub_video_adapter grub_video_efi_adapter =
+static struct grub_video_adapter grub_video_uga_adapter =
   {
-    .name = "EFI frame buffer driver",
+    .name = "EFI UGA driver",
 
-    .init = grub_video_efi_init,
-    .fini = grub_video_efi_fini,
-    .setup = grub_video_efi_setup,
+    .init = grub_video_uga_init,
+    .fini = grub_video_uga_fini,
+    .setup = grub_video_uga_setup,
     .get_info = grub_video_fb_get_info,
-    .get_info_and_fini = grub_video_efi_get_info_and_fini,
+    .get_info_and_fini = grub_video_uga_get_info_and_fini,
     .set_palette = grub_video_fb_set_palette,
     .get_palette = grub_video_fb_get_palette,
     .set_viewport = grub_video_fb_set_viewport,
@@ -317,21 +318,21 @@ static struct grub_video_adapter grub_video_efi_adapter =
     .blit_bitmap = grub_video_fb_blit_bitmap,
     .blit_render_target = grub_video_fb_blit_render_target,
     .scroll = grub_video_fb_scroll,
-    .swap_buffers = grub_video_efi_swap_buffers,
+    .swap_buffers = grub_video_uga_swap_buffers,
     .create_render_target = grub_video_fb_create_render_target,
     .delete_render_target = grub_video_fb_delete_render_target,
-    .set_active_render_target = grub_video_efi_set_active_render_target,
+    .set_active_render_target = grub_video_uga_set_active_render_target,
     .get_active_render_target = grub_video_fb_get_active_render_target,
   };
 
-GRUB_MOD_INIT(efi_fb)
+GRUB_MOD_INIT(efi_uga)
 {
   if (check_protocol ())
-    grub_video_register (&grub_video_efi_adapter);
+    grub_video_register (&grub_video_uga_adapter);
 }
 
-GRUB_MOD_FINI(efi_fb)
+GRUB_MOD_FINI(efi_uga)
 {
   if (uga)
-    grub_video_unregister (&grub_video_efi_adapter);
+    grub_video_unregister (&grub_video_uga_adapter);
 }

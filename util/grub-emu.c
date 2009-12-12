@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,19 +36,22 @@
 #include <grub/util/getroot.h>
 #include <grub/env.h>
 #include <grub/partition.h>
+#include <grub/i18n.h>
 
 #include <grub_emu_init.h>
+
+#include "progname.h"
 
 /* Used for going back to the main function.  */
 static jmp_buf main_env;
 
 /* Store the prefix specified by an argument.  */
-static char *prefix = 0;
+static char *prefix = NULL;
 
 grub_addr_t
 grub_arch_modules_addr (void)
 {
-  return 0;
+  return NULL;
 }
 
 grub_err_t
@@ -155,7 +158,10 @@ main (int argc, char *argv[])
   volatile int hold = 0;
   int opt;
 
-  progname = "grub-emu";
+  set_program_name (argv[0]);
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
 
   while ((opt = getopt_long (argc, argv, "r:d:m:vH:hV", options, 0)) != -1)
     switch (opt)
@@ -178,7 +184,7 @@ main (int argc, char *argv[])
       case 'h':
         return usage (0);
       case 'V':
-        printf ("%s (%s) %s\n", progname, PACKAGE_NAME, PACKAGE_VERSION);
+        printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
         return 0;
       default:
         return usage (1);
@@ -193,7 +199,7 @@ main (int argc, char *argv[])
   /* Wait until the ARGS.HOLD variable is cleared by an attached debugger. */
   if (hold && verbosity > 0)
     printf ("Run \"gdb %s %d\", and set ARGS.HOLD to zero.\n",
-            progname, (int) getpid ());
+            program_name, (int) getpid ());
   while (hold)
     {
       if (hold > 0)
