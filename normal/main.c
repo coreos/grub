@@ -509,7 +509,7 @@ grub_normal_reader_init (void)
   grub_normal_init_page ();
   grub_setcursor (1);
 
-  grub_printf (_("\
+  grub_printf_ (N_("\
  [ Minimal BASH-like line editing is supported. For the first word, TAB\n\
    lists possible command completions. Anywhere else TAB lists possible\n\
    device/file completions.%s ]\n\n"),

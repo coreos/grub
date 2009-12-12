@@ -1,3 +1,144 @@
+2009-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	libpciaccess support.
+
+	* Makefile.in (LIBPCIACCESS): New variable.
+	(enable_grub_emu_pci): Likewise.
+	* conf/any-emu.rmk (grub_emu_SOURCES) [enable_grub_emu_pci]: Add
+	util/pci.c and commands/lspci.c.
+	(grub_emu_LDFLAGS) [enable_grub_emu_pci]: Add $(LIBPCIACCESS).
+	* configure.ac (grub-emu-pci): New option.
+	* include/grub/i386/pci.h (grub_pci_device_map_range): New function.
+	(grub_pci_device_unmap_range): Likewise.
+	* include/grub/pci.h [GRUB_UTIL]: Include grub/pciutils.h.
+	(grub_pci_device) [!GRUB_UTIL]: New structure. All users updated.
+	(grub_pci_address_t) [!GRUB_UTIL]: New type.
+	(grub_pci_device_t) [!GRUB_UTIL]: Likewise.
+	(grub_pci_get_bus) [!GRUB_UTIL]: New function.
+	(grub_pci_get_device) [!GRUB_UTIL]: Likewise.
+	(grub_pci_get_function) [!GRUB_UTIL]: Likewise.
+	* include/grub/pciutils.h: New file.
+	* util/pci.c: Likewise.
+
+2009-12-11 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/misc.c: Don't include <errno.h> twice.
+
+2009-12-10 Felix Zielcke <fzielcke@z-51.de>
+
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_open): Show the disk
+	name in an error message.
+	(grub_biosdisk_rw): Likewise.
+
+2009-12-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Eliminate NTFS 4Gib barrier.
+
+	* fs/ntfs.c (read_attr): Use grub_disk_addr_t and grub_size_t.
+	(read_run_data): Likewise.
+	(grub_ntfs_read_run_list): Likewise.
+	(grub_ntfs_read_block): Likewise.
+	(grub_ntfs_iterate_dir): Likewise.
+	(read_mft): Likewise.
+	(read_data): Likewise.
+	Use COM_LOG_LEN.
+	* fs/ntfscomp.c (read_block): Cast ctx->target_vcn & 0xF to unsigned
+	to avoid 64-bit division
+	* include/grub/ntfs.h (COM_LOG_LEN): New definition.
+	(grub_ntfs_rlst): Use grub_disk_addr_t.
+
+2009-12-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Eliminate grub-fstest 4Gib barrier.
+
+	* util/grub-fstest.c (skip, leng): Use grub_disk_addr_t.
+	(read_file): Fix error reporting.
+
+2009-12-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Eliminate hexdump 4Gib barrier.
+
+	* commands/hexdump.c (grub_cmd_hexdump): Use grub_disk_addr_t.
+	* lib/arg.c (grub_arg_parse): Use grub_strtoull.
+
+2009-12-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/device.c (grub_device_iterate): Ignore errors during first scan.
+	Fixes amarsh bug.
+
+2009-12-09  Bruce Dubbs  <bruce.dubbs@gmail.com>
+
+	Remove miscellaneous files in distclean target.
+
+	* Makefile.in: Remove docs/{grub.info,version.texi,stamp-vti}
+
+2009-12-09  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in: Don't set grub_probe or grub_mkrelpath
+	if they're already set.  This resolves the conflict between my
+	grub-install change on 2009-10-06 and Felix' change on 2009-11-11,
+	fixing the --grub-probe option again.
+	* util/sparc64/ieee1275/grub-install.in: Revert the last piece of my
+	change on 2009-10-06, so that we now once again source
+	`${libdir}/grub/grub-mkconfig_lib' after options have been parsed.
+
+2009-12-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk [sparc64-ieee1275] (grub_mkdevicemap_SOURCES): Use
+	`util/ieee1275/ofpath.c' and `util/ieee1275/devicemap.c' instead of
+	`util/devicemap.c'.
+
+2009-12-08  Carles Pina i Estany  <carles@pina.cat>
+
+	* include/grub/misc.h (grub_printf_): New declaration.
+	* kern/misc.c (grub_printf_): New definition.
+	* normal/main.c (grub_normal_reader_init): Use `grub_printf_' and `N_'
+	instead of `grub_printf' and `_'.
+	* normal/menu_entry.c (store_completion): Likewise.
+	(run): Likewise.
+	(grub_menu_entry_run): Likewise.
+	* normal/menu_text.c (grub_wait_after_message): Likewise.
+	(notify_booting): Likewise.
+	(notify_fallback): Likewise.
+	(notify_execution_failure): Likewise.
+
+2009-12-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: Check for vasprintf.
+	* util/misc.c (asprintf): Move allocation from here ...
+	(vasprintf): ... to here.  New function.
+	(xasprintf): New function.
+	* include/grub/util/misc.h (vasprintf, xasprintf): Add
+	prototypes.
+	* util/getroot.c (grub_util_get_grub_dev): Use xasprintf.
+	* util/grub-mkfont.c (write_font): Likewise.
+	* util/grub-probe.c (probe): Likewise.
+	* util/hostdisk.c (make_device_name): Likewise.
+
+2009-12-06  David S. Miller  <davem@sunset.davemloft.net>
+
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Recognize
+	anything even prefixed with 'cdrom' as a cdrom.
+
+2009-12-06 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/misc.c (make_system_path_relative_to_its_root): Correctly cope with
+	mount points.
+
+2009-12-05  Carles Pina i Estany <carles@pina.cat>
+
+	* gettext/gettext.c: Include `<grub/list.h>'. Define grub_gettext_msg,
+	grub_gettext_msg_list.
+	(grub_gettext_gettranslation_from_position): Return const char *
+	and not char *.
+	(grub_gettext_translate): Add the translated strings into a list, 
+	returns from the list if existing there.
+	(grub_gettext_init_ext): Add \n at the end of grub_dprintf string.
+	(grub_gettext_delete_list): Delete the list.
+	(grub_gettext_env_write_lang): Call grub_gettext_delete_list when
+	lang environment variable is changed.
+	(GRUB_MOD_FINI): Call grub_gettext_delete_list.
+
 2009-12-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Rename kernel.mod to kernel.img.

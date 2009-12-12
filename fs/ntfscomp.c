@@ -209,7 +209,7 @@ read_block (struct grub_ntfs_rlst *ctx, char *buf, int num)
 	    }
 	}
 
-      nn = (16 - (ctx->target_vcn & 0xF)) / cpb;
+      nn = (16 - (unsigned) (ctx->target_vcn & 0xF)) / cpb;
       if (nn > num)
 	nn = num;
       num -= nn;

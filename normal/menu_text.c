@@ -40,7 +40,7 @@ void
 grub_wait_after_message (void)
 {
   grub_putchar ('\n');
-  grub_printf (_("Press any key to continue..."));
+  grub_printf_ (N_("Press any key to continue..."));
   (void) grub_getkey ();
   grub_putchar ('\n');
 }
@@ -206,7 +206,7 @@ entry is highlighted.");
       if (nested)
         {
           grub_printf ("\n        ");
-          grub_printf (_("ESC to return previous menu."));
+          grub_printf_ (N_("ESC to return previous menu."));
         }
     }
 }
@@ -627,7 +627,7 @@ notify_booting (grub_menu_entry_t entry,
 		void *userdata __attribute__((unused)))
 {
   grub_printf ("  ");
-  grub_printf (_("Booting \'%s\'"), entry->title);
+  grub_printf_ (N_("Booting \'%s\'"), entry->title);
   grub_printf ("\n\n");
 }
 
@@ -639,7 +639,7 @@ notify_fallback (grub_menu_entry_t entry,
 		 void *userdata __attribute__((unused)))
 {
   grub_printf ("\n   ");
-  grub_printf (_("Falling back to \'%s\'"), entry->title);
+  grub_printf_ (N_("Falling back to \'%s\'"), entry->title);
   grub_printf ("\n\n");
   grub_millisleep (DEFAULT_ENTRY_ERROR_DELAY_MS);
 }
@@ -655,7 +655,7 @@ notify_execution_failure (void *userdata __attribute__((unused)))
       grub_errno = GRUB_ERR_NONE;
     }
   grub_printf ("\n  ");
-  grub_printf (_("Failed to boot default entries.\n"));
+  grub_printf_ (N_("Failed to boot default entries.\n"));
   grub_wait_after_message ();
 }
 
