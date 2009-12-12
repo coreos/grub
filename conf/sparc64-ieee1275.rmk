@@ -93,7 +93,7 @@ grub_ofpathname_SOURCES = util/sparc64/ieee1275/grub-ofpathname.c \
 sbin_SCRIPTS = grub-install
 
 # For grub-install.
-grub_install_SOURCES = util/sparc64/ieee1275/grub-install.in
+grub_install_SOURCES = util/grub-install.in
 
 # Modules.
 pkglib_MODULES = halt.mod \
