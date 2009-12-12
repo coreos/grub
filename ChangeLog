@@ -1,3 +1,17 @@
+2009-12-12  Robert Millan  <rmh@aybabtu.com>
+
+	* gendistlist.sh (EXTRA_DISTFILES): Add `genvideolist.sh'.
+	* genmk.rb (video): New variable.
+	(CLEANFILES, VIDEOFILES): Add #{video}.
+	(#{video}): New target rule.
+	* genvideolist.sh: New file.
+	* Makefile.in (pkglib_DATA): Add video.lst.
+	(video.lst): New target rule.
+	* util/grub-mkconfig.in: Initialize ${GRUB_VIDEO_BACKEND} using
+	`video.lst'.
+	* util/grub.d/30_os-prober.in: Replace `vbe' with
+	${GRUB_VIDEO_BACKEND}.
+
 2009-12-11  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* THANKS: Add David Miller.
