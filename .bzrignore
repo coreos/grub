@@ -10,3 +10,16 @@ stamp-h1
 docs/Makefile
 docs/*.info*
 docs/.deps
+Makefile.in
+aclocal.m4
+config.h.in
+configure
+depcomp
+install-sh
+missing
+docs/Makefile.in
+docs/boot.S.texi
+docs/kernel
+docs/kernel.c.texi
+docs/multiboot.h.texi
+docs/texinfo.tex
