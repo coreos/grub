@@ -7,3 +7,6 @@ config.log
 config.status
 stamp-h
 stamp-h1
+docs/Makefile
+docs/*.info*
+docs/.deps
