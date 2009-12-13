@@ -1,3 +1,10 @@
+2009-12-13  Carles Pina i Estany  <carles@pina.cat>
+
+	* include/grub/misc.h (grub_puts): New declaration.
+	(grub_puts_): Likewise.
+	* kern/mis.c (grub_puts): New definition.
+	(grub_puts_): Likewise.
+
 2009-12-13  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/grub-probe.c (probe): Improve error message.
