@@ -1,5 +1,12 @@
 2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Prevent generation of .note.gnu.build-id which drastically increases
+	memory requirements of example kernel.
+
+	* docs/Makefile.am (kernel_LDFLAGS): Add '-Wl,--build-id=none'.
+
+2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* BUGS: New file.
 
 2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
