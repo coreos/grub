@@ -1,9 +1,8 @@
 info_TEXINFOS = multiboot.texi
 EXAMPLES = boot.S kernel.c multiboot.h
 multiboot_TEXINFOS = boot.S.texi kernel.c.texi multiboot.h.texi
-HELP2MAN = help2man
 SRC2TEXI = src2texi
-noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
+noinst_SCRIPTS = $(SRC2TEXI)
 EXTRA_PROGRAMS = kernel
 
 # The example kernel is built if you specify --enable-example-kernel.
