@@ -1,5 +1,9 @@
 2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/fdl.texi: Remove. It's not used.
+
+2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Prevent generation of .note.gnu.build-id which drastically increases
 	memory requirements of example kernel.
 
