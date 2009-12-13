@@ -78,10 +78,10 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
 
   /* Very unlikely condition: Relocator may risk overwrite itself.
      Just move it a bit up.  */
-  if ((grub_uint8_t *) UINT_TO_PTR (dest) - (grub_uint8_t *) relocator
-      < (signed) (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN)
-      && (grub_uint8_t *) UINT_TO_PTR (dest) - (grub_uint8_t *) relocator
-      > - (signed) (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN))
+  if ((grub_addr_t) dest < (grub_addr_t) relocator
+      + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN) 
+      && (grub_addr_t) dest + (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
+      > (grub_addr_t) relocator)
     {
       void *relocator_new = ((grub_uint8_t *) relocator)
 	+ (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
@@ -95,7 +95,7 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
       relocator = relocator_new;
     }
 
-  if (UINT_TO_PTR (dest) >= relocator)
+  if ((grub_addr_t) dest >= (grub_addr_t) relocator)
     {
       int overhead;
       overhead = dest -
