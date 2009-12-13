@@ -1,3 +1,8 @@
+2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/i386/pc/startup.S (multiboot_entry): Setup stack before calling
+	anything.
+
 2009-12-13  Carles Pina i Estany  <carles@pina.cat>
 
 	* script/execute.c (grub_script_execute_cmdline): Set grub_errno to
