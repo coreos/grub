@@ -110,7 +110,7 @@ grub_linux_load32 (grub_elf_t elf)
   if (entry == 0)
     entry = 0x01400000;
 
-  linux_size = grub_elf32_size (elf, 0);
+  linux_size = grub_elf32_size (elf);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
@@ -160,7 +160,7 @@ grub_linux_load64 (grub_elf_t elf)
   if (entry == 0)
     entry = 0x01400000;
 
-  linux_size = grub_elf64_size (elf, 0);
+  linux_size = grub_elf64_size (elf);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */

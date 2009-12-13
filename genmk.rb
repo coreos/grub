@@ -193,6 +193,7 @@ endif
       partmap = 'partmap-' + obj.suffix('lst')
       handler = 'handler-' + obj.suffix('lst')
       parttool = 'parttool-' + obj.suffix('lst')
+      video = 'video-' + obj.suffix('lst')
       dep = deps[i]
       flag = if /\.c$/ =~ src then 'CFLAGS' else 'ASFLAGS' end
       extra_flags = if /\.S$/ =~ src then '-DASM_FILE=1' else '' end
@@ -203,7 +204,7 @@ endif
 -include #{dep}
 
 clean-module-#{extra_target}.#{@rule_count}:
-	rm -f #{command} #{fs} #{partmap} #{handler} #{parttool}
+	rm -f #{command} #{fs} #{partmap} #{handler} #{parttool} #{video}
 
 CLEAN_MODULE_TARGETS += clean-module-#{extra_target}.#{@rule_count}
 
@@ -212,6 +213,7 @@ FSFILES += #{fs}
 PARTTOOLFILES += #{parttool}
 PARTMAPFILES += #{partmap}
 HANDLERFILES += #{handler}
+VIDEOFILES += #{video}
 
 #{command}: #{src} $(#{src}_DEPENDENCIES) gencmdlist.sh
 	set -e; \
@@ -237,6 +239,11 @@ HANDLERFILES += #{handler}
 	set -e; \
 	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/genhandlerlist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
+
+#{video}: #{src} $(#{src}_DEPENDENCIES) genvideolist.sh
+	set -e; \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  | sh $(srcdir)/genvideolist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 "
     end.join('')

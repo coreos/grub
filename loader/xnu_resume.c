@@ -94,16 +94,28 @@ grub_xnu_resume (char *imagename)
   /* Try to allocate necessary space.
      FIXME: mm isn't good enough yet to handle huge allocations.
    */
-  grub_xnu_hibernate_image = buf = XNU_RELOCATOR (alloc) (hibhead.image_size);
+  grub_xnu_hibernate_image = buf = XNU_RELOCATOR (alloc) (hibhead.image_size
+							  + codesize
+							  + GRUB_XNU_PAGESIZE);
   if (! buf)
     {
       grub_file_close (file);
       return grub_errno;
     }
 
+  /* Read code part. */
+  if (grub_file_seek (file, total_header_size) == (grub_off_t) -1
+      || grub_file_read (file, buf, codesize)
+      != (grub_ssize_t) codesize)
+    {
+      grub_file_close (file);
+      return grub_error (GRUB_ERR_READ_ERROR, "Cannot read resume image.");
+    }
+
   /* Read image. */
-  if (grub_file_seek (file, 0) == (grub_off_t)-1
-      || grub_file_read (file, buf, hibhead.image_size)
+  if (grub_file_seek (file, 0) == (grub_off_t) -1
+      || grub_file_read (file, buf + codesize + GRUB_XNU_PAGESIZE,
+			 hibhead.image_size)
       != (grub_ssize_t) hibhead.image_size)
     {
       grub_file_close (file);
@@ -114,10 +126,14 @@ grub_xnu_resume (char *imagename)
   /* Setup variables needed by asm helper. */
   grub_xnu_heap_will_be_at = codedest;
   grub_xnu_heap_start = buf;
-  grub_xnu_heap_size = codesize;
+  grub_xnu_heap_size = codesize + GRUB_XNU_PAGESIZE + hibhead.image_size;
   grub_xnu_stack = (codedest + hibhead.stack);
   grub_xnu_entry_point = (codedest + hibhead.entry_point);
-  grub_xnu_arg1 = (long) buf;
+  grub_xnu_arg1 = codedest + codesize + GRUB_XNU_PAGESIZE;
+
+  grub_dprintf ("xnu", "entry point 0x%x\n", codedest + hibhead.entry_point);
+  grub_dprintf ("xnu", "image at 0x%x\n",
+		codedest + codesize + GRUB_XNU_PAGESIZE);
 
   /* We're ready now. */
   grub_loader_set (grub_xnu_boot_resume,

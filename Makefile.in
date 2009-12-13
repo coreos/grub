@@ -169,7 +169,7 @@ endif
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
-pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst
+pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
 	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UNDSYMFILES) > $@ \
@@ -188,6 +188,9 @@ handler.lst: $(HANDLERFILES)
 	cat $^ /dev/null | sort > $@
 
 parttool.lst: $(PARTTOOLFILES)
+	cat $^ /dev/null | sort | uniq > $@
+
+video.lst: $(VIDEOFILES)
 	cat $^ /dev/null | sort | uniq > $@
 
 ifneq (true, $(MAKEINFO))

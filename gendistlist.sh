@@ -19,6 +19,7 @@ EXTRA_DISTFILES="AUTHORS COPYING ChangeLog DISTLIST INSTALL NEWS README \
 	gendistlist.sh genfslist.sh genhandlerlist.sh geninit.sh \
 	geninitheader.sh genkernsyms.sh.in genmk.rb genmoddep.awk \
 	genmodsrc.sh genpartmaplist.sh genparttoollist.sh \
+	genvideolist.sh \
 	gensymlist.sh.in install-sh mkinstalldirs stamp-h.in"
 
 DISTDIRS="boot bus commands conf disk docs efiemu font fs hello hook include io \

@@ -32,6 +32,4 @@ extern char *grub_multiboot_payload_orig;
 extern grub_addr_t grub_multiboot_payload_dest;
 extern grub_size_t grub_multiboot_payload_size;
 
-#define GRUB_MULTIBOOT_STACK_SIZE 4096
-
 #endif /* ! GRUB_MULTIBOOT_CPU_HEADER */

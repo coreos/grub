@@ -138,7 +138,7 @@ LOCAL(cont0):
 
 	lgdt	(LOCAL(gdtdesc) - LOCAL(base)) (RSI, 1)
 
-	/* Update %cs. Thanks to David Miller for pointing this mistake out. */
+	/* Update %cs.  */
 	ljmp	*(LOCAL(jump_vector) - LOCAL(base)) (RSI, 1)
 
 LOCAL(cont1):
