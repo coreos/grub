@@ -1,3 +1,8 @@
+2009-12-13  Carles Pina i Estany  <carles@pina.cat>
+
+	* script/execute.c (grub_script_execute_cmdline): Set grub_errno to
+	GRUB_ERR_NONE before calling grub_env_set.
+
 2009-12-12  Robert Millan  <rmh@aybabtu.com>
 
 	* gendistlist.sh (EXTRA_DISTFILES): Add `genvideolist.sh'.
