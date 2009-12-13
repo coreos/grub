@@ -59,7 +59,6 @@ char *grub_multiboot_payload_orig;
 grub_addr_t grub_multiboot_payload_dest;
 grub_size_t grub_multiboot_payload_size;
 grub_uint32_t grub_multiboot_payload_eip;
-grub_uint32_t grub_multiboot_payload_esp;
 
 static grub_err_t
 grub_multiboot_boot (void)
@@ -71,7 +70,9 @@ grub_multiboot_boot (void)
       .ecx = 0,
       .edx = 0,
       .eip = grub_multiboot_payload_eip,
-      .esp = grub_multiboot_payload_esp
+      /* Set esp to some random location in low memory to avoid breaking
+	 non-compliant kernels.  */
+      .esp = 0x7ff00
     };
 
   grub_relocator32_boot (grub_multiboot_payload_orig,
@@ -290,13 +291,11 @@ grub_multiboot (int argc, char *argv[])
 				((void *) ((x) + code_size + cmdline_length))
 #define mbi_addr(x)		((void *) ((x) + code_size + cmdline_length + boot_loader_name_length))
 #define mmap_addr(x)		((void *) ((x) + code_size + cmdline_length + boot_loader_name_length + sizeof (struct multiboot_info)))
-#define stack_addr(x)		((void *) ((x) + code_size + cmdline_length + boot_loader_name_length + sizeof (struct multiboot_info) + mmap_length + GRUB_MULTIBOOT_STACK_SIZE))
 
   grub_multiboot_payload_size = cmdline_length
     /* boot_loader_name_length might need to grow for mbi,etc to be aligned (see below) */
     + boot_loader_name_length + 3
-    + sizeof (struct multiboot_info) + mmap_length
-    + GRUB_MULTIBOOT_STACK_SIZE;
+    + sizeof (struct multiboot_info) + mmap_length;
 
   if (header->flags & MULTIBOOT_AOUT_KLUDGE)
     {
@@ -319,7 +318,7 @@ grub_multiboot (int argc, char *argv[])
       if (! grub_multiboot_payload_orig)
 	goto fail;
 
-      if ((grub_file_seek (file, offset)) == (grub_off_t) - 1)
+      if ((grub_file_seek (file, offset)) == (grub_off_t) -1)
 	goto fail;
 
       grub_file_read (file, (void *) grub_multiboot_payload_orig, load_size);
@@ -381,8 +380,6 @@ grub_multiboot (int argc, char *argv[])
 
   if (grub_multiboot_get_bootdev (&mbi->boot_device))
     mbi->flags |= MULTIBOOT_INFO_BOOTDEV;
-
-  grub_multiboot_payload_esp = PTR_TO_UINT32 (stack_addr (grub_multiboot_payload_dest));
 
   grub_loader_set (grub_multiboot_boot, grub_multiboot_unload, 1);
 
