@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,20 +16,26 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_MULTIBOOT_CPU_HEADER
-#define GRUB_MULTIBOOT_CPU_HEADER	1
+#ifndef GRUB_RELOCATOR_CPU_HEADER
+#define GRUB_RELOCATOR_CPU_HEADER	1
 
-/* The asm part of the multiboot loader.  */
-void grub_multiboot_real_boot (grub_addr_t entry,
-			       struct multiboot_info *mbi)
-     __attribute__ ((noreturn));
-void grub_multiboot2_real_boot (grub_addr_t entry,
-				struct multiboot_info *mbi)
-     __attribute__ ((noreturn));
+#include <grub/types.h>
+#include <grub/err.h>
 
-extern grub_uint32_t grub_multiboot_payload_eip;
-extern char *grub_multiboot_payload_orig;
-extern grub_addr_t grub_multiboot_payload_dest;
-extern grub_size_t grub_multiboot_payload_size;
+struct grub_relocator32_state
+{
+  grub_uint32_t esp;
+  grub_uint32_t eax;
+  grub_uint32_t ebx;
+  grub_uint32_t ecx;
+  grub_uint32_t edx;
+  grub_uint32_t eip;
+};
 
-#endif /* ! GRUB_MULTIBOOT_CPU_HEADER */
+void *grub_relocator32_alloc (grub_size_t size);
+grub_err_t grub_relocator32_boot (void *relocator, grub_uint32_t dest,
+				  struct grub_relocator32_state state);
+void *grub_relocator32_realloc (void *relocator, grub_size_t size);
+void grub_relocator32_free (void *relocator);
+
+#endif /* ! GRUB_RELOCATOR_CPU_HEADER */
