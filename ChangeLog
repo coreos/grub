@@ -1,6 +1,7 @@
 2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/Makefile.am: Remove HELP2MAN.
+	* docs/help2man: Remove.
 
 2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
