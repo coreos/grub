@@ -138,7 +138,8 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
     if (phdr(i)->p_vaddr <= ehdr->e_entry
 	&& phdr(i)->p_vaddr + phdr(i)->p_memsz > ehdr->e_entry)
       {
-	grub_multiboot_payload_eip = ehdr->e_entry;
+	grub_multiboot_payload_eip = grub_multiboot_payload_dest
+	  + (ehdr->e_entry - phdr(i)->p_vaddr) + (phdr(i)->p_paddr  - phdr(lowest_segment)->p_paddr);
 	break;
       }
 

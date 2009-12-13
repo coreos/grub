@@ -1,3 +1,9 @@
+2009-12-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/multiboot_elfxx.c
+	(CONCAT(grub_multiboot_load_elf, XX)): Fix `grub_multiboot_payload_eip'
+	initialization.
+
 2009-11-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Relocator framework
