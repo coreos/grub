@@ -1,5 +1,9 @@
 2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Remove non-multiboot stuff.
+
+2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* NEWS: Emptied. It contained no multiboot information.
 	* README: Likewise.
 
