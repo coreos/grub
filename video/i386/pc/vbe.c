@@ -258,8 +258,10 @@ grub_vbe_get_video_mode (grub_uint32_t *mode)
 
   /* Try to query current mode from VESA BIOS.  */
   status = grub_vbe_bios_get_mode (mode);
+#if 0
   if (status != GRUB_VBE_STATUS_OK)
     return grub_error (GRUB_ERR_BAD_DEVICE, "cannot get current VBE mode");
+#endif
 
   return GRUB_ERR_NONE;
 }
