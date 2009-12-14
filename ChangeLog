@@ -1,3 +1,9 @@
+2009-12-14 Felix Zielcke <fzielcke@z-51.de>
+
+	Fix a segfault with parsing unknown long options.
+
+	* util/grub-mkrelpath.c (options): Zero terminate it.
+
 2009-12-13  Carles Pina i Estany  <carles@pina.cat>
 
 	* include/grub/misc.h (grub_puts): New declaration.
