@@ -27,7 +27,7 @@
 #include <grub/bitmap.h>
 #include <grub/command.h>
 
-#define DEFAULT_VIDEO_MODE "1024x600"
+#define DEFAULT_VIDEO_MODE	"1024x768,800x600,640x480"
 #define DEFAULT_BORDER_WIDTH	10
 
 #define DEFAULT_STANDARD_COLOR  0x07
