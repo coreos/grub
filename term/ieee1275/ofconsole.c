@@ -43,17 +43,26 @@ struct color
   int blue;
 };
 
-#define	MAX 0xff
-static struct color colors[8] =
+static struct color colors[16] =
   {
-    { 0,   0,   0},
-    { MAX, 0,   0},
-    { 0,   MAX, 0},
-    { MAX, MAX, 0},
-    { 0,   0,   MAX},
-    { MAX, 0,   MAX},
-    { 0,   MAX, MAX},
-    { MAX, MAX, MAX}
+    // {R, G, B}
+    {0x00, 0x00, 0x00},
+    {0x00, 0x00, 0xA8}, // 1 = blue
+    {0x00, 0xA8, 0x00}, // 2 = green
+    {0x00, 0xA8, 0xA8}, // 3 = cyan
+    {0xA8, 0x00, 0x00}, // 4 = red
+    {0xA8, 0x00, 0xA8}, // 5 = magenta
+    {0xA8, 0x54, 0x00}, // 6 = brown
+    {0xA8, 0xA8, 0xA8}, // 7 = light gray
+
+    {0x54, 0x54, 0x54}, // 8 = dark gray
+    {0x54, 0x54, 0xFE}, // 9 = bright blue
+    {0x54, 0xFE, 0x54}, // 10 = bright green
+    {0x54, 0xFE, 0xFE}, // 11 = bright cyan
+    {0xFE, 0x54, 0x54}, // 12 = bright red
+    {0xFE, 0x54, 0xFE}, // 13 = bright magenta
+    {0xFE, 0xFE, 0x54}, // 14 = yellow
+    {0xFE, 0xFE, 0xFE}  // 15 = white
   };
 
 static grub_uint8_t grub_ofconsole_normal_color = 0x7;
