@@ -29,10 +29,11 @@
 #include <grub/cpu/linux.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
-#include <grub/efi/uga_draw.h>
-#include <grub/pci.h>
 #include <grub/command.h>
 #include <grub/memory.h>
+#include <grub/env.h>
+#include <grub/video.h>
+#include <grub/time.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
 #define GRUB_LINUX_CL_END_OFFSET	0x2000
@@ -285,6 +286,66 @@ grub_e820_add_region (struct grub_e820_mmap *e820_map, int *e820_num,
     }
 }
 
+static grub_err_t
+grub_linux_setup_video (struct linux_kernel_params *params)
+{
+  struct grub_video_mode_info mode_info;
+  void *framebuffer;
+  grub_err_t err;
+
+  err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
+
+  if (err)
+    return err;
+
+  params->lfb_width = mode_info.width;
+  params->lfb_height = mode_info.height;
+  params->lfb_depth = mode_info.bpp;
+  params->lfb_line_len = mode_info.pitch;
+
+  params->lfb_base = (grub_size_t) framebuffer;
+  params->lfb_size = (params->lfb_line_len * params->lfb_height + 65535) >> 16;
+
+  params->red_mask_size = mode_info.red_mask_size;
+  params->red_field_pos = mode_info.red_field_pos;
+  params->green_mask_size = mode_info.green_mask_size;
+  params->green_field_pos = mode_info.green_field_pos;
+  params->blue_mask_size = mode_info.blue_mask_size;
+  params->blue_field_pos = mode_info.blue_field_pos;
+  params->reserved_mask_size = mode_info.reserved_mask_size;
+  params->reserved_field_pos = mode_info.reserved_field_pos;
+
+  params->have_vga = GRUB_VIDEO_TYPE_EFI;
+
+#ifdef GRUB_MACHINE_PCBIOS
+  /* VESA packed modes may come with zeroed mask sizes, which need
+     to be set here according to DAC Palette width.  If we don't,
+     this results in Linux displaying a black screen.  */
+  if (mode_info.bpp <= 8)
+    {
+      struct grub_vbe_info_block controller_info;
+      int status;
+      int width = 8;
+
+      status = grub_vbe_bios_get_controller_info (&controller_info);
+
+      if (status == GRUB_VBE_STATUS_OK &&
+	  (controller_info.capabilities & GRUB_VBE_CAPABILITY_DACWIDTH))
+	status = grub_vbe_bios_set_dac_palette_width (&width);
+
+      if (status != GRUB_VBE_STATUS_OK)
+	/* 6 is default after mode reset.  */
+	width = 6;
+
+      params->red_mask_size = params->green_mask_size
+	= params->blue_mask_size = width;
+      params->reserved_mask_size = 0;
+    }
+#endif
+
+  return 0;
+}
+
 #ifdef __x86_64__
 extern grub_uint8_t grub_linux_trampoline_start[];
 extern grub_uint8_t grub_linux_trampoline_end[];
@@ -299,8 +360,13 @@ grub_linux_boot (void)
   grub_efi_uintn_t desc_size;
   grub_efi_uint32_t desc_version;
   int e820_num;
+  const char *modevar;
+  char *tmp;
+  grub_err_t err;
 
   params = real_mode_mem;
+
+  grub_printf ("%d\n", __LINE__);
 
   grub_dprintf ("linux", "code32_start = %x, idt_desc = %lx, gdt_desc = %lx\n",
 		(unsigned) params->code32_start,
@@ -309,6 +375,8 @@ grub_linux_boot (void)
   grub_dprintf ("linux", "idt = %x:%lx, gdt = %x:%lx\n",
 		(unsigned) idt_desc.limit, (unsigned long) idt_desc.base,
 		(unsigned) gdt_desc.limit, (unsigned long) gdt_desc.base);
+
+  grub_printf ("%d\n", __LINE__);
 
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
@@ -348,9 +416,42 @@ grub_linux_boot (void)
       return 0;
     }
 
+  grub_printf ("%d\n", __LINE__);
+
   e820_num = 0;
   grub_mmap_iterate (hook);
   params->mmap_size = e820_num;
+
+  modevar = grub_env_get ("gfxpayload");
+
+  /* Now all graphical modes are acceptable.
+     May change in future if we have modes without framebuffer.  */
+  if (modevar && *modevar != 0)
+    {
+      tmp = grub_malloc (grub_strlen (modevar)
+			 + sizeof (";auto"));
+      if (! tmp)
+	return grub_errno;
+      grub_sprintf (tmp, "%s;auto", modevar);
+      err = grub_video_set_mode (tmp, GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
+      grub_free (tmp);
+    }
+  else
+    err = grub_video_set_mode ("auto", GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
+
+  grub_printf ("Trampoline at %p. code32=%x, real_mode_mem=%p\n",
+	       ((char *) prot_mode_mem + (prot_mode_pages << 12)),
+	       (unsigned) params->code32_start, real_mode_mem);
+
+  if (!err)
+    err = grub_linux_setup_video (params);
+
+  if (err)
+    {
+      grub_print_error ();
+      grub_printf ("Booting however\n");
+      grub_errno = GRUB_ERR_NONE;
+    }
 
   mmap_size = find_mmap_size ();
   if (grub_efi_get_memory_map (&mmap_size, mmap_buf, &map_key,
@@ -422,174 +523,6 @@ grub_linux_unload (void)
   grub_dl_unref (my_mod);
   loaded = 0;
   return GRUB_ERR_NONE;
-}
-
-static grub_efi_guid_t uga_draw_guid = GRUB_EFI_UGA_DRAW_GUID;
-
-
-#define RGB_MASK	0xffffff
-#define RGB_MAGIC	0x121314
-#define LINE_MIN	800
-#define LINE_MAX	4096
-#define FBTEST_STEP	(0x10000 >> 2)
-#define FBTEST_COUNT	8
-
-static int
-find_line_len (grub_uint32_t *fb_base, grub_uint32_t *line_len)
-{
-  grub_uint32_t *base = (grub_uint32_t *) (grub_target_addr_t) *fb_base;
-  int i;
-
-  for (i = 0; i < FBTEST_COUNT; i++, base += FBTEST_STEP)
-    {
-      if ((*base & RGB_MASK) == RGB_MAGIC)
-	{
-	  int j;
-
-	  for (j = LINE_MIN; j <= LINE_MAX; j++)
-	    {
-	      if ((base[j] & RGB_MASK) == RGB_MAGIC)
-		{
-		  *fb_base = (grub_uint32_t) (grub_target_addr_t) base;
-		  *line_len = j << 2;
-
-		  return 1;
-		}
-	    }
-
-	  break;
-	}
-    }
-
-  return 0;
-}
-
-static int
-find_framebuf (grub_uint32_t *fb_base, grub_uint32_t *line_len)
-{
-  int found = 0;
-
-  auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev,
-				       grub_pci_id_t pciid);
-
-  int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev,
-				  grub_pci_id_t pciid)
-    {
-      grub_pci_address_t addr;
-
-      addr = grub_pci_make_address (dev, 2);
-      if (grub_pci_read (addr) >> 24 == 0x3)
-	{
-	  int i;
-
-	  grub_printf ("Display controller: %d:%d.%d\nDevice id: %x\n",
-		       grub_pci_get_bus (dev), grub_pci_get_device (dev),
-		       grub_pci_get_function (dev), pciid);
-	  addr += 8;
-	  for (i = 0; i < 6; i++, addr += 4)
-	    {
-	      grub_uint32_t old_bar1, old_bar2, type;
-	      grub_uint64_t base64;
-
-	      old_bar1 = grub_pci_read (addr);
-	      if ((! old_bar1) || (old_bar1 & GRUB_PCI_ADDR_SPACE_IO))
-		continue;
-
-	      type = old_bar1 & GRUB_PCI_ADDR_MEM_TYPE_MASK;
-	      if (type == GRUB_PCI_ADDR_MEM_TYPE_64)
-		{
-		  if (i == 5)
-		    break;
-
-		  old_bar2 = grub_pci_read (addr + 4);
-		}
-	      else
-		old_bar2 = 0;
-
-	      base64 = old_bar2;
-	      base64 <<= 32;
-	      base64 |= (old_bar1 & GRUB_PCI_ADDR_MEM_MASK);
-
-	      grub_printf ("%s(%d): 0x%llx\n",
-			   ((old_bar1 & GRUB_PCI_ADDR_MEM_PREFETCH) ?
-			    "VMEM" : "MMIO"), i,
-			   (unsigned long long) base64);
-
-	      if ((old_bar1 & GRUB_PCI_ADDR_MEM_PREFETCH) && (! found))
-		{
-		  *fb_base = base64;
-		  if (find_line_len (fb_base, line_len))
-		    found++;
-		}
-
-	      if (type == GRUB_PCI_ADDR_MEM_TYPE_64)
-		{
-		  i++;
-		  addr += 4;
-		}
-	    }
-	}
-
-      return found;
-    }
-
-  grub_pci_iterate (find_card);
-  return found;
-}
-
-static int
-grub_linux_setup_video (struct linux_kernel_params *params)
-{
-  grub_efi_uga_draw_protocol_t *c;
-  grub_uint32_t width, height, depth, rate, pixel, fb_base, line_len;
-  int ret;
-
-  c = grub_efi_locate_protocol (&uga_draw_guid, 0);
-  if (! c)
-    return 1;
-
-  if (efi_call_5 (c->get_mode, c, &width, &height, &depth, &rate))
-    return 1;
-
-  grub_printf ("Video mode: %ux%u-%u@%u\n", width, height, depth, rate);
-
-  grub_efi_set_text_mode (0);
-  pixel = RGB_MAGIC;
-  efi_call_10 (c->blt, c, (struct grub_efi_uga_pixel *) &pixel,
-	       GRUB_EFI_UGA_VIDEO_FILL, 0, 0, 0, 0, 1, height, 0);
-  ret = find_framebuf (&fb_base, &line_len);
-  grub_efi_set_text_mode (1);
-
-  if (! ret)
-    {
-      grub_printf ("Can\'t find frame buffer address\n");
-      return 1;
-    }
-
-  grub_printf ("Frame buffer base: 0x%x\n", fb_base);
-  grub_printf ("Video line length: %d\n", line_len);
-
-  params->lfb_width = width;
-  params->lfb_height = height;
-  params->lfb_depth = depth;
-  params->lfb_line_len = line_len;
-
-  params->lfb_base = fb_base;
-  params->lfb_size = (line_len * params->lfb_height + 65535) >> 16;
-
-  params->red_mask_size = 8;
-  params->red_field_pos = 16;
-  params->green_mask_size = 8;
-  params->green_field_pos = 8;
-  params->blue_mask_size = 8;
-  params->blue_field_pos = 0;
-  params->reserved_mask_size = 8;
-  params->reserved_field_pos = 24;
-
-  params->have_vga = GRUB_VIDEO_TYPE_VLFB;
-  params->vid_mode = 0x338;  /* 1024x768x32  */
-
-  return 0;
 }
 
 static grub_err_t
@@ -790,8 +723,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_printf ("   [Linux-bzImage, setup=0x%x, size=0x%x]\n",
 	       (unsigned) real_size, (unsigned) prot_size);
 
-  grub_linux_setup_video (params);
-
   /* Detect explicitly specified memory size, if any.  */
   linux_mem_size = 0;
   for (i = 1; i < argc; i++)
@@ -857,7 +788,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_errno == GRUB_ERR_NONE)
     {
-      grub_loader_set (grub_linux_boot, grub_linux_unload, 1);
+      grub_loader_set (grub_linux_boot, grub_linux_unload, 0);
       loaded = 1;
     }
 
