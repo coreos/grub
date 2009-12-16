@@ -198,7 +198,7 @@ grub_video_uga_fini (void)
 
 static grub_err_t
 grub_video_uga_setup (unsigned int width, unsigned int height,
-		      unsigned int mode_type)
+		      unsigned int mode_type, unsigned int mode_mask __attribute__ ((unused)))
 {
   unsigned int depth;
   int found = 0;
