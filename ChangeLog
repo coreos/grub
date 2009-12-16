@@ -1,3 +1,11 @@
+2009-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	UUID support for HFS.
+
+	* fs/hfs.c (grub_hfs_uuid): New function.
+	(grub_hfs_fs): New value .uuid.
+	* include/grub/hfs.h (grub_hfs_sblock): New field 'num_serial'.
+
 2009-12-14 Felix Zielcke <fzielcke@z-51.de>
 
 	Fix a segfault with parsing unknown long options.
