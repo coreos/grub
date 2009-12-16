@@ -36,6 +36,9 @@ struct grub_xnu_devtree_key *grub_xnu_devtree_root = 0;
 static int driverspackagenum = 0;
 static int driversnum = 0;
 
+void *grub_xnu_heap_start = 0;
+grub_size_t grub_xnu_heap_size = 0;
+
 /* Allocate heap by 32MB-blocks. */
 #define GRUB_XNU_HEAP_ALLOC_BLOCK 0x2000000
 
@@ -46,12 +49,6 @@ void *
 grub_xnu_heap_malloc (int size)
 {
   void *val;
-
-#if 0
-  /* This way booting is faster but less reliable.
-     Once we have advanced mm second way will be as fast as this one. */
-  val = grub_xnu_heap_start = (char *) 0x100000;
-#else
   int oldblknum, newblknum;
 
   /* The page after the heap is used for stack. Ensure it's usable. */
@@ -63,25 +60,21 @@ grub_xnu_heap_malloc (int size)
   newblknum = (grub_xnu_heap_size + size + GRUB_XNU_PAGESIZE
 	       + GRUB_XNU_HEAP_ALLOC_BLOCK - 1) / GRUB_XNU_HEAP_ALLOC_BLOCK;
   if (oldblknum != newblknum)
-    /* FIXME: instruct realloc to allocate at 1MB if possible once
-       advanced mm is ready. */
-    val = grub_realloc (grub_xnu_heap_start,
-			newblknum * GRUB_XNU_HEAP_ALLOC_BLOCK);
-  else
-    val = grub_xnu_heap_start;
-  if (! val)
     {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		  "not enough space on xnu memory heap");
-      return 0;
+      /* FIXME: instruct realloc to allocate at 1MB if possible once
+	 advanced mm is ready. */
+      grub_xnu_heap_start
+	= XNU_RELOCATOR (realloc) (grub_xnu_heap_start,
+				   newblknum 
+				   * GRUB_XNU_HEAP_ALLOC_BLOCK);
+      if (!grub_xnu_heap_start)
+	return NULL;
     }
-  grub_xnu_heap_start = val;
-#endif
 
-  val = (char *) grub_xnu_heap_start + grub_xnu_heap_size;
+  val = (grub_uint8_t *) grub_xnu_heap_start + grub_xnu_heap_size;
   grub_xnu_heap_size += size;
   grub_dprintf ("xnu", "val=%p\n", val);
-  return (char *) val;
+  return val;
 }
 
 /* Make sure next block of the heap will be aligned.
@@ -251,7 +244,7 @@ grub_xnu_writetree_toheap (void **start, grub_size_t *size)
 				 - *size % GRUB_XNU_PAGESIZE);
 
   /* Put real data in the dummy. */
-  extdesc->addr = (char *) *start - grub_xnu_heap_start
+  extdesc->addr = (grub_uint8_t *) *start - (grub_uint8_t *) grub_xnu_heap_start
     + grub_xnu_heap_will_be_at;
   extdesc->size = (grub_uint32_t) *size;
 
@@ -503,7 +496,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
   grub_file_t infoplist;
   struct grub_xnu_extheader *exthead;
   int neededspace = sizeof (*exthead);
-  char *buf;
+  grub_uint8_t *buf;
   grub_size_t infoplistsize = 0, machosize = 0;
 
   if (! grub_xnu_heap_size)
@@ -552,7 +545,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
   /* Load the binary. */
   if (macho)
     {
-      exthead->binaryaddr = (buf - grub_xnu_heap_start)
+      exthead->binaryaddr = (buf - (grub_uint8_t *) grub_xnu_heap_start)
 	+ grub_xnu_heap_will_be_at;
       exthead->binarysize = machosize;
       if ((err = grub_macho32_readfile (macho, buf)))
@@ -568,7 +561,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
   /* Load the plist. */
   if (infoplist)
     {
-      exthead->infoplistaddr = (buf - grub_xnu_heap_start)
+      exthead->infoplistaddr = (buf - (grub_uint8_t *) grub_xnu_heap_start)
 	+ grub_xnu_heap_will_be_at;
       exthead->infoplistsize = infoplistsize + 1;
       if (grub_file_read (infoplist, buf, infoplistsize)

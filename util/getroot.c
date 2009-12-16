@@ -30,6 +30,12 @@
 # define DEV_CYGDRIVE_MAJOR 98
 #endif
 
+#ifdef __GNU__
+#include <hurd.h>
+#include <hurd/lookup.h>
+#include <hurd/fs.h>
+#endif
+
 #include <grub/util/misc.h>
 #include <grub/util/hostdisk.h>
 #include <grub/util/getroot.h>
@@ -378,8 +384,65 @@ find_cygwin_root_device (const char *path, dev_t dev)
 char *
 grub_guess_root_device (const char *dir)
 {
-  struct stat st;
   char *os_dev;
+#ifdef __GNU__
+  file_t file;
+  mach_port_t *ports;
+  int *ints;
+  loff_t *offsets;
+  char *data;
+  error_t err;
+  mach_msg_type_number_t num_ports = 0, num_ints = 0, num_offsets = 0, data_len = 0;
+  size_t name_len;
+
+  file = file_name_lookup (dir, 0, 0);
+  if (file == MACH_PORT_NULL)
+    return 0;
+
+  err = file_get_storage_info (file,
+			       &ports, &num_ports,
+			       &ints, &num_ints,
+			       &offsets, &num_offsets,
+			       &data, &data_len);
+
+  if (num_ints < 1)
+    grub_util_error ("Storage info for `%s' does not include type", dir);
+  if (ints[0] != STORAGE_DEVICE)
+    grub_util_error ("Filesystem of `%s' is not stored on local disk", dir);
+
+  if (num_ints < 5)
+    grub_util_error ("Storage info for `%s' does not include name", dir);
+  name_len = ints[4];
+  if (name_len < data_len)
+    grub_util_error ("Bogus name length for storage info for `%s'", dir);
+  if (data[name_len - 1] != '\0')
+    grub_util_error ("Storage name for `%s' not NUL-terminated", dir);
+
+  os_dev = xmalloc (strlen ("/dev/") + data_len);
+  memcpy (os_dev, "/dev/", strlen ("/dev/"));
+  memcpy (os_dev + strlen ("/dev/"), data, data_len);
+
+  if (ports && num_ports > 0)
+    {
+      mach_msg_type_number_t i;
+      for (i = 0; i < num_ports; i++)
+        {
+	  mach_port_t port = ports[i];
+	  if (port != MACH_PORT_NULL)
+	    mach_port_deallocate (mach_task_self(), port);
+        }
+      munmap ((caddr_t) ports, num_ports * sizeof (*ports));
+    }
+
+  if (ints && num_ints > 0)
+    munmap ((caddr_t) ints, num_ints * sizeof (*ints));
+  if (offsets && num_offsets > 0)
+    munmap ((caddr_t) offsets, num_offsets * sizeof (*offsets));
+  if (data && data_len > 0)
+    munmap (data, data_len);
+  mach_port_deallocate (mach_task_self (), file);
+#else /* !__GNU__ */
+  struct stat st;
 
   if (stat (dir, &st) < 0)
     grub_util_error ("Cannot stat `%s'", dir);
@@ -393,8 +456,35 @@ grub_guess_root_device (const char *dir)
   /* This might be truly slow, but is there any better way?  */
   os_dev = find_root_device ("/dev", st.st_dev);
 #endif
+#endif /* !__GNU__ */
 
   return os_dev;
+}
+int
+grub_util_is_dmraid (const char *os_dev)
+{
+  if (! strncmp (os_dev, "/dev/mapper/nvidia_", 19))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/isw_", 16))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/hpt37x_", 19))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/hpt45x_", 19))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/via_", 16))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/lsi_", 16))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/pdc_", 16))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/jmicron_", 20))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/asr_", 16))
+    return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/sil_", 16))
+    return 1;
+ 
+  return 0;
 }
 
 int
@@ -402,7 +492,9 @@ grub_util_get_dev_abstraction (const char *os_dev UNUSED)
 {
 #ifdef __linux__
   /* Check for LVM.  */
-  if (!strncmp (os_dev, "/dev/mapper/", 12))
+  if (!strncmp (os_dev, "/dev/mapper/", 12)
+      && ! grub_util_is_dmraid (os_dev)
+      && strncmp (os_dev, "/dev/mapper/mpath", 17) != 0)
     return GRUB_DEV_ABSTRACTION_LVM;
 
   /* Check for RAID.  */
@@ -454,7 +546,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	  if (q)
 	    *q = ',';
 
-	  asprintf (&grub_dev, "md%s", p);
+	  grub_dev = xasprintf ("md%s", p);
 	  free (p);
 	}
       else if (os_dev[7] == '/' && os_dev[8] == 'd')
@@ -469,7 +561,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	  if (q)
 	    *q = ',';
 
-	  asprintf (&grub_dev, "md%s", p);
+	  grub_dev = xasprintf ("md%s", p);
 	  free (p);
 	}
       else if (os_dev[7] >= '0' && os_dev[7] <= '9')
@@ -482,7 +574,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	  if (q)
 	    *q = ',';
 
-	  asprintf (&grub_dev, "md%s", p);
+	  grub_dev = xasprintf ("md%s", p);
 	  free (p);
 	}
       else if (os_dev[7] == '/' && os_dev[8] >= '0' && os_dev[8] <= '9')
@@ -495,7 +587,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	  if (q)
 	    *q = ',';
 
-	  asprintf (&grub_dev, "md%s", p);
+	  grub_dev = xasprintf ("md%s", p);
 	  free (p);
 	}
       else

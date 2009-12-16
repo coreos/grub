@@ -24,7 +24,7 @@ libdir=@libdir@
 
 . ${bindir}/gettext.sh
 export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR=@LOCALEDIR@
+export TEXTDOMAINDIR=@localedir@
 
 case "${GRUB_DISTRIBUTOR}" in
   Debian)	OS="${GRUB_DISTRIBUTOR} GNU/kFreeBSD" ;;
@@ -38,7 +38,7 @@ kfreebsd_entry ()
   recovery="$3"	# not used yet
   args="$4"	# not used yet
   title="$(gettext "%s, with kFreeBSD %s")"
-  printf "menuentry \"${title}\" {" ${os} ${version}
+  printf "menuentry \"${title}\" {\n" "${os}" "${version}"
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi

@@ -88,11 +88,16 @@ EOF
           LLABEL="${LONGNAME}"
         fi
 
+	if [ "${LROOT}" != "${LBOOT}" ]; then
+	  LKERNEL="${LKERNEL#/boot}"
+	  LINITRD="${LINITRD#/boot}"
+	fi
+
         cat << EOF
 menuentry "${LLABEL} (on ${DEVICE})" {
 EOF
 	if [ -z "${prepare_boot_cache}" ]; then
-	  prepare_boot_cache="$(prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/")"
+	  prepare_boot_cache="$(prepare_grub_to_access_device ${LBOOT} | sed -e "s/^/\t/")"
 	fi
 	printf '%s\n' "${prepare_boot_cache}"
 	cat <<  EOF
@@ -115,7 +120,7 @@ menuentry "${LONGNAME} (on ${DEVICE})" {
 EOF
 	prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
 	cat << EOF
-        insmod vbe
+        insmod ${GRUB_VIDEO_BACKEND}
         do_resume=0
         if [ /var/vm/sleepimage -nt10 / ]; then
            if xnu_resume /var/vm/sleepimage; then

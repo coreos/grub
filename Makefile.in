@@ -45,7 +45,9 @@ XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
 MSGFMT = @MSGFMT@
 
-LINGUAS = $(shell tr '\n' ' ' < $(srcdir)/po/LINGUAS)
+LINGUAS = $(shell for i in $(srcdir)/po/*.po ; do \
+			if test -e $$i ; then echo $$i ; fi ; \
+		done | sed -e "s,.*/po/\(.*\)\.po$$,\1,")
 
 PACKAGE = @PACKAGE@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -107,12 +109,13 @@ endif
 AWK = @AWK@
 LIBCURSES = @LIBCURSES@
 LIBUSB = @LIBUSB@
+LIBPCIACCESS = @LIBPCIACCESS@
 YACC = @YACC@
-UNIFONT_BDF = @UNIFONT_BDF@
+FONT_SOURCE = @FONT_SOURCE@
 
 # Options.
-enable_grub_emu = @enable_grub_emu@
 enable_grub_emu_usb = @enable_grub_emu_usb@
+enable_grub_emu_pci = @enable_grub_emu_pci@
 enable_grub_fstest = @enable_grub_fstest@
 enable_grub_pe2elf = @enable_grub_pe2elf@
 enable_grub_mkfont = @enable_grub_mkfont@
@@ -138,7 +141,9 @@ CLEANFILES =
 MOSTLYCLEANFILES =
 DISTCLEANFILES = config.status config.cache config.log config.h \
 	Makefile stamp-h include/grub/cpu include/grub/machine \
-	gensymlist.sh genkernsyms.sh build_env.mk
+	gensymlist.sh genkernsyms.sh build_env.mk \
+	docs/grub.info docs/version.texi docs/stamp-vti
+
 MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES)) \
 	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in $(INFOS)
 
@@ -153,15 +158,18 @@ $(addprefix $(srcdir)/,$(MKFILES)): %.mk: %.rmk genmk.rb
 	  $(RUBY) $(srcdir)/genmk.rb < $< > $@; \
 	fi
 
+ifeq ($(platform), emu)
+include $(srcdir)/conf/any-emu.mk
+else
 include $(srcdir)/conf/$(target_cpu)-$(platform).mk
-
 # For external modules.
 -include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
+endif
 
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
-pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst
+pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
 	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UNDSYMFILES) > $@ \
@@ -180,6 +188,9 @@ handler.lst: $(HANDLERFILES)
 	cat $^ /dev/null | sort > $@
 
 parttool.lst: $(PARTTOOLFILES)
+	cat $^ /dev/null | sort | uniq > $@
+
+video.lst: $(VIDEOFILES)
 	cat $^ /dev/null | sort | uniq > $@
 
 ifneq (true, $(MAKEINFO))
@@ -207,7 +218,7 @@ docs/grub.info: docs/grub.texi docs/version.texi docs/fdl.texi
 	$(MKDIR_P) docs
 	-$(MAKEINFO) -P $(builddir)/docs --no-split --force $< -o $@
 
-ifeq (, $(UNIFONT_BDF))
+ifeq (, $(FONT_SOURCE))
 else
 
 ifeq ($(enable_grub_mkfont),yes)
@@ -218,11 +229,11 @@ pkgdata_DATA += unicode.pf2 ascii.pf2
 UNICODE_ARROWS=0x2190-0x2193
 UNICODE_LINES=0x2501-0x251B
 
-unicode.pf2: $(UNIFONT_BDF) grub-mkfont
-	$(builddir)/grub-mkfont -o $@ $(UNIFONT_BDF)
+unicode.pf2: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE)
 
-ascii.pf2: $(UNIFONT_BDF) grub-mkfont
-	$(builddir)/grub-mkfont -o $@ $(UNIFONT_BDF) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
+ascii.pf2: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
 endif
 endif
 
@@ -308,13 +319,13 @@ install-local: all
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
-	$(foreach lang, $(LINGUAS), \
-	$(SHELL) $(mkinstalldirs) $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES \
-	@list='po/$(lang).mo'; \
-	for file in $$list; do \
+	@langs='$(LINGUAS)'; \
+	for lang in $$langs; do \
+	  $(SHELL) $(mkinstalldirs) $(DESTDIR)/$(datadir)/locale/$$lang/LC_MESSAGES; \
+	  file="po/$$lang.mo"; \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
-	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)/$(datadir)/locale/$(lang)/LC_MESSAGES/$(PACKAGE).mo; \
-	done)
+	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)/$(datadir)/locale/$$lang/LC_MESSAGES/$(PACKAGE).mo; \
+	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(infodir)
 	@list='$(info_INFOS)'; \
 	for file in $$list; do \
@@ -472,12 +483,12 @@ gensymlist.sh: gensymlist.sh.in config.status
 genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
 
-po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
-	$(XGETTEXT) --from-code=utf-8 -o $@ -f $< --keyword=_
-	$(XGETTEXT) --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
+$(srcdir)/po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
+	cd $(srcdir) && $(XGETTEXT) --from-code=utf-8 -o $@ -f $< --keyword=_ --keyword=N_
+	cd $(srcdir) && $(XGETTEXT) --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
 
-$(foreach lang, $(LINGUAS), po/$(lang).po): po/$(PACKAGE).pot
-	$(MSGMERGE) -U $@ po/$(PACKAGE).pot
+$(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): po/$(PACKAGE).pot
+	$(MSGMERGE) -U $@ $^
 
 po/%.mo: po/%.po
 	$(MKDIR_P) $$(dirname $@)

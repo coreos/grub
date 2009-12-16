@@ -1,7 +1,7 @@
 /*  openfw.c -- Open firmware support functions.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2007,2008 Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2007,2008,2009 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -399,11 +399,14 @@ grub_ieee1275_encode_devname (const char *path)
   return encoding;
 }
 
+/* On i386, a firmware-independant grub_reboot() is provided by realmode.S.  */
+#ifndef __i386__
 void
 grub_reboot (void)
 {
   grub_ieee1275_interpret ("reset-all", 0);
 }
+#endif
 
 void
 grub_halt (void)

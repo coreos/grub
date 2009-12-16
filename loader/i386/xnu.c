@@ -30,6 +30,8 @@
 #include <grub/term.h>
 
 char grub_xnu_cmdline[1024];
+grub_uint32_t grub_xnu_heap_will_be_at;
+grub_uint32_t grub_xnu_entry_point, grub_xnu_arg1, grub_xnu_stack;
 
 /* Aliases set for some tables. */
 struct tbl_alias
@@ -43,21 +45,6 @@ struct tbl_alias table_aliases[] =
     {GRUB_EFI_ACPI_20_TABLE_GUID, "ACPI_20"},
     {GRUB_EFI_ACPI_TABLE_GUID, "ACPI"},
   };
-
-/* The following function is used to be able to debug xnu loader
-   with grub-emu. */
-#ifdef GRUB_UTIL
-static grub_err_t
-grub_xnu_launch (void)
-{
-  grub_printf ("Fake launch %x:%p:%p", grub_xnu_entry_point, grub_xnu_arg1,
-	       grub_xnu_stack);
-  grub_getkey ();
-  return 0;
-}
-#else
-static void (*grub_xnu_launch) (void) = 0;
-#endif
 
 static int
 utf16_strlen (grub_uint16_t *in)
@@ -417,6 +404,19 @@ grub_cpu_xnu_fill_devicetree (void)
   return GRUB_ERR_NONE;
 }
 
+grub_err_t
+grub_xnu_boot_resume (void)
+{
+  struct grub_relocator32_state state;
+
+  state.esp = grub_xnu_stack;
+  state.eip = grub_xnu_entry_point;
+  state.eax = grub_xnu_arg1;
+
+  return grub_relocator32_boot (grub_xnu_heap_start, grub_xnu_heap_will_be_at,
+				state);  
+}
+
 /* Boot xnu. */
 grub_err_t
 grub_xnu_boot (void)
@@ -434,6 +434,7 @@ grub_xnu_boot (void)
   void *devtree;
   grub_size_t devtreelen;
   int i;
+  struct grub_relocator32_state state;
 
   /* Page-align to avoid following parts to be inadvertently freed. */
   err = grub_xnu_align_heap (GRUB_XNU_PAGESIZE);
@@ -501,7 +502,8 @@ grub_xnu_boot (void)
   grub_memcpy (bootparams_relloc->cmdline, grub_xnu_cmdline,
 	       sizeof (bootparams_relloc->cmdline));
 
-  bootparams_relloc->devtree = ((char *) devtree - grub_xnu_heap_start)
+  bootparams_relloc->devtree
+    = ((grub_uint8_t *) devtree - (grub_uint8_t *) grub_xnu_heap_start)
     + grub_xnu_heap_will_be_at;
   bootparams_relloc->devtreelen = devtreelen;
 
@@ -529,12 +531,7 @@ grub_xnu_boot (void)
   grub_xnu_stack = bootparams_relloc->heap_start
     + bootparams_relloc->heap_size + GRUB_XNU_PAGESIZE;
   grub_xnu_arg1 = bootparams_relloc_off + grub_xnu_heap_will_be_at;
-#ifndef GRUB_UTIL
-  grub_xnu_launch = (void (*) (void))
-    (grub_xnu_heap_start + grub_xnu_heap_size);
-#endif
   grub_dprintf ("xnu", "eip=%x\n", grub_xnu_entry_point);
-  grub_dprintf ("xnu", "launch=%p\n", grub_xnu_launch);
 
   const char *debug = grub_env_get ("debug");
 
@@ -560,16 +557,12 @@ grub_xnu_boot (void)
       bootparams_relloc->lfb_base = 0;
     }
 
-  grub_memcpy (grub_xnu_heap_start + grub_xnu_heap_size,
-	       grub_xnu_launcher_start,
-	       grub_xnu_launcher_end - grub_xnu_launcher_start);
-
-
   if (! grub_autoefi_finish_boot_services ())
     return grub_error (GRUB_ERR_IO, "can't exit boot services");
 
-  grub_xnu_launch ();
-
-  /* Never reaches here. */
-  return 0;
+  state.eip = grub_xnu_entry_point;
+  state.eax = grub_xnu_arg1;
+  state.esp = grub_xnu_stack;
+  return grub_relocator32_boot (grub_xnu_heap_start, grub_xnu_heap_will_be_at,
+				state);
 }

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,26 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_MACHINE_MACHINE_HEADER
-#define GRUB_MACHINE_MACHINE_HEADER	1
+#ifndef GRUB_RELOCATOR_CPU_HEADER
+#define GRUB_RELOCATOR_CPU_HEADER	1
 
-#define GRUB_MACHINE_EFI	1
+#include <grub/types.h>
+#include <grub/err.h>
 
-#endif /* ! GRUB_MACHINE_MACHINE_HEADER */
+struct grub_relocator32_state
+{
+  grub_uint32_t esp;
+  grub_uint32_t eax;
+  grub_uint32_t ebx;
+  grub_uint32_t ecx;
+  grub_uint32_t edx;
+  grub_uint32_t eip;
+};
+
+void *grub_relocator32_alloc (grub_size_t size);
+grub_err_t grub_relocator32_boot (void *relocator, grub_uint32_t dest,
+				  struct grub_relocator32_state state);
+void *grub_relocator32_realloc (void *relocator, grub_size_t size);
+void grub_relocator32_free (void *relocator);
+
+#endif /* ! GRUB_RELOCATOR_CPU_HEADER */
