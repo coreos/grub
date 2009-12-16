@@ -185,7 +185,7 @@ grub_video_gop_fill_mode_info (struct grub_efi_gop_mode_info *in,
 
 static grub_err_t
 grub_video_gop_setup (unsigned int width, unsigned int height,
-		      unsigned int mode_type)
+		      unsigned int mode_type, unsigned int mode_mask __attribute__ ((unused)))
 {
   unsigned int depth;
   struct grub_efi_gop_mode_info *info = NULL;
