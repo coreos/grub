@@ -1,3 +1,8 @@
+2009-12-17 Felix Zielcke <fzielcke@z-51.de>
+
+	* gendistlist.sh: Use POSIX compliant `!' instead of `-not' in
+	the `find' command.
+
 2009-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	UUID support for HFS.
