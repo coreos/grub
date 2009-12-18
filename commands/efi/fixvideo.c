@@ -38,11 +38,11 @@ static struct grub_video_patch
   };
 
 static int NESTED_FUNC_ATTR
-scan_card (int bus, int dev, int func, grub_pci_id_t pciid)
+scan_card (grub_pci_device_t dev, grub_pci_id_t pciid)
 {
   grub_pci_address_t addr;
 
-  addr = grub_pci_make_address (bus, dev, func, 2);
+  addr = grub_pci_make_address (dev, 2);
   if (grub_pci_read_byte (addr + 3) == 0x3)
     {
       struct grub_video_patch *p = video_patches;

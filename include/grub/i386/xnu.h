@@ -20,6 +20,9 @@
 #define GRUB_CPU_XNU_H 1
 
 #include <grub/err.h>
+#include <grub/cpu/relocator.h>
+
+#define XNU_RELOCATOR(x) (grub_relocator32_ ## x)
 
 #define GRUB_XNU_PAGESIZE 4096
 typedef grub_uint32_t grub_xnu_ptr_t;
@@ -75,6 +78,4 @@ grub_err_t grub_xnu_boot (void);
 grub_err_t grub_cpu_xnu_fill_devicetree (void);
 grub_err_t grub_xnu_set_video (struct grub_xnu_boot_params *bootparams_relloc);
 extern grub_uint32_t grub_xnu_heap_will_be_at;
-extern grub_uint8_t grub_xnu_launcher_start[];
-extern grub_uint8_t grub_xnu_launcher_end[];
 #endif

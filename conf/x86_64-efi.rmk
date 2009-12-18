@@ -29,14 +29,14 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/i386/efi/grub-install.in
 
 # Modules.
-pkglib_MODULES = kernel.mod chain.mod appleldr.mod 	\
+pkglib_MODULES = kernel.img chain.mod appleldr.mod 	\
 	halt.mod reboot.mod linux.mod pci.mod lspci.mod \
 	datetime.mod date.mod datehook.mod loadbios.mod \
 	fixvideo.mod mmap.mod acpi.mod ata.mod
 
-# For kernel.mod.
-kernel_mod_EXPORTS = no
-kernel_mod_SOURCES = kern/x86_64/efi/startup.S kern/x86_64/efi/callwrap.S \
+# For kernel.img.
+kernel_img_EXPORTS = no
+kernel_img_SOURCES = kern/x86_64/efi/startup.S kern/x86_64/efi/callwrap.S \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
@@ -47,23 +47,23 @@ kernel_mod_SOURCES = kern/x86_64/efi/startup.S kern/x86_64/efi/callwrap.S \
 	kern/i386/tsc.c kern/i386/pit.c \
 	kern/generic/millisleep.c kern/generic/rtc_get_time_ms.c \
 	term/efi/console.c disk/efi/efidisk.c
-kernel_mod_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
 	efi/efi.h efi/time.h efi/disk.h machine/loader.h i386/pit.h list.h \
 	handler.h command.h i18n.h
-kernel_mod_CFLAGS = $(COMMON_CFLAGS)
-kernel_mod_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_mod_LDFLAGS = $(COMMON_LDFLAGS)
+kernel_img_CFLAGS = $(COMMON_CFLAGS)
+kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
+kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 
 MOSTLYCLEANFILES += symlist.c
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
-symlist.c: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h gensymlist.sh
+symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
-kernel_syms.lst: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h genkernsyms.sh
+kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # For boot.mod.
@@ -161,9 +161,15 @@ efi_gop_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += xnu.mod
 xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c loader/i386/efi/xnu.c\
-	 loader/macho.c loader/xnu.c loader/i386/xnu_helper.S
+	 loader/macho.c loader/xnu.c
 xnu_mod_CFLAGS = $(COMMON_CFLAGS)
 xnu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 xnu_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += relocator.mod
+relocator_mod_SOURCES = lib/i386/relocator.c lib/i386/relocator_asm.S lib/i386/relocator_backward.S
+relocator_mod_CFLAGS = $(COMMON_CFLAGS)
+relocator_mod_ASFLAGS = $(COMMON_ASFLAGS)
+relocator_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

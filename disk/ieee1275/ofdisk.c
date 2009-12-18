@@ -107,7 +107,7 @@ grub_ofdisk_iterate (int (*hook) (const char *name))
 	}
 
       if (! grub_strcmp (alias->type, "block") &&
-	  grub_strcmp (alias->name, "cdrom"))
+	  grub_strncmp (alias->name, "cdrom", 5))
 	ret = hook (alias->name);
       return ret;
     }

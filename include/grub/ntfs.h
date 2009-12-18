@@ -73,6 +73,7 @@
 #define MAX_IDX		(16384 >> BLK_SHR)
 
 #define COM_LEN		4096
+#define COM_LOG_LEN	12
 #define COM_SEC		(COM_LEN >> BLK_SHR)
 
 #define AF_ALST		1
@@ -164,7 +165,7 @@ struct grub_ntfs_comp
 struct grub_ntfs_rlst
 {
   int flags;
-  grub_uint32_t target_vcn, curr_vcn, next_vcn, curr_lcn;
+  grub_disk_addr_t target_vcn, curr_vcn, next_vcn, curr_lcn;
   char *cur_run;
   struct grub_ntfs_attr *attr;
   struct grub_ntfs_comp comp;
