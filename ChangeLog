@@ -1,5 +1,15 @@
 2009-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix console palette on OpenFirmware.
+
+	* term/ieee1275/ofconsole.c (MAX): Removed.
+	(colors): Redone based on VGA palette.
+	(grub_ofconsole_setcolor): Discard brightness bit since only 8
+	colors are supported.
+	(grub_ofconsole_init_output): Use ARRAY_SIZE instead of hardcoded size.
+
+2009-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix potential EfiEmu double prepare.
 
 	* efiemu/main.c (prepared): New variable
