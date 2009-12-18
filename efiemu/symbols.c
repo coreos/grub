@@ -30,7 +30,6 @@ static int relocated_handle = 0;
 static int ptv_requested = 0;
 static struct grub_efiemu_sym *efiemu_syms = 0;
 
-
 struct grub_efiemu_sym
 {
   struct grub_efiemu_sym *next;
