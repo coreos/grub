@@ -372,7 +372,7 @@ superblock_0_90:
   array->layout = grub_le_to_cpu32 (sb_1x->layout);
   array->total_devs = grub_le_to_cpu32 (sb_1x->raid_disks);
   array->disk_size = grub_le_to_cpu64 (sb_1x->size) * 2;
-  array->chunk_size = grub_le_to_cpu32 (sb_1x->chunksize) >> 9;
+  array->chunk_size = grub_le_to_cpu32 (sb_1x->chunksize);
   array->index = grub_le_to_cpu32 (sb_1x->dev_number);
   array->uuid_len = 16;
   array->uuid = grub_malloc (16);
