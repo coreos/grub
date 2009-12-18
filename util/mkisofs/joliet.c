@@ -3,9 +3,11 @@
 
    Copyright 1997 Eric Youngdale.
 
+   Copyright (C) 2009  Free Software Foundation, Inc.
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -14,11 +16,8 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
-static char rcsid[] ="$Id: joliet.c,v 1.14 1999/03/07 17:41:19 eric Exp $";
-
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 /*
  * Joliet extensions for ISO9660.  These are spottily documented by
@@ -74,6 +73,7 @@ static char rcsid[] ="$Id: joliet.c,v 1.14 1999/03/07 17:41:19 eric Exp $";
 #include "mkisofs.h"
 #include "iso9660.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -107,12 +107,12 @@ static void FDECL3(convert_to_unicode, unsigned char *, buffer, int, size, char 
    */
   if( source == NULL )
     {
-      tmpbuf = (u_char *) e_malloc(size);
+      tmpbuf = (uint8_t *) e_malloc(size);
       memcpy( tmpbuf, buffer, size);
     }
   else
     {
-      tmpbuf = (u_char *)source;
+      tmpbuf = (uint8_t *)source;
     }
 
   /*
@@ -237,15 +237,15 @@ static void FDECL1(get_joliet_vol_desc, struct iso_primary_descriptor *, jvol_de
    * just be really lazy and do a char -> short conversion.  We probably
    * will want to filter any characters >= 0x80.
    */
-  convert_to_unicode((u_char *)jvol_desc->system_id, sizeof(jvol_desc->system_id), NULL);
-  convert_to_unicode((u_char *)jvol_desc->volume_id, sizeof(jvol_desc->volume_id), NULL);
-  convert_to_unicode((u_char *)jvol_desc->volume_set_id, sizeof(jvol_desc->volume_set_id), NULL);
-  convert_to_unicode((u_char *)jvol_desc->publisher_id, sizeof(jvol_desc->publisher_id), NULL);
-  convert_to_unicode((u_char *)jvol_desc->preparer_id, sizeof(jvol_desc->preparer_id), NULL);
-  convert_to_unicode((u_char *)jvol_desc->application_id, sizeof(jvol_desc->application_id), NULL);
-  convert_to_unicode((u_char *)jvol_desc->copyright_file_id, sizeof(jvol_desc->copyright_file_id), NULL);
-  convert_to_unicode((u_char *)jvol_desc->abstract_file_id, sizeof(jvol_desc->abstract_file_id), NULL);
-  convert_to_unicode((u_char *)jvol_desc->bibliographic_file_id, sizeof(jvol_desc->bibliographic_file_id), NULL);
+  convert_to_unicode((uint8_t *)jvol_desc->system_id, sizeof(jvol_desc->system_id), NULL);
+  convert_to_unicode((uint8_t *)jvol_desc->volume_id, sizeof(jvol_desc->volume_id), NULL);
+  convert_to_unicode((uint8_t *)jvol_desc->volume_set_id, sizeof(jvol_desc->volume_set_id), NULL);
+  convert_to_unicode((uint8_t *)jvol_desc->publisher_id, sizeof(jvol_desc->publisher_id), NULL);
+  convert_to_unicode((uint8_t *)jvol_desc->preparer_id, sizeof(jvol_desc->preparer_id), NULL);
+  convert_to_unicode((uint8_t *)jvol_desc->application_id, sizeof(jvol_desc->application_id), NULL);
+  convert_to_unicode((uint8_t *)jvol_desc->copyright_file_id, sizeof(jvol_desc->copyright_file_id), NULL);
+  convert_to_unicode((uint8_t *)jvol_desc->abstract_file_id, sizeof(jvol_desc->abstract_file_id), NULL);
+  convert_to_unicode((uint8_t *)jvol_desc->bibliographic_file_id, sizeof(jvol_desc->bibliographic_file_id), NULL);
 
 
 }
@@ -356,9 +356,9 @@ static int generate_joliet_path_tables()
 
   if( next_jpath_index > 0xffff )
   {
-      fprintf(stderr, "Unable to generate sane path tables - too many directories (%d)\n",
-	      next_jpath_index);
-      exit(1);
+      fprintf (stderr, _("Unable to generate sane path tables - too many directories (%d)\n"),
+	       next_jpath_index);
+      exit (1);
   }
   /*
    * Now start filling in the path tables.  Start with root directory 
@@ -395,8 +395,8 @@ static int generate_joliet_path_tables()
        dpnt = jpathlist[j];
        if(!dpnt)
        {
-	    fprintf(stderr,"Entry %d not in path tables\n", j);
-	    exit(1);
+	    fprintf (stderr, _("Entry %d not in path tables\n"), j);
+	    exit (1);
        }
        npnt = dpnt->de_name;
        
@@ -409,8 +409,8 @@ static int generate_joliet_path_tables()
        de = dpnt->self;
        if(!de) 
        {
-	    fprintf(stderr,"Fatal goof - directory has amnesia\n"); 
-	    exit(1);
+	    fprintf (stderr, _("Fatal goof - directory has amnesia\n")); 
+	    exit (1);
        }
        
        namelen = joliet_strlen(de->name);
@@ -459,9 +459,9 @@ static int generate_joliet_path_tables()
 	 }
        else
 	 {
-	   convert_to_unicode((u_char *)jpath_table_l + jpath_table_index,  
+	   convert_to_unicode((uint8_t *)jpath_table_l + jpath_table_index,  
 			      namelen, de->name);
-	   convert_to_unicode((u_char *)jpath_table_m + jpath_table_index, 
+	   convert_to_unicode((uint8_t *)jpath_table_m + jpath_table_index, 
 			      namelen, de->name);
 	   jpath_table_index += namelen;
 	 }
@@ -475,7 +475,7 @@ static int generate_joliet_path_tables()
   free(jpathlist);
   if(jpath_table_index != jpath_table_size)
   {
-       fprintf(stderr,"Joliet path table lengths do not match %d %d\n",
+       fprintf(stderr, _("Joliet path table lengths do not match %d %d\n"),
 	       jpath_table_index,
 	       jpath_table_size);
   }
@@ -527,8 +527,8 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
 		     /*
 		      * We got trouble.
 		      */
-		     fprintf(stderr, "Unable to locate relocated directory\n");
-		     exit(1);
+		     fprintf (stderr, _("Unable to locate relocated directory\n"));
+		     exit (1);
 		 }
 	     }
 	     else
@@ -602,7 +602,8 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
 			 finddir = finddir->next;
 			 if(!finddir) 
 			 {
-			     fprintf(stderr,"Fatal goof - unable to find directory location\n"); exit(1);
+			     fprintf (stderr, _("Fatal goof - unable to find directory location\n"));
+			     exit (1);
 			 }
 		     }
 		     set_733((char *) jrec.extent, finddir->jextent);
@@ -634,7 +635,7 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
 	     }
 	     else
 	     {
-		 convert_to_unicode((u_char *)directory_buffer + dir_index,
+		 convert_to_unicode((uint8_t *)directory_buffer + dir_index,
 				    cvt_len,
 				    s_entry1->name);
 		 dir_index += cvt_len;
@@ -650,8 +651,8 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
      
      if(dpnt->jsize != dir_index)
      {
-	 fprintf(stderr,"Unexpected joliet directory length %d %d %s\n",dpnt->jsize, 
-		 dir_index, dpnt->de_name);
+	 fprintf (stderr, _("Unexpected joliet directory length %d %d %s\n"),
+		  dpnt->jsize, dir_index, dpnt->de_name);
      }
      
      xfwrite(directory_buffer, 1, total_size, outfile);

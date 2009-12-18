@@ -1072,6 +1072,31 @@ grub_hfs_label (grub_device_t device, char **label)
   return grub_errno;
 }
 
+static grub_err_t
+grub_hfs_uuid (grub_device_t device, char **uuid)
+{
+  struct grub_hfs_data *data;
+
+  grub_dl_ref (my_mod);
+
+  data = grub_hfs_mount (device->disk);
+  if (data && data->sblock.num_serial != 0)
+    {
+      *uuid = grub_malloc (16 + sizeof ('\0'));
+      grub_sprintf (*uuid, "%016llx",
+		    (unsigned long long)
+		    grub_be_to_cpu64 (data->sblock.num_serial));
+    }
+  else
+    *uuid = NULL;
+
+  grub_dl_unref (my_mod);
+
+  grub_free (data);
+
+  return grub_errno;
+}
+
 
 
 static struct grub_fs grub_hfs_fs =
@@ -1082,6 +1107,7 @@ static struct grub_fs grub_hfs_fs =
     .read = grub_hfs_read,
     .close = grub_hfs_close,
     .label = grub_hfs_label,
+    .uuid = grub_hfs_uuid,
     .next = 0
   };
 

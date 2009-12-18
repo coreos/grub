@@ -21,6 +21,7 @@
 #include <grub/types.h>
 #include <grub/util/misc.h>
 #include <grub/device.h>
+#include <grub/i18n.h>
 #include <grub/disk.h>
 #include <grub/file.h>
 #include <grub/fs.h>
@@ -48,6 +49,8 @@
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
+
+#include "progname.h"
 
 /* This program fills in various fields inside of the 'boot' and 'core'
  * image files.
@@ -401,10 +404,10 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-setup --help'' for more information.\n");
+    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-setup [OPTION]... DEVICE\n\
+Usage: %s [OPTION]... DEVICE\n\
 \n\
 Set up images to boot from DEVICE.\n\
 DEVICE must be a GRUB device (e.g. ``(hd0,1)'').\n\
@@ -419,7 +422,7 @@ DEVICE must be a GRUB device (e.g. ``(hd0,1)'').\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-",
+", program_name,
 	    DEFAULT_BOOT_FILE, DEFAULT_CORE_FILE, DEFAULT_DIRECTORY,
 	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
 
@@ -616,7 +619,10 @@ main (int argc, char *argv[])
 {
   struct grub_setup_info ginfo;
 
-  progname = "grub-setup";
+  set_program_name (argv[0]);
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
 
   init_info (&ginfo);
   if (!parse_options (&ginfo, argc, argv))

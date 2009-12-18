@@ -21,12 +21,13 @@
 #define GRUB_MEMORY_MACHINE_HEADER	1
 
 #include <grub/symbol.h>
-#include <grub/machine/machine.h>
 #ifndef ASM_FILE
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/memory.h>
 #endif
+
+#include <grub/i386/memory.h>
 
 /* The scratch buffer used in real mode code.  */
 #define GRUB_MEMORY_MACHINE_SCRATCH_ADDR	0x68000
@@ -62,9 +63,6 @@
 
 /* The address where another boot loader is loaded.  */
 #define GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR	0x7c00
-
-/* The flag for protected mode.  */
-#define GRUB_MEMORY_MACHINE_CR0_PE_ON		0x1
 
 /* The code segment of the protected mode.  */
 #define GRUB_MEMORY_MACHINE_PROT_MODE_CSEG	0x8

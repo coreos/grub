@@ -20,10 +20,16 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 datarootdir=@datarootdir@
 datadir=@datadir@
+bindir=@bindir@
 sbindir=@sbindir@
 pkgdatadir=${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`
 
-grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
+if test "x$grub_probe" = x; then
+  grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
+fi
+if test "x$grub_mkrelpath" = x; then
+  grub_mkrelpath=${bindir}/`echo grub-mkrelpath | sed ${transform}`
+fi
 
 grub_warn ()
 {
@@ -32,49 +38,7 @@ grub_warn ()
 
 make_system_path_relative_to_its_root ()
 {
-  path=$1
-  # abort if file doesn't exist
-  if test -e $path ; then : ;else
-    return 1
-  fi
-
-  # canonicalize
-  if path=`readlink -f $path` ; then : ; else
-    return 1
-  fi
-
-  # if not a directory, climb up to the directory containing it
-  if test -d $path ; then
-    dir=$path
-  else
-    dir=`echo $path | sed -e "s,/[^/]*$,,g"`
-  fi
-
-  num=`stat -c %d $dir`
-
-  # this loop sets $dir to the root directory of the filesystem we're inspecting
-  while : ; do
-    parent=`readlink -f $dir/..`
-    if [ "x`stat -c %d $parent`" = "x$num" ] ; then : ; else
-      # $parent is another filesystem; we found it.
-      break
-    fi
-    if [ "x$dir" = "x/" ] ; then
-      # / is our root.
-      break
-    fi
-    dir=$parent
-  done
-
-  # This function never prints trailing slashes (so that its output can be
-  # appended a slash unconditionally).  Each slash in $dir is considered a
-  # preceding slash, and therefore the root directory is an empty string.
-  if [ "$dir" = "/" ] ; then
-    dir=""
-  fi
-
-  # XXX: This fails if $dir contains ','.
-  path=`echo "$path" | sed -e "s,^$dir,,g"` || return 1
+  path="`${grub_mkrelpath} $1`"
 
   case "`uname 2>/dev/null`" in
     CYGWIN*)

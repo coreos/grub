@@ -94,6 +94,7 @@ struct grub_xnu_devtree_key *grub_xnu_create_value (struct grub_xnu_devtree_key 
 void grub_xnu_lock (void);
 void grub_xnu_unlock (void);
 grub_err_t grub_xnu_resume (char *imagename);
+grub_err_t grub_xnu_boot_resume (void);
 struct grub_xnu_devtree_key *grub_xnu_find_key (struct grub_xnu_devtree_key *parent,
 						char *name);
 grub_err_t grub_xnu_align_heap (int align);
@@ -105,7 +106,7 @@ void *grub_xnu_heap_malloc (int size);
 grub_err_t grub_xnu_fill_devicetree (void);
 extern grub_uint32_t grub_xnu_heap_real_start;
 extern grub_size_t grub_xnu_heap_size;
-extern char *grub_xnu_heap_start;
+extern void *grub_xnu_heap_start;
 extern struct grub_video_bitmap *grub_xnu_bitmap;
 extern int grub_xnu_is_64bit;
 #endif

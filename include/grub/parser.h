@@ -88,6 +88,7 @@ grub_err_t EXPORT_FUNC(grub_parser_execute) (char *source);
 
 static inline void
 grub_parser_register (const char *name __attribute__ ((unused)),
+		      /* `name' is ignored here, but used by genhandlerlist.sh.  */
 		      grub_parser_t parser)
 {
   grub_handler_register (&grub_parser_class, GRUB_AS_HANDLER (parser));

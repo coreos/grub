@@ -1,0 +1,182 @@
+#! /bin/sh -e
+
+# Make GRUB rescue image
+# Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+#
+# GRUB is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GRUB is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+
+# Initialize some variables.
+transform="@program_transform_name@"
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+libdir=@libdir@
+PACKAGE_NAME=@PACKAGE_NAME@
+PACKAGE_TARNAME=@PACKAGE_TARNAME@
+PACKAGE_VERSION=@PACKAGE_VERSION@
+target_cpu=@target_cpu@
+native_platform=@platform@
+
+coreboot_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/${target_cpu}-coreboot
+pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/${target_cpu}-pc
+
+# Usage: usage
+# Print the usage.
+usage () {
+    cat <<EOF
+Usage: $0 [OPTION] SOURCE...
+Make GRUB rescue image.
+
+  -h, --help              print this message and exit
+  -v, --version           print the version information and exit
+  --modules=MODULES       pre-load specified modules MODULES
+  --output=FILE           save output in FILE [required]
+
+$0 generates a bootable rescue image with specified source files or directories.
+
+Report bugs to <bug-grub@gnu.org>.
+EOF
+}
+
+# Check the arguments.
+for option in "$@"; do
+    case "$option" in
+    -h | --help)
+	usage
+	exit 0 ;;
+    -v | --version)
+	echo "$0 (GNU GRUB ${PACKAGE_VERSION})"
+	exit 0 ;;
+    --modules=*)
+	modules=`echo "$option" | sed 's/--modules=//'` ;;
+    --output=*)
+	output_image=`echo "$option" | sed 's/--output=//'` ;;
+    # Intentionally undocumented
+    --override-directory=*)
+	override_dir=`echo "${option}/" | sed 's/--override-directory=//'`
+	PATH=${override_dir}:$PATH
+	export PATH
+	;;
+    -*)
+	echo "Unrecognized option \`$option'" 1>&2
+	usage
+	exit 1
+	;;
+    *)
+	source="${source} ${option}" ;;
+    esac
+done
+
+if [ "x${output_image}" = x ] ; then
+  echo "output file must be given" >&2
+  usage
+  exit 1
+fi
+
+iso9660_dir=`mktemp -d`
+mkdir -p ${iso9660_dir}/boot/grub
+
+process_input_dir ()
+{
+    input_dir="$1"
+    platform="$2"
+    mkdir -p ${iso9660_dir}/boot/grub/${target_cpu}-${platform}
+    for file in ${input_dir}/*.mod ${input_dir}/efiemu??.o \
+        ${input_dir}/command.lst ${input_dir}/moddep.lst ${input_dir}/fs.lst \
+        ${input_dir}/handler.lst ${input_dir}/parttool.lst; do
+        if test -f "$file"; then
+            cp -f "$file" ${iso9660_dir}/boot/grub/${target_cpu}-${platform}/
+        fi
+    done
+
+    mkdir -p ${iso9660_dir}/boot/grub/locale
+    for file in ${input_dir}/po/*.mo; do
+        if test -f "$file"; then
+	    cp -f "$file" ${iso9660_dir}/boot/grub/locale/
+	fi
+    done
+}
+
+if [ "${override_dir}" = "" ] ; then
+    if test -e "${coreboot_dir}" ; then
+        process_input_dir ${coreboot_dir} coreboot
+    fi
+    if test -e "${pc_dir}" ; then
+        process_input_dir ${pc_dir} pc
+    fi
+else
+    process_input_dir ${override_dir} ${native_platform}
+    coreboot_dir=
+    pc_dir=
+    case "${native_platform}" in
+        coreboot) coreboot_dir=${override_dir} ;;
+        pc) pc_dir=${override_dir} ;;
+    esac
+fi
+
+# build coreboot core.img
+if test -e "${coreboot_dir}" ; then
+    echo "Generates coreboot"
+    memdisk_img=`mktemp`
+    memdisk_dir=`mktemp -d`
+    mkdir -p ${memdisk_dir}/boot/grub
+    # obtain date-based UUID
+    iso_uuid=$(date +%Y-%m-%d-%H-%M-%S-00)
+
+    modules="$(cat ${coreboot_dir}/partmap.lst) ${modules}"
+    cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
+search --fs-uuid --set ${iso_uuid}
+set prefix=(\${root})/boot/grub/${target_cpu}-coreboot
+EOF
+    (for i in ${modules} ; do
+        echo "insmod $i"
+    done ; \
+    echo "source /boot/grub/grub.cfg") \
+    > ${iso9660_dir}/boot/grub/i386-pc/grub.cfg
+
+    tar -C ${memdisk_dir} -cf ${memdisk_img} boot
+    rm -rf ${memdisk_dir}
+    grub-mkelfimage -d ${coreboot_dir}/ -m ${memdisk_img} -o ${iso9660_dir}/boot/multiboot.img \
+        memdisk tar search iso9660 configfile sh \
+        ata at_keyboard
+    rm -f ${memdisk_img}
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} --modification-date=$(echo ${iso_uuid} | sed -e s/-//g)"
+fi
+
+# build eltorito core.img
+if test -e "${pc_dir}" ; then
+    echo "Generates eltorito"
+    core_img=`mktemp`
+    grub-mkimage -d ${pc_dir}/ -o ${core_img} --prefix=/boot/grub/i386-pc \
+        memdisk tar search iso9660 configfile sh \
+        biosdisk
+    cat ${pc_dir}/cdboot.img ${core_img} > ${iso9660_dir}/boot/grub/i386-pc/eltorito.img
+    rm -f ${core_img}
+
+    modules="$(cat ${pc_dir}/partmap.lst) ${modules}"
+    (for i in ${modules} ; do
+        echo "insmod $i"
+    done ; \
+    echo "source /boot/grub/grub.cfg") \
+    > ${iso9660_dir}/boot/grub/i386-pc/grub.cfg
+
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -boot-info-table"
+fi
+
+# build iso image
+grub-mkisofs ${grub_mkisofs_arguments} -o ${output_image} -r ${iso9660_dir} ${source}
+rm -rf ${iso9660_dir}
+
+exit 0

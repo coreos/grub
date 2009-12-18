@@ -149,7 +149,7 @@ grub_pxefs_open (struct grub_file *file, const char *name)
   if (! data)
     return grub_errno;
 
-  data->block_size = grub_pxe_blksize;
+  data->block_size = c.c2.packet_size;
   grub_strcpy (data->filename, name);
 
   file_int = grub_malloc (sizeof (*file_int));
@@ -204,13 +204,14 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
       o.gateway_ip = grub_pxe_gateway_ip;
       grub_strcpy ((char *)&o.filename[0], data->filename);
       o.tftp_port = grub_cpu_to_be16 (GRUB_PXE_TFTP_PORT);
-      o.packet_size = data->block_size;
+      o.packet_size = grub_pxe_blksize;
       grub_pxe_call (GRUB_PXENV_TFTP_OPEN, &o);
       if (o.status)
 	{
 	  grub_error (GRUB_ERR_BAD_FS, "open fails");
 	  return -1;
 	}
+      data->block_size = o.packet_size;
       data->packet_number = 0;
       curr_file = file;
     }
@@ -218,7 +219,7 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
   c.buffer = SEGOFS (GRUB_MEMORY_MACHINE_SCRATCH_ADDR);
   while (pn >= data->packet_number)
     {
-      c.buffer_size = grub_pxe_blksize;
+      c.buffer_size = data->block_size;
       grub_pxe_call (GRUB_PXENV_TFTP_READ, &c);
       if (c.status)
         {

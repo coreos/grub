@@ -19,14 +19,21 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+ */
 
 /*
  * 	$Id: mkisofs.h,v 1.20 1999/03/02 04:16:41 eric Exp $
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <prototyp.h>
+#include <sys/stat.h>
+
+#include <locale.h>
+#include <libintl.h>
+#define _(str) gettext(str)
+#define N_(str) str
 
 /* This symbol is used to indicate that we do not have things like
    symlinks, devices, and so forth available.  Just files and dirs */
@@ -47,6 +54,38 @@
 #ifdef _WIN32
 #define NON_UNIXFS
 #endif /* _WIN32 */
+
+#ifndef S_IROTH
+#define S_IROTH 0
+#endif
+
+#ifndef S_IRGRP
+#define S_IRGRP 0
+#endif
+
+#ifndef HAVE_GETUID
+static inline int
+getuid ()
+{
+  return 0;
+}
+#endif
+
+#ifndef HAVE_GETGID
+static inline int
+getgid ()
+{
+  return 0;
+}
+#endif
+
+#ifndef HAVE_LSTAT
+static inline int
+lstat (const char *filename, struct stat *buf)
+{
+  return stat (filename, buf);
+}
+#endif
 
 #include <string.h>
 #include <sys/types.h>
@@ -126,8 +165,8 @@ struct directory_entry{
   struct directory_entry * next;
   struct directory_entry * jnext;
   struct iso_directory_record isorec;
-  unsigned int starting_block;
-  unsigned int size;
+  uint64_t starting_block;
+  uint64_t size;
   unsigned short priority;
   unsigned char jreclen;	/* Joliet record len */
   char * name;
@@ -233,21 +272,13 @@ struct directory{
   unsigned short dir_nlink;
 };
 
-struct deferred{
-  struct deferred * next;
-  unsigned int starting_block;
-  char * name;
-  struct directory * filedir;
-  unsigned int flags;
-};
-
 extern int goof;
 extern struct directory * root;
 extern struct directory * reloc_dir;
-extern unsigned int next_extent;
-extern unsigned int last_extent;
-extern unsigned int last_extent_written;
-extern unsigned int session_start;
+extern uint64_t next_extent;
+extern uint64_t last_extent;
+extern uint64_t last_extent_written;
+extern uint64_t session_start;
 
 extern unsigned int path_table_size;
 extern unsigned int path_table[4];
@@ -265,6 +296,8 @@ extern struct iso_directory_record root_record;
 extern struct iso_directory_record jroot_record;
 
 extern int use_eltorito;
+extern int use_eltorito_emul_floppy;
+extern int use_boot_info_table;
 extern int use_RockRidge;
 extern int use_Joliet;
 extern int rationalize;
@@ -309,6 +342,7 @@ extern void DECL(init_boot_catalog, (const char * path ));
 extern void DECL(get_torito_desc, (struct eltorito_boot_descriptor * path ));
 
 /* write.c */
+extern int DECL(get_731,(char *));
 extern int DECL(get_733,(char *));
 extern int DECL(isonum_733,(unsigned char *));
 extern void DECL(set_723,(char *, unsigned int));
@@ -320,7 +354,7 @@ extern void DECL(generate_one_directory,(struct directory *, FILE*));
 extern void DECL(memcpy_max, (char *, char *, int));
 extern int DECL(oneblock_size, (int starting_extent));
 extern struct iso_primary_descriptor vol_desc;
-extern void DECL(xfwrite, (void * buffer, int count, int size, FILE * file));
+extern void DECL(xfwrite, (void * buffer, uint64_t count, uint64_t size, FILE * file));
 extern void DECL(set_732, (char * pnt, unsigned int i));
 extern void DECL(set_722, (char * pnt, unsigned int i));
 extern void DECL(outputlist_insert, (struct output_fragment * frag));

@@ -21,7 +21,6 @@
 #ifndef GRUB_AUTOEFI_HEADER
 #define GRUB_AUTOEFI_HEADER	1
 
-#include <grub/machine/machine.h>
 
 #ifdef GRUB_MACHINE_EFI
 # include <grub/efi/efi.h>

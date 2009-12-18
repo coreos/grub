@@ -48,18 +48,36 @@
 #include <grub/device.h>
 #include <grub/partition.h>
 #endif
+#include <grub/i386/relocator.h>
 
 extern grub_dl_t my_mod;
-static struct grub_multiboot_info *mbi, *mbi_dest;
-static grub_addr_t entry;
+static struct multiboot_info *mbi, *mbi_dest;
 
-static char *playground = 0;
 static grub_size_t code_size;
+
+char *grub_multiboot_payload_orig;
+grub_addr_t grub_multiboot_payload_dest;
+grub_size_t grub_multiboot_payload_size;
+grub_uint32_t grub_multiboot_payload_eip;
 
 static grub_err_t
 grub_multiboot_boot (void)
 {
-  grub_multiboot_real_boot (entry, mbi_dest);
+  struct grub_relocator32_state state =
+    {
+      .eax = MULTIBOOT_MAGIC2,
+      .ebx = PTR_TO_UINT32 (mbi_dest),
+      .ecx = 0,
+      .edx = 0,
+      .eip = grub_multiboot_payload_eip,
+      /* Set esp to some random location in low memory to avoid breaking
+	 non-compliant kernels.  */
+      .esp = 0x7ff00
+    };
+
+  grub_relocator32_boot (grub_multiboot_payload_orig,
+			 grub_multiboot_payload_dest,
+			 state);
 
   /* Not reached.  */
   return GRUB_ERR_NONE;
@@ -68,22 +86,22 @@ grub_multiboot_boot (void)
 static grub_err_t
 grub_multiboot_unload (void)
 {
-  if (playground)
+  if (mbi)
     {
       unsigned int i;
       for (i = 0; i < mbi->mods_count; i++)
 	{
 	  grub_free ((void *)
-		     ((struct grub_mod_list *) mbi->mods_addr)[i].mod_start);
+		     ((struct multiboot_mod_list *) mbi->mods_addr)[i].mod_start);
 	  grub_free ((void *)
-		     ((struct grub_mod_list *) mbi->mods_addr)[i].cmdline);
+		     ((struct multiboot_mod_list *) mbi->mods_addr)[i].cmdline);
 	}
       grub_free ((void *) mbi->mods_addr);
-      grub_free (playground);
     }
+  grub_relocator32_free (grub_multiboot_payload_orig);
 
   mbi = NULL;
-  playground = NULL;
+  grub_multiboot_payload_orig = NULL;
   grub_dl_unref (my_mod);
 
   return GRUB_ERR_NONE;
@@ -107,14 +125,14 @@ grub_get_multiboot_mmap_len (void)
 
   grub_mmap_iterate (hook);
 
-  return count * sizeof (struct grub_multiboot_mmap_entry);
+  return count * sizeof (struct multiboot_mmap_entry);
 }
 
 /* Fill previously allocated Multiboot mmap.  */
 static void
-grub_fill_multiboot_mmap (struct grub_multiboot_mmap_entry *first_entry)
+grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
 {
-  struct grub_multiboot_mmap_entry *mmap_entry = (struct grub_multiboot_mmap_entry *) first_entry;
+  struct multiboot_mmap_entry *mmap_entry = (struct multiboot_mmap_entry *) first_entry;
 
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
@@ -122,7 +140,7 @@ grub_fill_multiboot_mmap (struct grub_multiboot_mmap_entry *first_entry)
       mmap_entry->addr = addr;
       mmap_entry->len = size;
       mmap_entry->type = type;
-      mmap_entry->size = sizeof (struct grub_multiboot_mmap_entry) - sizeof (mmap_entry->size);
+      mmap_entry->size = sizeof (struct multiboot_mmap_entry) - sizeof (mmap_entry->size);
       mmap_entry++;
 
       return 0;
@@ -197,7 +215,7 @@ grub_multiboot (int argc, char *argv[])
 {
   grub_file_t file = 0;
   char buffer[MULTIBOOT_SEARCH], *cmdline = 0, *p;
-  struct grub_multiboot_header *header;
+  struct multiboot_header *header;
   grub_ssize_t len, cmdline_length, boot_loader_name_length;
   grub_uint32_t mmap_length;
   int i;
@@ -228,9 +246,9 @@ grub_multiboot (int argc, char *argv[])
 
   /* Look for the multiboot header in the buffer.  The header should
      be at least 12 bytes and aligned on a 4-byte boundary.  */
-  for (header = (struct grub_multiboot_header *) buffer;
+  for (header = (struct multiboot_header *) buffer;
        ((char *) header <= buffer + len - 12) || (header = 0);
-       header = (struct grub_multiboot_header *) ((char *) header + 4))
+       header = (struct multiboot_header *) ((char *) header + 4))
     {
       if (header->magic == MULTIBOOT_MAGIC
 	  && !(header->magic + header->flags + header->checksum))
@@ -250,11 +268,8 @@ grub_multiboot (int argc, char *argv[])
       goto fail;
     }
 
-  if (playground)
-    {
-      grub_free (playground);
-      playground = NULL;
-    }
+  grub_relocator32_free (grub_multiboot_payload_orig);
+  grub_multiboot_payload_orig = NULL;
 
   mmap_length = grub_get_multiboot_mmap_len ();
 
@@ -275,12 +290,12 @@ grub_multiboot (int argc, char *argv[])
 #define boot_loader_name_addr(x) \
 				((void *) ((x) + code_size + cmdline_length))
 #define mbi_addr(x)		((void *) ((x) + code_size + cmdline_length + boot_loader_name_length))
-#define mmap_addr(x)		((void *) ((x) + code_size + cmdline_length + boot_loader_name_length + sizeof (struct grub_multiboot_info)))
+#define mmap_addr(x)		((void *) ((x) + code_size + cmdline_length + boot_loader_name_length + sizeof (struct multiboot_info)))
 
   grub_multiboot_payload_size = cmdline_length
     /* boot_loader_name_length might need to grow for mbi,etc to be aligned (see below) */
     + boot_loader_name_length + 3
-    + sizeof (struct grub_multiboot_info) + mmap_length;
+    + sizeof (struct multiboot_info) + mmap_length;
 
   if (header->flags & MULTIBOOT_AOUT_KLUDGE)
     {
@@ -296,13 +311,14 @@ grub_multiboot (int argc, char *argv[])
       grub_multiboot_payload_dest = header->load_addr;
 
       grub_multiboot_payload_size += code_size;
-      playground = grub_malloc (RELOCATOR_SIZEOF(forward) + grub_multiboot_payload_size + RELOCATOR_SIZEOF(backward));
-      if (! playground)
+
+      grub_multiboot_payload_orig
+	= grub_relocator32_alloc (grub_multiboot_payload_size);
+
+      if (! grub_multiboot_payload_orig)
 	goto fail;
 
-      grub_multiboot_payload_orig = (long) playground + RELOCATOR_SIZEOF(forward);
-
-      if ((grub_file_seek (file, offset)) == (grub_off_t) - 1)
+      if ((grub_file_seek (file, offset)) == (grub_off_t) -1)
 	goto fail;
 
       grub_file_read (file, (void *) grub_multiboot_payload_orig, load_size);
@@ -313,7 +329,7 @@ grub_multiboot (int argc, char *argv[])
 	grub_memset ((void *) (grub_multiboot_payload_orig + load_size), 0,
 		     header->bss_end_addr - header->load_addr - load_size);
 
-      grub_multiboot_payload_entry_offset = header->entry_addr - header->load_addr;
+      grub_multiboot_payload_eip = header->entry_addr;
 
     }
   else if (grub_multiboot_load_elf (file, buffer) != GRUB_ERR_NONE)
@@ -324,7 +340,7 @@ grub_multiboot (int argc, char *argv[])
 
   mbi = mbi_addr (grub_multiboot_payload_orig);
   mbi_dest = mbi_addr (grub_multiboot_payload_dest);
-  grub_memset (mbi, 0, sizeof (struct grub_multiboot_info));
+  grub_memset (mbi, 0, sizeof (struct multiboot_info));
   mbi->mmap_length = mmap_length;
 
   grub_fill_multiboot_mmap (mmap_addr (grub_multiboot_payload_orig));
@@ -333,23 +349,6 @@ grub_multiboot (int argc, char *argv[])
      by the spec.  Is there something we can do about it?  */
   mbi->mmap_addr = (grub_uint32_t) mmap_addr (grub_multiboot_payload_dest);
   mbi->flags |= MULTIBOOT_INFO_MEM_MAP;
-
-  if (grub_multiboot_payload_dest >= grub_multiboot_payload_orig)
-    {
-      grub_memmove (playground, &grub_multiboot_forward_relocator, RELOCATOR_SIZEOF(forward));
-      entry = (grub_addr_t) playground;
-    }
-  else
-    {
-      grub_memmove ((char *) (grub_multiboot_payload_orig + grub_multiboot_payload_size),
-		    &grub_multiboot_backward_relocator, RELOCATOR_SIZEOF(backward));
-      entry = (grub_addr_t) grub_multiboot_payload_orig + grub_multiboot_payload_size;
-    }
-
-  grub_dprintf ("multiboot_loader", "dest=%p, size=0x%x, entry_offset=0x%x\n",
-		(void *) grub_multiboot_payload_dest,
-		grub_multiboot_payload_size,
-		grub_multiboot_payload_entry_offset);
 
   /* Convert from bytes to kilobytes.  */
   mbi->mem_lower = grub_mmap_get_lower () / 1024;
@@ -462,10 +461,10 @@ grub_module  (int argc, char *argv[])
 
   if (mbi->flags & MULTIBOOT_INFO_MODS)
     {
-      struct grub_mod_list *modlist = (struct grub_mod_list *) mbi->mods_addr;
+      struct multiboot_mod_list *modlist = (struct multiboot_mod_list *) mbi->mods_addr;
 
       modlist = grub_realloc (modlist, (mbi->mods_count + 1)
-			               * sizeof (struct grub_mod_list));
+			               * sizeof (struct multiboot_mod_list));
       if (! modlist)
 	goto fail;
       mbi->mods_addr = (grub_uint32_t) modlist;
@@ -478,7 +477,7 @@ grub_module  (int argc, char *argv[])
     }
   else
     {
-      struct grub_mod_list *modlist = grub_zalloc (sizeof (struct grub_mod_list));
+      struct multiboot_mod_list *modlist = grub_zalloc (sizeof (struct multiboot_mod_list));
       if (! modlist)
 	goto fail;
       modlist->mod_start = (grub_uint32_t) module;
