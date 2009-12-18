@@ -1,3 +1,12 @@
+2009-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Workaround for broken ATI VBE.
+
+	* video/i386/pc/vbe.c (last_set_mode): New variable.
+	(grub_vbe_set_video_mode): Set 'last_set_mode'.
+	(grub_vbe_get_video_mode): Use 'last_set_mode' if get_mode fails.
+	(grub_video_vbe_setup): Don't check for reserved flag.
+
 2009-12-17 Felix Zielcke <fzielcke@z-51.de>
 
 	* gendistlist.sh: Use POSIX compliant `!' instead of `-not' in
