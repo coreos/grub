@@ -422,6 +422,10 @@ grub_linux_boot (void)
   grub_mmap_iterate (hook);
   params->mmap_size = e820_num;
 
+  grub_printf ("Trampoline at %p. code32=%x, real_mode_mem=%p\n",
+	       ((char *) prot_mode_mem + (prot_mode_pages << 12)),
+	       (unsigned) params->code32_start, real_mode_mem);
+
   modevar = grub_env_get ("gfxpayload");
 
   /* Now all graphical modes are acceptable.
@@ -438,10 +442,6 @@ grub_linux_boot (void)
     }
   else
     err = grub_video_set_mode ("auto", GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
-
-  grub_printf ("Trampoline at %p. code32=%x, real_mode_mem=%p\n",
-	       ((char *) prot_mode_mem + (prot_mode_pages << 12)),
-	       (unsigned) params->code32_start, real_mode_mem);
 
   if (!err)
     err = grub_linux_setup_video (params);
