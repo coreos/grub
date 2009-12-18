@@ -21,6 +21,7 @@
 #define GRUB_EFI_API_HEADER	1
 
 #include <grub/types.h>
+#include <grub/symbol.h>
 
 /* For consistency and safety, we name the EFI-defined types differently.
    All names are transformed into lower case, _t appended, and
