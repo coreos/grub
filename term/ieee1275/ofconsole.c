@@ -1,7 +1,7 @@
 /*  ofconsole.c -- Open Firmware console for GRUB.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ struct color
   int blue;
 };
 
-static struct color colors[16] =
+static struct color colors[] =
   {
     // {R, G, B}
     {0x00, 0x00, 0x00},
@@ -52,17 +52,8 @@ static struct color colors[16] =
     {0x00, 0xA8, 0xA8}, // 3 = cyan
     {0xA8, 0x00, 0x00}, // 4 = red
     {0xA8, 0x00, 0xA8}, // 5 = magenta
-    {0xA8, 0x54, 0x00}, // 6 = brown
-    {0xA8, 0xA8, 0xA8}, // 7 = light gray
-
-    {0x54, 0x54, 0x54}, // 8 = dark gray
-    {0x54, 0x54, 0xFE}, // 9 = bright blue
-    {0x54, 0xFE, 0x54}, // 10 = bright green
-    {0x54, 0xFE, 0xFE}, // 11 = bright cyan
-    {0xFE, 0x54, 0x54}, // 12 = bright red
-    {0xFE, 0x54, 0xFE}, // 13 = bright magenta
-    {0xFE, 0xFE, 0x54}, // 14 = yellow
-    {0xFE, 0xFE, 0xFE}  // 15 = white
+    {0xFE, 0xFE, 0x54}, // 6 = yellow
+    {0xFE, 0xFE, 0xFE}  // 7 = white
   };
 
 static grub_uint8_t grub_ofconsole_normal_color = 0x7;
@@ -140,8 +131,9 @@ static void
 grub_ofconsole_setcolor (grub_uint8_t normal_color,
 			 grub_uint8_t highlight_color)
 {
-  grub_ofconsole_normal_color = normal_color;
-  grub_ofconsole_highlight_color = highlight_color;
+  /* Discard bright bit.  */
+  grub_ofconsole_normal_color = normal_color & 0x77;
+  grub_ofconsole_highlight_color = highlight_color & 0x77;
 }
 
 static void
@@ -363,7 +355,6 @@ static grub_err_t
 grub_ofconsole_init_output (void)
 {
   grub_ssize_t actual;
-  int col;
 
   /* The latest PowerMacs don't actually initialize the screen for us, so we
    * use this trick to re-open the output device (but we avoid doing this on
@@ -379,7 +370,8 @@ grub_ofconsole_init_output (void)
   /* Initialize colors.  */
   if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_CANNOT_SET_COLORS))
     {
-      for (col = 0; col < 7; col++)
+      unsigned col;
+      for (col = 0; col < ARRAY_SIZE (colors); col++)
 	grub_ieee1275_set_color (stdout_ihandle, col, colors[col].red,
 				 colors[col].green, colors[col].blue);
 
