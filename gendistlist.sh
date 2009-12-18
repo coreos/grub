@@ -19,6 +19,7 @@ EXTRA_DISTFILES="AUTHORS COPYING ChangeLog DISTLIST INSTALL NEWS README \
 	gendistlist.sh genfslist.sh genhandlerlist.sh geninit.sh \
 	geninitheader.sh genkernsyms.sh.in genmk.rb genmoddep.awk \
 	genmodsrc.sh genpartmaplist.sh genparttoollist.sh \
+	genvideolist.sh \
 	gensymlist.sh.in install-sh mkinstalldirs stamp-h.in"
 
 DISTDIRS="boot bus commands conf disk docs efiemu font fs hello hook include io \
@@ -35,7 +36,7 @@ dir=`dirname $0`
 cd $dir
 
 for dir in $DISTDIRS; do
-  for d in `find $dir -type d -not -name .svn -not -name .bzr | sort`; do
+  for d in `find $dir -type d ! -name .svn ! -name .bzr | sort`; do
     find $d -maxdepth 1 -name '*.[chSy]' -o -name '*.mk' -o -name '*.rmk' \
       -o -name '*.rb' -o -name '*.in' -o -name '*.tex' -o -name '*.texi' \
       -o -name '*.info' -o -name 'grub.cfg' -o -name 'README' \

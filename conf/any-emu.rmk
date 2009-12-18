@@ -59,6 +59,11 @@ grub_emu_SOURCES += disk/usbms.c util/usb.c bus/usb/usb.c	\
 grub_emu_LDFLAGS += $(LIBCURSES) $(LIBUSB)
 endif
 
+ifeq ($(enable_grub_emu_pci), yes)
+grub_emu_SOURCES += util/pci.c commands/lspci.c
+grub_emu_LDFLAGS += $(LIBPCIACCESS)
+endif
+
 grub_emu_init.lst: geninit.sh $(filter-out grub_emu_init.c,$(grub_emu_SOURCES))
 	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
 DISTCLEANFILES += grub_emu_init.lst

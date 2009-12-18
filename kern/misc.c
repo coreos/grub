@@ -126,6 +126,38 @@ grub_printf (const char *fmt, ...)
   return ret;
 }
 
+int
+grub_printf_ (const char *fmt, ...)
+{
+  va_list ap;
+  int ret;
+
+  va_start (ap, fmt);
+  ret = grub_vprintf (_(fmt), ap);
+  va_end (ap);
+
+  return ret;
+}
+
+int
+grub_puts (const char *s)
+{
+  while (*s)
+    {
+      grub_putchar (*s);
+      s++;
+    }
+  grub_putchar ('\n');
+
+  return 1;	/* Cannot fail.  */
+}
+
+int
+grub_puts_ (const char *s)
+{
+  return grub_puts (_(s));
+}
+
 #if defined (APPLE_CC) && ! defined (GRUB_UTIL)
 int
 grub_err_printf (const char *fmt, ...)

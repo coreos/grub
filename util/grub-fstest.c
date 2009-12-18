@@ -85,7 +85,7 @@ execute_command (char *name, int n, char **args)
 
 #define BUF_SIZE  32256
 
-static grub_off_t skip, leng;
+static grub_disk_addr_t skip, leng;
 
 static void
 read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
@@ -140,7 +140,7 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
 
   if (skip > file->size)
     {
-      grub_util_error ("invalid skip value %d.");
+      grub_util_error ("invalid skip value %lld.", (unsigned long long) skip);
       return;
     }
 
