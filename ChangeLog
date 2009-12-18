@@ -1,3 +1,271 @@
+2009-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix potential EfiEmu double prepare.
+
+	* efiemu/main.c (prepared): New variable
+	(grub_efiemu_unload): Set prepare to '0'.
+	(grub_efiemu_prepare): Return if already prepared. Set prepared.
+
+	set_virtual_address_map support.
+
+	* include/grub/efi/efi.h (grub_efi_set_virtual_address_map): New
+	prototype.
+	* include/grub/efiemu/efiemu.h (grub_efiemu_write_sym_markers): New
+	prototype.
+	(grub_efiemu_crc32): Likewise.
+	(grub_efiemu_crc64): Likewise.
+	(grub_efiemu_set_virtual_address_map): Likewise.
+	* include/grub/autoefi.h (grub_autoefi_exit_boot_services):
+	New definition.
+	(grub_autoefi_set_virtual_address_map): Likewise.
+	* kern/efi/efi.c (grub_efi_set_virtual_address_map): New function.
+	* loader/i386/xnu.c (grub_xnu_boot): Call set_virtual_address_map.
+	Restructure flow to accomodate it.
+	* efiemu/prepare.c (grub_efiemu_prepare): Support set_virtual_address_map.
+	(grub_efiemu_crc): Recompute CRC32.
+	* efiemu/runtime/efiemu.c (ptv_relocated): Renamed to ...
+	(efiemu_ptv_relocated): ... this. Made global. All users updated.
+	* efiemu/symbols.c (relocated_handle): New variable.
+	(grub_efiemu_free_syms): Free relocated_handle.
+	(grub_efiemu_alloc_syms): Allocate relocated_handle.
+	(grub_efiemu_write_sym_markers): New function.
+	(grub_efiemu_set_virtual_address_map): Likewise.
+
+	Newer XNU parameters.
+
+	* include/grub/i386/xnu.h (GRUB_XNU_BOOTARGS_VERMINOR): Change to 5.
+	* include/grub/xnu.h (grub_xnu_extheader): Add nameaddr and namesize.
+	(grub_xnu_fill_devicetree): New prototype.
+	(grub_xnu_heap_real_start): New variable.
+	* loader/xnu.c (get_name_ptr): New function.
+	(grub_xnu_load_driver): Fill namelen and name.
+
+	64-bit xnu support.
+
+	* conf/i386-efi.rmk (xnu_mod_SOURCES): Add 'loader/macho32.c'
+	and 'loader/macho64.c'.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+	* include/grub/i386/macho.h (grub_macho_thread64): New structure.
+	* include/grub/xnu.h (grub_xnu_is_64bit): New variable.
+	* include/grub/macho.h (grub_macho_segment64): New structure.
+	* include/grub/machoload.h (grub_macho32_size): Renamed from ...
+	(grub_macho_size32): ... to this.
+	(grub_macho32_get_entry_point): Renamed from ...
+	(grub_macho_get_entry_point32): ... to this.
+	(grub_macho_contains_macho64): New prototype.
+	(grub_macho_size64): Likewise.
+	(grub_macho_get_entry_point64): Likewise.
+	(grub_macho32_load): Renamed from ...
+	(grub_macho_load32): ... to this.
+	(grub_macho32_filesize): Renamed from ...
+	(grub_macho_filesize32): ... to this.
+	(grub_macho32_readfile): Renamed from ...
+	(grub_macho_readfile32): ... to this.
+	(grub_macho_filesize64): New prototype.
+	(grub_macho_readfile64): Likewise.
+	(grub_macho_parse32): Likewise.
+	(grub_macho_parse64): Likewise.
+	* loader/macho.c: Split into ...
+	* loader/machoXX.c: ... and this. Replace 32 with XX.
+	* loader/macho32.c: New file.
+	* loader/macho64.c: Likewise.
+	* loader/xnu.c (grub_xnu_is_64bit): New variable.
+	(grub_cmd_xnu_kernel): Make 32-bit only.
+	(grub_cmd_xnu_kernel64): New function.
+	(grub_xnu_load_driver): Support Mach-O 64.
+	(grub_cmd_xnu_mkext): Likewise.
+	* util/grub.d/30_os-prober.in (osx_entry): New function.
+	Generate entries for 64-bit boot too.
+
+	Eliminate ad-hoc tree format in XNU and EfiEmu.
+
+	* efiemu/main.c (grub_efiemu_prepare): Update comment.
+	* efiemu/pnvram.c: Rewritten to use environment variables.
+	All users updated.
+
+	Inline utf16_to_utf8.
+
+	* kern/misc.c (grub_utf16_to_utf8): Move from here ...
+	* include/grub/charset.h (grub_utf16_to_utf8): ... to here. Inlined.
+	All users updated.
+	* include/grub/misc.h (grub_utf16_to_utf8): Removed.
+
+	* bus/usb/usb.c (grub_usb_get_string): Move from here ...
+	* commands/usbtest.c (grub_usb_get_string): ... move here.
+	(usb_print_str): Fix error handling.
+	* include/grub/usb.h (grub_usb_get_string): Remove.
+
+	UTF-8 to UTF-16 transformation.
+
+	* conf/common.rmk (pkglib_MODULES): Add charset.mod
+	(charset_mod_SOURCES): New variable.
+	(charset_mod_CFLAGS): Likewise.
+	(charset_mod_LDFLAGS): Likewise.
+	* include/grub/utf.h: New file.
+	* lib/utf.c: New file. (Based on grub_utf8_to_ucs4 from kern/misc.c)
+
+	Support for device properties.
+
+	* include/grub/i386/xnu.h (grub_xnu_devprop_header): New structure.
+	(grub_xnu_devprop_device_header): Likewise.
+	(grub_xnu_devprop_device_descriptor): Likewise.
+	(grub_xnu_devprop_add_device): New prototype.
+	(grub_xnu_devprop_remove_device): Likewise.
+	(grub_xnu_devprop_remove_property): Likewise.
+	(grub_xnu_devprop_add_property_utf8): Likewise.
+	(grub_xnu_devprop_add_property_utf16): Likewise.
+	(grub_cpu_xnu_init): Likewise.
+	(grub_cpu_xnu_fini): Likewise.
+	(grub_cpu_xnu_unload): Likewise.
+	* loader/i386/xnu.c (grub_xnu_devprop_device_descriptor): New structure.
+	(property_descriptor): Likewise.
+	(devices): New variable.
+	(grub_xnu_devprop_remove_property): New function.
+	(grub_xnu_devprop_add_device): Likewise.
+	(grub_xnu_devprop_remove_device): Likewise.
+	(grub_xnu_devprop_add_property): Likewise.
+	(grub_xnu_devprop_add_property_utf8): Likewise.
+	(grub_xnu_devprop_add_property_utf16): Likewise.
+	(hextoval): Likewise.
+	(grub_cpu_xnu_fill_devprop): Likewise.
+	(grub_cmd_devprop_load): Likewise.
+	(grub_xnu_boot): Call grub_cpu_xnu_fill_devprop,
+	grub_xnu_fill_devicetree, grub_xnu_fill_devicetree
+	(cmd_devprop_load): New variable.
+	(grub_cpu_xnu_init): New function.
+	(grub_cpu_xnu_fini): Likewise.
+	* loader/i386/xnu.c (grub_xnu_unload): Call grub_cpu_xnu_unload.
+	* loader/xnu.c (grub_xnu_parse_devtree): Remove.
+	(grub_cmd_xnu_devtree): Likewise.
+	(hextoval): New function.
+	(unescape): Likewise.
+	(grub_xnu_fill_devicetree): Likewise.
+
+	* util/grub.d/30_os-prober.in: Load devprop.bin. Don't load devtree.txt.
+	* util/i386/efi/grub-dumpdevtree: Generate devprop.bin.
+
+2009-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Workaround for broken ATI VBE.
+
+	* video/i386/pc/vbe.c (last_set_mode): New variable.
+	(grub_vbe_set_video_mode): Set 'last_set_mode'.
+	(grub_vbe_get_video_mode): Use 'last_set_mode' if get_mode fails.
+	(grub_video_vbe_setup): Don't check for reserved flag.
+
+2009-12-17 Felix Zielcke <fzielcke@z-51.de>
+
+	* gendistlist.sh: Use POSIX compliant `!' instead of `-not' in
+	the `find' command.
+
+2009-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	UUID support for HFS.
+
+	* fs/hfs.c (grub_hfs_uuid): New function.
+	(grub_hfs_fs): New value .uuid.
+	* include/grub/hfs.h (grub_hfs_sblock): New field 'num_serial'.
+
+2009-12-14 Felix Zielcke <fzielcke@z-51.de>
+
+	Fix a segfault with parsing unknown long options.
+
+	* util/grub-mkrelpath.c (options): Zero terminate it.
+
+2009-12-13  Carles Pina i Estany  <carles@pina.cat>
+
+	* include/grub/misc.h (grub_puts): New declaration.
+	(grub_puts_): Likewise.
+	* kern/mis.c (grub_puts): New definition.
+	(grub_puts_): Likewise.
+
+2009-12-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-probe.c (probe): Improve error message.
+
+2009-12-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/multiboot_elfxx.c
+	(CONCAT(grub_multiboot_load_elf, XX)): Fix `grub_multiboot_payload_eip'
+	initialization.
+
+2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Relocator framework
+
+	* loader/i386/xnu_helper.S: Removed. All users updated.
+	* conf/i386.rmk (pkglib_MODULES): Add relocator.mod.
+	(relocator_mod_SOURCES): New variable.
+	(relocator_mod_CFLAGS): Likewise.
+	(relocator_mod_LDFLAGS): Likewise.
+	(relocator_mod_ASFLAGS): Likewise.
+	* conf/x86_64.rmk: Likewise.
+	* include/grub/i386/multiboot.h (grub_multiboot_payload_orig): Removed.
+	(grub_multiboot_payload_entry_offset): Likewise.
+	(grub_multiboot_forward_relocator): Likewise.
+	(grub_multiboot_forward_relocator_end): Likewise.
+	(grub_multiboot_backward_relocator): Likewise.
+	(grub_multiboot_backward_relocator_end): Likewise.
+	(grub_multiboot_payload_eip): New variable.
+	(grub_multiboot_payload_orig): Likewise.
+	* include/grub/i386/pc/memory.h: Include grub/i386/memory.h.
+	(GRUB_MEMORY_MACHINE_CR0_PE_ON): Move from here ...
+	* include/grub/i386/memory.h
+	(GRUB_MEMORY_CPU_CR0_PE_ON): ... to here
+	(GRUB_MEMORY_CPU_CR4_PAE_ON): New definition.
+	(GRUB_MEMORY_CPU_CR0_PAGING_ON): Likewise.
+	(GRUB_MEMORY_CPU_AMD64_MSR): Likewise.
+	(GRUB_MEMORY_CPU_AMD64_MSR_ON): Likewise.
+	* include/grub/i386/relocator.h: New file.
+	* include/grub/x86_64/relocator.h: Likewise.
+	* include/grub/i386/xnu.h: Include grub/cpu/relocator.h.
+	(XNU_RELOCATOR): New macro.
+	(grub_xnu_launcher_start): Remove.
+	(grub_xnu_launcher_end): Likewise.
+	* include/grub/xnu.h (grub_xnu_boot_resume): New prototype.
+	(grub_xnu_heap_real_start): Remove.
+	(grub_xnu_heap_start): Change to void *. All users updated.
+	* kern/i386/realmode.S (real_to_prot): Use GRUB_MEMORY_CPU_CR0_PE_ON.
+	* lib/i386/relocator.c: New file.
+	* lib/i386/relocator_asm.S: Likewise.
+	* lib/i386/relocator_backward.S: Likewise.
+	* lib/mips/relocator.c: Likewise.
+	* lib/mips/relocator_asm.S: Likewise.
+	* lib/relocator.c: Likewise.
+	* loader/i386/multiboot.c: Include grub/i386/relocator.h.
+	(entry): Removed.
+	(playground): Likewise.
+	(grub_multiboot_payload_orig): New variable.
+	(grub_multiboot_payload_dest): Likewise.
+	(grub_multiboot_payload_size): Likewise.
+	(grub_multiboot_payload_eip): Likewise.
+	(grub_multiboot_payload_esp): Likewise.
+	(grub_multiboot_boot): Use grub_relocator32_boot.
+	(grub_multiboot_unload): Free relocators.
+	(grub_multiboot): Setup stack. Use relocators.
+	* loader/i386/multiboot_elfxx.c: Include grub/i386/relocator.h.
+	(grub_multiboot_load_elfXX): Use relocators.
+	* loader/i386/multiboot_helper.S (grub_multiboot_payload_orig): Removed.
+	(grub_multiboot_payload_size): Likewise.
+	(grub_multiboot_payload_dest): Likewise.
+	(grub_multiboot_payload_entry_offset): Likewise.
+	(grub_multiboot_forward_relocator): Likewise.
+	(grub_multiboot_backward_relocator): Likewise.
+	(grub_multiboot_real_boot): Likewise.
+	* loader/i386/xnu.c (grub_xnu_heap_will_be_at): New variable.
+	(grub_xnu_entry_point): Likewise.
+	(grub_xnu_arg1): Likewise.
+	(grub_xnu_stack): Likewise.
+	(grub_xnu_launch): Removed.
+	(grub_xnu_boot_resume): New function.
+	(grub_xnu_boot): Use relocators.
+	* loader/i386/xnu_helper.S: Removed.
+	* loader/xnu.c (grub_xnu_heap_start): New variable.
+	(grub_xnu_heap_size): Likewise.
+	(grub_xnu_heap_malloc): Use relocators.
+	* loader/xnu_resume.c (grub_xnu_resume): Use relocators.
+
 2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/i386/pc/startup.S (multiboot_entry): Setup stack before calling

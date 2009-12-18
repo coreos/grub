@@ -26,6 +26,7 @@
 static int ptv_written = 0;
 static int ptv_alloc = 0;
 static int ptv_handle = 0;
+static int relocated_handle = 0;
 static int ptv_requested = 0;
 static struct grub_efiemu_sym *efiemu_syms = 0;
 
@@ -54,6 +55,8 @@ grub_efiemu_free_syms (void)
   ptv_requested = 0;
   grub_efiemu_mm_return_request (ptv_handle);
   ptv_handle = 0;
+  grub_efiemu_mm_return_request (relocated_handle);
+  relocated_handle = 0;
 }
 
 /* Announce that the module will need NUM allocators */
@@ -114,8 +117,24 @@ grub_efiemu_alloc_syms (void)
   ptv_handle = grub_efiemu_request_memalign
     (1, (ptv_requested + 1) * sizeof (struct grub_efiemu_ptv_rel),
      GRUB_EFI_RUNTIME_SERVICES_DATA);
+  relocated_handle = grub_efiemu_request_memalign
+    (1, sizeof (grub_uint8_t), GRUB_EFI_RUNTIME_SERVICES_DATA);
+
+  grub_efiemu_register_symbol ("efiemu_ptv_relocated", relocated_handle, 0);
   grub_efiemu_register_symbol ("efiemu_ptv_relloc", ptv_handle, 0);
   return grub_errno;
+}
+
+grub_err_t
+grub_efiemu_write_sym_markers (void)
+{
+  struct grub_efiemu_ptv_rel *ptv_rels
+    = grub_efiemu_mm_obtain_request (ptv_handle);
+  grub_uint8_t *relocated = grub_efiemu_mm_obtain_request (relocated_handle);
+  grub_memset (ptv_rels, 0, (ptv_requested + 1)
+	       * sizeof (struct grub_efiemu_ptv_rel));
+  *relocated = 0;
+  return GRUB_ERR_NONE;
 }
 
 /* Write value (pointer to memory PLUS_HANDLE)
@@ -185,4 +204,68 @@ grub_efiemu_write_value (void *addr, grub_uint32_t value, int plus_handle,
     }
 
   return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_efiemu_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
+				     grub_efi_uintn_t descriptor_size,
+				     grub_efi_uint32_t descriptor_version
+				     __attribute__ ((unused)),
+				     grub_efi_memory_descriptor_t *virtual_map)
+{
+  grub_uint8_t *ptv_relocated;
+  struct grub_efiemu_ptv_rel *cur_relloc;
+  struct grub_efiemu_ptv_rel *ptv_rels;
+
+  ptv_relocated = grub_efiemu_mm_obtain_request (relocated_handle);
+  ptv_rels = grub_efiemu_mm_obtain_request (ptv_handle);
+
+  /* Ensure that we are called only once */
+  if (*ptv_relocated)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "EfiEmu is already relocated.");
+  *ptv_relocated = 1;
+
+  /* Correct addresses using information supplied by grub */
+  for (cur_relloc = ptv_rels; cur_relloc->size; cur_relloc++)
+    {
+      grub_int64_t corr = 0;
+      grub_efi_memory_descriptor_t *descptr;
+
+      /* Compute correction */
+      for (descptr = virtual_map;
+	   (grub_size_t) ((grub_uint8_t *) descptr
+			  - (grub_uint8_t *) virtual_map) < memory_map_size;
+	   descptr = (grub_efi_memory_descriptor_t *)
+	     ((grub_uint8_t *) descptr + descriptor_size))
+	{
+	  if (descptr->type == cur_relloc->plustype)
+	    corr += descptr->virtual_start - descptr->physical_start;
+	  if (descptr->type == cur_relloc->minustype)
+	    corr -= descptr->virtual_start - descptr->physical_start;
+	}
+
+      /* Apply correction */
+      switch (cur_relloc->size)
+	{
+	case 8:
+	  *((grub_uint64_t *) UINT_TO_PTR (cur_relloc->addr)) += corr;
+	  break;
+	case 4:
+	  *((grub_uint32_t *) UINT_TO_PTR (cur_relloc->addr)) += corr;
+	  break;
+	case 2:
+	  *((grub_uint16_t *) UINT_TO_PTR (cur_relloc->addr)) += corr;
+	  break;
+	case 1:
+	  *((grub_uint8_t *) UINT_TO_PTR (cur_relloc->addr)) += corr;
+	  break;
+	}
+    }
+
+  /* Recompute crc32 of system table and runtime services */
+
+  if (grub_efiemu_sizeof_uintn_t () == 4)
+    return grub_efiemu_crc32 ();
+  else
+    return grub_efiemu_crc64 ();
 }

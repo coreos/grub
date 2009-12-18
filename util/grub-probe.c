@@ -123,7 +123,7 @@ probe (const char *path, char *device_name)
     device_name = grub_guess_root_device (path);
 
   if (! device_name)
-    grub_util_error ("cannot find a device for %s.\n", path);
+    grub_util_error ("cannot find a device for %s (is /dev mounted?).\n", path);
 
   if (print == PRINT_DEVICE)
     {

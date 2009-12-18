@@ -1,6 +1,7 @@
+/* memory.h - describe the memory map */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,20 +17,14 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_MULTIBOOT_CPU_HEADER
-#define GRUB_MULTIBOOT_CPU_HEADER	1
+#ifndef GRUB_MEMORY_CPU_HEADER
+#define GRUB_MEMORY_CPU_HEADER	1
 
-/* The asm part of the multiboot loader.  */
-void grub_multiboot_real_boot (grub_addr_t entry,
-			       struct multiboot_info *mbi)
-     __attribute__ ((noreturn));
-void grub_multiboot2_real_boot (grub_addr_t entry,
-				struct multiboot_info *mbi)
-     __attribute__ ((noreturn));
+/* The flag for protected mode.  */
+#define GRUB_MEMORY_CPU_CR0_PE_ON		0x1
+#define GRUB_MEMORY_CPU_CR4_PAE_ON		0x00000040
+#define GRUB_MEMORY_CPU_CR0_PAGING_ON		0x80000000
+#define GRUB_MEMORY_CPU_AMD64_MSR		0xc0000080
+#define GRUB_MEMORY_CPU_AMD64_MSR_ON		0x00000100
 
-extern grub_uint32_t grub_multiboot_payload_eip;
-extern char *grub_multiboot_payload_orig;
-extern grub_addr_t grub_multiboot_payload_dest;
-extern grub_size_t grub_multiboot_payload_size;
-
-#endif /* ! GRUB_MULTIBOOT_CPU_HEADER */
+#endif /* ! GRUB_MEMORY_CPU_HEADER */
