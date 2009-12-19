@@ -1,3 +1,9 @@
+2009-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/types.h (UNUSED): Removed since it conflicts with
+	NetBSD headers. All users changed to direct __attribute__ ((unused)).
+	Reported by Grégoire Sutre.
+
 2009-12-19  Carles Pina i Estany  <carles@pina.cat>
 
 	* normal/menu_text.c (STANDARD_MARGIN): New macro.

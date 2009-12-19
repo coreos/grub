@@ -62,7 +62,7 @@ grub_getline (void)
 }
 
 static grub_err_t
-grub_cmd_read (grub_command_t cmd UNUSED, int argc, char **args)
+grub_cmd_read (grub_command_t cmd __attribute__ ((unused)), int argc, char **args)
 {
   char *line = grub_getline ();
   if (! line)

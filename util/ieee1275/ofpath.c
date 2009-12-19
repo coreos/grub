@@ -39,7 +39,6 @@
 #include <ctype.h>
 
 #ifdef OFPATH_STANDALONE
-#define UNUSED __attribute__((unused))
 #define xmalloc malloc
 void
 grub_util_error (const char *fmt, ...)
@@ -199,8 +198,10 @@ get_basename(char *p)
 
 static void
 of_path_of_vdisk(char *of_path,
-		 const char *devname UNUSED, const char *device,
-		 const char *devnode UNUSED, const char *devicenode)
+		 const char *devname __attribute__((unused)),
+		 const char *device,
+		 const char *devnode __attribute__((unused)),
+		 const char *devicenode)
 {
   char *sysfs_path, *p;
   int devno, junk;
@@ -217,8 +218,9 @@ of_path_of_vdisk(char *of_path,
 
 static void
 of_path_of_ide(char *of_path,
-	       const char *devname UNUSED, const char *device,
-	       const char *devnode UNUSED, const char *devicenode)
+	       const char *devname __attribute__((unused)), const char *device,
+	       const char *devnode __attribute__((unused)),
+	       const char *devicenode)
 {
   char *sysfs_path, *p;
   int chan, devno;
@@ -299,8 +301,9 @@ check_sas (char *sysfs_path, int *tgt)
 
 static void
 of_path_of_scsi(char *of_path,
-		const char *devname UNUSED, const char *device,
-		const char *devnode UNUSED, const char *devicenode)
+		const char *devname __attribute__((unused)), const char *device,
+		const char *devnode __attribute__((unused)),
+		const char *devicenode)
 {
   const char *p, *digit_string, *disk_name;
   int host, bus, tgt, lun;
