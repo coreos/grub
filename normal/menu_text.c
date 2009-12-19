@@ -55,7 +55,7 @@ print_spaces (int number_spaces)
     grub_putchar (' ');
 }
 
-static void
+void
 grub_print_ucs4 (const grub_uint32_t * str,
                 const grub_uint32_t * last_position)
 {
@@ -66,8 +66,35 @@ grub_print_ucs4 (const grub_uint32_t * str,
     }
 }
 
-static grub_ssize_t
-getstringwidth (grub_uint32_t * str, const grub_uint32_t * last_position)
+int
+grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
+			grub_uint32_t **last_position)
+{
+  grub_ssize_t msg_len = grub_strlen (msg);
+
+  *unicode_msg = grub_malloc (grub_strlen (msg) * sizeof (grub_uint32_t));
+  
+  if (!*unicode_msg)
+    {
+      grub_printf ("utf8_to_ucs4 ERROR1: %s", msg);
+      return -1;
+    }
+
+  msg_len = grub_utf8_to_ucs4 (*unicode_msg, msg_len,
+  			      (grub_uint8_t *) msg, -1, 0);
+
+  *last_position = *unicode_msg + msg_len;
+
+  if (msg_len < 0)
+    {
+      grub_printf ("utf8_to_ucs4 ERROR2: %s", msg);
+      grub_free (*unicode_msg);
+    }
+  return msg_len;
+}
+
+grub_ssize_t
+grub_getstringwidth (grub_uint32_t * str, const grub_uint32_t * last_position)
 {
   grub_ssize_t width = 0;
 
@@ -87,28 +114,16 @@ print_message_indented (const char *msg, int margin_left, int margin_right)
     (margin_left + margin_right);
 
   grub_uint32_t *unicode_msg;
+  grub_uint32_t *last_position;
 
-  grub_ssize_t msg_len = grub_strlen (msg);
+  int msg_len;
 
-  unicode_msg = grub_malloc (msg_len * sizeof (*unicode_msg));
-
-  msg_len = grub_utf8_to_ucs4 (unicode_msg, msg_len,
-                              (grub_uint8_t *) msg, -1, 0);
-
-  if (!unicode_msg)
-    {
-      grub_printf ("print_message_indented ERROR1: %s", msg);
-      return;
-    }
+  msg_len = grub_utf8_to_ucs4_alloc (msg, &unicode_msg, &last_position);
 
   if (msg_len < 0)
     {
-      grub_printf ("print_message_indented ERROR2: %s", msg);
-      grub_free (unicode_msg);
       return;
     }
-
-  const grub_uint32_t *last_position = unicode_msg + msg_len;
 
   grub_uint32_t *current_position = unicode_msg;
 
@@ -123,7 +138,7 @@ print_message_indented (const char *msg, int margin_left, int margin_right)
       
       next_new_line = (grub_uint32_t *) last_position;
 
-      while (getstringwidth (current_position, next_new_line) > line_len
+      while (grub_getstringwidth (current_position, next_new_line) > line_len
             || (*next_new_line != ' ' && next_new_line > current_position &&
                 next_new_line != last_position))
        {

@@ -1,5 +1,19 @@
 2009-12-19  Carles Pina i Estany  <carles@pina.cat>
 
+	* include/grub/normal.h (grub_utf8_to_ucs4): New declaration.
+	(grub_print_ucs4_alloc): Likewise.
+	(grub_getstringwidth): Likewise.
+	* normal/main.c (grub_normal_init_page): Gettextize version string.
+	* normal/menu_text.c (grub_utf8_to_ucs4_alloc): New definition.
+	(getstringwidth): Renamed to ...
+	(grub_getstringwidth): ... this. Remove `static' qualifier (now used
+	in normal/main.c).  Use `grub_utf8_to_ucs4_alloc'.
+	(grub_print_ucs4): Remove `static' qualifer (now used in
+	normal/main.c).
+	* po/POTFILES: Add normal/main.c.
+
+2009-12-19  Carles Pina i Estany  <carles@pina.cat>
+
 	* normal/menu_text.c (STANDARD_MARGIN): New macro.
 	(print_message_indented): Add `margin_left' and `margin_right'
 	parameters.
