@@ -1,3 +1,14 @@
+2009-12-19  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/menu_text.c (STANDARD_MARGIN): New macro.
+	(print_message_indented): Add `margin_left' and `margin_right'
+	parameters.
+	(print_message): Update `print_message_indented' calls. Adds '\n' to the
+	strings.
+	(print_timeout): Use `print_message_indented' to print the message.
+	Deletes `second_stage' parameter.
+	(run_menu): Update `print_timeout' calls.
+
 2009-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix console palette on OpenFirmware.

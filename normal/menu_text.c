@@ -31,6 +31,8 @@
    entry failing to boot.  */
 #define DEFAULT_ENTRY_ERROR_DELAY_MS  2500
 
+#define STANDARD_MARGIN 6
+
 static grub_uint8_t grub_color_menu_normal;
 static grub_uint8_t grub_color_menu_highlight;
 
@@ -78,9 +80,11 @@ getstringwidth (grub_uint32_t * str, const grub_uint32_t * last_position)
 }
 
 static void
-print_message_indented (const char *msg)
+print_message_indented (const char *msg, int margin_left, int margin_right)
 {
-  const int line_len = GRUB_TERM_WIDTH - grub_getcharwidth ('m') * 15;
+  int line_len;
+  line_len = GRUB_TERM_WIDTH - grub_getcharwidth ('m') *
+    (margin_left + margin_right);
 
   grub_uint32_t *unicode_msg;
 
@@ -110,8 +114,13 @@ print_message_indented (const char *msg)
 
   grub_uint32_t *next_new_line = unicode_msg;
 
+  int first_loop = 1;
+
   while (current_position < last_position)
     {
+      if (! first_loop)
+        grub_putchar ('\n');
+      
       next_new_line = (grub_uint32_t *) last_position;
 
       while (getstringwidth (current_position, next_new_line) > line_len
@@ -127,12 +136,12 @@ print_message_indented (const char *msg)
            (grub_uint32_t *) last_position : next_new_line + line_len;
        }
 
-      print_spaces (6);
+      print_spaces (margin_left);
       grub_print_ucs4 (current_position, next_new_line);
-      grub_putchar ('\n');
 
       next_new_line++;
       current_position = next_new_line;
+      first_loop = 0;
     }
   grub_free (unicode_msg);
 }
@@ -184,24 +193,24 @@ print_message (int nested, int edit)
       grub_putchar ('\n');
       print_message_indented (_("Minimum Emacs-like screen editing is \
 supported. TAB lists completions. Press Ctrl-x to boot, Ctrl-c for a \
-command-line or ESC to return menu."));
+command-line or ESC to return menu."), STANDARD_MARGIN, STANDARD_MARGIN);
     }
   else
     {
       const char *msg = _("Use the %C and %C keys to select which \
-entry is highlighted.");
+entry is highlighted.\n");
       char *msg_translated =
        grub_malloc (sizeof (char) * grub_strlen (msg) + 1);
 
       grub_sprintf (msg_translated, msg, (grub_uint32_t) GRUB_TERM_DISP_UP,
                    (grub_uint32_t) GRUB_TERM_DISP_DOWN);
       grub_putchar ('\n');
-      print_message_indented (msg_translated);
+      print_message_indented (msg_translated, STANDARD_MARGIN, STANDARD_MARGIN);
 
       grub_free (msg_translated);
 
       print_message_indented (_("Press enter to boot the selected OS, \
-\'e\' to edit the commands before booting or \'c\' for a command-line."));
+\'e\' to edit the commands before booting or \'c\' for a command-line.\n"), STANDARD_MARGIN, STANDARD_MARGIN);
 
       if (nested)
         {
@@ -368,22 +377,26 @@ get_entry_number (const char *name)
 }
 
 static void
-print_timeout (int timeout, int offset, int second_stage)
+print_timeout (int timeout, int offset)
 {
   const char *msg =
     _("The highlighted entry will be booted automatically in %ds.");
-  const int msg_localized_len = grub_strlen (msg);
-  const int number_spaces = GRUB_TERM_WIDTH - msg_localized_len - 3;
 
-  char *msg_end = grub_strchr (msg, '%');
+  grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
 
-  grub_gotoxy (second_stage ? (msg_end - msg + 3) : 3, GRUB_TERM_HEIGHT - 3);
-  grub_printf (second_stage ? msg_end : msg, timeout);
-  print_spaces (second_stage ? number_spaces : 0);
+  char *msg_translated =
+    grub_malloc (sizeof (char) * grub_strlen (msg) + 5);
+
+  grub_sprintf (msg_translated, msg, timeout);
+  print_message_indented (msg_translated, 3, 0);
+  
+  int posx;
+  posx = grub_getxy() >> 8;
+  print_spaces (GRUB_TERM_WIDTH - posx - 1);
 
   grub_gotoxy (GRUB_TERM_CURSOR_X, GRUB_TERM_FIRST_ENTRY_Y + offset);
   grub_refresh ();
-};
+}
 
 /* Show the menu and handle menu entry selection.  Returns the menu entry
    index that should be executed or -1 if no entry should be executed (e.g.,
@@ -434,7 +447,7 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
   timeout = grub_menu_get_timeout ();
 
   if (timeout > 0)
-    print_timeout (timeout, offset, 0);
+    print_timeout (timeout, offset);
 
   while (1)
     {
@@ -451,7 +464,7 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	      timeout--;
 	      grub_menu_set_timeout (timeout);
 	      saved_time = current_time;
-	      print_timeout (timeout, offset, 1);
+	      print_timeout (timeout, offset);
 	    }
 	}
 
