@@ -201,8 +201,9 @@ show_menu (grub_menu_t menu, int nested)
 }
 
 static grub_err_t
-grub_cmd_gfxmenu (grub_command_t cmd UNUSED,
-                  int argc UNUSED, char **args UNUSED)
+grub_cmd_gfxmenu (grub_command_t cmd __attribute__ ((unused)),
+                  int argc __attribute__ ((unused)),
+		  char **args __attribute__ ((unused)))
 {
   grub_menu_t menu = grub_env_get_data_slot ("menu");
   if (! menu)
