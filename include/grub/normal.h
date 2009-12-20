@@ -84,6 +84,8 @@ void read_command_list (void);
 /* Defined in `autofs.c'.  */
 void read_fs_list (void);
 
+void grub_context_init (void);
+void grub_context_fini (void);
 
 #ifdef GRUB_UTIL
 void grub_normal_init (void);

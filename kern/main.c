@@ -114,7 +114,6 @@ grub_set_root_dev (void)
   const char *prefix;
 
   grub_register_variable_hook ("root", 0, grub_env_write_root);
-  grub_env_export ("root");
 
   prefix = grub_env_get ("prefix");
 
@@ -164,7 +163,6 @@ grub_main (void)
   /* It is better to set the root device as soon as possible,
      for convenience.  */
   grub_machine_set_prefix ();
-  grub_env_export ("prefix");
   grub_set_root_dev ();
 
   grub_register_core_commands ();

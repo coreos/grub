@@ -17,7 +17,7 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h reader.h \
 	symbol.h term.h time.h types.h powerpc/libgcc.h loader.h partition.h \
 	msdos_partition.h ieee1275/ieee1275.h machine/kernel.h handler.h list.h \
-	command.h i18n.h
+	command.h i18n.h env_private.h
 
 symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
