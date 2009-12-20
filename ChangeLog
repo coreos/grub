@@ -1,5 +1,11 @@
 2009-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/parser.c (grub_parser_split_cmdline): Fix incorrect counting
+	of arguments. Return number of tokens and not arguments. All users
+	updated.
+
+2009-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/i386/pc/grub-setup.c (setup): Don't install on non-GPT,
 	non-MSDOS paritions.
 

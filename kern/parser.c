@@ -142,7 +142,7 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
 	*(bp++) = *val;
     }
 
-  *argc = 1;
+  *argc = 0;
   do
     {
       if (! *rd)
@@ -188,12 +188,16 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
 	  state = newstate;
 	}
     } while (state != GRUB_PARSER_STATE_TEXT && !check_varstate (state));
-  *(bp++) = '\0';
 
   /* A special case for when the last character was part of a
      variable.  */
   add_var (GRUB_PARSER_STATE_TEXT);
 
+  if (bp != buffer && *(bp - 1))
+    {
+      *(bp++) = '\0';
+      (*argc)++;
+    }
 
   /* Reserve memory for the return values.  */
   args = grub_malloc (bp - buffer);
@@ -218,8 +222,6 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
 	bp++;
       bp++;
     }
-
-  (*argc)--;
 
   return 0;
 }
