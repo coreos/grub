@@ -488,7 +488,7 @@ grub_util_is_dmraid (const char *os_dev)
 }
 
 int
-grub_util_get_dev_abstraction (const char *os_dev UNUSED)
+grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
 {
 #ifdef __linux__
   /* Check for LVM.  */

@@ -123,8 +123,9 @@ SUFFIX (grub_macho_size) (grub_macho_t macho, grub_macho_addr_t *segments_start,
      should claim.  */
   auto int NESTED_FUNC_ATTR calcsize (grub_macho_t _macho,
 				      struct grub_macho_cmd *phdr, void *_arg);
-  int NESTED_FUNC_ATTR calcsize (grub_macho_t UNUSED _macho,
-				 struct grub_macho_cmd *hdr0, void UNUSED *_arg)
+  int NESTED_FUNC_ATTR calcsize (grub_macho_t _macho __attribute__ ((unused)),
+				 struct grub_macho_cmd *hdr0,
+				 void *_arg __attribute__ ((unused)))
     {
       grub_macho_segment_t *hdr = (grub_macho_segment_t *) hdr0;
       if (hdr->cmd != GRUB_MACHO_CMD_SEGMENT)
@@ -166,10 +167,10 @@ SUFFIX (grub_macho_load) (grub_macho_t macho, char *offset, int flags)
   grub_err_t err = 0;
   auto int NESTED_FUNC_ATTR do_load(grub_macho_t _macho,
 			       struct grub_macho_cmd *hdr0,
-			       void UNUSED *_arg);
+			       void *_arg __attribute__ ((unused)));
   int NESTED_FUNC_ATTR do_load(grub_macho_t _macho,
 			       struct grub_macho_cmd *hdr0,
-			       void UNUSED *_arg)
+			       void *_arg __attribute__ ((unused)))
   {
     grub_macho_segment_t *hdr = (grub_macho_segment_t *) hdr0;
 
@@ -223,11 +224,11 @@ SUFFIX (grub_macho_get_entry_point) (grub_macho_t macho)
 {
   grub_macho_addr_t entry_point = 0;
   auto int NESTED_FUNC_ATTR hook(grub_macho_t _macho,
-			       struct grub_macho_cmd *hdr,
-			       void UNUSED *_arg);
-  int NESTED_FUNC_ATTR hook(grub_macho_t UNUSED _macho,
-			       struct grub_macho_cmd *hdr,
-			       void UNUSED *_arg)
+				 struct grub_macho_cmd *hdr,
+				 void *_arg __attribute__ ((unused)));
+  int NESTED_FUNC_ATTR hook(grub_macho_t _macho __attribute__ ((unused)),
+			    struct grub_macho_cmd *hdr,
+			    void *_arg __attribute__ ((unused)))
   {
     if (hdr->cmd == GRUB_MACHO_CMD_THREAD)
       entry_point = ((grub_macho_thread_t *) hdr)->entry_point;
