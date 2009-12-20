@@ -31,8 +31,6 @@
    entry failing to boot.  */
 #define DEFAULT_ENTRY_ERROR_DELAY_MS  2500
 
-#define STANDARD_MARGIN 6
-
 static grub_uint8_t grub_color_menu_normal;
 static grub_uint8_t grub_color_menu_highlight;
 
@@ -106,8 +104,8 @@ grub_getstringwidth (grub_uint32_t * str, const grub_uint32_t * last_position)
   return width;
 }
 
-static void
-print_message_indented (const char *msg, int margin_left, int margin_right)
+void
+grub_print_message_indented (const char *msg, int margin_left, int margin_right)
 {
   int line_len;
   line_len = GRUB_TERM_WIDTH - grub_getcharwidth ('m') *
@@ -206,7 +204,7 @@ print_message (int nested, int edit)
   if (edit)
     {
       grub_putchar ('\n');
-      print_message_indented (_("Minimum Emacs-like screen editing is \
+      grub_print_message_indented (_("Minimum Emacs-like screen editing is \
 supported. TAB lists completions. Press Ctrl-x to boot, Ctrl-c for a \
 command-line or ESC to return menu."), STANDARD_MARGIN, STANDARD_MARGIN);
     }
@@ -220,11 +218,11 @@ entry is highlighted.\n");
       grub_sprintf (msg_translated, msg, (grub_uint32_t) GRUB_TERM_DISP_UP,
                    (grub_uint32_t) GRUB_TERM_DISP_DOWN);
       grub_putchar ('\n');
-      print_message_indented (msg_translated, STANDARD_MARGIN, STANDARD_MARGIN);
+      grub_print_message_indented (msg_translated, STANDARD_MARGIN, STANDARD_MARGIN);
 
       grub_free (msg_translated);
 
-      print_message_indented (_("Press enter to boot the selected OS, \
+      grub_print_message_indented (_("Press enter to boot the selected OS, \
 \'e\' to edit the commands before booting or \'c\' for a command-line.\n"), STANDARD_MARGIN, STANDARD_MARGIN);
 
       if (nested)
@@ -403,7 +401,7 @@ print_timeout (int timeout, int offset)
     grub_malloc (sizeof (char) * grub_strlen (msg) + 5);
 
   grub_sprintf (msg_translated, msg, timeout);
-  print_message_indented (msg_translated, 3, 0);
+  grub_print_message_indented (msg_translated, 3, 0);
   
   int posx;
   posx = grub_getxy() >> 8;

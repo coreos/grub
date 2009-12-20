@@ -1,3 +1,33 @@
+2009-12-20 Carles Pina i Estany  <carles@pina.cat>
+ 
+	* include/grub/auth.h: Include `<grub/i18n.h>'.
+	(GRUB_GET_PASSWORD): Gettextizze string.
+	* include/grub/normal.h (STANDARD_MARGIN): New macro, moved from
+	menu_text.c.
+	(grub_utf8_to_ucs4_alloc): Fix indentation.
+	(grub_print_ucs4): Likewise.
+	(grub_getstringwidth): Likewise.
+	(print_message_indented): New declaration.
+	* normal/auth.c: Include `<grub/i18n.h>'.
+	(grub_auth_check_authentication): Gettexttize string.
+	* normal/cmdline.c: Include `<grub/i18n.h>'.
+	(grub_cmdline_get): Gettextizze.
+	* normal/color.c: Include `<grub/i18n.h>'.
+	(grub_parse_color_name_pair): Gettexttize strings.
+	* normal/main.c (grub_normal_reader_init): Cleanup gettexttized
+	string (use `print_message_indented').
+	* normal/menu_text.c (STANDARD_MARGIN): Moved from here to
+	`include/grub/normal.h'.
+	(print_message_indented): Renamed to ...
+	(grub_print_message_indented): ... this. Remove `static' qualifer (now
+	used in normal/main.c).
+	(print_message): Use `grub_print_message_indented' instead of
+	`print_message_indented'.
+	(print_timeout): Likewise.
+	* normal/misc.c: Include `<grub/term.h>' and `<grub/i18n.h>'.
+	(grub_normal_print_device_info): Gettexttize strings.
+	* po/POTFILES: Add `auth.c', `color.c' and `misc.c'.
+
 2009-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/parser.c (grub_parser_split_cmdline): Fix incorrect counting

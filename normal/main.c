@@ -522,12 +522,21 @@ grub_normal_reader_init (void)
   grub_normal_init_page ();
   grub_setcursor (1);
 
-  grub_printf_ (N_("\
- [ Minimal BASH-like line editing is supported. For the first word, TAB\n\
-   lists possible command completions. Anywhere else TAB lists possible\n\
-   device/file completions.%s ]\n\n"),
-	       reader_nested ? " ESC at any time exits." : "");
+  const char *msg = _("Minimal BASH-like line editing is supported. For "
+		      "the first word, TAB lists possible command completions. Anywhere "
+		      "else TAB lists possible device or file completions. %s");
 
+  const char *msg_esc = _("ESC at any time exits.");
+
+  char *msg_formatted = grub_malloc (sizeof (char) * (grub_strlen (msg) + 
+                grub_strlen(msg_esc) + 1));
+
+  grub_sprintf (msg_formatted, msg, reader_nested ? msg_esc : "");
+  grub_print_message_indented (msg_formatted, STANDARD_MARGIN, STANDARD_MARGIN);
+  grub_puts ("\n");
+
+  grub_free (msg_formatted);
+  
   return 0;
 }
 
