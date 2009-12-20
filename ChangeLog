@@ -1,3 +1,8 @@
+2009-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/i386/pc/grub-setup.c (setup): Don't install on non-GPT,
+	non-MSDOS paritions.
+
 2009-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/types.h (UNUSED): Removed since it conflicts with
