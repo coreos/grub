@@ -160,8 +160,7 @@ if test -e "${pc_dir}" ; then
     echo "Enabling BIOS support ..."
     core_img=`mktemp`
     grub-mkimage -d ${pc_dir}/ -o ${core_img} --prefix=/boot/grub/i386-pc \
-        iso9660 configfile sh \
-        biosdisk
+        iso9660 biosdisk
     cat ${pc_dir}/cdboot.img ${core_img} > ${iso9660_dir}/boot/grub/i386-pc/eltorito.img
     rm -f ${core_img}
 

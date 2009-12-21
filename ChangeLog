@@ -1,5 +1,10 @@
 2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/grub-mkrescue.in: Remove `configfile' and `sh' from i386-pc
+	build (not needed for bootstrap).
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* util/grub-mkrescue.in: Remove `memdisk', `tar' and `search' modules
 	from i386-pc build (not needed for bootstrap).
 	Rewrite a pair of strings.
