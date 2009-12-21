@@ -27,7 +27,8 @@
 #include <grub/cpu/multiboot.h>
 
 grub_err_t
-grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr, UNUSED grub_addr_t *addr,
+grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr,
+			  grub_addr_t *addr __attribute__ ((unused)),
 			  int *do_load)
 {
   Elf32_Addr paddr = phdr->p_paddr;
@@ -48,7 +49,8 @@ grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr, UNUSED grub_addr_t *addr,
 }
 
 grub_err_t
-grub_mb2_arch_elf64_hook (Elf64_Phdr *phdr, UNUSED grub_addr_t *addr,
+grub_mb2_arch_elf64_hook (Elf64_Phdr *phdr,
+			  grub_addr_t *addr __attribute__ ((unused)),
 			  int *do_load)
 {
   Elf64_Addr paddr = phdr->p_paddr;
@@ -82,7 +84,8 @@ grub_mb2_arch_module_alloc (grub_size_t size, grub_addr_t *addr)
 }
 
 grub_err_t
-grub_mb2_arch_module_free (grub_addr_t addr, UNUSED grub_size_t size)
+grub_mb2_arch_module_free (grub_addr_t addr,
+			   grub_size_t size __attribute__ ((unused)))
 {
   grub_free((void *) addr);
   return GRUB_ERR_NONE;
@@ -95,17 +98,17 @@ grub_mb2_arch_boot (grub_addr_t entry, void *tags)
 }
 
 void
-grub_mb2_arch_unload (struct multiboot_tag_header *tags)
+grub_mb2_arch_unload (struct multiboot2_tag_header *tags)
 {
-   struct multiboot_tag_header *tag;
+   struct multiboot2_tag_header *tag;
 
    /* Free all module memory in the tag list.  */
    for_each_tag (tag, tags)
      {
        if (tag->key == MULTIBOOT2_TAG_MODULE)
          {
-           struct multiboot_tag_module *module =
-              (struct multiboot_tag_module *) tag;
+           struct multiboot2_tag_module *module =
+              (struct multiboot2_tag_module *) tag;
            grub_free((void *) module->addr);
          }
      }

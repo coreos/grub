@@ -20,6 +20,7 @@
 #include <grub/mm.h>
 #include <grub/normal.h>
 #include <grub/term.h>
+#include <grub/i18n.h>
 
 /* Borrowed from GRUB Legacy */
 static char *color_list[16] =
@@ -76,7 +77,7 @@ grub_parse_color_name_pair (grub_uint8_t *ret, const char *name)
   bg_name = grub_strchr (fg_name, '/');
   if (bg_name == NULL)
     {
-      grub_printf ("Warning: syntax error (missing slash) in `%s'\n", fg_name);
+      grub_printf_ (N_("Warning: syntax error (missing slash) in `%s'\n"), fg_name);
       grub_wait_after_message ();
       goto free_and_return;
     }
@@ -85,13 +86,13 @@ grub_parse_color_name_pair (grub_uint8_t *ret, const char *name)
 
   if (parse_color_name (&fg, fg_name) == -1)
     {
-      grub_printf ("Warning: invalid foreground color `%s'\n", fg_name);
+      grub_printf_ (N_("Warning: invalid foreground color `%s'\n"), fg_name);
       grub_wait_after_message ();
       goto free_and_return;
     }
   if (parse_color_name (&bg, bg_name) == -1)
     {
-      grub_printf ("Warning: invalid background color `%s'\n", bg_name);
+      grub_printf_ (N_("Warning: invalid background color `%s'\n"), bg_name);
       grub_wait_after_message ();
       goto free_and_return;
     }

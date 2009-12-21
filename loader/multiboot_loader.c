@@ -17,7 +17,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/machine.h>
 #include <grub/multiboot.h>
 #include <grub/multiboot2.h>
 #include <multiboot2.h>
@@ -44,7 +43,7 @@ static unsigned int module_version_status = 1;
 static int
 find_multi_boot1_header (grub_file_t file)
 {
-  struct grub_multiboot_header *header;
+  struct multiboot_header *header;
   char buffer[MULTIBOOT_SEARCH];
   int found_status = 0;
   grub_ssize_t len;
@@ -55,9 +54,9 @@ find_multi_boot1_header (grub_file_t file)
 
   /* Look for the multiboot header in the buffer.  The header should
      be at least 12 bytes and aligned on a 4-byte boundary.  */
-  for (header = (struct grub_multiboot_header *) buffer;
+  for (header = (struct multiboot_header *) buffer;
       ((char *) header <= buffer + len - 12) || (header = 0);
-      header = (struct grub_multiboot_header *) ((char *) header + 4))
+      header = (struct multiboot_header *) ((char *) header + 4))
     {
       if (header->magic == MULTIBOOT_MAGIC
           && !(header->magic + header->flags + header->checksum))

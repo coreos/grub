@@ -109,6 +109,8 @@ grub_device_iterate (int (*hook) (const char *name))
 	  (void) grub_partition_iterate (dev->disk, iterate_partition);
 	  grub_device_close (dev);
 
+	  grub_errno = GRUB_ERR_NONE;
+
 	  p = ents;
 	  while (p != NULL)
 	    {

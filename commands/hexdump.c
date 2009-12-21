@@ -38,18 +38,18 @@ grub_cmd_hexdump (grub_extcmd_t cmd, int argc, char **args)
   struct grub_arg_list *state = cmd->state;
   char buf[GRUB_DISK_SECTOR_SIZE * 4];
   grub_ssize_t size, length;
-  grub_addr_t skip;
+  grub_disk_addr_t skip;
   int namelen;
 
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
   namelen = grub_strlen (args[0]);
-  skip = (state[0].set) ? grub_strtoul (state[0].arg, 0, 0) : 0;
+  skip = (state[0].set) ? grub_strtoull (state[0].arg, 0, 0) : 0;
   length = (state[1].set) ? grub_strtoul (state[1].arg, 0, 0) : 256;
 
   if (!grub_strcmp (args[0], "(mem)"))
-    hexdump (skip, (char *) skip, length);
+    hexdump (skip, (char *) (grub_addr_t) skip, length);
   else if ((args[0][0] == '(') && (args[0][namelen - 1] == ')'))
     {
       grub_disk_t disk;

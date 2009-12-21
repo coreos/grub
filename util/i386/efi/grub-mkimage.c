@@ -30,6 +30,7 @@
 #include <grub/kernel.h>
 #include <grub/efi/pe32.h>
 #include <grub/machine/kernel.h>
+#include "progname.h"
 
 #if GRUB_TARGET_WORDSIZE == 32
 # define grub_le_to_cpu(val) grub_le_to_cpu32(val)
@@ -54,12 +55,12 @@ align_pe32_section (Elf_Addr addr)
 /* Read the whole kernel image. Return the pointer to a read image,
    and store the size in bytes in *SIZE.  */
 static char *
-read_kernel_module (const char *dir, size_t *size)
+read_kernel_image (const char *dir, size_t *size)
 {
   char *kernel_image;
   char *kernel_path;
 
-  kernel_path = grub_util_get_path (dir, "kernel.mod");
+  kernel_path = grub_util_get_path (dir, "kernel.img");
   *size = grub_util_get_image_size (kernel_path);
   kernel_image = grub_util_read_image (kernel_path);
   free (kernel_path);
@@ -944,7 +945,7 @@ convert_elf (const char *dir, char *prefix, FILE *out, char *mods[])
   int i;
 
   /* Get the kernel image and check the format.  */
-  kernel_image = read_kernel_module (dir, &kernel_size);
+  kernel_image = read_kernel_image (dir, &kernel_size);
   e = (Elf_Ehdr *) kernel_image;
   if (! check_elf_header (e, kernel_size))
     grub_util_error ("invalid ELF header");
@@ -1056,7 +1057,7 @@ main (int argc, char *argv[])
   char *dir = NULL;
   char *prefix = NULL;
 
-  progname = "grub-mkimage";
+  program_name = "grub-mkimage";
 
   while (1)
     {

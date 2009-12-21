@@ -39,13 +39,6 @@ grub_uint32_t EXPORT_FUNC(grub_get_mmap_entry) (struct grub_machine_mmap_entry *
 /* Turn on/off Gate A20.  */
 void grub_gate_a20 (int on);
 
-/* Reboot the machine.  */
-void EXPORT_FUNC (grub_reboot) (void);
-
-/* Halt the system, using APM if possible. If NO_APM is true, don't
- * use APM even if it is available.  */
-void EXPORT_FUNC (grub_halt) (int no_apm);
-
 void EXPORT_FUNC(grub_stop_floppy) (void);
 
 #endif /* ! GRUB_INIT_MACHINE_HEADER */

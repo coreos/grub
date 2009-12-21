@@ -1,15 +1,27 @@
 # -*- makefile -*-
 
+sbin_UTILITIES += grub-mkdevicemap
+grub_mkdevicemap_SOURCES = gnulib/progname.c util/grub-mkdevicemap.c \
+	util/deviceiter.c \
+	util/misc.c
+
+ifeq ($(target_cpu)-$(platform), sparc64-ieee1275)
+grub_mkdevicemap_SOURCES += util/ieee1275/ofpath.c util/ieee1275/devicemap.c
+else
+grub_mkdevicemap_SOURCES += util/devicemap.c
+endif
+
 # For grub-mkelfimage.
 bin_UTILITIES += grub-mkelfimage
-grub_mkelfimage_SOURCES = util/elf/grub-mkimage.c util/misc.c \
+grub_mkelfimage_SOURCES = gnulib/progname.c \
+	util/elf/grub-mkimage.c util/misc.c \
 	util/resolve.c
 util/elf/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-probe.
 sbin_UTILITIES += grub-probe
 util/grub-probe.c_DEPENDENCIES = grub_probe_init.h
-grub_probe_SOURCES = util/grub-probe.c	\
+grub_probe_SOURCES = gnulib/progname.c util/grub-probe.c	\
 	util/hostdisk.c	util/misc.c util/getroot.c		\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	kern/parser.c kern/partition.c kern/file.c		\
@@ -29,18 +41,23 @@ bin_UTILITIES += grub-fstest
 endif
 
 bin_UTILITIES += grub-mkisofs
-grub_mkisofs_SOURCES = util/mkisofs/eltorito.c util/mkisofs/fnmatch.c	\
-	util/mkisofs/getopt1.c util/mkisofs/getopt.c			\
+grub_mkisofs_SOURCES = util/mkisofs/eltorito.c 				\
 	util/mkisofs/hash.c util/mkisofs/joliet.c			\
 	util/mkisofs/match.c util/mkisofs/mkisofs.c			\
 	util/mkisofs/multi.c util/mkisofs/name.c			\
 	util/mkisofs/rock.c util/mkisofs/tree.c				\
-	util/mkisofs/write.c
-grub_mkisofs_CFLAGS = -I$(srcdir)/util/mkisofs/include -Wno-all -Werror
+	util/mkisofs/write.c						\
+	\
+	gnulib/fnmatch.c gnulib/getopt1.c gnulib/getopt.c		\
+	gnulib/error.c gnulib/progname.c
+grub_mkisofs_CFLAGS = -D_FILE_OFFSET_BITS=64 				\
+	-I$(srcdir)/util/mkisofs/include				\
+	-Wno-all -Werror
 
 # For grub-fstest.
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
-grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
+grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c util/hostfs.c \
+	util/misc.c 	\
 	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	disk/host.c disk/loopback.c kern/list.c kern/command.c		\
 	lib/arg.c commands/extcmd.c normal/datetime.c normal/misc.c	\
@@ -62,28 +79,19 @@ grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 # For grub-mkfont.
 ifeq ($(enable_grub_mkfont), yes)
 bin_UTILITIES += grub-mkfont
-grub_mkfont_SOURCES = util/grub-mkfont.c util/misc.c
+grub_mkfont_SOURCES = gnulib/progname.c util/grub-mkfont.c util/misc.c
 grub_mkfont_CFLAGS = $(freetype_cflags)
 grub_mkfont_LDFLAGS = $(freetype_libs)
 endif
 
+# For grub-mkrelpath.
+bin_UTILITIES += grub-mkrelpath
+grub_mkrelpath_SOURCES = gnulib/progname.c util/grub-mkrelpath.c util/misc.c
+
 # For the parser.
-grub_script.tab.c grub_script.tab.h: script/sh/parser.y
-	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/sh/parser.y
+grub_script.tab.c grub_script.tab.h: script/parser.y
+	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/parser.y
 DISTCLEANFILES += grub_script.tab.c grub_script.tab.h
-
-# For grub-emu.
-grub_emu_init.lst: geninit.sh $(filter-out grub_emu_init.c,$(grub_emu_SOURCES))
-	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
-DISTCLEANFILES += grub_emu_init.lst
-
-grub_emu_init.h: grub_emu_init.lst $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninitheader.sh
-	rm -f $@; sh $(srcdir)/geninitheader.sh $< > $@
-DISTCLEANFILES += grub_emu_init.h
-
-grub_emu_init.c: grub_emu_init.lst $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninit.sh grub_emu_init.h
-	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
-DISTCLEANFILES += grub_emu_init.c
 
 # For grub-probe.
 grub_probe_init.lst: geninit.sh $(filter-out grub_probe_init.c,$(grub_probe_SOURCES))
@@ -126,7 +134,7 @@ DISTCLEANFILES += grub_fstest_init.c
 
 # for grub-editenv
 bin_UTILITIES += grub-editenv
-grub_editenv_SOURCES = util/grub-editenv.c lib/envblk.c util/misc.c kern/misc.c kern/err.c
+grub_editenv_SOURCES = gnulib/progname.c util/grub-editenv.c lib/envblk.c util/misc.c kern/misc.c kern/err.c
 CLEANFILES += grub-editenv
 
 # Needed for genmk.rb to work
@@ -134,7 +142,7 @@ ifeq (0,1)
 bin_UTILITIES += grub-macho2img grub-pe2elf
 endif
 
-grub_pe2elf_SOURCES = util/grub-pe2elf.c util/misc.c
+grub_pe2elf_SOURCES = gnulib/progname.c util/grub-pe2elf.c util/misc.c
 CLEANFILES += grub-pe2elf
 
 grub_macho2img_SOURCES = util/grub-macho2img.c
@@ -158,6 +166,12 @@ update-grub_lib: util/update-grub_lib.in config.status
 	chmod +x $@
 lib_SCRIPTS += update-grub_lib
 CLEANFILES += update-grub_lib
+
+grub-gettext_lib: util/grub-gettext_lib.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+lib_DATA += grub-gettext_lib
+CLEANFILES += grub-gettext_lib
 
 %: util/grub.d/%.in config.status
 	./config.status --file=$@:$<
@@ -534,8 +548,8 @@ normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For sh.mod.
-sh_mod_SOURCES = script/sh/main.c script/sh/script.c script/sh/execute.c \
-	script/sh/function.c script/sh/lexer.c grub_script.tab.c
+sh_mod_SOURCES = script/main.c script/script.c script/execute.c \
+	script/function.c script/lexer.c grub_script.tab.c
 sh_mod_CFLAGS = $(COMMON_CFLAGS)
 sh_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
@@ -606,6 +620,12 @@ bufio_mod_SOURCES = io/bufio.c
 bufio_mod_CFLAGS = $(COMMON_CFLAGS)
 bufio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For gettext.mod.
+pkglib_MODULES += gettext.mod
+gettext_mod_SOURCES = gettext/gettext.c
+gettext_mod_CFLAGS = $(COMMON_CFLAGS)
+gettext_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # Misc.
 pkglib_MODULES += xnu_uuid.mod
 
@@ -618,3 +638,8 @@ pkglib_MODULES += setjmp.mod
 setjmp_mod_SOURCES = lib/$(target_cpu)/setjmp.S
 setjmp_mod_ASFLAGS = $(COMMON_ASFLAGS)
 setjmp_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += charset.mod
+charset_mod_SOURCES = lib/charset.c
+charset_mod_CFLAGS = $(COMMON_CFLAGS)
+charset_mod_LDFLAGS = $(COMMON_LDFLAGS)

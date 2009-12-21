@@ -25,6 +25,7 @@
 #include <grub/time.h>
 #include <grub/env.h>
 #include <grub/menu_viewer.h>
+#include <grub/i18n.h>
 
 /* Time to delay after displaying an error message about a default/fallback
    entry failing to boot.  */
@@ -38,10 +39,126 @@ static grub_uint8_t grub_color_menu_highlight;
 void
 grub_wait_after_message (void)
 {
-  grub_printf ("\nPress any key to continue...");
+  grub_putchar ('\n');
+  grub_printf_ (N_("Press any key to continue..."));
   (void) grub_getkey ();
   grub_putchar ('\n');
 }
+
+static void
+print_spaces (int number_spaces)
+{
+  int i;
+  for (i = 0; i < number_spaces; i++)
+    grub_putchar (' ');
+}
+
+void
+grub_print_ucs4 (const grub_uint32_t * str,
+                const grub_uint32_t * last_position)
+{
+  while (str < last_position)
+    {
+      grub_putcode (*str);
+      str++;
+    }
+}
+
+int
+grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
+			grub_uint32_t **last_position)
+{
+  grub_ssize_t msg_len = grub_strlen (msg);
+
+  *unicode_msg = grub_malloc (grub_strlen (msg) * sizeof (grub_uint32_t));
+  
+  if (!*unicode_msg)
+    {
+      grub_printf ("utf8_to_ucs4 ERROR1: %s", msg);
+      return -1;
+    }
+
+  msg_len = grub_utf8_to_ucs4 (*unicode_msg, msg_len,
+  			      (grub_uint8_t *) msg, -1, 0);
+
+  *last_position = *unicode_msg + msg_len;
+
+  if (msg_len < 0)
+    {
+      grub_printf ("utf8_to_ucs4 ERROR2: %s", msg);
+      grub_free (*unicode_msg);
+    }
+  return msg_len;
+}
+
+grub_ssize_t
+grub_getstringwidth (grub_uint32_t * str, const grub_uint32_t * last_position)
+{
+  grub_ssize_t width = 0;
+
+  while (str < last_position)
+    {
+      width += grub_getcharwidth (*str);
+      str++;
+    }
+  return width;
+}
+
+void
+grub_print_message_indented (const char *msg, int margin_left, int margin_right)
+{
+  int line_len;
+  line_len = GRUB_TERM_WIDTH - grub_getcharwidth ('m') *
+    (margin_left + margin_right);
+
+  grub_uint32_t *unicode_msg;
+  grub_uint32_t *last_position;
+
+  int msg_len;
+
+  msg_len = grub_utf8_to_ucs4_alloc (msg, &unicode_msg, &last_position);
+
+  if (msg_len < 0)
+    {
+      return;
+    }
+
+  grub_uint32_t *current_position = unicode_msg;
+
+  grub_uint32_t *next_new_line = unicode_msg;
+
+  int first_loop = 1;
+
+  while (current_position < last_position)
+    {
+      if (! first_loop)
+        grub_putchar ('\n');
+      
+      next_new_line = (grub_uint32_t *) last_position;
+
+      while (grub_getstringwidth (current_position, next_new_line) > line_len
+            || (*next_new_line != ' ' && next_new_line > current_position &&
+                next_new_line != last_position))
+       {
+         next_new_line--;
+       }
+
+      if (next_new_line == current_position)
+       {
+         next_new_line = (next_new_line + line_len > last_position) ?
+           (grub_uint32_t *) last_position : next_new_line + line_len;
+       }
+
+      print_spaces (margin_left);
+      grub_print_ucs4 (current_position, next_new_line);
+
+      next_new_line++;
+      current_position = next_new_line;
+      first_loop = 0;
+    }
+  grub_free (unicode_msg);
+}
+
 
 static void
 draw_border (void)
@@ -86,22 +203,33 @@ print_message (int nested, int edit)
 
   if (edit)
     {
-      grub_printf ("\n\
-      Minimum Emacs-like screen editing is supported. TAB lists\n\
-      completions. Press Ctrl-x to boot, Ctrl-c for a command-line\n\
-      or ESC to return menu.");
+      grub_putchar ('\n');
+      grub_print_message_indented (_("Minimum Emacs-like screen editing is \
+supported. TAB lists completions. Press Ctrl-x to boot, Ctrl-c for a \
+command-line or ESC to return menu."), STANDARD_MARGIN, STANDARD_MARGIN);
     }
   else
     {
-      grub_printf ("\n\
-      Use the %C and %C keys to select which entry is highlighted.\n",
-		   (grub_uint32_t) GRUB_TERM_DISP_UP, (grub_uint32_t) GRUB_TERM_DISP_DOWN);
-      grub_printf ("\
-      Press enter to boot the selected OS, \'e\' to edit the\n\
-      commands before booting or \'c\' for a command-line.");
+      const char *msg = _("Use the %C and %C keys to select which \
+entry is highlighted.\n");
+      char *msg_translated =
+       grub_malloc (sizeof (char) * grub_strlen (msg) + 1);
+
+      grub_sprintf (msg_translated, msg, (grub_uint32_t) GRUB_TERM_DISP_UP,
+                   (grub_uint32_t) GRUB_TERM_DISP_DOWN);
+      grub_putchar ('\n');
+      grub_print_message_indented (msg_translated, STANDARD_MARGIN, STANDARD_MARGIN);
+
+      grub_free (msg_translated);
+
+      grub_print_message_indented (_("Press enter to boot the selected OS, \
+\'e\' to edit the commands before booting or \'c\' for a command-line.\n"), STANDARD_MARGIN, STANDARD_MARGIN);
+
       if (nested)
-	grub_printf ("\n\
-      ESC to return previous menu.");
+        {
+          grub_printf ("\n        ");
+          grub_printf_ (N_("ESC to return previous menu."));
+        }
     }
 }
 
@@ -262,18 +390,26 @@ get_entry_number (const char *name)
 }
 
 static void
-print_timeout (int timeout, int offset, int second_stage)
+print_timeout (int timeout, int offset)
 {
-  /* NOTE: Do not remove the trailing space characters.
-     They are required to clear the line.  */
-  char *msg = "   The highlighted entry will be booted automatically in %ds.    ";
-  char *msg_end = grub_strchr (msg, '%');
+  const char *msg =
+    _("The highlighted entry will be booted automatically in %ds.");
 
-  grub_gotoxy (second_stage ? (msg_end - msg) : 0, GRUB_TERM_HEIGHT - 3);
-  grub_printf (second_stage ? msg_end : msg, timeout);
+  grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
+
+  char *msg_translated =
+    grub_malloc (sizeof (char) * grub_strlen (msg) + 5);
+
+  grub_sprintf (msg_translated, msg, timeout);
+  grub_print_message_indented (msg_translated, 3, 0);
+  
+  int posx;
+  posx = grub_getxy() >> 8;
+  print_spaces (GRUB_TERM_WIDTH - posx - 1);
+
   grub_gotoxy (GRUB_TERM_CURSOR_X, GRUB_TERM_FIRST_ENTRY_Y + offset);
   grub_refresh ();
-};
+}
 
 /* Show the menu and handle menu entry selection.  Returns the menu entry
    index that should be executed or -1 if no entry should be executed (e.g.,
@@ -324,7 +460,7 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
   timeout = grub_menu_get_timeout ();
 
   if (timeout > 0)
-    print_timeout (timeout, offset, 0);
+    print_timeout (timeout, offset);
 
   while (1)
     {
@@ -341,7 +477,7 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	      timeout--;
 	      grub_menu_set_timeout (timeout);
 	      saved_time = current_time;
-	      print_timeout (timeout, offset, 1);
+	      print_timeout (timeout, offset);
 	    }
 	}
 
@@ -359,8 +495,8 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	  if (timeout >= 0)
 	    {
 	      grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
-              grub_printf ("\
-                                                                        ");
+              print_spaces (GRUB_TERM_WIDTH - 1);
+
 	      grub_env_unset ("timeout");
 	      grub_env_unset ("fallback");
 	      grub_gotoxy (GRUB_TERM_CURSOR_X, GRUB_TERM_FIRST_ENTRY_Y + offset);
@@ -516,7 +652,9 @@ static void
 notify_booting (grub_menu_entry_t entry,
 		void *userdata __attribute__((unused)))
 {
-  grub_printf ("  Booting \'%s\'\n\n", entry->title);
+  grub_printf ("  ");
+  grub_printf_ (N_("Booting \'%s\'"), entry->title);
+  grub_printf ("\n\n");
 }
 
 /* Callback invoked when a default menu entry executed because of a timeout
@@ -526,7 +664,9 @@ static void
 notify_fallback (grub_menu_entry_t entry,
 		 void *userdata __attribute__((unused)))
 {
-  grub_printf ("\n  Falling back to \'%s\'\n\n", entry->title);
+  grub_printf ("\n   ");
+  grub_printf_ (N_("Falling back to \'%s\'"), entry->title);
+  grub_printf ("\n\n");
   grub_millisleep (DEFAULT_ENTRY_ERROR_DELAY_MS);
 }
 
@@ -540,7 +680,8 @@ notify_execution_failure (void *userdata __attribute__((unused)))
       grub_print_error ();
       grub_errno = GRUB_ERR_NONE;
     }
-  grub_printf ("\n  Failed to boot default entries.\n");
+  grub_printf ("\n  ");
+  grub_printf_ (N_("Failed to boot default entries.\n"));
   grub_wait_after_message ();
 }
 

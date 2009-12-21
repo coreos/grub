@@ -22,12 +22,15 @@
 #include <grub/util/misc.h>
 #include <grub/lib/envblk.h>
 #include <grub/handler.h>
+#include <grub/i18n.h>
 
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
+
+#include "progname.h"
 
 #define DEFAULT_ENVBLK_SIZE	1024
 
@@ -104,7 +107,7 @@ create_envblk_file (const char *name)
   if (! buf)
     grub_util_error ("out of memory");
 
-  asprintf (&namenew, "%s.new", name);
+  namenew = xasprintf ("%s.new", name);
   fp = fopen (namenew, "wb");
   if (! fp)
     grub_util_error ("cannot open the file %s", namenew);
@@ -252,7 +255,10 @@ main (int argc, char *argv[])
   char *filename;
   char *command;
 
-  progname = "grub-editenv";
+  set_program_name (argv[0]);
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
 
   /* Check for options.  */
   while (1)
@@ -269,7 +275,7 @@ main (int argc, char *argv[])
 	    break;
 
 	  case 'V':
-	    printf ("%s (%s) %s\n", progname, PACKAGE_NAME, PACKAGE_VERSION);
+	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 	    return 0;
 
 	  case 'v':

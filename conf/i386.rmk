@@ -14,3 +14,14 @@ pkglib_MODULES += vga_text.mod
 vga_text_mod_SOURCES = term/i386/pc/vga_text.c term/i386/vga_common.c
 vga_text_mod_CFLAGS = $(COMMON_CFLAGS)
 vga_text_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += relocator.mod
+relocator_mod_SOURCES = lib/i386/relocator.c lib/i386/relocator_asm.S lib/i386/relocator_backward.S
+relocator_mod_CFLAGS = $(COMMON_CFLAGS)
+relocator_mod_ASFLAGS = $(COMMON_ASFLAGS)
+relocator_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += ata.mod
+ata_mod_SOURCES = disk/ata.c
+ata_mod_CFLAGS = $(COMMON_CFLAGS)
+ata_mod_LDFLAGS = $(COMMON_LDFLAGS)

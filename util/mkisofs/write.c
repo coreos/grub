@@ -19,15 +19,12 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+ */
 
-static char rcsid[] ="$Id: write.c,v 1.21 1999/03/07 17:41:19 eric Exp $";
+#include "config.h"
 
 #include <string.h>
 #include <stdlib.h>
-#include "config.h"
-#include "mkisofs.h"
-#include "iso9660.h"
 #include <time.h>
 #include <errno.h>
 
@@ -39,6 +36,10 @@ static char rcsid[] ="$Id: write.c,v 1.21 1999/03/07 17:41:19 eric Exp $";
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+
+#include "mkisofs.h"
+#include "iso9660.h"
+#include "msdos_partition.h"
  
 #ifdef __SVR4
 extern char * strdup(const char *);
@@ -111,6 +112,14 @@ void FDECL2(set_732, char *, pnt, unsigned int, i)
      pnt[0] = (i >> 24) &  0xff;
 }
 
+int FDECL1(get_731, char *, p)
+{
+  return ((p[0] & 0xff)
+	  | ((p[1] & 0xff) << 8)
+	  | ((p[2] & 0xff) << 16)
+	  | ((p[3] & 0xff) << 24));
+}
+
 int FDECL1(get_733, char *, p)
 {
      return ((p[0] & 0xff)
@@ -127,7 +136,7 @@ void FDECL2(set_733, char *, pnt, unsigned int, i)
      pnt[4] = pnt[3] = (i >> 24) &  0xff;
 }
 
-void FDECL4(xfwrite, void *, buffer, int, count, int, size, FILE *, file)
+void FDECL4(xfwrite, void *, buffer, uint64_t, count, uint64_t, size, FILE *, file)
 {
 	/*
 	 * This is a hack that could be made better. XXXIs this the only place?
@@ -148,21 +157,16 @@ void FDECL4(xfwrite, void *, buffer, int, count, int, size, FILE *, file)
 			unlink(outfile);
 		sprintf(nbuf, "%s_%02d", outfile, idx++);
 		file = freopen(nbuf, "wb", file);
-		if (file == NULL) {
-			fprintf(stderr, "Cannot open '%s'.\n", nbuf);
-			exit(1);
-		}
+		if (file == NULL)
+		  error (1, errno, _("Cannot open '%s'"), nbuf);
 
 	}
      while(count) 
      {
-	  int got = fwrite(buffer,size,count,file);
+	  size_t got = fwrite (buffer, size, count, file);
 
-	  if(got<=0) 
-	  {
-	       fprintf(stderr,"cannot fwrite %d*%d\n",size,count);
-	       exit(1);
-	  }
+	  if (got != count)
+	    error (1, errno, _("cannot fwrite %llu*%llu\n"), size, count);
 	  count-=got,*(char**)&buffer+=size*got;
      }
 }
@@ -171,14 +175,14 @@ struct deferred_write
 {
   struct deferred_write * next;
   char			* table;
-  unsigned int		  extent;
-  unsigned int		  size;
+  uint64_t		  extent;
+  uint64_t		  size;
   char			* name;
 };
 
 static struct deferred_write * dw_head = NULL, * dw_tail = NULL;
 
-unsigned int last_extent_written  =0;
+uint64_t last_extent_written = 0;
 static unsigned int path_table_index;
 static time_t begun;
 
@@ -235,23 +239,16 @@ static int FDECL1(assign_directory_addresses, struct directory *, node)
 }
 
 static void FDECL3(write_one_file, char *, filename, 
-		   unsigned int, size, FILE *, outfile)
+		   uint64_t, size, FILE *, outfile)
 {
      char		  buffer[SECTOR_SIZE * NSECT];
      FILE		* infile;
-     int		  remain;
-     unsigned int		  use;
+     int64_t		  remain;
+     size_t		  use;
 
 
      if ((infile = fopen(filename, "rb")) == NULL) 
-     {
-#if defined(sun) || defined(_AUX_SOURCE)
-	  fprintf(stderr, "cannot open %s: (%d)\n", filename, errno);
-#else
-	  fprintf(stderr, "cannot open %s: %s\n", filename, strerror(errno));
-#endif
-	  exit(1);
-     }
+       error (1, errno, _("cannot open %s\n"), filename);
      remain = size;
 
      while(remain > 0)
@@ -260,10 +257,7 @@ static void FDECL3(write_one_file, char *, filename,
 	  use = ROUND_UP(use); /* Round up to nearest sector boundary */
 	  memset(buffer, 0, use);
 	  if (fread(buffer, 1, use, infile) == 0) 
-	  {
-		fprintf(stderr,"cannot read from %s\n",filename); 
-		exit(1);
-	  }
+	    error (1, errno, _("cannot read %llu bytes from %s"), use, filename); 
 	  xfwrite(buffer, 1, use, outfile);
 	  last_extent_written += use/SECTOR_SIZE;
 #if 0
@@ -281,8 +275,8 @@ static void FDECL3(write_one_file, char *, filename,
 	       time(&now);
 	       frac = last_extent_written / (double)last_extent;
 	       the_end = begun + (now - begun) / frac;
-	       fprintf(stderr, "%6.2f%% done, estimate finish %s",
-		       frac * 100., ctime(&the_end));
+	       fprintf (stderr, _("%6.2f%% done, estimate finish %s"),
+			frac * 100., ctime(&the_end));
 	  }
 #endif
 	  remain -= use;
@@ -298,12 +292,10 @@ static void FDECL1(write_files, FILE *, outfile)
      {
 	  if(dwpnt->table) 
 	  {
-	       xfwrite(dwpnt->table,  1, ROUND_UP(dwpnt->size), outfile);
-	       last_extent_written += ROUND_UP(dwpnt->size) / SECTOR_SIZE;
-	       table_size += dwpnt->size;
-/*		  fprintf(stderr,"Size %d ", dwpnt->size); */
-	       free(dwpnt->table);
-	  } 
+	    write_one_file (dwpnt->table, dwpnt->size, outfile);
+	    table_size += dwpnt->size;
+	    free (dwpnt->table);
+	  }
 	  else 
 	  {
 
@@ -550,8 +542,8 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 	       {
 		    if(verbose > 2)
 		    {
-			 fprintf(stderr, "Cache hit for %s%s%s\n",s_entry->filedir->de_name, 
-				 SPATH_SEPARATOR, s_entry->name);
+		      fprintf (stderr, _("Cache hit for %s%s%s\n"), s_entry->filedir->de_name, 
+			       SPATH_SEPARATOR, s_entry->name);
 		    }
 		    set_733((char *) s_entry->isorec.extent, s_hash->starting_block);
 		    set_733((char *) s_entry->isorec.size, s_hash->size);
@@ -572,10 +564,8 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 		    {
 			 if(finddir->self == s_entry) break;
 			 finddir = finddir->next;
-			 if(!finddir) 
-			 {
-			      fprintf(stderr,"Fatal goof\n"); exit(1);
-			 }
+			 if (!finddir) 
+			   error (1, 0, _("Fatal goof\n"));
 		    }
 		    set_733((char *) s_entry->isorec.extent, finddir->extent);
 		    s_entry->starting_block = finddir->extent;
@@ -673,15 +663,15 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 		    last_extent += ROUND_UP(s_entry->size) >> 11;
 		    if(verbose > 2)
 		    {
-			 fprintf(stderr,"%d %d %s\n", s_entry->starting_block,
+			 fprintf(stderr,"%llu %llu %s\n", s_entry->starting_block,
 				 last_extent-1, whole_path);
 		    }
 #ifdef DBG_ISO
 		    if((ROUND_UP(s_entry->size) >> 11) > 500)
 		    {
-			 fprintf(stderr,"Warning: large file %s\n", whole_path);
-			 fprintf(stderr,"Starting block is %d\n", s_entry->starting_block);
-			 fprintf(stderr,"Reported file size is %d extents\n", s_entry->size);
+			 fprintf (stderr, "Warning: large file %s\n", whole_path);
+			 fprintf (stderr, "Starting block is %d\n", s_entry->starting_block);
+			 fprintf (stderr, "Reported file size is %d extents\n", s_entry->size);
 			 
 		    }
 #endif
@@ -906,8 +896,8 @@ void FDECL2(generate_one_directory, struct directory *, dpnt, FILE *, outfile)
 
      if(dpnt->size != dir_index)
      {
-	  fprintf(stderr,"Unexpected directory length %d %d %s\n",dpnt->size, 
-	    dir_index, dpnt->de_name);
+	  fprintf (stderr, _("Unexpected directory length %d %d %s\n"), dpnt->size,
+		   dir_index, dpnt->de_name);
      }
 
      xfwrite(directory_buffer, 1, total_size, outfile);
@@ -918,8 +908,8 @@ void FDECL2(generate_one_directory, struct directory *, dpnt, FILE *, outfile)
      {
 	  if(ce_index != dpnt->ce_bytes)
 	  {
-	       fprintf(stderr,"Continuation entry record length mismatch (%d %d).\n",
-		       ce_index, dpnt->ce_bytes);
+	    fprintf (stderr, _("Continuation entry record length mismatch (%d %d).\n"),
+		     ce_index, dpnt->ce_bytes);
 	  }
 	  xfwrite(ce_buffer, 1, ce_size, outfile);
 	  last_extent_written += ce_size >> 11;
@@ -991,9 +981,8 @@ static int generate_path_tables()
    */
   if( next_path_index > 0xffff )
   {
-      fprintf(stderr, "Unable to generate sane path tables - too many directories (%d)\n",
-	      next_path_index);
-      exit(1);
+    error (1, 0, _("Unable to generate sane path tables - too many directories (%d)\n"),
+	   next_path_index);
   }
 
   path_table_index = 0;
@@ -1028,8 +1017,7 @@ static int generate_path_tables()
        dpnt = pathlist[j];
        if(!dpnt)
        {
-	    fprintf(stderr,"Entry %d not in path tables\n", j);
-	    exit(1);
+	 error (1, 0, _("Entry %d not in path tables\n"), j);
        }
        npnt = dpnt->de_name;
        
@@ -1049,8 +1037,7 @@ static int generate_path_tables()
        de = dpnt->self;
        if(!de) 
        {
-	    fprintf(stderr,"Fatal goof\n"); 
-	    exit(1);
+	 error (1, 0, _("Fatal goof\n"));
        }
        
        
@@ -1085,9 +1072,9 @@ static int generate_path_tables()
   free(pathlist);
   if(path_table_index != path_table_size)
   {
-       fprintf(stderr,"Path table lengths do not match %d %d\n",
-	       path_table_index,
-	       path_table_size);
+    fprintf (stderr, _("Path table lengths do not match %d %d\n"),
+	     path_table_index,
+	     path_table_size);
   }
   return 0;
 } /* generate_path_tables(... */
@@ -1131,18 +1118,18 @@ static int FDECL1(file_write, FILE *, outfile)
 
   if( print_size > 0 )
     {
-      fprintf(stderr,"Total extents scheduled to be written = %d\n", 
-	      last_extent - session_start);
-	exit(0);
+      fprintf (stderr, _("Total extents scheduled to be written = %llu\n"),
+	       last_extent - session_start);
+      exit (0);
     }
   if( verbose > 2 )
     {
 #ifdef DBG_ISO
-      fprintf(stderr,"Total directory extents being written = %d\n", last_extent);
+      fprintf(stderr,"Total directory extents being written = %llu\n", last_extent);
 #endif
       
-      fprintf(stderr,"Total extents scheduled to be written = %d\n", 
-	      last_extent - session_start);
+      fprintf (stderr, _("Total extents scheduled to be written = %llu\n"), 
+	       last_extent - session_start);
     }
 
   /* 
@@ -1158,8 +1145,8 @@ static int FDECL1(file_write, FILE *, outfile)
       return 0;
     }
 
-  fprintf(stderr,"Total extents actually written = %d\n", 
-	  last_extent_written - session_start);
+  fprintf (stderr, _("Total extents actually written = %llu\n"),
+	   last_extent_written - session_start);
 
   /* 
    * Hard links throw us off here 
@@ -1167,14 +1154,14 @@ static int FDECL1(file_write, FILE *, outfile)
   assert (last_extent > session_start);
   if(should_write + session_start != last_extent)
     {
-      fprintf(stderr,"Number of extents written not what was predicted.  Please fix.\n");
-      fprintf(stderr,"Predicted = %d, written = %d\n", should_write, last_extent);
+      fprintf (stderr, _("Number of extents written different than what was predicted.  Please fix.\n"));
+      fprintf (stderr, _("Predicted = %d, written = %llu\n"), should_write, last_extent);
     }
 
-  fprintf(stderr,"Total translation table size: %d\n", table_size);
-  fprintf(stderr,"Total rockridge attributes bytes: %d\n", rockridge_size);
-  fprintf(stderr,"Total directory bytes: %d\n", total_dir_size);
-  fprintf(stderr,"Path table size(bytes): %d\n", path_table_size);
+  fprintf (stderr, _("Total translation table size: %d\n"), table_size);
+  fprintf (stderr, _("Total rockridge attributes bytes: %d\n"), rockridge_size);
+  fprintf (stderr, _("Total directory bytes: %d\n"), total_dir_size);
+  fprintf (stderr, _("Path table size(bytes): %d\n"), path_table_size);
 
 #ifdef DEBUG
   fprintf(stderr, "next extent, last_extent, last_extent_written %d %d %d\n",
@@ -1360,6 +1347,9 @@ int FDECL1(oneblock_size, int, starting_extent)
 /*
  * Functions to describe padding block at the start of the disc.
  */
+
+#define PADBLOCK_SIZE	16
+
 static int FDECL1(pathtab_size, int, starting_extent)
 {
   path_table[0] = starting_extent;
@@ -1373,7 +1363,7 @@ static int FDECL1(pathtab_size, int, starting_extent)
 
 static int FDECL1(padblock_size, int, starting_extent)
 {
-  last_extent += 16;
+  last_extent += PADBLOCK_SIZE;
   return 0;
 }
 
@@ -1436,17 +1426,45 @@ static int FDECL1(dirtree_cleanup, FILE *, outfile)
 
 static int FDECL1(padblock_write, FILE *, outfile)
 {
-  char				buffer[2048];
-  int				i;
+  char *buffer;
 
-  memset(buffer, 0, sizeof(buffer));
+  buffer = e_malloc (2048 * PADBLOCK_SIZE);
+  memset (buffer, 0, 2048 * PADBLOCK_SIZE);
 
-  for(i=0; i<16; i++)
+  if (use_embedded_boot)
     {
-      xfwrite(buffer, 1, sizeof(buffer), outfile);
+      FILE *fp = fopen (boot_image_embed, "rb");
+      if (! fp)
+	error (1, errno, _("Unable to open %s"), boot_image_embed);
+      fread (buffer, 2048 * PADBLOCK_SIZE, 1, fp);
     }
 
-  last_extent_written += 16;
+  if (use_protective_msdos_label)
+    {
+      struct msdos_partition_mbr *mbr = (void *) buffer;
+
+      memset (mbr->entries, 0, sizeof(mbr->entries));
+
+      /* Some idiotic BIOSes refuse to boot if they don't find at least
+	 one partition with active bit set.  */
+      mbr->entries[0].flag = 0x80;
+
+      /* Doesn't really matter, as long as it's non-zero.  It seems that
+         0xCD is used elsewhere, so we follow suit.  */
+      mbr->entries[0].type = 0xcd;
+
+      /* Start immediately (sector 1).  */
+      mbr->entries[0].start = 1;
+
+      /* We don't know yet.  Let's keep it safe.  */
+      mbr->entries[0].length = UINT32_MAX;
+
+      mbr->signature = MSDOS_PARTITION_SIGNATURE;
+    }
+
+  xfwrite (buffer, 1, 2048 * PADBLOCK_SIZE, outfile);
+  last_extent_written += PADBLOCK_SIZE;
+
   return 0;
 }
 

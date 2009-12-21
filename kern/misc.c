@@ -23,12 +23,22 @@
 #include <stdarg.h>
 #include <grub/term.h>
 #include <grub/env.h>
+#include <grub/i18n.h>
 
 static int
 grub_iswordseparator (int c)
 {
   return (grub_isspace (c) || c == ',' || c == ';' || c == '|' || c == '&');
 }
+
+/* grub_gettext_dummy is not translating anything.  */
+const char *
+grub_gettext_dummy (const char *s)
+{
+  return s;
+}
+
+const char* (*grub_gettext) (const char *s) = grub_gettext_dummy;
 
 void *
 grub_memmove (void *dest, const void *src, grub_size_t n)
@@ -114,6 +124,38 @@ grub_printf (const char *fmt, ...)
   va_end (ap);
 
   return ret;
+}
+
+int
+grub_printf_ (const char *fmt, ...)
+{
+  va_list ap;
+  int ret;
+
+  va_start (ap, fmt);
+  ret = grub_vprintf (_(fmt), ap);
+  va_end (ap);
+
+  return ret;
+}
+
+int
+grub_puts (const char *s)
+{
+  while (*s)
+    {
+      grub_putchar (*s);
+      s++;
+    }
+  grub_putchar ('\n');
+
+  return 1;	/* Cannot fail.  */
+}
+
+int
+grub_puts_ (const char *s)
+{
+  return grub_puts (_(s));
 }
 
 #if defined (APPLE_CC) && ! defined (GRUB_UTIL)
@@ -835,68 +877,6 @@ grub_sprintf (char *str, const char *fmt, ...)
   va_end (ap);
 
   return ret;
-}
-
-/* Convert UTF-16 to UTF-8.  */
-grub_uint8_t *
-grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
-		    grub_size_t size)
-{
-  grub_uint32_t code_high = 0;
-
-  while (size--)
-    {
-      grub_uint32_t code = *src++;
-
-      if (code_high)
-	{
-	  if (code >= 0xDC00 && code <= 0xDFFF)
-	    {
-	      /* Surrogate pair.  */
-	      code = ((code_high - 0xD800) << 12) + (code - 0xDC00) + 0x10000;
-
-	      *dest++ = (code >> 18) | 0xF0;
-	      *dest++ = ((code >> 12) & 0x3F) | 0x80;
-	      *dest++ = ((code >> 6) & 0x3F) | 0x80;
-	      *dest++ = (code & 0x3F) | 0x80;
-	    }
-	  else
-	    {
-	      /* Error...  */
-	      *dest++ = '?';
-	    }
-
-	  code_high = 0;
-	}
-      else
-	{
-	  if (code <= 0x007F)
-	    *dest++ = code;
-	  else if (code <= 0x07FF)
-	    {
-	      *dest++ = (code >> 6) | 0xC0;
-	      *dest++ = (code & 0x3F) | 0x80;
-	    }
-	  else if (code >= 0xD800 && code <= 0xDBFF)
-	    {
-	      code_high = code;
-	      continue;
-	    }
-	  else if (code >= 0xDC00 && code <= 0xDFFF)
-	    {
-	      /* Error... */
-	      *dest++ = '?';
-	    }
-	  else
-	    {
-	      *dest++ = (code >> 12) | 0xE0;
-	      *dest++ = ((code >> 6) & 0x3F) | 0x80;
-	      *dest++ = (code & 0x3F) | 0x80;
-	    }
-	}
-    }
-
-  return dest;
 }
 
 /* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE

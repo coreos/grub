@@ -124,16 +124,17 @@ static const struct grub_arg_option options[] =
 static int iospace;
 
 static int NESTED_FUNC_ATTR
-grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
+grub_lspci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
 {
   grub_uint32_t class;
   const char *sclass;
   grub_pci_address_t addr;
   int i, reg;
 
-  grub_printf ("%02x:%02x.%x %04x:%04x", bus, dev, func, pciid & 0xFFFF,
-	       pciid >> 16);
-  addr = grub_pci_make_address (bus, dev, func, 2);
+  grub_printf ("%02x:%02x.%x %04x:%04x", grub_pci_get_bus (dev),
+	       grub_pci_get_device (dev), grub_pci_get_function (dev),
+	       pciid & 0xFFFF, pciid >> 16);
+  addr = grub_pci_make_address (dev, 2);
   class = grub_pci_read (addr);
 
   /* Lookup the class name, if there isn't a specific one,
@@ -213,13 +214,13 @@ grub_cmd_lspci (grub_extcmd_t cmd,
 
 static grub_extcmd_t cmd;
 
-GRUB_MOD_INIT(pci)
+GRUB_MOD_INIT(lspci)
 {
   cmd = grub_register_extcmd ("lspci", grub_cmd_lspci, GRUB_COMMAND_FLAG_BOTH,
 			      "lspci [-i]", "List PCI devices", options);
 }
 
-GRUB_MOD_FINI(pci)
+GRUB_MOD_FINI(lspci)
 {
   grub_unregister_extcmd (cmd);
 }

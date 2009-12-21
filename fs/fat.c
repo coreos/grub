@@ -25,6 +25,7 @@
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/dl.h>
+#include <grub/charset.h>
 
 #define GRUB_FAT_DIR_ENTRY_SIZE	32
 

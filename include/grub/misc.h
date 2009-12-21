@@ -1,7 +1,7 @@
 /* misc.h - prototypes for misc functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -171,6 +171,9 @@ char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n);
 void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
 grub_size_t EXPORT_FUNC(grub_strlen) (const char *s);
 int EXPORT_FUNC(grub_printf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+int EXPORT_FUNC(grub_printf_) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+int EXPORT_FUNC(grub_puts) (const char *s);
+int EXPORT_FUNC(grub_puts_) (const char *s);
 void EXPORT_FUNC(grub_real_dprintf) (const char *file,
                                      const int line,
                                      const char *condition,
@@ -180,9 +183,6 @@ int EXPORT_FUNC(grub_sprintf) (char *str, const char *fmt, ...) __attribute__ ((
 int EXPORT_FUNC(grub_vsprintf) (char *str, const char *fmt, va_list args);
 void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
-grub_uint8_t *EXPORT_FUNC(grub_utf16_to_utf8) (grub_uint8_t *dest,
-					       grub_uint16_t *src,
-					       grub_size_t size);
 grub_ssize_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
 					     grub_size_t destsize,
 					     const grub_uint8_t *src,
@@ -221,5 +221,16 @@ grub_div_roundup (unsigned int x, unsigned int y)
 {
   return (x + y - 1) / y;
 }
+
+/* Reboot the machine.  */
+void EXPORT_FUNC (grub_reboot) (void);
+
+#ifdef GRUB_MACHINE_PCBIOS
+/* Halt the system, using APM if possible. If NO_APM is true, don't
+ * use APM even if it is available.  */
+void EXPORT_FUNC (grub_halt) (int no_apm);
+#else
+void EXPORT_FUNC (grub_halt) (void);
+#endif
 
 #endif /* ! GRUB_MISC_HEADER */

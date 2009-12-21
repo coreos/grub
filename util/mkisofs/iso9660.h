@@ -6,9 +6,11 @@
 
    Copyright 1993 Yggdrasil Computing, Incorporated
 
+   Copyright (C) 2009  Free Software Foundation, Inc.
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -17,8 +19,8 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 /*
  * 	$Id: iso9660.h,v 1.2 1997/05/17 15:46:44 eric Exp $
@@ -127,6 +129,20 @@ struct eltorito_defaultboot_entry {
         char nsect                      [ISODCL (  7,    8)];
 	char bootoff			[ISODCL (  9,   12)];
         char pad2                       [ISODCL ( 13,   32)];
+};
+
+/* El Torito boot information table */
+struct eltorito_boot_info
+{
+  /* Address of Primary Volume Descriptor.  */
+  char pvd_addr[ISODCL (1, 4)];
+  /* Boot file address.  */
+  char file_addr[ISODCL (5, 8)];
+  /* Boot file length.  */  
+  char file_length[ISODCL (9, 12)];
+  /* Boot file checksum.  */
+  char file_checksum[ISODCL (13, 16)];
+  char dummy[ISODCL (17, 56)];
 };
 
 

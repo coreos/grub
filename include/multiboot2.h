@@ -40,18 +40,18 @@
 
 /* XXX not portable? */
 #if __WORDSIZE == 64
-typedef uint64_t multiboot_word;
+typedef uint64_t multiboot2_word;
 #else
-typedef uint32_t multiboot_word;
+typedef uint32_t multiboot2_word;
 #endif
 
-struct multiboot_header
+struct multiboot2_header
 {
   uint32_t magic;
   uint32_t flags;
 };
 
-struct multiboot_tag_header
+struct multiboot2_tag_header
 {
   uint32_t key;
   uint32_t len;
@@ -61,48 +61,48 @@ struct multiboot_tag_header
 #define MULTIBOOT2_TAG_RESERVED2 (~0)
 
 #define MULTIBOOT2_TAG_START     1
-struct multiboot_tag_start
+struct multiboot2_tag_start
 {
-  struct multiboot_tag_header header;
-  multiboot_word size; /* Total size of all multiboot tags. */
+  struct multiboot2_tag_header header;
+  multiboot2_word size; /* Total size of all multiboot tags. */
 };
 
 #define MULTIBOOT2_TAG_NAME      2
-struct multiboot_tag_name
+struct multiboot2_tag_name
 {
-  struct multiboot_tag_header header;
+  struct multiboot2_tag_header header;
   char name[1];
 };
 
 #define MULTIBOOT2_TAG_MODULE    3
-struct multiboot_tag_module
+struct multiboot2_tag_module
 {
-  struct multiboot_tag_header header;
-  multiboot_word addr;
-  multiboot_word size;
+  struct multiboot2_tag_header header;
+  multiboot2_word addr;
+  multiboot2_word size;
   char type[36];
   char cmdline[1];
 };
 
 #define MULTIBOOT2_TAG_MEMORY    4
-struct multiboot_tag_memory
+struct multiboot2_tag_memory
 {
-  struct multiboot_tag_header header;
-  multiboot_word addr;
-  multiboot_word size;
-  multiboot_word type;
+  struct multiboot2_tag_header header;
+  multiboot2_word addr;
+  multiboot2_word size;
+  multiboot2_word type;
 };
 
 #define MULTIBOOT2_TAG_UNUSED    5
-struct multiboot_tag_unused
+struct multiboot2_tag_unused
 {
-  struct multiboot_tag_header header;
+  struct multiboot2_tag_header header;
 };
 
 #define MULTIBOOT2_TAG_END       0xffff
-struct multiboot_tag_end
+struct multiboot2_tag_end
 {
-  struct multiboot_tag_header header;
+  struct multiboot2_tag_header header;
 };
 
 #endif /* ! ASM_FILE */

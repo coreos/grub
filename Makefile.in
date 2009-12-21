@@ -41,6 +41,15 @@ includedir = @includedir@
 pkgdatadir = $(datadir)/`echo @PACKAGE_TARNAME@ | sed '$(transform)'`
 pkglibdir =  $(libdir)/`echo @PACKAGE_TARNAME@/$(target_cpu)-$(platform) | sed '$(transform)'`
 
+XGETTEXT = @XGETTEXT@
+MSGMERGE = @MSGMERGE@
+MSGFMT = @MSGFMT@
+
+LINGUAS = $(shell for i in $(srcdir)/po/*.po ; do \
+			if test -e $$i ; then echo $$i ; fi ; \
+		done | sed -e "s,.*/po/\(.*\)\.po$$,\1,")
+
+PACKAGE = @PACKAGE@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
@@ -67,15 +76,15 @@ CC = @CC@
 CFLAGS = @CFLAGS@
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@
-CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/include -Wall -W \
-	 -DGRUB_LIBDIR=\"$(pkglibdir)\"
+CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
+	 -DGRUB_LIBDIR=\"$(pkglibdir)\" -DLOCALEDIR=\"$(localedir)\"
 TARGET_CC = @TARGET_CC@
 TARGET_CFLAGS = @TARGET_CFLAGS@
 TARGET_ASFLAGS = @TARGET_ASFLAGS@
 TARGET_MODULE_FORMAT = @TARGET_MODULE_FORMAT@
 TARGET_APPLE_CC = @TARGET_APPLE_CC@
 OBJCONV = @OBJCONV@
-TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -isystem=$(srcdir)/include -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
+TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include) -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
 	-Wall -W
 TARGET_LDFLAGS = @TARGET_LDFLAGS@
 TARGET_IMG_LDSCRIPT = @TARGET_IMG_LDSCRIPT@
@@ -100,12 +109,13 @@ endif
 AWK = @AWK@
 LIBCURSES = @LIBCURSES@
 LIBUSB = @LIBUSB@
+LIBPCIACCESS = @LIBPCIACCESS@
 YACC = @YACC@
-UNIFONT_BDF = @UNIFONT_BDF@
+FONT_SOURCE = @FONT_SOURCE@
 
 # Options.
-enable_grub_emu = @enable_grub_emu@
 enable_grub_emu_usb = @enable_grub_emu_usb@
+enable_grub_emu_pci = @enable_grub_emu_pci@
 enable_grub_fstest = @enable_grub_fstest@
 enable_grub_pe2elf = @enable_grub_pe2elf@
 enable_grub_mkfont = @enable_grub_mkfont@
@@ -131,7 +141,9 @@ CLEANFILES =
 MOSTLYCLEANFILES =
 DISTCLEANFILES = config.status config.cache config.log config.h \
 	Makefile stamp-h include/grub/cpu include/grub/machine \
-	gensymlist.sh genkernsyms.sh build_env.mk
+	gensymlist.sh genkernsyms.sh build_env.mk \
+	docs/grub.info docs/version.texi docs/stamp-vti
+
 MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES)) \
 	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in $(INFOS)
 
@@ -146,15 +158,18 @@ $(addprefix $(srcdir)/,$(MKFILES)): %.mk: %.rmk genmk.rb
 	  $(RUBY) $(srcdir)/genmk.rb < $< > $@; \
 	fi
 
+ifeq ($(platform), emu)
+include $(srcdir)/conf/any-emu.mk
+else
 include $(srcdir)/conf/$(target_cpu)-$(platform).mk
-
 # For external modules.
 -include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
+endif
 
 ### General targets.
 
-CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA)
-pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst
+CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
+pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
 	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UNDSYMFILES) > $@ \
@@ -173,6 +188,9 @@ handler.lst: $(HANDLERFILES)
 	cat $^ /dev/null | sort > $@
 
 parttool.lst: $(PARTTOOLFILES)
+	cat $^ /dev/null | sort | uniq > $@
+
+video.lst: $(VIDEOFILES)
 	cat $^ /dev/null | sort | uniq > $@
 
 ifneq (true, $(MAKEINFO))
@@ -200,7 +218,7 @@ docs/grub.info: docs/grub.texi docs/version.texi docs/fdl.texi
 	$(MKDIR_P) docs
 	-$(MAKEINFO) -P $(builddir)/docs --no-split --force $< -o $@
 
-ifeq (, $(UNIFONT_BDF))
+ifeq (, $(FONT_SOURCE))
 else
 
 ifeq ($(enable_grub_mkfont),yes)
@@ -211,11 +229,11 @@ pkgdata_DATA += unicode.pf2 ascii.pf2
 UNICODE_ARROWS=0x2190-0x2193
 UNICODE_LINES=0x2501-0x251B
 
-unicode.pf2: $(UNIFONT_BDF) grub-mkfont
-	$(builddir)/grub-mkfont -o $@ $(UNIFONT_BDF)
+unicode.pf2: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE)
 
-ascii.pf2: $(UNIFONT_BDF) grub-mkfont
-	$(builddir)/grub-mkfont -o $@ $(UNIFONT_BDF) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
+ascii.pf2: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
 endif
 endif
 
@@ -237,7 +255,7 @@ build_env.mk: Makefile
 	) > $@
 pkglib_BUILDDIR += config.h grub_script.tab.h
 
-all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES)
+all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES) $(foreach lang, $(LINGUAS), po/$(lang).mo)
 
 install: install-local
 
@@ -300,6 +318,13 @@ install-local: all
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(libdir)/grub/$$dest; \
+	done
+	@langs='$(LINGUAS)'; \
+	for lang in $$langs; do \
+	  $(SHELL) $(mkinstalldirs) $(DESTDIR)/$(datadir)/locale/$$lang/LC_MESSAGES; \
+	  file="po/$$lang.mo"; \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
+	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)/$(datadir)/locale/$$lang/LC_MESSAGES/$(PACKAGE).mo; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(infodir)
 	@list='$(info_INFOS)'; \
@@ -431,6 +456,9 @@ check:
 .SUFFIX: .c .o .S .d
 
 # Regenerate configure and Makefile automatically.
+$(srcdir)/aclocal.m4: configure.ac acinclude.m4
+	cd $(srcdir) && aclocal
+
 $(srcdir)/configure: configure.ac aclocal.m4
 	cd $(srcdir) && autoconf
 
@@ -454,6 +482,17 @@ gensymlist.sh: gensymlist.sh.in config.status
 
 genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
+
+$(srcdir)/po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
+	cd $(srcdir) && $(XGETTEXT) --from-code=utf-8 -o $@ -f $< --keyword=_ --keyword=N_
+	cd $(srcdir) && $(XGETTEXT) --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
+
+$(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): po/$(PACKAGE).pot
+	$(MSGMERGE) -U $@ $^
+
+po/%.mo: po/%.po
+	$(MKDIR_P) $$(dirname $@)
+	$(MSGFMT) -c --statistics -o $@ $^
 
 .PHONY: all install install-strip uninstall clean mostlyclean distclean
 .PHONY: maintainer-clean info dvi dist check
