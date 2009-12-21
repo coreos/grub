@@ -41,6 +41,8 @@
 	* commands/usbtest.c (GRUB_MOD_INIT): Likewise.
 	* commands/videotest.c (GRUB_MOD_INIT): Likewise.
 	* lib/arg.c (help_options): Likewise.
+	* Makefile.in ($(srcdir)/po/$(PACKAGE).pot): Pass -ctranslate to
+	`$(XGETTEXT)'.
 
 2009-12-21 Felix Zielcke <fzielcke@z-51.de>
 
