@@ -1,3 +1,7 @@
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/main.c (grub_normal_reader_init): Set left margin back to 3.
+
 2009-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* video/i386/pc/vbe.c (grub_video_vbe_fini): Set 'last_set_mode'.

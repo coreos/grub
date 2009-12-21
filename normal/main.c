@@ -532,7 +532,7 @@ grub_normal_reader_init (void)
                 grub_strlen(msg_esc) + 1));
 
   grub_sprintf (msg_formatted, msg, reader_nested ? msg_esc : "");
-  grub_print_message_indented (msg_formatted, STANDARD_MARGIN, STANDARD_MARGIN);
+  grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN);
   grub_puts ("\n");
 
   grub_free (msg_formatted);
