@@ -1,5 +1,10 @@
 2009-12-21 Andreas Born  <futur.andy@googlemail.com>
 
+	* kern/env.c (grub_env_context_open): Mark exported variable for
+	reexport.
+
+2009-12-21 Andreas Born  <futur.andy@googlemail.com>
+
 	* kern/env.c (grub_env_export): Create nonexistent variables before
 	exporting.
 

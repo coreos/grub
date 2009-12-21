@@ -101,6 +101,7 @@ grub_env_context_open (int export)
 		  grub_env_context_close ();
 		  return grub_errno;
 		}
+	      grub_env_export (var->name);
 	      grub_register_variable_hook (var->name, var->read_hook, var->write_hook);
 	    }
 	}
