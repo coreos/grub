@@ -3,8 +3,8 @@
 	* commands/acpi.c (options): Fix capitalizations and/or full stops.
 	(GRUB_MOD_INIT): Likewise.
 	* commands/boot.c (GRUB_MOD_INIT): Likewise.
-	* commands/cmp.c (grub_cmd_cmp): Likewise.
-	* commands/echo.c (options): Likewise.
+	* commands/cmp.c (grub_cmd_cmp): Improve the help message.
+	* commands/echo.c (options): Fix capitalizations and/or full stops.
 	* commands/efi/loadbios.c (enable_rom_area): Likewise.
 	(enable_rom_area): Likewise.
 	(GRUB_MOD_INIT): Likewise.
