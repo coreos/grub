@@ -176,7 +176,8 @@ grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
 	      if ((space & GRUB_PCI_ADDR_MEM_TYPE_MASK) 
 		  == GRUB_PCI_ADDR_MEM_TYPE_64)
 		{
-		  space |= grub_pci_make_address (dev, reg);
+		  addr = grub_pci_make_address (dev, reg);
+		  space |= ((grub_uint64_t) grub_pci_read (addr)) << 32;
 		  reg++;
 		  grub_printf ("\t64-bit memory space %d at 0x%016llx [%s]\n",
 			       i, (unsigned long long)
