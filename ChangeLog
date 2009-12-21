@@ -1,5 +1,10 @@
+2009-12-21 Andreas Born  <futur.andy@googlemail.com>
+
+	* kern/env.c (grub_env_export): Create nonexistent variables before
+	exporting.
+
 2009-12-20 Carles Pina i Estany  <carles@pina.cat>
- 
+
 	* include/grub/auth.h: Include `<grub/i18n.h>'.
 	(GRUB_GET_PASSWORD): Gettextizze string.
 	* include/grub/normal.h (STANDARD_MARGIN): New macro, moved from
