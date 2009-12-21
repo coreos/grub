@@ -1,5 +1,19 @@
 2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/mkisofs/msdos_partition.h: New file (based on
+	include/grub/msdos_partition.h).
+	* util/mkisofs/mkisofs.c (use_protective_msdos_label): New variable.
+	(OPTION_PROTECTIVE_MSDOS_LABEL): New macro.
+	(ld_options, main): Recognize --protective-msdos-label.
+	* util/mkisofs/mkisofs.h (use_protective_msdos_label): New declaration.
+	* util/mkisofs/write.c: Include `"msdos_partition.h"'.
+	(padblock_write): If `use_protective_msdos_label' is set, patch a
+	protective DOS-style label in the output image.
+
+	* util/grub-mkrescue.in: Use --protective-msdos-label.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* util/grub-mkrescue.in: Do not zero-pad image for BIOS-based disk
 	boot.
 

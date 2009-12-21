@@ -180,7 +180,7 @@ if test -e "${pc_dir}" ; then
 fi
 
 # build iso image
-grub-mkisofs ${grub_mkisofs_arguments} -o ${output_image} -r ${iso9660_dir} ${source}
+grub-mkisofs ${grub_mkisofs_arguments} --protective-msdos-label -o ${output_image} -r ${iso9660_dir} ${source}
 rm -rf ${iso9660_dir}
 
 rm -f ${embed_img}

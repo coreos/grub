@@ -297,6 +297,7 @@ extern struct iso_directory_record jroot_record;
 
 extern int use_eltorito;
 extern int use_embedded_boot;
+extern int use_protective_msdos_label;
 extern int use_eltorito_emul_floppy;
 extern int use_boot_info_table;
 extern int use_RockRidge;

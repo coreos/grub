@@ -91,6 +91,7 @@ int extension_record_size = 0;
 int use_eltorito = 0;
 int use_eltorito_emul_floppy = 0;
 int use_embedded_boot = 0;
+int use_protective_msdos_label = 0;
 int use_boot_info_table = 0;
 int use_RockRidge = 0;
 int use_Joliet = 0;
@@ -199,6 +200,8 @@ struct ld_option
 
 #define OPTION_VERSION			173
 
+#define OPTION_PROTECTIVE_MSDOS_LABEL	174
+
 static const struct ld_option ld_options[] =
 {
   { {"all-files", no_argument, NULL, 'a'},
@@ -213,6 +216,8 @@ static const struct ld_option ld_options[] =
       '\0', N_("FILE"), N_("Set Copyright filename"), ONE_DASH },
   { {"embedded-boot", required_argument, NULL, 'G'},
       'G', N_("FILE"), N_("Set embedded boot image name"), TWO_DASHES },
+  { {"protective-msdos-label", no_argument, NULL, OPTION_PROTECTIVE_MSDOS_LABEL },
+      '\0', NULL, N_("Patch a protective DOS-style label in the image"), TWO_DASHES },
   { {"eltorito-boot", required_argument, NULL, 'b'},
       'b', N_("FILE"), N_("Set El Torito boot image name"), ONE_DASH },
   { {"eltorito-catalog", required_argument, NULL, 'c'},
@@ -726,10 +731,13 @@ int FDECL2(main, int, argc, char **, argv){
 	  error (1, 0, _("Required boot image pathname missing"));
 	break;
       case 'G':
-	use_embedded_boot++;
+	use_embedded_boot = 1;
 	boot_image_embed = optarg;  /* pathname of the boot image on host filesystem */
 	if (boot_image_embed == NULL)
 	  error (1, 0, _("Required boot image pathname missing"));
+	break;
+      case OPTION_PROTECTIVE_MSDOS_LABEL:
+	use_protective_msdos_label = 1;
 	break;
       case 'c':
 	use_eltorito++;

@@ -21,11 +21,10 @@
    along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
+
 #include <string.h>
 #include <stdlib.h>
-#include "config.h"
-#include "mkisofs.h"
-#include "iso9660.h"
 #include <time.h>
 #include <errno.h>
 
@@ -37,6 +36,10 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+
+#include "mkisofs.h"
+#include "iso9660.h"
+#include "msdos_partition.h"
  
 #ifdef __SVR4
 extern char * strdup(const char *);
@@ -1424,7 +1427,6 @@ static int FDECL1(dirtree_cleanup, FILE *, outfile)
 static int FDECL1(padblock_write, FILE *, outfile)
 {
   char *buffer;
-  int i;
 
   buffer = e_malloc (2048 * PADBLOCK_SIZE);
   memset (buffer, 0, 2048 * PADBLOCK_SIZE);
@@ -1435,6 +1437,29 @@ static int FDECL1(padblock_write, FILE *, outfile)
       if (! fp)
 	error (1, errno, _("Unable to open %s"), boot_image_embed);
       fread (buffer, 2048 * PADBLOCK_SIZE, 1, fp);
+    }
+
+  if (use_protective_msdos_label)
+    {
+      struct msdos_partition_mbr *mbr = (void *) buffer;
+
+      memset (mbr->entries, 0, sizeof(mbr->entries));
+
+      /* Some idiotic BIOSes refuse to boot if they don't find at least
+	 one partition with active bit set.  */
+      mbr->entries[0].flag = 0x80;
+
+      /* Doesn't really matter, as long as it's non-zero.  It seems that
+         0xCD is used elsewhere, so we follow suit.  */
+      mbr->entries[0].type = 0xcd;
+
+      /* Start immediately (sector 1).  */
+      mbr->entries[0].start = 1;
+
+      /* We don't know yet.  Let's keep it safe.  */
+      mbr->entries[0].length = UINT32_MAX;
+
+      mbr->signature = MSDOS_PARTITION_SIGNATURE;
     }
 
   xfwrite (buffer, 1, 2048 * PADBLOCK_SIZE, outfile);
