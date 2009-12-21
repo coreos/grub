@@ -94,8 +94,7 @@ process_input_dir ()
     platform="$2"
     mkdir -p ${iso9660_dir}/boot/grub/${target_cpu}-${platform}
     for file in ${input_dir}/*.mod ${input_dir}/efiemu??.o \
-        ${input_dir}/command.lst ${input_dir}/moddep.lst ${input_dir}/fs.lst \
-        ${input_dir}/handler.lst ${input_dir}/parttool.lst; do
+        ${input_dir}/*.lst; do
         if test -f "$file"; then
             cp -f "$file" ${iso9660_dir}/boot/grub/${target_cpu}-${platform}/
         fi

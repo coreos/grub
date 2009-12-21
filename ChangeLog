@@ -1,3 +1,8 @@
+2009-12-21 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/grub-mkrescue.in: (process_input_dir): Copy `*.lst' files
+	instead of specifying them explicit.
+
 2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* NEWS: Add grub-probe support for GNU/Hurd.
