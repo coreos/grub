@@ -1,5 +1,10 @@
 2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/grub-mkrescue.in: Do not zero-pad image for BIOS-based disk
+	boot.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* util/mkisofs/mkisofs.c (use_embedded_boot, boot_image_embed): New
 	variables.
 	(ld_options, main): Recognize `--embedded-boot'.

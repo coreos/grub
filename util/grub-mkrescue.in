@@ -164,7 +164,7 @@ if test -e "${pc_dir}" ; then
     cat ${pc_dir}/cdboot.img ${core_img} > ${iso9660_dir}/boot/grub/i386-pc/eltorito.img
 
     embed_img=`mktemp`
-    cat ${pc_dir}/boot.img ${core_img} /dev/zero | dd bs=1024 count=32 > ${embed_img}
+    cat ${pc_dir}/boot.img ${core_img} > ${embed_img}
 
     rm -f ${core_img}
 
