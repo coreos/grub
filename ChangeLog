@@ -1,5 +1,9 @@
 2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* NEWS: Add grub-probe support for GNU/Hurd.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* NEWS: gettext was added after 1.97.
 
 2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
