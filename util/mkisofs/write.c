@@ -1344,6 +1344,9 @@ int FDECL1(oneblock_size, int, starting_extent)
 /*
  * Functions to describe padding block at the start of the disc.
  */
+
+#define PADBLOCK_SIZE	16
+
 static int FDECL1(pathtab_size, int, starting_extent)
 {
   path_table[0] = starting_extent;
@@ -1357,7 +1360,7 @@ static int FDECL1(pathtab_size, int, starting_extent)
 
 static int FDECL1(padblock_size, int, starting_extent)
 {
-  last_extent += 16;
+  last_extent += PADBLOCK_SIZE;
   return 0;
 }
 
@@ -1420,17 +1423,23 @@ static int FDECL1(dirtree_cleanup, FILE *, outfile)
 
 static int FDECL1(padblock_write, FILE *, outfile)
 {
-  char				buffer[2048];
-  int				i;
+  char *buffer;
+  int i;
 
-  memset(buffer, 0, sizeof(buffer));
+  buffer = e_malloc (2048 * PADBLOCK_SIZE);
+  memset (buffer, 0, 2048 * PADBLOCK_SIZE);
 
-  for(i=0; i<16; i++)
+  if (use_embedded_boot)
     {
-      xfwrite(buffer, 1, sizeof(buffer), outfile);
+      FILE *fp = fopen (boot_image_embed, "rb");
+      if (! fp)
+	error (1, errno, _("Unable to open %s"), boot_image_embed);
+      fread (buffer, 2048 * PADBLOCK_SIZE, 1, fp);
     }
 
-  last_extent_written += 16;
+  xfwrite (buffer, 1, 2048 * PADBLOCK_SIZE, outfile);
+  last_extent_written += PADBLOCK_SIZE;
+
   return 0;
 }
 

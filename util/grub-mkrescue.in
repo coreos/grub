@@ -162,6 +162,10 @@ if test -e "${pc_dir}" ; then
     grub-mkimage -d ${pc_dir}/ -o ${core_img} --prefix=/boot/grub/i386-pc \
         iso9660 biosdisk
     cat ${pc_dir}/cdboot.img ${core_img} > ${iso9660_dir}/boot/grub/i386-pc/eltorito.img
+
+    embed_img=`mktemp`
+    cat ${pc_dir}/boot.img ${core_img} /dev/zero | dd bs=1024 count=32 > ${embed_img}
+
     rm -f ${core_img}
 
     modules="$(cat ${pc_dir}/partmap.lst) ${modules}"
@@ -171,11 +175,14 @@ if test -e "${pc_dir}" ; then
     echo "source /boot/grub/grub.cfg") \
     > ${iso9660_dir}/boot/grub/i386-pc/grub.cfg
 
-    grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -boot-info-table"
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -boot-info-table \
+		--embedded-boot ${embed_img}"
 fi
 
 # build iso image
 grub-mkisofs ${grub_mkisofs_arguments} -o ${output_image} -r ${iso9660_dir} ${source}
 rm -rf ${iso9660_dir}
+
+rm -f ${embed_img}
 
 exit 0

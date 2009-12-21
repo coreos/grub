@@ -1,5 +1,19 @@
 2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/mkisofs/mkisofs.c (use_embedded_boot, boot_image_embed): New
+	variables.
+	(ld_options, main): Recognize `--embedded-boot'.
+	* util/mkisofs/mkisofs.h (use_embedded_boot, boot_image_embed): New
+	declarations.
+	* util/mkisofs/write.c (PADBLOCK_SIZE): New variable.
+	(padblock_size): Use `PADBLOCK_SIZE' instead of hardcoding 16.
+	(padblock_write): Likewise.  Rewrite to support embedded boot image.
+
+	* util/grub-mkrescue.in: When building i386-pc images, embed core.img
+	for BIOS-based disk boot instead of only ElTorito.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* util/grub-mkrescue.in: Remove `configfile' and `sh' from i386-pc
 	build (not needed for bootstrap).
 
