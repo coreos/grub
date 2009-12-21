@@ -43,6 +43,7 @@
 	* lib/arg.c (help_options): Likewise.
 	* Makefile.in ($(srcdir)/po/$(PACKAGE).pot): Pass -ctranslate to
 	`$(XGETTEXT)'.
+	* po/POTFILES: Add `commands/loadenv.c'.
 
 2009-12-21 Felix Zielcke <fzielcke@z-51.de>
 
