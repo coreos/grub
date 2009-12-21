@@ -24,9 +24,9 @@
 
 static const struct grub_arg_option options[] =
   {
-    {"shift", 's', 0, "check Shift key", 0, 0},
-    {"ctrl", 'c', 0, "check Control key", 0, 0},
-    {"alt", 'a', 0, "check Alt key", 0, 0},
+    {"shift", 's', 0, "Check Shift key.", 0, 0},
+    {"ctrl", 'c', 0, "Check Control key.", 0, 0},
+    {"alt", 'a', 0, "Check Alt key.", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -71,7 +71,7 @@ GRUB_MOD_INIT(keystatus)
   cmd = grub_register_extcmd ("keystatus", grub_cmd_keystatus,
 			      GRUB_COMMAND_FLAG_BOTH,
 			      "keystatus [--shift] [--ctrl] [--alt]",
-			      "Check key modifier status",
+			      "Check key modifier status.",
 			      options);
 }
 

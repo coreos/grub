@@ -160,7 +160,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(lspci)
 {
   cmd = grub_register_command ("lspci", grub_cmd_lspci,
-			       0, "List PCI devices");
+			       0, "List PCI devices.");
 }
 
 GRUB_MOD_FINI(lspci)

@@ -195,7 +195,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(usbtest)
 {
   cmd = grub_register_command ("usb", grub_cmd_usbtest,
-			       0, "Test USB support");
+			       0, "Test USB support.");
 }
 
 GRUB_MOD_FINI(usbtest)
