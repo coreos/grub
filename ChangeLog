@@ -1,5 +1,9 @@
 2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* NEWS: gettext was added after 1.97.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* util/mkisofs/msdos_partition.h: New file (based on
 	include/grub/msdos_partition.h).
 	* util/mkisofs/mkisofs.c (use_protective_msdos_label): New variable.
