@@ -90,6 +90,8 @@ int extension_record_size = 0;
 /* These variables are associated with command line options */
 int use_eltorito = 0;
 int use_eltorito_emul_floppy = 0;
+int use_embedded_boot = 0;
+int use_protective_msdos_label = 0;
 int use_boot_info_table = 0;
 int use_RockRidge = 0;
 int use_Joliet = 0;
@@ -100,17 +102,18 @@ int rationalize = 0;
 int generate_tables = 0;
 int print_size = 0;
 int split_output = 0;
-char * preparer = PREPARER_DEFAULT;
-char * publisher = PUBLISHER_DEFAULT;
-char * appid = APPID_DEFAULT;
-char * copyright = COPYRIGHT_DEFAULT;
-char * biblio = BIBLIO_DEFAULT;
-char * abstract = ABSTRACT_DEFAULT;
-char * volset_id = VOLSET_ID_DEFAULT;
-char * volume_id = VOLUME_ID_DEFAULT;
-char * system_id = SYSTEM_ID_DEFAULT;
-char * boot_catalog = BOOT_CATALOG_DEFAULT;
-char * boot_image = BOOT_IMAGE_DEFAULT;
+char *preparer = PREPARER_DEFAULT;
+char *publisher = PUBLISHER_DEFAULT;
+char *appid = APPID_DEFAULT;
+char *copyright = COPYRIGHT_DEFAULT;
+char *biblio = BIBLIO_DEFAULT;
+char *abstract = ABSTRACT_DEFAULT;
+char *volset_id = VOLSET_ID_DEFAULT;
+char *volume_id = VOLUME_ID_DEFAULT;
+char *system_id = SYSTEM_ID_DEFAULT;
+char *boot_catalog = BOOT_CATALOG_DEFAULT;
+char *boot_image = BOOT_IMAGE_DEFAULT;
+char *boot_image_embed = NULL;
 int volume_set_size = 1;
 int volume_sequence_number = 1;
 
@@ -197,6 +200,8 @@ struct ld_option
 
 #define OPTION_VERSION			173
 
+#define OPTION_PROTECTIVE_MSDOS_LABEL	174
+
 static const struct ld_option ld_options[] =
 {
   { {"all-files", no_argument, NULL, 'a'},
@@ -209,6 +214,10 @@ static const struct ld_option ld_options[] =
       '\0', N_("FILE"), N_("Set Bibliographic filename"), ONE_DASH },
   { {"copyright", required_argument, NULL, OPTION_COPYRIGHT},
       '\0', N_("FILE"), N_("Set Copyright filename"), ONE_DASH },
+  { {"embedded-boot", required_argument, NULL, 'G'},
+      'G', N_("FILE"), N_("Set embedded boot image name"), TWO_DASHES },
+  { {"protective-msdos-label", no_argument, NULL, OPTION_PROTECTIVE_MSDOS_LABEL },
+      '\0', NULL, N_("Patch a protective DOS-style label in the image"), TWO_DASHES },
   { {"eltorito-boot", required_argument, NULL, 'b'},
       'b', N_("FILE"), N_("Set El Torito boot image name"), ONE_DASH },
   { {"eltorito-catalog", required_argument, NULL, 'c'},
@@ -719,10 +728,16 @@ int FDECL2(main, int, argc, char **, argv){
 	use_eltorito++;
 	boot_image = optarg;  /* pathname of the boot image on cd */
 	if (boot_image == NULL)
-	  {
-	    fprintf (stderr, _("Required boot image pathname missing\n"));
-	    exit (1);
-	  }
+	  error (1, 0, _("Required boot image pathname missing"));
+	break;
+      case 'G':
+	use_embedded_boot = 1;
+	boot_image_embed = optarg;  /* pathname of the boot image on host filesystem */
+	if (boot_image_embed == NULL)
+	  error (1, 0, _("Required boot image pathname missing"));
+	break;
+      case OPTION_PROTECTIVE_MSDOS_LABEL:
+	use_protective_msdos_label = 1;
 	break;
       case 'c':
 	use_eltorito++;

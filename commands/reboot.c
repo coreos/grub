@@ -35,7 +35,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(reboot)
 {
   cmd = grub_register_command ("reboot", grub_cmd_reboot,
-			       0, "Reboot the computer");
+			       0, "Reboot the computer.");
 }
 
 GRUB_MOD_FINI(reboot)

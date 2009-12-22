@@ -1,4 +1,6 @@
 # List of files which contain translatable strings.
+commands/loadenv.c
+
 util/i386/pc/grub-mkimage.c
 util/i386/pc/grub-setup.c
 
@@ -11,6 +13,9 @@ util/mkisofs/rock.c
 util/mkisofs/tree.c
 util/mkisofs/write.c
 
+normal/auth.c
+normal/color.c
 normal/main.c
 normal/menu_entry.c
 normal/menu_text.c
+normal/misc.c

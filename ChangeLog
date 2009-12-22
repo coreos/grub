@@ -1,3 +1,189 @@
+2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/lspci.c (grub_pci_classes): Add "USB Controller".
+	(options): New variable.
+	(iospace): Likewise.
+	(grub_lspci_iter): List IO spaces if "-i" was given.
+	(grub_cmd_lspci): Parse options.
+	(GRUB_MOD_INIT(lspci)): Use extcmd.
+	(GRUB_MOD_FINI(lspci)): Likewise.
+
+2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/grub.d/30_os-prober.in (osx_entry): Remove non POSIX compliant
+	`function' keyword.
+	Patch by Tony Mancill <tmancill@debian.org>.
+
+2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* bus/usb/uhci.c (grub_uhci_transfer): Set a limit transaction time.
+	(grub_uhci_portstatus): Likewise.
+	(grub_uhci_portstatus): Add necessary delay.
+	* bus/usb/usbhub.c (grub_usb_hub_add_dev): Fix loop-break condition.
+
+2009-12-21  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/acpi.c (options): Fix capitalizations and/or full stops.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/boot.c (GRUB_MOD_INIT): Likewise.
+	* commands/cmp.c (grub_cmd_cmp): Improve the help message.
+	* commands/echo.c (options): Fix capitalizations and/or full stops.
+	* commands/efi/loadbios.c (enable_rom_area): Likewise.
+	(enable_rom_area): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/gptsync.c (GRUB_MOD_INIT): Likewise.
+	* commands/halt.c (GRUB_MOD_INIT): Improve the help message.
+	* commands/handler.c (GRUB_MOD_INIT): Likewise.
+	* commands/hdparm.c (options): Fix capitalizations and/or full stops.
+	* commands/hexdump.c (options): Likewise.
+	* commands/i386/cpuid.c (options): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/drivemap.c (options): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/halt (options): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/play.c (GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/pxecmd.c (options): Likewise.
+	* commands/i386/pc/vbetest.c (GRUB_MOD_INIT): Likewise.
+	* commands/ieee1275/suspend.c (GRUB_MOD_INIT): Likewise.
+	* commands/keystatus.c (options): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/loadenv.c (options): Likewise.
+	* commands/ls.c (options): Likewise.
+	* commands/lspci.c (GRUB_MOD_INIT): Likewise.
+	* commands/memrw.c (GRUB_MOD_INIT): Likewise.
+	* commands/minicmd.c (GRUB_MOD_INIT): Likewise.
+	* commands/parttool.c (helpmsg): Likewise.
+	* commands/probe.c (options): Likewise.
+	* commands/read.c (GRUB_MOD_INIT): Likewise.
+	* commands/reboot.c (GRUB_MOD_INIT): Likewise.
+	* commands/search.c (options): Likewise.
+	* commands/sleep.c (options): Likewise.
+	* commands/test.c (GRUB_MOD_INIT): Likewise.
+	* commands/true.c (GRUB_MOD_INIT): Likewise.
+	* commands/usbtest.c (GRUB_MOD_INIT): Likewise.
+	* commands/videotest.c (GRUB_MOD_INIT): Likewise.
+	* lib/arg.c (help_options): Likewise.
+	* Makefile.in ($(srcdir)/po/$(PACKAGE).pot): Pass -ctranslate to
+	`$(XGETTEXT)'.
+	* po/POTFILES: Add `commands/loadenv.c'.
+
+2009-12-21 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/grub-mkrescue.in (process_input_dir): Copy `*.lst' files
+	instead of specifying them explicit.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* NEWS: Add grub-probe support for GNU/Hurd.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* NEWS: gettext was added after 1.97.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/msdos_partition.h: New file (based on
+	include/grub/msdos_partition.h).
+	* util/mkisofs/mkisofs.c (use_protective_msdos_label): New variable.
+	(OPTION_PROTECTIVE_MSDOS_LABEL): New macro.
+	(ld_options, main): Recognize --protective-msdos-label.
+	* util/mkisofs/mkisofs.h (use_protective_msdos_label): New declaration.
+	* util/mkisofs/write.c: Include `"msdos_partition.h"'.
+	(padblock_write): If `use_protective_msdos_label' is set, patch a
+	protective DOS-style label in the output image.
+
+	* util/grub-mkrescue.in: Use --protective-msdos-label.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Do not zero-pad image for BIOS-based disk
+	boot.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/mkisofs.c (use_embedded_boot, boot_image_embed): New
+	variables.
+	(ld_options, main): Recognize `--embedded-boot'.
+	* util/mkisofs/mkisofs.h (use_embedded_boot, boot_image_embed): New
+	declarations.
+	* util/mkisofs/write.c (PADBLOCK_SIZE): New variable.
+	(padblock_size): Use `PADBLOCK_SIZE' instead of hardcoding 16.
+	(padblock_write): Likewise.  Rewrite to support embedded boot image.
+
+	* util/grub-mkrescue.in: When building i386-pc images, embed core.img
+	for BIOS-based disk boot instead of only ElTorito.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Remove `configfile' and `sh' from i386-pc
+	build (not needed for bootstrap).
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Remove `memdisk', `tar' and `search' modules
+	from i386-pc build (not needed for bootstrap).
+	Rewrite a pair of strings.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/main.c (grub_normal_reader_init): Set left margin back to 3.
+
+2009-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* video/i386/pc/vbe.c (grub_video_vbe_fini): Set 'last_set_mode'.
+
+2009-12-21 Andreas Born  <futur.andy@googlemail.com>
+
+	* kern/env.c (grub_env_context_open): Mark exported variable for
+	reexport.
+
+2009-12-21 Andreas Born  <futur.andy@googlemail.com>
+
+	* kern/env.c (grub_env_export): Create nonexistent variables before
+	exporting.
+
+2009-12-20 Carles Pina i Estany  <carles@pina.cat>
+
+	* include/grub/auth.h: Include `<grub/i18n.h>'.
+	(GRUB_GET_PASSWORD): Gettextizze string.
+	* include/grub/normal.h (STANDARD_MARGIN): New macro, moved from
+	menu_text.c.
+	(grub_utf8_to_ucs4_alloc): Fix indentation.
+	(grub_print_ucs4): Likewise.
+	(grub_getstringwidth): Likewise.
+	(print_message_indented): New declaration.
+	* normal/auth.c: Include `<grub/i18n.h>'.
+	(grub_auth_check_authentication): Gettexttize string.
+	* normal/cmdline.c: Include `<grub/i18n.h>'.
+	(grub_cmdline_get): Gettextizze.
+	* normal/color.c: Include `<grub/i18n.h>'.
+	(grub_parse_color_name_pair): Gettexttize strings.
+	* normal/main.c (grub_normal_reader_init): Cleanup gettexttized
+	string (use `print_message_indented').
+	* normal/menu_text.c (STANDARD_MARGIN): Moved from here to
+	`include/grub/normal.h'.
+	(print_message_indented): Renamed to ...
+	(grub_print_message_indented): ... this. Remove `static' qualifer (now
+	used in normal/main.c).
+	(print_message): Use `grub_print_message_indented' instead of
+	`print_message_indented'.
+	(print_timeout): Likewise.
+	* normal/misc.c: Include `<grub/term.h>' and `<grub/i18n.h>'.
+	(grub_normal_print_device_info): Gettexttize strings.
+	* po/POTFILES: Add `auth.c', `color.c' and `misc.c'.
+
+2009-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/parser.c (grub_parser_split_cmdline): Fix incorrect counting
+	of arguments. Return number of tokens and not arguments. All users
+	updated.
+
+2009-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/i386/pc/grub-setup.c (setup): Don't install on non-GPT,
+	non-MSDOS paritions.
+
 2009-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/types.h (UNUSED): Removed since it conflicts with
