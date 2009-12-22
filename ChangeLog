@@ -1,3 +1,13 @@
+2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/lspci.c (grub_pci_classes): Add "USB Controller".
+	(options): New variable.
+	(iospace): Likewise.
+	(grub_lspci_iter): List IO spaces if "-i" was given.
+	(grub_cmd_lspci): Parse options.
+	(GRUB_MOD_INIT(lspci)): Use extcmd.
+	(GRUB_MOD_FINI(lspci)): Likewise.
+
 2009-12-22 Felix Zielcke <fzielcke@z-51.de>
 
 	* util/grub.d/30_os-prober.in (osx_entry): Remove non POSIX compliant
