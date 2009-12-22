@@ -27,16 +27,9 @@ void grub_multiboot2_real_boot (grub_addr_t entry,
 				struct multiboot_info *mbi)
      __attribute__ ((noreturn));
 
-extern grub_addr_t grub_multiboot_payload_orig;
+extern grub_uint32_t grub_multiboot_payload_eip;
+extern char *grub_multiboot_payload_orig;
 extern grub_addr_t grub_multiboot_payload_dest;
 extern grub_size_t grub_multiboot_payload_size;
-extern grub_uint32_t grub_multiboot_payload_entry_offset;
-
-extern grub_uint8_t grub_multiboot_forward_relocator;
-extern grub_uint8_t grub_multiboot_forward_relocator_end;
-extern grub_uint8_t grub_multiboot_backward_relocator;
-extern grub_uint8_t grub_multiboot_backward_relocator_end;
-
-#define RELOCATOR_SIZEOF(x)	(&grub_multiboot_##x##_relocator_end - &grub_multiboot_##x##_relocator)
 
 #endif /* ! GRUB_MULTIBOOT_CPU_HEADER */

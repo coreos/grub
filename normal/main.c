@@ -385,22 +385,35 @@ read_config_file (const char *config)
 void
 grub_normal_init_page (void)
 {
-  grub_uint8_t width, margin;
+  int msg_len;
+  int posx;
+  const char *msg = _("GNU GRUB  version %s");
 
-#define TITLE ("GNU GRUB  version " PACKAGE_VERSION)
-
-  width = grub_getwh () >> 8;
-  margin = (width - (sizeof(TITLE) + 7)) / 2;
-
+  char *msg_formatted = grub_malloc (grub_strlen(msg) +
+  				     grub_strlen(PACKAGE_VERSION));
+  
   grub_cls ();
-  grub_putchar ('\n');
 
-  while (margin--)
-    grub_putchar (' ');
+  grub_sprintf (msg_formatted, msg, PACKAGE_VERSION);
 
-  grub_printf ("%s\n\n", TITLE);
+  grub_uint32_t *unicode_msg;
+  grub_uint32_t *last_position;
+  
+  msg_len = grub_utf8_to_ucs4_alloc (msg_formatted, 
+  				     &unicode_msg, &last_position);
+  
+  if (msg_len < 0)
+    {
+      return;
+    }
 
-#undef TITLE
+  posx = grub_getstringwidth (unicode_msg, last_position);
+  posx = (GRUB_TERM_WIDTH - posx) / 2;
+  grub_gotoxy (posx, 1);
+
+  grub_print_ucs4 (unicode_msg, last_position);
+  grub_printf("\n\n");
+  grub_free (unicode_msg);
 }
 
 static int reader_nested;
@@ -509,12 +522,21 @@ grub_normal_reader_init (void)
   grub_normal_init_page ();
   grub_setcursor (1);
 
-  grub_printf (_("\
- [ Minimal BASH-like line editing is supported. For the first word, TAB\n\
-   lists possible command completions. Anywhere else TAB lists possible\n\
-   device/file completions.%s ]\n\n"),
-	       reader_nested ? " ESC at any time exits." : "");
+  const char *msg = _("Minimal BASH-like line editing is supported. For "
+		      "the first word, TAB lists possible command completions. Anywhere "
+		      "else TAB lists possible device or file completions. %s");
 
+  const char *msg_esc = _("ESC at any time exits.");
+
+  char *msg_formatted = grub_malloc (sizeof (char) * (grub_strlen (msg) + 
+                grub_strlen(msg_esc) + 1));
+
+  grub_sprintf (msg_formatted, msg, reader_nested ? msg_esc : "");
+  grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN);
+  grub_puts ("\n");
+
+  grub_free (msg_formatted);
+  
   return 0;
 }
 

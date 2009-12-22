@@ -23,6 +23,7 @@
 #include <grub/env.h>
 #include <grub/normal.h>
 #include <grub/time.h>
+#include <grub/i18n.h>
 
 struct grub_auth_user
 {
@@ -186,7 +187,7 @@ grub_auth_check_authentication (const char *userlist)
       return GRUB_ERR_NONE;
     }
 
-  if (!grub_cmdline_get ("Enter username: ", login, sizeof (login) - 1,
+  if (!grub_cmdline_get (N_("Enter username:"), login, sizeof (login) - 1,
 			 0, 0, 0))
     goto access_denied;
 

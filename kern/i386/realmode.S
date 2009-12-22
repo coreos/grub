@@ -127,7 +127,7 @@ real_to_prot:
 
 	/* turn on protected mode */
 	movl	%cr0, %eax
-	orl	$GRUB_MEMORY_MACHINE_CR0_PE_ON, %eax
+	orl	$GRUB_MEMORY_CPU_CR0_PE_ON, %eax
 	movl	%eax, %cr0
 
 	/* jump to relocation, flush prefetch queue, and reload %cs */
@@ -196,7 +196,7 @@ tmpcseg:
 
 	/* clear the PE bit of CR0 */
 	movl	%cr0, %eax
-	andl 	$(~GRUB_MEMORY_MACHINE_CR0_PE_ON), %eax
+	andl 	$(~GRUB_MEMORY_CPU_CR0_PE_ON), %eax
 	movl	%eax, %cr0
 
 	/* flush prefetch queue, reload %cs */

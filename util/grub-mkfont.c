@@ -366,8 +366,8 @@ write_font (struct grub_font_info *font_info, char *output_file)
   if (! style_name[0])
     strcpy (style_name, " Regular");
 
-  asprintf (&font_name, "%s %s %d", font_info->name, &style_name[1],
-	    font_info->size);
+  font_name = xasprintf ("%s %s %d", font_info->name, &style_name[1],
+			 font_info->size);
 
   write_string_section ("NAME", font_name, &offset, file);
   write_string_section ("FAMI", font_info->name, &offset, file);

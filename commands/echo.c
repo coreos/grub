@@ -23,8 +23,8 @@
 
 static const struct grub_arg_option options[] =
   {
-    {0, 'n', 0, "do not output the trailing newline", 0, 0},
-    {0, 'e', 0, "enable interpretation of backslash escapes", 0, 0},
+    {0, 'n', 0, "Do not output the trailing newline.", 0, 0},
+    {0, 'e', 0, "Enable interpretation of backslash escapes.", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 

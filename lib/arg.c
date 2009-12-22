@@ -30,9 +30,9 @@
 static const struct grub_arg_option help_options[] =
   {
     {"help", SHORT_ARG_HELP, 0,
-     "display this help and exit", 0, ARG_TYPE_NONE},
+     "Display this help and exit.", 0, ARG_TYPE_NONE},
     {"usage", SHORT_ARG_USAGE, 0,
-     "display the usage of this command and exit", 0, ARG_TYPE_NONE},
+     "Display the usage of this command and exit.", 0, ARG_TYPE_NONE},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -355,7 +355,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 	      {
 		char *tail;
 
-		grub_strtoul (option, &tail, 0);
+		grub_strtoull (option, &tail, 0);
 		if (tail == 0 || tail == option || *tail != '\0' || grub_errno)
 		  {
 		    grub_error (GRUB_ERR_BAD_ARGUMENT,

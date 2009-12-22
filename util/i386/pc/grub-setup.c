@@ -356,8 +356,12 @@ setup (const char *dir,
       goto unable_to_embed;
     }
 
-  grub_partition_iterate (dest_dev->disk, (strcmp (dest_partmap, "part_msdos") ?
-					   find_usable_region_gpt : find_usable_region_msdos));
+  if (strcmp (dest_partmap, "part_msdos") == 0)
+    grub_partition_iterate (dest_dev->disk, find_usable_region_msdos);
+  else if (strcmp (dest_partmap, "part_gpt") == 0)
+    grub_partition_iterate (dest_dev->disk, find_usable_region_gpt);
+  else
+    grub_util_error (_("No DOS-style partitions found"));
 
   if (embed_region.end == embed_region.start)
     {

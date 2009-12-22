@@ -222,7 +222,8 @@ grub_mb2_unload (void)
 }
 
 static grub_err_t
-grub_mb2_load_other (UNUSED grub_file_t file, UNUSED void *buffer)
+grub_mb2_load_other (grub_file_t file __attribute__ ((unused)),
+		     void *buffer __attribute__ ((unused)))
 {
   /* XXX Create module tag here.  */
   return grub_error (GRUB_ERR_UNKNOWN_OS, "currently only ELF is supported");

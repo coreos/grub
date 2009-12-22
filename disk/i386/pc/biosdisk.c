@@ -169,7 +169,7 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
 	  else
 	    {
 	      grub_free (data);
-	      return grub_error (GRUB_ERR_BAD_DEVICE, "cannot get C/H/S values");
+	      return grub_error (GRUB_ERR_BAD_DEVICE, "%s cannot get C/H/S values", disk->name);
 	    }
         }
 
@@ -252,7 +252,7 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	  1024 /* cylinders */ *
 	  256 /* heads */ *
 	  63 /* spt */)
-	return grub_error (GRUB_ERR_OUT_OF_RANGE, "out of disk");
+	return grub_error (GRUB_ERR_OUT_OF_RANGE, "%s out of disk", disk->name);
 
       soff = ((grub_uint32_t) sector) % data->sectors + 1;
       head = ((grub_uint32_t) sector) / data->sectors;
@@ -260,7 +260,7 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
       coff = head / data->heads;
 
       if (coff >= data->cylinders)
-	return grub_error (GRUB_ERR_OUT_OF_RANGE, "out of disk");
+	return grub_error (GRUB_ERR_OUT_OF_RANGE, "%s out of disk", disk->name);
 
       if (grub_biosdisk_rw_standard (cmd + 0x02, data->drive,
 				     coff, hoff, soff, size, segment))
@@ -268,9 +268,9 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	  switch (cmd)
 	    {
 	    case GRUB_BIOSDISK_READ:
-	      return grub_error (GRUB_ERR_READ_ERROR, "biosdisk read error");
+	      return grub_error (GRUB_ERR_READ_ERROR, "%s read error", disk->name);
 	    case GRUB_BIOSDISK_WRITE:
-	      return grub_error (GRUB_ERR_WRITE_ERROR, "biosdisk write error");
+	      return grub_error (GRUB_ERR_WRITE_ERROR, "%s write error", disk->name);
 	    }
 	}
     }

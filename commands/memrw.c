@@ -71,22 +71,22 @@ GRUB_MOD_INIT(memrw)
 {
   cmd_read_byte =
     grub_register_command ("read_byte", grub_cmd_read,
-			   "read_byte ADDR", "read byte.");
+			   "read_byte ADDR", "Read byte from ADDR.");
   cmd_read_word =
     grub_register_command ("read_word", grub_cmd_read,
-			   "read_word ADDR", "read word.");
+			   "read_word ADDR", "Read word from ADDR.");
   cmd_read_dword =
     grub_register_command ("read_dword", grub_cmd_read,
-			   "read_dword ADDR", "read dword.");
+			   "read_dword ADDR", "Read dword from ADDR.");
   cmd_write_byte =
     grub_register_command ("write_byte", grub_cmd_write,
-			   "write_byte ADDR VALUE", "write byte.");
+			   "write_byte ADDR VALUE", "Write byte VALUE to ADDR.");
   cmd_write_word =
     grub_register_command ("write_word", grub_cmd_write,
-			   "write_word ADDR VALUE", "write word.");
+			   "write_word ADDR VALUE", "Write word VALUE to ADDR.");
   cmd_write_dword =
     grub_register_command ("write_dword", grub_cmd_write,
-			   "write_dword ADDR VALUE", "write dword.");
+			   "write_dword ADDR VALUE", "Write dword VALUE to ADDR.");
 }
 
 GRUB_MOD_FINI(memrw)

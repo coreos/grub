@@ -488,7 +488,7 @@ grub_util_is_dmraid (const char *os_dev)
 }
 
 int
-grub_util_get_dev_abstraction (const char *os_dev UNUSED)
+grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
 {
 #ifdef __linux__
   /* Check for LVM.  */
@@ -546,7 +546,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	  if (q)
 	    *q = ',';
 
-	  asprintf (&grub_dev, "md%s", p);
+	  grub_dev = xasprintf ("md%s", p);
 	  free (p);
 	}
       else if (os_dev[7] == '/' && os_dev[8] == 'd')
@@ -561,7 +561,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	  if (q)
 	    *q = ',';
 
-	  asprintf (&grub_dev, "md%s", p);
+	  grub_dev = xasprintf ("md%s", p);
 	  free (p);
 	}
       else if (os_dev[7] >= '0' && os_dev[7] <= '9')
@@ -574,7 +574,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	  if (q)
 	    *q = ',';
 
-	  asprintf (&grub_dev, "md%s", p);
+	  grub_dev = xasprintf ("md%s", p);
 	  free (p);
 	}
       else if (os_dev[7] == '/' && os_dev[8] >= '0' && os_dev[8] <= '9')
@@ -587,7 +587,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	  if (q)
 	    *q = ',';
 
-	  asprintf (&grub_dev, "md%s", p);
+	  grub_dev = xasprintf ("md%s", p);
 	  free (p);
 	}
       else

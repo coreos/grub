@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,15 +36,44 @@
 #define  GRUB_PCI_ADDR_IO_MASK		~0x03
 
 typedef grub_uint32_t grub_pci_id_t;
-typedef int NESTED_FUNC_ATTR (*grub_pci_iteratefunc_t)
-     (int bus, int device, int func, grub_pci_id_t pciid);
-typedef grub_uint32_t grub_pci_address_t;
 
-grub_pci_address_t EXPORT_FUNC(grub_pci_make_address) (int bus, int device,
-						       int function, int reg);
+#ifdef GRUB_UTIL
+#include <grub/pciutils.h>
+#else
+typedef grub_uint32_t grub_pci_address_t;
+struct grub_pci_device
+{
+  int bus;
+  int device;
+  int function;
+};
+typedef struct grub_pci_device grub_pci_device_t;
+static inline int
+grub_pci_get_bus (grub_pci_device_t dev)
+{
+  return dev.bus;
+}
+
+static inline int
+grub_pci_get_device (grub_pci_device_t dev)
+{
+  return dev.device;
+}
+
+static inline int
+grub_pci_get_function (grub_pci_device_t dev)
+{
+  return dev.function;
+}
+#include <grub/cpu/pci.h>
+#endif
+
+typedef int NESTED_FUNC_ATTR (*grub_pci_iteratefunc_t)
+     (grub_pci_device_t dev, grub_pci_id_t pciid);
+
+grub_pci_address_t EXPORT_FUNC(grub_pci_make_address) (grub_pci_device_t dev,
+						       int reg);
 
 void EXPORT_FUNC(grub_pci_iterate) (grub_pci_iteratefunc_t hook);
-
-#include <grub/cpu/pci.h>
 
 #endif /* GRUB_PCI_H */

@@ -181,7 +181,9 @@ grub_elf32_size (grub_elf_t elf)
   /* Run through the program headers to calculate the total memory size we
    * should claim.  */
   auto int NESTED_FUNC_ATTR calcsize (grub_elf_t _elf, Elf32_Phdr *phdr, void *_arg);
-  int NESTED_FUNC_ATTR calcsize (grub_elf_t UNUSED _elf, Elf32_Phdr *phdr, void UNUSED *_arg)
+  int NESTED_FUNC_ATTR calcsize (grub_elf_t _elf  __attribute__ ((unused)),
+				 Elf32_Phdr *phdr,
+				 void *_arg __attribute__ ((unused)))
     {
       /* Only consider loadable segments.  */
       if (phdr->p_type != PT_LOAD)
@@ -360,7 +362,9 @@ grub_elf64_size (grub_elf_t elf)
   /* Run through the program headers to calculate the total memory size we
    * should claim.  */
   auto int NESTED_FUNC_ATTR calcsize (grub_elf_t _elf, Elf64_Phdr *phdr, void *_arg);
-  int NESTED_FUNC_ATTR calcsize (grub_elf_t UNUSED _elf, Elf64_Phdr *phdr, void UNUSED *_arg)
+  int NESTED_FUNC_ATTR calcsize (grub_elf_t _elf __attribute__ ((unused)),
+				 Elf64_Phdr *phdr,
+				 void *_arg __attribute__ ((unused)))
     {
       /* Only consider loadable segments.  */
       if (phdr->p_type != PT_LOAD)
