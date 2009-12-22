@@ -1,3 +1,11 @@
+2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/memrw.c (cmd_read_byte, cmd_read_word, cmd_read_dword):
+	Use grub_extcmd_t. All users updated.
+	(options): New variable.
+	(grub_cmd_read): Restructure for readability. Support "-v" option.
+	(grub_cmd_write): Restructure for readability.
+
 2009-12-22 Felix Zielcke <fzielcke@z-51.de>
 
 	* genmk.rb (class SCRIPT): Prepend #{src} path with $(srcdir).
