@@ -402,7 +402,7 @@ grub_ata_pciinit (grub_pci_device_t dev,
   static int controller = 0;
 
   /* Read class.  */
-  addr = grub_pci_make_address (dev, 2);
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
   class = grub_pci_read (addr);
 
   /* Check if this class ID matches that of a PCI IDE Controller.  */
@@ -429,9 +429,12 @@ grub_ata_pciinit (grub_pci_device_t dev,
 	{
 	  /* Read the BARs, which either contain a mmapped IO address
 	     or the IO port address.  */
-	  addr = grub_pci_make_address (dev, 4 + 2 * i);
+	  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESSES
+					+ sizeof (grub_uint64_t) * i);
 	  bar1 = grub_pci_read (addr);
-	  addr = grub_pci_make_address (dev, 5 + 2 * i);
+	  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESSES
+					+ sizeof (grub_uint64_t) * i
+					+ sizeof (grub_uint32_t));
 	  bar2 = grub_pci_read (addr);
 
 	  /* Check if the BARs describe an IO region.  */

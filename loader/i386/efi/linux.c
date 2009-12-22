@@ -477,7 +477,7 @@ find_framebuf (grub_uint32_t *fb_base, grub_uint32_t *line_len)
     {
       grub_pci_address_t addr;
 
-      addr = grub_pci_make_address (dev, 2);
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
       if (grub_pci_read (addr) >> 24 == 0x3)
 	{
 	  int i;

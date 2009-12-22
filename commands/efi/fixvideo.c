@@ -42,7 +42,7 @@ scan_card (grub_pci_device_t dev, grub_pci_id_t pciid)
 {
   grub_pci_address_t addr;
 
-  addr = grub_pci_make_address (dev, 2);
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
   if (grub_pci_read_byte (addr + 3) == 0x3)
     {
       struct grub_video_patch *p = video_patches;

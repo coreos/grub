@@ -1,0 +1,52 @@
+2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Byte-addressable PCI configuration space.
+
+	* bus/pci.c (grub_pci_make_address): Use byte address instead of
+	dword address.
+	(grub_pci_iterate): Use macroses GRUB_PCI_REG_PCI_ID and
+	GRUB_PCI_REG_CACHELINE.
+	* bus/usb/ohci.c (grub_ohci_pci_iter): Use macroses
+	GRUB_PCI_REG_CLASS and GRUB_PCI_REG_ADDRESS_REG0.
+	* bus/usb/uhci.c (grub_ohci_pci_iter): Use macroses
+	GRUB_PCI_REG_CLASS and GRUB_PCI_REG_ADDRESS_REG4.
+	* commands/efi/fixvideo.c (scan_card): Use macros GRUB_PCI_REG_CLASS.
+	* commands/efi/loadbios.c (enable_rom_area): Pass byte-address to
+	grub_pci_make_address.
+	(lock_rom_area): Likewise.
+	* commands/lspci.c (grub_lspci_iter): Use macroses
+	GRUB_PCI_REG_CLASS and GRUB_PCI_REG_ADDRESSES. Handle byte-addressing
+	of grub_pci_make_address.
+	* disk/ata.c (grub_ata_pciinit): Likewise.
+	* include/grub/pci.h (GRUB_PCI_REG_PCI_ID): New macro.
+	(GRUB_PCI_REG_VENDOR): Likewise.
+	(GRUB_PCI_REG_DEVICE): Likewise.
+	(GRUB_PCI_REG_COMMAND): Likewise.
+	(GRUB_PCI_REG_STATUS): Likewise.
+	(GRUB_PCI_REG_REVISION): Likewise.
+	(GRUB_PCI_REG_CLASS): Likewise.
+	(GRUB_PCI_REG_CACHELINE): Likewise.
+	(GRUB_PCI_REG_LAT_TIMER): Likewise.
+	(GRUB_PCI_REG_HEADER_TYPE): Likewise.
+	(GRUB_PCI_REG_BIST): Likewise.
+	(GRUB_PCI_REG_ADDRESSES): Likewise.
+	(GRUB_PCI_REG_ADDRESS_REG): Likewise.
+	(GRUB_PCI_REG_ADDRESS_REG): Likewise.
+	(GRUB_PCI_REG_ADDRESS_REG): Likewise.
+	(GRUB_PCI_REG_ADDRESS_REG): Likewise.
+	(GRUB_PCI_REG_ADDRESS_REG): Likewise.
+	(GRUB_PCI_REG_ADDRESS_REG): Likewise.
+	(GRUB_PCI_REG_CIS_POINTER): Likewise.
+	(GRUB_PCI_REG_SUBVENDOR): Likewise.
+	(GRUB_PCI_REG_SUBSYSTEM): Likewise.
+	(GRUB_PCI_REG_ROM_ADDRESS): Likewise.
+	(GRUB_PCI_REG_CAP_POINTER): Likewise.
+	(GRUB_PCI_REG_IRQ_LINE): Likewise.
+	(GRUB_PCI_REG_IRQ_PIN): Likewise.
+	(GRUB_PCI_REG_MIN_GNT): Likewise.
+	(GRUB_PCI_REG_MAX_LAT): Likewise.
+	* loader/i386/efi/linux.c (find_framebuf): Use GRUB_PCI_REG_CLASS.
+	* loader/i386/efi/xnu.c (find_framebuf): Likewise.
+	* video/efi_uga.c (find_framebuf): Likewise.
+	* util/pci.c (grub_pci_make_address): Use byte-addressed configuration
+	space.
