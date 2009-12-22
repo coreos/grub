@@ -37,7 +37,7 @@ if [ -z "${OSPROBED}" ] ; then
   exit 0
 fi
 
-function osx_entry {
+osx_entry {
         cat << EOF
 menuentry "${LONGNAME} (${2}-bit) (on ${DEVICE})" {
 EOF

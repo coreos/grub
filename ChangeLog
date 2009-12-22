@@ -1,3 +1,9 @@
+2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/grub.d/30_os-prober.in (osx_entry): Remove non POSIX compliant
+	`function' keyword.
+	Patch by Tony Mancill <tmancill@debian.org>.
+
 2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* bus/usb/uhci.c (grub_uhci_transfer): Set a limit transaction time.
