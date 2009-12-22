@@ -1,5 +1,11 @@
+2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* bus/usb/uhci.c (grub_uhci_transfer): Set a limit transaction time.
+	(grub_uhci_portstatus): Likewise.
+	(grub_uhci_portstatus): Add necessary delay.
+
 2009-12-21  Carles Pina i Estany  <carles@pina.cat>
- 
+
 	* commands/acpi.c (options): Fix capitalizations and/or full stops.
 	(GRUB_MOD_INIT): Likewise.
 	* commands/boot.c (GRUB_MOD_INIT): Likewise.
