@@ -75,24 +75,40 @@ grub_cmd_write (grub_command_t cmd, int argc, char **argv)
 {
   grub_target_addr_t addr;
   grub_uint32_t value;
+  grub_uint32_t mask = 0xffffffff;
 
-  if (argc != 2)
+  if (argc != 2 && argc != 3)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid number of arguments");
 
   addr = grub_strtoul (argv[0], 0, 0);
   value = grub_strtoul (argv[1], 0, 0);
+  if (argc == 3)
+    mask = grub_strtoul (argv[2], 0, 0);
+  value &= mask;
   switch (cmd->name[sizeof ("write_") - 1])
     {
     case 'd':
-      *((volatile grub_uint32_t *) addr) = value;
+      if (mask != 0xffffffff)
+	*((volatile grub_uint32_t *) addr)
+	  = (*((volatile grub_uint32_t *) addr) & ~mask) | value;
+      else
+	*((volatile grub_uint32_t *) addr) = value;
       break;
 
     case 'w':
-      *((volatile grub_uint16_t *) addr) = (grub_uint16_t) value;
+      if ((mask & 0xffff) != 0xffff)
+	*((volatile grub_uint16_t *) addr)
+	  = (*((volatile grub_uint16_t *) addr) & ~mask) | value;
+      else
+	*((volatile grub_uint16_t *) addr) = value;
       break;
 
     case 'b':
-      *((volatile grub_uint8_t *) addr) = (grub_uint8_t) value;
+      if ((mask & 0xff) != 0xff)
+	*((volatile grub_uint8_t *) addr)
+	  = (*((volatile grub_uint8_t *) addr) & ~mask) | value;
+      else
+	*((volatile grub_uint8_t *) addr) = value;
       break;
     }
 
@@ -112,13 +128,13 @@ GRUB_MOD_INIT(memrw)
 			  "read_dword ADDR", "Read dword from ADDR.", options);
   cmd_write_byte =
     grub_register_command ("write_byte", grub_cmd_write,
-			   "write_byte ADDR VALUE", "Write byte VALUE to ADDR.");
+			   "write_byte ADDR VALUE [MASK]", "Write byte VALUE to ADDR.");
   cmd_write_word =
     grub_register_command ("write_word", grub_cmd_write,
-			   "write_word ADDR VALUE", "Write word VALUE to ADDR.");
+			   "write_word ADDR VALUE [MASK]", "Write word VALUE to ADDR.");
   cmd_write_dword =
     grub_register_command ("write_dword", grub_cmd_write,
-			   "write_dword ADDR VALUE", "Write dword VALUE to ADDR.");
+			   "write_dword ADDR VALUE [MASK]", "Write dword VALUE to ADDR.");
 }
 
 GRUB_MOD_FINI(memrw)
