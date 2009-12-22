@@ -5,7 +5,7 @@ set -e
 aclocal
 autoconf
 autoheader
-xx
+
 # FIXME: automake doesn't like that there's no Makefile.am
 automake -a -c -f || true
 
