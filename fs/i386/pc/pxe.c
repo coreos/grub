@@ -107,9 +107,11 @@ static struct grub_disk_dev grub_pxe_dev =
   };
 
 static grub_err_t
-grub_pxefs_dir (grub_device_t device UNUSED, const char *path UNUSED,
+grub_pxefs_dir (grub_device_t device __attribute__ ((unused)),
+		const char *path  __attribute__ ((unused)),
 		int (*hook) (const char *filename,
-			     const struct grub_dirhook_info *info) UNUSED)
+			     const struct grub_dirhook_info *info) 
+		__attribute__ ((unused)))
 {
   return GRUB_ERR_NONE;
 }

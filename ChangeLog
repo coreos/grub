@@ -1,3 +1,391 @@
+2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/lspci.c (grub_pci_classes): Add "USB Controller".
+	(options): New variable.
+	(iospace): Likewise.
+	(grub_lspci_iter): List IO spaces if "-i" was given.
+	(grub_cmd_lspci): Parse options.
+	(GRUB_MOD_INIT(lspci)): Use extcmd.
+	(GRUB_MOD_FINI(lspci)): Likewise.
+
+2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/grub.d/30_os-prober.in (osx_entry): Remove non POSIX compliant
+	`function' keyword.
+	Patch by Tony Mancill <tmancill@debian.org>.
+
+2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* bus/usb/uhci.c (grub_uhci_transfer): Set a limit transaction time.
+	(grub_uhci_portstatus): Likewise.
+	(grub_uhci_portstatus): Add necessary delay.
+	* bus/usb/usbhub.c (grub_usb_hub_add_dev): Fix loop-break condition.
+
+2009-12-21  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/acpi.c (options): Fix capitalizations and/or full stops.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/boot.c (GRUB_MOD_INIT): Likewise.
+	* commands/cmp.c (grub_cmd_cmp): Improve the help message.
+	* commands/echo.c (options): Fix capitalizations and/or full stops.
+	* commands/efi/loadbios.c (enable_rom_area): Likewise.
+	(enable_rom_area): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/gptsync.c (GRUB_MOD_INIT): Likewise.
+	* commands/halt.c (GRUB_MOD_INIT): Improve the help message.
+	* commands/handler.c (GRUB_MOD_INIT): Likewise.
+	* commands/hdparm.c (options): Fix capitalizations and/or full stops.
+	* commands/hexdump.c (options): Likewise.
+	* commands/i386/cpuid.c (options): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/drivemap.c (options): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/halt (options): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/play.c (GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/pxecmd.c (options): Likewise.
+	* commands/i386/pc/vbetest.c (GRUB_MOD_INIT): Likewise.
+	* commands/ieee1275/suspend.c (GRUB_MOD_INIT): Likewise.
+	* commands/keystatus.c (options): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/loadenv.c (options): Likewise.
+	* commands/ls.c (options): Likewise.
+	* commands/lspci.c (GRUB_MOD_INIT): Likewise.
+	* commands/memrw.c (GRUB_MOD_INIT): Likewise.
+	* commands/minicmd.c (GRUB_MOD_INIT): Likewise.
+	* commands/parttool.c (helpmsg): Likewise.
+	* commands/probe.c (options): Likewise.
+	* commands/read.c (GRUB_MOD_INIT): Likewise.
+	* commands/reboot.c (GRUB_MOD_INIT): Likewise.
+	* commands/search.c (options): Likewise.
+	* commands/sleep.c (options): Likewise.
+	* commands/test.c (GRUB_MOD_INIT): Likewise.
+	* commands/true.c (GRUB_MOD_INIT): Likewise.
+	* commands/usbtest.c (GRUB_MOD_INIT): Likewise.
+	* commands/videotest.c (GRUB_MOD_INIT): Likewise.
+	* lib/arg.c (help_options): Likewise.
+	* Makefile.in ($(srcdir)/po/$(PACKAGE).pot): Pass -ctranslate to
+	`$(XGETTEXT)'.
+	* po/POTFILES: Add `commands/loadenv.c'.
+
+2009-12-21 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/grub-mkrescue.in (process_input_dir): Copy `*.lst' files
+	instead of specifying them explicit.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* NEWS: Add grub-probe support for GNU/Hurd.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* NEWS: gettext was added after 1.97.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/msdos_partition.h: New file (based on
+	include/grub/msdos_partition.h).
+	* util/mkisofs/mkisofs.c (use_protective_msdos_label): New variable.
+	(OPTION_PROTECTIVE_MSDOS_LABEL): New macro.
+	(ld_options, main): Recognize --protective-msdos-label.
+	* util/mkisofs/mkisofs.h (use_protective_msdos_label): New declaration.
+	* util/mkisofs/write.c: Include `"msdos_partition.h"'.
+	(padblock_write): If `use_protective_msdos_label' is set, patch a
+	protective DOS-style label in the output image.
+
+	* util/grub-mkrescue.in: Use --protective-msdos-label.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Do not zero-pad image for BIOS-based disk
+	boot.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/mkisofs.c (use_embedded_boot, boot_image_embed): New
+	variables.
+	(ld_options, main): Recognize `--embedded-boot'.
+	* util/mkisofs/mkisofs.h (use_embedded_boot, boot_image_embed): New
+	declarations.
+	* util/mkisofs/write.c (PADBLOCK_SIZE): New variable.
+	(padblock_size): Use `PADBLOCK_SIZE' instead of hardcoding 16.
+	(padblock_write): Likewise.  Rewrite to support embedded boot image.
+
+	* util/grub-mkrescue.in: When building i386-pc images, embed core.img
+	for BIOS-based disk boot instead of only ElTorito.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Remove `configfile' and `sh' from i386-pc
+	build (not needed for bootstrap).
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-mkrescue.in: Remove `memdisk', `tar' and `search' modules
+	from i386-pc build (not needed for bootstrap).
+	Rewrite a pair of strings.
+
+2009-12-21  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/main.c (grub_normal_reader_init): Set left margin back to 3.
+
+2009-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* video/i386/pc/vbe.c (grub_video_vbe_fini): Set 'last_set_mode'.
+
+2009-12-21 Andreas Born  <futur.andy@googlemail.com>
+
+	* kern/env.c (grub_env_context_open): Mark exported variable for
+	reexport.
+
+2009-12-21 Andreas Born  <futur.andy@googlemail.com>
+
+	* kern/env.c (grub_env_export): Create nonexistent variables before
+	exporting.
+
+2009-12-20 Carles Pina i Estany  <carles@pina.cat>
+
+	* include/grub/auth.h: Include `<grub/i18n.h>'.
+	(GRUB_GET_PASSWORD): Gettextizze string.
+	* include/grub/normal.h (STANDARD_MARGIN): New macro, moved from
+	menu_text.c.
+	(grub_utf8_to_ucs4_alloc): Fix indentation.
+	(grub_print_ucs4): Likewise.
+	(grub_getstringwidth): Likewise.
+	(print_message_indented): New declaration.
+	* normal/auth.c: Include `<grub/i18n.h>'.
+	(grub_auth_check_authentication): Gettexttize string.
+	* normal/cmdline.c: Include `<grub/i18n.h>'.
+	(grub_cmdline_get): Gettextizze.
+	* normal/color.c: Include `<grub/i18n.h>'.
+	(grub_parse_color_name_pair): Gettexttize strings.
+	* normal/main.c (grub_normal_reader_init): Cleanup gettexttized
+	string (use `print_message_indented').
+	* normal/menu_text.c (STANDARD_MARGIN): Moved from here to
+	`include/grub/normal.h'.
+	(print_message_indented): Renamed to ...
+	(grub_print_message_indented): ... this. Remove `static' qualifer (now
+	used in normal/main.c).
+	(print_message): Use `grub_print_message_indented' instead of
+	`print_message_indented'.
+	(print_timeout): Likewise.
+	* normal/misc.c: Include `<grub/term.h>' and `<grub/i18n.h>'.
+	(grub_normal_print_device_info): Gettexttize strings.
+	* po/POTFILES: Add `auth.c', `color.c' and `misc.c'.
+
+2009-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/parser.c (grub_parser_split_cmdline): Fix incorrect counting
+	of arguments. Return number of tokens and not arguments. All users
+	updated.
+
+2009-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/i386/pc/grub-setup.c (setup): Don't install on non-GPT,
+	non-MSDOS paritions.
+
+2009-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/types.h (UNUSED): Removed since it conflicts with
+	NetBSD headers. All users changed to direct __attribute__ ((unused)).
+	Reported by Grégoire Sutre.
+
+2009-12-19  Carles Pina i Estany  <carles@pina.cat>
+
+	* include/grub/normal.h (grub_utf8_to_ucs4): New declaration.
+	(grub_print_ucs4_alloc): Likewise.
+	(grub_getstringwidth): Likewise.
+	* normal/main.c (grub_normal_init_page): Gettextize version string.
+	* normal/menu_text.c (grub_utf8_to_ucs4_alloc): New definition.
+	(getstringwidth): Renamed to ...
+	(grub_getstringwidth): ... this. Remove `static' qualifier (now used
+	in normal/main.c).  Use `grub_utf8_to_ucs4_alloc'.
+	(grub_print_ucs4): Remove `static' qualifer (now used in
+	normal/main.c).
+	* po/POTFILES: Add normal/main.c.
+
+2009-12-19  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/menu_text.c (STANDARD_MARGIN): New macro.
+	(print_message_indented): Add `margin_left' and `margin_right'
+	parameters.
+	(print_message): Update `print_message_indented' calls. Adds '\n' to the
+	strings.
+	(print_timeout): Use `print_message_indented' to print the message.
+	Deletes `second_stage' parameter.
+	(run_menu): Update `print_timeout' calls.
+
+2009-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix console palette on OpenFirmware.
+
+	* term/ieee1275/ofconsole.c (MAX): Removed.
+	(colors): Redone based on VGA palette.
+	(grub_ofconsole_setcolor): Discard brightness bit since only 8
+	colors are supported.
+	(grub_ofconsole_init_output): Use ARRAY_SIZE instead of hardcoded size.
+
+2009-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix potential EfiEmu double prepare.
+
+	* efiemu/main.c (prepared): New variable
+	(grub_efiemu_unload): Set prepare to '0'.
+	(grub_efiemu_prepare): Return if already prepared. Set prepared.
+
+	set_virtual_address_map support.
+
+	* include/grub/efi/efi.h (grub_efi_set_virtual_address_map): New
+	prototype.
+	* include/grub/efiemu/efiemu.h (grub_efiemu_write_sym_markers): New
+	prototype.
+	(grub_efiemu_crc32): Likewise.
+	(grub_efiemu_crc64): Likewise.
+	(grub_efiemu_set_virtual_address_map): Likewise.
+	* include/grub/autoefi.h (grub_autoefi_exit_boot_services):
+	New definition.
+	(grub_autoefi_set_virtual_address_map): Likewise.
+	* kern/efi/efi.c (grub_efi_set_virtual_address_map): New function.
+	* loader/i386/xnu.c (grub_xnu_boot): Call set_virtual_address_map.
+	Restructure flow to accomodate it.
+	* efiemu/prepare.c (grub_efiemu_prepare): Support set_virtual_address_map.
+	(grub_efiemu_crc): Recompute CRC32.
+	* efiemu/runtime/efiemu.c (ptv_relocated): Renamed to ...
+	(efiemu_ptv_relocated): ... this. Made global. All users updated.
+	* efiemu/symbols.c (relocated_handle): New variable.
+	(grub_efiemu_free_syms): Free relocated_handle.
+	(grub_efiemu_alloc_syms): Allocate relocated_handle.
+	(grub_efiemu_write_sym_markers): New function.
+	(grub_efiemu_set_virtual_address_map): Likewise.
+
+	Newer XNU parameters.
+
+	* include/grub/i386/xnu.h (GRUB_XNU_BOOTARGS_VERMINOR): Change to 5.
+	* include/grub/xnu.h (grub_xnu_extheader): Add nameaddr and namesize.
+	(grub_xnu_fill_devicetree): New prototype.
+	(grub_xnu_heap_real_start): New variable.
+	* loader/xnu.c (get_name_ptr): New function.
+	(grub_xnu_load_driver): Fill namelen and name.
+
+	64-bit xnu support.
+
+	* conf/i386-efi.rmk (xnu_mod_SOURCES): Add 'loader/macho32.c'
+	and 'loader/macho64.c'.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+	* include/grub/i386/macho.h (grub_macho_thread64): New structure.
+	* include/grub/xnu.h (grub_xnu_is_64bit): New variable.
+	* include/grub/macho.h (grub_macho_segment64): New structure.
+	* include/grub/machoload.h (grub_macho32_size): Renamed from ...
+	(grub_macho_size32): ... to this.
+	(grub_macho32_get_entry_point): Renamed from ...
+	(grub_macho_get_entry_point32): ... to this.
+	(grub_macho_contains_macho64): New prototype.
+	(grub_macho_size64): Likewise.
+	(grub_macho_get_entry_point64): Likewise.
+	(grub_macho32_load): Renamed from ...
+	(grub_macho_load32): ... to this.
+	(grub_macho32_filesize): Renamed from ...
+	(grub_macho_filesize32): ... to this.
+	(grub_macho32_readfile): Renamed from ...
+	(grub_macho_readfile32): ... to this.
+	(grub_macho_filesize64): New prototype.
+	(grub_macho_readfile64): Likewise.
+	(grub_macho_parse32): Likewise.
+	(grub_macho_parse64): Likewise.
+	* loader/macho.c: Split into ...
+	* loader/machoXX.c: ... and this. Replace 32 with XX.
+	* loader/macho32.c: New file.
+	* loader/macho64.c: Likewise.
+	* loader/xnu.c (grub_xnu_is_64bit): New variable.
+	(grub_cmd_xnu_kernel): Make 32-bit only.
+	(grub_cmd_xnu_kernel64): New function.
+	(grub_xnu_load_driver): Support Mach-O 64.
+	(grub_cmd_xnu_mkext): Likewise.
+	* util/grub.d/30_os-prober.in (osx_entry): New function.
+	Generate entries for 64-bit boot too.
+
+	Eliminate ad-hoc tree format in XNU and EfiEmu.
+
+	* efiemu/main.c (grub_efiemu_prepare): Update comment.
+	* efiemu/pnvram.c: Rewritten to use environment variables.
+	All users updated.
+
+	Inline utf16_to_utf8.
+
+	* kern/misc.c (grub_utf16_to_utf8): Move from here ...
+	* include/grub/charset.h (grub_utf16_to_utf8): ... to here. Inlined.
+	All users updated.
+	* include/grub/misc.h (grub_utf16_to_utf8): Removed.
+
+	* bus/usb/usb.c (grub_usb_get_string): Move from here ...
+	* commands/usbtest.c (grub_usb_get_string): ... move here.
+	(usb_print_str): Fix error handling.
+	* include/grub/usb.h (grub_usb_get_string): Remove.
+
+	UTF-8 to UTF-16 transformation.
+
+	* conf/common.rmk (pkglib_MODULES): Add charset.mod
+	(charset_mod_SOURCES): New variable.
+	(charset_mod_CFLAGS): Likewise.
+	(charset_mod_LDFLAGS): Likewise.
+	* include/grub/utf.h: New file.
+	* lib/utf.c: New file. (Based on grub_utf8_to_ucs4 from kern/misc.c)
+
+	Support for device properties.
+
+	* include/grub/i386/xnu.h (grub_xnu_devprop_header): New structure.
+	(grub_xnu_devprop_device_header): Likewise.
+	(grub_xnu_devprop_device_descriptor): Likewise.
+	(grub_xnu_devprop_add_device): New prototype.
+	(grub_xnu_devprop_remove_device): Likewise.
+	(grub_xnu_devprop_remove_property): Likewise.
+	(grub_xnu_devprop_add_property_utf8): Likewise.
+	(grub_xnu_devprop_add_property_utf16): Likewise.
+	(grub_cpu_xnu_init): Likewise.
+	(grub_cpu_xnu_fini): Likewise.
+	(grub_cpu_xnu_unload): Likewise.
+	* loader/i386/xnu.c (grub_xnu_devprop_device_descriptor): New structure.
+	(property_descriptor): Likewise.
+	(devices): New variable.
+	(grub_xnu_devprop_remove_property): New function.
+	(grub_xnu_devprop_add_device): Likewise.
+	(grub_xnu_devprop_remove_device): Likewise.
+	(grub_xnu_devprop_add_property): Likewise.
+	(grub_xnu_devprop_add_property_utf8): Likewise.
+	(grub_xnu_devprop_add_property_utf16): Likewise.
+	(hextoval): Likewise.
+	(grub_cpu_xnu_fill_devprop): Likewise.
+	(grub_cmd_devprop_load): Likewise.
+	(grub_xnu_boot): Call grub_cpu_xnu_fill_devprop,
+	grub_xnu_fill_devicetree, grub_xnu_fill_devicetree
+	(cmd_devprop_load): New variable.
+	(grub_cpu_xnu_init): New function.
+	(grub_cpu_xnu_fini): Likewise.
+	* loader/i386/xnu.c (grub_xnu_unload): Call grub_cpu_xnu_unload.
+	* loader/xnu.c (grub_xnu_parse_devtree): Remove.
+	(grub_cmd_xnu_devtree): Likewise.
+	(hextoval): New function.
+	(unescape): Likewise.
+	(grub_xnu_fill_devicetree): Likewise.
+
+	* util/grub.d/30_os-prober.in: Load devprop.bin. Don't load devtree.txt.
+	* util/i386/efi/grub-dumpdevtree: Generate devprop.bin.
+
+2009-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Workaround for broken ATI VBE.
+
+	* video/i386/pc/vbe.c (last_set_mode): New variable.
+	(grub_vbe_set_video_mode): Set 'last_set_mode'.
+	(grub_vbe_get_video_mode): Use 'last_set_mode' if get_mode fails.
+	(grub_video_vbe_setup): Don't check for reserved flag.
+
+2009-12-17 Felix Zielcke <fzielcke@z-51.de>
+
+	* gendistlist.sh: Use POSIX compliant `!' instead of `-not' in
+	the `find' command.
+
 2009-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	UUID support for HFS.

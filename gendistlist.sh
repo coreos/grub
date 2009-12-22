@@ -36,7 +36,7 @@ dir=`dirname $0`
 cd $dir
 
 for dir in $DISTDIRS; do
-  for d in `find $dir -type d -not -name .svn -not -name .bzr | sort`; do
+  for d in `find $dir -type d ! -name .svn ! -name .bzr | sort`; do
     find $d -maxdepth 1 -name '*.[chSy]' -o -name '*.mk' -o -name '*.rmk' \
       -o -name '*.rb' -o -name '*.in' -o -name '*.tex' -o -name '*.texi' \
       -o -name '*.info' -o -name 'grub.cfg' -o -name 'README' \

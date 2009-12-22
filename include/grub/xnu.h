@@ -76,6 +76,8 @@ struct grub_xnu_extheader
   grub_uint32_t infoplistsize;
   grub_uint32_t binaryaddr;
   grub_uint32_t binarysize;
+  grub_uint32_t nameaddr;
+  grub_uint32_t namesize;
 } __attribute__ ((packed));
 
 struct grub_xnu_devtree_key *grub_xnu_create_key (struct grub_xnu_devtree_key **parent,
@@ -101,7 +103,10 @@ grub_err_t grub_xnu_scan_dir_for_kexts (char *dirname, char *osbundlerequired,
 grub_err_t grub_xnu_load_kext_from_dir (char *dirname, char *osbundlerequired,
 					int maxrecursion);
 void *grub_xnu_heap_malloc (int size);
+grub_err_t grub_xnu_fill_devicetree (void);
+extern grub_uint32_t grub_xnu_heap_real_start;
 extern grub_size_t grub_xnu_heap_size;
 extern void *grub_xnu_heap_start;
 extern struct grub_video_bitmap *grub_xnu_bitmap;
+extern int grub_xnu_is_64bit;
 #endif

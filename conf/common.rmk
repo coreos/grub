@@ -638,3 +638,8 @@ pkglib_MODULES += setjmp.mod
 setjmp_mod_SOURCES = lib/$(target_cpu)/setjmp.S
 setjmp_mod_ASFLAGS = $(COMMON_ASFLAGS)
 setjmp_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += charset.mod
+charset_mod_SOURCES = lib/charset.c
+charset_mod_CFLAGS = $(COMMON_CFLAGS)
+charset_mod_LDFLAGS = $(COMMON_LDFLAGS)

@@ -62,7 +62,7 @@ grub_getline (void)
 }
 
 static grub_err_t
-grub_cmd_read (grub_command_t cmd UNUSED, int argc, char **args)
+grub_cmd_read (grub_command_t cmd __attribute__ ((unused)), int argc, char **args)
 {
   char *line = grub_getline ();
   if (! line)
@@ -80,7 +80,7 @@ GRUB_MOD_INIT(read)
 {
   cmd = grub_register_command ("read", grub_cmd_read,
 			       "read [ENVVAR]",
-			       "Set variable with user input");
+			       "Set variable with user input.");
 }
 
 GRUB_MOD_FINI(read)

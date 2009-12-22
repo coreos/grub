@@ -46,7 +46,7 @@ enable_rom_area (void)
   rom_ptr = (grub_uint32_t *) VBIOS_ADDR;
   if (*rom_ptr != BLANK_MEM)
     {
-      grub_printf ("ROM image present.\n");
+      grub_printf ("ROM image is present.\n");
       return 0;
     }
 
@@ -63,7 +63,7 @@ enable_rom_area (void)
   *rom_ptr = 0;
   if (*rom_ptr != 0)
     {
-      grub_printf ("Can\'t enable rom area.\n");
+      grub_printf ("Can\'t enable ROM area.\n");
       return 0;
     }
 
@@ -201,7 +201,7 @@ static grub_command_t cmd_fakebios, cmd_loadbios;
 GRUB_MOD_INIT(loadbios)
 {
   cmd_fakebios = grub_register_command ("fakebios", grub_cmd_fakebios,
-					0, "fake bios.");
+					0, "Fake bios.");
 
   cmd_loadbios = grub_register_command ("loadbios", grub_cmd_loadbios,
 					"loadbios BIOS_DUMP [INT10_DUMP]",

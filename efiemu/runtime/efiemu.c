@@ -111,9 +111,8 @@ static grub_uint8_t loge[1000] = "EFIEMULOG";
 static int logn = 9;
 #define LOG(x)   { if (logn<900) loge[logn++]=x; }
 
-static int ptv_relocated = 0;
-
 /* Interface with grub */
+extern grub_uint8_t efiemu_ptv_relocated;
 struct grub_efi_runtime_services efiemu_runtime_services;
 struct grub_efi_system_table efiemu_system_table;
 extern struct grub_efiemu_ptv_rel efiemu_ptv_relloc[];
@@ -343,9 +342,9 @@ grub_efi_status_t EFI_FUNC
   LOG ('e');
 
   /* Ensure that we are called only once */
-  if (ptv_relocated)
+  if (efiemu_ptv_relocated)
     return GRUB_EFI_UNSUPPORTED;
-  ptv_relocated = 1;
+  efiemu_ptv_relocated = 1;
 
   /* Correct addresses using information supplied by grub */
   for (cur_relloc = efiemu_ptv_relloc; cur_relloc->size;cur_relloc++)

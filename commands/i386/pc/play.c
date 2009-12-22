@@ -207,7 +207,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(play)
 {
   cmd = grub_register_command ("play", grub_cmd_play,
-			       "play FILE", "Play a tune");
+			       "play FILE", "Play a tune.");
 }
 
 GRUB_MOD_FINI(play)
