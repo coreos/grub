@@ -25,3 +25,9 @@ pkglib_MODULES += ata.mod
 ata_mod_SOURCES = disk/ata.c
 ata_mod_CFLAGS = $(COMMON_CFLAGS)
 ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For iorw.mod.
+pkglib_MODULES += iorw.mod
+iorw_mod_SOURCES = commands/iorw.c
+iorw_mod_CFLAGS = $(COMMON_CFLAGS)
+iorw_mod_LDFLAGS = $(COMMON_LDFLAGS)
