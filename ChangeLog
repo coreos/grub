@@ -3,6 +3,7 @@
 	* bus/usb/uhci.c (grub_uhci_transfer): Set a limit transaction time.
 	(grub_uhci_portstatus): Likewise.
 	(grub_uhci_portstatus): Add necessary delay.
+	* bus/usb/usbhub.c (grub_usb_hub_add_dev): Fix loop-break condition.
 
 2009-12-21  Carles Pina i Estany  <carles@pina.cat>
 
