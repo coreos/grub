@@ -28,7 +28,7 @@ PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
 native_platform=@platform@
-pkglib_DATA="efiemu32.o efiemu64.o moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst"
+pkglib_DATA="@pkglib_DATA@"
 
 coreboot_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/${target_cpu}-coreboot
 pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/${target_cpu}-pc

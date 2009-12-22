@@ -363,8 +363,8 @@ class Script
     "CLEANFILES += #{@name}
 
 #{@name}: #{src} $(#{src}_DEPENDENCIES) config.status
-	sed -i -e 's,@pkglib_DATA@,$(pkglib_DATA),g' $(srcdir)/#{src}
 	./config.status --file=#{name}:#{src}
+	sed -i -e 's,@pkglib_DATA@,$(pkglib_DATA),g' $@
 	chmod +x $@
 
 "

@@ -1,3 +1,8 @@
+2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/grub-mkrescue.in (pkglib_DATA): Set to @pkglib_DATA@.
+	* genmk.rb (class SCRIPT): Modify the target file instead of source.
+
 2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* commands/memrw.c (grub_cmd_write): Support for mask parameter.
