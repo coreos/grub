@@ -25,3 +25,9 @@ pkglib_MODULES += ata.mod
 ata_mod_SOURCES = disk/ata.c
 ata_mod_CFLAGS = $(COMMON_CFLAGS)
 ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For setpci.mod
+pkglib_MODULES += setpci.mod
+setpci_mod_SOURCES = commands/setpci.c
+setpci_mod_CFLAGS = $(COMMON_CFLAGS)
+setpci_mod_LDFLAGS = $(COMMON_LDFLAGS)
