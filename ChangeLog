@@ -1,5 +1,13 @@
 2009-12-22 Felix Zielcke <fzielcke@z-51.de>
 
+	* genmk.rb (class SCRIPT): Use sed to substitute @pkglib_DATA@
+	with the actual contents of the correspondending make variable.
+	* util/grub-mkrescue.in (pkglib_DATA): New variable.
+	(process_input_dir): Copy all $pkglib_DATA files instead of explicitly
+	specifying `*.lst' and `efiemu??.o'
+
+2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+
 	* util/grub.d/30_os-prober.in (osx_entry): Add round brackets
 	after function name.
 	Noticed by Rene Engelhard <rene@debian.org>.

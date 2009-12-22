@@ -28,6 +28,7 @@ PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
 native_platform=@platform@
+pkglib_DATA="efiemu32.o efiemu64.o moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst"
 
 coreboot_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/${target_cpu}-coreboot
 pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/${target_cpu}-pc
@@ -93,11 +94,15 @@ process_input_dir ()
     input_dir="$1"
     platform="$2"
     mkdir -p ${iso9660_dir}/boot/grub/${target_cpu}-${platform}
-    for file in ${input_dir}/*.mod ${input_dir}/efiemu??.o \
-        ${input_dir}/*.lst; do
+    for file in ${input_dir}/*.mod; do
         if test -f "$file"; then
             cp -f "$file" ${iso9660_dir}/boot/grub/${target_cpu}-${platform}/
         fi
+    done
+    for file in ${pkglib_DATA}; do
+	if test -f "${input_dir}/${file}"; then
+            cp -f "${input_dir}/${file}" ${iso9660_dir}/boot/grub/${target_cpu}-${platform}/
+	fi
     done
 
     mkdir -p ${iso9660_dir}/boot/grub/locale
