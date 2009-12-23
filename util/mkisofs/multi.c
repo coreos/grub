@@ -1,5 +1,5 @@
 /*
- * File multi.c - scan existing iso9660 image and merge into 
+ * File multi.c - scan existing iso9660 image and merge into
  * iso9660 filesystem.  Used for multisession support.
  *
  * Written by Eric Youngdale (1996).
@@ -166,7 +166,7 @@ readsecs(startsecno, buffer, sectorcount)
 /*
  * Parse the RR attributes so we can find the file name.
  */
-static int 
+static int
 FDECL3(parse_rr, unsigned char *, pnt, int, len, struct directory_entry *,dpnt)
 {
 	int cont_extent, cont_offset, cont_size;
@@ -219,10 +219,10 @@ FDECL3(parse_rr, unsigned char *, pnt, int, len, struct directory_entry *,dpnt)
 } /* parse_rr */
 
 
-static int 
-FDECL4(check_rr_dates, struct directory_entry *, dpnt, 
-       struct directory_entry *, current, 
-       struct stat *, statbuf, 
+static int
+FDECL4(check_rr_dates, struct directory_entry *, dpnt,
+       struct directory_entry *, current,
+       struct stat *, statbuf,
        struct stat *,lstatbuf)
 {
 	int cont_extent, cont_offset, cont_size;
@@ -233,8 +233,8 @@ FDECL4(check_rr_dates, struct directory_entry *, dpnt,
 	int same_file_type;
 	mode_t mode;
 	char time_buf[7];
-	
-	
+
+
 	cont_extent = cont_offset = cont_size = 0;
 	same_file = 1;
 	same_file_type = 1;
@@ -270,14 +270,14 @@ FDECL4(check_rr_dates, struct directory_entry *, dpnt,
 		  if( pnt[4] & TF_CREATE )
 		    {
 		      iso9660_date((char *) time_buf, lstatbuf->st_ctime);
-		      if(memcmp(time_buf, pnt+offset, 7) == 0) 
+		      if(memcmp(time_buf, pnt+offset, 7) == 0)
 			same_file = 0;
 		      offset += 7;
 		    }
 		  if( pnt[4] & TF_MODIFY )
 		    {
 		      iso9660_date((char *) time_buf, lstatbuf->st_mtime);
-		      if(memcmp(time_buf, pnt+offset, 7) == 0) 
+		      if(memcmp(time_buf, pnt+offset, 7) == 0)
 			same_file = 0;
 		      offset += 7;
 		    }
@@ -350,7 +350,7 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
   while(i < len )
     {
       idr = (struct iso_directory_record *) &dirbuff[i];
-      if(idr->length[0] == 0) 
+      if(idr->length[0] == 0)
 	{
 	  i = (i + SECTOR_SIZE - 1) & ~(SECTOR_SIZE - 1);
 	  continue;
@@ -378,7 +378,7 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
   while(i < len )
     {
       idr = (struct iso_directory_record *) &dirbuff[i];
-      if(idr->length[0] == 0) 
+      if(idr->length[0] == 0)
 	{
 	  i = (i + SECTOR_SIZE - 1) & ~(SECTOR_SIZE - 1);
 	  continue;
@@ -413,16 +413,16 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
        */
       rlen = idr->length[0] & 0xff;
       cpnt = (unsigned char *) idr;
-      
+     
       rlen -= sizeof(struct iso_directory_record);
       cpnt += sizeof(struct iso_directory_record);
-      
+     
       rlen += sizeof(idr->name);
       cpnt -= sizeof(idr->name);
-      
+     
       rlen -= idr->name_len[0];
       cpnt += idr->name_len[0];
-      
+     
       if((idr->name_len[0] & 1) == 0){
 	cpnt++;
 	rlen--;
@@ -444,7 +444,7 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
       memset(cpnt, 0, sizeof((*pnt)->isorec.name) - idr->name_len[0]);
 
       parse_rr((*pnt)->rr_attributes, rlen, *pnt);
-      
+     
       if(    ((*pnt)->isorec.name_len[0] == 1)
 	  && (    ((*pnt)->isorec.name[0] == 0)
 	       || ((*pnt)->isorec.name[0] == 1)) )
@@ -485,7 +485,7 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
 	  tt_extent = isonum_733((unsigned char *)idr->extent);
 	  tt_size = isonum_733((unsigned char *)idr->size);
 	}
-      
+     
       pnt++;
       i += idr->length[0];
     }
@@ -515,7 +515,7 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
 	    {
 	      rlen = isonum_711((*pnt)->isorec.name_len);
 	      if( strncmp((char *) cpnt + 2, (*pnt)->isorec.name,
-			  rlen) == 0 
+			  rlen) == 0
 		  && cpnt[2+rlen] == ' ')
 		{
 		  (*pnt)->table = e_malloc(strlen((char*)cpnt) - 33);
@@ -534,7 +534,7 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
 	  cpnt = cpnt1 + 1;
 	  cpnt1 = cpnt;
 	}
-      
+     
       free(tt_buf);
     }
   else if( !seen_rockridge && !warning_given )
@@ -553,14 +553,14 @@ FDECL2(read_merging_directory, struct iso_directory_record *, mrootp,
     {
       free(dirbuff);
     }
-  
+ 
   return rtn;
 } /* read_merging_directory */
 
 /*
  * Free any associated data related to the structures.
  */
-int 
+int
 FDECL2(free_mdinfo, struct directory_entry **  , ptr, int, len )
 {
   int		i;
@@ -792,7 +792,7 @@ struct iso_directory_record * FDECL1(merge_isofs, char *, path)
   /*
    * Get the location and size of the root directory.
    */
-  rootp = (struct iso_directory_record *) 
+  rootp = (struct iso_directory_record *)
     malloc(sizeof(struct iso_directory_record));
 
   memcpy(rootp, pri->root_directory_record, sizeof(*rootp));
@@ -820,7 +820,7 @@ void FDECL3(merge_remaining_entries, struct directory *, this_dir,
 	{
 	  continue;
 	}
-      
+     
       if( pnt[i]->name != NULL && pnt[i]->whole_name == NULL)
        {
          /*
@@ -868,7 +868,7 @@ void FDECL3(merge_remaining_entries, struct directory *, this_dir,
       this_dir->contents = pnt[i];
       pnt[i] = NULL;
     }
-  
+ 
 
   /*
    * If we don't have an entry for the translation table, then
@@ -945,7 +945,7 @@ void FDECL3(merge_remaining_entries, struct directory *, this_dir,
  * location.  FIXME(eric).
  */
 static int
-FDECL2(merge_old_directory_into_tree, struct directory_entry *, dpnt, 
+FDECL2(merge_old_directory_into_tree, struct directory_entry *, dpnt,
        struct directory *, parent)
 {
   struct directory_entry	**contents = NULL;
@@ -997,7 +997,7 @@ FDECL2(merge_old_directory_into_tree, struct directory_entry *, dpnt,
       /*
        * We can always reuse the TRANS.TBL in this particular case.
        */
-      contents[i]->de_flags |= SAFE_TO_REUSE_TABLE_ENTRY;	
+      contents[i]->de_flags |= SAFE_TO_REUSE_TABLE_ENTRY;
 
       if(    ((contents[i]->isorec.flags[0] & 2) != 0)
 	  && (i >= 2) )
@@ -1059,7 +1059,7 @@ FDECL2(merge_old_directory_into_tree, struct directory_entry *, dpnt,
 char * cdwrite_data = NULL;
 
 int
-FDECL1(get_session_start, int *, file_addr) 
+FDECL1(get_session_start, int *, file_addr)
 {
   char * pnt;
 
@@ -1171,14 +1171,14 @@ FDECL2(merge_previous_session,struct directory *, this_dir,
 	{
 	  int dflag;
 
-	  if (strcmp(s_entry->name,".") && strcmp(s_entry->name,"..")) 
+	  if (strcmp(s_entry->name,".") && strcmp(s_entry->name,".."))
 	    {
 	      struct directory * child;
 
-	      child = find_or_create_directory(this_dir, 
-					       s_entry->whole_name, 
+	      child = find_or_create_directory(this_dir,
+					       s_entry->whole_name,
 					       s_entry, 1);
-	      dflag = merge_previous_session(child, 
+	      dflag = merge_previous_session(child,
 					     &odpnt->isorec);
 	      /* If unable to scan directory, mark this as a non-directory */
 	      if(!dflag)
@@ -1188,14 +1188,14 @@ FDECL2(merge_previous_session,struct directory *, this_dir,
 	    }
 	}
     }
-  
+ 
   /*
    * Whatever is left over, are things which are no longer in the tree
    * on disk.  We need to also merge these into the tree.
    */
    merge_remaining_entries(this_dir, orig_contents, n_orig);
    free_mdinfo(orig_contents, n_orig);
-  
+ 
   return 1;
 }
 

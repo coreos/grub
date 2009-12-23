@@ -391,17 +391,17 @@ grub_normal_init_page (void)
 
   char *msg_formatted = grub_malloc (grub_strlen(msg) +
   				     grub_strlen(PACKAGE_VERSION));
-  
+ 
   grub_cls ();
 
   grub_sprintf (msg_formatted, msg, PACKAGE_VERSION);
 
   grub_uint32_t *unicode_msg;
   grub_uint32_t *last_position;
-  
-  msg_len = grub_utf8_to_ucs4_alloc (msg_formatted, 
+ 
+  msg_len = grub_utf8_to_ucs4_alloc (msg_formatted,
   				     &unicode_msg, &last_position);
-  
+ 
   if (msg_len < 0)
     {
       return;
@@ -528,7 +528,7 @@ grub_normal_reader_init (void)
 
   const char *msg_esc = _("ESC at any time exits.");
 
-  char *msg_formatted = grub_malloc (sizeof (char) * (grub_strlen (msg) + 
+  char *msg_formatted = grub_malloc (sizeof (char) * (grub_strlen (msg) +
                 grub_strlen(msg_esc) + 1));
 
   grub_sprintf (msg_formatted, msg, reader_nested ? msg_esc : "");
@@ -536,7 +536,7 @@ grub_normal_reader_init (void)
   grub_puts ("\n");
 
   grub_free (msg_formatted);
-  
+ 
   return 0;
 }
 

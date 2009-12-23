@@ -100,7 +100,7 @@ prepare_grub_to_access_device ()
 
   # Abstraction modules aren't auto-loaded.
   abstraction="`${grub_probe} --device ${device} --target=abstraction`"
-  for module in ${abstraction} ; do 
+  for module in ${abstraction} ; do
     echo "insmod ${module}"
   done
 

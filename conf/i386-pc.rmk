@@ -128,7 +128,7 @@ pkglib_MODULES = biosdisk.mod chain.mod 				\
 	efiemu.mod mmap.mod acpi.mod drivemap.mod
 
 # For boot.mod.
-pkglib_MODULES += boot.mod 
+pkglib_MODULES += boot.mod
 boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
 boot_mod_CFLAGS = $(COMMON_CFLAGS)
 boot_mod_LDFLAGS = $(COMMON_LDFLAGS)

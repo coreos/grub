@@ -832,7 +832,7 @@ grub_xnu_boot_resume (void)
   state.eax = grub_xnu_arg1;
 
   return grub_relocator32_boot (grub_xnu_heap_start, grub_xnu_heap_will_be_at,
-				state);  
+				state); 
 }
 
 /* Boot xnu. */

@@ -483,7 +483,7 @@ grub_util_is_dmraid (const char *os_dev)
     return 1;
   else if (! strncmp (os_dev, "/dev/mapper/sil_", 16))
     return 1;
- 
+
   return 0;
 }
 

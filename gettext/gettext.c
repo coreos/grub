@@ -29,8 +29,8 @@
 #include <grub/gzio.h>
 #include <grub/i18n.h>
 
-/* 
-   .mo file information from: 
+/*
+   .mo file information from:
    http://www.gnu.org/software/autoconf/manual/gettext/MO-Files.html .
 */
 

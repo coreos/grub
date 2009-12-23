@@ -71,7 +71,7 @@ grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
   grub_ssize_t msg_len = grub_strlen (msg);
 
   *unicode_msg = grub_malloc (grub_strlen (msg) * sizeof (grub_uint32_t));
-  
+ 
   if (!*unicode_msg)
     {
       grub_printf ("utf8_to_ucs4 ERROR1: %s", msg);
@@ -133,7 +133,7 @@ grub_print_message_indented (const char *msg, int margin_left, int margin_right)
     {
       if (! first_loop)
         grub_putchar ('\n');
-      
+     
       next_new_line = (grub_uint32_t *) last_position;
 
       while (grub_getstringwidth (current_position, next_new_line) > line_len
@@ -402,7 +402,7 @@ print_timeout (int timeout, int offset)
 
   grub_sprintf (msg_translated, msg, timeout);
   grub_print_message_indented (msg_translated, 3, 0);
-  
+ 
   int posx;
   posx = grub_getxy() >> 8;
   print_spaces (GRUB_TERM_WIDTH - posx - 1);

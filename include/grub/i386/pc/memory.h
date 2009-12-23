@@ -85,7 +85,7 @@
 struct grub_machine_bios_data_area
 {
   grub_uint8_t unused1[0x17];
-  grub_uint8_t keyboard_flag_lower; /* 0x17 */ 
+  grub_uint8_t keyboard_flag_lower; /* 0x17 */
   grub_uint8_t unused2[0xf0 - 0x18];
 };
 
