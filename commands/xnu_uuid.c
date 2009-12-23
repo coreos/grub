@@ -1,4 +1,4 @@
-/* xnu_uuid.c - transform 64-bit serial number 
+/* xnu_uuid.c - transform 64-bit serial number
    to 128-bit uuid suitable for xnu. */
 /*
  *  GRUB  --  GRand Unified Bootloader
@@ -33,10 +33,10 @@
 #include <grub/command.h>
 #include <grub/crypto.h>
 
-/* This prefix is used by xnu and boot-132 to hash 
+/* This prefix is used by xnu and boot-132 to hash
    together with volume serial. */
-static grub_uint8_t hash_prefix[16] 
-  = {0xB3, 0xE2, 0x0F, 0x39, 0xF2, 0x92, 0x11, 0xD6, 
+static grub_uint8_t hash_prefix[16]
+  = {0xB3, 0xE2, 0x0F, 0x39, 0xF2, 0x92, 0x11, 0xD6,
      0x97, 0xA4, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC};
 
 static grub_err_t

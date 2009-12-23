@@ -67,7 +67,7 @@ grub_xnu_heap_malloc (int size)
 	 advanced mm is ready. */
       grub_xnu_heap_start
 	= XNU_RELOCATOR (realloc) (grub_xnu_heap_start,
-				   newblknum 
+				   newblknum
 				   * GRUB_XNU_HEAP_ALLOC_BLOCK);
       if (!grub_xnu_heap_start)
 	return NULL;
@@ -1326,20 +1326,20 @@ grub_xnu_fill_devicetree (void)
     nextdot = curdot + grub_strlen (curdot) + 1;
 
     name = grub_realloc (name, nextdot - curdot + 1);
-    
+   
     if (!name)
       return 1;
-    
+   
     unescape (name, curdot, nextdot, &len);
     name[len] = 0;
 
     curvalue = grub_xnu_create_value (curkey, name);
     grub_free (name);
-    
+   
     data = grub_malloc (grub_strlen (var->value) + 1);
     if (!data)
       return 1;
-    
+   
     unescape (data, var->value, var->value + grub_strlen (var->value),
 	      &len);
     curvalue->datasize = len;

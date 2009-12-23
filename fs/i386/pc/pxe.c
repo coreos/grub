@@ -110,7 +110,7 @@ static grub_err_t
 grub_pxefs_dir (grub_device_t device __attribute__ ((unused)),
 		const char *path  __attribute__ ((unused)),
 		int (*hook) (const char *filename,
-			     const struct grub_dirhook_info *info) 
+			     const struct grub_dirhook_info *info)
 		__attribute__ ((unused)))
 {
   return GRUB_ERR_NONE;

@@ -195,7 +195,7 @@ static int FDECL1(sort_n_finish, struct directory *, this_dir)
    * missing the required '.' entries.  Create these now if we need
    * them.
    */
-  if( (this_dir->dir_flags & (DIR_HAS_DOT | DIR_HAS_DOTDOT)) != 
+  if( (this_dir->dir_flags & (DIR_HAS_DOT | DIR_HAS_DOTDOT)) !=
       (DIR_HAS_DOT | DIR_HAS_DOTDOT) )
     {
       attach_dot_entries(this_dir, &fstatbuf);
@@ -211,9 +211,9 @@ static int FDECL1(sort_n_finish, struct directory *, this_dir)
 	s_entry = s_entry->next;
 	continue;
       }
-	  
+	 
       /*
-       * First assume no conflict, and handle this case 
+       * First assume no conflict, and handle this case
        */
       if(!(s_entry1 = find_file_hash(s_entry->isorec.name)))
 	{
@@ -221,16 +221,16 @@ static int FDECL1(sort_n_finish, struct directory *, this_dir)
 	  s_entry = s_entry->next;
 	  continue;
 	}
-	  
+	 
       if(s_entry1 == s_entry)
 	error (1, 0, _("Fatal goof\n"));
-      
-      /* 
+     
+      /*
        * OK, handle the conflicts.  Try substitute names until we come
-       * up with a winner 
+       * up with a winner
        */
       strcpy(rootname, s_entry->isorec.name);
-      if(full_iso9660_filenames) 
+      if(full_iso9660_filenames)
 	{
 	  if(strlen(rootname) > 27) rootname[27] = 0;
 	}
@@ -241,7 +241,7 @@ static int FDECL1(sort_n_finish, struct directory *, this_dir)
        * a ';'.
        */
       c  = strchr(rootname, '.');
-      if (c) 
+      if (c)
 	*c = 0;
       else
 	{
@@ -254,25 +254,25 @@ static int FDECL1(sort_n_finish, struct directory *, this_dir)
 	    {
 	      for(d3 = 0; d3 < 36; d3++)
 		{
-		  sprintf(newname,"%s.%c%c%c%s", rootname,  
+		  sprintf(newname,"%s.%c%c%c%s", rootname, 
 			  (d1 <= 9 ? '0' + d1 : 'A' + d1 - 10),
 			  (d2 <= 9 ? '0' + d2 : 'A' + d2 - 10),
 			  (d3 <= 9 ? '0' + d3 : 'A' + d3 - 10),
-			  (s_entry->isorec.flags[0] == 2 || 
+			  (s_entry->isorec.flags[0] == 2 ||
 			   omit_version_number ? "" : ";1"));
-		  
+		 
 #ifdef VMS
 		  /* Sigh.  VAXCRTL seems to be broken here */
 		  {
 		    int ijk = 0;
-		    while(newname[ijk]) 
+		    while(newname[ijk])
 		      {
 			if(newname[ijk] == ' ') newname[ijk] = '0';
 			ijk++;
 		      }
 		  }
 #endif
-		  
+		 
 		  if(!find_file_hash(newname)) goto got_valid_name;
 		}
 	    }
@@ -283,24 +283,24 @@ static int FDECL1(sort_n_finish, struct directory *, this_dir)
        */
       error (1, 0, _("Unable to  generate unique  name for file %s\n"), s_entry->name);
 
-got_valid_name:      
-      /* 
+got_valid_name:     
+      /*
        * OK, now we have a good replacement name.  Now decide which one
-       * of these two beasts should get the name changed 
+       * of these two beasts should get the name changed
        */
-      if(s_entry->priority < s_entry1->priority) 
+      if(s_entry->priority < s_entry1->priority)
 	{
 	  if( verbose > 0 )
 	    {
-	      fprintf (stderr, _("Using %s for %s%s%s (%s)\n"), newname,  
-		       this_dir->whole_name, SPATH_SEPARATOR, 
+	      fprintf (stderr, _("Using %s for %s%s%s (%s)\n"), newname, 
+		       this_dir->whole_name, SPATH_SEPARATOR,
 		       s_entry->name, s_entry1->name);
 	    }
 	  s_entry->isorec.name_len[0] =  strlen(newname);
 	  new_reclen =  sizeof(struct iso_directory_record) -
 	    sizeof(s_entry->isorec.name) +
 	    strlen(newname);
-	  if(use_RockRidge) 
+	  if(use_RockRidge)
 	    {
 	      if (new_reclen & 1) new_reclen++;  /* Pad to an even byte */
 	      new_reclen += s_entry->rr_attr_size;
@@ -309,20 +309,20 @@ got_valid_name:
 	  s_entry->isorec.length[0] = new_reclen;
 	  strcpy(s_entry->isorec.name, newname);
 	}
-      else 
+      else
 	{
 	  delete_file_hash(s_entry1);
 	  if( verbose > 0 )
 	    {
-	      fprintf(stderr, _("Using %s for %s%s%s (%s)\n"), newname,  
-		      this_dir->whole_name, SPATH_SEPARATOR, 
+	      fprintf(stderr, _("Using %s for %s%s%s (%s)\n"), newname, 
+		      this_dir->whole_name, SPATH_SEPARATOR,
 		      s_entry1->name, s_entry->name);
 	    }
 	  s_entry1->isorec.name_len[0] =  strlen(newname);
 	  new_reclen =  sizeof(struct iso_directory_record) -
 	    sizeof(s_entry1->isorec.name) +
 	    strlen(newname);
-	  if(use_RockRidge) 
+	  if(use_RockRidge)
 	    {
 	      if (new_reclen & 1) new_reclen++;  /* Pad to an even byte */
 	      new_reclen += s_entry1->rr_attr_size;
@@ -335,19 +335,19 @@ got_valid_name:
       add_file_hash(s_entry);
       s_entry = s_entry->next;
     }
-  
-  if(generate_tables 
-     && !find_file_hash("TRANS.TBL") 
+ 
+  if(generate_tables
+     && !find_file_hash("TRANS.TBL")
      && (reloc_dir != this_dir)
      && (this_dir->extent == 0) )
     {
-      /* 
-       * First we need to figure out how big this table is 
+      /*
+       * First we need to figure out how big this table is
        */
       for (s_entry = this_dir->contents; s_entry; s_entry = s_entry->next)
 	{
 	  if(strcmp(s_entry->name, ".") == 0  ||
-	     strcmp(s_entry->name, "..") == 0) continue; 
+	     strcmp(s_entry->name, "..") == 0) continue;
 	  if(s_entry->de_flags & INHIBIT_ISO9660_ENTRY) continue;
 	  if(s_entry->table) tablesize += 35 + strlen(s_entry->table);
 	}
@@ -355,13 +355,13 @@ got_valid_name:
 
   if( tablesize > 0 )
     {
-      table = (struct directory_entry *) 
+      table = (struct directory_entry *)
 	e_malloc(sizeof (struct directory_entry));
       memset(table, 0, sizeof(struct directory_entry));
       table->table = NULL;
       table->next = this_dir->contents;
       this_dir->contents = table;
-      
+     
       table->filedir = root;
       table->isorec.flags[0] = 0;
       table->priority  = 32768;
@@ -379,7 +379,7 @@ got_valid_name:
       table->table = (char *) e_malloc(ROUND_UP(tablesize));
       memset(table->table, 0, ROUND_UP(tablesize));
       iso9660_file_length  ("TRANS.TBL", table, 0);
-      
+     
       if(use_RockRidge)
 	{
 	  fstatbuf.st_mode = 0444 | S_IFREG;
@@ -389,7 +389,7 @@ got_valid_name:
 					 &fstatbuf, &fstatbuf, 0);
 	}
     }
-  
+ 
   /*
    * We have now chosen the 8.3 names and we should now know the length
    * of every entry in the directory.
@@ -403,18 +403,18 @@ got_valid_name:
 	}
 
       new_reclen = strlen(s_entry->isorec.name);
-	  
+	 
       /*
        * First update the path table sizes for directories.
        */
       if(s_entry->isorec.flags[0] ==  2)
 	{
-	  if (strcmp(s_entry->name,".") && strcmp(s_entry->name,"..")) 
+	  if (strcmp(s_entry->name,".") && strcmp(s_entry->name,".."))
 	    {
 	      path_table_size += new_reclen + sizeof(struct iso_path_table) - 1;
 	      if (new_reclen & 1) path_table_size++;
 	    }
-	  else 
+	  else
 	    {
 	      new_reclen = 1;
 	      if (this_dir == root && strlen(s_entry->name) == 1)
@@ -425,19 +425,19 @@ got_valid_name:
 	}
       if(path_table_size & 1) path_table_size++;  /* For odd lengths we pad */
       s_entry->isorec.name_len[0] = new_reclen;
-      
-      new_reclen += 
+     
+      new_reclen +=
 	sizeof(struct iso_directory_record) -
 	sizeof(s_entry->isorec.name);
-      
-      if (new_reclen & 1)	
+     
+      if (new_reclen & 1)
 	new_reclen++;
-      
+     
       new_reclen += s_entry->rr_attr_size;
-      
+     
       if (new_reclen & 1) new_reclen++;
-      
-      if(new_reclen > 0xff) 
+     
+      if(new_reclen > 0xff)
 	error (1, 0, _("Fatal error - RR overflow for file %s\n"),
 	       s_entry->name);
       s_entry->isorec.length[0] = new_reclen;
@@ -476,14 +476,14 @@ got_valid_name:
 	s_entry->table = NULL;
       }
 
-      if(count != tablesize) 
+      if(count != tablesize)
 	error (1, 0, _("Translation table size mismatch %d %d\n"),
 	       count, tablesize);
     }
 
-  /* 
+  /*
    * Now go through the directory and figure out how large this one will be.
-   * Do not split a directory entry across a sector boundary 
+   * Do not split a directory entry across a sector boundary
    */
   s_entry = this_dir->contents;
   this_dir->ce_bytes = 0;
@@ -497,34 +497,34 @@ got_valid_name:
 
       new_reclen = s_entry->isorec.length[0];
       if ((this_dir->size & (SECTOR_SIZE - 1)) + new_reclen >= SECTOR_SIZE)
-	this_dir->size = (this_dir->size + (SECTOR_SIZE - 1)) & 
+	this_dir->size = (this_dir->size + (SECTOR_SIZE - 1)) &
 	~(SECTOR_SIZE - 1);
       this_dir->size += new_reclen;
 
       /* See if continuation entries were used on disc */
-      if(use_RockRidge && 
-	 s_entry->rr_attr_size != s_entry->total_rr_attr_size) 
+      if(use_RockRidge &&
+	 s_entry->rr_attr_size != s_entry->total_rr_attr_size)
 	{
 	  unsigned char * pnt;
 	  int len;
 	  int nbytes;
-	  
+	 
 	  pnt = s_entry->rr_attributes;
 	  len = s_entry->total_rr_attr_size;
-	  
+	 
 	  /*
 	   * We make sure that each continuation entry record is not
 	   * split across sectors, but each file could in theory have more
-	   * than one CE, so we scan through and figure out what we need. 
+	   * than one CE, so we scan through and figure out what we need.
 	   */
 	  while(len > 3)
 	    {
-	      if(pnt[0] == 'C' && pnt[1] == 'E') 
+	      if(pnt[0] == 'C' && pnt[1] == 'E')
 		{
 		  nbytes = get_733((char *) pnt+20);
-		  
+		 
 		  if((this_dir->ce_bytes & (SECTOR_SIZE - 1)) + nbytes >=
-		     SECTOR_SIZE) this_dir->ce_bytes = 
+		     SECTOR_SIZE) this_dir->ce_bytes =
 				    ROUND_UP(this_dir->ce_bytes);
 		  /* Now store the block in the ce buffer */
 		  this_dir->ce_bytes += nbytes;
@@ -546,7 +546,7 @@ static void generate_reloc_directory()
 
 	/* Create an  entry for our internal tree */
 	time (&current_time);
-	reloc_dir = (struct directory *) 
+	reloc_dir = (struct directory *)
 		e_malloc(sizeof(struct directory));
 	memset(reloc_dir, 0, sizeof(struct directory));
 	reloc_dir->parent = root;
@@ -556,10 +556,10 @@ static void generate_reloc_directory()
 	reloc_dir->whole_name = strdup("./rr_moved");
 	reloc_dir->de_name =  strdup("rr_moved");
 	reloc_dir->extent = 0;
-	
-	
+
+
 	/* Now create an actual directory  entry */
-	s_entry = (struct directory_entry *) 
+	s_entry = (struct directory_entry *)
 		e_malloc(sizeof (struct directory_entry));
 	memset(s_entry, 0, sizeof(struct directory_entry));
 	s_entry->next = root->contents;
@@ -589,13 +589,13 @@ static void generate_reloc_directory()
 					       "rr_moved", s_entry,
 					       &fstatbuf, &fstatbuf, 0);
 	};
-	
+
 	/* Now create the . and .. entries in rr_moved */
 	/* Now create an actual directory  entry */
 	attach_dot_entries(reloc_dir, &root_statbuf);
 }
 
-/* 
+/*
  * Function:		attach_dot_entries
  *
  * Purpose:		Create . and .. entries for a new directory.
@@ -616,9 +616,9 @@ static void FDECL2(attach_dot_entries, struct directory *, dirnode,
 
 	if( (dirnode->dir_flags & DIR_HAS_DOTDOT) == 0 )
 	  {
-	    s_entry = (struct directory_entry *) 
+	    s_entry = (struct directory_entry *)
 	      e_malloc(sizeof (struct directory_entry));
-	    memcpy(s_entry, dirnode->self, 
+	    memcpy(s_entry, dirnode->self,
 		   sizeof(struct directory_entry));
 	    s_entry->name = strdup("..");
 	    s_entry->whole_name = NULL;
@@ -640,7 +640,7 @@ static void FDECL2(attach_dot_entries, struct directory *, dirnode,
 		  }
 		generate_rock_ridge_attributes("",
 					       "..", s_entry,
-					       parent_stat, 
+					       parent_stat,
 					       parent_stat, 0);
 	      }
 	    dirnode->dir_flags |= DIR_HAS_DOTDOT;
@@ -648,9 +648,9 @@ static void FDECL2(attach_dot_entries, struct directory *, dirnode,
 
 	if( (dirnode->dir_flags & DIR_HAS_DOT) == 0 )
 	  {
-	    s_entry = (struct directory_entry *) 
+	    s_entry = (struct directory_entry *)
 	      e_malloc(sizeof (struct directory_entry));
-	    memcpy(s_entry, dirnode->self, 
+	    memcpy(s_entry, dirnode->self,
 		   sizeof(struct directory_entry));
 	    s_entry->name = strdup(".");
 	    s_entry->whole_name = NULL;
@@ -659,7 +659,7 @@ static void FDECL2(attach_dot_entries, struct directory *, dirnode,
 	    iso9660_file_length (".", s_entry, 1);
 	    iso9660_date(s_entry->isorec.date, fstatbuf.st_mtime);
 	    s_entry->filedir = dirnode;
-	    
+	   
 	    dirnode->contents = s_entry;
 	    dirnode->contents->next = orig_contents;
 
@@ -667,17 +667,17 @@ static void FDECL2(attach_dot_entries, struct directory *, dirnode,
 	      {
 		fstatbuf.st_mode = 0555 | S_IFDIR;
 		fstatbuf.st_nlink = 2;
-		
+	
 		if( dirnode == root )
 		  {
 		    deep_flag |= NEED_CE | NEED_SP;  /* For extension record */
 		  }
-		
+	
 		generate_rock_ridge_attributes("",
 					       ".", s_entry,
 					       &fstatbuf, &fstatbuf, deep_flag);
 	      }
-	    
+	   
 	    dirnode->dir_flags |= DIR_HAS_DOT;
 	  }
 
@@ -687,12 +687,12 @@ static void FDECL2(update_nlink, struct directory_entry *, s_entry, int, value)
 {
     unsigned char * pnt;
     int len;
-    
+   
     pnt = s_entry->rr_attributes;
     len = s_entry->total_rr_attr_size;
     while(len)
     {
-	if(pnt[0] == 'P' && pnt[1] == 'X') 
+	if(pnt[0] == 'P' && pnt[1] == 'X')
 	{
 	    set_733((char *) pnt+12, value);
 	    break;
@@ -706,12 +706,12 @@ static void FDECL1(increment_nlink, struct directory_entry *, s_entry)
 {
     unsigned char * pnt;
     int len, nlink;
-    
+   
     pnt = s_entry->rr_attributes;
     len = s_entry->total_rr_attr_size;
     while(len)
     {
-	if(pnt[0] == 'P' && pnt[1] == 'X') 
+	if(pnt[0] == 'P' && pnt[1] == 'X')
 	{
 	    nlink =  get_733((char *) pnt+12);
 	    set_733((char *) pnt+12, nlink+1);
@@ -770,7 +770,7 @@ void finish_cl_pl_entries(){
   };
 }
 
-/* 
+/*
  * Function:		scan_directory_tree
  *
  * Purpose:		Walk through a directory on the local machine
@@ -781,7 +781,7 @@ void finish_cl_pl_entries(){
  */
 int
 FDECL3(scan_directory_tree,struct directory *, this_dir,
-       char *, path, 
+       char *, path,
        struct directory_entry *, de)
 {
   DIR				* current_dir;
@@ -806,7 +806,7 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
 
   if(current_dir) d_entry = readdir(current_dir);
 
-  if(!current_dir || !d_entry) 
+  if(!current_dir || !d_entry)
     {
       fprintf (stderr, _("Unable to open directory %s\n"), path);
       de->isorec.flags[0] &= ~2; /* Mark as not a directory */
@@ -827,12 +827,12 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
    */
   if (de->de_flags & INHIBIT_ISO9660_ENTRY)
     this_dir->dir_flags |= INHIBIT_ISO9660_ENTRY;
-  
+ 
   if (de->de_flags & INHIBIT_JOLIET_ENTRY)
     this_dir->dir_flags |= INHIBIT_JOLIET_ENTRY;
-  
-  /* 
-   * Now we scan the directory itself, and look at what is inside of it. 
+ 
+  /*
+   * Now we scan the directory itself, and look at what is inside of it.
    */
   dflag = 0;
   while(1==1){
@@ -878,7 +878,7 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
       continue;
     }
 
-    if(    generate_tables 
+    if(    generate_tables
 	&& strcmp(d_entry->d_name, "TRANS.TBL") == 0 )
       {
 	/*
@@ -886,7 +886,7 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
 	 * versions of these files, and we need to ignore any
 	 * originals that we might have found.
 	 */
-	if (verbose > 1) 
+	if (verbose > 1)
 	  {
 	    fprintf (stderr, _("Excluded: %s\n"), whole_path);
 	  }
@@ -897,13 +897,13 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
      * If we already have a '.' or a '..' entry, then don't
      * insert new ones.
      */
-    if( strcmp(d_entry->d_name, ".") == 0 
+    if( strcmp(d_entry->d_name, ".") == 0
 	&& this_dir->dir_flags & DIR_HAS_DOT )
       {
 	continue;
       }
 
-    if( strcmp(d_entry->d_name, "..") == 0 
+    if( strcmp(d_entry->d_name, "..") == 0
 	&& this_dir->dir_flags & DIR_HAS_DOTDOT )
       {
 	continue;
@@ -918,12 +918,12 @@ FDECL3(scan_directory_tree,struct directory *, this_dir,
     insert_file_entry(this_dir, whole_path, d_entry->d_name);
   }
   closedir(current_dir);
-  
+ 
   return 1;
 }
 
 
-/* 
+/*
  * Function:		insert_file_entry
  *
  * Purpose:		Insert one entry into our directory node.
@@ -961,12 +961,12 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
       fprintf (stderr, _("Non-existant or inaccessible: %s\n"),whole_path);
       return 0;
     }
-  
+ 
   if(this_dir == root && strcmp(short_name, ".") == 0)
     root_statbuf = statbuf;  /* Save this for later on */
-  
+ 
   /* We do this to make sure that the root entries are consistent */
-  if(this_dir == root && strcmp(short_name, "..") == 0) 
+  if(this_dir == root && strcmp(short_name, "..") == 0)
     {
       statbuf = root_statbuf;
       lstatbuf = root_statbuf;
@@ -974,13 +974,13 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 
   if(S_ISLNK(lstatbuf.st_mode))
     {
-      
+     
       /* Here we decide how to handle the symbolic links.  Here
 	 we handle the general case - if we are not following
 	 links or there is an error, then we must change
 	 something.  If RR is in use, it is easy, we let RR
 	 describe the file.  If not, then we punt the file. */
-      
+     
       if((status || !follow_links))
 	{
 	  if(use_RockRidge)
@@ -991,7 +991,7 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 	      statbuf.st_dev = (dev_t) UNCACHED_DEVICE;
 	      statbuf.st_mode = (statbuf.st_mode & ~S_IFMT) | S_IFREG;
 	    } else {
-	      if(follow_links) 
+	      if(follow_links)
 		{
 		  fprintf (stderr,
 			   _("Unable to stat file %s - ignoring and continuing.\n"),
@@ -1006,7 +1006,7 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 		}
 	    }
 	}
-      
+     
       /* Here we handle a different kind of case.  Here we have
 	 a symlink, but we want to follow symlinks.  If we run
 	 across a directory loop, then we need to pretend that
@@ -1014,16 +1014,16 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 	 is the first time we have seen this, then make this
 	 seem as if there was no symlink there in the first
 	 place */
-      
+     
       if( follow_links
-	  && S_ISDIR(statbuf.st_mode) ) 
+	  && S_ISDIR(statbuf.st_mode) )
 	{
 	  if(   strcmp(short_name, ".")
 		&& strcmp(short_name, "..") )
 	    {
 	      if(find_directory_hash(statbuf.st_dev, STAT_INODE(statbuf)))
 		{
-		  if(!use_RockRidge) 
+		  if(!use_RockRidge)
 		    {
 		      fprintf (stderr, _("Already cached directory seen (%s)\n"),
 			       whole_path);
@@ -1034,25 +1034,25 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 		  statbuf.st_dev = (dev_t) UNCACHED_DEVICE;
 		  statbuf.st_mode = (statbuf.st_mode & ~S_IFMT) | S_IFREG;
 		}
-	      else 
+	      else
 		{
 		  lstatbuf = statbuf;
 		  add_directory_hash(statbuf.st_dev, STAT_INODE(statbuf));
 		}
 	    }
 	}
-      
+     
       /*
        * For non-directories, we just copy the stat information over
        * so we correctly include this file.
        */
       if( follow_links
-	  && !S_ISDIR(statbuf.st_mode) ) 
+	  && !S_ISDIR(statbuf.st_mode) )
 	{
 	  lstatbuf = statbuf;
 	}
     }
-  
+ 
   /*
    * Add directories to the cache so that we don't waste space even
    * if we are supposed to be following symlinks.
@@ -1060,7 +1060,7 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
   if( follow_links
       && strcmp(short_name, ".")
       && strcmp(short_name, "..")
-      && S_ISDIR(statbuf.st_mode) ) 
+      && S_ISDIR(statbuf.st_mode) )
     {
       add_directory_hash(statbuf.st_dev, STAT_INODE(statbuf));
     }
@@ -1071,13 +1071,13 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 	       whole_path, strerror (errno));
       return 0;
     }
-  
+ 
   /* Add this so that we can detect directory loops with hard links.
      If we are set up to follow symlinks, then we skip this checking. */
-  if(   !follow_links 
-	&& S_ISDIR(lstatbuf.st_mode) 
-	&& strcmp(short_name, ".") 
-	&& strcmp(short_name, "..") ) 
+  if(   !follow_links
+	&& S_ISDIR(lstatbuf.st_mode)
+	&& strcmp(short_name, ".")
+	&& strcmp(short_name, "..") )
     {
       if(find_directory_hash(statbuf.st_dev, STAT_INODE(statbuf)))
 	error (1, 0, _("Directory loop - fatal goof (%s %lx %lu).\n"),
@@ -1085,7 +1085,7 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 	       (unsigned long) STAT_INODE(statbuf));
       add_directory_hash(statbuf.st_dev, STAT_INODE(statbuf));
     }
-  
+ 
   if (!S_ISCHR(lstatbuf.st_mode) && !S_ISBLK(lstatbuf.st_mode) &&
       !S_ISFIFO(lstatbuf.st_mode) && !S_ISSOCK(lstatbuf.st_mode)
       && !S_ISLNK(lstatbuf.st_mode) && !S_ISREG(lstatbuf.st_mode) &&
@@ -1094,26 +1094,26 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 	     whole_path);
     return 0;
   }
-  
+ 
   /* Who knows what trash this is - ignore and continue */
-  
-  if(status) 
+ 
+  if(status)
     {
       fprintf (stderr,
 	       _("Unable to stat file %s - ignoring and continuing.\n"),
 	       whole_path);
-      return 0; 
+      return 0;
     }
-  
+ 
   /*
    * Check to see if we have already seen this directory node.
    * If so, then we don't create a new entry for it, but we do want
    * to recurse beneath it and add any new files we do find.
    */
-  if (S_ISDIR(statbuf.st_mode)) 
+  if (S_ISDIR(statbuf.st_mode))
     {
       int dflag;
-      
+     
       for( s_entry = this_dir->contents; s_entry; s_entry = s_entry->next)
 	{
 	  if( strcmp(s_entry->name, short_name) == 0 )
@@ -1121,12 +1121,12 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 	      break;
 	    }
 	}
-      if ( s_entry != NULL 
-	   && strcmp(short_name,".") 
-	   && strcmp(short_name,"..")) 
+      if ( s_entry != NULL
+	   && strcmp(short_name,".")
+	   && strcmp(short_name,".."))
 	{
 	  struct directory * child;
-	  
+	 
 	  if ( (s_entry->de_flags & RELOCATED_DIRECTORY) != 0)
 	    {
 	      for( s_entry = reloc_dir->contents; s_entry; s_entry = s_entry->next)
@@ -1136,12 +1136,12 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 		      break;
 		    }
 		}
-	      child = find_or_create_directory(reloc_dir, whole_path, 
+	      child = find_or_create_directory(reloc_dir, whole_path,
 					       s_entry, 1);
 	    }
 	  else
 	    {
-	      child = find_or_create_directory(this_dir, whole_path, 
+	      child = find_or_create_directory(this_dir, whole_path,
 					       s_entry, 1);
 	      /* If unable to scan directory, mark this as a non-directory */
 	    }
@@ -1153,15 +1153,15 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 	  return 0;
 	}
     }
-  
-  s_entry = (struct directory_entry *) 
+ 
+  s_entry = (struct directory_entry *)
     e_malloc(sizeof (struct directory_entry));
   s_entry->next = this_dir->contents;
   memset(s_entry->isorec.extent, 0, 8);
   this_dir->contents = s_entry;
   deep_flag = 0;
   s_entry->table = NULL;
-  
+ 
   s_entry->name = strdup(short_name);
   s_entry->whole_name = strdup (whole_path);
 
@@ -1204,21 +1204,21 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
   if( strcmp(short_name,  ".") == 0)
     {
       this_dir->dir_flags |= DIR_HAS_DOT;
-    } 
+    }
 
   if( strcmp(short_name,  "..") == 0)
     {
       this_dir->dir_flags |= DIR_HAS_DOTDOT;
-    } 
+    }
 
-  if(   this_dir->parent 
-     && this_dir->parent == reloc_dir 
+  if(   this_dir->parent
+     && this_dir->parent == reloc_dir
      && strcmp(short_name,  "..") == 0)
     {
       s_entry->inode = UNCACHED_INODE;
       s_entry->dev = (dev_t) UNCACHED_DEVICE;
       deep_flag  = NEED_PL;
-    } 
+    }
   else
     {
       s_entry->inode = STAT_INODE(statbuf);
@@ -1229,42 +1229,42 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
   s_entry->rr_attr_size = 0;
   s_entry->total_rr_attr_size = 0;
   s_entry->rr_attributes = NULL;
-  
+ 
   /* Directories are assigned sizes later on */
-  if (!S_ISDIR(statbuf.st_mode)) 
+  if (!S_ISDIR(statbuf.st_mode))
     {
-      if (S_ISCHR(lstatbuf.st_mode) || S_ISBLK(lstatbuf.st_mode) || 
+      if (S_ISCHR(lstatbuf.st_mode) || S_ISBLK(lstatbuf.st_mode) ||
 	  S_ISFIFO(lstatbuf.st_mode) || S_ISSOCK(lstatbuf.st_mode)
 	  || S_ISLNK(lstatbuf.st_mode))
 	{
-	  s_entry->size = 0; 
-	  statbuf.st_size = 0; 
+	  s_entry->size = 0;
+	  statbuf.st_size = 0;
 	}
       else
 	{
-	  s_entry->size = statbuf.st_size; 
+	  s_entry->size = statbuf.st_size;
 	}
 
-      set_733((char *) s_entry->isorec.size, statbuf.st_size); 
-    } 
+      set_733((char *) s_entry->isorec.size, statbuf.st_size);
+    }
   else
     {
       s_entry->isorec.flags[0] = 2;
     }
-  
-  if (strcmp(short_name,".") && strcmp(short_name,"..") && 
+ 
+  if (strcmp(short_name,".") && strcmp(short_name,"..") &&
       S_ISDIR(statbuf.st_mode) && this_dir->depth > RR_relocation_depth)
     {
       struct directory * child;
 
       if(!reloc_dir) generate_reloc_directory();
-      
+     
       /*
        * Replicate the entry for this directory.  The old one will stay where it
        * is, and it will be neutered so that it no longer looks like a directory.
        * The new one will look like a directory, and it will be put in the reloc_dir.
        */
-      s_entry1 = (struct directory_entry *) 
+      s_entry1 = (struct directory_entry *)
 	e_malloc(sizeof (struct directory_entry));
       memcpy(s_entry1, s_entry,  sizeof(struct directory_entry));
       s_entry1->table = NULL;
@@ -1274,26 +1274,26 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
       reloc_dir->contents = s_entry1;
       s_entry1->priority  =  32768;
       s_entry1->parent_rec = this_dir->contents;
-      
+     
       deep_flag = NEED_RE;
-      
-      if(use_RockRidge) 
+     
+      if(use_RockRidge)
 	{
 	  generate_rock_ridge_attributes(whole_path,
 					 short_name, s_entry1,
 					 &statbuf, &lstatbuf, deep_flag);
 	}
-      
+     
       deep_flag = 0;
-      
+     
       /* We need to set this temporarily so that the parent to this
 	 is correctly determined. */
       s_entry1->filedir = reloc_dir;
-      child = find_or_create_directory(reloc_dir, whole_path, 
+      child = find_or_create_directory(reloc_dir, whole_path,
 				       s_entry1, 0);
       scan_directory_tree(child, whole_path, s_entry1);
       s_entry1->filedir = this_dir;
-      
+     
       statbuf.st_size = 0;
       statbuf.st_mode &= 0777;
       set_733((char *) s_entry->isorec.size, 0);
@@ -1303,10 +1303,10 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
       s_entry->de_flags |= RELOCATED_DIRECTORY;
       deep_flag = NEED_CL;
     }
-  
-  if(generate_tables 
-     && strcmp(s_entry->name, ".") 
-     && strcmp(s_entry->name, "..")) 
+ 
+  if(generate_tables
+     && strcmp(s_entry->name, ".")
+     && strcmp(s_entry->name, ".."))
     {
       char  buffer[2048];
       int nchar;
@@ -1357,8 +1357,8 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 #endif
 #ifdef S_IFLNK
 	case S_IFLNK:
-	  nchar = readlink(whole_path, 
-			   (char *)symlink_buff, 
+	  nchar = readlink(whole_path,
+			   (char *)symlink_buff,
 			   sizeof(symlink_buff));
 	  symlink_buff[nchar < 0 ? 0 : nchar] = 0;
 	  sprintf(buffer,"L\t%s\t%s\n",
@@ -1379,18 +1379,18 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 	};
       s_entry->table = strdup(buffer);
     }
-  
+ 
   if(S_ISDIR(statbuf.st_mode))
     {
       int dflag;
-      if (strcmp(short_name,".") && strcmp(short_name,"..")) 
+      if (strcmp(short_name,".") && strcmp(short_name,".."))
 	{
 	  struct directory * child;
-	  
-	  child = find_or_create_directory(this_dir, whole_path, 
+	 
+	  child = find_or_create_directory(this_dir, whole_path,
 					   s_entry, 1);
 	  dflag = scan_directory_tree(child, whole_path, s_entry);
-	  
+	 
 	  if(!dflag)
 	    {
 	      lstatbuf.st_mode = (lstatbuf.st_mode & ~S_IFMT) | S_IFREG;
@@ -1402,23 +1402,23 @@ FDECL3(insert_file_entry,struct directory *, this_dir,
 	}
       /* If unable to scan directory, mark this as a non-directory */
     }
-  
+ 
   if(use_RockRidge && this_dir == root && strcmp(s_entry->name, ".")  == 0)
     {
       deep_flag |= NEED_CE | NEED_SP;  /* For extension record */
     }
-  
+ 
   /* Now figure out how much room this file will take in the
      directory */
-  
-  if(use_RockRidge) 
+ 
+  if(use_RockRidge)
     {
       generate_rock_ridge_attributes(whole_path,
 				     short_name, s_entry,
 				     &statbuf, &lstatbuf, deep_flag);
-      
+     
     }
-  
+ 
   return 1;
 }
 
@@ -1492,7 +1492,7 @@ struct directory * FDECL4(find_or_create_directory, struct directory *, parent,
    */
   if( de == NULL )
     {
-      de = (struct directory_entry *) 
+      de = (struct directory_entry *)
 	e_malloc(sizeof (struct directory_entry));
       memset(de, 0, sizeof(struct directory_entry));
       de->next            = parent->contents;
@@ -1516,7 +1516,7 @@ struct directory * FDECL4(find_or_create_directory, struct directory *, parent,
 	  fstatbuf.st_nlink = 2;
 	  generate_rock_ridge_attributes("",
 					 (char *) pnt, de,
-					 &fstatbuf, 
+					 &fstatbuf,
 					 &fstatbuf, 0);
 	}
       iso9660_date(de->isorec.date, fstatbuf.st_mtime);
@@ -1570,7 +1570,7 @@ struct directory * FDECL4(find_or_create_directory, struct directory *, parent,
 
   if(!parent || parent == root)
     {
-      if (!root) 
+      if (!root)
 	{
 	  root = dpnt;  /* First time through for root directory only */
 	  root->depth = 0;
@@ -1581,7 +1581,7 @@ struct directory * FDECL4(find_or_create_directory, struct directory *, parent,
 	    {
 	      root->subdir = dpnt;
 	    }
-	  else 
+	  else
 	    {
 	      next_brother = root->subdir;
 	      while(next_brother->next) next_brother = next_brother->next;
@@ -1589,24 +1589,24 @@ struct directory * FDECL4(find_or_create_directory, struct directory *, parent,
 	    }
 	  dpnt->parent = parent;
 	}
-    } 
-  else 
+    }
+  else
     {
       /* Come through here for  normal traversal of  tree */
 #ifdef DEBUG
       fprintf(stderr,"%s(%d) ", path, dpnt->depth);
 #endif
-      if(parent->depth > RR_relocation_depth) 
+      if(parent->depth > RR_relocation_depth)
 	error (1, 0, _("Directories too deep  %s\n"), path);
-      
-      dpnt->parent = parent; 
+     
+      dpnt->parent = parent;
       dpnt->depth = parent->depth + 1;
-      
+     
       if(!parent->subdir)
 	{
 	  parent->subdir = dpnt;
 	}
-      else 
+      else
 	{
 	  next_brother = parent->subdir;
 	  while(next_brother->next) next_brother = next_brother->next;
@@ -1670,7 +1670,7 @@ int FDECL1(sort_tree, struct directory *, node){
       {
 	break;
       }
-    
+   
     if(dpnt->subdir) sort_tree(dpnt->subdir);
     dpnt = dpnt->next;
   }
@@ -1697,7 +1697,7 @@ void FDECL1(update_nlink_field, struct directory *, node)
     int				  i;
 
     dpnt = node;
-    
+   
     while (dpnt)
     {
 	if (dpnt->dir_flags & INHIBIT_ISO9660_ENTRY) {
@@ -1751,9 +1751,9 @@ void FDECL1(update_nlink_field, struct directory *, node)
 /*
  * something quick and dirty to locate a file given a path
  * recursively walks down path in filename until it finds the
- * directory entry for the desired file 
+ * directory entry for the desired file
  */
-struct directory_entry * FDECL2(search_tree_file, struct directory *, 
+struct directory_entry * FDECL2(search_tree_file, struct directory *,
 				node,char *, filename)
 {
   struct directory_entry * depnt;
@@ -1763,7 +1763,7 @@ struct directory_entry * FDECL2(search_tree_file, struct directory *,
   char			 * subdir;
 
   /*
-   * strip off next directory name from filename 
+   * strip off next directory name from filename
    */
   subdir = strdup(filename);
 
@@ -1776,65 +1776,65 @@ struct directory_entry * FDECL2(search_tree_file, struct directory *,
     }
 
   /*
-   * do we need to find a subdirectory 
+   * do we need to find a subdirectory
    */
-  if (p1) 
+  if (p1)
     {
       *p1 = '\0';
 
 #ifdef DEBUG_TORITO
-      fprintf(stderr,"Looking for subdir called %s\n",p1); 
+      fprintf(stderr,"Looking for subdir called %s\n",p1);
 #endif
 
       rest = p1+1;
 
 #ifdef DEBUG_TORITO
-      fprintf(stderr,"Remainder of path name is now %s\n", rest); 
+      fprintf(stderr,"Remainder of path name is now %s\n", rest);
 #endif
-      
+     
       dpnt = node->subdir;
      while( dpnt )
        {
 #ifdef DEBUG_TORITO
-	 fprintf(stderr,"%4d %5d %s\n", dpnt->extent, dpnt->size, 
-		 dpnt->de_name); 
+	 fprintf(stderr,"%4d %5d %s\n", dpnt->extent, dpnt->size,
+		 dpnt->de_name);
 #endif
-	 if (!strcmp(subdir, dpnt->de_name)) 
+	 if (!strcmp(subdir, dpnt->de_name))
 	   {
 #ifdef DEBUG_TORITO
-	     fprintf(stderr,"Calling next level with filename = %s", rest); 
+	     fprintf(stderr,"Calling next level with filename = %s", rest);
 #endif
 	     return(search_tree_file( dpnt, rest ));
 	   }
 	 dpnt = dpnt->next;
        }
-      
+     
      /* if we got here means we couldnt find the subdir */
      return (NULL);
-    }    
-  else 
+    }   
+  else
     {
-      /* 
-       * look for a normal file now 
+      /*
+       * look for a normal file now
        */
       depnt = node->contents;
       while (depnt)
 	{
 #ifdef DEBUG_TORITO
-	  fprintf(stderr,"%4d %5d %s\n",depnt->isorec.extent, 
-		  depnt->size, depnt->name); 
+	  fprintf(stderr,"%4d %5d %s\n",depnt->isorec.extent,
+		  depnt->size, depnt->name);
 #endif
-	  if (!strcmp(filename, depnt->name)) 
+	  if (!strcmp(filename, depnt->name))
 	    {
 #ifdef DEBUG_TORITO
-	      fprintf(stderr,"Found our file %s", filename); 
+	      fprintf(stderr,"Found our file %s", filename);
 #endif
 	      return(depnt);
 	    }
 	  depnt = depnt->next;
 	}
-      /* 
-       * if we got here means we couldnt find the subdir 
+      /*
+       * if we got here means we couldnt find the subdir
        */
       return (NULL);
     }

@@ -81,7 +81,7 @@ codestart:
 	movl	$END_SYMBOL, %ecx
 	subl	%edi, %ecx
 #endif
-			
+		
 	/* clean out */
 	xorl	%eax, %eax
 	cld

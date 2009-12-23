@@ -19,29 +19,53 @@
 
 #include <grub/dl.h>
 #include <grub/misc.h>
-#include <grub/command.h>
+#include <grub/extcmd.h>
+#include <grub/env.h>
 
-static grub_command_t cmd_read_byte, cmd_read_word, cmd_read_dword;
+static grub_extcmd_t cmd_read_byte, cmd_read_word, cmd_read_dword;
 static grub_command_t cmd_write_byte, cmd_write_word, cmd_write_dword;
 
+static const struct grub_arg_option options[] =
+  {
+    {0, 'v', 0, "Save read value into variable VARNAME.",
+     "VARNAME", ARG_TYPE_STRING},
+    {0, 0, 0, 0, 0, 0}
+  };
+
+
 static grub_err_t
-grub_cmd_read (grub_command_t cmd, int argc, char **argv)
+grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
 {
   grub_target_addr_t addr;
-  grub_uint32_t value;
+  grub_uint32_t value = 0;
+  char buf[sizeof ("XXXXXXXX")];
 
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid number of arguments");
 
   addr = grub_strtoul (argv[0], 0, 0);
-  if (cmd->name[5] == 'd')
-    value = *((grub_uint32_t *) addr);
-  else if (cmd->name[5] == 'w')
-    value = *((grub_uint16_t *) addr);
-  else
-    value = *((grub_uint8_t *) addr);
+  switch (cmd->cmd->name[sizeof ("read_") - 1])
+    {
+    case 'd':
+      value = *((volatile grub_uint32_t *) addr);
+      break;
 
-  grub_printf ("0x%x\n", value);
+    case 'w':
+      value = *((volatile grub_uint16_t *) addr);
+      break;
+
+    case 'b':
+      value = *((volatile grub_uint8_t *) addr);
+      break;
+    }
+
+  if (cmd->state[0].set)
+    {
+      grub_sprintf (buf, "%x", value);
+      grub_env_set (cmd->state[0].arg, buf);
+    }
+  else
+    grub_printf ("0x%x\n", value);
 
   return 0;
 }
@@ -51,18 +75,42 @@ grub_cmd_write (grub_command_t cmd, int argc, char **argv)
 {
   grub_target_addr_t addr;
   grub_uint32_t value;
+  grub_uint32_t mask = 0xffffffff;
 
-  if (argc != 2)
+  if (argc != 2 && argc != 3)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid number of arguments");
 
   addr = grub_strtoul (argv[0], 0, 0);
   value = grub_strtoul (argv[1], 0, 0);
-  if (cmd->name[6] == 'd')
-    *((grub_uint32_t *) addr) = value;
-  else if (cmd->name[6] == 'w')
-    *((grub_uint16_t *) addr) = (grub_uint16_t) value;
-  else
-    *((grub_uint8_t *) addr) = (grub_uint8_t) value;
+  if (argc == 3)
+    mask = grub_strtoul (argv[2], 0, 0);
+  value &= mask;
+  switch (cmd->name[sizeof ("write_") - 1])
+    {
+    case 'd':
+      if (mask != 0xffffffff)
+	*((volatile grub_uint32_t *) addr)
+	  = (*((volatile grub_uint32_t *) addr) & ~mask) | value;
+      else
+	*((volatile grub_uint32_t *) addr) = value;
+      break;
+
+    case 'w':
+      if ((mask & 0xffff) != 0xffff)
+	*((volatile grub_uint16_t *) addr)
+	  = (*((volatile grub_uint16_t *) addr) & ~mask) | value;
+      else
+	*((volatile grub_uint16_t *) addr) = value;
+      break;
+
+    case 'b':
+      if ((mask & 0xff) != 0xff)
+	*((volatile grub_uint8_t *) addr)
+	  = (*((volatile grub_uint8_t *) addr) & ~mask) | value;
+      else
+	*((volatile grub_uint8_t *) addr) = value;
+      break;
+    }
 
   return 0;
 }
@@ -70,30 +118,30 @@ grub_cmd_write (grub_command_t cmd, int argc, char **argv)
 GRUB_MOD_INIT(memrw)
 {
   cmd_read_byte =
-    grub_register_command ("read_byte", grub_cmd_read,
-			   "read_byte ADDR", "Read byte from ADDR.");
+    grub_register_extcmd ("read_byte", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
+			  "read_byte ADDR", "Read byte from ADDR.", options);
   cmd_read_word =
-    grub_register_command ("read_word", grub_cmd_read,
-			   "read_word ADDR", "Read word from ADDR.");
+    grub_register_extcmd ("read_word", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
+			  "read_word ADDR", "Read word from ADDR.", options);
   cmd_read_dword =
-    grub_register_command ("read_dword", grub_cmd_read,
-			   "read_dword ADDR", "Read dword from ADDR.");
+    grub_register_extcmd ("read_dword", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
+			  "read_dword ADDR", "Read dword from ADDR.", options);
   cmd_write_byte =
     grub_register_command ("write_byte", grub_cmd_write,
-			   "write_byte ADDR VALUE", "Write byte VALUE to ADDR.");
+			   "write_byte ADDR VALUE [MASK]", "Write byte VALUE to ADDR.");
   cmd_write_word =
     grub_register_command ("write_word", grub_cmd_write,
-			   "write_word ADDR VALUE", "Write word VALUE to ADDR.");
+			   "write_word ADDR VALUE [MASK]", "Write word VALUE to ADDR.");
   cmd_write_dword =
     grub_register_command ("write_dword", grub_cmd_write,
-			   "write_dword ADDR VALUE", "Write dword VALUE to ADDR.");
+			   "write_dword ADDR VALUE [MASK]", "Write dword VALUE to ADDR.");
 }
 
 GRUB_MOD_FINI(memrw)
 {
-  grub_unregister_command (cmd_read_byte);
-  grub_unregister_command (cmd_read_word);
-  grub_unregister_command (cmd_read_dword);
+  grub_unregister_extcmd (cmd_read_byte);
+  grub_unregister_extcmd (cmd_read_word);
+  grub_unregister_extcmd (cmd_read_dword);
   grub_unregister_command (cmd_write_byte);
   grub_unregister_command (cmd_write_word);
   grub_unregister_command (cmd_write_dword);

@@ -364,6 +364,7 @@ class Script
 
 #{@name}: #{src} $(#{src}_DEPENDENCIES) config.status
 	./config.status --file=#{name}:#{src}
+	sed -i -e 's,@pkglib_DATA@,$(pkglib_DATA),g' $@
 	chmod +x $@
 
 "

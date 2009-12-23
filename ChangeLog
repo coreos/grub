@@ -1,3 +1,92 @@
+2009-12-23 Felix Zielcke <fzielcke@z-51.de>
+
+	* commands/i386/pc/drivemap.c: Remove all trailing whitespace.
+	* commands/lspci.c: Likewise.
+	* commands/probe.c: Likewise.
+	* commands/xnu_uuid.c: Likewise.
+	* conf/i386-coreboot.rmk: Likewise.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+	* fs/i386/pc/pxe.c: Likewise.
+	* gettext/gettext.c: Likewise.
+	* include/grub/efi/graphics_output.h: Likewise.
+	* include/grub/i386/pc/memory.h: Likewise.
+	* kern/env.c: Likewise.
+	* kern/i386/qemu/startup.S: Likewise.
+	* lib/i386/pc/biosnum.c: Likewise.
+	* lib/i386/relocator.c: Likewise.
+	* lib/i386/relocator_asm.S: Likewise.
+	* lib/relocator.c: Likewise.
+	* loader/i386/bsd.c: Likewise.
+	* loader/i386/multiboot.c: Likewise.
+	* loader/i386/pc/chainloader.c: Likewise.
+	* loader/i386/xnu.c: Likewise.
+	* loader/xnu.c: Likewise.
+	* normal/main.c: Likewise.
+	* normal/menu_text.c: Likewise.
+	* util/getroot.c: Likewise.
+	* util/grub-mkconfig_lib.in: Likewise.
+	* util/grub.d/00_header.in: Likewise.
+	* util/i386/pc/grub-mkimage.c: Likewise.
+	* util/mkisofs/eltorito.c: Likewise.
+	* util/mkisofs/exclude.h: Likewise.
+	* util/mkisofs/hash.c: Likewise.
+	* util/mkisofs/iso9660.h: Likewise.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/mkisofs.c: Likewise.
+	* util/mkisofs/mkisofs.h: Likewise.
+	* util/mkisofs/multi.c: Likewise.
+	* util/mkisofs/name.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+	* video/efi_gop.c: Likewise.
+
+2009-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* video/efi_gop.c (grub_video_gop_get_bitmask): Fix off-by-one in mask
+	size counting.
+
+2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/grub-mkrescue.in (pkglib_DATA): Set to @pkglib_DATA@.
+	* genmk.rb (class SCRIPT): Modify the target file instead of source.
+
+2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/memrw.c (grub_cmd_write): Support for mask parameter.
+	(GRUB_MOD_INIT(memrw)): Update help line.
+
+2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/memrw.c (cmd_read_byte, cmd_read_word, cmd_read_dword):
+	Use grub_extcmd_t. All users updated.
+	(options): New variable.
+	(grub_cmd_read): Restructure for readability. Support "-v" option.
+	(grub_cmd_write): Restructure for readability.
+
+2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+
+	* genmk.rb (class SCRIPT): Prepend #{src} path with $(srcdir).
+
+2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+
+	* genmk.rb (class SCRIPT): Use sed to substitute @pkglib_DATA@
+	with the actual contents of the correspondending make variable.
+	* util/grub-mkrescue.in (pkglib_DATA): New variable.
+	(process_input_dir): Copy all $pkglib_DATA files instead of explicitly
+	specifying `*.lst' and `efiemu??.o'
+
+2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+
+	* util/grub.d/30_os-prober.in (osx_entry): Add round brackets
+	after function name.
+	Noticed by Rene Engelhard <rene@debian.org>.
+
 2009-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* commands/lspci.c (grub_pci_classes): Add "USB Controller".
@@ -654,7 +743,7 @@
 	grub_gettext_msg_list.
 	(grub_gettext_gettranslation_from_position): Return const char *
 	and not char *.
-	(grub_gettext_translate): Add the translated strings into a list, 
+	(grub_gettext_translate): Add the translated strings into a list,
 	returns from the list if existing there.
 	(grub_gettext_init_ext): Add \n at the end of grub_dprintf string.
 	(grub_gettext_delete_list): Delete the list.
@@ -695,7 +784,7 @@
 	(run_menu): Replaces grub_printf by print_spaces and dynamic terminal
 	width.
 	(get_entry_number): Gettextize and uses dynamic terminal width.
-	(notify_booting, notify_fallback, notify_execution_failure): 
+	(notify_booting, notify_fallback, notify_execution_failure):
 	Gettextize.
 	* normal/menu_entry.c (store_completion): Cleanup the gettextized
 	string.
@@ -966,7 +1055,7 @@
 	* include/grub/i18n.h: ... to here
 	* include/grub/i18n.h: ... to here.
 	* kern/misc.c: Include <grub/i18n.h>
-	(grub_gettext_dummy): Move above user. 
+	(grub_gettext_dummy): Move above user.
 
 2009-11-24  Felix Zielcke  <fzielcke@z-51.de>
 
