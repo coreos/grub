@@ -20,6 +20,7 @@
 #ifndef GRUB_NORMAL_HEADER
 #define GRUB_NORMAL_HEADER	1
 
+#include <grub/term.h>
 #include <grub/symbol.h>
 #include <grub/err.h>
 #include <grub/env.h>
@@ -50,7 +51,7 @@ extern struct grub_menu_viewer grub_normal_text_menu_viewer;
 /* Defined in `main.c'.  */
 void grub_enter_normal_mode (const char *config);
 void grub_normal_execute (const char *config, int nested, int batch);
-void grub_normal_init_page (void);
+void grub_normal_init_page (struct grub_term_output *term);
 void grub_menu_init_page (int nested, int edit);
 grub_err_t grub_normal_add_menu_entry (int argc, const char **args,
 				       const char *sourcecode);
@@ -58,8 +59,7 @@ char *grub_file_getline (grub_file_t file);
 void grub_cmdline_run (int nested);
 
 /* Defined in `cmdline.c'.  */
-int grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
-		      int echo_char, int readline, int history);
+char *grub_cmdline_get (const char *prompt, unsigned max_len);
 grub_err_t grub_set_history (int newsize);
 
 /* Defined in `completion.c'.  */
@@ -95,6 +95,7 @@ void read_command_list (void);
 /* Defined in `autofs.c'.  */
 void read_fs_list (void);
 
+void grub_set_more (int onoff);
 
 #ifdef GRUB_UTIL
 void grub_normal_init (void);

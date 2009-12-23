@@ -372,7 +372,21 @@ read_config_file (const char *config)
   if (! file)
     return 0;
 
-  grub_reader_loop (getline);
+  while (1)
+    {
+      char *line;
+
+      /* Print an error, if any.  */
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+
+      if ((getline (&line, 0)) || (! line))
+	break;
+
+      grub_parser_get_current ()->parse_line (line, getline);
+      grub_free (line);
+    }
+
   grub_file_close (file);
 
   if (old_parser)
@@ -383,7 +397,7 @@ read_config_file (const char *config)
 
 /* Initialize the screen.  */
 void
-grub_normal_init_page (void)
+grub_normal_init_page (struct grub_term_output *term)
 {
   int msg_len;
   int posx;
@@ -391,13 +405,12 @@ grub_normal_init_page (void)
 
   char *msg_formatted = grub_malloc (grub_strlen(msg) +
   				     grub_strlen(PACKAGE_VERSION));
+  grub_uint32_t *unicode_msg;
+  grub_uint32_t *last_position;
  
   grub_cls ();
 
   grub_sprintf (msg_formatted, msg, PACKAGE_VERSION);
-
-  grub_uint32_t *unicode_msg;
-  grub_uint32_t *last_position;
  
   msg_len = grub_utf8_to_ucs4_alloc (msg_formatted,
   				     &unicode_msg, &last_position);
@@ -408,8 +421,8 @@ grub_normal_init_page (void)
     }
 
   posx = grub_getstringwidth (unicode_msg, last_position);
-  posx = (GRUB_TERM_WIDTH - posx) / 2;
-  grub_gotoxy (posx, 1);
+  posx = (grub_term_width (term) - posx) / 2;
+  term->gotoxy (posx, 1);
 
   grub_print_ucs4 (unicode_msg, last_position);
   grub_printf("\n\n");
@@ -493,48 +506,30 @@ quit:
   return 0;
 }
 
-void
-grub_cmdline_run (int nested)
-{
-  grub_reader_t reader;
-  grub_err_t err = GRUB_ERR_NONE;
-
-  err = grub_auth_check_authentication (NULL);
-
-  if (err)
-    {
-      grub_print_error ();
-      grub_errno = GRUB_ERR_NONE;
-      return;
-    }
-
-  reader = grub_reader_get_current ();
-
-  reader_nested = nested;
-  if (reader->init)
-    reader->init ();
-  grub_reader_loop (0);
-}
-
 static grub_err_t
 grub_normal_reader_init (void)
 {
-  grub_normal_init_page ();
-  grub_setcursor (1);
-
+  struct grub_term_output *term;
   const char *msg = _("Minimal BASH-like line editing is supported. For "
 		      "the first word, TAB lists possible command completions. Anywhere "
 		      "else TAB lists possible device or file completions. %s");
-
   const char *msg_esc = _("ESC at any time exits.");
-
   char *msg_formatted = grub_malloc (sizeof (char) * (grub_strlen (msg) +
                 grub_strlen(msg_esc) + 1));
 
   grub_sprintf (msg_formatted, msg, reader_nested ? msg_esc : "");
-  grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN);
-  grub_puts ("\n");
 
+  for (term = grub_term_outputs; term; term = term->next)
+    {
+      if (! (term->flags & GRUB_TERM_ACTIVE))
+	continue;
+      grub_normal_init_page (term);
+      if (term->setcursor)
+	term->setcursor (1);
+      
+      grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN);
+      grub_puts ("\n");
+    }
   grub_free (msg_formatted);
  
   return 0;
@@ -567,12 +562,40 @@ grub_normal_read_line (char **line, int cont)
   return 0;
 }
 
-static struct grub_reader grub_normal_reader =
-  {
-    .name = "normal",
-    .init = grub_normal_reader_init,
-    .read_line = grub_normal_read_line
-  };
+void
+grub_cmdline_run (int nested)
+{
+  grub_err_t err = GRUB_ERR_NONE;
+
+  err = grub_auth_check_authentication (NULL);
+
+  if (err)
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+
+  reader_nested = nested;
+
+  grub_normal_reader_init ();
+
+  while (1)
+    {
+      char *line;
+
+      /* Print an error, if any.  */
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+
+      grub_normal_read_line (&line, 0);
+      if (! line)
+	continue;
+
+      grub_parser_get_current ()->parse_line (line, grub_normal_read_line);
+      grub_free (line);
+    }
+}
 
 static char *
 grub_env_write_pager (struct grub_env_var *var __attribute__ ((unused)),
@@ -592,8 +615,6 @@ GRUB_MOD_INIT(normal)
 
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
-  grub_reader_register ("normal", &grub_normal_reader);
-  grub_reader_set_current (&grub_normal_reader);
   grub_register_variable_hook ("pager", 0, grub_env_write_pager);
 
   /* Register a command "normal" for the rescue mode.  */
@@ -612,7 +633,6 @@ GRUB_MOD_INIT(normal)
 GRUB_MOD_FINI(normal)
 {
   grub_set_history (0);
-  grub_reader_unregister (&grub_normal_reader);
   grub_register_variable_hook ("pager", 0, 0);
   grub_fs_autoload_hook = 0;
   free_handler_list ();

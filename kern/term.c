@@ -22,78 +22,35 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 
-/* The amount of lines counted by the pager.  */
-static int grub_more_lines;
-
-/* If the more pager is active.  */
-static int grub_more;
-
-/* The current cursor state.  */
-static int cursor_state = 1;
-
 struct grub_handler_class grub_term_input_class =
   {
     .name = "terminal_input"
   };
 
-struct grub_handler_class grub_term_output_class =
-  {
-    .name = "terminal_output"
-  };
-
 #define grub_cur_term_input	grub_term_get_current_input ()
-#define grub_cur_term_output	grub_term_get_current_output ()
+
+struct grub_term_output *grub_term_outputs;
 
 /* Put a Unicode character.  */
 void
-grub_putcode (grub_uint32_t code)
+grub_putcode (grub_uint32_t code, struct grub_term_output *term)
 {
-  int height = grub_getwh () & 255;
+  int height;
 
-  if (code == '\t' && grub_cur_term_output->getxy)
+  height = term->getwh () & 255;
+
+  if (code == '\t' && term->getxy)
     {
       int n;
 
-      n = 8 - ((grub_getxy () >> 8) & 7);
+      n = 8 - ((term->getxy () >> 8) & 7);
       while (n--)
-	grub_putcode (' ');
+	grub_putcode (' ', term);
 
       return;
     }
 
-  (grub_cur_term_output->putchar) (code);
-
-  if (code == '\n')
-    {
-      grub_putcode ('\r');
-
-      grub_more_lines++;
-
-      if (grub_more && grub_more_lines == height - 1)
-	{
-	  char key;
-	  int pos = grub_getxy ();
-
-	  /* Show --MORE-- on the lower left side of the screen.  */
-	  grub_gotoxy (1, height - 1);
-	  grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
-	  grub_printf ("--MORE--");
-	  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
-
-	  key = grub_getkey ();
-
-	  /* Remove the message.  */
-	  grub_gotoxy (1, height - 1);
-	  grub_printf ("        ");
-	  grub_gotoxy (pos >> 8, pos & 0xFF);
-
-	  /* Scroll one lines or an entire page, depending on the key.  */
-	  if (key == '\r' || key =='\n')
-	    grub_more_lines--;
-	  else
-	    grub_more_lines = 0;
-	}
-    }
+  (term->putchar) (code);
 }
 
 /* Put a character. C is one byte of a UTF-8 stream.
@@ -106,26 +63,28 @@ grub_putchar (int c)
   grub_uint32_t code;
   grub_ssize_t ret;
 
+  auto int do_putcode (grub_list_t item);
+  int do_putcode (grub_list_t item)
+  {
+    struct grub_term_output *term = (struct grub_term_output *) item;
+
+    if (term->flags & GRUB_TERM_ACTIVE)
+      grub_putcode (code, term);
+
+    return 0;
+  }
+
   buf[size++] = c;
   ret = grub_utf8_to_ucs4 (&code, 1, buf, size, 0);
 
-  if (ret > 0)
-    {
-      size = 0;
-      grub_putcode (code);
-    }
-  else if (ret < 0)
-    {
-      size = 0;
-      grub_putcode ('?');
-    }
-}
+  if (ret < 0)
+    code = '?';
 
-/* Return the number of columns occupied by the character code CODE.  */
-grub_ssize_t
-grub_getcharwidth (grub_uint32_t code)
-{
-  return (grub_cur_term_output->getcharwidth) (code);
+  if (ret != 0)
+    {
+      size = 0;
+      grub_list_iterate (GRUB_AS_LIST (grub_term_outputs), do_putcode);
+    }
 }
 
 int
@@ -149,91 +108,67 @@ grub_getkeystatus (void)
     return 0;
 }
 
-grub_uint16_t
-grub_getxy (void)
-{
-  return (grub_cur_term_output->getxy) ();
-}
-
-grub_uint16_t
-grub_getwh (void)
-{
-  return (grub_cur_term_output->getwh) ();
-}
-
-void
-grub_gotoxy (grub_uint8_t x, grub_uint8_t y)
-{
-  (grub_cur_term_output->gotoxy) (x, y);
-}
-
 void
 grub_cls (void)
 {
-  if ((grub_cur_term_output->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
-    {
-      grub_putchar ('\n');
-      grub_refresh ();
-    }
-  else
-    (grub_cur_term_output->cls) ();
+  auto int hook (grub_list_t item);
+  int hook (grub_list_t item)
+  {
+    struct grub_term_output *term = (struct grub_term_output *) item;
+
+    if (!(term->flags & GRUB_TERM_ACTIVE))
+      return 0;
+
+    if ((term->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
+      {
+	grub_putcode ('\n', term);
+	grub_refresh ();
+      }
+    else
+      (term->cls) ();
+
+    return 0;
+  }
+
+  grub_list_iterate (GRUB_AS_LIST (grub_term_outputs), hook);
 }
 
 void
 grub_setcolorstate (grub_term_color_state state)
 {
-  if (grub_cur_term_output->setcolorstate)
-    (grub_cur_term_output->setcolorstate) (state);
-}
+  auto int hook (grub_list_t item);
+  int hook (grub_list_t item)
+  {
+    struct grub_term_output *term = (struct grub_term_output *) item;
 
-void
-grub_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
-{
-  if (grub_cur_term_output->setcolor)
-    (grub_cur_term_output->setcolor) (normal_color, highlight_color);
-}
+    if (!(term->flags & GRUB_TERM_ACTIVE))
+      return 0;
 
-void
-grub_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
-{
-  if (grub_cur_term_output->getcolor)
-    (grub_cur_term_output->getcolor) (normal_color, highlight_color);
-}
+    if (term->setcolorstate)
+      (term->setcolorstate) (state);
 
-int
-grub_setcursor (int on)
-{
-  int ret = cursor_state;
+    return 0;
+  }
 
-  if (grub_cur_term_output->setcursor)
-    {
-      (grub_cur_term_output->setcursor) (on);
-      cursor_state = on;
-    }
-
-  return ret;
-}
-
-int
-grub_getcursor (void)
-{
-  return cursor_state;
+  grub_list_iterate (GRUB_AS_LIST (grub_term_outputs), hook);
 }
 
 void
 grub_refresh (void)
 {
-  if (grub_cur_term_output->refresh)
-    (grub_cur_term_output->refresh) ();
-}
+  auto int hook (grub_list_t item);
+  int hook (grub_list_t item)
+  {
+    struct grub_term_output *term = (struct grub_term_output *) item;
 
-void
-grub_set_more (int onoff)
-{
-  if (onoff == 1)
-    grub_more++;
-  else
-    grub_more--;
+    if (!(term->flags & GRUB_TERM_ACTIVE))
+      return 0;
 
-  grub_more_lines = 0;
+    if (term->refresh)
+      (term->refresh) ();
+
+    return 0;
+  }
+
+  grub_list_iterate (GRUB_AS_LIST (grub_term_outputs), hook);
 }

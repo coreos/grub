@@ -114,3 +114,67 @@ grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
     *srcend = src;
   return p - dest;
 }
+
+/* Convert UCS-4 to UTF-8.  */
+char *
+grub_ucs4_to_utf8_alloc (grub_uint32_t *src, grub_size_t size)
+{
+  grub_size_t remaining;
+  grub_uint32_t *ptr;
+  grub_size_t cnt = 0;
+  grub_uint8_t *ret, *dest;
+
+  remaining = size;
+  ptr = src;
+  while (remaining--)
+    {
+      grub_uint32_t code = *ptr++;
+      
+      if (code <= 0x007F)
+	cnt++;
+      else if (code <= 0x07FF)
+	cnt += 2;
+      else if ((code >= 0xDC00 && code <= 0xDFFF)
+	       || (code >= 0xD800 && code <= 0xDBFF))
+	/* No surrogates in UCS-4... */
+	cnt++;
+      else
+	cnt += 3;
+    }
+  cnt++;
+
+  ret = grub_malloc (cnt);
+  if (!ret)
+    return 0;
+
+  dest = ret;
+  remaining = size;
+  ptr = src;
+  while (remaining--)
+    {
+      grub_uint32_t code = *ptr++;
+
+      if (code <= 0x007F)
+	*dest++ = code;
+      else if (code <= 0x07FF)
+	{
+	  *dest++ = (code >> 6) | 0xC0;
+	  *dest++ = (code & 0x3F) | 0x80;
+	}
+      else if ((code >= 0xDC00 && code <= 0xDFFF)
+	       || (code >= 0xD800 && code <= 0xDBFF))
+	{
+	  /* No surrogates in UCS-4... */
+	  *dest++ = '?';
+	}
+      else
+	{
+	  *dest++ = (code >> 12) | 0xE0;
+	  *dest++ = ((code >> 6) & 0x3F) | 0x80;
+	  *dest++ = (code & 0x3F) | 0x80;
+	}
+    }
+  *dest = 0;
+
+  return ret;
+}

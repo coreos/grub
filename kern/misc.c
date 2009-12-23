@@ -968,15 +968,12 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 void
 grub_abort (void)
 {
-  if (grub_term_get_current_output ())
+  grub_printf ("\nAborted.");
+  
+  if (grub_term_get_current_input ())
     {
-      grub_printf ("\nAborted.");
-
-      if (grub_term_get_current_input ())
-	{
-	  grub_printf (" Press any key to exit.");
-	  grub_getkey ();
-	}
+      grub_printf (" Press any key to exit.");
+      grub_getkey ();
     }
 
   grub_exit ();

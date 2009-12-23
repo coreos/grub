@@ -27,7 +27,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	normal/handler.c normal/auth.c normal/autofs.c			\
 	normal/completion.c normal/main.c normal/color.c		\
 	normal/menu.c normal/menu_entry.c normal/menu_viewer.c		\
-	normal/menu_text.c						\
+	normal/menu_text.c normal/term.c				\
 	script/main.c script/execute.c script/function.c		\
 	script/lexer.c script/script.c grub_script.tab.c		\
 	partmap/amiga.c	partmap/apple.c partmap/msdos.c partmap/sun.c	\

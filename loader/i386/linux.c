@@ -33,6 +33,7 @@
 #include <grub/video_fb.h>
 #include <grub/command.h>
 #include <grub/i386/pc/vbe.h>
+#include <grub/i386/pc/console.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
 #define GRUB_LINUX_CL_END_OFFSET	0x2000
@@ -547,8 +548,8 @@ grub_linux_boot (void)
   /* Initialize these last, because terminal position could be affected by printfs above.  */
   if (params->have_vga == GRUB_VIDEO_TYPE_TEXT)
     {
-      params->video_cursor_x = grub_getxy () >> 8;
-      params->video_cursor_y = grub_getxy () & 0xff;
+      params->video_cursor_x = grub_console_getxy () >> 8;
+      params->video_cursor_y = grub_console_getxy () & 0xff;
     }
 
 #ifdef __x86_64__

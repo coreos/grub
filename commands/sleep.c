@@ -32,12 +32,12 @@ static const struct grub_arg_option options[] =
     {0, 0, 0, 0, 0, 0}
   };
 
-static grub_uint8_t x, y;
+static grub_uint16_t *pos;
 
 static void
 do_print (int n)
 {
-  grub_gotoxy (x, y);
+  grub_term_restore_pos (pos);
   /* NOTE: Do not remove the trailing space characters.
      They are required to clear the line.  */
   grub_printf ("%d    ", n);
@@ -63,7 +63,6 @@ static grub_err_t
 grub_cmd_sleep (grub_extcmd_t cmd, int argc, char **args)
 {
   struct grub_arg_list *state = cmd->state;
-  grub_uint16_t xy;
   int n;
 
   if (argc != 1)
@@ -77,9 +76,7 @@ grub_cmd_sleep (grub_extcmd_t cmd, int argc, char **args)
       return 0;
     }
 
-  xy = grub_getxy ();
-  x = xy >> 8;
-  y = xy & 0xff;
+  pos = grub_term_save_pos ();
 
   for (; n; n--)
     {

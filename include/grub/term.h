@@ -68,6 +68,8 @@ grub_term_color_state;
 #define GRUB_TERM_NO_EDIT	(1 << 1)
 /* Set when the terminal cannot do fancy things.  */
 #define GRUB_TERM_DUMB		(1 << 2)
+/* Terminal is used as general output.  */
+#define GRUB_TERM_ACTIVE	(1 << 3)
 /* Set when the terminal needs to be initialized.  */
 #define GRUB_TERM_NEED_INIT	(1 << 16)
 
@@ -92,10 +94,6 @@ grub_term_color_state;
 
 
 /* Menu-related geometrical constants.  */
-
-/* FIXME: Ugly way to get them form terminal.  */
-#define GRUB_TERM_WIDTH         ((grub_getwh()&0xFF00)>>8)
-#define GRUB_TERM_HEIGHT        (grub_getwh()&0xFF)
 
 /* The number of lines of "GRUB version..." at the top.  */
 #define GRUB_TERM_INFO_HEIGHT	1
@@ -225,7 +223,7 @@ struct grub_term_output
 typedef struct grub_term_output *grub_term_output_t;
 
 extern struct grub_handler_class EXPORT_VAR(grub_term_input_class);
-extern struct grub_handler_class EXPORT_VAR(grub_term_output_class);
+extern struct grub_term_output *EXPORT_VAR(grub_term_outputs);
 
 static inline void
 grub_term_register_input (const char *name __attribute__ ((unused)),
@@ -238,7 +236,7 @@ static inline void
 grub_term_register_output (const char *name __attribute__ ((unused)),
 			   grub_term_output_t term)
 {
-  grub_handler_register (&grub_term_output_class, GRUB_AS_HANDLER (term));
+  grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs), GRUB_AS_LIST (term));
 }
 
 static inline void
@@ -250,7 +248,7 @@ grub_term_unregister_input (grub_term_input_t term)
 static inline void
 grub_term_unregister_output (grub_term_output_t term)
 {
-  grub_handler_unregister (&grub_term_output_class, GRUB_AS_HANDLER (term));
+  grub_list_remove (GRUB_AS_LIST_P (&grub_term_outputs), GRUB_AS_LIST (term));
 }
 
 static inline grub_err_t
@@ -260,44 +258,34 @@ grub_term_set_current_input (grub_term_input_t term)
 				   GRUB_AS_HANDLER (term));
 }
 
-static inline grub_err_t
-grub_term_set_current_output (grub_term_output_t term)
-{
-  return grub_handler_set_current (&grub_term_output_class,
-				   GRUB_AS_HANDLER (term));
-}
-
 static inline grub_term_input_t
 grub_term_get_current_input (void)
 {
   return (grub_term_input_t) grub_term_input_class.cur_handler;
 }
 
-static inline grub_term_output_t
-grub_term_get_current_output (void)
-{
-  return (grub_term_output_t) grub_term_output_class.cur_handler;
-}
-
 void EXPORT_FUNC(grub_putchar) (int c);
-void EXPORT_FUNC(grub_putcode) (grub_uint32_t code);
-grub_ssize_t EXPORT_FUNC(grub_getcharwidth) (grub_uint32_t code);
+void EXPORT_FUNC(grub_putcode) (grub_uint32_t code,
+				struct grub_term_output *term);
 int EXPORT_FUNC(grub_getkey) (void);
 int EXPORT_FUNC(grub_checkkey) (void);
 int EXPORT_FUNC(grub_getkeystatus) (void);
-grub_uint16_t EXPORT_FUNC(grub_getwh) (void);
-grub_uint16_t EXPORT_FUNC(grub_getxy) (void);
-void EXPORT_FUNC(grub_gotoxy) (grub_uint8_t x, grub_uint8_t y);
 void EXPORT_FUNC(grub_cls) (void);
 void EXPORT_FUNC(grub_setcolorstate) (grub_term_color_state state);
-void EXPORT_FUNC(grub_setcolor) (grub_uint8_t normal_color,
-				 grub_uint8_t highlight_color);
-void EXPORT_FUNC(grub_getcolor) (grub_uint8_t *normal_color,
-				 grub_uint8_t *highlight_color);
-int EXPORT_FUNC(grub_setcursor) (int on);
-int EXPORT_FUNC(grub_getcursor) (void);
 void EXPORT_FUNC(grub_refresh) (void);
-void EXPORT_FUNC(grub_set_more) (int onoff);
+void grub_puts_terminal (const char *str, struct grub_term_output *term);
+grub_uint16_t *grub_term_save_pos (void);
+void grub_term_restore_pos (grub_uint16_t *pos);
+
+static inline int grub_term_width (struct grub_term_output *term)
+{
+  return ((term->getwh()&0xFF00)>>8);
+}
+
+static inline int grub_term_height (struct grub_term_output *term)
+{
+  return (term->getwh()&0xFF);
+}
 
 /* For convenience.  */
 #define GRUB_TERM_ASCII_CHAR(c)	((c) & 0xff)
