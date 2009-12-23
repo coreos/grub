@@ -101,6 +101,7 @@ for cipher_file in cipher_files:
         iscryptostart = False
         iscomma = False
         isglue = False
+        skip_statement = False
         if isc:
             modname = cipher_file [0:len(cipher_file) - 2]
             if re.match (".*-glue$", modname):
@@ -108,6 +109,10 @@ for cipher_file in cipher_files:
                 isglue = True
             modname = "gcry_%s" % modname
         for line in f:
+            if skip_statement:
+                if not re.search (";", line) is None:
+                    skip_statement = False
+                continue
             if skip:
                 if line[0] == "}":
                     skip = False
@@ -132,10 +137,22 @@ for cipher_file in cipher_files:
                     fw.write ("    .blocksize = %s\n" % mdblocksizes [mdname])
                     ismd = False
                 iscomma = not re.search (",$", line) is None
+            # Used only for selftests.
+            m = re.match ("(static byte|static unsigned char) (weak_keys_chksum)\[[0-9]*\] =", line)
+            if not m is None:
+                skip = True
+                fname = m.groups ()[1]
+                chmsg = "(%s): Removed." % fname
+                if nch:
+                    chlognew = "%s\n	%s" % (chlognew, chmsg)
+                else:
+                    chlognew = "%s %s" % (chlognew, chmsg)
+                    nch = True
+                continue
             if hold:
                 hold = False
                 # We're optimising for size.
-                if not re.match ("(run_selftests|selftest|_gcry_aes_c.._..c|_gcry_[a-z0-9]*_hash_buffer)", line) is None:
+                if not re.match ("(run_selftests|selftest|_gcry_aes_c.._..c|_gcry_[a-z0-9]*_hash_buffer|tripledes_set2keys|do_tripledes_set_extra_info)", line) is None:
                     skip = True
                     fname = re.match ("[a-zA-Z0-9_]*", line).group ()
                     chmsg = "(%s): Removed." % fname
@@ -184,10 +201,17 @@ for cipher_file in cipher_files:
                     chlognew = "%s %s" % (chlognew, chmsg)
                     nch = True
                 continue
-            m = re.match ("(static const char( |)\*|static gpg_err_code_t|void)$", line)
+            m = re.match ("(static const char( |)\*|static gpg_err_code_t|void|static int|static gcry_err_code_t)$", line)
             if not m is None:
                 hold = True
                 holdline = line
+                continue
+            m = re.match ("static int tripledes_set2keys \(.*\);", line)
+            if not m is None:
+                continue
+            m = re.match ("static int tripledes_set2keys \(", line)
+            if not m is None:
+                skip_statement = True
                 continue
             m = re.match ("cipher_extra_spec_t", line)
             if isc and not m is None:
