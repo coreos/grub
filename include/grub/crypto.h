@@ -270,4 +270,6 @@ grub_password_get (char buf[], unsigned buf_size);
 /* For indistinguishibility.  */
 #define GRUB_ACCESS_DENIED grub_error (GRUB_ERR_ACCESS_DENIED, "Access denied.")
 
+extern void (*grub_crypto_autoload_hook) (const char *name);
+
 #endif

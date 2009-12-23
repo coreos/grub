@@ -32,6 +32,8 @@ struct grub_crypto_hmac_handle
 static gcry_cipher_spec_t *grub_ciphers = NULL;
 static gcry_md_spec_t *grub_digests = NULL;
 
+void (*grub_crypto_autoload_hook) (const char *name) = NULL;
+
 /* Based on libgcrypt-1.4.4/src/misc.c.  */
 void
 grub_burn_stack (grub_size_t size)
@@ -91,28 +93,44 @@ const gcry_md_spec_t *
 grub_crypto_lookup_md_by_name (const char *name)
 {
   const gcry_md_spec_t *md;
-  for (md = grub_digests; md; md = md->next)
-    if (grub_strcasecmp (name, md->name) == 0)
-      return md;
-  return NULL;
+  int first = 1;
+  while (1)
+    {
+      for (md = grub_digests; md; md = md->next)
+	if (grub_strcasecmp (name, md->name) == 0)
+	  return md;
+      if (grub_crypto_autoload_hook && first)
+	grub_crypto_autoload_hook (name);
+      else
+	return NULL;
+      first = 0;
+    }
 }
 
 const gcry_cipher_spec_t *
 grub_crypto_lookup_cipher_by_name (const char *name)
 {
   const gcry_cipher_spec_t *ciph;
-  for (ciph = grub_ciphers; ciph; ciph = ciph->next)
+  int first = 1;
+  while (1)
     {
-      const char **alias;
-      if (grub_strcasecmp (name, ciph->name) == 0)
-	return ciph;
-      if (!ciph->aliases)
-	continue;
-      for (alias = ciph->aliases; *alias; alias++)
-	if (grub_strcasecmp (name, *alias) == 0)
-	  return ciph;
+      for (ciph = grub_ciphers; ciph; ciph = ciph->next)
+	{
+	  const char **alias;
+	  if (grub_strcasecmp (name, ciph->name) == 0)
+	    return ciph;
+	  if (!ciph->aliases)
+	    continue;
+	  for (alias = ciph->aliases; *alias; alias++)
+	    if (grub_strcasecmp (name, *alias) == 0)
+	      return ciph;
+	}
+      if (grub_crypto_autoload_hook && first)
+	grub_crypto_autoload_hook (name);
+      else
+	return NULL;
+      first = 0;
     }
-  return NULL;
 }
 
 

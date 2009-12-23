@@ -61,6 +61,18 @@ mdblocksizes = {"_gcry_digest_spec_crc32" : 64,
                 "_gcry_digest_spec_tiger" : 64,
                 "_gcry_digest_spec_whirlpool" : 64}
 
+cryptolist = open (os.path.join (cipher_dir_out, "crypto.lst"), "w")
+
+# rijndael is the only cipher using aliases. So no need for mangling, just
+# hardcode it
+cryptolist.write ("RIJNDAEL: gcry_rijndael\n");
+cryptolist.write ("RIJNDAEL192: gcry_rijndael\n");
+cryptolist.write ("RIJNDAEL256: gcry_rijndael\n");
+cryptolist.write ("AES128: gcry_rijndael\n");
+cryptolist.write ("AES-128: gcry_rijndael\n");
+cryptolist.write ("AES-192: gcry_rijndael\n");
+cryptolist.write ("AES-256: gcry_rijndael\n");
+
 for cipher_file in cipher_files:
     infile = os.path.join (cipher_dir_in, cipher_file)
     outfile = os.path.join (cipher_dir_out, cipher_file)
@@ -86,7 +98,15 @@ for cipher_file in cipher_files:
         skip = False
         skip2 = False
         ismd = False
+        iscryptostart = False
         iscomma = False
+        isglue = False
+        if isc:
+            modname = cipher_file [0:len(cipher_file) - 2]
+            if re.match (".*-glue$", modname):
+                modname = modname.replace ("-glue", "")
+                isglue = True
+            modname = "gcry_%s" % modname
         for line in f:
             if skip:
                 if line[0] == "}":
@@ -96,6 +116,12 @@ for cipher_file in cipher_files:
                 if not re.search (" *};", line) is None:
                     skip2 = False
                 continue
+            if iscryptostart:
+                s = re.search (" *\"([A-Z0-9_a-z]*)\"", line)
+                if not s is None:
+                    sg = s.groups()[0]
+                    cryptolist.write (("%s: %s\n") % (sg, modname))
+                    iscryptostart = False
             if ismd:
                 if not re.search (" *};", line) is None:
                     if not mdblocksizes.has_key (mdname):
@@ -133,16 +159,20 @@ for cipher_file in cipher_files:
                 continue
             m = re.match ("gcry_cipher_spec_t", line)
             if isc and not m is None:
+                assert (not iscryptostart)
                 ciphername = line [len ("gcry_cipher_spec_t"):].strip ()
                 ciphername = re.match("[a-zA-Z0-9_]*",ciphername).group ()
                 ciphernames.append (ciphername)
+                iscryptostart = True
             m = re.match ("gcry_md_spec_t", line)
             if isc and not m is None:
                 assert (not ismd)
+                assert (not iscryptostart)
                 mdname = line [len ("gcry_md_spec_t"):].strip ()
                 mdname = re.match("[a-zA-Z0-9_]*",mdname).group ()
                 mdnames.append (mdname)
                 ismd = True
+                iscryptostart = True
             m = re.match ("static const char \*selftest.*;$", line)
             if not m is None:
                 fname = line[len ("static const char \*"):]
@@ -185,14 +215,11 @@ for cipher_file in cipher_files:
                 continue
             fw.write (line)
         if len (ciphernames) > 0 or len (mdnames) > 0:
-            modname = cipher_file [0:len(cipher_file) - 2]
-            if re.match (".*-glue$", modname):
+            if isglue:
                 modfiles = "lib/libgcrypt-grub/cipher/%s lib/libgcrypt-grub/cipher/%s" \
                     % (cipher_file, cipher_file.replace ("-glue.c", ".c"))
-                modname = modname.replace ("-glue", "")
             else:
                 modfiles = "lib/libgcrypt-grub/cipher/%s" % cipher_file
-            modname = "gcry_%s" % modname
             chmsg = "(GRUB_MOD_INIT(%s)): New function\n" % modname
             if nch:
                 chlognew = "%s\n	%s" % (chlognew, chmsg)
@@ -237,6 +264,9 @@ for cipher_file in cipher_files:
         continue
     chlog = "%s%sSkipped unknown file\n" % (chlog, chlognew)
     print ("WARNING: unknown file %s" % cipher_file)
+
+cryptolist.close ()
+chlog = "%s	* crypto.lst: New file.\n" % chlog
 
 outfile = os.path.join (cipher_dir_out, "types.h")
 fw=open (outfile, "w")
