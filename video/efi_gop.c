@@ -123,7 +123,7 @@ grub_video_gop_get_bitmask (grub_uint32_t mask, unsigned int *mask_size,
     if (!(mask & (1 << i)))
       break;
   *field_pos = i + 1;
-  *mask_size = last_p - *field_pos;
+  *mask_size = last_p - *field_pos + 1;
 }
 
 static grub_err_t
