@@ -649,6 +649,11 @@ crypto_mod_SOURCES = lib/crypto.c
 crypto_mod_CFLAGS = $(COMMON_CFLAGS)
 crypto_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += hashsum.mod
+hashsum_mod_SOURCES = commands/hashsum.c
+hashsum_mod_CFLAGS = $(COMMON_CFLAGS)
+hashsum_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 pkglib_MODULES += pbkdf2.mod
 pbkdf2_mod_SOURCES = lib/pbkdf2.c
 pbkdf2_mod_CFLAGS = $(COMMON_CFLAGS)
