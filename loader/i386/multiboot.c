@@ -201,7 +201,7 @@ grub_multiboot_get_bootdev (grub_uint32_t *bootdev)
   if (dev)
     grub_device_close (dev);
 
-  *bootdev = ((biosdev & 0xff) << 24) | ((slice & 0xff) << 16) 
+  *bootdev = ((biosdev & 0xff) << 24) | ((slice & 0xff) << 16)
     | ((part & 0xff) << 8) | 0xff;
   return (biosdev != ~0UL);
 #else

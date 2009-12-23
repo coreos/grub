@@ -79,7 +79,7 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
   /* Very unlikely condition: Relocator may risk overwrite itself.
      Just move it a bit up.  */
   if ((grub_addr_t) dest < (grub_addr_t) relocator
-      + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN) 
+      + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN)
       && (grub_addr_t) dest + (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
       > (grub_addr_t) relocator)
     {
@@ -105,7 +105,7 @@ PREFIX (boot) (void *relocator, grub_uint32_t dest,
 		    "Backward relocator: code %p, source: %p, "
 		    "destination: 0x%x, size: 0x%lx\n",
 		    (char *) relocator - overhead,
-		    (char *) relocator - overhead, 
+		    (char *) relocator - overhead,
 		    (unsigned) dest - overhead,
 		    (unsigned long) size + overhead);
 

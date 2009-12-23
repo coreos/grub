@@ -204,19 +204,19 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
     if (num > 0xffff)
       grub_util_error (_("the core image is too big"));
-    
+   
     boot_path = grub_util_get_path (dir, "diskboot.img");
     boot_size = grub_util_get_image_size (boot_path);
     if (boot_size != GRUB_DISK_SECTOR_SIZE)
       grub_util_error (_("diskboot.img size must be %u bytes"), GRUB_DISK_SECTOR_SIZE);
-    
+   
     boot_img = grub_util_read_image (boot_path);
-    
+   
     /* i386 is a little endian architecture.  */
     *((grub_uint16_t *) (boot_img + GRUB_DISK_SECTOR_SIZE
 			 - GRUB_BOOT_MACHINE_LIST_SIZE + 8))
       = grub_cpu_to_le16 (num);
-    
+   
     grub_util_write_image (boot_img, boot_size, out);
     free (boot_img);
     free (boot_path);

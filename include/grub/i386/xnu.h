@@ -20,6 +20,7 @@
 #define GRUB_CPU_XNU_H 1
 
 #include <grub/err.h>
+#include <grub/efi/api.h>
 #include <grub/cpu/relocator.h>
 
 #define XNU_RELOCATOR(x) (grub_relocator32_ ## x)
@@ -67,15 +68,54 @@ struct grub_xnu_boot_params
   /* Size of grub_efi_uintn_t in bits. */
   grub_uint8_t efi_uintnbits;
 } __attribute__ ((packed));
-#define GRUB_XNU_BOOTARGS_VERMINOR 4
+#define GRUB_XNU_BOOTARGS_VERMINOR 5
 #define GRUB_XNU_BOOTARGS_VERMAJOR 1
+
+struct grub_xnu_devprop_header
+{
+  grub_uint32_t length;
+  /* Always set to 1. Version?  */
+  grub_uint32_t alwaysone;
+  grub_uint32_t num_devices;
+};
+
+struct grub_xnu_devprop_device_header
+{
+  grub_uint32_t length;
+  grub_uint32_t num_values;
+};
+
+void grub_cpu_xnu_unload (void);
+
+struct grub_xnu_devprop_device_descriptor;
+
+struct grub_xnu_devprop_device_descriptor *
+grub_xnu_devprop_add_device (struct grub_efi_device_path *path, int length);
+grub_err_t
+grub_xnu_devprop_remove_device (struct grub_xnu_devprop_device_descriptor *dev);
+grub_err_t
+grub_xnu_devprop_remove_property (struct grub_xnu_devprop_device_descriptor *dev,
+				  char *name);
+grub_err_t
+grub_xnu_devprop_add_property_utf8 (struct grub_xnu_devprop_device_descriptor *dev,
+				    char *name, void *data, int datalen);
+grub_err_t
+grub_xnu_devprop_add_property_utf16 (struct grub_xnu_devprop_device_descriptor *dev,
+				     grub_uint16_t *name, int namelen,
+				     void *data, int datalen);
+grub_err_t
+grub_xnu_devprop_remove_property_utf8 (struct grub_xnu_devprop_device_descriptor *dev,
+				       char *name);
+void grub_cpu_xnu_init (void);
+void grub_cpu_xnu_fini (void);
 
 extern grub_uint32_t grub_xnu_entry_point;
 extern grub_uint32_t grub_xnu_stack;
 extern grub_uint32_t grub_xnu_arg1;
 extern char grub_xnu_cmdline[1024];
 grub_err_t grub_xnu_boot (void);
-grub_err_t grub_cpu_xnu_fill_devicetree (void);
 grub_err_t grub_xnu_set_video (struct grub_xnu_boot_params *bootparams_relloc);
+grub_err_t
+grub_cpu_xnu_fill_devicetree (void);
 extern grub_uint32_t grub_xnu_heap_will_be_at;
 #endif

@@ -25,9 +25,9 @@
 
 static const struct grub_arg_option options[] =
 {
-    {"info", 'i', 0, "show PXE information.", 0, 0},
-    {"bsize", 'b', 0, "set PXE block size", 0, ARG_TYPE_INT},
-    {"unload", 'u', 0, "unload PXE stack.", 0, 0},
+    {"info", 'i', 0, "Show PXE information.", 0, 0},
+    {"bsize", 'b', 0, "Set PXE block size.", 0, ARG_TYPE_INT},
+    {"unload", 'u', 0, "Unload PXE stack.", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 

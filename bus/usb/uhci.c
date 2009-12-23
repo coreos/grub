@@ -23,7 +23,6 @@
 #include <grub/usb.h>
 #include <grub/usbtrans.h>
 #include <grub/pci.h>
-#include <grub/cpu/pci.h>
 #include <grub/i386/io.h>
 #include <grub/time.h>
 
@@ -435,6 +434,7 @@ grub_uhci_transfer (grub_usb_controller_t dev,
   grub_uhci_td_t td_prev = NULL;
   grub_usb_err_t err = GRUB_USB_ERR_NONE;
   int i;
+  grub_uint64_t endtime;
 
   /* Allocate a queue head for the transfer queue.  */
   qh = grub_alloc_qh (u, GRUB_USB_TRANSACTION_TYPE_CONTROL);
@@ -483,6 +483,7 @@ grub_uhci_transfer (grub_usb_controller_t dev,
 
   /* Wait until either the transaction completed or an error
      occurred.  */
+  endtime = grub_get_time_ms () + 1000;
   for (;;)
     {
       grub_uhci_td_t errtd;
@@ -534,6 +535,13 @@ grub_uhci_transfer (grub_usb_controller_t dev,
 	     updated.  */
 	  grub_dprintf ("uhci", "transaction fallthrough\n");
 	}
+      if (grub_get_time_ms () > endtime)
+	{
+	  err = GRUB_USB_ERR_STALL;
+	  grub_dprintf ("uhci", "transaction timed out\n");
+	  goto fail;
+	}
+      grub_cpu_idle ();
     }
 
   grub_dprintf ("uhci", "transaction complete\n");
@@ -573,6 +581,7 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
   struct grub_uhci *u = (struct grub_uhci *) dev->data;
   int reg;
   unsigned int status;
+  grub_uint64_t endtime;
 
   grub_dprintf ("uhci", "enable=%d port=%d\n", enable, port);
 
@@ -595,6 +604,7 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
   status = grub_uhci_readreg16 (u, reg);
   grub_uhci_writereg16 (u, reg, status & ~(1 << 9));
   grub_dprintf ("uhci", "reset completed\n");
+  grub_millisleep (10);
 
   /* Enable the port.  */
   grub_uhci_writereg16 (u, reg, enable << 2);
@@ -602,7 +612,10 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
 
   grub_dprintf ("uhci", "waiting for the port to be enabled\n");
 
-  while (! (grub_uhci_readreg16 (u, reg) & (1 << 2)));
+  endtime = grub_get_time_ms () + 1000;
+  while (! (grub_uhci_readreg16 (u, reg) & (1 << 2)))
+    if (grub_get_time_ms () > endtime)
+      return grub_error (GRUB_ERR_IO, "UHCI Timed out");
 
   status = grub_uhci_readreg16 (u, reg);
   grub_dprintf ("uhci", ">3detect=0x%02x\n", status);

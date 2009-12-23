@@ -246,7 +246,7 @@ GRUB_MOD_INIT(gptsync)
 			       "of hybrid mbr. Up to 3 partitions are "
 			       "allowed. TYPE is an MBR type. "
 			       "+ means that partition is active. "
-			       "Only one partition can be active");
+			       "Only one partition can be active.");
 }
 
 GRUB_MOD_FINI(gptsync)

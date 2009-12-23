@@ -64,9 +64,6 @@ grub_usb_err_t grub_usb_clear_halt (grub_usb_device_t dev, int endpoint);
 grub_usb_err_t grub_usb_set_configuration (grub_usb_device_t dev,
 					   int configuration);
 
-grub_usb_err_t grub_usb_get_string (grub_usb_device_t dev, grub_uint8_t index,
-				    int langid, char **string);
-
 void grub_usb_controller_dev_register (grub_usb_controller_dev_t usb);
 
 void grub_usb_controller_dev_unregister (grub_usb_controller_dev_t usb);

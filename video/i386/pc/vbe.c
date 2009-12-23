@@ -356,6 +356,7 @@ grub_video_vbe_fini (void)
   if (status != GRUB_VBE_STATUS_OK)
     /* TODO: Decide, is this something we want to do.  */
     return grub_errno;
+  last_set_mode = initial_vbe_mode;
 
   /* TODO: Free any resources allocated by driver.  */
   grub_free (vbe_mode_list);

@@ -33,7 +33,7 @@ void FDECL1(add_hash, struct directory_entry *, spnt){
   struct file_hash * s_hash;
   unsigned int hash_number;
 
-  if(spnt->size == 0 || spnt->starting_block == 0) 
+  if(spnt->size == 0 || spnt->starting_block == 0)
     if(spnt->size != 0 || spnt->starting_block != 0) {
       fprintf(stderr,"Non zero-length file assigned zero extent.\n");
       exit(1);
@@ -116,10 +116,10 @@ static  unsigned int FDECL1(name_hash, const char *, name)
 {
   unsigned int hash = 0;
   const char * p;
-  
+ 
   p = name;
-  
-  while (*p) 
+ 
+  while (*p)
     {
       /*
        * Don't hash the  iso9660 version number.  This way
@@ -155,7 +155,7 @@ struct directory_entry * FDECL1(find_file_hash, char *, name)
   struct name_hash  * nh;
   char		    * p1;
   char		    * p2;
-  
+ 
   for(nh = name_hash_table[name_hash(name)]; nh; nh = nh->next)
     {
       p1 = name;
@@ -220,6 +220,6 @@ void flush_file_hash(){
 			nh = nh1;
 		}
 		name_hash_table[i] =  NULL;
-		
+	
 	}
 }

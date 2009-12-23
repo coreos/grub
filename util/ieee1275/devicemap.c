@@ -35,8 +35,10 @@ escape_of_path (const char *orig_path)
 }
 
 void
-grub_util_emit_devicemap_entry (FILE *fp, char *name, int is_floppy UNUSED,
-				int *num_fd UNUSED, int *num_hd UNUSED)
+grub_util_emit_devicemap_entry (FILE *fp, char *name,
+				int is_floppy __attribute__((unused)),
+				int *num_fd __attribute__((unused)),
+				int *num_hd __attribute__((unused)))
 {
   const char *orig_path = grub_util_devname_to_ofpath (name);
   char *ofpath = escape_of_path (orig_path);

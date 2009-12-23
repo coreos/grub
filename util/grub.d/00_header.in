@@ -107,12 +107,12 @@ if [ "x${LANG}" != "xC" ] ; then
   cat << EOF
 set locale_dir=${locale_dir}
 set lang=${grub_lang}
-insmod gettext 
+insmod gettext
 EOF
 fi
 
 if [ "x${GRUB_HIDDEN_TIMEOUT}" != "x" ] ; then
-  if [ "x${GRUB_HIDDEN_TIMEOUT_QUIET}" = "xtrue" ] ; then 
+  if [ "x${GRUB_HIDDEN_TIMEOUT_QUIET}" = "xtrue" ] ; then
     verbose=
   else
     verbose=" --verbose"

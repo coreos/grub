@@ -34,9 +34,9 @@ static struct grub_parttool *parts = 0;
 static int curhandle = 0;
 static grub_dl_t mymod;
 static char helpmsg[] =
-  "perform COMMANDS on partition.\n"
+  "Perform COMMANDS on partition.\n"
   "Use \"parttool PARTITION help\" for the list "
-  "of available commands";
+  "of available commands.";
 
 int
 grub_parttool_register(const char *part_name,

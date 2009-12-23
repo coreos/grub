@@ -25,6 +25,7 @@
 #include <grub/device.h>
 #include <grub/disk.h>
 #include <grub/misc.h>
+#include <grub/charset.h>
 #include <grub/mm.h>
 #include <grub/types.h>
 #include <grub/dl.h>
