@@ -197,14 +197,14 @@ struct grub_term_output
 };
 typedef struct grub_term_output *grub_term_output_t;
 
-extern struct grub_handler_class EXPORT_VAR(grub_term_input_class);
 extern struct grub_term_output *EXPORT_VAR(grub_term_outputs);
+extern struct grub_term_input *EXPORT_VAR(grub_term_inputs);
 
 static inline void
 grub_term_register_input (const char *name __attribute__ ((unused)),
 			  grub_term_input_t term)
 {
-  grub_handler_register (&grub_term_input_class, GRUB_AS_HANDLER (term));
+  grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs), GRUB_AS_LIST (term));
 }
 
 static inline void
@@ -217,7 +217,7 @@ grub_term_register_output (const char *name __attribute__ ((unused)),
 static inline void
 grub_term_unregister_input (grub_term_input_t term)
 {
-  grub_handler_unregister (&grub_term_input_class, GRUB_AS_HANDLER (term));
+  grub_list_remove (GRUB_AS_LIST_P (&grub_term_inputs), GRUB_AS_LIST (term));
 }
 
 static inline void
@@ -226,18 +226,7 @@ grub_term_unregister_output (grub_term_output_t term)
   grub_list_remove (GRUB_AS_LIST_P (&grub_term_outputs), GRUB_AS_LIST (term));
 }
 
-static inline grub_err_t
-grub_term_set_current_input (grub_term_input_t term)
-{
-  return grub_handler_set_current (&grub_term_input_class,
-				   GRUB_AS_HANDLER (term));
-}
-
-static inline grub_term_input_t
-grub_term_get_current_input (void)
-{
-  return (grub_term_input_t) grub_term_input_class.cur_handler;
-}
+#define FOR_ACTIVE_TERM_INPUTS(var) for (var = grub_term_inputs; var; var = var->next)
 
 void EXPORT_FUNC(grub_putchar) (int c);
 void EXPORT_FUNC(grub_putcode) (grub_uint32_t code,

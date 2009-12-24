@@ -975,7 +975,9 @@ grub_abort (void)
 {
   grub_printf ("\nAborted.");
   
-  if (grub_term_get_current_input ())
+#ifndef GRUB_UTIL
+  if (grub_term_inputs)
+#endif
     {
       grub_printf (" Press any key to exit.");
       grub_getkey ();

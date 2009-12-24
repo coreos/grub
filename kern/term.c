@@ -21,15 +21,10 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/env.h>
-
-struct grub_handler_class grub_term_input_class =
-  {
-    .name = "terminal_input"
-  };
-
-#define grub_cur_term_input	grub_term_get_current_input ()
+#include <grub/cpu/time.h>
 
 struct grub_term_output *grub_term_outputs;
+struct grub_term_input *grub_term_inputs;
 
 void (*grub_newline_hook) (void) = NULL;
 
@@ -85,22 +80,49 @@ grub_putchar (int c)
 int
 grub_getkey (void)
 {
-  return (grub_cur_term_input->getkey) ();
+  grub_term_input_t term;
+
+  while (1)
+    {
+      FOR_ACTIVE_TERM_INPUTS(term)
+      {
+	int key = term->checkkey ();
+	if (key != -1)
+	  return term->getkey ();
+      }
+
+      grub_cpu_idle ();
+    }
 }
 
 int
 grub_checkkey (void)
 {
-  return (grub_cur_term_input->checkkey) ();
+  grub_term_input_t term;
+
+  FOR_ACTIVE_TERM_INPUTS(term)
+  {
+    int key = term->checkkey ();
+    if (key != -1)
+      return key;
+  }
+
+  return -1;
 }
 
 int
 grub_getkeystatus (void)
 {
-  if (grub_cur_term_input->getkeystatus)
-    return (grub_cur_term_input->getkeystatus) ();
-  else
-    return 0;
+  int status = 0;
+  grub_term_input_t term;
+
+  FOR_ACTIVE_TERM_INPUTS(term)
+  {
+    if (term->getkeystatus)
+      status |= term->getkeystatus ();
+  }
+
+  return status;
 }
 
 void

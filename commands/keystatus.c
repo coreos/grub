@@ -48,13 +48,20 @@ grub_cmd_keystatus (grub_extcmd_t cmd,
   if (state[2].set)
     expect_mods |= GRUB_TERM_STATUS_ALT;
 
+  grub_dprintf ("keystatus", "expect_mods: %d\n", expect_mods);
+
   /* Without arguments, just check whether getkeystatus is supported at
      all.  */
-  if (!grub_cur_term_input->getkeystatus)
-    return grub_error (GRUB_ERR_TEST_FAILURE, "false");
-  grub_dprintf ("keystatus", "expect_mods: %d\n", expect_mods);
-  if (!expect_mods)
-    return 0;
+  if (expect_mods == 0)
+    {
+      grub_term_input_t term;
+
+      FOR_ACTIVE_TERM_INPUTS (term)
+	if (term->getkeystatus)
+	  return 0;
+
+      return grub_error (GRUB_ERR_TEST_FAILURE, "false");
+    }
 
   mods = grub_getkeystatus ();
   grub_dprintf ("keystatus", "mods: %d\n", mods);
