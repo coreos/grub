@@ -20,7 +20,7 @@ Copyright @copyright{} 1995,96 Bryan Ford <baford@@cs.utah.edu>
 
 Copyright @copyright{} 1995,96 Erich Stefan Boleyn <erich@@uruk.org>
 
-Copyright @copyright{} 1999,2000,2001,2002,2005,2006 Free Software Foundation, Inc.
+Copyright @copyright{} 1999,2000,2001,2002,2005,2006,2009 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to make and distribute verbatim copies of
