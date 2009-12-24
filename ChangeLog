@@ -1,5 +1,17 @@
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/multiboot.h (struct multiboot_aout_symbol_table)
+	(struct multiboot_elf_section_header_table): New structure
+	declarations (stolen from GRUB Legacy).
+	(struct multiboot_info): Replace opaque `syms' with a.out and ELF
+	table information.
+
+	(multiboot_aout_symbol_table_t, multiboot_elf_section_header_table_t)
+	(multiboot_info_t, multiboot_memory_map_t, multiboot_module_t): New
+	type aliases.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/multiboot.h: Make comments src2texi-friendly.
 
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>

@@ -1,5 +1,5 @@
 /*  multiboot.h - Multiboot header file.  */
-/*  Copyright (C) 2003,2007,2008,2009  Free Software Foundation, Inc.
+/*  Copyright (C) 1999,2003,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to
@@ -121,6 +121,26 @@ struct multiboot_header
   multiboot_uint32_t depth;
 };
 
+/* The symbol table for a.out.  */
+struct multiboot_aout_symbol_table
+{
+  multiboot_uint32_t tabsize;
+  multiboot_uint32_t strsize;
+  multiboot_uint32_t addr;
+  multiboot_uint32_t reserved;
+};
+typedef struct multiboot_aout_symbol_table multiboot_aout_symbol_table_t;
+
+/* The section header table for ELF.  */
+struct multiboot_elf_section_header_table
+{
+  multiboot_uint32_t num;
+  multiboot_uint32_t size;
+  multiboot_uint32_t addr;
+  multiboot_uint32_t shndx;
+};
+typedef struct multiboot_elf_section_header_table multiboot_elf_section_header_table_t;
+
 struct multiboot_info
 {
   /* Multiboot info version number */
@@ -140,7 +160,11 @@ struct multiboot_info
   multiboot_uint32_t mods_count;
   multiboot_uint32_t mods_addr;
 
-  multiboot_uint32_t syms[4];
+  union
+  {
+    multiboot_aout_symbol_table_t aout_sym;
+    multiboot_elf_section_header_table_t elf_sec;
+  } u;
 
   /* Memory Mapping buffer */
   multiboot_uint32_t mmap_length;
@@ -167,6 +191,7 @@ struct multiboot_info
   multiboot_uint16_t vbe_interface_off;
   multiboot_uint16_t vbe_interface_len;
 };
+typedef struct multiboot_info multiboot_info_t;
 
 struct multiboot_mmap_entry
 {
@@ -177,6 +202,7 @@ struct multiboot_mmap_entry
 #define MULTIBOOT_MEMORY_RESERVED		2
   multiboot_uint32_t type;
 } __attribute__((packed));
+typedef struct multiboot_mmap_entry multiboot_memory_map_t;
 
 struct multiboot_mod_list
 {
@@ -190,6 +216,7 @@ struct multiboot_mod_list
   /* padding to take it to 16 bytes (must be zero) */
   multiboot_uint32_t pad;
 };
+typedef struct multiboot_mod_list multiboot_module_t;
 
 #endif /* ! ASM_FILE */
 
