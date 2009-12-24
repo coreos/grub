@@ -16,7 +16,7 @@ kernel_LDFLAGS = -nostdlib -Wl,-N -Wl,-Ttext -Wl,100000 -Wl,--build-id=none
 boot.o: multiboot.h
 endif
 
-EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
+EXTRA_DIST = $(man_MANS) $(noinst_SCRIPTS) \
 	$(EXAMPLES) $(multiboot_TEXINFOS)
 CLEANFILES = $(noinst_PROGRAMS)
 
