@@ -1,5 +1,9 @@
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/multiboot.h: Make comments src2texi-friendly.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	For consistency with [multiboot]/docs/boot.S.
 
 	* include/multiboot.h (MULTIBOOT_MAGIC): Rename from this ...

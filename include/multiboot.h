@@ -1,6 +1,5 @@
-/*
- *  multiboot.h - Multiboot header file.
- *  Copyright (C) 2003,2007,2008,2009  Free Software Foundation, Inc.
+/*  multiboot.h - Multiboot header file.  */
+/*  Copyright (C) 2003,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to
@@ -41,9 +40,7 @@
 /* Alignment of the multiboot info structure.  */
 #define MULTIBOOT_INFO_ALIGN		 0x00000004
 
-/*
- * Flags set in the 'flags' member of the multiboot header.
- */
+/* Flags set in the 'flags' member of the multiboot header.  */
 
 /* Align all boot modules on i386 page (4KB) boundaries.  */
 #define MULTIBOOT_PAGE_ALIGN		0x00000001
@@ -57,9 +54,7 @@
 /* This flag indicates the use of the address fields in the header.  */
 #define MULTIBOOT_AOUT_KLUDGE		0x00010000
 
-/*
- *  Flags to be set in the 'flags' member of the multiboot info structure.
- */
+/* Flags to be set in the 'flags' member of the multiboot info structure.  */
 
 /* is there basic lower/upper memory information? */
 #define MULTIBOOT_INFO_MEMORY		0x00000001
