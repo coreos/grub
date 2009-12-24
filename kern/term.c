@@ -67,24 +67,16 @@ grub_putchar (int c)
   grub_uint32_t code;
   grub_ssize_t ret;
 
-  auto int do_putcode (grub_list_t item);
-  int do_putcode (grub_list_t item)
-  {
-    struct grub_term_output *term = (struct grub_term_output *) item;
-
-    if (grub_term_is_active (term))
-      grub_putcode (code, term);
-
-    return 0;
-  }
-
   buf[size++] = c;
   ret = grub_utf8_to_ucs4 (&code, 1, buf, size, 0);
 
   if (ret != 0)
     {
+      struct grub_term_output *term;
       size = 0;
-      grub_list_iterate (GRUB_AS_LIST (grub_term_outputs), do_putcode);
+      for (term = grub_term_outputs; term; term = term->next)
+	if (grub_term_is_active (term))
+	  grub_putcode (code, term);
     }
   if (ret == '\n' && grub_newline_hook)
     grub_newline_hook ();
@@ -114,62 +106,39 @@ grub_getkeystatus (void)
 void
 grub_cls (void)
 {
-  auto int hook (grub_list_t item);
-  int hook (grub_list_t item)
-  {
-    struct grub_term_output *term = (struct grub_term_output *) item;
+  struct grub_term_output *term;
+  
+  for (term = grub_term_outputs; term; term = term->next)
+    {
+      if (! grub_term_is_active (term))
+	continue;
 
-    if (! grub_term_is_active (term))
-      return 0;
-
-    if ((term->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
-      {
-	grub_putcode ('\n', term);
-	grub_refresh ();
-      }
-    else
-      (term->cls) ();
-
-    return 0;
-  }
-
-  grub_list_iterate (GRUB_AS_LIST (grub_term_outputs), hook);
+      if ((term->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
+	{
+	  grub_putcode ('\n', term);
+	  grub_refresh ();
+	}
+      else
+	(term->cls) ();
+    }
 }
 
 void
 grub_setcolorstate (grub_term_color_state state)
 {
-  auto int hook (grub_list_t item);
-  int hook (grub_list_t item)
-  {
-    struct grub_term_output *term = (struct grub_term_output *) item;
-
-    if (! grub_term_is_active (term))
-      return 0;
-
-    grub_term_setcolorstate (term, state);
-
-    return 0;
-  }
-
-  grub_list_iterate (GRUB_AS_LIST (grub_term_outputs), hook);
+  struct grub_term_output *term;
+  
+  for (term = grub_term_outputs; term; term = term->next)
+    if (grub_term_is_active (term))
+      grub_term_setcolorstate (term, state);
 }
 
 void
 grub_refresh (void)
 {
-  auto int hook (grub_list_t item);
-  int hook (grub_list_t item)
-  {
-    struct grub_term_output *term = (struct grub_term_output *) item;
+  struct grub_term_output *term;
 
-    if (!grub_term_is_active (term))
-      return 0;
-
-    grub_term_refresh (term);
-
-    return 0;
-  }
-
-  grub_list_iterate (GRUB_AS_LIST (grub_term_outputs), hook);
+  for (term = grub_term_outputs; term; term = term->next)
+    if (grub_term_is_active (term))
+      grub_term_refresh (term);
 }
