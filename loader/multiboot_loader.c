@@ -108,14 +108,14 @@ grub_cmd_multiboot_loader (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
       goto fail;
     }
 
   file = grub_gzfile_open (argv[0], 1);
   if (! file)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "Couldn't open file");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
       goto fail;
     }
 
@@ -126,7 +126,7 @@ grub_cmd_multiboot_loader (grub_command_t cmd __attribute__ ((unused)),
     header_multi_ver_found = 2;
   else
     {
-      grub_error (GRUB_ERR_BAD_OS, "Multiboot header not found");
+      grub_error (GRUB_ERR_BAD_OS, "multiboot header not found");
       goto fail;
     }
 

@@ -274,7 +274,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 	      if (! opt)
 		{
 		  grub_error (GRUB_ERR_BAD_ARGUMENT,
-			      "Unknown argument `-%c'\n", *curshort);
+			      "unknown argument `-%c'", *curshort);
 		  goto fail;
 		}
 
@@ -326,7 +326,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 	  opt = find_long (cmd->options, arg + 2, arglen);
 	  if (! opt)
 	    {
-	      grub_error (GRUB_ERR_BAD_ARGUMENT, "Unknown argument `%s'\n", arg);
+	      grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown argument `%s'", arg);
 	      goto fail;
 	    }
 	}
@@ -337,7 +337,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 	  if (! option)
 	    {
 	      grub_error (GRUB_ERR_BAD_ARGUMENT,
-			  "Missing mandatory option for `%s'\n", opt->longarg);
+			  "missing mandatory option for `%s'", opt->longarg);
 	      goto fail;
 	    }
 
@@ -359,7 +359,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 		if (tail == 0 || tail == option || *tail != '\0' || grub_errno)
 		  {
 		    grub_error (GRUB_ERR_BAD_ARGUMENT,
-				"The argument `%s' requires an integer.",
+				"the argument `%s' requires an integer",
 				arg);
 
 		    goto fail;
@@ -382,8 +382,8 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 	  if (option)
 	    {
 	      grub_error (GRUB_ERR_BAD_ARGUMENT,
-			  "A value was assigned to the argument `%s' while it "
-			  "doesn't require an argument\n", arg);
+			  "a value was assigned to the argument `%s' while it "
+			  "doesn't require an argument", arg);
 	      goto fail;
 	    }
 

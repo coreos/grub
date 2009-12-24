@@ -653,7 +653,7 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
 				  btree->nodesize, (char *) node) <= 0)
 	{
 	  grub_free (node);
-	  return grub_error (GRUB_ERR_BAD_FS, "Couldn't read i-node.");
+	  return grub_error (GRUB_ERR_BAD_FS, "couldn't read i-node");
 	}
 
       nodedesc = (struct grub_hfsplus_btnode *) node;

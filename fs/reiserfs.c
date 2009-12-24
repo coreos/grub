@@ -998,7 +998,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
     goto fail;
   if (root.block_number == 0)
     {
-      grub_error (GRUB_ERR_BAD_FS, "Unable to find root item");
+      grub_error (GRUB_ERR_BAD_FS, "unable to find root item");
       goto fail; /* Should never happen since checked at mount.  */
     }
   grub_fshelp_find_file (name, &root, &found,
@@ -1014,7 +1014,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
     goto fail;
   if (info.block_number == 0)
     {
-      grub_error (GRUB_ERR_BAD_FS, "Unable to find searched item");
+      grub_error (GRUB_ERR_BAD_FS, "unable to find searched item");
       goto fail;
     }
   entry_version = grub_le_to_cpu16 (info.header.version);
@@ -1289,7 +1289,7 @@ grub_reiserfs_dir (grub_device_t device, const char *path,
     goto fail;
   if (root.block_number == 0)
     {
-      grub_error(GRUB_ERR_BAD_FS, "Root not found");
+      grub_error(GRUB_ERR_BAD_FS, "root not found");
       goto fail;
     }
   grub_fshelp_find_file (path, &root, &found, grub_reiserfs_iterate_dir,

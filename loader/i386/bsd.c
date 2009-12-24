@@ -679,7 +679,7 @@ grub_netbsd_boot (void)
       + sizeof (struct grub_netbsd_btinfo_mmap_header)
       + count * sizeof (struct grub_netbsd_btinfo_mmap_entry)
       > grub_os_area_addr + grub_os_area_size)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "No memory for boot info.");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "no memory for boot info");
 
   curarg = mmap = (struct grub_netbsd_btinfo_mmap_header *) kern_end;
   pm = (struct grub_netbsd_btinfo_mmap_entry *) (mmap + 1);
@@ -750,10 +750,10 @@ grub_bsd_load_aout (grub_file_t file)
     return grub_errno;
 
   if (grub_file_read (file, &ah, sizeof (ah)) != sizeof (ah))
-    return grub_error (GRUB_ERR_READ_ERROR, "Cannot read the a.out header");
+    return grub_error (GRUB_ERR_READ_ERROR, "cannot read the a.out header");
 
   if (grub_aout_get_type (&ah) != AOUT_TYPE_AOUT32)
-    return grub_error (GRUB_ERR_BAD_OS, "Invalid a.out header");
+    return grub_error (GRUB_ERR_BAD_OS, "invalid a.out header");
 
   entry = ah.aout32.a_entry & 0xFFFFFF;
 
@@ -771,7 +771,7 @@ grub_bsd_load_aout (grub_file_t file)
     }
 
   if (load_addr < 0x100000)
-    return grub_error (GRUB_ERR_BAD_OS, "Load address below 1M");
+    return grub_error (GRUB_ERR_BAD_OS, "load address below 1M");
 
   kern_start = load_addr;
   kern_end = load_addr + ah.aout32.a_text + ah.aout32.a_data;
@@ -811,7 +811,7 @@ grub_bsd_elf32_hook (Elf32_Phdr * phdr, grub_addr_t * addr, int *do_load)
 
   if ((paddr < grub_os_area_addr)
       || (paddr + phdr->p_memsz > grub_os_area_addr + grub_os_area_size))
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "Address 0x%x is out of range",
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, "address 0x%x is out of range",
 		       paddr);
 
   if ((!kern_start) || (paddr < kern_start))
@@ -842,7 +842,7 @@ grub_bsd_elf64_hook (Elf64_Phdr * phdr, grub_addr_t * addr, int *do_load)
 
   if ((paddr < grub_os_area_addr)
       || (paddr + phdr->p_memsz > grub_os_area_addr + grub_os_area_size))
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "Address 0x%x is out of range",
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, "address 0x%x is out of range",
 		       paddr);
 
   if ((!kern_start) || (paddr < kern_start))
@@ -871,7 +871,7 @@ grub_bsd_load_elf (grub_elf_t elf)
       is_64bit = 1;
 
       if (! grub_cpuid_has_longmode)
-	return grub_error (GRUB_ERR_BAD_OS, "Your CPU does not implement AMD64 architecture.");
+	return grub_error (GRUB_ERR_BAD_OS, "your CPU does not implement AMD64 architecture");
 
       /* FreeBSD has 64-bit entry point.  */
       if (kernel_type == KERNEL_TYPE_FREEBSD)
@@ -887,7 +887,7 @@ grub_bsd_load_elf (grub_elf_t elf)
       return grub_elf64_load (elf, grub_bsd_elf64_hook, 0, 0);
     }
   else
-    return grub_error (GRUB_ERR_BAD_OS, "Invalid elf");
+    return grub_error (GRUB_ERR_BAD_OS, "invalid elf");
 }
 
 static grub_err_t
@@ -902,7 +902,7 @@ grub_bsd_load (int argc, char *argv[])
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
       goto fail;
     }
 
@@ -1024,14 +1024,14 @@ grub_cmd_openbsd (grub_extcmd_t cmd, int argc, char *argv[])
       int unit, part;
       if (*(arg++) != 'w' || *(arg++) != 'd')
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "Only device specifications of form "
-			   "wd<number><lowercase letter> are supported.");
+			   "only device specifications of form "
+			   "wd<number><lowercase letter> are supported");
 
       unit = grub_strtoul (arg, (char **) &arg, 10);
       if (! (arg && *arg >= 'a' && *arg <= 'z'))
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "Only device specifications of form "
-			   "wd<number><lowercase letter> are supported.");
+			   "only device specifications of form "
+			   "wd<number><lowercase letter> are supported");
 
       part = *arg - 'a';
 
@@ -1076,15 +1076,15 @@ grub_cmd_freebsd_loadenv (grub_command_t cmd __attribute__ ((unused)),
 
   if (kernel_type == KERNEL_TYPE_NONE)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "You need to load the kernel first.");
+		       "you need to load the kernel first");
 
   if (kernel_type != KERNEL_TYPE_FREEBSD)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "Only FreeBSD support environment");
+		       "only FreeBSD support environment");
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No filename");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no filename");
       goto fail;
     }
 
@@ -1170,15 +1170,15 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
 
   if (kernel_type == KERNEL_TYPE_NONE)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "You need to load the kernel first.");
+		       "you need to load the kernel first");
 
   if (kernel_type != KERNEL_TYPE_FREEBSD)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "Only FreeBSD support module");
+		       "only FreeBSD support module");
 
   if (!is_elf_kernel)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "Only ELF kernel support module");
+		       "only ELF kernel support module");
 
   /* List the current modules if no parameter.  */
   if (!argc)
@@ -1193,7 +1193,7 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
 
   if (kern_end + file->size > grub_os_area_addr + grub_os_area_size)
     {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "Not enough memory for the module");
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "not enough memory for the module");
       goto fail;
     }
 
@@ -1236,15 +1236,15 @@ grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
 
   if (kernel_type == KERNEL_TYPE_NONE)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "You need to load the kernel first.");
+		       "you need to load the kernel first");
 
   if (kernel_type != KERNEL_TYPE_FREEBSD)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "Only FreeBSD support module");
+		       "only FreeBSD support module");
 
   if (! is_elf_kernel)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "Only ELF kernel support module");
+		       "only ELF kernel support module");
 
   /* List the current modules if no parameter.  */
   if (! argc)

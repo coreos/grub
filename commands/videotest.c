@@ -71,7 +71,7 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
   sanssmall = grub_font_get ("Helvetica 8");
   fixed = grub_font_get ("Fixed 20");
   if (! sansbig || ! sans || ! sanssmall || ! fixed)
-    return grub_error (GRUB_ERR_BAD_FONT, "No font loaded.");
+    return grub_error (GRUB_ERR_BAD_FONT, "no font loaded");
 
   glyph = grub_font_get_glyph (fixed, '*');
   grub_font_draw_glyph (glyph, color, 200 ,0);

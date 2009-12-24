@@ -715,7 +715,7 @@ grub_jfs_lookup_symlink (struct grub_jfs_data *data, int ino)
 
   grub_jfs_find_file (data, symlink);
   if (grub_errno)
-    grub_error (grub_errno, "Can not follow symlink `%s'.", symlink);
+    grub_error (grub_errno, "can not follow symlink `%s'", symlink);
 
   return grub_errno;
 }

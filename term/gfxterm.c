@@ -189,7 +189,7 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
   virtual_screen.font = grub_font_get (font_name);
   if (!virtual_screen.font)
     return grub_error (GRUB_ERR_BAD_FONT,
-                       "No font loaded.");
+                       "no font loaded");
   virtual_screen.width = width;
   virtual_screen.height = height;
   virtual_screen.offset_x = x;

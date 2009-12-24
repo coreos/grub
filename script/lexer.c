@@ -389,7 +389,7 @@ grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 	{
 	  /* There is either text or a variable name.  In the case you
 	 arrive here there is a serious problem with the lexer.  */
-	  grub_error (GRUB_ERR_BAD_ARGUMENT, "Internal error\n");
+	  grub_error (GRUB_ERR_BAD_ARGUMENT, "internal error");
 	  return 0;
 	}
     }

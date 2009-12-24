@@ -832,7 +832,7 @@ grub_iso9660_uuid (grub_device_t device, char **uuid)
 	  && ! data->voldesc.modified.second[0] && ! data->voldesc.modified.second[1]
 	  && ! data->voldesc.modified.hundredth[0] && ! data->voldesc.modified.hundredth[1])
 	{
-	  grub_error (GRUB_ERR_BAD_NUMBER, "No creation date in filesystem to generate UUID.");
+	  grub_error (GRUB_ERR_BAD_NUMBER, "no creation date in filesystem to generate UUID");
 	  *uuid = NULL;
 	}
       else

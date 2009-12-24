@@ -163,7 +163,7 @@ grub_vga_mod_init (void)
   set_start_address (PAGE_OFFSET (page));
   font = grub_font_get ("");  /* Choose any font, for now. */
   if (!font)
-    return grub_error (GRUB_ERR_BAD_FONT, "No font loaded.");
+    return grub_error (GRUB_ERR_BAD_FONT, "no font loaded");
 
   return GRUB_ERR_NONE;
 }

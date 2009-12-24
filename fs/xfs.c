@@ -222,7 +222,7 @@ grub_xfs_read_inode (struct grub_xfs_data *data, grub_uint64_t ino,
     return grub_errno;
 
   if (grub_strncmp ((char *) inode->magic, "IN", 2))
-    return grub_error (GRUB_ERR_BAD_FS, "not a correct XFS inode.\n");
+    return grub_error (GRUB_ERR_BAD_FS, "not a correct XFS inode");
 
   return 0;
 }
@@ -273,7 +273,7 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
           if (grub_strncmp ((char *) leaf->magic, "BMAP", 4))
             {
               grub_free (leaf);
-              grub_error (GRUB_ERR_BAD_FS, "not a correct XFS BMAP node.\n");
+              grub_error (GRUB_ERR_BAD_FS, "not a correct XFS BMAP node");
               return 0;
             }
 

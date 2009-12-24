@@ -365,7 +365,7 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
     {
       grub_macho_close (macho);
       return grub_error (GRUB_ERR_BAD_OS,
-			 "Kernel doesn't contain suitable 32-bit architecture");
+			 "kernel doesn't contain suitable 32-bit architecture");
     }
 
   err = grub_macho_size32 (macho, &startcode, &endcode, GRUB_MACHO_NOBSS);
@@ -463,7 +463,7 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
     {
       grub_macho_close (macho);
       return grub_error (GRUB_ERR_BAD_OS,
-			 "Kernel doesn't contain suitable 64-bit architecture");
+			 "kernel doesn't contain suitable 64-bit architecture");
     }
 
   err = grub_macho_size64 (macho, &startcode, &endcode, GRUB_MACHO_NOBSS);
@@ -654,7 +654,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
 	  if (macho)
 	    grub_macho_close (macho);
 	  return grub_error (GRUB_ERR_BAD_OS,
-			     "Extension doesn't contain suitable architecture");
+			     "extension doesn't contain suitable architecture");
 	}
       if (grub_xnu_is_64bit)
 	machosize = grub_macho_filesize64 (macho);
@@ -719,7 +719,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
 	{
 	  grub_file_close (infoplist);
 	  grub_error_push ();
-	  return grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s: ",
+	  return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s: ",
 			     infoplistname);
 	}
       grub_file_close (infoplist);
@@ -763,7 +763,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
   file = grub_gzfile_open (args[0], 1);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       "Couldn't load driver package");
+		       "couldn't load driver package");
 
   /* Sometimes caches are fat binary. Errgh. */
   if (grub_file_read (file, &head, sizeof (head))
@@ -773,7 +773,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
 	 can hardly imagine a valid package shorter than 20 bytes. */
       grub_file_close (file);
       grub_error_push ();
-      return grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s", args[0]);
+      return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", args[0]);
     }
 
   /* Find the corresponding architecture. */
@@ -786,7 +786,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
 	  grub_file_close (file);
 	  grub_error_push ();
 	  return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			     "Couldn't read file %s", args[0]);
+			     "couldn't read file %s", args[0]);
 
 	}
       if (grub_file_read (file, archs,
@@ -795,7 +795,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
 	{
 	  grub_free (archs);
 	  grub_error_push ();
-	  return grub_error (GRUB_ERR_READ_ERROR, "Cannot read fat header.");
+	  return grub_error (GRUB_ERR_READ_ERROR, "cannot read fat header");
 	}
       for (i = 0; i < narchs; i++)
 	{
@@ -848,7 +848,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
     {
       grub_file_close (file);
       grub_error_push ();
-      return grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s", args[0]);
+      return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", args[0]);
     }
   grub_file_close (file);
 
@@ -875,7 +875,7 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
   file = grub_gzfile_open (args[0], 1);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       "Couldn't load ramdisk");
+		       "couldn't load ramdisk");
 
   err = grub_xnu_align_heap (GRUB_XNU_PAGESIZE);
   if (err)
@@ -891,7 +891,7 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
     {
       grub_file_close (file);
       grub_error_push ();
-      return grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s", args[0]);
+      return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", args[0]);
     }
   return grub_xnu_register_memory ("RAMDisk", 0, loadto, size);
 }
@@ -917,7 +917,7 @@ grub_xnu_check_os_bundle_required (char *plistname, char *osbundlereq,
     {
       grub_file_close (file);
       grub_error_push ();
-      grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s", plistname);
+      grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", plistname);
       return 0;
     }
 
@@ -927,14 +927,14 @@ grub_xnu_check_os_bundle_required (char *plistname, char *osbundlereq,
     {
       grub_file_close (file);
       grub_error_push ();
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "Couldn't read file %s", plistname);
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't read file %s", plistname);
       return 0;
     }
   if (grub_file_read (file, buf, size) != (grub_ssize_t) (size))
     {
       grub_file_close (file);
       grub_error_push ();
-      grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s", plistname);
+      grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", plistname);
       return 0;
     }
   grub_file_close (file);

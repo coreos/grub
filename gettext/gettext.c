@@ -243,7 +243,7 @@ grub_mofile_open (const char *filename)
   if (version != 0)
     {
       grub_error (GRUB_ERR_BAD_FILE_TYPE,
-		  "mo: invalid mo version in file: %s\n", filename);
+		  "mo: invalid mo version in file: %s", filename);
       fd_mo = 0;
       return 0;
     }

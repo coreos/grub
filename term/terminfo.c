@@ -103,7 +103,7 @@ grub_terminfo_set_current (const char *str)
       return grub_errno;
     }
 
-  return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminfo type.");
+  return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminfo type");
 }
 
 /* Wrapper for grub_putchar to write strings.  */
@@ -168,7 +168,7 @@ grub_cmd_terminfo (grub_command_t cmd __attribute__ ((unused)),
     return GRUB_ERR_NONE;
   }
   else if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many parameters.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many parameters");
   else
     return grub_terminfo_set_current (args[0]);
 }

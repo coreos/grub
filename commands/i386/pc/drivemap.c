@@ -308,7 +308,7 @@ install_int13_handler (int noret __attribute__ ((unused)))
 						GRUB_MACHINE_MEMORY_RESERVED,
 						GRUB_MMAP_MALLOC_LOW);
   if (! handler_base)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Could not reserve "
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "could not reserve "
 		       "memory for the int13h handler");
 
   /* Copy int13h handler bundle to reserved area.  */

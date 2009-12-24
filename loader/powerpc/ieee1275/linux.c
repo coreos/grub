@@ -75,10 +75,10 @@ grub_linux_release_mem (void)
   linux_args = 0;
 
   if (linux_addr && grub_ieee1275_release (linux_addr, linux_size))
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not release memory");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "can not release memory");
 
   if (initrd_addr && grub_ieee1275_release (initrd_addr, initrd_size))
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not release memory");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "can not release memory");
 
   linux_addr = 0;
   initrd_addr = 0;
@@ -128,7 +128,7 @@ grub_linux_load32 (grub_elf_t elf)
 	break;
     }
   if (found_addr == -1)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Could not claim memory.");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "could not claim memory");
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr, int *do_load);
@@ -178,7 +178,7 @@ grub_linux_load64 (grub_elf_t elf)
 	break;
     }
   if (found_addr == -1)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Could not claim memory.");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "could not claim memory");
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load);
@@ -222,7 +222,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (elf->ehdr.ehdr32.e_type != ET_EXEC)
     {
       grub_error (GRUB_ERR_UNKNOWN_OS,
-		  "This ELF file is not of the right type\n");
+		  "this ELF file is not of the right type");
       goto out;
     }
 
@@ -236,7 +236,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     grub_linux_load64 (elf);
   else
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "Unknown ELF class");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, "unknown ELF class");
       goto out;
     }
 
@@ -297,7 +297,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (!loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load the kernel first");
       goto fail;
     }
 
@@ -321,7 +321,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (found_addr == -1)
     {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not claim memory");
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, "can not claim memory");
       goto fail;
     }
 
@@ -330,7 +330,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   if (grub_file_read (file, (void *) addr, size) != size)
     {
       grub_ieee1275_release (addr, size);
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 

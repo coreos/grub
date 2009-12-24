@@ -85,7 +85,7 @@ acorn_partition_map_find (grub_disk_t disk, struct linux_part *m,
 
 fail:
   return grub_error (GRUB_ERR_BAD_PART_TABLE,
-		     "Linux/ADFS partition map not found.");
+		     "Linux/ADFS partition map not found");
 
 }
 

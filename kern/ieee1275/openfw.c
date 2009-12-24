@@ -308,13 +308,13 @@ grub_ieee1275_parse_args (const char *path, enum grub_ieee1275_parse_type ptype)
      file path properly.  */
   if (grub_ieee1275_finddevice (device, &dev))
     {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Device %s not found\n", device);
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "device %s not found", device);
       goto fail;
     }
   if (grub_ieee1275_get_property (dev, "device_type", &type, sizeof type, 0))
     {
       grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-		  "Device %s lacks a device_type property\n", device);
+		  "device %s lacks a device_type property", device);
       goto fail;
     }
 

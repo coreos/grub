@@ -277,7 +277,7 @@ grub_acpi_create_ebda (void)
     {
       grub_mmap_unregister (mmapregion);
       return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			 "Couldn't find suitable spot in EBDA");
+			 "couldn't find suitable spot in EBDA");
     }
 
   /* Remove any other RSDT. */
@@ -551,7 +551,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 		      grub_free (exclude);
 		      grub_free (load_only);
 		      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-					 "Couldn't allocate table");
+					 "couldn't allocate table");
 		    }
 		  grub_memcpy (table_dsdt, dsdt, dsdt->length);
 		}
@@ -578,7 +578,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	      grub_free (exclude);
 	      grub_free (load_only);
 	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-				 "Couldn't allocate table structure");
+				 "couldn't allocate table structure");
 	    }
 	  table->size = curtable->length;
 	  table->addr = grub_malloc (table->size);
@@ -587,7 +587,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	    {
 	      free_tables ();
 	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-				 "Couldn't allocate table");
+				 "couldn't allocate table");
 	    }
 	  table->next = acpi_tables;
 	  acpi_tables = table;
@@ -674,7 +674,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	    {
 	      free_tables ();
 	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-				 "Couldn't allocate table structure");
+				 "couldn't allocate table structure");
 	    }
 
 	  table->size = size;
@@ -709,7 +709,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
     {
       free_tables ();
       return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			 "Couldn't allocate space for ACPI tables");
+			 "couldn't allocate space for ACPI tables");
     }
 
   setup_common_tables ();

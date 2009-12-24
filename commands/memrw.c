@@ -41,7 +41,7 @@ grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
   char buf[sizeof ("XXXXXXXX")];
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid number of arguments");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid number of arguments");
 
   addr = grub_strtoul (argv[0], 0, 0);
   switch (cmd->cmd->name[sizeof ("read_") - 1])
@@ -78,7 +78,7 @@ grub_cmd_write (grub_command_t cmd, int argc, char **argv)
   grub_uint32_t mask = 0xffffffff;
 
   if (argc != 2 && argc != 3)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid number of arguments");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid number of arguments");
 
   addr = grub_strtoul (argv[0], 0, 0);
   value = grub_strtoul (argv[1], 0, 0);
