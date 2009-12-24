@@ -112,7 +112,7 @@ choice of boot loaders for a particular operating system --- if the one
 that comes with the operating system doesn't do exactly what you want,
 or doesn't work on your machine, you're screwed.
 
-While we may not be able to fix this problem in existing commercial
+While we may not be able to fix this problem in existing proprietary
 operating systems, it shouldn't be too difficult for a few people in the
 free operating system communities to put their heads together and solve
 this problem for the popular free operating systems. That's what this
@@ -141,10 +141,10 @@ This specification is targeted toward free 32-bit operating systems
 that can be fairly easily modified to support the specification without
 going through lots of bureaucratic rigmarole. The particular free
 operating systems that this specification is being primarily designed
-for are Linux, FreeBSD, NetBSD, Mach, and VSTa. It is hoped that other
+for are Linux, the kernels of FreeBSD and NetBSD, Mach, and VSTa. It is hoped that other
 emerging free operating systems will adopt it from the start, and thus
 immediately be able to take advantage of existing boot loaders. It would
-be nice if commercial operating system vendors eventually adopted this
+be nice if proprietary operating system vendors eventually adopted this
 specification as well, but that's probably a pipe dream.
 
 
@@ -221,7 +221,7 @@ Multiboot-compliant.
 @node Boot modules
 @section Boot modules
 
-Many modern operating system kernels, such as those of VSTa and Mach, do
+Many modern operating system kernels, such as Mach and the microkernel in VSTa, do
 not by themselves contain enough mechanism to get the system fully
 operational: they require the presence of additional software modules at
 boot time in order to access devices, mount file systems, etc. While
@@ -798,22 +798,17 @@ buffer consists of one or more of the following size/structure pairs
         +-------------------+
 -4      | size              |
         +-------------------+
-0       | base_addr_low     |
-4       | base_addr_high    |
-8       | length_low        |
-12      | length_high       |
+0       | base_addr         |
+8       | length            |
 16      | type              |
         +-------------------+
 @end group
 @end example
 
 where @samp{size} is the size of the associated structure in bytes, which
-can be greater than the minimum of 20 bytes. @samp{base_addr_low} is the
-lower 32 bits of the starting address, and @samp{base_addr_high} is the
-upper 32 bits, for a total of a 64-bit starting address. @samp{length_low}
-is the lower 32 bits of the size of the memory region in bytes, and
-@samp{length_high} is the upper 32 bits, for a total of a 64-bit
-length. @samp{type} is the variety of address range represented, where a
+can be greater than the minimum of 20 bytes. @samp{base_addr} is the
+starting address. @samp{length} is the size of the memory region in bytes.
+@samp{type} is the variety of address range represented, where a
 value of 1 indicates available @sc{ram}, and all other values currently
 indicated a reserved area.
 
@@ -1150,8 +1145,8 @@ library supporting the specification.
 @section Example boot loader code
 
 The GNU GRUB (@pxref{Top, , GRUB, grub.info, The GRUB manual}) project
-is a full Multiboot-compliant boot loader, supporting all required and
-optional features present in this specification. A public release has
+is a Multiboot-compliant boot loader, supporting all required and
+many optional features present in this specification. A public release has
 not been made, but the test release is available from:
 
 @url{ftp://alpha.gnu.org/gnu/grub}

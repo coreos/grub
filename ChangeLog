@@ -1,5 +1,22 @@
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* docs/multiboot.texi: Misc editorial changes:
+
+	Avoid using `commercial' as a synonym for `non-free'
+	(see http://www.gnu.org/philosophy/words-to-avoid.html#Commercial).
+
+	Make a clear distinction between kernels and Operating Systems
+	(Linux is a kernel, FreeBSD and NetBSD are Operating Systems, Mach
+	is a microkernel, VSTa is something in-between).
+
+	Use 64-bit types to describe 64-bit datum (instead of splitting in
+	two 32-bit fields).  Little endianess assumption applies (as per
+	Terminology section).
+
+	Update status of GNU GRUB relative to version 2.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* docs/multiboot.h: Replace with include/multiboot.h from GRUB 2 Bazaar
 	trunk.
 	* docs/kernel.c (cmain): Update name references for new multiboot.h
