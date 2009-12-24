@@ -110,17 +110,14 @@ set_colors (void)
 {
   struct grub_term_output *term;
 
-  for (term = grub_term_outputs; term; term = term->next)
-    {
-      if (! grub_term_is_active (term))
-	continue;
+  FOR_ACTIVE_TERM_OUTPUTS(term)
+  {
+    /* Reloads terminal `normal' and `highlight' colors.  */
+    grub_term_setcolor (term, color_normal, color_highlight);
 
-      /* Reloads terminal `normal' and `highlight' colors.  */
-      grub_term_setcolor (term, color_normal, color_highlight);
-
-      /* Propagates `normal' color to terminal current color.  */
-      grub_term_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
-    }
+    /* Propagates `normal' color to terminal current color.  */
+    grub_term_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
+  }
 }
 
 /* Replace default `normal' colors with the ones specified by user (if any).  */

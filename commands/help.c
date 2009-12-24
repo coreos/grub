@@ -39,22 +39,20 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 	{
 	  struct grub_term_output *cur;
 	  int desclen = grub_strlen (cmd->summary);
-	  for (cur = grub_term_outputs; cur; cur = cur->next)
-	    {
-	      if (!grub_term_is_active (cur))
-		continue;
-	      int width = grub_term_width(cur);
-	      char description[width / 2];
+	  FOR_ACTIVE_TERM_OUTPUTS(cur)
+	  {
+	    int width = grub_term_width(cur);
+	    char description[width / 2];
 
-	  /* Make a string with a length of GRUB_TERM_WIDTH / 2 - 1 filled
-	     with the description followed by spaces.  */
-	      grub_memset (description, ' ', width / 2 - 1);
-	      description[width / 2 - 1] = '\0';
-	      grub_memcpy (description, cmd->summary,
-			   (desclen < width / 2 - 1
-			    ? desclen : width / 2 - 1));
-	      grub_puts_terminal (description, cur);
-	    }
+	    /* Make a string with a length of GRUB_TERM_WIDTH / 2 - 1 filled
+	       with the description followed by spaces.  */
+	    grub_memset (description, ' ', width / 2 - 1);
+	    description[width / 2 - 1] = '\0';
+	    grub_memcpy (description, cmd->summary,
+			 (desclen < width / 2 - 1
+			  ? desclen : width / 2 - 1));
+	    grub_puts_terminal (description, cur);
+	  }
 	  if ((cnt++) % 2)
 	    grub_printf ("\n");
 	  else
@@ -83,7 +81,11 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
     }
 
   if (argc == 0)
-    grub_command_iterate (print_command_info);
+    {
+      grub_command_iterate (print_command_info);
+      if (!(cnt % 2))
+	grub_printf ("\n");
+    }
   else
     {
       int i;

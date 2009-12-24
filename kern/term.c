@@ -69,9 +69,8 @@ grub_putchar (int c)
     {
       struct grub_term_output *term;
       size = 0;
-      for (term = grub_term_outputs; term; term = term->next)
-	if (grub_term_is_active (term))
-	  grub_putcode (code, term);
+      FOR_ACTIVE_TERM_OUTPUTS(term)
+	grub_putcode (code, term);
     }
   if (ret == '\n' && grub_newline_hook)
     grub_newline_hook ();
@@ -129,20 +128,17 @@ void
 grub_cls (void)
 {
   struct grub_term_output *term;
-  
-  for (term = grub_term_outputs; term; term = term->next)
-    {
-      if (! grub_term_is_active (term))
-	continue;
 
-      if ((term->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
-	{
-	  grub_putcode ('\n', term);
-	  grub_refresh ();
-	}
-      else
-	(term->cls) ();
-    }
+  FOR_ACTIVE_TERM_OUTPUTS(term)  
+  {
+    if ((term->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
+      {
+	grub_putcode ('\n', term);
+	grub_refresh ();
+      }
+    else
+      (term->cls) ();
+  }
 }
 
 void
@@ -150,9 +146,8 @@ grub_setcolorstate (grub_term_color_state state)
 {
   struct grub_term_output *term;
   
-  for (term = grub_term_outputs; term; term = term->next)
-    if (grub_term_is_active (term))
-      grub_term_setcolorstate (term, state);
+  FOR_ACTIVE_TERM_OUTPUTS(term)
+    grub_term_setcolorstate (term, state);
 }
 
 void
@@ -160,7 +155,6 @@ grub_refresh (void)
 {
   struct grub_term_output *term;
 
-  for (term = grub_term_outputs; term; term = term->next)
-    if (grub_term_is_active (term))
-      grub_term_refresh (term);
+  FOR_ACTIVE_TERM_OUTPUTS(term)
+    grub_term_refresh (term);
 }

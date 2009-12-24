@@ -520,16 +520,14 @@ grub_normal_reader_init (void)
 
   grub_sprintf (msg_formatted, msg, reader_nested ? msg_esc : "");
 
-  for (term = grub_term_outputs; term; term = term->next)
-    {
-      if (! (term->flags & GRUB_TERM_ACTIVE))
-	continue;
-      grub_normal_init_page (term);
-      grub_term_setcursor (term, 1);
-      
-      grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN, term);
-      grub_puts ("\n");
-    }
+  FOR_ACTIVE_TERM_OUTPUTS(term)
+  {
+    grub_normal_init_page (term);
+    grub_term_setcursor (term, 1);
+    
+    grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN, term);
+    grub_puts ("\n");
+  }
   grub_free (msg_formatted);
  
   return 0;

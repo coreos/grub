@@ -363,21 +363,19 @@ grub_cmdline_get (const char *prompt)
     struct cmdline_term *cl_term_cur;
     struct grub_term_output *cur;
     nterms = 0;
-    for (cur = grub_term_outputs; cur; cur = cur->next)
-      if (grub_term_is_active (cur))
-	nterms++;
+    FOR_ACTIVE_TERM_OUTPUTS(cur)
+      nterms++;
 
     cl_terms = grub_malloc (sizeof (cl_terms[0]) * nterms);
     if (!cl_terms)
       return 0;
     cl_term_cur = cl_terms;
-    for (cur = grub_term_outputs; cur; cur = cur->next)
-      if (grub_term_is_active (cur))
-	{
-	  cl_term_cur->term = cur;
-	  init_clterm (cl_term_cur);
-	  cl_term_cur++;
-	}
+    FOR_ACTIVE_TERM_OUTPUTS(cur)
+    {
+      cl_term_cur->term = cur;
+      init_clterm (cl_term_cur);
+      cl_term_cur++;
+    }
   }
 
   if (hist_used == 0)

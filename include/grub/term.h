@@ -227,6 +227,7 @@ grub_term_unregister_output (grub_term_output_t term)
 }
 
 #define FOR_ACTIVE_TERM_INPUTS(var) for (var = grub_term_inputs; var; var = var->next)
+#define FOR_ACTIVE_TERM_OUTPUTS(var) for (var = grub_term_outputs; var; var = var->next) if (grub_term_is_active (var))
 
 void EXPORT_FUNC(grub_putchar) (int c);
 void EXPORT_FUNC(grub_putcode) (grub_uint32_t code,

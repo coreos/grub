@@ -32,8 +32,8 @@ process_newline (void)
   struct grub_term_output *cur;
   unsigned height = -1;
 
-  for (cur = grub_term_outputs; cur; cur = cur->next)
-    if (grub_term_is_active(cur) && grub_term_height (cur) < height)
+  FOR_ACTIVE_TERM_OUTPUTS(cur)
+    if (grub_term_height (cur) < height)
       height = grub_term_height (cur);
   grub_more_lines++;
 
@@ -98,18 +98,16 @@ grub_term_save_pos (void)
   unsigned cnt = 0;
   grub_uint16_t *ret, *ptr;
   
-  for (cur = grub_term_outputs; cur; cur = cur->next)
-    if (grub_term_is_active (cur))
-      cnt++;
+  FOR_ACTIVE_TERM_OUTPUTS(cur)
+    cnt++;
 
   ret = grub_malloc (cnt * sizeof (ret[0]));
   if (!ret)
     return NULL;
 
   ptr = ret;
-  for (cur = grub_term_outputs; cur; cur = cur->next)
-    if (grub_term_is_active (cur))
-      *ptr++ = grub_term_getxy (cur);
+  FOR_ACTIVE_TERM_OUTPUTS(cur)
+    *ptr++ = grub_term_getxy (cur);
 
   return ret;
 }
@@ -123,10 +121,9 @@ grub_term_restore_pos (grub_uint16_t *pos)
   if (!pos)
     return;
 
-  for (cur = grub_term_outputs; cur; cur = cur->next)
-    if (grub_term_is_active (cur))
-      {
-	grub_term_gotoxy (cur, (*ptr & 0xff00) >> 8, *ptr & 0xff);
-	ptr++;
-      }
+  FOR_ACTIVE_TERM_OUTPUTS(cur)
+  {
+    grub_term_gotoxy (cur, (*ptr & 0xff00) >> 8, *ptr & 0xff);
+    ptr++;
+  }
 }
