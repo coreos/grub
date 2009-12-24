@@ -1,5 +1,11 @@
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* autogen.sh: Workaround Automake requirement for NEWS and README.
+	We really should have them, but in practice we never had.  This
+	ought not be considered a regression.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* BUGS: Remove.
 	* INSTALL: Remove.
 	* NEWS: Remove.
