@@ -367,16 +367,14 @@ static struct grub_term_output grub_ncurses_term_output =
     .setcolor = grub_ncurses_setcolor,
     .getcolor = grub_ncurses_getcolor,
     .setcursor = grub_ncurses_setcursor,
-    .refresh = grub_ncurses_refresh,
-    .flags = GRUB_TERM_ACTIVE
+    .refresh = grub_ncurses_refresh
   };
 
 void
 grub_console_init (void)
 {
-  grub_term_register_output ("console", &grub_ncurses_term_output);
-  grub_term_register_input ("console", &grub_ncurses_term_input);
-  grub_term_set_current_output (&grub_ncurses_term_output);
+  grub_term_register_output_active ("console", &grub_ncurses_term_output);
+  grub_term_register_input_active ("console", &grub_ncurses_term_input);
 }
 
 void

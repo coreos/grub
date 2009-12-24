@@ -351,8 +351,7 @@ static struct grub_term_output grub_console_term_output =
     .setcolorstate = grub_console_setcolorstate,
     .setcolor = grub_console_setcolor,
     .getcolor = grub_console_getcolor,
-    .setcursor = grub_console_setcursor,
-    .flags = GRUB_TERM_ACTIVE,
+    .setcursor = grub_console_setcursor
   };
 
 void
@@ -366,8 +365,8 @@ grub_console_init (void)
       return;
     }
 
-  grub_term_register_input ("console", &grub_console_term_input);
-  grub_term_register_output ("console", &grub_console_term_output);
+  grub_term_register_input_active ("console", &grub_console_term_input);
+  grub_term_register_output_active ("console", &grub_console_term_output);
 }
 
 void

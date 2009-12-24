@@ -233,7 +233,11 @@ static struct grub_term_input grub_at_keyboard_term =
 
 GRUB_MOD_INIT(at_keyboard)
 {
+#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+  grub_term_register_input_active ("at_keyboard", &grub_at_keyboard_term);
+#else
   grub_term_register_input ("at_keyboard", &grub_at_keyboard_term);
+#endif
 }
 
 GRUB_MOD_FINI(at_keyboard)
