@@ -1,3 +1,9 @@
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot.h: Remove `<grub/types.h>'.
+	(multiboot_uint16_t, multiboot_uint32_t, multiboot_uint64_t): New
+	types.  Update all users.
+
 2009-12-23 Felix Zielcke <fzielcke@z-51.de>
 
 	* commands/i386/pc/drivemap.c: Remove all trailing whitespace.
