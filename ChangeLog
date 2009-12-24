@@ -1,5 +1,14 @@
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	For consistency with [multiboot]/docs/boot.S.
+
+	* include/multiboot.h (MULTIBOOT_MAGIC): Rename from this ...
+	(MULTIBOOT_HEADER_MAGIC): ... to this.  Update all users.
+	(MULTIBOOT_MAGIC2): Rename from this ...
+	(MULTIBOOT_BOOTLOADER_MAGIC): ... to this.  Update all users.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/multiboot.h: Remove `<grub/types.h>'.
 	(multiboot_uint16_t, multiboot_uint32_t, multiboot_uint64_t): New
 	types.  Update all users.

@@ -27,10 +27,10 @@
 #define MULTIBOOT_SEARCH                 8192
 
 /* The magic field should contain this.  */
-#define MULTIBOOT_MAGIC                  0x1BADB002
+#define MULTIBOOT_HEADER_MAGIC           0x1BADB002
 
 /* This should be in %eax.  */
-#define MULTIBOOT_MAGIC2                 0x2BADB002
+#define MULTIBOOT_BOOTLOADER_MAGIC       0x2BADB002
 
 /* The bits in the required part of flags field we don't support.  */
 #define MULTIBOOT_UNSUPPORTED            0x0000fffc

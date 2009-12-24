@@ -65,7 +65,7 @@ grub_multiboot_boot (void)
 {
   struct grub_relocator32_state state =
     {
-      .eax = MULTIBOOT_MAGIC2,
+      .eax = MULTIBOOT_BOOTLOADER_MAGIC,
       .ebx = PTR_TO_UINT32 (mbi_dest),
       .ecx = 0,
       .edx = 0,
@@ -250,7 +250,7 @@ grub_multiboot (int argc, char *argv[])
        ((char *) header <= buffer + len - 12) || (header = 0);
        header = (struct multiboot_header *) ((char *) header + 4))
     {
-      if (header->magic == MULTIBOOT_MAGIC
+      if (header->magic == MULTIBOOT_HEADER_MAGIC
 	  && !(header->magic + header->flags + header->checksum))
 	break;
     }
