@@ -27,6 +27,13 @@
 
 /* The size of our stack (16KB).  */
 #define STACK_SIZE			0x4000
+
+/* The flags for the Multiboot header.  */
+#ifdef __ELF__
+# define MULTIBOOT_HEADER_FLAGS		0x00000003
+#else
+# define MULTIBOOT_HEADER_FLAGS		0x00010003
+#endif
 	
 	.text
 

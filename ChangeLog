@@ -1,5 +1,10 @@
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* docs/multiboot.h (MULTIBOOT_HEADER_FLAGS): Moved from here ...
+	* docs/boot.S (MULTIBOOT_HEADER_FLAGS): ... to here.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* docs/boot.S (ASM): Rename to ...
 	(ASM_FILE): ... this.
 	* docs/multiboot.h: Check for `ASM_FILE' instead of `ASM'.
