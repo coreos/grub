@@ -45,7 +45,7 @@ grub_cmd_terminal_input (grub_command_t cmd __attribute__ ((unused)),
   i = 0;
 
   if (grub_strcmp (args[0], "--append") == 0
-      || grub_strcmp (args[0], "--removed") == 0)
+      || grub_strcmp (args[0], "--remove") == 0)
     i++;
 
   if (i == argc)
@@ -57,7 +57,7 @@ grub_cmd_terminal_input (grub_command_t cmd __attribute__ ((unused)),
 	if (grub_strcmp (args[i], term->name) == 0)
 	  break;
       if (term == 0)
-	FOR_DISABLED_TERM_INPUTS(term)
+	FOR_ACTIVE_TERM_INPUTS(term)
 	  if (grub_strcmp (args[i], term->name) == 0)
 	    break;
       if (term == 0)
@@ -128,7 +128,7 @@ grub_cmd_terminal_input (grub_command_t cmd __attribute__ ((unused)),
     for (i = 0; i < argc; i++)
       if (grub_strcmp (args[i], term->name) == 0)
 	break;
-    if (i != argc)
+    if (i == argc)
       {
 	if (!term->next && term == grub_term_inputs)
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
@@ -167,7 +167,7 @@ grub_cmd_terminal_output (grub_command_t cmd __attribute__ ((unused)),
   i = 0;
 
   if (grub_strcmp (args[0], "--append") == 0
-      || grub_strcmp (args[0], "--removed") == 0)
+      || grub_strcmp (args[0], "--remove") == 0)
     i++;
 
   if (i == argc)
@@ -179,7 +179,7 @@ grub_cmd_terminal_output (grub_command_t cmd __attribute__ ((unused)),
 	if (grub_strcmp (args[i], term->name) == 0)
 	  break;
       if (term == 0)
-	FOR_DISABLED_TERM_OUTPUTS(term)
+	FOR_ACTIVE_TERM_OUTPUTS(term)
 	  if (grub_strcmp (args[i], term->name) == 0)
 	    break;
       if (term == 0)
@@ -229,6 +229,7 @@ grub_cmd_terminal_output (grub_command_t cmd __attribute__ ((unused)),
 	}
       return GRUB_ERR_NONE;
     }
+
   for (i = 0; i < argc; i++)
     {
       FOR_DISABLED_TERM_OUTPUTS(term)
@@ -250,7 +251,7 @@ grub_cmd_terminal_output (grub_command_t cmd __attribute__ ((unused)),
     for (i = 0; i < argc; i++)
       if (grub_strcmp (args[i], term->name) == 0)
 	break;
-    if (i != argc)
+    if (i == argc)
       {
 	if (!term->next && term == grub_term_outputs)
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
