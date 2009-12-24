@@ -1,5 +1,11 @@
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* configure.ac: Bump version to 0.6.96.
+	* docs/multiboot.texi: Include `version.texi' instead of hardcoding
+	version number.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* docs/Makefile.am (EXTRA_DIST): Remove `menu.lst'.
 
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
