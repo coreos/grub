@@ -1,5 +1,10 @@
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/grub-install.in (host_os): New variable.
+	* util/i386/efi/grub-install.in (host_os): Likewise.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* util/mkisofs/write.c (padblock_write): Abort when given an
 	excedingly large embed image, instead of silently truncating it.
 
