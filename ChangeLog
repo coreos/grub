@@ -1,5 +1,9 @@
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* include/multiboot.h: Indentation fixes.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/multiboot.h (struct multiboot_aout_symbol_table)
 	(struct multiboot_elf_section_header_table): New structure
 	declarations (stolen from GRUB Legacy).
