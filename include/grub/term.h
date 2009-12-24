@@ -68,8 +68,6 @@ grub_term_color_state;
 #define GRUB_TERM_NO_EDIT	(1 << 1)
 /* Set when the terminal cannot do fancy things.  */
 #define GRUB_TERM_DUMB		(1 << 2)
-/* Set when the terminal needs to be initialized.  */
-#define GRUB_TERM_NEED_INIT	(1 << 16)
 
 
 /* Bitmasks for modifier keys returned by grub_getkeystatus.  */
