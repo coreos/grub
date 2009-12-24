@@ -16,8 +16,12 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/term.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
+
 /* The amount of lines counted by the pager.  */
-static int grub_more_lines;
+static unsigned grub_more_lines;
 
 /* If the more pager is active.  */
 static int grub_more;
@@ -25,36 +29,37 @@ static int grub_more;
 static void
 process_newline (void)
 {
-  if (code == '\n')
+  struct grub_term_output *cur;
+  unsigned height = -1;
+
+  for (cur = grub_term_outputs; cur; cur = cur->next)
+    if (grub_term_is_active(cur) && grub_term_height (cur) < height)
+      height = grub_term_height (cur);
+  grub_more_lines++;
+
+  if (grub_more && grub_more_lines == height - 1)
     {
-      grub_putcode ('\r');
+      char key;
+      grub_uint16_t *pos;
 
-      grub_more_lines++;
+      pos = grub_term_save_pos ();
 
-      if (grub_more && grub_more_lines == height - 1)
-	{
-	  char key;
-	  int pos = term->getxy ();
+      grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
+      grub_printf ("--MORE--");
+      grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 
-	  /* Show --MORE-- on the lower left side of the screen.  */
-	  term->gotoxy (1, height - 1);
-	  grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
-	  grub_printf ("--MORE--");
-	  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
+      key = grub_getkey ();
 
-	  key = grub_getkey ();
+      /* Remove the message.  */
+      grub_term_restore_pos (pos);
+      grub_printf ("        ");
+      grub_term_restore_pos (pos);
 
-	  /* Remove the message.  */
-	  term->gotoxy (1, height - 1);
-	  grub_printf ("        ");
-	  term->gotoxy (pos >> 8, pos & 0xFF);
-
-	  /* Scroll one lines or an entire page, depending on the key.  */
-	  if (key == '\r' || key =='\n')
-	    grub_more_lines--;
-	  else
-	    grub_more_lines = 0;
-	}
+      /* Scroll one lines or an entire page, depending on the key.  */
+      if (key == '\r' || key =='\n')
+	grub_more_lines--;
+      else
+	grub_more_lines = 0;
     }
 }
 
@@ -67,6 +72,7 @@ grub_set_more (int onoff)
     grub_more--;
 
   grub_more_lines = 0;
+  grub_newline_hook = process_newline;
 }
 
 void
@@ -74,21 +80,14 @@ grub_puts_terminal (const char *str, struct grub_term_output *term)
 {
   grub_uint32_t code;
   grub_ssize_t ret;
-  const char *ptr = str;
-  unsigned i;
+  const grub_uint8_t *ptr = (const grub_uint8_t *) str;
+  const grub_uint8_t *end;
+  end = (const grub_uint8_t *) (str + grub_strlen (str));
 
   while (*ptr)
     {
-      ret = grub_utf8_to_ucs4 (&code, 1, ptr,
-			       grub_strlen (ptr), &ptr);
-      if (ret < 0)
-	{
-	  grub_putcode ('?', term);
-	  ptr++;
-	  continue;
-	}
-      else
-	grub_putcode (code, term);	
+      ret = grub_utf8_to_ucs4 (&code, 1, ptr, end - ptr, &ptr);
+      grub_putcode (code, term);	
     }
 }
 
@@ -100,16 +99,17 @@ grub_term_save_pos (void)
   grub_uint16_t *ret, *ptr;
   
   for (cur = grub_term_outputs; cur; cur = cur->next)
-    if (cur->flags & GRUB_TERM_ACTIVE)
+    if (grub_term_is_active (cur))
       cnt++;
 
   ret = grub_malloc (cnt * sizeof (ret[0]));
   if (!ret)
     return NULL;
 
+  ptr = ret;
   for (cur = grub_term_outputs; cur; cur = cur->next)
-    if (cur->flags & GRUB_TERM_ACTIVE)
-      *ptr++ = cur->getxy ();
+    if (grub_term_is_active (cur))
+      *ptr++ = grub_term_getxy (cur);
 
   return ret;
 }
@@ -118,11 +118,15 @@ void
 grub_term_restore_pos (grub_uint16_t *pos)
 {
   struct grub_term_output *cur;
+  grub_uint16_t *ptr = pos;
 
   if (!pos)
     return;
 
   for (cur = grub_term_outputs; cur; cur = cur->next)
-    if (cur->flags & GRUB_TERM_ACTIVE)
-      cur->gotoxy ((*ptr & 0xff00) >> 8, *ptr & 0xff);
+    if (grub_term_is_active (cur))
+      {
+	grub_term_gotoxy (cur, (*ptr & 0xff00) >> 8, *ptr & 0xff);
+	ptr++;
+      }
 }

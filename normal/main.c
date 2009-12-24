@@ -30,6 +30,7 @@
 #include <grub/menu_viewer.h>
 #include <grub/auth.h>
 #include <grub/i18n.h>
+#include <grub/charset.h>
 
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
@@ -420,11 +421,11 @@ grub_normal_init_page (struct grub_term_output *term)
       return;
     }
 
-  posx = grub_getstringwidth (unicode_msg, last_position);
+  posx = grub_getstringwidth (unicode_msg, last_position, term);
   posx = (grub_term_width (term) - posx) / 2;
-  term->gotoxy (posx, 1);
+  grub_term_gotoxy (term, posx, 1);
 
-  grub_print_ucs4 (unicode_msg, last_position);
+  grub_print_ucs4 (unicode_msg, last_position, term);
   grub_printf("\n\n");
   grub_free (unicode_msg);
 }
@@ -458,7 +459,7 @@ grub_normal_execute (const char *config, int nested, int batch)
     {
       if (menu && menu->size)
 	{
-	  grub_menu_viewer_show_menu (menu, nested);
+	  grub_show_menu (menu, nested);
 	  if (nested)
 	    free_menu (menu);
 	}
@@ -470,20 +471,19 @@ void
 grub_enter_normal_mode (const char *config)
 {
   grub_normal_execute (config, 0, 0);
+  grub_cmdline_run (1);
 }
 
 /* Enter normal mode from rescue mode.  */
 static grub_err_t
-grub_cmd_normal (struct grub_command *cmd,
+grub_cmd_normal (struct grub_command *cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
 {
-  grub_unregister_command (cmd);
-
   if (argc == 0)
     {
       /* Guess the config filename. It is necessary to make CONFIG static,
 	 so that it won't get broken by longjmp.  */
-      static char *config;
+      char *config;
       const char *prefix;
 
       prefix = grub_env_get ("prefix");
@@ -525,10 +525,9 @@ grub_normal_reader_init (void)
       if (! (term->flags & GRUB_TERM_ACTIVE))
 	continue;
       grub_normal_init_page (term);
-      if (term->setcursor)
-	term->setcursor (1);
+      grub_term_setcursor (term, 1);
       
-      grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN);
+      grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN, term);
       grub_puts ("\n");
     }
   grub_free (msg_formatted);
@@ -536,7 +535,6 @@ grub_normal_reader_init (void)
   return 0;
 }
 
-static char cmdline[GRUB_MAX_CMDLINE];
 
 static grub_err_t
 grub_normal_read_line (char **line, int cont)
@@ -548,18 +546,18 @@ grub_normal_read_line (char **line, int cont)
 
   while (1)
     {
-      cmdline[0] = 0;
-      if (grub_cmdline_get (prompt, cmdline, sizeof (cmdline), 0, 1, 1))
+      *line = grub_cmdline_get (prompt);
+      if (*line)
 	break;
 
       if ((reader_nested) || (cont))
 	{
+	  grub_free (*line);
 	  *line = 0;
 	  return grub_errno;
 	}
     }
 
-  *line = grub_strdup (cmdline);
   return 0;
 }
 
@@ -591,7 +589,7 @@ grub_cmdline_run (int nested)
 
       grub_normal_read_line (&line, 0);
       if (! line)
-	continue;
+	break;
 
       grub_parser_get_current ()->parse_line (line, grub_normal_read_line);
       grub_free (line);
@@ -612,15 +610,20 @@ GRUB_MOD_INIT(normal)
   if (mod)
     grub_dl_ref (mod);
 
-  grub_menu_viewer_register (&grub_normal_text_menu_viewer);
-
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
+
+  grub_menu_register_viewer_init (grub_menu_text_register_instances);
+  if (grub_errno)
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+    }
 
   grub_register_variable_hook ("pager", 0, grub_env_write_pager);
 
   /* Register a command "normal" for the rescue mode.  */
-  grub_register_command_prio ("normal", grub_cmd_normal,
-			      0, "Enter normal mode", 0);
+  grub_register_command ("normal", grub_cmd_normal,
+			 0, "Enter normal mode");
 
   /* Reload terminal colors when these variables are written to.  */
   grub_register_variable_hook ("color_normal", NULL, grub_env_write_color_normal);

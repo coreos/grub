@@ -41,7 +41,7 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 	  int desclen = grub_strlen (cmd->summary);
 	  for (cur = grub_term_outputs; cur; cur = cur->next)
 	    {
-	      if (!(cur->flags & GRUB_TERM_ACTIVE))
+	      if (!grub_term_is_active (cur))
 		continue;
 	      int width = grub_term_width(cur);
 	      char description[width / 2];

@@ -415,7 +415,7 @@ static struct grub_term_output grub_ofconsole_term_output =
     .getcolor = grub_ofconsole_getcolor,
     .setcursor = grub_ofconsole_setcursor,
     .refresh = grub_ofconsole_refresh,
-    .flags = 0,
+    .flags = GRUB_TERM_ACTIVE,
   };
 
 void

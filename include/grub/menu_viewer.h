@@ -27,17 +27,18 @@
 
 struct grub_menu_viewer
 {
-  /* The menu viewer name.  */
-  const char *name;
-
-  grub_err_t (*show_menu) (grub_menu_t menu, int nested);
-
   struct grub_menu_viewer *next;
+  void *data;
+  void (*set_chosen_entry) (int entry, void *data);
+  void (*print_timeout) (int timeout, void *data);
+  void (*clear_timeout) (void *data);
+  void (*fini) (void *fini);
 };
-typedef struct grub_menu_viewer *grub_menu_viewer_t;
 
-void grub_menu_viewer_register (grub_menu_viewer_t viewer);
+void grub_menu_register_viewer (struct grub_menu_viewer *viewer);
 
-grub_err_t grub_menu_viewer_show_menu (grub_menu_t menu, int nested);
+grub_err_t grub_menu_register_viewer_init (void (*callback) (int entry,
+							     grub_menu_t menu,
+							     int nested));
 
 #endif /* GRUB_MENU_VIEWER_HEADER */

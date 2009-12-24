@@ -24,6 +24,8 @@
    last byte used in SRC.  */
 
 #include <grub/charset.h>
+#include <grub/mm.h>
+#include <grub/misc.h>
 
 grub_ssize_t
 grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
@@ -176,5 +178,92 @@ grub_ucs4_to_utf8_alloc (grub_uint32_t *src, grub_size_t size)
     }
   *dest = 0;
 
-  return ret;
+  return (char *) ret;
+}
+
+int
+grub_is_valid_utf8 (const grub_uint8_t *src, grub_size_t srcsize)
+{
+  grub_uint32_t code = 0;
+  int count = 0;
+
+  while (srcsize)
+    {
+      grub_uint32_t c = *src++;
+      if (srcsize != (grub_size_t)-1)
+	srcsize--;
+      if (count)
+	{
+	  if ((c & 0xc0) != 0x80)
+	    {
+	      /* invalid */
+	      return 0;
+	    }
+	  else
+	    {
+	      code <<= 6;
+	      code |= (c & 0x3f);
+	      count--;
+	    }
+	}
+      else
+	{
+	  if (c == 0)
+	    break;
+
+	  if ((c & 0x80) == 0x00)
+	    code = c;
+	  else if ((c & 0xe0) == 0xc0)
+	    {
+	      count = 1;
+	      code = c & 0x1f;
+	    }
+	  else if ((c & 0xf0) == 0xe0)
+	    {
+	      count = 2;
+	      code = c & 0x0f;
+	    }
+	  else if ((c & 0xf8) == 0xf0)
+	    {
+	      count = 3;
+	      code = c & 0x07;
+	    }
+	  else if ((c & 0xfc) == 0xf8)
+	    {
+	      count = 4;
+	      code = c & 0x03;
+	    }
+	  else if ((c & 0xfe) == 0xfc)
+	    {
+	      count = 5;
+	      code = c & 0x01;
+	    }
+	  else
+	    return 0;
+	}
+    }
+
+  return 1;
+}
+
+int
+grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
+			grub_uint32_t **last_position)
+{
+  grub_size_t msg_len = grub_strlen (msg);
+
+  *unicode_msg = grub_malloc (grub_strlen (msg) * sizeof (grub_uint32_t));
+ 
+  if (!*unicode_msg)
+    {
+      grub_printf ("utf8_to_ucs4 ERROR1: %s", msg);
+      return -1;
+    }
+
+  msg_len = grub_utf8_to_ucs4 (*unicode_msg, msg_len,
+  			      (grub_uint8_t *) msg, -1, 0);
+
+  *last_position = *unicode_msg + msg_len;
+
+  return msg_len;
 }

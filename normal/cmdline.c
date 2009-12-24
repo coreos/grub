@@ -27,6 +27,7 @@
 #include <grub/file.h>
 #include <grub/env.h>
 #include <grub/i18n.h>
+#include <grub/charset.h>
 
 static grub_uint32_t *kill_buf;
 
@@ -211,11 +212,12 @@ struct cmdline_term
    otherwise return command line.  */
 /* FIXME: The dumb interface is not supported yet.  */
 char *
-grub_cmdline_get (const char *prompt, unsigned max_len)
+grub_cmdline_get (const char *prompt)
 {
   grub_size_t lpos, llen;
   grub_size_t plen;
-  grub_uint32_t buf[max_len];
+  grub_uint32_t *buf;
+  grub_size_t max_len = 256;
   int key;
   int histpos = 0;
   auto void cl_insert (const grub_uint32_t *str);
@@ -226,13 +228,14 @@ grub_cmdline_get (const char *prompt, unsigned max_len)
   auto void cl_set_pos_all (void);
   const char *prompt_translated = _(prompt);
   struct cmdline_term *cl_terms;
+  char *ret;
   unsigned nterms;
 
   void cl_set_pos (struct cmdline_term *cl_term)
   {
     cl_term->xpos = (plen + lpos) % (cl_term->width - 1);
     cl_term->ypos = cl_term->ystart + (plen + lpos) / (cl_term->width - 1);
-    cl_term->term->gotoxy (cl_term->xpos, cl_term->ypos);
+    grub_term_gotoxy (cl_term->term, cl_term->xpos, cl_term->ypos);
   }
 
   void cl_set_pos_all ()
@@ -246,7 +249,7 @@ grub_cmdline_get (const char *prompt, unsigned max_len)
     {
       grub_uint32_t *p;
 
-      for (p = buf + pos; *p; p++)
+      for (p = buf + pos; p < buf + llen; p++)
 	{
 	  if (cl_term->xpos++ > cl_term->width - 2)
 	    {
@@ -277,14 +280,30 @@ grub_cmdline_get (const char *prompt, unsigned max_len)
     {
       grub_size_t len = strlen_ucs4 (str);
 
+      if (len + llen >= max_len)
+	{
+	  grub_uint32_t *nbuf;
+	  max_len *= 2;
+	  nbuf = grub_realloc (buf, sizeof (grub_uint32_t) * max_len);
+	  if (nbuf)
+	    buf = nbuf;
+	  else
+	    {
+	      grub_print_error ();
+	      grub_errno = GRUB_ERR_NONE;
+	      max_len /= 2;
+	    }
+	}
+
       if (len + llen < max_len)
 	{
-	  grub_memmove (buf + lpos + len, buf + lpos, llen - lpos + 1);
-	  grub_memmove (buf + lpos, str, len);
+	  grub_memmove (buf + lpos + len, buf + lpos,
+			(llen - lpos + 1) * sizeof (grub_uint32_t));
+	  grub_memmove (buf + lpos, str, len * sizeof (grub_uint32_t));
 
 	  llen += len;
 	  lpos += len;
-	  cl_print_all (lpos - len, echo_char);
+	  cl_print_all (lpos - len, 0);
 	  cl_set_pos_all ();
 	}
 
@@ -305,7 +324,7 @@ grub_cmdline_get (const char *prompt, unsigned max_len)
 
 	  grub_memmove (buf + lpos, buf + lpos + len, llen - lpos + 1);
 	  llen -= len;
-	  cl_print_all (lpos, echo_char);
+	  cl_print_all (lpos, 0);
 	  cl_set_pos_all ();
 	}
 
@@ -315,7 +334,7 @@ grub_cmdline_get (const char *prompt, unsigned max_len)
   void init_clterm (struct cmdline_term *cl_term_cur)
   {
     cl_term_cur->xpos = plen;
-    cl_term_cur->ypos = (cl_term_cur->term->getxy () & 0xFF);
+    cl_term_cur->ypos = (grub_term_getxy (cl_term_cur->term) & 0xFF);
     cl_term_cur->ystart = cl_term_cur->ypos;
     cl_term_cur->width = grub_term_width (cl_term_cur->term);
     cl_term_cur->height = grub_term_height (cl_term_cur->term);
@@ -327,6 +346,10 @@ grub_cmdline_get (const char *prompt, unsigned max_len)
     for (i = 0; i < nterms; i++)
       init_clterm (&cl_terms[i]);
   }
+
+  buf = grub_malloc (max_len * sizeof (grub_uint32_t));
+  if (!buf)
+    return 0;
 
   plen = grub_strlen (prompt_translated);
   lpos = llen = 0;
@@ -341,15 +364,15 @@ grub_cmdline_get (const char *prompt, unsigned max_len)
     struct grub_term_output *cur;
     nterms = 0;
     for (cur = grub_term_outputs; cur; cur = cur->next)
-      if (cur->flags & GRUB_TERM_ACTIVE)
+      if (grub_term_is_active (cur))
 	nterms++;
 
     cl_terms = grub_malloc (sizeof (cl_terms[0]) * nterms);
     if (!cl_terms)
-      return grub_errno;
+      return 0;
     cl_term_cur = cl_terms;
     for (cur = grub_term_outputs; cur; cur = cur->next)
-      if (cur->flags & GRUB_TERM_ACTIVE)
+      if (grub_term_is_active (cur))
 	{
 	  cl_term_cur->term = cur;
 	  init_clterm (cl_term_cur);
@@ -357,7 +380,7 @@ grub_cmdline_get (const char *prompt, unsigned max_len)
 	}
   }
 
-  if (history && hist_used == 0)
+  if (hist_used == 0)
     grub_history_add (buf);
 
   while ((key = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != '\n' && key != '\r')
@@ -394,17 +417,38 @@ grub_cmdline_get (const char *prompt, unsigned max_len)
 	  {
 	    grub_uint32_t *insert;
 	    int restore;
+	    char *bufu8, *insertu8;
+	    grub_size_t insertlen;
+	    grub_size_t t;
 
-	    /* Backup the next character and make it 0 so it will
-	       be easy to use string functions.  */
-	    char backup = buf[lpos];
 	    buf[lpos] = '\0';
 
+	    bufu8 = grub_ucs4_to_utf8_alloc (buf, lpos);
+	    if (!bufu8)
+	      {
+		grub_print_error ();
+		grub_errno = GRUB_ERR_NONE;
+		break;
+	      }
 
-	    insert = grub_normal_do_completion (buf, &restore,
-						print_completion);
-	    /* Restore the original string.  */
-	    buf[lpos] = backup;
+	    insertu8 = grub_normal_do_completion (bufu8, &restore,
+						  print_completion);
+	    grub_free (bufu8);
+	    insertlen = grub_strlen (bufu8);
+	    insert = grub_malloc ((insertlen + 1) * sizeof (grub_uint32_t));
+	    if (!insert)
+	      {
+		grub_free (insertu8);
+		grub_print_error ();
+		grub_errno = GRUB_ERR_NONE;
+		break;
+	      }
+	    t = grub_utf8_to_ucs4 (insert, insertlen,
+				   (grub_uint8_t *) insertu8,
+				   insertlen, 0);
+	    insert[t] = 0;
+
+	    grub_free (insertu8);
 
 	    if (restore)
 	      {
@@ -429,7 +473,11 @@ grub_cmdline_get (const char *prompt, unsigned max_len)
 		grub_free (kill_buf);
 
 	      kill_buf = strdup_ucs4 (buf + lpos);
-	      grub_errno = GRUB_ERR_NONE;
+	      if (grub_errno)
+		{
+		  grub_print_error ();
+		  grub_errno = GRUB_ERR_NONE;
+		}
 
 	      cl_delete (llen - lpos);
 	    }
@@ -481,7 +529,11 @@ grub_cmdline_get (const char *prompt, unsigned max_len)
 		grub_free (kill_buf);
 
 	      kill_buf = grub_malloc (n + 1);
-	      grub_errno = GRUB_ERR_NONE;
+	      if (grub_errno)
+		{
+		  grub_print_error ();
+		  grub_errno = GRUB_ERR_NONE;
+		}
 	      if (kill_buf)
 		{
 		  grub_memcpy (kill_buf, buf, n);
@@ -538,16 +590,15 @@ grub_cmdline_get (const char *prompt, unsigned max_len)
   while (buf[lpos] == ' ')
     lpos++;
 
-  if (history)
+  histpos = 0;
+  if (strlen_ucs4 (buf) > 0)
     {
-      histpos = 0;
-      if (strlen_ucs4 (buf) > 0)
-	{
-	  grub_uint32_t empty[] = { 0 };
-	  grub_history_replace (histpos, buf);
-	  grub_history_add (empty);
-	}
+      grub_uint32_t empty[] = { 0 };
+      grub_history_replace (histpos, buf);
+      grub_history_add (empty);
     }
 
-  return grub_ucs4_to_utf8_alloc (buf + lpos, llen - lpos + 1);
+  ret = grub_ucs4_to_utf8_alloc (buf + lpos, llen - lpos + 1);
+  grub_free (buf);
+  return ret;
 }

@@ -31,13 +31,15 @@ struct grub_handler_class grub_term_input_class =
 
 struct grub_term_output *grub_term_outputs;
 
+void (*grub_newline_hook) (void) = NULL;
+
 /* Put a Unicode character.  */
 void
 grub_putcode (grub_uint32_t code, struct grub_term_output *term)
 {
   int height;
 
-  height = term->getwh () & 255;
+  height = grub_term_height (term);
 
   if (code == '\t' && term->getxy)
     {
@@ -50,6 +52,8 @@ grub_putcode (grub_uint32_t code, struct grub_term_output *term)
       return;
     }
 
+  if (code == '\n')
+    (term->putchar) ('\r');
   (term->putchar) (code);
 }
 
@@ -68,7 +72,7 @@ grub_putchar (int c)
   {
     struct grub_term_output *term = (struct grub_term_output *) item;
 
-    if (term->flags & GRUB_TERM_ACTIVE)
+    if (grub_term_is_active (term))
       grub_putcode (code, term);
 
     return 0;
@@ -77,14 +81,13 @@ grub_putchar (int c)
   buf[size++] = c;
   ret = grub_utf8_to_ucs4 (&code, 1, buf, size, 0);
 
-  if (ret < 0)
-    code = '?';
-
   if (ret != 0)
     {
       size = 0;
       grub_list_iterate (GRUB_AS_LIST (grub_term_outputs), do_putcode);
     }
+  if (ret == '\n' && grub_newline_hook)
+    grub_newline_hook ();
 }
 
 int
@@ -116,7 +119,7 @@ grub_cls (void)
   {
     struct grub_term_output *term = (struct grub_term_output *) item;
 
-    if (!(term->flags & GRUB_TERM_ACTIVE))
+    if (! grub_term_is_active (term))
       return 0;
 
     if ((term->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
@@ -141,11 +144,10 @@ grub_setcolorstate (grub_term_color_state state)
   {
     struct grub_term_output *term = (struct grub_term_output *) item;
 
-    if (!(term->flags & GRUB_TERM_ACTIVE))
+    if (! grub_term_is_active (term))
       return 0;
 
-    if (term->setcolorstate)
-      (term->setcolorstate) (state);
+    grub_term_setcolorstate (term, state);
 
     return 0;
   }
@@ -161,11 +163,10 @@ grub_refresh (void)
   {
     struct grub_term_output *term = (struct grub_term_output *) item;
 
-    if (!(term->flags & GRUB_TERM_ACTIVE))
+    if (!grub_term_is_active (term))
       return 0;
 
-    if (term->refresh)
-      (term->refresh) ();
+    grub_term_refresh (term);
 
     return 0;
   }

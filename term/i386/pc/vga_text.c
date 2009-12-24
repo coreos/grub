@@ -164,10 +164,17 @@ static struct grub_term_output grub_vga_text_term =
     .setcolor = grub_console_setcolor,
     .getcolor = grub_console_getcolor,
     .setcursor = grub_vga_text_setcursor,
+#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+    .flags = GRUB_TERM_ACTIVE,
+#endif
   };
 
 GRUB_MOD_INIT(vga_text)
 {
+#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+  grub_vga_text_init_fini ();
+#endif
+
   grub_term_register_output ("vga_text", &grub_vga_text_term);
 }
 

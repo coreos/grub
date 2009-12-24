@@ -368,7 +368,7 @@ static struct grub_term_output grub_ncurses_term_output =
     .getcolor = grub_ncurses_getcolor,
     .setcursor = grub_ncurses_setcursor,
     .refresh = grub_ncurses_refresh,
-    .flags = 0,
+    .flags = GRUB_TERM_ACTIVE
   };
 
 void
