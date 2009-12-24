@@ -34,10 +34,6 @@ void (*grub_newline_hook) (void) = NULL;
 void
 grub_putcode (grub_uint32_t code, struct grub_term_output *term)
 {
-  int height;
-
-  height = grub_term_height (term);
-
   if (code == '\t' && term->getxy)
     {
       int n;
@@ -62,7 +58,7 @@ grub_putchar (int c)
   static grub_size_t size = 0;
   static grub_uint8_t buf[6];
   grub_uint32_t code;
-  grub_ssize_t ret;
+  grub_size_t ret;
 
   buf[size++] = c;
   ret = grub_utf8_to_ucs4 (&code, 1, buf, size, 0);
@@ -73,9 +69,9 @@ grub_putchar (int c)
       size = 0;
       FOR_ACTIVE_TERM_OUTPUTS(term)
 	grub_putcode (code, term);
+      if (code == '\n' && grub_newline_hook)
+	grub_newline_hook ();
     }
-  if (ret == '\n' && grub_newline_hook)
-    grub_newline_hook ();
 }
 
 int

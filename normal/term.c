@@ -37,7 +37,7 @@ process_newline (void)
       height = grub_term_height (cur);
   grub_more_lines++;
 
-  if (grub_more && grub_more_lines == height - 1)
+  if (grub_more && grub_more_lines >= height - 1)
     {
       char key;
       grub_uint16_t *pos;
@@ -57,7 +57,7 @@ process_newline (void)
 
       /* Scroll one lines or an entire page, depending on the key.  */
       if (key == '\r' || key =='\n')
-	grub_more_lines--;
+	grub_more_lines = height - 2;
       else
 	grub_more_lines = 0;
     }
