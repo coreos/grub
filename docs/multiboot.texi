@@ -1,7 +1,7 @@
 \input texinfo @c -*-texinfo-*-
 @c %**start of header
 @setfilename multiboot.info
-@set VERSION 0.6.95
+@set VERSION 0.6.96
 @settitle Multiboot Specification version @value{VERSION}
 @c Unify all our little indices for now.
 @syncodeindex fn cp

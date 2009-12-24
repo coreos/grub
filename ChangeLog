@@ -1,5 +1,9 @@
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* docs/multiboot.texi: Bump version number to 0.6.96.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* docs/multiboot.texi: Misc editorial changes:
 
 	Avoid using `commercial' as a synonym for `non-free'
