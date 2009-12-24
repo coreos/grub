@@ -15,8 +15,18 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#define ASM	1
+#define ASM_FILE	1
 #include <multiboot.h>
+
+/* C symbol format. HAVE_ASM_USCORE is defined by configure.  */
+#ifdef HAVE_ASM_USCORE
+# define EXT_C(sym)			_ ## sym
+#else
+# define EXT_C(sym)			sym
+#endif
+
+/* The size of our stack (16KB).  */
+#define STACK_SIZE			0x4000
 	
 	.text
 

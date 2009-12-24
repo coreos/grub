@@ -1,3 +1,12 @@
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* docs/boot.S (ASM): Rename to ...
+	(ASM_FILE): ... this.
+	* docs/multiboot.h: Check for `ASM_FILE' instead of `ASM'.
+
+	* docs/multiboot.h (EXT_C, STACK_SIZE): Moved from here ...
+	* docs/boot.S (EXT_C, STACK_SIZE): ... to here.
+
 2009-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/fdl.texi: Remove. It's not used.
