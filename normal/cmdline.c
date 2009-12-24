@@ -356,8 +356,13 @@ grub_cmdline_get (const char *prompt)
   lpos = llen = 0;
   buf[0] = '\0';
 
-  grub_putchar ('\n');
+  {
+    grub_term_output_t term;
 
+    FOR_ACTIVE_TERM_OUTPUTS(term)
+      if ((grub_term_getxy (term) >> 8) != 0)
+	grub_putcode ('\n', term);
+  }
   grub_printf ("%s", prompt_translated);
 
   {
