@@ -1436,7 +1436,10 @@ static int FDECL1(padblock_write, FILE *, outfile)
       FILE *fp = fopen (boot_image_embed, "rb");
       if (! fp)
 	error (1, errno, _("Unable to open %s"), boot_image_embed);
+
       fread (buffer, 2048 * PADBLOCK_SIZE, 1, fp);
+      if (fgetc (fp) != EOF)
+	error (1, 0, _("%s is too big for embed area"), boot_image_embed);
     }
 
   if (use_protective_msdos_label)
