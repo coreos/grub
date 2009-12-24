@@ -1,5 +1,12 @@
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* docs/multiboot.h: Replace with include/multiboot.h from GRUB 2 Bazaar
+	trunk.
+	* docs/kernel.c (cmain): Update name references for new multiboot.h
+	header.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* docs/multiboot.h (MULTIBOOT_HEADER_FLAGS): Moved from here ...
 	* docs/boot.S (MULTIBOOT_HEADER_FLAGS): ... to here.
 
