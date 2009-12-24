@@ -1,5 +1,14 @@
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* BUGS: Remove.
+	* INSTALL: Remove.
+	* NEWS: Remove.
+	* README: Remove.
+	* autogen.sh: Adjust automake flags to add generic files such
+	as `INSTALL', `depcomp', `install-sh' and `missing'.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* docs/multiboot.texi: Bump version number to 0.6.96.
 
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>

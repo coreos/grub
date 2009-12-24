@@ -4,7 +4,7 @@ set -ex
 
 aclocal
 autoheader
-automake --add-missing
+automake -a -c -f
 autoconf
 
 exit 0
