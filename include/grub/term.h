@@ -68,8 +68,6 @@ grub_term_color_state;
 #define GRUB_TERM_NO_EDIT	(1 << 1)
 /* Set when the terminal cannot do fancy things.  */
 #define GRUB_TERM_DUMB		(1 << 2)
-/* Terminal is used as general output.  */
-#define GRUB_TERM_ACTIVE	(1 << 3)
 /* Set when the terminal needs to be initialized.  */
 #define GRUB_TERM_NEED_INIT	(1 << 16)
 
@@ -197,37 +195,65 @@ struct grub_term_output
 };
 typedef struct grub_term_output *grub_term_output_t;
 
+extern struct grub_term_output *EXPORT_VAR(grub_term_outputs_disabled);
+extern struct grub_term_input *EXPORT_VAR(grub_term_inputs_disabled);
 extern struct grub_term_output *EXPORT_VAR(grub_term_outputs);
 extern struct grub_term_input *EXPORT_VAR(grub_term_inputs);
+
+static inline void
+grub_term_register_input_active (const char *name __attribute__ ((unused)),
+				 grub_term_input_t term)
+{
+  if (term->init)
+    term->init ();
+  grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs), GRUB_AS_LIST (term));
+}
 
 static inline void
 grub_term_register_input (const char *name __attribute__ ((unused)),
 			  grub_term_input_t term)
 {
-  grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs), GRUB_AS_LIST (term));
+  grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs_disabled),
+		  GRUB_AS_LIST (term));
+}
+
+static inline void
+grub_term_register_output_active (const char *name __attribute__ ((unused)),
+				  grub_term_output_t term)
+{
+  if (term->init)
+    term->init ();
+  grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs), GRUB_AS_LIST (term));
 }
 
 static inline void
 grub_term_register_output (const char *name __attribute__ ((unused)),
 			   grub_term_output_t term)
 {
-  grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs), GRUB_AS_LIST (term));
+  grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs_disabled),
+		  GRUB_AS_LIST (term));
 }
 
 static inline void
 grub_term_unregister_input (grub_term_input_t term)
 {
   grub_list_remove (GRUB_AS_LIST_P (&grub_term_inputs), GRUB_AS_LIST (term));
+  grub_list_remove (GRUB_AS_LIST_P (&grub_term_inputs_disabled),
+		    GRUB_AS_LIST (term));
 }
 
 static inline void
 grub_term_unregister_output (grub_term_output_t term)
 {
   grub_list_remove (GRUB_AS_LIST_P (&grub_term_outputs), GRUB_AS_LIST (term));
+  grub_list_remove (GRUB_AS_LIST_P (&(grub_term_outputs_disabled)),
+		    GRUB_AS_LIST (term));
 }
 
 #define FOR_ACTIVE_TERM_INPUTS(var) for (var = grub_term_inputs; var; var = var->next)
-#define FOR_ACTIVE_TERM_OUTPUTS(var) for (var = grub_term_outputs; var; var = var->next) if (grub_term_is_active (var))
+#define FOR_DISABLED_TERM_INPUTS(var) for (var = grub_term_inputs_disabled; var; var = var->next)
+#define FOR_ACTIVE_TERM_OUTPUTS(var) for (var = grub_term_outputs; var; var = var->next)
+#define FOR_DISABLED_TERM_OUTPUTS(var) for (var = grub_term_outputs_disabled; var; var = var->next)
 
 void EXPORT_FUNC(grub_putchar) (int c);
 void EXPORT_FUNC(grub_putcode) (grub_uint32_t code,
@@ -333,12 +359,6 @@ grub_term_setcursor (struct grub_term_output *term, int on)
 {
   if (term->setcursor)
     term->setcursor (on);
-}
-
-static inline int
-grub_term_is_active (struct grub_term_output *term)
-{
-  return !!(term->flags & GRUB_TERM_ACTIVE);
 }
 
 static inline grub_ssize_t 

@@ -23,6 +23,8 @@
 #include <grub/env.h>
 #include <grub/cpu/time.h>
 
+struct grub_term_output *grub_term_outputs_disabled;
+struct grub_term_input *grub_term_inputs_disabled;
 struct grub_term_output *grub_term_outputs;
 struct grub_term_input *grub_term_inputs;
 
