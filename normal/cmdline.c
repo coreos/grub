@@ -306,8 +306,6 @@ grub_cmdline_get (const char *prompt)
 	  cl_print_all (lpos - len, 0);
 	  cl_set_pos_all ();
 	}
-
-      grub_refresh ();
     }
 
   void cl_delete (unsigned len)
@@ -328,8 +326,6 @@ grub_cmdline_get (const char *prompt)
 	  cl_print_all (lpos, 0);
 	  cl_set_pos_all ();
 	}
-
-      grub_refresh ();
     }
 
   void init_clterm (struct cmdline_term *cl_term_cur)
@@ -596,6 +592,7 @@ grub_cmdline_get (const char *prompt)
 	    }
 	  break;
 	}
+      grub_refresh ();
     }
 
   grub_putchar ('\n');
