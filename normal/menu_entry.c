@@ -124,8 +124,7 @@ print_line (struct line *linep, int offset, int start, int y,
   if (linep->len >= offset + grub_term_entry_width (term_screen->term))
     {
       char *p, c;
-      p = linep->buf + offset + start
-	+ grub_term_entry_width (term_screen->term);
+      p = linep->buf + offset + grub_term_entry_width (term_screen->term);
       c = *p;
       *p = 0;
       grub_puts_terminal (linep->buf + offset + start, term_screen->term);
@@ -144,7 +143,7 @@ print_line (struct line *linep, int offset, int start, int y,
       *p = c;
 
       for (i = 0;
-	   i < grub_term_entry_width (term_screen->term) - linep->len + offset;
+	   i <= grub_term_entry_width (term_screen->term) - linep->len + offset;
 	   i++)
 	grub_putcode (' ', term_screen->term);
     }
@@ -1251,6 +1250,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
     screen->terms[i].term = term;
     screen->terms[i].x = 0;
     screen->terms[i].y = 0;
+    i++;
   }
   /* Draw the screen.  */
   for (i = 0; i < screen->nterms; i++)
