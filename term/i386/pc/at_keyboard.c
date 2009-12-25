@@ -32,6 +32,13 @@ static short at_keyboard_status = 0;
 #define KEYBOARD_STATUS_CTRL_L		(1 << 4)
 #define KEYBOARD_STATUS_CTRL_R		(1 << 5)
 #define KEYBOARD_STATUS_CAPS_LOCK	(1 << 6)
+#define KEYBOARD_STATUS_NUM_LOCK	(1 << 7)
+
+static grub_uint8_t led_status;
+
+#define KEYBOARD_LED_SCROLL		(1 << 0)
+#define KEYBOARD_LED_NUM		(1 << 1)
+#define KEYBOARD_LED_CAPS		(1 << 2)
 
 static char keyboard_map[128] =
 {
@@ -78,6 +85,15 @@ grub_keyboard_controller_read (void)
   while (! KEYBOARD_COMMAND_ISREADY (grub_inb (KEYBOARD_REG_STATUS)));
   grub_outb (KEYBOARD_COMMAND_READ, KEYBOARD_REG_STATUS);
   return grub_inb (KEYBOARD_REG_DATA);
+}
+
+static void
+keyboard_controller_led (grub_uint8_t led_status)
+{
+  while (! KEYBOARD_COMMAND_ISREADY (grub_inb (KEYBOARD_REG_STATUS)));
+  grub_outb (0xed, KEYBOARD_REG_DATA);
+  while (! KEYBOARD_COMMAND_ISREADY (grub_inb (KEYBOARD_REG_STATUS)));
+  grub_outb (led_status & 0x7, KEYBOARD_REG_DATA);
 }
 
 /* FIXME: This should become an interrupt service routine.  For now
@@ -158,12 +174,35 @@ grub_at_keyboard_getkey_noblock (void)
   switch (code)
     {
       case CAPS_LOCK:
-	at_keyboard_status ^= KEYBOARD_STATUS_CAPS_LOCK;
 	/* Caps lock sends scan code twice.  Get the second one and discard it.  */
 	while (grub_keyboard_getkey () == -1);
+
+	at_keyboard_status ^= KEYBOARD_STATUS_CAPS_LOCK;
+	led_status ^= KEYBOARD_LED_CAPS;
+	keyboard_controller_led (led_status);
+
 #ifdef DEBUG_AT_KEYBOARD
 	grub_dprintf ("atkeyb", "caps_lock = %d\n", !!(at_keyboard_status & KEYBOARD_STATUS_CAPS_LOCK));
 #endif
+	key = -1;
+	break;
+      case NUM_LOCK:
+	/* Num lock sends scan code twice.  Get the second one and discard it.  */
+	while (grub_keyboard_getkey () == -1);
+
+	at_keyboard_status ^= KEYBOARD_STATUS_NUM_LOCK;
+	led_status ^= KEYBOARD_LED_NUM;
+	keyboard_controller_led (led_status);
+
+#ifdef DEBUG_AT_KEYBOARD
+	grub_dprintf ("atkeyb", "num_lock = %d\n", !!(at_keyboard_status & KEYBOARD_STATUS_NUM_LOCK));
+#endif
+	key = -1;
+	break;
+      case SCROLL_LOCK:
+	/* For scroll lock we don't keep track of status.  Only update its led.  */
+	led_status ^= KEYBOARD_LED_SCROLL;
+	keyboard_controller_led (led_status);
 	key = -1;
 	break;
       default:

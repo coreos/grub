@@ -1,3 +1,13 @@
+2009-12-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/at_keyboard.h (NUM_LOCK, SCROLL_LOCK): New macros.
+	* term/i386/pc/at_keyboard.c (KEYBOARD_STATUS_NUM_LOCK)
+	(KEYBOARD_LED_SCROLL, KEYBOARD_LED_NUM, KEYBOARD_LED_CAPS): New macros.
+	(led_status): New variable.
+	(keyboard_controller_led): New function.
+	(grub_at_keyboard_getkey_noblock): Handle num lock and scroll lock,
+	update led status for caps lock, num lock and scroll lock.
+
 2009-12-25  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/hostdisk.c (open_device): Fix a comment.
