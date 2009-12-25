@@ -81,7 +81,7 @@ codestart:
 	movl	$END_SYMBOL, %ecx
 	subl	%edi, %ecx
 #endif
-			
+		
 	/* clean out */
 	xorl	%eax, %eax
 	cld
@@ -95,3 +95,5 @@ codestart:
 
 	/* This should never happen.  */
 	jmp	EXT_C(grub_stop)
+
+#include "../realmode.S"

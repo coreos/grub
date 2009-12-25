@@ -102,7 +102,7 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
 
   if (dev)
     grub_device_close (dev);
-  
+ 
   /* Ignore errors. Perhaps it's not fatal.  */
   grub_errno = GRUB_ERR_NONE;
 

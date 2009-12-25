@@ -122,6 +122,7 @@ case "$platform" in
   emu)		machine_CFLAGS="-DGRUB_MACHINE_EMU=1" ;;
 esac
 CFLAGS="$CFLAGS $machine_CFLAGS"
+TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
 TARGET_CFLAGS="$TARGET_CFLAGS $machine_CFLAGS"
 
 AC_SUBST(host_cpu)
@@ -193,7 +194,7 @@ else
 fi
 
 # Check for functions.
-AC_CHECK_FUNCS(posix_memalign memalign asprintf)
+AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf)
 
 # For grub-mkisofs
 AC_HEADER_MAJOR
@@ -529,6 +530,10 @@ AC_ARG_ENABLE([grub-emu-sdl],
 	      [AS_HELP_STRING([--enable-grub-emu-sdl],
                              [build and install the `grub-emu' debugging utility with SDL support (default=guessed)])])
 
+AC_ARG_ENABLE([grub-emu-pci],
+	      [AS_HELP_STRING([--enable-grub-emu-pci],
+                             [build and install the `grub-emu' debugging utility with PCI support (potentially dangerous) (default=no)])])
+
 if test "$platform" = emu; then
   missing_ncurses=
 [# Check for curses libraries.]
@@ -550,6 +555,11 @@ fi
 if test x"$enable_grub_emu_usb" = xno ; then
   grub_emu_usb_excuse="explicitly disabled"
 fi
+
+if test x"$enable_grub_emu_pci" = xyes ; then
+   grub_emu_usb_excuse="conflicts with PCI support"
+fi
+
 [if [ x"$grub_emu_usb_excuse" = x ]; then
     # Check for libusb libraries.]
 AC_CHECK_LIB([usb], [usb_claim_interface], [LIBUSB="-lusb"],
@@ -579,11 +589,13 @@ AC_CHECK_LIB([SDL], [SDL_Init], [LIBSDL="-lSDL"],
     [grub_emu_sdl_excuse=["libSDL libraries are required to build \`grub-emu' with SDL support"]])
     AC_SUBST([LIBSDL])
 [fi]
+
 [if [ x"$grub_emu_sdl_excuse" = x ]; then
     # Check for headers.]
     AC_CHECK_HEADERS([SDL/SDL.h], [],
       [grub_emu_sdl_excuse=["libSDL header file is required to build \`grub-emu' with SDL support"]])
 [fi]
+
 if test x"enable_grub_emu_sdl" = xyes && test x"$grub_emu_sdl_excuse" != x ; then
   AC_MSG_ERROR([SDL support for grub-emu was explicitely requested but can't be compiled])
 fi
@@ -593,8 +605,36 @@ else
 enable_grub_emu_sdl=no
 fi
 
+if test x"$enable_grub_emu_pci" != xyes ; then
+   grub_emu_pci_excuse="not enabled"
+fi
+
+if test x"$enable_grub_emu_usb" = xyes ; then
+   grub_emu_pci_excuse="conflicts with USB support"
+fi
+
+[if [ x"$grub_emu_pci_excuse" = x ]; then
+      # Check for libpci libraries.]
+   AC_CHECK_LIB([pciaccess], [pci_system_init], [LIBPCIACCESS="-lpciaccess"],
+      [grub_emu_pci_excuse=["need libpciaccess library"]])
+    AC_SUBST([LIBPCIACCESS])
+[fi]
+[if [ x"$grub_emu_pci_excuse" = x ]; then
+    # Check for headers.]
+    AC_CHECK_HEADERS([pci/pci.h], [],
+      [grub_emu_pci_excuse=["need libpciaccess headers"]])
+[fi]
+
+if test x"$grub_emu_pci_excuse" = x ; then
+enable_grub_emu_pci=yes
+else
+
+enable_grub_emu_pci=no
+fi
+
 AC_SUBST([enable_grub_emu_sdl])
 AC_SUBST([enable_grub_emu_usb])
+AC_SUBST([enable_grub_emu_pci])
 fi
 
 AC_ARG_ENABLE([grub-fstest],
@@ -673,6 +713,11 @@ if [ x"$grub_emu_sdl_excuse" = x ]; then
 echo SDL support for grub-emu: Yes
 else
 echo SDL support for grub-emu: No "($grub_emu_sdl_excuse)"
+fi
+if [ x"$grub_emu_pci_excuse" = x ]; then
+echo PCI support for grub-emu: Yes
+else
+echo PCI support for grub-emu: No "($grub_emu_pci_excuse)"
 fi
 fi
 if [ x"$enable_mm_debug" = xyes ]; then

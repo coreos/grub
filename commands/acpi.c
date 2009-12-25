@@ -36,23 +36,23 @@
 
 static const struct grub_arg_option options[] = {
   {"exclude", 'x', 0,
-   "Don't load host tables specified by comma-separated list",
+   "Don't load host tables specified by comma-separated list.",
    0, ARG_TYPE_STRING},
   {"load-only", 'n', 0,
-   "Load only tables specified by comma-separated list", 0, ARG_TYPE_STRING},
-  {"v1", '1', 0, "Expose v1 tables", 0, ARG_TYPE_NONE},
-  {"v2", '2', 0, "Expose v2 and v3 tables", 0, ARG_TYPE_NONE},
-  {"oemid", 'o', 0, "Set OEMID of RSDP, XSDT and RSDT", 0, ARG_TYPE_STRING},
+   "Load only tables specified by comma-separated list.", 0, ARG_TYPE_STRING},
+  {"v1", '1', 0, "Expose v1 tables.", 0, ARG_TYPE_NONE},
+  {"v2", '2', 0, "Expose v2 and v3 tables.", 0, ARG_TYPE_NONE},
+  {"oemid", 'o', 0, "Set OEMID of RSDP, XSDT and RSDT.", 0, ARG_TYPE_STRING},
   {"oemtable", 't', 0,
-   "Set OEMTABLE ID of RSDP, XSDT and RSDT", 0, ARG_TYPE_STRING},
+   "Set OEMTABLE ID of RSDP, XSDT and RSDT.", 0, ARG_TYPE_STRING},
   {"oemtablerev", 'r', 0,
-   "Set OEMTABLE revision of RSDP, XSDT and RSDT", 0, ARG_TYPE_INT},
+   "Set OEMTABLE revision of RSDP, XSDT and RSDT.", 0, ARG_TYPE_INT},
   {"oemtablecreator", 'c', 0,
-   "Set creator field of RSDP, XSDT and RSDT", 0, ARG_TYPE_STRING},
+   "Set creator field of RSDP, XSDT and RSDT.", 0, ARG_TYPE_STRING},
   {"oemtablecreatorrev", 'd', 0,
-   "Set creator revision of RSDP, XSDT and RSDT", 0, ARG_TYPE_INT},
-  {"no-ebda", 'e', 0, "Don't update EBDA. May fix failures or hangs on some"
-   " BIOSes but makes it ineffective with OS not receiving RSDP from GRUB",
+   "Set creator revision of RSDP, XSDT and RSDT.", 0, ARG_TYPE_INT},
+  {"no-ebda", 'e', 0, "Don't update EBDA. May fix failures or hangs on some."
+   " BIOSes but makes it ineffective with OS not receiving RSDP from GRUB.",
    0, ARG_TYPE_NONE},
   {0, 0, 0, 0, 0, 0}
 };
@@ -763,7 +763,7 @@ GRUB_MOD_INIT(acpi)
 			      "--load-only=table1,table2] filename1 "
 			      " [filename2] [...]",
 			      "Load host acpi tables and tables "
-			      "specified by arguments",
+			      "specified by arguments.",
 			      options);
 }
 

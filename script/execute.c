@@ -113,13 +113,13 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 
 	  if (eq)
 	    {
+	      /* This was set because the command was not found.  */
+	      grub_errno = GRUB_ERR_NONE;
+
 	      /* Create two strings and set the variable.  */
 	      *eq = '\0';
 	      eq++;
 	      grub_env_set (assign, eq);
-
-	      /* This was set because the command was not found.  */
-	      grub_errno = GRUB_ERR_NONE;
 	    }
 	  grub_free (assign);
 

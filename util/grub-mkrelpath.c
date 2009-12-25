@@ -27,6 +27,7 @@ static struct option options[] =
   {
     {"help", no_argument, 0, 'h'},
     {"version", no_argument, 0, 'V'},
+    {0, 0, 0, 0},
   };
 
 static void

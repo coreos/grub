@@ -27,6 +27,8 @@
 #include <grub/memory.h>
 #endif
 
+#include <grub/i386/memory.h>
+
 /* The scratch buffer used in real mode code.  */
 #define GRUB_MEMORY_MACHINE_SCRATCH_ADDR	0x68000
 #define GRUB_MEMORY_MACHINE_SCRATCH_SEG	(GRUB_MEMORY_MACHINE_SCRATCH_ADDR >> 4)
@@ -62,9 +64,6 @@
 /* The address where another boot loader is loaded.  */
 #define GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR	0x7c00
 
-/* The flag for protected mode.  */
-#define GRUB_MEMORY_MACHINE_CR0_PE_ON		0x1
-
 /* The code segment of the protected mode.  */
 #define GRUB_MEMORY_MACHINE_PROT_MODE_CSEG	0x8
 
@@ -86,7 +85,7 @@
 struct grub_machine_bios_data_area
 {
   grub_uint8_t unused1[0x17];
-  grub_uint8_t keyboard_flag_lower; /* 0x17 */ 
+  grub_uint8_t keyboard_flag_lower; /* 0x17 */
   grub_uint8_t unused2[0xf0 - 0x18];
 };
 

@@ -27,7 +27,8 @@
 #include <grub/cpu/multiboot.h>
 
 grub_err_t
-grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr, UNUSED grub_addr_t *addr,
+grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr,
+			  grub_addr_t *addr __attribute__ ((unused)),
 			  int *do_load)
 {
   Elf32_Addr paddr = phdr->p_paddr;
@@ -48,7 +49,8 @@ grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr, UNUSED grub_addr_t *addr,
 }
 
 grub_err_t
-grub_mb2_arch_elf64_hook (Elf64_Phdr *phdr, UNUSED grub_addr_t *addr,
+grub_mb2_arch_elf64_hook (Elf64_Phdr *phdr,
+			  grub_addr_t *addr __attribute__ ((unused)),
 			  int *do_load)
 {
   Elf64_Addr paddr = phdr->p_paddr;
@@ -82,7 +84,8 @@ grub_mb2_arch_module_alloc (grub_size_t size, grub_addr_t *addr)
 }
 
 grub_err_t
-grub_mb2_arch_module_free (grub_addr_t addr, UNUSED grub_size_t size)
+grub_mb2_arch_module_free (grub_addr_t addr,
+			   grub_size_t size __attribute__ ((unused)))
 {
   grub_free((void *) addr);
   return GRUB_ERR_NONE;

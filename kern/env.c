@@ -101,6 +101,7 @@ grub_env_context_open (int export)
 		  grub_env_context_close ();
 		  return grub_errno;
 		}
+	      grub_env_export (var->name);
 	      grub_register_variable_hook (var->name, var->read_hook, var->write_hook);
 	    }
 	}
@@ -170,8 +171,16 @@ grub_env_export (const char *name)
   struct grub_env_var *var;
 
   var = grub_env_find (name);
-  if (var)
-    var->type = GRUB_ENV_VAR_GLOBAL;
+  if (! var)
+    {
+      grub_err_t err;
+     
+      err = grub_env_set (name, "");
+      if (err)
+	return err;
+      var = grub_env_find (name);
+    }   
+  var->type = GRUB_ENV_VAR_GLOBAL;
 
   return GRUB_ERR_NONE;
 }

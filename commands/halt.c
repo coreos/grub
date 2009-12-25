@@ -19,15 +19,7 @@
 
 #include <grub/dl.h>
 #include <grub/command.h>
-
-#if defined(GRUB_MACHINE_IEEE1275)
-#include <grub/machine/kernel.h>
-#elif defined(GRUB_MACHINE_EFI)
-#include <grub/efi/efi.h>
-#else
-/* Platforms shipping standalone halt, such as coreboot.  */
-#include <grub/cpu/halt.h>
-#endif
+#include <grub/misc.h>
 
 static grub_err_t
 grub_cmd_halt (grub_command_t cmd __attribute__ ((unused)),
@@ -43,8 +35,8 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(halt)
 {
   cmd = grub_register_command ("halt", grub_cmd_halt,
-			       0, "halts the computer.  This command does not"
-			       " work on all firmware.");
+			       0, "Halts the computer.  This command does not"
+			       " work on all firmware implementations.");
 }
 
 GRUB_MOD_FINI(halt)

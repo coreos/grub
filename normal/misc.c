@@ -1,7 +1,7 @@
 /* misc.c - miscellaneous functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/datetime.h>
+#include <grub/term.h>
+#include <grub/i18n.h>
 
 /* Print the information on the device NAME.  */
 grub_err_t
@@ -34,13 +36,20 @@ grub_normal_print_device_info (const char *name)
 
   p = grub_strchr (name, ',');
   if (p)
-    grub_printf ("\tPartition %s: ", name);
+    {
+      grub_putchar ('\t');
+      grub_printf_ (N_("Partition %s:"), name);
+      grub_putchar (' ');
+    }
   else
-    grub_printf ("Device %s: ", name);
+    {
+      grub_printf_ (N_("Device %s:"), name);
+      grub_putchar (' ');
+    }
 
   dev = grub_device_open (name);
   if (! dev)
-    grub_printf ("Filesystem cannot be accessed");
+    grub_printf ("%s", _("Filesystem cannot be accessed"));
   else if (dev->disk)
     {
       grub_fs_t fs;
@@ -51,7 +60,7 @@ grub_normal_print_device_info (const char *name)
 
       if (fs)
 	{
-	  grub_printf ("Filesystem type %s", fs->name);
+	  grub_printf_ (N_("Filesystem type %s"), fs->name);
 	  if (fs->label)
 	    {
 	      char *label;
@@ -59,7 +68,7 @@ grub_normal_print_device_info (const char *name)
 	      if (grub_errno == GRUB_ERR_NONE)
 		{
 		  if (label && grub_strlen (label))
-		    grub_printf (", Label %s", label);
+		    grub_printf_ (N_("- Label %s"), label);
 		  grub_free (label);
 		}
 	      grub_errno = GRUB_ERR_NONE;
@@ -72,8 +81,8 @@ grub_normal_print_device_info (const char *name)
 	      if (grub_errno == GRUB_ERR_NONE)
 		{
 		  grub_unixtime2datetime (tm, &datetime);
-		  grub_printf (", Last modification time %d-%02d-%02d "
-			       "%02d:%02d:%02d %s",
+		  grub_printf_ (N_("- Last modification time %d-%02d-%02d "
+			       "%02d:%02d:%02d %s"),
 			       datetime.year, datetime.month, datetime.day,
 			       datetime.hour, datetime.minute, datetime.second,
 			       grub_get_weekday_name (&datetime));
@@ -95,13 +104,13 @@ grub_normal_print_device_info (const char *name)
 	    }
 	}
       else if (! dev->disk->has_partitions || dev->disk->partition)
-	grub_printf ("Unknown filesystem");
+	grub_printf ("%s", _("Unknown filesystem"));
       else
-	grub_printf ("Partition table");
+	grub_printf ("%s", _("Partition table"));
 
       grub_device_close (dev);
     }
 
-  grub_printf ("\n");
+  grub_putchar ('\n');
   return grub_errno;
 }

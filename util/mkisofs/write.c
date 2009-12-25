@@ -21,11 +21,10 @@
    along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
+
 #include <string.h>
 #include <stdlib.h>
-#include "config.h"
-#include "mkisofs.h"
-#include "iso9660.h"
 #include <time.h>
 #include <errno.h>
 
@@ -37,7 +36,11 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
- 
+
+#include "mkisofs.h"
+#include "iso9660.h"
+#include "msdos_partition.h"
+
 #ifdef __SVR4
 extern char * strdup(const char *);
 #endif
@@ -158,7 +161,7 @@ void FDECL4(xfwrite, void *, buffer, uint64_t, count, uint64_t, size, FILE *, fi
 		  error (1, errno, _("Cannot open '%s'"), nbuf);
 
 	}
-     while(count) 
+     while(count)
      {
 	  size_t got = fwrite (buffer, size, count, file);
 
@@ -193,7 +196,7 @@ static int FDECL1(assign_directory_addresses, struct directory *, node)
      struct directory * dpnt;
 
      dpnt = node;
-     
+    
      while (dpnt)
      {
 	  /* skip if it's hidden */
@@ -211,13 +214,13 @@ static int FDECL1(assign_directory_addresses, struct directory *, node)
 	  {
 	       dpnt->extent = last_extent;
 	       dir_size = (dpnt->size + (SECTOR_SIZE - 1)) >> 11;
-	       
+	      
 	       last_extent += dir_size;
-	       
-	       /* 
+	      
+	       /*
 		* Leave room for the CE entries for this directory.  Keep them
-		* close to the reference directory so that access will be 
-		* quick. 
+		* close to the reference directory so that access will be
+		* quick.
 		*/
 	       if(dpnt->ce_bytes)
 	       {
@@ -225,7 +228,7 @@ static int FDECL1(assign_directory_addresses, struct directory *, node)
 	       }
 	  }
 
-	  if(dpnt->subdir) 
+	  if(dpnt->subdir)
 	  {
 	       assign_directory_addresses(dpnt->subdir);
 	  }
@@ -235,7 +238,7 @@ static int FDECL1(assign_directory_addresses, struct directory *, node)
      return 0;
 }
 
-static void FDECL3(write_one_file, char *, filename, 
+static void FDECL3(write_one_file, char *, filename,
 		   uint64_t, size, FILE *, outfile)
 {
      char		  buffer[SECTOR_SIZE * NSECT];
@@ -244,7 +247,7 @@ static void FDECL3(write_one_file, char *, filename,
      size_t		  use;
 
 
-     if ((infile = fopen(filename, "rb")) == NULL) 
+     if ((infile = fopen(filename, "rb")) == NULL)
        error (1, errno, _("cannot open %s\n"), filename);
      remain = size;
 
@@ -253,12 +256,12 @@ static void FDECL3(write_one_file, char *, filename,
 	  use =  (remain >  SECTOR_SIZE * NSECT - 1 ? NSECT*SECTOR_SIZE : remain);
 	  use = ROUND_UP(use); /* Round up to nearest sector boundary */
 	  memset(buffer, 0, use);
-	  if (fread(buffer, 1, use, infile) == 0) 
-	    error (1, errno, _("cannot read %llu bytes from %s"), use, filename); 
+	  if (fread(buffer, 1, use, infile) == 0)
+	    error (1, errno, _("cannot read %llu bytes from %s"), use, filename);
 	  xfwrite(buffer, 1, use, outfile);
 	  last_extent_written += use/SECTOR_SIZE;
 #if 0
-	  if((last_extent_written % 1000) < use/SECTOR_SIZE) 
+	  if((last_extent_written % 1000) < use/SECTOR_SIZE)
 	  {
 	       fprintf(stderr,"%d..", last_extent_written);
 	  }
@@ -268,7 +271,7 @@ static void FDECL3(write_one_file, char *, filename,
 	       time_t now;
 	       time_t the_end;
 	       double frac;
-	       
+	      
 	       time(&now);
 	       frac = last_extent_written / (double)last_extent;
 	       the_end = begun + (now - begun) / frac;
@@ -287,13 +290,13 @@ static void FDECL1(write_files, FILE *, outfile)
      dwpnt = dw_head;
      while(dwpnt)
      {
-	  if(dwpnt->table) 
+	  if(dwpnt->table)
 	  {
 	    write_one_file (dwpnt->table, dwpnt->size, outfile);
 	    table_size += dwpnt->size;
 	    free (dwpnt->table);
 	  }
-	  else 
+	  else
 	  {
 
 #ifdef VMS
@@ -324,11 +327,11 @@ static void dump_filelist()
 }
 #endif
 
-static int FDECL2(compare_dirs, const void *, rr, const void *, ll) 
+static int FDECL2(compare_dirs, const void *, rr, const void *, ll)
 {
      char * rpnt, *lpnt;
      struct directory_entry ** r, **l;
-     
+    
      r = (struct directory_entry **) rr;
      l = (struct directory_entry **) ll;
      rpnt = (*r)->isorec.name;
@@ -341,7 +344,7 @@ static int FDECL2(compare_dirs, const void *, rr, const void *, ll)
        {
 	 sort_goof++;
        }
-     
+    
      /*
       *  Put the '.' and '..' entries on the head of the sorted list.
       *  For normal ASCII, this always happens to be the case, but out of
@@ -373,16 +376,16 @@ static int FDECL2(compare_dirs, const void *, rr, const void *, ll)
      if((*l)->isorec.name_len[0] == 1 && *lpnt == 1) return 1;
 #endif
 
-     while(*rpnt && *lpnt) 
+     while(*rpnt && *lpnt)
      {
 	  if(*rpnt == ';' && *lpnt != ';') return -1;
 	  if(*rpnt != ';' && *lpnt == ';') return 1;
-	  
+	 
 	  if(*rpnt == ';' && *lpnt == ';') return 0;
-	  
+	 
 	  if(*rpnt == '.' && *lpnt != '.') return -1;
 	  if(*rpnt != '.' && *lpnt == '.') return 1;
-	  
+	 
 	  if((unsigned char)*rpnt < (unsigned char)*lpnt) return -1;
 	  if((unsigned char)*rpnt > (unsigned char)*lpnt) return 1;
 	  rpnt++;  lpnt++;
@@ -392,7 +395,7 @@ static int FDECL2(compare_dirs, const void *, rr, const void *, ll)
      return 0;
 }
 
-/* 
+/*
  * Function:		sort_directory
  *
  * Purpose:		Sort the directory in the appropriate ISO9660
@@ -408,7 +411,7 @@ int FDECL1(sort_directory, struct directory_entry **, sort_dir)
      int i, len;
      struct directory_entry * s_entry;
      struct directory_entry ** sortlist;
-     
+    
      /* need to keep a count of how many entries are hidden */
      s_entry = *sort_dir;
      while(s_entry)
@@ -425,9 +428,9 @@ int FDECL1(sort_directory, struct directory_entry **, sort_dir)
      }
 
      /*
-      * OK, now we know how many there are.  Build a vector for sorting. 
+      * OK, now we know how many there are.  Build a vector for sorting.
       */
-     sortlist =   (struct directory_entry **) 
+     sortlist =   (struct directory_entry **)
 	  e_malloc(sizeof(struct directory_entry *) * dcount);
 
      j = dcount - 1;
@@ -449,29 +452,29 @@ int FDECL1(sort_directory, struct directory_entry **, sort_dir)
 	 s_entry->isorec.name[len] = 0;
 	 s_entry = s_entry->next;
      }
-  
+ 
      /*
       * Each directory is required to contain at least . and ..
       */
      if( dcount < 2 )
        {
 	 sort_goof = 1;
-	 
+	
        }
      else
        {
 	 /* only sort the non-hidden entries */
 	 sort_goof = 0;
 #ifdef __STDC__
-	 qsort(sortlist, dcount, sizeof(struct directory_entry *), 
+	 qsort(sortlist, dcount, sizeof(struct directory_entry *),
 	       (int (*)(const void *, const void *))compare_dirs);
 #else
-	 qsort(sortlist, dcount, sizeof(struct directory_entry *), 
+	 qsort(sortlist, dcount, sizeof(struct directory_entry *),
 	       compare_dirs);
 #endif
-	 
-	 /* 
-	  * Now reassemble the linked list in the proper sorted order 
+	
+	 /*
+	  * Now reassemble the linked list in the proper sorted order
 	  * We still need the hidden entries, as they may be used in the
 	  * Joliet tree.
 	  */
@@ -479,7 +482,7 @@ int FDECL1(sort_directory, struct directory_entry **, sort_dir)
 	   {
 	     sortlist[i]->next = sortlist[i+1];
 	   }
-	 
+	
 	 sortlist[dcount+xcount-1]->next = NULL;
 	 *sort_dir = sortlist[0];
        }
@@ -491,7 +494,7 @@ int FDECL1(sort_directory, struct directory_entry **, sort_dir)
 static int root_gen()
 {
      init_fstatbuf();
-     
+    
      root_record.length[0] = 1 + sizeof(struct iso_directory_record)
 	  - sizeof(root_record.name);
      root_record.ext_attr_length[0] = 0;
@@ -530,16 +533,16 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 	       {
 		    continue;
 	       }
-	       
-	       /* 
-		* This saves some space if there are symlinks present 
+	      
+	       /*
+		* This saves some space if there are symlinks present
 		*/
 	       s_hash = find_hash(s_entry->dev, s_entry->inode);
 	       if(s_hash)
 	       {
 		    if(verbose > 2)
 		    {
-		      fprintf (stderr, _("Cache hit for %s%s%s\n"), s_entry->filedir->de_name, 
+		      fprintf (stderr, _("Cache hit for %s%s%s\n"), s_entry->filedir->de_name,
 			       SPATH_SEPARATOR, s_entry->name);
 		    }
 		    set_733((char *) s_entry->isorec.extent, s_hash->starting_block);
@@ -548,12 +551,12 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 	       }
 
 	       /*
-		* If this is for a directory that is not a . or a .. entry, 
+		* If this is for a directory that is not a . or a .. entry,
 		* then look up the information for the entry.  We have already
 		* assigned extents for directories, so we just need to
 		* fill in the blanks here.
 		*/
-	       if (strcmp(s_entry->name,".") && strcmp(s_entry->name,"..") && 
+	       if (strcmp(s_entry->name,".") && strcmp(s_entry->name,"..") &&
 		   s_entry->isorec.flags[0] == 2)
 	       {
 		    finddir = dpnt->subdir;
@@ -561,7 +564,7 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 		    {
 			 if(finddir->self == s_entry) break;
 			 finddir = finddir->next;
-			 if (!finddir) 
+			 if (!finddir)
 			   error (1, 0, _("Fatal goof\n"));
 		    }
 		    set_733((char *) s_entry->isorec.extent, finddir->extent);
@@ -578,45 +581,45 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 		* If this is . or .., then look up the relevant info from the
 		* tables.
 		*/
-	       if(strcmp(s_entry->name,".") == 0) 
+	       if(strcmp(s_entry->name,".") == 0)
 	       {
 		    set_733((char *) s_entry->isorec.extent, dpnt->extent);
-		    
-		    /* 
+		   
+		    /*
 		     * Set these so that the hash table has the
 		     * correct information
 		     */
 		    s_entry->starting_block = dpnt->extent;
 		    s_entry->size = ROUND_UP(dpnt->size);
-		    
+		   
 		    add_hash(s_entry);
 		    s_entry->starting_block = dpnt->extent;
 		    set_733((char *) s_entry->isorec.size, ROUND_UP(dpnt->size));
 		    continue;
 	       }
 
-	       if(strcmp(s_entry->name,"..") == 0) 
+	       if(strcmp(s_entry->name,"..") == 0)
 	       {
 		    if(dpnt == root)
-		    { 
+		    {
 			 total_dir_size += root->size;
 		    }
 		    set_733((char *) s_entry->isorec.extent, dpnt->parent->extent);
-		    
-		    /* 
+		   
+		    /*
 		     * Set these so that the hash table has the
 		     * correct information
 		     */
 		    s_entry->starting_block = dpnt->parent->extent;
 		    s_entry->size = ROUND_UP(dpnt->parent->size);
-		    
+		   
 		    add_hash(s_entry);
 		    s_entry->starting_block = dpnt->parent->extent;
 		    set_733((char *) s_entry->isorec.size, ROUND_UP(dpnt->parent->size));
 		    continue;
 	       }
 
-	       /* 
+	       /*
 		* Some ordinary non-directory file.  Just schedule the
 		* file to be written.  This is all quite
 		* straightforward, just make a list and assign extents
@@ -624,28 +627,28 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 		* directories, we should be ready write out these
 		* files
 		*/
-	       if(s_entry->size) 
+	       if(s_entry->size)
 	       {
-		    dwpnt = (struct deferred_write *) 
+		    dwpnt = (struct deferred_write *)
 			 e_malloc(sizeof(struct deferred_write));
 		    if(dw_tail)
 		    {
 			 dw_tail->next = dwpnt;
 			 dw_tail = dwpnt;
-		    } 
-		    else 
+		    }
+		    else
 		    {
 			 dw_head = dwpnt;
 			 dw_tail = dwpnt;
 		    }
-		    if(s_entry->inode  ==  TABLE_INODE) 
+		    if(s_entry->inode  ==  TABLE_INODE)
 		    {
 			 dwpnt->table = s_entry->table;
 			 dwpnt->name = NULL;
 			 sprintf(whole_path,"%s%sTRANS.TBL",
 				 s_entry->filedir->whole_name, SPATH_SEPARATOR);
-		    } 
-		    else 
+		    }
+		    else
 		    {
 			 dwpnt->table = NULL;
 			 strcpy(whole_path, s_entry->whole_name);
@@ -669,15 +672,15 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 			 fprintf (stderr, "Warning: large file %s\n", whole_path);
 			 fprintf (stderr, "Starting block is %d\n", s_entry->starting_block);
 			 fprintf (stderr, "Reported file size is %d extents\n", s_entry->size);
-			 
+			
 		    }
 #endif
 #ifdef	NOT_NEEDED	/* Never use this code if you like to create a DVD */
 
-		    if(last_extent > (800000000 >> 11)) 
-		    { 
+		    if(last_extent > (800000000 >> 11))
+		    {
 			 /*
-			  * More than 800Mb? Punt 
+			  * More than 800Mb? Punt
 			  */
 			 fprintf(stderr,"Extent overflow processing file %s\n", whole_path);
 			 fprintf(stderr,"Starting block is %d\n", s_entry->starting_block);
@@ -696,7 +699,7 @@ static void FDECL1(assign_file_addresses, struct directory *, dpnt)
 		*/
 	       set_733((char *) s_entry->isorec.extent, last_extent);
 	  }
-	  if(dpnt->subdir) 
+	  if(dpnt->subdir)
 	  {
 	       assign_file_addresses(dpnt->subdir);
 	  }
@@ -708,13 +711,13 @@ static void FDECL1(free_one_directory, struct directory *, dpnt)
 {
      struct directory_entry		* s_entry;
      struct directory_entry		* s_entry_d;
-     
+    
      s_entry = dpnt->contents;
-     while(s_entry) 
+     while(s_entry)
      {
 	 s_entry_d = s_entry;
 	 s_entry = s_entry->next;
-	 
+	
 	 if( s_entry_d->name != NULL )
 	 {
 	     free (s_entry_d->name);
@@ -750,31 +753,31 @@ void FDECL2(generate_one_directory, struct directory *, dpnt, FILE *, outfile)
      struct directory_entry		* s_entry;
      struct directory_entry		* s_entry_d;
      unsigned int			  total_size;
-     
+    
      total_size = (dpnt->size + (SECTOR_SIZE - 1)) &  ~(SECTOR_SIZE - 1);
      directory_buffer = (char *) e_malloc(total_size);
      memset(directory_buffer, 0, total_size);
      dir_index = 0;
-     
+    
      ce_size = (dpnt->ce_bytes + (SECTOR_SIZE - 1)) &  ~(SECTOR_SIZE - 1);
      ce_buffer = NULL;
-     
-     if(ce_size) 
+    
+     if(ce_size)
      {
 	  ce_buffer = (char *) e_malloc(ce_size);
 	  memset(ce_buffer, 0, ce_size);
-	  
+	 
 	  ce_index = 0;
-	  
+	 
 	  /*
-	   * Absolute byte address of CE entries for this directory 
+	   * Absolute byte address of CE entries for this directory
 	   */
 	  ce_address = last_extent_written + (total_size >> 11);
 	  ce_address = ce_address << 11;
      }
-     
+    
      s_entry = dpnt->contents;
-     while(s_entry) 
+     while(s_entry)
      {
 	  /* skip if it's hidden */
 	  if(s_entry->de_flags & INHIBIT_ISO9660_ENTRY) {
@@ -782,25 +785,25 @@ void FDECL2(generate_one_directory, struct directory *, dpnt, FILE *, outfile)
 	    continue;
 	  }
 
-	  /* 
-	   * We do not allow directory entries to cross sector boundaries.  
-	   * Simply pad, and then start the next entry at the next sector 
+	  /*
+	   * We do not allow directory entries to cross sector boundaries. 
+	   * Simply pad, and then start the next entry at the next sector
 	   */
 	  new_reclen = s_entry->isorec.length[0];
 	  if( (dir_index & (SECTOR_SIZE - 1)) + new_reclen >= SECTOR_SIZE )
 	  {
-	       dir_index = (dir_index + (SECTOR_SIZE - 1)) & 
+	       dir_index = (dir_index + (SECTOR_SIZE - 1)) &
 		    ~(SECTOR_SIZE - 1);
 	  }
 
-	  memcpy(directory_buffer + dir_index, &s_entry->isorec, 
+	  memcpy(directory_buffer + dir_index, &s_entry->isorec,
 		 sizeof(struct iso_directory_record) -
 		 sizeof(s_entry->isorec.name) + s_entry->isorec.name_len[0]);
-	  dir_index += sizeof(struct iso_directory_record) - 
+	  dir_index += sizeof(struct iso_directory_record) -
 	       sizeof (s_entry->isorec.name)+ s_entry->isorec.name_len[0];
 
 	  /*
-	   * Add the Rock Ridge attributes, if present 
+	   * Add the Rock Ridge attributes, if present
 	   */
 	  if(s_entry->rr_attr_size)
 	  {
@@ -809,20 +812,20 @@ void FDECL2(generate_one_directory, struct directory *, dpnt, FILE *, outfile)
 		    directory_buffer[dir_index++] = 0;
 	       }
 
-	       /* 
+	       /*
 		* If the RR attributes were too long, then write the
 		* CE records, as required.
 		*/
-	       if(s_entry->rr_attr_size != s_entry->total_rr_attr_size) 
+	       if(s_entry->rr_attr_size != s_entry->total_rr_attr_size)
 	       {
 		    unsigned char * pnt;
 		    int len, nbytes;
-		    
-		    /* 
+		   
+		    /*
 		     * Go through the entire record and fix up the CE entries
-		     * so that the extent and offset are correct 
+		     * so that the extent and offset are correct
 		     */
-		    
+		   
 		    pnt = s_entry->rr_attributes;
 		    len = s_entry->total_rr_attr_size;
 		    while(len > 3)
@@ -834,30 +837,30 @@ void FDECL2(generate_one_directory, struct directory *, dpnt, FILE *, outfile)
 				      ce_index, ce_address);
 			 }
 #endif
-			 
-			 if(pnt[0] == 'C' && pnt[1] == 'E') 
+			
+			 if(pnt[0] == 'C' && pnt[1] == 'E')
 			 {
 			      nbytes = get_733( (char *) pnt+20);
-			      
+			     
 			      if((ce_index & (SECTOR_SIZE - 1)) + nbytes >=
-				 SECTOR_SIZE) 
+				 SECTOR_SIZE)
 			      {
 				   ce_index = ROUND_UP(ce_index);
 			      }
-			      
-			      set_733( (char *) pnt+4, 
+			     
+			      set_733( (char *) pnt+4,
 				       (ce_address + ce_index) >> 11);
-			      set_733( (char *) pnt+12, 
+			      set_733( (char *) pnt+12,
 				       (ce_address + ce_index) & (SECTOR_SIZE - 1));
-			      
-			      
-			      /* 
-			       * Now store the block in the ce buffer 
+			     
+			     
+			      /*
+			       * Now store the block in the ce buffer
 			       */
-			      memcpy(ce_buffer + ce_index, 
+			      memcpy(ce_buffer + ce_index,
 				     pnt + pnt[2], nbytes);
 			      ce_index += nbytes;
-			      if(ce_index & 1) 
+			      if(ce_index & 1)
 			      {
 				   ce_index++;
 			      }
@@ -865,11 +868,11 @@ void FDECL2(generate_one_directory, struct directory *, dpnt, FILE *, outfile)
 			 len -= pnt[2];
 			 pnt += pnt[2];
 		    }
-		    
+		   
 	       }
 
 	       rockridge_size += s_entry->total_rr_attr_size;
-	       memcpy(directory_buffer + dir_index, s_entry->rr_attributes, 
+	       memcpy(directory_buffer + dir_index, s_entry->rr_attributes,
 		      s_entry->rr_attr_size);
 	       dir_index += s_entry->rr_attr_size;
 	  }
@@ -877,14 +880,14 @@ void FDECL2(generate_one_directory, struct directory *, dpnt, FILE *, outfile)
 	  {
 	       directory_buffer[dir_index++] = 0;
 	  }
-	  
+	 
 	  s_entry_d = s_entry;
 	  s_entry = s_entry->next;
-	  
+	 
 	  /*
 	   * Joliet doesn't use the Rock Ridge attributes, so we free it here.
 	   */
-	  if (s_entry_d->rr_attributes) 
+	  if (s_entry_d->rr_attributes)
 	    {
 	      free(s_entry_d->rr_attributes);
 	      s_entry_d->rr_attributes = NULL;
@@ -912,16 +915,16 @@ void FDECL2(generate_one_directory, struct directory *, dpnt, FILE *, outfile)
 	  last_extent_written += ce_size >> 11;
 	  free(ce_buffer);
      }
-     
+    
 } /* generate_one_directory(... */
 
-static 
+static
 void FDECL1(build_pathlist, struct directory *, node)
 {
      struct directory * dpnt;
-     
+    
      dpnt = node;
-     
+    
      while (dpnt)
      {
 	/* skip if it's hidden */
@@ -933,7 +936,7 @@ void FDECL1(build_pathlist, struct directory *, node)
      }
 } /* build_pathlist(... */
 
-static int FDECL2(compare_paths, void const *, r, void const *, l) 
+static int FDECL2(compare_paths, void const *, r, void const *, l)
 {
   struct directory const *ll = *(struct directory * const *)l;
   struct directory const *rr = *(struct directory * const *)r;
@@ -943,13 +946,13 @@ static int FDECL2(compare_paths, void const *, r, void const *, l)
        return -1;
   }
 
-  if (rr->parent->path_index > ll->parent->path_index) 
+  if (rr->parent->path_index > ll->parent->path_index)
   {
        return 1;
   }
 
   return strcmp(rr->self->isorec.name, ll->self->isorec.name);
-  
+ 
 } /* compare_paths(... */
 
 static int generate_path_tables()
@@ -965,7 +968,7 @@ static int generate_path_tables()
   int			   tablesize;
 
   /*
-   * First allocate memory for the tables and initialize the memory 
+   * First allocate memory for the tables and initialize the memory
    */
   tablesize = path_blocks << 11;
   path_table_m = (char *) e_malloc(tablesize);
@@ -974,7 +977,7 @@ static int generate_path_tables()
   memset(path_table_m, 0, tablesize);
 
   /*
-   * Now start filling in the path tables.  Start with root directory 
+   * Now start filling in the path tables.  Start with root directory
    */
   if( next_path_index > 0xffff )
   {
@@ -983,7 +986,7 @@ static int generate_path_tables()
   }
 
   path_table_index = 0;
-  pathlist = (struct directory **) e_malloc(sizeof(struct directory *) 
+  pathlist = (struct directory **) e_malloc(sizeof(struct directory *)
 					    * next_path_index);
   memset(pathlist, 0, sizeof(struct directory *) * next_path_index);
   build_pathlist(root);
@@ -992,10 +995,10 @@ static int generate_path_tables()
   {
        fix = 0;
 #ifdef __STDC__
-       qsort(&pathlist[1], next_path_index-1, sizeof(struct directory *), 
+       qsort(&pathlist[1], next_path_index-1, sizeof(struct directory *),
 	     (int (*)(const void *, const void *))compare_paths);
 #else
-       qsort(&pathlist[1], next_path_index-1, sizeof(struct directory *), 
+       qsort(&pathlist[1], next_path_index-1, sizeof(struct directory *),
 	     compare_paths);
 #endif
 
@@ -1017,55 +1020,55 @@ static int generate_path_tables()
 	 error (1, 0, _("Entry %d not in path tables\n"), j);
        }
        npnt = dpnt->de_name;
-       
-       /* 
-	* So the root comes out OK 
+      
+       /*
+	* So the root comes out OK
 	*/
-       if( (*npnt == 0) || (dpnt == root) ) 
+       if( (*npnt == 0) || (dpnt == root) )
        {
-	    npnt = ".";  
+	    npnt = "."; 
        }
        npnt1 = strrchr(npnt, PATH_SEPARATOR);
-       if(npnt1) 
-       { 
+       if(npnt1)
+       {
 	    npnt = npnt1 + 1;
        }
-       
+      
        de = dpnt->self;
-       if(!de) 
+       if(!de)
        {
 	 error (1, 0, _("Fatal goof\n"));
        }
-       
-       
+      
+      
        namelen = de->isorec.name_len[0];
-       
+      
        path_table_l[path_table_index] = namelen;
        path_table_m[path_table_index] = namelen;
        path_table_index += 2;
-       
-       set_731(path_table_l + path_table_index, dpnt->extent); 
-       set_732(path_table_m + path_table_index, dpnt->extent); 
+      
+       set_731(path_table_l + path_table_index, dpnt->extent);
+       set_732(path_table_m + path_table_index, dpnt->extent);
        path_table_index += 4;
-       
-       set_721(path_table_l + path_table_index, 
-	       dpnt->parent->path_index); 
-       set_722(path_table_m + path_table_index, 
-	       dpnt->parent->path_index); 
+      
+       set_721(path_table_l + path_table_index,
+	       dpnt->parent->path_index);
+       set_722(path_table_m + path_table_index,
+	       dpnt->parent->path_index);
        path_table_index += 2;
-       
+      
        for(i =0; i<namelen; i++)
        {
 	    path_table_l[path_table_index] = de->isorec.name[i];
 	    path_table_m[path_table_index] = de->isorec.name[i];
 	    path_table_index++;
        }
-       if(path_table_index & 1) 
+       if(path_table_index & 1)
        {
 	    path_table_index++;  /* For odd lengths we pad */
        }
   }
-  
+ 
   free(pathlist);
   if(path_table_index != path_table_size)
   {
@@ -1108,7 +1111,7 @@ static int FDECL1(file_write, FILE *, outfile)
   /*
    * OK, all done with that crap.  Now write out the directories.
    * This is where the fur starts to fly, because we need to keep track of
-   * each file as we find it and keep track of where we put it. 
+   * each file as we find it and keep track of where we put it.
    */
 
   should_write = last_extent - session_start;
@@ -1124,16 +1127,16 @@ static int FDECL1(file_write, FILE *, outfile)
 #ifdef DBG_ISO
       fprintf(stderr,"Total directory extents being written = %llu\n", last_extent);
 #endif
-      
-      fprintf (stderr, _("Total extents scheduled to be written = %llu\n"), 
+     
+      fprintf (stderr, _("Total extents scheduled to be written = %llu\n"),
 	       last_extent - session_start);
     }
 
-  /* 
-   * Now write all of the files that we need. 
+  /*
+   * Now write all of the files that we need.
    */
   write_files(outfile);
-  
+ 
   /*
    * The rest is just fluff.
    */
@@ -1145,8 +1148,8 @@ static int FDECL1(file_write, FILE *, outfile)
   fprintf (stderr, _("Total extents actually written = %llu\n"),
 	   last_extent_written - session_start);
 
-  /* 
-   * Hard links throw us off here 
+  /*
+   * Hard links throw us off here
    */
   assert (last_extent > session_start);
   if(should_write + session_start != last_extent)
@@ -1192,7 +1195,7 @@ static int FDECL1(pvd_write, FILE *, outfile)
 
   /*
    * This will break  in the year  2000, I supose, but there is no good way
-   * to get the top two digits of the year. 
+   * to get the top two digits of the year.
    */
   sprintf(iso_time, "%4.4d%2.2d%2.2d%2.2d%2.2d%2.2d00", 1900 + local.tm_year,
 	  local.tm_mon+1, local.tm_mday,
@@ -1204,28 +1207,28 @@ static int FDECL1(pvd_write, FILE *, outfile)
   iso_time[16] = (local.tm_min + 60*(local.tm_hour + 24*local.tm_yday)) / 15;
 
   /*
-   * Next we write out the primary descriptor for the disc 
+   * Next we write out the primary descriptor for the disc
    */
   memset(&vol_desc, 0, sizeof(vol_desc));
   vol_desc.type[0] = ISO_VD_PRIMARY;
   memcpy(vol_desc.id, ISO_STANDARD_ID, sizeof(ISO_STANDARD_ID));
   vol_desc.version[0] = 1;
-  
+ 
   memset(vol_desc.system_id, ' ', sizeof(vol_desc.system_id));
   memcpy_max(vol_desc.system_id, system_id, strlen(system_id));
-  
+ 
   memset(vol_desc.volume_id, ' ', sizeof(vol_desc.volume_id));
   memcpy_max(vol_desc.volume_id, volume_id, strlen(volume_id));
-  
+ 
   should_write = last_extent - session_start;
   set_733((char *) vol_desc.volume_space_size, should_write);
   set_723(vol_desc.volume_set_size, volume_set_size);
   set_723(vol_desc.volume_sequence_number, volume_sequence_number);
   set_723(vol_desc.logical_block_size, 2048);
-  
+ 
   /*
    * The path tables are used by DOS based machines to cache directory
-   * locations 
+   * locations
    */
 
   set_733((char *) vol_desc.path_table_size, path_table_size);
@@ -1235,9 +1238,9 @@ static int FDECL1(pvd_write, FILE *, outfile)
   set_732(vol_desc.opt_type_m_path_table, path_table[3]);
 
   /*
-   * Now we copy the actual root directory record 
+   * Now we copy the actual root directory record
    */
-  memcpy(vol_desc.root_directory_record, &root_record, 
+  memcpy(vol_desc.root_directory_record, &root_record,
 	 sizeof(struct iso_directory_record) + 1);
 
   /*
@@ -1257,15 +1260,15 @@ static int FDECL1(pvd_write, FILE *, outfile)
   if(appid) memcpy_max(vol_desc.application_id, appid, strlen(appid));
 
   FILL_SPACE(copyright_file_id);
-  if(copyright) memcpy_max(vol_desc.copyright_file_id, copyright, 
+  if(copyright) memcpy_max(vol_desc.copyright_file_id, copyright,
 		       strlen(copyright));
 
   FILL_SPACE(abstract_file_id);
-  if(abstract) memcpy_max(vol_desc.abstract_file_id, abstract, 
+  if(abstract) memcpy_max(vol_desc.abstract_file_id, abstract,
 			  strlen(abstract));
 
   FILL_SPACE(bibliographic_file_id);
-  if(biblio) memcpy_max(vol_desc.bibliographic_file_id, biblio, 
+  if(biblio) memcpy_max(vol_desc.bibliographic_file_id, biblio,
 		       strlen(biblio));
 
   FILL_SPACE(creation_date);
@@ -1281,7 +1284,7 @@ static int FDECL1(pvd_write, FILE *, outfile)
   memcpy(vol_desc.effective_date, effective_date ? effective_date : iso_time, 17);
 
   /*
-   * if not a bootable cd do it the old way 
+   * if not a bootable cd do it the old way
    */
   xfwrite(&vol_desc, 1, 2048, outfile);
   last_extent_written++;
@@ -1296,7 +1299,7 @@ static int FDECL1(evd_write, FILE *, outfile)
   struct iso_primary_descriptor evol_desc;
 
   /*
-   * Now write the end volume descriptor.  Much simpler than the other one 
+   * Now write the end volume descriptor.  Much simpler than the other one
    */
   memset(&evol_desc, 0, sizeof(evol_desc));
   evol_desc.type[0] = ISO_VD_END;
@@ -1313,7 +1316,7 @@ static int FDECL1(evd_write, FILE *, outfile)
 static int FDECL1(pathtab_write, FILE *, outfile)
 {
   /*
-   * Next we write the path tables 
+   * Next we write the path tables
    */
   xfwrite(path_table_l, 1, path_blocks << 11, outfile);
   xfwrite(path_table_m, 1, path_blocks << 11, outfile);
@@ -1344,6 +1347,9 @@ int FDECL1(oneblock_size, int, starting_extent)
 /*
  * Functions to describe padding block at the start of the disc.
  */
+
+#define PADBLOCK_SIZE	16
+
 static int FDECL1(pathtab_size, int, starting_extent)
 {
   path_table[0] = starting_extent;
@@ -1357,7 +1363,7 @@ static int FDECL1(pathtab_size, int, starting_extent)
 
 static int FDECL1(padblock_size, int, starting_extent)
 {
-  last_extent += 16;
+  last_extent += PADBLOCK_SIZE;
   return 0;
 }
 
@@ -1420,17 +1426,45 @@ static int FDECL1(dirtree_cleanup, FILE *, outfile)
 
 static int FDECL1(padblock_write, FILE *, outfile)
 {
-  char				buffer[2048];
-  int				i;
+  char *buffer;
 
-  memset(buffer, 0, sizeof(buffer));
+  buffer = e_malloc (2048 * PADBLOCK_SIZE);
+  memset (buffer, 0, 2048 * PADBLOCK_SIZE);
 
-  for(i=0; i<16; i++)
+  if (use_embedded_boot)
     {
-      xfwrite(buffer, 1, sizeof(buffer), outfile);
+      FILE *fp = fopen (boot_image_embed, "rb");
+      if (! fp)
+	error (1, errno, _("Unable to open %s"), boot_image_embed);
+      fread (buffer, 2048 * PADBLOCK_SIZE, 1, fp);
     }
 
-  last_extent_written += 16;
+  if (use_protective_msdos_label)
+    {
+      struct msdos_partition_mbr *mbr = (void *) buffer;
+
+      memset (mbr->entries, 0, sizeof(mbr->entries));
+
+      /* Some idiotic BIOSes refuse to boot if they don't find at least
+	 one partition with active bit set.  */
+      mbr->entries[0].flag = 0x80;
+
+      /* Doesn't really matter, as long as it's non-zero.  It seems that
+         0xCD is used elsewhere, so we follow suit.  */
+      mbr->entries[0].type = 0xcd;
+
+      /* Start immediately (sector 1).  */
+      mbr->entries[0].start = 1;
+
+      /* We don't know yet.  Let's keep it safe.  */
+      mbr->entries[0].length = UINT32_MAX;
+
+      mbr->signature = MSDOS_PARTITION_SIGNATURE;
+    }
+
+  xfwrite (buffer, 1, 2048 * PADBLOCK_SIZE, outfile);
+  last_extent_written += PADBLOCK_SIZE;
+
   return 0;
 }
 

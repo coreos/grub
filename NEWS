@@ -1,6 +1,10 @@
-New in 1.97 - :
+New in 1.98:
+
+* Add grub-probe support for GNU/Hurd.
 
 * Add support for gettext.
+
+New in 1.97:
 
 * Add support for loading XNU (MacOS X kernel).
 

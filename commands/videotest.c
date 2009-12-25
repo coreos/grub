@@ -181,7 +181,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(videotest)
 {
   cmd = grub_register_command ("videotest", grub_cmd_videotest,
-			       0, "Test video subsystem");
+			       0, "Test video subsystem.");
 }
 
 GRUB_MOD_FINI(videotest)

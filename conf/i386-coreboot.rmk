@@ -18,6 +18,7 @@ kernel_img_SOURCES = kern/i386/coreboot/startup.S \
 	kern/i386/misc.S \
 	kern/i386/coreboot/init.c \
 	kern/i386/multiboot_mmap.c \
+	kern/i386/halt.c \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
@@ -61,6 +62,7 @@ kernel_img_SOURCES = kern/i386/qemu/startup.S \
 	kern/i386/misc.S \
 	kern/i386/coreboot/init.c \
 	kern/i386/qemu/mmap.c \
+	kern/i386/halt.c \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
@@ -107,7 +109,7 @@ pkglib_MODULES = linux.mod multiboot.mod 		\
 	lsmmap.mod mmap.mod
 
 # For boot.mod.
-pkglib_MODULES += boot.mod 
+pkglib_MODULES += boot.mod
 boot_mod_SOURCES = commands/boot.c
 boot_mod_CFLAGS = $(COMMON_CFLAGS)
 boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
@@ -124,12 +126,12 @@ linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod.
-reboot_mod_SOURCES = commands/reboot.c kern/i386/reboot.c
+reboot_mod_SOURCES = commands/reboot.c
 reboot_mod_CFLAGS = $(COMMON_CFLAGS)
 reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod.
-halt_mod_SOURCES = commands/halt.c kern/i386/halt.c
+halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

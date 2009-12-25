@@ -15,11 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
-hexify()
-{
-  echo -n "$@" | od -A n -t x1 - | sed -e 's/ //g' | tr '\n' '\0'
-}
+if [ x$1 == x ]; then
+   echo "Filename required".
+fi
 
-echo "`hexify efi`{	`hexify device-properties`:"
-ioreg -lw0 -p IODeviceTree -n efi -r -x |grep device-properties | sed 's/.*<//;s/>.*//;'
-echo ";}"
+ioreg -lw0 -p IODeviceTree -n efi -r -x |grep device-properties | sed 's/.*<//;s/>.*//;' | xxd -r -p > $1

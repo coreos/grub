@@ -140,7 +140,7 @@ grub_bsd_get_device (grub_uint32_t * biosdev,
 		     grub_uint32_t * slice, grub_uint32_t * part)
 {
   char *p;
-  grub_device_t dev; 
+  grub_device_t dev;
 
 #ifdef GRUB_MACHINE_PCBIOS
   *biosdev = grub_get_root_biosnumber () & 0xff;
