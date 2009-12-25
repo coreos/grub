@@ -30,7 +30,7 @@ grub_ata_pass_through (grub_disk_t disk,
 {
   if (disk->dev->id != GRUB_DISK_DEVICE_ATA_ID)
     return grub_error (GRUB_ERR_BAD_DEVICE,
-		       "Device not accessed via ata.mod");
+		       "device not accessed via ata.mod");
 
   struct grub_ata_device *dev = (struct grub_ata_device *) disk->data;
 

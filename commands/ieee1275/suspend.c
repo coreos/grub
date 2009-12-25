@@ -39,7 +39,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(ieee1275_suspend)
 {
   cmd = grub_register_command ("suspend", grub_cmd_suspend,
-			       0, "Return to Open Firmware prompt");
+			       0, "Return to Open Firmware prompt.");
 }
 
 GRUB_MOD_FINI(ieee1275_suspend)

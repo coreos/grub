@@ -370,7 +370,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
       default:
         grub_file_close (file);
         return grub_error (GRUB_ERR_BAD_FILE_TYPE,
-                           "Unsupported bitmap format (unknown encoding).");
+                           "unsupported bitmap format (unknown encoding)");
     }
 
   /* Check that bitmap depth is supported.  */
@@ -387,7 +387,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
       default:
         grub_file_close (file);
         return grub_error (GRUB_ERR_BAD_FILE_TYPE,
-                           "Unsupported bitmap format (bpp=%d).",
+                           "unsupported bitmap format (bpp=%d)",
                            header.image_bpp);
     }
 

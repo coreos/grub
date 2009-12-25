@@ -48,9 +48,9 @@ grub_usb_hub_add_dev (grub_usb_controller_t controller, grub_usb_speed_t speed)
       if (! grub_usb_devs[i])
 	break;
     }
-  if (grub_usb_devs[i])
+  if (i == 128)
     {
-      grub_error (GRUB_ERR_IO, "Can't assign address to USB device");
+      grub_error (GRUB_ERR_IO, "can't assign address to USB device");
       return NULL;
     }
 
@@ -60,6 +60,7 @@ grub_usb_hub_add_dev (grub_usb_controller_t controller, grub_usb_speed_t speed)
 			 | GRUB_USB_REQTYPE_TARGET_DEV),
 			GRUB_USB_REQ_SET_ADDRESS,
 			i, 0, 0, NULL);
+
   dev->addr = i;
   dev->initialized = 1;
   grub_usb_devs[i] = dev;

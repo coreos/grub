@@ -29,7 +29,7 @@
 
 static const struct grub_arg_option options[] =
   {
-    {"file", 'f', 0, "specify filename", 0, ARG_TYPE_PATHNAME},
+    {"file", 'f', 0, "Specify filename.", 0, ARG_TYPE_PATHNAME},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -328,7 +328,7 @@ grub_cmd_save_env (grub_extcmd_t cmd, int argc, char **args)
     }
 
   if (! argc)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "No variable is specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no variable is specified");
 
   file = open_envblk_file ((state[0].set) ? state[0].arg : 0);
   if (! file)

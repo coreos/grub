@@ -30,6 +30,9 @@
 /* The maximum size of a command-line.  */
 #define GRUB_MAX_CMDLINE	1600
 
+/* The standard left and right margin for some messages.  */
+#define STANDARD_MARGIN 6
+
 /* The type of a completion item.  */
 enum grub_completion_type
   {
@@ -73,6 +76,14 @@ void grub_parse_color_name_pair (grub_uint8_t *ret, const char *name);
 
 /* Defined in `menu_text.c'.  */
 void grub_wait_after_message (void);
+int grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
+			     grub_uint32_t **last_position);
+void grub_print_ucs4 (const grub_uint32_t * str,
+		      const grub_uint32_t * last_position);
+grub_ssize_t grub_getstringwidth (grub_uint32_t * str,
+				  const grub_uint32_t * last_position);
+void grub_print_message_indented (const char *msg, int margin_left,
+				  int margin_right);
 
 /* Defined in `handler.c'.  */
 void read_handler_list (void);

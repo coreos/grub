@@ -484,8 +484,8 @@ genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
 
 $(srcdir)/po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
-	cd $(srcdir) && $(XGETTEXT) --from-code=utf-8 -o $@ -f $< --keyword=_ --keyword=N_
-	cd $(srcdir) && $(XGETTEXT) --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
+	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o $@ -f $< --keyword=_ --keyword=N_
+	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
 
 $(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): po/$(PACKAGE).pot
 	$(MSGMERGE) -U $@ $^

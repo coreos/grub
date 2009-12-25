@@ -35,8 +35,8 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(halt)
 {
   cmd = grub_register_command ("halt", grub_cmd_halt,
-			       0, "halts the computer.  This command does not"
-			       " work on all firmware.");
+			       0, "Halts the computer.  This command does not"
+			       " work on all firmware implementations.");
 }
 
 GRUB_MOD_FINI(halt)

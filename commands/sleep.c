@@ -27,8 +27,8 @@
 
 static const struct grub_arg_option options[] =
   {
-    {"verbose", 'v', 0, "verbose countdown", 0, 0},
-    {"interruptible", 'i', 0, "interruptible with ESC", 0, 0},
+    {"verbose", 'v', 0, "Verbose countdown.", 0, 0},
+    {"interruptible", 'i', 0, "Interruptible with ESC.", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -106,7 +106,7 @@ GRUB_MOD_INIT(sleep)
 {
   cmd = grub_register_extcmd ("sleep", grub_cmd_sleep, GRUB_COMMAND_FLAG_BOTH,
 			      "sleep NUMBER_OF_SECONDS",
-			      "Wait for a specified number of seconds",
+			      "Wait for a specified number of seconds.",
 			      options);
 }
 

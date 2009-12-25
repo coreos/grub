@@ -88,7 +88,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 	return grub_errno;
 
       if (hd.magic != MAGIC_BCPIO)
-	return grub_error (GRUB_ERR_BAD_FS, "Invalid cpio archive");
+	return grub_error (GRUB_ERR_BAD_FS, "invalid cpio archive");
 
       data->size = (((grub_uint32_t) hd.filesize_1) << 16) + hd.filesize_2;
 
@@ -130,7 +130,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 	}
 
       if (grub_memcmp (hd.magic, MAGIC_USTAR, sizeof (MAGIC_USTAR) - 1))
-	return grub_error (GRUB_ERR_BAD_FS, "Invalid tar archive");
+	return grub_error (GRUB_ERR_BAD_FS, "invalid tar archive");
 
       if ((*name = grub_strdup (hd.name)) == NULL)
 	return grub_errno;

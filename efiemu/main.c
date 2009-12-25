@@ -39,6 +39,7 @@ grub_efi_system_table64_t *grub_efiemu_system_table64 = 0;
 static struct grub_efiemu_prepare_hook *efiemu_prepare_hooks = 0;
 /* Linked list of configuration tables */
 static struct grub_efiemu_configuration_table *efiemu_config_tables = 0;
+static int prepared = 0;
 
 /* Free all allocated space */
 grub_err_t
@@ -69,6 +70,8 @@ grub_efiemu_unload (void)
       curhook = d2;
     }
   efiemu_prepare_hooks = 0;
+
+  prepared = 0;
 
   return GRUB_ERR_NONE;
 }
@@ -211,7 +214,7 @@ grub_efiemu_load_file (const char *filename)
     {
       grub_file_close (file);
       grub_efiemu_unload ();
-      return grub_error (grub_errno, "Couldn't init memory management");
+      return grub_error (grub_errno, "couldn't init memory management");
     }
 
   grub_dprintf ("efiemu", "mm initialized\n");
@@ -277,13 +280,18 @@ grub_efiemu_prepare (void)
 {
   grub_err_t err;
 
+  if (prepared)
+    return GRUB_ERR_NONE;
+
   grub_dprintf ("efiemu", "Preparing %d-bit efiemu\n",
 		8 * grub_efiemu_sizeof_uintn_t ());
 
   err = grub_efiemu_autocore ();
 
-  /* Create NVRAM if not yet done. */
+  /* Create NVRAM. */
   grub_efiemu_pnvram ();
+
+  prepared = 1;
 
   if (grub_efiemu_sizeof_uintn_t () == 4)
     return grub_efiemu_prepare32 (efiemu_prepare_hooks, efiemu_config_tables);
@@ -316,9 +324,6 @@ grub_cmd_efiemu_load (grub_command_t cmd __attribute__ ((unused)),
 
 static grub_command_t cmd_loadcore, cmd_prepare, cmd_unload;
 
-void
-grub_efiemu_pnvram_cmd_register (void);
-
 GRUB_MOD_INIT(efiemu)
 {
   cmd_loadcore = grub_register_command ("efiemu_loadcore",
@@ -332,7 +337,6 @@ GRUB_MOD_INIT(efiemu)
   cmd_unload = grub_register_command ("efiemu_unload", grub_cmd_efiemu_unload,
 				      "efiemu_unload",
 				      "Unload  EFI emulator");
-  grub_efiemu_pnvram_cmd_register ();
 }
 
 GRUB_MOD_FINI(efiemu)
@@ -340,5 +344,4 @@ GRUB_MOD_FINI(efiemu)
   grub_unregister_command (cmd_loadcore);
   grub_unregister_command (cmd_prepare);
   grub_unregister_command (cmd_unload);
-  grub_efiemu_pnvram_cmd_unregister ();
 }

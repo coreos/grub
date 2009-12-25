@@ -26,14 +26,15 @@
 #include <grub/file.h>
 #include <grub/env.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] =
   {
-    {"file",		'f', 0, "search devices by a file", 0, 0},
-    {"label",		'l', 0, "search devices by a filesystem label", 0, 0},
-    {"fs-uuid",		'u', 0, "search devices by a filesystem UUID", 0, 0},
-    {"set",		's', GRUB_ARG_OPTION_OPTIONAL, "set a variable to the first device found", "VAR", ARG_TYPE_STRING},
-    {"no-floppy",	'n', 0, "do not probe any floppy drive", 0, 0},
+    {"file",		'f', 0, N_("Search devices by a file."), 0, 0},
+    {"label",		'l', 0, N_("Search devices by a filesystem label."), 0, 0},
+    {"fs-uuid",		'u', 0, N_("Search devices by a filesystem UUID."), 0, 0},
+    {"set",		's', GRUB_ARG_OPTION_OPTIONAL, N_("Set a variable to the first device found."), "VAR", ARG_TYPE_STRING},
+    {"no-floppy",	'n', 0, N_("Do not probe any floppy drive."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -186,11 +187,11 @@ GRUB_MOD_INIT(search)
   cmd =
     grub_register_extcmd ("search", grub_cmd_search,
 			  GRUB_COMMAND_FLAG_BOTH,
-			  "search [-f|-l|-u|-s|-n] NAME",
-			  "Search devices by file, filesystem label or filesystem UUID."
+			  N_("search [-f|-l|-u|-s|-n] NAME"),
+			  N_("Search devices by file, filesystem label or filesystem UUID."
 			  " If --set is specified, the first device found is"
 			  " set to a variable. If no variable name is"
-			  " specified, \"root\" is used.",
+			  " specified, \"root\" is used."),
 			  options);
 }
 

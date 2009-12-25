@@ -31,15 +31,15 @@
 #include <grub/env.h>
 #include <grub/extcmd.h>
 
-static const struct grub_arg_option options[] = 
+static const struct grub_arg_option options[] =
   {
     {"set",             's', GRUB_ARG_OPTION_OPTIONAL,
-     "set a variable to return value", "VAR", ARG_TYPE_STRING},
-    {"driver",		'd', 0, "determine driver", 0, 0},
-    {"partmap",		'p', 0, "determine partition map type", 0, 0},
-    {"fs",		'f', 0, "determine filesystem type", 0, 0},
-    {"fs-uuid",		'u', 0, "determine filesystem UUID", 0, 0},
-    {"label",		'l', 0, "determine filesystem label", 0, 0},
+     "Set a variable to return value.", "VAR", ARG_TYPE_STRING},
+    {"driver",		'd', 0, "Determine driver.", 0, 0},
+    {"partmap",		'p', 0, "Determine partition map type.", 0, 0},
+    {"fs",		'f', 0, "Determine filesystem type.", 0, 0},
+    {"fs-uuid",		'u', 0, "Determine filesystem UUID.", 0, 0},
+    {"label",		'l', 0, "Determine filesystem label.", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 

@@ -74,7 +74,7 @@ grub_elf_file (grub_file_t file)
       != sizeof (elf->ehdr))
     {
       grub_error_push ();
-      grub_error (GRUB_ERR_READ_ERROR, "Cannot read ELF header.");
+      grub_error (GRUB_ERR_READ_ERROR, "cannot read ELF header");
       goto fail;
     }
 
@@ -134,7 +134,7 @@ grub_elf32_load_phdrs (grub_elf_t elf)
       || (grub_file_read (elf->file, elf->phdrs, phdrs_size) != phdrs_size))
     {
       grub_error_push ();
-      return grub_error (GRUB_ERR_READ_ERROR, "Cannot read program headers");
+      return grub_error (GRUB_ERR_READ_ERROR, "cannot read program headers");
     }
 
   return GRUB_ERR_NONE;
@@ -181,7 +181,9 @@ grub_elf32_size (grub_elf_t elf, Elf32_Addr *base)
   /* Run through the program headers to calculate the total memory size we
    * should claim.  */
   auto int NESTED_FUNC_ATTR calcsize (grub_elf_t _elf, Elf32_Phdr *phdr, void *_arg);
-  int NESTED_FUNC_ATTR calcsize (grub_elf_t UNUSED _elf, Elf32_Phdr *phdr, void UNUSED *_arg)
+  int NESTED_FUNC_ATTR calcsize (grub_elf_t _elf  __attribute__ ((unused)),
+				 Elf32_Phdr *phdr,
+				 void *_arg __attribute__ ((unused)))
     {
       /* Only consider loadable segments.  */
       if (phdr->p_type != PT_LOAD)
@@ -201,14 +203,14 @@ grub_elf32_size (grub_elf_t elf, Elf32_Addr *base)
 
   if (nr_phdrs == 0)
     {
-      grub_error (GRUB_ERR_BAD_OS, "No program headers present");
+      grub_error (GRUB_ERR_BAD_OS, "no program headers present");
       return 0;
     }
 
   if (segments_end < segments_start)
     {
       /* Very bad addresses.  */
-      grub_error (GRUB_ERR_BAD_OS, "Bad program header load addresses");
+      grub_error (GRUB_ERR_BAD_OS, "bad program header load addresses");
       return 0;
     }
 
@@ -252,7 +254,7 @@ grub_elf32_load (grub_elf_t _elf, grub_elf32_load_hook_t _load_hook,
       {
 	grub_error_push ();
 	return grub_error (GRUB_ERR_BAD_OS,
-			   "Invalid offset in program header.");
+			   "invalid offset in program header");
       }
 
     if (phdr->p_filesz)
@@ -264,8 +266,8 @@ grub_elf32_load (grub_elf_t _elf, grub_elf32_load_hook_t _load_hook,
 	    /* XXX How can we free memory from `load_hook'? */
 	    grub_error_push ();
 	    return grub_error (GRUB_ERR_BAD_OS,
-			       "Couldn't read segment from file: "
-			       "wanted 0x%lx bytes; read 0x%lx bytes.",
+			       "couldn't read segment from file: "
+			       "wanted 0x%lx bytes; read 0x%lx bytes",
 			       phdr->p_filesz, read);
 	  }
       }
@@ -318,7 +320,7 @@ grub_elf64_load_phdrs (grub_elf_t elf)
       || (grub_file_read (elf->file, elf->phdrs, phdrs_size) != phdrs_size))
     {
       grub_error_push ();
-      return grub_error (GRUB_ERR_READ_ERROR, "Cannot read program headers");
+      return grub_error (GRUB_ERR_READ_ERROR, "cannot read program headers");
     }
 
   return GRUB_ERR_NONE;
@@ -365,7 +367,9 @@ grub_elf64_size (grub_elf_t elf, Elf64_Addr *base)
   /* Run through the program headers to calculate the total memory size we
    * should claim.  */
   auto int NESTED_FUNC_ATTR calcsize (grub_elf_t _elf, Elf64_Phdr *phdr, void *_arg);
-  int NESTED_FUNC_ATTR calcsize (grub_elf_t UNUSED _elf, Elf64_Phdr *phdr, void UNUSED *_arg)
+  int NESTED_FUNC_ATTR calcsize (grub_elf_t _elf __attribute__ ((unused)),
+				 Elf64_Phdr *phdr,
+				 void *_arg __attribute__ ((unused)))
     {
       /* Only consider loadable segments.  */
       if (phdr->p_type != PT_LOAD)
@@ -385,14 +389,14 @@ grub_elf64_size (grub_elf_t elf, Elf64_Addr *base)
 
   if (nr_phdrs == 0)
     {
-      grub_error (GRUB_ERR_BAD_OS, "No program headers present");
+      grub_error (GRUB_ERR_BAD_OS, "no program headers present");
       return 0;
     }
 
   if (segments_end < segments_start)
     {
       /* Very bad addresses.  */
-      grub_error (GRUB_ERR_BAD_OS, "Bad program header load addresses");
+      grub_error (GRUB_ERR_BAD_OS, "bad program header load addresses");
       return 0;
     }
 
@@ -438,7 +442,7 @@ grub_elf64_load (grub_elf_t _elf, grub_elf64_load_hook_t _load_hook,
       {
 	grub_error_push ();
 	return grub_error (GRUB_ERR_BAD_OS,
-			   "Invalid offset in program header.");
+			   "invalid offset in program header");
       }
 
     if (phdr->p_filesz)
@@ -450,8 +454,8 @@ grub_elf64_load (grub_elf_t _elf, grub_elf64_load_hook_t _load_hook,
 	    /* XXX How can we free memory from `load_hook'?  */
 	    grub_error_push ();
 	    return grub_error (GRUB_ERR_BAD_OS,
-			      "Couldn't read segment from file: "
-			      "wanted 0x%lx bytes; read 0x%lx bytes.",
+			      "couldn't read segment from file: "
+			      "wanted 0x%lx bytes; read 0x%lx bytes",
 			      phdr->p_filesz, read);
           }
       }

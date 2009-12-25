@@ -311,7 +311,7 @@ grub_minix_lookup_symlink (struct grub_minix_data *data, int ino)
 
   grub_minix_find_file (data, symlink);
   if (grub_errno)
-    grub_error (grub_errno, "Can not follow symlink `%s'.", symlink);
+    grub_error (grub_errno, "cannot follow symlink `%s'", symlink);
 
   return grub_errno;
 }

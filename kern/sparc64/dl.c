@@ -98,7 +98,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
                   case R_SPARC_32: /* 3 V-word32 */
                     if (value & 0xFFFFFFFF00000000)
                       return grub_error (GRUB_ERR_BAD_MODULE,
-                                         "Address out of 32 bits range");
+                                         "address out of 32 bits range");
                     *addr = value;
                     break;
                   case R_SPARC_WDISP30: /* 7 V-disp30 */
@@ -106,7 +106,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
                         (((value - (Elf_Addr) addr) & 0xFFFFFFFF00000000)
 			 != 0xFFFFFFFF00000000))
                       return grub_error (GRUB_ERR_BAD_MODULE,
-                                         "Displacement out of 30 bits range");
+                                         "displacement out of 30 bits range");
                     *addr = (*addr & 0xC0000000) |
                       (((grub_int32_t) ((value - (Elf_Addr) addr) >> 2)) &
                        0x3FFFFFFF);
@@ -114,7 +114,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
                   case R_SPARC_HI22: /* 9 V-imm22 */
                     if (((grub_int32_t) value) & 0xFF00000000)
                       return grub_error (GRUB_ERR_BAD_MODULE,
-                                         "High address out of 22 bits range");
+                                         "high address out of 22 bits range");
                     *addr = (*addr & 0xFFC00000) | ((value >> 10) & 0x3FFFFF);
                     break;
                   case R_SPARC_LO10: /* 12 T-simm13 */
@@ -131,7 +131,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    break;
 		  default:
 		    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-				       "This relocation (%d) is not implemented yet",
+				       "this relocation (%d) is not implemented yet",
 				       ELF_R_TYPE (rel->r_info));
 		  }
 	      }

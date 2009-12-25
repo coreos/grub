@@ -56,7 +56,7 @@ delete_loopback (const char *name)
       break;
 
   if (! dev)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "Device not found");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "device not found");
 
   /* Remove the device from the list.  */
   *prev = dev->next;
@@ -167,7 +167,7 @@ grub_loopback_open (const char *name, grub_disk_t disk)
       break;
 
   if (! dev)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't open device");
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
 
   file = grub_file_open (dev->filename);
   if (! file)

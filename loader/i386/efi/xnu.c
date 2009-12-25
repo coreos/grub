@@ -148,10 +148,10 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
 
   c = grub_efi_locate_protocol (&uga_draw_guid, 0);
   if (! c)
-    return grub_error (GRUB_ERR_IO, "Couldn't find UGADraw");
+    return grub_error (GRUB_ERR_IO, "couldn't find UGADraw");
 
   if (efi_call_5 (c->get_mode, c, &width, &height, &depth, &rate))
-    return grub_error (GRUB_ERR_IO, "Couldn't retrieve video mode");
+    return grub_error (GRUB_ERR_IO, "couldn't retrieve video mode");
 
   grub_printf ("Video mode: %ux%u-%u@%u\n", width, height, depth, rate);
 
@@ -163,7 +163,7 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
   grub_efi_set_text_mode (1);
 
   if (! ret)
-    return grub_error (GRUB_ERR_IO, "Can\'t find frame buffer address\n");
+    return grub_error (GRUB_ERR_IO, "can\'t find frame buffer address");
 
   grub_printf ("Frame buffer base: 0x%x\n", fb_base);
   grub_printf ("Video line length: %d\n", line_len);

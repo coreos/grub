@@ -32,8 +32,8 @@
 #else
 #define RAX %eax
 #define RCX %ecx
-#define RDI %edi	
-#define RSI %esi	
+#define RDI %edi
+#define RSI %esi
 #endif
 
 /* The code segment of the protected mode.  */
@@ -41,7 +41,7 @@
 
 /* The data segment of the protected mode.  */
 #define DATA_SEGMENT	0x18
-	
+
 	.p2align	4	/* force 16-byte alignment */
 
 RELOCATOR_VARIABLE(start)
@@ -92,7 +92,7 @@ RELOCATOR_VARIABLE(size)
 #endif
 
 	mov	RDI, RAX
-	
+
 #ifdef BACKWARD
 	add	RCX, RSI
 	add	RCX, RDI
@@ -104,7 +104,7 @@ RELOCATOR_VARIABLE(size)
 	add	$0x3, RCX
 	shr	$2, RCX
 
-	
+
 #ifdef BACKWARD
 	/* Backward movsl is implicitly off-by-four.  compensate that.  */
 	sub	$4,	RSI
@@ -213,7 +213,7 @@ RELOCATOR_VARIABLE (eip)
 LOCAL(gdt):
 	/* NULL.  */
 	.byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-	
+
 	/* Reserved.  */
 	.byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 
@@ -234,7 +234,7 @@ LOCAL(gdt_addr):
 	/* Filled by the code. */
 	.long	0
 #endif
-	
+
 	.p2align	4
 LOCAL(jump_vector):
 	/* Jump location. Is filled by the code */

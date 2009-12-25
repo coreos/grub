@@ -28,6 +28,7 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 #include <grub/hfs.h>
+#include <grub/charset.h>
 
 #define GRUB_HFSPLUS_MAGIC 0x482B
 #define GRUB_HFSPLUSX_MAGIC 0x4858
@@ -501,7 +502,7 @@ grub_hfsplus_mount (grub_disk_t disk)
  fail:
 
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
-    grub_error (GRUB_ERR_BAD_FS, "not a hfsplus filesystem");
+    grub_error (GRUB_ERR_BAD_FS, "not a HFS+ filesystem");
 
   grub_free (data);
   return 0;
@@ -652,7 +653,7 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
 				  btree->nodesize, (char *) node) <= 0)
 	{
 	  grub_free (node);
-	  return grub_error (GRUB_ERR_BAD_FS, "Couldn't read i-node.");
+	  return grub_error (GRUB_ERR_BAD_FS, "couldn't read i-node");
 	}
 
       nodedesc = (struct grub_hfsplus_btnode *) node;

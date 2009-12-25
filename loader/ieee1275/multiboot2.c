@@ -36,7 +36,8 @@ typedef void (*kernel_entry_t) (unsigned long, void *, int (void *),
 
 /* Claim the memory occupied by the multiboot kernel.  */
 grub_err_t
-grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr, UNUSED grub_addr_t *addr,
+grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr,
+			  grub_addr_t *addr __attribute__((unused)),
 			  int *do_load)
 {
   int rc;
@@ -50,7 +51,7 @@ grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr, UNUSED grub_addr_t *addr,
 
   rc = grub_claimmap (phdr->p_paddr, phdr->p_memsz);
   if (rc)
-    return grub_error(GRUB_ERR_OUT_OF_MEMORY, "Couldn't claim %x - %x",
+    return grub_error(GRUB_ERR_OUT_OF_MEMORY, "couldn't claim %x - %x",
 		      phdr->p_paddr, phdr->p_paddr + phdr->p_memsz);
 
   grub_dprintf ("loader", "Loading segment at 0x%x - 0x%x\n", phdr->p_paddr,
@@ -61,7 +62,8 @@ grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr, UNUSED grub_addr_t *addr,
 
 /* Claim the memory occupied by the multiboot kernel.  */
 grub_err_t
-grub_mb2_arch_elf64_hook (Elf64_Phdr *phdr, UNUSED grub_addr_t *addr,
+grub_mb2_arch_elf64_hook (Elf64_Phdr *phdr,
+			  grub_addr_t *addr __attribute__((unused)),
 			  int *do_load)
 {
   int rc;
@@ -75,7 +77,7 @@ grub_mb2_arch_elf64_hook (Elf64_Phdr *phdr, UNUSED grub_addr_t *addr,
 
   rc = grub_claimmap (phdr->p_paddr, phdr->p_memsz);
   if (rc)
-    return grub_error(GRUB_ERR_OUT_OF_MEMORY, "Couldn't claim 0x%lx - 0x%lx",
+    return grub_error(GRUB_ERR_OUT_OF_MEMORY, "couldn't claim 0x%lx - 0x%lx",
 		      phdr->p_paddr, phdr->p_paddr + phdr->p_memsz);
 
   grub_dprintf ("loader", "Loading segment at 0x%lx - 0x%lx\n",
@@ -94,7 +96,7 @@ grub_mb2_arch_module_alloc (grub_size_t size, grub_addr_t *addr)
   rc = grub_ieee1275_claim (0, size, MULTIBOOT2_MOD_ALIGN, addr);
   if (rc)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		       "Firmware couldn't allocate memory (size 0x%lx)", size);
+		       "firmware couldn't allocate memory (size 0x%lx)", size);
 
   return GRUB_ERR_NONE;
 }

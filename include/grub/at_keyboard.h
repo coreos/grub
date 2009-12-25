@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@
 #define CTRL		0x1d
 #define ALT		0x38
 #define CAPS_LOCK	0x3a
+#define NUM_LOCK	0x45
+#define SCROLL_LOCK	0x46
 
 /* Used for sending commands to the controller.  */
 #define KEYBOARD_COMMAND_ISREADY(x)	!((x) & 0x02)

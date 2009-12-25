@@ -48,7 +48,8 @@ struct grub_hfs_sblock
   /* A pascal style string that holds the volumename.  */
   grub_uint8_t volname[28];
 
-  grub_uint8_t unused5[60];
+  grub_uint8_t unused5[52];
+  grub_uint64_t num_serial;
   grub_uint16_t embed_sig;
   struct grub_hfs_extent embed_extent;
   grub_uint8_t unused6[4];

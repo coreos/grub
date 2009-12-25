@@ -22,8 +22,6 @@
 #include <config.h>
 #include <grub/cpu/types.h>
 
-#define UNUSED __attribute__ ((unused))
-
 #ifdef GRUB_UTIL
 # define GRUB_CPU_SIZEOF_VOID_P	SIZEOF_VOID_P
 # define GRUB_CPU_SIZEOF_LONG	SIZEOF_LONG
