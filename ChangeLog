@@ -1,3 +1,40 @@
+2009-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support for (pxe[:server[:gateway]]) syntax and
+	use environment variable for PXE.
+
+	* commands/i386/pc/pxecmd.c (options): Removed.
+	(print_ip): Removed.
+	(grub_cmd_pxe): Removed
+	(grub_cmd_pxe_unload): New function.
+	* fs/i386/pc/pxe.c (grub_pxe_disk_data): New structure.
+	(grub_pxe_your_ip): Made static.
+	(grub_pxe_default_server_ip): Likewise.
+	(grub_pxe_default_gateway_ip): Likewise.
+	(grub_pxe_blksize): Likewise.
+	(parse_ip): New function.
+	(grub_pxe_open): Support server and gateway specification.
+	(grub_pxe_close): Free disk->data.
+	(grub_pxefs_open): Use disk->data.
+	(grub_pxefs_read): Likewise.
+	(grub_env_write_readonly): New function.
+	(set_mac_env): Likewise.
+	(set_env_limn_ro): Likewise.
+	(parse_dhcp_vendor): Likewise.
+	(grub_pxe_detect): Set the environment variables.
+	(set_ip_env): New function.
+	(write_ip_env): Likewise.
+	(grub_env_write_pxe_default_server): Likewise.
+	(grub_env_write_pxe_default_gateway): Likewise.
+	(grub_env_write_pxe_blocksize): Likewise.
+	(GRUB_MOD_INIT(pxe)): Set environment variables.
+	* include/grub/i386/pc/pxe.h (grub_pxe_mac_addr): Rename to ...
+	(grub_pxe_mac_addr_t): ... this. All users updated.
+	(grub_pxe_your_ip): Removed.
+	(grub_pxe_server_ip): Likewise.
+	(grub_pxe_gateway_ip): Likewise.
+	(grub_pxe_blksize): Likewise.
+
 2009-12-25  Carles Pina i Estany  <carles@pina.cat>
 
 	* commands/help.c: Include `<grub/i18n.h>'.
@@ -15,7 +52,7 @@
 	* normal/dyncmd.c: Include `<grub/i18n.h>'.
 	(read_command_list): Gettextizze.
 	* po/POTFILES: Add `commands/i386/pc/play.c', `commands/search.c',
-	`commands/help.c', `lib/arg.c' and `normal/dyncmd.c'. 
+	`commands/help.c', `lib/arg.c' and `normal/dyncmd.c'.
 
 2009-12-25  Robert Millan  <rmh.grub@aybabtu.com>
 
