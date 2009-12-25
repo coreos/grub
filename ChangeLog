@@ -1,3 +1,9 @@
+2009-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/i386/pc/startup.S (grub_biosdisk_get_diskinfo_int13_extensions):
+	Ignore return status if CF is cleared.
+	(grub_biosdisk_get_diskinfo_standard): Likewise.
+
 2009-12-25  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* term/i386/pc/at_keyboard.c
