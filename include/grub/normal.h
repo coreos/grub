@@ -103,6 +103,8 @@ void read_fs_list (void);
 
 void read_crypto_list (void);
 
+void read_terminal_list (void);
+
 void grub_set_more (int onoff);
 
 #ifdef GRUB_UTIL

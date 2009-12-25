@@ -443,6 +443,7 @@ grub_normal_execute (const char *config, int nested, int batch)
   read_fs_list ();
   read_handler_list ();
   read_crypto_list ();
+  read_terminal_list ();
   grub_command_execute ("parser.grub", 0, 0);
 
   reader_nested = nested;

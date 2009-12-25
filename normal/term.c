@@ -19,6 +19,10 @@
 #include <grub/term.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
+#include <grub/file.h>
+#include <grub/dl.h>
+#include <grub/env.h>
+#include <grub/normal.h>
 
 /* The amount of lines counted by the pager.  */
 static unsigned grub_more_lines;
@@ -126,4 +130,123 @@ grub_term_restore_pos (grub_uint16_t *pos)
     grub_term_gotoxy (cur, (*ptr & 0xff00) >> 8, *ptr & 0xff);
     ptr++;
   }
+}
+
+static void 
+grub_terminal_autoload_free (void)
+{
+  struct grub_term_autoload *cur, *next;
+  unsigned i;
+  for (i = 0; i < 2; i++)
+    for (cur = i ? grub_term_input_autoload : grub_term_output_autoload;
+	 cur; cur = next)
+      {
+	next = cur->next;
+	grub_free (cur->name);
+	grub_free (cur->modname);
+	grub_free (cur);
+      }
+  grub_term_input_autoload = NULL;
+  grub_term_output_autoload = NULL;
+}
+
+
+/* Read the file terminal.lst for auto-loading.  */
+void
+read_terminal_list (void)
+{
+  const char *prefix;
+  char *filename;
+  grub_file_t file;
+  char *buf = NULL;
+
+  prefix = grub_env_get ("prefix");
+  if (!prefix)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+  
+  filename = grub_malloc (grub_strlen (prefix) + sizeof ("/crypto.lst"));
+  if (!filename)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+
+  grub_sprintf (filename, "%s/terminal.lst", prefix);
+  file = grub_file_open (filename);
+  if (!file)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+
+  /* Override previous terminal.lst.  */
+  grub_terminal_autoload_free ();
+
+  for (;; grub_free (buf))
+    {
+      char *p, *name;
+      struct grub_term_autoload *cur;
+      struct grub_term_autoload **target = NULL;
+      
+      buf = grub_file_getline (file);
+	
+      if (! buf)
+	break;
+
+      switch (buf[0])
+	{
+	case 'i':
+	  target = &grub_term_input_autoload;
+	  break;
+
+	case 'o':
+	  target = &grub_term_output_autoload;
+	  break;
+	}
+      if (!target)
+	continue;
+      
+      name = buf + 1;
+            
+      p = grub_strchr (name, ':');
+      if (! p)
+	continue;
+      
+      *p = '\0';
+      while (*++p == ' ')
+	;
+
+      cur = grub_malloc (sizeof (*cur));
+      if (!cur)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
+      
+      cur->name = grub_strdup (name);
+      if (! name)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  grub_free (cur);
+	  continue;
+	}
+	
+      cur->modname = grub_strdup (p);
+      if (! cur->modname)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  grub_free (cur);
+	  grub_free (cur->name);
+	  continue;
+	}
+      cur->next = *target;
+      *target = cur;
+    }
+  
+  grub_file_close (file);
+
+  grub_errno = GRUB_ERR_NONE;
 }

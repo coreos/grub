@@ -23,12 +23,16 @@
 #include <grub/i18n.h>
 #include <grub/misc.h>
 
+struct grub_term_autoload *grub_term_input_autoload = NULL;
+struct grub_term_autoload *grub_term_output_autoload = NULL;
+
 grub_err_t
 grub_cmd_terminal_input (grub_command_t cmd __attribute__ ((unused)),
 			 int argc, char **args)
 {
   int i;
   grub_term_input_t term;
+  struct grub_term_autoload *aut;
 
   if (argc == 0)
     {
@@ -39,6 +43,20 @@ grub_cmd_terminal_input (grub_command_t cmd __attribute__ ((unused)),
       grub_puts_ (N_ ("Available input terminals:"));
       FOR_DISABLED_TERM_INPUTS(term)
 	grub_printf ("%s ", term->name);
+      /* This is quadratic but we don't expect mode than 30 terminal
+	 modules ever.  */
+      for (aut = grub_term_input_autoload; aut; aut = aut->next)
+	{
+	  FOR_DISABLED_TERM_INPUTS(term)
+	    if (grub_strcmp (term->name, aut->name) == 0)
+	      break;
+	  if (!term)
+	    FOR_ACTIVE_TERM_INPUTS(term)
+	      if (grub_strcmp (term->name, aut->name) == 0)
+		break;
+	  if (!term)
+	    grub_printf ("%s ", aut->name);
+	}
       grub_printf ("\n");
       return GRUB_ERR_NONE;
     }
@@ -53,16 +71,36 @@ grub_cmd_terminal_input (grub_command_t cmd __attribute__ ((unused)),
 
   for (; i < argc; i++)
     {
-      FOR_DISABLED_TERM_INPUTS(term)
-	if (grub_strcmp (args[i], term->name) == 0)
-	  break;
-      if (term == 0)
-	FOR_ACTIVE_TERM_INPUTS(term)
-	  if (grub_strcmp (args[i], term->name) == 0)
+      int again = 0;
+      while (1)
+	{
+	  FOR_DISABLED_TERM_INPUTS(term)
+	    if (grub_strcmp (args[i], term->name) == 0)
+	      break;
+	  if (term == 0)
+	    FOR_ACTIVE_TERM_INPUTS(term)
+	      if (grub_strcmp (args[i], term->name) == 0)
+		break;
+	  if (term)
 	    break;
-      if (term == 0)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminal '%s'\n",
-			   args[i]);
+	  if (again)
+	    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminal '%s'\n",
+			       args[i]);
+	  for (aut = grub_term_input_autoload; aut; aut = aut->next)
+	    if (grub_strcmp (args[i], aut->name) == 0)
+	      {
+		grub_dl_t mod;
+		mod = grub_dl_load (aut->modname);
+		if (mod)
+		  grub_dl_ref (mod);
+		grub_errno = GRUB_ERR_NONE;
+		break;
+	      }
+	  if (!aut)
+	    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminal '%s'\n",
+			       args[i]);
+	  again = 1;
+	}
     }
 
   if (grub_strcmp (args[0], "--append") == 0)
@@ -151,6 +189,7 @@ grub_cmd_terminal_output (grub_command_t cmd __attribute__ ((unused)),
 {
   int i;
   grub_term_output_t term;
+  struct grub_term_autoload *aut;
 
   if (argc == 0)
     {
@@ -161,6 +200,20 @@ grub_cmd_terminal_output (grub_command_t cmd __attribute__ ((unused)),
       grub_puts_ (N_ ("Available output terminals:"));
       FOR_DISABLED_TERM_OUTPUTS(term)
 	grub_printf ("%s ", term->name);
+      /* This is quadratic but we don't expect mode than 30 terminal
+	 modules ever.  */
+      for (aut = grub_term_output_autoload; aut; aut = aut->next)
+	{
+	  FOR_DISABLED_TERM_OUTPUTS(term)
+	    if (grub_strcmp (term->name, aut->name) == 0)
+	      break;
+	  if (!term)
+	    FOR_ACTIVE_TERM_OUTPUTS(term)
+	      if (grub_strcmp (term->name, aut->name) == 0)
+		break;
+	  if (!term)
+	    grub_printf ("%s ", aut->name);
+	}
       grub_printf ("\n");
       return GRUB_ERR_NONE;
     }
@@ -175,16 +228,36 @@ grub_cmd_terminal_output (grub_command_t cmd __attribute__ ((unused)),
 
   for (; i < argc; i++)
     {
-      FOR_DISABLED_TERM_OUTPUTS(term)
-	if (grub_strcmp (args[i], term->name) == 0)
-	  break;
-      if (term == 0)
-	FOR_ACTIVE_TERM_OUTPUTS(term)
-	  if (grub_strcmp (args[i], term->name) == 0)
+      int again = 0;
+      while (1)
+	{
+	  FOR_DISABLED_TERM_OUTPUTS(term)
+	    if (grub_strcmp (args[i], term->name) == 0)
+	      break;
+	  if (term == 0)
+	    FOR_ACTIVE_TERM_OUTPUTS(term)
+	      if (grub_strcmp (args[i], term->name) == 0)
+		break;
+	  if (term)
 	    break;
-      if (term == 0)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminal '%s'\n",
-			   args[i]);
+	  if (again)
+	    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminal '%s'\n",
+			       args[i]);
+	  for (aut = grub_term_output_autoload; aut; aut = aut->next)
+	    if (grub_strcmp (args[i], aut->name) == 0)
+	      {
+		grub_dl_t mod;
+		mod = grub_dl_load (aut->modname);
+		if (mod)
+		  grub_dl_ref (mod);
+		grub_errno = GRUB_ERR_NONE;
+		break;
+	      }
+	  if (!aut)
+	    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminal '%s'\n",
+			       args[i]);
+	  again = 1;
+	}
     }
 
   if (grub_strcmp (args[0], "--append") == 0)

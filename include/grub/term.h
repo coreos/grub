@@ -395,6 +395,16 @@ grub_term_getcolor (struct grub_term_output *term,
 
 extern void (*EXPORT_VAR (grub_newline_hook)) (void);
 
+struct grub_term_autoload
+{
+  struct grub_term_autoload *next;
+  char *name;
+  char *modname;
+};
+
+extern struct grub_term_autoload *grub_term_input_autoload;
+extern struct grub_term_autoload *grub_term_output_autoload;
+
 /* For convenience.  */
 #define GRUB_TERM_ASCII_CHAR(c)	((c) & 0xff)
 
