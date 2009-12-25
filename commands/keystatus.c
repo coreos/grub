@@ -55,12 +55,16 @@ grub_cmd_keystatus (grub_extcmd_t cmd,
   if (expect_mods == 0)
     {
       grub_term_input_t term;
+      int nterms = 0;
 
       FOR_ACTIVE_TERM_INPUTS (term)
-	if (term->getkeystatus)
-	  return 0;
-
-      return grub_error (GRUB_ERR_TEST_FAILURE, "false");
+	if (!term->getkeystatus)
+	  return grub_error (GRUB_ERR_TEST_FAILURE, "false");
+	else
+	  nterms++;
+      if (!nterms)
+	return grub_error (GRUB_ERR_TEST_FAILURE, "false");
+      return 0;
     }
 
   mods = grub_getkeystatus ();
