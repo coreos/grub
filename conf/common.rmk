@@ -644,6 +644,11 @@ charset_mod_SOURCES = lib/charset.c
 charset_mod_CFLAGS = $(COMMON_CFLAGS)
 charset_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += terminal.mod
+terminal_mod_SOURCES = commands/terminal.c
+terminal_mod_CFLAGS = $(COMMON_CFLAGS)
+terminal_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 pkglib_MODULES += crypto.mod
 crypto_mod_SOURCES = lib/crypto.c
 crypto_mod_CFLAGS = $(COMMON_CFLAGS)
