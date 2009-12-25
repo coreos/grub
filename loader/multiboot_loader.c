@@ -58,7 +58,7 @@ find_multi_boot1_header (grub_file_t file)
       ((char *) header <= buffer + len - 12) || (header = 0);
       header = (struct multiboot_header *) ((char *) header + 4))
     {
-      if (header->magic == MULTIBOOT_MAGIC
+      if (header->magic == MULTIBOOT_HEADER_MAGIC
           && !(header->magic + header->flags + header->checksum))
         {
            found_status = 1;

@@ -1,3 +1,48 @@
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-install.in (host_os): New variable.
+	* util/i386/efi/grub-install.in (host_os): Likewise.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/write.c (padblock_write): Abort when given an
+	excedingly large embed image, instead of silently truncating it.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot.h: Indentation fixes.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot.h (struct multiboot_aout_symbol_table)
+	(struct multiboot_elf_section_header_table): New structure
+	declarations (stolen from GRUB Legacy).
+	(struct multiboot_info): Replace opaque `syms' with a.out and ELF
+	table information.
+
+	(multiboot_aout_symbol_table_t, multiboot_elf_section_header_table_t)
+	(multiboot_info_t, multiboot_memory_map_t, multiboot_module_t): New
+	type aliases.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot.h: Make comments src2texi-friendly.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	For consistency with [multiboot]/docs/boot.S.
+
+	* include/multiboot.h (MULTIBOOT_MAGIC): Rename from this ...
+	(MULTIBOOT_HEADER_MAGIC): ... to this.  Update all users.
+	(MULTIBOOT_MAGIC2): Rename from this ...
+	(MULTIBOOT_BOOTLOADER_MAGIC): ... to this.  Update all users.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot.h: Remove `<grub/types.h>'.
+	(multiboot_uint16_t, multiboot_uint32_t, multiboot_uint64_t): New
+	types.  Update all users.
+
 2009-12-25  Carles Pina i Estany  <carles@pina.cat>
 
 	* commands/efi/loadbios.c: Capitalize acronyms, replace `could not' by
