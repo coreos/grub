@@ -1,3 +1,12 @@
+2009-12-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* term/i386/pc/at_keyboard.c
+	(keyboard_controller_wait_untill_ready): New function.
+	(grub_keyboard_controller_write, grub_keyboard_controller_read)
+	(keyboard_controller_led): Use keyboard_controller_wait_untill_ready()
+	for keyboard polling, rather than duplicate the same loop.  This
+	saves a few bytes in code size.
+
 2009-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support for (pxe[:server[:gateway]]) syntax and
