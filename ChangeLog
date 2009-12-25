@@ -1,3 +1,7 @@
+2009-12-25  Felix Zielcke <fzielcke@z-51.de>
+
+	* util/hostdisk.c (open_device): Fix a comment.
+
 2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/grub-install.in (host_os): New variable.
@@ -153,7 +157,7 @@
 	* video/readers/tga.c: Likewise.
 	* video/video.c: Likewise.
 
-2009-12-23 Felix Zielcke <fzielcke@z-51.de>
+2009-12-23  Felix Zielcke <fzielcke@z-51.de>
 
 	* commands/i386/pc/drivemap.c: Remove all trailing whitespace.
 	* commands/lspci.c: Likewise.
@@ -206,7 +210,7 @@
 	* video/efi_gop.c (grub_video_gop_get_bitmask): Fix off-by-one in mask
 	size counting.
 
-2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+2009-12-22  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/grub-mkrescue.in (pkglib_DATA): Set to @pkglib_DATA@.
 	* genmk.rb (class SCRIPT): Modify the target file instead of source.
@@ -224,11 +228,11 @@
 	(grub_cmd_read): Restructure for readability. Support "-v" option.
 	(grub_cmd_write): Restructure for readability.
 
-2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+2009-12-22  Felix Zielcke <fzielcke@z-51.de>
 
 	* genmk.rb (class SCRIPT): Prepend #{src} path with $(srcdir).
 
-2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+2009-12-22  Felix Zielcke <fzielcke@z-51.de>
 
 	* genmk.rb (class SCRIPT): Use sed to substitute @pkglib_DATA@
 	with the actual contents of the correspondending make variable.
@@ -236,7 +240,7 @@
 	(process_input_dir): Copy all $pkglib_DATA files instead of explicitly
 	specifying `*.lst' and `efiemu??.o'
 
-2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+2009-12-22  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/grub.d/30_os-prober.in (osx_entry): Add round brackets
 	after function name.
@@ -252,7 +256,7 @@
 	(GRUB_MOD_INIT(lspci)): Use extcmd.
 	(GRUB_MOD_FINI(lspci)): Likewise.
 
-2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+2009-12-22  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/grub.d/30_os-prober.in (osx_entry): Remove non POSIX compliant
 	`function' keyword.
@@ -312,7 +316,7 @@
 	`$(XGETTEXT)'.
 	* po/POTFILES: Add `commands/loadenv.c'.
 
-2009-12-21 Felix Zielcke <fzielcke@z-51.de>
+2009-12-21  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/grub-mkrescue.in (process_input_dir): Copy `*.lst' files
 	instead of specifying them explicit.
@@ -625,7 +629,7 @@
 	(grub_vbe_get_video_mode): Use 'last_set_mode' if get_mode fails.
 	(grub_video_vbe_setup): Don't check for reserved flag.
 
-2009-12-17 Felix Zielcke <fzielcke@z-51.de>
+2009-12-17  Felix Zielcke <fzielcke@z-51.de>
 
 	* gendistlist.sh: Use POSIX compliant `!' instead of `-not' in
 	the `find' command.
@@ -638,7 +642,7 @@
 	(grub_hfs_fs): New value .uuid.
 	* include/grub/hfs.h (grub_hfs_sblock): New field 'num_serial'.
 
-2009-12-14 Felix Zielcke <fzielcke@z-51.de>
+2009-12-14  Felix Zielcke <fzielcke@z-51.de>
 
 	Fix a segfault with parsing unknown long options.
 
@@ -787,11 +791,11 @@
 	* include/grub/pciutils.h: New file.
 	* util/pci.c: Likewise.
 
-2009-12-11 Felix Zielcke <fzielcke@z-51.de>
+2009-12-11  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/misc.c: Don't include <errno.h> twice.
 
-2009-12-10 Felix Zielcke <fzielcke@z-51.de>
+2009-12-10  Felix Zielcke <fzielcke@z-51.de>
 
 	* disk/i386/pc/biosdisk.c (grub_biosdisk_open): Show the disk
 	name in an error message.
@@ -887,7 +891,7 @@
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Recognize
 	anything even prefixed with 'cdrom' as a cdrom.
 
-2009-12-06 Felix Zielcke <fzielcke@z-51.de>
+2009-12-06  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/misc.c (make_system_path_relative_to_its_root): Correctly cope with
 	mount points.
@@ -1103,7 +1107,7 @@
 	($(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po)): Rewrite as ...
 	(po/%.po): ... this.
 
-2009-11-26 Felix Zielcke <fzielcke@z-51.de>
+2009-11-26  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/i386/efi/grub-mkimage.c: Include "progname.h".
 	(main): Use `program_name' instead of nonexistent `progname'.
