@@ -33,7 +33,7 @@ host_os=@host_os@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
 grub_setup=${sbindir}/`echo grub-setup | sed ${transform}`
-if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
+if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
     grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 else
     grub_mkimage=${bindir}/`echo grub-mkelfimage | sed ${transform}`
@@ -52,6 +52,8 @@ debug=no
 
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
     disk_module=biosdisk
+elif [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
+    disk_module=
 else
     disk_module=ata
 fi
@@ -178,7 +180,7 @@ device_map=${grubdir}/device.map
 grub_probe="${grub_probe} --device-map=${device_map}"
 
 # Check if GRUB is installed.
-if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
+if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
     set $grub_setup dummy
     if test -f "$1"; then
         :
@@ -240,7 +242,7 @@ done
 for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst; do
     cp -f $file ${grubdir} || exit 1
 done
-if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
+if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
     for file in ${pkglibdir}/*.img ${pkglibdir}/efiemu??.o; do
 	if test -f $file; then
 	    cp -f $file ${grubdir} || exit 1
@@ -279,7 +281,14 @@ devabstraction_module=`$grub_probe --target=abstraction --device ${grub_device}`
 modules="$modules $disk_module"
 modules="$modules $fs_module $partmap_module $devabstraction_module"
 
+relative_grubdir=`make_system_path_relative_to_its_root ${grubdir}` || exit 1
+if [ "x${relative_grubdir}" = "x" ] ; then
+    relative_grubdir=/
+fi
+
 prefix_drive=
+config_opt=
+
 if [ "x${devabstraction_module}" = "x" ] ; then
     if echo "${install_device}" | grep -qx "(.*)" ; then
       install_drive="${install_device}"
@@ -298,34 +307,33 @@ if [ "x${devabstraction_module}" = "x" ] ; then
           echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
           exit 1
         fi
-        prefix_drive="(UUID=${uuid})"
-        modules="$modules fs_uuid"
+        echo "search.fs_uuid ${uuid} root " > ${grubdir}/load.cfg
+	echo 'set prefix=($root)'"${relative_grubdir}" >> ${grubdir}/load.cfg
+	config_opt="-c ${grubdir}/load.cfg "
+        modules="$modules search_fs_uuid"
     elif [ "x${grub_drive}" != "x${install_drive}" ] ; then
         uuid="`$grub_probe --target=fs_uuid --device ${grub_device}`"
         if [ "x${uuid}" = "x" ] ; then
           echo "You attempted a cross-disk install, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
           exit 1
         fi
-        prefix_drive="(UUID=${uuid})"
-        modules="$modules fs_uuid"
+        echo "search.fs_uuid ${uuid} root " > ${grubdir}/load.cfg
+	echo 'set prefix=($root)'"${relative_grubdir}" >> ${grubdir}/load.cfg
+	config_opt="-c ${grubdir}/load.cfg "
+        modules="$modules search_fs_uuid"
     fi
 else
     prefix_drive=`$grub_probe --target=drive --device ${grub_device}`
 fi
 
-relative_grubdir=`make_system_path_relative_to_its_root ${grubdir}` || exit 1
-if [ "x${relative_grubdir}" = "x" ] ; then
-    relative_grubdir=/
-fi
-
-if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
-    $grub_mkimage --output=${grubdir}/core.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
+if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
+    $grub_mkimage ${config_opt} --output=${grubdir}/core.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 
     # Now perform the installation.
     $grub_setup ${setup_verbose} ${setup_force} --directory=${grubdir} --device-map=${device_map} \
         ${install_device} || exit 1
 else
-    $grub_mkimage -d ${pkglibdir} --output=/boot/multiboot.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
+    $grub_mkimage ${config_opt} -d ${pkglibdir} --output=/boot/multiboot.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 fi
 
 echo "Installation finished. No error reported."

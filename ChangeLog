@@ -1,5 +1,46 @@
 2009-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use search command for preliminar UUID search.
+
+	* commands/search.c: Split into ...
+	* commands/search_wrap.c: ...this
+	* commands/search.c: ...and this.
+	* commands/search_file.c: New file.
+	* commands/search_label.c: New file.
+	* commands/search_uuid.c: New file.
+	* conf/any-emu.rmk (grub_emu_SOURCES): Remove commands/search.c.
+	Add commands/search_wrap.c, commands/search_file.c,
+	commands/search_label.c and commands/search_uuid.c.
+	* conf/common.rmk (pkglib_MODULES): Remove fs_uuid.mod and fs_file.mod.
+	(search_mod_SOURCES): Set to commands/search_wrap.c.
+	(pkglib_MODULES): Add search_fs_file.mod, search_fs_uuid.mod and
+	search_label.mod.
+	(search_fs_file_mod_SOURCES): New variable.
+	(search_fs_file_mod_CFLAGS): Likewise.
+	(search_fs_file_mod_LDFLAGS): Likewise.
+	(search_label_mod_SOURCES): Likewise.
+	(search_label_mod_CFLAGS): Likewise.
+	(search_label_mod_LDFLAGS): Likewise.
+	(search_fs_uuid_mod_SOURCES): New variable.
+	(search_fs_uuid_mod_CFLAGS): Likewise.
+	(search_fs_uuid_mod_LDFLAGS): Likewise.
+	(fs_file_mod_SOURCES): Removed.
+	(fs_file_mod_CFLAGS): Likewise.
+	(fs_file_mod_LDFLAGS): Likewise.
+	(fs_uuid_mod_SOURCES): Removed.
+	(fs_uuid_mod_CFLAGS): Likewise.
+	(fs_uuid_mod_LDFLAGS): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_install_SOURCES):
+	Set to util/grub-install.in.
+	* disk/fs_file.c: Removed.
+	* disk/fs_uuid.c: Likewise.
+	* include/grub/search.h: New file.
+	* util/grub-install.in: Handle sparc64.
+	Create and use load.cfg.
+	* util/sparc64/ieee1275/grub-install.in: Removed.
+
+2009-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/i386/pc/startup.S (grub_biosdisk_get_diskinfo_int13_extensions):
 	Ignore return status if CF is cleared.
 	(grub_biosdisk_get_diskinfo_standard): Likewise.
