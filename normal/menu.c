@@ -435,10 +435,12 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	      break;
 
 	    case 'c':
+	      menu_fini ();
 	      grub_cmdline_run (1);
 	      goto refresh;
 
 	    case 'e':
+	      menu_fini ();
 		{
 		  grub_menu_entry_t e = grub_menu_get_entry (menu, current_entry);
 		  if (e)

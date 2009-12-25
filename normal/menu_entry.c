@@ -135,8 +135,16 @@ print_line (struct line *linep, int offset, int start, int y,
   else
     {
       int i;
+      char *p, c;
+
+      p = linep->buf + linep->len;
+      c = *p;
+      *p = 0;
+      grub_puts_terminal (linep->buf + offset + start, term_screen->term);
+      *p = c;
+
       for (i = 0;
-	   i <= grub_term_entry_width (term_screen->term) - linep->len + offset;
+	   i < grub_term_entry_width (term_screen->term) - linep->len + offset;
 	   i++)
 	grub_putcode (' ', term_screen->term);
     }
@@ -1208,6 +1216,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
   int prev_c;
   grub_err_t err = GRUB_ERR_NONE;
   unsigned i;
+  grub_term_output_t term;
 
   err = grub_auth_check_authentication (NULL);
 
@@ -1222,7 +1231,27 @@ grub_menu_entry_run (grub_menu_entry_t entry)
   if (! screen)
     return;
 
+  screen->terms = NULL;
+
  refresh:
+  grub_free (screen->terms);
+  screen->nterms = 0;
+  FOR_ACTIVE_TERM_OUTPUTS(term)
+    screen->nterms++;
+  screen->terms = grub_malloc (screen->nterms * sizeof (screen->terms[0]));
+  if (!screen->terms)
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+  i = 0;
+  FOR_ACTIVE_TERM_OUTPUTS(term)
+  {
+    screen->terms[i].term = term;
+    screen->terms[i].x = 0;
+    screen->terms[i].y = 0;
+  }
   /* Draw the screen.  */
   for (i = 0; i < screen->nterms; i++)
     grub_menu_init_page (0, 1, screen->terms[i].term);
