@@ -895,7 +895,7 @@ GRUB_MOD_INIT (video_reader_png)
   grub_video_bitmap_reader_register (&png_reader);
 #if defined(PNG_DEBUG)
   grub_register_command ("pngtest", grub_cmd_pngtest,
-			 GRUB_COMMAND_FLAG_BOTH, "pngtest FILE",
+			 GRUB_COMMAND_FLAG_BOTH, "FILE",
 			 "Tests loading of PNG bitmap.", 0);
 #endif
 }

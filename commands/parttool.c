@@ -322,7 +322,7 @@ GRUB_MOD_INIT(parttool)
 {
   mymod = mod;
   cmd = grub_register_command ("parttool", grub_cmd_parttool,
-			       "parttool PARTITION COMMANDS",
+			       "PARTITION COMMANDS",
 			       helpmsg);
 }
 

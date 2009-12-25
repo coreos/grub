@@ -328,14 +328,14 @@ GRUB_MOD_INIT(efiemu)
 {
   cmd_loadcore = grub_register_command ("efiemu_loadcore",
 					grub_cmd_efiemu_load,
-				       "efiemu_loadcore FILE",
+				       "FILE",
 				       "Load and initialize EFI emulator");
   cmd_prepare = grub_register_command ("efiemu_prepare",
 				       grub_cmd_efiemu_prepare,
-				       "efiemu_prepare",
+				       0,
 				       "Finalize loading of EFI emulator");
   cmd_unload = grub_register_command ("efiemu_unload", grub_cmd_efiemu_unload,
-				      "efiemu_unload",
+				      0,
 				      "Unload  EFI emulator");
 }
 

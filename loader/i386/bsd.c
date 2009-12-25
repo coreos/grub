@@ -1280,15 +1280,15 @@ GRUB_MOD_INIT (bsd)
 {
   cmd_freebsd = grub_register_extcmd ("kfreebsd", grub_cmd_freebsd,
 				      GRUB_COMMAND_FLAG_BOTH,
-				      "kfreebsd FILE", "Load kernel of FreeBSD.",
+				      "FILE", "Load kernel of FreeBSD.",
 				      freebsd_opts);
   cmd_openbsd = grub_register_extcmd ("kopenbsd", grub_cmd_openbsd,
 				      GRUB_COMMAND_FLAG_BOTH,
-				      "kopenbsd FILE", "Load kernel of OpenBSD.",
+				      "FILE", "Load kernel of OpenBSD.",
 				      openbsd_opts);
   cmd_netbsd = grub_register_extcmd ("knetbsd", grub_cmd_netbsd,
 				     GRUB_COMMAND_FLAG_BOTH,
-				     "knetbsd FILE", "Load kernel of NetBSD.",
+				     "FILE", "Load kernel of NetBSD.",
 				     netbsd_opts);
   cmd_freebsd_loadenv =
     grub_register_command ("kfreebsd_loadenv", grub_cmd_freebsd_loadenv,

@@ -420,9 +420,9 @@ static grub_command_t cmd_1, cmd_2;
 GRUB_MOD_INIT(test)
 {
   cmd_1 = grub_register_command ("[", grub_cmd_test,
-				 "[ EXPRESSION ]", "Evaluate an expression.");
+				 "EXPRESSION ]", "Evaluate an expression.");
   cmd_2 = grub_register_command ("test", grub_cmd_test,
-				 "test EXPRESSION", "Evaluate an expression.");
+				 "EXPRESSION", "Evaluate an expression.");
 }
 
 GRUB_MOD_FINI(test)

@@ -107,7 +107,7 @@ find_long (const struct grub_arg_option *options, const char *s, int len)
 static void
 show_usage (grub_extcmd_t cmd)
 {
-  grub_printf ("%s %s\n", _("Usage:"), _(cmd->cmd->summary));
+  grub_printf ("%s %s %s\n", _("Usage:"), cmd->cmd->name, _(cmd->cmd->summary));
 }
 
 void

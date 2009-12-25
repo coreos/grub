@@ -178,7 +178,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(terminfo)
 {
   cmd = grub_register_command ("terminfo", grub_cmd_terminfo,
-			       "terminfo [TERM]", "Set terminfo type.");
+			       "[TERM]", "Set terminfo type.");
   grub_terminfo_set_current ("vt100");
 }
 

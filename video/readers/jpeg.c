@@ -731,7 +731,7 @@ GRUB_MOD_INIT (video_reader_jpeg)
   grub_video_bitmap_reader_register (&jpeg_reader);
 #if defined(JPEG_DEBUG)
   grub_register_command ("jpegtest", grub_cmd_jpegtest,
-			 GRUB_COMMAND_FLAG_BOTH, "jpegtest FILE",
+			 GRUB_COMMAND_FLAG_BOTH, "FILE",
 			 "Tests loading of JPEG bitmap.", 0);
 #endif
 }

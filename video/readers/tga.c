@@ -481,7 +481,7 @@ GRUB_MOD_INIT(video_reader_tga)
   grub_video_bitmap_reader_register (&tga_reader);
 #if defined(TGA_DEBUG)
   grub_register_command ("tgatest", grub_cmd_tgatest, GRUB_COMMAND_FLAG_BOTH,
-                         "tgatest FILE", "Tests loading of TGA bitmap.", 0);
+                         "FILE", "Tests loading of TGA bitmap.", 0);
 #endif
 }
 

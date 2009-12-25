@@ -759,7 +759,7 @@ GRUB_MOD_INIT(acpi)
 {
   cmd = grub_register_extcmd ("acpi", grub_cmd_acpi,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      "acpi [-1|-2] [--exclude=table1,table2|"
+			      "[-1|-2] [--exclude=table1,table2|"
 			      "--load-only=table1,table2] filename1 "
 			      " [filename2] [...]",
 			      "Load host acpi tables and tables "

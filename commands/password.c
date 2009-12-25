@@ -75,7 +75,7 @@ GRUB_MOD_INIT(password)
 {
   my_mod = mod;
   cmd = grub_register_command ("password", grub_cmd_password,
-			       "password USER PASSWORD",
+			       "USER PASSWORD",
 			       "Set user password (plaintext). "
 			       "Unrecommended and insecure.");
 }

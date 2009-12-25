@@ -110,7 +110,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(blocklist)
 {
   cmd = grub_register_command ("blocklist", grub_cmd_blocklist,
-			       "blocklist FILE", "Print a block list.");
+			       "FILE", "Print a block list.");
 }
 
 GRUB_MOD_FINI(blocklist)

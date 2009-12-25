@@ -1,3 +1,57 @@
+2009-12-26  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/help.c (grub_cmd_help): Print the command name before the
+	summary.
+	(GRUB_MOD_INIT): Remove command name from the summary.
+	* kern/command.c (GRUB_MOD_INIT): If summary is null assign an empty
+	strig as summary.
+	* lib/arg.c (find_long): Print the command name before the summary.
+	* commands/acpi.c (GRUB_MOD_INIT): Remove command name from the
+	summary.
+	* commands/blocklist.c (GRUB_MOD_INIT): Likewise.
+	* commands/cat.c (GRUB_MOD_INIT): Likewise.
+	* commands/cmp.c (GRUB_MOD_INIT): Likewise.
+	* commands/configfile.c (GRUB_MOD_INIT): Likewise.
+	* commands/crc.c (GRUB_MOD_INIT): Likewise.
+	* commands/date.c (GRUB_MOD_INIT): Likewise.
+	* commands/echo.c (GRUB_MOD_INIT): Likewise.
+	* commands/efi/loadbios.c (GRUB_MOD_INIT): Likewise.
+	* commands/gptsync.c (GRUB_MOD_INIT): Likewise.
+	* commands/handler.c (GRUB_MOD_INIT): Likewise.
+	* commands/hdparm.c (GRUB_MOD_INIT): Likewise.
+	* commands/hexdump.c (GRUB_MOD_INIT): Likewise.
+	* commands/i386/cpuid.c (GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/halt.c (GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/play.c (GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/pxecmd.c (GRUB_MOD_INIT): Likewise.
+	* commands/keystatus.c (GRUB_MOD_INIT): Likewise.
+	* commands/loadenv.c (GRUB_MOD_INIT): Likewise.
+	* commands/ls.c (GRUB_MOD_INIT): Likewise.
+	* commands/lspci.c (GRUB_MOD_INIT): Likewise.
+	* commands/memrw.c (GRUB_MOD_INIT): Likewise.
+	* commands/minicmd.c (GRUB_MOD_INIT): Likewise.
+	* commands/parttool.c (GRUB_MOD_INIT): Likewise.
+	* commands/password.c (GRUB_MOD_INIT): Likewise.
+	* commands/probe.c (GRUB_MOD_INIT): Likewise.
+	* commands/read.c (GRUB_MOD_INIT): Likewise.
+	* commands/search.c (GRUB_MOD_INIT): Likewise.
+	* commands/sleep.c (GRUB_MOD_INIT): Likewise.
+	* commands/test.c (GRUB_MOD_INIT): Likewise.
+	* commands/xnu_uuid.c (GRUB_MOD_INIT): Likewise.
+	* efiemu/main.c (GRUB_MOD_INIT): Likewise.
+	* font/font_cmd.c (GRUB_MOD_INIT): Likewise.
+	* gettext/gettext.c (GRUB_MOD_INIT): Likewise.
+	* kern/corecmd.c (GRUB_MOD_INIT): Likewise.
+	* lib/arg.c (GRUB_MOD_INIT): Likewise.
+	* loader/efi/appleloader.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/bsd.c (GRUB_MOD_INIT): Likewise.
+	* loader/xnu.c (GRUB_MOD_INIT): Likewise.
+	* mmap/mmap.c (GRUB_MOD_INIT): Likewise.
+	* term/terminfo.c (GRUB_MOD_INIT): Likewise.
+	* video/readers/jpeg.c (GRUB_MOD_INIT): Likewise.
+	* video/readers/png.c (GRUB_MOD_INIT): Likewise.
+	* video/readers/tga.c (GRUB_MOD_INIT): Likewise.
+
 2009-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Use search command for preliminar UUID search.

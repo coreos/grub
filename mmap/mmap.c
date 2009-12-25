@@ -414,7 +414,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(mmap)
 {
   cmd = grub_register_command ("badram", grub_cmd_badram,
-			       "badram ADDR1,MASK1[,ADDR2,MASK2[,...]]",
+			       "ADDR1,MASK1[,ADDR2,MASK2[,...]]",
 			       "declare memory regions as badram");
 }
 

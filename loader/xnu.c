@@ -1412,7 +1412,7 @@ GRUB_MOD_INIT(xnu)
   cmd_kext = grub_register_command ("xnu_kext", grub_cmd_xnu_kext, 0,
 				    "Load XNU extension.");
   cmd_kextdir = grub_register_command ("xnu_kextdir", grub_cmd_xnu_kextdir,
-				       "xnu_kextdir DIRECTORY [OSBundleRequired]",
+				       "DIRECTORY [OSBundleRequired]",
 				       "Load XNU extension directory");
   cmd_ramdisk = grub_register_command ("xnu_ramdisk", grub_cmd_xnu_ramdisk, 0,
 				       "Load XNU ramdisk. "
