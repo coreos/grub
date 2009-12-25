@@ -132,7 +132,7 @@ grub_cls (void)
     if ((term->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
       {
 	grub_putcode ('\n', term);
-	grub_refresh ();
+	grub_term_refresh (term);
       }
     else
       (term->cls) ();

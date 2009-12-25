@@ -391,13 +391,15 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
 	    case GRUB_TERM_UP:
 	    case '^':
-	      current_entry--;
+	      if (current_entry > 0)
+		current_entry--;
 	      menu_set_chosen_entry (current_entry);
 	      break;
 
 	    case GRUB_TERM_DOWN:
 	    case 'v':
-	      current_entry++;
+	      if (current_entry < menu->size - 1)
+		current_entry++;
 	      menu_set_chosen_entry (current_entry);
 	      break;
 
@@ -411,9 +413,9 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
 	    case GRUB_TERM_NPAGE:
 	      if (current_entry + GRUB_MENU_PAGE_SIZE < menu->size)
-		current_entry = 0;
-	      else
 		current_entry += GRUB_MENU_PAGE_SIZE;
+	      else
+		current_entry = menu->size - 1;
 	      menu_set_chosen_entry (current_entry);
 	      break;
 

@@ -359,6 +359,18 @@ grub_term_setcursor (struct grub_term_output *term, int on)
     term->setcursor (on);
 }
 
+static inline void 
+grub_term_cls (struct grub_term_output *term)
+{
+  if (term->cls)
+    (term->cls) ();
+  else
+    {
+      grub_putcode ('\n', term);
+      grub_term_refresh (term);
+    }
+}
+
 static inline grub_ssize_t 
 grub_term_getcharwidth (struct grub_term_output *term, grub_uint32_t c)
 {
@@ -372,7 +384,13 @@ static inline void
 grub_term_getcolor (struct grub_term_output *term, 
 		    grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
 {
-  term->getcolor (normal_color, highlight_color);
+  if (term->getcolor)
+    term->getcolor (normal_color, highlight_color);
+  else
+    {
+      *normal_color = 0x07;
+      *highlight_color = 0x07;
+    }
 }
 
 extern void (*EXPORT_VAR (grub_newline_hook)) (void);

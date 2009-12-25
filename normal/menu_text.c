@@ -202,8 +202,8 @@ entry is highlighted.\n");
 
       if (nested)
         {
-          grub_printf ("\n        ");
-          grub_printf_ (N_("ESC to return previous menu."));
+          grub_puts_terminal ("\n        ", term);
+          grub_puts_terminal (_("ESC to return previous menu."), term);
         }
     }
 }
@@ -385,10 +385,11 @@ menu_text_set_chosen_entry (int entry, void *dataptr)
   struct menu_viewer_data *data = dataptr;
   int oldoffset = data->offset;
   int complete_redraw = 0;
+
   data->offset = entry - data->first;
   if (data->offset > grub_term_num_entries (data->term) - 1)
     {
-      data->first = data->offset - (grub_term_num_entries (data->term) - 1);
+      data->first = entry - (grub_term_num_entries (data->term) - 1);
       data->offset = grub_term_num_entries (data->term) - 1;
       complete_redraw = 1;
     }
@@ -418,6 +419,8 @@ menu_text_fini (void *dataptr)
   struct menu_viewer_data *data = dataptr;
 
   grub_term_setcursor (data->term, 1);
+  grub_term_cls (data->term);
+
 }
 
 static void
@@ -456,13 +459,14 @@ grub_menu_text_register_instances (int entry, grub_menu_t menu, int nested)
 	grub_errno = GRUB_ERR_NONE;
 	continue;
       }
+
     data->term = term;
     instance->data = data;
     instance->set_chosen_entry = menu_text_set_chosen_entry;
     instance->print_timeout = menu_text_print_timeout;
     instance->clear_timeout = menu_text_clear_timeout;
     instance->fini = menu_text_fini;
-    
+
     data->menu = menu;
     
     data->offset = entry;
@@ -477,5 +481,6 @@ grub_menu_text_register_instances (int entry, grub_menu_t menu, int nested)
     grub_menu_init_page (nested, 0, data->term);
     print_entries (menu, data->first, data->offset, data->term);
     grub_term_refresh (data->term);
+    grub_menu_register_viewer (instance);
   }
 }
