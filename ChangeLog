@@ -652,7 +652,7 @@
 
 	* include/grub/misc.h (grub_puts): New declaration.
 	(grub_puts_): Likewise.
-	* kern/mis.c (grub_puts): New definition.
+	* kern/misc.c (grub_puts): New definition.
 	(grub_puts_): Likewise.
 
 2009-12-13  Robert Millan  <rmh.grub@aybabtu.com>
