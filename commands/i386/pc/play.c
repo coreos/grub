@@ -27,6 +27,7 @@
 #include <grub/machine/time.h>
 #include <grub/cpu/io.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 #define BASE_TEMPO 120
 
@@ -207,7 +208,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(play)
 {
   cmd = grub_register_command ("play", grub_cmd_play,
-			       "play FILE", "Play a tune.");
+			       N_("play FILE"), N_("Play a tune."));
 }
 
 GRUB_MOD_FINI(play)

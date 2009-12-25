@@ -22,6 +22,7 @@
 #include <grub/err.h>
 #include <grub/term.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 /* Built-in parser for default options.  */
 #define SHORT_ARG_HELP	-100
@@ -30,9 +31,9 @@
 static const struct grub_arg_option help_options[] =
   {
     {"help", SHORT_ARG_HELP, 0,
-     "Display this help and exit.", 0, ARG_TYPE_NONE},
+     N_("Display this help and exit."), 0, ARG_TYPE_NONE},
     {"usage", SHORT_ARG_USAGE, 0,
-     "Display the usage of this command and exit.", 0, ARG_TYPE_NONE},
+     N_("Display the usage of this command and exit."), 0, ARG_TYPE_NONE},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -106,7 +107,7 @@ find_long (const struct grub_arg_option *options, const char *s, int len)
 static void
 show_usage (grub_extcmd_t cmd)
 {
-  grub_printf ("Usage: %s\n", cmd->cmd->summary);
+  grub_printf ("%s %s\n", _("Usage:"), _(cmd->cmd->summary));
 }
 
 void
@@ -143,7 +144,7 @@ grub_arg_show_help (grub_extcmd_t cmd)
 		}
 	    }
 
-	  const char *doc = opt->doc;
+	  const char *doc = _(opt->doc);
 	  for (;;)
 	    {
 	      while (spacing-- > 0)
@@ -176,7 +177,7 @@ grub_arg_show_help (grub_extcmd_t cmd)
     }
 
   show_usage (cmd);
-  grub_printf ("%s\n\n", cmd->cmd->description);
+  grub_printf ("%s\n\n", _(cmd->cmd->description));
   if (cmd->options)
     showargs (cmd->options);
   showargs (help_options);

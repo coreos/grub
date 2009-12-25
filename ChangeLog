@@ -1,3 +1,22 @@
+2009-12-25  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/help.c: Include `<grub/i18n.h>'.
+	(grub_cmd_help): Gettextizze.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/play.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* commands/search.c: Include `<grub/i18n.h>'.
+	(options): Gettextizze.
+	(GRUB_MOD_INIT): Gettextizze.
+	* lib/arg.c: Include `<grub/i18n.h>'.
+	(help_options): Gettextizze.
+	(find_long): Likewise.
+	(grub_arg_show_help): Likewise.
+	* normal/dyncmd.c: Include `<grub/i18n.h>'.
+	(read_command_list): Gettextizze.
+	* po/POTFILES: Add `commands/i386/pc/play.c', `commands/search.c',
+	`commands/help.c', `lib/arg.c' and `normal/dyncmd.c'. 
+
 2009-12-25  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/i386/at_keyboard.h (NUM_LOCK, SCROLL_LOCK): New macros.
