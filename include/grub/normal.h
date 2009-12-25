@@ -46,7 +46,7 @@ enum grub_completion_type
 typedef enum grub_completion_type grub_completion_type_t;
 
 extern struct grub_menu_viewer grub_normal_text_menu_viewer;
-
+extern int grub_normal_exit_level;
 
 /* Defined in `main.c'.  */
 void grub_enter_normal_mode (const char *config);

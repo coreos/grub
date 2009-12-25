@@ -344,6 +344,9 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
       int c;
       timeout = grub_menu_get_timeout ();
 
+      if (grub_normal_exit_level)
+	return -1;
+
       if (timeout > 0)
 	{
 	  grub_uint64_t current_time;
@@ -553,6 +556,9 @@ grub_show_menu (grub_menu_t menu, int nested)
     {
       err1 = show_menu (menu, nested);
       grub_print_error ();
+
+      if (grub_normal_exit_level)
+	break;
 
       err2 = grub_auth_check_authentication (NULL);
       if (err2)

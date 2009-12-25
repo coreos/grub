@@ -34,6 +34,9 @@
 
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
+static int nested_level = 0;
+int grub_normal_exit_level = 0;
+
 /* Read a line from the file FILE.  */
 char *
 grub_file_getline (grub_file_t file)
@@ -430,8 +433,6 @@ grub_normal_init_page (struct grub_term_output *term)
   grub_free (unicode_msg);
 }
 
-static int reader_nested;
-
 /* Read the config file CONFIG and execute the menu interface or
    the command line interface if BATCH is false.  */
 void
@@ -445,8 +446,6 @@ grub_normal_execute (const char *config, int nested, int batch)
   read_crypto_list ();
   read_terminal_list ();
   grub_command_execute ("parser.grub", 0, 0);
-
-  reader_nested = nested;
 
   if (config)
     {
@@ -471,8 +470,12 @@ grub_normal_execute (const char *config, int nested, int batch)
 void
 grub_enter_normal_mode (const char *config)
 {
+  nested_level++;
   grub_normal_execute (config, 0, 0);
-  grub_cmdline_run (1);
+  grub_cmdline_run (0);
+  nested_level--;
+  if (grub_normal_exit_level)
+    grub_normal_exit_level--;
 }
 
 /* Enter normal mode from rescue mode.  */
@@ -508,8 +511,20 @@ quit:
   return 0;
 }
 
+/* Exit from normal mode to rescue mode.  */
 static grub_err_t
-grub_normal_reader_init (void)
+grub_cmd_normal_exit (struct grub_command *cmd __attribute__ ((unused)),
+		      int argc __attribute__ ((unused)),
+		      char *argv[] __attribute__ ((unused)))
+{
+  if (nested_level <= grub_normal_exit_level)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "not in normal environment");
+  grub_normal_exit_level++;
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_normal_reader_init (int nested)
 {
   struct grub_term_output *term;
   const char *msg = _("Minimal BASH-like line editing is supported. For "
@@ -519,7 +534,7 @@ grub_normal_reader_init (void)
   char *msg_formatted = grub_malloc (sizeof (char) * (grub_strlen (msg) +
                 grub_strlen(msg_esc) + 1));
 
-  grub_sprintf (msg_formatted, msg, reader_nested ? msg_esc : "");
+  grub_sprintf (msg_formatted, msg, nested ? msg_esc : "");
 
   FOR_ACTIVE_TERM_OUTPUTS(term)
   {
@@ -536,12 +551,15 @@ grub_normal_reader_init (void)
 
 
 static grub_err_t
-grub_normal_read_line (char **line, int cont)
+grub_normal_read_line_real (char **line, int cont, int nested)
 {
   grub_parser_t parser = grub_parser_get_current ();
   char prompt[sizeof("> ") + grub_strlen (parser->name)];
 
-  grub_sprintf (prompt, "%s> ", parser->name);
+  if (cont)
+    grub_sprintf (prompt, "> ");
+  else
+    grub_sprintf (prompt, "%s> ", parser->name);
 
   while (1)
     {
@@ -549,7 +567,7 @@ grub_normal_read_line (char **line, int cont)
       if (*line)
 	break;
 
-      if ((reader_nested) || (cont))
+      if (cont || nested)
 	{
 	  grub_free (*line);
 	  *line = 0;
@@ -558,6 +576,12 @@ grub_normal_read_line (char **line, int cont)
     }
 
   return 0;
+}
+
+static grub_err_t
+grub_normal_read_line (char **line, int cont)
+{
+  return grub_normal_read_line_real (line, cont, 0);
 }
 
 void
@@ -574,19 +598,20 @@ grub_cmdline_run (int nested)
       return;
     }
 
-  reader_nested = nested;
-
-  grub_normal_reader_init ();
+  grub_normal_reader_init (nested);
 
   while (1)
     {
       char *line;
 
+      if (grub_normal_exit_level)
+	break;
+
       /* Print an error, if any.  */
       grub_print_error ();
       grub_errno = GRUB_ERR_NONE;
 
-      grub_normal_read_line (&line, 0);
+      grub_normal_read_line_real (&line, 0, nested);
       if (! line)
 	break;
 
@@ -623,6 +648,8 @@ GRUB_MOD_INIT(normal)
   /* Register a command "normal" for the rescue mode.  */
   grub_register_command ("normal", grub_cmd_normal,
 			 0, "Enter normal mode");
+  grub_register_command ("normal_exit", grub_cmd_normal_exit,
+			 0, "Exit from normal mode");
 
   /* Reload terminal colors when these variables are written to.  */
   grub_register_variable_hook ("color_normal", NULL, grub_env_write_color_normal);

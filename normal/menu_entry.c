@@ -1270,6 +1270,12 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 	  screen->completion_shown = 0;
 	}
 
+      if (grub_normal_exit_level)
+	{
+	  destroy_screen (screen);
+	  return;
+	}
+
       switch (c)
 	{
 	case 16: /* C-p */
