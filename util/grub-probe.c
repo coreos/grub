@@ -259,7 +259,7 @@ probe (const char *path, char *device_name)
 	      grub_util_info ("reading %s via GRUB facilities", grub_path);
 	      file = grub_file_open (grub_path);
 	      if (! file)
-		grub_util_error ("can not open %s via GRUB facilities", grub_path);
+		grub_util_error ("cannot open %s via GRUB facilities", grub_path);
 	      filebuf_via_grub = xmalloc (file->size);
 	      grub_file_read (file, filebuf_via_grub, file->size);
 

@@ -281,7 +281,7 @@ grub_ata_identify (struct grub_ata_device *dev)
       else
 	/* Other Error.  */
 	return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-			   "device can not be identified");
+			   "device cannot be identified");
     }
 
   grub_ata_pio_read (dev, info, GRUB_DISK_SECTOR_SIZE);
@@ -520,7 +520,7 @@ grub_ata_setaddress (struct grub_ata_device *dev,
 	    || cylinder > dev->cylinders
 	    || head > dev->heads)
 	  return grub_error (GRUB_ERR_OUT_OF_RANGE,
-			     "sector %d can not be addressed "
+			     "sector %d cannot be addressed "
 			     "using CHS addressing", sector);
 
 	grub_ata_regset (dev, GRUB_ATA_REG_DISK, (dev->device << 4) | head);

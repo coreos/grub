@@ -1,3 +1,27 @@
+2009-12-25  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/efi/loadbios.c: Capitalize acronyms, replace `could not' by
+	`couldn't' and `can not' by `cannot'.
+	* commands/i386/pc/drivemap.c: Likewise.
+	* disk/ata.c: Likewise.
+	* disk/ieee1275/nand.c: Likewise.
+	* fs/affs.c: Likewise.
+	* fs/fat.c: Likewise.
+	* fs/hfs.c: Likewise.
+	* fs/hfsplus.c: Likewise.
+	* fs/iso9660.c: Likewise.
+	* fs/jfs.c: Likewise.
+	* fs/minix.c: Likewise.
+	* fs/reiserfs.c: Likewise.
+	* fs/sfs.c: Likewise.
+	* fs/udf.c: Likewise.
+	* fs/ufs.c: Likewise.
+	* fs/xfs.c: Likewise.
+	* loader/powerpc/ieee1275/linux.c: Likewise.
+	* loader/sparc64/ieee1275/linux.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/misc.c: Likewise.
+
 2009-12-24  Carles Pina i Estany  <carles@pina.cat>
 
 	* bus/usb/usbhub.c: Fix capitalization, fullstop and newlines in

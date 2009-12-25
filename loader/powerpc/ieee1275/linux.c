@@ -75,10 +75,10 @@ grub_linux_release_mem (void)
   linux_args = 0;
 
   if (linux_addr && grub_ieee1275_release (linux_addr, linux_size))
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "can not release memory");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot release memory");
 
   if (initrd_addr && grub_ieee1275_release (initrd_addr, initrd_size))
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "can not release memory");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot release memory");
 
   linux_addr = 0;
   initrd_addr = 0;
@@ -128,7 +128,7 @@ grub_linux_load32 (grub_elf_t elf)
 	break;
     }
   if (found_addr == -1)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "could not claim memory");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't claim memory");
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr, int *do_load);
@@ -178,7 +178,7 @@ grub_linux_load64 (grub_elf_t elf)
 	break;
     }
   if (found_addr == -1)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "could not claim memory");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't claim memory");
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load);
@@ -321,7 +321,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (found_addr == -1)
     {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "can not claim memory");
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot claim memory");
       goto fail;
     }
 

@@ -67,7 +67,7 @@ grub_nand_open (const char *name, grub_disk_t disk)
     } args;
 
   if (! grub_strstr (name, "nand"))
-    return  grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a nand device");
+    return  grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a NAND device");
 
   data = grub_malloc (sizeof (*data));
   if (! data)

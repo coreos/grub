@@ -290,7 +290,7 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
   else
     {
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "xfs does not support inode format %d yet",
+		  "XFS does not support inode format %d yet",
 		  node->inode.format);
       return 0;
     }
@@ -567,7 +567,7 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 
     default:
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "xfs does not support inode format %d yet",
+		  "XFS does not support inode format %d yet",
 		  diro->inode.format);
     }
   return 0;
@@ -590,7 +590,7 @@ grub_xfs_mount (grub_disk_t disk)
 
   if (grub_strncmp ((char *) (data->sblock.magic), "XFSB", 4))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a xfs filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a XFS filesystem");
       goto fail;
     }
 
@@ -617,7 +617,7 @@ grub_xfs_mount (grub_disk_t disk)
  fail:
 
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
-    grub_error (GRUB_ERR_BAD_FS, "not an xfs filesystem");
+    grub_error (GRUB_ERR_BAD_FS, "not an XFS filesystem");
 
   grub_free (data);
 

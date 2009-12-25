@@ -280,13 +280,13 @@ grub_iso9660_mount (grub_disk_t disk)
 			  sizeof (struct grub_iso9660_primary_voldesc),
 			  (char *) &voldesc))
         {
-          grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
+          grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
           goto fail;
         }
 
       if (grub_strncmp ((char *) voldesc.voldesc.magic, "CD001", 5) != 0)
         {
-          grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
+          grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
           goto fail;
         }
 
@@ -315,7 +315,7 @@ grub_iso9660_mount (grub_disk_t disk)
 			     << GRUB_ISO9660_LOG2_BLKSZ), 0,
 		      sizeof (rootdir), (char *) &rootdir))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
       goto fail;
     }
 
@@ -331,7 +331,7 @@ grub_iso9660_mount (grub_disk_t disk)
 			     << GRUB_ISO9660_LOG2_BLKSZ), sua_pos,
 		      sua_size, sua))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
       goto fail;
     }
 

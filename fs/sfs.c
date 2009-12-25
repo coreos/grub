@@ -279,7 +279,7 @@ grub_sfs_mount (grub_disk_t disk)
   /* Make sure this is a sfs filesystem.  */
   if (grub_strncmp ((char *) (data->rblock.header.magic), "SFS", 4))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a sfs filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a SFS filesystem");
       goto fail;
     }
 
@@ -307,7 +307,7 @@ grub_sfs_mount (grub_disk_t disk)
 
  fail:
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
-    grub_error (GRUB_ERR_BAD_FS, "not an sfs filesystem");
+    grub_error (GRUB_ERR_BAD_FS, "not an SFS filesystem");
 
   grub_free (data);
   grub_free (rootobjc_data);

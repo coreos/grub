@@ -415,7 +415,7 @@ grub_ufs_lookup_symlink (struct grub_ufs_data *data, int ino)
 
   grub_ufs_find_file (data, symlink);
   if (grub_errno)
-    grub_error (grub_errno, "can not follow symlink `%s'", symlink);
+    grub_error (grub_errno, "cannot follow symlink `%s'", symlink);
 
   return grub_errno;
 }

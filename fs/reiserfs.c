@@ -691,7 +691,7 @@ grub_reiserfs_mount (grub_disk_t disk)
   if (grub_memcmp (data->superblock.magic_string,
                    REISERFS_MAGIC_STRING, sizeof (REISERFS_MAGIC_STRING) - 1))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a reiserfs filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a ReiserFS filesystem");
       goto fail;
     }
   data->disk = disk;
@@ -700,7 +700,7 @@ grub_reiserfs_mount (grub_disk_t disk)
  fail:
   /* Disk is too small to contain a ReiserFS.  */
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
-    grub_error (GRUB_ERR_BAD_FS, "not a reiserfs filesystem");
+    grub_error (GRUB_ERR_BAD_FS, "not a ReiserFS filesystem");
 
   grub_free (data);
   return 0;

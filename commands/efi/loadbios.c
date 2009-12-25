@@ -160,7 +160,7 @@ grub_cmd_loadbios (grub_command_t cmd __attribute__ ((unused)),
   int size;
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no rom image specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no ROM image specified");
 
   if (argc > 1)
     {
