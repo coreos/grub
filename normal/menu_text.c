@@ -196,15 +196,22 @@ entry is highlighted.\n");
 
       grub_free (msg_translated);
 
-      grub_print_message_indented (_("Press enter to boot the selected OS, \
-\'e\' to edit the commands before booting or \'c\' for a command-line.\n"),
-				   STANDARD_MARGIN, STANDARD_MARGIN, term);
-
       if (nested)
-        {
-          grub_puts_terminal ("\n        ", term);
-          grub_puts_terminal (_("ESC to return previous menu."), term);
-        }
+	{
+	  grub_print_message_indented
+	    (_("Press enter to boot the selected OS, "
+	       "\'e\' to edit the commands before booting "
+	       "or \'c\' for a command-line. ESC to return previous menu.\n"),
+	     STANDARD_MARGIN, STANDARD_MARGIN, term);
+	}
+      else
+	{
+	  grub_print_message_indented
+	    (_("Press enter to boot the selected OS, "
+	       "\'e\' to edit the commands before booting "
+	       "or \'c\' for a command-line.\n"),
+	     STANDARD_MARGIN, STANDARD_MARGIN, term);
+	}	
     }
 }
 
