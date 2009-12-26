@@ -636,13 +636,6 @@ GRUB_MOD_INIT(normal)
 
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
-  grub_menu_register_viewer_init (grub_menu_text_register_instances);
-  if (grub_errno)
-    {
-      grub_print_error ();
-      grub_errno = GRUB_ERR_NONE;
-    }
-
   grub_register_variable_hook ("pager", 0, grub_env_write_pager);
 
   /* Register a command "normal" for the rescue mode.  */

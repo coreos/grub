@@ -242,7 +242,7 @@ VIDEOFILES += #{video}
 	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/genhandlerlist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
-#{terminal}: #{src} $(#{src}_DEPENDENCIES) genterminlist.sh
+#{terminal}: #{src} $(#{src}_DEPENDENCIES) genterminallist.sh
 	set -e; \
 	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/genterminallist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
