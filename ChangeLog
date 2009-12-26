@@ -1,5 +1,11 @@
 2009-12-27  Carles Pina i Estany  <carles@pina.cat>
 
+	* normal/cmdline.c (grub_cmdline_get): Print a space after prompt.
+	* normal/main.c (grub_normal_read_line): Remove a space from the
+	default prompt.
+
+2009-12-27  Carles Pina i Estany  <carles@pina.cat>
+
 	* loader/i386/efi/linux.c (GRUB_MOD_INIT): Improve command summary.
 	* loader/i386/ieee1275/linux.c (GRUB_MOD_INIT): Likewise.
 	* loader/i386/linux.c (GRUB_MOD_INIT): Likewise.
