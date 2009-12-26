@@ -44,7 +44,7 @@ grub_gfxmenu_viewer_fini (void *data __attribute__ ((unused)))
 {
 }
 
-/* FIXME: 't' and 'c'.  */
+/* FIXME: Previously 't' changed to text menu is it necessary?  */
 grub_err_t
 grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
 {

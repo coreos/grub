@@ -430,6 +430,9 @@ init_terminal (grub_gfxmenu_view_t view)
   grub_gfxterm_decorator_hook = grub_gfxmenu_draw_terminal_box;
 }
 
+/* FIXME: previously notifications were displayed in special case.
+   Is it necessary?
+ */
 #if 0
 /* Sets MESSAGE as the progress message for the view.
    MESSAGE can be 0, in which case no message is displayed.  */
