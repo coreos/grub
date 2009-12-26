@@ -349,9 +349,9 @@ static grub_command_t cmd_linux, cmd_initrd;
 GRUB_MOD_INIT(linux)
 {
   cmd_linux = grub_register_command ("linux", grub_cmd_linux,
-				     0, "Load a linux kernel.");
+				     0, "Load Linux.");
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
-				      0, "Load an initrd.");
+				      0, "Load initrd.");
   my_mod = mod;
 }
 

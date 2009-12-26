@@ -383,7 +383,7 @@ GRUB_MOD_INIT(linux16)
 {
   cmd_linux =
     grub_register_command ("linux16", grub_cmd_linux,
-			   0, "Load linux.");
+			   0, "Load Linux.");
   cmd_initrd =
     grub_register_command ("initrd16", grub_cmd_initrd,
 			   0, "Load initrd.");
