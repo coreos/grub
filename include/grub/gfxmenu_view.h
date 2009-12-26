@@ -45,14 +45,6 @@ grub_err_t grub_gui_recreate_box (grub_gfxmenu_box_t *boxptr,
 
 void grub_gfxmenu_view_draw (grub_gfxmenu_view_t view);
 
-int grub_gfxmenu_view_execute_with_fallback (grub_gfxmenu_view_t view,
-                                             grub_menu_entry_t entry);
-
-int grub_gfxmenu_view_execute_entry (grub_gfxmenu_view_t view,
-                                     grub_menu_entry_t entry);
-
-void grub_gfxmenu_view_run_terminal (grub_gfxmenu_view_t view);
-
 void
 grub_gfxmenu_redraw_menu (grub_gfxmenu_view_t view);
 

@@ -39,26 +39,9 @@
 
 grub_gfxmenu_view_t cached_view;
 
-static grub_err_t
-set_graphics_mode (void)
-{
-  const char *modestr = grub_env_get ("gfxmode");
-  if (!modestr || !modestr[0])
-    modestr = "auto";
-  return grub_video_set_mode (modestr, GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
-}
-
-/* FIXME: conflicts with gfxterm.  */
-static grub_err_t
-set_text_mode (void)
-{
-  return grub_video_restore ();
-}
-
 void 
 grub_gfxmenu_viewer_fini (void *data __attribute__ ((unused)))
 {
-  set_text_mode ();
 }
 
 /* FIXME: 't' and 'c'.  */
@@ -73,18 +56,23 @@ grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
 
   theme_path = grub_env_get ("theme");
   if (! theme_path)
-    return grub_error (GRUB_ERR_FILE_NOT_FOUND, "no theme specified");
+    {
+      grub_gfxterm_fullscreen ();
+      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "no theme specified");
+    }
 
   instance = grub_zalloc (sizeof (*instance));
   if (!instance)
-    return grub_errno;
+    {
+      grub_gfxterm_fullscreen ();
+      return grub_errno;
+    }
 
-  set_graphics_mode ();
   err = grub_video_get_info (&mode_info);
   if (err)
     {
-      set_text_mode ();
-      return 0;
+      grub_gfxterm_fullscreen ();
+      return err;
     }
 
   if (!cached_view || grub_strcmp (cached_view->theme_path, theme_path) != 0
@@ -100,7 +88,7 @@ grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
   if (! cached_view)
     {
       grub_free (instance);
-      set_text_mode ();
+      grub_gfxterm_fullscreen ();
       return grub_errno;
     }
 
@@ -129,6 +117,15 @@ grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
 
 GRUB_MOD_INIT (gfxmenu)
 {
+  struct grub_term_output *term;
+
+  FOR_ACTIVE_TERM_OUTPUTS(term)
+    if (grub_gfxmenu_try_hook && grub_strcmp (term->name, "gfxterm") == 0)
+      {
+	grub_gfxterm_fullscreen ();
+	break;
+      }
+
   grub_gfxmenu_try_hook = grub_gfxmenu_try;
 }
 

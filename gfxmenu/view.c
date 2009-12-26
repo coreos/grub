@@ -41,9 +41,10 @@
    status changes.  */
 #define TIMEOUT_COMPONENT_ID "__timeout__"
 
-#if 0
+static void
+init_terminal (grub_gfxmenu_view_t view);
+static grub_video_rect_t term_rect;
 static grub_gfxmenu_view_t term_view;
-#endif
 
 /* Create a new view object, loading the theme specified by THEME_PATH and
    associating MODEL with the view.  */
@@ -98,10 +99,6 @@ grub_gfxmenu_view_new (const char *theme_path,
       return 0;
     }
 
-#if 0
-  init_terminal (view);
-#endif
-
   return view;
 }
 
@@ -119,25 +116,7 @@ grub_gfxmenu_view_destroy (grub_gfxmenu_view_t view)
   if (view->canvas)
     view->canvas->ops->component.destroy (view->canvas);
   grub_free (view);
-
-#if 0
-  destroy_terminal ();
-#endif
 }
-
-#if 0
-/* Sets MESSAGE as the progress message for the view.
-   MESSAGE can be 0, in which case no message is displayed.  */
-static void
-set_progress_message (grub_gfxmenu_view_t view, const char *message)
-{
-  grub_free (view->progress_message_text);
-  if (message)
-    view->progress_message_text = grub_strdup (message);
-  else
-    view->progress_message_text = 0;
-}
-#endif
 
 static void
 redraw_background (grub_gfxmenu_view_t view,
@@ -331,6 +310,9 @@ void
 grub_gfxmenu_view_redraw (grub_gfxmenu_view_t view,
 			  const grub_video_rect_t *region)
 {
+  if (grub_video_have_common_points (&term_rect, region))
+    grub_gfxterm_schedule_repaint ();
+
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
   redraw_background (view, region);
@@ -344,11 +326,17 @@ grub_gfxmenu_view_redraw (grub_gfxmenu_view_t view,
 void
 grub_gfxmenu_view_draw (grub_gfxmenu_view_t view)
 {
+  init_terminal (view);
+
   /* Clear the screen; there may be garbage left over in video memory. */
   grub_video_fill_rect (grub_video_map_rgb (0, 0, 0),
                         view->screen.x, view->screen.y,
                         view->screen.width, view->screen.height);
   grub_video_swap_buffers ();
+  if (view->double_repaint)
+    grub_video_fill_rect (grub_video_map_rgb (0, 0, 0),
+			  view->screen.x, view->screen.y,
+			  view->screen.width, view->screen.height);
 
   update_menu_components (view);
 
@@ -399,77 +387,60 @@ grub_gfxmenu_set_chosen_entry (int entry, void *data)
   grub_gfxmenu_redraw_menu (view);
 }
 
-
-/* FIXME */
-#if 0
-static int term_target_width;
-static int term_target_height;
-static int term_initialized;
-static grub_term_output_t term_original;
-
 static void
-draw_terminal_box (grub_gfxmenu_view_t view)
+grub_gfxmenu_draw_terminal_box (void)
 {
   grub_gfxmenu_box_t term_box;
-  int termx;
-  int termy;
 
   term_box = term_view->terminal_box;
   if (!term_box)
     return;
-
-  termx = term_view->screen.x + term_view->screen.width * (10 - 7) / 10 / 2;
-  termy = term_view->screen.y + term_view->screen.height * (10 - 7) / 10 / 2;
   
-  term_box->set_content_size (term_box, term_target_width,
-			      term_target_height);
+  term_box->set_content_size (term_box, term_rect.width,
+			      term_rect.height);
   
   term_box->draw (term_box,
-		  termx - term_box->get_left_pad (term_box),
-		  termy - term_box->get_top_pad (term_box));
+		  term_rect.x - term_box->get_left_pad (term_box),
+		  term_rect.y - term_box->get_top_pad (term_box));
   grub_video_swap_buffers ();
-  if (view->double_repaint)
+  if (term_view->double_repaint)
     term_box->draw (term_box,
-		    termx - term_box->get_left_pad (term_box),
-		    termy - term_box->get_top_pad (term_box));
+		    term_rect.x - term_box->get_left_pad (term_box),
+		    term_rect.y - term_box->get_top_pad (term_box));
 }
 
 static void
 init_terminal (grub_gfxmenu_view_t view)
 {
-  int termx;
-  int termy;
+  term_rect.width = view->screen.width * 7 / 10;
+  term_rect.height = view->screen.height * 7 / 10;
 
-  term_original = grub_term_get_current_output ();
+  term_rect.x = view->screen.x + view->screen.width * (10 - 7) / 10 / 2;
+  term_rect.y = view->screen.y + view->screen.height * (10 - 7) / 10 / 2;
 
-  term_target_width = view->screen.width * 7 / 10;
-  term_target_height = view->screen.height * 7 / 10;
-
-  termx = view->screen.x + view->screen.width * (10 - 7) / 10 / 2;
-  termy = view->screen.y + view->screen.height * (10 - 7) / 10 / 2;
+  term_view = view;
 
   /* Note: currently there is no API for changing the gfxterm font
      on the fly, so whatever font the initially loaded theme specifies
      will be permanent.  */
-  grub_gfxterm_init_window (GRUB_VIDEO_RENDER_TARGET_DISPLAY, termx, termy,
-                            term_target_width, term_target_height,
-			    view->double_repaint, view->terminal_font_name, 3);
-  if (grub_errno != GRUB_ERR_NONE)
-    return;
-  term_initialized = 1;
-
-  term_view = view;
-
-  grub_term_set_current_output (grub_gfxterm_get_term ());
-  grub_refresh ();
+  grub_gfxterm_set_window (GRUB_VIDEO_RENDER_TARGET_DISPLAY, term_rect.x,
+			   term_rect.y,
+			   term_rect.width, term_rect.height,
+			   view->double_repaint, view->terminal_font_name, 3);
+  grub_gfxterm_decorator_hook = grub_gfxmenu_draw_terminal_box;
 }
 
-static void destroy_terminal (void)
+#if 0
+/* Sets MESSAGE as the progress message for the view.
+   MESSAGE can be 0, in which case no message is displayed.  */
+static void
+set_progress_message (grub_gfxmenu_view_t view, const char *message)
 {
-  if (term_initialized)
-    grub_gfxterm_destroy_window ();
-  if (term_original)
-    grub_term_set_current_output (term_original);
+  grub_free (view->progress_message_text);
+  if (message)
+    view->progress_message_text = grub_strdup (message);
+  else
+    view->progress_message_text = 0;
 }
 
 static void

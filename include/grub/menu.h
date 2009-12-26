@@ -83,10 +83,6 @@ typedef struct grub_menu_execute_callback
 }
 *grub_menu_execute_callback_t;
 
-extern grub_err_t (*grub_gfxmenu_try_hook) (int entry, grub_menu_t menu,
-					    int nested);
-
-
 grub_menu_entry_t grub_menu_get_entry (grub_menu_t menu, int no);
 int grub_menu_get_timeout (void);
 void grub_menu_set_timeout (int timeout);
