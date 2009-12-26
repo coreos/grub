@@ -31,8 +31,7 @@ typedef struct grub_gfxmenu_view *grub_gfxmenu_view_t;
 
 
 grub_gfxmenu_view_t grub_gfxmenu_view_new (const char *theme_path,
-                                           grub_menu_t menu, int entry,
-					   int nested);
+					   int width, int height);
 
 void grub_gfxmenu_view_destroy (grub_gfxmenu_view_t view);
 

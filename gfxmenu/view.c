@@ -45,62 +45,31 @@
 static grub_gfxmenu_view_t term_view;
 #endif
 
-static grub_err_t set_graphics_mode (void);
-static grub_err_t set_text_mode (void);
-
 /* Create a new view object, loading the theme specified by THEME_PATH and
    associating MODEL with the view.  */
 grub_gfxmenu_view_t
-grub_gfxmenu_view_new (const char *theme_path, grub_menu_t menu, int entry,
-		       int nested)
+grub_gfxmenu_view_new (const char *theme_path,
+		       int width, int height)
 {
   grub_gfxmenu_view_t view;
-  grub_err_t err;
-  struct grub_video_mode_info mode_info;
+  grub_font_t default_font;
+  grub_gui_color_t default_fg_color;
+  grub_gui_color_t default_bg_color;
 
   view = grub_malloc (sizeof (*view));
   if (! view)
     return 0;
 
-  set_graphics_mode ();
-  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
-  grub_video_get_viewport ((unsigned *) &view->screen.x,
-                           (unsigned *) &view->screen.y,
-                           (unsigned *) &view->screen.width,
-                           (unsigned *) &view->screen.height);
-
-  err = grub_video_get_info (&mode_info);
-  if (err)
-    {
-      grub_free (view);
-      return 0;
-    }
-  else
-    view->double_repaint = (mode_info.mode_type
-			    & GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED)
-      && !(mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
-
-
-  /* Clear the screen; there may be garbage left over in video memory, and
-     loading the menu style (particularly the background) can take a while. */
-  grub_video_fill_rect (grub_video_map_rgb (0, 0, 0),
-                        view->screen.x, view->screen.y,
-                        view->screen.width, view->screen.height);
-  grub_video_swap_buffers ();
-
-  grub_font_t default_font;
-  grub_gui_color_t default_fg_color;
-  grub_gui_color_t default_bg_color;
+  view->screen.x = 0;
+  view->screen.y = 0;
+  view->screen.width = width;
+  view->screen.height = height;
 
   default_font = grub_font_get ("Helvetica 12");
   default_fg_color = grub_gui_color_rgb (0, 0, 0);
   default_bg_color = grub_gui_color_rgb (255, 255, 255);
 
   view->canvas = 0;
-  view->selected = entry;
-  view->menu = menu;
-  view->nested = nested;
-  view->first_timeout = -1;
 
   view->title_font = default_font;
   view->message_font = default_font;
@@ -151,7 +120,6 @@ grub_gfxmenu_view_destroy (grub_gfxmenu_view_t view)
     view->canvas->ops->component.destroy (view->canvas);
   grub_free (view);
 
-  set_text_mode ();
 #if 0
   destroy_terminal ();
 #endif
@@ -376,6 +344,12 @@ grub_gfxmenu_view_redraw (grub_gfxmenu_view_t view,
 void
 grub_gfxmenu_view_draw (grub_gfxmenu_view_t view)
 {
+  /* Clear the screen; there may be garbage left over in video memory. */
+  grub_video_fill_rect (grub_video_map_rgb (0, 0, 0),
+                        view->screen.x, view->screen.y,
+                        view->screen.width, view->screen.height);
+  grub_video_swap_buffers ();
+
   update_menu_components (view);
 
   grub_gfxmenu_view_redraw (view, &view->screen);
@@ -425,21 +399,6 @@ grub_gfxmenu_set_chosen_entry (int entry, void *data)
   grub_gfxmenu_redraw_menu (view);
 }
 
-
-static grub_err_t
-set_graphics_mode (void)
-{
-  const char *modestr = grub_env_get ("gfxmode");
-  if (!modestr || !modestr[0])
-    modestr = "auto";
-  return grub_video_set_mode (modestr, GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
-}
-
-static grub_err_t
-set_text_mode (void)
-{
-  return grub_video_restore ();
-}
 
 /* FIXME */
 #if 0
