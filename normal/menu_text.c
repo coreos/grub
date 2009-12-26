@@ -442,52 +442,46 @@ menu_text_clear_timeout (void *dataptr)
   grub_term_refresh (data->term);
 }
 
-void
-grub_menu_text_register_instances (int entry, grub_menu_t menu, int nested)
+grub_err_t 
+grub_menu_try_text (struct grub_term_output *term, 
+		    int entry, grub_menu_t menu, int nested)
 {
   struct menu_viewer_data *data;
   struct grub_menu_viewer *instance;
-  struct grub_term_output *term;
 
-  FOR_ACTIVE_TERM_OUTPUTS(term)
-  {
-    instance = grub_zalloc (sizeof (*instance));
-    if (!instance)
-      {
-	grub_print_error ();
-	grub_errno = GRUB_ERR_NONE;
-	continue;
-      }
-    data = grub_zalloc (sizeof (*data));
-    if (!data)
-      {
-	grub_free (instance);
-	grub_print_error ();
-	grub_errno = GRUB_ERR_NONE;
-	continue;
-      }
+  instance = grub_zalloc (sizeof (*instance));
+  if (!instance)
+    return grub_errno;
 
-    data->term = term;
-    instance->data = data;
-    instance->set_chosen_entry = menu_text_set_chosen_entry;
-    instance->print_timeout = menu_text_print_timeout;
-    instance->clear_timeout = menu_text_clear_timeout;
-    instance->fini = menu_text_fini;
+  data = grub_zalloc (sizeof (*data));
+  if (!data)
+    {
+      grub_free (instance);
+      return grub_errno;
+    }
 
-    data->menu = menu;
-    
-    data->offset = entry;
-    data->first = 0;
-    if (data->offset > grub_term_num_entries (data->term) - 1)
-      {
-	data->first = data->offset - (grub_term_num_entries (data->term) - 1);
-	data->offset = grub_term_num_entries (data->term) - 1;
-      }
+  data->term = term;
+  instance->data = data;
+  instance->set_chosen_entry = menu_text_set_chosen_entry;
+  instance->print_timeout = menu_text_print_timeout;
+  instance->clear_timeout = menu_text_clear_timeout;
+  instance->fini = menu_text_fini;
 
-    grub_term_setcursor (data->term, 0);
-    grub_menu_init_page (nested, 0, data->term);
-    print_entries (menu, data->first, data->offset, data->term);
-    grub_term_refresh (data->term);
-    grub_menu_register_viewer (instance);
-  }
+  data->menu = menu;
+
+  data->offset = entry;
+  data->first = 0;
+  if (data->offset > grub_term_num_entries (data->term) - 1)
+    {
+      data->first = data->offset - (grub_term_num_entries (data->term) - 1);
+      data->offset = grub_term_num_entries (data->term) - 1;
+    }
+
+  grub_term_setcursor (data->term, 0);
+  grub_menu_init_page (nested, 0, data->term);
+  print_entries (menu, data->first, data->offset, data->term);
+  grub_term_refresh (data->term);
+  grub_menu_register_viewer (instance);
+
+  return GRUB_ERR_NONE;
 }

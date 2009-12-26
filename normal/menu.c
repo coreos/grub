@@ -28,18 +28,14 @@
 #include <grub/parser.h>
 #include <grub/auth.h>
 #include <grub/i18n.h>
+#include <grub/term.h>
 
 /* Time to delay after displaying an error message about a default/fallback
    entry failing to boot.  */
 #define DEFAULT_ENTRY_ERROR_DELAY_MS  2500
 
-struct menu_run_callback
-{
-  struct menu_run_callback *next;
-  void (*hook) (int entry, grub_menu_t menu, int nested);
-};
-
-struct menu_run_callback *callbacks = NULL;
+grub_err_t (*grub_gfxmenu_try_hook) (int entry, grub_menu_t menu,
+				     int nested) = NULL;
 
 /* Wait until the user pushes any key so that the user
    can see what happened.  */
@@ -242,18 +238,27 @@ grub_err_t (*grub_gfxmenu_try_hook) (int entry, grub_menu_t menu,
 static void
 menu_init (int entry, grub_menu_t menu, int nested)
 {
-  struct menu_run_callback *cb;
+  struct grub_term_output *term;
 
-  if (grub_gfxmenu_try_hook)
-    {
-      if(!grub_gfxmenu_try_hook (entry, menu, nested))
-	return;
-      grub_print_error ();
-      grub_errno = GRUB_ERR_NONE;
-    }
+  FOR_ACTIVE_TERM_OUTPUTS(term)
+  {
+    grub_err_t err;
 
-  for (cb = callbacks; cb; cb = cb->next)
-    cb->hook (entry, menu, nested);
+    if (grub_gfxmenu_try_hook && grub_strcmp (term->name, "gfxterm") == 0)
+      {
+	err = grub_gfxmenu_try_hook (entry, menu, nested);
+	if(!err)
+	  continue;
+	grub_print_error ();
+	grub_errno = GRUB_ERR_NONE;
+      }
+
+    err = grub_menu_try_text (term, entry, menu, nested);
+    if(!err)
+      continue;
+    grub_print_error ();
+    grub_errno = GRUB_ERR_NONE;
+  }
 }
 
 static void
@@ -269,20 +274,6 @@ grub_menu_register_viewer (struct grub_menu_viewer *viewer)
 {
   viewer->next = viewers;
   viewers = viewer;
-}
-
-grub_err_t
-grub_menu_register_viewer_init (void (*callback) (int entry, grub_menu_t menu,
-						  int nested))
-{
-  struct menu_run_callback *cb;
-  cb = grub_malloc (sizeof (*cb));
-  if (!cb)
-    return grub_errno;
-  cb->hook = callback;
-  cb->next = callbacks;
-  callbacks = cb;
-  return GRUB_ERR_NONE;
 }
 
 /* Get the entry number from the variable NAME.  */
