@@ -1,4 +1,4 @@
-2009-12-27  Carles Pina i Estany  <carles@pina.cat>
+2009-12-26  Carles Pina i Estany  <carles@pina.cat>
 
 	* video/readers/jpeg.c (cmd): Declare.
 	(grub_cmd_jpegtest): Use `grub_command_t' type.
@@ -16,7 +16,7 @@
 	Assign to `cmd'.
 	(GRUB_MOD_FINI): Use `cmd' to unregister.
 
-2009-12-27  Carles Pina i Estany  <carles@pina.cat>
+2009-12-26  Carles Pina i Estany  <carles@pina.cat>
 
 	* efiemu/main.c (GRUB_MOD_INIT): Fix capitalizations and/or full
 	stops.
@@ -43,7 +43,7 @@
 	summary.
 	(GRUB_MOD_INIT): Remove command name from the summary.
 	* kern/command.c (GRUB_MOD_INIT): If summary is null assign an empty
-	strig as summary.
+	string as summary.
 	* lib/arg.c (find_long): Print the command name before the summary.
 	* commands/acpi.c (GRUB_MOD_INIT): Remove command name from the
 	summary.
