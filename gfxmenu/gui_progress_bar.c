@@ -139,11 +139,16 @@ draw_pixmap_bar (grub_gui_progress_bar_t self)
   int bar_v_pad = bar_t_pad + bar_b_pad;
   int tracklen = w - bar_h_pad;
   int trackheight = h - bar_v_pad;
+  int barwidth;
+
+  if (self->end == self->start)
+    return;
+
   bar->set_content_size (bar, tracklen, trackheight);
 
-  int barwidth = (tracklen
-                  * (self->value - self->start)
-                  / (self->end - self->start));
+  barwidth = (tracklen * (self->value - self->start) 
+	      / (self->end - self->start));
+
   hl->set_content_size (hl, barwidth, h - bar_v_pad);
 
   bar->draw (bar, 0, 0);
@@ -174,12 +179,13 @@ static void
 progress_bar_paint (void *vself, const grub_video_rect_t *region)
 {
   grub_gui_progress_bar_t self = vself;
+  grub_video_rect_t vpsave;
+
   if (! self->visible)
     return;
   if (!grub_video_have_common_points (region, &self->bounds))
     return;
 
-  grub_video_rect_t vpsave;
   grub_gui_set_viewport (&self->bounds, &vpsave);
 
   if (check_pixmaps (self))

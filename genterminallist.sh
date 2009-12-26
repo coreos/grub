@@ -16,4 +16,7 @@
 module=$1
 
 grep -v "^#" | sed -n \
- -e "/grub_parser_register *( *\"/{s/.*( *\"\([^\"]*\)\".*/parser.\1: $module/;p;}"
+ -e "/grub_term_register_input *( *\"/{s/.*( *\"\([^\"]*\)\".*/i\1: $module/;p;}" \
+ -e "/grub_term_register_input_active *( *\"/{s/.*( *\"\([^\"]*\)\".*/i\1: $module/;p;}" \
+ -e "/grub_term_register_output *( *\"/{s/.*( *\"\([^\"]*\)\".*/o\1: $module/;p;}" \
+ -e "/grub_term_register_output_active *( *\"/{s/.*( *\"\([^\"]*\)\".*/o\1: $module/;p;}"

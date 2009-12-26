@@ -37,199 +37,58 @@
 #include <grub/gfxmenu_view.h>
 #include <grub/time.h>
 
-static void switch_to_text_menu (void)
+void 
+grub_gfxmenu_viewer_fini (void *data)
 {
-  grub_env_set ("menuviewer", "text");
+  grub_gfxmenu_view_t view = data;
+
+  grub_gfxmenu_view_destroy (view);
 }
 
-static void
-process_key_press (int c,
-                   grub_gfxmenu_model_t model,
-                   grub_gfxmenu_view_t view,
-                   int nested,
-                   int *should_exit)
+/* FIXME: 't' and 'c'.  */
+grub_err_t
+grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
 {
-  /* When a key is pressed, stop the timeout.  */
-  grub_gfxmenu_model_clear_timeout (model);
-
-  switch (c)
-    {
-    case 'j':
-    case GRUB_TERM_DOWN:
-      {
-	int i = grub_gfxmenu_model_get_selected_index (model);
-	int num_items = grub_gfxmenu_model_get_num_entries (model);
-	if (i < num_items - 1)
-	  {
-	    i++;
-	    grub_gfxmenu_model_set_selected_index (model, i);
-	    grub_gfxmenu_redraw_menu (view);
-	  }
-      }
-    break;
-
-    case 'k':
-    case GRUB_TERM_UP:
-      {
-	int i = grub_gfxmenu_model_get_selected_index (model);
-	if (i > 0)
-	  {
-	    i--;
-	    grub_gfxmenu_model_set_selected_index (model, i);
-	    grub_gfxmenu_redraw_menu (view);
-	  }
-      }
-    break;
-
-    case '\r':
-    case '\n':
-    case GRUB_TERM_RIGHT:
-      {
-	int selected = grub_gfxmenu_model_get_selected_index (model);
-	int num_entries = grub_gfxmenu_model_get_num_entries (model);
-	if (selected >= 0 && selected < num_entries)
-	  {
-	    grub_menu_entry_t entry =
-	      grub_gfxmenu_model_get_entry (model, selected);
-	    grub_gfxmenu_view_execute_entry (view, entry);
-	  }
-      }
-    break;
-
-    case 'c':
-      grub_gfxmenu_view_run_terminal (view);
-      break;
-
-    case 't':
-      /* The write hook for 'menuviewer' will cause
-       * grub_menu_viewer_should_return to return nonzero. */
-      switch_to_text_menu ();
-      *should_exit = 1;
-      break;
-
-    case GRUB_TERM_ESC:
-      if (nested)
-	*should_exit = 1;
-      break;
-    }
-
-  if (grub_errno != GRUB_ERR_NONE)
-    *should_exit = 1;
-}
-
-static void
-handle_key_events (grub_gfxmenu_model_t model,
-                   grub_gfxmenu_view_t view,
-                   int nested,
-                   int *should_exit)
-{
-  while ((! *should_exit) && (grub_checkkey () != -1))
-    {
-      int key = grub_getkey ();
-      int c = GRUB_TERM_ASCII_CHAR (key);
-      process_key_press (c, model, view, nested, should_exit);
-    }
-}
-
-static grub_err_t
-show_menu (grub_menu_t menu, int nested)
-{
-  grub_gfxmenu_model_t model;
   grub_gfxmenu_view_t view;
   const char *theme_path;
+  struct grub_menu_viewer *instance;
 
   theme_path = grub_env_get ("theme");
   if (! theme_path)
-    {
-      switch_to_text_menu ();
-      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "no theme specified");
-    }
+    return grub_error (GRUB_ERR_FILE_NOT_FOUND, "no theme specified");
 
-  model = grub_gfxmenu_model_new (menu);
-  if (! model)
-    {
-      switch_to_text_menu ();
-      return grub_errno;
-    }
+  instance = grub_zalloc (sizeof (*instance));
+  if (!instance)
+    return grub_errno;
 
   /* Create the view.  */
-  view = grub_gfxmenu_view_new (theme_path, model);
+  view = grub_gfxmenu_view_new (theme_path, menu, entry, nested);
 
   if (! view)
     {
-      grub_print_error ();
-      grub_gfxmenu_model_destroy (model);
-      switch_to_text_menu ();
+      grub_free (instance);
       return grub_errno;
     }
 
-  /* Initially select the default menu entry.  */
-  int default_index = grub_menu_get_default_entry_index (menu);
-  grub_gfxmenu_model_set_selected_index (model, default_index);
-
-  /* Start the timer to execute the default entry.  */
-  grub_gfxmenu_model_set_timeout (model);
-
-  /* Main event loop.  */
-  int exit_requested = 0;
-
   grub_gfxmenu_view_draw (view);
-  grub_video_swap_buffers ();
-  if (view->double_repaint)
-    grub_gfxmenu_view_draw (view);
 
-  while ((! exit_requested) && (! grub_menu_viewer_should_return ()))
-    {
-      grub_gfxmenu_redraw_timeout (view);
-      if (grub_gfxmenu_model_timeout_expired (model))
-        {
-          grub_gfxmenu_model_clear_timeout (model);
-          int i = grub_gfxmenu_model_get_selected_index (model);
-          grub_menu_entry_t e = grub_gfxmenu_model_get_entry (model, i);
-          grub_gfxmenu_view_execute_with_fallback (view, e);
-          continue;
-        }
+  instance->data = view;
+  instance->set_chosen_entry = grub_gfxmenu_set_chosen_entry;
+  instance->fini = grub_gfxmenu_viewer_fini;
+  instance->print_timeout = grub_gfxmenu_print_timeout;
+  instance->clear_timeout = grub_gfxmenu_clear_timeout;
 
-      handle_key_events (model, view, nested, &exit_requested);
-      grub_cpu_idle ();
-    }
+  grub_menu_register_viewer (instance);
 
-  grub_gfxmenu_view_destroy (view);
-  grub_gfxmenu_model_destroy (model);
-
-  return grub_errno;
+  return GRUB_ERR_NONE;
 }
-
-static grub_err_t
-grub_cmd_gfxmenu (grub_command_t cmd __attribute__ ((unused)),
-                  int argc __attribute__ ((unused)),
-		  char **args __attribute__ ((unused)))
-{
-  grub_menu_t menu = grub_env_get_data_slot ("menu");
-  if (! menu)
-    return grub_error (GRUB_ERR_MENU, "no menu context");
-
-  return show_menu (menu, 1);
-}
-
-static struct grub_menu_viewer menu_viewer =
-{
-  .name = "gfxmenu",
-  .show_menu = show_menu
-};
-
-static grub_command_t cmd;
 
 GRUB_MOD_INIT (gfxmenu)
 {
-  (void) mod;                   /* To stop warning. */
-  grub_menu_viewer_register (&menu_viewer);
-  cmd = grub_register_command ("gfxmenu", grub_cmd_gfxmenu,
-                               "gfxmenu",
-                               "Show graphical menu interface");
+  grub_gfxmenu_try_hook = grub_gfxmenu_try;
 }
 
 GRUB_MOD_FINI (gfxmenu)
 {
-  grub_unregister_command (cmd);
+  grub_gfxmenu_try_hook = NULL;
 }

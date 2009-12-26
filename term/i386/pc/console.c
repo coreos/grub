@@ -65,24 +65,19 @@ static struct grub_term_output grub_console_term_output =
     .setcolorstate = grub_console_setcolorstate,
     .setcolor = grub_console_setcolor,
     .getcolor = grub_console_getcolor,
-    .setcursor = grub_console_setcursor,
-    .flags = 0,
+    .setcursor = grub_console_setcursor
   };
 
 void
 grub_console_init (void)
 {
-  grub_term_register_output ("console", &grub_console_term_output);
-  grub_term_register_input ("console", &grub_console_term_input);
+  grub_term_register_output_active ("console", &grub_console_term_output);
+  grub_term_register_input_active ("console", &grub_console_term_input);
 }
 
 void
 grub_console_fini (void)
 {
-  /* This is to make sure the console is restored to text mode before
-     we boot.  */
-  grub_term_set_current_output (&grub_console_term_output);
-
   grub_term_unregister_input (&grub_console_term_input);
   grub_term_unregister_output (&grub_console_term_output);
 }

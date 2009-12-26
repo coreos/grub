@@ -21,7 +21,7 @@
 #include <grub/err.h>
 #include <grub/video.h>
 #include <grub/bitmap.h>
-#include <grub/gfxmenu_model.h>
+#include <grub/gfxmenu_view.h>
 
 #ifndef GRUB_GUI_H
 #define GRUB_GUI_H 1
@@ -73,8 +73,7 @@ struct grub_gui_list_ops
 {
   struct grub_gui_component_ops component_ops;
   void (*set_view_info) (void *self,
-                         const char *theme_path,
-                         grub_gfxmenu_model_t menu);
+                         grub_gfxmenu_view_t view);
 };
 
 struct grub_gui_component

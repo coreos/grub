@@ -140,11 +140,15 @@ circprog_paint (void *vself, const grub_video_rect_t *region)
                           center_width, center_height);
 
   int radius = width / 2 - tick_width / 2 - 1;
-  int nticks = (self->num_ticks
-                * (self->value - self->start)
-                / (self->end - self->start));
+  int nticks;
   int tick_begin;
   int tick_end;
+  if (self->end == self->start)
+    nticks = 0;
+  else
+    nticks = (self->num_ticks
+	      * (self->value - self->start)
+	      / (self->end - self->start));
   /* Do ticks appear or disappear as the value approached the end?  */
   if (self->ticks_disappear)
     {

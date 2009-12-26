@@ -171,7 +171,7 @@ endif
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
-pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst
+pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
 	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UNDSYMFILES) > $@ \
@@ -189,11 +189,17 @@ partmap.lst: $(PARTMAPFILES)
 handler.lst: $(HANDLERFILES)
 	cat $^ /dev/null | sort > $@
 
+terminal.lst: $(TERMINALFILES)
+	cat $^ /dev/null | sort > $@
+
 parttool.lst: $(PARTTOOLFILES)
 	cat $^ /dev/null | sort | uniq > $@
 
 video.lst: $(VIDEOFILES)
 	cat $^ /dev/null | sort | uniq > $@
+
+crypto.lst: lib/libgcrypt-grub/cipher/crypto.lst
+	cp $^ $@
 
 ifneq (true, $(MAKEINFO))
 info_INFOS += docs/grub.info

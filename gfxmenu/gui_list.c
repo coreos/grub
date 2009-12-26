@@ -67,7 +67,8 @@ struct grub_gui_list_impl
   grub_gfxmenu_box_t selected_item_box;
 
   grub_gfxmenu_icon_manager_t icon_manager;
-  grub_gfxmenu_model_t menu;
+
+  grub_gfxmenu_view_t view;
 };
 
 typedef struct grub_gui_list_impl *list_impl_t;
@@ -93,7 +94,7 @@ list_destroy (void *vself)
 static int
 get_num_shown_items (list_impl_t self)
 {
-  int n = grub_gfxmenu_model_get_num_entries (self->menu);
+  int n = self->view->menu->size;
   if (self->min_items_shown != -1 && n < self->min_items_shown)
     n = self->min_items_shown;
   if (self->max_items_shown != -1 && n > self->max_items_shown)
@@ -157,7 +158,7 @@ static struct grub_video_bitmap *
 get_item_icon (list_impl_t self, int item_index)
 {
   grub_menu_entry_t entry;
-  entry = grub_gfxmenu_model_get_entry (self->menu, item_index);
+  entry = grub_menu_get_entry (self->view->menu, item_index);
   if (! entry)
     return 0;
 
@@ -167,7 +168,7 @@ get_item_icon (list_impl_t self, int item_index)
 static void
 make_selected_item_visible (list_impl_t self)
 {
-  int selected_index = grub_gfxmenu_model_get_selected_index (self->menu);
+  int selected_index = self->view->selected;
   if (selected_index < 0)
     return;   /* No item is selected.  */
   int num_shown_items = get_num_shown_items (self);
@@ -222,7 +223,7 @@ draw_menu (list_impl_t self)
   int descent = grub_font_get_descent (self->item_font);
   int item_height = self->item_height;
 
-  int total_num_items = grub_gfxmenu_model_get_num_entries (self->menu);
+  int total_num_items = self->view->menu->size;
   int num_shown_items = get_num_shown_items (self);
   grub_gfxmenu_box_t box = self->menu_box;
   int width = self->bounds.width;
@@ -256,8 +257,7 @@ draw_menu (list_impl_t self)
        visible_index < num_shown_items && menu_index < total_num_items;
        visible_index++, menu_index++)
     {
-      int is_selected =
-        (menu_index == grub_gfxmenu_model_get_selected_index (self->menu));
+      int is_selected = (menu_index == self->view->selected);
 
       if (is_selected)
         {
@@ -282,7 +282,7 @@ draw_menu (list_impl_t self)
                                 0, 0, self->icon_width, self->icon_height);
 
       const char *item_title =
-        grub_gfxmenu_model_get_entry_title (self->menu, menu_index);
+        grub_menu_get_entry (self->view->menu, menu_index)->title;
       grub_font_t font =
         (is_selected && self->selected_item_font
          ? self->selected_item_font
@@ -530,12 +530,12 @@ list_set_property (void *vself, const char *name, const char *value)
 /* Set necessary information that the gfxmenu view provides.  */
 static void
 list_set_view_info (void *vself,
-                    const char *theme_path,
-                    grub_gfxmenu_model_t menu)
+                    grub_gfxmenu_view_t view)
 {
   list_impl_t self = vself;
-  grub_gfxmenu_icon_manager_set_theme_path (self->icon_manager, theme_path);
-  self->menu = menu;
+  grub_gfxmenu_icon_manager_set_theme_path (self->icon_manager,
+					    view->theme_path);
+  self->view = view;
 }
 
 static struct grub_gui_list_ops list_ops =
