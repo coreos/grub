@@ -1,5 +1,23 @@
 2009-12-27  Carles Pina i Estany  <carles@pina.cat>
 
+	* video/readers/jpeg.c (cmd): Declare.
+	(grub_cmd_jpegtest): Use `grub_command_t' type.
+	(GRUB_MOD_INIT): Fix arguments passed to `grub_register_command'.
+	Assign to `cmd'.
+	(GRUB_MOD_FINI): Use `cmd' to unregister.
+	* video/readers/png.c (cmd): Declare.
+	(grub_cmd_pngtest): Use `grub_command_t' type.
+	(GRUB_MOD_INIT): Fix arguments passed to `grub_register_command'.
+	Assign to `cmd'.
+	(GRUB_MOD_FINI): Use `cmd' to unregister.
+	* video/readers/tga.c (cmd): Declare.
+	(grub_cmd_tgatest): Use `grub_command_t' type.
+	(GRUB_MOD_INIT): Fix arguments passed to `grub_register_command'.
+	Assign to `cmd'.
+	(GRUB_MOD_FINI): Use `cmd' to unregister.
+
+2009-12-27  Carles Pina i Estany  <carles@pina.cat>
+
 	* efiemu/main.c (GRUB_MOD_INIT): Fix capitalizations and/or full
 	stops.
 	* kern/corecmd.c (grub_register_core_commands): Likewise.
