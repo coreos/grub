@@ -197,10 +197,10 @@ GRUB_MOD_INIT(multiboot)
 {
   cmd_multiboot =
     grub_register_command ("multiboot", grub_cmd_multiboot_loader,
-			   0, "load a multiboot kernel");
+			   0, "Load a multiboot kernel.");
   cmd_module =
     grub_register_command ("module", grub_cmd_module_loader,
-			   0, "load a multiboot module");
+			   0, "Load a multiboot module.");
 
   my_mod = mod;
 }

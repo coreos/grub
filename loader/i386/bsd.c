@@ -1292,13 +1292,13 @@ GRUB_MOD_INIT (bsd)
 				     netbsd_opts);
   cmd_freebsd_loadenv =
     grub_register_command ("kfreebsd_loadenv", grub_cmd_freebsd_loadenv,
-			   0, "load FreeBSD env");
+			   0, "Load FreeBSD env.");
   cmd_freebsd_module =
     grub_register_command ("kfreebsd_module", grub_cmd_freebsd_module,
-			   0, "load FreeBSD kernel module");
+			   0, "Load FreeBSD kernel module.");
   cmd_freebsd_module_elf =
     grub_register_command ("kfreebsd_module_elf", grub_cmd_freebsd_module_elf,
-			   0, "load FreeBSD kernel module (ELF)");
+			   0, "Load FreeBSD kernel module (ELF).");
 
   my_mod = mod;
 }

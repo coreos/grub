@@ -1,3 +1,24 @@
+2009-12-27  Carles Pina i Estany  <carles@pina.cat>
+
+	* efiemu/main.c (GRUB_MOD_INIT): Fix capitalizations and/or full
+	stops.
+	* kern/corecmd.c (grub_register_core_commands): Likewise.
+	* loader/efi/chainloader.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/bsd.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/efi/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/ieee1275/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/pc/chainloader.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/pc/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/multiboot_loader.c (GRUB_MOD_INIT): Likewise.
+	* loader/powerpc/ieee1275/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/sparc64/ieee1275/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/xnu.c (GRUB_MOD_INIT): Likewise.
+	* mmap/mmap.c (GRUB_MOD_INIT): Likewise.
+	* normal/handler.c (insert_handler): Likewise.
+	* normal/main.c (GRUB_MOD_INIT): Likewise.
+	* term/gfxterm.c (GRUB_MOD_INIT): Likewise.
+
 2009-12-26  Carles Pina i Estany  <carles@pina.cat>
 
 	* commands/help.c (grub_cmd_help): Print the command name before the

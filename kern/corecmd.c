@@ -190,13 +190,13 @@ void
 grub_register_core_commands (void)
 {
   grub_register_command ("set", grub_core_cmd_set,
-			 "[ENVVAR=VALUE]", "set an environment variable");
+			 "[ENVVAR=VALUE]", "Set an environment variable.");
   grub_register_command ("unset", grub_core_cmd_unset,
-			 "ENVVAR", "remove an environment variable");
+			 "ENVVAR", "Remove an environment variable.");
   grub_register_command ("export", grub_core_cmd_export,
 			 "ENVVAR", "Export a variable.");
   grub_register_command ("ls", grub_core_cmd_ls,
-			 "[ARG]", "list devices or files");
+			 "[ARG]", "List devices or files.");
   grub_register_command ("insmod", grub_core_cmd_insmod,
-			 "MODULE", "insert a module");
+			 "MODULE", "Insert a module.");
 }

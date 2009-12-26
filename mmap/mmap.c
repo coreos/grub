@@ -415,7 +415,7 @@ GRUB_MOD_INIT(mmap)
 {
   cmd = grub_register_command ("badram", grub_cmd_badram,
 			       "ADDR1,MASK1[,ADDR2,MASK2[,...]]",
-			       "declare memory regions as badram");
+			       "Declare memory regions as badram.");
 }
 
 GRUB_MOD_FINI(mmap)

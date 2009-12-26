@@ -598,7 +598,7 @@ GRUB_MOD_INIT(normal)
 
   /* Register a command "normal" for the rescue mode.  */
   grub_register_command_prio ("normal", grub_cmd_normal,
-			      0, "Enter normal mode", 0);
+			      0, "Enter normal mode.", 0);
 
   /* Reload terminal colors when these variables are written to.  */
   grub_register_variable_hook ("color_normal", NULL, grub_env_write_color_normal);

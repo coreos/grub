@@ -516,9 +516,9 @@ GRUB_MOD_INIT(linux)
   fetch_translations ();
 
   cmd_linux = grub_register_command ("linux", grub_cmd_linux,
-				     0, "load a linux kernel");
+				     0, "Load a linux kernel.");
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
-				      0, "load an initrd");
+				      0, "Load an initrd".);
   my_mod = mod;
 }
 
