@@ -1176,7 +1176,12 @@ static grub_extcmd_t background_image_cmd_handle;
 
 GRUB_MOD_INIT(term_gfxterm)
 {
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
+  grub_term_register_output_active ("gfxterm", &grub_video_term);
+#else
   grub_term_register_output ("gfxterm", &grub_video_term);
+#endif
+
   background_image_cmd_handle =
     grub_register_extcmd ("background_image",
                           grub_gfxterm_background_image_cmd,
