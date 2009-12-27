@@ -21,7 +21,7 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/env.h>
-#include <grub/cpu/time.h>
+#include <grub/time.h>
 
 struct grub_term_output *grub_term_outputs_disabled;
 struct grub_term_input *grub_term_inputs_disabled;
