@@ -25,3 +25,9 @@ pkglib_MODULES += ata.mod
 ata_mod_SOURCES = disk/ata.c
 ata_mod_CFLAGS = $(COMMON_CFLAGS)
 ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += backtrace.mod
+backtrace_mod_SOURCES = lib/i386/backtrace.c lib/i386/backtrace_int.S
+backtrace_mod_CFLAGS = $(COMMON_CFLAGS)
+backtrace_mod_ASFLAGS = $(COMMON_ASFLAGS)
+backtrace_mod_LDFLAGS = $(COMMON_LDFLAGS)
