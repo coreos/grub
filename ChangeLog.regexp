@@ -1,0 +1,17 @@
+2009-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Regexp support.
+
+	* conf/common.rmk (pkglib_MODULES): Add regexp.mod.
+	(regexp_mod_SOURCES): New variable.
+	(regexp_mod_CFLAGS): Likewise.
+	(regexp_mod_LDFLAGS): Likewise.
+	* commands/regexp.c: New file.
+	* include/grub/gnulib-wrap.h: Likewise.
+	* gnulib/regcomp.c: New file. Imported from gnulib.
+	* gnulib/regex.c: Likewise.
+	* gnulib/regex_internal.c: Likewise.
+	* gnulib/regex_internal.h: Likewise.
+	* gnulib/regexec.c: Likewise.
+	* include/grub/regex.h: Likewise.
+
