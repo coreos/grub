@@ -167,7 +167,7 @@ read_terminal_list (void)
       return;
     }
   
-  filename = grub_malloc (grub_strlen (prefix) + sizeof ("/crypto.lst"));
+  filename = grub_malloc (grub_strlen (prefix) + sizeof ("/terminal.lst"));
   if (!filename)
     {
       grub_errno = GRUB_ERR_NONE;

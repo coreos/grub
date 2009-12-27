@@ -45,9 +45,9 @@ grub_putcode (grub_uint32_t code, struct grub_term_output *term)
       return;
     }
 
+  (term->putchar) (code);
   if (code == '\n')
     (term->putchar) ('\r');
-  (term->putchar) (code);
 }
 
 /* Put a character. C is one byte of a UTF-8 stream.
