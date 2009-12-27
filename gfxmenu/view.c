@@ -106,6 +106,8 @@ grub_gfxmenu_view_new (const char *theme_path,
 void
 grub_gfxmenu_view_destroy (grub_gfxmenu_view_t view)
 {
+  if (!view)
+    return;
   grub_video_bitmap_destroy (view->desktop_image);
   if (view->terminal_box)
     view->terminal_box->destroy (view->terminal_box);
