@@ -1,5 +1,10 @@
 2009-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* normal/menu_text.c (grub_print_message_indented): Prevent
+	past-the-end-of-array dereference.
+
+2009-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* video/readers/jpeg.c (GRUB_MOD_FINI (grub_cmd_jpegtest)): Rename to ..
 	(GRUB_MOD_FINI (video_reader_jpeg)): ...this
 
