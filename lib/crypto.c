@@ -59,7 +59,10 @@ grub_cipher_unregister (gcry_cipher_spec_t *cipher)
   gcry_cipher_spec_t **ciph;
   for (ciph = &grub_ciphers; *ciph; ciph = &((*ciph)->next))
     if (*ciph == cipher)
-      *ciph = (*ciph)->next;
+      {
+	*ciph = (*ciph)->next;
+	break;
+      }
 }
 
 void 
@@ -75,7 +78,10 @@ grub_md_unregister (gcry_md_spec_t *cipher)
   gcry_md_spec_t **ciph;
   for (ciph = &grub_digests; *ciph; ciph = &((*ciph)->next))
     if (*ciph == cipher)
-      *ciph = (*ciph)->next;
+      {
+	*ciph = (*ciph)->next;
+	break;
+      }
 }
 
 void
