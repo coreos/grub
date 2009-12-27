@@ -1,3 +1,8 @@
+2009-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* video/readers/jpeg.c (GRUB_MOD_FINI (grub_cmd_jpegtest)): Rename to ..
+	(GRUB_MOD_FINI (video_reader_jpeg)): ...this
+
 2009-12-27  Carles Pina i Estany  <carles@pina.cat>
 
 	* normal/cmdline.c (grub_cmdline_get): Print a space after prompt.
