@@ -347,7 +347,7 @@ if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" 
     $grub_setup ${setup_verbose} ${setup_force} --directory=${grubdir} --device-map=${device_map} \
         ${install_device} || exit 1
 elif [ "${target_cpu}-${platform}" = "mips-yeeloong" ] ; then
-    $grub_mkimage -f ${font} -d ${pkglibdir} -O elf --output=/boot/grub.elf --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
+    $grub_mkimage ${config_opt} -f ${font} -d ${pkglibdir} -O elf --output=/boot/grub.elf --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 else
     $grub_mkimage ${config_opt} -d ${pkglibdir} --output=/boot/multiboot.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 fi
