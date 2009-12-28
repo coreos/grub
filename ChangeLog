@@ -1,5 +1,9 @@
 2009-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/parser.c (grub_parser_split_cmdline): Don't dereference NULL.
+
+2009-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* normal/menu_text.c (grub_print_message_indented): Prevent
 	past-the-end-of-array dereference.
 

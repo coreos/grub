@@ -145,12 +145,15 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
   *argc = 0;
   do
     {
-      if (! *rd)
+      if (! rd || !*rd)
 	{
 	  if (getline)
 	    getline (&rd, 1);
 	  else break;
 	}
+
+      if (!rd)
+	break;
 
       for (; *rd; rd++)
 	{
