@@ -1,3 +1,8 @@
+2009-12-28  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/misc.c (grub_normal_print_device_info): Add spaces and double
+	quotes.
+
 2009-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/parser.c (grub_parser_split_cmdline): Don't dereference NULL.
