@@ -88,7 +88,7 @@ done:
 #endif
 
   cmd = grub_register_extcmd ("cpuid", grub_cmd_cpuid, GRUB_COMMAND_FLAG_BOTH,
-			      "cpuid [-l]", "Check for CPU features.", options);
+			      "[-l]", "Check for CPU features.", options);
 }
 
 GRUB_MOD_FINI(cpuid)

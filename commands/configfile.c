@@ -53,15 +53,15 @@ GRUB_MOD_INIT(configfile)
 {
   cmd_configfile =
     grub_register_command ("configfile", grub_cmd_source,
-			   "configfile FILE", "Load another config file.");
+			   "FILE", "Load another config file.");
   cmd_source =
     grub_register_command ("source", grub_cmd_source,
-			   "source FILE",
+			   "FILE",
 			   "Load another config file without changing context."
 			   );
   cmd_dot =
     grub_register_command (".", grub_cmd_source,
-			   ". FILE",
+			   "FILE",
 			   "Load another config file without changing context."
 			   );
 }

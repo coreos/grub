@@ -57,7 +57,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(crc)
 {
   cmd = grub_register_command ("crc", grub_cmd_crc,
-			       "crc FILE",
+			       "FILE",
 			       "Calculate the crc32 checksum of a file.");
 }
 

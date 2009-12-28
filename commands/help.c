@@ -67,7 +67,7 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 	      if (cmd->flags & GRUB_COMMAND_FLAG_EXTCMD)
 		grub_arg_show_help ((grub_extcmd_t) cmd->data);
 	      else
-		grub_printf ("%s %s\n%s\b", _("Usage:"), _(cmd->summary),
+		grub_printf ("%s %s %s\n%s\b", _("Usage:"), cmd->name, _(cmd->summary),
 			     _(cmd->description));
 	    }
 	}
@@ -96,7 +96,7 @@ GRUB_MOD_INIT(help)
 {
   cmd = grub_register_extcmd ("help", grub_cmd_help,
 			      GRUB_COMMAND_FLAG_CMDLINE,
-			      N_("help [PATTERN ...]"),
+			      N_("[PATTERN ...]"),
 			      N_("Show a help message."), 0);
 }
 

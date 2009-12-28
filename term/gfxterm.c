@@ -960,7 +960,7 @@ GRUB_MOD_INIT(term_gfxterm)
   grub_term_register_output ("gfxterm", &grub_video_term);
   cmd = grub_register_command ("background_image",
 			       grub_gfxterm_background_image_cmd,
-			       0, "Load background image for active terminal");
+			       0, "Load background image for active terminal.");
 }
 
 GRUB_MOD_FINI(term_gfxterm)

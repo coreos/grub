@@ -240,7 +240,7 @@ GRUB_MOD_INIT(gptsync)
 {
   (void) mod;			/* To stop warning. */
   cmd = grub_register_command ("gptsync", grub_cmd_gptsync,
-			       "gptsync DEVICE [PARTITION[+/-[TYPE]]] ...",
+			       "DEVICE [PARTITION[+/-[TYPE]]] ...",
 			       "Fill hybrid MBR of GPT drive DEVICE. "
 			       "specified partitions will be a part "
 			       "of hybrid mbr. Up to 3 partitions are "

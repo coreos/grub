@@ -25,30 +25,12 @@
 #include <grub/device.h>
 #include <grub/file.h>
 #include <grub/env.h>
-#include <grub/extcmd.h>
+#include <grub/command.h>
+#include <grub/search.h>
 #include <grub/i18n.h>
 
-static const struct grub_arg_option options[] =
-  {
-    {"file",		'f', 0, N_("Search devices by a file."), 0, 0},
-    {"label",		'l', 0, N_("Search devices by a filesystem label."), 0, 0},
-    {"fs-uuid",		'u', 0, N_("Search devices by a filesystem UUID."), 0, 0},
-    {"set",		's', GRUB_ARG_OPTION_OPTIONAL, N_("Set a variable to the first device found."), "VAR", ARG_TYPE_STRING},
-    {"no-floppy",	'n', 0, N_("Do not probe any floppy drive."), 0, 0},
-    {0, 0, 0, 0, 0, 0}
-  };
-
-enum options
-  {
-    SEARCH_FILE,
-    SEARCH_LABEL,
-    SEARCH_FS_UUID,
-    SEARCH_SET,
-    SEARCH_NO_FLOPPY,
- };
-
-static void
-search_fs (const char *key, const char *var, int no_floppy, enum options type)
+void
+FUNC_NAME (const char *key, const char *var, int no_floppy)
 {
   int count = 0;
   char *buf = NULL;
@@ -64,7 +46,7 @@ search_fs (const char *key, const char *var, int no_floppy, enum options type)
 	name[0] == 'f' && name[1] == 'd' && name[2] >= '0' && name[2] <= '9')
       return 0;
 
-    if (type == SEARCH_FILE)
+#ifdef DO_SEARCH_FILE
       {
 	grub_size_t len;
 	char *p;
@@ -85,27 +67,29 @@ search_fs (const char *key, const char *var, int no_floppy, enum options type)
 	    grub_file_close (file);
 	  }
       }
-    else
+#else
       {
-	/* type is SEARCH_FS_UUID or SEARCH_LABEL */
+	/* SEARCH_FS_UUID or SEARCH_LABEL */
 	grub_device_t dev;
 	grub_fs_t fs;
-	int (*compare_fn) (const char *, const char *);
 	char *quid;
 
 	dev = grub_device_open (name);
 	if (dev)
 	  {
 	    fs = grub_fs_probe (dev);
-	    compare_fn =
-	      (type == SEARCH_FS_UUID) ? grub_strcasecmp : grub_strcmp;
 
-	    if (fs && ((type == SEARCH_FS_UUID) ? fs->uuid : fs->label))
+#ifdef DO_SEARCH_FS_UUID
+#define compare_fn grub_strcasecmp
+#define read_fn uuid
+#else
+#define compare_fn grub_strcmp
+#define read_fn label
+#endif
+
+	    if (fs && fs->read_fn)
 	      {
-		if (type == SEARCH_FS_UUID)
-		  fs->uuid (dev, &quid);
-		else
-		  fs->label (dev, &quid);
+		fs->read_fn (dev, &quid);
 
 		if (grub_errno == GRUB_ERR_NONE && quid)
 		  {
@@ -119,6 +103,7 @@ search_fs (const char *key, const char *var, int no_floppy, enum options type)
 	    grub_device_close (dev);
 	  }
       }
+#endif
 
     if (found)
       {
@@ -157,45 +142,42 @@ search_fs (const char *key, const char *var, int no_floppy, enum options type)
 }
 
 static grub_err_t
-grub_cmd_search (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_do_search (grub_command_t cmd __attribute__ ((unused)), int argc,
+		    char **args)
 {
-  struct grub_arg_list *state = cmd->state;
-  const char *var = 0;
-
   if (argc == 0)
-    return grub_error (GRUB_ERR_INVALID_COMMAND, "no argument specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no argument specified");
 
-  if (state[SEARCH_SET].set)
-    var = state[SEARCH_SET].arg ? state[SEARCH_SET].arg : "root";
-
-  if (state[SEARCH_LABEL].set)
-    search_fs (args[0], var, state[SEARCH_NO_FLOPPY].set, SEARCH_LABEL);
-  else if (state[SEARCH_FS_UUID].set)
-    search_fs (args[0], var, state[SEARCH_NO_FLOPPY].set, SEARCH_FS_UUID);
-  else if (state[SEARCH_FILE].set)
-    search_fs (args[0], var, state[SEARCH_NO_FLOPPY].set, SEARCH_FILE);
-  else
-    return grub_error (GRUB_ERR_INVALID_COMMAND, "unspecified search type");
+  FUNC_NAME (args[0], argc == 1 ? 0 : args[1], 0);
 
   return grub_errno;
 }
 
-static grub_extcmd_t cmd;
+static grub_command_t cmd;
 
-GRUB_MOD_INIT(search)
+#ifdef DO_SEARCH_FILE
+GRUB_MOD_INIT(search_file)
+#elif defined (DO_SEARCH_FS_UUID)
+GRUB_MOD_INIT(search_fs_uuid)
+#else
+GRUB_MOD_INIT(search_fs_label)
+#endif
 {
   cmd =
-    grub_register_extcmd ("search", grub_cmd_search,
-			  GRUB_COMMAND_FLAG_BOTH,
-			  N_("search [-f|-l|-u|-s|-n] NAME"),
-			  N_("Search devices by file, filesystem label or filesystem UUID."
-			  " If --set is specified, the first device found is"
-			  " set to a variable. If no variable name is"
-			  " specified, \"root\" is used."),
-			  options);
+    grub_register_command (COMMAND_NAME, grub_cmd_do_search,
+			   "NAME [VARIABLE]",
+			   "Search devices by " SEARCH_TARGET "."
+			   " If VARIABLE is specified, "
+			   "the first device found is set to a variable.");
 }
 
-GRUB_MOD_FINI(search)
+#ifdef DO_SEARCH_FILE
+GRUB_MOD_FINI(search_file)
+#elif defined (DO_SEARCH_FS_UUID)
+GRUB_MOD_FINI(search_fs_uuid)
+#else
+GRUB_MOD_FINI(search_fs_label)
+#endif
 {
-  grub_unregister_extcmd (cmd);
+  grub_unregister_command (cmd);
 }

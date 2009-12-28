@@ -396,7 +396,7 @@ GRUB_MOD_INIT(loadenv)
   cmd_save =
     grub_register_extcmd ("save_env", grub_cmd_save_env,
 			  GRUB_COMMAND_FLAG_BOTH,
-			  "save_env [-f FILE] variable_name [...]",
+			  "[-f FILE] variable_name [...]",
 			  "Save variables to environment block file.",
 			  options);
 }

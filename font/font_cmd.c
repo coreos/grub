@@ -128,7 +128,7 @@ GRUB_MOD_INIT(font_manager)
 
   cmd_loadfont =
     grub_register_command ("loadfont", loadfont_command,
-			 "loadfont FILE...",
+			 "FILE...",
 			 "Specify one or more font files to load.");
   cmd_lsfonts =
     grub_register_command ("lsfonts", lsfonts_command,

@@ -41,7 +41,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(pxecmd)
 {
   cmd = grub_register_command ("pxe_unload", grub_cmd_pxe_unload,
-			       "pxe_unload",
+			       0,
 			       "Unload PXE environment.");
 }
 

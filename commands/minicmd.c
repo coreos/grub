@@ -354,19 +354,19 @@ GRUB_MOD_INIT(minicmd)
 {
   cmd_cat =
     grub_register_command ("cat", grub_mini_cmd_cat,
-			   "cat FILE", "Show the contents of a file.");
+			   "FILE", "Show the contents of a file.");
   cmd_help =
     grub_register_command ("help", grub_mini_cmd_help,
 			   0, "Show this message.");
   cmd_root =
     grub_register_command ("root", grub_mini_cmd_root,
-			   "root [DEVICE]", "Set the root device.");
+			   "[DEVICE]", "Set the root device.");
   cmd_dump =
     grub_register_command ("dump", grub_mini_cmd_dump,
-			   "dump ADDR", "Dump memory.");
+			   "ADDR", "Dump memory.");
   cmd_rmmod =
     grub_register_command ("rmmod", grub_mini_cmd_rmmod,
-			   "rmmod MODULE", "Remove a module.");
+			   "MODULE", "Remove a module.");
   cmd_lsmod =
     grub_register_command ("lsmod", grub_mini_cmd_lsmod,
 			   0, "Show loaded modules.");

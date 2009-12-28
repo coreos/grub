@@ -1404,21 +1404,21 @@ static grub_command_t cmd_kextdir, cmd_ramdisk, cmd_resume, cmd_splash;
 GRUB_MOD_INIT(xnu)
 {
   cmd_kernel = grub_register_command ("xnu_kernel", grub_cmd_xnu_kernel, 0,
-				      "load a xnu kernel");
+				      "Load XNU image.");
   cmd_kernel64 = grub_register_command ("xnu_kernel64", grub_cmd_xnu_kernel64,
-					0, "load a 64-bit xnu kernel");
+					0, "Load 64-bit XNU image.");
   cmd_mkext = grub_register_command ("xnu_mkext", grub_cmd_xnu_mkext, 0,
 				     "Load XNU extension package.");
   cmd_kext = grub_register_command ("xnu_kext", grub_cmd_xnu_kext, 0,
 				    "Load XNU extension.");
   cmd_kextdir = grub_register_command ("xnu_kextdir", grub_cmd_xnu_kextdir,
-				       "xnu_kextdir DIRECTORY [OSBundleRequired]",
-				       "Load XNU extension directory");
+				       "DIRECTORY [OSBundleRequired]",
+				       "Load XNU extension directory.");
   cmd_ramdisk = grub_register_command ("xnu_ramdisk", grub_cmd_xnu_ramdisk, 0,
 				       "Load XNU ramdisk. "
-				       "It will be seen as md0");
+				       "It will be seen as md0.");
   cmd_splash = grub_register_command ("xnu_splash", grub_cmd_xnu_splash, 0,
-				      "Load a splash image for XNU");
+				      "Load a splash image for XNU.");
 
 #ifndef GRUB_UTIL
   cmd_resume = grub_register_command ("xnu_resume", grub_cmd_xnu_resume,

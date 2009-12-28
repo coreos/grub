@@ -204,7 +204,7 @@ GRUB_MOD_INIT(loadbios)
 					0, "Fake bios.");
 
   cmd_loadbios = grub_register_command ("loadbios", grub_cmd_loadbios,
-					"loadbios BIOS_DUMP [INT10_DUMP]",
+					"BIOS_DUMP [INT10_DUMP]",
 					"Load bios dump.");
 }
 

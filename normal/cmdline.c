@@ -268,14 +268,14 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
       grub_refresh ();
     }
 
-  plen = grub_strlen (prompt_translated);
+  plen = grub_strlen (prompt_translated) + sizeof (" ") - 1;
   lpos = llen = 0;
   buf[0] = '\0';
 
   if ((grub_getxy () >> 8) != 0)
     grub_putchar ('\n');
 
-  grub_printf ("%s", prompt_translated);
+  grub_printf ("%s ", prompt_translated);
 
   xpos = plen;
   ystart = ypos = (grub_getxy () & 0xFF);

@@ -70,7 +70,7 @@ GRUB_MOD_INIT(keystatus)
 {
   cmd = grub_register_extcmd ("keystatus", grub_cmd_keystatus,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      "keystatus [--shift] [--ctrl] [--alt]",
+			      "[--shift] [--ctrl] [--alt]",
 			      "Check key modifier status.",
 			      options);
 }
