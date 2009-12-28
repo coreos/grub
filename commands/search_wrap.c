@@ -62,11 +62,14 @@ grub_cmd_search (grub_extcmd_t cmd, int argc, char **args)
     var = state[SEARCH_SET].arg ? state[SEARCH_SET].arg : "root";
 
   if (state[SEARCH_LABEL].set)
-    grub_search_label (args[0], var, state[SEARCH_NO_FLOPPY].set);
+    grub_search_label (args[0], var, state[SEARCH_NO_FLOPPY].set, 
+		       (const char **) (args + 1), argc - 1);
   else if (state[SEARCH_FS_UUID].set)
-    grub_search_fs_uuid (args[0], var, state[SEARCH_NO_FLOPPY].set);
+    grub_search_fs_uuid (args[0], var, state[SEARCH_NO_FLOPPY].set,
+			 (const char **) (args + 1), argc - 1);
   else if (state[SEARCH_FILE].set)
-    grub_search_fs_file (args[0], var, state[SEARCH_NO_FLOPPY].set);
+    grub_search_fs_file (args[0], var, state[SEARCH_NO_FLOPPY].set, 
+			 (const char **) (args + 1), argc - 1);
   else
     return grub_error (GRUB_ERR_INVALID_COMMAND, "unspecified search type");
 
@@ -80,7 +83,7 @@ GRUB_MOD_INIT(search)
   cmd =
     grub_register_extcmd ("search", grub_cmd_search,
 			  GRUB_COMMAND_FLAG_BOTH,
-			  N_("search [-f|-l|-u|-s|-n] NAME"),
+			  N_("[-f|-l|-u|-s|-n] NAME [HINTS]"),
 			  N_("Search devices by file, filesystem label"
 			     " or filesystem UUID."
 			     " If --set is specified, the first device found is"

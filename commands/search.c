@@ -30,7 +30,8 @@
 #include <grub/i18n.h>
 
 void
-FUNC_NAME (const char *key, const char *var, int no_floppy)
+FUNC_NAME (const char *key, const char *var, int no_floppy,
+	   const char **hints, unsigned nhints)
 {
   int count = 0;
   char *buf = NULL;
@@ -118,22 +119,32 @@ FUNC_NAME (const char *key, const char *var, int no_floppy)
     return (found && var);
   }
 
+  auto void try (void);
+  void try (void)    
+  {
+    unsigned i;
+    for (i = 0; i < nhints; i++)
+      if (iterate_device (hints[i]))
+	return;
+    grub_device_iterate (iterate_device);
+  }
+
   /* First try without autoloading if we're setting variable. */
   if (var)
     {
       saved_autoload = grub_fs_autoload_hook;
       grub_fs_autoload_hook = 0;
-      grub_device_iterate (iterate_device);
+      try ();
 
       /* Restore autoload hook.  */
       grub_fs_autoload_hook = saved_autoload;
 
       /* Retry with autoload if nothing found.  */
       if (grub_errno == GRUB_ERR_NONE && count == 0)
-	grub_device_iterate (iterate_device);
+	try ();
     }
   else
-    grub_device_iterate (iterate_device);
+    try ();
 
   grub_free (buf);
 
@@ -148,7 +159,8 @@ grub_cmd_do_search (grub_command_t cmd __attribute__ ((unused)), int argc,
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no argument specified");
 
-  FUNC_NAME (args[0], argc == 1 ? 0 : args[1], 0);
+  FUNC_NAME (args[0], argc == 1 ? 0 : args[1], 0, (const char **) (args + 2),
+	     argc > 2 ? argc - 2 : 0);
 
   return grub_errno;
 }
@@ -165,7 +177,7 @@ GRUB_MOD_INIT(search_fs_label)
 {
   cmd =
     grub_register_command (COMMAND_NAME, grub_cmd_do_search,
-			   "NAME [VARIABLE]",
+			   "NAME [VARIABLE] [HINTS]",
 			   "Search devices by " SEARCH_TARGET "."
 			   " If VARIABLE is specified, "
 			   "the first device found is set to a variable.");
