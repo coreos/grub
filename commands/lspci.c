@@ -171,7 +171,7 @@ grub_lspci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
 	    {
 	    case GRUB_PCI_ADDR_SPACE_IO:
 	      grub_printf ("\tIO space %d at 0x%llx\n",
-			   ((reg - GRUB_PCI_REG_ADDRESSES)
+			   (unsigned) ((reg - GRUB_PCI_REG_ADDRESSES)
 			    / sizeof (grub_uint32_t)) - 1,
 			   (unsigned long long)
 			   (space & GRUB_PCI_ADDR_IO_MASK));
@@ -184,7 +184,7 @@ grub_lspci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
 		  space |= ((grub_uint64_t) grub_pci_read (addr)) << 32;
 		  reg += sizeof (grub_uint32_t);
 		  grub_printf ("\t64-bit memory space %d at 0x%016llx [%s]\n",
-			       ((reg - GRUB_PCI_REG_ADDRESSES)
+			       (unsigned) ((reg - GRUB_PCI_REG_ADDRESSES)
 				/ sizeof (grub_uint32_t)) - 2,
 			       (unsigned long long)
 			       (space & GRUB_PCI_ADDR_MEM_MASK),
@@ -194,7 +194,7 @@ grub_lspci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
 		}
 	      else
 		grub_printf ("\t32-bit memory space %d at 0x%016llx [%s]\n",
-			     ((reg - GRUB_PCI_REG_ADDRESSES)
+			     (unsigned) ((reg - GRUB_PCI_REG_ADDRESSES)
 			      / sizeof (grub_uint32_t)) - 1,
 			     (unsigned long long) 
 			     (space & GRUB_PCI_ADDR_MEM_MASK),
