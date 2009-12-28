@@ -106,7 +106,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 {
   char *kernel_img, *core_img;
   size_t kernel_size, total_module_size, core_size;
-  size_t memdisk_size = 0, font_size = 0, config_size = 0;
+  size_t memdisk_size = 0, font_size = 0, config_size = 0, config_size_pure = 0;
   char *kernel_path;
   size_t offset;
   struct grub_util_path_list *path_list, *p, *next;
@@ -134,7 +134,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
   if (config_path)
     {
-      config_size = ALIGN_UP(grub_util_get_image_size (config_path) + 1, 4);
+      config_size_pure = grub_util_get_image_size (config_path) + 1;
+      config_size = ALIGN_UP(config_size_pure, 4);
       grub_util_info ("the size of config file is 0x%x", config_size);
       total_module_size += config_size + sizeof (struct grub_module_header);
     }
@@ -218,8 +219,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       offset += sizeof (*header);
 
       grub_util_load_image (config_path, kernel_img + offset);
+      *(kernel_img + offset + config_size_pure - 1) = 0;
       offset += config_size;
-      *(kernel_img + offset - 1) = 0;
     }
 
   grub_util_info ("kernel_img=%p, kernel_size=0x%x", kernel_img, kernel_size);
