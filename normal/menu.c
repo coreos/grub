@@ -232,9 +232,6 @@ menu_fini (void)
   viewers = NULL;
 }
 
-/* FIXME: allow text menu in parallel with gfxmenu.  */
-grub_err_t (*grub_gfxmenu_try_hook) (int entry, grub_menu_t menu,
-				     int nested) = NULL;
 static void
 menu_init (int entry, grub_menu_t menu, int nested)
 {
