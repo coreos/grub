@@ -438,7 +438,7 @@ grub_cmdline_get (const char *prompt)
 	    if (restore)
 	      {
 		/* Restore the prompt.  */
-		grub_printf ("\n%s", prompt_translated);
+		grub_printf ("\n%s ", prompt_translated);
 		init_clterm_all ();
 		cl_print_all (0, 0);
 	      }
