@@ -356,7 +356,8 @@ set_mac_env (grub_uint8_t *mac_addr, grub_size_t mac_len)
 
   for (i = 0; i < mac_len; i++)
     {
-      grub_sprintf (ptr, "%02x:", mac_addr[i] & 0xff);
+      grub_snprintf (ptr, sizeof (buf) - (ptr - buf),
+		     "%02x:", mac_addr[i] & 0xff);
       ptr += (sizeof ("XX:") - 1);
     }
   if (mac_len)
@@ -483,8 +484,8 @@ set_ip_env (char *varname, grub_uint32_t ip)
 {
   char buf[sizeof ("XXX.XXX.XXX.XXX")];
 
-  grub_sprintf (buf, "%d.%d.%d.%d", (ip & 0xff),
-		(ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+  grub_snprintf (buf, sizeof (buf), "%d.%d.%d.%d", (ip & 0xff),
+		 (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
   grub_env_set (varname, buf);
 }
 
@@ -500,14 +501,12 @@ write_ip_env (grub_uint32_t *ip, const char *val)
     return 0;
 
   /* Normalize the IP.  */
-  buf = grub_malloc (sizeof ("XXX.XXX.XXX.XXX"));
+  buf = grub_asprintf ("%d.%d.%d.%d", (newip & 0xff), (newip >> 8) & 0xff,
+		       (newip >> 16) & 0xff, (newip >> 24) & 0xff);
   if (!buf)
     return 0;
 
   *ip = newip;
-
-  grub_sprintf (buf, "%d.%d.%d.%d", (newip & 0xff), (newip >> 8) & 0xff,
-		(newip >> 16) & 0xff, (newip >> 24) & 0xff);
 
   return buf; 
 }
@@ -544,11 +543,10 @@ grub_env_write_pxe_blocksize (struct grub_env_var *var __attribute__ ((unused)),
   else if (size > GRUB_PXE_MAX_BLKSIZE)
     size = GRUB_PXE_MAX_BLKSIZE;
   
-  buf = grub_malloc (sizeof ("XXXXXX XXXXXX"));
+  buf = grub_asprintf ("%d", size);
   if (!buf)
     return 0;
 
-  grub_sprintf (buf, "%d", size);
   grub_pxe_blksize = size;
   
   return buf;
@@ -562,12 +560,10 @@ GRUB_MOD_INIT(pxe)
     {
       char *buf;
 
-      buf = grub_malloc (sizeof ("XXXXXX XXXXXX"));
+      buf = grub_asprintf ("%d", grub_pxe_blksize);
       if (buf)
-	{
-	  grub_sprintf (buf, "%d", grub_pxe_blksize);
-	  grub_env_set ("net_pxe_blksize", buf);
-	}
+	grub_env_set ("net_pxe_blksize", buf);
+      grub_free (buf);
 
       set_ip_env ("pxe_default_server", grub_pxe_default_server_ip);
       set_ip_env ("pxe_default_gateway", grub_pxe_default_gateway_ip);

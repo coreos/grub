@@ -63,12 +63,11 @@ read_fs_list (void)
     {
       char *filename;
 
-      filename = grub_malloc (grub_strlen (prefix) + sizeof ("/fs.lst"));
+      filename = grub_asprintf ("%s/fs.lst", prefix);
       if (filename)
 	{
 	  grub_file_t file;
 
-	  grub_sprintf (filename, "%s/fs.lst", prefix);
 	  file = grub_file_open (filename);
 	  if (file)
 	    {

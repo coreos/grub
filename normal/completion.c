@@ -107,16 +107,11 @@ iterate_partition (grub_disk_t disk, const grub_partition_t p)
   if (! partition_name)
     return 1;
 
-  name = grub_malloc (grub_strlen (disk_name) + 1
-		      + grub_strlen (partition_name) + 1);
-  if (! name)
-    {
-      grub_free (partition_name);
-      return 1;
-    }
-
-  grub_sprintf (name, "%s,%s", disk_name, partition_name);
+  name = grub_asprintf ("%s,%s", disk_name, partition_name);
   grub_free (partition_name);
+
+  if (! name)
+    return 1;
 
   ret = add_completion (name, ")", GRUB_COMPLETION_TYPE_PARTITION);
   grub_free (name);
@@ -141,11 +136,15 @@ iterate_dir (const char *filename, const struct grub_dirhook_info *info)
     }
   else if (grub_strcmp (filename, ".") && grub_strcmp (filename, ".."))
     {
-      char fname[grub_strlen (filename) + 2];
+      char *fname;
 
-      grub_sprintf (fname, "%s/", filename);
+      fname = grub_asprintf ("%s/", filename);
       if (add_completion (fname, "", GRUB_COMPLETION_TYPE_FILE))
-	return 1;
+	{
+	  grub_free (fname);
+	  return 1;
+	}
+      grub_free (fname);
     }
 
   return 0;
@@ -360,8 +359,9 @@ complete_arguments (char *command)
       if (!option->longarg)
 	continue;
 
-      longarg = grub_malloc (grub_strlen (option->longarg));
-      grub_sprintf (longarg, "--%s", option->longarg);
+      longarg = grub_asprintf ("--%s", option->longarg);
+      if (!longarg)
+	return 1;
 
       if (add_completion (longarg, " ", GRUB_COMPLETION_TYPE_ARGUMENT))
 	{

@@ -648,11 +648,13 @@ grub_ata_iterate (int (*hook) (const char *name))
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
-      char devname[5];
-      grub_sprintf (devname, "ata%d", dev->port * 2 + dev->device);
+      char devname[10];
 
       if (dev->atapi)
 	continue;
+
+      grub_snprintf (devname, sizeof (devname), 
+		     "ata%d", dev->port * 2 + dev->device);
 
       if (hook (devname))
 	return 1;
@@ -668,8 +670,9 @@ grub_ata_open (const char *name, grub_disk_t disk)
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
-      char devname[5];
-      grub_sprintf (devname, "ata%d", dev->port * 2 + dev->device);
+      char devname[10];
+      grub_snprintf (devname, sizeof (devname),
+		     "ata%d", dev->port * 2 + dev->device);
       if (grub_strcmp (name, devname) == 0)
 	break;
     }
@@ -735,8 +738,9 @@ grub_atapi_iterate (int (*hook) (const char *name, int luns))
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
-      char devname[7];
-      grub_sprintf (devname, "ata%d", dev->port * 2 + dev->device);
+      char devname[10];
+      grub_snprintf (devname, sizeof (devname),
+		     "ata%d", dev->port * 2 + dev->device);
 
       if (! dev->atapi)
 	continue;
@@ -808,8 +812,9 @@ grub_atapi_open (const char *name, struct grub_scsi *scsi)
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
-      char devname[7];
-      grub_sprintf (devname, "ata%d", dev->port * 2 + dev->device);
+      char devname[10];
+      grub_snprintf (devname, sizeof (devname),
+		     "ata%d", dev->port * 2 + dev->device);
 
       if (!grub_strcmp (devname, name))
 	{

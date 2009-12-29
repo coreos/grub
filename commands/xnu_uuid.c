@@ -349,18 +349,18 @@ grub_cmd_xnu_uuid (grub_command_t cmd __attribute__ ((unused)),
   grub_memcpy (hashme.prefix, hash_prefix, sizeof (hashme.prefix));
 
   md5 ((char *) &hashme, sizeof (hashme), (char *) xnu_uuid);
-  grub_sprintf (uuid_string,
-		"%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-		(unsigned int) xnu_uuid[0], (unsigned int) xnu_uuid[1],
-		(unsigned int) xnu_uuid[2], (unsigned int) xnu_uuid[3],
-		(unsigned int) xnu_uuid[4], (unsigned int) xnu_uuid[5],
-		(unsigned int) ((xnu_uuid[6] & 0xf) | 0x30),
-		(unsigned int) xnu_uuid[7],
-		(unsigned int) ((xnu_uuid[8] & 0x3f) | 0x80),
-		(unsigned int) xnu_uuid[9],
-		(unsigned int) xnu_uuid[10], (unsigned int) xnu_uuid[11],
-		(unsigned int) xnu_uuid[12], (unsigned int) xnu_uuid[13],
-		(unsigned int) xnu_uuid[14], (unsigned int) xnu_uuid[15]);
+  grub_snprintf (uuid_string, sizeof (uuid_string),
+		 "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+		 (unsigned int) xnu_uuid[0], (unsigned int) xnu_uuid[1],
+		 (unsigned int) xnu_uuid[2], (unsigned int) xnu_uuid[3],
+		 (unsigned int) xnu_uuid[4], (unsigned int) xnu_uuid[5],
+		 (unsigned int) ((xnu_uuid[6] & 0xf) | 0x30),
+		 (unsigned int) xnu_uuid[7],
+		 (unsigned int) ((xnu_uuid[8] & 0x3f) | 0x80),
+		 (unsigned int) xnu_uuid[9],
+		 (unsigned int) xnu_uuid[10], (unsigned int) xnu_uuid[11],
+		 (unsigned int) xnu_uuid[12], (unsigned int) xnu_uuid[13],
+		 (unsigned int) xnu_uuid[14], (unsigned int) xnu_uuid[15]);
   for (ptr = uuid_string; *ptr; ptr++)
     *ptr = grub_toupper (*ptr);
   if (argc == 1)

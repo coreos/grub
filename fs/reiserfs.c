@@ -1335,12 +1335,15 @@ grub_reiserfs_uuid (grub_device_t device, char **uuid)
   data = grub_reiserfs_mount (disk);
   if (data)
     {
-      *uuid = grub_malloc (sizeof ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"));
-      grub_sprintf (*uuid, "%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-		    grub_be_to_cpu16 (data->superblock.uuid[0]), grub_be_to_cpu16 (data->superblock.uuid[1]),
-		    grub_be_to_cpu16 (data->superblock.uuid[2]), grub_be_to_cpu16 (data->superblock.uuid[3]),
-		    grub_be_to_cpu16 (data->superblock.uuid[4]), grub_be_to_cpu16 (data->superblock.uuid[5]),
-		    grub_be_to_cpu16 (data->superblock.uuid[6]), grub_be_to_cpu16 (data->superblock.uuid[7]));
+      *uuid = grub_asprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+			     grub_be_to_cpu16 (data->superblock.uuid[0]),
+			     grub_be_to_cpu16 (data->superblock.uuid[1]),
+			     grub_be_to_cpu16 (data->superblock.uuid[2]),
+			     grub_be_to_cpu16 (data->superblock.uuid[3]),
+			     grub_be_to_cpu16 (data->superblock.uuid[4]),
+			     grub_be_to_cpu16 (data->superblock.uuid[5]),
+			     grub_be_to_cpu16 (data->superblock.uuid[6]),
+			     grub_be_to_cpu16 (data->superblock.uuid[7]));
     }
   else
     *uuid = NULL;

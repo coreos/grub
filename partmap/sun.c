@@ -184,13 +184,7 @@ sun_partition_map_probe (grub_disk_t disk, const char *str)
 static char *
 sun_partition_map_get_name (const grub_partition_t p)
 {
-  char *name;
-
-  name = grub_malloc (13);
-  if (name)
-    grub_sprintf (name, "%d", p->index + 1);
-
-  return name;
+  return grub_asprintf ("%d", p->index + 1);
 }
 
 /* Partition map type.  */

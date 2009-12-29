@@ -90,10 +90,7 @@ grub_machine_set_prefix (void)
 	}
       prefix = grub_ieee1275_encode_devname (bootpath);
 
-      path = grub_malloc (grub_strlen (grub_prefix)
-			  + grub_strlen (prefix)
-			  + 2);
-      grub_sprintf(path, "%s%s", prefix, grub_prefix);
+      path = grub_asprintf("%s%s", prefix, grub_prefix);
 
       grub_strcpy (grub_prefix, path);
 

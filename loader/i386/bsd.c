@@ -1138,14 +1138,20 @@ grub_cmd_freebsd_loadenv (grub_command_t cmd __attribute__ ((unused)),
 
       if (*curr)
 	{
-	  char name[grub_strlen (curr) + sizeof("kFreeBSD.")];
+	  char *name;
 
 	  if (*p == '"')
 	    p++;
 
-	  grub_sprintf (name, "kFreeBSD.%s", curr);
-	  if (grub_env_set (name, p))
+	  name = grub_asprintf ("kFreeBSD.%s", curr);
+	  if (!name)
 	    goto fail;
+	  if (grub_env_set (name, p))
+	    {
+	      grub_free (name);
+	      goto fail;
+	    }
+	  grub_free (name);
 	}
     }
 

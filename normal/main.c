@@ -389,15 +389,16 @@ grub_normal_init_page (void)
   int posx;
   const char *msg = _("GNU GRUB  version %s");
 
-  char *msg_formatted = grub_malloc (grub_strlen(msg) +
-  				     grub_strlen(PACKAGE_VERSION));
- 
-  grub_cls ();
-
-  grub_sprintf (msg_formatted, msg, PACKAGE_VERSION);
+  char *msg_formatted;
 
   grub_uint32_t *unicode_msg;
   grub_uint32_t *last_position;
+ 
+  grub_cls ();
+
+  msg_formatted = grub_asprintf (msg, PACKAGE_VERSION);
+  if (!msg_formatted)
+    return;
  
   msg_len = grub_utf8_to_ucs4_alloc (msg_formatted,
   				     &unicode_msg, &last_position);
@@ -475,11 +476,10 @@ grub_cmd_normal (struct grub_command *cmd,
       prefix = grub_env_get ("prefix");
       if (prefix)
 	{
-	  config = grub_malloc (grub_strlen (prefix) + sizeof ("/grub.cfg"));
+	  config = grub_asprintf ("%s/grub.cfg", prefix);
 	  if (! config)
 	    goto quit;
 
-	  grub_sprintf (config, "%s/grub.cfg", prefix);
 	  grub_enter_normal_mode (config);
 	  grub_free (config);
 	}
@@ -528,10 +528,11 @@ grub_normal_reader_init (void)
 
   const char *msg_esc = _("ESC at any time exits.");
 
-  char *msg_formatted = grub_malloc (sizeof (char) * (grub_strlen (msg) +
-                grub_strlen(msg_esc) + 1));
+  char *msg_formatted;
 
-  grub_sprintf (msg_formatted, msg, reader_nested ? msg_esc : "");
+  msg_formatted = grub_asprintf (msg, reader_nested ? msg_esc : "");
+  if (!msg_formatted)
+    return grub_errno;
   grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN);
   grub_puts ("\n");
 
@@ -546,9 +547,11 @@ static grub_err_t
 grub_normal_read_line (char **line, int cont)
 {
   grub_parser_t parser = grub_parser_get_current ();
-  char prompt[sizeof(">") + grub_strlen (parser->name)];
+  char *prompt;
 
-  grub_sprintf (prompt, "%s>", parser->name);
+  prompt = grub_asprintf ("%s>", parser->name);
+  if (!prompt)
+    return grub_errno;
 
   while (1)
     {

@@ -86,7 +86,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
   int print_files_long (const char *filename,
 			const struct grub_dirhook_info *info)
     {
-      char pathname[grub_strlen (dirname) + grub_strlen (filename) + 1];
+      char *pathname;
 
       if ((! all) && (filename[0] == '.'))
 	return 0;
@@ -96,9 +96,12 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	  grub_file_t file;
 
 	  if (dirname[grub_strlen (dirname) - 1] == '/')
-	    grub_sprintf (pathname, "%s%s", dirname, filename);
+	    pathname = grub_asprintf ("%s%s", dirname, filename);
 	  else
-	    grub_sprintf (pathname, "%s/%s", dirname, filename);
+	    pathname = grub_asprintf ("%s/%s", dirname, filename);
+
+	  if (!pathname)
+	    return 1;
 
 	  /* XXX: For ext2fs symlinks are detected as files while they
 	     should be reported as directories.  */
@@ -130,8 +133,9 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 		  grub_uint32_t whole, fraction;
 
 		  whole = grub_divmod64 (fsize, 100, &fraction);
-		  grub_sprintf (buf, "%u.%02u%c", whole, fraction,
-				grub_human_sizes[units]);
+		  grub_snprintf (buf, sizeof (buf),
+				 "%u.%02u%c", whole, fraction,
+				 grub_human_sizes[units]);
 		  grub_printf ("%-12s", buf);
 		}
 	      else

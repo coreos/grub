@@ -356,14 +356,7 @@ grub_register_variable_hook (const char *name,
 static char *
 mangle_data_slot_name (const char *name)
 {
-  char *mangled_name;
-
-  mangled_name = grub_malloc (grub_strlen (name) + 2);
-  if (! mangled_name)
-    return 0;
-
-  grub_sprintf (mangled_name, "\e%s", name);
-  return mangled_name;
+  return grub_asprintf ("\e%s", name);
 }
 
 grub_err_t

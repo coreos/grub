@@ -210,13 +210,14 @@ command-line or ESC to return menu."), STANDARD_MARGIN, STANDARD_MARGIN);
     }
   else
     {
-      const char *msg = _("Use the %C and %C keys to select which \
-entry is highlighted.\n");
-      char *msg_translated =
-       grub_malloc (sizeof (char) * grub_strlen (msg) + 1);
+      const char *msg = _("Use the %C and %C keys to select which "
+			  "entry is highlighted.\n");
+      char *msg_translated;
 
-      grub_sprintf (msg_translated, msg, (grub_uint32_t) GRUB_TERM_DISP_UP,
-                   (grub_uint32_t) GRUB_TERM_DISP_DOWN);
+      msg_translated = grub_asprintf (msg, (grub_uint32_t) GRUB_TERM_DISP_UP,
+				     (grub_uint32_t) GRUB_TERM_DISP_DOWN);
+      if (!msg_translated)
+	return;
       grub_putchar ('\n');
       grub_print_message_indented (msg_translated, STANDARD_MARGIN, STANDARD_MARGIN);
 
@@ -394,13 +395,13 @@ print_timeout (int timeout, int offset)
 {
   const char *msg =
     _("The highlighted entry will be booted automatically in %ds.");
+  char *msg_translated;
 
   grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
 
-  char *msg_translated =
-    grub_malloc (sizeof (char) * grub_strlen (msg) + 5);
-
-  grub_sprintf (msg_translated, msg, timeout);
+  msg_translated = grub_asprintf (msg, timeout);
+  if (!msg_translated)
+    return;
   grub_print_message_indented (msg_translated, 3, 0);
  
   int posx;

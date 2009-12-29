@@ -61,7 +61,7 @@ grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
 
   if (cmd->state[0].set)
     {
-      grub_sprintf (buf, "%x", value);
+      grub_snprintf (buf, sizeof (buf), "%x", value);
       grub_env_set (cmd->state[0].arg, buf);
     }
   else
