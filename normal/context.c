@@ -22,6 +22,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/command.h>
+#include <grub/normal.h>
 
 struct menu_pointer
 {
