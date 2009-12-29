@@ -116,7 +116,7 @@ grub_gfxmenu_view_destroy (grub_gfxmenu_view_t view)
   grub_free (view->progress_message_text);
   grub_free (view->theme_path);
   if (view->canvas)
-    view->canvas->ops->component.destroy (view->canvas);
+    view->canvas->component.ops->destroy (view->canvas);
   grub_free (view);
 }
 
@@ -319,7 +319,7 @@ grub_gfxmenu_view_redraw (grub_gfxmenu_view_t view,
 
   redraw_background (view, region);
   if (view->canvas)
-    view->canvas->ops->component.paint (view->canvas, region);
+    view->canvas->component.ops->paint (view->canvas, region);
   draw_title (view);
   if (grub_video_have_common_points (&view->progress_message_frame, region))
     draw_message (view);

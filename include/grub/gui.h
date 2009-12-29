@@ -55,14 +55,13 @@ struct grub_gui_component_ops
   grub_gui_container_t (*get_parent) (void *self);
   void (*set_bounds) (void *self, const grub_video_rect_t *bounds);
   void (*get_bounds) (void *self, grub_video_rect_t *bounds);
-  void (*get_preferred_size) (void *self, int *width, int *height);
+  void (*get_minimal_size) (void *self, unsigned *width, unsigned *height);
   grub_err_t (*set_property) (void *self, const char *name, const char *value);
   void (*repaint) (void *self, int second_pass);
 };
 
 struct grub_gui_container_ops
 {
-  struct grub_gui_component_ops component;
   void (*add) (void *self, grub_gui_component_t comp);
   void (*remove) (void *self, grub_gui_component_t comp);
   void (*iterate_children) (void *self,
@@ -71,23 +70,77 @@ struct grub_gui_container_ops
 
 struct grub_gui_list_ops
 {
-  struct grub_gui_component_ops component_ops;
   void (*set_view_info) (void *self,
                          grub_gfxmenu_view_t view);
 };
 
+typedef grub_uint32_t grub_fixed_unsigned_t;
+#define GRUB_FIXED_1 0x10000
+
+static inline unsigned
+grub_fixed_ufu_divide (grub_uint32_t a, grub_fixed_unsigned_t b)
+{
+  return (a << 16) / b;
+}
+
+static inline grub_fixed_unsigned_t
+grub_fixed_fuf_divide (grub_fixed_unsigned_t a, grub_uint32_t b)
+{
+  return a / b;
+}
+
+static inline unsigned
+grub_fixed_ufu_multiply (grub_uint32_t a, grub_fixed_unsigned_t b)
+{
+  return (a * b) >> 16;
+}
+
+static inline unsigned
+grub_fixed_to_unsigned (grub_fixed_unsigned_t in)
+{
+  return in >> 16;
+}
+
+static inline grub_fixed_unsigned_t
+grub_unsigned_to_fixed (unsigned in)
+{
+  return in << 16;
+}
+
 struct grub_gui_component
 {
   struct grub_gui_component_ops *ops;
+  int isxfrac:1;
+  int isyfrac:1;
+  int iswfrac:1;
+  int ishfrac:1;
+  union {
+    unsigned x;
+    grub_fixed_unsigned_t xfrac;
+  };
+  union {
+    unsigned y;
+    grub_fixed_unsigned_t yfrac;
+  };
+  union {
+    unsigned w;
+    grub_fixed_unsigned_t wfrac;
+  };
+  union {
+    unsigned h;
+    grub_fixed_unsigned_t hfrac;
+  };
 };
 
 struct grub_gui_container
 {
+  struct grub_gui_component component;
   struct grub_gui_container_ops *ops;
 };
 
 struct grub_gui_list
 {
+  struct grub_gui_component component;
   struct grub_gui_list_ops *ops;
 };
 

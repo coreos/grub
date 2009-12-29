@@ -26,13 +26,11 @@
 
 struct grub_gui_image
 {
-  struct grub_gui_component_ops *image;
+  struct grub_gui_component component;
 
   grub_gui_container_t parent;
   grub_video_rect_t bounds;
   char *id;
-  int preferred_width;
-  int preferred_height;
   struct grub_video_bitmap *raw_bitmap;
   struct grub_video_bitmap *bitmap;
 };
@@ -172,8 +170,9 @@ image_get_bounds (void *vself, grub_video_rect_t *bounds)
   *bounds = self->bounds;
 }
 
+/* FIXME: inform rendering system it's not forced minimum.  */
 static void
-image_get_preferred_size (void *vself, int *width, int *height)
+image_get_minimal_size (void *vself, unsigned *width, unsigned *height)
 {
   grub_gui_image_t self = vself;
 
@@ -187,12 +186,6 @@ image_get_preferred_size (void *vself, int *width, int *height)
       *width = 0;
       *height = 0;
     }
-
-  /* Allow preferred dimensions to override the image dimensions.  */
-  if (self->preferred_width >= 0)
-    *width = self->preferred_width;
-  if (self->preferred_height >= 0)
-    *height = self->preferred_height;
 }
 
 static grub_err_t
@@ -217,15 +210,6 @@ image_set_property (void *vself, const char *name, const char *value)
   grub_gui_image_t self = vself;
   if (grub_strcmp (name, "file") == 0)
     return load_image (self, value);
-  else if (grub_strcmp (name, "preferred_size") == 0)
-    {
-      int w;
-      int h;
-      if (grub_gui_parse_2_tuple (value, &w, &h) != GRUB_ERR_NONE)
-        return grub_errno;
-      self->preferred_width = w;
-      self->preferred_height = h;
-    }
   else if (grub_strcmp (name, "id") == 0)
     {
       grub_free (self->id);
@@ -247,7 +231,7 @@ static struct grub_gui_component_ops image_ops =
   .get_parent = image_get_parent,
   .set_bounds = image_set_bounds,
   .get_bounds = image_get_bounds,
-  .get_preferred_size = image_get_preferred_size,
+  .get_minimal_size = image_get_minimal_size,
   .set_property = image_set_property
 };
 
@@ -255,20 +239,10 @@ grub_gui_component_t
 grub_gui_image_new (void)
 {
   grub_gui_image_t image;
-  image = grub_malloc (sizeof (*image));
+  image = grub_zalloc (sizeof (*image));
   if (! image)
     return 0;
-  image->image = &image_ops;
-  image->parent = 0;
-  image->bounds.x = 0;
-  image->bounds.y = 0;
-  image->bounds.width = 0;
-  image->bounds.height = 0;
-  image->id = 0;
-  image->preferred_width = -1;
-  image->preferred_height = -1;
-  image->raw_bitmap = 0;
-  image->bitmap = 0;
+  image->component.ops = &image_ops;
   return (grub_gui_component_t) image;
 }
 

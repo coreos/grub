@@ -510,35 +510,73 @@ read_object (struct parsebuf *p, grub_gui_container_t parent)
         }
 
       /* Handle the property value.  */
-      if (grub_strcmp (property, "position") == 0)
+      if (grub_strcmp (property, "left") == 0)
         {
-          /* Special case for position value.  */
-          int x;
-          int y;
-
-          if (grub_gui_parse_2_tuple (value, &x, &y) == GRUB_ERR_NONE)
-            {
-              grub_video_rect_t r;
-              component->ops->get_bounds (component, &r);
-              r.x = x;
-              r.y = y;
-              component->ops->set_bounds (component, &r);
-            }
+	  unsigned num;
+	  char *ptr;
+	  num = grub_strtoul (value, &ptr, 0);
+	  if (*ptr == '%')
+	    {
+	      component->isxfrac = 1;
+	      component->xfrac
+		= grub_fixed_fuf_divide (grub_unsigned_to_fixed (num), 100);
+	    }
+	  else
+	    {
+	      component->isxfrac = 0;
+	      component->x = num;
+	    }
         }
-      else if (grub_strcmp (property, "size") == 0)
+      else if (grub_strcmp (property, "top") == 0)
         {
-          /* Special case for size value.  */
-          int w;
-          int h;
-
-          if (grub_gui_parse_2_tuple (value, &w, &h) == GRUB_ERR_NONE)
-            {
-              grub_video_rect_t r;
-              component->ops->get_bounds (component, &r);
-              r.width = w;
-              r.height = h;
-              component->ops->set_bounds (component, &r);
-            }
+	  unsigned num;
+	  char *ptr;
+	  num = grub_strtoul (value, &ptr, 0);
+	  if (*ptr == '%')
+	    {
+	      component->isyfrac = 1;
+	      component->yfrac
+		= grub_fixed_fuf_divide (grub_unsigned_to_fixed (num), 100);
+	    }
+	  else
+	    {
+	      component->isyfrac = 0;
+	      component->y = num;
+	    }
+        }
+      else if (grub_strcmp (property, "width") == 0)
+        {
+	  unsigned num;
+	  char *ptr;
+	  num = grub_strtoul (value, &ptr, 0);
+	  if (*ptr == '%')
+	    {
+	      component->iswfrac = 1;
+	      component->wfrac
+		= grub_fixed_fuf_divide (grub_unsigned_to_fixed (num), 100);
+	    }
+	  else
+	    {
+	      component->iswfrac = 0;
+	      component->w = num;
+	    }
+        }
+      else if (grub_strcmp (property, "height") == 0)
+        {
+	  unsigned num;
+	  char *ptr;
+	  num = grub_strtoul (value, &ptr, 0);
+	  if (*ptr == '%')
+	    {
+	      component->ishfrac = 1;
+	      component->hfrac
+		= grub_fixed_fuf_divide (grub_unsigned_to_fixed (num), 100);
+	    }
+	  else
+	    {
+	      component->ishfrac = 0;
+	      component->h = num;
+	    }
         }
       else
         {
@@ -550,16 +588,6 @@ read_object (struct parsebuf *p, grub_gui_container_t parent)
       grub_free (property);
       if (grub_errno != GRUB_ERR_NONE)
         goto cleanup;
-    }
-
-  /* Set the object's size to its preferred size unless the user has
-     explicitly specified the size.  */
-  component->ops->get_bounds (component, &bounds);
-  if (bounds.width == -1 || bounds.height == -1)
-    {
-      component->ops->get_preferred_size (component,
-                                          &bounds.width, &bounds.height);
-      component->ops->set_bounds (component, &bounds);
     }
 
 cleanup:
@@ -665,7 +693,7 @@ grub_gfxmenu_view_load_theme (grub_gfxmenu_view_t view, const char *theme_path)
     }
 
   if (view->canvas)
-    view->canvas->ops->component.destroy (view->canvas);
+    view->canvas->component.ops->destroy (view->canvas);
 
   view->canvas = grub_gui_canvas_new ();
   ((grub_gui_component_t) view->canvas)
@@ -708,7 +736,7 @@ grub_gfxmenu_view_load_theme (grub_gfxmenu_view_t view, const char *theme_path)
 fail:
   if (view->canvas)
     {
-      view->canvas->ops->component.destroy (view->canvas);
+      view->canvas->component.ops->destroy (view->canvas);
       view->canvas = 0;
     }
 
