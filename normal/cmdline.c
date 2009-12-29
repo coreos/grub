@@ -222,7 +222,8 @@ grub_cmdline_get (const char *prompt)
   int histpos = 0;
   auto void cl_insert (const grub_uint32_t *str);
   auto void cl_delete (unsigned len);
-  auto void cl_print (struct cmdline_term *cl_term, int pos, grub_uint32_t c);
+  auto inline void __attribute__ ((always_inline)) cl_print (struct cmdline_term *cl_term, int pos,
+			grub_uint32_t c);
   auto void cl_set_pos (struct cmdline_term *cl_term);
   auto void cl_print_all (int pos, grub_uint32_t c);
   auto void cl_set_pos_all (void);
@@ -245,7 +246,7 @@ grub_cmdline_get (const char *prompt)
       cl_set_pos (&cl_terms[i]);
   }
 
-  void cl_print (struct cmdline_term *cl_term, int pos, grub_uint32_t c)
+  inline void __attribute__ ((always_inline)) cl_print (struct cmdline_term *cl_term, int pos, grub_uint32_t c)
     {
       grub_uint32_t *p;
 
