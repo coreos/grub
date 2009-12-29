@@ -39,13 +39,13 @@
 
 grub_gfxmenu_view_t cached_view;
 
-void 
+static void 
 grub_gfxmenu_viewer_fini (void *data __attribute__ ((unused)))
 {
 }
 
 /* FIXME: Previously 't' changed to text menu is it necessary?  */
-grub_err_t
+static grub_err_t
 grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
 {
   grub_gfxmenu_view_t view = NULL;
@@ -76,8 +76,8 @@ grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
     }
 
   if (!cached_view || grub_strcmp (cached_view->theme_path, theme_path) != 0
-      || cached_view->screen.width != (int) mode_info.width
-      || cached_view->screen.height != (int) mode_info.height)
+      || cached_view->screen.width != mode_info.width
+      || cached_view->screen.height != mode_info.height)
     {
       grub_free (cached_view);
       /* Create the view.  */
