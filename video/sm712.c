@@ -68,6 +68,7 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   grub_err_t err;
   int found = 0;
 
+  auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid __attribute__ ((unused)));
   int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid __attribute__ ((unused)))
     {
       grub_pci_address_t addr;
