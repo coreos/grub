@@ -1,3 +1,8 @@
+2009-12-29 Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/sparc64/ieee1275/linux.c (GRUB_MOD_INIT (linux)):
+	Fix syntax error.
+
 2009-12-29  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* configure.ac: Check for TARGET_CFLAGS initialization before we
