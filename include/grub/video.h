@@ -160,10 +160,10 @@ struct grub_video_mode_info
 /* A 2D rectangle type.  */
 struct grub_video_rect
 {
-  int x;
-  int y;
-  int width;
-  int height;
+  unsigned x;
+  unsigned y;
+  unsigned width;
+  unsigned height;
 };
 typedef struct grub_video_rect grub_video_rect_t;
 

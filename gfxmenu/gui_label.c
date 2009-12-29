@@ -39,13 +39,11 @@ enum align_mode {
 
 struct grub_gui_label
 {
-  struct grub_gui_component_ops *label;
+  struct grub_gui_component comp;
 
   grub_gui_container_t parent;
   grub_video_rect_t bounds;
   char *id;
-  int preferred_width;
-  int preferred_height;
   int visible;
   char *text;
   grub_font_t font;
@@ -140,18 +138,12 @@ label_get_bounds (void *vself, grub_video_rect_t *bounds)
 }
 
 static void
-label_get_preferred_size (void *vself, int *width, int *height)
+label_get_minimal_size (void *vself, unsigned *width, unsigned *height)
 {
   grub_gui_label_t self = vself;
   *width = grub_font_get_string_width (self->font, self->text);
   *height = (grub_font_get_ascent (self->font)
              + grub_font_get_descent (self->font));
-
-  /* Allow preferred dimensions to override the computed dimensions.  */
-  if (self->preferred_width >= 0)
-    *width = self->preferred_width;
-  if (self->preferred_height >= 0)
-    *height = self->preferred_height;
 }
 
 static grub_err_t
@@ -189,16 +181,6 @@ label_set_property (void *vself, const char *name, const char *value)
     {
       self->visible = grub_strcmp (value, "false") != 0;
     }
-  else if (grub_strcmp (name, "preferred_size") == 0)
-    {
-      int w;
-      int h;
-      if (grub_gui_parse_2_tuple (value, &w, &h) == GRUB_ERR_NONE)
-        {
-          self->preferred_width = w;
-          self->preferred_height = h;
-        }
-    }
   else if (grub_strcmp (name, "id") == 0)
     {
       grub_free (self->id);
@@ -220,7 +202,7 @@ static struct grub_gui_component_ops label_ops =
   .get_parent = label_get_parent,
   .set_bounds = label_set_bounds,
   .get_bounds = label_get_bounds,
-  .get_preferred_size = label_get_preferred_size,
+  .get_minimal_size = label_get_minimal_size,
   .set_property = label_set_property
 };
 
@@ -228,18 +210,10 @@ grub_gui_component_t
 grub_gui_label_new (void)
 {
   grub_gui_label_t label;
-  label = grub_malloc (sizeof (*label));
+  label = grub_zalloc (sizeof (*label));
   if (! label)
     return 0;
-  label->label = &label_ops;
-  label->parent = 0;
-  label->bounds.x = 0;
-  label->bounds.y = 0;
-  label->bounds.width = 0;
-  label->bounds.height = 0;
-  label->id = 0;
-  label->preferred_width = -1;
-  label->preferred_height = -1;
+  label->comp.ops = &label_ops;
   label->visible = 1;
   label->text = grub_strdup ("");
   label->font = grub_font_get ("Helvetica 10");

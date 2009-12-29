@@ -34,6 +34,4 @@ int grub_gui_get_named_color (const char *name, grub_gui_color_t *color);
 
 grub_err_t grub_gui_parse_color (const char *s, grub_gui_color_t *color);
 
-grub_err_t grub_gui_parse_2_tuple (const char *s, int *px, int *py);
-
 #endif /* GRUB_GUI_STRING_UTIL_HEADER */

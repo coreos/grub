@@ -28,13 +28,11 @@
 
 struct grub_gui_circular_progress
 {
-  struct grub_gui_component_ops *circprog_ops;
+  struct grub_gui_component comp;
 
   grub_gui_container_t parent;
   grub_video_rect_t bounds;
   char *id;
-  int preferred_width;
-  int preferred_height;
   int visible;
   int start;
   int end;
@@ -209,21 +207,6 @@ circprog_get_bounds (void *vself, grub_video_rect_t *bounds)
   *bounds = self->bounds;
 }
 
-static void
-circprog_get_preferred_size (void *vself, int *width, int *height)
-{
-  circular_progress_t self = vself;
-
-  *width = 0;
-  *height = 0;
-
-  /* Allow preferred dimensions to override the circprog dimensions.  */
-  if (self->preferred_width >= 0)
-    *width = self->preferred_width;
-  if (self->preferred_height >= 0)
-    *height = self->preferred_height;
-}
-
 static grub_err_t
 circprog_set_property (void *vself, const char *name, const char *value)
 {
@@ -270,15 +253,6 @@ circprog_set_property (void *vself, const char *name, const char *value)
       grub_free (self->theme_dir);
       self->theme_dir = value ? grub_strdup (value) : 0;
     }
-  else if (grub_strcmp (name, "preferred_size") == 0)
-    {
-      int w;
-      int h;
-      if (grub_gui_parse_2_tuple (value, &w, &h) != GRUB_ERR_NONE)
-        return grub_errno;
-      self->preferred_width = w;
-      self->preferred_height = h;
-    }
   else if (grub_strcmp (name, "visible") == 0)
     {
       self->visible = grub_strcmp (value, "false") != 0;
@@ -304,7 +278,6 @@ static struct grub_gui_component_ops circprog_ops =
   .get_parent = circprog_get_parent,
   .set_bounds = circprog_set_bounds,
   .get_bounds = circprog_get_bounds,
-  .get_preferred_size = circprog_get_preferred_size,
   .set_property = circprog_set_property
 };
 
@@ -312,32 +285,13 @@ grub_gui_component_t
 grub_gui_circular_progress_new (void)
 {
   circular_progress_t self;
-  self = grub_malloc (sizeof (*self));
+  self = grub_zalloc (sizeof (*self));
   if (! self)
     return 0;
-  self->circprog_ops = &circprog_ops;
-  self->parent = 0;
-  self->bounds.x = 0;
-  self->bounds.y = 0;
-  self->bounds.width = 0;
-  self->bounds.height = 0;
-  self->id = 0;
-  self->preferred_width = -1;
-  self->preferred_height = -1;
+  self->comp.ops = &circprog_ops;
   self->visible = 1;
-  self->start = 0;
-  self->end = 0;
-  self->value = 0;
   self->num_ticks = 64;
   self->start_angle = -64;
-  self->ticks_disappear = 0;
-
-  self->theme_dir = 0;
-  self->need_to_load_pixmaps = 0;
-  self->center_file = 0;
-  self->tick_file = 0;
-  self->center_bitmap = 0;
-  self->tick_bitmap = 0;
 
   return (grub_gui_component_t) self;
 }

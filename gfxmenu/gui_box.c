@@ -32,17 +32,16 @@ struct component_node
 typedef struct grub_gui_box *grub_gui_box_t;
 
 typedef void (*layout_func_t) (grub_gui_box_t self, int modify_layout,
-                               int *width, int *height);
+                               unsigned *minimal_width,
+			       unsigned *minimal_height);
 
 struct grub_gui_box
 {
-  struct grub_gui_container_ops *container;
+  struct grub_gui_container container;
 
   grub_gui_container_t parent;
   grub_video_rect_t bounds;
   char *id;
-  int preferred_width;
-  int preferred_height;
 
   /* Doubly linked list of components with dummy head & tail nodes.  */
   struct component_node chead;
@@ -87,82 +86,158 @@ box_is_instance (void *vself __attribute__((unused)), const char *type)
 
 static void
 layout_horizontally (grub_gui_box_t self, int modify_layout,
-                     int *width, int *height)
+                     unsigned *min_width, unsigned *min_height)
 {
   /* Start at the left (chead) and set the x coordinates as we go right.  */
   /* All components have their width set to the box's width.  */
 
   struct component_node *cur;
-  int x = 0;
-  if (height)
-    *height = 0;
+  unsigned w = 0, mwfrac = 0, h = 0, x = 0;
+  grub_fixed_unsigned_t wfrac = 0;
+  int bogus_frac = 0;
+
   for (cur = self->chead.next; cur != &self->ctail; cur = cur->next)
     {
       grub_gui_component_t c = cur->component;
+      unsigned mw = 0, mh = 0;
+
+      if (c->ops->get_minimal_size)
+	c->ops->get_minimal_size (c, &mw, &mh);
+
+      if (!c->ishfrac && c->h > h)
+	h = c->h;
+      if (mh > h)
+	h = mh;
+      if (!c->iswfrac)
+	w += mw > c->w ? mw : c->w;
+      if (c->iswfrac)
+	{
+	  wfrac += c->wfrac;
+	  mwfrac += mw;
+	}
+    }
+  if (wfrac > GRUB_FIXED_1 || (w > 0 && wfrac == GRUB_FIXED_1))
+    bogus_frac = 1;
+
+  if (min_width)
+    {
+      if (wfrac < GRUB_FIXED_1)
+	*min_width = grub_fixed_ufu_divide (w, GRUB_FIXED_1 - wfrac);
+      else
+	*min_width = w;
+      if (*min_width < w + mwfrac)
+	*min_width = w + mwfrac;
+    }
+  if (min_height)
+    *min_height = h;
+
+  if (!modify_layout)
+    return;
+
+  for (cur = self->chead.next; cur != &self->ctail; cur = cur->next)
+    {
       grub_video_rect_t r;
+      grub_gui_component_t c = cur->component;
+      unsigned mw = 0, mh = 0;
 
-      c->ops->get_preferred_size (c, &r.width, &r.height);
+      r.x = x;
+      r.y = 0;
+      r.width = 32;
+      r.height = h;
 
-      /* Check and possibly update the maximum width, if non-null.  */
-      if (height && r.height > *height)
-        *height = r.height;
+      if (c->ops->get_minimal_size)
+	c->ops->get_minimal_size (c, &mw, &mh);
 
-      /* Set the component's bounds, if the flag is set.  */
-      if (modify_layout)
-        {
-          r.x = x;
-          r.y = 0;
-          /* Width comes from the component's preferred size.  */
-          r.height = self->bounds.height;
-          c->ops->set_bounds (c, &r);
-        }
+      if (!c->iswfrac)
+	r.width = c->w;
+      if (c->iswfrac && !bogus_frac)
+	r.width = grub_fixed_ufu_multiply (self->bounds.width, c->wfrac);
+
+      if (r.width < mw)
+	r.width = mw;
+
+      c->ops->set_bounds (c, &r);
 
       x += r.width;
     }
-
-  /* Return the sum of the children's preferred widths.  */
-  if (width)
-    *width = x;
 }
 
 static void
 layout_vertically (grub_gui_box_t self, int modify_layout,
-                   int *width, int *height)
+                     unsigned *min_width, unsigned *min_height)
 {
-  /* Start at the top (chead) and set the y coordinates as we go down.  */
-  /* All components have their width set to the vbox's width.  */
+  /* Start at the top (chead) and set the y coordinates as we go rdown.  */
+  /* All components have their height set to the box's height.  */
 
   struct component_node *cur;
-  int y = 0;
-  if (width)
-    *width = 0;
+  unsigned h = 0, mhfrac = 0, w = 0, y = 0;
+  grub_fixed_unsigned_t hfrac = 0;
+  int bogus_frac = 0;
+
   for (cur = self->chead.next; cur != &self->ctail; cur = cur->next)
     {
       grub_gui_component_t c = cur->component;
+      unsigned mw = 0, mh = 0;
+
+      if (c->ops->get_minimal_size)
+	c->ops->get_minimal_size (c, &mw, &mh);
+
+      if (!c->iswfrac && c->w > w)
+	w = c->w;
+      if (mw > w)
+	w = mw;
+      if (!c->ishfrac)
+	h += mh > c->h ? mh : c->h;
+      if (c->ishfrac)
+	{
+	  hfrac += c->hfrac;
+	  mhfrac += mh;
+	}
+    }
+  if (hfrac > GRUB_FIXED_1 || (h > 0 && hfrac == GRUB_FIXED_1))
+    bogus_frac = 1;
+
+  if (min_height)
+    {
+      if (hfrac < GRUB_FIXED_1)
+	*min_height = grub_fixed_ufu_divide (h, GRUB_FIXED_1 - hfrac);
+      else
+	*min_height = h;
+      if (*min_height < h + mhfrac)
+	*min_height = h + mhfrac;
+    }
+  if (min_width)
+    *min_width = w;
+
+  if (!modify_layout)
+    return;
+
+  for (cur = self->chead.next; cur != &self->ctail; cur = cur->next)
+    {
       grub_video_rect_t r;
+      grub_gui_component_t c = cur->component;
+      unsigned mw = 0, mh = 0;
 
-      c->ops->get_preferred_size (c, &r.width, &r.height);
+      r.x = 0;
+      r.y = y;
+      r.width = w;
+      r.height = 32;
 
-      /* Check and possibly update the maximum width, if non-null.  */
-      if (width && r.width > *width)
-        *width = r.width;
+      if (c->ops->get_minimal_size)
+	c->ops->get_minimal_size (c, &mw, &mh);
 
-      /* Set the component's bounds, if the flag is set.  */
-      if (modify_layout)
-        {
-          r.x = 0;
-          r.y = y;
-          r.width = self->bounds.width;
-          /* Height comes from the component's preferred size.  */
-          c->ops->set_bounds (c, &r);
-        }
+      if (!c->ishfrac)
+	r.height = c->h;
+      if (c->ishfrac)
+	r.height = grub_fixed_ufu_multiply (self->bounds.height, c->hfrac);
+
+      if (r.height < mh)
+	r.height = mh;
+
+      c->ops->set_bounds (c, &r);
 
       y += r.height;
     }
-
-  /* Return the sum of the children's preferred heights.  */
-  if (height)
-    *height = y;
 }
 
 static void
@@ -213,16 +288,10 @@ box_get_bounds (void *vself, grub_video_rect_t *bounds)
 /* The box's preferred size is based on the preferred sizes
    of its children.  */
 static void
-box_get_preferred_size (void *vself, int *width, int *height)
+box_get_minimal_size (void *vself, unsigned *width, unsigned *height)
 {
   grub_gui_box_t self = vself;
   self->layout_func (self, 0, width, height);   /* Just calculate the size.  */
-
-  /* Allow preferred dimensions to override the computed dimensions.  */
-  if (self->preferred_width >= 0)
-    *width = self->preferred_width;
-  if (self->preferred_height >= 0)
-    *height = self->preferred_height;
 }
 
 static grub_err_t
@@ -240,15 +309,6 @@ box_set_property (void *vself, const char *name, const char *value)
         }
       else
         self->id = 0;
-    }
-  else if (grub_strcmp (name, "preferred_size") == 0)
-    {
-      int w;
-      int h;
-      if (grub_gui_parse_2_tuple (value, &w, &h) != GRUB_ERR_NONE)
-        return grub_errno;
-      self->preferred_width = w;
-      self->preferred_height = h;
     }
 
   return grub_errno;
@@ -303,21 +363,22 @@ box_iterate_children (void *vself,
     cb (cur->component, userdata);
 }
 
+static struct grub_gui_component_ops box_comp_ops =
+  {
+    .destroy = box_destroy,
+    .get_id = box_get_id,
+    .is_instance = box_is_instance,
+    .paint = box_paint,
+    .set_parent = box_set_parent,
+    .get_parent = box_get_parent,
+    .set_bounds = box_set_bounds,
+    .get_bounds = box_get_bounds,
+    .get_minimal_size = box_get_minimal_size,
+    .set_property = box_set_property
+  };
+
 static struct grub_gui_container_ops box_ops =
 {
-  .component =
-    {
-      .destroy = box_destroy,
-      .get_id = box_get_id,
-      .is_instance = box_is_instance,
-      .paint = box_paint,
-      .set_parent = box_set_parent,
-      .get_parent = box_get_parent,
-      .set_bounds = box_set_bounds,
-      .get_bounds = box_get_bounds,
-      .get_preferred_size = box_get_preferred_size,
-      .set_property = box_set_property
-    },
   .add = box_add,
   .remove = box_remove,
   .iterate_children = box_iterate_children
@@ -329,24 +390,13 @@ static grub_gui_box_t
 box_new (layout_func_t layout_func)
 {
   grub_gui_box_t box;
-  box = grub_malloc (sizeof (*box));
+  box = grub_zalloc (sizeof (*box));
   if (! box)
     return 0;
-  box->container = &box_ops;
-  box->parent = 0;
-  box->bounds.x = 0;
-  box->bounds.y = 0;
-  box->bounds.width = 0;
-  box->bounds.height = 0;
-  box->id = 0;
-  box->preferred_width = -1;
-  box->preferred_height = -1;
-  box->chead.component = 0;
-  box->chead.prev = 0;
+  box->container.ops = &box_ops;
+  box->container.component.ops = &box_comp_ops;
   box->chead.next = &box->ctail;
-  box->ctail.component = 0;
   box->ctail.prev = &box->chead;
-  box->ctail.next = 0;
   box->layout_func = layout_func;
   return box;
 }

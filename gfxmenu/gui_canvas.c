@@ -32,13 +32,11 @@ struct component_node
 
 struct grub_gui_canvas
 {
-  struct grub_gui_container_ops *container;
+  struct grub_gui_container container;
 
   grub_gui_container_t parent;
   grub_video_rect_t bounds;
   char *id;
-  int preferred_width;
-  int preferred_height;
   /* Component list (dummy head node).  */
   struct component_node components;
 };
@@ -88,22 +86,52 @@ canvas_paint (void *vself, const grub_video_rect_t *region)
   grub_gui_set_viewport (&self->bounds, &vpsave);
   for (cur = self->components.next; cur; cur = cur->next)
     {
-      int pw;
-      int ph;
       grub_video_rect_t r;
       grub_gui_component_t comp;
 
       comp = cur->component;
 
-      /* Give the child its preferred size.  */
-      comp->ops->get_preferred_size (comp, &pw, &ph);
-      comp->ops->get_bounds (comp, &r);
-      if (r.width != pw || r.height != ph)
-        {
-          r.width = pw;
-          r.height = ph;
-          comp->ops->set_bounds (comp, &r);
-        }
+      r.x = 0;
+      r.y = 0;
+      r.width = 32;
+      r.height = 32;
+
+      if (!comp->iswfrac && comp->w)
+	r.width = comp->w;
+
+      if (!comp->ishfrac && comp->h)
+	r.height = comp->h;
+
+      if (!comp->isxfrac && comp->x)
+	r.x = comp->x;
+
+      if (!comp->isyfrac && comp->y)
+	r.y = comp->y;
+
+      if (comp->ishfrac && comp->hfrac)
+	r.height = grub_fixed_ufu_multiply (self->bounds.height, comp->hfrac);
+
+      if (comp->iswfrac && comp->wfrac)
+	r.width = grub_fixed_ufu_multiply (self->bounds.width, comp->wfrac);
+
+      if (comp->isxfrac && comp->xfrac)
+	r.x = grub_fixed_ufu_multiply (self->bounds.width, comp->xfrac);
+
+      if (comp->isyfrac && comp->yfrac)
+	r.y = grub_fixed_ufu_multiply (self->bounds.height, comp->yfrac);
+
+      if (comp->ops->get_minimal_size)
+	{
+	  unsigned mw;
+	  unsigned mh;
+	  comp->ops->get_minimal_size (comp, &mw, &mh);
+	  if (r.width < mw)
+	    r.width = mw;
+	  if (r.height < mh)
+	    r.height = mh;
+	}
+
+      comp->ops->set_bounds (comp, &r);
 
       /* Paint the child.  */
       if (grub_video_have_common_points (region, &r))
@@ -140,20 +168,6 @@ canvas_get_bounds (void *vself, grub_video_rect_t *bounds)
   *bounds = self->bounds;
 }
 
-static void
-canvas_get_preferred_size (void *vself, int *width, int *height)
-{
-  grub_gui_canvas_t self = vself;
-  *width = 0;
-  *height = 0;
-
-  /* Allow preferred dimensions to override the empty dimensions.  */
-  if (self->preferred_width >= 0)
-    *width = self->preferred_width;
-  if (self->preferred_height >= 0)
-    *height = self->preferred_height;
-}
-
 static grub_err_t
 canvas_set_property (void *vself, const char *name, const char *value)
 {
@@ -169,15 +183,6 @@ canvas_set_property (void *vself, const char *name, const char *value)
         }
       else
         self->id = 0;
-    }
-  else if (grub_strcmp (name, "preferred_size") == 0)
-    {
-      int w;
-      int h;
-      if (grub_gui_parse_2_tuple (value, &w, &h) != GRUB_ERR_NONE)
-        return grub_errno;
-      self->preferred_width = w;
-      self->preferred_height = h;
     }
   return grub_errno;
 }
@@ -227,21 +232,21 @@ canvas_iterate_children (void *vself,
     cb (cur->component, userdata);
 }
 
+static struct grub_gui_component_ops canvas_comp_ops =
+{
+  .destroy = canvas_destroy,
+  .get_id = canvas_get_id,
+  .is_instance = canvas_is_instance,
+  .paint = canvas_paint,
+  .set_parent = canvas_set_parent,
+  .get_parent = canvas_get_parent,
+  .set_bounds = canvas_set_bounds,
+  .get_bounds = canvas_get_bounds,
+  .set_property = canvas_set_property
+};
+
 static struct grub_gui_container_ops canvas_ops =
 {
-  .component =
-    {
-      .destroy = canvas_destroy,
-      .get_id = canvas_get_id,
-      .is_instance = canvas_is_instance,
-      .paint = canvas_paint,
-      .set_parent = canvas_set_parent,
-      .get_parent = canvas_get_parent,
-      .set_bounds = canvas_set_bounds,
-      .get_bounds = canvas_get_bounds,
-      .get_preferred_size = canvas_get_preferred_size,
-      .set_property = canvas_set_property
-    },
   .add = canvas_add,
   .remove = canvas_remove,
   .iterate_children = canvas_iterate_children
@@ -251,19 +256,10 @@ grub_gui_container_t
 grub_gui_canvas_new (void)
 {
   grub_gui_canvas_t canvas;
-  canvas = grub_malloc (sizeof (*canvas));
+  canvas = grub_zalloc (sizeof (*canvas));
   if (! canvas)
     return 0;
-  canvas->container = &canvas_ops;
-  canvas->parent = 0;
-  canvas->bounds.x = 0;
-  canvas->bounds.y = 0;
-  canvas->bounds.width = 0;
-  canvas->bounds.height = 0;
-  canvas->id = 0;
-  canvas->preferred_width = -1;
-  canvas->preferred_height = -1;
-  canvas->components.component = 0;
-  canvas->components.next = 0;
+  canvas->container.ops = &canvas_ops;
+  canvas->container.component.ops = &canvas_comp_ops;
   return (grub_gui_container_t) canvas;
 }
