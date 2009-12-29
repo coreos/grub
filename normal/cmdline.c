@@ -227,6 +227,8 @@ grub_cmdline_get (const char *prompt)
   auto void cl_set_pos (struct cmdline_term *cl_term);
   auto void cl_print_all (int pos, grub_uint32_t c);
   auto void cl_set_pos_all (void);
+  auto void init_clterm (struct cmdline_term *cl_term_cur);
+  auto void init_clterm_all (void);
   const char *prompt_translated = _(prompt);
   struct cmdline_term *cl_terms;
   char *ret;

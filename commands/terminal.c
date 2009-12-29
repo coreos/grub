@@ -26,7 +26,7 @@
 struct grub_term_autoload *grub_term_input_autoload = NULL;
 struct grub_term_autoload *grub_term_output_autoload = NULL;
 
-grub_err_t
+static grub_err_t
 grub_cmd_terminal_input (grub_command_t cmd __attribute__ ((unused)),
 			 int argc, char **args)
 {
@@ -183,7 +183,7 @@ grub_cmd_terminal_input (grub_command_t cmd __attribute__ ((unused)),
   return GRUB_ERR_NONE;
 }
 
-grub_err_t
+static grub_err_t
 grub_cmd_terminal_output (grub_command_t cmd __attribute__ ((unused)),
 			 int argc, char **args)
 {
