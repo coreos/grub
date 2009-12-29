@@ -99,7 +99,6 @@ grub_install_SOURCES = util/sparc64/ieee1275/grub-install.in
 pkglib_MODULES = halt.mod \
 	linux.mod \
 	reboot.mod \
-	memdisk.mod \
 	lsmmap.mod
 
 # For boot.mod.
@@ -122,11 +121,6 @@ reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For memdisk.mod.
-memdisk_mod_SOURCES = disk/memdisk.c
-memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
-memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For lsmmap.mod
 lsmmap_mod_SOURCES = commands/lsmmap.c

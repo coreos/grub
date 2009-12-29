@@ -14,6 +14,9 @@ bin_UTILITIES = grub-mkimage
 grub_mkimage_SOURCES = gnulib/progname.c util/i386/efi/grub-mkimage.c \
 	util/misc.c util/resolve.c
 
+bin_SCRIPTS += grub-mkrescue
+grub_mkrescue_SOURCES = util/grub-mkrescue.in
+
 # For grub-setup.
 #grub_setup_SOURCES = util/i386/pc/grub-setup.c util/hostdisk.c	\
 #	util/misc.c util/getroot.c kern/device.c kern/disk.c	\

@@ -632,3 +632,9 @@ pkglib_MODULES += setjmp.mod
 setjmp_mod_SOURCES = lib/$(target_cpu)/setjmp.S
 setjmp_mod_ASFLAGS = $(COMMON_ASFLAGS)
 setjmp_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For memdisk.mod.
+pkglib_MODULES += memdisk.mod
+memdisk_mod_SOURCES = disk/memdisk.c
+memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
+memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
