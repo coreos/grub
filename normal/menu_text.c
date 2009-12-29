@@ -137,8 +137,8 @@ grub_print_message_indented (const char *msg, int margin_left, int margin_right)
       next_new_line = (grub_uint32_t *) last_position;
 
       while (grub_getstringwidth (current_position, next_new_line) > line_len
-            || (*next_new_line != ' ' && next_new_line > current_position &&
-                next_new_line != last_position))
+            || (next_new_line != last_position && *next_new_line != ' '
+		&& next_new_line > current_position))
        {
          next_new_line--;
        }

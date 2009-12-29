@@ -298,7 +298,7 @@ grub_gettext_init_ext (const char *lang)
 }
 
 static void
-grub_gettext_delete_list ()
+grub_gettext_delete_list (void)
 {
   struct grub_gettext_msg *item;
 

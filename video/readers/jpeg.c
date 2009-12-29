@@ -740,7 +740,7 @@ GRUB_MOD_INIT (video_reader_jpeg)
 #endif
 }
 
-GRUB_MOD_FINI (grub_cmd_jpegtest)
+GRUB_MOD_FINI (video_reader_jpeg)
 {
 #if defined(JPEG_DEBUG)
   grub_unregister_command (cmd);
