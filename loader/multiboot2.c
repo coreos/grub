@@ -319,14 +319,14 @@ grub_multiboot2 (int argc, char *argv[])
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
       goto fail;
     }
 
   file = grub_gzfile_open (argv[0], 1);
   if (! file)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "Couldn't open file");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
       goto fail;
     }
 
@@ -337,7 +337,7 @@ grub_multiboot2 (int argc, char *argv[])
   len = grub_file_read (file, buffer, MULTIBOOT2_HEADER_SEARCH);
   if (len < 32)
     {
-      grub_error (GRUB_ERR_BAD_OS, "File too small");
+      grub_error (GRUB_ERR_BAD_OS, "file too small");
       goto fail;
     }
 
@@ -378,7 +378,7 @@ grub_multiboot2 (int argc, char *argv[])
 	err = grub_mb2_load_other (file, header);
       else
 	err = grub_error (GRUB_ERR_BAD_OS,
-			  "Need multiboot 2 header to load non-ELF files.");
+			  "need multiboot 2 header to load non-ELF files");
       grub_file_close (file);
     }
 
@@ -406,20 +406,20 @@ grub_module2 (int argc, char *argv[])
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
       return;
     }
 
   if (argc == 1)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No module type specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no module type specified");
       return;
     }
 
   if (entry == 0)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT,
-		  "You need to load the multiboot kernel first");
+		  "you need to load the multiboot kernel first");
       return;
     }
 
@@ -437,7 +437,7 @@ grub_module2 (int argc, char *argv[])
 		modaddr + modsize);
   if (grub_file_read (file, (void *) modaddr, modsize) != modsize)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto out;
     }
 

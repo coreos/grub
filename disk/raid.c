@@ -123,7 +123,7 @@ grub_raid_open (const char *name, grub_disk_t disk)
     }
 
   if (!array)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Unknown RAID device %s",
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown RAID device %s",
                        name);
 
   disk->has_partitions = 1;
@@ -265,7 +265,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
                       }
                     else
                       err = grub_error (GRUB_ERR_READ_ERROR,
-                                        "disk missing.");
+                                        "disk missing");
 
                     k++;
                     if (k == array->total_devs)

@@ -113,7 +113,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(echo)
 {
   cmd = grub_register_extcmd ("echo", grub_cmd_echo, GRUB_COMMAND_FLAG_BOTH,
-			      "echo [-e|-n] STRING", "Display a line of text.",
+			      "[-e|-n] STRING", "Display a line of text.",
 			      options);
 }
 

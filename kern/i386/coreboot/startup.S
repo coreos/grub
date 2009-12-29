@@ -66,7 +66,7 @@ multiboot_header:
 	.long	-0x1BADB002 - MULTIBOOT_MEMORY_INFO
 
 codestart:
-	cmpl	$MULTIBOOT_MAGIC2, %eax
+	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC, %eax
 	jne 0f
 	movl	%ebx, EXT_C(startup_multiboot_info)
 0:

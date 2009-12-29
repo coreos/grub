@@ -365,7 +365,7 @@ grub_hfs_mount (grub_disk_t disk)
   if (grub_hfs_find_node (data, (char *) &key, data->cat_root,
 			  0, (char *) &dir, sizeof (dir)) == 0)
     {
-      grub_error (GRUB_ERR_BAD_FS, "can not find the hfs root directory");
+      grub_error (GRUB_ERR_BAD_FS, "cannot find the HFS root directory");
       goto fail;
     }
 
@@ -379,7 +379,7 @@ grub_hfs_mount (grub_disk_t disk)
   grub_free (data);
 
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
-    grub_error (GRUB_ERR_BAD_FS, "not a hfs filesystem");
+    grub_error (GRUB_ERR_BAD_FS, "not a HFS filesystem");
 
   return 0;
 }

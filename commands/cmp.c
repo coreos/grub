@@ -109,7 +109,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(cmp)
 {
   cmd = grub_register_command ("cmp", grub_cmd_cmp,
-			       "cmp FILE1 FILE2", "Compare two files.");
+			       "FILE1 FILE2", "Compare two files.");
 }
 
 GRUB_MOD_FINI(cmp)

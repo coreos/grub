@@ -527,12 +527,12 @@ grub_cmd_devprop_load (grub_command_t cmd __attribute__ ((unused)),
   unsigned i, j;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "File name required. ");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
   file = grub_gzfile_open (args[0], 1);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       "Couldn't load device-propertie dump. ");
+		       "couldn't load device-propertie dump");
   size = grub_file_size (file);
   buf = grub_malloc (size);
   if (!buf)

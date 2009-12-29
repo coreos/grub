@@ -115,7 +115,7 @@ grub_file_read (grub_file_t file, void *buf, grub_size_t len)
   if (file->offset > file->size)
     {
       grub_error (GRUB_ERR_OUT_OF_RANGE,
-		  "Attempt to read past the end of file.");
+		  "attempt to read past the end of file");
       return -1;
     }
 

@@ -105,7 +105,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(sleep)
 {
   cmd = grub_register_extcmd ("sleep", grub_cmd_sleep, GRUB_COMMAND_FLAG_BOTH,
-			      "sleep NUMBER_OF_SECONDS",
+			      "NUMBER_OF_SECONDS",
 			      "Wait for a specified number of seconds.",
 			      options);
 }

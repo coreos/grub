@@ -87,7 +87,7 @@ grub_cmd_blocklist (grub_command_t cmd __attribute__ ((unused)),
 
   if (! file->device->disk)
     return grub_error (GRUB_ERR_BAD_DEVICE,
-		       "this command is available only for disk devices.");
+		       "this command is available only for disk devices");
 
   if (file->device->disk->partition)
     part_start = grub_partition_get_start (file->device->disk->partition);
@@ -110,7 +110,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(blocklist)
 {
   cmd = grub_register_command ("blocklist", grub_cmd_blocklist,
-			       "blocklist FILE", "Print a block list.");
+			       "FILE", "Print a block list.");
 }
 
 GRUB_MOD_FINI(blocklist)

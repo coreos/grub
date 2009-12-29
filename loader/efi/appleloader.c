@@ -208,7 +208,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(appleloader)
 {
   cmd = grub_register_command ("appleloader", grub_cmd_appleloader,
-			       "appleloader [OPTS]", "Boot legacy system.");
+			       "[OPTS]", "Boot legacy system.");
   my_mod = mod;
 }
 

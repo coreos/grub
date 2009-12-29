@@ -150,7 +150,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT (probe)
 {
   cmd = grub_register_extcmd ("probe", grub_cmd_probe, GRUB_COMMAND_FLAG_BOTH,
-			      "probe [DEVICE]",
+			      "[DEVICE]",
 			      "Retrieve device info.", options);
 }
 

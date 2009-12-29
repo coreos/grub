@@ -157,7 +157,7 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
 
       if (! array->device[q])
         {
-          grub_error (GRUB_ERR_READ_ERROR, "Not enough disk to restore");
+          grub_error (GRUB_ERR_READ_ERROR, "not enough disk to restore");
           goto quit;
         }
 
@@ -176,7 +176,7 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
 
       if ((! array->device[p]) || (! array->device[q]))
         {
-          grub_error (GRUB_ERR_READ_ERROR, "Not enough disk to restore");
+          grub_error (GRUB_ERR_READ_ERROR, "not enough disk to restore");
           goto quit;
         }
 

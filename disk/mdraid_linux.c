@@ -295,7 +295,7 @@ superblock_0_90:
 
   if (sb.major_version != 0 || sb.minor_version != 90)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "Unsupported RAID version: %d.%d",
+		       "unsupported RAID version: %d.%d",
 		       sb.major_version, sb.minor_version);
 
   /* FIXME: Check the checksum.  */
@@ -307,7 +307,7 @@ superblock_0_90:
   if (sb.level != 0 && sb.level != 1 && sb.level != 4 &&
       sb.level != 5 && sb.level != 6 && sb.level != 10)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "Unsupported RAID level: %d", sb.level);
+		       "unsupported RAID level: %d", sb.level);
 
   array->name = NULL;
   array->number = sb.md_minor;

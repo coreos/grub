@@ -106,7 +106,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		      Elf_Sword delta = value - (Elf_Word) addr;
 
 		      if (delta << 6 >> 6 != delta)
-			return grub_error (GRUB_ERR_BAD_MODULE, "Relocation overflow");
+			return grub_error (GRUB_ERR_BAD_MODULE, "relocation overflow");
 		      *addr = (*addr & 0xfc000003) | (delta & 0x3fffffc);
 		      break;
 		    }
@@ -125,7 +125,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
 		  default:
 		    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-				       "This relocation (%d) is not implemented yet",
+				       "this relocation (%d) is not implemented yet",
 				       ELF_R_TYPE (rel->r_info));
 		  }
 	      }

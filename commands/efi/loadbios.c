@@ -160,7 +160,7 @@ grub_cmd_loadbios (grub_command_t cmd __attribute__ ((unused)),
   int size;
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "No rom image specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no ROM image specified");
 
   if (argc > 1)
     {
@@ -169,7 +169,7 @@ grub_cmd_loadbios (grub_command_t cmd __attribute__ ((unused)),
 	return grub_errno;
 
       if (file->size != 4)
-	grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid int10 dump size");
+	grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid int10 dump size");
       else
 	grub_file_read (file, (void *) 0x40, 4);
 
@@ -184,7 +184,7 @@ grub_cmd_loadbios (grub_command_t cmd __attribute__ ((unused)),
 
   size = file->size;
   if ((size < 0x10000) || (size > 0x40000))
-    grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid bios dump size");
+    grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid bios dump size");
   else if (enable_rom_area ())
     {
       grub_file_read (file, (void *) VBIOS_ADDR, size);
@@ -204,7 +204,7 @@ GRUB_MOD_INIT(loadbios)
 					0, "Fake bios.");
 
   cmd_loadbios = grub_register_command ("loadbios", grub_cmd_loadbios,
-					"loadbios BIOS_DUMP [INT10_DUMP]",
+					"BIOS_DUMP [INT10_DUMP]",
 					"Load bios dump.");
 }
 

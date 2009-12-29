@@ -338,7 +338,7 @@ grub_fat_mount (grub_disk_t disk)
  fail:
 
   grub_free (data);
-  grub_error (GRUB_ERR_BAD_FS, "not a fat filesystem");
+  grub_error (GRUB_ERR_BAD_FS, "not a FAT filesystem");
   return 0;
 }
 

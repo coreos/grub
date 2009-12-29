@@ -182,14 +182,14 @@ grub_affs_mount (grub_disk_t disk)
   /* Make sure this is an affs filesystem.  */
   if (grub_strncmp ((char *) (data->bblock.type), "DOS", 3))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not an affs filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not an AFFS filesystem");
       goto fail;
     }
 
   /* Test if the filesystem is a OFS filesystem.  */
   if (! (data->bblock.flags & GRUB_AFFS_FLAG_FFS))
     {
-      grub_error (GRUB_ERR_BAD_FS, "ofs not yet supported");
+      grub_error (GRUB_ERR_BAD_FS, "OFS not yet supported");
       goto fail;
     }
 
@@ -231,7 +231,7 @@ grub_affs_mount (grub_disk_t disk)
     }
   if (-checksum != checksumr)
     {
-      grub_error (GRUB_ERR_BAD_FS, "affs blocksize could not be determined");
+      grub_error (GRUB_ERR_BAD_FS, "AFFS blocksize couldn't be determined");
       goto fail;
     }
   blocksize++;
@@ -248,7 +248,7 @@ grub_affs_mount (grub_disk_t disk)
 
  fail:
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
-    grub_error (GRUB_ERR_BAD_FS, "not an affs filesystem");
+    grub_error (GRUB_ERR_BAD_FS, "not an AFFS filesystem");
 
   grub_free (data);
   grub_free (rootblock);

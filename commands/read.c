@@ -79,7 +79,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(read)
 {
   cmd = grub_register_command ("read", grub_cmd_read,
-			       "read [ENVVAR]",
+			       "[ENVVAR]",
 			       "Set variable with user input.");
 }
 

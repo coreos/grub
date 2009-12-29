@@ -348,7 +348,8 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 	return -1;
       }
 
-    /* Make the buffer cache consistent with the physical disk.  */
+    /* Flush the buffer cache to the physical disk.
+       XXX: This also empties the buffer cache.  */
     ioctl (fd, BLKFLSBUF, 0);
 
     if (is_partition)

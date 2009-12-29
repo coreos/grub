@@ -117,7 +117,7 @@ insert_handler (char *name, char *module)
     data = 0;
 
   item->cmd = grub_register_command (item->name, grub_handler_cmd, 0,
-				     "Set active handler");
+				     "Set active handler.");
   if (! item->cmd)
     {
       grub_free (data);

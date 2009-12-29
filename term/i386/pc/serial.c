@@ -498,7 +498,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
       unit = grub_strtoul (state[0].arg, 0, 0);
       serial_settings.port = serial_hw_get_port (unit);
       if (!serial_settings.port)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad unit number.");
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad unit number");
     }
 
   if (state[1].set)

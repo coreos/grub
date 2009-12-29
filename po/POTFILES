@@ -1,5 +1,12 @@
 # List of files which contain translatable strings.
+commands/i386/pc/play.c
 commands/loadenv.c
+commands/search.c
+commands/help.c
+
+lib/arg.c
+
+normal/dyncmd.c
 
 util/i386/pc/grub-mkimage.c
 util/i386/pc/grub-setup.c

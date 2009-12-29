@@ -410,7 +410,7 @@ GRUB_MOD_INIT(hdparm)
 {
   cmd = grub_register_extcmd ("hdparm", grub_cmd_hdparm,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      "hdparm [OPTIONS] DISK",
+			      "[OPTIONS] DISK",
 			      "Get/set ATA disk parameters.", options);
 }
 
