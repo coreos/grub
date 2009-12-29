@@ -22,6 +22,14 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 
+#define HAVE_ISBLANK 0
+#define HAVE_LIBINTL_H 0
+#define HAVE_LOCALE_H 0
+#define __STRICT_ANSI__ 0
+#define DEBUG 0
+#define _Restrict_ __restrict
+#define _Restrict_arr_ __restrict
+
 typedef grub_size_t size_t;
 typedef int bool;
 static const bool true = 1;
@@ -164,6 +172,12 @@ calloc (grub_size_t size, grub_size_t nelem)
 {
   return grub_zalloc (size * nelem);
 }
+
+static inline char *strncpy (char *dest, const char *src, int c)
+{
+  return grub_strncpy (dest, src, c);
+}
+
 
 #define ULONG_MAX GRUB_ULONG_MAX
 #define UCHAR_MAX 0xff
