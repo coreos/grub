@@ -1,3 +1,17 @@
+2009-12-29  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Check for TARGET_CFLAGS initialization before we
+	initialize it ourselves (sigh).
+	Move a few modifications to TARGET_CFLAGS to be unconditional
+	(extra warning flags, loop alignment, i386 CPU extensions, GCC 4.4
+	eh_frame)
+
+	* gettext/gettext.c (grub_gettext_delete_list): Add `void' argument.
+	* term/i386/pc/at_keyboard.c
+	(keyboard_controller_wait_untill_ready): Likewise.
+	(keyboard_controller_led): Rename `led_status' paramter to avoid
+	name conflict.
+
 2009-12-28  Carles Pina i Estany  <carles@pina.cat>
 
 	* normal/misc.c (grub_normal_print_device_info): Add spaces and double
