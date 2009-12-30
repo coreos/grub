@@ -630,7 +630,7 @@ grub_lltoa (char *str, int c, unsigned long long n)
 }
 
 static int
-grub_vsnprintf_real (char *str, grub_size_t n, const char *fmt, va_list args)
+grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt, va_list args)
 {
   char c;
   grub_size_t count = 0;
@@ -642,7 +642,7 @@ grub_vsnprintf_real (char *str, grub_size_t n, const char *fmt, va_list args)
     {
       if (str)
 	{
-	  if (count < n)
+	  if (count < max_len)
 	    *str++ = ch;
 	}
       else
