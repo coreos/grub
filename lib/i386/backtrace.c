@@ -46,7 +46,9 @@ struct idt_entry
   grub_uint16_t addr_high;
 } __attribute__ ((packed));
 
-void
+void grub_interrupt_handler_real (void *ret, void *ebp);
+
+static void
 print_address (void *addr)
 {
   const char *name;
@@ -86,14 +88,11 @@ grub_backtrace_pointer (void *ebp)
   while (1)
     {
       grub_printf ("%p: ", ptr);
-      print_address (*(void **) (ptr + sizeof (void *)));
+      print_address (((void **) ptr)[1]);
       grub_printf (" (");
       for (i = 0; i < 2; i++)
-	grub_printf ("%p,", *(void **)
-		     (ptr + (i + 2) * sizeof (void *)));
-      grub_printf ("%p", *(void **)
-		   (ptr + (i + 2) * sizeof (void *)));
-      grub_printf (")\n");
+	grub_printf ("%p,", ((void **)ptr) [i + 2]);
+      grub_printf ("%p)\n", ((void **)ptr) [i + 2]);
       nptr = *(void **)ptr;
       if (nptr < ptr || (void **) nptr - (void **) ptr > MAX_STACK_FRAME
 	  || nptr == ptr)
