@@ -5,11 +5,11 @@
 	(grub_bad_type_cast): New macro.
 	(GRUB_AS_LIST): Use grub_bad_type_cast.
 	(GRUB_AS_LIST_P): Likewise.
-	(GRUB_AS_NAMED_LIST): Likewise,
+	(GRUB_AS_NAMED_LIST): Likewise.
 	(GRUB_AS_NAMED_LIST_P): Likewise.
-	(GRUB_AS_PRIO_LIST): Likewise,
+	(GRUB_AS_PRIO_LIST): Likewise.
 	(GRUB_AS_PRIO_LIST_P): Likewise.
-	* include/grub/handler.h (GRUB_AS_HANDLER): Likewise,
+	* include/grub/handler.h (GRUB_AS_HANDLER): Likewise.
 
 2009-12-29 Vladimir Serbinenko  <phcoder@gmail.com>
 
