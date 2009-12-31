@@ -1,3 +1,16 @@
+2009-12-31 BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* include/grub/list.h (grub_assert_fail): Removed.
+	(grub_bad_type_cast_real): New function.
+	(grub_bad_type_cast): New macro.
+	(GRUB_AS_LIST): Use grub_bad_type_cast.
+	(GRUB_AS_LIST_P): Likewise.
+	(GRUB_AS_NAMED_LIST): Likewise,
+	(GRUB_AS_NAMED_LIST_P): Likewise.
+	(GRUB_AS_PRIO_LIST): Likewise,
+	(GRUB_AS_PRIO_LIST_P): Likewise.
+	* include/grub/handler.h (GRUB_AS_HANDLER): Likewise,
+
 2009-12-29 Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* loader/sparc64/ieee1275/linux.c (GRUB_MOD_INIT (linux)):
