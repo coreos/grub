@@ -914,7 +914,7 @@ grub_avsprintf (const char *fmt, va_list ap)
       if (!ret)
 	return NULL;
 
-      s = grub_vsnprintf (ret, as, fmt, ap);
+      s = grub_vsnprintf_real (ret, as, fmt, ap);
       if (s <= as)
 	return ret;
 
