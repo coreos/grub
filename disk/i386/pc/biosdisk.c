@@ -19,6 +19,7 @@
 #include <grub/machine/biosdisk.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/int.h>
 #include <grub/disk.h>
 #include <grub/dl.h>
 #include <grub/mm.h>
@@ -28,6 +29,59 @@
 #include <grub/term.h>
 
 static int cd_drive = 0;
+static int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap);
+
+static int grub_biosdisk_get_num_floppies (void)
+{
+  struct grub_cpu_int_registers regs;
+  int drive;
+
+  /* reset the disk system first */
+  regs.ax = 0;
+  regs.dx = 0;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+
+  grub_cpu_interrupt (0x13, &regs);
+
+  for (drive = 0; drive < 2; drive++)
+    {
+      regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT | GRUB_CPU_INT_FLAGS_CARRY;
+      regs.dx = drive;
+
+      /* call GET DISK TYPE */
+      regs.ax = 0x1500;
+      grub_cpu_interrupt (0x13, &regs);
+      if (regs.flags & GRUB_CPU_INT_FLAGS_CARRY)
+	break;
+
+      /* check if this drive exists */
+      if (!(regs.ax & 0x300))
+	break;
+    }
+
+  return drive;
+}
+
+/*
+ *   Call IBM/MS INT13 Extensions (int 13 %ah=AH) for DRIVE. DAP
+ *   is passed for disk address packet. If an error occurs, return
+ *   non-zero, otherwise zero.
+ */
+
+static int 
+grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)
+{
+  struct grub_cpu_int_registers regs;
+  regs.ax = ah << 8;
+  /* compute the address of disk_address_packet */
+  regs.ds = (((grub_addr_t) dap) & 0xffff0000) >> 4;
+  regs.si = (((grub_addr_t) dap) & 0xffff);
+  regs.dx = drive;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+
+  grub_cpu_interrupt (0x13, &regs);
+  return regs.ax >> 8;
+}
 
 static int
 grub_biosdisk_get_drive (const char *name)

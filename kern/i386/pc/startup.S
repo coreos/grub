@@ -567,44 +567,6 @@ FUNCTION(grub_chainloader_real_boot)
 #include "../loader.S"
 
 /*
- *   int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)
- *
- *   Call IBM/MS INT13 Extensions (int 13 %ah=AH) for DRIVE. DAP
- *   is passed for disk address packet. If an error occurs, return
- *   non-zero, otherwise zero.
- */
-
-FUNCTION(grub_biosdisk_rw_int13_extensions)
-	pushl	%ebp
-	pushl	%esi
-
-	/* compute the address of disk_address_packet */
-	movw	%cx, %si
-	xorw	%cx, %cx
-	shrl	$4, %ecx	/* save the segment to cx */
-
-	/* ah */
-	movb	%al, %dh
-	/* enter real mode */
-	call	prot_to_real
-
-	.code16
-	movb	%dh, %ah
-	movw	%cx, %ds
-	int	$0x13		/* do the operation */
-	movb	%ah, %dl	/* save return value */
-	/* back to protected mode */
-	DATA32	call	real_to_prot
-	.code32
-
-	movb	%dl, %al	/* return value in %eax */
-
-	popl	%esi
-	popl	%ebp
-
-	ret
-
-/*
  *   int grub_biosdisk_rw_standard (int ah, int drive, int coff, int hoff,
  *                                  int soff, int nsec, int segment)
  *
@@ -859,43 +821,6 @@ noclean2:
 	popl	%ebp
 
 	ret	$4
-
-
-/*
- * int grub_biosdisk_get_num_floppies (void)
- */
-FUNCTION(grub_biosdisk_get_num_floppies)
-	pushl	%ebp
-
-	xorl	%edx, %edx
-	call	prot_to_real
-
-	.code16
-	/* reset the disk system first */
-	int	$0x13
-1:
-	stc
-
-	/* call GET DISK TYPE */
-	movb	$0x15, %ah
-	int	$0x13
-
-	jc	2f
-
-	/* check if this drive exists */
-	testb	$0x3, %ah
-	jz	2f
-
-	incb	%dl
-	cmpb	$2, %dl
-	jne	1b
-2:
-	DATA32	call	real_to_prot
-	.code32
-
-	movl	%edx, %eax
-	popl	%ebp
-	ret
 
 
 /*
@@ -2141,4 +2066,75 @@ FUNCTION(grub_pxe_call)
 	popl	%edi
 	popl	%esi
 	popl	%ebp
+	ret
+
+FUNCTION(grub_cpu_interrupt)
+	pushl    %ebp
+	pushl    %esi
+	pushl    %edi
+	pushl    %ebx
+	pushl    %edx
+	movb     %al, intno
+	movl     %edx, %esi
+
+	movl     0(%esi), %ebx
+	movl	 4(%esi), %ecx
+	movl     8(%esi), %edx
+	movl     12(%esi), %edi
+	movw     16(%esi), %si
+
+	call    prot_to_real
+	.code16
+	movl    %edi, %eax
+	shrl    $16, %eax
+	push    %ax
+
+	movl    %ebx, %eax
+	shrl    $16, %eax
+	movw    %ax, %es
+	
+	movl    %edx, %eax
+	shrl    $16, %eax
+	movw    %ax, %ds
+
+	movl    %ecx, %eax
+	shrl    $16, %eax
+
+	popf
+	.byte   0xcd
+intno:	
+	.byte   0
+
+	pushf
+	andl    $0xffff, %ebx
+	andl    $0xffff, %ecx
+	andl    $0xffff, %edx
+	andl    $0xffff, %edi
+
+	shll    $16, %eax
+	orl     %eax, %ecx
+
+	movw    %ds, %ax
+	shll    $16, %eax
+	orl     %eax, %edx
+
+	pop     %ax
+	shll    $16, %eax
+	orl     %eax, %edi
+
+	DATA32  call	real_to_prot
+	.code32
+	pushl    %esi
+	movl     4(%esp), %esi
+	movl     %ebx, 0(%esi)
+	movl     %ecx, 4(%esi)
+	movl     %edx, 8(%esi)
+	movl     %edi, 12(%esi)
+	popl     %eax
+	movw     %ax, 16(%esi)
+	popl     %eax
+	popl	 %ebx
+	popl	 %edi
+	popl	 %esi
+	popl     %ebp
 	ret
