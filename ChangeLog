@@ -1,3 +1,10 @@
+2010-01-01  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Import from Gnulib.
+
+	* gnulib/getdelim.c: New file.
+	* gnulib/getline.c: Likewise.
+
 2009-12-31 BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* include/grub/list.h (grub_assert_fail): Removed.
