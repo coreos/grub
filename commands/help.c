@@ -22,6 +22,8 @@
 #include <grub/term.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
+#include <grub/mm.h>
+#include <grub/normal.h>
 
 static grub_err_t
 grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
@@ -38,19 +40,46 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
       if ((cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE) &&
 	  (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE))
 	{
-	  char description[GRUB_TERM_WIDTH / 2];
-	  const char* summary_translated = _(cmd->summary);
-	  int desclen = grub_strlen (summary_translated);
+	  char *command_help;
+	  int stringwidth;
+	  grub_uint32_t *unicode_command_help;
+	  grub_uint32_t *unicode_last_position;
+	  grub_uint32_t *unicode_last_screen_position;
+	  const char *summary_translated = _(cmd->summary);
 
-	  /* Make a string with a length of GRUB_TERM_WIDTH / 2 - 1 filled
-	     with the description followed by spaces.  */
-	  grub_memset (description, ' ', GRUB_TERM_WIDTH / 2 - 1);
-	  description[GRUB_TERM_WIDTH / 2 - 1] = '\0';
-	  grub_memcpy (description, summary_translated,
-		       (desclen < GRUB_TERM_WIDTH / 2 - 1
-			? desclen : GRUB_TERM_WIDTH / 2 - 1));
+	  command_help = grub_malloc (grub_strlen (cmd->name) +
+	  			      sizeof (" ") - 1 +
+				      grub_strlen (summary_translated));
+	  			      
+	  grub_sprintf(command_help, "%s %s", cmd->name, summary_translated);
 
-	  grub_printf ("%s%s", description, (cnt++) % 2 ? "\n" : " ");
+	  grub_utf8_to_ucs4_alloc (command_help, &unicode_command_help,
+	  			   &unicode_last_position);
+	  
+	  unicode_last_screen_position = unicode_command_help;
+
+	  stringwidth = 0;
+
+	  while (unicode_last_screen_position < unicode_last_position && 
+	         stringwidth < ((GRUB_TERM_WIDTH / 2) - 2))
+	    {
+	      stringwidth += grub_getcharwidth (*unicode_last_screen_position);
+	      unicode_last_screen_position++;
+	    }
+
+	  grub_print_ucs4 (unicode_command_help, unicode_last_screen_position);
+	  
+	  if ((cnt++) % 2)
+	    {
+	      grub_putchar ('\n');
+	    }
+	    else
+	    {
+	      grub_print_spaces (GRUB_TERM_WIDTH / 2 - stringwidth);
+	    }
+	  
+	  grub_free (command_help);
+	  grub_free (unicode_command_help);
 	}
       return 0;
     }

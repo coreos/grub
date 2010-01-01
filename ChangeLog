@@ -1,3 +1,14 @@
+2010-01-01  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/help.c: Include `grub/mm.h' and `grub/normal.h'.
+	(grub_cmd_help): Print the cmd->name before the cmd->summary. Cut the
+	string using string width.
+	* normal/menu_text.c (grub_print_message_indented): Use
+	grub_print_spaces and not print_spaces.
+	(print_timeout): Likewise.
+	(print_spaces): Move to...
+	* include/grub/term.h: ... here. Change the name to grub_print_spaces.
+
 2010-01-01  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Import from Gnulib.

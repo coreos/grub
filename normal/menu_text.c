@@ -45,14 +45,6 @@ grub_wait_after_message (void)
   grub_putchar ('\n');
 }
 
-static void
-print_spaces (int number_spaces)
-{
-  int i;
-  for (i = 0; i < number_spaces; i++)
-    grub_putchar (' ');
-}
-
 void
 grub_print_ucs4 (const grub_uint32_t * str,
                 const grub_uint32_t * last_position)
@@ -149,7 +141,7 @@ grub_print_message_indented (const char *msg, int margin_left, int margin_right)
            (grub_uint32_t *) last_position : next_new_line + line_len;
        }
 
-      print_spaces (margin_left);
+      grub_print_spaces (margin_left);
       grub_print_ucs4 (current_position, next_new_line);
 
       next_new_line++;
@@ -405,7 +397,7 @@ print_timeout (int timeout, int offset)
  
   int posx;
   posx = grub_getxy() >> 8;
-  print_spaces (GRUB_TERM_WIDTH - posx - 1);
+  grub_print_spaces (GRUB_TERM_WIDTH - posx - 1);
 
   grub_gotoxy (GRUB_TERM_CURSOR_X, GRUB_TERM_FIRST_ENTRY_Y + offset);
   grub_refresh ();
@@ -495,7 +487,7 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	  if (timeout >= 0)
 	    {
 	      grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
-              print_spaces (GRUB_TERM_WIDTH - 1);
+              grub_print_spaces (GRUB_TERM_WIDTH - 1);
 
 	      grub_env_unset ("timeout");
 	      grub_env_unset ("fallback");
