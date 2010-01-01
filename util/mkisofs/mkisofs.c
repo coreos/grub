@@ -490,7 +490,7 @@ void usage(){
 	  int comma;
 	  int len;
 	  unsigned int j;
-	  char *arg;
+	  const char *arg;
 
 	  printf ("  ");
 
