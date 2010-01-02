@@ -1,3 +1,9 @@
+2010-01-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* term/i386/pc/at_keyboard.c
+	(keyboard_controller_wait_untill_ready): Rename to ...
+	(keyboard_controller_wait_until_ready): ... this. Update all users.
+
 2010-01-01  Carles Pina i Estany  <carles@pina.cat>
 
 	* commands/help.c: Include `grub/mm.h' and `grub/normal.h'.
