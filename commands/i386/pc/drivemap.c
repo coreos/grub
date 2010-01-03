@@ -404,7 +404,7 @@ GRUB_MOD_INIT (drivemap)
   cmd = grub_register_extcmd ("drivemap", grub_cmd_drivemap,
 					GRUB_COMMAND_FLAG_BOTH,
 					"drivemap"
-					N_(" -l | -r | [-s] grubdev osdisk"),
+					N_("-l | -r | [-s] grubdev osdisk."),
 					N_("Manage the BIOS drive mappings."),
 					options);
   drivemap_hook =

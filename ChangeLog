@@ -1,5 +1,24 @@
 2010-01-03  Carles Pina i Estany  <carles@pina.cat>
 
+	* commands/acpi.c (GRUB_MOD_INIT): Capitalise some words from help.
+	* commands/efi/loadbios.c (GRUB_MOD_INIT): Capitalise BIOS.
+	* commands/i386/pc/drivemap.c (GRUB_MOD_INIT): Remove space. Add
+	full stop.
+	* commands/loadenv.c (GRUB_MOD_INIT): Remove command name from
+	summary. Gettextizze the strings.
+	* commands/probe.c (grub_cmd_probe): Capitalise UUID and FS.
+	* commands/xnu_uuid.c (GRUB_MOD_INIT): Capitalise XNU.
+	* disk/loopback.c (grub_arg_options): Capitalise first letter. Add
+	full stop.
+	(GRUB_MOD_INIT): Remove command name from summary.
+	* hello/hello.c (GRUD_MOT_INIT): Add missing full stop. Improve the
+	summary.
+	* loader/i386/bsd.c (grub_arg_option): Capitalise CDROM.
+	* term/i386/pc/serial.c (options): Add full stops.
+	(GRUB_MOD_INIT): Remove command name from the summary.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
 	* commands/acpi.c: Gettextizze help strings and/or options. Include
 	`grub/i18n.h' if needed.
 	* commands/blocklist.c: Likewise.

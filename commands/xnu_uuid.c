@@ -380,7 +380,7 @@ GRUB_MOD_INIT (xnu_uuid)
   cmd = grub_register_command ("xnu_uuid", grub_cmd_xnu_uuid,
 			       N_("GRUBUUID [VARNAME]"),
 			       N_("Transform 64-bit UUID to format "
-			       "suitable for xnu."));
+			       "suitable for XNU."));
 }
 
 GRUB_MOD_FINI (xnu_uuid)

@@ -65,7 +65,7 @@ static const struct grub_arg_option freebsd_opts[] =
     {"dual", 'D', 0, N_("Display output on all consoles."), 0, 0},
     {"serial", 'h', 0, N_("Use serial console."), 0, 0},
     {"askname", 'a', 0, N_("Ask for file name to reboot from."), 0, 0},
-    {"cdrom", 'C', 0, N_("Use cdrom as root."), 0, 0},
+    {"cdrom", 'C', 0, N_("Use CDROM as root."), 0, 0},
     {"config", 'c', 0, N_("Invoke user configuration routing."), 0, 0},
     {"kdb", 'd', 0, N_("Enter in KDB on boot."), 0, 0},
     {"gdb", 'g', 0, N_("Use GDB remote debugger instead of DDB."), 0, 0},

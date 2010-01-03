@@ -202,11 +202,11 @@ static grub_command_t cmd_fakebios, cmd_loadbios;
 GRUB_MOD_INIT(loadbios)
 {
   cmd_fakebios = grub_register_command ("fakebios", grub_cmd_fakebios,
-					0, N_("Fake bios."));
+					0, N_("Fake BIOS."));
 
   cmd_loadbios = grub_register_command ("loadbios", grub_cmd_loadbios,
 					"BIOS_DUMP [INT10_DUMP]",
-					N_("Load bios dump."));
+					N_("Load BIOS dump."));
 }
 
 GRUB_MOD_FINI(loadbios)

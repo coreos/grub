@@ -42,12 +42,12 @@ static unsigned int npending = 0;
 /* Argument options.  */
 static const struct grub_arg_option options[] =
 {
-  {"unit",   'u', 0, N_("Set the serial unit"),             0, ARG_TYPE_INT},
-  {"port",   'p', 0, N_("Set the serial port address"),     0, ARG_TYPE_STRING},
-  {"speed",  's', 0, N_("Set the serial port speed"),       0, ARG_TYPE_INT},
-  {"word",   'w', 0, N_("Set the serial port word length"), 0, ARG_TYPE_INT},
-  {"parity", 'r', 0, N_("Set the serial port parity"),      0, ARG_TYPE_STRING},
-  {"stop",   't', 0, N_("Set the serial port stop bits"),   0, ARG_TYPE_INT},
+  {"unit",   'u', 0, N_("Set the serial unit."),             0, ARG_TYPE_INT},
+  {"port",   'p', 0, N_("Set the serial port address."),     0, ARG_TYPE_STRING},
+  {"speed",  's', 0, N_("Set the serial port speed."),       0, ARG_TYPE_INT},
+  {"word",   'w', 0, N_("Set the serial port word length."), 0, ARG_TYPE_INT},
+  {"parity", 'r', 0, N_("Set the serial port parity."),      0, ARG_TYPE_STRING},
+  {"stop",   't', 0, N_("Set the serial port stop bits."),   0, ARG_TYPE_INT},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -603,7 +603,7 @@ GRUB_MOD_INIT(serial)
 {
   cmd = grub_register_extcmd ("serial", grub_cmd_serial,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      N_("serial [OPTIONS...]"),
+			      N_("[OPTIONS...]"),
 			      N_("Configure serial port."), options);
 
   /* Set default settings.  */
