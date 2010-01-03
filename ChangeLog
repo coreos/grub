@@ -1,5 +1,9 @@
 2010-01-03  Carles Pina i Estany  <carles@pina.cat>
 
+	* kern/env.c (grub_env_unset): Set the variable to "" if has hooks.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
 	* po/POTFILES: Sort correctly.
 
 2010-01-03  Carles Pina i Estany  <carles@pina.cat>
