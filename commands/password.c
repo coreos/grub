@@ -23,6 +23,7 @@
 #include <grub/env.h>
 #include <grub/normal.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 
 static grub_dl_t my_mod;
 
@@ -75,9 +76,9 @@ GRUB_MOD_INIT(password)
 {
   my_mod = mod;
   cmd = grub_register_command ("password", grub_cmd_password,
-			       "USER PASSWORD",
-			       "Set user password (plaintext). "
-			       "Unrecommended and insecure.");
+			       N_("USER PASSWORD"),
+			       N_("Set user password (plaintext). "
+			       "Unrecommended and insecure."));
 }
 
 GRUB_MOD_FINI(password)

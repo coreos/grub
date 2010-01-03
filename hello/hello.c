@@ -24,6 +24,7 @@
 #include <grub/err.h>
 #include <grub/dl.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_hello (struct grub_extcmd *cmd __attribute__ ((unused)),
@@ -39,7 +40,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(hello)
 {
   cmd = grub_register_extcmd ("hello", grub_cmd_hello, GRUB_COMMAND_FLAG_BOTH,
-			      "hello", "Say hello", 0);
+			      "hello", N_("Say hello"), 0);
 }
 
 GRUB_MOD_FINI(hello)

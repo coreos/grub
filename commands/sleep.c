@@ -24,11 +24,12 @@
 #include <grub/misc.h>
 #include <grub/machine/time.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] =
   {
-    {"verbose", 'v', 0, "Verbose countdown.", 0, 0},
-    {"interruptible", 'i', 0, "Interruptible with ESC.", 0, 0},
+    {"verbose", 'v', 0, N_("Verbose countdown."), 0, 0},
+    {"interruptible", 'i', 0, N_("Interruptible with ESC."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -105,8 +106,8 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(sleep)
 {
   cmd = grub_register_extcmd ("sleep", grub_cmd_sleep, GRUB_COMMAND_FLAG_BOTH,
-			      "NUMBER_OF_SECONDS",
-			      "Wait for a specified number of seconds.",
+			      N_("NUMBER_OF_SECONDS"),
+			      N_("Wait for a specified number of seconds."),
 			      options);
 }
 

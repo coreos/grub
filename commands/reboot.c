@@ -20,6 +20,7 @@
 #include <grub/dl.h>
 #include <grub/command.h>
 #include <grub/misc.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_reboot (grub_command_t cmd __attribute__ ((unused)),
@@ -35,7 +36,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(reboot)
 {
   cmd = grub_register_command ("reboot", grub_cmd_reboot,
-			       0, "Reboot the computer.");
+			       0, N_("Reboot the computer."));
 }
 
 GRUB_MOD_FINI(reboot)

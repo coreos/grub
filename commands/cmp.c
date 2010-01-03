@@ -23,6 +23,7 @@
 #include <grub/mm.h>
 #include <grub/gzio.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 #define BUFFER_SIZE 512
 
@@ -109,7 +110,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(cmp)
 {
   cmd = grub_register_command ("cmp", grub_cmd_cmp,
-			       "FILE1 FILE2", "Compare two files.");
+			       N_("FILE1 FILE2"), N_("Compare two files."));
 }
 
 GRUB_MOD_FINI(cmp)

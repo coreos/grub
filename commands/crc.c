@@ -23,6 +23,7 @@
 #include <grub/misc.h>
 #include <grub/lib/crc.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_crc (grub_command_t cmd __attribute__ ((unused)),
@@ -57,8 +58,8 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(crc)
 {
   cmd = grub_register_command ("crc", grub_cmd_crc,
-			       "FILE",
-			       "Calculate the crc32 checksum of a file.");
+			       N_("FILE"),
+			       N_("Calculate the crc32 checksum of a file."));
 }
 
 GRUB_MOD_FINI(crc)

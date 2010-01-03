@@ -21,12 +21,13 @@
 #include <grub/misc.h>
 #include <grub/extcmd.h>
 #include <grub/term.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] =
   {
-    {"shift", 's', 0, "Check Shift key.", 0, 0},
-    {"ctrl", 'c', 0, "Check Control key.", 0, 0},
-    {"alt", 'a', 0, "Check Alt key.", 0, 0},
+    {"shift", 's', 0, N_("Check Shift key."), 0, 0},
+    {"ctrl", 'c', 0, N_("Check Control key."), 0, 0},
+    {"alt", 'a', 0, N_("Check Alt key."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -70,8 +71,8 @@ GRUB_MOD_INIT(keystatus)
 {
   cmd = grub_register_extcmd ("keystatus", grub_cmd_keystatus,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      "[--shift] [--ctrl] [--alt]",
-			      "Check key modifier status.",
+			      N_("[--shift] [--ctrl] [--alt]"),
+			      N_("Check key modifier status."),
 			      options);
 }
 

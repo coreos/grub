@@ -23,6 +23,7 @@
 #include <grub/term.h>
 #include <grub/handler.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_handler (struct grub_command *cmd,
@@ -95,16 +96,16 @@ GRUB_MOD_INIT(handler)
 {
   cmd_handler =
     grub_register_command ("handler", grub_cmd_handler,
-			   "[class [handler]]",
-			   "List or select a handler.");
+			   N_("[class [handler]]"),
+			   N_("List or select a handler."));
   cmd_terminal_input =
     grub_register_command ("terminal_input", grub_cmd_handler,
-			   "[handler]",
-			   "List or select an input terminal.");
+			   N_("[handler]"),
+			   N_("List or select an input terminal."));
   cmd_terminal_output =
     grub_register_command ("terminal_output", grub_cmd_handler,
-			   "[handler]",
-			   "List or select an output terminal.");
+			   N_("[handler]"),
+			   N_("List or select an output terminal."));
 }
 
 GRUB_MOD_FINI(handler)

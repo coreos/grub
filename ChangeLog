@@ -1,3 +1,54 @@
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/acpi.c: Gettextizze help strings and/or options. Include
+	`grub/i18n.h' if needed.
+	* commands/blocklist.c: Likewise.
+	* commands/boot.c: Likewise.
+	* commands/cat.c: Likewise.
+	* commands/cmp.c: Likewise.
+	* commands/configfile.c: Likewise.
+	* commands/crc.c: Likewise.
+	* commands/date.c: Likewise.
+	* commands/echo.c: Likewise.
+	* commands/efi/fixvideo.c: Likewise.
+	* commands/efi/loadbios.c: Likewise.
+	* commands/gptsync.c: Likewise.
+	* commands/halt.c: Likewise.
+	* commands/handler.c: Likewise.
+	* commands/hdparm.c: Likewise.
+	* commands/hexdump.c: Likewise.
+	* commands/i386/cpuid.c: Likewise.
+	* commands/i386/pc/drivemap.c: Likewise.
+	* commands/i386/pc/halt.c: Likewise.
+	* commands/i386/pc/pxecmd.c: Likewise.
+	* commands/i386/pc/vbeinfo.c: Likewise.
+	* commands/i386/pc/vbetest.c: Likewise.
+	* commands/ieee1275/suspend.c: Likewise.
+	* commands/keystatus.c: Likewise.
+	* commands/loadenv.c: Likewise.
+	* commands/ls.c: Likewise.
+	* commands/lsmmap.c: Likewise.
+	* commands/lspci.c: Likewise.
+	* commands/memrw.c: Likewise.
+	* commands/minicmd.c: Likewise.
+	* commands/parttool.c: Likewise.
+	* commands/password.c: Likewise.
+	* commands/probe.c: Likewise.
+	* commands/read.c: Likewise.
+	* commands/reboot.c: Likewise.
+	* commands/search.c: Likewise.
+	* commands/sleep.c: Likewise.
+	* commands/test.c: Likewise.
+	* commands/true.c: Likewise.
+	* commands/usbtest.c: Likewise.
+	* commands/videotest.c: Likewise.
+	* commands/xnu_uuid.c: Likewise.
+	* disk/loopback.c: Likewise.
+	* hello/hello.c: Likewise.
+	* loader/i386/bsd.c: Likewise.
+	* term/i386/pc/serial.c: Likewise.
+	* po/POTFILES: Add new files.
+
 2010-01-02  Colin Watson  <cjwatson@ubuntu.com>
 
 	* term/i386/pc/at_keyboard.c

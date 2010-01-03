@@ -23,6 +23,7 @@
 #include <grub/loader.h>
 #include <grub/kernel.h>
 #include <grub/mm.h>
+#include <grub/i18n.h>
 
 static grub_err_t (*grub_loader_boot_func) (void);
 static grub_err_t (*grub_loader_unload_func) (void);
@@ -186,7 +187,7 @@ GRUB_MOD_INIT(boot)
 {
   cmd_boot =
     grub_register_command ("boot", grub_cmd_boot,
-			   0, "Boot an operating system.");
+			   0, N_("Boot an operating system."));
 }
 
 GRUB_MOD_FINI(boot)

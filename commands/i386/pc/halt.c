@@ -20,10 +20,11 @@
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] =
   {
-    {"no-apm", 'n', 0, "Do not use APM to halt the computer.", 0, 0},
+    {"no-apm", 'n', 0, N_("Do not use APM to halt the computer."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -47,7 +48,7 @@ GRUB_MOD_INIT(halt)
 {
   cmd = grub_register_extcmd ("halt", grub_cmd_halt, GRUB_COMMAND_FLAG_BOTH,
 			      "[-n]",
-			      "Halt the system, if possible using APM.",
+			      N_("Halt the system, if possible using APM."),
 			      options);
 }
 

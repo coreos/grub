@@ -26,10 +26,11 @@
 #include <grub/partition.h>
 #include <grub/lib/envblk.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] =
   {
-    {"file", 'f', 0, "Specify filename.", 0, ARG_TYPE_PATHNAME},
+    {"file", 'f', 0, N_("Specify filename."), 0, ARG_TYPE_PATHNAME},
     {0, 0, 0, 0, 0, 0}
   };
 

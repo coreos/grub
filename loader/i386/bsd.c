@@ -34,6 +34,7 @@
 #include <grub/aout.h>
 #include <grub/command.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>
@@ -61,20 +62,20 @@ static grub_uint32_t openbsd_root;
 
 static const struct grub_arg_option freebsd_opts[] =
   {
-    {"dual", 'D', 0, "Display output on all consoles.", 0, 0},
-    {"serial", 'h', 0, "Use serial console.", 0, 0},
-    {"askname", 'a', 0, "Ask for file name to reboot from.", 0, 0},
-    {"cdrom", 'C', 0, "Use cdrom as root.", 0, 0},
-    {"config", 'c', 0, "Invoke user configuration routing.", 0, 0},
-    {"kdb", 'd', 0, "Enter in KDB on boot.", 0, 0},
-    {"gdb", 'g', 0, "Use GDB remote debugger instead of DDB.", 0, 0},
-    {"mute", 'm', 0, "Disable all boot output.", 0, 0},
+    {"dual", 'D', 0, N_("Display output on all consoles."), 0, 0},
+    {"serial", 'h', 0, N_("Use serial console."), 0, 0},
+    {"askname", 'a', 0, N_("Ask for file name to reboot from."), 0, 0},
+    {"cdrom", 'C', 0, N_("Use cdrom as root."), 0, 0},
+    {"config", 'c', 0, N_("Invoke user configuration routing."), 0, 0},
+    {"kdb", 'd', 0, N_("Enter in KDB on boot."), 0, 0},
+    {"gdb", 'g', 0, N_("Use GDB remote debugger instead of DDB."), 0, 0},
+    {"mute", 'm', 0, N_("Disable all boot output."), 0, 0},
     {"nointr", 'n', 0, "", 0, 0},
-    {"pause", 'p', 0, "Wait for keypress after every line of output.", 0, 0},
+    {"pause", 'p', 0, N_("Wait for keypress after every line of output."), 0, 0},
     {"quiet", 'q', 0, "", 0, 0},
-    {"dfltroot", 'r', 0, "Use compiled-in rootdev.", 0, 0},
-    {"single", 's', 0, "Boot into single mode.", 0, 0},
-    {"verbose", 'v', 0, "Boot with verbose messages.", 0, 0},
+    {"dfltroot", 'r', 0, N_("Use compiled-in rootdev."), 0, 0},
+    {"single", 's', 0, N_("Boot into single mode."), 0, 0},
+    {"verbose", 'v', 0, N_("Boot with verbose messages."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -89,12 +90,12 @@ static const grub_uint32_t freebsd_flags[] =
 
 static const struct grub_arg_option openbsd_opts[] =
   {
-    {"askname", 'a', 0, "Ask for file name to reboot from.", 0, 0},
-    {"halt", 'b', 0, "Don't reboot, just halt.", 0, 0},
-    {"config", 'c', 0, "Change configured devices.", 0, 0},
-    {"single", 's', 0, "Boot into single mode.", 0, 0},
-    {"kdb", 'd', 0, "Enter in KDB on boot.", 0, 0},
-    {"root", 'r', 0, "Set root device.", "wdXY", ARG_TYPE_STRING},
+    {"askname", 'a', 0, N_("Ask for file name to reboot from."), 0, 0},
+    {"halt", 'b', 0, N_("Don't reboot, just halt."), 0, 0},
+    {"config", 'c', 0, N_("Change configured devices."), 0, 0},
+    {"single", 's', 0, N_("Boot into single mode."), 0, 0},
+    {"kdb", 'd', 0, N_("Enter in KDB on boot."), 0, 0},
+    {"root", 'r', 0, N_("Set root device."), "wdXY", ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -108,19 +109,19 @@ static const grub_uint32_t openbsd_flags[] =
 
 static const struct grub_arg_option netbsd_opts[] =
   {
-    {"no-smp", '1', 0, "Disable SMP.", 0, 0},
-    {"no-acpi", '2', 0, "Disable ACPI.", 0, 0},
-    {"askname", 'a', 0, "Ask for file name to reboot from.", 0, 0},
-    {"halt", 'b', 0, "Don't reboot, just halt.", 0, 0},
-    {"config", 'c', 0, "Change configured devices.", 0, 0},
-    {"kdb", 'd', 0, "Enter in KDB on boot.", 0, 0},
+    {"no-smp", '1', 0, N_("Disable SMP."), 0, 0},
+    {"no-acpi", '2', 0, N_("Disable ACPI."), 0, 0},
+    {"askname", 'a', 0, N_("Ask for file name to reboot from."), 0, 0},
+    {"halt", 'b', 0, N_("Don't reboot, just halt."), 0, 0},
+    {"config", 'c', 0, N_("Change configured devices."), 0, 0},
+    {"kdb", 'd', 0, N_("Enter in KDB on boot."), 0, 0},
     {"miniroot", 'm', 0, "", 0, 0},
-    {"quiet", 'q', 0, "Don't display boot diagnostic messages.", 0, 0},
-    {"single", 's', 0, "Boot into single mode.", 0, 0},
-    {"verbose", 'v', 0, "Boot with verbose messages.", 0, 0},
-    {"debug", 'x', 0, "Boot with debug messages.", 0, 0},
-    {"silent", 'z', 0, "Supress normal output (warnings remain).", 0, 0},
-    {"root", 'r', 0, "Set root device.", "DEVICE", ARG_TYPE_STRING},
+    {"quiet", 'q', 0, N_("Don't display boot diagnostic messages."), 0, 0},
+    {"single", 's', 0, N_("Boot into single mode."), 0, 0},
+    {"verbose", 'v', 0, N_("Boot with verbose messages."), 0, 0},
+    {"debug", 'x', 0, N_("Boot with debug messages."), 0, 0},
+    {"silent", 'z', 0, N_("Supress normal output (warnings remain)."), 0, 0},
+    {"root", 'r', 0, N_("Set root device."), N_("DEVICE"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -1280,25 +1281,25 @@ GRUB_MOD_INIT (bsd)
 {
   cmd_freebsd = grub_register_extcmd ("kfreebsd", grub_cmd_freebsd,
 				      GRUB_COMMAND_FLAG_BOTH,
-				      "FILE", "Load kernel of FreeBSD.",
+				      N_("FILE"), N_("Load kernel of FreeBSD."),
 				      freebsd_opts);
   cmd_openbsd = grub_register_extcmd ("kopenbsd", grub_cmd_openbsd,
 				      GRUB_COMMAND_FLAG_BOTH,
-				      "FILE", "Load kernel of OpenBSD.",
+				      N_("FILE"), N_("Load kernel of OpenBSD."),
 				      openbsd_opts);
   cmd_netbsd = grub_register_extcmd ("knetbsd", grub_cmd_netbsd,
 				     GRUB_COMMAND_FLAG_BOTH,
-				     "FILE", "Load kernel of NetBSD.",
+				     N_("FILE"), N_("Load kernel of NetBSD."),
 				     netbsd_opts);
   cmd_freebsd_loadenv =
     grub_register_command ("kfreebsd_loadenv", grub_cmd_freebsd_loadenv,
-			   0, "Load FreeBSD env.");
+			   0, N_("Load FreeBSD env."));
   cmd_freebsd_module =
     grub_register_command ("kfreebsd_module", grub_cmd_freebsd_module,
-			   0, "Load FreeBSD kernel module.");
+			   0, N_("Load FreeBSD kernel module."));
   cmd_freebsd_module_elf =
     grub_register_command ("kfreebsd_module_elf", grub_cmd_freebsd_module_elf,
-			   0, "Load FreeBSD kernel module (ELF).");
+			   0, N_("Load FreeBSD kernel module (ELF)."));
 
   my_mod = mod;
 }
