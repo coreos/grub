@@ -816,28 +816,28 @@ store_completion (const char *item, grub_completion_type_t type, int count)
       switch (type)
 	{
 	case GRUB_COMPLETION_TYPE_COMMAND:
-	  what = "commands";
+	  what = N_("commands");
 	  break;
 	case GRUB_COMPLETION_TYPE_DEVICE:
-	  what = "devices";
+	  what = N_("devices");
 	  break;
 	case GRUB_COMPLETION_TYPE_FILE:
-	  what = "files";
+	  what = N_("files");
 	  break;
 	case GRUB_COMPLETION_TYPE_PARTITION:
-	  what = "partitions";
+	  what = N_("partitions");
 	  break;
 	case GRUB_COMPLETION_TYPE_ARGUMENT:
-	  what = "arguments";
+	  what = N_("arguments");
 	  break;
 	default:
-	  what = "things";
+	  what = N_("things");
 	  break;
 	}
 
       grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
       grub_printf ("   ");
-      grub_printf_ (N_("Possible %s are:"), what);
+      grub_printf_ (N_("Possible %s are:"), _(what));
       grub_printf ("\n    ");
     }
 
