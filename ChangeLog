@@ -1,3 +1,10 @@
+2010-01-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/misc.h (GNUC_PREREQ): New macro.
+	(ATTRIBUTE_ERROR): New macro.
+	* include/grub/list.h (grub_bad_type_cast_real): Use
+	ATTRIBUTE_ERROR.
+
 2010-01-03  Carles Pina i Estany  <carles@pina.cat>
 
 	* normal/menu_text.c (print_message): Change messages.
