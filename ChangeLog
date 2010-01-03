@@ -1,5 +1,9 @@
 2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* loader/efi/appleloader.c: Remove.  Update all users.
+
+2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* boot/i386/pc/boot.S: Update copyright year.
 	* boot/i386/pc/cdboot.S: Likewise.
 	* boot/i386/pc/diskboot.S: Likewise.
