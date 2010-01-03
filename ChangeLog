@@ -1,5 +1,9 @@
 2010-01-03  Carles Pina i Estany  <carles@pina.cat>
 
+	* po/POTFILES: Sort correctly.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
 	* commands/acpi.c (GRUB_MOD_INIT): Capitalise some words from help.
 	* commands/efi/loadbios.c (GRUB_MOD_INIT): Capitalise BIOS.
 	* commands/i386/pc/drivemap.c (GRUB_MOD_INIT): Remove space. Add
