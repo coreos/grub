@@ -1,5 +1,9 @@
 2010-01-03  Carles Pina i Estany  <carles@pina.cat>
 
+	* normal/menu_text.c (print_message): Change messages.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
 	* normal/menu_entry.c (store_completion): Gettextizze.
 
 2010-01-03  Carles Pina i Estany  <carles@pina.cat>

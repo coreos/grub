@@ -214,8 +214,8 @@ entry is highlighted.\n");
 
       grub_free (msg_translated);
 
-      grub_print_message_indented (_("Press enter to boot the selected OS, \
-\'e\' to edit the commands before booting or \'c\' for a command-line.\n"), STANDARD_MARGIN, STANDARD_MARGIN);
+      grub_print_message_indented (_("Press enter to execute the selected \
+entry, \'e\' to edit the commands before booting or \'c\' for a command-line.\n"), STANDARD_MARGIN, STANDARD_MARGIN);
 
       if (nested)
         {
@@ -385,7 +385,7 @@ static void
 print_timeout (int timeout, int offset)
 {
   const char *msg =
-    _("The highlighted entry will be booted automatically in %ds.");
+    _("The highlighted entry will be executed automatically in %ds.");
 
   grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
 
