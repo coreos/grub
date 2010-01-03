@@ -1,5 +1,20 @@
 2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* boot/i386/pc/diskboot.S: Fix inaccurate comment.
+
+	* util/i386/pc/grub-setup.c: Include `<assert.h>'.
+	(struct boot_blocklist): Move from here ...
+	* include/grub/i386/pc/boot.h [ASM_FILE]
+	(struct grub_boot_blocklist): ... to here.  Update all users.
+	(setup): Only initialize `start' member of `first_block'
+	structure.  Add assert() calls to verify the other members.
+
+	* util/i386/pc/grub-mkimage.c: Include `<assert.h>'.
+	(generate_image): Fix broken blocklist length initialization.
+	Add assert() call to verify blocklist `segment' field.
+
+2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* loader/efi/appleloader.c: Remove.  Update all users.
 
 2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>

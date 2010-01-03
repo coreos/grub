@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2006,2007,2009   Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2006,2007,2009,2010   Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -370,7 +370,7 @@ blocklist_default_start:
 	   the start of the disk, sector 0 */
 	.long 2, 0
 blocklist_default_len:
-	/* this is the number of sectors to read the command "install"
+	/* this is the number of sectors to read.  grub-mkimage
 	   will fill this up */
 	.word 0
 blocklist_default_seg:

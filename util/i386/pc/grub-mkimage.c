@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
@@ -212,10 +213,17 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
    
     boot_img = grub_util_read_image (boot_path);
    
-    /* i386 is a little endian architecture.  */
-    *((grub_uint16_t *) (boot_img + GRUB_DISK_SECTOR_SIZE
-			 - GRUB_BOOT_MACHINE_LIST_SIZE + 8))
-      = grub_cpu_to_le16 (num);
+    {
+      struct grub_boot_blocklist *block;
+      block = (struct grub_boot_blocklist *) (boot_img
+					 + GRUB_DISK_SECTOR_SIZE
+					 - sizeof (*block));
+      block->len = grub_host_to_target16 (num);
+
+      /* This is filled elsewhere.  Verify it just in case.  */
+      assert (block->segment == grub_host_to_target16 (GRUB_BOOT_MACHINE_KERNEL_SEG
+						  + (GRUB_DISK_SECTOR_SIZE >> 4)));
+    }
    
     grub_util_write_image (boot_img, boot_size, out);
     free (boot_img);
