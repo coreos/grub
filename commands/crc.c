@@ -1,7 +1,7 @@
 /* crc.c - command to calculate the crc32 checksum of a file  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,10 +46,13 @@ grub_cmd_crc (grub_command_t cmd __attribute__ ((unused)),
   while ((size = grub_file_read (file, buf, sizeof (buf))) > 0)
     crc = grub_getcrc32 (crc, buf, size);
 
-  grub_file_close (file);
+  if (grub_errno)
+    goto fail;
 
   grub_printf ("%08x\n", crc);
 
+ fail:
+  grub_file_close (file);
   return 0;
 }
 
