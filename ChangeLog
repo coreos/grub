@@ -1,3 +1,7 @@
+2010-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/efi/appleloader.c: Restored. Update all users.
+
 2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* boot/i386/pc/diskboot.S: Fix inaccurate comment.
