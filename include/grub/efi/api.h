@@ -584,6 +584,16 @@ struct grub_efi_protocol_device_path
 };
 typedef struct grub_efi_protocol_device_path grub_efi_protocol_device_path_t;
 
+#define GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE		6
+
+struct grub_efi_piwg_device_path
+{
+  grub_efi_device_path_t header;
+  grub_efi_guid_t guid __attribute__ ((packed));
+};
+typedef struct grub_efi_piwg_device_path grub_efi_piwg_device_path_t;
+
+
 /* BIOS Boot Specification Device Path.  */
 #define GRUB_EFI_BIOS_DEVICE_PATH_TYPE			5
 

@@ -1,5 +1,18 @@
 2010-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/efi/api.h (GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE):
+	New constant.
+	(grub_efi_piwg_device_path): New structure
+	(grub_efi_piwg_device_path_t): New type.
+	* loader/efi/appleloader.c (piwg_full_device_path): New structure.
+	(devpath_1): Transform to a structure. All users updated.
+	(devpath_2): Likewise.
+	(devpath_3): Likewise.
+	(devpath_4): Likewise.
+	(devpath_5): Likewise.
+
+2010-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* loader/efi/appleloader.c: Restored. Update all users.
 
 2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>
