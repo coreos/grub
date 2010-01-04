@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -222,7 +222,7 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	  if (cmd)
 	    return grub_error (GRUB_ERR_WRITE_ERROR, "can\'t write to cdrom");
 
-	  dap->blocks = (dap->blocks + 3) >> 2;
+	  dap->blocks = ALIGN_UP (dap->blocks, 4) >> 2;
 	  dap->block >>= 2;
 
 	  for (i = 0; i < GRUB_BIOSDISK_CDROM_RETRY_COUNT; i++)

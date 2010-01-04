@@ -1,5 +1,14 @@
 2010-01-04  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_rw): Use ALIGN_UP macro
+	instead of manual alignment.
+	* kern/disk.c (grub_disk_read): Remove grub_dprintf call (excessively
+	verbose).  Avoid attempts to read past end of the device
+	(grub_disk_adjust_range() guarantees that we can read `size' bytes,
+	but GRUB_DISK_CACHE_SIZE may exceed that).
+
+2010-01-04  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* commands/crc.c (grub_cmd_crc): Abort on read errors.
 	* fs/iso9660.c (grub_iso9660_read): Check for read error and pass
 	it to upper layer.
