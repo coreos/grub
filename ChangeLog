@@ -1,3 +1,9 @@
+2010-01-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* commands/crc.c (grub_cmd_crc): Abort on read errors.
+	* fs/iso9660.c (grub_iso9660_read): Check for read error and pass
+	it to upper layer.
+
 2010-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/efi/api.h (GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE):
