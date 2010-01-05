@@ -1,5 +1,13 @@
 2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/mkisofs/write.c (padblock_write): Switch size and nmemb
+	arguments to fread so that we get a return value in bytes, rather
+	than something that will normally be rounded down to 0.
+	Adjust error handling to avoid producing garbage when size_t is not
+	the same size as long long.
+
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/mkisofs/write.c (padblock_write): Check return value of
 	fread.
 
