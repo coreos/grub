@@ -1,3 +1,11 @@
+2010-10-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-10-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (save_default_entry): Only set
+	saved_entry if boot_once is unset.
+	* util/grub.d/00_header.in: Set boot_once to "true" if there was a
+	previous saved entry (i.e. grub-reboot).
+
 2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub.d/30_os-prober.in: Call save_default_entry for hurd.

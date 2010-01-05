@@ -93,8 +93,12 @@ convert_system_path_to_grub_path ()
 save_default_entry ()
 {
   if [ "x${GRUB_DEFAULT}" = "xsaved" ] ; then
-    echo 'set saved_entry=${chosen}'
-    echo 'save_env saved_entry'
+    cat << EOF
+if [ -z \${boot_once} ]; then
+  set saved_entry=${chosen}
+  save_env saved_entry
+fi
+EOF
   fi
 }
 
