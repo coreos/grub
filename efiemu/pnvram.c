@@ -78,8 +78,8 @@ unescape (char *in, char *out, char *outmax, int *len)
       }
   if (dptr == outmax)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		       "Too many NVRAM variables for reserved variable space."
-		       " Try increasing EfiEmu.pnvram.size.");
+		       "too many NVRAM variables for reserved variable space."
+		       " Try increasing EfiEmu.pnvram.size");
   *len = dptr - out;
   return 0;
 }
@@ -132,8 +132,8 @@ nvram_set (void * data __attribute__ ((unused)))
     if (nvramptr - nvram + sizeof (struct efi_variable) > nvramsize)
       {
 	grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		    "Too many NVRAM variables for reserved variable space."
-		    " Try increasing EfiEmu.pnvram.size.");
+		    "too many NVRAM variables for reserved variable space."
+		    " Try increasing EfiEmu.pnvram.size");
 	return 1;
       }
 
@@ -173,7 +173,7 @@ nvram_set (void * data __attribute__ ((unused)))
 
     if (len < 0)
       {
-	grub_error (GRUB_ERR_BAD_ARGUMENT, "Broken UTF-8 in variable name\n");
+	grub_error (GRUB_ERR_BAD_ARGUMENT, "broken UTF-8 in variable name");
 	return 1;
       }
 

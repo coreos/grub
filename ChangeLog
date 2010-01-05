@@ -1,4 +1,713 @@
-2009-12-23 Felix Zielcke <fzielcke@z-51.de>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/mkisofs/write.c (padblock_write): Check return value of
+	fread.
+
+2010-01-05  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Remove grub-mkfloppy.  Images produced by grub-mkrescue are valid
+	floppy images now.
+
+	* util/i386/pc/grub-mkfloppy.in: Remove.  Update all users.
+
+2010-01-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_rw): Use ALIGN_UP macro
+	instead of manual alignment.
+	* kern/disk.c (grub_disk_read): Remove grub_dprintf call (excessively
+	verbose).  Avoid attempts to read past end of the device
+	(grub_disk_adjust_range() guarantees that we can read `size' bytes,
+	but GRUB_DISK_CACHE_SIZE may exceed that).
+
+2010-01-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* commands/crc.c (grub_cmd_crc): Abort on read errors.
+	* fs/iso9660.c (grub_iso9660_read): Check for read error and pass
+	it to upper layer.
+
+2010-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/efi/api.h (GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE):
+	New constant.
+	(grub_efi_piwg_device_path): New structure
+	(grub_efi_piwg_device_path_t): New type.
+	* loader/efi/appleloader.c (piwg_full_device_path): New structure.
+	(devpath_1): Transform to a structure. All users updated.
+	(devpath_2): Likewise.
+	(devpath_3): Likewise.
+	(devpath_4): Likewise.
+	(devpath_5): Likewise.
+
+2010-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/efi/appleloader.c: Restored. Update all users.
+
+2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* boot/i386/pc/diskboot.S: Fix inaccurate comment.
+
+	* util/i386/pc/grub-setup.c: Include `<assert.h>'.
+	(struct boot_blocklist): Move from here ...
+	* include/grub/i386/pc/boot.h [ASM_FILE]
+	(struct grub_boot_blocklist): ... to here.  Update all users.
+	(setup): Only initialize `start' member of `first_block'
+	structure.  Add assert() calls to verify the other members.
+
+	* util/i386/pc/grub-mkimage.c: Include `<assert.h>'.
+	(generate_image): Fix broken blocklist length initialization.
+	Add assert() call to verify blocklist `segment' field.
+
+2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/efi/appleloader.c: Remove.  Update all users.
+
+2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* boot/i386/pc/boot.S: Update copyright year.
+	* boot/i386/pc/cdboot.S: Likewise.
+	* boot/i386/pc/diskboot.S: Likewise.
+	* boot/i386/pc/lnxboot.S: Likewise.
+	* boot/i386/pc/pxeboot.S: Likewise.
+	* bus/pci.c: Likewise.
+	* commands/cmp.c: Likewise.
+	* commands/help.c: Likewise.
+	* commands/hexdump.c: Likewise.
+	* commands/i386/pc/halt.c: Likewise.
+	* commands/i386/pc/play.c: Likewise.
+	* commands/i386/pc/vbeinfo.c: Likewise.
+	* commands/ls.c: Likewise.
+	* commands/test.c: Likewise.
+	* disk/dmraid_nvidia.c: Likewise.
+	* disk/i386/pc/biosdisk.c: Likewise.
+	* disk/ieee1275/nand.c: Likewise.
+	* disk/ieee1275/ofdisk.c: Likewise.
+	* disk/lvm.c: Likewise.
+	* disk/raid.c: Likewise.
+	* disk/raid6_recover.c: Likewise.
+	* disk/scsi.c: Likewise.
+	* fs/affs.c: Likewise.
+	* fs/cpio.c: Likewise.
+	* fs/ext2.c: Likewise.
+	* fs/hfs.c: Likewise.
+	* fs/iso9660.c: Likewise.
+	* fs/ntfs.c: Likewise.
+	* fs/sfs.c: Likewise.
+	* fs/udf.c: Likewise.
+	* fs/ufs.c: Likewise.
+	* fs/xfs.c: Likewise.
+	* gencmdlist.sh: Likewise.
+	* genmk.rb: Likewise.
+	* include/grub/disk.h: Likewise.
+	* include/grub/efi/api.h: Likewise.
+	* include/grub/efi/efi.h: Likewise.
+	* include/grub/efi/pe32.h: Likewise.
+	* include/grub/elf.h: Likewise.
+	* include/grub/fs.h: Likewise.
+	* include/grub/i386/at_keyboard.h: Likewise.
+	* include/grub/i386/pc/memory.h: Likewise.
+	* include/grub/i386/pc/vbe.h: Likewise.
+	* include/grub/i386/pci.h: Likewise.
+	* include/grub/i386/tsc.h: Likewise.
+	* include/grub/ieee1275/ieee1275.h: Likewise.
+	* include/grub/ntfs.h: Likewise.
+	* include/grub/sparc64/ieee1275/ieee1275.h: Likewise.
+	* include/grub/sparc64/libgcc.h: Likewise.
+	* include/grub/symbol.h: Likewise.
+	* include/grub/types.h: Likewise.
+	* include/multiboot2.h: Likewise.
+	* io/gzio.c: Likewise.
+	* kern/device.c: Likewise.
+	* kern/disk.c: Likewise.
+	* kern/efi/efi.c: Likewise.
+	* kern/efi/mm.c: Likewise.
+	* kern/elf.c: Likewise.
+	* kern/file.c: Likewise.
+	* kern/i386/dl.c: Likewise.
+	* kern/i386/pc/init.c: Likewise.
+	* kern/i386/pc/startup.S: Likewise.
+	* kern/ieee1275/ieee1275.c: Likewise.
+	* kern/ieee1275/init.c: Likewise.
+	* kern/main.c: Likewise.
+	* kern/mm.c: Likewise.
+	* kern/powerpc/dl.c: Likewise.
+	* kern/sparc64/dl.c: Likewise.
+	* kern/x86_64/dl.c: Likewise.
+	* lib/hexdump.c: Likewise.
+	* loader/efi/appleloader.c: Likewise.
+	* loader/i386/ieee1275/linux.c: Likewise.
+	* loader/i386/pc/chainloader.c: Likewise.
+	* loader/i386/pc/linux.c: Likewise.
+	* loader/i386/pc/multiboot2.c: Likewise.
+	* loader/ieee1275/multiboot2.c: Likewise.
+	* loader/multiboot2.c: Likewise.
+	* loader/multiboot_loader.c: Likewise.
+	* loader/powerpc/ieee1275/linux.c: Likewise.
+	* normal/completion.c: Likewise.
+	* normal/menu_entry.c: Likewise.
+	* partmap/apple.c: Likewise.
+	* util/grub.d/10_hurd.in: Likewise.
+	* util/hostfs.c: Likewise.
+	* video/readers/png.c: Likewise.
+
+2010-01-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/misc.h (GNUC_PREREQ): New macro.
+	(ATTRIBUTE_ERROR): New macro.
+	* include/grub/list.h (grub_bad_type_cast_real): Use
+	ATTRIBUTE_ERROR.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/menu_text.c (print_message): Change messages.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/menu_entry.c (store_completion): Gettextizze.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* kern/env.c (grub_env_unset): Set the variable to "" if has hooks.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* po/POTFILES: Sort correctly.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/acpi.c (GRUB_MOD_INIT): Capitalise some words from help.
+	* commands/efi/loadbios.c (GRUB_MOD_INIT): Capitalise BIOS.
+	* commands/i386/pc/drivemap.c (GRUB_MOD_INIT): Remove space. Add
+	full stop.
+	* commands/loadenv.c (GRUB_MOD_INIT): Remove command name from
+	summary. Gettextizze the strings.
+	* commands/probe.c (grub_cmd_probe): Capitalise UUID and FS.
+	* commands/xnu_uuid.c (GRUB_MOD_INIT): Capitalise XNU.
+	* disk/loopback.c (grub_arg_options): Capitalise first letter. Add
+	full stop.
+	(GRUB_MOD_INIT): Remove command name from summary.
+	* hello/hello.c (GRUD_MOT_INIT): Add missing full stop. Improve the
+	summary.
+	* loader/i386/bsd.c (grub_arg_option): Capitalise CDROM.
+	* term/i386/pc/serial.c (options): Add full stops.
+	(GRUB_MOD_INIT): Remove command name from the summary.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/acpi.c: Gettextizze help strings and/or options. Include
+	`grub/i18n.h' if needed.
+	* commands/blocklist.c: Likewise.
+	* commands/boot.c: Likewise.
+	* commands/cat.c: Likewise.
+	* commands/cmp.c: Likewise.
+	* commands/configfile.c: Likewise.
+	* commands/crc.c: Likewise.
+	* commands/date.c: Likewise.
+	* commands/echo.c: Likewise.
+	* commands/efi/fixvideo.c: Likewise.
+	* commands/efi/loadbios.c: Likewise.
+	* commands/gptsync.c: Likewise.
+	* commands/halt.c: Likewise.
+	* commands/handler.c: Likewise.
+	* commands/hdparm.c: Likewise.
+	* commands/hexdump.c: Likewise.
+	* commands/i386/cpuid.c: Likewise.
+	* commands/i386/pc/drivemap.c: Likewise.
+	* commands/i386/pc/halt.c: Likewise.
+	* commands/i386/pc/pxecmd.c: Likewise.
+	* commands/i386/pc/vbeinfo.c: Likewise.
+	* commands/i386/pc/vbetest.c: Likewise.
+	* commands/ieee1275/suspend.c: Likewise.
+	* commands/keystatus.c: Likewise.
+	* commands/loadenv.c: Likewise.
+	* commands/ls.c: Likewise.
+	* commands/lsmmap.c: Likewise.
+	* commands/lspci.c: Likewise.
+	* commands/memrw.c: Likewise.
+	* commands/minicmd.c: Likewise.
+	* commands/parttool.c: Likewise.
+	* commands/password.c: Likewise.
+	* commands/probe.c: Likewise.
+	* commands/read.c: Likewise.
+	* commands/reboot.c: Likewise.
+	* commands/search.c: Likewise.
+	* commands/sleep.c: Likewise.
+	* commands/test.c: Likewise.
+	* commands/true.c: Likewise.
+	* commands/usbtest.c: Likewise.
+	* commands/videotest.c: Likewise.
+	* commands/xnu_uuid.c: Likewise.
+	* disk/loopback.c: Likewise.
+	* hello/hello.c: Likewise.
+	* loader/i386/bsd.c: Likewise.
+	* term/i386/pc/serial.c: Likewise.
+	* po/POTFILES: Add new files.
+
+2010-01-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* term/i386/pc/at_keyboard.c
+	(keyboard_controller_wait_untill_ready): Rename to ...
+	(keyboard_controller_wait_until_ready): ... this. Update all users.
+
+2010-01-01  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/help.c: Include `grub/mm.h' and `grub/normal.h'.
+	(grub_cmd_help): Print the cmd->name before the cmd->summary. Cut the
+	string using string width.
+	* normal/menu_text.c (grub_print_message_indented): Use
+	grub_print_spaces and not print_spaces.
+	(print_timeout): Likewise.
+	(print_spaces): Move to...
+	* include/grub/term.h: ... here. Change the name to grub_print_spaces.
+
+2010-01-01  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Import from Gnulib.
+
+	* gnulib/getdelim.c: New file.
+	* gnulib/getline.c: Likewise.
+
+2009-12-31 BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* include/grub/list.h (grub_assert_fail): Removed.
+	(grub_bad_type_cast_real): New function.
+	(grub_bad_type_cast): New macro.
+	(GRUB_AS_LIST): Use grub_bad_type_cast.
+	(GRUB_AS_LIST_P): Likewise.
+	(GRUB_AS_NAMED_LIST): Likewise.
+	(GRUB_AS_NAMED_LIST_P): Likewise.
+	(GRUB_AS_PRIO_LIST): Likewise.
+	(GRUB_AS_PRIO_LIST_P): Likewise.
+	* include/grub/handler.h (GRUB_AS_HANDLER): Likewise.
+
+2009-12-29 Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/sparc64/ieee1275/linux.c (GRUB_MOD_INIT (linux)):
+	Fix syntax error.
+
+2009-12-29  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* configure.ac: Check for TARGET_CFLAGS initialization before we
+	initialize it ourselves (sigh).
+	Move a few modifications to TARGET_CFLAGS to be unconditional
+	(extra warning flags, loop alignment, i386 CPU extensions, GCC 4.4
+	eh_frame)
+
+	* gettext/gettext.c (grub_gettext_delete_list): Add `void' argument.
+	* term/i386/pc/at_keyboard.c
+	(keyboard_controller_wait_untill_ready): Likewise.
+	(keyboard_controller_led): Rename `led_status' paramter to avoid
+	name conflict.
+
+2009-12-28  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/misc.c (grub_normal_print_device_info): Add spaces and double
+	quotes.
+
+2009-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/parser.c (grub_parser_split_cmdline): Don't dereference NULL.
+
+2009-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/menu_text.c (grub_print_message_indented): Prevent
+	past-the-end-of-array dereference.
+
+2009-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* video/readers/jpeg.c (GRUB_MOD_FINI (grub_cmd_jpegtest)): Rename to ..
+	(GRUB_MOD_FINI (video_reader_jpeg)): ...this
+
+2009-12-27  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/cmdline.c (grub_cmdline_get): Print a space after prompt.
+	* normal/main.c (grub_normal_read_line): Remove a space from the
+	default prompt.
+
+2009-12-27  Carles Pina i Estany  <carles@pina.cat>
+
+	* loader/i386/efi/linux.c (GRUB_MOD_INIT): Improve command summary.
+	* loader/i386/ieee1275/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/pc/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/powerpc/ieee1275/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/sparc64/ieee1275/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/xnu.c (GRUB_MOD_INIT): Likewise.
+
+2009-12-26  Carles Pina i Estany  <carles@pina.cat>
+
+	* video/readers/jpeg.c (cmd): Declare.
+	(grub_cmd_jpegtest): Use `grub_command_t' type.
+	(GRUB_MOD_INIT): Fix arguments passed to `grub_register_command'.
+	Assign to `cmd'.
+	(GRUB_MOD_FINI): Use `cmd' to unregister.
+	* video/readers/png.c (cmd): Declare.
+	(grub_cmd_pngtest): Use `grub_command_t' type.
+	(GRUB_MOD_INIT): Fix arguments passed to `grub_register_command'.
+	Assign to `cmd'.
+	(GRUB_MOD_FINI): Use `cmd' to unregister.
+	* video/readers/tga.c (cmd): Declare.
+	(grub_cmd_tgatest): Use `grub_command_t' type.
+	(GRUB_MOD_INIT): Fix arguments passed to `grub_register_command'.
+	Assign to `cmd'.
+	(GRUB_MOD_FINI): Use `cmd' to unregister.
+
+2009-12-26  Carles Pina i Estany  <carles@pina.cat>
+
+	* efiemu/main.c (GRUB_MOD_INIT): Fix capitalizations and/or full
+	stops.
+	* kern/corecmd.c (grub_register_core_commands): Likewise.
+	* loader/efi/chainloader.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/bsd.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/efi/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/ieee1275/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/pc/chainloader.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/pc/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/multiboot_loader.c (GRUB_MOD_INIT): Likewise.
+	* loader/powerpc/ieee1275/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/sparc64/ieee1275/linux.c (GRUB_MOD_INIT): Likewise.
+	* loader/xnu.c (GRUB_MOD_INIT): Likewise.
+	* mmap/mmap.c (GRUB_MOD_INIT): Likewise.
+	* normal/handler.c (insert_handler): Likewise.
+	* normal/main.c (GRUB_MOD_INIT): Likewise.
+	* term/gfxterm.c (GRUB_MOD_INIT): Likewise.
+
+2009-12-26  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/help.c (grub_cmd_help): Print the command name before the
+	summary.
+	(GRUB_MOD_INIT): Remove command name from the summary.
+	* kern/command.c (GRUB_MOD_INIT): If summary is null assign an empty
+	string as summary.
+	* lib/arg.c (find_long): Print the command name before the summary.
+	* commands/acpi.c (GRUB_MOD_INIT): Remove command name from the
+	summary.
+	* commands/blocklist.c (GRUB_MOD_INIT): Likewise.
+	* commands/cat.c (GRUB_MOD_INIT): Likewise.
+	* commands/cmp.c (GRUB_MOD_INIT): Likewise.
+	* commands/configfile.c (GRUB_MOD_INIT): Likewise.
+	* commands/crc.c (GRUB_MOD_INIT): Likewise.
+	* commands/date.c (GRUB_MOD_INIT): Likewise.
+	* commands/echo.c (GRUB_MOD_INIT): Likewise.
+	* commands/efi/loadbios.c (GRUB_MOD_INIT): Likewise.
+	* commands/gptsync.c (GRUB_MOD_INIT): Likewise.
+	* commands/handler.c (GRUB_MOD_INIT): Likewise.
+	* commands/hdparm.c (GRUB_MOD_INIT): Likewise.
+	* commands/hexdump.c (GRUB_MOD_INIT): Likewise.
+	* commands/i386/cpuid.c (GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/halt.c (GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/play.c (GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/pxecmd.c (GRUB_MOD_INIT): Likewise.
+	* commands/keystatus.c (GRUB_MOD_INIT): Likewise.
+	* commands/loadenv.c (GRUB_MOD_INIT): Likewise.
+	* commands/ls.c (GRUB_MOD_INIT): Likewise.
+	* commands/lspci.c (GRUB_MOD_INIT): Likewise.
+	* commands/memrw.c (GRUB_MOD_INIT): Likewise.
+	* commands/minicmd.c (GRUB_MOD_INIT): Likewise.
+	* commands/parttool.c (GRUB_MOD_INIT): Likewise.
+	* commands/password.c (GRUB_MOD_INIT): Likewise.
+	* commands/probe.c (GRUB_MOD_INIT): Likewise.
+	* commands/read.c (GRUB_MOD_INIT): Likewise.
+	* commands/search.c (GRUB_MOD_INIT): Likewise.
+	* commands/sleep.c (GRUB_MOD_INIT): Likewise.
+	* commands/test.c (GRUB_MOD_INIT): Likewise.
+	* commands/xnu_uuid.c (GRUB_MOD_INIT): Likewise.
+	* efiemu/main.c (GRUB_MOD_INIT): Likewise.
+	* font/font_cmd.c (GRUB_MOD_INIT): Likewise.
+	* gettext/gettext.c (GRUB_MOD_INIT): Likewise.
+	* kern/corecmd.c (GRUB_MOD_INIT): Likewise.
+	* lib/arg.c (GRUB_MOD_INIT): Likewise.
+	* loader/efi/appleloader.c (GRUB_MOD_INIT): Likewise.
+	* loader/i386/bsd.c (GRUB_MOD_INIT): Likewise.
+	* loader/xnu.c (GRUB_MOD_INIT): Likewise.
+	* mmap/mmap.c (GRUB_MOD_INIT): Likewise.
+	* term/terminfo.c (GRUB_MOD_INIT): Likewise.
+	* video/readers/jpeg.c (GRUB_MOD_INIT): Likewise.
+	* video/readers/png.c (GRUB_MOD_INIT): Likewise.
+	* video/readers/tga.c (GRUB_MOD_INIT): Likewise.
+
+2009-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use search command for preliminar UUID search.
+
+	* commands/search.c: Split into ...
+	* commands/search_wrap.c: ...this
+	* commands/search.c: ...and this.
+	* commands/search_file.c: New file.
+	* commands/search_label.c: New file.
+	* commands/search_uuid.c: New file.
+	* conf/any-emu.rmk (grub_emu_SOURCES): Remove commands/search.c.
+	Add commands/search_wrap.c, commands/search_file.c,
+	commands/search_label.c and commands/search_uuid.c.
+	* conf/common.rmk (pkglib_MODULES): Remove fs_uuid.mod and fs_file.mod.
+	(search_mod_SOURCES): Set to commands/search_wrap.c.
+	(pkglib_MODULES): Add search_fs_file.mod, search_fs_uuid.mod and
+	search_label.mod.
+	(search_fs_file_mod_SOURCES): New variable.
+	(search_fs_file_mod_CFLAGS): Likewise.
+	(search_fs_file_mod_LDFLAGS): Likewise.
+	(search_label_mod_SOURCES): Likewise.
+	(search_label_mod_CFLAGS): Likewise.
+	(search_label_mod_LDFLAGS): Likewise.
+	(search_fs_uuid_mod_SOURCES): New variable.
+	(search_fs_uuid_mod_CFLAGS): Likewise.
+	(search_fs_uuid_mod_LDFLAGS): Likewise.
+	(fs_file_mod_SOURCES): Removed.
+	(fs_file_mod_CFLAGS): Likewise.
+	(fs_file_mod_LDFLAGS): Likewise.
+	(fs_uuid_mod_SOURCES): Removed.
+	(fs_uuid_mod_CFLAGS): Likewise.
+	(fs_uuid_mod_LDFLAGS): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_install_SOURCES):
+	Set to util/grub-install.in.
+	* disk/fs_file.c: Removed.
+	* disk/fs_uuid.c: Likewise.
+	* include/grub/search.h: New file.
+	* util/grub-install.in: Handle sparc64.
+	Create and use load.cfg.
+	* util/sparc64/ieee1275/grub-install.in: Removed.
+
+2009-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/i386/pc/startup.S (grub_biosdisk_get_diskinfo_int13_extensions):
+	Ignore return status if CF is cleared.
+	(grub_biosdisk_get_diskinfo_standard): Likewise.
+
+2009-12-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* term/i386/pc/at_keyboard.c
+	(keyboard_controller_wait_untill_ready): New function.
+	(grub_keyboard_controller_write, grub_keyboard_controller_read)
+	(keyboard_controller_led): Use keyboard_controller_wait_untill_ready()
+	for keyboard polling, rather than duplicate the same loop.  This
+	saves a few bytes in code size.
+
+2009-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support for (pxe[:server[:gateway]]) syntax and
+	use environment variable for PXE.
+
+	* commands/i386/pc/pxecmd.c (options): Removed.
+	(print_ip): Removed.
+	(grub_cmd_pxe): Removed
+	(grub_cmd_pxe_unload): New function.
+	* fs/i386/pc/pxe.c (grub_pxe_disk_data): New structure.
+	(grub_pxe_your_ip): Made static.
+	(grub_pxe_default_server_ip): Likewise.
+	(grub_pxe_default_gateway_ip): Likewise.
+	(grub_pxe_blksize): Likewise.
+	(parse_ip): New function.
+	(grub_pxe_open): Support server and gateway specification.
+	(grub_pxe_close): Free disk->data.
+	(grub_pxefs_open): Use disk->data.
+	(grub_pxefs_read): Likewise.
+	(grub_env_write_readonly): New function.
+	(set_mac_env): Likewise.
+	(set_env_limn_ro): Likewise.
+	(parse_dhcp_vendor): Likewise.
+	(grub_pxe_detect): Set the environment variables.
+	(set_ip_env): New function.
+	(write_ip_env): Likewise.
+	(grub_env_write_pxe_default_server): Likewise.
+	(grub_env_write_pxe_default_gateway): Likewise.
+	(grub_env_write_pxe_blocksize): Likewise.
+	(GRUB_MOD_INIT(pxe)): Set environment variables.
+	* include/grub/i386/pc/pxe.h (grub_pxe_mac_addr): Rename to ...
+	(grub_pxe_mac_addr_t): ... this. All users updated.
+	(grub_pxe_your_ip): Removed.
+	(grub_pxe_server_ip): Likewise.
+	(grub_pxe_gateway_ip): Likewise.
+	(grub_pxe_blksize): Likewise.
+
+2009-12-25  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/help.c: Include `<grub/i18n.h>'.
+	(grub_cmd_help): Gettextizze.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/play.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* commands/search.c: Include `<grub/i18n.h>'.
+	(options): Gettextizze.
+	(GRUB_MOD_INIT): Gettextizze.
+	* lib/arg.c: Include `<grub/i18n.h>'.
+	(help_options): Gettextizze.
+	(find_long): Likewise.
+	(grub_arg_show_help): Likewise.
+	* normal/dyncmd.c: Include `<grub/i18n.h>'.
+	(read_command_list): Gettextizze.
+	* po/POTFILES: Add `commands/i386/pc/play.c', `commands/search.c',
+	`commands/help.c', `lib/arg.c' and `normal/dyncmd.c'.
+
+2009-12-25  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/at_keyboard.h (NUM_LOCK, SCROLL_LOCK): New macros.
+	* term/i386/pc/at_keyboard.c (KEYBOARD_STATUS_NUM_LOCK)
+	(KEYBOARD_LED_SCROLL, KEYBOARD_LED_NUM, KEYBOARD_LED_CAPS): New macros.
+	(led_status): New variable.
+	(keyboard_controller_led): New function.
+	(grub_at_keyboard_getkey_noblock): Handle num lock and scroll lock,
+	update led status for caps lock, num lock and scroll lock.
+
+2009-12-25  Felix Zielcke <fzielcke@z-51.de>
+
+	* util/hostdisk.c (open_device): Fix a comment.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub-install.in (host_os): New variable.
+	* util/i386/efi/grub-install.in (host_os): Likewise.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/write.c (padblock_write): Abort when given an
+	excedingly large embed image, instead of silently truncating it.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot.h: Indentation fixes.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot.h (struct multiboot_aout_symbol_table)
+	(struct multiboot_elf_section_header_table): New structure
+	declarations (stolen from GRUB Legacy).
+	(struct multiboot_info): Replace opaque `syms' with a.out and ELF
+	table information.
+
+	(multiboot_aout_symbol_table_t, multiboot_elf_section_header_table_t)
+	(multiboot_info_t, multiboot_memory_map_t, multiboot_module_t): New
+	type aliases.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot.h: Make comments src2texi-friendly.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	For consistency with [multiboot]/docs/boot.S.
+
+	* include/multiboot.h (MULTIBOOT_MAGIC): Rename from this ...
+	(MULTIBOOT_HEADER_MAGIC): ... to this.  Update all users.
+	(MULTIBOOT_MAGIC2): Rename from this ...
+	(MULTIBOOT_BOOTLOADER_MAGIC): ... to this.  Update all users.
+
+2009-12-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot.h: Remove `<grub/types.h>'.
+	(multiboot_uint16_t, multiboot_uint32_t, multiboot_uint64_t): New
+	types.  Update all users.
+
+2009-12-25  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/efi/loadbios.c: Capitalize acronyms, replace `could not' by
+	`couldn't' and `can not' by `cannot'.
+	* commands/i386/pc/drivemap.c: Likewise.
+	* disk/ata.c: Likewise.
+	* disk/ieee1275/nand.c: Likewise.
+	* fs/affs.c: Likewise.
+	* fs/fat.c: Likewise.
+	* fs/hfs.c: Likewise.
+	* fs/hfsplus.c: Likewise.
+	* fs/iso9660.c: Likewise.
+	* fs/jfs.c: Likewise.
+	* fs/minix.c: Likewise.
+	* fs/reiserfs.c: Likewise.
+	* fs/sfs.c: Likewise.
+	* fs/udf.c: Likewise.
+	* fs/ufs.c: Likewise.
+	* fs/xfs.c: Likewise.
+	* loader/powerpc/ieee1275/linux.c: Likewise.
+	* loader/sparc64/ieee1275/linux.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/misc.c: Likewise.
+
+2009-12-24  Carles Pina i Estany  <carles@pina.cat>
+
+	* bus/usb/usbhub.c: Fix capitalization, fullstop and newlines in
+	grub_errno calls.
+	* commands/acpi.c: Likewise.
+	* commands/blocklist.c: Likewise.
+	* commands/efi/loadbios.c: Likewise.
+	* commands/i386/pc/drivemap.c: Likewise.
+	* commands/loadenv.c: Likewise.
+	* commands/memrw.c: Likewise.
+	* commands/password.c: Likewise.
+	* commands/videotest.c: Likewise.
+	* disk/ata.c: Likewise.
+	* disk/ata_pthru.c: Likewise.
+	* disk/dmraid_nvidia.c: Likewise.
+	* disk/ieee1275/nand.c: Likewise.
+	* disk/ieee1275/ofdisk.c: Likewise.
+	* disk/loopback.c: Likewise.
+	* disk/lvm.c: Likewise.
+	* disk/mdraid_linux.c: Likewise.
+	* disk/raid.c: Likewise.
+	* disk/raid6_recover.c: Likewise.
+	* disk/scsi.c: Likewise.
+	* efiemu/main.c: Likewise.
+	* efiemu/mm.c: Likewise.
+	* efiemu/pnvram.c: Likewise.
+	* efiemu/symbols.c: Likewise.
+	* font/font.c: Likewise.
+	* fs/cpio.c: Likewise.
+	* fs/hfsplus.c: Likewise.
+	* fs/iso9660.c: Likewise.
+	* fs/jfs.c: Likewise.
+	* fs/minix.c: Likewise.
+	* fs/ntfs.c: Likewise.
+	* fs/ntfscomp.c: Likewise.
+	* fs/reiserfs.c: Likewise.
+	* fs/ufs.c: Likewise.
+	* fs/xfs.c: Likewise.
+	* gettext/gettext.c: Likewise.
+	* include/grub/auth.h: Likewise.
+	* kern/elf.c: Likewise.
+	* kern/file.c: Likewise.
+	* kern/ieee1275/init.c: Likewise.
+	* kern/ieee1275/mmap.c: Likewise.
+	* kern/ieee1275/openfw.c: Likewise.
+	* kern/powerpc/dl.c: Likewise.
+	* kern/sparc64/dl.c: Likewise.
+	* lib/arg.c: Likewise.
+	* loader/i386/bsd.c: Likewise.
+	* loader/i386/bsdXX.c: Likewise.
+	* loader/i386/efi/linux.c: Likewise.
+	* loader/i386/efi/xnu.c: Likewise.
+	* loader/i386/ieee1275/linux.c: Likewise.
+	* loader/i386/linux.c: Likewise.
+	* loader/i386/multiboot.c: Likewise.
+	* loader/i386/pc/linux.c: Likewise.
+	* loader/i386/pc/multiboot2.c: Likewise.
+	* loader/i386/xnu.c: Likewise.
+	* loader/ieee1275/multiboot2.c: Likewise.
+	* loader/macho.c: Likewise.
+	* loader/machoXX.c: Likewise.
+	* loader/multiboot2.c: Likewise.
+	* loader/multiboot_loader.c: Likewise.
+	* loader/powerpc/ieee1275/linux.c: Likewise.
+	* loader/sparc64/ieee1275/linux.c: Likewise.
+	* loader/xnu.c: Likewise.
+	* loader/xnu_resume.c: Likewise.
+	* mmap/i386/pc/mmap.c: Likewise.
+	* normal/menu_viewer.c: Likewise.
+	* partmap/acorn.c: Likewise.
+	* partmap/amiga.c: Likewise.
+	* partmap/apple.c: Likewise.
+	* script/lexer.c: Likewise.
+	* term/gfxterm.c: Likewise.
+	* term/i386/pc/serial.c: Likewise.
+	* term/i386/pc/vga.c: Likewise.
+	* term/ieee1275/ofconsole.c: Likewise.
+	* term/terminfo.c: Likewise.
+	* video/bitmap.c: Likewise.
+	* video/efi_gop.c: Likewise.
+	* video/efi_uga.c: Likewise.
+	* video/fb/video_fb.c: Likewise.
+	* video/i386/pc/vbe.c: Likewise.
+	* video/readers/tga.c: Likewise.
+	* video/video.c: Likewise.
+
+2009-12-23  Felix Zielcke <fzielcke@z-51.de>
 
 	* commands/i386/pc/drivemap.c: Remove all trailing whitespace.
 	* commands/lspci.c: Likewise.
@@ -51,7 +760,7 @@
 	* video/efi_gop.c (grub_video_gop_get_bitmask): Fix off-by-one in mask
 	size counting.
 
-2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+2009-12-22  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/grub-mkrescue.in (pkglib_DATA): Set to @pkglib_DATA@.
 	* genmk.rb (class SCRIPT): Modify the target file instead of source.
@@ -69,11 +778,11 @@
 	(grub_cmd_read): Restructure for readability. Support "-v" option.
 	(grub_cmd_write): Restructure for readability.
 
-2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+2009-12-22  Felix Zielcke <fzielcke@z-51.de>
 
 	* genmk.rb (class SCRIPT): Prepend #{src} path with $(srcdir).
 
-2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+2009-12-22  Felix Zielcke <fzielcke@z-51.de>
 
 	* genmk.rb (class SCRIPT): Use sed to substitute @pkglib_DATA@
 	with the actual contents of the correspondending make variable.
@@ -81,7 +790,7 @@
 	(process_input_dir): Copy all $pkglib_DATA files instead of explicitly
 	specifying `*.lst' and `efiemu??.o'
 
-2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+2009-12-22  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/grub.d/30_os-prober.in (osx_entry): Add round brackets
 	after function name.
@@ -97,7 +806,7 @@
 	(GRUB_MOD_INIT(lspci)): Use extcmd.
 	(GRUB_MOD_FINI(lspci)): Likewise.
 
-2009-12-22 Felix Zielcke <fzielcke@z-51.de>
+2009-12-22  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/grub.d/30_os-prober.in (osx_entry): Remove non POSIX compliant
 	`function' keyword.
@@ -157,7 +866,7 @@
 	`$(XGETTEXT)'.
 	* po/POTFILES: Add `commands/loadenv.c'.
 
-2009-12-21 Felix Zielcke <fzielcke@z-51.de>
+2009-12-21  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/grub-mkrescue.in (process_input_dir): Copy `*.lst' files
 	instead of specifying them explicit.
@@ -470,7 +1179,7 @@
 	(grub_vbe_get_video_mode): Use 'last_set_mode' if get_mode fails.
 	(grub_video_vbe_setup): Don't check for reserved flag.
 
-2009-12-17 Felix Zielcke <fzielcke@z-51.de>
+2009-12-17  Felix Zielcke <fzielcke@z-51.de>
 
 	* gendistlist.sh: Use POSIX compliant `!' instead of `-not' in
 	the `find' command.
@@ -483,7 +1192,7 @@
 	(grub_hfs_fs): New value .uuid.
 	* include/grub/hfs.h (grub_hfs_sblock): New field 'num_serial'.
 
-2009-12-14 Felix Zielcke <fzielcke@z-51.de>
+2009-12-14  Felix Zielcke <fzielcke@z-51.de>
 
 	Fix a segfault with parsing unknown long options.
 
@@ -493,7 +1202,7 @@
 
 	* include/grub/misc.h (grub_puts): New declaration.
 	(grub_puts_): Likewise.
-	* kern/mis.c (grub_puts): New definition.
+	* kern/misc.c (grub_puts): New definition.
 	(grub_puts_): Likewise.
 
 2009-12-13  Robert Millan  <rmh.grub@aybabtu.com>
@@ -632,11 +1341,11 @@
 	* include/grub/pciutils.h: New file.
 	* util/pci.c: Likewise.
 
-2009-12-11 Felix Zielcke <fzielcke@z-51.de>
+2009-12-11  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/misc.c: Don't include <errno.h> twice.
 
-2009-12-10 Felix Zielcke <fzielcke@z-51.de>
+2009-12-10  Felix Zielcke <fzielcke@z-51.de>
 
 	* disk/i386/pc/biosdisk.c (grub_biosdisk_open): Show the disk
 	name in an error message.
@@ -732,7 +1441,7 @@
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Recognize
 	anything even prefixed with 'cdrom' as a cdrom.
 
-2009-12-06 Felix Zielcke <fzielcke@z-51.de>
+2009-12-06  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/misc.c (make_system_path_relative_to_its_root): Correctly cope with
 	mount points.
@@ -948,7 +1657,7 @@
 	($(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po)): Rewrite as ...
 	(po/%.po): ... this.
 
-2009-11-26 Felix Zielcke <fzielcke@z-51.de>
+2009-11-26  Felix Zielcke <fzielcke@z-51.de>
 
 	* util/i386/efi/grub-mkimage.c: Include "progname.h".
 	(main): Use `program_name' instead of nonexistent `progname'.

@@ -1,7 +1,7 @@
 /* ntfs.c - NTFS filesystem */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007,2008 Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008,2009 Free Software Foundation, Inc.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ fixup (struct grub_ntfs_data *data, char *buf, int len, char *magic)
 
   ss = u16at (buf, 6) - 1;
   if (ss * (int) data->blocksize != len * GRUB_DISK_SECTOR_SIZE)
-    return grub_error (GRUB_ERR_BAD_FS, "Size not match",
+    return grub_error (GRUB_ERR_BAD_FS, "size not match",
 		       ss * (int) data->blocksize,
 		       len * GRUB_DISK_SECTOR_SIZE);
   pu = buf + u16at (buf, 4);
@@ -53,7 +53,7 @@ fixup (struct grub_ntfs_data *data, char *buf, int len, char *magic)
       buf += data->blocksize;
       pu += 2;
       if (u16at (buf, 0) != us)
-	return grub_error (GRUB_ERR_BAD_FS, "Fixup signature not match");
+	return grub_error (GRUB_ERR_BAD_FS, "fixup signature not match");
       v16at (buf, 0) = v16at (pu, 0);
       ss--;
     }
@@ -147,7 +147,7 @@ find_attr (struct grub_ntfs_attr *at, unsigned char attr)
 		  new_pos += u16at (new_pos, 4);
 		}
 	      grub_error (GRUB_ERR_BAD_FS,
-			  "Can\'t find 0x%X in attribute list",
+			  "can\'t find 0x%X in attribute list",
 			  (unsigned char) *at->attr_cur);
 	      return NULL;
 	    }
@@ -186,7 +186,7 @@ find_attr (struct grub_ntfs_attr *at, unsigned char attr)
 	  if (read_data (at, pa, at->edat_buf, 0, n, 0, 0))
 	    {
 	      grub_error (GRUB_ERR_BAD_FS,
-			  "Fail to read non-resident attribute list");
+			  "fail to read non-resident attribute list");
 	      return NULL;
 	    }
 	  at->attr_nxt = at->edat_buf;
@@ -315,7 +315,7 @@ retry:
 	      goto retry;
 	    }
 	}
-      return grub_error (GRUB_ERR_BAD_FS, "Run list overflown");
+      return grub_error (GRUB_ERR_BAD_FS, "run list overflown");
     }
   run = read_run_data (run + 1, c1, &val, 0);	/* length of current VCN */
   ctx->curr_vcn = ctx->next_vcn;
@@ -369,7 +369,7 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
   if (pa[8] == 0)
     {
       if (ofs + len > u32at (pa, 0x10))
-	return grub_error (GRUB_ERR_BAD_FS, "Read out of range");
+	return grub_error (GRUB_ERR_BAD_FS, "read out of range");
       grub_memcpy (dest, pa + u32at (pa, 0x14) + ofs, len);
       return 0;
     }
@@ -383,7 +383,7 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
   if (ctx->flags & RF_COMP)
     {
       if (!cached)
-	return grub_error (GRUB_ERR_BAD_FS, "Attribute can\'t be compressed");
+	return grub_error (GRUB_ERR_BAD_FS, "attribute can\'t be compressed");
 
       if (at->sbuf)
 	{
@@ -502,7 +502,7 @@ read_attr (struct grub_ntfs_attr *at, char *dest, grub_disk_addr_t ofs,
   else
     ret =
       (grub_errno) ? grub_errno : grub_error (GRUB_ERR_BAD_FS,
-					      "Attribute not found");
+					      "attribute not found");
   at->attr_cur = save_cur;
   return ret;
 }
@@ -513,7 +513,7 @@ read_mft (struct grub_ntfs_data *data, char *buf, grub_uint32_t mftno)
   if (read_attr
       (&data->mmft.attr, buf, mftno * ((grub_disk_addr_t) data->mft_size << BLK_SHR),
        data->mft_size << BLK_SHR, 0, 0))
-    return grub_error (GRUB_ERR_BAD_FS, "Read MFT 0x%X fails", mftno);
+    return grub_error (GRUB_ERR_BAD_FS, "read MFT 0x%X fails", mftno);
   return fixup (data, buf, data->mft_size, "FILE");
 }
 
@@ -541,7 +541,7 @@ init_file (struct grub_ntfs_file *mft, grub_uint32_t mftno)
 
       pa = locate_attr (&mft->attr, mft, AT_DATA);
       if (pa == NULL)
-	return grub_error (GRUB_ERR_BAD_FS, "No $DATA in MFT 0x%X", mftno);
+	return grub_error (GRUB_ERR_BAD_FS, "no $DATA in MFT 0x%X", mftno);
 
       if (!pa[8])
 	mft->size = u32at (pa, 0x10);
@@ -664,7 +664,7 @@ grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
     {
       if ((cur_pos = find_attr (at, AT_INDEX_ROOT)) == NULL)
 	{
-	  grub_error (GRUB_ERR_BAD_FS, "No $INDEX_ROOT");
+	  grub_error (GRUB_ERR_BAD_FS, "no $INDEX_ROOT");
 	  goto done;
 	}
 
@@ -717,7 +717,7 @@ grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
               if (read_data (at, cur_pos, bmp, 0, bitmap_len, 0, 0))
                 {
                   grub_error (GRUB_ERR_BAD_FS,
-                              "Fails to read non-resident $BITMAP");
+                              "fails to read non-resident $BITMAP");
                   goto done;
                 }
               bitmap_len = u32at (cur_pos, 0x30);

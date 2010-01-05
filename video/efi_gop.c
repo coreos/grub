@@ -137,7 +137,7 @@ grub_video_gop_fill_mode_info (struct grub_efi_gop_mode_info *in,
   out->bpp = grub_video_gop_get_bpp (in);
   out->bytes_per_pixel = out->bpp >> 3;
   if (!out->bpp)
-    return grub_error (GRUB_ERR_IO, "Unsupported video mode");
+    return grub_error (GRUB_ERR_IO, "unsupported video mode");
   out->pitch = in->pixels_per_scanline * out->bytes_per_pixel;
 
   switch (in->pixel_format)
@@ -176,7 +176,7 @@ grub_video_gop_fill_mode_info (struct grub_efi_gop_mode_info *in,
       break;
 
     default:
-      return grub_error (GRUB_ERR_IO, "Unsupported video mode");
+      return grub_error (GRUB_ERR_IO, "unsupported video mode");
     }
 
   out->blit_format = grub_video_get_blit_format (out);
@@ -266,7 +266,7 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
   if (!found)
     {
       grub_dprintf ("video", "GOP: no mode found\n");
-      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found.");
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found");
     }
 
   if (best_mode != gop->mode->mode)

@@ -115,9 +115,6 @@ grub_install_SOURCES = util/grub-install.in
 bin_SCRIPTS += grub-mkrescue
 grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
-bin_SCRIPTS += grub-mkfloppy
-grub_mkfloppy_SOURCES = util/i386/pc/grub-mkfloppy.in
-
 pkglib_MODULES = biosdisk.mod chain.mod 				\
 	multiboot.mod reboot.mod halt.mod				\
 	vbe.mod vbetest.mod vbeinfo.mod play.mod serial.mod		\

@@ -700,7 +700,7 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
     }
 
   /* Couldn't found matching mode.  */
-  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found.");
+  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found");
 }
 
 static grub_err_t

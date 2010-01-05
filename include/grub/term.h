@@ -405,6 +405,14 @@ struct grub_term_autoload
 extern struct grub_term_autoload *grub_term_input_autoload;
 extern struct grub_term_autoload *grub_term_output_autoload;
 
+static inline void
+grub_print_spaces (struct grub_term_output *term, int number_spaces)
+{
+  while (--number_spaces >= 0)
+    grub_putcode (' ', term);
+}
+
+
 /* For convenience.  */
 #define GRUB_TERM_ASCII_CHAR(c)	((c) & 0xff)
 

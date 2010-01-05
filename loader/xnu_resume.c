@@ -109,7 +109,7 @@ grub_xnu_resume (char *imagename)
       != (grub_ssize_t) codesize)
     {
       grub_file_close (file);
-      return grub_error (GRUB_ERR_READ_ERROR, "Cannot read resume image.");
+      return grub_error (GRUB_ERR_READ_ERROR, "cannot read resume image");
     }
 
   /* Read image. */
@@ -119,7 +119,7 @@ grub_xnu_resume (char *imagename)
       != (grub_ssize_t) hibhead.image_size)
     {
       grub_file_close (file);
-      return grub_error (GRUB_ERR_READ_ERROR, "Cannot read resume image.");
+      return grub_error (GRUB_ERR_READ_ERROR, "cannot read resume image");
     }
   grub_file_close (file);
 

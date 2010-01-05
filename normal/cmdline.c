@@ -351,7 +351,7 @@ grub_cmdline_get (const char *prompt)
   if (!buf)
     return 0;
 
-  plen = grub_strlen (prompt_translated);
+  plen = grub_strlen (prompt_translated) + sizeof (" ") - 1;
   lpos = llen = 0;
   buf[0] = '\0';
 
@@ -362,7 +362,7 @@ grub_cmdline_get (const char *prompt)
       if ((grub_term_getxy (term) >> 8) != 0)
 	grub_putcode ('\n', term);
   }
-  grub_printf ("%s", prompt_translated);
+  grub_printf ("%s ", prompt_translated);
 
   {
     struct cmdline_term *cl_term_cur;

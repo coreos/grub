@@ -108,8 +108,8 @@ grub_print_message_indented (const char *msg, int margin_left, int margin_right,
 
       while (grub_getstringwidth (current_position, next_new_line,term) 
 	     > line_len
-            || (*next_new_line != ' ' && next_new_line > current_position &&
-                next_new_line != last_position))
+            || (next_new_line != last_position && *next_new_line != ' '
+		&& next_new_line > current_position))
        {
          next_new_line--;
        }
@@ -359,7 +359,7 @@ static void
 menu_text_print_timeout (int timeout, void *dataptr)
 {
   const char *msg =
-    _("The highlighted entry will be booted automatically in %ds.");
+    _("The highlighted entry will be executed automatically in %ds.");
   struct menu_viewer_data *data = dataptr;
   char *msg_translated;
   int posx;

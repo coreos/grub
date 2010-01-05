@@ -1050,7 +1050,7 @@ grub_video_fb_create_render_target (struct grub_video_fbrender_target **result,
       || (width == 0)
       || (height == 0))
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-                       "invalid argument given.");
+                       "invalid argument given");
 
   /* Allocate memory for render target.  */
   target = grub_malloc (sizeof (struct grub_video_fbrender_target));
@@ -1170,7 +1170,7 @@ grub_video_fb_set_active_render_target (struct grub_video_fbrender_target *targe
 {
   if (! target->data)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-                       "invalid render target given.");
+                       "invalid render target given");
 
   render_target = target;
 

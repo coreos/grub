@@ -1,7 +1,7 @@
 /* chainloader.c - boot another boot loader */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2004,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -146,7 +146,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(chainloader)
 {
   cmd = grub_register_command ("chainloader", grub_cmd_chainloader,
-			       0, "load another boot loader");
+			       0, "Load another boot loader.");
   my_mod = mod;
 }
 

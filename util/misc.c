@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 #include <grub/mm.h>
 #include <grub/term.h>
 #include <grub/time.h>
+#include <grub/i18n.h>
 
 #include "progname.h"
 
@@ -504,7 +505,7 @@ make_system_path_relative_to_its_root (const char *path)
   free (p);
 
   if (stat (buf, &st) < 0)
-    grub_util_error ("can not stat %s: %s", buf, strerror (errno));
+    grub_util_error ("cannot stat %s: %s", buf, strerror (errno));
 
   buf2 = strdup (buf);
   num = st.st_dev;
@@ -523,7 +524,7 @@ make_system_path_relative_to_its_root (const char *path)
 	*++p = 0;
 
       if (stat (buf, &st) < 0)
-	grub_util_error ("can not stat %s: %s", buf, strerror (errno));
+	grub_util_error ("cannot stat %s: %s", buf, strerror (errno));
 
       /* buf is another filesystem; we found it.  */
       if (st.st_dev != num)
@@ -565,4 +566,14 @@ make_system_path_relative_to_its_root (const char *path)
     }
 
   return buf3;
+}
+
+void
+grub_util_init_nls (void)
+{
+#if ENABLE_NLS
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
+#endif /* ENABLE_NLS */
 }
