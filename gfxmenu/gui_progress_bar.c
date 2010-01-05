@@ -46,6 +46,7 @@ struct grub_gui_progress_bar
 
   char *theme_dir;
   int need_to_recreate_pixmaps;
+  int pixmapbar_available;
   char *bar_pattern;
   char *highlight_pattern;
   grub_gfxmenu_box_t bar_box;
@@ -77,6 +78,8 @@ progress_bar_is_instance (void *vself __attribute__((unused)), const char *type)
 static int
 check_pixmaps (grub_gui_progress_bar_t self)
 {
+  if (!self->pixmapbar_available)
+    return 0;
   if (self->need_to_recreate_pixmaps)
     {
       grub_gui_recreate_box (&self->bar_box,
@@ -139,9 +142,6 @@ draw_pixmap_bar (grub_gui_progress_bar_t self)
   int trackheight = h - bar_v_pad;
   int barwidth;
 
-  if (self->end == self->start)
-    return;
-
   bar->set_content_size (bar, tracklen, trackheight);
 
   barwidth = (tracklen * (self->value - self->start) 
@@ -182,6 +182,9 @@ progress_bar_paint (void *vself, const grub_video_rect_t *region)
   if (! self->visible)
     return;
   if (!grub_video_have_common_points (region, &self->bounds))
+    return;
+
+  if (self->end == self->start)
     return;
 
   grub_gui_set_viewport (&self->bounds, &vpsave);
@@ -278,12 +281,14 @@ progress_bar_set_property (void *vself, const char *name, const char *value)
   else if (grub_strcmp (name, "bar_style") == 0)
     {
       self->need_to_recreate_pixmaps = 1;
+      self->pixmapbar_available = 1;
       grub_free (self->bar_pattern);
       self->bar_pattern = value ? grub_strdup (value) : 0;
     }
   else if (grub_strcmp (name, "highlight_style") == 0)
     {
       self->need_to_recreate_pixmaps = 1;
+      self->pixmapbar_available = 1;
       grub_free (self->highlight_pattern);
       self->highlight_pattern = value ? grub_strdup (value) : 0;
     }
