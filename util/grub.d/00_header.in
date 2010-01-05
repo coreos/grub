@@ -50,6 +50,13 @@ if [ \${prev_saved_entry} ]; then
   save_env prev_saved_entry
   set boot_once=true
 fi
+
+function savedefault {
+  if [ -z \${boot_once} ]; then
+    saved_entry=\${chosen}
+    save_env saved_entry
+  fi
+}
 EOF
 
 case ${GRUB_TERMINAL_INPUT}:${GRUB_TERMINAL_OUTPUT} in
