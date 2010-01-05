@@ -1,3 +1,8 @@
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/mkisofs/write.c (padblock_write): Check return value of
+	fread.
+
 2010-01-05  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Remove grub-mkfloppy.  Images produced by grub-mkrescue are valid
