@@ -53,8 +53,6 @@ struct grub_gui_list_impl
   grub_gfxmenu_box_t scrollbar_thumb;
   int scrollbar_width;
 
-  int min_items_shown;
-  int max_items_shown;
   int first_shown_index;
 
   int need_to_recreate_boxes;
@@ -91,12 +89,16 @@ list_destroy (void *vself)
 static int
 get_num_shown_items (list_impl_t self)
 {
-  int n = grub_gfxmenu_model_get_num_entries (self->menu);
-  if (self->min_items_shown != -1 && n < self->min_items_shown)
-    n = self->min_items_shown;
-  if (self->max_items_shown != -1 && n > self->max_items_shown)
-    n = self->max_items_shown;
-  return n;
+  int boxpad = self->item_padding;
+  int item_vspace = self->item_spacing;
+  int item_height = self->item_height;
+  
+  grub_gfxmenu_box_t box = self->menu_box;
+  int box_top_pad = box->get_top_pad (box);
+  int box_bottom_pad = box->get_bottom_pad (box);
+      
+  return (self->bounds.height + item_vspace - 2 * boxpad
+	  - box_top_pad - box_bottom_pad) / (item_height + item_vspace);
 }
 
 static int
@@ -364,15 +366,22 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
       int boxpad = self->item_padding;
       int item_vspace = self->item_spacing;
       int item_height = self->item_height;
-      int num_items = get_num_shown_items (self);
+      int num_items = 3;
 
       grub_gfxmenu_box_t box = self->menu_box;
       int box_left_pad = box->get_left_pad (box);
       int box_top_pad = box->get_top_pad (box);
       int box_right_pad = box->get_right_pad (box);
       int box_bottom_pad = box->get_bottom_pad (box);
+      unsigned width_s;
+      
+      *width = grub_font_get_string_width (self->item_font, "Typical OS");
+      width_s = grub_font_get_string_width (self->selected_item_font,
+					    "Typical OS");
+      if (*width < width_s)
+	*width = width_s;
 
-      *width = 400 + 2 * boxpad + box_left_pad + box_right_pad;
+      *width += 2 * boxpad + box_left_pad + box_right_pad;
 
       /* Set the menu box height to fit the items.  */
       *height = (item_height * num_items
@@ -485,14 +494,6 @@ list_set_property (void *vself, const char *name, const char *value)
     {
       self->draw_scrollbar = grub_strcmp (value, "false") != 0;
     }
-  else if (grub_strcmp (name, "min_items_shown") == 0)
-    {
-      self->min_items_shown = grub_strtol (value, 0, 10);
-    }
-  else if (grub_strcmp (name, "max_items_shown") == 0)
-    {
-      self->max_items_shown = grub_strtol (value, 0, 10);
-    }
   else if (grub_strcmp (name, "theme_dir") == 0)
     {
       self->need_to_recreate_boxes = 1;
@@ -581,8 +582,6 @@ grub_gui_list_new (void)
   self->scrollbar_thumb_pattern = 0;
   self->scrollbar_width = 16;
 
-  self->min_items_shown = -1;
-  self->max_items_shown = -1;
   self->first_shown_index = 0;
 
   self->need_to_recreate_boxes = 0;
