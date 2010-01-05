@@ -93,6 +93,15 @@ if loadfont `make_system_path_relative_to_its_root ${GRUB_FONT_PATH}` ; then
     # understand terminal_output
     terminal gfxterm
   fi
+EOF
+if [ x$GRUB_THEME != x ] && [ -f $GRUB_THEME ] \
+	&& is_path_readable_by_grub $GRUB_THEME; then
+    echo "Found theme: $GRUB_THEME" >&2
+    prepare_grub_to_access_device `${grub_probe} --target=device $GRUB_THEME`
+    echo "insmod gfxmenu"
+    echo "set theme=(\$root)/`make_system_path_relative_to_its_root $GRUB_THEME`"
+fi
+    cat << EOF
 fi
 EOF
   ;;
