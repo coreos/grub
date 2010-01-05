@@ -1,7 +1,7 @@
 /* grub-probe.c - probe device information for a given path */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -259,7 +259,7 @@ probe (const char *path, char *device_name)
 	      grub_util_info ("reading %s via GRUB facilities", grub_path);
 	      file = grub_file_open (grub_path);
 	      if (! file)
-		grub_util_error ("can not open %s via GRUB facilities", grub_path);
+		grub_util_error ("cannot open %s via GRUB facilities", grub_path);
 	      filebuf_via_grub = xmalloc (file->size);
 	      grub_file_read (file, filebuf_via_grub, file->size);
 
@@ -338,9 +338,8 @@ main (int argc, char *argv[])
   char *argument;
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+
+  grub_util_init_nls ();
 
   /* Check for options.  */
   while (1)

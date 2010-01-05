@@ -6,7 +6,7 @@
 
    Copyright 1993 Yggdrasil Computing, Incorporated
 
-   Copyright (C) 2009  Free Software Foundation, Inc.
+   Copyright (C) 2009,2010  Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -490,7 +490,7 @@ void usage(){
 	  int comma;
 	  int len;
 	  unsigned int j;
-	  char *arg;
+	  const char *arg;
 
 	  printf ("  ");
 
@@ -645,9 +645,11 @@ int FDECL2(main, int, argc, char **, argv){
   char *log_file = 0;
 
   set_program_name (argv[0]);
+#if ENABLE_NLS
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
+#endif /* ENABLE_NLS */
 
   if (argc < 2)
     usage();

@@ -23,6 +23,7 @@
 #include <grub/term.h>
 #include <grub/handler.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_handler (struct grub_command *cmd __attribute__ ((unused)),
@@ -90,8 +91,8 @@ GRUB_MOD_INIT(handler)
 {
   cmd_handler =
     grub_register_command ("handler", grub_cmd_handler,
-			   "handler [class [handler]]",
-			   "List or select a handler.");
+			   N_("[class [handler]]"),
+			   N_("List or select a handler."));
 }
 
 GRUB_MOD_FINI(handler)

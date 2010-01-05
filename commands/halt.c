@@ -20,6 +20,7 @@
 #include <grub/dl.h>
 #include <grub/command.h>
 #include <grub/misc.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_halt (grub_command_t cmd __attribute__ ((unused)),
@@ -35,8 +36,8 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(halt)
 {
   cmd = grub_register_command ("halt", grub_cmd_halt,
-			       0, "Halts the computer.  This command does not"
-			       " work on all firmware implementations.");
+			       0, N_("Halts the computer.  This command does" 
+			       " not work on all firmware implementations."));
 }
 
 GRUB_MOD_FINI(halt)

@@ -23,4 +23,3 @@
 #include <grub/menu.h>
 #include <grub/auth.h>
 
-

@@ -256,12 +256,12 @@ grub_linux_load64 (grub_elf_t elf)
   paddr = alloc_phys (linux_size + off);
   if (paddr == (grub_addr_t) -1)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		       "Could not allocate physical memory.");
+		       "couldn't allocate physical memory");
   ret = grub_ieee1275_map_physical (paddr, linux_addr - off,
 				    linux_size + off, IEEE1275_MAP_DEFAULT);
   if (ret)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		       "Could not map physical memory.");
+		       "couldn't map physical memory");
 
   grub_dprintf ("loader", "Loading linux at vaddr 0x%lx, paddr 0x%lx, size 0x%lx\n",
 		linux_addr, paddr, linux_size);
@@ -317,7 +317,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (elf->ehdr.ehdr32.e_type != ET_EXEC)
     {
       grub_error (GRUB_ERR_UNKNOWN_OS,
-		  "This ELF file is not of the right type\n");
+		  "this ELF file is not of the right type");
       goto out;
     }
 
@@ -328,7 +328,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     grub_linux_load64 (elf);
   else
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "Unknown ELF class");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, "unknown ELF class");
       goto out;
     }
 
@@ -390,7 +390,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (!loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load the kernel first");
       goto fail;
     }
 
@@ -405,14 +405,14 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   if (paddr == (grub_addr_t) -1)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		  "Could not allocate physical memory.");
+		  "couldn't allocate physical memory");
       goto fail;
     }
   ret = grub_ieee1275_map_physical (paddr, addr, size, IEEE1275_MAP_DEFAULT);
   if (ret)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		  "Could not map physical memory.");
+		  "couldn't map physical memory");
       goto fail;
     }
 
@@ -421,7 +421,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_file_read (file, (void *) addr, size) != size)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 
@@ -516,9 +516,9 @@ GRUB_MOD_INIT(linux)
   fetch_translations ();
 
   cmd_linux = grub_register_command ("linux", grub_cmd_linux,
-				     0, "load a linux kernel");
+				     0, "Load Linux.");
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
-				      0, "load an initrd");
+				      0, "Load initrd.");
   my_mod = mod;
 }
 

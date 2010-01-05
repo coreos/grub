@@ -21,13 +21,14 @@
 #include <grub/misc.h>
 #include <grub/extcmd.h>
 #include <grub/env.h>
+#include <grub/i18n.h>
 
 static grub_extcmd_t cmd_read_byte, cmd_read_word, cmd_read_dword;
 static grub_command_t cmd_write_byte, cmd_write_word, cmd_write_dword;
 
 static const struct grub_arg_option options[] =
   {
-    {0, 'v', 0, "Save read value into variable VARNAME.",
+    {0, 'v', 0, N_("Save read value into variable VARNAME."),
      "VARNAME", ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
@@ -41,7 +42,7 @@ grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
   char buf[sizeof ("XXXXXXXX")];
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid number of arguments");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid number of arguments");
 
   addr = grub_strtoul (argv[0], 0, 0);
   switch (cmd->cmd->name[sizeof ("read_") - 1])
@@ -78,7 +79,7 @@ grub_cmd_write (grub_command_t cmd, int argc, char **argv)
   grub_uint32_t mask = 0xffffffff;
 
   if (argc != 2 && argc != 3)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid number of arguments");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid number of arguments");
 
   addr = grub_strtoul (argv[0], 0, 0);
   value = grub_strtoul (argv[1], 0, 0);
@@ -119,22 +120,22 @@ GRUB_MOD_INIT(memrw)
 {
   cmd_read_byte =
     grub_register_extcmd ("read_byte", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
-			  "read_byte ADDR", "Read byte from ADDR.", options);
+			  N_("ADDR"), N_("Read byte from ADDR."), options);
   cmd_read_word =
     grub_register_extcmd ("read_word", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
-			  "read_word ADDR", "Read word from ADDR.", options);
+			  N_("ADDR"), N_("Read word from ADDR."), options);
   cmd_read_dword =
     grub_register_extcmd ("read_dword", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
-			  "read_dword ADDR", "Read dword from ADDR.", options);
+			  N_("ADDR"), N_("Read dword from ADDR."), options);
   cmd_write_byte =
     grub_register_command ("write_byte", grub_cmd_write,
-			   "write_byte ADDR VALUE [MASK]", "Write byte VALUE to ADDR.");
+			   N_("ADDR VALUE [MASK]"), N_("Write byte VALUE to ADDR."));
   cmd_write_word =
     grub_register_command ("write_word", grub_cmd_write,
-			   "write_word ADDR VALUE [MASK]", "Write word VALUE to ADDR.");
+			   N_("ADDR VALUE [MASK]"), N_("Write word VALUE to ADDR."));
   cmd_write_dword =
     grub_register_command ("write_dword", grub_cmd_write,
-			   "write_dword ADDR VALUE [MASK]", "Write dword VALUE to ADDR.");
+			   N_("ADDR VALUE [MASK]"), N_("Write dword VALUE to ADDR."));
 }
 
 GRUB_MOD_FINI(memrw)

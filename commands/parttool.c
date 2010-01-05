@@ -29,6 +29,7 @@
 #include <grub/partition.h>
 #include <grub/parttool.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static struct grub_parttool *parts = 0;
 static int curhandle = 0;
@@ -322,7 +323,7 @@ GRUB_MOD_INIT(parttool)
 {
   mymod = mod;
   cmd = grub_register_command ("parttool", grub_cmd_parttool,
-			       "parttool PARTITION COMMANDS",
+			       N_("PARTITION COMMANDS"),
 			       helpmsg);
 }
 

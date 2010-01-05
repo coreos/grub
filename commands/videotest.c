@@ -24,6 +24,7 @@
 #include <grub/font.h>
 #include <grub/term.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
@@ -71,7 +72,7 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
   sanssmall = grub_font_get ("Helvetica 8");
   fixed = grub_font_get ("Fixed 20");
   if (! sansbig || ! sans || ! sanssmall || ! fixed)
-    return grub_error (GRUB_ERR_BAD_FONT, "No font loaded.");
+    return grub_error (GRUB_ERR_BAD_FONT, "no font loaded");
 
   glyph = grub_font_get_glyph (fixed, '*');
   grub_font_draw_glyph (glyph, color, 200 ,0);
@@ -178,7 +179,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(videotest)
 {
   cmd = grub_register_command ("videotest", grub_cmd_videotest,
-			       0, "Test video subsystem.");
+			       0, N_("Test video subsystem."));
 }
 
 GRUB_MOD_FINI(videotest)

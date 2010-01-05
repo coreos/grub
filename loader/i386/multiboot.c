@@ -65,7 +65,7 @@ grub_multiboot_boot (void)
 {
   struct grub_relocator32_state state =
     {
-      .eax = MULTIBOOT_MAGIC2,
+      .eax = MULTIBOOT_BOOTLOADER_MAGIC,
       .ebx = PTR_TO_UINT32 (mbi_dest),
       .ecx = 0,
       .edx = 0,
@@ -226,21 +226,21 @@ grub_multiboot (int argc, char *argv[])
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
       goto fail;
     }
 
   file = grub_gzfile_open (argv[0], 1);
   if (! file)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "Couldn't open file");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
       goto fail;
     }
 
   len = grub_file_read (file, buffer, MULTIBOOT_SEARCH);
   if (len < 32)
     {
-      grub_error (GRUB_ERR_BAD_OS, "File too small");
+      grub_error (GRUB_ERR_BAD_OS, "file too small");
       goto fail;
     }
 
@@ -250,21 +250,21 @@ grub_multiboot (int argc, char *argv[])
        ((char *) header <= buffer + len - 12) || (header = 0);
        header = (struct multiboot_header *) ((char *) header + 4))
     {
-      if (header->magic == MULTIBOOT_MAGIC
+      if (header->magic == MULTIBOOT_HEADER_MAGIC
 	  && !(header->magic + header->flags + header->checksum))
 	break;
     }
 
   if (header == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No multiboot header found");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no multiboot header found");
       goto fail;
     }
 
   if (header->flags & MULTIBOOT_UNSUPPORTED)
     {
       grub_error (GRUB_ERR_UNKNOWN_OS,
-		  "Unsupported flag: 0x%x", header->flags);
+		  "unsupported flag: 0x%x", header->flags);
       goto fail;
     }
 
@@ -408,14 +408,14 @@ grub_module  (int argc, char *argv[])
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
       goto fail;
     }
 
   if (!mbi)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT,
-		  "You need to load the multiboot kernel first");
+		  "you need to load the multiboot kernel first");
       goto fail;
     }
 
@@ -430,7 +430,7 @@ grub_module  (int argc, char *argv[])
 
   if (grub_file_read (file, module, size) != size)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 

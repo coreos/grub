@@ -23,6 +23,7 @@
 #include <grub/disk.h>
 #include <grub/mm.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 struct grub_loopback
 {
@@ -36,8 +37,8 @@ static struct grub_loopback *loopback_list;
 
 static const struct grub_arg_option options[] =
   {
-    {"delete", 'd', 0, "delete the loopback device entry", 0, 0},
-    {"partitions", 'p', 0, "simulate a hard drive with partitions", 0, 0},
+    {"delete", 'd', 0, N_("Delete the loopback device entry."), 0, 0},
+    {"partitions", 'p', 0, N_("Simulate a hard drive with partitions."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -56,7 +57,7 @@ delete_loopback (const char *name)
       break;
 
   if (! dev)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "Device not found");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "device not found");
 
   /* Remove the device from the list.  */
   *prev = dev->next;
@@ -167,7 +168,7 @@ grub_loopback_open (const char *name, grub_disk_t disk)
       break;
 
   if (! dev)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't open device");
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
 
   file = grub_file_open (dev->filename);
   if (! file)
@@ -245,8 +246,8 @@ GRUB_MOD_INIT(loop)
 {
   cmd = grub_register_extcmd ("loopback", grub_cmd_loopback,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      "loopback [-d|-p] DEVICENAME FILE",
-			      "Make a device of a file.", options);
+			      N_("[-d|-p] DEVICENAME FILE."),
+			      N_("Make a device of a file."), options);
   grub_disk_dev_register (&grub_loopback_dev);
 }
 

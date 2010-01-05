@@ -1,7 +1,7 @@
 /* misc.c - definitions of misc functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -227,6 +227,11 @@ grub_memcmp (const void *s1, const void *s2, grub_size_t n)
 #ifndef APPLE_CC
 int memcmp (const void *s1, const void *s2, grub_size_t n)
   __attribute__ ((alias ("grub_memcmp")));
+#else
+int memcmp (const void *s1, const void *s2, grub_size_t n)
+{
+  return grub_memcmp (s1, s2, n);
+}
 #endif
 
 int
@@ -512,6 +517,11 @@ grub_memset (void *s, int c, grub_size_t n)
 #ifndef APPLE_CC
 void *memset (void *s, int c, grub_size_t n)
   __attribute__ ((alias ("grub_memset")));
+#else
+void *memset (void *s, int c, grub_size_t n)
+{
+  return grub_memset (s, c, n);
+}
 #endif
 
 grub_size_t

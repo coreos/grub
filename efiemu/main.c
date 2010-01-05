@@ -214,7 +214,7 @@ grub_efiemu_load_file (const char *filename)
     {
       grub_file_close (file);
       grub_efiemu_unload ();
-      return grub_error (grub_errno, "Couldn't init memory management");
+      return grub_error (grub_errno, "couldn't init memory management");
     }
 
   grub_dprintf ("efiemu", "mm initialized\n");
@@ -328,15 +328,15 @@ GRUB_MOD_INIT(efiemu)
 {
   cmd_loadcore = grub_register_command ("efiemu_loadcore",
 					grub_cmd_efiemu_load,
-				       "efiemu_loadcore FILE",
-				       "Load and initialize EFI emulator");
+				       "FILE",
+				       "Load and initialize EFI emulator.");
   cmd_prepare = grub_register_command ("efiemu_prepare",
 				       grub_cmd_efiemu_prepare,
-				       "efiemu_prepare",
-				       "Finalize loading of EFI emulator");
+				       0,
+				       "Finalize loading of EFI emulator.");
   cmd_unload = grub_register_command ("efiemu_unload", grub_cmd_efiemu_unload,
-				      "efiemu_unload",
-				      "Unload  EFI emulator");
+				      0,
+				      "Unload  EFI emulator.");
 }
 
 GRUB_MOD_FINI(efiemu)

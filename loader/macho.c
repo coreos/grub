@@ -71,7 +71,7 @@ grub_macho_file (grub_file_t file)
       != sizeof (filestart))
     {
       grub_error_push ();
-      grub_error (GRUB_ERR_READ_ERROR, "Cannot read Mach-O header.");
+      grub_error (GRUB_ERR_READ_ERROR, "cannot read Mach-O header");
       goto fail;
     }
 
@@ -95,7 +95,7 @@ grub_macho_file (grub_file_t file)
 	{
 	  grub_free (archs);
 	  grub_error_push ();
-	  grub_error (GRUB_ERR_READ_ERROR, "Cannot read Mach-O header.");
+	  grub_error (GRUB_ERR_READ_ERROR, "cannot read Mach-O header");
 	  goto fail;
 	}
 

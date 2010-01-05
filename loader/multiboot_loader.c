@@ -1,7 +1,7 @@
 /* multiboot_loader.c - boot multiboot 1 or 2 OS image */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ find_multi_boot1_header (grub_file_t file)
       ((char *) header <= buffer + len - 12) || (header = 0);
       header = (struct multiboot_header *) ((char *) header + 4))
     {
-      if (header->magic == MULTIBOOT_MAGIC
+      if (header->magic == MULTIBOOT_HEADER_MAGIC
           && !(header->magic + header->flags + header->checksum))
         {
            found_status = 1;
@@ -108,14 +108,14 @@ grub_cmd_multiboot_loader (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
       goto fail;
     }
 
   file = grub_gzfile_open (argv[0], 1);
   if (! file)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "Couldn't open file");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
       goto fail;
     }
 
@@ -126,7 +126,7 @@ grub_cmd_multiboot_loader (grub_command_t cmd __attribute__ ((unused)),
     header_multi_ver_found = 2;
   else
     {
-      grub_error (GRUB_ERR_BAD_OS, "Multiboot header not found");
+      grub_error (GRUB_ERR_BAD_OS, "multiboot header not found");
       goto fail;
     }
 
@@ -197,10 +197,10 @@ GRUB_MOD_INIT(multiboot)
 {
   cmd_multiboot =
     grub_register_command ("multiboot", grub_cmd_multiboot_loader,
-			   0, "load a multiboot kernel");
+			   0, "Load a multiboot kernel.");
   cmd_module =
     grub_register_command ("module", grub_cmd_module_loader,
-			   0, "load a multiboot module");
+			   0, "Load a multiboot module.");
 
   my_mod = mod;
 }

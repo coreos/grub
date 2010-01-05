@@ -54,6 +54,10 @@ static const grub_uint8_t jpeg_zigzag_order[64] = {
   53, 60, 61, 54, 47, 55, 62, 63
 };
 
+#ifdef JPEG_DEBUG
+static grub_command_t cmd;
+#endif
+
 typedef int jpeg_data_unit_t[64];
 
 struct grub_jpeg_data
@@ -695,8 +699,8 @@ grub_video_reader_jpeg (struct grub_video_bitmap **bitmap,
 
 #if defined(JPEG_DEBUG)
 static grub_err_t
-grub_cmd_jpegtest (struct grub_arg_list *state __attribute__ ((unused)),
-		   int argc, char **args)
+grub_cmd_jpegtest (grub_command_t cmd __attribute__ ((unused)),
+                   int argc, char **args)
 {
   struct grub_video_bitmap *bitmap = 0;
 
@@ -730,16 +734,16 @@ GRUB_MOD_INIT (video_reader_jpeg)
   grub_video_bitmap_reader_register (&jpg_reader);
   grub_video_bitmap_reader_register (&jpeg_reader);
 #if defined(JPEG_DEBUG)
-  grub_register_command ("jpegtest", grub_cmd_jpegtest,
-			 GRUB_COMMAND_FLAG_BOTH, "jpegtest FILE",
-			 "Tests loading of JPEG bitmap.", 0);
+  cmd = grub_register_command ("jpegtest", grub_cmd_jpegtest,
+			       "FILE",
+			       "Tests loading of JPEG bitmap.");
 #endif
 }
 
 GRUB_MOD_FINI (video_reader_jpeg)
 {
 #if defined(JPEG_DEBUG)
-  grub_unregister_command ("jpegtest");
+  grub_unregister_command (cmd);
 #endif
   grub_video_bitmap_reader_unregister (&jpeg_reader);
   grub_video_bitmap_reader_unregister (&jpg_reader);

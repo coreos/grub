@@ -1,7 +1,7 @@
 /* udf.c - Universal Disk Format filesystem.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -525,7 +525,7 @@ grub_udf_mount (grub_disk_t disk)
       if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
 			  sizeof (struct grub_udf_vrs), &vrs))
 	{
-	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	  goto fail;
 	}
 
@@ -539,7 +539,7 @@ grub_udf_mount (grub_disk_t disk)
 	  (grub_memcmp (vrs.magic, GRUB_UDF_STD_IDENT_CDW02, 5)) &&
 	  (grub_memcmp (vrs.magic, GRUB_UDF_STD_IDENT_TEA01, 5)))
 	{
-	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	  goto fail;
 	}
     }
@@ -552,7 +552,7 @@ grub_udf_mount (grub_disk_t disk)
       if (grub_disk_read (disk, *sblklist << GRUB_UDF_LOG2_BLKSZ, 0,
 			  sizeof (struct grub_udf_avdp), &avdp))
 	{
-	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	  goto fail;
 	}
 
@@ -565,7 +565,7 @@ grub_udf_mount (grub_disk_t disk)
       sblklist++;
       if (*sblklist == 0)
 	{
-	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	  goto fail;
 	}
     }
@@ -579,7 +579,7 @@ grub_udf_mount (grub_disk_t disk)
       if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
 			  sizeof (struct grub_udf_tag), &tag))
 	{
-	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	  goto fail;
 	}
 
@@ -596,7 +596,7 @@ grub_udf_mount (grub_disk_t disk)
 			      sizeof (struct grub_udf_pd),
 			      &data->pds[data->npd]))
 	    {
-	      grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	      grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	      goto fail;
 	    }
 
@@ -612,7 +612,7 @@ grub_udf_mount (grub_disk_t disk)
 			      sizeof (struct grub_udf_lvd),
 			      &data->lvd))
 	    {
-	      grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	      grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	      goto fail;
 	    }
 
@@ -675,7 +675,7 @@ grub_udf_mount (grub_disk_t disk)
   if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
 		      sizeof (struct grub_udf_fileset), &root_fs))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
       goto fail;
     }
 

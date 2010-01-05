@@ -179,7 +179,7 @@ malloc_hook (void)
   if (! hooktarget)
     {
       slots_available = 0;
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY, "No space for mmap hook");
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY, "no space for mmap hook");
     }
   return GRUB_ERR_NONE;
 }

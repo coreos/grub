@@ -189,7 +189,7 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
   virtual_screen.font = grub_font_get (font_name);
   if (!virtual_screen.font)
     return grub_error (GRUB_ERR_BAD_FONT,
-                       "No font loaded.");
+                       "no font loaded");
   virtual_screen.width = width;
   virtual_screen.height = height;
   virtual_screen.offset_x = x;
@@ -960,7 +960,7 @@ GRUB_MOD_INIT(term_gfxterm)
 #endif
   cmd = grub_register_command ("background_image",
 			       grub_gfxterm_background_image_cmd,
-			       0, "Load background image for active terminal");
+			       0, "Load background image for active terminal.");
 }
 
 GRUB_MOD_FINI(term_gfxterm)

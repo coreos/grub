@@ -55,6 +55,6 @@ grub_err_t EXPORT_FUNC(grub_handler_set_current) (grub_handler_class_t class,
     GRUB_FIELD_MATCH (ptr, grub_handler_t, name) && \
     GRUB_FIELD_MATCH (ptr, grub_handler_t, init) && \
     GRUB_FIELD_MATCH (ptr, grub_handler_t, fini)) ? \
-   (grub_handler_t) ptr : grub_assert_fail ())
+   (grub_handler_t) ptr : grub_bad_type_cast ())
 
 #endif /* ! GRUB_HANDLER_HEADER */

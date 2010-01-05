@@ -554,12 +554,12 @@ static grub_err_t
 grub_normal_read_line_real (char **line, int cont, int nested)
 {
   grub_parser_t parser = grub_parser_get_current ();
-  char prompt[sizeof("> ") + grub_strlen (parser->name)];
+  char prompt[sizeof(">") + grub_strlen (parser->name)];
 
   if (cont)
-    grub_sprintf (prompt, "> ");
+    grub_sprintf (prompt, ">");
   else
-    grub_sprintf (prompt, "%s> ", parser->name);
+    grub_sprintf (prompt, "%s>", parser->name);
 
   while (1)
     {
@@ -640,9 +640,9 @@ GRUB_MOD_INIT(normal)
 
   /* Register a command "normal" for the rescue mode.  */
   grub_register_command ("normal", grub_cmd_normal,
-			 0, "Enter normal mode");
+			 0, "Enter normal mode.");
   grub_register_command ("normal_exit", grub_cmd_normal_exit,
-			 0, "Exit from normal mode");
+			 0, "Exit from normal mode.");
 
   /* Reload terminal colors when these variables are written to.  */
   grub_register_variable_hook ("color_normal", NULL, grub_env_write_color_normal);

@@ -266,7 +266,7 @@ grub_video_uga_setup (unsigned int width, unsigned int height,
       return err;
     }
 
-  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found.");
+  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found");
 }
 
 static grub_err_t
