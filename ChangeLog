@@ -1,3 +1,7 @@
+2010-01-05  Yves Blusseau  <blusseau@zetam.org>
+
+	* commands/acpi.c (grub_acpi_create_ebda): fix incorrect message.
+
 2010-01-05  Yves Blusseau  <yves.blusseau@zetam.org>
 
 	* util/sparc64/ieee1275/grub-mkimage.c (main): Typo fix.
