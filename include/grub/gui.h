@@ -74,62 +74,50 @@ struct grub_gui_list_ops
                          grub_gfxmenu_view_t view);
 };
 
-typedef grub_uint32_t grub_fixed_unsigned_t;
+typedef signed grub_fixed_signed_t;
 #define GRUB_FIXED_1 0x10000
 
-static inline unsigned
-grub_fixed_ufu_divide (grub_uint32_t a, grub_fixed_unsigned_t b)
+static inline signed
+grub_fixed_sfs_divide (signed a, grub_fixed_signed_t b)
 {
-  return (a << 16) / b;
+  return (a * GRUB_FIXED_1) / b;
 }
 
-static inline grub_fixed_unsigned_t
-grub_fixed_fuf_divide (grub_fixed_unsigned_t a, grub_uint32_t b)
+static inline grub_fixed_signed_t
+grub_fixed_fsf_divide (grub_fixed_signed_t a, signed b)
 {
   return a / b;
 }
 
-static inline unsigned
-grub_fixed_ufu_multiply (grub_uint32_t a, grub_fixed_unsigned_t b)
+static inline signed
+grub_fixed_sfs_multiply (signed a, grub_fixed_signed_t b)
 {
-  return (a * b) >> 16;
+  return (a * b) / GRUB_FIXED_1;
 }
 
-static inline unsigned
-grub_fixed_to_unsigned (grub_fixed_unsigned_t in)
+static inline signed
+grub_fixed_to_signed (grub_fixed_signed_t in)
 {
-  return in >> 16;
+  return in / GRUB_FIXED_1;
 }
 
-static inline grub_fixed_unsigned_t
-grub_unsigned_to_fixed (unsigned in)
+static inline grub_fixed_signed_t
+grub_signed_to_fixed (signed in)
 {
-  return in << 16;
+  return in * GRUB_FIXED_1;
 }
 
 struct grub_gui_component
 {
   struct grub_gui_component_ops *ops;
-  int isxfrac:1;
-  int isyfrac:1;
-  int iswfrac:1;
-  int ishfrac:1;
-  union {
-    unsigned x;
-    grub_fixed_unsigned_t xfrac;
-  };
-  union {
-    unsigned y;
-    grub_fixed_unsigned_t yfrac;
-  };
-  union {
-    unsigned w;
-    grub_fixed_unsigned_t wfrac;
-  };
-  union {
-    unsigned h;
-    grub_fixed_unsigned_t hfrac;
-  };
+  signed x;
+  grub_fixed_signed_t xfrac;
+  signed y;
+  grub_fixed_signed_t yfrac;
+  signed w;
+  grub_fixed_signed_t wfrac;
+  signed h;
+  grub_fixed_signed_t hfrac;
 };
 
 struct grub_gui_container

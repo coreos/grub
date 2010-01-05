@@ -93,7 +93,7 @@ layout_horizontally (grub_gui_box_t self, int modify_layout,
 
   struct component_node *cur;
   unsigned w = 0, mwfrac = 0, h = 0, x = 0;
-  grub_fixed_unsigned_t wfrac = 0;
+  grub_fixed_signed_t wfrac = 0;
   int bogus_frac = 0;
 
   for (cur = self->chead.next; cur != &self->ctail; cur = cur->next)
@@ -104,17 +104,14 @@ layout_horizontally (grub_gui_box_t self, int modify_layout,
       if (c->ops->get_minimal_size)
 	c->ops->get_minimal_size (c, &mw, &mh);
 
-      if (!c->ishfrac && c->h > h)
+      if (c->h > (signed) h)
 	h = c->h;
       if (mh > h)
 	h = mh;
-      if (!c->iswfrac)
-	w += mw > c->w ? mw : c->w;
-      if (c->iswfrac)
-	{
-	  wfrac += c->wfrac;
-	  mwfrac += mw;
-	}
+      wfrac += c->wfrac;
+      w += c->w;
+      if (mw - c->w > 0)
+	mwfrac += mw - c->w;
     }
   if (wfrac > GRUB_FIXED_1 || (w > 0 && wfrac == GRUB_FIXED_1))
     bogus_frac = 1;
@@ -122,7 +119,7 @@ layout_horizontally (grub_gui_box_t self, int modify_layout,
   if (min_width)
     {
       if (wfrac < GRUB_FIXED_1)
-	*min_width = grub_fixed_ufu_divide (w, GRUB_FIXED_1 - wfrac);
+	*min_width = grub_fixed_sfs_divide (w, GRUB_FIXED_1 - wfrac);
       else
 	*min_width = w;
       if (*min_width < w + mwfrac)
@@ -142,16 +139,14 @@ layout_horizontally (grub_gui_box_t self, int modify_layout,
 
       r.x = x;
       r.y = 0;
-      r.width = 32;
       r.height = h;
 
       if (c->ops->get_minimal_size)
 	c->ops->get_minimal_size (c, &mw, &mh);
 
-      if (!c->iswfrac)
-	r.width = c->w;
-      if (c->iswfrac && !bogus_frac)
-	r.width = grub_fixed_ufu_multiply (self->bounds.width, c->wfrac);
+      r.width = c->w;
+      if (!bogus_frac)
+	r.width += grub_fixed_sfs_multiply (self->bounds.width, c->wfrac);
 
       if (r.width < mw)
 	r.width = mw;
@@ -171,7 +166,7 @@ layout_vertically (grub_gui_box_t self, int modify_layout,
 
   struct component_node *cur;
   unsigned h = 0, mhfrac = 0, w = 0, y = 0;
-  grub_fixed_unsigned_t hfrac = 0;
+  grub_fixed_signed_t hfrac = 0;
   int bogus_frac = 0;
 
   for (cur = self->chead.next; cur != &self->ctail; cur = cur->next)
@@ -182,17 +177,14 @@ layout_vertically (grub_gui_box_t self, int modify_layout,
       if (c->ops->get_minimal_size)
 	c->ops->get_minimal_size (c, &mw, &mh);
 
-      if (!c->iswfrac && c->w > w)
+      if (c->w > (signed) w)
 	w = c->w;
       if (mw > w)
 	w = mw;
-      if (!c->ishfrac)
-	h += mh > c->h ? mh : c->h;
-      if (c->ishfrac)
-	{
-	  hfrac += c->hfrac;
-	  mhfrac += mh;
-	}
+      hfrac += c->hfrac;
+      h += c->h;
+      if (mh - c->h > 0)
+	mhfrac += mh - c->h;
     }
   if (hfrac > GRUB_FIXED_1 || (h > 0 && hfrac == GRUB_FIXED_1))
     bogus_frac = 1;
@@ -200,7 +192,7 @@ layout_vertically (grub_gui_box_t self, int modify_layout,
   if (min_height)
     {
       if (hfrac < GRUB_FIXED_1)
-	*min_height = grub_fixed_ufu_divide (h, GRUB_FIXED_1 - hfrac);
+	*min_height = grub_fixed_sfs_divide (h, GRUB_FIXED_1 - hfrac);
       else
 	*min_height = h;
       if (*min_height < h + mhfrac)
@@ -221,15 +213,13 @@ layout_vertically (grub_gui_box_t self, int modify_layout,
       r.x = 0;
       r.y = y;
       r.width = w;
-      r.height = 32;
 
       if (c->ops->get_minimal_size)
 	c->ops->get_minimal_size (c, &mw, &mh);
 
-      if (!c->ishfrac)
-	r.height = c->h;
-      if (c->ishfrac)
-	r.height = grub_fixed_ufu_multiply (self->bounds.height, c->hfrac);
+      r.height = c->h;
+      if (!bogus_frac)
+	r.height += grub_fixed_sfs_multiply (self->bounds.height, c->hfrac);
 
       if (r.height < mh)
 	r.height = mh;

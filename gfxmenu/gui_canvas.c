@@ -88,49 +88,51 @@ canvas_paint (void *vself, const grub_video_rect_t *region)
     {
       grub_video_rect_t r;
       grub_gui_component_t comp;
+      signed x, y, w, h;
 
       comp = cur->component;
 
-      r.x = 0;
-      r.y = 0;
-      r.width = 32;
-      r.height = 32;
-
-      if (!comp->iswfrac && comp->w)
-	r.width = comp->w;
-
-      if (!comp->ishfrac && comp->h)
-	r.height = comp->h;
-
-      if (!comp->isxfrac && comp->x)
-	r.x = comp->x;
-
-      if (!comp->isyfrac && comp->y)
-	r.y = comp->y;
-
-      if (comp->ishfrac && comp->hfrac)
-	r.height = grub_fixed_ufu_multiply (self->bounds.height, comp->hfrac);
-
-      if (comp->iswfrac && comp->wfrac)
-	r.width = grub_fixed_ufu_multiply (self->bounds.width, comp->wfrac);
-
-      if (comp->isxfrac && comp->xfrac)
-	r.x = grub_fixed_ufu_multiply (self->bounds.width, comp->xfrac);
-
-      if (comp->isyfrac && comp->yfrac)
-	r.y = grub_fixed_ufu_multiply (self->bounds.height, comp->yfrac);
+      w = grub_fixed_sfs_multiply (self->bounds.width, comp->wfrac) + comp->w;
+      h = grub_fixed_sfs_multiply (self->bounds.height, comp->hfrac) + comp->h;
+      x = grub_fixed_sfs_multiply (self->bounds.width, comp->xfrac) + comp->x;
+      y = grub_fixed_sfs_multiply (self->bounds.height, comp->yfrac) + comp->y;
 
       if (comp->ops->get_minimal_size)
 	{
 	  unsigned mw;
 	  unsigned mh;
 	  comp->ops->get_minimal_size (comp, &mw, &mh);
-	  if (r.width < mw)
-	    r.width = mw;
-	  if (r.height < mh)
-	    r.height = mh;
+	  if (w < (signed) mw)
+	    w = mw;
+	  if (h < (signed) mh)
+	    h = mh;
 	}
 
+      /* Sanity checks.  */
+      if (w <= 0)
+	w = 32;
+      if (h <= 0)
+	h = 32;
+
+      if (x >= (signed) self->bounds.width)
+	x = self->bounds.width - 32;
+      if (y >= (signed) self->bounds.height)
+	y = self->bounds.height - 32;
+
+      if (x < 0)
+	x = 0;
+      if (y < 0)
+	y = 0;
+
+      if (x + w >= (signed) self->bounds.width)
+	w = self->bounds.width - x;
+      if (y + h >= (signed) self->bounds.height)
+	h = self->bounds.height - y;
+
+      r.x = x;
+      r.y = y;
+      r.width = w;
+      r.height = h;
       comp->ops->set_bounds (comp, &r);
 
       /* Paint the child.  */

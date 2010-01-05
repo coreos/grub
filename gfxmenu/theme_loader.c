@@ -361,6 +361,40 @@ read_expression (struct parsebuf *p)
   return grub_new_substring (p->buf, start, end);
 }
 
+static grub_err_t
+parse_proportional_spec (char *value, signed *abs, grub_fixed_signed_t *prop)
+{
+  signed num;
+  char *ptr;
+  int sig = 0;
+  *abs = 0;
+  *prop = 0;
+  ptr = value;
+  while (*ptr)
+    {
+      sig = 0;
+
+      while (*ptr == '-' || *ptr == '+')
+	{
+	  if (*ptr == '-')
+	    sig = !sig;
+	  ptr++;
+	}
+
+      num = grub_strtoul (ptr, &ptr, 0);
+      if (grub_errno)
+	return grub_errno;
+      if (sig)
+	num = -num;
+      if (*ptr == '%')
+	*prop += grub_fixed_fsf_divide (grub_signed_to_fixed (num), 100);
+      else
+	*abs += num;
+    }
+  return GRUB_ERR_NONE;
+}
+
+
 /* Read a GUI object specification from the theme file.
    Any components created will be added to the GUI container PARENT.  */
 static grub_err_t
@@ -511,78 +545,16 @@ read_object (struct parsebuf *p, grub_gui_container_t parent)
 
       /* Handle the property value.  */
       if (grub_strcmp (property, "left") == 0)
-        {
-	  unsigned num;
-	  char *ptr;
-	  num = grub_strtoul (value, &ptr, 0);
-	  if (*ptr == '%')
-	    {
-	      component->isxfrac = 1;
-	      component->xfrac
-		= grub_fixed_fuf_divide (grub_unsigned_to_fixed (num), 100);
-	    }
-	  else
-	    {
-	      component->isxfrac = 0;
-	      component->x = num;
-	    }
-        }
+	parse_proportional_spec (value, &component->x, &component->xfrac);
       else if (grub_strcmp (property, "top") == 0)
-        {
-	  unsigned num;
-	  char *ptr;
-	  num = grub_strtoul (value, &ptr, 0);
-	  if (*ptr == '%')
-	    {
-	      component->isyfrac = 1;
-	      component->yfrac
-		= grub_fixed_fuf_divide (grub_unsigned_to_fixed (num), 100);
-	    }
-	  else
-	    {
-	      component->isyfrac = 0;
-	      component->y = num;
-	    }
-        }
+	parse_proportional_spec (value, &component->y, &component->yfrac);
       else if (grub_strcmp (property, "width") == 0)
-        {
-	  unsigned num;
-	  char *ptr;
-	  num = grub_strtoul (value, &ptr, 0);
-	  if (*ptr == '%')
-	    {
-	      component->iswfrac = 1;
-	      component->wfrac
-		= grub_fixed_fuf_divide (grub_unsigned_to_fixed (num), 100);
-	    }
-	  else
-	    {
-	      component->iswfrac = 0;
-	      component->w = num;
-	    }
-        }
+	parse_proportional_spec (value, &component->w, &component->wfrac);
       else if (grub_strcmp (property, "height") == 0)
-        {
-	  unsigned num;
-	  char *ptr;
-	  num = grub_strtoul (value, &ptr, 0);
-	  if (*ptr == '%')
-	    {
-	      component->ishfrac = 1;
-	      component->hfrac
-		= grub_fixed_fuf_divide (grub_unsigned_to_fixed (num), 100);
-	    }
-	  else
-	    {
-	      component->ishfrac = 0;
-	      component->h = num;
-	    }
-        }
+	parse_proportional_spec (value, &component->h, &component->hfrac);
       else
-        {
-          /* General property handling.  */
-          component->ops->set_property (component, property, value);
-        }
+	/* General property handling.  */
+	component->ops->set_property (component, property, value);
 
       grub_free (value);
       grub_free (property);
