@@ -387,7 +387,10 @@ parse_proportional_spec (char *value, signed *abs, grub_fixed_signed_t *prop)
       if (sig)
 	num = -num;
       if (*ptr == '%')
-	*prop += grub_fixed_fsf_divide (grub_signed_to_fixed (num), 100);
+	{
+	  *prop += grub_fixed_fsf_divide (grub_signed_to_fixed (num), 100);
+	  ptr++;
+	}
       else
 	*abs += num;
     }
