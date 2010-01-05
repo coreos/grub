@@ -1,3 +1,7 @@
+2010-01-05  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* config.rpath: Update from Gnulib.
+
 2010-01-05  Yves Blusseau  <blusseau@zetam.org>
 
 	* commands/acpi.c (grub_acpi_create_ebda): fix incorrect message.
