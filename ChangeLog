@@ -1,3 +1,7 @@
+2010-01-05  Yves Blusseau  <yves.blusseau@zetam.org>
+
+	* util/sparc64/ieee1275/grub-mkimage.c (main): Typo fix.
+
 2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/mkisofs/write.c (padblock_write): Switch size and nmemb
