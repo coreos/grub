@@ -37,6 +37,57 @@ if [ -z "${OSPROBED}" ] ; then
   exit 0
 fi
 
+osx_entry() {
+        cat << EOF
+menuentry "${LONGNAME} (${2}-bit) (on ${DEVICE})" {
+EOF
+	save_default_entry | sed -e "s/^/\t/"
+	prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
+	cat << EOF
+        insmod ${GRUB_VIDEO_BACKEND}
+        do_resume=0
+        if [ /var/vm/sleepimage -nt10 / ]; then
+           if xnu_resume /var/vm/sleepimage; then
+             do_resume=1
+           fi
+        fi
+        if [ \$do_resume == 0 ]; then
+           xnu_uuid ${OSXUUID} uuid
+           if [ -f /Extra/DSDT.aml ]; then
+              acpi -e /Extra/DSDT.aml
+           fi
+           $1 /mach_kernel boot-uuid=\${uuid} rd=*uuid
+           if [ /System/Library/Extensions.mkext -nt /System/Library/Extensions ]; then
+              xnu_mkext /System/Library/Extensions.mkext
+           else
+              xnu_kextdir /System/Library/Extensions
+           fi
+           if [ -f /Extra/Extensions.mkext ]; then
+              xnu_mkext /Extra/Extensions.mkext
+           fi
+           if [ -d /Extra/Extensions ]; then
+              xnu_kextdir /Extra/Extensions
+           fi
+           if [ -f /Extra/devprop.bin ]; then
+              xnu_devprop_load /Extra/devprop.bin
+           fi
+           if [ -f /Extra/splash.jpg ]; then
+              insmod jpeg
+              xnu_splash /Extra/splash.jpg
+           fi
+           if [ -f /Extra/splash.png ]; then
+              insmod png
+              xnu_splash /Extra/splash.png
+           fi
+           if [ -f /Extra/splash.tga ]; then
+              insmod tga
+              xnu_splash /Extra/splash.tga
+           fi
+        fi
+}
+EOF
+}
+
 for OS in ${OSPROBED} ; do
   DEVICE="`echo ${OS} | cut -d ':' -f 1`"
   LONGNAME="`echo ${OS} | cut -d ':' -f 2 | tr '^' ' '`"
@@ -117,54 +168,8 @@ EOF
     ;;
     macosx)
       OSXUUID="`grub-probe --target=fs_uuid --device ${DEVICE} 2> /dev/null`"
-        cat << EOF
-menuentry "${LONGNAME} (on ${DEVICE})" {
-EOF
-	save_default_entry | sed -e "s/^/\t/"
-	prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
-	cat << EOF
-        insmod vbe
-        do_resume=0
-        if [ /var/vm/sleepimage -nt10 / ]; then
-           if xnu_resume /var/vm/sleepimage; then
-             do_resume=1
-           fi
-        fi
-        if [ \$do_resume == 0 ]; then
-           xnu_uuid ${OSXUUID} uuid
-           if [ -f /Extra/DSDT.aml ]; then
-              acpi -e /Extra/DSDT.aml
-           fi
-           xnu_kernel /mach_kernel boot-uuid=\${uuid} rd=*uuid
-           if [ /System/Library/Extensions.mkext -nt /System/Library/Extensions ]; then
-              xnu_mkext /System/Library/Extensions.mkext
-           else
-              xnu_kextdir /System/Library/Extensions
-           fi
-           if [ -f /Extra/Extensions.mkext ]; then
-              xnu_mkext /Extra/Extensions.mkext
-           fi
-           if [ -d /Extra/Extensions ]; then
-              xnu_kextdir /Extra/Extensions
-           fi
-           if [ -f /Extra/devtree.txt ]; then
-              xnu_devtree /Extra/devtree.txt
-           fi
-           if [ -f /Extra/splash.jpg ]; then
-              insmod jpeg
-              xnu_splash /Extra/splash.jpg
-           fi
-           if [ -f /Extra/splash.png ]; then
-              insmod png
-              xnu_splash /Extra/splash.png
-           fi
-           if [ -f /Extra/splash.tga ]; then
-              insmod tga
-              xnu_splash /Extra/splash.tga
-           fi
-        fi
-}
-EOF
+      osx_entry xnu_kernel 32
+      osx_entry xnu_kernel64 64
     ;;
     hurd)
       cat << EOF

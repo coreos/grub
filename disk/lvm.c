@@ -95,7 +95,7 @@ grub_lvm_open (const char *name, grub_disk_t disk)
     }
 
   if (! lv)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Unknown LVM device %s", name);
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown LVM device %s", name);
 
   disk->has_partitions = 0;
   disk->id = lv->number;
@@ -188,7 +188,7 @@ grub_lvm_read (grub_disk_t disk, grub_disk_addr_t sector,
 			  size << GRUB_DISK_SECTOR_BITS, buf);
   else
     err = grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-		      "Physical volume %s not found", pv->name);
+		      "physical volume %s not found", pv->name);
 
   return err;
 }
@@ -263,7 +263,7 @@ grub_lvm_scan_device (const char *name)
   if (dlocn->offset)
     {
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "We don't support multiple LVM data areas");
+		  "we don't support multiple LVM data areas");
 
       goto fail;
     }
@@ -290,7 +290,7 @@ grub_lvm_scan_device (const char *name)
       || (grub_le_to_cpu32 (mdah->version) != GRUB_LVM_FMTT_VERSION))
     {
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "Unknown LVM metadata header");
+		  "unknown LVM metadata header");
       goto fail2;
     }
 

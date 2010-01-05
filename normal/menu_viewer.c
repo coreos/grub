@@ -58,7 +58,7 @@ grub_menu_viewer_show_menu (grub_menu_t menu, int nested)
   grub_menu_viewer_t cur = get_current_menu_viewer ();
   grub_err_t err1, err2;
   if (!cur)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "No menu viewer available.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no menu viewer available");
 
   while (1)
     {

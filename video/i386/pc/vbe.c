@@ -33,6 +33,9 @@ static int vbe_detected = -1;
 static struct grub_vbe_info_block controller_info;
 static struct grub_vbe_mode_info_block active_vbe_mode_info;
 
+/* Track last mode to support cards which fail on get_mode.  */
+static grub_uint32_t last_set_mode = 3;
+
 static struct
 {
   struct grub_video_mode_info mode_info;
@@ -160,6 +163,7 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
   status = grub_vbe_bios_set_mode (vbe_mode, 0);
   if (status != GRUB_VBE_STATUS_OK)
     return grub_error (GRUB_ERR_BAD_DEVICE, "cannot set VBE mode %x", vbe_mode);
+  last_set_mode = vbe_mode;
 
   /* Save information for later usage.  */
   framebuffer.active_vbe_mode = vbe_mode;
@@ -203,6 +207,7 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
 	case 8: framebuffer.bytes_per_pixel = 1; break;
 	default:
 	  grub_vbe_bios_set_mode (old_vbe_mode, 0);
+	  last_set_mode = old_vbe_mode;
 	  return grub_error (GRUB_ERR_BAD_DEVICE,
 			     "cannot set VBE mode %x",
 			     vbe_mode);
@@ -256,8 +261,9 @@ grub_vbe_get_video_mode (grub_uint32_t *mode)
 
   /* Try to query current mode from VESA BIOS.  */
   status = grub_vbe_bios_get_mode (mode);
+  /* XXX: ATI cards don't support get_mode.  */
   if (status != GRUB_VBE_STATUS_OK)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "cannot get current VBE mode");
+    *mode = last_set_mode;
 
   return GRUB_ERR_NONE;
 }
@@ -350,6 +356,7 @@ grub_video_vbe_fini (void)
   if (status != GRUB_VBE_STATUS_OK)
     /* TODO: Decide, is this something we want to do.  */
     return grub_errno;
+  last_set_mode = initial_vbe_mode;
 
   /* TODO: Free any resources allocated by driver.  */
   grub_free (vbe_mode_list);
@@ -389,10 +396,6 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
 
       if ((vbe_mode_info.mode_attributes & 0x001) == 0)
         /* If not available, skip it.  */
-        continue;
-
-      if ((vbe_mode_info.mode_attributes & 0x002) == 0)
-        /* Not enough information.  */
         continue;
 
       if ((vbe_mode_info.mode_attributes & 0x008) == 0)
@@ -497,7 +500,7 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
     }
 
   /* Couldn't found matching mode.  */
-  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found.");
+  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found");
 }
 
 static grub_err_t

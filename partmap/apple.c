@@ -176,7 +176,7 @@ apple_partition_map_iterate (grub_disk_t disk,
 
  fail:
   return grub_error (GRUB_ERR_BAD_PART_TABLE,
-		     "Apple partition map not found.");
+		     "Apple partition map not found");
 }
 
 

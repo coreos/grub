@@ -281,7 +281,7 @@ grub_ata_identify (struct grub_ata_device *dev)
       else
 	/* Other Error.  */
 	return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-			   "device can not be identified");
+			   "device cannot be identified");
     }
 
   grub_ata_pio_read (dev, info, GRUB_DISK_SECTOR_SIZE);
@@ -388,7 +388,7 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
 }
 
 static int NESTED_FUNC_ATTR
-grub_ata_pciinit (int bus, int device, int func,
+grub_ata_pciinit (grub_pci_device_t dev,
 		  grub_pci_id_t pciid __attribute__((unused)))
 {
   static int compat_use[2] = { 0 };
@@ -402,7 +402,7 @@ grub_ata_pciinit (int bus, int device, int func,
   static int controller = 0;
 
   /* Read class.  */
-  addr = grub_pci_make_address (bus, device, func, 2);
+  addr = grub_pci_make_address (dev, 2);
   class = grub_pci_read (addr);
 
   /* Check if this class ID matches that of a PCI IDE Controller.  */
@@ -429,9 +429,9 @@ grub_ata_pciinit (int bus, int device, int func,
 	{
 	  /* Read the BARs, which either contain a mmapped IO address
 	     or the IO port address.  */
-	  addr = grub_pci_make_address (bus, device, func, 4 + 2 * i);
+	  addr = grub_pci_make_address (dev, 4 + 2 * i);
 	  bar1 = grub_pci_read (addr);
-	  addr = grub_pci_make_address (bus, device, func, 5 + 2 * i);
+	  addr = grub_pci_make_address (dev, 5 + 2 * i);
 	  bar2 = grub_pci_read (addr);
 
 	  /* Check if the BARs describe an IO region.  */
@@ -444,7 +444,8 @@ grub_ata_pciinit (int bus, int device, int func,
 
       grub_dprintf ("ata",
 		    "PCI dev (%d,%d,%d) compat=%d rega=0x%x regb=0x%x\n",
-		    bus, device, func, compat, rega, regb);
+		    grub_pci_get_bus (dev), grub_pci_get_device (dev),
+		    grub_pci_get_function (dev), compat, rega, regb);
 
       if (rega && regb)
 	{
@@ -519,7 +520,7 @@ grub_ata_setaddress (struct grub_ata_device *dev,
 	    || cylinder > dev->cylinders
 	    || head > dev->heads)
 	  return grub_error (GRUB_ERR_OUT_OF_RANGE,
-			     "sector %d can not be addressed "
+			     "sector %d cannot be addressed "
 			     "using CHS addressing", sector);
 
 	grub_ata_regset (dev, GRUB_ATA_REG_DISK, (dev->device << 4) | head);
@@ -674,7 +675,7 @@ grub_ata_open (const char *name, grub_disk_t disk)
     }
 
   if (! dev)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't open device");
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
 
   if (dev->atapi)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not an ATA harddisk");
@@ -774,7 +775,7 @@ grub_atapi_read (struct grub_scsi *scsi,
 
       /* Count of last transfer may be uneven.  */
       if (! (0 < cnt && cnt <= size - nread && (! (cnt & 1) || cnt == size - nread)))
-	return grub_error (GRUB_ERR_READ_ERROR, "Invalid ATAPI transfer count");
+	return grub_error (GRUB_ERR_READ_ERROR, "invalid ATAPI transfer count");
 
       /* Read the data.  */
       grub_ata_pio_read (dev, buf + nread, cnt);
@@ -820,7 +821,7 @@ grub_atapi_open (const char *name, struct grub_scsi *scsi)
   grub_dprintf ("ata", "opening ATAPI dev `%s'\n", name);
 
   if (! devfnd)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "No such ATAPI device");
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such ATAPI device");
 
   scsi->data = devfnd;
 

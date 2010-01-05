@@ -25,6 +25,8 @@
 #define CTRL		0x1d
 #define ALT		0x38
 #define CAPS_LOCK	0x3a
+#define NUM_LOCK	0x45
+#define SCROLL_LOCK	0x46
 
 #define KEYBOARD_REG_DATA	0x60
 #define KEYBOARD_REG_STATUS	0x64

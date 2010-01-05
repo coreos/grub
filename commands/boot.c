@@ -186,7 +186,7 @@ GRUB_MOD_INIT(boot)
 {
   cmd_boot =
     grub_register_command ("boot", grub_cmd_boot,
-			   0, "boot an operating system");
+			   0, "Boot an operating system.");
 }
 
 GRUB_MOD_FINI(boot)

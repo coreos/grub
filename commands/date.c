@@ -135,7 +135,7 @@ GRUB_MOD_INIT(date)
 {
   cmd =
     grub_register_command ("date", grub_cmd_date,
-			   "date [[year-]month-day] [hour:minute[:second]]",
+			   "[[year-]month-day] [hour:minute[:second]]",
 			   "Command to display/set current datetime.");
 }
 

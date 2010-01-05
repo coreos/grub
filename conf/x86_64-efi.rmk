@@ -67,7 +67,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genke
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # For boot.mod.
-pkglib_MODULES += boot.mod 
+pkglib_MODULES += boot.mod
 boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
 boot_mod_CFLAGS = $(COMMON_CFLAGS)
 boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
@@ -160,10 +160,16 @@ efi_gop_mod_CFLAGS = $(COMMON_CFLAGS)
 efi_gop_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += xnu.mod
-xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c loader/i386/efi/xnu.c\
-	 loader/macho.c loader/xnu.c loader/i386/xnu_helper.S
+xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c loader/i386/efi/xnu.c \
+	loader/macho32.c loader/macho64.c loader/macho.c loader/xnu.c
 xnu_mod_CFLAGS = $(COMMON_CFLAGS)
 xnu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 xnu_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += relocator.mod
+relocator_mod_SOURCES = lib/i386/relocator.c lib/i386/relocator_asm.S lib/i386/relocator_backward.S
+relocator_mod_CFLAGS = $(COMMON_CFLAGS)
+relocator_mod_ASFLAGS = $(COMMON_ASFLAGS)
+relocator_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

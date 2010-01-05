@@ -181,7 +181,7 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array)
   /* FIXME: Also support version 1.0. */
   if (sb.major_version != 0 || sb.minor_version != 90)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "Unsupported RAID version: %d.%d",
+		       "unsupported RAID version: %d.%d",
 		       sb.major_version, sb.minor_version);
 
   /* FIXME: Check the checksum. */
@@ -193,7 +193,7 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array)
   if (sb.level != 0 && sb.level != 1 && sb.level != 4 &&
       sb.level != 5 && sb.level != 6 && sb.level != 10)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "Unsupported RAID level: %d", sb.level);
+		       "unsupported RAID level: %d", sb.level);
 
   array->number = sb.md_minor;
   array->level = sb.level;

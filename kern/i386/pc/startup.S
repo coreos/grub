@@ -146,6 +146,9 @@ multiboot_entry:
 	/* obtain the boot device */
 	movl	12(%ebx), %edx
 
+	movl	$GRUB_MEMORY_MACHINE_PROT_STACK, %ebp
+	movl	%ebp, %esp
+
 	/* relocate the code */
 	movl	$(GRUB_KERNEL_MACHINE_RAW_SIZE + 0x200), %ecx
 	addl	EXT_C(grub_compressed_size) - _start + 0x100000 + 0x200, %ecx
@@ -761,6 +764,11 @@ FUNCTION(grub_biosdisk_get_diskinfo_int13_extensions)
 	movw	%cx, %ax
 	movw	%bx, %ds
 	int	$0x13		/* do the operation */
+	jc      noclean
+	/* Clean return value if carry isn't set to workaround
+	some buggy BIOSes.  */
+	xor     %ax, %ax
+noclean:
 	movb	%ah, %bl	/* save return value in %bl */
 	/* back to protected mode */
 	DATA32	call	real_to_prot
@@ -804,6 +812,11 @@ FUNCTION(grub_biosdisk_get_diskinfo_standard)
 	.code16
 	movb	$0x8, %ah
 	int	$0x13		/* do the operation */
+	jc      noclean2
+	/* Clean return value if carry isn't set to workaround
+	some buggy BIOSes.  */
+	xor     %ax, %ax
+noclean2:
 	/* check if successful */
 	testb	%ah, %ah
 	jnz	1f

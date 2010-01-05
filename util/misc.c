@@ -30,7 +30,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <time.h>
-#include <errno.h>
 
 #include <grub/kernel.h>
 #include <grub/misc.h>
@@ -505,7 +504,7 @@ make_system_path_relative_to_its_root (const char *path)
   free (p);
 
   if (stat (buf, &st) < 0)
-    grub_util_error ("can not stat %s: %s", buf, strerror (errno));
+    grub_util_error ("cannot stat %s: %s", buf, strerror (errno));
 
   buf2 = strdup (buf);
   num = st.st_dev;
@@ -524,7 +523,7 @@ make_system_path_relative_to_its_root (const char *path)
 	*++p = 0;
 
       if (stat (buf, &st) < 0)
-	grub_util_error ("can not stat %s: %s", buf, strerror (errno));
+	grub_util_error ("cannot stat %s: %s", buf, strerror (errno));
 
       /* buf is another filesystem; we found it.  */
       if (st.st_dev != num)

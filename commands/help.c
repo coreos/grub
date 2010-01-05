@@ -21,6 +21,7 @@
 #include <grub/misc.h>
 #include <grub/term.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
@@ -38,13 +39,14 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 	  (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE))
 	{
 	  char description[GRUB_TERM_WIDTH / 2];
-	  int desclen = grub_strlen (cmd->summary);
+	  const char* summary_translated = _(cmd->summary);
+	  int desclen = grub_strlen (summary_translated);
 
 	  /* Make a string with a length of GRUB_TERM_WIDTH / 2 - 1 filled
 	     with the description followed by spaces.  */
 	  grub_memset (description, ' ', GRUB_TERM_WIDTH / 2 - 1);
 	  description[GRUB_TERM_WIDTH / 2 - 1] = '\0';
-	  grub_memcpy (description, cmd->summary,
+	  grub_memcpy (description, summary_translated,
 		       (desclen < GRUB_TERM_WIDTH / 2 - 1
 			? desclen : GRUB_TERM_WIDTH / 2 - 1));
 
@@ -65,8 +67,8 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 	      if (cmd->flags & GRUB_COMMAND_FLAG_EXTCMD)
 		grub_arg_show_help ((grub_extcmd_t) cmd->data);
 	      else
-		grub_printf ("Usage: %s\n%s\b", cmd->summary,
-			     cmd->description);
+		grub_printf ("%s %s %s\n%s\b", _("Usage:"), cmd->name, _(cmd->summary),
+			     _(cmd->description));
 	    }
 	}
       return 0;
@@ -94,8 +96,8 @@ GRUB_MOD_INIT(help)
 {
   cmd = grub_register_extcmd ("help", grub_cmd_help,
 			      GRUB_COMMAND_FLAG_CMDLINE,
-			      "help [PATTERN ...]",
-			      "Show a help message.", 0);
+			      N_("[PATTERN ...]"),
+			      N_("Show a help message."), 0);
 }
 
 GRUB_MOD_FINI(help)

@@ -33,9 +33,9 @@
 
 static const struct grub_arg_option options[] =
   {
-    {"long", 'l', 0, "show a long list with more detailed information", 0, 0},
-    {"human-readable", 'h', 0, "print sizes in a human readable format", 0, 0},
-    {"all", 'a', 0, "list all files", 0, 0},
+    {"long", 'l', 0, "Show a long list with more detailed information.", 0, 0},
+    {"human-readable", 'h', 0, "Print sizes in a human readable format.", 0, 0},
+    {"all", 'a', 0, "List all files.", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -260,7 +260,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(ls)
 {
   cmd = grub_register_extcmd ("ls", grub_cmd_ls, GRUB_COMMAND_FLAG_BOTH,
-			      "ls [-l|-h|-a] [FILE]",
+			      "[-l|-h|-a] [FILE]",
 			      "List devices and files.", options);
 }
 

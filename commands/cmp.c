@@ -40,7 +40,7 @@ grub_cmd_cmp (grub_command_t cmd __attribute__ ((unused)),
   if (argc != 2)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "two arguments required");
 
-  grub_printf ("Compare `%s' and `%s':\n", args[0],
+  grub_printf ("Compare file `%s' with `%s':\n", args[0],
 	       args[1]);
 
   file1 = grub_gzfile_open (args[0], 1);
@@ -49,7 +49,7 @@ grub_cmd_cmp (grub_command_t cmd __attribute__ ((unused)),
     goto cleanup;
 
   if (grub_file_size (file1) != grub_file_size (file2))
-    grub_printf ("Differ in size: %llu [%s], %llu [%s]\n",
+    grub_printf ("Files differ in size: %llu [%s], %llu [%s]\n",
 		 (unsigned long long) grub_file_size (file1), args[0],
 		 (unsigned long long) grub_file_size (file2), args[1]);
   else
@@ -76,7 +76,7 @@ grub_cmd_cmp (grub_command_t cmd __attribute__ ((unused)),
 	    {
 	      if (buf1[i] != buf2[i])
 		{
-		  grub_printf ("Differ at the offset %llu: 0x%x [%s], 0x%x [%s]\n",
+		  grub_printf ("Files differ at the offset %llu: 0x%x [%s], 0x%x [%s]\n",
 			       (unsigned long long) (i + pos), buf1[i], args[0],
 			       buf2[i], args[1]);
 		  goto cleanup;
@@ -109,7 +109,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(cmp)
 {
   cmd = grub_register_command ("cmp", grub_cmd_cmp,
-			       "cmp FILE1 FILE2", "Compare two files.");
+			       "FILE1 FILE2", "Compare two files.");
 }
 
 GRUB_MOD_FINI(cmp)

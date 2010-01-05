@@ -8,7 +8,9 @@ util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
 grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	commands/configfile.c commands/echo.c commands/help.c		\
 	commands/handler.c commands/ls.c commands/test.c 		\
-	commands/search.c commands/blocklist.c commands/hexdump.c	\
+	commands/search_wrap.c commands/search_file.c			\
+	commands/search_label.c commands/search_uuid.c			\
+	commands/blocklist.c commands/hexdump.c				\
 	lib/hexdump.c commands/halt.c commands/reboot.c			\
 	lib/envblk.c commands/loadenv.c					\
 	commands/gptsync.c commands/probe.c commands/xnu_uuid.c		\
@@ -57,6 +59,11 @@ ifeq ($(enable_grub_emu_usb), yes)
 grub_emu_SOURCES += disk/usbms.c util/usb.c bus/usb/usb.c	\
 		commands/usbtest.c
 grub_emu_LDFLAGS += $(LIBCURSES) $(LIBUSB)
+endif
+
+ifeq ($(enable_grub_emu_pci), yes)
+grub_emu_SOURCES += util/pci.c commands/lspci.c
+grub_emu_LDFLAGS += $(LIBPCIACCESS)
 endif
 
 grub_emu_init.lst: geninit.sh $(filter-out grub_emu_init.c,$(grub_emu_SOURCES))

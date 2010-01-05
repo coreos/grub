@@ -44,6 +44,11 @@ AC_CANONICAL_TARGET
 # Program name transformations
 AC_ARG_PROGRAM
 
+# Optimization flag.  Allow user to override.
+if test "x$TARGET_CFLAGS" = x; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -Os"
+fi
+
 case "$target_cpu" in
   i[[3456]]86)	target_cpu=i386 ;;
   sparc)	target_cpu=sparc64 ;;
@@ -242,60 +247,45 @@ CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
 LIBS=""
 
-if test "x$TARGET_CFLAGS" = x; then
-  # debug flags.
-  TARGET_CFLAGS="-Wall -W -Wshadow -Wpointer-arith -Wmissing-prototypes \
-                 -Wundef -Wstrict-prototypes -g"
+# debug flags.
+TARGET_CFLAGS="$TARGET_CFLAGS -Wall -W -Wshadow -Wpointer-arith -Wmissing-prototypes \
+               -Wundef -Wstrict-prototypes -g"
 
-  # optimization flags.
-  AC_CACHE_CHECK([whether optimization for size works], grub_cv_cc_Os, [
-    CFLAGS=-Os
+# Force no alignment to save space on i386.
+if test "x$target_cpu" = xi386; then
+  AC_CACHE_CHECK([whether -falign-loops works], [grub_cv_cc_falign_loop], [
+    CFLAGS="$CFLAGS -falign-loops=1"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		      [grub_cv_cc_Os=yes],
-		      [grub_cv_cc_Os=no])
+        [grub_cv_cc_falign_loop=yes],
+	[grub_cv_cc_falign_loop=no])
   ])
-  if test "x$grub_cv_cc_Os" = xyes; then
-    TARGET_CFLAGS="$TARGET_CFLAGS -Os"
+
+  if test "x$grub_cv_cc_falign_loop" = xyes; then
+    TARGET_CFLAGS="$TARGET_CFLAGS -falign-jumps=1 -falign-loops=1 -falign-functions=1"
   else
-    TARGET_CFLAGS="$TARGET_CFLAGS -O2 -fno-strength-reduce -fno-unroll-loops"
+    TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
   fi
 
-  # Force no alignment to save space on i386.
-  if test "x$target_cpu" = xi386; then
-    AC_CACHE_CHECK([whether -falign-loops works], [grub_cv_cc_falign_loop], [
-      CFLAGS="$CFLAGS -falign-loops=1"
-      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		        [grub_cv_cc_falign_loop=yes],
-			[grub_cv_cc_falign_loop=no])
-    ])
+  # Some toolchains enable these features by default, but they need
+  # registers that aren't set up properly in GRUB.
+  TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
+fi
 
-    if test "x$grub_cv_cc_falign_loop" = xyes; then
-      TARGET_CFLAGS="$TARGET_CFLAGS -falign-jumps=1 -falign-loops=1 -falign-functions=1"
-    else
-      TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
-    fi
+# By default, GCC 4.4 generates .eh_frame sections containing unwind
+# information in some cases where it previously did not. GRUB doesn't need
+# these and they just use up vital space. Restore the old compiler
+# behaviour.
+AC_CACHE_CHECK([whether -fno-dwarf2-cfi-asm works], [grub_cv_cc_fno_dwarf2_cfi_asm], [
+  SAVE_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -fno-dwarf2-cfi-asm"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+      [grub_cv_cc_fno_dwarf2_cfi_asm=yes],
+      [grub_cv_cc_fno_dwarf2_cfi_asm=no])
+  CFLAGS="$SAVE_CFLAGS"
+])
 
-    # Some toolchains enable these features by default, but they need
-    # registers that aren't set up properly in GRUB.
-    TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
-  fi
-
-  # By default, GCC 4.4 generates .eh_frame sections containing unwind
-  # information in some cases where it previously did not. GRUB doesn't need
-  # these and they just use up vital space. Restore the old compiler
-  # behaviour.
-  AC_CACHE_CHECK([whether -fno-dwarf2-cfi-asm works], [grub_cv_cc_fno_dwarf2_cfi_asm], [
-    SAVE_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS -fno-dwarf2-cfi-asm"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		      [grub_cv_cc_fno_dwarf2_cfi_asm=yes],
-		      [grub_cv_cc_fno_dwarf2_cfi_asm=no])
-    CFLAGS="$SAVE_CFLAGS"
-  ])
-
-  if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
-    TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
-  fi
+if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
 fi
 
 grub_apple_target_cc
@@ -526,6 +516,10 @@ AC_ARG_ENABLE([grub-emu-usb],
 	      [AS_HELP_STRING([--enable-grub-emu-usb],
                              [build and install the `grub-emu' debugging utility with USB support (default=guessed)])])
 
+AC_ARG_ENABLE([grub-emu-pci],
+	      [AS_HELP_STRING([--enable-grub-emu-pci],
+                             [build and install the `grub-emu' debugging utility with PCI support (potentially dangerous) (default=no)])])
+
 if test "$platform" = emu; then
   missing_ncurses=
 [# Check for curses libraries.]
@@ -547,6 +541,11 @@ fi
 if test x"$enable_grub_emu_usb" = xno ; then
   grub_emu_usb_excuse="explicitly disabled"
 fi
+
+if test x"$enable_grub_emu_pci" = xyes ; then
+   grub_emu_usb_excuse="conflicts with PCI support"
+fi
+
 [if [ x"$grub_emu_usb_excuse" = x ]; then
     # Check for libusb libraries.]
 AC_CHECK_LIB([usb], [usb_claim_interface], [LIBUSB="-lusb"],
@@ -566,7 +565,35 @@ enable_grub_emu_usb=yes
 else
 enable_grub_emu_usb=no
 fi
+
+if test x"$enable_grub_emu_pci" != xyes ; then
+   grub_emu_pci_excuse="not enabled"
+fi
+
+if test x"$enable_grub_emu_usb" = xyes ; then
+   grub_emu_pci_excuse="conflicts with USB support"
+fi
+
+[if [ x"$grub_emu_pci_excuse" = x ]; then
+      # Check for libpci libraries.]
+   AC_CHECK_LIB([pciaccess], [pci_system_init], [LIBPCIACCESS="-lpciaccess"],
+      [grub_emu_pci_excuse=["need libpciaccess library"]])
+    AC_SUBST([LIBPCIACCESS])
+[fi]
+[if [ x"$grub_emu_pci_excuse" = x ]; then
+    # Check for headers.]
+    AC_CHECK_HEADERS([pci/pci.h], [],
+      [grub_emu_pci_excuse=["need libpciaccess headers"]])
+[fi]
+
+if test x"$grub_emu_pci_excuse" = x ; then
+enable_grub_emu_pci=yes
+else
+enable_grub_emu_pci=no
+fi
+
 AC_SUBST([enable_grub_emu_usb])
+AC_SUBST([enable_grub_emu_pci])
 fi
 
 AC_ARG_ENABLE([grub-fstest],
@@ -640,6 +667,11 @@ if [ x"$grub_emu_usb_excuse" = x ]; then
 echo USB support for grub-emu: Yes
 else
 echo USB support for grub-emu: No "($grub_emu_usb_excuse)"
+fi
+if [ x"$grub_emu_pci_excuse" = x ]; then
+echo PCI support for grub-emu: Yes
+else
+echo PCI support for grub-emu: No "($grub_emu_pci_excuse)"
 fi
 fi
 if [ x"$enable_mm_debug" = xyes ]; then

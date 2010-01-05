@@ -102,7 +102,7 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
 
   if (dev)
     grub_device_close (dev);
-  
+ 
   /* Ignore errors. Perhaps it's not fatal.  */
   grub_errno = GRUB_ERR_NONE;
 
@@ -146,7 +146,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(chainloader)
 {
   cmd = grub_register_command ("chainloader", grub_cmd_chainloader,
-			       0, "load another boot loader");
+			       0, "Load another boot loader.");
   my_mod = mod;
 }
 

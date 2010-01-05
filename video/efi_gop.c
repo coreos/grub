@@ -93,7 +93,7 @@ grub_video_gop_get_bpp (struct grub_efi_gop_mode_info *in)
 
       total_mask = in->pixel_bitmask.r | in->pixel_bitmask.g
 	| in->pixel_bitmask.b | in->pixel_bitmask.a;
-	
+
       for (i = 31; i >= 0; i--)
 	if (total_mask & (1 << i))
 	  return i + 1;
@@ -123,7 +123,7 @@ grub_video_gop_get_bitmask (grub_uint32_t mask, unsigned int *mask_size,
     if (!(mask & (1 << i)))
       break;
   *field_pos = i + 1;
-  *mask_size = last_p - *field_pos;
+  *mask_size = last_p - *field_pos + 1;
 }
 
 static grub_err_t
@@ -137,7 +137,7 @@ grub_video_gop_fill_mode_info (struct grub_efi_gop_mode_info *in,
   out->bpp = grub_video_gop_get_bpp (in);
   out->bytes_per_pixel = out->bpp >> 3;
   if (!out->bpp)
-    return grub_error (GRUB_ERR_IO, "Unsupported video mode");
+    return grub_error (GRUB_ERR_IO, "unsupported video mode");
   out->pitch = in->pixels_per_scanline * out->bytes_per_pixel;
 
   switch (in->pixel_format)
@@ -176,7 +176,7 @@ grub_video_gop_fill_mode_info (struct grub_efi_gop_mode_info *in,
       break;
 
     default:
-      return grub_error (GRUB_ERR_IO, "Unsupported video mode");
+      return grub_error (GRUB_ERR_IO, "unsupported video mode");
     }
 
   out->blit_format = grub_video_get_blit_format (out);
@@ -212,7 +212,7 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
 	  found = 1;
 	}
     }
-  
+ 
   if (!found)
     {
       unsigned mode;
@@ -221,7 +221,7 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
 	{
 	  grub_efi_uintn_t size;
 	  grub_efi_status_t status;
-	  
+	 
 	  status = efi_call_4 (gop->query_mode, gop, mode, &size, &info);
 	  if (status)
 	    {
@@ -255,7 +255,7 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
 	      * ((unsigned long long) bpp))
 	    {
 	      best_volume = ((unsigned long long) info->width)
-		* ((unsigned long long) info->height) 
+		* ((unsigned long long) info->height)
 		* ((unsigned long long) bpp);
 	      best_mode = mode;
 	    }
@@ -266,7 +266,7 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
   if (!found)
     {
       grub_dprintf ("video", "GOP: no mode found\n");
-      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found.");
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found");
     }
 
   if (best_mode != gop->mode->mode)
@@ -293,8 +293,8 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
   grub_dprintf ("video", "GOP: initialising FB @ %p %dx%dx%d\n",
 		framebuffer.ptr, framebuffer.mode_info.width,
 		framebuffer.mode_info.height, framebuffer.mode_info.bpp);
-  
-  err = grub_video_fb_create_render_target_from_pointer 
+ 
+  err = grub_video_fb_create_render_target_from_pointer
     (&framebuffer.render_target, &framebuffer.mode_info, framebuffer.ptr);
 
   if (err)
@@ -302,15 +302,15 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
       grub_dprintf ("video", "GOP: Couldn't create FB target\n");
       return err;
     }
-  
+ 
   err = grub_video_fb_set_active_render_target (framebuffer.render_target);
-  
+ 
   if (err)
     {
       grub_dprintf ("video", "GOP: Couldn't set FB target\n");
       return err;
     }
-  
+ 
   err = grub_video_fb_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
 				   grub_video_fbstd_colors);
 
@@ -318,7 +318,7 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
     grub_dprintf ("video", "GOP: Couldn't set palette\n");
   else
     grub_dprintf ("video", "GOP: Success\n");
-  
+ 
   return err;
 }
 

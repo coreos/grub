@@ -1,4 +1,4 @@
-/* xnu_uuid.c - transform 64-bit serial number 
+/* xnu_uuid.c - transform 64-bit serial number
    to 128-bit uuid suitable for xnu. */
 /*
  *  GRUB  --  GRand Unified Bootloader
@@ -38,10 +38,10 @@ struct tohash
   grub_uint64_t serial;
 } __attribute__ ((packed));
 
-/* This prefix is used by xnu and boot-132 to hash 
+/* This prefix is used by xnu and boot-132 to hash
    together with volume serial. */
-static grub_uint8_t hash_prefix[16] 
-  = {0xB3, 0xE2, 0x0F, 0x39, 0xF2, 0x92, 0x11, 0xD6, 
+static grub_uint8_t hash_prefix[16]
+  = {0xB3, 0xE2, 0x0F, 0x39, 0xF2, 0x92, 0x11, 0xD6,
      0x97, 0xA4, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC};
 
 #define rol(x,n) ( ((x) << (n)) | ((x) >> (32-(n))) )
@@ -237,7 +237,7 @@ md5_write( void *context, const void *inbuf_arg , grub_size_t inlen)
   }
   //  _gcry_burn_stack (80+6*sizeof(void*));
 
-  while( inlen >= 64 ) 
+  while( inlen >= 64 )
   {
     transform( hd, inbuf );
     hd->count = 0;
@@ -377,7 +377,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT (xnu_uuid)
 {
   cmd = grub_register_command ("xnu_uuid", grub_cmd_xnu_uuid,
-			       "xnu_uuid GRUBUUID [VARNAME]",
+			       "GRUBUUID [VARNAME]",
 			       "Transform 64-bit UUID to format "
 			       "suitable for xnu.");
 }

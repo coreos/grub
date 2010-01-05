@@ -53,7 +53,7 @@ grub_cmd_password (grub_command_t cmd __attribute__ ((unused)),
   char *pass;
 
   if (argc != 2)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Two arguments expected.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "two arguments expected");
 
   pass = grub_strdup (args[1]);
   if (!pass)
@@ -75,7 +75,7 @@ GRUB_MOD_INIT(password)
 {
   my_mod = mod;
   cmd = grub_register_command ("password", grub_cmd_password,
-			       "password USER PASSWORD",
+			       "USER PASSWORD",
 			       "Set user password (plaintext). "
 			       "Unrecommended and insecure.");
 }

@@ -469,21 +469,22 @@ find_framebuf (grub_uint32_t *fb_base, grub_uint32_t *line_len)
 {
   int found = 0;
 
-  auto int NESTED_FUNC_ATTR find_card (int bus, int dev, int func,
+  auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev,
 				       grub_pci_id_t pciid);
 
-  int NESTED_FUNC_ATTR find_card (int bus, int dev, int func,
+  int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev,
 				  grub_pci_id_t pciid)
     {
       grub_pci_address_t addr;
 
-      addr = grub_pci_make_address (bus, dev, func, 2);
+      addr = grub_pci_make_address (dev, 2);
       if (grub_pci_read (addr) >> 24 == 0x3)
 	{
 	  int i;
 
 	  grub_printf ("Display controller: %d:%d.%d\nDevice id: %x\n",
-		       bus, dev, func, pciid);
+		       grub_pci_get_bus (dev), grub_pci_get_device (dev),
+		       grub_pci_get_function (dev), pciid);
 	  addr += 8;
 	  for (i = 0; i < 6; i++, addr += 4)
 	    {
@@ -670,7 +671,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   len = 0x400 - sizeof (lh);
   if (grub_file_read (file, (char *) real_mode_mem + sizeof (lh), len) != len)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 
@@ -852,7 +853,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   len = prot_size;
   if (grub_file_read (file, (void *) GRUB_LINUX_BZIMAGE_ADDR, len) != len)
-    grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+    grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
 
   if (grub_errno == GRUB_ERR_NONE)
     {
@@ -889,13 +890,13 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
       goto fail;
     }
 
   if (! loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load the kernel first");
       goto fail;
     }
 
@@ -965,7 +966,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_file_read (file, initrd_mem, size) != size)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 
@@ -988,9 +989,9 @@ static grub_command_t cmd_linux, cmd_initrd;
 GRUB_MOD_INIT(linux)
 {
   cmd_linux = grub_register_command ("linux", grub_cmd_linux,
-				     0, "load linux");
+				     0, "Load Linux.");
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
-				      0, "load initrd");
+				      0, "Load initrd.");
   my_mod = mod;
 }
 

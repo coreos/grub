@@ -78,7 +78,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(cat)
 {
   cmd = grub_register_command_p1 ("cat", grub_cmd_cat,
-				  "cat FILE", "Show the contents of a file.");
+				  "FILE", "Show the contents of a file.");
 }
 
 GRUB_MOD_FINI(cat)

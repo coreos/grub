@@ -48,18 +48,36 @@
 #include <grub/device.h>
 #include <grub/partition.h>
 #endif
+#include <grub/i386/relocator.h>
 
 extern grub_dl_t my_mod;
 static struct multiboot_info *mbi, *mbi_dest;
-static grub_addr_t entry;
 
-static char *playground = 0;
 static grub_size_t code_size;
+
+char *grub_multiboot_payload_orig;
+grub_addr_t grub_multiboot_payload_dest;
+grub_size_t grub_multiboot_payload_size;
+grub_uint32_t grub_multiboot_payload_eip;
 
 static grub_err_t
 grub_multiboot_boot (void)
 {
-  grub_multiboot_real_boot (entry, mbi_dest);
+  struct grub_relocator32_state state =
+    {
+      .eax = MULTIBOOT_BOOTLOADER_MAGIC,
+      .ebx = PTR_TO_UINT32 (mbi_dest),
+      .ecx = 0,
+      .edx = 0,
+      .eip = grub_multiboot_payload_eip,
+      /* Set esp to some random location in low memory to avoid breaking
+	 non-compliant kernels.  */
+      .esp = 0x7ff00
+    };
+
+  grub_relocator32_boot (grub_multiboot_payload_orig,
+			 grub_multiboot_payload_dest,
+			 state);
 
   /* Not reached.  */
   return GRUB_ERR_NONE;
@@ -68,7 +86,7 @@ grub_multiboot_boot (void)
 static grub_err_t
 grub_multiboot_unload (void)
 {
-  if (playground)
+  if (mbi)
     {
       unsigned int i;
       for (i = 0; i < mbi->mods_count; i++)
@@ -79,11 +97,11 @@ grub_multiboot_unload (void)
 		     ((struct multiboot_mod_list *) mbi->mods_addr)[i].cmdline);
 	}
       grub_free ((void *) mbi->mods_addr);
-      grub_free (playground);
     }
+  grub_relocator32_free (grub_multiboot_payload_orig);
 
   mbi = NULL;
-  playground = NULL;
+  grub_multiboot_payload_orig = NULL;
   grub_dl_unref (my_mod);
 
   return GRUB_ERR_NONE;
@@ -183,7 +201,7 @@ grub_multiboot_get_bootdev (grub_uint32_t *bootdev)
   if (dev)
     grub_device_close (dev);
 
-  *bootdev = ((biosdev & 0xff) << 24) | ((slice & 0xff) << 16) 
+  *bootdev = ((biosdev & 0xff) << 24) | ((slice & 0xff) << 16)
     | ((part & 0xff) << 8) | 0xff;
   return (biosdev != ~0UL);
 #else
@@ -208,21 +226,21 @@ grub_multiboot (int argc, char *argv[])
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
       goto fail;
     }
 
   file = grub_gzfile_open (argv[0], 1);
   if (! file)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "Couldn't open file");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
       goto fail;
     }
 
   len = grub_file_read (file, buffer, MULTIBOOT_SEARCH);
   if (len < 32)
     {
-      grub_error (GRUB_ERR_BAD_OS, "File too small");
+      grub_error (GRUB_ERR_BAD_OS, "file too small");
       goto fail;
     }
 
@@ -232,29 +250,26 @@ grub_multiboot (int argc, char *argv[])
        ((char *) header <= buffer + len - 12) || (header = 0);
        header = (struct multiboot_header *) ((char *) header + 4))
     {
-      if (header->magic == MULTIBOOT_MAGIC
+      if (header->magic == MULTIBOOT_HEADER_MAGIC
 	  && !(header->magic + header->flags + header->checksum))
 	break;
     }
 
   if (header == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No multiboot header found");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no multiboot header found");
       goto fail;
     }
 
   if (header->flags & MULTIBOOT_UNSUPPORTED)
     {
       grub_error (GRUB_ERR_UNKNOWN_OS,
-		  "Unsupported flag: 0x%x", header->flags);
+		  "unsupported flag: 0x%x", header->flags);
       goto fail;
     }
 
-  if (playground)
-    {
-      grub_free (playground);
-      playground = NULL;
-    }
+  grub_relocator32_free (grub_multiboot_payload_orig);
+  grub_multiboot_payload_orig = NULL;
 
   mmap_length = grub_get_multiboot_mmap_len ();
 
@@ -296,13 +311,14 @@ grub_multiboot (int argc, char *argv[])
       grub_multiboot_payload_dest = header->load_addr;
 
       grub_multiboot_payload_size += code_size;
-      playground = grub_malloc (RELOCATOR_SIZEOF(forward) + grub_multiboot_payload_size + RELOCATOR_SIZEOF(backward));
-      if (! playground)
+
+      grub_multiboot_payload_orig
+	= grub_relocator32_alloc (grub_multiboot_payload_size);
+
+      if (! grub_multiboot_payload_orig)
 	goto fail;
 
-      grub_multiboot_payload_orig = (long) playground + RELOCATOR_SIZEOF(forward);
-
-      if ((grub_file_seek (file, offset)) == (grub_off_t) - 1)
+      if ((grub_file_seek (file, offset)) == (grub_off_t) -1)
 	goto fail;
 
       grub_file_read (file, (void *) grub_multiboot_payload_orig, load_size);
@@ -313,7 +329,7 @@ grub_multiboot (int argc, char *argv[])
 	grub_memset ((void *) (grub_multiboot_payload_orig + load_size), 0,
 		     header->bss_end_addr - header->load_addr - load_size);
 
-      grub_multiboot_payload_entry_offset = header->entry_addr - header->load_addr;
+      grub_multiboot_payload_eip = header->entry_addr;
 
     }
   else if (grub_multiboot_load_elf (file, buffer) != GRUB_ERR_NONE)
@@ -333,23 +349,6 @@ grub_multiboot (int argc, char *argv[])
      by the spec.  Is there something we can do about it?  */
   mbi->mmap_addr = (grub_uint32_t) mmap_addr (grub_multiboot_payload_dest);
   mbi->flags |= MULTIBOOT_INFO_MEM_MAP;
-
-  if (grub_multiboot_payload_dest >= grub_multiboot_payload_orig)
-    {
-      grub_memmove (playground, &grub_multiboot_forward_relocator, RELOCATOR_SIZEOF(forward));
-      entry = (grub_addr_t) playground;
-    }
-  else
-    {
-      grub_memmove ((char *) (grub_multiboot_payload_orig + grub_multiboot_payload_size),
-		    &grub_multiboot_backward_relocator, RELOCATOR_SIZEOF(backward));
-      entry = (grub_addr_t) grub_multiboot_payload_orig + grub_multiboot_payload_size;
-    }
-
-  grub_dprintf ("multiboot_loader", "dest=%p, size=0x%x, entry_offset=0x%x\n",
-		(void *) grub_multiboot_payload_dest,
-		grub_multiboot_payload_size,
-		grub_multiboot_payload_entry_offset);
 
   /* Convert from bytes to kilobytes.  */
   mbi->mem_lower = grub_mmap_get_lower () / 1024;
@@ -409,14 +408,14 @@ grub_module  (int argc, char *argv[])
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
       goto fail;
     }
 
   if (!mbi)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT,
-		  "You need to load the multiboot kernel first");
+		  "you need to load the multiboot kernel first");
       goto fail;
     }
 
@@ -431,7 +430,7 @@ grub_module  (int argc, char *argv[])
 
   if (grub_file_read (file, module, size) != size)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 

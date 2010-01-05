@@ -190,7 +190,7 @@ struct file_hash{
   unsigned int starting_block;
   unsigned int size;
 };
-  
+ 
 
 /*
  * This structure is used to control the output of fragments to the cdrom
@@ -243,7 +243,7 @@ extern struct output_fragment jdirtree_desc;
 extern struct output_fragment extension_desc;
 extern struct output_fragment files_desc;
 
-/* 
+/*
  * This structure describes one complete directory.  It has pointers
  * to other directories in the overall tree so that it is clear where
  * this directory lives in the tree, and it also must contain pointers
@@ -296,6 +296,8 @@ extern struct iso_directory_record root_record;
 extern struct iso_directory_record jroot_record;
 
 extern int use_eltorito;
+extern int use_embedded_boot;
+extern int use_protective_msdos_label;
 extern int use_eltorito_emul_floppy;
 extern int use_boot_info_table;
 extern int use_RockRidge;
@@ -324,14 +326,14 @@ extern struct directory *
 					  struct directory_entry * self, int));
 extern void DECL (finish_cl_pl_entries, (void));
 extern int DECL(scan_directory_tree,(struct directory * this_dir,
-				     char * path, 
+				     char * path,
 				     struct directory_entry * self));
-extern int DECL(insert_file_entry,(struct directory *, char *, 
+extern int DECL(insert_file_entry,(struct directory *, char *,
 				   char *));
 
 extern void DECL(generate_iso9660_directories,(struct directory *, FILE*));
 extern void DECL(dump_tree,(struct directory * node));
-extern struct directory_entry * DECL(search_tree_file, (struct 
+extern struct directory_entry * DECL(search_tree_file, (struct
 				directory * node,char * filename));
 extern void DECL(update_nlink_field,(struct directory * node));
 extern void DECL (init_fstatbuf, (void));
@@ -372,17 +374,17 @@ extern char *effective_date;
 
 extern FILE * in_image;
 extern struct iso_directory_record *
-	DECL(merge_isofs,(char * path)); 
+	DECL(merge_isofs,(char * path));
 
 extern int DECL(free_mdinfo, (struct directory_entry **, int len));
 
-extern struct directory_entry ** 
+extern struct directory_entry **
 	DECL(read_merging_directory,(struct iso_directory_record *, int*));
-extern void 
-	DECL(merge_remaining_entries, (struct directory *, 
+extern void
+	DECL(merge_remaining_entries, (struct directory *,
 				       struct directory_entry **, int));
-extern int 
-	DECL(merge_previous_session, (struct directory *, 
+extern int
+	DECL(merge_previous_session, (struct directory *,
 				      struct iso_directory_record *));
 
 extern int  DECL(get_session_start, (int *));
@@ -399,7 +401,7 @@ struct dirent * DECL(readdir_add_files, (char **, char *, DIR *));
 
 /* */
 
-extern int DECL(iso9660_file_length,(const char* name, 
+extern int DECL(iso9660_file_length,(const char* name,
 			       struct directory_entry * sresult, int flag));
 extern int DECL(iso9660_date,(char *, time_t));
 extern void DECL(add_hash,(struct directory_entry *));
@@ -411,7 +413,7 @@ extern int DECL(delete_file_hash,(struct directory_entry *));
 extern struct directory_entry * DECL(find_file_hash,(char *));
 extern void DECL(add_file_hash,(struct directory_entry *));
 extern int DECL(generate_rock_ridge_attributes,(char *, char *,
-					  struct directory_entry *, 
+					  struct directory_entry *,
 					  struct stat *, struct stat *,
 					  int  deep_flag));
 extern char * DECL(generate_rr_extension_record,(char * id,  char  * descriptor,
@@ -438,20 +440,21 @@ extern char * extension_record;
 extern int extension_record_extent;
 extern int n_data_extents;
 
-/* These are a few goodies that can be specified on the command line, and  are
+/* These are a few goodies that can be specified on the command line, and are
    filled into the root record */
 
-extern char * preparer;
-extern char * publisher;
-extern char * copyright;
-extern char * biblio;
-extern char * abstract;
-extern char * appid;
-extern char * volset_id;
-extern char * system_id;
-extern char * volume_id;
-extern char * boot_catalog;
-extern char * boot_image;
+extern char *preparer;
+extern char *publisher;
+extern char *copyright;
+extern char *biblio;
+extern char *abstract;
+extern char *appid;
+extern char *volset_id;
+extern char *system_id;
+extern char *volume_id;
+extern char *boot_catalog;
+extern char *boot_image;
+extern char *boot_image_embed;
 extern int volume_set_size;
 extern int volume_sequence_number;
 

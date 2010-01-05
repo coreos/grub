@@ -26,6 +26,7 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/fshelp.h>
+#include <grub/charset.h>
 
 #define GRUB_ISO9660_FSTYPE_DIR		0040000
 #define GRUB_ISO9660_FSTYPE_REG		0100000
@@ -279,13 +280,13 @@ grub_iso9660_mount (grub_disk_t disk)
 			  sizeof (struct grub_iso9660_primary_voldesc),
 			  (char *) &voldesc))
         {
-          grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
+          grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
           goto fail;
         }
 
       if (grub_strncmp ((char *) voldesc.voldesc.magic, "CD001", 5) != 0)
         {
-          grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
+          grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
           goto fail;
         }
 
@@ -314,7 +315,7 @@ grub_iso9660_mount (grub_disk_t disk)
 			     << GRUB_ISO9660_LOG2_BLKSZ), 0,
 		      sizeof (rootdir), (char *) &rootdir))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
       goto fail;
     }
 
@@ -330,7 +331,7 @@ grub_iso9660_mount (grub_disk_t disk)
 			     << GRUB_ISO9660_LOG2_BLKSZ), sua_pos,
 		      sua_size, sua))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
       goto fail;
     }
 
@@ -831,7 +832,7 @@ grub_iso9660_uuid (grub_device_t device, char **uuid)
 	  && ! data->voldesc.modified.second[0] && ! data->voldesc.modified.second[1]
 	  && ! data->voldesc.modified.hundredth[0] && ! data->voldesc.modified.hundredth[1])
 	{
-	  grub_error (GRUB_ERR_BAD_NUMBER, "No creation date in filesystem to generate UUID.");
+	  grub_error (GRUB_ERR_BAD_NUMBER, "no creation date in filesystem to generate UUID");
 	  *uuid = NULL;
 	}
       else

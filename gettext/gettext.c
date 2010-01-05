@@ -29,8 +29,8 @@
 #include <grub/gzio.h>
 #include <grub/i18n.h>
 
-/* 
-   .mo file information from: 
+/*
+   .mo file information from:
    http://www.gnu.org/software/autoconf/manual/gettext/MO-Files.html .
 */
 
@@ -243,7 +243,7 @@ grub_mofile_open (const char *filename)
   if (version != 0)
     {
       grub_error (GRUB_ERR_BAD_FILE_TYPE,
-		  "mo: invalid mo version in file: %s\n", filename);
+		  "mo: invalid mo version in file: %s", filename);
       fd_mo = 0;
       return 0;
     }
@@ -298,7 +298,7 @@ grub_gettext_init_ext (const char *lang)
 }
 
 static void
-grub_gettext_delete_list ()
+grub_gettext_delete_list (void)
 {
   struct grub_gettext_msg *item;
 
@@ -347,7 +347,7 @@ GRUB_MOD_INIT (gettext)
   grub_gettext_init_ext (lang);
 
   grub_register_command_p1 ("gettext", grub_cmd_translate,
-			    "gettext STRING",
+			    "STRING",
 			    "Translates the string with the current settings.");
 
   /* Reload .mo file information if lang changes.  */

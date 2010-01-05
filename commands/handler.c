@@ -95,16 +95,16 @@ GRUB_MOD_INIT(handler)
 {
   cmd_handler =
     grub_register_command ("handler", grub_cmd_handler,
-			   "handler [class [handler]]",
-			   "List or select a handler");
+			   "[class [handler]]",
+			   "List or select a handler.");
   cmd_terminal_input =
     grub_register_command ("terminal_input", grub_cmd_handler,
-			   "terminal_input [handler]",
-			   "List or select a handler");
+			   "[handler]",
+			   "List or select an input terminal.");
   cmd_terminal_output =
     grub_register_command ("terminal_output", grub_cmd_handler,
-			   "terminal_output [handler]",
-			   "List or select a handler");
+			   "[handler]",
+			   "List or select an output terminal.");
 }
 
 GRUB_MOD_FINI(handler)
