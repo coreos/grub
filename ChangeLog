@@ -1,3 +1,10 @@
+2010-01-05  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Remove grub-mkfloppy.  Images produced by grub-mkrescue are valid
+	floppy images now.
+
+	* util/i386/pc/grub-mkfloppy.in: Remove.  Update all users.
+
 2010-01-04  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* disk/i386/pc/biosdisk.c (grub_biosdisk_rw): Use ALIGN_UP macro
