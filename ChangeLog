@@ -1,3 +1,16 @@
+2010-01-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix descent and ascent calculation.
+
+	* util/grub-mkfont.c (grub_font_info): New fields 'asce' and 'max_y'.
+	(options): New option "asce".
+	(usage): Likewise.
+	(add_char): Ignore invalid glyphs for descent calculation.
+	Calculate ascent from actual content.
+	(print_glyphs): Use 'asce'.
+	(write_font): Likewise. Allow ascent override.
+	(main): Handle "asce" option.
+
 2010-01-06  Carles Pina i Estany  <carles@pina.cat>
 
 	* kern/err.c: Include `<grub/i18n.h>'.
