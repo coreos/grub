@@ -315,6 +315,7 @@ grub_gfxterm_fullscreen (void)
   struct grub_video_mode_info mode_info;
   grub_video_color_t color;
   grub_err_t err;
+  int double_redraw;
 
   err = grub_video_get_info (&mode_info);
   /* Figure out what mode we ended up.  */
@@ -323,9 +324,17 @@ grub_gfxterm_fullscreen (void)
 
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
+  double_redraw = mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED
+    && !(mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
+
   /* Make sure screen is black.  */
   color = grub_video_map_rgb (0, 0, 0);
   grub_video_fill_rect (color, 0, 0, mode_info.width, mode_info.height);
+  if (double_redraw)
+    {
+      grub_video_swap_buffers ();
+      grub_video_fill_rect (color, 0, 0, mode_info.width, mode_info.height);
+    }
   bitmap = 0;
 
   /* Select the font to use.  */
@@ -337,10 +346,7 @@ grub_gfxterm_fullscreen (void)
 
   return grub_gfxterm_set_window (GRUB_VIDEO_RENDER_TARGET_DISPLAY,
 				  0, 0, mode_info.width, mode_info.height,
-				  mode_info.mode_type
-				  & GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED
-				  && !(mode_info.mode_type 
-				       & GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP),
+				  double_redraw,
 				  font_name, DEFAULT_BORDER_WIDTH);
 }
 
