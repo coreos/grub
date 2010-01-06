@@ -271,7 +271,7 @@ SUFFIX (grub_freebsd_load_elf_meta) (grub_file_t file, grub_addr_t *kern_end)
       (grub_ssize_t) symsize)
     {
       if (! grub_errno)
-	return grub_error (GRUB_ERR_BAD_OS, "invalid elf");
+	return grub_error (GRUB_ERR_BAD_OS, "invalid ELF");
       return grub_errno;
     }
   curload += symsize;
@@ -285,7 +285,7 @@ SUFFIX (grub_freebsd_load_elf_meta) (grub_file_t file, grub_addr_t *kern_end)
       != (grub_ssize_t) strsize)
     {
       if (! grub_errno)
-	return grub_error (GRUB_ERR_BAD_OS, "invalid elf");
+	return grub_error (GRUB_ERR_BAD_OS, "invalid ELF");
       return grub_errno;
     }
   curload += strsize;

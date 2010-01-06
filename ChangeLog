@@ -1,5 +1,16 @@
 2010-01-06  Carles Pina i Estany  <carles@pina.cat>
 
+	* kern/err.c: Include `<grub/i18n.h>'.
+	(grub_print_error): Add full stop. Gettextizze.
+	* loader/i386/bsd.c (grub_netbsd_boot): Change grub_error description.
+	(grub_bsd_load_elf): Capitalise ELF.
+	(grub_cmd_freebsd_loadenv): Add `s' in error string.
+	(grub_cmd_freebsd_module): Likewise.
+	(grub_cmd_freebsd_module_elf): Likewise.
+	* loader/i386/bsdXX.c (SUFFIX): Capitalise ELF.
+
+2010-01-06  Carles Pina i Estany  <carles@pina.cat>
+
 	* commands/search.c (GRUB_MOD_INIT): Use HELP_MESSAGE.
 	* commands/search_file.c (HELP_MESSAGE): New macro.
 	* commands/search_label.c (HELP_MESSAGE): Likewise.
