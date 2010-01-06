@@ -37,7 +37,9 @@ commands/probe.c
 commands/read.c
 commands/reboot.c
 commands/search.c
-commands/search.c
+commands/search_file.c
+commands/search_label.c
+commands/search_uuid.c
 commands/sleep.c
 commands/test.c
 commands/true.c
