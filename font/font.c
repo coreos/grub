@@ -1131,12 +1131,15 @@ grub_err_bidi_logical_to_visual (grub_uint32_t *logical,
   void revert (unsigned start, unsigned end)
   {
     grub_uint32_t t;
-    unsigned k;
+    unsigned k, tl;
     for (k = 0; k <= (end - start) / 2; k++)
       {
 	t = no_markers[start+k];
 	no_markers[start+k] = no_markers[end-k];
 	no_markers[end-k] = t;
+	tl = levels[start+k];
+	levels[start+k] = levels[end-k];
+	levels[end-k] = tl;
       }
   }
 
