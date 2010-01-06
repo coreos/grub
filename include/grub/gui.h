@@ -74,6 +74,11 @@ struct grub_gui_list_ops
                          grub_gfxmenu_view_t view);
 };
 
+struct grub_gui_progress_ops
+{
+  void (*set_state) (void *self, int visible, int start, int current, int end);
+};
+
 typedef signed grub_fixed_signed_t;
 #define GRUB_FIXED_1 0x10000
 
@@ -118,6 +123,12 @@ struct grub_gui_component
   grub_fixed_signed_t wfrac;
   signed h;
   grub_fixed_signed_t hfrac;
+};
+
+struct grub_gui_progress
+{
+  struct grub_gui_component component;
+  struct grub_gui_progress_ops *ops;
 };
 
 struct grub_gui_container

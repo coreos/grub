@@ -362,6 +362,8 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
   if (timeout > 0)
     menu_print_timeout (timeout);
+  else
+    clear_timeout ();
 
   while (1)
     {

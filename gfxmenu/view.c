@@ -160,11 +160,10 @@ draw_title (grub_gfxmenu_view_t view)
 
 struct progress_value_data
 {
-  const char *visible;
-  const char *start;
-  const char *end;
-  const char *value;
-  const char *text;
+  int visible;
+  int start;
+  int end;
+  int value;
 };
 
 static void
@@ -174,19 +173,14 @@ update_timeout_visit (grub_gui_component_t component,
   struct progress_value_data *pv;
   pv = (struct progress_value_data *) userdata;
 
-  component->ops->set_property (component, "visible", pv->visible);
-  component->ops->set_property (component, "start", pv->start);
-  component->ops->set_property (component, "end", pv->end);
-  component->ops->set_property (component, "value", pv->value);
-  component->ops->set_property (component, "text", pv->text);
+  ((struct grub_gui_progress *) component)->ops
+    ->set_state ((struct grub_gui_progress *) component,
+		 pv->visible, pv->start, pv->value, pv->end);
 }
 
 void 
 grub_gfxmenu_print_timeout (int timeout, void *data)
 {
-  char valuebuf[sizeof ("-XXXXXXXXXXX")];
-  char startbuf[sizeof ("-XXXXXXXXXXX")];
-  char msgbuf[120];
   struct grub_gfxmenu_view *view = data;
 
   struct progress_value_data pv;
@@ -205,17 +199,10 @@ grub_gfxmenu_print_timeout (int timeout, void *data)
   if (view->first_timeout == -1)
     view->first_timeout = timeout;
 
-  pv.visible = "true";
-  grub_sprintf (startbuf, "%d", -(view->first_timeout + 1));
-  pv.start = startbuf;
-  pv.end = "0";
-  grub_sprintf (valuebuf, "%d", -timeout);
-  pv.value = valuebuf;
-
-  grub_sprintf (msgbuf,
-                "The highlighted entry will be booted automatically in %d s.",
-		timeout);
-  pv.text = msgbuf;
+  pv.visible = 1;
+  pv.start = -(view->first_timeout + 1);
+  pv.end = 0;
+  pv.value = -timeout;
 
   grub_gui_find_by_id ((grub_gui_component_t) view->canvas,
                        TIMEOUT_COMPONENT_ID, update_timeout_visit, &pv);
@@ -244,11 +231,10 @@ grub_gfxmenu_clear_timeout (void *data)
     grub_gfxmenu_view_redraw (view, &bounds);
   }
 
-  pv.visible = "false";
-  pv.start = "1";
-  pv.end = "0";
-  pv.value = "0";
-  pv.text = "";
+  pv.visible = 0;
+  pv.start = 1;
+  pv.end = 0;
+  pv.value = 0;
 
   grub_gui_find_by_id ((grub_gui_component_t) view->canvas,
                        TIMEOUT_COMPONENT_ID, update_timeout_visit, &pv);

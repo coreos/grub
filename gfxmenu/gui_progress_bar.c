@@ -24,10 +24,11 @@
 #include <grub/gui_string_util.h>
 #include <grub/gfxmenu_view.h>
 #include <grub/gfxwidgets.h>
+#include <grub/i18n.h>
 
 struct grub_gui_progress_bar
 {
-  struct grub_gui_component component;
+  struct grub_gui_progress progress;
 
   grub_gui_container_t parent;
   grub_video_rect_t bounds;
@@ -37,7 +38,7 @@ struct grub_gui_progress_bar
   int end;
   int value;
   int show_text;
-  char *text;
+  char *template;
   grub_font_t font;
   grub_gui_color_t text_color;
   grub_gui_color_t border_color;
@@ -156,14 +157,20 @@ draw_pixmap_bar (grub_gui_progress_bar_t self)
 static void
 draw_text (grub_gui_progress_bar_t self)
 {
-  const char *text = self->text;
-  if (text && self->show_text)
+  if (self->template)
     {
       grub_font_t font = self->font;
       grub_video_color_t text_color = grub_gui_map_color (self->text_color);
       int width = self->bounds.width;
       int height = self->bounds.height;
-
+      char *text = grub_asprintf (self->template,
+				  self->value > 0 ? self->value : -self->value);
+      if (!text)
+	{
+	  grub_print_error ();
+	  grub_errno = GRUB_ERR_NONE;
+	  return;
+	}
       /* Center the text. */
       int text_width = grub_font_get_string_width (font, text);
       int x = (width - text_width) / 2;
@@ -228,35 +235,60 @@ progress_bar_get_bounds (void *vself, grub_video_rect_t *bounds)
 }
 
 static void
-progress_bar_get_minimal_size (void *vself __attribute__ ((unused)),
+progress_bar_get_minimal_size (void *vself,
 			       unsigned *width, unsigned *height)
 {
+  unsigned text_width = 0, text_height = 0;
+  grub_gui_progress_bar_t self = vself;
+
+  if (self->template)
+    {
+      text_width = grub_font_get_string_width (self->font, self->template);
+      text_width += grub_font_get_string_width (self->font, "XXXXXXXXXX");
+      text_height = grub_font_get_descent (self->font)
+	+ grub_font_get_ascent (self->font);
+    }
   *width = 200;
+  if (*width < text_width)
+    *width = text_width;
   *height = 28;
+  if (*height < text_height)
+    *height = text_height;
+}
+
+static void
+progress_bar_set_state (void *vself, int visible, int start,
+			int current, int end)
+{
+  grub_gui_progress_bar_t self = vself;  
+  self->visible = visible;
+  self->start = start;
+  self->value = current;
+  self->end = end;
 }
 
 static grub_err_t
 progress_bar_set_property (void *vself, const char *name, const char *value)
 {
   grub_gui_progress_bar_t self = vself;
-  if (grub_strcmp (name, "value") == 0)
+  if (grub_strcmp (name, "text") == 0)
     {
-      self->value = grub_strtol (value, 0, 10);
-    }
-  else if (grub_strcmp (name, "start") == 0)
-    {
-      self->start = grub_strtol (value, 0, 10);
-    }
-  else if (grub_strcmp (name, "end") == 0)
-    {
-      self->end = grub_strtol (value, 0, 10);
-    }
-  else if (grub_strcmp (name, "text") == 0)
-    {
-      grub_free (self->text);
-      if (! value)
-        value = "";
-      self->text = grub_strdup (value);
+      grub_free (self->template);
+      if (grub_strcmp (value, "@TIMEOUT_NOTIFICATION_LONG@") == 0)
+	value 
+	  = _("The highlighted entry will be executed automatically in %ds.");
+      else if (grub_strcmp (value, "@TIMEOUT_NOTIFICATION_MIDDLE@") == 0)
+	/* TRANSLATORS:  's' stands for seconds.
+	   It's a standalone timeout notification.
+	   Please use the short form in your language.  */
+	value = _("%ds remaining.");
+      else if (grub_strcmp (value, "@TIMEOUT_NOTIFICATION_SHORT@") == 0)
+	/* TRANSLATORS:  's' stands for seconds.
+	   It's a standalone timeout notification.
+	   Please use the shortest form available in you language.  */
+	value = _("%ds");
+
+      self->template = grub_strdup (value);
     }
   else if (grub_strcmp (name, "font") == 0)
     {
@@ -298,14 +330,6 @@ progress_bar_set_property (void *vself, const char *name, const char *value)
       grub_free (self->theme_dir);
       self->theme_dir = value ? grub_strdup (value) : 0;
     }
-  else if (grub_strcmp (name, "visible") == 0)
-    {
-      self->visible = grub_strcmp (value, "false") != 0;
-    }
-  else if (grub_strcmp (name, "show_text") == 0)
-    {
-      self->show_text = grub_strcmp (value, "false") != 0;
-    }
   else if (grub_strcmp (name, "id") == 0)
     {
       grub_free (self->id);
@@ -331,6 +355,11 @@ static struct grub_gui_component_ops progress_bar_ops =
   .set_property = progress_bar_set_property
 };
 
+static struct grub_gui_progress_ops progress_bar_pb_ops =
+  {
+    .set_state = progress_bar_set_state
+  };
+
 grub_gui_component_t
 grub_gui_progress_bar_new (void)
 {
@@ -338,10 +367,9 @@ grub_gui_progress_bar_new (void)
   self = grub_zalloc (sizeof (*self));
   if (! self)
     return 0;
-  self->component.ops = &progress_bar_ops;
+  self->progress.ops = &progress_bar_pb_ops;
+  self->progress.component.ops = &progress_bar_ops;
   self->visible = 1;
-  self->show_text = 1;
-  self->text = grub_strdup ("");
   self->font = grub_font_get ("Helvetica 10");
   grub_gui_color_t black = { .red = 0, .green = 0, .blue = 0, .alpha = 255 };
   grub_gui_color_t gray = { .red = 128, .green = 128, .blue = 128, .alpha = 255 };

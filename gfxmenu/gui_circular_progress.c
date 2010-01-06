@@ -28,7 +28,7 @@
 
 struct grub_gui_circular_progress
 {
-  struct grub_gui_component comp;
+  struct grub_gui_progress progress;
 
   grub_gui_container_t parent;
   grub_video_rect_t bounds;
@@ -215,19 +215,7 @@ static grub_err_t
 circprog_set_property (void *vself, const char *name, const char *value)
 {
   circular_progress_t self = vself;
-  if (grub_strcmp (name, "value") == 0)
-    {
-      self->value = grub_strtol (value, 0, 10);
-    }
-  else if (grub_strcmp (name, "start") == 0)
-    {
-      self->start = grub_strtol (value, 0, 10);
-    }
-  else if (grub_strcmp (name, "end") == 0)
-    {
-      self->end = grub_strtol (value, 0, 10);
-    }
-  else if (grub_strcmp (name, "num_ticks") == 0)
+  if (grub_strcmp (name, "num_ticks") == 0)
     {
       self->num_ticks = grub_strtol (value, 0, 10);
     }
@@ -257,10 +245,6 @@ circprog_set_property (void *vself, const char *name, const char *value)
       grub_free (self->theme_dir);
       self->theme_dir = value ? grub_strdup (value) : 0;
     }
-  else if (grub_strcmp (name, "visible") == 0)
-    {
-      self->visible = grub_strcmp (value, "false") != 0;
-    }
   else if (grub_strcmp (name, "id") == 0)
     {
       grub_free (self->id);
@@ -270,6 +254,17 @@ circprog_set_property (void *vself, const char *name, const char *value)
         self->id = 0;
     }
   return grub_errno;
+}
+
+static void
+circprog_set_state (void *vself, int visible, int start,
+		    int current, int end)
+{
+  circular_progress_t self = vself;  
+  self->visible = visible;
+  self->start = start;
+  self->value = current;
+  self->end = end;
 }
 
 static struct grub_gui_component_ops circprog_ops =
@@ -285,6 +280,11 @@ static struct grub_gui_component_ops circprog_ops =
   .set_property = circprog_set_property
 };
 
+static struct grub_gui_progress_ops circprog_prog_ops =
+  {
+    .set_state = circprog_set_state
+  };
+
 grub_gui_component_t
 grub_gui_circular_progress_new (void)
 {
@@ -292,7 +292,8 @@ grub_gui_circular_progress_new (void)
   self = grub_zalloc (sizeof (*self));
   if (! self)
     return 0;
-  self->comp.ops = &circprog_ops;
+  self->progress.ops = &circprog_prog_ops;
+  self->progress.component.ops = &circprog_ops;
   self->visible = 1;
   self->num_ticks = 64;
   self->start_angle = -64;
