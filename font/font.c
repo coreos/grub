@@ -26,6 +26,8 @@
 #include <grub/types.h>
 #include <grub/video.h>
 #include <grub/bitmap.h>
+#include <grub/charset.h>
+#include <grub/bidi.h>
 
 #ifndef FONT_DEBUG
 #define FONT_DEBUG 0
@@ -1045,6 +1047,359 @@ grub_font_draw_glyph (struct grub_font_glyph *glyph,
                                  glyph->width, glyph->height);
 }
 
+static inline enum grub_bidi_type
+get_bidi_type (grub_uint32_t c)
+{
+  static grub_uint8_t *bidi_types = NULL;
+  struct grub_bidi_compact_range *cur;
+
+  if (!bidi_types)
+    {
+      unsigned i;
+      bidi_types = grub_zalloc (GRUB_BIDI_MAX_CACHED_UNICODE_CHAR);
+      if (bidi_types)
+	for (cur = grub_bidi_compact; cur->end; cur++)
+	  for (i = cur->start; i <= cur->end
+		 && i < GRUB_BIDI_MAX_CACHED_UNICODE_CHAR; i++)
+	    bidi_types[i] = cur->type;
+      else
+	grub_errno = GRUB_ERR_NONE;
+    }
+
+  if (bidi_types && c < GRUB_BIDI_MAX_CACHED_UNICODE_CHAR)
+    return bidi_types[c];
+
+  for (cur = grub_bidi_compact; cur->end; cur++)
+    if (cur->start <= c && c <= cur->end)
+      return cur->type;
+
+  return GRUB_BIDI_TYPE_L;
+}
+
+static grub_ssize_t
+grub_err_bidi_logical_to_visual (grub_uint32_t *logical,
+				 grub_size_t logical_len,
+				 grub_uint32_t **visual)
+{
+  enum grub_bidi_type type = GRUB_BIDI_TYPE_L;
+  enum override_status {OVERRIDE_NEUTRAL = 0, OVERRIDE_R, OVERRIDE_L};
+  unsigned *levels;
+  enum grub_bidi_type *resolved_types;
+  unsigned base_level;
+  enum override_status cur_override;
+  unsigned i;
+  unsigned stack_level[GRUB_BIDI_MAX_EXPLICIT_LEVEL + 3];
+  enum override_status stack_override[GRUB_BIDI_MAX_EXPLICIT_LEVEL + 3];
+  unsigned stack_depth = 0;
+  unsigned invalid_pushes = 0;
+  unsigned no_markers_len = 0;
+  unsigned run_start, run_end;
+  grub_uint32_t *no_markers;
+  unsigned cur_level;
+
+  auto void push_stack (unsigned new_override, unsigned new_level);
+  void push_stack (unsigned new_override, unsigned new_level)
+  {
+    if (new_level > GRUB_BIDI_MAX_EXPLICIT_LEVEL)
+      {
+	invalid_pushes++;
+	return;
+      }
+    stack_level[stack_depth] = cur_level;
+    stack_override[stack_depth] = cur_override;
+    stack_depth++;
+    cur_level = new_level;
+    cur_override = new_override;
+  }
+
+  auto void pop_stack (void);
+  void pop_stack (void)
+  {
+    if (invalid_pushes)
+      {
+	invalid_pushes--;
+	return;
+      }
+    if (!stack_depth)
+      return;
+    stack_depth--;
+    cur_level = stack_level[stack_depth];
+    cur_override = stack_override[stack_depth];
+  }
+
+  auto void revert (unsigned start, unsigned end);
+  void revert (unsigned start, unsigned end)
+  {
+    grub_uint32_t t;
+    unsigned k;
+    for (k = 0; k <= (end - start) / 2; k++)
+      {
+	t = no_markers[start+k];
+	no_markers[start+k] = no_markers[end-k];
+	no_markers[end-k] = t;
+      }
+  }
+
+  levels = grub_malloc (sizeof (levels[0]) * logical_len);
+  if (!levels)
+    return -1;
+
+  resolved_types = grub_malloc (sizeof (resolved_types[0]) * logical_len);
+  if (!resolved_types)
+    {
+      grub_free (levels);
+      return -1;
+    }
+
+  no_markers = grub_malloc (sizeof (resolved_types[0]) * logical_len);
+  if (!no_markers)
+    {
+      grub_free (resolved_types);
+      grub_free (levels);
+      return -1;
+    }
+
+  for (i = 0; i < logical_len; i++)
+    {
+      type = get_bidi_type (logical[i]);
+      if (type == GRUB_BIDI_TYPE_L || type == GRUB_BIDI_TYPE_AL
+	  || type == GRUB_BIDI_TYPE_R)
+	break;
+    }
+  if (type == GRUB_BIDI_TYPE_R || type == GRUB_BIDI_TYPE_AL)
+    base_level = 1;
+  else
+    base_level = 0;
+  
+  cur_level = base_level;
+  cur_override = OVERRIDE_NEUTRAL;
+  for (i = 0; i < logical_len; i++)
+    {
+      type = get_bidi_type (logical[i]);
+      switch (type)
+	{
+	case GRUB_BIDI_TYPE_RLE:
+	  push_stack (cur_override, (cur_level | 1) + 1);
+	  break;
+	case GRUB_BIDI_TYPE_RLO:
+	  push_stack (OVERRIDE_R, (cur_level | 1) + 1);
+	  break;
+	case GRUB_BIDI_TYPE_LRE:
+	  push_stack (cur_override, (cur_level & ~1) + 2);
+	  break;
+	case GRUB_BIDI_TYPE_LRO:
+	  push_stack (OVERRIDE_L, (cur_level & ~1) + 2);
+	  break;
+	case GRUB_BIDI_TYPE_PDF:
+	  pop_stack ();
+	  break;
+	case GRUB_BIDI_TYPE_BN:
+	  break;
+	default:
+	  levels[no_markers_len] = cur_level;
+	  if (cur_override != OVERRIDE_NEUTRAL)
+	    resolved_types[no_markers_len] = 
+	      (cur_override == OVERRIDE_L) ? GRUB_BIDI_TYPE_L : GRUB_BIDI_TYPE_R;
+	  else
+	    resolved_types[no_markers_len] = type;
+	  no_markers[no_markers_len] = logical[i];
+	  no_markers_len++;
+	}
+    }
+
+  for (run_start = 0; run_start < no_markers_len; run_start = run_end)
+    {
+      unsigned prev_level, next_level, cur_run_level;
+      unsigned last_type, last_strong_type;
+      for (run_end = run_start; run_end < no_markers_len &&
+	     levels[run_end] == levels[run_start]; run_end++);
+      if (run_start == 0)
+	prev_level = base_level;
+      else
+	prev_level = levels[run_start - 1];
+      if (run_end == no_markers_len)
+	next_level = base_level;
+      else
+	next_level = levels[run_end];
+      cur_run_level = levels[run_start];
+      if (prev_level & 1)
+	last_type = GRUB_BIDI_TYPE_R;
+      else
+	last_type = GRUB_BIDI_TYPE_L;
+      last_strong_type = last_type;
+      for (i = run_start; i < run_end; i++)
+	{
+	  switch (resolved_types[i])
+	    {
+	    case GRUB_BIDI_TYPE_NSM:
+	      resolved_types[i] = last_type;
+	      break;
+	    case GRUB_BIDI_TYPE_EN:
+	      if (last_strong_type == GRUB_BIDI_TYPE_AL)
+		resolved_types[i] = GRUB_BIDI_TYPE_AN;
+	      break;
+	    case GRUB_BIDI_TYPE_L:
+	    case GRUB_BIDI_TYPE_R:
+	      last_strong_type = resolved_types[i];
+	      break;
+	    case GRUB_BIDI_TYPE_ES:
+	      if (last_type == GRUB_BIDI_TYPE_EN
+		  && i + 1 < run_end 
+		  && resolved_types[i + 1] == GRUB_BIDI_TYPE_EN)
+		resolved_types[i] = GRUB_BIDI_TYPE_EN;
+	      else
+		resolved_types[i] = GRUB_BIDI_TYPE_ON;
+	      break;
+	    case GRUB_BIDI_TYPE_ET:
+	      {
+		unsigned j;
+		if (last_type == GRUB_BIDI_TYPE_EN)
+		  {
+		    resolved_types[i] = GRUB_BIDI_TYPE_EN;
+		    break;
+		  }
+		for (j = i; j < run_end
+		       && resolved_types[j] == GRUB_BIDI_TYPE_ET; j++);
+		if (j != run_end && resolved_types[j] == GRUB_BIDI_TYPE_EN)
+		  {
+		    for (; i < run_end
+			   && resolved_types[i] == GRUB_BIDI_TYPE_ET; i++)
+		      resolved_types[i] = GRUB_BIDI_TYPE_EN;
+		    i--;
+		    break;
+		  }
+		for (; i < run_end
+		       && resolved_types[i] == GRUB_BIDI_TYPE_ET; i++)
+		  resolved_types[i] = GRUB_BIDI_TYPE_ON;
+		i--;
+		break;		
+	      }
+	      break;
+	    case GRUB_BIDI_TYPE_CS:
+	      if (last_type == GRUB_BIDI_TYPE_EN
+		  && i + 1 < run_end 
+		  && resolved_types[i + 1] == GRUB_BIDI_TYPE_EN)
+		{
+		  resolved_types[i] = GRUB_BIDI_TYPE_EN;
+		  break;
+		}
+	      if (last_type == GRUB_BIDI_TYPE_AN
+		  && i + 1 < run_end 
+		  && (resolved_types[i + 1] == GRUB_BIDI_TYPE_AN
+		      || (resolved_types[i + 1] == GRUB_BIDI_TYPE_EN
+			  && last_strong_type == GRUB_BIDI_TYPE_AL)))
+		{
+		  resolved_types[i] = GRUB_BIDI_TYPE_EN;
+		  break;
+		}
+	      resolved_types[i] = GRUB_BIDI_TYPE_ON;
+	      break;
+	    case GRUB_BIDI_TYPE_AL:
+	      last_strong_type = resolved_types[i];
+	      resolved_types[i] = GRUB_BIDI_TYPE_R;
+	      break;
+	    default: /* Make GCC happy.  */
+	      break;
+	    }
+	  last_type = resolved_types[i];
+	  if (resolved_types[i] == GRUB_BIDI_TYPE_EN
+	      && last_strong_type == GRUB_BIDI_TYPE_L)
+	    resolved_types[i] = GRUB_BIDI_TYPE_L;
+	}
+      if (prev_level & 1)
+	last_type = GRUB_BIDI_TYPE_R;
+      else
+	last_type = GRUB_BIDI_TYPE_L;
+      for (i = run_start; i < run_end; )
+	{
+	  unsigned j;
+	  unsigned next_type;
+	  for (j = i; j < run_end &&
+	  	 (resolved_types[j] == GRUB_BIDI_TYPE_B
+	  	  || resolved_types[j] == GRUB_BIDI_TYPE_S
+	  	  || resolved_types[j] == GRUB_BIDI_TYPE_WS
+	  	  || resolved_types[j] == GRUB_BIDI_TYPE_ON); j++);
+	  if (j == i)
+	    {
+	      if (resolved_types[i] == GRUB_BIDI_TYPE_L)
+		last_type = GRUB_BIDI_TYPE_L;
+	      else
+		last_type = GRUB_BIDI_TYPE_R;
+	      i++;
+	      continue;
+	    }
+	  if (j == run_end)
+	    next_type = (next_level & 1) ? GRUB_BIDI_TYPE_R : GRUB_BIDI_TYPE_L;
+	  else
+	    {
+	      if (resolved_types[j] == GRUB_BIDI_TYPE_L)
+		next_type = GRUB_BIDI_TYPE_L;
+	      else
+		next_type = GRUB_BIDI_TYPE_R;
+	    }
+	  if (next_type == last_type)
+	    for (; i < j; i++)
+	      resolved_types[i] = last_type;
+	  else
+	    for (; i < j; i++)
+	      resolved_types[i] = (cur_run_level & 1) ? GRUB_BIDI_TYPE_R
+		: GRUB_BIDI_TYPE_L;
+	}
+    }
+
+  for (i = 0; i < no_markers_len; i++)
+    {
+      if (!(levels[i] & 1) && resolved_types[i] == GRUB_BIDI_TYPE_R)
+	{
+	  levels[i]++;
+	  continue;
+	}
+      if (!(levels[i] & 1) && (resolved_types[i] == GRUB_BIDI_TYPE_AN
+			       || resolved_types[i] == GRUB_BIDI_TYPE_EN))
+	{
+	  levels[i] += 2;
+	  continue;
+	}
+      if ((levels[i] & 1) && (resolved_types[i] == GRUB_BIDI_TYPE_L
+			      || resolved_types[i] == GRUB_BIDI_TYPE_AN
+			      || resolved_types[i] == GRUB_BIDI_TYPE_EN))
+	{
+	  levels[i]++;
+	  continue;
+	}
+    }
+  grub_free (resolved_types);
+  /* TODO: put line-wrapping here.  */
+  {
+    unsigned min_odd_level = 0xffffffff;
+    unsigned max_level = 0;
+    unsigned j;
+    for (i = 0; i < no_markers_len; i++)
+      {
+	if (levels[i] > max_level)
+	  max_level = levels[i];
+	if (levels[i] < min_odd_level && (levels[i] & 1))
+	  min_odd_level = levels[i];	
+      }
+    for (j = max_level; j >= min_odd_level; j--)
+      {
+	unsigned in = 0;
+	for (i = 0; i < no_markers_len; i++)
+	  {
+	    if (i != 0 && levels[i] >= j && levels[i-1] < j)
+	      in = i;
+	    if (levels[i] >= j && (i + 1 == no_markers_len || levels[i+1] < j))
+	      revert (in, i);
+	  }
+      }
+  }
+
+  grub_free (levels);
+
+  *visual = no_markers;
+  return no_markers_len;
+}
+
 /* Draw a UTF-8 string of text on the current video render target.
    The x coordinate specifies the starting x position for the first character,
    while the y coordinate specifies the baseline position.
@@ -1057,18 +1412,28 @@ grub_font_draw_string (const char *str, grub_font_t font,
 {
   int x;
   struct grub_font_glyph *glyph;
-  grub_uint32_t code;
-  const grub_uint8_t *ptr;
+  grub_uint32_t *logical, *visual, *ptr;
+  grub_ssize_t logical_len, visual_len;
 
-  for (ptr = (const grub_uint8_t *) str, x = left_x;
-       grub_utf8_to_ucs4 (&code, 1, ptr, -1, &ptr) > 0; )
+  logical_len = grub_utf8_to_ucs4_alloc (str, &logical, 0);
+  if (logical_len < 0)
+    return grub_errno;
+
+  visual_len = grub_err_bidi_logical_to_visual (logical, logical_len, &visual);
+  grub_free (logical);
+  if (visual_len < 0)
+    return grub_errno;
+
+  for (ptr = visual, x = left_x; ptr < visual + visual_len; ptr++)
     {
-      glyph = grub_font_get_glyph_with_fallback (font, code);
+      glyph = grub_font_get_glyph_with_fallback (font, *ptr);
       if (grub_font_draw_glyph (glyph, color, x, baseline_y)
           != GRUB_ERR_NONE)
         return grub_errno;
       x += glyph->device_width;
     }
+
+  grub_free (visual);
 
   return GRUB_ERR_NONE;
 }

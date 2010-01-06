@@ -642,7 +642,7 @@ png_mod_CFLAGS = $(COMMON_CFLAGS)
 png_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For font.mod.
-font_mod_SOURCES = font/font_cmd.c font/font.c
+font_mod_SOURCES = font/font_cmd.c font/font.c unidata.c
 font_mod_CFLAGS = $(COMMON_CFLAGS)
 font_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
