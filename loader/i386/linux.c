@@ -551,21 +551,14 @@ grub_linux_boot (void)
       grub_term_output_t term;
       int found = 0;
       FOR_ACTIVE_TERM_OUTPUTS(term)
-	if (grub_strcmp (term->name, "vga_text") == 0)
+	if (grub_strcmp (term->name, "vga_text") == 0
+	    || grub_strcmp (term->name, "console") == 0)
 	  {
 	    grub_uint16_t pos = grub_term_getxy (term);
 	    params->video_cursor_x = pos >> 8;
 	    params->video_cursor_y = pos & 0xff;
 	    found = 1;
-	  }
-      if (!found)
-	FOR_ACTIVE_TERM_OUTPUTS(term)
-	  if (grub_strcmp (term->name, "console") == 0)
-	  {
-	    grub_uint16_t pos = grub_term_getxy (term);
-	    params->video_cursor_x = pos >> 8;
-	    params->video_cursor_y = pos & 0xff;
-	    found = 1;
+	    break;
 	  }
       if (!found)
 	{
