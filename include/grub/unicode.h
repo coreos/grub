@@ -55,6 +55,9 @@ enum grub_bidi_type
 
 enum grub_comb_type
   {
+    GRUB_UNICODE_COMB_OVERLAY = 1,
+    GRUB_UNICODE_STACK_ATTACHED_BELOW = 202,
+    GRUB_UNICODE_STACK_ATTACHED_ABOVE = 214,
     GRUB_UNICODE_STACK_BELOW = 220,
     GRUB_UNICODE_STACK_ABOVE = 230,
     /* If combining nature is indicated only by class and
