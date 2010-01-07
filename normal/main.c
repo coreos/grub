@@ -418,6 +418,17 @@ grub_normal_init_page (void)
 
 static int reader_nested;
 
+static char *
+read_lists (struct grub_env_var *var __attribute__ ((unused)),
+	    const char *val)
+{
+  read_command_list ();
+  read_fs_list ();
+  read_handler_list ();
+  read_crypto_list ();
+  return val ? grub_strdup (val) : NULL;
+}
+
 /* Read the config file CONFIG and execute the menu interface or
    the command line interface if BATCH is false.  */
 void
@@ -425,10 +436,8 @@ grub_normal_execute (const char *config, int nested, int batch)
 {
   grub_menu_t menu = 0;
 
-  read_command_list ();
-  read_fs_list ();
-  read_handler_list ();
-  read_crypto_list ();
+  read_lists (NULL, NULL);
+  grub_register_variable_hook ("prefix", NULL, read_lists);
   grub_command_execute ("parser.grub", 0, 0);
 
   reader_nested = nested;

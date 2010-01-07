@@ -1,3 +1,18 @@
+2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Merge prefix-redefinition-fix branch.
+
+	* normal/autofs.c (read_fs_list): Make function capable of being
+	run multiple times, gracefuly replacing the previous data
+	structures.
+	* normal/dyncmd.c (read_command_list): Likewise.
+	* normal/handler.c (read_handler_list): Likewise.
+	* normal/main.c (read_lists): New function.  Calls all the
+	list reading functions.
+	(grub_normal_execute): Use read_lists() instead of calling all
+	list reading functions explicitly.  Register read_lists() as a
+	variable hook attached to ${prefix}.
+
 2010-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Merge crypto branch.
