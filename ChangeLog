@@ -1,4 +1,10 @@
 2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot.h (MULTIBOOT_UNSUPPORTED): Moved from here ...
+	* loader/i386/multiboot.c (UNSUPPORTED_FLAGS): ... to here.  Update
+	all users.
+
+2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
 2010-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix breakage introduced with previous commit.
