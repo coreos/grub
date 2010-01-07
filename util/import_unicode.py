@@ -33,12 +33,14 @@ outfile.write ("struct grub_unicode_compact_range grub_unicode_compact[] = {\n")
 begincode = -2
 lastcode = -2
 lastbiditype = "X"
+lastmirrortype = False
 lastcombtype = -1
 for line in infile:
     sp = line.split (";")
     curcode = int (sp[0], 16)
-    curbiditype = sp[4]
     curcombtype = int (sp[3], 10)
+    curbiditype = sp[4]
+    curmirrortype = (sp[9] == "Y")
     if curcombtype <= 255 and curcombtype >= 253:
         print ("UnicodeData.txt uses combination type %d. Conflict." \
                    % curcombtype)
@@ -50,18 +52,21 @@ for line in infile:
     if curcombtype == 0 and sp[2] == "Mn":
         curcombtype = 255
     if lastcode + 1 != curcode or curbiditype != lastbiditype \
-            or curcombtype != lastcombtype:
-        if begincode != -2 and (lastbiditype != "L" or lastcombtype != 0):
-            outfile.write (("{0x%x, 0x%x, GRUB_BIDI_TYPE_%s, %d},\n" \
+            or curcombtype != lastcombtype or curmirrortype != lastmirrortype:
+        if begincode != -2 and (lastbiditype != "L" or lastcombtype != 0 or \
+                                    lastmirrortype):
+            outfile.write (("{0x%x, 0x%x, GRUB_BIDI_TYPE_%s, %d, %d},\n" \
                                 % (begincode, lastcode, lastbiditype, \
-                                       lastcombtype)))
+                                       lastcombtype, lastmirrortype)))
         begincode = curcode
     lastcode = curcode
     lastbiditype = curbiditype
     lastcombtype = curcombtype
-if lastbiditype != "L" or lastcombtype != 0:
-    outfile.write (("{0x%x, 0x%x, GRUB_BIDI_TYPE_%s, %d},\n" \
-                        % (begincode, lastcode, lastbiditype, lastcombtype)))
-outfile.write ("{0, 0, 0, 0},\n")
+    lastmirrortype = curmirrortype
+if lastbiditype != "L" or lastcombtype != 0 or lastmirrortype:
+    outfile.write (("{0x%x, 0x%x, GRUB_BIDI_TYPE_%s, %d, %d},\n" \
+                        % (begincode, lastcode, lastbiditype, lastcombtype, \
+                               lastmirrortype)))
+outfile.write ("{0, 0, 0, 0, 0},\n")
 
 outfile.write ("};")

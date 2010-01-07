@@ -96,6 +96,8 @@ int grub_font_get_leading (grub_font_t font);
 
 int grub_font_get_height (grub_font_t font);
 
+int grub_font_get_xheight (grub_font_t font);
+
 int grub_font_get_string_width (grub_font_t font, const char *str);
 
 struct grub_font_glyph *grub_font_get_glyph (grub_font_t font,

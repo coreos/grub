@@ -27,6 +27,7 @@ struct grub_unicode_compact_range
   grub_uint32_t end:21;
   grub_uint8_t bidi_type:5;
   grub_uint8_t comb_type;
+  grub_uint8_t bidi_mirror:1;
 } __attribute__ ((packed));
 
 enum grub_bidi_type
@@ -67,13 +68,13 @@ enum grub_comb_type
 struct grub_unicode_glyph
 {
   grub_uint32_t base;
-  /* Unicode permits 256 variation selectors but since we need a value
-     for "default" we have to use grub_uint16_t.  */
-  grub_uint16_t variant;
+  grub_uint16_t variant:9;
+  grub_uint8_t attributes:1;
   grub_size_t ncomb;
   grub_uint32_t *combining;
 };
 
+#define GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR 0x1
 #define GRUB_UNICODE_VARIATION_SELECTOR_1 0xfe00
 #define GRUB_UNICODE_VARIATION_SELECTOR_16 0xfe0f
 #define GRUB_UNICODE_VARIATION_SELECTOR_17 0xe0100
