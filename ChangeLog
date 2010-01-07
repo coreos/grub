@@ -1,5 +1,45 @@
 2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
 
+	Reset Multiboot 2 support.  New loader implements the draft in
+	/branches/multiboot2 and shares as much code as possible with the
+	production Multiboot 1 implementation.
+
+	* loader/ieee1275/multiboot2.c: Remove file.  Update all users.
+	* loader/multiboot2.c: Likewise.
+	* loader/i386/multiboot_helper.S: Likewise.
+	* include/multiboot2.h: Replace with latest version from the draft
+	in /branches/multiboot2.
+
+	* conf/i386-coreboot.rmk (multiboot_mod_SOURCES): Remove
+	`loader/i386/multiboot_helper.S', `loader/i386/pc/multiboot2.c'
+	and `loader/multiboot2.c'.
+	(pkglib_MODULES): Add `multiboot2.mod'.
+	(multiboot2_mod_SOURCES): New variable.
+	(multiboot2_mod_LDFLAGS): Likewise.
+	(multiboot2_mod_CFLAGS): Likewise.  Define `GRUB_USE_MULTIBOOT2'.
+
+	* conf/i386-pc.rmk: Likewise.
+
+	* conf/powerpc-ieee1275.rmk (pkglib_MODULES): Remove `multiboot.mod'.
+	(multiboot_mod_SOURCES): Remove variable.
+	(multiboot_mod_LDFLAGS): Likewise.
+	(multiboot_mod_CFLAGS): Likewise.
+
+	* include/grub/multiboot.h [GRUB_USE_MULTIBOOT2]: Include
+	`<multiboot2.h>' instead of `<multiboot.h>'.
+	[GRUB_USE_MULTIBOOT2] (MULTIBOOT_BOOTLOADER_MAGIC)
+	(MULTIBOOT_HEADER_MAGIC): New macros.
+
+	* loader/multiboot_loader.c (module_version_status): Remove variable.
+	(find_multi_boot2_header): Remove function.
+	(grub_cmd_multiboot_loader): Remove Multiboot 2 / Multiboot 1 selection
+	logic.  Always check for the Multiboot version we're compiling for.
+	(grub_cmd_module_loader): Likewise.
+	[GRUB_USE_MULTIBOOT2] (GRUB_MOD_INIT(multiboot)): Register `multiboot2'
+	command instead of `multiboot'.
+
+2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/multiboot.h (MULTIBOOT_UNSUPPORTED): Moved from here ...
 	* loader/i386/multiboot.c (UNSUPPORTED_FLAGS): ... to here.  Update
 	all users.

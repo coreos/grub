@@ -61,7 +61,6 @@ pkglib_MODULES = halt.mod \
 	linux.mod \
 	reboot.mod \
 	suspend.mod \
-        multiboot.mod \
 	memdisk.mod \
 	lsmmap.mod
 
@@ -90,13 +89,6 @@ reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For multiboot.mod
-multiboot_mod_SOURCES = loader/ieee1275/multiboot2.c \
-                         loader/multiboot2.c \
-                         loader/multiboot_loader.c
-multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
-multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For memdisk.mod.
 memdisk_mod_SOURCES = disk/memdisk.c
