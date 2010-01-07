@@ -680,7 +680,7 @@ grub_netbsd_boot (void)
       + sizeof (struct grub_netbsd_btinfo_mmap_header)
       + count * sizeof (struct grub_netbsd_btinfo_mmap_entry)
       > grub_os_area_addr + grub_os_area_size)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "no memory for boot info");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
 
   curarg = mmap = (struct grub_netbsd_btinfo_mmap_header *) kern_end;
   pm = (struct grub_netbsd_btinfo_mmap_entry *) (mmap + 1);
@@ -888,7 +888,7 @@ grub_bsd_load_elf (grub_elf_t elf)
       return grub_elf64_load (elf, grub_bsd_elf64_hook, 0, 0);
     }
   else
-    return grub_error (GRUB_ERR_BAD_OS, "invalid elf");
+    return grub_error (GRUB_ERR_BAD_OS, "invalid ELF");
 }
 
 static grub_err_t
@@ -1081,7 +1081,7 @@ grub_cmd_freebsd_loadenv (grub_command_t cmd __attribute__ ((unused)),
 
   if (kernel_type != KERNEL_TYPE_FREEBSD)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "only FreeBSD support environment");
+		       "only FreeBSD supports environment");
 
   if (argc == 0)
     {
@@ -1175,11 +1175,11 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
 
   if (kernel_type != KERNEL_TYPE_FREEBSD)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "only FreeBSD support module");
+		       "only FreeBSD supports module");
 
   if (!is_elf_kernel)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "only ELF kernel support module");
+		       "only ELF kernel supports module");
 
   /* List the current modules if no parameter.  */
   if (!argc)
@@ -1241,11 +1241,11 @@ grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
 
   if (kernel_type != KERNEL_TYPE_FREEBSD)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "only FreeBSD support module");
+		       "only FreeBSD supports module");
 
   if (! is_elf_kernel)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "only ELF kernel support module");
+		       "only ELF kernel supports module");
 
   /* List the current modules if no parameter.  */
   if (! argc)

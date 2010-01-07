@@ -1,3 +1,123 @@
+2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Merge prefix-redefinition-fix branch.
+
+	* normal/autofs.c (read_fs_list): Make function capable of being
+	run multiple times, gracefuly replacing the previous data
+	structures.
+	* normal/dyncmd.c (read_command_list): Likewise.
+	* normal/handler.c (read_handler_list): Likewise.
+	* normal/main.c (read_lists): New function.  Calls all the
+	list reading functions.
+	(grub_normal_execute): Use read_lists() instead of calling all
+	list reading functions explicitly.  Register read_lists() as a
+	variable hook attached to ${prefix}.
+
+2010-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Merge crypto branch.
+
+	* Makefile.in (pkglib_DATA):  Add crypto.lst.
+	(crypto.lst): New target.
+	* commands/hashsum.c: New file.
+	* commands/password.c (check_password): Use grub_crypto_memcmp.
+	* commands/password_pbkdf2.c: New file.
+	* commands/xnu_uuid.c: Remove MD5. Use GRUB_MD_MD5.
+	* conf/any-emu.rmk (grub_emu_SOURCES): Add lib/crypto.c,
+	normal/crypto.c and lib/libgcrypt-grub/cipher/md5.c.
+	(grub_emu_CFLAGS): Add -Wno-missing-field-initializers -Wno-error
+	-I$(srcdir)/lib/libgcrypt_wrap.
+	* conf/common.rmk (normal_mod_SOURCES): Add normal/crypto.c.
+	(pkglib_MODULES): Add crypto.mod, hashsum.mod, pbkdf2.mod and
+	password_pbkdf2.mod.
+	(crypto_mod_SOURCES): New variable.
+	(crypto_mod_CFLAGS): Likewise.
+	(crypto_mod_LDFLAGS): Likewise.
+	(hashsum_mod_SOURCES): New variable.
+	(hashsum_mod_CFLAGS): Likewise.
+	(hashsum_mod_LDFLAGS): Likewise.
+	(pbkdf2_mod_SOURCES): New variable.
+	(pbkdf2_mod_CFLAGS): Likewise.
+	(pbkdf2_mod_LDFLAGS): Likewise.
+	(password_pbkdf2_mod_SOURCES): New variable.
+	(password_pbkdf2_mod_CFLAGS): Likewise.
+	(password_pbkdf2_mod_LDFLAGS): Likewise.
+	(bin_UTILITIES): Add grub-mkpasswd-pbkdf2.
+	(grub_mkpasswd_pbkdf2_SOURCES): New variable.
+	(grub_mkpasswd_pbkdf2_CFLAGS): Likewise.
+	Include conf/gcry.rmk.
+	* include/grub/auth.h: Rewritten.
+	* include/grub/crypto.h: New file.
+	* include/grub/disk.h (grub_disk_dev_id): Add GRUB_DISK_DEVICE_LUKS_ID.
+	* include/grub/normal.h (read_crypto_list): New prototype.
+	* lib/crypto.c: New file.
+	* lib/libgcrypt_wrap/cipher_wrap.h: Likewise.
+	* lib/pbkdf2.c: Likewise.
+	* normal/auth.c (grub_auth_strcmp): Removed.
+	(grub_iswordseparator): Likewise.
+	(grub_auth_strword): Likewise.
+	(is_authenticated): Use grub_strword.
+	(grub_auth_check_authentication): Use grub_strcmp, grub_password_get
+	and grub_strword. Pass entered password to authentication callback.
+	* normal/crypto.c: New file.
+	* normal/main.c: Call read_crypto_list.
+	* util/grub-mkpasswd-pbkdf2.c: New file.
+	* util/import_gcry.py: Generate crypto.lst. Add hash blocklen.
+
+2010-01-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix descent and ascent calculation.
+
+	* util/grub-mkfont.c (grub_font_info): New fields 'asce' and 'max_y'.
+	(options): New option "asce".
+	(usage): Likewise.
+	(add_char): Ignore invalid glyphs for descent calculation.
+	Calculate ascent from actual content.
+	(print_glyphs): Use 'asce'.
+	(write_font): Likewise. Allow ascent override.
+	(main): Handle "asce" option.
+
+2010-01-06  Carles Pina i Estany  <carles@pina.cat>
+
+	* kern/err.c: Include `<grub/i18n.h>'.
+	(grub_print_error): Add full stop. Gettextizze.
+	* loader/i386/bsd.c (grub_netbsd_boot): Change grub_error description.
+	(grub_bsd_load_elf): Capitalise ELF.
+	(grub_cmd_freebsd_loadenv): Add `s' in error string.
+	(grub_cmd_freebsd_module): Likewise.
+	(grub_cmd_freebsd_module_elf): Likewise.
+	* loader/i386/bsdXX.c (SUFFIX): Capitalise ELF.
+
+2010-01-06  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/search.c (GRUB_MOD_INIT): Use HELP_MESSAGE.
+	* commands/search_file.c (HELP_MESSAGE): New macro.
+	* commands/search_label.c (HELP_MESSAGE): Likewise.
+	* commands/search_uuid.c (HELP_MESSAGE): Likewise.
+	* po/POTFILES: Add `commands/search_file.c',
+	`commands/search_label.c', `commands_uuid.c'. Remove duplicate
+	`commands/search.c'.
+
+2010-01-05  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* config.rpath: Update from Gnulib.
+
+2010-01-05  Yves Blusseau  <blusseau@zetam.org>
+
+	* commands/acpi.c (grub_acpi_create_ebda): fix incorrect message.
+
+2010-01-05  Yves Blusseau  <yves.blusseau@zetam.org>
+
+	* util/sparc64/ieee1275/grub-mkimage.c (main): Typo fix.
+
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/mkisofs/write.c (padblock_write): Switch size and nmemb
+	arguments to fread so that we get a return value in bytes, rather
+	than something that will normally be rounded down to 0.
+	Adjust error handling to avoid producing garbage when size_t is not
+	the same size as long long.
+
 2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/mkisofs/write.c (padblock_write): Check return value of

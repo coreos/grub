@@ -31,6 +31,7 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 #include <grub/crypto.h>
 #include <grub/i18n.h>
 

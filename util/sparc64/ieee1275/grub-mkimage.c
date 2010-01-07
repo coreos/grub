@@ -223,7 +223,7 @@ main (int argc, char *argv[])
 
   set_program_name (argv[0]);
 
-  grub_util_init_ls ();
+  grub_util_init_nls ();
 
   while (1)
     {
