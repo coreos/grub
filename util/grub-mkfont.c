@@ -170,6 +170,9 @@ add_char (struct grub_font_info *font_info, FT_Face face,
   if ((*p_glyph) && ((*p_glyph)->char_code == char_code))
     return;
 
+  if (glyph->next)
+    printf ("%x\n", char_code);
+
   width = glyph->bitmap.width;
   height = glyph->bitmap.rows;
 

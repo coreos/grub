@@ -21,11 +21,12 @@
 
 #include <grub/types.h>
 
-struct grub_bidi_compact_range
+struct grub_unicode_compact_range
 {
-  grub_uint32_t start:24;
-  grub_uint32_t end:24;
-  grub_uint8_t type;
+  grub_uint32_t start:21;
+  grub_uint32_t end:21;
+  grub_uint8_t bidi_type:5;
+  grub_uint8_t comb_type;
 } __attribute__ ((packed));
 
 enum grub_bidi_type
@@ -51,9 +52,36 @@ enum grub_bidi_type
     GRUB_BIDI_TYPE_ON
   };
 
-extern struct grub_bidi_compact_range grub_bidi_compact[];
+enum grub_comb_type
+  {
+    GRUB_UNICODE_STACK_BELOW = 220,
+    GRUB_UNICODE_STACK_ABOVE = 230,
+    /* If combining nature is indicated only by class and
+       not "combining type".  */
+    GRUB_UNICODE_COMB_ME = 253,
+    GRUB_UNICODE_COMB_MC = 254,
+    GRUB_UNICODE_COMB_MN = 255,
+  };
 
-#define GRUB_BIDI_MAX_CACHED_UNICODE_CHAR 0x20000
+/* This structure describes a glyph as opposed to character.  */
+struct grub_unicode_glyph
+{
+  grub_uint32_t base;
+  /* Unicode permits 256 variation selectors but since we need a value
+     for "default" we have to use grub_uint16_t.  */
+  grub_uint16_t variant;
+  grub_size_t ncomb;
+  grub_uint32_t *combining;
+};
+
+#define GRUB_UNICODE_VARIATION_SELECTOR_1 0xfe00
+#define GRUB_UNICODE_VARIATION_SELECTOR_16 0xfe0f
+#define GRUB_UNICODE_VARIATION_SELECTOR_17 0xe0100
+#define GRUB_UNICODE_VARIATION_SELECTOR_256 0xe01ef
+
+extern struct grub_unicode_compact_range grub_unicode_compact[];
+
+#define GRUB_UNICODE_MAX_CACHED_CHAR 0x20000
 /*  Unicode mandates an arbitrary limit.  */
 #define GRUB_BIDI_MAX_EXPLICIT_LEVEL 61
 
