@@ -17,6 +17,7 @@
  */
 
 #include <grub/auth.h>
+#include <grub/crypto.h>
 #include <grub/list.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
@@ -28,17 +29,10 @@
 static grub_dl_t my_mod;
 
 static grub_err_t
-check_password (const char *user,
+check_password (const char *user, const char *entered,
 		void *password)
 {
-  char entered[1024];
-
-  grub_memset (entered, 0, sizeof (entered));
-
-  if (!GRUB_GET_PASSWORD (entered, sizeof (entered) - 1))
-    return GRUB_ACCESS_DENIED;
-
-  if (grub_auth_strcmp (entered, password) != 0)
+  if (grub_crypto_memcmp (entered, password, GRUB_AUTH_MAX_PASSLEN) != 0)
     return GRUB_ACCESS_DENIED;
 
   grub_auth_authenticate (user);
@@ -52,13 +46,18 @@ grub_cmd_password (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_err_t err;
   char *pass;
+  int copylen;
 
   if (argc != 2)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "two arguments expected");
 
-  pass = grub_strdup (args[1]);
+  pass = grub_zalloc (GRUB_AUTH_MAX_PASSLEN);
   if (!pass)
     return grub_errno;
+  copylen = grub_strlen (args[1]);
+  if (copylen >= GRUB_AUTH_MAX_PASSLEN)
+    copylen = GRUB_AUTH_MAX_PASSLEN - 1;
+  grub_memcpy (pass, args[1], copylen);
 
   err = grub_auth_register_authentication (args[0], check_password, pass);
   if (err)

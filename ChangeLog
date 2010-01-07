@@ -1,3 +1,54 @@
+2010-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Merge crypto branch.
+
+	* Makefile.in (pkglib_DATA):  Add crypto.lst.
+	(crypto.lst): New target.
+	* commands/hashsum.c: New file.
+	* commands/password.c (check_password): Use grub_crypto_memcmp.
+	* commands/password_pbkdf2.c: New file.
+	* commands/xnu_uuid.c: Remove MD5. Use GRUB_MD_MD5.
+	* conf/any-emu.rmk (grub_emu_SOURCES): Add lib/crypto.c,
+	normal/crypto.c and lib/libgcrypt-grub/cipher/md5.c.
+	(grub_emu_CFLAGS): Add -Wno-missing-field-initializers -Wno-error
+	-I$(srcdir)/lib/libgcrypt_wrap.
+	* conf/common.rmk (normal_mod_SOURCES): Add normal/crypto.c.
+	(pkglib_MODULES): Add crypto.mod, hashsum.mod, pbkdf2.mod and
+	password_pbkdf2.mod.
+	(crypto_mod_SOURCES): New variable.
+	(crypto_mod_CFLAGS): Likewise.
+	(crypto_mod_LDFLAGS): Likewise.
+	(hashsum_mod_SOURCES): New variable.
+	(hashsum_mod_CFLAGS): Likewise.
+	(hashsum_mod_LDFLAGS): Likewise.
+	(pbkdf2_mod_SOURCES): New variable.
+	(pbkdf2_mod_CFLAGS): Likewise.
+	(pbkdf2_mod_LDFLAGS): Likewise.
+	(password_pbkdf2_mod_SOURCES): New variable.
+	(password_pbkdf2_mod_CFLAGS): Likewise.
+	(password_pbkdf2_mod_LDFLAGS): Likewise.
+	(bin_UTILITIES): Add grub-mkpasswd-pbkdf2.
+	(grub_mkpasswd_pbkdf2_SOURCES): New variable.
+	(grub_mkpasswd_pbkdf2_CFLAGS): Likewise.
+	Include conf/gcry.rmk.
+	* include/grub/auth.h: Rewritten.
+	* include/grub/crypto.h: New file.
+	* include/grub/disk.h (grub_disk_dev_id): Add GRUB_DISK_DEVICE_LUKS_ID.
+	* include/grub/normal.h (read_crypto_list): New prototype.
+	* lib/crypto.c: New file.
+	* lib/libgcrypt_wrap/cipher_wrap.h: Likewise.
+	* lib/pbkdf2.c: Likewise.
+	* normal/auth.c (grub_auth_strcmp): Removed.
+	(grub_iswordseparator): Likewise.
+	(grub_auth_strword): Likewise.
+	(is_authenticated): Use grub_strword.
+	(grub_auth_check_authentication): Use grub_strcmp, grub_password_get
+	and grub_strword. Pass entered password to authentication callback.
+	* normal/crypto.c: New file.
+	* normal/main.c: Call read_crypto_list.
+	* util/grub-mkpasswd-pbkdf2.c: New file.
+	* util/import_gcry.py: Generate crypto.lst. Add hash blocklen.
+
 2010-01-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix descent and ascent calculation.

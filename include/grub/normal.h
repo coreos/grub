@@ -95,6 +95,8 @@ void read_command_list (void);
 /* Defined in `autofs.c'.  */
 void read_fs_list (void);
 
+void read_crypto_list (void);
+
 
 #ifdef GRUB_UTIL
 void grub_normal_init (void);
