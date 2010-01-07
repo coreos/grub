@@ -33,7 +33,6 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 #include <grub/crypto.h>
-#include <grub/i18n.h>
 
 /* This prefix is used by xnu and boot-132 to hash
    together with volume serial. */

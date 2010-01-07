@@ -48,7 +48,7 @@ kernel_img_SOURCES = kern/i386/pc/startup.S \
 	kern/i386/misc.S \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
+	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
 	kern/$(target_cpu)/dl.c kern/i386/pc/init.c kern/i386/pc/mmap.c \
