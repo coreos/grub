@@ -79,14 +79,22 @@ read_command_list (void)
 	  if (file)
 	    {
 	      char *buf = NULL;
+	      grub_command_t ptr, last = 0, next;
 
 	      /* Override previous commands.lst.  */
-	      while (grub_command_list)
+	      for (ptr = grub_command_list; ptr; ptr = next)
 		{
-		  grub_command_t tmp;
-		  tmp = grub_command_list->next;
-		  grub_free (grub_command_list);
-		  grub_command_list = tmp;
+		  next = ptr->next;
+		  if (ptr->func == grub_dyncmd_dispatcher)
+		    {
+		      if (last)
+			last->next = ptr->next;
+		      else
+			grub_command_list = ptr->next;
+		      grub_free (ptr);
+		    }
+		  else
+		    last = ptr;
 		}
 
 	      for (;; grub_free (buf))

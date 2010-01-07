@@ -1,4 +1,16 @@
 2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
+2010-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix breakage introduced with previous commit.
+
+	* normal/dyncmd.c (read_command_list): Avoid unregistering kernel
+	commands.
+	* normal/handler.c (read_handler_list): Revert part of previous commit
+	affecting this file.
+	* normal/main.c (read_lists): Move read_handler_list() call back to ...
+	(grub_normal_execute): ... here.
+
+2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Merge prefix-redefinition-fix branch.
 
