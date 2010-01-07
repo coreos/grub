@@ -135,6 +135,7 @@ void
 read_handler_list (void)
 {
   const char *prefix;
+  static int first_time = 1;
   const char *class_name;
 
   auto int iterate_handler (grub_handler_t handler);
@@ -161,6 +162,11 @@ read_handler_list (void)
       return 0;
     }
 
+  /* Make sure that this function does not get executed twice.  */
+  if (! first_time)
+    return;
+  first_time = 0;
+
   prefix = grub_env_get ("prefix");
   if (prefix)
     {
@@ -176,16 +182,6 @@ read_handler_list (void)
 	  if (file)
 	    {
 	      char *buf = NULL;
-
-	      /* Override previous handler.lst.  */
-	      while (grub_handler_class_list)
-		{
-		  grub_handler_class_t tmp;
-		  tmp = grub_handler_class_list->next;
-		  grub_free (grub_handler_class_list);
-		  grub_handler_class_list = tmp;
-		}
-
 	      for (;; grub_free (buf))
 		{
 		  char *p;

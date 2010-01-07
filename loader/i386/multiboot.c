@@ -27,6 +27,9 @@
  *  - APM table
  */
 
+/* The bits in the required part of flags field we don't support.  */
+#define UNSUPPORTED_FLAGS			0x0000fffc
+
 #include <grub/loader.h>
 #include <grub/machine/loader.h>
 #include <grub/multiboot.h>
@@ -261,7 +264,7 @@ grub_multiboot (int argc, char *argv[])
       goto fail;
     }
 
-  if (header->flags & MULTIBOOT_UNSUPPORTED)
+  if (header->flags & UNSUPPORTED_FLAGS)
     {
       grub_error (GRUB_ERR_UNKNOWN_OS,
 		  "unsupported flag: 0x%x", header->flags);
