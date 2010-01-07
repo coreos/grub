@@ -433,8 +433,6 @@ grub_normal_init_page (struct grub_term_output *term)
   grub_free (unicode_msg);
 }
 
-static int reader_nested;
-
 static char *
 read_lists (struct grub_env_var *var __attribute__ ((unused)),
 	    const char *val)
