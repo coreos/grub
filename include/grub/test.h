@@ -35,22 +35,10 @@ void grub_test_nonzero (int cond, const char *file,
 			const char *fmt, ...)
   __attribute__ ((format (printf, 5, 6)));
 
-#ifdef __STDC_VERSION__
-#if __STDC_VERSION__ < 199901L
-# if __GNUC__ >= 2
-#  define __func__ __FUNCTION__
-# else
-#  define __func__ "<unknown>"
-# endif
-#endif
-#else
-#define __func__ "<unknown>"
-#endif
-
 /* Macro to fill in location details and an optional error message.  */
-#define grub_test_assert(cond, ...)			\
-  grub_test_nonzero(cond, __FILE__, __func__, __LINE__, \
-		    ## __VA_ARGS__,			\
+#define grub_test_assert(cond, ...)				\
+  grub_test_nonzero(cond, __FILE__, __FUNCTION__, __LINE__,	\
+		    ## __VA_ARGS__,				\
 		    "assert failed: %s", #cond)
 
 /* Macro to define a unit test.  */
