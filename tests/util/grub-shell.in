@@ -1,0 +1,125 @@
+#! /bin/bash -e
+
+# Run GRUB script in a Qemu instance
+# Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+#
+# GRUB is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GRUB is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+
+# Initialize some variables.
+transform="@program_transform_name@"
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+libdir=@libdir@
+builddir=@builddir@
+PACKAGE_NAME=@PACKAGE_NAME@
+PACKAGE_TARNAME=@PACKAGE_TARNAME@
+PACKAGE_VERSION=@PACKAGE_VERSION@
+target_cpu=@target_cpu@
+
+# Force build directory components
+PATH=${builddir}:$PATH
+export PATH
+
+# Usage: usage
+# Print the usage.
+usage () {
+    cat <<EOF
+Usage: $0 [OPTION] [SOURCE]
+Run GRUB script in a Qemu instance.
+
+  -h, --help              print this message and exit
+  -v, --version           print the version information and exit
+  --modules=MODULES       pre-load specified modules MODULES
+  --qemu-opts=OPTIONS     extra options to pass to Qemu instance
+
+$0 runs input GRUB script or SOURCE file in a Qemu instance and prints
+its output.
+
+Report bugs to <bug-grub@gnu.org>.
+EOF
+}
+
+# Check the arguments.
+for option in "$@"; do
+    case "$option" in
+    -h | --help)
+	usage
+	exit 0 ;;
+    -v | --version)
+	echo "$0 (GNU GRUB ${PACKAGE_VERSION})"
+	exit 0 ;;
+    --modules=*)
+	ms=`echo "$option" | sed -e 's/--modules=//' -e 's/,/ /g'`
+	modules="$modules $ms" ;;
+    --qemu-opts=*)
+        qs=`echo "$option" | sed -e 's/--qemu-opts=//'`
+        qemuopts="$qemuopts $qs" ;;
+    -*)
+	echo "Unrecognized option \`$option'" 1>&2
+	usage
+	exit 1
+	;;
+    *)
+	if [ "x${source}" != x ] ; then
+	    echo "too many parameters at the end" 1>&2
+	    usage
+	    exit 1
+	fi
+	source="${option}" ;;
+    esac
+done
+
+if [ "x${source}" = x ] ; then
+  tmpfile=`mktemp`
+  while read; do
+    echo $REPLY >> ${tmpfile}
+  done
+  source=${tmpfile}
+fi
+
+cfgfile=`mktemp`
+cat <<EOF >${cfgfile}
+grubshell=yes
+insmod serial
+serial
+terminal_input serial
+terminal_output serial
+EOF
+
+for mod in ${modules}
+do
+  echo "insmod ${mod}" >> ${cfgfile}
+done
+
+cat <<EOF >>${cfgfile}
+source /boot/grub/testcase.cfg
+halt
+EOF
+
+isofile=`mktemp`
+grub-mkrescue --output=${isofile} --override-directory=${builddir} \
+  /boot/grub/grub.cfg=${cfgfile} /boot/grub/testcase.cfg=${source} \
+  >/dev/null 2>&1
+
+outfile=`mktemp`
+qemu ${qemuopts} -nographic -serial stdio -cdrom ${isofile} -boot d | tr -d "\r" >${outfile}
+
+cat $outfile
+
+rm -f ${tmpfile} ${outfile} ${cfgfile} ${isofile}
+exit 0
+
+

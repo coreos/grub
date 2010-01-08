@@ -407,12 +407,12 @@ while l = gets
 	    Image.new(prefix, img)
 	  end
 
-	when 'MODULES'
+	when 'MODULES', 'FUNCTIONALTESTS'
 	  pmodules += args.split(/\s+/).collect do |pmod|
 	    PModule.new(prefix, pmod)
 	  end
 
-	when 'UTILITIES'
+	when 'UTILITIES', 'UNITTESTS'
 	  utils += args.split(/\s+/).collect do |util|
 	    Utility.new(prefix, util)
 	  end
@@ -422,7 +422,7 @@ while l = gets
 	    Program.new(prefix, prog)
 	  end
 
-	when 'SCRIPTS'
+	when 'SCRIPTS', 'SCRIPTEDTESTS'
 	  scripts += args.split(/\s+/).collect do |script|
 	    Script.new(prefix, script)
 	  end

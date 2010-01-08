@@ -141,6 +141,7 @@ PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
 SCRIPTS = $(bin_SCRIPTS) $(sbin_SCRIPTS) $(grub-mkconfig_SCRIPTS) \
 	$(lib_SCRIPTS)
 INFOS = $(info_INFOS)
+TESTS = $(check_UNITTESTS) $(check_FUNCTIONALTESTS) $(check_SCRIPTEDTESTS)
 
 CLEANFILES =
 MOSTLYCLEANFILES =
@@ -167,6 +168,8 @@ ifeq ($(platform), emu)
 include $(srcdir)/conf/any-emu.mk
 else
 include $(srcdir)/conf/$(target_cpu)-$(platform).mk
+# For tests.
+include $(srcdir)/conf/tests.mk
 # For external modules.
 -include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
 endif
@@ -458,7 +461,21 @@ distcheck: dist
 	@echo "$(distdir).tar.gz is ready for distribution" | \
 	  sed 'h;s/./=/g;p;x;p;x'
 
-check:
+$(TESTS): $(check_SCRIPTS) $(check_MODULES) $(check_PROGRAMS)
+check: all $(TESTS)
+	@list="$(check_UNITTESTS) $(check_SCRIPTEDTESTS)"; \
+	for file in $$list; do \
+	  if $(builddir)/$$file; then \
+	    echo "$$file: PASS"; \
+	  else \
+	    echo "$$file: FAIL"; \
+	  fi; \
+	done
+	@list="$(check_FUNCTIONALTESTS)"; \
+	for test in $$list; do \
+	  echo "insmod functional_test; insmod $test; functional_test" \
+	    | $(builddir)/grub-shell; \
+	done
 
 .SUFFIX:
 .SUFFIX: .c .o .S .d
