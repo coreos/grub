@@ -32,6 +32,7 @@
 #include <grub/term.h>
 #include <grub/command.h>
 #include <grub/gzio.h>
+#include <grub/i18n.h>
 
 char grub_xnu_cmdline[1024];
 grub_uint32_t grub_xnu_heap_will_be_at;
@@ -1026,7 +1027,7 @@ grub_cpu_xnu_init (void)
 {
   cmd_devprop_load = grub_register_command ("xnu_devprop_load",
 					    grub_cmd_devprop_load,
-					    0, "Load device-properties dump.");
+					    0, N_("Load device-properties dump."));
 }
 
 void

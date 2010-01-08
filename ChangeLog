@@ -1,3 +1,42 @@
+2010-01-08  Carles Pina i Estany  <carles@pina.cat>
+
+	* loader/efi/appleloader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/efi/chainloader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/efi/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/ieee1275/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/pc/chainloader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/pc/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/xnu.c: Include `<grub/i18n.h>'.
+	(grub_cpu_xnu_init): Gettextizze.
+	* loader/multiboot_loader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/powerpc/ieee1275/linux.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/sparc64/ieee1275/linux.c: Include `<grub/i18n.h>'.
+	(grub_linux_load64): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/xnu.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* po/POTFILES: Add `loader/efi/appleloader.c',
+	`loader/efi/chainloader.c', `loader/i386/efi/linux.c',
+	`loader/i386/ieee1275/linux.c', `loader/i386/linux.c',
+	`loader/i386/pc/chainloader.c', `loader/i386/pc/linux.c',
+	`loader/i386/xnu.c', `loader/multiboot_loader.c',
+	`loader/powerpc/ieee1275/linux.c', `loader/sparc64/ieee1275/linux.c'
+	and `loader/xnu.c'.
+
 2010-01-08  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* src/mkisofs.c: Remove `ifdef linux' portability kludge.

@@ -26,6 +26,7 @@
 #include <grub/misc.h>
 #include <grub/gzio.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 grub_dl_t my_mod;
 
@@ -129,15 +130,15 @@ GRUB_MOD_INIT(multiboot)
   cmd_multiboot =
 #ifdef GRUB_USE_MULTIBOOT2
     grub_register_command ("multiboot2", grub_cmd_multiboot_loader,
-			   0, "Load a multiboot 2 kernel.");
+			   0, N_("Load a multiboot 2 kernel."));
 #else
     grub_register_command ("multiboot", grub_cmd_multiboot_loader,
-			   0, "Load a multiboot kernel.");
+			   0, N_("Load a multiboot kernel."));
 #endif
 
   cmd_module =
     grub_register_command ("module", grub_cmd_module_loader,
-			   0, "Load a multiboot module.");
+			   0, N_("Load a multiboot module."));
 
   my_mod = mod;
 }
