@@ -1111,20 +1111,129 @@ get_comb_type (grub_uint32_t c)
   return GRUB_BIDI_TYPE_L;
 }
 
+static void
+blit_comb (const struct grub_unicode_glyph *glyph_id,
+	   struct grub_font_glyph *glyph,
+	   struct grub_video_signed_rect *bounds_out,
+	   struct grub_font_glyph *main_glyph,
+	   struct grub_font_glyph **combining_glyphs)
+{
+  struct grub_video_signed_rect bounds;
+  unsigned i;
+  auto void NESTED_FUNC_ATTR do_blit (struct grub_font_glyph *src,
+				      signed dx, signed dy);
+  void NESTED_FUNC_ATTR do_blit (struct grub_font_glyph *src,
+				 signed dx, signed dy)
+  {
+    if (glyph)
+      grub_font_blit_glyph (glyph, src, dx - glyph->offset_x,
+			    (glyph->height + glyph->offset_y) + dy);
+    if (dx < bounds.x)
+      {
+	bounds.width += bounds.x - dx;
+	bounds.x = dx;
+      }
+    if (bounds.y > -src->height - dy)
+      {
+	bounds.height += bounds.y - (-src->height - dy);
+	bounds.y = (-src->height - dy);
+      }
+    if (dx + src->width - bounds.x >= (signed) bounds.width)
+      bounds.width = dx + src->width - bounds.x + 1;
+    if ((signed) bounds.height < src->height + (-src->height - dy) - bounds.y)
+      bounds.height = src->height + (-src->height - dy) - bounds.y;
+  }
+
+  auto void minimal_device_width (int val);
+  void minimal_device_width (int val)
+  {
+    if (glyph && glyph->device_width < val)
+      glyph->device_width = val;
+  }
+  auto void add_device_width (int val);
+  void add_device_width (int val)
+  {
+    if (glyph)
+      glyph->device_width += val;
+  }
+
+  bounds.x = main_glyph->offset_x;
+  bounds.y = main_glyph->offset_y;
+  bounds.width = main_glyph->width;
+  bounds.height = main_glyph->height;
+
+  for (i = 0; i < glyph_id->ncomb; i++)
+    {
+      enum grub_comb_type combtype;
+      grub_int16_t space = 0;
+      grub_int16_t centerx = (bounds.width - combining_glyphs[i]->width) / 2
+	+ bounds.x;
+      
+      if (!combining_glyphs[i])
+	continue;
+      combtype = get_comb_type (glyph_id->combining[i]);
+      switch (combtype)
+	{
+	case GRUB_UNICODE_COMB_OVERLAY:
+	  do_blit (combining_glyphs[i],
+		   centerx,
+		   (bounds.height - combining_glyphs[i]->height) / 2
+		   -(bounds.height + bounds.y));
+	  minimal_device_width (combining_glyphs[i]->width);
+	  break;
+
+	case GRUB_UNICODE_STACK_ABOVE:
+	  space = combining_glyphs[i]->offset_y
+	    - grub_font_get_xheight (combining_glyphs[i]->font);
+	  if (space < 0)
+	    space = 1 + (grub_font_get_xheight (main_glyph->font)) / 8;
+	    
+	case GRUB_UNICODE_STACK_ATTACHED_ABOVE:	    
+	  do_blit (combining_glyphs[i], centerx,
+		   -(bounds.height + bounds.y + space
+		     + combining_glyphs[i]->height));
+	  minimal_device_width (combining_glyphs[i]->width);
+	  break;
+
+	case GRUB_UNICODE_STACK_BELOW:
+	  space = -(combining_glyphs[i]->offset_y 
+		    + combining_glyphs[i]->height);
+	  if (space < 0)
+	    space = 1 + (grub_font_get_xheight (main_glyph->font)) / 8;
+	  
+	case GRUB_UNICODE_STACK_ATTACHED_BELOW:
+	  do_blit (combining_glyphs[i], centerx,
+		   -(bounds.y - space));
+	  minimal_device_width (combining_glyphs[i]->width);
+	  break;
+
+	default:
+	  {
+	    /* Default handling. Just draw combining character on top
+	       of base character.
+	       FIXME: support more unicode types correctly.
+	    */
+	    do_blit (combining_glyphs[i],
+		     main_glyph->device_width
+		     + combining_glyphs[i]->offset_x,  
+		     - (combining_glyphs[i]->height 
+			+ combining_glyphs[i]->offset_y));
+	    add_device_width (combining_glyphs[i]->device_width);
+	  }
+	}
+    }
+  if (bounds_out)
+    *bounds_out = bounds;
+}
+
 static struct grub_font_glyph *
 grub_font_construct_glyph (grub_font_t hinted_font,
 			   const struct grub_unicode_glyph *glyph_id)
 {
   grub_font_t font;
-  grub_uint16_t width;
-  grub_uint16_t height;
-  grub_int16_t offset_x;
-  grub_int16_t offset_y;
-  grub_int16_t curtop, curbottom;
-  grub_uint16_t device_width;
+  struct grub_video_signed_rect bounds;
   struct grub_font_glyph *main_glyph;
   struct grub_font_glyph **combining_glyphs;
-  unsigned i;
   struct grub_font_glyph *glyph;
 
   main_glyph = grub_font_get_glyph_with_fallback (hinted_font, glyph_id->base);
@@ -1147,106 +1256,17 @@ grub_font_construct_glyph (grub_font_t hinted_font,
     }
   
   font = main_glyph->font;
-  width = main_glyph->width;
-  height = main_glyph->height;
-  offset_x = main_glyph->offset_x;
-  offset_y = main_glyph->offset_y;
-  device_width = main_glyph->device_width;
 
-  for (i = 0; i < glyph_id->ncomb; i++)
-    {
-      enum grub_comb_type combtype;
+  {
+    unsigned i;
+    for (i = 0; i < glyph_id->ncomb; i++)
       combining_glyphs[i]
 	= grub_font_get_glyph_with_fallback (font, glyph_id->combining[i]);
-      if (!combining_glyphs[i])
-	continue;
-      combtype = get_comb_type (glyph_id->combining[i]);
-      switch (combtype)
-	{
-	case GRUB_UNICODE_COMB_OVERLAY:
-	  if (height < combining_glyphs[i]->height)
-	    {
-	      offset_y -= (combining_glyphs[i]->height - height) / 2;
-	      height = combining_glyphs[i]->height;
-	    }
-	  if (width < combining_glyphs[i]->width)
-	    {
-	      offset_x -= (combining_glyphs[i]->width - width) / 2;
-	      width = combining_glyphs[i]->width;
-	    }
-	  if (device_width < combining_glyphs[i]->width)
-	    device_width = combining_glyphs[i]->width;
-	  break;
+  }
 
-	case GRUB_UNICODE_STACK_ABOVE:
-	  {
-	    grub_int16_t space;
-	    space = combining_glyphs[i]->offset_y
-	      - grub_font_get_xheight (combining_glyphs[i]->font);
-	    if (space < 1)
-	      space = 1;
-	    if (width < combining_glyphs[i]->width)
-	      {
-		offset_x -= (combining_glyphs[i]->width - width) / 2;
-		width = combining_glyphs[i]->width;
-	      }
-	    if (device_width < combining_glyphs[i]->width)
-	      device_width = combining_glyphs[i]->width;
-	    height += combining_glyphs[i]->height + space;
-	  }
-	  break;  
+  blit_comb (glyph_id, NULL, &bounds, main_glyph, combining_glyphs);
 
-	case GRUB_UNICODE_STACK_BELOW:
-	  {
-	    grub_int16_t space;
-	    space = -(combining_glyphs[i]->offset_y 
-		      + combining_glyphs[i]->height);
-	    if (space < 1)
-	      space = 1;
-	    if (width < combining_glyphs[i]->width)
-	      {
-		offset_x -= (combining_glyphs[i]->width - width) / 2;
-		width = combining_glyphs[i]->width;
-	      }
-	    if (device_width < combining_glyphs[i]->width)
-	      device_width = combining_glyphs[i]->width;
-	    height += combining_glyphs[i]->height + space;
-	    offset_y -= combining_glyphs[i]->height + space;
-	  }
-	  break;
-
-	default:
-	  {
-	    /* Default handling. Just draw combining character on top
-	       of base character.
-	       FIXME: support more unicode types correctly.
-	    */
-	    grub_int16_t nx = main_glyph->device_width
-	      + combining_glyphs[i]->offset_x;
-
-	    device_width += combining_glyphs[i]->device_width;
-	    if (nx < offset_x)
-	      {
-		width += offset_x - nx;
-		offset_x = nx;
-	      }
-	    if (offset_y > combining_glyphs[i]->offset_y)
-	      {
-		height += offset_y - combining_glyphs[i]->offset_y;
-		offset_y = combining_glyphs[i]->offset_y;
-	      }
-	    if (nx + combining_glyphs[i]->width - offset_x >= width)
-	      width = nx + combining_glyphs[i]->width - offset_x + 1;
-	    if (height
-		< (combining_glyphs[i]->height 
-		   + combining_glyphs[i]->offset_y) - offset_y)
-	      height = (combining_glyphs[i]->height 
-			+ combining_glyphs[i]->offset_y) - offset_y;
-	  }
-	}
-    }
-
-  glyph = grub_zalloc (sizeof (*glyph) + (width * height + 7) / 8);
+  glyph = grub_zalloc (sizeof (*glyph) + (bounds.width * bounds.height + 7) / 8);
   if (!glyph)
     {
       grub_errno = GRUB_ERR_NONE;
@@ -1254,84 +1274,24 @@ grub_font_construct_glyph (grub_font_t hinted_font,
     }
 
   glyph->font = font;
-  glyph->width = width;
-  glyph->height = height;
-  glyph->offset_x = offset_x;
-  glyph->offset_y = offset_y;
-  glyph->device_width = device_width;
+  glyph->width = bounds.width;
+  glyph->height = bounds.height;
+  glyph->offset_x = bounds.x;
+  glyph->offset_y = bounds.y;
+  glyph->device_width = main_glyph->device_width;
 
   if (glyph_id->attributes & GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR)
     grub_font_blit_glyph_mirror (glyph, main_glyph,
-				 main_glyph->offset_x - offset_x,
-				 (height + offset_y)
+				 main_glyph->offset_x - glyph->offset_x,
+				 (glyph->height + glyph->offset_y)
 				 - (main_glyph->height + main_glyph->offset_y));
   else
-    grub_font_blit_glyph (glyph, main_glyph, main_glyph->offset_x - offset_x,
-			  (height + offset_y)
+    grub_font_blit_glyph (glyph, main_glyph,
+			  main_glyph->offset_x - glyph->offset_x,
+			  (glyph->height + glyph->offset_y)
 			  - (main_glyph->height + main_glyph->offset_y));
 
-  curtop = main_glyph->height + main_glyph->offset_y;
-  curbottom = main_glyph->offset_y;
-
-  for (i = 0; i < glyph_id->ncomb; i++)
-    {
-      enum grub_comb_type combtype;
-      grub_int16_t space = 0;
-
-      if (!combining_glyphs[i])
-	continue;
-      combtype = get_comb_type (glyph_id->combining[i]);
-      switch (combtype)
-	{
-	case GRUB_UNICODE_COMB_OVERLAY:
-	  grub_font_blit_glyph (glyph, combining_glyphs[i],
-				(width - combining_glyphs[i]->width) / 2,
-				(height - combining_glyphs[i]->height) / 2);
-	  break;
-
-	case GRUB_UNICODE_STACK_ABOVE:
-	  space = combining_glyphs[i]->offset_y
-	    - grub_font_get_xheight (combining_glyphs[i]->font);
-	  if (space < 0)
-	    space = 1;
-
-	case GRUB_UNICODE_STACK_ATTACHED_ABOVE:
-	    
-	  curtop += combining_glyphs[i]->height + space;
-	  grub_font_blit_glyph (glyph, combining_glyphs[i],
-				(width - combining_glyphs[i]->width) / 2,
-				(height + offset_y) - curtop);
-	  break;
-
-	case GRUB_UNICODE_STACK_BELOW:
-	  space = -(combining_glyphs[i]->offset_y 
-		    + combining_glyphs[i]->height);
-	  if (space < 0)
-	    space = 1;
-	  
-	case GRUB_UNICODE_STACK_ATTACHED_BELOW:
-	  curbottom -= space;
-	  grub_font_blit_glyph (glyph, combining_glyphs[i],
-				(width - combining_glyphs[i]->width) / 2,
-				(height + offset_y) - curbottom);
-	  curbottom -= combining_glyphs[i]->height;
-	  break;
-
-	default:
-	  {
-	    /* Default handling. Just draw combining character on top
-	       of base character.
-	       FIXME: support more unicode types correctly.
-	    */
-	    grub_font_blit_glyph (glyph, combining_glyphs[i],
-				  main_glyph->device_width
-				  + combining_glyphs[i]->offset_x - offset_x,
-				  (height + offset_y)
-				  - (combining_glyphs[i]->height 
-				     + combining_glyphs[i]->offset_y));
-	  }
-	}
-    }
+  blit_comb (glyph_id, glyph, NULL, main_glyph, combining_glyphs);
 
   return glyph;
 }
