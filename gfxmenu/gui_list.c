@@ -327,7 +327,7 @@ list_paint (void *vself, const grub_video_rect_t *region)
       draw_scrollbar (self,
 		      self->first_shown_index, num_shown_items,
 		      0, self->view->menu->size,
-		      content_rect.width - box_right_pad
+		      self->bounds.width - box_right_pad
 		      + self->scrollbar_width,
 		      box_top_pad + self->item_padding,
 		      content_rect.height - box_top_pad - box_bottom_pad);
