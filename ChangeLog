@@ -1,4 +1,8 @@
-2010-01-08  Robert Millan  <rmh.mkisofs@aybabtu.com>
+2010-01-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* src/mkisofs.c: Remove `ifdef linux' portability kludge.
+
+2010-01-08  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/mkisofs/defaults.h (APPID_DEFAULT): Redefine using PACKAGE_NAME.
 	(SYSTEM_ID_DEFAULT): Set to "GNU" unconditionally.

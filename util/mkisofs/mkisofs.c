@@ -26,12 +26,7 @@
 #include "config.h"
 #include "mkisofs.h"
 #include "match.h"
-
-#ifdef linux
-#include <getopt.h>
-#else
 #include "getopt.h"
-#endif
 
 #include "iso9660.h"
 #include <ctype.h>
