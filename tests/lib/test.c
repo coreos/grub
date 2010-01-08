@@ -117,10 +117,8 @@ grub_test_unregister (const char *name)
 }
 
 int
-grub_test_run (const char *name)
+grub_test_run (grub_test_t test)
 {
-  grub_test_t test;
-
   auto int print_failure (grub_test_failure_t item);
   int print_failure (grub_test_failure_t item)
   {
@@ -133,18 +131,16 @@ grub_test_run (const char *name)
     return 0;
   }
 
-  test = grub_named_list_find (GRUB_AS_NAMED_LIST (grub_test_list), name);
-  if (!test)
-    return GRUB_ERR_FILE_NOT_FOUND;
-
   test->main ();
-
-  if (!failure_list)
-    return GRUB_ERR_NONE;
 
   grub_test_printf ("%s:\n", test->name);
   grub_list_iterate (GRUB_AS_LIST (failure_list),
 		     (grub_list_hook_t) print_failure);
+  if (!failure_list)
+    grub_test_printf ("%s: PASS\n", test->name);
+  else
+    grub_test_printf ("%s: FAIL\n", test->name);
+
   free_failures ();
-  return GRUB_ERR_TEST_FAILURE;
+  return GRUB_ERR_NONE;
 }

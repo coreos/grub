@@ -27,7 +27,7 @@ void EXPORT_FUNC (grub_test_register) (const char *name, void (*test) (void));
 void EXPORT_FUNC (grub_test_unregister) (const char *name);
 
 /* Execute a test and print results.  */
-int grub_test_run (const char *name);
+int grub_test_run (grub_test_t test);
 
 /* Test `cond' for nonzero; log failure otherwise.  */
 void grub_test_nonzero (int cond, const char *file,

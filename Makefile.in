@@ -141,7 +141,6 @@ PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
 SCRIPTS = $(bin_SCRIPTS) $(sbin_SCRIPTS) $(grub-mkconfig_SCRIPTS) \
 	$(lib_SCRIPTS)
 INFOS = $(info_INFOS)
-TESTS = $(check_UNITTESTS) $(check_FUNCTIONALTESTS) $(check_SCRIPTEDTESTS)
 
 CLEANFILES =
 MOSTLYCLEANFILES =
@@ -461,19 +460,27 @@ distcheck: dist
 	@echo "$(distdir).tar.gz is ready for distribution" | \
 	  sed 'h;s/./=/g;p;x;p;x'
 
-$(TESTS): $(check_SCRIPTS) $(check_MODULES) $(check_PROGRAMS)
+TESTS = $(check_UTILITIES) $(check_SCRIPTS) $(check_MODULES)
+$(TESTS): $(test_framework_SCRIPTS) $(test_framework_MODULES)
+
 check: all $(TESTS)
-	@list="$(check_UNITTESTS) $(check_SCRIPTEDTESTS)"; \
+	@list="$(check_UTILITIES)"; \
 	for file in $$list; do \
+	  $(builddir)/$$file; \
+	done
+	@list="$(check_SCRIPTS)"; \
+	for file in $$list; do \
+	  echo "$$file:"; \
 	  if $(builddir)/$$file; then \
 	    echo "$$file: PASS"; \
 	  else \
 	    echo "$$file: FAIL"; \
 	  fi; \
 	done
-	@list="$(check_FUNCTIONALTESTS)"; \
-	for test in $$list; do \
-	  echo "insmod functional_test; insmod $test; functional_test" \
+	@list="$(check_MODULES)"; \
+	for file in $$list; do \
+	  mod=`basename $$file .mod`; \
+	  echo "insmod functional_test; insmod $$mod; functional_test" \
 	    | $(builddir)/grub-shell; \
 	done
 

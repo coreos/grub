@@ -56,7 +56,7 @@ main (int argc __attribute__ ((unused)),
   auto int run_test (grub_test_t test);
   int run_test (grub_test_t test)
   {
-    status = grub_test_run (test->name) ? : status;
+    status = grub_test_run (test) ? : status;
     return 0;
   }
 

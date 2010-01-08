@@ -45,19 +45,16 @@ grub_functional_test (struct grub_extcmd *cmd __attribute__ ((unused)),
 		      int argc __attribute__ ((unused)),
 		      char **args __attribute__ ((unused)))
 {
-  int i;
-  int status;
-  grub_test_t test;
+  auto int run_test (grub_test_t test);
+  int run_test (grub_test_t test)
+  {
+    grub_test_run (test);
+    return 0;
+  }
 
-  status = 0;
-  for (i = 0; i < argc; i++)
-    {
-      test = grub_named_list_find (GRUB_AS_NAMED_LIST (grub_test_list),
-				   args[i]);
-      status = grub_test_run (test->name) ? : status;
-    }
-
-  return status;
+  grub_list_iterate (GRUB_AS_LIST (grub_test_list),
+		     (grub_list_hook_t) run_test);
+  return GRUB_ERR_NONE;
 }
 
 static grub_extcmd_t cmd;

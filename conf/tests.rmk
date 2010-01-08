@@ -4,38 +4,38 @@
 grub-shell: tests/util/grub-shell.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@
-check_SCRIPTS += grub-shell
+test_framework_SCRIPTS += grub-shell
 CLEANFILES += grub-shell
 
 # For grub-shell-tester
 grub-shell-tester: tests/util/grub-shell-tester.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@
-check_SCRIPTS += grub-shell-tester
+test_framework_SCRIPTS += grub-shell-tester
 CLEANFILES += grub-shell-tester
 
-check_MODULES += functional_test.mod
+test_framework_MODULES += functional_test.mod
 functional_test_mod_SOURCES = tests/lib/functional_test.c tests/lib/test.c
 functional_test_mod_CFLAGS  = $(COMMON_CFLAGS)
 functional_test_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Unit tests
 
-check_UNITTESTS += example_unit_test
+check_UTILITIES += example_unit_test
 example_unit_test_SOURCES = tests/example_unit_test.c kern/list.c kern/misc.c tests/lib/test.c tests/lib/unit_test.c
 example_unit_test_CFLAGS  = -Wno-format
 
 # Functional tests
 
-check_FUNCTIONALTESTS += example_functional_test.mod
+check_MODULES += example_functional_test.mod
 example_functional_test_mod_SOURCES = tests/example_functional_test.c
 example_functional_test_mod_CFLAGS  = -Wno-format $(COMMON_CFLAGS)
 example_functional_test_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Scripted tests
 
-check_SCRIPTEDTESTS += example_scripted_test
+check_SCRIPTS += example_scripted_test
 example_scripted_test_SOURCES = tests/example_scripted_test.in
 
-check_SCRIPTEDTESTS += example_grub_script_test
+check_SCRIPTS += example_grub_script_test
 example_grub_script_test_SOURCES = tests/example_grub_script_test.in
