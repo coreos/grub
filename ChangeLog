@@ -1,3 +1,9 @@
+2010-01-08  Robert Millan  <rmh.mkisofs@aybabtu.com>
+
+	* util/mkisofs/defaults.h (APPID_DEFAULT): Redefine using PACKAGE_NAME.
+	(SYSTEM_ID_DEFAULT): Set to "GNU" unconditionally.
+	* util/mkisofs/mkisofs.c (main): Readjust --version output.
+
 2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Reset Multiboot 2 support.  New loader implements the draft in

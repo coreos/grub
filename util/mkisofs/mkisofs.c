@@ -914,7 +914,7 @@ int FDECL2(main, int, argc, char **, argv){
 	exit (0);
 	break;
       case OPTION_VERSION:
-	printf ("%s (%s %s)\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
+	printf ("%s version %s\n", PACKAGE_NAME, PACKAGE_VERSION);
 	exit (0);
 	break;
       case OPTION_NOSPLIT_SL_COMPONENT:
