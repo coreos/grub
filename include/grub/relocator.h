@@ -16,24 +16,27 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_RELOCATOR_CPU_HEADER
-#define GRUB_RELOCATOR_CPU_HEADER	1
+#ifndef GRUB_RELOCATOR_HEADER
+#define GRUB_RELOCATOR_HEADER	1
 
 #include <grub/types.h>
 #include <grub/err.h>
-#include <grub/relocator.h>
 
-struct grub_relocator32_state
-{
-  grub_uint32_t esp;
-  grub_uint32_t eax;
-  grub_uint32_t ebx;
-  grub_uint32_t ecx;
-  grub_uint32_t edx;
-  grub_uint32_t eip;
-};
+struct grub_relocator;
 
-grub_err_t grub_relocator32_boot (struct grub_relocator *rel,
-				  struct grub_relocator32_state state);
+struct grub_relocator *grub_relocator_new (void);
 
-#endif /* ! GRUB_RELOCATOR_CPU_HEADER */
+grub_err_t
+grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
+				 grub_addr_t target, grub_size_t size);
+
+grub_err_t
+grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src, 
+				  grub_addr_t *target,
+				  grub_addr_t min_addr, grub_addr_t max_addr,
+				  grub_size_t size, grub_size_t align);
+
+void
+grub_relocator_unload (struct grub_relocator *rel);
+
+#endif

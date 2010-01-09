@@ -20,30 +20,33 @@
 #include <grub/i386/memory.h>
 
 VARIABLE(grub_relocator_backward_start)
-	/* mov imm32, %eax */
+	/* mov imm32, %rax */
+	.byte	0x48
 	.byte	0xb8
-VARIABLE(grub_relocator_backward_dest)
-	.long	0
-	movl	%eax, %edi
+RELOCATOR_VARIABLE(dest)
+	.long	0, 0
+	movq	%rax, %rdi
 
-	/* mov imm32, %eax */
+	/* mov imm64, %rax */
+	.byte	0x48
 	.byte	0xb8
-VARIABLE(grub_relocator_backward_src)
-	.long	0
-	movl	%eax, %esi
+RELOCATOR_VARIABLE(src)
+	.long	0, 0
+	movq	%rax, %rsi
 
 	/* mov imm32, %ecx */
+	.byte	0x48
 	.byte	0xb9
-VARIABLE(grub_relocator_backward_size)
-	.long	0
-	
-	add	%ecx, %esi
-	add	%ecx, %edi
+RELOCATOR_VARIABLE(size)
+	.long	0, 0
+
+	add	%rcx, %rsi
+	add	%rcx, %rdi
 
 
 	/* Backward movsb is implicitly off-by-one.  compensate that.  */
-	sub	$1,	%esi
-	sub	$1,	%edi
+	sub	$1,	%rsi
+	sub	$1,	%rdi
 
 	/* Backward copy.  */
 	std
@@ -54,22 +57,26 @@ VARIABLE(grub_relocator_backward_end)
 
 
 VARIABLE(grub_relocator_forward_start)
-	/* mov imm32, %eax */
+	/* mov imm64, %rax */
+	.byte	0x48
 	.byte	0xb8
 VARIABLE(grub_relocator_forward_dest)
-	.long	0
-	movl	%eax, %edi
+	.long	0, 0
+	movq	%rax, %rdi
 
-	/* mov imm32, %rax */
+	/* mov imm64, %rax */
+	.byte	0x48
 	.byte	0xb8
 VARIABLE(grub_relocator_forward_src)
-	.long	0
-	movl	%eax, %esi
+	.long	0, 0
+	movq	%rax, %rsi
 
-	/* mov imm32, %ecx */
+	xorq	%rcx, %rcx
+	/* mov imm64, %rcx */
+	.byte	0x48
 	.byte	0xb9
 VARIABLE(grub_relocator_forward_size)
-	.long	0
+	.long	0, 0
 
 	/* Forward copy.  */
 	cld

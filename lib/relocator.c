@@ -16,122 +16,486 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define MAX_OVERHEAD ((RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN) \
-		      + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN) \
-		      + (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)	\
-		      + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN))
-#define PRE_REGION_SIZE (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN)
+#include <grub/relocator.h>
+#include <grub/relocator_private.h>
+#include <grub/mm_private.h>
+#include <grub/misc.h>
 
-void *
-PREFIX (alloc) (grub_size_t size)
+/* TODO: use more efficient data structures if necessary.  */
+
+struct grub_relocator *
+grub_relocator_new (void)
 {
-  char *playground;
+  struct grub_relocator *ret;
 
-  playground = grub_malloc (size + MAX_OVERHEAD);
-  if (!playground)
-    return 0;
+  grub_cpu_relocator_init ();
 
-  *(grub_size_t *) playground = size;
-
-  return playground + PRE_REGION_SIZE;
+  ret = grub_zalloc (sizeof (struct grub_relocator));
+  if (!ret)
+    return NULL;
+    
+  ret->postchunks = ~(grub_addr_t) 0;
+  ret->relocators_size = grub_relocator_jumper_size;  
+  return ret;
 }
 
-void *
-PREFIX (realloc) (void *relocator, grub_size_t size)
+static grub_mm_header_t
+get_best_header (struct grub_relocator *rel,
+		 grub_addr_t start, grub_addr_t end, grub_addr_t align,
+		 grub_size_t size,
+		 grub_mm_region_t rb, grub_mm_header_t *prev,
+		 grub_addr_t *best_addr, int from_low_priv, int collisioncheck)
 {
-  char *playground;
+  grub_mm_header_t h, hp;
+  grub_mm_header_t hb = NULL, hbp = NULL;
 
-  if (!relocator)
-    return PREFIX (alloc) (size);
+  auto void try_addr (grub_addr_t allowable_start, grub_addr_t allowable_end);
+  void try_addr (grub_addr_t allowable_start, grub_addr_t allowable_end)
+  {
+    if (from_low_priv)
+      {
+	grub_addr_t addr;
 
-  playground = (char *) relocator - PRE_REGION_SIZE;
+	addr = ALIGN_UP (allowable_start, align);
 
-  playground = grub_realloc (playground, size + MAX_OVERHEAD);
-  if (!playground)
-    return 0;
+	if (addr < start)
+	  addr = ALIGN_UP (start, align);
 
-  *(grub_size_t *) playground = size;
+	if (collisioncheck)
+	  while (1)
+	    {
+	      struct grub_relocator_chunk *chunk;
+	      for (chunk = rel->chunks; chunk; chunk = chunk->next)
+		if ((chunk->target <= addr
+		     && addr < chunk->target + chunk->size)
+		    || (chunk->target <= addr + size
+			&& addr + size < chunk->target + chunk->size)
+		    || (addr <= chunk->target && chunk->target < addr + size)
+		    || (addr <= chunk->target + chunk->size
+			&& chunk->target + chunk->size < addr + size))
+		  {
+		    addr = ALIGN_UP (chunk->target + chunk->size, align);
+		    break;
+		  }
+	      if (!chunk)
+		break;
+	    }
 
-  return playground + PRE_REGION_SIZE;
+	if (allowable_end <= addr + size)
+	  return;
+
+	if (addr > end)
+	  return;
+
+	if (hb == NULL || *best_addr > addr)
+	  {
+	    hb = h;
+	    hbp = hp;
+	    *best_addr = addr;
+	  }
+      }
+    else
+      {
+	grub_addr_t addr;
+
+	addr = ALIGN_DOWN (allowable_end - size, align);
+
+	if (addr > end)
+	  addr = ALIGN_DOWN (end, align);
+
+	if (collisioncheck)
+	  while (1)
+	    {
+	      struct grub_relocator_chunk *chunk;
+	      for (chunk = rel->chunks; chunk; chunk = chunk->next)
+		if ((chunk->target <= addr
+		     && addr < chunk->target + chunk->size)
+		    || (chunk->target <= addr + size
+			&& addr + size < chunk->target + chunk->size)
+		    || (addr <= chunk->target && chunk->target < addr + size)
+		    || (addr <= chunk->target + chunk->size
+			&& chunk->target + chunk->size < addr + size))
+		  {
+		    addr = ALIGN_DOWN (chunk->target - size, align);
+		    break;
+		  }
+	      if (!chunk)
+		break;
+	    }
+
+	if (allowable_start > addr)
+	  return;
+
+	if (addr < start)
+	  return;
+
+	if (hb == NULL || *best_addr < addr)
+	  {
+	    hb = h;
+	    hbp = hp;
+	    *best_addr = addr;
+	  }
+      }
+  }
+  
+  for (hp = NULL, h = rb->first; h; hp = h, h = h->next)
+    {
+      grub_addr_t allowable_start, allowable_end;
+      allowable_start = (grub_addr_t) h;
+      allowable_end = (grub_addr_t) (h + 1 + h->size);
+      
+      try_addr (allowable_start, allowable_end);
+      
+      if ((grub_addr_t) h == (grub_addr_t) (rb + 1))
+	try_addr (allowable_start - sizeof (*rb) - rb->pre_size,
+		  allowable_end - sizeof (*rb));
+    }
+  *prev = hbp;
+  return hb;
 }
 
-void
-PREFIX(free) (void *relocator)
+static int
+malloc_in_range (struct grub_relocator *rel,
+		 grub_addr_t start, grub_addr_t end, grub_addr_t align,
+		 grub_size_t size, grub_addr_t *res, int from_low_priv,
+		 int collisioncheck)
 {
-  if (relocator)
-    grub_free ((char *) relocator - PRE_REGION_SIZE);
+  grub_mm_region_t rb = NULL, rbp = NULL;
+  grub_mm_header_t hb = NULL, hbp = NULL;
+  grub_addr_t best_addr;
+
+ again:
+  
+  {
+    grub_mm_region_t r, rp;
+    for (rp = NULL, r = grub_mm_base; r; rp = r, r = r->next)
+      {
+	if ((grub_addr_t) r + r->size + sizeof (*r) > start
+	    && (grub_addr_t) r <= end && r->size + sizeof (*r) >= size
+	    && (rb == NULL || from_low_priv ? rb > r : rb < r))
+	  {
+	    rb = r;
+	    rbp = rp;
+	  }
+      }
+  }
+
+  if (!rb)
+    return 0;
+
+  hb = get_best_header (rel, start, end, align, size, rb, &hbp, &best_addr,
+			from_low_priv, collisioncheck);
+  if (!hb)
+    {
+      if (from_low_priv)
+	start = (grub_addr_t) (rb + rb->size + sizeof (*rb));
+      else
+	end = (grub_addr_t) rb - 1;
+      goto again;
+    }
+
+  /* Special case: relocating region start.  */
+  if (best_addr < (grub_addr_t) hbp)
+    {
+      grub_addr_t newreg_start, newreg_raw_start = best_addr + size;
+      grub_addr_t newreg_size, newreg_presize;
+      grub_mm_header_t new_header;
+      newreg_start = ALIGN_UP (newreg_raw_start, GRUB_MM_ALIGN);
+      newreg_presize = newreg_start - newreg_raw_start;
+      newreg_size = rb->size - (newreg_start - (grub_addr_t) rb);
+      if ((hb->size << GRUB_MM_ALIGN_LOG2) >= newreg_start
+	  + (grub_addr_t) rb)
+	{
+	  grub_mm_header_t newhnext = hb->next;
+	  grub_size_t newhsize = ((hb->size << GRUB_MM_ALIGN_LOG2)
+				  - newreg_start
+				  - (grub_addr_t) rb) >> GRUB_MM_ALIGN_LOG2;
+	  new_header = (void *) (newreg_start + sizeof (*rb));
+	  new_header->next = newhnext;
+	  new_header->size = newhsize;
+	  new_header->magic = GRUB_MM_FREE_MAGIC;
+	}
+      else
+	{
+	  new_header = hb->next;
+	}
+      if (hbp || new_header)
+	{
+	  struct grub_mm_header *newregfirst = rb->first;
+	  struct grub_mm_region *newregnext = rb->next;
+	  struct grub_mm_region *newreg = (void *) newreg_start;
+	  if (hbp)
+	    hbp->next = new_header;
+	  else
+	    newregfirst = new_header;
+	  newreg->first = newregfirst;
+	  newreg->next = newregnext;
+	  newreg->pre_size = newreg_presize;
+	  newreg->size = newreg_size;
+	  if (rbp)
+	    rbp->next = newreg;
+	  else
+	    grub_mm_base = newreg;
+	}
+      else
+	{
+	  if (rbp)
+	    rbp->next = rb->next;
+	  else
+	    grub_mm_base = rb->next;
+	}
+      *res = best_addr;
+      return 1;
+    }
+  {
+    struct grub_mm_header *foll = NULL;
+    
+    if (best_addr + size <= (grub_addr_t) (hb + hb->size))
+      {
+	foll = (void *) ALIGN_UP (best_addr + size, GRUB_MM_ALIGN);
+	foll->magic = GRUB_MM_FREE_MAGIC;
+	foll->size = hb->size - (foll - hb);
+      }
+
+    if (best_addr - (grub_addr_t) hb >= sizeof (*hb))
+      {
+	hb->size = (best_addr - (grub_addr_t) hb) >> GRUB_MM_ALIGN_LOG2;
+	if (foll)
+	  {
+	    foll->next = hb;
+	    if (hbp)
+	      hbp->next = foll;
+	    else
+	      rb->first = foll;
+	  }
+      }
+    else
+      {
+	if (foll)
+	  foll->next = hb->next;
+	else
+	  foll = hb->next;
+	if (hbp)
+	  hbp->next = foll;
+	else
+	  rb->first = foll;
+      }
+    *res = best_addr;
+    return 1;
+  }
 }
 
 grub_err_t
-PREFIX (boot) (void *relocator, grub_uint32_t dest,
-	       struct grub_relocator32_state state)
+grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
+				 grub_addr_t target, grub_size_t size)
 {
-  grub_size_t size;
-  char *playground;
+  struct grub_relocator_chunk *chunk;
+  grub_addr_t start;
+  grub_addr_t min_addr = 0, max_addr;
 
-  playground = (char *) relocator - PRE_REGION_SIZE;
-  size = *(grub_size_t *) playground;
+  max_addr = rel->postchunks;
 
-  grub_dprintf ("relocator",
-		"Relocator: source: %p, destination: 0x%x, size: 0x%lx\n",
-		relocator, (unsigned) dest, (unsigned long) size);
-
-  /* Very unlikely condition: Relocator may risk overwrite itself.
-     Just move it a bit up.  */
-  if ((grub_addr_t) dest < (grub_addr_t) relocator
-      + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN)
-      && (grub_addr_t) dest + (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
-      > (grub_addr_t) relocator)
+  /* Keep chunks in memory in the same order as they'll be after relocation.  */
+  for (chunk = rel->chunks; chunk; chunk = chunk->next)
     {
-      void *relocator_new = ((grub_uint8_t *) relocator)
-	+ (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
-	+ (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN);
-      grub_dprintf ("relocator", "Overwrite condition detected moving "
-		    "relocator from %p to %p\n", relocator, relocator_new);
-      grub_memmove (relocator_new, relocator,
-		    (RELOCATOR_SIZEOF (forward) + RELOCATOR_ALIGN)
-		    + size
-		    + (RELOCATOR_SIZEOF (backward) + RELOCATOR_ALIGN));
-      relocator = relocator_new;
+      if (chunk->target > target && chunk->src > max_addr)
+	max_addr = chunk->src;
+      if (chunk->target + chunk->size <= target
+	  && chunk->src + chunk->size < min_addr
+	  && chunk->src < rel->postchunks)
+	min_addr = chunk->src + chunk->size;
+      if ((chunk->target <= target && target < chunk->target + chunk->size)
+	  || (target <= chunk->target && chunk->target < target + size))
+	{
+	  return grub_error (GRUB_ERR_BAD_ARGUMENT, "overlap detected");
+	}
     }
 
-  if ((grub_addr_t) dest >= (grub_addr_t) relocator)
+  chunk = grub_malloc (sizeof (struct grub_relocator_chunk));
+  if (!chunk)
+    return grub_errno;
+
+  do
     {
-      int overhead;
-      overhead = dest -
-	ALIGN_UP (dest - RELOCATOR_SIZEOF (backward) - RELOCATOR_ALIGN,
-		  RELOCATOR_ALIGN);
-      grub_dprintf ("relocator",
-		    "Backward relocator: code %p, source: %p, "
-		    "destination: 0x%x, size: 0x%lx\n",
-		    (char *) relocator - overhead,
-		    (char *) relocator - overhead,
-		    (unsigned) dest - overhead,
-		    (unsigned long) size + overhead);
+      /* A trick to improve Linux allocation.  */
+#if defined (__i386__) || defined (__x86_64__)
+      if (target < 0x100000)
+	if (malloc_in_range (rel, rel->highestnonpostaddr, ~(grub_addr_t)0, 0,
+			     size, &start, 1, 0))
+	  {
+	    if (rel->postchunks < start)
+	      rel->postchunks = start;
+	    break;
+	  }
+#endif
+      if (malloc_in_range (rel, target, max_addr, 1, size, &start, 1, 0))
+	break;
 
-      write_call_relocator_bw ((char *) relocator - overhead,
-			       (char *) relocator - overhead,
-			       dest - overhead, size + overhead, state);
+      if (malloc_in_range (rel, min_addr, target, 0, size, &start, 1, 0))
+	break;
+
+      grub_free (chunk);
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
     }
-  else
+  while (0);
+
+  if (rel->highestaddr < target + size)
+    rel->highestaddr = target + size;
+
+  if (rel->highestaddr < start + size)
+    rel->highestaddr = start + size;
+
+  if (start < rel->postchunks)
     {
-      int overhead;
-
-      overhead = ALIGN_UP (dest + size, RELOCATOR_ALIGN)
-	+ RELOCATOR_SIZEOF (forward) - (dest + size);
-      grub_dprintf ("relocator",
-		    "Forward relocator: code %p, source: %p, "
-		    "destination: 0x%x, size: 0x%lx\n",
-		    (char *) relocator + size + overhead
-		    - RELOCATOR_SIZEOF (forward),
-		    relocator, (unsigned) dest,
-		    (unsigned long) size + overhead);
-
-      write_call_relocator_fw ((char *) relocator + size + overhead
-			       - RELOCATOR_SIZEOF (forward),
-			       relocator, dest, size + overhead, state);
+      if (rel->highestnonpostaddr < target + size)
+	rel->highestnonpostaddr = target + size;
+      
+      if (rel->highestnonpostaddr < start + size)
+	rel->highestnonpostaddr = start + size;  
     }
 
-  /* Not reached.  */
+  if (start < target)
+    rel->relocators_size += grub_relocator_backward_size;
+  if (start > target)
+    rel->relocators_size += grub_relocator_forward_size;
+
+  chunk->src = start;
+  chunk->target = target;
+  chunk->size = size;
+  chunk->next = rel->chunks;
+  rel->chunks = chunk;
+  *src = (void *) start;
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
+				  grub_addr_t *target,
+				  grub_addr_t min_addr, grub_addr_t max_addr,
+				  grub_size_t size, grub_size_t align)
+{
+  grub_addr_t min_addr2 = 0, max_addr2;
+  struct grub_relocator_chunk *chunk;
+  grub_addr_t start;
+
+  chunk = grub_malloc (sizeof (struct grub_relocator_chunk));
+  if (!chunk)
+    return grub_errno;
+
+  if (malloc_in_range (rel, min_addr, max_addr, align,
+		       size, &start, 1, 1))
+    {
+      chunk->src = start;
+      chunk->target = start;
+      chunk->size = size;
+      chunk->next = rel->chunks;
+      rel->chunks = chunk;
+      *src = (void *) start;
+      *target = start;
+      return GRUB_ERR_NONE;
+    }
+
+  max_addr2 = rel->postchunks;
+  
+  /* Keep chunks in memory in the same order as they'll be after
+     relocation.  */
+  for (chunk = rel->chunks; chunk; chunk = chunk->next)
+    {
+      if (chunk->target > max_addr && chunk->src > max_addr2)
+	max_addr2 = chunk->src;
+      if (chunk->target + chunk->size <= min_addr
+	  && chunk->src + chunk->size < min_addr2
+	  && chunk->src < rel->postchunks)
+	min_addr2 = chunk->src + chunk->size;
+    }
+
+  if (!malloc_in_range (rel, min_addr2, max_addr2, align,
+			size, &start, 1, 1))
+    {
+      grub_free (chunk);
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
+    }
+  
+  chunk->target = ALIGN_UP (min_addr, align);
+  while (1)
+    {
+      struct grub_relocator_chunk *chunk2;
+      for (chunk2 = rel->chunks; chunk2; chunk2 = chunk2->next)
+	if ((chunk2->target <= chunk->target
+	     && chunk->target < chunk2->target + chunk2->size)
+	    || (chunk2->target <= chunk->target + size
+		&& chunk->target + size < chunk2->target + chunk2->size)
+	    || (chunk->target <= chunk2->target && chunk2->target
+		< chunk->target + size)
+	    || (chunk->target <= chunk2->target + chunk2->size
+		&& chunk2->target + chunk2->size < chunk->target + size))
+	  {
+	    chunk->target = ALIGN_UP (chunk2->target + chunk2->size, align);
+	    break;
+	  }
+      if (!chunk2)
+	break;
+    }
+
+  if (start < chunk->target)
+    rel->relocators_size += grub_relocator_backward_size;
+  if (start > chunk->target)
+    rel->relocators_size += grub_relocator_forward_size;
+
+  chunk->src = start;
+  chunk->size = size;
+  chunk->next = rel->chunks;
+  rel->chunks = chunk;
+  *src = (void *) start;
+  *target = chunk->target;
+  return GRUB_ERR_NONE;
+}
+
+void
+grub_relocator_unload (struct grub_relocator *rel)
+{
+  struct grub_relocator_chunk *chunk, *next;
+  for (chunk = rel->chunks; chunk; chunk = next)
+    {
+      grub_fatal ("Relocator unloading isn't implemented yet");
+      next = chunk->next;
+      grub_free (chunk);
+    }
+}
+
+grub_err_t
+grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
+			       grub_addr_t *relstart)
+{
+  struct grub_relocator_chunk *chunk;
+  grub_addr_t rels;
+  grub_addr_t rels0;
+
+  if (!malloc_in_range (rel, 0, ~(grub_addr_t)0, grub_relocator_align,
+			rel->relocators_size, &rels0, 1, 1))
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
+  rels = rels0;
+
+  for (chunk = rel->chunks; chunk; chunk = chunk->next)
+    {
+      if (chunk->src < chunk->target)
+	{
+	  grub_cpu_relocator_backward ((void *) rels,
+				       (void *) chunk->src,
+				       (void *) chunk->target,
+				       chunk->size);
+	  rels += grub_relocator_backward_size;
+	}
+      if (chunk->src > chunk->target)
+	{
+	  grub_cpu_relocator_forward ((void *) rels,
+				      (void *) chunk->src,
+				      (void *) chunk->target,
+				      chunk->size);
+	  rels += grub_relocator_forward_size;
+	}
+    }
+  grub_cpu_relocator_jumper ((void *) rels, addr);
+  *relstart = rels0;
   return GRUB_ERR_NONE;
 }

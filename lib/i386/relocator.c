@@ -24,79 +24,115 @@
 #include <grub/err.h>
 
 #include <grub/i386/relocator.h>
+#include <grub/relocator_private.h>
 
-extern grub_uint8_t grub_relocator32_forward_start;
-extern grub_uint8_t grub_relocator32_forward_end;
-extern grub_uint8_t grub_relocator32_backward_start;
-extern grub_uint8_t grub_relocator32_backward_end;
+extern grub_uint8_t grub_relocator32_start;
+extern grub_uint8_t grub_relocator32_end;
+extern grub_uint8_t grub_relocator_forward_start;
+extern grub_uint8_t grub_relocator_forward_end;
+extern grub_uint8_t grub_relocator_backward_start;
+extern grub_uint8_t grub_relocator_backward_end;
 
-extern grub_uint32_t grub_relocator32_backward_dest;
-extern grub_uint32_t grub_relocator32_backward_size;
-extern grub_addr_t grub_relocator32_backward_src;
+extern void *grub_relocator_backward_dest;
+extern void *grub_relocator_backward_src;
+extern grub_size_t grub_relocator_backward_size;
 
-extern grub_uint32_t grub_relocator32_forward_dest;
-extern grub_uint32_t grub_relocator32_forward_size;
-extern grub_addr_t grub_relocator32_forward_src;
+extern void *grub_relocator_forward_dest;
+extern void *grub_relocator_forward_src;
+extern grub_size_t grub_relocator_forward_size;
 
-extern grub_uint32_t grub_relocator32_forward_eax;
-extern grub_uint32_t grub_relocator32_forward_ebx;
-extern grub_uint32_t grub_relocator32_forward_ecx;
-extern grub_uint32_t grub_relocator32_forward_edx;
-extern grub_uint32_t grub_relocator32_forward_eip;
-extern grub_uint32_t grub_relocator32_forward_esp;
+extern grub_uint32_t grub_relocator32_eax;
+extern grub_uint32_t grub_relocator32_ebx;
+extern grub_uint32_t grub_relocator32_ecx;
+extern grub_uint32_t grub_relocator32_edx;
+extern grub_uint32_t grub_relocator32_eip;
+extern grub_uint32_t grub_relocator32_esp;
 
-extern grub_uint32_t grub_relocator32_backward_eax;
-extern grub_uint32_t grub_relocator32_backward_ebx;
-extern grub_uint32_t grub_relocator32_backward_ecx;
-extern grub_uint32_t grub_relocator32_backward_edx;
-extern grub_uint32_t grub_relocator32_backward_eip;
-extern grub_uint32_t grub_relocator32_backward_esp;
+#define RELOCATOR_SIZEOF(x)	(&grub_relocator##x##_end - &grub_relocator##x##_start)
 
-#define RELOCATOR_SIZEOF(x)	(&grub_relocator32_##x##_end - &grub_relocator32_##x##_start)
-#define RELOCATOR_ALIGN 16
-#define PREFIX(x) grub_relocator32_ ## x
+grub_size_t grub_relocator_align = 1;
+grub_size_t grub_relocator_forward_size;
+grub_size_t grub_relocator_backward_size;
+grub_size_t grub_relocator_jumper_size = 10;
 
-static void
-write_call_relocator_bw (void *ptr, void *src, grub_uint32_t dest,
-			 grub_size_t size, struct grub_relocator32_state state)
+void
+grub_cpu_relocator_init (void)
 {
-  grub_relocator32_backward_dest = dest;
-  grub_relocator32_backward_src = PTR_TO_UINT64 (src);
-  grub_relocator32_backward_size = size;
-
-  grub_relocator32_backward_eax = state.eax;
-  grub_relocator32_backward_ebx = state.ebx;
-  grub_relocator32_backward_ecx = state.ecx;
-  grub_relocator32_backward_edx = state.edx;
-  grub_relocator32_backward_eip = state.eip;
-  grub_relocator32_backward_esp = state.esp;
-
-  grub_memmove (ptr,
-		&grub_relocator32_backward_start,
-		RELOCATOR_SIZEOF (backward));
-  ((void (*) (void)) ptr) ();
+  grub_relocator_forward_size = RELOCATOR_SIZEOF(_forward);
+  grub_relocator_backward_size = RELOCATOR_SIZEOF(_backward);
 }
 
-static void
-write_call_relocator_fw (void *ptr, void *src, grub_uint32_t dest,
-			 grub_size_t size, struct grub_relocator32_state state)
+void
+grub_cpu_relocator_jumper (void *rels, grub_addr_t addr)
 {
-
-  grub_relocator32_forward_dest = dest;
-  grub_relocator32_forward_src = PTR_TO_UINT64 (src);
-  grub_relocator32_forward_size = size;
-
-  grub_relocator32_forward_eax = state.eax;
-  grub_relocator32_forward_ebx = state.ebx;
-  grub_relocator32_forward_ecx = state.ecx;
-  grub_relocator32_forward_edx = state.edx;
-  grub_relocator32_forward_eip = state.eip;
-  grub_relocator32_forward_esp = state.esp;
-
-  grub_memmove (ptr,
-		&grub_relocator32_forward_start,
-		RELOCATOR_SIZEOF (forward));
-  ((void (*) (void)) ptr) ();
+  grub_uint8_t *ptr;
+  ptr = rels;
+  /* jmp $addr */
+  *(grub_uint8_t *) ptr = 0xe9;
+  ptr++;
+  *(grub_uint32_t *) ptr = addr - (grub_uint32_t) (ptr + 4);
+  ptr += 4;
+  /* movl $addr, %eax (for relocator) */
+  *(grub_uint8_t *) ptr = 0xb8;
+  ptr++;
+  *(grub_uint32_t *) ptr = addr;  
 }
 
-#include "../relocator.c"
+void
+grub_cpu_relocator_backward (void *ptr, void *src, void *dest,
+			     grub_size_t size)
+{
+  grub_relocator_backward_dest = dest;
+  grub_relocator_backward_src = src;
+  grub_relocator_backward_size = size;
+
+  grub_memmove (ptr,
+		&grub_relocator_backward_start,
+		RELOCATOR_SIZEOF (_backward));
+}
+
+void
+grub_cpu_relocator_forward (void *ptr, void *src, void *dest,
+			     grub_size_t size)
+{
+  grub_relocator_forward_dest = dest;
+  grub_relocator_forward_src = src;
+  grub_relocator_forward_size = size;
+
+  grub_memmove (ptr,
+		&grub_relocator_forward_start,
+		RELOCATOR_SIZEOF (_forward));
+}
+
+grub_err_t
+grub_relocator32_boot (struct grub_relocator *rel,
+		       struct grub_relocator32_state state)
+{
+  grub_addr_t target;
+  void *src;
+  grub_err_t err;
+  grub_addr_t relst;
+  err = grub_relocator_alloc_chunk_align (rel, &src, &target, 0,
+					  (0xffffffff - RELOCATOR_SIZEOF (32))
+					  + 1, RELOCATOR_SIZEOF (32), 16);
+  if (err)
+    return err;
+
+  grub_relocator32_eax = state.eax;
+  grub_relocator32_ebx = state.ebx;
+  grub_relocator32_ecx = state.ecx;
+  grub_relocator32_edx = state.edx;
+  grub_relocator32_eip = state.eip;
+  grub_relocator32_esp = state.esp;
+
+  grub_memmove (src, &grub_relocator32_start, RELOCATOR_SIZEOF (32));
+
+  err = grub_relocator_prepare_relocs (rel, target, &relst);
+  if (err)
+    return err;
+  asm volatile ("cli");
+  ((void (*) (void)) relst) ();
+
+  /* Not reached.  */
+  return GRUB_ERR_NONE;
+}
