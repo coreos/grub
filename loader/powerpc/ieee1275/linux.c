@@ -26,6 +26,7 @@
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/machine/loader.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 #define ELF32_LOADMASK (0xc0000000UL)
 #define ELF64_LOADMASK (0xc000000000000000ULL)
@@ -349,9 +350,9 @@ static grub_command_t cmd_linux, cmd_initrd;
 GRUB_MOD_INIT(linux)
 {
   cmd_linux = grub_register_command ("linux", grub_cmd_linux,
-				     0, "Load Linux.");
+				     0, N_("Load Linux."));
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
-				      0, "Load initrd.");
+				      0, N_("Load initrd."));
   my_mod = mod;
 }
 

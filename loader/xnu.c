@@ -32,6 +32,7 @@
 #include <grub/command.h>
 #include <grub/misc.h>
 #include <grub/env.h>
+#include <grub/i18n.h>
 
 struct grub_xnu_devtree_key *grub_xnu_devtree_root = 0;
 static int driverspackagenum = 0;
@@ -1404,25 +1405,25 @@ static grub_command_t cmd_kextdir, cmd_ramdisk, cmd_resume, cmd_splash;
 GRUB_MOD_INIT(xnu)
 {
   cmd_kernel = grub_register_command ("xnu_kernel", grub_cmd_xnu_kernel, 0,
-				      "Load XNU image.");
+				      N_("Load XNU image."));
   cmd_kernel64 = grub_register_command ("xnu_kernel64", grub_cmd_xnu_kernel64,
-					0, "Load 64-bit XNU image.");
+					0, N_("Load 64-bit XNU image."));
   cmd_mkext = grub_register_command ("xnu_mkext", grub_cmd_xnu_mkext, 0,
-				     "Load XNU extension package.");
+				     N_("Load XNU extension package."));
   cmd_kext = grub_register_command ("xnu_kext", grub_cmd_xnu_kext, 0,
-				    "Load XNU extension.");
+				    N_("Load XNU extension."));
   cmd_kextdir = grub_register_command ("xnu_kextdir", grub_cmd_xnu_kextdir,
-				       "DIRECTORY [OSBundleRequired]",
-				       "Load XNU extension directory.");
+				       N_("DIRECTORY [OSBundleRequired]"),
+				       N_("Load XNU extension directory."));
   cmd_ramdisk = grub_register_command ("xnu_ramdisk", grub_cmd_xnu_ramdisk, 0,
-				       "Load XNU ramdisk. "
-				       "It will be seen as md0.");
+				       N_("Load XNU ramdisk. "
+				       "It will be seen as md0."));
   cmd_splash = grub_register_command ("xnu_splash", grub_cmd_xnu_splash, 0,
-				      "Load a splash image for XNU.");
+				      N_("Load a splash image for XNU."));
 
 #ifndef GRUB_UTIL
   cmd_resume = grub_register_command ("xnu_resume", grub_cmd_xnu_resume,
-				      0, "Load XNU hibernate image.");
+				      0, N_("Load XNU hibernate image."));
 #endif
 
   grub_cpu_xnu_init ();

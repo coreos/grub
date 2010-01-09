@@ -8,7 +8,7 @@
 #define  PREPARER_DEFAULT 	NULL
 #define  PUBLISHER_DEFAULT	NULL
 #ifndef	APPID_DEFAULT
-#define  APPID_DEFAULT 		"MKISOFS ISO 9660 FILESYSTEM BUILDER"
+#define  APPID_DEFAULT 		PACKAGE_NAME " ISO 9660 filesystem builder"
 #endif
 #define  COPYRIGHT_DEFAULT 	NULL
 #define  BIBLIO_DEFAULT 	NULL
@@ -17,38 +17,4 @@
 #define  VOLUME_ID_DEFAULT 	"CDROM"
 #define  BOOT_CATALOG_DEFAULT   "boot.catalog"
 #define  BOOT_IMAGE_DEFAULT     NULL
-#ifdef __QNX__
-#define  SYSTEM_ID_DEFAULT 	"QNX"
-#endif
-
-#ifdef __osf__
-#define  SYSTEM_ID_DEFAULT 	"OSF"
-#endif
-
-#ifdef __sun
-#ifdef __SVR4
-#define  SYSTEM_ID_DEFAULT    "Solaris"
-#else
-#define  SYSTEM_ID_DEFAULT    "SunOS"
-#endif
-#endif
-
-#ifdef __hpux
-#define  SYSTEM_ID_DEFAULT 	"HP-UX"
-#endif
-
-#ifdef __sgi
-#define  SYSTEM_ID_DEFAULT 	"SGI"
-#endif
-
-#ifdef _AIX
-#define  SYSTEM_ID_DEFAULT 	"AIX"
-#endif
-
-#ifdef _WIN
-#define	SYSTEM_ID_DEFAULT       "Win32"
-#endif /* _WIN */
-
-#ifndef SYSTEM_ID_DEFAULT
-#define  SYSTEM_ID_DEFAULT 	"LINUX"
-#endif
+#define  SYSTEM_ID_DEFAULT 	"GNU"

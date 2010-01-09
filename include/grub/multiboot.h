@@ -1,7 +1,7 @@
 /* multiboot.h - multiboot header file with grub definitions. */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2007,2008,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,7 +20,14 @@
 #ifndef GRUB_MULTIBOOT_HEADER
 #define GRUB_MULTIBOOT_HEADER 1
 
+#ifdef GRUB_USE_MULTIBOOT2
+#include <multiboot2.h>
+/* Same thing as far as our loader is concerned.  */
+#define MULTIBOOT_BOOTLOADER_MAGIC	MULTIBOOT2_BOOTLOADER_MAGIC
+#define MULTIBOOT_HEADER_MAGIC		MULTIBOOT2_HEADER_MAGIC
+#else
 #include <multiboot.h>
+#endif
 
 void grub_multiboot (int argc, char *argv[]);
 void grub_module (int argc, char *argv[]);

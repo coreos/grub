@@ -1,3 +1,112 @@
+2010-01-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Make loader output a bit more user-friendly.
+
+	* util/grub.d/10_hurd.in: Print message indicating that GNU Mach
+	is being loaded.  Likewise for the Hurd.
+
+	* util/grub.d/10_kfreebsd.in (kfreebsd_entry): Print message indicating
+	that kernel of FreeBSD ${version} is being loaded.
+
+	* loader/i386/linux.c (grub_cmd_linux): Move debug info to
+	grub_dprintf().
+	(grub_cmd_initrd): Likewise.
+	* util/grub.d/10_linux.in (linux_entry): Print message indicating
+	that Linux ${version} is being loaded.  Likewise for initrd.
+
+2010-01-09  Carles Pina i Estany  <carles@pina.cat>
+
+	* gettext/gettext.c (GRUB_MOD_INIT): Gettextizze.
+
+2010-01-08  Carles Pina i Estany  <carles@pina.cat>
+
+	* loader/efi/appleloader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/efi/chainloader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/efi/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/ieee1275/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/pc/chainloader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/pc/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/xnu.c: Include `<grub/i18n.h>'.
+	(grub_cpu_xnu_init): Gettextizze.
+	* loader/multiboot_loader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/powerpc/ieee1275/linux.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/sparc64/ieee1275/linux.c: Include `<grub/i18n.h>'.
+	(grub_linux_load64): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/xnu.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* po/POTFILES: Add `loader/efi/appleloader.c',
+	`loader/efi/chainloader.c', `loader/i386/efi/linux.c',
+	`loader/i386/ieee1275/linux.c', `loader/i386/linux.c',
+	`loader/i386/pc/chainloader.c', `loader/i386/pc/linux.c',
+	`loader/i386/xnu.c', `loader/multiboot_loader.c',
+	`loader/powerpc/ieee1275/linux.c', `loader/sparc64/ieee1275/linux.c'
+	and `loader/xnu.c'.
+
+2010-01-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* src/mkisofs.c: Remove `ifdef linux' portability kludge.
+
+2010-01-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/defaults.h (APPID_DEFAULT): Redefine using PACKAGE_NAME.
+	(SYSTEM_ID_DEFAULT): Set to "GNU" unconditionally.
+	* util/mkisofs/mkisofs.c (main): Readjust --version output.
+
+2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Reset Multiboot 2 support.  New loader implements the draft in
+	/branches/multiboot2 and shares as much code as possible with the
+	production Multiboot 1 implementation.
+
+	* loader/ieee1275/multiboot2.c: Remove file.  Update all users.
+	* loader/multiboot2.c: Likewise.
+	* loader/i386/multiboot_helper.S: Likewise.
+	* include/multiboot2.h: Replace with latest version from the draft
+	in /branches/multiboot2.
+
+	* conf/i386-coreboot.rmk (multiboot_mod_SOURCES): Remove
+	`loader/i386/multiboot_helper.S', `loader/i386/pc/multiboot2.c'
+	and `loader/multiboot2.c'.
+	(pkglib_MODULES): Add `multiboot2.mod'.
+	(multiboot2_mod_SOURCES): New variable.
+	(multiboot2_mod_LDFLAGS): Likewise.
+	(multiboot2_mod_CFLAGS): Likewise.  Define `GRUB_USE_MULTIBOOT2'.
+
+	* conf/i386-pc.rmk: Likewise.
+
+	* conf/powerpc-ieee1275.rmk (pkglib_MODULES): Remove `multiboot.mod'.
+	(multiboot_mod_SOURCES): Remove variable.
+	(multiboot_mod_LDFLAGS): Likewise.
+	(multiboot_mod_CFLAGS): Likewise.
+
+	* include/grub/multiboot.h [GRUB_USE_MULTIBOOT2]: Include
+	`<multiboot2.h>' instead of `<multiboot.h>'.
+	[GRUB_USE_MULTIBOOT2] (MULTIBOOT_BOOTLOADER_MAGIC)
+	(MULTIBOOT_HEADER_MAGIC): New macros.
+
+	* loader/multiboot_loader.c (module_version_status): Remove variable.
+	(find_multi_boot2_header): Remove function.
+	(grub_cmd_multiboot_loader): Remove Multiboot 2 / Multiboot 1 selection
+	logic.  Always check for the Multiboot version we're compiling for.
+	(grub_cmd_module_loader): Likewise.
+	[GRUB_USE_MULTIBOOT2] (GRUB_MOD_INIT(multiboot)): Register `multiboot2'
+	command instead of `multiboot'.
+
 2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/multiboot.h (MULTIBOOT_UNSUPPORTED): Moved from here ...
