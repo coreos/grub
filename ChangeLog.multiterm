@@ -1,5 +1,5 @@
 2010-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
-2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
+2010-01-09  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Support for multiple terminals.
 
@@ -58,8 +58,6 @@
 	(grub_term_inputs_disabled): Likewise.
 	(grub_term_outputs): Likewise.
 	(grub_term_inputs): Likewise.
-	(grub_term_register_input_active): New function.
-	(grub_term_register_output_active): Likewise.
 	(grub_term_register_input): Rewritten.
 	(grub_term_register_output): Likewise.
 	(grub_term_unregister_input): Likewise.
@@ -102,20 +100,8 @@
 	* normal/menu_text.c: Likewise.
 	* normal/menu_viewer.c: Removed. All users updated.
 	* normal/term.c: New file.
-	* term/efi/console.c (grub_console_init): Use
-	grub_term_register_input_active and grub_term_register_output_active.
-	* term/gfxterm.c (GRUB_MOD_INIT) [GRUB_MACHINE_MIPS_YEELOONG]: Likewise.
-	* term/i386/pc/at_keyboard.c (GRUB_MOD_INIT)
-	[GRUB_MACHINE_MIPS_YEELOONG] || [GRUB_MACHINE_COREBOOT]
-	|| [GRUB_MACHINE_QEMU]: Likewise.
-	* term/i386/pc/vga_text.c (GRUB_MOD_INIT) [GRUB_MACHINE_COREBOOT]
-	|| [GRUB_MACHINE_QEMU]: Likewise.
-	* term/i386/pc/console.c (grub_console_init): Likewise.
-	* term/ieee1275/ofconsole.c (grub_console_init): Likewise.
 	* util/console.c: Change order of includes to workaround a bug in
 	ncurses headers.
-	(grub_console_init): Use
-	grub_term_register_input_active and grub_term_register_output_active.
 	* term/terminfo.c: New argument oterm on all exported functions.
 	All users updated.
 	* util/grub-editenv.c (grub_term_input_class): Removed.
