@@ -24,6 +24,7 @@
 #include <grub/i18n.h>
 #include <grub/mm.h>
 #include <grub/normal.h>
+#include <grub/charset.h>
 
 static grub_err_t
 grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
@@ -40,12 +41,11 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
       if ((cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE) &&
 	  (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE))
 	{
+	  struct grub_term_output *term;
+	  const char *summary_translated = _(cmd->summary);
 	  char *command_help;
-	  int stringwidth;
 	  grub_uint32_t *unicode_command_help;
 	  grub_uint32_t *unicode_last_position;
-	  grub_uint32_t *unicode_last_screen_position;
-	  const char *summary_translated = _(cmd->summary);
 
 	  command_help = grub_malloc (grub_strlen (cmd->name) +
 	  			      sizeof (" ") - 1 +
@@ -55,28 +55,34 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 
 	  grub_utf8_to_ucs4_alloc (command_help, &unicode_command_help,
 	  			   &unicode_last_position);
-	  
-	  unicode_last_screen_position = unicode_command_help;
 
-	  stringwidth = 0;
+	  FOR_ACTIVE_TERM_OUTPUTS(term)
+	  {
+	    unsigned stringwidth;
+	    grub_uint32_t *unicode_last_screen_position;
 
-	  while (unicode_last_screen_position < unicode_last_position && 
-	         stringwidth < ((GRUB_TERM_WIDTH / 2) - 2))
-	    {
-	      stringwidth += grub_getcharwidth (*unicode_last_screen_position);
-	      unicode_last_screen_position++;
-	    }
+	    unicode_last_screen_position = unicode_command_help;
 
-	  grub_print_ucs4 (unicode_command_help, unicode_last_screen_position);
-	  
-	  if ((cnt++) % 2)
-	    {
-	      grub_putchar ('\n');
-	    }
-	    else
-	    {
-	      grub_print_spaces (GRUB_TERM_WIDTH / 2 - stringwidth);
-	    }
+	    stringwidth = 0;
+
+	    while (unicode_last_screen_position < unicode_last_position && 
+		   stringwidth < ((grub_term_width (term) / 2) - 2))
+	      {
+		stringwidth
+		  += grub_term_getcharwidth (term,
+					     *unicode_last_screen_position);
+		unicode_last_screen_position++;
+	      }
+
+	    grub_print_ucs4 (unicode_command_help,
+			     unicode_last_screen_position, term);
+	    if (!(cnt % 2))
+	      grub_print_spaces (term, grub_term_width (term) / 2
+				 - stringwidth);
+	  }
+	  if (cnt % 2)
+	    grub_printf ("\n");
+	  cnt++;
 	  
 	  grub_free (command_help);
 	  grub_free (unicode_command_help);
@@ -104,7 +110,11 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
     }
 
   if (argc == 0)
-    grub_command_iterate (print_command_info);
+    {
+      grub_command_iterate (print_command_info);
+      if (!(cnt % 2))
+	grub_printf ("\n");
+    }
   else
     {
       int i;

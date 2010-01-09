@@ -169,9 +169,8 @@ grub_main (void)
 
   grub_register_core_commands ();
   grub_register_rescue_parser ();
-  grub_register_rescue_reader ();
 
   grub_load_config ();
   grub_load_normal_mode ();
-  grub_reader_loop (0);
+  grub_rescue_run ();
 }

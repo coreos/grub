@@ -31,7 +31,7 @@ pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/powerpc/ieee1275/startup.S kern/ieee1275/cmain.c \
 	kern/ieee1275/ieee1275.c kern/main.c kern/device.c 		\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c 	\
+	kern/misc.c kern/mm.c kern/term.c 	\
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/list.c kern/handler.c kern/command.c kern/corecmd.c	\
 	kern/ieee1275/init.c 						\

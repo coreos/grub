@@ -192,6 +192,7 @@ endif
       fs = 'fs-' + obj.suffix('lst')
       partmap = 'partmap-' + obj.suffix('lst')
       handler = 'handler-' + obj.suffix('lst')
+      terminal = 'terminal-' + obj.suffix('lst')
       parttool = 'parttool-' + obj.suffix('lst')
       video = 'video-' + obj.suffix('lst')
       dep = deps[i]
@@ -213,6 +214,7 @@ FSFILES += #{fs}
 PARTTOOLFILES += #{parttool}
 PARTMAPFILES += #{partmap}
 HANDLERFILES += #{handler}
+TERMINALFILES += #{terminal}
 VIDEOFILES += #{video}
 
 #{command}: #{src} $(#{src}_DEPENDENCIES) gencmdlist.sh
@@ -239,6 +241,11 @@ VIDEOFILES += #{video}
 	set -e; \
 	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/genhandlerlist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
+
+#{terminal}: #{src} $(#{src}_DEPENDENCIES) genterminallist.sh
+	set -e; \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  | sh $(srcdir)/genterminallist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 #{video}: #{src} $(#{src}_DEPENDENCIES) genvideolist.sh
 	set -e; \
