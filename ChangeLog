@@ -1,3 +1,19 @@
+2010-01-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Make loader output a bit more user-friendly.
+
+	* util/grub.d/10_hurd.in: Print message indicating that GNU Mach
+	is being loaded.  Likewise for the Hurd.
+
+	* util/grub.d/10_kfreebsd.in (kfreebsd_entry): Print message indicating
+	that kernel of FreeBSD ${version} is being loaded.
+
+	* loader/i386/linux.c (grub_cmd_linux): Move debug info to
+	grub_dprintf().
+	(grub_cmd_initrd): Likewise.
+	* util/grub.d/10_linux.in (linux_entry): Print message indicating
+	that Linux ${version} is being loaded.  Likewise for initrd.
+
 2010-01-09  Carles Pina i Estany  <carles@pina.cat>
 
 	* gettext/gettext.c (GRUB_MOD_INIT): Gettextizze.

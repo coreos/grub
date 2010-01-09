@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -713,8 +713,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   grub_file_seek (file, real_size + GRUB_DISK_SECTOR_SIZE);
 
-  grub_printf ("   [Linux-bzImage, setup=0x%x, size=0x%x]\n",
-	       (unsigned) real_size, (unsigned) prot_size);
+  grub_dprintf ("linux", "bzImage, setup=0x%x, size=0x%x\n",
+		(unsigned) real_size, (unsigned) prot_size);
 
   /* Look for memory size and video mode specified on the command line.  */
   linux_mem_size = 0;
@@ -964,8 +964,8 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  grub_printf ("   [Initrd, addr=0x%x, size=0x%x]\n",
-	       (unsigned) addr, (unsigned) size);
+  grub_dprintf ("linux", "Initrd, addr=0x%x, size=0x%x\n",
+		(unsigned) addr, (unsigned) size);
 
   lh->ramdisk_image = addr;
   lh->ramdisk_size = size;
