@@ -101,7 +101,7 @@ grub_script.tab.c grub_script.tab.h: script/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/parser.y
 DISTCLEANFILES += grub_script.tab.c grub_script.tab.h
 
-# For grub-check.
+# For grub-script-check.
 grub_script_check_init.lst: geninit.sh $(filter-out grub_script_check_init.c,$(grub_script_check_SOURCES))
 	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
 DISTCLEANFILES += grub_script_check_init.lst
