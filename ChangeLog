@@ -1,3 +1,7 @@
+2010-01-09  Carles Pina i Estany  <carles@pina.cat>
+
+	* gettext/gettext.c (GRUB_MOD_INIT): Gettextizze.
+
 2010-01-08  Carles Pina i Estany  <carles@pina.cat>
 
 	* loader/efi/appleloader.c: Include `<grub/i18n.h>'.
