@@ -100,10 +100,11 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
   code_size = (phdr(highest_segment)->p_paddr + phdr(highest_segment)->p_memsz) - phdr(lowest_segment)->p_paddr;
   grub_multiboot_payload_dest = phdr(lowest_segment)->p_paddr;
 
-  grub_multiboot_payload_size += code_size;
+  grub_multiboot_pure_size += code_size;
 
+  alloc_mbi = grub_multiboot_get_mbi_size ();
   grub_multiboot_payload_orig
-    = grub_relocator32_alloc (grub_multiboot_payload_size);
+    = grub_relocator32_alloc (grub_multiboot_pure_size + alloc_mbi);
 
   if (!grub_multiboot_payload_orig)
     return grub_errno;
