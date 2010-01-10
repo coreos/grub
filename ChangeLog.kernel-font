@@ -1,3 +1,23 @@
+2010-01-10  Carles Pina i Estany  <carles@pina.cat>
+
+	* font/font.c: Include `ascii.h'.
+	(ASCII_BITMAP_SIZE): New macro.
+	(ascii_font_glyph): Define.
+	(ascii_glyph_lookup): New function.
+	(grub_font_get_string_width): Change comment. If glyph not found, use
+	ascii_glyph_lookup.
+	(grub_font_get_glyph_with_fallback): If glyph not available returns
+	ascii_glyph_lookup.
+	* util/grub-mkfont.c (file_formats): New enum.
+	(options): Add `ascii-bitmaps' new option.
+	(usage): Add `asii-bitmaps' new option.
+	(write_font_ascii_bitmap): New function.
+	(write_font): Rename to ...
+	(write_font_p2): ... this. Remove print_glyphs call.
+	(main): Use file_format. Implement code for ranges if ascii-bitmaps is
+	used. Call print_glyphs.
+	* Makefile.in (pkgdata_DATA): Add `font/ascii.h'.
+
 2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* conf/common.rmk (bin_UTILITIES): Add `grub-bin2h'.

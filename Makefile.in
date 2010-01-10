@@ -234,7 +234,7 @@ else
 
 ifeq ($(enable_grub_mkfont),yes)
 
-pkgdata_DATA += unicode.pf2 ascii.pf2
+pkgdata_DATA += unicode.pf2 ascii.pf2 font/ascii.h
 
 # Arrows and lines are needed to draw the menu, so we always include them
 UNICODE_ARROWS=0x2190-0x2193
@@ -245,6 +245,12 @@ unicode.pf2: $(FONT_SOURCE) grub-mkfont
 
 ascii.pf2: $(FONT_SOURCE) grub-mkfont
 	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
+
+font/ascii.bitmaps: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont --ascii-bitmaps -o $@ $(FONT_SOURCE)
+
+font/ascii.h: font/ascii.bitmaps grub-bin2h
+	$(builddir)/grub-bin2h ascii_bitmaps 2048 < font/ascii.bitmaps > font/ascii.h
 endif
 endif
 
