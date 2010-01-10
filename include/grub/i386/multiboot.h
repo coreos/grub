@@ -27,9 +27,7 @@ void grub_multiboot2_real_boot (grub_addr_t entry,
 				struct multiboot_info *mbi)
      __attribute__ ((noreturn));
 
+extern struct grub_relocator *grub_multiboot_relocator;
 extern grub_uint32_t grub_multiboot_payload_eip;
-extern char *grub_multiboot_payload_orig;
-extern grub_addr_t grub_multiboot_payload_dest;
-extern grub_size_t grub_multiboot_payload_size;
 
 #endif /* ! GRUB_MULTIBOOT_CPU_HEADER */

@@ -51,7 +51,6 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
 {
   Elf_Ehdr *ehdr = (Elf_Ehdr *) buffer;
   char *phdr_base;
-  int lowest_segment = -1, highest_segment = -1;
   int i;
 
   if (ehdr->e_ident[EI_CLASS] != ELFCLASSXX)
@@ -82,54 +81,38 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
   phdr_base = (char *) buffer + ehdr->e_phoff;
 #define phdr(i)			((Elf_Phdr *) (phdr_base + (i) * ehdr->e_phentsize))
 
-  for (i = 0; i < ehdr->e_phnum; i++)
-    if (phdr(i)->p_type == PT_LOAD && phdr(i)->p_filesz != 0)
-      {
-	/* Beware that segment 0 isn't necessarily loadable */
-	if (lowest_segment == -1
-	    || phdr(i)->p_paddr < phdr(lowest_segment)->p_paddr)
-	  lowest_segment = i;
-	if (highest_segment == -1
-	    || phdr(i)->p_paddr > phdr(highest_segment)->p_paddr)
-	  highest_segment = i;
-      }
-
-  if (lowest_segment == -1)
-    return grub_error (GRUB_ERR_BAD_OS, "ELF contains no loadable segments");
-
-  code_size = (phdr(highest_segment)->p_paddr + phdr(highest_segment)->p_memsz) - phdr(lowest_segment)->p_paddr;
-  grub_multiboot_payload_dest = phdr(lowest_segment)->p_paddr;
-
-  grub_multiboot_payload_size += code_size;
-
-  grub_multiboot_payload_orig
-    = grub_relocator32_alloc (grub_multiboot_payload_size);
-
-  if (!grub_multiboot_payload_orig)
-    return grub_errno;
-
   /* Load every loadable segment in memory.  */
   for (i = 0; i < ehdr->e_phnum; i++)
     {
       if (phdr(i)->p_type == PT_LOAD && phdr(i)->p_filesz != 0)
         {
-	  char *load_this_module_at = (char *) (grub_multiboot_payload_orig + (long) (phdr(i)->p_paddr - phdr(lowest_segment)->p_paddr));
+	  grub_err_t err;
+	  void *source;
 
 	  grub_dprintf ("multiboot_loader", "segment %d: paddr=0x%lx, memsz=0x%lx, vaddr=0x%lx\n",
 			i, (long) phdr(i)->p_paddr, (long) phdr(i)->p_memsz, (long) phdr(i)->p_vaddr);
+
+	  err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator, 
+						 &source, phdr(i)->p_paddr,
+						 phdr(i)->p_memsz);
+	  if (err)
+	    {
+	      grub_dprintf ("multiboot_loader", "Error loading phdr %d\n", i);
+	      return err;
+	    }
 
 	  if (grub_file_seek (file, (grub_off_t) phdr(i)->p_offset)
 	      == (grub_off_t) -1)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "invalid offset in program header");
 
-          if (grub_file_read (file, load_this_module_at, phdr(i)->p_filesz)
+          if (grub_file_read (file, source, phdr(i)->p_filesz)
               != (grub_ssize_t) phdr(i)->p_filesz)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "couldn't read segment from file");
 
           if (phdr(i)->p_filesz < phdr(i)->p_memsz)
-            grub_memset (load_this_module_at + phdr(i)->p_filesz, 0,
+            grub_memset ((grub_uint8_t *) source + phdr(i)->p_filesz, 0,
 			 phdr(i)->p_memsz - phdr(i)->p_filesz);
         }
     }
@@ -138,8 +121,8 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
     if (phdr(i)->p_vaddr <= ehdr->e_entry
 	&& phdr(i)->p_vaddr + phdr(i)->p_memsz > ehdr->e_entry)
       {
-	grub_multiboot_payload_eip = grub_multiboot_payload_dest
-	  + (ehdr->e_entry - phdr(i)->p_vaddr) + (phdr(i)->p_paddr  - phdr(lowest_segment)->p_paddr);
+	grub_multiboot_payload_eip = (ehdr->e_entry - phdr(i)->p_vaddr)
+	  + phdr(i)->p_paddr;
 	break;
       }
 

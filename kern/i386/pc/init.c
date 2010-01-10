@@ -190,7 +190,7 @@ grub_machine_init (void)
      from 1MB. This region is partially used for loading OS images.
      For now, 1/4 of this is added to free memory.  */
   for (i = 0; i < num_regions; i++)
-    if (mem_regions[i].addr == 0x100000)
+    /*    if (mem_regions[i].addr == 0x100000)
       {
 	grub_size_t quarter = mem_regions[i].size >> 2;
 
@@ -199,11 +199,11 @@ grub_machine_init (void)
 	grub_mm_init_region ((void *) (grub_os_area_addr + grub_os_area_size),
 			     quarter);
       }
-    else
+      else*/
       grub_mm_init_region ((void *) mem_regions[i].addr, mem_regions[i].size);
 
-  if (! grub_os_area_addr)
-    grub_fatal ("no upper memory");
+  //  if (! grub_os_area_addr)
+  //grub_fatal ("no upper memory");
 
   grub_tsc_init ();
 }

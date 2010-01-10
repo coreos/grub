@@ -20,8 +20,8 @@
 #include <grub/misc.h>
 
 #include <grub/types.h>
-#include <grub/types.h>
 #include <grub/err.h>
+#include <grub/term.h>
 
 #include <grub/i386/relocator.h>
 #include <grub/relocator_private.h>
@@ -67,15 +67,16 @@ grub_cpu_relocator_jumper (void *rels, grub_addr_t addr)
 {
   grub_uint8_t *ptr;
   ptr = rels;
+  /* movl $addr, %eax (for relocator) */
+  *(grub_uint8_t *) ptr = 0xb8;
+  ptr++;
+  *(grub_uint32_t *) ptr = addr;
+  ptr += 4;
   /* jmp $addr */
   *(grub_uint8_t *) ptr = 0xe9;
   ptr++;
   *(grub_uint32_t *) ptr = addr - (grub_uint32_t) (ptr + 4);
   ptr += 4;
-  /* movl $addr, %eax (for relocator) */
-  *(grub_uint8_t *) ptr = 0xb8;
-  ptr++;
-  *(grub_uint32_t *) ptr = addr;  
 }
 
 void
@@ -112,6 +113,7 @@ grub_relocator32_boot (struct grub_relocator *rel,
   void *src;
   grub_err_t err;
   grub_addr_t relst;
+
   err = grub_relocator_alloc_chunk_align (rel, &src, &target, 0,
 					  (0xffffffff - RELOCATOR_SIZEOF (32))
 					  + 1, RELOCATOR_SIZEOF (32), 16);
@@ -130,6 +132,7 @@ grub_relocator32_boot (struct grub_relocator *rel,
   err = grub_relocator_prepare_relocs (rel, target, &relst);
   if (err)
     return err;
+
   asm volatile ("cli");
   ((void (*) (void)) relst) ();
 
