@@ -1,0 +1,5 @@
+2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (bin_UTILITIES): Add `grub-bin2h'.
+	(grub_bin2h_SOURCES): New variable.
+	* util/bin2h.c: New file.

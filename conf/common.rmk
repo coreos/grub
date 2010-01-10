@@ -88,6 +88,9 @@ endif
 bin_UTILITIES += grub-mkrelpath
 grub_mkrelpath_SOURCES = gnulib/progname.c util/grub-mkrelpath.c util/misc.c
 
+bin_UTILITIES += grub-bin2h
+grub_bin2h_SOURCES = util/bin2h.c
+
 # For the parser.
 grub_script.tab.c grub_script.tab.h: script/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/parser.y
