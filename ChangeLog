@@ -1,5 +1,10 @@
 2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* loader/i386/ieee1275/linux.c (grub_linux_boot): Rework video position
+	initialization with similar approach as with other Linux loaders.
+
+2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Fix i386-ieee1275 build.
 
 	* loader/i386/ieee1275/linux.c (grub_linux_boot): Use grub_term_width()
