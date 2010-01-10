@@ -48,7 +48,7 @@ kernel_img_SOURCES = kern/i386/pc/startup.S \
 	kern/i386/misc.S \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
+	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
 	kern/$(target_cpu)/dl.c kern/i386/pc/init.c kern/i386/pc/mmap.c \
@@ -204,13 +204,17 @@ serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 # For multiboot.mod.
 #pkglib_MODULES += multiboot.mod
 multiboot_mod_SOURCES = loader/i386/multiboot.c \
-			loader/i386/multiboot_helper.S \
-                        loader/i386/pc/multiboot2.c \
-                        loader/multiboot2.c \
                         loader/multiboot_loader.c
 multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
 multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 multiboot_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+#pkglib_MODULES += multiboot2.mod
+multiboot2_mod_SOURCES = loader/i386/multiboot.c \
+                        loader/multiboot_loader.c
+multiboot2_mod_CFLAGS = $(COMMON_CFLAGS) -DGRUB_USE_MULTIBOOT2
+multiboot2_mod_LDFLAGS = $(COMMON_LDFLAGS)
+multiboot2_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For vbe.mod.
 vbe_mod_SOURCES = video/i386/pc/vbe.c

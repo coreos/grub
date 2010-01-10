@@ -26,12 +26,7 @@
 #include "config.h"
 #include "mkisofs.h"
 #include "match.h"
-
-#ifdef linux
-#include <getopt.h>
-#else
 #include "getopt.h"
-#endif
 
 #include "iso9660.h"
 #include <ctype.h>
@@ -914,7 +909,7 @@ int FDECL2(main, int, argc, char **, argv){
 	exit (0);
 	break;
       case OPTION_VERSION:
-	printf ("%s (%s %s)\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
+	printf ("%s version %s\n", PACKAGE_NAME, PACKAGE_VERSION);
 	exit (0);
 	break;
       case OPTION_NOSPLIT_SL_COMPONENT:

@@ -27,11 +27,12 @@
 #include <grub/file.h>
 #include <grub/env.h>
 #include <grub/i18n.h>
+#include <grub/charset.h>
 
-static char *kill_buf;
+static grub_uint32_t *kill_buf;
 
 static int hist_size;
-static char **hist_lines = 0;
+static grub_uint32_t **hist_lines = 0;
 static int hist_pos = 0;
 static int hist_end = 0;
 static int hist_used = 0;
@@ -39,8 +40,8 @@ static int hist_used = 0;
 grub_err_t
 grub_set_history (int newsize)
 {
-  char **old_hist_lines = hist_lines;
-  hist_lines = grub_malloc (sizeof (char *) * newsize);
+  grub_uint32_t **old_hist_lines = hist_lines;
+  hist_lines = grub_malloc (sizeof (grub_uint32_t *) * newsize);
 
   /* Copy the old lines into the new buffer.  */
   if (old_hist_lines)
@@ -67,16 +68,16 @@ grub_set_history (int newsize)
 
       if (hist_pos < hist_end)
 	grub_memmove (hist_lines, old_hist_lines + hist_pos,
-		      (hist_end - hist_pos) * sizeof (char *));
+		      (hist_end - hist_pos) * sizeof (grub_uint32_t *));
       else if (hist_used)
 	{
 	  /* Copy the older part.  */
 	  grub_memmove (hist_lines, old_hist_lines + hist_pos,
- 			(hist_size - hist_pos) * sizeof (char *));
+ 			(hist_size - hist_pos) * sizeof (grub_uint32_t *));
 
 	  /* Copy the newer part. */
 	  grub_memmove (hist_lines + hist_size - hist_pos, old_hist_lines,
-			hist_end * sizeof (char *));
+			hist_end * sizeof (grub_uint32_t *));
 	}
     }
 
@@ -90,17 +91,43 @@ grub_set_history (int newsize)
 
 /* Get the entry POS from the history where `0' is the newest
    entry.  */
-static char *
+static grub_uint32_t *
 grub_history_get (int pos)
 {
   pos = (hist_pos + pos) % hist_size;
   return hist_lines[pos];
 }
 
+static grub_size_t
+strlen_ucs4 (const grub_uint32_t *s)
+{
+  const grub_uint32_t *p = s;
+
+  while (*p)
+    p++;
+
+  return p - s;
+}
+
+/* Replace the history entry on position POS with the string S.  */
+static void
+grub_history_set (int pos, grub_uint32_t *s, grub_size_t len)
+{
+  grub_free (hist_lines[pos]);
+  hist_lines[pos] = grub_malloc ((len + 1) * sizeof (grub_uint32_t));
+  if (!hist_lines[pos])
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+      return ;
+    }
+  grub_memcpy (hist_lines[pos], s, len * sizeof (grub_uint32_t));
+  hist_lines[pos][len] = 0;
+}
 
 /* Insert a new history line S on the top of the history.  */
 static void
-grub_history_add (char *s)
+grub_history_add (grub_uint32_t *s, grub_size_t len)
 {
   /* Remove the oldest entry in the history to make room for a new
      entry.  */
@@ -121,16 +148,15 @@ grub_history_add (char *s)
     hist_pos = hist_size + hist_pos;
 
   /* Insert into history.  */
-  hist_lines[hist_pos] = grub_strdup (s);
+  hist_lines[hist_pos] = NULL;
+  grub_history_set (hist_pos, s, len);
 }
 
 /* Replace the history entry on position POS with the string S.  */
 static void
-grub_history_replace (int pos, char *s)
+grub_history_replace (int pos, grub_uint32_t *s, grub_size_t len)
 {
-  pos = (hist_pos + pos) % hist_size;
-  grub_free (hist_lines[pos]);
-  hist_lines[pos] = grub_strdup (s);
+  grub_history_set ((hist_pos + pos) % hist_size, s, len);
 }
 
 /* A completion hook to print items.  */
@@ -176,75 +202,113 @@ print_completion (const char *item, grub_completion_type_t type, int count)
     grub_printf (" %s", item);
 }
 
-/* Get a command-line. If ECHO_CHAR is not zero, echo it instead of input
-   characters. If READLINE is non-zero, readline-like key bindings are
-   available. If ESC is pushed, return zero, otherwise return non-zero.  */
-/* FIXME: The dumb interface is not supported yet.  */
-int
-grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
-		  int echo_char, int readline, int history)
+struct cmdline_term
 {
-  unsigned xpos, ypos, ystart;
+  unsigned xpos, ypos, ystart, width, height;
+  struct grub_term_output *term;
+};
+
+/* Get a command-line. If ESC is pushed, return zero,
+   otherwise return command line.  */
+/* FIXME: The dumb interface is not supported yet.  */
+char *
+grub_cmdline_get (const char *prompt)
+{
   grub_size_t lpos, llen;
   grub_size_t plen;
-  char buf[max_len];
+  grub_uint32_t *buf;
+  grub_size_t max_len = 256;
   int key;
   int histpos = 0;
-  auto void cl_insert (const char *str);
+  auto void cl_insert (const grub_uint32_t *str);
   auto void cl_delete (unsigned len);
-  auto void cl_print (int pos, int c);
-  auto void cl_set_pos (void);
+  auto inline void __attribute__ ((always_inline)) cl_print (struct cmdline_term *cl_term, int pos,
+			grub_uint32_t c);
+  auto void cl_set_pos (struct cmdline_term *cl_term);
+  auto void cl_print_all (int pos, grub_uint32_t c);
+  auto void cl_set_pos_all (void);
+  auto void init_clterm (struct cmdline_term *cl_term_cur);
+  auto void init_clterm_all (void);
   const char *prompt_translated = _(prompt);
+  struct cmdline_term *cl_terms;
+  char *ret;
+  unsigned nterms;
 
-  void cl_set_pos (void)
+  void cl_set_pos (struct cmdline_term *cl_term)
+  {
+    cl_term->xpos = (plen + lpos) % (cl_term->width - 1);
+    cl_term->ypos = cl_term->ystart + (plen + lpos) / (cl_term->width - 1);
+    grub_term_gotoxy (cl_term->term, cl_term->xpos, cl_term->ypos);
+  }
+
+  void cl_set_pos_all ()
+  {
+    unsigned i;
+    for (i = 0; i < nterms; i++)
+      cl_set_pos (&cl_terms[i]);
+  }
+
+  inline void __attribute__ ((always_inline)) cl_print (struct cmdline_term *cl_term, int pos, grub_uint32_t c)
     {
-      xpos = (plen + lpos) % 79;
-      ypos = ystart + (plen + lpos) / 79;
-      grub_gotoxy (xpos, ypos);
+      grub_uint32_t *p;
 
-      grub_refresh ();
-    }
-
-  void cl_print (int pos, int c)
-    {
-      char *p;
-
-      for (p = buf + pos; *p; p++)
+      for (p = buf + pos; p < buf + llen; p++)
 	{
-	  if (xpos++ > 78)
+	  if (cl_term->xpos++ > cl_term->width - 2)
 	    {
-	      grub_putchar ('\n');
+	      grub_putcode ('\n', cl_term->term);
 
-	      xpos = 1;
-	      if (ypos == (unsigned) (grub_getxy () & 0xFF))
-		ystart--;
+	      cl_term->xpos = 1;
+	      if (cl_term->ypos == (unsigned) (cl_term->height))
+		cl_term->ystart--;
 	      else
-		ypos++;
+		cl_term->ypos++;
 	    }
 
 	  if (c)
-	    grub_putchar (c);
+	    grub_putcode (c, cl_term->term);
 	  else
-	    grub_putchar (*p);
+	    grub_putcode (*p, cl_term->term);
 	}
     }
 
-  void cl_insert (const char *str)
+  void cl_print_all (int pos, grub_uint32_t c)
+  {
+    unsigned i;
+    for (i = 0; i < nterms; i++)
+      cl_print (&cl_terms[i], pos, c);
+  }
+
+  void cl_insert (const grub_uint32_t *str)
     {
-      grub_size_t len = grub_strlen (str);
+      grub_size_t len = strlen_ucs4 (str);
+
+      if (len + llen >= max_len)
+	{
+	  grub_uint32_t *nbuf;
+	  max_len *= 2;
+	  nbuf = grub_realloc (buf, sizeof (grub_uint32_t) * max_len);
+	  if (nbuf)
+	    buf = nbuf;
+	  else
+	    {
+	      grub_print_error ();
+	      grub_errno = GRUB_ERR_NONE;
+	      max_len /= 2;
+	    }
+	}
 
       if (len + llen < max_len)
 	{
-	  grub_memmove (buf + lpos + len, buf + lpos, llen - lpos + 1);
-	  grub_memmove (buf + lpos, str, len);
+	  grub_memmove (buf + lpos + len, buf + lpos,
+			(llen - lpos + 1) * sizeof (grub_uint32_t));
+	  grub_memmove (buf + lpos, str, len * sizeof (grub_uint32_t));
 
 	  llen += len;
 	  lpos += len;
-	  cl_print (lpos - len, echo_char);
-	  cl_set_pos ();
+	  cl_print_all (lpos - len, 0);
+	  cl_set_pos_all ();
 	}
-
-      grub_refresh ();
     }
 
   void cl_delete (unsigned len)
@@ -254,182 +318,254 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	  grub_size_t saved_lpos = lpos;
 
 	  lpos = llen - len;
-	  cl_set_pos ();
-	  cl_print (lpos, ' ');
+	  cl_set_pos_all ();
+	  cl_print_all (lpos, ' ');
 	  lpos = saved_lpos;
-	  cl_set_pos ();
+	  cl_set_pos_all ();
 
-	  grub_memmove (buf + lpos, buf + lpos + len, llen - lpos + 1);
+	  grub_memmove (buf + lpos, buf + lpos + len,
+			sizeof (grub_uint32_t) * (llen - lpos + 1));
 	  llen -= len;
-	  cl_print (lpos, echo_char);
-	  cl_set_pos ();
+	  cl_print_all (lpos, 0);
+	  cl_set_pos_all ();
 	}
-
-      grub_refresh ();
     }
+
+  void init_clterm (struct cmdline_term *cl_term_cur)
+  {
+    cl_term_cur->xpos = plen;
+    cl_term_cur->ypos = (grub_term_getxy (cl_term_cur->term) & 0xFF);
+    cl_term_cur->ystart = cl_term_cur->ypos;
+    cl_term_cur->width = grub_term_width (cl_term_cur->term);
+    cl_term_cur->height = grub_term_height (cl_term_cur->term);
+  }
+
+  void init_clterm_all (void)
+  {
+    unsigned i;
+    for (i = 0; i < nterms; i++)
+      init_clterm (&cl_terms[i]);
+  }
+
+  buf = grub_malloc (max_len * sizeof (grub_uint32_t));
+  if (!buf)
+    return 0;
 
   plen = grub_strlen (prompt_translated) + sizeof (" ") - 1;
   lpos = llen = 0;
   buf[0] = '\0';
 
-  if ((grub_getxy () >> 8) != 0)
-    grub_putchar ('\n');
+  {
+    grub_term_output_t term;
 
+    FOR_ACTIVE_TERM_OUTPUTS(term)
+      if ((grub_term_getxy (term) >> 8) != 0)
+	grub_putcode ('\n', term);
+  }
   grub_printf ("%s ", prompt_translated);
 
-  xpos = plen;
-  ystart = ypos = (grub_getxy () & 0xFF);
+  {
+    struct cmdline_term *cl_term_cur;
+    struct grub_term_output *cur;
+    nterms = 0;
+    FOR_ACTIVE_TERM_OUTPUTS(cur)
+      nterms++;
 
-  cl_insert (cmdline);
+    cl_terms = grub_malloc (sizeof (cl_terms[0]) * nterms);
+    if (!cl_terms)
+      return 0;
+    cl_term_cur = cl_terms;
+    FOR_ACTIVE_TERM_OUTPUTS(cur)
+    {
+      cl_term_cur->term = cur;
+      init_clterm (cl_term_cur);
+      cl_term_cur++;
+    }
+  }
 
-  if (history && hist_used == 0)
-    grub_history_add (buf);
+  if (hist_used == 0)
+    grub_history_add (buf, llen);
 
   while ((key = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != '\n' && key != '\r')
     {
-      if (readline)
-	{
-	  switch (key)
-	    {
-	    case 1:	/* Ctrl-a */
-	      lpos = 0;
-	      cl_set_pos ();
-	      break;
-
-	    case 2:	/* Ctrl-b */
-	      if (lpos > 0)
-		{
-		  lpos--;
-		  cl_set_pos ();
-		}
-	      break;
-
-	    case 5:	/* Ctrl-e */
-	      lpos = llen;
-	      cl_set_pos ();
-	      break;
-
-	    case 6:	/* Ctrl-f */
-	      if (lpos < llen)
-		{
-		  lpos++;
-		  cl_set_pos ();
-		}
-	      break;
-
-	    case 9:	/* Ctrl-i or TAB */
-	      {
-		char *insert;
-		int restore;
-
-		/* Backup the next character and make it 0 so it will
-		   be easy to use string functions.  */
-		char backup = buf[lpos];
-		buf[lpos] = '\0';
-
-
-		insert = grub_normal_do_completion (buf, &restore,
-						    print_completion);
-		/* Restore the original string.  */
-		buf[lpos] = backup;
-
-		if (restore)
-		  {
-		    /* Restore the prompt.  */
-		    grub_printf ("\n%s %s", prompt_translated, buf);
-		    xpos = plen;
-		    ystart = ypos = (grub_getxy () & 0xFF);
-		  }
-
-		if (insert)
-		  {
-		    cl_insert (insert);
-		    grub_free (insert);
-		  }
-	      }
-	      break;
-
-	    case 11:	/* Ctrl-k */
-	      if (lpos < llen)
-		{
-		  if (kill_buf)
-		    grub_free (kill_buf);
-
-		  kill_buf = grub_strdup (buf + lpos);
-		  grub_errno = GRUB_ERR_NONE;
-
-		  cl_delete (llen - lpos);
-		}
-	      break;
-
-	    case 14:	/* Ctrl-n */
-	      {
-		char *hist;
-
-		lpos = 0;
-
-		if (histpos > 0)
-		  {
-		    grub_history_replace (histpos, buf);
-		    histpos--;
-		  }
-
-		cl_delete (llen);
-		hist = grub_history_get (histpos);
-		cl_insert (hist);
-
-		break;
-	      }
-	    case 16:	/* Ctrl-p */
-	      {
-		char *hist;
-
-		lpos = 0;
-
-		if (histpos < hist_used - 1)
-		  {
-		    grub_history_replace (histpos, buf);
-		    histpos++;
-		  }
-
-		cl_delete (llen);
-		hist = grub_history_get (histpos);
-
-		cl_insert (hist);
-	      }
-	      break;
-
-	    case 21:	/* Ctrl-u */
-	      if (lpos > 0)
-		{
-		  grub_size_t n = lpos;
-
-		  if (kill_buf)
-		    grub_free (kill_buf);
-
-		  kill_buf = grub_malloc (n + 1);
-		  grub_errno = GRUB_ERR_NONE;
-		  if (kill_buf)
-		    {
-		      grub_memcpy (kill_buf, buf, n);
-		      kill_buf[n] = '\0';
-		    }
-
-		  lpos = 0;
-		  cl_set_pos ();
-		  cl_delete (n);
-		}
-	      break;
-
-	    case 25:	/* Ctrl-y */
-	      if (kill_buf)
-		cl_insert (kill_buf);
-	      break;
-	    }
-	}
-
       switch (key)
 	{
+	case 1:	/* Ctrl-a */
+	  lpos = 0;
+	  cl_set_pos_all ();
+	  break;
+
+	case 2:	/* Ctrl-b */
+	  if (lpos > 0)
+	    {
+	      lpos--;
+	      cl_set_pos_all ();
+	    }
+	  break;
+
+	case 5:	/* Ctrl-e */
+	  lpos = llen;
+	  cl_set_pos_all ();
+	  break;
+
+	case 6:	/* Ctrl-f */
+	  if (lpos < llen)
+	    {
+	      lpos++;
+	      cl_set_pos_all ();
+	    }
+	  break;
+
+	case 9:	/* Ctrl-i or TAB */
+	  {
+	    int restore;
+	    char *insertu8;
+	    char *bufu8;
+
+	    buf[lpos] = '\0';
+
+	    bufu8 = grub_ucs4_to_utf8_alloc (buf, lpos);
+	    if (!bufu8)
+	      {
+		grub_print_error ();
+		grub_errno = GRUB_ERR_NONE;
+		break;
+	      }
+
+	    insertu8 = grub_normal_do_completion (bufu8, &restore,
+						  print_completion);
+	    grub_free (bufu8);
+
+	    if (restore)
+	      {
+		/* Restore the prompt.  */
+		grub_printf ("\n%s ", prompt_translated);
+		init_clterm_all ();
+		cl_print_all (0, 0);
+	      }
+
+	    if (insertu8)
+	      {
+		grub_size_t insertlen;
+		grub_ssize_t t;
+		grub_uint32_t *insert;
+
+		insertlen = grub_strlen (insertu8);
+		insert = grub_malloc ((insertlen + 1) * sizeof (grub_uint32_t));
+		if (!insert)
+		  {
+		    grub_free (insertu8);
+		    grub_print_error ();
+		    grub_errno = GRUB_ERR_NONE;
+		    break;
+		  }
+		t = grub_utf8_to_ucs4 (insert, insertlen,
+				       (grub_uint8_t *) insertu8,
+				       insertlen, 0);
+		if (t > 0)
+		  {
+		    insert[t] = 0;
+		    cl_insert (insert);
+		  }
+
+		grub_free (insertu8);
+		grub_free (insert);
+	      }
+	  }
+	  break;
+
+	case 11:	/* Ctrl-k */
+	  if (lpos < llen)
+	    {
+	      if (kill_buf)
+		grub_free (kill_buf);
+
+	      kill_buf = grub_malloc ((llen - lpos + 1)
+				      * sizeof (grub_uint32_t));
+	      if (grub_errno)
+		{
+		  grub_print_error ();
+		  grub_errno = GRUB_ERR_NONE;
+		}
+	      else
+		{
+		  grub_memcpy (kill_buf, buf + lpos,
+			       (llen - lpos + 1) * sizeof (grub_uint32_t));
+		  kill_buf[llen - lpos] = 0;
+		}
+
+	      cl_delete (llen - lpos);
+	    }
+	  break;
+
+	case 14:	/* Ctrl-n */
+	  {
+	    grub_uint32_t *hist;
+
+	    lpos = 0;
+
+	    if (histpos > 0)
+	      {
+		grub_history_replace (histpos, buf, llen);
+		histpos--;
+	      }
+
+	    cl_delete (llen);
+	    hist = grub_history_get (histpos);
+	    cl_insert (hist);
+
+	    break;
+	  }
+	case 16:	/* Ctrl-p */
+	  {
+	    grub_uint32_t *hist;
+
+	    lpos = 0;
+
+	    if (histpos < hist_used - 1)
+	      {
+		grub_history_replace (histpos, buf, llen);
+		histpos++;
+	      }
+
+	    cl_delete (llen);
+	    hist = grub_history_get (histpos);
+
+	    cl_insert (hist);
+	  }
+	  break;
+
+	case 21:	/* Ctrl-u */
+	  if (lpos > 0)
+	    {
+	      grub_size_t n = lpos;
+
+	      if (kill_buf)
+		grub_free (kill_buf);
+
+	      kill_buf = grub_malloc (n + 1);
+	      if (grub_errno)
+		{
+		  grub_print_error ();
+		  grub_errno = GRUB_ERR_NONE;
+		}
+	      if (kill_buf)
+		{
+		  grub_memcpy (kill_buf, buf, n);
+		  kill_buf[n] = '\0';
+		}
+
+	      lpos = 0;
+	      cl_set_pos_all ();
+	      cl_delete (n);
+	    }
+	  break;
+
+	case 25:	/* Ctrl-y */
+	  if (kill_buf)
+	    cl_insert (kill_buf);
+	  break;
+
 	case '\e':
 	  return 0;
 
@@ -437,7 +573,7 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	  if (lpos > 0)
 	    {
 	      lpos--;
-	      cl_set_pos ();
+	      cl_set_pos_all ();
 	    }
           else
             break;
@@ -451,7 +587,7 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	default:
 	  if (grub_isprint (key))
 	    {
-	      char str[2];
+	      grub_uint32_t str[2];
 
 	      str[0] = key;
 	      str[1] = '\0';
@@ -459,28 +595,26 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	    }
 	  break;
 	}
+      grub_refresh ();
     }
 
   grub_putchar ('\n');
   grub_refresh ();
 
-  /* If ECHO_CHAR is NUL, remove leading spaces.  */
+  /* Remove leading spaces.  */
   lpos = 0;
-  if (! echo_char)
-    while (buf[lpos] == ' ')
-      lpos++;
+  while (buf[lpos] == ' ')
+    lpos++;
 
-  if (history)
+  histpos = 0;
+  if (strlen_ucs4 (buf) > 0)
     {
-      histpos = 0;
-      if (grub_strlen (buf) > 0)
-	{
-	  grub_history_replace (histpos, buf);
-	  grub_history_add ("");
-	}
+      grub_uint32_t empty[] = { 0 };
+      grub_history_replace (histpos, buf, llen);
+      grub_history_add (empty, 0);
     }
 
-  grub_memcpy (cmdline, buf + lpos, llen - lpos + 1);
-
-  return 1;
+  ret = grub_ucs4_to_utf8_alloc (buf + lpos, llen - lpos + 1);
+  grub_free (buf);
+  return ret;
 }
