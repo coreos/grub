@@ -1,7 +1,7 @@
 /* linux.c - boot Linux zImage or bzImage */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -110,8 +110,8 @@ grub_linux_boot (void)
   params->cl_magic = GRUB_LINUX_CL_MAGIC;
   params->cl_offset = GRUB_OFW_LINUX_CL_OFFSET;
 
-  params->video_width = (grub_getwh () >> 8);
-  params->video_height = (grub_getwh () & 0xff);
+  params->video_width = grub_term_width (term);
+  params->video_height = grub_term_height (term);
   params->font_size = 16;
 
   params->ofw_signature = GRUB_LINUX_OFW_SIGNATURE;

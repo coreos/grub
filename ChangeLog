@@ -1,4 +1,11 @@
-2010-01-09  Robert Millan  <rmh.grub@aybabtu.com>
+2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix i386-ieee1275 build.
+
+	* loader/i386/ieee1275/linux.c (grub_linux_boot): Use grub_term_width()
+	and grub_term_height() for video_{width,height} initialization.
+
+2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Fix grub-emu build.
 
