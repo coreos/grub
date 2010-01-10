@@ -1,3 +1,9 @@
+2010-01-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix grub-emu build.
+
+	* conf/any-emu.rmk (grub_emu_SOURCES): Remove `kern/reader.c'.
+
 2010-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
 2010-01-09  Robert Millan  <rmh.grub@aybabtu.com>
 
