@@ -254,21 +254,20 @@ grub_cmdline_get (const char *prompt)
 
       for (p = buf + pos; p < buf + llen; p++)
 	{
-	  if (cl_term->xpos++ > cl_term->width - 2)
-	    {
-	      grub_putcode ('\n', cl_term->term);
-
-	      cl_term->xpos = 1;
-	      if (cl_term->ypos == (unsigned) (cl_term->height))
-		cl_term->ystart--;
-	      else
-		cl_term->ypos++;
-	    }
-
 	  if (c)
 	    grub_putcode (c, cl_term->term);
 	  else
 	    grub_putcode (*p, cl_term->term);
+	  cl_term->xpos++;
+	  if (cl_term->xpos >= cl_term->width - 1)
+	    {
+	      cl_term->xpos = 0;
+	      if (cl_term->ypos >= (unsigned) (cl_term->height - 1))
+		cl_term->ystart--;
+	      else
+		cl_term->ypos++;
+	      grub_putcode ('\n', cl_term->term);
+	    }
 	}
     }
 

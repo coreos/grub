@@ -1,3 +1,8 @@
+2010-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/cmdline.c (grub_cmdline_get): Fix off-by-one error
+	which resulted in garbled command line at the end of screen.
+
 2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* loader/i386/ieee1275/linux.c (grub_linux_boot): Rework video position
