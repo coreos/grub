@@ -19,6 +19,8 @@
 #include <grub/symbol.h>
 #include <grub/i386/memory.h>
 
+	.p2align	2
+
 VARIABLE(grub_relocator_backward_start)
 	/* mov imm32, %eax */
 	.byte	0xb8
