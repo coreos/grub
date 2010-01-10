@@ -1,5 +1,10 @@
 2010-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* term/i386/pc/vga_text.c (inc_y): Fix off-by-one error which resulted
+	in premature implicit newline.
+
+2010-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* normal/cmdline.c (grub_cmdline_get): Fix off-by-one error
 	which resulted in garbled command line at the end of screen.
 
