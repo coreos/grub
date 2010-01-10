@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,23 +23,21 @@ main (int argc, char *argv[])
 {
   int b, i;
   char *sym;
-  unsigned int len;
 
-  if (argc != 3)
+  if (argc != 2)
     {
-      fprintf (stderr, "Usage: %s symbol_name length\n", argv[0]);
+      fprintf (stderr, "Usage: %s symbol_name\n", argv[0]);
       exit (1);
     }
 
   sym = argv[1];
-  len = atoi (argv[2]);
 
   b = getchar ();
   if (b == EOF)
     goto abort;
 
   printf ("/* THIS CHUNK OF BYTES IS AUTOMATICALY GENERATED */\n"
-	  "unsigned char %s[%u] =\n{\n", sym, len);
+	  "unsigned char %s[] =\n{\n", sym);
 
   while (1)
     {
