@@ -1,7 +1,7 @@
 /* ls.c - command to list files and devices */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,12 +30,13 @@
 #include <grub/normal.h>
 #include <grub/extcmd.h>
 #include <grub/datetime.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] =
   {
-    {"long", 'l', 0, "Show a long list with more detailed information.", 0, 0},
-    {"human-readable", 'h', 0, "Print sizes in a human readable format.", 0, 0},
-    {"all", 'a', 0, "List all files.", 0, 0},
+    {"long", 'l', 0, N_("Show a long list with more detailed information."), 0, 0},
+    {"human-readable", 'h', 0, N_("Print sizes in a human readable format."), 0, 0},
+    {"all", 'a', 0, N_("List all files."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -260,8 +261,8 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(ls)
 {
   cmd = grub_register_extcmd ("ls", grub_cmd_ls, GRUB_COMMAND_FLAG_BOTH,
-			      "[-l|-h|-a] [FILE]",
-			      "List devices and files.", options);
+			      N_("[-l|-h|-a] [FILE]"),
+			      N_("List devices and files."), options);
 }
 
 GRUB_MOD_FINI(ls)

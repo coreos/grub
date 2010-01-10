@@ -19,7 +19,7 @@ kernel_img_SOURCES = kern/i386/ieee1275/startup.S \
 	kern/ieee1275/cmain.c kern/ieee1275/openfw.c \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
+	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/$(target_cpu)/dl.c kern/parser.c kern/partition.c \
 	kern/env.c \

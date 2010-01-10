@@ -31,7 +31,7 @@ kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
 	kern/main.c kern/device.c kern/$(target_cpu)/init.c \
 	kern/$(target_cpu)/$(target_machine)/init.c 		\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c 	\
+	kern/misc.c kern/mm.c kern/term.c 	\
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/list.c kern/handler.c kern/command.c kern/corecmd.c	\
 	kern/parser.c kern/partition.c kern/env.c kern/$(target_cpu)/dl.c 	\

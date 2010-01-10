@@ -27,6 +27,7 @@
 #include <grub/machine/loader.h>
 #include <grub/gzio.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_dl_t my_mod;
 
@@ -263,7 +264,7 @@ grub_linux_load64 (grub_elf_t elf)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "couldn't map physical memory");
 
-  grub_dprintf ("loader", "Loading linux at vaddr 0x%lx, paddr 0x%lx, size 0x%lx\n",
+  grub_dprintf ("loader", "Loading Linux at vaddr 0x%lx, paddr 0x%lx, size 0x%lx\n",
 		linux_addr, paddr, linux_size);
 
   linux_paddr = paddr;
@@ -516,9 +517,9 @@ GRUB_MOD_INIT(linux)
   fetch_translations ();
 
   cmd_linux = grub_register_command ("linux", grub_cmd_linux,
-				     0, "Load Linux.");
+				     0, N_("Load Linux."));
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
-				      0, "Load initrd".);
+				      0, N_("Load initrd."));
   my_mod = mod;
 }
 

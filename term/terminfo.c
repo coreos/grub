@@ -108,52 +108,52 @@ grub_terminfo_set_current (const char *str)
 
 /* Wrapper for grub_putchar to write strings.  */
 static void
-putstr (const char *str)
+putstr (const char *str, grub_term_output_t oterm)
 {
   while (*str)
-    grub_putchar (*str++);
+    grub_putcode (*str++, oterm);
 }
 
 /* Move the cursor to the given position starting with "0".  */
 void
-grub_terminfo_gotoxy (grub_uint8_t x, grub_uint8_t y)
+grub_terminfo_gotoxy (grub_uint8_t x, grub_uint8_t y, grub_term_output_t oterm)
 {
-  putstr (grub_terminfo_tparm (term.gotoxy, y, x));
+  putstr (grub_terminfo_tparm (term.gotoxy, y, x), oterm);
 }
 
 /* Clear the screen.  */
 void
-grub_terminfo_cls (void)
+grub_terminfo_cls (grub_term_output_t oterm)
 {
-  putstr (grub_terminfo_tparm (term.cls));
+  putstr (grub_terminfo_tparm (term.cls), oterm);
 }
 
 /* Set reverse video mode on.  */
 void
-grub_terminfo_reverse_video_on (void)
+grub_terminfo_reverse_video_on (grub_term_output_t oterm)
 {
-  putstr (grub_terminfo_tparm (term.reverse_video_on));
+  putstr (grub_terminfo_tparm (term.reverse_video_on), oterm);
 }
 
 /* Set reverse video mode off.  */
 void
-grub_terminfo_reverse_video_off (void)
+grub_terminfo_reverse_video_off (grub_term_output_t oterm)
 {
-  putstr (grub_terminfo_tparm (term.reverse_video_off));
+  putstr (grub_terminfo_tparm (term.reverse_video_off), oterm);
 }
 
 /* Show cursor.  */
 void
-grub_terminfo_cursor_on (void)
+grub_terminfo_cursor_on (grub_term_output_t oterm)
 {
-  putstr (grub_terminfo_tparm (term.cursor_on));
+  putstr (grub_terminfo_tparm (term.cursor_on), oterm);
 }
 
 /* Hide cursor.  */
 void
-grub_terminfo_cursor_off (void)
+grub_terminfo_cursor_off (grub_term_output_t oterm)
 {
-  putstr (grub_terminfo_tparm (term.cursor_off));
+  putstr (grub_terminfo_tparm (term.cursor_off), oterm);
 }
 
 /* GRUB Command.  */

@@ -24,6 +24,7 @@
 #include <grub/disk.h>
 #include <grub/partition.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_blocklist (grub_command_t cmd __attribute__ ((unused)),
@@ -110,7 +111,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(blocklist)
 {
   cmd = grub_register_command ("blocklist", grub_cmd_blocklist,
-			       "FILE", "Print a block list.");
+			       N_("FILE"), N_("Print a block list."));
 }
 
 GRUB_MOD_FINI(blocklist)

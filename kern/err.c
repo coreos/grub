@@ -20,6 +20,7 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <stdarg.h>
+#include <grub/i18n.h>
 
 #define GRUB_MAX_ERRMSG		256
 #define GRUB_ERROR_STACK_SIZE	10
@@ -121,7 +122,7 @@ grub_print_error (void)
   do
     {
       if (grub_errno != GRUB_ERR_NONE)
-        grub_err_printf ("error: %s\n", grub_errmsg);
+        grub_err_printf (_("error: %s.\n"), grub_errmsg);
     }
   while (grub_error_pop ());
 

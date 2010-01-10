@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# Copyright (C) 1994,1995,1996,1997,1998,1999,2000,2001,2002,2004,2005,2006,2007,2008,2009 Free Software Foundation, Inc.
+# Copyright (C) 1994,1995,1996,1997,1998,1999,2000,2001,2002,2004,2005,2006,2007,2008,2009,2010 Free Software Foundation, Inc.
 #
 # This Makefile.in is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -41,6 +41,9 @@ includedir = @includedir@
 pkgdatadir = $(datadir)/`echo @PACKAGE_TARNAME@ | sed '$(transform)'`
 pkglibdir =  $(libdir)/`echo @PACKAGE_TARNAME@/$(target_cpu)-$(platform) | sed '$(transform)'`
 
+# Internationalization library.
+LIBINTL = @LIBINTL@
+
 XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
 MSGFMT = @MSGFMT@
@@ -72,10 +75,12 @@ MKDIR_P = @MKDIR_P@
 
 mkinstalldirs = $(srcdir)/mkinstalldirs
 
+LIBS = @LIBS@ $(LIBINTL)
+
 CC = @CC@
 CFLAGS = @CFLAGS@
 ASFLAGS = @ASFLAGS@
-LDFLAGS = @LDFLAGS@
+LDFLAGS = @LDFLAGS@ $(LIBS)
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
 	 -DGRUB_LIBDIR=\"$(pkglibdir)\" -DLOCALEDIR=\"$(localedir)\"
 TARGET_CC = @TARGET_CC@
@@ -169,7 +174,7 @@ endif
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
-pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst
+pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
 	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UNDSYMFILES) > $@ \
@@ -187,11 +192,17 @@ partmap.lst: $(PARTMAPFILES)
 handler.lst: $(HANDLERFILES)
 	cat $^ /dev/null | sort > $@
 
+terminal.lst: $(TERMINALFILES)
+	cat $^ /dev/null | sort > $@
+
 parttool.lst: $(PARTTOOLFILES)
 	cat $^ /dev/null | sort | uniq > $@
 
 video.lst: $(VIDEOFILES)
 	cat $^ /dev/null | sort | uniq > $@
+
+crypto.lst: lib/libgcrypt-grub/cipher/crypto.lst
+	cp $^ $@
 
 ifneq (true, $(MAKEINFO))
 info_INFOS += docs/grub.info

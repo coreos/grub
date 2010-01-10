@@ -73,7 +73,7 @@ static char keyboard_map_shift[128] =
 static grub_uint8_t grub_keyboard_controller_orig;
 
 static void
-keyboard_controller_wait_untill_ready ()
+keyboard_controller_wait_until_ready (void)
 {
   while (! KEYBOARD_COMMAND_ISREADY (grub_inb (KEYBOARD_REG_STATUS)));
 }
@@ -81,7 +81,7 @@ keyboard_controller_wait_untill_ready ()
 static void
 grub_keyboard_controller_write (grub_uint8_t c)
 {
-  keyboard_controller_wait_untill_ready ();
+  keyboard_controller_wait_until_ready ();
   grub_outb (KEYBOARD_COMMAND_WRITE, KEYBOARD_REG_STATUS);
   grub_outb (c, KEYBOARD_REG_DATA);
 }
@@ -89,18 +89,18 @@ grub_keyboard_controller_write (grub_uint8_t c)
 static grub_uint8_t
 grub_keyboard_controller_read (void)
 {
-  keyboard_controller_wait_untill_ready ();
+  keyboard_controller_wait_until_ready ();
   grub_outb (KEYBOARD_COMMAND_READ, KEYBOARD_REG_STATUS);
   return grub_inb (KEYBOARD_REG_DATA);
 }
 
 static void
-keyboard_controller_led (grub_uint8_t led_status)
+keyboard_controller_led (grub_uint8_t leds)
 {
-  keyboard_controller_wait_untill_ready ();
+  keyboard_controller_wait_until_ready ();
   grub_outb (0xed, KEYBOARD_REG_DATA);
-  keyboard_controller_wait_untill_ready ();
-  grub_outb (led_status & 0x7, KEYBOARD_REG_DATA);
+  keyboard_controller_wait_until_ready ();
+  grub_outb (leds & 0x7, KEYBOARD_REG_DATA);
 }
 
 /* FIXME: This should become an interrupt service routine.  For now

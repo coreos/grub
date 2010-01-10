@@ -25,6 +25,7 @@
 #include <grub/terminfo.h>
 #include <grub/cpu/io.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 #define TEXT_WIDTH	80
 #define TEXT_HEIGHT	24
@@ -37,15 +38,17 @@ static unsigned int registered = 0;
 static char input_buf[8];
 static unsigned int npending = 0;
 
+static struct grub_term_output grub_serial_term_output;
+
 /* Argument options.  */
 static const struct grub_arg_option options[] =
 {
-  {"unit",   'u', 0, "Set the serial unit",             0, ARG_TYPE_INT},
-  {"port",   'p', 0, "Set the serial port address",     0, ARG_TYPE_STRING},
-  {"speed",  's', 0, "Set the serial port speed",       0, ARG_TYPE_INT},
-  {"word",   'w', 0, "Set the serial port word length", 0, ARG_TYPE_INT},
-  {"parity", 'r', 0, "Set the serial port parity",      0, ARG_TYPE_STRING},
-  {"stop",   't', 0, "Set the serial port stop bits",   0, ARG_TYPE_INT},
+  {"unit",   'u', 0, N_("Set the serial unit."),             0, ARG_TYPE_INT},
+  {"port",   'p', 0, N_("Set the serial port address."),     0, ARG_TYPE_STRING},
+  {"speed",  's', 0, N_("Set the serial port speed."),       0, ARG_TYPE_INT},
+  {"word",   'w', 0, N_("Set the serial port word length."), 0, ARG_TYPE_INT},
+  {"parity", 'r', 0, N_("Set the serial port parity."),      0, ARG_TYPE_STRING},
+  {"stop",   't', 0, N_("Set the serial port stop bits."),   0, ARG_TYPE_INT},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -416,7 +419,7 @@ grub_serial_gotoxy (grub_uint8_t x, grub_uint8_t y)
   else
     {
       keep_track = 0;
-      grub_terminfo_gotoxy (x, y);
+      grub_terminfo_gotoxy (x, y, &grub_serial_term_output);
       keep_track = 1;
 
       xpos = x;
@@ -428,7 +431,7 @@ static void
 grub_serial_cls (void)
 {
   keep_track = 0;
-  grub_terminfo_cls ();
+  grub_terminfo_cls (&grub_serial_term_output);
   keep_track = 1;
 
   xpos = ypos = 0;
@@ -442,10 +445,10 @@ grub_serial_setcolorstate (const grub_term_color_state state)
     {
     case GRUB_TERM_COLOR_STANDARD:
     case GRUB_TERM_COLOR_NORMAL:
-      grub_terminfo_reverse_video_off ();
+      grub_terminfo_reverse_video_off (&grub_serial_term_output);
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      grub_terminfo_reverse_video_on ();
+      grub_terminfo_reverse_video_on (&grub_serial_term_output);
       break;
     default:
       break;
@@ -457,9 +460,9 @@ static void
 grub_serial_setcursor (const int on)
 {
   if (on)
-    grub_terminfo_cursor_on ();
+    grub_terminfo_cursor_on (&grub_serial_term_output);
   else
-    grub_terminfo_cursor_off ();
+    grub_terminfo_cursor_off (&grub_serial_term_output);
 }
 
 static struct grub_term_input grub_serial_term_input =

@@ -63,12 +63,6 @@ void
 read_command_list (void)
 {
   const char *prefix;
-  static int first_time = 1;
-
-  /* Make sure that this function does not get executed twice.  */
-  if (! first_time)
-    return;
-  first_time = 0;
 
   prefix = grub_env_get ("prefix");
   if (prefix)
@@ -85,6 +79,24 @@ read_command_list (void)
 	  if (file)
 	    {
 	      char *buf = NULL;
+	      grub_command_t ptr, last = 0, next;
+
+	      /* Override previous commands.lst.  */
+	      for (ptr = grub_command_list; ptr; ptr = next)
+		{
+		  next = ptr->next;
+		  if (ptr->func == grub_dyncmd_dispatcher)
+		    {
+		      if (last)
+			last->next = ptr->next;
+		      else
+			grub_command_list = ptr->next;
+		      grub_free (ptr);
+		    }
+		  else
+		    last = ptr;
+		}
+
 	      for (;; grub_free (buf))
 		{
 		  char *p, *name, *modname;
