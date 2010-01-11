@@ -23,7 +23,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	kern/err.c kern/list.c kern/handler.c				\
 	kern/command.c kern/corecmd.c commands/extcmd.c	kern/file.c	\
 	kern/fs.c commands/boot.c kern/main.c kern/misc.c kern/parser.c	\
-	kern/partition.c kern/reader.c kern/term.c			\
+	kern/partition.c kern/term.c					\
 	kern/rescue_reader.c kern/rescue_parser.c			\
 	lib/arg.c normal/cmdline.c normal/datetime.c normal/misc.c	\
 	normal/handler.c normal/auth.c lib/crypto.c normal/autofs.c	\
