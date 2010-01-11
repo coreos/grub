@@ -36,7 +36,7 @@ VARIABLE(grub_relocator_backward_src)
 	.long	0, 0
 	movq	%rax, %rsi
 
-	/* mov imm32, %ecx */
+	/* mov imm64, %rcx */
 	.byte	0x48
 	.byte	0xb9
 VARIABLE(grub_relocator_backward_chunk_size)
@@ -72,7 +72,6 @@ VARIABLE(grub_relocator_forward_src)
 	.long	0, 0
 	movq	%rax, %rsi
 
-	xorq	%rcx, %rcx
 	/* mov imm64, %rcx */
 	.byte	0x48
 	.byte	0xb9
