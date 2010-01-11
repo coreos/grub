@@ -17,7 +17,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define GENERATE_ASCII
+//#define USE_ASCII_FAILBACK 0
 
 #include <grub/bufio.h>
 #include <grub/dl.h>
@@ -29,7 +29,7 @@
 #include <grub/video.h>
 #include <grub/bitmap.h>
 
-#ifdef GENERATE_ASCII
+#ifdef USE_ASCII_FAILBACK
 #include "ascii.h"
 #endif
 
@@ -136,14 +136,14 @@ static struct grub_font null_font;
 /* Flag to ensure module is initialized only once.  */
 static grub_uint8_t font_loader_initialized;
 
-#ifdef GENERATE_ASCII
+#ifdef USE_ASCII_FAILBACK
 static struct grub_font_glyph *ascii_font_glyph[0x80];
 #endif
 
 static struct grub_font_glyph *
 ascii_glyph_lookup (grub_uint32_t code)
 {
-#ifdef GENERATE_ASCII
+#ifdef USE_ASCII_FAILBACK 
   static int ascii_failback_initialized = 0;
 
   if (code >= 0x80)

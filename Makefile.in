@@ -250,7 +250,7 @@ font/ascii.bitmaps: $(FONT_SOURCE) grub-mkfont
 	$(builddir)/grub-mkfont --ascii-bitmaps -o $@ $(FONT_SOURCE)
 
 font/ascii.h: font/ascii.bitmaps grub-bin2h
-	$(builddir)/grub-bin2h ascii_bitmaps 2048 < font/ascii.bitmaps > font/ascii.h
+	$(builddir)/grub-bin2h ascii_bitmaps < font/ascii.bitmaps > font/ascii.h
 endif
 endif
 

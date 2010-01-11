@@ -1,3 +1,10 @@
+2010-01-11  Carles Pina i Estany  <carles@pina.cat>
+
+	* font/font.c (GENERATE_ASCII): Change the name to USE_ASCII_FAILBACK.
+	By default: disabled.
+	* Makefile.in (font/ascii.h): Remove the non-needed grub/bin2h size
+	parameter.
+
 2010-01-10  Carles Pina i Estany  <carles@pina.cat>
 
 	* font/font.c: Update copyright years.
