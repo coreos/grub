@@ -361,7 +361,7 @@ write_font_ascii_bitmap (struct grub_font_info *font_info, char *output_file)
       correct_size = 1;
       if (glyph->width != 8 || glyph->height != 16)
       {
-        // printf ("Width or height from glyph U+%04x not supported, skipping.\n", glyph->char_code);
+        /* printf ("Width or height from glyph U+%04x not supported, skipping.\n", glyph->char_code);  */
 	correct_size = 0;
       }
       int row;

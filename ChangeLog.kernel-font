@@ -1,5 +1,10 @@
 2010-01-10  Carles Pina i Estany  <carles@pina.cat>
 
+	* font/font.c: Update copyright years.
+	* util/grub-mkfont.c (write_font_ascii_bitmap): Change comment format.
+
+2010-01-10  Carles Pina i Estany  <carles@pina.cat>
+
 	* font/font.c: Include `ascii.h'.
 	(ASCII_BITMAP_SIZE): New macro.
 	(ascii_font_glyph): Define.
