@@ -20,6 +20,7 @@
 #define GRUB_BSD_CPU_HEADER	1
 
 #include <grub/types.h>
+#include <grub/relocator.h>
 
 enum bsd_kernel_types
   {
@@ -197,7 +198,7 @@ struct grub_openbsd_bootargs
 struct grub_netbsd_bootinfo
 {
   grub_uint32_t bi_count;
-  void *bi_data[1];
+  grub_addr_t bi_data[1];
 };
 
 #define NETBSD_BTINFO_BOOTPATH		0
@@ -255,9 +256,11 @@ struct grub_netbsd_btinfo_bootdisk
 
 void grub_unix_real_boot (grub_addr_t entry, ...)
      __attribute__ ((cdecl,noreturn));
-grub_err_t grub_freebsd_load_elfmodule32 (grub_file_t file, int argc,
+grub_err_t grub_freebsd_load_elfmodule32 (struct grub_relocator *relocator,
+					  grub_file_t file, int argc,
 					  char *argv[], grub_addr_t *kern_end);
-grub_err_t grub_freebsd_load_elfmodule_obj64 (grub_file_t file, int argc,
+grub_err_t grub_freebsd_load_elfmodule_obj64 (struct grub_relocator *relocator,
+					      grub_file_t file, int argc,
 					      char *argv[],
 					      grub_addr_t *kern_end);
 grub_err_t grub_freebsd_load_elf_meta32 (grub_file_t file,

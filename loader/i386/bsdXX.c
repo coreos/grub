@@ -4,19 +4,16 @@
 #include <grub/elf.h>
 #include <grub/misc.h>
 #include <grub/i386/loader.h>
+#include <grub/cpu/relocator.h>
 
 #define ALIGN_PAGE(a)	ALIGN_UP (a, 4096)
 
 static inline grub_err_t
 load (grub_file_t file, void *where, grub_off_t off, grub_size_t size)
 {
-  if (PTR_TO_UINT32 (where) + size > grub_os_area_addr + grub_os_area_size)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE,
-		       "not enough memory for the module");
   if (grub_file_seek (file, off) == (grub_off_t) -1)
     return grub_errno;
-  if (grub_file_read (file, where, size)
-      != (grub_ssize_t) size)
+  if (grub_file_read (file, where, size) != (grub_ssize_t) size)
     {
       if (grub_errno)
 	return grub_errno;
@@ -75,7 +72,8 @@ read_headers (grub_file_t file, Elf_Ehdr *e, char **shdr)
    platforms. So I keep both versions.  */
 #if OBJSYM
 grub_err_t
-SUFFIX (grub_freebsd_load_elfmodule_obj) (grub_file_t file, int argc,
+SUFFIX (grub_freebsd_load_elfmodule_obj) (struct grub_relocator *relocator,
+					  grub_file_t file, int argc,
 					  char *argv[], grub_addr_t *kern_end)
 {
   Elf_Ehdr e;
@@ -83,12 +81,33 @@ SUFFIX (grub_freebsd_load_elfmodule_obj) (grub_file_t file, int argc,
   char *shdr;
   grub_addr_t curload, module;
   grub_err_t err;
+  grub_size_t chunk_size = 0;
+  void *chunk_src;
 
   err = read_headers (file, &e, &shdr);
   if (err)
     return err;
 
   curload = module = ALIGN_PAGE (*kern_end);
+
+  for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) ((char *) shdr
+						+ e.e_shnum * e.e_shentsize);
+       s = (Elf_Shdr *) ((char *) s + e.e_shentsize))
+    {
+      if (s->sh_size == 0)
+	continue;
+
+      if (s->sh_addralign)
+	chunk_size = ALIGN_UP (chunk_size + *kern_end, s->sh_addralign)
+	  - *kern_end;
+
+      chunk_size += s->sh_size;
+    }
+
+  err = grub_relocator_alloc_chunk_addr (relocator, &chunk_src,
+					 module, chunk_size);
+  if (err)
+    return err;
 
   for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) ((char *) shdr
 						+ e.e_shnum * e.e_shentsize);
@@ -109,15 +128,14 @@ SUFFIX (grub_freebsd_load_elfmodule_obj) (grub_file_t file, int argc,
 	{
 	default:
 	case SHT_PROGBITS:
-	  err = load (file, UINT_TO_PTR (curload), s->sh_offset, s->sh_size);
+	  err = load (file, (grub_uint8_t *) chunk_src + curload - *kern_end,
+		      s->sh_offset, s->sh_size);
 	  if (err)
 	    return err;
 	  break;
 	case SHT_NOBITS:
-	  if (curload + s->sh_size > grub_os_area_addr + grub_os_area_size)
-	    return grub_error (GRUB_ERR_OUT_OF_RANGE,
-			       "not enough memory for the module");
-	  grub_memset (UINT_TO_PTR (curload), 0, s->sh_size);
+	  grub_memset ((grub_uint8_t *) chunk_src + curload - *kern_end, 0,
+		       s->sh_size);
 	  break;
 	}
       curload += s->sh_size;
@@ -143,7 +161,8 @@ SUFFIX (grub_freebsd_load_elfmodule_obj) (grub_file_t file, int argc,
 #else
 
 grub_err_t
-SUFFIX (grub_freebsd_load_elfmodule) (grub_file_t file, int argc, char *argv[],
+SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
+				      grub_file_t file, int argc, char *argv[],
 				      grub_addr_t *kern_end)
 {
   Elf_Ehdr e;
@@ -151,12 +170,32 @@ SUFFIX (grub_freebsd_load_elfmodule) (grub_file_t file, int argc, char *argv[],
   char *shdr;
   grub_addr_t curload, module;
   grub_err_t err;
+  grub_size_t chunk_size = 0;
+  void *chunk_src;
 
   err = read_headers (file, &e, &shdr);
   if (err)
     return err;
 
   curload = module = ALIGN_PAGE (*kern_end);
+
+  for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) ((char *) shdr
+						+ e.e_shnum * e.e_shentsize);
+       s = (Elf_Shdr *) ((char *) s + e.e_shentsize))
+    {
+      if (s->sh_size == 0)
+	continue;
+
+      if (! (s->sh_flags & SHF_ALLOC))
+	continue;
+      if (chunk_size < s->sh_addr + s->sh_size)
+	chunk_size = s->sh_addr + s->sh_size;
+    }
+
+  err = grub_relocator_alloc_chunk_addr (relocator, &chunk_src,
+					 module, chunk_size);
+  if (err)
+    return err;
 
   for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) ((char *) shdr
 						+ e.e_shnum * e.e_shentsize);
@@ -176,17 +215,15 @@ SUFFIX (grub_freebsd_load_elfmodule) (grub_file_t file, int argc, char *argv[],
 	{
 	default:
 	case SHT_PROGBITS:
-	  err = load (file, UINT_TO_PTR (module + s->sh_addr),
+	  err = load (file, (grub_uint8_t *) chunk_src + module
+		      + s->sh_addr - *kern_end,
 		      s->sh_offset, s->sh_size);
 	  if (err)
 	    return err;
 	  break;
 	case SHT_NOBITS:
-	  if (module + s->sh_addr + s->sh_size
-	      > grub_os_area_addr + grub_os_area_size)
-	    return grub_error (GRUB_ERR_OUT_OF_RANGE,
-			       "not enough memory for the module");
-	  grub_memset (UINT_TO_PTR (module + s->sh_addr), 0, s->sh_size);
+	  grub_memset ((grub_uint8_t *) chunk_src + module
+		      + s->sh_addr - *kern_end, 0, s->sh_size);
 	  break;
 	}
       if (curload < module + s->sh_addr + s->sh_size)

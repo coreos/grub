@@ -85,7 +85,7 @@ union grub_aout_header
 int EXPORT_FUNC(grub_aout_get_type) (union grub_aout_header *header);
 
 grub_err_t EXPORT_FUNC(grub_aout_load) (grub_file_t file, int offset,
-                                        grub_addr_t load_addr, int load_size,
-                                        grub_addr_t bss_end_addr);
+                                        void *load_addr, int load_size,
+                                        grub_size_t bss_size);
 
 #endif /* ! GRUB_AOUT_HEADER */

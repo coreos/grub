@@ -42,6 +42,8 @@
 #include <grub/disk.h>
 #include <grub/device.h>
 #include <grub/partition.h>
+#include <grub/relocator.h>
+#include <grub/cpu/relocator.h>
 
 #define ALIGN_DWORD(a)	ALIGN_UP (a, 4)
 #define ALIGN_QWORD(a)	ALIGN_UP (a, 8)
@@ -53,12 +55,14 @@
 static int kernel_type = KERNEL_TYPE_NONE;
 static grub_dl_t my_mod;
 static grub_addr_t entry, entry_hi, kern_start, kern_end;
+static void *kern_chunk_src;
 static grub_uint32_t bootflags;
 static char *mod_buf;
 static grub_uint32_t mod_buf_len, mod_buf_max, kern_end_mdofs;
 static int is_elf_kernel, is_64bit;
 static char *netbsd_root = NULL;
 static grub_uint32_t openbsd_root;
+struct grub_relocator *relocator = NULL;
 
 static const struct grub_arg_option freebsd_opts[] =
   {
@@ -442,23 +446,40 @@ static grub_err_t
 grub_freebsd_boot (void)
 {
   struct grub_freebsd_bootinfo bi;
-  char *p;
+  grub_uint8_t *p, *p0;
+  grub_addr_t p_target;
+  grub_size_t p_size = 0;
   grub_uint32_t bootdev, biosdev, unit, slice, part;
+  grub_err_t err;
 
   auto int iterate_env (struct grub_env_var *var);
   int iterate_env (struct grub_env_var *var)
   {
     if ((!grub_memcmp (var->name, "kFreeBSD.", sizeof("kFreeBSD.") - 1)) && (var->name[sizeof("kFreeBSD.") - 1]))
       {
-	grub_strcpy (p, &var->name[sizeof("kFreeBSD.") - 1]);
-	p += grub_strlen (p);
+	grub_strcpy ((char *) p, &var->name[sizeof("kFreeBSD.") - 1]);
+	p += grub_strlen ((char *) p);
 	*(p++) = '=';
-	grub_strcpy (p, var->value);
-	p += grub_strlen (p) + 1;
+	grub_strcpy ((char *) p, var->value);
+	p += grub_strlen ((char *) p) + 1;
       }
 
     return 0;
   }
+
+  auto int iterate_env_count (struct grub_env_var *var);
+  int iterate_env_count (struct grub_env_var *var)
+  {
+    if ((!grub_memcmp (var->name, "kFreeBSD.", sizeof("kFreeBSD.") - 1)) && (var->name[sizeof("kFreeBSD.") - 1]))
+      {
+	p_size += grub_strlen (&var->name[sizeof("kFreeBSD.") - 1]);
+	p_size++;
+	p_size += grub_strlen (var->value) + 1;
+      }
+
+    return 0;
+  }
+
 
   grub_memset (&bi, 0, sizeof (bi));
   bi.bi_version = FREEBSD_BOOTINFO_VERSION;
@@ -470,35 +491,50 @@ grub_freebsd_boot (void)
 
   bi.bi_bios_dev = biosdev;
 
-  p = (char *) kern_end;
+  p_size = 0;
+  grub_env_iterate (iterate_env_count);
+  if (p_size)
+    p_size = ALIGN_PAGE (kern_end + p_size + 1) - kern_end;
+  if (is_elf_kernel)
+    p_size = ALIGN_PAGE (kern_end + p_size + mod_buf_len) - kern_end;
+
+  if (is_64bit)
+    p_size += 4096 * 4;
+
+  err = grub_relocator_alloc_chunk_addr (relocator, (void **) &p,
+					 kern_end, p_size);
+  if (err)
+    return err;
+  kern_end += p_size;
+  p0 = p;
+  p_target = kern_end;
 
   grub_env_iterate (iterate_env);
 
-  if (p != (char *) kern_end)
+  if (p != p0)
     {
       *(p++) = 0;
 
-      bi.bi_envp = kern_end;
-      kern_end = ALIGN_PAGE ((grub_uint32_t) p);
+      bi.bi_envp = p_target;
     }
 
   if (is_elf_kernel)
     {
-      grub_addr_t md_ofs;
+      grub_uint8_t *md_ofs;
       int ofs;
 
       if (grub_freebsd_add_meta (FREEBSD_MODINFO_END, 0, 0))
 	return grub_errno;
 
-      grub_memcpy ((char *) kern_end, mod_buf, mod_buf_len);
-      bi.bi_modulep = kern_end;
+      grub_memcpy (p, mod_buf, mod_buf_len);
+      bi.bi_modulep = (p - p0) + p_target;
+      md_ofs = p + kern_end_mdofs;
 
-      kern_end = ALIGN_PAGE (kern_end + mod_buf_len);
+      p = (ALIGN_PAGE ((p - p0) + p_target) - p_target) + p0;
 
       if (is_64bit)
-	kern_end += 4096 * 4;
+	p += 4096 * 4;
 
-      md_ofs = bi.bi_modulep + kern_end_mdofs;
       ofs = (is_64bit) ? 16 : 12;
       *((grub_uint32_t *) md_ofs) = kern_end;
       md_ofs -= ofs;
@@ -519,11 +555,11 @@ grub_freebsd_boot (void)
 
       struct gdt_descriptor *gdtdesc;
 
-      pagetable = (grub_uint8_t *) (kern_end - 16384);
+      pagetable = p - 16384;
       fill_bsd64_pagetable (pagetable);
 
       /* Create GDT. */
-      gdt = (grub_uint32_t *) (kern_end - 4096);
+      gdt = (grub_uint32_t *) (p - 4096);
       gdt[0] = 0;
       gdt[1] = 0;
       gdt[2] = 0;
@@ -532,12 +568,12 @@ grub_freebsd_boot (void)
       gdt[5] = 0x00008000;
 
       /* Create GDT descriptor. */
-      gdtdesc = (struct gdt_descriptor *) (kern_end - 4096 + 24);
+      gdtdesc = (struct gdt_descriptor *) (p - 4096 + 24);
       gdtdesc->limit = 24;
       gdtdesc->base = gdt;
 
       /* Prepare trampoline. */
-      trampoline = (grub_uint8_t *) (kern_end - 4096 + 24
+      trampoline = (grub_uint8_t *) (p - 4096 + 24
 				     + sizeof (struct gdt_descriptor));
       launch_trampoline = (void  __attribute__ ((cdecl, regparm (0)))
 			   (*) (grub_addr_t entry_lo, ...)) trampoline;
@@ -556,8 +592,31 @@ grub_freebsd_boot (void)
 			 kern_end);
     }
   else
-    grub_unix_real_boot (entry, bootflags | FREEBSD_RB_BOOTINFO, bootdev,
-			 0, 0, 0, &bi, bi.bi_modulep, kern_end);
+    {
+      struct grub_relocator32_state state;
+      grub_uint32_t *stack;
+      grub_addr_t stack_target;
+      err = grub_relocator_alloc_chunk_align (relocator, (void **) &stack,
+					      &stack_target,
+					      0x10000, 0x90000,
+					      9 * sizeof (grub_uint32_t)
+					      + sizeof (bi), 4);
+      if (err)
+	return err;
+      grub_memcpy (&stack[8], &bi, sizeof (bi));
+      state.eip = entry;
+      state.esp = stack_target;
+      stack[0] = entry; /* "Return" address.  */
+      stack[1] = bootflags | FREEBSD_RB_BOOTINFO;
+      stack[2] = bootdev;
+      stack[3] = 0;
+      stack[4] = 0;
+      stack[5] = 0;
+      stack[6] = stack_target + 9 * sizeof (grub_uint32_t);
+      stack[7] = bi.bi_modulep;
+      stack[8] = kern_end;
+      return grub_relocator32_boot (relocator, state);
+    }
 
   /* Not reached.  */
   return GRUB_ERR_NONE;
@@ -566,9 +625,23 @@ grub_freebsd_boot (void)
 static grub_err_t
 grub_openbsd_boot (void)
 {
-  char *buf = (char *) GRUB_BSD_TEMP_BUFFER;
+  grub_uint8_t *buf, *buf0;
+  grub_uint32_t *stack;
+  grub_addr_t buf_target, argbuf_target_start, argbuf_target_end;
+  grub_size_t buf_size;
   struct grub_openbsd_bios_mmap *pm;
   struct grub_openbsd_bootargs *pa;
+  struct grub_relocator32_state state;
+  grub_err_t err;
+
+  auto int NESTED_FUNC_ATTR count_hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR count_hook (grub_uint64_t addr __attribute__ ((unused)),
+				   grub_uint64_t size __attribute__ ((unused)),
+				   grub_uint32_t type __attribute__ ((unused)))
+  {
+    buf_size += sizeof (struct grub_openbsd_bios_mmap);
+    return 1;
+  }
 
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
@@ -599,6 +672,21 @@ grub_openbsd_boot (void)
       return 0;
     }
 
+  buf_target = GRUB_BSD_TEMP_BUFFER;
+  buf_size = sizeof (struct grub_openbsd_bootargs) + 9 * sizeof (grub_uint32_t);
+  grub_mmap_iterate (count_hook);
+  buf_size += sizeof (struct grub_openbsd_bootargs);
+
+  err = grub_relocator_alloc_chunk_addr (relocator, (void **) &buf,
+					 buf_target, buf_size);
+  if (err)
+    return err;
+  buf0 = buf;
+  stack = (grub_uint32_t *) buf;
+  buf = (grub_uint8_t *) (stack + 9);
+
+  argbuf_target_start = buf - buf0 + buf_target;
+
   pa = (struct grub_openbsd_bootargs *) buf;
 
   pa->ba_type = OPENBSD_BOOTARG_MMAP;
@@ -610,20 +698,29 @@ grub_openbsd_boot (void)
   pm->len = 0;
   pm->type = 0;
   pm++;
+  buf = (grub_uint8_t *) pm;
 
   pa->ba_size = (char *) pm - (char *) pa;
-  pa->ba_next = (struct grub_openbsd_bootargs *) pm;
+  pa->ba_next = (struct grub_openbsd_bootargs *) (buf - buf0 + buf_target);
   pa = pa->ba_next;
   pa->ba_type = OPENBSD_BOOTARG_END;
   pa++;
+  buf = (grub_uint8_t *) pa;
+  argbuf_target_end = buf - buf0 + buf_target;
 
-  grub_unix_real_boot (entry, bootflags, openbsd_root, OPENBSD_BOOTARG_APIVER,
-		       0, (grub_uint32_t) (grub_mmap_get_upper () >> 10),
-		       (grub_uint32_t) (grub_mmap_get_lower () >> 10),
-		       (char *) pa - buf, buf);
+  state.eip = entry;
+  state.esp = ((grub_uint8_t *) stack - buf0) + buf_target;
+  stack[0] = entry;
+  stack[1] = bootflags;
+  stack[2] = openbsd_root;
+  stack[3] = OPENBSD_BOOTARG_APIVER;
+  stack[4] = 0;
+  stack[5] = grub_mmap_get_upper () >> 10;
+  stack[6] = grub_mmap_get_lower () >> 10;
+  stack[7] = argbuf_target_end - argbuf_target_start;
+  stack[8] = argbuf_target_start;
 
-  /* Not reached.  */
-  return GRUB_ERR_NONE;
+  return grub_relocator32_boot (relocator, state);
 }
 
 static grub_err_t
@@ -633,7 +730,11 @@ grub_netbsd_boot (void)
   int count = 0;
   struct grub_netbsd_btinfo_mmap_header *mmap;
   struct grub_netbsd_btinfo_mmap_entry *pm;
-  void *curarg;
+  void *curarg, *arg0;
+  grub_addr_t arg_target, stack_target;
+  grub_uint32_t *stack;
+  grub_err_t err;
+  struct grub_relocator32_state state;
 
   auto int NESTED_FUNC_ATTR count_hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR count_hook (grub_uint64_t addr __attribute__ ((unused)),
@@ -675,14 +776,18 @@ grub_netbsd_boot (void)
 
   grub_mmap_iterate (count_hook);
 
-  if (kern_end + sizeof (struct grub_netbsd_btinfo_rootdevice)
-      + sizeof (struct grub_netbsd_bootinfo)
-      + sizeof (struct grub_netbsd_btinfo_mmap_header)
-      + count * sizeof (struct grub_netbsd_btinfo_mmap_entry)
-      > grub_os_area_addr + grub_os_area_size)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
+  arg_target = kern_end;
+  err = grub_relocator_alloc_chunk_addr 
+    (relocator, &curarg, arg_target,
+     sizeof (struct grub_netbsd_btinfo_rootdevice)
+     + sizeof (struct grub_netbsd_bootinfo)
+     + sizeof (struct grub_netbsd_btinfo_mmap_header)
+     + count * sizeof (struct grub_netbsd_btinfo_mmap_entry));
+  if (err)
+    return err;
 
-  curarg = mmap = (struct grub_netbsd_btinfo_mmap_header *) kern_end;
+  arg0 = curarg;
+  mmap = curarg;
   pm = (struct grub_netbsd_btinfo_mmap_entry *) (mmap + 1);
 
   grub_mmap_iterate (fill_hook);
@@ -703,22 +808,36 @@ grub_netbsd_boot (void)
 
       bootinfo = (struct grub_netbsd_bootinfo *) (rootdev + 1);
       bootinfo->bi_count = 2;
-      bootinfo->bi_data[0] = mmap;
-      bootinfo->bi_data[1] = rootdev;
+      bootinfo->bi_data[0] = ((grub_uint8_t *) mmap - (grub_uint8_t *) arg0)
+	+ arg_target;
+      bootinfo->bi_data[1] = ((grub_uint8_t *) rootdev - (grub_uint8_t *) arg0)
+	+ arg_target;
     }
   else
     {
       bootinfo = (struct grub_netbsd_bootinfo *) curarg;
       bootinfo->bi_count = 1;
-      bootinfo->bi_data[0] = mmap;
+      bootinfo->bi_data[0] = ((grub_uint8_t *) mmap - (grub_uint8_t *) arg0)
+	+ arg_target;
     }
 
-  grub_unix_real_boot (entry, bootflags, 0, bootinfo,
-		       0, (grub_uint32_t) (grub_mmap_get_upper () >> 10),
-		       (grub_uint32_t) (grub_mmap_get_lower () >> 10));
+  err = grub_relocator_alloc_chunk_align (relocator, (void **) &stack,
+					  &stack_target, 0x10000, 0x90000,
+					  7 * sizeof (grub_uint32_t), 4);
+  if (err)
+    return err;
 
-  /* Not reached.  */
-  return GRUB_ERR_NONE;
+  state.eip = entry;
+  state.esp = stack_target;
+  stack[0] = entry;
+  stack[1] = bootflags;
+  stack[2] = 0;
+  stack[3] = ((grub_uint8_t *) bootinfo - (grub_uint8_t *) arg0) + arg_target;
+  stack[4] = 0;
+  stack[5] = grub_mmap_get_upper () >> 10;
+  stack[6] = grub_mmap_get_lower () >> 10;
+
+  return grub_relocator32_boot (relocator, state);
 }
 
 static grub_err_t
@@ -737,15 +856,20 @@ grub_bsd_unload (void)
   grub_free (netbsd_root);
   netbsd_root = NULL;
 
+  grub_relocator_unload (relocator);
+  relocator = NULL;
+
   return GRUB_ERR_NONE;
 }
 
 static grub_err_t
 grub_bsd_load_aout (grub_file_t file)
 {
-  grub_addr_t load_addr, bss_end_addr;
+  grub_addr_t load_addr, load_end;
   int ofs, align_page;
   union grub_aout_header ah;
+  grub_err_t err;
+  grub_size_t bss_size;
 
   if ((grub_file_seek (file, 0)) == (grub_off_t) - 1)
     return grub_errno;
@@ -775,7 +899,7 @@ grub_bsd_load_aout (grub_file_t file)
     return grub_error (GRUB_ERR_BAD_OS, "load address below 1M");
 
   kern_start = load_addr;
-  kern_end = load_addr + ah.aout32.a_text + ah.aout32.a_data;
+  load_end = kern_end = load_addr + ah.aout32.a_text + ah.aout32.a_data;
   if (align_page)
     kern_end = ALIGN_PAGE (kern_end);
 
@@ -785,13 +909,44 @@ grub_bsd_load_aout (grub_file_t file)
       if (align_page)
 	kern_end = ALIGN_PAGE (kern_end);
 
-      bss_end_addr = kern_end;
+      bss_size = kern_end - load_end;
     }
   else
-    bss_end_addr = 0;
+    bss_size = 0;
 
-  return grub_aout_load (file, ofs, load_addr,
-			 ah.aout32.a_text + ah.aout32.a_data, bss_end_addr);
+  relocator = grub_relocator_new ();
+  if (!relocator)
+    return grub_errno;
+
+  err = grub_relocator_alloc_chunk_addr (relocator, &kern_chunk_src,
+					 kern_start, kern_end - kern_start);
+  if (err)
+    return err;
+
+  return grub_aout_load (file, ofs, kern_chunk_src,
+			 ah.aout32.a_text + ah.aout32.a_data,
+			 bss_size);
+}
+
+static int NESTED_FUNC_ATTR
+grub_bsd_elf32_size_hook (grub_elf_t elf __attribute__ ((unused)),
+			  Elf32_Phdr *phdr, void *arg __attribute__ ((unused)))
+{
+  Elf32_Addr paddr;
+
+  if (phdr->p_type != PT_LOAD
+      && phdr->p_type != PT_DYNAMIC)
+      return 1;
+
+  paddr = phdr->p_paddr & 0xFFFFFF;
+
+  if (paddr < kern_start)
+    kern_start = paddr;
+
+  if (paddr + phdr->p_memsz > kern_end)
+    kern_end = paddr + phdr->p_memsz;
+
+  return 1;
 }
 
 static grub_err_t
@@ -810,20 +965,30 @@ grub_bsd_elf32_hook (Elf32_Phdr * phdr, grub_addr_t * addr, int *do_load)
   phdr->p_paddr &= 0xFFFFFF;
   paddr = phdr->p_paddr;
 
-  if ((paddr < grub_os_area_addr)
-      || (paddr + phdr->p_memsz > grub_os_area_addr + grub_os_area_size))
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "address 0x%x is out of range",
-		       paddr);
+  *addr = (grub_addr_t) (paddr - kern_start + (grub_uint8_t *) kern_chunk_src);
 
-  if ((!kern_start) || (paddr < kern_start))
+  return GRUB_ERR_NONE;
+}
+
+static int NESTED_FUNC_ATTR
+grub_bsd_elf64_size_hook (grub_elf_t elf __attribute__ ((unused)),
+			  Elf64_Phdr *phdr, void *arg __attribute__ ((unused)))
+{
+  Elf64_Addr paddr;
+
+  if (phdr->p_type != PT_LOAD
+      && phdr->p_type != PT_DYNAMIC)
+    return 1;
+
+  paddr = phdr->p_paddr & 0xffffff;
+
+  if (paddr < kern_start)
     kern_start = paddr;
 
   if (paddr + phdr->p_memsz > kern_end)
     kern_end = paddr + phdr->p_memsz;
 
-  *addr = paddr;
-
-  return GRUB_ERR_NONE;
+  return 1;
 }
 
 static grub_err_t
@@ -841,18 +1006,7 @@ grub_bsd_elf64_hook (Elf64_Phdr * phdr, grub_addr_t * addr, int *do_load)
   *do_load = 1;
   paddr = phdr->p_paddr & 0xffffff;
 
-  if ((paddr < grub_os_area_addr)
-      || (paddr + phdr->p_memsz > grub_os_area_addr + grub_os_area_size))
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "address 0x%x is out of range",
-		       paddr);
-
-  if ((!kern_start) || (paddr < kern_start))
-    kern_start = paddr;
-
-  if (paddr + phdr->p_memsz > kern_end)
-    kern_end = paddr + phdr->p_memsz;
-
-  *addr = paddr;
+  *addr = (grub_addr_t) (paddr - kern_start + (grub_uint8_t *) kern_chunk_src);
 
   return GRUB_ERR_NONE;
 }
@@ -860,11 +1014,22 @@ grub_bsd_elf64_hook (Elf64_Phdr * phdr, grub_addr_t * addr, int *do_load)
 static grub_err_t
 grub_bsd_load_elf (grub_elf_t elf)
 {
-  kern_start = kern_end = 0;
+  grub_err_t err;
+
+  kern_end = 0;
+  kern_start = ~0;
 
   if (grub_elf_is_elf32 (elf))
     {
       entry = elf->ehdr.ehdr32.e_entry & 0xFFFFFF;
+      err = grub_elf32_phdr_iterate (elf, grub_bsd_elf32_size_hook, NULL);
+      if (err)
+	return err;
+      err = grub_relocator_alloc_chunk_addr (relocator, &kern_chunk_src,
+					     kern_start, kern_end - kern_start);
+      if (err)
+	return err;
+
       return grub_elf32_load (elf, grub_bsd_elf32_hook, 0, 0);
     }
   else if (grub_elf_is_elf64 (elf))
@@ -885,6 +1050,15 @@ grub_bsd_load_elf (grub_elf_t elf)
 	  entry = elf->ehdr.ehdr64.e_entry & 0x0fffffff;
 	  entry_hi = 0;
 	}
+
+      err = grub_elf64_phdr_iterate (elf, grub_bsd_elf64_size_hook, NULL);
+      if (err)
+	return err;
+      err = grub_relocator_alloc_chunk_addr (relocator, &kern_chunk_src,
+					     kern_start, kern_end - kern_start);
+      if (err)
+	return err;
+
       return grub_elf64_load (elf, grub_bsd_elf64_hook, 0, 0);
     }
   else
@@ -910,6 +1084,8 @@ grub_bsd_load (int argc, char *argv[])
   file = grub_gzfile_open (argv[0], 1);
   if (!file)
     goto fail;
+
+  relocator = grub_relocator_new ();
 
   elf = grub_elf_file (file);
   if (elf)
@@ -1059,7 +1235,7 @@ grub_cmd_netbsd (grub_extcmd_t cmd, int argc, char *argv[])
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     {
-      grub_loader_set (grub_netbsd_boot, grub_bsd_unload, 1);
+      grub_loader_set (grub_netbsd_boot, grub_bsd_unload, 0);
       if (cmd->state[NETBSD_ROOT_ARG].set)
 	netbsd_root = grub_strdup (cmd->state[NETBSD_ROOT_ARG].arg);
     }
@@ -1164,10 +1340,11 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
 			 int argc, char *argv[])
 {
   grub_file_t file = 0;
-  grub_err_t err;
   int modargc;
   char **modargv;
   char *type;
+  grub_err_t err;
+  void *src;
 
   if (kernel_type == KERNEL_TYPE_NONE)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
@@ -1192,13 +1369,12 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
   if ((!file) || (!file->size))
     goto fail;
 
-  if (kern_end + file->size > grub_os_area_addr + grub_os_area_size)
-    {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "not enough memory for the module");
-      goto fail;
-    }
+  err = grub_relocator_alloc_chunk_addr (relocator, &src, kern_end, 
+					 file->size);
+  if (err)
+    goto fail;
 
-  grub_file_read (file, (void *) kern_end, file->size);
+  grub_file_read (file, src, file->size);
   if (grub_errno)
     goto fail;
 
@@ -1264,9 +1440,11 @@ grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
     }
 
   if (is_64bit)
-    err = grub_freebsd_load_elfmodule_obj64 (file, argc, argv, &kern_end);
+    err = grub_freebsd_load_elfmodule_obj64 (relocator, file,
+					     argc, argv, &kern_end);
   else
-    err = grub_freebsd_load_elfmodule32 (file, argc, argv, &kern_end);
+    err = grub_freebsd_load_elfmodule32 (relocator, file,
+					 argc, argv, &kern_end);
   grub_file_close (file);
 
   return err;
