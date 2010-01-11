@@ -49,7 +49,6 @@
 
 extern grub_dl_t my_mod;
 struct grub_relocator *grub_multiboot_relocator = NULL;
-static grub_size_t code_size;
 grub_uint32_t grub_multiboot_payload_eip;
 
 static grub_err_t
@@ -182,6 +181,7 @@ grub_multiboot (int argc, char *argv[])
 		    (header->header_addr - header->load_addr));
       int load_size = ((header->load_end_addr == 0) ? file->size - offset :
 		       header->load_end_addr - header->load_addr);
+      grub_size_t code_size;
       void *source;
 
       if (header->bss_end_addr)
