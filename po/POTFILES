@@ -75,7 +75,7 @@ normal/menu_entry.c
 normal/menu_text.c
 normal/misc.c
 
-term/i386/pc/serial.c
+term/serial.c
 
 util/grub-mkrawimage.c
 util/i386/pc/grub-setup.c

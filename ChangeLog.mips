@@ -1,3 +1,7 @@
+2010-01-11  Felix Zielcke <fzielcke@z-51.de>
+
+	* po/POTFILES: Replace `term/i386/pc/serial.c' with `term/serial.c'.
+
 2009-12-10  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/mips/libgcc.h: Only export symbols for functions
