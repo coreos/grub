@@ -99,6 +99,7 @@ get_best_header (struct grub_relocator *rel,
 	    hb = h;
 	    hbp = hp;
 	    *best_addr = addr;
+	    grub_dprintf ("relocator", "picked %p/%x\n", hb, addr);
 	  }
       }
     else
@@ -141,6 +142,7 @@ get_best_header (struct grub_relocator *rel,
 	    hb = h;
 	    hbp = hp;
 	    *best_addr = addr;
+	    grub_dprintf ("relocator", "picked %p/%x\n", hb, addr);
 	  }
       }
   }
@@ -188,8 +190,12 @@ malloc_in_range (struct grub_relocator *rel,
     grub_mm_region_t r, rp;
     for (rp = NULL, r = grub_mm_base; r; rp = r, r = r->next)
       {
-	if ((grub_addr_t) r + r->size + sizeof (*r) > start
-	    && (grub_addr_t) r <= end && r->size + sizeof (*r) >= size
+	grub_dprintf ("relocator", "region %p. %d %d %d\n", r,
+		      (grub_addr_t) r + r->size + sizeof (*r) >= start,
+		      (grub_addr_t) r < end && r->size + sizeof (*r) >= size,
+		      (rb == NULL || (from_low_priv ? rb > r : rb < r)));
+	if ((grub_addr_t) r + r->size + sizeof (*r) >= start
+	    && (grub_addr_t) r < end && r->size + sizeof (*r) >= size
 	    && (rb == NULL || (from_low_priv ? rb > r : rb < r)))
 	  {
 	    rb = r;
@@ -221,7 +227,7 @@ malloc_in_range (struct grub_relocator *rel,
     }
 
   /* Special case: relocating region start.  */
-  if (best_addr < (grub_addr_t) hbp)
+  if (best_addr < (grub_addr_t) hb)
     {
       grub_addr_t newreg_start, newreg_raw_start = best_addr + size;
       grub_addr_t newreg_size, newreg_presize;
@@ -320,7 +326,8 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
   /* Keep chunks in memory in the same order as they'll be after relocation.  */
   for (chunk = rel->chunks; chunk; chunk = chunk->next)
     {
-      if (chunk->target > target && chunk->src > max_addr)
+      if (chunk->target > target && chunk->src < max_addr
+	  && chunk->src < rel->postchunks)
 	max_addr = chunk->src;
       if (chunk->target + chunk->size <= target
 	  && chunk->src + chunk->size > min_addr
@@ -345,10 +352,10 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
       /* A trick to improve Linux allocation.  */
 #if defined (__i386__) || defined (__x86_64__)
       if (target < 0x100000)
-	if (malloc_in_range (rel, rel->highestnonpostaddr, ~(grub_addr_t)0, 0,
-			     size, &start, 1, 0))
+	if (malloc_in_range (rel, rel->highestnonpostaddr, ~(grub_addr_t)0, 1,
+			     size, &start, 0, 1))
 	  {
-	    if (rel->postchunks < start)
+	    if (rel->postchunks > start)
 	      rel->postchunks = start;
 	    break;
 	  }
@@ -356,7 +363,7 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
       if (malloc_in_range (rel, target, max_addr, 1, size, &start, 1, 0))
 	break;
 
-      if (malloc_in_range (rel, min_addr, target, 0, size, &start, 1, 0))
+      if (malloc_in_range (rel, min_addr, target, 1, size, &start, 0, 0))
 	break;
 
       grub_dprintf ("relocator", "not allocated\n");
@@ -436,7 +443,8 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
      relocation.  */
   for (chunk = rel->chunks; chunk; chunk = chunk->next)
     {
-      if (chunk->target > max_addr && chunk->src > max_addr2)
+      if (chunk->target > max_addr && chunk->src > max_addr2
+	  && chunk->src < rel->postchunks)
 	max_addr2 = chunk->src;
       if (chunk->target + chunk->size <= min_addr
 	  && chunk->src + chunk->size < min_addr2

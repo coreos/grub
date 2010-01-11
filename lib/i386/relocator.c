@@ -47,6 +47,7 @@ extern grub_uint32_t grub_relocator32_ecx;
 extern grub_uint32_t grub_relocator32_edx;
 extern grub_uint32_t grub_relocator32_eip;
 extern grub_uint32_t grub_relocator32_esp;
+extern grub_uint32_t grub_relocator32_esi;
 
 #define RELOCATOR_SIZEOF(x)	(&grub_relocator##x##_end - &grub_relocator##x##_start)
 
@@ -126,6 +127,7 @@ grub_relocator32_boot (struct grub_relocator *rel,
   grub_relocator32_edx = state.edx;
   grub_relocator32_eip = state.eip;
   grub_relocator32_esp = state.esp;
+  grub_relocator32_esi = state.esi;
 
   grub_memmove (src, &grub_relocator32_start, RELOCATOR_SIZEOF (32));
 

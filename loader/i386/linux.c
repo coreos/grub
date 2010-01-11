@@ -34,6 +34,7 @@
 #include <grub/command.h>
 #include <grub/i386/pc/vbe.h>
 #include <grub/i386/pc/console.h>
+#include <grub/i386/relocator.h>
 #include <grub/i18n.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
@@ -44,36 +45,18 @@ static grub_dl_t my_mod;
 static grub_size_t linux_mem_size;
 static int loaded;
 static void *real_mode_mem;
+static grub_addr_t real_mode_target;
 static void *prot_mode_mem;
+static grub_addr_t prot_mode_target;
 static void *initrd_mem;
+static grub_addr_t initrd_mem_target;
 static grub_uint32_t real_mode_pages;
 static grub_uint32_t prot_mode_pages;
 static grub_uint32_t initrd_pages;
+static struct grub_relocator *relocator = NULL;
 
-static grub_uint8_t gdt[] __attribute__ ((aligned(16))) =
-  {
-    /* NULL.  */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    /* Reserved.  */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    /* Code segment.  */
-    0xFF, 0xFF, 0x00, 0x00, 0x00, 0x9A, 0xCF, 0x00,
-    /* Data segment.  */
-    0xFF, 0xFF, 0x00, 0x00, 0x00, 0x92, 0xCF, 0x00
-  };
-
-struct gdt_descriptor
-{
-  grub_uint16_t limit;
-  void *base;
-} __attribute__ ((packed));
-
-static struct gdt_descriptor gdt_desc =
-  {
-    sizeof (gdt) - 1,
-    gdt
-  };
-
+/* FIXME */
+#if 0
 struct idt_descriptor
 {
   grub_uint16_t limit;
@@ -85,6 +68,7 @@ static struct idt_descriptor idt_desc =
     0,
     0
   };
+#endif
 
 #ifdef GRUB_MACHINE_PCBIOS
 struct linux_vesafb_res
@@ -290,15 +274,19 @@ find_mmap_size (void)
 static void
 free_pages (void)
 {
+  grub_relocator_unload (relocator);
+  relocator = NULL;
   real_mode_mem = prot_mode_mem = initrd_mem = 0;
+  real_mode_target = prot_mode_target = initrd_mem_target = 0;
 }
 
 /* Allocate pages for the real mode code and the protected mode code
    for linux as well as a memory map buffer.  */
-static int
+static grub_err_t
 allocate_pages (grub_size_t prot_size)
 {
   grub_size_t real_size, mmap_size;
+  grub_err_t err;
 
   /* Make sure that each size is aligned to a page boundary.  */
   real_size = GRUB_LINUX_CL_END_OFFSET;
@@ -315,6 +303,13 @@ allocate_pages (grub_size_t prot_size)
 
   /* Initialize the memory pointers with NULL for convenience.  */
   free_pages ();
+
+  relocator = grub_relocator_new ();
+  if (!relocator)
+    {
+      err = grub_errno;
+      goto fail;
+    }
 
   /* FIXME: Should request low memory from the heap when this feature is
      implemented.  */
@@ -339,32 +334,42 @@ allocate_pages (grub_size_t prot_size)
 	  if (real_size + mmap_size > size)
 	    return 0;
 
-	  real_mode_mem =
-	    (void *) (grub_size_t) ((addr + size) - (real_size + mmap_size));
+	  real_mode_target = ((addr + size) - (real_size + mmap_size));
 	  return 1;
 	}
 
       return 0;
     }
   grub_mmap_iterate (hook);
-  if (! real_mode_mem)
+  if (! real_mode_target)
     {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate real mode pages");
+      err = grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate real mode pages");
       goto fail;
     }
 
-  prot_mode_mem = (void *) 0x100000;
+  err = grub_relocator_alloc_chunk_addr (relocator, &real_mode_mem,
+					 real_mode_target,
+					 (real_size + mmap_size));
+  if (err)
+    goto fail;
+
+  prot_mode_target = 0x100000;
+
+  err = grub_relocator_alloc_chunk_addr (relocator, &prot_mode_mem,
+					 prot_mode_target, prot_size);
+  if (err)
+    goto fail;
 
   grub_dprintf ("linux", "real_mode_mem = %lx, real_mode_pages = %x, "
                 "prot_mode_mem = %lx, prot_mode_pages = %x\n",
                 (unsigned long) real_mode_mem, (unsigned) real_mode_pages,
                 (unsigned long) prot_mode_mem, (unsigned) prot_mode_pages);
 
-  return 1;
+  return GRUB_ERR_NONE;
 
  fail:
   free_pages ();
-  return 0;
+  return err;
 }
 
 static void
@@ -460,16 +465,12 @@ grub_linux_boot (void)
   int e820_num;
   grub_err_t err = 0;
   char *modevar, *tmp;
+  struct grub_relocator32_state state;
 
   params = real_mode_mem;
 
-  grub_dprintf ("linux", "code32_start = %x, idt_desc = %lx, gdt_desc = %lx\n",
-		(unsigned) params->code32_start,
-                (unsigned long) &(idt_desc.limit),
-		(unsigned long) &(gdt_desc.limit));
-  grub_dprintf ("linux", "idt = %x:%lx, gdt = %x:%lx\n",
-		(unsigned) idt_desc.limit, (unsigned long) idt_desc.base,
-		(unsigned) gdt_desc.limit, (unsigned long) gdt_desc.base);
+  grub_dprintf ("linux", "code32_start = %x\n",
+		(unsigned) params->code32_start);
 
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
@@ -568,31 +569,12 @@ grub_linux_boot (void)
 	}
     }
 
-#ifdef __x86_64__
-
-  grub_memcpy ((char *) prot_mode_mem + (prot_mode_pages << 12),
-	       grub_linux_trampoline_start,
-	       grub_linux_trampoline_end - grub_linux_trampoline_start);
-
-  ((void (*) (unsigned long, void *)) ((char *) prot_mode_mem
-				       + (prot_mode_pages << 12)))
-    (params->code32_start, real_mode_mem);
-#else
-
-  /* Hardware interrupts are not safe any longer.  */
-  asm volatile ("cli" : : );
-
-  /* Load the IDT and the GDT for the bootstrap.  */
-  asm volatile ("lidt %0" : : "m" (idt_desc));
-  asm volatile ("lgdt %0" : : "m" (gdt_desc));
-
-  /* Enter Linux.  */
-  asm volatile ("jmp *%2" : : "b" (0), "S" (real_mode_mem), "g" (params->code32_start));
-
-#endif
-
-  /* Never reach here.  */
-  return GRUB_ERR_NONE;
+  /* FIXME.  */
+  /*  asm volatile ("lidt %0" : : "m" (idt_desc)); */
+  state.ebx = 0;
+  state.esi = real_mode_target;
+  state.eip = params->code32_start;
+  return grub_relocator32_boot (relocator, state);
 }
 
 static grub_err_t
@@ -678,7 +660,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   real_size = setup_sects << GRUB_DISK_SECTOR_BITS;
   prot_size = grub_file_size (file) - real_size - GRUB_DISK_SECTOR_SIZE;
 
-  if (! allocate_pages (prot_size))
+  if (allocate_pages (prot_size))
     goto fail;
 
   params = (struct linux_kernel_params *) real_mode_mem;
@@ -701,7 +683,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   params->cl_magic = GRUB_LINUX_CL_MAGIC;
   params->cl_offset = 0x1000;
 
-  params->cmd_line_ptr = (unsigned long) real_mode_mem + 0x1000;
+  params->cmd_line_ptr = real_mode_target + 0x1000;
   params->ramdisk_image = 0;
   params->ramdisk_size = 0;
 
@@ -910,6 +892,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_ssize_t size;
   grub_addr_t addr_min, addr_max;
   grub_addr_t addr;
+  grub_err_t err;
   struct linux_kernel_header *lh;
 
   if (argc == 0)
@@ -957,7 +940,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   addr_max -= 0x10000;
 
   /* Usually, the compression ratio is about 50%.  */
-  addr_min = (grub_addr_t) prot_mode_mem + ((prot_mode_pages * 3) << 12)
+  addr_min = (grub_addr_t) prot_mode_target + ((prot_mode_pages * 3) << 12)
              + page_align (size);
 
   if (addr_max > grub_os_area_addr + grub_os_area_size)
@@ -972,7 +955,11 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  initrd_mem = (void *) addr;
+  err = grub_relocator_alloc_chunk_align (relocator, &initrd_mem,
+					  &initrd_mem_target,
+					  addr_min, addr, size, 0x1000);
+  if (err)
+    return err;
 
   if (grub_file_read (file, initrd_mem, size) != size)
     {
@@ -983,7 +970,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_dprintf ("linux", "Initrd, addr=0x%x, size=0x%x\n",
 		(unsigned) addr, (unsigned) size);
 
-  lh->ramdisk_image = addr;
+  lh->ramdisk_image = initrd_mem_target;
   lh->ramdisk_size = size;
   lh->root_dev = 0x0100; /* XXX */
 

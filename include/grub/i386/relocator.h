@@ -31,6 +31,7 @@ struct grub_relocator32_state
   grub_uint32_t ecx;
   grub_uint32_t edx;
   grub_uint32_t eip;
+  grub_uint32_t esi;
 };
 
 grub_err_t grub_relocator32_boot (struct grub_relocator *rel,
