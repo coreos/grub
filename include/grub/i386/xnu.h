@@ -117,5 +117,4 @@ grub_err_t grub_xnu_boot (void);
 grub_err_t grub_xnu_set_video (struct grub_xnu_boot_params *bootparams_relloc);
 grub_err_t
 grub_cpu_xnu_fill_devicetree (void);
-extern grub_uint32_t grub_xnu_heap_will_be_at;
 #endif
