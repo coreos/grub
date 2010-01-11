@@ -35,11 +35,11 @@ extern grub_uint8_t grub_relocator_backward_end;
 
 extern void *grub_relocator_backward_dest;
 extern void *grub_relocator_backward_src;
-extern grub_size_t grub_relocator_backward_size;
+extern grub_size_t grub_relocator_backward_chunk_size;
 
 extern void *grub_relocator_forward_dest;
 extern void *grub_relocator_forward_src;
-extern grub_size_t grub_relocator_forward_size;
+extern grub_size_t grub_relocator_forward_chunk_size;
 
 extern grub_uint32_t grub_relocator32_eax;
 extern grub_uint32_t grub_relocator32_ebx;
@@ -85,7 +85,7 @@ grub_cpu_relocator_backward (void *ptr, void *src, void *dest,
 {
   grub_relocator_backward_dest = dest;
   grub_relocator_backward_src = src;
-  grub_relocator_backward_size = size;
+  grub_relocator_backward_chunk_size = size;
 
   grub_memmove (ptr,
 		&grub_relocator_backward_start,
@@ -98,7 +98,7 @@ grub_cpu_relocator_forward (void *ptr, void *src, void *dest,
 {
   grub_relocator_forward_dest = dest;
   grub_relocator_forward_src = src;
-  grub_relocator_forward_size = size;
+  grub_relocator_forward_chunk_size = size;
 
   grub_memmove (ptr,
 		&grub_relocator_forward_start,

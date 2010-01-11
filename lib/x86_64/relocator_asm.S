@@ -25,26 +25,25 @@ VARIABLE(grub_relocator_backward_start)
 	/* mov imm32, %rax */
 	.byte	0x48
 	.byte	0xb8
-RELOCATOR_VARIABLE(dest)
+VARIABLE(grub_relocator_backward_dest)
 	.long	0, 0
 	movq	%rax, %rdi
 
 	/* mov imm64, %rax */
 	.byte	0x48
 	.byte	0xb8
-RELOCATOR_VARIABLE(src)
+VARIABLE(grub_relocator_backward_src)
 	.long	0, 0
 	movq	%rax, %rsi
 
 	/* mov imm32, %ecx */
 	.byte	0x48
 	.byte	0xb9
-RELOCATOR_VARIABLE(size)
+VARIABLE(grub_relocator_backward_chunk_size)
 	.long	0, 0
 
 	add	%rcx, %rsi
 	add	%rcx, %rdi
-
 
 	/* Backward movsb is implicitly off-by-one.  compensate that.  */
 	sub	$1,	%rsi
@@ -77,7 +76,7 @@ VARIABLE(grub_relocator_forward_src)
 	/* mov imm64, %rcx */
 	.byte	0x48
 	.byte	0xb9
-VARIABLE(grub_relocator_forward_size)
+VARIABLE(grub_relocator_forward_chunk_size)
 	.long	0, 0
 
 	/* Forward copy.  */

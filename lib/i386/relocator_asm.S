@@ -36,7 +36,7 @@ VARIABLE(grub_relocator_backward_src)
 
 	/* mov imm32, %ecx */
 	.byte	0xb9
-VARIABLE(grub_relocator_backward_size)
+VARIABLE(grub_relocator_backward_chunk_size)
 	.long	0
 	
 	add	%ecx, %esi
@@ -70,7 +70,7 @@ VARIABLE(grub_relocator_forward_src)
 
 	/* mov imm32, %ecx */
 	.byte	0xb9
-VARIABLE(grub_relocator_forward_size)
+VARIABLE(grub_relocator_forward_chunk_size)
 	.long	0
 
 	/* Forward copy.  */
