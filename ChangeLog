@@ -1,5 +1,9 @@
 2010-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* loader/i386/pc/multiboot2.c: Removed stalled file.
+
+2010-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkpasswd-pbkdf2.c (main): Use grub_util_init_nls.
 	Reported by: Grégoire Sutre
 
