@@ -109,4 +109,13 @@ grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
   return dest;
 }
 
+/* Convert UCS-4 to UTF-8.  */
+char *grub_ucs4_to_utf8_alloc (grub_uint32_t *src, grub_size_t size);
+
+int
+grub_is_valid_utf8 (const grub_uint8_t *src, grub_size_t srcsize);
+
+int grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
+			     grub_uint32_t **last_position);
+
 #endif

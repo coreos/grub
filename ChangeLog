@@ -1,3 +1,221 @@
+2010-01-11  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/misc.c (canonicalize_file_name): New function.
+	(make_system_path_relative_to_its_root): Use canonicalize_file_name()
+	instead of realpath().
+
+2010-01-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in (usage): Clarify meaning of --root-directory,
+	and make it clearer that it's optional.  Based on confusion
+	witnessed on IRC.
+
+2010-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/i386/pc/vga_text.c (inc_y): Fix off-by-one error which resulted
+	in premature implicit newline.
+
+2010-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/cmdline.c (grub_cmdline_get): Fix off-by-one error
+	which resulted in garbled command line at the end of screen.
+
+2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/ieee1275/linux.c (grub_linux_boot): Rework video position
+	initialization with similar approach as with other Linux loaders.
+
+2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix i386-ieee1275 build.
+
+	* loader/i386/ieee1275/linux.c (grub_linux_boot): Use grub_term_width()
+	and grub_term_height() for video_{width,height} initialization.
+
+2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix grub-emu build.
+
+	* conf/any-emu.rmk (grub_emu_SOURCES): Remove `kern/reader.c'.
+
+2010-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
+2010-01-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Support for multiple terminals.
+
+	* Makefile.in (pkglib_DATA): terminal.lst.
+	(terminal.lst): New target.
+	* commands/handler.c (grub_cmd_handler): Don't handle terminals.
+	(GRUB_MOD_INIT(handler)): Likewise.
+	(GRUB_MOD_FINI(handler)): Likewise.
+	* commands/help.c (grub_cmd_help): Handle multiple terminals.
+	* commands/keystatus.c (grub_cmd_keystatus): Likewise.
+	* commands/sleep.c (do_print): Use grub_term_restore_pos.
+	(grub_cmd_sleep): Use grub_term_save_pos.
+	* commands/terminal.c: New file.
+	* conf/any-emu.rmk (grub_emu_SOURCES): Add normal/term.c
+	commands/terminal.c and lib/charset.c.
+	* conf/common.rmk (normal_mod_SOURCES): Add normal/term.c.
+	(pkglib_MODULES): Add terminal.mod.
+	(terminal_mod_SOURCES): New variable.
+	(terminal_mod_CFLAGS): Likewise.
+	(terminal_mod_LDFLAGS): Likewise.
+	* genhandlerlist.sh: Don't handle terminals.
+	* genmk.rb: Generate terminal-*.lst.
+	* genterminallist.sh: New file.
+	* include/grub/charset.h (grub_ucs4_to_utf8_alloc): New proto.
+	(grub_is_valid_utf8): Likewise.
+	(grub_utf8_to_ucs4_alloc): Likewise.
+	* include/grub/menu_viewer.h (grub_menu_viewer): Rewritten.
+	(grub_menu_register_viewer): Changed argument.
+	(grub_menu_try_text): New proto.
+	(grub_gfxmenu_try_hook): New declaration.
+	* include/grub/normal.h (grub_normal_exit_level): New declaration.
+	(grub_menu_init_page): Additional argument term.
+	(grub_normal_init_page): Likewise.
+	(grub_cmdline_get): Arguments simplified.
+	(grub_utf8_to_ucs4_alloc): Removed.
+	(grub_print_ucs4): Additional argument term.
+	(grub_getstringwidth): Likewise.
+	(grub_print_message_indented): Likewise.
+	(grub_menu_text_register_instances): New proto.
+	(grub_show_menu): Likewise.
+	(read_terminal_list): Likewise.
+	(grub_set_more): Likewise.
+	* include/grub/parser.h: Include handler.h.
+	* include/grub/reader.h: Rewritten.
+	* include/grub/term.h (GRUB_TERM_NEED_INIT): Removed.
+	(GRUB_TERM_WIDTH): Changed to function.
+	(GRUB_TERM_HEIGHT): Likewise.
+	(GRUB_TERM_BORDER_WIDTH): Likewise.
+	(GRUB_TERM_BORDER_HEIGHT): Likewise.
+	(GRUB_TERM_NUM_ENTRIES): Likewise.
+	(GRUB_TERM_ENTRY_WIDTH): Likewise.
+	(GRUB_TERM_CURSOR_X): Likewise.
+	(grub_term_input_class): Likewise.
+	(grub_term_output_class): Likewise.
+	(grub_term_outputs_disabled): New declaration.
+	(grub_term_inputs_disabled): Likewise.
+	(grub_term_outputs): Likewise.
+	(grub_term_inputs): Likewise.
+	(grub_term_register_input): Rewritten.
+	(grub_term_register_output): Likewise.
+	(grub_term_unregister_input): Likewise.
+	(grub_term_unregister_output): Likewise.
+	(FOR_ACTIVE_TERM_INPUTS): New macro.
+	(FOR_DISABLED_TERM_INPUTS): Likewise.
+	(FOR_ACTIVE_TERM_OUTPUTS): Likewise.
+	(FOR_DISABLED_TERM_OUTPUTS): Likewise.
+	* include/grub/terminfo.h: Add oterm argument to all protypes.
+	* kern/main.c (grub_main): Don't call grub_register_rescue_reader.
+	Use grub_rescue_run.
+	* kern/misc.c (grub_utf8_to_ucs4): Put '?' for invalid characters.
+	All users updated.
+	* kern/reader.c: Removed. All users updated.
+	* kern/rescue_reader.c (grub_rescue_init): Removed.
+	(grub_rescue_reader): Likewise.
+	(grub_register_rescue_reader): Likewise.
+	(grub_rescue_run): New function based on kern/reader.c.
+	* kern/term.c: Adapted for multiterm.
+	* lib/charset.c (grub_ucs4_to_utf8_alloc): New function.
+	(grub_is_valid_utf8): Likewise.
+	(grub_utf8_to_ucs4_alloc): Moved from normal/menu_text.c.
+	* loader/i386/efi/linux.c (grub_cmd_linux): Retrieve parameters of
+	right terminal.
+	* loader/i386/linux.c (grub_linux_boot): Likewise.
+	* normal/auth.c (grub_username_get): New function.
+	(grub_auth_check_authentication): Use grub_username_get.
+	* normal/cmdline.c: Changed to UCS4. Adapted for multiterm.
+	* normal/color.c: Adapt for multiterm.
+	* normal/main.c (read_config_file): Don't use grub_reader_loop.
+	(grub_normal_init_page): Additional argument term.
+	(read_lists): Call read_terminal_lists.
+	(grub_enter_normal_mode): Call grub_cmdline_run.
+	Handle grub_normal_exit_level.
+	(grub_cmd_normal): Make reentrant.
+	(grub_cmd_normal_exit): New function.
+	(grub_normal_reader_init): Additional argument nested. Handle multiterm.
+	* normal/menu.c: Adapt for multiterm.
+	* normal/menu_entry.c: Likewise.
+	* normal/menu_text.c: Likewise.
+	* normal/menu_viewer.c: Removed. All users updated.
+	* normal/term.c: New file.
+	* util/console.c: Change order of includes to workaround a bug in
+	ncurses headers.
+	* term/terminfo.c: New argument oterm on all exported functions.
+	All users updated.
+	* util/grub-editenv.c (grub_term_input_class): Removed.
+	(grub_term_output_class): Likewise.
+
+2010-01-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Make loader output a bit more user-friendly.
+
+	* util/grub.d/10_hurd.in: Print message indicating that GNU Mach
+	is being loaded.  Likewise for the Hurd.
+
+	* util/grub.d/10_kfreebsd.in (kfreebsd_entry): Print message indicating
+	that kernel of FreeBSD ${version} is being loaded.
+
+	* loader/i386/linux.c (grub_cmd_linux): Move debug info to
+	grub_dprintf().
+	(grub_cmd_initrd): Likewise.
+	* util/grub.d/10_linux.in (linux_entry): Print message indicating
+	that Linux ${version} is being loaded.  Likewise for initrd.
+
+2010-01-09  Carles Pina i Estany  <carles@pina.cat>
+
+	* gettext/gettext.c (GRUB_MOD_INIT): Gettextizze.
+
+2010-01-08  Carles Pina i Estany  <carles@pina.cat>
+
+	* loader/efi/appleloader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/efi/chainloader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/efi/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/ieee1275/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/pc/chainloader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/pc/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/xnu.c: Include `<grub/i18n.h>'.
+	(grub_cpu_xnu_init): Gettextizze.
+	* loader/multiboot_loader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/powerpc/ieee1275/linux.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/sparc64/ieee1275/linux.c: Include `<grub/i18n.h>'.
+	(grub_linux_load64): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/xnu.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* po/POTFILES: Add `loader/efi/appleloader.c',
+	`loader/efi/chainloader.c', `loader/i386/efi/linux.c',
+	`loader/i386/ieee1275/linux.c', `loader/i386/linux.c',
+	`loader/i386/pc/chainloader.c', `loader/i386/pc/linux.c',
+	`loader/i386/xnu.c', `loader/multiboot_loader.c',
+	`loader/powerpc/ieee1275/linux.c', `loader/sparc64/ieee1275/linux.c'
+	and `loader/xnu.c'.
+
+2010-01-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* src/mkisofs.c: Remove `ifdef linux' portability kludge.
+
+2010-01-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/defaults.h (APPID_DEFAULT): Redefine using PACKAGE_NAME.
+	(SYSTEM_ID_DEFAULT): Set to "GNU" unconditionally.
+	* util/mkisofs/mkisofs.c (main): Readjust --version output.
+
 2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Reset Multiboot 2 support.  New loader implements the draft in
