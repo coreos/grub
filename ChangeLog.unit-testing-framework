@@ -1,3 +1,7 @@
+2010-01-12  BVK Chaitanya  <bvk@dbook>
+
+	* tests/util/grub-shell-tester.in: Fix error message.
+
 2010-01-08  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Unit testing framework for GRUB.

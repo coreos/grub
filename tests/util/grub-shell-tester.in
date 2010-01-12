@@ -98,7 +98,7 @@ bash ${source} >${outfile2}
 
 if ! diff -q ${outfile1} ${outfile2} >/dev/null
 then
-  echo "$1: GRUB and BASH outputs (${outfile1}, ${outfile2}) did not match"
+  echo "${source}: GRUB and BASH outputs did not match (see diff -u ${outfile1} ${outfile2})"
   status=1
 else
     rm -f ${outfile1} ${outfile2}
