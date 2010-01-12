@@ -460,15 +460,18 @@ distcheck: dist
 	@echo "$(distdir).tar.gz is ready for distribution" | \
 	  sed 'h;s/./=/g;p;x;p;x'
 
-TESTS = $(check_UTILITIES) $(check_SCRIPTS) $(check_MODULES)
-$(TESTS): $(test_framework_SCRIPTS) $(test_framework_MODULES)
-
-check: all $(TESTS)
-	@list="$(check_UTILITIES)"; \
+check: all $(UNIT_TESTS) $(FUNCTIONAL_TESTS) $(SCRIPTED_TESTS)
+	@list="$(UNIT_TESTS)"; \
 	for file in $$list; do \
 	  $(builddir)/$$file; \
 	done
-	@list="$(check_SCRIPTS)"; \
+	@list="$(FUNCTIONAL_TESTS)"; \
+	for file in $$list; do \
+	  mod=`basename $$file .mod`; \
+	  echo "insmod functional_test; insmod $$mod; functional_test" \
+	    | $(builddir)/grub-shell; \
+	done
+	@list="$(SCRIPTED_TESTS)"; \
 	for file in $$list; do \
 	  echo "$$file:"; \
 	  if $(builddir)/$$file; then \
@@ -476,12 +479,6 @@ check: all $(TESTS)
 	  else \
 	    echo "$$file: FAIL"; \
 	  fi; \
-	done
-	@list="$(check_MODULES)"; \
-	for file in $$list; do \
-	  mod=`basename $$file .mod`; \
-	  echo "insmod functional_test; insmod $$mod; functional_test" \
-	    | $(builddir)/grub-shell; \
 	done
 
 .SUFFIX:

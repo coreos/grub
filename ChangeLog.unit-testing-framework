@@ -1,6 +1,9 @@
 2010-01-12  BVK Chaitanya  <bvk@dbook>
 
-	* include/grub/test.h: Removed EXPORT_* usage.
+	* conf/tests.rmk: Build tests on make.
+	* Makefile.in (check): Use new variables.
+
+	* include/grub/test.h: Remove EXPORT_* usage.
 
 	* tests/util/grub-shell-tester.in: Fix error message.
 
