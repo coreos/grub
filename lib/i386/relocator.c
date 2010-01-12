@@ -26,8 +26,6 @@
 #include <grub/i386/relocator.h>
 #include <grub/relocator_private.h>
 
-extern grub_uint8_t grub_relocator32_start;
-extern grub_uint8_t grub_relocator32_end;
 extern grub_uint8_t grub_relocator_forward_start;
 extern grub_uint8_t grub_relocator_forward_end;
 extern grub_uint8_t grub_relocator_backward_start;
@@ -41,6 +39,8 @@ extern void *grub_relocator_forward_dest;
 extern void *grub_relocator_forward_src;
 extern grub_size_t grub_relocator_forward_chunk_size;
 
+extern grub_uint8_t grub_relocator32_start;
+extern grub_uint8_t grub_relocator32_end;
 extern grub_uint32_t grub_relocator32_eax;
 extern grub_uint32_t grub_relocator32_ebx;
 extern grub_uint32_t grub_relocator32_ecx;
@@ -48,6 +48,18 @@ extern grub_uint32_t grub_relocator32_edx;
 extern grub_uint32_t grub_relocator32_eip;
 extern grub_uint32_t grub_relocator32_esp;
 extern grub_uint32_t grub_relocator32_esi;
+
+extern grub_uint8_t grub_relocator64_start;
+extern grub_uint8_t grub_relocator64_end;
+extern grub_uint64_t grub_relocator64_rax;
+extern grub_uint64_t grub_relocator64_rbx;
+extern grub_uint64_t grub_relocator64_rcx;
+extern grub_uint64_t grub_relocator64_rdx;
+extern grub_uint64_t grub_relocator64_rip;
+extern grub_uint64_t grub_relocator64_rip_addr;
+extern grub_uint64_t grub_relocator64_rsp;
+extern grub_uint64_t grub_relocator64_rsi;
+extern grub_addr_t grub_relocator64_cr3;
 
 #define RELOCATOR_SIZEOF(x)	(&grub_relocator##x##_end - &grub_relocator##x##_start)
 
@@ -130,6 +142,44 @@ grub_relocator32_boot (struct grub_relocator *rel,
   grub_relocator32_esi = state.esi;
 
   grub_memmove (src, &grub_relocator32_start, RELOCATOR_SIZEOF (32));
+
+  err = grub_relocator_prepare_relocs (rel, target, &relst);
+  if (err)
+    return err;
+
+  asm volatile ("cli");
+  ((void (*) (void)) relst) ();
+
+  /* Not reached.  */
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_relocator64_boot (struct grub_relocator *rel,
+		       struct grub_relocator64_state state,
+		       grub_addr_t min_addr, grub_addr_t max_addr)
+{
+  grub_addr_t target;
+  void *src;
+  grub_err_t err;
+  grub_addr_t relst;
+
+  err = grub_relocator_alloc_chunk_align (rel, &src, &target, min_addr,
+					  max_addr - RELOCATOR_SIZEOF (64),
+					  RELOCATOR_SIZEOF (64), 16);
+  if (err)
+    return err;
+
+  grub_relocator64_rax = state.rax;
+  grub_relocator64_rbx = state.rbx;
+  grub_relocator64_rcx = state.rcx;
+  grub_relocator64_rdx = state.rdx;
+  grub_relocator64_rip = state.rip;
+  grub_relocator64_rsp = state.rsp;
+  grub_relocator64_rsi = state.rsi;
+  grub_relocator64_cr3 = state.cr3;
+
+  grub_memmove (src, &grub_relocator64_start, RELOCATOR_SIZEOF (64));
 
   err = grub_relocator_prepare_relocs (rel, target, &relst);
   if (err)

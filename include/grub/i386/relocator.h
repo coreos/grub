@@ -34,7 +34,23 @@ struct grub_relocator32_state
   grub_uint32_t esi;
 };
 
+struct grub_relocator64_state
+{
+  grub_uint64_t rsp;
+  grub_uint64_t rax;
+  grub_uint64_t rbx;
+  grub_uint64_t rcx;
+  grub_uint64_t rdx;
+  grub_uint64_t rip;
+  grub_uint64_t rsi;
+  grub_addr_t cr3;
+};
+
 grub_err_t grub_relocator32_boot (struct grub_relocator *rel,
 				  struct grub_relocator32_state state);
+
+grub_err_t grub_relocator64_boot (struct grub_relocator *rel,
+				  struct grub_relocator64_state state,
+				  grub_addr_t min_addr, grub_addr_t max_addr);
 
 #endif /* ! GRUB_RELOCATOR_CPU_HEADER */
