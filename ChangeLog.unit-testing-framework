@@ -2,7 +2,7 @@
 
 	* tests/util/grub-shell.in: New --boot option.
 
-	* conf/tests.rmk: Build tests on make.
+	* conf/tests.rmk: Build functional tests on make.
 	* Makefile.in (check): Use new variables.
 
 	* include/grub/test.h: Remove EXPORT_* usage.
