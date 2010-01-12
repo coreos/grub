@@ -39,6 +39,17 @@ extern void *grub_relocator_forward_dest;
 extern void *grub_relocator_forward_src;
 extern grub_size_t grub_relocator_forward_chunk_size;
 
+extern grub_uint8_t grub_relocator16_start;
+extern grub_uint8_t grub_relocator16_end;
+extern grub_uint16_t grub_relocator16_cs;
+extern grub_uint16_t grub_relocator16_ip;
+extern grub_uint16_t grub_relocator16_ds;
+extern grub_uint16_t grub_relocator16_es;
+extern grub_uint16_t grub_relocator16_fs;
+extern grub_uint16_t grub_relocator16_gs;
+extern grub_uint16_t grub_relocator16_ss;
+extern grub_uint16_t grub_relocator16_sp;
+
 extern grub_uint8_t grub_relocator32_start;
 extern grub_uint8_t grub_relocator32_end;
 extern grub_uint32_t grub_relocator32_eax;
@@ -143,6 +154,46 @@ grub_relocator32_boot (struct grub_relocator *rel,
   grub_relocator32_esi = state.esi;
 
   grub_memmove (src, &grub_relocator32_start, RELOCATOR_SIZEOF (32));
+
+  err = grub_relocator_prepare_relocs (rel, target, &relst);
+  if (err)
+    return err;
+
+  asm volatile ("cli");
+  ((void (*) (void)) relst) ();
+
+  /* Not reached.  */
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_relocator16_boot (struct grub_relocator *rel,
+		       struct grub_relocator16_state state)
+{
+  grub_addr_t target;
+  void *src;
+  grub_err_t err;
+  grub_addr_t relst;
+
+  err = grub_relocator_alloc_chunk_align (rel, &src, &target, 0,
+					  0xa0000 - RELOCATOR_SIZEOF (16),
+					  RELOCATOR_SIZEOF (16), 16,
+					  GRUB_RELOCATOR_PREFERENCE_NONE);
+  if (err)
+    return err;
+
+  grub_relocator16_cs = state.cs;  
+  grub_relocator16_ip = state.ip;
+
+  grub_relocator16_ds = state.ds;
+  grub_relocator16_es = state.es;
+  grub_relocator16_fs = state.fs;
+  grub_relocator16_gs = state.gs;
+
+  grub_relocator16_ss = state.ss;
+  grub_relocator16_sp = state.sp;
+
+  grub_memmove (src, &grub_relocator16_start, RELOCATOR_SIZEOF (16));
 
   err = grub_relocator_prepare_relocs (rel, target, &relst);
   if (err)

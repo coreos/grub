@@ -34,6 +34,18 @@ struct grub_relocator32_state
   grub_uint32_t esi;
 };
 
+struct grub_relocator16_state
+{
+  grub_uint16_t cs;
+  grub_uint16_t ds;
+  grub_uint16_t es;
+  grub_uint16_t fs;
+  grub_uint16_t gs;
+  grub_uint16_t ss;
+  grub_uint16_t sp;
+  grub_uint16_t ip;
+};
+
 struct grub_relocator64_state
 {
   grub_uint64_t rsp;
@@ -45,6 +57,9 @@ struct grub_relocator64_state
   grub_uint64_t rsi;
   grub_addr_t cr3;
 };
+
+grub_err_t grub_relocator16_boot (struct grub_relocator *rel,
+				  struct grub_relocator16_state state);
 
 grub_err_t grub_relocator32_boot (struct grub_relocator *rel,
 				  struct grub_relocator32_state state);
