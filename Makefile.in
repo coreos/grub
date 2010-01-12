@@ -251,6 +251,8 @@ font/ascii.bitmaps: $(FONT_SOURCE) grub-mkfont
 
 font/ascii.h: font/ascii.bitmaps grub-bin2h
 	$(builddir)/grub-bin2h ascii_bitmaps < font/ascii.bitmaps > font/ascii.h
+
+TARGET_CFLAGS += -DUSE_ASCII_FAILBACK=1
 endif
 endif
 

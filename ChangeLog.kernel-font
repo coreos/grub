@@ -1,3 +1,7 @@
+2010-01-12  Carles Pina i Estany  <carles@pina.cat>
+
+	* Makefile.in (DUSE_ASCII_FAILBACK): New macro.
+
 2010-01-11  Carles Pina i Estany  <carles@pina.cat>
 
 	* font/font.c (GENERATE_ASCII): Change the name to USE_ASCII_FAILBACK.
