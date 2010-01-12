@@ -31,7 +31,6 @@
 #define UNSUPPORTED_FLAGS			0x0000fff0
 
 #include <grub/loader.h>
-#include <grub/machine/loader.h>
 #include <grub/multiboot.h>
 #include <grub/machine/init.h>
 #include <grub/machine/memory.h>

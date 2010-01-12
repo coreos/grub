@@ -41,9 +41,6 @@
 extern char _start[];
 extern char _end[];
 
-grub_addr_t grub_os_area_addr;
-grub_size_t grub_os_area_size;
-
 grub_uint32_t
 grub_get_rtc (void)
 {
@@ -105,20 +102,7 @@ grub_machine_init (void)
 	  }
       }
 
-    if (addr == GRUB_MEMORY_MACHINE_UPPER_START
-	|| (addr >= GRUB_MEMORY_MACHINE_LOWER_SIZE
-	    && addr <= GRUB_MEMORY_MACHINE_UPPER_START
-	    && (addr + size > GRUB_MEMORY_MACHINE_UPPER_START)))
-      {
-	grub_size_t quarter = size >> 2;
-
-	grub_os_area_addr = addr;
-	grub_os_area_size = size - quarter;
-	grub_mm_init_region ((void *) (grub_os_area_addr + grub_os_area_size),
-			     quarter);
-      }
-    else
-      grub_mm_init_region ((void *) (grub_addr_t) addr, (grub_size_t) size);
+    grub_mm_init_region ((void *) (grub_addr_t) addr, (grub_size_t) size);
 
     return 0;
   }
