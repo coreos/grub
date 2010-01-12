@@ -436,12 +436,6 @@ grub_freebsd_list_modules (void)
 /* This function would be here but it's under different license. */
 #include "bsd_pagetable.c"
 
-struct gdt_descriptor
-{
-  grub_uint16_t limit;
-  void *base;
-} __attribute__ ((packed));
-
 static grub_err_t
 grub_freebsd_boot (void)
 {
@@ -499,15 +493,15 @@ grub_freebsd_boot (void)
     p_size = ALIGN_PAGE (kern_end + p_size + mod_buf_len) - kern_end;
 
   if (is_64bit)
-    p_size += 4096 * 4;
+    p_size += 4096 * 3;
 
   err = grub_relocator_alloc_chunk_addr (relocator, (void **) &p,
 					 kern_end, p_size);
   if (err)
     return err;
-  kern_end += p_size;
-  p0 = p;
   p_target = kern_end;
+  p0 = p;
+  kern_end += p_size;
 
   grub_env_iterate (iterate_env);
 
@@ -547,49 +541,30 @@ grub_freebsd_boot (void)
 
   if (is_64bit)
     {
-      grub_uint32_t *gdt;
-      grub_uint8_t *trampoline;
-      void (*launch_trampoline) (grub_addr_t entry_lo, ...)
-	__attribute__ ((cdecl, regparm (0)));
+      struct grub_relocator64_state state;
       grub_uint8_t *pagetable;
+      grub_uint32_t *stack;
+      grub_addr_t stack_target;
 
-      struct gdt_descriptor *gdtdesc;
+      err = grub_relocator_alloc_chunk_align (relocator, (void **) &stack,
+					      &stack_target,
+					      0x10000, 0x90000,
+					      3 * sizeof (grub_uint32_t)
+					      + sizeof (bi), 4);
+      if (err)
+	return err;
 
-      pagetable = p - 16384;
-      fill_bsd64_pagetable (pagetable);
+      pagetable = p - (4096 * 3);
+      fill_bsd64_pagetable (pagetable, (pagetable - p0) + p_target);
 
-      /* Create GDT. */
-      gdt = (grub_uint32_t *) (p - 4096);
-      gdt[0] = 0;
-      gdt[1] = 0;
-      gdt[2] = 0;
-      gdt[3] = 0x00209800;
-      gdt[4] = 0;
-      gdt[5] = 0x00008000;
+      state.cr3 = (pagetable - p0) + p_target;
+      state.rsp = stack_target;
+      state.rip = (((grub_uint64_t) entry_hi) << 32) | entry;
 
-      /* Create GDT descriptor. */
-      gdtdesc = (struct gdt_descriptor *) (p - 4096 + 24);
-      gdtdesc->limit = 24;
-      gdtdesc->base = gdt;
-
-      /* Prepare trampoline. */
-      trampoline = (grub_uint8_t *) (p - 4096 + 24
-				     + sizeof (struct gdt_descriptor));
-      launch_trampoline = (void  __attribute__ ((cdecl, regparm (0)))
-			   (*) (grub_addr_t entry_lo, ...)) trampoline;
-      grub_bsd64_trampoline_gdt = (grub_uint32_t) gdtdesc;
-      grub_bsd64_trampoline_selfjump
-	= (grub_uint32_t) (trampoline + 6
-			   + ((grub_uint8_t *) &grub_bsd64_trampoline_selfjump
-			      - &grub_bsd64_trampoline_start));
-
-      /* Copy trampoline. */
-      grub_memcpy (trampoline, &grub_bsd64_trampoline_start,
-		   &grub_bsd64_trampoline_end - &grub_bsd64_trampoline_start);
-
-      /* Launch trampoline. */
-      launch_trampoline (entry, entry_hi, pagetable, bi.bi_modulep,
-			 kern_end);
+      stack[0] = entry;
+      stack[1] = bi.bi_modulep;
+      stack[2] = kern_end;
+      return grub_relocator64_boot (relocator, state, 0, 0x40000000);
     }
   else
     {
@@ -936,7 +911,7 @@ grub_bsd_elf32_size_hook (grub_elf_t elf __attribute__ ((unused)),
 
   if (phdr->p_type != PT_LOAD
       && phdr->p_type != PT_DYNAMIC)
-      return 1;
+      return 0;
 
   paddr = phdr->p_paddr & 0xFFFFFF;
 
@@ -946,7 +921,7 @@ grub_bsd_elf32_size_hook (grub_elf_t elf __attribute__ ((unused)),
   if (paddr + phdr->p_memsz > kern_end)
     kern_end = paddr + phdr->p_memsz;
 
-  return 1;
+  return 0;
 }
 
 static grub_err_t
@@ -978,7 +953,7 @@ grub_bsd_elf64_size_hook (grub_elf_t elf __attribute__ ((unused)),
 
   if (phdr->p_type != PT_LOAD
       && phdr->p_type != PT_DYNAMIC)
-    return 1;
+    return 0;
 
   paddr = phdr->p_paddr & 0xffffff;
 
@@ -988,7 +963,7 @@ grub_bsd_elf64_size_hook (grub_elf_t elf __attribute__ ((unused)),
   if (paddr + phdr->p_memsz > kern_end)
     kern_end = paddr + phdr->p_memsz;
 
-  return 1;
+  return 0;
 }
 
 static grub_err_t
@@ -1054,6 +1029,9 @@ grub_bsd_load_elf (grub_elf_t elf)
       err = grub_elf64_phdr_iterate (elf, grub_bsd_elf64_size_hook, NULL);
       if (err)
 	return err;
+
+      grub_dprintf ("bsd", "kern_start = %x, kern_end = %x\n", kern_start,
+		    kern_end);
       err = grub_relocator_alloc_chunk_addr (relocator, &kern_chunk_src,
 					     kern_start, kern_end - kern_start);
       if (err)
@@ -1154,9 +1132,9 @@ grub_cmd_freebsd (grub_extcmd_t cmd, int argc, char *argv[])
 	    return grub_errno;
 
 	  if (is_64bit)
-	    err = grub_freebsd_load_elf_meta64 (file, &kern_end);
+	    err = grub_freebsd_load_elf_meta64 (relocator, file, &kern_end);
 	  else
-	    err = grub_freebsd_load_elf_meta32 (file, &kern_end);
+	    err = grub_freebsd_load_elf_meta32 (relocator, file, &kern_end);
 	  if (err)
 	    return err;
 

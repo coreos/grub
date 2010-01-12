@@ -263,9 +263,11 @@ grub_err_t grub_freebsd_load_elfmodule_obj64 (struct grub_relocator *relocator,
 					      grub_file_t file, int argc,
 					      char *argv[],
 					      grub_addr_t *kern_end);
-grub_err_t grub_freebsd_load_elf_meta32 (grub_file_t file,
+grub_err_t grub_freebsd_load_elf_meta32 (struct grub_relocator *relocator,
+					 grub_file_t file,
 					 grub_addr_t *kern_end);
-grub_err_t grub_freebsd_load_elf_meta64 (grub_file_t file,
+grub_err_t grub_freebsd_load_elf_meta64 (struct grub_relocator *relocator,
+					 grub_file_t file,
 					 grub_addr_t *kern_end);
 
 grub_err_t grub_freebsd_add_meta (grub_uint32_t type, void *data,

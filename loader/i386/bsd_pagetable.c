@@ -50,9 +50,10 @@
 
 
 static void
-fill_bsd64_pagetable (grub_uint8_t *target)
+fill_bsd64_pagetable (grub_uint8_t *src, grub_addr_t target)
 {
   grub_uint64_t *pt2, *pt3, *pt4;
+  grub_addr_t pt2t, pt3t, pt4t;
   int i;
 
 #define PG_V		0x001
@@ -60,11 +61,15 @@ fill_bsd64_pagetable (grub_uint8_t *target)
 #define PG_U		0x004
 #define PG_PS		0x080
 
-  pt4 = (grub_uint64_t *) target;
-  pt3 = (grub_uint64_t *) (target + 4096);
-  pt2 = (grub_uint64_t *) (target + 8192);
+  pt4 = (grub_uint64_t *) src;
+  pt3 = (grub_uint64_t *) (src + 4096);
+  pt2 = (grub_uint64_t *) (src + 8192);
 
-  grub_memset ((char *) target, 0, 4096 * 3);
+  pt4t = target;
+  pt3t = target + 4096;
+  pt2t = target + 8192;
+
+  grub_memset (src, 0, 4096 * 3);
 
   /*
    * This is kinda brutal, but every single 1GB VM memory segment points to
@@ -74,11 +79,11 @@ fill_bsd64_pagetable (grub_uint8_t *target)
   for (i = 0; i < 512; i++)
     {
       /* Each slot of the level 4 pages points to the same level 3 page */
-      pt4[i] = (grub_addr_t) &pt3[0];
+      pt4[i] = (grub_addr_t) pt3t;
       pt4[i] |= PG_V | PG_RW | PG_U;
 
       /* Each slot of the level 3 pages points to the same level 2 page */
-      pt3[i] = (grub_addr_t) &pt2[0];
+      pt3[i] = (grub_addr_t) pt2t;
       pt3[i] |= PG_V | PG_RW | PG_U;
 
       /* The level 2 page slots are mapped with 2MB pages for 1GB. */
