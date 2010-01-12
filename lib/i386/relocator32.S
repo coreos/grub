@@ -79,7 +79,7 @@ LOCAL(cont1):
 
 	/* Turn off PAE. */
 	movl	%cr4, %eax
-	andl	$GRUB_MEMORY_CPU_CR4_PAE_ON, %eax
+	andl	$(~GRUB_MEMORY_CPU_CR4_PAE_ON), %eax
 	movl	%eax, %cr4
 
 	jmp	LOCAL(cont2)
