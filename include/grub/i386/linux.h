@@ -124,7 +124,7 @@ struct linux_kernel_header
   grub_uint32_t bootsect_kludge;	/* obsolete */
   grub_uint16_t heap_end_ptr;		/* Free memory after setup end */
   grub_uint16_t pad1;			/* Unused */
-  char *cmd_line_ptr;			/* Points to the kernel command line */
+  grub_uint32_t cmd_line_ptr;		/* Points to the kernel command line */
   grub_uint32_t initrd_addr_max;        /* Highest address for initrd */
 } __attribute__ ((packed));
 
