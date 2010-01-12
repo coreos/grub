@@ -17,7 +17,6 @@
  */
 
 #include <grub/loader.h>
-#include <grub/cpu/loader.h>
 #include <grub/cpu/bsd.h>
 #include <grub/i386/cpuid.h>
 #include <grub/machine/init.h>

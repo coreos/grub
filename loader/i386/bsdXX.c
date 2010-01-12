@@ -3,7 +3,6 @@
 #include <grub/mm.h>
 #include <grub/elf.h>
 #include <grub/misc.h>
-#include <grub/i386/loader.h>
 #include <grub/cpu/relocator.h>
 
 #define ALIGN_PAGE(a)	ALIGN_UP (a, 4096)
