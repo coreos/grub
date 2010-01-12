@@ -42,6 +42,7 @@ Run GRUB script in a Qemu instance.
 
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
+  --boot=[fd|hd|cd]       boot method for Qemu instance
   --modules=MODULES       pre-load specified modules MODULES
   --qemu-opts=OPTIONS     extra options to pass to Qemu instance
 
@@ -67,11 +68,20 @@ for option in "$@"; do
     --qemu-opts=*)
         qs=`echo "$option" | sed -e 's/--qemu-opts=//'`
         qemuopts="$qemuopts $qs" ;;
+    --boot=*)
+        dev=`echo "$option" | sed -e 's/--boot=//'`
+	if   [ "$dev" = "fd" ] ; then bootdev=a;
+	elif [ "$dev" = "hd" ] ; then bootdev=c;
+	elif [ "$dev" = "cd" ] ; then bootdev=d;
+	else
+	    echo "Unrecognized boot method \`$dev'" 1>&2
+	    usage
+	    exit 1
+	fi ;;
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage
-	exit 1
-	;;
+	exit 1 ;;
     *)
 	if [ "x${source}" != x ] ; then
 	    echo "too many parameters at the end" 1>&2
@@ -83,11 +93,15 @@ for option in "$@"; do
 done
 
 if [ "x${source}" = x ] ; then
-  tmpfile=`mktemp`
-  while read; do
-    echo $REPLY >> ${tmpfile}
-  done
-  source=${tmpfile}
+    tmpfile=`mktemp`
+    while read; do
+	echo $REPLY >> ${tmpfile}
+    done
+    source=${tmpfile}
+fi
+
+if [ "x${bootdev}" = x ] ; then
+    bootdev=c # default is boot as disk image
 fi
 
 cfgfile=`mktemp`
@@ -101,7 +115,7 @@ EOF
 
 for mod in ${modules}
 do
-  echo "insmod ${mod}" >> ${cfgfile}
+    echo "insmod ${mod}" >> ${cfgfile}
 done
 
 cat <<EOF >>${cfgfile}
@@ -114,12 +128,18 @@ grub-mkrescue --output=${isofile} --override-directory=${builddir} \
   /boot/grub/grub.cfg=${cfgfile} /boot/grub/testcase.cfg=${source} \
   >/dev/null 2>&1
 
+hdafile=`mktemp`
+cp ${isofile} ${hdafile}
+
+fdafile=`mktemp`
+cp ${isofile} ${fdafile}
+
 outfile=`mktemp`
-qemu ${qemuopts} -nographic -serial stdio -cdrom ${isofile} -boot d | tr -d "\r" >${outfile}
+qemu ${qemuopts} -nographic -serial stdio -hda ${hdafile} -fda ${fdafile} -cdrom ${isofile} -boot ${bootdev} | tr -d "\r" >${outfile}
 
 cat $outfile
 
-rm -f ${tmpfile} ${outfile} ${cfgfile} ${isofile}
+rm -f ${tmpfile} ${outfile} ${cfgfile} ${isofile} ${hdafile} ${fdafile}
 exit 0
 
 
