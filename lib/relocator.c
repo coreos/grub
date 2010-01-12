@@ -22,6 +22,10 @@
 #include <grub/misc.h>
 
 /* TODO: use more efficient data structures if necessary.  */
+/* FIXME: implement unload. */
+/* FIXME: check memory map.  */ 
+/* FIXME: try to request memory from firmware.  */
+/* FIXME: sort chunk when programming relocators.  */
 
 struct grub_relocator *
 grub_relocator_new (void)
@@ -180,11 +184,13 @@ malloc_in_range (struct grub_relocator *rel,
 		 grub_size_t size, grub_addr_t *res, int from_low_priv,
 		 int collisioncheck)
 {
-  grub_mm_region_t rb = NULL, rbp = NULL;
+  grub_mm_region_t rb, rbp;
   grub_mm_header_t hb = NULL, hbp = NULL;
   grub_addr_t best_addr;
 
  again:
+
+  rb = NULL, rbp = NULL;
   
   {
     grub_mm_region_t r, rp;
@@ -344,6 +350,9 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
   grub_addr_t start;
   grub_addr_t min_addr = 0, max_addr;
 
+  if (target > ~size)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, "address is out of range");
+
   adjust_limits (rel, &min_addr, &max_addr, target, target);
 
   for (chunk = rel->chunks; chunk; chunk = chunk->next)
@@ -356,8 +365,10 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
   if (!chunk)
     return grub_errno;
 
-  grub_dprintf ("relocator", "min_addr = 0x%llx, max_addr = 0x%llx\n",
-		(unsigned long long) min_addr, (unsigned long long) max_addr);
+  grub_dprintf ("relocator",
+		"min_addr = 0x%llx, max_addr = 0x%llx, target = 0x%llx\n",
+		(unsigned long long) min_addr, (unsigned long long) max_addr,
+		(unsigned long long) target);
 
   do
     {
@@ -440,6 +451,9 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
   grub_addr_t min_addr2 = 0, max_addr2;
   struct grub_relocator_chunk *chunk;
   grub_addr_t start;
+
+  if (max_addr > ~size)
+    max_addr = ~size;
 
   grub_dprintf ("relocator", "chunks = %p\n", rel->chunks);
 
