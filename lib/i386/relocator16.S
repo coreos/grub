@@ -21,7 +21,7 @@
 
 #ifdef __x86_64__
 #define RAX %rax
-#define RSI %rdi
+#define RSI %rsi
 #else
 #define RAX %eax
 #define RSI %esi
@@ -93,7 +93,7 @@ LOCAL(cont1):
 
 	movl 	%esi, %eax
 	shrl	$4, %eax
-	movw	%ax, (LOCAL (segment) - LOCAL (base)) (RSI, 1)
+	movw	%ax, (LOCAL (segment) - LOCAL (base)) (%esi, 1)
 	
 	/* jump to a 16 bit segment */
 	ljmp	$PSEUDO_REAL_CSEG, $(LOCAL (cont2) - LOCAL(base))

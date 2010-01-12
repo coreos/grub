@@ -40,7 +40,7 @@ grub_relocator_new (void)
     
   ret->postchunks = ~(grub_addr_t) 0;
   ret->relocators_size = grub_relocator_jumper_size;
-  grub_dprintf ("relocator", "relocators_size=%d\n", ret->relocators_size);
+  grub_dprintf ("relocator", "relocators_size=%ld\n", ret->relocators_size);
   return ret;
 }
 
@@ -103,7 +103,7 @@ get_best_header (struct grub_relocator *rel,
 	    hb = h;
 	    hbp = hp;
 	    *best_addr = addr;
-	    grub_dprintf ("relocator", "picked %p/%x\n", hb, addr);
+	    grub_dprintf ("relocator", "picked %p/%lx\n", hb, addr);
 	  }
       }
     else
@@ -146,7 +146,7 @@ get_best_header (struct grub_relocator *rel,
 	    hb = h;
 	    hbp = hp;
 	    *best_addr = addr;
-	    grub_dprintf ("relocator", "picked %p/%x\n", hb, addr);
+	    grub_dprintf ("relocator", "picked %p/%lx\n", hb, addr);
 	  }
       }
   }
@@ -221,7 +221,7 @@ malloc_in_range (struct grub_relocator *rel,
   hb = get_best_header (rel, start, end, align, size, rb, &hbp, &best_addr,
 			from_low_priv, collisioncheck);
 
-  grub_dprintf ("relocator", "best header %p/%x\n", hb, best_addr);
+  grub_dprintf ("relocator", "best header %p/%lx\n", hb, best_addr);
 
   if (!hb)
     {
@@ -421,14 +421,14 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
 	rel->highestnonpostaddr = start + size;  
     }
 
-  grub_dprintf ("relocator", "relocators_size=%d\n", rel->relocators_size);
+  grub_dprintf ("relocator", "relocators_size=%ld\n", rel->relocators_size);
 
   if (start < target)
     rel->relocators_size += grub_relocator_backward_size;
   if (start > target)
     rel->relocators_size += grub_relocator_forward_size;
 
-  grub_dprintf ("relocator", "relocators_size=%d\n", rel->relocators_size);
+  grub_dprintf ("relocator", "relocators_size=%ld\n", rel->relocators_size);
 
   chunk->src = start;
   chunk->target = target;
@@ -485,7 +485,7 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
     }
 
   adjust_limits (rel, &min_addr2, &max_addr2, min_addr, max_addr);
-  grub_dprintf ("relocator", "Adjusted limits from %x-%x to %x-%x\n",
+  grub_dprintf ("relocator", "Adjusted limits from %lx-%lx to %lx-%lx\n",
 		min_addr, max_addr, min_addr2, max_addr2);
 
   do
@@ -572,7 +572,7 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
   grub_addr_t rels;
   grub_addr_t rels0;
 
-  grub_dprintf ("relocator", "Preparing relocs (size=%d)\n",
+  grub_dprintf ("relocator", "Preparing relocs (size=%ld)\n",
 		rel->relocators_size);
 
   if (!malloc_in_range (rel, 0, ~(grub_addr_t)0 - rel->relocators_size + 1,

@@ -21,7 +21,7 @@
 
 #ifdef __x86_64__
 #define RAX %rax
-#define RSI %rdi
+#define RSI %rsi
 #else
 #define RAX %eax
 #define RSI %esi

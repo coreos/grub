@@ -21,7 +21,7 @@
 
 #ifdef __x86_64__
 #define RAX %rax
-#define RSI %rdi
+#define RSI %rsi
 #else
 #define RAX %eax
 #define RSI %esi
@@ -82,7 +82,7 @@ VARIABLE(grub_relocator64_cr3)
 	.byte	0xb8
 VARIABLE(grub_relocator64_cr3)
 	.quad	0
-	movl	%rax, %cr3
+	movq	%rax, %cr3
 #endif
 	/* Load GDT. */
 	lgdt	(LOCAL(gdtdesc) - LOCAL(base)) (RSI, 1)

@@ -77,7 +77,11 @@ extern grub_addr_t grub_relocator64_cr3;
 grub_size_t grub_relocator_align = 1;
 grub_size_t grub_relocator_forward_size;
 grub_size_t grub_relocator_backward_size;
-grub_size_t grub_relocator_jumper_size = 10;
+#ifdef __x86_64__
+grub_size_t grub_relocator_jumper_size = 12;
+#else
+grub_size_t grub_relocator_jumper_size = 7;
+#endif
 
 void
 grub_cpu_relocator_init (void)
@@ -91,16 +95,26 @@ grub_cpu_relocator_jumper (void *rels, grub_addr_t addr)
 {
   grub_uint8_t *ptr;
   ptr = rels;
-  /* movl $addr, %eax (for relocator) */
+#ifdef __x86_64__
+  /* movq imm64, %rax (for relocator) */
+  *(grub_uint8_t *) ptr = 0x48;
+  ptr++;
+  *(grub_uint8_t *) ptr = 0xb8;
+  ptr++;
+  *(grub_uint64_t *) ptr = addr;
+  ptr += sizeof (grub_uint64_t);
+#else
+  /* movl imm32, %eax (for relocator) */
   *(grub_uint8_t *) ptr = 0xb8;
   ptr++;
   *(grub_uint32_t *) ptr = addr;
-  ptr += 4;
-  /* jmp $addr */
-  *(grub_uint8_t *) ptr = 0xe9;
+  ptr += sizeof (grub_uint32_t);
+#endif
+  /* jmp $eax/$rax */
+  *(grub_uint8_t *) ptr = 0xff;
   ptr++;
-  *(grub_uint32_t *) ptr = addr - (grub_uint32_t) (ptr + 4);
-  ptr += 4;
+  *(grub_uint8_t *) ptr = 0xe0;
+  ptr++;
 }
 
 void
