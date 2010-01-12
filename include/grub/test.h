@@ -20,11 +20,10 @@ struct grub_test
 };
 typedef struct grub_test *grub_test_t;
 
-extern grub_test_t EXPORT_VAR (grub_test_list);
+extern grub_test_t grub_test_list;
 
-void EXPORT_FUNC (grub_test_register) (const char *name, void (*test) (void));
-
-void EXPORT_FUNC (grub_test_unregister) (const char *name);
+void grub_test_register   (const char *name, void (*test) (void));
+void grub_test_unregister (const char *name);
 
 /* Execute a test and print results.  */
 int grub_test_run (grub_test_t test);

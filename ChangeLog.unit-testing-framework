@@ -1,5 +1,7 @@
 2010-01-12  BVK Chaitanya  <bvk@dbook>
 
+	* include/grub/test.h: Removed EXPORT_* usage.
+
 	* tests/util/grub-shell-tester.in: Fix error message.
 
 2010-01-08  BVK Chaitanya  <bvk.groups@gmail.com>
