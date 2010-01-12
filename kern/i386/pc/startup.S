@@ -564,8 +564,6 @@ FUNCTION(grub_chainloader_real_boot)
 	ljmp	$0, $GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR
 	.code32
 
-#include "../loader.S"
-
 /*
  *   int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)
  *
