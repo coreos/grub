@@ -446,7 +446,8 @@ grub_err_t
 grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
 				  grub_addr_t *target,
 				  grub_addr_t min_addr, grub_addr_t max_addr,
-				  grub_size_t size, grub_size_t align)
+				  grub_size_t size, grub_size_t align,
+				  int preference)
 {
   grub_addr_t min_addr2 = 0, max_addr2;
   struct grub_relocator_chunk *chunk;
@@ -455,6 +456,11 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
   if (max_addr > ~size)
     max_addr = ~size;
 
+#ifdef GRUB_MACHINE_PCBIOS
+  if (min_addr < 0x1000)
+    min_addr = 0x1000;
+#endif
+
   grub_dprintf ("relocator", "chunks = %p\n", rel->chunks);
 
   chunk = grub_malloc (sizeof (struct grub_relocator_chunk));
@@ -462,7 +468,8 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
     return grub_errno;
 
   if (malloc_in_range (rel, min_addr, max_addr, align,
-		       size, &start, 1, 1))
+		       size, &start,
+		       preference != GRUB_RELOCATOR_PREFERENCE_HIGH, 1))
     {
       grub_dprintf ("relocator", "allocated 0x%llx/0x%llx\n",
 		    (unsigned long long) start, (unsigned long long) start);
@@ -500,7 +507,10 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
   while (0);
 
   /* FIXME: check memory map.  */
-  chunk->target = ALIGN_UP (min_addr, align);
+  if (preference == GRUB_RELOCATOR_PREFERENCE_HIGH)
+    chunk->target = ALIGN_DOWN (max_addr, align);
+  else
+    chunk->target = ALIGN_UP (min_addr, align);    
   while (1)
     {
       struct grub_relocator_chunk *chunk2;
@@ -514,7 +524,10 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
 	    || (chunk->target <= chunk2->target + chunk2->size
 		&& chunk2->target + chunk2->size < chunk->target + size))
 	  {
-	    chunk->target = ALIGN_UP (chunk2->target + chunk2->size, align);
+	    if (preference == GRUB_RELOCATOR_PREFERENCE_HIGH)
+	      chunk->target = ALIGN_DOWN (chunk2->target, align);
+	    else
+	      chunk->target = ALIGN_UP (chunk2->target + chunk2->size, align);
 	    break;
 	  }
       if (!chunk2)

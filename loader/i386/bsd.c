@@ -550,7 +550,8 @@ grub_freebsd_boot (void)
 					      &stack_target,
 					      0x10000, 0x90000,
 					      3 * sizeof (grub_uint32_t)
-					      + sizeof (bi), 4);
+					      + sizeof (bi), 4,
+					      GRUB_RELOCATOR_PREFERENCE_NONE);
       if (err)
 	return err;
 
@@ -575,7 +576,8 @@ grub_freebsd_boot (void)
 					      &stack_target,
 					      0x10000, 0x90000,
 					      9 * sizeof (grub_uint32_t)
-					      + sizeof (bi), 4);
+					      + sizeof (bi), 4,
+					      GRUB_RELOCATOR_PREFERENCE_NONE);
       if (err)
 	return err;
       grub_memcpy (&stack[8], &bi, sizeof (bi));
@@ -798,7 +800,8 @@ grub_netbsd_boot (void)
 
   err = grub_relocator_alloc_chunk_align (relocator, (void **) &stack,
 					  &stack_target, 0x10000, 0x90000,
-					  7 * sizeof (grub_uint32_t), 4);
+					  7 * sizeof (grub_uint32_t), 4,
+					  GRUB_RELOCATOR_PREFERENCE_NONE);
   if (err)
     return err;
 

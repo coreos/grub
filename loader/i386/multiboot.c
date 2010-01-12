@@ -259,7 +259,8 @@ grub_module  (int argc, char *argv[])
   err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &module, 
 					  &target,
 					  0, (0xffffffff - size) + 1,
-					  size, MULTIBOOT_MOD_ALIGN);
+					  size, MULTIBOOT_MOD_ALIGN,
+					  GRUB_RELOCATOR_PREFERENCE_NONE);
   if (err)
     goto fail;
 

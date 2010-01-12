@@ -34,7 +34,12 @@ grub_err_t
 grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src, 
 				  grub_addr_t *target,
 				  grub_addr_t min_addr, grub_addr_t max_addr,
-				  grub_size_t size, grub_size_t align);
+				  grub_size_t size, grub_size_t align,
+				  int preference);
+
+#define GRUB_RELOCATOR_PREFERENCE_NONE 0
+#define GRUB_RELOCATOR_PREFERENCE_LOW 1
+#define GRUB_RELOCATOR_PREFERENCE_HIGH 2
 
 void
 grub_relocator_unload (struct grub_relocator *rel);

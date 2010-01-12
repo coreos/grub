@@ -115,7 +115,8 @@ grub_xnu_resume (char *imagename)
 					  &target_image, 0,
 					  (0xffffffff - hibhead.image_size) + 1,
 					  hibhead.image_size,
-					  GRUB_XNU_PAGESIZE);
+					  GRUB_XNU_PAGESIZE,
+					  GRUB_RELOCATOR_PREFERENCE_NONE);
   if (err)
     {
       grub_file_close (file);

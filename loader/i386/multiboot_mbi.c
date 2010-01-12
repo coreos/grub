@@ -125,7 +125,8 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, 
 					  (void **) &ptrorig, &ptrdest,
 					  0, 0xffffffff - bufsize,
-					  bufsize, 4);
+					  bufsize, 4,
+					  GRUB_RELOCATOR_PREFERENCE_NONE);
   if (err)
     return err;
 

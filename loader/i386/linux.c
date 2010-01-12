@@ -943,9 +943,6 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   addr_min = (grub_addr_t) prot_mode_target + ((prot_mode_pages * 3) << 12)
              + page_align (size);
 
-  if (addr_max > grub_os_area_addr + grub_os_area_size)
-    addr_max = grub_os_area_addr + grub_os_area_size;
-
   /* Put the initrd as high as possible, 4KiB aligned.  */
   addr = (addr_max - size) & ~0xFFF;
 
@@ -957,7 +954,8 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   err = grub_relocator_alloc_chunk_align (relocator, &initrd_mem,
 					  &initrd_mem_target,
-					  addr_min, addr, size, 0x1000);
+					  addr_min, addr, size, 0x1000,
+					  GRUB_RELOCATOR_PREFERENCE_HIGH);
   if (err)
     return err;
 

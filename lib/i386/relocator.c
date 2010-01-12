@@ -129,7 +129,8 @@ grub_relocator32_boot (struct grub_relocator *rel,
 
   err = grub_relocator_alloc_chunk_align (rel, &src, &target, 0,
 					  (0xffffffff - RELOCATOR_SIZEOF (32))
-					  + 1, RELOCATOR_SIZEOF (32), 16);
+					  + 1, RELOCATOR_SIZEOF (32), 16,
+					  GRUB_RELOCATOR_PREFERENCE_NONE);
   if (err)
     return err;
 
@@ -166,7 +167,8 @@ grub_relocator64_boot (struct grub_relocator *rel,
 
   err = grub_relocator_alloc_chunk_align (rel, &src, &target, min_addr,
 					  max_addr - RELOCATOR_SIZEOF (64),
-					  RELOCATOR_SIZEOF (64), 16);
+					  RELOCATOR_SIZEOF (64), 16,
+					  GRUB_RELOCATOR_PREFERENCE_NONE);
   if (err)
     return err;
 
