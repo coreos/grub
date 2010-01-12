@@ -104,7 +104,7 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
 
   alloc_mbi = grub_multiboot_get_mbi_size ();
   grub_multiboot_payload_orig
-    = grub_relocator32_alloc (grub_multiboot_pure_size + alloc_mbi);
+    = grub_relocator32_alloc (grub_multiboot_pure_size + alloc_mbi + 65536);
 
   if (!grub_multiboot_payload_orig)
     return grub_errno;

@@ -232,32 +232,6 @@ grub_multiboot (int argc, char *argv[])
   else if (grub_multiboot_load_elf (file, buffer) != GRUB_ERR_NONE)
     goto fail;
 
-  if (header->flags & MULTIBOOT_VIDEO_MODE)
-    {
-      switch (header->mode_type)
-	{
-	case 1:
-	  grub_env_set ("gfxpayload", "text");
-	  break;
-
-	case 0:
-	  {
-	    char buf[sizeof ("XXXXXXXXXXxXXXXXXXXXXxXXXXXXXXXX,XXXXXXXXXXxXXXXXXXXXX,auto")];
-	    if (header->depth && header->width && header->height)
-	      grub_sprintf (buf, "%dx%dx%d,%dx%d,auto", header->width,
-			    header->height, header->depth, header->width,
-			    header->height);
-	    else if (header->width && header->height)
-	      grub_sprintf (buf, "%dx%d,auto", header->width, header->height);
-	    else
-	      grub_sprintf (buf, "auto");
-
-	    grub_env_set ("gfxpayload", buf);
-	    break;
-	  }
-	}
-    }
-
   grub_multiboot_set_bootdev ();
 
   grub_loader_set (grub_multiboot_boot, grub_multiboot_unload, 0);
