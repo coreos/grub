@@ -174,11 +174,6 @@ linux16_mod_SOURCES = loader/i386/pc/linux.c
 linux16_mod_CFLAGS = $(COMMON_CFLAGS)
 linux16_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-pkglib_MODULES += linux.mod
-linux_mod_SOURCES = loader/i386/linux.c
-linux_mod_CFLAGS = $(COMMON_CFLAGS)
-linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 pkglib_MODULES += xnu.mod
 xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c \
 	 loader/macho32.c loader/macho64.c loader/macho.c loader/xnu.c

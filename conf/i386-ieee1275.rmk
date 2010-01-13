@@ -55,7 +55,7 @@ grub_install_SOURCES = util/ieee1275/grub-install.in
 
 # Modules.
 pkglib_MODULES = halt.mod reboot.mod suspend.mod		\
-	aout.mod serial.mod linux.mod		\
+	aout.mod serial.mod 		\
 	nand.mod memdisk.mod pci.mod lspci.mod datetime.mod	\
 	date.mod datehook.mod lsmmap.mod mmap.mod
 
@@ -95,11 +95,6 @@ halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 serial_mod_SOURCES = term/i386/pc/serial.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For linux.mod.
-linux_mod_SOURCES = loader/i386/linux.c
-linux_mod_CFLAGS = $(COMMON_CFLAGS)
-linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For nand.mod.
 nand_mod_SOURCES = disk/ieee1275/nand.c

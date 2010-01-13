@@ -102,8 +102,7 @@ bin_SCRIPTS += grub-mkrescue
 grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 # Modules.
-pkglib_MODULES = linux.mod 				\
-	aout.mod play.mod serial.mod 			\
+pkglib_MODULES = aout.mod play.mod serial.mod		\
 	memdisk.mod pci.mod lspci.mod reboot.mod	\
 	halt.mod datetime.mod date.mod datehook.mod	\
 	lsmmap.mod mmap.mod
@@ -119,11 +118,6 @@ mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c
 mmap_mod_CFLAGS = $(COMMON_CFLAGS)
 mmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 mmap_mod_ASFLAGS = $(COMMON_ASFLAGS)
-
-# For linux.mod.
-linux_mod_SOURCES = loader/i386/linux.c
-linux_mod_CFLAGS = $(COMMON_CFLAGS)
-linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod.
 reboot_mod_SOURCES = commands/reboot.c

@@ -31,7 +31,7 @@ grub_install_SOURCES = util/i386/efi/grub-install.in
 
 # Modules.
 pkglib_MODULES = kernel.img chain.mod appleldr.mod \
-	linux.mod halt.mod reboot.mod pci.mod lspci.mod \
+	halt.mod reboot.mod pci.mod lspci.mod \
 	datetime.mod date.mod datehook.mod loadbios.mod \
 	fixvideo.mod mmap.mod acpi.mod
 
@@ -92,11 +92,6 @@ chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
 appleldr_mod_SOURCES = loader/efi/appleloader.c
 appleldr_mod_CFLAGS = $(COMMON_CFLAGS)
 appleldr_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For linux.mod.
-linux_mod_SOURCES = loader/i386/linux.c
-linux_mod_CFLAGS = $(COMMON_CFLAGS)
-linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod.
 halt_mod_SOURCES = commands/halt.c
