@@ -43,13 +43,13 @@ LOCAL(base):
 	add	$(LOCAL(cont0) - LOCAL(base)), RAX
 	jmp	*RAX
 LOCAL(cont0):
+#ifndef __x86_64__
 	lea	(LOCAL(cont1) - LOCAL(base)) (RSI, 1), RAX
 	mov	RAX, (LOCAL(jump_vector) - LOCAL(base)) (RSI, 1)
 
 	lea	(LOCAL(gdt) - LOCAL(base)) (RSI, 1), RAX
 	mov	RAX, (LOCAL(gdt_addr) - LOCAL(base)) (RSI, 1)
 
-#ifndef __x86_64__
 	/* Disable paging. */
 	movl	%cr0, %eax
 	andl	$(~GRUB_MEMORY_CPU_CR0_PAGING_ON), %eax
@@ -76,6 +76,12 @@ VARIABLE(grub_relocator64_cr3)
 	movl	%cr0, %eax
 	orl	$GRUB_MEMORY_CPU_CR0_PAGING_ON, %eax
 	movl	%eax, %cr0
+
+	/* Load GDT. */
+	lgdt	(LOCAL(gdtdesc) - LOCAL(base)) (RSI, 1)
+
+	/* Update %cs.  */
+	ljmp	*(LOCAL(jump_vector) - LOCAL(base)) (RSI, 1)
 #else
 	/* mov imm64, %rax */
 	.byte 	0x48
@@ -84,11 +90,6 @@ VARIABLE(grub_relocator64_cr3)
 	.quad	0
 	movq	%rax, %cr3
 #endif
-	/* Load GDT. */
-	lgdt	(LOCAL(gdtdesc) - LOCAL(base)) (RSI, 1)
-
-	/* Update %cs.  */
-	ljmp	*(LOCAL(jump_vector) - LOCAL(base)) (RSI, 1)
 
 LOCAL(cont1):
 	.code64
@@ -143,6 +144,7 @@ LOCAL(jump_addr):
 VARIABLE(grub_relocator64_rip)
 	.quad	0
 
+#ifndef __x86_64__
 	.p2align	4
 LOCAL(gdt):
 	/* NULL.  */
@@ -185,22 +187,14 @@ LOCAL(gdt):
 LOCAL(gdtdesc):
 	.word	0x20
 LOCAL(gdt_addr):
-#ifdef __x86_64__
-	/* Filled by the code. */
-	.quad	0
-#else
 	/* Filled by the code. */
 	.long	0
-#endif
 
 	.p2align	4
 LOCAL(jump_vector):
 	/* Jump location. Is filled by the code */
-#ifdef __x86_64__
-	.quad	0
-#else
 	.long	0
-#endif
 	.long	CODE64_SEGMENT
+#endif
 
 VARIABLE(grub_relocator64_end)
