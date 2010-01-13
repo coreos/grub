@@ -22,7 +22,6 @@
 #include <grub/machine/biosnum.h>
 #endif
 #include <grub/multiboot.h>
-#include <grub/cpu/multiboot.h>
 #include <grub/disk.h>
 #include <grub/device.h>
 #include <grub/partition.h>
