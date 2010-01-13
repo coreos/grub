@@ -33,3 +33,16 @@ pkglib_MODULES += linux.mod
 linux_mod_SOURCES = loader/i386/linux.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For aout.mod
+pkglib_MODULES += aout.mod
+aout_mod_SOURCES = loader/aout.c
+aout_mod_CFLAGS = $(COMMON_CFLAGS)
+aout_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For bsd.mod
+pkglib_MODULES += bsd.mod
+bsd_mod_SOURCES = loader/i386/bsd.c loader/i386/bsd32.c loader/i386/bsd64.c
+bsd_mod_CFLAGS = $(COMMON_CFLAGS)
+bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+bsd_mod_ASFLAGS = $(COMMON_ASFLAGS)

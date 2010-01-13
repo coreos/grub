@@ -119,7 +119,7 @@ pkglib_MODULES = biosdisk.mod chain.mod 				\
 	reboot.mod halt.mod				\
 	vbe.mod vbetest.mod vbeinfo.mod play.mod serial.mod		\
 	vga.mod memdisk.mod pci.mod lspci.mod				\
-	aout.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod 	\
+	pxe.mod pxecmd.mod datetime.mod date.mod 	\
 	datehook.mod lsmmap.mod ata_pthru.mod hdparm.mod 		\
 	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod usb_keyboard.mod \
 	efiemu.mod mmap.mod acpi.mod drivemap.mod
@@ -252,17 +252,6 @@ pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 lspci_mod_SOURCES = commands/lspci.c
 lspci_mod_CFLAGS = $(COMMON_CFLAGS)
 lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For aout.mod
-aout_mod_SOURCES = loader/aout.c
-aout_mod_CFLAGS = $(COMMON_CFLAGS)
-aout_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For bsd.mod
-bsd_mod_SOURCES = loader/i386/bsd.c loader/i386/bsd32.c loader/i386/bsd64.c
-bsd_mod_CFLAGS = $(COMMON_CFLAGS)
-bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
-bsd_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For usb.mod
 usb_mod_SOURCES = bus/usb/usb.c bus/usb/usbtrans.c bus/usb/usbhub.c

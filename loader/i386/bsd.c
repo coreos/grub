@@ -37,6 +37,9 @@
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>
 #endif
+#ifdef GRUB_MACHINE_EFI
+#include <grub/efi/efi.h>
+#endif
 #include <grub/disk.h>
 #include <grub/device.h>
 #include <grub/partition.h>
@@ -553,6 +556,9 @@ grub_freebsd_boot (void)
       if (err)
 	return err;
 
+      if (! grub_efi_finish_boot_services ())
+	grub_fatal ("cannot exit boot services");
+
       pagetable = p - (4096 * 3);
       fill_bsd64_pagetable (pagetable, (pagetable - p0) + p_target);
 
@@ -578,6 +584,9 @@ grub_freebsd_boot (void)
 					      GRUB_RELOCATOR_PREFERENCE_NONE);
       if (err)
 	return err;
+
+      if (! grub_efi_finish_boot_services ())
+	grub_fatal ("cannot exit boot services");
 
       grub_memcpy (&stack[8], &bi, sizeof (bi));
       state.eip = entry;
@@ -683,6 +692,9 @@ grub_openbsd_boot (void)
   pa++;
   buf = (grub_uint8_t *) pa;
   argbuf_target_end = buf - buf0 + buf_target;
+
+  if (! grub_efi_finish_boot_services ())
+    grub_fatal ("cannot exit boot services");
 
   state.eip = entry;
   state.esp = ((grub_uint8_t *) stack - buf0) + buf_target;
@@ -803,6 +815,9 @@ grub_netbsd_boot (void)
 					  GRUB_RELOCATOR_PREFERENCE_NONE);
   if (err)
     return err;
+
+  if (! grub_efi_finish_boot_services ())
+    grub_fatal ("cannot exit boot services");
 
   state.eip = entry;
   state.esp = stack_target;

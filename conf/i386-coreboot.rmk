@@ -102,7 +102,7 @@ bin_SCRIPTS += grub-mkrescue
 grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 # Modules.
-pkglib_MODULES = aout.mod play.mod serial.mod		\
+pkglib_MODULES = play.mod serial.mod		\
 	memdisk.mod pci.mod lspci.mod reboot.mod	\
 	halt.mod datetime.mod date.mod datehook.mod	\
 	lsmmap.mod mmap.mod
@@ -149,18 +149,6 @@ multiboot2_mod_SOURCES = loader/i386/multiboot.c \
 multiboot2_mod_CFLAGS = $(COMMON_CFLAGS) -DGRUB_USE_MULTIBOOT2
 multiboot2_mod_LDFLAGS = $(COMMON_LDFLAGS)
 multiboot2_mod_ASFLAGS = $(COMMON_ASFLAGS)
-
-# For aout.mod.
-aout_mod_SOURCES = loader/aout.c
-aout_mod_CFLAGS = $(COMMON_CFLAGS)
-aout_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For bsd.mod
-pkglib_MODULES += bsd.mod
-bsd_mod_SOURCES = loader/i386/bsd.c loader/i386/bsd32.c loader/i386/bsd64.c
-bsd_mod_CFLAGS = $(COMMON_CFLAGS)
-bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
-bsd_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For play.mod.
 play_mod_SOURCES = commands/i386/pc/play.c
