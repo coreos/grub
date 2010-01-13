@@ -1,3 +1,11 @@
+2010-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_putchar): Handle '\r'.
+	(grub_ofconsole_getwh): Split to ...
+	(grub_ofconsole_getwh): ... this.
+	(grub_ofconsole_dimensions): ...and this.
+	(grub_ofconsole_init_output): Call grub_ofconsole_dimensions.
+
 2010-01-13  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/mkisofs/rock.c (generate_rock_ridge_attributes): Fix a typo.
