@@ -83,7 +83,3 @@ codestart:
  */
 #include "../realmode.S"
 
-/*
- *  Routines needed by Linux and Multiboot loaders.
- */
-#include "../loader.S"
