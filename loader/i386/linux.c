@@ -597,11 +597,11 @@ grub_linux_boot (void)
       if (! tmp)
 	return grub_errno;
       grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
-      err = grub_video_set_mode (tmp, 0);
+      err = grub_video_set_mode (tmp, 0, 0);
       grub_free (tmp);
     }
   else
-    err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0);
+    err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
 
   if (err)
     {
