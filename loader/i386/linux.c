@@ -39,6 +39,10 @@
 #include <grub/efi/efi.h>
 #define HAS_VGA_TEXT 0
 #define DEFAULT_VIDEO_MODE "800x600"
+#elif defined (GRUB_MACHINE_IEEE1275)
+#include <grub/ieee1275/ieee1275.h>
+#define HAS_VGA_TEXT 0
+#define DEFAULT_VIDEO_MODE "text"
 #else
 #include <grub/i386/pc/vbe.h>
 #include <grub/i386/pc/console.h>
@@ -541,6 +545,20 @@ grub_linux_boot (void)
 
   params = real_mode_mem;
 
+#ifdef GRUB_MACHINE_IEEE1275
+  {
+    char *bootpath;
+    grub_ssize_t len;
+
+    bootpath = grub_env_get ("root");
+    if (bootpath)
+      grub_ieee1275_set_property (grub_ieee1275_chosen,
+				  "bootpath", bootpath,
+				  grub_strlen (bootpath) + 1,
+				  &len);
+  }
+#endif
+
   grub_dprintf ("linux", "code32_start = %x\n",
 		(unsigned) params->code32_start);
 
@@ -618,8 +636,6 @@ grub_linux_boot (void)
 #if HAS_VGA_TEXT
       params->have_vga = GRUB_VIDEO_LINUX_TYPE_EGA_TEXT;
       params->video_mode = 0x3;
-      params->video_width = 80;
-      params->video_height = 25;
 #else
       params->have_vga = 0;
       params->video_mode = 0;
@@ -629,17 +645,22 @@ grub_linux_boot (void)
     }
 
   /* Initialize these last, because terminal position could be affected by printfs above.  */
+#ifndef GRUB_MACHINE_IEEE1275
   if (params->have_vga == GRUB_VIDEO_LINUX_TYPE_EGA_TEXT)
+#endif
     {
       grub_term_output_t term;
       int found = 0;
       FOR_ACTIVE_TERM_OUTPUTS(term)
 	if (grub_strcmp (term->name, "vga_text") == 0
-	    || grub_strcmp (term->name, "console") == 0)
+	    || grub_strcmp (term->name, "console") == 0
+	    || grub_strcmp (term->name, "ofconsole") == 0)
 	  {
 	    grub_uint16_t pos = grub_term_getxy (term);
 	    params->video_cursor_x = pos >> 8;
 	    params->video_cursor_y = pos & 0xff;
+	    params->video_width = grub_term_width (term);
+	    params->video_height = grub_term_height (term);
 	    found = 1;
 	    break;
 	  }
@@ -647,8 +668,19 @@ grub_linux_boot (void)
 	{
 	  params->video_cursor_x = 0;
 	  params->video_cursor_y = 0;
+	  params->video_width = 80;
+	  params->video_height = 25;
 	}
     }
+
+#ifdef GRUB_MACHINE_IEEE1275
+  {
+    params->ofw_signature = GRUB_LINUX_OFW_SIGNATURE;
+    params->ofw_num_items = 1;
+    params->ofw_cif_handler = (grub_uint32_t) grub_ieee1275_entry_fn;
+    params->ofw_idt = 0;
+  }
+#endif
 
 #ifdef GRUB_MACHINE_EFI
   {
@@ -688,6 +720,7 @@ grub_linux_boot (void)
   /*  asm volatile ("lidt %0" : : "m" (idt_desc)); */
   state.ebx = 0;
   state.esi = real_mode_target;
+  state.esp = real_mode_target;
   state.eip = params->code32_start;
   return grub_relocator32_boot (relocator, state);
 }
