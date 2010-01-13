@@ -1,5 +1,10 @@
 2010-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/efi/init.c (grub_efi_fini): Don't call grub_efi_mm_fini as
+	it would result in module crash.
+
+2010-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* term/ieee1275/ofconsole.c (grub_ofconsole_putchar): Handle '\r'.
 	(grub_ofconsole_getwh): Split to ...
 	(grub_ofconsole_getwh): ... this.
