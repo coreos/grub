@@ -18,6 +18,7 @@
 
 #include <grub/loader.h>
 #include <grub/machine/memory.h>
+#include <grub/memory.h>
 #include <grub/normal.h>
 #include <grub/file.h>
 #include <grub/disk.h>
@@ -31,10 +32,19 @@
 #include <grub/video.h>
 #include <grub/video_fb.h>
 #include <grub/command.h>
-#include <grub/i386/pc/vbe.h>
-#include <grub/i386/pc/console.h>
 #include <grub/i386/relocator.h>
 #include <grub/i18n.h>
+
+#ifdef GRUB_MACHINE_EFI
+#include <grub/efi/efi.h>
+#define HAS_VGA_TEXT 0
+#define DEFAULT_VIDEO_MODE "800x600"
+#else
+#include <grub/i386/pc/vbe.h>
+#include <grub/i386/pc/console.h>
+#define HAS_VGA_TEXT 1
+#define DEFAULT_VIDEO_MODE "text"
+#endif
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
 #define GRUB_LINUX_CL_END_OFFSET	0x2000
@@ -53,6 +63,8 @@ static grub_uint32_t real_mode_pages;
 static grub_uint32_t prot_mode_pages;
 static grub_uint32_t initrd_pages;
 static struct grub_relocator *relocator = NULL;
+static void *efi_mmap_buf;
+static grub_size_t efi_mmap_size;
 
 /* FIXME */
 #if 0
@@ -244,6 +256,48 @@ page_align (grub_size_t size)
   return (size + (1 << 12) - 1) & (~((1 << 12) - 1));
 }
 
+#ifdef GRUB_MACHINE_EFI
+/* Find the optimal number of pages for the memory map. Is it better to
+   move this code to efi/mm.c?  */
+static grub_efi_uintn_t
+find_efi_mmap_size (void)
+{
+  static grub_efi_uintn_t mmap_size = 0;
+
+  if (mmap_size != 0)
+    return mmap_size;
+
+  mmap_size = (1 << 12);
+  while (1)
+    {
+      int ret;
+      grub_efi_memory_descriptor_t *mmap;
+      grub_efi_uintn_t desc_size;
+
+      mmap = grub_malloc (mmap_size);
+      if (! mmap)
+	return 0;
+
+      ret = grub_efi_get_memory_map (&mmap_size, mmap, 0, &desc_size, 0);
+      grub_free (mmap);
+
+      if (ret < 0)
+	grub_fatal ("cannot get memory map");
+      else if (ret > 0)
+	break;
+
+      mmap_size += (1 << 12);
+    }
+
+  /* Increase the size a bit for safety, because GRUB allocates more on
+     later, and EFI itself may allocate more.  */
+  mmap_size += (1 << 12);
+
+  return page_align (mmap_size);
+}
+
+#endif
+
 /* Find the optimal number of pages for the memory map. */
 static grub_size_t
 find_mmap_size (void)
@@ -292,12 +346,18 @@ allocate_pages (grub_size_t prot_size)
   prot_size = page_align (prot_size);
   mmap_size = find_mmap_size ();
 
+#ifdef GRUB_MACHINE_EFI
+  efi_mmap_size = find_efi_mmap_size ();
+#else
+  efi_mmap_size = 0;
+#endif
+
   grub_dprintf ("linux", "real_size = %x, prot_size = %x, mmap_size = %x\n",
 		(unsigned) real_size, (unsigned) prot_size, (unsigned) mmap_size);
 
   /* Calculate the number of pages; Combine the real mode code with
      the memory map buffer for simplicity.  */
-  real_mode_pages = ((real_size + mmap_size) >> 12);
+  real_mode_pages = ((real_size + mmap_size + efi_mmap_size) >> 12);
   prot_mode_pages = (prot_size >> 12);
 
   /* Initialize the memory pointers with NULL for convenience.  */
@@ -330,10 +390,10 @@ allocate_pages (grub_size_t prot_size)
 	  if (addr + size > 0x90000)
 	    size = 0x90000 - addr;
 
-	  if (real_size + mmap_size > size)
+	  if (real_size + mmap_size + efi_mmap_size > size)
 	    return 0;
 
-	  real_mode_target = ((addr + size) - (real_size + mmap_size));
+	  real_mode_target = ((addr + size) - (real_size + mmap_size + efi_mmap_size));
 	  return 1;
 	}
 
@@ -348,11 +408,13 @@ allocate_pages (grub_size_t prot_size)
 
   err = grub_relocator_alloc_chunk_addr (relocator, &real_mode_mem,
 					 real_mode_target,
-					 (real_size + mmap_size));
+					 (real_size + mmap_size 
+					  + efi_mmap_size));
   if (err)
     goto fail;
+  efi_mmap_buf = (grub_uint8_t *) real_mode_mem + real_size + mmap_size;
 
-  prot_mode_target = 0x100000;
+  prot_mode_target = GRUB_LINUX_BZIMAGE_ADDR;
 
   err = grub_relocator_alloc_chunk_addr (relocator, &prot_mode_mem,
 					 prot_mode_target, prot_size);
@@ -393,17 +455,28 @@ grub_e820_add_region (struct grub_e820_mmap *e820_map, int *e820_num,
     }
 }
 
-static int
+static grub_err_t
 grub_linux_setup_video (struct linux_kernel_params *params)
 {
   struct grub_video_mode_info mode_info;
   void *framebuffer;
-  int ret;
+  grub_err_t err;
 
-  ret = grub_video_get_info_and_fini (&mode_info, &framebuffer);
+  switch (grub_video_get_driver_id ())
+    {
+    case GRUB_VIDEO_DRIVER_VBE:
+      params->have_vga = GRUB_VIDEO_LINUX_TYPE_VLFB;
+      break;
 
-  if (ret)
-    return 1;
+    default:
+      params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE_LFB;
+      break;
+    }
+
+  err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
+
+  if (err)
+    return err;
 
   params->lfb_width = mode_info.width;
   params->lfb_height = mode_info.height;
@@ -449,7 +522,7 @@ grub_linux_setup_video (struct linux_kernel_params *params)
     }
 #endif
 
-  return 0;
+  return GRUB_ERR_NONE;
 }
 
 #ifdef __x86_64__
@@ -520,15 +593,15 @@ grub_linux_boot (void)
   if (modevar && *modevar != 0)
     {
       tmp = grub_malloc (grub_strlen (modevar)
-			 + sizeof (";text"));
+			 + sizeof (";" DEFAULT_VIDEO_MODE));
       if (! tmp)
 	return grub_errno;
-      grub_sprintf (tmp, "%s;text", modevar);
+      grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
       err = grub_video_set_mode (tmp, 0);
       grub_free (tmp);
     }
   else
-    err = grub_video_set_mode ("text", 0);
+    err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0);
 
   if (err)
     {
@@ -537,17 +610,26 @@ grub_linux_boot (void)
       grub_errno = GRUB_ERR_NONE;
     }
 
-  if (! grub_linux_setup_video (params))
-    params->have_vga = GRUB_VIDEO_TYPE_VLFB;
-  else
+  err = grub_linux_setup_video (params);
+  if (err)
     {
-      params->have_vga = GRUB_VIDEO_TYPE_TEXT;
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+#if HAS_VGA_TEXT
+      params->have_vga = GRUB_VIDEO_LINUX_TYPE_EGA_TEXT;
+      params->video_mode = 0x3;
       params->video_width = 80;
       params->video_height = 25;
+#else
+      params->have_vga = 0;
+      params->video_mode = 0;
+      params->video_width = 0;
+      params->video_height = 0;
+#endif
     }
 
   /* Initialize these last, because terminal position could be affected by printfs above.  */
-  if (params->have_vga == GRUB_VIDEO_TYPE_TEXT)
+  if (params->have_vga == GRUB_VIDEO_LINUX_TYPE_EGA_TEXT)
     {
       grub_term_output_t term;
       int found = 0;
@@ -567,6 +649,40 @@ grub_linux_boot (void)
 	  params->video_cursor_y = 0;
 	}
     }
+
+#ifdef GRUB_MACHINE_EFI
+  {
+    grub_efi_uintn_t efi_map_key, efi_desc_size;
+    grub_efi_uint32_t efi_desc_version;
+    if (grub_efi_get_memory_map (&efi_mmap_size, efi_mmap_buf, &efi_map_key,
+				 &efi_desc_size, &efi_desc_version) <= 0)
+      grub_fatal ("cannot get memory map");
+    
+    if (! grub_efi_exit_boot_services (efi_map_key))
+      grub_fatal ("cannot exit boot services");
+
+    /* Note that no boot services are available from here.  */
+
+    /* Pass EFI parameters.  */
+    if (grub_le_to_cpu16 (params->version) >= 0x0206)
+      {
+	params->v0206.efi_mem_desc_size = efi_desc_size;
+	params->v0206.efi_mem_desc_version = efi_desc_version;
+	params->v0206.efi_mmap = (grub_uint32_t) (unsigned long) efi_mmap_buf;
+	params->v0206.efi_mmap_size = efi_mmap_size;
+#ifdef __x86_64__
+	params->v0206.efi_mmap_hi = (grub_uint32_t) ((grub_uint64_t) efi_mmap_buf >> 32);
+#endif
+      }
+    else if (grub_le_to_cpu16 (params->version) >= 0x0204)
+      {
+	params->v0204.efi_mem_desc_size = efi_desc_size;
+	params->v0204.efi_mem_desc_version = efi_desc_version;
+	params->v0204.efi_mmap = (grub_uint32_t) (unsigned long) efi_mmap_buf;
+	params->v0204.efi_mmap_size = efi_mmap_size;
+      }
+  }
+#endif
 
   /* FIXME.  */
   /*  asm volatile ("lidt %0" : : "m" (idt_desc)); */
@@ -675,7 +791,12 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
+#ifdef GRUB_MACHINE_EFI
+  /* XXX Linux assumes that only elilo can boot Linux on EFI!!!  */
+  params->type_of_loader = (LINUX_LOADER_ID_ELILO << 4);
+#else
   params->type_of_loader = (LINUX_LOADER_ID_GRUB << 4);
+#endif
 
   /* These two are used (instead of cmd_line_ptr) by older versions of Linux,
      and otherwise ignored.  */
@@ -698,13 +819,26 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   /* Ignored by Linux.  */
   params->video_page = 0;
 
-  /* Must be non-zero even in text mode, or Linux will think there's no VGA.  */
-  params->video_mode = 0x3;
-
   /* Only used when `video_mode == 0x7', otherwise ignored.  */
   params->video_ega_bx = 0;
 
   params->font_size = 16; /* XXX */
+
+#ifdef GRUB_MACHINE_EFI
+  if (grub_le_to_cpu16 (params->version) >= 0x0206)
+    {
+      params->v0206.efi_signature = GRUB_LINUX_EFI_SIGNATURE;
+      params->v0206.efi_system_table = (grub_uint32_t) (unsigned long) grub_efi_system_table;
+#ifdef __x86_64__
+      params->v0206.efi_system_table_hi = (grub_uint32_t) ((grub_uint64_t) grub_efi_system_table >> 32);
+#endif
+    }
+  else if (grub_le_to_cpu16 (params->version) >= 0x0204)
+    {
+      params->v0204.efi_signature = GRUB_LINUX_EFI_SIGNATURE_0204;
+      params->v0204.efi_system_table = (grub_uint32_t) (unsigned long) grub_efi_system_table;
+    }
+#endif
 
   /* The other parameters are filled when booting.  */
 
@@ -859,7 +993,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     }
 
   len = prot_size;
-  if (grub_file_read (file, (void *) GRUB_LINUX_BZIMAGE_ADDR, len) != len)
+  if (grub_file_read (file, prot_mode_mem, len) != len)
     grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
 
   if (grub_errno == GRUB_ERR_NONE)
