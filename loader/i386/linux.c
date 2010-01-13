@@ -68,7 +68,11 @@ static grub_uint32_t prot_mode_pages;
 static grub_uint32_t initrd_pages;
 static struct grub_relocator *relocator = NULL;
 static void *efi_mmap_buf;
-static grub_size_t efi_mmap_size;
+#ifdef GRUB_MACHINE_EFI
+static grub_efi_uintn_t efi_mmap_size;
+#else
+static const grub_size_t efi_mmap_size = 0;
+#endif
 
 /* FIXME */
 #if 0
@@ -352,8 +356,6 @@ allocate_pages (grub_size_t prot_size)
 
 #ifdef GRUB_MACHINE_EFI
   efi_mmap_size = find_efi_mmap_size ();
-#else
-  efi_mmap_size = 0;
 #endif
 
   grub_dprintf ("linux", "real_size = %x, prot_size = %x, mmap_size = %x\n",
