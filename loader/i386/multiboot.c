@@ -32,9 +32,7 @@
 
 #include <grub/loader.h>
 #include <grub/multiboot.h>
-#include <grub/machine/init.h>
 #include <grub/machine/memory.h>
-#include <grub/cpu/multiboot.h>
 #include <grub/elf.h>
 #include <grub/aout.h>
 #include <grub/file.h>
@@ -48,7 +46,7 @@
 
 extern grub_dl_t my_mod;
 struct grub_relocator *grub_multiboot_relocator = NULL;
-grub_uint32_t grub_multiboot_payload_eip;
+static grub_uint32_t grub_multiboot_payload_eip;
 
 static grub_err_t
 grub_multiboot_boot (void)
