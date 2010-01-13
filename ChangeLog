@@ -1,3 +1,7 @@
+2010-01-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/rock.c (generate_rock_ridge_attributes): Fix a typo.
+
 2010-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* loader/i386/pc/multiboot2.c: Removed stalled file.
