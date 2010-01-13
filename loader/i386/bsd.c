@@ -17,9 +17,8 @@
  */
 
 #include <grub/loader.h>
-#include <grub/cpu/bsd.h>
+#include <grub/i386/bsd.h>
 #include <grub/i386/cpuid.h>
-#include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/memory.h>
 #include <grub/file.h>
@@ -42,7 +41,7 @@
 #include <grub/device.h>
 #include <grub/partition.h>
 #include <grub/relocator.h>
-#include <grub/cpu/relocator.h>
+#include <grub/i386/relocator.h>
 
 #define ALIGN_DWORD(a)	ALIGN_UP (a, 4)
 #define ALIGN_QWORD(a)	ALIGN_UP (a, 8)
@@ -313,7 +312,7 @@ grub_freebsd_add_mmap (void)
 		  (unsigned long long) mmap_buf[i].addr,
 		  (unsigned long long) mmap_buf[i].size);
 
-  grub_dprintf ("bsd", "%d entries in smap\n", mmap - mmap_buf);
+  grub_dprintf ("bsd", "%ld entries in smap\n", (long) (mmap - mmap_buf));
   grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA |
 			 FREEBSD_MODINFOMD_SMAP, mmap_buf, len);
 
@@ -413,9 +412,9 @@ grub_freebsd_list_modules (void)
 	  break;
 	case FREEBSD_MODINFO_ADDR:
 	  {
-	    grub_addr_t addr;
+	    grub_uint32_t addr;
 
-	    addr = *((grub_addr_t *) (mod_buf + pos));
+	    addr = *((grub_uint32_t *) (mod_buf + pos));
 	    grub_printf ("    0x%08x", addr);
 	    break;
 	  }
@@ -579,6 +578,7 @@ grub_freebsd_boot (void)
 					      GRUB_RELOCATOR_PREFERENCE_NONE);
       if (err)
 	return err;
+
       grub_memcpy (&stack[8], &bi, sizeof (bi));
       state.eip = entry;
       state.esp = stack_target;
@@ -1032,8 +1032,8 @@ grub_bsd_load_elf (grub_elf_t elf)
       if (err)
 	return err;
 
-      grub_dprintf ("bsd", "kern_start = %x, kern_end = %x\n", kern_start,
-		    kern_end);
+      grub_dprintf ("bsd", "kern_start = %lx, kern_end = %lx\n",
+		    (unsigned long) kern_start, (unsigned long) kern_end);
       err = grub_relocator_alloc_chunk_addr (relocator, &kern_chunk_src,
 					     kern_start, kern_end - kern_start);
       if (err)

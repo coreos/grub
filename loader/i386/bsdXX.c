@@ -1,9 +1,9 @@
 #include <grub/loader.h>
-#include <grub/cpu/bsd.h>
+#include <grub/i386/bsd.h>
 #include <grub/mm.h>
 #include <grub/elf.h>
 #include <grub/misc.h>
-#include <grub/cpu/relocator.h>
+#include <grub/i386/relocator.h>
 
 #define ALIGN_PAGE(a)	ALIGN_UP (a, 4096)
 
