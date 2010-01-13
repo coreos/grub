@@ -199,9 +199,9 @@ malloc_in_range (struct grub_relocator *rel,
     grub_mm_region_t r, rp;
     for (rp = NULL, r = grub_mm_base; r; rp = r, r = r->next)
       {
-	grub_dprintf ("relocator", "region %p. %d %d %d\n", r,
+	grub_dprintf ("relocator", "region %p. %d %d %d %d\n", r,
 		      (grub_addr_t) r + r->size + sizeof (*r) >= start,
-		      (grub_addr_t) r < end && r->size + sizeof (*r) >= size,
+		      (grub_addr_t) r < end, r->size + sizeof (*r) >= size,
 		      (rb == NULL || (from_low_priv ? rb > r : rb < r)));
 	if ((grub_addr_t) r + r->size + sizeof (*r) >= start
 	    && (grub_addr_t) r < end && r->size + sizeof (*r) >= size
@@ -224,7 +224,7 @@ malloc_in_range (struct grub_relocator *rel,
   hb = get_best_header (rel, start, end, align, size, rb, &hbp, &best_addr,
 			from_low_priv, collisioncheck);
 
-  grub_dprintf ("relocator", "best header %p/%lx\n", hb,
+  grub_dprintf ("relocator", "best header %p/%p/%lx\n", hb, hbp,
 		(unsigned long) best_addr);
 
   if (!hb)
@@ -253,8 +253,8 @@ malloc_in_range (struct grub_relocator *rel,
 				  - (newreg_start
 				     - (grub_addr_t) rb)) >> GRUB_MM_ALIGN_LOG2;
 	  new_header = (void *) (newreg_start + sizeof (*rb));
-	  if (newhnext == hb->next)
-	    newhnext = newhnext;
+	  if (newhnext == hb)
+	    newhnext = new_header;
 	  new_header->next = newhnext;
 	  new_header->size = newhsize;
 	  new_header->magic = GRUB_MM_FREE_MAGIC;
@@ -280,6 +280,18 @@ malloc_in_range (struct grub_relocator *rel,
 	  rbp->next = newreg;
 	else
 	  grub_mm_base = newreg;
+	{
+	  grub_mm_header_t h = newreg->first, hp = NULL;
+	  do
+	    {
+	      if ((void *) h < (void *) (newreg + 1))
+		grub_fatal ("Failed to adjust memory region: %p, %p, %p, %p, %p",
+			    newreg, newreg->first, h, hp, hb);
+	      hp = h;
+	      h = h->next;
+	    }
+	  while (h != newreg->first);
+	}
       }
       *res = best_addr;
       return 1;
