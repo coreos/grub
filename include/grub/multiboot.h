@@ -32,6 +32,8 @@
 #include <grub/types.h>
 #include <grub/err.h>
 
+extern struct grub_relocator *grub_multiboot_relocator;
+
 void grub_multiboot (int argc, char *argv[]);
 void grub_module (int argc, char *argv[]);
 
