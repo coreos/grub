@@ -54,8 +54,7 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/ieee1275/grub-install.in
 
 # Modules.
-pkglib_MODULES = halt.mod reboot.mod suspend.mod		\
-	aout.mod serial.mod 		\
+pkglib_MODULES = halt.mod reboot.mod suspend.mod serial.mod	\
 	nand.mod memdisk.mod pci.mod lspci.mod datetime.mod	\
 	date.mod datehook.mod lsmmap.mod mmap.mod
 
@@ -70,11 +69,6 @@ mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c
 mmap_mod_CFLAGS = $(COMMON_CFLAGS)
 mmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 mmap_mod_ASFLAGS = $(COMMON_ASFLAGS)
-
-# For aout.mod.
-aout_mod_SOURCES = loader/aout.c
-aout_mod_CFLAGS = $(COMMON_CFLAGS)
-aout_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For suspend.mod
 suspend_mod_SOURCES = commands/ieee1275/suspend.c
