@@ -148,14 +148,24 @@ grub_gettext_translate (const char *orig)
 
   struct grub_gettext_msg *cur;
 
+  /* Make sure we can use grub_gettext_translate for error messages.  Push
+     active error message to error stack and reset error message.  */
+  grub_error_push ();
+
   cur = grub_named_list_find (GRUB_AS_NAMED_LIST (grub_gettext_msg_list),
 			      orig);
 
   if (cur)
-    return cur->translated;
+    {
+      grub_error_pop ();
+      return cur->translated;
+    }
 
   if (fd_mo == 0)
-    return orig;
+    {
+      grub_error_pop ();
+      return orig;
+    }
 
   min = 0;
   max = grub_gettext_max;
@@ -205,6 +215,7 @@ grub_gettext_translate (const char *orig)
 	grub_errno = GRUB_ERR_NONE;
     }
 
+  grub_error_pop ();
   return ret;
 }
 
@@ -308,7 +319,7 @@ grub_gettext_delete_list (void)
       char *original = (char *) ((struct grub_gettext_msg *) item)->name;
       grub_free (original);
 
-      // Don't delete the translated message because could be in use.
+      /* Don't delete the translated message because could be in use.  */
     }
 }
 

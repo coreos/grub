@@ -1,3 +1,11 @@
+2010-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* gettext/gettext.c (grub_gettext_translate): Push and pop
+	grub_errno.
+	(grub_gettext_delete_list): Change comment style.
+	* kern/err.c (grub_error): Gettextizze.
+	(grub_fatal): Gettextizze.
+
 2010-01-14  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/i386/loader.h (grub_linux16_boot): Renamed to ...
