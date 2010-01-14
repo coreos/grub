@@ -161,7 +161,7 @@ get_best_header (struct grub_relocator *rel,
     {
       grub_addr_t allowable_start, allowable_end;
       allowable_start = (grub_addr_t) h;
-      allowable_end = (grub_addr_t) (h + 1 + h->size);
+      allowable_end = (grub_addr_t) (h + h->size);
 
       try_addr (allowable_start, allowable_end);
 
@@ -308,7 +308,7 @@ malloc_in_range (struct grub_relocator *rel,
 
     if (best_addr - (grub_addr_t) hb >= sizeof (*hb))
       {
-	hb->size = ((best_addr - (grub_addr_t) hb) >> GRUB_MM_ALIGN_LOG2) - 1;
+	hb->size = ((best_addr - (grub_addr_t) hb) >> GRUB_MM_ALIGN_LOG2);
 	if (foll)
 	  {
 	    foll->next = hb;
