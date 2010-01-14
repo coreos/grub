@@ -1,3 +1,29 @@
+2010-01-14  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Unit testing framework for GRUB.
+
+	* Makefile.in: Test framework build rules for 'make check'.
+	* conf/tests.rmk: Build rules for individual tests and framework.
+
+	* include/grub/test.h: Header file for whitebox tests.
+	* tests/lib/functional_test.c: Framework support for whitebox
+	functional tests.
+	* tests/lib/test.c: Common whitebox testing code for unit and
+	functional tests.
+	* tests/lib/unit_test.c: Framework support for whitebox unit
+	tests.
+
+	* tests/util/grub-shell-tester.in: Support utility for grub-script
+	tests.
+	* tests/util/grub-shell.in: Utility to execute grub-script
+	commands in a Qemu instance.
+
+	* tests/example_functional_test.c: Example whitebox functional
+	test.
+	* tests/example_grub_script_test.in: Example grub-script test.
+	* tests/example_scripted_test.in: Example scripted test.
+	* tests/example_unit_test.c: Example whitebox unit test.
+
 2010-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* conf/i386-coreboot.rmk (multiboot_mod_SOURCES):
