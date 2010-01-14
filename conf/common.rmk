@@ -89,7 +89,7 @@ bin_UTILITIES += grub-mkrelpath
 grub_mkrelpath_SOURCES = gnulib/progname.c util/grub-mkrelpath.c util/misc.c
 
 bin_UTILITIES += grub-bin2h
-grub_bin2h_SOURCES = util/bin2h.c
+grub_bin2h_SOURCES = gnulib/progname.c util/bin2h.c
 
 # For the parser.
 grub_script.tab.c grub_script.tab.h: script/parser.y

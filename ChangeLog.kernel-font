@@ -34,7 +34,7 @@
 	used. Call print_glyphs.
 	* Makefile.in (pkgdata_DATA): Add `font/ascii.h'.
 
-2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
+2010-01-14  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* conf/common.rmk (bin_UTILITIES): Add `grub-bin2h'.
 	(grub_bin2h_SOURCES): New variable.

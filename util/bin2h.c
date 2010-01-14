@@ -15,8 +15,40 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#define _GNU_SOURCE	1
+#include <getopt.h>
+
+#include "progname.h"
+
+static struct option options[] =
+  {
+    {"help", no_argument, 0, 'h' },
+    {"version", no_argument, 0, 'V' },
+    {0, 0, 0, 0 }
+  };
+
+static void
+usage (int status)
+{
+  if (status)
+    fprintf (stderr,
+	     "Try ``%s --help'' for more information.\n", program_name);
+  else
+    printf ("\
+Usage: %s [OPTIONS] SYMBOL-NAME\n\
+\n\
+  -h, --help                display this message and exit\n\
+  -V, --version             print version information and exit\n\
+\n\
+Report bugs to <%s>.\n\
+", program_name, PACKAGE_BUGREPORT);
+
+  exit (status);
+}
 
 int
 main (int argc, char *argv[])
@@ -24,13 +56,39 @@ main (int argc, char *argv[])
   int b, i;
   char *sym;
 
-  if (argc != 2)
+  set_program_name (argv[0]);
+
+  /* Check for options.  */
+  while (1)
     {
-      fprintf (stderr, "Usage: %s symbol_name\n", argv[0]);
-      exit (1);
+      int c = getopt_long (argc, argv, "snm:r:hVv", options, 0);
+
+      if (c == -1)
+	break;
+      else
+	switch (c)
+	  {
+	  case 'h':
+	    usage (0);
+	    break;
+
+	  case 'V':
+	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
+	    return 0;
+
+	  default:
+	    usage (1);
+	    break;
+	  }
     }
 
-  sym = argv[1];
+  if (optind >= argc)
+    usage (1);
+  
+  if (optind + 1 != argc)
+    usage (1);
+
+  sym = argv[optind];
 
   b = getchar ();
   if (b == EOF)
