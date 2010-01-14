@@ -6,7 +6,7 @@
 
 	* font/font.c (GENERATE_ASCII): Change the name to USE_ASCII_FAILBACK.
 	By default: disabled.
-	* Makefile.in (font/ascii.h): Remove the non-needed grub/bin2h size
+	* Makefile.in (ascii.h): Remove the non-needed grub/bin2h size
 	parameter.
 
 2010-01-10  Carles Pina i Estany  <carles@pina.cat>
@@ -32,7 +32,7 @@
 	(write_font_p2): ... this. Remove print_glyphs call.
 	(main): Use file_format. Implement code for ranges if ascii-bitmaps is
 	used. Call print_glyphs.
-	* Makefile.in (pkgdata_DATA): Add `font/ascii.h'.
+	* Makefile.in (pkgdata_DATA): Add `ascii.h'.
 
 2010-01-14  Robert Millan  <rmh.grub@aybabtu.com>
 
