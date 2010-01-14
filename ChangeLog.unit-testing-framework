@@ -1,3 +1,23 @@
+2010-01-14  BVK Chaitanya  <bvk@dbook>
+
+	Removed unnecessary grub_test_* wrappers.
+
+	* tests/lib/unit_test.c (grub_test_malloc): Removed.
+	(grub_test_vsprintf): Removed.
+	(grub_test_strdup): Removed.
+	(grub_test_printf): Removed.
+	(grub_test_free): Replaced with....
+	(grub_free): ...new wrapper.
+	* tests/lib/functional_test.c (grub_test_malloc): Removed.
+	(grub_test_free): Removed.
+	(grub_test_vsprintf): Removed.
+	(grub_test_strdup): Removed.
+	(grub_test_printf): Removed.
+	* tests/lib/test.c: Replaced
+	grub_test_{malloc,free,strdup,printf,vsprintf} methods with
+	grub_{malloc,free,strdup,printf,vsprintf} methods.
+	* include/grub/test.h: Removed prototypes for the above.
+
 2010-01-12  BVK Chaitanya  <bvk@dbook>
 
 	* tests/util/grub-shell.in: New --boot option.

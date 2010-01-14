@@ -1,3 +1,4 @@
+#include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/test.h>
 
@@ -31,16 +32,16 @@ add_failure (const char *file,
   char buf[1024];
   grub_test_failure_t failure;
 
-  failure = (grub_test_failure_t) grub_test_malloc (sizeof (*failure));
+  failure = (grub_test_failure_t) grub_malloc (sizeof (*failure));
   if (!failure)
     return;
 
-  grub_test_vsprintf (buf, fmt, args);
+  grub_vsprintf (buf, fmt, args);
 
-  failure->file = grub_test_strdup (file ? : "<unknown_file>");
-  failure->funp = grub_test_strdup (funp ? : "<unknown_function>");
+  failure->file = grub_strdup (file ? : "<unknown_file>");
+  failure->funp = grub_strdup (funp ? : "<unknown_function>");
   failure->line = line;
-  failure->message = grub_test_strdup (buf);
+  failure->message = grub_strdup (buf);
 
   grub_list_push (GRUB_AS_LIST_P (&failure_list), GRUB_AS_LIST (failure));
 }
@@ -53,15 +54,15 @@ free_failures (void)
   while ((item = grub_list_pop (GRUB_AS_LIST_P (&failure_list))) != 0)
     {
       if (item->message)
-	grub_test_free (item->message);
+	grub_free (item->message);
 
       if (item->funp)
-	grub_test_free (item->funp);
+	grub_free (item->funp);
 
       if (item->file)
-	grub_test_free (item->file);
+	grub_free (item->file);
 
-      grub_test_free (item);
+      grub_free (item);
     }
   failure_list = 0;
 }
@@ -86,11 +87,11 @@ grub_test_register (const char *name, void (*test_main) (void))
 {
   grub_test_t test;
 
-  test = (grub_test_t) grub_test_malloc (sizeof (*test));
+  test = (grub_test_t) grub_malloc (sizeof (*test));
   if (!test)
     return;
 
-  test->name = grub_test_strdup (name);
+  test->name = grub_strdup (name);
   test->main = test_main;
 
   grub_list_push (GRUB_AS_LIST_P (&grub_test_list), GRUB_AS_LIST (test));
@@ -106,13 +107,12 @@ grub_test_unregister (const char *name)
 
   if (test)
     {
-      grub_list_remove (GRUB_AS_LIST_P (&grub_test_list),
-			GRUB_AS_LIST (test));
+      grub_list_remove (GRUB_AS_LIST_P (&grub_test_list), GRUB_AS_LIST (test));
 
       if (test->name)
-	grub_test_free (test->name);
+	grub_free (test->name);
 
-      grub_test_free (test);
+      grub_free (test);
     }
 }
 
@@ -124,22 +124,22 @@ grub_test_run (grub_test_t test)
   {
     grub_test_failure_t failure = (grub_test_failure_t) item;
 
-    grub_test_printf (" %s:%s:%u: %s\n",
-		      (failure->file ? : "<unknown_file>"),
-		      (failure->funp ? : "<unknown_function>"),
-		      failure->line, (failure->message ? : "<no message>"));
+    grub_printf (" %s:%s:%u: %s\n",
+		 (failure->file ? : "<unknown_file>"),
+		 (failure->funp ? : "<unknown_function>"),
+		 failure->line, (failure->message ? : "<no message>"));
     return 0;
   }
 
   test->main ();
 
-  grub_test_printf ("%s:\n", test->name);
+  grub_printf ("%s:\n", test->name);
   grub_list_iterate (GRUB_AS_LIST (failure_list),
 		     (grub_list_hook_t) print_failure);
   if (!failure_list)
-    grub_test_printf ("%s: PASS\n", test->name);
+    grub_printf ("%s: PASS\n", test->name);
   else
-    grub_test_printf ("%s: FAIL\n", test->name);
+    grub_printf ("%s: FAIL\n", test->name);
 
   free_failures ();
   return GRUB_ERR_NONE;

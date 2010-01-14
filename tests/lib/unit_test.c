@@ -7,43 +7,6 @@
 #include <grub/test.h>
 #include <grub/handler.h>
 
-void *
-grub_test_malloc (grub_size_t size)
-{
-  return malloc (size);
-}
-
-void
-grub_test_free (void *ptr)
-{
-  free (ptr);
-}
-
-int
-grub_test_vsprintf (char *str, const char *fmt, va_list args)
-{
-  return vsprintf (str, fmt, args);
-}
-
-char *
-grub_test_strdup (const char *str)
-{
-  return strdup (str);
-}
-
-int
-grub_test_printf (const char *fmt, ...)
-{
-  int r;
-  va_list ap;
-
-  va_start (ap, fmt);
-  r = vprintf (fmt, ap);
-  va_end (ap);
-
-  return r;
-}
-
 int
 main (int argc __attribute__ ((unused)),
       char *argv[] __attribute__ ((unused)))
@@ -69,6 +32,12 @@ main (int argc __attribute__ ((unused)),
 }
 
 /* Other misc. functions necessary for successful linking.  */
+
+void
+grub_free (void *ptr)
+{
+  free (ptr);
+}
 
 char *
 grub_env_get (const char *name __attribute__ ((unused)))

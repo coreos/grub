@@ -64,12 +64,4 @@ void grub_test_nonzero (int cond, const char *file,
     grub_test_unregister (name);		\
   }
 
-/* Functions that are defined differently for unit and functional tests.  */
-void *grub_test_malloc (grub_size_t size);
-void grub_test_free (void *ptr);
-char *grub_test_strdup (const char *str);
-int grub_test_vsprintf (char *str, const char *fmt, va_list args);
-int grub_test_printf (const char *fmt, ...)
-  __attribute__ ((format (printf, 1, 2)));
-
 #endif /* ! GRUB_TEST_HEADER */

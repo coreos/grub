@@ -3,43 +3,6 @@
 #include <grub/extcmd.h>
 #include <grub/test.h>
 
-void *
-grub_test_malloc (grub_size_t size)
-{
-  return grub_malloc (size);
-}
-
-void
-grub_test_free (void *ptr)
-{
-  grub_free (ptr);
-}
-
-int
-grub_test_vsprintf (char *str, const char *fmt, va_list args)
-{
-  return grub_vsprintf (str, fmt, args);
-}
-
-char *
-grub_test_strdup (const char *str)
-{
-  return grub_strdup (str);
-}
-
-int
-grub_test_printf (const char *fmt, ...)
-{
-  int r;
-  va_list ap;
-
-  va_start (ap, fmt);
-  r = grub_vprintf (fmt, ap);
-  va_end (ap);
-
-  return r;
-}
-
 static grub_err_t
 grub_functional_test (struct grub_extcmd *cmd __attribute__ ((unused)),
 		      int argc __attribute__ ((unused)),
