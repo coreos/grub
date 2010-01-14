@@ -87,9 +87,11 @@ fi
 
 INSTALL_DEVICE can be a GRUB device name or a system device filename.
 
-grub-install copies GRUB images into the DIR/boot directory specified by
---root-directory, and uses grub-setup to install grub into the boot
-sector.
+grub-install copies GRUB images into /boot/grub (or /grub on NetBSD and
+OpenBSD), and uses grub-setup to install grub into the boot sector.
+
+If the --root-directory option is used, then grub-install will copy
+images into the operating system installation rooted at that directory.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF

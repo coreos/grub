@@ -1,3 +1,51 @@
+2010-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/efi/init.c (grub_efi_fini): Don't call grub_efi_mm_fini as
+	it would result in module crash.
+
+2010-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_putchar): Handle '\r'.
+	(grub_ofconsole_getwh): Split to ...
+	(grub_ofconsole_getwh): ... this.
+	(grub_ofconsole_dimensions): ...and this.
+	(grub_ofconsole_init_output): Call grub_ofconsole_dimensions.
+
+2010-01-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/rock.c (generate_rock_ridge_attributes): Fix a typo.
+
+2010-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/pc/multiboot2.c: Removed stalled file.
+
+2010-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkpasswd-pbkdf2.c (main): Use grub_util_init_nls.
+	Reported by: Grégoire Sutre
+
+2010-01-11  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/misc.c (canonicalize_file_name): New function.
+	(make_system_path_relative_to_its_root): Use canonicalize_file_name()
+	instead of realpath().
+
+2010-01-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in (usage): Clarify meaning of --root-directory,
+	and make it clearer that it's optional.  Based on confusion
+	witnessed on IRC.
+
+2010-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/i386/pc/vga_text.c (inc_y): Fix off-by-one error which resulted
+	in premature implicit newline.
+
+2010-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/cmdline.c (grub_cmdline_get): Fix off-by-one error
+	which resulted in garbled command line at the end of screen.
+
 2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* loader/i386/ieee1275/linux.c (grub_linux_boot): Rework video position
