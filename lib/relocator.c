@@ -308,12 +308,12 @@ malloc_in_range (struct grub_relocator *rel,
 
     if (best_addr - (grub_addr_t) hb >= sizeof (*hb))
       {
-	hb->size = (best_addr - (grub_addr_t) hb) >> GRUB_MM_ALIGN_LOG2;
+	hb->size = ((best_addr - (grub_addr_t) hb) >> GRUB_MM_ALIGN_LOG2) - 1;
 	if (foll)
 	  {
 	    foll->next = hb;
 	    hbp->next = foll;
-	    if (rb->first == hbp)
+	    if (rb->first == hb)
 	      rb->first = foll;
 	  }
       }
