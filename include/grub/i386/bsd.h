@@ -97,8 +97,8 @@ enum bsd_kernel_types
 struct grub_freebsd_bootinfo
 {
   grub_uint32_t bi_version;
-  grub_uint8_t *bi_kernelname;
-  struct nfs_diskless *bi_nfs_diskless;
+  grub_uint32_t bi_kernelname;
+  grub_uint32_t bi_nfs_diskless;
   grub_uint32_t bi_n_bios_used;
   grub_uint32_t bi_bios_geom[FREEBSD_N_BIOS_GEOM];
   grub_uint32_t bi_size;
