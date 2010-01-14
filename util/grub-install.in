@@ -40,6 +40,7 @@ else
 fi
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
+grub_editenv=${bindir}/`echo grub-editenv | sed ${transform}`
 rootdir=
 grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
@@ -262,6 +263,10 @@ done
 
 # Write device to a variable so we don't have to traverse /dev every time.
 grub_device=`$grub_probe --target=device ${grubdir}`
+
+if ! test -f ${grubdir}/grubenv; then
+    $grub_editenv ${grubdir}/grubenv create
+fi
 
 # Create the core image. First, auto-detect the filesystem module.
 fs_module=`$grub_probe --target=fs --device ${grub_device}`

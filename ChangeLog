@@ -1,3 +1,84 @@
+2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-reboot.in: Make sure prev_saved_entry always gets a
+	non-empty value.
+
+2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Define a "savedefault" function for use
+	in menu entries.
+	* util/grub-mkconfig_lib.in (save_default_entry): Use it.
+
+2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (save_default_entry): Only set
+	saved_entry if boot_once is unset.
+	* util/grub.d/00_header.in: Set boot_once to "true" if there was a
+	previous saved entry (i.e. grub-reboot).
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/30_os-prober.in: Call save_default_entry for hurd.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Use `set var=val' rather than plain
+	`var=val'.
+	* util/grub-mkconfig_lib.in (save_default_entry): Likewise.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-reboot.in: Fix --version output.
+	* util/grub-set-default.in: Likewise.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Silently ignore zero-sized environment
+	blocks.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Quote the value assigned to `default',
+	in case it contains spaces.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/30_os-prober.in: Fix merge error that moved a
+	`save_default_entry' call from the macosx case to the linux case.
+
+2009-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2009-10-25  Colin Watson  <cjwatson@ubuntu.com>
+
+	* normal/menu.c (grub_menu_execute_entry): Save selected entry title
+	in `chosen' environment variable.
+	* normal/menu_text.c (get_entry_number): Check if the variable
+	matches the title of a menu entry.
+	(run_menu): Pass menu to get_entry_number.
+
+	* util/grub-reboot.in: New file.
+	* util/grub-set-default.in: New file.
+	* conf/common.rmk (grub-reboot): New utility.
+	(grub-set-default): New utility.
+
+	* util/grub-mkconfig_lib.in (save_default_entry): New function.
+	* util/grub.d/00_header.in: If GRUB_DEFAULT is `saved', set
+	default to `${saved_entry}'.  If `${prev_saved_entry}' is non-empty,
+	move it to `saved_entry' for the next boot.  Load environment on
+	initialisation.
+	* util/grub.d/10_kfreebsd.in: Call save_default_entry.
+	* util/grub.d/10_hurd.in: Likewise.
+	* util/grub.d/10_linux.in (linux_entry): Likewise.
+	* util/grub.d/10_windows.in: Likewise.
+	* util/grub.d/30_os-prober.in: Likewise.
+
+	* util/grub-install.in: Create environment block.
+	* util/i386/efi/grub-install.in: Likewise.
+	* util/ieee1275/grub-install.in: Likewise.
+	* util/sparc64/ieee1275/grub-install.in: Likewise.
+
 2010-01-14  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Unit testing framework for GRUB.
