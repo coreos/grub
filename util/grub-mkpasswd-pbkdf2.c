@@ -123,9 +123,8 @@ main (int argc, char *argv[])
   int tty_changed;
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+
+  grub_util_init_nls ();
 
   /* Check for options.  */
   while (1)

@@ -1,3 +1,55 @@
+2010-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* conf/i386-coreboot.rmk (multiboot_mod_SOURCES):
+	Add loader/i386/multiboot_mbi.c.
+	(multiboot2_mod_SOURCES): Likewise.
+	* conf/i386-pc.rmk (multiboot_mod_SOURCES): Likewise.
+	(multiboot2_mod_SOURCES): Likewise.
+	* include/grub/multiboot.h (grub_multiboot_get_mbi_size): New proto.
+	(grub_multiboot_make_mbi): Likewise.
+	(grub_multiboot_free_mbi): Likewise.
+	(grub_multiboot_init_mbi): Likewise.
+	(grub_multiboot_add_module): Likewise.
+	(grub_multiboot_set_bootdev): Likewise.
+	* loader/i386/multiboot.c (mbi): Removed.
+	(mbi_dest): Likewise.
+	(alloc_mbi): New variable.
+	(grub_multiboot_payload_size): Removed. All users updated.
+	(grub_multiboot_pure_size): New variable.
+	(grub_multiboot_boot): Use grub_multiboot_make_mbi.
+	(grub_multiboot_unload): Use grub_multiboot_free_mbi.
+	(grub_get_multiboot_mmap_len): Moved to loader/i386/multiboot_mbi.c.
+	(grub_fill_multiboot_mmap): Likewise.
+	(grub_multiboot_get_bootdev): Likewise.
+	(grub_multiboot): Use multiboot_mbi functions.
+	* loader/i386/multiboot_mbi.c: New file.
+
+2010-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/efi/init.c (grub_efi_fini): Don't call grub_efi_mm_fini as
+	it would result in module crash.
+
+2010-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_putchar): Handle '\r'.
+	(grub_ofconsole_getwh): Split to ...
+	(grub_ofconsole_getwh): ... this.
+	(grub_ofconsole_dimensions): ...and this.
+	(grub_ofconsole_init_output): Call grub_ofconsole_dimensions.
+
+2010-01-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/rock.c (generate_rock_ridge_attributes): Fix a typo.
+
+2010-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/pc/multiboot2.c: Removed stalled file.
+
+2010-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkpasswd-pbkdf2.c (main): Use grub_util_init_nls.
+	Reported by: Grégoire Sutre
+
 2010-01-11  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/misc.c (canonicalize_file_name): New function.
