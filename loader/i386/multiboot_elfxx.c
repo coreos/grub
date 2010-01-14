@@ -129,6 +129,67 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
   if (i == ehdr->e_phnum)
     return grub_error (GRUB_ERR_BAD_OS, "entry point isn't in a segment");
 
+  if (ehdr->e_shnum)
+    {
+      grub_uint8_t *shdr, *shdrptr;
+
+      shdr = grub_malloc (ehdr->e_shnum * ehdr->e_shentsize);
+      if (!shdr)
+	return grub_errno;
+      
+      if (grub_file_seek (file, ehdr->e_shoff) == (grub_off_t) -1)
+	return grub_error (GRUB_ERR_BAD_OS,
+			   "invalid offset to section headers");
+
+      if (grub_file_read (file, shdr, ehdr->e_shnum * ehdr->e_shentsize)
+              != (grub_ssize_t) ehdr->e_shnum * ehdr->e_shentsize)
+	return grub_error (GRUB_ERR_BAD_OS,
+			   "couldn't read sections headers from file");
+      
+      for (shdrptr = shdr, i = 0; i < ehdr->e_shnum;
+	   shdrptr += ehdr->e_shentsize, i++)
+	{
+	  Elf_Shdr *sh = (Elf_Shdr *) shdrptr;
+	  void *src;
+	  grub_addr_t target;
+	  grub_err_t err;
+
+	  /* This section is a loaded section,
+	     so we don't care.  */
+	  if (sh->sh_addr != 0)
+	    continue;
+		      
+	  /* This section is empty, so we don't care.  */
+	  if (sh->sh_size == 0)
+	    continue;
+
+	  err 
+	    = grub_relocator_alloc_chunk_align (grub_multiboot_relocator,
+						&src, &target, 0,
+						(0xffffffff - sh->sh_size) + 1,
+						sh->sh_size,
+						sh->sh_addralign,
+						GRUB_RELOCATOR_PREFERENCE_NONE);
+	  if (err)
+	    {
+	      grub_dprintf ("multiboot_loader", "Error loading shdr %d\n", i);
+	      return err;
+	    }
+
+	  if (grub_file_seek (file, sh->sh_offset) == (grub_off_t) -1)
+	    return grub_error (GRUB_ERR_BAD_OS,
+			       "invalid offset in section header");
+
+          if (grub_file_read (file, src, sh->sh_size)
+              != (grub_ssize_t) sh->sh_size)
+	    return grub_error (GRUB_ERR_BAD_OS,
+			       "couldn't read segment from file");
+	  sh->sh_addr = target;
+	}
+      grub_multiboot_add_elfsyms (ehdr->e_shnum, ehdr->e_shentsize,
+				  ehdr->e_shstrndx, shdr);
+    }
+
 #undef phdr
 
   return grub_errno;

@@ -46,6 +46,9 @@ static unsigned modcnt;
 static char *cmdline = NULL;
 static grub_uint32_t bootdev;
 static int bootdev_set;
+static grub_size_t elf_sec_num, elf_sec_entsize;
+static unsigned elf_sec_shstrndx;
+static void *elf_sections;
 
 /* Return the length of the Multiboot mmap that will be needed to allocate
    our platform's map.  */
@@ -73,7 +76,8 @@ grub_multiboot_get_mbi_size (void)
 {
   return sizeof (struct multiboot_info) + ALIGN_UP (cmdline_size, 4)
     + modcnt * sizeof (struct multiboot_mod_list) + total_modcmd
-    + ALIGN_UP (sizeof(PACKAGE_STRING), 4) + grub_get_multiboot_mmap_len ();
+    + ALIGN_UP (sizeof(PACKAGE_STRING), 4) + grub_get_multiboot_mmap_len ()
+    + elf_sec_entsize * elf_sec_num;
 }
 
 /* Fill previously allocated Multiboot mmap.  */
@@ -192,7 +196,28 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
       mbi->flags |= MULTIBOOT_INFO_BOOTDEV;
     }
 
+  if (elf_sec_num)
+    {
+      mbi->u.elf_sec.addr = ptrdest;
+      grub_memcpy (ptrorig, elf_sections, elf_sec_entsize * elf_sec_num);
+      mbi->u.elf_sec.num = elf_sec_num;
+      mbi->u.elf_sec.size = elf_sec_entsize;
+      mbi->u.elf_sec.shndx = elf_sec_shstrndx;
+
+      mbi->flags |= MULTIBOOT_INFO_ELF_SHDR;
+    }
+
   return GRUB_ERR_NONE;
+}
+
+void
+grub_multiboot_add_elfsyms (grub_size_t num, grub_size_t entsize,
+			    unsigned shndx, void *data)
+{
+  elf_sec_num = num;
+  elf_sec_shstrndx = shndx;
+  elf_sec_entsize = entsize;
+  elf_sections = data;
 }
 
 void
@@ -215,6 +240,11 @@ grub_multiboot_free_mbi (void)
     }
   modules = NULL;
   modules_last = NULL;
+
+  grub_free (elf_sections);
+  elf_sections = NULL;
+  elf_sec_entsize = 0;
+  elf_sec_num = 0;
 }
 
 grub_err_t

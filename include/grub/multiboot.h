@@ -43,6 +43,9 @@ grub_err_t grub_multiboot_init_mbi (int argc, char *argv[]);
 grub_err_t grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
 				      int argc, char *argv[]);
 void grub_multiboot_set_bootdev (void);
+void
+grub_multiboot_add_elfsyms (grub_size_t num, grub_size_t entsize,
+			    unsigned shndx, void *data);
 
 
 #endif /* ! GRUB_MULTIBOOT_HEADER */
