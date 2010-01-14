@@ -24,6 +24,7 @@
 #include <grub/font.h>
 #include <grub/term.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
@@ -178,7 +179,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(videotest)
 {
   cmd = grub_register_command ("videotest", grub_cmd_videotest,
-			       0, "Test video subsystem.");
+			       0, N_("Test video subsystem."));
 }
 
 GRUB_MOD_FINI(videotest)

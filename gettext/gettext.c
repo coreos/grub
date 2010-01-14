@@ -347,8 +347,8 @@ GRUB_MOD_INIT (gettext)
   grub_gettext_init_ext (lang);
 
   grub_register_command_p1 ("gettext", grub_cmd_translate,
-			    "STRING",
-			    "Translates the string with the current settings.");
+			    N_("STRING"),
+			    N_("Translates the string with the current settings."));
 
   /* Reload .mo file information if lang changes.  */
   grub_register_variable_hook ("lang", NULL, grub_gettext_env_write_lang);

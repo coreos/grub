@@ -25,6 +25,7 @@
 #include <grub/dl.h>
 #include <grub/usb.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static const char *usb_classes[] =
   {
@@ -195,7 +196,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(usbtest)
 {
   cmd = grub_register_command ("usb", grub_cmd_usbtest,
-			       0, "Test USB support.");
+			       0, N_("Test USB support."));
 }
 
 GRUB_MOD_FINI(usbtest)

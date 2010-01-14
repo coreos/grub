@@ -48,7 +48,7 @@ kernel_img_SOURCES = kern/i386/pc/startup.S \
 	kern/i386/misc.S \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
+	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
 	kern/$(target_cpu)/dl.c kern/i386/pc/init.c kern/i386/pc/mmap.c \
@@ -115,11 +115,8 @@ grub_install_SOURCES = util/grub-install.in
 bin_SCRIPTS += grub-mkrescue
 grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
-bin_SCRIPTS += grub-mkfloppy
-grub_mkfloppy_SOURCES = util/i386/pc/grub-mkfloppy.in
-
 pkglib_MODULES = biosdisk.mod chain.mod 				\
-	multiboot.mod reboot.mod halt.mod				\
+	reboot.mod halt.mod				\
 	vbe.mod vbetest.mod vbeinfo.mod play.mod serial.mod		\
 	vga.mod memdisk.mod pci.mod lspci.mod				\
 	aout.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod 	\
@@ -204,15 +201,21 @@ serial_mod_SOURCES = term/i386/pc/serial.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For multiboot.mod.
+pkglib_MODULES += multiboot.mod
 multiboot_mod_SOURCES = loader/i386/multiboot.c \
-			loader/i386/multiboot_helper.S \
-                        loader/i386/pc/multiboot2.c \
-                        loader/multiboot2.c \
+			loader/i386/multiboot_mbi.c \
                         loader/multiboot_loader.c
 multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
 multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 multiboot_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += multiboot2.mod
+multiboot2_mod_SOURCES = loader/i386/multiboot.c \
+			 loader/i386/multiboot_mbi.c \
+                         loader/multiboot_loader.c
+multiboot2_mod_CFLAGS = $(COMMON_CFLAGS) -DGRUB_USE_MULTIBOOT2
+multiboot2_mod_LDFLAGS = $(COMMON_LDFLAGS)
+multiboot2_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For vbe.mod.
 vbe_mod_SOURCES = video/i386/pc/vbe.c

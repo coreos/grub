@@ -1,7 +1,7 @@
 #! /bin/sh -e
 
 # grub-mkconfig helper script.
-# Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
+# Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,12 +45,13 @@ kfreebsd_entry ()
   fi
   printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
-	kfreebsd			${rel_dirname}/${basename}
+	echo			$(printf "$(gettext "Loading kernel of FreeBSD %s ...")" ${version})
+	kfreebsd		${rel_dirname}/${basename}
 EOF
 
   if test -n "${devices}" ; then
     cat << EOF
-	kfreebsd_loadenv		${devices_rel_dirname}/${devices_basename}
+	kfreebsd_loadenv	${devices_rel_dirname}/${devices_basename}
 EOF
   fi
 

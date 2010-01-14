@@ -1,7 +1,7 @@
 /* crc.c - command to calculate the crc32 checksum of a file  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <grub/misc.h>
 #include <grub/lib/crc.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_crc (grub_command_t cmd __attribute__ ((unused)),
@@ -45,10 +46,13 @@ grub_cmd_crc (grub_command_t cmd __attribute__ ((unused)),
   while ((size = grub_file_read (file, buf, sizeof (buf))) > 0)
     crc = grub_getcrc32 (crc, buf, size);
 
-  grub_file_close (file);
+  if (grub_errno)
+    goto fail;
 
   grub_printf ("%08x\n", crc);
 
+ fail:
+  grub_file_close (file);
   return 0;
 }
 
@@ -57,8 +61,8 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(crc)
 {
   cmd = grub_register_command ("crc", grub_cmd_crc,
-			       "FILE",
-			       "Calculate the crc32 checksum of a file.");
+			       N_("FILE"),
+			       N_("Calculate the crc32 checksum of a file."));
 }
 
 GRUB_MOD_FINI(crc)

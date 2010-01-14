@@ -1,7 +1,7 @@
 /* misc.h - prototypes for misc functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,22 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 #include <grub/err.h>
+
+/* GCC version checking borrowed from glibc. */
+#if defined(__GNUC__) && defined(__GNUC_MINOR__)
+#  define GNUC_PREREQ(maj,min) \
+	((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+#else
+#  define GNUC_PREREQ(maj,min) 0
+#endif
+
+/* Does this compiler support compile-time error attributes? */
+#if GNUC_PREREQ(4,3)
+#  define ATTRIBUTE_ERROR(msg) \
+	__attribute__ ((__error__ (msg)))
+#else
+#  define ATTRIBUTE_ERROR(msg)
+#endif
 
 #define ALIGN_UP(addr, align) \
 	((addr + (typeof (addr)) align - 1) & ~((typeof (addr)) align - 1))
@@ -183,11 +199,11 @@ int EXPORT_FUNC(grub_sprintf) (char *str, const char *fmt, ...) __attribute__ ((
 int EXPORT_FUNC(grub_vsprintf) (char *str, const char *fmt, va_list args);
 void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
-grub_ssize_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
-					     grub_size_t destsize,
-					     const grub_uint8_t *src,
-					     grub_size_t srcsize,
-					     const grub_uint8_t **srcend);
+grub_size_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
+					    grub_size_t destsize,
+					    const grub_uint8_t *src,
+					    grub_size_t srcsize,
+					    const grub_uint8_t **srcend);
 grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint32_t d, grub_uint32_t *r);
 
