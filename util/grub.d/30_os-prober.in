@@ -45,10 +45,10 @@ EOF
 	prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
 	cat << EOF
         insmod ${GRUB_VIDEO_BACKEND}
-        do_resume=0
+        set do_resume=0
         if [ /var/vm/sleepimage -nt10 / ]; then
            if xnu_resume /var/vm/sleepimage; then
-             do_resume=1
+             set do_resume=1
            fi
         fi
         if [ \$do_resume == 0 ]; then

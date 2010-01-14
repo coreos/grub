@@ -1,5 +1,10 @@
 2010-01-14  Carles Pina i Estany  <carles@pina.cat>
 
+	* util/grub.d/30_os-prober.in: Use `set var=val' rather than plain
+	`var=val'.
+
+2010-01-14  Carles Pina i Estany  <carles@pina.cat>
+
 	* normal/cmdline.c (print_completion): Gettextizze.
 
 2001-01-14  Carles Pina i Estany  <carles@pina.cat>
