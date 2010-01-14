@@ -265,6 +265,11 @@ grub_module  (int argc, char *argv[])
   if (err)
     goto fail;
 
+  err = grub_multiboot_add_module ((grub_addr_t) module, size,
+				   argc - 1, argv + 1);
+  if (err)
+    goto fail;
+
   if (grub_file_read (file, module, size) != size)
     {
       grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
