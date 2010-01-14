@@ -1,3 +1,7 @@
+2010-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/cmdline.c (print_completion): Gettextizze.
+
 2001-01-14  Carles Pina i Estany  <carles@pina.cat>
 
 	* loader/i386/pc/chainloader.c: Include `<grub/mm.h>'.
