@@ -35,6 +35,8 @@
 void grub_multiboot (int argc, char *argv[]);
 void grub_module (int argc, char *argv[]);
 
+void grub_multiboot_set_accepts_video (int val);
+
 grub_size_t grub_multiboot_get_mbi_size (void);
 grub_err_t grub_multiboot_make_mbi (void *orig, grub_uint32_t dest,
 				    grub_off_t buf_off, grub_size_t bufsize);

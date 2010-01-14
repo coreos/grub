@@ -557,6 +557,7 @@ grub_video_vbe_get_info_and_fini (struct grub_video_mode_info *mode_info,
 static struct grub_video_adapter grub_video_vbe_adapter =
   {
     .name = "VESA BIOS Extension Video Driver",
+    .id = GRUB_VIDEO_DRIVER_VBE,
 
     .init = grub_video_vbe_init,
     .fini = grub_video_vbe_fini,
