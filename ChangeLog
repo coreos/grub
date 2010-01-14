@@ -1,3 +1,24 @@
+2010-01-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/loader.h (grub_linux16_boot): Renamed to ...
+	(grub_linux16_real_boot): ... this.
+	* kern/i386/loader.S: Likewise.
+	* loader/i386/pc/linux.c: Include `<grub/video.h>' and `<grub/mm.h>'.
+	(grub_linux16_boot): New function.  Switches to text mode and calls
+	grub_linux16_real_boot().
+
+	* loader/i386/bsd.c: Include `<grub/video.h>'.
+	(grub_freebsd_boot, grub_openbsd_boot, grub_netbsd_boot): Switch to
+	text mode before calling grub_unix_real_boot().
+
+	* loader/i386/multiboot.c: Include `<grub/video.h>'.
+	(grub_multiboot_boot): Switch to text mode before calling
+	grub_relocator32_boot().
+
+	* loader/i386/pc/chainloader.c: Include `<grub/video.h>'.
+	(grub_chainloader_boot): Switch to text mode before calling
+	grub_chainloader_real_boot().
+
 2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
 2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
 

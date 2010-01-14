@@ -1,7 +1,7 @@
 /* multiboot.c - boot a multiboot OS image. */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@
 #include <grub/gzio.h>
 #include <grub/env.h>
 #include <grub/i386/relocator.h>
+#include <grub/video.h>
 
 extern grub_dl_t my_mod;
 static grub_size_t code_size, alloc_mbi;
@@ -88,6 +89,8 @@ grub_multiboot_boot (void)
 				 grub_multiboot_pure_size, mbi_size);
   if (err)
     return err;
+
+  grub_video_set_mode ("text", NULL);
 
   grub_relocator32_boot (grub_multiboot_payload_orig,
 			 grub_multiboot_payload_dest,
