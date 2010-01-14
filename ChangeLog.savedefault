@@ -1,18 +1,18 @@
-2010-10-05  Jordan Uggla  <jordan.uggla@gmail.com>
-2010-10-05  Colin Watson  <cjwatson@ubuntu.com>
+2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-reboot.in: Make sure prev_saved_entry always gets a
 	non-empty value.
 
-2010-10-05  Jordan Uggla  <jordan.uggla@gmail.com>
-2010-10-05  Colin Watson  <cjwatson@ubuntu.com>
+2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub.d/00_header.in: Define a "savedefault" function for use
 	in menu entries.
 	* util/grub-mkconfig_lib.in (save_default_entry): Use it.
 
-2010-10-05  Jordan Uggla  <jordan.uggla@gmail.com>
-2010-10-05  Colin Watson  <cjwatson@ubuntu.com>
+2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig_lib.in (save_default_entry): Only set
 	saved_entry if boot_once is unset.
