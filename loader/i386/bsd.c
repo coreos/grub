@@ -556,8 +556,10 @@ grub_freebsd_boot (void)
       if (err)
 	return err;
 
+#ifdef GRUB_MACHINE_EFI
       if (! grub_efi_finish_boot_services ())
 	grub_fatal ("cannot exit boot services");
+#endif
 
       pagetable = p - (4096 * 3);
       fill_bsd64_pagetable (pagetable, (pagetable - p0) + p_target);
@@ -585,8 +587,10 @@ grub_freebsd_boot (void)
       if (err)
 	return err;
 
+#ifdef GRUB_MACHINE_EFI
       if (! grub_efi_finish_boot_services ())
 	grub_fatal ("cannot exit boot services");
+#endif
 
       grub_memcpy (&stack[8], &bi, sizeof (bi));
       state.eip = entry;
@@ -693,8 +697,10 @@ grub_openbsd_boot (void)
   buf = (grub_uint8_t *) pa;
   argbuf_target_end = buf - buf0 + buf_target;
 
+#ifdef GRUB_MACHINE_EFI
   if (! grub_efi_finish_boot_services ())
     grub_fatal ("cannot exit boot services");
+#endif
 
   state.eip = entry;
   state.esp = ((grub_uint8_t *) stack - buf0) + buf_target;
@@ -816,8 +822,10 @@ grub_netbsd_boot (void)
   if (err)
     return err;
 
+#ifdef GRUB_MACHINE_EFI
   if (! grub_efi_finish_boot_services ())
     grub_fatal ("cannot exit boot services");
+#endif
 
   state.eip = entry;
   state.esp = stack_target;
