@@ -1,5 +1,9 @@
 2010-01-14  BVK Chaitanya  <bvk@dbook>
 
+	Use qemu-system-i386 instead of qemu.
+
+	* tests/util/grub-shell.in (outfile): Use qemu-system-i386.
+
 	Removed unnecessary grub_test_* wrappers.
 
 	* tests/lib/unit_test.c (grub_test_malloc): Removed.

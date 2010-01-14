@@ -135,7 +135,7 @@ fdafile=`mktemp`
 cp ${isofile} ${fdafile}
 
 outfile=`mktemp`
-qemu ${qemuopts} -nographic -serial stdio -hda ${hdafile} -fda ${fdafile} -cdrom ${isofile} -boot ${bootdev} | tr -d "\r" >${outfile}
+qemu-system-i386 ${qemuopts} -nographic -serial stdio -hda ${hdafile} -fda ${fdafile} -cdrom ${isofile} -boot ${bootdev} | tr -d "\r" >${outfile}
 
 cat $outfile
 
