@@ -46,6 +46,10 @@
 #include <grub/i386/relocator.h>
 #include <grub/video.h>
 
+#ifdef GRUB_MACHINE_EFI
+#include <grub/efi/efi.h>
+#endif
+
 extern grub_dl_t my_mod;
 static grub_size_t code_size, alloc_mbi;
 
@@ -87,6 +91,11 @@ grub_multiboot_boot (void)
 				 grub_multiboot_pure_size, mbi_size);
   if (err)
     return err;
+
+#ifdef GRUB_MACHINE_EFI
+  if (! grub_efi_finish_boot_services ())
+     grub_fatal ("cannot exit boot services");
+#endif
 
   grub_relocator32_boot (grub_multiboot_payload_orig,
 			 grub_multiboot_payload_dest,

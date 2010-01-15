@@ -1,5 +1,38 @@
 2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Enable multiboot on non-pc.
+
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (pkglib_MODULES): Move
+	multiboot.mod and multiboot2.mod to ...
+	* conf/i386.rmk (pkglib_MODULES): ... here.
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (multiboot_mod_SOURCES):
+	Moved to ...
+	* conf/i386.rmk (multiboot_mod_SOURCES): .. here.
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (multiboot_mod_CFLAGS):
+	Moved to ...
+	* conf/i386.rmk (multiboot_mod_CFLAGS): .. here.
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (multiboot_mod_ASFLAGS):
+	Moved to ...
+	* conf/i386.rmk (multiboot_mod_ASFLAGS): .. here.
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (multiboot_mod_LDFLAGS):
+	Moved to ...
+	* conf/i386.rmk (multiboot_mod_LDFLAGS): .. here.
+	* conf/x86_64-efi.rmk (pkglib_MODULES): Remove ata.mod and
+	relocator.mod.
+	(ata_mod_SOURCES): Removed.
+	(ata_mod_CFLAGS): Likewise.
+	(ata_mod_LDFLAGS): Likewise.
+	(relocator_mod_SOURCES): Removed.
+	(relocator_mod_CFLAGS): Likewise.
+	(relocator_mod_ASFLAGS): Likewise.
+	(relocator_mod_LDFLAGS): Likewise.
+	Include i386.mk.
+	* include/grub/x86_64/multiboot.h: New file.
+	* loader/i386/multiboot.c (grub_multiboot_boot) [GRUB_MACHINE_EFI]:
+	Terminate EFI.
+
+2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Video multiboot support.
 
 	* include/grub/multiboot.h (grub_multiboot_set_accepts_video):

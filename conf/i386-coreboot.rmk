@@ -140,22 +140,6 @@ serial_mod_SOURCES = term/i386/pc/serial.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-pkglib_MODULES += multiboot.mod
-multiboot_mod_SOURCES = loader/i386/multiboot.c \
-			loader/i386/multiboot_mbi.c \
-	                loader/multiboot_loader.c
-multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
-multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
-multiboot_mod_ASFLAGS = $(COMMON_ASFLAGS)
-
-pkglib_MODULES += multiboot2.mod
-multiboot2_mod_SOURCES = loader/i386/multiboot.c \
-                         loader/multiboot_loader.c \
-			 loader/i386/multiboot_mbi.c
-multiboot2_mod_CFLAGS = $(COMMON_CFLAGS) -DGRUB_USE_MULTIBOOT2
-multiboot2_mod_LDFLAGS = $(COMMON_LDFLAGS)
-multiboot2_mod_ASFLAGS = $(COMMON_ASFLAGS)
-
 # For aout.mod.
 aout_mod_SOURCES = loader/aout.c
 aout_mod_CFLAGS = $(COMMON_CFLAGS)
