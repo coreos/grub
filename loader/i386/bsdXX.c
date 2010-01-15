@@ -146,13 +146,13 @@ SUFFIX (grub_freebsd_load_elfmodule_obj) (struct grub_relocator *relocator,
 				      argc - 1, argv + 1, module,
 				      curload - module);
   if (! err)
-    err = grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA
-				 | FREEBSD_MODINFOMD_ELFHDR,
-				 &e, sizeof (e));
+    err = grub_bsd_add_meta (FREEBSD_MODINFO_METADATA 
+			     | FREEBSD_MODINFOMD_ELFHDR,
+			     &e, sizeof (e));
   if (! err)
-    err = grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA
-				 | FREEBSD_MODINFOMD_SHDR,
-				 shdr, e.e_shnum * e.e_shentsize);
+    err = grub_bsd_add_meta (FREEBSD_MODINFO_METADATA
+			     | FREEBSD_MODINFOMD_SHDR,
+			     shdr, e.e_shnum * e.e_shentsize);
 
   return err;
 }
@@ -275,9 +275,9 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
   if (err)
     return err;
 
-  err = grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA |
-			       FREEBSD_MODINFOMD_ELFHDR, &e,
-			       sizeof (e));
+  err = grub_bsd_add_meta (FREEBSD_MODINFO_METADATA |
+			   FREEBSD_MODINFOMD_ELFHDR, &e,
+			   sizeof (e));
   if (err)
     return err;
 
@@ -346,22 +346,22 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
     {
       dynamic = sym->st_value;
       grub_dprintf ("bsd", "dynamic = %llx\n", (unsigned long long) dynamic);
-      err = grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA |
-				   FREEBSD_MODINFOMD_DYNAMIC, &dynamic,
-				   sizeof (dynamic));
+      err = grub_bsd_add_meta (FREEBSD_MODINFO_METADATA |
+			       FREEBSD_MODINFOMD_DYNAMIC, &dynamic,
+			       sizeof (dynamic));
       if (err)
 	return err;
     }
 
-  err = grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA |
-			       FREEBSD_MODINFOMD_SSYM, &symstart,
-			       sizeof (symstart));
+  err = grub_bsd_add_meta (FREEBSD_MODINFO_METADATA |
+			   FREEBSD_MODINFOMD_SSYM, &symstart,
+			   sizeof (symstart));
   if (err)
     return err;
 
-  err = grub_freebsd_add_meta (FREEBSD_MODINFO_METADATA |
-			       FREEBSD_MODINFOMD_ESYM, &symend,
-			       sizeof (symend));
+  err = grub_bsd_add_meta (FREEBSD_MODINFO_METADATA |
+			   FREEBSD_MODINFOMD_ESYM, &symend,
+			   sizeof (symend));
   if (err)
     return err;
 
@@ -369,3 +369,5 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
 
   return GRUB_ERR_NONE;
 }
+
+

@@ -114,6 +114,12 @@ struct grub_freebsd_bootinfo
   grub_uint32_t bi_modulep;
 } __attribute__ ((packed));
 
+struct freebsd_tag_header
+{
+  grub_uint32_t type;
+  grub_uint32_t len;
+};
+
 #define OPENBSD_RB_ASKNAME	(1 << 0)  /* ask for file name to reboot from */
 #define OPENBSD_RB_SINGLE	(1 << 1)  /* reboot to single user only */
 #define OPENBSD_RB_NOSYNC	(1 << 2)  /* dont sync before reboot */
@@ -198,48 +204,21 @@ struct grub_openbsd_bootargs
 struct grub_netbsd_bootinfo
 {
   grub_uint32_t bi_count;
-  grub_addr_t bi_data[1];
+  grub_addr_t bi_data[0];
 };
 
 #define NETBSD_BTINFO_BOOTPATH		0
 #define NETBSD_BTINFO_ROOTDEVICE	1
-#define NETBSD_BTINFO_BOOTDISK		3
+#define NETBSD_BTINFO_CONSOLE		6
 #define NETBSD_BTINFO_MEMMAP		9
 
 struct grub_netbsd_btinfo_common
 {
-  int len;
-  int type;
-};
-
-struct grub_netbsd_btinfo_mmap_header
-{
-  struct grub_netbsd_btinfo_common common;
-  grub_uint32_t count;
-};
-
-struct grub_netbsd_btinfo_mmap_entry
-{
-  grub_uint64_t addr;
-  grub_uint64_t len;
-#define	NETBSD_MMAP_AVAILABLE	1
-#define	NETBSD_MMAP_RESERVED 	2
-#define	NETBSD_MMAP_ACPI	3
-#define	NETBSD_MMAP_NVS 	4
+  grub_uint32_t len;
   grub_uint32_t type;
 };
 
-struct grub_netbsd_btinfo_bootpath
-{
-  struct grub_netbsd_btinfo_common common;
-  char bootpath[80];
-};
-
-struct grub_netbsd_btinfo_rootdevice
-{
-  struct grub_netbsd_btinfo_common common;
-  char devname[16];
-};
+#define GRUB_NETBSD_MAX_BOOTPATH_LEN 80
 
 struct grub_netbsd_btinfo_bootdisk
 {
@@ -253,6 +232,15 @@ struct grub_netbsd_btinfo_bootdisk
   int biosdev;
   int partition;
 };
+
+struct grub_netbsd_btinfo_serial
+{
+  char devname[16];
+  grub_uint32_t addr;
+  grub_uint32_t speed;
+};
+
+#define GRUB_NETBSD_MAX_ROOTDEVICE_LEN 16
 
 grub_err_t grub_freebsd_load_elfmodule32 (struct grub_relocator *relocator,
 					  grub_file_t file, int argc,
@@ -268,8 +256,8 @@ grub_err_t grub_freebsd_load_elf_meta64 (struct grub_relocator *relocator,
 					 grub_file_t file,
 					 grub_addr_t *kern_end);
 
-grub_err_t grub_freebsd_add_meta (grub_uint32_t type, void *data,
-				  grub_uint32_t len);
+grub_err_t grub_bsd_add_meta (grub_uint32_t type, 
+			      void *data, grub_uint32_t len);
 grub_err_t grub_freebsd_add_meta_module (char *filename, char *type,
 					 int argc, char **argv,
 					 grub_addr_t addr, grub_uint32_t size);
