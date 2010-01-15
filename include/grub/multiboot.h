@@ -37,6 +37,7 @@ extern struct grub_relocator *grub_multiboot_relocator;
 void grub_multiboot (int argc, char *argv[]);
 void grub_module (int argc, char *argv[]);
 
+void grub_multiboot_set_accepts_video (int val);
 grub_err_t grub_multiboot_make_mbi (grub_uint32_t *target);
 void grub_multiboot_free_mbi (void);
 grub_err_t grub_multiboot_init_mbi (int argc, char *argv[]);

@@ -1,7 +1,7 @@
 /* multiboot.c - boot a multiboot OS image. */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
  */
 
 /* The bits in the required part of flags field we don't support.  */
-#define UNSUPPORTED_FLAGS			0x0000fff0
+#define UNSUPPORTED_FLAGS			0x0000fff8
 
 #include <grub/loader.h>
 #include <grub/multiboot.h>
@@ -43,6 +43,11 @@
 #include <grub/gzio.h>
 #include <grub/env.h>
 #include <grub/i386/relocator.h>
+#include <grub/video.h>
+
+#ifdef GRUB_MACHINE_EFI
+#include <grub/efi/efi.h>
+#endif
 
 extern grub_dl_t my_mod;
 struct grub_relocator *grub_multiboot_relocator = NULL;
@@ -66,6 +71,11 @@ grub_multiboot_boot (void)
   err = grub_multiboot_make_mbi (&state.ebx);
   if (err)
     return err;
+
+#ifdef GRUB_MACHINE_EFI
+  if (! grub_efi_finish_boot_services ())
+     grub_fatal ("cannot exit boot services");
+#endif
 
   grub_relocator32_boot (grub_multiboot_relocator, state);
 
@@ -210,6 +220,34 @@ grub_multiboot (int argc, char *argv[])
     }
   else if (grub_multiboot_load_elf (file, buffer) != GRUB_ERR_NONE)
     goto fail;
+
+  if (header->flags & MULTIBOOT_VIDEO_MODE)
+    {
+      switch (header->mode_type)
+	{
+	case 1:
+	  grub_env_set ("gfxpayload", "text");
+	  break;
+
+	case 0:
+	  {
+	    char buf[sizeof ("XXXXXXXXXXxXXXXXXXXXXxXXXXXXXXXX,XXXXXXXXXXxXXXXXXXXXX,auto")];
+	    if (header->depth && header->width && header->height)
+	      grub_sprintf (buf, "%dx%dx%d,%dx%d,auto", header->width,
+			    header->height, header->depth, header->width,
+			    header->height);
+	    else if (header->width && header->height)
+	      grub_sprintf (buf, "%dx%d,auto", header->width, header->height);
+	    else
+	      grub_sprintf (buf, "auto");
+
+	    grub_env_set ("gfxpayload", buf);
+	    break;
+	  }
+	}
+    }
+
+  grub_multiboot_set_accepts_video (!!(header->flags & MULTIBOOT_VIDEO_MODE));
 
   grub_multiboot_set_bootdev ();
 

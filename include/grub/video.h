@@ -329,4 +329,7 @@ grub_video_check_mode_flag (unsigned int flags, unsigned int mask,
 grub_video_driver_id_t
 grub_video_get_driver_id (void);
 
+grub_video_driver_id_t
+grub_video_get_driver_id (void);
+
 #endif /* ! GRUB_VIDEO_HEADER */

@@ -1,7 +1,7 @@
 /* linux.c - boot Linux zImage or bzImage */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include <grub/i18n.h>
 #include <grub/mm.h>
 #include <grub/cpu/relocator.h>
+#include <grub/video.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x9000
 #define GRUB_LINUX_CL_END_OFFSET	0x90FF
@@ -57,6 +58,8 @@ grub_linux16_boot (void)
   state.sp = GRUB_LINUX_SETUP_STACK;
   state.cs = segment + 0x20;
   state.ip = 0;
+
+  grub_video_set_mode ("text", 0, 0);
   
   return grub_relocator16_boot (relocator, state);
 }

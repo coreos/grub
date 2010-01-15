@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008, 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include <grub/i18n.h>
 #include <grub/i386/pc/serial.h>
 
+#include <grub/video.h>
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>
 #endif
@@ -599,6 +600,8 @@ grub_freebsd_boot (void)
 
   bi.bi_kernend = kern_end;
 
+  grub_video_set_mode ("text", 0, 0);
+
   if (is_64bit)
     {
       struct grub_relocator64_state state;
@@ -772,6 +775,8 @@ grub_openbsd_boot (void)
   stack[6] = grub_mmap_get_lower () >> 10;
   stack[7] = argbuf_target_end - argbuf_target_start;
   stack[8] = argbuf_target_start;
+
+  grub_video_set_mode ("text", 0, 0);
 
   return grub_relocator32_boot (relocator, state);
 }

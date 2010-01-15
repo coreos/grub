@@ -32,7 +32,7 @@ grub_install_SOURCES = util/i386/efi/grub-install.in
 pkglib_MODULES = kernel.img chain.mod appleldr.mod 	\
 	halt.mod reboot.mod pci.mod lspci.mod \
 	datetime.mod date.mod datehook.mod loadbios.mod \
-	fixvideo.mod mmap.mod acpi.mod ata.mod
+	fixvideo.mod mmap.mod acpi.mod
 
 # For kernel.img.
 kernel_img_EXPORTS = no
