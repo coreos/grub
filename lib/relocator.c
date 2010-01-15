@@ -163,6 +163,9 @@ get_best_header (struct grub_relocator *rel,
       allowable_start = (grub_addr_t) h;
       allowable_end = (grub_addr_t) (h + h->size);
 
+      if (h->magic != GRUB_MM_FREE_MAGIC)
+	grub_fatal ("free magic is broken at %p: 0x%x", h, h->magic);
+
       try_addr (allowable_start, allowable_end);
 
       if ((grub_addr_t) h == (grub_addr_t) (rb + 1))
@@ -299,7 +302,8 @@ malloc_in_range (struct grub_relocator *rel,
   {
     struct grub_mm_header *foll = NULL;
     
-    if (best_addr + size <= (grub_addr_t) (hb + hb->size))
+    if (ALIGN_UP (best_addr + size, GRUB_MM_ALIGN) + GRUB_MM_ALIGN
+	<= (grub_addr_t) (hb + hb->size))
       {
 	foll = (void *) ALIGN_UP (best_addr + size, GRUB_MM_ALIGN);
 	foll->magic = GRUB_MM_FREE_MAGIC;
@@ -324,11 +328,11 @@ malloc_in_range (struct grub_relocator *rel,
 	else
 	  foll = hb->next;
 	
+	hbp->next = foll;
 	if (rb->first == hb)
 	  rb->first = foll;
 	if (rb->first == hb)
 	  rb->first = (void *) (rb + 1);
-	hbp->next = foll;
       }
     *res = best_addr;
     return 1;
