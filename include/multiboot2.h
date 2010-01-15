@@ -195,6 +195,9 @@ struct multiboot_info
   multiboot_uint32_t framebuffer_width;
   multiboot_uint32_t framebuffer_height;
   multiboot_uint8_t framebuffer_bpp;
+#define MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED 0
+#define MULTIBOOT_FRAMEBUFFER_TYPE_RGB     1
+#define MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT	2
   multiboot_uint8_t framebuffer_type;
   union
   {
@@ -222,9 +225,6 @@ struct multiboot_color
   multiboot_uint8_t green;
   multiboot_uint8_t blue;
 };
-
-#define MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED 0
-#define MULTIBOOT_FRAMEBUFFER_TYPE_RGB     1
 
 struct multiboot_mmap_entry
 {
