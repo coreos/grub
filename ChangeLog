@@ -1,3 +1,12 @@
+2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Video driver ids.
+
+	* include/grub/video.h (grub_video_driver_id): New type.
+	(grub_video_adapter): New member 'id'. All users updated.
+	(grub_video_get_driver_id): New proto.
+	* video/video.c (grub_video_get_driver_id): New function.
+
 2010-01-14  Carles Pina i Estany  <carles@pina.cat>
 
 	* util/grub.d/30_os-prober.in: Use `set var=val' rather than plain
