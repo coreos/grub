@@ -185,6 +185,20 @@ CLEANFILES += $(grub-mkconfig_SCRIPTS)
 
 grub-mkconfig_DATA += util/grub.d/README
 
+# For grub-set-default.
+grub-set-default: util/grub-set-default.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+sbin_SCRIPTS += grub-set-default
+CLEANFILES += grub-set-default
+
+# For grub-reboot.
+grub-reboot: util/grub-reboot.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+sbin_SCRIPTS += grub-reboot
+CLEANFILES += grub-reboot
+
 # Filing systems.
 pkglib_MODULES += fshelp.mod fat.mod ufs1.mod ufs2.mod ext2.mod ntfs.mod \
 	ntfscomp.mod minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod	\
