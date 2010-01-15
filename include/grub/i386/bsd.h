@@ -212,6 +212,7 @@ struct grub_netbsd_bootinfo
 #define NETBSD_BTINFO_CONSOLE		6
 #define NETBSD_BTINFO_SYMTAB		8
 #define NETBSD_BTINFO_MEMMAP		9
+#define NETBSD_BTINFO_FRAMEBUF		12
 
 struct grub_netbsd_btinfo_common
 {
@@ -247,6 +248,27 @@ struct grub_netbsd_btinfo_serial
   grub_uint32_t addr;
   grub_uint32_t speed;
 };
+
+struct grub_netbsd_btinfo_framebuf
+{
+  grub_uint64_t fbaddr;
+  grub_uint32_t flags;
+  grub_uint32_t width;
+  grub_uint32_t height;
+  grub_uint16_t pitch;
+  grub_uint8_t bpp;
+
+  grub_uint8_t red_mask_size;
+  grub_uint8_t green_mask_size;
+  grub_uint8_t blue_mask_size;
+
+  grub_uint8_t red_field_pos;
+  grub_uint8_t green_field_pos;
+  grub_uint8_t blue_field_pos;
+
+  grub_uint8_t reserved[16];
+};
+
 
 #define GRUB_NETBSD_MAX_ROOTDEVICE_LEN 16
 

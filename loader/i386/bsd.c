@@ -40,7 +40,13 @@
 #endif
 #ifdef GRUB_MACHINE_EFI
 #include <grub/efi/efi.h>
+#define NETBSD_DEFAULT_VIDEO_MODE "800x600"
+#else
+#define NETBSD_DEFAULT_VIDEO_MODE "text"
+#include <grub/i386/pc/vbe.h>
 #endif
+#include <grub/video.h>
+
 #include <grub/disk.h>
 #include <grub/device.h>
 #include <grub/partition.h>
@@ -771,6 +777,85 @@ grub_openbsd_boot (void)
 }
 
 static grub_err_t
+grub_netbsd_setup_video (void)
+{
+  struct grub_video_mode_info mode_info;
+  void *framebuffer;
+  const char *modevar;
+  struct grub_netbsd_btinfo_framebuf params;
+  grub_err_t err;
+
+  modevar = grub_env_get ("gfxpayload");
+
+  /* Now all graphical modes are acceptable.
+     May change in future if we have modes without framebuffer.  */
+  if (modevar && *modevar != 0)
+    {
+      char *tmp;
+      tmp = grub_malloc (grub_strlen (modevar)
+			 + sizeof (";" NETBSD_DEFAULT_VIDEO_MODE));
+      if (! tmp)
+	return grub_errno;
+      grub_sprintf (tmp, "%s;" NETBSD_DEFAULT_VIDEO_MODE, modevar);
+      err = grub_video_set_mode (tmp, 0, 0);
+      grub_free (tmp);
+    }
+  else
+    err = grub_video_set_mode (NETBSD_DEFAULT_VIDEO_MODE, 0, 0);
+
+  if (err)
+    return err;
+
+  err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
+
+  if (err)
+    return err;
+
+  params.width = mode_info.width;
+  params.height = mode_info.height;
+  params.bpp = mode_info.bpp;
+  params.pitch = mode_info.pitch;
+  params.flags = 0;
+
+  params.fbaddr = (grub_addr_t) framebuffer;
+
+  params.red_mask_size = mode_info.red_mask_size;
+  params.red_field_pos = mode_info.red_field_pos;
+  params.green_mask_size = mode_info.green_mask_size;
+  params.green_field_pos = mode_info.green_field_pos;
+  params.blue_mask_size = mode_info.blue_mask_size;
+  params.blue_field_pos = mode_info.blue_field_pos;
+
+#ifdef GRUB_MACHINE_PCBIOS
+  /* VESA packed modes may come with zeroed mask sizes, which need
+     to be set here according to DAC Palette width.  If we don't,
+     this results in Linux displaying a black screen.  */
+  if (mode_info.bpp <= 8)
+    {
+      struct grub_vbe_info_block controller_info;
+      int status;
+      int width = 8;
+
+      status = grub_vbe_bios_get_controller_info (&controller_info);
+
+      if (status == GRUB_VBE_STATUS_OK &&
+	  (controller_info.capabilities & GRUB_VBE_CAPABILITY_DACWIDTH))
+	status = grub_vbe_bios_set_dac_palette_width (&width);
+
+      if (status != GRUB_VBE_STATUS_OK)
+	/* 6 is default after mode reset.  */
+	width = 6;
+
+      params.red_mask_size = params.green_mask_size
+	= params.blue_mask_size = width;
+    }
+#endif
+
+  err = grub_bsd_add_meta (NETBSD_BTINFO_FRAMEBUF, &params, sizeof (params));
+  return err;
+}
+
+static grub_err_t
 grub_netbsd_boot (void)
 {
   struct grub_netbsd_bootinfo *bootinfo;
@@ -785,6 +870,14 @@ grub_netbsd_boot (void)
   err = grub_bsd_add_mmap ();
   if (err)
     return err;
+
+  err = grub_netbsd_setup_video ();
+  if (err)
+    {
+      grub_print_error ();
+      grub_printf ("Booting however\n");
+      grub_errno = GRUB_ERR_NONE;
+    }
 
   {
     struct bsd_tag *tag;
@@ -1320,7 +1413,7 @@ grub_cmd_netbsd (grub_extcmd_t cmd, int argc, char *argv[])
 	  grub_memset (&cons, 0, sizeof (cons));
 	  grub_strcpy (cons.devname, "pc");
 
- 	  grub_bsd_add_meta (NETBSD_BTINFO_CONSOLE, &cons, sizeof (cons));
+	  grub_bsd_add_meta (NETBSD_BTINFO_CONSOLE, &cons, sizeof (cons));
 	}
 
       grub_loader_set (grub_netbsd_boot, grub_bsd_unload, 0);
