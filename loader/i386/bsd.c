@@ -789,6 +789,7 @@ grub_netbsd_setup_video (void)
   const char *modevar;
   struct grub_netbsd_btinfo_framebuf params;
   grub_err_t err;
+  grub_video_driver_id_t driv_id;
 
   modevar = grub_env_get ("gfxpayload");
 
@@ -810,6 +811,10 @@ grub_netbsd_setup_video (void)
 
   if (err)
     return err;
+
+  driv_id = grub_video_get_driver_id ();
+  if (driv_id == GRUB_VIDEO_DRIVER_NONE)
+    return GRUB_ERR_NONE;
 
   err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
 
@@ -835,7 +840,7 @@ grub_netbsd_setup_video (void)
   /* VESA packed modes may come with zeroed mask sizes, which need
      to be set here according to DAC Palette width.  If we don't,
      this results in Linux displaying a black screen.  */
-  if (mode_info.bpp <= 8)
+  if (mode_info.bpp <= 8 && driv_id == GRUB_VIDEO_DRIVER_VBE)
     {
       struct grub_vbe_info_block controller_info;
       int status;
