@@ -33,6 +33,7 @@
 #include <grub/command.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
+#include <grub/i386/pc/serial.h>
 
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>
@@ -137,7 +138,7 @@ static const struct grub_arg_option netbsd_opts[] =
     {"silent", 'z', 0, N_("Supress normal output (warnings remain)."), 0, 0},
     {"root", 'r', 0, N_("Set root device."), N_("DEVICE"), ARG_TYPE_STRING},
     {"serial", 'h', GRUB_ARG_OPTION_OPTIONAL, 
-     N_("Use serial console."), N_("ADDR,SPEED"), ARG_TYPE_STRING},
+     N_("Use serial console."), N_("[ADDR|comUNIT][,SPEED]"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -1275,15 +1276,24 @@ grub_cmd_netbsd (grub_extcmd_t cmd, int argc, char *argv[])
 	  if (cmd->state[NETBSD_SERIAL_ARG].arg)
 	    {
 	      ptr = cmd->state[NETBSD_SERIAL_ARG].arg;
-	      serial.addr = grub_strtoul (ptr, &ptr, 0);
+	      if (grub_memcmp (ptr, "com", sizeof ("com") - 1) == 0)
+		{
+		  ptr += sizeof ("com") - 1;
+		  serial.addr 
+		    = grub_serial_hw_get_port (grub_strtoul (ptr, &ptr, 0));
+		}
+	      else
+		serial.addr = grub_strtoul (ptr, &ptr, 0);
 	      if (grub_errno)
 		return grub_errno;
-	      if (*ptr != ',')
-		return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid format");
-	      ptr++;
-	      serial.speed = grub_strtoul (ptr, &ptr, 0);
-	      if (grub_errno)
-		return grub_errno;
+
+	      if (*ptr == ',')
+		{
+		  ptr++;
+		  serial.speed = grub_strtoul (ptr, &ptr, 0);
+		  if (grub_errno)
+		    return grub_errno;
+		}
 	    }
 	  
  	  grub_bsd_add_meta (NETBSD_BTINFO_CONSOLE, &serial, sizeof (serial));

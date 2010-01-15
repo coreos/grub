@@ -74,8 +74,8 @@ static const unsigned short serial_hw_io_addr[] = { 0x3f8, 0x2f8, 0x3e8, 0x2e8 }
 #endif
 
 /* Return the port number for the UNITth serial device.  */
-static inline unsigned short
-serial_hw_get_port (const unsigned int unit)
+unsigned short
+grub_serial_hw_get_port (const unsigned int unit)
 {
   if (unit < GRUB_SERIAL_PORT_NUM)
     return serial_hw_io_addr[unit];
@@ -498,7 +498,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
       unsigned int unit;
 
       unit = grub_strtoul (state[0].arg, 0, 0);
-      serial_settings.port = serial_hw_get_port (unit);
+      serial_settings.port = grub_serial_hw_get_port (unit);
       if (!serial_settings.port)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad unit number");
     }
@@ -608,7 +608,7 @@ GRUB_MOD_INIT(serial)
 			      N_("Configure serial port."), options);
 
   /* Set default settings.  */
-  serial_settings.port      = serial_hw_get_port (0);
+  serial_settings.port      = grub_serial_hw_get_port (0);
   serial_settings.divisor   = serial_get_divisor (9600);
   serial_settings.word_len  = UART_8BITS_WORD;
   serial_settings.parity    = UART_NO_PARITY;

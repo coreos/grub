@@ -64,4 +64,7 @@
 /* Turn on DTR, RTS, and OUT2.  */
 #define UART_ENABLE_MODEM	0x0B
 
+unsigned short
+grub_serial_hw_get_port (const unsigned int unit);
+
 #endif /* ! GRUB_SERIAL_MACHINE_HEADER */
