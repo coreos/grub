@@ -1,5 +1,24 @@
 2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Video multiboot support.
+
+	* include/grub/multiboot.h (grub_multiboot_set_accepts_video):
+	New prototype.
+	* include/multiboot.h: Resynced with multiboot specification.
+	* include/multiboot2.h: Likewise.
+	* loader/i386/multiboot.c (UNSUPPORTED_FLAGS): Support video flags.
+	(grub_multiboot): Parse MULTIBOOT_VIDEO_MODE fields.
+	* loader/i386/multiboot_mbi.c (DEFAULT_VIDEO_MODE): New constant.
+	(HAS_VGA_TEXT): Likewise.
+	(accepts_video): New variable.
+	(grub_multiboot_set_accepts_video): New function.
+	(grub_multiboot_get_mbi_size): Account for video structures.
+	(set_video_mode): New function.
+	(retrieve_video_parameters): Likewise.
+	(grub_multiboot_make_mbi): Fill video fields.
+
+2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Video driver ids.
 
 	* include/grub/video.h (grub_video_driver_id): New type.
