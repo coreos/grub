@@ -29,6 +29,16 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/env.h>
+#include <grub/video.h>
+
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+#include <grub/i386/pc/vbe.h>
+#define DEFAULT_VIDEO_MODE "text"
+#define HAS_VGA_TEXT 1
+#else
+#define DEFAULT_VIDEO_MODE "auto"
+#define HAS_VGA_TEXT 0
+#endif
 
 struct module
 {
@@ -46,6 +56,13 @@ static unsigned modcnt;
 static char *cmdline = NULL;
 static grub_uint32_t bootdev;
 static int bootdev_set;
+static int accepts_video;
+
+void
+grub_multiboot_set_accepts_video (int val)
+{
+  accepts_video = val;
+}
 
 /* Return the length of the Multiboot mmap that will be needed to allocate
    our platform's map.  */
@@ -73,7 +90,8 @@ grub_multiboot_get_mbi_size (void)
 {
   return sizeof (struct multiboot_info) + ALIGN_UP (cmdline_size, 4)
     + modcnt * sizeof (struct multiboot_mod_list) + total_modcmd
-    + ALIGN_UP (sizeof(PACKAGE_STRING), 4) + grub_get_multiboot_mmap_len ();
+    + ALIGN_UP (sizeof(PACKAGE_STRING), 4) + grub_get_multiboot_mmap_len ()
+    + 256 * sizeof (struct multiboot_color);
 }
 
 /* Fill previously allocated Multiboot mmap.  */
@@ -106,6 +124,107 @@ grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
   grub_mmap_iterate (hook);
 }
 
+static grub_err_t
+set_video_mode (void)
+{
+  grub_err_t err;
+  const char *modevar;
+
+  if (accepts_video || !HAS_VGA_TEXT)
+    {
+      modevar = grub_env_get ("gfxpayload");
+      if (! modevar || *modevar == 0)
+	err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0);
+      else
+	{
+	  char *tmp;
+	  tmp = grub_malloc (grub_strlen (modevar)
+			     + sizeof (DEFAULT_VIDEO_MODE) + 1);
+	  if (! tmp)
+	    return grub_errno;
+	  grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
+	  err = grub_video_set_mode (tmp, 0);
+	  grub_free (tmp);
+	}
+    }
+  else
+    err = grub_video_set_mode ("text", 0);
+
+  return err;
+}
+
+static grub_err_t
+retrieve_video_parameters (struct multiboot_info *mbi,
+			   grub_uint8_t *ptrorig, grub_uint32_t ptrdest)
+{
+  grub_err_t err;
+  struct grub_video_mode_info mode_info;
+  void *framebuffer;
+  grub_video_driver_id_t driv_id;
+  struct grub_video_palette_data palette[256];
+
+  err = set_video_mode ();
+  if (err)
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+    }
+
+  grub_video_get_palette (0, ARRAY_SIZE (palette), palette);
+
+  driv_id = grub_video_get_driver_id ();
+  if (driv_id == GRUB_VIDEO_DRIVER_NONE)
+    return GRUB_ERR_NONE;
+
+  err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
+  if (err)
+    return err;
+
+  mbi->framebuffer_addr = (grub_addr_t) framebuffer;
+  mbi->framebuffer_pitch = mode_info.pitch;
+
+  mbi->framebuffer_width = mode_info.width;
+  mbi->framebuffer_height = mode_info.height;
+
+  mbi->framebuffer_bpp = mode_info.bpp;
+      
+  if (mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)
+    {
+      struct multiboot_color *mb_palette;
+      unsigned i;
+      mbi->framebuffer_type = MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED;
+      mbi->framebuffer_palette_addr = ptrdest;
+      mbi->framebuffer_palette_num_colors = mode_info.number_of_colors;
+      if (mbi->framebuffer_palette_num_colors > ARRAY_SIZE (palette))
+	mbi->framebuffer_palette_num_colors = ARRAY_SIZE (palette);
+      mb_palette = (struct multiboot_color *) ptrorig;
+      for (i = 0; i < mbi->framebuffer_palette_num_colors; i++)
+	{
+	  mb_palette[i].red = palette[i].r;
+	  mb_palette[i].green = palette[i].g;
+	  mb_palette[i].blue = palette[i].b;
+	}
+      ptrorig += mbi->framebuffer_palette_num_colors
+	* sizeof (struct multiboot_color);
+      ptrdest += mbi->framebuffer_palette_num_colors
+	* sizeof (struct multiboot_color);
+    }
+  else
+    {
+      mbi->framebuffer_type = MULTIBOOT_FRAMEBUFFER_TYPE_RGB;
+      mbi->framebuffer_red_field_position = mode_info.green_field_pos;
+      mbi->framebuffer_red_mask_size = mode_info.green_mask_size;
+      mbi->framebuffer_green_field_position = mode_info.green_field_pos;
+      mbi->framebuffer_green_mask_size = mode_info.green_mask_size;
+      mbi->framebuffer_blue_field_position = mode_info.blue_field_pos;
+      mbi->framebuffer_blue_mask_size = mode_info.blue_mask_size;
+    }
+
+  mbi->flags |= MULTIBOOT_INFO_FRAMEBUFFER_INFO;
+
+  return GRUB_ERR_NONE;
+}
+
 grub_err_t
 grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
 			 grub_size_t bufsize)
@@ -117,6 +236,7 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
   unsigned i;
   struct module *cur;
   grub_size_t mmap_size;
+  grub_err_t err;
 
   if (bufsize < grub_multiboot_get_mbi_size ())
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "mbi buffer is too small");
@@ -180,6 +300,13 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
     {
       mbi->boot_device = bootdev;
       mbi->flags |= MULTIBOOT_INFO_BOOTDEV;
+    }
+
+  err = retrieve_video_parameters (mbi, ptrorig, ptrdest);
+  if (err)
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
     }
 
   return GRUB_ERR_NONE;
