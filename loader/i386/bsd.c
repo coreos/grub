@@ -1237,12 +1237,27 @@ grub_cmd_openbsd (grub_extcmd_t cmd, int argc, char *argv[])
 static grub_err_t
 grub_cmd_netbsd (grub_extcmd_t cmd, int argc, char *argv[])
 {
+  grub_err_t err;
   kernel_type = KERNEL_TYPE_NETBSD;
   bootflags = grub_bsd_parse_flags (cmd->state, netbsd_flags);
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     {
-      grub_loader_set (grub_netbsd_boot, grub_bsd_unload, 0);
+      if (is_elf_kernel)
+	{
+	  grub_file_t file;
+
+	  file = grub_gzfile_open (argv[0], 1);
+	  if (! file)
+	    return grub_errno;
+
+	  if (is_64bit)
+	    err = grub_netbsd_load_elf_meta64 (relocator, file, &kern_end);
+	  else
+	    err = grub_netbsd_load_elf_meta32 (relocator, file, &kern_end);
+	  if (err)
+	    return err;
+	}
 
       {
 	char bootpath[GRUB_NETBSD_MAX_BOOTPATH_LEN];
@@ -1307,6 +1322,8 @@ grub_cmd_netbsd (grub_extcmd_t cmd, int argc, char *argv[])
 
  	  grub_bsd_add_meta (NETBSD_BTINFO_CONSOLE, &cons, sizeof (cons));
 	}
+
+      grub_loader_set (grub_netbsd_boot, grub_bsd_unload, 0);
     }
 
   return grub_errno;

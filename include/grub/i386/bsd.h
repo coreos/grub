@@ -210,6 +210,7 @@ struct grub_netbsd_bootinfo
 #define NETBSD_BTINFO_BOOTPATH		0
 #define NETBSD_BTINFO_ROOTDEVICE	1
 #define NETBSD_BTINFO_CONSOLE		6
+#define NETBSD_BTINFO_SYMTAB		8
 #define NETBSD_BTINFO_MEMMAP		9
 
 struct grub_netbsd_btinfo_common
@@ -222,7 +223,6 @@ struct grub_netbsd_btinfo_common
 
 struct grub_netbsd_btinfo_bootdisk
 {
-  struct grub_netbsd_btinfo_common common;
   int labelsector;  /* label valid if != -1 */
   struct
     {
@@ -232,6 +232,14 @@ struct grub_netbsd_btinfo_bootdisk
   int biosdev;
   int partition;
 };
+
+struct grub_netbsd_btinfo_symtab
+{
+  grub_uint32_t nsyms;
+  grub_uint32_t ssyms;
+  grub_uint32_t esyms;
+};
+
 
 struct grub_netbsd_btinfo_serial
 {
@@ -255,6 +263,13 @@ grub_err_t grub_freebsd_load_elf_meta32 (struct grub_relocator *relocator,
 grub_err_t grub_freebsd_load_elf_meta64 (struct grub_relocator *relocator,
 					 grub_file_t file,
 					 grub_addr_t *kern_end);
+
+grub_err_t grub_netbsd_load_elf_meta32 (struct grub_relocator *relocator,
+					grub_file_t file,
+					grub_addr_t *kern_end);
+grub_err_t grub_netbsd_load_elf_meta64 (struct grub_relocator *relocator,
+					grub_file_t file,
+					grub_addr_t *kern_end);
 
 grub_err_t grub_bsd_add_meta (grub_uint32_t type, 
 			      void *data, grub_uint32_t len);

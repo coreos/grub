@@ -254,7 +254,7 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
 #endif
 
 grub_err_t
-SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator, 
+SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
 				     grub_file_t file, grub_addr_t *kern_end)
 {
   grub_err_t err;
@@ -296,8 +296,9 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
   stroff = s->sh_offset;
   strsize = s->sh_size;
 
-  chunk_size = 2 * sizeof (grub_freebsd_addr_t)
-    + ALIGN_UP (symsize + strsize, sizeof (grub_freebsd_addr_t));
+  chunk_size = ALIGN_UP (symsize + strsize, sizeof (grub_freebsd_addr_t))
+    + 2 * sizeof (grub_freebsd_addr_t);
+
   symtarget = ALIGN_UP (*kern_end, sizeof (grub_freebsd_addr_t));
   err = grub_relocator_alloc_chunk_addr (relocator, &sym_chunk,
 					 symtarget, chunk_size);
@@ -310,6 +311,7 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
   curload = sym_chunk;
   *((grub_freebsd_addr_t *) curload) = symsize;
   curload += sizeof (grub_freebsd_addr_t);
+
   if (grub_file_seek (file, symoff) == (grub_off_t) -1)
     return grub_errno;
   sym = (Elf_Sym *) curload;
@@ -366,6 +368,131 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
     return err;
 
   *kern_end = ALIGN_PAGE (symend);
+
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
+				    grub_file_t file, grub_addr_t *kern_end)
+{
+  grub_err_t err;
+  Elf_Ehdr e;
+  Elf_Shdr *s, *symsh, *strsh;
+  char *shdr;
+  unsigned symsize, strsize;
+  Elf_Sym *sym;
+  void *sym_chunk;
+  grub_uint8_t *curload;
+  const char *str;
+  grub_size_t chunk_size;
+  Elf_Ehdr *e2;
+  struct grub_netbsd_btinfo_symtab symtab;
+  grub_addr_t symtarget;
+
+  err = read_headers (file, &e, &shdr);
+  if (err)
+    return err;
+
+  for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) (shdr
+						+ e.e_shnum * e.e_shentsize);
+       s = (Elf_Shdr *) ((char *) s + e.e_shentsize))
+      if (s->sh_type == SHT_SYMTAB)
+	break;
+  if (s >= (Elf_Shdr *) ((char *) shdr
+			+ e.e_shnum * e.e_shentsize))
+    return grub_error (GRUB_ERR_BAD_OS, "no symbol table");
+  symsize = s->sh_size;
+  symsh = s;
+  s = (Elf_Shdr *) (shdr + e.e_shentsize * s->sh_link);
+  strsize = s->sh_size;
+  strsh = s;
+
+  chunk_size = ALIGN_UP (symsize, sizeof (grub_freebsd_addr_t))
+    + ALIGN_UP (strsize, sizeof (grub_freebsd_addr_t))
+    + sizeof (e) + e.e_phnum * e.e_phentsize
+    + e.e_shnum * e.e_shentsize;
+
+  symtarget = ALIGN_UP (*kern_end, sizeof (grub_freebsd_addr_t));
+  err = grub_relocator_alloc_chunk_addr (relocator, &sym_chunk,
+					 symtarget, chunk_size);
+  if (err)
+    return err;
+
+  symtab.nsyms = chunk_size;
+  symtab.ssyms = symtarget;
+  symtab.esyms = symtarget + chunk_size;
+
+  curload = sym_chunk;
+  
+  e2 = (Elf_Ehdr *) curload;
+  grub_memcpy (curload, &e, sizeof (e));
+  e2->e_phoff = sizeof (e);
+  e2->e_shoff = sizeof (e) + e.e_phnum * e.e_phentsize;
+
+  curload += sizeof (e);
+  if (grub_file_seek (file, e.e_phoff) == (grub_off_t) -1)
+    return grub_errno;
+  if (grub_file_read (file, curload, e.e_phnum * e.e_phentsize) 
+      != (grub_ssize_t) (e.e_phnum * e.e_phentsize))
+    {
+      if (! grub_errno)
+	return grub_error (GRUB_ERR_BAD_OS, "invalid ELF");
+      return grub_errno;
+    }
+  curload += e.e_phnum * e.e_phentsize;
+
+  for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) (shdr
+						+ e.e_shnum * e.e_shentsize);
+       s = (Elf_Shdr *) ((char *) s + e.e_shentsize))
+    {
+      Elf_Shdr *s2;
+      s2 = (Elf_Shdr *) curload;
+      grub_memcpy (curload, s, e.e_shentsize);
+      if (s == symsh)
+	{
+	  s2->sh_offset = sizeof (e) + e.e_phnum * e.e_phentsize
+	    + e.e_shnum * e.e_shentsize;
+	}
+      else if (s == strsh)
+	{
+	  s2->sh_offset = ALIGN_UP (symsize, sizeof (grub_freebsd_addr_t))
+	    + sizeof (e) + e.e_phnum * e.e_phentsize
+	    + e.e_shnum * e.e_shentsize;
+	}
+      else
+	s2->sh_offset = 0;
+      s2->sh_addr = s2->sh_offset;
+    }
+
+  if (grub_file_seek (file, symsh->sh_offset) == (grub_off_t) -1)
+    return grub_errno;
+  sym = (Elf_Sym *) curload;
+  if (grub_file_read (file, curload, symsize) != (grub_ssize_t) symsize)
+    {
+      if (! grub_errno)
+	return grub_error (GRUB_ERR_BAD_OS, "invalid ELF");
+      return grub_errno;
+    }
+  curload += ALIGN_UP (symsize, sizeof (grub_freebsd_addr_t));
+
+  if (grub_file_seek (file, strsh->sh_offset) == (grub_off_t) -1)
+    return grub_errno;
+  str = (char *) curload;
+  if (grub_file_read (file, curload, strsize) != (grub_ssize_t) strsize)
+    {
+      if (! grub_errno)
+	return grub_error (GRUB_ERR_BAD_OS, "invalid ELF");
+      return grub_errno;
+    }
+
+  err = grub_bsd_add_meta (NETBSD_BTINFO_SYMTAB, 
+			   &symtab,
+			   sizeof (symtab));
+  if (err)
+    return err;
+
+  *kern_end = ALIGN_PAGE (symtarget + chunk_size);
 
   return GRUB_ERR_NONE;
 }
