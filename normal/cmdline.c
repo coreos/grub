@@ -166,31 +166,30 @@ print_completion (const char *item, grub_completion_type_t type, int count)
   if (count == 0)
     {
       /* If this is the first time, print a label.  */
-      const char *what;
-
+      
+      grub_puts ("");
       switch (type)
 	{
 	case GRUB_COMPLETION_TYPE_COMMAND:
-	  what = "commands";
+	  grub_puts_ (N_("Possible commands are:"));
 	  break;
 	case GRUB_COMPLETION_TYPE_DEVICE:
-	  what = "devices";
+	  grub_puts_ (N_("Possible devices are:"));
 	  break;
 	case GRUB_COMPLETION_TYPE_FILE:
-	  what = "files";
+	  grub_puts_ (N_("Possible files are:"));
 	  break;
 	case GRUB_COMPLETION_TYPE_PARTITION:
-	  what = "partitions";
+	  grub_puts_ (N_("Possible partitions are:"));
 	  break;
 	case GRUB_COMPLETION_TYPE_ARGUMENT:
-	  what = "arguments";
+	  grub_puts_ (N_("Possible arguments are:"));
 	  break;
 	default:
-	  what = "things";
+	  grub_puts_ (N_("Possible things are:"));
 	  break;
 	}
-
-      grub_printf ("\nPossible %s are:\n", what);
+      grub_puts ("");
     }
 
   if (type == GRUB_COMPLETION_TYPE_PARTITION)

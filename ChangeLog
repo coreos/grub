@@ -1,3 +1,33 @@
+2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Video driver ids.
+
+	* include/grub/video.h (grub_video_driver_id): New type.
+	(grub_video_adapter): New member 'id'. All users updated.
+	(grub_video_get_driver_id): New proto.
+	* video/video.c (grub_video_get_driver_id): New function.
+
+2010-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/grub.d/30_os-prober.in: Use `set var=val' rather than plain
+	`var=val'.
+
+2010-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/cmdline.c (print_completion): Gettextizze.
+
+2001-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* loader/i386/pc/chainloader.c: Include `<grub/mm.h>'.
+
+2010-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* gettext/gettext.c (grub_gettext_translate): Push and pop
+	grub_errno.
+	(grub_gettext_delete_list): Change comment style.
+	* kern/err.c (grub_error): Gettextizze.
+	(grub_fatal): Gettextizze.
+
 2010-01-14  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/i386/loader.h (grub_linux16_boot): Renamed to ...

@@ -34,6 +34,7 @@
 #include <grub/machine/biosnum.h>
 #include <grub/i18n.h>
 #include <grub/video.h>
+#include <grub/mm.h>
 
 static grub_dl_t my_mod;
 static int boot_drive;

@@ -4,9 +4,6 @@
 
 	* include/grub/multiboot.h (grub_multiboot_set_accepts_video):
 	New prototype.
-	* include/grub/video.h (grub_video_driver_id): New type.
-	(grub_video_adapter): New member 'id'. All users updated.
-	(grub_video_get_driver_id): New proto.
 	* include/multiboot.h: Resynced with multiboot specification.
 	* include/multiboot2.h: Likewise.
 	* loader/i386/multiboot.c (UNSUPPORTED_FLAGS): Support video flags.
@@ -21,4 +18,3 @@
 	(fill_vbe_info) [HAS_VBE]: Likewise.
 	(retrieve_video_parameters): Likewise.
 	(grub_multiboot_make_mbi): Fill video fields.
-	* video/video.c (grub_video_get_driver_id): New function.
