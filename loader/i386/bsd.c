@@ -922,23 +922,18 @@ grub_netbsd_add_modules (void)
   struct netbsd_module *mod;
   unsigned modcnt = 0;
   struct grub_netbsd_btinfo_modules *mods;
-  grub_addr_t last_addr = 0;
   unsigned i;
   grub_err_t err;
 
   for (mod = netbsd_mods; mod; mod = mod->next)
-    {
-      if (mod->mod.addr + mod->mod.size > last_addr)
-	last_addr = mod->mod.addr + mod->mod.size;
-      modcnt++;
-    }
+    modcnt++;
 
   mods = grub_malloc (sizeof (*mods) + sizeof (mods->mods[0]) * modcnt);
   if (!mods)
     return grub_errno;
 
   mods->num = modcnt;
-  mods->last_addr = last_addr;
+  mods->last_addr = kern_end;
   for (mod = netbsd_mods, i = 0; mod; i++, mod = mod->next)
     mods->mods[i] = mod->mod;
 
