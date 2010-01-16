@@ -60,11 +60,12 @@ grub_util_warn (const char *fmt, ...)
 {
   va_list ap;
 
-  fprintf (stderr, "%s: warn: ", program_name);
+  fprintf (stderr, _("%s: warn:"), program_name);
+  fprintf (stderr, " ");
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   va_end (ap);
-  fputc ('\n', stderr);
+  fprintf (stderr, ".\n");
   fflush (stderr);
 }
 
@@ -75,11 +76,12 @@ grub_util_info (const char *fmt, ...)
     {
       va_list ap;
 
-      fprintf (stderr, "%s: info: ", program_name);
+      fprintf (stderr, _("%s: info:"), program_name);
+      fprintf (stderr, " ");
       va_start (ap, fmt);
       vfprintf (stderr, fmt, ap);
       va_end (ap);
-      fputc ('\n', stderr);
+      fprintf (".\n", stderr);
       fflush (stderr);
     }
 }
@@ -89,11 +91,12 @@ grub_util_error (const char *fmt, ...)
 {
   va_list ap;
 
-  fprintf (stderr, "%s: error: ", program_name);
+  fprintf (stderr, _("%s: error:"), program_name);
+  fprintf (stderr, " ");
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   va_end (ap);
-  fputc ('\n', stderr);
+  fprintf (stderr, ".\n");
   exit (1);
 }
 

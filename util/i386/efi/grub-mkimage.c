@@ -778,7 +778,7 @@ make_reloc_section (FILE *out, Elf_Addr current_address, Elf_Ehdr *e,
 	    if ((ELF_R_TYPE (info) == R_X86_64_32) ||
                 (ELF_R_TYPE (info) == R_X86_64_32S))
 	      {
-		grub_util_error ("Can\'t add fixup entry for R_X86_64_32(S)");
+		grub_util_error ("can\'t add fixup entry for R_X86_64_32(S)");
 	      }
 	    else if (ELF_R_TYPE (info) == R_X86_64_64)
 	      {
@@ -1029,7 +1029,7 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-mkimage --help'' for more information.\n");
+    fprintf (stderr, "Try `grub-mkimage --help' for more information.\n");
   else
     printf ("\
 Usage: grub-mkimage -o FILE [OPTION]... [MODULES]\n\

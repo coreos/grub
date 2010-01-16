@@ -69,7 +69,7 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-editenv --help'' for more information.\n");
+    fprintf (stderr, "Try `grub-editenv --help' for more information.\n");
   else
     printf ("\
 Usage: grub-editenv [OPTIONS] [FILENAME] COMMAND\n\

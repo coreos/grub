@@ -289,7 +289,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
 #ifdef GRUB_MACHINE_PCBIOS
   if (GRUB_KERNEL_MACHINE_LINK_ADDR + core_size > GRUB_MEMORY_MACHINE_UPPER)
-    grub_util_error (_("Core image is too big (%p > %p)\n"),
+    grub_util_error (_("core image is too big (%p > %p)"),
  		     GRUB_KERNEL_MACHINE_LINK_ADDR + core_size, GRUB_MEMORY_MACHINE_UPPER);
 #endif
 
@@ -326,7 +326,7 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, _("Try ``%s --help'' for more information.\n"), program_name);
+    fprintf (stderr, _("Try `%s --help' for more information.\n"), program_name);
   else
     printf (_("\
 Usage: grub-mkimage [OPTION]... [MODULES]\n\

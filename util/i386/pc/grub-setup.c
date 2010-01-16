@@ -156,7 +156,7 @@ setup (const char *dir,
 		      sector, offset, length);
 
       if (offset != 0 || length != GRUB_DISK_SECTOR_SIZE)
-	grub_util_error (_("The first sector of the core file is not sector-aligned"));
+	grub_util_error (_("the first sector of the core file is not sector-aligned"));
 
       first_sector = sector;
     }
@@ -170,7 +170,7 @@ setup (const char *dir,
 		      sector, offset, length, (unsigned) current_segment);
 
       if (offset != 0 || last_length != GRUB_DISK_SECTOR_SIZE)
-	grub_util_error (_("Non-sector-aligned data is found in the core file"));
+	grub_util_error (_("non-sector-aligned data is found in the core file"));
 
       if (block != first_block
 	  && (grub_le_to_cpu64 (prev->start)
@@ -184,7 +184,7 @@ setup (const char *dir,
 
 	  block--;
 	  if (block->len)
-	    grub_util_error (_("The sectors of the core file are too fragmented"));
+	    grub_util_error (_("the sectors of the core file are too fragmented"));
 	}
 
       last_length = length;
@@ -195,7 +195,7 @@ setup (const char *dir,
   boot_path = grub_util_get_path (dir, boot_file);
   boot_size = grub_util_get_image_size (boot_path);
   if (boot_size != GRUB_DISK_SECTOR_SIZE)
-    grub_util_error (_("The size of `%s' is not %u"),
+    grub_util_error (_("the size of `%s' is not %u"),
 		     boot_path, GRUB_DISK_SECTOR_SIZE);
   boot_img = grub_util_read_image (boot_path);
   free (boot_path);
@@ -212,9 +212,9 @@ setup (const char *dir,
   core_sectors = ((core_size + GRUB_DISK_SECTOR_SIZE - 1)
 		  >> GRUB_DISK_SECTOR_BITS);
   if (core_size < GRUB_DISK_SECTOR_SIZE)
-    grub_util_error (_("The size of `%s' is too small"), core_path);
+    grub_util_error (_("the size of `%s' is too small"), core_path);
   else if (core_size > 0xFFFF * GRUB_DISK_SECTOR_SIZE)
-    grub_util_error (_("The size of `%s' is too large"), core_path);
+    grub_util_error (_("the size of `%s' is too large"), core_path);
 
   core_img = grub_util_read_image (core_path);
 
@@ -251,7 +251,7 @@ setup (const char *dir,
       grub_fs_t fs;
       fs = grub_fs_probe (dest_dev);
       if (! fs)
-	grub_util_error (_("Unable to identify a filesystem in %s; safety check can't be performed"),
+	grub_util_error (_("unable to identify a filesystem in %s; safety check can't be performed"),
 			 dest_dev->disk->name);
 
       if (! fs->reserved_first_sector)
@@ -304,7 +304,7 @@ setup (const char *dir,
 	      bsd_part = -1;
 	    }
 	  else
-	    grub_util_error (_("No DOS-style partitions found"));
+	    grub_util_error (_("no DOS-style partitions found"));
 	}
       else
 	dos_part = bsd_part = -1;
@@ -413,14 +413,14 @@ setup (const char *dir,
 unable_to_embed:
 
   if (must_embed)
-    grub_util_error (_("Embedding is not possible, but this is required when "
-		       "the root device is on a RAID array or LVM volume."));
+    grub_util_error (_("embedding is not possible, but this is required when "
+		       "the root device is on a RAID array or LVM volume"));
 
   grub_util_warn (_("Embedding is not possible.  GRUB can only be installed in this "
 		    "setup by using blocklists.  However, blocklists are UNRELIABLE and "
 		    "its use is discouraged."));
   if (! force)
-    grub_util_error (_("If you really want blocklists, use --force."));
+    grub_util_error (_("if you really want blocklists, use --force"));
 
   /* Make sure that GRUB reads the identical image as the OS.  */
   tmp_img = xmalloc (core_size);
@@ -495,7 +495,7 @@ unable_to_embed:
     }
 
   if (i == MAX_TRIES)
-    grub_util_error (_("Cannot read `%s' correctly"), core_path_dev);
+    grub_util_error (_("cannot read `%s' correctly"), core_path_dev);
 
   /* Clean out the blocklists.  */
   block = first_block;
@@ -508,7 +508,7 @@ unable_to_embed:
       block--;
 
       if ((char *) block <= core_img)
-	grub_util_error (_("No terminator in the core image"));
+	grub_util_error (_("no terminator in the core image"));
     }
 
   /* Now read the core image to determine where the sectors are.  */
@@ -519,13 +519,13 @@ unable_to_embed:
   file->read_hook = save_first_sector;
   if (grub_file_read (file, tmp_img, GRUB_DISK_SECTOR_SIZE)
       != GRUB_DISK_SECTOR_SIZE)
-    grub_util_error (_("Failed to read the first sector of the core image"));
+    grub_util_error (_("failed to read the first sector of the core image"));
 
   block = first_block;
   file->read_hook = save_blocklists;
   if (grub_file_read (file, tmp_img, core_size - GRUB_DISK_SECTOR_SIZE)
       != (grub_ssize_t) core_size - GRUB_DISK_SECTOR_SIZE)
-    grub_util_error (_("Failed to read the rest sectors of the core image"));
+    grub_util_error (_("failed to read the rest sectors of the core image"));
 
   grub_file_close (file);
 
@@ -544,7 +544,7 @@ unable_to_embed:
   grub_util_info ("opening the core image `%s'", core_path);
   fp = fopen (core_path, "r+b");
   if (! fp)
-    grub_util_error (_("Cannot open `%s'"), core_path);
+    grub_util_error (_("cannot open `%s'"), core_path);
 
   grub_util_write_image (core_img, GRUB_DISK_SECTOR_SIZE * 2, fp);
   fclose (fp);
@@ -584,13 +584,13 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, _("Try ``%s --help'' for more information.\n"), program_name);
+    fprintf (stderr, _("Try `%s --help' for more information.\n"), program_name);
   else
     printf (_("\
 Usage: grub-setup [OPTION]... DEVICE\n\
 \n\
 Set up images to boot from DEVICE.\n\
-DEVICE must be a GRUB device (e.g. ``(hd0,1)'').\n\
+DEVICE must be a GRUB device (e.g. `(hd0,1)').\n\
 \n\
   -b, --boot-image=FILE   use FILE as the boot image [default=%s]\n\
   -c, --core-image=FILE   use FILE as the core image [default=%s]\n\
@@ -751,7 +751,7 @@ main (int argc, char *argv[])
       char *tmp = get_device_name (root_dev);
 
       if (! tmp)
-	grub_util_error (_("Invalid root device `%s'"), root_dev);
+	grub_util_error (_("invalid root device `%s'"), root_dev);
 
       tmp = xstrdup (tmp);
       free (root_dev);
@@ -764,7 +764,7 @@ main (int argc, char *argv[])
 	{
 	  grub_util_info ("guessing the root device failed, because of `%s'",
 			  grub_errmsg);
-	  grub_util_error (_("Cannot guess the root device. Specify the option ``--root-device''."));
+	  grub_util_error (_("cannot guess the root device. Specify the option `--root-device'"));
 	}
     }
 

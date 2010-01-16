@@ -1,3 +1,34 @@
+2010-01-16  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/misc.c (grub_util_warn): Gettextizze, print full stop after
+	the message.
+	(grub_util_info): Likewise.
+	(grub_util_error): Likewise.
+	* util/elf/grub-mkimage.c: Fix capitalisation, quotes, full stops
+	and/or new lines in `grub_util_warna', `grub_util_info',
+	`grub_util_error' calls.
+	* util/getroot.c: Likewise.
+	* util/grub-editenv.c: Likewise.
+	* util/grub-emu.c: Likewise.
+	* util/grub-fstest.c: Likewise.
+	* util/grub-mkdevicemap.c: Likewise.
+	* util/grub-mkfont.c: Likewise.
+	* util/grub-mkpasswd-pbkdf2.c: Likewise.
+	* util/grub-mkrelpath.c: Likewise.
+	* util/grub-pe2elf.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/hostdisk.c: Likewise.
+	* util/i386/efi/grub-mkimage.c: Likewise.
+	* util/i386/pc/grub-mkimage.c: Likewise.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/ieee1275/ofpath.c: Likewise.
+	* util/mkisofs/eltorito.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+	* util/raid.c: Likewise.
+	* util/sparc64/ieee1275/grub-mkimage.c: Likewise.
+	* util/sparc64/ieee1275/grub-setup.c: Likewise.
+
 2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Enable multiboot on non-pc.
