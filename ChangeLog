@@ -1,3 +1,7 @@
+2010-01-16  Grégoire Sutre <gregoire.sutre@gmail.com>
+
+	* genmk.rb (class SCRIPT): Replace option -i of sed by a pipe.
+
 2010-01-16  Carles Pina i Estany  <carles@pina.cat>
 
 	* util/grub-editenv.c (usage): Use `program_name' instead of hardcoded
