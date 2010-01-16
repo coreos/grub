@@ -417,6 +417,9 @@ grub_multiboot_set_bootdev (void)
   biosdev = 0xffffffff;
 #endif
 
+  if (biosdev == 0xffffffff)
+    return;
+
   dev = grub_device_open (0);
   if (dev && dev->disk && dev->disk->partition)
     {
