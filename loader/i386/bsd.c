@@ -82,6 +82,14 @@ struct bsd_tag
 
 struct bsd_tag *tags, *tags_last;
 
+struct netbsd_module
+{
+  struct netbsd_module *next;
+  struct grub_netbsd_btinfo_module mod;
+};
+
+struct netbsd_module *netbsd_mods, *netbsd_mods_last;
+
 static const struct grub_arg_option freebsd_opts[] =
   {
     {"dual", 'D', 0, N_("Display output on all consoles."), 0, 0},
@@ -450,6 +458,49 @@ grub_freebsd_list_modules (void)
 	  }
 	}
     }
+}
+
+static grub_err_t
+grub_netbsd_add_meta_module (char *filename, grub_uint32_t type,
+			     grub_addr_t addr, grub_uint32_t size)
+{
+  char *name;
+  struct netbsd_module *mod;
+  name = grub_strrchr (filename, '/');
+
+  if (name)
+    name++;
+  else
+    name = filename;
+
+  mod = grub_zalloc (sizeof (*mod));
+  if (!mod)
+    return grub_errno;
+
+  grub_strncpy (mod->mod.name, name, sizeof (mod->mod.name) - 1);
+  mod->mod.addr = addr;
+  mod->mod.type = type;
+  mod->mod.size = size;
+
+  if (netbsd_mods_last)
+    netbsd_mods_last->next = mod;
+  else
+    netbsd_mods = mod;
+  netbsd_mods_last = mod;
+
+  return GRUB_ERR_NONE;
+}
+
+static void
+grub_netbsd_list_modules (void)
+{
+  struct netbsd_module *mod;
+
+  grub_printf ("  %-18s%14s%14s%14s\n", "name", "type", "addr", "size");
+
+  for (mod = netbsd_mods; mod; mod = mod->next)
+    grub_printf ("  %-18s  0x%08x  0x%08x  0x%08x", mod->mod.name,
+		 mod->mod.type, mod->mod.addr, mod->mod.size);
 }
 
 /* This function would be here but it's under different license. */
@@ -866,6 +917,38 @@ grub_netbsd_setup_video (void)
 }
 
 static grub_err_t
+grub_netbsd_add_modules (void)
+{
+  struct netbsd_module *mod;
+  unsigned modcnt = 0;
+  struct grub_netbsd_btinfo_modules *mods;
+  grub_addr_t last_addr = 0;
+  unsigned i;
+  grub_err_t err;
+
+  for (mod = netbsd_mods; mod; mod = mod->next)
+    {
+      if (mod->mod.addr + mod->mod.size > last_addr)
+	last_addr = mod->mod.addr + mod->mod.size;
+      modcnt++;
+    }
+
+  mods = grub_malloc (sizeof (*mods) + sizeof (mods->mods[0]) * modcnt);
+  if (!mods)
+    return grub_errno;
+
+  mods->num = modcnt;
+  mods->last_addr = last_addr;
+  for (mod = netbsd_mods, i = 0; mod; i++, mod = mod->next)
+    mods->mods[i] = mod->mod;
+
+  err = grub_bsd_add_meta (NETBSD_BTINFO_MODULES, mods,
+			   sizeof (*mods) + sizeof (mods->mods[0]) * modcnt);
+  grub_free (mods);
+  return err;
+}
+
+static grub_err_t
 grub_netbsd_boot (void)
 {
   struct grub_netbsd_bootinfo *bootinfo;
@@ -888,6 +971,10 @@ grub_netbsd_boot (void)
       grub_printf ("Booting however\n");
       grub_errno = GRUB_ERR_NONE;
     }
+
+  err = grub_netbsd_add_modules ();
+  if (err)
+    return err;
 
   {
     struct bsd_tag *tag;
@@ -1535,13 +1622,8 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
   grub_err_t err;
   void *src;
 
-  if (kernel_type == KERNEL_TYPE_NONE)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "you need to load the kernel first");
-
   if (kernel_type != KERNEL_TYPE_FREEBSD)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "only FreeBSD supports module");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no FreeBSD loaded");
 
   if (!is_elf_kernel)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
@@ -1594,6 +1676,68 @@ fail:
 }
 
 static grub_err_t
+grub_netbsd_module_load (char *filename, grub_uint32_t type)
+{
+  grub_file_t file = 0;
+  void *src;
+  grub_err_t err;
+
+  file = grub_gzfile_open (filename, 1);
+  if ((!file) || (!file->size))
+    goto fail;
+
+  err = grub_relocator_alloc_chunk_addr (relocator, &src, kern_end, 
+					 file->size);
+  if (err)
+    goto fail;
+
+  grub_file_read (file, src, file->size);
+  if (grub_errno)
+    goto fail;
+
+  err = grub_netbsd_add_meta_module (filename, type, kern_end, file->size);
+
+  if (err)
+    goto fail;
+
+  kern_end = ALIGN_PAGE (kern_end + file->size);
+
+fail:
+  if (file)
+    grub_file_close (file);
+
+  return grub_errno;
+}
+
+static grub_err_t
+grub_cmd_netbsd_module (grub_command_t cmd,
+			int argc, char *argv[])
+{
+  grub_uint32_t type;
+
+  if (kernel_type != KERNEL_TYPE_NETBSD)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no NetBSD loaded");
+
+  if (!is_elf_kernel)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "only ELF kernel supports module");
+
+  /* List the current modules if no parameter.  */
+  if (!argc)
+    {
+      grub_netbsd_list_modules ();
+      return 0;
+    }
+
+  if (grub_strcmp (cmd->name, "knetbsd_module_elf") == 0)
+    type = GRUB_NETBSD_MODULE_ELF;
+  else
+    type = GRUB_NETBSD_MODULE_RAW;
+
+  return grub_netbsd_module_load (argv[0], type);
+}
+
+static grub_err_t
 grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
 			     int argc, char *argv[])
 {
@@ -1642,7 +1786,8 @@ grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
 
 static grub_extcmd_t cmd_freebsd, cmd_openbsd, cmd_netbsd;
 static grub_command_t cmd_freebsd_loadenv, cmd_freebsd_module;
-static grub_command_t cmd_freebsd_module_elf;
+static grub_command_t cmd_netbsd_module, cmd_freebsd_module_elf;
+static grub_command_t cmd_netbsd_module_elf;
 
 GRUB_MOD_INIT (bsd)
 {
@@ -1664,6 +1809,12 @@ GRUB_MOD_INIT (bsd)
   cmd_freebsd_module =
     grub_register_command ("kfreebsd_module", grub_cmd_freebsd_module,
 			   0, N_("Load FreeBSD kernel module."));
+  cmd_netbsd_module =
+    grub_register_command ("knetbsd_module", grub_cmd_netbsd_module,
+			   0, N_("Load NetBSD kernel module."));
+  cmd_netbsd_module_elf =
+    grub_register_command ("knetbsd_module_elf", grub_cmd_netbsd_module,
+			   0, N_("Load NetBSD kernel module (ELF)."));
   cmd_freebsd_module_elf =
     grub_register_command ("kfreebsd_module_elf", grub_cmd_freebsd_module_elf,
 			   0, N_("Load FreeBSD kernel module (ELF)."));
@@ -1679,7 +1830,9 @@ GRUB_MOD_FINI (bsd)
 
   grub_unregister_command (cmd_freebsd_loadenv);
   grub_unregister_command (cmd_freebsd_module);
+  grub_unregister_command (cmd_netbsd_module);
   grub_unregister_command (cmd_freebsd_module_elf);
+  grub_unregister_command (cmd_netbsd_module_elf);
 
   grub_bsd_unload ();
 }

@@ -212,6 +212,7 @@ struct grub_netbsd_bootinfo
 #define NETBSD_BTINFO_CONSOLE		6
 #define NETBSD_BTINFO_SYMTAB		8
 #define NETBSD_BTINFO_MEMMAP		9
+#define NETBSD_BTINFO_MODULES		11
 #define NETBSD_BTINFO_FRAMEBUF		12
 
 struct grub_netbsd_btinfo_common
@@ -247,6 +248,21 @@ struct grub_netbsd_btinfo_serial
   char devname[16];
   grub_uint32_t addr;
   grub_uint32_t speed;
+};
+
+struct grub_netbsd_btinfo_modules
+{
+  grub_uint32_t num;
+  grub_uint32_t last_addr;
+  struct grub_netbsd_btinfo_module
+  {
+    char name[80];
+#define GRUB_NETBSD_MODULE_RAW 0
+#define GRUB_NETBSD_MODULE_ELF 1
+    grub_uint32_t type;
+    grub_uint32_t size;
+    grub_uint32_t addr;
+  } mods[0];
 };
 
 struct grub_netbsd_btinfo_framebuf
