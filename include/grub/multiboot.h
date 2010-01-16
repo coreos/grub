@@ -35,8 +35,6 @@
 void grub_multiboot (int argc, char *argv[]);
 void grub_module (int argc, char *argv[]);
 
-void grub_multiboot_set_accepts_video (int val);
-
 grub_size_t grub_multiboot_get_mbi_size (void);
 grub_err_t grub_multiboot_make_mbi (void *orig, grub_uint32_t dest,
 				    grub_off_t buf_off, grub_size_t bufsize);
@@ -46,5 +44,24 @@ grub_err_t grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
 				      int argc, char *argv[]);
 void grub_multiboot_set_bootdev (void);
 
+grub_uint32_t grub_get_multiboot_mmap_len (void);
+void grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry);
+grub_err_t grub_multiboot_set_video_mode (void);
+
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+#include <grub/i386/pc/vbe.h>
+grub_err_t
+grub_multiboot_fill_vbe_info_real (struct grub_vbe_info_block *vbe_control_info,
+				   struct grub_vbe_mode_info_block *vbe_mode_info,
+				   multiboot_uint16_t *vbe_mode,
+				   multiboot_uint16_t *vbe_interface_seg,
+				   multiboot_uint16_t *vbe_interface_off,
+				   multiboot_uint16_t *vbe_interface_len);
+#define GRUB_MACHINE_HAS_VBE 1
+#define GRUB_MACHINE_HAS_VGA_TEXT 1
+#else
+#define GRUB_MACHINE_HAS_VBE 0
+#define GRUB_MACHINE_HAS_VGA_TEXT 0
+#endif
 
 #endif /* ! GRUB_MULTIBOOT_HEADER */

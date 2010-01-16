@@ -51,42 +51,15 @@
 /* This flag indicates the use of the address fields in the header.  */
 #define MULTIBOOT_AOUT_KLUDGE			0x00010000
 
-/* Flags to be set in the 'flags' member of the multiboot info structure.  */
-
-/* is there basic lower/upper memory information? */
-#define MULTIBOOT_INFO_MEMORY			0x00000001
-/* is there a boot device set? */
-#define MULTIBOOT_INFO_BOOTDEV			0x00000002
-/* is the command-line defined? */
-#define MULTIBOOT_INFO_CMDLINE			0x00000004
-/* are there modules to do something with? */
-#define MULTIBOOT_INFO_MODS			0x00000008
-
-/* These next two are mutually exclusive */
-
-/* is there a symbol table loaded? */
-#define MULTIBOOT_INFO_AOUT_SYMS		0x00000010
-/* is there an ELF section header table? */
-#define MULTIBOOT_INFO_ELF_SHDR			0X00000020
-
-/* is there a full memory map? */
-#define MULTIBOOT_INFO_MEM_MAP			0x00000040
-
-/* Is there drive info?  */
-#define MULTIBOOT_INFO_DRIVE_INFO		0x00000080
-
-/* Is there a config table?  */
-#define MULTIBOOT_INFO_CONFIG_TABLE		0x00000100
-
-/* Is there a boot loader name?  */
-#define MULTIBOOT_INFO_BOOT_LOADER_NAME		0x00000200
-
-/* Is there a APM table?  */
-#define MULTIBOOT_INFO_APM_TABLE		0x00000400
-
-/* Is there video information?  */
-#define MULTIBOOT_INFO_VBE_INFO		        0x00000800
-#define MULTIBOOT_INFO_FRAMEBUFFER_INFO	        0x00001000
+#define MULTIBOOT_TAG_TYPE_END               0
+#define MULTIBOOT_TAG_TYPE_CMDLINE           1
+#define MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME  2
+#define MULTIBOOT_TAG_TYPE_MODULE            3
+#define MULTIBOOT_TAG_TYPE_BASIC_MEMINFO     4
+#define MULTIBOOT_TAG_TYPE_BOOTDEV           5
+#define MULTIBOOT_TAG_TYPE_MMAP              6
+#define MULTIBOOT_TAG_TYPE_VBE               7
+#define MULTIBOOT_TAG_TYPE_FRAMEBUFFER       8
 
 #ifndef ASM_FILE
 
@@ -120,105 +93,6 @@ struct multiboot_header
   multiboot_uint32_t depth;
 };
 
-/* The symbol table for a.out.  */
-struct multiboot_aout_symbol_table
-{
-  multiboot_uint32_t tabsize;
-  multiboot_uint32_t strsize;
-  multiboot_uint32_t addr;
-  multiboot_uint32_t reserved;
-};
-typedef struct multiboot_aout_symbol_table multiboot_aout_symbol_table_t;
-
-/* The section header table for ELF.  */
-struct multiboot_elf_section_header_table
-{
-  multiboot_uint32_t num;
-  multiboot_uint32_t size;
-  multiboot_uint32_t addr;
-  multiboot_uint32_t shndx;
-};
-typedef struct multiboot_elf_section_header_table multiboot_elf_section_header_table_t;
-
-struct multiboot_info
-{
-  /* Multiboot info version number */
-  multiboot_uint32_t flags;
-
-  /* Available memory from BIOS */
-  multiboot_uint32_t mem_lower;
-  multiboot_uint32_t mem_upper;
-
-  /* "root" partition */
-  multiboot_uint32_t boot_device;
-
-  /* Kernel command line */
-  multiboot_uint32_t cmdline;
-
-  /* Boot-Module list */
-  multiboot_uint32_t mods_count;
-  multiboot_uint32_t mods_addr;
-
-  union
-  {
-    multiboot_aout_symbol_table_t aout_sym;
-    multiboot_elf_section_header_table_t elf_sec;
-  } u;
-
-  /* Memory Mapping buffer */
-  multiboot_uint32_t mmap_length;
-  multiboot_uint32_t mmap_addr;
-
-  /* Drive Info buffer */
-  multiboot_uint32_t drives_length;
-  multiboot_uint32_t drives_addr;
-
-  /* ROM configuration table */
-  multiboot_uint32_t config_table;
-
-  /* Boot Loader Name */
-  multiboot_uint32_t boot_loader_name;
-
-  /* APM table */
-  multiboot_uint32_t apm_table;
-
-  /* Video */
-  multiboot_uint32_t vbe_control_info;
-  multiboot_uint32_t vbe_mode_info;
-  multiboot_uint16_t vbe_mode;
-  multiboot_uint16_t vbe_interface_seg;
-  multiboot_uint16_t vbe_interface_off;
-  multiboot_uint16_t vbe_interface_len;
-
-  multiboot_uint64_t framebuffer_addr;
-  multiboot_uint32_t framebuffer_pitch;
-  multiboot_uint32_t framebuffer_width;
-  multiboot_uint32_t framebuffer_height;
-  multiboot_uint8_t framebuffer_bpp;
-#define MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED 0
-#define MULTIBOOT_FRAMEBUFFER_TYPE_RGB     1
-#define MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT	2
-  multiboot_uint8_t framebuffer_type;
-  union
-  {
-    struct
-    {
-      multiboot_uint32_t framebuffer_palette_addr;
-      multiboot_uint16_t framebuffer_palette_num_colors;
-    };
-    struct
-    {
-      multiboot_uint8_t framebuffer_red_field_position;
-      multiboot_uint8_t framebuffer_red_mask_size;
-      multiboot_uint8_t framebuffer_green_field_position;
-      multiboot_uint8_t framebuffer_green_mask_size;
-      multiboot_uint8_t framebuffer_blue_field_position;
-      multiboot_uint8_t framebuffer_blue_mask_size;
-    };
-  };
-};
-typedef struct multiboot_info multiboot_info_t;
-
 struct multiboot_color
 {
   multiboot_uint8_t red;
@@ -237,19 +111,114 @@ struct multiboot_mmap_entry
 } __attribute__((packed));
 typedef struct multiboot_mmap_entry multiboot_memory_map_t;
 
-struct multiboot_mod_list
+struct multiboot_tag
 {
-  /* the memory used goes from bytes 'mod_start' to 'mod_end-1' inclusive */
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+};
+
+struct multiboot_tag_string
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  char string[0];
+};
+
+struct multiboot_tag_module
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
   multiboot_uint32_t mod_start;
   multiboot_uint32_t mod_end;
-
-  /* Module command line */
-  multiboot_uint32_t cmdline;
-
-  /* padding to take it to 16 bytes (must be zero) */
-  multiboot_uint32_t pad;
+  char cmdline[0];
 };
-typedef struct multiboot_mod_list multiboot_module_t;
+
+struct multiboot_tag_basic_meminfo
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint32_t mem_lower;
+  multiboot_uint32_t mem_upper;
+};
+
+struct multiboot_tag_bootdev
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint32_t biosdev;
+  multiboot_uint32_t slice;
+  multiboot_uint32_t part;
+};
+
+struct multiboot_tag_mmap
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  struct multiboot_mmap_entry entries[0];  
+};
+
+struct multiboot_vbe_info_block
+{
+  multiboot_uint8_t external_specification[512];
+};
+
+struct multiboot_vbe_mode_info_block
+{
+  multiboot_uint8_t external_specification[256];
+};
+
+struct multiboot_tag_vbe
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+
+  multiboot_uint16_t vbe_mode;
+  multiboot_uint16_t vbe_interface_seg;
+  multiboot_uint16_t vbe_interface_off;
+  multiboot_uint16_t vbe_interface_len;
+
+  struct multiboot_vbe_info_block vbe_control_info;
+  struct multiboot_vbe_mode_info_block vbe_mode_info;
+};
+
+struct multiboot_tag_framebuffer_common
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+
+  multiboot_uint64_t framebuffer_addr;
+  multiboot_uint32_t framebuffer_pitch;
+  multiboot_uint32_t framebuffer_width;
+  multiboot_uint32_t framebuffer_height;
+  multiboot_uint8_t framebuffer_bpp;
+#define MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED 0
+#define MULTIBOOT_FRAMEBUFFER_TYPE_RGB     1
+#define MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT	2
+  multiboot_uint8_t framebuffer_type;
+};
+
+struct multiboot_tag_framebuffer
+{
+  struct multiboot_tag_framebuffer_common common;
+
+  union
+  {
+    struct
+    {
+      multiboot_uint16_t framebuffer_palette_num_colors;
+      struct multiboot_color framebuffer_palette[0];
+    };
+    struct
+    {
+      multiboot_uint8_t framebuffer_red_field_position;
+      multiboot_uint8_t framebuffer_red_mask_size;
+      multiboot_uint8_t framebuffer_green_field_position;
+      multiboot_uint8_t framebuffer_green_mask_size;
+      multiboot_uint8_t framebuffer_blue_field_position;
+      multiboot_uint8_t framebuffer_blue_mask_size;
+    };
+  };
+};
 
 #endif /* ! ASM_FILE */
 

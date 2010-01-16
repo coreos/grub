@@ -44,9 +44,16 @@
 #include <grub/env.h>
 #include <grub/i386/relocator.h>
 #include <grub/video.h>
+#include <grub/memory.h>
 
 #ifdef GRUB_MACHINE_EFI
 #include <grub/efi/efi.h>
+#endif
+
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+#define DEFAULT_VIDEO_MODE "text"
+#else
+#define DEFAULT_VIDEO_MODE "auto"
 #endif
 
 extern grub_dl_t my_mod;
@@ -56,6 +63,135 @@ char *grub_multiboot_payload_orig;
 grub_addr_t grub_multiboot_payload_dest;
 grub_size_t grub_multiboot_pure_size;
 grub_uint32_t grub_multiboot_payload_eip;
+static int accepts_video;
+
+/* Return the length of the Multiboot mmap that will be needed to allocate
+   our platform's map.  */
+grub_uint32_t
+grub_get_multiboot_mmap_len (void)
+{
+  grub_size_t count = 0;
+
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr __attribute__ ((unused)),
+			     grub_uint64_t size __attribute__ ((unused)),
+			     grub_uint32_t type __attribute__ ((unused)))
+    {
+      count++;
+      return 0;
+    }
+
+  grub_mmap_iterate (hook);
+
+  return count * sizeof (struct multiboot_mmap_entry);
+}
+
+/* Fill previously allocated Multiboot mmap.  */
+void
+grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
+{
+  struct multiboot_mmap_entry *mmap_entry = (struct multiboot_mmap_entry *) first_entry;
+
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+    {
+      mmap_entry->addr = addr;
+      mmap_entry->len = size;
+      switch (type)
+	{
+	case GRUB_MACHINE_MEMORY_AVAILABLE:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_AVAILABLE;
+ 	  break;
+	  
+ 	default:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_RESERVED;
+ 	  break;
+ 	}
+      mmap_entry->size = sizeof (struct multiboot_mmap_entry) - sizeof (mmap_entry->size);
+      mmap_entry++;
+
+      return 0;
+    }
+
+  grub_mmap_iterate (hook);
+}
+
+grub_err_t
+grub_multiboot_set_video_mode (void)
+{
+  grub_err_t err;
+  const char *modevar;
+
+  if (accepts_video || !GRUB_MACHINE_HAS_VGA_TEXT)
+    {
+      modevar = grub_env_get ("gfxpayload");
+      if (! modevar || *modevar == 0)
+	err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0);
+      else
+	{
+	  char *tmp;
+	  tmp = grub_malloc (grub_strlen (modevar)
+			     + sizeof (DEFAULT_VIDEO_MODE) + 1);
+	  if (! tmp)
+	    return grub_errno;
+	  grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
+	  err = grub_video_set_mode (tmp, 0);
+	  grub_free (tmp);
+	}
+    }
+  else
+    err = grub_video_set_mode ("text", 0);
+
+  return err;
+}
+
+#if GRUB_MACHINE_HAS_VBE
+grub_err_t
+grub_multiboot_fill_vbe_info_real (struct grub_vbe_info_block *vbe_control_info,
+				   struct grub_vbe_mode_info_block *vbe_mode_info,
+				   multiboot_uint16_t *vbe_mode,
+				   multiboot_uint16_t *vbe_interface_seg,
+				   multiboot_uint16_t *vbe_interface_off,
+				   multiboot_uint16_t *vbe_interface_len)
+{
+  grub_vbe_status_t status;
+  void *scratch = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+    
+  status = grub_vbe_bios_get_controller_info (scratch);
+  if (status != GRUB_VBE_STATUS_OK)
+    return grub_error (GRUB_ERR_IO, "Can't get controller info.");  
+  grub_memcpy (vbe_control_info, scratch, sizeof (struct grub_vbe_info_block));
+  
+  status = grub_vbe_bios_get_mode (scratch);
+  *vbe_mode = *(grub_uint32_t *) scratch;
+  if (status != GRUB_VBE_STATUS_OK)
+    return grub_error (GRUB_ERR_IO, "can't get VBE mode");
+
+  /* get_mode_info isn't available for mode 3.  */
+  if (*vbe_mode == 3)
+    {
+      grub_memset (vbe_mode_info, 0, sizeof (struct grub_vbe_mode_info_block));
+      vbe_mode_info->memory_model = GRUB_VBE_MEMORY_MODEL_TEXT;
+      vbe_mode_info->x_resolution = 80;
+      vbe_mode_info->y_resolution = 25;
+    }
+  else
+    {
+      status = grub_vbe_bios_get_mode_info (*vbe_mode, scratch);
+      if (status != GRUB_VBE_STATUS_OK)
+	return grub_error (GRUB_ERR_IO, "can't get mode info");
+      grub_memcpy (vbe_mode_info, scratch,
+		   sizeof (struct grub_vbe_mode_info_block));
+    }
+      
+  /* FIXME: retrieve those.  */
+  *vbe_interface_seg = 0;
+  *vbe_interface_off = 0;
+  *vbe_interface_len = 0;
+  
+  return GRUB_ERR_NONE;
+}
+#endif
 
 static grub_err_t
 grub_multiboot_boot (void)
@@ -265,7 +401,7 @@ grub_multiboot (int argc, char *argv[])
 	}
     }
 
-  grub_multiboot_set_accepts_video (!!(header->flags & MULTIBOOT_VIDEO_MODE));
+  accepts_video = !!(header->flags & MULTIBOOT_VIDEO_MODE);
 
   grub_multiboot_set_bootdev ();
 
