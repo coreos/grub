@@ -62,7 +62,7 @@ static grub_uint32_t biosdev, slice, part;
 grub_size_t
 grub_multiboot_get_mbi_size (void)
 {
-  return sizeof (struct multiboot_tag)
+  return sizeof (grub_uint32_t) + sizeof (struct multiboot_tag)
     + (sizeof (struct multiboot_tag_string) + ALIGN_UP (cmdline_size, 4))
     + (sizeof (struct multiboot_tag_string)
        + ALIGN_UP (sizeof (PACKAGE_STRING), 4))
@@ -221,11 +221,14 @@ grub_err_t
 grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
 			 grub_size_t bufsize)
 {
-  grub_uint8_t *ptrorig = (grub_uint8_t *) orig + buf_off;
+  grub_uint8_t *ptrorig;
+  grub_uint8_t *mbistart = (grub_uint8_t *) orig + buf_off;
   grub_err_t err;
 
   if (bufsize < grub_multiboot_get_mbi_size ())
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "mbi buffer is too small");
+
+  ptrorig = (grub_uint8_t *) orig + buf_off + sizeof (grub_uint32_t);
 
   {
     struct multiboot_tag_string *tag = (struct multiboot_tag_string *) ptrorig;
@@ -313,6 +316,8 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
     tag->size = sizeof (struct multiboot_tag);
     ptrorig += tag->size;
   }
+
+  *(grub_uint32_t *) mbistart = ptrorig - mbistart;
 
   return GRUB_ERR_NONE;
 }
