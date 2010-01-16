@@ -410,8 +410,7 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
 
   chunk_size = ALIGN_UP (symsize, sizeof (grub_freebsd_addr_t))
     + ALIGN_UP (strsize, sizeof (grub_freebsd_addr_t))
-    + sizeof (e) + e.e_phnum * e.e_phentsize
-    + e.e_shnum * e.e_shentsize;
+    + sizeof (e) + e.e_shnum * e.e_shentsize;
 
   symtarget = ALIGN_UP (*kern_end, sizeof (grub_freebsd_addr_t));
   err = grub_relocator_alloc_chunk_addr (relocator, &sym_chunk,
@@ -419,7 +418,7 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
   if (err)
     return err;
 
-  symtab.nsyms = chunk_size;
+  symtab.nsyms = 1;
   symtab.ssyms = symtarget;
   symtab.esyms = symtarget + chunk_size;
 
@@ -427,20 +426,13 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
   
   e2 = (Elf_Ehdr *) curload;
   grub_memcpy (curload, &e, sizeof (e));
-  e2->e_phoff = sizeof (e);
-  e2->e_shoff = sizeof (e) + e.e_phnum * e.e_phentsize;
+  e2->e_phoff = 0;
+  e2->e_phnum = 0;
+  e2->e_phentsize = 0;
+  e2->e_shstrndx = 0;
+  e2->e_shoff = sizeof (e);
 
   curload += sizeof (e);
-  if (grub_file_seek (file, e.e_phoff) == (grub_off_t) -1)
-    return grub_errno;
-  if (grub_file_read (file, curload, e.e_phnum * e.e_phentsize) 
-      != (grub_ssize_t) (e.e_phnum * e.e_phentsize))
-    {
-      if (! grub_errno)
-	return grub_error (GRUB_ERR_BAD_OS, "invalid ELF");
-      return grub_errno;
-    }
-  curload += e.e_phnum * e.e_phentsize;
 
   for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) (shdr
 						+ e.e_shnum * e.e_shentsize);
@@ -450,19 +442,14 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
       s2 = (Elf_Shdr *) curload;
       grub_memcpy (curload, s, e.e_shentsize);
       if (s == symsh)
-	{
-	  s2->sh_offset = sizeof (e) + e.e_phnum * e.e_phentsize
-	    + e.e_shnum * e.e_shentsize;
-	}
+	s2->sh_offset = sizeof (e) + e.e_shnum * e.e_shentsize;
       else if (s == strsh)
-	{
-	  s2->sh_offset = ALIGN_UP (symsize, sizeof (grub_freebsd_addr_t))
-	    + sizeof (e) + e.e_phnum * e.e_phentsize
-	    + e.e_shnum * e.e_shentsize;
-	}
+	s2->sh_offset = ALIGN_UP (symsize, sizeof (grub_freebsd_addr_t))
+	  + sizeof (e) + e.e_shnum * e.e_shentsize;
       else
 	s2->sh_offset = 0;
       s2->sh_addr = s2->sh_offset;
+      curload += e.e_shentsize;
     }
 
   if (grub_file_seek (file, symsh->sh_offset) == (grub_off_t) -1)
