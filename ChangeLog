@@ -1,5 +1,15 @@
 2010-01-16  Carles Pina i Estany  <carles@pina.cat>
 
+	* util/grub-editenv.c (usage): Use `program_name' instead of hardcoded
+	string.
+	* util/grub-emu.c (usage): Likewise.
+	* util/grub-mkpasswd-pbkdf2.c (usage): Likewise.
+	* util/i386/efi/grub-mkimage.c (usage): Likewise.
+	* util/i386/pc/grub-mkimage.c (usage): Likewise.
+	* util/i386/pc/grub-setup.c (usage): Likewise.
+
+2010-01-16  Carles Pina i Estany  <carles@pina.cat>
+
 	* util/misc.c (grub_util_warn): Gettextizze, print full stop after
 	the message.
 	(grub_util_info): Likewise.

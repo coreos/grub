@@ -329,7 +329,7 @@ usage (int status)
     fprintf (stderr, _("Try `%s --help' for more information.\n"), program_name);
   else
     printf (_("\
-Usage: grub-mkimage [OPTION]... [MODULES]\n\
+Usage: %s [OPTION]... [MODULES]\n\
 \n\
 Make a bootable image of GRUB.\n\
 \n\
@@ -343,7 +343,7 @@ Make a bootable image of GRUB.\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-"), GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+"), program_name, GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
 
   exit (status);
 }

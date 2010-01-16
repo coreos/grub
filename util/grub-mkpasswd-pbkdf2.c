@@ -74,16 +74,16 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try `grub-scrypt --help' for more information.\n");
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-scrypt [OPTIONS]\n\
+Usage: %s [OPTIONS]\n\
 \nOptions:\n\
      -c number, --iteration-count=number  Number of PBKDF2 iterations\n\
      -l number, --buflen=number           Length of generated hash\n\
      -s number, --salt=number             Length of salt\n\
 \n\
-Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
+Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
 
   exit (status);
 }

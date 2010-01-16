@@ -129,10 +129,10 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try `grub-emu --help' for more information.\n");
+	     "Try `%s --help' for more information.\n", program_name);
   else
     printf (
-      "Usage: grub-emu [OPTION]...\n"
+      "Usage: %s [OPTION]...\n"
       "\n"
       "GRUB emulator.\n"
       "\n"
@@ -144,7 +144,7 @@ usage (int status)
       "  -h, --help                display this message and exit\n"
       "  -V, --version             print version information and exit\n"
       "\n"
-      "Report bugs to <%s>.\n", DEFAULT_DEVICE_MAP, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+      "Report bugs to <%s>.\n", program_name, DEFAULT_DEVICE_MAP, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
   return status;
 }
 
