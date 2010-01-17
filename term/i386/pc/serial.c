@@ -17,8 +17,7 @@
  */
 
 #include <grub/machine/memory.h>
-#include <grub/machine/serial.h>
-#include <grub/machine/console.h>
+#include <grub/i386/pc/serial.h>
 #include <grub/term.h>
 #include <grub/types.h>
 #include <grub/dl.h>

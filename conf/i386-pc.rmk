@@ -117,7 +117,7 @@ grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 pkglib_MODULES = biosdisk.mod chain.mod 				\
 	reboot.mod halt.mod				\
-	vbe.mod vbetest.mod vbeinfo.mod play.mod serial.mod		\
+	vbe.mod vbetest.mod vbeinfo.mod play.mod 		\
 	vga.mod memdisk.mod pci.mod lspci.mod				\
 	pxe.mod pxecmd.mod datetime.mod date.mod 	\
 	datehook.mod lsmmap.mod ata_pthru.mod hdparm.mod 		\
@@ -190,11 +190,6 @@ reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 halt_mod_SOURCES = commands/i386/pc/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For serial.mod.
-serial_mod_SOURCES = term/i386/pc/serial.c
-serial_mod_CFLAGS = $(COMMON_CFLAGS)
-serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vbe.mod.
 vbe_mod_SOURCES = video/i386/pc/vbe.c
