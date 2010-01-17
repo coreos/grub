@@ -21,17 +21,18 @@
 
 #include <grub/symbol.h>
 
-struct grub_cpu_int_registers
+struct grub_bios_int_registers
 {
-  grub_uint16_t bx;
+  grub_uint32_t eax;
   grub_uint16_t es;
-  grub_uint16_t cx;
-  grub_uint16_t ax;
-  grub_uint16_t dx;
   grub_uint16_t ds;
-  grub_uint16_t di;
   grub_uint16_t flags;
-  grub_uint16_t si;
+  grub_uint16_t dummy;
+  grub_uint32_t ebx;
+  grub_uint32_t ecx;
+  grub_uint32_t edi;
+  grub_uint32_t esi;
+  grub_uint32_t edx;
 };
 
 #define  GRUB_CPU_INT_FLAGS_CARRY     0x1
@@ -45,6 +46,7 @@ struct grub_cpu_int_registers
 #define  GRUB_CPU_INT_FLAGS_OVERFLOW  0x800
 #define  GRUB_CPU_INT_FLAGS_DEFAULT   GRUB_CPU_INT_FLAGS_INTERRUPT
 
-void EXPORT_FUNC (grub_cpu_interrupt) (grub_uint8_t intno, struct grub_cpu_int_registers *regs);
+void EXPORT_FUNC (grub_bios_interrupt) (grub_uint8_t intno,
+					struct grub_bios_int_registers *regs);
 
 #endif

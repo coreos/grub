@@ -2068,73 +2068,96 @@ FUNCTION(grub_pxe_call)
 	popl	%ebp
 	ret
 
-FUNCTION(grub_cpu_interrupt)
+FUNCTION(grub_bios_interrupt)
 	pushl    %ebp
-	pushl    %esi
-	pushl    %edi
-	pushl    %ebx
+	pushl    %ecx
+	pushl    %eax
 	pushl    %edx
+	
 	movb     %al, intno
-	movl     %edx, %esi
+	movl	 (%edx), %eax
+	movl	 %eax, LOCAL(bios_register_eax)
+	movw	 4(%edx), %ax
+	movw	 %ax, LOCAL(bios_register_es)
+	movw	 6(%edx), %ax
+	movw	 %ax, LOCAL(bios_register_ds)
+	movw	 8(%edx), %ax
+	movw	 %ax, LOCAL(bios_register_flags)
 
-	movl     0(%esi), %ebx
-	movl	 4(%esi), %ecx
-	movl     8(%esi), %edx
-	movl     12(%esi), %edi
-	movw     16(%esi), %si
+	movl 	12(%edx), %ebx
+	movl 	16(%edx), %ecx
+	movl 	20(%edx), %edi
+	movl 	24(%edx), %esi
+	movl 	28(%edx), %edx
 
 	call    prot_to_real
 	.code16
-	movl    %edi, %eax
-	shrl    $16, %eax
-	push    %ax
 
-	movl    %ebx, %eax
-	shrl    $16, %eax
-	movw    %ax, %es
-	
-	movl    %edx, %eax
-	shrl    $16, %eax
-	movw    %ax, %ds
+	mov	%ds, %ax
+	push	%ax
 
-	movl    %ecx, %eax
-	shrl    $16, %eax
+	/* movw imm16, %ax*/
+	.byte	0xb8
+LOCAL(bios_register_es):
+	.short 	0
+	movw	%ax, %es
+	/* movw imm16, %ax*/
+	.byte	0xb8
+LOCAL(bios_register_ds):
+	.short 	0
+	movw	%ax, %ds
 
+	/* movw imm16, %ax*/
+	.byte	0xb8
+LOCAL(bios_register_flags):
+	.short 	0
+	push	%ax
 	popf
+
+	/* movl imm32, %eax*/
+	.byte	0x66, 0xb8
+LOCAL(bios_register_eax):
+	.long 	0
+	
+	/* int imm8.  */
 	.byte   0xcd
 intno:	
 	.byte   0
 
+	movl 	%eax, %cs:LOCAL(bios_register_eax)
+	movw	%ds, %ax
+	movw 	%ax, %cs:LOCAL(bios_register_ds)
+	pop 	%ax
+	mov	%ax, %ds
 	pushf
-	andl    $0xffff, %ebx
-	andl    $0xffff, %ecx
-	andl    $0xffff, %edx
-	andl    $0xffff, %edi
-
-	shll    $16, %eax
-	orl     %eax, %ecx
-
-	movw    %ds, %ax
-	shll    $16, %eax
-	orl     %eax, %edx
-
-	pop     %ax
-	shll    $16, %eax
-	orl     %eax, %edi
+	pop	%ax
+	movw	%ax, LOCAL(bios_register_flags)
+	mov 	%es, %ax
+	movw	%ax, LOCAL(bios_register_es)
 
 	DATA32  call	real_to_prot
 	.code32
-	pushl    %esi
-	movl     4(%esp), %esi
-	movl     %ebx, 0(%esi)
-	movl     %ecx, 4(%esi)
-	movl     %edx, 8(%esi)
-	movl     %edi, 12(%esi)
-	popl     %eax
-	movw     %ax, 16(%esi)
-	popl     %eax
-	popl	 %ebx
-	popl	 %edi
-	popl	 %esi
-	popl     %ebp
+
+	popl    %eax
+
+	movl 	%ebx, 12(%eax)
+	movl 	%ecx, 16(%eax)
+	movl 	%edi, 20(%eax)
+	movl 	%esi, 24(%eax)
+	movl 	%edx, 28(%eax)
+
+	movl     %eax, %edx
+
+	movl	 LOCAL(bios_register_eax), %eax
+	movl	 %eax, (%edx)
+	movw	 LOCAL(bios_register_es), %ax
+	movw	 %ax, 4(%edx)
+	movw	 LOCAL(bios_register_ds), %ax
+	movw	 %ax, 6(%edx)
+	movw	 LOCAL(bios_register_flags), %ax
+	movw	 %ax, 8(%edx)
+
+	popl    %eax
+	popl    %ecx
+	popl    %ebp
 	ret

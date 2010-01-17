@@ -33,29 +33,29 @@ static int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap);
 
 static int grub_biosdisk_get_num_floppies (void)
 {
-  struct grub_cpu_int_registers regs;
+  struct grub_bios_int_registers regs;
   int drive;
 
   /* reset the disk system first */
-  regs.ax = 0;
-  regs.dx = 0;
+  regs.eax = 0;
+  regs.edx = 0;
   regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
 
-  grub_cpu_interrupt (0x13, &regs);
+  grub_bios_interrupt (0x13, &regs);
 
   for (drive = 0; drive < 2; drive++)
     {
       regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT | GRUB_CPU_INT_FLAGS_CARRY;
-      regs.dx = drive;
+      regs.edx = drive;
 
       /* call GET DISK TYPE */
-      regs.ax = 0x1500;
-      grub_cpu_interrupt (0x13, &regs);
+      regs.eax = 0x1500;
+      grub_bios_interrupt (0x13, &regs);
       if (regs.flags & GRUB_CPU_INT_FLAGS_CARRY)
 	break;
 
       /* check if this drive exists */
-      if (!(regs.ax & 0x300))
+      if (!(regs.eax & 0x300))
 	break;
     }
 
@@ -71,16 +71,16 @@ static int grub_biosdisk_get_num_floppies (void)
 static int 
 grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)
 {
-  struct grub_cpu_int_registers regs;
-  regs.ax = ah << 8;
+  struct grub_bios_int_registers regs;
+  regs.eax = ah << 8;
   /* compute the address of disk_address_packet */
   regs.ds = (((grub_addr_t) dap) & 0xffff0000) >> 4;
-  regs.si = (((grub_addr_t) dap) & 0xffff);
-  regs.dx = drive;
+  regs.esi = (((grub_addr_t) dap) & 0xffff);
+  regs.edx = drive;
   regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
 
-  grub_cpu_interrupt (0x13, &regs);
-  return regs.ax >> 8;
+  grub_bios_interrupt (0x13, &regs);
+  return (regs.eax >> 8) & 0xff;
 }
 
 static int
