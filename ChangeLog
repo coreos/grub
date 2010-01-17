@@ -1,3 +1,12 @@
+2010-01-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/test.h: Add license header.
+	* tests/example_functional_test.c: Likewise.
+	* tests/example_unit_test.c: Likewise.
+	* tests/lib/functional_test.c: Likewise.
+	* tests/lib/test.c: Likewise.
+	* tests/lib/unit_test.c: Likewise.
+
 2010-01-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Use flag-based instead of hook-based video mode selection and "auto"
