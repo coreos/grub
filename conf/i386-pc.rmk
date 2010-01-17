@@ -368,5 +368,15 @@ pkglib_DATA += efiemu32.o efiemu64.o
 
 endif
 
+BOOTTARGET=bios-cd
+
+bootcheck-linux16-i386: linux-initramfs.i386 $(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/tests/boot/linux.cfg grub-shell
+	timeout -s KILL 30s ./grub-shell --boot=$(BOOTTARGET) --qemu=qemu-system-i386 --files=/initrd=linux-initramfs.i386 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/tests/boot/linux16.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
+
+bootcheck-linux16-x86_64: linux-initramfs.x86_64 $(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/tests/boot/linux.cfg grub-shell
+	timeout -s KILL 30s ./grub-shell --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/initrd=linux-initramfs.x86_64 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/tests/boot/linux16.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
+
+BOOTCHECKS+=bootcheck-linux16-i386 bootcheck-linux16-x86_64
+
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk
