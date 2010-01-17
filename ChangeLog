@@ -1,3 +1,8 @@
+2010-01-17  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/misc.c (grub_util_info): Fix the order of the parameters in a
+	fprintf call.
+
 2010-01-16  Grégoire Sutre <gregoire.sutre@gmail.com>
 
 	* genmk.rb (class SCRIPT): Replace option -i of sed by a pipe.

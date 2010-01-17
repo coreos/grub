@@ -81,7 +81,7 @@ grub_util_info (const char *fmt, ...)
       va_start (ap, fmt);
       vfprintf (stderr, fmt, ap);
       va_end (ap);
-      fprintf (".\n", stderr);
+      fprintf (stderr, ".\n");
       fflush (stderr);
     }
 }
