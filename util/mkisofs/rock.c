@@ -306,7 +306,7 @@ int deep_opt;
 	     * the symbolic link won't fit into one SL System Use Field
 	     * print an error message and continue with splited one
 	     */
-	    fprintf (stderr, _("symbolic link ``%s'' too long for one SL System Use Field, splitting"), cpnt);
+	    fprintf (stderr, _("symbolic link `%s' too long for one SL System Use Field, splitting"), cpnt);
 	  }
        if(MAYBE_ADD_CE_ENTRY(SL_SIZE + sl_bytes)) add_CE_entry();
      }

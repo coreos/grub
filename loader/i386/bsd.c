@@ -807,6 +807,7 @@ grub_openbsd_boot (void)
   pa = pa->ba_next;
   pa->ba_type = OPENBSD_BOOTARG_END;
   pa++;
+
   buf = (grub_uint8_t *) pa;
   argbuf_target_end = buf - buf0 + buf_target;
 

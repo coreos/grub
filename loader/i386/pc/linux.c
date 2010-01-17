@@ -64,7 +64,6 @@ grub_linux16_boot (void)
   return grub_relocator16_boot (relocator, state);
 }
 
-
 static grub_err_t
 grub_linux_unload (void)
 {

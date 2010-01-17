@@ -129,10 +129,10 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try ``grub-emu --help'' for more information.\n");
+	     "Try `%s --help' for more information.\n", program_name);
   else
     printf (
-      "Usage: grub-emu [OPTION]...\n"
+      "Usage: %s [OPTION]...\n"
       "\n"
       "GRUB emulator.\n"
       "\n"
@@ -144,7 +144,7 @@ usage (int status)
       "  -h, --help                display this message and exit\n"
       "  -V, --version             print version information and exit\n"
       "\n"
-      "Report bugs to <%s>.\n", DEFAULT_DEVICE_MAP, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+      "Report bugs to <%s>.\n", program_name, DEFAULT_DEVICE_MAP, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
   return status;
 }
 
@@ -220,14 +220,14 @@ main (int argc, char *argv[])
     {
       char *device_name = grub_guess_root_device (dir);
       if (! device_name)
-        grub_util_error ("cannot find a device for %s.\n", dir);
+        grub_util_error ("cannot find a device for %s", dir);
 
       root_dev = grub_util_get_grub_dev (device_name);
       if (! root_dev)
 	{
 	  grub_util_info ("guessing the root device failed, because of `%s'",
 			  grub_errmsg);
-	  grub_util_error ("Cannot guess the root device. Specify the option ``--root-device''.");
+	  grub_util_error ("cannot guess the root device. Specify the option `--root-device'");
 	}
     }
 

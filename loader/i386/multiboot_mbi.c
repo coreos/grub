@@ -239,6 +239,7 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   grub_size_t mmap_size;
   grub_uint8_t *ptrorig; 
   grub_addr_t ptrdest;
+
   grub_err_t err;
   grub_size_t bufsize;
 
