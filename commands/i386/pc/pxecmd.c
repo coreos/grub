@@ -22,6 +22,7 @@
 #include <grub/misc.h>
 #include <grub/machine/pxe.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_pxe_unload (grub_command_t cmd __attribute__ ((unused)),
@@ -42,7 +43,7 @@ GRUB_MOD_INIT(pxecmd)
 {
   cmd = grub_register_command ("pxe_unload", grub_cmd_pxe_unload,
 			       0,
-			       "Unload PXE environment.");
+			       N_("Unload PXE environment."));
 }
 
 GRUB_MOD_FINI(pxecmd)

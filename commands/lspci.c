@@ -21,6 +21,7 @@
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 struct grub_pci_classname
 {
@@ -218,7 +219,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(lspci)
 {
   cmd = grub_register_extcmd ("lspci", grub_cmd_lspci, GRUB_COMMAND_FLAG_BOTH,
-			      "[-i]", "List PCI devices.", options);
+			      "[-i]", N_("List PCI devices."), options);
 }
 
 GRUB_MOD_FINI(lspci)

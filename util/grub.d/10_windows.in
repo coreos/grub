@@ -73,6 +73,7 @@ for dir in $dirlist ; do
 menuentry "$OS" {
 EOF
 
+  save_default_entry | sed -e 's,^,\t,'
   prepare_grub_to_access_device "$dev" | sed 's,^,\t,'
 
   cat << EOF

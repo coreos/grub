@@ -158,7 +158,7 @@ void FDECL4(xfwrite, void *, buffer, uint64_t, count, uint64_t, size, FILE *, fi
 		sprintf(nbuf, "%s_%02d", outfile, idx++);
 		file = freopen(nbuf, "wb", file);
 		if (file == NULL)
-		  error (1, errno, _("Cannot open '%s'"), nbuf);
+		  error (1, errno, _("Cannot open `%s'"), nbuf);
 
 	}
      while(count)
@@ -1437,7 +1437,9 @@ static int FDECL1(padblock_write, FILE *, outfile)
       if (! fp)
 	error (1, errno, _("Unable to open %s"), boot_image_embed);
 
-      fread (buffer, 2048 * PADBLOCK_SIZE, 1, fp);
+      if (fread (buffer, 1, 2048 * PADBLOCK_SIZE, fp) == 0)
+	error (1, errno, _("cannot read %d bytes from %s"),
+	       2048 * PADBLOCK_SIZE, boot_image_embed);
       if (fgetc (fp) != EOF)
 	error (1, 0, _("%s is too big for embed area"), boot_image_embed);
     }

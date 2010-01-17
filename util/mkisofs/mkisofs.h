@@ -5,7 +5,7 @@
 
    Copyright 1993 Yggdrasil Computing, Incorporated
 
-   Copyright (C) 2009  Free Software Foundation, Inc.
+   Copyright (C) 2009,2010  Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,8 +30,21 @@
 #include <prototyp.h>
 #include <sys/stat.h>
 
-#include <locale.h>
-#include <libintl.h>
+#if ENABLE_NLS
+
+#  include <locale.h>
+#  include <libintl.h>
+
+#else /* ! ENABLE_NLS */
+
+/* Disabled NLS.
+   The casts to 'const char *' serve the purpose of producing warnings
+   for invalid uses of the value returned from these functions.
+   On pre-ANSI systems without 'const', the config.h file is supposed to
+   contain "#define const".  */
+#  define gettext(Msgid) ((const char *) (Msgid))
+#endif /* ENABLE_NLS */
+
 #define _(str) gettext(str)
 #define N_(str) str
 

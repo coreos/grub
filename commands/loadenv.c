@@ -26,10 +26,11 @@
 #include <grub/partition.h>
 #include <grub/lib/envblk.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] =
   {
-    {"file", 'f', 0, "Specify filename.", 0, ARG_TYPE_PATHNAME},
+    {"file", 'f', 0, N_("Specify filename."), 0, ARG_TYPE_PATHNAME},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -384,20 +385,20 @@ GRUB_MOD_INIT(loadenv)
   cmd_load =
     grub_register_extcmd ("load_env", grub_cmd_load_env,
 			  GRUB_COMMAND_FLAG_BOTH,
-			  "load_env [-f FILE]",
-			  "Load variables from environment block file.",
+			  N_("[-f FILE]"),
+			  N_("Load variables from environment block file."),
 			  options);
   cmd_list =
     grub_register_extcmd ("list_env", grub_cmd_list_env,
 			  GRUB_COMMAND_FLAG_BOTH,
-			  "list_env [-f FILE]",
-			  "List variables from environment block file.",
+			  N_("[-f FILE]"),
+			  N_("List variables from environment block file."),
 			  options);
   cmd_save =
     grub_register_extcmd ("save_env", grub_cmd_save_env,
 			  GRUB_COMMAND_FLAG_BOTH,
-			  "[-f FILE] variable_name [...]",
-			  "Save variables to environment block file.",
+			  N_("[-f FILE] variable_name [...]"),
+			  N_("Save variables to environment block file."),
 			  options);
 }
 

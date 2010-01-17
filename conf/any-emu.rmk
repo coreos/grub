@@ -23,13 +23,14 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	kern/err.c kern/list.c kern/handler.c				\
 	kern/command.c kern/corecmd.c commands/extcmd.c	kern/file.c	\
 	kern/fs.c commands/boot.c kern/main.c kern/misc.c kern/parser.c	\
-	kern/partition.c kern/reader.c kern/term.c			\
+	kern/partition.c kern/term.c					\
 	kern/rescue_reader.c kern/rescue_parser.c			\
 	lib/arg.c normal/cmdline.c normal/datetime.c normal/misc.c	\
-	normal/handler.c normal/auth.c normal/autofs.c			\
+	normal/handler.c normal/auth.c lib/crypto.c normal/autofs.c	\
 	normal/completion.c normal/main.c normal/color.c		\
-	normal/menu.c normal/menu_entry.c normal/menu_viewer.c		\
-	normal/menu_text.c						\
+	normal/menu.c normal/menu_entry.c		\
+	normal/menu_text.c normal/crypto.c normal/term.c		\
+	commands/terminal.c lib/charset.c \
 	script/main.c script/execute.c script/function.c		\
 	script/lexer.c script/script.c grub_script.tab.c		\
 	partmap/amiga.c	partmap/apple.c partmap/msdos.c partmap/sun.c	\
@@ -47,7 +48,10 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	disk/raid.c disk/raid5_recover.c disk/raid6_recover.c		\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c		\
 	commands/parttool.c parttool/msdospart.c			\
+	lib/libgcrypt-grub/cipher/md5.c \
 	grub_emu_init.c gnulib/progname.c
+grub_emu_CFLAGS += -Wno-missing-field-initializers -Wno-error -I$(srcdir)/lib/libgcrypt_wrap
+
 
 ifeq ($(target_cpu), i386)
 grub_emu_SOURCES += commands/i386/cpuid.c

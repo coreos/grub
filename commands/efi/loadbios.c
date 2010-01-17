@@ -23,6 +23,7 @@
 #include <grub/efi/efi.h>
 #include <grub/pci.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_efi_guid_t acpi_guid = GRUB_EFI_ACPI_TABLE_GUID;
 static grub_efi_guid_t acpi2_guid = GRUB_EFI_ACPI_20_TABLE_GUID;
@@ -201,11 +202,11 @@ static grub_command_t cmd_fakebios, cmd_loadbios;
 GRUB_MOD_INIT(loadbios)
 {
   cmd_fakebios = grub_register_command ("fakebios", grub_cmd_fakebios,
-					0, "Fake bios.");
+					0, N_("Fake BIOS."));
 
   cmd_loadbios = grub_register_command ("loadbios", grub_cmd_loadbios,
 					"BIOS_DUMP [INT10_DUMP]",
-					"Load bios dump.");
+					N_("Load BIOS dump."));
 }
 
 GRUB_MOD_FINI(loadbios)
