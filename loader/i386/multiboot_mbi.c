@@ -134,7 +134,7 @@ set_video_mode (void)
     {
       modevar = grub_env_get ("gfxpayload");
       if (! modevar || *modevar == 0)
-	err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0);
+	err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
       else
 	{
 	  char *tmp;
@@ -143,12 +143,12 @@ set_video_mode (void)
 	  if (! tmp)
 	    return grub_errno;
 	  grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
-	  err = grub_video_set_mode (tmp, 0);
+	  err = grub_video_set_mode (tmp, 0, 0);
 	  grub_free (tmp);
 	}
     }
   else
-    err = grub_video_set_mode ("text", 0);
+    err = grub_video_set_mode ("text", 0, 0);
 
   return err;
 }

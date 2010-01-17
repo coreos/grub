@@ -509,7 +509,7 @@ grub_freebsd_boot (void)
 
   bi.bi_kernend = kern_end;
 
-  grub_video_set_mode ("text", NULL);
+  grub_video_set_mode ("text", 0, 0);
 
   if (is_64bit)
     {
@@ -619,7 +619,7 @@ grub_openbsd_boot (void)
   pa->ba_type = OPENBSD_BOOTARG_END;
   pa++;
 
-  grub_video_set_mode ("text", NULL);
+  grub_video_set_mode ("text", 0, 0);
 
   grub_unix_real_boot (entry, bootflags, openbsd_root, OPENBSD_BOOTARG_APIVER,
 		       0, (grub_uint32_t) (grub_mmap_get_upper () >> 10),
@@ -717,7 +717,7 @@ grub_netbsd_boot (void)
       bootinfo->bi_data[0] = mmap;
     }
 
-  grub_video_set_mode ("text", NULL);
+  grub_video_set_mode ("text", 0, 0);
 
   grub_unix_real_boot (entry, bootflags, 0, bootinfo,
 		       0, (grub_uint32_t) (grub_mmap_get_upper () >> 10),

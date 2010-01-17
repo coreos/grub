@@ -180,7 +180,7 @@ struct grub_video_adapter
   grub_err_t (*fini) (void);
 
   grub_err_t (*setup) (unsigned int width,  unsigned int height,
-                       unsigned int mode_type);
+                       unsigned int mode_type, unsigned int mode_mask);
 
   grub_err_t (*get_info) (struct grub_video_mode_info *mode_info);
 
@@ -316,8 +316,15 @@ grub_err_t grub_video_set_active_render_target (struct grub_video_render_target 
 grub_err_t grub_video_get_active_render_target (struct grub_video_render_target **target);
 
 grub_err_t grub_video_set_mode (const char *modestring,
-				int NESTED_FUNC_ATTR (*hook) (grub_video_adapter_t p,
-							      struct grub_video_mode_info *mode_info));
+				unsigned int modemask,
+				unsigned int modevalue);
+
+static inline int
+grub_video_check_mode_flag (unsigned int flags, unsigned int mask,
+			    unsigned int flag, int def)
+{
+  return (flag & mask) ? !! (flags & flag) : def;
+}
 
 grub_video_driver_id_t
 grub_video_get_driver_id (void);

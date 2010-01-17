@@ -524,11 +524,11 @@ grub_linux_boot (void)
       if (! tmp)
 	return grub_errno;
       grub_sprintf (tmp, "%s;text", modevar);
-      err = grub_video_set_mode (tmp, 0);
+      err = grub_video_set_mode (tmp, 0, 0);
       grub_free (tmp);
     }
   else
-    err = grub_video_set_mode ("text", 0);
+    err = grub_video_set_mode ("text", 0, 0);
 
   if (err)
     {
