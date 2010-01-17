@@ -25,7 +25,23 @@
 /* FIXME: implement unload. */
 /* FIXME: check memory map.  */ 
 /* FIXME: try to request memory from firmware.  */
-/* FIXME: sort chunk when programming relocators.  */
+
+struct grub_relocator
+{
+  struct grub_relocator_chunk *chunks;
+  grub_addr_t postchunks;
+  grub_addr_t highestaddr;
+  grub_addr_t highestnonpostaddr;
+  grub_size_t relocators_size;
+};
+
+struct grub_relocator_chunk
+{
+  struct grub_relocator_chunk *next;
+  grub_addr_t src;
+  grub_addr_t target;
+  grub_size_t size;
+};
 
 struct grub_relocator *
 grub_relocator_new (void)
@@ -591,9 +607,11 @@ grub_err_t
 grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
 			       grub_addr_t *relstart)
 {
-  struct grub_relocator_chunk *chunk;
   grub_addr_t rels;
   grub_addr_t rels0;
+  struct grub_relocator_chunk *sorted;
+  grub_size_t nchunks = 0;
+  unsigned j;
 
   grub_dprintf ("relocator", "Preparing relocs (size=%ld)\n",
 		(unsigned long) rel->relocators_size);
@@ -605,29 +623,84 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
   rels = rels0;
 
   grub_dprintf ("relocator", "Relocs allocated\n");
+  
+  {
+    unsigned i;
+    grub_size_t count[257];
+    struct grub_relocator_chunk *from, *to, *tmp;
 
-  for (chunk = rel->chunks; chunk; chunk = chunk->next)
+    grub_memset (count, 0, sizeof (count));
+
     {
-      grub_dprintf ("relocator", "chunk %p->%p\n", 
-		    (void *) chunk->src, (void *) chunk->target);
-      if (chunk->src < chunk->target)
+        struct grub_relocator_chunk *chunk;
+	for (chunk = rel->chunks; chunk; chunk = chunk->next)
+	  {
+	    grub_dprintf ("relocator", "chunk %p->%p, 0x%x\n", 
+			  (void *) chunk->src, (void *) chunk->target,
+			  chunk->size);
+	    nchunks++;
+	    count[(chunk->src & 0xff) + 1]++;
+	  }
+    }
+    from = grub_malloc (nchunks * sizeof (sorted[0]));
+    to = grub_malloc (nchunks * sizeof (sorted[0]));
+    if (!from || !to)
+      {
+	grub_free (from);
+	grub_free (to);
+	return grub_errno;
+      }
+
+    for (j = 0; j < 256; j++)
+      count[j+1] += count[j];
+
+    {
+      struct grub_relocator_chunk *chunk;
+      for (chunk = rel->chunks; chunk; chunk = chunk->next)
+	from[count[chunk->src & 0xff]++] = *chunk;
+    }
+
+    for (i = 1; i < GRUB_CPU_SIZEOF_VOID_P; i++)
+      {
+	grub_memset (count, 0, sizeof (count));
+	for (j = 0; j < nchunks; j++)
+	  count[((from[j].src >> (8 * i)) & 0xff) + 1]++;
+	for (j = 0; j < 256; j++)
+	  count[j+1] += count[j];
+	for (j = 0; j < nchunks; j++)
+	  to[count[(from[j].src >> (8 * i)) & 0xff]++] = from[j];
+	tmp = to;
+	to = from;
+	from = tmp;
+      }
+    sorted = from;
+    grub_free (to);
+  }
+
+  for (j = 0; j < nchunks; j++)
+    {
+      grub_dprintf ("relocator", "sorted chunk %p->%p, 0x%x\n", 
+		    (void *) sorted[j].src, (void *) sorted[j].target,
+		    sorted[j].size);
+      if (sorted[j].src < sorted[j].target)
 	{
 	  grub_cpu_relocator_backward ((void *) rels,
-				       (void *) chunk->src,
-				       (void *) chunk->target,
-				       chunk->size);
+				       (void *) sorted[j].src,
+				       (void *) sorted[j].target,
+				       sorted[j].size);
 	  rels += grub_relocator_backward_size;
 	}
-      if (chunk->src > chunk->target)
+      if (sorted[j].src > sorted[j].target)
 	{
 	  grub_cpu_relocator_forward ((void *) rels,
-				      (void *) chunk->src,
-				      (void *) chunk->target,
-				      chunk->size);
+				      (void *) sorted[j].src,
+				      (void *) sorted[j].target,
+				      sorted[j].size);
 	  rels += grub_relocator_forward_size;
 	}
     }
   grub_cpu_relocator_jumper ((void *) rels, addr);
   *relstart = rels0;
+  grub_free (sorted);
   return GRUB_ERR_NONE;
 }

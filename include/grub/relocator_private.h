@@ -27,23 +27,6 @@ extern grub_size_t grub_relocator_forward_size;
 extern grub_size_t grub_relocator_backward_size;
 extern grub_size_t grub_relocator_jumper_size;
 
-struct grub_relocator
-{
-  struct grub_relocator_chunk *chunks;
-  grub_addr_t postchunks;
-  grub_addr_t highestaddr;
-  grub_addr_t highestnonpostaddr;
-  grub_size_t relocators_size;
-};
-
-struct grub_relocator_chunk
-{
-  struct grub_relocator_chunk *next;
-  grub_addr_t src;
-  grub_addr_t target;
-  grub_size_t size;
-};
-
 void
 grub_cpu_relocator_init (void);
 grub_err_t
