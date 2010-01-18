@@ -57,6 +57,7 @@ grub_module_iterate (int (*hook) (struct grub_module_header *header))
 static void
 grub_load_modules (void)
 {
+#if 0
   auto int hook (struct grub_module_header *);
   int hook (struct grub_module_header *header)
     {
@@ -72,6 +73,7 @@ grub_load_modules (void)
     }
 
   grub_module_iterate (hook);
+#endif
 }
 
 static void
@@ -136,7 +138,7 @@ static void
 grub_load_normal_mode (void)
 {
   /* Load the module.  */
-  grub_dl_load ("normal");
+//  grub_dl_load ("normal");
 
   /* Something went wrong.  Print errors here to let user know why we're entering rescue mode.  */
   grub_print_error ();
