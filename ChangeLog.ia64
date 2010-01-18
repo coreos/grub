@@ -1,4 +1,5 @@
 2008-01-28  Tristan Gingold  <gingold@free.fr>
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* geninit.sh: Call _init with a null argument.
 	* configure.ac: Add ia64-efi target.
@@ -24,6 +25,7 @@
 	* include/grub/ia64/efi/misc.h: New file.
 	* include/grub/ia64/efi/loader.h: New file.
 	* include/grub/ia64/efi/kernel.h: New file.
+	* include/grub/ia64/kernel.h: New file.
 	* include/grub/ia64/time.h: New file.
 	* include/grub/ia64/setjmp.h: New file.
 	* include/grub/ia64/types.h: New file.
