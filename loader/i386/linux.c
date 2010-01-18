@@ -471,11 +471,11 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   switch (grub_video_get_driver_id ())
     {
     case GRUB_VIDEO_DRIVER_VBE:
-      params->have_vga = GRUB_VIDEO_LINUX_TYPE_VLFB;
+      params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
       break;
 
     default:
-      params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE_LFB;
+      params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
       break;
     }
 
@@ -636,7 +636,7 @@ grub_linux_boot (void)
       grub_print_error ();
       grub_errno = GRUB_ERR_NONE;
 #if HAS_VGA_TEXT
-      params->have_vga = GRUB_VIDEO_LINUX_TYPE_EGA_TEXT;
+      params->have_vga = GRUB_VIDEO_LINUX_TYPE_TEXT;
       params->video_mode = 0x3;
 #else
       params->have_vga = 0;
@@ -648,7 +648,7 @@ grub_linux_boot (void)
 
   /* Initialize these last, because terminal position could be affected by printfs above.  */
 #ifndef GRUB_MACHINE_IEEE1275
-  if (params->have_vga == GRUB_VIDEO_LINUX_TYPE_EGA_TEXT)
+  if (params->have_vga == GRUB_VIDEO_LINUX_TYPE_TEXT)
 #endif
     {
       grub_term_output_t term;
@@ -826,12 +826,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-#ifdef GRUB_MACHINE_EFI
-  /* XXX Linux assumes that only elilo can boot Linux on EFI!!!  */
-  params->type_of_loader = (LINUX_LOADER_ID_ELILO << 4);
-#else
   params->type_of_loader = (LINUX_LOADER_ID_GRUB << 4);
-#endif
 
   /* These two are used (instead of cmd_line_ptr) by older versions of Linux,
      and otherwise ignored.  */

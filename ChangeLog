@@ -1,3 +1,54 @@
+2010-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i386/bsd.h: Fix include pathes.
+
+2010-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add missing *BSD copyright headers.
+
+	* include/grub/aout.h: Add BSD licence.
+	* include/grub/i386/bsd.h: Parts under different licences moved to ...
+	* include/grub/i386/freebsd_linker.h: ... here,
+	* include/grub/i386/freebsd_reboot.h: ... here,
+	* include/grub/i386/netbsd_bootinfo.h: ... here,
+	* include/grub/i386/netbsd_reboot.h: ... here,
+	* include/grub/i386/openbsd_bootarg.h: ... here,
+	* include/grub/i386/openbsd_reboot.h: ... and here. Added appropriate
+	licence to each file.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* acinclude.m4: Remove `nop' assembly instruction; it's not
+	implemented by all architectures.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/efi/linux.c (grub_cmd_linux): Stop pretending we're
+	ELILO.  This is no longer necessary.
+
+2010-01-18  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Added new tool, grub-scrit-check to verify grub.cfg syntax.
+
+	* util/grub-script-check.c: grub-script-check tool.
+	* conf/common.rmk: Make rules for grub-script-check.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix annoying UI bug in rescue mode.  Thanks to Tristan Gingold for
+	spotting it back in 2008.  Shame on me for forgetting he did.
+
+	* kern/rescue_reader.c (grub_rescue_run): Skip zero-length lines.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/linux.h (GRUB_VIDEO_TYPE_TEXT): Rename to ...
+	(GRUB_VIDEO_LINUX_TYPE_TEXT): ... this.  Update all users.
+	(GRUB_VIDEO_TYPE_VLFB): Rename to ...
+	(GRUB_VIDEO_LINUX_TYPE_VESA): ... this.  Update all users.
+	(GRUB_VIDEO_TYPE_EFI): Rename to ...
+	(GRUB_VIDEO_LINUX_TYPE_SIMPLE): ... this.  Update all users.
+
 2010-01-17  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/test.h: Add license header.
