@@ -1,5 +1,12 @@
 2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
 
+	Fix annoying UI bug in rescue mode.  Thanks to Tristan Gingold for
+	spotting it back in 2008.  Shame on me for forgetting he did.
+
+	* kern/rescue_reader.c (grub_rescue_run): Skip zero-length lines.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/grub/i386/linux.h (GRUB_VIDEO_TYPE_TEXT): Rename to ...
 	(GRUB_VIDEO_LINUX_TYPE_TEXT): ... this.  Update all users.
 	(GRUB_VIDEO_TYPE_VLFB): Rename to ...

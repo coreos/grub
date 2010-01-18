@@ -1,7 +1,7 @@
 /* rescue_reader.c - rescue mode reader  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ grub_rescue_run (void)
       grub_errno = GRUB_ERR_NONE;
 
       grub_rescue_read_line (&line, 0);
-      if (! line)
+      if (! line || line[0] == '\0')
 	continue;
 
       grub_parser_get_current ()->parse_line (line, grub_rescue_read_line);
