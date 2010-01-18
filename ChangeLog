@@ -1,3 +1,8 @@
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/efi/linux.c (grub_cmd_linux): Stop pretending we're
+	ELILO.  This is no longer necessary.
+
 2010-01-18  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Added new tool, grub-scrit-check to verify grub.cfg syntax.
