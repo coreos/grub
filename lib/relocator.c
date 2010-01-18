@@ -635,9 +635,9 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
         struct grub_relocator_chunk *chunk;
 	for (chunk = rel->chunks; chunk; chunk = chunk->next)
 	  {
-	    grub_dprintf ("relocator", "chunk %p->%p, 0x%x\n", 
+	    grub_dprintf ("relocator", "chunk %p->%p, 0x%lx\n", 
 			  (void *) chunk->src, (void *) chunk->target,
-			  chunk->size);
+			  (unsigned long) chunk->size);
 	    nchunks++;
 	    count[(chunk->src & 0xff) + 1]++;
 	  }
@@ -679,9 +679,9 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
 
   for (j = 0; j < nchunks; j++)
     {
-      grub_dprintf ("relocator", "sorted chunk %p->%p, 0x%x\n", 
+      grub_dprintf ("relocator", "sorted chunk %p->%p, 0x%lx\n", 
 		    (void *) sorted[j].src, (void *) sorted[j].target,
-		    sorted[j].size);
+		    (unsigned long) sorted[j].size);
       if (sorted[j].src < sorted[j].target)
 	{
 	  grub_cpu_relocator_backward ((void *) rels,

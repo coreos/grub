@@ -351,7 +351,7 @@ grub_bsd_add_mmap (void)
 
   generate_e820_mmap (NULL, &cnt, buf);
 
-  grub_dprintf ("bsd", "%u entries in smap\n", cnt);
+  grub_dprintf ("bsd", "%u entries in smap\n", (unsigned) cnt);
   if (kernel_type == KERNEL_TYPE_NETBSD)
     grub_bsd_add_meta (NETBSD_BTINFO_MEMMAP, buf0, len);
   else
