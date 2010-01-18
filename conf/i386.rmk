@@ -42,7 +42,7 @@ multiboot2_mod_CFLAGS = $(COMMON_CFLAGS) -DGRUB_USE_MULTIBOOT2
 multiboot2_mod_LDFLAGS = $(COMMON_LDFLAGS)
 multiboot2_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
-linuxinit.x86_64: $(srcdir)/tests/boot/linuxinit-x86_64.S
+linux.init.x86_64: $(srcdir)/tests/boot/linux.init-x86_64.S
 	$(TARGET_CC) -o $@ $< -m64 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 linux.init.i386: $(srcdir)/tests/boot/linux.init-i386.S
