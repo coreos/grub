@@ -158,7 +158,7 @@ void FDECL4(xfwrite, void *, buffer, uint64_t, count, uint64_t, size, FILE *, fi
 		sprintf(nbuf, "%s_%02d", outfile, idx++);
 		file = freopen(nbuf, "wb", file);
 		if (file == NULL)
-		  error (1, errno, _("Cannot open '%s'"), nbuf);
+		  error (1, errno, _("Cannot open `%s'"), nbuf);
 
 	}
      while(count)

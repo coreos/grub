@@ -112,10 +112,11 @@ grub_cmd_terminal_input (grub_command_t cmd __attribute__ ((unused)),
 	      break;
 	  if (term)
 	    {
+              if (term->init && term->init () != GRUB_ERR_NONE)
+                return grub_errno;
+
 	      grub_list_remove (GRUB_AS_LIST_P (&(grub_term_inputs_disabled)),
 				GRUB_AS_LIST (term));
-	      if (term->init)
-		term->init ();
 	      grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs),
 			      GRUB_AS_LIST (term));
 	    }
@@ -152,10 +153,11 @@ grub_cmd_terminal_input (grub_command_t cmd __attribute__ ((unused)),
 	  break;
       if (term)
 	{
+	  if (term->init && term->init () != GRUB_ERR_NONE)
+	    return grub_errno;
+
 	  grub_list_remove (GRUB_AS_LIST_P (&(grub_term_inputs_disabled)),
 			    GRUB_AS_LIST (term));
-	  if (term->init)
-	    term->init ();
 	  grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs),
 			  GRUB_AS_LIST (term));
 	}	
@@ -269,10 +271,11 @@ grub_cmd_terminal_output (grub_command_t cmd __attribute__ ((unused)),
 	      break;
 	  if (term)
 	    {
+              if (term->init && term->init () != GRUB_ERR_NONE)
+                return grub_errno;
+
 	      grub_list_remove (GRUB_AS_LIST_P (&(grub_term_outputs_disabled)),
 				GRUB_AS_LIST (term));
-	      if (term->init)
-		term->init ();
 	      grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs),
 			      GRUB_AS_LIST (term));
 	    }
@@ -310,10 +313,11 @@ grub_cmd_terminal_output (grub_command_t cmd __attribute__ ((unused)),
 	  break;
       if (term)
 	{
+	  if (term->init && term->init () != GRUB_ERR_NONE)
+	    return grub_errno;
+
 	  grub_list_remove (GRUB_AS_LIST_P (&(grub_term_outputs_disabled)),
 			    GRUB_AS_LIST (term));
-	  if (term->init)
-	    term->init ();
 	  grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs),
 			  GRUB_AS_LIST (term));
 	}	

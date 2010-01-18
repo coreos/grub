@@ -103,7 +103,7 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
 Usage: %s [OPTIONS] FONT_FILES\n\
@@ -387,7 +387,7 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 
   file = fopen (output_file, "wb");
   if (! file)
-    grub_util_error ("Can\'t write to file %s.", output_file);
+    grub_util_error ("can\'t write to file %s.", output_file);
 
   offset = 0;
 
@@ -584,7 +584,7 @@ main (int argc, char *argv[])
 
 		  a = strtoul (p, &p, 0);
 		  if (*p != '-')
-		    grub_util_error ("Invalid font range");
+		    grub_util_error ("invalid font range");
 		  b = strtoul (p + 1, &p, 0);
 		  if ((font_info.num_range & (GRUB_FONT_RANGE_BLOCK - 1)) == 0)
 		    font_info.ranges = xrealloc (font_info.ranges,
@@ -599,7 +599,7 @@ main (int argc, char *argv[])
 		  if (*p)
 		    {
 		      if (*p != ',')
-			grub_util_error ("Invalid font range");
+			grub_util_error ("invalid font range");
 		      else
 			p++;
 		    }
@@ -657,7 +657,7 @@ main (int argc, char *argv[])
     }
 
   if (! output_file)
-    grub_util_error ("No output file is specified.");
+    grub_util_error ("no output file is specified");
 
   if (FT_Init_FreeType (&ft_lib))
     grub_util_error ("FT_Init_FreeType fails");
@@ -669,7 +669,7 @@ main (int argc, char *argv[])
 
       if (FT_New_Face (ft_lib, argv[optind], font_index, &ft_face))
 	{
-	  grub_util_info ("Can't open file %s, index %d\n", argv[optind],
+	  grub_util_info ("can't open file %s, index %d", argv[optind],
 			  font_index);
 	  continue;
 	}

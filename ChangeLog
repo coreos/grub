@@ -1,3 +1,414 @@
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* commands/terminal.c (grub_cmd_terminal_input)
+	(grub_cmd_terminal_output): Check return of terminal init()
+	routines, and abort if errors are raised.
+
+2010-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i386/bsd.h: Fix include pathes.
+
+2010-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add missing *BSD copyright headers.
+
+	* include/grub/aout.h: Add BSD licence.
+	* include/grub/i386/bsd.h: Parts under different licences moved to ...
+	* include/grub/i386/freebsd_linker.h: ... here,
+	* include/grub/i386/freebsd_reboot.h: ... here,
+	* include/grub/i386/netbsd_bootinfo.h: ... here,
+	* include/grub/i386/netbsd_reboot.h: ... here,
+	* include/grub/i386/openbsd_bootarg.h: ... here,
+	* include/grub/i386/openbsd_reboot.h: ... and here. Added appropriate
+	licence to each file.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* acinclude.m4: Remove `nop' assembly instruction; it's not
+	implemented by all architectures.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/efi/linux.c (grub_cmd_linux): Stop pretending we're
+	ELILO.  This is no longer necessary.
+
+2010-01-18  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Added new tool, grub-scrit-check to verify grub.cfg syntax.
+
+	* util/grub-script-check.c: grub-script-check tool.
+	* conf/common.rmk: Make rules for grub-script-check.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix annoying UI bug in rescue mode.  Thanks to Tristan Gingold for
+	spotting it back in 2008.  Shame on me for forgetting he did.
+
+	* kern/rescue_reader.c (grub_rescue_run): Skip zero-length lines.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/linux.h (GRUB_VIDEO_TYPE_TEXT): Rename to ...
+	(GRUB_VIDEO_LINUX_TYPE_TEXT): ... this.  Update all users.
+	(GRUB_VIDEO_TYPE_VLFB): Rename to ...
+	(GRUB_VIDEO_LINUX_TYPE_VESA): ... this.  Update all users.
+	(GRUB_VIDEO_TYPE_EFI): Rename to ...
+	(GRUB_VIDEO_LINUX_TYPE_SIMPLE): ... this.  Update all users.
+
+2010-01-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/test.h: Add license header.
+	* tests/example_functional_test.c: Likewise.
+	* tests/example_unit_test.c: Likewise.
+	* tests/lib/functional_test.c: Likewise.
+	* tests/lib/test.c: Likewise.
+	* tests/lib/unit_test.c: Likewise.
+
+2010-01-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use flag-based instead of hook-based video mode selection and "auto"
+	keyword.
+
+	* include/grub/video.h (grub_video_adapter): Changed 'setup' member.
+	(grub_video_set_mode): Changed prototype. All users updated.
+	(grub_video_check_mode_flag): New inline function.
+	* video/video.c (parse_modespec): New function.
+	(grub_video_set_mode): Parse flags and keywords.
+
+2010-01-17  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/misc.c (grub_util_info): Fix the order of the parameters in a
+	fprintf call.
+
+2010-01-16  Grégoire Sutre <gregoire.sutre@gmail.com>
+
+	* genmk.rb (class SCRIPT): Replace option -i of sed by a pipe.
+
+2010-01-16  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/grub-editenv.c (usage): Use `program_name' instead of hardcoded
+	string.
+	* util/grub-emu.c (usage): Likewise.
+	* util/grub-mkpasswd-pbkdf2.c (usage): Likewise.
+	* util/i386/efi/grub-mkimage.c (usage): Likewise.
+	* util/i386/pc/grub-mkimage.c (usage): Likewise.
+	* util/i386/pc/grub-setup.c (usage): Likewise.
+
+2010-01-16  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/misc.c (grub_util_warn): Gettextizze, print full stop after
+	the message.
+	(grub_util_info): Likewise.
+	(grub_util_error): Likewise.
+	* util/elf/grub-mkimage.c: Fix capitalisation, quotes, full stops
+	and/or new lines in `grub_util_warna', `grub_util_info',
+	`grub_util_error' calls.
+	* util/getroot.c: Likewise.
+	* util/grub-editenv.c: Likewise.
+	* util/grub-emu.c: Likewise.
+	* util/grub-fstest.c: Likewise.
+	* util/grub-mkdevicemap.c: Likewise.
+	* util/grub-mkfont.c: Likewise.
+	* util/grub-mkpasswd-pbkdf2.c: Likewise.
+	* util/grub-mkrelpath.c: Likewise.
+	* util/grub-pe2elf.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/hostdisk.c: Likewise.
+	* util/i386/efi/grub-mkimage.c: Likewise.
+	* util/i386/pc/grub-mkimage.c: Likewise.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/ieee1275/ofpath.c: Likewise.
+	* util/mkisofs/eltorito.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+	* util/raid.c: Likewise.
+	* util/sparc64/ieee1275/grub-mkimage.c: Likewise.
+	* util/sparc64/ieee1275/grub-setup.c: Likewise.
+
+2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Enable multiboot on non-pc.
+
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (pkglib_MODULES): Move
+	multiboot.mod and multiboot2.mod to ...
+	* conf/i386.rmk (pkglib_MODULES): ... here.
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (multiboot_mod_SOURCES):
+	Moved to ...
+	* conf/i386.rmk (multiboot_mod_SOURCES): .. here.
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (multiboot_mod_CFLAGS):
+	Moved to ...
+	* conf/i386.rmk (multiboot_mod_CFLAGS): .. here.
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (multiboot_mod_ASFLAGS):
+	Moved to ...
+	* conf/i386.rmk (multiboot_mod_ASFLAGS): .. here.
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (multiboot_mod_LDFLAGS):
+	Moved to ...
+	* conf/i386.rmk (multiboot_mod_LDFLAGS): .. here.
+	* conf/x86_64-efi.rmk (pkglib_MODULES): Remove ata.mod and
+	relocator.mod.
+	(ata_mod_SOURCES): Removed.
+	(ata_mod_CFLAGS): Likewise.
+	(ata_mod_LDFLAGS): Likewise.
+	(relocator_mod_SOURCES): Removed.
+	(relocator_mod_CFLAGS): Likewise.
+	(relocator_mod_ASFLAGS): Likewise.
+	(relocator_mod_LDFLAGS): Likewise.
+	Include i386.mk.
+	* include/grub/x86_64/multiboot.h: New file.
+	* loader/i386/multiboot.c (grub_multiboot_boot) [GRUB_MACHINE_EFI]:
+	Terminate EFI.
+
+2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Video multiboot support.
+
+	* include/grub/multiboot.h (grub_multiboot_set_accepts_video):
+	New prototype.
+	* include/multiboot.h: Resynced with multiboot specification.
+	* include/multiboot2.h: Likewise.
+	* loader/i386/multiboot.c (UNSUPPORTED_FLAGS): Support video flags.
+	(grub_multiboot): Parse MULTIBOOT_VIDEO_MODE fields.
+	* loader/i386/multiboot_mbi.c (DEFAULT_VIDEO_MODE): New constant.
+	(HAS_VGA_TEXT): Likewise.
+	(accepts_video): New variable.
+	(grub_multiboot_set_accepts_video): New function.
+	(grub_multiboot_get_mbi_size): Account for video structures.
+	(set_video_mode): New function.
+	(retrieve_video_parameters): Likewise.
+	(grub_multiboot_make_mbi): Fill video fields.
+
+2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Video driver ids.
+
+	* include/grub/video.h (grub_video_driver_id): New type.
+	(grub_video_adapter): New member 'id'. All users updated.
+	(grub_video_get_driver_id): New proto.
+	* video/video.c (grub_video_get_driver_id): New function.
+
+2010-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/grub.d/30_os-prober.in: Use `set var=val' rather than plain
+	`var=val'.
+
+2010-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/cmdline.c (print_completion): Gettextizze.
+
+2001-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* loader/i386/pc/chainloader.c: Include `<grub/mm.h>'.
+
+2010-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* gettext/gettext.c (grub_gettext_translate): Push and pop
+	grub_errno.
+	(grub_gettext_delete_list): Change comment style.
+	* kern/err.c (grub_error): Gettextizze.
+	(grub_fatal): Gettextizze.
+
+2010-01-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/loader.h (grub_linux16_boot): Renamed to ...
+	(grub_linux16_real_boot): ... this.
+	* kern/i386/loader.S: Likewise.
+	* loader/i386/pc/linux.c: Include `<grub/video.h>' and `<grub/mm.h>'.
+	(grub_linux16_boot): New function.  Switches to text mode and calls
+	grub_linux16_real_boot().
+
+	* loader/i386/bsd.c: Include `<grub/video.h>'.
+	(grub_freebsd_boot, grub_openbsd_boot, grub_netbsd_boot): Switch to
+	text mode before calling grub_unix_real_boot().
+
+	* loader/i386/multiboot.c: Include `<grub/video.h>'.
+	(grub_multiboot_boot): Switch to text mode before calling
+	grub_relocator32_boot().
+
+	* loader/i386/pc/chainloader.c: Include `<grub/video.h>'.
+	(grub_chainloader_boot): Switch to text mode before calling
+	grub_chainloader_real_boot().
+
+2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-reboot.in: Make sure prev_saved_entry always gets a
+	non-empty value.
+
+2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Define a "savedefault" function for use
+	in menu entries.
+	* util/grub-mkconfig_lib.in (save_default_entry): Use it.
+
+2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (save_default_entry): Only set
+	saved_entry if boot_once is unset.
+	* util/grub.d/00_header.in: Set boot_once to "true" if there was a
+	previous saved entry (i.e. grub-reboot).
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/30_os-prober.in: Call save_default_entry for hurd.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Use `set var=val' rather than plain
+	`var=val'.
+	* util/grub-mkconfig_lib.in (save_default_entry): Likewise.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-reboot.in: Fix --version output.
+	* util/grub-set-default.in: Likewise.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Silently ignore zero-sized environment
+	blocks.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Quote the value assigned to `default',
+	in case it contains spaces.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/30_os-prober.in: Fix merge error that moved a
+	`save_default_entry' call from the macosx case to the linux case.
+
+2009-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2009-10-25  Colin Watson  <cjwatson@ubuntu.com>
+
+	* normal/menu.c (grub_menu_execute_entry): Save selected entry title
+	in `chosen' environment variable.
+	* normal/menu_text.c (get_entry_number): Check if the variable
+	matches the title of a menu entry.
+	(run_menu): Pass menu to get_entry_number.
+
+	* util/grub-reboot.in: New file.
+	* util/grub-set-default.in: New file.
+	* conf/common.rmk (grub-reboot): New utility.
+	(grub-set-default): New utility.
+
+	* util/grub-mkconfig_lib.in (save_default_entry): New function.
+	* util/grub.d/00_header.in: If GRUB_DEFAULT is `saved', set
+	default to `${saved_entry}'.  If `${prev_saved_entry}' is non-empty,
+	move it to `saved_entry' for the next boot.  Load environment on
+	initialisation.
+	* util/grub.d/10_kfreebsd.in: Call save_default_entry.
+	* util/grub.d/10_hurd.in: Likewise.
+	* util/grub.d/10_linux.in (linux_entry): Likewise.
+	* util/grub.d/10_windows.in: Likewise.
+	* util/grub.d/30_os-prober.in: Likewise.
+
+	* util/grub-install.in: Create environment block.
+	* util/i386/efi/grub-install.in: Likewise.
+	* util/ieee1275/grub-install.in: Likewise.
+	* util/sparc64/ieee1275/grub-install.in: Likewise.
+
+2010-01-14  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Unit testing framework for GRUB.
+
+	* Makefile.in: Test framework build rules for 'make check'.
+	* conf/tests.rmk: Build rules for individual tests and framework.
+
+	* include/grub/test.h: Header file for whitebox tests.
+	* tests/lib/functional_test.c: Framework support for whitebox
+	functional tests.
+	* tests/lib/test.c: Common whitebox testing code for unit and
+	functional tests.
+	* tests/lib/unit_test.c: Framework support for whitebox unit
+	tests.
+
+	* tests/util/grub-shell-tester.in: Support utility for grub-script
+	tests.
+	* tests/util/grub-shell.in: Utility to execute grub-script
+	commands in a Qemu instance.
+
+	* tests/example_functional_test.c: Example whitebox functional
+	test.
+	* tests/example_grub_script_test.in: Example grub-script test.
+	* tests/example_scripted_test.in: Example scripted test.
+	* tests/example_unit_test.c: Example whitebox unit test.
+
+2010-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* conf/i386-coreboot.rmk (multiboot_mod_SOURCES):
+	Add loader/i386/multiboot_mbi.c.
+	(multiboot2_mod_SOURCES): Likewise.
+	* conf/i386-pc.rmk (multiboot_mod_SOURCES): Likewise.
+	(multiboot2_mod_SOURCES): Likewise.
+	* include/grub/multiboot.h (grub_multiboot_get_mbi_size): New proto.
+	(grub_multiboot_make_mbi): Likewise.
+	(grub_multiboot_free_mbi): Likewise.
+	(grub_multiboot_init_mbi): Likewise.
+	(grub_multiboot_add_module): Likewise.
+	(grub_multiboot_set_bootdev): Likewise.
+	* loader/i386/multiboot.c (mbi): Removed.
+	(mbi_dest): Likewise.
+	(alloc_mbi): New variable.
+	(grub_multiboot_payload_size): Removed. All users updated.
+	(grub_multiboot_pure_size): New variable.
+	(grub_multiboot_boot): Use grub_multiboot_make_mbi.
+	(grub_multiboot_unload): Use grub_multiboot_free_mbi.
+	(grub_get_multiboot_mmap_len): Moved to loader/i386/multiboot_mbi.c.
+	(grub_fill_multiboot_mmap): Likewise.
+	(grub_multiboot_get_bootdev): Likewise.
+	(grub_multiboot): Use multiboot_mbi functions.
+	* loader/i386/multiboot_mbi.c: New file.
+
+2010-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/efi/init.c (grub_efi_fini): Don't call grub_efi_mm_fini as
+	it would result in module crash.
+
+2010-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_putchar): Handle '\r'.
+	(grub_ofconsole_getwh): Split to ...
+	(grub_ofconsole_getwh): ... this.
+	(grub_ofconsole_dimensions): ...and this.
+	(grub_ofconsole_init_output): Call grub_ofconsole_dimensions.
+
+2010-01-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/rock.c (generate_rock_ridge_attributes): Fix a typo.
+
+2010-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/pc/multiboot2.c: Removed stalled file.
+
+2010-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkpasswd-pbkdf2.c (main): Use grub_util_init_nls.
+	Reported by: Grégoire Sutre
+
+2010-01-11  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/misc.c (canonicalize_file_name): New function.
+	(make_system_path_relative_to_its_root): Use canonicalize_file_name()
+	instead of realpath().
+
+2010-01-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in (usage): Clarify meaning of --root-directory,
+	and make it clearer that it's optional.  Based on confusion
+	witnessed on IRC.
+
+2010-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/i386/pc/vga_text.c (inc_y): Fix off-by-one error which resulted
+	in premature implicit newline.
+
+2010-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/cmdline.c (grub_cmdline_get): Fix off-by-one error
+	which resulted in garbled command line at the end of screen.
+
 2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* loader/i386/ieee1275/linux.c (grub_linux_boot): Rework video position

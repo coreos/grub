@@ -29,7 +29,22 @@
 #include <multiboot.h>
 #endif
 
+#include <grub/types.h>
+#include <grub/err.h>
+
 void grub_multiboot (int argc, char *argv[]);
 void grub_module (int argc, char *argv[]);
+
+void grub_multiboot_set_accepts_video (int val);
+
+grub_size_t grub_multiboot_get_mbi_size (void);
+grub_err_t grub_multiboot_make_mbi (void *orig, grub_uint32_t dest,
+				    grub_off_t buf_off, grub_size_t bufsize);
+void grub_multiboot_free_mbi (void);
+grub_err_t grub_multiboot_init_mbi (int argc, char *argv[]);
+grub_err_t grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
+				      int argc, char *argv[]);
+void grub_multiboot_set_bootdev (void);
+
 
 #endif /* ! GRUB_MULTIBOOT_HEADER */

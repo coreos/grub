@@ -84,7 +84,7 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try ``%s --help'' for more information.\n", program_name);
+	     "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
 Usage: %s [OPTION]...\n\
