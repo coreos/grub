@@ -697,6 +697,7 @@ grub_mkpasswd_pbkdf2_CFLAGS += -Wno-missing-field-initializers -Wno-error -I$(sr
 
 # Randomly generated
 SUCCESSFUL_BOOT_STRING=3e49994fd5d82b7c9298d672d774080d
+BOOTCHECK_TIMEOUT=60
 
 bootcheck: $(BOOTCHECKS)
 
