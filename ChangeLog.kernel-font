@@ -1,3 +1,10 @@
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix parallel builds.
+
+	* conf/common.rmk (font/font.c_DEPENDENCIES): New variable (makes
+	font.c depend on ascii.h).
+
 2010-01-12  Carles Pina i Estany  <carles@pina.cat>
 
 	* Makefile.in (DUSE_ASCII_FAILBACK): New macro.
