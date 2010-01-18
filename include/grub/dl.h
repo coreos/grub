@@ -26,25 +26,27 @@
 
 #define GRUB_MOD_INIT(name)	\
 static void grub_mod_init (grub_dl_t mod __attribute__ ((unused))) __attribute__ ((used)); \
-void grub_##name##_init (void); \
+void grub_module_##name##_init (grub_dl_t); \
 void \
-grub_##name##_init (void) { grub_mod_init (0); } \
+grub_module_##name##_init (grub_dl_t mod) { grub_mod_init (mod); } \
 static void \
 grub_mod_init (grub_dl_t mod __attribute__ ((unused)))
 
 #define GRUB_MOD_FINI(name)	\
 static void grub_mod_fini (void) __attribute__ ((used)); \
-void grub_##name##_fini (void); \
+void grub_module_##name##_fini (void); \
 void \
-grub_##name##_fini (void) { grub_mod_fini (); } \
+grub_module_##name##_fini (void) { grub_mod_fini (); } \
 static void \
 grub_mod_fini (void)
 
 #define GRUB_MOD_NAME(name)	\
-__asm__ (".section .modname,\"S\"\n.string \"" #name "\"\n.previous")
+static const char grub_module_name_##name[] \
+  __attribute__((section(".modname"), __used__)) = #name
 
 #define GRUB_MOD_DEP(name)	\
-__asm__ (".section .moddeps,\"S\"\n.string \"" #name "\"\n.previous")
+static const char grub_module_depend_##name[] \
+  __attribute__((section(".moddeps"), __used__)) = #name
 
 struct grub_dl_segment
 {

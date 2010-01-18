@@ -53,7 +53,8 @@ case "$target_cpu" in
   powerpc) ;;
   powerpc64) target_cpu=powerpc target_m32=1;;
   sparc64) ;;
-  *) AC_MSG_ERROR([unsupported CPU type]) ;;
+  ia64) ;;
+  *) AC_MSG_ERROR([unsupported CPU type $target_cpu]) ;;
 esac
 
 # Specify the platform (such as firmware).
@@ -68,6 +69,7 @@ if test "x$with_platform" = x; then
     i386-*) platform=pc ;;
     powerpc-*) platform=ieee1275 ;;
     sparc64-*) platform=ieee1275 ;;
+    ia64*) platform=efi ;;
     *) AC_MSG_ERROR([unsupported machine type]) ;;
   esac
 else
@@ -82,6 +84,7 @@ case "$target_cpu"-"$platform" in
   i386-ieee1275) ;;
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;
+  ia64-efi) ;;
   *) AC_MSG_ERROR([unsupported machine type]) ;;
 esac
 

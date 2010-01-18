@@ -49,7 +49,7 @@ EOF
 while read line; do
   file=`echo $line | cut -f1 -d:`
   if echo $@ | grep $file >/dev/null; then
-    echo $line | sed -e 's/.*GRUB_MOD_INIT *(\([a-zA-Z0-9_]*\)).*/  grub_\1_init ();/'
+    echo $line | sed -e 's/.*GRUB_MOD_INIT *(\([a-zA-Z0-9_]*\)).*/  grub_\1_init (0);/'
   fi
 done < ${lst}
 

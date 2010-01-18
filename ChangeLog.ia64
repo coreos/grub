@@ -1,0 +1,45 @@
+2008-01-28  Tristan Gingold  <gingold@free.fr>
+
+	* geninit.sh: Call _init with a null argument.
+	* configure.ac: Add ia64-efi target.
+	* Makefile.in (STRIP_FLAGS): Declare (overriden on ia64).
+	(RMKFILES): Add ia64-efi.rmk
+	* genmk.rb: Use STRIP_FLAGS for strip.
+	* util/ia64/efi/grub-install.in: New file.
+	* util/ia64/efi/pe32.h: New file.
+	* util/ia64/efi/elf2pe.c: New file.
+	* normal/ia64/setjmp.S: New file (from glibc).
+	* normal/ia64/longjmp.S: New file (from glibc).
+	* loader/ia64/efi/linux_normal.c: New file.
+	* loader/ia64/efi/linux.c: New file.
+	* conf/ia64-efi.rmk: New file.
+	* commands/efi/systab.c: New file.
+	* commands/efi/memmap.c: New file.
+	* commands/efi/acpi.c: New file.
+	* include/grub/efi/efi.h: Declare grub_efi_allocate_boot_pages and
+	grub_efi_free_boot_pages.
+	* include/grub/kernel.h: Export grub_machine_fini.
+	* include/grub/dl.h: Use attribute instead of raw asm statement.
+	Use grub_module as prefix to make identification easier.
+	* include/grub/ia64/efi/time.h: New file.
+	* include/grub/ia64/efi/misc.h: New file.
+	* include/grub/ia64/efi/loader.h: New file.
+	* include/grub/ia64/efi/kernel.h: New file.
+	* include/grub/ia64/time.h: New file.
+	* include/grub/ia64/setjmp.h: New file.
+	* include/grub/ia64/types.h: New file.
+	* kern/efi/mm.c (BYTES_TO_PAGES): Round instead of truncating.
+	(grub_efi_allocate_boot_pages): Low level interface to allocate_pages.
+	(grub_efi_free_boot_pages): Low level interface to free_pages.
+	(grub_efi_allocate_pages): Call grub_efi_allocate_boot_pages.
+	(grub_efi_free_pages): Call grubèefi_free_boot_pages.
+	(add_memory_regions): Add debug message in ifdef.
+	(add_memory_regions): Add debug message in ifdef.
+	(grub_efi_mm_init): Do not constraint memory map length, add space for
+	a few more entries.
+	* kern/dl.c (grub_init_module): New function.  Register an already
+	linked module.
+	* kern/ia64/efi/elf_ia64_efi.lds: New file.
+	* kern/ia64/efi/startup.S: New file.
+	* kern/ia64/efi/init.c: New file.
+	* kern/ia64/trampoline.S: New file.

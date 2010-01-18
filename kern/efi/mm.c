@@ -22,15 +22,13 @@
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
 
+//#define DEBUG_MM
+
 #define NEXT_MEMORY_DESCRIPTOR(desc, size)	\
   ((grub_efi_memory_descriptor_t *) ((char *) (desc) + (size)))
 
-#define BYTES_TO_PAGES(bytes)	((bytes) >> 12)
+#define BYTES_TO_PAGES(bytes)	((bytes + 0xfff) >> 12)
 #define PAGES_TO_BYTES(pages)	((pages) << 12)
-
-/* The size of a memory map obtained from the firmware. This must be
-   a multiplier of 4KB.  */
-#define MEMORY_MAP_SIZE	0x1000
 
 /* Maintain the list of allocated pages.  */
 struct allocated_page
@@ -49,11 +47,10 @@ static struct allocated_page *allocated_pages = 0;
 #define MIN_HEAP_SIZE	0x100000
 #define MAX_HEAP_SIZE	(16 * 0x100000)
 
-
 /* Allocate pages. Return the pointer to the first of allocated pages.  */
 void *
-grub_efi_allocate_pages (grub_efi_physical_address_t address,
-			 grub_efi_uintn_t pages)
+grub_efi_allocate_boot_pages (grub_efi_physical_address_t address,
+			      grub_efi_uintn_t pages)
 {
   grub_efi_allocate_type_t type;
   grub_efi_status_t status;
@@ -87,14 +84,34 @@ grub_efi_allocate_pages (grub_efi_physical_address_t address,
     {
       /* Uggh, the address 0 was allocated... This is too annoying,
 	 so reallocate another one.  */
-      address = 0xffffffff;
       status = b->allocate_pages (type, GRUB_EFI_LOADER_DATA, pages, &address);
-      grub_efi_free_pages (0, pages);
+      grub_efi_free_boot_pages (0, pages);
       if (status != GRUB_EFI_SUCCESS)
 	return 0;
     }
       
-  if (allocated_pages)
+  return (void *)address;
+}
+
+/* Free pages starting from ADDRESS.  */
+void
+grub_efi_free_boot_pages (grub_efi_physical_address_t address,
+			  grub_efi_uintn_t pages)
+{
+  grub_efi_boot_services_t *b;
+
+  b = grub_efi_system_table->boot_services;
+  b->free_pages (address, pages);
+}
+
+/* Allocate pages. Return the pointer to the first of allocated pages.  */
+void *
+grub_efi_allocate_pages (grub_efi_physical_address_t address,
+			 grub_efi_uintn_t pages)
+{
+  address = grub_efi_allocate_boot_pages (address, pages);
+
+  if (address != 0 && allocated_pages)
     {
       unsigned i;
 
@@ -118,8 +135,6 @@ void
 grub_efi_free_pages (grub_efi_physical_address_t address,
 		     grub_efi_uintn_t pages)
 {
-  grub_efi_boot_services_t *b;
-
   if (allocated_pages
       && ((grub_efi_physical_address_t) ((grub_addr_t) allocated_pages)
 	  != address))
@@ -133,9 +148,8 @@ grub_efi_free_pages (grub_efi_physical_address_t address,
 	    break;
 	  }
     }
-  
-  b = grub_efi_system_table->boot_services;
-  b->free_pages (address, pages);
+
+  grub_efi_free_boot_pages (address, pages);
 }
 
 /* Get the memory map as defined in the EFI spec. Return 1 if successful,
@@ -278,7 +292,11 @@ add_memory_regions (grub_efi_memory_descriptor_t *memory_map,
 		    grub_efi_uint64_t required_pages)
 {
   grub_efi_memory_descriptor_t *desc;
-  
+
+#ifdef DEBUG_MM
+  grub_printf ("mm: required_pages=%lu\n", required_pages);
+#endif
+
   for (desc = memory_map;
        desc < memory_map_end;
        desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size))
@@ -302,6 +320,10 @@ add_memory_regions (grub_efi_memory_descriptor_t *memory_map,
 		    (unsigned) pages);
 
       grub_mm_init_region (addr, PAGES_TO_BYTES (pages));
+
+#ifdef DEBUG_MM
+      grub_printf ("mm: add %lu pages from %p\n", pages, addr);
+#endif
 
       required_pages -= pages;
       if (required_pages == 0)
@@ -344,6 +366,8 @@ grub_efi_mm_init (void)
   grub_efi_uintn_t desc_size;
   grub_efi_uint64_t total_pages;
   grub_efi_uint64_t required_pages;
+  grub_efi_uintn_t memory_map_size;
+  int res;
 
   /* First of all, allocate pages to maintain allocations.  */
   allocated_pages
@@ -352,26 +376,35 @@ grub_efi_mm_init (void)
     grub_fatal ("cannot allocate memory");
 
   grub_memset (allocated_pages, 0, ALLOCATED_PAGES_SIZE);
-  
+
   /* Prepare a memory region to store two memory maps.  */
-  memory_map = grub_efi_allocate_pages (0,
-					2 * BYTES_TO_PAGES (MEMORY_MAP_SIZE));
+  memory_map_size = 0;
+  res = grub_efi_get_memory_map (&memory_map_size, NULL, 0, &desc_size, 0);
+  if (res != 0)
+    grub_fatal ("cannot get memory map size");
+
+  /* Add space for a few more entries as allocating pages can increase
+     memory map size.  */
+  memory_map_size += 4 * desc_size;
+
+  memory_map = grub_efi_allocate_pages
+    (0, 2 * BYTES_TO_PAGES (memory_map_size));
   if (! memory_map)
     grub_fatal ("cannot allocate memory");
 
-  filtered_memory_map = NEXT_MEMORY_DESCRIPTOR (memory_map, MEMORY_MAP_SIZE);
+  filtered_memory_map = NEXT_MEMORY_DESCRIPTOR (memory_map, memory_map_size);
 
   /* Obtain descriptors for available memory.  */
-  map_size = MEMORY_MAP_SIZE;
+  map_size = memory_map_size;
 
-  if (grub_efi_get_memory_map (&map_size, memory_map, 0, &desc_size, 0) < 0)
+  if (grub_efi_get_memory_map (&map_size, memory_map, 0, &desc_size, 0) <= 0)
     grub_fatal ("cannot get memory map");
 
   memory_map_end = NEXT_MEMORY_DESCRIPTOR (memory_map, map_size);
   
   filtered_memory_map_end = filter_memory_map (memory_map, filtered_memory_map,
 					       desc_size, memory_map_end);
-  
+
   /* By default, request a quarter of the available memory.  */
   total_pages = get_total_pages (filtered_memory_map, desc_size,
 				 filtered_memory_map_end);
@@ -391,7 +424,7 @@ grub_efi_mm_init (void)
 
 #if 0
   /* For debug.  */
-  map_size = MEMORY_MAP_SIZE;
+  map_size = memory_map_size;
 
   if (grub_efi_get_memory_map (&map_size, memory_map, 0, &desc_size, 0) < 0)
     grub_fatal ("cannot get memory map");
@@ -404,7 +437,7 @@ grub_efi_mm_init (void)
   
   /* Release the memory maps.  */
   grub_efi_free_pages ((grub_addr_t) memory_map,
-		       2 * BYTES_TO_PAGES (MEMORY_MAP_SIZE));
+		       2 * BYTES_TO_PAGES (memory_map_size));
 }
 
 void
@@ -420,10 +453,13 @@ grub_efi_mm_fini (void)
 
 	  p = allocated_pages + i;
 	  if (p->addr != 0)
-	    grub_efi_free_pages ((grub_addr_t) p->addr, p->num_pages);
+	    {
+	      grub_efi_free_pages ((grub_addr_t) p->addr, p->num_pages);
+	    }
 	}
 
       grub_efi_free_pages ((grub_addr_t) allocated_pages,
 			   BYTES_TO_PAGES (ALLOCATED_PAGES_SIZE));
+      allocated_pages = 0;
     }
 }

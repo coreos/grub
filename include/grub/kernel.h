@@ -53,7 +53,7 @@ void grub_main (void);
 void grub_machine_init (void);
 
 /* The machine-specific finalization.  */
-void grub_machine_fini (void);
+void EXPORT_FUNC (grub_machine_fini) (void);
 
 /* The machine-specific prefix initialization.  */
 void grub_machine_set_prefix (void);
