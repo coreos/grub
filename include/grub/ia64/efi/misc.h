@@ -16,7 +16,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void EXPORT_FUNC (memset) (void);
 void EXPORT_FUNC (__ia64_trampoline) (void);
 void EXPORT_FUNC (grub_init_modules) (void);
 
