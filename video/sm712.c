@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ grub_video_sm712_video_fini (void)
 
 static grub_err_t
 grub_video_sm712_setup (unsigned int width, unsigned int height,
-			unsigned int mode_type)
+			unsigned int mode_type, unsigned int mode_mask __attribute__ ((unused)))
 {
   int depth;
   grub_err_t err;
