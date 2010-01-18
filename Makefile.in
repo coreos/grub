@@ -167,6 +167,8 @@ ifeq ($(platform), emu)
 include $(srcdir)/conf/any-emu.mk
 else
 include $(srcdir)/conf/$(target_cpu)-$(platform).mk
+# For tests.
+include $(srcdir)/conf/tests.mk
 # For external modules.
 -include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
 endif
@@ -174,7 +176,7 @@ endif
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
-pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst
+pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
 	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UNDSYMFILES) > $@ \
@@ -190,6 +192,9 @@ partmap.lst: $(PARTMAPFILES)
 	cat $^ /dev/null | sort > $@
 
 handler.lst: $(HANDLERFILES)
+	cat $^ /dev/null | sort > $@
+
+terminal.lst: $(TERMINALFILES)
 	cat $^ /dev/null | sort > $@
 
 parttool.lst: $(PARTTOOLFILES)
@@ -458,7 +463,26 @@ distcheck: dist
 	@echo "$(distdir).tar.gz is ready for distribution" | \
 	  sed 'h;s/./=/g;p;x;p;x'
 
-check:
+check: all $(UNIT_TESTS) $(FUNCTIONAL_TESTS) $(SCRIPTED_TESTS)
+	@list="$(UNIT_TESTS)"; \
+	for file in $$list; do \
+	  $(builddir)/$$file; \
+	done
+	@list="$(FUNCTIONAL_TESTS)"; \
+	for file in $$list; do \
+	  mod=`basename $$file .mod`; \
+	  echo "insmod functional_test; insmod $$mod; functional_test" \
+	    | $(builddir)/grub-shell; \
+	done
+	@list="$(SCRIPTED_TESTS)"; \
+	for file in $$list; do \
+	  echo "$$file:"; \
+	  if $(builddir)/$$file; then \
+	    echo "$$file: PASS"; \
+	  else \
+	    echo "$$file: FAIL"; \
+	  fi; \
+	done
 
 .SUFFIX:
 .SUFFIX: .c .o .S .d

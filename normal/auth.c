@@ -154,6 +154,49 @@ is_authenticated (const char *userlist)
   return grub_list_iterate (GRUB_AS_LIST (users), hook);
 }
 
+static int
+grub_username_get (char buf[], unsigned buf_size)
+{
+  unsigned cur_len = 0;
+  int key;
+
+  while (1)
+    {
+      key = GRUB_TERM_ASCII_CHAR (grub_getkey ()); 
+      if (key == '\n' || key == '\r')
+	break;
+
+      if (key == '\e')
+	{
+	  cur_len = 0;
+	  break;
+	}
+
+      if (key == '\b')
+	{
+	  cur_len--;
+	  grub_printf ("\b");
+	  continue;
+	}
+
+      if (!grub_isprint (key))
+	continue;
+
+      if (cur_len + 2 < buf_size)
+	{
+	  buf[cur_len++] = key;
+	  grub_putchar (key);
+	}
+    }
+
+  grub_memset (buf + cur_len, 0, buf_size - cur_len);
+
+  grub_putchar ('\n');
+  grub_refresh ();
+
+  return (key != '\e');
+}
+
 grub_err_t
 grub_auth_check_authentication (const char *userlist)
 {
@@ -187,11 +230,12 @@ grub_auth_check_authentication (const char *userlist)
       return GRUB_ERR_NONE;
     }
 
-  if (!grub_cmdline_get (N_("Enter username:"), login, sizeof (login) - 1,
-			 0, 0, 0))
+  grub_puts_ (N_("Enter username: "));
+
+  if (!grub_username_get (login, sizeof (login) - 1))
     goto access_denied;
 
-  grub_printf ("Enter password: ");
+  grub_puts_ (N_("Enter password: "));
 
   if (!grub_password_get (entered, GRUB_AUTH_MAX_PASSLEN))
     goto access_denied;

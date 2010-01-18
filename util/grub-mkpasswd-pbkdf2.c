@@ -74,16 +74,16 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-scrypt --help'' for more information.\n");
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-scrypt [OPTIONS]\n\
+Usage: %s [OPTIONS]\n\
 \nOptions:\n\
      -c number, --iteration-count=number  Number of PBKDF2 iterations\n\
      -l number, --buflen=number           Length of generated hash\n\
      -s number, --salt=number             Length of salt\n\
 \n\
-Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
+Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -123,9 +123,8 @@ main (int argc, char *argv[])
   int tty_changed;
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+
+  grub_util_init_nls ();
 
   /* Check for options.  */
   while (1)
@@ -166,12 +165,12 @@ main (int argc, char *argv[])
 
   bufhex = malloc (buflen * 2 + 1);
   if (!bufhex)
-    grub_util_error ("Out of memory");
+    grub_util_error ("out of memory");
   buf = malloc (buflen);
   if (!buf)
     {
       free (bufhex);
-      grub_util_error ("Out of memory");
+      grub_util_error ("out of memory");
     }
 
   salt = malloc (saltlen);
@@ -179,7 +178,7 @@ main (int argc, char *argv[])
     {
       free (bufhex);
       free (buf);
-      grub_util_error ("Out of memory");
+      grub_util_error ("out of memory");
     }
   salthex = malloc (saltlen * 2 + 1);
   if (!salthex)
@@ -187,7 +186,7 @@ main (int argc, char *argv[])
       free (salt);
       free (bufhex);
       free (buf);
-      grub_util_error ("Out of memory");
+      grub_util_error ("out of memory");
     }
 
   /* Disable echoing. Based on glibc.  */
@@ -226,7 +225,7 @@ main (int argc, char *argv[])
       /* Restore the original setting.  */
       if (tty_changed)
 	(void) tcsetattr (fileno (in), TCSAFLUSH, &s);
-      grub_util_error ("Failure to read password");
+      grub_util_error ("failure to read password");
     }
   if (nr >= 1 && pass1[nr-1] == '\n')
     pass1[nr-1] = 0;
@@ -250,7 +249,7 @@ main (int argc, char *argv[])
       free (bufhex);
       free (salthex);
       free (salt);
-      grub_util_error ("Failure to read password");
+      grub_util_error ("failure to read password");
     }
   if (nr >= 1 && pass2[nr-1] == '\n')
     pass2[nr-1] = 0;
@@ -265,7 +264,7 @@ main (int argc, char *argv[])
       free (bufhex);
       free (salthex);
       free (salt);
-      grub_util_error ("Passwords don't match");
+      grub_util_error ("passwords don't match");
     }
   memset (pass2, 0, strlen (pass2));
   free (pass2);
@@ -287,7 +286,7 @@ main (int argc, char *argv[])
 	free (salthex);
 	free (salt);
 	fclose (f);
-	grub_util_error ("Couldn't retrieve random data for salt");
+	grub_util_error ("couldn't retrieve random data for salt");
       }
     rd = fread (salt, 1, saltlen, f);
     if (rd != saltlen)
@@ -300,7 +299,7 @@ main (int argc, char *argv[])
 	free (salthex);
 	free (salt);
 	fclose (f);
-	grub_util_error ("Couldn't retrieve random data for salt");
+	grub_util_error ("couldn't retrieve random data for salt");
       }
     fclose (f);
   }
@@ -322,7 +321,7 @@ main (int argc, char *argv[])
       memset (salthex, 0, 2 * saltlen);
       free (salt);
       free (salthex);
-      grub_util_error ("Cryptographic error number %d", gcry_err);
+      grub_util_error ("cryptographic error number %d", gcry_err);
     }
 
   hexify (bufhex, buf, buflen);

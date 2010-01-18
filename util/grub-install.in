@@ -40,6 +40,7 @@ else
 fi
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
+grub_editenv=${bindir}/`echo grub-editenv | sed ${transform}`
 rootdir=
 grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
@@ -87,9 +88,11 @@ fi
 
 INSTALL_DEVICE can be a GRUB device name or a system device filename.
 
-grub-install copies GRUB images into the DIR/boot directory specified by
---root-directory, and uses grub-setup to install grub into the boot
-sector.
+grub-install copies GRUB images into /boot/grub (or /grub on NetBSD and
+OpenBSD), and uses grub-setup to install grub into the boot sector.
+
+If the --root-directory option is used, then grub-install will copy
+images into the operating system installation rooted at that directory.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
@@ -260,6 +263,10 @@ done
 
 # Write device to a variable so we don't have to traverse /dev every time.
 grub_device=`$grub_probe --target=device ${grubdir}`
+
+if ! test -f ${grubdir}/grubenv; then
+    $grub_editenv ${grubdir}/grubenv create
+fi
 
 # Create the core image. First, auto-detect the filesystem module.
 fs_module=`$grub_probe --target=fs --device ${grub_device}`

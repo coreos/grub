@@ -131,12 +131,12 @@ block_device_get_sysfs_path_and_link(const char *devicenode,
   snprintf(sysfs_path, sysfs_path_len, "/sys/block/%s", devicenode);
 
   if (!realpath (sysfs_path, rpath))
-    grub_util_error ("Cannot get the real path of `%s'", sysfs_path);
+    grub_util_error ("cannot get the real path of `%s'", sysfs_path);
 
   strcat(rpath, "/device");
 
   if (!realpath (rpath, sysfs_path))
-    grub_util_error ("Cannot get the real path of `%s'", rpath);
+    grub_util_error ("cannot get the real path of `%s'", rpath);
 
   free (rpath);
 }
@@ -247,12 +247,12 @@ vendor_is_ATA(const char *path)
   snprintf(buf, PATH_MAX, "%s/vendor", path);
   fd = open(buf, O_RDONLY);
   if (fd < 0)
-    grub_util_error ("Cannot open 'vendor' node of `%s'", path);
+    grub_util_error ("cannot open 'vendor' node of `%s'", path);
 
   memset(buf, 0, PATH_MAX);
   err = read(fd, buf, PATH_MAX);
   if (err < 0)
-    grub_util_error ("Cannot read 'vendor' node of `%s'", path);
+    grub_util_error ("cannot read 'vendor' node of `%s'", path);
 
   close(fd);
 
@@ -288,7 +288,7 @@ check_sas (char *sysfs_path, int *tgt)
 
   fd = open(path, O_RDONLY);
   if (fd < 0)
-    grub_util_error("Cannot open SAS PHY ID '%s'\n", path);
+    grub_util_error("cannot open SAS PHY ID `%s'\n", path);
 
   memset (phy, 0, sizeof (phy));
   read (fd, phy, sizeof (phy));
@@ -375,7 +375,7 @@ grub_util_devname_to_ofpath (char *devname)
   name_buf = xmalloc (PATH_MAX);
   name_buf = realpath (devname, name_buf);
   if (! name_buf)
-    grub_util_error ("Cannot get the real path of `%s'", devname);
+    grub_util_error ("cannot get the real path of `%s'", devname);
 
   device = get_basename (devname);
   devnode = strip_trailing_digits (devname);

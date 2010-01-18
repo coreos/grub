@@ -21,6 +21,7 @@
 #include <grub/types.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
+#include <grub/util/misc.h>
 #include <grub/i18n.h>
 #include <grub/parser.h>
 #include <grub/script_sh.h>
@@ -55,9 +56,6 @@ grub_refresh (void)
 {
   fflush (stdout);
 }
-
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
 
 char *
 grub_script_execute_argument_to_string (struct grub_script_arg *arg __attribute__ ((unused)))
@@ -173,9 +171,7 @@ main (int argc, char *argv[])
   }
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+  grub_util_init_nls ();
 
   /* Check for options.  */
   while (1)
@@ -208,7 +204,7 @@ main (int argc, char *argv[])
   /* Obtain ARGUMENT.  */
   if (optind >= argc)
     {
-      file = 0; // read from stdin
+      file = 0; /* read from stdin */
     }
   else if (optind + 1 != argc)
     {

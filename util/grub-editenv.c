@@ -46,9 +46,6 @@ grub_refresh (void)
   fflush (stdout);
 }
 
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
-
 int
 grub_getkey (void)
 {
@@ -72,10 +69,10 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-editenv --help'' for more information.\n");
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-editenv [OPTIONS] [FILENAME] COMMAND\n\
+Usage: %s [OPTIONS] [FILENAME] COMMAND\n\
 \n\
 Tool to edit environment block.\n\
 \nCommands:\n\
@@ -91,7 +88,7 @@ Tool to edit environment block.\n\
 If not given explicitly, FILENAME defaults to %s.\n\
 \n\
 Report bugs to <%s>.\n",
-DEFAULT_DIRECTORY "/" GRUB_ENVBLK_DEFCFG, PACKAGE_BUGREPORT);
+program_name, DEFAULT_DIRECTORY "/" GRUB_ENVBLK_DEFCFG, PACKAGE_BUGREPORT);
 
   exit (status);
 }

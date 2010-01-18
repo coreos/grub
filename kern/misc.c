@@ -892,10 +892,10 @@ grub_sprintf (char *str, const char *fmt, ...)
 /* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
    bytes (if SRCSIZE is -1, it is ignored) in length to a UCS-4 string.
    Return the number of characters converted. DEST must be able to hold
-   at least DESTSIZE characters. If an invalid sequence is found, return -1.
+   at least DESTSIZE characters.
    If SRCEND is not NULL, then *SRCEND is set to the next byte after the
    last byte used in SRC.  */
-grub_ssize_t
+grub_size_t
 grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 		   const grub_uint8_t *src, grub_size_t srcsize,
 		   const grub_uint8_t **srcend)
@@ -917,7 +917,8 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 	  if ((c & 0xc0) != 0x80)
 	    {
 	      /* invalid */
-	      return -1;
+	      code = '?';
+	      count = 0;
 	    }
 	  else
 	    {
@@ -959,7 +960,11 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 	      code = c & 0x01;
 	    }
 	  else
-	    return -1;
+	    {
+	      /* invalid */
+	      code = '?';
+	      count = 0;
+	    }
 	}
 
       if (count == 0)
@@ -978,15 +983,14 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 void
 grub_abort (void)
 {
-  if (grub_term_get_current_output ())
+  grub_printf ("\nAborted.");
+  
+#ifndef GRUB_UTIL
+  if (grub_term_inputs)
+#endif
     {
-      grub_printf ("\nAborted.");
-
-      if (grub_term_get_current_input ())
-	{
-	  grub_printf (" Press any key to exit.");
-	  grub_getkey ();
-	}
+      grub_printf (" Press any key to exit.");
+      grub_getkey ();
     }
 
   grub_exit ();
