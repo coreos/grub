@@ -60,7 +60,7 @@
 struct grub_netbsd_bootinfo
 {
   grub_uint32_t bi_count;
-  grub_addr_t bi_data[0];
+  grub_uint32_t bi_data[0];
 };
 
 struct grub_netbsd_btinfo_common
@@ -73,14 +73,14 @@ struct grub_netbsd_btinfo_common
 
 struct grub_netbsd_btinfo_bootdisk
 {
-  int labelsector;  /* label valid if != -1 */
+  grub_uint32_t labelsector;  /* label valid if != 0xffffffff */
   struct
     {
       grub_uint16_t type, checksum;
       char packname[16];
     } label;
-  int biosdev;
-  int partition;
+  grub_uint32_t biosdev;
+  grub_uint32_t partition;
 };
 
 struct grub_netbsd_btinfo_symtab

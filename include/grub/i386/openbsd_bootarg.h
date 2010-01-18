@@ -64,9 +64,9 @@
 
 struct grub_openbsd_bootargs
 {
-  int ba_type;
-  int ba_size;
-  struct grub_openbsd_bootargs *ba_next;
+  grub_uint32_t ba_type;
+  grub_uint32_t ba_size;
+  grub_uint32_t ba_next;
 } __attribute__ ((packed));
 
 #endif

@@ -822,9 +822,11 @@ grub_openbsd_boot (void)
   buf = (grub_uint8_t *) pm;
 
   pa->ba_size = (char *) pm - (char *) pa;
-  pa->ba_next = (struct grub_openbsd_bootargs *) (buf - buf0 + buf_target);
-  pa = pa->ba_next;
+  pa->ba_next = buf - buf0 + buf_target;
+  pa = (struct grub_openbsd_bootargs *) buf;
   pa->ba_type = OPENBSD_BOOTARG_END;
+  pa->ba_size = 0;
+  pa->ba_next = 0;
   pa++;
 
   buf = (grub_uint8_t *) pa;
