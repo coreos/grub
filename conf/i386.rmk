@@ -48,6 +48,9 @@ linuxinit.x86_64: $(srcdir)/tests/boot/linuxinit-x86_64.S
 linux.init.i386: $(srcdir)/tests/boot/linux.init-i386.S
 	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
+kfreebsd.init.x86_64: $(srcdir)/tests/boot/kfreebsd.init-x86_64.S
+	$(TARGET_CC) -o $@ $< -m64 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" && freebsd-brandelf -t FreeBSD $@
+
 kfreebsd.init.i386: $(srcdir)/tests/boot/kfreebsd.init-i386.S
 	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" && freebsd-brandelf -t FreeBSD $@
 
@@ -62,6 +65,8 @@ CLEANFILES += linux.init.i386 kfreebsd.init.i386 linux.init.x86_64 linux-initram
 bootcheck-kfreebsd-i386: kfreebsd-mfsroot.i386 $(GRUB_PAYLOADS_DIR)/kfreebsd.i386 $(GRUB_PAYLOADS_DIR)/kfreebsd_env.i386 $(srcdir)/tests/boot/kfreebsd.cfg grub-shell
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --boot=$(BOOTTARGET) --qemu=qemu-system-i386 --files=/mfsroot=kfreebsd-mfsroot.i386 --files=/kfreebsd=$(GRUB_PAYLOADS_DIR)/kfreebsd.i386 --files=/kfreebsd_env=$(GRUB_PAYLOADS_DIR)/kfreebsd_env.i386 $(srcdir)/tests/boot/kfreebsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
+bootcheck-kfreebsd-x86_64: kfreebsd-mfsroot.x86_64 $(GRUB_PAYLOADS_DIR)/kfreebsd.x86_64 $(GRUB_PAYLOADS_DIR)/kfreebsd_env.x86_64 $(srcdir)/tests/boot/kfreebsd.cfg grub-shell
+	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/mfsroot=kfreebsd-mfsroot.x86_64 --files=/kfreebsd=$(GRUB_PAYLOADS_DIR)/kfreebsd.x86_64 --files=/kfreebsd_env=$(GRUB_PAYLOADS_DIR)/kfreebsd_env.x86_64 $(srcdir)/tests/boot/kfreebsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 bootcheck-linux-i386: linux-initramfs.i386 $(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/tests/boot/linux.cfg grub-shell
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --boot=$(BOOTTARGET) --qemu=qemu-system-i386 --files=/initrd=linux-initramfs.i386 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/tests/boot/linux.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
@@ -69,6 +74,8 @@ bootcheck-linux-i386: linux-initramfs.i386 $(GRUB_PAYLOADS_DIR)/linux.i386 $(src
 bootcheck-linux-x86_64: linux-initramfs.x86_64 $(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/tests/boot/linux.cfg grub-shell
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/initrd=linux-initramfs.x86_64 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/tests/boot/linux.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
-BOOTCHECKS+=bootcheck-linux-i386 bootcheck-linux-x86_64 bootcheck-kfreebsd-i386
+BOOTCHECKS+=bootcheck-linux-i386 bootcheck-linux-x86_64 \
+	bootcheck-kfreebsd-i386 bootcheck-kfreebsd-x86_64
 
-.PHONY: bootcheck-linux-i386 bootcheck-linux-x86_64 bootcheck-kfreebsd-i386
+.PHONY: bootcheck-linux-i386 bootcheck-linux-x86_64 \
+	bootcheck-kfreebsd-i386 bootcheck-kfreebsd-x86_64
