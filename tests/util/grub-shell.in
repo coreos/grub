@@ -44,7 +44,9 @@ Run GRUB script in a Qemu instance.
   -v, --version           print the version information and exit
   --boot=[fd|hd|cd]       boot method for Qemu instance
   --modules=MODULES       pre-load specified modules MODULES
+  --qemu=FILE             Name of qemu binary
   --qemu-opts=OPTIONS     extra options to pass to Qemu instance
+  --files=FILES           add files to the image
 
 $0 runs input GRUB script or SOURCE file in a Qemu instance and prints
 its output.
@@ -52,6 +54,9 @@ its output.
 Report bugs to <bug-grub@gnu.org>.
 EOF
 }
+
+boot=bios-hd
+qemu=qemu-system-i386
 
 # Check the arguments.
 for option in "$@"; do
@@ -65,14 +70,19 @@ for option in "$@"; do
     --modules=*)
 	ms=`echo "$option" | sed -e 's/--modules=//' -e 's/,/ /g'`
 	modules="$modules $ms" ;;
+    --files=*)
+	fls=`echo "$option" | sed -e 's/--files=//' -e 's/,/ /g'`
+	files="$files $fls" ;;
+    --qemu=*)
+	qemu=`echo "$option" | sed -e 's/--qemu=//' -e 's/,/ /g'`;;
     --qemu-opts=*)
         qs=`echo "$option" | sed -e 's/--qemu-opts=//'`
         qemuopts="$qemuopts $qs" ;;
     --boot=*)
         dev=`echo "$option" | sed -e 's/--boot=//'`
-	if   [ "$dev" = "fd" ] ; then bootdev=a;
-	elif [ "$dev" = "hd" ] ; then bootdev=c;
-	elif [ "$dev" = "cd" ] ; then bootdev=d;
+	if   [ "$dev" = "bios-fd" ] ; then boot=bios-fd;
+	elif [ "$dev" = "bios-hd" ] ; then boot=bios-hd;
+	elif [ "$dev" = "bios-cd" ] ; then boot=bios-cd;
 	else
 	    echo "Unrecognized boot method \`$dev'" 1>&2
 	    usage
@@ -100,10 +110,6 @@ if [ "x${source}" = x ] ; then
     source=${tmpfile}
 fi
 
-if [ "x${bootdev}" = x ] ; then
-    bootdev=c # default is boot as disk image
-fi
-
 cfgfile=`mktemp`
 cat <<EOF >${cfgfile}
 grubshell=yes
@@ -123,23 +129,28 @@ source /boot/grub/testcase.cfg
 halt
 EOF
 
-isofile=`mktemp`
-grub-mkrescue --output=${isofile} --override-directory=${builddir} \
-  /boot/grub/grub.cfg=${cfgfile} /boot/grub/testcase.cfg=${source} \
-  >/dev/null 2>&1
+if [ x$boot = xbios-hd ] || [ x$boot = xbios-fd ] || [ x$boot = xbios-cd ]; then
+    isofile=`mktemp`
+    grub-mkrescue --output=${isofile} --override-directory=${builddir} \
+	/boot/grub/grub.cfg=${cfgfile} /boot/grub/testcase.cfg=${source} \
+	${files} >/dev/null 2>&1
+    if [ x$boot = xbios-hd ]; then
+	device=hda
+	bootdev=c
+    fi
+    if [ x$boot = xbios-cd ]; then
+	device=cdrom
+	bootdev=d
+    fi
+    if [ x$boot = xbios-fd ]; then
+	device=fda
+	bootdev=a
+    fi
+    ${qemu} ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} -boot ${bootdev} | tr -d "\r"
+    rm -f ${isofile}
+fi
 
-hdafile=`mktemp`
-cp ${isofile} ${hdafile}
-
-fdafile=`mktemp`
-cp ${isofile} ${fdafile}
-
-outfile=`mktemp`
-qemu-system-i386 ${qemuopts} -nographic -serial stdio -hda ${hdafile} -fda ${fdafile} -cdrom ${isofile} -boot ${bootdev} | tr -d "\r" >${outfile}
-
-cat $outfile
-
-rm -f ${tmpfile} ${outfile} ${cfgfile} ${isofile} ${hdafile} ${fdafile}
+rm -f ${tmpfile} ${cfgfile}
 exit 0
 
 

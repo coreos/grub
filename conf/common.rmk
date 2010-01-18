@@ -695,4 +695,10 @@ bin_UTILITIES += grub-mkpasswd-pbkdf2
 grub_mkpasswd_pbkdf2_SOURCES = gnulib/progname.c util/grub-mkpasswd-pbkdf2.c lib/crypto.c lib/libgcrypt-grub/cipher/sha512.c lib/pbkdf2.c util/misc.c kern/err.c
 grub_mkpasswd_pbkdf2_CFLAGS += -Wno-missing-field-initializers -Wno-error -I$(srcdir)/lib/libgcrypt_wrap -DGRUB_MKPASSWD=1
 
+# Randomly generated
+SUCCESSFUL_BOOT_STRING=3e49994fd5d82b7c9298d672d774080d
+BOOTCHECK_TIMEOUT=60
+
+bootcheck: $(BOOTCHECKS)
+
 include $(srcdir)/conf/gcry.mk
