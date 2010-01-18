@@ -208,9 +208,8 @@ grub_term_register_input (const char *name __attribute__ ((unused)),
   else
     {
       /* If this is the first terminal, enable automatically.  */
-      if (term->init)
-        term->init ();
-      grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs), GRUB_AS_LIST (term));
+      if (! term->init || term->init () == GRUB_ERR_NONE)
+	grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs), GRUB_AS_LIST (term));
     }
 }
 
@@ -224,10 +223,9 @@ grub_term_register_output (const char *name __attribute__ ((unused)),
   else
     {
       /* If this is the first terminal, enable automatically.  */
-      if (term->init)
-	term->init ();
-      grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs),
-		      GRUB_AS_LIST (term));
+      if (! term->init || term->init () == GRUB_ERR_NONE)
+	grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs),
+			GRUB_AS_LIST (term));
     }
 }
 
