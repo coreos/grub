@@ -401,7 +401,7 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
 	break;
   if (s >= (Elf_Shdr *) ((char *) shdr
 			+ e.e_shnum * e.e_shentsize))
-    return grub_error (GRUB_ERR_BAD_OS, "no symbol table");
+    return GRUB_ERR_NONE;
   symsize = s->sh_size;
   symsh = s;
   s = (Elf_Shdr *) (shdr + e.e_shentsize * s->sh_link);
