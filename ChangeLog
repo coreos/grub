@@ -1,3 +1,9 @@
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* commands/terminal.c (grub_cmd_terminal_input)
+	(grub_cmd_terminal_output): Check return of terminal init()
+	routines, and abort if errors are raised.
+
 2010-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/i386/bsd.h: Fix include pathes.
