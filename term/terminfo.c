@@ -27,10 +27,10 @@
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/dl.h>
-#include <grub/normal.h>
 #include <grub/term.h>
 #include <grub/terminfo.h>
 #include <grub/tparm.h>
+#include <grub/command.h>
 
 struct terminfo
 {
@@ -90,7 +90,7 @@ grub_terminfo_set_current (const char *str)
   grub_terminfo_free (&term.reverse_video_off);
   grub_terminfo_free (&term.cursor_on);
   grub_terminfo_free (&term.cursor_off);
-  
+
   if (grub_strcmp ("vt100", str) == 0)
     {
       term.name              = grub_strdup ("vt100");
@@ -98,69 +98,69 @@ grub_terminfo_set_current (const char *str)
       term.cls               = grub_strdup ("\e[H\e[J");
       term.reverse_video_on  = grub_strdup ("\e[7m");
       term.reverse_video_off = grub_strdup ("\e[m");
-      term.cursor_on         = grub_strdup ("\e[?25l");
-      term.cursor_off        = grub_strdup ("\e[?25h");
+      term.cursor_on         = grub_strdup ("\e[?25h");
+      term.cursor_off        = grub_strdup ("\e[?25l");
       return grub_errno;
     }
-  
-  return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminfo type.");
+
+  return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminfo type");
 }
 
 /* Wrapper for grub_putchar to write strings.  */
 static void
-putstr (const char *str)
+putstr (const char *str, grub_term_output_t oterm)
 {
   while (*str)
-    grub_putchar (*str++);
+    grub_putcode (*str++, oterm);
 }
 
 /* Move the cursor to the given position starting with "0".  */
 void
-grub_terminfo_gotoxy (grub_uint8_t x, grub_uint8_t y)
+grub_terminfo_gotoxy (grub_uint8_t x, grub_uint8_t y, grub_term_output_t oterm)
 {
-  putstr (grub_terminfo_tparm (term.gotoxy, y, x));
+  putstr (grub_terminfo_tparm (term.gotoxy, y, x), oterm);
 }
 
 /* Clear the screen.  */
 void
-grub_terminfo_cls (void)
+grub_terminfo_cls (grub_term_output_t oterm)
 {
-  putstr (grub_terminfo_tparm (term.cls));
+  putstr (grub_terminfo_tparm (term.cls), oterm);
 }
 
 /* Set reverse video mode on.  */
 void
-grub_terminfo_reverse_video_on (void)
+grub_terminfo_reverse_video_on (grub_term_output_t oterm)
 {
-  putstr (grub_terminfo_tparm (term.reverse_video_on));
+  putstr (grub_terminfo_tparm (term.reverse_video_on), oterm);
 }
 
 /* Set reverse video mode off.  */
 void
-grub_terminfo_reverse_video_off (void)
+grub_terminfo_reverse_video_off (grub_term_output_t oterm)
 {
-  putstr (grub_terminfo_tparm (term.reverse_video_off));
+  putstr (grub_terminfo_tparm (term.reverse_video_off), oterm);
 }
 
 /* Show cursor.  */
 void
-grub_terminfo_cursor_on (void)
+grub_terminfo_cursor_on (grub_term_output_t oterm)
 {
-  putstr (grub_terminfo_tparm (term.cursor_on));
+  putstr (grub_terminfo_tparm (term.cursor_on), oterm);
 }
 
 /* Hide cursor.  */
 void
-grub_terminfo_cursor_off (void)
+grub_terminfo_cursor_off (grub_term_output_t oterm)
 {
-  putstr (grub_terminfo_tparm (term.cursor_off));
+  putstr (grub_terminfo_tparm (term.cursor_off), oterm);
 }
 
 /* GRUB Command.  */
 
 static grub_err_t
-grub_cmd_terminfo (struct grub_arg_list *state __attribute__ ((unused)),
-		int argc, char **args)
+grub_cmd_terminfo (grub_command_t cmd __attribute__ ((unused)),
+		   int argc, char **args)
 {
   if (argc == 0)
   {
@@ -168,20 +168,21 @@ grub_cmd_terminfo (struct grub_arg_list *state __attribute__ ((unused)),
     return GRUB_ERR_NONE;
   }
   else if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many parameters.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many parameters");
   else
     return grub_terminfo_set_current (args[0]);
 }
 
+static grub_command_t cmd;
+
 GRUB_MOD_INIT(terminfo)
 {
-  (void) mod;			/* To stop warning. */
-  grub_register_command ("terminfo", grub_cmd_terminfo, GRUB_COMMAND_FLAG_BOTH,
-			 "terminfo [TERM]", "Set terminfo type.", 0);
+  cmd = grub_register_command ("terminfo", grub_cmd_terminfo,
+			       "[TERM]", "Set terminfo type.");
   grub_terminfo_set_current ("vt100");
 }
 
 GRUB_MOD_FINI(terminfo)
 {
-  grub_unregister_command ("terminfo");
+  grub_unregister_command (cmd);
 }

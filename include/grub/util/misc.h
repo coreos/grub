@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,8 +21,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <setjmp.h>
 #include <unistd.h>
+
+#include <config.h>
+#include <grub/types.h>
 
 #ifdef __NetBSD__
 /* NetBSD uses /boot for its boot block.  */
@@ -35,8 +39,8 @@
 
 extern char *progname;
 extern int verbosity;
-extern jmp_buf main_env;
 
+void grub_util_warn (const char *fmt, ...);
 void grub_util_info (const char *fmt, ...);
 void grub_util_error (const char *fmt, ...) __attribute__ ((noreturn));
 
@@ -53,6 +57,37 @@ void grub_util_load_image (const char *path, char *buf);
 void grub_util_write_image (const char *img, size_t size, FILE *out);
 void grub_util_write_image_at (const void *img, size_t size, off_t offset,
 			       FILE *out);
-char *grub_util_get_disk_name (int disk, char *name);
+
+#ifndef HAVE_VASPRINTF
+
+int vasprintf (char **buf, const char *fmt, va_list ap);
+
+#endif
+
+#ifndef  HAVE_ASPRINTF
+
+int asprintf (char **buf, const char *fmt, ...);
+
+#endif
+
+char *xasprintf (const char *fmt, ...);
+
+#ifdef __MINGW32__
+
+#define fseeko fseeko64
+#define ftello ftello64
+
+void sync (void);
+int fsync (int fno);
+void sleep(int s);
+
+grub_int64_t grub_util_get_disk_size (char *name);
+
+#endif
+
+
+char *make_system_path_relative_to_its_root (const char *path);
+
+void grub_util_init_nls (void);
 
 #endif /* ! GRUB_UTIL_MISC_HEADER */

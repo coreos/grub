@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #include <grub/video.h>
 #include <grub/types.h>
 #include <grub/dl.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
 
 /* The list of video adapters registered to system.  */
 static grub_video_adapter_t grub_video_adapter_list;
@@ -59,59 +61,6 @@ grub_video_iterate (int (*hook) (grub_video_adapter_t adapter))
       break;
 }
 
-/* Setup specified video mode.  */
-grub_err_t
-grub_video_setup (unsigned int width, unsigned int height,
-                  unsigned int mode_type)
-{
-  grub_video_adapter_t p;
-
-  /* De-activate last set video adapter.  */
-  if (grub_video_adapter_active)
-    {
-      /* Finalize adapter.  */
-      grub_video_adapter_active->fini ();
-      if (grub_errno != GRUB_ERR_NONE)
-        return grub_errno;
-
-      /* Mark active adapter as not set.  */
-      grub_video_adapter_active = 0;
-    }
-
-  /* Loop thru all possible video adapter trying to find requested mode.  */
-  for (p = grub_video_adapter_list; p; p = p->next)
-    {
-      /* Try to initialize adapter, if it fails, skip to next adapter.  */
-      p->init ();
-      if (grub_errno != GRUB_ERR_NONE)
-        {
-          grub_errno = GRUB_ERR_NONE;
-          continue;
-        }
-
-      /* Try to initialize video mode.  */
-      p->setup (width, height, mode_type);
-      if (grub_errno == GRUB_ERR_NONE)
-        {
-          /* Valid mode found from adapter, and it has been activated.
-             Specify it as active adapter.  */
-          grub_video_adapter_active = p;
-          return GRUB_ERR_NONE;
-        }
-      else
-        grub_errno = GRUB_ERR_NONE;
-
-      /* No valid mode found in this adapter, finalize adapter.  */
-      p->fini ();
-      if (grub_errno != GRUB_ERR_NONE)
-        return grub_errno;
-    }
-
-  /* We couldn't find suitable adapter for specified mode.  */
-  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, 
-                     "Can't locate valid adapter for mode");
-}
-
 /* Restore back to initial mode (where applicable).  */
 grub_err_t
 grub_video_restore (void)
@@ -132,7 +81,7 @@ grub_err_t
 grub_video_get_info (struct grub_video_mode_info *mode_info)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   /* If mode_info is NULL just report that video adapter is active.  */
   if (! mode_info)
@@ -140,8 +89,34 @@ grub_video_get_info (struct grub_video_mode_info *mode_info)
       grub_errno = GRUB_ERR_NONE;
       return grub_errno;
     }
-  
+
   return grub_video_adapter_active->get_info (mode_info);
+}
+
+grub_video_driver_id_t
+grub_video_get_driver_id (void)
+{
+  if (! grub_video_adapter_active)
+    return GRUB_VIDEO_DRIVER_NONE;
+  return grub_video_adapter_active->id;
+}
+
+/* Get information about active video mode.  */
+grub_err_t
+grub_video_get_info_and_fini (struct grub_video_mode_info *mode_info,
+			      void **framebuffer)
+{
+  grub_err_t err;
+
+  if (! grub_video_adapter_active)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
+
+  err = grub_video_adapter_active->get_info_and_fini (mode_info, framebuffer);
+  if (err)
+    return err;
+
+  grub_video_adapter_active = 0;
+  return GRUB_ERR_NONE;
 }
 
 /* Determine optimized blitting formation for specified video mode info.  */
@@ -152,40 +127,84 @@ grub_video_get_blit_format (struct grub_video_mode_info *mode_info)
   if (mode_info->bpp == 32)
     {
       if ((mode_info->red_mask_size == 8)
-          && (mode_info->red_field_pos == 0)
-          && (mode_info->green_mask_size == 8)
-          && (mode_info->green_field_pos == 8)
-          && (mode_info->blue_mask_size == 8)
-          && (mode_info->blue_field_pos == 16)
-          && (mode_info->reserved_mask_size == 8)
-          && (mode_info->reserved_field_pos == 24))
-        {
-          return GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8;
-        }
+	  && (mode_info->red_field_pos == 16)
+	  && (mode_info->green_mask_size == 8)
+	  && (mode_info->green_field_pos == 8)
+	  && (mode_info->blue_mask_size == 8)
+	  && (mode_info->blue_field_pos == 0))
+	{
+	  return GRUB_VIDEO_BLIT_FORMAT_BGRA_8888;
+	}
+      else if ((mode_info->red_mask_size == 8)
+	       && (mode_info->red_field_pos == 0)
+	       && (mode_info->green_mask_size == 8)
+	       && (mode_info->green_field_pos == 8)
+	       && (mode_info->blue_mask_size == 8)
+	       && (mode_info->blue_field_pos == 16))
+	{
+	  return GRUB_VIDEO_BLIT_FORMAT_RGBA_8888;
+	}
     }
-
   /* Check if we have any known 24 bit modes.  */
-  if (mode_info->bpp == 24)
+  else if (mode_info->bpp == 24)
     {
       if ((mode_info->red_mask_size == 8)
-          && (mode_info->red_field_pos == 0)
-          && (mode_info->green_mask_size == 8)
-          && (mode_info->green_field_pos == 8)
-          && (mode_info->blue_mask_size == 8)
-          && (mode_info->blue_field_pos == 16))
-        {
-          return GRUB_VIDEO_BLIT_FORMAT_R8G8B8;
-        }
+	  && (mode_info->red_field_pos == 16)
+	  && (mode_info->green_mask_size == 8)
+	  && (mode_info->green_field_pos == 8)
+	  && (mode_info->blue_mask_size == 8)
+	  && (mode_info->blue_field_pos == 0))
+	{
+	  return GRUB_VIDEO_BLIT_FORMAT_BGR_888;
+	}
+      else if ((mode_info->red_mask_size == 8)
+	       && (mode_info->red_field_pos == 0)
+	       && (mode_info->green_mask_size == 8)
+	       && (mode_info->green_field_pos == 8)
+	       && (mode_info->blue_mask_size == 8)
+	       && (mode_info->blue_field_pos == 16))
+	{
+	  return GRUB_VIDEO_BLIT_FORMAT_RGB_888;
+	}
     }
+  /* Check if we have any known 16 bit modes.  */
+  else if (mode_info->bpp == 16)
+    {
+      if ((mode_info->red_mask_size == 5)
+	  && (mode_info->red_field_pos == 11)
+	  && (mode_info->green_mask_size == 6)
+	  && (mode_info->green_field_pos == 5)
+	  && (mode_info->blue_mask_size == 5)
+	  && (mode_info->blue_field_pos == 0))
+	{
+	  return GRUB_VIDEO_BLIT_FORMAT_BGR_565;
+	}
+      else if ((mode_info->red_mask_size == 5)
+	       && (mode_info->red_field_pos == 0)
+	       && (mode_info->green_mask_size == 6)
+	       && (mode_info->green_field_pos == 5)
+	       && (mode_info->blue_mask_size == 5)
+	       && (mode_info->blue_field_pos == 11))
+	{
+	  return GRUB_VIDEO_BLIT_FORMAT_RGB_565;
+	}
+    }
+  else if (mode_info->bpp == 1)
+    return GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED;
+
+  /* Backup route.  Unknown format.  */
 
   /* If there are more than 8 bits per color, assume RGB(A) mode.  */
   if (mode_info->bpp > 8)
     {
       if (mode_info->reserved_mask_size > 0)
-        {
-          return GRUB_VIDEO_BLIT_FORMAT_RGBA;
-        }
-      return GRUB_VIDEO_BLIT_FORMAT_RGB;
+	{
+	  return GRUB_VIDEO_BLIT_FORMAT_RGBA;
+	}
+      else
+	{
+	  return GRUB_VIDEO_BLIT_FORMAT_RGB;
+	}
     }
 
   /* Assume as indexcolor mode.  */
@@ -198,7 +217,7 @@ grub_video_set_palette (unsigned int start, unsigned int count,
                         struct grub_video_palette_data *palette_data)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->set_palette (start, count, palette_data);
 }
@@ -209,7 +228,7 @@ grub_video_get_palette (unsigned int start, unsigned int count,
                         struct grub_video_palette_data *palette_data)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->get_palette (start, count, palette_data);
 }
@@ -220,7 +239,7 @@ grub_video_set_viewport (unsigned int x, unsigned int y,
                          unsigned int width, unsigned int height)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->set_viewport (x, y, width, height);
 }
@@ -231,7 +250,7 @@ grub_video_get_viewport (unsigned int *x, unsigned int *y,
                          unsigned int *width, unsigned int *height)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->get_viewport (x, y, width, height);
 }
@@ -269,12 +288,12 @@ grub_video_map_rgba (grub_uint8_t red, grub_uint8_t green, grub_uint8_t blue,
 
 /* Unmap video color back to RGBA components.  */
 grub_err_t
-grub_video_unmap_color (grub_video_color_t color, grub_uint8_t *red, 
-                        grub_uint8_t *green, grub_uint8_t *blue, 
+grub_video_unmap_color (grub_video_color_t color, grub_uint8_t *red,
+                        grub_uint8_t *green, grub_uint8_t *blue,
                         grub_uint8_t *alpha)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->unmap_color (color,
                                                  red,
@@ -289,20 +308,9 @@ grub_video_fill_rect (grub_video_color_t color, int x, int y,
                       unsigned int width, unsigned int height)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->fill_rect (color, x, y, width, height);
-}
-
-/* Blit glyph to screen using specified color.  */
-grub_err_t
-grub_video_blit_glyph (struct grub_font_glyph *glyph,
-                       grub_video_color_t color, int x, int y)
-{
-  if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
-
-  return grub_video_adapter_active->blit_glyph (glyph, color, x, y);
 }
 
 /* Blit bitmap to screen.  */
@@ -313,7 +321,7 @@ grub_video_blit_bitmap (struct grub_video_bitmap *bitmap,
                         unsigned int width, unsigned int height)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->blit_bitmap (bitmap, oper, x, y,
                                                  offset_x, offset_y,
@@ -328,7 +336,7 @@ grub_video_blit_render_target (struct grub_video_render_target *target,
                                unsigned int width, unsigned int height)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->blit_render_target (target, oper, x, y,
                                                         offset_x, offset_y,
@@ -340,7 +348,7 @@ grub_err_t
 grub_video_scroll (grub_video_color_t color, int dx, int dy)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->scroll (color, dx, dy);
 }
@@ -350,7 +358,7 @@ grub_err_t
 grub_video_swap_buffers (void)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->swap_buffers ();
 }
@@ -362,7 +370,7 @@ grub_video_create_render_target (struct grub_video_render_target **result,
                                  unsigned int mode_type)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->create_render_target (result,
                                                           width, height,
@@ -374,7 +382,7 @@ grub_err_t
 grub_video_delete_render_target (struct grub_video_render_target *target)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->delete_render_target (target);
 }
@@ -384,7 +392,7 @@ grub_err_t
 grub_video_set_active_render_target (struct grub_video_render_target *target)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->set_active_render_target (target);
 }
@@ -394,16 +402,302 @@ grub_err_t
 grub_video_get_active_render_target (struct grub_video_render_target **target)
 {
   if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->get_active_render_target (target);
+}
+
+/* Parse <width>x<height>[x<depth>]*/
+static grub_err_t
+parse_modespec (const char *current_mode, int *width, int *height, int *depth)
+{
+  const char *value;
+  const char *param = current_mode;
+
+  *width = *height = *depth = -1;
+
+  if (grub_strcmp (param, "auto") == 0)
+    {
+      *width = *height = 0;
+      return GRUB_ERR_NONE;
+    }
+
+  /* Find width value.  */
+  value = param;
+  param = grub_strchr(param, 'x');
+  if (param == NULL)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "Invalid mode: %s\n",
+		       current_mode);
+
+  param++;
+  
+  *width = grub_strtoul (value, 0, 0);
+  if (grub_errno != GRUB_ERR_NONE)
+      return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			 "Invalid mode: %s\n",
+			 current_mode);
+  
+  /* Find height value.  */
+  value = param;
+  param = grub_strchr(param, 'x');
+  if (param == NULL)
+    {
+      *height = grub_strtoul (value, 0, 0);
+      if (grub_errno != GRUB_ERR_NONE)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   "Invalid mode: %s\n",
+			   current_mode);
+    }
+  else
+    {
+      /* We have optional color depth value.  */
+      param++;
+      
+      *height = grub_strtoul (value, 0, 0);
+      if (grub_errno != GRUB_ERR_NONE)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   "Invalid mode: %s\n",
+			   current_mode);
+      
+      /* Convert color depth value.  */
+      value = param;
+      *depth = grub_strtoul (value, 0, 0);
+      if (grub_errno != GRUB_ERR_NONE)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   "Invalid mode: %s\n",
+			   current_mode);
+    }
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_video_set_mode (const char *modestring,
+		     unsigned int modemask,
+		     unsigned int modevalue)
+{
+  char *tmp;
+  char *next_mode;
+  char *current_mode;
+  char *modevar;
+
+  modevalue &= modemask;
+
+  /* Take copy of env.var. as we don't want to modify that.  */
+  modevar = grub_strdup (modestring);
+
+  /* Initialize next mode.  */
+  next_mode = modevar;
+
+  if (! modevar)
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
+		       "couldn't allocate space for local modevar copy");
+
+  if (grub_memcmp (next_mode, "keep", sizeof ("keep")) == 0
+      || grub_memcmp (next_mode, "keep,", sizeof ("keep,") - 1) == 0
+      || grub_memcmp (next_mode, "keep;", sizeof ("keep;") - 1) == 0)
+    {
+      int suitable = 1;
+      grub_err_t err;
+
+      if (grub_video_adapter_active)
+	{
+	  struct grub_video_mode_info mode_info;
+	  grub_memset (&mode_info, 0, sizeof (mode_info));
+	  err = grub_video_get_info (&mode_info);
+	  if (err)
+	    {
+	      suitable = 0;
+	      grub_errno = GRUB_ERR_NONE;
+	    }
+	  if ((mode_info.mode_type & modemask) != modevalue)
+	    suitable = 0;
+	}
+      else if (((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modemask) != 0)
+	       && ((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modevalue) == 0))
+	suitable = 0;
+
+      if (suitable)
+	{
+	  grub_free (modevar);
+	  return GRUB_ERR_NONE;
+	}
+      next_mode += sizeof ("keep") - 1;
+      if (! *next_mode)
+	{
+	  grub_free (modevar);
+
+	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			     "no suitable mode found");
+	}
+
+      /* Skip separator. */
+      next_mode++;
+    }
+
+  /* De-activate last set video adapter.  */
+  if (grub_video_adapter_active)
+    {
+      /* Finalize adapter.  */
+      grub_video_adapter_active->fini ();
+      if (grub_errno != GRUB_ERR_NONE)
+	grub_errno = GRUB_ERR_NONE;
+
+      /* Mark active adapter as not set.  */
+      grub_video_adapter_active = 0;
+    }
+
+  /* Loop until all modes has been tested out.  */
+  while (next_mode != NULL)
+    {
+      int width = -1;
+      int height = -1;
+      int depth = -1;
+      grub_err_t err;
+      unsigned int flags = modevalue;
+      unsigned int flagmask = modemask;
+
+      /* Use last next_mode as current mode.  */
+      tmp = next_mode;
+
+      /* Save position of next mode and separate modes.  */
+      for (; *next_mode; next_mode++)
+	if (*next_mode == ',' || *next_mode == ';')
+	  break;
+      if (*next_mode)
+	{
+	  *next_mode = 0;
+	  next_mode++;
+	}
+      else
+	next_mode = 0;
+
+      /* Skip whitespace.  */
+      while (grub_isspace (*tmp))
+	tmp++;
+
+      /* Initialize token holders.  */
+      current_mode = tmp;
+
+      /* XXX: we assume that we're in pure text mode if
+	 no video mode is initialized. Is it always true? */
+      if (grub_strcmp (current_mode, "text") == 0)
+	{
+	  struct grub_video_mode_info mode_info;
+
+	  grub_memset (&mode_info, 0, sizeof (mode_info));
+	  if (((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modemask) == 0)
+	      || ((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modevalue) != 0))
+	    {
+	      /* Valid mode found from adapter, and it has been activated.
+		 Specify it as active adapter.  */
+	      grub_video_adapter_active = NULL;
+
+	      /* Free memory.  */
+	      grub_free (modevar);
+
+	      return GRUB_ERR_NONE;
+	    }
+	}
+
+      err = parse_modespec (current_mode, &width, &height, &depth);
+      if (err)
+	{
+	  /* Free memory before returning.  */
+	  grub_free (modevar);
+
+	  return err;
+	}
+
+      /* Try out video mode.  */
+
+      /* If user requested specific depth check if this depth is supported.  */
+      if (depth != -1 && (flagmask & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK)
+	  &&
+	  (((flags & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK)
+	    != ((depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
+		& GRUB_VIDEO_MODE_TYPE_DEPTH_MASK))))
+	continue;
+
+      if (depth != -1)
+	{
+	  flags |= (depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
+	    & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+	  flagmask |= GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+	}
+
+      /* Try to initialize requested mode.  Ignore any errors.  */
+      grub_video_adapter_t p;
+
+      /* Loop thru all possible video adapter trying to find requested mode.  */
+      for (p = grub_video_adapter_list; p; p = p->next)
+	{
+	  struct grub_video_mode_info mode_info;
+
+	  grub_memset (&mode_info, 0, sizeof (mode_info));
+
+	  /* Try to initialize adapter, if it fails, skip to next adapter.  */
+	  err = p->init ();
+	  if (err != GRUB_ERR_NONE)
+	    {
+	      grub_errno = GRUB_ERR_NONE;
+	      continue;
+	    }
+
+	  /* Try to initialize video mode.  */
+	  err = p->setup (width, height, flags, flagmask);
+	  if (err != GRUB_ERR_NONE)
+	    {
+	      p->fini ();
+	      grub_errno = GRUB_ERR_NONE;
+	      continue;
+	    }
+
+	  err = p->get_info (&mode_info);
+	  if (err != GRUB_ERR_NONE)
+	    {
+	      p->fini ();
+	      grub_errno = GRUB_ERR_NONE;
+	      continue;
+	    }
+
+	  flags = mode_info.mode_type & ~GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+	  flags |= (mode_info.bpp << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
+	    & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+
+	  /* Check that mode is suitable for upper layer.  */
+	  if ((flags & GRUB_VIDEO_MODE_TYPE_PURE_TEXT)
+	      ? (((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modemask) != 0)
+		 && ((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modevalue) == 0))
+	      : ((flags & modemask) != modevalue))
+	    {
+	      p->fini ();
+	      grub_errno = GRUB_ERR_NONE;
+	      continue;
+	    }
+
+	  /* Valid mode found from adapter, and it has been activated.
+	     Specify it as active adapter.  */
+	  grub_video_adapter_active = p;
+
+	  /* Free memory.  */
+	  grub_free (modevar);
+
+	  return GRUB_ERR_NONE;
+	}
+
+    }
+
+  /* Free memory.  */
+  grub_free (modevar);
+
+  return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		     "no suitable mode found");
 }
 
 /* Initialize Video API module.  */
 GRUB_MOD_INIT(video_video)
 {
-  grub_video_adapter_active = 0;
-  grub_video_adapter_list = 0;
 }
 
 /* Finalize Video API module.  */

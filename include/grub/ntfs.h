@@ -1,7 +1,7 @@
 /* ntfs.h - header for the NTFS filesystem */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -71,12 +71,10 @@
 
 #define MAX_MFT		(1024 >> BLK_SHR)
 #define MAX_IDX		(16384 >> BLK_SHR)
-#define MAX_SPC		(4096 >> BLK_SHR)
 
 #define COM_LEN		4096
+#define COM_LOG_LEN	12
 #define COM_SEC		(COM_LEN >> BLK_SHR)
-
-#define BMP_LEN		4096
 
 #define AF_ALST		1
 #define AF_MMFT		2
@@ -116,7 +114,7 @@ struct grub_ntfs_bpb
   grub_int8_t reserved_4[3];
   grub_int8_t clusters_per_index;
   grub_int8_t reserved_5[3];
-  grub_uint64_t serial_number;
+  grub_uint64_t num_serial;
   grub_uint32_t checksum;
 } __attribute__ ((packed));
 
@@ -136,7 +134,7 @@ struct grub_fshelp_node
 {
   struct grub_ntfs_data *data;
   char *buf;
-  grub_uint32_t size;
+  grub_uint64_t size;
   grub_uint32_t ino;
   int inode_read;
   struct grub_ntfs_attr attr;
@@ -152,6 +150,7 @@ struct grub_ntfs_data
   grub_uint32_t spc;
   grub_uint32_t blocksize;
   grub_uint32_t mft_start;
+  grub_uint64_t uuid;
 };
 
 struct grub_ntfs_comp
@@ -166,7 +165,7 @@ struct grub_ntfs_comp
 struct grub_ntfs_rlst
 {
   int flags;
-  grub_uint32_t target_vcn, curr_vcn, next_vcn, curr_lcn;
+  grub_disk_addr_t target_vcn, curr_vcn, next_vcn, curr_lcn;
   char *cur_run;
   struct grub_ntfs_attr *attr;
   struct grub_ntfs_comp comp;

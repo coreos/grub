@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,124 +16,48 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/machine.h>
+#include <grub/machine/memory.h>
 #include <grub/machine/console.h>
 #include <grub/term.h>
 #include <grub/types.h>
 
-grub_uint8_t grub_console_cur_color = 0x7;
-static grub_uint8_t grub_console_standard_color = 0x7;
-static grub_uint8_t grub_console_normal_color = 0x7;
-static grub_uint8_t grub_console_highlight_color = 0x70;
+static const struct grub_machine_bios_data_area *bios_data_area =
+  (struct grub_machine_bios_data_area *) GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR;
 
-static grub_uint32_t
-map_char (grub_uint32_t c)
+#define KEYBOARD_LEFT_SHIFT	(1 << 0)
+#define KEYBOARD_RIGHT_SHIFT	(1 << 1)
+#define KEYBOARD_CTRL		(1 << 2)
+#define KEYBOARD_ALT		(1 << 3)
+
+static int
+grub_console_getkeystatus (void)
 {
-  if (c > 0x7f)
-    {
-      /* Map some unicode characters to the VGA font, if possible.  */
-      switch (c)
-	{
-	case 0x2190:	/* left arrow */
-	  c = 0x1b;
-	  break;
-	case 0x2191:	/* up arrow */
-	  c = 0x18;
-	  break;
-	case 0x2192:	/* right arrow */
-	  c = 0x1a;
-	  break;
-	case 0x2193:	/* down arrow */
-	  c = 0x19;
-	  break;
-	case 0x2501:	/* horizontal line */
-	  c = 0xc4;
-	  break;
-	case 0x2503:	/* vertical line */
-	  c = 0xb3;
-	  break;
-	case 0x250F:	/* upper-left corner */
-	  c = 0xda;
-	  break;
-	case 0x2513:	/* upper-right corner */
-	  c = 0xbf;
-	  break;
-	case 0x2517:	/* lower-left corner */
-	  c = 0xc0;
-	  break;
-	case 0x251B:	/* lower-right corner */
-	  c = 0xd9;
-	  break;
+  grub_uint8_t status = bios_data_area->keyboard_flag_lower;
+  int mods = 0;
 
-	default:
-	  c = '?';
-	  break;
-	}
-    }
+  if (status & (KEYBOARD_LEFT_SHIFT | KEYBOARD_RIGHT_SHIFT))
+    mods |= GRUB_TERM_STATUS_SHIFT;
+  if (status & KEYBOARD_CTRL)
+    mods |= GRUB_TERM_STATUS_CTRL;
+  if (status & KEYBOARD_ALT)
+    mods |= GRUB_TERM_STATUS_ALT;
 
-  return c;
+  return mods;
 }
 
-static void
-grub_console_putchar (grub_uint32_t c)
-{
-  grub_console_real_putchar (map_char (c));
-}
-
-static grub_ssize_t
-grub_console_getcharwidth (grub_uint32_t c __attribute__ ((unused)))
-{
-  /* For now, every printable character has the width 1.  */
-  return 1;
-}
-
-static grub_uint16_t
-grub_console_getwh (void)
-{
-  return (80 << 8) | 25;
-}
-
-static void
-grub_console_setcolorstate (grub_term_color_state state)
-{
-  switch (state) {
-    case GRUB_TERM_COLOR_STANDARD:
-      grub_console_cur_color = grub_console_standard_color;
-      break;
-    case GRUB_TERM_COLOR_NORMAL:
-      grub_console_cur_color = grub_console_normal_color;
-      break;
-    case GRUB_TERM_COLOR_HIGHLIGHT:
-      grub_console_cur_color = grub_console_highlight_color;
-      break;
-    default:
-      break;
-  }
-}
-
-static void
-grub_console_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
-{
-  grub_console_normal_color = normal_color;
-  grub_console_highlight_color = highlight_color;
-}
-
-static void
-grub_console_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
-{
-  *normal_color = grub_console_normal_color;
-  *highlight_color = grub_console_highlight_color;
-}
-
-static struct grub_term grub_console_term =
+static struct grub_term_input grub_console_term_input =
   {
     .name = "console",
-    .init = 0,
-    .fini = 0,
-    .putchar = grub_console_putchar,
-    .getcharwidth = grub_console_getcharwidth,
     .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
+    .getkeystatus = grub_console_getkeystatus,
+  };
+
+static struct grub_term_output grub_console_term_output =
+  {
+    .name = "console",
+    .putchar = grub_console_putchar,
+    .getcharwidth = grub_console_getcharwidth,
     .getwh = grub_console_getwh,
     .getxy = grub_console_getxy,
     .gotoxy = grub_console_gotoxy,
@@ -141,25 +65,19 @@ static struct grub_term grub_console_term =
     .setcolorstate = grub_console_setcolorstate,
     .setcolor = grub_console_setcolor,
     .getcolor = grub_console_getcolor,
-    .setcursor = grub_console_setcursor,
-    .flags = 0,
-    .next = 0
+    .setcursor = grub_console_setcursor
   };
 
 void
 grub_console_init (void)
 {
-#ifdef GRUB_MACHINE_LINUXBIOS
-  grub_keyboard_controller_init ();
-#endif
-
-  grub_term_register (&grub_console_term);
-  grub_term_set_current (&grub_console_term);
+  grub_term_register_output ("console", &grub_console_term_output);
+  grub_term_register_input ("console", &grub_console_term_input);
 }
 
 void
 grub_console_fini (void)
 {
-  grub_term_set_current (&grub_console_term);
-  grub_term_unregister (&grub_console_term);
+  grub_term_unregister_input (&grub_console_term_input);
+  grub_term_unregister_output (&grub_console_term_output);
 }

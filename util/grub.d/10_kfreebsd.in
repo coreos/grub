@@ -1,0 +1,116 @@
+#! /bin/sh -e
+
+# grub-mkconfig helper script.
+# Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+#
+# GRUB is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GRUB is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+libdir=@libdir@
+. ${libdir}/grub/grub-mkconfig_lib
+
+. ${bindir}/gettext.sh
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR=@localedir@
+
+case "${GRUB_DISTRIBUTOR}" in
+  Debian)	OS="${GRUB_DISTRIBUTOR} GNU/kFreeBSD" ;;
+  *)		OS="FreeBSD" ;;
+esac
+
+kfreebsd_entry ()
+{
+  os="$1"
+  version="$2"
+  recovery="$3"	# not used yet
+  args="$4"	# not used yet
+  title="$(gettext "%s, with kFreeBSD %s")"
+  printf "menuentry \"${title}\" {\n" "${os}" "${version}"
+  save_default_entry | sed -e "s/^/\t/"
+  if [ -z "${prepare_boot_cache}" ]; then
+    prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
+  fi
+  printf '%s\n' "${prepare_boot_cache}"
+  cat << EOF
+	echo			$(printf "$(gettext "Loading kernel of FreeBSD %s ...")" ${version})
+	kfreebsd		${rel_dirname}/${basename}
+EOF
+
+  if test -n "${devices}" ; then
+    cat << EOF
+	kfreebsd_loadenv	${devices_rel_dirname}/${devices_basename}
+EOF
+  fi
+
+  if test -n "${acpi_ko}" ; then
+    cat << EOF
+	kfreebsd_module_elf	${acpi_ko_rel_dirname}/${acpi_ko_basename}
+EOF
+  fi
+
+  cat << EOF
+	set kFreeBSD.vfs.root.mountfrom=${kfreebsd_fs}:${GRUB_DEVICE}
+	set kFreeBSD.vfs.root.mountfrom.options=rw
+}
+EOF
+}
+
+list=`for i in /boot/kfreebsd-* /boot/kernel/kernel ; do
+        if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
+      done`
+prepare_boot_cache=
+
+while [ "x$list" != "x" ] ; do
+  kfreebsd=`version_find_latest $list`
+  echo "Found kernel of FreeBSD: $kfreebsd" >&2
+  basename=`basename $kfreebsd`
+  dirname=`dirname $kfreebsd`
+  rel_dirname=`make_system_path_relative_to_its_root $dirname`
+
+  if [ -f /boot/device.hints ] ; then
+    devices=/boot/device.hints
+    devices_basename=`basename $devices`
+    devices_dirname=`dirname $devices`
+    devices_rel_dirname=`make_system_path_relative_to_its_root $devices_dirname`
+  fi
+
+  case ${GRUB_FS} in
+    ufs1 | ufs2)        kfreebsd_fs=ufs ;;
+    *)                  kfreebsd_fs=${GRUB_FS} ;;
+  esac
+
+  version=`echo $basename | sed -e "s,^[^0-9]*-,,g;s/\.gz$//g"`
+  alt_version=`echo $version | sed -e "s,\.old$,,g"`
+
+  acpi_ko=
+  for i in "/lib/modules/${version}/acpi.ko" "/lib/modules/${alt_version}/acpi.ko" \
+      "/boot/kernel/acpi.ko"; do
+    if test -e "$i" ; then
+      acpi_ko="$i"
+      break
+    fi
+  done
+  if test -n "${acpi_ko}" ; then
+    echo "Found ACPI module: ${acpi_ko}" >&2
+    acpi_ko_basename=`basename ${acpi_ko}`
+    acpi_ko_dirname=`dirname ${acpi_ko}`
+    acpi_ko_rel_dirname=`make_system_path_relative_to_its_root $acpi_ko_dirname`
+  fi
+
+  kfreebsd_entry "${OS}" "${version}"
+
+  list=`echo $list | tr ' ' '\n' | grep -vx $kfreebsd | tr '\n' ' '`
+done

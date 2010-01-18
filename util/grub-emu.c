@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,28 +27,31 @@
 #include <grub/mm.h>
 #include <grub/setjmp.h>
 #include <grub/fs.h>
-#include <grub/util/biosdisk.h>
+#include <grub/util/hostdisk.h>
 #include <grub/dl.h>
-#include <grub/machine/console.h>
+#include <grub/util/console.h>
 #include <grub/util/misc.h>
 #include <grub/kernel.h>
 #include <grub/normal.h>
 #include <grub/util/getroot.h>
 #include <grub/env.h>
 #include <grub/partition.h>
+#include <grub/i18n.h>
 
 #include <grub_emu_init.h>
 
+#include "progname.h"
+
 /* Used for going back to the main function.  */
-jmp_buf main_env;
+static jmp_buf main_env;
 
 /* Store the prefix specified by an argument.  */
-static char *prefix = 0;
+static char *prefix = NULL;
 
 grub_addr_t
 grub_arch_modules_addr (void)
 {
-  return 0;
+  return NULL;
 }
 
 grub_err_t
@@ -69,10 +72,24 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 }
 
 void
+grub_reboot (void)
+{
+  longjmp (main_env, 1);
+}
+
+void
+grub_halt (
+#ifdef GRUB_MACHINE_PCBIOS
+	   int no_apm __attribute__ ((unused))
+#endif
+	   )
+{
+  grub_reboot ();
+}
+
+void
 grub_machine_init (void)
 {
-  signal (SIGINT, SIG_IGN);
-  grub_console_init ();
 }
 
 void
@@ -88,6 +105,11 @@ grub_machine_fini (void)
 {
   grub_console_fini ();
 }
+
+void
+read_command_list (void)
+{
+}
 
 
 static struct option options[] =
@@ -102,15 +124,15 @@ static struct option options[] =
     { 0, 0, 0, 0 }
   };
 
-static int 
+static int
 usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try ``grub-emu --help'' for more information.\n");
+	     "Try `%s --help' for more information.\n", program_name);
   else
     printf (
-      "Usage: grub-emu [OPTION]...\n"
+      "Usage: %s [OPTION]...\n"
       "\n"
       "GRUB emulator.\n"
       "\n"
@@ -122,7 +144,7 @@ usage (int status)
       "  -h, --help                display this message and exit\n"
       "  -V, --version             print version information and exit\n"
       "\n"
-      "Report bugs to <%s>.\n", DEFAULT_DEVICE_MAP, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+      "Report bugs to <%s>.\n", program_name, DEFAULT_DEVICE_MAP, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
   return status;
 }
 
@@ -135,8 +157,10 @@ main (int argc, char *argv[])
   char *dev_map = DEFAULT_DEVICE_MAP;
   volatile int hold = 0;
   int opt;
-  
-  progname = "grub-emu";
+
+  set_program_name (argv[0]);
+
+  grub_util_init_nls ();
 
   while ((opt = getopt_long (argc, argv, "r:d:m:vH:hV", options, 0)) != -1)
     switch (opt)
@@ -159,7 +183,7 @@ main (int argc, char *argv[])
       case 'h':
         return usage (0);
       case 'V':
-        printf ("%s (%s) %s\n", progname, PACKAGE_NAME, PACKAGE_VERSION);
+        printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
         return 0;
       default:
         return usage (1);
@@ -174,7 +198,7 @@ main (int argc, char *argv[])
   /* Wait until the ARGS.HOLD variable is cleared by an attached debugger. */
   if (hold && verbosity > 0)
     printf ("Run \"gdb %s %d\", and set ARGS.HOLD to zero.\n",
-            progname, (int) getpid ());
+            program_name, (int) getpid ());
   while (hold)
     {
       if (hold > 0)
@@ -182,11 +206,12 @@ main (int argc, char *argv[])
 
       sleep (1);
     }
-  
+
+  signal (SIGINT, SIG_IGN);
+  grub_console_init ();
+
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (dev_map);
-
-  grub_hostfs_init ();
 
   grub_init_all ();
 
@@ -195,14 +220,14 @@ main (int argc, char *argv[])
     {
       char *device_name = grub_guess_root_device (dir);
       if (! device_name)
-        grub_util_error ("cannot find a device for %s.\n", dir);
+        grub_util_error ("cannot find a device for %s", dir);
 
       root_dev = grub_util_get_grub_dev (device_name);
       if (! root_dev)
 	{
 	  grub_util_info ("guessing the root device failed, because of `%s'",
 			  grub_errmsg);
-	  grub_util_error ("Cannot guess the root device. Specify the option ``--root-device''.");
+	  grub_util_error ("cannot guess the root device. Specify the option `--root-device'");
 	}
     }
 
@@ -210,16 +235,14 @@ main (int argc, char *argv[])
   prefix = xmalloc (strlen (root_dev) + 2 + strlen (dir) + 1);
   sprintf (prefix, "(%s)%s", root_dev, dir);
   free (dir);
-  
+
   /* Start GRUB!  */
   if (setjmp (main_env) == 0)
     grub_main ();
 
   grub_fini_all ();
 
-  grub_hostfs_fini ();
-
   grub_machine_fini ();
-  
+
   return 0;
 }

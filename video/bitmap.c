@@ -50,7 +50,7 @@ grub_video_bitmap_reader_unregister (grub_video_bitmap_reader_t reader)
 
 /* Creates new bitmap, saves created bitmap on success to *bitmap.  */
 grub_err_t
-grub_video_bitmap_create (struct grub_video_bitmap **bitmap, 
+grub_video_bitmap_create (struct grub_video_bitmap **bitmap,
                           unsigned int width, unsigned int height,
                           enum grub_video_blit_format blit_format)
 {
@@ -58,12 +58,12 @@ grub_video_bitmap_create (struct grub_video_bitmap **bitmap,
   unsigned int size;
 
   if (!bitmap)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid argument.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
 
   *bitmap = 0;
 
   if (width == 0 || height == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid argument.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
 
   *bitmap = (struct grub_video_bitmap *)grub_malloc (sizeof (struct grub_video_bitmap));
   if (! *bitmap)
@@ -78,8 +78,8 @@ grub_video_bitmap_create (struct grub_video_bitmap **bitmap,
 
   switch (blit_format)
     {
-      case GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8:
-        mode_info->mode_type = GRUB_VIDEO_MODE_TYPE_RGB 
+      case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
+        mode_info->mode_type = GRUB_VIDEO_MODE_TYPE_RGB
                                | GRUB_VIDEO_MODE_TYPE_ALPHA;
         mode_info->bpp = 32;
         mode_info->bytes_per_pixel = 4;
@@ -94,7 +94,7 @@ grub_video_bitmap_create (struct grub_video_bitmap **bitmap,
         mode_info->reserved_field_pos = 24;
         break;
 
-      case GRUB_VIDEO_BLIT_FORMAT_R8G8B8:
+      case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
         mode_info->mode_type = GRUB_VIDEO_MODE_TYPE_RGB;
         mode_info->bpp = 24;
         mode_info->bytes_per_pixel = 3;
@@ -129,7 +129,7 @@ grub_video_bitmap_create (struct grub_video_bitmap **bitmap,
         *bitmap = 0;
 
         return grub_error (GRUB_ERR_BAD_ARGUMENT,
-                           "Unsupported bitmap format");
+                           "unsupported bitmap format");
     }
 
   mode_info->pitch = width * mode_info->bytes_per_pixel;
@@ -137,7 +137,7 @@ grub_video_bitmap_create (struct grub_video_bitmap **bitmap,
   /* Calculate size needed for the data.  */
   size = (width * mode_info->bytes_per_pixel) * height;
 
-  (*bitmap)->data = grub_malloc (size);  
+  (*bitmap)->data = grub_zalloc (size);
   if (! (*bitmap)->data)
     {
       grub_free (*bitmap);
@@ -145,9 +145,6 @@ grub_video_bitmap_create (struct grub_video_bitmap **bitmap,
 
       return grub_errno;
     }
-
-  /* Clear bitmap.  */
-  grub_memset ((*bitmap)->data, 0, size);
 
   return GRUB_ERR_NONE;
 }
@@ -185,13 +182,13 @@ match_extension (const char *filename, const char *ext)
 
 /* Loads bitmap using registered bitmap readers.  */
 grub_err_t
-grub_video_bitmap_load (struct grub_video_bitmap **bitmap, 
+grub_video_bitmap_load (struct grub_video_bitmap **bitmap,
                         const char *filename)
 {
   grub_video_bitmap_reader_t reader = bitmap_readers_list;
 
   if (!bitmap)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid argument.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
 
   *bitmap = 0;
 

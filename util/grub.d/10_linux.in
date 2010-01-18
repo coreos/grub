@@ -1,7 +1,7 @@
 #! /bin/sh -e
 
-# update-grub helper script.
-# Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+# grub-mkconfig helper script.
+# Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +18,13 @@
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
+bindir=@bindir@
 libdir=@libdir@
-. ${libdir}/grub/update-grub_lib
+. ${libdir}/grub/grub-mkconfig_lib
+
+. ${bindir}/gettext.sh
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR=@localedir@
 
 if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS=GNU/Linux
@@ -27,73 +32,72 @@ else
   OS="${GRUB_DISTRIBUTOR} GNU/Linux"
 fi
 
-test_numeric ()
+# loop-AES arranges things so that /dev/loop/X can be our root device, but
+# the initrds that Linux uses don't like that.
+case ${GRUB_DEVICE} in
+  /dev/loop/*|/dev/loop[0-9])
+    GRUB_DEVICE=`losetup ${GRUB_DEVICE} | sed -e "s/^[^(]*(\([^)]\+\)).*/\1/"`
+  ;;
+esac
+
+if [ "x${GRUB_DEVICE_UUID}" = "x" ] || [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue" ] \
+    || ! test -e "/dev/disk/by-uuid/${GRUB_DEVICE_UUID}" ; then
+  LINUX_ROOT_DEVICE=${GRUB_DEVICE}
+else
+  LINUX_ROOT_DEVICE=UUID=${GRUB_DEVICE_UUID}
+fi
+
+linux_entry ()
 {
-  local a=$1
-  local cmp=$2
-  local b=$3
-  if [ "$a" = "$b" ] ; then
-    case $cmp in
-      ge|eq|le) return 0 ;;
-      gt|lt) return 1 ;;
-    esac
-  fi
-  if [ "$cmp" = "lt" ] ; then
-    c=$a
-    a=$b
-    b=$c
-  fi
-  if (echo $a ; echo $b) | sort -n | head -n 1 | grep -qx $b ; then
-    return 0
+  os="$1"
+  version="$2"
+  recovery="$3"
+  args="$4"
+  if ${recovery} ; then
+    title="$(gettext "%s, with Linux %s (recovery mode)")"
   else
-    return 1
+    title="$(gettext "%s, with Linux %s")"
   fi
-}
-
-test_gt ()
-{
-  local a=`echo $1 | sed -e "s/vmlinu[zx]-//g"`
-  local b=`echo $2 | sed -e "s/vmlinu[zx]-//g"`
-  local cmp=gt
-  if [ "x$b" = "x" ] ; then
-    return 0
+  printf "menuentry \"${title}\" {\n" "${os}" "${version}"
+  save_default_entry | sed -e "s/^/\t/"
+  if [ -z "${prepare_boot_cache}" ]; then
+    prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
-  case $a:$b in
-    *.old:*.old) ;;
-    *.old:*) a=`echo -n $a | sed -e s/\.old$//g` ; cmp=gt ;;
-    *:*.old) b=`echo -n $b | sed -e s/\.old$//g` ; cmp=ge ;;
-  esac
-  test_numeric $a $cmp $b
-  return $?
+  printf '%s\n' "${prepare_boot_cache}"
+  cat << EOF
+	echo	$(printf "$(gettext "Loading Linux %s ...")" ${version})
+	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro ${args}
+EOF
+  if test -n "${initrd}" ; then
+    cat << EOF
+	echo	$(gettext "Loading initial ramdisk ...")
+	initrd	${rel_dirname}/${initrd}
+EOF
+  fi
+  cat << EOF
 }
-
-find_latest ()
-{
-  local a=""
-  for i in $@ ; do
-    if test_gt "$i" "$a" ; then
-      a="$i"
-    fi
-  done
-  echo "$a"
+EOF
 }
 
 list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
+prepare_boot_cache=
 
 while [ "x$list" != "x" ] ; do
-  linux=`find_latest $list`
+  linux=`version_find_latest $list`
   echo "Found linux image: $linux" >&2
   basename=`basename $linux`
   dirname=`dirname $linux`
-  grub_dirname=`echo ${dirname} | sed -e "s%^/boot%${GRUB_DRIVE_BOOT}%g"`
+  rel_dirname=`make_system_path_relative_to_its_root $dirname`
   version=`echo $basename | sed -e "s,^[^0-9]*-,,g"`
   alt_version=`echo $version | sed -e "s,\.old$,,g"`
+  linux_root_device_thisversion="${LINUX_ROOT_DEVICE}"
 
   initrd=
   for i in "initrd.img-${version}" "initrd-${version}.img" \
-	   "initrd.img-${alt_version}" "initrd-${alt_version}.img"; do
+	   "initrd-${version}" "initrd.img-${alt_version}" \
+	   "initrd-${alt_version}.img" "initrd-${alt_version}"; do
     if test -e "${dirname}/${i}" ; then
       initrd="$i"
       break
@@ -101,33 +105,17 @@ while [ "x$list" != "x" ] ; do
   done
   if test -n "${initrd}" ; then
     echo "Found initrd image: ${dirname}/${initrd}" >&2
+  else
+    # "UUID=" magic is parsed by initrds.  Since there's no initrd, it can't work here.
+    linux_root_device_thisversion=${GRUB_DEVICE}
   fi
 
-  cat << EOF
-menuentry "${OS}, linux ${version}" {
-	linux	${grub_dirname}/${basename} root=${GRUB_DEVICE} ro ${GRUB_CMDLINE_LINUX}
-EOF
-  if test -n "${initrd}" ; then
-    cat << EOF
-	initrd	${grub_dirname}/${initrd}
-EOF
+  linux_entry "${OS}" "${version}" false \
+      "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
+  if [ "x${GRUB_DISABLE_LINUX_RECOVERY}" != "xtrue" ]; then
+    linux_entry "${OS}" "${version}" true \
+	"single ${GRUB_CMDLINE_LINUX}"
   fi
-  cat << EOF
-}
-EOF
-
-  cat << EOF
-menuentry "${OS}, linux ${version} (single-user mode)" {
-	linux	${grub_dirname}/${basename} root=${GRUB_DEVICE} ro single ${GRUB_CMDLINE_LINUX}
-EOF
-  if test -n "${initrd}" ; then
-    cat << EOF
-	initrd	${grub_dirname}/${initrd}
-EOF
-  fi
-  cat << EOF
-}
-EOF
 
   list=`echo $list | tr ' ' '\n' | grep -vx $linux | tr '\n' ' '`
 done

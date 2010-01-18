@@ -23,10 +23,11 @@
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/dl.h>
-#include <grub/normal.h>
+#include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static grub_err_t
-grub_cmd_hello (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_hello (struct grub_extcmd *cmd __attribute__ ((unused)),
 		int argc __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {
@@ -34,14 +35,15 @@ grub_cmd_hello (struct grub_arg_list *state __attribute__ ((unused)),
   return 0;
 }
 
+static grub_extcmd_t cmd;
+
 GRUB_MOD_INIT(hello)
 {
-  (void)mod;			/* To stop warning. */
-  grub_register_command ("hello", grub_cmd_hello, GRUB_COMMAND_FLAG_BOTH,
-			 "hello", "Say hello", 0);
+  cmd = grub_register_extcmd ("hello", grub_cmd_hello, GRUB_COMMAND_FLAG_BOTH,
+			      0, N_("Say \"Hello World\"."), 0);
 }
 
 GRUB_MOD_FINI(hello)
 {
-  grub_unregister_command ("hello");
+  grub_unregister_extcmd (cmd);
 }

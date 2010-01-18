@@ -1,7 +1,7 @@
 /* affs.c - Amiga Fast FileSystem.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -104,43 +104,42 @@ struct grub_affs_data
   int htsize;
 };
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 
-static int
-grub_affs_read_block (grub_fshelp_node_t node, int fileblock)
+static grub_disk_addr_t
+grub_affs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
   int links;
   grub_uint32_t pos;
   int block = node->block;
   struct grub_affs_file file;
   struct grub_affs_data *data = node->data;
+  grub_uint32_t mod;
 
   /* Find the block that points to the fileblock we are looking up by
      following the chain until the right table is reached.  */
-  for (links = fileblock / (data->htsize); links; links--)
+  for (links = grub_divmod64 (fileblock, data->htsize, &mod); links; links--)
     {
       grub_disk_read (data->disk, block + data->blocksize - 1,
 		      data->blocksize * (GRUB_DISK_SECTOR_SIZE
 					 - GRUB_AFFS_FILE_LOCATION),
-		      sizeof (file), (char *) &file);
+		      sizeof (file), &file);
       if (grub_errno)
 	return 0;
-	  
+
       block = grub_be_to_cpu32 (file.extension);
     }
 
   /* Translate the fileblock to the block within the right table.  */
-  fileblock = fileblock % (data->htsize);
+  fileblock = mod;
   grub_disk_read (data->disk, block,
 		  GRUB_AFFS_BLOCKPTR_OFFSET
 		  + (data->htsize - fileblock - 1) * sizeof (pos),
-		  sizeof (pos), (char *) &pos);
+		  sizeof (pos), &pos);
   if (grub_errno)
     return 0;
-  
+
   return grub_be_to_cpu32 (pos);
 }
 
@@ -176,27 +175,27 @@ grub_affs_mount (grub_disk_t disk)
 
   /* Read the bootblock.  */
   grub_disk_read (disk, 0, 0, sizeof (struct grub_affs_bblock),
-		  (char *) &data->bblock);
+		  &data->bblock);
   if (grub_errno)
     goto fail;
 
   /* Make sure this is an affs filesystem.  */
   if (grub_strncmp ((char *) (data->bblock.type), "DOS", 3))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not an affs filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not an AFFS filesystem");
       goto fail;
     }
 
   /* Test if the filesystem is a OFS filesystem.  */
   if (! (data->bblock.flags & GRUB_AFFS_FLAG_FFS))
     {
-      grub_error (GRUB_ERR_BAD_FS, "ofs not yet supported");
+      grub_error (GRUB_ERR_BAD_FS, "OFS not yet supported");
       goto fail;
     }
 
   /* Read the bootblock.  */
   grub_disk_read (disk, 0, 0, sizeof (struct grub_affs_bblock),
-		  (char *) &data->bblock);
+		  &data->bblock);
   if (grub_errno)
     goto fail;
 
@@ -210,7 +209,7 @@ grub_affs_mount (grub_disk_t disk)
 
   /* Read the rootblock.  */
   grub_disk_read (disk, (disk->total_sectors >> 1) + blocksize, 0,
-		  GRUB_DISK_SECTOR_SIZE * 16, (char *) rootblock);
+		  GRUB_DISK_SECTOR_SIZE * 16, rootblock);
   if (grub_errno)
     goto fail;
 
@@ -232,7 +231,7 @@ grub_affs_mount (grub_disk_t disk)
     }
   if (-checksum != checksumr)
     {
-      grub_error (GRUB_ERR_BAD_FS, "affs blocksize could not be determined");
+      grub_error (GRUB_ERR_BAD_FS, "AFFS blocksize couldn't be determined");
       goto fail;
     }
   blocksize++;
@@ -249,7 +248,7 @@ grub_affs_mount (grub_disk_t disk)
 
  fail:
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
-    grub_error (GRUB_ERR_BAD_FS, "not an affs filesystem");
+    grub_error (GRUB_ERR_BAD_FS, "not an AFFS filesystem");
 
   grub_free (data);
   grub_free (rootblock);
@@ -274,7 +273,7 @@ grub_affs_read_symlink (grub_fshelp_node_t node)
       grub_free (symlink);
       return 0;
     }
-  grub_printf ("Symlink: `%s'\n", symlink);
+  grub_dprintf ("affs", "Symlink: `%s'\n", symlink);
   return symlink;
 }
 
@@ -354,7 +353,7 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
 			  sizeof (file), (char *) &file);
 	  if (grub_errno)
 	    goto fail;
-	  
+
 	  file.name[file.namelen] = '\0';
 
 	  if ((int) grub_be_to_cpu32 (file.type) == GRUB_AFFS_FILETYPE_DIR)
@@ -371,7 +370,7 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
 	    return 1;
 
 	  next = grub_be_to_cpu32 (file.next);
-	}      
+	}
     }
 
   grub_free (hashtable);
@@ -380,7 +379,7 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
  fail:
   grub_free (node);
   grub_free (hashtable);
-  return 1;
+  return 0;
 }
 
 
@@ -390,20 +389,18 @@ grub_affs_open (struct grub_file *file, const char *name)
 {
   struct grub_affs_data *data;
   struct grub_fshelp_node *fdiro = 0;
-  
-#ifndef GRUB_UTIL
+
   grub_dl_ref (my_mod);
-#endif
-  
+
   data = grub_affs_mount (file->device->disk);
   if (!data)
     goto fail;
-  
+
   grub_fshelp_find_file (name, &data->diropen, &fdiro, grub_affs_iterate_dir,
 			 grub_affs_read_symlink, GRUB_FSHELP_REG);
   if (grub_errno)
     goto fail;
-  
+
   file->size = fdiro->size;
   data->diropen = *fdiro;
   grub_free (fdiro);
@@ -417,10 +414,8 @@ grub_affs_open (struct grub_file *file, const char *name)
   if (data && fdiro != &data->diropen)
     grub_free (fdiro);
   grub_free (data);
-  
-#ifndef GRUB_UTIL
+
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -431,9 +426,7 @@ grub_affs_close (grub_file_t file)
 {
   grub_free (file->data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return GRUB_ERR_NONE;
 }
@@ -443,7 +436,7 @@ grub_affs_close (grub_file_t file)
 static grub_ssize_t
 grub_affs_read (grub_file_t file, char *buf, grub_size_t len)
 {
-  struct grub_affs_data *data = 
+  struct grub_affs_data *data =
     (struct grub_affs_data *) file->data;
 
   int size = grub_affs_read_file (&data->diropen, file->read_hook,
@@ -454,12 +447,13 @@ grub_affs_read (grub_file_t file, char *buf, grub_size_t len)
 
 
 static grub_err_t
-grub_affs_dir (grub_device_t device, const char *path, 
-	       int (*hook) (const char *filename, int dir))
+grub_affs_dir (grub_device_t device, const char *path,
+	       int (*hook) (const char *filename,
+			    const struct grub_dirhook_info *info))
 {
   struct grub_affs_data *data = 0;
   struct grub_fshelp_node *fdiro = 0;
-  
+
   auto int NESTED_FUNC_ATTR iterate (const char *filename,
 				     enum grub_fshelp_filetype filetype,
 				     grub_fshelp_node_t node);
@@ -468,39 +462,32 @@ grub_affs_dir (grub_device_t device, const char *path,
 				enum grub_fshelp_filetype filetype,
 				grub_fshelp_node_t node)
     {
+      struct grub_dirhook_info info;
+      grub_memset (&info, 0, sizeof (info));
+      info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
       grub_free (node);
-      
-      if (filetype == GRUB_FSHELP_DIR)
-	return hook (filename, 1);
-      else 
-	return hook (filename, 0);
-      
-      return 0;
+      return hook (filename, &info);
     }
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
-  
+
   data = grub_affs_mount (device->disk);
   if (!data)
     goto fail;
-  
+
   grub_fshelp_find_file (path, &data->diropen, &fdiro, grub_affs_iterate_dir,
 			 grub_affs_read_symlink, GRUB_FSHELP_DIR);
   if (grub_errno)
     goto fail;
 
   grub_affs_iterate_dir (fdiro, iterate);
-  
+
  fail:
   if (data && fdiro != &data->diropen)
     grub_free (fdiro);
   grub_free (data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -513,9 +500,7 @@ grub_affs_label (grub_device_t device, char **label)
   struct grub_affs_file file;
   grub_disk_t disk = device->disk;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_affs_mount (disk);
   if (data)
@@ -525,7 +510,7 @@ grub_affs_label (grub_device_t device, char **label)
       grub_disk_read (data->disk, disk->total_sectors >> 1,
 		      data->blocksize * (GRUB_DISK_SECTOR_SIZE
 					 - GRUB_AFFS_FILE_LOCATION),
-		      sizeof (file), (char *) &file);
+		      sizeof (file), &file);
       if (grub_errno)
 	return 0;
 
@@ -534,9 +519,7 @@ grub_affs_label (grub_device_t device, char **label)
   else
     *label = 0;
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   grub_free (data);
 
@@ -558,13 +541,10 @@ static struct grub_fs grub_affs_fs =
 GRUB_MOD_INIT(affs)
 {
   grub_fs_register (&grub_affs_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(affs)
 {
   grub_fs_unregister (&grub_affs_fs);
 }
-

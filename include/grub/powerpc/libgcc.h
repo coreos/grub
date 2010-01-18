@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,30 +16,20 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void EXPORT_FUNC (memset) (void);
-void EXPORT_FUNC (__adddf3) (void);
-void EXPORT_FUNC (__addsf3) (void);
+#include <config.h>
+
+#ifdef HAVE___ASHLDI3
 void EXPORT_FUNC (__ashldi3) (void);
-void EXPORT_FUNC (__bss_start) (void);
-void EXPORT_FUNC (__extendsfdf2) (void);
-void EXPORT_FUNC (__fixunsdfsi) (void);
-void EXPORT_FUNC (__floatsidf) (void);
-void EXPORT_FUNC (__floatsisf) (void);
+#endif
+#ifdef HAVE___ASHRDI3
+void EXPORT_FUNC (__ashrdi3) (void);
+#endif
+#ifdef HAVE___LSHRDI3
 void EXPORT_FUNC (__lshrdi3) (void);
-void EXPORT_FUNC (__make_dp) (void);
-void EXPORT_FUNC (__make_fp) (void);
-void EXPORT_FUNC (__muldf3) (void);
-void EXPORT_FUNC (__mulsf3) (void);
-void EXPORT_FUNC (__pack_d) (void);
-void EXPORT_FUNC (__pack_f) (void);
-void EXPORT_FUNC (__subdf3) (void);
-void EXPORT_FUNC (__subsf3) (void);
-void EXPORT_FUNC (__thenan_df) (void);
-void EXPORT_FUNC (__thenan_sf) (void);
+#endif
+#ifdef HAVE___TRAMPOLINE_SETUP
 void EXPORT_FUNC (__trampoline_setup) (void);
-void EXPORT_FUNC (__truncdfsf2) (void);
+#endif
+#ifdef HAVE___UCMPDI2
 void EXPORT_FUNC (__ucmpdi2) (void);
-void EXPORT_FUNC (__unpack_d) (void);
-void EXPORT_FUNC (__unpack_f) (void);
-void EXPORT_FUNC (__floatdisf) (void);
-void EXPORT_FUNC (__cmpdi2) (void);
+#endif

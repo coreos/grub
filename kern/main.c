@@ -1,7 +1,7 @@
 /* main.c - the kernel main routine */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,18 +19,19 @@
 
 #include <grub/kernel.h>
 #include <grub/misc.h>
-#include <grub/mm.h>
 #include <grub/symbol.h>
 #include <grub/dl.h>
 #include <grub/term.h>
-#include <grub/rescue.h>
 #include <grub/file.h>
 #include <grub/device.h>
 #include <grub/env.h>
+#include <grub/mm.h>
+#include <grub/command.h>
+#include <grub/reader.h>
+#include <grub/parser.h>
 
-/* Load all modules in core.  */
-static void
-grub_load_modules (void)
+void
+grub_module_iterate (int (*hook) (struct grub_module_header *header))
 {
   struct grub_module_info *modinfo;
   struct grub_module_header *header;
@@ -38,7 +39,7 @@ grub_load_modules (void)
 
   modbase = grub_arch_modules_addr ();
   modinfo = (struct grub_module_info *) modbase;
-  
+
   /* Check if there are any modules.  */
   if ((modinfo == 0) || modinfo->magic != GRUB_MODULE_MAGIC)
     return;
@@ -47,13 +48,48 @@ grub_load_modules (void)
        header < (struct grub_module_header *) (modbase + modinfo->size);
        header = (struct grub_module_header *) ((char *) header + header->size))
     {
-      if (! grub_dl_load_core ((char *) header + header->offset,
-			       (header->size - header->offset)))
+      if (hook (header))
+	break;
+    }
+}
+
+/* Load all modules in core.  */
+static void
+grub_load_modules (void)
+{
+  auto int hook (struct grub_module_header *);
+  int hook (struct grub_module_header *header)
+    {
+      /* Not an ELF module, skip.  */
+      if (header->type != OBJ_TYPE_ELF)
+        return 0;
+
+      if (! grub_dl_load_core ((char *) header + sizeof (struct grub_module_header),
+			       (header->size - sizeof (struct grub_module_header))))
 	grub_fatal ("%s", grub_errmsg);
+
+      return 0;
     }
 
-  /* Add the region where modules reside into dynamic memory.  */
-  grub_mm_init_region ((void *) modinfo, modinfo->size);
+  grub_module_iterate (hook);
+}
+
+static void
+grub_load_config (void)
+{
+  auto int hook (struct grub_module_header *);
+  int hook (struct grub_module_header *header)
+    {
+      /* Not an ELF module, skip.  */
+      if (header->type != OBJ_TYPE_CONFIG)
+	return 0;
+
+      grub_parser_execute ((char *) header +
+			   sizeof (struct grub_module_header));
+      return 1;
+    }
+
+  grub_module_iterate (hook);
 }
 
 /* Write hook for the environment variables of root. Remove surrounding
@@ -64,7 +100,7 @@ grub_env_write_root (struct grub_env_var *var __attribute__ ((unused)),
 {
   /* XXX Is it better to check the existence of the device?  */
   grub_size_t len = grub_strlen (val);
-  
+
   if (val[0] == '(' && val[len - 1] == ')')
     return grub_strndup (val + 1, len - 2);
 
@@ -79,9 +115,9 @@ grub_set_root_dev (void)
 
   grub_register_variable_hook ("root", 0, grub_env_write_root);
   grub_env_export ("root");
-  
+
   prefix = grub_env_get ("prefix");
-  
+
   if (prefix)
     {
       char *dev;
@@ -101,9 +137,12 @@ grub_load_normal_mode (void)
 {
   /* Load the module.  */
   grub_dl_load ("normal");
-  
-  /* Ignore any error, because we have the rescue mode anyway.  */
-  grub_errno = GRUB_ERR_NONE;
+
+  /* Something went wrong.  Print errors here to let user know why we're entering rescue mode.  */
+  grub_print_error ();
+  grub_errno = 0;
+
+  grub_command_execute ("normal", 0, 0);
 }
 
 /* The main routine.  */
@@ -125,11 +164,13 @@ grub_main (void)
   /* It is better to set the root device as soon as possible,
      for convenience.  */
   grub_machine_set_prefix ();
+  grub_env_export ("prefix");
   grub_set_root_dev ();
 
-  /* Load the normal mode module.  */
+  grub_register_core_commands ();
+  grub_register_rescue_parser ();
+
+  grub_load_config ();
   grub_load_normal_mode ();
-  
-  /* Enter the rescue mode.  */
-  grub_enter_rescue_mode ();
+  grub_rescue_run ();
 }

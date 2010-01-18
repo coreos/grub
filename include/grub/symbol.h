@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@
 
 #include <config.h>
 
+/* Apple assembler requires local labels to start with a capital L */
+#define LOCAL(sym)	L_ ## sym
+
 /* Add an underscore to a C symbol in assembler code if needed. */
 #ifdef HAVE_ASM_USCORE
 # define EXT_C(sym)	_ ## sym
@@ -28,8 +31,17 @@
 # define EXT_C(sym)	sym
 #endif
 
+#if defined (APPLE_CC)
+#define FUNCTION(x)	.globl EXT_C(x) ; EXT_C(x):
+#define VARIABLE(x)	.globl EXT_C(x) ; EXT_C(x):
+#elif ! defined (__CYGWIN__) && ! defined (__MINGW32__)
 #define FUNCTION(x)	.globl EXT_C(x) ; .type EXT_C(x), "function" ; EXT_C(x):
 #define VARIABLE(x)	.globl EXT_C(x) ; .type EXT_C(x), "object" ; EXT_C(x):
+#else
+/* .type not supported for non-ELF targets.  XXX: Check this in configure? */
+#define FUNCTION(x)	.globl EXT_C(x) ; .def EXT_C(x); .scl 2; .type 32; .endef; EXT_C(x):
+#define VARIABLE(x)	.globl EXT_C(x) ; .def EXT_C(x); .scl 2; .type 0; .endef; EXT_C(x):
+#endif
 
 /* Mark an exported symbol.  */
 #ifndef GRUB_SYMBOL_GENERATOR

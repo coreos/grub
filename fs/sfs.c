@@ -1,7 +1,7 @@
 /* sfs.c - Amiga Smart FileSystem.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -135,9 +135,7 @@ struct grub_sfs_data
   char *label;
 };
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 
 /* Lookup the extent starting with BLOCK in the filesystem described
@@ -172,7 +170,7 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
 	  return grub_errno;
 	}
 
-      for (i = 0; i < tree->nodes; i++)
+      for (i = grub_be_to_cpu16 (tree->nodes) - 1; i >= 0; i--)
 	{
 
 #define EXTNODE(tree, index)						\
@@ -180,16 +178,8 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
 					 + (index) * (tree)->nodesize))
 
 	  /* Follow the tree down to the leaf level.  */
-	  if ((grub_be_to_cpu32 (EXTNODE(tree, i)->key) >= block)
+	  if ((grub_be_to_cpu32 (EXTNODE(tree, i)->key) <= block)
 	      && !tree->leaf)
-	    {
-	      next = grub_be_to_cpu32 (EXTNODE (tree, i - 1)->data);
-	      break;
-	    }
-
-	  /* In case the last node is reached just use that one, it is
-	     the right match.  */
-	  if (i + 1 == tree->nodes && !tree->leaf)
 	    {
 	      next = grub_be_to_cpu32 (EXTNODE (tree, i)->data);
 	      break;
@@ -204,7 +194,7 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
 	      /* We found a correct leaf.  */
 	      *size = grub_be_to_cpu16 (extent->size);
 	      *nextext = grub_be_to_cpu32 (extent->next);
-	      
+
 	      grub_free (treeblock);
 	      return 0;
 	    }
@@ -219,8 +209,8 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
   return grub_error (GRUB_ERR_FILE_READ_ERROR, "SFS extent not found");
 }
 
-static int
-grub_sfs_read_block (grub_fshelp_node_t node, int fileblock)
+static grub_disk_addr_t
+grub_sfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
   int blk = node->block;
   int size = 0;
@@ -239,7 +229,7 @@ grub_sfs_read_block (grub_fshelp_node_t node, int fileblock)
       if (err)
 	return 0;
 
-      if (fileblock < size)
+      if (fileblock < (unsigned int) size)
 	return fileblock + blk;
 
       fileblock -= size;
@@ -282,14 +272,14 @@ grub_sfs_mount (grub_disk_t disk)
 
   /* Read the rootblock.  */
   grub_disk_read (disk, 0, 0, sizeof (struct grub_sfs_rblock),
-		  (char *) &data->rblock);
+		  &data->rblock);
   if (grub_errno)
     goto fail;
 
   /* Make sure this is a sfs filesystem.  */
   if (grub_strncmp ((char *) (data->rblock.header.magic), "SFS", 4))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a sfs filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a SFS filesystem");
       goto fail;
     }
 
@@ -317,7 +307,7 @@ grub_sfs_mount (grub_disk_t disk)
 
  fail:
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
-    grub_error (GRUB_ERR_BAD_FS, "not an sfs filesystem");
+    grub_error (GRUB_ERR_BAD_FS, "not an SFS filesystem");
 
   grub_free (data);
   grub_free (rootobjc_data);
@@ -380,7 +370,7 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
       node->data = data;
       node->size = size;
       node->block = block;
-      
+
       return hook (name, type, node);
     }
 
@@ -451,7 +441,7 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
 
  fail:
   grub_free (objc_data);
-  return 1;
+  return 0;
 }
 
 
@@ -461,20 +451,18 @@ grub_sfs_open (struct grub_file *file, const char *name)
 {
   struct grub_sfs_data *data;
   struct grub_fshelp_node *fdiro = 0;
-  
-#ifndef GRUB_UTIL
+
   grub_dl_ref (my_mod);
-#endif
-  
+
   data = grub_sfs_mount (file->device->disk);
   if (!data)
     goto fail;
-  
+
   grub_fshelp_find_file (name, &data->diropen, &fdiro, grub_sfs_iterate_dir,
 			 grub_sfs_read_symlink, GRUB_FSHELP_REG);
   if (grub_errno)
     goto fail;
-  
+
   file->size = fdiro->size;
   data->diropen = *fdiro;
   grub_free (fdiro);
@@ -490,10 +478,8 @@ grub_sfs_open (struct grub_file *file, const char *name)
   if (data)
     grub_free (data->label);
   grub_free (data);
-  
-#ifndef GRUB_UTIL
+
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -504,9 +490,7 @@ grub_sfs_close (grub_file_t file)
 {
   grub_free (file->data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return GRUB_ERR_NONE;
 }
@@ -526,12 +510,13 @@ grub_sfs_read (grub_file_t file, char *buf, grub_size_t len)
 
 
 static grub_err_t
-grub_sfs_dir (grub_device_t device, const char *path, 
-	       int (*hook) (const char *filename, int dir))
+grub_sfs_dir (grub_device_t device, const char *path,
+	       int (*hook) (const char *filename,
+			    const struct grub_dirhook_info *info))
 {
   struct grub_sfs_data *data = 0;
   struct grub_fshelp_node *fdiro = 0;
-  
+
   auto int NESTED_FUNC_ATTR iterate (const char *filename,
 				     enum grub_fshelp_filetype filetype,
 				     grub_fshelp_node_t node);
@@ -540,20 +525,15 @@ grub_sfs_dir (grub_device_t device, const char *path,
 				enum grub_fshelp_filetype filetype,
 				grub_fshelp_node_t node)
     {
+      struct grub_dirhook_info info;
+      grub_memset (&info, 0, sizeof (info));
+      info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
       grub_free (node);
-      
-      if (filetype == GRUB_FSHELP_DIR)
-	return hook (filename, 1);
-      else
-	return hook (filename, 0);
-      
-      return 0;
+      return hook (filename, &info);
     }
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
-  
+
   data = grub_sfs_mount (device->disk);
   if (!data)
     goto fail;
@@ -564,7 +544,7 @@ grub_sfs_dir (grub_device_t device, const char *path,
     goto fail;
 
   grub_sfs_iterate_dir (fdiro, iterate);
-  
+
  fail:
   if (data && fdiro != &data->diropen)
     grub_free (fdiro);
@@ -572,9 +552,7 @@ grub_sfs_dir (grub_device_t device, const char *path,
     grub_free (data->label);
   grub_free (data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -610,9 +588,7 @@ static struct grub_fs grub_sfs_fs =
 GRUB_MOD_INIT(sfs)
 {
   grub_fs_register (&grub_sfs_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(sfs)

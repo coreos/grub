@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,45 +26,55 @@
    specific coding format.  */
 typedef grub_uint32_t grub_video_color_t;
 
-/* This structure is driver specific and should not be accessed directly by 
+/* This structure is driver specific and should not be accessed directly by
    outside code.  */
 struct grub_video_render_target;
 
 /* Forward declarations for used data structures.  */
-struct grub_font_glyph;
 struct grub_video_bitmap;
 
 /* Defines used to describe video mode or rendering target.  */
-#define GRUB_VIDEO_MODE_TYPE_ALPHA		0x00000008
-#define GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED	0x00000004
+#define GRUB_VIDEO_MODE_TYPE_PURE_TEXT		0x00000040
+#define GRUB_VIDEO_MODE_TYPE_ALPHA		0x00000020
+#define GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED	0x00000010
+#define GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP	0x00000004
 #define GRUB_VIDEO_MODE_TYPE_INDEX_COLOR	0x00000002
 #define GRUB_VIDEO_MODE_TYPE_RGB		0x00000001
 
 /* Defines used to mask flags.  */
-#define GRUB_VIDEO_MODE_TYPE_COLOR_MASK		0x00000003
+#define GRUB_VIDEO_MODE_TYPE_COLOR_MASK		0x0000000F
 
 /* Defines used to specify requested bit depth.  */
 #define GRUB_VIDEO_MODE_TYPE_DEPTH_MASK		0x0000ff00
 #define GRUB_VIDEO_MODE_TYPE_DEPTH_POS		8
 
-/* Defined predefined render targets.  */
-#define GRUB_VIDEO_RENDER_TARGET_DISPLAY	((struct grub_video_render_target *) 0)
-#define GRUB_VIDEO_RENDER_TARGET_FRONT_BUFFER	((struct grub_video_render_target *) 0)
-#define GRUB_VIDEO_RENDER_TARGET_BACK_BUFFER	((struct grub_video_render_target *) 1)
+#define GRUB_VIDEO_RENDER_TARGET_DISPLAY \
+  ((struct grub_video_render_target *) 0)
 
 /* Defined blitting formats.  */
 enum grub_video_blit_format
   {
-    /* Follow exactly field & mask information.  */
+    /* Generic RGBA, use fields & masks.  */
     GRUB_VIDEO_BLIT_FORMAT_RGBA,
-    /* Make optimization assumption.  */
-    GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8,
-    /* Follow exactly field & mask information.  */
+
+    /* Optimized RGBA's.  */
+    GRUB_VIDEO_BLIT_FORMAT_RGBA_8888,
+    GRUB_VIDEO_BLIT_FORMAT_BGRA_8888,
+
+    /* Generic RGB, use fields & masks.  */
     GRUB_VIDEO_BLIT_FORMAT_RGB,
-    /* Make optimization assumption.  */
-    GRUB_VIDEO_BLIT_FORMAT_R8G8B8,
+
+    /* Optimized RGB's.  */
+    GRUB_VIDEO_BLIT_FORMAT_RGB_888,
+    GRUB_VIDEO_BLIT_FORMAT_BGR_888,
+    GRUB_VIDEO_BLIT_FORMAT_RGB_565,
+    GRUB_VIDEO_BLIT_FORMAT_BGR_565,
+
     /* When needed, decode color or just use value as is.  */
-    GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR
+    GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR,
+
+    /* Two color bitmap; bits packed: rows are not padded to byte boundary.  */
+    GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED
   };
 
 /* Define blitting operators.  */
@@ -84,7 +94,7 @@ struct grub_video_mode_info
   /* Height of the screen.  */
   unsigned int height;
 
-  /* Mode type bitmask.  Contains information like is it Index color or 
+  /* Mode type bitmask.  Contains information like is it Index color or
      RGB mode.  */
   unsigned int mode_type;
 
@@ -124,9 +134,21 @@ struct grub_video_mode_info
   /* How many bits are reserved in color.  */
   unsigned int reserved_mask_size;
 
-  /* What is location of reserved color bits.  In Index Color mode, 
+  /* What is location of reserved color bits.  In Index Color mode,
      this is 0.  */
   unsigned int reserved_field_pos;
+
+  /* For 1-bit bitmaps, the background color.  Used for bits = 0.  */
+  grub_uint8_t bg_red;
+  grub_uint8_t bg_green;
+  grub_uint8_t bg_blue;
+  grub_uint8_t bg_alpha;
+
+  /* For 1-bit bitmaps, the foreground color.  Used for bits = 1.  */
+  grub_uint8_t fg_red;
+  grub_uint8_t fg_green;
+  grub_uint8_t fg_blue;
+  grub_uint8_t fg_alpha;
 };
 
 struct grub_video_palette_data
@@ -137,10 +159,19 @@ struct grub_video_palette_data
   grub_uint8_t a; /* Reserved bits value (0-255).  */
 };
 
+typedef enum grub_video_driver_id
+  {
+    GRUB_VIDEO_DRIVER_NONE,
+    GRUB_VIDEO_DRIVER_VBE,
+    GRUB_VIDEO_DRIVER_EFI_UGA,
+    GRUB_VIDEO_DRIVER_EFI_GOP
+  } grub_video_driver_id_t;
+
 struct grub_video_adapter
 {
   /* The video adapter name.  */
   const char *name;
+  grub_video_driver_id_t id;
 
   /* Initialize the video adapter.  */
   grub_err_t (*init) (void);
@@ -149,9 +180,12 @@ struct grub_video_adapter
   grub_err_t (*fini) (void);
 
   grub_err_t (*setup) (unsigned int width,  unsigned int height,
-                       unsigned int mode_type);
+                       unsigned int mode_type, unsigned int mode_mask);
 
   grub_err_t (*get_info) (struct grub_video_mode_info *mode_info);
+
+  grub_err_t (*get_info_and_fini) (struct grub_video_mode_info *mode_info,
+				   void **framebuffer);
 
   grub_err_t (*set_palette) (unsigned int start, unsigned int count,
                              struct grub_video_palette_data *palette_data);
@@ -179,9 +213,6 @@ struct grub_video_adapter
 
   grub_err_t (*fill_rect) (grub_video_color_t color, int x, int y,
                            unsigned int width, unsigned int height);
-
-  grub_err_t (*blit_glyph) (struct grub_font_glyph *glyph,
-                            grub_video_color_t color, int x, int y);
 
   grub_err_t (*blit_bitmap) (struct grub_video_bitmap *bitmap,
                              enum grub_video_blit_operators oper,
@@ -216,12 +247,17 @@ void grub_video_register (grub_video_adapter_t adapter);
 void grub_video_unregister (grub_video_adapter_t adapter);
 void grub_video_iterate (int (*hook) (grub_video_adapter_t adapter));
 
-grub_err_t grub_video_setup (unsigned int width, unsigned int height,
-                             unsigned int mode_type);
-
 grub_err_t grub_video_restore (void);
 
 grub_err_t grub_video_get_info (struct grub_video_mode_info *mode_info);
+
+/* Framebuffer address may change as a part of normal operation
+   (e.g. double buffering). That's why you need to stop video subsystem to be
+   sure that framebuffer address doesn't change. To ensure this abstraction
+   grub_video_get_info_and_fini is the only function supplying framebuffer
+   address. */
+grub_err_t grub_video_get_info_and_fini (struct grub_video_mode_info *mode_info,
+					 void **framebuffer);
 
 enum grub_video_blit_format grub_video_get_blit_format (struct grub_video_mode_info *mode_info);
 
@@ -252,9 +288,6 @@ grub_err_t grub_video_unmap_color (grub_video_color_t color,
 grub_err_t grub_video_fill_rect (grub_video_color_t color, int x, int y,
                                  unsigned int width, unsigned int height);
 
-grub_err_t grub_video_blit_glyph (struct grub_font_glyph *glyph,
-                                  grub_video_color_t color, int x, int y);
-
 grub_err_t grub_video_blit_bitmap (struct grub_video_bitmap *bitmap,
                                    enum grub_video_blit_operators oper,
                                    int x, int y, int offset_x, int offset_y,
@@ -281,5 +314,19 @@ grub_err_t grub_video_delete_render_target (struct grub_video_render_target *tar
 grub_err_t grub_video_set_active_render_target (struct grub_video_render_target *target);
 
 grub_err_t grub_video_get_active_render_target (struct grub_video_render_target **target);
+
+grub_err_t grub_video_set_mode (const char *modestring,
+				unsigned int modemask,
+				unsigned int modevalue);
+
+static inline int
+grub_video_check_mode_flag (unsigned int flags, unsigned int mask,
+			    unsigned int flag, int def)
+{
+  return (flag & mask) ? !! (flags & flag) : def;
+}
+
+grub_video_driver_id_t
+grub_video_get_driver_id (void);
 
 #endif /* ! GRUB_VIDEO_HEADER */

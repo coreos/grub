@@ -1,7 +1,7 @@
 /* cpuid.c - test for CPU features */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006, 2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2006, 2007, 2009  Free Software Foundation, Inc.
  *  Based on gcc/gcc/config/i386/driver-i386.c
  *
  *  GRUB is free software: you can redistribute it and/or modify
@@ -18,41 +18,46 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/normal.h>
 #include <grub/dl.h>
-#include <grub/arg.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/env.h>
+#include <grub/command.h>
+#include <grub/extcmd.h>
+#include <grub/i386/cpuid.h>
+#include <grub/i18n.h>
 
 #define cpuid(num,a,b,c,d) \
   asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1" \
 		: "=a" (a), "=r" (b), "=c" (c), "=d" (d)  \
 		: "0" (num))
 
-#define bit_LM (1 << 29)
-
-unsigned char has_longmode = 0;
-
 static const struct grub_arg_option options[] =
   {
-    {"long-mode", 'l', 0, "check for long mode flag (default)", 0, 0},
+    {"long-mode", 'l', 0, N_("Check for long mode flag (default)."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
+#define bit_LM (1 << 29)
+
+unsigned char grub_cpuid_has_longmode = 0;
+
 static grub_err_t
-grub_cmd_cpuid (struct grub_arg_list *state __attribute__ ((unused)),
-	       int argc __attribute__ ((unused)),
-	       char **args __attribute__ ((unused)))
+grub_cmd_cpuid (grub_extcmd_t cmd __attribute__ ((unused)),
+		int argc __attribute__ ((unused)),
+		char **args __attribute__ ((unused)))
 {
-  return !has_longmode;
+  return grub_cpuid_has_longmode ? GRUB_ERR_NONE
+    : grub_error (GRUB_ERR_TEST_FAILURE, "false");
 }
+
+static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(cpuid)
 {
 #ifdef __x86_64__
   /* grub-emu */
-  has_longmode = 1;
+  grub_cpuid_has_longmode = 1;
 #else
   unsigned int eax, ebx, ecx, edx;
   unsigned int max_level;
@@ -79,15 +84,15 @@ GRUB_MOD_INIT(cpuid)
     goto done;
 
   cpuid (0x80000001, eax, ebx, ecx, edx);
-  has_longmode = !!(edx & bit_LM);
+  grub_cpuid_has_longmode = !!(edx & bit_LM);
 done:
 #endif
 
-  grub_register_command ("cpuid", grub_cmd_cpuid, GRUB_COMMAND_FLAG_CMDLINE,
-			 "cpuid", "Check for CPU features", options);
+  cmd = grub_register_extcmd ("cpuid", grub_cmd_cpuid, GRUB_COMMAND_FLAG_BOTH,
+			      "[-l]", N_("Check for CPU features."), options);
 }
 
 GRUB_MOD_FINI(cpuid)
 {
-  grub_unregister_command ("cpuid");
+  grub_unregister_extcmd (cmd);
 }

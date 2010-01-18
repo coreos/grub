@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright (C) 2005  Free Software Foundation, Inc.
+# Copyright (C) 2005,2008  Free Software Foundation, Inc.
 #
 # This gensymlist.sh is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -14,6 +14,11 @@
 # Read source code from stdin and detect fs names.
 
 module=$1
+
+# Ignore kernel.mod.
+if test $module = kernel; then
+    exit
+fi
 
 # For now, this emits only a module name, if the module registers a filesystem.
 if grep -v "^#" | grep '^ *grub_fs_register' >/dev/null 2>&1; then

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,9 +37,18 @@ enum grub_disk_dev_id
     GRUB_DISK_DEVICE_HOST_ID,
     GRUB_DISK_DEVICE_ATA_ID,
     GRUB_DISK_DEVICE_MEMDISK_ID,
+    GRUB_DISK_DEVICE_NAND_ID,
+    GRUB_DISK_DEVICE_UUID_ID,
+    GRUB_DISK_DEVICE_PXE_ID,
+    GRUB_DISK_DEVICE_SCSI_ID,
+    GRUB_DISK_DEVICE_FILE_ID,
+    GRUB_DISK_DEVICE_LUKS_ID
   };
 
 struct grub_disk;
+#ifdef GRUB_UTIL
+struct grub_disk_memberlist;
+#endif
 
 /* Disk device.  */
 struct grub_disk_dev
@@ -48,8 +57,8 @@ struct grub_disk_dev
   const char *name;
 
   /* The device id used by the cache manager.  */
-  unsigned long id;
-  
+  enum grub_disk_dev_id id;
+
   /* Call HOOK with each device name, until HOOK returns non-zero.  */
   int (*iterate) (int (*hook) (const char *name));
 
@@ -66,6 +75,10 @@ struct grub_disk_dev
   /* Write SIZE sectors from BUF into the sector SECTOR of the disk DISK.  */
   grub_err_t (*write) (struct grub_disk *disk, grub_disk_addr_t sector,
 		       grub_size_t size, const char *buf);
+
+#ifdef GRUB_UTIL
+  struct grub_disk_memberlist *(*memberlist) (struct grub_disk *disk);
+#endif
 
   /* The next disk device.  */
   struct grub_disk_dev *next;
@@ -91,7 +104,7 @@ struct grub_disk
 
   /* The id used by the disk cache manager.  */
   unsigned long id;
-  
+
   /* The partition information. This is machine-specific.  */
   struct grub_partition *partition;
 
@@ -104,6 +117,15 @@ struct grub_disk
   void *data;
 };
 typedef struct grub_disk *grub_disk_t;
+
+#ifdef GRUB_UTIL
+struct grub_disk_memberlist
+{
+  grub_disk_t disk;
+  struct grub_disk_memberlist *next;
+};
+typedef struct grub_disk_memberlist *grub_disk_memberlist_t;
+#endif
 
 /* The sector size.  */
 #define GRUB_DISK_SECTOR_SIZE	0x200
@@ -129,23 +151,27 @@ grub_err_t EXPORT_FUNC(grub_disk_read) (grub_disk_t disk,
 					grub_disk_addr_t sector,
 					grub_off_t offset,
 					grub_size_t size,
-					char *buf);
+					void *buf);
 grub_err_t EXPORT_FUNC(grub_disk_write) (grub_disk_t disk,
 					 grub_disk_addr_t sector,
 					 grub_off_t offset,
 					 grub_size_t size,
-					 const char *buf);
+					 const void *buf);
 
 grub_uint64_t EXPORT_FUNC(grub_disk_get_size) (grub_disk_t disk);
 
 extern void (* EXPORT_VAR(grub_disk_firmware_fini)) (void);
 extern int EXPORT_VAR(grub_disk_firmware_is_tainted);
 
-#ifdef GRUB_UTIL
-void grub_raid_init (void);
-void grub_raid_fini (void);
-void grub_lvm_init (void);
-void grub_lvm_fini (void);
-#endif
+/* ATA pass through parameters and function.  */
+struct grub_disk_ata_pass_through_parms
+{
+  grub_uint8_t taskfile[8];
+  void * buffer;
+  int size;
+};
+
+extern grub_err_t (* EXPORT_VAR(grub_disk_ata_pass_through)) (grub_disk_t,
+		   struct grub_disk_ata_pass_through_parms *);
 
 #endif /* ! GRUB_DISK_HEADER */

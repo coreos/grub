@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,4 +16,14 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void EXPORT_FUNC (memset) (void);
+#include <config.h>
+
+#ifdef HAVE___BSWAPSI2
+typedef int SItype __attribute__ ((mode (SI)));
+SItype EXPORT_FUNC (__bswapsi2) (SItype);
+#endif
+
+#ifdef HAVE___BSWAPDI2
+typedef int DItype __attribute__ ((mode (DI)));
+DItype EXPORT_FUNC (__bswapdi2) (DItype);
+#endif

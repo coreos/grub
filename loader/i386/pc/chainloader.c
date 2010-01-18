@@ -1,7 +1,7 @@
 /* chainloader.c - boot another boot loader */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2004,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004,2007,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,8 +29,12 @@
 #include <grub/machine/init.h>
 #include <grub/partition.h>
 #include <grub/machine/memory.h>
-#include <grub/rescue.h>
 #include <grub/dl.h>
+#include <grub/command.h>
+#include <grub/machine/biosnum.h>
+#include <grub/i18n.h>
+#include <grub/video.h>
+#include <grub/mm.h>
 
 static grub_dl_t my_mod;
 static int boot_drive;
@@ -39,6 +43,7 @@ static void *boot_part_addr;
 static grub_err_t
 grub_chainloader_boot (void)
 {
+  grub_video_set_mode ("text", 0, 0);
   grub_chainloader_real_boot (boot_drive, boot_part_addr);
 
   /* Never reach here.  */
@@ -52,7 +57,7 @@ grub_chainloader_unload (void)
   return GRUB_ERR_NONE;
 }
 
-void
+static void
 grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
 {
   grub_file_t file = 0;
@@ -62,13 +67,13 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
   void *part_addr = 0;
 
   grub_dl_ref (my_mod);
-  
+
   file = grub_file_open (filename);
   if (! file)
     goto fail;
 
   /* Read the first block.  */
-  if (grub_file_read (file, (char *) 0x7C00, GRUB_DISK_SECTOR_SIZE)
+  if (grub_file_read (file, (void *) 0x7C00, GRUB_DISK_SECTOR_SIZE)
       != GRUB_DISK_SECTOR_SIZE)
     {
       if (grub_errno == GRUB_ERR_NONE)
@@ -89,49 +94,39 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
   grub_file_close (file);
 
   /* Obtain the partition table from the root device.  */
+  drive = grub_get_root_biosnumber ();
   dev = grub_device_open (0);
-  if (dev)
+  if (dev && dev->disk && dev->disk->partition)
     {
-      grub_disk_t disk = dev->disk;
-      
-      if (disk)
-	{
-	  grub_partition_t p = disk->partition;
-	  
-	  /* In i386-pc, the id is equal to the BIOS drive number.  */
-	  drive = (int) disk->id;
-
-	  if (p)
-	    {
-	      grub_disk_read (disk, p->offset, 446, 64,
-			      (char *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
-	      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
-				    + (p->index << 4));
-	    }
-	}
-
-      grub_device_close (dev);
+      grub_disk_read (dev->disk, dev->disk->partition->offset, 446, 64,
+		      (void *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
+      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
+			    + (dev->disk->partition->index << 4));
     }
-  
+
+  if (dev)
+    grub_device_close (dev);
+ 
   /* Ignore errors. Perhaps it's not fatal.  */
   grub_errno = GRUB_ERR_NONE;
 
   boot_drive = drive;
   boot_part_addr = part_addr;
-  
+
   grub_loader_set (grub_chainloader_boot, grub_chainloader_unload, 1);
   return;
-  
+
  fail:
 
   if (file)
     grub_file_close (file);
-  
+
   grub_dl_unref (my_mod);
 }
 
-static void
-grub_rescue_cmd_chainloader (int argc, char *argv[])
+static grub_err_t
+grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
+		      int argc, char *argv[])
 {
   grub_chainloader_flags_t flags = 0;
 
@@ -141,24 +136,25 @@ grub_rescue_cmd_chainloader (int argc, char *argv[])
       argc--;
       argv++;
     }
-  
+
   if (argc == 0)
-    grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
   else
     grub_chainloader_cmd (argv[0], flags);
+
+  return grub_errno;
 }
 
-static const char loader_name[] = "chainloader";
+static grub_command_t cmd;
 
 GRUB_MOD_INIT(chainloader)
 {
-  grub_rescue_register_command (loader_name,
-				grub_rescue_cmd_chainloader,
-				"load another boot loader");
+  cmd = grub_register_command ("chainloader", grub_cmd_chainloader,
+			       0, N_("Load another boot loader."));
   my_mod = mod;
 }
 
 GRUB_MOD_FINI(chainloader)
 {
-  grub_rescue_unregister_command (loader_name);
+  grub_unregister_command (cmd);
 }

@@ -103,6 +103,7 @@ struct grub_lvm_pv_header {
 
 #define GRUB_LVM_FMTT_MAGIC "\040\114\126\115\062\040\170\133\065\101\045\162\060\116\052\076"
 #define GRUB_LVM_FMTT_VERSION 1
+#define GRUB_LVM_MDA_HEADER_SIZE 512
 
 /* On disk */
 struct grub_lvm_raw_locn {
@@ -120,7 +121,7 @@ struct grub_lvm_mda_header {
   grub_uint32_t version;
   grub_uint64_t start;		/* Absolute start byte of mda_header */
   grub_uint64_t size;		/* Size of metadata area */
-  
+
   struct grub_lvm_raw_locn raw_locns[0];	/* NULL-terminated list */
 } __attribute__ ((packed));
 

@@ -22,6 +22,7 @@
 
 #include <grub/dl.h>
 #include <grub/disk.h>
+#include <grub/misc.h>
 
 int grub_disk_host_i_want_a_reference;
 
@@ -40,8 +41,8 @@ grub_host_open (const char *name, grub_disk_t disk)
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a host disk");
 
   disk->total_sectors = 0;
-  disk->id = (int) "host";
-  
+  disk->id = (unsigned long) "host";
+
   disk->has_partitions = 0;
   disk->data = 0;
 
@@ -86,7 +87,6 @@ static struct grub_disk_dev grub_host_dev =
 
 GRUB_MOD_INIT(host)
 {
-  (void) mod;			/* To stop warning. */
   grub_disk_dev_register (&grub_host_dev);
 }
 

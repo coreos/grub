@@ -1,7 +1,7 @@
 /*  console.c -- Ncurses console for GRUB.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,14 +19,6 @@
 
 #include <config.h>
 
-#if defined(HAVE_NCURSES_CURSES_H)
-# include <ncurses/curses.h>
-#elif defined(HAVE_NCURSES_H)
-# include <ncurses.h>
-#elif defined(HAVE_CURSES_H)
-# include <curses.h>
-#endif
-
 /* For compatibility.  */
 #ifndef A_NORMAL
 # define A_NORMAL	0
@@ -35,11 +27,41 @@
 # define A_STANDOUT	0
 #endif /* ! A_STANDOUT */
 
-#include <grub/machine/console.h>
+#include <grub/util/console.h>
 #include <grub/term.h>
 #include <grub/types.h>
 
+#if defined(HAVE_NCURSES_CURSES_H)
+# include <ncurses/curses.h>
+#elif defined(HAVE_NCURSES_H)
+# include <ncurses.h>
+#elif defined(HAVE_CURSES_H)
+# include <curses.h>
+#endif
+
 static int grub_console_attr = A_NORMAL;
+
+grub_uint8_t grub_console_cur_color = 7;
+
+static grub_uint8_t grub_console_standard_color = 0x7;
+static grub_uint8_t grub_console_normal_color = 0x7;
+static grub_uint8_t grub_console_highlight_color = 0x70;
+
+#define NUM_COLORS	8
+
+static grub_uint8_t color_map[NUM_COLORS] =
+{
+  COLOR_BLACK,
+  COLOR_BLUE,
+  COLOR_GREEN,
+  COLOR_CYAN,
+  COLOR_RED,
+  COLOR_MAGENTA,
+  COLOR_YELLOW,
+  COLOR_WHITE
+};
+
+static int use_color;
 
 static void
 grub_ncurses_putchar (grub_uint32_t c)
@@ -84,7 +106,7 @@ grub_ncurses_putchar (grub_uint32_t c)
 	c = '?';
       break;
     }
-  
+
   addch (c | grub_console_attr);
 }
 
@@ -97,19 +119,33 @@ grub_ncurses_getcharwidth (grub_uint32_t code __attribute__ ((unused)))
 static void
 grub_ncurses_setcolorstate (grub_term_color_state state)
 {
-  switch (state) 
+  switch (state)
     {
     case GRUB_TERM_COLOR_STANDARD:
+      grub_console_cur_color = grub_console_standard_color;
       grub_console_attr = A_NORMAL;
       break;
     case GRUB_TERM_COLOR_NORMAL:
+      grub_console_cur_color = grub_console_normal_color;
       grub_console_attr = A_NORMAL;
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
+      grub_console_cur_color = grub_console_highlight_color;
       grub_console_attr = A_STANDOUT;
       break;
     default:
       break;
+    }
+
+  if (use_color)
+    {
+      grub_uint8_t fg, bg;
+
+      fg = (grub_console_cur_color & 7);
+      bg = (grub_console_cur_color >> 4) & 7;
+
+      grub_console_attr = (grub_console_cur_color & 8) ? A_BOLD : A_NORMAL;
+      color_set ((bg << 3) + fg, 0);
     }
 }
 
@@ -117,7 +153,15 @@ grub_ncurses_setcolorstate (grub_term_color_state state)
 static void
 grub_ncurses_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
 {
-  color_set (normal_color << 8 | highlight_color, 0);
+  grub_console_normal_color = normal_color;
+  grub_console_highlight_color = highlight_color;
+}
+
+static void
+grub_ncurses_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
+{
+  *normal_color = grub_console_normal_color;
+  *highlight_color = grub_console_highlight_color;
 }
 
 static int saved_char = ERR;
@@ -126,12 +170,12 @@ static int
 grub_ncurses_checkkey (void)
 {
   int c;
-  
+
   /* Check for SAVED_CHAR. This should not be true, because this
      means checkkey is called twice continuously.  */
   if (saved_char != ERR)
     return saved_char;
-  
+
   wtimeout (stdscr, 100);
   c = getch ();
   /* If C is not ERR, then put it back in the input queue.  */
@@ -148,7 +192,7 @@ static int
 grub_ncurses_getkey (void)
 {
   int c;
-  
+
   /* If checkkey has already got a character, then return it.  */
   if (saved_char != ERR)
     {
@@ -170,7 +214,7 @@ grub_ncurses_getkey (void)
     case KEY_RIGHT:
       c = 6;
       break;
-      
+
     case KEY_UP:
       c = 16;
       break;
@@ -190,7 +234,7 @@ grub_ncurses_getkey (void)
     case KEY_BACKSPACE:
       /* XXX: For some reason ncurses on xterm does not return
 	 KEY_BACKSPACE.  */
-    case 127: 
+    case 127:
       c = 8;
       break;
 
@@ -272,7 +316,23 @@ grub_ncurses_init (void)
   nonl ();
   intrflush (stdscr, FALSE);
   keypad (stdscr, TRUE);
-  start_color ();
+
+  if (has_colors ())
+    {
+      start_color ();
+
+      if ((COLORS >= NUM_COLORS) && (COLOR_PAIRS >= NUM_COLORS * NUM_COLORS))
+        {
+          int i, j, n;
+
+          n = 0;
+          for (i = 0; i < NUM_COLORS; i++)
+            for (j = 0; j < NUM_COLORS; j++)
+              init_pair(n++, color_map[j], color_map[i]);
+
+          use_color = 1;
+        }
+    }
 
   return 0;
 }
@@ -285,32 +345,36 @@ grub_ncurses_fini (void)
 }
 
 
-static struct grub_term grub_ncurses_term =
+static struct grub_term_input grub_ncurses_term_input =
+  {
+    .name = "console",
+    .checkkey = grub_ncurses_checkkey,
+    .getkey = grub_ncurses_getkey,
+  };
+
+static struct grub_term_output grub_ncurses_term_output =
   {
     .name = "console",
     .init = grub_ncurses_init,
     .fini = grub_ncurses_fini,
     .putchar = grub_ncurses_putchar,
     .getcharwidth = grub_ncurses_getcharwidth,
-    .checkkey = grub_ncurses_checkkey,
-    .getkey = grub_ncurses_getkey,
     .getxy = grub_ncurses_getxy,
     .getwh = grub_ncurses_getwh,
     .gotoxy = grub_ncurses_gotoxy,
     .cls = grub_ncurses_cls,
     .setcolorstate = grub_ncurses_setcolorstate,
     .setcolor = grub_ncurses_setcolor,
+    .getcolor = grub_ncurses_getcolor,
     .setcursor = grub_ncurses_setcursor,
-    .refresh = grub_ncurses_refresh,
-    .flags = 0,
-    .next = 0
+    .refresh = grub_ncurses_refresh
   };
 
 void
 grub_console_init (void)
 {
-  grub_term_register (&grub_ncurses_term);
-  grub_term_set_current (&grub_ncurses_term);
+  grub_term_register_output ("console", &grub_ncurses_term_output);
+  grub_term_register_input ("console", &grub_ncurses_term_input);
 }
 
 void

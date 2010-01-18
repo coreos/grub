@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -64,6 +64,7 @@ struct grub_pe32_coff_header
 };
 
 #define GRUB_PE32_MACHINE_I386		0x14c
+#define GRUB_PE32_MACHINE_X86_64	0x8664
 
 #define GRUB_PE32_RELOCS_STRIPPED		0x0001
 #define GRUB_PE32_EXECUTABLE_IMAGE		0x0002
@@ -97,10 +98,14 @@ struct grub_pe32_optional_header
   grub_uint32_t bss_size;
   grub_uint32_t entry_addr;
   grub_uint32_t code_base;
-  
-  grub_uint32_t data_base;
 
+#if GRUB_TARGET_SIZEOF_VOID_P == 4
+  grub_uint32_t data_base;
   grub_uint32_t image_base;
+#else
+  grub_uint64_t image_base;
+#endif
+
   grub_uint32_t section_alignment;
   grub_uint32_t file_alignment;
   grub_uint16_t major_os_version;
@@ -115,13 +120,26 @@ struct grub_pe32_optional_header
   grub_uint32_t checksum;
   grub_uint16_t subsystem;
   grub_uint16_t dll_characteristics;
+
+#if GRUB_TARGET_SIZEOF_VOID_P == 4
+
   grub_uint32_t stack_reserve_size;
   grub_uint32_t stack_commit_size;
   grub_uint32_t heap_reserve_size;
   grub_uint32_t heap_commit_size;
+
+#else
+
+  grub_uint64_t stack_reserve_size;
+  grub_uint64_t stack_commit_size;
+  grub_uint64_t heap_reserve_size;
+  grub_uint64_t heap_commit_size;
+
+#endif
+
   grub_uint32_t loader_flags;
   grub_uint32_t num_data_directories;
-  
+
   /* Data directories.  */
   struct grub_pe32_data_directory export_table;
   struct grub_pe32_data_directory import_table;
@@ -141,7 +159,15 @@ struct grub_pe32_optional_header
   struct grub_pe32_data_directory reserved_entry;
 };
 
+#if GRUB_TARGET_SIZEOF_VOID_P == 4
+
 #define GRUB_PE32_PE32_MAGIC	0x10b
+
+#else
+
+#define GRUB_PE32_PE32_MAGIC	0x20b
+
+#endif
 
 #define GRUB_PE32_SUBSYSTEM_EFI_APPLICATION	10
 
@@ -168,11 +194,23 @@ struct grub_pe32_section_table
 #define GRUB_PE32_SCN_MEM_READ			0x40000000
 #define GRUB_PE32_SCN_MEM_WRITE			0x80000000
 
+#define GRUB_PE32_SCN_ALIGN_1BYTES		0x00100000
+#define GRUB_PE32_SCN_ALIGN_2BYTES		0x00200000
+#define GRUB_PE32_SCN_ALIGN_4BYTES		0x00300000
+#define GRUB_PE32_SCN_ALIGN_8BYTES		0x00400000
+#define GRUB_PE32_SCN_ALIGN_16BYTES		0x00500000
+#define GRUB_PE32_SCN_ALIGN_32BYTES		0x00600000
+#define GRUB_PE32_SCN_ALIGN_64BYTES		0x00700000
+
+#define GRUB_PE32_SCN_ALIGN_SHIFT		20
+#define GRUB_PE32_SCN_ALIGN_MASK		7
+
+
 struct grub_pe32_header
 {
   /* This should be filled in with GRUB_PE32_MSDOS_STUB.  */
   grub_uint8_t msdos_stub[GRUB_PE32_MSDOS_STUB_SIZE];
-  
+
   /* This is always PE\0\0.  */
   char signature[4];
 
@@ -193,6 +231,46 @@ struct grub_pe32_fixup_block
 #define GRUB_PE32_FIXUP_ENTRY(type, offset)	(((type) << 12) | (offset))
 
 #define GRUB_PE32_REL_BASED_ABSOLUTE	0
+#define GRUB_PE32_REL_BASED_HIGH	1
+#define GRUB_PE32_REL_BASED_LOW		2
 #define GRUB_PE32_REL_BASED_HIGHLOW	3
+#define GRUB_PE32_REL_BASED_HIGHADJ	4
+#define GRUB_PE32_REL_BASED_MIPS_JMPADDR 5
+#define GRUB_PE32_REL_BASED_SECTION	6
+#define GRUB_PE32_REL_BASED_REL		7
+#define GRUB_PE32_REL_BASED_IA64_IMM64	9
+#define GRUB_PE32_REL_BASED_DIR64	10
+#define GRUB_PE32_REL_BASED_HIGH3ADJ	11
+
+struct grub_pe32_symbol
+{
+  union
+  {
+    char short_name[8];
+    grub_uint32_t long_name[2];
+  };
+
+  grub_uint32_t value;
+  grub_uint16_t section;
+  grub_uint16_t type;
+  grub_uint8_t storage_class;
+  grub_uint8_t num_aux;
+} __attribute__ ((packed));
+
+#define GRUB_PE32_SYM_CLASS_EXTERNAL	2
+#define GRUB_PE32_SYM_CLASS_STATIC	3
+#define GRUB_PE32_SYM_CLASS_FILE	0x67
+
+#define GRUB_PE32_DT_FUNCTION		0x20
+
+struct grub_pe32_reloc
+{
+  grub_uint32_t offset;
+  grub_uint32_t symtab_index;
+  grub_uint16_t type;
+} __attribute__ ((packed));
+
+#define GRUB_PE32_REL_I386_DIR32	0x6
+#define GRUB_PE32_REL_I386_REL32	0x14
 
 #endif /* ! GRUB_EFI_PE32_HEADER */

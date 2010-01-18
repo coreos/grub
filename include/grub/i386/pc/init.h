@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2004,2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004,2005,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include <grub/types.h>
 #include <grub/symbol.h>
+#include <grub/machine/memory.h>
 
 /* Get the memory size in KB. If EXTENDED is zero, return conventional
    memory, otherwise return extended memory.  */
@@ -30,28 +31,14 @@ grub_uint16_t grub_get_memsize (int extended);
    in 1KB parts, and upper 16 bits are above 16MB in 64KB parts.  */
 grub_uint32_t grub_get_eisa_mmap (void);
 
-struct grub_machine_mmap_entry
-{
-  grub_uint32_t size;
-  grub_uint64_t addr;
-  grub_uint64_t len;
-  grub_uint32_t type;
-} __attribute__((packed));
-
 /* Get a memory map entry. Return next continuation value. Zero means
    the end.  */
-grub_uint32_t grub_get_mmap_entry (struct grub_machine_mmap_entry *entry,
+grub_uint32_t EXPORT_FUNC(grub_get_mmap_entry) (struct grub_machine_mmap_entry *entry,
 				   grub_uint32_t cont);
 
 /* Turn on/off Gate A20.  */
 void grub_gate_a20 (int on);
 
-/* Reboot the machine.  */
-void EXPORT_FUNC (grub_reboot) (void);
-
-/* Halt the system, using APM if possible. If NO_APM is true, don't
- * use APM even if it is available.  */
-void EXPORT_FUNC (grub_halt) (int no_apm);
-
+void EXPORT_FUNC(grub_stop_floppy) (void);
 
 #endif /* ! GRUB_INIT_MACHINE_HEADER */
