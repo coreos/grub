@@ -246,13 +246,13 @@ grub_cmd_systab (struct grub_arg_list *state, int argc, char **args)
 
 GRUB_MOD_INIT(systab)
 {
-  (void)mod;			/* To stop warning. */
-  grub_register_command ("systab", grub_cmd_systab, GRUB_COMMAND_FLAG_BOTH,
-			 "systab [NAME]",
-			 "Display EFI system table.", NULL);
+  (void) mod;			/* To stop warning. */
+  grub_register_extcmd ("systab", grub_cmd_systab, GRUB_COMMAND_FLAG_BOTH,
+			"systab [NAME]",
+			"Display EFI system table.", NULL);
 }
 
 GRUB_MOD_FINI(systab)
 {
-  grub_unregister_command ("systab");
+  grub_unregister_extcmd ("systab");
 }

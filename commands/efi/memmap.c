@@ -132,12 +132,12 @@ grub_cmd_memmap (struct grub_arg_list *state, int argc, char **args)
 GRUB_MOD_INIT(memmap)
 {
   (void)mod;			/* To stop warning. */
-  grub_register_command ("memmap", grub_cmd_memmap, GRUB_COMMAND_FLAG_BOTH,
-			 "memmap",
-			 "Display memory map.", NULL);
+  grub_register_extcmd ("memmap", grub_cmd_memmap, GRUB_COMMAND_FLAG_BOTH,
+			"memmap",
+			"Display memory map.", NULL);
 }
 
 GRUB_MOD_FINI(memmap)
 {
-  grub_unregister_command ("memmap");
+  grub_unregister_extcmd ("memmap");
 }
