@@ -1,3 +1,17 @@
+2010-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add missing *BSD copyright headers.
+
+	* include/grub/aout.h: Add BSD licence.
+	* include/grub/i386/bsd.h: Parts under different licences moved to ...
+	* include/grub/i386/freebsd_linker.h: ... here,
+	* include/grub/i386/freebsd_reboot.h: ... here,
+	* include/grub/i386/netbsd_bootinfo.h: ... here,
+	* include/grub/i386/netbsd_reboot.h: ... here,
+	* include/grub/i386/openbsd_bootarg.h: ... here,
+	* include/grub/i386/openbsd_reboot.h: ... and here. Added appropriate
+	licence to each file.
+
 2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* acinclude.m4: Remove `nop' assembly instruction; it's not
