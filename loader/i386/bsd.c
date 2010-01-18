@@ -220,6 +220,25 @@ grub_bsd_add_meta (grub_uint32_t type, void *data, grub_uint32_t len)
   newtag->next = NULL;
   if (len)
     grub_memcpy (newtag->data, data, len);
+
+  if (kernel_type == KERNEL_TYPE_FREEBSD 
+      && type == (FREEBSD_MODINFO_METADATA | FREEBSD_MODINFOMD_SMAP))
+    {
+      struct bsd_tag *p;
+      for (p = tags;
+	   p->type != (FREEBSD_MODINFO_METADATA | FREEBSD_MODINFOMD_KERNEND);
+	   p = p->next);
+
+      if (p)
+	{
+	  newtag->next = p->next;
+	  p->next = newtag;
+	  if (newtag->next == NULL)
+	    tags_last = newtag;
+	  return GRUB_ERR_NONE;
+	}
+    }
+
   if (tags_last)
     tags_last->next = newtag;
   else
