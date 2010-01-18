@@ -705,7 +705,7 @@ grub_freebsd_boot (void)
 	grub_fatal ("cannot exit boot services");
 #endif
 
-      grub_memcpy (&stack[8], &bi, sizeof (bi));
+      grub_memcpy (&stack[9], &bi, sizeof (bi));
       state.eip = entry;
       state.esp = stack_target;
       stack[0] = entry; /* "Return" address.  */
