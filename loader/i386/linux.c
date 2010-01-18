@@ -538,16 +538,16 @@ grub_linux_boot (void)
     }
 
   if (! grub_linux_setup_video (params))
-    params->have_vga = GRUB_VIDEO_TYPE_VLFB;
+    params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
   else
     {
-      params->have_vga = GRUB_VIDEO_TYPE_TEXT;
+      params->have_vga = GRUB_VIDEO_LINUX_TYPE_TEXT;
       params->video_width = 80;
       params->video_height = 25;
     }
 
   /* Initialize these last, because terminal position could be affected by printfs above.  */
-  if (params->have_vga == GRUB_VIDEO_TYPE_TEXT)
+  if (params->have_vga == GRUB_VIDEO_LINUX_TYPE_TEXT)
     {
       grub_term_output_t term;
       int found = 0;

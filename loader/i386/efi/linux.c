@@ -587,7 +587,7 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   params->reserved_mask_size = 8;
   params->reserved_field_pos = 24;
 
-  params->have_vga = GRUB_VIDEO_TYPE_VLFB;
+  params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
   params->vid_mode = 0x338;  /* 1024x768x32  */
 
   return 0;
@@ -852,7 +852,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     else if (grub_memcmp (argv[i], "video=efifb", 11) == 0)
       {
 	if (params->have_vga)
-	  params->have_vga = GRUB_VIDEO_TYPE_EFI;
+	  params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
       }
 
   /* Specify the boot file.  */

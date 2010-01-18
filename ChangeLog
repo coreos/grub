@@ -1,3 +1,12 @@
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/linux.h (GRUB_VIDEO_TYPE_TEXT): Rename to ...
+	(GRUB_VIDEO_LINUX_TYPE_TEXT): ... this.  Update all users.
+	(GRUB_VIDEO_TYPE_VLFB): Rename to ...
+	(GRUB_VIDEO_LINUX_TYPE_VESA): ... this.  Update all users.
+	(GRUB_VIDEO_TYPE_EFI): Rename to ...
+	(GRUB_VIDEO_LINUX_TYPE_SIMPLE): ... this.  Update all users.
+
 2010-01-17  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/test.h: Add license header.
