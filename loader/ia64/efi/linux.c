@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/types.h>
-#include <grub/rescue.h>
+#include <grub/command.h>
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/cache.h>
@@ -756,26 +756,39 @@ grub_rescue_cmd_fpswa  (int argc, char *argv[] __attribute__((unused)))
 
 GRUB_MOD_INIT(linux)
 {
-  grub_rescue_register_command ("linux",
-				grub_rescue_cmd_linux,
-				"load linux");
-  grub_rescue_register_command ("initrd",
-				grub_rescue_cmd_initrd,
-				"load initrd");
-  grub_rescue_register_command ("payload", grub_rescue_cmd_payload,
-				"load an additional file");
-  grub_rescue_register_command ("relocate", grub_rescue_cmd_relocate,
-				"set relocate feature");
-  grub_rescue_register_command ("fpswa", grub_rescue_cmd_fpswa,
-				"load fpswa");
+  grub_register_extcmd ("linux", grub_normal_linux_command,
+			GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
+			"linux FILE [ARGS...]",
+			"Load Linux.", 0);
+  
+  grub_register_extcmd ("initrd", grub_normal_initrd_command,
+			GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
+			"initrd FILE",
+			"Load initrd.", 0);
+
+  grub_register_extcmd ("payload", grub_normal_cmd_payload,
+			GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
+			"payload FILE [ARGS...]",
+			"Load an additional file.", 0);
+
+  grub_register_extcmd ("relocate", grub_normal_cmd_relocate,
+			GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
+			"relocate [on|off|force]",
+			"Set relocate feature.", 0);
+
+  grub_register_extcmd ("fpswa", grub_normal_cmd_fpswa,
+			GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
+			"fpswa",
+			"Display FPSWA version.", 0);
+
   my_mod = mod;
 }
 
 GRUB_MOD_FINI(linux)
 {
-  grub_rescue_unregister_command ("linux");
-  grub_rescue_unregister_command ("initrd");
-  grub_rescue_unregister_command ("payload");
-  grub_rescue_unregister_command ("relocate");
-  grub_rescue_unregister_command ("fpswa");
+  grub_unregister_command ("linux");
+  grub_unregister_command ("initrd");
+  grub_unregister_command ("payload");
+  grub_unregister_command ("relocate");
+  grub_unregister_command ("fpswa");
 }
