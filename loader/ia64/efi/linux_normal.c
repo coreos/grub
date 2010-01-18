@@ -40,10 +40,10 @@ grub_normal_initrd_command (struct grub_arg_list *state __attribute__ ((unused))
 }
 
 static grub_err_t
-grub_normal_cmd_module (struct grub_arg_list *state __attribute__ ((unused)),
+grub_normal_cmd_payload (struct grub_arg_list *state __attribute__ ((unused)),
 			int argc, char **args)
 {
-  grub_rescue_cmd_module (argc, args);
+  grub_rescue_cmd_payload (argc, args);
   return grub_errno;
 }
 
@@ -79,10 +79,10 @@ GRUB_MOD_INIT(linux_normal)
      "Load an initrd.", 0);
 
   grub_register_command
-    ("module", grub_normal_cmd_module,
+    ("payload", grub_normal_cmd_payload,
      GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
-     "module FILE [ARGS...]",
-     "Load a Multiboot module.", 0);
+     "payload FILE [ARGS...]",
+     "Load an additional file.", 0);
 
   grub_register_command
     ("relocate", grub_normal_cmd_relocate,
@@ -101,7 +101,7 @@ GRUB_MOD_FINI(linux_normal)
 {
   grub_unregister_command ("linux");
   grub_unregister_command ("initrd");
-  grub_unregister_command ("module");
+  grub_unregister_command ("payload");
   grub_unregister_command ("relocate");
   grub_unregister_command ("fpswa");
 }

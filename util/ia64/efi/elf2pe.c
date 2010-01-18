@@ -70,7 +70,7 @@ typedef Elf64_Sym Elf_Sym;
 #define ELF_R_SYM(r) ELF64_R_SYM(r)
 #endif
 
-#ifdef __ia64__
+#ifdef ELF2PE_IA64
 #define ELF_ETYPE ET_DYN
 #else
 #define ELF_ETYPE ET_EXEC
@@ -99,7 +99,7 @@ uint32_t text_offset;
 uint32_t data_offset;
 uint32_t reloc_offset;
 
-#ifdef __ia64__
+#ifdef ELF2PE_IA64
 uint32_t coff_entry_descr_offset;
 uint32_t coff_entry_descr_func;
 uint64_t plt_base;
@@ -160,7 +160,7 @@ is_text_shdr (Elf_Shdr *shdr)
   if (shdr->sh_type != SHT_PROGBITS) {
     return 0;
   }
-#ifdef __ia64__
+#ifdef ELF2PE_IA64
   return (shdr->sh_flags & (SHF_EXECINSTR | SHF_ALLOC))
     == (SHF_ALLOC | SHF_EXECINSTR);
 #else
@@ -229,7 +229,7 @@ scan_sections (void)
       }
       coff_sections_offset[i] = coff_offset;
       coff_offset += shdr->sh_size;
-#ifdef __ia64__
+#ifdef ELF2PE_IA64
       if (coff_sections_offset[i] != shdr->sh_addr) {
 	fprintf (stderr, 
 		 "Section %s: Coff offset (%x) != Elf offset (%lx)",
@@ -244,7 +244,7 @@ scan_sections (void)
       shdr_dynamic = shdr;
     }
   }
-#ifdef __ia64__
+#ifdef ELF2PE_IA64
   /* 16 bytes are reserved (by the ld script) for the entry point descriptor.
    */
   coff_entry_descr_offset = coff_offset - 16;
@@ -259,7 +259,7 @@ scan_sections (void)
     if (is_data_shdr (shdr)) {
       coff_sections_offset[i] = coff_offset;
       coff_offset += shdr->sh_size;
-#ifdef __ia64__
+#ifdef ELF2PE_IA64
       if (coff_sections_offset[i] != shdr->sh_addr) {
 	fprintf (stderr,
 		 "Section %s: Coff offset (%x) != Elf offset (%lx)",
@@ -307,7 +307,7 @@ scan_sections (void)
   nt_hdr->optional_header.code_size = data_offset - text_offset;
   nt_hdr->optional_header.data_size = reloc_offset - data_offset;
   nt_hdr->optional_header.bss_size = 0;
-#ifdef __ia64__
+#ifdef ELF2PE_IA64
   nt_hdr->optional_header.entry_addr = coff_entry_descr_offset;
   coff_entry_descr_func = coff_entry;
 #else
@@ -335,7 +335,7 @@ scan_sections (void)
 			 PE32_SCN_CNT_INITIALIZED_DATA
 			 | PE32_SCN_MEM_WRITE
 			 | PE32_SCN_MEM_READ);
-#ifdef __ia64__
+#ifdef ELF2PE_IA64
   if (shdr_dynamic != NULL)
     {
       Elf64_Dyn *dyn = (Elf64_Dyn*)((uint8_t*)ehdr + shdr_dynamic->sh_offset);
@@ -639,7 +639,7 @@ write_relocations(void)
 	}
     }
   
-#ifdef __ia64__
+#ifdef ELF2PE_IA64
   coff_add_fixup (coff_entry_descr_offset, PE32_REL_BASED_DIR64);
   coff_add_fixup (coff_entry_descr_offset + 8, PE32_REL_BASED_DIR64);
 #endif
@@ -719,7 +719,7 @@ convert_elf (uint8_t **file_buffer, unsigned int *file_length)
   if (write_sections (is_text_shdr) != 0)
     return -3;
 
-#ifdef __ia64__
+#ifdef ELF2PE_IA64
   *(uint64_t*)(coff_file + coff_entry_descr_offset) = coff_entry_descr_func;
   *(uint64_t*)(coff_file + coff_entry_descr_offset + 8) = plt_base;
 #endif

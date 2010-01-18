@@ -27,7 +27,7 @@
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/cache.h>
-/* #include <grub/cpu/linux.h> */
+#include <grub/kernel.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
 #include <grub/elf.h>
@@ -59,16 +59,16 @@ struct ia64_boot_param
   grub_uint64_t initrd_size;
   grub_uint64_t domain_start;   /* boot domain address.  */
   grub_uint64_t domain_size;    /* how big is the boot domain */
-  grub_uint64_t modules_chain;
-  grub_uint64_t modules_nbr;
+  grub_uint64_t payloads_chain;
+  grub_uint64_t payloads_nbr;
 };
 
-struct ia64_boot_module
+struct ia64_boot_payload
 {
-  grub_uint64_t mod_start;
-  grub_uint64_t mod_end;
+  grub_uint64_t start;
+  grub_uint64_t length;
   
-  /* Module command line */
+  /* Payload command line */
   grub_uint64_t cmdline;
   
   grub_uint64_t next;
@@ -101,7 +101,7 @@ static grub_efi_uintn_t initrd_size;
 
 static struct ia64_boot_param *boot_param;
 static grub_efi_uintn_t boot_param_pages;
-static struct ia64_boot_module *last_module = NULL;
+static struct ia64_boot_payload *last_payload = NULL;
 
 /* Can linux kernel be relocated ?  */
 #define RELOCATE_OFF   0	/* No.  */
@@ -133,14 +133,15 @@ query_fpswa (void)
   
   bs = grub_efi_system_table->boot_services;
   status = bs->locate_handle (GRUB_EFI_BY_PROTOCOL,
-			      &fpswa_protocol,
+			      (void *)&fpswa_protocol,
 			      NULL, &size, &fpswa_image);
   if (status != GRUB_EFI_SUCCESS)
     {
       grub_printf("Could not locate FPSWA driver\n");
       return;
     }
-  status = bs->handle_protocol (fpswa_image, &fpswa_protocol, &fpswa);
+  status = bs->handle_protocol (fpswa_image,
+				(void *)&fpswa_protocol, (void *)&fpswa);
   if (status != GRUB_EFI_SUCCESS)
     {
       grub_printf ("Fpswa protocol not able find the interface\n");
@@ -204,20 +205,20 @@ free_pages (void)
 
   if (boot_param)
     {
-      struct ia64_boot_module *mod;
-      struct ia64_boot_module *next_mod;
+      struct ia64_boot_payload *payload;
+      struct ia64_boot_payload *next_payload;
 
-      /* Free modules.  */
-      mod = (struct ia64_boot_module *)boot_param->modules_chain;
-      while (mod != 0)
+      /* Free payloads.  */
+      payload = (struct ia64_boot_payload *)boot_param->payloads_chain;
+      while (payload != 0)
 	{
-	  next_mod = (struct ia64_boot_module *)mod->next;
+	  next_payload = (struct ia64_boot_payload *)payload->next;
 
 	  grub_efi_free_boot_pages
-	    (mod->mod_start, page_align (mod->mod_end - mod->mod_start) >> 12);
-	  grub_efi_free_boot_pages ((grub_efi_physical_address_t)mod, 1);
+	    (payload->start, page_align (payload->length) >> 12);
+	  grub_efi_free_boot_pages ((grub_efi_physical_address_t)payload, 1);
 
-	  mod = next_mod;
+	  payload = next_payload;
 	}
 
       /* Free bootparam.  */
@@ -446,8 +447,8 @@ grub_load_elf64 (grub_file_t file, void *buffer)
       kernel_mem = allocate_pages (align, kernel_pages, low_addr);
       if (kernel_mem)
 	{
-	  reloc_offset = kernel_mem - low_addr;
-	  grub_printf ("  Relocated at %p (offset=%016llx)\n",
+	  reloc_offset = (grub_uint64_t)kernel_mem - low_addr;
+	  grub_printf ("  Relocated at %p (offset=%016lx)\n",
 		       kernel_mem, reloc_offset);
 	  entry += reloc_offset;
 	}
@@ -463,12 +464,12 @@ grub_load_elf64 (grub_file_t file, void *buffer)
 			     + i * ehdr->e_phentsize);
       if (phdr->p_type == PT_LOAD)
         {
-	  grub_printf ("  [paddr=%llx load=%llx memsz=%08llx "
+	  grub_printf ("  [paddr=%lx load=%lx memsz=%08lx "
 		       "off=%lx flags=%x]\n",
 		       phdr->p_paddr, phdr->p_paddr + reloc_offset,
 		       phdr->p_memsz, phdr->p_offset, phdr->p_flags);
 
-	  if (grub_file_seek (file, phdr->p_offset) == -1)
+	  if (grub_file_seek (file, phdr->p_offset) == (grub_off_t)-1)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "invalid offset in program header");
 
@@ -582,7 +583,7 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "No filename specified");
       goto fail;
     }
   
@@ -619,12 +620,12 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
 }
 
 void
-grub_rescue_cmd_module  (int argc, char *argv[])
+grub_rescue_cmd_payload  (int argc, char *argv[])
 {
   grub_file_t file = 0;
   grub_ssize_t size, len = 0;
-  char *module = 0, *cmdline = 0, *p;
-  struct ia64_boot_module *mod = NULL;
+  char *base = 0, *cmdline = 0, *p;
+  struct ia64_boot_payload *payload = NULL;
   int i;
 
   if (argc == 0)
@@ -636,7 +637,7 @@ grub_rescue_cmd_module  (int argc, char *argv[])
   if (!boot_param)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, 
-		  "You need to load the multiboot kernel first");
+		  "You need to load the kernel first");
       goto fail;
     }
 
@@ -645,47 +646,47 @@ grub_rescue_cmd_module  (int argc, char *argv[])
     goto fail;
 
   size = grub_file_size (file);
-  module = grub_efi_allocate_boot_pages (0, page_align (size) >> 12);
-  if (! module)
+  base = grub_efi_allocate_boot_pages (0, page_align (size) >> 12);
+  if (! base)
     goto fail;
 
-  grub_printf ("Module %s [addr=%llx + %lx]\n",
-	       argv[0], (grub_uint64_t)module, size);
+  grub_printf ("Payload %s [addr=%lx + %lx]\n",
+	       argv[0], (grub_uint64_t)base, size);
 
-  if (grub_file_read (file, module, size) != size)
+  if (grub_file_read (file, base, size) != size)
     {
       grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
       goto fail;
     }
 
-  len = sizeof (struct ia64_boot_module);  
+  len = sizeof (struct ia64_boot_payload);  
   for (i = 0; i < argc; i++)
     len += grub_strlen (argv[i]) + 1;
 
   if (len > 4096)
     {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "module command line too long");
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "payload command line too long");
       goto fail;
     }
-  mod = grub_efi_allocate_boot_pages (0, 1);
-  if (! mod)
+  payload = grub_efi_allocate_boot_pages (0, 1);
+  if (! payload)
     goto fail;
 
-  p = (char *)(mod + 1);
+  p = (char *)(payload + 1);
 
-  mod->mod_start = (grub_uint64_t)module;
-  mod->mod_end = (grub_uint64_t)module + size;
-  mod->cmdline = (grub_uint64_t)p;
-  mod->next = 0;
+  payload->start = (grub_uint64_t)base;
+  payload->length = size;
+  payload->cmdline = (grub_uint64_t)p;
+  payload->next = 0;
 
-  if (last_module)
-    last_module->next = (grub_uint64_t)mod;
+  if (last_payload)
+    last_payload->next = (grub_uint64_t)payload;
   else
     {
-      last_module = mod;
-      boot_param->modules_chain = (grub_uint64_t)mod;
+      last_payload = payload;
+      boot_param->payloads_chain = (grub_uint64_t)payload;
     }
-  boot_param->modules_nbr++;
+  boot_param->payloads_nbr++;
 
   /* Copy command line.  */
   for (i = 0; i < argc; i++)
@@ -704,7 +705,7 @@ grub_rescue_cmd_module  (int argc, char *argv[])
 
   if (grub_errno != GRUB_ERR_NONE)
     {
-      grub_free (module);
+      grub_free (base);
       grub_free (cmdline);
     }
 }
@@ -761,8 +762,8 @@ GRUB_MOD_INIT(linux)
   grub_rescue_register_command ("initrd",
 				grub_rescue_cmd_initrd,
 				"load initrd");
-  grub_rescue_register_command ("module", grub_rescue_cmd_module,
-				"load a multiboot module");
+  grub_rescue_register_command ("payload", grub_rescue_cmd_payload,
+				"load an additional file");
   grub_rescue_register_command ("relocate", grub_rescue_cmd_relocate,
 				"set relocate feature");
   grub_rescue_register_command ("fpswa", grub_rescue_cmd_fpswa,
@@ -774,7 +775,7 @@ GRUB_MOD_FINI(linux)
 {
   grub_rescue_unregister_command ("linux");
   grub_rescue_unregister_command ("initrd");
-  grub_rescue_unregister_command ("module");
+  grub_rescue_unregister_command ("payload");
   grub_rescue_unregister_command ("relocate");
   grub_rescue_unregister_command ("fpswa");
 }

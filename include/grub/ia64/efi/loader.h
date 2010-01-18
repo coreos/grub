@@ -23,7 +23,7 @@
    reuse rescue mode commands.  */
 void grub_rescue_cmd_linux (int argc, char *argv[]);
 void grub_rescue_cmd_initrd (int argc, char *argv[]);
-void grub_rescue_cmd_module (int argc, char *argv[]);
+void grub_rescue_cmd_payload (int argc, char *argv[]);
 void grub_rescue_cmd_relocate (int argc, char *argv[]);
 void grub_rescue_cmd_fpswa (int argc, char *argv[]);
 
