@@ -101,7 +101,7 @@ GRUB_MOD_FINI(linux_normal)
 {
   grub_unregister_command ("linux");
   grub_unregister_command ("initrd");
-  grub_unregister_command ("normal");
+  grub_unregister_command ("module");
   grub_unregister_command ("relocate");
   grub_unregister_command ("fpswa");
 }

@@ -1,4 +1,4 @@
-/* acpi.c  - Display acpi.  */
+/* acpi.c  - Display acpi tables.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2008  Free Software Foundation, Inc.
@@ -23,20 +23,17 @@
 
 static grub_uint32_t read16 (grub_uint8_t *p)
 {
-  return p[0] | (p[1] << 8);
+  return grub_le_to_cpu16 (*(grub_uint16_t *)p);
 }
 
 static grub_uint32_t read32 (grub_uint8_t *p)
 {
-  return p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
+  return grub_le_to_cpu32 (*(grub_uint32_t *)p);
 }
 
 static grub_uint64_t read64 (grub_uint8_t *p)
 {
-  grub_uint32_t l, h;
-  l = read32(p);
-  h = read32(p + 4);
-  return l | (((grub_uint64_t)h) << 32);
+  return grub_le_to_cpu64 (*(grub_uint64_t *)p);
 }
 
 static void

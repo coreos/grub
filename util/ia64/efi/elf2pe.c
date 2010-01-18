@@ -23,12 +23,12 @@
 #include <time.h>
 #include <elf.h>
 
-#if defined(i386)
+#if defined(ELF2PE_I386)
 #define USE_ELF32
 #define USE_PE32
 #define ELF_MACHINE EM_386
 #define EFI_MACHINE PE32_MACHINE_I386
-#elif defined(__ia64__)
+#elif defined(ELF2PE_IA64)
 #define USE_ELF64
 #define USE_PE32PLUS
 #define ELF_MACHINE EM_IA_64

@@ -23,15 +23,15 @@
 	.proc __ia64_trampoline
 	.global __ia64_trampoline
 __ia64_trampoline:
-	// Read address of the real descriptor
+	/* Read address of the real descriptor.  */
 	ld8 r2=[r1],8
 	;;
-	// Read chain
+	/* Read chain.  */
 	ld8 r15=[r1]
-	// Read pc
+	/* Read pc.  */
 	ld8 r3=[r2],8
 	;;
-	// Read gp
+	/* Read gp.  */
 	ld8 r1=[r2]
 	mov b6=r3
 	br.many b6

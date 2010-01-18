@@ -20,6 +20,7 @@ pkgdata_DATA += kern/ia64/efi/elf_ia64_efi.lds
 
 # For grub-elf2pe
 grub_elf2pe_SOURCES = util/ia64/efi/elf2pe.c
+grub_elf2pe_CFLAGS = -DELF2PE_IA64
 
 # For grub-emu.
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
@@ -27,8 +28,12 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	commands/terminal.c commands/ls.c commands/test.c 		\
 	commands/search.c commands/blocklist.c				\
 	disk/loopback.c							\
-	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\
-	fs/jfs.c fs/minix.c fs/sfs.c fs/ufs.c fs/xfs.c fs/hfsplus.c	\
+	\
+	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c			\
+	fs/hfsplus.c fs/iso9660.c fs/jfs.c fs/minix.c			\
+	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
+	fs/ufs.c fs/xfs.c						\
+	\
 	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
 	normal/execute.c kern/file.c kern/fs.c normal/lexer.c 		\

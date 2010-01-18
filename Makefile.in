@@ -83,8 +83,7 @@ enable_grub_emu = @enable_grub_emu@
 
 ### General variables.
 
-RMKFILES = $(addprefix conf/,common.rmk i386-pc.rmk powerpc-ieee1275.rmk \
-	sparc64-ieee1275.rmk i386-efi.rmk ia64-efi.rmk)
+RMKFILES = $(wildcard $(srcdir)/conf/*.rmk)
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
 PKGLIB = $(pkglib_IMAGES) $(pkglib_MODULES) $(pkglib_PROGRAMS) \
@@ -98,13 +97,13 @@ MOSTLYCLEANFILES =
 DISTCLEANFILES = config.status config.cache config.log config.h \
 	Makefile stamp-h include/grub/cpu include/grub/machine \
 	gensymlist.sh genkernsyms.sh
-MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES))
+MAINTAINER_CLEANFILES = $(srcdir)/configure $(MKFILES)
 
 # The default target.
 all: all-local
 
 ### Include an arch-specific Makefile.
-$(addprefix $(srcdir)/,$(MKFILES)): %.mk: %.rmk genmk.rb
+$(MKFILES): %.mk: %.rmk genmk.rb
 	if test "x$(RUBY)" = x; then \
 	  touch $@; \
 	else \

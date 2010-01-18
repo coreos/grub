@@ -39,14 +39,16 @@
 
 #define BOOT_PARAM_SIZE	16384
 
-struct ia64_boot_param {
+struct ia64_boot_param
+{
   grub_uint64_t command_line;	/* physical address of command line. */
   grub_uint64_t efi_systab;	/* physical address of EFI system table */
   grub_uint64_t efi_memmap;	/* physical address of EFI memory map */
   grub_uint64_t efi_memmap_size;	/* size of EFI memory map */
   grub_uint64_t efi_memdesc_size; /* size of an EFI memory map descriptor */
   grub_uint32_t efi_memdesc_version;	/* memory descriptor version */
-  struct {
+  struct
+  {
     grub_uint16_t num_cols;	/* number of columns on console output dev */
     grub_uint16_t num_rows;	/* number of rows on console output device */
     grub_uint16_t orig_x;	/* cursor's x position */
@@ -61,7 +63,8 @@ struct ia64_boot_param {
   grub_uint64_t modules_nbr;
 };
 
-struct ia64_boot_module {
+struct ia64_boot_module
+{
   grub_uint64_t mod_start;
   grub_uint64_t mod_end;
   
@@ -71,7 +74,8 @@ struct ia64_boot_module {
   grub_uint64_t next;
 };
 
-typedef struct {
+typedef struct
+{
   grub_uint32_t	revision;
   grub_uint32_t	reserved;
   void *fpswa;
