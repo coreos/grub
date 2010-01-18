@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008, 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 #include <grub/command.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
-
+#include <grub/video.h>
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>
 #endif
@@ -509,6 +509,8 @@ grub_freebsd_boot (void)
 
   bi.bi_kernend = kern_end;
 
+  grub_video_set_mode ("text", 0, 0);
+
   if (is_64bit)
     {
       grub_uint32_t *gdt;
@@ -617,6 +619,8 @@ grub_openbsd_boot (void)
   pa->ba_type = OPENBSD_BOOTARG_END;
   pa++;
 
+  grub_video_set_mode ("text", 0, 0);
+
   grub_unix_real_boot (entry, bootflags, openbsd_root, OPENBSD_BOOTARG_APIVER,
 		       0, (grub_uint32_t) (grub_mmap_get_upper () >> 10),
 		       (grub_uint32_t) (grub_mmap_get_lower () >> 10),
@@ -712,6 +716,8 @@ grub_netbsd_boot (void)
       bootinfo->bi_count = 1;
       bootinfo->bi_data[0] = mmap;
     }
+
+  grub_video_set_mode ("text", 0, 0);
 
   grub_unix_real_boot (entry, bootflags, 0, bootinfo,
 		       0, (grub_uint32_t) (grub_mmap_get_upper () >> 10),

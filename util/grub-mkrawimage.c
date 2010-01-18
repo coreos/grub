@@ -325,7 +325,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
 #ifdef GRUB_MACHINE_PCBIOS
   if (GRUB_KERNEL_MACHINE_LINK_ADDR + core_size > GRUB_MEMORY_MACHINE_UPPER)
-    grub_util_error (_("Core image is too big (%p > %p)\n"),
+    grub_util_error (_("core image is too big (%p > %p)"),
  		     GRUB_KERNEL_MACHINE_LINK_ADDR + core_size,
 		     GRUB_MEMORY_MACHINE_UPPER);
 #endif
@@ -429,10 +429,10 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, _("Try ``%s --help'' for more information.\n"), program_name);
+    fprintf (stderr, _("Try `%s --help' for more information.\n"), program_name);
   else
     printf (_("\
-Usage: grub-mkimage [OPTION]... [MODULES]\n\
+Usage: %s [OPTION]... [MODULES]\n\
 \n\
 Make a bootable image of GRUB.\n\
 \n\
@@ -455,7 +455,7 @@ Make a bootable image of GRUB.\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-"), GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+"), program_name, GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
 
   exit (status);
 }

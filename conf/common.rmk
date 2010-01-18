@@ -88,10 +88,31 @@ endif
 bin_UTILITIES += grub-mkrelpath
 grub_mkrelpath_SOURCES = gnulib/progname.c util/grub-mkrelpath.c util/misc.c
 
+# For grub-script-check.
+bin_UTILITIES += grub-script-check
+util/grub-script-check.c_DEPENDENCIES = grub_script_check_init.h
+grub_script_check_SOURCES = gnulib/progname.c util/grub-script-check.c util/misc.c \
+	script/main.c script/script.c script/function.c script/lexer.c \
+	kern/handler.c kern/err.c kern/parser.c kern/list.c \
+	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c
+
 # For the parser.
 grub_script.tab.c grub_script.tab.h: script/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/parser.y
 DISTCLEANFILES += grub_script.tab.c grub_script.tab.h
+
+# For grub-script-check.
+grub_script_check_init.lst: geninit.sh $(filter-out grub_script_check_init.c,$(grub_script_check_SOURCES))
+	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
+DISTCLEANFILES += grub_script_check_init.lst
+
+grub_script_check_init.h: grub_script_check_init.lst $(filter-out grub_script_check_init.c,$(grub_script_check_SOURCES)) geninitheader.sh
+	rm -f $@; sh $(srcdir)/geninitheader.sh $< > $@
+DISTCLEANFILES += grub_script_check_init.h
+
+grub_script_check_init.c: grub_script_check_init.lst $(filter-out grub_script_check_init.c,$(grub_script_check_SOURCES)) geninit.sh
+	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
+DISTCLEANFILES += grub_script_check_init.c
 
 # For grub-probe.
 grub_probe_init.lst: geninit.sh $(filter-out grub_probe_init.c,$(grub_probe_SOURCES))
@@ -184,6 +205,20 @@ endif
 CLEANFILES += $(grub-mkconfig_SCRIPTS)
 
 grub-mkconfig_DATA += util/grub.d/README
+
+# For grub-set-default.
+grub-set-default: util/grub-set-default.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+sbin_SCRIPTS += grub-set-default
+CLEANFILES += grub-set-default
+
+# For grub-reboot.
+grub-reboot: util/grub-reboot.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+sbin_SCRIPTS += grub-reboot
+CLEANFILES += grub-reboot
 
 # Filing systems.
 pkglib_MODULES += fshelp.mod fat.mod ufs1.mod ufs2.mod ext2.mod ntfs.mod \

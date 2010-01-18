@@ -161,7 +161,7 @@ setup (const char *prefix, const char *dir,
       grub_util_info ("first sector is <%llu,%u,%u>", sector, offset, length);
 
       if (offset != 0 || length != GRUB_DISK_SECTOR_SIZE)
-	grub_util_error ("The first sector of the core file "
+	grub_util_error ("the first sector of the core file "
 			 "is not sector-aligned");
 
       first_sector = sector;
@@ -176,7 +176,7 @@ setup (const char *prefix, const char *dir,
       grub_util_info ("saving <%llu,%u,%u>", sector, offset, length);
 
       if (offset != 0 || last_length != GRUB_DISK_SECTOR_SIZE)
-	grub_util_error ("Non-sector-aligned data is found in the core file");
+	grub_util_error ("non-sector-aligned data is found in the core file");
 
       if (block != first_block
 	  && (grub_be_to_cpu64 (prev->start)
@@ -189,7 +189,7 @@ setup (const char *prefix, const char *dir,
 
 	  block--;
 	  if (block->len)
-	    grub_util_error ("The sectors of the core file are too fragmented");
+	    grub_util_error ("the sectors of the core file are too fragmented");
 	}
 
       last_length = length;
@@ -201,7 +201,7 @@ setup (const char *prefix, const char *dir,
   boot_path = grub_util_get_path (dir, boot_file);
   boot_size = grub_util_get_image_size (boot_path);
   if (boot_size != GRUB_DISK_SECTOR_SIZE)
-    grub_util_error ("The size of `%s' is not %d",
+    grub_util_error ("the size of `%s' is not %d",
 		     boot_path, GRUB_DISK_SECTOR_SIZE);
   boot_img = grub_util_read_image (boot_path);
   free (boot_path);
@@ -219,7 +219,7 @@ setup (const char *prefix, const char *dir,
   core_sectors = ((core_size + GRUB_DISK_SECTOR_SIZE - 1)
 		  >> GRUB_DISK_SECTOR_BITS);
   if (core_size < GRUB_DISK_SECTOR_SIZE)
-    grub_util_error ("The size of `%s' is too small", core_path);
+    grub_util_error ("the size of `%s' is too small", core_path);
 
   core_img = grub_util_read_image (core_path);
   free (core_path);
@@ -229,7 +229,7 @@ setup (const char *prefix, const char *dir,
 					   + GRUB_DISK_SECTOR_SIZE
 					   - sizeof (*block));
 
-  grub_util_info ("root is '%s', dest is '%s', and dest_ofpath is '%s'",
+  grub_util_info ("root is `%s', dest is `%s', and dest_ofpath is `%s'",
 		  root, dest, dest_ofpath);
 
   /* Open the root device and the destination device.  */
@@ -320,7 +320,7 @@ setup (const char *prefix, const char *dir,
     }
 
   if (i == MAX_TRIES)
-    grub_util_error ("Cannot read `%s' correctly", core_path);
+    grub_util_error ("cannot read `%s' correctly", core_path);
 
   /* Clean out the blocklists.  */
   block = first_block;
@@ -332,7 +332,7 @@ setup (const char *prefix, const char *dir,
       block--;
 
       if ((char *) block <= core_img)
-	grub_util_error ("No terminator in the core image");
+	grub_util_error ("no terminator in the core image");
     }
 
   /* Now read the core image to determine where the sectors are.  */
@@ -343,13 +343,13 @@ setup (const char *prefix, const char *dir,
   file->read_hook = save_first_sector;
   if (grub_file_read (file, tmp_img, GRUB_DISK_SECTOR_SIZE)
       != GRUB_DISK_SECTOR_SIZE)
-    grub_util_error ("Failed to read the first sector of the core image");
+    grub_util_error ("failed to read the first sector of the core image");
 
   block = first_block;
   file->read_hook = save_blocklists;
   if (grub_file_read (file, tmp_img, core_size - GRUB_DISK_SECTOR_SIZE)
       != (grub_ssize_t) core_size - GRUB_DISK_SECTOR_SIZE)
-    grub_util_error ("Failed to read the rest sectors of the core image");
+    grub_util_error ("failed to read the rest sectors of the core image");
 
   grub_file_close (file);
 
@@ -368,7 +368,7 @@ setup (const char *prefix, const char *dir,
   grub_util_info ("opening the core image `%s'", core_path);
   fp = fopen (core_path, "r+b");
   if (! fp)
-    grub_util_error ("Cannot open `%s'", core_path);
+    grub_util_error ("cannot open `%s'", core_path);
 
   grub_util_write_image (core_img, GRUB_DISK_SECTOR_SIZE, fp);
   fclose (fp);
@@ -404,13 +404,13 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
 Usage: %s [OPTION]... DEVICE\n\
 \n\
 Set up images to boot from DEVICE.\n\
-DEVICE must be a GRUB device (e.g. ``(hd0,1)'').\n\
+DEVICE must be a GRUB device (e.g. `(hd0,1)').\n\
 \n\
   -b, --boot-image=FILE   use FILE as the boot image [default=%s]\n\
   -c, --core-image=FILE   use FILE as the core image [default=%s]\n\
@@ -559,14 +559,14 @@ find_dest_dev (struct grub_setup_info *gp, char *argv[])
 	  fprintf (stderr, "Invalid device `%s'.\n", argv[optind]);
 	  usage (1);
 	}
-      grub_util_info ("transformed OS device '%s' into GRUB device '%s'",
+      grub_util_info ("transformed OS device `%s' into GRUB device `%s'",
 		      argv[optind], gp->dest_dev);
     }
   else
     {
       /* For simplicity.  */
       gp->dest_dev = xstrdup (gp->dest_dev);
-      grub_util_info ("Using '%s' as GRUB device", gp->dest_dev);
+      grub_util_info ("Using `%s' as GRUB device", gp->dest_dev);
     }
 }
 
@@ -578,7 +578,7 @@ check_root_dev (struct grub_setup_info *gp)
       char *tmp = get_device_name (gp->root_dev);
 
       if (! tmp)
-	grub_util_error ("Invalid root device `%s'", gp->root_dev);
+	grub_util_error ("invalid root device `%s'", gp->root_dev);
 
       tmp = xstrdup (tmp);
       free (gp->root_dev);
@@ -594,11 +594,11 @@ check_root_dev (struct grub_setup_info *gp)
 	{
 	  grub_util_info ("guessing the root device failed, because of `%s'",
 			  grub_errmsg);
-	  grub_util_error ("Cannot guess the root device. "
-			   "Specify the option ``--root-device''.");
+	  grub_util_error ("cannot guess the root device. "
+			   "Specify the option `--root-device'");
 	}
-      grub_util_info ("Guessed root device '%s' and root_dev '%s' from "
-		      "dir '%s'", root_device, gp->root_dev, dir);
+      grub_util_info ("guessed root device `%s' and root_dev `%s' from "
+		      "dir `%s'", root_device, gp->root_dev, dir);
     }
 }
 

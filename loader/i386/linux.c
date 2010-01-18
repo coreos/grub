@@ -524,11 +524,11 @@ grub_linux_boot (void)
       if (! tmp)
 	return grub_errno;
       grub_sprintf (tmp, "%s;text", modevar);
-      err = grub_video_set_mode (tmp, 0);
+      err = grub_video_set_mode (tmp, 0, 0);
       grub_free (tmp);
     }
   else
-    err = grub_video_set_mode ("text", 0);
+    err = grub_video_set_mode ("text", 0, 0);
 
   if (err)
     {
@@ -538,16 +538,16 @@ grub_linux_boot (void)
     }
 
   if (! grub_linux_setup_video (params))
-    params->have_vga = GRUB_VIDEO_TYPE_VLFB;
+    params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
   else
     {
-      params->have_vga = GRUB_VIDEO_TYPE_TEXT;
+      params->have_vga = GRUB_VIDEO_LINUX_TYPE_TEXT;
       params->video_width = 80;
       params->video_height = 25;
     }
 
   /* Initialize these last, because terminal position could be affected by printfs above.  */
-  if (params->have_vga == GRUB_VIDEO_TYPE_TEXT)
+  if (params->have_vga == GRUB_VIDEO_LINUX_TYPE_TEXT)
     {
       grub_term_output_t term;
       int found = 0;

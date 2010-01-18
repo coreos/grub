@@ -31,9 +31,7 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
                     int argc __attribute__ ((unused)),
                     char **args __attribute__ ((unused)))
 {
-  if (grub_video_set_mode ("1024x768;800x600;640x480", 0) != GRUB_ERR_NONE)
-    return grub_errno;
-
+  grub_err_t err;
   grub_video_color_t color;
   unsigned int x;
   unsigned int y;
@@ -49,6 +47,10 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
   grub_video_color_t palette[16];
   const char *str;
   int texty;
+
+  err = grub_video_set_mode ("auto", GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
+  if (err)
+    return err;
 
   grub_video_get_viewport (&x, &y, &width, &height);
 
@@ -153,12 +155,13 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
 
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
-  for (i = 0; i < 255; i++)
+  for (i = 0; i < 5; i++)
     {
       color = grub_video_map_rgb (i, 33, 77);
       grub_video_fill_rect (color, 0, 0, width, height);
       grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_BLEND, 0, 0,
                                      0, 0, width, height);
+      grub_video_swap_buffers ();
     }
 
   grub_getkey ();
