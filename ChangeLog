@@ -1,5 +1,9 @@
 2010-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/i386/bsd.h: Fix include pathes.
+
+2010-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add missing *BSD copyright headers.
 
 	* include/grub/aout.h: Add BSD licence.

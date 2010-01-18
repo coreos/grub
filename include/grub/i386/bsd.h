@@ -20,12 +20,12 @@
 #define GRUB_BSD_CPU_HEADER	1
 
 #include <grub/types.h>
-#include <grub/freebsd_reboot.h>
-#include <grub/netbsd_reboot.h>
-#include <grub/openbsd_reboot.h>
-#include <grub/freebsd_linker.h>
-#include <grub/netbsd_bootinfo.h>
-#include <grub/openbsd_bootarg.h>
+#include <grub/i386/freebsd_reboot.h>
+#include <grub/i386/netbsd_reboot.h>
+#include <grub/i386/openbsd_reboot.h>
+#include <grub/i386/freebsd_linker.h>
+#include <grub/i386/netbsd_bootinfo.h>
+#include <grub/i386/openbsd_bootarg.h>
 
 
 enum bsd_kernel_types
