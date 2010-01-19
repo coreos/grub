@@ -357,6 +357,9 @@ grub_bsd_add_mmap (void)
   if (kernel_type == KERNEL_TYPE_NETBSD)
     len += sizeof (grub_uint32_t);
 
+  if (kernel_type == KERNEL_TYPE_OPENBSD)
+    len += sizeof (struct grub_e820_mmap);
+
   buf = grub_malloc (len);
   if (!buf)
     return grub_errno;
@@ -370,9 +373,15 @@ grub_bsd_add_mmap (void)
 
   generate_e820_mmap (NULL, &cnt, buf);
 
+  if (kernel_type == KERNEL_TYPE_OPENBSD)
+    grub_memset ((grub_uint8_t *) buf + len - sizeof (struct grub_e820_mmap), 0,
+		 sizeof (struct grub_e820_mmap));
+
   grub_dprintf ("bsd", "%u entries in smap\n", (unsigned) cnt);
   if (kernel_type == KERNEL_TYPE_NETBSD)
     grub_bsd_add_meta (NETBSD_BTINFO_MEMMAP, buf0, len);
+  else if (kernel_type == KERNEL_TYPE_OPENBSD)
+    grub_bsd_add_meta (OPENBSD_BOOTARG_MMAP, buf0, len);
   else
     grub_bsd_add_meta (FREEBSD_MODINFO_METADATA |
 		       FREEBSD_MODINFOMD_SMAP, buf0, len);
@@ -746,91 +755,59 @@ grub_freebsd_boot (void)
 static grub_err_t
 grub_openbsd_boot (void)
 {
-  grub_uint8_t *buf, *buf0;
   grub_uint32_t *stack;
-  grub_addr_t buf_target, argbuf_target_start, argbuf_target_end;
-  grub_size_t buf_size;
-  struct grub_openbsd_bios_mmap *pm;
-  struct grub_openbsd_bootargs *pa;
   struct grub_relocator32_state state;
+  void *curarg, *buf0, *arg0;
+  grub_addr_t buf_target;
   grub_err_t err;
+  grub_size_t tag_buf_len;
 
-  auto int NESTED_FUNC_ATTR count_hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR count_hook (grub_uint64_t addr __attribute__ ((unused)),
-				   grub_uint64_t size __attribute__ ((unused)),
-				   grub_uint32_t type __attribute__ ((unused)))
-  {
-    buf_size += sizeof (struct grub_openbsd_bios_mmap);
-    return 1;
-  }
-
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
-    {
-      pm->addr = addr;
-      pm->len = size;
-
-      switch (type)
-        {
-        case GRUB_MACHINE_MEMORY_AVAILABLE:
-	  pm->type = OPENBSD_MMAP_AVAILABLE;
-	  break;
-
-        case GRUB_MACHINE_MEMORY_ACPI:
-	  pm->type = OPENBSD_MMAP_ACPI;
-	  break;
-
-        case GRUB_MACHINE_MEMORY_NVS:
-	  pm->type = OPENBSD_MMAP_NVS;
-	  break;
-
-	default:
-	  pm->type = OPENBSD_MMAP_RESERVED;
-	  break;
-	}
-      pm++;
-
-      return 0;
-    }
-
-  buf_target = GRUB_BSD_TEMP_BUFFER;
-  buf_size = sizeof (struct grub_openbsd_bootargs) + 9 * sizeof (grub_uint32_t);
-  grub_mmap_iterate (count_hook);
-  buf_size += sizeof (struct grub_openbsd_bootargs);
-
-  err = grub_relocator_alloc_chunk_addr (relocator, (void **) &buf,
-					 buf_target, buf_size);
+  err = grub_bsd_add_mmap ();
   if (err)
     return err;
-  buf0 = buf;
-  stack = (grub_uint32_t *) buf;
-  buf = (grub_uint8_t *) (stack + 9);
 
-  argbuf_target_start = buf - buf0 + buf_target;
+  {
+    struct bsd_tag *tag;
+    tag_buf_len = 0;
+    for (tag = tags; tag; tag = tag->next)
+      tag_buf_len = ALIGN_VAR (tag_buf_len
+			       + sizeof (struct grub_openbsd_bootargs)
+			       + tag->len);
+  }
 
-  pa = (struct grub_openbsd_bootargs *) buf;
+  buf_target = GRUB_BSD_TEMP_BUFFER - 9 * sizeof (grub_uint32_t);
+  err = grub_relocator_alloc_chunk_addr (relocator, &buf0,
+					 buf_target, tag_buf_len
+					 + sizeof (struct grub_openbsd_bootargs)
+					 + 9 * sizeof (grub_uint32_t));
+  if (err)
+    return err;
 
-  pa->ba_type = OPENBSD_BOOTARG_MMAP;
-  pm = (struct grub_openbsd_bios_mmap *) (pa + 1);
-  grub_mmap_iterate (hook);
+  stack = (grub_uint32_t *) buf0;
+  arg0 = curarg = stack + 9;
 
-  /* Memory map terminator.  */
-  pm->addr = 0;
-  pm->len = 0;
-  pm->type = 0;
-  pm++;
-  buf = (grub_uint8_t *) pm;
+  {
+    struct bsd_tag *tag;
+    struct grub_openbsd_bootargs *head;
 
-  pa->ba_size = (char *) pm - (char *) pa;
-  pa->ba_next = buf - buf0 + buf_target;
-  pa = (struct grub_openbsd_bootargs *) buf;
-  pa->ba_type = OPENBSD_BOOTARG_END;
-  pa->ba_size = 0;
-  pa->ba_next = 0;
-  pa++;
+    for (tag = tags; tag; tag = tag->next)
+      {
+	head = curarg;
+	head->ba_type = tag->type;
+	head->ba_size = tag->len + sizeof (*head);
+	curarg = head + 1;
+	grub_memcpy (curarg, tag->data, tag->len);
+	curarg = (grub_uint8_t *) curarg + tag->len;
+	head->ba_next = (grub_uint8_t *) curarg - (grub_uint8_t *) buf0
+	  + buf_target;
+      }
+    head = curarg;
+    head->ba_type = OPENBSD_BOOTARG_END;
+    head->ba_size = 0;
+    head->ba_next = 0;
+  }
 
-  buf = (grub_uint8_t *) pa;
-  argbuf_target_end = buf - buf0 + buf_target;
+  grub_video_set_mode ("text", 0, 0);
 
 #ifdef GRUB_MACHINE_EFI
   if (! grub_efi_finish_boot_services ())
@@ -838,7 +815,7 @@ grub_openbsd_boot (void)
 #endif
 
   state.eip = entry;
-  state.esp = ((grub_uint8_t *) stack - buf0) + buf_target;
+  state.esp = ((grub_uint8_t *) stack - (grub_uint8_t *) buf0) + buf_target;
   stack[0] = entry;
   stack[1] = bootflags;
   stack[2] = openbsd_root;
@@ -846,10 +823,8 @@ grub_openbsd_boot (void)
   stack[4] = 0;
   stack[5] = grub_mmap_get_upper () >> 10;
   stack[6] = grub_mmap_get_lower () >> 10;
-  stack[7] = argbuf_target_end - argbuf_target_start;
-  stack[8] = argbuf_target_start;
-
-  grub_video_set_mode ("text", 0, 0);
+  stack[7] = (grub_uint8_t *) curarg - (grub_uint8_t *) arg0;
+  stack[8] = ((grub_uint8_t *) arg0 - (grub_uint8_t *) buf0) + buf_target;
 
   return grub_relocator32_boot (relocator, state);
 }
@@ -998,7 +973,8 @@ grub_netbsd_boot (void)
     tag_buf_len = 0;
     for (tag = tags; tag; tag = tag->next)
       {
-	tag_buf_len = ALIGN_VAR (tag_buf_len + 2 * sizeof (grub_uint32_t)
+	tag_buf_len = ALIGN_VAR (tag_buf_len
+				 + sizeof (struct grub_netbsd_btinfo_common)
 				 + tag->len);
 	tag_count++;
       }

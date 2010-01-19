@@ -80,19 +80,6 @@ struct freebsd_tag_header
   grub_uint32_t len;
 };
 
-struct grub_openbsd_bios_mmap
-{
-  grub_uint64_t addr;
-  grub_uint64_t len;
-#define	OPENBSD_MMAP_AVAILABLE	1
-#define	OPENBSD_MMAP_RESERVED 2
-#define	OPENBSD_MMAP_ACPI	3
-#define	OPENBSD_MMAP_NVS 	4
-  grub_uint32_t type;
-};
-
-
-
 grub_err_t grub_freebsd_load_elfmodule32 (struct grub_relocator *relocator,
 					  grub_file_t file, int argc,
 					  char *argv[], grub_addr_t *kern_end);
