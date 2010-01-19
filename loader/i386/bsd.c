@@ -1008,7 +1008,7 @@ grub_netbsd_boot (void)
   err = grub_relocator_alloc_chunk_addr (relocator, &curarg,
 					 arg_target, tag_buf_len
 					 + sizeof (struct grub_netbsd_bootinfo)
-					 + tag_count * sizeof (grub_addr_t));
+					 + tag_count * sizeof (grub_uint32_t));
   if (err)
     return err;
 
@@ -1321,6 +1321,8 @@ grub_bsd_load (int argc, char *argv[])
       grub_bsd_load_aout (file);
       grub_file_close (file);
     }
+
+  kern_end = ALIGN_PAGE (kern_end);
 
 fail:
 
