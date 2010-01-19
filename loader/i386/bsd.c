@@ -126,6 +126,8 @@ static const struct grub_arg_option openbsd_opts[] =
     {"single", 's', 0, N_("Boot into single mode."), 0, 0},
     {"kdb", 'd', 0, N_("Enter in KDB on boot."), 0, 0},
     {"root", 'r', 0, N_("Set root device."), "wdXY", ARG_TYPE_STRING},
+    {"serial", 'h', GRUB_ARG_OPTION_OPTIONAL, 
+     N_("Use serial console."), N_("comUNIT[,SPEED]"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -136,6 +138,7 @@ static const grub_uint32_t openbsd_flags[] =
 };
 
 #define OPENBSD_ROOT_ARG (ARRAY_SIZE (openbsd_flags) - 1)
+#define OPENBSD_SERIAL_ARG (ARRAY_SIZE (openbsd_flags))
 
 static const struct grub_arg_option netbsd_opts[] =
   {
@@ -1409,6 +1412,51 @@ grub_cmd_openbsd (grub_extcmd_t cmd, int argc, char *argv[])
     }
   else
     bootdev = 0;
+
+  if (cmd->state[OPENBSD_SERIAL_ARG].set)
+    {
+      struct grub_openbsd_bootarg_console serial;
+      char *ptr;
+      unsigned port = 0;
+      unsigned speed = 9600;
+
+      grub_memset (&serial, 0, sizeof (serial));
+
+      if (cmd->state[OPENBSD_SERIAL_ARG].arg)
+	{
+	  ptr = cmd->state[OPENBSD_SERIAL_ARG].arg;
+	  if (grub_memcmp (ptr, "com", sizeof ("com") - 1) != 0)
+	    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			       "only com0-com3 are supported");
+	  ptr += sizeof ("com") - 1;
+	  port = grub_strtoul (ptr, &ptr, 0);
+	  if (port >= 4)
+	    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			       "only com0-com3 are supported");
+	  if (*ptr == ',')
+	    {
+	      ptr++; 
+	      speed = grub_strtoul (ptr, &ptr, 0);
+	      if (grub_errno)
+		return grub_errno;
+	    }
+	}
+
+      serial.device = (GRUB_OPENBSD_COM_MAJOR << 8) | port;
+      serial.speed = speed;
+	  
+      grub_bsd_add_meta (OPENBSD_BOOTARG_CONSOLE, &serial, sizeof (serial));
+      bootflags |= OPENBSD_RB_SERCONS;
+    }
+  else
+    {
+      struct grub_openbsd_bootarg_console serial;
+
+      grub_memset (&serial, 0, sizeof (serial));
+      serial.device = (GRUB_OPENBSD_VGA_MAJOR << 8);
+      grub_bsd_add_meta (OPENBSD_BOOTARG_CONSOLE, &serial, sizeof (serial));
+      bootflags &= ~OPENBSD_RB_SERCONS;
+    }
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     {
