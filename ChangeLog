@@ -1,3 +1,9 @@
+2010-01-20  Felix Zielcke <fzielcke@z-51.de>
+
+	* util/misc.c (make_system_path_relative_to_its_root): Change the work
+	around for handling "/" to the correct fix.  Fix a memory leak.  Use
+	xstrdup instead of strdup.
+
 2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* conf/mips.rmk (kernel_img_HEADERS): Add env_private.h
