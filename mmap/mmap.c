@@ -52,7 +52,7 @@ grub_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
 #ifdef GRUB_MACHINE_MEMORY_AVAILABLE
       [GRUB_MACHINE_MEMORY_AVAILABLE] = 1,
 #endif
-#ifdef GRUB_MACHINE_MEMORY_RESERVED
+#if defined (GRUB_MACHINE_MEMORY_RESERVED) && GRUB_MACHINE_MEMORY_RESERVED != GRUB_MACHINE_MEMORY_HOLE
       [GRUB_MACHINE_MEMORY_RESERVED] = 3,
 #endif
 #ifdef GRUB_MACHINE_MEMORY_ACPI
@@ -414,8 +414,8 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(mmap)
 {
   cmd = grub_register_command ("badram", grub_cmd_badram,
-			       "badram ADDR1,MASK1[,ADDR2,MASK2[,...]]",
-			       "declare memory regions as badram");
+			       "ADDR1,MASK1[,ADDR2,MASK2[,...]]",
+			       "Declare memory regions as badram.");
 }
 
 GRUB_MOD_FINI(mmap)

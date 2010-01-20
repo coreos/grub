@@ -32,6 +32,7 @@
 #include <grub/term.h>
 #include <grub/command.h>
 #include <grub/gzio.h>
+#include <grub/i18n.h>
 
 char grub_xnu_cmdline[1024];
 grub_uint32_t grub_xnu_heap_will_be_at;
@@ -527,12 +528,12 @@ grub_cmd_devprop_load (grub_command_t cmd __attribute__ ((unused)),
   unsigned i, j;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "File name required. ");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
   file = grub_gzfile_open (args[0], 1);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       "Couldn't load device-propertie dump. ");
+		       "couldn't load device-propertie dump");
   size = grub_file_size (file);
   buf = grub_malloc (size);
   if (!buf)
@@ -748,11 +749,13 @@ grub_cpu_xnu_fill_devicetree (void)
 #endif
 
       /* The name of key for new table. */
-      grub_sprintf (guidbuf, "%08x-%04x-%04x-%02x%02x-",
-		    guid.data1, guid.data2, guid.data3, guid.data4[0],
-		    guid.data4[1]);
+      grub_snprintf (guidbuf, sizeof (guidbuf), "%08x-%04x-%04x-%02x%02x-",
+		     guid.data1, guid.data2, guid.data3, guid.data4[0],
+		     guid.data4[1]);
       for (j = 2; j < 8; j++)
-	grub_sprintf (guidbuf + grub_strlen (guidbuf), "%02x", guid.data4[j]);
+	grub_snprintf (guidbuf + grub_strlen (guidbuf),
+		       sizeof (guidbuf) - grub_strlen (guidbuf),
+		       "%02x", guid.data4[j]);
       /* For some reason GUID has to be in uppercase. */
       for (j = 0; guidbuf[j] ; j++)
 	if (guidbuf[j] >= 'a' && guidbuf[j] <= 'f')
@@ -832,7 +835,7 @@ grub_xnu_boot_resume (void)
   state.eax = grub_xnu_arg1;
 
   return grub_relocator32_boot (grub_xnu_heap_start, grub_xnu_heap_will_be_at,
-				state);  
+				state); 
 }
 
 /* Boot xnu. */
@@ -1026,7 +1029,7 @@ grub_cpu_xnu_init (void)
 {
   cmd_devprop_load = grub_register_command ("xnu_devprop_load",
 					    grub_cmd_devprop_load,
-					    0, "Load device-properties dump.");
+					    0, N_("Load device-properties dump."));
 }
 
 void

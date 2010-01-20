@@ -1,7 +1,7 @@
 /* xfs.c - XFS.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -222,7 +222,7 @@ grub_xfs_read_inode (struct grub_xfs_data *data, grub_uint64_t ino,
     return grub_errno;
 
   if (grub_strncmp ((char *) inode->magic, "IN", 2))
-    return grub_error (GRUB_ERR_BAD_FS, "not a correct XFS inode.\n");
+    return grub_error (GRUB_ERR_BAD_FS, "not a correct XFS inode");
 
   return 0;
 }
@@ -273,7 +273,7 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
           if (grub_strncmp ((char *) leaf->magic, "BMAP", 4))
             {
               grub_free (leaf);
-              grub_error (GRUB_ERR_BAD_FS, "not a correct XFS BMAP node.\n");
+              grub_error (GRUB_ERR_BAD_FS, "not a correct XFS BMAP node");
               return 0;
             }
 
@@ -290,7 +290,7 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
   else
     {
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "xfs does not support inode format %d yet",
+		  "XFS does not support inode format %d yet",
 		  node->inode.format);
       return 0;
     }
@@ -567,7 +567,7 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 
     default:
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "xfs does not support inode format %d yet",
+		  "XFS does not support inode format %d yet",
 		  diro->inode.format);
     }
   return 0;
@@ -590,7 +590,7 @@ grub_xfs_mount (grub_disk_t disk)
 
   if (grub_strncmp ((char *) (data->sblock.magic), "XFSB", 4))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a xfs filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a XFS filesystem");
       goto fail;
     }
 
@@ -617,7 +617,7 @@ grub_xfs_mount (grub_disk_t disk)
  fail:
 
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
-    grub_error (GRUB_ERR_BAD_FS, "not an xfs filesystem");
+    grub_error (GRUB_ERR_BAD_FS, "not an XFS filesystem");
 
   grub_free (data);
 
@@ -777,12 +777,15 @@ grub_xfs_uuid (grub_device_t device, char **uuid)
   data = grub_xfs_mount (disk);
   if (data)
     {
-      *uuid = grub_malloc (sizeof ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"));
-      grub_sprintf (*uuid, "%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-		    grub_be_to_cpu16 (data->sblock.uuid[0]), grub_be_to_cpu16 (data->sblock.uuid[1]),
-		    grub_be_to_cpu16 (data->sblock.uuid[2]), grub_be_to_cpu16 (data->sblock.uuid[3]),
-		    grub_be_to_cpu16 (data->sblock.uuid[4]), grub_be_to_cpu16 (data->sblock.uuid[5]),
-		    grub_be_to_cpu16 (data->sblock.uuid[6]), grub_be_to_cpu16 (data->sblock.uuid[7]));
+      *uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+			     grub_be_to_cpu16 (data->sblock.uuid[0]),
+			     grub_be_to_cpu16 (data->sblock.uuid[1]),
+			     grub_be_to_cpu16 (data->sblock.uuid[2]),
+			     grub_be_to_cpu16 (data->sblock.uuid[3]),
+			     grub_be_to_cpu16 (data->sblock.uuid[4]),
+			     grub_be_to_cpu16 (data->sblock.uuid[5]),
+			     grub_be_to_cpu16 (data->sblock.uuid[6]),
+			     grub_be_to_cpu16 (data->sblock.uuid[7]));
     }
   else
     *uuid = NULL;

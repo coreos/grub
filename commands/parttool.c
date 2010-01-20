@@ -29,6 +29,7 @@
 #include <grub/partition.h>
 #include <grub/parttool.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static struct grub_parttool *parts = 0;
 static int curhandle = 0;
@@ -182,12 +183,11 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
       {
 	char *filename;
 
-	filename = grub_malloc (grub_strlen (prefix) + sizeof ("/parttool.lst"));
+	filename = grub_xasprintf ("%s/parttool.lst", prefix);
 	if (filename)
 	  {
 	    grub_file_t file;
 
-	    grub_sprintf (filename, "%s/parttool.lst", prefix);
 	    file = grub_file_open (filename);
 	    if (file)
 	      {
@@ -322,7 +322,7 @@ GRUB_MOD_INIT(parttool)
 {
   mymod = mod;
   cmd = grub_register_command ("parttool", grub_cmd_parttool,
-			       "parttool PARTITION COMMANDS",
+			       N_("PARTITION COMMANDS"),
 			       helpmsg);
 }
 

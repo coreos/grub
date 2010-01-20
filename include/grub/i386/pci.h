@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,8 +22,11 @@
 #include <grub/types.h>
 #include <grub/i386/io.h>
 
+#define GRUB_MACHINE_PCI_IO_BASE          0
 #define GRUB_PCI_ADDR_REG	0xcf8
 #define GRUB_PCI_DATA_REG	0xcfc
+#define GRUB_PCI_NUM_BUS        256
+#define GRUB_PCI_NUM_DEVICES    32
 
 static inline grub_uint32_t
 grub_pci_read (grub_pci_address_t addr)
@@ -67,12 +70,12 @@ grub_pci_write_byte (grub_pci_address_t addr, grub_uint8_t data)
   grub_outb (data, GRUB_PCI_DATA_REG + (addr & 3));
 }
 
-static inline void *
+static inline volatile void *
 grub_pci_device_map_range (grub_pci_device_t dev __attribute__ ((unused)),
 			   grub_addr_t base,
 			   grub_size_t size __attribute__ ((unused)))
 {
-  return (void *) base;
+  return (volatile void *) base;
 }
 
 static inline void

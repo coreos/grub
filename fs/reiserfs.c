@@ -691,7 +691,7 @@ grub_reiserfs_mount (grub_disk_t disk)
   if (grub_memcmp (data->superblock.magic_string,
                    REISERFS_MAGIC_STRING, sizeof (REISERFS_MAGIC_STRING) - 1))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a reiserfs filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a ReiserFS filesystem");
       goto fail;
     }
   data->disk = disk;
@@ -700,7 +700,7 @@ grub_reiserfs_mount (grub_disk_t disk)
  fail:
   /* Disk is too small to contain a ReiserFS.  */
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
-    grub_error (GRUB_ERR_BAD_FS, "not a reiserfs filesystem");
+    grub_error (GRUB_ERR_BAD_FS, "not a ReiserFS filesystem");
 
   grub_free (data);
   return 0;
@@ -998,7 +998,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
     goto fail;
   if (root.block_number == 0)
     {
-      grub_error (GRUB_ERR_BAD_FS, "Unable to find root item");
+      grub_error (GRUB_ERR_BAD_FS, "unable to find root item");
       goto fail; /* Should never happen since checked at mount.  */
     }
   grub_fshelp_find_file (name, &root, &found,
@@ -1014,7 +1014,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
     goto fail;
   if (info.block_number == 0)
     {
-      grub_error (GRUB_ERR_BAD_FS, "Unable to find searched item");
+      grub_error (GRUB_ERR_BAD_FS, "unable to find searched item");
       goto fail;
     }
   entry_version = grub_le_to_cpu16 (info.header.version);
@@ -1289,7 +1289,7 @@ grub_reiserfs_dir (grub_device_t device, const char *path,
     goto fail;
   if (root.block_number == 0)
     {
-      grub_error(GRUB_ERR_BAD_FS, "Root not found");
+      grub_error(GRUB_ERR_BAD_FS, "root not found");
       goto fail;
     }
   grub_fshelp_find_file (path, &root, &found, grub_reiserfs_iterate_dir,
@@ -1335,12 +1335,15 @@ grub_reiserfs_uuid (grub_device_t device, char **uuid)
   data = grub_reiserfs_mount (disk);
   if (data)
     {
-      *uuid = grub_malloc (sizeof ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"));
-      grub_sprintf (*uuid, "%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-		    grub_be_to_cpu16 (data->superblock.uuid[0]), grub_be_to_cpu16 (data->superblock.uuid[1]),
-		    grub_be_to_cpu16 (data->superblock.uuid[2]), grub_be_to_cpu16 (data->superblock.uuid[3]),
-		    grub_be_to_cpu16 (data->superblock.uuid[4]), grub_be_to_cpu16 (data->superblock.uuid[5]),
-		    grub_be_to_cpu16 (data->superblock.uuid[6]), grub_be_to_cpu16 (data->superblock.uuid[7]));
+      *uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+			     grub_be_to_cpu16 (data->superblock.uuid[0]),
+			     grub_be_to_cpu16 (data->superblock.uuid[1]),
+			     grub_be_to_cpu16 (data->superblock.uuid[2]),
+			     grub_be_to_cpu16 (data->superblock.uuid[3]),
+			     grub_be_to_cpu16 (data->superblock.uuid[4]),
+			     grub_be_to_cpu16 (data->superblock.uuid[5]),
+			     grub_be_to_cpu16 (data->superblock.uuid[6]),
+			     grub_be_to_cpu16 (data->superblock.uuid[7]));
     }
   else
     *uuid = NULL;

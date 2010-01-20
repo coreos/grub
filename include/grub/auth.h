@@ -15,24 +15,15 @@
  *  You should have received a copy of the GNU General Public License
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GRUB_AURH_HEADER
+#ifndef GRUB_AUTH_HEADER
 #define GRUB_AUTH_HEADER	1
 
 #include <grub/err.h>
-#include <grub/i18n.h>
+#include <grub/crypto.h>
 
-/* Macros for indistinguishibility.  */
-#define GRUB_ACCESS_DENIED grub_error (GRUB_ERR_ACCESS_DENIED, "Access denied.")
-#define GRUB_GET_PASSWORD(string, len) grub_cmdline_get (N_("Enter password:"), \
-							 string, len,	\
-							 '*', 0, 0)
+#define GRUB_AUTH_MAX_PASSLEN 1024
 
-/* Like strcmp but untimeable. Accepts NULL as second argument.  */
-int grub_auth_strcmp (const char *user_input, const char *template);
-/* Like strcmp but untimeable and ignores commas in needle.  */
-int grub_auth_strword (const char *haystack, const char *needle);
-
-typedef grub_err_t (*grub_auth_callback_t) (const char*, void *);
+typedef grub_err_t (*grub_auth_callback_t) (const char *, const char *, void *);
 
 grub_err_t grub_auth_register_authentication (const char *user,
 					      grub_auth_callback_t callback,

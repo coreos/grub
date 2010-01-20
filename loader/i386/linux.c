@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,6 +33,8 @@
 #include <grub/video_fb.h>
 #include <grub/command.h>
 #include <grub/i386/pc/vbe.h>
+#include <grub/i386/pc/console.h>
+#include <grub/i18n.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
 #define GRUB_LINUX_CL_END_OFFSET	0x2000
@@ -517,16 +519,14 @@ grub_linux_boot (void)
      May change in future if we have modes without framebuffer.  */
   if (modevar && *modevar != 0)
     {
-      tmp = grub_malloc (grub_strlen (modevar)
-			 + sizeof (";text"));
+      tmp = grub_xasprintf ("%s;text", modevar);
       if (! tmp)
 	return grub_errno;
-      grub_sprintf (tmp, "%s;text", modevar);
-      err = grub_video_set_mode (tmp, 0);
+      err = grub_video_set_mode (tmp, 0, 0);
       grub_free (tmp);
     }
   else
-    err = grub_video_set_mode ("text", 0);
+    err = grub_video_set_mode ("text", 0, 0);
 
   if (err)
     {
@@ -536,19 +536,38 @@ grub_linux_boot (void)
     }
 
   if (! grub_linux_setup_video (params))
-    params->have_vga = GRUB_VIDEO_TYPE_VLFB;
+    {
+      /* Use generic framebuffer unless VESA is known to be supported.  */
+      if (params->have_vga != GRUB_VIDEO_LINUX_TYPE_VESA)
+	params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
+    }
   else
     {
-      params->have_vga = GRUB_VIDEO_TYPE_TEXT;
+      params->have_vga = GRUB_VIDEO_LINUX_TYPE_TEXT;
       params->video_width = 80;
       params->video_height = 25;
     }
 
   /* Initialize these last, because terminal position could be affected by printfs above.  */
-  if (params->have_vga == GRUB_VIDEO_TYPE_TEXT)
+  if (params->have_vga == GRUB_VIDEO_LINUX_TYPE_TEXT)
     {
-      params->video_cursor_x = grub_getxy () >> 8;
-      params->video_cursor_y = grub_getxy () & 0xff;
+      grub_term_output_t term;
+      int found = 0;
+      FOR_ACTIVE_TERM_OUTPUTS(term)
+	if (grub_strcmp (term->name, "vga_text") == 0
+	    || grub_strcmp (term->name, "console") == 0)
+	  {
+	    grub_uint16_t pos = grub_term_getxy (term);
+	    params->video_cursor_x = pos >> 8;
+	    params->video_cursor_y = pos & 0xff;
+	    found = 1;
+	    break;
+	  }
+      if (!found)
+	{
+	  params->video_cursor_x = 0;
+	  params->video_cursor_y = 0;
+	}
     }
 
 #ifdef __x86_64__
@@ -613,7 +632,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_file_read (file, &lh, sizeof (lh)) != sizeof (lh))
     {
-      grub_error (GRUB_ERR_READ_ERROR, "cannot read the linux header");
+      grub_error (GRUB_ERR_READ_ERROR, "cannot read the Linux header");
       goto fail;
     }
 
@@ -673,7 +692,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   len = 0x400 - sizeof (lh);
   if (grub_file_read (file, (char *) real_mode_mem + sizeof (lh), len) != len)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 
@@ -712,8 +731,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   grub_file_seek (file, real_size + GRUB_DISK_SECTOR_SIZE);
 
-  grub_printf ("   [Linux-bzImage, setup=0x%x, size=0x%x]\n",
-	       (unsigned) real_size, (unsigned) prot_size);
+  grub_dprintf ("linux", "bzImage, setup=0x%x, size=0x%x\n",
+		(unsigned) real_size, (unsigned) prot_size);
 
   /* Look for memory size and video mode specified on the command line.  */
   linux_mem_size = 0;
@@ -779,19 +798,22 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		break;
 	      }
 
-	    buf = grub_malloc (sizeof ("WWWWxHHHHxDD;WWWWxHHHH"));
-	    if (! buf)
-	      goto fail;
+	    /* We can't detect VESA, but user is implicitly telling us that it
+	       is built-in because `vga=' parameter was used.  */
+	    params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
 
 	    linux_mode
 	      = &linux_vesafb_modes[vid_mode - GRUB_LINUX_VID_MODE_VESA_START];
 
-	    grub_sprintf (buf, "%ux%ux%u,%ux%u",
-			  linux_vesafb_res[linux_mode->res_index].width,
-			  linux_vesafb_res[linux_mode->res_index].height,
-			  linux_mode->depth,
-			  linux_vesafb_res[linux_mode->res_index].width,
-			  linux_vesafb_res[linux_mode->res_index].height);
+	    buf = grub_xasprintf ("%ux%ux%u,%ux%u",
+				 linux_vesafb_res[linux_mode->res_index].width,
+				 linux_vesafb_res[linux_mode->res_index].height,
+				 linux_mode->depth,
+				 linux_vesafb_res[linux_mode->res_index].width,
+				 linux_vesafb_res[linux_mode->res_index].height);
+	    if (! buf)
+	      goto fail;
+
 	    grub_printf ("%s is deprecated. "
 			 "Use set gfxpayload=%s before "
 			 "linux command instead.\n",
@@ -862,7 +884,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   len = prot_size;
   if (grub_file_read (file, (void *) GRUB_LINUX_BZIMAGE_ADDR, len) != len)
-    grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+    grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
 
   if (grub_errno == GRUB_ERR_NONE)
     {
@@ -897,13 +919,13 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
       goto fail;
     }
 
   if (! loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load the kernel first");
       goto fail;
     }
 
@@ -951,7 +973,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (addr < addr_min)
     {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "The initrd is too big");
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "the initrd is too big");
       goto fail;
     }
 
@@ -959,12 +981,12 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_file_read (file, initrd_mem, size) != size)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 
-  grub_printf ("   [Initrd, addr=0x%x, size=0x%x]\n",
-	       (unsigned) addr, (unsigned) size);
+  grub_dprintf ("linux", "Initrd, addr=0x%x, size=0x%x\n",
+		(unsigned) addr, (unsigned) size);
 
   lh->ramdisk_image = addr;
   lh->ramdisk_size = size;
@@ -982,9 +1004,9 @@ static grub_command_t cmd_linux, cmd_initrd;
 GRUB_MOD_INIT(linux)
 {
   cmd_linux = grub_register_command ("linux", grub_cmd_linux,
-				     0, "load linux");
+				     0, N_("Load Linux."));
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
-				      0, "load initrd");
+				      0, N_("Load initrd."));
   my_mod = mod;
 }
 

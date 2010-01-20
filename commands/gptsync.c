@@ -27,6 +27,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/fs.h>
+#include <grub/i18n.h>
 
 /* Convert a LBA address to a CHS address in the INT 13 format.  */
 /* Taken from grub1. */
@@ -240,13 +241,13 @@ GRUB_MOD_INIT(gptsync)
 {
   (void) mod;			/* To stop warning. */
   cmd = grub_register_command ("gptsync", grub_cmd_gptsync,
-			       "gptsync DEVICE [PARTITION[+/-[TYPE]]] ...",
-			       "Fill hybrid MBR of GPT drive DEVICE. "
+			       N_("DEVICE [PARTITION[+/-[TYPE]]] ..."),
+			       N_("Fill hybrid MBR of GPT drive DEVICE. "
 			       "specified partitions will be a part "
 			       "of hybrid mbr. Up to 3 partitions are "
 			       "allowed. TYPE is an MBR type. "
 			       "+ means that partition is active. "
-			       "Only one partition can be active.");
+			       "Only one partition can be active."));
 }
 
 GRUB_MOD_FINI(gptsync)

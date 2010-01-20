@@ -1,1 +1,1 @@
-#include <grub/i386/pc/serial.h>
+#include <grub/i386/coreboot/serial.h>

@@ -115,14 +115,14 @@ grub_get_prefix (const char *dir)
   saved_cwd = xgetcwd ();
 
   if (chdir (dir) < 0)
-    grub_util_error ("Cannot change directory to `%s'", dir);
+    grub_util_error ("cannot change directory to `%s'", dir);
 
   abs_dir = xgetcwd ();
   strip_extra_slashes (abs_dir);
   prev_dir = xstrdup (abs_dir);
 
   if (stat (".", &prev_st) < 0)
-    grub_util_error ("Cannot stat `%s'", dir);
+    grub_util_error ("cannot stat `%s'", dir);
 
   if (! S_ISDIR (prev_st.st_mode))
     grub_util_error ("`%s' is not a directory", dir);
@@ -130,13 +130,13 @@ grub_get_prefix (const char *dir)
   while (1)
     {
       if (chdir ("..") < 0)
-	grub_util_error ("Cannot change directory to the parent");
+	grub_util_error ("cannot change directory to the parent");
 
       if (stat (".", &st) < 0)
-	grub_util_error ("Cannot stat current directory");
+	grub_util_error ("cannot stat current directory");
 
       if (! S_ISDIR (st.st_mode))
-	grub_util_error ("Current directory is not a directory???");
+	grub_util_error ("current directory is not a directory???");
 
       if (prev_st.st_dev != st.st_dev || prev_st.st_ino == st.st_ino)
 	break;
@@ -153,7 +153,7 @@ grub_get_prefix (const char *dir)
   strip_extra_slashes (prefix);
 
   if (chdir (saved_cwd) < 0)
-    grub_util_error ("Cannot change directory to `%s'", dir);
+    grub_util_error ("cannot change directory to `%s'", dir);
 
 #ifdef __CYGWIN__
   if (st.st_dev != (DEV_CYGDRIVE_MAJOR << 16))
@@ -236,7 +236,7 @@ find_root_device (const char *dir, dev_t dev)
 	  if (res)
 	    {
 	      if (chdir (saved_cwd) < 0)
-		grub_util_error ("Cannot restore the original directory");
+		grub_util_error ("cannot restore the original directory");
 
 	      free (saved_cwd);
 	      closedir (dp);
@@ -279,7 +279,7 @@ find_root_device (const char *dir, dev_t dev)
 		continue;
 
 	  if (chdir (saved_cwd) < 0)
-	    grub_util_error ("Cannot restore the original directory");
+	    grub_util_error ("cannot restore the original directory");
 
 	  free (saved_cwd);
 	  closedir (dp);
@@ -288,7 +288,7 @@ find_root_device (const char *dir, dev_t dev)
     }
 
   if (chdir (saved_cwd) < 0)
-    grub_util_error ("Cannot restore the original directory");
+    grub_util_error ("cannot restore the original directory");
 
   free (saved_cwd);
   closedir (dp);
@@ -445,7 +445,7 @@ grub_guess_root_device (const char *dir)
   struct stat st;
 
   if (stat (dir, &st) < 0)
-    grub_util_error ("Cannot stat `%s'", dir);
+    grub_util_error ("cannot stat `%s'", dir);
 
 #ifdef __CYGWIN__
   /* Cygwin specific function.  */
@@ -483,7 +483,7 @@ grub_util_is_dmraid (const char *os_dev)
     return 1;
   else if (! strncmp (os_dev, "/dev/mapper/sil_", 16))
     return 1;
- 
+
   return 0;
 }
 
@@ -591,7 +591,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	  free (p);
 	}
       else
-	grub_util_error ("Unknown kind of RAID device `%s'", os_dev);
+	grub_util_error ("unknown kind of RAID device `%s'", os_dev);
 
       break;
 
@@ -608,7 +608,7 @@ grub_util_check_block_device (const char *blk_dev)
   struct stat st;
 
   if (stat (blk_dev, &st) < 0)
-    grub_util_error ("Cannot stat `%s'", blk_dev);
+    grub_util_error ("cannot stat `%s'", blk_dev);
 
   if (S_ISBLK (st.st_mode))
     return (blk_dev);
@@ -622,7 +622,7 @@ grub_util_check_char_device (const char *blk_dev)
   struct stat st;
 
   if (stat (blk_dev, &st) < 0)
-    grub_util_error ("Cannot stat `%s'", blk_dev);
+    grub_util_error ("cannot stat `%s'", blk_dev);
 
   if (S_ISCHR (st.st_mode))
     return (blk_dev);

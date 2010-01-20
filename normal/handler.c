@@ -117,7 +117,7 @@ insert_handler (char *name, char *module)
     data = 0;
 
   item->cmd = grub_register_command (item->name, grub_handler_cmd, 0,
-				     "Set active handler");
+				     "Set active handler.");
   if (! item->cmd)
     {
       grub_free (data);
@@ -172,12 +172,11 @@ read_handler_list (void)
     {
       char *filename;
 
-      filename = grub_malloc (grub_strlen (prefix) + sizeof ("/handler.lst"));
+      filename = grub_xasprintf ("%s/handler.lst", prefix);
       if (filename)
 	{
 	  grub_file_t file;
 
-	  grub_sprintf (filename, "%s/handler.lst", prefix);
 	  file = grub_file_open (filename);
 	  if (file)
 	    {

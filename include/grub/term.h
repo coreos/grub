@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -68,8 +68,6 @@ grub_term_color_state;
 #define GRUB_TERM_NO_EDIT	(1 << 1)
 /* Set when the terminal cannot do fancy things.  */
 #define GRUB_TERM_DUMB		(1 << 2)
-/* Set when the terminal needs to be initialized.  */
-#define GRUB_TERM_NEED_INIT	(1 << 16)
 
 
 /* Bitmasks for modifier keys returned by grub_getkeystatus.  */
@@ -93,10 +91,6 @@ grub_term_color_state;
 
 /* Menu-related geometrical constants.  */
 
-/* FIXME: Ugly way to get them form terminal.  */
-#define GRUB_TERM_WIDTH         ((grub_getwh()&0xFF00)>>8)
-#define GRUB_TERM_HEIGHT        (grub_getwh()&0xFF)
-
 /* The number of lines of "GRUB version..." at the top.  */
 #define GRUB_TERM_INFO_HEIGHT	1
 
@@ -113,36 +107,11 @@ grub_term_color_state;
 /* The X position of the left border.  */
 #define GRUB_TERM_LEFT_BORDER_X	GRUB_TERM_MARGIN
 
-/* The width of the border.  */
-#define GRUB_TERM_BORDER_WIDTH	(GRUB_TERM_WIDTH \
-                                 - GRUB_TERM_MARGIN * 3 \
-				 - GRUB_TERM_SCROLL_WIDTH)
-
 /* The number of lines of messages at the bottom.  */
 #define GRUB_TERM_MESSAGE_HEIGHT	8
 
-/* The height of the border.  */
-#define GRUB_TERM_BORDER_HEIGHT	(GRUB_TERM_HEIGHT \
-                                 - GRUB_TERM_TOP_BORDER_Y \
-                                 - GRUB_TERM_MESSAGE_HEIGHT)
-
-/* The number of entries shown at a time.  */
-#define GRUB_TERM_NUM_ENTRIES	(GRUB_TERM_BORDER_HEIGHT - 2)
-
 /* The Y position of the first entry.  */
 #define GRUB_TERM_FIRST_ENTRY_Y	(GRUB_TERM_TOP_BORDER_Y + 1)
-
-/* The max column number of an entry. The last "-1" is for a
-   continuation marker.  */
-#define GRUB_TERM_ENTRY_WIDTH	(GRUB_TERM_BORDER_WIDTH - 2 \
-                                 - GRUB_TERM_MARGIN * 2 - 1)
-
-/* The standard X position of the cursor.  */
-#define GRUB_TERM_CURSOR_X	(GRUB_TERM_LEFT_BORDER_X \
-                                 + GRUB_TERM_BORDER_WIDTH \
-                                 - GRUB_TERM_MARGIN \
-                                 - 1)
-
 
 struct grub_term_input
 {
@@ -224,80 +193,222 @@ struct grub_term_output
 };
 typedef struct grub_term_output *grub_term_output_t;
 
-extern struct grub_handler_class EXPORT_VAR(grub_term_input_class);
-extern struct grub_handler_class EXPORT_VAR(grub_term_output_class);
+extern struct grub_term_output *EXPORT_VAR(grub_term_outputs_disabled);
+extern struct grub_term_input *EXPORT_VAR(grub_term_inputs_disabled);
+extern struct grub_term_output *EXPORT_VAR(grub_term_outputs);
+extern struct grub_term_input *EXPORT_VAR(grub_term_inputs);
 
 static inline void
 grub_term_register_input (const char *name __attribute__ ((unused)),
 			  grub_term_input_t term)
 {
-  grub_handler_register (&grub_term_input_class, GRUB_AS_HANDLER (term));
+  if (grub_term_inputs)
+    grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs_disabled),
+		    GRUB_AS_LIST (term));
+  else
+    {
+      /* If this is the first terminal, enable automatically.  */
+      if (! term->init || term->init () == GRUB_ERR_NONE)
+	grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs), GRUB_AS_LIST (term));
+    }
 }
 
 static inline void
 grub_term_register_output (const char *name __attribute__ ((unused)),
 			   grub_term_output_t term)
 {
-  grub_handler_register (&grub_term_output_class, GRUB_AS_HANDLER (term));
+  if (grub_term_outputs)
+    grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs_disabled),
+		    GRUB_AS_LIST (term));
+  else
+    {
+      /* If this is the first terminal, enable automatically.  */
+      if (! term->init || term->init () == GRUB_ERR_NONE)
+	grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs),
+			GRUB_AS_LIST (term));
+    }
 }
 
 static inline void
 grub_term_unregister_input (grub_term_input_t term)
 {
-  grub_handler_unregister (&grub_term_input_class, GRUB_AS_HANDLER (term));
+  grub_list_remove (GRUB_AS_LIST_P (&grub_term_inputs), GRUB_AS_LIST (term));
+  grub_list_remove (GRUB_AS_LIST_P (&grub_term_inputs_disabled),
+		    GRUB_AS_LIST (term));
 }
 
 static inline void
 grub_term_unregister_output (grub_term_output_t term)
 {
-  grub_handler_unregister (&grub_term_output_class, GRUB_AS_HANDLER (term));
+  grub_list_remove (GRUB_AS_LIST_P (&grub_term_outputs), GRUB_AS_LIST (term));
+  grub_list_remove (GRUB_AS_LIST_P (&(grub_term_outputs_disabled)),
+		    GRUB_AS_LIST (term));
 }
 
-static inline grub_err_t
-grub_term_set_current_input (grub_term_input_t term)
-{
-  return grub_handler_set_current (&grub_term_input_class,
-				   GRUB_AS_HANDLER (term));
-}
-
-static inline grub_err_t
-grub_term_set_current_output (grub_term_output_t term)
-{
-  return grub_handler_set_current (&grub_term_output_class,
-				   GRUB_AS_HANDLER (term));
-}
-
-static inline grub_term_input_t
-grub_term_get_current_input (void)
-{
-  return (grub_term_input_t) grub_term_input_class.cur_handler;
-}
-
-static inline grub_term_output_t
-grub_term_get_current_output (void)
-{
-  return (grub_term_output_t) grub_term_output_class.cur_handler;
-}
+#define FOR_ACTIVE_TERM_INPUTS(var) for (var = grub_term_inputs; var; var = var->next)
+#define FOR_DISABLED_TERM_INPUTS(var) for (var = grub_term_inputs_disabled; var; var = var->next)
+#define FOR_ACTIVE_TERM_OUTPUTS(var) for (var = grub_term_outputs; var; var = var->next)
+#define FOR_DISABLED_TERM_OUTPUTS(var) for (var = grub_term_outputs_disabled; var; var = var->next)
 
 void EXPORT_FUNC(grub_putchar) (int c);
-void EXPORT_FUNC(grub_putcode) (grub_uint32_t code);
-grub_ssize_t EXPORT_FUNC(grub_getcharwidth) (grub_uint32_t code);
+void EXPORT_FUNC(grub_putcode) (grub_uint32_t code,
+				struct grub_term_output *term);
 int EXPORT_FUNC(grub_getkey) (void);
 int EXPORT_FUNC(grub_checkkey) (void);
 int EXPORT_FUNC(grub_getkeystatus) (void);
-grub_uint16_t EXPORT_FUNC(grub_getwh) (void);
-grub_uint16_t EXPORT_FUNC(grub_getxy) (void);
-void EXPORT_FUNC(grub_gotoxy) (grub_uint8_t x, grub_uint8_t y);
 void EXPORT_FUNC(grub_cls) (void);
 void EXPORT_FUNC(grub_setcolorstate) (grub_term_color_state state);
-void EXPORT_FUNC(grub_setcolor) (grub_uint8_t normal_color,
-				 grub_uint8_t highlight_color);
-void EXPORT_FUNC(grub_getcolor) (grub_uint8_t *normal_color,
-				 grub_uint8_t *highlight_color);
-int EXPORT_FUNC(grub_setcursor) (int on);
-int EXPORT_FUNC(grub_getcursor) (void);
 void EXPORT_FUNC(grub_refresh) (void);
-void EXPORT_FUNC(grub_set_more) (int onoff);
+void grub_puts_terminal (const char *str, struct grub_term_output *term);
+grub_uint16_t *grub_term_save_pos (void);
+void grub_term_restore_pos (grub_uint16_t *pos);
+
+static inline unsigned grub_term_width (struct grub_term_output *term)
+{
+  return ((term->getwh()&0xFF00)>>8);
+}
+
+static inline unsigned grub_term_height (struct grub_term_output *term)
+{
+  return (term->getwh()&0xFF);
+}
+
+/* The width of the border.  */
+static inline unsigned
+grub_term_border_width (struct grub_term_output *term)
+{
+  return grub_term_width (term) - GRUB_TERM_MARGIN * 3 - GRUB_TERM_SCROLL_WIDTH;
+}
+
+/* The max column number of an entry. The last "-1" is for a
+   continuation marker.  */
+static inline int
+grub_term_entry_width (struct grub_term_output *term)
+{
+  return grub_term_border_width (term) - 2 - GRUB_TERM_MARGIN * 2 - 1;
+}
+
+/* The height of the border.  */
+
+static inline unsigned
+grub_term_border_height (struct grub_term_output *term)
+{
+  return grub_term_height (term) - GRUB_TERM_TOP_BORDER_Y
+    - GRUB_TERM_MESSAGE_HEIGHT;
+}
+
+/* The number of entries shown at a time.  */
+static inline int
+grub_term_num_entries (struct grub_term_output *term)
+{
+  return grub_term_border_height (term) - 2;
+}
+
+static inline int
+grub_term_cursor_x (struct grub_term_output *term)
+{
+  return (GRUB_TERM_LEFT_BORDER_X + grub_term_border_width (term) 
+	  - GRUB_TERM_MARGIN - 1);
+}
+
+static inline grub_uint16_t
+grub_term_getxy (struct grub_term_output *term)
+{
+  return term->getxy ();
+}
+
+static inline void
+grub_term_refresh (struct grub_term_output *term)
+{
+  if (term->refresh)
+    term->refresh ();
+}
+
+static inline void
+grub_term_gotoxy (struct grub_term_output *term, grub_uint8_t x, grub_uint8_t y)
+{
+  term->gotoxy (x, y);
+}
+
+static inline void 
+grub_term_setcolorstate (struct grub_term_output *term, 
+			 grub_term_color_state state)
+{
+  if (term->setcolorstate)
+    term->setcolorstate (state);
+}
+
+  /* Set the normal color and the highlight color. The format of each
+     color is VGA's.  */
+static inline void 
+grub_term_setcolor (struct grub_term_output *term,
+		    grub_uint8_t normal_color, grub_uint8_t highlight_color)
+{
+  if (term->setcolor)
+    term->setcolor (normal_color, highlight_color);
+}
+
+/* Turn on/off the cursor.  */
+static inline void 
+grub_term_setcursor (struct grub_term_output *term, int on)
+{
+  if (term->setcursor)
+    term->setcursor (on);
+}
+
+static inline void 
+grub_term_cls (struct grub_term_output *term)
+{
+  if (term->cls)
+    (term->cls) ();
+  else
+    {
+      grub_putcode ('\n', term);
+      grub_term_refresh (term);
+    }
+}
+
+static inline grub_ssize_t 
+grub_term_getcharwidth (struct grub_term_output *term, grub_uint32_t c)
+{
+  if (term->getcharwidth)
+    return term->getcharwidth (c);
+  else
+    return 1;
+}
+
+static inline void 
+grub_term_getcolor (struct grub_term_output *term, 
+		    grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
+{
+  if (term->getcolor)
+    term->getcolor (normal_color, highlight_color);
+  else
+    {
+      *normal_color = 0x07;
+      *highlight_color = 0x07;
+    }
+}
+
+extern void (*EXPORT_VAR (grub_newline_hook)) (void);
+
+struct grub_term_autoload
+{
+  struct grub_term_autoload *next;
+  char *name;
+  char *modname;
+};
+
+extern struct grub_term_autoload *grub_term_input_autoload;
+extern struct grub_term_autoload *grub_term_output_autoload;
+
+static inline void
+grub_print_spaces (struct grub_term_output *term, int number_spaces)
+{
+  while (--number_spaces >= 0)
+    grub_putcode (' ', term);
+}
+
 
 /* For convenience.  */
 #define GRUB_TERM_ASCII_CHAR(c)	((c) & 0xff)

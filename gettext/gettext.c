@@ -29,8 +29,8 @@
 #include <grub/gzio.h>
 #include <grub/i18n.h>
 
-/* 
-   .mo file information from: 
+/*
+   .mo file information from:
    http://www.gnu.org/software/autoconf/manual/gettext/MO-Files.html .
 */
 
@@ -148,14 +148,24 @@ grub_gettext_translate (const char *orig)
 
   struct grub_gettext_msg *cur;
 
+  /* Make sure we can use grub_gettext_translate for error messages.  Push
+     active error message to error stack and reset error message.  */
+  grub_error_push ();
+
   cur = grub_named_list_find (GRUB_AS_NAMED_LIST (grub_gettext_msg_list),
 			      orig);
 
   if (cur)
-    return cur->translated;
+    {
+      grub_error_pop ();
+      return cur->translated;
+    }
 
   if (fd_mo == 0)
-    return orig;
+    {
+      grub_error_pop ();
+      return orig;
+    }
 
   min = 0;
   max = grub_gettext_max;
@@ -205,6 +215,7 @@ grub_gettext_translate (const char *orig)
 	grub_errno = GRUB_ERR_NONE;
     }
 
+  grub_error_pop ();
   return ret;
 }
 
@@ -243,7 +254,7 @@ grub_mofile_open (const char *filename)
   if (version != 0)
     {
       grub_error (GRUB_ERR_BAD_FILE_TYPE,
-		  "mo: invalid mo version in file: %s\n", filename);
+		  "mo: invalid mo version in file: %s", filename);
       fd_mo = 0;
       return 0;
     }
@@ -275,14 +286,19 @@ grub_gettext_init_ext (const char *lang)
   /* Warning: if changing some paths in the below line, change the grub_malloc
      contents below.  */
 
-  grub_sprintf (mo_file, "%s/%s.mo", locale_dir, lang);
+  mo_file = grub_xasprintf ("%s/%s.mo", locale_dir, lang);
+  if (!mo_file)
+    return;
 
   fd_mo = grub_mofile_open (mo_file);
 
   /* Will try adding .gz as well.  */
   if (fd_mo == NULL)
     {
-      grub_sprintf (mo_file, "%s.gz", mo_file);
+      grub_free (mo_file);
+      mo_file = grub_xasprintf ("%s.gz", mo_file);
+      if (!mo_file)
+	return;
       fd_mo = grub_mofile_open (mo_file);
     }
 
@@ -298,7 +314,7 @@ grub_gettext_init_ext (const char *lang)
 }
 
 static void
-grub_gettext_delete_list ()
+grub_gettext_delete_list (void)
 {
   struct grub_gettext_msg *item;
 
@@ -308,7 +324,7 @@ grub_gettext_delete_list ()
       char *original = (char *) ((struct grub_gettext_msg *) item)->name;
       grub_free (original);
 
-      // Don't delete the translated message because could be in use.
+      /* Don't delete the translated message because could be in use.  */
     }
 }
 
@@ -347,8 +363,8 @@ GRUB_MOD_INIT (gettext)
   grub_gettext_init_ext (lang);
 
   grub_register_command_p1 ("gettext", grub_cmd_translate,
-			    "gettext STRING",
-			    "Translates the string with the current settings.");
+			    N_("STRING"),
+			    N_("Translates the string with the current settings."));
 
   /* Reload .mo file information if lang changes.  */
   grub_register_variable_hook ("lang", NULL, grub_gettext_env_write_lang);

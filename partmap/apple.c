@@ -1,7 +1,7 @@
 /* apple.c - Read macintosh partition tables.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -176,7 +176,7 @@ apple_partition_map_iterate (grub_disk_t disk,
 
  fail:
   return grub_error (GRUB_ERR_BAD_PART_TABLE,
-		     "Apple partition map not found.");
+		     "Apple partition map not found");
 }
 
 
@@ -227,14 +227,7 @@ apple_partition_map_probe (grub_disk_t disk, const char *str)
 static char *
 apple_partition_map_get_name (const grub_partition_t p)
 {
-  char *name;
-
-  name = grub_malloc (13);
-  if (! name)
-    return 0;
-
-  grub_sprintf (name, "%d", p->index + 1);
-  return name;
+  return grub_xasprintf ("%d", p->index + 1);
 }
 
 
