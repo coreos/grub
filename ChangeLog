@@ -1,5 +1,15 @@
 2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	setpci support.
+
+	* commands/setpci.c: New file.
+	* conf/i386.rmk (pkglib_MODULES): Add setpci.mod.
+	(setpci_mod_SOURCES): New variable.
+	(setpci_mod_CFLAGS): Likewise.
+	(setpci_mod_LDFLAGS): Likewise.
+
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Byte-addressable PCI configuration space.
 
 	* bus/pci.c (grub_pci_make_address): Use byte address instead of
