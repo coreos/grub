@@ -29,17 +29,18 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/i386/efi/grub-install.in
 
 # Modules.
-pkglib_MODULES = kernel.mod chain.mod appleldr.mod 	\
+pkglib_PROGRAMS = kernel.img
+pkglib_MODULES = chain.mod appleldr.mod 	\
 	halt.mod reboot.mod linux.mod pci.mod lspci.mod \
 	datetime.mod date.mod datehook.mod loadbios.mod \
-	fixvideo.mod mmap.mod acpi.mod ata.mod
+	fixvideo.mod mmap.mod acpi.mod
 
-# For kernel.mod.
-kernel_mod_EXPORTS = no
-kernel_mod_SOURCES = kern/x86_64/efi/startup.S kern/x86_64/efi/callwrap.S \
+# For kernel.img.
+kernel_img_RELOCATABLE = yes
+kernel_img_SOURCES = kern/x86_64/efi/startup.S kern/x86_64/efi/callwrap.S \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
+	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/$(target_cpu)/dl.c kern/i386/efi/init.c kern/parser.c kern/partition.c \
 	kern/env.c symlist.c kern/efi/efi.c kern/efi/init.c kern/efi/mm.c \
@@ -47,27 +48,27 @@ kernel_mod_SOURCES = kern/x86_64/efi/startup.S kern/x86_64/efi/callwrap.S \
 	kern/i386/tsc.c kern/i386/pit.c \
 	kern/generic/millisleep.c kern/generic/rtc_get_time_ms.c \
 	term/efi/console.c disk/efi/efidisk.c
-kernel_mod_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
 	efi/efi.h efi/time.h efi/disk.h machine/loader.h i386/pit.h list.h \
-	handler.h command.h i18n.h
-kernel_mod_CFLAGS = $(COMMON_CFLAGS)
-kernel_mod_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_mod_LDFLAGS = $(COMMON_LDFLAGS)
+	handler.h command.h i18n.h env_private.h
+kernel_img_CFLAGS = $(COMMON_CFLAGS)
+kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
+kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 
 MOSTLYCLEANFILES += symlist.c
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
-symlist.c: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h gensymlist.sh
+symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
-kernel_syms.lst: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h genkernsyms.sh
+kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # For boot.mod.
-pkglib_MODULES += boot.mod 
+pkglib_MODULES += boot.mod
 boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
 boot_mod_CFLAGS = $(COMMON_CFLAGS)
 boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
@@ -76,11 +77,6 @@ boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 acpi_mod_SOURCES = commands/acpi.c commands/efi/acpi.c
 acpi_mod_CFLAGS = $(COMMON_CFLAGS)
 acpi_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For ata.mod
-ata_mod_SOURCES = disk/ata.c
-ata_mod_CFLAGS = $(COMMON_CFLAGS)
-ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For mmap.mod.
 mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c \
@@ -160,10 +156,11 @@ efi_gop_mod_CFLAGS = $(COMMON_CFLAGS)
 efi_gop_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += xnu.mod
-xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c loader/i386/efi/xnu.c\
-	 loader/macho.c loader/xnu.c loader/i386/xnu_helper.S
+xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c loader/i386/efi/xnu.c \
+	loader/macho32.c loader/macho64.c loader/macho.c loader/xnu.c
 xnu_mod_CFLAGS = $(COMMON_CFLAGS)
 xnu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 xnu_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
+include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk

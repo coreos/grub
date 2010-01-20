@@ -144,13 +144,9 @@ case x${GRUB_TERMINAL_OUTPUT} in
   x | xgfxterm)
     # If this platform supports gfxterm, try to use it.
     if test -e ${grub_prefix}/gfxterm.mod ; then
-      GRUB_VIDEO_BACKEND=
-      for i in vbe ; do
-        if test -e ${grub_prefix}/$i.mod ; then
-          GRUB_VIDEO_BACKEND=$i
-          break
-        fi
-      done
+      # FIXME: this should do something smarter than just loading first
+      # video backend.
+      GRUB_VIDEO_BACKEND=$(head -n 1 ${grub_prefix}/video.lst || true)
       if [ -n "${GRUB_VIDEO_BACKEND}" ] ; then
         GRUB_TERMINAL_OUTPUT=gfxterm
       elif [ "${GRUB_TERMINAL_OUTPUT}" = "gfxterm" ] ; then

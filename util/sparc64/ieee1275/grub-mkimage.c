@@ -1,7 +1,7 @@
 /* grub-mkimage.c - make a bootable image */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <grub/kernel.h>
+#include <grub/i18n.h>
 #include <grub/disk.h>
 #include <grub/util/misc.h>
 #include <grub/util/resolve.h>
@@ -33,6 +34,8 @@
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
+
+#include "progname.h"
 
 static void
 compress_kernel (char *kernel_img, size_t kernel_size,
@@ -188,7 +191,7 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
 Usage: %s [OPTION]... [MODULES]\n\
@@ -219,9 +222,8 @@ main (int argc, char *argv[])
   FILE *fp = stdout;
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+
+  grub_util_init_nls ();
 
   while (1)
     {

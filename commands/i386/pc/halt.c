@@ -1,7 +1,7 @@
 /* halt.c - command to halt the computer.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,12 +18,13 @@
  */
 
 #include <grub/dl.h>
-#include <grub/machine/init.h>
+#include <grub/misc.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] =
   {
-    {"no-apm", 'n', 0, "do not use APM to halt the computer", 0, 0},
+    {"no-apm", 'n', 0, N_("Do not use APM to halt the computer."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -46,8 +47,8 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(halt)
 {
   cmd = grub_register_extcmd ("halt", grub_cmd_halt, GRUB_COMMAND_FLAG_BOTH,
-			      "halt [-n]",
-			      "Halt the system, if possible using APM",
+			      "[-n]",
+			      N_("Halt the system, if possible using APM."),
 			      options);
 }
 

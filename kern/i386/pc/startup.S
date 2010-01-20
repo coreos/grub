@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007,2008 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007,2008,2009 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -145,6 +145,9 @@ multiboot_entry:
 	.code32
 	/* obtain the boot device */
 	movl	12(%ebx), %edx
+
+	movl	$GRUB_MEMORY_MACHINE_PROT_STACK, %ebp
+	movl	%ebp, %esp
 
 	/* relocate the code */
 	movl	$(GRUB_KERNEL_MACHINE_RAW_SIZE + 0x200), %ecx
@@ -485,21 +488,6 @@ FUNCTION(grub_exit)
 	.code32
 
 /*
- * grub_reboot()
- *
- * Reboot the system. At the moment, rely on BIOS.
- */
-FUNCTION(grub_reboot)
-	call	prot_to_real
-	.code16
-cold_reboot:
-	/* cold boot */
-	movw	$0x0472, %di
-	movw	%ax, (%di)
-	ljmp	$0xFFFF, $0x0000
-	.code32
-
-/*
  * grub_halt(int no_apm)
  *
  * Halt the system, using APM if possible. If NO_APM is true, don't use
@@ -776,6 +764,11 @@ FUNCTION(grub_biosdisk_get_diskinfo_int13_extensions)
 	movw	%cx, %ax
 	movw	%bx, %ds
 	int	$0x13		/* do the operation */
+	jc      noclean
+	/* Clean return value if carry isn't set to workaround
+	some buggy BIOSes.  */
+	xor     %ax, %ax
+noclean:
 	movb	%ah, %bl	/* save return value in %bl */
 	/* back to protected mode */
 	DATA32	call	real_to_prot
@@ -819,6 +812,11 @@ FUNCTION(grub_biosdisk_get_diskinfo_standard)
 	.code16
 	movb	$0x8, %ah
 	int	$0x13		/* do the operation */
+	jc      noclean2
+	/* Clean return value if carry isn't set to workaround
+	some buggy BIOSes.  */
+	xor     %ax, %ax
+noclean2:
 	/* check if successful */
 	testb	%ah, %ah
 	jnz	1f

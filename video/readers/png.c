@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -72,6 +72,10 @@
 #define DEFLATE_HDIST_MAX	30
 
 #define DEFLATE_HUFF_LEN	16
+
+#ifdef PNG_DEBUG
+static grub_command_t cmd;
+#endif
 
 struct huff_table
 {
@@ -866,7 +870,7 @@ grub_video_reader_png (struct grub_video_bitmap **bitmap,
 
 #if defined(PNG_DEBUG)
 static grub_err_t
-grub_cmd_pngtest (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_pngtest (grub_command_t cmd __attribute__ ((unused)),
 		  int argc, char **args)
 {
   struct grub_video_bitmap *bitmap = 0;
@@ -894,16 +898,16 @@ GRUB_MOD_INIT (video_reader_png)
 {
   grub_video_bitmap_reader_register (&png_reader);
 #if defined(PNG_DEBUG)
-  grub_register_command ("pngtest", grub_cmd_pngtest,
-			 GRUB_COMMAND_FLAG_BOTH, "pngtest FILE",
-			 "Tests loading of PNG bitmap.", 0);
+  cmd = grub_register_command ("pngtest", grub_cmd_pngtest,
+			       "FILE",
+			       "Tests loading of PNG bitmap.");
 #endif
 }
 
 GRUB_MOD_FINI (video_reader_png)
 {
 #if defined(PNG_DEBUG)
-  grub_unregister_command ("pngtest");
+  grub_unregister_command (cmd);
 #endif
   grub_video_bitmap_reader_unregister (&png_reader);
 }

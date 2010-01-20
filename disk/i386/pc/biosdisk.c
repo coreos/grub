@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -56,7 +56,8 @@ grub_biosdisk_call_hook (int (*hook) (const char *name), int drive)
 {
   char name[10];
 
-    grub_sprintf (name, (drive & 0x80) ? "hd%d" : "fd%d", drive & (~0x80));
+  grub_snprintf (name, sizeof (name),
+		 (drive & 0x80) ? "hd%d" : "fd%d", drive & (~0x80));
   return hook (name);
 }
 
@@ -169,7 +170,7 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
 	  else
 	    {
 	      grub_free (data);
-	      return grub_error (GRUB_ERR_BAD_DEVICE, "cannot get C/H/S values");
+	      return grub_error (GRUB_ERR_BAD_DEVICE, "%s cannot get C/H/S values", disk->name);
 	    }
         }
 
@@ -222,7 +223,7 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	  if (cmd)
 	    return grub_error (GRUB_ERR_WRITE_ERROR, "can\'t write to cdrom");
 
-	  dap->blocks = (dap->blocks + 3) >> 2;
+	  dap->blocks = ALIGN_UP (dap->blocks, 4) >> 2;
 	  dap->block >>= 2;
 
 	  for (i = 0; i < GRUB_BIOSDISK_CDROM_RETRY_COUNT; i++)
@@ -252,7 +253,7 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	  1024 /* cylinders */ *
 	  256 /* heads */ *
 	  63 /* spt */)
-	return grub_error (GRUB_ERR_OUT_OF_RANGE, "out of disk");
+	return grub_error (GRUB_ERR_OUT_OF_RANGE, "%s out of disk", disk->name);
 
       soff = ((grub_uint32_t) sector) % data->sectors + 1;
       head = ((grub_uint32_t) sector) / data->sectors;
@@ -260,7 +261,7 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
       coff = head / data->heads;
 
       if (coff >= data->cylinders)
-	return grub_error (GRUB_ERR_OUT_OF_RANGE, "out of disk");
+	return grub_error (GRUB_ERR_OUT_OF_RANGE, "%s out of disk", disk->name);
 
       if (grub_biosdisk_rw_standard (cmd + 0x02, data->drive,
 				     coff, hoff, soff, size, segment))
@@ -268,9 +269,9 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	  switch (cmd)
 	    {
 	    case GRUB_BIOSDISK_READ:
-	      return grub_error (GRUB_ERR_READ_ERROR, "biosdisk read error");
+	      return grub_error (GRUB_ERR_READ_ERROR, "%s read error", disk->name);
 	    case GRUB_BIOSDISK_WRITE:
-	      return grub_error (GRUB_ERR_WRITE_ERROR, "biosdisk write error");
+	      return grub_error (GRUB_ERR_WRITE_ERROR, "%s write error", disk->name);
 	    }
 	}
     }

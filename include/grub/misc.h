@@ -1,7 +1,7 @@
 /* misc.h - prototypes for misc functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,22 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 #include <grub/err.h>
+
+/* GCC version checking borrowed from glibc. */
+#if defined(__GNUC__) && defined(__GNUC_MINOR__)
+#  define GNUC_PREREQ(maj,min) \
+	((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+#else
+#  define GNUC_PREREQ(maj,min) 0
+#endif
+
+/* Does this compiler support compile-time error attributes? */
+#if GNUC_PREREQ(4,3)
+#  define ATTRIBUTE_ERROR(msg) \
+	__attribute__ ((__error__ (msg)))
+#else
+#  define ATTRIBUTE_ERROR(msg)
+#endif
 
 #define ALIGN_UP(addr, align) \
 	((addr + (typeof (addr)) align - 1) & ~((typeof (addr)) align - 1))
@@ -171,23 +187,28 @@ char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n);
 void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
 grub_size_t EXPORT_FUNC(grub_strlen) (const char *s);
 int EXPORT_FUNC(grub_printf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+int EXPORT_FUNC(grub_printf_) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+int EXPORT_FUNC(grub_puts) (const char *s);
+int EXPORT_FUNC(grub_puts_) (const char *s);
 void EXPORT_FUNC(grub_real_dprintf) (const char *file,
                                      const int line,
                                      const char *condition,
                                      const char *fmt, ...) __attribute__ ((format (printf, 4, 5)));
 int EXPORT_FUNC(grub_vprintf) (const char *fmt, va_list args);
-int EXPORT_FUNC(grub_sprintf) (char *str, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
-int EXPORT_FUNC(grub_vsprintf) (char *str, const char *fmt, va_list args);
+int EXPORT_FUNC(grub_snprintf) (char *str, grub_size_t n, const char *fmt, ...)
+     __attribute__ ((format (printf, 3, 4)));
+int EXPORT_FUNC(grub_vsnprintf) (char *str, grub_size_t n, const char *fmt,
+				 va_list args);
+char *EXPORT_FUNC(grub_xasprintf) (const char *fmt, ...)
+     __attribute__ ((format (printf, 1, 2)));
+char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args);
 void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
-grub_uint8_t *EXPORT_FUNC(grub_utf16_to_utf8) (grub_uint8_t *dest,
-					       grub_uint16_t *src,
-					       grub_size_t size);
-grub_ssize_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
-					     grub_size_t destsize,
-					     const grub_uint8_t *src,
-					     grub_size_t srcsize,
-					     const grub_uint8_t **srcend);
+grub_size_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
+					    grub_size_t destsize,
+					    const grub_uint8_t *src,
+					    grub_size_t srcsize,
+					    const grub_uint8_t **srcend);
 grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint32_t d, grub_uint32_t *r);
 
@@ -221,5 +242,16 @@ grub_div_roundup (unsigned int x, unsigned int y)
 {
   return (x + y - 1) / y;
 }
+
+/* Reboot the machine.  */
+void EXPORT_FUNC (grub_reboot) (void);
+
+#ifdef GRUB_MACHINE_PCBIOS
+/* Halt the system, using APM if possible. If NO_APM is true, don't
+ * use APM even if it is available.  */
+void EXPORT_FUNC (grub_halt) (int no_apm);
+#else
+void EXPORT_FUNC (grub_halt) (void);
+#endif
 
 #endif /* ! GRUB_MISC_HEADER */

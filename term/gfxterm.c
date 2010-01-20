@@ -27,7 +27,7 @@
 #include <grub/bitmap.h>
 #include <grub/command.h>
 
-#define DEFAULT_VIDEO_MODE "1024x768,800x600,640x480"
+#define DEFAULT_VIDEO_MODE	"auto"
 #define DEFAULT_BORDER_WIDTH	10
 
 #define DEFAULT_STANDARD_COLOR  0x07
@@ -95,6 +95,7 @@ struct grub_virtual_screen
   /* Color settings.  */
   grub_video_color_t fg_color;
   grub_video_color_t bg_color;
+  grub_video_color_t bg_color_display;
 
   /* Text buffer for virtual screen.  Contains (columns * rows) number
      of entries.  */
@@ -189,7 +190,7 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
   virtual_screen.font = grub_font_get (font_name);
   if (!virtual_screen.font)
     return grub_error (GRUB_ERR_BAD_FONT,
-                       "No font loaded.");
+                       "no font loaded");
   virtual_screen.width = width;
   virtual_screen.height = height;
   virtual_screen.offset_x = x;
@@ -237,17 +238,13 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
 
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
+  virtual_screen.bg_color_display = grub_video_map_rgba(0, 0, 0, 0);
+
   /* Clear out text buffer. */
   for (i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
     clear_char (&(virtual_screen.text_buffer[i]));
 
   return grub_errno;
-}
-
-static int NESTED_FUNC_ATTR video_hook (grub_video_adapter_t p __attribute__ ((unused)),
-					struct grub_video_mode_info *info)
-{
-  return ! (info->mode_type & GRUB_VIDEO_MODE_TYPE_PURE_TEXT);
 }
 
 static grub_err_t
@@ -269,13 +266,14 @@ grub_gfxterm_init (void)
   /* Parse gfxmode environment variable if set.  */
   modevar = grub_env_get ("gfxmode");
   if (! modevar || *modevar == 0)
-    err = grub_video_set_mode (DEFAULT_VIDEO_MODE, video_hook);
+    err = grub_video_set_mode (DEFAULT_VIDEO_MODE,
+			       GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
   else
     {
-      tmp = grub_malloc (grub_strlen (modevar)
-			 + sizeof (DEFAULT_VIDEO_MODE) + 1);
-      grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
-      err = grub_video_set_mode (tmp, video_hook);
+      tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
+      if (!tmp)
+	return grub_errno;
+      err = grub_video_set_mode (tmp, GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
       grub_free (tmp);
     }
 
@@ -345,7 +343,7 @@ redraw_screen_rect (unsigned int x, unsigned int y,
 
       /* If bitmap is smaller than requested blit area, use background
          color.  */
-      color = virtual_screen.bg_color;
+      color = virtual_screen.bg_color_display;
 
       /* Fill right side of the bitmap if needed.  */
       if ((x + width >= bitmap_width) && (y < bitmap_height))
@@ -392,7 +390,7 @@ redraw_screen_rect (unsigned int x, unsigned int y,
   else
     {
       /* Render background layer.  */
-      color = virtual_screen.bg_color;
+      color = virtual_screen.bg_color_display;
       grub_video_fill_rect (color, x, y, width, height);
 
       /* Render text layer as replaced (to get texts background color).  */
@@ -814,7 +812,8 @@ grub_gfxterm_cls (void)
   /* Clear text layer.  */
   grub_video_set_active_render_target (text_layer);
   color = virtual_screen.bg_color;
-  grub_video_fill_rect (color, 0, 0, mode_info.width, mode_info.height);
+  grub_video_fill_rect (color, 0, 0, virtual_screen.width,
+			virtual_screen.height);
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
   /* Mark virtual screen to be redrawn.  */
@@ -956,7 +955,7 @@ GRUB_MOD_INIT(term_gfxterm)
   grub_term_register_output ("gfxterm", &grub_video_term);
   cmd = grub_register_command ("background_image",
 			       grub_gfxterm_background_image_cmd,
-			       0, "Load background image for active terminal");
+			       0, "Load background image for active terminal.");
 }
 
 GRUB_MOD_FINI(term_gfxterm)

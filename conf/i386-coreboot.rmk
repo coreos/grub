@@ -18,9 +18,10 @@ kernel_img_SOURCES = kern/i386/coreboot/startup.S \
 	kern/i386/misc.S \
 	kern/i386/coreboot/init.c \
 	kern/i386/multiboot_mmap.c \
+	kern/i386/halt.c \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
+	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
 	kern/$(target_cpu)/dl.c kern/parser.c kern/partition.c \
@@ -34,7 +35,8 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
 	machine/boot.h machine/console.h machine/init.h \
-	machine/memory.h machine/loader.h list.h handler.h command.h i18n.h
+	machine/memory.h machine/loader.h list.h handler.h command.h i18n.h \
+	env_private.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR),-Bstatic
@@ -52,18 +54,21 @@ boot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_BOOT_MACHINE_LI
 boot_img_FORMAT = binary
 
 bin_UTILITIES += grub-mkimage
-grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
+grub_mkimage_SOURCES = util/grub-mkrawimage.c util/misc.c \
 	util/resolve.c gnulib/progname.c
 grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
+util/grub-mkrawimage.c_DEPENDENCIES = Makefile
+
 
 pkglib_IMAGES += kernel.img
 kernel_img_SOURCES = kern/i386/qemu/startup.S \
 	kern/i386/misc.S \
 	kern/i386/coreboot/init.c \
 	kern/i386/qemu/mmap.c \
+	kern/i386/halt.c \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
+	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
 	kern/$(target_cpu)/dl.c kern/parser.c kern/partition.c \
@@ -77,7 +82,8 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
 	machine/boot.h machine/console.h machine/init.h \
-	machine/memory.h machine/loader.h list.h handler.h command.h i18n.h
+	machine/memory.h machine/loader.h list.h handler.h command.h i18n.h \
+	env_private.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS) -DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS) -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_KERNEL_MACHINE_LINK_ADDR)
@@ -100,14 +106,14 @@ bin_SCRIPTS += grub-mkrescue
 grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 # Modules.
-pkglib_MODULES = linux.mod multiboot.mod 		\
+pkglib_MODULES = linux.mod 				\
 	aout.mod play.mod serial.mod 			\
 	memdisk.mod pci.mod lspci.mod reboot.mod	\
 	halt.mod datetime.mod date.mod datehook.mod	\
 	lsmmap.mod mmap.mod
 
 # For boot.mod.
-pkglib_MODULES += boot.mod 
+pkglib_MODULES += boot.mod
 boot_mod_SOURCES = commands/boot.c
 boot_mod_CFLAGS = $(COMMON_CFLAGS)
 boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
@@ -124,29 +130,19 @@ linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod.
-reboot_mod_SOURCES = commands/reboot.c kern/i386/reboot.c
+reboot_mod_SOURCES = commands/reboot.c
 reboot_mod_CFLAGS = $(COMMON_CFLAGS)
 reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod.
-halt_mod_SOURCES = commands/halt.c kern/i386/halt.c
+halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For serial.mod.
-serial_mod_SOURCES = term/i386/pc/serial.c
+serial_mod_SOURCES = term/serial.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For multiboot.mod.
-multiboot_mod_SOURCES = loader/i386/multiboot.c \
-			loader/i386/multiboot_helper.S \
-                         loader/i386/pc/multiboot2.c \
-                         loader/multiboot2.c \
-                         loader/multiboot_loader.c
-multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
-multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
-multiboot_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For aout.mod.
 aout_mod_SOURCES = loader/aout.c
@@ -181,7 +177,7 @@ lspci_mod_CFLAGS = $(COMMON_CFLAGS)
 lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For datetime.mod
-datetime_mod_SOURCES = lib/i386/datetime.c
+datetime_mod_SOURCES = lib/cmos_datetime.c
 datetime_mod_CFLAGS = $(COMMON_CFLAGS)
 datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

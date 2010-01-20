@@ -1,7 +1,7 @@
 /* nand.c - NAND flash disk access.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008 Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ grub_nand_open (const char *name, grub_disk_t disk)
     } args;
 
   if (! grub_strstr (name, "nand"))
-    return  grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Not a nand device");
+    return  grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a NAND device");
 
   data = grub_malloc (sizeof (*data));
   if (! data)
@@ -76,7 +76,7 @@ grub_nand_open (const char *name, grub_disk_t disk)
   grub_ieee1275_open (name, &dev_ihandle);
   if (! dev_ihandle)
     {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't open device");
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
       goto fail;
     }
 
@@ -89,7 +89,7 @@ grub_nand_open (const char *name, grub_disk_t disk)
 
   if ((IEEE1275_CALL_ENTRY_FN (&args) == -1) || (args.result))
     {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't get block size");
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't get block size");
       goto fail;
     }
 
@@ -102,7 +102,7 @@ grub_nand_open (const char *name, grub_disk_t disk)
 
   if ((IEEE1275_CALL_ENTRY_FN (&args) == -1) || (args.result))
     {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't get disk size");
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't get disk size");
       goto fail;
     }
 
@@ -172,7 +172,7 @@ grub_nand_read (grub_disk_t disk, grub_disk_addr_t sector,
       args.result = 1;
 
       if ((IEEE1275_CALL_ENTRY_FN (&args) == -1) || (args.result))
-        return grub_error (GRUB_ERR_READ_ERROR, "Read error");
+        return grub_error (GRUB_ERR_READ_ERROR, "read error");
 
       ofs = 0;
       size -= len;

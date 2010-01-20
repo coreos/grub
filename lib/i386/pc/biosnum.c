@@ -33,7 +33,7 @@ grub_get_root_biosnumber_default (void)
     return grub_strtoul (biosnum, 0, 0);
 
   dev = grub_device_open (0);
-  if (dev && dev->disk && dev->disk->dev 
+  if (dev && dev->disk && dev->disk->dev
       && dev->disk->dev->id == GRUB_DISK_DEVICE_BIOSDISK_ID)
     ret = (int) dev->disk->id;
 

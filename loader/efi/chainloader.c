@@ -25,6 +25,7 @@
 #include <grub/device.h>
 #include <grub/disk.h>
 #include <grub/misc.h>
+#include <grub/charset.h>
 #include <grub/mm.h>
 #include <grub/types.h>
 #include <grub/dl.h>
@@ -32,6 +33,7 @@
 #include <grub/efi/efi.h>
 #include <grub/efi/disk.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_dl_t my_mod;
 
@@ -335,7 +337,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(chainloader)
 {
   cmd = grub_register_command ("chainloader", grub_cmd_chainloader,
-			       0, "load another boot loader");
+			       0, N_("Load another boot loader."));
   my_mod = mod;
 }
 

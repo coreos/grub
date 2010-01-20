@@ -35,9 +35,12 @@ grub_rescue_parse_line (char *line, grub_reader_getline_t getline)
   if (grub_parser_split_cmdline (line, getline, &n, &args) || n < 0)
     return grub_errno;
 
+  if (n == 0)
+    return GRUB_ERR_NONE;
+
   /* In case of an assignment set the environment accordingly
      instead of calling a function.  */
-  if (n == 0 && grub_strchr (line, '='))
+  if (n == 1 && grub_strchr (line, '='))
     {
       char *val = grub_strchr (args[0], '=');
       val[0] = 0;
@@ -56,7 +59,7 @@ grub_rescue_parse_line (char *line, grub_reader_getline_t getline)
   cmd = grub_command_find (name);
   if (cmd)
     {
-      (cmd->func) (cmd, n, &args[1]);
+      (cmd->func) (cmd, n - 1, &args[1]);
     }
   else
     {

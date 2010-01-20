@@ -32,6 +32,8 @@
 #error "I'm confused"
 #endif
 
+#include <grub/i386/relocator.h>
+
 #define CONCAT(a,b)	CONCAT_(a, b)
 #define CONCAT_(a,b)	a ## b
 
@@ -98,12 +100,14 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
   code_size = (phdr(highest_segment)->p_paddr + phdr(highest_segment)->p_memsz) - phdr(lowest_segment)->p_paddr;
   grub_multiboot_payload_dest = phdr(lowest_segment)->p_paddr;
 
-  grub_multiboot_payload_size += code_size;
-  playground = grub_malloc (RELOCATOR_SIZEOF(forward) + grub_multiboot_payload_size + RELOCATOR_SIZEOF(backward));
-  if (! playground)
-    return grub_errno;
+  grub_multiboot_pure_size += code_size;
 
-  grub_multiboot_payload_orig = (long) playground + RELOCATOR_SIZEOF(forward);
+  alloc_mbi = grub_multiboot_get_mbi_size ();
+  grub_multiboot_payload_orig
+    = grub_relocator32_alloc (grub_multiboot_pure_size + alloc_mbi + 65536);
+
+  if (!grub_multiboot_payload_orig)
+    return grub_errno;
 
   /* Load every loadable segment in memory.  */
   for (i = 0; i < ehdr->e_phnum; i++)
@@ -135,8 +139,8 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
     if (phdr(i)->p_vaddr <= ehdr->e_entry
 	&& phdr(i)->p_vaddr + phdr(i)->p_memsz > ehdr->e_entry)
       {
-	grub_multiboot_payload_entry_offset = (ehdr->e_entry - phdr(i)->p_vaddr)
-	  + (phdr(i)->p_paddr  - phdr(lowest_segment)->p_paddr);
+	grub_multiboot_payload_eip = grub_multiboot_payload_dest
+	  + (ehdr->e_entry - phdr(i)->p_vaddr) + (phdr(i)->p_paddr  - phdr(lowest_segment)->p_paddr);
 	break;
       }
 

@@ -20,7 +20,8 @@
 #include <grub/pci.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
-#include <grub/command.h>
+#include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 struct grub_pci_classname
 {
@@ -84,6 +85,7 @@ static const struct grub_pci_classname grub_pci_classes[] =
     { 11, 0x30, "MIPS Processor" },
     { 11, 0x40, "Co-Processor" },
     { 11, 0x80, "Unknown Processor" },
+    { 12, 3, "USB Controller" },
     { 12, 0x80, "Serial Bus Controller" },
     { 13, 0x80, "Wireless Controller" },
     { 14, 0, "I2O" },
@@ -114,16 +116,26 @@ grub_pci_get_class (int class, int subclass)
   return 0;
 }
 
+static const struct grub_arg_option options[] =
+  {
+    {"iospace", 'i', 0, "show I/O spaces", 0, 0},
+    {0, 0, 0, 0, 0, 0}
+  };
+
+static int iospace;
+
 static int NESTED_FUNC_ATTR
-grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
+grub_lspci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
 {
   grub_uint32_t class;
   const char *sclass;
   grub_pci_address_t addr;
+  int reg;
 
-  grub_printf ("%02x:%02x.%x %04x:%04x", bus, dev, func, pciid & 0xFFFF,
-	       pciid >> 16);
-  addr = grub_pci_make_address (bus, dev, func, 2);
+  grub_printf ("%02x:%02x.%x %04x:%04x", grub_pci_get_bus (dev),
+	       grub_pci_get_device (dev), grub_pci_get_function (dev),
+	       pciid & 0xFFFF, pciid >> 16);
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
   class = grub_pci_read (addr);
 
   /* Lookup the class name, if there isn't a specific one,
@@ -142,27 +154,81 @@ grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
 
   grub_printf ("\n");
 
+  if (iospace)
+    {
+      reg = GRUB_PCI_REG_ADDRESSES;
+      while (reg < GRUB_PCI_REG_CIS_POINTER)
+	{
+	  grub_uint64_t space;
+	  addr = grub_pci_make_address (dev, reg);
+	  space = grub_pci_read (addr);
+
+	  reg += sizeof (grub_uint32_t);
+
+	  if (space == 0)
+	    continue;
+	 
+	  switch (space & GRUB_PCI_ADDR_SPACE_MASK)
+	    {
+	    case GRUB_PCI_ADDR_SPACE_IO:
+	      grub_printf ("\tIO space %d at 0x%llx\n",
+			   (unsigned) ((reg - GRUB_PCI_REG_ADDRESSES)
+			    / sizeof (grub_uint32_t)) - 1,
+			   (unsigned long long)
+			   (space & GRUB_PCI_ADDR_IO_MASK));
+	      break;
+	    case GRUB_PCI_ADDR_SPACE_MEMORY:
+	      if ((space & GRUB_PCI_ADDR_MEM_TYPE_MASK)
+		  == GRUB_PCI_ADDR_MEM_TYPE_64)
+		{
+		  addr = grub_pci_make_address (dev, reg);
+		  space |= ((grub_uint64_t) grub_pci_read (addr)) << 32;
+		  reg += sizeof (grub_uint32_t);
+		  grub_printf ("\t64-bit memory space %d at 0x%016llx [%s]\n",
+			       (unsigned) ((reg - GRUB_PCI_REG_ADDRESSES)
+				/ sizeof (grub_uint32_t)) - 2,
+			       (unsigned long long)
+			       (space & GRUB_PCI_ADDR_MEM_MASK),
+			       space & GRUB_PCI_ADDR_MEM_PREFETCH
+			       ? "prefetchable" : "non-prefetchable");
+		 
+		}
+	      else
+		grub_printf ("\t32-bit memory space %d at 0x%016llx [%s]\n",
+			     (unsigned) ((reg - GRUB_PCI_REG_ADDRESSES)
+			      / sizeof (grub_uint32_t)) - 1,
+			     (unsigned long long) 
+			     (space & GRUB_PCI_ADDR_MEM_MASK),
+			     space & GRUB_PCI_ADDR_MEM_PREFETCH
+			     ? "prefetchable" : "non-prefetchable");
+	      break;
+	    }
+	}
+    }
+
+
   return 0;
 }
 
 static grub_err_t
-grub_cmd_lspci (grub_command_t cmd __attribute__ ((unused)),
+grub_cmd_lspci (grub_extcmd_t cmd,
 		int argc __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {
+  iospace = cmd->state[0].set;
   grub_pci_iterate (grub_lspci_iter);
   return GRUB_ERR_NONE;
 }
 
-static grub_command_t cmd;
+static grub_extcmd_t cmd;
 
-GRUB_MOD_INIT(pci)
+GRUB_MOD_INIT(lspci)
 {
-  cmd = grub_register_command ("lspci", grub_cmd_lspci,
-			       0, "List PCI devices");
+  cmd = grub_register_extcmd ("lspci", grub_cmd_lspci, GRUB_COMMAND_FLAG_BOTH,
+			      "[-i]", N_("List PCI devices."), options);
 }
 
-GRUB_MOD_FINI(pci)
+GRUB_MOD_FINI(lspci)
 {
-  grub_unregister_command (cmd);
+  grub_unregister_extcmd (cmd);
 }

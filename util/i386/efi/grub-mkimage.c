@@ -55,12 +55,12 @@ align_pe32_section (Elf_Addr addr)
 /* Read the whole kernel image. Return the pointer to a read image,
    and store the size in bytes in *SIZE.  */
 static char *
-read_kernel_module (const char *dir, size_t *size)
+read_kernel_image (const char *dir, size_t *size)
 {
   char *kernel_image;
   char *kernel_path;
 
-  kernel_path = grub_util_get_path (dir, "kernel.mod");
+  kernel_path = grub_util_get_path (dir, "kernel.img");
   *size = grub_util_get_image_size (kernel_path);
   kernel_image = grub_util_read_image (kernel_path);
   free (kernel_path);
@@ -778,7 +778,7 @@ make_reloc_section (FILE *out, Elf_Addr current_address, Elf_Ehdr *e,
 	    if ((ELF_R_TYPE (info) == R_X86_64_32) ||
                 (ELF_R_TYPE (info) == R_X86_64_32S))
 	      {
-		grub_util_error ("Can\'t add fixup entry for R_X86_64_32(S)");
+		grub_util_error ("can\'t add fixup entry for R_X86_64_32(S)");
 	      }
 	    else if (ELF_R_TYPE (info) == R_X86_64_64)
 	      {
@@ -945,7 +945,7 @@ convert_elf (const char *dir, char *prefix, FILE *out, char *mods[])
   int i;
 
   /* Get the kernel image and check the format.  */
-  kernel_image = read_kernel_module (dir, &kernel_size);
+  kernel_image = read_kernel_image (dir, &kernel_size);
   e = (Elf_Ehdr *) kernel_image;
   if (! check_elf_header (e, kernel_size))
     grub_util_error ("invalid ELF header");
@@ -1029,10 +1029,10 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-mkimage --help'' for more information.\n");
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-mkimage -o FILE [OPTION]... [MODULES]\n\
+Usage: %s -o FILE [OPTION]... [MODULES]\n\
 \n\
 Make a bootable image of GRUB.\n\
 \n\
@@ -1044,7 +1044,7 @@ Make a bootable image of GRUB.\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-", GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+", program_name, GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
 
   exit (status);
 }

@@ -1,7 +1,7 @@
 /* cpio.c - cpio and tar filesystem.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007,2008 Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008,2009 Free Software Foundation, Inc.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 	return grub_errno;
 
       if (hd.magic != MAGIC_BCPIO)
-	return grub_error (GRUB_ERR_BAD_FS, "Invalid cpio archive");
+	return grub_error (GRUB_ERR_BAD_FS, "invalid cpio archive");
 
       data->size = (((grub_uint32_t) hd.filesize_1) << 16) + hd.filesize_2;
 
@@ -130,7 +130,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 	}
 
       if (grub_memcmp (hd.magic, MAGIC_USTAR, sizeof (MAGIC_USTAR) - 1))
-	return grub_error (GRUB_ERR_BAD_FS, "Invalid tar archive");
+	return grub_error (GRUB_ERR_BAD_FS, "invalid tar archive");
 
       if ((*name = grub_strdup (hd.name)) == NULL)
 	return grub_errno;
@@ -280,8 +280,10 @@ grub_cpio_open (grub_file_t file, const char *name)
 
       /* Compare NAME and FN by hand in order to cope with duplicate
 	 slashes.  */
-      i = 1;
+      i = 0;
       j = 0;
+      while (name[i] == '/')
+	i++;
       while (1)
 	{
 	  if (name[i] != fn[j])
@@ -290,12 +292,15 @@ grub_cpio_open (grub_file_t file, const char *name)
 	  if (name[i] == '\0')
 	    break;
 
-	  if (name[i] == '/' && name[i+1] == '/')
+	  while (name[i] == '/' && name[i+1] == '/')
 	    i++;
 
 	  i++;
 	  j++;
 	}
+
+      if (name[i] != fn[j])
+	goto no_match;
 
       file->data = data;
       file->size = data->size;

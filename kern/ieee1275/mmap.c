@@ -44,11 +44,11 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uin
   /* Load `/memory/available'.  */
   if (grub_ieee1275_finddevice ("/memory", &memory))
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-		       "Couldn't find /memory node");
+		       "couldn't find /memory node");
   if (grub_ieee1275_get_integer_property (memory, "available", available,
 					  sizeof available, &available_size))
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-		       "Couldn't examine /memory/available property");
+		       "couldn't examine /memory/available property");
 
   /* Decode each entry and call `hook'.  */
   i = 0;

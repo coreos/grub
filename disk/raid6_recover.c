@@ -1,7 +1,7 @@
 /* raid6_recover.c - module to recover from faulty RAID6 arrays.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -157,7 +157,7 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
 
       if (! array->device[q])
         {
-          grub_error (GRUB_ERR_READ_ERROR, "Not enough disk to restore");
+          grub_error (GRUB_ERR_READ_ERROR, "not enough disk to restore");
           goto quit;
         }
 
@@ -176,7 +176,7 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
 
       if ((! array->device[p]) || (! array->device[q]))
         {
-          grub_error (GRUB_ERR_READ_ERROR, "Not enough disk to restore");
+          grub_error (GRUB_ERR_READ_ERROR, "not enough disk to restore");
           goto quit;
         }
 
