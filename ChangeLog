@@ -1,3 +1,10 @@
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix any-emu compilation.
+
+	* conf/any-emu.rmk (bin_UTILITIES): Add grub-bin2h.
+	* grub_bin2h_SOURCES: New variable.
+
 2010-01-20  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/grub.d/00_header.in: Fix stupid mistake from last commit.
