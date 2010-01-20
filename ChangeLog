@@ -1,5 +1,11 @@
 2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add /usr/share/fonts/unifont/unifont.pcf.gz
+	as possible unifont location (Gentoo).
+	Reported by: Alexander Brüning
+
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't try to generate lists for kernel.img.
 
 	* conf/i386-efi.rmk (pkglib_PROGRAMS): New variable.
