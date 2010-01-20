@@ -20,11 +20,12 @@
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] =
   {
-    {0, 'n', 0, "do not output the trailing newline", 0, 0},
-    {0, 'e', 0, "enable interpretation of backslash escapes", 0, 0},
+    {0, 'n', 0, N_("Do not output the trailing newline."), 0, 0},
+    {0, 'e', 0, N_("Enable interpretation of backslash escapes."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -113,7 +114,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(echo)
 {
   cmd = grub_register_extcmd ("echo", grub_cmd_echo, GRUB_COMMAND_FLAG_BOTH,
-			      "echo [-e|-n] STRING", "Display a line of text.",
+			      N_("[-e|-n] STRING"), N_("Display a line of text."),
 			      options);
 }
 

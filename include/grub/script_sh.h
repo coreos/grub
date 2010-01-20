@@ -112,7 +112,7 @@ struct grub_script_cmd_menuentry
   struct grub_script_arglist *arglist;
 
   /* The sourcecode the entry will be generated from.  */
-  const char *sourcecode;
+  char *sourcecode;
 
   /* Options.  XXX: Not used yet.  */
   int options;

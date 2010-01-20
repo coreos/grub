@@ -1,7 +1,7 @@
-/* multiboot_loader.c - boot multiboot 1 or 2 OS image */
+/* multiboot_loader.c - boot multiboot kernel image */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
  */
 
 #include <grub/multiboot.h>
-#include <grub/multiboot2.h>
-#include <multiboot2.h>
 #include <grub/elf.h>
 #include <grub/file.h>
 #include <grub/err.h>
@@ -28,17 +26,9 @@
 #include <grub/misc.h>
 #include <grub/gzio.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 grub_dl_t my_mod;
-
-/* This tracks which version of multiboot to use when using
- * the module command. By default use multiboot version 1.
- * values:
- *      1 - Multiboot version 1
- *      2 - Multiboot version 2
- */
-
-static unsigned int module_version_status = 1;
 
 static int
 find_multi_boot1_header (grub_file_t file)
@@ -58,36 +48,8 @@ find_multi_boot1_header (grub_file_t file)
       ((char *) header <= buffer + len - 12) || (header = 0);
       header = (struct multiboot_header *) ((char *) header + 4))
     {
-      if (header->magic == MULTIBOOT_MAGIC
+      if (header->magic == MULTIBOOT_HEADER_MAGIC
           && !(header->magic + header->flags + header->checksum))
-        {
-           found_status = 1;
-           break;
-        }
-     }
-
-   return found_status;
-}
-
-static int
-find_multi_boot2_header (grub_file_t file)
-{
-  struct multiboot_header *header;
-  char buffer[MULTIBOOT_SEARCH];
-  int found_status = 0;
-  grub_ssize_t len;
-
-  len = grub_file_read (file, buffer, MULTIBOOT_SEARCH);
-  if (len < 32)
-    return found_status;
-
-  /* Look for the multiboot header in the buffer.  The header should
-     be at least 8 bytes and aligned on a 8-byte boundary.  */
-  for (header = (struct multiboot_header *) buffer;
-      ((char *) header <= buffer + len - 8) || (header = 0);
-      header = (struct multiboot_header *) ((char *) header + 8))
-    {
-      if (header->magic == MULTIBOOT2_HEADER_MAGIC)
         {
            found_status = 1;
            break;
@@ -108,25 +70,23 @@ grub_cmd_multiboot_loader (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
       goto fail;
     }
 
   file = grub_gzfile_open (argv[0], 1);
   if (! file)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "Couldn't open file");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
       goto fail;
     }
 
   /* find which header is in the file */
   if (find_multi_boot1_header (file))
     header_multi_ver_found = 1;
-  else if (find_multi_boot2_header (file))
-    header_multi_ver_found = 2;
   else
     {
-      grub_error (GRUB_ERR_BAD_OS, "Multiboot header not found");
+      grub_error (GRUB_ERR_BAD_OS, "multiboot header not found");
       goto fail;
     }
 
@@ -136,25 +96,9 @@ grub_cmd_multiboot_loader (grub_command_t cmd __attribute__ ((unused)),
 
   /* Launch multi boot with header */
 
-  /* XXX Find a better way to identify this.
-     This is for i386-pc */
-#if defined(GRUB_MACHINE_PCBIOS) || defined(GRUB_MACHINE_COREBOOT) || \
-    defined(GRUB_MACHINE_QEMU)
-  if (header_multi_ver_found == 1)
-    {
-      grub_dprintf ("multiboot_loader",
-		    "Launching multiboot 1 grub_multiboot() function\n");
-      grub_multiboot (argc, argv);
-      module_version_status = 1;
-    }
-#endif
-  if (header_multi_ver_found == 0 || header_multi_ver_found == 2)
-    {
-      grub_dprintf ("multiboot_loader",
-		    "Launching multiboot 2 grub_multiboot2() function\n");
-      grub_multiboot2 (argc, argv);
-      module_version_status = 2;
-    }
+  grub_dprintf ("multiboot_loader",
+		"Launching multiboot 1 grub_multiboot() function\n");
+  grub_multiboot (argc, argv);
 
   return grub_errno;
 
@@ -172,21 +116,9 @@ grub_cmd_module_loader (grub_command_t cmd __attribute__ ((unused)),
 			int argc, char *argv[])
 {
 
-#if defined(GRUB_MACHINE_PCBIOS) || defined(GRUB_MACHINE_COREBOOT) || \
-    defined(GRUB_MACHINE_QEMU)
-  if (module_version_status == 1)
-    {
-      grub_dprintf("multiboot_loader",
-           "Launching multiboot 1 grub_module() function\n");
-      grub_module (argc, argv);
-    }
-#endif
-  if (module_version_status == 2)
-    {
-      grub_dprintf("multiboot_loader",
-          "Launching multiboot 2 grub_module2() function\n");
-      grub_module2 (argc, argv);
-    }
+  grub_dprintf("multiboot_loader",
+	       "Launching multiboot 1 grub_module() function\n");
+  grub_module (argc, argv);
 
   return grub_errno;
 }
@@ -196,11 +128,17 @@ static grub_command_t cmd_multiboot, cmd_module;
 GRUB_MOD_INIT(multiboot)
 {
   cmd_multiboot =
+#ifdef GRUB_USE_MULTIBOOT2
+    grub_register_command ("multiboot2", grub_cmd_multiboot_loader,
+			   0, N_("Load a multiboot 2 kernel."));
+#else
     grub_register_command ("multiboot", grub_cmd_multiboot_loader,
-			   0, "load a multiboot kernel");
+			   0, N_("Load a multiboot kernel."));
+#endif
+
   cmd_module =
     grub_register_command ("module", grub_cmd_module_loader,
-			   0, "load a multiboot module");
+			   0, N_("Load a multiboot module."));
 
   my_mod = mod;
 }

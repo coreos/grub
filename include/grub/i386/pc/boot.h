@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2002,2005,2006,2007,2008   Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2002,2005,2006,2007,2008,2010   Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -65,5 +65,17 @@
 
 /* The size of a block list used in the kernel startup code.  */
 #define GRUB_BOOT_MACHINE_LIST_SIZE	12
+
+#ifndef ASM_FILE
+
+/* This is the blocklist used in the diskboot image.  */
+struct grub_boot_blocklist
+{
+  grub_uint64_t start;
+  grub_uint16_t len;
+  grub_uint16_t segment;
+} __attribute__ ((packed));
+
+#endif /* ! ASM_FILE */
 
 #endif /* ! BOOT_MACHINE_HEADER */

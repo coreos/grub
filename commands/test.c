@@ -1,7 +1,7 @@
 /* test.c -- The test command..  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <grub/device.h>
 #include <grub/file.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 /* A simple implementation for signed numbers. */
 static int
@@ -420,9 +421,9 @@ static grub_command_t cmd_1, cmd_2;
 GRUB_MOD_INIT(test)
 {
   cmd_1 = grub_register_command ("[", grub_cmd_test,
-				 "[ EXPRESSION ]", "Evaluate an expression");
+				 N_("EXPRESSION ]"), N_("Evaluate an expression."));
   cmd_2 = grub_register_command ("test", grub_cmd_test,
-				 "test EXPRESSION", "Evaluate an expression");
+				 N_("EXPRESSION"), N_("Evaluate an expression."));
 }
 
 GRUB_MOD_FINI(test)

@@ -29,7 +29,7 @@ FNR == 1 {
   if ($1 in symtab) {
     modtab[module] = modtab[module] " " symtab[$1];
   }
-  else {
+  else if ($1 != "__gnu_local_gp") {
     printf "%s in %s is not defined\n", $1, module >"/dev/stderr";
     error++;
     exit;

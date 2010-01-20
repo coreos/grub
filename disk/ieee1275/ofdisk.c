@@ -1,7 +1,7 @@
 /* ofdisk.c - Open Firmware disk access.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -107,7 +107,7 @@ grub_ofdisk_iterate (int (*hook) (const char *name))
 	}
 
       if (! grub_strcmp (alias->type, "block") &&
-	  grub_strcmp (alias->name, "cdrom"))
+	  grub_strncmp (alias->name, "cdrom", 5))
 	ret = hook (alias->name);
       return ret;
     }
@@ -175,7 +175,7 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
   grub_ieee1275_open (op->devpath, &dev_ihandle);
   if (! dev_ihandle)
     {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't open device");
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
       goto fail;
     }
 
@@ -184,20 +184,20 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
 
   if (grub_ieee1275_finddevice (op->devpath, &dev))
     {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't read device properties");
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read device properties");
       goto fail;
     }
 
   if (grub_ieee1275_get_property (dev, "device_type", prop, sizeof (prop),
 				  &actual))
     {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't read the device type");
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read the device type");
       goto fail;
     }
 
   if (grub_strcmp (prop, "block"))
     {
-      grub_error (GRUB_ERR_BAD_DEVICE, "Not a block device");
+      grub_error (GRUB_ERR_BAD_DEVICE, "not a block device");
       goto fail;
     }
 
@@ -244,12 +244,12 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 		      (int) (pos >> 32), (int) pos & 0xFFFFFFFFUL, &status);
   if (status < 0)
     return grub_error (GRUB_ERR_READ_ERROR,
-		       "Seek error, can't seek block %llu",
+		       "seek error, can't seek block %llu",
 		       (long long) sector);
   grub_ieee1275_read ((grub_ieee1275_ihandle_t) (unsigned long) disk->data,
 		      buf, size * 512UL, &actual);
   if (actual != actual)
-    return grub_error (GRUB_ERR_READ_ERROR, "Read error on block: %llu",
+    return grub_error (GRUB_ERR_READ_ERROR, "read error on block: %llu",
 		       (long long) sector);
 
   return 0;

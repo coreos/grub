@@ -6,7 +6,7 @@
 
    Copyright 1993 Yggdrasil Computing, Incorporated
 
-   Copyright (C) 2009  Free Software Foundation, Inc.
+   Copyright (C) 2009,2010  Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,12 +26,7 @@
 #include "config.h"
 #include "mkisofs.h"
 #include "match.h"
-
-#ifdef linux
-#include <getopt.h>
-#else
 #include "getopt.h"
-#endif
 
 #include "iso9660.h"
 #include <ctype.h>
@@ -90,6 +85,8 @@ int extension_record_size = 0;
 /* These variables are associated with command line options */
 int use_eltorito = 0;
 int use_eltorito_emul_floppy = 0;
+int use_embedded_boot = 0;
+int use_protective_msdos_label = 0;
 int use_boot_info_table = 0;
 int use_RockRidge = 0;
 int use_Joliet = 0;
@@ -100,17 +97,18 @@ int rationalize = 0;
 int generate_tables = 0;
 int print_size = 0;
 int split_output = 0;
-char * preparer = PREPARER_DEFAULT;
-char * publisher = PUBLISHER_DEFAULT;
-char * appid = APPID_DEFAULT;
-char * copyright = COPYRIGHT_DEFAULT;
-char * biblio = BIBLIO_DEFAULT;
-char * abstract = ABSTRACT_DEFAULT;
-char * volset_id = VOLSET_ID_DEFAULT;
-char * volume_id = VOLUME_ID_DEFAULT;
-char * system_id = SYSTEM_ID_DEFAULT;
-char * boot_catalog = BOOT_CATALOG_DEFAULT;
-char * boot_image = BOOT_IMAGE_DEFAULT;
+char *preparer = PREPARER_DEFAULT;
+char *publisher = PUBLISHER_DEFAULT;
+char *appid = APPID_DEFAULT;
+char *copyright = COPYRIGHT_DEFAULT;
+char *biblio = BIBLIO_DEFAULT;
+char *abstract = ABSTRACT_DEFAULT;
+char *volset_id = VOLSET_ID_DEFAULT;
+char *volume_id = VOLUME_ID_DEFAULT;
+char *system_id = SYSTEM_ID_DEFAULT;
+char *boot_catalog = BOOT_CATALOG_DEFAULT;
+char *boot_image = BOOT_IMAGE_DEFAULT;
+char *boot_image_embed = NULL;
 int volume_set_size = 1;
 int volume_sequence_number = 1;
 
@@ -197,6 +195,8 @@ struct ld_option
 
 #define OPTION_VERSION			173
 
+#define OPTION_PROTECTIVE_MSDOS_LABEL	174
+
 static const struct ld_option ld_options[] =
 {
   { {"all-files", no_argument, NULL, 'a'},
@@ -209,6 +209,10 @@ static const struct ld_option ld_options[] =
       '\0', N_("FILE"), N_("Set Bibliographic filename"), ONE_DASH },
   { {"copyright", required_argument, NULL, OPTION_COPYRIGHT},
       '\0', N_("FILE"), N_("Set Copyright filename"), ONE_DASH },
+  { {"embedded-boot", required_argument, NULL, 'G'},
+      'G', N_("FILE"), N_("Set embedded boot image name"), TWO_DASHES },
+  { {"protective-msdos-label", no_argument, NULL, OPTION_PROTECTIVE_MSDOS_LABEL },
+      '\0', NULL, N_("Patch a protective DOS-style label in the image"), TWO_DASHES },
   { {"eltorito-boot", required_argument, NULL, 'b'},
       'b', N_("FILE"), N_("Set El Torito boot image name"), ONE_DASH },
   { {"eltorito-catalog", required_argument, NULL, 'c'},
@@ -481,7 +485,7 @@ void usage(){
 	  int comma;
 	  int len;
 	  unsigned int j;
-	  char *arg;
+	  const char *arg;
 
 	  printf ("  ");
 
@@ -555,8 +559,8 @@ void usage(){
 }
 
 
-/* 
- * Fill in date in the iso9660 format 
+/*
+ * Fill in date in the iso9660 format
  *
  * The standards  state that the timezone offset is in multiples of 15
  * minutes, and is what you add to GMT to get the localtime.  The U.S.
@@ -574,9 +578,9 @@ int FDECL2(iso9660_date,char *, result, time_t, crtime){
   result[4] = local->tm_min;
   result[5] = local->tm_sec;
 
-  /* 
+  /*
    * Must recalculate proper timezone offset each time,
-   * as some files use daylight savings time and some don't... 
+   * as some files use daylight savings time and some don't...
    */
   result[6] = local->tm_yday;	/* save yday 'cause gmtime zaps it */
   local = gmtime(&crtime);
@@ -584,11 +588,11 @@ int FDECL2(iso9660_date,char *, result, time_t, crtime){
   local->tm_yday -= result[6];
   local->tm_hour -= result[3];
   local->tm_min -= result[4];
-  if (local->tm_year < 0) 
+  if (local->tm_year < 0)
     {
       local->tm_yday = -1;
     }
-  else 
+  else
     {
       if (local->tm_year > 0) local->tm_yday = 1;
     }
@@ -636,9 +640,11 @@ int FDECL2(main, int, argc, char **, argv){
   char *log_file = 0;
 
   set_program_name (argv[0]);
+#if ENABLE_NLS
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
+#endif /* ENABLE_NLS */
 
   if (argc < 2)
     usage();
@@ -719,10 +725,16 @@ int FDECL2(main, int, argc, char **, argv){
 	use_eltorito++;
 	boot_image = optarg;  /* pathname of the boot image on cd */
 	if (boot_image == NULL)
-	  {
-	    fprintf (stderr, _("Required boot image pathname missing\n"));
-	    exit (1);
-	  }
+	  error (1, 0, _("Required boot image pathname missing"));
+	break;
+      case 'G':
+	use_embedded_boot = 1;
+	boot_image_embed = optarg;  /* pathname of the boot image on host filesystem */
+	if (boot_image_embed == NULL)
+	  error (1, 0, _("Required boot image pathname missing"));
+	break;
+      case OPTION_PROTECTIVE_MSDOS_LABEL:
+	use_protective_msdos_label = 1;
 	break;
       case 'c':
 	use_eltorito++;
@@ -897,7 +909,7 @@ int FDECL2(main, int, argc, char **, argv){
 	exit (0);
 	break;
       case OPTION_VERSION:
-	printf ("%s (%s %s)\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
+	printf ("%s version %s\n", PACKAGE_NAME, PACKAGE_VERSION);
 	exit (0);
 	break;
       case OPTION_NOSPLIT_SL_COMPONENT:
@@ -957,7 +969,7 @@ parse_input_files:
     {
 	int resource;
     struct rlimit rlp;
-	if (getrlimit(RLIMIT_DATA,&rlp) == -1) 
+	if (getrlimit(RLIMIT_DATA,&rlp) == -1)
 		perror (_("Warning: getrlimit"));
 	else {
 		rlp.rlim_cur=33554432;
@@ -1077,7 +1089,7 @@ parse_input_files:
 		 merge_image);
 	}
 
-      memcpy(&de.isorec.extent, mrootp->extent, 8);      
+      memcpy(&de.isorec.extent, mrootp->extent, 8);     
     }
 
   /*
@@ -1160,8 +1172,8 @@ parse_input_files:
 		  break;
 		}
 	      *pnt = '\0';
-	      graft_dir = find_or_create_directory(graft_dir, 
-						   graft_point, 
+	      graft_dir = find_or_create_directory(graft_dir,
+						   graft_point,
 						   NULL, TRUE);
 	      *pnt = PATH_SEPARATOR;
 	      xpnt = pnt + 1;
@@ -1247,12 +1259,12 @@ parse_input_files:
 
   if (goof)
     error (1, 0, _("Joliet tree sort failed.\n"));
-  
+ 
   /*
    * Fix a couple of things in the root directory so that everything
    * is self consistent.
    */
-  root->self = root->contents;  /* Fix this up so that the path 
+  root->self = root->contents;  /* Fix this up so that the path
 				   tables get done right */
 
   /*
@@ -1329,8 +1341,8 @@ parse_input_files:
 
   outputlist_insert(&dirtree_clean);
 
-  if(extension_record) 
-    { 
+  if(extension_record)
+    {
       outputlist_insert(&extension_desc);
     }
 
@@ -1341,7 +1353,7 @@ parse_input_files:
    * will always be a primary and an end volume descriptor.
    */
   last_extent = session_start;
-  
+ 
   /*
    * Calculate the size of all of the components of the disc, and assign
    * extent numbers.
@@ -1387,7 +1399,7 @@ parse_input_files:
   if( verbose > 0 )
     {
 #ifdef HAVE_SBRK
-      fprintf (stderr, _("Max brk space used %x\n"), 
+      fprintf (stderr, _("Max brk space used %x\n"),
 	       (unsigned int)(((unsigned long)sbrk(0)) - mem_start));
 #endif
       fprintf (stderr, _("%llu extents written (%llu MiB)\n"), last_extent, last_extent >> 9);

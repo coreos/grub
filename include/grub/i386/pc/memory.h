@@ -1,7 +1,7 @@
 /* memory.h - describe the memory map */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@
 #include <grub/err.h>
 #include <grub/memory.h>
 #endif
+
+#include <grub/i386/memory.h>
 
 /* The scratch buffer used in real mode code.  */
 #define GRUB_MEMORY_MACHINE_SCRATCH_ADDR	0x68000
@@ -62,9 +64,6 @@
 /* The address where another boot loader is loaded.  */
 #define GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR	0x7c00
 
-/* The flag for protected mode.  */
-#define GRUB_MEMORY_MACHINE_CR0_PE_ON		0x1
-
 /* The code segment of the protected mode.  */
 #define GRUB_MEMORY_MACHINE_PROT_MODE_CSEG	0x8
 
@@ -86,7 +85,7 @@
 struct grub_machine_bios_data_area
 {
   grub_uint8_t unused1[0x17];
-  grub_uint8_t keyboard_flag_lower; /* 0x17 */ 
+  grub_uint8_t keyboard_flag_lower; /* 0x17 */
   grub_uint8_t unused2[0xf0 - 0x18];
 };
 
