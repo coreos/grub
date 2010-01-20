@@ -97,11 +97,11 @@ EOF
 if [ x$GRUB_THEME != x ] && [ -f $GRUB_THEME ] \
 	&& is_path_readable_by_grub $GRUB_THEME; then
     echo "Found theme: $GRUB_THEME" >&2
-    prepare_grub_to_access_device `${grub_probe} --target=device $GRUB_THEME`
+    prepare_grub_to_access_device `${grub_probe} --target=device $GRUB_THEME` | sed -e "s/^/  /"
     cat << EOF
-insmod gfxmenu
-set theme=(\$root)`make_system_path_relative_to_its_root $GRUB_THEME`
-set menuviewer=gfxmenu
+  insmod gfxmenu
+  set theme=(\$root)`make_system_path_relative_to_its_root $GRUB_THEME`
+  set menuviewer=gfxmenu
 EOF
 fi
     cat << EOF
