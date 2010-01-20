@@ -536,7 +536,11 @@ grub_linux_boot (void)
     }
 
   if (! grub_linux_setup_video (params))
-    params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
+    {
+      /* Use generic framebuffer unless VESA is known to be supported.  */
+      if (params->have_vga != GRUB_VIDEO_LINUX_TYPE_VESA)
+	params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
+    }
   else
     {
       params->have_vga = GRUB_VIDEO_LINUX_TYPE_TEXT;
@@ -793,6 +797,10 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 			     argv[i], vid_mode);
 		break;
 	      }
+
+	    /* We can't detect VESA, but user is implicitly telling us that it
+	       is built-in because `vga=' parameter was used.  */
+	    params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
 
 	    linux_mode
 	      = &linux_vesafb_modes[vid_mode - GRUB_LINUX_VID_MODE_VESA_START];

@@ -1,3 +1,10 @@
+2010-01-20  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/linux.c (grub_cmd_linux): If `vga=' was used, write down
+	that VESA is supported.
+	(grub_linux_boot): Use generic framebuffer unless VESA is known to be
+	supported.
+
 2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* conf/common.rmk (font/font.c_DEPENDENCIES): Condition on FONT_SOURCE.
