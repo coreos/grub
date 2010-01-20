@@ -1,5 +1,61 @@
 2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Move context handling out of the kernel.
+
+	* conf/any-emu.rmk (grub_emu_SOURCES): Add normal/context.c.
+	* conf/common.rmk (normal_mod_SOURCES): Add normal/context.c.
+	* conf/i386-coreboot.rmk (kernel_img_HEADERS): Add env_private.h.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+	* include/grub/env.h: Include grub/menu.h.
+	(grub_env_var_type): Removed.
+	(grub_env_var): Replaced field 'type' with 'global'.
+	(grub_env_find): New prototype.
+	(grub_env_context_open): Remove EXPORT_FUNC.
+	(grub_env_context_close): Likewise.
+	(grub_env_export): Likewise.
+	(grub_env_set_data_slot): Removed.
+	(grub_env_get_data_slot): Likewise.
+	(grub_env_unset_data_slot): Likewise.
+	(grub_env_unset_menu): New prototype.
+	(grub_env_set_menu): Likewise.
+	(grub_env_get_menu): Likewise.
+	* include/grub/env_private.h: New file.
+	* include/grub/normal.h (grub_context_init): New prototype.
+	(grub_context_fini): Likewise.
+	* kern/corecmd.c (grub_core_cmd_export): Moved from here ...
+	* normal/context.c (grub_cmd_export): ... to here.
+	* kern/env.c: Include env_private.h.
+	(HASHSZ): Moved to include/grub/env_private.h.
+	(grub_env_context): Likewise.
+	(grub_env_sorted_var): Likewise.
+	(current_context): Renamed from this ...
+	(grub_current_context): ...to this. 'static' removed. All users updated.
+	(grub_env_find): Removed 'static'.
+	(grub_env_context_open): Moved to normal/context.c.
+	(grub_env_context_close): Likewise.
+	(grub_env_export): Likewise.
+	(mangle_data_slot_name): Removed.
+	(grub_env_set_data_slot): Likewise.
+	(grub_env_get_data_slot): Likewise.
+	(grub_env_unset_data_slot): Likewise.
+	* kern/main.c (grub_set_root_dev): Don't export root.
+	It will be done later.
+	(grub_main): Don't export prefix.
+	It will be done later.
+	* normal/context.c: New file.
+	* normal/main.c (free_menu): Use grub_env_unset_menu.
+	(grub_normal_add_menu_entry): Use grub_env_get_menu.
+	(read_config_file): Use grub_env_get_menu and grub_env_set_menu.
+	(GRUB_MOD_INIT(normal)): Call grub_context_init.
+	(GRUB_MOD_FINI(normal)): Call grub_context_fini.
+
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	setpci support.
 
 	* commands/setpci.c: New file.

@@ -35,7 +35,8 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
 	machine/boot.h machine/console.h machine/init.h \
-	machine/memory.h machine/loader.h list.h handler.h command.h i18n.h
+	machine/memory.h machine/loader.h list.h handler.h command.h i18n.h \
+	env_private.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR),-Bstatic
@@ -81,7 +82,8 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
 	machine/boot.h machine/console.h machine/init.h \
-	machine/memory.h machine/loader.h list.h handler.h command.h i18n.h
+	machine/memory.h machine/loader.h list.h handler.h command.h i18n.h \
+	env_private.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS) -DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS) -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_KERNEL_MACHINE_LINK_ADDR)
