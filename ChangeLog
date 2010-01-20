@@ -1,3 +1,19 @@
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/font.h (grub_font_load): Fix prototype.
+
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* conf/mips.rmk (kernel_img_HEADERS) [yeeloong]: Add pci.h.
+
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/x86_64/at_keyboard.h: New file.
+
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/mips/linux.c: Include missing grub/i18n.h.
+
 2009-12-20  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* normal/menu.c (notify_execution_failure): Clarify error message.
