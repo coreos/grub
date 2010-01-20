@@ -1,3 +1,7 @@
+2010-01-20  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub.d/00_header.in: Fix handling of locale_dir.
+
 2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Add /usr/share/fonts/unifont/unifont.pcf.gz
