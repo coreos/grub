@@ -26,7 +26,8 @@ enum
 {
   OBJ_TYPE_ELF,
   OBJ_TYPE_MEMDISK,
-  OBJ_TYPE_CONFIG
+  OBJ_TYPE_CONFIG,
+  OBJ_TYPE_FONT
 };
 
 /* The module header.  */

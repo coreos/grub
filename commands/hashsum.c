@@ -111,11 +111,9 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
 	{
 	  char *filename;
 	  
-	  filename = grub_malloc (grub_strlen (prefix)
-				  + grub_strlen (p) + 2);
+	  filename = grub_xasprintf ("%s/%s", prefix, p);
 	  if (!filename)
 	    return grub_errno;
-	  grub_sprintf (filename, "%s/%s", prefix, p);
 	  file = grub_file_open (filename);
 	  grub_free (filename);
 	}

@@ -31,21 +31,22 @@ hexdump (unsigned long bse, char *buf, int len)
     {
       int cnt, i;
 
-      pos = grub_sprintf (line, "%08lx  ", bse);
+      pos = grub_snprintf (line, sizeof (line), "%08lx  ", bse);
       cnt = 16;
       if (cnt > len)
 	cnt = len;
 
       for (i = 0; i < cnt; i++)
 	{
-	  pos += grub_sprintf (&line[pos], "%02x ", (unsigned char) buf[i]);
+	  pos += grub_snprintf (&line[pos], sizeof (line) - pos,
+				"%02x ", (unsigned char) buf[i]);
 	  if ((i & 7) == 7)
 	    line[pos++] = ' ';
 	}
 
       for (; i < 16; i++)
 	{
-	  pos += grub_sprintf (&line[pos], "   ");
+	  pos += grub_snprintf (&line[pos], sizeof (line) - pos, "   ");
 	  if ((i & 7) == 7)
 	    line[pos++] = ' ';
 	}

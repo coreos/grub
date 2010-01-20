@@ -17,8 +17,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_SERIAL_MACHINE_HEADER
-#define GRUB_SERIAL_MACHINE_HEADER	1
+#ifndef GRUB_SERIAL_HEADER
+#define GRUB_SERIAL_HEADER	1
 
 /* Macros.  */
 
@@ -64,7 +64,9 @@
 /* Turn on DTR, RTS, and OUT2.  */
 #define UART_ENABLE_MODEM	0x0B
 
-unsigned short
+#include <grub/cpu/io.h>
+
+grub_port_t
 grub_serial_hw_get_port (const unsigned int unit);
 
 #endif /* ! GRUB_SERIAL_MACHINE_HEADER */

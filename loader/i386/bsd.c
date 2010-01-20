@@ -33,7 +33,7 @@
 #include <grub/command.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
-#include <grub/i386/pc/serial.h>
+#include <grub/serial.h>
 
 #include <grub/video.h>
 #ifdef GRUB_MACHINE_PCBIOS
@@ -849,11 +849,9 @@ grub_netbsd_setup_video (void)
   if (modevar && *modevar != 0)
     {
       char *tmp;
-      tmp = grub_malloc (grub_strlen (modevar)
-			 + sizeof (";" NETBSD_DEFAULT_VIDEO_MODE));
+      tmp = grub_xasprintf ("%s;" NETBSD_DEFAULT_VIDEO_MODE, modevar);
       if (! tmp)
 	return grub_errno;
-      grub_sprintf (tmp, "%s;" NETBSD_DEFAULT_VIDEO_MODE, modevar);
       err = grub_video_set_mode (tmp, 0, 0);
       grub_free (tmp);
     }
@@ -1634,14 +1632,20 @@ grub_cmd_freebsd_loadenv (grub_command_t cmd __attribute__ ((unused)),
 
       if (*curr)
 	{
-	  char name[grub_strlen (curr) + sizeof("kFreeBSD.")];
+	  char *name;
 
 	  if (*p == '"')
 	    p++;
 
-	  grub_sprintf (name, "kFreeBSD.%s", curr);
-	  if (grub_env_set (name, p))
+	  name = grub_xasprintf ("kFreeBSD.%s", curr);
+	  if (!name)
 	    goto fail;
+	  if (grub_env_set (name, p))
+	    {
+	      grub_free (name);
+	      goto fail;
+	    }
+	  grub_free (name);
 	}
     }
 

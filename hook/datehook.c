@@ -76,7 +76,7 @@ grub_read_hook_datetime (struct grub_env_var *var,
                 return grub_get_weekday_name (&datetime);
               }
 
-            grub_sprintf (buf, "%d", n);
+            grub_snprintf (buf, sizeof (buf), "%d", n);
             break;
           }
     }

@@ -842,17 +842,16 @@ grub_jfs_uuid (grub_device_t device, char **uuid)
   data = grub_jfs_mount (disk);
   if (data)
     {
-      *uuid = grub_malloc (40 + sizeof ('\0'));
-
-      grub_sprintf (*uuid, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-		    data->sblock.uuid[0], data->sblock.uuid[1],
-		    data->sblock.uuid[2], data->sblock.uuid[3],
-		    data->sblock.uuid[4], data->sblock.uuid[5],
-		    data->sblock.uuid[6], data->sblock.uuid[7],
-		    data->sblock.uuid[8], data->sblock.uuid[9],
-		    data->sblock.uuid[10], data->sblock.uuid[11],
-		    data->sblock.uuid[12], data->sblock.uuid[13],
-		    data->sblock.uuid[14], data->sblock.uuid[15]);
+      *uuid = grub_xasprintf ("%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-"
+			     "%02x%02x%02x%02x%02x%02x",
+			     data->sblock.uuid[0], data->sblock.uuid[1],
+			     data->sblock.uuid[2], data->sblock.uuid[3],
+			     data->sblock.uuid[4], data->sblock.uuid[5],
+			     data->sblock.uuid[6], data->sblock.uuid[7],
+			     data->sblock.uuid[8], data->sblock.uuid[9],
+			     data->sblock.uuid[10], data->sblock.uuid[11],
+			     data->sblock.uuid[12], data->sblock.uuid[13],
+			     data->sblock.uuid[14], data->sblock.uuid[15]);
     }
   else
     *uuid = NULL;

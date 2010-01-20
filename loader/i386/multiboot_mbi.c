@@ -114,6 +114,18 @@ grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
 	case GRUB_MACHINE_MEMORY_AVAILABLE:
  	  mmap_entry->type = MULTIBOOT_MEMORY_AVAILABLE;
  	  break;
+
+#ifdef GRUB_MACHINE_MEMORY_ACPI_RECLAIMABLE
+	case GRUB_MACHINE_MEMORY_ACPI_RECLAIMABLE:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_ACPI_RECLAIMABLE;
+ 	  break;
+#endif
+
+#ifdef GRUB_MACHINE_MEMORY_NVS
+	case GRUB_MACHINE_MEMORY_NVS:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_NVS;
+ 	  break;
+#endif	  
 	  
  	default:
  	  mmap_entry->type = MULTIBOOT_MEMORY_RESERVED;
@@ -142,11 +154,9 @@ set_video_mode (void)
       else
 	{
 	  char *tmp;
-	  tmp = grub_malloc (grub_strlen (modevar)
-			     + sizeof (DEFAULT_VIDEO_MODE) + 1);
+	  tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
 	  if (! tmp)
 	    return grub_errno;
-	  grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
 	  err = grub_video_set_mode (tmp, 0, 0);
 	  grub_free (tmp);
 	}

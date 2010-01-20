@@ -21,8 +21,8 @@
 	.p2align	4	/* force 16-byte alignment */
 
 VARIABLE (grub_relocator32_forward_start)
-	move $12, $9
-	move $13, $10
+	move $a0, $9
+	move $a1, $10
 
 copycont1:	
 	lb $11,0($8)
@@ -32,31 +32,13 @@ copycont1:
 	addiu $10, $10, 0xffff
 	bne $10, $0, copycont1
 
-	move $9, $12
-	move $10, $13
-cachecont1a:	
-	cache 1,0($12)
-	addiu $12, $12, 0x1
-	addiu $13, $13, 0xffff
-	bne $13, $0, cachecont1a
-
-	sync
-
-	move $12, $9
-	move $13, $10
-cachecont1b:	
-	cache 0,0($12)
-	addiu $12, $12, 0x1
-	addiu $13, $13, 0xffff
-	bne $13, $0, cachecont1b
-
-	sync
+#include "../../kern/mips/cache_flush.S"
 
 VARIABLE (grub_relocator32_forward_end)
 
 VARIABLE (grub_relocator32_backward_start)
-	move $12, $9
-	move $13, $10
+	move $a0, $9
+	move $a1, $10
 
 	addu $9, $9, $10
 	addu $8, $8, $10
@@ -71,23 +53,6 @@ copycont2:
 	addiu $10, 0xffff
 	bne $10, $0, copycont2
 
-	move $9, $12
-	move $10, $13
-cachecont2a:	
-	cache 1,0($12)
-	addiu $12, $12, 0x1
-	addiu $13, $13, 0xffff
-	bne $13, $0, cachecont2a
+#include "../../kern/mips/cache_flush.S"
 
-	sync
-
-	move $12, $9
-	move $13, $10
-cachecont2b:	
-	cache 0,0($12)
-	addiu $12, $12, 0x1
-	addiu $13, $13, 0xffff
-	bne $13, $0, cachecont2b
-
-	sync
 VARIABLE (grub_relocator32_backward_end)

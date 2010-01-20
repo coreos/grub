@@ -167,7 +167,7 @@ save_text(const char *fmt, const char *s, int len)
 
     get_space(s_len + 1);
 
-    (void) grub_sprintf(out_buff + out_used, fmt, s);
+    (void) grub_snprintf(out_buff + out_used, s_len + 1, fmt, s);
     out_used += grub_strlen(out_buff + out_used);
 }
 
@@ -179,7 +179,7 @@ save_number(const char *fmt, int number, int len)
 
     get_space((unsigned) len + 1);
 
-    (void) grub_sprintf(out_buff + out_used, fmt, number);
+    (void) grub_snprintf(out_buff + out_used, len + 1, fmt, number);
     out_used += grub_strlen(out_buff + out_used);
 }
 

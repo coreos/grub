@@ -1,7 +1,7 @@
-/* kern/i386/datetime.c - x86 CMOS datetime function.
+/* kern/cmos_datetime.c - CMOS datetime function.
  *
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  */
 
 #include <grub/datetime.h>
-#include <grub/i386/cmos.h>
+#include <grub/cmos.h>
 
 grub_err_t
 grub_get_datetime (struct grub_datetime *datetime)
