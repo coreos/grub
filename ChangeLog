@@ -1,5 +1,9 @@
 2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/font.h (grub_font_load): Fix prototype.
+
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/mips.rmk (kernel_img_HEADERS) [yeeloong]: Add pci.h.
 
 2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
