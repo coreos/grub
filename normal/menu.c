@@ -98,7 +98,7 @@ grub_menu_set_timeout (int timeout)
     {
       char buf[16];
 
-      grub_sprintf (buf, "%d", timeout);
+      grub_snprintf (buf, sizeof (buf), "%d", timeout);
       grub_env_set ("timeout", buf);
     }
 }

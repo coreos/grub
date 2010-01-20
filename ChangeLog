@@ -1,3 +1,21 @@
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/misc.h (grub_sprintf): Removed. All users switched to
+	grub_xasprintf or grub_snprintf.
+	(grub_vsprintf): Likewise.
+	(grub_snprintf): New proto.
+	(grub_vsnprintf): Likewise.
+	(grub_xasprintf): Likewise.
+	(grub_xvasprintf): Likewise.
+	* kern/misc.c (grub_vprintf): Use grub_vsnprintf_real.
+	(grub_sprintf): Removed.
+	(grub_vsnprintf): New function.
+	(grub_snprintf): Likewise.
+	(grub_xvasprintf): Likewise.
+	(grub_xasprintf): Likewise.
+	(grub_vsprintf): Renamed to ...
+	(grub_vsnprintf_real): ...this. New argument max_len.
+
 2010-01-20  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* include/grub/script_sh.h (sourcecode): Remove const qualifier to

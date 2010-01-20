@@ -270,11 +270,10 @@ grub_gfxterm_init (void)
 			       GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
   else
     {
-      tmp = grub_malloc (grub_strlen (modevar)
-			 + sizeof (DEFAULT_VIDEO_MODE) + 1);
-      grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
-      err = grub_video_set_mode (tmp,
-				 GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
+      tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
+      if (!tmp)
+	return grub_errno;
+      err = grub_video_set_mode (tmp, GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
       grub_free (tmp);
     }
 

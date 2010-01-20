@@ -627,12 +627,10 @@ grub_dl_load (const char *name)
     return 0;
   }
 
-  filename = (char *) grub_malloc (grub_strlen (grub_dl_dir) + 1
-				   + grub_strlen (name) + 4 + 1);
+  filename = grub_xasprintf ("%s/%s.mod", grub_dl_dir, name);
   if (! filename)
     return 0;
 
-  grub_sprintf (filename, "%s/%s.mod", grub_dl_dir, name);
   mod = grub_dl_load_file (filename);
   grub_free (filename);
 

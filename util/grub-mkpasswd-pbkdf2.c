@@ -50,9 +50,9 @@ grub_vprintf (const char *fmt, va_list args)
 }
 
 int 
-grub_vsprintf (char *str, const char *fmt, va_list args)
+grub_vsnprintf (char *str, grub_size_t n, const char *fmt, va_list args)
 {
-  return vsprintf (str, fmt, args);
+  return vsnprintf (str, n, fmt, args);
 }
 
 void

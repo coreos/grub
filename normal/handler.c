@@ -172,12 +172,11 @@ read_handler_list (void)
     {
       char *filename;
 
-      filename = grub_malloc (grub_strlen (prefix) + sizeof ("/handler.lst"));
+      filename = grub_xasprintf ("%s/handler.lst", prefix);
       if (filename)
 	{
 	  grub_file_t file;
 
-	  grub_sprintf (filename, "%s/handler.lst", prefix);
 	  file = grub_file_open (filename);
 	  if (file)
 	    {
