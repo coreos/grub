@@ -1,5 +1,16 @@
 2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't try to generate lists for kernel.img.
+
+	* conf/i386-efi.rmk (pkglib_PROGRAMS): New variable.
+	(pkglib_MODULES): Remove kernel.img.
+	(kernel_img_EXPORTS): Removed.
+	(kernel_img_RELOCATABLE): New variable.
+	* conf/x86_64-efi.rmk: Likewise.
+	* genmk.rb: Remove *_EXPORTS support and add *_RELOCATABLE support.
+
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/misc.h (grub_sprintf): Removed. All users switched to
 	grub_xasprintf or grub_snprintf.
 	(grub_vsprintf): Likewise.

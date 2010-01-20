@@ -132,13 +132,11 @@ clean-module-#{@name}.#{@rule_count}:
 
 CLEAN_MODULE_TARGETS += clean-module-#{@name}.#{@rule_count}
 
-ifneq ($(#{prefix}_EXPORTS),no)
 clean-module-#{@name}-symbol.#{@rule_count}:
 	rm -f #{defsym}
 
 CLEAN_MODULE_TARGETS += clean-module-#{@name}-symbol.#{@rule_count}
 DEFSYMFILES += #{defsym}
-endif
 mostlyclean-module-#{@name}.#{@rule_count}:
 	rm -f #{deps_str}
 
@@ -170,14 +168,12 @@ endif
 #{mod_src}: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '#{mod_name}' $< > $@ || (rm -f $@; exit 1)
 
-ifneq ($(#{prefix}_EXPORTS),no)
 ifneq ($(TARGET_APPLE_CC),1)
 #{defsym}: #{pre_obj}
 	$(NM) -g --defined-only -P -p $< | sed 's/^\\([^ ]*\\).*/\\1 #{mod_name}/' > $@
 else
 #{defsym}: #{pre_obj}
 	$(NM) -g -P -p $< | grep -E '^[a-zA-Z0-9_]* [TDS]'  | sed 's/^\\([^ ]*\\).*/\\1 #{mod_name}/' > $@
-endif
 endif
 
 #{undsym}: #{pre_obj}
@@ -331,9 +327,15 @@ class Program
     "CLEANFILES += #{@name} #{objs_str}
 MOSTLYCLEANFILES += #{deps_str}
 
+ifeq ($(#{prefix}_RELOCATABLE),yes)
+#{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
+	$(TARGET_CC) -Wl,-r,-d -o $@ #{objs_str} $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
+	$(STRIP) --strip-unneeded -K start -R .note -R .comment $@
+else
 #{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
 	$(TARGET_CC) -o $@ #{objs_str} $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
 	$(STRIP) -R .rel.dyn -R .reginfo -R .note -R .comment $@
+endif
 
 " + objs.collect_with_index do |obj, i|
       src = sources[i]
