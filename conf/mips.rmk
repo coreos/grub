@@ -25,24 +25,6 @@ symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.
 kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
-# Programs
-pkglib_IMAGES = kernel.img
-kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
-	kern/main.c kern/device.c kern/$(target_cpu)/init.c \
-	kern/$(target_cpu)/$(target_machine)/init.c 		\
-	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
-	kern/misc.c kern/mm.c kern/term.c 	\
-	kern/rescue_parser.c kern/rescue_reader.c \
-	kern/list.c kern/handler.c kern/command.c kern/corecmd.c	\
-	kern/parser.c kern/partition.c kern/env.c kern/$(target_cpu)/dl.c 	\
-	kern/generic/millisleep.c kern/generic/rtc_get_time_ms.c kern/time.c    \
-	symlist.c kern/$(target_cpu)/cache.S
-kernel_img_CFLAGS = $(COMMON_CFLAGS)
-kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
-	-Wl,-N,-S,-Ttext,$(LINK_BASE),-Bstatic
-kernel_img_FORMAT = binary
-
 # Scripts.
 sbin_SCRIPTS = 
 bin_SCRIPTS = 

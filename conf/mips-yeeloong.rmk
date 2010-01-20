@@ -5,11 +5,30 @@ COMMON_CFLAGS += -march=mips3
 COMMON_ASFLAGS += -march=mips3
 include $(srcdir)/conf/mips.mk
 
-# For pci.mod.
-pkglib_MODULES += pci.mod
-pci_mod_SOURCES = bus/pci.c bus/bonito.c
-pci_mod_CFLAGS = $(COMMON_CFLAGS)
-pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_IMAGES = kernel.img
+kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
+	kern/main.c kern/device.c kern/$(target_cpu)/init.c \
+	kern/$(target_cpu)/$(target_machine)/init.c 		\
+	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
+	kern/misc.c kern/mm.c kern/term.c 	\
+	kern/rescue_parser.c kern/rescue_reader.c \
+	kern/list.c kern/handler.c kern/command.c kern/corecmd.c	\
+	kern/parser.c kern/partition.c kern/env.c kern/$(target_cpu)/dl.c 	\
+	kern/generic/millisleep.c kern/generic/rtc_get_time_ms.c kern/time.c    \
+	kern/$(target_cpu)/cache.S \
+	\
+	term/at_keyboard.c \
+	font/font_cmd.c font/font.c io/bufio.c \
+	video/video.c video/fb/video_fb.c video/fb/fbblit.c \
+	video/fb/fbfill.c video/fb/fbutil.c video/bitmap.c \
+	video/sm712.c bus/pci.c bus/bonito.c \
+	term/gfxterm.c commands/extcmd.c lib/arg.c \
+	symlist.c
+kernel_img_CFLAGS = $(COMMON_CFLAGS) -DUSE_ASCII_FAILBACK
+kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
+kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
+	-Wl,-N,-S,-Ttext,$(LINK_BASE),-Bstatic
+kernel_img_FORMAT = binary
 
 # For ata.mod.
 pkglib_MODULES += ata.mod
@@ -17,23 +36,11 @@ ata_mod_SOURCES = disk/ata.c
 ata_mod_CFLAGS = $(COMMON_CFLAGS)
 ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For pci.mod.
-pkglib_MODULES += sm712.mod
-sm712_mod_SOURCES = video/sm712.c 
-sm712_mod_CFLAGS = $(COMMON_CFLAGS)
-sm712_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For lspci.mod
 pkglib_MODULES += lspci.mod
 lspci_mod_SOURCES = commands/lspci.c
 lspci_mod_CFLAGS = $(COMMON_CFLAGS)
 lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For at_keyboard.mod.
-pkglib_MODULES += at_keyboard.mod
-at_keyboard_mod_SOURCES = term/at_keyboard.c
-at_keyboard_mod_CFLAGS = $(COMMON_CFLAGS)
-at_keyboard_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For ata_pthru.mod.
 pkglib_MODULES += ata_pthru.mod

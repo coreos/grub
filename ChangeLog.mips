@@ -1,3 +1,38 @@
+2009-12-20  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* kern/mips/yeeloong/init.c (grub_video_sm712_init)
+	(grub_video_video_init, grub_video_bitmap_init)
+	(grub_font_manager_init, grub_term_gfxterm_init)
+	(grub_at_keyboard_init): New extern declarations.
+	(grub_machine_init): Initialize gfxterm and at_keyboard.
+
+	* kern/main.c (grub_main): Revert grub_printf delay kludge.
+
+	* util/grub-install.in: Revert embed of `at_keyboard.mod' and
+	`gfxterm.mod' into core image.
+
+	* conf/mips.rmk (pkglib_IMAGES, kernel_img_SOURCES)
+	(kernel_img_CFLAGS, kernel_img_ASFLAGS, kernel_img_LDFLAGS)
+	(kernel_img_FORMAT): Copy to ...
+
+	* conf/mips-qemu-mips.rmk (pkglib_IMAGES, kernel_img_SOURCES)
+	(kernel_img_CFLAGS, kernel_img_ASFLAGS, kernel_img_LDFLAGS)
+	(kernel_img_FORMAT): ... here, and ...
+
+	* conf/mips-yeeloong.rmk (pkglib_IMAGES, kernel_img_SOURCES)
+	(kernel_img_CFLAGS, kernel_img_ASFLAGS, kernel_img_LDFLAGS)
+	(kernel_img_FORMAT): ... here.
+
+	(kernel_img_SOURCES): Add files necessary for output (gfxterm)
+	and input (at_keyboard) terminals in kernel.
+	(kernel_img_CFLAGS): Add `-DUSE_ASCII_FAILBACK'.
+
+	(pkglib_MODULES): Remove `pci.mod'.
+	(pci_mod_SOURCES, pci_mod_CFLAGS, pci_mod_LDFLAGS)
+	(sm712_mod_SOURCES, sm712_mod_CFLAGS, sm712_mod_LDFLAGS)
+	(at_keyboard_mod_SOURCES, at_keyboard_mod_CFLAGS)
+	(at_keyboard_mod_LDFLAGS): Remove variables.
+
 2010-01-11  Felix Zielcke <fzielcke@z-51.de>
 
 	* po/POTFILES: Replace `term/i386/pc/serial.c' with `term/serial.c'.

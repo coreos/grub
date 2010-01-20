@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,6 +27,13 @@
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
 #include <grub/cpu/kernel.h>
+
+extern void grub_video_sm712_init (void);
+extern void grub_video_video_init (void);
+extern void grub_video_bitmap_init (void);
+extern void grub_font_manager_init (void);
+extern void grub_term_gfxterm_init (void);
+extern void grub_at_keyboard_init (void);
 
 /* FIXME: use interrupt to count high.  */
 grub_uint64_t
@@ -87,6 +94,16 @@ grub_machine_init (void)
 		       - (((grub_addr_t) modend) - GRUB_ARCH_LOWMEMVSTART));
   /* FIXME: use upper memory as well.  */
   grub_install_get_time_ms (grub_rtc_get_time_ms);
+
+  /* Initialize output terminal (can't be done earlier, as gfxterm
+     relies on a working heap.  */
+  grub_video_sm712_init ();
+  grub_video_video_init ();
+  grub_video_bitmap_init ();
+  grub_font_manager_init ();
+  grub_term_gfxterm_init ();
+
+  grub_at_keyboard_init ();
 }
 
 void

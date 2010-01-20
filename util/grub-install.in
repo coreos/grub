@@ -292,10 +292,6 @@ partmap_module=`$grub_probe --target=partmap --device ${grub_device} 2> /dev/nul
 # Device abstraction module, if any (lvm, raid).
 devabstraction_module=`$grub_probe --target=abstraction --device ${grub_device}`
 
-if [ "${target_cpu}-${platform}" = "mips-yeeloong" ] ; then
-    modules="sm712 gfxterm at_keyboard $modules"
-fi
-
 # The order in this list is critical.  Be careful when modifying it.
 modules="$modules $disk_module"
 modules="$modules $fs_module $partmap_module $devabstraction_module"
