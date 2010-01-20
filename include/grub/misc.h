@@ -199,9 +199,9 @@ int EXPORT_FUNC(grub_snprintf) (char *str, grub_size_t n, const char *fmt, ...)
      __attribute__ ((format (printf, 3, 4)));
 int EXPORT_FUNC(grub_vsnprintf) (char *str, grub_size_t n, const char *fmt,
 				 va_list args);
-char *EXPORT_FUNC(grub_asprintf) (const char *fmt, ...)
+char *EXPORT_FUNC(grub_xasprintf) (const char *fmt, ...)
      __attribute__ ((format (printf, 1, 2)));
-char *EXPORT_FUNC(grub_avsprintf) (const char *fmt, va_list args);
+char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args);
 void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
 grub_size_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,

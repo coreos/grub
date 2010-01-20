@@ -842,7 +842,7 @@ grub_jfs_uuid (grub_device_t device, char **uuid)
   data = grub_jfs_mount (disk);
   if (data)
     {
-      *uuid = grub_asprintf ("%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-"
+      *uuid = grub_xasprintf ("%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-"
 			     "%02x%02x%02x%02x%02x%02x",
 			     data->sblock.uuid[0], data->sblock.uuid[1],
 			     data->sblock.uuid[2], data->sblock.uuid[3],

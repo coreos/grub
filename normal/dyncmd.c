@@ -69,7 +69,7 @@ read_command_list (void)
     {
       char *filename;
 
-      filename = grub_asprintf ("%s/command.lst", prefix);
+      filename = grub_xasprintf ("%s/command.lst", prefix);
       if (filename)
 	{
 	  grub_file_t file;

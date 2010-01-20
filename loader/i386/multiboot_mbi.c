@@ -150,7 +150,7 @@ set_video_mode (void)
       else
 	{
 	  char *tmp;
-	  tmp = grub_asprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
+	  tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
 	  if (! tmp)
 	    return grub_errno;
 	  err = grub_video_set_mode (tmp, 0, 0);

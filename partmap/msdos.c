@@ -303,11 +303,11 @@ pc_partition_map_get_name (const grub_partition_t p)
   struct grub_msdos_partition *pcdata = p->data;
 
   if (pcdata->bsd_part < 0)
-    return grub_asprintf ("%d", pcdata->dos_part + 1);
+    return grub_xasprintf ("%d", pcdata->dos_part + 1);
   else if (pcdata->dos_part < 0)
-    return grub_asprintf ("%c", pcdata->bsd_part + 'a');
+    return grub_xasprintf ("%c", pcdata->bsd_part + 'a');
   else
-    return grub_asprintf ("%d,%c", pcdata->dos_part + 1,
+    return grub_xasprintf ("%d,%c", pcdata->dos_part + 1,
 			  pcdata->bsd_part + 'a');
 }
 

@@ -82,7 +82,7 @@ grub_children_iterate (char *devpath,
 				      IEEE1275_MAX_PROP_LEN, &actual))
 	continue;
 
-      fullname = grub_asprintf ("%s/%s", devpath, childname);
+      fullname = grub_xasprintf ("%s/%s", devpath, childname);
       if (!fullname)
 	{
 	  grub_free (childname);
@@ -332,7 +332,7 @@ grub_ieee1275_parse_args (const char *path, enum grub_ieee1275_parse_type ptype)
 
 	      /* Make sure filepath has leading backslash.  */
 	      if (filepath[0] != '\\')
-		ret = grub_asprintf ("\\%s", filepath);
+		ret = grub_xasprintf ("\\%s", filepath);
 	      else
 		ret = grub_strdup (filepath);
 	    }
@@ -382,10 +382,10 @@ grub_ieee1275_encode_devname (const char *path)
 	/* GRUB partition 1 is OF partition 0.  */
 	partno++;
 
-      encoding = grub_asprintf ("(%s,%d)", device, partno);
+      encoding = grub_xasprintf ("(%s,%d)", device, partno);
     }
   else
-    encoding = grub_asprintf ("(%s)", device);
+    encoding = grub_xasprintf ("(%s)", device);
 
   grub_free (partition);
   grub_free (device);

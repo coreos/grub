@@ -128,7 +128,7 @@ grub_ofconsole_setcolorstate (grub_term_color_state state)
       return;
     }
 
-  setcol = grub_asprintf ("\e[3%dm\e[4%dm", fg, bg);
+  setcol = grub_xasprintf ("\e[3%dm\e[4%dm", fg, bg);
   if (setcol)
     grub_ofconsole_writeesc (setcol);
   grub_free (setcol);
@@ -301,7 +301,7 @@ grub_ofconsole_gotoxy (grub_uint8_t x, grub_uint8_t y)
       grub_curr_x = x;
       grub_curr_y = y;
 
-      s = grub_asprintf ("\e[%d;%dH", y + 1, x + 1);
+      s = grub_xasprintf ("\e[%d;%dH", y + 1, x + 1);
       if (s)
 	grub_ofconsole_writeesc (s);
       grub_free (s);

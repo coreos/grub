@@ -167,7 +167,7 @@ read_terminal_list (void)
       return;
     }
   
-  filename = grub_asprintf ("%s/terminal.lst", prefix);
+  filename = grub_xasprintf ("%s/terminal.lst", prefix);
   if (!filename)
     {
       grub_errno = GRUB_ERR_NONE;

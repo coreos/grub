@@ -1082,7 +1082,7 @@ grub_hfs_uuid (grub_device_t device, char **uuid)
   data = grub_hfs_mount (device->disk);
   if (data && data->sblock.num_serial != 0)
     {
-      *uuid = grub_asprintf ("%016llx",
+      *uuid = grub_xasprintf ("%016llx",
 			     (unsigned long long)
 			     grub_be_to_cpu64 (data->sblock.num_serial));
     }

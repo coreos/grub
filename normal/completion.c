@@ -107,7 +107,7 @@ iterate_partition (grub_disk_t disk, const grub_partition_t p)
   if (! partition_name)
     return 1;
 
-  name = grub_asprintf ("%s,%s", disk_name, partition_name);
+  name = grub_xasprintf ("%s,%s", disk_name, partition_name);
   grub_free (partition_name);
 
   if (! name)
@@ -138,7 +138,7 @@ iterate_dir (const char *filename, const struct grub_dirhook_info *info)
     {
       char *fname;
 
-      fname = grub_asprintf ("%s/", filename);
+      fname = grub_xasprintf ("%s/", filename);
       if (add_completion (fname, "", GRUB_COMPLETION_TYPE_FILE))
 	{
 	  grub_free (fname);
@@ -359,7 +359,7 @@ complete_arguments (char *command)
       if (!option->longarg)
 	continue;
 
-      longarg = grub_asprintf ("--%s", option->longarg);
+      longarg = grub_xasprintf ("--%s", option->longarg);
       if (!longarg)
 	return 1;
 

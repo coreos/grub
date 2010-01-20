@@ -286,7 +286,7 @@ grub_gettext_init_ext (const char *lang)
   /* Warning: if changing some paths in the below line, change the grub_malloc
      contents below.  */
 
-  mo_file = grub_asprintf ("%s/%s.mo", locale_dir, lang);
+  mo_file = grub_xasprintf ("%s/%s.mo", locale_dir, lang);
   if (!mo_file)
     return;
 
@@ -296,7 +296,7 @@ grub_gettext_init_ext (const char *lang)
   if (fd_mo == NULL)
     {
       grub_free (mo_file);
-      mo_file = grub_asprintf ("%s.gz", mo_file);
+      mo_file = grub_xasprintf ("%s.gz", mo_file);
       if (!mo_file)
 	return;
       fd_mo = grub_mofile_open (mo_file);

@@ -501,7 +501,7 @@ write_ip_env (grub_uint32_t *ip, const char *val)
     return 0;
 
   /* Normalize the IP.  */
-  buf = grub_asprintf ("%d.%d.%d.%d", (newip & 0xff), (newip >> 8) & 0xff,
+  buf = grub_xasprintf ("%d.%d.%d.%d", (newip & 0xff), (newip >> 8) & 0xff,
 		       (newip >> 16) & 0xff, (newip >> 24) & 0xff);
   if (!buf)
     return 0;
@@ -543,7 +543,7 @@ grub_env_write_pxe_blocksize (struct grub_env_var *var __attribute__ ((unused)),
   else if (size > GRUB_PXE_MAX_BLKSIZE)
     size = GRUB_PXE_MAX_BLKSIZE;
   
-  buf = grub_asprintf ("%d", size);
+  buf = grub_xasprintf ("%d", size);
   if (!buf)
     return 0;
 
@@ -560,7 +560,7 @@ GRUB_MOD_INIT(pxe)
     {
       char *buf;
 
-      buf = grub_asprintf ("%d", grub_pxe_blksize);
+      buf = grub_xasprintf ("%d", grub_pxe_blksize);
       if (buf)
 	grub_env_set ("net_pxe_blksize", buf);
       grub_free (buf);

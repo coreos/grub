@@ -840,7 +840,7 @@ grub_iso9660_uuid (grub_device_t device, char **uuid)
 	}
       else
 	{
-	  *uuid = grub_asprintf ("%c%c%c%c-%c%c-%c%c-%c%c-%c%c-%c%c-%c%c",
+	  *uuid = grub_xasprintf ("%c%c%c%c-%c%c-%c%c-%c%c-%c%c-%c%c-%c%c",
 				 data->voldesc.modified.year[0],
 				 data->voldesc.modified.year[1],
 				 data->voldesc.modified.year[2],

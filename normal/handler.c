@@ -172,7 +172,7 @@ read_handler_list (void)
     {
       char *filename;
 
-      filename = grub_asprintf ("%s/handler.lst", prefix);
+      filename = grub_xasprintf ("%s/handler.lst", prefix);
       if (filename)
 	{
 	  grub_file_t file;

@@ -50,7 +50,7 @@ FUNC_NAME (const char *key, const char *var, int no_floppy)
 	char *buf;
 	grub_file_t file;
 
-	buf = grub_asprintf ("(%s)%s", name, key);
+	buf = grub_xasprintf ("(%s)%s", name, key);
 	if (! buf)
 	  return 1;
 

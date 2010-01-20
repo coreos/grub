@@ -285,8 +285,8 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
 
   for (i = 0; i < num_disks; i++)
     {
-      loop_name = grub_asprintf ("loop%d", i);
-      host_file = grub_asprintf ("(host)%s", images[i]);
+      loop_name = grub_xasprintf ("loop%d", i);
+      host_file = grub_xasprintf ("(host)%s", images[i]);
 
       if (!loop_name || !host_file)
 	{
@@ -337,7 +337,7 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
   for (i = 0; i < num_disks; i++)
     {
       grub_free (loop_name);
-      loop_name = grub_asprintf ("loop%d", i);
+      loop_name = grub_xasprintf ("loop%d", i);
       if (!loop_name)
 	{
 	  grub_free (host_file);

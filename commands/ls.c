@@ -97,9 +97,9 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	  grub_file_t file;
 
 	  if (dirname[grub_strlen (dirname) - 1] == '/')
-	    pathname = grub_asprintf ("%s%s", dirname, filename);
+	    pathname = grub_xasprintf ("%s%s", dirname, filename);
 	  else
-	    pathname = grub_asprintf ("%s/%s", dirname, filename);
+	    pathname = grub_xasprintf ("%s/%s", dirname, filename);
 
 	  if (!pathname)
 	    return 1;

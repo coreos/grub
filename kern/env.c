@@ -357,7 +357,7 @@ grub_register_variable_hook (const char *name,
 static char *
 mangle_data_slot_name (const char *name)
 {
-  return grub_asprintf ("\e%s", name);
+  return grub_xasprintf ("\e%s", name);
 }
 
 grub_err_t

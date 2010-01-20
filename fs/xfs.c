@@ -777,7 +777,7 @@ grub_xfs_uuid (grub_device_t device, char **uuid)
   data = grub_xfs_mount (disk);
   if (data)
     {
-      *uuid = grub_asprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+      *uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
 			     grub_be_to_cpu16 (data->sblock.uuid[0]),
 			     grub_be_to_cpu16 (data->sblock.uuid[1]),
 			     grub_be_to_cpu16 (data->sblock.uuid[2]),

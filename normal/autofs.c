@@ -57,7 +57,7 @@ read_fs_list (void)
     {
       char *filename;
 
-      filename = grub_asprintf ("%s/fs.lst", prefix);
+      filename = grub_xasprintf ("%s/fs.lst", prefix);
       if (filename)
 	{
 	  grub_file_t file;

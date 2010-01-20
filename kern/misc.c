@@ -913,7 +913,7 @@ grub_snprintf (char *str, grub_size_t n, const char *fmt, ...)
 #define PREALLOC_SIZE 255
 
 char *
-grub_avsprintf (const char *fmt, va_list ap)
+grub_xvasprintf (const char *fmt, va_list ap)
 {
   grub_size_t s, as = PREALLOC_SIZE;
   char *ret;
@@ -934,13 +934,13 @@ grub_avsprintf (const char *fmt, va_list ap)
 }
 
 char *
-grub_asprintf (const char *fmt, ...)
+grub_xasprintf (const char *fmt, ...)
 {
   va_list ap;
   char *ret;
 
   va_start (ap, fmt);
-  ret = grub_avsprintf (fmt, ap);
+  ret = grub_xvasprintf (fmt, ap);
   va_end (ap);
 
   return ret;

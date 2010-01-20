@@ -833,7 +833,7 @@ grub_fat_uuid (grub_device_t device, char **uuid)
   data = grub_fat_mount (disk);
   if (data)
     {
-      *uuid = grub_asprintf ("%04x-%04x",
+      *uuid = grub_xasprintf ("%04x-%04x",
 			     (grub_uint16_t) (data->uuid >> 16),
 			     (grub_uint16_t) data->uuid);
     }

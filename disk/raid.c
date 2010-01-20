@@ -556,7 +556,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
             }
         }
 
-      array->name = grub_asprintf ("md%d", array->number);
+      array->name = grub_xasprintf ("md%d", array->number);
       if (! array->name)
         {
           grub_free (array->uuid);

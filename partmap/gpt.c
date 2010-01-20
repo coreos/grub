@@ -162,7 +162,7 @@ gpt_partition_map_probe (grub_disk_t disk, const char *str)
 static char *
 gpt_partition_map_get_name (const grub_partition_t p)
 {
-  return grub_asprintf ("%d", p->index + 1);
+  return grub_xasprintf ("%d", p->index + 1);
 }
 
 

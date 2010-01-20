@@ -569,7 +569,7 @@ grub_xnu_register_memory (char *prefix, int *suffix,
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "can't register memory");
   if (suffix)
     {
-      driverkey->name = grub_asprintf ("%s%d", prefix, (*suffix)++);
+      driverkey->name = grub_xasprintf ("%s%d", prefix, (*suffix)++);
       if (!driverkey->name)
 	return grub_error (GRUB_ERR_OUT_OF_MEMORY, "can't register memory");
     }

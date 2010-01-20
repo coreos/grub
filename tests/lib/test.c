@@ -56,7 +56,7 @@ add_failure (const char *file,
   failure->file = grub_strdup (file ? : "<unknown_file>");
   failure->funp = grub_strdup (funp ? : "<unknown_function>");
   failure->line = line;
-  failure->message = grub_avsprintf (fmt, args);
+  failure->message = grub_xvasprintf (fmt, args);
 
   grub_list_push (GRUB_AS_LIST_P (&failure_list), GRUB_AS_LIST (failure));
 }

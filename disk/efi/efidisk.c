@@ -805,7 +805,7 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 	  return 0;
 	}
 
-      device_name = grub_asprintf ("%s,%s", parent->name, partition_name);
+      device_name = grub_xasprintf ("%s,%s", parent->name, partition_name);
       grub_free (partition_name);
       grub_disk_close (parent);
 

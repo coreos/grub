@@ -111,7 +111,7 @@ grub_machine_set_prefix (void)
 	  *lastslash = '\0';
 	  grub_translate_ieee1275_path (filename);
 
-	  newprefix = grub_asprintf ("%s%s", prefix, filename);
+	  newprefix = grub_xasprintf ("%s%s", prefix, filename);
 	  if (newprefix)
 	    {
 	      grub_free (prefix);

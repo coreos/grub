@@ -47,7 +47,7 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 	  grub_uint32_t *unicode_command_help;
 	  grub_uint32_t *unicode_last_position;
 	  			      
-	  command_help = grub_asprintf ("%s %s", cmd->name, summary_translated);
+	  command_help = grub_xasprintf ("%s %s", cmd->name, summary_translated);
 	  if (!command_help)
 	    return 1;
 

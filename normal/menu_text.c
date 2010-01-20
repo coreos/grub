@@ -187,7 +187,7 @@ command-line or ESC to return menu."), STANDARD_MARGIN, STANDARD_MARGIN,
 			  "entry is highlighted.\n");
       char *msg_translated;
 
-      msg_translated = grub_asprintf (msg, (grub_uint32_t) GRUB_TERM_DISP_UP,
+      msg_translated = grub_xasprintf (msg, (grub_uint32_t) GRUB_TERM_DISP_UP,
 				     (grub_uint32_t) GRUB_TERM_DISP_DOWN);
       if (!msg_translated)
 	return;
@@ -367,7 +367,7 @@ menu_text_print_timeout (int timeout, void *dataptr)
 
   grub_term_gotoxy (data->term, 0, grub_term_height (data->term) - 3);
 
-  msg_translated = grub_asprintf (msg, timeout);
+  msg_translated = grub_xasprintf (msg, timeout);
   if (!msg_translated)
     {
       grub_print_error ();

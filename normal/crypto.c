@@ -80,7 +80,7 @@ read_crypto_list (void)
       return;
     }
   
-  filename = grub_asprintf ("%s/crypto.lst", prefix);
+  filename = grub_xasprintf ("%s/crypto.lst", prefix);
   if (!filename)
     {
       grub_errno = GRUB_ERR_NONE;

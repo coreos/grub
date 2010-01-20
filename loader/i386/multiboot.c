@@ -252,11 +252,11 @@ grub_multiboot (int argc, char *argv[])
 	  {
 	    char *buf;
 	    if (header->depth && header->width && header->height)
-	      buf = grub_asprintf ("%dx%dx%d,%dx%d,auto", header->width,
+	      buf = grub_xasprintf ("%dx%dx%d,%dx%d,auto", header->width,
 				   header->height, header->depth, header->width,
 				   header->height);
 	    else if (header->width && header->height)
-	      buf = grub_asprintf ("%dx%d,auto", header->width, header->height);
+	      buf = grub_xasprintf ("%dx%d,auto", header->width, header->height);
 	    else
 	      buf = grub_strdup ("auto");
 

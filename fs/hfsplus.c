@@ -995,7 +995,7 @@ grub_hfsplus_uuid (grub_device_t device, char **uuid)
   data = grub_hfsplus_mount (disk);
   if (data)
     {
-      *uuid = grub_asprintf ("%016llx",
+      *uuid = grub_xasprintf ("%016llx",
 			     (unsigned long long)
 			     grub_be_to_cpu64 (data->volheader.num_serial));
     }

@@ -412,7 +412,7 @@ grub_normal_init_page (struct grub_term_output *term)
  
   grub_term_cls (term);
 
-  msg_formatted = grub_asprintf (msg, PACKAGE_VERSION);
+  msg_formatted = grub_xasprintf (msg, PACKAGE_VERSION);
   if (!msg_formatted)
     return;
  
@@ -502,7 +502,7 @@ grub_cmd_normal (struct grub_command *cmd __attribute__ ((unused)),
       prefix = grub_env_get ("prefix");
       if (prefix)
 	{
-	  config = grub_asprintf ("%s/grub.cfg", prefix);
+	  config = grub_xasprintf ("%s/grub.cfg", prefix);
 	  if (! config)
 	    goto quit;
 
@@ -541,7 +541,7 @@ grub_normal_reader_init (int nested)
   const char *msg_esc = _("ESC at any time exits.");
   char *msg_formatted;
 
-  msg_formatted = grub_asprintf (msg, nested ? msg_esc : "");
+  msg_formatted = grub_xasprintf (msg, nested ? msg_esc : "");
   if (!msg_formatted)
     return grub_errno;
 
@@ -566,9 +566,9 @@ grub_normal_read_line_real (char **line, int cont, int nested)
   char *prompt;
 
   if (cont)
-    prompt = grub_asprintf (">");
+    prompt = grub_xasprintf (">");
   else
-    prompt = grub_asprintf ("%s>", parser->name);
+    prompt = grub_xasprintf ("%s>", parser->name);
 
   if (!prompt)
     return grub_errno;

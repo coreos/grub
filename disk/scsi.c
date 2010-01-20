@@ -208,7 +208,7 @@ grub_scsi_iterate (int (*hook) (const char *name))
       for (i = 0; i < luns; i++)
 	{
 	  char *sname;
-	  sname = grub_asprintf ("%s%c", name, 'a' + i);
+	  sname = grub_xasprintf ("%s%c", name, 'a' + i);
 	  if (!sname)
 	    return 1;
 	  if (hook (sname))

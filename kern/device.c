@@ -146,7 +146,7 @@ grub_device_iterate (int (*hook) (const char *name))
 	  return 1;
 	}
 
-      p->name = grub_asprintf ("%s,%s", disk->name, partition_name);
+      p->name = grub_xasprintf ("%s,%s", disk->name, partition_name);
       if (!p->name)
 	{
 	  grub_free (partition_name);

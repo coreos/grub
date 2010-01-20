@@ -627,7 +627,7 @@ grub_dl_load (const char *name)
     return 0;
   }
 
-  filename = grub_asprintf ("%s/%s.mod", grub_dl_dir, name);
+  filename = grub_xasprintf ("%s/%s.mod", grub_dl_dir, name);
   if (! filename)
     return 0;
 
