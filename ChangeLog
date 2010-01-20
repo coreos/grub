@@ -1,3 +1,13 @@
+2010-01-20  Dan Merillat  <debian@dan.merillat.org>
+
+	* kern/device.c (grub_device_iterate): Allocate new part_ent
+	structure based on sizeof (*p) rather than sizeof (p->next), to
+	account for structure padding.
+
+	* util/grub-probe.c (probe_raid_level): Return -1 immediately if
+	disk is NULL, which might happen for LVM physical volumes with no
+	LVM signature.
+
 2009-12-20  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* loader/mips/linux.c (grub_cmd_initrd)

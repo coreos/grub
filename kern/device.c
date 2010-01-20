@@ -138,7 +138,7 @@ grub_device_iterate (int (*hook) (const char *name))
       if (! partition_name)
 	return 1;
 
-      p = grub_malloc (sizeof (p->next) + grub_strlen (disk->name) + 1 +
+      p = grub_malloc (sizeof (*p) + grub_strlen (disk->name) + 1 +
 		       grub_strlen (partition_name) + 1);
       if (!p)
 	{
