@@ -638,7 +638,9 @@ png_mod_CFLAGS = $(COMMON_CFLAGS)
 png_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += font.mod
+ifneq (, $(FONT_SOURCE))
 font/font.c_DEPENDENCIES = ascii.h
+endif
 font_mod_SOURCES = font/font_cmd.c font/font.c
 font_mod_CFLAGS = $(COMMON_CFLAGS)
 font_mod_LDFLAGS = $(COMMON_LDFLAGS)
