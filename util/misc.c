@@ -577,6 +577,13 @@ make_system_path_relative_to_its_root (const char *path)
       len--;
     }
 
+  /* This works around special-casing of "/" in Un*x.  This function never
+     prints trailing slashes (so that its output can be appended a slash
+     unconditionally).  Each slash in is considered a preceding slash, and
+     therefore the root directory is an empty string.  */
+  if (!strcmp (buf3, "/"))
+    buf3[0] = '\0';
+
   return buf3;
 }
 
