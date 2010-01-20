@@ -60,6 +60,15 @@ linux_entry ()
   fi
   printf "menuentry \"${title}\" {\n" "${os}" "${version}"
   save_default_entry | sed -e "s/^/\t/"
+
+  # Use ELILO's generic "efifb" when it's known to be available.
+  # FIXME: We need an interface to select vesafb in case efifb can't be used.
+  if grep -qx "CONFIG_FB_EFI=y" /boot/config-${version} 2> /dev/null ; then
+    cat << EOF
+	set gfxpayload=keep
+EOF
+  fi
+
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi

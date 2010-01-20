@@ -137,7 +137,7 @@ free_menu (grub_menu_t menu)
     }
 
   grub_free (menu);
-  grub_env_unset_data_slot ("menu");
+  grub_env_unset_menu ();
 }
 
 static void
@@ -178,7 +178,7 @@ grub_normal_add_menu_entry (int argc, const char **args,
     return grub_errno;
   classes_tail = classes_head;
 
-  menu = grub_env_get_data_slot ("menu");
+  menu = grub_env_get_menu ();
   if (! menu)
     return grub_error (GRUB_ERR_MENU, "no menu context");
 
@@ -361,14 +361,14 @@ read_config_file (const char *config)
 
   grub_menu_t newmenu;
 
-  newmenu = grub_env_get_data_slot ("menu");
+  newmenu = grub_env_get_menu ();
   if (! newmenu)
     {
       newmenu = grub_zalloc (sizeof (*newmenu));
       if (! newmenu)
 	return 0;
 
-      grub_env_set_data_slot ("menu", newmenu);
+      grub_env_set_menu (newmenu);
     }
 
   /* Try to open the config file.  */
@@ -642,6 +642,8 @@ grub_env_write_pager (struct grub_env_var *var __attribute__ ((unused)),
 
 GRUB_MOD_INIT(normal)
 {
+  grub_context_init ();
+
   /* Normal mode shouldn't be unloaded.  */
   if (mod)
     grub_dl_ref (mod);
@@ -667,6 +669,8 @@ GRUB_MOD_INIT(normal)
 
 GRUB_MOD_FINI(normal)
 {
+  grub_context_fini ();
+
   grub_set_history (0);
   grub_register_variable_hook ("pager", 0, 0);
   grub_fs_autoload_hook = 0;
