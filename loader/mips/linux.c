@@ -281,7 +281,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   linux_envp = extra;
   envp_off = (grub_uint8_t *) linux_envp - (grub_uint8_t *) playground;
   linux_envs = (char *) (linux_envp + 5);
-  grub_snprintf (linux_envs, sizeof ("memsize=XXXXXXXXXXXXXXXXXXXX"), 
+  grub_snprintf (linux_envs, sizeof ("memsize=XXXXXXXXXXXXXXXXXXXX"),
 		 "memsize=%lld",
 		 (unsigned long long) grub_mmap_get_lower () >> 20);
   linux_envp[0] = (grub_uint8_t *) linux_envs - (grub_uint8_t *) playground
@@ -294,12 +294,12 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     + target_addr;
   linux_envs += ALIGN_UP (grub_strlen (linux_envs) + 1, 4);
 
-  grub_snprintf (linux_envs, sizeof ("busclock=XXXXXXXXXXXXXXXXXXXX"),
+  grub_snprintf (linux_envs, sizeof ("busclock=XXXXXXXXXX"),
 		 "busclock=%d", grub_arch_busclock);
   linux_envp[2] = (grub_uint8_t *) linux_envs - (grub_uint8_t *) playground
     + target_addr;
   linux_envs += ALIGN_UP (grub_strlen (linux_envs) + 1, 4);
-  grub_snprintf (linux_envs, sizeof ("cpuclock=XXXXXXXXXXXXXXXXXXXX"),
+  grub_snprintf (linux_envs, sizeof ("cpuclock=XXXXXXXXXX"),
 		 "cpuclock=%d", grub_arch_cpuclock);
   linux_envp[3] = (grub_uint8_t *) linux_envs - (grub_uint8_t *) playground
     + target_addr;
@@ -360,14 +360,14 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
     }
 
   grub_snprintf ((char *) playground + rd_addr_arg_off,
-		 sizeof ("rd_start=XXXXXXXXXXXXXXXXXXXX"), "rd_start=0x%llx",
+		 sizeof ("rd_start=0xXXXXXXXXXXXXXXXX"), "rd_start=0x%llx",
 		(unsigned long long) target_addr + linux_size  + overhead);
   ((grub_uint32_t *) (playground + argv_off))[linux_argc]
     = target_addr + rd_addr_arg_off;
   linux_argc++;
 
   grub_snprintf ((char *) playground + rd_size_arg_off,
-		sizeof ("rd_size=XXXXXXXXXXXXXXXXXXXX"), "rd_size=0x%llx",
+		sizeof ("rd_size=0xXXXXXXXXXXXXXXXXX"), "rd_size=0x%llx",
 		(unsigned long long) size);
   ((grub_uint32_t *) (playground + argv_off))[linux_argc]
     = target_addr + rd_size_arg_off;
