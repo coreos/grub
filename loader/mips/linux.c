@@ -27,6 +27,7 @@
 #include <grub/command.h>
 #include <grub/mips/relocator.h>
 #include <grub/machine/memory.h>
+#include <grub/i18n.h>
 
 /* For frequencies.  */
 #include <grub/pci.h>
