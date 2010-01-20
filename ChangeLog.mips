@@ -1,5 +1,10 @@
 2009-12-20  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* loader/mips/linux.c (grub_cmd_initrd)
+	(GRUB_MOD_INIT(linux)): Adjust and gettextize a few strings.
+
+2009-12-20  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* kern/mips/yeeloong/init.c (grub_video_sm712_init)
 	(grub_video_video_init, grub_video_bitmap_init)
 	(grub_font_manager_init, grub_term_gfxterm_init)
