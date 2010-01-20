@@ -68,7 +68,7 @@ MOSTLYCLEAN_IMAGE_TARGETS += mostlyclean-image-#{@name}.#{@rule_count}
 
 ifneq ($(TARGET_APPLE_CC),1)
 #{@name}: #{exe}
-	$(OBJCOPY) -O $(#{prefix}_FORMAT) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id $< $@
+	$(OBJCOPY) -O $(#{prefix}_FORMAT) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@
 else
 ifneq (#{exe},kernel.exec)
 #{@name}: #{exe} ./grub-macho2img
@@ -333,6 +333,7 @@ MOSTLYCLEANFILES += #{deps_str}
 
 #{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
 	$(TARGET_CC) -o $@ #{objs_str} $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
+	$(STRIP) -R .rel.dyn -R .reginfo -R .note -R .comment $@
 
 " + objs.collect_with_index do |obj, i|
       src = sources[i]
@@ -344,6 +345,7 @@ MOSTLYCLEANFILES += #{deps_str}
 
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
 	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
+
 -include #{dep}
 
 "

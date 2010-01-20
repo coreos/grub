@@ -247,7 +247,7 @@ grub_linux_load64 (grub_elf_t elf)
   linux_entry = elf->ehdr.ehdr64.e_entry;
   linux_addr = 0x40004000;
   off = 0x4000;
-  linux_size = grub_elf64_size (elf);
+  linux_size = grub_elf64_size (elf, 0);
   if (linux_size == 0)
     return grub_errno;
 

@@ -27,7 +27,7 @@
 #include <grub/bitmap.h>
 #include <grub/command.h>
 
-#define DEFAULT_VIDEO_MODE "auto"
+#define DEFAULT_VIDEO_MODE	"auto"
 #define DEFAULT_BORDER_WIDTH	10
 
 #define DEFAULT_STANDARD_COLOR  0x07
@@ -95,6 +95,7 @@ struct grub_virtual_screen
   /* Color settings.  */
   grub_video_color_t fg_color;
   grub_video_color_t bg_color;
+  grub_video_color_t bg_color_display;
 
   /* Text buffer for virtual screen.  Contains (columns * rows) number
      of entries.  */
@@ -237,6 +238,8 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
 
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
+  virtual_screen.bg_color_display = grub_video_map_rgba(0, 0, 0, 0);
+
   /* Clear out text buffer. */
   for (i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
     clear_char (&(virtual_screen.text_buffer[i]));
@@ -341,7 +344,7 @@ redraw_screen_rect (unsigned int x, unsigned int y,
 
       /* If bitmap is smaller than requested blit area, use background
          color.  */
-      color = virtual_screen.bg_color;
+      color = virtual_screen.bg_color_display;
 
       /* Fill right side of the bitmap if needed.  */
       if ((x + width >= bitmap_width) && (y < bitmap_height))
@@ -388,7 +391,7 @@ redraw_screen_rect (unsigned int x, unsigned int y,
   else
     {
       /* Render background layer.  */
-      color = virtual_screen.bg_color;
+      color = virtual_screen.bg_color_display;
       grub_video_fill_rect (color, x, y, width, height);
 
       /* Render text layer as replaced (to get texts background color).  */
@@ -810,7 +813,8 @@ grub_gfxterm_cls (void)
   /* Clear text layer.  */
   grub_video_set_active_render_target (text_layer);
   color = virtual_screen.bg_color;
-  grub_video_fill_rect (color, 0, 0, mode_info.width, mode_info.height);
+  grub_video_fill_rect (color, 0, 0, virtual_screen.width,
+			virtual_screen.height);
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
   /* Mark virtual screen to be redrawn.  */
