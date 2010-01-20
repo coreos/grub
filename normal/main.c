@@ -570,6 +570,9 @@ grub_normal_read_line_real (char **line, int cont, int nested)
   else
     prompt = grub_asprintf ("%s>", parser->name);
 
+  if (!prompt)
+    return grub_errno;
+
   while (1)
     {
       *line = grub_cmdline_get (prompt);
