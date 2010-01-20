@@ -48,6 +48,7 @@
 	* loader/i386/efi/linux.c (find_framebuf): Use GRUB_PCI_REG_CLASS.
 	* loader/i386/efi/xnu.c (find_framebuf): Likewise.
 	* video/efi_uga.c (find_framebuf): Likewise.
+	* video/sm712.c (grub_video_sm712_setup): Likewise.
 	* util/pci.c (grub_pci_make_address): Use byte-addressed configuration
 	space.
 

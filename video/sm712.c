@@ -74,7 +74,7 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
       grub_pci_address_t addr;
       grub_uint32_t class;
 
-      addr = grub_pci_make_address (dev, 2);
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
       class = grub_pci_read (addr);
 
       if (((class >> 16) & 0xffff) != 0x0300 || pciid != 0x0712126f)
@@ -82,7 +82,7 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
       
       found = 1;
 
-      addr = grub_pci_make_address (dev, 4);
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
       framebuffer.base = grub_pci_read (addr);
       framebuffer.dev = dev;
 
