@@ -1,7 +1,7 @@
 /* font.c - Font API and font file loader.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,10 @@
 #include <grub/video.h>
 #include <grub/bitmap.h>
 
+#ifdef USE_ASCII_FAILBACK
+#include "ascii.h"
+#endif
+
 #ifndef FONT_DEBUG
 #define FONT_DEBUG 0
 #endif
@@ -42,6 +46,7 @@ struct char_index_entry
 
 #define FONT_WEIGHT_NORMAL 100
 #define FONT_WEIGHT_BOLD 200
+#define ASCII_BITMAP_SIZE 16
 
 struct grub_font
 {
@@ -127,6 +132,48 @@ static struct grub_font null_font;
 
 /* Flag to ensure module is initialized only once.  */
 static grub_uint8_t font_loader_initialized;
+
+#ifdef USE_ASCII_FAILBACK
+static struct grub_font_glyph *ascii_font_glyph[0x80];
+#endif
+
+static struct grub_font_glyph *
+ascii_glyph_lookup (grub_uint32_t code)
+{
+#ifdef USE_ASCII_FAILBACK 
+  static int ascii_failback_initialized = 0;
+
+  if (code >= 0x80)
+    return unknown_glyph;
+
+  if (ascii_failback_initialized == 0)
+    {
+      int current;
+      for (current = 0; current < 0x80; current++)
+        {
+	  ascii_font_glyph[current] = grub_malloc(sizeof(struct grub_font_glyph)
+	  			+ ASCII_BITMAP_SIZE);
+
+          ascii_font_glyph[current]->width = 8;
+          ascii_font_glyph[current]->height = 16; 
+          ascii_font_glyph[current]->offset_x = 0; 
+          ascii_font_glyph[current]->offset_y = -2; 
+	  ascii_font_glyph[current]->device_width = 8;
+
+	  grub_memcpy (ascii_font_glyph[current]->bitmap,
+		       &ascii_bitmaps[(0x7f - current) * ASCII_BITMAP_SIZE],
+		       ASCII_BITMAP_SIZE);
+	}
+
+      ascii_failback_initialized = 1;
+    }
+
+  return ascii_font_glyph[code];
+#else
+  (void) code;
+  return unknown_glyph;
+#endif
+}
 
 void
 grub_font_loader_init (void)
@@ -851,15 +898,17 @@ grub_font_get_string_width (grub_font_t font, const char *str)
 }
 
 /* Get the glyph for FONT corresponding to the Unicode code point CODE.
-   Returns a pointer to an glyph indicating there is no glyph available
-   if CODE does not exist in the font.  The glyphs are cached once loaded.  */
+   Returns the ASCII glyph for the code if no other fonts are available. 
+   The glyphs are cached once loaded.  */
 struct grub_font_glyph *
 grub_font_get_glyph (grub_font_t font, grub_uint32_t code)
 {
   struct grub_font_glyph *glyph;
   glyph = grub_font_get_glyph_internal (font, code);
   if (glyph == 0)
-    glyph = unknown_glyph;
+    {
+      glyph = ascii_glyph_lookup (code);
+    }
   return glyph;
 }
 
@@ -954,8 +1003,8 @@ grub_font_get_glyph_with_fallback (grub_font_t font, grub_uint32_t code)
   if (best_glyph)
     return best_glyph;
   else
-    /* Glyph not available in any font.  Return unknown glyph.  */
-    return unknown_glyph;
+    /* Glyph not available in any font.  Return ASCII failback.  */
+    return ascii_glyph_lookup (code);
 }
 
 

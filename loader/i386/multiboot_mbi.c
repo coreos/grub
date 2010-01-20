@@ -110,6 +110,18 @@ grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
 	case GRUB_MACHINE_MEMORY_AVAILABLE:
  	  mmap_entry->type = MULTIBOOT_MEMORY_AVAILABLE;
  	  break;
+
+#ifdef GRUB_MACHINE_MEMORY_ACPI_RECLAIMABLE
+	case GRUB_MACHINE_MEMORY_ACPI_RECLAIMABLE:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_ACPI_RECLAIMABLE;
+ 	  break;
+#endif
+
+#ifdef GRUB_MACHINE_MEMORY_NVS
+	case GRUB_MACHINE_MEMORY_NVS:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_NVS;
+ 	  break;
+#endif	  
 	  
  	default:
  	  mmap_entry->type = MULTIBOOT_MEMORY_RESERVED;

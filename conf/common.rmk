@@ -88,6 +88,9 @@ endif
 bin_UTILITIES += grub-mkrelpath
 grub_mkrelpath_SOURCES = gnulib/progname.c util/grub-mkrelpath.c util/misc.c
 
+bin_UTILITIES += grub-bin2h
+grub_bin2h_SOURCES = gnulib/progname.c util/bin2h.c
+
 # For grub-script-check.
 bin_UTILITIES += grub-script-check
 util/grub-script-check.c_DEPENDENCIES = grub_script_check_init.h
@@ -597,7 +600,7 @@ sh_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Common Video Subsystem specific modules.
 pkglib_MODULES += video.mod videotest.mod bitmap.mod tga.mod jpeg.mod	\
-	png.mod	font.mod gfxterm.mod video_fb.mod
+	png.mod	gfxterm.mod video_fb.mod
 
 # For video.mod.
 video_mod_SOURCES = video/video.c
@@ -634,7 +637,8 @@ png_mod_SOURCES = video/readers/png.c
 png_mod_CFLAGS = $(COMMON_CFLAGS)
 png_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For font.mod.
+pkglib_MODULES += font.mod
+font/font.c_DEPENDENCIES = ascii.h
 font_mod_SOURCES = font/font_cmd.c font/font.c
 font_mod_CFLAGS = $(COMMON_CFLAGS)
 font_mod_LDFLAGS = $(COMMON_LDFLAGS)
