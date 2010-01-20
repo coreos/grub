@@ -1,7 +1,7 @@
 /* linux.c - boot Linux */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004, 2005, 2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/machine/loader.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 #define ELF32_LOADMASK (0xc0000000UL)
 #define ELF64_LOADMASK (0xc000000000000000ULL)
@@ -75,10 +76,10 @@ grub_linux_release_mem (void)
   linux_args = 0;
 
   if (linux_addr && grub_ieee1275_release (linux_addr, linux_size))
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not release memory");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot release memory");
 
   if (initrd_addr && grub_ieee1275_release (initrd_addr, initrd_size))
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not release memory");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot release memory");
 
   linux_addr = 0;
   initrd_addr = 0;
@@ -110,7 +111,7 @@ grub_linux_load32 (grub_elf_t elf)
   if (entry == 0)
     entry = 0x01400000;
 
-  linux_size = grub_elf32_size (elf);
+  linux_size = grub_elf32_size (elf, 0);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
@@ -128,7 +129,7 @@ grub_linux_load32 (grub_elf_t elf)
 	break;
     }
   if (found_addr == -1)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Could not claim memory.");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't claim memory");
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr, int *do_load);
@@ -160,7 +161,7 @@ grub_linux_load64 (grub_elf_t elf)
   if (entry == 0)
     entry = 0x01400000;
 
-  linux_size = grub_elf64_size (elf);
+  linux_size = grub_elf64_size (elf, 0);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
@@ -178,7 +179,7 @@ grub_linux_load64 (grub_elf_t elf)
 	break;
     }
   if (found_addr == -1)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Could not claim memory.");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't claim memory");
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load);
@@ -222,7 +223,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (elf->ehdr.ehdr32.e_type != ET_EXEC)
     {
       grub_error (GRUB_ERR_UNKNOWN_OS,
-		  "This ELF file is not of the right type\n");
+		  "this ELF file is not of the right type");
       goto out;
     }
 
@@ -236,7 +237,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     grub_linux_load64 (elf);
   else
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "Unknown ELF class");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, "unknown ELF class");
       goto out;
     }
 
@@ -297,7 +298,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (!loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load the kernel first");
       goto fail;
     }
 
@@ -321,7 +322,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (found_addr == -1)
     {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not claim memory");
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot claim memory");
       goto fail;
     }
 
@@ -330,7 +331,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   if (grub_file_read (file, (void *) addr, size) != size)
     {
       grub_ieee1275_release (addr, size);
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 
@@ -349,9 +350,9 @@ static grub_command_t cmd_linux, cmd_initrd;
 GRUB_MOD_INIT(linux)
 {
   cmd_linux = grub_register_command ("linux", grub_cmd_linux,
-				     0, "load a linux kernel");
+				     0, N_("Load Linux."));
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
-				      0, "load an initrd");
+				      0, N_("Load initrd."));
   my_mod = mod;
 }
 

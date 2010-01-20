@@ -22,6 +22,7 @@
 #include <grub/env.h>
 #include <grub/normal.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_source (grub_command_t cmd, int argc, char **args)
@@ -53,16 +54,16 @@ GRUB_MOD_INIT(configfile)
 {
   cmd_configfile =
     grub_register_command ("configfile", grub_cmd_source,
-			   "configfile FILE", "Load another config file.");
+			   N_("FILE"), N_("Load another config file."));
   cmd_source =
     grub_register_command ("source", grub_cmd_source,
-			   "source FILE",
-			   "Load another config file without changing context."
+			   N_("FILE"),
+			   N_("Load another config file without changing context.")
 			   );
   cmd_dot =
     grub_register_command (".", grub_cmd_source,
-			   ". FILE",
-			   "Load another config file without changing context."
+			   N_("FILE"),
+			   N_("Load another config file without changing context.")
 			   );
 }
 

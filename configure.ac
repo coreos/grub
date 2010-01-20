@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+# Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
 #
 # This configure.ac is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -44,9 +44,24 @@ AC_CANONICAL_TARGET
 # Program name transformations
 AC_ARG_PROGRAM
 
+# Optimization flag.  Allow user to override.
+if test "x$TARGET_CFLAGS" = x; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -Os"
+fi
+
 case "$target_cpu" in
   i[[3456]]86)	target_cpu=i386 ;;
   sparc)	target_cpu=sparc64 ;;
+  mipsel|mips64el)
+                target_cpu=mips;    
+		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPSEL=1"; 
+		CFLAGS="$CFLAGS -DGRUB_CPU_MIPSEL=1";
+		;;
+  mips|mips64)
+                target_cpu=mips;    
+		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPS=1"; 
+		CFLAGS="$CFLAGS -DGRUB_CPU_MIPS=1";
+		;;
 esac
 
 # Specify the platform (such as firmware).
@@ -64,6 +79,7 @@ if test "x$with_platform" = x; then
     powerpc-*) platform=ieee1275 ;;
     powerpc64-*) platform=ieee1275 ;;
     sparc64-*) platform=ieee1275 ;;
+    mips-*) platform=yeeloong ;;
     *) AC_MSG_ERROR([unsupported CPU: "$target_cpu"]) ;;
   esac
 else
@@ -90,6 +106,8 @@ case "$target_cpu"-"$platform" in
   i386-qemu) ;;
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;
+  mips-qemu-mips) ;;
+  mips-yeeloong) ;;
   *-emu) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
@@ -120,6 +138,8 @@ case "$platform" in
   qemu)		machine_CFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
   pc)		machine_CFLAGS="-DGRUB_MACHINE_PCBIOS=1" ;;
   emu)		machine_CFLAGS="-DGRUB_MACHINE_EMU=1" ;;
+  yeeloong)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  qemu-mips)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
 esac
 CFLAGS="$CFLAGS $machine_CFLAGS"
 TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
@@ -148,7 +168,7 @@ if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
 fi
 
-for file in /usr/src/unifont.bdf /usr/share/fonts/X11/misc/unifont.pcf.gz ; do
+for file in /usr/src/unifont.bdf /usr/share/fonts/X11/misc/unifont.pcf.gz /usr/share/fonts/unifont/unifont.pcf.gz; do
   if test -e $file ; then
     AC_SUBST([FONT_SOURCE], [$file])
     break
@@ -173,7 +193,7 @@ AC_PROG_CC
 test "x$GCC" = xyes || AC_MSG_ERROR([GCC is required])
 
 AC_GNU_SOURCE
-AM_GNU_GETTEXT
+AM_GNU_GETTEXT([external])
 AC_SYS_LARGEFILE
 
 # Identify characteristics of the host architecture.
@@ -242,60 +262,45 @@ CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
 LIBS=""
 
-if test "x$TARGET_CFLAGS" = x; then
-  # debug flags.
-  TARGET_CFLAGS="-Wall -W -Wshadow -Wpointer-arith -Wmissing-prototypes \
-                 -Wundef -Wstrict-prototypes -g"
+# debug flags.
+TARGET_CFLAGS="$TARGET_CFLAGS -Wall -W -Wshadow -Wpointer-arith -Wmissing-prototypes \
+               -Wundef -Wstrict-prototypes -g"
 
-  # optimization flags.
-  AC_CACHE_CHECK([whether optimization for size works], grub_cv_cc_Os, [
-    CFLAGS=-Os
+# Force no alignment to save space on i386.
+if test "x$target_cpu" = xi386; then
+  AC_CACHE_CHECK([whether -falign-loops works], [grub_cv_cc_falign_loop], [
+    CFLAGS="$CFLAGS -falign-loops=1"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		      [grub_cv_cc_Os=yes],
-		      [grub_cv_cc_Os=no])
+        [grub_cv_cc_falign_loop=yes],
+	[grub_cv_cc_falign_loop=no])
   ])
-  if test "x$grub_cv_cc_Os" = xyes; then
-    TARGET_CFLAGS="$TARGET_CFLAGS -Os"
+
+  if test "x$grub_cv_cc_falign_loop" = xyes; then
+    TARGET_CFLAGS="$TARGET_CFLAGS -falign-jumps=1 -falign-loops=1 -falign-functions=1"
   else
-    TARGET_CFLAGS="$TARGET_CFLAGS -O2 -fno-strength-reduce -fno-unroll-loops"
+    TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
   fi
 
-  # Force no alignment to save space on i386.
-  if test "x$target_cpu" = xi386; then
-    AC_CACHE_CHECK([whether -falign-loops works], [grub_cv_cc_falign_loop], [
-      CFLAGS="$CFLAGS -falign-loops=1"
-      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		        [grub_cv_cc_falign_loop=yes],
-			[grub_cv_cc_falign_loop=no])
-    ])
+  # Some toolchains enable these features by default, but they need
+  # registers that aren't set up properly in GRUB.
+  TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
+fi
 
-    if test "x$grub_cv_cc_falign_loop" = xyes; then
-      TARGET_CFLAGS="$TARGET_CFLAGS -falign-jumps=1 -falign-loops=1 -falign-functions=1"
-    else
-      TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
-    fi
+# By default, GCC 4.4 generates .eh_frame sections containing unwind
+# information in some cases where it previously did not. GRUB doesn't need
+# these and they just use up vital space. Restore the old compiler
+# behaviour.
+AC_CACHE_CHECK([whether -fno-dwarf2-cfi-asm works], [grub_cv_cc_fno_dwarf2_cfi_asm], [
+  SAVE_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -fno-dwarf2-cfi-asm"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+      [grub_cv_cc_fno_dwarf2_cfi_asm=yes],
+      [grub_cv_cc_fno_dwarf2_cfi_asm=no])
+  CFLAGS="$SAVE_CFLAGS"
+])
 
-    # Some toolchains enable these features by default, but they need
-    # registers that aren't set up properly in GRUB.
-    TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
-  fi
-
-  # By default, GCC 4.4 generates .eh_frame sections containing unwind
-  # information in some cases where it previously did not. GRUB doesn't need
-  # these and they just use up vital space. Restore the old compiler
-  # behaviour.
-  AC_CACHE_CHECK([whether -fno-dwarf2-cfi-asm works], [grub_cv_cc_fno_dwarf2_cfi_asm], [
-    SAVE_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS -fno-dwarf2-cfi-asm"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		      [grub_cv_cc_fno_dwarf2_cfi_asm=yes],
-		      [grub_cv_cc_fno_dwarf2_cfi_asm=no])
-    CFLAGS="$SAVE_CFLAGS"
-  ])
-
-  if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
-    TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
-  fi
+if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
 fi
 
 grub_apple_target_cc

@@ -50,7 +50,7 @@ grub_usb_hub_add_dev (grub_usb_controller_t controller, grub_usb_speed_t speed)
     }
   if (i == 128)
     {
-      grub_error (GRUB_ERR_IO, "Can't assign address to USB device");
+      grub_error (GRUB_ERR_IO, "can't assign address to USB device");
       return NULL;
     }
 

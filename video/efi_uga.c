@@ -198,7 +198,7 @@ grub_video_uga_fini (void)
 
 static grub_err_t
 grub_video_uga_setup (unsigned int width, unsigned int height,
-		      unsigned int mode_type)
+		      unsigned int mode_type, unsigned int mode_mask __attribute__ ((unused)))
 {
   unsigned int depth;
   int found = 0;
@@ -266,7 +266,7 @@ grub_video_uga_setup (unsigned int width, unsigned int height,
       return err;
     }
 
-  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found.");
+  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found");
 }
 
 static grub_err_t
@@ -300,6 +300,7 @@ grub_video_uga_get_info_and_fini (struct grub_video_mode_info *mode_info,
 static struct grub_video_adapter grub_video_uga_adapter =
   {
     .name = "EFI UGA driver",
+    .id = GRUB_VIDEO_DRIVER_EFI_UGA,
 
     .init = grub_video_uga_init,
     .fini = grub_video_uga_fini,

@@ -27,6 +27,7 @@
 #include <grub/term.h>
 #include <grub/loader.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 /* cat FILE */
 static grub_err_t
@@ -354,28 +355,28 @@ GRUB_MOD_INIT(minicmd)
 {
   cmd_cat =
     grub_register_command ("cat", grub_mini_cmd_cat,
-			   "cat FILE", "Show the contents of a file.");
+			   N_("FILE"), N_("Show the contents of a file."));
   cmd_help =
     grub_register_command ("help", grub_mini_cmd_help,
-			   0, "Show this message.");
+			   0, N_("Show this message."));
   cmd_root =
     grub_register_command ("root", grub_mini_cmd_root,
-			   "root [DEVICE]", "Set the root device.");
+			   N_("[DEVICE]"), N_("Set the root device."));
   cmd_dump =
     grub_register_command ("dump", grub_mini_cmd_dump,
-			   "dump ADDR", "Dump memory.");
+			   N_("ADDR"), N_("Dump memory."));
   cmd_rmmod =
     grub_register_command ("rmmod", grub_mini_cmd_rmmod,
-			   "rmmod MODULE", "Remove a module.");
+			   N_("MODULE"), N_("Remove a module."));
   cmd_lsmod =
     grub_register_command ("lsmod", grub_mini_cmd_lsmod,
-			   0, "Show loaded modules.");
+			   0, N_("Show loaded modules."));
   cmd_exit =
     grub_register_command ("exit", grub_mini_cmd_exit,
-			   0, "Exit from GRUB.");
+			   0, N_("Exit from GRUB."));
   cmd_clear =
     grub_register_command ("clear", grub_mini_cmd_clear,
-			   0, "Clear the screen.");
+			   0, N_("Clear the screen."));
 }
 
 GRUB_MOD_FINI(minicmd)

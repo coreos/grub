@@ -1,7 +1,7 @@
 #! /bin/sh -e
 
 # grub-mkconfig helper script.
-# Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
+# Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,11 +34,29 @@ for i in ${GRUB_PRELOAD_MODULES} ; do
 done
 
 if [ "x${GRUB_DEFAULT}" = "x" ] ; then GRUB_DEFAULT=0 ; fi
+if [ "x${GRUB_DEFAULT}" = "xsaved" ] ; then GRUB_DEFAULT='${saved_entry}' ; fi
 if [ "x${GRUB_TIMEOUT}" = "x" ] ; then GRUB_TIMEOUT=5 ; fi
 if [ "x${GRUB_GFXMODE}" = "x" ] ; then GRUB_GFXMODE=640x480 ; fi
 
 cat << EOF
-set default=${GRUB_DEFAULT}
+if [ -s \$prefix/grubenv ]; then
+  load_env
+fi
+set default="${GRUB_DEFAULT}"
+if [ \${prev_saved_entry} ]; then
+  set saved_entry=\${prev_saved_entry}
+  save_env saved_entry
+  set prev_saved_entry=
+  save_env prev_saved_entry
+  set boot_once=true
+fi
+
+function savedefault {
+  if [ -z \${boot_once} ]; then
+    saved_entry=\${chosen}
+    save_env saved_entry
+  fi
+}
 EOF
 
 case ${GRUB_TERMINAL_INPUT}:${GRUB_TERMINAL_OUTPUT} in
@@ -104,15 +122,16 @@ esac
 
 # Gettext variables and module
 if [ "x${LANG}" != "xC" ] ; then
+    prepare_grub_to_access_device $(${grub_probe} --target=device ${locale_dir})
   cat << EOF
-set locale_dir=${locale_dir}
+set locale_dir=(\$root)$(make_system_path_relative_to_its_root ${locale_dir})
 set lang=${grub_lang}
-insmod gettext 
+insmod gettext
 EOF
 fi
 
 if [ "x${GRUB_HIDDEN_TIMEOUT}" != "x" ] ; then
-  if [ "x${GRUB_HIDDEN_TIMEOUT_QUIET}" = "xtrue" ] ; then 
+  if [ "x${GRUB_HIDDEN_TIMEOUT_QUIET}" = "xtrue" ] ; then
     verbose=
   else
     verbose=" --verbose"

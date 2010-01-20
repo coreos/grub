@@ -174,12 +174,12 @@ grub_env_export (const char *name)
   if (! var)
     {
       grub_err_t err;
-      
+     
       err = grub_env_set (name, "");
       if (err)
 	return err;
       var = grub_env_find (name);
-    }    
+    }   
   var->type = GRUB_ENV_VAR_GLOBAL;
 
   return GRUB_ERR_NONE;
@@ -264,10 +264,11 @@ grub_env_unset (const char *name)
   if (! var)
     return;
 
-  /* XXX: It is not possible to unset variables with a read or write
-     hook.  */
   if (var->read_hook || var->write_hook)
-    return;
+    {
+      grub_env_set (name, "");
+      return;
+    }
 
   grub_env_remove (var);
 
@@ -356,14 +357,7 @@ grub_register_variable_hook (const char *name,
 static char *
 mangle_data_slot_name (const char *name)
 {
-  char *mangled_name;
-
-  mangled_name = grub_malloc (grub_strlen (name) + 2);
-  if (! mangled_name)
-    return 0;
-
-  grub_sprintf (mangled_name, "\e%s", name);
-  return mangled_name;
+  return grub_xasprintf ("\e%s", name);
 }
 
 grub_err_t

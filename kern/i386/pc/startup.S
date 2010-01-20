@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007,2008 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007,2008,2009 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -764,6 +764,11 @@ FUNCTION(grub_biosdisk_get_diskinfo_int13_extensions)
 	movw	%cx, %ax
 	movw	%bx, %ds
 	int	$0x13		/* do the operation */
+	jc      noclean
+	/* Clean return value if carry isn't set to workaround
+	some buggy BIOSes.  */
+	xor     %ax, %ax
+noclean:
 	movb	%ah, %bl	/* save return value in %bl */
 	/* back to protected mode */
 	DATA32	call	real_to_prot
@@ -807,6 +812,11 @@ FUNCTION(grub_biosdisk_get_diskinfo_standard)
 	.code16
 	movb	$0x8, %ah
 	int	$0x13		/* do the operation */
+	jc      noclean2
+	/* Clean return value if carry isn't set to workaround
+	some buggy BIOSes.  */
+	xor     %ax, %ax
+noclean2:
 	/* check if successful */
 	testb	%ah, %ah
 	jnz	1f

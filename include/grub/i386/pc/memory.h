@@ -1,7 +1,7 @@
 /* memory.h - describe the memory map */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -85,7 +85,7 @@
 struct grub_machine_bios_data_area
 {
   grub_uint8_t unused1[0x17];
-  grub_uint8_t keyboard_flag_lower; /* 0x17 */ 
+  grub_uint8_t keyboard_flag_lower; /* 0x17 */
   grub_uint8_t unused2[0xf0 - 0x18];
 };
 

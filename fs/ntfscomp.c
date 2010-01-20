@@ -28,7 +28,7 @@ static grub_err_t
 decomp_nextvcn (struct grub_ntfs_comp *cc)
 {
   if (cc->comp_head >= cc->comp_tail)
-    return grub_error (GRUB_ERR_BAD_FS, "Compression block overflown");
+    return grub_error (GRUB_ERR_BAD_FS, "compression block overflown");
   if (grub_disk_read
       (cc->disk,
        (cc->comp_table[cc->comp_head][1] -
@@ -87,7 +87,7 @@ decomp_block (struct grub_ntfs_comp *cc, char *dest)
 	    {
 	      if (copied > COM_LEN)
 		return grub_error (GRUB_ERR_BAD_FS,
-				   "Compression block too large");
+				   "compression block too large");
 
 	      if (!bits)
 		{
@@ -112,7 +112,7 @@ decomp_block (struct grub_ntfs_comp *cc, char *dest)
 
 		  if (!copied)
 		    {
-		      grub_error (GRUB_ERR_BAD_FS, "Context window empty");
+		      grub_error (GRUB_ERR_BAD_FS, "nontext window empty");
 		      return 0;
 		    }
 
@@ -150,7 +150,7 @@ decomp_block (struct grub_ntfs_comp *cc, char *dest)
 	{
 	  if (cnt != COM_LEN)
 	    return grub_error (GRUB_ERR_BAD_FS,
-			       "Invalid compression block size");
+			       "invalid compression block size");
 	}
     }
 
@@ -187,7 +187,7 @@ read_block (struct grub_ntfs_rlst *ctx, char *buf, int num)
 	{
 
 	  if (ctx->comp.comp_head != ctx->comp.comp_tail)
-	    return grub_error (GRUB_ERR_BAD_FS, "Invalid compression block");
+	    return grub_error (GRUB_ERR_BAD_FS, "invalid compression block");
 	  ctx->comp.comp_head = ctx->comp.comp_tail = 0;
 	  ctx->comp.cbuf_vcn = ctx->target_vcn;
 	  ctx->comp.cbuf_ofs = (ctx->comp.spc << BLK_SHR);
