@@ -1,7 +1,7 @@
 /* scsi.c - scsi support.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -197,7 +197,6 @@ grub_scsi_iterate (int (*hook) (const char *name))
 
   int scsi_iterate (const char *name, int luns)
     {
-      char sname[40];
       int i;
 
       /* In case of a single LUN, just return `usbX'.  */
@@ -208,9 +207,13 @@ grub_scsi_iterate (int (*hook) (const char *name))
 	 distinguish it.  */
       for (i = 0; i < luns; i++)
 	{
-	  grub_sprintf (sname, "%s%c", name, 'a' + i);
+	  char *sname;
+	  sname = grub_xasprintf ("%s%c", name, 'a' + i);
+	  if (!sname)
+	    return 1;
 	  if (hook (sname))
 	    return 1;
+	  grub_free (sname);
 	}
       return 0;
     }
@@ -337,14 +340,14 @@ grub_scsi_read (grub_disk_t disk, grub_disk_addr_t sector,
       unsigned spb = scsi->blocksize >> GRUB_DISK_SECTOR_BITS;
       if (! (spb != 0 && (scsi->blocksize & GRUB_DISK_SECTOR_SIZE) == 0))
 	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			   "Unsupported SCSI block size");
+			   "unsupported SCSI block size");
 
       grub_uint32_t sector_mod = 0;
       sector = grub_divmod64 (sector, spb, &sector_mod);
 
       if (! (sector_mod == 0 && size % spb == 0))
 	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			   "Unaligned SCSI read not supported");
+			   "unaligned SCSI read not supported");
 
       size /= spb;
     }

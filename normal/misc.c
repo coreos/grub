@@ -68,7 +68,10 @@ grub_normal_print_device_info (const char *name)
 	      if (grub_errno == GRUB_ERR_NONE)
 		{
 		  if (label && grub_strlen (label))
-		    grub_printf_ (N_("- Label %s"), label);
+		    {
+		      grub_putchar (' ');
+		      grub_printf_ (N_("- Label \"%s\""), label);
+		    }
 		  grub_free (label);
 		}
 	      grub_errno = GRUB_ERR_NONE;
@@ -81,6 +84,7 @@ grub_normal_print_device_info (const char *name)
 	      if (grub_errno == GRUB_ERR_NONE)
 		{
 		  grub_unixtime2datetime (tm, &datetime);
+		  grub_putchar (' ');
 		  grub_printf_ (N_("- Last modification time %d-%02d-%02d "
 			       "%02d:%02d:%02d %s"),
 			       datetime.year, datetime.month, datetime.day,

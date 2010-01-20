@@ -369,7 +369,7 @@ grub_video_vbe_fini (void)
 
 static grub_err_t
 grub_video_vbe_setup (unsigned int width, unsigned int height,
-                      unsigned int mode_type)
+                      unsigned int mode_type, unsigned int mode_mask)
 {
   grub_uint16_t *p;
   struct grub_vbe_mode_info_block vbe_mode_info;
@@ -415,32 +415,40 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
         /* Not compatible memory model.  */
         continue;
 
-      if ((vbe_mode_info.x_resolution != width)
-          || (vbe_mode_info.y_resolution != height))
+      if (((vbe_mode_info.x_resolution != width)
+	   || (vbe_mode_info.y_resolution != height)) && width != 0 && height != 0)
         /* Non matching resolution.  */
         continue;
 
       /* Check if user requested RGB or index color mode.  */
-      if ((mode_type & GRUB_VIDEO_MODE_TYPE_COLOR_MASK) != 0)
+      if ((mode_mask & GRUB_VIDEO_MODE_TYPE_COLOR_MASK) != 0)
         {
-          if (((mode_type & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR) != 0)
-              && (vbe_mode_info.memory_model != GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL))
-            /* Requested only index color modes.  */
-            continue;
+	  unsigned my_mode_type = 0;
 
-          if (((mode_type & GRUB_VIDEO_MODE_TYPE_RGB) != 0)
-              && (vbe_mode_info.memory_model != GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR))
-            /* Requested only RGB modes.  */
-            continue;
+	  if (vbe_mode_info.memory_model == GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL)
+	    my_mode_type |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+
+	  if (vbe_mode_info.memory_model == GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR)
+	    my_mode_type |= GRUB_VIDEO_MODE_TYPE_RGB;
+
+	  if ((my_mode_type & mode_mask
+	       & (GRUB_VIDEO_MODE_TYPE_RGB | GRUB_VIDEO_MODE_TYPE_INDEX_COLOR))
+	      != (mode_type & mode_mask
+		  & (GRUB_VIDEO_MODE_TYPE_RGB
+		     | GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)))
+	    continue;
         }
 
       /* If there is a request for specific depth, ignore others.  */
       if ((depth != 0) && (vbe_mode_info.bits_per_pixel != depth))
         continue;
 
-      /* Select mode with most number of bits per pixel.  */
+      /* Select mode with most of "volume" (size of framebuffer in bits).  */
       if (best_vbe_mode != 0)
-        if (vbe_mode_info.bits_per_pixel < best_vbe_mode_info.bits_per_pixel)
+        if ((grub_uint64_t) vbe_mode_info.bits_per_pixel
+	    * vbe_mode_info.x_resolution * vbe_mode_info.y_resolution
+	    < (grub_uint64_t) best_vbe_mode_info.bits_per_pixel
+	    * best_vbe_mode_info.x_resolution * best_vbe_mode_info.y_resolution)
           continue;
 
       /* Save so far best mode information for later use.  */
@@ -500,7 +508,7 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
     }
 
   /* Couldn't found matching mode.  */
-  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found.");
+  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found");
 }
 
 static grub_err_t
@@ -557,6 +565,7 @@ grub_video_vbe_get_info_and_fini (struct grub_video_mode_info *mode_info,
 static struct grub_video_adapter grub_video_vbe_adapter =
   {
     .name = "VESA BIOS Extension Video Driver",
+    .id = GRUB_VIDEO_DRIVER_VBE,
 
     .init = grub_video_vbe_init,
     .fini = grub_video_vbe_fini,

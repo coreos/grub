@@ -19,6 +19,7 @@
 
 #include <grub/dl.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_true (struct grub_command *cmd __attribute__ ((unused)),
@@ -43,10 +44,10 @@ GRUB_MOD_INIT(true)
 {
   cmd_true =
     grub_register_command ("true", grub_cmd_true,
-			   0, "Do nothing, successfully.");
+			   0, N_("Do nothing, successfully."));
   cmd_false =
     grub_register_command ("false", grub_cmd_false,
-			   0, "Do nothing, unsuccessfully.");
+			   0, N_("Do nothing, unsuccessfully."));
 }
 
 GRUB_MOD_FINI(true)

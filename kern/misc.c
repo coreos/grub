@@ -1,7 +1,7 @@
 /* misc.c - definitions of misc functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@
 #include <grub/term.h>
 #include <grub/env.h>
 #include <grub/i18n.h>
+
+static int
+grub_vsnprintf_real (char *str, grub_size_t n, const char *fmt, va_list args);
 
 static int
 grub_iswordseparator (int c)
@@ -202,7 +205,7 @@ grub_vprintf (const char *fmt, va_list args)
 {
   int ret;
 
-  ret = grub_vsprintf (0, fmt, args);
+  ret = grub_vsnprintf_real (0, 0, fmt, args);
   grub_refresh ();
   return ret;
 }
@@ -227,6 +230,11 @@ grub_memcmp (const void *s1, const void *s2, grub_size_t n)
 #ifndef APPLE_CC
 int memcmp (const void *s1, const void *s2, grub_size_t n)
   __attribute__ ((alias ("grub_memcmp")));
+#else
+int memcmp (const void *s1, const void *s2, grub_size_t n)
+{
+  return grub_memcmp (s1, s2, n);
+}
 #endif
 
 int
@@ -512,6 +520,11 @@ grub_memset (void *s, int c, grub_size_t n)
 #ifndef APPLE_CC
 void *memset (void *s, int c, grub_size_t n)
   __attribute__ ((alias ("grub_memset")));
+#else
+void *memset (void *s, int c, grub_size_t n)
+{
+  return grub_memset (s, c, n);
+}
 #endif
 
 grub_size_t
@@ -626,11 +639,11 @@ grub_lltoa (char *str, int c, unsigned long long n)
   return p;
 }
 
-int
-grub_vsprintf (char *str, const char *fmt, va_list args)
+static int
+grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt, va_list args)
 {
   char c;
-  int count = 0;
+  grub_size_t count = 0;
   auto void write_char (unsigned char ch);
   auto void write_str (const char *s);
   auto void write_fill (const char ch, int n);
@@ -638,7 +651,10 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
   void write_char (unsigned char ch)
     {
       if (str)
-	*str++ = ch;
+	{
+	  if (count < max_len)
+	    *str++ = ch;
+	}
       else
 	grub_putchar (ch);
 
@@ -867,13 +883,64 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 }
 
 int
-grub_sprintf (char *str, const char *fmt, ...)
+grub_vsnprintf (char *str, grub_size_t n, const char *fmt, va_list ap)
+{
+  grub_size_t ret;
+
+  if (!n)
+    return 0;
+
+  n--;
+
+  ret = grub_vsnprintf_real (str, n, fmt, ap);
+
+  return ret < n ? ret : n;
+}
+
+int
+grub_snprintf (char *str, grub_size_t n, const char *fmt, ...)
 {
   va_list ap;
   int ret;
 
   va_start (ap, fmt);
-  ret = grub_vsprintf (str, fmt, ap);
+  ret = grub_vsnprintf (str, n, fmt, ap);
+  va_end (ap);
+
+  return ret;
+}
+
+#define PREALLOC_SIZE 255
+
+char *
+grub_xvasprintf (const char *fmt, va_list ap)
+{
+  grub_size_t s, as = PREALLOC_SIZE;
+  char *ret;
+
+  while (1)
+    {
+      ret = grub_malloc (as + 1);
+      if (!ret)
+	return NULL;
+
+      s = grub_vsnprintf_real (ret, as, fmt, ap);
+      if (s <= as)
+	return ret;
+
+      grub_free (ret);
+      as = s;
+    }
+}
+
+char *
+grub_xasprintf (const char *fmt, ...)
+{
+  va_list ap;
+  char *ret;
+
+  va_start (ap, fmt);
+  ret = grub_xvasprintf (fmt, ap);
   va_end (ap);
 
   return ret;
@@ -882,10 +949,10 @@ grub_sprintf (char *str, const char *fmt, ...)
 /* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
    bytes (if SRCSIZE is -1, it is ignored) in length to a UCS-4 string.
    Return the number of characters converted. DEST must be able to hold
-   at least DESTSIZE characters. If an invalid sequence is found, return -1.
+   at least DESTSIZE characters.
    If SRCEND is not NULL, then *SRCEND is set to the next byte after the
    last byte used in SRC.  */
-grub_ssize_t
+grub_size_t
 grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 		   const grub_uint8_t *src, grub_size_t srcsize,
 		   const grub_uint8_t **srcend)
@@ -907,7 +974,8 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 	  if ((c & 0xc0) != 0x80)
 	    {
 	      /* invalid */
-	      return -1;
+	      code = '?';
+	      count = 0;
 	    }
 	  else
 	    {
@@ -949,7 +1017,11 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 	      code = c & 0x01;
 	    }
 	  else
-	    return -1;
+	    {
+	      /* invalid */
+	      code = '?';
+	      count = 0;
+	    }
 	}
 
       if (count == 0)
@@ -968,15 +1040,14 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 void
 grub_abort (void)
 {
-  if (grub_term_get_current_output ())
+  grub_printf ("\nAborted.");
+  
+#ifndef GRUB_UTIL
+  if (grub_term_inputs)
+#endif
     {
-      grub_printf ("\nAborted.");
-
-      if (grub_term_get_current_input ())
-	{
-	  grub_printf (" Press any key to exit.");
-	  grub_getkey ();
-	}
+      grub_printf (" Press any key to exit.");
+      grub_getkey ();
     }
 
   grub_exit ();

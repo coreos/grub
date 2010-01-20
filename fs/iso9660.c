@@ -2,7 +2,7 @@
    SUSP, Rock Ridge.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -280,13 +280,13 @@ grub_iso9660_mount (grub_disk_t disk)
 			  sizeof (struct grub_iso9660_primary_voldesc),
 			  (char *) &voldesc))
         {
-          grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
+          grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
           goto fail;
         }
 
       if (grub_strncmp ((char *) voldesc.voldesc.magic, "CD001", 5) != 0)
         {
-          grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
+          grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
           goto fail;
         }
 
@@ -315,7 +315,7 @@ grub_iso9660_mount (grub_disk_t disk)
 			     << GRUB_ISO9660_LOG2_BLKSZ), 0,
 		      sizeof (rootdir), (char *) &rootdir))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
       goto fail;
     }
 
@@ -331,7 +331,7 @@ grub_iso9660_mount (grub_disk_t disk)
 			     << GRUB_ISO9660_LOG2_BLKSZ), sua_pos,
 		      sua_size, sua))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
       goto fail;
     }
 
@@ -773,7 +773,10 @@ grub_iso9660_read (grub_file_t file, char *buf, grub_size_t len)
 		  data->first_sector << GRUB_ISO9660_LOG2_BLKSZ,
 		  file->offset,
 		  len, buf);
-  data->disk->read_hook = 0;
+  data->disk->read_hook = NULL;
+
+  if (grub_errno)
+    return -1;
 
   return len;
 }
@@ -832,21 +835,28 @@ grub_iso9660_uuid (grub_device_t device, char **uuid)
 	  && ! data->voldesc.modified.second[0] && ! data->voldesc.modified.second[1]
 	  && ! data->voldesc.modified.hundredth[0] && ! data->voldesc.modified.hundredth[1])
 	{
-	  grub_error (GRUB_ERR_BAD_NUMBER, "No creation date in filesystem to generate UUID.");
+	  grub_error (GRUB_ERR_BAD_NUMBER, "no creation date in filesystem to generate UUID");
 	  *uuid = NULL;
 	}
       else
 	{
-	  *uuid = grub_malloc (sizeof ("YYYY-MM-DD-HH-mm-ss-hh"));
-	  grub_sprintf (*uuid, "%c%c%c%c-%c%c-%c%c-%c%c-%c%c-%c%c-%c%c",
-			data->voldesc.modified.year[0], data->voldesc.modified.year[1],
-			data->voldesc.modified.year[2], data->voldesc.modified.year[3],
-			data->voldesc.modified.month[0], data->voldesc.modified.month[1],
-			data->voldesc.modified.day[0], data->voldesc.modified.day[1],
-			data->voldesc.modified.hour[0], data->voldesc.modified.hour[1],
-			data->voldesc.modified.minute[0], data->voldesc.modified.minute[1],
-			data->voldesc.modified.second[0], data->voldesc.modified.second[1],
-			data->voldesc.modified.hundredth[0], data->voldesc.modified.hundredth[1]);
+	  *uuid = grub_xasprintf ("%c%c%c%c-%c%c-%c%c-%c%c-%c%c-%c%c-%c%c",
+				 data->voldesc.modified.year[0],
+				 data->voldesc.modified.year[1],
+				 data->voldesc.modified.year[2],
+				 data->voldesc.modified.year[3],
+				 data->voldesc.modified.month[0],
+				 data->voldesc.modified.month[1],
+				 data->voldesc.modified.day[0],
+				 data->voldesc.modified.day[1],
+				 data->voldesc.modified.hour[0],
+				 data->voldesc.modified.hour[1],
+				 data->voldesc.modified.minute[0],
+				 data->voldesc.modified.minute[1],
+				 data->voldesc.modified.second[0],
+				 data->voldesc.modified.second[1],
+				 data->voldesc.modified.hundredth[0],
+				 data->voldesc.modified.hundredth[1]);
 	}
     }
   else

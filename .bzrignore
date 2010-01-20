@@ -35,6 +35,7 @@ grub_fstest_init.c
 grub_fstest_init.h
 grub-install
 grub-mk*
+grub-pbkdf2
 grub-pe2elf
 grub-probe
 grub_probe_init.c

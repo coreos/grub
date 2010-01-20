@@ -6,7 +6,7 @@
 
    Copyright 1993 Yggdrasil Computing, Incorporated
 
-   Copyright (C) 2009  Free Software Foundation, Inc.
+   Copyright (C) 2009,2010  Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,12 +26,7 @@
 #include "config.h"
 #include "mkisofs.h"
 #include "match.h"
-
-#ifdef linux
-#include <getopt.h>
-#else
 #include "getopt.h"
-#endif
 
 #include "iso9660.h"
 #include <ctype.h>
@@ -490,7 +485,7 @@ void usage(){
 	  int comma;
 	  int len;
 	  unsigned int j;
-	  char *arg;
+	  const char *arg;
 
 	  printf ("  ");
 
@@ -564,8 +559,8 @@ void usage(){
 }
 
 
-/* 
- * Fill in date in the iso9660 format 
+/*
+ * Fill in date in the iso9660 format
  *
  * The standards  state that the timezone offset is in multiples of 15
  * minutes, and is what you add to GMT to get the localtime.  The U.S.
@@ -583,9 +578,9 @@ int FDECL2(iso9660_date,char *, result, time_t, crtime){
   result[4] = local->tm_min;
   result[5] = local->tm_sec;
 
-  /* 
+  /*
    * Must recalculate proper timezone offset each time,
-   * as some files use daylight savings time and some don't... 
+   * as some files use daylight savings time and some don't...
    */
   result[6] = local->tm_yday;	/* save yday 'cause gmtime zaps it */
   local = gmtime(&crtime);
@@ -593,11 +588,11 @@ int FDECL2(iso9660_date,char *, result, time_t, crtime){
   local->tm_yday -= result[6];
   local->tm_hour -= result[3];
   local->tm_min -= result[4];
-  if (local->tm_year < 0) 
+  if (local->tm_year < 0)
     {
       local->tm_yday = -1;
     }
-  else 
+  else
     {
       if (local->tm_year > 0) local->tm_yday = 1;
     }
@@ -645,9 +640,11 @@ int FDECL2(main, int, argc, char **, argv){
   char *log_file = 0;
 
   set_program_name (argv[0]);
+#if ENABLE_NLS
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
+#endif /* ENABLE_NLS */
 
   if (argc < 2)
     usage();
@@ -912,7 +909,7 @@ int FDECL2(main, int, argc, char **, argv){
 	exit (0);
 	break;
       case OPTION_VERSION:
-	printf ("%s (%s %s)\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
+	printf ("%s version %s\n", PACKAGE_NAME, PACKAGE_VERSION);
 	exit (0);
 	break;
       case OPTION_NOSPLIT_SL_COMPONENT:
@@ -972,7 +969,7 @@ parse_input_files:
     {
 	int resource;
     struct rlimit rlp;
-	if (getrlimit(RLIMIT_DATA,&rlp) == -1) 
+	if (getrlimit(RLIMIT_DATA,&rlp) == -1)
 		perror (_("Warning: getrlimit"));
 	else {
 		rlp.rlim_cur=33554432;
@@ -1092,7 +1089,7 @@ parse_input_files:
 		 merge_image);
 	}
 
-      memcpy(&de.isorec.extent, mrootp->extent, 8);      
+      memcpy(&de.isorec.extent, mrootp->extent, 8);     
     }
 
   /*
@@ -1175,8 +1172,8 @@ parse_input_files:
 		  break;
 		}
 	      *pnt = '\0';
-	      graft_dir = find_or_create_directory(graft_dir, 
-						   graft_point, 
+	      graft_dir = find_or_create_directory(graft_dir,
+						   graft_point,
 						   NULL, TRUE);
 	      *pnt = PATH_SEPARATOR;
 	      xpnt = pnt + 1;
@@ -1262,12 +1259,12 @@ parse_input_files:
 
   if (goof)
     error (1, 0, _("Joliet tree sort failed.\n"));
-  
+ 
   /*
    * Fix a couple of things in the root directory so that everything
    * is self consistent.
    */
-  root->self = root->contents;  /* Fix this up so that the path 
+  root->self = root->contents;  /* Fix this up so that the path
 				   tables get done right */
 
   /*
@@ -1344,8 +1341,8 @@ parse_input_files:
 
   outputlist_insert(&dirtree_clean);
 
-  if(extension_record) 
-    { 
+  if(extension_record)
+    {
       outputlist_insert(&extension_desc);
     }
 
@@ -1356,7 +1353,7 @@ parse_input_files:
    * will always be a primary and an end volume descriptor.
    */
   last_extent = session_start;
-  
+ 
   /*
    * Calculate the size of all of the components of the disc, and assign
    * extent numbers.
@@ -1402,7 +1399,7 @@ parse_input_files:
   if( verbose > 0 )
     {
 #ifdef HAVE_SBRK
-      fprintf (stderr, _("Max brk space used %x\n"), 
+      fprintf (stderr, _("Max brk space used %x\n"),
 	       (unsigned int)(((unsigned long)sbrk(0)) - mem_start));
 #endif
       fprintf (stderr, _("%llu extents written (%llu MiB)\n"), last_extent, last_extent >> 9);

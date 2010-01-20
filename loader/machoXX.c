@@ -25,13 +25,13 @@ SUFFIX (grub_macho_parse) (grub_macho_t macho)
       || grub_file_read (macho->file, &head, sizeof (head))
       != sizeof(head))
     {
-      grub_error (GRUB_ERR_READ_ERROR, "Cannot read Mach-O header.");
+      grub_error (GRUB_ERR_READ_ERROR, "cannot read Mach-O header");
       macho->offsetXX = -1;
       return;
     }
   if (head.magic != GRUB_MACHO_MAGIC)
     {
-      grub_error (GRUB_ERR_BAD_OS, "Invalid Mach-O " XX "-bit header.");
+      grub_error (GRUB_ERR_BAD_OS, "invalid Mach-O " XX "-bit header");
       macho->offsetXX = -1;
       return;
     }
@@ -49,7 +49,7 @@ SUFFIX (grub_macho_parse) (grub_macho_t macho)
 		      (grub_size_t) macho->cmdsizeXX)
       != (grub_ssize_t) macho->cmdsizeXX)
     {
-      grub_error (GRUB_ERR_READ_ERROR, "Cannot read Mach-O header.");
+      grub_error (GRUB_ERR_READ_ERROR, "cannot read Mach-O header");
       macho->offsetXX = -1;
     }
 }
@@ -66,7 +66,7 @@ grub_macho_cmds_iterate (grub_macho_t macho,
   grub_uint8_t *hdrs = macho->cmdsXX;
   int i;
   if (! macho->cmdsXX)
-    return grub_error (GRUB_ERR_BAD_OS, "Couldn't find " XX "-bit Mach-O");
+    return grub_error (GRUB_ERR_BAD_OS, "couldn't find " XX "-bit Mach-O");
   for (i = 0; i < macho->ncmdsXX; i++)
     {
       struct grub_macho_cmd *hdr = (struct grub_macho_cmd *) hdrs;
@@ -92,13 +92,13 @@ SUFFIX (grub_macho_readfile) (grub_macho_t macho, void *dest)
   grub_ssize_t read;
   if (! SUFFIX (grub_macho_contains_macho) (macho))
     return grub_error (GRUB_ERR_BAD_OS,
-		       "Couldn't read architecture-specific part");
+		       "couldn't read architecture-specific part");
 
   if (grub_file_seek (macho->file, macho->offsetXX) == (grub_off_t) -1)
     {
       grub_error_push ();
       return grub_error (GRUB_ERR_BAD_OS,
-			 "Invalid offset in program header.");
+			 "invalid offset in program header");
     }
 
   read = grub_file_read (macho->file, dest,
@@ -107,7 +107,7 @@ SUFFIX (grub_macho_readfile) (grub_macho_t macho, void *dest)
     {
       grub_error_push ();
       return grub_error (GRUB_ERR_BAD_OS,
-			 "Couldn't read architecture-specific part");
+			 "couldn't read architecture-specific part");
     }
   return GRUB_ERR_NONE;
 }
@@ -151,11 +151,11 @@ SUFFIX (grub_macho_size) (grub_macho_t macho, grub_macho_addr_t *segments_start,
   grub_macho_cmds_iterate (macho, calcsize, 0);
 
   if (nr_phdrs == 0)
-    return grub_error (GRUB_ERR_BAD_OS, "No program headers present");
+    return grub_error (GRUB_ERR_BAD_OS, "no program headers present");
 
   if (*segments_end < *segments_start)
     /* Very bad addresses.  */
-    return grub_error (GRUB_ERR_BAD_OS, "Bad program header load addresses");
+    return grub_error (GRUB_ERR_BAD_OS, "bad program header load addresses");
 
   return GRUB_ERR_NONE;
 }
@@ -187,7 +187,7 @@ SUFFIX (grub_macho_load) (grub_macho_t macho, char *offset, int flags)
       {
 	grub_error_push ();
 	grub_error (GRUB_ERR_BAD_OS,
-		    "Invalid offset in program header.");
+		    "invalid offset in program header");
 	return 1;
       }
 
@@ -201,8 +201,8 @@ SUFFIX (grub_macho_load) (grub_macho_t macho, char *offset, int flags)
 	    /* XXX How can we free memory from `load_hook'? */
 	    grub_error_push ();
 	    err=grub_error (GRUB_ERR_BAD_OS,
-			    "Couldn't read segment from file: "
-			    "wanted 0x%lx bytes; read 0x%lx bytes.",
+			    "couldn't read segment from file: "
+			    "wanted 0x%lx bytes; read 0x%lx bytes",
 			    hdr->filesize, read);
 	    return 1;
 	  }

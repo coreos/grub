@@ -30,16 +30,17 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/i386/efi/grub-install.in
 
 # Modules.
-pkglib_MODULES = kernel.img chain.mod appleldr.mod \
+pkglib_PROGRAMS = kernel.img
+pkglib_MODULES = chain.mod appleldr.mod \
 	linux.mod halt.mod reboot.mod pci.mod lspci.mod \
 	datetime.mod date.mod datehook.mod loadbios.mod \
 	fixvideo.mod mmap.mod acpi.mod
 
 # For kernel.img.
-kernel_img_EXPORTS = no
+kernel_img_RELOCATABLE = yes
 kernel_img_SOURCES = kern/i386/efi/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
+	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/$(target_cpu)/dl.c kern/i386/efi/init.c kern/parser.c kern/partition.c \
 	kern/env.c symlist.c kern/efi/efi.c kern/efi/init.c kern/efi/mm.c \
@@ -68,7 +69,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genke
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # For boot.mod.
-pkglib_MODULES += boot.mod 
+pkglib_MODULES += boot.mod
 boot_mod_SOURCES = commands/boot.c
 boot_mod_CFLAGS = $(COMMON_CFLAGS)
 boot_mod_LDFLAGS = $(COMMON_LDFLAGS)

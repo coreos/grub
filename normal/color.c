@@ -103,23 +103,31 @@ free_and_return:
   grub_free (fg_name);
 }
 
+static grub_uint8_t color_normal, color_highlight;
+
+static void
+set_colors (void)
+{
+  struct grub_term_output *term;
+
+  FOR_ACTIVE_TERM_OUTPUTS(term)
+  {
+    /* Reloads terminal `normal' and `highlight' colors.  */
+    grub_term_setcolor (term, color_normal, color_highlight);
+
+    /* Propagates `normal' color to terminal current color.  */
+    grub_term_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
+  }
+}
+
 /* Replace default `normal' colors with the ones specified by user (if any).  */
 char *
 grub_env_write_color_normal (struct grub_env_var *var __attribute__ ((unused)),
 			     const char *val)
 {
-  grub_uint8_t color_normal, color_highlight;
-
-  /* Use old settings in case grub_parse_color_name_pair() has no effect.  */
-  grub_getcolor (&color_normal, &color_highlight);
-
   grub_parse_color_name_pair (&color_normal, val);
 
-  /* Reloads terminal `normal' and `highlight' colors.  */
-  grub_setcolor (color_normal, color_highlight);
-
-  /* Propagates `normal' color to terminal current color.  */
-  grub_setcolorstate (GRUB_TERM_COLOR_NORMAL);
+  set_colors ();
 
   return grub_strdup (val);
 }
@@ -129,21 +137,9 @@ char *
 grub_env_write_color_highlight (struct grub_env_var *var __attribute__ ((unused)),
 				const char *val)
 {
-  grub_uint8_t color_normal, color_highlight;
-
-  /* Use old settings in case grub_parse_color_name_pair() has no effect.  */
-  grub_getcolor (&color_normal, &color_highlight);
-
   grub_parse_color_name_pair (&color_highlight, val);
 
-  /* Reloads terminal `normal' and `highlight' colors.  */
-  grub_setcolor (color_normal, color_highlight);
-
-  /* Propagates `normal' color to terminal current color.
-     Note: Using GRUB_TERM_COLOR_NORMAL here rather than
-     GRUB_TERM_COLOR_HIGHLIGHT is intentional.  We don't want to switch
-     to highlight state just because color was reloaded.  */
-  grub_setcolorstate (GRUB_TERM_COLOR_NORMAL);
+  set_colors ();
 
   return grub_strdup (val);
 }

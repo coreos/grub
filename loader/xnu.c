@@ -32,6 +32,7 @@
 #include <grub/command.h>
 #include <grub/misc.h>
 #include <grub/env.h>
+#include <grub/i18n.h>
 
 struct grub_xnu_devtree_key *grub_xnu_devtree_root = 0;
 static int driverspackagenum = 0;
@@ -67,7 +68,7 @@ grub_xnu_heap_malloc (int size)
 	 advanced mm is ready. */
       grub_xnu_heap_start
 	= XNU_RELOCATOR (realloc) (grub_xnu_heap_start,
-				   newblknum 
+				   newblknum
 				   * GRUB_XNU_HEAP_ALLOC_BLOCK);
       if (!grub_xnu_heap_start)
 	return NULL;
@@ -365,7 +366,7 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
     {
       grub_macho_close (macho);
       return grub_error (GRUB_ERR_BAD_OS,
-			 "Kernel doesn't contain suitable 32-bit architecture");
+			 "kernel doesn't contain suitable 32-bit architecture");
     }
 
   err = grub_macho_size32 (macho, &startcode, &endcode, GRUB_MACHO_NOBSS);
@@ -463,7 +464,7 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
     {
       grub_macho_close (macho);
       return grub_error (GRUB_ERR_BAD_OS,
-			 "Kernel doesn't contain suitable 64-bit architecture");
+			 "kernel doesn't contain suitable 64-bit architecture");
     }
 
   err = grub_macho_size64 (macho, &startcode, &endcode, GRUB_MACHO_NOBSS);
@@ -568,10 +569,9 @@ grub_xnu_register_memory (char *prefix, int *suffix,
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "can't register memory");
   if (suffix)
     {
-      driverkey->name = grub_malloc (grub_strlen (prefix) + 10);
+      driverkey->name = grub_xasprintf ("%s%d", prefix, (*suffix)++);
       if (!driverkey->name)
 	return grub_error (GRUB_ERR_OUT_OF_MEMORY, "can't register memory");
-      grub_sprintf (driverkey->name, "%s%d", prefix, (*suffix)++);
     }
   else
     driverkey->name = grub_strdup (prefix);
@@ -654,7 +654,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
 	  if (macho)
 	    grub_macho_close (macho);
 	  return grub_error (GRUB_ERR_BAD_OS,
-			     "Extension doesn't contain suitable architecture");
+			     "extension doesn't contain suitable architecture");
 	}
       if (grub_xnu_is_64bit)
 	machosize = grub_macho_filesize64 (macho);
@@ -719,7 +719,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
 	{
 	  grub_file_close (infoplist);
 	  grub_error_push ();
-	  return grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s: ",
+	  return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s: ",
 			     infoplistname);
 	}
       grub_file_close (infoplist);
@@ -763,7 +763,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
   file = grub_gzfile_open (args[0], 1);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       "Couldn't load driver package");
+		       "couldn't load driver package");
 
   /* Sometimes caches are fat binary. Errgh. */
   if (grub_file_read (file, &head, sizeof (head))
@@ -773,7 +773,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
 	 can hardly imagine a valid package shorter than 20 bytes. */
       grub_file_close (file);
       grub_error_push ();
-      return grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s", args[0]);
+      return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", args[0]);
     }
 
   /* Find the corresponding architecture. */
@@ -786,7 +786,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
 	  grub_file_close (file);
 	  grub_error_push ();
 	  return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			     "Couldn't read file %s", args[0]);
+			     "couldn't read file %s", args[0]);
 
 	}
       if (grub_file_read (file, archs,
@@ -795,7 +795,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
 	{
 	  grub_free (archs);
 	  grub_error_push ();
-	  return grub_error (GRUB_ERR_READ_ERROR, "Cannot read fat header.");
+	  return grub_error (GRUB_ERR_READ_ERROR, "cannot read fat header");
 	}
       for (i = 0; i < narchs; i++)
 	{
@@ -848,7 +848,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
     {
       grub_file_close (file);
       grub_error_push ();
-      return grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s", args[0]);
+      return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", args[0]);
     }
   grub_file_close (file);
 
@@ -875,7 +875,7 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
   file = grub_gzfile_open (args[0], 1);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       "Couldn't load ramdisk");
+		       "couldn't load ramdisk");
 
   err = grub_xnu_align_heap (GRUB_XNU_PAGESIZE);
   if (err)
@@ -891,7 +891,7 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
     {
       grub_file_close (file);
       grub_error_push ();
-      return grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s", args[0]);
+      return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", args[0]);
     }
   return grub_xnu_register_memory ("RAMDisk", 0, loadto, size);
 }
@@ -917,7 +917,7 @@ grub_xnu_check_os_bundle_required (char *plistname, char *osbundlereq,
     {
       grub_file_close (file);
       grub_error_push ();
-      grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s", plistname);
+      grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", plistname);
       return 0;
     }
 
@@ -927,14 +927,14 @@ grub_xnu_check_os_bundle_required (char *plistname, char *osbundlereq,
     {
       grub_file_close (file);
       grub_error_push ();
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "Couldn't read file %s", plistname);
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't read file %s", plistname);
       return 0;
     }
   if (grub_file_read (file, buf, size) != (grub_ssize_t) (size))
     {
       grub_file_close (file);
       grub_error_push ();
-      grub_error (GRUB_ERR_BAD_OS, "Couldn't read file %s", plistname);
+      grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", plistname);
       return 0;
     }
   grub_file_close (file);
@@ -1326,20 +1326,20 @@ grub_xnu_fill_devicetree (void)
     nextdot = curdot + grub_strlen (curdot) + 1;
 
     name = grub_realloc (name, nextdot - curdot + 1);
-    
+   
     if (!name)
       return 1;
-    
+   
     unescape (name, curdot, nextdot, &len);
     name[len] = 0;
 
     curvalue = grub_xnu_create_value (curkey, name);
     grub_free (name);
-    
+   
     data = grub_malloc (grub_strlen (var->value) + 1);
     if (!data)
       return 1;
-    
+   
     unescape (data, var->value, var->value + grub_strlen (var->value),
 	      &len);
     curvalue->datasize = len;
@@ -1404,25 +1404,25 @@ static grub_command_t cmd_kextdir, cmd_ramdisk, cmd_resume, cmd_splash;
 GRUB_MOD_INIT(xnu)
 {
   cmd_kernel = grub_register_command ("xnu_kernel", grub_cmd_xnu_kernel, 0,
-				      "load a xnu kernel");
+				      N_("Load XNU image."));
   cmd_kernel64 = grub_register_command ("xnu_kernel64", grub_cmd_xnu_kernel64,
-					0, "load a 64-bit xnu kernel");
+					0, N_("Load 64-bit XNU image."));
   cmd_mkext = grub_register_command ("xnu_mkext", grub_cmd_xnu_mkext, 0,
-				     "Load XNU extension package.");
+				     N_("Load XNU extension package."));
   cmd_kext = grub_register_command ("xnu_kext", grub_cmd_xnu_kext, 0,
-				    "Load XNU extension.");
+				    N_("Load XNU extension."));
   cmd_kextdir = grub_register_command ("xnu_kextdir", grub_cmd_xnu_kextdir,
-				       "xnu_kextdir DIRECTORY [OSBundleRequired]",
-				       "Load XNU extension directory");
+				       N_("DIRECTORY [OSBundleRequired]"),
+				       N_("Load XNU extension directory."));
   cmd_ramdisk = grub_register_command ("xnu_ramdisk", grub_cmd_xnu_ramdisk, 0,
-				       "Load XNU ramdisk. "
-				       "It will be seen as md0");
+				       N_("Load XNU ramdisk. "
+				       "It will be seen as md0."));
   cmd_splash = grub_register_command ("xnu_splash", grub_cmd_xnu_splash, 0,
-				      "Load a splash image for XNU");
+				      N_("Load a splash image for XNU."));
 
 #ifndef GRUB_UTIL
   cmd_resume = grub_register_command ("xnu_resume", grub_cmd_xnu_resume,
-				      0, "Load XNU hibernate image.");
+				      0, N_("Load XNU hibernate image."));
 #endif
 
   grub_cpu_xnu_init ();

@@ -24,6 +24,7 @@
 #include <grub/misc.h>
 #include <grub/gzio.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_cat (grub_command_t cmd __attribute__ ((unused)),
@@ -78,7 +79,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(cat)
 {
   cmd = grub_register_command_p1 ("cat", grub_cmd_cat,
-				  "cat FILE", "Show the contents of a file.");
+				  N_("FILE"), N_("Show the contents of a file."));
 }
 
 GRUB_MOD_FINI(cat)

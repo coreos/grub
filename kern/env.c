@@ -156,10 +156,11 @@ grub_env_unset (const char *name)
   if (! var)
     return;
 
-  /* XXX: It is not possible to unset variables with a read or write
-     hook.  */
   if (var->read_hook || var->write_hook)
-    return;
+    {
+      grub_env_set (name, "");
+      return;
+    }
 
   grub_env_remove (var);
 
