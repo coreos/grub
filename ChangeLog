@@ -1,5 +1,10 @@
 2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* video/fb/video_fb.c (grub_video_fb_scroll): Optimise by avoiding
+	unnecessary calls.
+
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move context handling out of the kernel.
 
 	* conf/any-emu.rmk (grub_emu_SOURCES): Add normal/context.c.
