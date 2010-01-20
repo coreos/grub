@@ -1,3 +1,10 @@
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/multiboot.h: Resynced with spec.
+	* include/multiboot2.h: Likewise.
+	* loader/i386/multiboot_mbi.c (grub_fill_multiboot_mmap): Handle
+	GRUB_MACHINE_MEMORY_ACPI_RECLAIMABLE and GRUB_MACHINE_MEMORY_NVS.
+
 2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/term.h (grub_term_register_input,
