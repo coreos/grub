@@ -1,5 +1,9 @@
 2009-12-20  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* normal/menu.c (notify_execution_failure): Clarify error message.
+
+2009-12-20  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* commands/loadenv.c (check_blocklists): Use `grub_err_t' as
 	return value (and revert all return statements).  Update users.
 

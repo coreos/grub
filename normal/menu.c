@@ -1,7 +1,7 @@
 /* menu.c - General supporting functionality for menus.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -519,7 +519,7 @@ notify_execution_failure (void *userdata __attribute__((unused)))
       grub_errno = GRUB_ERR_NONE;
     }
   grub_printf ("\n  ");
-  grub_printf_ (N_("Failed to boot default entries.\n"));
+  grub_printf_ (N_("Failed to boot both default and fallback entries.\n"));
   grub_wait_after_message ();
 }
 
