@@ -125,7 +125,6 @@ if [ "x${LANG}" != "xC" ] ; then
     prepare_grub_to_access_device $(${grub_probe} --target=device ${locale_dir})
   cat << EOF
 set locale_dir=(\$root)$(make_system_path_relative_to_its_root ${locale_dir})
-set locale_dir=${locale_dir}
 set lang=${grub_lang}
 insmod gettext
 EOF
