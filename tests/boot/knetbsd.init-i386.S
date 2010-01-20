@@ -78,7 +78,7 @@ _start:
 
 	/* shutdown.  */
 	movl $SYSCALL_RESET, %eax
-	pushl $haltmsg
+	pushl $0
 	pushl $(RESET_POWEROFF|RESET_HALT|RESET_NOSYNC)
 	pushl $0
 	int $SYSCALL_INT
@@ -107,9 +107,6 @@ device:
 message:
 	.ascii "Boot Test Passed Successfully\n" SUCCESSFUL_BOOT_STRING "\n"
 messageend:
-haltmsg:
-	.ascii "Machine halted"
-	.byte 0
 devfstype:
 	.ascii "tmpfs"
 	.byte 0

@@ -67,7 +67,7 @@ _start:
 	/* shutdown.  */
 	movq $SYSCALL_RESET, %rax
 	movq $(RESET_POWEROFF|RESET_HALT|RESET_NOSYNC), %rdi
-	movq $haltmsg, %rsi
+	movq $0, %rsi
 	syscall
 
 	/* exit (1). Shouldn't be reached.  */
@@ -92,9 +92,6 @@ device:
 message:
 	.ascii "Boot Test Passed Successfully\n" SUCCESSFUL_BOOT_STRING "\n"
 messageend:
-haltmsg:
-	.ascii "Machine halted"
-	.byte 0
 devfstype:
 	.ascii "tmpfs"
 	.byte 0
