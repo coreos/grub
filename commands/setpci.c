@@ -118,7 +118,7 @@ grub_setpci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
   if (varname)
     {
       char buf[sizeof ("XXXXXXXX")];
-      grub_sprintf (buf, "%x", regval);
+      grub_snprintf (buf, sizeof (buf), "%x", regval);
       grub_env_set (varname, buf);
       return 1;
     }
