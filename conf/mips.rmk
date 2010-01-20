@@ -19,6 +19,10 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	msdos_partition.h machine/kernel.h handler.h list.h \
 	command.h machine/memory.h cpu/libgcc.h cpu/cache.h i18n.h
 
+ifeq ($(platform), yeeloong)
+kernel_img_HEADERS += pci.h
+endif
+
 symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
