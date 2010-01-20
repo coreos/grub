@@ -1,3 +1,8 @@
+2010-01-20  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* include/grub/script_sh.h (sourcecode): Remove const qualifier to
+	fix grub-script-check warning.
+
 2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/font.h (grub_font_load): Fix prototype.
