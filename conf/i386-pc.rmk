@@ -84,10 +84,10 @@ bin_UTILITIES = grub-mkimage
 sbin_UTILITIES = grub-setup
 
 # For grub-mkimage.
-grub_mkimage_SOURCES = gnulib/progname.c util/i386/pc/grub-mkimage.c util/misc.c \
+grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkrawimage.c util/misc.c \
 	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
 grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
-util/i386/pc/grub-mkimage.c_DEPENDENCIES = Makefile
+util/grub-mkrawimage.c_DEPENDENCIES = Makefile
 
 # For grub-setup.
 util/i386/pc/grub-setup.c_DEPENDENCIES = grub_setup_init.h
@@ -197,7 +197,7 @@ halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For serial.mod.
-serial_mod_SOURCES = term/i386/pc/serial.c
+serial_mod_SOURCES = term/serial.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
@@ -293,7 +293,7 @@ pxecmd_mod_CFLAGS = $(COMMON_CFLAGS)
 pxecmd_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For datetime.mod
-datetime_mod_SOURCES = lib/i386/datetime.c
+datetime_mod_SOURCES = lib/cmos_datetime.c
 datetime_mod_CFLAGS = $(COMMON_CFLAGS)
 datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

@@ -777,12 +777,15 @@ grub_xfs_uuid (grub_device_t device, char **uuid)
   data = grub_xfs_mount (disk);
   if (data)
     {
-      *uuid = grub_malloc (sizeof ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"));
-      grub_sprintf (*uuid, "%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-		    grub_be_to_cpu16 (data->sblock.uuid[0]), grub_be_to_cpu16 (data->sblock.uuid[1]),
-		    grub_be_to_cpu16 (data->sblock.uuid[2]), grub_be_to_cpu16 (data->sblock.uuid[3]),
-		    grub_be_to_cpu16 (data->sblock.uuid[4]), grub_be_to_cpu16 (data->sblock.uuid[5]),
-		    grub_be_to_cpu16 (data->sblock.uuid[6]), grub_be_to_cpu16 (data->sblock.uuid[7]));
+      *uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+			     grub_be_to_cpu16 (data->sblock.uuid[0]),
+			     grub_be_to_cpu16 (data->sblock.uuid[1]),
+			     grub_be_to_cpu16 (data->sblock.uuid[2]),
+			     grub_be_to_cpu16 (data->sblock.uuid[3]),
+			     grub_be_to_cpu16 (data->sblock.uuid[4]),
+			     grub_be_to_cpu16 (data->sblock.uuid[5]),
+			     grub_be_to_cpu16 (data->sblock.uuid[6]),
+			     grub_be_to_cpu16 (data->sblock.uuid[7]));
     }
   else
     *uuid = NULL;

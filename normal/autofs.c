@@ -57,13 +57,11 @@ read_fs_list (void)
     {
       char *filename;
 
-      filename = grub_malloc (grub_strlen (prefix) + sizeof ("/fs.lst"));
+      filename = grub_xasprintf ("%s/fs.lst", prefix);
       if (filename)
 	{
 	  grub_file_t file;
 	  grub_fs_autoload_hook_t tmp_autoload_hook;
-
-	  grub_sprintf (filename, "%s/fs.lst", prefix);
 
 	  /* This rules out the possibility that read_fs_list() is invoked
 	     recursively when we call grub_file_open() below.  */

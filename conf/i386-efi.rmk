@@ -30,13 +30,14 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/i386/efi/grub-install.in
 
 # Modules.
-pkglib_MODULES = kernel.img chain.mod appleldr.mod \
+pkglib_PROGRAMS = kernel.img
+pkglib_MODULES = chain.mod appleldr.mod \
 	linux.mod halt.mod reboot.mod pci.mod lspci.mod \
 	datetime.mod date.mod datehook.mod loadbios.mod \
 	fixvideo.mod mmap.mod acpi.mod
 
 # For kernel.img.
-kernel_img_EXPORTS = no
+kernel_img_RELOCATABLE = yes
 kernel_img_SOURCES = kern/i386/efi/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/term.c \

@@ -17,8 +17,7 @@
  */
 
 #include <grub/machine/memory.h>
-#include <grub/machine/serial.h>
-#include <grub/machine/console.h>
+#include <grub/serial.h>
 #include <grub/term.h>
 #include <grub/types.h>
 #include <grub/dl.h>
@@ -29,9 +28,8 @@
 #include <grub/i18n.h>
 
 #define TEXT_WIDTH	80
-#define TEXT_HEIGHT	25
+#define TEXT_HEIGHT	24
 
-static struct grub_term_output grub_serial_term_output;
 static unsigned int xpos, ypos;
 static unsigned int keep_track = 1;
 static unsigned int registered = 0;
@@ -39,6 +37,8 @@ static unsigned int registered = 0;
 /* An input buffer.  */
 static char input_buf[8];
 static unsigned int npending = 0;
+
+static struct grub_term_output grub_serial_term_output;
 
 /* Argument options.  */
 static const struct grub_arg_option options[] =
@@ -55,7 +55,7 @@ static const struct grub_arg_option options[] =
 /* Serial port settings.  */
 struct serial_port
 {
-  unsigned short port;
+  grub_port_t port;
   unsigned short divisor;
   unsigned short word_len;
   unsigned int   parity;
@@ -69,12 +69,13 @@ static struct serial_port serial_settings;
 static const unsigned short *serial_hw_io_addr = (const unsigned short *) GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR;
 #define GRUB_SERIAL_PORT_NUM 4
 #else
-static const unsigned short serial_hw_io_addr[] = { 0x3f8, 0x2f8, 0x3e8, 0x2e8 };
+#include <grub/machine/serial.h>
+static const grub_port_t serial_hw_io_addr[] = GRUB_MACHINE_SERIAL_PORTS;
 #define GRUB_SERIAL_PORT_NUM (ARRAY_SIZE(serial_hw_io_addr))
 #endif
 
 /* Return the port number for the UNITth serial device.  */
-static inline unsigned short
+static inline grub_port_t
 serial_hw_get_port (const unsigned int unit)
 {
   if (unit < GRUB_SERIAL_PORT_NUM)
@@ -150,7 +151,7 @@ serial_translate_key_sequence (void)
   if (input_buf[0] != '\e' || input_buf[1] != '[')
     return;
 
-  for (i = 0; ARRAY_SIZE (three_code_table); i++)
+  for (i = 0; i < ARRAY_SIZE (three_code_table); i++)
     if (three_code_table[i].key == input_buf[2])
       {
 	input_buf[0] = three_code_table[i].ascii;
@@ -255,6 +256,9 @@ grub_serial_getkey (void)
     ;
 
   c = input_buf[0];
+  if (c == 0x7f)
+    c = GRUB_TERM_BACKSPACE;
+
   grub_memmove (input_buf, input_buf + 1, --npending);
 
   return c;
@@ -365,7 +369,7 @@ grub_serial_putchar (grub_uint32_t c)
 	  break;
 
 	case '\n':
-	  if (ypos < TEXT_HEIGHT)
+	  if (ypos < TEXT_HEIGHT - 1)
 	    ypos++;
 	  break;
 
@@ -504,7 +508,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
     }
 
   if (state[1].set)
-    serial_settings.port = (unsigned short) grub_strtoul (state[1].arg, 0, 0);
+    serial_settings.port = (grub_port_t) grub_strtoul (state[1].arg, 0, 0);
 
   if (state[2].set)
     {
@@ -604,8 +608,8 @@ GRUB_MOD_INIT(serial)
 {
   cmd = grub_register_extcmd ("serial", grub_cmd_serial,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      N_("[OPTIONS...]"),
-			      N_("Configure serial port."), options);
+			      "serial [OPTIONS...]",
+			      "Configure serial port.", options);
 
   /* Set default settings.  */
   serial_settings.port      = serial_hw_get_port (0);

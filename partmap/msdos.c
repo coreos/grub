@@ -300,21 +300,15 @@ pc_partition_map_probe (grub_disk_t disk, const char *str)
 static char *
 pc_partition_map_get_name (const grub_partition_t p)
 {
-  char *name;
   struct grub_msdos_partition *pcdata = p->data;
 
-  name = grub_malloc (13);
-  if (! name)
-    return 0;
-
   if (pcdata->bsd_part < 0)
-    grub_sprintf (name, "%d", pcdata->dos_part + 1);
+    return grub_xasprintf ("%d", pcdata->dos_part + 1);
   else if (pcdata->dos_part < 0)
-    grub_sprintf (name, "%c", pcdata->bsd_part + 'a');
+    return grub_xasprintf ("%c", pcdata->bsd_part + 'a');
   else
-    grub_sprintf (name, "%d,%c", pcdata->dos_part + 1, pcdata->bsd_part + 'a');
-
-  return name;
+    return grub_xasprintf ("%d,%c", pcdata->dos_part + 1,
+			  pcdata->bsd_part + 'a');
 }
 
 

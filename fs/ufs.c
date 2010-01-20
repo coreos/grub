@@ -732,12 +732,9 @@ grub_ufs_uuid (grub_device_t device, char **uuid)
 
   data = grub_ufs_mount (disk);
   if (data && (data->sblock.uuidhi != 0 || data->sblock.uuidlow != 0))
-    {
-      *uuid = grub_malloc (16 + sizeof ('\0'));
-      grub_sprintf (*uuid, "%08x%08x",
-		    (unsigned) grub_le_to_cpu32 (data->sblock.uuidhi),
-		    (unsigned) grub_le_to_cpu32 (data->sblock.uuidlow));
-    }
+    *uuid = grub_xasprintf ("%08x%08x",
+			   (unsigned) grub_le_to_cpu32 (data->sblock.uuidhi),
+			   (unsigned) grub_le_to_cpu32 (data->sblock.uuidlow));
   else
     *uuid = NULL;
 

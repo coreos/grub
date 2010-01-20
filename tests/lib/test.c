@@ -47,19 +47,16 @@ add_failure (const char *file,
 	     const char *funp,
 	     grub_uint32_t line, const char *fmt, va_list args)
 {
-  char buf[1024];
   grub_test_failure_t failure;
 
   failure = (grub_test_failure_t) grub_malloc (sizeof (*failure));
   if (!failure)
     return;
 
-  grub_vsprintf (buf, fmt, args);
-
   failure->file = grub_strdup (file ? : "<unknown_file>");
   failure->funp = grub_strdup (funp ? : "<unknown_function>");
   failure->line = line;
-  failure->message = grub_strdup (buf);
+  failure->message = grub_xvasprintf (fmt, args);
 
   grub_list_push (GRUB_AS_LIST_P (&failure_list), GRUB_AS_LIST (failure));
 }

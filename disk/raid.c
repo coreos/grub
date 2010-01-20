@@ -556,7 +556,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
             }
         }
 
-      array->name = grub_malloc (13);
+      array->name = grub_xasprintf ("md%d", array->number);
       if (! array->name)
         {
           grub_free (array->uuid);
@@ -564,8 +564,6 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 
           return grub_errno;
         }
-
-      grub_sprintf (array->name, "md%d", array->number);
 
       grub_dprintf ("raid", "Found array %s (%s)\n", array->name,
                     scanner_name);

@@ -250,17 +250,20 @@ grub_multiboot (int argc, char *argv[])
 
 	case 0:
 	  {
-	    char buf[sizeof ("XXXXXXXXXXxXXXXXXXXXXxXXXXXXXXXX,XXXXXXXXXXxXXXXXXXXXX,auto")];
+	    char *buf;
 	    if (header->depth && header->width && header->height)
-	      grub_sprintf (buf, "%dx%dx%d,%dx%d,auto", header->width,
-			    header->height, header->depth, header->width,
-			    header->height);
+	      buf = grub_xasprintf ("%dx%dx%d,%dx%d,auto", header->width,
+				   header->height, header->depth, header->width,
+				   header->height);
 	    else if (header->width && header->height)
-	      grub_sprintf (buf, "%dx%d,auto", header->width, header->height);
+	      buf = grub_xasprintf ("%dx%d,auto", header->width, header->height);
 	    else
-	      grub_sprintf (buf, "auto");
+	      buf = grub_strdup ("auto");
 
+	    if (!buf)
+	      goto fail;
 	    grub_env_set ("gfxpayload", buf);
+	    grub_free (buf);
 	    break;
 	  }
 	}

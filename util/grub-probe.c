@@ -94,6 +94,11 @@ probe_partmap (grub_disk_t disk)
 static int
 probe_raid_level (grub_disk_t disk)
 {
+  /* disk might be NULL in the case of a LVM physical volume with no LVM
+     signature.  Ignore such cases here.  */
+  if (!disk)
+    return -1;
+
   if (disk->dev->id != GRUB_DISK_DEVICE_RAID_ID)
     return -1;
 

@@ -35,9 +35,9 @@ grub_pci_iterate (grub_pci_iteratefunc_t hook)
   grub_pci_id_t id;
   grub_uint32_t hdr;
 
-  for (dev.bus = 0; dev.bus < 256; dev.bus++)
+  for (dev.bus = 0; dev.bus < GRUB_PCI_NUM_BUS; dev.bus++)
     {
-      for (dev.device = 0; dev.device < 32; dev.device++)
+      for (dev.device = 0; dev.device < GRUB_PCI_NUM_DEVICES; dev.device++)
 	{
 	  for (dev.function = 0; dev.function < 8; dev.function++)
 	    {

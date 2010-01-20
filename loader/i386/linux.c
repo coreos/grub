@@ -519,11 +519,9 @@ grub_linux_boot (void)
      May change in future if we have modes without framebuffer.  */
   if (modevar && *modevar != 0)
     {
-      tmp = grub_malloc (grub_strlen (modevar)
-			 + sizeof (";text"));
+      tmp = grub_xasprintf ("%s;text", modevar);
       if (! tmp)
 	return grub_errno;
-      grub_sprintf (tmp, "%s;text", modevar);
       err = grub_video_set_mode (tmp, 0, 0);
       grub_free (tmp);
     }
@@ -538,16 +536,16 @@ grub_linux_boot (void)
     }
 
   if (! grub_linux_setup_video (params))
-    params->have_vga = GRUB_VIDEO_TYPE_VLFB;
+    params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
   else
     {
-      params->have_vga = GRUB_VIDEO_TYPE_TEXT;
+      params->have_vga = GRUB_VIDEO_LINUX_TYPE_TEXT;
       params->video_width = 80;
       params->video_height = 25;
     }
 
   /* Initialize these last, because terminal position could be affected by printfs above.  */
-  if (params->have_vga == GRUB_VIDEO_TYPE_TEXT)
+  if (params->have_vga == GRUB_VIDEO_LINUX_TYPE_TEXT)
     {
       grub_term_output_t term;
       int found = 0;
@@ -796,19 +794,18 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		break;
 	      }
 
-	    buf = grub_malloc (sizeof ("WWWWxHHHHxDD;WWWWxHHHH"));
-	    if (! buf)
-	      goto fail;
-
 	    linux_mode
 	      = &linux_vesafb_modes[vid_mode - GRUB_LINUX_VID_MODE_VESA_START];
 
-	    grub_sprintf (buf, "%ux%ux%u,%ux%u",
-			  linux_vesafb_res[linux_mode->res_index].width,
-			  linux_vesafb_res[linux_mode->res_index].height,
-			  linux_mode->depth,
-			  linux_vesafb_res[linux_mode->res_index].width,
-			  linux_vesafb_res[linux_mode->res_index].height);
+	    buf = grub_xasprintf ("%ux%ux%u,%ux%u",
+				 linux_vesafb_res[linux_mode->res_index].width,
+				 linux_vesafb_res[linux_mode->res_index].height,
+				 linux_mode->depth,
+				 linux_vesafb_res[linux_mode->res_index].width,
+				 linux_vesafb_res[linux_mode->res_index].height);
+	    if (! buf)
+	      goto fail;
+
 	    grub_printf ("%s is deprecated. "
 			 "Use set gfxpayload=%s before "
 			 "linux command instead.\n",
