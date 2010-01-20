@@ -17,7 +17,7 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h reader.h \
 	symbol.h term.h time.h types.h loader.h partition.h \
 	msdos_partition.h machine/kernel.h handler.h list.h \
-	command.h machine/memory.h cpu/libgcc.h cpu/cache.h i18n.h
+	command.h machine/memory.h cpu/libgcc.h cpu/cache.h i18n.h env_private.h
 
 ifeq ($(platform), yeeloong)
 kernel_img_HEADERS += pci.h
