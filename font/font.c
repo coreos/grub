@@ -17,8 +17,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#define USE_ASCII_FAILBACK 0
-
 #include <grub/bufio.h>
 #include <grub/dl.h>
 #include <grub/file.h>
