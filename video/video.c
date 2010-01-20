@@ -93,6 +93,14 @@ grub_video_get_info (struct grub_video_mode_info *mode_info)
   return grub_video_adapter_active->get_info (mode_info);
 }
 
+grub_video_driver_id_t
+grub_video_get_driver_id (void)
+{
+  if (! grub_video_adapter_active)
+    return GRUB_VIDEO_DRIVER_NONE;
+  return grub_video_adapter_active->id;
+}
+
 /* Get information about active video mode.  */
 grub_err_t
 grub_video_get_info_and_fini (struct grub_video_mode_info *mode_info,
@@ -399,21 +407,81 @@ grub_video_get_active_render_target (struct grub_video_render_target **target)
   return grub_video_adapter_active->get_active_render_target (target);
 }
 
+/* Parse <width>x<height>[x<depth>]*/
+static grub_err_t
+parse_modespec (const char *current_mode, int *width, int *height, int *depth)
+{
+  const char *value;
+  const char *param = current_mode;
+
+  *width = *height = *depth = -1;
+
+  if (grub_strcmp (param, "auto") == 0)
+    {
+      *width = *height = 0;
+      return GRUB_ERR_NONE;
+    }
+
+  /* Find width value.  */
+  value = param;
+  param = grub_strchr(param, 'x');
+  if (param == NULL)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "Invalid mode: %s\n",
+		       current_mode);
+
+  param++;
+  
+  *width = grub_strtoul (value, 0, 0);
+  if (grub_errno != GRUB_ERR_NONE)
+      return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			 "Invalid mode: %s\n",
+			 current_mode);
+  
+  /* Find height value.  */
+  value = param;
+  param = grub_strchr(param, 'x');
+  if (param == NULL)
+    {
+      *height = grub_strtoul (value, 0, 0);
+      if (grub_errno != GRUB_ERR_NONE)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   "Invalid mode: %s\n",
+			   current_mode);
+    }
+  else
+    {
+      /* We have optional color depth value.  */
+      param++;
+      
+      *height = grub_strtoul (value, 0, 0);
+      if (grub_errno != GRUB_ERR_NONE)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   "Invalid mode: %s\n",
+			   current_mode);
+      
+      /* Convert color depth value.  */
+      value = param;
+      *depth = grub_strtoul (value, 0, 0);
+      if (grub_errno != GRUB_ERR_NONE)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   "Invalid mode: %s\n",
+			   current_mode);
+    }
+  return GRUB_ERR_NONE;
+}
+
 grub_err_t
 grub_video_set_mode (const char *modestring,
-		     int NESTED_FUNC_ATTR (*hook) (grub_video_adapter_t p,
-						   struct grub_video_mode_info *mode_info))
+		     unsigned int modemask,
+		     unsigned int modevalue)
 {
   char *tmp;
   char *next_mode;
   char *current_mode;
-  char *param;
-  char *value;
   char *modevar;
-  int width = -1;
-  int height = -1;
-  int depth = -1;
-  int flags = 0;
+
+  modevalue &= modemask;
 
   /* Take copy of env.var. as we don't want to modify that.  */
   modevar = grub_strdup (modestring);
@@ -429,26 +497,26 @@ grub_video_set_mode (const char *modestring,
       || grub_memcmp (next_mode, "keep,", sizeof ("keep,") - 1) == 0
       || grub_memcmp (next_mode, "keep;", sizeof ("keep;") - 1) == 0)
     {
-      struct grub_video_mode_info mode_info;
       int suitable = 1;
       grub_err_t err;
 
-      grub_memset (&mode_info, 0, sizeof (mode_info));
-
       if (grub_video_adapter_active)
 	{
+	  struct grub_video_mode_info mode_info;
+	  grub_memset (&mode_info, 0, sizeof (mode_info));
 	  err = grub_video_get_info (&mode_info);
 	  if (err)
 	    {
 	      suitable = 0;
 	      grub_errno = GRUB_ERR_NONE;
 	    }
+	  if ((mode_info.mode_type & modemask) != modevalue)
+	    suitable = 0;
 	}
-      else
-	mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_PURE_TEXT;
+      else if (((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modemask) != 0)
+	       && ((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modevalue) == 0))
+	suitable = 0;
 
-      if (suitable && hook)
-	suitable = hook (grub_video_adapter_active, &mode_info);
       if (suitable)
 	{
 	  grub_free (modevar);
@@ -482,14 +550,15 @@ grub_video_set_mode (const char *modestring,
   /* Loop until all modes has been tested out.  */
   while (next_mode != NULL)
     {
+      int width = -1;
+      int height = -1;
+      int depth = -1;
+      grub_err_t err;
+      unsigned int flags = modevalue;
+      unsigned int flagmask = modemask;
+
       /* Use last next_mode as current mode.  */
       tmp = next_mode;
-
-      /* Reset video mode settings.  */
-      width = -1;
-      height = -1;
-      depth = -1;
-      flags = 0;
 
       /* Save position of next mode and separate modes.  */
       for (; *next_mode; next_mode++)
@@ -509,19 +578,16 @@ grub_video_set_mode (const char *modestring,
 
       /* Initialize token holders.  */
       current_mode = tmp;
-      param = tmp;
-      value = NULL;
 
       /* XXX: we assume that we're in pure text mode if
 	 no video mode is initialized. Is it always true? */
-      if (grub_strcmp (param, "text") == 0)
+      if (grub_strcmp (current_mode, "text") == 0)
 	{
 	  struct grub_video_mode_info mode_info;
 
 	  grub_memset (&mode_info, 0, sizeof (mode_info));
-	  mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_PURE_TEXT;
-
-	  if (! hook || hook (0, &mode_info))
+	  if (((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modemask) == 0)
+	      || ((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modevalue) != 0))
 	    {
 	      /* Valid mode found from adapter, and it has been activated.
 		 Specify it as active adapter.  */
@@ -534,121 +600,31 @@ grub_video_set_mode (const char *modestring,
 	    }
 	}
 
-      /* Parse <width>x<height>[x<depth>]*/
-
-      /* Find width value.  */
-      value = param;
-      param = grub_strchr(param, 'x');
-      if (param == NULL)
+      err = parse_modespec (current_mode, &width, &height, &depth);
+      if (err)
 	{
-	  grub_err_t rc;
-
-	  /* First setup error message.  */
-	  rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "invalid mode: %s",
-			   current_mode);
-
 	  /* Free memory before returning.  */
 	  grub_free (modevar);
 
-	  return rc;
-	}
-
-      *param = 0;
-      param++;
-
-      width = grub_strtoul (value, 0, 0);
-      if (grub_errno != GRUB_ERR_NONE)
-	{
-	  grub_err_t rc;
-
-	  /* First setup error message.  */
-	  rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "invalid mode: %s",
-			   current_mode);
-
-	  /* Free memory before returning.  */
-	  grub_free (modevar);
-
-	  return rc;
-	}
-
-      /* Find height value.  */
-      value = param;
-      param = grub_strchr(param, 'x');
-      if (param == NULL)
-	{
-	  height = grub_strtoul (value, 0, 0);
-	  if (grub_errno != GRUB_ERR_NONE)
-	    {
-	      grub_err_t rc;
-
-	      /* First setup error message.  */
-	      rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
-			       "invalid mode: %s",
-			       current_mode);
-
-	      /* Free memory before returning.  */
-	      grub_free (modevar);
-
-	      return rc;
-	    }
-	}
-      else
-	{
-	  /* We have optional color depth value.  */
-	  *param = 0;
-	  param++;
-
-	  height = grub_strtoul (value, 0, 0);
-	  if (grub_errno != GRUB_ERR_NONE)
-	    {
-	      grub_err_t rc;
-
-	      /* First setup error message.  */
-	      rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
-			       "invalid mode: %s",
-			       current_mode);
-
-	      /* Free memory before returning.  */
-	      grub_free (modevar);
-
-	      return rc;
-	    }
-
-	  /* Convert color depth value.  */
-	  value = param;
-	  depth = grub_strtoul (value, 0, 0);
-	  if (grub_errno != GRUB_ERR_NONE)
-	    {
-	      grub_err_t rc;
-
-	      /* First setup error message.  */
-	      rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
-			       "invalid mode: %s",
-			       current_mode);
-
-	      /* Free memory before returning.  */
-	      grub_free (modevar);
-
-	      return rc;
-	    }
+	  return err;
 	}
 
       /* Try out video mode.  */
 
-      /* If we have 8 or less bits, then assume that it is indexed color mode.  */
-      if ((depth <= 8) && (depth != -1))
-	flags |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+      /* If user requested specific depth check if this depth is supported.  */
+      if (depth != -1 && (flagmask & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK)
+	  &&
+	  (((flags & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK)
+	    != ((depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
+		& GRUB_VIDEO_MODE_TYPE_DEPTH_MASK))))
+	continue;
 
-      /* We have more than 8 bits, then assume that it is RGB color mode.  */
-      if (depth > 8)
-	flags |= GRUB_VIDEO_MODE_TYPE_RGB;
-
-      /* If user requested specific depth, forward that information to driver.  */
       if (depth != -1)
-	flags |= (depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
-	  & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+	{
+	  flags |= (depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
+	    & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+	  flagmask |= GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+	}
 
       /* Try to initialize requested mode.  Ignore any errors.  */
       grub_video_adapter_t p;
@@ -656,7 +632,6 @@ grub_video_set_mode (const char *modestring,
       /* Loop thru all possible video adapter trying to find requested mode.  */
       for (p = grub_video_adapter_list; p; p = p->next)
 	{
-	  grub_err_t err;
 	  struct grub_video_mode_info mode_info;
 
 	  grub_memset (&mode_info, 0, sizeof (mode_info));
@@ -670,7 +645,7 @@ grub_video_set_mode (const char *modestring,
 	    }
 
 	  /* Try to initialize video mode.  */
-	  err = p->setup (width, height, flags);
+	  err = p->setup (width, height, flags, flagmask);
 	  if (err != GRUB_ERR_NONE)
 	    {
 	      p->fini ();
@@ -686,7 +661,15 @@ grub_video_set_mode (const char *modestring,
 	      continue;
 	    }
 
-	  if (hook && ! hook (p, &mode_info))
+	  flags = mode_info.mode_type & ~GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+	  flags |= (mode_info.bpp << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
+	    & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+
+	  /* Check that mode is suitable for upper layer.  */
+	  if ((flags & GRUB_VIDEO_MODE_TYPE_PURE_TEXT)
+	      ? (((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modemask) != 0)
+		 && ((GRUB_VIDEO_MODE_TYPE_PURE_TEXT & modevalue) == 0))
+	      : ((flags & modemask) != modevalue))
 	    {
 	      p->fini ();
 	      grub_errno = GRUB_ERR_NONE;

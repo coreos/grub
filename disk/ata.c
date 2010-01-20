@@ -26,8 +26,8 @@
 #include <grub/scsi.h>
 
 /* At the moment, only two IDE ports are supported.  */
-static const int grub_ata_ioaddress[] = { 0x1f0, 0x170 };
-static const int grub_ata_ioaddress2[] = { 0x3f6, 0x376 };
+static const grub_port_t grub_ata_ioaddress[] = { 0x1f0, 0x170 };
+static const grub_port_t grub_ata_ioaddress2[] = { 0x3f6, 0x376 };
 
 static struct grub_ata_device *grub_ata_devices;
 
@@ -347,8 +347,8 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
   /* Setup the device information.  */
   dev->port = port;
   dev->device = device;
-  dev->ioaddress = addr;
-  dev->ioaddress2 = addr2;
+  dev->ioaddress = addr + GRUB_MACHINE_PCI_IO_BASE;
+  dev->ioaddress2 = addr2 + GRUB_MACHINE_PCI_IO_BASE;
   dev->next = NULL;
 
   grub_ata_regset (dev, GRUB_ATA_REG_DISK, dev->device << 4);
@@ -389,7 +389,7 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
 
 static int NESTED_FUNC_ATTR
 grub_ata_pciinit (grub_pci_device_t dev,
-		  grub_pci_id_t pciid __attribute__((unused)))
+		  grub_pci_id_t pciid)
 {
   static int compat_use[2] = { 0 };
   grub_pci_address_t addr;
@@ -400,19 +400,34 @@ grub_ata_pciinit (grub_pci_device_t dev,
   int regb;
   int i;
   static int controller = 0;
+  int cs5536 = 0;
+  int nports = 2;
 
   /* Read class.  */
   addr = grub_pci_make_address (dev, 2);
   class = grub_pci_read (addr);
 
+  /* AMD CS5536 Southbridge.  */
+  if (pciid == 0x208f1022)
+    {
+      cs5536 = 1;
+      nports = 1;
+    }
+
   /* Check if this class ID matches that of a PCI IDE Controller.  */
-  if (class >> 16 != 0x0101)
+  if (!cs5536 && (class >> 16 != 0x0101))
     return 0;
 
-  for (i = 0; i < 2; i++)
+  for (i = 0; i < nports; i++)
     {
       /* Set to 0 when the channel operated in compatibility mode.  */
-      int compat = (class >> (8 + 2 * i)) & 1;
+      int compat;
+
+      /* We don't support non-compatibility mode for CS5536.  */
+      if (cs5536)
+	compat = 0;
+      else
+	compat = (class >> (8 + 2 * i)) & 1;
 
       rega = 0;
       regb = 0;
@@ -484,7 +499,6 @@ grub_ata_initialize (void)
   grub_pci_iterate (grub_ata_pciinit);
   return 0;
 }
-
 
 static void
 grub_ata_setlba (struct grub_ata_device *dev, grub_disk_addr_t sector,

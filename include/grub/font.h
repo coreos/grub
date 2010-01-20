@@ -21,6 +21,7 @@
 
 #include <grub/types.h>
 #include <grub/video.h>
+#include <grub/file.h>
 
 /* Forward declaration of opaque structure grub_font.
    Users only pass struct grub_font pointers to the font module functions,
@@ -74,7 +75,8 @@ void grub_font_loader_init (void);
 
 /* Load a font and add it to the beginning of the global font list.
    Returns: 0 upon success; nonzero upon failure.  */
-int grub_font_load (const char *filename);
+int
+grub_font_load (const char *filename);
 
 /* Get the font that has the specified name.  Font names are in the form
    "Family Name Bold Italic 14", where Bold and Italic are optional.

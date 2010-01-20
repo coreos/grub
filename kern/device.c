@@ -1,7 +1,7 @@
 /* device.c - device manager */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -139,7 +139,7 @@ grub_device_iterate (int (*hook) (const char *name))
       if (! partition_name)
 	return 1;
 
-      p = grub_malloc (sizeof (p->next));
+      p = grub_malloc (sizeof (*p));
       if (!p)
 	{
 	  grub_free (partition_name);

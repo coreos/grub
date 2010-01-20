@@ -88,10 +88,34 @@ endif
 bin_UTILITIES += grub-mkrelpath
 grub_mkrelpath_SOURCES = gnulib/progname.c util/grub-mkrelpath.c util/misc.c
 
+bin_UTILITIES += grub-bin2h
+grub_bin2h_SOURCES = gnulib/progname.c util/bin2h.c
+
+# For grub-script-check.
+bin_UTILITIES += grub-script-check
+util/grub-script-check.c_DEPENDENCIES = grub_script_check_init.h
+grub_script_check_SOURCES = gnulib/progname.c util/grub-script-check.c util/misc.c \
+	script/main.c script/script.c script/function.c script/lexer.c \
+	kern/handler.c kern/err.c kern/parser.c kern/list.c \
+	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c
+
 # For the parser.
 grub_script.tab.c grub_script.tab.h: script/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/parser.y
 DISTCLEANFILES += grub_script.tab.c grub_script.tab.h
+
+# For grub-script-check.
+grub_script_check_init.lst: geninit.sh $(filter-out grub_script_check_init.c,$(grub_script_check_SOURCES))
+	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
+DISTCLEANFILES += grub_script_check_init.lst
+
+grub_script_check_init.h: grub_script_check_init.lst $(filter-out grub_script_check_init.c,$(grub_script_check_SOURCES)) geninitheader.sh
+	rm -f $@; sh $(srcdir)/geninitheader.sh $< > $@
+DISTCLEANFILES += grub_script_check_init.h
+
+grub_script_check_init.c: grub_script_check_init.lst $(filter-out grub_script_check_init.c,$(grub_script_check_SOURCES)) geninit.sh
+	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
+DISTCLEANFILES += grub_script_check_init.c
 
 # For grub-probe.
 grub_probe_init.lst: geninit.sh $(filter-out grub_probe_init.c,$(grub_probe_SOURCES))
@@ -184,6 +208,20 @@ endif
 CLEANFILES += $(grub-mkconfig_SCRIPTS)
 
 grub-mkconfig_DATA += util/grub.d/README
+
+# For grub-set-default.
+grub-set-default: util/grub-set-default.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+sbin_SCRIPTS += grub-set-default
+CLEANFILES += grub-set-default
+
+# For grub-reboot.
+grub-reboot: util/grub-reboot.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+sbin_SCRIPTS += grub-reboot
+CLEANFILES += grub-reboot
 
 # Filing systems.
 pkglib_MODULES += fshelp.mod fat.mod ufs1.mod ufs2.mod ext2.mod ntfs.mod \
@@ -549,8 +587,8 @@ keystatus_mod_LDFLAGS = $(COMMON_LDFLAGS)
 normal_mod_SOURCES = normal/main.c normal/cmdline.c normal/dyncmd.c \
 	normal/auth.c normal/autofs.c normal/handler.c \
 	normal/color.c normal/completion.c normal/datetime.c normal/menu.c \
-	normal/menu_entry.c normal/menu_text.c normal/menu_viewer.c \
-	normal/misc.c
+	normal/menu_entry.c normal/menu_text.c \
+	normal/misc.c normal/crypto.c normal/term.c
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
@@ -562,7 +600,7 @@ sh_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Common Video Subsystem specific modules.
 pkglib_MODULES += video.mod videotest.mod bitmap.mod tga.mod jpeg.mod	\
-	png.mod	font.mod gfxterm.mod video_fb.mod
+	png.mod	gfxterm.mod video_fb.mod
 
 # For video.mod.
 video_mod_SOURCES = video/video.c
@@ -599,7 +637,8 @@ png_mod_SOURCES = video/readers/png.c
 png_mod_CFLAGS = $(COMMON_CFLAGS)
 png_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For font.mod.
+pkglib_MODULES += font.mod
+font/font.c_DEPENDENCIES = ascii.h
 font_mod_SOURCES = font/font_cmd.c font/font.c
 font_mod_CFLAGS = $(COMMON_CFLAGS)
 font_mod_LDFLAGS = $(COMMON_LDFLAGS)
@@ -650,3 +689,35 @@ pkglib_MODULES += charset.mod
 charset_mod_SOURCES = lib/charset.c
 charset_mod_CFLAGS = $(COMMON_CFLAGS)
 charset_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += terminal.mod
+terminal_mod_SOURCES = commands/terminal.c
+terminal_mod_CFLAGS = $(COMMON_CFLAGS)
+terminal_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += crypto.mod
+crypto_mod_SOURCES = lib/crypto.c
+crypto_mod_CFLAGS = $(COMMON_CFLAGS)
+crypto_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += hashsum.mod
+hashsum_mod_SOURCES = commands/hashsum.c
+hashsum_mod_CFLAGS = $(COMMON_CFLAGS)
+hashsum_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += pbkdf2.mod
+pbkdf2_mod_SOURCES = lib/pbkdf2.c
+pbkdf2_mod_CFLAGS = $(COMMON_CFLAGS)
+pbkdf2_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For password_pbkdf2.mod.
+pkglib_MODULES += password_pbkdf2.mod
+password_pbkdf2_mod_SOURCES = commands/password_pbkdf2.c
+password_pbkdf2_mod_CFLAGS = $(COMMON_CFLAGS)
+password_pbkdf2_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+bin_UTILITIES += grub-mkpasswd-pbkdf2
+grub_mkpasswd_pbkdf2_SOURCES = gnulib/progname.c util/grub-mkpasswd-pbkdf2.c lib/crypto.c lib/libgcrypt-grub/cipher/sha512.c lib/pbkdf2.c util/misc.c kern/err.c
+grub_mkpasswd_pbkdf2_CFLAGS += -Wno-missing-field-initializers -Wno-error -I$(srcdir)/lib/libgcrypt_wrap -DGRUB_MKPASSWD=1
+
+include $(srcdir)/conf/gcry.mk

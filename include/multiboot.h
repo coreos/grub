@@ -31,9 +31,6 @@
 /* This should be in %eax.  */
 #define MULTIBOOT_BOOTLOADER_MAGIC		0x2BADB002
 
-/* The bits in the required part of flags field we don't support.  */
-#define MULTIBOOT_UNSUPPORTED			0x0000fffc
-
 /* Alignment of multiboot modules.  */
 #define MULTIBOOT_MOD_ALIGN			0x00001000
 
@@ -88,10 +85,12 @@
 #define MULTIBOOT_INFO_APM_TABLE		0x00000400
 
 /* Is there video information?  */
-#define MULTIBOOT_INFO_VIDEO_INFO		0x00000800
+#define MULTIBOOT_INFO_VBE_INFO		        0x00000800
+#define MULTIBOOT_INFO_FRAMEBUFFER_INFO	        0x00001000
 
 #ifndef ASM_FILE
 
+typedef unsigned char		multiboot_uint8_t;
 typedef unsigned short		multiboot_uint16_t;
 typedef unsigned int		multiboot_uint32_t;
 typedef unsigned long long	multiboot_uint64_t;
@@ -190,8 +189,42 @@ struct multiboot_info
   multiboot_uint16_t vbe_interface_seg;
   multiboot_uint16_t vbe_interface_off;
   multiboot_uint16_t vbe_interface_len;
+
+  multiboot_uint64_t framebuffer_addr;
+  multiboot_uint32_t framebuffer_pitch;
+  multiboot_uint32_t framebuffer_width;
+  multiboot_uint32_t framebuffer_height;
+  multiboot_uint8_t framebuffer_bpp;
+#define MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED 0
+#define MULTIBOOT_FRAMEBUFFER_TYPE_RGB     1
+#define MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT	2
+  multiboot_uint8_t framebuffer_type;
+  union
+  {
+    struct
+    {
+      multiboot_uint32_t framebuffer_palette_addr;
+      multiboot_uint16_t framebuffer_palette_num_colors;
+    };
+    struct
+    {
+      multiboot_uint8_t framebuffer_red_field_position;
+      multiboot_uint8_t framebuffer_red_mask_size;
+      multiboot_uint8_t framebuffer_green_field_position;
+      multiboot_uint8_t framebuffer_green_mask_size;
+      multiboot_uint8_t framebuffer_blue_field_position;
+      multiboot_uint8_t framebuffer_blue_mask_size;
+    };
+  };
 };
 typedef struct multiboot_info multiboot_info_t;
+
+struct multiboot_color
+{
+  multiboot_uint8_t red;
+  multiboot_uint8_t green;
+  multiboot_uint8_t blue;
+};
 
 struct multiboot_mmap_entry
 {
@@ -200,6 +233,8 @@ struct multiboot_mmap_entry
   multiboot_uint64_t len;
 #define MULTIBOOT_MEMORY_AVAILABLE		1
 #define MULTIBOOT_MEMORY_RESERVED		2
+#define MULTIBOOT_MEMORY_ACPI_RECLAIMABLE       3
+#define MULTIBOOT_MEMORY_NVS                    4
   multiboot_uint32_t type;
 } __attribute__((packed));
 typedef struct multiboot_mmap_entry multiboot_memory_map_t;

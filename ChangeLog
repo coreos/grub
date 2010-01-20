@@ -1,3 +1,1341 @@
+2009-12-20  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/menu.c (notify_execution_failure): Clarify error message.
+
+2009-12-20  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* commands/loadenv.c (check_blocklists): Use `grub_err_t' as
+	return value (and revert all return statements).  Update users.
+
+2010-01-20  Dan Merillat  <debian@dan.merillat.org>
+
+	* kern/device.c (grub_device_iterate): Allocate new part_ent
+	structure based on sizeof (*p) rather than sizeof (p->next), to
+	account for structure padding.
+
+	* util/grub-probe.c (probe_raid_level): Return -1 immediately if
+	disk is NULL, which might happen for LVM physical volumes with no
+	LVM signature.
+
+2009-12-20  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/mips/linux.c (grub_cmd_initrd)
+	(GRUB_MOD_INIT(linux)): Adjust and gettextize a few strings.
+
+2009-12-20  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* kern/mips/yeeloong/init.c (grub_video_sm712_init)
+	(grub_video_video_init, grub_video_bitmap_init)
+	(grub_font_manager_init, grub_term_gfxterm_init)
+	(grub_at_keyboard_init): New extern declarations.
+	(grub_machine_init): Initialize gfxterm and at_keyboard.
+
+	* kern/main.c (grub_main): Revert grub_printf delay kludge.
+
+	* util/grub-install.in: Revert embed of `at_keyboard.mod' and
+	`gfxterm.mod' into core image.
+
+	* conf/mips.rmk (pkglib_IMAGES, kernel_img_SOURCES)
+	(kernel_img_CFLAGS, kernel_img_ASFLAGS, kernel_img_LDFLAGS)
+	(kernel_img_FORMAT): Copy to ...
+
+	* conf/mips-qemu-mips.rmk (pkglib_IMAGES, kernel_img_SOURCES)
+	(kernel_img_CFLAGS, kernel_img_ASFLAGS, kernel_img_LDFLAGS)
+	(kernel_img_FORMAT): ... here, and ...
+
+	* conf/mips-yeeloong.rmk (pkglib_IMAGES, kernel_img_SOURCES)
+	(kernel_img_CFLAGS, kernel_img_ASFLAGS, kernel_img_LDFLAGS)
+	(kernel_img_FORMAT): ... here.
+
+	(kernel_img_SOURCES): Add files necessary for output (gfxterm)
+	and input (at_keyboard) terminals in kernel.
+	(kernel_img_CFLAGS): Add `-DUSE_ASCII_FAILBACK'.
+
+	(pkglib_MODULES): Remove `pci.mod'.
+	(pci_mod_SOURCES, pci_mod_CFLAGS, pci_mod_LDFLAGS)
+	(sm712_mod_SOURCES, sm712_mod_CFLAGS, sm712_mod_LDFLAGS)
+	(at_keyboard_mod_SOURCES, at_keyboard_mod_CFLAGS)
+	(at_keyboard_mod_LDFLAGS): Remove variables.
+
+2010-01-11  Felix Zielcke <fzielcke@z-51.de>
+
+	* po/POTFILES: Replace `term/i386/pc/serial.c' with `term/serial.c'.
+
+2009-12-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/mips/libgcc.h: Only export symbols for functions
+	that libgcc provides.
+
+2009-12-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	MIPS support.
+
+	* bus/bonito.c: New file.
+	* bus/pci.c (grub_pci_iterate): Use GRUB_PCI_NUM_BUS and
+	GRUB_PCI_NUM_DEVICES.
+	* term/i386/pc/serial.c: Move to ...
+	* term/serial.c: ... here. All users updated.
+	* util/i386/pc/grub-mkimage.c: Move to ...
+	* util/grub-mkrawimage.c: ... here. All users updated.
+	* term/i386/pc/at_keyboard.c: Move to ...
+	* term/at_keyboard.c: ... here. All users updated.
+	* conf/mips-qemu-mips.rmk: New file.
+	* conf/mips-yeeloong.rmk: Likewise.
+	* conf/mips.rmk: Likewise.
+	* configure.ac: New platforms mipsel-yeeloong, mips-qemu-mips and
+	mipsel-qemu-mips.
+	* disk/ata.c (grub_ata_device_initialize): Add GRUB_MACHINE_PCI_IO_BASE
+	to port addresses.
+	(grub_ata_pciinit): Support CS5536.
+	* font/font.c (grub_font_load): Use grub_file_t instead of filename.
+	* font/font_cmd.c (loadfont_command): Open file before passing it to
+	grub_font_load.
+	(pseudo_file_read): New function.
+	(pseudo_file_close): Likewise.
+	(pseudo_fs): New structure.
+	(load_font_module): New function.
+	(GRUB_MOD_INIT(font_manager)): Load embedded font.
+	* fs/cpio.c (grub_cpio_open): Handle partial matches correctly.
+	* genmk.rb: Strip .rel.dyn, .reginfo, .note and .comment.
+	* genmoddep.awk: Ignore __gnu_local_gp. It's defined by linker.
+	* include/grub/i386/at_keyboard.h: Split into ...
+	* include/grub/at_keyboard.h: ... this ...
+	* include/grub/i386/at_keyboard.h: ... and this.
+	* include/grub/dl.h (grub_arch_dl_init_linker) [_mips && !GRUB_UTIL]:
+	New prototype.
+	* include/grub/elfload.h (grub_elf32_size): New parameter. All users
+	updated.
+	(grub_elf64_size): Likewise.
+	* include/grub/font.h (grub_font_load): Use grub_file_t instead of
+	filename.
+	* include/grub/i386/io.h (grub_port_t): New type. All users updated.
+	* include/grub/i386/coreboot/serial.h: Rewritten.
+	* include/grub/i386/ieee1275/serial.h: Include
+	grub/i386/coreboot/serial.h instead of grub/i386/pc/serial.h.
+	* include/grub/i386/pc/serial.h: Moved from here ...
+	* include/grub/serial.h: ... to here. All users updated.
+	* include/grub/i386/pci.h (GRUB_MACHINE_PCI_IO_BASE): New definition.
+	(GRUB_PCI_NUM_BUS): Likewise.
+	(GRUB_PCI_NUM_DEVICES): Likewise.
+	(grub_pci_device_map_range): Add missing volatile keyword.
+	* include/grub/kernel.h (OBJ_TYPE_FONT): New enum value.
+	* include/grub/mips/at_keyboard.h: New file.
+        * include/grub/mips/cache.h: Likewise.
+        * include/grub/mips/io.h: Likewise.
+        * include/grub/mips/kernel.h: Likewise.
+        * include/grub/mips/libgcc.h: Likewise.
+        * include/grub/mips/pci.h: Likewise.
+        * include/grub/mips/qemu-mips/boot.h: Likewise.
+        * include/grub/mips/qemu-mips/kernel.h: Likewise.
+        * include/grub/mips/qemu-mips/loader.h: Likewise.
+        * include/grub/mips/qemu-mips/memory.h: Likewise.
+        * include/grub/mips/qemu-mips/serial.h: Likewise.
+        * include/grub/mips/qemu-mips/time.h: Likewise.
+        * include/grub/mips/relocator.h: Likewise.
+        * include/grub/mips/time.h: Likewise.
+        * include/grub/mips/types.h: Likewise.
+        * include/grub/mips/yeeloong/at_keyboard.h: Likewise.
+        * include/grub/mips/yeeloong/boot.h: Likewise.
+        * include/grub/mips/yeeloong/kernel.h: Likewise.
+        * include/grub/mips/yeeloong/loader.h: Likewise.
+        * include/grub/mips/yeeloong/memory.h: Likewise.
+        * include/grub/mips/yeeloong/pci.h: Likewise.
+        * include/grub/mips/yeeloong/serial.h: Likewise.
+        * include/grub/mips/yeeloong/time.h: Likewise.
+	* kern/dl.c (grub_dl_resolve_symbols): Handle STT_OBJECT correctly.
+	* kern/elf.c (grub_elf32_size): New parameter. All users
+	updated.
+	(grub_elf64_size): Likewise.
+	* kern/main.c (grub_main): Call grub_arch_dl_init_linker if necessary.
+	Load modules before saying "Welcome to GRUB!".
+	Call grub_refresh after saying "Welcome to GRUB!".
+        * kern/mips/cache.S: New file.
+        * kern/mips/cache_flush.S: Likewise.
+        * kern/mips/dl.c: Likewise.
+        * kern/mips/init.c: Likewise.
+        * kern/mips/qemu-mips/init.c: Likewise.
+        * kern/mips/startup.S: Likewise.
+        * kern/mips/yeeloong/init.c: Likewise.
+	* kern/term.c (grub_putcode): Handle NULL terminal.
+	(grub_getcharwidth): Likewise.
+	(grub_getkey): Likewise.
+	(grub_checkkey): Likewise.
+	(grub_getkeystatus): Likewise.
+	(grub_getxy): Likewise.
+	(grub_getwh): Likewise.
+	(grub_gotoxy): Likewise.
+	(grub_cls): Likewise.
+	(grub_setcolorstate): Likewise.
+	(grub_setcolor): Likewise.
+	(grub_getcolor): Likewise.
+	(grub_refresh): Likewise.
+	* lib/mips/relocator.c (JUMP_SIZEOF): Fix incorrect value.
+	(write_jump): Add hatch nop.
+	* lib/mips/relocator_asm.S: Use kern/mips/cache_flush.S.
+        * lib/mips/setjmp.S: New file.
+        * loader/mips/linux.c: Likewise.
+	* term/i386/pc/at_keyboard.c: Move from here ...
+	* term/at_keyboard.c: ... to here.
+	* term/i386/pc/serial.c: Moved from here ...
+	* term/serial.c: ... to here. All users updated.
+	(TEXT_HEIGHT): Set to 24 to fit linux terminal.
+	(serial_hw_io_addr): Use GRUB_MACHINE_SERIAL_PORTS.
+	(serial_translate_key_sequence): Avoid deadlock.
+	(grub_serial_getkey): Handle backspace.
+	(grub_serial_putchar): Fix newline handling.
+	* util/i386/pc/grub-mkimage.c: Move from here ...
+	* util/grub-mkrawimage.c: ... to here. All users updated.
+	(generate_image): New parameters 'font_path' and 'format'.
+	Support embedding font.
+	Use grub_host_to_target* instead of grub_cpu_to_le*.
+	(generate_image) [GRUB_MACHINE_MIPS]: Support ELF encapsulation.
+	(options) [GRUB_PLATFORM_IMAGE_DEFAULT]: New option "--format".
+	(options): New option "--font".
+	(usage): Likewise.
+	(main) [GRUB_PLATFORM_IMAGE_DEFAULT]: Handle "--format".
+	(main): Handle "--font".
+	* term/gfxterm.c (grub_virtual_screen): New member bg_color_display.
+	(grub_virtual_screen_setup): Set bg_color_display.
+	(redraw_screen_rect): Use bg_color_display instead of incorrect
+	bg_color.
+	(grub_gfxterm_cls): Likewise.
+	* util/elf/grub-mkimage.c (load_modules): New parameter 'config_path'.
+	Support embedding config file.
+	(add_segments): Likewise.
+	(options): New option "--config".
+	(main): Handle "--config".
+	* video/sm712.c: New file.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix parallel builds.
+
+	* conf/common.rmk (font/font.c_DEPENDENCIES): New variable (makes
+	font.c depend on ascii.h).
+
+2010-01-12  Carles Pina i Estany  <carles@pina.cat>
+
+	* Makefile.in (DUSE_ASCII_FAILBACK): New macro.
+
+2010-01-11  Carles Pina i Estany  <carles@pina.cat>
+
+	* font/font.c (GENERATE_ASCII): Change the name to USE_ASCII_FAILBACK.
+	By default: disabled.
+	* Makefile.in (ascii.h): Remove the non-needed grub/bin2h size
+	parameter.
+
+2010-01-10  Carles Pina i Estany  <carles@pina.cat>
+
+	* font/font.c: Update copyright years.
+	* util/grub-mkfont.c (write_font_ascii_bitmap): Change comment format.
+
+2010-01-10  Carles Pina i Estany  <carles@pina.cat>
+
+	* font/font.c: Include `ascii.h'.
+	(ASCII_BITMAP_SIZE): New macro.
+	(ascii_font_glyph): Define.
+	(ascii_glyph_lookup): New function.
+	(grub_font_get_string_width): Change comment. If glyph not found, use
+	ascii_glyph_lookup.
+	(grub_font_get_glyph_with_fallback): If glyph not available returns
+	ascii_glyph_lookup.
+	* util/grub-mkfont.c (file_formats): New enum.
+	(options): Add `ascii-bitmaps' new option.
+	(usage): Add `asii-bitmaps' new option.
+	(write_font_ascii_bitmap): New function.
+	(write_font): Rename to ...
+	(write_font_p2): ... this. Remove print_glyphs call.
+	(main): Use file_format. Implement code for ranges if ascii-bitmaps is
+	used. Call print_glyphs.
+	* Makefile.in (pkgdata_DATA): Add `ascii.h'.
+
+2010-01-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* conf/common.rmk (bin_UTILITIES): Add `grub-bin2h'.
+	(grub_bin2h_SOURCES): New variable.
+	* util/bin2h.c: New file.
+
+2010-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/multiboot.h: Resynced with spec.
+	* include/multiboot2.h: Likewise.
+	* loader/i386/multiboot_mbi.c (grub_fill_multiboot_mmap): Handle
+	GRUB_MACHINE_MEMORY_ACPI_RECLAIMABLE and GRUB_MACHINE_MEMORY_NVS.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/term.h (grub_term_register_input,
+	grub_term_register_output): Check return of terminal init()
+	routines, and abort if errors are raised.
+
+	* commands/terminal.c: Update copyright year.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* commands/terminal.c (grub_cmd_terminal_input)
+	(grub_cmd_terminal_output): Check return of terminal init()
+	routines, and abort if errors are raised.
+
+2010-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i386/bsd.h: Fix include pathes.
+
+2010-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add missing *BSD copyright headers.
+
+	* include/grub/aout.h: Add BSD licence.
+	* include/grub/i386/bsd.h: Parts under different licences moved to ...
+	* include/grub/i386/freebsd_linker.h: ... here,
+	* include/grub/i386/freebsd_reboot.h: ... here,
+	* include/grub/i386/netbsd_bootinfo.h: ... here,
+	* include/grub/i386/netbsd_reboot.h: ... here,
+	* include/grub/i386/openbsd_bootarg.h: ... here,
+	* include/grub/i386/openbsd_reboot.h: ... and here. Added appropriate
+	licence to each file.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* acinclude.m4: Remove `nop' assembly instruction; it's not
+	implemented by all architectures.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/efi/linux.c (grub_cmd_linux): Stop pretending we're
+	ELILO.  This is no longer necessary.
+
+2010-01-18  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Added new tool, grub-scrit-check to verify grub.cfg syntax.
+
+	* util/grub-script-check.c: grub-script-check tool.
+	* conf/common.rmk: Make rules for grub-script-check.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix annoying UI bug in rescue mode.  Thanks to Tristan Gingold for
+	spotting it back in 2008.  Shame on me for forgetting he did.
+
+	* kern/rescue_reader.c (grub_rescue_run): Skip zero-length lines.
+
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/linux.h (GRUB_VIDEO_TYPE_TEXT): Rename to ...
+	(GRUB_VIDEO_LINUX_TYPE_TEXT): ... this.  Update all users.
+	(GRUB_VIDEO_TYPE_VLFB): Rename to ...
+	(GRUB_VIDEO_LINUX_TYPE_VESA): ... this.  Update all users.
+	(GRUB_VIDEO_TYPE_EFI): Rename to ...
+	(GRUB_VIDEO_LINUX_TYPE_SIMPLE): ... this.  Update all users.
+
+2010-01-17  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/test.h: Add license header.
+	* tests/example_functional_test.c: Likewise.
+	* tests/example_unit_test.c: Likewise.
+	* tests/lib/functional_test.c: Likewise.
+	* tests/lib/test.c: Likewise.
+	* tests/lib/unit_test.c: Likewise.
+
+2010-01-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use flag-based instead of hook-based video mode selection and "auto"
+	keyword.
+
+	* include/grub/video.h (grub_video_adapter): Changed 'setup' member.
+	(grub_video_set_mode): Changed prototype. All users updated.
+	(grub_video_check_mode_flag): New inline function.
+	* video/video.c (parse_modespec): New function.
+	(grub_video_set_mode): Parse flags and keywords.
+
+2010-01-17  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/misc.c (grub_util_info): Fix the order of the parameters in a
+	fprintf call.
+
+2010-01-16  Grégoire Sutre <gregoire.sutre@gmail.com>
+
+	* genmk.rb (class SCRIPT): Replace option -i of sed by a pipe.
+
+2010-01-16  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/grub-editenv.c (usage): Use `program_name' instead of hardcoded
+	string.
+	* util/grub-emu.c (usage): Likewise.
+	* util/grub-mkpasswd-pbkdf2.c (usage): Likewise.
+	* util/i386/efi/grub-mkimage.c (usage): Likewise.
+	* util/i386/pc/grub-mkimage.c (usage): Likewise.
+	* util/i386/pc/grub-setup.c (usage): Likewise.
+
+2010-01-16  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/misc.c (grub_util_warn): Gettextizze, print full stop after
+	the message.
+	(grub_util_info): Likewise.
+	(grub_util_error): Likewise.
+	* util/elf/grub-mkimage.c: Fix capitalisation, quotes, full stops
+	and/or new lines in `grub_util_warna', `grub_util_info',
+	`grub_util_error' calls.
+	* util/getroot.c: Likewise.
+	* util/grub-editenv.c: Likewise.
+	* util/grub-emu.c: Likewise.
+	* util/grub-fstest.c: Likewise.
+	* util/grub-mkdevicemap.c: Likewise.
+	* util/grub-mkfont.c: Likewise.
+	* util/grub-mkpasswd-pbkdf2.c: Likewise.
+	* util/grub-mkrelpath.c: Likewise.
+	* util/grub-pe2elf.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/hostdisk.c: Likewise.
+	* util/i386/efi/grub-mkimage.c: Likewise.
+	* util/i386/pc/grub-mkimage.c: Likewise.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/ieee1275/ofpath.c: Likewise.
+	* util/mkisofs/eltorito.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+	* util/raid.c: Likewise.
+	* util/sparc64/ieee1275/grub-mkimage.c: Likewise.
+	* util/sparc64/ieee1275/grub-setup.c: Likewise.
+
+2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Enable multiboot on non-pc.
+
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (pkglib_MODULES): Move
+	multiboot.mod and multiboot2.mod to ...
+	* conf/i386.rmk (pkglib_MODULES): ... here.
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (multiboot_mod_SOURCES):
+	Moved to ...
+	* conf/i386.rmk (multiboot_mod_SOURCES): .. here.
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (multiboot_mod_CFLAGS):
+	Moved to ...
+	* conf/i386.rmk (multiboot_mod_CFLAGS): .. here.
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (multiboot_mod_ASFLAGS):
+	Moved to ...
+	* conf/i386.rmk (multiboot_mod_ASFLAGS): .. here.
+	* conf/i386-coreboot.rmk, conf/i386-pc.rmk (multiboot_mod_LDFLAGS):
+	Moved to ...
+	* conf/i386.rmk (multiboot_mod_LDFLAGS): .. here.
+	* conf/x86_64-efi.rmk (pkglib_MODULES): Remove ata.mod and
+	relocator.mod.
+	(ata_mod_SOURCES): Removed.
+	(ata_mod_CFLAGS): Likewise.
+	(ata_mod_LDFLAGS): Likewise.
+	(relocator_mod_SOURCES): Removed.
+	(relocator_mod_CFLAGS): Likewise.
+	(relocator_mod_ASFLAGS): Likewise.
+	(relocator_mod_LDFLAGS): Likewise.
+	Include i386.mk.
+	* include/grub/x86_64/multiboot.h: New file.
+	* loader/i386/multiboot.c (grub_multiboot_boot) [GRUB_MACHINE_EFI]:
+	Terminate EFI.
+
+2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Video multiboot support.
+
+	* include/grub/multiboot.h (grub_multiboot_set_accepts_video):
+	New prototype.
+	* include/multiboot.h: Resynced with multiboot specification.
+	* include/multiboot2.h: Likewise.
+	* loader/i386/multiboot.c (UNSUPPORTED_FLAGS): Support video flags.
+	(grub_multiboot): Parse MULTIBOOT_VIDEO_MODE fields.
+	* loader/i386/multiboot_mbi.c (DEFAULT_VIDEO_MODE): New constant.
+	(HAS_VGA_TEXT): Likewise.
+	(accepts_video): New variable.
+	(grub_multiboot_set_accepts_video): New function.
+	(grub_multiboot_get_mbi_size): Account for video structures.
+	(set_video_mode): New function.
+	(retrieve_video_parameters): Likewise.
+	(grub_multiboot_make_mbi): Fill video fields.
+
+2010-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Video driver ids.
+
+	* include/grub/video.h (grub_video_driver_id): New type.
+	(grub_video_adapter): New member 'id'. All users updated.
+	(grub_video_get_driver_id): New proto.
+	* video/video.c (grub_video_get_driver_id): New function.
+
+2010-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/grub.d/30_os-prober.in: Use `set var=val' rather than plain
+	`var=val'.
+
+2010-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/cmdline.c (print_completion): Gettextizze.
+
+2001-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* loader/i386/pc/chainloader.c: Include `<grub/mm.h>'.
+
+2010-01-14  Carles Pina i Estany  <carles@pina.cat>
+
+	* gettext/gettext.c (grub_gettext_translate): Push and pop
+	grub_errno.
+	(grub_gettext_delete_list): Change comment style.
+	* kern/err.c (grub_error): Gettextizze.
+	(grub_fatal): Gettextizze.
+
+2010-01-14  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/loader.h (grub_linux16_boot): Renamed to ...
+	(grub_linux16_real_boot): ... this.
+	* kern/i386/loader.S: Likewise.
+	* loader/i386/pc/linux.c: Include `<grub/video.h>' and `<grub/mm.h>'.
+	(grub_linux16_boot): New function.  Switches to text mode and calls
+	grub_linux16_real_boot().
+
+	* loader/i386/bsd.c: Include `<grub/video.h>'.
+	(grub_freebsd_boot, grub_openbsd_boot, grub_netbsd_boot): Switch to
+	text mode before calling grub_unix_real_boot().
+
+	* loader/i386/multiboot.c: Include `<grub/video.h>'.
+	(grub_multiboot_boot): Switch to text mode before calling
+	grub_relocator32_boot().
+
+	* loader/i386/pc/chainloader.c: Include `<grub/video.h>'.
+	(grub_chainloader_boot): Switch to text mode before calling
+	grub_chainloader_real_boot().
+
+2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-reboot.in: Make sure prev_saved_entry always gets a
+	non-empty value.
+
+2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Define a "savedefault" function for use
+	in menu entries.
+	* util/grub-mkconfig_lib.in (save_default_entry): Use it.
+
+2010-01-05  Jordan Uggla  <jordan.uggla@gmail.com>
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (save_default_entry): Only set
+	saved_entry if boot_once is unset.
+	* util/grub.d/00_header.in: Set boot_once to "true" if there was a
+	previous saved entry (i.e. grub-reboot).
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/30_os-prober.in: Call save_default_entry for hurd.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Use `set var=val' rather than plain
+	`var=val'.
+	* util/grub-mkconfig_lib.in (save_default_entry): Likewise.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-reboot.in: Fix --version output.
+	* util/grub-set-default.in: Likewise.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Silently ignore zero-sized environment
+	blocks.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Quote the value assigned to `default',
+	in case it contains spaces.
+
+2009-12-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/30_os-prober.in: Fix merge error that moved a
+	`save_default_entry' call from the macosx case to the linux case.
+
+2009-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2009-10-25  Colin Watson  <cjwatson@ubuntu.com>
+
+	* normal/menu.c (grub_menu_execute_entry): Save selected entry title
+	in `chosen' environment variable.
+	* normal/menu_text.c (get_entry_number): Check if the variable
+	matches the title of a menu entry.
+	(run_menu): Pass menu to get_entry_number.
+
+	* util/grub-reboot.in: New file.
+	* util/grub-set-default.in: New file.
+	* conf/common.rmk (grub-reboot): New utility.
+	(grub-set-default): New utility.
+
+	* util/grub-mkconfig_lib.in (save_default_entry): New function.
+	* util/grub.d/00_header.in: If GRUB_DEFAULT is `saved', set
+	default to `${saved_entry}'.  If `${prev_saved_entry}' is non-empty,
+	move it to `saved_entry' for the next boot.  Load environment on
+	initialisation.
+	* util/grub.d/10_kfreebsd.in: Call save_default_entry.
+	* util/grub.d/10_hurd.in: Likewise.
+	* util/grub.d/10_linux.in (linux_entry): Likewise.
+	* util/grub.d/10_windows.in: Likewise.
+	* util/grub.d/30_os-prober.in: Likewise.
+
+	* util/grub-install.in: Create environment block.
+	* util/i386/efi/grub-install.in: Likewise.
+	* util/ieee1275/grub-install.in: Likewise.
+	* util/sparc64/ieee1275/grub-install.in: Likewise.
+
+2010-01-14  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Unit testing framework for GRUB.
+
+	* Makefile.in: Test framework build rules for 'make check'.
+	* conf/tests.rmk: Build rules for individual tests and framework.
+
+	* include/grub/test.h: Header file for whitebox tests.
+	* tests/lib/functional_test.c: Framework support for whitebox
+	functional tests.
+	* tests/lib/test.c: Common whitebox testing code for unit and
+	functional tests.
+	* tests/lib/unit_test.c: Framework support for whitebox unit
+	tests.
+
+	* tests/util/grub-shell-tester.in: Support utility for grub-script
+	tests.
+	* tests/util/grub-shell.in: Utility to execute grub-script
+	commands in a Qemu instance.
+
+	* tests/example_functional_test.c: Example whitebox functional
+	test.
+	* tests/example_grub_script_test.in: Example grub-script test.
+	* tests/example_scripted_test.in: Example scripted test.
+	* tests/example_unit_test.c: Example whitebox unit test.
+
+2010-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* conf/i386-coreboot.rmk (multiboot_mod_SOURCES):
+	Add loader/i386/multiboot_mbi.c.
+	(multiboot2_mod_SOURCES): Likewise.
+	* conf/i386-pc.rmk (multiboot_mod_SOURCES): Likewise.
+	(multiboot2_mod_SOURCES): Likewise.
+	* include/grub/multiboot.h (grub_multiboot_get_mbi_size): New proto.
+	(grub_multiboot_make_mbi): Likewise.
+	(grub_multiboot_free_mbi): Likewise.
+	(grub_multiboot_init_mbi): Likewise.
+	(grub_multiboot_add_module): Likewise.
+	(grub_multiboot_set_bootdev): Likewise.
+	* loader/i386/multiboot.c (mbi): Removed.
+	(mbi_dest): Likewise.
+	(alloc_mbi): New variable.
+	(grub_multiboot_payload_size): Removed. All users updated.
+	(grub_multiboot_pure_size): New variable.
+	(grub_multiboot_boot): Use grub_multiboot_make_mbi.
+	(grub_multiboot_unload): Use grub_multiboot_free_mbi.
+	(grub_get_multiboot_mmap_len): Moved to loader/i386/multiboot_mbi.c.
+	(grub_fill_multiboot_mmap): Likewise.
+	(grub_multiboot_get_bootdev): Likewise.
+	(grub_multiboot): Use multiboot_mbi functions.
+	* loader/i386/multiboot_mbi.c: New file.
+
+2010-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/efi/init.c (grub_efi_fini): Don't call grub_efi_mm_fini as
+	it would result in module crash.
+
+2010-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_putchar): Handle '\r'.
+	(grub_ofconsole_getwh): Split to ...
+	(grub_ofconsole_getwh): ... this.
+	(grub_ofconsole_dimensions): ...and this.
+	(grub_ofconsole_init_output): Call grub_ofconsole_dimensions.
+
+2010-01-13  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/rock.c (generate_rock_ridge_attributes): Fix a typo.
+
+2010-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/pc/multiboot2.c: Removed stalled file.
+
+2010-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkpasswd-pbkdf2.c (main): Use grub_util_init_nls.
+	Reported by: Grégoire Sutre
+
+2010-01-11  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/misc.c (canonicalize_file_name): New function.
+	(make_system_path_relative_to_its_root): Use canonicalize_file_name()
+	instead of realpath().
+
+2010-01-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in (usage): Clarify meaning of --root-directory,
+	and make it clearer that it's optional.  Based on confusion
+	witnessed on IRC.
+
+2010-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/i386/pc/vga_text.c (inc_y): Fix off-by-one error which resulted
+	in premature implicit newline.
+
+2010-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/cmdline.c (grub_cmdline_get): Fix off-by-one error
+	which resulted in garbled command line at the end of screen.
+
+2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/ieee1275/linux.c (grub_linux_boot): Rework video position
+	initialization with similar approach as with other Linux loaders.
+
+2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix i386-ieee1275 build.
+
+	* loader/i386/ieee1275/linux.c (grub_linux_boot): Use grub_term_width()
+	and grub_term_height() for video_{width,height} initialization.
+
+2010-01-10  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Fix grub-emu build.
+
+	* conf/any-emu.rmk (grub_emu_SOURCES): Remove `kern/reader.c'.
+
+2010-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
+2010-01-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Support for multiple terminals.
+
+	* Makefile.in (pkglib_DATA): terminal.lst.
+	(terminal.lst): New target.
+	* commands/handler.c (grub_cmd_handler): Don't handle terminals.
+	(GRUB_MOD_INIT(handler)): Likewise.
+	(GRUB_MOD_FINI(handler)): Likewise.
+	* commands/help.c (grub_cmd_help): Handle multiple terminals.
+	* commands/keystatus.c (grub_cmd_keystatus): Likewise.
+	* commands/sleep.c (do_print): Use grub_term_restore_pos.
+	(grub_cmd_sleep): Use grub_term_save_pos.
+	* commands/terminal.c: New file.
+	* conf/any-emu.rmk (grub_emu_SOURCES): Add normal/term.c
+	commands/terminal.c and lib/charset.c.
+	* conf/common.rmk (normal_mod_SOURCES): Add normal/term.c.
+	(pkglib_MODULES): Add terminal.mod.
+	(terminal_mod_SOURCES): New variable.
+	(terminal_mod_CFLAGS): Likewise.
+	(terminal_mod_LDFLAGS): Likewise.
+	* genhandlerlist.sh: Don't handle terminals.
+	* genmk.rb: Generate terminal-*.lst.
+	* genterminallist.sh: New file.
+	* include/grub/charset.h (grub_ucs4_to_utf8_alloc): New proto.
+	(grub_is_valid_utf8): Likewise.
+	(grub_utf8_to_ucs4_alloc): Likewise.
+	* include/grub/menu_viewer.h (grub_menu_viewer): Rewritten.
+	(grub_menu_register_viewer): Changed argument.
+	(grub_menu_try_text): New proto.
+	(grub_gfxmenu_try_hook): New declaration.
+	* include/grub/normal.h (grub_normal_exit_level): New declaration.
+	(grub_menu_init_page): Additional argument term.
+	(grub_normal_init_page): Likewise.
+	(grub_cmdline_get): Arguments simplified.
+	(grub_utf8_to_ucs4_alloc): Removed.
+	(grub_print_ucs4): Additional argument term.
+	(grub_getstringwidth): Likewise.
+	(grub_print_message_indented): Likewise.
+	(grub_menu_text_register_instances): New proto.
+	(grub_show_menu): Likewise.
+	(read_terminal_list): Likewise.
+	(grub_set_more): Likewise.
+	* include/grub/parser.h: Include handler.h.
+	* include/grub/reader.h: Rewritten.
+	* include/grub/term.h (GRUB_TERM_NEED_INIT): Removed.
+	(GRUB_TERM_WIDTH): Changed to function.
+	(GRUB_TERM_HEIGHT): Likewise.
+	(GRUB_TERM_BORDER_WIDTH): Likewise.
+	(GRUB_TERM_BORDER_HEIGHT): Likewise.
+	(GRUB_TERM_NUM_ENTRIES): Likewise.
+	(GRUB_TERM_ENTRY_WIDTH): Likewise.
+	(GRUB_TERM_CURSOR_X): Likewise.
+	(grub_term_input_class): Likewise.
+	(grub_term_output_class): Likewise.
+	(grub_term_outputs_disabled): New declaration.
+	(grub_term_inputs_disabled): Likewise.
+	(grub_term_outputs): Likewise.
+	(grub_term_inputs): Likewise.
+	(grub_term_register_input): Rewritten.
+	(grub_term_register_output): Likewise.
+	(grub_term_unregister_input): Likewise.
+	(grub_term_unregister_output): Likewise.
+	(FOR_ACTIVE_TERM_INPUTS): New macro.
+	(FOR_DISABLED_TERM_INPUTS): Likewise.
+	(FOR_ACTIVE_TERM_OUTPUTS): Likewise.
+	(FOR_DISABLED_TERM_OUTPUTS): Likewise.
+	* include/grub/terminfo.h: Add oterm argument to all protypes.
+	* kern/main.c (grub_main): Don't call grub_register_rescue_reader.
+	Use grub_rescue_run.
+	* kern/misc.c (grub_utf8_to_ucs4): Put '?' for invalid characters.
+	All users updated.
+	* kern/reader.c: Removed. All users updated.
+	* kern/rescue_reader.c (grub_rescue_init): Removed.
+	(grub_rescue_reader): Likewise.
+	(grub_register_rescue_reader): Likewise.
+	(grub_rescue_run): New function based on kern/reader.c.
+	* kern/term.c: Adapted for multiterm.
+	* lib/charset.c (grub_ucs4_to_utf8_alloc): New function.
+	(grub_is_valid_utf8): Likewise.
+	(grub_utf8_to_ucs4_alloc): Moved from normal/menu_text.c.
+	* loader/i386/efi/linux.c (grub_cmd_linux): Retrieve parameters of
+	right terminal.
+	* loader/i386/linux.c (grub_linux_boot): Likewise.
+	* normal/auth.c (grub_username_get): New function.
+	(grub_auth_check_authentication): Use grub_username_get.
+	* normal/cmdline.c: Changed to UCS4. Adapted for multiterm.
+	* normal/color.c: Adapt for multiterm.
+	* normal/main.c (read_config_file): Don't use grub_reader_loop.
+	(grub_normal_init_page): Additional argument term.
+	(read_lists): Call read_terminal_lists.
+	(grub_enter_normal_mode): Call grub_cmdline_run.
+	Handle grub_normal_exit_level.
+	(grub_cmd_normal): Make reentrant.
+	(grub_cmd_normal_exit): New function.
+	(grub_normal_reader_init): Additional argument nested. Handle multiterm.
+	* normal/menu.c: Adapt for multiterm.
+	* normal/menu_entry.c: Likewise.
+	* normal/menu_text.c: Likewise.
+	* normal/menu_viewer.c: Removed. All users updated.
+	* normal/term.c: New file.
+	* util/console.c: Change order of includes to workaround a bug in
+	ncurses headers.
+	* term/terminfo.c: New argument oterm on all exported functions.
+	All users updated.
+	* util/grub-editenv.c (grub_term_input_class): Removed.
+	(grub_term_output_class): Likewise.
+
+2010-01-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Make loader output a bit more user-friendly.
+
+	* util/grub.d/10_hurd.in: Print message indicating that GNU Mach
+	is being loaded.  Likewise for the Hurd.
+
+	* util/grub.d/10_kfreebsd.in (kfreebsd_entry): Print message indicating
+	that kernel of FreeBSD ${version} is being loaded.
+
+	* loader/i386/linux.c (grub_cmd_linux): Move debug info to
+	grub_dprintf().
+	(grub_cmd_initrd): Likewise.
+	* util/grub.d/10_linux.in (linux_entry): Print message indicating
+	that Linux ${version} is being loaded.  Likewise for initrd.
+
+2010-01-09  Carles Pina i Estany  <carles@pina.cat>
+
+	* gettext/gettext.c (GRUB_MOD_INIT): Gettextizze.
+
+2010-01-08  Carles Pina i Estany  <carles@pina.cat>
+
+	* loader/efi/appleloader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/efi/chainloader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/efi/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/ieee1275/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/pc/chainloader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/pc/linux.c: Include `<grub/i18n.h>'.
+	(grub_cmd_linux): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/i386/xnu.c: Include `<grub/i18n.h>'.
+	(grub_cpu_xnu_init): Gettextizze.
+	* loader/multiboot_loader.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/powerpc/ieee1275/linux.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/sparc64/ieee1275/linux.c: Include `<grub/i18n.h>'.
+	(grub_linux_load64): Capitalise Linux.
+	(GRUB_MOD_INIT): Gettextizze.
+	* loader/xnu.c: Include `<grub/i18n.h>'.
+	(GRUB_MOD_INIT): Gettextizze.
+	* po/POTFILES: Add `loader/efi/appleloader.c',
+	`loader/efi/chainloader.c', `loader/i386/efi/linux.c',
+	`loader/i386/ieee1275/linux.c', `loader/i386/linux.c',
+	`loader/i386/pc/chainloader.c', `loader/i386/pc/linux.c',
+	`loader/i386/xnu.c', `loader/multiboot_loader.c',
+	`loader/powerpc/ieee1275/linux.c', `loader/sparc64/ieee1275/linux.c'
+	and `loader/xnu.c'.
+
+2010-01-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* src/mkisofs.c: Remove `ifdef linux' portability kludge.
+
+2010-01-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/mkisofs/defaults.h (APPID_DEFAULT): Redefine using PACKAGE_NAME.
+	(SYSTEM_ID_DEFAULT): Set to "GNU" unconditionally.
+	* util/mkisofs/mkisofs.c (main): Readjust --version output.
+
+2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Reset Multiboot 2 support.  New loader implements the draft in
+	/branches/multiboot2 and shares as much code as possible with the
+	production Multiboot 1 implementation.
+
+	* loader/ieee1275/multiboot2.c: Remove file.  Update all users.
+	* loader/multiboot2.c: Likewise.
+	* loader/i386/multiboot_helper.S: Likewise.
+	* include/multiboot2.h: Replace with latest version from the draft
+	in /branches/multiboot2.
+
+	* conf/i386-coreboot.rmk (multiboot_mod_SOURCES): Remove
+	`loader/i386/multiboot_helper.S', `loader/i386/pc/multiboot2.c'
+	and `loader/multiboot2.c'.
+	(pkglib_MODULES): Add `multiboot2.mod'.
+	(multiboot2_mod_SOURCES): New variable.
+	(multiboot2_mod_LDFLAGS): Likewise.
+	(multiboot2_mod_CFLAGS): Likewise.  Define `GRUB_USE_MULTIBOOT2'.
+
+	* conf/i386-pc.rmk: Likewise.
+
+	* conf/powerpc-ieee1275.rmk (pkglib_MODULES): Remove `multiboot.mod'.
+	(multiboot_mod_SOURCES): Remove variable.
+	(multiboot_mod_LDFLAGS): Likewise.
+	(multiboot_mod_CFLAGS): Likewise.
+
+	* include/grub/multiboot.h [GRUB_USE_MULTIBOOT2]: Include
+	`<multiboot2.h>' instead of `<multiboot.h>'.
+	[GRUB_USE_MULTIBOOT2] (MULTIBOOT_BOOTLOADER_MAGIC)
+	(MULTIBOOT_HEADER_MAGIC): New macros.
+
+	* loader/multiboot_loader.c (module_version_status): Remove variable.
+	(find_multi_boot2_header): Remove function.
+	(grub_cmd_multiboot_loader): Remove Multiboot 2 / Multiboot 1 selection
+	logic.  Always check for the Multiboot version we're compiling for.
+	(grub_cmd_module_loader): Likewise.
+	[GRUB_USE_MULTIBOOT2] (GRUB_MOD_INIT(multiboot)): Register `multiboot2'
+	command instead of `multiboot'.
+
+2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/multiboot.h (MULTIBOOT_UNSUPPORTED): Moved from here ...
+	* loader/i386/multiboot.c (UNSUPPORTED_FLAGS): ... to here.  Update
+	all users.
+
+2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
+2010-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix breakage introduced with previous commit.
+
+	* normal/dyncmd.c (read_command_list): Avoid unregistering kernel
+	commands.
+	* normal/handler.c (read_handler_list): Revert part of previous commit
+	affecting this file.
+	* normal/main.c (read_lists): Move read_handler_list() call back to ...
+	(grub_normal_execute): ... here.
+
+2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Merge prefix-redefinition-fix branch.
+
+	* normal/autofs.c (read_fs_list): Make function capable of being
+	run multiple times, gracefuly replacing the previous data
+	structures.
+	* normal/dyncmd.c (read_command_list): Likewise.
+	* normal/handler.c (read_handler_list): Likewise.
+	* normal/main.c (read_lists): New function.  Calls all the
+	list reading functions.
+	(grub_normal_execute): Use read_lists() instead of calling all
+	list reading functions explicitly.  Register read_lists() as a
+	variable hook attached to ${prefix}.
+
+2010-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Merge crypto branch.
+
+	* Makefile.in (pkglib_DATA):  Add crypto.lst.
+	(crypto.lst): New target.
+	* commands/hashsum.c: New file.
+	* commands/password.c (check_password): Use grub_crypto_memcmp.
+	* commands/password_pbkdf2.c: New file.
+	* commands/xnu_uuid.c: Remove MD5. Use GRUB_MD_MD5.
+	* conf/any-emu.rmk (grub_emu_SOURCES): Add lib/crypto.c,
+	normal/crypto.c and lib/libgcrypt-grub/cipher/md5.c.
+	(grub_emu_CFLAGS): Add -Wno-missing-field-initializers -Wno-error
+	-I$(srcdir)/lib/libgcrypt_wrap.
+	* conf/common.rmk (normal_mod_SOURCES): Add normal/crypto.c.
+	(pkglib_MODULES): Add crypto.mod, hashsum.mod, pbkdf2.mod and
+	password_pbkdf2.mod.
+	(crypto_mod_SOURCES): New variable.
+	(crypto_mod_CFLAGS): Likewise.
+	(crypto_mod_LDFLAGS): Likewise.
+	(hashsum_mod_SOURCES): New variable.
+	(hashsum_mod_CFLAGS): Likewise.
+	(hashsum_mod_LDFLAGS): Likewise.
+	(pbkdf2_mod_SOURCES): New variable.
+	(pbkdf2_mod_CFLAGS): Likewise.
+	(pbkdf2_mod_LDFLAGS): Likewise.
+	(password_pbkdf2_mod_SOURCES): New variable.
+	(password_pbkdf2_mod_CFLAGS): Likewise.
+	(password_pbkdf2_mod_LDFLAGS): Likewise.
+	(bin_UTILITIES): Add grub-mkpasswd-pbkdf2.
+	(grub_mkpasswd_pbkdf2_SOURCES): New variable.
+	(grub_mkpasswd_pbkdf2_CFLAGS): Likewise.
+	Include conf/gcry.rmk.
+	* include/grub/auth.h: Rewritten.
+	* include/grub/crypto.h: New file.
+	* include/grub/disk.h (grub_disk_dev_id): Add GRUB_DISK_DEVICE_LUKS_ID.
+	* include/grub/normal.h (read_crypto_list): New prototype.
+	* lib/crypto.c: New file.
+	* lib/libgcrypt_wrap/cipher_wrap.h: Likewise.
+	* lib/pbkdf2.c: Likewise.
+	* normal/auth.c (grub_auth_strcmp): Removed.
+	(grub_iswordseparator): Likewise.
+	(grub_auth_strword): Likewise.
+	(is_authenticated): Use grub_strword.
+	(grub_auth_check_authentication): Use grub_strcmp, grub_password_get
+	and grub_strword. Pass entered password to authentication callback.
+	* normal/crypto.c: New file.
+	* normal/main.c: Call read_crypto_list.
+	* util/grub-mkpasswd-pbkdf2.c: New file.
+	* util/import_gcry.py: Generate crypto.lst. Add hash blocklen.
+
+2010-01-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix descent and ascent calculation.
+
+	* util/grub-mkfont.c (grub_font_info): New fields 'asce' and 'max_y'.
+	(options): New option "asce".
+	(usage): Likewise.
+	(add_char): Ignore invalid glyphs for descent calculation.
+	Calculate ascent from actual content.
+	(print_glyphs): Use 'asce'.
+	(write_font): Likewise. Allow ascent override.
+	(main): Handle "asce" option.
+
+2010-01-06  Carles Pina i Estany  <carles@pina.cat>
+
+	* kern/err.c: Include `<grub/i18n.h>'.
+	(grub_print_error): Add full stop. Gettextizze.
+	* loader/i386/bsd.c (grub_netbsd_boot): Change grub_error description.
+	(grub_bsd_load_elf): Capitalise ELF.
+	(grub_cmd_freebsd_loadenv): Add `s' in error string.
+	(grub_cmd_freebsd_module): Likewise.
+	(grub_cmd_freebsd_module_elf): Likewise.
+	* loader/i386/bsdXX.c (SUFFIX): Capitalise ELF.
+
+2010-01-06  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/search.c (GRUB_MOD_INIT): Use HELP_MESSAGE.
+	* commands/search_file.c (HELP_MESSAGE): New macro.
+	* commands/search_label.c (HELP_MESSAGE): Likewise.
+	* commands/search_uuid.c (HELP_MESSAGE): Likewise.
+	* po/POTFILES: Add `commands/search_file.c',
+	`commands/search_label.c', `commands_uuid.c'. Remove duplicate
+	`commands/search.c'.
+
+2010-01-05  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* config.rpath: Update from Gnulib.
+
+2010-01-05  Yves Blusseau  <blusseau@zetam.org>
+
+	* commands/acpi.c (grub_acpi_create_ebda): fix incorrect message.
+
+2010-01-05  Yves Blusseau  <yves.blusseau@zetam.org>
+
+	* util/sparc64/ieee1275/grub-mkimage.c (main): Typo fix.
+
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/mkisofs/write.c (padblock_write): Switch size and nmemb
+	arguments to fread so that we get a return value in bytes, rather
+	than something that will normally be rounded down to 0.
+	Adjust error handling to avoid producing garbage when size_t is not
+	the same size as long long.
+
+2010-01-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/mkisofs/write.c (padblock_write): Check return value of
+	fread.
+
+2010-01-05  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Remove grub-mkfloppy.  Images produced by grub-mkrescue are valid
+	floppy images now.
+
+	* util/i386/pc/grub-mkfloppy.in: Remove.  Update all users.
+
+2010-01-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_rw): Use ALIGN_UP macro
+	instead of manual alignment.
+	* kern/disk.c (grub_disk_read): Remove grub_dprintf call (excessively
+	verbose).  Avoid attempts to read past end of the device
+	(grub_disk_adjust_range() guarantees that we can read `size' bytes,
+	but GRUB_DISK_CACHE_SIZE may exceed that).
+
+2010-01-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* commands/crc.c (grub_cmd_crc): Abort on read errors.
+	* fs/iso9660.c (grub_iso9660_read): Check for read error and pass
+	it to upper layer.
+
+2010-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/efi/api.h (GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE):
+	New constant.
+	(grub_efi_piwg_device_path): New structure
+	(grub_efi_piwg_device_path_t): New type.
+	* loader/efi/appleloader.c (piwg_full_device_path): New structure.
+	(devpath_1): Transform to a structure. All users updated.
+	(devpath_2): Likewise.
+	(devpath_3): Likewise.
+	(devpath_4): Likewise.
+	(devpath_5): Likewise.
+
+2010-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/efi/appleloader.c: Restored. Update all users.
+
+2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* boot/i386/pc/diskboot.S: Fix inaccurate comment.
+
+	* util/i386/pc/grub-setup.c: Include `<assert.h>'.
+	(struct boot_blocklist): Move from here ...
+	* include/grub/i386/pc/boot.h [ASM_FILE]
+	(struct grub_boot_blocklist): ... to here.  Update all users.
+	(setup): Only initialize `start' member of `first_block'
+	structure.  Add assert() calls to verify the other members.
+
+	* util/i386/pc/grub-mkimage.c: Include `<assert.h>'.
+	(generate_image): Fix broken blocklist length initialization.
+	Add assert() call to verify blocklist `segment' field.
+
+2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/efi/appleloader.c: Remove.  Update all users.
+
+2010-01-03  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* boot/i386/pc/boot.S: Update copyright year.
+	* boot/i386/pc/cdboot.S: Likewise.
+	* boot/i386/pc/diskboot.S: Likewise.
+	* boot/i386/pc/lnxboot.S: Likewise.
+	* boot/i386/pc/pxeboot.S: Likewise.
+	* bus/pci.c: Likewise.
+	* commands/cmp.c: Likewise.
+	* commands/help.c: Likewise.
+	* commands/hexdump.c: Likewise.
+	* commands/i386/pc/halt.c: Likewise.
+	* commands/i386/pc/play.c: Likewise.
+	* commands/i386/pc/vbeinfo.c: Likewise.
+	* commands/ls.c: Likewise.
+	* commands/test.c: Likewise.
+	* disk/dmraid_nvidia.c: Likewise.
+	* disk/i386/pc/biosdisk.c: Likewise.
+	* disk/ieee1275/nand.c: Likewise.
+	* disk/ieee1275/ofdisk.c: Likewise.
+	* disk/lvm.c: Likewise.
+	* disk/raid.c: Likewise.
+	* disk/raid6_recover.c: Likewise.
+	* disk/scsi.c: Likewise.
+	* fs/affs.c: Likewise.
+	* fs/cpio.c: Likewise.
+	* fs/ext2.c: Likewise.
+	* fs/hfs.c: Likewise.
+	* fs/iso9660.c: Likewise.
+	* fs/ntfs.c: Likewise.
+	* fs/sfs.c: Likewise.
+	* fs/udf.c: Likewise.
+	* fs/ufs.c: Likewise.
+	* fs/xfs.c: Likewise.
+	* gencmdlist.sh: Likewise.
+	* genmk.rb: Likewise.
+	* include/grub/disk.h: Likewise.
+	* include/grub/efi/api.h: Likewise.
+	* include/grub/efi/efi.h: Likewise.
+	* include/grub/efi/pe32.h: Likewise.
+	* include/grub/elf.h: Likewise.
+	* include/grub/fs.h: Likewise.
+	* include/grub/i386/at_keyboard.h: Likewise.
+	* include/grub/i386/pc/memory.h: Likewise.
+	* include/grub/i386/pc/vbe.h: Likewise.
+	* include/grub/i386/pci.h: Likewise.
+	* include/grub/i386/tsc.h: Likewise.
+	* include/grub/ieee1275/ieee1275.h: Likewise.
+	* include/grub/ntfs.h: Likewise.
+	* include/grub/sparc64/ieee1275/ieee1275.h: Likewise.
+	* include/grub/sparc64/libgcc.h: Likewise.
+	* include/grub/symbol.h: Likewise.
+	* include/grub/types.h: Likewise.
+	* include/multiboot2.h: Likewise.
+	* io/gzio.c: Likewise.
+	* kern/device.c: Likewise.
+	* kern/disk.c: Likewise.
+	* kern/efi/efi.c: Likewise.
+	* kern/efi/mm.c: Likewise.
+	* kern/elf.c: Likewise.
+	* kern/file.c: Likewise.
+	* kern/i386/dl.c: Likewise.
+	* kern/i386/pc/init.c: Likewise.
+	* kern/i386/pc/startup.S: Likewise.
+	* kern/ieee1275/ieee1275.c: Likewise.
+	* kern/ieee1275/init.c: Likewise.
+	* kern/main.c: Likewise.
+	* kern/mm.c: Likewise.
+	* kern/powerpc/dl.c: Likewise.
+	* kern/sparc64/dl.c: Likewise.
+	* kern/x86_64/dl.c: Likewise.
+	* lib/hexdump.c: Likewise.
+	* loader/efi/appleloader.c: Likewise.
+	* loader/i386/ieee1275/linux.c: Likewise.
+	* loader/i386/pc/chainloader.c: Likewise.
+	* loader/i386/pc/linux.c: Likewise.
+	* loader/i386/pc/multiboot2.c: Likewise.
+	* loader/ieee1275/multiboot2.c: Likewise.
+	* loader/multiboot2.c: Likewise.
+	* loader/multiboot_loader.c: Likewise.
+	* loader/powerpc/ieee1275/linux.c: Likewise.
+	* normal/completion.c: Likewise.
+	* normal/menu_entry.c: Likewise.
+	* partmap/apple.c: Likewise.
+	* util/grub.d/10_hurd.in: Likewise.
+	* util/hostfs.c: Likewise.
+	* video/readers/png.c: Likewise.
+
+2010-01-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/misc.h (GNUC_PREREQ): New macro.
+	(ATTRIBUTE_ERROR): New macro.
+	* include/grub/list.h (grub_bad_type_cast_real): Use
+	ATTRIBUTE_ERROR.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/menu_text.c (print_message): Change messages.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/menu_entry.c (store_completion): Gettextizze.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* kern/env.c (grub_env_unset): Set the variable to "" if has hooks.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* po/POTFILES: Sort correctly.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/acpi.c (GRUB_MOD_INIT): Capitalise some words from help.
+	* commands/efi/loadbios.c (GRUB_MOD_INIT): Capitalise BIOS.
+	* commands/i386/pc/drivemap.c (GRUB_MOD_INIT): Remove space. Add
+	full stop.
+	* commands/loadenv.c (GRUB_MOD_INIT): Remove command name from
+	summary. Gettextizze the strings.
+	* commands/probe.c (grub_cmd_probe): Capitalise UUID and FS.
+	* commands/xnu_uuid.c (GRUB_MOD_INIT): Capitalise XNU.
+	* disk/loopback.c (grub_arg_options): Capitalise first letter. Add
+	full stop.
+	(GRUB_MOD_INIT): Remove command name from summary.
+	* hello/hello.c (GRUD_MOT_INIT): Add missing full stop. Improve the
+	summary.
+	* loader/i386/bsd.c (grub_arg_option): Capitalise CDROM.
+	* term/i386/pc/serial.c (options): Add full stops.
+	(GRUB_MOD_INIT): Remove command name from the summary.
+
+2010-01-03  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/acpi.c: Gettextizze help strings and/or options. Include
+	`grub/i18n.h' if needed.
+	* commands/blocklist.c: Likewise.
+	* commands/boot.c: Likewise.
+	* commands/cat.c: Likewise.
+	* commands/cmp.c: Likewise.
+	* commands/configfile.c: Likewise.
+	* commands/crc.c: Likewise.
+	* commands/date.c: Likewise.
+	* commands/echo.c: Likewise.
+	* commands/efi/fixvideo.c: Likewise.
+	* commands/efi/loadbios.c: Likewise.
+	* commands/gptsync.c: Likewise.
+	* commands/halt.c: Likewise.
+	* commands/handler.c: Likewise.
+	* commands/hdparm.c: Likewise.
+	* commands/hexdump.c: Likewise.
+	* commands/i386/cpuid.c: Likewise.
+	* commands/i386/pc/drivemap.c: Likewise.
+	* commands/i386/pc/halt.c: Likewise.
+	* commands/i386/pc/pxecmd.c: Likewise.
+	* commands/i386/pc/vbeinfo.c: Likewise.
+	* commands/i386/pc/vbetest.c: Likewise.
+	* commands/ieee1275/suspend.c: Likewise.
+	* commands/keystatus.c: Likewise.
+	* commands/loadenv.c: Likewise.
+	* commands/ls.c: Likewise.
+	* commands/lsmmap.c: Likewise.
+	* commands/lspci.c: Likewise.
+	* commands/memrw.c: Likewise.
+	* commands/minicmd.c: Likewise.
+	* commands/parttool.c: Likewise.
+	* commands/password.c: Likewise.
+	* commands/probe.c: Likewise.
+	* commands/read.c: Likewise.
+	* commands/reboot.c: Likewise.
+	* commands/search.c: Likewise.
+	* commands/sleep.c: Likewise.
+	* commands/test.c: Likewise.
+	* commands/true.c: Likewise.
+	* commands/usbtest.c: Likewise.
+	* commands/videotest.c: Likewise.
+	* commands/xnu_uuid.c: Likewise.
+	* disk/loopback.c: Likewise.
+	* hello/hello.c: Likewise.
+	* loader/i386/bsd.c: Likewise.
+	* term/i386/pc/serial.c: Likewise.
+	* po/POTFILES: Add new files.
+
+2010-01-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* term/i386/pc/at_keyboard.c
+	(keyboard_controller_wait_untill_ready): Rename to ...
+	(keyboard_controller_wait_until_ready): ... this. Update all users.
+
+2010-01-01  Carles Pina i Estany  <carles@pina.cat>
+
+	* commands/help.c: Include `grub/mm.h' and `grub/normal.h'.
+	(grub_cmd_help): Print the cmd->name before the cmd->summary. Cut the
+	string using string width.
+	* normal/menu_text.c (grub_print_message_indented): Use
+	grub_print_spaces and not print_spaces.
+	(print_timeout): Likewise.
+	(print_spaces): Move to...
+	* include/grub/term.h: ... here. Change the name to grub_print_spaces.
+
+2010-01-01  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Import from Gnulib.
+
+	* gnulib/getdelim.c: New file.
+	* gnulib/getline.c: Likewise.
+
+2009-12-31 BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* include/grub/list.h (grub_assert_fail): Removed.
+	(grub_bad_type_cast_real): New function.
+	(grub_bad_type_cast): New macro.
+	(GRUB_AS_LIST): Use grub_bad_type_cast.
+	(GRUB_AS_LIST_P): Likewise.
+	(GRUB_AS_NAMED_LIST): Likewise.
+	(GRUB_AS_NAMED_LIST_P): Likewise.
+	(GRUB_AS_PRIO_LIST): Likewise.
+	(GRUB_AS_PRIO_LIST_P): Likewise.
+	* include/grub/handler.h (GRUB_AS_HANDLER): Likewise.
+
 2009-12-29 Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* loader/sparc64/ieee1275/linux.c (GRUB_MOD_INIT (linux)):

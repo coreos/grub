@@ -158,10 +158,8 @@ GRUB_MOD_INIT(search_fs_label)
 {
   cmd =
     grub_register_command (COMMAND_NAME, grub_cmd_do_search,
-			   "NAME [VARIABLE]",
-			   "Search devices by " SEARCH_TARGET "."
-			   " If VARIABLE is specified, "
-			   "the first device found is set to a variable.");
+			   N_("NAME [VARIABLE]"),
+			   HELP_MESSAGE);
 }
 
 #ifdef DO_SEARCH_FILE

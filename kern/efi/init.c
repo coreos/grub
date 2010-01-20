@@ -81,6 +81,5 @@ void
 grub_efi_fini (void)
 {
   grub_efidisk_fini ();
-  grub_efi_mm_fini ();
   grub_console_fini ();
 }

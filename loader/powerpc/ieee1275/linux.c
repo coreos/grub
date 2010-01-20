@@ -1,7 +1,7 @@
 /* linux.c - boot Linux */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004, 2005, 2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/machine/loader.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 #define ELF32_LOADMASK (0xc0000000UL)
 #define ELF64_LOADMASK (0xc000000000000000ULL)
@@ -110,7 +111,7 @@ grub_linux_load32 (grub_elf_t elf)
   if (entry == 0)
     entry = 0x01400000;
 
-  linux_size = grub_elf32_size (elf);
+  linux_size = grub_elf32_size (elf, 0);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
@@ -160,7 +161,7 @@ grub_linux_load64 (grub_elf_t elf)
   if (entry == 0)
     entry = 0x01400000;
 
-  linux_size = grub_elf64_size (elf);
+  linux_size = grub_elf64_size (elf, 0);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
@@ -349,9 +350,9 @@ static grub_command_t cmd_linux, cmd_initrd;
 GRUB_MOD_INIT(linux)
 {
   cmd_linux = grub_register_command ("linux", grub_cmd_linux,
-				     0, "Load Linux.");
+				     0, N_("Load Linux."));
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
-				      0, "Load initrd.");
+				      0, N_("Load initrd."));
   my_mod = mod;
 }
 

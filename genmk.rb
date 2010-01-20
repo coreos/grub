@@ -1,6 +1,6 @@
 #! /usr/bin/ruby -w
 #
-# Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+# Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
 #
 # This genmk.rb is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -68,7 +68,7 @@ MOSTLYCLEAN_IMAGE_TARGETS += mostlyclean-image-#{@name}.#{@rule_count}
 
 ifneq ($(TARGET_APPLE_CC),1)
 #{@name}: #{exe}
-	$(OBJCOPY) -O $(#{prefix}_FORMAT) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id $< $@
+	$(OBJCOPY) -O $(#{prefix}_FORMAT) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@
 else
 ifneq (#{exe},kernel.exec)
 #{@name}: #{exe} ./grub-macho2img
@@ -192,6 +192,7 @@ endif
       fs = 'fs-' + obj.suffix('lst')
       partmap = 'partmap-' + obj.suffix('lst')
       handler = 'handler-' + obj.suffix('lst')
+      terminal = 'terminal-' + obj.suffix('lst')
       parttool = 'parttool-' + obj.suffix('lst')
       video = 'video-' + obj.suffix('lst')
       dep = deps[i]
@@ -213,6 +214,7 @@ FSFILES += #{fs}
 PARTTOOLFILES += #{parttool}
 PARTMAPFILES += #{partmap}
 HANDLERFILES += #{handler}
+TERMINALFILES += #{terminal}
 VIDEOFILES += #{video}
 
 #{command}: #{src} $(#{src}_DEPENDENCIES) gencmdlist.sh
@@ -239,6 +241,11 @@ VIDEOFILES += #{video}
 	set -e; \
 	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/genhandlerlist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
+
+#{terminal}: #{src} $(#{src}_DEPENDENCIES) genterminallist.sh
+	set -e; \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  | sh $(srcdir)/genterminallist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 #{video}: #{src} $(#{src}_DEPENDENCIES) genvideolist.sh
 	set -e; \
@@ -326,6 +333,7 @@ MOSTLYCLEANFILES += #{deps_str}
 
 #{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
 	$(TARGET_CC) -o $@ #{objs_str} $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
+	$(STRIP) -R .rel.dyn -R .reginfo -R .note -R .comment $@
 
 " + objs.collect_with_index do |obj, i|
       src = sources[i]
@@ -337,6 +345,7 @@ MOSTLYCLEANFILES += #{deps_str}
 
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
 	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
+
 -include #{dep}
 
 "
@@ -363,8 +372,7 @@ class Script
     "CLEANFILES += #{@name}
 
 #{@name}: #{src} $(#{src}_DEPENDENCIES) config.status
-	./config.status --file=#{name}:#{src}
-	sed -i -e 's,@pkglib_DATA@,$(pkglib_DATA),g' $@
+	./config.status --file=-:#{src} | sed -e 's,@pkglib_DATA@,$(pkglib_DATA),g' > $@
 	chmod +x $@
 
 "

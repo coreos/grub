@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+# Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
 #
 # This configure.ac is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -52,6 +52,16 @@ fi
 case "$target_cpu" in
   i[[3456]]86)	target_cpu=i386 ;;
   sparc)	target_cpu=sparc64 ;;
+  mipsel|mips64el)
+                target_cpu=mips;    
+		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPSEL=1"; 
+		CFLAGS="$CFLAGS -DGRUB_CPU_MIPSEL=1";
+		;;
+  mips|mips64)
+                target_cpu=mips;    
+		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPS=1"; 
+		CFLAGS="$CFLAGS -DGRUB_CPU_MIPS=1";
+		;;
 esac
 
 # Specify the platform (such as firmware).
@@ -69,6 +79,7 @@ if test "x$with_platform" = x; then
     powerpc-*) platform=ieee1275 ;;
     powerpc64-*) platform=ieee1275 ;;
     sparc64-*) platform=ieee1275 ;;
+    mips-*) platform=yeeloong ;;
     *) AC_MSG_ERROR([unsupported CPU: "$target_cpu"]) ;;
   esac
 else
@@ -95,6 +106,8 @@ case "$target_cpu"-"$platform" in
   i386-qemu) ;;
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;
+  mips-qemu-mips) ;;
+  mips-yeeloong) ;;
   *-emu) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
@@ -125,6 +138,8 @@ case "$platform" in
   qemu)		machine_CFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
   pc)		machine_CFLAGS="-DGRUB_MACHINE_PCBIOS=1" ;;
   emu)		machine_CFLAGS="-DGRUB_MACHINE_EMU=1" ;;
+  yeeloong)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  qemu-mips)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
 esac
 CFLAGS="$CFLAGS $machine_CFLAGS"
 TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
@@ -178,7 +193,7 @@ AC_PROG_CC
 test "x$GCC" = xyes || AC_MSG_ERROR([GCC is required])
 
 AC_GNU_SOURCE
-AM_GNU_GETTEXT
+AM_GNU_GETTEXT([external])
 AC_SYS_LARGEFILE
 
 # Identify characteristics of the host architecture.

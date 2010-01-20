@@ -19,7 +19,7 @@ kernel_img_SOURCES = kern/i386/ieee1275/startup.S \
 	kern/ieee1275/cmain.c kern/ieee1275/openfw.c \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
+	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/$(target_cpu)/dl.c kern/parser.c kern/partition.c \
 	kern/env.c \
@@ -92,7 +92,7 @@ halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For serial.mod.
-serial_mod_SOURCES = term/i386/pc/serial.c
+serial_mod_SOURCES = term/serial.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
@@ -122,7 +122,7 @@ lspci_mod_CFLAGS = $(COMMON_CFLAGS)
 lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For datetime.mod
-datetime_mod_SOURCES = lib/i386/datetime.c
+datetime_mod_SOURCES = lib/cmos_datetime.c
 datetime_mod_CFLAGS = $(COMMON_CFLAGS)
 datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

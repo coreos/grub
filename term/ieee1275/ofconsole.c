@@ -83,12 +83,17 @@ grub_ofconsole_putchar (grub_uint32_t c)
       grub_curr_y++;
       grub_curr_x = 0;
     }
+  else if (c == '\r')
+    {
+      grub_curr_x = 0;
+    }
   else
     {
       grub_curr_x++;
-      if (grub_curr_x > grub_ofconsole_width)
+      if (grub_curr_x >= grub_ofconsole_width)
         {
-          grub_putcode ('\n');
+          grub_ofconsole_putchar ('\n');
+          grub_ofconsole_putchar ('\r');
           grub_curr_x++;
         }
     }
@@ -236,15 +241,12 @@ grub_ofconsole_getxy (void)
   return ((grub_curr_x - 1) << 8) | grub_curr_y;
 }
 
-static grub_uint16_t
-grub_ofconsole_getwh (void)
+static void
+grub_ofconsole_dimensions (void)
 {
   grub_ieee1275_ihandle_t options;
   char *val;
   grub_ssize_t lval;
-
-  if (grub_ofconsole_width && grub_ofconsole_height)
-    return (grub_ofconsole_width << 8) | grub_ofconsole_height;
 
   if (! grub_ieee1275_finddevice ("/options", &options)
       && options != (grub_ieee1275_ihandle_t) -1)
@@ -282,7 +284,11 @@ grub_ofconsole_getwh (void)
     grub_ofconsole_width = 80;
   if (! grub_ofconsole_height)
     grub_ofconsole_height = 24;
+}
 
+static grub_uint16_t
+grub_ofconsole_getwh (void)
+{
   return (grub_ofconsole_width << 8) | grub_ofconsole_height;
 }
 
@@ -322,7 +328,7 @@ grub_ofconsole_cls (void)
    * ANSI escape sequence.  Using video console, Apple Open Firmware (version
    * 3.1.1) only recognizes the literal ^L.  So use both.  */
   grub_ofconsole_writeesc ("\e[2J");
-  grub_gotoxy (0, 0);
+  grub_ofconsole_gotoxy (0, 0);
 }
 
 static void
@@ -382,6 +388,8 @@ grub_ofconsole_init_output (void)
       grub_ofconsole_setcolorstate (GRUB_TERM_COLOR_NORMAL);
     }
 
+  grub_ofconsole_dimensions ();
+
   return 0;
 }
 
@@ -417,8 +425,7 @@ static struct grub_term_output grub_ofconsole_term_output =
     .setcolor = grub_ofconsole_setcolor,
     .getcolor = grub_ofconsole_getcolor,
     .setcursor = grub_ofconsole_setcursor,
-    .refresh = grub_ofconsole_refresh,
-    .flags = 0,
+    .refresh = grub_ofconsole_refresh
   };
 
 void

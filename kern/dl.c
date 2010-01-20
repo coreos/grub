@@ -341,6 +341,7 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
       switch (type)
 	{
 	case STT_NOTYPE:
+	case STT_OBJECT:
 	  /* Resolve a global symbol.  */
 	  if (sym->st_name != 0 && sym->st_shndx == 0)
 	    {
@@ -350,15 +351,13 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 				   "the symbol `%s' not found", name);
 	    }
 	  else
-	    sym->st_value = 0;
-	  break;
-
-	case STT_OBJECT:
-	  sym->st_value += (Elf_Addr) grub_dl_get_section_addr (mod,
-								sym->st_shndx);
-	  if (bind != STB_LOCAL)
-	    if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
-	      return grub_errno;
+	    {
+	      sym->st_value += (Elf_Addr) grub_dl_get_section_addr (mod,
+								    sym->st_shndx);
+	      if (bind != STB_LOCAL)
+		if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
+		  return grub_errno;
+	    }
 	  break;
 
 	case STT_FUNC:
