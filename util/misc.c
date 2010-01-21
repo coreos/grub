@@ -574,7 +574,7 @@ make_system_path_relative_to_its_root (const char *path)
 	      /* This means path given is just a backslash.  As above
 		 we have to return an empty string.  */
 	      free (buf2);
-	      return xtrdup ("");
+	      return xstrdup ("");
 	    }
 	}
     }

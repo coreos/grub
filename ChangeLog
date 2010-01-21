@@ -1,3 +1,7 @@
+2010-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/misc.c (make_system_path_relative_to_its_root): Fix typo.
+
 2010-01-21  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* po/POTFILES: Remove mkisofs-related files.  They have their own TLP
