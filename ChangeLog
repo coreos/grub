@@ -1,3 +1,9 @@
+2010-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/ieee1275/init.c (grub_machine_set_prefix): Don't check for
+	presence of "prefix" variable as it breaks when normal.mod is
+	embedded.
+
 2010-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* term/ieee1275/ofconsole.c (grub_ofconsole_dimensions): Allocate on
