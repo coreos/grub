@@ -245,37 +245,28 @@ static void
 grub_ofconsole_dimensions (void)
 {
   grub_ieee1275_ihandle_t options;
-  char *val;
   grub_ssize_t lval;
 
   if (! grub_ieee1275_finddevice ("/options", &options)
       && options != (grub_ieee1275_ihandle_t) -1)
     {
       if (! grub_ieee1275_get_property_length (options, "screen-#columns",
-					       &lval) && lval != -1)
+					       &lval)
+	  && lval >= 0 && lval < 1024)
 	{
-	  val = grub_malloc (lval);
-	  if (val)
-	    {
-	      if (! grub_ieee1275_get_property (options, "screen-#columns",
-						val, lval, 0))
-		grub_ofconsole_width = (grub_uint8_t) grub_strtoul (val, 0, 10);
+	  char val[lval];
 
-	      grub_free (val);
-	    }
+	  if (! grub_ieee1275_get_property (options, "screen-#columns",
+					    val, lval, 0))
+	    grub_ofconsole_width = (grub_uint8_t) grub_strtoul (val, 0, 10);
 	}
-      if (! grub_ieee1275_get_property_length (options, "screen-#rows",
-					       &lval) && lval != -1)
+      if (! grub_ieee1275_get_property_length (options, "screen-#rows", &lval)
+	  && lval >= 0 && lval < 1024)
 	{
-	  val = grub_malloc (lval);
-	  if (val)
-	    {
-	      if (! grub_ieee1275_get_property (options, "screen-#rows",
-						val, lval, 0))
-		grub_ofconsole_height = (grub_uint8_t) grub_strtoul (val, 0, 10);
-
-	      grub_free (val);
-	    }
+	  char val[lval];
+	  if (! grub_ieee1275_get_property (options, "screen-#rows",
+					    val, lval, 0))
+	    grub_ofconsole_height = (grub_uint8_t) grub_strtoul (val, 0, 10);
 	}
     }
 

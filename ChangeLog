@@ -1,5 +1,10 @@
 2010-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* term/ieee1275/ofconsole.c (grub_ofconsole_dimensions): Allocate on
+	stack since heap is unavailable at that point.
+
+2010-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/i386/bsd.h (FREEBSD_N_BIOS_GEOM): Removed.
 	(grub_freebsd_bootinfo): Rewritten.
 	* loader/i386/bsd.c (grub_freebsd_boot): Use new grub_freebsd_bootinfo.
