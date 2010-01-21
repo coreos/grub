@@ -44,33 +44,25 @@ enum bsd_kernel_types
 #define FREEBSD_B_PARTSHIFT	OPENBSD_B_PARTSHIFT
 #define FREEBSD_B_TYPESHIFT	OPENBSD_B_TYPESHIFT
 
-#define FREEBSD_BOOTINFO_VERSION 1
-#define FREEBSD_N_BIOS_GEOM	8
-
 #define FREEBSD_MODTYPE_KERNEL		"elf kernel"
 #define FREEBSD_MODTYPE_KERNEL64	"elf64 kernel"
 #define FREEBSD_MODTYPE_ELF_MODULE	"elf module"
 #define FREEBSD_MODTYPE_ELF_MODULE_OBJ	"elf obj module"
 #define FREEBSD_MODTYPE_RAW		"raw"
 
+#define FREEBSD_BOOTINFO_VERSION 1
+
 struct grub_freebsd_bootinfo
 {
-  grub_uint32_t bi_version;
-  grub_uint8_t *bi_kernelname;
-  struct nfs_diskless *bi_nfs_diskless;
-  grub_uint32_t bi_n_bios_used;
-  grub_uint32_t bi_bios_geom[FREEBSD_N_BIOS_GEOM];
-  grub_uint32_t bi_size;
-  grub_uint8_t bi_memsizes_valid;
-  grub_uint8_t bi_bios_dev;
-  grub_uint8_t bi_pad[2];
-  grub_uint32_t bi_basemem;
-  grub_uint32_t bi_extmem;
-  grub_uint32_t bi_symtab;
-  grub_uint32_t bi_esymtab;
-  grub_uint32_t bi_kernend;
-  grub_uint32_t bi_envp;
-  grub_uint32_t bi_modulep;
+  grub_uint32_t version;
+  grub_uint8_t unused1[44];
+  grub_uint32_t length;
+  grub_uint8_t unused2;
+  grub_uint8_t boot_device;
+  grub_uint8_t unused3[18];
+  grub_uint32_t kern_end;
+  grub_uint32_t environment;
+  grub_uint32_t tags;
 } __attribute__ ((packed));
 
 struct grub_openbsd_bios_mmap

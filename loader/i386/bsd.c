@@ -461,14 +461,14 @@ grub_freebsd_boot (void)
   }
 
   grub_memset (&bi, 0, sizeof (bi));
-  bi.bi_version = FREEBSD_BOOTINFO_VERSION;
-  bi.bi_size = sizeof (bi);
+  bi.version = FREEBSD_BOOTINFO_VERSION;
+  bi.length = sizeof (bi);
 
   grub_bsd_get_device (&biosdev, &unit, &slice, &part);
   bootdev = (FREEBSD_B_DEVMAGIC + ((slice + 1) << FREEBSD_B_SLICESHIFT) +
 	     (unit << FREEBSD_B_UNITSHIFT) + (part << FREEBSD_B_PARTSHIFT));
 
-  bi.bi_bios_dev = biosdev;
+  bi.boot_device = biosdev;
 
   p = (char *) kern_end;
 
@@ -478,7 +478,7 @@ grub_freebsd_boot (void)
     {
       *(p++) = 0;
 
-      bi.bi_envp = kern_end;
+      bi.environment = kern_end;
       kern_end = ALIGN_PAGE ((grub_uint32_t) p);
     }
 
@@ -491,23 +491,23 @@ grub_freebsd_boot (void)
 	return grub_errno;
 
       grub_memcpy ((char *) kern_end, mod_buf, mod_buf_len);
-      bi.bi_modulep = kern_end;
+      bi.tags = kern_end;
 
       kern_end = ALIGN_PAGE (kern_end + mod_buf_len);
 
       if (is_64bit)
 	kern_end += 4096 * 4;
 
-      md_ofs = bi.bi_modulep + kern_end_mdofs;
+      md_ofs = bi.tags + kern_end_mdofs;
       ofs = (is_64bit) ? 16 : 12;
       *((grub_uint32_t *) md_ofs) = kern_end;
       md_ofs -= ofs;
-      *((grub_uint32_t *) md_ofs) = bi.bi_envp;
+      *((grub_uint32_t *) md_ofs) = bi.environment;
       md_ofs -= ofs;
       *((grub_uint32_t *) md_ofs) = bootflags;
     }
 
-  bi.bi_kernend = kern_end;
+  bi.kern_end = kern_end;
 
   grub_video_set_mode ("text", 0, 0);
 
@@ -554,12 +554,12 @@ grub_freebsd_boot (void)
 		   &grub_bsd64_trampoline_end - &grub_bsd64_trampoline_start);
 
       /* Launch trampoline. */
-      launch_trampoline (entry, entry_hi, pagetable, bi.bi_modulep,
+      launch_trampoline (entry, entry_hi, pagetable, bi.tags,
 			 kern_end);
     }
   else
     grub_unix_real_boot (entry, bootflags | FREEBSD_RB_BOOTINFO, bootdev,
-			 0, 0, 0, &bi, bi.bi_modulep, kern_end);
+			 0, 0, 0, &bi, bi.tags, kern_end);
 
   /* Not reached.  */
   return GRUB_ERR_NONE;
