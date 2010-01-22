@@ -1,3 +1,11 @@
+2010-01-22  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Use generic grub_reboot() for i386-efi.
+
+	* kern/efi/efi.c [__i386__] (grub_reboot): Remove.
+	* kern/i386/efi/startup.S: Include `"../realmode.S"'.
+	* kern/i386/realmode.S: Include `<grub/i386/pc/memory.h>'.
+
 2010-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/ieee1275/init.c (grub_machine_set_prefix): Don't check for
