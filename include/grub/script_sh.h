@@ -157,8 +157,10 @@ struct grub_lexer_param
   int merge_start;
   int merge_end;
 
-  /* Text of current token.  */
+  /* Part of a multi-part token.  */
   char *text;
+  unsigned used;
+  unsigned size;
 
   /* Type of text.  */
   grub_script_arg_type_t type;
@@ -168,12 +170,9 @@ struct grub_lexer_param
 
   /* Flex scanner buffer.  */
   void *buffer;
-
-  /* Length of current token text.  */
-  unsigned size;
 };
 
-#define GRUB_LEXER_TOKEN_MAX        256
+#define GRUB_LEXER_INITIAL_TEXT_SIZE 32
 #define GRUB_LEXER_RECORD_INCREMENT 256
 
 /* State of the parser as passes to the parser.  */

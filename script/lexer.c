@@ -213,7 +213,8 @@ grub_script_lexer_init (struct grub_parser_param *parser, char *script,
   if (!lexerstate)
     return 0;
 
-  lexerstate->text = grub_malloc (GRUB_LEXER_TOKEN_MAX);
+  lexerstate->size = GRUB_LEXER_INITIAL_TEXT_SIZE;
+  lexerstate->text = grub_malloc (lexerstate->size);
   if (!lexerstate->text)
     {
       grub_free (lexerstate);
@@ -301,7 +302,7 @@ grub_script_yylex (union YYSTYPE *value,
   do
     {
       /* Empty lexerstate->text.  */
-      lexerstate->size = 0;
+      lexerstate->used = 1;
       lexerstate->text[0] = '\0';
 
       token = yylex (value, lexerstate->yyscanner);
@@ -311,7 +312,6 @@ grub_script_yylex (union YYSTYPE *value,
       /* Merging feature uses lexerstate->text instead of yytext.  */
       if (lexerstate->merge_start)
 	{
-	  lexerstate->text[lexerstate->size] = '\0';
 	  str = lexerstate->text;
 	  type = lexerstate->type;
 	}

@@ -37,31 +37,19 @@
     grub_printf ("fatal error: %s\n", msg);     \
   } while (0)
 
-#define PUSH(c)								\
-  do {									\
-    if (yyextra->lexerstate->size >= GRUB_LEXER_TOKEN_MAX - 1)		\
-      grub_script_yyerror (yyextra, "token too long");			\
-    else								\
-      yyextra->lexerstate->text[yyextra->lexerstate->size++] = c;	\
-  } while (0)
-      
-#define COPY(str)				\
-  do {						\
-    char *ptr = str;				\
-    while (*ptr && ! yyextra->err)		\
-      {						\
-        PUSH (*ptr);				\
-	ptr++;					\
-      }						\
+#define COPY(str, hint)                         \
+  do {                                          \
+    copy_string (yyextra, str, hint);           \
   } while (0)
 
-#define RECORD					\
-  do {						\
-    grub_script_lexer_record (yyextra, yytext);	\
+
+#define RECORD                                  \
+  do {                                          \
+    grub_script_lexer_record (yyextra, yytext); \
   } while (0)
 
-#define ARG(t)			      \
-  do {				      \
+#define ARG(t)                        \
+  do {                                \
     yyextra->lexerstate->type = t;    \
     return GRUB_PARSER_TOKEN_WORD;    \
   } while (0)
@@ -73,6 +61,8 @@
 static void  grub_lexer_yyfree (void *, yyscan_t yyscanner);
 static void* grub_lexer_yyalloc (yy_size_t, yyscan_t yyscanner);
 static void* grub_lexer_yyrealloc (void*, yy_size_t, yyscan_t yyscanner);
+static void  copy_string (struct grub_parser_param *, const char *,
+                          unsigned hint);
 
 %}
 
@@ -201,52 +191,47 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
                   RECORD;
                   /* resplit yytext */
                   yypush_buffer_state (YY_CURRENT_BUFFER, yyscanner);
-		  if (yy_scan_string (yytext, yyscanner))
-		    {
-		      yyextra->lexerstate->merge_start = 1;
-		      yy_push_state (SPLIT, yyscanner);
-		    }
-		  else
-		    {
-		      grub_script_yyerror (yyextra, 0);
-		      yypop_buffer_state (yyscanner);
-		      return GRUB_PARSER_TOKEN_WORD;
-		    }
+                  if (yy_scan_string (yytext, yyscanner))
+                    {
+                      yyextra->lexerstate->merge_start = 1;
+                      yy_push_state (SPLIT, yyscanner);
+                    }
+                  else
+                    {
+                      grub_script_yyerror (yyextra, 0);
+                      yypop_buffer_state (yyscanner);
+                      return GRUB_PARSER_TOKEN_WORD;
+                    }
                 }
 
 .|\n            {
                   grub_script_yyerror (yyextra, "unrecognized token");
-		  return GRUB_PARSER_TOKEN_BAD;
+                  return GRUB_PARSER_TOKEN_BAD;
                 }
 
 
  /* Split word into multiple args */
 
 <SPLIT>{
-  \\.           { PUSH (yytext[1]); }
+  \\.           { COPY (yytext + 1, yyleng - 1); }
   \"            {
-		  yy_push_state (DQUOTE, yyscanner);
+                  yy_push_state (DQUOTE, yyscanner);
                   ARG (GRUB_SCRIPT_ARG_TYPE_TEXT);
                 }
   \'            {
-		  yy_push_state (SQUOTE, yyscanner);
+                  yy_push_state (SQUOTE, yyscanner);
                   ARG (GRUB_SCRIPT_ARG_TYPE_TEXT);
                 }
   \$            {
                   yy_push_state (VAR, yyscanner);
                   ARG (GRUB_SCRIPT_ARG_TYPE_TEXT);
-		}
-  {CHAR}        { PUSH (yytext[0]); }
-  .|\n          {
-                  /* This cannot happen.  */
-		  grub_script_yyerror (yyextra, "internal error: unexpected characters in a word");
-                  return GRUB_PARSER_TOKEN_BAD;
-		}
-
+                }
+  \\            |
+  [^\"\'$\\]+   { COPY (yytext, yyleng); }
   <<EOF>>       {
-		  yy_pop_state (yyscanner);
-		  yypop_buffer_state (yyscanner);
-		  yyextra->lexerstate->merge_end = 1;
+                  yy_pop_state (yyscanner);
+                  yypop_buffer_state (yyscanner);
+                  yyextra->lexerstate->merge_end = 1;
                   ARG (GRUB_SCRIPT_ARG_TYPE_TEXT);
                 }
 }
@@ -255,23 +240,23 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
   \?            |
   {DIGITS}      |
   {NAME}        {
-                  COPY (yytext);
-		  yy_pop_state (yyscanner);
-		  if (YY_START == SPLIT)
-		    ARG (GRUB_SCRIPT_ARG_TYPE_VAR);
-		  else
-		    ARG (GRUB_SCRIPT_ARG_TYPE_DQVAR);
-		}
+                  COPY (yytext, yyleng);
+                  yy_pop_state (yyscanner);
+                  if (YY_START == SPLIT)
+                    ARG (GRUB_SCRIPT_ARG_TYPE_VAR);
+                  else
+                    ARG (GRUB_SCRIPT_ARG_TYPE_DQVAR);
+                }
   \{\?\}        |
   \{{DIGITS}\}  |
   \{{NAME}\}    {
                   yytext[yyleng - 1] = '\0';
-		  COPY (yytext + 1);
+                  COPY (yytext + 1, yyleng - 2);
                   yy_pop_state (yyscanner);
-		  if (YY_START == SPLIT)
-		    ARG (GRUB_SCRIPT_ARG_TYPE_VAR);
-		  else
-		    ARG (GRUB_SCRIPT_ARG_TYPE_DQVAR);
+                  if (YY_START == SPLIT)
+                    ARG (GRUB_SCRIPT_ARG_TYPE_VAR);
+                  else
+                    ARG (GRUB_SCRIPT_ARG_TYPE_DQVAR);
                 }
   .|\n          { return GRUB_PARSER_TOKEN_BAD; }
 }
@@ -279,33 +264,34 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 <SQUOTE>{
   \'            {
                   yy_pop_state (yyscanner);
-		  ARG (GRUB_SCRIPT_ARG_TYPE_SQSTR);
+                  ARG (GRUB_SCRIPT_ARG_TYPE_SQSTR);
                 }
-  (.|\n)        { PUSH (yytext[0]); }
+  [^\']+        { COPY (yytext, yyleng); }
 }
 
 <DQUOTE>{
   \"            {
                   yy_pop_state (yyscanner);
-		  ARG (GRUB_SCRIPT_ARG_TYPE_DQSTR);
+                  ARG (GRUB_SCRIPT_ARG_TYPE_DQSTR);
                 }
   \$            {
                   yy_push_state (VAR, yyscanner);
-		  ARG (GRUB_SCRIPT_ARG_TYPE_DQSTR);
-		}
-  \\\\          { PUSH ('\\'); }
-  \\\"          { PUSH ('\"'); }
+                  ARG (GRUB_SCRIPT_ARG_TYPE_DQSTR);
+                }
+  \\\\          { COPY ("\\", 1); }
+  \\\"          { COPY ("\"", 1); }
   \\\n          { /* ignore */ }
-  (.|\n)        { PUSH (yytext[0]); }
+  [^\"$\\\n]+   { COPY (yytext, yyleng); }
+  (.|\n)        { COPY (yytext, yyleng); }
 }
 
 <<EOF>>         {
-		  yypop_buffer_state (yyscanner);
-		  if (! grub_script_lexer_yywrap (yyextra))
-		    {
-		      yyextra->lexerstate->eof = 1;
-		      return GRUB_PARSER_TOKEN_EOF;
-		    }
+                  yypop_buffer_state (yyscanner);
+                  if (! grub_script_lexer_yywrap (yyextra))
+                    {
+                      yyextra->lexerstate->eof = 1;
+                      return GRUB_PARSER_TOKEN_EOF;
+                    }
                 }
 
 %%
@@ -329,3 +315,26 @@ grub_lexer_yyrealloc (void *ptr, yy_size_t size,
   return grub_realloc (ptr, size);
 }
 
+static void copy_string (struct grub_parser_param *parser, const char *str, unsigned hint)
+{
+  int len;
+  int size;
+  char *ptr;
+
+  len = hint ? hint : grub_strlen (str);
+  if (parser->lexerstate->used + len >= parser->lexerstate->size)
+    {
+      size = parser->lexerstate->size * 2;
+      ptr = grub_realloc (parser->lexerstate->text, size);
+      if (!ptr)
+        {
+          grub_script_yyerror (parser, 0);
+          return;
+        }
+
+      parser->lexerstate->text = ptr;
+      parser->lexerstate->size = size;
+    }
+  grub_strcpy (parser->lexerstate->text + parser->lexerstate->used - 1, str);
+  parser->lexerstate->used += len;
+}
