@@ -1,5 +1,11 @@
 2010-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* term/ieee1275/ofconsole.c (grub_ofconsole_setcolorstate): Allocate on
+	stack since heap may be unavailable at that point.
+	(grub_ofconsole_gotoxy): Likewise.
+
+2010-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Check for _restgpr_14_x.
 	* include/grub/powerpc/libgcc.h [HAVE__RESTGPR_14_X]: Add _restgpr_*_x
 	and _savegpr_* prototypes.
