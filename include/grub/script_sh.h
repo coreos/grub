@@ -1,7 +1,7 @@
 /* normal_parser.h  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,8 +45,11 @@ struct grub_script
 
 typedef enum
 {
-  GRUB_SCRIPT_ARG_TYPE_STR,
-  GRUB_SCRIPT_ARG_TYPE_VAR
+  GRUB_SCRIPT_ARG_TYPE_VAR,
+  GRUB_SCRIPT_ARG_TYPE_TEXT,
+  GRUB_SCRIPT_ARG_TYPE_DQVAR,
+  GRUB_SCRIPT_ARG_TYPE_DQSTR,
+  GRUB_SCRIPT_ARG_TYPE_SQSTR
 } grub_script_arg_type_t;
 
 /* A part of an argument.  */
@@ -121,12 +124,6 @@ struct grub_script_cmd_menuentry
 /* State of the lexer as passed to the lexer.  */
 struct grub_lexer_param
 {
-  /* Set to 0 when the lexer is done.  */
-  int done;
-
-  /* State of the state machine.  */
-  grub_parser_state_t state;
-
   /* Function used by the lexer to get a new line when more input is
      expected, but not available.  */
   grub_reader_getline_t getline;
@@ -136,10 +133,6 @@ struct grub_lexer_param
      Otherwise the lexer can stop processing if the current buffer is
      depleted.  */
   int refs;
-
-  /* The character stream that has to be parsed.  */
-  char *script;
-  char *newscript; /* XXX */
 
   /* While walking through the databuffer, `record' the characters to
      this other buffer.  It can be used to edit the menu entry at a
@@ -157,12 +150,31 @@ struct grub_lexer_param
   /* Size of RECORDING.  */
   int recordlen;
 
-  /* The token that is already parsed but not yet returned. */
-  int tokenonhold;
+  /* End of file reached.  */
+  int eof;
 
-  /* Was the last token a newline? */
-  int was_newline;
+  /* Merge multiple word tokens.  */
+  int merge_start;
+  int merge_end;
+
+  /* Text of current token.  */
+  char *text;
+
+  /* Type of text.  */
+  grub_script_arg_type_t type;
+
+  /* Flex scanner.  */
+  void *yyscanner;
+
+  /* Flex scanner buffer.  */
+  void *buffer;
+
+  /* Length of current token text.  */
+  unsigned size;
 };
+
+#define GRUB_LEXER_TOKEN_MAX        256
+#define GRUB_LEXER_RECORD_INCREMENT 256
 
 /* State of the parser as passes to the parser.  */
 struct grub_parser_param
@@ -223,12 +235,16 @@ void grub_script_free (struct grub_script *script);
 struct grub_script *grub_script_create (struct grub_script_cmd *cmd,
 					struct grub_script_mem *mem);
 
-struct grub_lexer_param *grub_script_lexer_init (char *s,
+struct grub_lexer_param *grub_script_lexer_init (struct grub_parser_param *parser,
+						 char *script,
 						 grub_reader_getline_t getline);
+void grub_script_lexer_fini (struct grub_lexer_param *);
 void grub_script_lexer_ref (struct grub_lexer_param *);
 void grub_script_lexer_deref (struct grub_lexer_param *);
-void grub_script_lexer_record_start (struct grub_lexer_param *);
-char *grub_script_lexer_record_stop (struct grub_lexer_param *);
+void grub_script_lexer_record_start (struct grub_parser_param *);
+char *grub_script_lexer_record_stop (struct grub_parser_param *);
+int  grub_script_lexer_yywrap (struct grub_parser_param *);
+void grub_script_lexer_record (struct grub_parser_param *, char *);
 
 /* Functions to track allocated memory.  */
 struct grub_script_mem *grub_script_mem_record (struct grub_parser_param *state);
@@ -284,7 +300,7 @@ int grub_script_function_iterate (int (*iterate) (grub_script_function_t));
 int grub_script_function_call (grub_script_function_t func,
 			       int argc, char **args);
 
-char *
-grub_script_execute_argument_to_string (struct grub_script_arg *arg);
+char **
+grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist);
 
 #endif /* ! GRUB_NORMAL_PARSER_HEADER */

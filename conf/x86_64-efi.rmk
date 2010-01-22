@@ -5,7 +5,7 @@ COMMON_CFLAGS = -fno-builtin -m64
 COMMON_LDFLAGS = -melf_x86_64 -nostdlib
 
 # Used by various components.  These rules need to precede them.
-script/lexer.c_DEPENDENCIES = grub_script.tab.h
+script/lexer.c_DEPENDENCIES = grub_script.tab.h grub_script.yy.h
 
 # Utilities.
 bin_UTILITIES = grub-mkimage

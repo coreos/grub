@@ -6,7 +6,7 @@ COMMON_CFLAGS = -ffreestanding -m64 -mno-app-regs
 COMMON_LDFLAGS = -melf64_sparc -nostdlib -mno-relax
 
 # Used by various components.  These rules need to precede them.
-script/lexer.c_DEPENDENCIES = grub_script.tab.h
+script/lexer.c_DEPENDENCIES = grub_script.tab.h grub_script.yy.h
 
 # Images.
 pkglib_IMAGES = boot.img diskboot.img kernel.img

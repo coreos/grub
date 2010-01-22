@@ -1,0 +1,70 @@
+2010-01-10  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* conf/any-emu.rmk: Build rule updates.
+	* conf/common.rmk: Likewise.
+	* conf/i386-coreboot.rmk: Likewise.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+
+	* configure.ac: Configure check for flex.
+
+	* include/grub/script_sh.h (grub_script_arg_type_t): More argument
+	types.
+	(grub_lexer_param): Struct member updates.
+	(grub_parser_param): Likewise.
+	(GRUB_LEXER_TOKEN_MAX): Maximum token size.
+	(GRUB_LEXER_RECORD_INCREMENT): Memory increments' size.
+	(grub_script_lexer_init): Prototype update.
+	(grub_script_lexer_record_start): Likewise.
+	(grub_script_lexer_record_stop): Likewise.
+	(grub_script_lexer_yywrap): New function prototype.
+	(grub_script_lexer_fini): Likewise.
+	(grub_script_execute_argument_to_string): Removed by...
+	(grub_script_execute_argument_to_argv): ...better version.
+
+	* script/execute.c (ROUND_UPTO): New macro.
+	(grub_script_execute_cmdline): Out of memory fixes.
+	(grub_script_execute_menuentry): Likewise.
+	(grub_script_execute_argument_to_string): Removed. Update all
+	users by...
+	(grub_script_execute_argument_to_argv): ...better version.
+	* script/function.c (grub_script_function_create): Use
+	grub_script_execute_argument_to_argv instead of
+	grub_script_execute_argument_to_string.
+
+	* script/lexer.c (check_varstate): Removed.
+	(check_textstate): Removed.
+	(grub_script_lexer_record_start): Likewise.
+	(grub_script_lexer_record_stop): Likewise.
+	(recordchar): Replaced with...
+	(grub_script_lexer_record): ...new function.
+	(nextchar): Removed.
+	(grub_script_lexer_init): Rewritten.
+	(grub_script_yylex): Rewritten.
+	(append_newline): New function.
+	(grub_script_lexer_yywrap): New function.
+	(grub_script_lexer_fini): New function.
+	(grub_script_yyerror): Sets error flag.
+
+	* script/yylex.l: New file.
+	(grub_lexer_yyfree): Wrapper for flex yyffre.
+	(grub_lexer_yyalloc): Likewise.
+	(grub_lexer_yyrealloc): Likewise.
+	* script/parser.y: Refactored.
+
+	* script/script.c (grub_script_arg_add): Out of memory fixes.
+	(grub_script_add_arglist): Likewise.
+	(grub_script_create_cmdline): Likewise.
+	(grub_script_create_cmdmenu): Likewise.
+	(grub_script_add_cmd): Likewise.
+	(grub_script_parse): Use grub_script_lexer_fini to deallocated.
+	* util/grub-script-check.c (grub_script_execute_menuentry): Remove
+	unnecessary code.
+
+	* tests/grub_script_echo1.in: New testcase.
+	* tests/grub_script_vars1.in: New testcase.
+	* tests/grub_script_echo_keywords.in: New testcase.
+

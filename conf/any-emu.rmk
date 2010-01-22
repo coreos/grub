@@ -1,7 +1,7 @@
 # -*- makefile -*-
 
 # Used by various components.  These rules need to precede them.
-script/lexer.c_DEPENDENCIES = grub_script.tab.h
+script/lexer.c_DEPENDENCIES = grub_script.tab.h grub_script.yy.h
 
 sbin_UTILITIES += grub-emu
 util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
@@ -33,6 +33,8 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	commands/terminal.c normal/context.c lib/charset.c \
 	script/main.c script/execute.c script/function.c		\
 	script/lexer.c script/script.c grub_script.tab.c		\
+	grub_script.yy.c						\
+	\
 	partmap/amiga.c	partmap/apple.c partmap/msdos.c partmap/sun.c	\
 	partmap/acorn.c partmap/gpt.c					\
 	\
@@ -98,6 +100,12 @@ endif
 grub_script.tab.c grub_script.tab.h: script/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/parser.y
 DISTCLEANFILES += grub_script.tab.c grub_script.tab.h
+
+grub_script.yy.c grub_script.yy.h: script/yylex.l
+	$(LEX) -o grub_script.yy.c --header-file=grub_script.yy.h $(srcdir)/script/yylex.l
+	sed -i 's/^#include.*\(<stdio\.h>\|<string\.h>\|<errno\.h>\|<stdlib\.h>\|<unistd\.h>\)//g' grub_script.yy.h
+	sed -i 's/^#include.*\(<stdio\.h>\|<string\.h>\|<errno\.h>\|<stdlib\.h>\|<unistd\.h>\)//g' grub_script.yy.c
+DISTCLEANFILES += grub_script.yy.c grub_script.yy.h
 
 bin_UTILITIES += grub-bin2h
 grub_bin2h_SOURCES = gnulib/progname.c util/bin2h.c
