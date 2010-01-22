@@ -45,12 +45,11 @@ grub_script_lexer_record_start (struct grub_parser_param *parser)
 
   lexer->record = 1;
   lexer->recordpos = 0;
-  if (lexer->recording)		/* reuse last record */
+  if (lexer->recording) /* reuse last record */
     return;
 
-  lexer->recordlen = GRUB_LEXER_RECORD_INCREMENT;
+  lexer->recordlen = GRUB_LEXER_INITIAL_RECORD_SIZE;
   lexer->recording = grub_malloc (lexer->recordlen);
-
   if (!lexer->recording)
     {
       grub_script_yyerror (parser, 0);
@@ -99,27 +98,31 @@ grub_script_lexer_record_stop (struct grub_parser_param *parser)
   return result;
 }
 
+#define MAX(a,b) ((a) < (b) ? (b) : (a))
 
 /* Record STR if input recording is enabled.  */
 void
 grub_script_lexer_record (struct grub_parser_param *parser, char *str)
 {
   int len;
+  char *old;
   struct grub_lexer_param *lexer = parser->lexerstate;
 
   if (!lexer->record)
     return;
 
   len = grub_strlen (str);
-  if (lexer->recordpos + len >= lexer->recordlen - 1)
+  if (lexer->recordpos + len + 1 > lexer->recordlen)
     {
-      char *old = lexer->recording;
-      lexer->recordlen += GRUB_LEXER_RECORD_INCREMENT;
+      old = lexer->recording;
+      lexer->recordlen = MAX (len, lexer->recordlen) * 2;
       lexer->recording = grub_realloc (lexer->recording, lexer->recordlen);
       if (!lexer->recording)
 	{
 	  grub_free (old);
 	  lexer->record = 0;
+	  lexer->recordpos = 0;
+	  lexer->recordlen /= 2;
 	  grub_script_yyerror (parser, 0);
 	  return;
 	}

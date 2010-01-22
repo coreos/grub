@@ -172,8 +172,8 @@ struct grub_lexer_param
   void *buffer;
 };
 
-#define GRUB_LEXER_INITIAL_TEXT_SIZE 32
-#define GRUB_LEXER_RECORD_INCREMENT 256
+#define GRUB_LEXER_INITIAL_TEXT_SIZE   32
+#define GRUB_LEXER_INITIAL_RECORD_SIZE 256
 
 /* State of the parser as passes to the parser.  */
 struct grub_parser_param

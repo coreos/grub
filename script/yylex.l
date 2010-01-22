@@ -315,16 +315,18 @@ grub_lexer_yyrealloc (void *ptr, yy_size_t size,
   return grub_realloc (ptr, size);
 }
 
+#define MAX(a,b) ((a) < (b) ? (b) : (a))
+
 static void copy_string (struct grub_parser_param *parser, const char *str, unsigned hint)
 {
-  int len;
   int size;
   char *ptr;
+  unsigned len;
 
   len = hint ? hint : grub_strlen (str);
   if (parser->lexerstate->used + len >= parser->lexerstate->size)
     {
-      size = parser->lexerstate->size * 2;
+      size = MAX (len, parser->lexerstate->size) * 2;
       ptr = grub_realloc (parser->lexerstate->text, size);
       if (!ptr)
         {
