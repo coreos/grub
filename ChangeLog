@@ -1,3 +1,9 @@
+2010-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Check for _restgpr_14_x.
+	* include/grub/powerpc/libgcc.h [HAVE__RESTGPR_14_X]: Add _restgpr_*_x
+	and _savegpr_* prototypes.
+
 2010-01-22  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Use generic grub_reboot() for i386-efi.
