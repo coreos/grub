@@ -308,6 +308,26 @@ grub_script_execute_cmdfor (struct grub_script_cmd *cmd)
   return result;
 }
 
+/* Execute a "while" or "until" command.  */
+grub_err_t
+grub_script_execute_cmdwhile (struct grub_script_cmd *cmd)
+{
+  int cond;
+  int result;
+  struct grub_script_cmdwhile *cmdwhile = (struct grub_script_cmdwhile *) cmd;
+
+  result = 0;
+  do {
+    cond = grub_script_execute_cmd (cmdwhile->cond);
+    if ((cmdwhile->until && !cond) || (!cmdwhile->until && cond))
+      break;
+
+    result = grub_script_execute_cmd (cmdwhile->list);
+  } while (1); /* XXX Put a check for ^C here */
+
+  return result;
+}
+
 /* Execute the menu entry generate statement.  */
 grub_err_t
 grub_script_execute_menuentry (struct grub_script_cmd *cmd)
