@@ -35,6 +35,9 @@ grub_script_execute_cmd (struct grub_script_cmd *cmd)
   return cmd->exec (cmd);
 }
 
+#define ARG_ALLOCATION_UNIT  (32 * sizeof (char))
+#define ARGV_ALLOCATION_UNIT (8 * sizeof (void*))
+
 /* Expand arguments in ARGLIST into multiple arguments.  */
 char **
 grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count)
@@ -56,7 +59,7 @@ grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *c
     if (oom)
       return;
 
-    p = grub_realloc (argv, ALIGN_UP (sizeof(char*) * (argc + 1), 32));
+    p = grub_realloc (argv, ALIGN_UP (sizeof(char*) * (argc + 1), ARGV_ALLOCATION_UNIT));
     if (!p)
       oom = 1;
     else
@@ -78,7 +81,7 @@ grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *c
 
     len = nchar ?: grub_strlen (str);
     old = argv[argc - 1] ? grub_strlen (argv[argc - 1]) : 0;
-    p = grub_realloc (argv[argc - 1], ALIGN_UP(old + len + 1, 32));
+    p = grub_realloc (argv[argc - 1], ALIGN_UP(old + len + 1, ARG_ALLOCATION_UNIT));
 
     if (p)
       {
