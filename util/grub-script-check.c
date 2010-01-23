@@ -1,7 +1,7 @@
 /* grub-script-check.c - check grub script file for syntax errors */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+ *  Copyright (C) 2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -82,16 +82,8 @@ grub_script_execute_cmdif (struct grub_script_cmd *cmd __attribute__ ((unused)))
 }
 
 grub_err_t
-grub_script_execute_menuentry (struct grub_script_cmd *cmd)
+grub_script_execute_menuentry (struct grub_script_cmd *cmd __attribute__ ((unused)))
 {
-  struct grub_script_cmd_menuentry *menu;
-  menu = (struct grub_script_cmd_menuentry *)cmd;
-
-  if (menu->sourcecode)
-    {
-      grub_free (menu->sourcecode);
-      menu->sourcecode = 0;
-    }
   return 0;
 }
 
