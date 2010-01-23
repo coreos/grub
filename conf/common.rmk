@@ -91,13 +91,21 @@ grub_mkrelpath_SOURCES = gnulib/progname.c util/grub-mkrelpath.c util/misc.c
 bin_UTILITIES += grub-bin2h
 grub_bin2h_SOURCES = gnulib/progname.c util/bin2h.c
 
+# For the lexer.
+grub_script.yy.c grub_script.yy.h: script/yylex.l
+	$(LEX) -o grub_script.yy.c --header-file=grub_script.yy.h $(srcdir)/script/yylex.l
+	sed -i 's/^#include.*\(<stdio\.h>\|<string\.h>\|<errno\.h>\|<stdlib\.h>\|<unistd\.h>\)//g' grub_script.yy.h
+	sed -i 's/^#include.*\(<stdio\.h>\|<string\.h>\|<errno\.h>\|<stdlib\.h>\|<unistd\.h>\)//g' grub_script.yy.c
+DISTCLEANFILES += grub_script.yy.c grub_script.yy.h
+
 # For grub-script-check.
 bin_UTILITIES += grub-script-check
 util/grub-script-check.c_DEPENDENCIES = grub_script_check_init.h
 grub_script_check_SOURCES = gnulib/progname.c util/grub-script-check.c util/misc.c \
 	script/main.c script/script.c script/function.c script/lexer.c \
 	kern/handler.c kern/err.c kern/parser.c kern/list.c \
-	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c
+	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c \
+	grub_script.yy.c
 
 # For the parser.
 grub_script.tab.c grub_script.tab.h: script/parser.y
@@ -594,7 +602,7 @@ normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For sh.mod.
 sh_mod_SOURCES = script/main.c script/script.c script/execute.c \
-	script/function.c script/lexer.c grub_script.tab.c
+	script/function.c script/lexer.c grub_script.tab.c grub_script.yy.c
 sh_mod_CFLAGS = $(COMMON_CFLAGS)
 sh_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
