@@ -35,8 +35,6 @@ grub_script_execute_cmd (struct grub_script_cmd *cmd)
   return cmd->exec (cmd);
 }
 
-#define ROUND_UPTO(sz,up) (((sz) + (up) - 1) / (up) *  (up))
-
 /* Expand arguments in ARGLIST into multiple arguments.  */
 char **
 grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist)
@@ -58,7 +56,7 @@ grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist)
     if (oom)
       return;
 
-    p = grub_realloc (argv, ROUND_UPTO (sizeof(char*) * (argc + 1), 32));
+    p = grub_realloc (argv, ALIGN_UP (sizeof(char*) * (argc + 1), 32));
     if (!p)
       oom = 1;
     else
@@ -80,7 +78,7 @@ grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist)
 
     len = nchar ?: grub_strlen (str);
     old = argv[argc - 1] ? grub_strlen (argv[argc - 1]) : 0;
-    p = grub_realloc (argv[argc - 1], ROUND_UPTO(old + len + 1, 32));
+    p = grub_realloc (argv[argc - 1], ALIGN_UP(old + len + 1, 32));
 
     if (p)
       {
