@@ -76,7 +76,7 @@
 %token <arg> GRUB_PARSER_TOKEN_WORD      "word"
 
 %type <arglist> word argument arguments0 arguments1
-%type <cmd> script_init script grubcmd ifcmd command
+%type <cmd> script_init script grubcmd ifcmd forcmd command
 %type <cmd> commands1 menuentry statement
 
 %pure-parser
@@ -175,6 +175,7 @@ grubcmd: word arguments0
 /* A single command.  */
 command: grubcmd { $$ = $1; }
        | ifcmd   { $$ = $1; }
+       | forcmd  { $$ = $1; }
 ;
 
 /* A list of commands. */
@@ -237,4 +238,15 @@ ifcmd: if commands1 delimiters1 "then" commands1 delimiters1 "fi"
          $$ = grub_script_create_cmdif (state, $2, $5, $8);
          grub_script_lexer_deref (state->lexerstate);
        }
+;
+
+forcmd: "for" "name"
+        {
+	  grub_script_lexer_ref (state->lexerstate);
+        }
+        "in" arguments0 delimiters1 "do" commands1 delimiters1 "done"
+	{
+	  $$ = grub_script_create_cmdfor (state, $2, $5, $8);
+	  grub_script_lexer_deref (state->lexerstate);
+	}
 ;

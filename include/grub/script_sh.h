@@ -106,6 +106,21 @@ struct grub_script_cmdif
   struct grub_script_cmd *exec_on_false;
 };
 
+/* A for statement.  */
+struct grub_script_cmdfor
+{
+  struct grub_script_cmd cmd;
+
+  /* The name used as looping variable.  */
+  struct grub_script_arg *name;
+
+  /* The words loop iterates over.  */
+  struct grub_script_arglist *words;
+
+  /* The command list executed in each loop.  */
+  struct grub_script_cmd *list;
+};
+
 /* A menu entry generate statement.  */
 struct grub_script_cmd_menuentry
 {
@@ -214,6 +229,12 @@ grub_script_create_cmdif (struct grub_parser_param *state,
 			  struct grub_script_cmd *exec_on_false);
 
 struct grub_script_cmd *
+grub_script_create_cmdfor (struct grub_parser_param *state,
+			   struct grub_script_arg *name,
+			   struct grub_script_arglist *words,
+			   struct grub_script_cmd *list);
+
+struct grub_script_cmd *
 grub_script_create_cmdmenu (struct grub_parser_param *state,
 			    struct grub_script_arglist *arglist,
 			    char *sourcecode,
@@ -261,6 +282,7 @@ void grub_script_yyerror (struct grub_parser_param *, char const *);
 grub_err_t grub_script_execute_cmdline (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdblock (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdif (struct grub_script_cmd *cmd);
+grub_err_t grub_script_execute_cmdfor (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_menuentry (struct grub_script_cmd *cmd);
 
 /* Execute any GRUB pre-parsed command or script.  */
