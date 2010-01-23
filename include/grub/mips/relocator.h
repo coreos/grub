@@ -21,6 +21,7 @@
 
 #include <grub/types.h>
 #include <grub/err.h>
+#include <grub/relocator.h>
 
 struct grub_relocator32_state
 {
@@ -30,10 +31,8 @@ struct grub_relocator32_state
   int jumpreg;
 };
 
-void *grub_relocator32_alloc (grub_size_t size);
-grub_err_t grub_relocator32_boot (void *relocator, grub_uint32_t dest,
-				  struct grub_relocator32_state state);
-void *grub_relocator32_realloc (void *relocator, grub_size_t size);
-void grub_relocator32_free (void *relocator);
+grub_err_t
+grub_relocator32_boot (struct grub_relocator *rel,
+		       struct grub_relocator32_state state);
 
 #endif /* ! GRUB_RELOCATOR_CPU_HEADER */

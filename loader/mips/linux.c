@@ -42,6 +42,7 @@ static int loaded;
 
 static grub_size_t linux_size;
 
+static struct grub_relocator *relocator;
 static grub_uint8_t *playground;
 static grub_addr_t target_addr, entry_addr;
 static int linux_argc;
@@ -60,15 +61,7 @@ grub_linux_boot (void)
   state.gpr[5] = target_addr + argv_off;
   state.gpr[6] = target_addr + envp_off;
   state.jumpreg = 1;
-  grub_relocator32_boot (playground, target_addr, state);
-
-  return GRUB_ERR_NONE;
-}
-
-static grub_err_t
-grub_linux_release_mem (void)
-{
-  grub_relocator32_free (playground);
+  grub_relocator32_boot (relocator, state);
 
   return GRUB_ERR_NONE;
 }
@@ -76,14 +69,12 @@ grub_linux_release_mem (void)
 static grub_err_t
 grub_linux_unload (void)
 {
-  grub_err_t err;
-
-  err = grub_linux_release_mem ();
+  grub_relocator_unload (relocator);
   grub_dl_unref (my_mod);
 
   loaded = 0;
 
-  return err;
+  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
@@ -91,6 +82,7 @@ grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
 {
   Elf32_Addr base;
   int extraoff;
+  grub_err_t err;
 
   /* Linux's entry point incorrectly contains a virtual address.  */
   entry_addr = elf->ehdr.ehdr32.e_entry & ~ELF32_LOADMASK;
@@ -105,9 +97,14 @@ grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   extraoff = linux_size;
   linux_size += extra_size;
 
-  playground = grub_relocator32_alloc (linux_size);
-  if (!playground)
+  relocator = grub_relocator_new ();
+  if (!relocator)
     return grub_errno;
+
+  err = grub_relocator_alloc_chunk_addr (relocator, (void **) &playground,
+					 target_addr, linux_size);
+  if (err)
+    return err;
 
   *extra_mem = playground + extraoff;
 
@@ -135,6 +132,7 @@ grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
 {
   Elf64_Addr base;
   int extraoff;
+  grub_err_t err;
 
   /* Linux's entry point incorrectly contains a virtual address.  */
   entry_addr = elf->ehdr.ehdr64.e_entry & ~ELF64_LOADMASK;
@@ -149,9 +147,14 @@ grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   extraoff = linux_size;
   linux_size += extra_size;
 
-  playground = grub_relocator32_alloc (linux_size);
-  if (!playground)
+  relocator = grub_relocator_new ();
+  if (!relocator)
     return grub_errno;
+
+  err = grub_relocator_alloc_chunk_addr (relocator, (void **) &playground,
+					 target_addr, linux_size);
+  if (err)
+    return err;
 
   *extra_mem = playground + extraoff;
 
@@ -322,7 +325,9 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_file_t file = 0;
   grub_ssize_t size;
-  grub_size_t overhead;
+  void *initrd_src;
+  grub_addr_t initrd_dest;
+  grub_err_t err;
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "No initrd specified");
@@ -339,19 +344,20 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   size = grub_file_size (file);
 
-  overhead = ALIGN_UP (target_addr + linux_size + 0x10000, 0x10000)
-    - (target_addr + linux_size);
+  err = grub_relocator_alloc_chunk_align (relocator, &initrd_src, 
+					  &initrd_dest,
+					  target_addr + linux_size + 0x10000,
+					  (0xffffffff - size) + 1,
+					  size, 0x10000,
+					  GRUB_RELOCATOR_PREFERENCE_NONE);
 
-  playground = grub_relocator32_realloc (playground,
-					 linux_size + overhead + size);
-
-  if (!playground)
+  if (err)
     {
       grub_file_close (file);
-      return grub_errno;
+      return err;
     }
 
-  if (grub_file_read (file, playground + linux_size + overhead, size) != size)
+  if (grub_file_read (file, initrd_src, size) != size)
     {
       grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
       grub_file_close (file);
@@ -361,7 +367,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   grub_snprintf ((char *) playground + rd_addr_arg_off,
 		 sizeof ("rd_start=0xXXXXXXXXXXXXXXXX"), "rd_start=0x%llx",
-		(unsigned long long) target_addr + linux_size  + overhead);
+		(unsigned long long) initrd_dest);
   ((grub_uint32_t *) (playground + argv_off))[linux_argc]
     = target_addr + rd_addr_arg_off;
   linux_argc++;

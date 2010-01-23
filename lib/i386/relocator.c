@@ -169,7 +169,7 @@ grub_relocator32_boot (struct grub_relocator *rel,
 
   grub_memmove (src, &grub_relocator32_start, RELOCATOR_SIZEOF (32));
 
-  err = grub_relocator_prepare_relocs (rel, target, &relst);
+  err = grub_relocator_prepare_relocs (rel, target, &relst, NULL);
   if (err)
     return err;
 
@@ -209,7 +209,7 @@ grub_relocator16_boot (struct grub_relocator *rel,
 
   grub_memmove (src, &grub_relocator16_start, RELOCATOR_SIZEOF (16));
 
-  err = grub_relocator_prepare_relocs (rel, target, &relst);
+  err = grub_relocator_prepare_relocs (rel, target, &relst, NULL);
   if (err)
     return err;
 
@@ -248,7 +248,7 @@ grub_relocator64_boot (struct grub_relocator *rel,
 
   grub_memmove (src, &grub_relocator64_start, RELOCATOR_SIZEOF (64));
 
-  err = grub_relocator_prepare_relocs (rel, target, &relst);
+  err = grub_relocator_prepare_relocs (rel, target, &relst, NULL);
   if (err)
     return err;
 

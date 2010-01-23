@@ -20,6 +20,7 @@
 #include <grub/relocator_private.h>
 #include <grub/mm_private.h>
 #include <grub/misc.h>
+#include <grub/cache.h>
 
 /* TODO: use more efficient data structures if necessary.  */
 /* FIXME: implement unload. */
@@ -605,7 +606,7 @@ grub_relocator_unload (struct grub_relocator *rel)
 
 grub_err_t
 grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
-			       grub_addr_t *relstart)
+			       grub_addr_t *relstart, grub_size_t *relsize)
 {
   grub_addr_t rels;
   grub_addr_t rels0;
@@ -621,6 +622,9 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
 			rel->relocators_size, &rels0, 1, 1))
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
   rels = rels0;
+
+  if (relsize)
+    *relsize = rel->relocators_size;
 
   grub_dprintf ("relocator", "Relocs allocated\n");
   
@@ -698,6 +702,8 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
 				      sorted[j].size);
 	  rels += grub_relocator_forward_size;
 	}
+      if (sorted[j].src == sorted[j].target)
+	grub_arch_sync_caches ((void *) sorted[j].src, sorted[j].size);
     }
   grub_cpu_relocator_jumper ((void *) rels, addr);
   *relstart = rels0;

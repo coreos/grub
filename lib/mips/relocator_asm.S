@@ -20,7 +20,7 @@
 	
 	.p2align	4	/* force 16-byte alignment */
 
-VARIABLE (grub_relocator32_forward_start)
+VARIABLE (grub_relocator_forward_start)
 	move $a0, $9
 	move $a1, $10
 
@@ -34,9 +34,9 @@ copycont1:
 
 #include "../../kern/mips/cache_flush.S"
 
-VARIABLE (grub_relocator32_forward_end)
+VARIABLE (grub_relocator_forward_end)
 
-VARIABLE (grub_relocator32_backward_start)
+VARIABLE (grub_relocator_backward_start)
 	move $a0, $9
 	move $a1, $10
 
@@ -55,4 +55,4 @@ copycont2:
 
 #include "../../kern/mips/cache_flush.S"
 
-VARIABLE (grub_relocator32_backward_end)
+VARIABLE (grub_relocator_backward_end)
