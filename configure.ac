@@ -438,18 +438,25 @@ AC_SUBST(TARGET_ASFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)
 AC_SUBST(TARGET_LDFLAGS)
 
-# Check for libgcc symbols (must be performed before we add -nostdlib to LDFLAGS)
-AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x)
-
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"
+if test "x$TARGET_APPLE_CC" = x1 ; then
+CFLAGS="$TARGET_CFLAGS -nostdlib -Wno-error"
+else
+CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wl,--defsym,abort=main -Wno-error"
+fi
+CPPFLAGS="$TARGET_CPPFLAGS"
+LDFLAGS="$TARGET_LDFLAGS"
+LIBS=-lgcc
+
+# Check for libgcc symbols
+AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x)
+
 if test "x$TARGET_APPLE_CC" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib"
 else
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100"
 fi
-CPPFLAGS="$TARGET_CPPFLAGS"
-LDFLAGS="$TARGET_LDFLAGS"
 
 # Defined in aclocal.m4.
 grub_PROG_TARGET_CC

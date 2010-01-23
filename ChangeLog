@@ -1,3 +1,7 @@
+2010-01-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Check for libgcc symbols with -nostdlib.
+
 2010-01-23  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* acinclude.m4: Quote underquoted AC_DEFUN parameters.
