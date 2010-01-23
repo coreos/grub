@@ -300,6 +300,6 @@ int grub_script_function_call (grub_script_function_t func,
 			       int argc, char **args);
 
 char **
-grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist);
+grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count);
 
 #endif /* ! GRUB_NORMAL_PARSER_HEADER */

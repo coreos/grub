@@ -37,7 +37,7 @@ grub_script_execute_cmd (struct grub_script_cmd *cmd)
 
 /* Expand arguments in ARGLIST into multiple arguments.  */
 char **
-grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist)
+grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count)
 {
   int i;
   int oom;
@@ -162,7 +162,6 @@ grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist)
       if (!empty)
 	push (0);
     }
-  push (0); /* Ensure argv[argc] == 0.  */
 
   if (oom)
     {
@@ -171,6 +170,9 @@ grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist)
       grub_free (argv);
       argv = 0;
     }
+
+  if (argv)
+    *count = argc - 1;
 
   return argv;
 }
@@ -190,7 +192,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   char *cmdname;
 
   /* Lookup the command.  */
-  args = grub_script_execute_arglist_to_argv (cmdline->arglist);
+  args = grub_script_execute_arglist_to_argv (cmdline->arglist, &argcount);
   if (!args)
     return grub_errno;
 
@@ -227,9 +229,6 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 	  return 0;
 	}
     }
-
-  /* Count argv size.  */
-  for (argcount = 0; args[argcount]; argcount++);
 
   /* Execute the GRUB command or function.  */
   if (grubcmd)
@@ -296,11 +295,9 @@ grub_script_execute_menuentry (struct grub_script_cmd *cmd)
 
   if (cmd_menuentry->arglist)
     {
-      args = grub_script_execute_arglist_to_argv (cmd_menuentry->arglist);
+      args = grub_script_execute_arglist_to_argv (cmd_menuentry->arglist, &argcount);
       if (!args)
 	return grub_errno;
-
-      for (argcount = 0; args[argcount]; argcount++);
     }
 
   grub_normal_add_menu_entry (argcount, (const char **) args,
