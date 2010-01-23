@@ -130,7 +130,7 @@ grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *c
 	    {
 	    case GRUB_SCRIPT_ARG_TYPE_VAR:
 	      value = grub_env_get (arg->str);
-	      while (*value && (ptr = move_to_next(&value)))
+	      while (value && *value && (ptr = move_to_next(&value)))
 		{
 		  empty = 0;
 		  append (ptr, value - ptr);
