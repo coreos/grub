@@ -323,7 +323,7 @@ grub_script_yylex (union YYSTYPE *value,
 	  str = yyget_text (lexerstate->yyscanner);
 	  type = GRUB_SCRIPT_ARG_TYPE_TEXT;
 	}
-      /* grub_printf ("tok %u, txt [%s] size %u\n", token, str, lexerstate->size); */
+      grub_dprintf("lexer", "token %u text [%s]\n", token, str);
 
       value->arg = grub_script_arg_add (parserstate, value->arg, type, str);
     }
