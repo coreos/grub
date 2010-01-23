@@ -109,7 +109,7 @@ grub_ofconsole_getcharwidth (grub_uint32_t c __attribute__((unused)))
 static void
 grub_ofconsole_setcolorstate (grub_term_color_state state)
 {
-  char *setcol;
+  char setcol[256];
   int fg;
   int bg;
 
@@ -128,10 +128,8 @@ grub_ofconsole_setcolorstate (grub_term_color_state state)
       return;
     }
 
-  setcol = grub_xasprintf ("\e[3%dm\e[4%dm", fg, bg);
-  if (setcol)
-    grub_ofconsole_writeesc (setcol);
-  grub_free (setcol);
+  grub_snprintf (setcol, sizeof (setcol), "\e[3%dm\e[4%dm", fg, bg);
+  grub_ofconsole_writeesc (setcol);
 }
 
 static void
@@ -288,14 +286,12 @@ grub_ofconsole_gotoxy (grub_uint8_t x, grub_uint8_t y)
 {
   if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_ANSI))
     {
-      char *s;
+      char s[256];
       grub_curr_x = x;
       grub_curr_y = y;
 
-      s = grub_xasprintf ("\e[%d;%dH", y + 1, x + 1);
-      if (s)
-	grub_ofconsole_writeesc (s);
-      grub_free (s);
+      grub_snprintf (s, sizeof (s), "\e[%d;%dH", y + 1, x + 1);
+      grub_ofconsole_writeesc (s);
     }
   else
     {
