@@ -139,7 +139,7 @@ append_newline (const char *src)
   grub_size_t len;
 
   len = grub_strlen (src);
-  line = grub_malloc (len + 1);
+  line = grub_malloc (len + 2);
   if (!line)
     return 0;
 

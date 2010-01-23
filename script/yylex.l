@@ -128,13 +128,13 @@ typedef grub_size_t yy_size_t;
 BLANK           [ \t]
 COMMENT         ^[ \t]*#.*$
 
-CHAR            [^|&;()<> \t\n\'\"]
+CHAR            [^|&$;()<> \t\n\'\"\\]
 DIGITS          [[:digit:]]+
 NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
 
 ESC             \\.
 VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|$\?|$\{\?\}
-DQSTR           \"([^\"]|\\\")*\"
+DQSTR           \"([^\\\"]|{ESC})*\"
 SQSTR           \'[^\']*\'
 WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 
@@ -190,6 +190,7 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 {WORD}          {
                   RECORD;
                   /* resplit yytext */
+		  grub_dprintf ("lexer", "word: [%s]\n", yytext);
                   yypush_buffer_state (YY_CURRENT_BUFFER, yyscanner);
                   if (yy_scan_string (yytext, yyscanner))
                     {
@@ -208,7 +209,6 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
                   grub_script_yyerror (yyextra, "unrecognized token");
                   return GRUB_PARSER_TOKEN_BAD;
                 }
-
 
  /* Split word into multiple args */
 
