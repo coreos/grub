@@ -80,8 +80,6 @@
 %type <cmd> commands1 menuentry statement
 
 %pure-parser
-%error-verbose
-
 %lex-param   { struct grub_parser_param *state };
 %parse-param { struct grub_parser_param *state };
 
