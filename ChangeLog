@@ -1,3 +1,7 @@
+2010-01-23  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* acinclude.m4: Quote underquoted AC_DEFUN parameters.
+
 2010-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* term/ieee1275/ofconsole.c (grub_ofconsole_setcolorstate): Allocate on
