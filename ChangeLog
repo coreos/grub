@@ -1,3 +1,8 @@
+2010-01-24  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/mips/linux.c (grub_cmd_linux, grub_cmd_initrd): Don't
+	capitalize error strings.
+
 2010-01-24  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* util/grub.d/10_hurd.in: Add a recovery mode.
