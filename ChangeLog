@@ -1,3 +1,7 @@
+2010-01-24  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/grub.d/10_hurd.in: Add a recovery mode.
+
 2010-01-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Check for libgcc symbols with -nostdlib.
