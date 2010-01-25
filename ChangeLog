@@ -1,3 +1,8 @@
+2010-01-25  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* configure.ac: Check for `limits.h'.
+	* util/misc.c: Include `<limits.h>' (for PATH_MAX).
+
 2010-01-24  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* loader/mips/linux.c (grub_cmd_linux, grub_cmd_initrd): Don't
