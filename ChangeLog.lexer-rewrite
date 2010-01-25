@@ -1,3 +1,8 @@
+2010-01-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* script/yylex.l: Accept parenthesis as part of word.
+	* script/parser.y: Remove GRUB_PARSER_TOKEN_{LPAR,RPAR} tokens.
+
 2010-01-10  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* conf/any-emu.rmk: Build rule updates.
