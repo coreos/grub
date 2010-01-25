@@ -340,7 +340,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
       is_partition = linux_find_partition (dev, disk->partition->start);
 
     /* Open the partition.  */
-    grub_dprintf ("hostdisk", "opening the device `%s' in open_device()", dev);
+    grub_dprintf ("hostdisk", "opening the device `%s' in open_device()\n", dev);
     fd = open (dev, flags);
     if (fd < 0)
       {
