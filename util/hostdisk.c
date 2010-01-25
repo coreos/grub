@@ -97,6 +97,10 @@ struct hd_geometry
 # include <sys/disk.h>
 #endif
 
+#ifdef HAVE_DEVICE_MAPPER
+# include <libdevmapper.h>
+#endif
+
 struct
 {
   char *drive;
@@ -253,6 +257,115 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   return GRUB_ERR_NONE;
 }
 
+#ifdef HAVE_DEVICE_MAPPER
+static int
+device_is_mapped (const char *dev)
+{
+  struct stat st;
+
+  if (stat (dev, &st) < 0)
+    return 0;
+
+  return dm_is_dm_major (major (st.st_rdev));
+}
+#endif /* HAVE_DEVICE_MAPPER */
+
+#if defined(__linux__) || defined(__CYGWIN__)
+static grub_disk_addr_t
+find_partition_start (const char *dev)
+{
+  int fd;
+  struct hd_geometry hdg;
+
+#ifdef HAVE_DEVICE_MAPPER
+  if (device_is_mapped (dev)) {
+    struct dm_task *task = NULL;
+    grub_uint64_t start, length;
+    char *target_type, *params, *space;
+    grub_disk_addr_t partition_start;
+
+    /* If any device-mapper operation fails, we fall back silently to
+       HDIO_GETGEO.  */
+    task = dm_task_create (DM_DEVICE_TABLE);
+    if (! task)
+      {
+	grub_dprintf ("hostdisk", "dm_task_create failed\n");
+	goto devmapper_fail;
+      }
+
+    if (! dm_task_set_name (task, dev))
+      {
+	grub_dprintf ("hostdisk", "dm_task_set_name failed\n");
+	goto devmapper_fail;
+      }
+
+    if (! dm_task_run (task))
+      {
+	grub_dprintf ("hostdisk", "dm_task_run failed\n");
+	goto devmapper_fail;
+      }
+
+    dm_get_next_target (task, NULL, &start, &length, &target_type, &params);
+    if (! target_type)
+      {
+	grub_dprintf ("hostdisk", "no dm target\n");
+	goto devmapper_fail;
+      }
+    if (strcmp (target_type, "linear") != 0)
+      {
+	grub_dprintf ("hostdisk", "ignoring dm target %s (not linear)\n",
+		      target_type);
+	goto devmapper_fail;
+      }
+    if (! params)
+      {
+	grub_dprintf ("hostdisk", "no dm params\n");
+	goto devmapper_fail;
+      }
+
+    /* The params string for a linear target looks like this:
+         DEVICE-NAME START-SECTOR
+       Parse this out.  */
+    space = strchr (params, ' ');
+    if (! space)
+      goto devmapper_fail;
+    errno = 0;
+    partition_start = strtoull (space + 1, NULL, 10);
+    if (errno == 0)
+      {
+	grub_dprintf ("hostdisk", "dm %s starts at %llu\n",
+		      dev, partition_start);
+	dm_task_destroy (task);
+	return partition_start;
+      }
+
+devmapper_fail:
+    if (task)
+      dm_task_destroy (task);
+  }
+#endif /* HAVE_DEVICE_MAPPER */
+
+  fd = open (dev, O_RDONLY);
+  if (fd == -1)
+    {
+      grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' while attempting to get disk geometry", dev);
+      return 0;
+    }
+
+  if (ioctl (fd, HDIO_GETGEO, &hdg))
+    {
+      grub_error (GRUB_ERR_BAD_DEVICE,
+		  "cannot get geometry of `%s'", dev);
+      close (fd);
+      return 0;
+    }
+
+  close (fd);
+
+  return hdg.start;
+}
+#endif /* __linux__ || __CYGWIN__ */
+
 #ifdef __linux__
 static int
 linux_find_partition (char *dev, unsigned long sector)
@@ -284,22 +397,20 @@ linux_find_partition (char *dev, unsigned long sector)
   for (i = 1; i < 10000; i++)
     {
       int fd;
-      struct hd_geometry hdg;
+      grub_disk_addr_t start;
 
       sprintf (p, format, i);
+
       fd = open (real_dev, O_RDONLY);
       if (fd == -1)
 	return 0;
-
-      if (ioctl (fd, HDIO_GETGEO, &hdg))
-	{
-	  close (fd);
-	  return 0;
-	}
-
       close (fd);
 
-      if (hdg.start == sector)
+      start = find_partition_start (real_dev);
+      /* We don't care about errors here.  */
+      grub_errno = GRUB_ERR_NONE;
+
+      if (start == sector)
 	{
 	  strcpy (dev, real_dev);
 	  return 1;
@@ -699,7 +810,7 @@ make_device_name (int drive, int dos_part, int bsd_part)
 }
 
 static char *
-convert_system_partition_to_system_disk (const char *os_dev)
+convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 {
 #if defined(__linux__)
   char *path = xmalloc (PATH_MAX);
@@ -817,6 +928,83 @@ convert_system_partition_to_system_disk (const char *os_dev)
 	  p[4] = '\0';
 	  return path;
 	}
+
+#ifdef HAVE_DEVICE_MAPPER
+      /* If this is a DM-RAID device.  */
+      if ((strncmp ("mapper/", p, 7) == 0))
+	{
+	  static struct dm_tree *tree = NULL;
+	  uint32_t maj, min;
+	  struct dm_tree_node *node, *child;
+	  void *handle;
+	  const char *node_uuid, *child_uuid, *child_name;
+
+	  if (! tree)
+	    tree = dm_tree_create ();
+
+	  if (! tree)
+	    {
+	      grub_dprintf ("hostdisk", "dm_tree_create failed\n");
+	      return NULL;
+	    }
+
+	  maj = major (st->st_rdev);
+	  min = minor (st->st_rdev);
+	  if (! dm_tree_add_dev (tree, maj, min))
+	    {
+	      grub_dprintf ("hostdisk", "dm_tree_add_dev failed\n");
+	      return NULL;
+	    }
+
+	  node = dm_tree_find_node (tree, maj, min);
+	  if (! node)
+	    {
+	      grub_dprintf ("hostdisk", "dm_tree_find_node failed\n");
+	      return NULL;
+	    }
+	  node_uuid = dm_tree_node_get_uuid (node);
+	  if (! node_uuid)
+	    {
+	      grub_dprintf ("hostdisk", "%s has no DM uuid\n", path);
+	      return NULL;
+	    }
+	  else if (strncmp (node_uuid, "DMRAID-", 7) != 0)
+	    {
+	      grub_dprintf ("hostdisk", "%s is not DM-RAID\n", path);
+	      return NULL;
+	    }
+
+	  handle = NULL;
+	  /* Counter-intuitively, device-mapper refers to the disk-like
+	     device containing a DM-RAID partition device as a "child" of
+	     the partition device.  */
+	  child = dm_tree_next_child (&handle, node, 0);
+	  if (! child)
+	    {
+	      grub_dprintf ("hostdisk", "%s has no DM children\n", path);
+	      return NULL;
+	    }
+	  child_uuid = dm_tree_node_get_uuid (child);
+	  if (! child_uuid)
+	    {
+	      grub_dprintf ("hostdisk", "%s child has no DM uuid\n", path);
+	      return NULL;
+	    }
+	  else if (strncmp (child_uuid, "DMRAID-", 7) != 0)
+	    {
+	      grub_dprintf ("hostdisk", "%s child is not DM-RAID\n", path);
+	      return NULL;
+	    }
+	  child_name = dm_tree_node_get_name (child);
+	  if (! child_name)
+	    {
+	      grub_dprintf ("hostdisk", "%s child has no DM name\n", path);
+	      return NULL;
+	    }
+
+	  return xasprintf ("/dev/mapper/%s", child_name);
+	}
+#endif /* HAVE_DEVICE_MAPPER */
     }
 
   return path;
@@ -872,12 +1060,12 @@ device_is_wholedisk (const char *os_dev)
 #endif
 
 static int
-find_system_device (const char *os_dev)
+find_system_device (const char *os_dev, struct stat *st)
 {
   unsigned int i;
   char *os_disk;
 
-  os_disk = convert_system_partition_to_system_disk (os_dev);
+  os_disk = convert_system_partition_to_system_disk (os_dev, st);
   if (! os_disk)
     return -1;
 
@@ -911,7 +1099,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       return 0;
     }
 
-  drive = find_system_device (os_dev);
+  drive = find_system_device (os_dev, &st);
   if (drive < 0)
     {
       grub_error (GRUB_ERR_BAD_DEVICE,
@@ -919,8 +1107,8 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       return 0;
     }
 
-  if (grub_strcmp (os_dev, convert_system_partition_to_system_disk (os_dev))
-      == 0)
+  if (grub_strcmp (os_dev,
+		   convert_system_partition_to_system_disk (os_dev, &st)) == 0)
     return make_device_name (drive, -1, -1);
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
@@ -942,8 +1130,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
   {
     char *name;
     grub_disk_t disk;
-    int fd;
-    struct hd_geometry hdg;
+    grub_disk_addr_t start;
     int dos_part = -1;
     int bsd_part = -1;
     auto int find_partition (grub_disk_t disk,
@@ -973,7 +1160,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 			      partition->index, partition->start);
 	  }
 
-	if (hdg.start == partition->start)
+	if (start == partition->start)
 	  {
 	    if (pcdata)
 	      {
@@ -996,28 +1183,16 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     if (MAJOR (st.st_rdev) == FLOPPY_MAJOR)
       return name;
 
-    fd = open (os_dev, O_RDONLY);
-    if (fd == -1)
+    start = find_partition_start (os_dev);
+    if (grub_errno != GRUB_ERR_NONE)
       {
-	grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' while attempting to get disk geometry", os_dev);
 	free (name);
 	return 0;
       }
 
-    if (ioctl (fd, HDIO_GETGEO, &hdg))
-      {
-	grub_error (GRUB_ERR_BAD_DEVICE,
-		    "cannot get geometry of `%s'", os_dev);
-	close (fd);
-	free (name);
-	return 0;
-      }
+    grub_util_info ("%s starts from %lu", os_dev, start);
 
-    close (fd);
-
-    grub_util_info ("%s starts from %lu", os_dev, hdg.start);
-
-    if (hdg.start == 0 && device_is_wholedisk (os_dev))
+    if (start == 0 && device_is_wholedisk (os_dev))
       return name;
 
     grub_util_info ("opening the device %s", name);
