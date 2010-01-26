@@ -66,6 +66,8 @@
 /* The size of a block list used in the kernel startup code.  */
 #define GRUB_BOOT_MACHINE_LIST_SIZE	12
 
+#define GRUB_BOOT_MACHINE_PXE_DL	0x7f
+
 #ifndef ASM_FILE
 
 /* This is the blocklist used in the diskboot image.  */

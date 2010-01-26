@@ -1,3 +1,14 @@
+2010-01-26  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/pc/boot.h (GRUB_BOOT_MACHINE_PXE_DL): New macro.
+
+	* boot/i386/pc/pxeboot.S: Include `<grub/machine/boot.h>'.
+	(_start): Macroify `0x7F'.
+
+	* kern/i386/pc/init.c: Include `<grub/machine/boot.h>'.
+	(make_install_device): Use "(pxe)" as fallback prefix when booting
+	via PXE.
+
 2010-01-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Reset LIBS after check for libgcc symbols.

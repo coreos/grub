@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include <grub/kernel.h>
 #include <grub/mm.h>
+#include <grub/machine/boot.h>
 #include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
@@ -62,22 +63,28 @@ make_install_device (void)
     {
       /* No hardcoded root partition - make it from the boot drive and the
 	 partition number encoded at the install time.  */
-      grub_snprintf (dev, sizeof (dev),
-		    "(%cd%u", (grub_boot_drive & 0x80) ? 'h' : 'f',
-		    grub_boot_drive & 0x7f);
-      ptr += grub_strlen (ptr);
+      if (grub_boot_drive == GRUB_BOOT_MACHINE_PXE_DL)
+	{
+	  grub_strcpy (dev, "(pxe");
+	  ptr += sizeof ("(pxe") - 1;
+	}
+      else
+	{
+	  grub_snprintf (dev, sizeof (dev),
+			 "(%cd%u", (grub_boot_drive & 0x80) ? 'h' : 'f',
+			 grub_boot_drive & 0x7f);
+	  ptr += grub_strlen (ptr);
 
-      if (grub_install_dos_part >= 0)
-	grub_snprintf (ptr, sizeof (dev) - (ptr - dev),
-		       ",%u", grub_install_dos_part + 1);
+	  if (grub_install_dos_part >= 0)
+	    grub_snprintf (ptr, sizeof (dev) - (ptr - dev),
+			   ",%u", grub_install_dos_part + 1);
+	  ptr += grub_strlen (ptr);
 
-      ptr += grub_strlen (ptr);
-
-      if (grub_install_bsd_part >= 0)
-	grub_snprintf (ptr, sizeof (dev) - (ptr - dev), ",%c",
-		       grub_install_bsd_part + 'a');
-
-      ptr += grub_strlen (ptr);
+	  if (grub_install_bsd_part >= 0)
+	    grub_snprintf (ptr, sizeof (dev) - (ptr - dev), ",%c",
+			   grub_install_bsd_part + 'a');
+	  ptr += grub_strlen (ptr);
+	}
 
       grub_snprintf (ptr, sizeof (dev) - (ptr - dev), ")%s", grub_prefix);
       grub_strcpy (grub_prefix, dev);
