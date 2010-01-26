@@ -41,6 +41,8 @@ usage (int status)
     printf ("\
 Usage: %s [OPTIONS] SYMBOL-NAME\n\
 \n\
+Convert a binary file to a C header.\n\
+\n\ 
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
 \n\

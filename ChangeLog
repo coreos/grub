@@ -1,5 +1,10 @@
 2010-01-26  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/bin2h.c (usage): Make --help actually explain what `grub-bin2h'
+	does.
+
+2010-01-26  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* include/grub/i386/pc/boot.h (GRUB_BOOT_MACHINE_PXE_DL): New macro.
 
 	* boot/i386/pc/pxeboot.S: Include `<grub/machine/boot.h>'.
