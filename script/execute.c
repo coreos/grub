@@ -323,7 +323,7 @@ grub_script_execute_cmdwhile (struct grub_script_cmd *cmd)
   result = 0;
   do {
     cond = grub_script_execute_cmd (cmdwhile->cond);
-    if ((cmdwhile->until && !cond) || (!cmdwhile->until && cond))
+    if (cmdwhile->until ? !cond : cond)
       break;
 
     result = grub_script_execute_cmd (cmdwhile->list);
