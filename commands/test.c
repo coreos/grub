@@ -412,8 +412,7 @@ grub_cmd_test (grub_command_t cmd __attribute__ ((unused)),
   if (argc >= 1 && grub_strcmp (args[argc - 1], "]") == 0)
     argc--;
 
-  return test_parse (args, &argn, argc) ? GRUB_ERR_NONE
-    : grub_error (GRUB_ERR_TEST_FAILURE, "false");
+  return test_parse (args, &argn, argc) ? 0 : 1;
 }
 
 static grub_command_t cmd_1, cmd_2;

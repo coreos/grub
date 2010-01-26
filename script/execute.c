@@ -26,13 +26,24 @@
 #include <grub/lib/arg.h>
 #include <grub/normal.h>
 
+/* Max digits for a char is 3 (0xFF is 255), similarly for an int it
+   is sizeof (int) * 3, and one extra for a possible -ve sign.  */
+#define ERRNO_DIGITS_MAX  (sizeof (int) * 3 + 1)
+
 static grub_err_t
 grub_script_execute_cmd (struct grub_script_cmd *cmd)
 {
+  int ret;
+  char errnobuf[ERRNO_DIGITS_MAX + 1];
+
   if (cmd == 0)
     return 0;
 
-  return cmd->exec (cmd);
+  ret = cmd->exec (cmd);
+
+  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", ret);
+  grub_env_set ("?", errnobuf);
+  return ret;
 }
 
 /* Expand arguments in ARGLIST into multiple arguments.  */
@@ -188,7 +199,6 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   grub_err_t ret = 0;
   int argcount = 0;
   grub_script_function_t func = 0;
-  char errnobuf[18];
   char *cmdname;
 
   /* Lookup the command.  */
@@ -222,11 +232,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 	      grub_env_set (assign, eq);
 	    }
 	  grub_free (assign);
-
-	  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", grub_errno);
-	  grub_env_set ("?", errnobuf);
-
-	  return 0;
+	  return grub_errno;
 	}
     }
 
@@ -241,9 +247,6 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
     grub_free (args[i]);
   grub_free (args);
 
-  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", ret);
-  grub_env_set ("?", errnobuf);
-
   return ret;
 }
 
@@ -251,13 +254,14 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 grub_err_t
 grub_script_execute_cmdblock (struct grub_script_cmd *cmd)
 {
+  int ret = 0;
   struct grub_script_cmdblock *cmdblock = (struct grub_script_cmdblock *) cmd;
 
   /* Loop over every command and execute it.  */
   for (cmd = cmdblock->cmdlist; cmd; cmd = cmd->next)
-    grub_script_execute_cmd (cmd);
+    ret = grub_script_execute_cmd (cmd);
 
-  return 0;
+  return ret;
 }
 
 /* Execute an if statement.  */

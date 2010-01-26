@@ -34,7 +34,7 @@ grub_cmd_false (struct grub_command *cmd __attribute__ ((unused)),
 		int argc __attribute__ ((unused)),
 		char *argv[] __attribute__ ((unused)))
 {
-  return grub_error (GRUB_ERR_TEST_FAILURE, "false");
+  return 1;
 }
 
 static grub_command_t cmd_true, cmd_false;

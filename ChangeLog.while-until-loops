@@ -13,3 +13,8 @@
 	* util/grub-script-check.c (grub_script_execute_cmdwhile): New
 	function.
 
+	* tests/grub_script_while1.in: New testcase.
+	* conf/tests.rmk: New testcase make rule.
+
+	* commands/true.c (grub_cmd_false): Remove printing error message.
+	* commands/test.c (grub_cmd_test): Likewise.
