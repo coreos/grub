@@ -1,3 +1,7 @@
+2010-01-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Reset LIBS after check for libgcc symbols.
+
 2010-01-25  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/hostdisk.c (open_device): Add trailing newline to debug

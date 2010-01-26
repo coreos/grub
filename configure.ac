@@ -457,6 +457,7 @@ CFLAGS="$TARGET_CFLAGS -nostdlib"
 else
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100"
 fi
+LIBS=""
 
 # Defined in aclocal.m4.
 grub_PROG_TARGET_CC
