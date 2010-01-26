@@ -1,6 +1,7 @@
-2010-01-25  Colin Watson  <cjwatson@ubuntu.com>
+2010-01-26  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac: Check for Linux device-mapper support.
+
 	* util/hostdisk.c (device_is_mapped): New function.
 	(find_partition_start): New function, partly broken out from
 	linux_find_partition and grub_util_biosdisk_get_grub_dev but with
@@ -14,3 +15,12 @@
 	(grub_util_biosdisk_get_grub_dev): Pass stat result to
 	find_system_device and convert_system_partition_to_system_disk.  Use
 	find_partition_start.
+
+	* conf/common.rmk (grub_mkdevicemap_SOURCES): Add kern/env.c,
+	kern/err.c, kern/list.c, and kern/misc.c.
+	* util/deviceiter.c [__linux__]: Define MINOR.
+	(grub_util_iterate_devices): Add support for DM-RAID disk devices.
+	* util/mkdevicemap.c (grub_putchar): New function.
+	(grub_getkey): New function.
+	(grub_refresh): New function.
+	(main): Set debug=all if -v -v is used.
