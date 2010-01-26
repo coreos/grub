@@ -1,0 +1,15 @@
+2010-01-26  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	While and until loops support to GRUB script.
+
+	* include/grub/script_sh.h (grub_script_cmdwhile): New struct.
+	(grub_script_create_cmdwhile): New function prototype.
+	(grub_script_execute_cmdwhile): New function prototype.
+	* script/execute.c (grub_script_execute_cmdwhile): New function.
+	* script/parser.y (command): New commands.
+	(whilecmd): New grammar rule.
+	(untilcmd): New grammar rule.
+	* script/script.c (grub_script_create_cmdwhile): New function.
+	* util/grub-script-check.c (grub_script_execute_cmdwhile): New
+	function.
+
