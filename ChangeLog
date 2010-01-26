@@ -23847,7 +23847,7 @@
 
 	* genmk.rb (PModule#rule): Make sure to get only symbol names
 	from the output of nm.
-	Reported by Robert Millan <zeratul2@wanadoo.es>.
+	Reported by Robert Millan <rmh.grub@aybabtu.com>.
 
 2003-09-25  Yoshinori K. Okuji  <okuji@enbug.org>
 
