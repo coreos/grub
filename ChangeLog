@@ -1,3 +1,12 @@
+2010-01-25  Carles Pina i Estany  <carles@pina.cat>
+
+	* font/font.c: Include `grub/fontformat.h.
+	Remove font file format constants.
+	(grub_font_load): Use the new macros.
+	* include/grub/fontformat.h: New file.
+	* util/grub-mkfont.c: Include `grub/fontformat.c'.
+	(write_font_pf2): Use the new macros.
+
 2010-01-26  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/bin2h.c (usage): Make --help actually explain what `grub-bin2h'

@@ -20,6 +20,7 @@
 #include <grub/types.h>
 #include <grub/util/misc.h>
 #include <grub/i18n.h>
+#include <grub/fontformat.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -392,9 +393,10 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
   offset = 0;
 
   leng = grub_cpu_to_be32 (4);
-  grub_util_write_image ("FILE", 4, file);
+  grub_util_write_image (FONT_FORMAT_SECTION_NAMES_FILE,
+  			 sizeof(FONT_FORMAT_SECTION_NAMES_FILE) - 1, file);
   grub_util_write_image ((char *) &leng, 4, file);
-  grub_util_write_image ("PFF2", 4, file);
+  grub_util_write_image (FONT_FORMAT_PFF2_MAGIC, 4, file);
   offset += 12;
 
   if (! font_info->name)
@@ -416,20 +418,25 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
   font_name = xasprintf ("%s %s %d", font_info->name, &style_name[1],
 			 font_info->size);
 
-  write_string_section ("NAME", font_name, &offset, file);
-  write_string_section ("FAMI", font_info->name, &offset, file);
-  write_string_section ("WEIG",
+  write_string_section (FONT_FORMAT_SECTION_NAMES_FONT_NAME,
+  			font_name, &offset, file);
+  write_string_section (FONT_FORMAT_SECTION_NAMES_FAMILY,
+  			font_info->name, &offset, file);
+  write_string_section (FONT_FORMAT_SECTION_NAMES_WEIGHT,
 			(font_info->style & FT_STYLE_FLAG_BOLD) ?
 			"bold" : "normal",
 			&offset, file);
-  write_string_section ("SLAN",
+  write_string_section (FONT_FORMAT_SECTION_NAMES_SLAN,
 			(font_info->style & FT_STYLE_FLAG_ITALIC) ?
 			"italic" : "normal",
 			&offset, file);
 
-  write_be16_section ("PTSZ", font_info->size, &offset, file);
-  write_be16_section ("MAXW", font_info->max_width, &offset, file);
-  write_be16_section ("MAXH", font_info->max_height, &offset, file);
+  write_be16_section (FONT_FORMAT_SECTION_NAMES_POINT_SIZE,
+  		      font_info->size, &offset, file);
+  write_be16_section (FONT_FORMAT_SECTION_NAMES_MAX_CHAR_WIDTH,
+  		      font_info->max_width, &offset, file);
+  write_be16_section (FONT_FORMAT_SECTION_NAMES_MAX_CHAR_HEIGHT,
+  		      font_info->max_height, &offset, file);
 
   if (! font_info->desc)
     {
@@ -447,8 +454,10 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 	font_info->asce = font_info->max_y;
     }
 
-  write_be16_section ("ASCE", font_info->asce, &offset, file);
-  write_be16_section ("DESC", font_info->desc, &offset, file);
+  write_be16_section (FONT_FORMAT_SECTION_NAMES_ASCENT,
+  		      font_info->asce, &offset, file);
+  write_be16_section (FONT_FORMAT_SECTION_NAMES_DESCENT,
+  		      font_info->desc, &offset, file);
 
   if (font_verbosity > 0)
     {
@@ -479,7 +488,9 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
     printf ("Number of glyph: %d\n", num);
 
   leng = grub_cpu_to_be32 (num * 9);
-  grub_util_write_image ("CHIX", 4, file);
+  grub_util_write_image (FONT_FORMAT_SECTION_NAMES_CHAR_INDEX,
+  			 sizeof(FONT_FORMAT_SECTION_NAMES_CHAR_INDEX) - 1,
+			 file);
   grub_util_write_image ((char *) &leng, 4, file);
   offset += 8 + num * 9 + 8;
 
@@ -495,7 +506,8 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
     }
 
   leng = 0xffffffff;
-  grub_util_write_image ("DATA", 4, file);
+  grub_util_write_image (FONT_FORMAT_SECTION_NAMES_DATA,
+  			 sizeof(FONT_FORMAT_SECTION_NAMES_DATA) - 1, file);
   grub_util_write_image ((char *) &leng, 4, file);
 
   for (cur = font_info->glyph; cur; cur = cur->next)

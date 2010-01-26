@@ -26,6 +26,7 @@
 #include <grub/types.h>
 #include <grub/video.h>
 #include <grub/bitmap.h>
+#include <grub/fontformat.h>
 
 #ifdef USE_ASCII_FAILBACK
 #include "ascii.h"
@@ -88,19 +89,6 @@ struct font_file_section
   /* Set by open_section() on EOF.  */
   int eof;
 };
-
-/* Font file format constants.  */
-static const char pff2_magic[4] = { 'P', 'F', 'F', '2' };
-static const char section_names_file[4] = { 'F', 'I', 'L', 'E' };
-static const char section_names_font_name[4] = { 'N', 'A', 'M', 'E' };
-static const char section_names_point_size[4] = { 'P', 'T', 'S', 'Z' };
-static const char section_names_weight[4] = { 'W', 'E', 'I', 'G' };
-static const char section_names_max_char_width[4] = { 'M', 'A', 'X', 'W' };
-static const char section_names_max_char_height[4] = { 'M', 'A', 'X', 'H' };
-static const char section_names_ascent[4] = { 'A', 'S', 'C', 'E' };
-static const char section_names_descent[4] = { 'D', 'E', 'S', 'C' };
-static const char section_names_char_index[4] = { 'C', 'H', 'I', 'X' };
-static const char section_names_data[4] = { 'D', 'A', 'T', 'A' };
 
 /* Replace unknown glyphs with a rounded question mark.  */
 static grub_uint8_t unknown_glyph_bitmap[] =
@@ -460,7 +448,8 @@ grub_font_load (const char *filename)
 #if FONT_DEBUG >= 3
   grub_printf("opened FILE section\n");
 #endif
-  if (grub_memcmp (section.name, section_names_file, 4) != 0)
+  if (grub_memcmp (section.name, FONT_FORMAT_SECTION_NAMES_FILE,
+  		   sizeof(FONT_FORMAT_SECTION_NAMES_FILE) - 1) != 0)
     {
       grub_error (GRUB_ERR_BAD_FONT,
                   "font file format error: 1st section must be FILE");
@@ -489,7 +478,7 @@ grub_font_load (const char *filename)
   grub_printf("read magic ok\n");
 #endif
 
-  if (grub_memcmp (magic, pff2_magic, 4) != 0)
+  if (grub_memcmp (magic, FONT_FORMAT_PFF2_MAGIC, 4) != 0)
     {
       grub_error (GRUB_ERR_BAD_FONT, "invalid font magic %x %x %x %x",
                   magic[0], magic[1], magic[2], magic[3]);
@@ -529,18 +518,22 @@ grub_font_load (const char *filename)
                   section.name[2], section.name[3]);
 #endif
 
-      if (grub_memcmp (section.name, section_names_font_name, 4) == 0)
+      if (grub_memcmp (section.name, FONT_FORMAT_SECTION_NAMES_FONT_NAME,
+      		       sizeof(FONT_FORMAT_SECTION_NAMES_FONT_NAME) - 1) == 0)
         {
           font->name = read_section_as_string (&section);
           if (!font->name)
             goto fail;
         }
-      else if (grub_memcmp (section.name, section_names_point_size, 4) == 0)
+      else if (grub_memcmp (section.name,
+      			    FONT_FORMAT_SECTION_NAMES_POINT_SIZE,
+			    sizeof(FONT_FORMAT_SECTION_NAMES_POINT_SIZE) - 1) == 0)
         {
           if (read_section_as_short (&section, &font->point_size) != 0)
             goto fail;
         }
-      else if (grub_memcmp (section.name, section_names_weight, 4) == 0)
+      else if (grub_memcmp (section.name, FONT_FORMAT_SECTION_NAMES_WEIGHT,
+      			    sizeof(FONT_FORMAT_SECTION_NAMES_WEIGHT) - 1) == 0)
         {
           char *wt;
           wt = read_section_as_string (&section);
@@ -553,32 +546,42 @@ grub_font_load (const char *filename)
             font->weight = FONT_WEIGHT_BOLD;
           grub_free (wt);
         }
-      else if (grub_memcmp (section.name, section_names_max_char_width, 4) == 0)
+      else if (grub_memcmp (section.name,
+      	       FONT_FORMAT_SECTION_NAMES_MAX_CHAR_WIDTH,
+	       sizeof(FONT_FORMAT_SECTION_NAMES_MAX_CHAR_WIDTH) - 1) == 0)
         {
           if (read_section_as_short (&section, &font->max_char_width) != 0)
             goto fail;
         }
-      else if (grub_memcmp (section.name, section_names_max_char_height, 4) == 0)
+      else if (grub_memcmp (section.name,
+      	       FONT_FORMAT_SECTION_NAMES_MAX_CHAR_HEIGHT,
+	       sizeof(FONT_FORMAT_SECTION_NAMES_MAX_CHAR_HEIGHT) - 1) == 0)
         {
           if (read_section_as_short (&section, &font->max_char_height) != 0)
             goto fail;
         }
-      else if (grub_memcmp (section.name, section_names_ascent, 4) == 0)
+      else if (grub_memcmp (section.name,
+      	       FONT_FORMAT_SECTION_NAMES_ASCENT,
+	       sizeof(FONT_FORMAT_SECTION_NAMES_ASCENT) - 1) == 0)
         {
           if (read_section_as_short (&section, &font->ascent) != 0)
             goto fail;
         }
-      else if (grub_memcmp (section.name, section_names_descent, 4) == 0)
+      else if (grub_memcmp (section.name, FONT_FORMAT_SECTION_NAMES_DESCENT,
+      			    sizeof(FONT_FORMAT_SECTION_NAMES_DESCENT) - 1) == 0)
         {
           if (read_section_as_short (&section, &font->descent) != 0)
             goto fail;
         }
-      else if (grub_memcmp (section.name, section_names_char_index, 4) == 0)
+      else if (grub_memcmp (section.name,
+      			    FONT_FORMAT_SECTION_NAMES_CHAR_INDEX,
+			    sizeof(FONT_FORMAT_SECTION_NAMES_CHAR_INDEX) - 1) == 0)
         {
           if (load_font_index (file, section.length, font) != 0)
             goto fail;
         }
-      else if (grub_memcmp (section.name, section_names_data, 4) == 0)
+      else if (grub_memcmp (section.name, FONT_FORMAT_SECTION_NAMES_DATA,
+      			    sizeof(FONT_FORMAT_SECTION_NAMES_DATA) - 1) == 0)
         {
           /* When the DATA section marker is reached, we stop reading.  */
           break;
