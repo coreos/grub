@@ -1,5 +1,10 @@
 2010-01-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/disk.c (grub_disk_read): Fix offset computation when reading
+	last sectors.
+
+2010-01-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* commands/hashsum.c (hash_file): Avoid possible stack overflow by
 	having a 4KiB and not 32KiB buffer size.
 
