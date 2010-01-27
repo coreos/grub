@@ -1,5 +1,10 @@
 2010-01-27  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/hostfs.c: Include `<errno.h>'.
+	(grub_hostfs_read): Handle errors from fseeko() and fread().
+
+2010-01-27  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* kern/disk.c (grub_disk_read): Fix bug that would cause infinite
 	loop when using read hooks on files whose size isn't sector-aligned.
 
