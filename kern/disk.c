@@ -464,12 +464,14 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	      if (disk->read_hook)
 		while (size)
 		  {
+		    grub_size_t to_read = (size > GRUB_DISK_SECTOR_SIZE) ? GRUB_DISK_SECTOR_SIZE : size;
 		    (disk->read_hook) (sector, real_offset,
-				       ((size > GRUB_DISK_SECTOR_SIZE)
-					? GRUB_DISK_SECTOR_SIZE
-					: size));
+				       to_read);
+		    if (grub_errno != GRUB_ERR_NONE)
+		      goto finish;
+
 		    sector++;
-		    size -= GRUB_DISK_SECTOR_SIZE - real_offset;
+		    size -= to_read - real_offset;
 		    real_offset = 0;
 		  }
 

@@ -1,5 +1,10 @@
 2010-01-27  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* kern/disk.c (grub_disk_read): Fix bug that would cause infinite
+	loop when using read hooks on files whose size isn't sector-aligned.
+
+2010-01-27  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Remove unused parameter.
 
 	* fs/iso9660.c (struct grub_iso9660_data): Remove `length' parameter.
