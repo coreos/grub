@@ -1,3 +1,8 @@
+2010-01-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/hashsum.c (hash_file): Avoid possible stack overflow by
+	having a 4KiB and not 32KiB buffer size.
+
 2010-01-27  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/hostfs.c: Include `<errno.h>'.
