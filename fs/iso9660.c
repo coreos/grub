@@ -136,7 +136,6 @@ struct grub_iso9660_data
   struct grub_iso9660_primary_voldesc voldesc;
   grub_disk_t disk;
   unsigned int first_sector;
-  unsigned int length;
   int rockridge;
   int susp_skip;
   int joliet;
@@ -744,7 +743,6 @@ grub_iso9660_open (struct grub_file *file, const char *name)
     goto fail;
 
   data->first_sector = foundnode->blk;
-  data->length = foundnode->size;
 
   file->data = data;
   file->size = foundnode->size;

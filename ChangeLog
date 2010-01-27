@@ -1,5 +1,12 @@
 2010-01-27  Robert Millan  <rmh.grub@aybabtu.com>
 
+	Remove unused parameter.
+
+	* fs/iso9660.c (struct grub_iso9660_data): Remove `length' parameter.
+	(grub_iso9660_open): Remove initialization of `data->length'.
+
+2010-01-27  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* util/grub-fstest.c (fstest): Rewrite allocation, fixing a few
 	memleak conditions.
 
