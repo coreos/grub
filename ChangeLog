@@ -1,3 +1,8 @@
+2010-01-28  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* include/grub/script_sh.h (sourcecode): Add const qualifier.
+	* util/grub-script-check.c (getline): Fix empty lines case.
+
 2010-01-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* normal/cmdline.c (grub_cmdline_get): Fix completion in the middle
