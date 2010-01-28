@@ -1,3 +1,10 @@
+2010-01-28  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (check): Exit with fail status when one of the tests
+	fails.
+	* tests/example_functional_test.c (example_test): Fix reversed assert.
+	* tests/example_unit_test.c (example_test): Likewise.
+
 2010-01-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub.d/10_linux.in: This script does not use any of the
