@@ -1,3 +1,8 @@
+2010-01-28  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* include/grub/script_sh.h (sourcecode): Add const qualifier.
+	* util/grub-script-check.c (getline): Fix empty lines case.
+
 2010-01-28  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* Makefile.in (check): Exit with fail status when one of the tests
