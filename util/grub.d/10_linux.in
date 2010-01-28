@@ -22,7 +22,6 @@ bindir=@bindir@
 libdir=@libdir@
 . ${libdir}/grub/grub-mkconfig_lib
 
-. ${bindir}/gettext.sh
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR=@localedir@
 

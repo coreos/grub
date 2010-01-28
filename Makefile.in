@@ -473,23 +473,21 @@ distcheck: dist
 
 check: all $(UNIT_TESTS) $(FUNCTIONAL_TESTS) $(SCRIPTED_TESTS)
 	@list="$(UNIT_TESTS)"; \
+	set -e; \
 	for file in $$list; do \
 	  $(builddir)/$$file; \
 	done
 	@list="$(FUNCTIONAL_TESTS)"; \
+	set -e; \
 	for file in $$list; do \
 	  mod=`basename $$file .mod`; \
 	  echo "insmod functional_test; insmod $$mod; functional_test" \
 	    | $(builddir)/grub-shell; \
 	done
 	@list="$(SCRIPTED_TESTS)"; \
+	set -e; \
 	for file in $$list; do \
-	  echo "$$file:"; \
-	  if $(builddir)/$$file; then \
-	    echo "$$file: PASS"; \
-	  else \
-	    echo "$$file: FAIL"; \
-	  fi; \
+	  $(builddir)/$$file; \
 	done
 
 .SUFFIX:

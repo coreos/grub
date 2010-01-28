@@ -3,6 +3,21 @@
 	* include/grub/script_sh.h (sourcecode): Add const qualifier.
 	* util/grub-script-check.c (getline): Fix empty lines case.
 
+2010-01-28  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* Makefile.in (check): Exit with fail status when one of the tests
+	fails.
+	* tests/example_functional_test.c (example_test): Fix reversed assert.
+	* tests/example_unit_test.c (example_test): Likewise.
+
+2010-01-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/10_linux.in: This script does not use any of the
+	contents of gettext.sh, only the external command `gettext', so stop
+	sourcing it.  (Moreover, gettext.sh isn't necessarily installed in
+	the same prefix as GRUB.)
+	* util/grub.d/10_kfreebsd.in: Likewise.
+
 2010-01-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* normal/cmdline.c (grub_cmdline_get): Fix completion in the middle
