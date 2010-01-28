@@ -1,3 +1,7 @@
+2010-01-28  Christian Schmitt  <chris@ilovelinux.de>
+
+        * util/ieee1275/grub-install.in: Fix nvsetenv arguments.
+
 2010-01-28  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* include/grub/script_sh.h (sourcecode): Add const qualifier.
