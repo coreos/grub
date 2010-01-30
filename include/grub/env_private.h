@@ -1,7 +1,6 @@
-/* lvm.c - LVM support for GRUB utils.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005,2006,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,36 +16,31 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* We only support LVM on Linux.  */
-#ifdef __linux__
+#ifndef GRUB_ENV_PRIVATE_HEADER
+#define GRUB_ENV_PRIVATE_HEADER	1
 
-#include <grub/util/misc.h>
-#include <grub/util/lvm.h>
+#include <grub/env.h>
 
-#include <string.h>
-#include <sys/stat.h>
+/* The size of the hash table.  */
+#define	HASHSZ	13
 
-#define LVM_DEV_MAPPER_STRING "/dev/mapper/"
-
-int
-grub_util_lvm_isvolume (char *name)
+/* A hashtable for quick lookup of variables.  */
+struct grub_env_context
 {
-  char *devname;
-  struct stat st;
-  int err;
+  /* A hash table for variables.  */
+  struct grub_env_var *vars[HASHSZ];
 
-  devname = xmalloc (strlen (name) + sizeof (LVM_DEV_MAPPER_STRING));
+  /* One level deeper on the stack.  */
+  struct grub_env_context *prev;
+};
 
-  strcpy (devname, LVM_DEV_MAPPER_STRING);
-  strcpy (devname + sizeof(LVM_DEV_MAPPER_STRING) - 1, name);
+/* This is used for sorting only.  */
+struct grub_env_sorted_var
+{
+  struct grub_env_var *var;
+  struct grub_env_sorted_var *next;
+};
 
-  err = stat (devname, &st);
-  free (devname);
+extern struct grub_env_context *EXPORT_VAR(grub_current_context);
 
-  if (err)
-    return 0;
-  else
-    return 1;
-}
-
-#endif /* ! __linux__ */
+#endif /* ! GRUB_ENV_PRIVATE_HEADER */

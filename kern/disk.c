@@ -441,7 +441,7 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 
 	      grub_errno = GRUB_ERR_NONE;
 
-	      num = ((size + GRUB_DISK_SECTOR_SIZE - 1)
+	      num = ((size + real_offset + pos + GRUB_DISK_SECTOR_SIZE - 1)
 		     >> GRUB_DISK_SECTOR_BITS);
 
 	      p = grub_realloc (tmp_buf, num << GRUB_DISK_SECTOR_BITS);
@@ -458,18 +458,20 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 		  goto finish;
 		}
 
-	      grub_memcpy (buf, tmp_buf + real_offset, size);
+	      grub_memcpy (buf, tmp_buf + pos + real_offset, size);
 
 	      /* Call the read hook, if any.  */
 	      if (disk->read_hook)
 		while (size)
 		  {
+		    grub_size_t to_read = (size > GRUB_DISK_SECTOR_SIZE) ? GRUB_DISK_SECTOR_SIZE : size;
 		    (disk->read_hook) (sector, real_offset,
-				       ((size > GRUB_DISK_SECTOR_SIZE)
-					? GRUB_DISK_SECTOR_SIZE
-					: size));
+				       to_read);
+		    if (grub_errno != GRUB_ERR_NONE)
+		      goto finish;
+
 		    sector++;
-		    size -= GRUB_DISK_SECTOR_SIZE - real_offset;
+		    size -= to_read - real_offset;
 		    real_offset = 0;
 		  }
 

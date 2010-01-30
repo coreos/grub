@@ -26,7 +26,7 @@ grub_pci_make_address (grub_pci_device_t dev, int reg)
 {
   grub_pci_address_t ret;
   ret.dev = dev;
-  ret.pos = reg << 2;
+  ret.pos = reg;
   return ret;
 }
 

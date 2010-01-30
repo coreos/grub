@@ -33,7 +33,7 @@ kernel_img_HEADERS = cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
 	ieee1275/ieee1275.h machine/kernel.h machine/memory.h \
-	list.h handler.h command.h i18n.h mm_private.h
+	list.h handler.h command.h i18n.h env_private.h mm_private.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x10000,-Bstatic
@@ -54,7 +54,7 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/ieee1275/grub-install.in
 
 # Modules.
-pkglib_MODULES = halt.mod reboot.mod suspend.mod serial.mod	\
+pkglib_MODULES = halt.mod reboot.mod suspend.mod	\
 	nand.mod memdisk.mod pci.mod lspci.mod datetime.mod	\
 	date.mod datehook.mod lsmmap.mod mmap.mod
 
@@ -84,11 +84,6 @@ reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For serial.mod.
-serial_mod_SOURCES = term/serial.c
-serial_mod_CFLAGS = $(COMMON_CFLAGS)
-serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For nand.mod.
 nand_mod_SOURCES = disk/ieee1275/nand.c

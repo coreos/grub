@@ -577,14 +577,14 @@ grub_freebsd_boot (void)
   }
 
   grub_memset (&bi, 0, sizeof (bi));
-  bi.bi_version = FREEBSD_BOOTINFO_VERSION;
-  bi.bi_size = sizeof (bi);
+  bi.version = FREEBSD_BOOTINFO_VERSION;
+  bi.length = sizeof (bi);
 
   grub_bsd_get_device (&biosdev, &unit, &slice, &part);
   bootdev = (FREEBSD_B_DEVMAGIC + ((slice + 1) << FREEBSD_B_SLICESHIFT) +
 	     (unit << FREEBSD_B_UNITSHIFT) + (part << FREEBSD_B_PARTSHIFT));
 
-  bi.bi_bios_dev = biosdev;
+  bi.boot_device = biosdev;
 
   p_size = 0;
   grub_env_iterate (iterate_env_count);
@@ -629,7 +629,7 @@ grub_freebsd_boot (void)
     {
       *(p++) = 0;
 
-      bi.bi_envp = p_target;
+      bi.environment = p_target;
     }
 
   if (is_elf_kernel)
@@ -655,9 +655,9 @@ grub_freebsd_boot (void)
 
 	    case FREEBSD_MODINFO_METADATA | FREEBSD_MODINFOMD_ENVP:
 	      if (is_64bit)
-		*(grub_uint64_t *) p_tag = bi.bi_envp;
+		*(grub_uint64_t *) p_tag = bi.environment;
 	      else
-		*(grub_uint32_t *) p_tag = bi.bi_envp;
+		*(grub_uint32_t *) p_tag = bi.environment;
 	      break;
 
 	    case FREEBSD_MODINFO_METADATA | FREEBSD_MODINFOMD_KERNEND:
@@ -675,12 +675,12 @@ grub_freebsd_boot (void)
 	  p_tag = ALIGN_VAR (p_tag - p) + p;
 	}
 
-      bi.bi_modulep = (p - p0) + p_target;
+      bi.tags = (p - p0) + p_target;
 
       p = (ALIGN_PAGE ((p_tag - p0) + p_target) - p_target) + p0;
     }
 
-  bi.bi_kernend = kern_end;
+  bi.kern_end = kern_end;
 
   grub_video_set_mode ("text", 0, 0);
 
@@ -713,7 +713,7 @@ grub_freebsd_boot (void)
       state.rip = (((grub_uint64_t) entry_hi) << 32) | entry;
 
       stack[0] = entry;
-      stack[1] = bi.bi_modulep;
+      stack[1] = bi.tags;
       stack[2] = kern_end;
       return grub_relocator64_boot (relocator, state, 0, 0x40000000);
     }
@@ -746,7 +746,7 @@ grub_freebsd_boot (void)
       stack[4] = 0;
       stack[5] = 0;
       stack[6] = stack_target + 9 * sizeof (grub_uint32_t);
-      stack[7] = bi.bi_modulep;
+      stack[7] = bi.tags;
       stack[8] = kern_end;
       return grub_relocator32_boot (relocator, state);
     }

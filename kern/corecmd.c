@@ -73,18 +73,6 @@ grub_core_cmd_unset (struct grub_command *cmd __attribute__ ((unused)),
   return 0;
 }
 
-static grub_err_t
-grub_core_cmd_export (struct grub_command *cmd __attribute__ ((unused)),
-		      int argc, char **args)
-{
-  if (argc < 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "no environment variable specified");
-
-  grub_env_export (args[0]);
-  return 0;
-}
-
 /* insmod MODULE */
 static grub_err_t
 grub_core_cmd_insmod (struct grub_command *cmd __attribute__ ((unused)),
@@ -193,8 +181,6 @@ grub_register_core_commands (void)
 			 "[ENVVAR=VALUE]", "Set an environment variable.");
   grub_register_command ("unset", grub_core_cmd_unset,
 			 "ENVVAR", "Remove an environment variable.");
-  grub_register_command ("export", grub_core_cmd_export,
-			 "ENVVAR", "Export a variable.");
   grub_register_command ("ls", grub_core_cmd_ls,
 			 "[ARG]", "List devices or files.");
   grub_register_command ("insmod", grub_core_cmd_insmod,

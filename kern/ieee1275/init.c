@@ -75,10 +75,6 @@ grub_machine_set_prefix (void)
   char *filename;
   char *prefix;
 
-  if (grub_env_get ("prefix"))
-    /* We already set prefix in grub_machine_init().  */
-    return;
-
   if (grub_prefix[0])
     {
       grub_env_set ("prefix", grub_prefix);

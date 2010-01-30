@@ -89,3 +89,25 @@ cat << EOF
 	module		/lib/ld.so.1 exec /hurd/exec '\$(exec-task=task-create)'
 }
 EOF
+
+cat << EOF
+menuentry "${OS} (recovery mode)" {
+EOF
+prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
+cat << EOF
+	echo		$(gettext "Loading GNU Mach ...")
+	multiboot	${kernel} root=device:${GRUB_DEVICE#/dev/} -s
+EOF
+save_default_entry | sed -e "s/^/\t/"
+prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/"
+cat << EOF
+	echo		$(gettext "Loading the Hurd ...")
+	module		/hurd/${hurd_fs}.static ${hurd_fs} \\
+			--multiboot-command-line='\${kernel-command-line}' \\
+			--host-priv-port='\${host-port}' \\
+			--device-master-port='\${device-port}' \\
+			--exec-server-task='\${exec-task}' -T typed '\${root}' \\
+			'\$(task-create)' '\$(task-resume)'
+	module		/lib/ld.so.1 exec /hurd/exec '\$(exec-task=task-create)'
+}
+EOF

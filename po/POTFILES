@@ -79,12 +79,3 @@ term/serial.c
 
 util/grub-mkrawimage.c
 util/i386/pc/grub-setup.c
-
-util/mkisofs/eltorito.c
-util/mkisofs/joliet.c
-util/mkisofs/mkisofs.c
-util/mkisofs/mkisofs.h
-util/mkisofs/multi.c
-util/mkisofs/rock.c
-util/mkisofs/tree.c
-util/mkisofs/write.c
