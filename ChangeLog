@@ -1,5 +1,9 @@
 2010-01-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Fix off-by-one error.
+
+2010-01-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* font/font.c (find_glyph): Check that bmp_idx is available before
 	using it.
 	(grub_font_get_string_width): Never call grub_font_get_glyph_internal

@@ -118,7 +118,7 @@ grub_ofdisk_iterate (int (*hook) (const char *name))
 static char *
 compute_dev_path (const char *name)
 {
-  char *devpath = grub_malloc (grub_strlen (name) + 2);
+  char *devpath = grub_malloc (grub_strlen (name) + 3);
   char *p, c;
 
   if (!devpath)
