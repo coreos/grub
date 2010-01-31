@@ -1,3 +1,10 @@
+2010-01-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* font/font.c (find_glyph): Check that bmp_idx is available before
+	using it.
+	(grub_font_get_string_width): Never call grub_font_get_glyph_internal
+	with (font == NULL).
+
 2010-01-28  Christian Schmitt  <chris@ilovelinux.de>
 
         * util/ieee1275/grub-install.in: Fix nvsetenv arguments.
