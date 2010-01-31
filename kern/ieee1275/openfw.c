@@ -72,7 +72,7 @@ grub_children_iterate (char *devpath,
 
       if (grub_ieee1275_get_property (child, "device_type", childtype,
 				      IEEE1275_MAX_PROP_LEN, &actual))
-	continue;
+	childtype[0] = 0;
 
       if (grub_ieee1275_package_to_path (child, childpath,
 					 IEEE1275_MAX_PATH_LEN, &actual))
@@ -82,7 +82,10 @@ grub_children_iterate (char *devpath,
 				      IEEE1275_MAX_PROP_LEN, &actual))
 	continue;
 
-      fullname = grub_xasprintf ("%s/%s", devpath, childname);
+      if (devpath[0] == '/' && devpath[1] == 0)
+	fullname = grub_xasprintf ("/%s", childname);
+      else
+	fullname = grub_xasprintf ("%s/%s", devpath, childname);
       if (!fullname)
 	{
 	  grub_free (childname);
@@ -99,13 +102,27 @@ grub_children_iterate (char *devpath,
       if (ret)
 	break;
     }
-  while (grub_ieee1275_peer (child, &child));
+  while (grub_ieee1275_peer (child, &child) != -1);
 
   grub_free (childname);
   grub_free (childpath);
   grub_free (childtype);
 
   return ret;
+}
+
+int
+grub_ieee1275_devices_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
+{
+  auto int it_through (struct grub_ieee1275_devalias *alias);
+  int it_through (struct grub_ieee1275_devalias *alias)
+  {
+    if (hook (alias))
+      return 1;
+    return grub_children_iterate (alias->name, it_through);
+  }
+
+  return grub_children_iterate ("/", it_through);
 }
 
 /* Iterate through all device aliases.  This function can be used to

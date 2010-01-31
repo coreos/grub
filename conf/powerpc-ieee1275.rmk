@@ -70,6 +70,11 @@ boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
 boot_mod_CFLAGS = $(COMMON_CFLAGS)
 boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += ieee1275_fb.mod 
+ieee1275_fb_mod_SOURCES = video/ieee1275.c
+ieee1275_fb_mod_CFLAGS = $(COMMON_CFLAGS)
+ieee1275_fb_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For linux.mod.
 linux_mod_SOURCES = loader/powerpc/ieee1275/linux.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
