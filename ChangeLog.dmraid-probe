@@ -1,4 +1,4 @@
-2010-01-26  Colin Watson  <cjwatson@ubuntu.com>
+2010-01-31  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac: Check for Linux device-mapper support.
 
