@@ -668,7 +668,7 @@ find_glyph (const grub_font_t font, grub_uint32_t code)
   table = font->char_index;
 
   /* Use BMP index if possible.  */
-  if (code < 0x10000)
+  if (code < 0x10000 && font->bmp_idx)
     {
       if (font->bmp_idx[code] == 0xffff)
 	return 0;
@@ -942,8 +942,9 @@ grub_font_get_string_width (grub_font_t font, const char *str)
 struct grub_font_glyph *
 grub_font_get_glyph (grub_font_t font, grub_uint32_t code)
 {
-  struct grub_font_glyph *glyph;
-  glyph = grub_font_get_glyph_internal (font, code);
+  struct grub_font_glyph *glyph = 0;
+  if (font)
+    glyph = grub_font_get_glyph_internal (font, code);
   if (glyph == 0)
     {
       glyph = ascii_glyph_lookup (code);
