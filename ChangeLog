@@ -1,3 +1,9 @@
+2010-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_read): Handle non-2048 aligned
+	CDROM reads.
+	(grub_biosdisk_write): Refuse to write to CDROM.
+
 2010-01-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Fix off-by-one error.
