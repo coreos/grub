@@ -1,3 +1,12 @@
+2010-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/hostdisk.c (open_device): Don't use partition device when reading
+	before the partition.
+	(grub_util_biosdisk_read): Don't read from partition and before the
+	partition in single operation.
+	(grub_util_biosdisk_write): Don't write to partition and before the
+	partition in single operation.
+
 2010-02-03  Torsten Landschoff   <torsten@debian.org>
 
 	* kern/disk.c (grub_disk_read): Fix offset computation when reading
