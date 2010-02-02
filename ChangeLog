@@ -1,3 +1,8 @@
+2010-02-03  Torsten Landschoff   <torsten@debian.org>
+
+	* kern/disk.c (grub_disk_read): Fix offset computation when reading
+	last sectors.
+
 2010-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* disk/i386/pc/biosdisk.c (grub_biosdisk_read): Handle non-2048 aligned
