@@ -84,7 +84,7 @@ probe_partmap (grub_disk_t disk)
 {
   if (disk->partition == NULL)
     {
-      grub_util_info ("No partition map found for %s", disk->name);
+      grub_util_info ("no partition map found for %s", disk->name);
       return;
     }
 
@@ -94,6 +94,11 @@ probe_partmap (grub_disk_t disk)
 static int
 probe_raid_level (grub_disk_t disk)
 {
+  /* disk might be NULL in the case of a LVM physical volume with no LVM
+     signature.  Ignore such cases here.  */
+  if (!disk)
+    return -1;
+
   if (disk->dev->id != GRUB_DISK_DEVICE_RAID_ID)
     return -1;
 
@@ -113,17 +118,17 @@ probe (const char *path, char *device_name)
     {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
       if (! grub_util_check_char_device (device_name))
-        grub_util_error ("%s is not a character device.\n", device_name);
+        grub_util_error ("%s is not a character device", device_name);
 #else
       if (! grub_util_check_block_device (device_name))
-        grub_util_error ("%s is not a block device.\n", device_name);
+        grub_util_error ("%s is not a block device", device_name);
 #endif
     }
   else
     device_name = grub_guess_root_device (path);
 
   if (! device_name)
-    grub_util_error ("cannot find a device for %s (is /dev mounted?).\n", path);
+    grub_util_error ("cannot find a device for %s (is /dev mounted?)", path);
 
   if (print == PRINT_DEVICE)
     {
@@ -133,7 +138,7 @@ probe (const char *path, char *device_name)
 
   drive_name = grub_util_get_grub_dev (device_name);
   if (! drive_name)
-    grub_util_error ("Cannot find a GRUB drive for %s.  Check your device.map.\n", device_name);
+    grub_util_error ("cannot find a GRUB drive for %s.  Check your device.map", device_name);
 
   if (print == PRINT_DRIVE)
     {
@@ -309,7 +314,7 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try ``%s --help'' for more information.\n", program_name);
+	     "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
 Usage: %s [OPTION]... [PATH|DEVICE]\n\

@@ -1,0 +1,82 @@
+
+# -*- makefile -*-
+
+COMMON_ASFLAGS += -nostdinc
+COMMON_CFLAGS += -ffreestanding -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
+COMMON_LDFLAGS += -nostdlib
+
+# Used by various components.  These rules need to precede them.
+script/lexer.c_DEPENDENCIES = grub_script.tab.h
+
+# Images.
+
+MOSTLYCLEANFILES += symlist.c kernel_syms.lst
+DEFSYMFILES += kernel_syms.lst
+
+kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h reader.h \
+	symbol.h term.h time.h types.h loader.h partition.h \
+	msdos_partition.h machine/kernel.h handler.h list.h \
+	command.h machine/memory.h cpu/libgcc.h cpu/cache.h i18n.h env_private.h
+
+ifeq ($(platform), yeeloong)
+kernel_img_HEADERS += pci.h
+endif
+
+symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
+	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
+
+kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
+	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
+
+# Scripts.
+sbin_SCRIPTS = 
+bin_SCRIPTS = 
+
+# For grub-mkimage.
+bin_UTILITIES += grub-mkimage
+grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkrawimage.c util/misc.c \
+	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
+grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(LINK_BASE)
+util/grub-mkrawimage.c_DEPENDENCIES = Makefile
+
+# Modules.
+pkglib_MODULES = memdisk.mod \
+	lsmmap.mod
+
+# For boot.mod.
+pkglib_MODULES += boot.mod 
+boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
+boot_mod_CFLAGS = $(COMMON_CFLAGS)
+boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For memdisk.mod.
+memdisk_mod_SOURCES = disk/memdisk.c
+memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
+memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For lsmmap.mod
+lsmmap_mod_SOURCES = commands/lsmmap.c
+lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
+lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For serial.mod.
+pkglib_MODULES += serial.mod
+serial_mod_SOURCES = term/serial.c
+serial_mod_CFLAGS = $(COMMON_CFLAGS)
+serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For relocator.mod.
+pkglib_MODULES += relocator.mod
+relocator_mod_SOURCES = lib/$(target_cpu)/relocator.c lib/$(target_cpu)/relocator_asm.S
+relocator_mod_CFLAGS = $(COMMON_CFLAGS)
+relocator_mod_ASFLAGS = $(COMMON_ASFLAGS)
+relocator_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += linux.mod
+linux_mod_SOURCES = loader/$(target_cpu)/linux.c
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
+linux_mod_ASFLAGS = $(COMMON_ASFLAGS)
+linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+include $(srcdir)/conf/common.mk

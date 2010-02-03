@@ -163,15 +163,15 @@ draw_text (grub_gui_progress_bar_t self)
       grub_video_color_t text_color = grub_gui_map_color (self->text_color);
       int width = self->bounds.width;
       int height = self->bounds.height;
-      char *text = grub_malloc (grub_strlen (self->template) + 10);
+      char *text;
+      text = grub_xasprintf (self->template,
+			     self->value > 0 ? self->value : -self->value);
       if (!text)
 	{
 	  grub_print_error ();
 	  grub_errno = GRUB_ERR_NONE;
 	  return;
 	}
-      grub_sprintf (text, self->template,
-		    self->value > 0 ? self->value : -self->value);
       /* Center the text. */
       int text_width = grub_font_get_string_width (font, text);
       int x = (width - text_width) / 2;

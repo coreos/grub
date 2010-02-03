@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000,2005,2007,2008,2009   Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2005,2007,2008,2009,2010   Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/machine/boot.h>
+
 	.file	"pxeboot.S"
 	.text
 
@@ -28,7 +30,7 @@ _start:
 start:
 
 	/* Use drive number 0x7F for PXE */
-        movb	$0x7F, %dl
+        movb	$GRUB_BOOT_MACHINE_PXE_DL, %dl
 
 	/* Jump to the real world */
 	ljmp	$0, $0x8200

@@ -75,10 +75,6 @@ grub_machine_set_prefix (void)
   char *filename;
   char *prefix;
 
-  if (grub_env_get ("prefix"))
-    /* We already set prefix in grub_machine_init().  */
-    return;
-
   if (grub_prefix[0])
     {
       grub_env_set ("prefix", grub_prefix);
@@ -111,11 +107,12 @@ grub_machine_set_prefix (void)
 	  *lastslash = '\0';
 	  grub_translate_ieee1275_path (filename);
 
-	  newprefix = grub_malloc (grub_strlen (prefix)
-				   + grub_strlen (filename));
-	  grub_sprintf (newprefix, "%s%s", prefix, filename);
-	  grub_free (prefix);
-	  prefix = newprefix;
+	  newprefix = grub_xasprintf ("%s%s", prefix, filename);
+	  if (newprefix)
+	    {
+	      grub_free (prefix);
+	      prefix = newprefix;
+	    }
 	}
     }
 

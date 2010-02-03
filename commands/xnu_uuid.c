@@ -31,8 +31,8 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/command.h>
-#include <grub/crypto.h>
 #include <grub/i18n.h>
+#include <grub/crypto.h>
 
 /* This prefix is used by xnu and boot-132 to hash
    together with volume serial. */
@@ -61,7 +61,7 @@ grub_cmd_xnu_uuid (grub_command_t cmd __attribute__ ((unused)),
   GRUB_MD_MD5->final (&ctx);
   xnu_uuid = GRUB_MD_MD5->read (&ctx);
 
-  grub_sprintf (uuid_string,
+  grub_snprintf (uuid_string, sizeof (uuid_string),
 		"%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
 		(unsigned int) xnu_uuid[0], (unsigned int) xnu_uuid[1],
 		(unsigned int) xnu_uuid[2], (unsigned int) xnu_uuid[3],

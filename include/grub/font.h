@@ -21,6 +21,7 @@
 
 #include <grub/types.h>
 #include <grub/video.h>
+#include <grub/file.h>
 
 /* Forward declaration of opaque structure grub_font.
    Users only pass struct grub_font pointers to the font module functions,

@@ -353,6 +353,7 @@ grub_video_gop_get_info_and_fini (struct grub_video_mode_info *mode_info,
 static struct grub_video_adapter grub_video_gop_adapter =
   {
     .name = "EFI GOP driver",
+    .id = GRUB_VIDEO_DRIVER_EFI_GOP,
 
     .init = grub_video_gop_init,
     .fini = grub_video_gop_fini,

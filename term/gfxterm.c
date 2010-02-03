@@ -30,7 +30,7 @@
 #include <grub/extcmd.h>
 #include <grub/bitmap_scale.h>
 
-#define DEFAULT_VIDEO_MODE "auto"
+#define DEFAULT_VIDEO_MODE	"auto"
 #define DEFAULT_BORDER_WIDTH	10
 
 #define DEFAULT_STANDARD_COLOR  0x07
@@ -98,6 +98,7 @@ struct grub_virtual_screen
   /* Color settings.  */
   grub_video_color_t fg_color;
   grub_video_color_t bg_color;
+  grub_video_color_t bg_color_display;
 
   /* Text buffer for virtual screen.  Contains (columns * rows) number
      of entries.  */
@@ -260,6 +261,8 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
 
   grub_video_set_active_render_target (render_target);
 
+  virtual_screen.bg_color_display = grub_video_map_rgba(0, 0, 0, 0);
+
   /* Clear out text buffer. */
   for (i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
     clear_char (&(virtual_screen.text_buffer[i]));
@@ -364,13 +367,10 @@ grub_gfxterm_init (void)
 			       GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
   else
     {
-      tmp = grub_malloc (grub_strlen (modevar)
-			 + sizeof (DEFAULT_VIDEO_MODE) + 1);
-      if (! tmp)
-        return grub_errno;
-      grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
-      err = grub_video_set_mode (tmp,
-				 GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
+      tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
+      if (!tmp)
+	return grub_errno;
+      err = grub_video_set_mode (tmp, GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
       grub_free (tmp);
     }
 
@@ -432,7 +432,7 @@ redraw_screen_rect (unsigned int x, unsigned int y,
 
       /* If bitmap is smaller than requested blit area, use background
          color.  */
-      color = virtual_screen.bg_color;
+      color = virtual_screen.bg_color_display;
 
       /* Fill right side of the bitmap if needed.  */
       if ((x + width >= bitmap_width) && (y < bitmap_height))
@@ -479,7 +479,7 @@ redraw_screen_rect (unsigned int x, unsigned int y,
   else
     {
       /* Render background layer.  */
-      color = virtual_screen.bg_color;
+      color = virtual_screen.bg_color_display;
       grub_video_fill_rect (color, x, y, width, height);
 
       /* Render text layer as replaced (to get texts background color).  */
@@ -1182,11 +1182,7 @@ static grub_extcmd_t background_image_cmd_handle;
 
 GRUB_MOD_INIT(term_gfxterm)
 {
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
-  grub_term_register_output_active ("gfxterm", &grub_video_term);
-#else
   grub_term_register_output ("gfxterm", &grub_video_term);
-#endif
   background_image_cmd_handle =
     grub_register_extcmd ("background_image",
                           grub_gfxterm_background_image_cmd,

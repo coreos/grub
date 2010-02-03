@@ -17,7 +17,7 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h reader.h \
 	symbol.h term.h time.h types.h powerpc/libgcc.h loader.h partition.h \
 	msdos_partition.h ieee1275/ieee1275.h machine/kernel.h handler.h list.h \
-	command.h i18n.h
+	command.h i18n.h env_private.h
 
 symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
@@ -31,7 +31,7 @@ pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/powerpc/ieee1275/startup.S kern/ieee1275/cmain.c \
 	kern/ieee1275/ieee1275.c kern/main.c kern/device.c 		\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c 	\
+	kern/misc.c kern/mm.c kern/term.c 	\
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/list.c kern/handler.c kern/command.c kern/corecmd.c	\
 	kern/ieee1275/init.c 						\
@@ -61,7 +61,6 @@ pkglib_MODULES = halt.mod \
 	linux.mod \
 	reboot.mod \
 	suspend.mod \
-        multiboot.mod \
 	memdisk.mod \
 	lsmmap.mod
 
@@ -90,13 +89,6 @@ reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For multiboot.mod
-multiboot_mod_SOURCES = loader/ieee1275/multiboot2.c \
-                         loader/multiboot2.c \
-                         loader/multiboot_loader.c
-multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
-multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For memdisk.mod.
 memdisk_mod_SOURCES = disk/memdisk.c

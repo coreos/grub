@@ -92,7 +92,7 @@ find_framebuf (grub_uint32_t *fb_base, grub_uint32_t *line_len)
     {
       grub_pci_address_t addr;
 
-      addr = grub_pci_make_address (dev, 2);
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
       if (grub_pci_read (addr) >> 24 == 0x3)
 	{
 	  int i;
@@ -300,6 +300,7 @@ grub_video_uga_get_info_and_fini (struct grub_video_mode_info *mode_info,
 static struct grub_video_adapter grub_video_uga_adapter =
   {
     .name = "EFI UGA driver",
+    .id = GRUB_VIDEO_DRIVER_EFI_UGA,
 
     .init = grub_video_uga_init,
     .fini = grub_video_uga_fini,

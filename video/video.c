@@ -93,6 +93,14 @@ grub_video_get_info (struct grub_video_mode_info *mode_info)
   return grub_video_adapter_active->get_info (mode_info);
 }
 
+grub_video_driver_id_t
+grub_video_get_driver_id (void)
+{
+  if (! grub_video_adapter_active)
+    return GRUB_VIDEO_DRIVER_NONE;
+  return grub_video_adapter_active->id;
+}
+
 /* Get information about active video mode.  */
 grub_err_t
 grub_video_get_info_and_fini (struct grub_video_mode_info *mode_info,

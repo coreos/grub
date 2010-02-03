@@ -41,13 +41,14 @@ osx_entry() {
         cat << EOF
 menuentry "${LONGNAME} (${2}-bit) (on ${DEVICE})" {
 EOF
+	save_default_entry | sed -e "s/^/\t/"
 	prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
 	cat << EOF
         insmod ${GRUB_VIDEO_BACKEND}
-        do_resume=0
+        set do_resume=0
         if [ /var/vm/sleepimage -nt10 / ]; then
            if xnu_resume /var/vm/sleepimage; then
-             do_resume=1
+             set do_resume=1
            fi
         fi
         if [ \$do_resume == 0 ]; then
@@ -147,6 +148,7 @@ EOF
         cat << EOF
 menuentry "${LLABEL} (on ${DEVICE})" {
 EOF
+	save_default_entry | sed -e "s/^/\t/"
 	if [ -z "${prepare_boot_cache}" ]; then
 	  prepare_boot_cache="$(prepare_grub_to_access_device ${LBOOT} | sed -e "s/^/\t/")"
 	fi
@@ -173,6 +175,7 @@ EOF
       cat << EOF
 menuentry "${LONGNAME} (on ${DEVICE})" {
 EOF
+      save_default_entry | sed -e "s/^/\t/"
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
       grub_device="`${grub_probe} --device ${DEVICE} --target=drive`"
       mach_device="`echo "${grub_device}" | tr -d '()' | tr , s`"

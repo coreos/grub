@@ -22,7 +22,6 @@ bindir=@bindir@
 libdir=@libdir@
 . ${libdir}/grub/grub-mkconfig_lib
 
-. ${bindir}/gettext.sh
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR=@LOCALEDIR@
 
@@ -61,17 +60,28 @@ linux_entry ()
   else
     title="$(gettext "%s, with Linux %s")"
   fi
-  printf "menuentry \"${title}\" ${CLASS} {" ${os} ${version}
+  printf "menuentry \"${title}\" ${CLASS} {\n" "${os}" "${version}"
   save_default_entry | sed -e "s/^/\t/"
+
+  # Use ELILO's generic "efifb" when it's known to be available.
+  # FIXME: We need an interface to select vesafb in case efifb can't be used.
+  if grep -qx "CONFIG_FB_EFI=y" /boot/config-${version} 2> /dev/null ; then
+    cat << EOF
+	set gfxpayload=keep
+EOF
+  fi
+
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
   printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
+	echo	$(printf "$(gettext "Loading Linux %s ...")" ${version})
 	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro ${args}
 EOF
   if test -n "${initrd}" ; then
     cat << EOF
+	echo	$(gettext "Loading initial ramdisk ...")
 	initrd	${rel_dirname}/${initrd}
 EOF
   fi

@@ -30,6 +30,9 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <time.h>
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
 
 #include <grub/kernel.h>
 #include <grub/misc.h>
@@ -60,11 +63,12 @@ grub_util_warn (const char *fmt, ...)
 {
   va_list ap;
 
-  fprintf (stderr, "%s: warn: ", program_name);
+  fprintf (stderr, _("%s: warn:"), program_name);
+  fprintf (stderr, " ");
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   va_end (ap);
-  fputc ('\n', stderr);
+  fprintf (stderr, ".\n");
   fflush (stderr);
 }
 
@@ -75,11 +79,12 @@ grub_util_info (const char *fmt, ...)
     {
       va_list ap;
 
-      fprintf (stderr, "%s: info: ", program_name);
+      fprintf (stderr, _("%s: info:"), program_name);
+      fprintf (stderr, " ");
       va_start (ap, fmt);
       vfprintf (stderr, fmt, ap);
       va_end (ap);
-      fputc ('\n', stderr);
+      fprintf (stderr, ".\n");
       fflush (stderr);
     }
 }
@@ -89,11 +94,12 @@ grub_util_error (const char *fmt, ...)
 {
   va_list ap;
 
-  fprintf (stderr, "%s: error: ", program_name);
+  fprintf (stderr, _("%s: error:"), program_name);
+  fprintf (stderr, " ");
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   va_end (ap);
-  fputc ('\n', stderr);
+  fprintf (stderr, ".\n");
   exit (1);
 }
 
@@ -479,6 +485,19 @@ fail:
 
 #endif /* __MINGW32__ */
 
+char *
+canonicalize_file_name (const char *path)
+{
+  char *ret;
+#ifdef PATH_MAX
+  ret = xmalloc (PATH_MAX);
+  (void) realpath (path, ret);
+#else
+  ret = realpath (path, NULL);
+#endif
+  return ret;
+}
+
 /* This function never prints trailing slashes (so that its output
    can be appended a slash unconditionally).  */
 char *
@@ -491,23 +510,19 @@ make_system_path_relative_to_its_root (const char *path)
   size_t len;
 
   /* canonicalize.  */
-  p = realpath (path, NULL);
+  p = canonicalize_file_name (path);
 
   if (p == NULL)
-    {
-      if (errno != EINVAL)
-	grub_util_error ("failed to get realpath of %s", path);
-      else
-	grub_util_error ("realpath not supporting (path, NULL)");
-    }
+    grub_util_error ("failed to get canonical path of %s", path);
+
   len = strlen (p) + 1;
-  buf = strdup (p);
+  buf = xstrdup (p);
   free (p);
 
   if (stat (buf, &st) < 0)
     grub_util_error ("cannot stat %s: %s", buf, strerror (errno));
 
-  buf2 = strdup (buf);
+  buf2 = xstrdup (buf);
   num = st.st_dev;
 
   /* This loop sets offset to the number of chars of the root
@@ -529,12 +544,16 @@ make_system_path_relative_to_its_root (const char *path)
       /* buf is another filesystem; we found it.  */
       if (st.st_dev != num)
 	{
-	  /* offset == 0 means path given is the mount point.  */
+	  /* offset == 0 means path given is the mount point.
+	     This works around special-casing of "/" in Un*x.  This function never
+	     prints trailing slashes (so that its output can be appended a slash
+	     unconditionally).  Each slash in is considered a preceding slash, and
+	     therefore the root directory is an empty string.  */
 	  if (offset == 0)
 	    {
 	      free (buf);
 	      free (buf2);
-	      return strdup ("/");
+	      return xstrdup ("");
 	    }
 	  else
 	    break;
@@ -551,11 +570,19 @@ make_system_path_relative_to_its_root (const char *path)
 	      buf2[len - 1] = '\0';
 	      len--;
 	    }
-	  return buf2;
+	  if (len > 1)
+	    return buf2;
+	  else
+	    {
+	      /* This means path given is just a backslash.  As above
+		 we have to return an empty string.  */
+	      free (buf2);
+	      return xstrdup ("");
+	    }
 	}
     }
   free (buf);
-  buf3 = strdup (buf2 + offset);
+  buf3 = xstrdup (buf2 + offset);
   free (buf2);
 
   len = strlen (buf3);

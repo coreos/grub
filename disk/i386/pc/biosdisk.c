@@ -56,7 +56,8 @@ grub_biosdisk_call_hook (int (*hook) (const char *name), int drive)
 {
   char name[10];
 
-    grub_sprintf (name, (drive & 0x80) ? "hd%d" : "fd%d", drive & (~0x80));
+  grub_snprintf (name, sizeof (name),
+		 (drive & 0x80) ? "hd%d" : "fd%d", drive & (~0x80));
   return hook (name);
 }
 
@@ -306,8 +307,17 @@ grub_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   while (size)
     {
       grub_size_t len;
+      grub_size_t cdoff = 0;
 
       len = get_safe_sectors (sector, data->sectors);
+
+      if (data->flags & GRUB_BIOSDISK_FLAG_CDROM)
+	{
+	  cdoff = (sector & 3) << GRUB_DISK_SECTOR_BITS;
+	  len = ALIGN_UP (sector + len, 4) - (sector & ~3);
+	  sector &= ~3;
+	}
+
       if (len > size)
 	len = size;
 
@@ -315,7 +325,7 @@ grub_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 			    GRUB_MEMORY_MACHINE_SCRATCH_SEG))
 	return grub_errno;
 
-      grub_memcpy (buf, (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR,
+      grub_memcpy (buf, (void *) (GRUB_MEMORY_MACHINE_SCRATCH_ADDR + cdoff),
 		   len << GRUB_DISK_SECTOR_BITS);
       buf += len << GRUB_DISK_SECTOR_BITS;
       sector += len;
@@ -330,6 +340,9 @@ grub_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
 		     grub_size_t size, const char *buf)
 {
   struct grub_biosdisk_data *data = disk->data;
+
+  if (data->flags & GRUB_BIOSDISK_FLAG_CDROM)
+    return grub_error (GRUB_ERR_IO, "can't write to CDROM");
 
   while (size)
     {

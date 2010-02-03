@@ -166,31 +166,30 @@ print_completion (const char *item, grub_completion_type_t type, int count)
   if (count == 0)
     {
       /* If this is the first time, print a label.  */
-      const char *what;
-
+      
+      grub_puts ("");
       switch (type)
 	{
 	case GRUB_COMPLETION_TYPE_COMMAND:
-	  what = "commands";
+	  grub_puts_ (N_("Possible commands are:"));
 	  break;
 	case GRUB_COMPLETION_TYPE_DEVICE:
-	  what = "devices";
+	  grub_puts_ (N_("Possible devices are:"));
 	  break;
 	case GRUB_COMPLETION_TYPE_FILE:
-	  what = "files";
+	  grub_puts_ (N_("Possible files are:"));
 	  break;
 	case GRUB_COMPLETION_TYPE_PARTITION:
-	  what = "partitions";
+	  grub_puts_ (N_("Possible partitions are:"));
 	  break;
 	case GRUB_COMPLETION_TYPE_ARGUMENT:
-	  what = "arguments";
+	  grub_puts_ (N_("Possible arguments are:"));
 	  break;
 	default:
-	  what = "things";
+	  grub_puts_ (N_("Possible things are:"));
 	  break;
 	}
-
-      grub_printf ("\nPossible %s are:\n", what);
+      grub_puts ("");
     }
 
   if (type == GRUB_COMPLETION_TYPE_PARTITION)
@@ -254,21 +253,20 @@ grub_cmdline_get (const char *prompt)
 
       for (p = buf + pos; p < buf + llen; p++)
 	{
-	  if (cl_term->xpos++ > cl_term->width - 2)
-	    {
-	      grub_putcode ('\n', cl_term->term);
-
-	      cl_term->xpos = 1;
-	      if (cl_term->ypos == (unsigned) (cl_term->height))
-		cl_term->ystart--;
-	      else
-		cl_term->ypos++;
-	    }
-
 	  if (c)
 	    grub_putcode (c, cl_term->term);
 	  else
 	    grub_putcode (*p, cl_term->term);
+	  cl_term->xpos++;
+	  if (cl_term->xpos >= cl_term->width - 1)
+	    {
+	      cl_term->xpos = 0;
+	      if (cl_term->ypos >= (unsigned) (cl_term->height - 1))
+		cl_term->ystart--;
+	      else
+		cl_term->ypos++;
+	      grub_putcode ('\n', cl_term->term);
+	    }
 	}
     }
 
@@ -423,10 +421,13 @@ grub_cmdline_get (const char *prompt)
 	    int restore;
 	    char *insertu8;
 	    char *bufu8;
+	    grub_uint32_t c;
 
+	    c = buf[lpos];
 	    buf[lpos] = '\0';
 
 	    bufu8 = grub_ucs4_to_utf8_alloc (buf, lpos);
+	    buf[lpos] = c;
 	    if (!bufu8)
 	      {
 		grub_print_error ();
@@ -466,8 +467,19 @@ grub_cmdline_get (const char *prompt)
 				       insertlen, 0);
 		if (t > 0)
 		  {
-		    insert[t] = 0;
-		    cl_insert (insert);
+		    if (insert[t-1] == ' ' && buf[lpos] == ' ')
+		      {
+			insert[t-1] = 0;
+			if (t != 1)
+			  cl_insert (insert);
+			lpos++;
+			cl_set_pos_all ();			
+		      }
+		    else
+		      {
+			insert[t] = 0;
+			cl_insert (insert);
+		      }
 		  }
 
 		grub_free (insertu8);
