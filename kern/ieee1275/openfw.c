@@ -135,7 +135,7 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
   /* Find the first property.  */
   aliasname[0] = '\0';
 
-  while (grub_ieee1275_next_property (aliases, aliasname, aliasname))
+  while (grub_ieee1275_next_property (aliases, aliasname, aliasname) > 0)
     {
       grub_ieee1275_phandle_t dev;
       grub_ssize_t pathlen;
