@@ -673,7 +673,6 @@ if test x"$device_mapper_excuse" = x ; then
                 AC_DEFINE([HAVE_DEVICE_MAPPER], [1],
                           [Define to 1 if you have the devmapper library.])],
                [device_mapper_excuse="need devmapper library"])
-  AC_SUBST([LIBDEVMAPPER])
 fi
 
 AC_SUBST(ASFLAGS)
