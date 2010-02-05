@@ -27,9 +27,9 @@ VARIABLE (grub_relocator_forward_start)
 copycont1:	
 	lb $11,0($8)
 	sb $11,0($9)
-	addiu $8, $8, 0x1
-	addiu $9, $9, 0x1
-	addiu $10, $10, 0xffff
+	addiu $8, $8, 1
+	addiu $9, $9, 1
+	addiu $10, $10, -1
 	bne $10, $0, copycont1
 
 #include "../../kern/mips/cache_flush.S"
@@ -43,14 +43,14 @@ VARIABLE (grub_relocator_backward_start)
 	addu $9, $9, $10
 	addu $8, $8, $10
 	/* Backward movsl is implicitly off-by-one.  compensate that.  */
-	addiu $9, $9, 0xffff
-	addiu $8, $8, 0xffff
+	addiu $9, $9, -1
+	addiu $8, $8, -1
 copycont2:	
 	lb $11,0($8)
 	sb $11,0($9)
-	addiu $8, $8, 0xffff
-	addiu $9, $9, 0xffff
-	addiu $10, 0xffff
+	addiu $8, $8, -1
+	addiu $9, $9, -1
+	addiu $10, $10, -1
 	bne $10, $0, copycont2
 
 #include "../../kern/mips/cache_flush.S"
