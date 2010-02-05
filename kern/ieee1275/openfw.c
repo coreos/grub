@@ -374,7 +374,7 @@ grub_ieee1275_encode_devname (const char *path)
   char *partition = grub_ieee1275_parse_args (path, GRUB_PARSE_PARTITION);
   char *encoding;
 
-  if (partition)
+  if (partition && partition[0])
     {
       unsigned int partno = grub_strtoul (partition, 0, 0);
 

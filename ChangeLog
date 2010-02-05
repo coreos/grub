@@ -1,5 +1,10 @@
 2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/ieee1275/openfw.c (grub_ieee1275_encode_devname): Support whole
+	disk devices.
+
+2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/ieee1275/openfw.c (grub_devalias_iterate): Stop iterating on
 	error.
 
