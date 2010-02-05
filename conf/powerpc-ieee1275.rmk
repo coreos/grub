@@ -100,4 +100,11 @@ lsmmap_mod_SOURCES = commands/lsmmap.c
 lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
 lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For relocator.mod.
+pkglib_MODULES += relocator.mod
+relocator_mod_SOURCES = lib/$(target_cpu)/relocator.c lib/relocator.c lib/$(target_cpu)/relocator_asm.S
+relocator_mod_CFLAGS = $(COMMON_CFLAGS)
+relocator_mod_ASFLAGS = $(COMMON_ASFLAGS)
+relocator_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 include $(srcdir)/conf/common.mk
