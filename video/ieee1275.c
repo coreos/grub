@@ -152,6 +152,7 @@ grub_video_ieee1275_setup (unsigned int width, unsigned int height,
     {
       grub_dprintf ("video", "IEEE1275: Setting mode %dx%d\n", width, height);
       /* TODO. */
+      return grub_error (GRUB_ERR_IO, "can't set mode %dx%d", width, height);
     }
   
   err = grub_video_ieee1275_fill_mode_info (dev, &framebuffer.mode_info);
