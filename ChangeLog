@@ -1,5 +1,11 @@
 2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/misc.c (grub_utf8_to_ucs4): Don't eat valid characters preceeded
+	by non-valid ones.
+	* kern/term.c (grub_putchar): Likewise.
+
+2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* partmap/sun.c (sun_partition_map_iterate): Restructure flow to fix
 	buggy hook call and memory leak.
 
