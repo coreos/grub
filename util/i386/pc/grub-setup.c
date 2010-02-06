@@ -116,15 +116,10 @@ setup (const char *dir,
   int NESTED_FUNC_ATTR find_usable_region_msdos (grub_disk_t disk __attribute__ ((unused)),
 						 const grub_partition_t p)
     {
-      struct grub_msdos_partition *pcdata = p->data;
-
       /* There's always an embed region, and it starts right after the MBR.  */
       embed_region.start = 1;
 
-      /* For its end offset, include as many dummy partitions as we can.  */
-      if (! grub_msdos_partition_is_empty (pcdata->dos_type)
-	  && ! grub_msdos_partition_is_bsd (pcdata->dos_type)
-	  && embed_region.end > p->start)
+      if (embed_region.end > p->start)
 	embed_region.end = p->start;
 
       return 0;
@@ -289,22 +284,19 @@ setup (const char *dir,
       /* Embed information about the installed location.  */
       if (root_dev->disk->partition)
 	{
-	  if (strcmp (root_dev->disk->partition->partmap->name,
-		      "part_msdos") == 0)
-	    {
-	      struct grub_msdos_partition *pcdata =
-		root_dev->disk->partition->data;
-	      dos_part = pcdata->dos_part;
-	      bsd_part = pcdata->bsd_part;
-	    }
-	  else if (strcmp (root_dev->disk->partition->partmap->name,
-			   "part_gpt") == 0)
-	    {
-	      dos_part = root_dev->disk->partition->index;
-	      bsd_part = -1;
-	    }
+	  if (root_dev->disk->partition->parent)
+ 	    {
+	      if (root_dev->disk->partition->parent->parent)
+		grub_util_error ("Installing on doubly nested partitions is "
+				 "not supported");
+	      dos_part = root_dev->disk->partition->parent->number;
+	      bsd_part = root_dev->disk->partition->number;
+ 	    }
 	  else
-	    grub_util_error (_("no DOS-style partitions found"));
+ 	    {
+	      dos_part = root_dev->disk->partition->number;
+ 	      bsd_part = -1;
+ 	    }
 	}
       else
 	dos_part = bsd_part = -1;
@@ -337,6 +329,8 @@ setup (const char *dir,
   int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk __attribute__ ((unused)),
 					 const grub_partition_t p)
     {
+      if (p->parent)
+	return 0;
       dest_partmap = p->partmap->name;
       return 1;
     }

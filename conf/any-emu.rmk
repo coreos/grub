@@ -34,7 +34,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	script/main.c script/execute.c script/function.c		\
 	script/lexer.c script/script.c grub_script.tab.c		\
 	partmap/amiga.c	partmap/apple.c partmap/msdos.c partmap/sun.c	\
-	partmap/acorn.c partmap/gpt.c					\
+	partmap/acorn.c partmap/gpt.c partmap/bsd.c			\
 	\
 	fs/affs.c fs/cpio.c  fs/fat.c fs/ext2.c fs/hfs.c		\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c		\

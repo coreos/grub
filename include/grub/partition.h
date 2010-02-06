@@ -36,13 +36,6 @@ struct grub_partition_map
 			 int (*hook) (struct grub_disk *disk,
 				      const grub_partition_t partition));
 
-  /* Return the partition named STR on the disk DISK.  */
-  grub_partition_t (*probe) (struct grub_disk *disk,
-			     const char *str);
-
-  /* Return the name of the partition PARTITION.  */
-  char *(*get_name) (const grub_partition_t partition);
-
   /* The next partition map type.  */
   struct grub_partition_map *next;
 };
@@ -51,6 +44,9 @@ typedef struct grub_partition_map *grub_partition_map_t;
 /* Partition description.  */
 struct grub_partition
 {
+  /* The partition number.  */
+  int number;
+
   /* The start sector.  */
   grub_disk_addr_t start;
 
@@ -65,6 +61,9 @@ struct grub_partition
 
   /* Partition map type specific data.  */
   void *data;
+
+  /* Parent partition map.  */
+  struct grub_partition *parent;
 
   /* The type partition map.  */
   grub_partition_map_t partmap;
@@ -101,7 +100,13 @@ void grub_apple_partition_map_fini (void);
 static inline grub_disk_addr_t
 grub_partition_get_start (const grub_partition_t p)
 {
-  return p->start;
+  grub_partition_t part;
+  grub_uint64_t part_start = 0;
+
+  for (part = p; part; part = part->parent)
+    part_start += part->start;
+
+  return part_start;
 }
 
 static inline grub_uint64_t
