@@ -1,5 +1,9 @@
 2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/dl.h (grub_dl_register_symbol): Don't export.
+
+2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/i18n.h (grub_gettext_dummy): Removed.
 	* kern/misc.c (grub_gettext_dummy): Make static.
 
