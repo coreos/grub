@@ -248,7 +248,7 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 		       (long long) sector);
   grub_ieee1275_read ((grub_ieee1275_ihandle_t) (unsigned long) disk->data,
 		      buf, size * 512UL, &actual);
-  if (actual != actual)
+  if (actual != (grub_ssize_t) (size * 512UL))
     return grub_error (GRUB_ERR_READ_ERROR, "read error on block: %llu",
 		       (long long) sector);
 
