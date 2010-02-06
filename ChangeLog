@@ -1,5 +1,11 @@
 2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* loader/i386/pc/xnu.c (grub_xnu_set_video): Add const qualifier to
+	modevar.
+	Return grub_errno on allocation error.
+
+2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_read): Correct error handling.
 
 2010-02-06  Yves Blusseau  <blusseau@zetam.org>
