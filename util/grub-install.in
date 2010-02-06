@@ -105,7 +105,11 @@ EOF
 }
 
 # Check the arguments.
-for option in "$@"; do
+while test $# -gt 0
+do
+    option=$1
+    shift
+
     case "$option" in
     -h | --help)
 	usage
@@ -113,33 +117,62 @@ for option in "$@"; do
     -v | --version)
 	echo "grub-install (GNU GRUB ${PACKAGE_VERSION})"
 	exit 0 ;;
+
+    --modules)
+	modules=$1; shift;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
+
+    --font)
+	font=$1; shift;;
     --font=*)
 	font=`echo "$option" | sed 's/--font=//'` ;;
+
+    --root-directory)
+	rootdir=$1; shift;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
+
+    --grub-setup)
+	grub_setup=$1; shift;;
     --grub-setup=*)
 	grub_setup=`echo "$option" | sed 's/--grub-setup=//'` ;;
+
+    --grub-mkimage)
+	grub_mkimage=$1; shift;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+
+    --grub-mkdevicemap)
+	grub_mkdevicemap=$1; shift;;
     --grub-mkdevicemap=*)
 	grub_mkdevicemap=`echo "$option" | sed 's/--grub-mkdevicemap=//'` ;;
+
+    --grub-probe)
+	grub_probe=$1; shift;;
     --grub-probe=*)
 	grub_probe=`echo "$option" | sed 's/--grub-probe=//'` ;;
+
     --no-floppy)
 	no_floppy="--no-floppy" ;;
     --recheck)
 	recheck=yes ;;
+
+    --disk-module)
+	if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
+	    disk_module=$1; shift;
+	fi ;;
     --disk-module=*)
 	if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
            disk_module=`echo "$option" | sed 's/--disk-module=//'`
         fi ;;
+
     # This is an undocumented feature...
     --debug)
 	debug=yes ;;
     -f | --force)
         setup_force="--force" ;;
+
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage
