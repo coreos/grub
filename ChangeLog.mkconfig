@@ -1,0 +1,5 @@
+2010-01-07  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub.d/10_hurd.in: Add --class information to menuentries.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.

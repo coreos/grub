@@ -79,6 +79,8 @@ grub_getkey (void)
 {
   grub_term_input_t term;
 
+  grub_refresh ();
+
   while (1)
     {
       FOR_ACTIVE_TERM_INPUTS(term)
