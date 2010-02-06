@@ -1,5 +1,9 @@
 2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* fs/fat.c (grub_fat_iterate_dir): Free unibuf at exit.
+
+2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* loader/i386/pc/xnu.c (grub_xnu_set_video): Add const qualifier to
 	modevar.
 	Return grub_errno on allocation error.
