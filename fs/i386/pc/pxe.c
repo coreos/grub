@@ -173,12 +173,15 @@ static struct grub_disk_dev grub_pxe_dev =
   };
 
 static grub_err_t
-grub_pxefs_dir (grub_device_t device __attribute__ ((unused)),
+grub_pxefs_dir (grub_device_t device,
 		const char *path  __attribute__ ((unused)),
 		int (*hook) (const char *filename,
 			     const struct grub_dirhook_info *info)
 		__attribute__ ((unused)))
 {
+  if (device->disk->dev->id != GRUB_DISK_DEVICE_PXE_ID)
+    return grub_error (GRUB_ERR_IO, "not a pxe disk");
+
   return GRUB_ERR_NONE;
 }
 
@@ -193,6 +196,9 @@ grub_pxefs_open (struct grub_file *file, const char *name)
   struct grub_pxe_data *data;
   struct grub_pxe_disk_data *disk_data = file->device->disk->data;
   grub_file_t file_int, bufio;
+
+  if (file->device->disk->dev->id != GRUB_DISK_DEVICE_PXE_ID)
+    return grub_error (GRUB_ERR_IO, "not a pxe disk");
 
   if (curr_file != 0)
     {

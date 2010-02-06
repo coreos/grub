@@ -1,3 +1,9 @@
+2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/i386/pc/pxe.c (grub_pxefs_dir): Return with failure on
+	non-pxe disk.
+	(grub_pxefs_open): Likewise.
+
 2010-02-06  Colin D Bennett  <colin@gibibit.com>
 
 	* conf/common.rmk (pkglib_MODULES): Add gfxmenu.mod.
