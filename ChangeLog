@@ -1,3 +1,8 @@
+2010-02-06  Yves Blusseau  <blusseau@zetam.org>
+
+	* conf/common.rmk (grub_script_check_SOURCES): add missing dependencies.
+	(grub_mkpasswd_pbkdf2_SOURCES): Likewise.
+
 2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* fs/i386/pc/pxe.c (grub_pxefs_dir): Return with failure on
