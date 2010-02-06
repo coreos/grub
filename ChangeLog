@@ -1,3 +1,7 @@
+2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_read): Correct error handling.
+
 2010-02-06  Yves Blusseau  <blusseau@zetam.org>
 
 	* conf/common.rmk (grub_script_check_SOURCES): add missing dependencies.
@@ -5,13 +9,15 @@
 
 2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* disk/ieee1275/ofdisk.c (grub_ofdisk_read): Correct error handling.
-
-2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
-
 	* fs/i386/pc/pxe.c (grub_pxefs_dir): Return with failure on
 	non-pxe disk.
 	(grub_pxefs_open): Likewise.
+
+2010-02-06  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/grub.d/10_hurd.in: Add --class information to menuentries.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
 
 2010-02-06  Colin D Bennett  <colin@gibibit.com>
 
