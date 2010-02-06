@@ -539,6 +539,10 @@ AC_ARG_ENABLE([grub-emu-usb],
 	      [AS_HELP_STRING([--enable-grub-emu-usb],
                              [build and install the `grub-emu' debugging utility with USB support (default=guessed)])])
 
+AC_ARG_ENABLE([grub-emu-sdl],
+	      [AS_HELP_STRING([--enable-grub-emu-sdl],
+                             [build and install the `grub-emu' debugging utility with SDL support (default=guessed)])])
+
 AC_ARG_ENABLE([grub-emu-pci],
 	      [AS_HELP_STRING([--enable-grub-emu-pci],
                              [build and install the `grub-emu' debugging utility with PCI support (potentially dangerous) (default=no)])])
@@ -589,6 +593,31 @@ else
 enable_grub_emu_usb=no
 fi
 
+if test x"$enable_grub_emu_sdl" = xno ; then
+  grub_emu_sdl_excuse="explicitely disabled"
+fi
+[if [ x"$grub_emu_sdl_excuse" = x ]; then
+    # Check for libSDL libraries.]
+AC_CHECK_LIB([SDL], [SDL_Init], [LIBSDL="-lSDL"],
+    [grub_emu_sdl_excuse=["libSDL libraries are required to build \`grub-emu' with SDL support"]])
+    AC_SUBST([LIBSDL])
+[fi]
+
+[if [ x"$grub_emu_sdl_excuse" = x ]; then
+    # Check for headers.]
+    AC_CHECK_HEADERS([SDL/SDL.h], [],
+      [grub_emu_sdl_excuse=["libSDL header file is required to build \`grub-emu' with SDL support"]])
+[fi]
+
+if test x"enable_grub_emu_sdl" = xyes && test x"$grub_emu_sdl_excuse" != x ; then
+  AC_MSG_ERROR([SDL support for grub-emu was explicitely requested but can't be compiled])
+fi
+if test x"$grub_emu_sdl_excuse" = x ; then
+enable_grub_emu_sdl=yes
+else
+enable_grub_emu_sdl=no
+fi
+
 if test x"$enable_grub_emu_pci" != xyes ; then
    grub_emu_pci_excuse="not enabled"
 fi
@@ -612,9 +641,11 @@ fi
 if test x"$grub_emu_pci_excuse" = x ; then
 enable_grub_emu_pci=yes
 else
+
 enable_grub_emu_pci=no
 fi
 
+AC_SUBST([enable_grub_emu_sdl])
 AC_SUBST([enable_grub_emu_usb])
 AC_SUBST([enable_grub_emu_pci])
 fi
@@ -690,6 +721,11 @@ if [ x"$grub_emu_usb_excuse" = x ]; then
 echo USB support for grub-emu: Yes
 else
 echo USB support for grub-emu: No "($grub_emu_usb_excuse)"
+fi
+if [ x"$grub_emu_sdl_excuse" = x ]; then
+echo SDL support for grub-emu: Yes
+else
+echo SDL support for grub-emu: No "($grub_emu_sdl_excuse)"
 fi
 if [ x"$grub_emu_pci_excuse" = x ]; then
 echo PCI support for grub-emu: Yes

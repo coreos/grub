@@ -118,7 +118,7 @@ grub_ofdisk_iterate (int (*hook) (const char *name))
 static char *
 compute_dev_path (const char *name)
 {
-  char *devpath = grub_malloc (grub_strlen (name) + 2);
+  char *devpath = grub_malloc (grub_strlen (name) + 3);
   char *p, c;
 
   if (!devpath)
@@ -248,7 +248,7 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 		       (long long) sector);
   grub_ieee1275_read ((grub_ieee1275_ihandle_t) (unsigned long) disk->data,
 		      buf, size * 512UL, &actual);
-  if (actual != actual)
+  if (actual != (grub_ssize_t) (size * 512UL))
     return grub_error (GRUB_ERR_READ_ERROR, "read error on block: %llu",
 		       (long long) sector);
 

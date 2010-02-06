@@ -23,11 +23,19 @@ libdir=@libdir@
 . ${libdir}/grub/grub-mkconfig_lib
 
 export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR=@localedir@
+export TEXTDOMAINDIR=@LOCALEDIR@
+
+CLASS="--class os"
 
 case "${GRUB_DISTRIBUTOR}" in
-  Debian)	OS="${GRUB_DISTRIBUTOR} GNU/kFreeBSD" ;;
-  *)		OS="FreeBSD" ;;
+  Debian)
+	OS="${GRUB_DISTRIBUTOR} GNU/kFreeBSD"
+	CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr '[A-Z]' '[a-z]') --class gnu-kfreebsd --class gnu ${CLASS}"
+  ;;
+  *)
+	OS="FreeBSD"
+	CLASS="--class freebsd --class bsd ${CLASS}"
+  ;;
 esac
 
 kfreebsd_entry ()
@@ -37,7 +45,7 @@ kfreebsd_entry ()
   recovery="$3"	# not used yet
   args="$4"	# not used yet
   title="$(gettext "%s, with kFreeBSD %s")"
-  printf "menuentry \"${title}\" {\n" "${os}" "${version}"
+  printf "menuentry \"${title}\" ${CLASS} {\n" "${os}" "${version}"
   save_default_entry | sed -e "s/^/\t/"
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
