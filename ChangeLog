@@ -1,5 +1,9 @@
 2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* commands/ls.c (grub_ls_list_files): Free pathname on exit.
+
+2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* fs/fat.c (grub_fat_iterate_dir): Free unibuf at exit.
 
 2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
