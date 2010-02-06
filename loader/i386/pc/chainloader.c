@@ -105,7 +105,7 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
 	{
 	  grub_partition_t p = disk->partition;
 
-	  if (p && grub_strcmp (p->partmap->name, "part_msdos") == 0)
+	  if (p && grub_strcmp (p->partmap->name, "msdos") == 0)
 	    {
 	      disk->partition = p->parent;
 	      grub_disk_read (disk, p->offset, 446, 64,

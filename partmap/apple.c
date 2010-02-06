@@ -182,7 +182,7 @@ apple_partition_map_iterate (grub_disk_t disk,
 /* Partition map type.  */
 static struct grub_partition_map grub_apple_partition_map =
   {
-    .name = "part_apple",
+    .name = "apple",
     .iterate = apple_partition_map_iterate,
   };
 

@@ -119,7 +119,7 @@ gpt_partition_map_iterate (grub_disk_t disk,
 /* Partition map type.  */
 static struct grub_partition_map grub_gpt_partition_map =
   {
-    .name = "part_gpt",
+    .name = "gpt",
     .iterate = gpt_partition_map_iterate,
   };
 

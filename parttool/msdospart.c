@@ -140,10 +140,10 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
 
 GRUB_MOD_INIT (pcpart)
 {
-  activate_table_handle = grub_parttool_register ("part_msdos",
+  activate_table_handle = grub_parttool_register ("msdos",
 						  grub_pcpart_boot,
 						  grub_pcpart_bootargs);
-  type_table_handle = grub_parttool_register ("part_msdos",
+  type_table_handle = grub_parttool_register ("msdos",
 					      grub_pcpart_type,
 					      grub_pcpart_typeargs);
 

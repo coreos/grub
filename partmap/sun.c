@@ -137,7 +137,7 @@ sun_partition_map_iterate (grub_disk_t disk,
 /* Partition map type.  */
 static struct grub_partition_map grub_sun_partition_map =
   {
-    .name = "part_sun",
+    .name = "sun",
     .iterate = sun_partition_map_iterate,
   };
 

@@ -138,7 +138,7 @@ amiga_partition_map_iterate (grub_disk_t disk,
 /* Partition map type.  */
 static struct grub_partition_map grub_amiga_partition_map =
   {
-    .name = "part_amiga",
+    .name = "amiga",
     .iterate = amiga_partition_map_iterate,
   };
 
