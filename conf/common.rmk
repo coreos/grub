@@ -451,6 +451,28 @@ hello_mod_SOURCES = hello/hello.c
 hello_mod_CFLAGS = $(COMMON_CFLAGS)
 hello_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For gfxmenu.mod.
+pkglib_MODULES += gfxmenu.mod
+gfxmenu_mod_SOURCES = \
+	gfxmenu/gfxmenu.c \
+	gfxmenu/model.c \
+	gfxmenu/view.c \
+	gfxmenu/icon_manager.c \
+	gfxmenu/theme_loader.c \
+	gfxmenu/widget-box.c \
+	gfxmenu/gui_canvas.c \
+	gfxmenu/gui_circular_progress.c \
+	gfxmenu/gui_box.c \
+	gfxmenu/gui_label.c \
+	gfxmenu/gui_list.c \
+	gfxmenu/gui_image.c \
+	gfxmenu/gui_progress_bar.c \
+	gfxmenu/gui_util.c \
+	gfxmenu/gui_string_util.c \
+	gfxmenu/named_colors.c
+gfxmenu_mod_CFLAGS = $(COMMON_CFLAGS)
+gfxmenu_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For parttool.mod.
 parttool_mod_SOURCES = commands/parttool.c
 parttool_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -622,6 +644,12 @@ bitmap_mod_SOURCES = video/bitmap.c
 bitmap_mod_CFLAGS = $(COMMON_CFLAGS)
 bitmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For bitmap_scale.mod
+pkglib_MODULES += bitmap_scale.mod
+bitmap_scale_mod_SOURCES = video/bitmap_scale.c
+bitmap_scale_mod_CFLAGS = $(COMMON_CFLAGS)
+bitmap_scale_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For tga.mod
 tga_mod_SOURCES = video/readers/tga.c
 tga_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -681,6 +709,18 @@ pkglib_MODULES += xnu_uuid.mod
 xnu_uuid_mod_SOURCES = commands/xnu_uuid.c
 xnu_uuid_mod_CFLAGS = $(COMMON_CFLAGS)
 xnu_uuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += trig.mod
+trig_mod_SOURCES = trigtables.c
+trig_mod_CFLAGS = $(COMMON_CFLAGS)
+trig_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+trigtables.c: gentrigtables
+	./gentrigtables > $@
+DISTCLEANFILES += trigtables.c
+gentrigtables: gentrigtables.c
+	$(CC) -o $@ $^ $(CPPFLAGS) -lm
+DISTCLEANFILES += gentrigtables
 
 pkglib_MODULES += setjmp.mod
 setjmp_mod_SOURCES = lib/$(target_cpu)/setjmp.S

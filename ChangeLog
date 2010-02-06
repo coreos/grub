@@ -1,3 +1,206 @@
+2010-02-06  Colin D Bennett  <colin@gibibit.com>
+
+	* conf/common.rmk (pkglib_MODULES): Add gfxmenu.mod.
+	(gfxmenu_mod_SOURCES): New variable.
+	(gfxmenu_mod_CFLAGS): Likewise.
+	(gfxmenu_mod_LDFLAGS): Likewise.
+	* include/grub/term.h (grub_term_set_current_output): Declare
+	argument as const.
+	* docs/gfxmenu-theme-example.txt: New file.
+	* gfxmenu/gfxmenu.c: Likewise.
+	* gfxmenu/gui_box.c: Likewise.
+	* gfxmenu/gui_canvas.c: Likewise.
+	* gfxmenu/gui_circular_progress.c: Likewise.
+	* gfxmenu/gui_image.c: Likewise.
+	* gfxmenu/gui_label.c: Likewise.
+	* gfxmenu/gui_list.c: Likewise.
+	* gfxmenu/gui_progress_bar.c: Likewise.
+	* gfxmenu/gui_string_util.c: Likewise.
+	* gfxmenu/gui_util.c: Likewise.
+	* gfxmenu/icon_manager.c: Likewise.
+	* gfxmenu/model.c: Likewise.
+	* gfxmenu/named_colors.c: Likewise.
+	* gfxmenu/theme_loader.c: Likewise.
+	* gfxmenu/view.c: Likewise.
+	* gfxmenu/widget-box.c: Likewise.
+	* include/grub/gfxmenu_model.h: Likewise.
+	* include/grub/gfxmenu_view.h: Likewise.
+	* include/grub/gfxwidgets.h: Likewise.
+	* include/grub/gui.h: Likewise.
+	* include/grub/gui_string_util.h: Likewise.
+	* include/grub/icon_manager.h: Likewise.
+
+2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Agglomerate scrolling in gfxterm.
+
+	* term/gfxterm.c (grub_virtual_screen): New member 'total_screen'.
+	(grub_virtual_screen_setup): Initialise 'total_screen'.
+	(write_char): Split to ...
+	(paint_char): ... this ...
+	(write_char): ... and this.
+	(paint_char): Handle delayed scrolling.
+	(draw_cursor): Likewise.
+	(scroll_up): Split to ...
+	(real_scroll): ... this ...
+	(scroll_up): ... and this.
+	(real_scroll): Handle multi-line scroll and draw below-the-bottom
+	characters.
+	(grub_gfxterm_refresh): Call real_scroll.
+
+2010-02-06  Colin D Bennett  <colin@gibibit.com>
+
+	* include/grub/misc.h (grub_iscntrl): New inline function.
+	(grub_isalnum): Likewise.
+	(grub_strtol): Likewise.
+
+2010-02-06  Colin D Bennett  <colin@gibibit.com>
+
+	* normal/menu_text.c (get_entry_number): Move from here ...
+	* normal/menu.c (get_entry_number): ... moved here.
+	* include/grub/menu.h (grub_menu_get_default_entry_index):
+	New prototype.
+	* normal/menu.c (grub_menu_get_default_entry_index): New function.
+	* normal/menu_text.c (run_menu): Use grub_menu_get_default_entry_index.
+	* include/grub/menu_viewer.h (grub_menu_viewer_init): New prototype.
+	(grub_menu_viewer_should_return): Likewise.
+	* normal/main.c (GRUB_MOD_INIT (normal)): Call grub_menu_viewer_init.
+	* normal/menu_text.c (run_menu): Enable menu switching.
+	* normal/menu_viewer.c (should_return): New variable.
+	(menu_viewer_changed): Likewise.
+	(grub_menu_viewer_show_menu): Handle menu viewer changes.
+	(grub_menu_viewer_should_return): New function.
+	(menuviewer_write_hook): Likewise.
+	(grub_menu_viewer_init): Likewise.
+
+2010-02-06  Colin D Bennet <colin@gibibit.com>
+2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support for gfxterm in a window.
+
+	* include/grub/gfxterm.h: New file.
+	* include/grub/video.h (struct grub_video_rect): New declaration.
+	(grub_video_rect_t): Likewise.
+	* term/gfxterm.c (struct grub_gfxterm_window): New type.
+	(refcount): New variable.
+	(render_target): Likewise.
+	(window): Likewise.
+	(repaint_callback): Likewise.
+	(grub_virtual_screen_setup): Use 'render_target'.
+	(init_window): New function.
+	(grub_gfxterm_init_window): Likewise.
+	(grub_gfxterm_init): Check reference counter.
+	Use init_window.
+	(destroy_window): New function.
+	(grub_gfxterm_destroy_window): Likewise.
+	(grub_gfxterm_fini): Check reference counter.
+	Use destroy_window.
+	(redraw_screen_rect): Restore viewport.
+	Use 'render_target' and 'window'.
+	Call 'repaint_callback'.
+	(write_char): Use 'render_target'.
+	(draw_cursor): Likewise.
+	(scroll_up): Restore viewport.
+	Use 'render_target' and 'window'.
+	Call 'repaint_callback'.
+	(grub_gfxterm_cls): Likewise.
+	(grub_gfxterm_refresh): Use 'window'.
+	(grub_gfxterm_set_repaint_callback): New function.
+	(grub_gfxterm_background_image_cmd): Use 'window'.
+	(grub_gfxterm_get_term): New function.
+	(GRUB_MOD_INIT(term_gfxterm)): Set 'refcount' to 0.
+
+2010-02-06  Colin D Bennett  <colin@gibibit.com>
+
+	Bitmap scaling support.
+
+	* conf/common.rmk (pkglib_MODULES): Add bitmap_scale.mod.
+	(bitmap_scale_mod_SOURCES): New variable.
+	(bitmap_scale_mod_CFLAGS): Likewise.
+	(bitmap_scale_mod_LDFLAGS): Likewise.
+	* include/grub/bitmap_scale.h: New file.
+	* term/gfxterm.c (BACKGROUND_CMD_ARGINDEX_MODE): New definiton.
+	(background_image_cmd_options): New variable.
+	(grub_gfxterm_background_image_cmd): Support bitmap stretching.
+	(cmd): Rename and change type to ...
+	(background_image_cmd_handle): ... this. All users updated.
+	(GRUB_MOD_INIT(term_gfxterm)): Make background_image extended command.
+	* video/bitmap_scale.c: New file.
+
+2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	SDL support.
+
+	* Makefile.in (LIBSDL): New variable.
+	(enable_grub_emu_sdl): Likewise.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add video files.
+	(grub_emu_SOURCES) [enable_grub_emu_sdl]: Add util/sdl.c.
+	(grub_emu_LDFLAGS) [enable_grub_emu_sdl]: Add $(LIBSDL).
+	* configure.ac: Detect SDL availability and add --enable-grub-emu-sdl
+	* util/sdl.c: New file.
+
+2010-02-06  Colin D Bennett  <colin@gibibit.com>
+2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Double buffering support.
+
+	* commands/i386/pc/videotest.c (grub_cmd_videotest): Swap doublebuffers.
+	* include/grub/video.h: Update comment.
+	* include/grub/video_fb.h (grub_video_fb_doublebuf_update_screen_t):
+	New type.
+	(grub_video_fb_doublebuf_blit_init): New prototype.
+	* term/gfxterm.c (scroll_up): Support double buffering.
+	(grub_gfxterm_refresh): Likewise.
+	* video/fb/video_fb.c (doublebuf_blit_update_screen): New function.
+	(grub_video_fb_doublebuf_blit_init): Likewise.
+	* video/i386/pc/vbe.c (framebuffer): Remove 'render_target'. Add
+	'front_target', 'back_target', 'offscreen_buffer', 'page_size',
+	'displayed_page', 'render_page' and 'update_screen'.
+	(grub_video_vbe_fini): Free offscreen buffer.
+	(doublebuf_pageflipping_commit): New function.
+	(doublebuf_pageflipping_update_screen): Likewise.
+	(doublebuf_pageflipping_init): Likewise.
+	(double_buffering_init): Likewise.
+	(grub_video_vbe_setup): Enable doublebuffering.
+	(grub_video_vbe_swap_buffers): Implement.
+	(grub_video_vbe_set_active_render_target): Handle double buffering.
+	(grub_video_vbe_get_active_render_target): Likewise.
+	(grub_video_vbe_get_info_and_fini): Likewise. Free offscreen_buffer.
+	(grub_video_vbe_adapter): Use grub_video_vbe_get_active_render_target.
+	(grub_video_vbe_enable_double_buffering): Likewise.
+	(grub_video_vbe_swap_buffers): Use update_screen.
+	(grub_video_set_mode): Use double buffering.
+
+2010-02-06  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* maintainance/gentrigtables.py: Remove.
+	* lib/trig.c: Likewise.
+
+	* gentrigtables.c: New file.  C rewrite of gentrigtables.py.
+
+	* conf/common.rmk (trig_mod_SOURCES): Replace `lib/trig.c' with
+	`trigtables.c'.
+	(trigtables.c): New rule.
+	(gentrigtables): Likewise.
+	(DISTCLEANFILES): Add `trigtables.c' and `gentrigtables'.
+
+2010-02-06  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* maintainance/gentrigtables.py: Avoid duplicate hardcoding of
+	integer constants.
+
+2010-02-06  Colin D Bennet <colin@gibibit.com>
+
+	Trigonometry support.
+
+	* include/grub/trig.h: New file.
+	* lib/trig.c: Likewise.
+	* maintainance/gentrigtables.py: Likewise.
+	* conf/common.rmk (pkglib_MODULES): Add trig.mod.
+	(trig_mod_SOURCES): New variable.
+	(trig_mod_CFLAGS): Likewise.
+	(trig_mod_LDFLAGS): Likewise.
+
 2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/ieee1275/openfw.c (grub_ieee1275_encode_devname): Support whole

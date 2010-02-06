@@ -23,12 +23,15 @@ libdir=@libdir@
 . ${libdir}/grub/grub-mkconfig_lib
 
 export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR=@localedir@
+export TEXTDOMAINDIR=@LOCALEDIR@
+
+CLASS="--class gnu-linux --class gnu --class os"
 
 if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS=GNU/Linux
 else
   OS="${GRUB_DISTRIBUTOR} GNU/Linux"
+  CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr '[A-Z]' '[a-z]') ${CLASS}"
 fi
 
 # loop-AES arranges things so that /dev/loop/X can be our root device, but
@@ -57,7 +60,7 @@ linux_entry ()
   else
     title="$(gettext "%s, with Linux %s")"
   fi
-  printf "menuentry \"${title}\" {\n" "${os}" "${version}"
+  printf "menuentry \"${title}\" ${CLASS} {\n" "${os}" "${version}"
   save_default_entry | sed -e "s/^/\t/"
 
   # Use ELILO's generic "efifb" when it's known to be available.

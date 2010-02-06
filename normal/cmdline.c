@@ -384,6 +384,8 @@ grub_cmdline_get (const char *prompt)
   if (hist_used == 0)
     grub_history_add (buf, llen);
 
+  grub_refresh ();
+
   while ((key = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != '\n' && key != '\r')
     {
       switch (key)
@@ -607,6 +609,7 @@ grub_cmdline_get (const char *prompt)
 	    }
 	  break;
 	}
+
       grub_refresh ();
     }
 

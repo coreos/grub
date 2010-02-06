@@ -42,6 +42,20 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c		\
 	fs/befs.c fs/befs_be.c fs/tar.c					\
 	\
+	video/video.c video/fb/video_fb.c video/fb/fbblit.c             \
+        video/fb/fbfill.c video/fb/fbutil.c commands/videotest.c        \
+	video/bitmap.c video/bitmap_scale.c video/readers/tga.c 	\
+	video/readers/jpeg.c video/readers/png.c font/font_cmd.c 	\
+	font/font.c term/gfxterm.c io/bufio.c				\
+	\
+	gfxmenu/gfxmenu.c gfxmenu/model.c gfxmenu/view.c 		\
+	gfxmenu/icon_manager.c gfxmenu/theme_loader.c 			\
+	gfxmenu/widget-box.c gfxmenu/gui_canvas.c 			\
+	gfxmenu/gui_circular_progress.c gfxmenu/gui_box.c 		\
+	gfxmenu/gui_label.c gfxmenu/gui_list.c gfxmenu/gui_image.c 	\
+	gfxmenu/gui_progress_bar.c gfxmenu/gui_util.c 			\
+	gfxmenu/gui_string_util.c gfxmenu/named_colors.c trigtables.c   \
+	\
 	util/console.c util/hostfs.c util/grub-emu.c util/misc.c	\
 	util/hostdisk.c util/getroot.c					\
 	\
@@ -65,6 +79,11 @@ grub_emu_SOURCES += disk/usbms.c util/usb.c bus/usb/usb.c	\
 grub_emu_LDFLAGS += $(LIBCURSES) $(LIBUSB)
 endif
 
+ifeq ($(enable_grub_emu_sdl), yes)
+grub_emu_SOURCES += util/sdl.c
+grub_emu_LDFLAGS += $(LIBSDL)
+endif
+
 ifeq ($(enable_grub_emu_pci), yes)
 grub_emu_SOURCES += util/pci.c commands/lspci.c
 grub_emu_LDFLAGS += $(LIBPCIACCESS)
@@ -86,6 +105,13 @@ DISTCLEANFILES += grub_emu_init.c
 
 
 # FIXME: this could be shared with common.rmk
+
+trigtables.c: gentrigtables
+	./gentrigtables > $@
+DISTCLEANFILES += trigtables.c
+gentrigtables: gentrigtables.c
+	$(CC) -o $@ $^ $(CPPFLAGS) -lm
+DISTCLEANFILES += gentrigtables
 
 # For grub-mkfont.
 ifeq ($(enable_grub_mkfont), yes)

@@ -21,7 +21,7 @@ kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
 	font/font_cmd.c font/font.c io/bufio.c \
 	video/video.c video/fb/video_fb.c video/fb/fbblit.c \
 	video/fb/fbfill.c video/fb/fbutil.c video/bitmap.c \
-	video/sm712.c bus/pci.c bus/bonito.c \
+	video/bitmap_scale.c video/sm712.c bus/pci.c bus/bonito.c \
 	term/gfxterm.c commands/extcmd.c lib/arg.c \
 	symlist.c
 kernel_img_CFLAGS = $(COMMON_CFLAGS) -DUSE_ASCII_FAILBACK
