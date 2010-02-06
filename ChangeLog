@@ -1,5 +1,10 @@
 2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* partmap/sun.c (sun_partition_map_iterate): Restructure flow to fix
+	buggy hook call and memory leak.
+
+2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* commands/ls.c (grub_ls_list_files): Free pathname on exit.
 
 2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
