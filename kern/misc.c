@@ -35,7 +35,7 @@ grub_iswordseparator (int c)
 }
 
 /* grub_gettext_dummy is not translating anything.  */
-const char *
+static const char *
 grub_gettext_dummy (const char *s)
 {
   return s;

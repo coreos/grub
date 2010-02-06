@@ -1,3 +1,8 @@
+2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i18n.h (grub_gettext_dummy): Removed.
+	* kern/misc.c (grub_gettext_dummy): Make static.
+
 2010-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/misc.c (grub_utf8_to_ucs4): Don't eat valid characters preceeded
