@@ -384,6 +384,8 @@ grub_cmdline_get (const char *prompt)
   if (hist_used == 0)
     grub_history_add (buf, llen);
 
+  grub_refresh ();
+
   while ((key = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != '\n' && key != '\r')
     {
       switch (key)
@@ -419,10 +421,13 @@ grub_cmdline_get (const char *prompt)
 	    int restore;
 	    char *insertu8;
 	    char *bufu8;
+	    grub_uint32_t c;
 
+	    c = buf[lpos];
 	    buf[lpos] = '\0';
 
 	    bufu8 = grub_ucs4_to_utf8_alloc (buf, lpos);
+	    buf[lpos] = c;
 	    if (!bufu8)
 	      {
 		grub_print_error ();
@@ -462,8 +467,19 @@ grub_cmdline_get (const char *prompt)
 				       insertlen, 0);
 		if (t > 0)
 		  {
-		    insert[t] = 0;
-		    cl_insert (insert);
+		    if (insert[t-1] == ' ' && buf[lpos] == ' ')
+		      {
+			insert[t-1] = 0;
+			if (t != 1)
+			  cl_insert (insert);
+			lpos++;
+			cl_set_pos_all ();			
+		      }
+		    else
+		      {
+			insert[t] = 0;
+			cl_insert (insert);
+		      }
 		  }
 
 		grub_free (insertu8);
@@ -593,6 +609,7 @@ grub_cmdline_get (const char *prompt)
 	    }
 	  break;
 	}
+
       grub_refresh ();
     }
 

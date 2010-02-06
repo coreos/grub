@@ -114,12 +114,14 @@ endif
 AWK = @AWK@
 LIBCURSES = @LIBCURSES@
 LIBUSB = @LIBUSB@
+LIBSDL = @LIBSDL@
 LIBPCIACCESS = @LIBPCIACCESS@
 YACC = @YACC@
 FONT_SOURCE = @FONT_SOURCE@
 
 # Options.
 enable_grub_emu_usb = @enable_grub_emu_usb@
+enable_grub_emu_sdl = @enable_grub_emu_sdl@
 enable_grub_emu_pci = @enable_grub_emu_pci@
 enable_grub_fstest = @enable_grub_fstest@
 enable_grub_pe2elf = @enable_grub_pe2elf@
@@ -236,7 +238,7 @@ else
 
 ifeq ($(enable_grub_mkfont),yes)
 
-pkgdata_DATA += unicode.pf2 ascii.pf2
+pkgdata_DATA += unicode.pf2 ascii.pf2 ascii.h
 
 # Arrows and lines are needed to draw the menu, so we always include them
 UNICODE_ARROWS=0x2190-0x2193
@@ -247,6 +249,14 @@ unicode.pf2: $(FONT_SOURCE) grub-mkfont
 
 ascii.pf2: $(FONT_SOURCE) grub-mkfont
 	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
+
+ascii.bitmaps: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont --ascii-bitmaps -o $@ $(FONT_SOURCE)
+
+ascii.h: ascii.bitmaps grub-bin2h
+	$(builddir)/grub-bin2h ascii_bitmaps < $< > $@
+
+TARGET_CFLAGS += -DUSE_ASCII_FAILBACK=1
 endif
 endif
 
@@ -465,23 +475,21 @@ distcheck: dist
 
 check: all $(UNIT_TESTS) $(FUNCTIONAL_TESTS) $(SCRIPTED_TESTS)
 	@list="$(UNIT_TESTS)"; \
+	set -e; \
 	for file in $$list; do \
 	  $(builddir)/$$file; \
 	done
 	@list="$(FUNCTIONAL_TESTS)"; \
+	set -e; \
 	for file in $$list; do \
 	  mod=`basename $$file .mod`; \
 	  echo "insmod functional_test; insmod $$mod; functional_test" \
 	    | $(builddir)/grub-shell; \
 	done
 	@list="$(SCRIPTED_TESTS)"; \
+	set -e; \
 	for file in $$list; do \
-	  echo "$$file:"; \
-	  if $(builddir)/$$file; then \
-	    echo "$$file: PASS"; \
-	  else \
-	    echo "$$file: FAIL"; \
-	  fi; \
+	  $(builddir)/$$file; \
 	done
 
 .SUFFIX:

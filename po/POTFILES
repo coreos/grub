@@ -75,16 +75,7 @@ normal/menu_entry.c
 normal/menu_text.c
 normal/misc.c
 
-term/i386/pc/serial.c
+term/serial.c
 
-util/i386/pc/grub-mkimage.c
+util/grub-mkrawimage.c
 util/i386/pc/grub-setup.c
-
-util/mkisofs/eltorito.c
-util/mkisofs/joliet.c
-util/mkisofs/mkisofs.c
-util/mkisofs/mkisofs.h
-util/mkisofs/multi.c
-util/mkisofs/rock.c
-util/mkisofs/tree.c
-util/mkisofs/write.c

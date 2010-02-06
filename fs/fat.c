@@ -592,6 +592,7 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
     }
 
   grub_free (filename);
+  grub_free (unibuf);
 
   return grub_errno;
 }
@@ -833,9 +834,9 @@ grub_fat_uuid (grub_device_t device, char **uuid)
   data = grub_fat_mount (disk);
   if (data)
     {
-      *uuid = grub_malloc (sizeof ("xxxx-xxxx"));
-      grub_sprintf (*uuid, "%04x-%04x", (grub_uint16_t) (data->uuid >> 16),
-		    (grub_uint16_t) data->uuid);
+      *uuid = grub_xasprintf ("%04x-%04x",
+			     (grub_uint16_t) (data->uuid >> 16),
+			     (grub_uint16_t) data->uuid);
     }
   else
     *uuid = NULL;

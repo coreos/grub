@@ -116,4 +116,9 @@ grub_err_t EXPORT_FUNC(grub_dl_register_symbol) (const char *name, void *addr,
 grub_err_t grub_arch_dl_check_header (void *ehdr);
 grub_err_t grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr);
 
+#if defined (_mips) && ! defined (GRUB_UTIL)
+#define GRUB_LINKER_HAVE_INIT 1
+void grub_arch_dl_init_linker (void);
+#endif
+
 #endif /* ! GRUB_DL_H */
