@@ -371,11 +371,13 @@ grub_millisleep (grub_uint32_t ms)
 
 #endif
 
+#if !(defined (__i386__) || defined (__x86_64__))
 void
 grub_arch_sync_caches (void *address __attribute__ ((unused)),
 		       grub_size_t len __attribute__ ((unused)))
 {
 }
+#endif
 
 #ifndef HAVE_VASPRINTF
 

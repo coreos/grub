@@ -1,5 +1,14 @@
 2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/cache.h (grub_arch_sync_caches) [i386 || x86_64]: Inline.
+	* kern/i386/coreboot/init.c (grub_arch_sync_caches): Remove.
+	* kern/i386/efi/init.c (grub_arch_sync_caches): Likewise.
+	* kern/i386/ieee1275/init.c (grub_arch_sync_caches): Likewise.
+	* kern/i386/pc/init.c (grub_arch_sync_caches): Likewise.
+	* util/misc.c (grub_arch_sync_caches) [i386 || x86_64]: Likewise.
+
+2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/err.h (grub_err_printf): Don't export.
 
 2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
