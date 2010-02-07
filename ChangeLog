@@ -1,5 +1,14 @@
 2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix warnings in grub-emu when compiling with maximum warning options.
+
+	* util/grub-emu.c (ENABLE_RELOCATABLE): New definition.
+	(grub_arch_modules_addr): Return 0 and not NULL.
+	* util/misc.c (ENABLE_RELOCATABLE): New definition.
+	(xstrdup): USe newstr instead of dup.
+
+2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* loader/i386/linux.c (grub_linux_setup_video): Handle error
 	appropriately.
 

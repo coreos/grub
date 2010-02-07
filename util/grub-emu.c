@@ -40,6 +40,7 @@
 
 #include <grub_emu_init.h>
 
+#define ENABLE_RELOCATABLE 0
 #include "progname.h"
 
 /* Used for going back to the main function.  */
@@ -51,7 +52,7 @@ static char *prefix = NULL;
 grub_addr_t
 grub_arch_modules_addr (void)
 {
-  return NULL;
+  return 0;
 }
 
 grub_err_t
