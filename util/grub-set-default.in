@@ -45,7 +45,11 @@ EOF
 }
 
 # Check the arguments.
-for option in "$@"; do
+while test $# -gt 0
+do
+    option=$1
+    shift
+
     case "$option" in
     -h | --help)
 	usage
@@ -53,8 +57,12 @@ for option in "$@"; do
     -v | --version)
 	echo "grub-set-default (GNU GRUB ${PACKAGE_VERSION})"
 	exit 0 ;;
+
+    --root-directory)
+	rootdir=$1; shift ;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
+
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage

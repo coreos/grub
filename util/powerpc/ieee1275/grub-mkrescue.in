@@ -55,7 +55,11 @@ EOF
 input_dir=${pkglibdir}
 
 # Check the arguments.
-for option in "$@"; do
+while test $# -gt 0
+do
+    option=$1
+    shift
+
     case "$option" in
     -h | --help)
 	usage
@@ -63,12 +67,22 @@ for option in "$@"; do
     -v | --version)
 	echo "grub-mkrescue (GNU GRUB ${PACKAGE_VERSION})"
 	exit 0 ;;
+
+    --modules)
+	modules=$1; shift ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
+
+    --pkglibdir)
+	input_dir=$1; shift ;;
     --pkglibdir=*)
 	input_dir=`echo "$option" | sed 's/--pkglibdir=//'` ;;
+
+    --grub-mkimage)
+	grub_mkimage=$1; shift ;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage
