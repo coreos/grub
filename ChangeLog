@@ -1,5 +1,10 @@
 2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* fs/reiserfs.c (grub_reiserfs_read): Use #if 0 instead of commenting
+	code out.
+
+2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/cache.h (grub_arch_sync_caches) [i386 || x86_64]: Inline.
 	* kern/i386/coreboot/init.c (grub_arch_sync_caches): Remove.
 	* kern/i386/efi/init.c (grub_arch_sync_caches): Likewise.
