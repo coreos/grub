@@ -327,12 +327,12 @@ static struct grub_partition_map grub_msdos_partition_map =
     .get_name = pc_partition_map_get_name
   };
 
-GRUB_MOD_INIT(pc_partition_map)
+GRUB_MOD_INIT(part_msdos)
 {
   grub_partition_map_register (&grub_msdos_partition_map);
 }
 
-GRUB_MOD_FINI(pc_partition_map)
+GRUB_MOD_FINI(part_msdos)
 {
   grub_partition_map_unregister (&grub_msdos_partition_map);
 }

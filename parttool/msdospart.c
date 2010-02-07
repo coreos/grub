@@ -138,7 +138,7 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
   return GRUB_ERR_NONE;
 }
 
-GRUB_MOD_INIT (pcpart)
+GRUB_MOD_INIT (msdospart)
 {
   activate_table_handle = grub_parttool_register ("part_msdos",
 						  grub_pcpart_boot,
@@ -148,7 +148,7 @@ GRUB_MOD_INIT (pcpart)
 					      grub_pcpart_typeargs);
 
 }
-GRUB_MOD_FINI(pcpart)
+GRUB_MOD_FINI(msdospart)
 {
   grub_parttool_unregister (activate_table_handle);
   grub_parttool_unregister (type_table_handle);

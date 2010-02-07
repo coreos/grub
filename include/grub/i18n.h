@@ -19,17 +19,17 @@
 #ifndef	GRUB_I18N_H
 #define	GRUB_I18N_H	1
 
-#ifdef GRUB_UTIL
+//#ifdef GRUB_UTIL
 # include <locale.h>
 # include <libintl.h>
-# define _(str) gettext(str)
-#else
+//# define _(str) gettext(str)
+//#else
 # define _(str) grub_gettext(str)
 
 const char *EXPORT_FUNC(grub_gettext_dummy) (const char *s);
 extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
 
-#endif
+					    //#endif
 
 #define N_(str) str
 

@@ -74,6 +74,7 @@ fi
 if test -z "$target_alias"; then
   case "$target_cpu"-"$platform" in
     x86_64-efi) ;;
+    x86_64-emu) ;;
     x86_64-*) target_cpu=i386 ;;
     powerpc64-ieee1275) target_cpu=powerpc ;;
   esac

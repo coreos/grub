@@ -51,7 +51,7 @@ static char *prefix = NULL;
 grub_addr_t
 grub_arch_modules_addr (void)
 {
-  return NULL;
+  return 0;
 }
 
 grub_err_t
@@ -106,10 +106,6 @@ grub_machine_fini (void)
   grub_console_fini ();
 }
 
-void
-read_command_list (void)
-{
-}
 
 
 static struct option options[] =

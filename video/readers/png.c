@@ -890,7 +890,7 @@ static struct grub_video_bitmap_reader png_reader = {
   .next = 0
 };
 
-GRUB_MOD_INIT (video_reader_png)
+GRUB_MOD_INIT (png)
 {
   grub_video_bitmap_reader_register (&png_reader);
 #if defined(PNG_DEBUG)
@@ -900,7 +900,7 @@ GRUB_MOD_INIT (video_reader_png)
 #endif
 }
 
-GRUB_MOD_FINI (video_reader_png)
+GRUB_MOD_FINI (png)
 {
 #if defined(PNG_DEBUG)
   grub_unregister_command ("pngtest");

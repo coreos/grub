@@ -56,7 +56,7 @@ lsfonts_command (grub_command_t cmd __attribute__ ((unused)),
 
 static grub_command_t cmd_loadfont, cmd_lsfonts;
 
-GRUB_MOD_INIT(font_manager)
+GRUB_MOD_INIT(font)
 {
   grub_font_loader_init ();
 
@@ -69,7 +69,7 @@ GRUB_MOD_INIT(font_manager)
 			   0, "List the loaded fonts.");
 }
 
-GRUB_MOD_FINI(font_manager)
+GRUB_MOD_FINI(font)
 {
   /* TODO: Determine way to free allocated resources.
      Warning: possible pointer references could be in use.  */

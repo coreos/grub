@@ -251,7 +251,7 @@ static int NESTED_FUNC_ATTR video_hook (grub_video_adapter_t p __attribute__ ((u
 }
 
 static grub_err_t
-grub_gfxterm_init (void)
+grub_gfxterm_term_init (void)
 {
   char *font_name;
   char *modevar;
@@ -312,7 +312,7 @@ grub_gfxterm_init (void)
 }
 
 static grub_err_t
-grub_gfxterm_fini (void)
+grub_gfxterm_term_fini (void)
 {
   if (bitmap)
     {
@@ -932,8 +932,8 @@ grub_gfxterm_background_image_cmd (grub_command_t cmd __attribute__ ((unused)),
 static struct grub_term_output grub_video_term =
   {
     .name = "gfxterm",
-    .init = grub_gfxterm_init,
-    .fini = grub_gfxterm_fini,
+    .init = grub_gfxterm_term_init,
+    .fini = grub_gfxterm_term_fini,
     .putchar = grub_gfxterm_putchar,
     .getcharwidth = grub_gfxterm_getcharwidth,
     .getwh = grub_virtual_screen_getwh,
@@ -951,7 +951,7 @@ static struct grub_term_output grub_video_term =
 
 static grub_command_t cmd;
 
-GRUB_MOD_INIT(term_gfxterm)
+GRUB_MOD_INIT(gfxterm)
 {
   grub_term_register_output ("gfxterm", &grub_video_term);
   cmd = grub_register_command ("background_image",
@@ -959,7 +959,7 @@ GRUB_MOD_INIT(term_gfxterm)
 			       0, "Load background image for active terminal");
 }
 
-GRUB_MOD_FINI(term_gfxterm)
+GRUB_MOD_FINI(gfxterm)
 {
   grub_unregister_command (cmd);
   grub_term_unregister_output (&grub_video_term);

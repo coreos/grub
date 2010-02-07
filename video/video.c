@@ -713,11 +713,11 @@ grub_video_set_mode (const char *modestring,
 }
 
 /* Initialize Video API module.  */
-GRUB_MOD_INIT(video_video)
+GRUB_MOD_INIT(video)
 {
 }
 
 /* Finalize Video API module.  */
-GRUB_MOD_FINI(video_video)
+GRUB_MOD_FINI(video)
 {
 }
