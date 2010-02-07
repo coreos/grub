@@ -82,6 +82,7 @@ pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 grub_emu_LDFLAGS += $(LIBPCIACCESS)
 endif
 
+include $(srcdir)/conf/common.mk
 
 grub_emu_init.h: genemuinitheader.sh $(pkglib_MODULES)
 	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinitheader.sh $(NM)  > $@
@@ -91,8 +92,8 @@ grub_emu_init.c: genemuinit.sh $(pkglib_MODULES)
 	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinit.sh $(NM) > $@
 DISTCLEANFILES += grub_emu_init.c
 
-include $(srcdir)/conf/common.mk
-
+CLEANFILES += grub-emu
 grub-emu: $(pkglib_MODULES) $(pkglib_PROGRAMS)
 	$(CC) -o $@ $(pkglib_MODULES) $(pkglib_PROGRAMS) $(grub_emu_LDFLAGS) $(LDFLAGS)
+GRUB_EMU=grub-emu
 
