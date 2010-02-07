@@ -178,9 +178,8 @@ endif
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
-pkglib_DATA += command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst
 ifneq ($(platform), emu)
-pkglib_DATA += moddep.lst
+pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst
 endif
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
