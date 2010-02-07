@@ -138,7 +138,7 @@ struct eltorito_boot_info
   char pvd_addr[ISODCL (1, 4)];
   /* Boot file address.  */
   char file_addr[ISODCL (5, 8)];
-  /* Boot file length.  */  
+  /* Boot file length.  */ 
   char file_length[ISODCL (9, 12)];
   /* Boot file checksum.  */
   char file_checksum[ISODCL (13, 16)];

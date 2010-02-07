@@ -150,7 +150,7 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
   struct grub_uhci *u;
   int i;
 
-  addr = grub_pci_make_address (dev, 2);
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
   class_code = grub_pci_read (addr) >> 8;
 
   interf = class_code & 0xFF;
@@ -162,7 +162,7 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
     return 0;
 
   /* Determine IO base address.  */
-  addr = grub_pci_make_address (dev, 8);
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG4);
   base = grub_pci_read (addr);
   /* Stop if there is no IO space base address defined.  */
   if (! (base & 1))

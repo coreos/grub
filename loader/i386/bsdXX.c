@@ -12,7 +12,7 @@ load (grub_file_t file, void *where, grub_off_t off, grub_size_t size)
 {
   if (PTR_TO_UINT32 (where) + size > grub_os_area_addr + grub_os_area_size)
     return grub_error (GRUB_ERR_OUT_OF_RANGE,
-		       "Not enough memory for the module");
+		       "not enough memory for the module");
   if (grub_file_seek (file, off) == (grub_off_t) -1)
     return grub_errno;
   if (grub_file_read (file, where, size)
@@ -116,7 +116,7 @@ SUFFIX (grub_freebsd_load_elfmodule_obj) (grub_file_t file, int argc,
 	case SHT_NOBITS:
 	  if (curload + s->sh_size > grub_os_area_addr + grub_os_area_size)
 	    return grub_error (GRUB_ERR_OUT_OF_RANGE,
-			       "Not enough memory for the module");
+			       "not enough memory for the module");
 	  grub_memset (UINT_TO_PTR (curload), 0, s->sh_size);
 	  break;
 	}
@@ -185,7 +185,7 @@ SUFFIX (grub_freebsd_load_elfmodule) (grub_file_t file, int argc, char *argv[],
 	  if (module + s->sh_addr + s->sh_size
 	      > grub_os_area_addr + grub_os_area_size)
 	    return grub_error (GRUB_ERR_OUT_OF_RANGE,
-			       "Not enough memory for the module");
+			       "not enough memory for the module");
 	  grub_memset (UINT_TO_PTR (module + s->sh_addr), 0, s->sh_size);
 	  break;
 	}
@@ -259,7 +259,7 @@ SUFFIX (grub_freebsd_load_elf_meta) (grub_file_t file, grub_addr_t *kern_end)
   if (*kern_end + 4 * sizeof (grub_freebsd_addr_t) + symsize + strsize
       > grub_os_area_addr + grub_os_area_size)
     return grub_error (GRUB_ERR_OUT_OF_RANGE,
-		       "Not enough memory for kernel symbols");
+		       "not enough memory for kernel symbols");
 
   symstart = curload = ALIGN_UP (*kern_end, sizeof (grub_freebsd_addr_t));
   *((grub_freebsd_addr_t *) UINT_TO_PTR (curload)) = symsize;
@@ -271,7 +271,7 @@ SUFFIX (grub_freebsd_load_elf_meta) (grub_file_t file, grub_addr_t *kern_end)
       (grub_ssize_t) symsize)
     {
       if (! grub_errno)
-	return grub_error (GRUB_ERR_BAD_OS, "invalid elf");
+	return grub_error (GRUB_ERR_BAD_OS, "invalid ELF");
       return grub_errno;
     }
   curload += symsize;
@@ -285,7 +285,7 @@ SUFFIX (grub_freebsd_load_elf_meta) (grub_file_t file, grub_addr_t *kern_end)
       != (grub_ssize_t) strsize)
     {
       if (! grub_errno)
-	return grub_error (GRUB_ERR_BAD_OS, "invalid elf");
+	return grub_error (GRUB_ERR_BAD_OS, "invalid ELF");
       return grub_errno;
     }
   curload += strsize;

@@ -85,7 +85,7 @@ acorn_partition_map_find (grub_disk_t disk, struct linux_part *m,
 
 fail:
   return grub_error (GRUB_ERR_BAD_PART_TABLE,
-		     "Linux/ADFS partition map not found.");
+		     "Linux/ADFS partition map not found");
 
 }
 
@@ -175,14 +175,7 @@ fail:
 static char *
 acorn_partition_map_get_name (const grub_partition_t p)
 {
-  char *name;
-
-  name = grub_malloc (13);
-  if (! name)
-    return 0;
-
-  grub_sprintf (name, "%d", p->index + 1);
-  return name;
+  return grub_xasprintf ("%d", p->index + 1);
 }
 
 

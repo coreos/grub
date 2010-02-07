@@ -35,6 +35,37 @@
 #define  GRUB_PCI_ADDR_MEM_MASK		~0xf
 #define  GRUB_PCI_ADDR_IO_MASK		~0x03
 
+#define  GRUB_PCI_REG_PCI_ID       0x00
+#define  GRUB_PCI_REG_VENDOR       0x00
+#define  GRUB_PCI_REG_DEVICE       0x02
+#define  GRUB_PCI_REG_COMMAND      0x04
+#define  GRUB_PCI_REG_STATUS       0x06
+#define  GRUB_PCI_REG_REVISION     0x08
+#define  GRUB_PCI_REG_CLASS        0x08
+#define  GRUB_PCI_REG_CACHELINE    0x0c
+#define  GRUB_PCI_REG_LAT_TIMER    0x0d
+#define  GRUB_PCI_REG_HEADER_TYPE  0x0e
+#define  GRUB_PCI_REG_BIST         0x0f
+#define  GRUB_PCI_REG_ADDRESSES    0x10
+
+/* Beware that 64-bit address takes 2 registers.  */
+#define  GRUB_PCI_REG_ADDRESS_REG0 0x10
+#define  GRUB_PCI_REG_ADDRESS_REG1 0x14
+#define  GRUB_PCI_REG_ADDRESS_REG2 0x18
+#define  GRUB_PCI_REG_ADDRESS_REG3 0x1c
+#define  GRUB_PCI_REG_ADDRESS_REG4 0x20
+#define  GRUB_PCI_REG_ADDRESS_REG5 0x24
+
+#define  GRUB_PCI_REG_CIS_POINTER  0x28
+#define  GRUB_PCI_REG_SUBVENDOR    0x2c
+#define  GRUB_PCI_REG_SUBSYSTEM    0x2e
+#define  GRUB_PCI_REG_ROM_ADDRESS  0x30
+#define  GRUB_PCI_REG_CAP_POINTER  0x34
+#define  GRUB_PCI_REG_IRQ_LINE     0x3c
+#define  GRUB_PCI_REG_IRQ_PIN      0x3d
+#define  GRUB_PCI_REG_MIN_GNT      0x3e
+#define  GRUB_PCI_REG_MAX_LAT      0x3f
+
 typedef grub_uint32_t grub_pci_id_t;
 
 #ifdef GRUB_UTIL

@@ -1,0 +1,128 @@
+# GRUB gfxmenu theme "winter".
+# Uses background image from:
+# http://www.cyberpunkcafe.com/e107_plugins/autogallery/autogallery.php?show=1.Open%20Source%20Wallpaper
+# "without-leaves.png" was called "Without Leafs in Winter.png"
+
+lua-script: "winter.lua"
+title-text: ""
+title-font: "Helvetica Bold 18"
+status-font: "Helvetica 8"
+terminal-font: "Fixed 9"
+title-color: "40, 40, 40"
+status-color: "#FFF"
+status-bg-color: "0, 166, 183, 128"
+desktop-image: "without-leaves.png"
+desktop-color: "0, 154, 183"
+terminal-box: "terminal_*.png"
+
++ boot_menu {
+   position = (120, 60)
+   preferred_size = (400, -1)
+   item_font = "Helvetica Bold 14"
+   selected_item_font = "Helvetica Bold 14"
+   item_color = "0, 0, 0"
+   selected_item_color = "203, 251, 255"
+   menu_pixmap_style = "menu_*.png"
+   selected_item_pixmap_style = "select_*.png"
+   icon_width = 44
+   icon_height = 44
+   item_height = 32
+   item_padding = 0
+   item_icon_space = 3
+   item_spacing = 11
+}
+
+# You can add text at arbitrary locations on the screen.
+# The specification within the "+label {...}" block is free-form,
+# so you can use as much or as little white space as you like.
+
++ label {
+   position = (170, 50)
+   font = "smoothansi 13"
+   color = "0,0,128"
+   text = "This is the Winter theme ... brought to you by GRUB!"
+}
+
+# Show the text alignment supported by labels.
++ vbox {
+   position = (220, 347)
+   preferred_size = (200, -1)     # A preferred size of -1 means automatic.
+   + label { text="Text alignment demo" align="center" font="aqui 11" }
+   + label { text="Left" align="left" font="cure 11" }
+   + label { text="Center" align="center" font="cure 11" }
+   + label { text="Right" align="right" font="cure 11" }
+}
+
++ vbox {
+   position = (580, 10)
+   + label { text="GNU" font="gelly 11" color="0, 0, 0" }
+   + label { text="GRUB" font="aqui 11" color="0, 0, 0" }
+   + label { text="boot loader" font="cure 11" color="0, 0, 0" }
+}
+
++ hbox {
+   position = (80, 10)
+   + label { text="GNU" font="gelly 11" color="0, 0, 0" }
+   + label { text="GRUB" font="aqui 11" color="0, 0, 0" }
+   + label { text="boot loader" font="cure 11" color="0, 0, 0" }
+}
+
+# Demonstration of a compound layout: boxes within boxes.
++ hbox
+{
+   position = (480, 3)
+
+   + vbox
+   {
+      # Note: We can't just use 'size' to set the image's size,
+      #       since the vbox will resize the component according to its
+      #       preferred size, which for images is the native image size.
+
+      + image { file="/boot/grub/themes/icons/ubuntu.png"
+                preferred_size = (20, 20) }
+      + image { file="/boot/grub/themes/icons/gentoo.png"
+                preferred_size = (20, 20) }
+   }
+
+   + vbox
+   {
+      + label { text="GRand" font="cure 11" color=#99F }
+      + label { text="Unified" font="cure 11" color=#BBF }
+      + label { text="Bootloader" font="cure 11" color=#DDF }
+   }
+}
+
+# By defining a 'progress_bar' type component with an ID of '__timeout__',
+# the progress bar will be used to display the time remaining before an
+# the default entry is automatically booted.
++ progress_bar
+{
+   id = "__timeout__"
+   position = (80, 393)
+   preferred_size = (500, 24)
+   font = "cure 11"
+   text_color = #000
+   fg_color = #CCF
+   bg_color = #66B
+   border_color = #006
+   show_text = false
+}
+
+# Although the progress_bar component is normally used to indicate the
+# time remaining, it's also possible to create other components with an ID
+# of '__timeout__'.  All components with and ID of 'timeout_bar' will have
+# the following properties set based on the timeout value:
+#   text, value, start, end, visible.
+# In this case, we have set 'show_text=false' on the progress bar, and use
+# the following label's 'text' property to display the message.
++ label
+{
+   id = "__timeout__"
+   position = (80, 420)
+   preferred_size = (500, 24)
+   font = "lime 11"
+   color = #117
+   align = "center"
+}
+
+

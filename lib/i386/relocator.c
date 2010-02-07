@@ -85,14 +85,14 @@ write_call_relocator_fw (void *ptr, void *src, grub_uint32_t dest,
   grub_relocator32_forward_dest = dest;
   grub_relocator32_forward_src = PTR_TO_UINT64 (src);
   grub_relocator32_forward_size = size;
-  
+
   grub_relocator32_forward_eax = state.eax;
   grub_relocator32_forward_ebx = state.ebx;
   grub_relocator32_forward_ecx = state.ecx;
   grub_relocator32_forward_edx = state.edx;
   grub_relocator32_forward_eip = state.eip;
   grub_relocator32_forward_esp = state.esp;
-  
+
   grub_memmove (ptr,
 		&grub_relocator32_forward_start,
 		RELOCATOR_SIZEOF (forward));

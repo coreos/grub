@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -386,8 +386,6 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
   char *tmp_buf;
   unsigned real_offset;
 
-  grub_dprintf ("disk", "Reading `%s'...\n", disk->name);
-
   /* First of all, check if the region is within the disk.  */
   if (grub_disk_adjust_range (disk, &sector, &offset, size) != GRUB_ERR_NONE)
     {
@@ -432,8 +430,9 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
       else
 	{
 	  /* Otherwise read data from the disk actually.  */
-	  if ((disk->dev->read) (disk, start_sector,
-				 GRUB_DISK_CACHE_SIZE, tmp_buf)
+	  if (start_sector + GRUB_DISK_CACHE_SIZE > disk->total_sectors
+	      || (disk->dev->read) (disk, start_sector,
+				    GRUB_DISK_CACHE_SIZE, tmp_buf)
 	      != GRUB_ERR_NONE)
 	    {
 	      /* Uggh... Failed. Instead, just read necessary data.  */
@@ -442,7 +441,7 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 
 	      grub_errno = GRUB_ERR_NONE;
 
-	      num = ((size + GRUB_DISK_SECTOR_SIZE - 1)
+	      num = ((size + real_offset + GRUB_DISK_SECTOR_SIZE - 1)
 		     >> GRUB_DISK_SECTOR_BITS);
 
 	      p = grub_realloc (tmp_buf, num << GRUB_DISK_SECTOR_BITS);
@@ -465,12 +464,14 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	      if (disk->read_hook)
 		while (size)
 		  {
+		    grub_size_t to_read = (size > GRUB_DISK_SECTOR_SIZE) ? GRUB_DISK_SECTOR_SIZE : size;
 		    (disk->read_hook) (sector, real_offset,
-				       ((size > GRUB_DISK_SECTOR_SIZE)
-					? GRUB_DISK_SECTOR_SIZE
-					: size));
+				       to_read);
+		    if (grub_errno != GRUB_ERR_NONE)
+		      goto finish;
+
 		    sector++;
-		    size -= GRUB_DISK_SECTOR_SIZE - real_offset;
+		    size -= to_read - real_offset;
 		    real_offset = 0;
 		  }
 

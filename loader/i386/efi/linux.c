@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include <grub/pci.h>
 #include <grub/command.h>
 #include <grub/memory.h>
+#include <grub/i18n.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
 #define GRUB_LINUX_CL_END_OFFSET	0x2000
@@ -477,7 +478,7 @@ find_framebuf (grub_uint32_t *fb_base, grub_uint32_t *line_len)
     {
       grub_pci_address_t addr;
 
-      addr = grub_pci_make_address (dev, 2);
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
       if (grub_pci_read (addr) >> 24 == 0x3)
 	{
 	  int i;
@@ -586,7 +587,7 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   params->reserved_mask_size = 8;
   params->reserved_field_pos = 24;
 
-  params->have_vga = GRUB_VIDEO_TYPE_VLFB;
+  params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
   params->vid_mode = 0x338;  /* 1024x768x32  */
 
   return 0;
@@ -619,7 +620,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_file_read (file, &lh, sizeof (lh)) != sizeof (lh))
     {
-      grub_error (GRUB_ERR_READ_ERROR, "cannot read the linux header");
+      grub_error (GRUB_ERR_READ_ERROR, "cannot read the Linux header");
       goto fail;
     }
 
@@ -671,12 +672,11 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   len = 0x400 - sizeof (lh);
   if (grub_file_read (file, (char *) real_mode_mem + sizeof (lh), len) != len)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 
-  /* XXX Linux assumes that only elilo can boot Linux on EFI!!!  */
-  params->type_of_loader = (LINUX_LOADER_ID_ELILO << 4);
+  params->type_of_loader = (LINUX_LOADER_ID_GRUB << 4);
 
   params->cl_magic = GRUB_LINUX_CL_MAGIC;
   params->cl_offset = 0x1000;
@@ -693,13 +693,32 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   params->ext_mem = ((32 * 0x100000) >> 10);
   params->alt_mem = ((32 * 0x100000) >> 10);
 
-  params->video_cursor_x = grub_getxy () >> 8;
-  params->video_cursor_y = grub_getxy () & 0xff;
+  {
+    grub_term_output_t term;
+    int found = 0;
+    FOR_ACTIVE_TERM_OUTPUTS(term)
+      if (grub_strcmp (term->name, "vga_text") == 0
+	  || grub_strcmp (term->name, "console") == 0)
+	{
+	  grub_uint16_t pos = grub_term_getxy (term);
+	  params->video_cursor_x = pos >> 8;
+	  params->video_cursor_y = pos & 0xff;
+	  params->video_width = grub_term_width (term);
+	  params->video_height = grub_term_height (term);
+	  found = 1;
+	  break;
+	}
+    if (!found)
+      {
+	params->video_cursor_x = 0;
+	params->video_cursor_y = 0;
+	params->video_width = 80;
+	params->video_height = 25;
+      }
+  }
   params->video_page = 0; /* ??? */
   params->video_mode = grub_efi_system_table->con_out->mode->mode;
-  params->video_width = (grub_getwh () >> 8);
   params->video_ega_bx = 0;
-  params->video_height = (grub_getwh () & 0xff);
   params->have_vga = 0;
   params->font_size = 16; /* XXX */
 
@@ -832,7 +851,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     else if (grub_memcmp (argv[i], "video=efifb", 11) == 0)
       {
 	if (params->have_vga)
-	  params->have_vga = GRUB_VIDEO_TYPE_EFI;
+	  params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
       }
 
   /* Specify the boot file.  */
@@ -853,7 +872,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   len = prot_size;
   if (grub_file_read (file, (void *) GRUB_LINUX_BZIMAGE_ADDR, len) != len)
-    grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+    grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
 
   if (grub_errno == GRUB_ERR_NONE)
     {
@@ -890,13 +909,13 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
       goto fail;
     }
 
   if (! loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load the kernel first");
       goto fail;
     }
 
@@ -966,7 +985,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_file_read (file, initrd_mem, size) != size)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 
@@ -989,9 +1008,9 @@ static grub_command_t cmd_linux, cmd_initrd;
 GRUB_MOD_INIT(linux)
 {
   cmd_linux = grub_register_command ("linux", grub_cmd_linux,
-				     0, "load linux");
+				     0, N_("Load Linux."));
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
-				      0, "load initrd");
+				      0, N_("Load initrd."));
   my_mod = mod;
 }
 

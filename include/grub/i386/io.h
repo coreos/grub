@@ -21,6 +21,8 @@
 #ifndef	GRUB_IO_H
 #define	GRUB_IO_H	1
 
+typedef unsigned short int grub_port_t;
+
 static __inline unsigned char
 grub_inb (unsigned short int port)
 {

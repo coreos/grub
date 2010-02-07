@@ -94,13 +94,22 @@ convert_system_path_to_grub_path ()
   echo ${drive}${relative_path}
 }
 
+save_default_entry ()
+{
+  if [ "x${GRUB_DEFAULT}" = "xsaved" ] ; then
+    cat << EOF
+savedefault
+EOF
+  fi
+}
+
 prepare_grub_to_access_device ()
 {
   device=$1
 
   # Abstraction modules aren't auto-loaded.
   abstraction="`${grub_probe} --device ${device} --target=abstraction`"
-  for module in ${abstraction} ; do 
+  for module in ${abstraction} ; do
     echo "insmod ${module}"
   done
 
