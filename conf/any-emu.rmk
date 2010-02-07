@@ -83,7 +83,7 @@ grub_emu_LDFLAGS += $(LIBPCIACCESS)
 endif
 
 
-grub_emu_init.h: genemuinitheader.sh
+grub_emu_init.h: genemuinitheader.sh $(pkglib_MODULES)
 	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinitheader.sh $(NM)  > $@
 DISTCLEANFILES += grub_emu_init.h
 
