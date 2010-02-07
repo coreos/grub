@@ -143,6 +143,13 @@ mostlyclean-module-#{@name}.#{@rule_count}:
 MOSTLYCLEAN_MODULE_TARGETS += mostlyclean-module-#{@name}.#{@rule_count}
 UNDSYMFILES += #{undsym}
 
+ifeq ($(TARGET_NO_DYNAMIC_MODULES), yes)
+#{@name}: #{pre_obj} $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ #{pre_obj}
+	if test ! -z \"$(TARGET_OBJ2ELF)\"; then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@; fi
+else
 ifneq ($(TARGET_APPLE_CC),1)
 #{@name}: #{pre_obj} #{mod_obj} $(TARGET_OBJ2ELF)
 	-rm -f $@
@@ -156,6 +163,7 @@ else
 	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@.bin #{pre_obj} #{mod_obj}
 	$(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -wd1106 -nu -nd $@.bin $@
 	-rm -f $@.bin
+endif
 endif
 
 #{pre_obj}: $(#{prefix}_DEPENDENCIES) #{objs_str}
