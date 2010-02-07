@@ -168,7 +168,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 
   drive = find_grub_drive (name);
   if (drive < 0)
-    return grub_error (GRUB_ERR_BAD_DEVICE,
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "no mapping exists for `%s'", name);
 
   disk->has_partitions = 1;
@@ -949,7 +949,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
   drive = find_system_device (os_dev);
   if (drive < 0)
     {
-      grub_error (GRUB_ERR_BAD_DEVICE,
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		  "no mapping exists for `%s'", os_dev);
       return 0;
     }

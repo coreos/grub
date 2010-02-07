@@ -262,56 +262,6 @@ grub_util_write_image (const char *img, size_t size, FILE *out)
     grub_util_error ("write failed");
 }
 
-void *
-grub_malloc (grub_size_t size)
-{
-  return xmalloc (size);
-}
-
-void *
-grub_zalloc (grub_size_t size)
-{
-  void *ret;
-
-  ret = xmalloc (size);
-  memset (ret, 0, size);
-  return ret;
-}
-
-void
-grub_free (void *ptr)
-{
-  free (ptr);
-}
-
-void *
-grub_realloc (void *ptr, grub_size_t size)
-{
-  return xrealloc (ptr, size);
-}
-
-void *
-grub_memalign (grub_size_t align, grub_size_t size)
-{
-  void *p;
-
-#if defined(HAVE_POSIX_MEMALIGN)
-  if (posix_memalign (&p, align, size) != 0)
-    p = 0;
-#elif defined(HAVE_MEMALIGN)
-  p = memalign (align, size);
-#else
-  (void) align;
-  (void) size;
-  grub_util_error ("grub_memalign is not supported");
-#endif
-
-  if (! p)
-    grub_util_error ("out of memory");
-
-  return p;
-}
-
 /* Some functions that we don't use.  */
 void
 grub_mm_init_region (void *addr __attribute__ ((unused)),
@@ -376,7 +326,7 @@ grub_millisleep (grub_uint32_t ms)
 
 #endif
 
-#if !(defined (__i386__) || defined (__x86_64__))
+#if !(defined (__i386__) || defined (__x86_64__)) && GRUB_NO_MODULES
 void
 grub_arch_sync_caches (void *address __attribute__ ((unused)),
 		       grub_size_t len __attribute__ ((unused)))

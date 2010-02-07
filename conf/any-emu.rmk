@@ -7,7 +7,6 @@ COMMON_CFLAGS +=
 script/lexer.c_DEPENDENCIES = grub_script.tab.h
 
 #sbin_UTILITIES += grub-emu
-util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
 kernel_img_RELOCATABLE = yes
 pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
@@ -18,9 +17,9 @@ kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
 	kern/rescue_reader.c kern/rescue_parser.c			\
 	\
 	util/console.c  util/grub-emu.c util/misc.c			\
-	util/hostdisk.c util/getroot.c					\
+	util/hostdisk.c util/getroot.c util/mm.c			\
 	\
-	gnulib/progname.c util/hostfs.c
+	gnulib/progname.c util/hostfs.c disk/host.c
 kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
@@ -30,9 +29,15 @@ kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 TARGET_NO_STRIP = yes
 
 ifneq ($(TARGET_NO_MODULES), yes)
-kernel_img_SOURCES += symlist.c
+kernel_img_SOURCES += symlist.c kern/$(target_cpu)/dl.c
+ifneq ($(target_cpu), i386)
+ifneq ($(target_cpu), x86_64)
+kernel_img_SOURCES += kern/$(target_cpu)/cache.S
+endif
+endif
 else
 kernel_img_SOURCES += grub_emu_init.c
+grub_emu_init.c_DEPENDENCIES = grub_emu_init.h
 endif
 
 # For boot.mod.
@@ -40,12 +45,6 @@ pkglib_MODULES += boot.mod
 boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
 boot_mod_CFLAGS = $(COMMON_CFLAGS)
 boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For host.mod.
-pkglib_MODULES += host.mod
-host_mod_SOURCES = disk/host.c
-host_mod_CFLAGS = $(COMMON_CFLAGS)
-host_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod.
 pkglib_MODULES += reboot.mod
