@@ -157,8 +157,6 @@ main (int argc, char *argv[])
 
   set_program_name (argv[0]);
 
-  grub_util_init_nls ();
-
   while ((opt = getopt_long (argc, argv, "r:d:m:vH:hV", options, 0)) != -1)
     switch (opt)
       {

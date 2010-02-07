@@ -1,7 +1,7 @@
 # -*- makefile -*-
 
 COMMON_LDFLAGS += -nostdlib
-COMMON_CFLAGS += -DGRUB_UTIL=1
+COMMON_CFLAGS +=
 
 # Used by various components.  These rules need to precede them.
 script/lexer.c_DEPENDENCIES = grub_script.tab.h
@@ -21,7 +21,7 @@ kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
 	util/hostdisk.c util/getroot.c					\
 	\
 	grub_emu_init.c gnulib/progname.c
-kernel_img_CFLAGS = $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1
+kernel_img_CFLAGS = $(CPPFLAGS) $(CFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 TARGET_NO_STRIP = yes
 TARGET_NO_DYNAMIC_MODULES = yes
