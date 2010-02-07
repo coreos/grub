@@ -11,12 +11,12 @@ pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
 	kern/err.c kern/list.c kern/handler.c				\
 	kern/command.c kern/corecmd.c kern/file.c			\
-	kern/fs.c kern/main.c kern/misc.c kern/parser.c	\
+	kern/fs.c kern/main.c kern/misc.c kern/parser.c			\
 	kern/partition.c kern/term.c					\
 	kern/rescue_reader.c kern/rescue_parser.c			\
 	\
 	util/console.c  util/grub-emu.c util/misc.c			\
-	util/hostdisk.c util/getroot.c util/mm.c			\
+	util/hostdisk.c util/getroot.c util/mm.c util/time.c		\
 	\
 	gnulib/progname.c util/hostfs.c disk/host.c
 kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
@@ -37,18 +37,6 @@ endif
 else
 kernel_img_SOURCES += grub_emu_init.c
 endif
-
-# For boot.mod.
-pkglib_MODULES += boot.mod
-boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
-boot_mod_CFLAGS = $(COMMON_CFLAGS)
-boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For reboot.mod.
-pkglib_MODULES += reboot.mod
-reboot_mod_SOURCES = commands/reboot.c
-reboot_mod_CFLAGS = $(COMMON_CFLAGS)
-reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod.
 pkglib_MODULES += halt.mod
