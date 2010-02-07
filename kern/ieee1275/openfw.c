@@ -405,8 +405,9 @@ grub_reboot (void)
 void
 grub_halt (void)
 {
-  /* Not standardized.  We try both known commands.  */
+  /* Not standardized.  We try three known commands.  */
 
   grub_ieee1275_interpret ("shut-down", 0);
   grub_ieee1275_interpret ("power-off", 0);
+  grub_ieee1275_interpret ("poweroff", 0);
 }

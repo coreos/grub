@@ -1,5 +1,9 @@
 2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/ieee1275/openfw.c (grub_halt): Try executing "poweroff".
+
+2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* genkernsyms.sh.in: Use TARGET_CC.
 
 2010-02-07  Colin Watson  <cjwatson@ubuntu.com>
