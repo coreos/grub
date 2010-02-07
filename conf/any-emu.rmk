@@ -13,30 +13,33 @@ pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
 	kern/err.c kern/list.c kern/handler.c				\
 	kern/command.c kern/corecmd.c kern/file.c			\
-	kern/fs.c commands/boot.c kern/main.c kern/misc.c kern/parser.c	\
+	kern/fs.c kern/main.c kern/misc.c kern/parser.c	\
 	kern/partition.c kern/term.c					\
 	kern/rescue_reader.c kern/rescue_parser.c			\
 	\
 	util/console.c  util/grub-emu.c util/misc.c			\
 	util/hostdisk.c util/getroot.c					\
 	\
-	grub_emu_init.c
-kernel_img_CFLAGS = $(CPPFLAGS) $(CFLAGS)
+	gnulib/progname.c util/hostfs.c
+kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
+	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
+	list.h handler.h command.h i18n.h env_private.h
+kernel_img_CFLAGS = $(CPPFLAGS) $(CFLAGS) -Wno-undef
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 TARGET_NO_STRIP = yes
-TARGET_NO_DYNAMIC_MODULES = yes
 
-# progname.c always has warnings. Compile it separately.
-pkglib_MODULES += progname.mod
-progname_mod_SOURCES = gnulib/progname.c
-progname_mod_CFLAGS = $(COMMON_CFLAGS) -Wno-error
-progname_mod_LDFLAGS = $(COMMON_LDFLAGS)
+ifneq ($(TARGET_NO_MODULES), yes)
+kernel_img_SOURCES += symlist.c
+else
+kernel_img_SOURCES += grub_emu_init.c
+endif
 
-# For hostfs.mod.
-pkglib_MODULES += hostfs.mod
-hostfs_mod_SOURCES = util/hostfs.c
-hostfs_mod_CFLAGS = $(COMMON_CFLAGS)
-hostfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
+# For boot.mod.
+pkglib_MODULES += boot.mod
+boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
+boot_mod_CFLAGS = $(COMMON_CFLAGS)
+boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For host.mod.
 pkglib_MODULES += host.mod
@@ -77,8 +80,10 @@ endif
 ifeq ($(enable_grub_emu_sdl), yes)
 pkglib_MODULES += sdl.mod
 sdl_mod_SOURCES = util/sdl.c
+sdl_mod_CFLAGS = $(COMMON_CFLAGS)
 sdl_mod_LDFLAGS = $(COMMON_LDFLAGS)
 grub_emu_LDFLAGS += $(LIBSDL)
+kernel_img_HEADERS += sdl.h
 endif
 
 ifeq ($(enable_grub_emu_pci), yes)
@@ -90,6 +95,14 @@ endif
 
 include $(srcdir)/conf/common.mk
 
+MOSTLYCLEANFILES += symlist.c kernel_syms.lst
+DEFSYMFILES += kernel_syms.lst
+symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
+	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
+
+kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
+	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
+
 grub_emu_init.h: genemuinitheader.sh $(pkglib_MODULES)
 	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinitheader.sh $(NM)  > $@
 DISTCLEANFILES += grub_emu_init.h
@@ -99,7 +112,12 @@ grub_emu_init.c: genemuinit.sh $(pkglib_MODULES)
 DISTCLEANFILES += grub_emu_init.c
 
 CLEANFILES += grub-emu
+ifneq ($(TARGET_NO_MODULES), yes)
+grub-emu: $(pkglib_PROGRAMS)
+	$(CC) -o $@ $(pkglib_PROGRAMS) $(grub_emu_LDFLAGS) $(LDFLAGS)
+else
 grub-emu: $(pkglib_MODULES) $(pkglib_PROGRAMS)
 	$(CC) -o $@ $(pkglib_MODULES) $(pkglib_PROGRAMS) $(grub_emu_LDFLAGS) $(LDFLAGS)
+endif
 GRUB_EMU=grub-emu
 

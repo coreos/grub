@@ -146,6 +146,9 @@ usage (int status)
 }
 
 
+void grub_hostfs_init (void);
+void grub_hostfs_fini (void);
+
 int
 main (int argc, char *argv[])
 {
@@ -204,11 +207,14 @@ main (int argc, char *argv[])
 
   signal (SIGINT, SIG_IGN);
   grub_console_init ();
+  grub_hostfs_init ();
 
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (dev_map);
 
+#if GRUB_NO_MODULES
   grub_init_all ();
+#endif
 
   /* Make sure that there is a root device.  */
   if (! root_dev)
@@ -235,7 +241,10 @@ main (int argc, char *argv[])
   if (setjmp (main_env) == 0)
     grub_main ();
 
+#if GRUB_NO_MODULES
   grub_fini_all ();
+#endif
+  grub_hostfs_fini ();
 
   grub_machine_fini ();
 

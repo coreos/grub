@@ -319,10 +319,12 @@ grub_mm_init_region (void *addr __attribute__ ((unused)),
 {
 }
 
+#if GRUB_NO_MODULES
 void
 grub_register_exported_symbols (void)
 {
 }
+#endif
 
 void
 grub_exit (void)

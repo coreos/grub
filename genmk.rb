@@ -143,7 +143,7 @@ mostlyclean-module-#{@name}.#{@rule_count}:
 MOSTLYCLEAN_MODULE_TARGETS += mostlyclean-module-#{@name}.#{@rule_count}
 UNDSYMFILES += #{undsym}
 
-ifeq ($(TARGET_NO_DYNAMIC_MODULES), yes)
+ifeq ($(TARGET_NO_MODULES), yes)
 #{@name}: #{pre_obj} $(TARGET_OBJ2ELF)
 	-rm -f $@
 	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ #{pre_obj}
@@ -322,28 +322,32 @@ class Program
   end
   attr_reader :dir, :name
 
+  def print_tail()
+    prefix = @name.to_var
+    print "CLEANFILES += #{@name} $(#{prefix}_OBJECTS)
+ifeq ($(#{prefix}_RELOCATABLE),yes)
+#{@name}: $(#{prefix}_DEPENDENCIES) $(#{prefix}_OBJECTS)
+	$(TARGET_CC) -Wl,-r,-d -o $@ $(#{prefix}_OBJECTS) $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
+	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) --strip-unneeded -K start -R .note -R .comment $@; fi
+else
+#{@name}: $(#{prefix}_DEPENDENCIES) $(#{prefix}_OBJECTS)
+	$(TARGET_CC) -o $@ $(#{prefix}_OBJECTS) $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
+	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) -R .rel.dyn -R .reginfo -R .note -R .comment $@; fi
+endif
+
+"
+  end
+
   def rule(sources)
     prefix = @name.to_var
     objs = sources.collect do |src|
       raise "unknown source file `#{src}'" if /\.[cS]$/ !~ src
       prefix + '-' + src.to_obj
     end
-    objs_str = objs.join(' ');
     deps = objs.collect {|obj| obj.suffix('d')}
     deps_str = deps.join(' ');
 
-    "CLEANFILES += #{@name} #{objs_str}
-MOSTLYCLEANFILES += #{deps_str}
-
-ifeq ($(#{prefix}_RELOCATABLE),yes)
-#{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
-	$(TARGET_CC) -Wl,-r,-d -o $@ #{objs_str} $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
-	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) --strip-unneeded -K start -R .note -R .comment $@; fi
-else
-#{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
-	$(TARGET_CC) -o $@ #{objs_str} $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
-	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) -R .rel.dyn -R .reginfo -R .note -R .comment $@; fi
-endif
+    "MOSTLYCLEANFILES += #{deps_str}
 
 " + objs.collect_with_index do |obj, i|
       src = sources[i]
@@ -358,6 +362,7 @@ endif
 
 -include #{dep}
 
+#{prefix}_OBJECTS += #{obj}
 "
     end.join('')
   end
@@ -466,4 +471,5 @@ while l = gets
 
 end
 utils.each {|util| util.print_tail()}
+programs.each {|program| program.print_tail()}
 
