@@ -1120,6 +1120,7 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 {
   struct grub_video_signed_rect bounds;
   unsigned i;
+  signed above_rightx, above_righty;
   auto void NESTED_FUNC_ATTR do_blit (struct grub_font_glyph *src,
 				      signed dx, signed dy);
   void NESTED_FUNC_ATTR do_blit (struct grub_font_glyph *src,
@@ -1162,6 +1163,9 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
   bounds.width = main_glyph->width;
   bounds.height = main_glyph->height;
 
+  above_rightx = bounds.x + bounds.width;
+  above_righty = bounds.y + bounds.height;
+
   for (i = 0; i < glyph_id->ncomb; i++)
     {
       enum grub_comb_type combtype;
@@ -1180,6 +1184,14 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 		   (bounds.height - combining_glyphs[i]->height) / 2
 		   -(bounds.height + bounds.y));
 	  minimal_device_width (combining_glyphs[i]->width);
+	  break;
+
+	case GRUB_UNICODE_COMB_ABOVE_RIGHT:
+	  do_blit (combining_glyphs[i], above_rightx,
+		   -(above_righty + space
+		     + combining_glyphs[i]->height));
+	  above_rightx += combining_glyphs[i]->width;
+	  minimal_device_width (above_rightx);
 	  break;
 
 	case GRUB_UNICODE_STACK_ABOVE:
