@@ -50,7 +50,11 @@ EOF
 }
 
 # Check the arguments.
-for option in "$@"; do
+while test $# -gt 0
+do
+    option=$1
+    shift
+
     case "$option" in
     -h | --help)
 	usage
@@ -58,9 +62,9 @@ for option in "$@"; do
     -v | --version)
 	echo "$0 (GNU GRUB ${package_version})"
 	exit 0 ;;
-    -o)
-	shift
+    -o | --output)
 	grub_cfg=$1
+	shift
 	;;
     --output=*)
 	grub_cfg=`echo "$option" | sed 's/--output=//'`

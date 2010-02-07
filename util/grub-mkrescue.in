@@ -42,8 +42,8 @@ Make GRUB rescue image.
 
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
+  -o, --output=FILE       save output in FILE [required]
   --modules=MODULES       pre-load specified modules MODULES
-  --output=FILE           save output in FILE [required]
 
 $0 generates a bootable rescue image with specified source files or directories.
 
@@ -52,7 +52,11 @@ EOF
 }
 
 # Check the arguments.
-for option in "$@"; do
+while test $# -gt 0
+do
+    option=$1
+    shift
+
     case "$option" in
     -h | --help)
 	usage
@@ -60,11 +64,24 @@ for option in "$@"; do
     -v | --version)
 	echo "$0 (GNU GRUB ${PACKAGE_VERSION})"
 	exit 0 ;;
+
+    --modules)
+        modules=$1; shift ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
+
+    -o | --output)
+	output_image=$1; shift ;;
     --output=*)
 	output_image=`echo "$option" | sed 's/--output=//'` ;;
+
     # Intentionally undocumented
+    --override-directory)
+        override_dir=$1
+	shift
+	PATH=${override_dir}:$PATH
+	export PATH
+	;;
     --override-directory=*)
 	override_dir=`echo "${option}/" | sed 's/--override-directory=//'`
 	PATH=${override_dir}:$PATH
