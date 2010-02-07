@@ -1,6 +1,10 @@
+2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/multiboot2.h: Remove leftover file.
+
 2010-02-07  Yves Blusseau  <blusseau@zetam.org>
 
-    * gnulib/getdelim.c: add missing header (type ssize_t must be defined).
+	* gnulib/getdelim.c: add missing header (type ssize_t must be defined).
 
 2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
