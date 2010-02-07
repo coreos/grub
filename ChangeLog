@@ -1,3 +1,7 @@
+2010-02-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* NEWS: Update.
+
 2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/multiboot2.h: Remove leftover file.
