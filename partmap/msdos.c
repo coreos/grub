@@ -40,7 +40,6 @@ pc_partition_map_iterate (grub_disk_t disk,
 
   p.offset = 0;
   ext_offset = 0;
-  p.data = 0;
   p.number = -1;
   p.partmap = &grub_msdos_partition_map;
 

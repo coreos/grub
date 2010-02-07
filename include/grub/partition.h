@@ -60,9 +60,6 @@ struct grub_partition
   /* The index of this partition in the partition table.  */
   int index;
 
-  /* Partition map type specific data.  */
-  void *data;
-
   /* Parent partition map.  */
   struct grub_partition *parent;
 

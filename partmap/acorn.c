@@ -106,7 +106,6 @@ acorn_partition_map_iterate (grub_disk_t disk,
     return err;
 
   part.partmap = &grub_acorn_partition_map;
-  part.data = 0;
 
   for (i = 0; i != LINUX_MAP_ENTRIES; ++i)
     {

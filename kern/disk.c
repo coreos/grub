@@ -342,7 +342,6 @@ grub_disk_close (grub_disk_t disk)
   while (disk->partition)
     {
       part = disk->partition->parent;
-      grub_free (disk->partition->data);
       grub_free (disk->partition);
       disk->partition = part;
     }

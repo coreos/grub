@@ -71,15 +71,11 @@ gpt_partition_map_iterate (grub_disk_t disk,
   grub_dprintf ("gpt", "Read a valid GPT header\n");
 
   entries = grub_le_to_cpu64 (gpt.partitions);
-  part.data = grub_malloc (sizeof (entry));
   for (i = 0; i < grub_le_to_cpu32 (gpt.maxpart); i++)
     {
       if (grub_disk_read (disk, entries, last_offset,
 			  sizeof (entry), &entry))
-	{
-	  grub_free (part.data);
-	  return grub_errno;
-	}
+	return grub_errno;
 
       if (grub_memcmp (&grub_gpt_partition_type_empty, &entry.type,
 		       sizeof (grub_gpt_partition_type_empty)))
@@ -92,7 +88,6 @@ gpt_partition_map_iterate (grub_disk_t disk,
 	  part.number = i;
 	  part.index = last_offset;
 	  part.partmap = &grub_gpt_partition_map;
-	  grub_memcpy (part.data, &entry, sizeof (entry));
 
 	  grub_dprintf ("gpt", "GPT entry %d: start=%lld, length=%lld\n", i,
 			(unsigned long long) part.start,
@@ -109,8 +104,6 @@ gpt_partition_map_iterate (grub_disk_t disk,
 	  entries++;
 	}
     }
-
-  grub_free (part.data);
 
   return GRUB_ERR_NONE;
 }
