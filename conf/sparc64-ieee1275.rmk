@@ -133,4 +133,21 @@ lsmmap_mod_SOURCES = commands/lsmmap.c
 lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
 lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += datetime.mod date.mod datehook.mod
+
+# For datetime.mod
+datetime_mod_SOURCES = lib/ieee1275/datetime.c
+datetime_mod_CFLAGS = $(COMMON_CFLAGS)
+datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For date.mod
+date_mod_SOURCES = commands/date.c
+date_mod_CFLAGS = $(COMMON_CFLAGS)
+date_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datehook.mod
+datehook_mod_SOURCES = hook/datehook.c
+datehook_mod_CFLAGS = $(COMMON_CFLAGS)
+datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 include $(srcdir)/conf/common.mk
