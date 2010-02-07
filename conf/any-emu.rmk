@@ -20,11 +20,17 @@ kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
 	util/console.c  util/grub-emu.c util/misc.c			\
 	util/hostdisk.c util/getroot.c					\
 	\
-	grub_emu_init.c gnulib/progname.c
+	grub_emu_init.c
 kernel_img_CFLAGS = $(CPPFLAGS) $(CFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 TARGET_NO_STRIP = yes
 TARGET_NO_DYNAMIC_MODULES = yes
+
+# progname.c always has warnings. Compile it separately.
+pkglib_MODULES += progname.mod
+progname_mod_SOURCES = gnulib/progname.c
+progname_mod_CFLAGS = $(COMMON_CFLAGS) -Wno-error
+progname_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For hostfs.mod.
 pkglib_MODULES += hostfs.mod
