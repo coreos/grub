@@ -84,11 +84,11 @@ endif
 
 
 grub_emu_init.h: genemuinitheader.sh
-	rm -f $@; echo $(pkglib_MODULES) |sh $(srcdir)/genemuinitheader.sh  > $@
+	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinitheader.sh $(NM)  > $@
 DISTCLEANFILES += grub_emu_init.h
 
-grub_emu_init.c: genemuinit.sh
-	rm -f $@; echo $(pkglib_MODULES) |sed 's,elf.mod,,;s,extcmd.mod,,;s,gzio.mod,,;s,fshelp.mod,,;s,bufio.mod,,;s,setjmp.mod,,;s,crypto.mod,,;s,pbkdf2.mod,,;s,trig.mod,,;s,bitmap_scale.mod,,;s,charset.mod,,;'|sh $(srcdir)/genemuinit.sh > $@
+grub_emu_init.c: genemuinit.sh $(pkglib_MODULES)
+	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinit.sh $(NM) > $@
 DISTCLEANFILES += grub_emu_init.c
 
 include $(srcdir)/conf/common.mk

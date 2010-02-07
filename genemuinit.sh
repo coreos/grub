@@ -11,7 +11,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-lst="$1"
+nm="$1"
 shift
 
 cat <<EOF
@@ -46,7 +46,9 @@ EOF
 
 read mods
 for line in $mods; do
-  echo "grub_${line}_init ();" | sed 's,\.mod,,g;'
+  if ${nm} --defined-only -P -p ${line} | grep grub_mod_init > /dev/null; then
+      echo "grub_${line}_init ();" | sed 's,\.mod,,g;'
+  fi
 done
 
 cat <<EOF
@@ -60,7 +62,9 @@ grub_fini_all (void)
 EOF
 
 for line in $mods; do
-  echo "grub_${line}_fini ();" | sed 's,\.mod,,g;'
+  if ${nm} --defined-only -P -p ${line} | grep grub_mod_fini > /dev/null; then
+      echo "grub_${line}_fini ();" | sed 's,\.mod,,g;'
+  fi
 done
 
 cat <<EOF
