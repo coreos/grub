@@ -8,8 +8,9 @@ script/lexer.c_DEPENDENCIES = grub_script.tab.h
 
 #sbin_UTILITIES += grub-emu
 util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
-pkglib_MODULES += main.mod
-main_mod_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
+kernel_img_RELOCATABLE = yes
+pkglib_PROGRAMS = kernel.img
+kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
 	kern/err.c kern/list.c kern/handler.c				\
 	kern/command.c kern/corecmd.c kern/file.c			\
 	kern/fs.c commands/boot.c kern/main.c kern/misc.c kern/parser.c	\
@@ -20,8 +21,8 @@ main_mod_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
 	util/hostdisk.c util/getroot.c					\
 	\
 	grub_emu_init.c gnulib/progname.c
-main_mod_CFLAGS = $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1
-main_mod_LDFLAGS = $(COMMON_LDFLAGS)
+kernel_img_CFLAGS = $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1
+kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For hostfs.mod.
 pkglib_MODULES += hostfs.mod
@@ -85,11 +86,11 @@ grub_emu_init.h: genemuinitheader.sh
 DISTCLEANFILES += grub_emu_init.h
 
 grub_emu_init.c: genemuinit.sh
-	rm -f $@; echo $(pkglib_MODULES) |sed 's,elf.mod,,;s,extcmd.mod,,;s,main.mod,,;s,gzio.mod,,;s,fshelp.mod,,;s,bufio.mod,,;s,setjmp.mod,,;s,crypto.mod,,;s,pbkdf2.mod,,;s,trig.mod,,;s,bitmap_scale.mod,,;s,charset.mod,,;'|sh $(srcdir)/genemuinit.sh > $@
+	rm -f $@; echo $(pkglib_MODULES) |sed 's,elf.mod,,;s,extcmd.mod,,;s,gzio.mod,,;s,fshelp.mod,,;s,bufio.mod,,;s,setjmp.mod,,;s,crypto.mod,,;s,pbkdf2.mod,,;s,trig.mod,,;s,bitmap_scale.mod,,;s,charset.mod,,;'|sh $(srcdir)/genemuinit.sh > $@
 DISTCLEANFILES += grub_emu_init.c
 
 include $(srcdir)/conf/common.mk
 
-grub-emu: $(pkglib_MODULES)
-	$(CC) -o $@ $(pkglib_MODULES) $(grub_emu_LDFLAGS) $(LDFLAGS)
+grub-emu: $(pkglib_MODULES) $(pkglib_PROGRAMS)
+	$(CC) -o $@ $(pkglib_MODULES) $(pkglib_PROGRAMS) $(grub_emu_LDFLAGS) $(LDFLAGS)
 
