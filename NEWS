@@ -1,5 +1,20 @@
 New in 1.98:
 
+* Graphical menu support.
+
+* MIPS support.
+
+* Saved default menu entry support, with new utilities `grub-reboot' and
+  `grub-set-default'.
+
+* Unit testing framework.
+
+* Support for multiple terminals.
+
+* Encrypted password support, with a new utility `grub-mkpasswd-pbkdf2'.
+
+* `grub-mkfloppy' removed; use `grub-mkrescue' to create floppy images.
+
 * Add grub-probe support for GNU/Hurd.
 
 * Add support for gettext.
