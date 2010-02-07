@@ -1,12 +1,11 @@
 # -*- makefile -*-
 
 COMMON_LDFLAGS += -nostdlib
-COMMON_CFLAGS +=
+COMMON_CFLAGS += -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include) -fno-builtin
 
 # Used by various components.  These rules need to precede them.
 script/lexer.c_DEPENDENCIES = grub_script.tab.h
 
-#sbin_UTILITIES += grub-emu
 kernel_img_RELOCATABLE = yes
 pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
@@ -37,7 +36,6 @@ endif
 endif
 else
 kernel_img_SOURCES += grub_emu_init.c
-grub_emu_init.c_DEPENDENCIES = grub_emu_init.h
 endif
 
 # For boot.mod.
@@ -79,7 +77,7 @@ endif
 ifeq ($(enable_grub_emu_sdl), yes)
 pkglib_MODULES += sdl.mod
 sdl_mod_SOURCES = util/sdl.c
-sdl_mod_CFLAGS = $(COMMON_CFLAGS)
+sdl_mod_CFLAGS = 
 sdl_mod_LDFLAGS = $(COMMON_LDFLAGS)
 grub_emu_LDFLAGS += $(LIBSDL)
 kernel_img_HEADERS += sdl.h
@@ -106,7 +104,7 @@ grub_emu_init.h: genemuinitheader.sh $(pkglib_MODULES)
 	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinitheader.sh $(NM)  > $@
 DISTCLEANFILES += grub_emu_init.h
 
-grub_emu_init.c: genemuinit.sh $(pkglib_MODULES)
+grub_emu_init.c: genemuinit.sh $(pkglib_MODULES) grub_emu_init.h
 	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinit.sh $(NM) > $@
 DISTCLEANFILES += grub_emu_init.c
 

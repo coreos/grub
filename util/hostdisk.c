@@ -198,7 +198,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 
     fd = open (map[drive].device, O_RDONLY);
     if (fd == -1)
-      return grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' while attempting to get disk size", map[drive].device);
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "cannot open `%s' while attempting to get disk size", map[drive].device);
 
 # if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
     if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))
@@ -244,7 +244,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 # warning "No special routine to get the size of a block device is implemented for your OS. This is not possibly fatal."
 #endif
   if (stat (map[drive].device, &st) < 0)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "cannot stat `%s'", map[drive].device);
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "cannot stat `%s'", map[drive].device);
 
   disk->total_sectors = st.st_size >> GRUB_DISK_SECTOR_BITS;
 

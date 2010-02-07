@@ -150,6 +150,10 @@ void grub_hostfs_init (void);
 void grub_hostfs_fini (void);
 void grub_host_init (void);
 void grub_host_fini (void);
+#if GRUB_NO_MODULES
+void grub_init_all (void);
+void grub_fini_all (void);
+#endif
 
 int
 main (int argc, char *argv[])

@@ -35,6 +35,7 @@
 #endif
 
 #include <grub/kernel.h>
+#include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/cache.h>
 #include <grub/util/misc.h>
