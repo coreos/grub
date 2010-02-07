@@ -89,8 +89,10 @@ TARGET_ASFLAGS = @TARGET_ASFLAGS@
 TARGET_MODULE_FORMAT = @TARGET_MODULE_FORMAT@
 TARGET_APPLE_CC = @TARGET_APPLE_CC@
 OBJCONV = @OBJCONV@
-TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
-	-Wall -W
+TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(srcdir)/include -I$(builddir) -I$(builddir)/include -Wall -W
+ifneq ($(platform), emu)
+TARGET_CPPFLAGS += -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include)
+endif
 TARGET_LDFLAGS = @TARGET_LDFLAGS@
 TARGET_IMG_LDSCRIPT = @TARGET_IMG_LDSCRIPT@
 TARGET_IMG_LDFLAGS = @TARGET_IMG_LDFLAGS@
