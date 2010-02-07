@@ -1,5 +1,10 @@
 2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* loader/i386/linux.c (grub_linux_setup_video): Handle error
+	appropriately.
+
+2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* fs/reiserfs.c (grub_reiserfs_read): Use #if 0 instead of commenting
 	code out.
 

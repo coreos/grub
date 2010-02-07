@@ -394,12 +394,15 @@ grub_linux_setup_video (struct linux_kernel_params *params)
 {
   struct grub_video_mode_info mode_info;
   void *framebuffer;
-  int ret;
+  grub_err_t err;
 
-  ret = grub_video_get_info_and_fini (&mode_info, &framebuffer);
+  err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
 
-  if (ret)
-    return 1;
+  if (err)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return 1;
+    }
 
   params->lfb_width = mode_info.width;
   params->lfb_height = mode_info.height;
