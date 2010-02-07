@@ -54,16 +54,10 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/ieee1275/grub-install.in
 
 # Modules.
-pkglib_MODULES = halt.mod reboot.mod suspend.mod		\
-	aout.mod serial.mod linux.mod		\
-	nand.mod memdisk.mod pci.mod lspci.mod datetime.mod	\
-	date.mod datehook.mod lsmmap.mod mmap.mod
-
-# For boot.mod.
-pkglib_MODULES += boot.mod
-boot_mod_SOURCES = commands/boot.c
-boot_mod_CFLAGS = $(COMMON_CFLAGS)
-boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_MODULES = halt.mod suspend.mod		\
+	aout.mod linux.mod	\
+	nand.mod datetime.mod	\
+	mmap.mod
 
 # For mmap.mod.
 mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c
@@ -81,20 +75,10 @@ suspend_mod_SOURCES = commands/ieee1275/suspend.c
 suspend_mod_CFLAGS = $(COMMON_CFLAGS)
 suspend_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For reboot.mod
-reboot_mod_SOURCES = commands/reboot.c
-reboot_mod_CFLAGS = $(COMMON_CFLAGS)
-reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For halt.mod
 halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For serial.mod.
-serial_mod_SOURCES = term/serial.c
-serial_mod_CFLAGS = $(COMMON_CFLAGS)
-serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For linux.mod.
 linux_mod_SOURCES = loader/i386/ieee1275/linux.c
@@ -106,40 +90,10 @@ nand_mod_SOURCES = disk/ieee1275/nand.c
 nand_mod_CFLAGS = $(COMMON_CFLAGS)
 nand_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For memdisk.mod.
-memdisk_mod_SOURCES = disk/memdisk.c
-memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
-memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For pci.mod
-pci_mod_SOURCES = bus/pci.c
-pci_mod_CFLAGS = $(COMMON_CFLAGS)
-pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For lspci.mod
-lspci_mod_SOURCES = commands/lspci.c
-lspci_mod_CFLAGS = $(COMMON_CFLAGS)
-lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For datetime.mod
 datetime_mod_SOURCES = lib/cmos_datetime.c
 datetime_mod_CFLAGS = $(COMMON_CFLAGS)
 datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For date.mod
-date_mod_SOURCES = commands/date.c
-date_mod_CFLAGS = $(COMMON_CFLAGS)
-date_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For datehook.mod
-datehook_mod_SOURCES = hook/datehook.c
-datehook_mod_CFLAGS = $(COMMON_CFLAGS)
-datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For lsmmap.mod
-lsmmap_mod_SOURCES = commands/lsmmap.c
-lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
-lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk

@@ -124,7 +124,8 @@ grub_video_ieee1275_setup (unsigned int width, unsigned int height,
 			   unsigned int mode_type __attribute__ ((unused)),
 			   unsigned int mode_mask __attribute__ ((unused)))
 {
-  grub_uint32_t current_width, current_height, address;
+  grub_uint32_t current_width, current_height;
+  grub_addr_t address;
   grub_err_t err;
   grub_ieee1275_phandle_t dev;
 
@@ -162,7 +163,7 @@ grub_video_ieee1275_setup (unsigned int width, unsigned int height,
       return err;
     }
 
-  if (grub_ieee1275_get_integer_property (dev, "address", &address,
+  if (grub_ieee1275_get_integer_property (dev, "address", (void *) &address,
 					  sizeof (address), 0))
     return grub_error (GRUB_ERR_IO, "Couldn't retrieve display address.");
 

@@ -40,26 +40,6 @@ grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkrawimage.c util/misc.c \
 grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(LINK_BASE)
 util/grub-mkrawimage.c_DEPENDENCIES = Makefile
 
-# Modules.
-pkglib_MODULES = memdisk.mod \
-	lsmmap.mod
-
-# For boot.mod.
-pkglib_MODULES += boot.mod 
-boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
-boot_mod_CFLAGS = $(COMMON_CFLAGS)
-boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For memdisk.mod.
-memdisk_mod_SOURCES = disk/memdisk.c
-memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
-memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For lsmmap.mod
-lsmmap_mod_SOURCES = commands/lsmmap.c
-lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
-lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For serial.mod.
 pkglib_MODULES += serial.mod
 serial_mod_SOURCES = term/serial.c

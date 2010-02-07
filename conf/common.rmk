@@ -759,6 +759,42 @@ password_pbkdf2_mod_SOURCES = commands/password_pbkdf2.c
 password_pbkdf2_mod_CFLAGS = $(COMMON_CFLAGS)
 password_pbkdf2_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For memdisk.mod.
+pkglib_MODULES += memdisk.mod
+memdisk_mod_SOURCES = disk/memdisk.c
+memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
+memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For reboot.mod.
+pkglib_MODULES += reboot.mod
+reboot_mod_SOURCES = commands/reboot.c
+reboot_mod_CFLAGS = $(COMMON_CFLAGS)
+reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For date.mod
+pkglib_MODULES += date.mod
+date_mod_SOURCES = commands/date.c
+date_mod_CFLAGS = $(COMMON_CFLAGS)
+date_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datehook.mod
+pkglib_MODULES += datehook.mod
+datehook_mod_SOURCES = hook/datehook.c
+datehook_mod_CFLAGS = $(COMMON_CFLAGS)
+datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For lsmmap.mod
+pkglib_MODULES += lsmmap.mod
+lsmmap_mod_SOURCES = commands/lsmmap.c
+lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
+lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For boot.mod.
+pkglib_MODULES += boot.mod
+boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
+boot_mod_CFLAGS = $(COMMON_CFLAGS)
+boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 bin_UTILITIES += grub-mkpasswd-pbkdf2
 grub_mkpasswd_pbkdf2_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c util/grub-mkpasswd-pbkdf2.c lib/crypto.c lib/libgcrypt-grub/cipher/sha512.c lib/pbkdf2.c util/misc.c kern/err.c
 grub_mkpasswd_pbkdf2_CFLAGS += -Wno-missing-field-initializers -Wno-error -I$(srcdir)/lib/libgcrypt_wrap -DGRUB_MKPASSWD=1
