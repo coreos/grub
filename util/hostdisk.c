@@ -137,7 +137,7 @@ find_grub_drive (const char *name)
 }
 
 static int
-find_free_slot ()
+find_free_slot (void)
 {
   unsigned int i;
 
