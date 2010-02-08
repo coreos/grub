@@ -2072,6 +2072,9 @@ FUNCTION(grub_bios_interrupt)
 	pushl    %ebp
 	pushl    %ecx
 	pushl    %eax
+	pushl    %ebx
+	pushl    %esi
+	pushl    %edi	
 	pushl    %edx
 	
 	movb     %al, intno
@@ -2157,6 +2160,9 @@ intno:
 	movw	 LOCAL(bios_register_flags), %ax
 	movw	 %ax, 8(%edx)
 
+	popl 	%edi
+	popl 	%esi
+	popl    %ebx
 	popl    %eax
 	popl    %ecx
 	popl    %ebp
