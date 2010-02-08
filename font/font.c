@@ -1175,6 +1175,9 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
       
       if (!combining_glyphs[i])
 	continue;
+      /* CGJ is to avoid diacritics reordering. */
+      if (glyph_id->combining[i] == GRUB_UNICODE_COMBINING_GRAPHEME_JOINER)
+	continue;
       combtype = get_comb_type (glyph_id->combining[i]);
       switch (combtype)
 	{
