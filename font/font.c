@@ -1186,10 +1186,15 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	  minimal_device_width (combining_glyphs[i]->width);
 	  break;
 
+	case GRUB_UNICODE_COMB_ATTACHED_ABOVE_RIGHT:
+	  do_blit (combining_glyphs[i], above_rightx, -above_righty);
+	  above_rightx += combining_glyphs[i]->width;
+	  minimal_device_width (above_rightx);
+	  break;
+
 	case GRUB_UNICODE_COMB_ABOVE_RIGHT:
 	  do_blit (combining_glyphs[i], above_rightx,
-		   -(above_righty + space
-		     + combining_glyphs[i]->height));
+		   -(above_righty + combining_glyphs[i]->height));
 	  above_rightx += combining_glyphs[i]->width;
 	  minimal_device_width (above_rightx);
 	  break;
