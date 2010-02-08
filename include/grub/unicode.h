@@ -64,6 +64,7 @@ enum grub_comb_type
     GRUB_UNICODE_COMB_BELOW_RIGHT = 222,
     GRUB_UNICODE_STACK_ABOVE = 230,
     GRUB_UNICODE_COMB_ABOVE_RIGHT = 232,
+    GRUB_UNICODE_COMB_YPOGEGRAMMENI = 240,
     /* If combining nature is indicated only by class and
        not "combining type".  */
     GRUB_UNICODE_COMB_ME = 253,

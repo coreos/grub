@@ -1212,6 +1212,8 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	  minimal_device_width (combining_glyphs[i]->width);
 	  break;
 
+	  /* I don't know how ypogegrammeni differs from subscript. */
+	case GRUB_UNICODE_COMB_YPOGEGRAMMENI:
 	case GRUB_UNICODE_STACK_BELOW:
 	  space = -(combining_glyphs[i]->offset_y 
 		    + combining_glyphs[i]->height);
