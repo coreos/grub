@@ -57,16 +57,6 @@ kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 
-MOSTLYCLEANFILES += symlist.c
-MOSTLYCLEANFILES += symlist.c kernel_syms.lst
-DEFSYMFILES += kernel_syms.lst
-
-symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
-	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
-
-kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
-	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
-
 # For acpi.mod.
 acpi_mod_SOURCES = commands/acpi.c commands/efi/acpi.c
 acpi_mod_CFLAGS = $(COMMON_CFLAGS)

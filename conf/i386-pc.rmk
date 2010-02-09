@@ -71,15 +71,6 @@ kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_KERNEL_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
 kernel_img_FORMAT = binary
 
-MOSTLYCLEANFILES += symlist.c kernel_syms.lst
-DEFSYMFILES += kernel_syms.lst
-
-symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
-	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
-
-kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
-	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
-
 # Utilities.
 bin_UTILITIES = grub-mkimage
 sbin_UTILITIES = grub-setup

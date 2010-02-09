@@ -9,10 +9,6 @@ COMMON_LDFLAGS += -nostdlib
 script/lexer.c_DEPENDENCIES = grub_script.tab.h
 
 # Images.
-
-MOSTLYCLEANFILES += symlist.c kernel_syms.lst
-DEFSYMFILES += kernel_syms.lst
-
 kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h reader.h \
 	symbol.h term.h time.h types.h loader.h partition.h \
@@ -22,12 +18,6 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 ifeq ($(platform), yeeloong)
 kernel_img_HEADERS += pci.h
 endif
-
-symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
-	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
-
-kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
-	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # Scripts.
 sbin_SCRIPTS = 

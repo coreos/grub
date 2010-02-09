@@ -23,9 +23,6 @@ diskboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,0x4200
 diskboot_img_FORMAT = binary
 
-MOSTLYCLEANFILES += symlist.c kernel_syms.lst
-DEFSYMFILES += kernel_syms.lst
-
 kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
@@ -50,12 +47,6 @@ kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,0x200000,-Bstatic,-melf64_sparc -static-libgcc -lgcc
 kernel_img_FORMAT = binary
-
-symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
-	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
-
-kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
-	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
