@@ -679,6 +679,16 @@ if test x"$grub_mkfont_excuse" = x ; then
   freetype_cflags=`freetype-config --cflags`
   freetype_libs=`freetype-config --libs`
 fi
+
+if test x"$grub_mkfont_excuse" = x ; then
+  # Check for freetype libraries.
+  SAVED_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS $freetype_cflags"
+  AC_CHECK_HEADERS([ft2build.h], [],
+  	[grub_mkfont_excuse=["need freetype2 headers"]])
+  CFLAGS="$SAVED_CFLAGS"
+fi
+
 if test x"$enable_grub_mkfont" = xyes && test x"$grub_mkfont_excuse" != x ; then
   AC_MSG_ERROR([grub-mkfont was explicitly requested but can't be compiled])
 fi

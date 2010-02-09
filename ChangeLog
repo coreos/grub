@@ -1,3 +1,7 @@
+2010-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Check for ft2build.h.
+
 2010-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/ieee1275/openfw.c (grub_halt): Try executing "poweroff".
