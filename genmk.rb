@@ -91,7 +91,7 @@ endif
       dir = File.dirname(src)
 
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
-	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
+	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -DGRUB_FILE=\\\"#{src}\\\" -MD -c -o $@ $<
 -include #{dep}
 
 "
@@ -163,7 +163,7 @@ endif
 	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ #{objs_str}
 
 #{mod_obj}: #{mod_src}
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(#{prefix}_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(#{prefix}_CFLAGS) -DGRUB_FILE=\\\"#{mod_src}\\\" -c -o $@ $<
 
 #{mod_src}: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '#{mod_name}' $< > $@ || (rm -f $@; exit 1)
@@ -197,7 +197,7 @@ endif
       dir = File.dirname(src)
 
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
-	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
+	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -DGRUB_FILE=\\\"#{src}\\\" -MD -c -o $@ $<
 -include #{dep}
 
 clean-module-#{extra_target}.#{@rule_count}:
@@ -299,7 +299,7 @@ MOSTLYCLEAN_UTILITY_TARGETS += mostlyclean-utility-#{@name}.#{@rule_count}
       dir = File.dirname(src)
 
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
-	$(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(#{prefix}_CFLAGS) -MD -c -o $@ $<
+	$(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(#{prefix}_CFLAGS) -DGRUB_FILE=\\\"#{src}\\\" -MD -c -o $@ $<
 -include #{dep}
 
 "
@@ -346,7 +346,7 @@ endif
       dir = File.dirname(src)
 
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
-	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
+	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -DGRUB_FILE=\\\"#{src}\\\" -MD -c -o $@ $<
 
 -include #{dep}
 
