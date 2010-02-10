@@ -1,8 +1,6 @@
 # -*- makefile -*-
 
-COMMON_ASFLAGS	= -m32 -nostdinc -fno-builtin
-COMMON_CFLAGS	= -ffreestanding -mrtd -mregparm=3
-COMMON_LDFLAGS	= -nostdlib
+COMMON_CFLAGS	= -mrtd -mregparm=3
 
 # Images.
 pkglib_PROGRAMS = kernel.img

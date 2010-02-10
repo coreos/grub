@@ -2,9 +2,7 @@
 
 GRUB_KERNEL_MACHINE_LINK_ADDR = 0x8200
 
-COMMON_ASFLAGS = -nostdinc -fno-builtin -m32
-COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3 -m32
-COMMON_LDFLAGS = -m32 -nostdlib
+COMMON_CFLAGS = -mrtd -mregparm=3
 
 # Images.
 pkglib_IMAGES = boot.img cdboot.img diskboot.img kernel.img lnxboot.img \

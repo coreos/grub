@@ -1,9 +1,7 @@
 
 # -*- makefile -*-
 
-COMMON_ASFLAGS += -nostdinc
-COMMON_CFLAGS += -ffreestanding -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
-COMMON_LDFLAGS += -nostdlib
+COMMON_CFLAGS += -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
 
 # Images.
 kernel_img_HEADERS += cpu/libgcc.h cpu/cache.h

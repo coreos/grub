@@ -1,7 +1,5 @@
 # -*- makefile -*-
 
-COMMON_ASFLAGS = -nostdinc -fno-builtin -m32
-COMMON_CFLAGS = -fno-builtin -m32
-COMMON_LDFLAGS = -melf_i386 -nostdlib
+COMMON_LDFLAGS = -melf_i386
 
 include $(srcdir)/conf/x86-efi.mk

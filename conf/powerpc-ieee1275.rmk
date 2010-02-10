@@ -1,10 +1,6 @@
 
 # -*- makefile -*-
 
-COMMON_ASFLAGS = -nostdinc
-COMMON_CFLAGS = -ffreestanding
-COMMON_LDFLAGS += -nostdlib
-
 # Images.
 
 kernel_img_HEADERS += cpu/libgcc.h ieee1275/ieee1275.h

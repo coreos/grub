@@ -1,9 +1,8 @@
 
 # -*- makefile -*-
 
-COMMON_ASFLAGS = -nostdinc -m64
-COMMON_CFLAGS = -ffreestanding -m64 -mno-app-regs
-COMMON_LDFLAGS = -melf64_sparc -nostdlib -mno-relax
+COMMON_CFLAGS = -mno-app-regs
+COMMON_LDFLAGS = -melf64_sparc -mno-relax
 
 # Images.
 pkglib_IMAGES = boot.img diskboot.img kernel.img
@@ -37,7 +36,7 @@ kernel_img_SOURCES = kern/sparc64/ieee1275/crt0.S kern/ieee1275/cmain.c	\
 	symlist.c kern/$(target_cpu)/cache.S
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,0x200000,-Bstatic,-melf64_sparc -static-libgcc -lgcc
+kernel_img_LDFLAGS = -Wl,-N,-Ttext,0x200000,-Bstatic,-melf64_sparc -static-libgcc -lgcc
 kernel_img_FORMAT = binary
 
 # Utilities.
