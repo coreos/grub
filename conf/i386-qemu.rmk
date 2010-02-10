@@ -1,11 +1,6 @@
 # -*- makefile -*-
 
-COMMON_ASFLAGS	= -nostdinc -fno-builtin -m32
-COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3 -m32
-COMMON_LDFLAGS	= -m32 -nostdlib
-
-# Used by various components.  These rules need to precede them.
-script/lexer.c_DEPENDENCIES = grub_script.tab.h
+COMMON_CFLAGS = -mrtd -mregparm=3
 
 # Images.
 
@@ -42,25 +37,10 @@ kernel_img_SOURCES = kern/i386/qemu/startup.S \
 	kern/env.c \
 	term/i386/pc/vga_text.c term/i386/vga_common.c \
 	symlist.c
-kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
-	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
-	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
-	machine/boot.h machine/console.h machine/init.h \
-	machine/memory.h machine/loader.h list.h handler.h command.h i18n.h \
-	env_private.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS) -DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS) -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_KERNEL_MACHINE_LINK_ADDR)
 kernel_img_FORMAT = binary
-
-MOSTLYCLEANFILES += symlist.c kernel_syms.lst
-DEFSYMFILES += kernel_syms.lst
-
-symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
-	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
-
-kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
-	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 sbin_SCRIPTS += grub-install
 grub_install_SOURCES = util/grub-install.in

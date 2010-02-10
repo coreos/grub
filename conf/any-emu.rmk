@@ -1,10 +1,6 @@
 # -*- makefile -*-
 
-COMMON_LDFLAGS += -nostdlib
-COMMON_CFLAGS += -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include) -fno-builtin
-
-# Used by various components.  These rules need to precede them.
-script/lexer.c_DEPENDENCIES = grub_script.tab.h
+COMMON_CFLAGS += -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include)
 
 kernel_img_RELOCATABLE = yes
 pkglib_PROGRAMS = kernel.img
@@ -19,10 +15,7 @@ kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
 	util/hostdisk.c util/getroot.c util/mm.c util/time.c		\
 	\
 	gnulib/progname.c util/hostfs.c disk/host.c
-kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
-	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
-	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
-	list.h handler.h command.h i18n.h env_private.h
+kernel_img_HEADERS += datetime.h
 kernel_img_CFLAGS = $(CPPFLAGS) $(CFLAGS) -Wno-undef
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 TARGET_NO_STRIP = yes
@@ -79,14 +72,6 @@ grub_emu_LDFLAGS += $(LIBPCIACCESS)
 endif
 
 include $(srcdir)/conf/common.mk
-
-MOSTLYCLEANFILES += symlist.c kernel_syms.lst
-DEFSYMFILES += kernel_syms.lst
-symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
-	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
-
-kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
-	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 grub_emu_init.h: genemuinitheader.sh $(pkglib_MODULES)
 	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinitheader.sh $(NM)  > $@

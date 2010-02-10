@@ -1,5 +1,8 @@
 # -*- makefile -*-
 
+# Used by various components.  These rules need to precede them.
+script/lexer.c_DEPENDENCIES = grub_script.tab.h
+
 sbin_UTILITIES += grub-mkdevicemap
 grub_mkdevicemap_SOURCES = gnulib/progname.c util/grub-mkdevicemap.c \
 	util/deviceiter.c \
@@ -99,6 +102,24 @@ grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c
 	script/main.c script/script.c script/function.c script/lexer.c \
 	kern/handler.c kern/err.c kern/parser.c kern/list.c \
 	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c
+
+MOSTLYCLEANFILES += symlist.c kernel_syms.lst
+DEFSYMFILES += kernel_syms.lst
+
+kernel_img_HEADERS += boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
+	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
+	list.h handler.h command.h i18n.h env_private.h
+
+ifneq ($(platform), emu)
+kernel_img_HEADERS += machine/memory.h machine/loader.h machine/kernel.h
+endif
+
+symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
+	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
+
+kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
+	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # For the parser.
 grub_script.tab.c grub_script.tab.h: script/parser.y
