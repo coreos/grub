@@ -1,5 +1,13 @@
 2010-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Pass SIMPLE framebuffer size in bytes and not 64K blocks.
+
+	* loader/i386/efi/linux.c (grub_linux_setup_video): Don't divide by 64K.
+	* loader/i386/linux.c (grub_linux_setup_video): Likewise.
+	(grub_linux_boot): Divide by 64K when on VESA.
+
+2010-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support GRUB_GFXPAYLOAD_LINUX.
 
 	* util/grub-mkconfig.in: Export GRUB_GFXPAYLOAD_LINUX.
