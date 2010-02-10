@@ -1,7 +1,7 @@
 
 # -*- makefile -*-
 
-COMMON_ASFLAGS = -nostdinc -D__ASSEMBLY__
+COMMON_ASFLAGS = -nostdinc
 COMMON_CFLAGS = -ffreestanding
 COMMON_LDFLAGS += -nostdlib
 
