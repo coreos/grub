@@ -24,6 +24,7 @@ kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
 	video/bitmap_scale.c video/sm712.c bus/pci.c bus/bonito.c \
 	term/gfxterm.c commands/extcmd.c lib/arg.c \
 	symlist.c
+kernel_img_HEADERS += pci.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS) -DUSE_ASCII_FAILBACK
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
