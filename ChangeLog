@@ -1,3 +1,10 @@
+2010-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* script/execute.c (grub_script_execute_cmdline): Use grub_print_error
+	to show messages instead of discarding them.
+	Process errors after executing command and not before. Keep old method
+	too as precaution.
+
 2010-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Check for ft2build.h.

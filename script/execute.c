@@ -100,8 +100,8 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   grubcmd = grub_command_find (cmdname);
   if (! grubcmd)
     {
-      /* Ignore errors.  */
-      grub_errno = GRUB_ERR_NONE;
+      /* Shouldn't happen but precaution is good.  */
+      grub_print_error ();
 
       /* It's not a GRUB command, try all functions.  */
       func = grub_script_function_find (cmdname);
@@ -155,6 +155,11 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   for (i = 0; i < argcount; i++)
     grub_free (args[i]);
   grub_free (args);
+
+  if (grub_errno == GRUB_ERR_TEST_FAILURE)
+    grub_errno = GRUB_ERR_NONE;
+
+  grub_print_error ();
 
   grub_snprintf (errnobuf, sizeof (errnobuf), "%d", ret);
   grub_env_set ("?", errnobuf);
