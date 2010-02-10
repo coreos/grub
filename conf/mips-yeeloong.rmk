@@ -3,6 +3,8 @@ LINK_BASE = 0x80200000
 target_machine=yeeloong
 COMMON_CFLAGS += -march=mips3
 COMMON_ASFLAGS += -march=mips3
+
+kernel_img_HEADERS += pci.h
 include $(srcdir)/conf/mips.mk
 
 pkglib_IMAGES = kernel.img
@@ -24,7 +26,6 @@ kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
 	video/bitmap_scale.c video/sm712.c bus/pci.c bus/bonito.c \
 	term/gfxterm.c commands/extcmd.c lib/arg.c \
 	symlist.c
-kernel_img_HEADERS += pci.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS) -DUSE_ASCII_FAILBACK
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
@@ -64,4 +65,3 @@ datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 sbin_SCRIPTS += grub-install
 grub_install_SOURCES = util/grub-install.in
-
