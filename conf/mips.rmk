@@ -5,9 +5,6 @@ COMMON_ASFLAGS += -nostdinc
 COMMON_CFLAGS += -ffreestanding -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
 COMMON_LDFLAGS += -nostdlib
 
-# Used by various components.  These rules need to precede them.
-script/lexer.c_DEPENDENCIES = grub_script.tab.h
-
 # Images.
 kernel_img_HEADERS += cpu/libgcc.h cpu/cache.h
 

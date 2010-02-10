@@ -4,9 +4,6 @@ COMMON_ASFLAGS	= -nostdinc -fno-builtin -m32
 COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3 -m32
 COMMON_LDFLAGS	= -m32 -nostdlib
 
-# Used by various components.  These rules need to precede them.
-script/lexer.c_DEPENDENCIES = grub_script.tab.h
-
 # Images.
 
 GRUB_KERNEL_MACHINE_LINK_ADDR	= 0x8200
