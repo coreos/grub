@@ -65,9 +65,15 @@ linux_entry ()
 
   # Use ELILO's generic "efifb" when it's known to be available.
   # FIXME: We need an interface to select vesafb in case efifb can't be used.
-  if grep -qx "CONFIG_FB_EFI=y" /boot/config-${version} 2> /dev/null ; then
-    cat << EOF
+  if [ "x$GRUB_GFXPAYLOAD_LINUX" = x ]; then
+      if grep -qx "CONFIG_FB_EFI=y" /boot/config-${version} 2> /dev/null ; then
+	  cat << EOF
 	set gfxpayload=keep
+EOF
+      fi
+  else
+	  cat << EOF
+	set gfxpayload=$GRUB_GFXPAYLOAD_LINUX
 EOF
   fi
 

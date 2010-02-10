@@ -1,5 +1,12 @@
 2010-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support GRUB_GFXPAYLOAD_LINUX.
+
+	* util/grub-mkconfig.in: Export GRUB_GFXPAYLOAD_LINUX.
+	* util/grub.d/10_linux.in (linux_entry): Handle GRUB_GFXPAYLOAD_LINUX.
+
+2010-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* script/execute.c (grub_script_execute_cmdline): Use grub_print_error
 	to show messages instead of discarding them.
 	Process errors after executing command and not before. Keep old method
