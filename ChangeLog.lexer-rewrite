@@ -1,3 +1,8 @@
+2010-02-10  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* script/lexer.c (grub_script_lexer_record_stop): Fix off-by-one
+	bug.
+
 2010-01-25  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* script/yylex.l: Accept parenthesis as part of word.

@@ -76,7 +76,7 @@ grub_script_lexer_record_stop (struct grub_parser_param *parser)
     while (*end && grub_isspace (*end)) end--;
     if (*end == '}') end--;
     while (*end && grub_isspace (*end)) end--;
-    *end = '\0';
+    end[1] = '\0';
 
     return start;
   }
