@@ -142,7 +142,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     }
 
   for (p = path_list; p; p = p->next)
-    total_module_size += (grub_util_get_image_size (p->name)
+    total_module_size += (ALIGN_UP (grub_util_get_image_size (p->name), 4)
 			  + sizeof (struct grub_module_header));
 
   grub_util_info ("the total module size is 0x%x", total_module_size);
@@ -295,6 +295,30 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     core_img = rom_img;
     core_size = rom_size;
 
+    free (boot_img);
+    free (boot_path);
+  }
+#elif defined (GRUB_MACHINE_SPARC64)
+  {
+    unsigned int num;
+    char *boot_path, *boot_img;
+    size_t boot_size;
+
+    num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
+    num <<= GRUB_DISK_SECTOR_BITS;
+
+    boot_path = grub_util_get_path (dir, "diskboot.img");
+    boot_size = grub_util_get_image_size (boot_path);
+    if (boot_size != GRUB_DISK_SECTOR_SIZE)
+      grub_util_error ("diskboot.img is not one sector size");
+
+    boot_img = grub_util_read_image (boot_path);
+
+    *((grub_uint32_t *) (boot_img + GRUB_DISK_SECTOR_SIZE
+			 - GRUB_BOOT_MACHINE_LIST_SIZE + 8))
+      = grub_host_to_target32 (num);
+
+    grub_util_write_image (boot_img, boot_size, out);
     free (boot_img);
     free (boot_path);
   }

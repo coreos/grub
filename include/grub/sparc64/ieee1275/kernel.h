@@ -39,6 +39,8 @@
 /* End of the data section. */
 #define GRUB_KERNEL_MACHINE_DATA_END		0x114
 
+#define GRUB_KERNEL_MACHINE_RAW_SIZE                   0
+
 #ifndef ASM_FILE
 
 #include <grub/symbol.h>

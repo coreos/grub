@@ -62,7 +62,7 @@ bin_UTILITIES = grub-mkimage
 sbin_UTILITIES = grub-setup grub-ofpathname
 
 # For grub-mkimage.
-grub_mkimage_SOURCES = util/sparc64/ieee1275/grub-mkimage.c util/misc.c \
+grub_mkimage_SOURCES = util/grub-mkrawimage.c util/misc.c \
         util/resolve.c gnulib/progname.c
 
 # For grub-setup.
