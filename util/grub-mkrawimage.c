@@ -142,7 +142,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     }
 
   for (p = path_list; p; p = p->next)
-    total_module_size += (grub_util_get_image_size (p->name)
+    total_module_size += (ALIGN_UP (grub_util_get_image_size (p->name), 4)
 			  + sizeof (struct grub_module_header));
 
   grub_util_info ("the total module size is 0x%x", total_module_size);

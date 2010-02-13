@@ -1,3 +1,7 @@
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrawimage.c (generate_image): Add forgotten ALIGN_UP.
+
 2010-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Pass SIMPLE framebuffer size in bytes and not 64K blocks.
