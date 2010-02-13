@@ -1,5 +1,9 @@
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* loader/sparc64/ieee1275/linux.c (alloc_phys): Correct bounds checking.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/sparc64/ieee1275/crt0.S (codestart): Move modules backwards.
 
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>

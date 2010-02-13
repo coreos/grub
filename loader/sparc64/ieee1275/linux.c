@@ -193,20 +193,20 @@ alloc_phys (grub_addr_t size)
       return 0;
 
     addr = align_addr (addr, FOUR_MB);
-    if (addr >= end)
+    if (addr + size >= end)
       return 0;
 
     if (addr >= grub_phys_start && addr < grub_phys_end)
       {
 	addr = align_addr (grub_phys_end, FOUR_MB);
-	if (addr >= end)
+	if (addr + size >= end)
 	  return 0;
       }
     if ((addr + size) >= grub_phys_start
 	&& (addr + size) < grub_phys_end)
       {
 	addr = align_addr (grub_phys_end, FOUR_MB);
-	if (addr >= end)
+	if (addr + size >= end)
 	  return 0;
       }
 
@@ -217,14 +217,14 @@ alloc_phys (grub_addr_t size)
 	if (addr >= linux_paddr && addr < linux_end)
 	  {
 	    addr = linux_end;
-	    if (addr >= end)
+	    if (addr + size >= end)
 	      return 0;
 	  }
 	if ((addr + size) >= linux_paddr
 	    && (addr + size) < linux_end)
 	  {
 	    addr = linux_end;
-	    if (addr >= end)
+	    if (addr + size >= end)
 	      return 0;
 	  }
       }
