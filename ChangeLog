@@ -1,5 +1,9 @@
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrawimage.c (main): Call set_program_name.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Properly align 64-bit targets.
 
 	* util/grub-mkrawimage.c (ALIGN_ADDR): New macro.

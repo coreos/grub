@@ -476,6 +476,8 @@ main (int argc, char *argv[])
   grub_platform_image_format_t format = GRUB_PLATFORM_IMAGE_DEFAULT;
 #endif
 
+  set_program_name (argv[0]);
+
   grub_util_init_nls ();
 
   while (1)
