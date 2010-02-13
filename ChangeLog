@@ -1,5 +1,10 @@
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_read): Remove excessively
+	verbose dprintf.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix over-4GiB seek on sparc64.
 
 	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_seek):

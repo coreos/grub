@@ -234,10 +234,6 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   grub_ssize_t status, actual;
   unsigned long long pos;
 
-  grub_dprintf ("disk",
-		"Reading handle %p: sector 0x%llx, size 0x%lx, buf %p.\n",
-		(void *) disk->data, (long long) sector, (long) size, buf);
-
   pos = sector * 512UL;
 
   grub_ieee1275_seek ((grub_ieee1275_ihandle_t) (unsigned long) disk->data,
