@@ -1,5 +1,10 @@
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_open): Check device type before
+	opening and not after.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* term/ieee1275/ofconsole.c (grub_ofconsole_readkey): Macroify
 	constants.
 

@@ -172,16 +172,6 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
 
   grub_dprintf ("disk", "Opening `%s'.\n", op->devpath);
 
-  grub_ieee1275_open (op->devpath, &dev_ihandle);
-  if (! dev_ihandle)
-    {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
-      goto fail;
-    }
-
-  grub_dprintf ("disk", "Opened `%s' as handle %p.\n", op->devpath,
-		(void *) (unsigned long) dev_ihandle);
-
   if (grub_ieee1275_finddevice (op->devpath, &dev))
     {
       grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read device properties");
@@ -200,6 +190,16 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
       grub_error (GRUB_ERR_BAD_DEVICE, "not a block device");
       goto fail;
     }
+
+  grub_ieee1275_open (op->devpath, &dev_ihandle);
+  if (! dev_ihandle)
+    {
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
+      goto fail;
+    }
+
+  grub_dprintf ("disk", "Opened `%s' as handle %p.\n", op->devpath,
+		(void *) (unsigned long) dev_ihandle);
 
   /* XXX: There is no property to read the number of blocks.  There
      should be a property `#blocks', but it is not there.  Perhaps it
