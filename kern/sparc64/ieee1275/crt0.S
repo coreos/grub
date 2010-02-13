@@ -53,12 +53,16 @@ codestart:
 	or	%o3, %lo(_end), %o3
 	sethi	%hi(grub_total_module_size), %o4
 	lduw	[%o4 + %lo(grub_total_module_size)], %o4
+	add     %o2, %o4, %o2
+	add     %o3, %o4, %o3
+	sub	%o2, 4, %o2
+	sub	%o3, 4, %o3
 1:	lduw	[%o2], %o5
 	stw	%o5, [%o3]
 	subcc	%o4, 4, %o4
-	add	%o2, 4, %o2
+	sub	%o2, 4, %o2
 	bne,pt	%icc, 1b
-	 add	%o3, 4, %o3
+	  sub	%o3, 4, %o3
 
 	/* Now it's safe to clear out the BSS.  */
 	sethi	%hi(__bss_start), %o2

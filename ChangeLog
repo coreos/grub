@@ -1,3 +1,79 @@
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Merge grub_ieee1275_map_physical into grub_map and rename to
+	grub_ieee1275_map
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_map): New proto.
+	* include/grub/sparc64/ieee1275/ieee1275.h (grub_ieee1275_map_physical):
+	Remove.
+	* kern/ieee1275/openfw.c (grub_map): Rename to ...
+	(grub_ieee1275_map): ... this. All users updated. Add phys_lo when
+	necessary.
+	* kern/sparc64/ieee1275/ieee1275.c (grub_ieee1275_map_physical): Remove.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_open): Check device type before
+	opening and not after.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_readkey): Macroify
+	constants.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/sparc64/ieee1275/linux.c (align_addr): Remove.
+	(alloc_phys): Use ALIGN_UP instead of align_addr.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/sparc64/ieee1275/linux.c (alloc_phys): Correct bounds checking.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/sparc64/ieee1275/crt0.S (codestart): Move modules backwards.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_read): Remove excessively
+	verbose dprintf.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix over-4GiB seek on sparc64.
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_seek):
+	Replace pos_i and pos_lo with pos. All users updated.
+	* include/grub/powerpc/ieee1275/ieee1275.h (GRUB_IEEE1275_CELL_SIZEOF):
+	New constant.
+	* include/grub/sparc64/ieee1275/ieee1275.h (GRUB_IEEE1275_CELL_SIZEOF):
+	Likewise.
+	* kern/ieee1275/ieee1275.c (grub_ieee1275_seek): Split pos into pos_hi
+	and pos_lo.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrawimage.c (main): Call set_program_name.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Properly align 64-bit targets.
+
+	* util/grub-mkrawimage.c (ALIGN_ADDR): New macro.
+	(generate_image): Use ALIGN_ADDR.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Properly create cross-endian images.
+
+	* include/grub/types.h (grub_host_to_target_addr): New macro
+	* util/grub-mkrawimage.c (generate_image): Add missing host_to_target.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrawimage.c (generate_image): Add forgotten ALIGN_UP.
+
 2010-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Pass SIMPLE framebuffer size in bytes and not 64K blocks.

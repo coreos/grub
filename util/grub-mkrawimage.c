@@ -42,6 +42,8 @@
 
 #include "progname.h"
 
+#define ALIGN_ADDR(x) (ALIGN_UP((x), GRUB_TARGET_SIZEOF_VOID_P))
+
 #ifdef ENABLE_LZMA
 #include <grub/lib/LzmaEnc.h>
 
@@ -130,20 +132,20 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
   if (font_path)
     {
-      font_size = ALIGN_UP(grub_util_get_image_size (font_path), 4);
+      font_size = ALIGN_ADDR (grub_util_get_image_size (font_path));
       total_module_size += font_size + sizeof (struct grub_module_header);
     }
 
   if (config_path)
     {
       config_size_pure = grub_util_get_image_size (config_path) + 1;
-      config_size = ALIGN_UP(config_size_pure, 4);
+      config_size = ALIGN_ADDR (config_size_pure);
       grub_util_info ("the size of config file is 0x%x", config_size);
       total_module_size += config_size + sizeof (struct grub_module_header);
     }
 
   for (p = path_list; p; p = p->next)
-    total_module_size += (ALIGN_UP (grub_util_get_image_size (p->name), 4)
+    total_module_size += (ALIGN_ADDR (grub_util_get_image_size (p->name))
 			  + sizeof (struct grub_module_header));
 
   grub_util_info ("the total module size is 0x%x", total_module_size);
@@ -158,9 +160,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   /* Fill in the grub_module_info structure.  */
   modinfo = (struct grub_module_info *) (kernel_img + kernel_size);
   memset (modinfo, 0, sizeof (struct grub_module_info));
-  modinfo->magic = GRUB_MODULE_MAGIC;
-  modinfo->offset = sizeof (struct grub_module_info);
-  modinfo->size = total_module_size;
+  modinfo->magic = grub_host_to_target32 (GRUB_MODULE_MAGIC);
+  modinfo->offset = grub_host_to_target_addr (sizeof (struct grub_module_info));
+  modinfo->size = grub_host_to_target_addr (total_module_size);
 
   offset = kernel_size + sizeof (struct grub_module_info);
   for (p = path_list; p; p = p->next)
@@ -169,11 +171,11 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       size_t mod_size, orig_size;
 
       orig_size = grub_util_get_image_size (p->name);
-      mod_size = ALIGN_UP(orig_size, 4);
+      mod_size = ALIGN_ADDR (orig_size);
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = OBJ_TYPE_ELF;
+      header->type = grub_host_to_target32 (OBJ_TYPE_ELF);
       header->size = grub_host_to_target32 (mod_size + sizeof (*header));
       offset += sizeof (*header);
       memset (kernel_img + offset + orig_size, 0, mod_size - orig_size);
@@ -188,7 +190,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = OBJ_TYPE_MEMDISK;
+      header->type = grub_host_to_target32 (OBJ_TYPE_MEMDISK);
       header->size = grub_host_to_target32 (memdisk_size + sizeof (*header));
       offset += sizeof (*header);
 
@@ -202,7 +204,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = OBJ_TYPE_FONT;
+      header->type = grub_host_to_target32 (OBJ_TYPE_FONT);
       header->size = grub_host_to_target32 (font_size + sizeof (*header));
       offset += sizeof (*header);
 
@@ -216,7 +218,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = OBJ_TYPE_CONFIG;
+      header->type = grub_host_to_target32 (OBJ_TYPE_CONFIG);
       header->size = grub_host_to_target32 (config_size + sizeof (*header));
       offset += sizeof (*header);
 
@@ -382,7 +384,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       Elf32_Phdr *phdr;
       grub_uint32_t target_addr;
 
-      program_size = ALIGN_UP (core_size, 4);
+      program_size = ALIGN_ADDR (core_size);
 
       elf_img = xmalloc (program_size + sizeof (*ehdr) + sizeof (*phdr));
       memset (elf_img, 0, program_size + sizeof (*ehdr) + sizeof (*phdr));
@@ -516,6 +518,8 @@ main (int argc, char *argv[])
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
   grub_platform_image_format_t format = GRUB_PLATFORM_IMAGE_DEFAULT;
 #endif
+
+  set_program_name (argv[0]);
 
   grub_util_init_nls ();
 
