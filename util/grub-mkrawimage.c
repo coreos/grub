@@ -344,7 +344,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       aout_head->a_midmag = grub_host_to_target32 ((AOUT_MID_SUN << 16)
 						   | AOUT32_OMAGIC);
       aout_head->a_text = grub_host_to_target32 (core_size);
-      aout_head->a_entry = grub_host_to_target32 (0x4400);
+      aout_head->a_entry
+	= grub_host_to_target32 (GRUB_BOOT_MACHINE_IMAGE_ADDRESS);
       memcpy (aout_img + sizeof (*aout_head), core_img, core_size);
 
       free (core_img);
