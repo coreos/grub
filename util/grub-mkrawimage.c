@@ -157,9 +157,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   /* Fill in the grub_module_info structure.  */
   modinfo = (struct grub_module_info *) (kernel_img + kernel_size);
   memset (modinfo, 0, sizeof (struct grub_module_info));
-  modinfo->magic = GRUB_MODULE_MAGIC;
-  modinfo->offset = sizeof (struct grub_module_info);
-  modinfo->size = total_module_size;
+  modinfo->magic = grub_host_to_target32 (GRUB_MODULE_MAGIC);
+  modinfo->offset = grub_host_to_target_addr (sizeof (struct grub_module_info));
+  modinfo->size = grub_host_to_target_addr (total_module_size);
 
   offset = kernel_size + sizeof (struct grub_module_info);
   for (p = path_list; p; p = p->next)
@@ -172,7 +172,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = OBJ_TYPE_ELF;
+      header->type = grub_host_to_target32 (OBJ_TYPE_ELF);
       header->size = grub_host_to_target32 (mod_size + sizeof (*header));
       offset += sizeof (*header);
       memset (kernel_img + offset + orig_size, 0, mod_size - orig_size);
@@ -187,7 +187,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = OBJ_TYPE_MEMDISK;
+      header->type = grub_host_to_target32 (OBJ_TYPE_MEMDISK);
       header->size = grub_host_to_target32 (memdisk_size + sizeof (*header));
       offset += sizeof (*header);
 
@@ -201,7 +201,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = OBJ_TYPE_FONT;
+      header->type = grub_host_to_target32 (OBJ_TYPE_FONT);
       header->size = grub_host_to_target32 (font_size + sizeof (*header));
       offset += sizeof (*header);
 
@@ -215,7 +215,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = OBJ_TYPE_CONFIG;
+      header->type = grub_host_to_target32 (OBJ_TYPE_CONFIG);
       header->size = grub_host_to_target32 (config_size + sizeof (*header));
       offset += sizeof (*header);
 

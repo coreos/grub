@@ -1,5 +1,12 @@
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Properly create cross-endian images.
+
+	* include/grub/types.h (grub_host_to_target_addr): New macro
+	* util/grub-mkrawimage.c (generate_image): Add missing host_to_target.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrawimage.c (generate_image): Add forgotten ALIGN_UP.
 
 2010-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
