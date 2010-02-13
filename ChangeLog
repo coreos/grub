@@ -1,5 +1,10 @@
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* term/ieee1275/ofconsole.c (grub_ofconsole_readkey): Macroify
+	constants.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* loader/sparc64/ieee1275/linux.c (align_addr): Remove.
 	(alloc_phys): Use ALIGN_UP instead of align_addr.
 

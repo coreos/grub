@@ -165,7 +165,7 @@ grub_ofconsole_readkey (int *key)
 	  return 1;
 	}
 
-      if (c != 91)
+      if (c != '[')
 	return 0;
 
       grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
@@ -174,21 +174,21 @@ grub_ofconsole_readkey (int *key)
 
       switch (c)
 	{
-	case 65:
+	case 'A':
 	  /* Up: Ctrl-p.  */
-	  c = 16;
+	  c = GRUB_TERM_UP;
 	  break;
-	case 66:
+	case 'B':
 	  /* Down: Ctrl-n.  */
-	  c = 14;
+	  c = GRUB_TERM_DOWN;
 	  break;
-	case 67:
+	case 'C':
 	  /* Right: Ctrl-f.  */
-	  c = 6;
+	  c = GRUB_TERM_RIGHT;
 	  break;
-	case 68:
+	case 'D':
 	  /* Left: Ctrl-b.  */
-	  c = 2;
+	  c = GRUB_TERM_LEFT;
 	  break;
 	}
     }
