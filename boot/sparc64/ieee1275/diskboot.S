@@ -129,7 +129,7 @@ bootit:
 	 mov	NOTIFICATION_DONE_LEN, %o3
 	sethi	%hi(GRUB_BOOT_MACHINE_IMAGE_ADDRESS), %o2
 	jmpl	%o2 + %lo(GRUB_BOOT_MACHINE_IMAGE_ADDRESS), %o7
-	 mov	CIF_REG, %o0
+	 mov	CIF_REG, %o4
 1:	ba,a	1b
 
 lastlist:

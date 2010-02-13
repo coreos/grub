@@ -48,7 +48,7 @@ kernel_img_SOURCES = kern/sparc64/ieee1275/crt0.S kern/ieee1275/cmain.c	\
 	symlist.c kern/$(target_cpu)/cache.S
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,0x200000,-Bstatic,-melf64_sparc -static-libgcc -lgcc
+kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,0x4400,-Bstatic,-melf64_sparc -static-libgcc -lgcc
 kernel_img_FORMAT = binary
 
 symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh

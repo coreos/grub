@@ -104,7 +104,7 @@ grub_machine_set_prefix (void)
 static void
 grub_heap_init (void)
 {
-  grub_mm_init_region ((void *)(long)0x4000UL, 0x200000 - 0x4000);
+  grub_mm_init_region ((void *) grub_modules_get_end (), 0x200000);
 }
 
 static void

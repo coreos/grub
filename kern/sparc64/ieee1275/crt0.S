@@ -24,7 +24,7 @@
 	.globl	_start
 _start:
 	ba	codestart
-	 nop
+	 mov  %o4, %o0
 
 	. = EXT_C(_start) + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
 
