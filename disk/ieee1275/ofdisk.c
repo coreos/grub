@@ -241,7 +241,7 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   pos = sector * 512UL;
 
   grub_ieee1275_seek ((grub_ieee1275_ihandle_t) (unsigned long) disk->data,
-		      (int) (pos >> 32), (int) pos & 0xFFFFFFFFUL, &status);
+		      pos, &status);
   if (status < 0)
     return grub_error (GRUB_ERR_READ_ERROR,
 		       "seek error, can't seek block %llu",

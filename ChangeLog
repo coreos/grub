@@ -1,5 +1,18 @@
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix over-4GiB seek on sparc64.
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_seek):
+	Replace pos_i and pos_lo with pos. All users updated.
+	* include/grub/powerpc/ieee1275/ieee1275.h (GRUB_IEEE1275_CELL_SIZEOF):
+	New constant.
+	* include/grub/sparc64/ieee1275/ieee1275.h (GRUB_IEEE1275_CELL_SIZEOF):
+	Likewise.
+	* kern/ieee1275/ieee1275.c (grub_ieee1275_seek): Split pos into pos_hi
+	and pos_lo.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrawimage.c (main): Call set_program_name.
 
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>

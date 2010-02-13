@@ -22,6 +22,7 @@
 
 #include <grub/types.h>
 
+#define GRUB_IEEE1275_CELL_SIZEOF 8
 typedef grub_uint64_t grub_ieee1275_cell_t;
 
 /* Encoding of 'mode' argument to grub_ieee1275_map_physical() */
