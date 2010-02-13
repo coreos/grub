@@ -174,12 +174,6 @@ grub_linux_unload (void)
 #define FOUR_MB	(4 * 1024 * 1024)
 
 static grub_addr_t
-align_addr(grub_addr_t val, grub_addr_t align)
-{
-  return (val + (align - 1)) & ~(align - 1);
-}
-
-static grub_addr_t
 alloc_phys (grub_addr_t size)
 {
   grub_addr_t ret = (grub_addr_t) -1;
@@ -192,27 +186,27 @@ alloc_phys (grub_addr_t size)
     if (type != 1)
       return 0;
 
-    addr = align_addr (addr, FOUR_MB);
+    addr = ALIGN_UP (addr, FOUR_MB);
     if (addr + size >= end)
       return 0;
 
     if (addr >= grub_phys_start && addr < grub_phys_end)
       {
-	addr = align_addr (grub_phys_end, FOUR_MB);
+	addr = ALIGN_UP (grub_phys_end, FOUR_MB);
 	if (addr + size >= end)
 	  return 0;
       }
     if ((addr + size) >= grub_phys_start
 	&& (addr + size) < grub_phys_end)
       {
-	addr = align_addr (grub_phys_end, FOUR_MB);
+	addr = ALIGN_UP (grub_phys_end, FOUR_MB);
 	if (addr + size >= end)
 	  return 0;
       }
 
     if (loaded)
       {
-	grub_addr_t linux_end = align_addr (linux_paddr + linux_size, FOUR_MB);
+	grub_addr_t linux_end = ALIGN_UP (linux_paddr + linux_size, FOUR_MB);
 
 	if (addr >= linux_paddr && addr < linux_end)
 	  {
