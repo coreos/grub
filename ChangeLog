@@ -1,5 +1,9 @@
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/sparc64/ieee1275/crt0.S (codestart): Move modules backwards.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_read): Remove excessively
 	verbose dprintf.
 
