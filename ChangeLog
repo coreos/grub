@@ -1,5 +1,12 @@
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Properly align 64-bit targets.
+
+	* util/grub-mkrawimage.c (ALIGN_ADDR): New macro.
+	(generate_image): Use ALIGN_ADDR.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Properly create cross-endian images.
 
 	* include/grub/types.h (grub_host_to_target_addr): New macro
