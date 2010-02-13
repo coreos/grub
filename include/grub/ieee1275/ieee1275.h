@@ -173,6 +173,10 @@ grub_err_t EXPORT_FUNC(grub_machine_mmap_iterate)
      (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));
 int EXPORT_FUNC(grub_claimmap) (grub_addr_t addr, grub_size_t size);
 
+int
+EXPORT_FUNC(grub_ieee1275_map) (grub_addr_t phys, grub_addr_t virt,
+				grub_size_t size, grub_uint32_t mode);
+
 char *EXPORT_FUNC(grub_ieee1275_encode_devname) (const char *path);
 char *EXPORT_FUNC(grub_ieee1275_get_filename) (const char *path);
 

@@ -252,8 +252,8 @@ grub_linux_load64 (grub_elf_t elf)
   if (paddr == (grub_addr_t) -1)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "couldn't allocate physical memory");
-  ret = grub_ieee1275_map_physical (paddr, linux_addr - off,
-				    linux_size + off, IEEE1275_MAP_DEFAULT);
+  ret = grub_ieee1275_map (paddr, linux_addr - off,
+			   linux_size + off, IEEE1275_MAP_DEFAULT);
   if (ret)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "couldn't map physical memory");
@@ -403,7 +403,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		  "couldn't allocate physical memory");
       goto fail;
     }
-  ret = grub_ieee1275_map_physical (paddr, addr, size, IEEE1275_MAP_DEFAULT);
+  ret = grub_ieee1275_map (paddr, addr, size, IEEE1275_MAP_DEFAULT);
   if (ret)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY,

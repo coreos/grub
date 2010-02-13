@@ -199,9 +199,9 @@ nextprop:
 }
 
 /* Call the "map" method of /chosen/mmu.  */
-static int
-grub_map (grub_addr_t phys, grub_addr_t virt, grub_uint32_t size,
-		   grub_uint8_t mode)
+int
+grub_ieee1275_map (grub_addr_t phys, grub_addr_t virt, grub_size_t size,
+		   grub_uint32_t mode)
 {
   struct map_args {
     struct grub_ieee1275_common_hdr common;
@@ -210,17 +210,30 @@ grub_map (grub_addr_t phys, grub_addr_t virt, grub_uint32_t size,
     grub_ieee1275_cell_t mode;
     grub_ieee1275_cell_t size;
     grub_ieee1275_cell_t virt;
-    grub_ieee1275_cell_t phys;
+#ifdef GRUB_MACHINE_SPARC64
+    grub_ieee1275_cell_t phys_high;
+#endif
+    grub_ieee1275_cell_t phys_low;
     grub_ieee1275_cell_t catch_result;
   } args;
 
-  INIT_IEEE1275_COMMON (&args.common, "call-method", 6, 1);
+  INIT_IEEE1275_COMMON (&args.common, "call-method",
+#ifdef GRUB_MACHINE_SPARC64
+			7,
+#else
+			6,
+#endif
+			1);
   args.method = (grub_ieee1275_cell_t) "map";
   args.ihandle = grub_ieee1275_mmu;
-  args.phys = phys;
+#ifdef GRUB_MACHINE_SPARC64
+  args.phys_high = 0;
+#endif
+  args.phys_low = phys;
   args.virt = virt;
   args.size = size;
   args.mode = mode; /* Format is WIMG0PP.  */
+  args.catch_result = (grub_ieee1275_cell_t) -1;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -235,7 +248,7 @@ grub_claimmap (grub_addr_t addr, grub_size_t size)
     return -1;
 
   if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_REAL_MODE)
-      && grub_map (addr, addr, size, 0x00))
+      && grub_ieee1275_map (addr, addr, size, 0x00))
     {
       grub_printf ("map failed: address 0x%llx, size 0x%llx\n",
 		   (long long) addr, (long long) size);

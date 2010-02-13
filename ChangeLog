@@ -1,5 +1,18 @@
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Merge grub_ieee1275_map_physical into grub_map and rename to
+	grub_ieee1275_map
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_map): New proto.
+	* include/grub/sparc64/ieee1275/ieee1275.h (grub_ieee1275_map_physical):
+	Remove.
+	* kern/ieee1275/openfw.c (grub_map): Rename to ...
+	(grub_ieee1275_map): ... this. All users updated. Add phys_lo when
+	necessary.
+	* kern/sparc64/ieee1275/ieee1275.c (grub_ieee1275_map_physical): Remove.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_open): Check device type before
 	opening and not after.
 
