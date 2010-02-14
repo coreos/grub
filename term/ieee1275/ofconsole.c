@@ -21,6 +21,7 @@
 #include <grub/types.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
+#include <grub/time.h>
 #include <grub/machine/console.h>
 #include <grub/ieee1275/ieee1275.h>
 
@@ -203,7 +204,14 @@ grub_ofconsole_readkey (int *key)
 
   if (actual > 0 && c == '\e')
     {
+      grub_uint64_t start;
       grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+
+      /* On 9600 we have to wait up to 12 milliseconds.  */
+      start = grub_get_time_ms ();
+      while (actual <= 0 && grub_get_time_ms () - start < 12)
+	grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+
       if (actual <= 0)
 	{
 	  *key = '\e';
@@ -214,6 +222,10 @@ grub_ofconsole_readkey (int *key)
 	return 0;
 
       grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+      /* On 9600 we have to wait up to 12 milliseconds.  */
+      start = grub_get_time_ms ();
+      while (actual <= 0 && grub_get_time_ms () - start < 12)
+	grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
       if (actual <= 0)
 	return 0;
 
