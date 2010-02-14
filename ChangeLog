@@ -1,5 +1,12 @@
 2010-02-14  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
+	* commands/i386/pc/play.c (grub_cmd_play): If grub_file_open fails,
+	parse arguments as inline tempo and notes.  Move code for playing notes
+	to...
+	(play): ... new function.
+
+2010-02-14  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
 	* commands/i386/pc/play.c (T_REST, T_FINE, struct note, beep_on): Use
 	grub_uint16_t instead of short.
 	(grub_cmd_play): Use grub_uint32_t instead of int, convert data from
