@@ -1,5 +1,12 @@
 2010-02-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Prevent unknown commands from stopping menuentry execution.
+
+	* script/execute.c (grub_script_execute_cmdline): Print error after
+	unknown command.
+
+2010-02-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* fs/i386/pc/pxe.c (GRUB_MOD_INIT): Fix typo.
 	Reported by: Pavel Pisa.
 
