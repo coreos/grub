@@ -29,7 +29,7 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
-#define BASE_TEMPO 120
+#define BASE_TEMPO (60 * GRUB_TICKS_PER_SECOND)
 
 /* The speaker port.  */
 #define SPEAKER			0x61

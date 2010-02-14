@@ -1,3 +1,8 @@
+2010-02-07  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* commands/i386/pc/play.c (BASE_TEMPO): Set to 60 *
+	GRUB_TICKS_PER_SECOND instead of 120.
+
 2010-02-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* term/ieee1275/ofconsole.c (grub_ofconsole_readkey): Wait for possible
