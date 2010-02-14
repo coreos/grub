@@ -68,7 +68,6 @@ grub_children_iterate (char *devpath,
     {
       struct grub_ieee1275_devalias alias;
       grub_ssize_t actual;
-      char *fullname;
 
       if (grub_ieee1275_get_property (child, "device_type", childtype,
 				      IEEE1275_MAX_PROP_LEN, &actual))
@@ -82,23 +81,10 @@ grub_children_iterate (char *devpath,
 				      IEEE1275_MAX_PROP_LEN, &actual))
 	continue;
 
-      if (devpath[0] == '/' && devpath[1] == 0)
-	fullname = grub_xasprintf ("/%s", childname);
-      else
-	fullname = grub_xasprintf ("%s/%s", devpath, childname);
-      if (!fullname)
-	{
-	  grub_free (childname);
-	  grub_free (childpath);
-	  grub_free (childtype);
-	  return 0;
-	}
-
       alias.type = childtype;
       alias.path = childpath;
-      alias.name = fullname;
+      alias.name = childname;
       ret = hook (&alias);
-      grub_free (fullname);
       if (ret)
 	break;
     }
@@ -119,7 +105,7 @@ grub_ieee1275_devices_iterate (int (*hook) (struct grub_ieee1275_devalias *alias
   {
     if (hook (alias))
       return 1;
-    return grub_children_iterate (alias->name, it_through);
+    return grub_children_iterate (alias->path, it_through);
   }
 
   return grub_children_iterate ("/", it_through);
