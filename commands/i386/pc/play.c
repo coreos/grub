@@ -101,13 +101,13 @@
 #define PIT_CTRL_COUNT_BINARY	0x00	/* 16-bit binary counter.  */
 #define PIT_CTRL_COUNT_BCD	0x01	/* 4-decade BCD counter.  */
 
-#define T_REST			((short) 0)
-#define T_FINE			((short) -1)
+#define T_REST			((grub_uint16_t) 0)
+#define T_FINE			((grub_uint16_t) -1)
 
 struct note
 {
-  short pitch;
-  short duration;
+  grub_uint16_t pitch;
+  grub_uint16_t duration;
 };
 
 static void
@@ -120,7 +120,7 @@ beep_off (void)
 }
 
 static void
-beep_on (short pitch)
+beep_on (grub_uint16_t pitch)
 {
   unsigned char status;
   unsigned int counter;
@@ -149,7 +149,7 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_file_t file;
   struct note buf;
-  int tempo;
+  grub_uint32_t tempo;
   unsigned int to;
 
   if (argc != 1)
@@ -166,12 +166,18 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
                          "file doesn't even contains a full tempo record");
     }
 
+  tempo = grub_le_to_cpu32(tempo);
+
   grub_dprintf ("play","tempo = %d\n", tempo);
 
   while (grub_file_read (file, &buf,
-                         sizeof (struct note)) == sizeof (struct note)
-         && buf.pitch != T_FINE && grub_checkkey () < 0)
+                         sizeof (struct note)) == sizeof (struct note))
     {
+      buf.pitch = grub_le_to_cpu16(buf.pitch);
+      buf.duration = grub_le_to_cpu16(buf.duration);
+
+      if (buf.pitch == T_FINE || grub_checkkey () >= 0)
+        break;
 
       grub_dprintf ("play", "pitch = %d, duration = %d\n", buf.pitch,
                     buf.duration);

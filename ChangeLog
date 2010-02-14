@@ -1,3 +1,10 @@
+2010-02-14  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* commands/i386/pc/play.c (T_REST, T_FINE, struct note, beep_on): Use
+	grub_uint16_t instead of short.
+	(grub_cmd_play): Use grub_uint32_t instead of int, convert data from
+	disk from little endian to cpu endianness.
+
 2010-02-07  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* commands/i386/pc/play.c (BASE_TEMPO): Set to 60 *
