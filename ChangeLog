@@ -1,5 +1,10 @@
 2010-02-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* term/ieee1275/ofconsole.c (grub_ofconsole_putchar): Don't output
+	non-ASCII characters.
+
+2010-02-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Enclose
 	set root in single quotes to prevent \, from being unescaped.
 

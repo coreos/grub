@@ -77,7 +77,52 @@ grub_ofconsole_writeesc (const char *str)
 static void
 grub_ofconsole_putchar (grub_uint32_t c)
 {
-  char chr = c;
+  char chr;
+
+  if (c > 0x7F)
+    {
+      /* Better than nothing.  */
+      switch (c)
+	{
+	case GRUB_TERM_DISP_LEFT:
+	  c = '<';
+	  break;
+	  
+	case GRUB_TERM_DISP_UP:
+	  c = '^';
+	  break;
+
+	case GRUB_TERM_DISP_RIGHT:
+	  c = '>';
+	  break;
+
+	case GRUB_TERM_DISP_DOWN:
+	  c = 'v';
+	  break;
+
+	case GRUB_TERM_DISP_HLINE:
+	  c = '-';
+	  break;
+
+	case GRUB_TERM_DISP_VLINE:
+	  c = '|';
+	  break;
+
+	case GRUB_TERM_DISP_UL:
+	case GRUB_TERM_DISP_UR:
+	case GRUB_TERM_DISP_LL:
+	case GRUB_TERM_DISP_LR:
+	  c = '+';
+	  break;
+
+	default:
+	  c = '?';
+	  break;
+	}
+    }
+
+  chr = c;
+
   if (c == '\n')
     {
       grub_curr_y++;
