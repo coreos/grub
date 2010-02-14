@@ -94,7 +94,7 @@ grub_get_datetime (struct grub_datetime *datetime)
 grub_err_t
 grub_set_datetime (struct grub_datetime *datetime)
 {
-  struct get_time_args
+  struct set_time_args
   {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_cell_t method;
