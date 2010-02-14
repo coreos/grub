@@ -1,5 +1,9 @@
 2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* io/gzio.c (grub_gzio_open): Use grub_zalloc.
+
+2010-02-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Merge grub_ieee1275_map_physical into grub_map and rename to
 	grub_ieee1275_map
 
