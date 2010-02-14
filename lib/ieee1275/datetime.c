@@ -31,8 +31,8 @@ find_rtc (void)
   {
     if (grub_strcmp (alias->type, "rtc") == 0)
       {
-	grub_dprintf ("datetime", "Found RTC %s\n", alias->name);
-	rtc = grub_strdup (alias->name);
+	grub_dprintf ("datetime", "Found RTC %s\n", alias->path);
+	rtc = grub_strdup (alias->path);
 	return 1;
       }
     return 0;
