@@ -259,7 +259,8 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(play)
 {
   cmd = grub_register_command ("play", grub_cmd_play,
-			       N_("FILE"), N_("Play a tune."));
+			       N_("FILE | TEMPO [PITCH1 DURATION1] [PITCH2 DURATION2] ... "),
+			       N_("Play a tune."));
 }
 
 GRUB_MOD_FINI(play)

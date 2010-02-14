@@ -1,5 +1,11 @@
 2010-02-14  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
+	* commands/i386/pc/play.c (GRUB_MOD_INIT(play)): Fix help.
+	* docs/grub.texi (Command-line and menu entry commands): Document play
+	command.
+
+2010-02-14  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
 	* commands/i386/pc/play.c (grub_cmd_play): If grub_file_open fails,
 	parse arguments as inline tempo and notes.  Move code for playing notes
 	to...
