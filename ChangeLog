@@ -1,5 +1,10 @@
 2010-02-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Enclose
+	set root in single quotes to prevent \, from being unescaped.
+
+2010-02-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Prevent unknown commands from stopping menuentry execution.
 
 	* script/execute.c (grub_script_execute_cmdline): Print error after
