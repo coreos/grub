@@ -1,5 +1,13 @@
 2010-02-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* term/serial.c (serial_get_divisor) [GRUB_MACHINE_MIPS_YEELOONG]:
+	Double divisor.
+	(serial_hw_init) [GRUB_MACHINE_MIPS_YEELOONG]: Don't enable advanced
+	features.
+	(GRUB_MOD_INIT) [GRUB_MACHINE_MIPS_YEELOONG]: Default to 115200.
+
+2010-02-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* gensymlist.sh.in: Use TARGET_CC instead of CC.
 
 2010-02-14  Samuel Thibault  <samuel.thibault@ens-lyon.org>
