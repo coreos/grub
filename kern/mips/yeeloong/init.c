@@ -68,7 +68,7 @@ grub_machine_init (void)
 {
   grub_addr_t modend;
   modend = grub_modules_get_end ();
-  grub_mm_init_region (modend, (grub_arch_memsize << 20)
+  grub_mm_init_region ((void *) modend, (grub_arch_memsize << 20)
 		       - (modend - GRUB_ARCH_LOWMEMVSTART));
   /* FIXME: use upper memory as well.  */
   grub_install_get_time_ms (grub_rtc_get_time_ms);
