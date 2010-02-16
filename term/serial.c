@@ -300,10 +300,17 @@ serial_hw_init (void)
   /* In Yeeloong serial port has only 3 wires.  */
 #ifndef GRUB_MACHINE_MIPS_YEELOONG
   /* Enable the FIFO.  */
-  grub_outb (UART_ENABLE_FIFO, serial_settings.port + UART_FCR);
+  grub_outb (UART_ENABLE_FIFO_TRIGGER1, serial_settings.port + UART_FCR);
+
+  /* Turn on DTR and RTS.  */
+  grub_outb (UART_ENABLE_DTRRTS, serial_settings.port + UART_MCR);
+#else
+  /* Enable the FIFO.  */
+  grub_outb (UART_ENABLE_FIFO_TRIGGER14, serial_settings.port + UART_FCR);
 
   /* Turn on DTR, RTS, and OUT2.  */
-  grub_outb (UART_ENABLE_MODEM, serial_settings.port + UART_MCR);
+  grub_outb (UART_ENABLE_DTRRTS | UART_ENABLE_OUT2,
+	     serial_settings.port + UART_MCR);
 #endif
 
   /* Drain the input buffer.  */
