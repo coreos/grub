@@ -73,6 +73,17 @@ datehook_mod_SOURCES = hook/datehook.c
 datehook_mod_CFLAGS = $(COMMON_CFLAGS)
 datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For lsspd.mod
+pkglib_MODULES += lsspd.mod
+lsspd_mod_SOURCES = commands/mips/yeeloong/lsspd.c
+lsspd_mod_CFLAGS = $(COMMON_CFLAGS)
+lsspd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For cs5536.mod
+pkglib_MODULES += cs5536.mod
+cs5536_mod_SOURCES = bus/cs5536.c
+cs5536_mod_CFLAGS = $(COMMON_CFLAGS)
+cs5536_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 sbin_SCRIPTS += grub-install
 grub_install_SOURCES = util/grub-install.in

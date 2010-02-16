@@ -24,6 +24,7 @@
 #include <grub/time.h>
 #include <grub/pci.h>
 #include <grub/scsi.h>
+#include <grub/cs5536.h>
 
 /* At the moment, only two IDE ports are supported.  */
 static const grub_port_t grub_ata_ioaddress[] = { 0x1f0, 0x170 };
@@ -408,7 +409,7 @@ grub_ata_pciinit (grub_pci_device_t dev,
   class = grub_pci_read (addr);
 
   /* AMD CS5536 Southbridge.  */
-  if (pciid == 0x208f1022)
+  if (pciid == GRUB_CS5536_PCIID)
     {
       cs5536 = 1;
       nports = 1;
