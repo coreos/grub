@@ -19,6 +19,11 @@
 #ifndef GRUB_MACHINE_SERIAL_HEADER
 #define GRUB_MACHINE_SERIAL_HEADER	1
 
+#ifndef ASM_FILE
 #define GRUB_MACHINE_SERIAL_PORTS { 0xbff003f8 }
+#else
+#define GRUB_MACHINE_SERIAL_PORT_HI  0xbff0
+#define GRUB_MACHINE_SERIAL_PORT_LO  0x03f8 
+#endif
 
 #endif 
