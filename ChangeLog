@@ -1,3 +1,16 @@
+2010-02-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove any reference to non-free fonts.
+
+	* commands/videotest.c (grub_cmd_videotest): Use unifont by default.
+	* docs/gfxmenu-theme-example.txt: Removed. It's both outdated and
+	uses non-free components.
+	* font/font.c (grub_font_get_name): Remove example name.
+	* gfxmenu/gui_label.c (grub_gui_label_new): Use unifont by default.
+	* gfxmenu/gui_list.c (grub_gui_list_new): Likewise.
+	* gfxmenu/gui_progress_bar.c (grub_gui_progress_bar_new): Likewise.
+	* gfxmenu/view.c (grub_gfxmenu_view_new): Likewise.
+
 2010-02-16  Georgy Buranov <gburanov@gmail.com>
 
 	* disk/efi/efidisk.c (grub_efidisk_get_device_name): Fix a typo.
