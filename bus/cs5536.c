@@ -80,11 +80,11 @@ grub_cs5536_smbus_wait (grub_port_t smbbase)
     {
       grub_uint8_t status;
       status = grub_inb (smbbase + GRUB_CS5536_SMB_REG_STATUS);
-      if (status & (1 << 6))
+      if (status & GRUB_CS5536_SMB_REG_STATUS_SDAST)
 	return GRUB_ERR_NONE;	
-      if (status & (1 << 5))
+      if (status & GRUB_CS5536_SMB_REG_STATUS_BER)
 	return grub_error (GRUB_ERR_IO, "SM bus error");
-      if (status & (1 << 4))
+      if (status & GRUB_CS5536_SMB_REG_STATUS_NACK)
 	return grub_error (GRUB_ERR_IO, "NACK received");
       if (grub_get_time_ms () > start + 40)
 	return grub_error (GRUB_ERR_IO, "SM stalled");

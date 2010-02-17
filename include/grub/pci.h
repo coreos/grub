@@ -19,8 +19,10 @@
 #ifndef	GRUB_PCI_H
 #define	GRUB_PCI_H	1
 
+#ifndef ASM_FILE
 #include <grub/types.h>
 #include <grub/symbol.h>
+#endif
 
 #define  GRUB_PCI_ADDR_SPACE_MASK	0x01
 #define  GRUB_PCI_ADDR_SPACE_MEMORY	0x00
@@ -66,6 +68,7 @@
 #define  GRUB_PCI_REG_MIN_GNT      0x3e
 #define  GRUB_PCI_REG_MAX_LAT      0x3f
 
+#ifndef ASM_FILE
 typedef grub_uint32_t grub_pci_id_t;
 
 #ifdef GRUB_UTIL
@@ -106,5 +109,6 @@ grub_pci_address_t EXPORT_FUNC(grub_pci_make_address) (grub_pci_device_t dev,
 						       int reg);
 
 void EXPORT_FUNC(grub_pci_iterate) (grub_pci_iteratefunc_t hook);
+#endif
 
 #endif /* GRUB_PCI_H */

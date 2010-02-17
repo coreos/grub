@@ -19,6 +19,9 @@
 #ifndef GRUB_SMBUS_HEADER
 #define GRUB_SMBUS_HEADER 1
 
+#define GRUB_SMB_RAM_START_ADDR 0x50
+#define GRUB_SMB_RAM_NUM_MAX 0x08
+
 struct grub_smbus_spd
 {
   grub_uint8_t written_size;
