@@ -1,3 +1,8 @@
+2010-02-14  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/grub-mkconfig.in: Export GRUB_INIT_TUNE.
+	* util/grub.d/00_header.in: Handle GRUB_INIT_TUNE.
+
 2010-02-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove any reference to non-free fonts.
