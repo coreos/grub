@@ -446,10 +446,8 @@ Make a bootable image of GRUB.\n\
   -o, --output=FILE       output a generated image to FILE [default=stdout]\n"
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
 	    "\
-  -O, --format=FORMAT     generate an image in format [default=" 
-	    GRUB_PLATFORM_IMAGE_DEFAULT_FORMAT "]\n	\
-	                available formats: "
-	    GRUB_PLATFORM_IMAGE_FORMATS "\n"
+  -O, --format=FORMAT     generate an image in format [default=%s]\n\
+                          available formats: %s\n"
 #endif
 	    "\
   -h, --help              display this message and exit\n\
@@ -457,7 +455,12 @@ Make a bootable image of GRUB.\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-"), program_name, GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+"), 
+program_name, GRUB_LIBDIR, DEFAULT_DIRECTORY,
+#ifdef GRUB_PLATFORM_IMAGE_DEFAULT
+  GRUB_PLATFORM_IMAGE_DEFAULT_FORMAT, GRUB_PLATFORM_IMAGE_FORMATS,
+#endif
+PACKAGE_BUGREPORT);
 
   exit (status);
 }

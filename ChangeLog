@@ -1,3 +1,8 @@
+2010-02-20  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/grub-mkrawimage.c (usage): Change string formatting to
+	improve gettext.
+
 2010-02-20  Manoel Rebelo Abranches <mrabran@br.ibm.com>
 
 	* term/ieee1275/ofconsole.c (grub_ofconsole_readkey): Add delete and
