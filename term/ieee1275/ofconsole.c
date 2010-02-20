@@ -202,53 +202,82 @@ grub_ofconsole_readkey (int *key)
 
   grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
 
-  if (actual > 0 && c == '\e')
-    {
-      grub_uint64_t start;
-      grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-
-      /* On 9600 we have to wait up to 12 milliseconds.  */
-      start = grub_get_time_ms ();
-      while (actual <= 0 && grub_get_time_ms () - start < 12)
-	grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-
-      if (actual <= 0)
+  if (actual > 0)
+    switch(c)
+      {
+      case 0x7f:
+        /* Backspace: Ctrl-h.  */
+        c = '\b'; 
+        break;
+      case '\e':
 	{
-	  *key = '\e';
-	  return 1;
+	  grub_uint64_t start;
+	  grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+
+	  /* On 9600 we have to wait up to 12 milliseconds.  */
+	  start = grub_get_time_ms ();
+	  while (actual <= 0 && grub_get_time_ms () - start < 12)
+	    grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+
+	  if (actual <= 0)
+	    {
+	      *key = '\e';
+	      return 1;
+	    }
+
+	  if (c != '[')
+	    return 0;
+	  
+	  grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+
+	  /* On 9600 we have to wait up to 12 milliseconds.  */
+	  start = grub_get_time_ms ();
+	  while (actual <= 0 && grub_get_time_ms () - start < 12)
+	    grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+	  if (actual <= 0)
+	    return 0;
+
+	  switch (c)
+	    {
+	    case 'A':
+	      /* Up: Ctrl-p.  */
+	      c = GRUB_TERM_UP;
+	      break;
+	    case 'B':
+	      /* Down: Ctrl-n.  */
+	      c = GRUB_TERM_DOWN;
+	      break;
+	    case 'C':
+	      /* Right: Ctrl-f.  */
+	      c = GRUB_TERM_RIGHT;
+	      break;
+	    case 'D':
+	      /* Left: Ctrl-b.  */
+	      c = GRUB_TERM_LEFT;
+	      break;
+	    case '3':
+	      {
+		grub_uint64_t start;		
+		grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+		/* On 9600 we have to wait up to 12 milliseconds.  */
+		start = grub_get_time_ms ();
+		while (actual <= 0 && grub_get_time_ms () - start < 12)
+		  grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+		
+		if (actual <= 0)
+		  return 0;
+  	    
+		/* Delete: Ctrl-d.  */
+		if (c == '~')
+		  c = GRUB_TERM_DC;
+		else
+		  return 0;
+		break;
+	      }
+	      break;
+	    }
 	}
-
-      if (c != '[')
-	return 0;
-
-      grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-      /* On 9600 we have to wait up to 12 milliseconds.  */
-      start = grub_get_time_ms ();
-      while (actual <= 0 && grub_get_time_ms () - start < 12)
-	grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-      if (actual <= 0)
-	return 0;
-
-      switch (c)
-	{
-	case 'A':
-	  /* Up: Ctrl-p.  */
-	  c = GRUB_TERM_UP;
-	  break;
-	case 'B':
-	  /* Down: Ctrl-n.  */
-	  c = GRUB_TERM_DOWN;
-	  break;
-	case 'C':
-	  /* Right: Ctrl-f.  */
-	  c = GRUB_TERM_RIGHT;
-	  break;
-	case 'D':
-	  /* Left: Ctrl-b.  */
-	  c = GRUB_TERM_LEFT;
-	  break;
-	}
-    }
+      }
 
   *key = c;
   return actual > 0;
