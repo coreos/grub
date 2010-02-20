@@ -1,4 +1,9 @@
-2010-02-14  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+2010-02-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* video/fb/video_fb.c (grub_video_fb_scroll): Fix a pixel size bug.
+	Reported by: Michael Suchanek.
+
+2010-02-18  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* util/grub-mkconfig.in: Export GRUB_INIT_TUNE.
 	* util/grub.d/00_header.in: Handle GRUB_INIT_TUNE.
