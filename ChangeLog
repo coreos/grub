@@ -1,3 +1,9 @@
+2010-02-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/iso9660.c (grub_iso9660_iterate_dir): Strip version from joliet
+	filename.
+	Reported by: Georgy Buranov
+
 2010-02-20  Carles Pina i Estany  <carles@pina.cat>
 
 	* util/grub-mkrawimage.c (usage): Change string formatting to
