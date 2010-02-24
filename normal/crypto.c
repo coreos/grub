@@ -88,6 +88,7 @@ read_crypto_list (void)
     }
 
   file = grub_file_open (filename);
+  grub_free (filename);
   if (!file)
     {
       grub_errno = GRUB_ERR_NONE;

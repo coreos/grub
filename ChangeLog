@@ -1,5 +1,12 @@
 2010-02-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* normal/crypto.c (read_crypto_list): Fix a memory leak.
+	* normal/term.c (read_terminal_list): Likewise.
+	* normal/main.c (grub_normal_init_page): Likewise.
+	(grub_normal_read_line_real): Likewise.
+
+2010-02-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* loader/i386/multiboot_mbi.c (grub_multiboot_set_bootdev): Fix a
 	memory leak.
 	Reported by: Seth Goldberg.
