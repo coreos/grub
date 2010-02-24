@@ -257,7 +257,6 @@ grub_ofconsole_readkey (int *key)
 	      break;
 	    case '3':
 	      {
-		grub_uint64_t start;		
 		grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
 		/* On 9600 we have to wait up to 12 milliseconds.  */
 		start = grub_get_time_ms ();

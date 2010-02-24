@@ -1,3 +1,8 @@
+2010-02-24  Joey Korkames  <joey+lists@kidfixit.com>
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_readkey): Remove
+	duplicate declaration of `start'.
+
 2010-02-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* fs/iso9660.c (grub_iso9660_iterate_dir): Strip version from joliet
