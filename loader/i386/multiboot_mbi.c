@@ -463,6 +463,7 @@ grub_multiboot_set_bootdev (void)
 	  if ((p[0] >= 'a') && (p[0] <= 'z'))
 	    part = p[0] - 'a';
 	}
+      grub_free (p);
     }
   if (dev)
     grub_device_close (dev);

@@ -1,3 +1,9 @@
+2010-02-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/multiboot_mbi.c (grub_multiboot_set_bootdev): Fix a
+	memory leak.
+	Reported by: Seth Goldberg.
+
 2010-02-24  Joey Korkames  <joey+lists@kidfixit.com>
 
 	* term/ieee1275/ofconsole.c (grub_ofconsole_readkey): Remove
