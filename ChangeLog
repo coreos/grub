@@ -1,3 +1,23 @@
+2010-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't compile video modules on yeeloong since video subsystem is part
+	of kernel.
+
+	* conf/common.rmk (pkglib_MODULES) [yeeloong]: Remove video.mod,
+	video_fb.mod, bitmap.mod, font.mod, gfxterm.mod and bufio.mod
+	* conf/mips-yeeloong.rmk (kernel_img_HEADERS): Add bitmap.h,
+	video.h, gfxterm.h, font.h, bitmap_scale.h and bufio.h.
+	* conf/mips.rmk (kernel_img_HEADERS): Add values instead of overwriting.
+	* include/grub/bitmap.h: Add EXPORT_FUNC and EXPORT_VAR.
+	* include/grub/bitmap_scale.h: Likewise.
+	* include/grub/bufio.h: Likewise.
+	* include/grub/font.h: Likewise.
+	* include/grub/gfxterm.h: Likewise.
+	* include/grub/video.h: Likewise.
+	* include/grub/vbe.h: Don't include video_fb.h.
+	* video/i386/pc/vbe.c: Include video_fb.h.
+	* commands/i386/pc/vbetest.c: Include video.h.
+
 2010-02-25  Jordan Uggla  <jordan.uggla@gmail.com>
 
 	* util/grub-mkconfig.in (GRUB_SAVEDEFAULT): Export new variable.
