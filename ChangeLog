@@ -1,3 +1,11 @@
+2010-02-25  Jordan Uggla  <jordan.uggla@gmail.com>
+
+	* util/grub-mkconfig.in (GRUB_SAVEDEFAULT): Export new variable.
+	* util/grub-mkconfig_lib.in (save_default_entry): Only save a new
+	default entry if GRUB_SAVEDEFAULT=true.  This allows using
+	GRUB_DEFAULT=saved on its own to let grub-reboot work, without
+	saving a new default on every boot.
+
 2010-02-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* normal/crypto.c (read_crypto_list): Fix a memory leak.

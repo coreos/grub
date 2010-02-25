@@ -96,7 +96,7 @@ convert_system_path_to_grub_path ()
 
 save_default_entry ()
 {
-  if [ "x${GRUB_DEFAULT}" = "xsaved" ] ; then
+  if [ "x${GRUB_SAVEDEFAULT}" = "xtrue" ] ; then
     cat << EOF
 savedefault
 EOF

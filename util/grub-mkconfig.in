@@ -223,7 +223,8 @@ export GRUB_DEFAULT \
   GRUB_THEME \
   GRUB_GFXPAYLOAD_LINUX \
   GRUB_DISABLE_OS_PROBER \
-  GRUB_INIT_TUNE
+  GRUB_INIT_TUNE \
+  GRUB_SAVEDEFAULT
 
 if test "x${grub_cfg}" != "x"; then
   rm -f ${grub_cfg}.new
