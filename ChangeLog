@@ -1,3 +1,8 @@
+2010-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/10_linux.in (linux_entry): Don't default to
+	gfxpayload=keep if Linux doesn't support video handover.
+
 2010-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Don't compile video modules on yeeloong since video subsystem is part
