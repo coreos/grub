@@ -27,6 +27,7 @@
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
 #include <grub/cpu/kernel.h>
+#include <grub/cs5536.h>
 
 extern void grub_video_sm712_init (void);
 extern void grub_video_video_init (void);
@@ -89,16 +90,67 @@ void
 grub_machine_init (void)
 {
   void *modend;
+
+  /* FIXME: measure this.  */
+  if (grub_arch_busclock == 0)
+    {
+      grub_arch_busclock = 66000000;
+      grub_arch_cpuclock = 797000000;
+    }
+
+  grub_install_get_time_ms (grub_rtc_get_time_ms);
+
+  if (grub_arch_memsize == 0)
+    {
+      grub_port_t smbbase;
+      grub_err_t err;
+      grub_pci_device_t dev;
+      struct grub_smbus_spd spd;
+      unsigned totalmem;
+      int i;
+
+      if (!grub_cs5536_find (&dev))
+	grub_fatal ("No CS5536 found\n");
+
+      err = grub_cs5536_init_smbus (dev, 0x7ff, &smbbase);
+      if (err)
+	grub_fatal ("Couldn't init SMBus: %s\n", grub_errmsg);
+
+      /* Yeeloong has only one memory slot.  */
+      err = grub_cs5536_read_spd (smbbase, GRUB_SMB_RAM_START_ADDR, &spd);
+      if (err)
+	grub_fatal ("Couldn't read SPD: %s\n", grub_errmsg);
+      for (i = 5; i < 13; i++)
+	if (spd.ddr2.rank_capacity & (1 << (i & 7)))
+	  break;
+      /* Something is wrong.  */
+      if (i == 13)
+	totalmem = 256;
+      else
+	totalmem = ((spd.ddr2.num_of_ranks
+		     & GRUB_SMBUS_SPD_MEMORY_NUM_OF_RANKS_MASK) + 1) << (i + 2);
+      
+      if (totalmem >= 256)
+	{
+	  grub_arch_memsize = 256;
+	  grub_arch_highmemsize = totalmem - 256;
+	}
+      else
+	{
+	  grub_arch_memsize = (totalmem >> 20);
+	  grub_arch_highmemsize = 0;
+	}
+    }
+
   modend = get_modules_end ();
   grub_mm_init_region (modend, (grub_arch_memsize << 20)
 		       - (((grub_addr_t) modend) - GRUB_ARCH_LOWMEMVSTART));
   /* FIXME: use upper memory as well.  */
-  grub_install_get_time_ms (grub_rtc_get_time_ms);
 
   /* Initialize output terminal (can't be done earlier, as gfxterm
      relies on a working heap.  */
-  grub_video_sm712_init ();
   grub_video_video_init ();
+  grub_video_sm712_init ();
   grub_video_bitmap_init ();
   grub_font_manager_init ();
   grub_term_gfxterm_init ();
