@@ -1,5 +1,18 @@
 2010-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Wait for user entry basing on presence of output rather than on errors.
+
+	* include/grub/normal.h (grub_normal_get_line_counter): New proto.
+	(grub_install_newline_hook): Likewise.
+	* normal/main.c (GRUB_MOD_INIT): Call grub_install_newline_hook.
+	* normal/menu.c (show_menu): Check line_counter to determine presence
+	of output.
+	* normal/term.c (grub_normal_line_counter): New variable.
+	(grub_normal_get_line_counter): New function.
+	(grub_install_newline_hook): Likewise.
+
+2010-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* commands/cat.c (grub_cmd_cat): Propagate grub_gzfile_open error.
 
 2010-03-01  Vladimir Serbinenko  <phcoder@gmail.com>

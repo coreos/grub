@@ -654,6 +654,7 @@ GRUB_MOD_INIT(normal)
 
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
+  grub_install_newline_hook ();
   grub_register_variable_hook ("pager", 0, grub_env_write_pager);
 
   /* Register a command "normal" for the rescue mode.  */
