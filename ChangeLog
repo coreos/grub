@@ -1,5 +1,9 @@
 2010-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* fs/ext2.c (grub_ext2_read_block): Fix an integer overflow.
+
+2010-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Wait for user entry basing on presence of output rather than on errors.
 
 	* include/grub/normal.h (grub_normal_get_line_counter): New proto.
