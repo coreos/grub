@@ -1,5 +1,9 @@
 2010-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* commands/cat.c (grub_cmd_cat): Propagate grub_gzfile_open error.
+
+2010-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Update version to 1.98.
 
 2010-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
