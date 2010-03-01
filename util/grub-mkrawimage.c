@@ -391,7 +391,31 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       free (core_img);
       core_img = elf_img;
       core_size = program_size  + sizeof (*ehdr) + sizeof (*phdr);
-  }
+    }
+  else
+    {
+      char *rom_img;
+      size_t rom_size;
+      char *boot_path, *boot_img;
+      size_t boot_size;
+      
+      boot_path = grub_util_get_path (dir, "fwstart.img");
+      boot_size = grub_util_get_image_size (boot_path);
+      boot_img = grub_util_read_image (boot_path);
+
+      rom_size = core_size + boot_size;
+
+      rom_img = xmalloc (rom_size);
+      memset (rom_img, 0, rom_size); 
+
+      memcpy (rom_img, boot_img, boot_size);
+
+      memcpy (rom_img + boot_size, core_img, core_size);      
+
+      free (core_img);
+      core_img = rom_img;
+      core_size = rom_size;
+    }
 #endif
 
   grub_util_write_image (core_img, core_size, out);

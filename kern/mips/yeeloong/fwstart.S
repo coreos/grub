@@ -22,6 +22,7 @@
 #include <grub/pci.h>
 #include <grub/serial.h>
 #include <grub/cs5536.h>
+#include <grub/smbus.h>
 
 	.set noreorder
 	.set noat
@@ -103,21 +104,102 @@ __start:
 	sb $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_CTRL3) ($t0)
 	sb $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_CTRL2) ($t0)
 
-	ori $a0, $zero, 0x50
+	/* Yeeloong has only one memory slot.  */
+	/* Output first byte on serial for debugging.  */
+	ori $a1, $zero, GRUB_SMB_RAM_START_ADDR
 	bal read_spd
-	 move $a1, $zero
+	 move $a0, $zero
 	bal printhex
 	 move $a0, $v0
 
-	ori $a0, $zero, 0x50
 	bal read_spd
-	 ori $a1, $zero, 2
+	 ori $a0, $zero, 2
+	ori $t0, $zero, GRUB_SMBUS_SPD_MEMORY_TYPE_DDR2
+	lui $a0, %hi(unimplemented_memory_type)
+	bne $t0, $v0, fatal
+	 addiu $a0, $a0, %hi(unimplemented_memory_type)
+
+	/* And here is our goal: DDR2 controller initialisation.  */
+        lui	$t0, 0xbfe0
+        ld	$t1, 0x0180($t0)
+	andi	$t1, $t1, 0x4ff
+        sd	$t1, 0x0180($t0)
+
+	b continue
+
+	. = start + GRUB_MACHINE_FLASH_TLB_REFILL - GRUB_MACHINE_FLASH_START
+tlb_refill:	
+	mfc0 $s1, $14
+	mfc0 $s2, $8
+	move $s3, $ra
+	lui $a0, %hi(epc)
+	bal message
+	 addiu $a0, $a0, %lo(epc)
+
 	bal printhex
-	 move $a0, $v0
+	 move $a0, $s1
+
+	lui $a0, %hi(badvaddr)
+	bal message
+	 addiu $a0, $a0, %lo(badvaddr)
+
+	bal printhex
+	 move $a0, $s2
+
+	lui $a0, %hi(return_msg)
+	bal message
+	 addiu $a0, $a0, %lo(return_msg)
+
+	bal printhex
+	 move $a0, $s3
 	
-	lui $a0, %hi(not_implemented)
+	lui $a0, %hi(newline)
+	bal message
+	 addiu $a0, $a0, %lo(newline)
+
+	lui $a0, %hi(unhandled_tlb_refill)
 	b fatal
-	 addiu $a0, $a0, %lo(not_implemented)
+	 addiu $a0, $a0, %lo(unhandled_tlb_refill)
+
+	. = start + GRUB_MACHINE_FLASH_CACHE_ERROR - GRUB_MACHINE_FLASH_START
+cache_error:
+	lui $a0, %hi(unhandled_cache_error)
+	b fatal
+	 addiu $a0, $a0, %lo(unhandled_cache_error)
+
+	. = start + GRUB_MACHINE_FLASH_OTHER_EXCEPTION - GRUB_MACHINE_FLASH_START
+other_exception:
+	mfc0 $s0, $13
+	mfc0 $s1, $14
+	mfc0 $s2, $8
+	lui $a0, %hi(cause)
+	bal message
+	 addiu $a0, $a0, %lo(cause)
+
+	bal printhex
+	 move $a0, $s0
+
+	lui $a0, %hi(epc)
+	bal message
+	 addiu $a0, $a0, %lo(epc)
+
+	bal printhex
+	 move $a0, $s1
+
+	lui $a0, %hi(badvaddr)
+	bal message
+	 addiu $a0, $a0, %lo(badvaddr)
+
+	bal printhex
+	 move $a0, $s2
+	
+	lui $a0, %hi(newline)
+	bal message
+	 addiu $a0, $a0, %lo(newline)
+	
+	lui $a0, %hi(unhandled_exception)
+	b fatal
+	 addiu $a0, $a0, %lo(unhandled_exception)
 
 	/* Same as similarly named C function but in asm since
 	   we need it early.  */
@@ -171,7 +253,7 @@ message:
 	 addiu $a0, $a0, 1
 	jr  $ra
 	 nop
-
+	
 	/* Print 32-bit hexadecimal on serial.
            In:	$a0. Out: None. Clobbered: $a0, $t0, $t1, $t2
 	*/
@@ -202,25 +284,7 @@ fatal:
 self:
 	b self
 	 nop
-
-	. = start + GRUB_MACHINE_FLASH_TLB_REFILL - GRUB_MACHINE_FLASH_START
-tlb_refill:	
-	lui $a0, %hi(unhandled_tlb_refill)
-	b fatal
-	 addiu $a0, $a0, %lo(unhandled_tlb_refill)
-
-	. = start + GRUB_MACHINE_FLASH_CACHE_ERROR - GRUB_MACHINE_FLASH_START
-cache_error:
-	lui $a0, %hi(unhandled_cache_error)
-	b fatal
-	 addiu $a0, $a0, %lo(unhandled_cache_error)
-
-	. = start + GRUB_MACHINE_FLASH_OTHER_EXCEPTION - GRUB_MACHINE_FLASH_START
-other_exception:
-	lui $a0, %hi(unhandled_exception)
-	b fatal
-	 addiu $a0, $a0, %lo(unhandled_exception)
-
+	
 	/* Write CS5536 MSR.
            In:   $a0 address, $a1 lower word, $a2 upper word.
            Out:	 None
@@ -251,7 +315,7 @@ return:
 	jr $ra
 	 nop
 	
-	/* Read SPD byte. In: $a0 device, $a1 byte. Out: $v0 read byte (0x100 on failure).
+	/* Read SPD byte. In: $a0 byte, $a1 device. Out: $v0 read byte (0x100 on failure).
            Clobbered: $t0, $t1, $t2, $t3, $a0. */
 read_spd:
 	move $t2, $a0
@@ -268,7 +332,7 @@ read_spd:
 	
 	/* Send device address.  */
 	lui $t0, %hi(GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_DATA + GRUB_MACHINE_PCI_IO_BASE)
-	sll $t1, $t2, 1
+	sll $t1, $a1, 1
 	bal smbus_wait
 	 sb $t1, %lo(GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_DATA + GRUB_MACHINE_PCI_IO_BASE) ($t0)
 
@@ -281,7 +345,7 @@ read_spd:
 	/* Send byte address.  */
 	lui $t0, %hi(GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_DATA + GRUB_MACHINE_PCI_IO_BASE)
 	bal smbus_wait
-	 sb $a1, %lo(GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_DATA + GRUB_MACHINE_PCI_IO_BASE) ($t0)
+	 sb $t2, %lo(GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_DATA + GRUB_MACHINE_PCI_IO_BASE) ($t0)
 
 	/* Send START.  */
 	lui $t0, %hi(GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_CTRL1 + GRUB_MACHINE_PCI_IO_BASE)
@@ -292,7 +356,7 @@ read_spd:
 
 	/* Send device address.  */
 	lui $t0, %hi(GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_DATA + GRUB_MACHINE_PCI_IO_BASE)
-	sll $t1, $t2, 1
+	sll $t1, $a1, 1
 	ori $t1, $t1, 1
 	bal smbus_wait
 	 sb $t1, %lo(GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_DATA + GRUB_MACHINE_PCI_IO_BASE) ($t0)
@@ -321,3 +385,156 @@ unhandled_tlb_refill:	.asciz "Unhandled TLB refill.\n\r"
 unhandled_cache_error:	.asciz "Unhandled cache error.\n\r"
 unhandled_exception:	.asciz "Unhandled exception.\n\r"
 smbus_enabled:	.asciz "SMBus controller enabled.\n\r"
+unimplemented_memory_type:	.asciz "non-DDR2 memory isn't supported.\n\r"
+no_cas_latency:		.asciz "Couldn't determine CAS latency.\n\r"
+cause:	 .asciz "Cause: "
+epc:	.asciz "\n\rEPC: "
+badvaddr:	.asciz "\n\rBadVaddr: "
+newline:	.asciz "\n\r"
+return_msg:	  .asciz "\n\rReturn address: "
+
+	.p2align 3
+
+regdump:
+	.quad 0x0100010000000101 /* 0 */
+	.quad 0x0100010100000000 /* 2 */
+	.quad 0x0101000001000000 /* 3 */
+	.quad 0x0100020200010101 /* 4 */
+	.quad 0x0a04030603050203 /* 6 */
+	.quad 0x0f0e040000010a0b /* 7 */
+	.quad 0x0000010200000102 /* 8 */
+	.quad 0x0000060c00000000 /* 9 */
+	.quad 0x2323233f3f1f0200 /* a */
+	.quad 0x5f7f232323232323 /* b */
+	.quad 0x002a3c0615000000 /* c */
+	.quad 0x002a002a002a002a /* d */
+	.quad 0x002a002a002a002a /* e */
+	.quad 0x00b40020006d0004 /* f */
+	.quad 0x070007ff00000087 /* 10 */
+	.quad 0x000000000016101f /* 11 */
+	.quad 0x001c000000000000 /* 12 */
+	.quad 0x28e1000200c8006b /* 13 */
+	.quad 0x0000204200c8002f /* 14 */
+	.quad 0x0000000000030d40 /* 15 */
+	.quad 0 /* 16 */
+	.quad 0 /* 17 */
+	.quad 0 /* 18 */
+	.quad 0 /* 19 */
+	.quad 0 /* 1a */
+	.quad 0 /* 1b */
+	.quad 0 /* 1c */
+
+	.p2align
+
+write_dumpreg:	
+	ld $t2, 0($t6)
+	sd $t2, 0($t4)
+	addiu $t4, $t4, 0x10
+	jr $ra
+	 addiu $t6, $t6, 0x8
+
+continue:
+	lui $t4, %hi(GRUB_MACHINE_DDR2_BASE)
+	addiu $t4, $t4, %lo(GRUB_MACHINE_DDR2_BASE)
+	lui $t6, %hi(regdump)
+
+	/* 0 */
+	bal write_dumpreg
+	 addiu $t6, $t6, %lo(regdump)
+
+	/* 1 */
+	ori $a1, $a1, 0x50
+	move $t8, $zero
+	lui  $t5, 0x0001
+	bal read_spd
+	 ori $a0, $zero, GRUB_SMBUS_SPD_MEMORY_NUM_BANKS_ADDR
+	ori $t7, $zero, 8
+	bne $v0, $t7, 1f
+	 ori $t5, $t5, 0x0001
+	ori $t8, $t8, GRUB_MACHINE_DDR2_REG1_HI_8BANKS
+1:
+	dsll $t8, $t8, 32
+	or $t5, $t5, $t8
+	sd  $t5, 0 ($t4)
+	addiu $t4, $t4, 0x10
+
+	/* 2 */
+	bal write_dumpreg
+	 nop
+
+	/* 3 */
+	bal write_dumpreg
+	 nop
+
+	/* 4 */
+	bal write_dumpreg
+	 nop
+
+	/* 5 */
+	/* FIXME: figure termination resistance.  */
+	ori $t5, $zero, 0x2
+	bal read_spd
+	 ori $a0, $zero, GRUB_SMBUS_SPD_MEMORY_NUM_ROWS_ADDR
+	/* $v0 = 15 - $v0.  */
+	xori $v0, $v0, 0xf
+	andi $v0, $v0, 0x7
+	sll $v0, $v0, 8
+	or $t5, $t5, $v0
+
+	/* Find the fastest supported CAS latency.  */
+	bal read_spd
+	 ori $a0, $zero, GRUB_SMBUS_SPD_MEMORY_CAS_LATENCY_ADDR
+	ori $t0, $zero, GRUB_SMBUS_SPD_MEMORY_CAS_LATENCY_MIN_VALUE
+	ori $t1, $zero, (1 << GRUB_SMBUS_SPD_MEMORY_CAS_LATENCY_MIN_VALUE)
+2:	
+	and $t2, $t1, $v0
+	bne $t2, $zero, 1f
+	 ori $t3, $zero, 8
+	lui $a0, %hi(no_cas_latency)
+	beq $t0, $t3, fatal
+	 addiu $a0, $a0, %lo(no_cas_latency)
+	addiu $t0, $t0, 1
+	b 2b
+	 sll $t1, $t1, 1
+1:
+	sll $t0, $t0, 16
+	or $t5, $t5, $t0
+	
+	bal read_spd
+	 ori $a0, $zero, GRUB_SMBUS_SPD_MEMORY_NUM_COLUMNS_ADDR
+	/* $v0 = 15 - ($v0 + 1) = 14 - $v0.  */
+	addiu $v0, $v0, 1
+	xori $v0, $v0, 0xf
+	andi $v0, $v0, 0x7
+	sll $v0, 24
+	or $t5, $t5, $v0
+	sd  $t5, 0 ($t4)
+
+	addiu $t4, $t4, 0x10
+	
+	ori $t7, $zero, 0x16
+
+1:	
+	ld $t2, 0($t6)
+	sd $t2, 0($t4)
+	addiu $t4, $t4, 0x10
+	addiu $t7, $t7, -1
+	bne $t7, $zero, 1b
+	 addiu $t6, $t6, 0x8
+	
+	lui $t4, %hi(GRUB_MACHINE_DDR2_BASE)
+	ld  $t5, (%lo(GRUB_MACHINE_DDR2_BASE) + 0x30) ($t4)
+	ori $t0, $zero, 1
+	dsll $t0, $t0, 40
+	or $t5, $t5, $t0
+	sd  $t5, (%lo(GRUB_MACHINE_DDR2_BASE) + 0x30) ($t4)
+
+	/* Desactivate DDR2 registers.  */
+        lui	$t0, 0xbfe0
+        ld	$t1, 0x0180($t0)
+	ori	$t1, $t1, 0x100
+        sd	$t1, 0x0180($t0)
+
+	addiu $a0, $zero, -1
+	addiu $a1, $zero, -1
+	addiu $a2, $zero, -1
