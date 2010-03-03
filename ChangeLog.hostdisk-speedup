@@ -1,0 +1,18 @@
+2010-03-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/hostdisk.c (struct grub_util_biosdisk_data): New structure.
+	(grub_util_biosdisk_open): Initialise disk->data.
+	(struct linux_partition_cache): New structure.
+	(linux_find_partition): Cache partition start positions; these are
+	expensive to compute on every read and write.
+	(open_device): Cache open file descriptor in disk->data, so that we
+	don't have to reopen it and flush the buffer cache for consecutive
+	operations on the same device.
+	(grub_util_biosdisk_close): New function.
+	(grub_util_biosdisk_dev): Set `close' member.
+
+	* conf/common.rmk (grub_probe_SOURCES): Add kern/list.c.
+	* conf/i386-efi.rmk (grub_setup_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_setup_SOURCES): Likewise.
+	* conf/x86_64-efi.rmk (grub_setup_SOURCES): Likewise.

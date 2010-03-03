@@ -24,7 +24,7 @@ util/grub-probe.c_DEPENDENCIES = grub_probe_init.h
 grub_probe_SOURCES = gnulib/progname.c util/grub-probe.c	\
 	util/hostdisk.c	util/misc.c util/getroot.c		\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c	\
-	kern/parser.c kern/partition.c kern/file.c		\
+	kern/parser.c kern/partition.c kern/file.c kern/list.c	\
 	\
 	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c		\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c	\

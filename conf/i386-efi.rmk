@@ -21,7 +21,7 @@ util/i386/efi/grub-mkimage.c_DEPENDENCIES = Makefile
 #	kern/err.c kern/misc.c fs/fat.c fs/ext2.c fs/xfs.c fs/affs.c	\
 #	fs/sfs.c kern/parser.c kern/partition.c partmap/msdos.c		\
 #	fs/ufs.c fs/ufs2.c fs/minix.c fs/hfs.c fs/jfs.c fs/hfsplus.c kern/file.c	\
-#	kern/fs.c kern/env.c fs/fshelp.c
+#	kern/fs.c kern/env.c kern/list.c fs/fshelp.c
 
 # Scripts.
 sbin_SCRIPTS = grub-install
