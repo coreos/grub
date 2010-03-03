@@ -24,8 +24,12 @@
 #include <grub/err.h>
 
 struct grub_disk;
-struct grub_net;
 struct grub_fs;
+struct grub_net
+{
+  char *name;
+  struct grub_fs *fs;
+};
 
 struct grub_device
 {
