@@ -107,6 +107,7 @@ struct
 struct grub_util_biosdisk_data
 {
   char *dev;
+  int access_mode;
   int fd;
 };
 
@@ -183,6 +184,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   disk->id = drive;
   disk->data = data = xmalloc (sizeof (struct grub_util_biosdisk_data));
   data->dev = NULL;
+  data->access_mode = 0;
   data->fd = -1;
 
   /* Get the size.  */
@@ -383,13 +385,18 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 	&& strncmp (map[disk->id].device, "/dev/", 5) == 0)
       is_partition = linux_find_partition (dev, disk->partition->start);
 
-    if (data->dev && strcmp (data->dev, dev) == 0)
+    if (data->dev && strcmp (data->dev, dev) == 0 &&
+	data->access_mode == (flags & O_ACCMODE))
       {
 	grub_dprintf ("hostdisk", "reusing open device `%s'\n", dev);
 	fd = data->fd;
       }
     else
       {
+	free (data->dev);
+	if (data->fd != -1)
+	  close (data->fd);
+
 	/* Open the partition.  */
 	grub_dprintf ("hostdisk", "opening the device `%s' in open_device()\n", dev);
 	fd = open (dev, flags);
@@ -403,8 +410,8 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 	   XXX: This also empties the buffer cache.  */
 	ioctl (fd, BLKFLSBUF, 0);
 
-	free (data->dev);
 	data->dev = xstrdup (dev);
+	data->access_mode = (flags & O_ACCMODE);
 	data->fd = fd;
       }
 
@@ -430,18 +437,23 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
     }
 #endif
 
-  if (data->dev && strcmp (data->dev, map[disk->id].device) == 0)
+  if (data->dev && strcmp (data->dev, map[disk->id].device) == 0 &&
+      data->access_mode == (flags & O_ACCMODE))
     {
       grub_dprintf ("hostdisk", "reusing open device `%s'\n", data->dev);
       fd = data->fd;
     }
   else
     {
+      free (data->dev);
+      if (data->fd != -1)
+	close (data->fd);
+
       fd = open (map[disk->id].device, flags);
       if (fd >= 0)
 	{
-	  free (data->dev);
 	  data->dev = xstrdup (map[disk->id].device);
+	  data->access_mode = (flags & O_ACCMODE);
 	  data->fd = fd;
 	}
     }
