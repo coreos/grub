@@ -81,36 +81,38 @@ int grub_font_load (const char *filename);
    "Family Name Bold Italic 14", where Bold and Italic are optional.
    If no font matches the name specified, the most recently loaded font
    is returned as a fallback.  */
-grub_font_t grub_font_get (const char *font_name);
+grub_font_t EXPORT_FUNC (grub_font_get) (const char *font_name);
 
-const char *grub_font_get_name (grub_font_t font);
+const char *EXPORT_FUNC (grub_font_get_name) (grub_font_t font);
 
-int grub_font_get_max_char_width (grub_font_t font);
+int EXPORT_FUNC (grub_font_get_max_char_width) (grub_font_t font);
 
-int grub_font_get_max_char_height (grub_font_t font);
+int EXPORT_FUNC (grub_font_get_max_char_height) (grub_font_t font);
 
-int grub_font_get_ascent (grub_font_t font);
+int EXPORT_FUNC (grub_font_get_ascent) (grub_font_t font);
 
-int grub_font_get_descent (grub_font_t font);
+int EXPORT_FUNC (grub_font_get_descent) (grub_font_t font);
 
-int grub_font_get_leading (grub_font_t font);
+int EXPORT_FUNC (grub_font_get_leading) (grub_font_t font);
 
-int grub_font_get_height (grub_font_t font);
+int EXPORT_FUNC (grub_font_get_height) (grub_font_t font);
 
-int grub_font_get_string_width (grub_font_t font, const char *str);
+int EXPORT_FUNC (grub_font_get_string_width) (grub_font_t font,
+					      const char *str);
 
-struct grub_font_glyph *grub_font_get_glyph (grub_font_t font,
-                                             grub_uint32_t code);
+struct grub_font_glyph *EXPORT_FUNC (grub_font_get_glyph) (grub_font_t font,
+							   grub_uint32_t code);
 
-struct grub_font_glyph *grub_font_get_glyph_with_fallback (grub_font_t font,
-                                                           grub_uint32_t code);
+struct grub_font_glyph *EXPORT_FUNC (grub_font_get_glyph_with_fallback) (grub_font_t font,
+									 grub_uint32_t code);
 
-grub_err_t grub_font_draw_glyph (struct grub_font_glyph *glyph,
-                                        grub_video_color_t color,
-                                        int left_x, int baseline_y);
+grub_err_t EXPORT_FUNC (grub_font_draw_glyph) (struct grub_font_glyph *glyph,
+					       grub_video_color_t color,
+					       int left_x, int baseline_y);
 
-grub_err_t grub_font_draw_string (const char *str, grub_font_t font,
-                                  grub_video_color_t color,
-                                  int left_x, int baseline_y);
+grub_err_t EXPORT_FUNC (grub_font_draw_string) (const char *str,
+						grub_font_t font,
+						grub_video_color_t color,
+						int left_x, int baseline_y);
 
 #endif /* ! GRUB_FONT_HEADER */

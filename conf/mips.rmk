@@ -13,7 +13,7 @@ script/lexer.c_DEPENDENCIES = grub_script.tab.h
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
-kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+kernel_img_HEADERS += boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h reader.h \
 	symbol.h term.h time.h types.h loader.h partition.h \
 	msdos_partition.h machine/kernel.h handler.h list.h \
