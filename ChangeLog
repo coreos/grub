@@ -1,3 +1,7 @@
+2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/i386/efi/grub-install.in: Copy gettext files.
+
 2010-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* fs/ext2.c (grub_ext2_read_block): Fix an integer overflow.
