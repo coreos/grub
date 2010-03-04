@@ -1,5 +1,9 @@
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.in (DISTCLEANFILES): Add stamp-h1.
+
+2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.in (CLEANFILES) [FONT_SOURCE && grub_mkfont]: Add
 	ascii.bitmaps.
 

@@ -147,7 +147,7 @@ INFOS = $(info_INFOS)
 CLEANFILES =
 MOSTLYCLEANFILES =
 DISTCLEANFILES = config.status config.cache config.log config.h \
-	Makefile stamp-h include/grub/cpu include/grub/machine \
+	Makefile stamp-h stamp-h1 include/grub/cpu include/grub/machine \
 	gensymlist.sh genkernsyms.sh build_env.mk \
 	docs/grub.info docs/version.texi docs/stamp-vti
 
