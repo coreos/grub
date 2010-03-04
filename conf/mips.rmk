@@ -73,10 +73,4 @@ relocator_mod_CFLAGS = $(COMMON_CFLAGS)
 relocator_mod_ASFLAGS = $(COMMON_ASFLAGS)
 relocator_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-pkglib_MODULES += linux.mod
-linux_mod_SOURCES = loader/$(target_cpu)/linux.c
-linux_mod_CFLAGS = $(COMMON_CFLAGS)
-linux_mod_ASFLAGS = $(COMMON_ASFLAGS)
-linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 include $(srcdir)/conf/common.mk

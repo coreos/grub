@@ -1,3 +1,20 @@
+2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Disable linux.mod on qemu-mips since it's not functional and leads
+	to compilation failure.
+
+	* conf/mips.rmk (pkglib_MODULES): Remove linux.mod.
+	* conf/mips-yeeloong.rmk (pkglib_MODULES): Add linux.mod.
+	* conf/mips.rmk (linux_mod_SOURCES): Move from here ...
+	* conf/mips-yeeloong.rmk (linux_mod_SOURCES): ... here
+	* conf/mips.rmk (linux_mod_CFLAGS): Move from here ...
+	* conf/mips-yeeloong.rmk (linux_mod_CFLAGS): ... here
+	* conf/mips.rmk (linux_mod_ASFLAGS): Move from here ...
+	* conf/mips-yeeloong.rmk (linux_mod_ASFLAGS): ... here
+	* conf/mips.rmk (linux_mod_LDFLAGS): Move from here ...
+	* conf/mips-yeeloong.rmk (linux_mod_LDFLAGS): ... here
+	Reported by: BVK Chaitanya
+
 2010-03-04  Jordan Uggla  <jordan.uggla@gmail.com>
 
 	* INSTALL: Add gettext as a dependency and add qemu to a new section

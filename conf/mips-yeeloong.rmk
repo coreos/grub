@@ -76,6 +76,11 @@ datehook_mod_SOURCES = hook/datehook.c
 datehook_mod_CFLAGS = $(COMMON_CFLAGS)
 datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += linux.mod
+linux_mod_SOURCES = loader/$(target_cpu)/linux.c
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
+linux_mod_ASFLAGS = $(COMMON_ASFLAGS)
+linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 sbin_SCRIPTS += grub-install
 grub_install_SOURCES = util/grub-install.in
