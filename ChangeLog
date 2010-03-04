@@ -1,5 +1,9 @@
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* normal/autofs.c (autoload_fs_module): Handle errors.
+
+2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Disable linux.mod on qemu-mips since it's not functional and leads
 	to compilation failure.
 
