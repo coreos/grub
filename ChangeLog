@@ -1,3 +1,8 @@
+2010-03-04  Jordan Uggla  <jordan.uggla@gmail.com>
+
+	* INSTALL: Add gettext as a dependency and add qemu to a new section
+	"Prerequisites for make-check".
+
 2010-03-04  Christian Franke  <franke@computer.org>
 
 	* util/grub-pe2elf.c: Add missing include "progname.h".
