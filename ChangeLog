@@ -1,5 +1,9 @@
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* NEWS: mention multiboot on EFI.
+
+2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/main.c (grub_load_modules): Handle errors from init functions of
 	embeded modules.
 
