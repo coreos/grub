@@ -1,5 +1,9 @@
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* genmk.rb: Remove terminal*.lst in make clean.
+
+2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/i386/efi/grub-install.in: Copy gettext files.
 
 2010-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
