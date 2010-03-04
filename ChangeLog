@@ -1,3 +1,10 @@
+2010-03-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	Support relative image path in theme file.
+
+	* gfxmenu/gui_image.c (grub_gui_image): New member theme_dir.
+	(image_set_property): Handle theme_dir and relative path.
+
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Alias amd64 to x86_64.
