@@ -1,3 +1,7 @@
+2010-03-04  Christian Franke  <franke@computer.org>
+
+	* util/grub-pe2elf.c: Add missing include "progname.h".
+
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* normal/crypto.c (read_crypto_list): Fix a typo.
