@@ -1,5 +1,10 @@
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/main.c (grub_load_modules): Handle errors from init functions of
+	embeded modules.
+
+2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* normal/autofs.c (autoload_fs_module): Handle errors.
 
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
