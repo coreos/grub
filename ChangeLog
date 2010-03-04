@@ -1,5 +1,10 @@
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.in (CLEANFILES) [FONT_SOURCE && grub_mkfont]: Add
+	ascii.bitmaps.
+
+2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* genmk.rb: Remove terminal*.lst in make clean.
 
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>

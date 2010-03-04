@@ -239,6 +239,7 @@ else
 ifeq ($(enable_grub_mkfont),yes)
 
 pkgdata_DATA += unicode.pf2 ascii.pf2 ascii.h
+CLEANFILES += ascii.bitmaps
 
 # Arrows and lines are needed to draw the menu, so we always include them
 UNICODE_ARROWS=0x2190-0x2193
