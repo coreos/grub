@@ -51,6 +51,7 @@ fi
 
 case "$target_cpu" in
   i[[3456]]86)	target_cpu=i386 ;;
+  amd64)	target_cpu=x86_64 ;;
   sparc)	target_cpu=sparc64 ;;
   mipsel|mips64el)
                 target_cpu=mips;    

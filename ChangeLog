@@ -1,5 +1,9 @@
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Alias amd64 to x86_64.
+
+2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* NEWS: mention multiboot on EFI.
 
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
