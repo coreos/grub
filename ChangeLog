@@ -1,3 +1,7 @@
+2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/scsi.c (grub_scsi_iterate): Fix a memory leak.
+
 2010-03-04  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Support relative image path in theme file.
