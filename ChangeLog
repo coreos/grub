@@ -1,5 +1,9 @@
 2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* gettext/gettext.c (grub_gettext_init_ext): Fix a memory leak.
+
+2010-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* disk/scsi.c (grub_scsi_iterate): Fix a memory leak.
 
 2010-03-04  Robert Millan  <rmh.grub@aybabtu.com>
