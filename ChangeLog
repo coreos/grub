@@ -1,5 +1,10 @@
 2010-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* normal/cmdline.c (grub_cmdline_get): Fix gabled line after
+	completition in the middle of string.
+
+2010-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Use mktemp with explicit template.
 
 2010-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
