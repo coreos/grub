@@ -1,3 +1,8 @@
+2010-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/multiboot_mbi.c (grub_multiboot_set_bootdev): Free the
+	right pointer.
+
 2010-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix FreeBSD compilation.
