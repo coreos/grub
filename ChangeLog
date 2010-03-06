@@ -1,5 +1,9 @@
 2010-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.in: Use mktemp with explicit template.
+
+2010-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* loader/i386/bsd.c (grub_bsd_get_device): Fix a memory leak.
 
 2010-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
