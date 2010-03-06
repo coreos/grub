@@ -1,5 +1,9 @@
 2010-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* NEWS: Put the date of 1.98 release.
+
+2010-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Update CPPFLAGS and not CFLAGS when checking for
 	ft2build.h.
 
