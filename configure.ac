@@ -517,6 +517,19 @@ enable_efiemu=no
 fi
 AC_SUBST([enable_efiemu])
 
+AC_CACHE_CHECK([whether -nostdinc -isystem works], [grub_cv_cc_isystem], [
+  SAVED_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$TARGET_CPPFLAGS -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
+int va_arg_func (int fixed, va_list args);]], [[]])],
+      [grub_cv_cc_isystem=yes],
+      [grub_cv_cc_isystem=no])
+  CPPFLAGS="$SAVED_CPPFLAGS"
+])
+
+if test x"$grub_cv_cc_isystem" = xyes ; then
+  TARGET_CPPFLAGS="$TARGET_CPPFLAGS -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
+fi
 
 # Restore the flags.
 CC="$tmp_CC"
