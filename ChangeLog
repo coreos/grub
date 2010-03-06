@@ -1,5 +1,10 @@
 2010-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Update CPPFLAGS and not CFLAGS when checking for
+	ft2build.h.
+
+2010-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* normal/cmdline.c (grub_cmdline_get): Fix gabled line after
 	completition in the middle of string.
 

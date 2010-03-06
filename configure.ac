@@ -696,11 +696,11 @@ fi
 
 if test x"$grub_mkfont_excuse" = x ; then
   # Check for freetype libraries.
-  SAVED_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS $freetype_cflags"
+  SAVED_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS $freetype_cflags"
   AC_CHECK_HEADERS([ft2build.h], [],
   	[grub_mkfont_excuse=["need freetype2 headers"]])
-  CFLAGS="$SAVED_CFLAGS"
+  CPPFLAGS="$SAVED_CPPFLAGS"
 fi
 
 if test x"$enable_grub_mkfont" = xyes && test x"$grub_mkfont_excuse" != x ; then
