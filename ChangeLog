@@ -1,3 +1,7 @@
+2010-03-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* genmoddep.awk: Output all missing symbols and not only first.
+
 2010-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* NEWS: Put the date of 1.98 release.
