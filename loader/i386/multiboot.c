@@ -68,7 +68,7 @@ static int accepts_video;
 /* Return the length of the Multiboot mmap that will be needed to allocate
    our platform's map.  */
 grub_uint32_t
-grub_get_multiboot_mmap_len (void)
+grub_get_multiboot_mmap_count (void)
 {
   grub_size_t count = 0;
 
@@ -83,7 +83,7 @@ grub_get_multiboot_mmap_len (void)
 
   grub_mmap_iterate (hook);
 
-  return count * sizeof (struct multiboot_mmap_entry);
+  return count;
 }
 
 grub_err_t

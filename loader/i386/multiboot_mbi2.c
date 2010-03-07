@@ -62,15 +62,17 @@ static grub_uint32_t biosdev, slice, part;
 grub_size_t
 grub_multiboot_get_mbi_size (void)
 {
-  return sizeof (grub_uint32_t) + sizeof (struct multiboot_tag)
-    + (sizeof (struct multiboot_tag_string) + ALIGN_UP (cmdline_size, 4))
+  return 2 * sizeof (grub_uint32_t) + sizeof (struct multiboot_tag)
     + (sizeof (struct multiboot_tag_string)
-       + ALIGN_UP (sizeof (PACKAGE_STRING), 4))
+       + ALIGN_UP (cmdline_size, MULTIBOOT_TAG_ALIGN))
+    + (sizeof (struct multiboot_tag_string)
+       + ALIGN_UP (sizeof (PACKAGE_STRING), MULTIBOOT_TAG_ALIGN))
     + (modcnt * sizeof (struct multiboot_tag_module) + total_modcmd)
     + sizeof (struct multiboot_tag_basic_meminfo)
-    + sizeof (struct multiboot_tag_bootdev)
-    + (sizeof (struct multiboot_tag_mmap) + grub_get_multiboot_mmap_len ())
-    + sizeof (struct multiboot_tag_vbe);
+    + ALIGN_UP (sizeof (struct multiboot_tag_bootdev), MULTIBOOT_TAG_ALIGN)
+    + (sizeof (struct multiboot_tag_mmap) + grub_get_multiboot_mmap_count ()
+       * sizeof (struct multiboot_mmap_entry))
+    + sizeof (struct multiboot_tag_vbe) + MULTIBOOT_TAG_ALIGN - 1;
 }
 
 #ifdef GRUB_MACHINE_HAS_VBE
@@ -98,7 +100,7 @@ fill_vbe_info (struct grub_vbe_mode_info_block **vbe_mode_info_out,
     *vbe_mode_info_out = (struct grub_vbe_mode_info_block *) 
       &(tag->vbe_mode_info);
   tag->size = sizeof (struct multiboot_tag_vbe);
-  *ptrorig += tag->size;
+  *ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   return GRUB_ERR_NONE;
 }
 
@@ -106,9 +108,9 @@ fill_vbe_info (struct grub_vbe_mode_info_block **vbe_mode_info_out,
 
 /* Fill previously allocated Multiboot mmap.  */
 static void
-grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
+grub_fill_multiboot_mmap (struct multiboot_tag_mmap *tag)
 {
-  struct multiboot_mmap_entry *mmap_entry = (struct multiboot_mmap_entry *) first_entry;
+  struct multiboot_mmap_entry *mmap_entry = tag->entries;
 
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
@@ -137,11 +139,16 @@ grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
  	  mmap_entry->type = MULTIBOOT_MEMORY_RESERVED;
  	  break;
  	}
-      mmap_entry->size = sizeof (struct multiboot_mmap_entry) - sizeof (mmap_entry->size);
       mmap_entry++;
 
       return 0;
     }
+
+  tag->type = MULTIBOOT_TAG_TYPE_MMAP;
+  tag->size = sizeof (struct multiboot_tag_mmap)
+    + sizeof (struct multiboot_mmap_entry) * grub_get_multiboot_mmap_count (); 
+  tag->entry_size = sizeof (struct multiboot_mmap_entry);
+  tag->entry_version = 0;
 
   grub_mmap_iterate (hook);
 }
@@ -190,7 +197,8 @@ retrieve_video_parameters (grub_uint8_t **ptrorig)
 	  
 	  tag->common.framebuffer_type = MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT;
 	  tag->common.size = sizeof (tag->common);
-	  *ptrorig += tag->common.size;
+	  tag->common.reserved = 0;
+	  *ptrorig += ALIGN_UP (tag->common.size, MULTIBOOT_TAG_ALIGN);
 	}
       return GRUB_ERR_NONE;
     }
@@ -214,6 +222,8 @@ retrieve_video_parameters (grub_uint8_t **ptrorig)
   tag->common.framebuffer_height = mode_info.height;
 
   tag->common.framebuffer_bpp = mode_info.bpp;
+
+  tag->common.reserved = 0;
       
   if (mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)
     {
@@ -231,7 +241,6 @@ retrieve_video_parameters (grub_uint8_t **ptrorig)
 	  tag->framebuffer_palette[i].green = palette[i].g;
 	  tag->framebuffer_palette[i].blue = palette[i].b;
 	}
-      *ptrorig += tag->common.size;
     }
   else
     {
@@ -246,6 +255,7 @@ retrieve_video_parameters (grub_uint8_t **ptrorig)
 
       tag->common.size = sizeof (struct multiboot_tag_framebuffer_common) + 6;
     }
+  *ptrorig += ALIGN_UP (tag->common.size, MULTIBOOT_TAG_ALIGN);
 
 #if HAS_VBE
   if (driv_id == GRUB_VIDEO_DRIVER_VBE)
@@ -264,30 +274,29 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
 			 grub_size_t bufsize)
 {
   grub_uint8_t *ptrorig;
-  grub_uint8_t *mbistart = (grub_uint8_t *) orig + buf_off;
+  grub_uint8_t *mbistart = (grub_uint8_t *) orig + buf_off 
+    + (ALIGN_UP (dest + buf_off, MULTIBOOT_TAG_ALIGN) - (dest + buf_off));
   grub_err_t err;
 
   if (bufsize < grub_multiboot_get_mbi_size ())
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "mbi buffer is too small");
 
-  ptrorig = (grub_uint8_t *) orig + buf_off + sizeof (grub_uint32_t);
+  ptrorig = mbistart + 2 * sizeof (grub_uint32_t);
 
   {
     struct multiboot_tag_string *tag = (struct multiboot_tag_string *) ptrorig;
     tag->type = MULTIBOOT_TAG_TYPE_CMDLINE;
-    tag->size = sizeof (struct multiboot_tag_string)
-      + ALIGN_UP (cmdline_size, 4); 
+    tag->size = sizeof (struct multiboot_tag_string) + cmdline_size; 
     grub_memcpy (tag->string, cmdline, cmdline_size);
-    ptrorig += tag->size;
+    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   }
 
   {
     struct multiboot_tag_string *tag = (struct multiboot_tag_string *) ptrorig;
     tag->type = MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME;
-    tag->size = sizeof (struct multiboot_tag_string)
-      + ALIGN_UP (sizeof (PACKAGE_STRING), 4); 
+    tag->size = sizeof (struct multiboot_tag_string) + sizeof (PACKAGE_STRING); 
     grub_memcpy (tag->string, PACKAGE_STRING, sizeof (PACKAGE_STRING));
-    ptrorig += tag->size;
+    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   }
 
   {
@@ -299,23 +308,18 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
 	struct multiboot_tag_module *tag
 	  = (struct multiboot_tag_module *) ptrorig;
 	tag->type = MULTIBOOT_TAG_TYPE_MODULE;
-	tag->size = sizeof (struct multiboot_tag_module)
-	  + ALIGN_UP (sizeof (cur->cmdline_size), 4); 
-
+	tag->size = sizeof (struct multiboot_tag_module) + cur->cmdline_size;
 	tag->mod_start = dest + cur->start;
 	tag->mod_end = tag->mod_start + cur->size;
 	grub_memcpy (tag->cmdline, cur->cmdline, cur->cmdline_size);
-	ptrorig += tag->size;
+	ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
       }
   }
 
   {
     struct multiboot_tag_mmap *tag = (struct multiboot_tag_mmap *) ptrorig;
-    tag->type = MULTIBOOT_TAG_TYPE_MMAP;
-    tag->size = sizeof (struct multiboot_tag_mmap) 
-      + grub_get_multiboot_mmap_len (); 
-    grub_fill_multiboot_mmap (tag->entries);
-    ptrorig += tag->size;
+    grub_fill_multiboot_mmap (tag);
+    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   }
 
   {
@@ -327,7 +331,7 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
     /* Convert from bytes to kilobytes.  */
     tag->mem_lower = grub_mmap_get_lower () / 1024;
     tag->mem_upper = grub_mmap_get_upper () / 1024;
-    ptrorig += tag->size;
+    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   }
 
   if (bootdev_set)
@@ -340,7 +344,7 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
       tag->biosdev = biosdev;
       tag->slice = slice;
       tag->part = part;
-      ptrorig += tag->size;
+      ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
     }
 
   {
@@ -356,10 +360,11 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
     struct multiboot_tag *tag = (struct multiboot_tag *) ptrorig;
     tag->type = MULTIBOOT_TAG_TYPE_END;
     tag->size = sizeof (struct multiboot_tag);
-    ptrorig += tag->size;
+    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   }
 
-  *(grub_uint32_t *) mbistart = ptrorig - mbistart;
+  ((grub_uint32_t *) mbistart)[0] = ptrorig - mbistart;
+  ((grub_uint32_t *) mbistart)[1] = 0;
 
   return GRUB_ERR_NONE;
 }
@@ -447,7 +452,7 @@ grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
       return grub_errno;
     }
   newmod->cmdline_size = len;
-  total_modcmd += ALIGN_UP (len, 4);
+  total_modcmd += ALIGN_UP (len, MULTIBOOT_TAG_ALIGN);
 
   for (i = 0; i < argc; i++)
     {
@@ -495,8 +500,8 @@ grub_multiboot_set_bootdev (void)
   dev = grub_device_open (0);
   if (dev && dev->disk && dev->disk->partition)
     {
-
-      p = dev->disk->partition->partmap->get_name (dev->disk->partition);
+      char *p0;
+      p = p0 = dev->disk->partition->partmap->get_name (dev->disk->partition);
       if (p)
 	{
 	  if ((p[0] >= '0') && (p[0] <= '9'))
@@ -510,6 +515,7 @@ grub_multiboot_set_bootdev (void)
 	  if ((p[0] >= 'a') && (p[0] <= 'z'))
 	    part = p[0] - 'a';
 	}
+      grub_free (p0);
     }
   if (dev)
     grub_device_close (dev);

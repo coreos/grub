@@ -53,7 +53,8 @@ grub_multiboot_get_mbi_size (void)
 {
   return sizeof (struct multiboot_info) + ALIGN_UP (cmdline_size, 4)
     + modcnt * sizeof (struct multiboot_mod_list) + total_modcmd
-    + ALIGN_UP (sizeof(PACKAGE_STRING), 4) + grub_get_multiboot_mmap_len ()
+    + ALIGN_UP (sizeof(PACKAGE_STRING), 4) 
+    + grub_get_multiboot_mmap_count () * sizeof (struct multiboot_mmap_entry)
 #if GRUB_MACHINE_HAS_VBE
     + sizeof (struct grub_vbe_info_block)
     + sizeof (struct grub_vbe_mode_info_block)
@@ -233,7 +234,8 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
       mbi->mods_count = 0;
     }
 
-  mmap_size = grub_get_multiboot_mmap_len (); 
+  mmap_size = grub_get_multiboot_mmap_count () 
+    * sizeof (struct multiboot_mmap_entry);
   grub_fill_multiboot_mmap ((struct multiboot_mmap_entry *) ptrorig);
   mbi->mmap_length = mmap_size;
   mbi->mmap_addr = ptrdest;
