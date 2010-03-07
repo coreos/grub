@@ -110,4 +110,7 @@ void read_terminal_list (void);
 
 void grub_set_more (int onoff);
 
+int grub_normal_get_line_counter (void);
+void grub_install_newline_hook (void);
+
 #endif /* ! GRUB_NORMAL_HEADER */

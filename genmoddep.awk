@@ -32,13 +32,12 @@ FNR == 1 {
   else if ($1 != "__gnu_local_gp") {
     printf "%s in %s is not defined\n", $1, module >"/dev/stderr";
     error++;
-    exit;
   }
 }
 
 # Output the result.
 END {
-  if (error == 1)
+  if (error >= 1)
     exit 1;
 
   for (mod in modtab) {

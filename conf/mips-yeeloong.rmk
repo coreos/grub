@@ -3,6 +3,10 @@ LINK_BASE = 0x80200000
 target_machine=yeeloong
 COMMON_CFLAGS += -march=mips3
 COMMON_ASFLAGS += -march=mips3
+
+kernel_img_HEADERS += bitmap.h video.h gfxterm.h font.h bitmap_scale.h bufio.h \
+	cs5536.h
+
 include $(srcdir)/conf/mips.mk
 
 pkglib_IMAGES = kernel.img
@@ -23,6 +27,7 @@ kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
 	video/fb/fbfill.c video/fb/fbutil.c video/bitmap.c \
 	video/bitmap_scale.c video/sm712.c bus/pci.c bus/bonito.c \
 	term/gfxterm.c commands/extcmd.c lib/arg.c \
+	bus/cs5536.c \
 	symlist.c
 kernel_img_CFLAGS = $(COMMON_CFLAGS) -DUSE_ASCII_FAILBACK
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
@@ -87,11 +92,11 @@ lsspd_mod_SOURCES = commands/mips/yeeloong/lsspd.c
 lsspd_mod_CFLAGS = $(COMMON_CFLAGS)
 lsspd_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For cs5536.mod
-pkglib_MODULES += cs5536.mod
-cs5536_mod_SOURCES = bus/cs5536.c
-cs5536_mod_CFLAGS = $(COMMON_CFLAGS)
-cs5536_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_MODULES += linux.mod
+linux_mod_SOURCES = loader/$(target_cpu)/linux.c
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
+linux_mod_ASFLAGS = $(COMMON_ASFLAGS)
+linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 sbin_SCRIPTS += grub-install
 grub_install_SOURCES = util/grub-install.in

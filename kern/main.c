@@ -68,6 +68,9 @@ grub_load_modules (void)
 			       (header->size - sizeof (struct grub_module_header))))
 	grub_fatal ("%s", grub_errmsg);
 
+      if (grub_errno)
+	grub_print_error ();
+
       return 0;
     }
 

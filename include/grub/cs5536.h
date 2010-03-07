@@ -60,18 +60,20 @@
 #define GRUB_GPIO_REG_IN_AUX1 0x34
 
 #ifndef ASM_FILE
-int grub_cs5536_find (grub_pci_device_t *devp);
+int EXPORT_FUNC (grub_cs5536_find) (grub_pci_device_t *devp);
 
 grub_uint64_t grub_cs5536_read_msr (grub_pci_device_t dev, grub_uint32_t addr);
 void grub_cs5536_write_msr (grub_pci_device_t dev, grub_uint32_t addr,
 			    grub_uint64_t val);
 grub_err_t grub_cs5536_read_spd_byte (grub_port_t smbbase, grub_uint8_t dev,
 				      grub_uint8_t addr, grub_uint8_t *res);
-grub_err_t grub_cs5536_read_spd (grub_port_t smbbase, grub_uint8_t dev,
-				 struct grub_smbus_spd *res);
+grub_err_t EXPORT_FUNC (grub_cs5536_read_spd) (grub_port_t smbbase,
+					       grub_uint8_t dev,
+					       struct grub_smbus_spd *res);
 grub_err_t grub_cs5536_smbus_wait (grub_port_t smbbase);
-grub_err_t grub_cs5536_init_smbus (grub_pci_device_t dev, grub_uint16_t divisor,
-				   grub_port_t *smbbase);
+grub_err_t EXPORT_FUNC (grub_cs5536_init_smbus) (grub_pci_device_t dev,
+						 grub_uint16_t divisor,
+						 grub_port_t *smbbase);
 #endif
 
 #endif
