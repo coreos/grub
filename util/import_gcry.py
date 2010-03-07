@@ -62,6 +62,7 @@ mdblocksizes = {"_gcry_digest_spec_crc32" : 64,
                 "_gcry_digest_spec_whirlpool" : 64}
 
 cryptolist = open (os.path.join (cipher_dir_out, "crypto.lst"), "w")
+conf.write ("MAINTAINER_CLEANFILES += $(srcdir)/conf/gcry.rmk $(srcdir)/lib/libgcrypt-grub/cipher/ChangeLog $(srcdir)/lib/libgcrypt-grub/cipher/cipher.h $(srcdir)/lib/libgcrypt-grub/cipher/crypto.lst $(srcdir)/lib/libgcrypt-grub/cipher/g10lib.h $(srcdir)/lib/libgcrypt-grub/cipher/memory.h $(srcdir)/lib/libgcrypt-grub/cipher/types.h\n");
 
 # rijndael is the only cipher using aliases. So no need for mangling, just
 # hardcode it
@@ -87,6 +88,7 @@ for cipher_file in cipher_files:
         continue
     nch = False
     if re.match (".*\.[ch]$", cipher_file):
+        conf.write ("MAINTAINER_CLEANFILES += $(srcdir)/lib/libgcrypt-grub/cipher/" + cipher_file + "\n");
         isc = re.match (".*\.c$", cipher_file)
         f = open (infile, "r")
         fw = open (outfile, "w")

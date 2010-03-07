@@ -30,6 +30,14 @@ static unsigned grub_more_lines;
 /* If the more pager is active.  */
 static int grub_more;
 
+static int grub_normal_line_counter = 0;
+
+int
+grub_normal_get_line_counter (void)
+{
+  return grub_normal_line_counter;
+}
+
 static void
 process_newline (void)
 {
@@ -40,6 +48,8 @@ process_newline (void)
     if (grub_term_height (cur) < height)
       height = grub_term_height (cur);
   grub_more_lines++;
+
+  grub_normal_line_counter++;
 
   if (grub_more && grub_more_lines >= height - 1)
     {
@@ -76,6 +86,11 @@ grub_set_more (int onoff)
     grub_more--;
 
   grub_more_lines = 0;
+}
+
+void
+grub_install_newline_hook (void)
+{
   grub_newline_hook = process_newline;
 }
 
@@ -150,7 +165,6 @@ grub_terminal_autoload_free (void)
   grub_term_output_autoload = NULL;
 }
 
-
 /* Read the file terminal.lst for auto-loading.  */
 void
 read_terminal_list (void)
@@ -167,15 +181,15 @@ read_terminal_list (void)
       return;
     }
   
-  filename = grub_malloc (grub_strlen (prefix) + sizeof ("/terminal.lst"));
+  filename = grub_xasprintf ("%s/terminal.lst", prefix);
   if (!filename)
     {
       grub_errno = GRUB_ERR_NONE;
       return;
     }
 
-  grub_sprintf (filename, "%s/terminal.lst", prefix);
   file = grub_file_open (filename);
+  grub_free (filename);
   if (!file)
     {
       grub_errno = GRUB_ERR_NONE;

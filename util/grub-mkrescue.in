@@ -86,7 +86,15 @@ if [ "x${output_image}" = x ] ; then
   exit 1
 fi
 
-iso9660_dir=`mktemp -d`
+if test "x$TMP" != x; then
+  MKTEMP_TEMPLATE="$TMP/grub-mkrescue.XXXXXXXXXX"
+elif test "x$TEMP" != x; then
+  MKTEMP_TEMPLATE="$TEMP/grub-mkrescue.XXXXXXXXXX"
+else
+  MKTEMP_TEMPLATE="/tmp/grub-mkrescue.XXXXXXXXXX"
+fi
+
+iso9660_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
 mkdir -p ${iso9660_dir}/boot/grub
 
 process_input_dir ()
@@ -133,8 +141,8 @@ fi
 # build coreboot core.img
 if test -e "${coreboot_dir}" ; then
     echo "Enabling coreboot support ..."
-    memdisk_img=`mktemp`
-    memdisk_dir=`mktemp -d`
+    memdisk_img=`mktemp "$MKTEMP_TEMPLATE"`
+    memdisk_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
     mkdir -p ${memdisk_dir}/boot/grub
     # obtain date-based UUID
     iso_uuid=$(date +%Y-%m-%d-%H-%M-%S-00)
@@ -162,12 +170,12 @@ fi
 # build BIOS core.img
 if test -e "${pc_dir}" ; then
     echo "Enabling BIOS support ..."
-    core_img=`mktemp`
+    core_img=`mktemp "$MKTEMP_TEMPLATE"`
     grub-mkimage -d ${pc_dir}/ -o ${core_img} --prefix=/boot/grub/i386-pc \
         iso9660 biosdisk
     cat ${pc_dir}/cdboot.img ${core_img} > ${iso9660_dir}/boot/grub/i386-pc/eltorito.img
 
-    embed_img=`mktemp`
+    embed_img=`mktemp "$MKTEMP_TEMPLATE"`
     cat ${pc_dir}/boot.img ${core_img} > ${embed_img}
 
     rm -f ${core_img}

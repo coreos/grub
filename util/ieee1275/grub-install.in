@@ -46,8 +46,8 @@ install_device=
 debug=no
 update_nvram=yes
 
-ofpathname=/usr/sbin/ofpathname
-nvsetenv=/sbin/nvsetenv
+ofpathname=`which ofpathname`
+nvsetenv=`which nvsetenv`
 
 # Usage: usage
 # Print the usage.
@@ -216,11 +216,11 @@ if test $update_nvram = yes; then
     }
 
     # Point boot-device at the new grub install
-    boot_device="boot-device $ofpath:$partno,\\grub"
-    "$nvsetenv" "$boot_device" || {
+    boot_device="$ofpath:$partno,\\grub"
+    "$nvsetenv" boot-device "$boot_device" || {
 	echo "$nvsetenv failed."
 	echo "You will have to set boot-device manually.  At the Open Firmware prompt, type:"
-	echo "  setenv $boot_device"
+	echo "  setenv boot-device $boot_device"
 	exit 1
     }
 fi

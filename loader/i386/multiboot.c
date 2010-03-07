@@ -86,36 +86,6 @@ grub_get_multiboot_mmap_len (void)
   return count * sizeof (struct multiboot_mmap_entry);
 }
 
-/* Fill previously allocated Multiboot mmap.  */
-void
-grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
-{
-  struct multiboot_mmap_entry *mmap_entry = (struct multiboot_mmap_entry *) first_entry;
-
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
-    {
-      mmap_entry->addr = addr;
-      mmap_entry->len = size;
-      switch (type)
-	{
-	case GRUB_MACHINE_MEMORY_AVAILABLE:
- 	  mmap_entry->type = MULTIBOOT_MEMORY_AVAILABLE;
- 	  break;
-	  
- 	default:
- 	  mmap_entry->type = MULTIBOOT_MEMORY_RESERVED;
- 	  break;
- 	}
-      mmap_entry->size = sizeof (struct multiboot_mmap_entry) - sizeof (mmap_entry->size);
-      mmap_entry++;
-
-      return 0;
-    }
-
-  grub_mmap_iterate (hook);
-}
-
 grub_err_t
 grub_multiboot_set_video_mode (void)
 {
@@ -126,21 +96,19 @@ grub_multiboot_set_video_mode (void)
     {
       modevar = grub_env_get ("gfxpayload");
       if (! modevar || *modevar == 0)
-	err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0);
+	err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
       else
 	{
 	  char *tmp;
-	  tmp = grub_malloc (grub_strlen (modevar)
-			     + sizeof (DEFAULT_VIDEO_MODE) + 1);
+	  tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
 	  if (! tmp)
 	    return grub_errno;
-	  grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
-	  err = grub_video_set_mode (tmp, 0);
+	  err = grub_video_set_mode (tmp, 0, 0);
 	  grub_free (tmp);
 	}
     }
   else
-    err = grub_video_set_mode ("text", 0);
+    err = grub_video_set_mode ("text", 0, 0);
 
   return err;
 }
@@ -385,17 +353,20 @@ grub_multiboot (int argc, char *argv[])
 
 	case 0:
 	  {
-	    char buf[sizeof ("XXXXXXXXXXxXXXXXXXXXXxXXXXXXXXXX,XXXXXXXXXXxXXXXXXXXXX,auto")];
+	    char *buf;
 	    if (header->depth && header->width && header->height)
-	      grub_sprintf (buf, "%dx%dx%d,%dx%d,auto", header->width,
-			    header->height, header->depth, header->width,
-			    header->height);
+	      buf = grub_xasprintf ("%dx%dx%d,%dx%d,auto", header->width,
+				   header->height, header->depth, header->width,
+				   header->height);
 	    else if (header->width && header->height)
-	      grub_sprintf (buf, "%dx%d,auto", header->width, header->height);
+	      buf = grub_xasprintf ("%dx%d,auto", header->width, header->height);
 	    else
-	      grub_sprintf (buf, "auto");
+	      buf = grub_strdup ("auto");
 
+	    if (!buf)
+	      goto fail;
 	    grub_env_set ("gfxpayload", buf);
+	    grub_free (buf);
 	    break;
 	  }
 	}

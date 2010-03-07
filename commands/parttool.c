@@ -183,12 +183,11 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
       {
 	char *filename;
 
-	filename = grub_malloc (grub_strlen (prefix) + sizeof ("/parttool.lst"));
+	filename = grub_xasprintf ("%s/parttool.lst", prefix);
 	if (filename)
 	  {
 	    grub_file_t file;
 
-	    grub_sprintf (filename, "%s/parttool.lst", prefix);
 	    file = grub_file_open (filename);
 	    if (file)
 	      {

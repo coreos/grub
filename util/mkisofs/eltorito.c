@@ -288,7 +288,7 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
 	struct eltorito_boot_info bi_table;
 	bootimage = fopen (de->whole_name, "r+b");
 	if (bootimage == NULL)
-	  error (1, errno, _("Error opening boot image file '%s' for update"),
+	  error (1, errno, _("Error opening boot image file `%s' for update"),
 		 de->whole_name);
 	/* Compute checksum of boot image, sans 64 bytes */
 	total_len = 0;
@@ -296,7 +296,7 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
 	while ((len = fread (csum_buffer, 1, SECTOR_SIZE, bootimage)) > 0)
 	  {
 	    if (total_len & 3)
-	      error (1, 0, _("Odd alignment at non-end-of-file in boot image '%s'"),
+	      error (1, 0, _("Odd alignment at non-end-of-file in boot image `%s'"),
 		     de->whole_name);
 	    if (total_len < 64)
 	      memset (csum_buffer, 0, 64 - total_len);
@@ -308,7 +308,7 @@ void FDECL1(get_torito_desc, struct eltorito_boot_descriptor *, boot_desc)
 	  }
 
 	if (total_len != de->size)
-	  error (1, 0, _("Boot image file '%s' changed unexpectedly"),
+	  error (1, 0, _("Boot image file `%s' changed unexpectedly"),
 		 de->whole_name);
 	/* End of file, set position to byte 8 */
 	fseeko (bootimage, (off_t) 8, SEEK_SET);

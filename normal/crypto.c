@@ -80,22 +80,22 @@ read_crypto_list (void)
       return;
     }
   
-  filename = grub_malloc (grub_strlen (prefix) + sizeof ("/crypto.lst"));
+  filename = grub_xasprintf ("%s/crypto.lst", prefix);
   if (!filename)
     {
       grub_errno = GRUB_ERR_NONE;
       return;
     }
 
-  grub_sprintf (filename, "%s/crypto.lst", prefix);
   file = grub_file_open (filename);
+  grub_free (filename);
   if (!file)
     {
       grub_errno = GRUB_ERR_NONE;
       return;
     }
 
-  /* Override previous commands.lst.  */
+  /* Override previous crypto.lst.  */
   grub_crypto_spec_free ();
 
   for (;; grub_free (buf))

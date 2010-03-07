@@ -61,39 +61,47 @@ grub_multiboot_get_mbi_size (void)
     + 256 * sizeof (struct multiboot_color);
 }
 
-#if GRUB_MACHINE_HAS_VBE
-static grub_err_t
-fill_vbe_info (struct multiboot_info *mbi,
-	       struct grub_vbe_mode_info_block **vbe_mode_info_out,
-	       grub_uint8_t *ptrorig, grub_addr_t ptrdest)
+/* Fill previously allocated Multiboot mmap.  */
+static void
+grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
 {
-  struct grub_vbe_info_block *vbe_control_info;
-  struct grub_vbe_mode_info_block *vbe_mode_info;
-  grub_err_t err;
+  struct multiboot_mmap_entry *mmap_entry = (struct multiboot_mmap_entry *) first_entry;
 
-  vbe_control_info = (struct grub_vbe_info_block *) ptrorig;
-  mbi->vbe_control_info = ptrdest;
-  ptrorig += sizeof (struct grub_vbe_info_block);
-  ptrdest += sizeof (struct grub_vbe_info_block);
-  vbe_mode_info = (struct grub_vbe_mode_info_block *) ptrorig;
-  mbi->vbe_mode_info = ptrdest;
-  ptrorig += sizeof (struct grub_vbe_mode_info_block);
-  ptrdest += sizeof (struct grub_vbe_mode_info_block);
-  
-  err = grub_multiboot_fill_vbe_info_real (vbe_control_info, vbe_mode_info,
-					   &mbi->vbe_mode,
-					   &mbi->vbe_interface_seg,
-					   &mbi->vbe_interface_off,
-					   &mbi->vbe_interface_len);
-  if (err)
-    return err;
-  mbi->flags |= MULTIBOOT_INFO_VBE_INFO;
-  if (vbe_mode_info_out)
-    *vbe_mode_info_out = vbe_mode_info;
-  return GRUB_ERR_NONE;
-}
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+    {
+      mmap_entry->addr = addr;
+      mmap_entry->len = size;
+      switch (type)
+	{
+	case GRUB_MACHINE_MEMORY_AVAILABLE:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_AVAILABLE;
+ 	  break;
 
+#ifdef GRUB_MACHINE_MEMORY_ACPI_RECLAIMABLE
+	case GRUB_MACHINE_MEMORY_ACPI_RECLAIMABLE:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_ACPI_RECLAIMABLE;
+ 	  break;
 #endif
+
+#ifdef GRUB_MACHINE_MEMORY_NVS
+	case GRUB_MACHINE_MEMORY_NVS:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_NVS;
+ 	  break;
+#endif	  
+	  
+ 	default:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_RESERVED;
+ 	  break;
+ 	}
+      mmap_entry->size = sizeof (struct multiboot_mmap_entry) - sizeof (mmap_entry->size);
+      mmap_entry++;
+
+      return 0;
+    }
+
+  grub_mmap_iterate (hook);
+}
 
 static grub_err_t
 retrieve_video_parameters (struct multiboot_info *mbi,
@@ -115,33 +123,8 @@ retrieve_video_parameters (struct multiboot_info *mbi,
   grub_video_get_palette (0, ARRAY_SIZE (palette), palette);
 
   driv_id = grub_video_get_driver_id ();
-#if GRUB_MACHINE_HAS_VGA_TEXT
-  if (driv_id == GRUB_VIDEO_DRIVER_NONE)
-    {
-      struct grub_vbe_mode_info_block *vbe_mode_info;
-      err = fill_vbe_info (mbi, &vbe_mode_info, ptrorig, ptrdest);
-      if (err)
-	return err;
-      if (vbe_mode_info->memory_model == GRUB_VBE_MEMORY_MODEL_TEXT)
-	{
-	  mbi->framebuffer_addr = 0xb8000;
-	  
-	  mbi->framebuffer_pitch = 2 * vbe_mode_info->x_resolution;	
-	  mbi->framebuffer_width = vbe_mode_info->x_resolution;
-	  mbi->framebuffer_height = vbe_mode_info->y_resolution;
-
-	  mbi->framebuffer_bpp = 16;
-	  
-	  mbi->framebuffer_type = MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT;
-
-	  mbi->flags |= MULTIBOOT_INFO_FRAMEBUFFER_INFO;
-	}
-      return GRUB_ERR_NONE;
-    }
-#else
   if (driv_id == GRUB_VIDEO_DRIVER_NONE)
     return GRUB_ERR_NONE;
-#endif
 
   err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
   if (err)
@@ -188,15 +171,6 @@ retrieve_video_parameters (struct multiboot_info *mbi,
     }
 
   mbi->flags |= MULTIBOOT_INFO_FRAMEBUFFER_INFO;
-
-#if GRUB_MACHINE_HAS_VBE
-  if (driv_id == GRUB_VIDEO_DRIVER_VBE)
-    {
-      err = fill_vbe_info (mbi, NULL, ptrorig, ptrdest);
-      if (err)
-	return err;
-    }
-#endif
 
   return GRUB_ERR_NONE;
 }
@@ -423,8 +397,8 @@ grub_multiboot_set_bootdev (void)
   dev = grub_device_open (0);
   if (dev && dev->disk && dev->disk->partition)
     {
-
-      p = dev->disk->partition->partmap->get_name (dev->disk->partition);
+      char *p0;
+      p = p0 = dev->disk->partition->partmap->get_name (dev->disk->partition);
       if (p)
 	{
 	  if ((p[0] >= '0') && (p[0] <= '9'))
@@ -438,6 +412,7 @@ grub_multiboot_set_bootdev (void)
 	  if ((p[0] >= 'a') && (p[0] <= 'z'))
 	    part = p[0] - 'a';
 	}
+      grub_free (p0);
     }
   if (dev)
     grub_device_close (dev);

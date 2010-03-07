@@ -136,7 +136,6 @@ struct grub_iso9660_data
   struct grub_iso9660_primary_voldesc voldesc;
   grub_disk_t disk;
   unsigned int first_sector;
-  unsigned int length;
   int rockridge;
   int susp_skip;
   int joliet;
@@ -630,11 +629,15 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 
         if (dir->data->joliet)
           {
-            char *oldname;
+            char *oldname, *semicolon;
 
             oldname = filename;
             filename = grub_iso9660_convert_string
                   ((grub_uint16_t *) oldname, dirent.namelen >> 1);
+
+	    semicolon = grub_strrchr (filename, ';');
+	    if (semicolon)
+	      *semicolon = '\0';
 
             if (filename_alloc)
               grub_free (oldname);
@@ -744,7 +747,6 @@ grub_iso9660_open (struct grub_file *file, const char *name)
     goto fail;
 
   data->first_sector = foundnode->blk;
-  data->length = foundnode->size;
 
   file->data = data;
   file->size = foundnode->size;
@@ -840,16 +842,23 @@ grub_iso9660_uuid (grub_device_t device, char **uuid)
 	}
       else
 	{
-	  *uuid = grub_malloc (sizeof ("YYYY-MM-DD-HH-mm-ss-hh"));
-	  grub_sprintf (*uuid, "%c%c%c%c-%c%c-%c%c-%c%c-%c%c-%c%c-%c%c",
-			data->voldesc.modified.year[0], data->voldesc.modified.year[1],
-			data->voldesc.modified.year[2], data->voldesc.modified.year[3],
-			data->voldesc.modified.month[0], data->voldesc.modified.month[1],
-			data->voldesc.modified.day[0], data->voldesc.modified.day[1],
-			data->voldesc.modified.hour[0], data->voldesc.modified.hour[1],
-			data->voldesc.modified.minute[0], data->voldesc.modified.minute[1],
-			data->voldesc.modified.second[0], data->voldesc.modified.second[1],
-			data->voldesc.modified.hundredth[0], data->voldesc.modified.hundredth[1]);
+	  *uuid = grub_xasprintf ("%c%c%c%c-%c%c-%c%c-%c%c-%c%c-%c%c-%c%c",
+				 data->voldesc.modified.year[0],
+				 data->voldesc.modified.year[1],
+				 data->voldesc.modified.year[2],
+				 data->voldesc.modified.year[3],
+				 data->voldesc.modified.month[0],
+				 data->voldesc.modified.month[1],
+				 data->voldesc.modified.day[0],
+				 data->voldesc.modified.day[1],
+				 data->voldesc.modified.hour[0],
+				 data->voldesc.modified.hour[1],
+				 data->voldesc.modified.minute[0],
+				 data->voldesc.modified.minute[1],
+				 data->voldesc.modified.second[0],
+				 data->voldesc.modified.second[1],
+				 data->voldesc.modified.hundredth[0],
+				 data->voldesc.modified.hundredth[1]);
 	}
     }
   else

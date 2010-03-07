@@ -104,6 +104,48 @@ fill_vbe_info (struct grub_vbe_mode_info_block **vbe_mode_info_out,
 
 #endif
 
+/* Fill previously allocated Multiboot mmap.  */
+static void
+grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
+{
+  struct multiboot_mmap_entry *mmap_entry = (struct multiboot_mmap_entry *) first_entry;
+
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+    {
+      mmap_entry->addr = addr;
+      mmap_entry->len = size;
+      switch (type)
+	{
+	case GRUB_MACHINE_MEMORY_AVAILABLE:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_AVAILABLE;
+ 	  break;
+
+#ifdef GRUB_MACHINE_MEMORY_ACPI_RECLAIMABLE
+	case GRUB_MACHINE_MEMORY_ACPI_RECLAIMABLE:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_ACPI_RECLAIMABLE;
+ 	  break;
+#endif
+
+#ifdef GRUB_MACHINE_MEMORY_NVS
+	case GRUB_MACHINE_MEMORY_NVS:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_NVS;
+ 	  break;
+#endif	  
+	  
+ 	default:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_RESERVED;
+ 	  break;
+ 	}
+      mmap_entry->size = sizeof (struct multiboot_mmap_entry) - sizeof (mmap_entry->size);
+      mmap_entry++;
+
+      return 0;
+    }
+
+  grub_mmap_iterate (hook);
+}
+
 static grub_err_t
 retrieve_video_parameters (grub_uint8_t **ptrorig)
 {

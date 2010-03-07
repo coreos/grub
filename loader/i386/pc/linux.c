@@ -53,7 +53,7 @@ grub_linux_unload (void)
 static grub_err_t
 grub_linux16_boot (void)
 {
-  grub_video_set_mode ("text", NULL);
+  grub_video_set_mode ("text", 0, 0);
   grub_linux16_real_boot ();
 
   /* Not reached.  */

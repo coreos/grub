@@ -43,7 +43,7 @@ static void *boot_part_addr;
 static grub_err_t
 grub_chainloader_boot (void)
 {
-  grub_video_set_mode ("text", NULL);
+  grub_video_set_mode ("text", 0, 0);
   grub_chainloader_real_boot (boot_drive, boot_part_addr);
 
   /* Never reach here.  */

@@ -394,12 +394,15 @@ grub_linux_setup_video (struct linux_kernel_params *params)
 {
   struct grub_video_mode_info mode_info;
   void *framebuffer;
-  int ret;
+  grub_err_t err;
 
-  ret = grub_video_get_info_and_fini (&mode_info, &framebuffer);
+  err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
 
-  if (ret)
-    return 1;
+  if (err)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return 1;
+    }
 
   params->lfb_width = mode_info.width;
   params->lfb_height = mode_info.height;
@@ -407,7 +410,7 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   params->lfb_line_len = mode_info.pitch;
 
   params->lfb_base = (grub_size_t) framebuffer;
-  params->lfb_size = (params->lfb_line_len * params->lfb_height + 65535) >> 16;
+  params->lfb_size = ALIGN_UP (params->lfb_line_len * params->lfb_height, 65536);
 
   params->red_mask_size = mode_info.red_mask_size;
   params->red_field_pos = mode_info.red_field_pos;
@@ -519,16 +522,14 @@ grub_linux_boot (void)
      May change in future if we have modes without framebuffer.  */
   if (modevar && *modevar != 0)
     {
-      tmp = grub_malloc (grub_strlen (modevar)
-			 + sizeof (";text"));
+      tmp = grub_xasprintf ("%s;text", modevar);
       if (! tmp)
 	return grub_errno;
-      grub_sprintf (tmp, "%s;text", modevar);
-      err = grub_video_set_mode (tmp, 0);
+      err = grub_video_set_mode (tmp, 0, 0);
       grub_free (tmp);
     }
   else
-    err = grub_video_set_mode ("text", 0);
+    err = grub_video_set_mode ("text", 0, 0);
 
   if (err)
     {
@@ -538,16 +539,22 @@ grub_linux_boot (void)
     }
 
   if (! grub_linux_setup_video (params))
-    params->have_vga = GRUB_VIDEO_TYPE_VLFB;
+    {
+      /* Use generic framebuffer unless VESA is known to be supported.  */
+      if (params->have_vga != GRUB_VIDEO_LINUX_TYPE_VESA)
+	params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
+      else
+	params->lfb_size >>= 16;
+    }
   else
     {
-      params->have_vga = GRUB_VIDEO_TYPE_TEXT;
+      params->have_vga = GRUB_VIDEO_LINUX_TYPE_TEXT;
       params->video_width = 80;
       params->video_height = 25;
     }
 
   /* Initialize these last, because terminal position could be affected by printfs above.  */
-  if (params->have_vga == GRUB_VIDEO_TYPE_TEXT)
+  if (params->have_vga == GRUB_VIDEO_LINUX_TYPE_TEXT)
     {
       grub_term_output_t term;
       int found = 0;
@@ -796,19 +803,22 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		break;
 	      }
 
-	    buf = grub_malloc (sizeof ("WWWWxHHHHxDD;WWWWxHHHH"));
-	    if (! buf)
-	      goto fail;
+	    /* We can't detect VESA, but user is implicitly telling us that it
+	       is built-in because `vga=' parameter was used.  */
+	    params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
 
 	    linux_mode
 	      = &linux_vesafb_modes[vid_mode - GRUB_LINUX_VID_MODE_VESA_START];
 
-	    grub_sprintf (buf, "%ux%ux%u,%ux%u",
-			  linux_vesafb_res[linux_mode->res_index].width,
-			  linux_vesafb_res[linux_mode->res_index].height,
-			  linux_mode->depth,
-			  linux_vesafb_res[linux_mode->res_index].width,
-			  linux_vesafb_res[linux_mode->res_index].height);
+	    buf = grub_xasprintf ("%ux%ux%u,%ux%u",
+				 linux_vesafb_res[linux_mode->res_index].width,
+				 linux_vesafb_res[linux_mode->res_index].height,
+				 linux_mode->depth,
+				 linux_vesafb_res[linux_mode->res_index].width,
+				 linux_vesafb_res[linux_mode->res_index].height);
+	    if (! buf)
+	      goto fail;
+
 	    grub_printf ("%s is deprecated. "
 			 "Use set gfxpayload=%s before "
 			 "linux command instead.\n",

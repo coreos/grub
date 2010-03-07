@@ -1,3 +1,21 @@
+/*
+ *  GRUB  --  GRand Unified Bootloader
+ *  Copyright (C) 2010 Free Software Foundation, Inc.
+ *
+ *  GRUB is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  GRUB is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/test.h>
@@ -29,19 +47,16 @@ add_failure (const char *file,
 	     const char *funp,
 	     grub_uint32_t line, const char *fmt, va_list args)
 {
-  char buf[1024];
   grub_test_failure_t failure;
 
   failure = (grub_test_failure_t) grub_malloc (sizeof (*failure));
   if (!failure)
     return;
 
-  grub_vsprintf (buf, fmt, args);
-
   failure->file = grub_strdup (file ? : "<unknown_file>");
   failure->funp = grub_strdup (funp ? : "<unknown_function>");
   failure->line = line;
-  failure->message = grub_strdup (buf);
+  failure->message = grub_xvasprintf (fmt, args);
 
   grub_list_push (GRUB_AS_LIST_P (&failure_list), GRUB_AS_LIST (failure));
 }

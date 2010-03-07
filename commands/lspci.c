@@ -135,7 +135,7 @@ grub_lspci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
   grub_printf ("%02x:%02x.%x %04x:%04x", grub_pci_get_bus (dev),
 	       grub_pci_get_device (dev), grub_pci_get_function (dev),
 	       pciid & 0xFFFF, pciid >> 16);
-  addr = grub_pci_make_address (dev, 2);
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
   class = grub_pci_read (addr);
 
   /* Lookup the class name, if there isn't a specific one,
@@ -156,22 +156,24 @@ grub_lspci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
 
   if (iospace)
     {
-      reg = 4;
-      while (reg < 10)
+      reg = GRUB_PCI_REG_ADDRESSES;
+      while (reg < GRUB_PCI_REG_CIS_POINTER)
 	{
 	  grub_uint64_t space;
 	  addr = grub_pci_make_address (dev, reg);
 	  space = grub_pci_read (addr);
 
-	  reg++;
-	 
+	  reg += sizeof (grub_uint32_t);
+
 	  if (space == 0)
 	    continue;
 	 
 	  switch (space & GRUB_PCI_ADDR_SPACE_MASK)
 	    {
 	    case GRUB_PCI_ADDR_SPACE_IO:
-	      grub_printf ("\tIO space %d at 0x%llx\n", (reg - 1) - 4,
+	      grub_printf ("\tIO space %d at 0x%llx\n",
+			   (unsigned) ((reg - GRUB_PCI_REG_ADDRESSES)
+			    / sizeof (grub_uint32_t)) - 1,
 			   (unsigned long long)
 			   (space & GRUB_PCI_ADDR_IO_MASK));
 	      break;
@@ -181,9 +183,11 @@ grub_lspci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
 		{
 		  addr = grub_pci_make_address (dev, reg);
 		  space |= ((grub_uint64_t) grub_pci_read (addr)) << 32;
-		  reg++;
+		  reg += sizeof (grub_uint32_t);
 		  grub_printf ("\t64-bit memory space %d at 0x%016llx [%s]\n",
-			       (reg - 2) - 4, (unsigned long long)
+			       (unsigned) ((reg - GRUB_PCI_REG_ADDRESSES)
+				/ sizeof (grub_uint32_t)) - 2,
+			       (unsigned long long)
 			       (space & GRUB_PCI_ADDR_MEM_MASK),
 			       space & GRUB_PCI_ADDR_MEM_PREFETCH
 			       ? "prefetchable" : "non-prefetchable");
@@ -191,7 +195,9 @@ grub_lspci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
 		}
 	      else
 		grub_printf ("\t32-bit memory space %d at 0x%016llx [%s]\n",
-			     (reg - 1) - 4, (unsigned long long)
+			     (unsigned) ((reg - GRUB_PCI_REG_ADDRESSES)
+			      / sizeof (grub_uint32_t)) - 1,
+			     (unsigned long long) 
 			     (space & GRUB_PCI_ADDR_MEM_MASK),
 			     space & GRUB_PCI_ADDR_MEM_PREFETCH
 			     ? "prefetchable" : "non-prefetchable");

@@ -20,6 +20,7 @@
 #include <grub/types.h>
 #include <grub/util/misc.h>
 #include <grub/i18n.h>
+#include <grub/fontformat.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,6 +48,12 @@ struct grub_glyph_info
   int device_width;
   int bitmap_size;
   grub_uint8_t bitmap[0];
+};
+
+enum file_formats
+{
+  PF2,
+  ASCII_BITMAPS 
 };
 
 #define GRUB_FONT_FLAG_BOLD		1
@@ -87,6 +94,7 @@ static struct option options[] =
   {"help", no_argument, 0, 'h'},
   {"version", no_argument, 0, 'V'},
   {"verbose", no_argument, 0, 'v'},
+  {"ascii-bitmaps", no_argument, 0, 0x102},
   {0, 0, 0, 0}
 };
 
@@ -96,12 +104,13 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
 Usage: %s [OPTIONS] FONT_FILES\n\
 \nOptions:\n\
   -o, --output=FILE_NAME    set output file name\n\
+  --ascii-bitmaps           save only the ASCII bitmaps\n\
   -i, --index=N             set face index\n\
   -r, --range=A-B[,C-D]     set font range\n\
   -n, --name=S              set font family name\n\
@@ -337,7 +346,39 @@ print_glyphs (struct grub_font_info *font_info)
 }
 
 void
-write_font (struct grub_font_info *font_info, char *output_file)
+write_font_ascii_bitmap (struct grub_font_info *font_info, char *output_file)
+{
+  FILE *file;
+  struct grub_glyph_info *glyph;
+  int num; 
+  
+  file = fopen (output_file, "wb");
+  if (! file)
+    grub_util_error ("Can\'t write to file %s.", output_file);
+
+  int correct_size;
+  for (glyph = font_info->glyph, num = 0; glyph; glyph = glyph->next, num++)
+    {
+      correct_size = 1;
+      if (glyph->width != 8 || glyph->height != 16)
+      {
+        /* printf ("Width or height from glyph U+%04x not supported, skipping.\n", glyph->char_code);  */
+	correct_size = 0;
+      }
+      int row;
+      for (row = 0; row < glyph->height; row++)
+        {
+	  if (correct_size)
+	    fwrite (&glyph->bitmap[row], sizeof(glyph->bitmap[row]), 1, file);
+	  else
+	    fwrite (&correct_size, 1, 1, file);
+        }
+    }
+    fclose (file);
+}
+
+void
+write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 {
   FILE *file;
   grub_uint32_t leng, data;
@@ -347,14 +388,15 @@ write_font (struct grub_font_info *font_info, char *output_file)
 
   file = fopen (output_file, "wb");
   if (! file)
-    grub_util_error ("Can\'t write to file %s.", output_file);
+    grub_util_error ("can\'t write to file %s.", output_file);
 
   offset = 0;
 
   leng = grub_cpu_to_be32 (4);
-  grub_util_write_image ("FILE", 4, file);
+  grub_util_write_image (FONT_FORMAT_SECTION_NAMES_FILE,
+  			 sizeof(FONT_FORMAT_SECTION_NAMES_FILE) - 1, file);
   grub_util_write_image ((char *) &leng, 4, file);
-  grub_util_write_image ("PFF2", 4, file);
+  grub_util_write_image (FONT_FORMAT_PFF2_MAGIC, 4, file);
   offset += 12;
 
   if (! font_info->name)
@@ -376,20 +418,25 @@ write_font (struct grub_font_info *font_info, char *output_file)
   font_name = xasprintf ("%s %s %d", font_info->name, &style_name[1],
 			 font_info->size);
 
-  write_string_section ("NAME", font_name, &offset, file);
-  write_string_section ("FAMI", font_info->name, &offset, file);
-  write_string_section ("WEIG",
+  write_string_section (FONT_FORMAT_SECTION_NAMES_FONT_NAME,
+  			font_name, &offset, file);
+  write_string_section (FONT_FORMAT_SECTION_NAMES_FAMILY,
+  			font_info->name, &offset, file);
+  write_string_section (FONT_FORMAT_SECTION_NAMES_WEIGHT,
 			(font_info->style & FT_STYLE_FLAG_BOLD) ?
 			"bold" : "normal",
 			&offset, file);
-  write_string_section ("SLAN",
+  write_string_section (FONT_FORMAT_SECTION_NAMES_SLAN,
 			(font_info->style & FT_STYLE_FLAG_ITALIC) ?
 			"italic" : "normal",
 			&offset, file);
 
-  write_be16_section ("PTSZ", font_info->size, &offset, file);
-  write_be16_section ("MAXW", font_info->max_width, &offset, file);
-  write_be16_section ("MAXH", font_info->max_height, &offset, file);
+  write_be16_section (FONT_FORMAT_SECTION_NAMES_POINT_SIZE,
+  		      font_info->size, &offset, file);
+  write_be16_section (FONT_FORMAT_SECTION_NAMES_MAX_CHAR_WIDTH,
+  		      font_info->max_width, &offset, file);
+  write_be16_section (FONT_FORMAT_SECTION_NAMES_MAX_CHAR_HEIGHT,
+  		      font_info->max_height, &offset, file);
 
   if (! font_info->desc)
     {
@@ -407,8 +454,10 @@ write_font (struct grub_font_info *font_info, char *output_file)
 	font_info->asce = font_info->max_y;
     }
 
-  write_be16_section ("ASCE", font_info->asce, &offset, file);
-  write_be16_section ("DESC", font_info->desc, &offset, file);
+  write_be16_section (FONT_FORMAT_SECTION_NAMES_ASCENT,
+  		      font_info->asce, &offset, file);
+  write_be16_section (FONT_FORMAT_SECTION_NAMES_DESCENT,
+  		      font_info->desc, &offset, file);
 
   if (font_verbosity > 0)
     {
@@ -439,7 +488,9 @@ write_font (struct grub_font_info *font_info, char *output_file)
     printf ("Number of glyph: %d\n", num);
 
   leng = grub_cpu_to_be32 (num * 9);
-  grub_util_write_image ("CHIX", 4, file);
+  grub_util_write_image (FONT_FORMAT_SECTION_NAMES_CHAR_INDEX,
+  			 sizeof(FONT_FORMAT_SECTION_NAMES_CHAR_INDEX) - 1,
+			 file);
   grub_util_write_image ((char *) &leng, 4, file);
   offset += 8 + num * 9 + 8;
 
@@ -455,7 +506,8 @@ write_font (struct grub_font_info *font_info, char *output_file)
     }
 
   leng = 0xffffffff;
-  grub_util_write_image ("DATA", 4, file);
+  grub_util_write_image (FONT_FORMAT_SECTION_NAMES_DATA,
+  			 sizeof(FONT_FORMAT_SECTION_NAMES_DATA) - 1, file);
   grub_util_write_image ((char *) &leng, 4, file);
 
   for (cur = font_info->glyph; cur; cur = cur->next)
@@ -473,9 +525,6 @@ write_font (struct grub_font_info *font_info, char *output_file)
       grub_util_write_image ((char *) &cur->bitmap[0], cur->bitmap_size, file);
     }
 
-  if (font_verbosity > 1)
-    print_glyphs (font_info);
-
   fclose (file);
 }
 
@@ -487,6 +536,7 @@ main (int argc, char *argv[])
   int font_index = 0;
   int font_size = 0;
   char *output_file = NULL;
+  enum file_formats file_format = PF2;
 
   memset (&font_info, 0, sizeof (font_info));
 
@@ -546,13 +596,13 @@ main (int argc, char *argv[])
 
 		  a = strtoul (p, &p, 0);
 		  if (*p != '-')
-		    grub_util_error ("Invalid font range");
+		    grub_util_error ("invalid font range");
 		  b = strtoul (p + 1, &p, 0);
 		  if ((font_info.num_range & (GRUB_FONT_RANGE_BLOCK - 1)) == 0)
 		    font_info.ranges = xrealloc (font_info.ranges,
 						 (font_info.num_range +
 						  GRUB_FONT_RANGE_BLOCK) *
-						 sizeof (int) * 2);
+						 sizeof (grub_uint32_t) * 2);
 
 		  font_info.ranges[font_info.num_range * 2] = a;
 		  font_info.ranges[font_info.num_range * 2 + 1] = b;
@@ -561,7 +611,7 @@ main (int argc, char *argv[])
 		  if (*p)
 		    {
 		      if (*p != ',')
-			grub_util_error ("Invalid font range");
+			grub_util_error ("invalid font range");
 		      else
 			p++;
 		    }
@@ -591,14 +641,35 @@ main (int argc, char *argv[])
 	    font_verbosity++;
 	    break;
 
+	  case 0x102:
+	     file_format = ASCII_BITMAPS;
+	     break;
+
 	  default:
 	    usage (1);
 	    break;
 	  }
     }
 
+  if (file_format == ASCII_BITMAPS && font_info.num_range > 0)
+    {
+      grub_util_error ("Option --ascii-bitmaps doesn't accept ranges (use ASCII).");
+      return 1;
+    }
+
+  else if (file_format == ASCII_BITMAPS)
+    {
+      font_info.ranges = xrealloc (font_info.ranges,
+				   GRUB_FONT_RANGE_BLOCK *
+				   sizeof (grub_uint32_t) * 2);
+
+      font_info.ranges[0] = (grub_uint32_t) 0x00;
+      font_info.ranges[1] = (grub_uint32_t) 0x7f;
+      font_info.num_range = 1;
+    }
+
   if (! output_file)
-    grub_util_error ("No output file is specified.");
+    grub_util_error ("no output file is specified");
 
   if (FT_Init_FreeType (&ft_lib))
     grub_util_error ("FT_Init_FreeType fails");
@@ -610,7 +681,7 @@ main (int argc, char *argv[])
 
       if (FT_New_Face (ft_lib, argv[optind], font_index, &ft_face))
 	{
-	  grub_util_info ("Can't open file %s, index %d\n", argv[optind],
+	  grub_util_info ("can't open file %s, index %d", argv[optind],
 			  font_index);
 	  continue;
 	}
@@ -638,7 +709,13 @@ main (int argc, char *argv[])
 
   FT_Done_FreeType (ft_lib);
 
-  write_font (&font_info, output_file);
+  if (file_format == PF2)
+    write_font_pf2 (&font_info, output_file);
+  else if (file_format == ASCII_BITMAPS)
+    write_font_ascii_bitmap (&font_info, output_file);
+
+  if (font_verbosity > 1)
+    print_glyphs (&font_info);
 
   return 0;
 }

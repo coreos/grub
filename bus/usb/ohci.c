@@ -126,7 +126,7 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
   grub_uint32_t revision;
   grub_uint32_t frame_interval;
 
-  addr = grub_pci_make_address (dev, 2);
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
   class_code = grub_pci_read (addr) >> 8;
 
   interf = class_code & 0xFF;
@@ -138,7 +138,7 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
     return 0;
 
   /* Determine IO base address.  */
-  addr = grub_pci_make_address (dev, 4);
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
   base = grub_pci_read (addr);
 
 #if 0

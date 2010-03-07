@@ -34,6 +34,10 @@ struct grub_video_render_target;
 struct grub_video_bitmap;
 
 /* Defines used to describe video mode or rendering target.  */
+/* If following is set render target contains currenly displayed image
+   after swapping buffers (otherwise it contains previously displayed image).
+ */
+#define GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP	0x00000080
 #define GRUB_VIDEO_MODE_TYPE_PURE_TEXT		0x00000040
 #define GRUB_VIDEO_MODE_TYPE_ALPHA		0x00000020
 #define GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED	0x00000010
@@ -48,6 +52,8 @@ struct grub_video_bitmap;
 #define GRUB_VIDEO_MODE_TYPE_DEPTH_MASK		0x0000ff00
 #define GRUB_VIDEO_MODE_TYPE_DEPTH_POS		8
 
+/* The basic render target representing the whole display.  This always
+   renders to the back buffer when double-buffering is in use.  */
 #define GRUB_VIDEO_RENDER_TARGET_DISPLAY \
   ((struct grub_video_render_target *) 0)
 
@@ -151,6 +157,16 @@ struct grub_video_mode_info
   grub_uint8_t fg_alpha;
 };
 
+/* A 2D rectangle type.  */
+struct grub_video_rect
+{
+  unsigned x;
+  unsigned y;
+  unsigned width;
+  unsigned height;
+};
+typedef struct grub_video_rect grub_video_rect_t;
+
 struct grub_video_palette_data
 {
   grub_uint8_t r; /* Red color value (0-255).  */
@@ -180,7 +196,7 @@ struct grub_video_adapter
   grub_err_t (*fini) (void);
 
   grub_err_t (*setup) (unsigned int width,  unsigned int height,
-                       unsigned int mode_type);
+                       unsigned int mode_type, unsigned int mode_mask);
 
   grub_err_t (*get_info) (struct grub_video_mode_info *mode_info);
 
@@ -243,13 +259,13 @@ struct grub_video_adapter
 };
 typedef struct grub_video_adapter *grub_video_adapter_t;
 
-void grub_video_register (grub_video_adapter_t adapter);
+void EXPORT_FUNC (grub_video_register) (grub_video_adapter_t adapter);
 void grub_video_unregister (grub_video_adapter_t adapter);
 void grub_video_iterate (int (*hook) (grub_video_adapter_t adapter));
 
-grub_err_t grub_video_restore (void);
+grub_err_t EXPORT_FUNC (grub_video_restore) (void);
 
-grub_err_t grub_video_get_info (struct grub_video_mode_info *mode_info);
+grub_err_t EXPORT_FUNC (grub_video_get_info) (struct grub_video_mode_info *mode_info);
 
 /* Framebuffer address may change as a part of normal operation
    (e.g. double buffering). That's why you need to stop video subsystem to be
@@ -267,57 +283,78 @@ grub_err_t grub_video_set_palette (unsigned int start, unsigned int count,
 grub_err_t grub_video_get_palette (unsigned int start, unsigned int count,
                                    struct grub_video_palette_data *palette_data);
 
-grub_err_t grub_video_set_viewport (unsigned int x, unsigned int y,
-                                    unsigned int width, unsigned int height);
+grub_err_t EXPORT_FUNC (grub_video_set_viewport) (unsigned int x,
+						  unsigned int y,
+						  unsigned int width,
+						  unsigned int height);
 
-grub_err_t grub_video_get_viewport (unsigned int *x, unsigned int *y,
-                                    unsigned int *width, unsigned int *height);
+grub_err_t EXPORT_FUNC (grub_video_get_viewport) (unsigned int *x,
+						  unsigned int *y,
+						  unsigned int *width,
+						  unsigned int *height);
 
-grub_video_color_t grub_video_map_color (grub_uint32_t color_name);
+grub_video_color_t EXPORT_FUNC (grub_video_map_color) (grub_uint32_t color_name);
 
-grub_video_color_t grub_video_map_rgb (grub_uint8_t red, grub_uint8_t green,
-                                       grub_uint8_t blue);
+grub_video_color_t EXPORT_FUNC (grub_video_map_rgb) (grub_uint8_t red,
+						     grub_uint8_t green,
+						     grub_uint8_t blue);
 
-grub_video_color_t grub_video_map_rgba (grub_uint8_t red, grub_uint8_t green,
-                                        grub_uint8_t blue, grub_uint8_t alpha);
+grub_video_color_t EXPORT_FUNC (grub_video_map_rgba) (grub_uint8_t red,
+						      grub_uint8_t green,
+						      grub_uint8_t blue,
+						      grub_uint8_t alpha);
 
-grub_err_t grub_video_unmap_color (grub_video_color_t color,
-                                   grub_uint8_t *red, grub_uint8_t *green,
-                                   grub_uint8_t *blue, grub_uint8_t *alpha);
+grub_err_t EXPORT_FUNC (grub_video_unmap_color) (grub_video_color_t color,
+						 grub_uint8_t *red,
+						 grub_uint8_t *green,
+						 grub_uint8_t *blue,
+						 grub_uint8_t *alpha);
 
-grub_err_t grub_video_fill_rect (grub_video_color_t color, int x, int y,
-                                 unsigned int width, unsigned int height);
+grub_err_t EXPORT_FUNC (grub_video_fill_rect) (grub_video_color_t color, 
+					       int x, int y,
+					       unsigned int width,
+					       unsigned int height);
 
-grub_err_t grub_video_blit_bitmap (struct grub_video_bitmap *bitmap,
-                                   enum grub_video_blit_operators oper,
-                                   int x, int y, int offset_x, int offset_y,
-                                   unsigned int width, unsigned int height);
+grub_err_t EXPORT_FUNC (grub_video_blit_bitmap) (struct grub_video_bitmap *bitmap,
+						 enum grub_video_blit_operators oper,
+						 int x, int y,
+						 int offset_x, int offset_y,
+						 unsigned int width,
+						 unsigned int height);
 
-grub_err_t grub_video_blit_render_target (struct grub_video_render_target *source,
-                                          enum grub_video_blit_operators oper,
-                                          int x, int y,
-                                          int offset_x, int offset_y,
-                                          unsigned int width,
-                                          unsigned int height);
+grub_err_t EXPORT_FUNC (grub_video_blit_render_target) (struct grub_video_render_target *source,
+							enum grub_video_blit_operators oper,
+							int x, int y,
+							int offset_x,
+							int offset_y,
+							unsigned int width,
+							unsigned int height);
 
 grub_err_t grub_video_scroll (grub_video_color_t color, int dx, int dy);
 
-grub_err_t grub_video_swap_buffers (void);
+grub_err_t EXPORT_FUNC (grub_video_swap_buffers) (void);
 
-grub_err_t grub_video_create_render_target (struct grub_video_render_target **result,
-                                            unsigned int width,
-                                            unsigned int height,
-                                            unsigned int mode_type);
+grub_err_t EXPORT_FUNC (grub_video_create_render_target) (struct grub_video_render_target **result,
+							  unsigned int width,
+							  unsigned int height,
+							  unsigned int mode_type);
 
-grub_err_t grub_video_delete_render_target (struct grub_video_render_target *target);
+grub_err_t EXPORT_FUNC (grub_video_delete_render_target) (struct grub_video_render_target *target);
 
-grub_err_t grub_video_set_active_render_target (struct grub_video_render_target *target);
+grub_err_t EXPORT_FUNC (grub_video_set_active_render_target) (struct grub_video_render_target *target);
 
 grub_err_t grub_video_get_active_render_target (struct grub_video_render_target **target);
 
-grub_err_t grub_video_set_mode (const char *modestring,
-				int NESTED_FUNC_ATTR (*hook) (grub_video_adapter_t p,
-							      struct grub_video_mode_info *mode_info));
+grub_err_t EXPORT_FUNC (grub_video_set_mode) (const char *modestring,
+					      unsigned int modemask,
+					      unsigned int modevalue);
+
+static inline int
+grub_video_check_mode_flag (unsigned int flags, unsigned int mask,
+			    unsigned int flag, int def)
+{
+  return (flag & mask) ? !! (flags & flag) : def;
+}
 
 grub_video_driver_id_t
 grub_video_get_driver_id (void);

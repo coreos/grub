@@ -45,7 +45,6 @@ grub_err_t grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
 void grub_multiboot_set_bootdev (void);
 
 grub_uint32_t grub_get_multiboot_mmap_len (void);
-void grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry);
 grub_err_t grub_multiboot_set_video_mode (void);
 
 #if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
