@@ -23,6 +23,7 @@
 #endif
 #include <grub/multiboot.h>
 #include <grub/cpu/multiboot.h>
+#include <grub/cpu/relocator.h>
 #include <grub/disk.h>
 #include <grub/device.h>
 #include <grub/partition.h>
@@ -30,6 +31,10 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/video.h>
+#include <grub/file.h>
+
+/* The bits in the required part of flags field we don't support.  */
+#define UNSUPPORTED_FLAGS			0x0000fff8
 
 struct module
 {
@@ -47,6 +52,132 @@ static unsigned modcnt;
 static char *cmdline = NULL;
 static grub_uint32_t bootdev;
 static int bootdev_set;
+
+grub_err_t
+grub_multiboot_load (grub_file_t file)
+{
+  char *buffer;
+  grub_ssize_t len;
+  struct multiboot_header *header;
+  grub_err_t err;
+
+  buffer = grub_malloc (MULTIBOOT_SEARCH);
+  if (!buffer)
+    return grub_errno;
+
+  len = grub_file_read (file, buffer, MULTIBOOT_SEARCH);
+  if (len < 32)
+    {
+      grub_free (buffer);
+      return grub_error (GRUB_ERR_BAD_OS, "file too small");
+    }
+
+  /* Look for the multiboot header in the buffer.  The header should
+     be at least 12 bytes and aligned on a 4-byte boundary.  */
+  for (header = (struct multiboot_header *) buffer;
+       ((char *) header <= buffer + len - 12) || (header = 0);
+       header = (struct multiboot_header *) ((char *) header + MULTIBOOT_HEADER_ALIGN))
+    {
+      if (header->magic == MULTIBOOT_HEADER_MAGIC
+	  && !(header->magic + header->flags + header->checksum))
+	break;
+    }
+
+  if (header == 0)
+    {
+      grub_free (buffer);
+      return grub_error (GRUB_ERR_BAD_ARGUMENT, "no multiboot header found");
+    }
+
+  if (header->flags & UNSUPPORTED_FLAGS)
+    {
+      grub_free (buffer);
+      return grub_error (GRUB_ERR_UNKNOWN_OS,
+			 "unsupported flag: 0x%x", header->flags);
+    }
+
+  if (header->flags & MULTIBOOT_AOUT_KLUDGE)
+    {
+      int offset = ((char *) header - buffer -
+		    (header->header_addr - header->load_addr));
+      int load_size = ((header->load_end_addr == 0) ? file->size - offset :
+		       header->load_end_addr - header->load_addr);
+      grub_size_t code_size;
+
+      if (header->bss_end_addr)
+	code_size = (header->bss_end_addr - header->load_addr);
+      else
+	code_size = load_size;
+      grub_multiboot_payload_dest = header->load_addr;
+
+      grub_multiboot_pure_size += code_size;
+
+      /* Allocate a bit more to avoid relocations in most cases.  */
+      grub_multiboot_alloc_mbi = grub_multiboot_get_mbi_size () + 65536;
+      grub_multiboot_payload_orig
+	= grub_relocator32_alloc (grub_multiboot_pure_size + grub_multiboot_alloc_mbi);
+
+      if (! grub_multiboot_payload_orig)
+	{
+	  grub_free (buffer);
+	  return grub_errno;
+	}
+
+      if ((grub_file_seek (file, offset)) == (grub_off_t) -1)
+	{
+	  grub_free (buffer);
+	  return grub_errno;
+	}
+
+      grub_file_read (file, (void *) grub_multiboot_payload_orig, load_size);
+      if (grub_errno)
+	{
+	  grub_free (buffer);
+	  return grub_errno;
+	}
+
+      if (header->bss_end_addr)
+	grub_memset ((void *) (grub_multiboot_payload_orig + load_size), 0,
+		     header->bss_end_addr - header->load_addr - load_size);
+
+      grub_multiboot_payload_eip = header->entry_addr;
+
+    }
+  else
+    {
+      err = grub_multiboot_load_elf (file, buffer);
+      if (err)
+	{
+	  grub_free (buffer);
+	  return err;
+	}
+    }
+
+  if (header->flags & MULTIBOOT_VIDEO_MODE)
+    {
+      switch (header->mode_type)
+	{
+	case 1:
+	  err = grub_multiboot_set_console (GRUB_MULTIBOOT_CONSOLE_EGA_TEXT, 
+					    GRUB_MULTIBOOT_CONSOLE_EGA_TEXT
+					    | GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER,
+					    0, 0, 0);
+	  break;
+	case 0:
+	  err = grub_multiboot_set_console (GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER,
+					    GRUB_MULTIBOOT_CONSOLE_EGA_TEXT
+					    | GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER,
+					    header->width, header->height,
+					    header->depth);
+	  break;
+	}
+    }
+  else
+    err = grub_multiboot_set_console (GRUB_MULTIBOOT_CONSOLE_EGA_TEXT, 
+				      GRUB_MULTIBOOT_CONSOLE_EGA_TEXT,
+				      0, 0, 0);
+  return err;
+}
 
 grub_size_t
 grub_multiboot_get_mbi_size (void)

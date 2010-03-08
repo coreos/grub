@@ -20,6 +20,8 @@
 #ifndef GRUB_MULTIBOOT_HEADER
 #define GRUB_MULTIBOOT_HEADER 1
 
+#include <grub/file.h>
+
 #ifdef GRUB_USE_MULTIBOOT2
 #include <multiboot2.h>
 /* Same thing as far as our loader is concerned.  */
@@ -62,5 +64,19 @@ grub_multiboot_fill_vbe_info_real (struct grub_vbe_info_block *vbe_control_info,
 #define GRUB_MACHINE_HAS_VBE 0
 #define GRUB_MACHINE_HAS_VGA_TEXT 0
 #endif
+
+#define GRUB_MULTIBOOT_CONSOLE_EGA_TEXT 1
+#define GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER 2 
+
+grub_err_t
+grub_multiboot_set_console (int console_type, int accepted_consoles,
+			    int width, int height, int depth);
+grub_err_t
+grub_multiboot_load (grub_file_t file);
+/* Load ELF32 or ELF64.  */
+grub_err_t
+grub_multiboot_load_elf (grub_file_t file, void *buffer);
+extern grub_size_t grub_multiboot_pure_size;
+extern grub_size_t grub_multiboot_alloc_mbi;
 
 #endif /* ! GRUB_MULTIBOOT_HEADER */
