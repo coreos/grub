@@ -1,3 +1,8 @@
+2010-03-08  Matt Kraai  <kraai@ftbfs.org>
+
+	* util/i386/pc/grub-setup.c (setup): Fix a grammatical error (Debian
+	bug #559005).
+
 2010-03-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* genmoddep.awk: Output all missing symbols and not only first.
