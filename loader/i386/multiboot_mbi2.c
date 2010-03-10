@@ -23,6 +23,7 @@
 #endif
 #include <grub/multiboot.h>
 #include <grub/cpu/multiboot.h>
+#include <grub/cpu/relocator.h>
 #include <grub/disk.h>
 #include <grub/device.h>
 #include <grub/partition.h>
@@ -58,6 +59,201 @@ static unsigned modcnt;
 static char *cmdline = NULL;
 static int bootdev_set;
 static grub_uint32_t biosdev, slice, part;
+
+grub_err_t
+grub_multiboot_load (grub_file_t file)
+{
+  char *buffer;
+  grub_ssize_t len;
+  struct multiboot_header *header;
+  grub_err_t err;
+  struct multiboot_header_tag *tag;
+  struct multiboot_header_tag_address *addr_tag = NULL;
+  int entry_specified = 0;
+  grub_addr_t entry = 0;
+  grub_uint32_t console_required = 0;
+  struct multiboot_header_tag_framebuffer *fbtag = NULL;
+  int accepted_consoles = GRUB_MULTIBOOT_CONSOLE_EGA_TEXT;
+
+  buffer = grub_malloc (MULTIBOOT_SEARCH);
+  if (!buffer)
+    return grub_errno;
+
+  len = grub_file_read (file, buffer, MULTIBOOT_SEARCH);
+  if (len < 32)
+    {
+      grub_free (buffer);
+      return grub_error (GRUB_ERR_BAD_OS, "file too small");
+    }
+
+  /* Look for the multiboot header in the buffer.  The header should
+     be at least 12 bytes and aligned on a 4-byte boundary.  */
+  for (header = (struct multiboot_header *) buffer;
+       ((char *) header <= buffer + len - 12) || (header = 0);
+       header = (struct multiboot_header *) ((char *) header + MULTIBOOT_HEADER_ALIGN))
+    {
+      if (header->magic == MULTIBOOT_HEADER_MAGIC
+	  && !(header->magic + header->architecture
+	       + header->header_length + header->checksum))
+	break;
+    }
+
+  if (header == 0)
+    {
+      grub_free (buffer);
+      return grub_error (GRUB_ERR_BAD_ARGUMENT, "no multiboot header found");
+    }
+
+  for (tag = (struct multiboot_header_tag *) (header + 1);
+       tag->type != MULTIBOOT_TAG_TYPE_END;
+       tag = (struct multiboot_header_tag *) ((char *) tag + tag->size))
+    switch (tag->type)
+      {
+      case MULTIBOOT_HEADER_TAG_INFORMATION_REQUEST:
+	{
+	  unsigned i;
+	  struct multiboot_header_tag_information_request *request_tag
+	    = (struct multiboot_header_tag_information_request *) tag;
+	  if (request_tag->flags & MULTIBOOT_HEADER_TAG_OPTIONAL)
+	    break;
+	  for (i = 0; i < (request_tag->size - sizeof (request_tag))
+		 / sizeof (request_tag->requests[0]); i++)
+	    switch (request_tag->requests[i])
+	      {
+	      case MULTIBOOT_TAG_TYPE_END:
+	      case MULTIBOOT_TAG_TYPE_CMDLINE:
+	      case MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME:
+	      case MULTIBOOT_TAG_TYPE_MODULE:
+	      case MULTIBOOT_TAG_TYPE_BASIC_MEMINFO:
+	      case MULTIBOOT_TAG_TYPE_BOOTDEV:
+	      case MULTIBOOT_TAG_TYPE_MMAP:
+	      case MULTIBOOT_TAG_TYPE_VBE:
+	      case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
+		break;
+
+	      case MULTIBOOT_TAG_TYPE_ELF_SECTIONS:
+	      case MULTIBOOT_TAG_TYPE_APM:
+	      default:
+		grub_free (buffer);
+		return grub_error (GRUB_ERR_UNKNOWN_OS,
+				   "unsupported information tag: 0x%x",
+				   request_tag->requests[i]);
+	      }
+	  break;
+	}
+	       
+      case MULTIBOOT_HEADER_TAG_ADDRESS:
+	addr_tag = (struct multiboot_header_tag_address *) tag;
+	break;
+
+      case MULTIBOOT_HEADER_TAG_ENTRY_ADDRESS:
+	entry_specified = 1;
+	entry = ((struct multiboot_header_tag_entry_address *) tag)->entry_addr;
+	break;
+
+      case MULTIBOOT_HEADER_TAG_CONSOLE_FLAGS:
+	if (!(((struct multiboot_header_tag_console_flags *) tag)->console_flags
+	    & MULTIBOOT_CONSOLE_FLAGS_EGA_TEXT_SUPPORTED))
+	  accepted_consoles &= ~GRUB_MULTIBOOT_CONSOLE_EGA_TEXT;
+	if (((struct multiboot_header_tag_console_flags *) tag)->console_flags
+	    & MULTIBOOT_CONSOLE_FLAGS_CONSOLE_REQUIRED)
+	  console_required = 1;
+	break;
+
+      case MULTIBOOT_HEADER_TAG_FRAMEBUFFER:
+	fbtag = (struct multiboot_header_tag_framebuffer *) tag;
+	accepted_consoles |= GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER;
+	break;
+
+	/* GRUB always page-aligns modules.  */
+      case MULTIBOOT_HEADER_TAG_MODULE_ALIGN:
+	break;
+
+      default:
+	if (! (tag->flags & MULTIBOOT_HEADER_TAG_OPTIONAL))
+	  {
+	    grub_free (buffer);
+	    return grub_error (GRUB_ERR_UNKNOWN_OS,
+			       "unsupported tag: 0x%x", tag->type);
+	  }
+	break;
+      }
+
+  if (addr_tag && !entry_specified)
+    {
+      grub_free (buffer);
+      return grub_error (GRUB_ERR_UNKNOWN_OS,
+			 "load address tag without entry address tag");
+    }
+ 
+  if (addr_tag)
+    {
+      int offset = ((char *) header - buffer -
+		    (addr_tag->header_addr - addr_tag->load_addr));
+      int load_size = ((addr_tag->load_end_addr == 0) ? file->size - offset :
+		       addr_tag->load_end_addr - addr_tag->load_addr);
+      grub_size_t code_size;
+
+      if (addr_tag->bss_end_addr)
+	code_size = (addr_tag->bss_end_addr - addr_tag->load_addr);
+      else
+	code_size = load_size;
+      grub_multiboot_payload_dest = addr_tag->load_addr;
+
+      grub_multiboot_pure_size += code_size;
+
+      /* Allocate a bit more to avoid relocations in most cases.  */
+      grub_multiboot_alloc_mbi = grub_multiboot_get_mbi_size () + 65536;
+      grub_multiboot_payload_orig
+	= grub_relocator32_alloc (grub_multiboot_pure_size + grub_multiboot_alloc_mbi);
+
+      if (! grub_multiboot_payload_orig)
+	{
+	  grub_free (buffer);
+	  return grub_errno;
+	}
+
+      if ((grub_file_seek (file, offset)) == (grub_off_t) -1)
+	{
+	  grub_free (buffer);
+	  return grub_errno;
+	}
+
+      grub_file_read (file, (void *) grub_multiboot_payload_orig, load_size);
+      if (grub_errno)
+	{
+	  grub_free (buffer);
+	  return grub_errno;
+	}
+
+      if (addr_tag->bss_end_addr)
+	grub_memset ((void *) (grub_multiboot_payload_orig + load_size), 0,
+		     addr_tag->bss_end_addr - addr_tag->load_addr - load_size);
+    }
+  else
+    {
+      err = grub_multiboot_load_elf (file, buffer);
+      if (err)
+	{
+	  grub_free (buffer);
+	  return err;
+	}
+    }
+
+  if (entry_specified)
+    grub_multiboot_payload_eip = entry;
+
+  if (fbtag)
+    err = grub_multiboot_set_console (GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER,
+				      accepted_consoles,
+				      fbtag->width, fbtag->height,
+				      fbtag->depth, console_required);
+  else
+    err = grub_multiboot_set_console (GRUB_MULTIBOOT_CONSOLE_EGA_TEXT,
+				      accepted_consoles,
+				      0, 0, 0, console_required);
+  return err;
+}
 
 grub_size_t
 grub_multiboot_get_mbi_size (void)

@@ -62,6 +62,8 @@ grub_addr_t grub_multiboot_payload_dest;
 grub_size_t grub_multiboot_pure_size;
 grub_uint32_t grub_multiboot_payload_eip;
 static int accepts_video;
+static int accepts_ega_text;
+static int console_required;
 static grub_dl_t my_mod;
 
 
@@ -245,8 +247,23 @@ grub_multiboot_load_elf (grub_file_t file, void *buffer)
 
 grub_err_t
 grub_multiboot_set_console (int console_type, int accepted_consoles,
-			    int width, int height, int depth)
+			    int width, int height, int depth,
+			    int console_req)
 {
+  console_required = console_req;
+  if (!(accepted_consoles 
+	& (GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER
+	   | (GRUB_MACHINE_HAS_VGA_TEXT ? GRUB_MULTIBOOT_CONSOLE_EGA_TEXT : 0))))
+    {
+      if (console_required)
+	return grub_error (GRUB_ERR_BAD_OS,
+			   "OS requires a console but none is available");
+      grub_printf ("WARNING: no console will be available to OS");
+      accepts_video = 0;
+      accepts_ega_text = 0;
+      return GRUB_ERR_NONE;
+    }
+
   if (console_type == GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER)
     {
       char *buf;
@@ -267,6 +284,7 @@ grub_multiboot_set_console (int console_type, int accepted_consoles,
    grub_env_set ("gfxpayload", "text");
 
   accepts_video = !!(accepted_consoles & GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER);
+  accepts_ega_text = !!(accepted_consoles & GRUB_MULTIBOOT_CONSOLE_EGA_TEXT);
   return GRUB_ERR_NONE;
 }
 

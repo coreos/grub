@@ -161,21 +161,21 @@ grub_multiboot_load (grub_file_t file)
 	  err = grub_multiboot_set_console (GRUB_MULTIBOOT_CONSOLE_EGA_TEXT, 
 					    GRUB_MULTIBOOT_CONSOLE_EGA_TEXT
 					    | GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER,
-					    0, 0, 0);
+					    0, 0, 0, 0);
 	  break;
 	case 0:
 	  err = grub_multiboot_set_console (GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER,
 					    GRUB_MULTIBOOT_CONSOLE_EGA_TEXT
 					    | GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER,
 					    header->width, header->height,
-					    header->depth);
+					    header->depth, 0);
 	  break;
 	}
     }
   else
     err = grub_multiboot_set_console (GRUB_MULTIBOOT_CONSOLE_EGA_TEXT, 
 				      GRUB_MULTIBOOT_CONSOLE_EGA_TEXT,
-				      0, 0, 0);
+				      0, 0, 0, 0);
   return err;
 }
 

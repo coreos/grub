@@ -70,7 +70,8 @@ grub_multiboot_fill_vbe_info_real (struct grub_vbe_info_block *vbe_control_info,
 
 grub_err_t
 grub_multiboot_set_console (int console_type, int accepted_consoles,
-			    int width, int height, int depth);
+			    int width, int height, int depth,
+			    int console_required);
 grub_err_t
 grub_multiboot_load (grub_file_t file);
 /* Load ELF32 or ELF64.  */
