@@ -609,6 +609,15 @@ continue:
 	lui $a0, %hi(caches_enabled)
 	bal message
 	  addiu $a0, $a0, %lo(caches_enabled)
+
+	/* Set ROM delay cycles to 1.  */
+	lui $t0, %hi(GRUB_CPU_LOONGSON_LIOCFG)
+	lw  $t1, %lo(GRUB_CPU_LOONGSON_LIOCFG) ($t0)
+	addiu $t2, $zero, ~(GRUB_CPU_LOONGSON_ROM_DELAY_MASK \
+	                    << GRUB_CPU_LOONGSON_ROM_DELAY_OFFSET)
+	and $t1, $t1, $t2
+	ori $t1, $t1, (1 << GRUB_CPU_LOONGSON_ROM_DELAY_OFFSET)
+	sw  $t1, %lo(GRUB_CPU_LOONGSON_LIOCFG) ($t0)
 	
 	addiu $a0, $zero, -1
 	addiu $a1, $zero, -1
