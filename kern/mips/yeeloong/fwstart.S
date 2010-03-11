@@ -618,4 +618,11 @@ continue:
 	
 	addiu $a0, $zero, -1
 	addiu $a1, $zero, -1
-	addiu $a2, $zero, -1
+
+	/* Take advantage of cache.  */
+	lui $t0, %hi(cached_continue - 0x20000000)
+	addiu $t0, $t0, %lo(cached_continue - 0x20000000)
+	jr $t0
+	 addiu $a2, $zero, -1
+
+cached_continue:
