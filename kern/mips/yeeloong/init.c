@@ -26,6 +26,7 @@
 #include <grub/time.h>
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
+#include <grub/mips/loongson.h>
 #include <grub/cpu/kernel.h>
 #include <grub/cs5536.h>
 
@@ -44,7 +45,7 @@ grub_get_rtc (void)
   static grub_uint32_t last = 0;
   grub_uint32_t low;
 
-  asm volatile ("mfc0 %0, $9": "=r" (low));
+  asm volatile ("mfc0 %0, " GRUB_CPU_LOONGSON_COP0_TIMER_COUNT : "=r" (low));
   if (low < last)
     high++;
   last = low;

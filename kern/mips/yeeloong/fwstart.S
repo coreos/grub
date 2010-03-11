@@ -130,8 +130,8 @@ __start:
 
 	. = start + GRUB_MACHINE_FLASH_TLB_REFILL - GRUB_MACHINE_FLASH_START
 tlb_refill:	
-	mfc0 $s1, $14
-	mfc0 $s2, $8
+	mfc0 $s1, GRUB_CPU_LOONGSON_COP0_EPC
+	mfc0 $s2, GRUB_CPU_LOONGSON_COP0_BADVADDR
 	move $s3, $ra
 	lui $a0, %hi(epc)
 	bal message
@@ -170,9 +170,9 @@ cache_error:
 
 	. = start + GRUB_MACHINE_FLASH_OTHER_EXCEPTION - GRUB_MACHINE_FLASH_START
 other_exception:
-	mfc0 $s0, $13
-	mfc0 $s1, $14
-	mfc0 $s2, $8
+	mfc0 $s0, GRUB_CPU_LOONGSON_COP0_CAUSE
+	mfc0 $s1, GRUB_CPU_LOONGSON_COP0_EPC
+	mfc0 $s2, GRUB_CPU_LOONGSON_COP0_BADVADDR
 	lui $a0, %hi(cause)
 	bal message
 	 addiu $a0, $a0, %lo(cause)
