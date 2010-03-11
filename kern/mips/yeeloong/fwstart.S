@@ -19,6 +19,7 @@
 #include <grub/mips/yeeloong/serial.h>
 #include <grub/mips/yeeloong/pci.h>
 #include <grub/mips/yeeloong/boot.h>
+#include <grub/mips/loongson.h>
 #include <grub/pci.h>
 #include <grub/serial.h>
 #include <grub/cs5536.h>
@@ -392,6 +393,7 @@ epc:	.asciz "\n\rEPC: "
 badvaddr:	.asciz "\n\rBadVaddr: "
 newline:	.asciz "\n\r"
 return_msg:	  .asciz "\n\rReturn address: "
+caches_enabled:	.asciz "Caches enabled\n\r"
 
 	.p2align 3
 
@@ -535,6 +537,79 @@ continue:
 	ori	$t1, $t1, 0x100
         sd	$t1, 0x0180($t0)
 
+	/* Enable cache.  */
+	mfc0	$t0, GRUB_CPU_LOONGSON_COP0_CACHE_CONFIG
+	addiu 	$t1, $zero, ~GRUB_CPU_LOONGSON_CACHE_TYPE_MASK
+	and     $t0, $t1, $t1
+	/* Set line size to 32 bytes and disabled cache.  */
+	ori   	$t0, $t0, (GRUB_CPU_LOONGSON_COP0_CACHE_CONFIG_ILINESIZE \
+	                   | GRUB_CPU_LOONGSON_COP0_CACHE_CONFIG_DLINESIZE \
+	                   | GRUB_CPU_LOONGSON_CACHE_ACCELERATED)
+	mtc0	$t0, GRUB_CPU_LOONGSON_COP0_CACHE_CONFIG
+
+	/* Invalidate all I-cache entries.  */
+	srl $t1, $t0, GRUB_CPU_LOONGSON_COP0_CACHE_ISIZE_SHIFT
+	andi $t1, $t1, GRUB_CPU_LOONGSON_COP0_CACHE_SIZE_MASK
+	ori $t2, $zero, (1 << (GRUB_CPU_LOONGSON_COP0_CACHE_SIZE_OFFSET \
+	                       - GRUB_CPU_LOONGSON_CACHE_LINE_SIZE_LOG_BIG \
+	                       - GRUB_CPU_LOONGSON_I_CACHE_LOG_WAYS))
+	sll $t1, $t2, $t1
+	lui $t2, 0x8000
+
+1:	
+	cache GRUB_CPU_LOONGSON_COP0_I_INDEX_INVALIDATE, 0($t2)
+	addiu $t1, $t1, -1
+	bne $t1, $zero, 1b
+	 addiu $t2, $t2, (1 << GRUB_CPU_LOONGSON_COP0_I_INDEX_BIT_OFFSET)
+
+	/* Invalidate all D-cache entries.  */
+	srl $t1, $t0, GRUB_CPU_LOONGSON_COP0_CACHE_DSIZE_SHIFT
+	andi $t1, $t1, GRUB_CPU_LOONGSON_COP0_CACHE_SIZE_MASK
+	ori $t2, $zero, (1 << (GRUB_CPU_LOONGSON_COP0_CACHE_SIZE_OFFSET \
+	                       - GRUB_CPU_LOONGSON_CACHE_LINE_SIZE_LOG_BIG \
+	                       - GRUB_CPU_LOONGSON_D_CACHE_LOG_WAYS))
+	sll $t1, $t2, $t1
+	lui $t2, 0x8000
+	mtc0 $zero, GRUB_CPU_LOONGSON_COP0_CACHE_TAGLO
+	mtc0 $zero, GRUB_CPU_LOONGSON_COP0_CACHE_TAGHI
+1:
+	/* All four ways.  */
+	cache GRUB_CPU_LOONGSON_COP0_D_INDEX_TAG_STORE, 0($t2)
+	cache GRUB_CPU_LOONGSON_COP0_D_INDEX_TAG_STORE, 1($t2)
+	cache GRUB_CPU_LOONGSON_COP0_D_INDEX_TAG_STORE, 2($t2)
+	cache GRUB_CPU_LOONGSON_COP0_D_INDEX_TAG_STORE, 3($t2)
+	addiu $t1, $t1, -1
+	bne $t1, $zero, 1b
+	 addiu $t2, $t2, (1 << GRUB_CPU_LOONGSON_COP0_D_INDEX_BIT_OFFSET)
+
+	/* Invalidate all S-cache entries.  */
+	ori $t1, $zero, (1 << (GRUB_CPU_LOONGSON_SECONDARY_CACHE_LOG_SIZE \
+	                       - GRUB_CPU_LOONGSON_CACHE_LINE_SIZE_LOG_BIG \
+	                       - GRUB_CPU_LOONGSON_S_CACHE_LOG_WAYS))
+	lui $t2, 0x8000
+	mtc0 $zero, GRUB_CPU_LOONGSON_COP0_CACHE_TAGLO
+	mtc0 $zero, GRUB_CPU_LOONGSON_COP0_CACHE_TAGHI
+1:
+	/* All four ways.  */
+	cache GRUB_CPU_LOONGSON_COP0_S_INDEX_TAG_STORE, 0($t2)
+	cache GRUB_CPU_LOONGSON_COP0_S_INDEX_TAG_STORE, 1($t2)
+	cache GRUB_CPU_LOONGSON_COP0_S_INDEX_TAG_STORE, 2($t2)
+	cache GRUB_CPU_LOONGSON_COP0_S_INDEX_TAG_STORE, 3($t2)
+	addiu $t1, $t1, -1
+	bne $t1, $zero, 1b
+	 addiu $t2, $t2, (1 << GRUB_CPU_LOONGSON_COP0_D_INDEX_BIT_OFFSET)
+	
+	/* Finally enable cache.  */
+	mfc0	$t0, GRUB_CPU_LOONGSON_COP0_CACHE_CONFIG
+	addiu 	$t1, $zero, ~GRUB_CPU_LOONGSON_CACHE_TYPE_MASK
+	and     $t0, $t1, $t1
+	ori   	$t0, $t0, GRUB_CPU_LOONGSON_CACHE_CACHED
+	mtc0	$t0, GRUB_CPU_LOONGSON_COP0_CACHE_CONFIG
+
+	lui $a0, %hi(caches_enabled)
+	bal message
+	  addiu $a0, $a0, %lo(caches_enabled)
+	
 	addiu $a0, $zero, -1
 	addiu $a1, $zero, -1
 	addiu $a2, $zero, -1
