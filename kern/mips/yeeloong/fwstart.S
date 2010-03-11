@@ -47,7 +47,7 @@ __start:
 	ori $t4, $zero, 1
 	lui $a0, %hi(no_cs5536)
 1:
-	andi $t4, $t4, 0xffff
+	andi $t4, $t4, ((1 << GRUB_PCI_NUM_DEVICES) - 1)
 	beql  $t4, $zero, fatal
 	 addiu $a0, $a0, %lo(no_cs5536)
 	sw   $t4, GRUB_MACHINE_PCI_CONF_CTRL_REG_LO($t0)
@@ -206,34 +206,34 @@ other_exception:
 	   we need it early.  */
 	/* In: none. Out: none. Clobbered: $t0, $t1, $a0.  */
 serial_hw_init:
-	lui $t0, GRUB_MACHINE_SERIAL_PORT_HI
+	lui $t0, %hi (GRUB_MACHINE_SERIAL_PORT)
 
 	/* Turn off the interrupt.  */
-	sb $zero, (GRUB_MACHINE_SERIAL_PORT_LO + UART_IER)($t0)
+	sb $zero, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_IER)($t0)
 
 	/* Set DLAB.  */
 	ori $t1, $zero, UART_DLAB
-	sb  $t1, (GRUB_MACHINE_SERIAL_PORT_LO + UART_LCR)($t0)
+	sb  $t1, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_LCR)($t0)
 
 	/* Set the baud rate 115200.  */
 	ori $t1, $zero, 2
-	sb $t1, (GRUB_MACHINE_SERIAL_PORT_LO + UART_DLL)($t0) 
-	sb $zero, (GRUB_MACHINE_SERIAL_PORT_LO + UART_DLH)($t0) 
+	sb $t1, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_DLL)($t0) 
+	sb $zero, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_DLH)($t0) 
 
 	/* Set the line status.  */
 	ori $t1, $zero, (UART_NO_PARITY | UART_8BITS_WORD | UART_1_STOP_BIT)
-        sb  $t1, (GRUB_MACHINE_SERIAL_PORT_LO + UART_LCR)($t0)
+        sb  $t1, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_LCR)($t0)
 
 	/* Enable the FIFO.  */
 	ori $t1, $zero, UART_ENABLE_FIFO_TRIGGER1
-	sb $t1, (GRUB_MACHINE_SERIAL_PORT_LO + UART_FCR)($t0)
+	sb $t1, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_FCR)($t0)
 
 	/* Turn on DTR and RTS.  */
 	ori $t1, $zero, UART_ENABLE_DTRRTS
-	sb  $t1, (GRUB_MACHINE_SERIAL_PORT_LO + UART_MCR)($t0)
+	sb  $t1, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_MCR)($t0)
 
-	lui $t0, 0xbff0
-	addiu $t0, $t0, 0x03f8	
+	lui $t0, %hi (GRUB_MACHINE_SERIAL_PORT)
+	addiu $t0, $t0, %lo (GRUB_MACHINE_SERIAL_PORT)
 
 	/* Let message return to original caller.  */
 	lui  $a0, %hi(notification_string)
@@ -242,14 +242,14 @@ serial_hw_init:
 	/* Print message on serial console.  */
 	/* In: $a0 = asciiz message. Out: none. Clobbered: $t0, $t1, $a0.  */
 message:
-	lui $t0, GRUB_MACHINE_SERIAL_PORT_HI
+	lui $t0, %hi (GRUB_MACHINE_SERIAL_PORT)
 1:
-	lb $t1, (GRUB_MACHINE_SERIAL_PORT_LO + UART_LSR)($t0)
+	lb $t1, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_LSR)($t0)
 	andi $t1, $t1, UART_EMPTY_TRANSMITTER
 	beq $t1, $zero, 1b
 	 nop
 	lb  $t1, 0($a0)
-	sb  $t1, (GRUB_MACHINE_SERIAL_PORT_LO + UART_TX)($t0)
+	sb  $t1, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_TX)($t0)
 	bne $t1, $zero, 1b
 	 addiu $a0, $a0, 1
 	jr  $ra
@@ -259,10 +259,10 @@ message:
            In:	$a0. Out: None. Clobbered: $a0, $t0, $t1, $t2
 	*/
 printhex:
-	lui $t0, GRUB_MACHINE_SERIAL_PORT_HI
+	lui $t0, %hi  (GRUB_MACHINE_SERIAL_PORT)
 	ori $t2, $zero, 8
 1:
-	lb $t1, (GRUB_MACHINE_SERIAL_PORT_LO + UART_LSR)($t0)
+	lb $t1, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_LSR)($t0)
 	andi $t1, $t1, UART_EMPTY_TRANSMITTER
 	beq $t1, $zero, 1b
 	 nop
@@ -272,7 +272,7 @@ printhex:
 	 sll  $a0, $a0, 4
 	addiu $t1, $t1, 'A'-10-'0' 
 2:	addiu $t1, $t1, '0'+10
-	sb  $t1, (GRUB_MACHINE_SERIAL_PORT_LO + UART_TX)($t0)
+	sb  $t1, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_TX)($t0)
 	addiu $t2, $t2, -1
 	bne $t2, $zero, 1b
 	 nop
