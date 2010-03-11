@@ -232,9 +232,6 @@ serial_hw_init:
 	ori $t1, $zero, UART_ENABLE_DTRRTS
 	sb  $t1, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_MCR)($t0)
 
-	lui $t0, %hi (GRUB_MACHINE_SERIAL_PORT)
-	addiu $t0, $t0, %lo (GRUB_MACHINE_SERIAL_PORT)
-
 	/* Let message return to original caller.  */
 	lui  $a0, %hi(notification_string)
 	addiu $a0, $a0, %lo(notification_string)
