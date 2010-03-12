@@ -30,12 +30,12 @@
 #define GRUB_MACHINE_PCI_IO_BASE          0xbfd00000
 #define GRUB_MACHINE_PCI_CONFSPACE        0xbfe80000
 
+#define GRUB_MACHINE_PCI_CONF_CTRL_REG_ADDR 0xbfe00118
+
 #ifndef ASM_FILE
-#define GRUB_MACHINE_PCI_CONF_CTRL_REG    (*(volatile grub_uint32_t *) 0xbfe00118)
+#define GRUB_MACHINE_PCI_CONF_CTRL_REG    (*(volatile grub_uint32_t *) \
+					   GRUB_MACHINE_PCI_CONF_CTRL_REG_ADDR)
 #define GRUB_MACHINE_PCI_IO_CTRL_REG      (*(volatile grub_uint32_t *) 0xbfe00110)
-#else
-#define GRUB_MACHINE_PCI_CONF_CTRL_REG_HI    0xbfe0
-#define GRUB_MACHINE_PCI_CONF_CTRL_REG_LO    0x0118
 #endif
 #define GRUB_MACHINE_PCI_WIN_MASK_SIZE    6
 #define GRUB_MACHINE_PCI_WIN_MASK         ((1 << GRUB_MACHINE_PCI_WIN_MASK_SIZE) - 1)

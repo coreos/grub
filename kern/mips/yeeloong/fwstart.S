@@ -40,7 +40,7 @@ __start:
 	/* Resulting value is kept in GRUB_MACHINE_PCI_CONF_CTRL_REG.
 	   This way we don't need to sacrifice a register for it.  */
 	/* We have only one bus (0). Function is 0.  */
-	lui $t0, GRUB_MACHINE_PCI_CONF_CTRL_REG_HI
+	lui $t0, %hi(GRUB_MACHINE_PCI_CONF_CTRL_REG_ADDR)
 	lui $t1, %hi(GRUB_MACHINE_PCI_CONFSPACE)
 	lui $t3, %hi(GRUB_CS5536_PCIID)
 	addiu $t3, $t3, %lo(GRUB_CS5536_PCIID)
@@ -50,7 +50,7 @@ __start:
 	andi $t4, $t4, ((1 << GRUB_PCI_NUM_DEVICES) - 1)
 	beql  $t4, $zero, fatal
 	 addiu $a0, $a0, %lo(no_cs5536)
-	sw   $t4, GRUB_MACHINE_PCI_CONF_CTRL_REG_LO($t0)
+	sw   $t4, %lo(GRUB_MACHINE_PCI_CONF_CTRL_REG_ADDR) ($t0)
 	lw   $t2, (%lo(GRUB_MACHINE_PCI_CONFSPACE) + GRUB_PCI_REG_PCI_ID) ($t1)
 	bnel  $t2, $t3, 1b
 	 sll $t4, $t4, 1
@@ -67,7 +67,8 @@ __start:
 	ori $a1, $zero, GRUB_CS5536_LBAR_GPIO
 	/* Set mask to 0xf and enabled bit to 1.  */
 	bal wrmsr
-	 ori $a2, $zero, 0xf001
+	 ori $a2, $zero, ((GRUB_CS5536_LBAR_MASK_MASK \
+	                  | GRUB_CS5536_LBAR_ENABLE) >> 32)
 
 	/* Set SMBUS LBAR.  */
 	lui $a0, %hi(GRUB_CS5536_MSR_SMB_BAR)
@@ -75,7 +76,8 @@ __start:
 	ori $a1, $zero, GRUB_CS5536_LBAR_SMBUS
 	/* Set mask to 0xf and enabled bit to 1.  */
 	bal wrmsr
-	 ori $a2, $zero, 0xf001
+	 ori $a2, $zero, ((GRUB_CS5536_LBAR_MASK_MASK \
+	                   | GRUB_CS5536_LBAR_ENABLE) >> 32)
 
 	lui $a0, %hi(smbus_enabled)
 	bal message
@@ -430,7 +432,7 @@ write_dumpreg:
 	sd $t2, 0($t4)
 	addiu $t4, $t4, 0x10
 	jr $ra
-	 addiu $t6, $t6, 0x8
+	 addiu $t6, $t6, GRUB_MACHINE_DDR2_REG_SIZE
 
 continue:
 	lui $t4, %hi(GRUB_MACHINE_DDR2_BASE)
@@ -442,7 +444,7 @@ continue:
 	 addiu $t6, $t6, %lo(regdump)
 
 	/* 1 */
-	ori $a1, $a1, 0x50
+	ori $a1, $a1, GRUB_SMB_RAM_START_ADDR
 	move $t8, $zero
 	lui  $t5, 0x0001
 	bal read_spd
@@ -455,7 +457,7 @@ continue:
 	dsll $t8, $t8, 32
 	or $t5, $t5, $t8
 	sd  $t5, 0 ($t4)
-	addiu $t4, $t4, 0x10
+	addiu $t4, $t4, GRUB_MACHINE_DDR2_REG_STEP
 
 	/* 2 */
 	bal write_dumpreg
@@ -509,17 +511,17 @@ continue:
 	or $t5, $t5, $v0
 	sd  $t5, 0 ($t4)
 
-	addiu $t4, $t4, 0x10
+	addiu $t4, $t4, GRUB_MACHINE_DDR2_REG_STEP
 	
 	ori $t7, $zero, 0x16
 
 1:	
 	ld $t2, 0($t6)
 	sd $t2, 0($t4)
-	addiu $t4, $t4, 0x10
+	addiu $t4, $t4, GRUB_MACHINE_DDR2_REG_STEP
 	addiu $t7, $t7, -1
 	bne $t7, $zero, 1b
-	 addiu $t6, $t6, 0x8
+	 addiu $t6, $t6, GRUB_MACHINE_DDR2_REG_SIZE
 	
 	lui $t4, %hi(GRUB_MACHINE_DDR2_BASE)
 	ld  $t5, (%lo(GRUB_MACHINE_DDR2_BASE) + 0x30) ($t4)

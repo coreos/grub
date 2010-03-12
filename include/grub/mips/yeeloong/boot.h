@@ -26,5 +26,7 @@
 
 #define GRUB_MACHINE_DDR2_BASE              0xaffffe00
 #define GRUB_MACHINE_DDR2_REG1_HI_8BANKS    0x00000001
+#define GRUB_MACHINE_DDR2_REG_SIZE          0x8
+#define GRUB_MACHINE_DDR2_REG_STEP          0x10
 
 #endif
