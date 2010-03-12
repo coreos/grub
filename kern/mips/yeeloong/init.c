@@ -29,6 +29,8 @@
 #include <grub/mips/loongson.h>
 #include <grub/cpu/kernel.h>
 #include <grub/cs5536.h>
+#include <grub/term.h>
+#include <grub/machine/ec.h>
 
 extern void grub_video_sm712_init (void);
 extern void grub_video_video_init (void);
@@ -165,20 +167,29 @@ grub_machine_fini (void)
 }
 
 void
-grub_exit (void)
+grub_halt (void)
 {
+  grub_outb (grub_inb (GRUB_CPU_LOONGSON_GPIOCFG)
+	     & ~GRUB_CPU_LOONGSON_SHUTDOWN_GPIO, GRUB_CPU_LOONGSON_GPIOCFG);
+
+  grub_printf ("Shutdown failed\n");
+  grub_refresh ();
   while (1);
 }
 
 void
-grub_halt (void)
+grub_exit (void)
 {
-  while (1);
+  grub_halt ();
 }
 
 void
 grub_reboot (void)
 {
+  grub_write_ec (GRUB_MACHINE_EC_COMMAND_REBOOT);
+
+  grub_printf ("Reboot failed\n");
+  grub_refresh ();
   while (1);
 }
 
