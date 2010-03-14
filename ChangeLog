@@ -1,3 +1,17 @@
+2010-03-14  Colin King  <colin.king@ubuntu.com>
+2010-03-14  Colin Watson  <cjwatson@ubuntu.com>
+
+	Shrink the pre-partition-table part of boot.img by eight bytes.
+
+	* boot/i386/pc/boot.S (ERR): New macro.
+	(chs_mode): Use ERR.
+	(geometry_error): Likewise.
+	(hd_probe_error): Remove.  This is only used once, so we wrwite
+	it inline instead.
+	(read_error): Instead of printing read_error_string, just set up
+	%si and fall through to ...
+	(error_message): ... this new function, also used by ERR.
+
 2010-03-14  Colin Watson  <cjwatson@ubuntu.com>
 
 	Speed up consecutive hostdisk operations on the same device.
