@@ -1,0 +1,4 @@
+2010-03-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/mm.c (grub_real_malloc): Satisfy alignment requirement when
+        extra == 0.

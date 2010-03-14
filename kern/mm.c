@@ -223,7 +223,7 @@ grub_real_malloc (grub_mm_header_t *first, grub_size_t n, grub_size_t align)
 	      q->next = p->next;
 	      p->magic = GRUB_MM_ALLOC_MAGIC;
 	    }
-	  else if (extra == 0 || p->size == n + extra)
+	  else if (align == 1 || p->size == n + extra)
 	    {
 	      /* There might be alignment requirement, when taking it into
 	         account memory block fits in.
@@ -240,10 +240,24 @@ grub_real_malloc (grub_mm_header_t *first, grub_size_t n, grub_size_t align)
 	         | alloc, size=n |        |
 	         +---------------+        v
 	       */
+
 	      p->size -= n;
 	      p += p->size;
 	      p->size = n;
 	      p->magic = GRUB_MM_ALLOC_MAGIC;
+	    }
+	  else if (extra == 0)
+	    {
+	      grub_mm_header_t r;
+
+	      p->magic = GRUB_MM_ALLOC_MAGIC;
+	      p->size = n;
+	      
+	      r = p + extra + n;
+	      r->magic = GRUB_MM_FREE_MAGIC;
+	      r->size = p->size - extra - n;
+	      r->next = p->next;
+	      q->next = r;
 	    }
 	  else
 	    {
