@@ -162,11 +162,12 @@ grub_video_ieee1275_setup (unsigned int width, unsigned int height,
       return err;
     }
 
-  if (grub_ieee1275_get_integer_property (dev, "address", &address,
+  if (grub_ieee1275_get_integer_property (dev, "address", (void *) &address,
 					  sizeof (address), 0))
     return grub_error (GRUB_ERR_IO, "Couldn't retrieve display address.");
 
-  framebuffer.ptr = (void *) address;
+  /* For some reason sparc64 uses 32-bit pointer too.  */
+  framebuffer.ptr = (void *) (grub_addr_t) address;
 
   grub_video_ieee1275_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
 				   grub_video_fbstd_colors);

@@ -1,3 +1,73 @@
+2010-03-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove some redundancy in build system.
+
+	* Makefile.in (TARGET_CFLAGS): Add -ffreestanding.
+	(TARGET_ASFLAGS): Add -nostdinc -fno-builtin.
+	(TARGET_LDFLAGS): Add -nostdlib.
+	(TARGET_IMG_LDFLAGS): Likewise.
+	* commands/lsmmap.c (grub_cmd_lsmmap) [GRUB_MACHINE_EMU]: Don't do
+	anything since mmap isn't available.
+	* conf/any-emu.rmk (kernel_img_SOURCES): Remove commands/boot.c.
+	Add util/time.c.
+	(pkglib_MODULES): Remove reboot.mod.
+	(reboot_mod_SOURCES): Removed.
+	(reboot_mod_CFLAGS): Likewise.
+	(reboot_mod_LDFLAGS): Likewise.
+	* conf/common.rmk (script/lexer.c_DEPENDENCIES): New variable.
+	(MOSTLYCLEANFILES): Add symlist.c kernel_syms.lst.
+	(DEFSYMFILES): Add kernel_syms.lst.
+	(kernel_img_HEADERS): Add common headers.
+	(symlist.c): New target.
+	(kernel_syms.lst): Likewise.
+	(pkglib_MODULES): Add memdisk.mod.
+	(memdisk_mod_SOURCES): New variable.
+	(memdisk_mod_CFLAGS): Likewise.
+	(memdisk_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES): Add reboot.mod.
+	(reboot_mod_SOURCES): New variable.
+	(reboot_mod_CFLAGS): Likewise.
+	(reboot_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES): Add date.mod.
+	(date_mod_SOURCES): New variable.
+	(date_mod_CFLAGS): Likewise.
+	(date_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES): Add datehook.mod.
+	(datehook_mod_SOURCES): New variable.
+	(datehook_mod_CFLAGS): Likewise.
+	(datehook_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES): Add lsmmap.mod.
+	(lsmmap_mod_SOURCES): New variable.
+	(lsmmap_mod_CFLAGS): Likewise.
+	(lsmmap_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES): Add boot.mod.
+	(boot_mod_SOURCES): New variable.
+	(boot_mod_CFLAGS): Likewise.
+	(boot_mod_LDFLAGS): Likewise.
+	* conf/i386-coreboot.rmk: Removed redundant parts.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/mips-yeeloong.rmk: Likewise.
+	* conf/mips.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+	* conf/i386-coreboot.rmk: Moved qemu parts ..
+	* conf/i386-qemu.rmk: ... here
+	* conf/i386-efi.rmk: Moved common parts to...
+	* conf/x86-efi.rmk: ... here.
+	* conf/i386.rmk: Added modules common to all x86 variants.
+	* configure.ac: Add -m32/-m64 to TARGET_ASFLAGS.
+	* disk/memdisk.c: Remove grub/machine/kernel.h.
+	* gensymlist.sh.in: Include symbol.h.
+	* hook/datehook.c: Correct module name.
+	* include/grub/datetime.h (grub_get_datetime) [GRUB_MACHINE_EMU]: Export.
+	(grub_set_datetime) [GRUB_MACHINE_EMU]: Likewise.
+	* include/grub/i386/efi/serial.h: New file.
+	* include/grub/x86_64/efi/serial.h: Likewise.
+	* util/time.c: Likewise.
+	* video/ieee1275.c (grub_video_ieee1275_setup): Handle 64-bit void *.
+
 2010-03-14  Colin King  <colin.king@ubuntu.com>
 2010-03-14  Colin Watson  <cjwatson@ubuntu.com>
 

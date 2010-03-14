@@ -4,7 +4,7 @@ target_machine=yeeloong
 COMMON_CFLAGS += -march=mips3
 COMMON_ASFLAGS += -march=mips3
 
-kernel_img_HEADERS += bitmap.h video.h gfxterm.h font.h bitmap_scale.h bufio.h
+kernel_img_HEADERS += pci.h bitmap.h video.h gfxterm.h font.h bitmap_scale.h bufio.h
 
 include $(srcdir)/conf/mips.mk
 
@@ -64,18 +64,6 @@ datetime_mod_SOURCES = lib/cmos_datetime.c
 datetime_mod_CFLAGS = $(COMMON_CFLAGS)
 datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For date.mod
-pkglib_MODULES += date.mod
-date_mod_SOURCES = commands/date.c
-date_mod_CFLAGS = $(COMMON_CFLAGS)
-date_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For datehook.mod
-pkglib_MODULES += datehook.mod
-datehook_mod_SOURCES = hook/datehook.c
-datehook_mod_CFLAGS = $(COMMON_CFLAGS)
-datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 pkglib_MODULES += linux.mod
 linux_mod_SOURCES = loader/$(target_cpu)/linux.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -84,4 +72,3 @@ linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 sbin_SCRIPTS += grub-install
 grub_install_SOURCES = util/grub-install.in
-

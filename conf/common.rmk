@@ -1,5 +1,8 @@
 # -*- makefile -*-
 
+# Used by various components.  These rules need to precede them.
+script/lexer.c_DEPENDENCIES = grub_script.tab.h
+
 sbin_UTILITIES += grub-mkdevicemap
 grub_mkdevicemap_SOURCES = gnulib/progname.c util/grub-mkdevicemap.c \
 	util/deviceiter.c \
@@ -99,6 +102,21 @@ grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c
 	script/main.c script/script.c script/function.c script/lexer.c \
 	kern/handler.c kern/err.c kern/parser.c kern/list.c \
 	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c
+
+MOSTLYCLEANFILES += symlist.c kernel_syms.lst
+DEFSYMFILES += kernel_syms.lst
+
+kernel_img_HEADERS += boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
+	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
+	machine/memory.h machine/loader.h machine/kernel.h \
+	list.h handler.h command.h i18n.h env_private.h
+
+symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
+	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
+
+kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
+	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # For the parser.
 grub_script.tab.c grub_script.tab.h: script/parser.y
@@ -774,6 +792,42 @@ pkglib_MODULES += password_pbkdf2.mod
 password_pbkdf2_mod_SOURCES = commands/password_pbkdf2.c
 password_pbkdf2_mod_CFLAGS = $(COMMON_CFLAGS)
 password_pbkdf2_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For memdisk.mod.
+pkglib_MODULES += memdisk.mod
+memdisk_mod_SOURCES = disk/memdisk.c
+memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
+memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For reboot.mod.
+pkglib_MODULES += reboot.mod
+reboot_mod_SOURCES = commands/reboot.c
+reboot_mod_CFLAGS = $(COMMON_CFLAGS)
+reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For date.mod
+pkglib_MODULES += date.mod
+date_mod_SOURCES = commands/date.c
+date_mod_CFLAGS = $(COMMON_CFLAGS)
+date_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datehook.mod
+pkglib_MODULES += datehook.mod
+datehook_mod_SOURCES = hook/datehook.c
+datehook_mod_CFLAGS = $(COMMON_CFLAGS)
+datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For lsmmap.mod
+pkglib_MODULES += lsmmap.mod
+lsmmap_mod_SOURCES = commands/lsmmap.c
+lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
+lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For boot.mod.
+pkglib_MODULES += boot.mod
+boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
+boot_mod_CFLAGS = $(COMMON_CFLAGS)
+boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 bin_UTILITIES += grub-mkpasswd-pbkdf2
 grub_mkpasswd_pbkdf2_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c util/grub-mkpasswd-pbkdf2.c lib/crypto.c lib/libgcrypt-grub/cipher/sha512.c lib/pbkdf2.c util/misc.c kern/err.c
