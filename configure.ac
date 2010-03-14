@@ -51,6 +51,7 @@ fi
 
 case "$target_cpu" in
   i[[3456]]86)	target_cpu=i386 ;;
+  amd64)	target_cpu=x86_64 ;;
   sparc)	target_cpu=sparc64 ;;
   mipsel|mips64el)
                 target_cpu=mips;    
@@ -521,6 +522,19 @@ enable_efiemu=no
 fi
 AC_SUBST([enable_efiemu])
 
+AC_CACHE_CHECK([whether -nostdinc -isystem works], [grub_cv_cc_isystem], [
+  SAVED_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$TARGET_CPPFLAGS -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
+int va_arg_func (int fixed, va_list args);]], [[]])],
+      [grub_cv_cc_isystem=yes],
+      [grub_cv_cc_isystem=no])
+  CPPFLAGS="$SAVED_CPPFLAGS"
+])
+
+if test x"$grub_cv_cc_isystem" = xyes ; then
+  TARGET_CPPFLAGS="$TARGET_CPPFLAGS -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
+fi
 
 # Restore the flags.
 CC="$tmp_CC"
@@ -687,11 +701,11 @@ fi
 
 if test x"$grub_mkfont_excuse" = x ; then
   # Check for freetype libraries.
-  SAVED_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS $freetype_cflags"
+  SAVED_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS $freetype_cflags"
   AC_CHECK_HEADERS([ft2build.h], [],
   	[grub_mkfont_excuse=["need freetype2 headers"]])
-  CFLAGS="$SAVED_CFLAGS"
+  CPPFLAGS="$SAVED_CPPFLAGS"
 fi
 
 if test x"$enable_grub_mkfont" = xyes && test x"$grub_mkfont_excuse" != x ; then

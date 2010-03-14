@@ -448,8 +448,8 @@ grub_multiboot_set_bootdev (void)
   dev = grub_device_open (0);
   if (dev && dev->disk && dev->disk->partition)
     {
-
-      p = dev->disk->partition->partmap->get_name (dev->disk->partition);
+      char *p0;
+      p = p0 = dev->disk->partition->partmap->get_name (dev->disk->partition);
       if (p)
 	{
 	  if ((p[0] >= '0') && (p[0] <= '9'))
@@ -463,7 +463,7 @@ grub_multiboot_set_bootdev (void)
 	  if ((p[0] >= 'a') && (p[0] <= 'z'))
 	    part = p[0] - 'a';
 	}
-      grub_free (p);
+      grub_free (p0);
     }
   if (dev)
     grub_device_close (dev);

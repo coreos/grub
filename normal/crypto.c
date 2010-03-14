@@ -95,7 +95,7 @@ read_crypto_list (void)
       return;
     }
 
-  /* Override previous commands.lst.  */
+  /* Override previous crypto.lst.  */
   grub_crypto_spec_free ();
 
   for (;; grub_free (buf))
