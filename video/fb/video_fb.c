@@ -1006,11 +1006,13 @@ grub_video_fb_scroll (grub_video_color_t color, int dx, int dy)
 	{                                                            \
 	  /* 3b. Move data downwards.  */                            \
 	  dst = (void *) grub_video_fb_get_video_ptr (&target,	     \
-					     dst_x + width - 1,      \
+					              dst_x + width, \
 					     dst_y + height - 1);    \
 	  src = (void *) grub_video_fb_get_video_ptr (&target,	     \
-					     src_x + width - 1,      \
+					              src_x + width, \
 					     src_y + height - 1);    \
+	  dst--;                                                     \
+          src--;                                                     \
 	  for (j = 0; j < height; j++)                               \
 	    {                                                        \
 	      for (i = 0; i < linelen; i++)                          \

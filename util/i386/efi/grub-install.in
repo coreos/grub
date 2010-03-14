@@ -180,6 +180,14 @@ for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst; do
     cp -f $file ${grubdir} || exit 1
 done
 
+# Copy gettext files
+mkdir -p ${grubdir}/locale/
+for file in ${grubdir}/locale/*.mo ${pkglibdir}/locale/*.mo; do
+    if test -f "$file"; then
+        cp -f "$file" ${grubdir}/locale/
+    fi
+done
+
 if ! test -f ${grubdir}/grubenv; then
     $grub_editenv ${grubdir}/grubenv create
 fi

@@ -66,7 +66,7 @@ grub_gfxmenu_view_new (const char *theme_path,
   view->screen.width = width;
   view->screen.height = height;
 
-  default_font = grub_font_get ("Helvetica 12");
+  default_font = grub_font_get ("Unknown Regular 16");
   default_fg_color = grub_gui_color_rgb (0, 0, 0);
   default_bg_color = grub_gui_color_rgb (255, 255, 255);
 

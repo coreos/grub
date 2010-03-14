@@ -1121,14 +1121,13 @@ grub_gzio_open (grub_file_t io, int transparent)
   if (! file)
     return 0;
 
-  gzio = grub_malloc (sizeof (*gzio));
+  gzio = grub_zalloc (sizeof (*gzio));
   if (! gzio)
     {
       grub_free (file);
       return 0;
     }
 
-  grub_memset (gzio, 0, sizeof (*gzio));
   gzio->file = io;
 
   file->device = io->device;

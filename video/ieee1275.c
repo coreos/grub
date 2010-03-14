@@ -59,8 +59,8 @@ find_display (void)
   {
     if (grub_strcmp (alias->type, "display") == 0)
       {
-	grub_dprintf ("video", "Found display %s\n", alias->name);
-	display = grub_strdup (alias->name);
+	grub_dprintf ("video", "Found display %s\n", alias->path);
+	display = grub_strdup (alias->path);
 	return 1;
       }
     return 0;

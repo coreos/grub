@@ -31,8 +31,8 @@ find_rtc (void)
   {
     if (grub_strcmp (alias->type, "rtc") == 0)
       {
-	grub_dprintf ("datetime", "Found RTC %s\n", alias->name);
-	rtc = grub_strdup (alias->name);
+	grub_dprintf ("datetime", "Found RTC %s\n", alias->path);
+	rtc = grub_strdup (alias->path);
 	return 1;
       }
     return 0;
@@ -94,7 +94,7 @@ grub_get_datetime (struct grub_datetime *datetime)
 grub_err_t
 grub_set_datetime (struct grub_datetime *datetime)
 {
-  struct get_time_args
+  struct set_time_args
   {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_cell_t method;

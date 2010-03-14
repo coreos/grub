@@ -14,6 +14,7 @@ configuring the GRUB.
 * GCC 4.1.3 or later
 * GNU Make
 * GNU Bison 2.3 or later
+* GNU gettext 0.17 or later
 * GNU binutils 2.9.1.0.23 or later
 * Other standard GNU/Unix tools
 
@@ -24,6 +25,10 @@ need the following.
 * Python 2.5.2 or later
 * Autoconf 2.60 or later
 * Automake 1.10.1 or later
+
+Prerequisites for make-check:
+
+* qemu, specifically the binary 'qemu-system-i386'
 
 Configuring the GRUB
 ====================

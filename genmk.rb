@@ -209,7 +209,7 @@ endif
 -include #{dep}
 
 clean-module-#{extra_target}.#{@rule_count}:
-	rm -f #{command} #{fs} #{partmap} #{handler} #{parttool} #{video}
+	rm -f #{command} #{fs} #{partmap} #{handler} #{parttool} #{video} #{terminal}
 
 CLEAN_MODULE_TARGETS += clean-module-#{extra_target}.#{@rule_count}
 

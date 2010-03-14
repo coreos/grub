@@ -1126,6 +1126,7 @@ you forget a command, you can run the command @command{help}
 * insmod::                      Insert a module
 * keystatus::                   Check key modifier status
 * ls::                          List devices or files
+* play::                        Play a tune
 * reboot::                      Reboot your computer
 * set::                         Set an environment variable
 * unset::                       Unset an environment variable
@@ -1361,6 +1362,24 @@ syntax}), then list all files at the root directory of that device.
 
 If the argument is a directory given as an absolute file name (@pxref{File
 name syntax}), then list the contents of that directory.
+@end deffn
+
+
+@node play
+@subsection play
+
+@deffn Command play file | tempo [pitch1 duration1] [pitch2 duration2] ...
+Plays a tune
+
+If the argument is a file name (@pxref{File name syntax}), play the tune
+recorded in it.  The file format is first the tempo as an unsigned 32bit
+little-endian number, then pairs of unsigned 16bit little-endian numbers for
+pitch and duration pairs.
+
+If the arguments are a series of numbers, play the inline tune.
+
+The tempo is the base for all note durations. 60 gives a 1-second base, 120
+gives a half-second base, etc.  Pitches are Hz.
 @end deffn
 
 
