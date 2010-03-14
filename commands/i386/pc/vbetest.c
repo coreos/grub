@@ -24,6 +24,7 @@
 #include <grub/term.h>
 #include <grub/machine/init.h>
 #include <grub/machine/vbe.h>
+#include <grub/video.h>
 #include <grub/err.h>
 #include <grub/i18n.h>
 

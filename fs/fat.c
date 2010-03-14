@@ -592,6 +592,7 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
     }
 
   grub_free (filename);
+  grub_free (unibuf);
 
   return grub_errno;
 }

@@ -84,7 +84,7 @@ grub_read_hook_datetime (struct grub_env_var *var,
   return buf;
 }
 
-GRUB_MOD_INIT(datetime)
+GRUB_MOD_INIT(datehook)
 {
   int i;
 
@@ -93,7 +93,7 @@ GRUB_MOD_INIT(datetime)
                                  grub_read_hook_datetime, 0);
 }
 
-GRUB_MOD_FINI(datetime)
+GRUB_MOD_FINI(datehook)
 {
   int i;
 

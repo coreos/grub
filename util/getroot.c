@@ -460,7 +460,8 @@ grub_guess_root_device (const char *dir)
 
   return os_dev;
 }
-int
+
+static int
 grub_util_is_dmraid (const char *os_dev)
 {
   if (! strncmp (os_dev, "/dev/mapper/nvidia_", 19))

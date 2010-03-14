@@ -57,7 +57,7 @@ static grub_err_t
 hash_file (grub_file_t file, const gcry_md_spec_t *hash, void *result)
 {
   grub_uint8_t context[hash->contextsize];
-  char *readbuf[4096];
+  grub_uint8_t readbuf[4096];
 
   grub_memset (context, 0, sizeof (context));
   hash->init (context);

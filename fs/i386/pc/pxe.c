@@ -173,12 +173,15 @@ static struct grub_disk_dev grub_pxe_dev =
   };
 
 static grub_err_t
-grub_pxefs_dir (grub_device_t device __attribute__ ((unused)),
+grub_pxefs_dir (grub_device_t device,
 		const char *path  __attribute__ ((unused)),
 		int (*hook) (const char *filename,
 			     const struct grub_dirhook_info *info)
 		__attribute__ ((unused)))
 {
+  if (device->disk->dev->id != GRUB_DISK_DEVICE_PXE_ID)
+    return grub_error (GRUB_ERR_IO, "not a pxe disk");
+
   return GRUB_ERR_NONE;
 }
 
@@ -193,6 +196,9 @@ grub_pxefs_open (struct grub_file *file, const char *name)
   struct grub_pxe_data *data;
   struct grub_pxe_disk_data *disk_data = file->device->disk->data;
   grub_file_t file_int, bufio;
+
+  if (file->device->disk->dev->id != GRUB_DISK_DEVICE_PXE_ID)
+    return grub_error (GRUB_ERR_IO, "not a pxe disk");
 
   if (curr_file != 0)
     {
@@ -562,21 +568,21 @@ GRUB_MOD_INIT(pxe)
 
       buf = grub_xasprintf ("%d", grub_pxe_blksize);
       if (buf)
-	grub_env_set ("net_pxe_blksize", buf);
+	grub_env_set ("pxe_blksize", buf);
       grub_free (buf);
 
       set_ip_env ("pxe_default_server", grub_pxe_default_server_ip);
       set_ip_env ("pxe_default_gateway", grub_pxe_default_gateway_ip);
       set_ip_env ("net_pxe_ip", grub_pxe_your_ip);
-      grub_register_variable_hook ("net_pxe_default_server", 0,
+      grub_register_variable_hook ("pxe_default_server", 0,
 				   grub_env_write_pxe_default_server);
-      grub_register_variable_hook ("net_pxe_default_gateway", 0,
+      grub_register_variable_hook ("pxe_default_gateway", 0,
 				   grub_env_write_pxe_default_gateway);
 
       /* XXX: Is it possible to change IP in PXE?  */
       grub_register_variable_hook ("net_pxe_ip", 0,
 				   grub_env_write_readonly);
-      grub_register_variable_hook ("net_pxe_blksize", 0,
+      grub_register_variable_hook ("pxe_blksize", 0,
 				   grub_env_write_pxe_blocksize);
       grub_disk_dev_register (&grub_pxe_dev);
       grub_fs_register (&grub_pxefs_fs);

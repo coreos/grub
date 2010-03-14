@@ -196,7 +196,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     {
       grub_elf_close (elf);
       return grub_error (GRUB_ERR_UNKNOWN_OS,
-			 "This ELF file is not of the right type\n");
+			 "this ELF file is not of the right type\n");
     }
 
   /* Release the previously used memory.  */
@@ -236,7 +236,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (grub_elf_is_elf64 (elf))
     err = grub_linux_load64 (elf, &extra, size);
   else
-    err = grub_error (GRUB_ERR_BAD_FILE_TYPE, "Unknown ELF class");
+    err = grub_error (GRUB_ERR_BAD_FILE_TYPE, "unknown ELF class");
 
   grub_elf_close (elf);
 
@@ -325,13 +325,13 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_size_t overhead;
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "No initrd specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
 
   if (!loaded)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load Linux first.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load Linux first.");
 
   if (initrd_loaded)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Only one initrd can be loaded.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "only one initrd can be loaded.");
 
   file = grub_file_open (argv[0]);
   if (! file)
@@ -353,7 +353,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_file_read (file, playground + linux_size + overhead, size) != size)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       grub_file_close (file);
 
       return grub_errno;
