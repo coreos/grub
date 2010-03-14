@@ -43,4 +43,6 @@ extern int EXPORT_FUNC(grub_ieee1275_alloc_physmem) (grub_addr_t *paddr,
 						     grub_size_t size,
 						     grub_uint32_t align);
 
+extern grub_addr_t EXPORT_VAR (grub_ieee1275_original_stack);
+
 #endif /* ! GRUB_IEEE1275_MACHINE_HEADER */
