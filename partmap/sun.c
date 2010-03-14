@@ -91,6 +91,7 @@ sun_partition_map_iterate (grub_disk_t disk,
   struct grub_disk raw;
   struct grub_sun_block block;
   int partnum;
+  grub_err_t err;
 
   raw = *disk;
   raw.partition = 0;
@@ -100,36 +101,47 @@ sun_partition_map_iterate (grub_disk_t disk,
     return grub_errno;
 
   p->partmap = &grub_sun_partition_map;
-  if (grub_disk_read (&raw, 0, 0, sizeof (struct grub_sun_block),
-		      &block) == GRUB_ERR_NONE)
+  err = grub_disk_read (&raw, 0, 0, sizeof (struct grub_sun_block),
+			&block);
+  if (err)
     {
-      if (GRUB_PARTMAP_SUN_MAGIC != grub_be_to_cpu16 (block.magic))
-	grub_error (GRUB_ERR_BAD_PART_TABLE, "not a sun partition table");
+      grub_free (p);
+      return err;
+    }
 
-      if (! grub_sun_is_valid (&block))
-	grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid checksum");
+  if (GRUB_PARTMAP_SUN_MAGIC != grub_be_to_cpu16 (block.magic))
+    {
+      grub_free (p);
+      return grub_error (GRUB_ERR_BAD_PART_TABLE,
+			 "not a sun partition table");
+    }
 
-      /* Maybe another error value would be better, because partition
-	 table _is_ recognized but invalid.  */
-      for (partnum = 0; partnum < GRUB_PARTMAP_SUN_MAX_PARTS; partnum++)
+  if (! grub_sun_is_valid (&block))
+    {
+      grub_free (p);
+      return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid checksum");
+    }
+
+  /* Maybe another error value would be better, because partition
+     table _is_ recognized but invalid.  */
+  for (partnum = 0; partnum < GRUB_PARTMAP_SUN_MAX_PARTS; partnum++)
+    {
+      struct grub_sun_partition_descriptor *desc;
+      
+      if (block.infos[partnum].id == 0
+	  || block.infos[partnum].id == GRUB_PARTMAP_SUN_WHOLE_DISK_ID)
+	continue;
+
+      desc = &block.partitions[partnum];
+      p->start = ((grub_uint64_t) grub_be_to_cpu32 (desc->start_cylinder)
+		  * grub_be_to_cpu16 (block.ntrks)
+		  * grub_be_to_cpu16 (block.nsect));
+      p->len = grub_be_to_cpu32 (desc->num_sectors);
+      p->index = partnum;
+      if (p->len)
 	{
-	  struct grub_sun_partition_descriptor *desc;
-
-	  if (block.infos[partnum].id == 0
-	      || block.infos[partnum].id == GRUB_PARTMAP_SUN_WHOLE_DISK_ID)
-	    continue;
-
-	  desc = &block.partitions[partnum];
-	  p->start = ((grub_uint64_t) grub_be_to_cpu32 (desc->start_cylinder)
-		      * grub_be_to_cpu16 (block.ntrks)
-		      * grub_be_to_cpu16 (block.nsect));
-	  p->len = grub_be_to_cpu32 (desc->num_sectors);
-	  p->index = partnum;
-	  if (p->len)
-	    {
-	      if (hook (disk, p))
-		partnum = GRUB_PARTMAP_SUN_MAX_PARTS;
-	    }
+	  if (hook (disk, p))
+	    partnum = GRUB_PARTMAP_SUN_MAX_PARTS;
 	}
     }
 

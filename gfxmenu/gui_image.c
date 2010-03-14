@@ -31,6 +31,7 @@ struct grub_gui_image
   grub_gui_container_t parent;
   grub_video_rect_t bounds;
   char *id;
+  char *theme_dir;
   struct grub_video_bitmap *raw_bitmap;
   struct grub_video_bitmap *bitmap;
 };
@@ -208,8 +209,28 @@ static grub_err_t
 image_set_property (void *vself, const char *name, const char *value)
 {
   grub_gui_image_t self = vself;
-  if (grub_strcmp (name, "file") == 0)
-    return load_image (self, value);
+  if (grub_strcmp (name, "theme_dir") == 0)
+    {
+      grub_free (self->theme_dir);
+      self->theme_dir = grub_strdup (value);
+    }
+  else if (grub_strcmp (name, "file") == 0)
+    {
+      char *absvalue;
+      grub_err_t err;
+
+      /* Resolve to an absolute path.  */
+      if (! self->theme_dir)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "unspecified theme_dir");
+      absvalue = grub_resolve_relative_path (self->theme_dir, value);
+      if (! absvalue)
+	return grub_errno;
+
+      err = load_image (self, absvalue);
+      grub_free (absvalue);
+
+      return err;
+    }
   else if (grub_strcmp (name, "id") == 0)
     {
       grub_free (self->id);

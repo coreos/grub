@@ -23,11 +23,14 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/time.h>
+#include <grub/machine/boot.h>
 #include <grub/machine/console.h>
 #include <grub/machine/kernel.h>
 #include <grub/machine/time.h>
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
+
+grub_addr_t grub_ieee1275_original_stack;
 
 void
 grub_exit (void)
@@ -104,7 +107,8 @@ grub_machine_set_prefix (void)
 static void
 grub_heap_init (void)
 {
-  grub_mm_init_region ((void *)(long)0x4000UL, 0x200000 - 0x4000);
+  grub_mm_init_region ((void *) (grub_modules_get_end ()
+				 + GRUB_KERNEL_MACHINE_STACK_SIZE), 0x200000);
 }
 
 static void

@@ -102,6 +102,7 @@ union grub_aout_header
 #define AOUT_MID_I386		134	/* i386 BSD binary */
 #define AOUT_MID_SPARC		138	/* sparc */
 #define	AOUT_MID_HP200		200	/* hp200 (68010) BSD binary */
+#define	AOUT_MID_SUN            0x103
 #define	AOUT_MID_HP300		300	/* hp300 (68020+68881) BSD binary */
 #define	AOUT_MID_HPUX		0x20C	/* hp200/300 HP-UX binary */
 #define	AOUT_MID_HPUX800	0x20B	/* hp800 HP-UX binary */
@@ -114,10 +115,14 @@ union grub_aout_header
 #define AOUT_GETMID(header) ((header).a_midmag >> 16) & 0x03ff)
 #define AOUT_GETFLAG(header) ((header).a_midmag >> 26) & 0x3f)
 
+#ifndef GRUB_UTIL
+
 int EXPORT_FUNC(grub_aout_get_type) (union grub_aout_header *header);
 
 grub_err_t EXPORT_FUNC(grub_aout_load) (grub_file_t file, int offset,
                                         grub_addr_t load_addr, int load_size,
                                         grub_addr_t bss_end_addr);
+
+#endif
 
 #endif /* ! GRUB_AOUT_HEADER */

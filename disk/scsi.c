@@ -208,12 +208,14 @@ grub_scsi_iterate (int (*hook) (const char *name))
       for (i = 0; i < luns; i++)
 	{
 	  char *sname;
+	  int ret;
 	  sname = grub_xasprintf ("%s%c", name, 'a' + i);
 	  if (!sname)
 	    return 1;
-	  if (hook (sname))
-	    return 1;
+	  ret = hook (sname);
 	  grub_free (sname);
+	  if (ret)
+	    return 1;
 	}
       return 0;
     }

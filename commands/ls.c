@@ -87,14 +87,13 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
   int print_files_long (const char *filename,
 			const struct grub_dirhook_info *info)
     {
-      char *pathname;
-
       if ((! all) && (filename[0] == '.'))
 	return 0;
 
       if (! info->dir)
 	{
 	  grub_file_t file;
+	  char *pathname;
 
 	  if (dirname[grub_strlen (dirname) - 1] == '/')
 	    pathname = grub_xasprintf ("%s%s", dirname, filename);
@@ -110,6 +109,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	  if (! file)
 	    {
 	      grub_errno = 0;
+	      grub_free (pathname);
 	      return 0;
 	    }
 
@@ -144,6 +144,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 
 	    }
 	  grub_file_close (file);
+	  grub_free (pathname);
 	}
       else
 	grub_printf ("%-12s", "DIR");

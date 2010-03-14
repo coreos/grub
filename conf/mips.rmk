@@ -13,7 +13,7 @@ script/lexer.c_DEPENDENCIES = grub_script.tab.h
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
-kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+kernel_img_HEADERS += boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h reader.h \
 	symbol.h term.h time.h types.h loader.h partition.h \
 	msdos_partition.h machine/kernel.h handler.h list.h \
@@ -72,11 +72,5 @@ relocator_mod_SOURCES = lib/$(target_cpu)/relocator.c lib/$(target_cpu)/relocato
 relocator_mod_CFLAGS = $(COMMON_CFLAGS)
 relocator_mod_ASFLAGS = $(COMMON_ASFLAGS)
 relocator_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-pkglib_MODULES += linux.mod
-linux_mod_SOURCES = loader/$(target_cpu)/linux.c
-linux_mod_CFLAGS = $(COMMON_CFLAGS)
-linux_mod_ASFLAGS = $(COMMON_ASFLAGS)
-linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

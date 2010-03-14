@@ -110,8 +110,8 @@ int EXPORT_FUNC(grub_dl_unref) (grub_dl_t mod);
 #endif
 void EXPORT_FUNC(grub_dl_iterate) (int (*hook) (grub_dl_t mod));
 grub_dl_t EXPORT_FUNC(grub_dl_get) (const char *name);
-grub_err_t EXPORT_FUNC(grub_dl_register_symbol) (const char *name, void *addr,
-					    grub_dl_t mod);
+grub_err_t grub_dl_register_symbol (const char *name, void *addr,
+				    grub_dl_t mod);
 
 grub_err_t grub_arch_dl_check_header (void *ehdr);
 grub_err_t grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr);
