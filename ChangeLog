@@ -1,3 +1,7 @@
+2010-03-14  Thorsten Glaser <tg@mirbsd.org>
+
+	* util/grub-mkrescue.in: Base ISO UUID on UTC.
+
 2010-03-08  Matt Kraai  <kraai@ftbfs.org>
 
 	* util/i386/pc/grub-setup.c (setup): Fix a grammatical error (Debian

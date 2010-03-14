@@ -145,7 +145,7 @@ if test -e "${coreboot_dir}" ; then
     memdisk_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
     mkdir -p ${memdisk_dir}/boot/grub
     # obtain date-based UUID
-    iso_uuid=$(date +%Y-%m-%d-%H-%M-%S-00)
+    iso_uuid=$(date -u +%Y-%m-%d-%H-%M-%S-00)
 
     modules="$(cat ${coreboot_dir}/partmap.lst) ${modules}"
     cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
