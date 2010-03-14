@@ -333,10 +333,37 @@ grub_ata_identify (struct grub_ata_device *dev)
 }
 
 static grub_err_t
+check_device (struct grub_ata_device *dev)
+{
+  grub_ata_regset (dev, GRUB_ATA_REG_DISK, dev->device << 4);
+  grub_ata_wait ();
+
+  /* Try to detect if the port is in use by writing to it,
+     waiting for a while and reading it again.  If the value
+     was preserved, there is a device connected.  */
+  grub_ata_regset (dev, GRUB_ATA_REG_SECTORS, 0x5A);
+  grub_ata_wait ();
+  grub_uint8_t sec = grub_ata_regget (dev, GRUB_ATA_REG_SECTORS);
+  grub_dprintf ("ata", "sectors=0x%x\n", sec);
+  if (sec != 0x5A)
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no device connected");
+
+  /* The above test may detect a second (slave) device
+     connected to a SATA controller which supports only one
+     (master) device.  It is not safe to use the status register
+     READY bit to check for controller channel existence.  Some
+     ATAPI commands (RESET, DIAGNOSTIC) may clear this bit.  */
+
+  /* Use the IDENTIFY DEVICE command to query the device.  */
+  return grub_ata_identify (dev);
+}
+
+static grub_err_t
 grub_ata_device_initialize (int port, int device, int addr, int addr2)
 {
   struct grub_ata_device *dev;
   struct grub_ata_device **devp;
+  grub_err_t err;
 
   grub_dprintf ("ata", "detecting device %d,%d (0x%x, 0x%x)\n",
 		port, device, addr, addr2);
@@ -352,38 +379,13 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
   dev->ioaddress2 = addr2 + GRUB_MACHINE_PCI_IO_BASE;
   dev->next = NULL;
 
-  grub_ata_regset (dev, GRUB_ATA_REG_DISK, dev->device << 4);
-  grub_ata_wait ();
-
-  /* Try to detect if the port is in use by writing to it,
-     waiting for a while and reading it again.  If the value
-     was preserved, there is a device connected.  */
-  grub_ata_regset (dev, GRUB_ATA_REG_SECTORS, 0x5A);
-  grub_ata_wait ();
-  grub_uint8_t sec = grub_ata_regget (dev, GRUB_ATA_REG_SECTORS);
-  grub_dprintf ("ata", "sectors=0x%x\n", sec);
-  if (sec != 0x5A)
-    {
-      grub_free(dev);
-      return 0;
-    }
-
-  /* The above test may detect a second (slave) device
-     connected to a SATA controller which supports only one
-     (master) device.  It is not safe to use the status register
-     READY bit to check for controller channel existence.  Some
-     ATAPI commands (RESET, DIAGNOSTIC) may clear this bit.  */
-
-  /* Use the IDENTIFY DEVICE command to query the device.  */
-  if (grub_ata_identify (dev))
-    {
-      grub_free (dev);
-      return 0;
-    }
-
   /* Register the device.  */
   for (devp = &grub_ata_devices; *devp; devp = &(*devp)->next);
   *devp = dev;
+
+  err = check_device (dev);
+  if (err)
+    grub_print_error ();
 
   return 0;
 }
@@ -667,6 +669,14 @@ grub_ata_iterate (int (*hook) (const char *name))
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
       char devname[10];
+      grub_err_t err;
+
+      err = check_device (dev);
+      if (err)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
 
       if (dev->atapi)
 	continue;
@@ -685,6 +695,7 @@ static grub_err_t
 grub_ata_open (const char *name, grub_disk_t disk)
 {
   struct grub_ata_device *dev;
+  grub_err_t err;
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
@@ -700,6 +711,11 @@ grub_ata_open (const char *name, grub_disk_t disk)
 
   if (dev->atapi)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not an ATA harddisk");
+
+  err = check_device (dev);
+
+  if (err)
+    return err;
 
   disk->total_sectors = dev->size;
 
@@ -757,6 +773,16 @@ grub_atapi_iterate (int (*hook) (const char *name, int luns))
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
       char devname[10];
+
+      grub_err_t err;
+
+      err = check_device (dev);
+      if (err)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
+
       grub_snprintf (devname, sizeof (devname),
 		     "ata%d", dev->port * 2 + dev->device);
 
@@ -827,6 +853,7 @@ grub_atapi_open (const char *name, struct grub_scsi *scsi)
 {
   struct grub_ata_device *dev;
   struct grub_ata_device *devfnd = 0;
+  grub_err_t err;
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
@@ -844,6 +871,13 @@ grub_atapi_open (const char *name, struct grub_scsi *scsi)
   grub_dprintf ("ata", "opening ATAPI dev `%s'\n", name);
 
   if (! devfnd)
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such ATAPI device");
+
+  err = check_device (devfnd);
+  if (err)
+    return err;
+
+  if (! devfnd->atapi)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such ATAPI device");
 
   scsi->data = devfnd;
