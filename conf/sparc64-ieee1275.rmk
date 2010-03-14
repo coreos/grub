@@ -70,7 +70,8 @@ util/sparc64/ieee1275/grub-setup.c_DEPENDENCIES = grub_setup_init.h
 grub_setup_SOURCES = util/sparc64/ieee1275/grub-setup.c util/hostdisk.c	\
 	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
 	kern/err.c kern/misc.c kern/parser.c kern/partition.c	\
-	kern/file.c kern/fs.c kern/env.c fs/fshelp.c		\
+	kern/file.c kern/fs.c kern/env.c kern/list.c		\
+	fs/fshelp.c						\
 	\
 	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c		\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c	\
