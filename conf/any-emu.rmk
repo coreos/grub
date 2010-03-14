@@ -6,16 +6,15 @@ COMMON_CFLAGS += -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=includ
 util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
 kernel_img_RELOCATABLE = yes
 pkglib_PROGRAMS = kernel.img
-kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
-	kern/err.c kern/list.c kern/handler.c				\
-	kern/command.c kern/corecmd.c kern/file.c			\
-	kern/fs.c kern/main.c kern/misc.c kern/parser.c			\
-	kern/partition.c kern/term.c					\
+kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c kern/env.c	\
+	kern/err.c kern/list.c kern/handler.c kern/command.c		\
+	kern/corecmd.c kern/file.c kern/fs.c kern/main.c kern/misc.c	\
+	kern/parser.c kern/partition.c kern/term.c			\
 	kern/rescue_reader.c kern/rescue_parser.c			\
-	\
-	util/console.c  util/grub-emu.c util/misc.c			\
-	util/hostdisk.c util/getroot.c util/time.c			\
-	\
+									\
+	util/console.c util/grub-emu.c util/misc.c util/hostdisk.c	\
+	util/getroot.c util/time.c					\
+									\
 	grub_emu_init.c gnulib/progname.c util/hostfs.c disk/host.c
 kernel_img_CFLAGS = $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Wno-undef -I$(srcdir)/gnulib
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
