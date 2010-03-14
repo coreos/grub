@@ -1,5 +1,21 @@
 2010-03-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* conf/powerpc-ieee1275.rmk (pkglib_MODULES): Add datetime.mod,
+	date.mod, datehook.mod.
+	(datetime_mod_SOURCES): New variable.
+	(datetime_mod_CFLAGS): Likewise.
+	(datetime_mod_LDFLAGS): Likewise.
+	(date_mod_SOURCES): Likewise.
+	(date_mod_CFLAGS): Likewise.
+	(date_mod_LDFLAGS): Likewise.
+	(datehook_mod_SOURCES): Likewise.
+	(datehook_mod_CFLAGS): Likewise.
+	(datehook_mod_LDFLAGS): Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* lib/ieee1275/datetime.c: New file.
+
+2010-03-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/powerpc-ieee1275.rmk (pkglib_MODULES): Add ieee1275_fb.mod.
 	(ieee1275_fb_mod_SOURCES): New variable.
 	(ieee1275_fb_mod_CFLAGS): Likewise.
