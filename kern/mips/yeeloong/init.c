@@ -63,35 +63,13 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
   return GRUB_ERR_NONE;
 }
 
-
-static void *
-get_modules_end (void)
-{
-  struct grub_module_info *modinfo;
-  struct grub_module_header *header;
-  grub_addr_t modbase;
-
-  modbase = grub_arch_modules_addr ();
-  modinfo = (struct grub_module_info *) modbase;
-
-  /* Check if there are any modules.  */
-  if ((modinfo == 0) || modinfo->magic != GRUB_MODULE_MAGIC)
-    return modinfo;
-
-  for (header = (struct grub_module_header *) (modbase + modinfo->offset);
-       header < (struct grub_module_header *) (modbase + modinfo->size);
-       header = (struct grub_module_header *) ((char *) header + header->size));
-
-  return header;
-}
-
 void
 grub_machine_init (void)
 {
-  void *modend;
-  modend = get_modules_end ();
-  grub_mm_init_region (modend, (grub_arch_memsize << 20)
-		       - (((grub_addr_t) modend) - GRUB_ARCH_LOWMEMVSTART));
+  grub_addr_t modend;
+  modend = grub_modules_get_end ();
+  grub_mm_init_region ((void *) modend, (grub_arch_memsize << 20)
+		       - (modend - GRUB_ARCH_LOWMEMVSTART));
   /* FIXME: use upper memory as well.  */
   grub_install_get_time_ms (grub_rtc_get_time_ms);
 

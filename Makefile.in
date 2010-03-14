@@ -89,10 +89,8 @@ TARGET_ASFLAGS = @TARGET_ASFLAGS@
 TARGET_MODULE_FORMAT = @TARGET_MODULE_FORMAT@
 TARGET_APPLE_CC = @TARGET_APPLE_CC@
 OBJCONV = @OBJCONV@
-TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(srcdir)/include -I$(builddir) -I$(builddir)/include -Wall -W
-ifneq ($(platform), emu)
-TARGET_CPPFLAGS += -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include)
-endif
+TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
+	-Wall -W
 TARGET_LDFLAGS = @TARGET_LDFLAGS@
 TARGET_IMG_LDSCRIPT = @TARGET_IMG_LDSCRIPT@
 TARGET_IMG_LDFLAGS = @TARGET_IMG_LDFLAGS@
@@ -149,7 +147,7 @@ INFOS = $(info_INFOS)
 CLEANFILES =
 MOSTLYCLEANFILES =
 DISTCLEANFILES = config.status config.cache config.log config.h \
-	Makefile stamp-h include/grub/cpu include/grub/machine \
+	Makefile stamp-h stamp-h1 include/grub/cpu include/grub/machine \
 	gensymlist.sh genkernsyms.sh build_env.mk \
 	docs/grub.info docs/version.texi docs/stamp-vti
 
@@ -243,6 +241,7 @@ else
 ifeq ($(enable_grub_mkfont),yes)
 
 pkgdata_DATA += unicode.pf2 ascii.pf2 ascii.h
+CLEANFILES += ascii.bitmaps
 
 # Arrows and lines are needed to draw the menu, so we always include them
 UNICODE_ARROWS=0x2190-0x2193

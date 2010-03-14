@@ -22,6 +22,7 @@
 
 #include <grub/types.h>
 
+#define GRUB_IEEE1275_CELL_SIZEOF 4
 typedef grub_uint32_t grub_ieee1275_cell_t;
 
 #endif /* ! GRUB_IEEE1275_MACHINE_HEADER */

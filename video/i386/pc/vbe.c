@@ -22,6 +22,7 @@
 #include <grub/machine/memory.h>
 #include <grub/machine/vga.h>
 #include <grub/machine/vbe.h>
+#include <grub/video_fb.h>
 #include <grub/types.h>
 #include <grub/dl.h>
 #include <grub/misc.h>

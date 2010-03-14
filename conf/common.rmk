@@ -621,26 +621,28 @@ sh_mod_SOURCES = script/main.c script/script.c script/execute.c \
 sh_mod_CFLAGS = $(COMMON_CFLAGS)
 sh_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+ifneq (, $(FONT_SOURCE))
+font/font.c_DEPENDENCIES = ascii.h
+endif
+
 # Common Video Subsystem specific modules.
-pkglib_MODULES += video.mod videotest.mod bitmap.mod tga.mod jpeg.mod	\
-	png.mod	gfxterm.mod video_fb.mod
+# On Yeeloong it's part of kernel
+ifneq ($(platform), yeeloong)
 
 # For video.mod.
+pkglib_MODULES += video.mod
 video_mod_SOURCES = video/video.c
 video_mod_CFLAGS = $(COMMON_CFLAGS)
 video_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += video_fb.mod
 video_fb_mod_SOURCES = video/fb/video_fb.c video/fb/fbblit.c \
 		  video/fb/fbfill.c video/fb/fbutil.c
 video_fb_mod_CFLAGS = $(COMMON_CFLAGS)
 video_fb_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For videotest.mod.
-videotest_mod_SOURCES = commands/videotest.c
-videotest_mod_CFLAGS = $(COMMON_CFLAGS)
-videotest_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For bitmap.mod
+pkglib_MODULES += bitmap.mod
 bitmap_mod_SOURCES = video/bitmap.c
 bitmap_mod_CFLAGS = $(COMMON_CFLAGS)
 bitmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
@@ -651,36 +653,46 @@ bitmap_scale_mod_SOURCES = video/bitmap_scale.c
 bitmap_scale_mod_CFLAGS = $(COMMON_CFLAGS)
 bitmap_scale_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For tga.mod
-tga_mod_SOURCES = video/readers/tga.c
-tga_mod_CFLAGS = $(COMMON_CFLAGS)
-tga_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For jpeg.mod.
-jpeg_mod_SOURCES = video/readers/jpeg.c
-jpeg_mod_CFLAGS = $(COMMON_CFLAGS)
-jpeg_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For png.mod.
-png_mod_SOURCES = video/readers/png.c
-png_mod_CFLAGS = $(COMMON_CFLAGS)
-png_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 pkglib_MODULES += font.mod
-ifneq (, $(FONT_SOURCE))
-font/font.c_DEPENDENCIES = ascii.h
-endif
 font_mod_SOURCES = font/font_cmd.c font/font.c
 font_mod_CFLAGS = $(COMMON_CFLAGS)
 font_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For gfxterm.mod.
+pkglib_MODULES += gfxterm.mod
 gfxterm_mod_SOURCES = term/gfxterm.c
 gfxterm_mod_CFLAGS = $(COMMON_CFLAGS)
 gfxterm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+endif
+
+# For videotest.mod.
+pkglib_MODULES += videotest.mod
+videotest_mod_SOURCES = commands/videotest.c
+videotest_mod_CFLAGS = $(COMMON_CFLAGS)
+videotest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For tga.mod
+pkglib_MODULES += tga.mod
+tga_mod_SOURCES = video/readers/tga.c
+tga_mod_CFLAGS = $(COMMON_CFLAGS)
+tga_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For jpeg.mod.
+pkglib_MODULES += jpeg.mod
+jpeg_mod_SOURCES = video/readers/jpeg.c
+jpeg_mod_CFLAGS = $(COMMON_CFLAGS)
+jpeg_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For png.mod.
+pkglib_MODULES += png.mod
+png_mod_SOURCES = video/readers/png.c
+png_mod_CFLAGS = $(COMMON_CFLAGS)
+png_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+
 # Misc.
-pkglib_MODULES += gzio.mod bufio.mod elf.mod
+pkglib_MODULES += gzio.mod elf.mod
 
 # For elf.mod.
 elf_mod_SOURCES = kern/elf.c
@@ -692,10 +704,14 @@ gzio_mod_SOURCES = io/gzio.c
 gzio_mod_CFLAGS = $(COMMON_CFLAGS)
 gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# On Yeeloong it's part of kernel
+ifneq ($(platform), yeeloong)
 # For bufio.mod.
+pkglib_MODULES += bufio.mod
 bufio_mod_SOURCES = io/bufio.c
 bufio_mod_CFLAGS = $(COMMON_CFLAGS)
 bufio_mod_LDFLAGS = $(COMMON_LDFLAGS)
+endif
 
 # For gettext.mod.
 pkglib_MODULES += gettext.mod

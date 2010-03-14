@@ -559,14 +559,14 @@ show_menu (grub_menu_t menu, int nested)
         }
       else
         {
+	  int lines_before = grub_normal_get_line_counter ();
           grub_errno = GRUB_ERR_NONE;
           grub_menu_execute_entry (e);
-          if (grub_errno != GRUB_ERR_NONE)
-            {
-              grub_print_error ();
-              grub_errno = GRUB_ERR_NONE;
-              grub_wait_after_message ();
-            }
+	  grub_print_error ();
+	  grub_errno = GRUB_ERR_NONE;
+
+          if (lines_before != grub_normal_get_line_counter ())
+	    grub_wait_after_message ();
         }
     }
 

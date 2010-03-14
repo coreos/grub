@@ -69,9 +69,9 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
   color = grub_video_map_rgb (0, 255, 255);
   grub_video_fill_rect (color, 100, 100, 100, 100);
 
-  sansbig = grub_font_get ("Helvetica Bold 24");
-  sans = grub_font_get ("Helvetica Bold 14");
-  sanssmall = grub_font_get ("Helvetica 8");
+  sansbig = grub_font_get ("Unknown Regular 16");
+  sans = grub_font_get ("Unknown Regular 16");
+  sanssmall = grub_font_get ("Unknown Regular 16");
   fixed = grub_font_get ("Fixed 20");
   if (! sansbig || ! sans || ! sanssmall || ! fixed)
     return grub_error (GRUB_ERR_BAD_FONT, "no font loaded");
@@ -125,11 +125,6 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
   texty += grub_font_get_ascent(fixed);
   grub_font_draw_string (str, fixed, color, 16, texty);
   texty += grub_font_get_descent (fixed) + grub_font_get_leading (fixed);
-
-  /* Some character don't exist in the Helvetica font, so the font engine
-     will fall back to using glyphs from another font that does contain them.
-     TODO The font engine should be smart about selecting a replacement font
-     and prioritize fonts with similar sizes.  */
 
   texty += grub_font_get_ascent(sansbig);
   grub_font_draw_string (str, sansbig, color, 16, texty);
