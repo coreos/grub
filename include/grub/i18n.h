@@ -22,7 +22,6 @@
 #include <config.h>
 #include <grub/symbol.h>
 
-const char *EXPORT_FUNC(grub_gettext_dummy) (const char *s);
 extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
 
 /* NLS can be disabled through the configure --disable-nls option.  */

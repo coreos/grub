@@ -43,6 +43,7 @@
 #include <grub/time.h>
 #include <grub/i18n.h>
 
+#define ENABLE_RELOCATABLE 0
 #include "progname.h"
 
 /* Include malloc.h, only if memalign is available. It is known that
@@ -142,13 +143,13 @@ char *
 xstrdup (const char *str)
 {
   size_t len;
-  char *dup;
+  char *newstr;
 
   len = strlen (str);
-  dup = (char *) xmalloc (len + 1);
-  memcpy (dup, str, len + 1);
+  newstr = (char *) xmalloc (len + 1);
+  memcpy (newstr, str, len + 1);
 
-  return dup;
+  return newstr;
 }
 
 char *
@@ -371,11 +372,13 @@ grub_millisleep (grub_uint32_t ms)
 
 #endif
 
+#if !(defined (__i386__) || defined (__x86_64__))
 void
 grub_arch_sync_caches (void *address __attribute__ ((unused)),
 		       grub_size_t len __attribute__ ((unused)))
 {
 }
+#endif
 
 #ifndef HAVE_VASPRINTF
 

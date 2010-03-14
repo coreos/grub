@@ -158,3 +158,11 @@ else
 set timeout=${GRUB_TIMEOUT}
 EOF
 fi
+
+# Play an initial tune
+if [ "x${GRUB_INIT_TUNE}" != "x" ] ; then
+  cat << EOF
+insmod play
+play ${GRUB_INIT_TUNE}
+EOF
+fi

@@ -566,7 +566,7 @@ grub_gui_list_new (void)
 
   self->visible = 1;
 
-  default_font = grub_font_get ("Helvetica 12");
+  default_font = grub_font_get ("Unknown Regular 16");
   default_fg_color = grub_gui_color_rgb (0, 0, 0);
   default_bg_color = grub_gui_color_rgb (255, 255, 255);
 
