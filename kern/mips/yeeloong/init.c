@@ -29,10 +29,10 @@
 #include <grub/cpu/kernel.h>
 
 extern void grub_video_sm712_init (void);
-extern void grub_video_video_init (void);
-extern void grub_video_bitmap_init (void);
-extern void grub_font_manager_init (void);
-extern void grub_term_gfxterm_init (void);
+extern void grub_video_init (void);
+extern void grub_bitmap_init (void);
+extern void grub_font_init (void);
+extern void grub_gfxterm_init (void);
 extern void grub_at_keyboard_init (void);
 
 /* FIXME: use interrupt to count high.  */
@@ -76,10 +76,10 @@ grub_machine_init (void)
   /* Initialize output terminal (can't be done earlier, as gfxterm
      relies on a working heap.  */
   grub_video_sm712_init ();
-  grub_video_video_init ();
-  grub_video_bitmap_init ();
-  grub_font_manager_init ();
-  grub_term_gfxterm_init ();
+  grub_video_init ();
+  grub_bitmap_init ();
+  grub_font_init ();
+  grub_gfxterm_init ();
 
   grub_at_keyboard_init ();
 }
