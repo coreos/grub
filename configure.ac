@@ -535,10 +535,10 @@ int va_arg_func (int fixed, va_list args);]], [[]])],
       [grub_cv_cc_isystem=no])
   CPPFLAGS="$SAVED_CPPFLAGS"
 ])
-endif
 
 if test x"$grub_cv_cc_isystem" = xyes ; then
   TARGET_CPPFLAGS="$TARGET_CPPFLAGS -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
+fi
 fi
 
 # Restore the flags.

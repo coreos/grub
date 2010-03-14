@@ -1,5 +1,6 @@
 # -*- makefile -*-
 
+COMMON_LDFLAGS += -nostdlib
 COMMON_CFLAGS += -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include) -fno-builtin
 
 util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
