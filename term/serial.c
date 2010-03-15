@@ -343,7 +343,7 @@ grub_serial_putchar (const struct grub_unicode_glyph *c)
 	  break;
 
 	default:
-	  if ((c->base & 0xC0) == 0xC0)
+	  if ((c->base & 0xC0) == 0x80)
 	    break;
 	  if (xpos >= TEXT_WIDTH)
 	    {
