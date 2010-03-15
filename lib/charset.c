@@ -488,7 +488,7 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
       comb_type = grub_unicode_get_comb_type (*ptr);
       if (comb_type)
 	{
-	  grub_uint32_t *n;
+	  struct grub_unicode_combining *n;
 	  unsigned j;
 
 	  if (!haveout)
@@ -499,7 +499,7 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 	      || comb_type == GRUB_UNICODE_COMB_MN)
 	    last_comb_pointer = out->ncomb;
 	  n = grub_realloc (out->combining, 
-			    sizeof (grub_uint32_t) * (out->ncomb + 1));
+			    sizeof (n[0]) * (out->ncomb + 1));
 	  if (!n)
 	    {
 	      grub_errno = GRUB_ERR_NONE;
@@ -507,14 +507,15 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 	    }
 
 	  for (j = last_comb_pointer; j < out->ncomb; j++)
-	    if (grub_unicode_get_comb_type (out->combining[j]) > comb_type)
+	    if (out->combining[j].type > comb_type)
 	      break;
 	  grub_memmove (out->combining + j + 1,
 			out->combining + j,
 			(out->ncomb - j)
 			* sizeof (out->combining[0]));
 	  out->combining = n;
-	  out->combining[j] = *ptr;
+	  out->combining[j].code = *ptr;
+	  out->combining[j].type = comb_type;
 	  out->ncomb++;
 	  continue;
 	}
@@ -944,40 +945,6 @@ grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 	}
     }
   return visual_ptr - *visual_out;
-}
-
-struct grub_unicode_glyph *
-grub_unicode_glyph_dup (const struct grub_unicode_glyph *in)
-{
-  struct grub_unicode_glyph *out = grub_malloc (sizeof (*out));
-  if (!out)
-    return NULL;
-  grub_memcpy (out, in, sizeof (*in));
-  out->combining = grub_malloc (in->ncomb * sizeof (*in));
-  if (!out->combining)
-    {
-      grub_free (out);
-      return NULL;
-    }
-  grub_memcpy (out->combining, in->combining, in->ncomb * sizeof (*in));
-  return out;
-}
-
-struct grub_unicode_glyph *
-grub_unicode_glyph_from_code (grub_uint32_t code)
-{
-  struct grub_unicode_glyph *ret;
-  ret = grub_malloc (sizeof (*ret));
-  if (!ret)
-    return NULL;
-
-  ret->base = code;
-  ret->variant = 0;
-  ret->attributes = 0;
-  ret->ncomb = 0;
-  ret->combining = 0;
-
-  return ret;
 }
 
 static grub_uint32_t

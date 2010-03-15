@@ -267,6 +267,7 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
 					     len - i, &glyph);
 
 	  width = grub_term_getcharwidth (term, &glyph);
+	  grub_free (glyph.combining);
 
 	  if (x + width <= (int) (GRUB_TERM_LEFT_BORDER_X 
 				 + grub_term_border_width (term)

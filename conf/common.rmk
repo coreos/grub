@@ -496,7 +496,8 @@ gfxmenu_mod_SOURCES = \
 	gfxmenu/gui_progress_bar.c \
 	gfxmenu/gui_util.c \
 	gfxmenu/gui_string_util.c \
-	gfxmenu/named_colors.c
+	gfxmenu/named_colors.c \
+	gfxmenu/font.c
 gfxmenu_mod_CFLAGS = $(COMMON_CFLAGS)
 gfxmenu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

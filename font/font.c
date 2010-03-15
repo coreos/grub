@@ -924,30 +924,6 @@ grub_font_get_height (grub_font_t font)
   return font->ascent + font->descent + font->leading;
 }
 
-/* Get the width in pixels of the specified UTF-8 string, when rendered in
-   in the specified font (but falling back on other fonts for glyphs that
-   are missing).  */
-int
-grub_font_get_string_width (grub_font_t font, const char *str)
-{
-  int width;
-  struct grub_font_glyph *glyph;
-  grub_uint32_t code;
-  const grub_uint8_t *ptr;
-
-  for (ptr = (const grub_uint8_t *) str, width = 0;
-       grub_utf8_to_ucs4 (&code, 1, ptr, -1, &ptr) > 0; )
-    {
-      glyph = grub_font_get_glyph_with_fallback (font, code);
-      if (glyph)
-	width += glyph->device_width;
-      else
-	width += unknown_glyph->device_width;
-    }
-
-  return width;
-}
-
 /* Get the glyph for FONT corresponding to the Unicode code point CODE.
    Returns the ASCII glyph for the code if no other fonts are available. 
    The glyphs are cached once loaded.  */
@@ -1202,7 +1178,6 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 
   for (i = 0; i < glyph_id->ncomb; i++)
     {
-      enum grub_comb_type combtype;
       grub_int16_t space = 0;
       grub_int16_t centerx = (bounds.width - combining_glyphs[i]->width) / 2
 	+ bounds.x;
@@ -1210,10 +1185,9 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
       if (!combining_glyphs[i])
 	continue;
       /* CGJ is to avoid diacritics reordering. */
-      if (glyph_id->combining[i] == GRUB_UNICODE_COMBINING_GRAPHEME_JOINER)
+      if (glyph_id->combining[i].code == GRUB_UNICODE_COMBINING_GRAPHEME_JOINER)
 	continue;
-      combtype = grub_unicode_get_comb_type (glyph_id->combining[i]);
-      switch (combtype)
+      switch (glyph_id->combining[i].type)
 	{
 	case GRUB_UNICODE_COMB_OVERLAY:
 	  do_blit (combining_glyphs[i],
@@ -1324,7 +1298,7 @@ grub_font_construct_dry_run (grub_font_t hinted_font,
     for (i = 0; i < glyph_id->ncomb; i++)
       combining_glyphs[i]
 	= grub_font_get_glyph_with_fallback (main_glyph->font,
-					     glyph_id->combining[i]);
+					     glyph_id->combining[i].code);
   }
 
   blit_comb (glyph_id, NULL, bounds, main_glyph, combining_glyphs, device_width);
@@ -1444,48 +1418,5 @@ grub_font_draw_glyph (struct grub_font_glyph *glyph,
                                  bitmap_left, bitmap_top,
                                  0, 0,
                                  glyph->width, glyph->height);
-}
-
-/* Draw a UTF-8 string of text on the current video render target.
-   The x coordinate specifies the starting x position for the first character,
-   while the y coordinate specifies the baseline position.
-   If the string contains a character that FONT does not contain, then
-   a glyph from another loaded font may be used instead.  */
-grub_err_t
-grub_font_draw_string (const char *str, grub_font_t font,
-                       grub_video_color_t color,
-                       int left_x, int baseline_y)
-{
-  int x;
-  struct grub_font_glyph *glyph;
-  grub_uint32_t *logical;
-  grub_ssize_t logical_len, visual_len;
-  struct grub_unicode_glyph *visual, *ptr;
-
-  logical_len = grub_utf8_to_ucs4_alloc (str, &logical, 0);
-  if (logical_len < 0)
-    return grub_errno;
-
-  visual_len = grub_bidi_logical_to_visual (logical, logical_len, &visual, 0, 0);
-  grub_free (logical);
-  if (visual_len < 0)
-    return grub_errno;
-
-  for (ptr = visual, x = left_x; ptr < visual + visual_len; ptr++)
-    {
-      grub_err_t err;
-      glyph = grub_font_construct_glyph (font, ptr);
-      if (!glyph)
-	return grub_errno;
-      err = grub_font_draw_glyph (glyph, color, x, baseline_y);
-      grub_free (glyph);
-      if (err)
-	return err;
-      x += glyph->device_width;
-    }
-
-  grub_free (visual);
-
-  return GRUB_ERR_NONE;
 }
 

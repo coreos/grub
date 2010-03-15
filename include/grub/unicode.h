@@ -20,6 +20,8 @@
 #define GRUB_BIDI_HEADER	1
 
 #include <grub/types.h>
+#include <grub/mm.h>
+#include <grub/misc.h>
 
 struct grub_unicode_compact_range
 {
@@ -78,7 +80,10 @@ struct grub_unicode_glyph
   grub_uint16_t variant:9;
   grub_uint8_t attributes:1;
   grub_size_t ncomb;
-  grub_uint32_t *combining;
+  struct grub_unicode_combining {
+    grub_uint32_t code;
+    enum grub_comb_type type;
+  } *combining;
 };
 
 #define GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR 0x1
@@ -106,9 +111,39 @@ grub_unicode_get_comb_type (grub_uint32_t c);
 grub_size_t
 grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 			      struct grub_unicode_glyph *out);
-struct grub_unicode_glyph *
-grub_unicode_glyph_from_code (grub_uint32_t code);
-struct grub_unicode_glyph *
-grub_unicode_glyph_dup (const struct grub_unicode_glyph *in);
+
+static inline struct grub_unicode_glyph *
+grub_unicode_glyph_dup (const struct grub_unicode_glyph *in)
+{
+  struct grub_unicode_glyph *out = grub_malloc (sizeof (*out));
+  if (!out)
+    return NULL;
+  grub_memcpy (out, in, sizeof (*in));
+  out->combining = grub_malloc (in->ncomb * sizeof (*in));
+  if (!out->combining)
+    {
+      grub_free (out);
+      return NULL;
+    }
+  grub_memcpy (out->combining, in->combining, in->ncomb * sizeof (*in));
+  return out;
+}
+
+static inline struct grub_unicode_glyph *
+grub_unicode_glyph_from_code (grub_uint32_t code)
+{
+  struct grub_unicode_glyph *ret;
+  ret = grub_malloc (sizeof (*ret));
+  if (!ret)
+    return NULL;
+
+  ret->base = code;
+  ret->variant = 0;
+  ret->attributes = 0;
+  ret->ncomb = 0;
+  ret->combining = 0;
+
+  return ret;
+}
 
 #endif
