@@ -840,7 +840,7 @@ grub_gfxterm_putchar (grub_uint32_t c)
 
       /* If we are about to exceed line length, wrap to next line.  */
       if (virtual_screen.cursor_x + char_width > virtual_screen.columns)
-        grub_putchar ('\n');
+        grub_gfxterm_putchar ('\n');
 
       /* Find position on virtual screen, and fill information.  */
       p = (virtual_screen.text_buffer +

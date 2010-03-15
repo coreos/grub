@@ -42,10 +42,10 @@ grub_err_t (*grub_gfxmenu_try_hook) (int entry, grub_menu_t menu,
 void
 grub_wait_after_message (void)
 {
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_printf_ (N_("Press any key to continue..."));
   (void) grub_getkey ();
-  grub_putchar ('\n');
+  grub_xputs ("\n");
 }
 
 /* Get a menu entry by its index in the entry list.  */

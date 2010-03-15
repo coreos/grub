@@ -1315,7 +1315,7 @@ grub_font_construct_glyph (grub_font_t hinted_font,
 
   /* Glyph not available in any font.  Use ASCII fallback.  */
   if (!main_glyph)
-    main_glyph = ascii_glyph_lookup (code);
+    main_glyph = ascii_glyph_lookup (glyph_id->base);
 
   /* Glyph not available in any font.  Return unknown glyph.  */
   if (!main_glyph)

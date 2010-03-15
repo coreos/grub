@@ -388,8 +388,8 @@ grub_serial_putchar (grub_uint32_t c)
 	default:
 	  if (xpos >= TEXT_WIDTH)
 	    {
-	      grub_putchar ('\r');
-	      grub_putchar ('\n');
+	      grub_serial_putchar ('\r');
+	      grub_serial_putchar ('\n');
 	    }
 	  xpos++;
 	  break;

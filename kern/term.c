@@ -50,30 +50,22 @@ grub_putcode (grub_uint32_t code, struct grub_term_output *term)
     (term->putchar) ('\r');
 }
 
-/* Put a character. C is one byte of a UTF-8 stream.
-   This function gathers bytes until a valid Unicode character is found.  */
-void
-grub_putchar (int c)
+static void
+grub_xputs_dumb (const char *str)
 {
-  static grub_size_t size = 0;
-  static grub_uint8_t buf[6];
-  grub_uint8_t *rest;
-  grub_uint32_t code;
-
-  buf[size++] = c;
-
-  while (grub_utf8_to_ucs4 (&code, 1, buf, size, (const grub_uint8_t **) &rest) 
-	 != 0)
+  for (; *str; str++)
     {
-      struct grub_term_output *term;
-      size -= rest - buf;
-      grub_memmove (buf, rest, size);
+      grub_term_output_t term;
+
+      char c = *str;
+      if ((unsigned char) c > 0x7f)
+	c = '?';
       FOR_ACTIVE_TERM_OUTPUTS(term)
-	grub_putcode (code, term);
-      if (code == '\n' && grub_newline_hook)
-	grub_newline_hook ();
+	grub_putcode (c, term);
     }
 }
+
+void (*grub_xputs) (const char *str) = grub_xputs_dumb;
 
 int
 grub_getkey (void)

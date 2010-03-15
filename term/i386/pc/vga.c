@@ -334,7 +334,7 @@ grub_vga_putchar (grub_uint32_t c)
       glyph = grub_font_get_glyph(font, c);
 
       if (xpos + char_width > TEXT_WIDTH)
-	grub_putchar ('\n');
+	grub_vga_putchar ('\n');
 
       p = text_buf + xpos + ypos * TEXT_WIDTH;
       p->code = c;

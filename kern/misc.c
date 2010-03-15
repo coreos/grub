@@ -143,19 +143,6 @@ grub_printf_ (const char *fmt, ...)
 }
 
 int
-grub_puts (const char *s)
-{
-  while (*s)
-    {
-      grub_putchar (*s);
-      s++;
-    }
-  grub_putchar ('\n');
-
-  return 1;	/* Cannot fail.  */
-}
-
-int
 grub_puts_ (const char *s)
 {
   return grub_puts (_(s));
@@ -200,13 +187,37 @@ grub_real_dprintf (const char *file, const int line, const char *condition,
     }
 }
 
+#define PREALLOC_SIZE 255
+
 int
 grub_vprintf (const char *fmt, va_list args)
 {
-  int ret;
+  grub_size_t s;
+  static char buf[PREALLOC_SIZE + 1];
+  char *curbuf = buf;
 
-  ret = grub_vsnprintf_real (0, 0, fmt, args);
-  return ret;
+  s = grub_vsnprintf_real (buf, PREALLOC_SIZE, fmt, args);
+  if (s > PREALLOC_SIZE)
+    {
+      curbuf = grub_malloc (s + 1);
+      if (!curbuf)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  buf[PREALLOC_SIZE - 3] = '.';
+	  buf[PREALLOC_SIZE - 2] = '.';
+	  buf[PREALLOC_SIZE - 1] = '.';
+	  buf[PREALLOC_SIZE] = 0;
+	}
+      else
+	s = grub_vsnprintf_real (curbuf, s, fmt, args);
+    }
+
+  grub_xputs (curbuf);
+
+  if (curbuf != buf)
+    grub_free (curbuf);
+  
+  return s;
 }
 
 int
@@ -649,13 +660,8 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt, va_list ar
 
   void write_char (unsigned char ch)
     {
-      if (str)
-	{
-	  if (count < max_len)
-	    *str++ = ch;
-	}
-      else
-	grub_putchar (ch);
+      if (count < max_len)
+	*str++ = ch;
 
       count++;
     }
@@ -872,8 +878,7 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt, va_list ar
 	}
     }
 
-  if (str)
-    *str = '\0';
+  *str = '\0';
 
   return count;
 }
@@ -905,8 +910,6 @@ grub_snprintf (char *str, grub_size_t n, const char *fmt, ...)
 
   return ret;
 }
-
-#define PREALLOC_SIZE 255
 
 char *
 grub_xvasprintf (const char *fmt, va_list ap)
@@ -940,100 +943,6 @@ grub_xasprintf (const char *fmt, ...)
   va_end (ap);
 
   return ret;
-}
-
-/* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
-   bytes (if SRCSIZE is -1, it is ignored) in length to a UCS-4 string.
-   Return the number of characters converted. DEST must be able to hold
-   at least DESTSIZE characters.
-   If SRCEND is not NULL, then *SRCEND is set to the next byte after the
-   last byte used in SRC.  */
-grub_size_t
-grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
-		   const grub_uint8_t *src, grub_size_t srcsize,
-		   const grub_uint8_t **srcend)
-{
-  grub_uint32_t *p = dest;
-  int count = 0;
-  grub_uint32_t code = 0;
-
-  if (srcend)
-    *srcend = src;
-
-  while (srcsize && destsize)
-    {
-      grub_uint32_t c = *src++;
-      if (srcsize != (grub_size_t)-1)
-	srcsize--;
-      if (count)
-	{
-	  if ((c & 0xc0) != 0x80)
-	    {
-	      /* invalid */
-	      code = '?';
-	      /* Character c may be valid, don't eat it.  */
-	      src--;
-	      if (srcsize != (grub_size_t)-1)
-		srcsize++;
-	      count = 0;
-	    }
-	  else
-	    {
-	      code <<= 6;
-	      code |= (c & 0x3f);
-	      count--;
-	    }
-	}
-      else
-	{
-	  if (c == 0)
-	    break;
-
-	  if ((c & 0x80) == 0x00)
-	    code = c;
-	  else if ((c & 0xe0) == 0xc0)
-	    {
-	      count = 1;
-	      code = c & 0x1f;
-	    }
-	  else if ((c & 0xf0) == 0xe0)
-	    {
-	      count = 2;
-	      code = c & 0x0f;
-	    }
-	  else if ((c & 0xf8) == 0xf0)
-	    {
-	      count = 3;
-	      code = c & 0x07;
-	    }
-	  else if ((c & 0xfc) == 0xf8)
-	    {
-	      count = 4;
-	      code = c & 0x03;
-	    }
-	  else if ((c & 0xfe) == 0xfc)
-	    {
-	      count = 5;
-	      code = c & 0x01;
-	    }
-	  else
-	    {
-	      /* invalid */
-	      code = '?';
-	      count = 0;
-	    }
-	}
-
-      if (count == 0)
-	{
-	  *p++ = code;
-	  destsize--;
-	}
-    }
-
-  if (srcend)
-    *srcend = src;
-  return p - dest;
 }
 
 /* Abort GRUB. This function does not return.  */

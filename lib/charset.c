@@ -267,3 +267,97 @@ grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
 
   return msg_len;
 }
+
+/* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
+   bytes (if SRCSIZE is -1, it is ignored) in length to a UCS-4 string.
+   Return the number of characters converted. DEST must be able to hold
+   at least DESTSIZE characters.
+   If SRCEND is not NULL, then *SRCEND is set to the next byte after the
+   last byte used in SRC.  */
+grub_size_t
+grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
+		   const grub_uint8_t *src, grub_size_t srcsize,
+		   const grub_uint8_t **srcend)
+{
+  grub_uint32_t *p = dest;
+  int count = 0;
+  grub_uint32_t code = 0;
+
+  if (srcend)
+    *srcend = src;
+
+  while (srcsize && destsize)
+    {
+      grub_uint32_t c = *src++;
+      if (srcsize != (grub_size_t)-1)
+	srcsize--;
+      if (count)
+	{
+	  if ((c & 0xc0) != 0x80)
+	    {
+	      /* invalid */
+	      code = '?';
+	      /* Character c may be valid, don't eat it.  */
+	      src--;
+	      if (srcsize != (grub_size_t)-1)
+		srcsize++;
+	      count = 0;
+	    }
+	  else
+	    {
+	      code <<= 6;
+	      code |= (c & 0x3f);
+	      count--;
+	    }
+	}
+      else
+	{
+	  if (c == 0)
+	    break;
+
+	  if ((c & 0x80) == 0x00)
+	    code = c;
+	  else if ((c & 0xe0) == 0xc0)
+	    {
+	      count = 1;
+	      code = c & 0x1f;
+	    }
+	  else if ((c & 0xf0) == 0xe0)
+	    {
+	      count = 2;
+	      code = c & 0x0f;
+	    }
+	  else if ((c & 0xf8) == 0xf0)
+	    {
+	      count = 3;
+	      code = c & 0x07;
+	    }
+	  else if ((c & 0xfc) == 0xf8)
+	    {
+	      count = 4;
+	      code = c & 0x03;
+	    }
+	  else if ((c & 0xfe) == 0xfc)
+	    {
+	      count = 5;
+	      code = c & 0x01;
+	    }
+	  else
+	    {
+	      /* invalid */
+	      code = '?';
+	      count = 0;
+	    }
+	}
+
+      if (count == 0)
+	{
+	  *p++ = code;
+	  destsize--;
+	}
+    }
+
+  if (srcend)
+    *srcend = src;
+  return p - dest;
+}

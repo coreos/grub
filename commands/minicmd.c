@@ -54,7 +54,7 @@ grub_mini_cmd_cat (struct grub_command *cmd __attribute__ ((unused)),
 	  unsigned char c = buf[i];
 
 	  if ((grub_isprint (c) || grub_isspace (c)) && c != '\r')
-	    grub_putchar (c);
+	    grub_printf ("%c", c);
 	  else
 	    {
 	      grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
@@ -64,7 +64,7 @@ grub_mini_cmd_cat (struct grub_command *cmd __attribute__ ((unused)),
 	}
     }
 
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_refresh ();
   grub_file_close (file);
 
@@ -311,11 +311,11 @@ grub_mini_cmd_lsmod (struct grub_command *cmd __attribute__ ((unused)),
       for (dep = mod->dep; dep; dep = dep->next)
 	{
 	  if (dep != mod->dep)
-	    grub_putchar (',');
+	    grub_xputs (",");
 
 	  grub_printf ("%s", dep->mod->name);
 	}
-      grub_putchar ('\n');
+      grub_xputs ("\n");
 
       return 0;
     }

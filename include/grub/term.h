@@ -63,11 +63,22 @@ grub_term_color_state;
    to NULL.  */
 
 /* Set when input characters shouldn't be echoed back.  */
-#define GRUB_TERM_NO_ECHO	(1 << 0)
+#define GRUB_TERM_NO_ECHO	        (1 << 0)
 /* Set when the editing feature should be disabled.  */
-#define GRUB_TERM_NO_EDIT	(1 << 1)
+#define GRUB_TERM_NO_EDIT	        (1 << 1)
 /* Set when the terminal cannot do fancy things.  */
-#define GRUB_TERM_DUMB		(1 << 2)
+#define GRUB_TERM_DUMB		        (1 << 2)
+/* Which encoding does terminal expect stream to be.  */
+#define GRUB_TERM_CODE_TYPE_MASK	        ((1 << 5) | (1 << 4) | (1 << 3))
+/* Only ASCII characters accepted.  */
+#define GRUB_TERM_CODE_TYPE_ASCII	        0
+/* Expects VGA characters (ASCII + pseudographics).  */
+#define GRUB_TERM_CODE_TYPE_VGA	                (1 << 3)
+/* UTF-8 stream in logical order. Usually used for terminals
+   which just forward the stream to another computer.  */
+#define GRUB_TERM_CODE_TYPE_UTF8_LOGICAL	(1 << 4)
+/* UCS-4 in visual order.  */
+#define GRUB_TERM_CODE_TYPE_UCS4_VISUAL	        ((1 << 4) | (1 << 3))
 
 
 /* Bitmasks for modifier keys returned by grub_getkeystatus.  */
@@ -250,7 +261,6 @@ grub_term_unregister_output (grub_term_output_t term)
 #define FOR_ACTIVE_TERM_OUTPUTS(var) for (var = grub_term_outputs; var; var = var->next)
 #define FOR_DISABLED_TERM_OUTPUTS(var) for (var = grub_term_outputs_disabled; var; var = var->next)
 
-void EXPORT_FUNC(grub_putchar) (int c);
 void EXPORT_FUNC(grub_putcode) (grub_uint32_t code,
 				struct grub_term_output *term);
 int EXPORT_FUNC(grub_getkey) (void);

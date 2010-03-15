@@ -36,7 +36,7 @@ grub_cmd_handler (struct grub_command *cmd __attribute__ ((unused)),
   int list_item (grub_named_list_t item)
     {
       if (item == curr_item)
-	grub_putchar ('*');
+	grub_xputs ("*");
 
       grub_printf ("%s\n", item->name);
 

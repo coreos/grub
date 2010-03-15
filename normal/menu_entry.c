@@ -25,6 +25,7 @@
 #include <grub/parser.h>
 #include <grub/auth.h>
 #include <grub/i18n.h>
+#include <grub/charset.h>
 
 enum update_mode
   {
@@ -1393,7 +1394,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
   grub_cls ();
   grub_print_error ();
   grub_errno = GRUB_ERR_NONE;
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_printf_ (N_("Press any key to continue..."));
   (void) grub_getkey ();
 }

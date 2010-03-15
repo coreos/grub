@@ -23,6 +23,7 @@
 #include <grub/dl.h>
 #include <grub/env.h>
 #include <grub/normal.h>
+#include <grub/charset.h>
 
 /* The amount of lines counted by the pager.  */
 static unsigned grub_more_lines;

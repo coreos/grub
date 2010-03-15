@@ -34,6 +34,7 @@ grub_rescue_read_line (char **line, int cont)
 {
   int c;
   int pos = 0;
+  char str[4];
 
   grub_printf ((cont) ? "> " : "grub rescue> ");
   grub_memset (linebuf, 0, GRUB_RESCUE_BUF_SIZE);
@@ -44,24 +45,28 @@ grub_rescue_read_line (char **line, int cont)
 	{
 	  if (pos < GRUB_RESCUE_BUF_SIZE - 1)
 	    {
+	      str[0] = c;
+	      str[1] = 0;
 	      linebuf[pos++] = c;
-	      grub_putchar (c);
+	      grub_xputs (str);
 	    }
 	}
       else if (c == '\b')
 	{
 	  if (pos > 0)
 	    {
+	      str[0] = c;
+	      str[1] = ' ';
+	      str[2] = c;
+	      str[3] = 0;
 	      linebuf[--pos] = 0;
-	      grub_putchar (c);
-	      grub_putchar (' ');
-	      grub_putchar (c);
+	      grub_xputs (str);
 	    }
 	}
       grub_refresh ();
     }
 
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_refresh ();
 
   *line = grub_strdup (linebuf);

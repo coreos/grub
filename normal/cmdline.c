@@ -614,7 +614,7 @@ grub_cmdline_get (const char *prompt)
       grub_refresh ();
     }
 
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_refresh ();
 
   /* Remove leading spaces.  */

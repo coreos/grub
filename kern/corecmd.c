@@ -121,7 +121,7 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
   if (argc < 1)
     {
       grub_device_iterate (grub_mini_print_devices);
-      grub_putchar ('\n');
+      grub_xputs ("\n");
       grub_refresh ();
     }
   else
@@ -160,7 +160,7 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
       else if (fs)
 	{
 	  (fs->dir) (dev, path, grub_mini_print_files);
-	  grub_putchar ('\n');
+	  grub_xputs ("\n");
 	  grub_refresh ();
 	}
 
