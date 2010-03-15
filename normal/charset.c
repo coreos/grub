@@ -121,13 +121,52 @@ grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 }
 
 /* Convert UCS-4 to UTF-8.  */
+void
+grub_ucs4_to_utf8 (grub_uint32_t *src, grub_size_t size,
+		   grub_uint8_t *dest, grub_size_t destsize)
+{
+  /* Keep last char for \0.  */
+  grub_uint8_t *destend = dest + destsize - 1;
+
+  while (size-- && dest < destend)
+    {
+      grub_uint32_t code = *src++;
+
+      if (code <= 0x007F)
+	*dest++ = code;
+      else if (code <= 0x07FF)
+	{
+	  if (dest + 1 >= destend)
+	    break;
+	  *dest++ = (code >> 6) | 0xC0;
+	  *dest++ = (code & 0x3F) | 0x80;
+	}
+      else if ((code >= 0xDC00 && code <= 0xDFFF)
+	       || (code >= 0xD800 && code <= 0xDBFF))
+	{
+	  /* No surrogates in UCS-4... */
+	  *dest++ = '?';
+	}
+      else
+	{
+	  if (dest + 2 >= destend)
+	    break;
+	  *dest++ = (code >> 12) | 0xE0;
+	  *dest++ = ((code >> 6) & 0x3F) | 0x80;
+	  *dest++ = (code & 0x3F) | 0x80;
+	}
+    }
+  *dest = 0;
+}
+
+/* Convert UCS-4 to UTF-8.  */
 char *
 grub_ucs4_to_utf8_alloc (grub_uint32_t *src, grub_size_t size)
 {
   grub_size_t remaining;
   grub_uint32_t *ptr;
   grub_size_t cnt = 0;
-  grub_uint8_t *ret, *dest;
+  grub_uint8_t *ret;
 
   remaining = size;
   ptr = src;
@@ -152,34 +191,7 @@ grub_ucs4_to_utf8_alloc (grub_uint32_t *src, grub_size_t size)
   if (!ret)
     return 0;
 
-  dest = ret;
-  remaining = size;
-  ptr = src;
-  while (remaining--)
-    {
-      grub_uint32_t code = *ptr++;
-
-      if (code <= 0x007F)
-	*dest++ = code;
-      else if (code <= 0x07FF)
-	{
-	  *dest++ = (code >> 6) | 0xC0;
-	  *dest++ = (code & 0x3F) | 0x80;
-	}
-      else if ((code >= 0xDC00 && code <= 0xDFFF)
-	       || (code >= 0xD800 && code <= 0xDBFF))
-	{
-	  /* No surrogates in UCS-4... */
-	  *dest++ = '?';
-	}
-      else
-	{
-	  *dest++ = (code >> 12) | 0xE0;
-	  *dest++ = ((code >> 6) & 0x3F) | 0x80;
-	  *dest++ = (code & 0x3F) | 0x80;
-	}
-    }
-  *dest = 0;
+  grub_ucs4_to_utf8 (src, size, ret, cnt);
 
   return (char *) ret;
 }
@@ -953,8 +965,9 @@ map_code (grub_uint32_t in, struct grub_term_output *term)
   if (in <= 0x7f)
     return in;
 
-  if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) == GRUB_TERM_CODE_TYPE_VGA)
+  switch (term->flags & GRUB_TERM_CODE_TYPE_MASK)
     {
+    case GRUB_TERM_CODE_TYPE_VGA:
       switch (in)
 	{
 	case GRUB_TERM_DISP_LEFT:
@@ -979,9 +992,7 @@ map_code (grub_uint32_t in, struct grub_term_output *term)
 	  return 0xd9;
 	}
       return '?';
-    }
-  else
-    {
+    case GRUB_TERM_CODE_TYPE_ASCII:
       /* Better than nothing.  */
       switch (in)
 	{
@@ -990,7 +1001,7 @@ map_code (grub_uint32_t in, struct grub_term_output *term)
 		
 	case GRUB_TERM_DISP_UP:
 	  return '^';
-		
+	  
 	case GRUB_TERM_DISP_RIGHT:
 	  return '>';
 		
@@ -1017,8 +1028,7 @@ map_code (grub_uint32_t in, struct grub_term_output *term)
 
 /* Put a Unicode character.  */
 void
-grub_putcode (grub_uint32_t code,
-	      struct grub_term_output *term)
+grub_putcode (grub_uint32_t code, struct grub_term_output *term)
 {
   struct grub_unicode_glyph c =
     {
@@ -1042,9 +1052,25 @@ grub_putcode (grub_uint32_t code,
       return;
     }
 
-  c.base = map_code (code, term);
+  if ((term->flags & GRUB_TERM_CODE_TYPE_MASK)
+      == GRUB_TERM_CODE_TYPE_UTF8_LOGICAL)
+    {
+      grub_uint8_t str[20], *ptr;
 
-  (term->putchar) (&c);
+      grub_ucs4_to_utf8 (&code, 1, str, sizeof (str));
+
+      for (ptr = str; *ptr; ptr++)
+	{
+	  c.base = *ptr;
+	  (term->putchar) (&c);
+	}
+    }
+  else
+    {
+      c.base = map_code (code, term);
+      (term->putchar) (&c);
+    }
+
   if (code == '\n')
     grub_putcode ('\r', term);
 }
