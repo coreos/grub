@@ -85,29 +85,35 @@ map_char (grub_uint32_t c)
 }
 
 static void
-grub_console_putchar (grub_uint32_t c)
+grub_console_putchar (const struct grub_unicode_glyph *c)
 {
-  grub_efi_char16_t str[2];
+  grub_efi_char16_t str[2 + c->ncomb];
   grub_efi_simple_text_output_interface_t *o;
+  unsigned i, j;
 
   o = grub_efi_system_table->con_out;
 
   /* For now, do not try to use a surrogate pair.  */
-  if (c > 0xffff)
-    c = '?';
-
-  str[0] = (grub_efi_char16_t)  map_char (c & 0xffff);
-  str[1] = 0;
+  if (c->base > 0xffff)
+    str[0] = '?';
+  else
+    str[0] = (grub_efi_char16_t)  map_char (c->base & 0xffff);
+  j = 1;
+  for (i = 0; i < c->ncomb; i++)
+    if (c->base < 0xffff)
+      str[j++] = c->combining[i].code;
+  str[j] = 0;
 
   /* Should this test be cached?  */
-  if (c > 0x7f && efi_call_2 (o->test_string, o, str) != GRUB_EFI_SUCCESS)
+  if ((c->base > 0x7f || c->ncomb)
+      && efi_call_2 (o->test_string, o, str) != GRUB_EFI_SUCCESS)
     return;
 
   efi_call_2 (o->output_string, o, str);
 }
 
 static grub_ssize_t
-grub_console_getcharwidth (grub_uint32_t c __attribute__ ((unused)))
+grub_console_getcharwidth (const struct grub_unicode_glyph *c __attribute__ ((unused)))
 {
   /* For now, every printable character has the width 1.  */
   return 1;
@@ -351,7 +357,8 @@ static struct grub_term_output grub_console_term_output =
     .setcolorstate = grub_console_setcolorstate,
     .setcolor = grub_console_setcolor,
     .getcolor = grub_console_getcolor,
-    .setcursor = grub_console_setcursor
+    .setcursor = grub_console_setcursor,
+    .flags = GRUB_TERM_CODE_TYPE_UCS4_VISUAL
   };
 
 void

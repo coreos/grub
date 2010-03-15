@@ -76,60 +76,18 @@ grub_ofconsole_writeesc (const char *str)
 }
 
 static void
-grub_ofconsole_putchar (grub_uint32_t c)
+grub_ofconsole_putchar (const struct grub_unicode_glyph *c)
 {
   char chr;
 
-  if (c > 0x7F)
-    {
-      /* Better than nothing.  */
-      switch (c)
-	{
-	case GRUB_TERM_DISP_LEFT:
-	  c = '<';
-	  break;
-	  
-	case GRUB_TERM_DISP_UP:
-	  c = '^';
-	  break;
+  chr = c->base;
 
-	case GRUB_TERM_DISP_RIGHT:
-	  c = '>';
-	  break;
-
-	case GRUB_TERM_DISP_DOWN:
-	  c = 'v';
-	  break;
-
-	case GRUB_TERM_DISP_HLINE:
-	  c = '-';
-	  break;
-
-	case GRUB_TERM_DISP_VLINE:
-	  c = '|';
-	  break;
-
-	case GRUB_TERM_DISP_UL:
-	case GRUB_TERM_DISP_UR:
-	case GRUB_TERM_DISP_LL:
-	case GRUB_TERM_DISP_LR:
-	  c = '+';
-	  break;
-
-	default:
-	  c = '?';
-	  break;
-	}
-    }
-
-  chr = c;
-
-  if (c == '\n')
+  if (chr == '\n')
     {
       grub_curr_y++;
       grub_curr_x = 0;
     }
-  else if (c == '\r')
+  else if (chr == '\r')
     {
       grub_curr_x = 0;
     }
@@ -138,16 +96,19 @@ grub_ofconsole_putchar (grub_uint32_t c)
       grub_curr_x++;
       if (grub_curr_x >= grub_ofconsole_width)
         {
-          grub_ofconsole_putchar ('\n');
-          grub_ofconsole_putchar ('\r');
-          grub_curr_x++;
+	  chr = '\n';
+	  grub_ieee1275_write (stdout_ihandle, &chr, 1, 0);
+	  chr = '\r';
+	  grub_ieee1275_write (stdout_ihandle, &chr, 1, 0);
+	  grub_curr_y++;
+	  grub_curr_x = 1;
         }
     }
   grub_ieee1275_write (stdout_ihandle, &chr, 1, 0);
 }
 
 static grub_ssize_t
-grub_ofconsole_getcharwidth (grub_uint32_t c __attribute__((unused)))
+grub_ofconsole_getcharwidth (const struct grub_unicode_glyph *c __attribute__((unused)))
 {
   return 1;
 }
@@ -497,7 +458,8 @@ static struct grub_term_output grub_ofconsole_term_output =
     .setcolor = grub_ofconsole_setcolor,
     .getcolor = grub_ofconsole_getcolor,
     .setcursor = grub_ofconsole_setcursor,
-    .refresh = grub_ofconsole_refresh
+    .refresh = grub_ofconsole_refresh,
+    .flags = GRUB_TERM_CODE_TYPE_ASCII
   };
 
 void
