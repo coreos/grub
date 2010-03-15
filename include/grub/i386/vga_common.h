@@ -25,8 +25,10 @@
 
 extern grub_uint8_t grub_console_cur_color;
 
-void grub_console_putchar (grub_uint32_t c);
-grub_ssize_t grub_console_getcharwidth (grub_uint32_t c);
+void
+grub_console_putchar (const struct grub_unicode_glyph *c);
+grub_ssize_t
+grub_console_getcharwidth (const struct grub_unicode_glyph *c);
 grub_uint16_t grub_console_getwh (void);
 void grub_console_setcolorstate (grub_term_color_state state);
 void grub_console_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color);

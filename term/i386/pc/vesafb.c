@@ -214,45 +214,7 @@ grub_virtual_screen_get_glyph (grub_uint32_t code,
 			       unsigned *width)
 {
   if (code > 0x7f)
-    {
-      /* Map some unicode characters to the VGA font, if possible.  */
-      switch (code)
-	{
-	case 0x2190:	/* left arrow */
-	  code = 0x1b;
-	  break;
-	case 0x2191:	/* up arrow */
-	  code = 0x18;
-	  break;
-	case 0x2192:	/* right arrow */
-	  code = 0x1a;
-	  break;
-	case 0x2193:	/* down arrow */
-	  code = 0x19;
-	  break;
-	case 0x2501:	/* horizontal line */
-	  code = 0xc4;
-	  break;
-	case 0x2503:	/* vertical line */
-	  code = 0xb3;
-	  break;
-	case 0x250F:	/* upper-left corner */
-	  code = 0xda;
-	  break;
-	case 0x2513:	/* upper-right corner */
-	  code = 0xbf;
-	  break;
-	case 0x2517:	/* lower-left corner */
-	  code = 0xc0;
-	  break;
-	case 0x251B:	/* lower-right corner */
-	  code = 0xd9;
-	  break;
-
-	default:
-	  return grub_font_get_glyph_any (code, bitmap, width);
-	}
-    }
+    return grub_font_get_glyph_any (code, bitmap, width);
 
   /* TODO This is wrong for the new font module.  Should it be fixed?  */
   if (bitmap)
@@ -592,7 +554,7 @@ static struct grub_term_output grub_vesafb_term =
     .cls = grub_vesafb_cls,
     .setcolorstate = grub_virtual_screen_setcolorstate,
     .setcursor = grub_vesafb_setcursor,
-    .flags = 0,
+    .flags = GRUB_TERM_CODE_TYPE_VGA
   };
 
 GRUB_MOD_INIT(vesafb)

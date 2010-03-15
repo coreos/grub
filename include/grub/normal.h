@@ -113,4 +113,6 @@ void grub_set_more (int onoff);
 int grub_normal_get_line_counter (void);
 void grub_install_newline_hook (void);
 
+void grub_xputs_normal (const char *str);
+
 #endif /* ! GRUB_NORMAL_HEADER */

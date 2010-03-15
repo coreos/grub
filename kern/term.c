@@ -31,23 +31,33 @@ struct grub_term_input *grub_term_inputs;
 void (*grub_newline_hook) (void) = NULL;
 
 /* Put a Unicode character.  */
-void
-grub_putcode (grub_uint32_t code, struct grub_term_output *term)
+static void
+grub_putcode_dumb (grub_uint32_t code,
+		   struct grub_term_output *term)
 {
+  struct grub_unicode_glyph c =
+    {
+      .base = code,
+      .variant = 0,
+      .attributes = 0,
+      .ncomb = 0,
+      .combining = 0
+    };
+
   if (code == '\t' && term->getxy)
     {
       int n;
 
       n = 8 - ((term->getxy () >> 8) & 7);
       while (n--)
-	grub_putcode (' ', term);
+	grub_putcode_dumb (' ', term);
 
       return;
     }
 
-  (term->putchar) (code);
+  (term->putchar) (&c);
   if (code == '\n')
-    (term->putchar) ('\r');
+    grub_putcode_dumb ('\r', term);
 }
 
 static void
@@ -56,12 +66,12 @@ grub_xputs_dumb (const char *str)
   for (; *str; str++)
     {
       grub_term_output_t term;
+      grub_uint32_t code = *str;
+      if (code > 0x7f)
+	code = '?';
 
-      char c = *str;
-      if ((unsigned char) c > 0x7f)
-	c = '?';
       FOR_ACTIVE_TERM_OUTPUTS(term)
-	grub_putcode (c, term);
+	grub_putcode_dumb (code, term);
     }
 }
 
@@ -126,7 +136,7 @@ grub_cls (void)
   {
     if ((term->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
       {
-	grub_putcode ('\n', term);
+	grub_putcode_dumb ('\n', term);
 	grub_term_refresh (term);
       }
     else

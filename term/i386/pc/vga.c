@@ -287,23 +287,23 @@ scroll_up (void)
 }
 
 static void
-grub_vga_putchar (grub_uint32_t c)
+grub_vga_putchar (const struct grub_unicode_glyph *c)
 {
 #if DEBUG_VGA
   static int show = 1;
 #endif
 
-  if (c == '\a')
+  if (c->base == '\a')
     /* FIXME */
     return;
 
-  if (c == '\b' || c == '\n' || c == '\r')
+  if (c->base == '\b' || c->base == '\n' || c->base == '\r')
     {
       /* Erase current cursor, if any.  */
       if (cursor_state)
 	write_char ();
 
-      switch (c)
+      switch (c->base)
 	{
 	case '\b':
 	  if (xpos > 0)
@@ -331,13 +331,19 @@ grub_vga_putchar (grub_uint32_t c)
       struct colored_char *p;
       unsigned char_width = 1;
 
-      glyph = grub_font_get_glyph(font, c);
+      glyph = grub_font_get_glyph(font, c->base);
 
       if (xpos + char_width > TEXT_WIDTH)
-	grub_vga_putchar ('\n');
+	{
+	  xpos = 0;
+	  if (ypos >= TEXT_HEIGHT - 1)
+	    scroll_up ();
+	  else
+	    ypos++;
+	}
 
       p = text_buf + xpos + ypos * TEXT_WIDTH;
-      p->code = c;
+      p->code = c->base;
       p->fg_color = fg_color;
       p->bg_color = bg_color;
       p->width = char_width - 1;
@@ -387,12 +393,12 @@ grub_vga_putchar (grub_uint32_t c)
 }
 
 static grub_ssize_t
-grub_vga_getcharwidth (grub_uint32_t c)
+grub_vga_getcharwidth (const struct grub_unicode_glyph *c)
 {
 #if 0
   struct grub_font_glyph glyph;
 
-  glyph = grub_font_get_glyph (c);
+  glyph = grub_font_get_glyph (c->base);
 
   return glyph.char_width;
 #else
@@ -499,7 +505,7 @@ static struct grub_term_output grub_vga_term =
     .cls = grub_vga_cls,
     .setcolorstate = grub_vga_setcolorstate,
     .setcursor = grub_vga_setcursor,
-    .flags = 0,
+    .flags = GRUB_TERM_CODE_TYPE_UCS4_VISUAL,
   };
 
 GRUB_MOD_INIT(vga)

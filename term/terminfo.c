@@ -111,7 +111,17 @@ static void
 putstr (const char *str, grub_term_output_t oterm)
 {
   while (*str)
-    grub_putcode (*str++, oterm);
+    {
+      struct grub_unicode_glyph c =
+	{
+	  .base = *str++,
+	  .variant = 0,
+	  .attributes = 0,
+	  .ncomb = 0,
+	  .combining = 0
+	};
+      oterm->putchar (&c);
+    }
 }
 
 /* Move the cursor to the given position starting with "0".  */

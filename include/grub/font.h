@@ -22,6 +22,7 @@
 #include <grub/types.h>
 #include <grub/video.h>
 #include <grub/file.h>
+#include <grub/unicode.h>
 
 /* Forward declaration of opaque structure grub_font.
    Users only pass struct grub_font pointers to the font module functions,
@@ -116,5 +117,12 @@ grub_err_t EXPORT_FUNC (grub_font_draw_string) (const char *str,
 						grub_font_t font,
 						grub_video_color_t color,
 						int left_x, int baseline_y);
+
+int
+EXPORT_FUNC (grub_font_get_constructed_device_width) (grub_font_t hinted_font,
+					const struct grub_unicode_glyph *glyph_id);
+struct grub_font_glyph *
+EXPORT_FUNC (grub_font_construct_glyph) (grub_font_t hinted_font,
+			   const struct grub_unicode_glyph *glyph_id);
 
 #endif /* ! GRUB_FONT_HEADER */

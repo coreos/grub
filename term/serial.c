@@ -317,55 +317,12 @@ serial_hw_init (void)
 
 /* The serial version of putchar.  */
 static void
-grub_serial_putchar (grub_uint32_t c)
+grub_serial_putchar (const struct grub_unicode_glyph *c)
 {
   /* Keep track of the cursor.  */
   if (keep_track)
     {
-      /* The serial terminal does not have VGA fonts.  */
-      if (c > 0x7F)
-	{
-	  /* Better than nothing.  */
-	  switch (c)
-	    {
-	    case GRUB_TERM_DISP_LEFT:
-	      c = '<';
-	      break;
-
-	    case GRUB_TERM_DISP_UP:
-	      c = '^';
-	      break;
-
-	    case GRUB_TERM_DISP_RIGHT:
-	      c = '>';
-	      break;
-
-	    case GRUB_TERM_DISP_DOWN:
-	      c = 'v';
-	      break;
-
-	    case GRUB_TERM_DISP_HLINE:
-	      c = '-';
-	      break;
-
-	    case GRUB_TERM_DISP_VLINE:
-	      c = '|';
-	      break;
-
-	    case GRUB_TERM_DISP_UL:
-	    case GRUB_TERM_DISP_UR:
-	    case GRUB_TERM_DISP_LL:
-	    case GRUB_TERM_DISP_LR:
-	      c = '+';
-	      break;
-
-	    default:
-	      c = '?';
-	      break;
-	    }
-	}
-
-      switch (c)
+      switch (c->base)
 	{
 	case '\a':
 	  break;
@@ -388,19 +345,22 @@ grub_serial_putchar (grub_uint32_t c)
 	default:
 	  if (xpos >= TEXT_WIDTH)
 	    {
-	      grub_serial_putchar ('\r');
-	      grub_serial_putchar ('\n');
+	      xpos = 0;
+	      if (ypos < TEXT_HEIGHT - 1)
+		ypos++;
+	      serial_hw_put ('\r');
+	      serial_hw_put ('\n');
 	    }
 	  xpos++;
 	  break;
 	}
     }
 
-  serial_hw_put (c);
+  serial_hw_put (c->base);
 }
 
 static grub_ssize_t
-grub_serial_getcharwidth (grub_uint32_t c __attribute__ ((unused)))
+grub_serial_getcharwidth (const struct grub_unicode_glyph *c __attribute__ ((unused)))
 {
   return 1;
 }
@@ -491,7 +451,7 @@ static struct grub_term_output grub_serial_term_output =
   .cls = grub_serial_cls,
   .setcolorstate = grub_serial_setcolorstate,
   .setcursor = grub_serial_setcursor,
-  .flags = 0,
+  .flags = GRUB_TERM_CODE_TYPE_UTF8_LOGICAL,
 };
 
 

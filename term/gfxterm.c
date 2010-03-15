@@ -48,7 +48,7 @@ struct grub_dirty_region
 struct grub_colored_char
 {
   /* An Unicode codepoint.  */
-  grub_uint32_t code;
+  struct grub_unicode_glyph *code;
 
   /* Color values.  */
   grub_video_color_t fg_color;
@@ -147,6 +147,9 @@ static unsigned char calculate_character_width (struct grub_font_glyph *glyph);
 
 static void grub_gfxterm_refresh (void);
 
+static grub_ssize_t
+grub_gfxterm_getcharwidth (const struct grub_unicode_glyph *c);
+
 static void
 set_term_color (grub_uint8_t term_color)
 {
@@ -176,7 +179,10 @@ set_term_color (grub_uint8_t term_color)
 static void
 clear_char (struct grub_colored_char *c)
 {
-  c->code = ' ';
+  grub_free (c->code);
+  c->code = grub_unicode_glyph_from_code (' ');
+  if (!c->code)
+    grub_errno = GRUB_ERR_NONE;
   c->fg_color = virtual_screen.fg_color;
   c->bg_color = virtual_screen.bg_color;
   c->width = 0;
@@ -265,7 +271,10 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
 
   /* Clear out text buffer. */
   for (i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
-    clear_char (&(virtual_screen.text_buffer[i]));
+    {
+      virtual_screen.text_buffer[i].code = 0;
+      clear_char (&(virtual_screen.text_buffer[i]));
+    }
 
   return grub_errno;
 }
@@ -610,7 +619,12 @@ paint_char (unsigned cx, unsigned cy)
   p -= p->index;
 
   /* Get glyph for character.  */
-  glyph = grub_font_get_glyph (virtual_screen.font, p->code);
+  glyph = grub_font_construct_glyph (virtual_screen.font, p->code);
+  if (!glyph)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
   ascent = grub_font_get_ascent (virtual_screen.font);
 
   width = virtual_screen.normal_char_width * calculate_character_width(glyph);
@@ -631,6 +645,7 @@ paint_char (unsigned cx, unsigned cy)
   /* Mark character to be drawn.  */
   dirty_region_add (virtual_screen.offset_x + x, virtual_screen.offset_y + y,
                     width, height);
+  grub_free (glyph);
 }
 
 static inline void
@@ -777,6 +792,15 @@ scroll_up (void)
 {
   unsigned int i;
 
+  /* Clear first line in text buffer.  */
+  for (i = 0;
+       i < virtual_screen.columns;
+       i++)
+    {
+      virtual_screen.text_buffer[i].code = 0;
+      clear_char (&(virtual_screen.text_buffer[i]));
+    }
+
   /* Scroll text buffer with one line to up.  */
   grub_memmove (virtual_screen.text_buffer,
                 virtual_screen.text_buffer + virtual_screen.columns,
@@ -788,15 +812,18 @@ scroll_up (void)
   for (i = virtual_screen.columns * (virtual_screen.rows - 1);
        i < virtual_screen.columns * virtual_screen.rows;
        i++)
-    clear_char (&(virtual_screen.text_buffer[i]));
+    {
+      virtual_screen.text_buffer[i].code = 0;
+      clear_char (&(virtual_screen.text_buffer[i]));
+    }
 
   virtual_screen.total_scroll++;
 }
 
 static void
-grub_gfxterm_putchar (grub_uint32_t c)
+grub_gfxterm_putchar (const struct grub_unicode_glyph *c)
 {
-  if (c == '\a')
+  if (c->base == '\a')
     /* FIXME */
     return;
 
@@ -804,9 +831,9 @@ grub_gfxterm_putchar (grub_uint32_t c)
   if (virtual_screen.cursor_state)
     draw_cursor (0);
 
-  if (c == '\b' || c == '\n' || c == '\r')
+  if (c->base == '\b' || c->base == '\n' || c->base == '\r')
     {
-      switch (c)
+      switch (c->base)
         {
         case '\b':
           if (virtual_screen.cursor_x > 0)
@@ -827,26 +854,30 @@ grub_gfxterm_putchar (grub_uint32_t c)
     }
   else
     {
-      struct grub_font_glyph *glyph;
       struct grub_colored_char *p;
       unsigned char char_width;
 
-      /* Get properties of the character.  */
-      glyph = grub_font_get_glyph (virtual_screen.font, c);
-
       /* Calculate actual character width for glyph. This is number of
          times of normal_font_width.  */
-      char_width = calculate_character_width(glyph);
+      char_width = grub_gfxterm_getcharwidth (c);
 
       /* If we are about to exceed line length, wrap to next line.  */
       if (virtual_screen.cursor_x + char_width > virtual_screen.columns)
-        grub_gfxterm_putchar ('\n');
+	{
+          if (virtual_screen.cursor_y >= virtual_screen.rows - 1)
+            scroll_up ();
+          else
+            virtual_screen.cursor_y++;
+	}
 
       /* Find position on virtual screen, and fill information.  */
       p = (virtual_screen.text_buffer +
            virtual_screen.cursor_x +
            virtual_screen.cursor_y * virtual_screen.columns);
-      p->code = c;
+      grub_free (p->code);
+      p->code = grub_unicode_glyph_dup (c);
+      if (!p->code)
+	grub_errno = GRUB_ERR_NONE;
       p->fg_color = virtual_screen.fg_color;
       p->bg_color = virtual_screen.bg_color;
       p->width = char_width - 1;
@@ -859,7 +890,10 @@ grub_gfxterm_putchar (grub_uint32_t c)
 
           for (i = 1; i < char_width; i++)
             {
-              p[i].code = ' ';
+	      grub_free (p[i].code);
+              p[i].code = grub_unicode_glyph_from_code (' ');
+	      if (!p[i].code)
+		grub_errno = GRUB_ERR_NONE;
               p[i].width = char_width - 1;
               p[i].index = i;
             }
@@ -924,18 +958,16 @@ calculate_character_width (struct grub_font_glyph *glyph)
 }
 
 static grub_ssize_t
-grub_gfxterm_getcharwidth (grub_uint32_t c)
+grub_gfxterm_getcharwidth (const struct grub_unicode_glyph *c)
 {
-  struct grub_font_glyph *glyph;
-  unsigned char char_width;
+  int dev_width;
+  dev_width = grub_font_get_constructed_device_width (virtual_screen.font, c);
 
-  /* Get properties of the character.  */
-  glyph = grub_font_get_glyph (virtual_screen.font, c);
+  if (dev_width == 0)
+    return 1;
 
-  /* Calculate actual character width for glyph.  */
-  char_width = calculate_character_width (glyph);
-
-  return char_width;
+  return (dev_width + (virtual_screen.normal_char_width - 1))
+    / virtual_screen.normal_char_width;
 }
 
 static grub_uint16_t
@@ -1174,7 +1206,7 @@ static struct grub_term_output grub_video_term =
     .getcolor = grub_virtual_screen_getcolor,
     .setcursor = grub_gfxterm_setcursor,
     .refresh = grub_gfxterm_refresh,
-    .flags = 0,
+    .flags = GRUB_TERM_CODE_TYPE_UCS4_VISUAL,
     .next = 0
   };
 

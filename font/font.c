@@ -1135,41 +1135,13 @@ grub_font_blit_glyph_mirror (struct grub_font_glyph *target,
     }
 }
 
-static inline enum grub_comb_type
-get_comb_type (grub_uint32_t c)
-{
-  static grub_uint8_t *comb_types = NULL;
-  struct grub_unicode_compact_range *cur;
-
-  if (!comb_types)
-    {
-      unsigned i;
-      comb_types = grub_zalloc (GRUB_UNICODE_MAX_CACHED_CHAR);
-      if (comb_types)
-	for (cur = grub_unicode_compact; cur->end; cur++)
-	  for (i = cur->start; i <= cur->end
-		 && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
-	    comb_types[i] = cur->comb_type;
-      else
-	grub_errno = GRUB_ERR_NONE;
-    }
-
-  if (comb_types && c < GRUB_UNICODE_MAX_CACHED_CHAR)
-    return comb_types[c];
-
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    if (cur->start <= c && c <= cur->end)
-      return cur->comb_type;
-
-  return GRUB_BIDI_TYPE_L;
-}
-
 static void
 blit_comb (const struct grub_unicode_glyph *glyph_id,
 	   struct grub_font_glyph *glyph,
 	   struct grub_video_signed_rect *bounds_out,
 	   struct grub_font_glyph *main_glyph,
-	   struct grub_font_glyph **combining_glyphs)
+	   struct grub_font_glyph **combining_glyphs,
+	   int *device_width)
 {
   struct grub_video_signed_rect bounds;
   unsigned i;
@@ -1203,13 +1175,22 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
   {
     if (glyph && glyph->device_width < val)
       glyph->device_width = val;
+    if (device_width && *device_width < val)
+      *device_width = val;
   }
   auto void add_device_width (int val);
   void add_device_width (int val)
   {
     if (glyph)
       glyph->device_width += val;
+    if (device_width)
+      *device_width += val;
   }
+
+  if (glyph)
+    glyph->device_width = main_glyph->device_width;
+  if (device_width)
+    *device_width = main_glyph->device_width;
 
   bounds.x = main_glyph->offset_x;
   bounds.y = main_glyph->offset_y;
@@ -1231,7 +1212,7 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
       /* CGJ is to avoid diacritics reordering. */
       if (glyph_id->combining[i] == GRUB_UNICODE_COMBINING_GRAPHEME_JOINER)
 	continue;
-      combtype = get_comb_type (glyph_id->combining[i]);
+      combtype = grub_unicode_get_comb_type (glyph_id->combining[i]);
       switch (combtype)
 	{
 	case GRUB_UNICODE_COMB_OVERLAY:
@@ -1302,14 +1283,17 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 }
 
 static struct grub_font_glyph *
-grub_font_construct_glyph (grub_font_t hinted_font,
-			   const struct grub_unicode_glyph *glyph_id)
+grub_font_construct_dry_run (grub_font_t hinted_font,
+			     const struct grub_unicode_glyph *glyph_id,
+			     struct grub_video_signed_rect *bounds,
+			     struct grub_font_glyph ***combining_glyphs_out,
+			     int *device_width)
 {
-  grub_font_t font;
-  struct grub_video_signed_rect bounds;
   struct grub_font_glyph *main_glyph;
   struct grub_font_glyph **combining_glyphs;
-  struct grub_font_glyph *glyph;
+
+  if (combining_glyphs_out)
+    *combining_glyphs_out = NULL;
 
   main_glyph = grub_font_get_glyph_with_fallback (hinted_font, glyph_id->base);
 
@@ -1319,30 +1303,70 @@ grub_font_construct_glyph (grub_font_t hinted_font,
 
   /* Glyph not available in any font.  Return unknown glyph.  */
   if (!main_glyph)
-    return grub_font_dup_glyph (unknown_glyph);
+    return NULL;
+
+  if (device_width)
+    *device_width = main_glyph->device_width;
 
   if (!glyph_id->ncomb && !glyph_id->attributes)
-    return grub_font_dup_glyph (main_glyph);
+    return main_glyph;
 
   combining_glyphs = grub_malloc (sizeof (combining_glyphs[0])
 				  * glyph_id->ncomb);
   if (glyph_id->ncomb && !combining_glyphs)
     {
       grub_errno = GRUB_ERR_NONE;
-      return grub_font_dup_glyph (main_glyph);
+      return main_glyph;
     }
   
-  font = main_glyph->font;
-
   {
     unsigned i;
     for (i = 0; i < glyph_id->ncomb; i++)
       combining_glyphs[i]
-	= grub_font_get_glyph_with_fallback (font, glyph_id->combining[i]);
+	= grub_font_get_glyph_with_fallback (main_glyph->font,
+					     glyph_id->combining[i]);
   }
 
-  blit_comb (glyph_id, NULL, &bounds, main_glyph, combining_glyphs);
+  blit_comb (glyph_id, NULL, bounds, main_glyph, combining_glyphs, device_width);
+  if (combining_glyphs_out)
+    *combining_glyphs_out = combining_glyphs;
+  else
+    grub_free (combining_glyphs);
 
+  return main_glyph;
+}
+
+int
+grub_font_get_constructed_device_width (grub_font_t hinted_font,
+					const struct grub_unicode_glyph *glyph_id)
+{
+  int ret;
+  struct grub_font_glyph *main_glyph;
+  main_glyph = grub_font_construct_dry_run (hinted_font, glyph_id, NULL,
+					    NULL, &ret);
+  if (!main_glyph)
+    return unknown_glyph->device_width;
+  return ret;
+}
+
+struct grub_font_glyph *
+grub_font_construct_glyph (grub_font_t hinted_font,
+			   const struct grub_unicode_glyph *glyph_id)
+{
+  struct grub_font_glyph *main_glyph;
+  struct grub_video_signed_rect bounds;
+  struct grub_font_glyph *glyph;
+  struct grub_font_glyph **combining_glyphs;
+
+  main_glyph = grub_font_construct_dry_run (hinted_font, glyph_id,
+					    &bounds, &combining_glyphs, NULL);
+
+  if (!main_glyph)
+    return grub_font_dup_glyph (unknown_glyph);
+
+  if (!combining_glyphs)
+    return grub_font_dup_glyph (main_glyph);
+  
   glyph = grub_zalloc (sizeof (*glyph) + (bounds.width * bounds.height + 7) / 8);
   if (!glyph)
     {
@@ -1350,12 +1374,11 @@ grub_font_construct_glyph (grub_font_t hinted_font,
       return grub_font_dup_glyph (main_glyph);
     }
 
-  glyph->font = font;
+  glyph->font = main_glyph->font;
   glyph->width = bounds.width;
   glyph->height = bounds.height;
   glyph->offset_x = bounds.x;
   glyph->offset_y = bounds.y;
-  glyph->device_width = main_glyph->device_width;
 
   if (glyph_id->attributes & GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR)
     grub_font_blit_glyph_mirror (glyph, main_glyph,
@@ -1368,7 +1391,7 @@ grub_font_construct_glyph (grub_font_t hinted_font,
 			  (glyph->height + glyph->offset_y)
 			  - (main_glyph->height + main_glyph->offset_y));
 
-  blit_comb (glyph_id, glyph, NULL, main_glyph, combining_glyphs);
+  blit_comb (glyph_id, glyph, NULL, main_glyph, combining_glyphs, NULL);
 
   return glyph;
 }
@@ -1423,465 +1446,6 @@ grub_font_draw_glyph (struct grub_font_glyph *glyph,
                                  glyph->width, glyph->height);
 }
 
-static grub_uint8_t *bidi_types = NULL;
-
-static void
-unpack_bidi (void)
-{
-  unsigned i;
-  struct grub_unicode_compact_range *cur;
-
-  bidi_types = grub_zalloc (GRUB_UNICODE_MAX_CACHED_CHAR);
-  if (!bidi_types)
-    {
-      grub_errno = GRUB_ERR_NONE;
-      return;
-    }
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    for (i = cur->start; i <= cur->end
-	     && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
-      if (cur->bidi_mirror)
-	bidi_types[i] = cur->bidi_type | 0x80;
-      else
-	bidi_types[i] = cur->bidi_type | 0x00;
-}
-
-static inline enum grub_bidi_type
-get_bidi_type (grub_uint32_t c)
-{
-  struct grub_unicode_compact_range *cur;
-
-  if (!bidi_types)
-    unpack_bidi ();
-
-  if (bidi_types && c < GRUB_UNICODE_MAX_CACHED_CHAR)
-    return bidi_types[c] & 0x7f;
-
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    if (cur->start <= c && c <= cur->end)
-      return cur->bidi_type;
-
-  return GRUB_BIDI_TYPE_L;
-}
-
-static inline int
-is_mirrored (grub_uint32_t c)
-{
-  struct grub_unicode_compact_range *cur;
-
-  if (!bidi_types)
-    unpack_bidi ();
-
-  if (bidi_types && c < GRUB_UNICODE_MAX_CACHED_CHAR)
-    return !!(bidi_types[c] & 0x80);
-
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    if (cur->start <= c && c <= cur->end)
-      return cur->bidi_mirror;
-
-  return 0;
-}
-
-static grub_ssize_t
-grub_err_bidi_logical_to_visual (grub_uint32_t *logical,
-				 grub_size_t logical_len,
-				 struct grub_unicode_glyph **visual_out)
-{
-  enum grub_bidi_type type = GRUB_BIDI_TYPE_L;
-  enum override_status {OVERRIDE_NEUTRAL = 0, OVERRIDE_R, OVERRIDE_L};
-  unsigned *levels;
-  enum grub_bidi_type *resolved_types;
-  unsigned base_level;
-  enum override_status cur_override;
-  unsigned i;
-  unsigned stack_level[GRUB_BIDI_MAX_EXPLICIT_LEVEL + 3];
-  enum override_status stack_override[GRUB_BIDI_MAX_EXPLICIT_LEVEL + 3];
-  unsigned stack_depth = 0;
-  unsigned invalid_pushes = 0;
-  unsigned visual_len = 0;
-  unsigned run_start, run_end;
-  struct grub_unicode_glyph *visual;
-  unsigned cur_level;
-
-  auto void push_stack (unsigned new_override, unsigned new_level);
-  void push_stack (unsigned new_override, unsigned new_level)
-  {
-    if (new_level > GRUB_BIDI_MAX_EXPLICIT_LEVEL)
-      {
-	invalid_pushes++;
-	return;
-      }
-    stack_level[stack_depth] = cur_level;
-    stack_override[stack_depth] = cur_override;
-    stack_depth++;
-    cur_level = new_level;
-    cur_override = new_override;
-  }
-
-  auto void pop_stack (void);
-  void pop_stack (void)
-  {
-    if (invalid_pushes)
-      {
-	invalid_pushes--;
-	return;
-      }
-    if (!stack_depth)
-      return;
-    stack_depth--;
-    cur_level = stack_level[stack_depth];
-    cur_override = stack_override[stack_depth];
-  }
-
-  auto void revert (unsigned start, unsigned end);
-  void revert (unsigned start, unsigned end)
-  {
-    struct grub_unicode_glyph t;
-    unsigned k, tl;
-    for (k = 0; k <= (end - start) / 2; k++)
-      {
-	t = visual[start+k];
-	visual[start+k] = visual[end-k];
-	visual[end-k] = t;
-	tl = levels[start+k];
-	levels[start+k] = levels[end-k];
-	levels[end-k] = tl;
-      }
-  }
-
-  levels = grub_malloc (sizeof (levels[0]) * logical_len);
-  if (!levels)
-    return -1;
-
-  resolved_types = grub_malloc (sizeof (resolved_types[0]) * logical_len);
-  if (!resolved_types)
-    {
-      grub_free (levels);
-      return -1;
-    }
-
-  visual = grub_malloc (sizeof (visual[0]) * logical_len);
-  if (!visual)
-    {
-      grub_free (resolved_types);
-      grub_free (levels);
-      return -1;
-    }
-
-  for (i = 0; i < logical_len; i++)
-    {
-      type = get_bidi_type (logical[i]);
-      if (type == GRUB_BIDI_TYPE_L || type == GRUB_BIDI_TYPE_AL
-	  || type == GRUB_BIDI_TYPE_R)
-	break;
-    }
-  if (type == GRUB_BIDI_TYPE_R || type == GRUB_BIDI_TYPE_AL)
-    base_level = 1;
-  else
-    base_level = 0;
-  
-  cur_level = base_level;
-  cur_override = OVERRIDE_NEUTRAL;
-  {
-    unsigned last_comb_pointer = 0;
-    for (i = 0; i < logical_len; i++)
-      {
-	/* Variation selectors >= 17 are outside of BMP and SMP. 
-	   Handle variation selectors first to avoid potentially costly lookups.
-	*/
-	if (logical[i] >= GRUB_UNICODE_VARIATION_SELECTOR_1
-	    && logical[i] <= GRUB_UNICODE_VARIATION_SELECTOR_16)
-	  {
-	    if (!visual_len)
-	      continue;
-	    visual[visual_len - 1].variant
-	      = logical[i] - GRUB_UNICODE_VARIATION_SELECTOR_1 + 1;
-	  }
-	if (logical[i] >= GRUB_UNICODE_VARIATION_SELECTOR_17
-	    && logical[i] <= GRUB_UNICODE_VARIATION_SELECTOR_256)
-	  {
-	    if (!visual_len)
-	      continue;
-	    visual[visual_len - 1].variant
-	      = logical[i] - GRUB_UNICODE_VARIATION_SELECTOR_17 + 17;
-	    continue;
-	  }
-	
-	type = get_bidi_type (logical[i]);
-	switch (type)
-	  {
-	  case GRUB_BIDI_TYPE_RLE:
-	    push_stack (cur_override, (cur_level | 1) + 1);
-	    break;
-	  case GRUB_BIDI_TYPE_RLO:
-	    push_stack (OVERRIDE_R, (cur_level | 1) + 1);
-	    break;
-	  case GRUB_BIDI_TYPE_LRE:
-	    push_stack (cur_override, (cur_level & ~1) + 2);
-	    break;
-	  case GRUB_BIDI_TYPE_LRO:
-	    push_stack (OVERRIDE_L, (cur_level & ~1) + 2);
-	    break;
-	  case GRUB_BIDI_TYPE_PDF:
-	    pop_stack ();
-	    break;
-	  case GRUB_BIDI_TYPE_BN:
-	    break;
-	  default:
-	    {
-	      enum grub_comb_type comb_type;
-	      comb_type = get_comb_type (logical[i]);
-	      if (comb_type)
-		{
-		  grub_uint32_t *n;
-		  unsigned j;
-
-		  if (!visual_len)
-		    break;
-		  if (comb_type == GRUB_UNICODE_COMB_MC
-		      || comb_type == GRUB_UNICODE_COMB_ME
-		      || comb_type == GRUB_UNICODE_COMB_MN)
-		    last_comb_pointer = visual[visual_len - 1].ncomb;
-		  n = grub_realloc (visual[visual_len - 1].combining, 
-				    sizeof (grub_uint32_t)
-				    * (visual[visual_len - 1].ncomb + 1));
-		  if (!n)
-		    {
-		      grub_errno = GRUB_ERR_NONE;
-		      break;
-		    }
-
-		  for (j = last_comb_pointer;
-		       j < visual[visual_len - 1].ncomb; j++)
-		    if (get_comb_type (visual[visual_len - 1].combining[j])
-			> comb_type)
-		      break;
-		  grub_memmove (visual[visual_len - 1].combining + j + 1,
-				visual[visual_len - 1].combining + j,
-				(visual[visual_len - 1].ncomb - j)
-				* sizeof (visual[visual_len - 1].combining[0]));
-		  visual[visual_len - 1].combining = n;
-		  visual[visual_len - 1].combining[j] = logical[i];
-		  visual[visual_len - 1].ncomb++;
-		  break;
-		}
-	      last_comb_pointer = 0;
-	      levels[visual_len] = cur_level;
-	      if (cur_override != OVERRIDE_NEUTRAL)
-		resolved_types[visual_len] = 
-		  (cur_override == OVERRIDE_L) ? GRUB_BIDI_TYPE_L
-		  : GRUB_BIDI_TYPE_R;
-	      else
-		resolved_types[visual_len] = type;
-	      visual[visual_len].base = logical[i];
-	      visual[visual_len].variant = 0;
-	      visual[visual_len].attributes = 0;
-	      visual[visual_len].ncomb = 0;
-	      visual[visual_len].combining = NULL;
-	      visual_len++;
-	    }
-	  }
-      }
-  }
-
-  for (run_start = 0; run_start < visual_len; run_start = run_end)
-    {
-      unsigned prev_level, next_level, cur_run_level;
-      unsigned last_type, last_strong_type;
-      for (run_end = run_start; run_end < visual_len &&
-	     levels[run_end] == levels[run_start]; run_end++);
-      if (run_start == 0)
-	prev_level = base_level;
-      else
-	prev_level = levels[run_start - 1];
-      if (run_end == visual_len)
-	next_level = base_level;
-      else
-	next_level = levels[run_end];
-      cur_run_level = levels[run_start];
-      if (prev_level & 1)
-	last_type = GRUB_BIDI_TYPE_R;
-      else
-	last_type = GRUB_BIDI_TYPE_L;
-      last_strong_type = last_type;
-      for (i = run_start; i < run_end; i++)
-	{
-	  switch (resolved_types[i])
-	    {
-	    case GRUB_BIDI_TYPE_NSM:
-	      resolved_types[i] = last_type;
-	      break;
-	    case GRUB_BIDI_TYPE_EN:
-	      if (last_strong_type == GRUB_BIDI_TYPE_AL)
-		resolved_types[i] = GRUB_BIDI_TYPE_AN;
-	      break;
-	    case GRUB_BIDI_TYPE_L:
-	    case GRUB_BIDI_TYPE_R:
-	      last_strong_type = resolved_types[i];
-	      break;
-	    case GRUB_BIDI_TYPE_ES:
-	      if (last_type == GRUB_BIDI_TYPE_EN
-		  && i + 1 < run_end 
-		  && resolved_types[i + 1] == GRUB_BIDI_TYPE_EN)
-		resolved_types[i] = GRUB_BIDI_TYPE_EN;
-	      else
-		resolved_types[i] = GRUB_BIDI_TYPE_ON;
-	      break;
-	    case GRUB_BIDI_TYPE_ET:
-	      {
-		unsigned j;
-		if (last_type == GRUB_BIDI_TYPE_EN)
-		  {
-		    resolved_types[i] = GRUB_BIDI_TYPE_EN;
-		    break;
-		  }
-		for (j = i; j < run_end
-		       && resolved_types[j] == GRUB_BIDI_TYPE_ET; j++);
-		if (j != run_end && resolved_types[j] == GRUB_BIDI_TYPE_EN)
-		  {
-		    for (; i < run_end
-			   && resolved_types[i] == GRUB_BIDI_TYPE_ET; i++)
-		      resolved_types[i] = GRUB_BIDI_TYPE_EN;
-		    i--;
-		    break;
-		  }
-		for (; i < run_end
-		       && resolved_types[i] == GRUB_BIDI_TYPE_ET; i++)
-		  resolved_types[i] = GRUB_BIDI_TYPE_ON;
-		i--;
-		break;		
-	      }
-	      break;
-	    case GRUB_BIDI_TYPE_CS:
-	      if (last_type == GRUB_BIDI_TYPE_EN
-		  && i + 1 < run_end 
-		  && resolved_types[i + 1] == GRUB_BIDI_TYPE_EN)
-		{
-		  resolved_types[i] = GRUB_BIDI_TYPE_EN;
-		  break;
-		}
-	      if (last_type == GRUB_BIDI_TYPE_AN
-		  && i + 1 < run_end 
-		  && (resolved_types[i + 1] == GRUB_BIDI_TYPE_AN
-		      || (resolved_types[i + 1] == GRUB_BIDI_TYPE_EN
-			  && last_strong_type == GRUB_BIDI_TYPE_AL)))
-		{
-		  resolved_types[i] = GRUB_BIDI_TYPE_EN;
-		  break;
-		}
-	      resolved_types[i] = GRUB_BIDI_TYPE_ON;
-	      break;
-	    case GRUB_BIDI_TYPE_AL:
-	      last_strong_type = resolved_types[i];
-	      resolved_types[i] = GRUB_BIDI_TYPE_R;
-	      break;
-	    default: /* Make GCC happy.  */
-	      break;
-	    }
-	  last_type = resolved_types[i];
-	  if (resolved_types[i] == GRUB_BIDI_TYPE_EN
-	      && last_strong_type == GRUB_BIDI_TYPE_L)
-	    resolved_types[i] = GRUB_BIDI_TYPE_L;
-	}
-      if (prev_level & 1)
-	last_type = GRUB_BIDI_TYPE_R;
-      else
-	last_type = GRUB_BIDI_TYPE_L;
-      for (i = run_start; i < run_end; )
-	{
-	  unsigned j;
-	  unsigned next_type;
-	  for (j = i; j < run_end &&
-	  	 (resolved_types[j] == GRUB_BIDI_TYPE_B
-	  	  || resolved_types[j] == GRUB_BIDI_TYPE_S
-	  	  || resolved_types[j] == GRUB_BIDI_TYPE_WS
-	  	  || resolved_types[j] == GRUB_BIDI_TYPE_ON); j++);
-	  if (j == i)
-	    {
-	      if (resolved_types[i] == GRUB_BIDI_TYPE_L)
-		last_type = GRUB_BIDI_TYPE_L;
-	      else
-		last_type = GRUB_BIDI_TYPE_R;
-	      i++;
-	      continue;
-	    }
-	  if (j == run_end)
-	    next_type = (next_level & 1) ? GRUB_BIDI_TYPE_R : GRUB_BIDI_TYPE_L;
-	  else
-	    {
-	      if (resolved_types[j] == GRUB_BIDI_TYPE_L)
-		next_type = GRUB_BIDI_TYPE_L;
-	      else
-		next_type = GRUB_BIDI_TYPE_R;
-	    }
-	  if (next_type == last_type)
-	    for (; i < j; i++)
-	      resolved_types[i] = last_type;
-	  else
-	    for (; i < j; i++)
-	      resolved_types[i] = (cur_run_level & 1) ? GRUB_BIDI_TYPE_R
-		: GRUB_BIDI_TYPE_L;
-	}
-    }
-
-  for (i = 0; i < visual_len; i++)
-    {
-      if (!(levels[i] & 1) && resolved_types[i] == GRUB_BIDI_TYPE_R)
-	{
-	  levels[i]++;
-	  continue;
-	}
-      if (!(levels[i] & 1) && (resolved_types[i] == GRUB_BIDI_TYPE_AN
-			       || resolved_types[i] == GRUB_BIDI_TYPE_EN))
-	{
-	  levels[i] += 2;
-	  continue;
-	}
-      if ((levels[i] & 1) && (resolved_types[i] == GRUB_BIDI_TYPE_L
-			      || resolved_types[i] == GRUB_BIDI_TYPE_AN
-			      || resolved_types[i] == GRUB_BIDI_TYPE_EN))
-	{
-	  levels[i]++;
-	  continue;
-	}
-    }
-  grub_free (resolved_types);
-  /* TODO: put line-wrapping here.  */
-  {
-    unsigned min_odd_level = 0xffffffff;
-    unsigned max_level = 0;
-    unsigned j;
-    for (i = 0; i < visual_len; i++)
-      {
-	if (levels[i] > max_level)
-	  max_level = levels[i];
-	if (levels[i] < min_odd_level && (levels[i] & 1))
-	  min_odd_level = levels[i];
-      }
-    /* FIXME: can be optimized.  */
-    for (j = max_level; j >= min_odd_level; j--)
-      {
-	unsigned in = 0;
-	for (i = 0; i < visual_len; i++)
-	  {
-	    if (i != 0 && levels[i] >= j && levels[i-1] < j)
-	      in = i;
-	    if (levels[i] >= j && (i + 1 == visual_len || levels[i+1] < j))
-	      revert (in, i);
-	  }
-      }
-  }
-
-  for (i = 0; i < visual_len; i++)
-    if (is_mirrored (visual[i].base) && levels[i])
-      visual[i].attributes |= GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR;
-
-  grub_free (levels);
-
-  *visual_out = visual;
-  return visual_len;
-}
-
 /* Draw a UTF-8 string of text on the current video render target.
    The x coordinate specifies the starting x position for the first character,
    while the y coordinate specifies the baseline position.
@@ -1902,7 +1466,7 @@ grub_font_draw_string (const char *str, grub_font_t font,
   if (logical_len < 0)
     return grub_errno;
 
-  visual_len = grub_err_bidi_logical_to_visual (logical, logical_len, &visual);
+  visual_len = grub_bidi_logical_to_visual (logical, logical_len, &visual, 0, 0);
   grub_free (logical);
   if (visual_len < 0)
     return grub_errno;

@@ -164,6 +164,7 @@ static struct grub_term_output grub_vga_text_term =
     .setcolor = grub_console_setcolor,
     .getcolor = grub_console_getcolor,
     .setcursor = grub_vga_text_setcursor,
+    .flags = GRUB_TERM_CODE_TYPE_VGA
   };
 
 GRUB_MOD_INIT(vga_text)

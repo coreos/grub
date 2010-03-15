@@ -64,54 +64,13 @@ static grub_uint8_t color_map[NUM_COLORS] =
 static int use_color;
 
 static void
-grub_ncurses_putchar (grub_uint32_t c)
+grub_ncurses_putchar (const struct grub_unicode_glyph *c)
 {
-  /* Better than nothing.  */
-  switch (c)
-    {
-    case GRUB_TERM_DISP_LEFT:
-      c = '<';
-      break;
-
-    case GRUB_TERM_DISP_UP:
-      c = '^';
-      break;
-
-    case GRUB_TERM_DISP_RIGHT:
-      c = '>';
-      break;
-
-    case GRUB_TERM_DISP_DOWN:
-      c = 'v';
-      break;
-
-    case GRUB_TERM_DISP_HLINE:
-      c = '-';
-      break;
-
-    case GRUB_TERM_DISP_VLINE:
-      c = '|';
-      break;
-
-    case GRUB_TERM_DISP_UL:
-    case GRUB_TERM_DISP_UR:
-    case GRUB_TERM_DISP_LL:
-    case GRUB_TERM_DISP_LR:
-      c = '+';
-      break;
-
-    default:
-      /* ncurses does not support Unicode.  */
-      if (c > 0x7f)
-	c = '?';
-      break;
-    }
-
-  addch (c | grub_console_attr);
+  addch (c->base | grub_console_attr);
 }
 
 static grub_ssize_t
-grub_ncurses_getcharwidth (grub_uint32_t code __attribute__ ((unused)))
+grub_ncurses_getcharwidth (const struct grub_unicode_glyph * c __attribute__ ((unused)))
 {
   return 1;
 }
@@ -367,7 +326,8 @@ static struct grub_term_output grub_ncurses_term_output =
     .setcolor = grub_ncurses_setcolor,
     .getcolor = grub_ncurses_getcolor,
     .setcursor = grub_ncurses_setcursor,
-    .refresh = grub_ncurses_refresh
+    .refresh = grub_ncurses_refresh,
+    .flags = GRUB_TERM_CODE_TYPE_ASCII
   };
 
 void

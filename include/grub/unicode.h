@@ -55,6 +55,7 @@ enum grub_bidi_type
 
 enum grub_comb_type
   {
+    GRUB_UNICODE_COMB_NONE = 0,
     GRUB_UNICODE_COMB_OVERLAY = 1,
     GRUB_UNICODE_STACK_ATTACHED_BELOW = 202,
     GRUB_UNICODE_STACK_ATTACHED_ABOVE = 214,
@@ -92,5 +93,22 @@ extern struct grub_unicode_compact_range grub_unicode_compact[];
 #define GRUB_UNICODE_MAX_CACHED_CHAR 0x20000
 /*  Unicode mandates an arbitrary limit.  */
 #define GRUB_BIDI_MAX_EXPLICIT_LEVEL 61
+
+grub_ssize_t
+grub_bidi_logical_to_visual (const grub_uint32_t *logical,
+			     grub_size_t logical_len,
+			     struct grub_unicode_glyph **visual_out,
+			     grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
+			     grub_size_t max_length);
+
+enum grub_comb_type
+grub_unicode_get_comb_type (grub_uint32_t c);
+grub_size_t
+grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
+			      struct grub_unicode_glyph *out);
+struct grub_unicode_glyph *
+grub_unicode_glyph_from_code (grub_uint32_t code);
+struct grub_unicode_glyph *
+grub_unicode_glyph_dup (const struct grub_unicode_glyph *in);
 
 #endif

@@ -644,9 +644,14 @@ grub_env_write_pager (struct grub_env_var *var __attribute__ ((unused)),
   return grub_strdup (val);
 }
 
+static void (*grub_xputs_saved) (const char *str);
+
 GRUB_MOD_INIT(normal)
 {
   grub_context_init ();
+
+  grub_xputs_saved = grub_xputs;
+  grub_xputs = grub_xputs_normal;
 
   /* Normal mode shouldn't be unloaded.  */
   if (mod)
@@ -675,6 +680,8 @@ GRUB_MOD_INIT(normal)
 GRUB_MOD_FINI(normal)
 {
   grub_context_fini ();
+
+  grub_xputs = grub_xputs_saved;
 
   grub_set_history (0);
   grub_register_variable_hook ("pager", 0, 0);

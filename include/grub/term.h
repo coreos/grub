@@ -39,6 +39,7 @@
 #include <grub/symbol.h>
 #include <grub/types.h>
 #include <grub/handler.h>
+#include <grub/unicode.h>
 
 /* These are used to represent the various color states we use.  */
 typedef enum
@@ -164,11 +165,11 @@ struct grub_term_output
   grub_err_t (*fini) (void);
 
   /* Put a character. C is encoded in Unicode.  */
-  void (*putchar) (grub_uint32_t c);
+  void (*putchar) (const struct grub_unicode_glyph *c);
 
   /* Get the number of columns occupied by a given character C. C is
      encoded in Unicode.  */
-  grub_ssize_t (*getcharwidth) (grub_uint32_t c);
+  grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *c);
 
   /* Get the screen size. The return value is ((Width << 8) | Height).  */
   grub_uint16_t (*getwh) (void);
@@ -261,8 +262,7 @@ grub_term_unregister_output (grub_term_output_t term)
 #define FOR_ACTIVE_TERM_OUTPUTS(var) for (var = grub_term_outputs; var; var = var->next)
 #define FOR_DISABLED_TERM_OUTPUTS(var) for (var = grub_term_outputs_disabled; var; var = var->next)
 
-void EXPORT_FUNC(grub_putcode) (grub_uint32_t code,
-				struct grub_term_output *term);
+void grub_putcode (grub_uint32_t code, struct grub_term_output *term);
 int EXPORT_FUNC(grub_getkey) (void);
 int EXPORT_FUNC(grub_checkkey) (void);
 int EXPORT_FUNC(grub_getkeystatus) (void);
@@ -379,7 +379,8 @@ grub_term_cls (struct grub_term_output *term)
 }
 
 static inline grub_ssize_t 
-grub_term_getcharwidth (struct grub_term_output *term, grub_uint32_t c)
+grub_term_getcharwidth (struct grub_term_output *term,
+			const struct grub_unicode_glyph *c)
 {
   if (term->getcharwidth)
     return term->getcharwidth (c);

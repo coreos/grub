@@ -63,6 +63,11 @@ grub_arch_dl_check_header (void *ehdr)
   return GRUB_ERR_BAD_MODULE;
 }
 
+void grub_hostfs_init (void);
+void grub_hostfs_fini (void);
+void grub_host_init (void);
+void grub_host_fini (void);
+
 grub_err_t
 grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 {
@@ -75,7 +80,14 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 void
 grub_reboot (void)
 {
-  longjmp (main_env, 1);
+  grub_fini_all ();
+  grub_hostfs_fini ();
+  grub_host_fini ();
+
+  grub_machine_fini ();
+
+  exit (0);
+  //  longjmp (main_env, 1);
 }
 
 void
@@ -145,11 +157,6 @@ usage (int status)
   return status;
 }
 
-
-void grub_hostfs_init (void);
-void grub_hostfs_fini (void);
-void grub_host_init (void);
-void grub_host_fini (void);
 
 int
 main (int argc, char *argv[])

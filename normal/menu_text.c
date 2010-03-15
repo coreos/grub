@@ -46,18 +46,6 @@ print_spaces (int number_spaces, struct grub_term_output *term)
     grub_putcode (' ', term);
 }
 
-void
-grub_print_ucs4 (const grub_uint32_t * str,
-		 const grub_uint32_t * last_position,
-		 struct grub_term_output *term)
-{
-  while (str < last_position)
-    {
-      grub_putcode (*str, term);
-      str++;
-    }
-}
-
 grub_ssize_t
 grub_getstringwidth (grub_uint32_t * str, const grub_uint32_t * last_position,
 		     struct grub_term_output *term)
@@ -66,8 +54,9 @@ grub_getstringwidth (grub_uint32_t * str, const grub_uint32_t * last_position,
 
   while (str < last_position)
     {
-      width += grub_term_getcharwidth (term, *str);
-      str++;
+      struct grub_unicode_glyph glyph;
+      str += grub_unicode_aglomerate_comb (str, last_position - str, &glyph);
+      width += grub_term_getcharwidth (term, &glyph);
     }
   return width;
 }
@@ -83,8 +72,18 @@ grub_print_message_indented (const char *msg, int margin_left, int margin_right,
 
   int msg_len;
 
-  line_len = grub_term_width (term) - grub_term_getcharwidth (term, 'm') *
-    (margin_left + margin_right);
+  {
+    struct grub_unicode_glyph pseudo_glyph = {
+      .base = ' ',
+      .variant = 0,
+      .attributes = 0,
+      .ncomb = 0,
+      .combining = 0
+      };
+    line_len = grub_term_width (term)
+      - grub_term_getcharwidth (term, &pseudo_glyph) 
+      * (margin_left + margin_right);
+  }
 
   msg_len = grub_utf8_to_ucs4_alloc (msg, &unicode_msg, &last_position);
 
@@ -252,34 +251,53 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
 
   grub_term_gotoxy (term, GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN, y);
 
+  int last_printed = 0;
   for (x = GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN + 1, i = 0;
        x < (int) (GRUB_TERM_LEFT_BORDER_X + grub_term_border_width (term)
-		  - GRUB_TERM_MARGIN);
-       i++)
+		  - GRUB_TERM_MARGIN);)
     {
       if (i < len
 	  && x <= (int) (GRUB_TERM_LEFT_BORDER_X + grub_term_border_width (term)
 			 - GRUB_TERM_MARGIN - 1))
 	{
 	  grub_ssize_t width;
+	  struct grub_unicode_glyph glyph;
 
-	  width = grub_term_getcharwidth (term, unicode_title[i]);
+	  i += grub_unicode_aglomerate_comb (unicode_title + i,
+					     len - i, &glyph);
 
-	  if (x + width > (int) (GRUB_TERM_LEFT_BORDER_X 
+	  width = grub_term_getcharwidth (term, &glyph);
+
+	  if (x + width <= (int) (GRUB_TERM_LEFT_BORDER_X 
 				 + grub_term_border_width (term)
 				 - GRUB_TERM_MARGIN - 1))
-	    grub_putcode (GRUB_TERM_DISP_RIGHT, term);
-	  else
-	    grub_putcode (unicode_title[i], term);
-
+	    last_printed = i;
 	  x += width;
 	}
       else
-	{
-	  grub_putcode (' ', term);
-	  x++;
-	}
+	break;
     }
+
+  grub_print_ucs4 (unicode_title,
+		   unicode_title + last_printed, term);
+
+  if (last_printed != len)
+    {
+      grub_putcode (GRUB_TERM_DISP_RIGHT, term);
+      struct grub_unicode_glyph pseudo_glyph = {
+	.base = GRUB_TERM_DISP_RIGHT,
+	.variant = 0,
+	.attributes = 0,
+	.ncomb = 0,
+	.combining = 0
+      };
+      x += grub_term_getcharwidth (term, &pseudo_glyph);
+    }
+
+  for (; x < (int) (GRUB_TERM_LEFT_BORDER_X + grub_term_border_width (term)
+		    - GRUB_TERM_MARGIN); x++)
+    grub_putcode (' ', term);
+
   grub_term_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
   grub_putcode (' ', term);
 
