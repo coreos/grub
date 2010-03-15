@@ -175,14 +175,7 @@ fail:
 static char *
 acorn_partition_map_get_name (const grub_partition_t p)
 {
-  char *name;
-
-  name = grub_malloc (13);
-  if (! name)
-    return 0;
-
-  grub_sprintf (name, "%d", p->index + 1);
-  return name;
+  return grub_xasprintf ("%d", p->index + 1);
 }
 
 
@@ -195,12 +188,12 @@ static struct grub_partition_map grub_acorn_partition_map =
   .get_name = acorn_partition_map_get_name
 };
 
-GRUB_MOD_INIT(acorn_partition_map)
+GRUB_MOD_INIT(part_acorn)
 {
   grub_partition_map_register (&grub_acorn_partition_map);
 }
 
-GRUB_MOD_FINI(acorn_partition_map)
+GRUB_MOD_FINI(part_acorn)
 {
   grub_partition_map_unregister (&grub_acorn_partition_map);
 }

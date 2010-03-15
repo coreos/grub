@@ -163,15 +163,15 @@ draw_text (grub_gui_progress_bar_t self)
       grub_video_color_t text_color = grub_gui_map_color (self->text_color);
       int width = self->bounds.width;
       int height = self->bounds.height;
-      char *text = grub_malloc (grub_strlen (self->template) + 10);
+      char *text;
+      text = grub_xasprintf (self->template,
+			     self->value > 0 ? self->value : -self->value);
       if (!text)
 	{
 	  grub_print_error ();
 	  grub_errno = GRUB_ERR_NONE;
 	  return;
 	}
-      grub_sprintf (text, self->template,
-		    self->value > 0 ? self->value : -self->value);
       /* Center the text. */
       int text_width = grub_font_get_string_width (font, text);
       int x = (width - text_width) / 2;
@@ -371,7 +371,7 @@ grub_gui_progress_bar_new (void)
   self->progress.ops = &progress_bar_pb_ops;
   self->progress.component.ops = &progress_bar_ops;
   self->visible = 1;
-  self->font = grub_font_get ("Helvetica 10");
+  self->font = grub_font_get ("Unknown Regular 16");
   grub_gui_color_t black = { .red = 0, .green = 0, .blue = 0, .alpha = 255 };
   grub_gui_color_t gray = { .red = 128, .green = 128, .blue = 128, .alpha = 255 };
   grub_gui_color_t lightgray = { .red = 200, .green = 200, .blue = 200, .alpha = 255 };

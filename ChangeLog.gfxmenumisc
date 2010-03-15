@@ -1,6 +1,0 @@
-2009-11-20  Colin D Bennett  <colin@gibibit.com>
-
-	* include/grub/misc.h (grub_iscntrl): New inline function.
-	(grub_isalnum): Likewise.
-	(grub_strtol): Likewise.
-

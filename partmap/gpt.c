@@ -162,14 +162,7 @@ gpt_partition_map_probe (grub_disk_t disk, const char *str)
 static char *
 gpt_partition_map_get_name (const grub_partition_t p)
 {
-  char *name;
-
-  name = grub_malloc (13);
-  if (! name)
-    return 0;
-
-  grub_sprintf (name, "%d", p->index + 1);
-  return name;
+  return grub_xasprintf ("%d", p->index + 1);
 }
 
 
@@ -182,12 +175,12 @@ static struct grub_partition_map grub_gpt_partition_map =
     .get_name = gpt_partition_map_get_name
   };
 
-GRUB_MOD_INIT(gpt_partition_map)
+GRUB_MOD_INIT(part_gpt)
 {
   grub_partition_map_register (&grub_gpt_partition_map);
 }
 
-GRUB_MOD_FINI(gpt_partition_map)
+GRUB_MOD_FINI(part_gpt)
 {
   grub_partition_map_unregister (&grub_gpt_partition_map);
 }

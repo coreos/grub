@@ -68,7 +68,7 @@ MOSTLYCLEAN_IMAGE_TARGETS += mostlyclean-image-#{@name}.#{@rule_count}
 
 ifneq ($(TARGET_APPLE_CC),1)
 #{@name}: #{exe}
-	$(OBJCOPY) -O $(#{prefix}_FORMAT) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id $< $@
+	$(OBJCOPY) -O $(#{prefix}_FORMAT) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@
 else
 ifneq (#{exe},kernel.exec)
 #{@name}: #{exe} ./grub-macho2img
@@ -132,25 +132,30 @@ clean-module-#{@name}.#{@rule_count}:
 
 CLEAN_MODULE_TARGETS += clean-module-#{@name}.#{@rule_count}
 
-ifneq ($(#{prefix}_EXPORTS),no)
 clean-module-#{@name}-symbol.#{@rule_count}:
 	rm -f #{defsym}
 
 CLEAN_MODULE_TARGETS += clean-module-#{@name}-symbol.#{@rule_count}
 DEFSYMFILES += #{defsym}
-endif
 mostlyclean-module-#{@name}.#{@rule_count}:
 	rm -f #{deps_str}
 
 MOSTLYCLEAN_MODULE_TARGETS += mostlyclean-module-#{@name}.#{@rule_count}
 UNDSYMFILES += #{undsym}
 
+ifeq ($(TARGET_NO_DYNAMIC_MODULES), yes)
+#{@name}: #{pre_obj} $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ #{pre_obj}
+	if test ! -z \"$(TARGET_OBJ2ELF)\"; then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@; fi
+else
 ifneq ($(TARGET_APPLE_CC),1)
 #{@name}: #{pre_obj} #{mod_obj} $(TARGET_OBJ2ELF)
 	-rm -f $@
 	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ #{pre_obj} #{mod_obj}
 	if test ! -z \"$(TARGET_OBJ2ELF)\"; then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@; fi
 else
 #{@name}: #{pre_obj} #{mod_obj} $(TARGET_OBJ2ELF)
 	-rm -f $@
@@ -158,6 +163,7 @@ else
 	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@.bin #{pre_obj} #{mod_obj}
 	$(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -wd1106 -nu -nd $@.bin $@
 	-rm -f $@.bin
+endif
 endif
 
 #{pre_obj}: $(#{prefix}_DEPENDENCIES) #{objs_str}
@@ -170,14 +176,12 @@ endif
 #{mod_src}: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '#{mod_name}' $< > $@ || (rm -f $@; exit 1)
 
-ifneq ($(#{prefix}_EXPORTS),no)
 ifneq ($(TARGET_APPLE_CC),1)
 #{defsym}: #{pre_obj}
 	$(NM) -g --defined-only -P -p $< | sed 's/^\\([^ ]*\\).*/\\1 #{mod_name}/' > $@
 else
 #{defsym}: #{pre_obj}
 	$(NM) -g -P -p $< | grep -E '^[a-zA-Z0-9_]* [TDS]'  | sed 's/^\\([^ ]*\\).*/\\1 #{mod_name}/' > $@
-endif
 endif
 
 #{undsym}: #{pre_obj}
@@ -205,7 +209,7 @@ endif
 -include #{dep}
 
 clean-module-#{extra_target}.#{@rule_count}:
-	rm -f #{command} #{fs} #{partmap} #{handler} #{parttool} #{video}
+	rm -f #{command} #{fs} #{partmap} #{handler} #{parttool} #{video} #{terminal}
 
 CLEAN_MODULE_TARGETS += clean-module-#{extra_target}.#{@rule_count}
 
@@ -331,8 +335,15 @@ class Program
     "CLEANFILES += #{@name} #{objs_str}
 MOSTLYCLEANFILES += #{deps_str}
 
+ifeq ($(#{prefix}_RELOCATABLE),yes)
+#{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
+	$(TARGET_CC) -Wl,-r,-d -o $@ #{objs_str} $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
+	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) --strip-unneeded -K start -R .note -R .comment $@; fi
+else
 #{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
 	$(TARGET_CC) -o $@ #{objs_str} $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
+	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) -R .rel.dyn -R .reginfo -R .note -R .comment $@; fi
+endif
 
 " + objs.collect_with_index do |obj, i|
       src = sources[i]
@@ -344,6 +355,7 @@ MOSTLYCLEANFILES += #{deps_str}
 
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
 	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
+
 -include #{dep}
 
 "
@@ -370,8 +382,7 @@ class Script
     "CLEANFILES += #{@name}
 
 #{@name}: #{src} $(#{src}_DEPENDENCIES) config.status
-	./config.status --file=#{name}:#{src}
-	sed -i -e 's,@pkglib_DATA@,$(pkglib_DATA),g' $@
+	./config.status --file=-:#{src} | sed -e 's,@pkglib_DATA@,$(pkglib_DATA),g' > $@
 	chmod +x $@
 
 "

@@ -26,6 +26,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#define LVM_DEV_MAPPER_STRING "/dev/mapper/"
+
 int
 grub_util_lvm_isvolume (char *name)
 {
@@ -33,10 +35,10 @@ grub_util_lvm_isvolume (char *name)
   struct stat st;
   int err;
 
-  devname = xmalloc (strlen (name) + 13);
+  devname = xmalloc (strlen (name) + sizeof (LVM_DEV_MAPPER_STRING));
 
-  strcpy (devname, "/dev/mapper/");
-  strcpy (devname+12, name);
+  strcpy (devname, LVM_DEV_MAPPER_STRING);
+  strcpy (devname + sizeof(LVM_DEV_MAPPER_STRING) - 1, name);
 
   err = stat (devname, &st);
   free (devname);

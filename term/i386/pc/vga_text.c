@@ -77,7 +77,7 @@ inc_y (void)
 static void
 inc_x (void)
 {
-  if (grub_curr_x >= COLS - 2)
+  if (grub_curr_x >= COLS - 1)
     inc_y ();
   else
     grub_curr_x++;
@@ -163,16 +163,12 @@ static struct grub_term_output grub_vga_text_term =
     .setcolorstate = grub_console_setcolorstate,
     .setcolor = grub_console_setcolor,
     .getcolor = grub_console_getcolor,
-    .setcursor = grub_vga_text_setcursor
+    .setcursor = grub_vga_text_setcursor,
   };
 
 GRUB_MOD_INIT(vga_text)
 {
-#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
-  grub_term_register_output_active ("vga_text", &grub_vga_text_term);
-#else
   grub_term_register_output ("vga_text", &grub_vga_text_term);
-#endif
 }
 
 GRUB_MOD_FINI(vga_text)

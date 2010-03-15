@@ -327,10 +327,10 @@ list_paint (void *vself, const grub_video_rect_t *region)
       draw_scrollbar (self,
 		      self->first_shown_index, num_shown_items,
 		      0, self->view->menu->size,
-		      content_rect.width - box_right_pad
+		      self->bounds.width - box_right_pad
 		      + self->scrollbar_width,
 		      box_top_pad + self->item_padding,
-		      content_rect.height - box_top_pad - box_bottom_pad);
+		      self->bounds.height - box_top_pad - box_bottom_pad);
   }
 
   grub_gui_restore_viewport (&vpsave);
@@ -566,7 +566,7 @@ grub_gui_list_new (void)
 
   self->visible = 1;
 
-  default_font = grub_font_get ("Helvetica 12");
+  default_font = grub_font_get ("Unknown Regular 16");
   default_fg_color = grub_gui_color_rgb (0, 0, 0);
   default_bg_color = grub_gui_color_rgb (255, 255, 255);
 

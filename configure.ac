@@ -31,7 +31,7 @@ dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
 dnl type.
 
 
-AC_INIT([GRUB],[1.97],[bug-grub@gnu.org])
+AC_INIT([GRUB],[1.98],[bug-grub@gnu.org])
 AM_INIT_AUTOMAKE()
 AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
@@ -51,7 +51,18 @@ fi
 
 case "$target_cpu" in
   i[[3456]]86)	target_cpu=i386 ;;
+  amd64)	target_cpu=x86_64 ;;
   sparc)	target_cpu=sparc64 ;;
+  mipsel|mips64el)
+                target_cpu=mips;    
+		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPSEL=1"; 
+		CFLAGS="$CFLAGS -DGRUB_CPU_MIPSEL=1";
+		;;
+  mips|mips64)
+                target_cpu=mips;    
+		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPS=1"; 
+		CFLAGS="$CFLAGS -DGRUB_CPU_MIPS=1";
+		;;
 esac
 
 # Specify the platform (such as firmware).
@@ -69,6 +80,7 @@ if test "x$with_platform" = x; then
     powerpc-*) platform=ieee1275 ;;
     powerpc64-*) platform=ieee1275 ;;
     sparc64-*) platform=ieee1275 ;;
+    mips-*) platform=yeeloong ;;
     *) AC_MSG_ERROR([unsupported CPU: "$target_cpu"]) ;;
   esac
 else
@@ -79,6 +91,7 @@ fi
 if test -z "$target_alias"; then
   case "$target_cpu"-"$platform" in
     x86_64-efi) ;;
+    x86_64-emu) ;;
     x86_64-*) target_cpu=i386 ;;
     powerpc64-ieee1275) target_cpu=powerpc ;;
   esac
@@ -95,6 +108,8 @@ case "$target_cpu"-"$platform" in
   i386-qemu) ;;
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;
+  mips-qemu-mips) ;;
+  mips-yeeloong) ;;
   *-emu) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
@@ -125,7 +140,14 @@ case "$platform" in
   qemu)		machine_CFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
   pc)		machine_CFLAGS="-DGRUB_MACHINE_PCBIOS=1" ;;
   emu)		machine_CFLAGS="-DGRUB_MACHINE_EMU=1" ;;
+  yeeloong)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  qemu-mips)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
 esac
+case "$target_cpu" in
+  mips)      	machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_MIPS=1" ;;
+  sparc64)      machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
+esac
+
 CFLAGS="$CFLAGS $machine_CFLAGS"
 TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
 TARGET_CFLAGS="$TARGET_CFLAGS $machine_CFLAGS"
@@ -148,12 +170,17 @@ if test "x$CMP" = x; then
   AC_MSG_ERROR([cmp is not found])
 fi
 
+AC_CHECK_PROGS([LEX], [flex])
+if test "x$LEX" = x; then
+  AC_MSG_ERROR([flex is not found])
+fi
+
 AC_CHECK_PROGS([YACC], [bison])
 if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
 fi
 
-for file in /usr/src/unifont.bdf /usr/share/fonts/X11/misc/unifont.pcf.gz ; do
+for file in /usr/src/unifont.bdf /usr/share/fonts/X11/misc/unifont.pcf.gz /usr/share/fonts/unifont/unifont.pcf.gz; do
   if test -e $file ; then
     AC_SUBST([FONT_SOURCE], [$file])
     break
@@ -206,7 +233,7 @@ AC_HEADER_MAJOR
 AC_HEADER_DIRENT
 AC_CHECK_FUNCS(memmove sbrk strdup lstat getuid getgid)
 AC_CHECK_HEADERS(sys/mkdev.h sys/sysmacros.h malloc.h termios.h sys/types.h)
-AC_CHECK_HEADERS(unistd.h string.h strings.h sys/stat.h sys/fcntl.h)
+AC_CHECK_HEADERS(unistd.h string.h strings.h sys/stat.h sys/fcntl.h limits.h)
 
 #
 # Check for target programs.
@@ -337,6 +364,7 @@ AC_MSG_RESULT([$TARGET_OBJ2ELF])
 if test "x$target_m32" = x1; then
   # Force 32-bit mode.
   TARGET_CFLAGS="$TARGET_CFLAGS -m32"
+  TARGET_ASFLAGS="$TARGET_CFLAGS -m32"
   TARGET_LDFLAGS="$TARGET_LDFLAGS -m32"
   TARGET_MODULE_FORMAT="elf32"
 fi
@@ -344,6 +372,7 @@ fi
 if test "x$target_m64" = x1; then
   # Force 64-bit mode.
   TARGET_CFLAGS="$TARGET_CFLAGS -m64"
+  TARGET_ASFLAGS="$TARGET_ASFLAGS -m64"
   TARGET_LDFLAGS="$TARGET_LDFLAGS -m64"
   TARGET_MODULE_FORMAT="elf64"
 fi
@@ -423,18 +452,26 @@ AC_SUBST(TARGET_ASFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)
 AC_SUBST(TARGET_LDFLAGS)
 
-# Check for libgcc symbols (must be performed before we add -nostdlib to LDFLAGS)
-AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2)
-
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"
+if test "x$TARGET_APPLE_CC" = x1 ; then
+CFLAGS="$TARGET_CFLAGS -nostdlib -Wno-error"
+else
+CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wl,--defsym,abort=main -Wno-error"
+fi
+CPPFLAGS="$TARGET_CPPFLAGS"
+LDFLAGS="$TARGET_LDFLAGS"
+LIBS=-lgcc
+
+# Check for libgcc symbols
+AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x)
+
 if test "x$TARGET_APPLE_CC" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib"
 else
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100"
 fi
-CPPFLAGS="$TARGET_CPPFLAGS"
-LDFLAGS="$TARGET_LDFLAGS"
+LIBS=""
 
 # Defined in aclocal.m4.
 grub_PROG_TARGET_CC
@@ -493,6 +530,21 @@ enable_efiemu=no
 fi
 AC_SUBST([enable_efiemu])
 
+if test "$platform" != emu; then
+AC_CACHE_CHECK([whether -nostdinc -isystem works], [grub_cv_cc_isystem], [
+  SAVED_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$TARGET_CPPFLAGS -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
+int va_arg_func (int fixed, va_list args);]], [[]])],
+      [grub_cv_cc_isystem=yes],
+      [grub_cv_cc_isystem=no])
+  CPPFLAGS="$SAVED_CPPFLAGS"
+])
+
+if test x"$grub_cv_cc_isystem" = xyes ; then
+  TARGET_CPPFLAGS="$TARGET_CPPFLAGS -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
+fi
+fi
 
 # Restore the flags.
 CC="$tmp_CC"
@@ -656,6 +708,16 @@ if test x"$grub_mkfont_excuse" = x ; then
   freetype_cflags=`freetype-config --cflags`
   freetype_libs=`freetype-config --libs`
 fi
+
+if test x"$grub_mkfont_excuse" = x ; then
+  # Check for freetype libraries.
+  SAVED_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS $freetype_cflags"
+  AC_CHECK_HEADERS([ft2build.h], [],
+  	[grub_mkfont_excuse=["need freetype2 headers"]])
+  CPPFLAGS="$SAVED_CPPFLAGS"
+fi
+
 if test x"$enable_grub_mkfont" = xyes && test x"$grub_mkfont_excuse" != x ; then
   AC_MSG_ERROR([grub-mkfont was explicitly requested but can't be compiled])
 fi

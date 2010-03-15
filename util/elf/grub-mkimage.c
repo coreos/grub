@@ -100,7 +100,7 @@ load_note (Elf32_Phdr *phdr, FILE *out)
 
 void
 load_modules (grub_addr_t modbase, Elf32_Phdr *phdr, const char *dir,
-	      char *mods[], FILE *out, char *memdisk_path)
+	      char *mods[], FILE *out, char *memdisk_path, char *config_path)
 {
   char *module_img;
   struct grub_util_path_list *path_list;
@@ -109,6 +109,7 @@ load_modules (grub_addr_t modbase, Elf32_Phdr *phdr, const char *dir,
   size_t offset;
   size_t total_module_size;
   size_t memdisk_size = 0;
+  size_t config_size = 0;
 
   path_list = grub_util_resolve_dependencies (dir, "moddep.lst", mods);
 
@@ -120,6 +121,13 @@ load_modules (grub_addr_t modbase, Elf32_Phdr *phdr, const char *dir,
       memdisk_size = ALIGN_UP(grub_util_get_image_size (memdisk_path), 512);
       grub_util_info ("the size of memory disk is 0x%x", memdisk_size);
       total_module_size += memdisk_size + sizeof (struct grub_module_header);
+    }
+
+  if (config_path)
+    {
+      config_size = ALIGN_UP(grub_util_get_image_size (config_path), 512);
+      grub_util_info ("the size of memory disk is 0x%x", config_size);
+      total_module_size += config_size + sizeof (struct grub_module_header);
     }
 
   for (p = path_list; p; p = p->next)
@@ -168,6 +176,19 @@ load_modules (grub_addr_t modbase, Elf32_Phdr *phdr, const char *dir,
       offset += memdisk_size;
     }
 
+  if (config_path)
+    {
+      struct grub_module_header *header;
+
+      header = (struct grub_module_header *) (module_img + offset);
+      header->type = OBJ_TYPE_CONFIG;
+      header->size = grub_host_to_target32 (config_size + sizeof (*header));
+      offset += sizeof (*header);
+
+      grub_util_load_image (config_path, module_img + offset);
+      offset += config_size;
+    }
+
 
   /* Write the module data to the new segment.  */
   grub_util_write_image_at (module_img, total_module_size,
@@ -184,7 +205,7 @@ load_modules (grub_addr_t modbase, Elf32_Phdr *phdr, const char *dir,
 }
 
 void
-add_segments (char *dir, char *prefix, FILE *out, int chrp, char *mods[], char *memdisk_path)
+add_segments (char *dir, char *prefix, FILE *out, int chrp, char *mods[], char *memdisk_path, char *config_path)
 {
   Elf32_Ehdr ehdr;
   Elf32_Phdr *phdrs = NULL;
@@ -273,7 +294,7 @@ add_segments (char *dir, char *prefix, FILE *out, int chrp, char *mods[], char *
       phdr->p_offset = grub_host_to_target32 (ALIGN_UP (grub_util_get_fp_size (out),
 							GRUB_TARGET_SIZEOF_LONG));
 
-      load_modules (modbase, phdr, dir, mods, out, memdisk_path);
+      load_modules (modbase, phdr, dir, mods, out, memdisk_path, config_path);
     }
 
   if (chrp)
@@ -316,6 +337,7 @@ static struct option options[] =
     {"directory", required_argument, 0, 'd'},
     {"prefix", required_argument, 0, 'p'},
     {"memdisk", required_argument, 0, 'm'},
+    {"config", required_argument, 0, 'c'},
     {"output", required_argument, 0, 'o'},
     {"help", no_argument, 0, 'h'},
     {"note", no_argument, 0, 'n'},
@@ -328,7 +350,7 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
 Usage: %s -o FILE [OPTION]... [MODULES]\n\
@@ -338,6 +360,7 @@ Make a bootable image of GRUB.\n\
   -d, --directory=DIR     use images and modules under DIR [default=%s]\n\
   -p, --prefix=DIR        set grub_prefix directory\n\
   -m, --memdisk=FILE      embed FILE as a memdisk image\n\
+  -c, --config=FILE       embed FILE as boot config\n\
   -o, --output=FILE       output a generated image to FILE\n\
   -h, --help              display this message and exit\n\
   -n, --note              add NOTE segment for CHRP Open Firmware\n\
@@ -358,6 +381,7 @@ main (int argc, char *argv[])
   char *dir = NULL;
   char *prefix = NULL;
   char *memdisk = NULL;
+  char *config = NULL;
   int chrp = 0;
 
   set_program_name (argv[0]);
@@ -366,7 +390,7 @@ main (int argc, char *argv[])
 
   while (1)
     {
-      int c = getopt_long (argc, argv, "d:p:m:o:hVvn", options, 0);
+      int c = getopt_long (argc, argv, "d:p:m:c:o:hVvn", options, 0);
       if (c == -1)
 	break;
 
@@ -392,6 +416,13 @@ main (int argc, char *argv[])
 	    prefix = xstrdup ("(memdisk)/boot/grub");
 
 	    break;
+	  case 'c':
+	    if (config)
+	      free (config);
+	    config = xstrdup (optarg);
+
+	    break;
+
 	  case 'h':
 	    usage (0);
 	    break;
@@ -422,7 +453,8 @@ main (int argc, char *argv[])
   if (! fp)
     grub_util_error ("cannot open %s", output);
 
-  add_segments (dir ? : GRUB_LIBDIR, prefix, fp, chrp, argv + optind, memdisk);
+  add_segments (dir ? : GRUB_LIBDIR, prefix, fp, chrp, argv + optind, memdisk,
+		config);
 
   fclose (fp);
 

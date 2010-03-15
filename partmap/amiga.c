@@ -184,14 +184,7 @@ amiga_partition_map_probe (grub_disk_t disk, const char *str)
 static char *
 amiga_partition_map_get_name (const grub_partition_t p)
 {
-  char *name;
-
-  name = grub_malloc (13);
-  if (! name)
-    return 0;
-
-  grub_sprintf (name, "%d", p->index + 1);
-  return name;
+  return grub_xasprintf ("%d", p->index + 1);
 }
 
 
@@ -204,12 +197,12 @@ static struct grub_partition_map grub_amiga_partition_map =
     .get_name = amiga_partition_map_get_name
   };
 
-GRUB_MOD_INIT(amiga_partition_map)
+GRUB_MOD_INIT(part_amiga)
 {
   grub_partition_map_register (&grub_amiga_partition_map);
 }
 
-GRUB_MOD_FINI(amiga_partition_map)
+GRUB_MOD_FINI(part_amiga)
 {
   grub_partition_map_unregister (&grub_amiga_partition_map);
 }

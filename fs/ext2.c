@@ -436,7 +436,8 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       grub_uint32_t indir[blksz / 4];
 
       if (grub_disk_read (data->disk,
-			  grub_le_to_cpu32 (inode->blocks.indir_block)
+			  ((grub_disk_addr_t)
+			   grub_le_to_cpu32 (inode->blocks.indir_block))
 			  << log2_blksz,
 			  0, blksz, indir))
 	return grub_errno;
@@ -452,13 +453,15 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       grub_uint32_t indir[blksz / 4];
 
       if (grub_disk_read (data->disk,
-			  grub_le_to_cpu32 (inode->blocks.double_indir_block)
+			  ((grub_disk_addr_t)
+			   grub_le_to_cpu32 (inode->blocks.double_indir_block))
 			  << log2_blksz,
 			  0, blksz, indir))
 	return grub_errno;
 
       if (grub_disk_read (data->disk,
-			  grub_le_to_cpu32 (indir[rblock / perblock])
+			  ((grub_disk_addr_t)
+			   grub_le_to_cpu32 (indir[rblock / perblock]))
 			  << log2_blksz,
 			  0, blksz, indir))
 	return grub_errno;
@@ -875,12 +878,15 @@ grub_ext2_uuid (grub_device_t device, char **uuid)
   data = grub_ext2_mount (disk);
   if (data)
     {
-      *uuid = grub_malloc (40 + sizeof ('\0'));
-      grub_sprintf (*uuid, "%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-		    grub_be_to_cpu16 (data->sblock.uuid[0]), grub_be_to_cpu16 (data->sblock.uuid[1]),
-		    grub_be_to_cpu16 (data->sblock.uuid[2]), grub_be_to_cpu16 (data->sblock.uuid[3]),
-		    grub_be_to_cpu16 (data->sblock.uuid[4]), grub_be_to_cpu16 (data->sblock.uuid[5]),
-		    grub_be_to_cpu16 (data->sblock.uuid[6]), grub_be_to_cpu16 (data->sblock.uuid[7]));
+      *uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+			     grub_be_to_cpu16 (data->sblock.uuid[0]),
+			     grub_be_to_cpu16 (data->sblock.uuid[1]),
+			     grub_be_to_cpu16 (data->sblock.uuid[2]),
+			     grub_be_to_cpu16 (data->sblock.uuid[3]),
+			     grub_be_to_cpu16 (data->sblock.uuid[4]),
+			     grub_be_to_cpu16 (data->sblock.uuid[5]),
+			     grub_be_to_cpu16 (data->sblock.uuid[6]),
+			     grub_be_to_cpu16 (data->sblock.uuid[7]));
     }
   else
     *uuid = NULL;

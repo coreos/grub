@@ -21,6 +21,7 @@
 #include <grub/types.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
+#include <grub/time.h>
 #include <grub/machine/console.h>
 #include <grub/ieee1275/ieee1275.h>
 
@@ -77,18 +78,68 @@ grub_ofconsole_writeesc (const char *str)
 static void
 grub_ofconsole_putchar (grub_uint32_t c)
 {
-  char chr = c;
+  char chr;
+
+  if (c > 0x7F)
+    {
+      /* Better than nothing.  */
+      switch (c)
+	{
+	case GRUB_TERM_DISP_LEFT:
+	  c = '<';
+	  break;
+	  
+	case GRUB_TERM_DISP_UP:
+	  c = '^';
+	  break;
+
+	case GRUB_TERM_DISP_RIGHT:
+	  c = '>';
+	  break;
+
+	case GRUB_TERM_DISP_DOWN:
+	  c = 'v';
+	  break;
+
+	case GRUB_TERM_DISP_HLINE:
+	  c = '-';
+	  break;
+
+	case GRUB_TERM_DISP_VLINE:
+	  c = '|';
+	  break;
+
+	case GRUB_TERM_DISP_UL:
+	case GRUB_TERM_DISP_UR:
+	case GRUB_TERM_DISP_LL:
+	case GRUB_TERM_DISP_LR:
+	  c = '+';
+	  break;
+
+	default:
+	  c = '?';
+	  break;
+	}
+    }
+
+  chr = c;
+
   if (c == '\n')
     {
       grub_curr_y++;
       grub_curr_x = 0;
     }
+  else if (c == '\r')
+    {
+      grub_curr_x = 0;
+    }
   else
     {
       grub_curr_x++;
-      if (grub_curr_x > grub_ofconsole_width)
+      if (grub_curr_x >= grub_ofconsole_width)
         {
           grub_ofconsole_putchar ('\n');
+          grub_ofconsole_putchar ('\r');
           grub_curr_x++;
         }
     }
@@ -104,7 +155,7 @@ grub_ofconsole_getcharwidth (grub_uint32_t c __attribute__((unused)))
 static void
 grub_ofconsole_setcolorstate (grub_term_color_state state)
 {
-  char setcol[20];
+  char setcol[256];
   int fg;
   int bg;
 
@@ -123,7 +174,7 @@ grub_ofconsole_setcolorstate (grub_term_color_state state)
       return;
     }
 
-  grub_sprintf (setcol, "\e[3%dm\e[4%dm", fg, bg);
+  grub_snprintf (setcol, sizeof (setcol), "\e[3%dm\e[4%dm", fg, bg);
   grub_ofconsole_writeesc (setcol);
 }
 
@@ -151,42 +202,81 @@ grub_ofconsole_readkey (int *key)
 
   grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
 
-  if (actual > 0 && c == '\e')
-    {
-      grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-      if (actual <= 0)
+  if (actual > 0)
+    switch(c)
+      {
+      case 0x7f:
+        /* Backspace: Ctrl-h.  */
+        c = '\b'; 
+        break;
+      case '\e':
 	{
-	  *key = '\e';
-	  return 1;
+	  grub_uint64_t start;
+	  grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+
+	  /* On 9600 we have to wait up to 12 milliseconds.  */
+	  start = grub_get_time_ms ();
+	  while (actual <= 0 && grub_get_time_ms () - start < 12)
+	    grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+
+	  if (actual <= 0)
+	    {
+	      *key = '\e';
+	      return 1;
+	    }
+
+	  if (c != '[')
+	    return 0;
+	  
+	  grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+
+	  /* On 9600 we have to wait up to 12 milliseconds.  */
+	  start = grub_get_time_ms ();
+	  while (actual <= 0 && grub_get_time_ms () - start < 12)
+	    grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+	  if (actual <= 0)
+	    return 0;
+
+	  switch (c)
+	    {
+	    case 'A':
+	      /* Up: Ctrl-p.  */
+	      c = GRUB_TERM_UP;
+	      break;
+	    case 'B':
+	      /* Down: Ctrl-n.  */
+	      c = GRUB_TERM_DOWN;
+	      break;
+	    case 'C':
+	      /* Right: Ctrl-f.  */
+	      c = GRUB_TERM_RIGHT;
+	      break;
+	    case 'D':
+	      /* Left: Ctrl-b.  */
+	      c = GRUB_TERM_LEFT;
+	      break;
+	    case '3':
+	      {
+		grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+		/* On 9600 we have to wait up to 12 milliseconds.  */
+		start = grub_get_time_ms ();
+		while (actual <= 0 && grub_get_time_ms () - start < 12)
+		  grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+		
+		if (actual <= 0)
+		  return 0;
+  	    
+		/* Delete: Ctrl-d.  */
+		if (c == '~')
+		  c = GRUB_TERM_DC;
+		else
+		  return 0;
+		break;
+	      }
+	      break;
+	    }
 	}
-
-      if (c != 91)
-	return 0;
-
-      grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-      if (actual <= 0)
-	return 0;
-
-      switch (c)
-	{
-	case 65:
-	  /* Up: Ctrl-p.  */
-	  c = 16;
-	  break;
-	case 66:
-	  /* Down: Ctrl-n.  */
-	  c = 14;
-	  break;
-	case 67:
-	  /* Right: Ctrl-f.  */
-	  c = 6;
-	  break;
-	case 68:
-	  /* Left: Ctrl-b.  */
-	  c = 2;
-	  break;
-	}
-    }
+      }
 
   *key = c;
   return actual > 0;
@@ -234,44 +324,32 @@ grub_ofconsole_getxy (void)
   return ((grub_curr_x - 1) << 8) | grub_curr_y;
 }
 
-static grub_uint16_t
-grub_ofconsole_getwh (void)
+static void
+grub_ofconsole_dimensions (void)
 {
   grub_ieee1275_ihandle_t options;
-  char *val;
   grub_ssize_t lval;
-
-  if (grub_ofconsole_width && grub_ofconsole_height)
-    return (grub_ofconsole_width << 8) | grub_ofconsole_height;
 
   if (! grub_ieee1275_finddevice ("/options", &options)
       && options != (grub_ieee1275_ihandle_t) -1)
     {
       if (! grub_ieee1275_get_property_length (options, "screen-#columns",
-					       &lval) && lval != -1)
+					       &lval)
+	  && lval >= 0 && lval < 1024)
 	{
-	  val = grub_malloc (lval);
-	  if (val)
-	    {
-	      if (! grub_ieee1275_get_property (options, "screen-#columns",
-						val, lval, 0))
-		grub_ofconsole_width = (grub_uint8_t) grub_strtoul (val, 0, 10);
+	  char val[lval];
 
-	      grub_free (val);
-	    }
+	  if (! grub_ieee1275_get_property (options, "screen-#columns",
+					    val, lval, 0))
+	    grub_ofconsole_width = (grub_uint8_t) grub_strtoul (val, 0, 10);
 	}
-      if (! grub_ieee1275_get_property_length (options, "screen-#rows",
-					       &lval) && lval != -1)
+      if (! grub_ieee1275_get_property_length (options, "screen-#rows", &lval)
+	  && lval >= 0 && lval < 1024)
 	{
-	  val = grub_malloc (lval);
-	  if (val)
-	    {
-	      if (! grub_ieee1275_get_property (options, "screen-#rows",
-						val, lval, 0))
-		grub_ofconsole_height = (grub_uint8_t) grub_strtoul (val, 0, 10);
-
-	      grub_free (val);
-	    }
+	  char val[lval];
+	  if (! grub_ieee1275_get_property (options, "screen-#rows",
+					    val, lval, 0))
+	    grub_ofconsole_height = (grub_uint8_t) grub_strtoul (val, 0, 10);
 	}
     }
 
@@ -280,21 +358,24 @@ grub_ofconsole_getwh (void)
     grub_ofconsole_width = 80;
   if (! grub_ofconsole_height)
     grub_ofconsole_height = 24;
+}
 
+static grub_uint16_t
+grub_ofconsole_getwh (void)
+{
   return (grub_ofconsole_width << 8) | grub_ofconsole_height;
 }
 
 static void
 grub_ofconsole_gotoxy (grub_uint8_t x, grub_uint8_t y)
 {
-  char s[11]; /* 5 + 3 + 3.  */
-
   if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_ANSI))
     {
+      char s[256];
       grub_curr_x = x;
       grub_curr_y = y;
 
-      grub_sprintf (s, "\e[%d;%dH", y + 1, x + 1);
+      grub_snprintf (s, sizeof (s), "\e[%d;%dH", y + 1, x + 1);
       grub_ofconsole_writeesc (s);
     }
   else
@@ -379,6 +460,8 @@ grub_ofconsole_init_output (void)
       grub_ofconsole_setcolorstate (GRUB_TERM_COLOR_NORMAL);
     }
 
+  grub_ofconsole_dimensions ();
+
   return 0;
 }
 
@@ -420,8 +503,8 @@ static struct grub_term_output grub_ofconsole_term_output =
 void
 grub_console_init (void)
 {
-  grub_term_register_input_active ("ofconsole", &grub_ofconsole_term_input);
-  grub_term_register_output_active ("ofconsole", &grub_ofconsole_term_output);
+  grub_term_register_input ("ofconsole", &grub_ofconsole_term_input);
+  grub_term_register_output ("ofconsole", &grub_ofconsole_term_output);
 }
 
 void

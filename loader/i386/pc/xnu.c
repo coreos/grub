@@ -35,7 +35,8 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
 {
   struct grub_video_mode_info mode_info;
   int ret;
-  char *tmp, *modevar;
+  char *tmp;
+  const char *modevar;
   void *framebuffer;
   grub_err_t err;
   struct grub_video_bitmap *bitmap = NULL;
@@ -49,12 +50,9 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
 			       32 << GRUB_VIDEO_MODE_TYPE_DEPTH_POS);
   else
     {
-      tmp = grub_malloc (grub_strlen (modevar)
-			 + sizeof (DEFAULT_VIDEO_MODE) + 1);
+      tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
       if (! tmp)
-	return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			   "couldn't allocate temporary storag");
-      grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
+	return grub_errno;
       err = grub_video_set_mode (tmp,
 				 GRUB_VIDEO_MODE_TYPE_PURE_TEXT
 				 | GRUB_VIDEO_MODE_TYPE_DEPTH_MASK,

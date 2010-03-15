@@ -229,7 +229,7 @@ grub_acpi_create_ebda (void)
 				   sizeof (struct grub_acpi_rsdp_v10)) == 0)
 	  {
 	    grub_memcpy (target, v1, sizeof (struct grub_acpi_rsdp_v10));
-	    grub_dprintf ("acpi", "Copying rsdpv2 to %p\n", target);
+	    grub_dprintf ("acpi", "Copying rsdpv1 to %p\n", target);
 	    v1inebda = target;
 	    target += sizeof (struct grub_acpi_rsdp_v10);
 	    target = (grub_uint8_t *) ((((long) target - 1) | 0xf) + 1);

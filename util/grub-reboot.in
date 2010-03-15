@@ -51,7 +51,7 @@ for option in "$@"; do
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-install (GNU GRUB ${PACKAGE_VERSION})"
+	echo "grub-reboot (GNU GRUB ${PACKAGE_VERSION})"
 	exit 0 ;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
@@ -96,7 +96,11 @@ prev_saved_entry=`$grub_editenv ${grubdir}/grubenv list | sed -n 's/^saved_entry
 if [ "$prev_saved_entry" ]; then
     $grub_editenv ${grubdir}/grubenv set prev_saved_entry="$prev_saved_entry"
 else
-    $grub_editenv ${grubdir}/grubenv unset prev_saved_entry
+    # We need some non-empty value for prev_saved_entry so that GRUB will
+    # recognise that grub-reboot has been used and restore the previous
+    # saved entry. "0" is the same as an empty value, i.e. the first menu
+    # entry.
+    $grub_editenv ${grubdir}/grubenv set prev_saved_entry=0
 fi
 $grub_editenv ${grubdir}/grubenv set saved_entry="$entry"
 
