@@ -597,10 +597,15 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	  unsigned j;
 	  unsigned i;
 
-	  if (last_space > (signed) line_start)
+	  if (k != visual_len && last_space > (signed) line_start)
 	    k = last_space;
+	  else if (k != visual_len && line_start == 0 && startwidth != 0)
+	    {
+	      k = 0;
+	      last_space_width = startwidth;
+	    }
 	  else
-	    line_width -= last_width;
+	    last_space_width = line_width - last_width;
 
 	  for (i = line_start; i < k; i++)
 	    {
@@ -627,6 +632,8 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	    if (is_mirrored (visual[i].base) && levels[i])
 	      visual[i].attributes |= GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR;
 
+	  grub_memcpy (outptr, &visual[line_start],
+		       (k - line_start) * sizeof (visual[0]));
 	  outptr += k - line_start;
 	  if (k != visual_len)
 	    {
@@ -986,6 +993,7 @@ grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 	      grub_memset (visual_ptr, 0, sizeof (visual_ptr[0]));
 	      visual_ptr->base = '\n';
 	      visual_ptr++;
+	      line_start++;
 	    }
 	}
     }
@@ -1140,7 +1148,6 @@ grub_print_ucs4 (const grub_uint32_t * str,
     grub_print_spaces (term, margin_left - ((term->getxy () >> 8) & 0xff));
 
   startwidth = ((term->getxy () >> 8) & 0xff) - margin_left;
-  startwidth = 0;
 
   if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
       == GRUB_TERM_CODE_TYPE_UCS4_VISUAL 
@@ -1236,6 +1243,12 @@ grub_print_ucs4 (const grub_uint32_t * str,
 
 	    if (line_width > max_width && last_space > line_start)
 	      ptr = last_space;
+	    else if (line_width > max_width 
+		     && line_start == str && startwidth != 0)
+	      {
+		ptr = str;
+		lastspacewidth = startwidth;
+	      }
 	    else
 	      lastspacewidth = line_width - last_width;
 
