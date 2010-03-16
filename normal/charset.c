@@ -538,6 +538,7 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
       out->variant = 0;
       out->attributes = 0;
       out->ncomb = 0;
+      out->estimated_width = 1;
       out->combining = NULL;
     }
   return ptr - in;
@@ -1075,7 +1076,8 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
       .variant = 0,
       .attributes = 0,
       .ncomb = 0,
-      .combining = 0
+      .combining = 0,
+      .estimated_width = 1
     };
 
   if (c->base == '\t' && term->getxy)
@@ -1096,6 +1098,7 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
       == GRUB_TERM_CODE_TYPE_UTF8_VISUAL)
     {
       int i;
+      c2.estimated_width = 1;
       for (i = -1; i < (int) c->ncomb; i++)
 	{
 	  grub_uint8_t u8[20], *ptr;
@@ -1112,8 +1115,10 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
 	    {
 	      c2.base = *ptr;
 	      (term->putchar) (&c2);
+	      c2.estimated_width = 0;
 	    }
 	}
+      c2.estimated_width = 1;
     }
   else
     (term->putchar) (c);
@@ -1133,7 +1138,8 @@ putcode_real (grub_uint32_t code, struct grub_term_output *term)
       .variant = 0,
       .attributes = 0,
       .ncomb = 0,
-      .combining = 0
+      .combining = 0,
+      .estimated_width = 1
     };
 
   c.base = map_code (code, term);

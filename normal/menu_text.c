@@ -273,7 +273,8 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
 	.variant = 0,
 	.attributes = 0,
 	.ncomb = 0,
-	.combining = 0
+	.combining = 0,
+	.estimated_width = 1
       };
       x += grub_term_getcharwidth (term, &pseudo_glyph);
     }

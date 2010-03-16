@@ -356,7 +356,7 @@ grub_serial_putchar (const struct grub_unicode_glyph *c)
 	      serial_hw_put ('\r');
 	      serial_hw_put ('\n');
 	    }
-	  xpos++;
+	  xpos += c->estimated_width;
 	  break;
 	}
     }

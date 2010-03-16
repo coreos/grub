@@ -84,6 +84,9 @@ struct grub_unicode_glyph
     grub_uint32_t code;
     enum grub_comb_type type;
   } *combining;
+  /* Hint by unicode subsystem how wide this character usually is.
+     Real width is determined by font. Set only in UTF-8 stream.  */
+  int estimated_width;
 };
 
 #define GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR 0x1
@@ -134,15 +137,11 @@ static inline struct grub_unicode_glyph *
 grub_unicode_glyph_from_code (grub_uint32_t code)
 {
   struct grub_unicode_glyph *ret;
-  ret = grub_malloc (sizeof (*ret));
+  ret = grub_zalloc (sizeof (*ret));
   if (!ret)
     return NULL;
 
   ret->base = code;
-  ret->variant = 0;
-  ret->attributes = 0;
-  ret->ncomb = 0;
-  ret->combining = 0;
 
   return ret;
 }
