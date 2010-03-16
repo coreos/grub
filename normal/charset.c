@@ -544,11 +544,11 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 }
 
 static grub_ssize_t
-line_wrap (struct grub_unicode_glyph *visual_out,
-	   struct grub_unicode_glyph *visual,
-	   grub_size_t visual_len, unsigned *levels,
-	   grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
-	   grub_size_t maxwidth, grub_size_t startwidth)
+bidi_line_wrap (struct grub_unicode_glyph *visual_out,
+		struct grub_unicode_glyph *visual,
+		grub_size_t visual_len, unsigned *levels,
+		grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
+		grub_size_t maxwidth, grub_size_t startwidth)
 {
   struct grub_unicode_glyph *outptr = visual_out;
   unsigned line_start = 0;
@@ -582,38 +582,35 @@ line_wrap (struct grub_unicode_glyph *visual_out,
       if (((grub_ssize_t) maxwidth > 0 
 	   && line_width > (grub_ssize_t) maxwidth) || k == visual_len)
 	{	  
-	  if (levels)
+	  unsigned min_odd_level = 0xffffffff;
+	  unsigned max_level = 0;
+	  unsigned j;
+	  
+	  unsigned i;
+	  for (i = line_start; i < k; i++)
 	    {
-	      unsigned min_odd_level = 0xffffffff;
-	      unsigned max_level = 0;
-	      unsigned j;
-
-	      unsigned i;
-	      for (i = line_start; i < k; i++)
-		{
-		  if (levels[i] > max_level)
-		    max_level = levels[i];
-		  if (levels[i] < min_odd_level && (levels[i] & 1))
-		    min_odd_level = levels[i];
-		}
-
-	      /* FIXME: can be optimized.  */
-	      for (j = max_level; j >= min_odd_level; j--)
-		{
-		  unsigned in = 0;
-		  for (i = line_start; i < k; i++)
-		    {
-		      if (i != line_start && levels[i] >= j && levels[i-1] < j)
-			in = i;
-		      if (levels[i] >= j && (i + 1 == k || levels[i+1] < j))
-			revert (in, i);
-		    }
-		}
-	      
-	      for (i = line_start; i < k; i++)
-		if (is_mirrored (visual[i].base) && levels[i])
-		  visual[i].attributes |= GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR;
+	      if (levels[i] > max_level)
+		max_level = levels[i];
+	      if (levels[i] < min_odd_level && (levels[i] & 1))
+		min_odd_level = levels[i];
 	    }
+	  
+	  /* FIXME: can be optimized.  */
+	  for (j = max_level; j >= min_odd_level; j--)
+	    {
+	      unsigned in = 0;
+	      for (i = line_start; i < k; i++)
+		{
+		  if (i != line_start && levels[i] >= j && levels[i-1] < j)
+		    in = i;
+		  if (levels[i] >= j && (i + 1 == k || levels[i+1] < j))
+		    revert (in, i);
+		}
+	    }
+	  
+	  for (i = line_start; i < k; i++)
+	    if (is_mirrored (visual[i].base) && levels[i])
+	      visual[i].attributes |= GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR;
 
 	  outptr += k - line_start;
 	  if (k != visual_len)
@@ -927,8 +924,8 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 
   {
     grub_ssize_t ret;
-    ret = line_wrap (visual_out, visual, visual_len, levels, 
-		     getcharwidth, maxwidth, startwidth);
+    ret = bidi_line_wrap (visual_out, visual, visual_len, levels, 
+			  getcharwidth, maxwidth, startwidth);
     grub_free (levels);
     grub_free (visual);
     return ret;
@@ -1056,7 +1053,11 @@ grub_putcode (grub_uint32_t code, struct grub_term_output *term)
       .combining = 0
     };
 
-  if (grub_unicode_get_comb_type (code) != GRUB_UNICODE_COMB_NONE)
+  if (grub_unicode_get_comb_type (code) != GRUB_UNICODE_COMB_NONE
+      && ((term->flags & GRUB_TERM_CODE_TYPE_MASK)
+	  != GRUB_TERM_CODE_TYPE_UTF8_LOGICAL 
+	  && (term->flags & GRUB_TERM_CODE_TYPE_MASK)
+	  != GRUB_TERM_CODE_TYPE_UTF8_VISUAL))
     return;
 
   if (code == '\t' && term->getxy)
@@ -1095,12 +1096,33 @@ grub_putcode (grub_uint32_t code, struct grub_term_output *term)
     grub_putcode ('\r', term);
 }
 
-
 void
 grub_print_ucs4 (const grub_uint32_t * str,
 		 const grub_uint32_t * last_position,
+		 int margin_left, int margin_right,
 		 struct grub_term_output *term)
 {
+  grub_size_t line_len;
+  grub_ssize_t startwidth;
+
+  {
+    struct grub_unicode_glyph space_glyph = {
+      .base = ' ',
+      .variant = 0,
+      .attributes = 0,
+      .ncomb = 0,
+      .combining = 0
+      };
+    line_len = grub_term_width (term)
+      - grub_term_getcharwidth (term, &space_glyph) 
+      * (margin_left + margin_right) - 1;
+  }
+
+  if (((term->getxy () >> 8) & 0xff) < margin_left)
+    grub_print_spaces (term, margin_left - ((term->getxy () >> 8) & 0xff));
+
+  startwidth = ((term->getxy () >> 8) & 0xff) - margin_left;
+
   if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
       == GRUB_TERM_CODE_TYPE_UCS4_VISUAL 
       || (term->flags & GRUB_TERM_CODE_TYPE_MASK) 
@@ -1109,12 +1131,9 @@ grub_print_ucs4 (const grub_uint32_t * str,
       grub_ssize_t visual_len;
       struct grub_unicode_glyph *visual;
       struct grub_unicode_glyph *visual_ptr;
-      visual_len = grub_bidi_logical_to_visual (str,
-						last_position - str,
-						&visual,
-						term->getcharwidth,
-						grub_term_width (term),
-						(term->getxy () >> 8) & 0xff);
+      visual_len = grub_bidi_logical_to_visual (str, last_position - str,
+						&visual, term->getcharwidth,
+						line_len, startwidth);
       if (visual_len < 0)
 	{
 	  grub_print_error ();
@@ -1128,6 +1147,8 @@ grub_print_ucs4 (const grub_uint32_t * str,
 	    .ncomb = 0,
 	    .combining = 0
 	  };
+	  if (visual_ptr->base == '\n')
+	    grub_print_spaces (term, margin_right);
 	  if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
 	      == GRUB_TERM_CODE_TYPE_UTF8_VISUAL)
 	    {
@@ -1155,6 +1176,7 @@ grub_print_ucs4 (const grub_uint32_t * str,
 	    {
 	      c.base = '\r';
 	      term->putchar (&c);
+	      grub_print_spaces (term, margin_left);
 	    }
 	  grub_free (visual_ptr->combining);
 	}
@@ -1164,8 +1186,36 @@ grub_print_ucs4 (const grub_uint32_t * str,
 
   {
     const grub_uint32_t *ptr;
+    grub_ssize_t line_width = startwidth;
+    grub_ssize_t maxwidth = line_len;
+
     for (ptr = str; ptr < last_position; ptr++)
-      grub_putcode (*ptr, term);
+      {
+	struct grub_unicode_glyph c = {
+	  .variant = 0,
+	  .attributes = 0,
+	  .ncomb = 0,
+	  .combining = 0
+	};
+	grub_ssize_t last_width = 0;
+	if (grub_unicode_get_comb_type (*ptr) == GRUB_UNICODE_COMB_NONE)
+	  {
+	    c.base = *ptr;
+	    line_width += last_width = term->getcharwidth (&c);
+	  }
+
+	if (line_width > maxwidth || *ptr == '\n')
+	  {
+	    grub_print_spaces (term, margin_right);
+	    grub_putcode ('\n', term);
+	    grub_putcode ('\r', term);
+	    line_width = last_width;
+	    grub_print_spaces (term, margin_left);
+	  }
+	  
+	if (*ptr != '\n')
+	  grub_putcode (*ptr, term);
+      }
   }
 }
 
@@ -1179,7 +1229,7 @@ grub_xputs_normal (const char *str)
     grub_uint32_t *unicode_str, *unicode_last_position;
     grub_utf8_to_ucs4_alloc (str, &unicode_str,
 			     &unicode_last_position);
-    grub_print_ucs4 (unicode_str, unicode_last_position, term);
+    grub_print_ucs4 (unicode_str, unicode_last_position, 0, 0, term);
     grub_free (unicode_str);
   }
 }

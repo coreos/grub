@@ -77,9 +77,11 @@ void grub_parse_color_name_pair (grub_uint8_t *ret, const char *name);
 
 /* Defined in `menu_text.c'.  */
 void grub_wait_after_message (void);
-void grub_print_ucs4 (const grub_uint32_t * str,
-		      const grub_uint32_t * last_position,
-		      struct grub_term_output *term);
+void
+grub_print_ucs4 (const grub_uint32_t * str,
+		 const grub_uint32_t * last_position,
+		 int margin_left, int margin_right,
+		 struct grub_term_output *term);
 grub_ssize_t grub_getstringwidth (grub_uint32_t * str,
 				  const grub_uint32_t * last_position,
 				  struct grub_term_output *term);

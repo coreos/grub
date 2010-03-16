@@ -38,14 +38,6 @@ struct menu_viewer_data
   struct grub_term_output *term;
 };
 
-static void
-print_spaces (int number_spaces, struct grub_term_output *term)
-{
-  int i;
-  for (i = 0; i < number_spaces; i++)
-    grub_putcode (' ', term);
-}
-
 grub_ssize_t
 grub_getstringwidth (grub_uint32_t * str, const grub_uint32_t * last_position,
 		     struct grub_term_output *term)
@@ -65,25 +57,10 @@ void
 grub_print_message_indented (const char *msg, int margin_left, int margin_right,
 			     struct grub_term_output *term)
 {
-  int line_len;
-
   grub_uint32_t *unicode_msg;
   grub_uint32_t *last_position;
 
   int msg_len;
-
-  {
-    struct grub_unicode_glyph pseudo_glyph = {
-      .base = ' ',
-      .variant = 0,
-      .attributes = 0,
-      .ncomb = 0,
-      .combining = 0
-      };
-    line_len = grub_term_width (term)
-      - grub_term_getcharwidth (term, &pseudo_glyph) 
-      * (margin_left + margin_right);
-  }
 
   msg_len = grub_utf8_to_ucs4_alloc (msg, &unicode_msg, &last_position);
 
@@ -91,6 +68,11 @@ grub_print_message_indented (const char *msg, int margin_left, int margin_right,
     {
       return;
     }
+
+  grub_print_ucs4 (unicode_msg, last_position, margin_left, margin_right, term);
+
+#if 0
+  int line_len;
 
   grub_uint32_t *current_position = unicode_msg;
 
@@ -126,6 +108,7 @@ grub_print_message_indented (const char *msg, int margin_left, int margin_right,
       current_position = next_new_line;
       first_loop = 0;
     }
+#endif
   grub_free (unicode_msg);
 }
 
@@ -280,7 +263,7 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
     }
 
   grub_print_ucs4 (unicode_title,
-		   unicode_title + last_printed, term);
+		   unicode_title + last_printed, 0, 0, term);
 
   if (last_printed != len)
     {
@@ -397,7 +380,7 @@ menu_text_print_timeout (int timeout, void *dataptr)
   grub_print_message_indented (msg_translated, 3, 0, data->term);
  
   posx = grub_term_getxy (data->term) >> 8;
-  print_spaces (grub_term_width (data->term) - posx - 1, data->term);
+  grub_print_spaces (data->term, grub_term_width (data->term) - posx - 1);
 
   grub_term_gotoxy (data->term,
 		    grub_term_cursor_x (data->term),
@@ -455,7 +438,7 @@ menu_text_clear_timeout (void *dataptr)
   struct menu_viewer_data *data = dataptr;
 
   grub_term_gotoxy (data->term, 0, grub_term_height (data->term) - 3);
-  print_spaces (grub_term_width (data->term) - 1, data->term);
+  grub_print_spaces (data->term, grub_term_width (data->term) - 1);
   grub_term_gotoxy (data->term, grub_term_cursor_x (data->term),
 		    GRUB_TERM_FIRST_ENTRY_Y + data->offset);
   grub_term_refresh (data->term);

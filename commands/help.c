@@ -77,7 +77,7 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 	      }
 
 	    grub_print_ucs4 (unicode_command_help,
-			     unicode_last_screen_position, term);
+			     unicode_last_screen_position, 0, 0, term);
 	    if (!(cnt % 2))
 	      grub_print_spaces (term, grub_term_width (term) / 2
 				 - stringwidth);

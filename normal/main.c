@@ -429,7 +429,7 @@ grub_normal_init_page (struct grub_term_output *term)
   posx = (grub_term_width (term) - posx) / 2;
   grub_term_gotoxy (term, posx, 1);
 
-  grub_print_ucs4 (unicode_msg, last_position, term);
+  grub_print_ucs4 (unicode_msg, last_position, 0, 0, term);
   grub_printf("\n\n");
   grub_free (unicode_msg);
 }
