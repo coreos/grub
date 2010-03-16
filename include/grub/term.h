@@ -380,12 +380,36 @@ grub_term_cls (struct grub_term_output *term)
     }
 }
 
+#ifdef HAVE_UNIFONT_WIDTHSPEC
+
+grub_ssize_t
+grub_unicode_estimate_width (const struct grub_unicode_glyph *c);
+
+#else
+
+static inline grub_ssize_t
+grub_unicode_estimate_width (const struct grub_unicode_glyph *c __attribute__ ((unused)))
+{
+  if (grub_unicode_get_comb_type (c->base))
+    return 0;
+  return 1;
+}
+
+#endif
+
 static inline grub_ssize_t 
 grub_term_getcharwidth (struct grub_term_output *term,
 			const struct grub_unicode_glyph *c)
 {
   if (term->getcharwidth)
     return term->getcharwidth (c);
+  else if (((term->flags & GRUB_TERM_CODE_TYPE_MASK)
+	    == GRUB_TERM_CODE_TYPE_UTF8_LOGICAL)
+	   || ((term->flags & GRUB_TERM_CODE_TYPE_MASK)
+	       == GRUB_TERM_CODE_TYPE_UTF8_VISUAL)
+	   || ((term->flags & GRUB_TERM_CODE_TYPE_MASK)
+	       == GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS))
+    return grub_unicode_estimate_width (c);
   else
     return 1;
 }

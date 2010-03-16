@@ -30,6 +30,10 @@
 #include <grub/term.h>
 #include <grub/normal.h>
 
+#ifdef HAVE_UNIFONT_WIDTHSPEC
+#include "widthspec.h"
+#endif
+
 grub_ssize_t
 grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 		    const grub_uint8_t *src, grub_size_t srcsize,
@@ -464,6 +468,21 @@ grub_unicode_get_comb_type (grub_uint32_t c)
 
   return GRUB_UNICODE_COMB_NONE;
 }
+
+#ifdef HAVE_UNIFONT_WIDTHSPEC
+
+grub_ssize_t
+grub_unicode_estimate_width (const struct grub_unicode_glyph *c)
+{
+  if (grub_unicode_get_comb_type (c->base))
+    return 0;
+  if (widthspec[c->base >> 3] & (1 << (c->base & 7)))
+    return 2;
+  else
+    return 1;
+}
+
+#endif
 
 grub_size_t
 grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
@@ -1098,7 +1117,7 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
       == GRUB_TERM_CODE_TYPE_UTF8_VISUAL)
     {
       int i;
-      c2.estimated_width = 1;
+      c2.estimated_width = grub_term_getcharwidth (term, c);
       for (i = -1; i < (int) c->ncomb; i++)
 	{
 	  grub_uint8_t u8[20], *ptr;
@@ -1192,8 +1211,15 @@ grub_print_ucs4 (const grub_uint32_t * str,
       grub_ssize_t visual_len;
       struct grub_unicode_glyph *visual;
       struct grub_unicode_glyph *visual_ptr;
+
+      auto grub_ssize_t getcharwidth (const struct grub_unicode_glyph *c);
+      grub_ssize_t getcharwidth (const struct grub_unicode_glyph *c)
+      {
+	return grub_term_getcharwidth (term, c);
+      }
+
       visual_len = grub_bidi_logical_to_visual (str, last_position - str,
-						&visual, term->getcharwidth,
+						&visual, getcharwidth,
 						max_width, startwidth);
       if (visual_len < 0)
 	{
@@ -1231,7 +1257,7 @@ grub_print_ucs4 (const grub_uint32_t * str,
 	      .combining = 0
 	    };
 	    c.base = *ptr;
-	    line_width += last_width = term->getcharwidth (&c);
+	    line_width += last_width = grub_term_getcharwidth (term, &c);
 	  }
 
 	if (*ptr == ' ')
@@ -1279,7 +1305,15 @@ grub_print_ucs4 (const grub_uint32_t * str,
     {
       const grub_uint32_t *ptr2;
       for (ptr2 = line_start; ptr2 < last_position; ptr2++)
-	grub_putcode (*ptr2, term);
+	{
+	  /* Skip combining characters on non-UTF8 terminals.  */
+	  if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
+	      != GRUB_TERM_CODE_TYPE_UTF8_LOGICAL
+	      && grub_unicode_get_comb_type (*ptr2)
+	      != GRUB_UNICODE_COMB_NONE)
+	    continue;
+	  putcode_real (*ptr2, term);
+	}
     }
   }
 }

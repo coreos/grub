@@ -640,6 +640,10 @@ normal_mod_SOURCES = normal/main.c normal/cmdline.c normal/dyncmd.c \
 	normal/menu_entry.c normal/menu_text.c normal/charset.c \
 	normal/misc.c normal/crypto.c normal/term.c normal/context.c \
 	unidata.c
+ifneq (, $(FONT_SOURCE))
+normal/charset.c_SOURCES += widthspec.h
+endif
+
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

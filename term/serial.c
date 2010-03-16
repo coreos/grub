@@ -364,12 +364,6 @@ grub_serial_putchar (const struct grub_unicode_glyph *c)
   serial_hw_put (c->base);
 }
 
-static grub_ssize_t
-grub_serial_getcharwidth (const struct grub_unicode_glyph *c __attribute__ ((unused)))
-{
-  return 1;
-}
-
 static grub_uint16_t
 grub_serial_getwh (void)
 {
@@ -449,7 +443,6 @@ static struct grub_term_output grub_serial_term_output =
 {
   .name = "serial",
   .putchar = grub_serial_putchar,
-  .getcharwidth = grub_serial_getcharwidth,
   .getwh = grub_serial_getwh,
   .getxy = grub_serial_getxy,
   .gotoxy = grub_serial_gotoxy,

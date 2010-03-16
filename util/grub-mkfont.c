@@ -53,7 +53,8 @@ struct grub_glyph_info
 enum file_formats
 {
   PF2,
-  ASCII_BITMAPS 
+  ASCII_BITMAPS,
+  WIDTH_SPEC
 };
 
 #define GRUB_FONT_FLAG_BOLD		1
@@ -95,6 +96,7 @@ static struct option options[] =
   {"version", no_argument, 0, 'V'},
   {"verbose", no_argument, 0, 'v'},
   {"ascii-bitmaps", no_argument, 0, 0x102},
+  {"width-spec", no_argument, 0, 0x103},
   {0, 0, 0, 0}
 };
 
@@ -111,6 +113,7 @@ Usage: %s [OPTIONS] FONT_FILES\n\
 \nOptions:\n\
   -o, --output=FILE_NAME    set output file name\n\
   --ascii-bitmaps           save only the ASCII bitmaps\n\
+  --width-spec              create width summary file\n\
   -i, --index=N             set face index\n\
   -r, --range=A-B[,C-D]     set font range\n\
   -n, --name=S              set font family name\n\
@@ -381,6 +384,32 @@ write_font_ascii_bitmap (struct grub_font_info *font_info, char *output_file)
 }
 
 void
+write_font_width_spec (struct grub_font_info *font_info, char *output_file)
+{
+  FILE *file;
+  struct grub_glyph_info *glyph;
+  grub_uint8_t *out;
+  grub_uint8_t *rle;
+  int rle_size;
+  int i, j;
+
+  out = xmalloc (8192);
+  memset (out, 0, 8192);
+  
+  file = fopen (output_file, "wb");
+  if (! file)
+    grub_util_error ("Can\'t write to file %s.", output_file);
+
+  for (glyph = font_info->glyph; glyph; glyph = glyph->next)
+    if (glyph->width > 12)
+      out[glyph->char_code >> 3] |= (1 << (glyph->char_code & 7));
+
+  fwrite (out, 8192, 1, file);
+  fclose (file);
+  free (out);
+}
+
+void
 write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 {
   FILE *file;
@@ -648,6 +677,10 @@ main (int argc, char *argv[])
 	     file_format = ASCII_BITMAPS;
 	     break;
 
+	  case 0x103:
+	     file_format = WIDTH_SPEC;
+	     break;
+
 	  default:
 	    usage (1);
 	    break;
@@ -712,10 +745,20 @@ main (int argc, char *argv[])
 
   FT_Done_FreeType (ft_lib);
 
-  if (file_format == PF2)
-    write_font_pf2 (&font_info, output_file);
-  else if (file_format == ASCII_BITMAPS)
-    write_font_ascii_bitmap (&font_info, output_file);
+  switch (file_format)
+    {
+    case PF2:
+      write_font_pf2 (&font_info, output_file);
+      break;
+
+    case ASCII_BITMAPS:
+      write_font_ascii_bitmap (&font_info, output_file);
+      break;
+
+    case WIDTH_SPEC:
+      write_font_width_spec (&font_info, output_file);
+      break;
+    }
 
   if (font_verbosity > 1)
     print_glyphs (&font_info);
