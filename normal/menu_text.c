@@ -135,7 +135,7 @@ command-line or ESC to return menu."), STANDARD_MARGIN, STANDARD_MARGIN,
 				     (grub_uint32_t) GRUB_TERM_DISP_DOWN);
       if (!msg_translated)
 	return;
-      grub_xputs ("\n");
+      grub_putcode ('\n', term);
       grub_print_message_indented (msg_translated, STANDARD_MARGIN,
 				   STANDARD_MARGIN, term);
 
