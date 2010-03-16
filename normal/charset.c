@@ -1067,11 +1067,10 @@ map_code (grub_uint32_t in, struct grub_term_output *term)
   return in;
 }
 
-/* Put a Unicode character.  */
-void
-grub_putcode (grub_uint32_t code, struct grub_term_output *term)
+static void
+putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
 {
-  struct grub_unicode_glyph c =
+  struct grub_unicode_glyph c2 =
     {
       .variant = 0,
       .attributes = 0,
@@ -1079,20 +1078,14 @@ grub_putcode (grub_uint32_t code, struct grub_term_output *term)
       .combining = 0
     };
 
-  if (grub_unicode_get_comb_type (code) != GRUB_UNICODE_COMB_NONE
-      && ((term->flags & GRUB_TERM_CODE_TYPE_MASK)
-	  != GRUB_TERM_CODE_TYPE_UTF8_LOGICAL 
-	  && (term->flags & GRUB_TERM_CODE_TYPE_MASK)
-	  != GRUB_TERM_CODE_TYPE_UTF8_VISUAL))
-    return;
-
-  if (code == '\t' && term->getxy)
+  if (c->base == '\t' && term->getxy)
     {
       int n;
 
       n = 8 - ((term->getxy () >> 8) & 7);
+      c2.base = ' ';
       while (n--)
-	grub_putcode (' ', term);
+	(term->putchar) (&c2);
 
       return;
     }
@@ -1102,24 +1095,60 @@ grub_putcode (grub_uint32_t code, struct grub_term_output *term)
       || (term->flags & GRUB_TERM_CODE_TYPE_MASK)
       == GRUB_TERM_CODE_TYPE_UTF8_VISUAL)
     {
-      grub_uint8_t str[20], *ptr;
-
-      grub_ucs4_to_utf8 (&code, 1, str, sizeof (str));
-
-      for (ptr = str; *ptr; ptr++)
+      int i;
+      for (i = -1; i < (int) c->ncomb; i++)
 	{
-	  c.base = *ptr;
-	  (term->putchar) (&c);
+	  grub_uint8_t u8[20], *ptr;
+	  grub_uint32_t code;
+	      
+	  if (i == -1)
+	    code = c->base;
+	  else
+	    code = c->combining[i].code;
+
+	  grub_ucs4_to_utf8 (&code, 1, u8, sizeof (u8));
+
+	  for (ptr = u8; *ptr; ptr++)
+	    {
+	      c2.base = *ptr;
+	      (term->putchar) (&c2);
+	    }
 	}
     }
   else
-    {
-      c.base = map_code (code, term);
-      (term->putchar) (&c);
-    }
+    (term->putchar) (c);
 
-  if (code == '\n')
-    grub_putcode ('\r', term);
+  if (c->base == '\n')
+    {
+      c2.base = '\r';
+      (term->putchar) (&c2);
+    }
+}
+
+static void
+putcode_real (grub_uint32_t code, struct grub_term_output *term)
+{
+  struct grub_unicode_glyph c =
+    {
+      .variant = 0,
+      .attributes = 0,
+      .ncomb = 0,
+      .combining = 0
+    };
+
+  c.base = map_code (code, term);
+  putglyph (&c, term);
+}
+
+/* Put a Unicode character.  */
+void
+grub_putcode (grub_uint32_t code, struct grub_term_output *term)
+{
+  /* Combining character by itself?  */
+  if (grub_unicode_get_comb_type (code) != GRUB_UNICODE_COMB_NONE)
+    return;
+
+  putcode_real (code, term);
 }
 
 void
@@ -1167,43 +1196,11 @@ grub_print_ucs4 (const grub_uint32_t * str,
 	}
       for (visual_ptr = visual; visual_ptr < visual + visual_len; visual_ptr++)
 	{
-	  struct grub_unicode_glyph c = {
-	    .variant = 0,
-	    .attributes = 0,
-	    .ncomb = 0,
-	    .combining = 0
-	  };
 	  if (visual_ptr->base == '\n')
 	    grub_print_spaces (term, margin_right);
-	  if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
-	      == GRUB_TERM_CODE_TYPE_UTF8_VISUAL)
-	    {
-	      int i;
-	      for (i = -1; i < (int) visual_ptr->ncomb; i++)
-		{
-		  grub_uint8_t u8[20], *ptr;
-	      
-		  if (i == -1)
-		    grub_ucs4_to_utf8 (&visual_ptr->base, 1, u8, sizeof (u8));
-		  else
-		    grub_ucs4_to_utf8 (&visual_ptr->combining[i].code,
-				       1, u8, sizeof (u8));
-
-		  for (ptr = u8; *ptr; ptr++)
-		    {
-		      c.base = *ptr;
-		      (term->putchar) (&c);
-		    }
-		}
-	    }
-	  else
-	    term->putchar (visual_ptr);
+	  putglyph (visual_ptr, term);
 	  if (visual_ptr->base == '\n')
-	    {
-	      c.base = '\r';
-	      term->putchar (&c);
-	      grub_print_spaces (term, margin_left);
-	    }
+	    grub_print_spaces (term, margin_left);
 	  grub_free (visual_ptr->combining);
 	}
       grub_free (visual);
@@ -1253,11 +1250,18 @@ grub_print_ucs4 (const grub_uint32_t * str,
 	      lastspacewidth = line_width - last_width;
 
 	    for (ptr2 = line_start; ptr2 < ptr; ptr2++)
-	      grub_putcode (*ptr2, term);	      
+	      {
+		/* Skip combining characters on non-UTF8 terminals.  */
+		if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
+		    != GRUB_TERM_CODE_TYPE_UTF8_LOGICAL
+		    && grub_unicode_get_comb_type (*ptr2)
+		    != GRUB_UNICODE_COMB_NONE)
+		  continue;
+		putcode_real (*ptr2, term);
+	      }
 
 	    grub_print_spaces (term, margin_right);
 	    grub_putcode ('\n', term);
-	    grub_putcode ('\r', term);
 	    line_width -= lastspacewidth;
 	    grub_print_spaces (term, margin_left);
 	    if (ptr == last_space || *ptr == '\n')
