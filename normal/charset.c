@@ -1179,7 +1179,7 @@ grub_print_ucs4 (const grub_uint32_t * str,
   startwidth = ((term->getxy () >> 8) & 0xff) - margin_left;
 
   if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
-      == GRUB_TERM_CODE_TYPE_UCS4_VISUAL 
+      == GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS
       || (term->flags & GRUB_TERM_CODE_TYPE_MASK) 
       == GRUB_TERM_CODE_TYPE_UTF8_VISUAL)
     {

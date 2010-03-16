@@ -1206,7 +1206,7 @@ static struct grub_term_output grub_video_term =
     .getcolor = grub_virtual_screen_getcolor,
     .setcursor = grub_gfxterm_setcursor,
     .refresh = grub_gfxterm_refresh,
-    .flags = GRUB_TERM_CODE_TYPE_UCS4_VISUAL,
+    .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS,
     .next = 0
   };
 

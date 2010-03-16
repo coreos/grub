@@ -78,9 +78,10 @@ grub_term_color_state;
 /* UTF-8 stream in logical order. Usually used for terminals
    which just forward the stream to another computer.  */
 #define GRUB_TERM_CODE_TYPE_UTF8_LOGICAL	(1 << 4)
-/* UCS-4 in visual order.  */
-#define GRUB_TERM_CODE_TYPE_UCS4_VISUAL	        ((1 << 4) | (1 << 3))
-#define GRUB_TERM_CODE_TYPE_UTF8_VISUAL	        ((1 << 5) | (1 << 4))
+/* UTF-8 in visual order. Like UTF-8 logical but for buggy endpoints.  */
+#define GRUB_TERM_CODE_TYPE_UTF8_VISUAL	        ((1 << 4) | (1 << 3))
+/* Glyph description in visual order.  */
+#define GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS       (1 << 5)
 
 
 /* Bitmasks for modifier keys returned by grub_getkeystatus.  */

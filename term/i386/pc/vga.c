@@ -505,7 +505,7 @@ static struct grub_term_output grub_vga_term =
     .cls = grub_vga_cls,
     .setcolorstate = grub_vga_setcolorstate,
     .setcursor = grub_vga_setcursor,
-    .flags = GRUB_TERM_CODE_TYPE_UCS4_VISUAL,
+    .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS,
   };
 
 GRUB_MOD_INIT(vga)
