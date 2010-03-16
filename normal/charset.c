@@ -553,24 +553,23 @@ line_wrap (struct grub_unicode_glyph *visual_out,
   struct grub_unicode_glyph *outptr = visual_out;
   unsigned line_start = 0;
   grub_ssize_t line_width = startwidth;
+  unsigned k;
 
   auto void revert (unsigned start, unsigned end);
   void revert (unsigned start, unsigned end)
   {
     struct grub_unicode_glyph t;
-    unsigned k, tl;
-    for (k = 0; k <= (end - start) / 2; k++)
+    unsigned i, tl;
+    for (i = 0; i <= (end - start) / 2; i++)
       {
-	t = visual[start + k];
-	visual[start + k] = visual[end - k];
-	visual[end - k] = t;
-	tl = levels[start + k];
-	levels[start + k] = levels[end - k];
-	levels[end - k] = tl;
+	t = visual[start + i];
+	visual[start + i] = visual[end - i];
+	visual[end - i] = t;
+	tl = levels[start + i];
+	levels[start + i] = levels[end - i];
+	levels[end - i] = tl;
       }
   }
-
-  unsigned k;
 
   if (!visual_len)
     return 0;
@@ -582,20 +581,22 @@ line_wrap (struct grub_unicode_glyph *visual_out,
 	line_width += last_width = getcharwidth (&visual[k]);
       if (((grub_ssize_t) maxwidth > 0 
 	   && line_width > (grub_ssize_t) maxwidth) || k == visual_len)
-	{
-	  unsigned min_odd_level = 0xffffffff;
-	  unsigned max_level = 0;
-	  unsigned i, j;
-	  for (i = line_start; i < k; i++)
-	    {
-	      if (levels[i] > max_level)
-		max_level = levels[i];
-	      if (levels[i] < min_odd_level && (levels[i] & 1))
-		min_odd_level = levels[i];
-	    }
-	  
+	{	  
 	  if (levels)
 	    {
+	      unsigned min_odd_level = 0xffffffff;
+	      unsigned max_level = 0;
+	      unsigned j;
+
+	      unsigned i;
+	      for (i = line_start; i < k; i++)
+		{
+		  if (levels[i] > max_level)
+		    max_level = levels[i];
+		  if (levels[i] < min_odd_level && (levels[i] & 1))
+		    min_odd_level = levels[i];
+		}
+
 	      /* FIXME: can be optimized.  */
 	      for (j = max_level; j >= min_odd_level; j--)
 		{
