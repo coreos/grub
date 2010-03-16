@@ -1136,7 +1136,9 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
 	  if (i == -1)
 	    {
 	      code = c->base;
-	      if (c->attributes & GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR)
+	      if ((term->flags & GRUB_TERM_CODE_TYPE_MASK)
+		  == GRUB_TERM_CODE_TYPE_UTF8_VISUAL
+		  && (c->attributes & GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR))
 		code = mirror_code (code);
 	    }
 	  else
