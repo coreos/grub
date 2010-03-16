@@ -23,6 +23,12 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 
+struct grub_unicode_bidi_pair
+{
+  grub_uint32_t key;
+  grub_uint32_t replace;
+};
+
 struct grub_unicode_compact_range
 {
   grub_uint32_t start:21;
@@ -97,6 +103,7 @@ struct grub_unicode_glyph
 #define GRUB_UNICODE_VARIATION_SELECTOR_256 0xe01ef
 
 extern struct grub_unicode_compact_range grub_unicode_compact[];
+extern struct grub_unicode_bidi_pair grub_unicode_bidi_pairs[];
 
 #define GRUB_UNICODE_MAX_CACHED_CHAR 0x20000
 /*  Unicode mandates an arbitrary limit.  */

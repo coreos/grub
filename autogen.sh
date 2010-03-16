@@ -13,7 +13,7 @@ echo timestamp > stamp-h.in
 
 python util/import_gcry.py lib/libgcrypt/ .
 
-python util/import_unicode.py util/UnicodeData.txt unidata.c
+python util/import_unicode.py util/UnicodeData.txt util/BidiMirroring.txt unidata.c
 
 for rmk in conf/*.rmk ${GRUB_CONTRIB}/*/conf/*.rmk; do
   if test -e $rmk ; then

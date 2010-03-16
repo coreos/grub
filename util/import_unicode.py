@@ -25,7 +25,7 @@ if len (sys.argv) < 3:
     print ("Usage: %s SOURCE DESTINATION" % sys.argv[0])
     exit (0)
 infile = open (sys.argv[1], "r")
-outfile = open (sys.argv[2], "w")
+outfile = open (sys.argv[3], "w")
 outfile.write ("#include <grub/unicode.h>\n")
 outfile.write ("\n")
 outfile.write ("struct grub_unicode_compact_range grub_unicode_compact[] = {\n")
@@ -69,4 +69,24 @@ if lastbiditype != "L" or lastcombtype != 0 or lastmirrortype:
                                lastmirrortype)))
 outfile.write ("{0, 0, 0, 0, 0},\n")
 
-outfile.write ("};")
+outfile.write ("};\n")
+
+infile.close ()
+
+infile = open (sys.argv[2], "r")
+
+outfile.write ("struct grub_unicode_bidi_pair grub_unicode_bidi_pairs[] = {\n")
+
+for line in infile:
+    line = re.sub ("#.*$", "", line)
+    line = line.replace ("\n", "")
+    line = line.replace (" ", "")
+    if len (line) == 0 or line[0] == '\n':
+        continue
+    sp = line.split (";")
+    code1 = int (sp[0], 16)
+    code2 = int (sp[1], 16)
+    outfile.write ("{0x%x, 0x%x},\n" % (code1, code2))
+outfile.write ("{0, 0},\n")
+outfile.write ("};\n")
+

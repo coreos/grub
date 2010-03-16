@@ -1087,6 +1087,16 @@ map_code (grub_uint32_t in, struct grub_term_output *term)
   return in;
 }
 
+static grub_uint32_t
+mirror_code (grub_uint32_t in)
+{
+  int i;
+  for (i = 0; grub_unicode_bidi_pairs[i].key; i++)
+    if (grub_unicode_bidi_pairs[i].key == in)
+      return grub_unicode_bidi_pairs[i].replace;
+  return in;
+}
+
 static void
 putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
 {
@@ -1124,7 +1134,11 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
 	  grub_uint32_t code;
 	      
 	  if (i == -1)
-	    code = c->base;
+	    {
+	      code = c->base;
+	      if (c->attributes & GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR)
+		code = mirror_code (code);
+	    }
 	  else
 	    code = c->combining[i].code;
 
