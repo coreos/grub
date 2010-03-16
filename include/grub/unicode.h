@@ -104,7 +104,8 @@ grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 			     grub_size_t logical_len,
 			     struct grub_unicode_glyph **visual_out,
 			     grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
-			     grub_size_t max_length);
+			     grub_size_t max_width,
+			     grub_size_t start_width);
 
 enum grub_comb_type
 grub_unicode_get_comb_type (grub_uint32_t c);

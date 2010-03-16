@@ -548,7 +548,7 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 				  grub_size_t logical_len,
 				  struct grub_unicode_glyph *visual_out,
 				  grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
-				  grub_size_t maxwidth)
+				  grub_size_t maxwidth, grub_size_t startwidth)
 {
   enum grub_bidi_type type = GRUB_BIDI_TYPE_L;
   enum override_status {OVERRIDE_NEUTRAL = 0, OVERRIDE_R, OVERRIDE_L};
@@ -861,7 +861,7 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
   {
     struct grub_unicode_glyph *outptr = visual_out;
     unsigned line_start = 0;
-    grub_ssize_t line_width = 0;
+    grub_ssize_t line_width = startwidth;
     unsigned k;
 
     for (k = 0; k <= visual_len; k++)
@@ -925,7 +925,7 @@ grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 			     grub_size_t logical_len,
 			     struct grub_unicode_glyph **visual_out,
 			     grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
-			     grub_size_t max_length)
+			     grub_size_t max_length, grub_size_t startwidth)
 {
   const grub_uint32_t *line_start = logical, *ptr;
   struct grub_unicode_glyph *visual_ptr;
@@ -940,7 +940,10 @@ grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 						  ptr - line_start,
 						  visual_ptr,
 						  getcharwidth,
-						  max_length);
+						  max_length,
+						  startwidth);
+	  startwidth = 0;
+
 	  if (ret < 0)
 	    {
 	      grub_free (*visual_out);
@@ -1095,7 +1098,8 @@ grub_print_ucs4 (const grub_uint32_t * str,
 						last_position - str,
 						&visual,
 						term->getcharwidth,
-						grub_term_width (term));
+						grub_term_width (term),
+						(term->getxy () >> 8) & 0xff);
       if (visual_len < 0)
 	{
 	  grub_print_error ();
