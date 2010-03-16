@@ -1,7 +1,7 @@
 /* hostfs.c - Dummy filesystem to provide access to the hosts filesystem  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 
 #include <dirent.h>
 #include <stdio.h>
+#include <errno.h>
 
 
 /* dirent.d_type is a BSD extension, not part of POSIX */
@@ -118,10 +119,17 @@ grub_hostfs_read (grub_file_t file, char *buf, grub_size_t len)
   FILE *f;
 
   f = (FILE *) file->data;
-  fseeko (f, file->offset, SEEK_SET);
-  int s = fread (buf, 1, len, f);
+  if (fseeko (f, file->offset, SEEK_SET) != 0)
+    {
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "fseeko: %s", strerror (errno));
+      return -1;
+    }
 
-  return s;
+  unsigned int s = fread (buf, 1, len, f);
+  if (s != len)
+    grub_error (GRUB_ERR_FILE_READ_ERROR, "fread: %s", strerror (errno));
+
+  return (signed) s;
 }
 
 static grub_err_t

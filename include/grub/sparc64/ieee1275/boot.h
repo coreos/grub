@@ -25,7 +25,8 @@
 #define BOOTDEV_REG			%l6
 #define PIC_REG				%l7
 
-#define	SCRATCH_PAD			0x10000
+#define	SCRATCH_PAD_BOOT		0x5000
+#define	SCRATCH_PAD_DISKBOOT		0x4000
 
 #define GET_ABS(symbol, reg)	\
 	add	PIC_REG, (symbol - pic_base), reg
@@ -51,7 +52,7 @@
 
 #define GRUB_BOOT_MACHINE_LIST_SIZE	12
 
-#define GRUB_BOOT_MACHINE_IMAGE_ADDRESS	0x200000
+#define GRUB_BOOT_MACHINE_IMAGE_ADDRESS	0x4400
 
 #define GRUB_BOOT_MACHINE_KERNEL_ADDR 0x4200
 

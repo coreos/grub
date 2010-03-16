@@ -128,7 +128,7 @@ typedef grub_size_t yy_size_t;
 BLANK           [ \t]
 COMMENT         ^[ \t]*#.*$
 
-CHAR            [^|&$;()<> \t\n\'\"\\]
+CHAR            [^|&$;<> \t\n\'\"\\]
 DIGITS          [[:digit:]]+
 NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
 
@@ -157,8 +157,6 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 "|"             { RECORD; return GRUB_PARSER_TOKEN_PIPE;    }
 "&"             { RECORD; return GRUB_PARSER_TOKEN_AMP;     }
 ";"             { RECORD; return GRUB_PARSER_TOKEN_SEMI;    }
-"("             { RECORD; return GRUB_PARSER_TOKEN_LPAR;    }
-")"             { RECORD; return GRUB_PARSER_TOKEN_RPAR;    }
 "<"             { RECORD; return GRUB_PARSER_TOKEN_LT;      }
 ">"             { RECORD; return GRUB_PARSER_TOKEN_GT;      }
 

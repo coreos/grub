@@ -279,13 +279,6 @@ grub_gettext_init_ext (const char *lang)
 
   /* mo_file e.g.: /boot/grub/locale/ca.mo   */
 
-  mo_file =
-    grub_malloc (grub_strlen (locale_dir) + grub_strlen ("/") +
-		 grub_strlen (lang) + grub_strlen (".mo") + 1);
-
-  /* Warning: if changing some paths in the below line, change the grub_malloc
-     contents below.  */
-
   mo_file = grub_xasprintf ("%s/%s.mo", locale_dir, lang);
   if (!mo_file)
     return;

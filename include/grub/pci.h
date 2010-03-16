@@ -68,7 +68,7 @@
 
 typedef grub_uint32_t grub_pci_id_t;
 
-#ifdef GRUB_UTIL
+#ifdef GRUB_MACHINE_EMU
 #include <grub/pciutils.h>
 #else
 typedef grub_uint32_t grub_pci_address_t;

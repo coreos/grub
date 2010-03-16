@@ -45,8 +45,6 @@
 %token GRUB_PARSER_TOKEN_PIPE    "|"
 %token GRUB_PARSER_TOKEN_AMP     "&"
 %token GRUB_PARSER_TOKEN_SEMI    ";"
-%token GRUB_PARSER_TOKEN_LPAR    "("
-%token GRUB_PARSER_TOKEN_RPAR    ")"
 %token GRUB_PARSER_TOKEN_LBR     "{"
 %token GRUB_PARSER_TOKEN_RBR     "}"
 %token GRUB_PARSER_TOKEN_NOT     "!"

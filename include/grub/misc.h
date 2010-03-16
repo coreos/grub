@@ -111,6 +111,12 @@ int EXPORT_FUNC(grub_isspace) (int c);
 int EXPORT_FUNC(grub_isprint) (int c);
 
 static inline int
+grub_iscntrl (int c)
+{
+  return (c >= 0x00 && c <= 0x1F) || c == 0x7F;
+}
+
+static inline int
 grub_isalpha (int c)
 {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
@@ -126,6 +132,12 @@ static inline int
 grub_isdigit (int c)
 {
   return (c >= '0' && c <= '9');
+}
+
+static inline int
+grub_isalnum (int c)
+{
+  return grub_isalpha (c) || grub_isdigit (c);
 }
 
 static inline int
@@ -182,6 +194,43 @@ grub_strncasecmp (const char *s1, const char *s2, grub_size_t n)
 
 unsigned long EXPORT_FUNC(grub_strtoul) (const char *str, char **end, int base);
 unsigned long long EXPORT_FUNC(grub_strtoull) (const char *str, char **end, int base);
+
+static inline long
+grub_strtol (const char *str, char **end, int base)
+{
+  int negative = 0;
+  unsigned long magnitude;
+
+  while (*str && grub_isspace (*str))
+    str++;
+
+  if (*str == '-')
+    {
+      negative = 1;
+      str++;
+    }
+
+  magnitude = grub_strtoull (str, end, base);
+  if (negative)
+    {
+      if (magnitude > (unsigned long) GRUB_LONG_MAX + 1)
+        {
+          grub_error (GRUB_ERR_OUT_OF_RANGE, "negative overflow");
+          return GRUB_LONG_MIN;
+        }
+      return -((long) magnitude);
+    }
+  else
+    {
+      if (magnitude > GRUB_LONG_MAX)
+        {
+          grub_error (GRUB_ERR_OUT_OF_RANGE, "positive overflow");
+          return GRUB_LONG_MAX;
+        }
+      return (long) magnitude;
+    }
+}
+
 char *EXPORT_FUNC(grub_strdup) (const char *s);
 char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n);
 void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);

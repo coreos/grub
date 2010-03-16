@@ -35,6 +35,9 @@ grub_script_execute_cmd (struct grub_script_cmd *cmd)
   return cmd->exec (cmd);
 }
 
+#define ARG_ALLOCATION_UNIT  (32 * sizeof (char))
+#define ARGV_ALLOCATION_UNIT (8 * sizeof (void*))
+
 /* Expand arguments in ARGLIST into multiple arguments.  */
 char **
 grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count)
@@ -56,7 +59,7 @@ grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *c
     if (oom)
       return;
 
-    p = grub_realloc (argv, ALIGN_UP (sizeof(char*) * (argc + 1), 32));
+    p = grub_realloc (argv, ALIGN_UP (sizeof(char*) * (argc + 1), ARGV_ALLOCATION_UNIT));
     if (!p)
       oom = 1;
     else
@@ -78,7 +81,7 @@ grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *c
 
     len = nchar ?: grub_strlen (str);
     old = argv[argc - 1] ? grub_strlen (argv[argc - 1]) : 0;
-    p = grub_realloc (argv[argc - 1], ALIGN_UP(old + len + 1, 32));
+    p = grub_realloc (argv[argc - 1], ALIGN_UP(old + len + 1, ARG_ALLOCATION_UNIT));
 
     if (p)
       {
@@ -200,7 +203,6 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   grubcmd = grub_command_find (cmdname);
   if (! grubcmd)
     {
-      /* Ignore errors.  */
       grub_errno = GRUB_ERR_NONE;
 
       /* It's not a GRUB command, try all functions.  */
@@ -226,6 +228,8 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 	  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", grub_errno);
 	  grub_env_set ("?", errnobuf);
 
+	  grub_print_error ();
+
 	  return 0;
 	}
     }
@@ -240,6 +244,11 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   for (i = 0; i < argcount; i++)
     grub_free (args[i]);
   grub_free (args);
+
+  if (grub_errno == GRUB_ERR_TEST_FAILURE)
+    grub_errno = GRUB_ERR_NONE;
+
+  grub_print_error ();
 
   grub_snprintf (errnobuf, sizeof (errnobuf), "%d", ret);
   grub_env_set ("?", errnobuf);

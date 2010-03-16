@@ -242,7 +242,7 @@ static struct grub_disk_dev grub_loopback_dev =
 
 static grub_extcmd_t cmd;
 
-GRUB_MOD_INIT(loop)
+GRUB_MOD_INIT(loopback)
 {
   cmd = grub_register_extcmd ("loopback", grub_cmd_loopback,
 			      GRUB_COMMAND_FLAG_BOTH,
@@ -251,7 +251,7 @@ GRUB_MOD_INIT(loop)
   grub_disk_dev_register (&grub_loopback_dev);
 }
 
-GRUB_MOD_FINI(loop)
+GRUB_MOD_FINI(loopback)
 {
   grub_unregister_extcmd (cmd);
   grub_disk_dev_unregister (&grub_loopback_dev);

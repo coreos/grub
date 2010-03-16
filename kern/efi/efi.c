@@ -1,7 +1,7 @@
 /* efi.c - generic EFI support */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -162,6 +162,8 @@ grub_exit (void)
   for (;;) ;
 }
 
+/* On i386, a firmware-independant grub_reboot() is provided by realmode.S.  */
+#ifndef __i386__
 void
 grub_reboot (void)
 {
@@ -169,6 +171,7 @@ grub_reboot (void)
   efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
               GRUB_EFI_RESET_COLD, GRUB_EFI_SUCCESS, 0, NULL);
 }
+#endif
 
 void
 grub_halt (void)

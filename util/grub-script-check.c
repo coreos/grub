@@ -144,6 +144,7 @@ main (int argc, char *argv[])
   auto grub_err_t get_config_line (char **line, int cont);
   grub_err_t get_config_line (char **line, int cont __attribute__ ((unused)))
   {
+    int i;
     char *cmdline = 0;
     size_t len = 0;
     ssize_t read;
@@ -161,6 +162,17 @@ main (int argc, char *argv[])
 
     if (verbose)
       grub_printf("%s", cmdline);
+
+    for (i = 0; cmdline[i] != '\0'; i++)
+      {
+	/* Replace tabs and carriage returns with spaces.  */
+	if (cmdline[i] == '\t' || cmdline[i] == '\r')
+	  cmdline[i] = ' ';
+
+	/* Replace '\n' with '\0'.  */
+	if (cmdline[i] == '\n')
+	  cmdline[i] = '\0';
+      }
 
     *line = grub_strdup (cmdline);
 

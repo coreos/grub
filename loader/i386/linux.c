@@ -394,12 +394,15 @@ grub_linux_setup_video (struct linux_kernel_params *params)
 {
   struct grub_video_mode_info mode_info;
   void *framebuffer;
-  int ret;
+  grub_err_t err;
 
-  ret = grub_video_get_info_and_fini (&mode_info, &framebuffer);
+  err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
 
-  if (ret)
-    return 1;
+  if (err)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return 1;
+    }
 
   params->lfb_width = mode_info.width;
   params->lfb_height = mode_info.height;
@@ -407,7 +410,7 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   params->lfb_line_len = mode_info.pitch;
 
   params->lfb_base = (grub_size_t) framebuffer;
-  params->lfb_size = (params->lfb_line_len * params->lfb_height + 65535) >> 16;
+  params->lfb_size = ALIGN_UP (params->lfb_line_len * params->lfb_height, 65536);
 
   params->red_mask_size = mode_info.red_mask_size;
   params->red_field_pos = mode_info.red_field_pos;
@@ -540,6 +543,8 @@ grub_linux_boot (void)
       /* Use generic framebuffer unless VESA is known to be supported.  */
       if (params->have_vga != GRUB_VIDEO_LINUX_TYPE_VESA)
 	params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
+      else
+	params->lfb_size >>= 16;
     }
   else
     {
