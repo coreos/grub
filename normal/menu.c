@@ -246,7 +246,6 @@ menu_init (int entry, grub_menu_t menu, int nested)
 	err = grub_gfxmenu_try_hook (entry, menu, nested);
 	if(!err)
 	  continue;
-	grub_print_error ();
 	grub_errno = GRUB_ERR_NONE;
       }
 
