@@ -63,10 +63,10 @@ grub_font_draw_string (const char *str, grub_font_t font,
       if (!glyph)
 	return grub_errno;
       err = grub_font_draw_glyph (glyph, color, x, baseline_y);
+      x += glyph->device_width;
       grub_free (glyph);
       if (err)
 	return err;
-      x += glyph->device_width;
     }
 
   grub_free (visual);

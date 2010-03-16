@@ -282,7 +282,8 @@ grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
   msg_len = grub_utf8_to_ucs4 (*unicode_msg, msg_len,
   			      (grub_uint8_t *) msg, -1, 0);
 
-  *last_position = *unicode_msg + msg_len;
+  if (last_position)
+    *last_position = *unicode_msg + msg_len;
 
   return msg_len;
 }
@@ -529,13 +530,14 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 	      || comb_type == GRUB_UNICODE_COMB_ME
 	      || comb_type == GRUB_UNICODE_COMB_MN)
 	    last_comb_pointer = out->ncomb;
-	  n = grub_realloc (out->combining, 
+	  n = grub_realloc (out->combining,
 			    sizeof (n[0]) * (out->ncomb + 1));
 	  if (!n)
 	    {
 	      grub_errno = GRUB_ERR_NONE;
 	      continue;
 	    }
+	  out->combining = n;
 
 	  for (j = last_comb_pointer; j < out->ncomb; j++)
 	    if (out->combining[j].type > comb_type)
