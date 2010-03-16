@@ -49,6 +49,9 @@ static const struct grub_arg_option options[] =
   {"word",   'w', 0, N_("Set the serial port word length."), 0, ARG_TYPE_INT},
   {"parity", 'r', 0, N_("Set the serial port parity."),      0, ARG_TYPE_STRING},
   {"stop",   't', 0, N_("Set the serial port stop bits."),   0, ARG_TYPE_INT},
+  {"ascii",  'a', 0, N_("Terminal is ASCII-only."),   0, ARG_TYPE_NONE},
+  {"utf8",   'l', 0, N_("Terminal is logical-ordered UTF-8."), 0, ARG_TYPE_NONE},
+  {"visual-utf8",   'v', 0, N_("Terminal is visually-ordered UTF-8."), 0, ARG_TYPE_NONE},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -453,7 +456,7 @@ static struct grub_term_output grub_serial_term_output =
   .cls = grub_serial_cls,
   .setcolorstate = grub_serial_setcolorstate,
   .setcursor = grub_serial_setcursor,
-  .flags = GRUB_TERM_CODE_TYPE_UTF8_VISUAL,
+  .flags = GRUB_TERM_CODE_TYPE_ASCII,
 };
 
 
@@ -537,6 +540,15 @@ grub_cmd_serial (grub_extcmd_t cmd,
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad number of stop bits");
 	}
     }
+
+  grub_serial_term_output.flags &= ~GRUB_TERM_CODE_TYPE_MASK;
+
+  if (state[7].set)
+    grub_serial_term_output.flags |= GRUB_TERM_CODE_TYPE_UTF8_LOGICAL;
+  else if (state[8].set)
+    grub_serial_term_output.flags |= GRUB_TERM_CODE_TYPE_UTF8_VISUAL;
+  else
+    grub_serial_term_output.flags |= GRUB_TERM_CODE_TYPE_ASCII;
 
   /* Initialize with new settings.  */
   hwiniterr = serial_hw_init ();
