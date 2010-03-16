@@ -1053,7 +1053,9 @@ grub_putcode (grub_uint32_t code, struct grub_term_output *term)
     }
 
   if ((term->flags & GRUB_TERM_CODE_TYPE_MASK)
-      == GRUB_TERM_CODE_TYPE_UTF8_LOGICAL)
+      == GRUB_TERM_CODE_TYPE_UTF8_LOGICAL 
+      || (term->flags & GRUB_TERM_CODE_TYPE_MASK)
+      == GRUB_TERM_CODE_TYPE_UTF8_VISUAL)
     {
       grub_uint8_t str[20], *ptr;
 
@@ -1081,8 +1083,10 @@ grub_print_ucs4 (const grub_uint32_t * str,
 		 const grub_uint32_t * last_position,
 		 struct grub_term_output *term)
 {
-  if ((term->flags & GRUB_TERM_CODE_TYPE_MASK)
-      == GRUB_TERM_CODE_TYPE_UCS4_VISUAL)
+  if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
+      == GRUB_TERM_CODE_TYPE_UCS4_VISUAL 
+      || (term->flags & GRUB_TERM_CODE_TYPE_MASK) 
+      == GRUB_TERM_CODE_TYPE_UTF8_VISUAL)
     {
       grub_ssize_t visual_len;
       struct grub_unicode_glyph *visual;
@@ -1099,23 +1103,46 @@ grub_print_ucs4 (const grub_uint32_t * str,
 	}
       for (visual_ptr = visual; visual_ptr < visual + visual_len; visual_ptr++)
 	{
-	  struct grub_unicode_glyph glyph_r = {
-	    .base = '\r',
+	  struct grub_unicode_glyph c = {
 	    .variant = 0,
 	    .attributes = 0,
 	    .ncomb = 0,
 	    .combining = 0
 	  };
-	  term->putchar (visual_ptr);
+	  if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
+	      == GRUB_TERM_CODE_TYPE_UTF8_VISUAL)
+	    {
+	      int i;
+	      for (i = -1; i < (int) visual_ptr->ncomb; i++)
+		{
+		  grub_uint8_t u8[20], *ptr;
+	      
+		  if (i == -1)
+		    grub_ucs4_to_utf8 (&visual_ptr->base, 1, u8, sizeof (u8));
+		  else
+		    grub_ucs4_to_utf8 (&visual_ptr->combining[i].code,
+				       1, u8, sizeof (u8));
+
+		  for (ptr = u8; *ptr; ptr++)
+		    {
+		      c.base = *ptr;
+		      (term->putchar) (&c);
+		    }
+		}
+	    }
+	  else
+	    term->putchar (visual_ptr);
 	  if (visual_ptr->base == '\n')
-	    term->putchar (&glyph_r);
+	    {
+	      c.base = '\r';
+	      term->putchar (&c);
+	    }
 	  grub_free (visual_ptr->combining);
 	}
       grub_free (visual);
       return;
     }
 
-  /* FIXME: UTF-8 terminals.  */
   {
     const grub_uint32_t *ptr;
     for (ptr = str; ptr < last_position; ptr++)

@@ -80,6 +80,7 @@ grub_term_color_state;
 #define GRUB_TERM_CODE_TYPE_UTF8_LOGICAL	(1 << 4)
 /* UCS-4 in visual order.  */
 #define GRUB_TERM_CODE_TYPE_UCS4_VISUAL	        ((1 << 4) | (1 << 3))
+#define GRUB_TERM_CODE_TYPE_UTF8_VISUAL	        ((1 << 5) | (1 << 4))
 
 
 /* Bitmasks for modifier keys returned by grub_getkeystatus.  */

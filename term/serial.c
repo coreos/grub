@@ -453,7 +453,7 @@ static struct grub_term_output grub_serial_term_output =
   .cls = grub_serial_cls,
   .setcolorstate = grub_serial_setcolorstate,
   .setcursor = grub_serial_setcursor,
-  .flags = GRUB_TERM_CODE_TYPE_UTF8_LOGICAL,
+  .flags = GRUB_TERM_CODE_TYPE_UTF8_VISUAL,
 };
 
 
