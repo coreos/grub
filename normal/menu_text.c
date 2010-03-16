@@ -71,44 +71,6 @@ grub_print_message_indented (const char *msg, int margin_left, int margin_right,
 
   grub_print_ucs4 (unicode_msg, last_position, margin_left, margin_right, term);
 
-#if 0
-  int line_len;
-
-  grub_uint32_t *current_position = unicode_msg;
-
-  grub_uint32_t *next_new_line = unicode_msg;
-
-  int first_loop = 1;
-
-  while (current_position < last_position)
-    {
-      if (! first_loop)
-        grub_putcode ('\n', term);
-     
-      next_new_line = (grub_uint32_t *) last_position;
-
-      while (grub_getstringwidth (current_position, next_new_line,term) 
-	     > line_len
-            || (next_new_line != last_position && *next_new_line != ' '
-		&& next_new_line > current_position))
-       {
-         next_new_line--;
-       }
-
-      if (next_new_line == current_position)
-       {
-         next_new_line = (next_new_line + line_len > last_position) ?
-           (grub_uint32_t *) last_position : next_new_line + line_len;
-       }
-
-      print_spaces (margin_left, term);
-      grub_print_ucs4 (current_position, next_new_line, term);
-
-      next_new_line++;
-      current_position = next_new_line;
-      first_loop = 0;
-    }
-#endif
   grub_free (unicode_msg);
 }
 
