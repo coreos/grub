@@ -155,7 +155,6 @@ static struct grub_term_output grub_vga_text_term =
     .init = grub_vga_text_init_fini,
     .fini = grub_vga_text_init_fini,
     .putchar = grub_console_putchar,
-    .getcharwidth = grub_console_getcharwidth,
     .getwh = grub_console_getwh,
     .getxy = grub_vga_text_getxy,
     .gotoxy = grub_vga_text_gotoxy,

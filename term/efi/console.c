@@ -112,13 +112,6 @@ grub_console_putchar (const struct grub_unicode_glyph *c)
   efi_call_2 (o->output_string, o, str);
 }
 
-static grub_ssize_t
-grub_console_getcharwidth (const struct grub_unicode_glyph *c __attribute__ ((unused)))
-{
-  /* For now, every printable character has the width 1.  */
-  return 1;
-}
-
 static int
 grub_console_checkkey (void)
 {
@@ -349,7 +342,6 @@ static struct grub_term_output grub_console_term_output =
   {
     .name = "console",
     .putchar = grub_console_putchar,
-    .getcharwidth = grub_console_getcharwidth,
     .getwh = grub_console_getwh,
     .getxy = grub_console_getxy,
     .gotoxy = grub_console_gotoxy,

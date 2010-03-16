@@ -107,12 +107,6 @@ grub_ofconsole_putchar (const struct grub_unicode_glyph *c)
   grub_ieee1275_write (stdout_ihandle, &chr, 1, 0);
 }
 
-static grub_ssize_t
-grub_ofconsole_getcharwidth (const struct grub_unicode_glyph *c __attribute__((unused)))
-{
-  return 1;
-}
-
 static void
 grub_ofconsole_setcolorstate (grub_term_color_state state)
 {
@@ -449,7 +443,6 @@ static struct grub_term_output grub_ofconsole_term_output =
     .init = grub_ofconsole_init_output,
     .fini = grub_ofconsole_fini,
     .putchar = grub_ofconsole_putchar,
-    .getcharwidth = grub_ofconsole_getcharwidth,
     .getxy = grub_ofconsole_getxy,
     .getwh = grub_ofconsole_getwh,
     .gotoxy = grub_ofconsole_gotoxy,

@@ -69,12 +69,6 @@ grub_ncurses_putchar (const struct grub_unicode_glyph *c)
   addch (c->base | grub_console_attr);
 }
 
-static grub_ssize_t
-grub_ncurses_getcharwidth (const struct grub_unicode_glyph * c __attribute__ ((unused)))
-{
-  return 1;
-}
-
 static void
 grub_ncurses_setcolorstate (grub_term_color_state state)
 {
@@ -317,7 +311,6 @@ static struct grub_term_output grub_ncurses_term_output =
     .init = grub_ncurses_init,
     .fini = grub_ncurses_fini,
     .putchar = grub_ncurses_putchar,
-    .getcharwidth = grub_ncurses_getcharwidth,
     .getxy = grub_ncurses_getxy,
     .getwh = grub_ncurses_getwh,
     .gotoxy = grub_ncurses_gotoxy,

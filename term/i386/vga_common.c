@@ -31,13 +31,6 @@ grub_console_putchar (const struct grub_unicode_glyph *c)
   grub_console_real_putchar (c->base);
 }
 
-grub_ssize_t
-grub_console_getcharwidth (const struct grub_unicode_glyph *c __attribute__ ((unused)))
-{
-  /* For now, every printable character has the width 1.  */
-  return 1;
-}
-
 grub_uint16_t
 grub_console_getwh (void)
 {

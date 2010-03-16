@@ -57,7 +57,6 @@ static struct grub_term_output grub_console_term_output =
   {
     .name = "console",
     .putchar = grub_console_putchar,
-    .getcharwidth = grub_console_getcharwidth,
     .getwh = grub_console_getwh,
     .getxy = grub_console_getxy,
     .gotoxy = grub_console_gotoxy,
