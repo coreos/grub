@@ -544,6 +544,94 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 }
 
 static grub_ssize_t
+line_wrap (struct grub_unicode_glyph *visual_out,
+	   struct grub_unicode_glyph *visual,
+	   grub_size_t visual_len, unsigned *levels,
+	   grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
+	   grub_size_t maxwidth, grub_size_t startwidth)
+{
+  struct grub_unicode_glyph *outptr = visual_out;
+  unsigned line_start = 0;
+  grub_ssize_t line_width = startwidth;
+
+  auto void revert (unsigned start, unsigned end);
+  void revert (unsigned start, unsigned end)
+  {
+    struct grub_unicode_glyph t;
+    unsigned k, tl;
+    for (k = 0; k <= (end - start) / 2; k++)
+      {
+	t = visual[start + k];
+	visual[start + k] = visual[end - k];
+	visual[end - k] = t;
+	tl = levels[start + k];
+	levels[start + k] = levels[end - k];
+	levels[end - k] = tl;
+      }
+  }
+
+  unsigned k;
+
+  if (!visual_len)
+    return 0;
+
+  for (k = 0; k <= visual_len; k++)
+    {
+      grub_ssize_t last_width = 0;
+      if (getcharwidth && k != visual_len)
+	line_width += last_width = getcharwidth (&visual[k]);
+      if (((grub_ssize_t) maxwidth > 0 
+	   && line_width > (grub_ssize_t) maxwidth) || k == visual_len)
+	{
+	  unsigned min_odd_level = 0xffffffff;
+	  unsigned max_level = 0;
+	  unsigned i, j;
+	  for (i = line_start; i < k; i++)
+	    {
+	      if (levels[i] > max_level)
+		max_level = levels[i];
+	      if (levels[i] < min_odd_level && (levels[i] & 1))
+		min_odd_level = levels[i];
+	    }
+	  
+	  if (levels)
+	    {
+	      /* FIXME: can be optimized.  */
+	      for (j = max_level; j >= min_odd_level; j--)
+		{
+		  unsigned in = 0;
+		  for (i = line_start; i < k; i++)
+		    {
+		      if (i != line_start && levels[i] >= j && levels[i-1] < j)
+			in = i;
+		      if (levels[i] >= j && (i + 1 == k || levels[i+1] < j))
+			revert (in, i);
+		    }
+		}
+	      
+	      for (i = line_start; i < k; i++)
+		if (is_mirrored (visual[i].base) && levels[i])
+		  visual[i].attributes |= GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR;
+	    }
+
+	  outptr += k - line_start;
+	  if (k != visual_len)
+	    {
+	      grub_memset (outptr, 0, sizeof (visual[0]));
+	      outptr->base = '\n';
+	      outptr++;
+	    }
+	    
+	  line_start = k;
+	  line_width = last_width;
+	}
+    }
+
+  return outptr - visual_out;
+}
+
+
+static grub_ssize_t
 grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 				  grub_size_t logical_len,
 				  struct grub_unicode_glyph *visual_out,
@@ -594,22 +682,6 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
     stack_depth--;
     cur_level = stack_level[stack_depth];
     cur_override = stack_override[stack_depth];
-  }
-
-  auto void revert (unsigned start, unsigned end);
-  void revert (unsigned start, unsigned end)
-  {
-    struct grub_unicode_glyph t;
-    unsigned k, tl;
-    for (k = 0; k <= (end - start) / 2; k++)
-      {
-	t = visual[start+k];
-	visual[start+k] = visual[end-k];
-	visual[end-k] = t;
-	tl = levels[start+k];
-	levels[start+k] = levels[end-k];
-	levels[end-k] = tl;
-      }
   }
 
   levels = grub_malloc (sizeof (levels[0]) * logical_len);
@@ -852,71 +924,13 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
     }
   grub_free (resolved_types);
 
-  if (!visual_len)
-    {
-      grub_free (levels);
-      grub_free (visual);
-      return 0;
-    }
   {
-    struct grub_unicode_glyph *outptr = visual_out;
-    unsigned line_start = 0;
-    grub_ssize_t line_width = startwidth;
-    unsigned k;
-
-    for (k = 0; k <= visual_len; k++)
-      {
-	grub_ssize_t last_width = 0;
-	if (getcharwidth && k != visual_len)
-	  line_width += last_width = getcharwidth (&visual[k]);
-	if (((grub_ssize_t) maxwidth > 0 
-	     && line_width > (grub_ssize_t) maxwidth) || k == visual_len)
-	  {
-	    unsigned min_odd_level = 0xffffffff;
-	    unsigned max_level = 0;
-	    unsigned j;
-	    for (i = line_start; i < k; i++)
-	      {
-		if (levels[i] > max_level)
-		  max_level = levels[i];
-		if (levels[i] < min_odd_level && (levels[i] & 1))
-		  min_odd_level = levels[i];
-	      }
-	    /* FIXME: can be optimized.  */
-	    for (j = max_level; j >= min_odd_level; j--)
-	      {
-		unsigned in = 0;
-		for (i = line_start; i < k; i++)
-		  {
-		    if (i != line_start && levels[i] >= j && levels[i-1] < j)
-		      in = i;
-		    if (levels[i] >= j && (i + 1 == k || levels[i+1] < j))
-		      revert (in, i);
-		  }
-	      }
-
-	    for (i = line_start; i < k; i++)
-	      if (is_mirrored (visual[i].base) && levels[i])
-		visual[i].attributes |= GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR;
-
-	    grub_memcpy (outptr, &visual[line_start],
-			 (k - line_start) * sizeof (visual[0]));
-	    outptr += k - line_start;
-	    if (k != visual_len)
-	      {
-		grub_memset (outptr, 0, sizeof (visual[0]));
-		outptr->base = '\n';
-		outptr++;
-	      }
-	    
-	    line_start = k;
-	    line_width = last_width;
-	  }
-      }
+    grub_ssize_t ret;
+    ret = line_wrap (visual_out, visual, visual_len, levels, 
+		     getcharwidth, maxwidth, startwidth);
     grub_free (levels);
     grub_free (visual);
-
-    return outptr - visual_out;
+    return ret;
   }
 }
 
