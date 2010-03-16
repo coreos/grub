@@ -554,6 +554,8 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
   unsigned line_start = 0;
   grub_ssize_t line_width = startwidth;
   unsigned k;
+  grub_ssize_t last_space = -1;
+  grub_ssize_t last_space_width = 0;
 
   auto void revert (unsigned start, unsigned end);
   void revert (unsigned start, unsigned end)
@@ -577,16 +579,29 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
   for (k = 0; k <= visual_len; k++)
     {
       grub_ssize_t last_width = 0;
+
       if (getcharwidth && k != visual_len)
 	line_width += last_width = getcharwidth (&visual[k]);
+
+      if (k != visual_len && visual[k].base == ' ')
+	{
+	  last_space = k;
+	  last_space_width = line_width;
+	}
+
       if (((grub_ssize_t) maxwidth > 0 
 	   && line_width > (grub_ssize_t) maxwidth) || k == visual_len)
 	{	  
 	  unsigned min_odd_level = 0xffffffff;
 	  unsigned max_level = 0;
 	  unsigned j;
-	  
 	  unsigned i;
+
+	  if (last_space > (signed) line_start)
+	    k = last_space;
+	  else
+	    line_width -= last_width;
+
 	  for (i = line_start; i < k; i++)
 	    {
 	      if (levels[i] > max_level)
@@ -619,9 +634,12 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	      outptr->base = '\n';
 	      outptr++;
 	    }
-	    
+
+	  if ((signed) k == last_space)
+	    k++;
+
 	  line_start = k;
-	  line_width = last_width;
+	  line_width -= last_space_width;
 	}
     }
 
@@ -1102,7 +1120,7 @@ grub_print_ucs4 (const grub_uint32_t * str,
 		 int margin_left, int margin_right,
 		 struct grub_term_output *term)
 {
-  grub_size_t line_len;
+  grub_ssize_t max_width;
   grub_ssize_t startwidth;
 
   {
@@ -1113,7 +1131,7 @@ grub_print_ucs4 (const grub_uint32_t * str,
       .ncomb = 0,
       .combining = 0
       };
-    line_len = grub_term_width (term)
+    max_width = grub_term_width (term)
       - grub_term_getcharwidth (term, &space_glyph) 
       * (margin_left + margin_right) - 1;
   }
@@ -1122,6 +1140,7 @@ grub_print_ucs4 (const grub_uint32_t * str,
     grub_print_spaces (term, margin_left - ((term->getxy () >> 8) & 0xff));
 
   startwidth = ((term->getxy () >> 8) & 0xff) - margin_left;
+  startwidth = 0;
 
   if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
       == GRUB_TERM_CODE_TYPE_UCS4_VISUAL 
@@ -1133,7 +1152,7 @@ grub_print_ucs4 (const grub_uint32_t * str,
       struct grub_unicode_glyph *visual_ptr;
       visual_len = grub_bidi_logical_to_visual (str, last_position - str,
 						&visual, term->getcharwidth,
-						line_len, startwidth);
+						max_width, startwidth);
       if (visual_len < 0)
 	{
 	  grub_print_error ();
@@ -1187,35 +1206,58 @@ grub_print_ucs4 (const grub_uint32_t * str,
   {
     const grub_uint32_t *ptr;
     grub_ssize_t line_width = startwidth;
-    grub_ssize_t maxwidth = line_len;
+    grub_ssize_t lastspacewidth = 0;
+    const grub_uint32_t *line_start = str, *last_space = str - 1;
 
     for (ptr = str; ptr < last_position; ptr++)
       {
-	struct grub_unicode_glyph c = {
-	  .variant = 0,
-	  .attributes = 0,
-	  .ncomb = 0,
-	  .combining = 0
-	};
 	grub_ssize_t last_width = 0;
 	if (grub_unicode_get_comb_type (*ptr) == GRUB_UNICODE_COMB_NONE)
 	  {
+	    struct grub_unicode_glyph c = {
+	      .variant = 0,
+	      .attributes = 0,
+	      .ncomb = 0,
+	      .combining = 0
+	    };
 	    c.base = *ptr;
 	    line_width += last_width = term->getcharwidth (&c);
 	  }
 
-	if (line_width > maxwidth || *ptr == '\n')
+	if (*ptr == ' ')
 	  {
+	    lastspacewidth = line_width;
+	    last_space = ptr;
+	  }
+
+	if (line_width > max_width || *ptr == '\n')
+	  {
+	    const grub_uint32_t *ptr2;
+
+	    if (line_width > max_width && last_space > line_start)
+	      ptr = last_space;
+	    else
+	      lastspacewidth = line_width - last_width;
+
+	    for (ptr2 = line_start; ptr2 < ptr; ptr2++)
+	      grub_putcode (*ptr2, term);	      
+
 	    grub_print_spaces (term, margin_right);
 	    grub_putcode ('\n', term);
 	    grub_putcode ('\r', term);
-	    line_width = last_width;
+	    line_width -= lastspacewidth;
 	    grub_print_spaces (term, margin_left);
+	    if (ptr == last_space || *ptr == '\n')
+	      ptr++;
+	    line_start = ptr;
 	  }
-	  
-	if (*ptr != '\n')
-	  grub_putcode (*ptr, term);
       }
+
+    {
+      const grub_uint32_t *ptr2;
+      for (ptr2 = line_start; ptr2 < last_position; ptr2++)
+	grub_putcode (*ptr2, term);
+    }
   }
 }
 
