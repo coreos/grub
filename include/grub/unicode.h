@@ -156,4 +156,7 @@ grub_unicode_glyph_from_code (grub_uint32_t code)
   return ret;
 }
 
+grub_uint32_t
+grub_unicode_mirror_code (grub_uint32_t in);
+
 #endif
