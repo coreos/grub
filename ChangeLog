@@ -1,5 +1,9 @@
 2010-03-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* term/i386/pc/vesafb.c: Removed (orphaned, deprecated and broken).
+
+2010-03-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* video/fb/fbblit.c (grub_video_fbblit_blend_XXXA8888_1bit): Handle
 	alpha_mask_size == 0 case.
 
