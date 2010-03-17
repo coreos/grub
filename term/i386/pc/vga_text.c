@@ -83,10 +83,10 @@ inc_x (void)
     grub_curr_x++;
 }
 
-void
-grub_console_real_putchar (int c)
+static void
+grub_vga_text_putchar (const struct grub_unicode_glyph *c)
 {
-  switch (c)
+  switch (c->base)
     {
       case '\b':
 	if (grub_curr_x != 0)
@@ -99,8 +99,8 @@ grub_console_real_putchar (int c)
 	grub_curr_x = 0;
 	break;
       default:
-	screen_write_char (grub_curr_x,
-			   grub_curr_y, c | (grub_console_cur_color << 8));
+	screen_write_char (grub_curr_x, grub_curr_y,
+			   c->base | (grub_console_cur_color << 8));
 	inc_x ();
     }
 
@@ -154,7 +154,7 @@ static struct grub_term_output grub_vga_text_term =
     .name = "vga_text",
     .init = grub_vga_text_init_fini,
     .fini = grub_vga_text_init_fini,
-    .putchar = grub_console_putchar,
+    .putchar = grub_vga_text_putchar,
     .getwh = grub_console_getwh,
     .getxy = grub_vga_text_getxy,
     .gotoxy = grub_vga_text_gotoxy,

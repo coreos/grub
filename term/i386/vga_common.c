@@ -25,12 +25,6 @@ static grub_uint8_t grub_console_standard_color = 0x7;
 static grub_uint8_t grub_console_normal_color = 0x7;
 static grub_uint8_t grub_console_highlight_color = 0x70;
 
-void
-grub_console_putchar (const struct grub_unicode_glyph *c)
-{
-  grub_console_real_putchar (c->base);
-}
-
 grub_uint16_t
 grub_console_getwh (void)
 {

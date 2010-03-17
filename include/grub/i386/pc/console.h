@@ -46,6 +46,7 @@ grub_uint16_t grub_console_getxy (void);
 void grub_console_gotoxy (grub_uint8_t x, grub_uint8_t y);
 void grub_console_cls (void);
 void grub_console_setcursor (int on);
+void grub_console_putchar (const struct grub_unicode_glyph *c);
 
 /* Initialize the console system.  */
 void grub_console_init (void);

@@ -1064,7 +1064,7 @@ xsmap:
 
 
 /*
- * void grub_console_real_putchar (int c)
+ * void grub_console_putchar (const struct grub_unicode_glyph *c)
  *
  * Put the character C on the console. Because GRUB wants to write a
  * character with an attribute, this implementation is a bit tricky.
@@ -1077,8 +1077,9 @@ xsmap:
  * get the height of the screen, and the TELETYPE OUTPUT BIOS call doesn't
  * support setting a background attribute.
  */
-FUNCTION(grub_console_real_putchar)
-	movl	%eax, %edx
+FUNCTION(grub_console_putchar)
+	/* Retrieve the base character.  */
+	movl	0(%eax), %edx
 	pusha
 	movb	EXT_C(grub_console_cur_color), %bl
 

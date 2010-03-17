@@ -25,18 +25,9 @@
 
 extern grub_uint8_t grub_console_cur_color;
 
-void
-grub_console_putchar (const struct grub_unicode_glyph *c);
-grub_ssize_t
-grub_console_getcharwidth (const struct grub_unicode_glyph *c);
 grub_uint16_t grub_console_getwh (void);
 void grub_console_setcolorstate (grub_term_color_state state);
 void grub_console_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color);
 void grub_console_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color);
-
-/* Implemented in both kern/i386/pc/startup.S and vga_text.c;  this symbol
-   is not exported, so there's no collision, but vga_common.c expects this
-   prototype to be the same.  */
-void grub_console_real_putchar (int c);
 
 #endif /* ! GRUB_VGA_COMMON_CPU_HEADER */
