@@ -1,3 +1,7 @@
+2010-03-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/parser.c: Indented.
+
 2010-03-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* term/i386/pc/vesafb.c: Removed (orphaned, deprecated and broken).
