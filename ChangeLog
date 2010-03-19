@@ -1,3 +1,9 @@
+2010-03-19  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Add gentrigtables, grub-script-check,
+	grub_script_check_init.c, grub_script_check_init.h, and
+	trigtables.c.
+
 2010-03-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/parser.c: Indented.
