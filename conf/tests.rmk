@@ -50,6 +50,9 @@ grub_script_echo_keywords_SOURCES = tests/grub_script_echo_keywords.in
 check_SCRIPTS += grub_script_vars1
 grub_script_vars1_SOURCES = tests/grub_script_vars1.in
 
+check_SCRIPTS += grub_script_for1
+grub_script_for1_SOURCES = tests/grub_script_for1.in
+
 # List of tests to execute on "make check"
 # SCRIPTED_TESTS    = example_scripted_test
 # SCRIPTED_TESTS   += example_grub_script_test
@@ -59,6 +62,7 @@ grub_script_vars1_SOURCES = tests/grub_script_vars1.in
 SCRIPTED_TESTS  = grub_script_echo1
 SCRIPTED_TESTS += grub_script_echo_keywords
 SCRIPTED_TESTS += grub_script_vars1
+SCRIPTED_TESTS += grub_script_for1
 
 # dependencies between tests and testing-tools
 $(SCRIPTED_TESTS): grub-shell grub-shell-tester
