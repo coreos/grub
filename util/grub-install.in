@@ -32,6 +32,7 @@ platform=@platform@
 host_os=@host_os@
 font=@datadir@/@PACKAGE_TARNAME@/ascii.pf2
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
+localedir=@datadir@/locale
 
 grub_setup=${sbindir}/`echo grub-setup | sed ${transform}`
 if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] || [ "${target_cpu}-${platform}" = "mips-yeeloong" ] ; then
@@ -263,9 +264,9 @@ fi
 
 # Copy gettext files
 mkdir -p ${grubdir}/locale/
-for file in ${grubdir}/locale/*.mo ${pkglibdir}/locale/*.mo; do
-    if test -f "$file"; then
-        cp -f "$file" ${grubdir}/locale/
+for dir in ${localedir}/*; do
+    if test -f "$dir/LC_MESSAGES/grub.mo"; then
+        cp -f "$dir/LC_MESSAGES/grub.mo" "${grubdir}/locale/${dir##*/}.mo"
     fi
 done
 
