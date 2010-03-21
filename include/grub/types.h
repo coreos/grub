@@ -223,4 +223,10 @@ static inline grub_uint64_t grub_swap_bytes64(grub_uint64_t x)
 # endif
 #endif /* ! WORDS_BIGENDIAN */
 
+#if GRUB_TARGET_SIZEOF_VOID_P == 8
+#  define grub_host_to_target_addr(x) grub_host_to_target64(x)
+#else
+#  define grub_host_to_target_addr(x) grub_host_to_target32(x)
+#endif
+
 #endif /* ! GRUB_TYPES_HEADER */

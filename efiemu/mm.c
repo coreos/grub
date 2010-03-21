@@ -281,7 +281,7 @@ grub_efiemu_mmap_init (void)
   // the place for memory used by efiemu itself
   mmap_reserved_size = GRUB_EFI_MAX_MEMORY_TYPE + 1;
 
-#ifndef GRUB_UTIL
+#ifndef GRUB_MACHINE_EMU
   grub_machine_mmap_iterate (bounds_hook);
 #endif
 
@@ -394,7 +394,7 @@ grub_efiemu_mmap_fill (void)
 	}
     }
 
-#ifndef GRUB_UTIL
+#ifndef GRUB_MACHINE_EMU
   grub_machine_mmap_iterate (fill_hook);
 #endif
 

@@ -136,7 +136,6 @@ struct grub_iso9660_data
   struct grub_iso9660_primary_voldesc voldesc;
   grub_disk_t disk;
   unsigned int first_sector;
-  unsigned int length;
   int rockridge;
   int susp_skip;
   int joliet;
@@ -630,11 +629,15 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 
         if (dir->data->joliet)
           {
-            char *oldname;
+            char *oldname, *semicolon;
 
             oldname = filename;
             filename = grub_iso9660_convert_string
                   ((grub_uint16_t *) oldname, dirent.namelen >> 1);
+
+	    semicolon = grub_strrchr (filename, ';');
+	    if (semicolon)
+	      *semicolon = '\0';
 
             if (filename_alloc)
               grub_free (oldname);
@@ -744,7 +747,6 @@ grub_iso9660_open (struct grub_file *file, const char *name)
     goto fail;
 
   data->first_sector = foundnode->blk;
-  data->length = foundnode->size;
 
   file->data = data;
   file->size = foundnode->size;

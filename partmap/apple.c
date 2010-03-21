@@ -240,12 +240,12 @@ static struct grub_partition_map grub_apple_partition_map =
     .get_name = apple_partition_map_get_name
   };
 
-GRUB_MOD_INIT(apple_partition_map)
+GRUB_MOD_INIT(part_apple)
 {
   grub_partition_map_register (&grub_apple_partition_map);
 }
 
-GRUB_MOD_FINI(apple_partition_map)
+GRUB_MOD_FINI(part_apple)
 {
   grub_partition_map_unregister (&grub_apple_partition_map);
 }

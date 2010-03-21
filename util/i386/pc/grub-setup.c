@@ -418,7 +418,7 @@ unable_to_embed:
 
   grub_util_warn (_("Embedding is not possible.  GRUB can only be installed in this "
 		    "setup by using blocklists.  However, blocklists are UNRELIABLE and "
-		    "its use is discouraged."));
+		    "their use is discouraged."));
   if (! force)
     grub_util_error (_("if you really want blocklists, use --force"));
 

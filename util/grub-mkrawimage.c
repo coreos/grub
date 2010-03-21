@@ -23,6 +23,7 @@
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
 #include <grub/elf.h>
+#include <grub/aout.h>
 #include <grub/i18n.h>
 #include <grub/kernel.h>
 #include <grub/disk.h>
@@ -40,6 +41,8 @@
 #include <getopt.h>
 
 #include "progname.h"
+
+#define ALIGN_ADDR(x) (ALIGN_UP((x), GRUB_TARGET_SIZEOF_VOID_P))
 
 #ifdef ENABLE_LZMA
 #include <grub/lib/LzmaEnc.h>
@@ -129,20 +132,20 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
   if (font_path)
     {
-      font_size = ALIGN_UP(grub_util_get_image_size (font_path), 4);
+      font_size = ALIGN_ADDR (grub_util_get_image_size (font_path));
       total_module_size += font_size + sizeof (struct grub_module_header);
     }
 
   if (config_path)
     {
       config_size_pure = grub_util_get_image_size (config_path) + 1;
-      config_size = ALIGN_UP(config_size_pure, 4);
+      config_size = ALIGN_ADDR (config_size_pure);
       grub_util_info ("the size of config file is 0x%x", config_size);
       total_module_size += config_size + sizeof (struct grub_module_header);
     }
 
   for (p = path_list; p; p = p->next)
-    total_module_size += (grub_util_get_image_size (p->name)
+    total_module_size += (ALIGN_ADDR (grub_util_get_image_size (p->name))
 			  + sizeof (struct grub_module_header));
 
   grub_util_info ("the total module size is 0x%x", total_module_size);
@@ -157,9 +160,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   /* Fill in the grub_module_info structure.  */
   modinfo = (struct grub_module_info *) (kernel_img + kernel_size);
   memset (modinfo, 0, sizeof (struct grub_module_info));
-  modinfo->magic = GRUB_MODULE_MAGIC;
-  modinfo->offset = sizeof (struct grub_module_info);
-  modinfo->size = total_module_size;
+  modinfo->magic = grub_host_to_target32 (GRUB_MODULE_MAGIC);
+  modinfo->offset = grub_host_to_target_addr (sizeof (struct grub_module_info));
+  modinfo->size = grub_host_to_target_addr (total_module_size);
 
   offset = kernel_size + sizeof (struct grub_module_info);
   for (p = path_list; p; p = p->next)
@@ -168,11 +171,11 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       size_t mod_size, orig_size;
 
       orig_size = grub_util_get_image_size (p->name);
-      mod_size = ALIGN_UP(orig_size, 4);
+      mod_size = ALIGN_ADDR (orig_size);
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = OBJ_TYPE_ELF;
+      header->type = grub_host_to_target32 (OBJ_TYPE_ELF);
       header->size = grub_host_to_target32 (mod_size + sizeof (*header));
       offset += sizeof (*header);
       memset (kernel_img + offset + orig_size, 0, mod_size - orig_size);
@@ -187,7 +190,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = OBJ_TYPE_MEMDISK;
+      header->type = grub_host_to_target32 (OBJ_TYPE_MEMDISK);
       header->size = grub_host_to_target32 (memdisk_size + sizeof (*header));
       offset += sizeof (*header);
 
@@ -201,7 +204,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = OBJ_TYPE_FONT;
+      header->type = grub_host_to_target32 (OBJ_TYPE_FONT);
       header->size = grub_host_to_target32 (font_size + sizeof (*header));
       offset += sizeof (*header);
 
@@ -215,7 +218,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       header = (struct grub_module_header *) (kernel_img + offset);
       memset (header, 0, sizeof (struct grub_module_header));
-      header->type = OBJ_TYPE_CONFIG;
+      header->type = grub_host_to_target32 (OBJ_TYPE_CONFIG);
       header->size = grub_host_to_target32 (config_size + sizeof (*header));
       offset += sizeof (*header);
 
@@ -229,6 +232,36 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 		   &core_img, &core_size);
 
   grub_util_info ("the core size is 0x%x", core_size);
+
+#ifdef GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
+  *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE))
+    = grub_host_to_target32 (total_module_size);
+#endif
+  *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE))
+    = grub_host_to_target32 (kernel_size);
+#ifdef GRUB_KERNEL_MACHINE_COMPRESSED_SIZE
+  *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE))
+    = grub_host_to_target32 (core_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
+#endif
+
+#if defined(GRUB_KERNEL_MACHINE_INSTALL_DOS_PART) && defined(GRUB_KERNEL_MACHINE_INSTALL_BSD_PART)
+  /* If we included a drive in our prefix, let GRUB know it doesn't have to
+     prepend the drive told by BIOS.  */
+  if (prefix[0] == '(')
+    {
+      *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART))
+	= grub_host_to_target32 (-2);
+      *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART))
+	= grub_host_to_target32 (-2);
+    }
+#endif
+
+#ifdef GRUB_MACHINE_PCBIOS
+  if (GRUB_KERNEL_MACHINE_LINK_ADDR + core_size > GRUB_MEMORY_MACHINE_UPPER)
+    grub_util_error (_("core image is too big (%p > %p)"),
+ 		     GRUB_KERNEL_MACHINE_LINK_ADDR + core_size,
+		     GRUB_MEMORY_MACHINE_UPPER);
+#endif
 
 #if defined(GRUB_MACHINE_PCBIOS)
   {
@@ -298,39 +331,52 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     free (boot_img);
     free (boot_path);
   }
-#endif
-
-#ifdef GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
-  *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE))
-    = grub_host_to_target32 (total_module_size);
-#endif
-  *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE))
-    = grub_host_to_target32 (kernel_size);
-#ifdef GRUB_KERNEL_MACHINE_COMPRESSED_SIZE
-  *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE))
-    = grub_host_to_target32 (core_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
-#endif
-
-#if defined(GRUB_KERNEL_MACHINE_INSTALL_DOS_PART) && defined(GRUB_KERNEL_MACHINE_INSTALL_BSD_PART)
-  /* If we included a drive in our prefix, let GRUB know it doesn't have to
-     prepend the drive told by BIOS.  */
-  if (prefix[0] == '(')
+#elif defined (GRUB_MACHINE_SPARC64)
+  if (format == GRUB_PLATFORM_IMAGE_AOUT)
     {
-      *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART))
-	= grub_host_to_target32 (-2);
-      *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART))
-	= grub_host_to_target32 (-2);
+      void *aout_img;
+      size_t aout_size;
+      struct grub_aout32_header *aout_head;
+
+      aout_size = core_size + sizeof (*aout_head);
+      aout_img = xmalloc (aout_size);
+      aout_head = aout_img;
+      aout_head->a_midmag = grub_host_to_target32 ((AOUT_MID_SUN << 16)
+						   | AOUT32_OMAGIC);
+      aout_head->a_text = grub_host_to_target32 (core_size);
+      aout_head->a_entry
+	= grub_host_to_target32 (GRUB_BOOT_MACHINE_IMAGE_ADDRESS);
+      memcpy (aout_img + sizeof (*aout_head), core_img, core_size);
+
+      free (core_img);
+      core_img = aout_img;
+      core_size = aout_size;
     }
-#endif
+  else
+    {
+      unsigned int num;
+      char *boot_path, *boot_img;
+      size_t boot_size;
 
-#ifdef GRUB_MACHINE_PCBIOS
-  if (GRUB_KERNEL_MACHINE_LINK_ADDR + core_size > GRUB_MEMORY_MACHINE_UPPER)
-    grub_util_error (_("core image is too big (%p > %p)"),
- 		     GRUB_KERNEL_MACHINE_LINK_ADDR + core_size,
-		     GRUB_MEMORY_MACHINE_UPPER);
-#endif
+      num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
+      num <<= GRUB_DISK_SECTOR_BITS;
 
-#if defined(GRUB_MACHINE_MIPS)
+      boot_path = grub_util_get_path (dir, "diskboot.img");
+      boot_size = grub_util_get_image_size (boot_path);
+      if (boot_size != GRUB_DISK_SECTOR_SIZE)
+	grub_util_error ("diskboot.img is not one sector size");
+
+      boot_img = grub_util_read_image (boot_path);
+
+      *((grub_uint32_t *) (boot_img + GRUB_DISK_SECTOR_SIZE
+			   - GRUB_BOOT_MACHINE_LIST_SIZE + 8))
+	= grub_host_to_target32 (num);
+
+      grub_util_write_image (boot_img, boot_size, out);
+      free (boot_img);
+      free (boot_path);
+    }
+#elif defined(GRUB_MACHINE_MIPS)
   if (format == GRUB_PLATFORM_IMAGE_ELF)
     {
       char *elf_img;
@@ -339,7 +385,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       Elf32_Phdr *phdr;
       grub_uint32_t target_addr;
 
-      program_size = ALIGN_UP (core_size, 4);
+      program_size = ALIGN_ADDR (core_size);
 
       elf_img = xmalloc (program_size + sizeof (*ehdr) + sizeof (*phdr));
       memset (elf_img, 0, program_size + sizeof (*ehdr) + sizeof (*phdr));
@@ -444,10 +490,8 @@ Make a bootable image of GRUB.\n\
   -o, --output=FILE       output a generated image to FILE [default=stdout]\n"
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
 	    "\
-  -O, --format=FORMAT     generate an image in format [default=" 
-	    GRUB_PLATFORM_IMAGE_DEFAULT_FORMAT "]\n	\
-	                available formats: "
-	    GRUB_PLATFORM_IMAGE_FORMATS "\n"
+  -O, --format=FORMAT     generate an image in format [default=%s]\n\
+                          available formats: %s\n"
 #endif
 	    "\
   -h, --help              display this message and exit\n\
@@ -455,7 +499,12 @@ Make a bootable image of GRUB.\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-"), program_name, GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+"), 
+program_name, GRUB_LIBDIR, DEFAULT_DIRECTORY,
+#ifdef GRUB_PLATFORM_IMAGE_DEFAULT
+  GRUB_PLATFORM_IMAGE_DEFAULT_FORMAT, GRUB_PLATFORM_IMAGE_FORMATS,
+#endif
+PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -473,6 +522,8 @@ main (int argc, char *argv[])
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
   grub_platform_image_format_t format = GRUB_PLATFORM_IMAGE_DEFAULT;
 #endif
+
+  set_program_name (argv[0]);
 
   grub_util_init_nls ();
 
@@ -502,6 +553,11 @@ main (int argc, char *argv[])
 #ifdef GRUB_PLATFORM_IMAGE_ELF
 	    if (strcmp (optarg, "elf") == 0)
 	      format = GRUB_PLATFORM_IMAGE_ELF;
+	    else 
+#endif
+#ifdef GRUB_PLATFORM_IMAGE_AOUT
+	    if (strcmp (optarg, "aout") == 0)
+	      format = GRUB_PLATFORM_IMAGE_AOUT;
 	    else 
 #endif
 	      usage (1);
