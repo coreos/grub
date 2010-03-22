@@ -26,32 +26,31 @@
 /* All the possible state transitions on the command line.  If a
    transition can not be found, it is assumed that there is no
    transition and keep_value is assumed to be 1.  */
-static struct grub_parser_state_transition state_transitions[] =
-{
-  { GRUB_PARSER_STATE_TEXT, GRUB_PARSER_STATE_QUOTE, '\'', 0},
-  { GRUB_PARSER_STATE_TEXT, GRUB_PARSER_STATE_DQUOTE, '\"', 0},
-  { GRUB_PARSER_STATE_TEXT, GRUB_PARSER_STATE_VAR, '$', 0},
-  { GRUB_PARSER_STATE_TEXT, GRUB_PARSER_STATE_ESC, '\\', 0},
+static struct grub_parser_state_transition state_transitions[] = {
+  {GRUB_PARSER_STATE_TEXT, GRUB_PARSER_STATE_QUOTE, '\'', 0},
+  {GRUB_PARSER_STATE_TEXT, GRUB_PARSER_STATE_DQUOTE, '\"', 0},
+  {GRUB_PARSER_STATE_TEXT, GRUB_PARSER_STATE_VAR, '$', 0},
+  {GRUB_PARSER_STATE_TEXT, GRUB_PARSER_STATE_ESC, '\\', 0},
 
-  { GRUB_PARSER_STATE_ESC, GRUB_PARSER_STATE_TEXT, 0, 1},
+  {GRUB_PARSER_STATE_ESC, GRUB_PARSER_STATE_TEXT, 0, 1},
 
-  { GRUB_PARSER_STATE_QUOTE, GRUB_PARSER_STATE_TEXT, '\'', 0},
+  {GRUB_PARSER_STATE_QUOTE, GRUB_PARSER_STATE_TEXT, '\'', 0},
 
-  { GRUB_PARSER_STATE_DQUOTE, GRUB_PARSER_STATE_TEXT, '\"', 0},
-  { GRUB_PARSER_STATE_DQUOTE, GRUB_PARSER_STATE_QVAR, '$', 0},
+  {GRUB_PARSER_STATE_DQUOTE, GRUB_PARSER_STATE_TEXT, '\"', 0},
+  {GRUB_PARSER_STATE_DQUOTE, GRUB_PARSER_STATE_QVAR, '$', 0},
 
-  { GRUB_PARSER_STATE_VAR, GRUB_PARSER_STATE_VARNAME2, '{', 0},
-  { GRUB_PARSER_STATE_VAR, GRUB_PARSER_STATE_VARNAME, 0, 1},
-  { GRUB_PARSER_STATE_VARNAME, GRUB_PARSER_STATE_TEXT, ' ', 1},
-  { GRUB_PARSER_STATE_VARNAME2, GRUB_PARSER_STATE_TEXT, '}', 0},
+  {GRUB_PARSER_STATE_VAR, GRUB_PARSER_STATE_VARNAME2, '{', 0},
+  {GRUB_PARSER_STATE_VAR, GRUB_PARSER_STATE_VARNAME, 0, 1},
+  {GRUB_PARSER_STATE_VARNAME, GRUB_PARSER_STATE_TEXT, ' ', 1},
+  {GRUB_PARSER_STATE_VARNAME2, GRUB_PARSER_STATE_TEXT, '}', 0},
 
-  { GRUB_PARSER_STATE_QVAR, GRUB_PARSER_STATE_QVARNAME2, '{', 0},
-  { GRUB_PARSER_STATE_QVAR, GRUB_PARSER_STATE_QVARNAME, 0, 1},
-  { GRUB_PARSER_STATE_QVARNAME, GRUB_PARSER_STATE_TEXT, '\"', 0},
-  { GRUB_PARSER_STATE_QVARNAME, GRUB_PARSER_STATE_DQUOTE, ' ', 1},
-  { GRUB_PARSER_STATE_QVARNAME2, GRUB_PARSER_STATE_DQUOTE, '}', 0},
+  {GRUB_PARSER_STATE_QVAR, GRUB_PARSER_STATE_QVARNAME2, '{', 0},
+  {GRUB_PARSER_STATE_QVAR, GRUB_PARSER_STATE_QVARNAME, 0, 1},
+  {GRUB_PARSER_STATE_QVARNAME, GRUB_PARSER_STATE_TEXT, '\"', 0},
+  {GRUB_PARSER_STATE_QVARNAME, GRUB_PARSER_STATE_DQUOTE, ' ', 1},
+  {GRUB_PARSER_STATE_QVARNAME2, GRUB_PARSER_STATE_DQUOTE, '}', 0},
 
-  { 0, 0, 0, 0}
+  {0, 0, 0, 0}
 };
 
 
@@ -74,17 +73,17 @@ grub_parser_cmdline_state (grub_parser_state_t state, char c, char *result)
       if (transition->input == c)
 	break;
 
-      if (transition->input == ' ' && ! grub_isalpha (c)
-	  && ! grub_isdigit (c) && c != '_')
+      if (transition->input == ' ' && !grub_isalpha (c)
+	  && !grub_isdigit (c) && c != '_')
 	break;
 
       /* A less perfect match was found, use this one if no exact
-	 match can be found.  */
+         match can be found.  */
       if (transition->input == 0)
 	break;
     }
 
-  if (! transition->from_state)
+  if (!transition->from_state)
     transition = &default_transition;
 
   if (transition->keep_value)
@@ -113,43 +112,44 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
   auto int check_varstate (grub_parser_state_t s);
 
   int check_varstate (grub_parser_state_t s)
-    {
-      return (s == GRUB_PARSER_STATE_VARNAME
-	      || s == GRUB_PARSER_STATE_VARNAME2
-	      || s == GRUB_PARSER_STATE_QVARNAME
-	      || s == GRUB_PARSER_STATE_QVARNAME2);
-    }
+  {
+    return (s == GRUB_PARSER_STATE_VARNAME
+	    || s == GRUB_PARSER_STATE_VARNAME2
+	    || s == GRUB_PARSER_STATE_QVARNAME
+	    || s == GRUB_PARSER_STATE_QVARNAME2);
+  }
 
   auto void add_var (grub_parser_state_t newstate);
 
   void add_var (grub_parser_state_t newstate)
-    {
-      char *val;
+  {
+    char *val;
 
-      /* Check if a variable was being read in and the end of the name
-	 was reached.  */
-      if (! (check_varstate (state) && !check_varstate (newstate)))
-	return;
+    /* Check if a variable was being read in and the end of the name
+       was reached.  */
+    if (!(check_varstate (state) && !check_varstate (newstate)))
+      return;
 
-      *(vp++) = '\0';
-      val = grub_env_get (varname);
-      vp = varname;
-      if (! val)
-	return;
+    *(vp++) = '\0';
+    val = grub_env_get (varname);
+    vp = varname;
+    if (!val)
+      return;
 
-      /* Insert the contents of the variable in the buffer.  */
-      for (; *val; val++)
-	*(bp++) = *val;
-    }
+    /* Insert the contents of the variable in the buffer.  */
+    for (; *val; val++)
+      *(bp++) = *val;
+  }
 
   *argc = 0;
   do
     {
-      if (! rd || !*rd)
+      if (!rd || !*rd)
 	{
 	  if (getline)
 	    getline (&rd, 1);
-	  else break;
+	  else
+	    break;
 	}
 
       if (!rd)
@@ -190,7 +190,8 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
 	    }
 	  state = newstate;
 	}
-    } while (state != GRUB_PARSER_STATE_TEXT && !check_varstate (state));
+    }
+  while (state != GRUB_PARSER_STATE_TEXT && !check_varstate (state));
 
   /* A special case for when the last character was part of a
      variable.  */
@@ -204,12 +205,12 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
 
   /* Reserve memory for the return values.  */
   args = grub_malloc (bp - buffer);
-  if (! args)
+  if (!args)
     return grub_errno;
   grub_memcpy (args, buffer, bp - buffer);
 
   *argv = grub_malloc (sizeof (char *) * (*argc + 1));
-  if (! *argv)
+  if (!*argv)
     {
       grub_free (args);
       return grub_errno;
@@ -229,35 +230,34 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
   return 0;
 }
 
-struct grub_handler_class grub_parser_class =
-  {
-    .name = "parser"
-  };
+struct grub_handler_class grub_parser_class = {
+  .name = "parser"
+};
 
 grub_err_t
 grub_parser_execute (char *source)
 {
   auto grub_err_t getline (char **line, int cont);
   grub_err_t getline (char **line, int cont __attribute__ ((unused)))
-    {
-      char *p;
+  {
+    char *p;
 
-      if (! source)
-	{
-	  *line = 0;
-	  return 0;
-	}
+    if (!source)
+      {
+	*line = 0;
+	return 0;
+      }
 
-      p = grub_strchr (source, '\n');
-      if (p)
-	*p = 0;
+    p = grub_strchr (source, '\n');
+    if (p)
+      *p = 0;
 
-      *line = grub_strdup (source);
-      if (p)
-	*p = '\n';
-      source = p ? p + 1 : 0;
-      return 0;
-    }
+    *line = grub_strdup (source);
+    if (p)
+      *p = '\n';
+    source = p ? p + 1 : 0;
+    return 0;
+  }
 
   while (source)
     {

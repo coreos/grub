@@ -110,37 +110,7 @@ void read_terminal_list (void);
 
 void grub_set_more (int onoff);
 
-#ifdef GRUB_UTIL
-void grub_normal_init (void);
-void grub_normal_fini (void);
-void grub_hello_init (void);
-void grub_hello_fini (void);
-void grub_ls_init (void);
-void grub_ls_fini (void);
-void grub_cat_init (void);
-void grub_cat_fini (void);
-void grub_boot_init (void);
-void grub_boot_fini (void);
-void grub_cmp_init (void);
-void grub_cmp_fini (void);
-void grub_terminal_init (void);
-void grub_terminal_fini (void);
-void grub_loop_init (void);
-void grub_loop_fini (void);
-void grub_help_init (void);
-void grub_help_fini (void);
-void grub_halt_init (void);
-void grub_halt_fini (void);
-void grub_reboot_init (void);
-void grub_reboot_fini (void);
-void grub_configfile_init (void);
-void grub_configfile_fini (void);
-void grub_search_init (void);
-void grub_search_fini (void);
-void grub_test_init (void);
-void grub_test_fini (void);
-void grub_blocklist_init (void);
-void grub_blocklist_fini (void);
-#endif
+int grub_normal_get_line_counter (void);
+void grub_install_newline_hook (void);
 
 #endif /* ! GRUB_NORMAL_HEADER */

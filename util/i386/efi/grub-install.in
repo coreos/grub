@@ -31,6 +31,7 @@ target_cpu=@target_cpu@
 platform=@platform@
 host_os=@host_os@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
+localedir=@datadir@/locale
 
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
@@ -198,6 +199,14 @@ for file in ${grubdir}/*.mod ${grubdir}/*.lst; do
 done
 for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst; do
     cp -f $file ${grubdir} || exit 1
+done
+
+# Copy gettext files
+mkdir -p ${grubdir}/locale/
+for dir in ${localedir}/*; do
+    if test -f "$dir/LC_MESSAGES/grub.mo"; then
+        cp -f "$dir/LC_MESSAGES/grub.mo" "${grubdir}/locale/${dir##*/}.mo"
+    fi
 done
 
 if ! test -f ${grubdir}/grubenv; then

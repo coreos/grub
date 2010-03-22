@@ -36,7 +36,7 @@ void *EXPORT_FUNC(grub_realloc) (void *ptr, grub_size_t size);
 void *EXPORT_FUNC(grub_memalign) (grub_size_t align, grub_size_t size);
 
 /* For debugging.  */
-#if defined(MM_DEBUG) && !defined(GRUB_UTIL)
+#if defined(MM_DEBUG) && !defined(GRUB_UTIL) && !defined (GRUB_MACHINE_EMU)
 /* Set this variable to 1 when you want to trace all memory function calls.  */
 extern int EXPORT_VAR(grub_mm_debug);
 

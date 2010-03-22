@@ -862,7 +862,7 @@ grub_font_get (const char *font_name)
     return &null_font;
 }
 
-/* Get the full name of the font.  For instance, "Helvetica Bold 12".  */
+/* Get the full name of the font.  */
 const char *
 grub_font_get_name (grub_font_t font)
 {
