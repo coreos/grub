@@ -113,6 +113,7 @@ void read_terminal_list (void);
 void grub_set_more (int onoff);
 
 int grub_normal_get_char_counter (void);
+void grub_normal_reset_more (void);
 
 void grub_xputs_normal (const char *str);
 

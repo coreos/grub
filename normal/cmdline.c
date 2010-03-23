@@ -362,6 +362,7 @@ grub_cmdline_get (const char *prompt)
 	grub_putcode ('\n', term);
   }
   grub_printf ("%s ", prompt_translated);
+  grub_normal_reset_more ();
 
   {
     struct cmdline_term *cl_term_cur;
@@ -439,6 +440,8 @@ grub_cmdline_get (const char *prompt)
 	    insertu8 = grub_normal_do_completion (bufu8, &restore,
 						  print_completion);
 	    grub_free (bufu8);
+
+	    grub_normal_reset_more ();
 
 	    if (restore)
 	      {

@@ -39,9 +39,6 @@ struct term_state
 
 static struct term_state *term_states = NULL;
 
-/* The amount of lines counted by the pager.  */
-static unsigned grub_more_lines;
-
 /* If the more pager is active.  */
 static int grub_more;
 
@@ -51,6 +48,14 @@ int
 grub_normal_get_char_counter (void)
 {
   return grub_normal_char_counter;
+}
+
+void
+grub_normal_reset_more (void)
+{
+  static struct term_state *state;
+  for (state = term_states; state; state = state->next)
+    state->num_lines = 0;
 }
 
 static void
@@ -92,14 +97,14 @@ print_more (void)
 
   /* Scroll one lines or an entire page, depending on the key.  */
 
-  {
-    static struct term_state *state;
-    for (state = term_states; state; state = state->next)
-      if (key == '\r' || key =='\n')
-	state->num_lines = 0;
-      else
+  if (key == '\r' || key =='\n')
+    grub_normal_reset_more ();
+  else
+    {
+      static struct term_state *state;
+      for (state = term_states; state; state = state->next)
 	state->num_lines -= 2;
-  }
+    }
 }
 
 void
@@ -109,8 +114,7 @@ grub_set_more (int onoff)
     grub_more++;
   else
     grub_more--;
-
-  grub_more_lines = 0;
+  grub_normal_reset_more ();
 }
 
 static grub_uint32_t
@@ -529,8 +533,8 @@ print_ucs4_terminal (const grub_uint32_t * str,
 
 	  grub_print_spaces (term, margin_right);
 	  grub_putcode ('\n', term);
-	  if (state && state->num_lines++
-	      >= (grub_ssize_t) grub_term_height (term))
+	  if (state && ++state->num_lines
+	      >= (grub_ssize_t) grub_term_height (term) - 2)
 	    {
 	      state->backlog_ucs4 = (ptr == last_space || *ptr == '\n') 
 		? ptr + 1 : ptr;
@@ -597,7 +601,8 @@ put_glyphs_terminal (const struct grub_unicode_glyph *visual,
       if (visual_ptr->base == '\n')
 	grub_print_spaces (term, margin_right);
       putglyph (visual_ptr, term);
-      if (state && state->num_lines++ >= (grub_ssize_t) grub_term_height (term))
+      if (state && ++state->num_lines
+	  >= (grub_ssize_t) grub_term_height (term) - 2)
       {
 	state->backlog_glyphs = visual_ptr + 1;
 	state->backlog_len = visual_len - (visual - visual_ptr) - 1;
@@ -736,7 +741,7 @@ grub_xputs_normal (const char *str)
   {
     int cur;
     cur = print_ucs4_real (unicode_str, unicode_last_position, 0, 0,
-			   term, 1);
+			   term, grub_more);
     if (cur)
       backlog = 1;
   }
