@@ -389,9 +389,6 @@ write_font_width_spec (struct grub_font_info *font_info, char *output_file)
   FILE *file;
   struct grub_glyph_info *glyph;
   grub_uint8_t *out;
-  grub_uint8_t *rle;
-  int rle_size;
-  int i, j;
 
   out = xmalloc (8192);
   memset (out, 0, 8192);
