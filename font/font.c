@@ -1180,7 +1180,8 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
   for (i = 0; i < glyph_id->ncomb; i++)
     {
       grub_int16_t space = 0;
-      grub_int16_t centerx = (bounds.width - combining_glyphs[i]->width) / 2
+      /* Center by default.  */
+      grub_int16_t targetx = (bounds.width - combining_glyphs[i]->width) / 2
 	+ bounds.x;
       
       if (!combining_glyphs[i])
@@ -1192,7 +1193,7 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	{
 	case GRUB_UNICODE_COMB_OVERLAY:
 	  do_blit (combining_glyphs[i],
-		   centerx,
+		   targetx,
 		   (bounds.height - combining_glyphs[i]->height) / 2
 		   -(bounds.height + bounds.y));
 	  if (min_devwidth < combining_glyphs[i]->width)
@@ -1222,20 +1223,59 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	  below_rightx += combining_glyphs[i]->width;
 	  break;
 
+	case GRUB_UNICODE_COMB_HEBREW_HOLAM:
+	  if (glyph_id->base != GRUB_UNICODE_HEBREW_WAW)
+	    targetx = main_glyph->offset_x - combining_glyphs[i]->width - (combining_glyphs[i]->width + 3) / 4;
+	  goto above_on_main;
+
+	case GRUB_UNICODE_COMB_HEBREW_SIN_DOT:
+	  targetx = main_glyph->offset_x + combining_glyphs[i]->width / 4;
+	  goto above_on_main;
+
+	case GRUB_UNICODE_COMB_HEBREW_SHIN_DOT:
+	  targetx = main_glyph->width + main_glyph->offset_x - combining_glyphs[i]->width;
+	above_on_main:
+	  space = combining_glyphs[i]->offset_y
+	    - grub_font_get_xheight (combining_glyphs[i]->font) - 1;
+	  if (space <= 0)
+	    space = 1 + (grub_font_get_xheight (main_glyph->font)) / 8;
+	  do_blit (combining_glyphs[i], targetx,
+		   -(main_glyph->height + main_glyph->offset_y + space
+		     + combining_glyphs[i]->height));
+	  if (min_devwidth < combining_glyphs[i]->width)
+	    min_devwidth = combining_glyphs[i]->width;
+	  break;
+
+	case GRUB_UNICODE_COMB_HEBREW_RAFE:
 	case GRUB_UNICODE_STACK_ABOVE:
 	  space = combining_glyphs[i]->offset_y
-	    - grub_font_get_xheight (combining_glyphs[i]->font);
-	  if (space < 0)
+	    - grub_font_get_xheight (combining_glyphs[i]->font) - 1;
+	  if (space <= 0)
 	    space = 1 + (grub_font_get_xheight (main_glyph->font)) / 8;
 	    
 	case GRUB_UNICODE_STACK_ATTACHED_ABOVE:	    
-	  do_blit (combining_glyphs[i], centerx,
+	  do_blit (combining_glyphs[i], targetx,
 		   -(bounds.height + bounds.y + space
 		     + combining_glyphs[i]->height));
 	  if (min_devwidth < combining_glyphs[i]->width)
 	    min_devwidth = combining_glyphs[i]->width;
 	  break;
 
+	case GRUB_UNICODE_COMB_HEBREW_SHEVA:
+	case GRUB_UNICODE_COMB_HEBREW_HIRIQ:
+	case GRUB_UNICODE_COMB_HEBREW_QAMATS:
+	case GRUB_UNICODE_COMB_HEBREW_TSERE:
+	case GRUB_UNICODE_COMB_HEBREW_SEGOL:
+	  /* , 
+	     GRUB_UNICODE_COMB_HEBREW_DAGESH = 21*/
+	  /* TODO: placement in final kaf and under reish.  */
+
+	case GRUB_UNICODE_COMB_HEBREW_HATAF_SEGOL:
+	case GRUB_UNICODE_COMB_HEBREW_HATAF_PATAH:
+	case GRUB_UNICODE_COMB_HEBREW_HATAF_QAMATS:
+	case GRUB_UNICODE_COMB_HEBREW_PATAH:
+	case GRUB_UNICODE_COMB_HEBREW_QUBUTS:
+	case GRUB_UNICODE_COMB_HEBREW_METEG:
 	  /* I don't know how ypogegrammeni differs from subscript. */
 	case GRUB_UNICODE_COMB_YPOGEGRAMMENI:
 	case GRUB_UNICODE_STACK_BELOW:
@@ -1245,7 +1285,7 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	    space = 1 + (grub_font_get_xheight (main_glyph->font)) / 8;
 	  
 	case GRUB_UNICODE_STACK_ATTACHED_BELOW:
-	  do_blit (combining_glyphs[i], centerx,
+	  do_blit (combining_glyphs[i], targetx,
 		   -(bounds.y - space));
 	  if (min_devwidth < combining_glyphs[i]->width)
 	    min_devwidth = combining_glyphs[i]->width;
