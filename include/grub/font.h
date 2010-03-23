@@ -100,9 +100,6 @@ int EXPORT_FUNC (grub_font_get_height) (grub_font_t font);
 
 int EXPORT_FUNC (grub_font_get_xheight) (grub_font_t font);
 
-int EXPORT_FUNC (grub_font_get_string_width) (grub_font_t font,
-					      const char *str);
-
 struct grub_font_glyph *EXPORT_FUNC (grub_font_get_glyph) (grub_font_t font,
 							   grub_uint32_t code);
 
@@ -112,11 +109,6 @@ struct grub_font_glyph *EXPORT_FUNC (grub_font_get_glyph_with_fallback) (grub_fo
 grub_err_t EXPORT_FUNC (grub_font_draw_glyph) (struct grub_font_glyph *glyph,
 					       grub_video_color_t color,
 					       int left_x, int baseline_y);
-
-grub_err_t EXPORT_FUNC (grub_font_draw_string) (const char *str,
-						grub_font_t font,
-						grub_video_color_t color,
-						int left_x, int baseline_y);
 
 int
 EXPORT_FUNC (grub_font_get_constructed_device_width) (grub_font_t hinted_font,

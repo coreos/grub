@@ -29,6 +29,7 @@
 #include <grub/charset.h>
 #include <grub/unicode.h>
 #include <grub/fontformat.h>
+#include <grub/gfxmenu_view.h>
 
 /* Draw a UTF-8 string of text on the current video render target.
    The x coordinate specifies the starting x position for the first character,
