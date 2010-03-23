@@ -33,6 +33,8 @@
   218, 224, 226, 233, 234
   - Private use surrogates
   - Private use characters (not really a problem)
+  - Variations (no font support)
+  - Vertical text
  */
 
 /* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
