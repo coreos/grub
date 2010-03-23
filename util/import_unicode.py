@@ -45,12 +45,35 @@ for line in infile:
         print ("UnicodeData.txt uses combination type %d. Conflict." \
                    % curcombtype)
         raise
+    if sp[2] != "Lu" and sp[2] != "Ll" and sp[2] != "Lt" and sp[2] != "Lm" \
+            and sp[2] != "Lo"\
+            and sp[2] != "Me" and sp[2] != "Mc" and sp[2] != "Mn" \
+            and sp[2] != "Nd" and sp[2] != "Nl" and sp[2] != "No" \
+            and sp[2] != "Pc" and sp[2] != "Pd" and sp[2] != "Ps" \
+            and sp[2] != "Pe" and sp[2] != "Pi" and sp[2] != "Pf" \
+            and sp[2] != "Po" \
+            and sp[2] != "Sm" and sp[2] != "Sc" and sp[2] != "Sk" \
+            and sp[2] != "So"\
+            and sp[2] != "Zs" and sp[2] != "Zl" and sp[2] != "Zp" \
+            and sp[2] != "Cc" and sp[2] != "Cf" and sp[2] != "Cs" \
+            and sp[2] != "Co":
+        print ("WARNING: Unknown type %s" % sp[2])
     if curcombtype == 0 and sp[2] == "Me":
         curcombtype = 253
     if curcombtype == 0 and sp[2] == "Mc":
         curcombtype = 254
     if curcombtype == 0 and sp[2] == "Mn":
         curcombtype = 255
+    if (curcombtype >= 2 and curcombtype <= 6) \
+            or (curcombtype >= 37 and curcombtype != 84 and curcombtype != 91  and curcombtype != 103 and curcombtype != 107 and curcombtype != 118 and curcombtype != 122 and curcombtype != 129 and curcombtype != 130 and curcombtype != 132 and curcombtype != 202 and \
+                curcombtype != 214 and curcombtype != 216 and \
+                curcombtype != 218 and curcombtype != 220 and \
+                curcombtype != 222 and curcombtype != 224 and curcombtype != 226 and curcombtype != 228 and \
+                curcombtype != 230 and curcombtype != 232 and curcombtype != 233 and \
+                curcombtype != 234 and \
+                curcombtype != 240 and curcombtype != 253 and \
+                curcombtype != 254 and curcombtype != 255):
+        print ("WARNING: Unknown combining type %d" % curcombtype)
     if lastcode + 1 != curcode or curbiditype != lastbiditype \
             or curcombtype != lastcombtype or curmirrortype != lastmirrortype:
         if begincode != -2 and (lastbiditype != "L" or lastcombtype != 0 or \
