@@ -165,17 +165,12 @@ map_code (grub_uint32_t in, struct grub_term_output *term)
 void
 grub_puts_terminal (const char *str, struct grub_term_output *term)
 {
-  grub_uint32_t code;
-  grub_ssize_t ret;
-  const grub_uint8_t *ptr = (const grub_uint8_t *) str;
-  const grub_uint8_t *end;
-  end = (const grub_uint8_t *) (str + grub_strlen (str));
+  grub_uint32_t *unicode_str, *unicode_last_position;
+  grub_utf8_to_ucs4_alloc (str, &unicode_str,
+			   &unicode_last_position);
 
-  while (*ptr)
-    {
-      ret = grub_utf8_to_ucs4 (&code, 1, ptr, end - ptr, &ptr);
-      grub_putcode (code, term);	
-    }
+  grub_print_ucs4 (unicode_str, unicode_last_position, 0, 0, term);
+  grub_free (unicode_str);
 }
 
 grub_uint16_t *
@@ -574,13 +569,13 @@ void
 grub_xputs_normal (const char *str)
 {
   grub_term_output_t term;
+  grub_uint32_t *unicode_str, *unicode_last_position;
+  grub_utf8_to_ucs4_alloc (str, &unicode_str,
+			   &unicode_last_position);
 
   FOR_ACTIVE_TERM_OUTPUTS(term)
   {
-    grub_uint32_t *unicode_str, *unicode_last_position;
-    grub_utf8_to_ucs4_alloc (str, &unicode_str,
-			     &unicode_last_position);
     grub_print_ucs4 (unicode_str, unicode_last_position, 0, 0, term);
-    grub_free (unicode_str);
   }
+  grub_free (unicode_str);
 }

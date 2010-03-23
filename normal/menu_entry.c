@@ -1094,10 +1094,10 @@ complete (struct screen *screen, int continuous, int update)
 	else
 	  grub_putcode (' ', screen->terms[i].term);
 
-	while (*p && p < endp)
-	  grub_putcode (*p++, screen->terms[i].term);
+	grub_print_ucs4 (p, ucs4 + ucs4len < endp ? ucs4 + ucs4len : endp,
+			 0, 0, screen->terms[i].term);
 
-	if (*p)
+	if (ucs4 + ucs4len > endp)
 	  grub_putcode (GRUB_TERM_DISP_RIGHT, screen->terms[i].term);
 	grub_term_gotoxy (screen->terms[i].term, pos >> 8, pos & 0xFF);
       }
