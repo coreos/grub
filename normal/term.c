@@ -25,18 +25,26 @@
 #include <grub/normal.h>
 #include <grub/charset.h>
 
+struct term_state
+{
+  struct term_state *next;
+  struct grub_unicode_glyph *backlog;
+  int numlines;
+  char *term_name;
+};
+
 /* The amount of lines counted by the pager.  */
 static unsigned grub_more_lines;
 
 /* If the more pager is active.  */
 static int grub_more;
 
-static int grub_normal_line_counter = 0;
+static int grub_normal_char_counter = 0;
 
 int
-grub_normal_get_line_counter (void)
+grub_normal_get_char_counter (void)
 {
-  return grub_normal_line_counter;
+  return grub_normal_char_counter;
 }
 
 static void
@@ -49,8 +57,6 @@ process_newline (void)
     if (grub_term_height (cur) < height)
       height = grub_term_height (cur);
   grub_more_lines++;
-
-  grub_normal_line_counter++;
 
   if (grub_more && grub_more_lines >= height - 1)
     {
@@ -339,6 +345,8 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
       .combining = 0,
       .estimated_width = 1
     };
+
+  grub_normal_char_counter++;
 
   if (c->base == '\t' && term->getxy)
     {

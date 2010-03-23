@@ -112,7 +112,7 @@ void read_terminal_list (void);
 
 void grub_set_more (int onoff);
 
-int grub_normal_get_line_counter (void);
+int grub_normal_get_char_counter (void);
 void grub_install_newline_hook (void);
 
 void grub_xputs_normal (const char *str);
