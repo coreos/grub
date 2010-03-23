@@ -36,6 +36,7 @@ struct grub_unicode_compact_range
   grub_uint8_t bidi_type:5;
   grub_uint8_t comb_type;
   grub_uint8_t bidi_mirror:1;
+  grub_uint8_t join_type:3;
 } __attribute__ ((packed));
 
 enum grub_bidi_type
@@ -59,6 +60,16 @@ enum grub_bidi_type
     GRUB_BIDI_TYPE_S,
     GRUB_BIDI_TYPE_WS,
     GRUB_BIDI_TYPE_ON
+  };
+
+enum grub_join_type
+  {
+    GRUB_JOIN_TYPE_NONJOINING = 0,
+    GRUB_JOIN_TYPE_LEFT = 1,
+    GRUB_JOIN_TYPE_RIGHT = 2,
+    GRUB_JOIN_TYPE_DUAL = 3,
+    GRUB_JOIN_TYPE_CAUSING = 4,
+    GRUB_JOIN_TYPE_TRANSPARENT = 5
   };
 
 enum grub_comb_type
@@ -103,7 +114,7 @@ struct grub_unicode_glyph
 {
   grub_uint32_t base;
   grub_uint16_t variant:9;
-  grub_uint8_t attributes:1;
+  grub_uint8_t attributes:5;
   grub_size_t ncomb;
   struct grub_unicode_combining {
     grub_uint32_t code;
@@ -115,12 +126,30 @@ struct grub_unicode_glyph
 };
 
 #define GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR 0x1
+#define GRUB_UNICODE_GLYPH_ATTRIBUTES_JOIN_LEFT_TO_RIGHT_SHIFT 1
+#define GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED 0x2
+#define GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED \
+  (GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED \
+   << GRUB_UNICODE_GLYPH_ATTRIBUTES_JOIN_LEFT_TO_RIGHT_SHIFT)
+/* Set iff the corresponding joining flags come from ZWJ or ZWNJ.  */
+#define GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED_EXPLICIT 0x8
+#define GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED_EXPLICIT \
+  (GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED_EXPLICIT \
+   << GRUB_UNICODE_GLYPH_ATTRIBUTES_JOIN_LEFT_TO_RIGHT_SHIFT)
+#define GRUB_UNICODE_GLYPH_ATTRIBUTES_JOIN \
+  (GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED \
+   | GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED \
+   | GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED_EXPLICIT \
+   | GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED_EXPLICIT)
+
 #define GRUB_UNICODE_COMBINING_GRAPHEME_JOINER 0x34f
 #define GRUB_UNICODE_VARIATION_SELECTOR_1 0xfe00
 #define GRUB_UNICODE_VARIATION_SELECTOR_16 0xfe0f
 #define GRUB_UNICODE_VARIATION_SELECTOR_17 0xe0100
 #define GRUB_UNICODE_VARIATION_SELECTOR_256 0xe01ef
 #define GRUB_UNICODE_HEBREW_WAW  0x05d5
+#define GRUB_UNICODE_ZWNJ        0x200c
+#define GRUB_UNICODE_ZWJ         0x200d
 
 extern struct grub_unicode_compact_range grub_unicode_compact[];
 extern struct grub_unicode_bidi_pair grub_unicode_bidi_pairs[];

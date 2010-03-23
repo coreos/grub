@@ -24,8 +24,33 @@ import datetime
 if len (sys.argv) < 3:
     print ("Usage: %s SOURCE DESTINATION" % sys.argv[0])
     exit (0)
+infile = open (sys.argv[3], "r")
+joining = {}
+for line in infile:
+    line = re.sub ("#.*$", "", line)
+    line = line.replace ("\n", "")
+    line = line.replace (" ", "")
+    if len (line) == 0 or line[0] == '\n':
+        continue
+    sp = line.split (";")
+    curcode = int (sp[0], 16)
+    if sp[2] == "U":
+        joining[curcode] = "GRUB_JOIN_TYPE_NONJOINING"
+    elif sp[2] == "L":
+        joining[curcode] = "GRUB_JOIN_TYPE_LEFT"
+    elif sp[2] == "R":
+        joining[curcode] = "GRUB_JOIN_TYPE_RIGHT"
+    elif sp[2] == "D":
+        joining[curcode] = "GRUB_JOIN_TYPE_DUAL"
+    elif sp[2] == "C":
+        joining[curcode] = "GRUB_JOIN_TYPE_CAUSING"
+    else:
+        print ("Unknown joining type '%s'" % sp[2])
+        exit (1)
+infile.close ()
+
 infile = open (sys.argv[1], "r")
-outfile = open (sys.argv[3], "w")
+outfile = open (sys.argv[4], "w")
 outfile.write ("#include <grub/unicode.h>\n")
 outfile.write ("\n")
 outfile.write ("struct grub_unicode_compact_range grub_unicode_compact[] = {\n")
@@ -74,23 +99,32 @@ for line in infile:
                 curcombtype != 240 and curcombtype != 253 and \
                 curcombtype != 254 and curcombtype != 255):
         print ("WARNING: Unknown combining type %d" % curcombtype)
+    if curcode in joining:
+        curjoin = joining[curcode]
+    elif sp[2] == "Me" or sp[2] == "Mn" or sp[2] == "Cf":
+        curjoin = "GRUB_JOIN_TYPE_TRANSPARENT"
+    else:
+        curjoin = "GRUB_JOIN_TYPE_NONJOINING"
     if lastcode + 1 != curcode or curbiditype != lastbiditype \
-            or curcombtype != lastcombtype or curmirrortype != lastmirrortype:
+            or curcombtype != lastcombtype or curmirrortype != lastmirrortype \
+            or curjoin != lastjoin:
         if begincode != -2 and (lastbiditype != "L" or lastcombtype != 0 or \
                                     lastmirrortype):
-            outfile.write (("{0x%x, 0x%x, GRUB_BIDI_TYPE_%s, %d, %d},\n" \
+            outfile.write (("{0x%x, 0x%x, GRUB_BIDI_TYPE_%s, %d, %d, %s},\n" \
                                 % (begincode, lastcode, lastbiditype, \
-                                       lastcombtype, lastmirrortype)))
+                                       lastcombtype, lastmirrortype, \
+                                       lastjoin)))
         begincode = curcode
     lastcode = curcode
+    lastjoin = curjoin
     lastbiditype = curbiditype
     lastcombtype = curcombtype
     lastmirrortype = curmirrortype
 if lastbiditype != "L" or lastcombtype != 0 or lastmirrortype:
-    outfile.write (("{0x%x, 0x%x, GRUB_BIDI_TYPE_%s, %d, %d},\n" \
+    outfile.write (("{0x%x, 0x%x, GRUB_BIDI_TYPE_%s, %d, %d, %s},\n" \
                         % (begincode, lastcode, lastbiditype, lastcombtype, \
-                               lastmirrortype)))
-outfile.write ("{0, 0, 0, 0, 0},\n")
+                               lastmirrortype, lastjoin)))
+outfile.write ("{0, 0, 0, 0, 0, 0},\n")
 
 outfile.write ("};\n")
 
