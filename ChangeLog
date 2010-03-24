@@ -1,3 +1,7 @@
+2010-03-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Add grub-bin2h, grub-reboot, and grub-set-default.
+
 2010-03-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-install.in: Copy .mo files from @datadir@/locale, to
