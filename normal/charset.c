@@ -403,6 +403,26 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
   return p - dest;
 }
 
+static grub_uint8_t *join_types = NULL;
+
+static void
+unpack_join (void)
+{
+  unsigned i;
+  struct grub_unicode_compact_range *cur;
+
+  join_types = grub_zalloc (GRUB_UNICODE_MAX_CACHED_CHAR);
+  if (!join_types)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+  for (cur = grub_unicode_compact; cur->end; cur++)
+    for (i = cur->start; i <= cur->end
+	     && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
+      join_types[i] = cur->join_type;
+}
+
 static grub_uint8_t *bidi_types = NULL;
 
 static void
@@ -442,6 +462,24 @@ get_bidi_type (grub_uint32_t c)
       return cur->bidi_type;
 
   return GRUB_BIDI_TYPE_L;
+}
+
+static inline enum grub_join_type
+get_join_type (grub_uint32_t c)
+{
+  struct grub_unicode_compact_range *cur;
+
+  if (!join_types)
+    unpack_join ();
+
+  if (join_types && c < GRUB_UNICODE_MAX_CACHED_CHAR)
+    return join_types[c];
+
+  for (cur = grub_unicode_compact; cur->end; cur++)
+    if (cur->start <= c && c <= cur->end)
+      return cur->join_type;
+
+  return GRUB_JOIN_TYPE_NONJOINING;
 }
 
 static inline int
@@ -637,8 +675,6 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	{	  
 	  unsigned min_odd_level = 0xffffffff;
 	  unsigned max_level = 0;
-	  unsigned j;
-	  unsigned i;
 
 	  if (k != visual_len && last_space > (signed) line_start)
 	    k = last_space;
@@ -650,30 +686,113 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	  else
 	    last_space_width = line_width - last_width;
 
-	  for (i = line_start; i < k; i++)
-	    {
-	      if (levels[i] > max_level)
-		max_level = levels[i];
-	      if (levels[i] < min_odd_level && (levels[i] & 1))
-		min_odd_level = levels[i];
-	    }
+	  {
+	    unsigned i;
+	    for (i = line_start; i < k; i++)
+	      {
+		if (levels[i] > max_level)
+		  max_level = levels[i];
+		if (levels[i] < min_odd_level && (levels[i] & 1))
+		  min_odd_level = levels[i];
+	      }
+	  }
+
+	  {
+	    unsigned j;	  
+	    /* FIXME: can be optimized.  */
+	    for (j = max_level; j >= min_odd_level; j--)
+	      {
+		unsigned in = 0;
+		unsigned i;
+		for (i = line_start; i < k; i++)
+		  {
+		    if (i != line_start && levels[i] >= j && levels[i-1] < j)
+		      in = i;
+		    if (levels[i] >= j && (i + 1 == k || levels[i+1] < j))
+		      revert (in, i);
+		  }
+	      }
+	  }
 	  
-	  /* FIXME: can be optimized.  */
-	  for (j = max_level; j >= min_odd_level; j--)
-	    {
-	      unsigned in = 0;
-	      for (i = line_start; i < k; i++)
-		{
-		  if (i != line_start && levels[i] >= j && levels[i-1] < j)
-		    in = i;
-		  if (levels[i] >= j && (i + 1 == k || levels[i+1] < j))
-		    revert (in, i);
-		}
-	    }
-	  
-	  for (i = line_start; i < k; i++)
-	    if (is_mirrored (visual[i].base) && levels[i])
-	      visual[i].attributes |= GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR;
+	  {
+	    unsigned i;
+	    for (i = line_start; i < k; i++)
+	      {
+		if (is_mirrored (visual[i].base) && levels[i])
+		  visual[i].attributes |= GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR;
+		if ((visual[i].attributes & GRUB_UNICODE_GLYPH_ATTRIBUTES_JOIN)
+		    && levels[i])
+		  {
+		    int left, right;
+		    left = visual[i].attributes
+		      & (GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED 
+			 | GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED_EXPLICIT);
+		    right = visual[i].attributes
+		      & (GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED 
+			 | GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED_EXPLICIT);
+		    visual[i].attributes &= ~GRUB_UNICODE_GLYPH_ATTRIBUTES_JOIN;
+		    left <<= GRUB_UNICODE_GLYPH_ATTRIBUTES_JOIN_LEFT_TO_RIGHT_SHIFT;
+		    right >>= GRUB_UNICODE_GLYPH_ATTRIBUTES_JOIN_LEFT_TO_RIGHT_SHIFT;
+		    visual[i].attributes |= (left | right);
+		  }
+	      }
+	  }
+
+	  {
+	    int left_join = 0;
+	    unsigned i;
+	    for (i = line_start; i < k; i++)
+	      {
+		enum grub_join_type join_type = get_join_type (visual[i].base);
+		if (!(visual[i].attributes
+		      & GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED_EXPLICIT)
+		    && (join_type == GRUB_JOIN_TYPE_LEFT
+			|| join_type == GRUB_JOIN_TYPE_DUAL))
+		  {
+		    if (left_join)
+		      visual[i].attributes
+			|= GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED;
+		    else
+		      visual[i].attributes
+			&= ~GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED;
+		  }
+		if (join_type == GRUB_JOIN_TYPE_NONJOINING
+		    || join_type == GRUB_JOIN_TYPE_LEFT)
+		  left_join = 0;
+		if (join_type == GRUB_JOIN_TYPE_RIGHT
+		    || join_type == GRUB_JOIN_TYPE_DUAL
+		    || join_type == GRUB_JOIN_TYPE_CAUSING)
+		  left_join = 1;
+	      }
+	  }
+
+	  {
+	    int right_join = 0;
+	    signed i;
+	    for (i = k - 1; i >= (signed) line_start; i--)
+	      {
+		enum grub_join_type join_type = get_join_type (visual[i].base);
+		if (!(visual[i].attributes
+		      & GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED_EXPLICIT)
+		    && (join_type == GRUB_JOIN_TYPE_RIGHT
+			|| join_type == GRUB_JOIN_TYPE_DUAL))
+		  {
+		    if (right_join)
+		      visual[i].attributes
+			|= GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED;
+		    else
+		      visual[i].attributes
+			&= ~GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED;
+		  }
+		if (join_type == GRUB_JOIN_TYPE_NONJOINING
+		    || join_type == GRUB_JOIN_TYPE_RIGHT)
+		  right_join = 0;
+		if (join_type == GRUB_JOIN_TYPE_LEFT
+		    || join_type == GRUB_JOIN_TYPE_DUAL
+		    || join_type == GRUB_JOIN_TYPE_CAUSING)
+		  right_join = 1;
+	      }
+	  }		
 
 	  grub_memcpy (outptr, &visual[line_start],
 		       (k - line_start) * sizeof (visual[0]));
@@ -785,11 +904,43 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
   cur_override = OVERRIDE_NEUTRAL;
   {
     const grub_uint32_t *lptr;
+    enum {JOIN_DEFAULT, NOJOIN, JOIN_FORCE} join_state = JOIN_DEFAULT;
+    int zwj_propagate_to_previous = 0;
     for (lptr = logical; lptr < logical + logical_len;)
       {
-	grub_size_t p = grub_unicode_aglomerate_comb (lptr, logical 
-						      + logical_len - lptr, 
-						      &visual[visual_len]);
+	grub_size_t p;
+
+	if (*lptr == GRUB_UNICODE_ZWJ)
+	  {
+	    if (zwj_propagate_to_previous)
+	      {
+		visual[visual_len - 1].attributes
+		  |= GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED_EXPLICIT
+		  | GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED;
+	      }
+	    zwj_propagate_to_previous = 0;
+	    join_state = JOIN_FORCE;
+	    lptr++;
+	    continue;
+	  }
+
+	if (*lptr == GRUB_UNICODE_ZWNJ)
+	  {
+	    if (zwj_propagate_to_previous)
+	      {
+		visual[visual_len - 1].attributes
+		  |= GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED_EXPLICIT;
+		visual[visual_len - 1].attributes 
+		  &= ~GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED;
+	      }
+	    zwj_propagate_to_previous = 0;
+	    join_state = NOJOIN;
+	    lptr++;
+	    continue;
+	  }
+
+	p = grub_unicode_aglomerate_comb (lptr, logical + logical_len - lptr, 
+					  &visual[visual_len]);
 	
 	type = get_bidi_type (visual[visual_len].base);
 	switch (type)
@@ -813,6 +964,24 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 	    break;
 	  default:
 	    {
+	      if (join_state == JOIN_FORCE)
+		{
+		  visual[visual_len].attributes
+		    |= GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED_EXPLICIT
+		    | GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED;
+		}
+	      
+	      if (join_state == NOJOIN)
+		{
+		  visual[visual_len].attributes
+		    |= GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED_EXPLICIT;
+		  visual[visual_len].attributes
+		    &= ~GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED;
+		}
+
+	      join_state = JOIN_DEFAULT;
+	      zwj_propagate_to_previous = 1;
+
 	      levels[visual_len] = cur_level;
 	      if (cur_override != OVERRIDE_NEUTRAL)
 		resolved_types[visual_len] = 
