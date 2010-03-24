@@ -31,7 +31,6 @@
   - Combining characters of types 7, 8, 9, 21, 27, 28, 29, 30, 31,
   32, 33, 34, 35, 36, 84, 91, 103, 107, 118, 122, 129, 130, 132,
   218, 224, 226, 233, 234
-  - Private use surrogates
   - Private use characters (not really a problem)
   - Variations (no font support)
   - Vertical text
