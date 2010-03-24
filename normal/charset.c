@@ -26,7 +26,6 @@
   - Cc type characters (ignored)
   - Line-breaking rules (e.g. Zs type characters)
   - Indic languages
-  - Arabic shaping
   - non-Semitic shaping (rarely used)
   - Zl and Zp characters
   - Combining characters of types 7, 8, 9, 21, 27, 28, 29, 30, 31,
@@ -40,6 +39,7 @@
   - Justification data
   - Glyph posititioning
   - Baseline data
+  TODO: Use form characters of Unicode as last resort Arabic shaping.
  */
 
 /* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE

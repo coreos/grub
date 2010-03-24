@@ -151,6 +151,7 @@ ascii_glyph_lookup (grub_uint32_t code)
           ascii_font_glyph[current]->offset_x = 0; 
           ascii_font_glyph[current]->offset_y = -2; 
 	  ascii_font_glyph[current]->device_width = 8;
+	  ascii_font_glyph[current]->font = NULL;
 
 	  grub_memcpy (ascii_font_glyph[current]->bitmap,
 		       &ascii_bitmaps[(0x7f - current) * ASCII_BITMAP_SIZE],
@@ -1181,11 +1182,12 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
     {
       grub_int16_t space = 0;
       /* Center by default.  */
-      grub_int16_t targetx = (bounds.width - combining_glyphs[i]->width) / 2
-	+ bounds.x;
+      grub_int16_t targetx;
       
       if (!combining_glyphs[i])
 	continue;
+      targetx = (bounds.width - combining_glyphs[i]->width) / 2
+	+ bounds.x;
       /* CGJ is to avoid diacritics reordering. */
       if (glyph_id->combining[i].code == GRUB_UNICODE_COMBINING_GRAPHEME_JOINER)
 	continue;
@@ -1325,13 +1327,25 @@ grub_font_construct_dry_run (grub_font_t hinted_font,
 			     struct grub_font_glyph ***combining_glyphs_out,
 			     int *device_width)
 {
-  struct grub_font_glyph *main_glyph;
+  struct grub_font_glyph *main_glyph = NULL;
   struct grub_font_glyph **combining_glyphs;
+  grub_uint32_t desired_attributes = 0;
 
   if (combining_glyphs_out)
     *combining_glyphs_out = NULL;
 
-  main_glyph = grub_font_get_glyph_with_fallback (hinted_font, glyph_id->base);
+  if (glyph_id->attributes & GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED)
+    desired_attributes |= GRUB_FONT_CODE_RIGHT_JOINED;
+
+  if (glyph_id->attributes & GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED)
+    desired_attributes |= GRUB_FONT_CODE_LEFT_JOINED;
+
+  main_glyph = grub_font_get_glyph_with_fallback (hinted_font, glyph_id->base
+						  | desired_attributes);
+
+  if (!main_glyph)
+    main_glyph = grub_font_get_glyph_with_fallback (hinted_font,
+						    glyph_id->base);
 
   /* Glyph not available in any font.  Use ASCII fallback.  */
   if (!main_glyph)

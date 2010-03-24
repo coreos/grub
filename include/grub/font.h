@@ -70,6 +70,11 @@ struct grub_font_glyph
   grub_uint8_t bitmap[0];
 };
 
+/* Part of code field which is really used as such.  */
+#define GRUB_FONT_CODE_CHAR_MASK     0x001fffff
+#define GRUB_FONT_CODE_RIGHT_JOINED  0x80000000
+#define GRUB_FONT_CODE_LEFT_JOINED   0x40000000
+
 /* Initialize the font loader.
    Must be called before any fonts are loaded or used.  */
 void grub_font_loader_init (void);

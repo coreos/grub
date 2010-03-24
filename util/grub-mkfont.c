@@ -19,8 +19,10 @@
 #include <config.h>
 #include <grub/types.h>
 #include <grub/util/misc.h>
+#include <grub/misc.h>
 #include <grub/i18n.h>
 #include <grub/fontformat.h>
+#include <grub/font.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +31,8 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_TRUETYPE_TAGS_H
+#include FT_TRUETYPE_TABLES_H
 #include <freetype/ftsynth.h>
 
 #include "progname.h"
@@ -47,7 +51,7 @@ struct grub_glyph_info
   int y_ofs;
   int device_width;
   int bitmap_size;
-  grub_uint8_t bitmap[0];
+  grub_uint8_t *bitmap;
 };
 
 enum file_formats
@@ -76,7 +80,9 @@ struct grub_font_info
   int flags;
   int num_range;
   grub_uint32_t *ranges;
-  struct grub_glyph_info *glyph;
+  struct grub_glyph_info *glyphs_unsorted;
+  struct grub_glyph_info *glyphs_sorted;
+  int num_glyphs;
 };
 
 static struct option options[] =
@@ -149,11 +155,11 @@ add_pixel (grub_uint8_t **data, int *mask, int not_blank)
   *mask >>= 1;
 }
 
-void
-add_char (struct grub_font_info *font_info, FT_Face face,
-	  grub_uint32_t char_code)
+static void
+add_glyph (struct grub_font_info *font_info, FT_UInt glyph_idx, FT_Face face,
+	   grub_uint32_t char_code)
 {
-  struct grub_glyph_info *glyph_info, **p_glyph;
+  struct grub_glyph_info *glyph_info;
   int width, height;
   grub_uint8_t *data;
   int mask, i, j, bitmap_size;
@@ -168,23 +174,16 @@ add_char (struct grub_font_info *font_info, FT_Face face,
   else if (font_info->flags & GRUB_FONT_FLAG_FORCEHINT)
     flag |= FT_LOAD_FORCE_AUTOHINT;
 
-  if (FT_Load_Char (face, char_code, flag))
-    return;
+  if (FT_Load_Glyph (face, glyph_idx, flag))
+    {
+      printf ("WARNING: Couldn't load glyph %x\n", glyph_idx);
+      return;
+    }
 
   glyph = face->glyph;
 
   if (font_info->flags & GRUB_FONT_FLAG_BOLD)
     FT_GlyphSlot_Embolden (glyph);
-
-  p_glyph = &font_info->glyph;
-  while ((*p_glyph) && ((*p_glyph)->char_code > char_code))
-    {
-      p_glyph = &(*p_glyph)->next;
-    }
-
-  /* Ignore duplicated glyph.  */
-  if ((*p_glyph) && ((*p_glyph)->char_code == char_code))
-    return;
 
   if (glyph->next)
     printf ("%x\n", char_code);
@@ -193,11 +192,13 @@ add_char (struct grub_font_info *font_info, FT_Face face,
   height = glyph->bitmap.rows;
 
   bitmap_size = ((width * height + 7) / 8);
-  glyph_info = xmalloc (sizeof (struct grub_glyph_info) + bitmap_size);
+  glyph_info = xmalloc (sizeof (struct grub_glyph_info));
+  glyph_info->bitmap = xmalloc (bitmap_size);
   glyph_info->bitmap_size = bitmap_size;
 
-  glyph_info->next = *p_glyph;
-  *p_glyph = glyph_info;
+  glyph_info->next = font_info->glyphs_unsorted;
+  font_info->glyphs_unsorted = glyph_info;
+  font_info->num_glyphs++;
 
   glyph_info->char_code = char_code;
   glyph_info->width = width;
@@ -227,9 +228,318 @@ add_char (struct grub_font_info *font_info, FT_Face face,
 		 (1 << (7 - (i & 7))));
 }
 
+struct glyph_replace *subst_rightjoin, *subst_leftjoin, *subst_medijoin;
+
+struct glyph_replace
+{
+  struct glyph_replace *next;
+  grub_uint32_t from, to;
+};
+
+/* TODO: sort glyph_replace and use binary search if necessary.  */
+static void
+add_char (struct grub_font_info *font_info, FT_Face face,
+	  grub_uint32_t char_code)
+{
+  FT_UInt glyph_idx;
+  struct glyph_replace *cur;
+
+  glyph_idx = FT_Get_Char_Index (face, char_code);
+  if (!glyph_idx)
+    return;
+  add_glyph (font_info, glyph_idx, face, char_code);
+  for (cur = subst_rightjoin; cur; cur = cur->next)
+    if (cur->from == glyph_idx)
+      {
+	add_glyph (font_info, cur->to, face,
+		   char_code | GRUB_FONT_CODE_RIGHT_JOINED);
+	break;
+      }
+  for (cur = subst_leftjoin; cur; cur = cur->next)
+    if (cur->from == glyph_idx)
+      {
+	add_glyph (font_info, cur->to, face,
+		   char_code | GRUB_FONT_CODE_LEFT_JOINED);
+	break;
+      }
+  for (cur = subst_medijoin; cur; cur = cur->next)
+    if (cur->from == glyph_idx)
+      {
+	add_glyph (font_info, cur->to, face,
+		   char_code | GRUB_FONT_CODE_LEFT_JOINED
+		   | GRUB_FONT_CODE_RIGHT_JOINED);
+	break;
+      }
+}
+
+struct gsub_header
+{
+  grub_uint32_t version;
+  grub_uint16_t scripts_off;
+  grub_uint16_t features_off;
+  grub_uint16_t lookups_off;
+} __attribute__ ((packed));
+
+struct gsub_features
+{
+  grub_uint16_t count;
+  struct
+  {
+#define FEATURE_FINA 0x66696e61
+#define FEATURE_INIT 0x696e6974
+#define FEATURE_MEDI 0x6d656469
+#define FEATURE_AALT 0x61616c74
+    grub_uint32_t feature_tag;
+    grub_uint16_t offset;
+  } __attribute__ ((packed)) features[0];
+} __attribute__ ((packed));
+
+struct gsub_feature
+{
+  grub_uint16_t params;
+  grub_uint16_t lookupcount;
+  grub_uint16_t lookupindices[0];
+} __attribute__ ((packed));
+
+struct gsub_lookup_list
+{
+  grub_uint16_t count;
+  grub_uint16_t offsets[0];
+} __attribute__ ((packed));
+
+struct gsub_lookup
+{
+  grub_uint16_t type;
+  grub_uint16_t flag;
+  grub_uint16_t subtablecount;
+  grub_uint16_t subtables[0];
+} __attribute__ ((packed));
+
+struct gsub_substitution
+{
+  grub_uint16_t type;
+  grub_uint16_t coverage_off;
+  union
+  {
+    grub_int16_t delta;
+    struct
+    {
+      grub_int16_t count;
+      grub_uint16_t repl[0];
+    };
+  };
+} __attribute__ ((packed));
+
+struct gsub_coverage_list
+{
+  grub_uint16_t type;
+  grub_uint16_t count;
+  grub_uint16_t glyphs[0];
+} __attribute__ ((packed));
+
+struct gsub_coverage_ranges
+{
+  grub_uint16_t type;
+  grub_uint16_t count;
+  struct 
+  {
+    grub_uint16_t start;
+    grub_uint16_t end;
+    grub_uint16_t start_index;
+  } __attribute__ ((packed)) ranges[0];
+} __attribute__ ((packed));
+
+#define GSUB_SINGLE_SUBSTITUTION 1
+
+#define GSUB_SUBSTITUTION_DELTA 1
+#define GSUB_SUBSTITUTION_MAP 2
+
+#define GSUB_COVERAGE_LIST 1
+#define GSUB_COVERAGE_RANGE 2
+
+#define GSUB_RTL_CHAR 1
+
+static void
+add_subst (grub_uint32_t from, grub_uint32_t to, struct glyph_replace **target)
+{
+  struct glyph_replace *new = xmalloc (sizeof (*new));
+  new->next = *target;
+  new->from = from;
+  new->to = to;
+  *target = new;
+}
+
+static void
+process_cursive (struct gsub_feature *feature,
+		 struct gsub_lookup_list *lookups,
+		 grub_uint32_t feattag)
+{
+  int j, k;
+  int i;
+  struct glyph_replace **target;
+  struct gsub_substitution *sub;
+
+  auto inline void subst (grub_uint32_t glyph);
+  void subst (grub_uint32_t glyph)
+  {
+    grub_uint16_t substtype;
+    substtype = grub_be_to_cpu16 (sub->type);
+
+    if (substtype == GSUB_SUBSTITUTION_DELTA)
+      add_subst (glyph, glyph + grub_be_to_cpu16 (sub->delta), target);
+    else if (i >= grub_be_to_cpu16 (sub->count))
+      printf ("Out of range substitution (%d, %d)\n", i,
+	      grub_be_to_cpu16 (sub->count));
+    else
+      add_subst (glyph, grub_be_to_cpu16 (sub->repl[i++]), target);
+  }
+
+  for (j = 0; j < grub_be_to_cpu16 (feature->lookupcount); j++)
+    {
+      int lookup_index = grub_be_to_cpu16 (feature->lookupindices[j]);
+      struct gsub_lookup *lookup;
+      if (lookup_index >= grub_be_to_cpu16 (lookups->count))
+	{
+	  printf ("Out of range lookup: %d\n", lookup_index);
+	  continue;
+	}
+      lookup = (struct gsub_lookup *)
+	((grub_uint8_t *) lookups 
+	 + grub_be_to_cpu16 (lookups->offsets[lookup_index]));
+      if (grub_be_to_cpu16 (lookup->type) != GSUB_SINGLE_SUBSTITUTION)
+	{
+	  printf ("Unsupported substitution type: %d\n",
+		  grub_be_to_cpu16 (lookup->type));
+	  continue;
+	}		      
+      if (grub_be_to_cpu16 (lookup->flag) & ~GSUB_RTL_CHAR)
+	{
+	  printf ("Unsupported substitution flag: 0x%x\n",
+		  grub_be_to_cpu16 (lookup->flag));
+	}
+      switch (feattag)
+	{
+	case FEATURE_INIT:
+	  if (grub_be_to_cpu16 (lookup->flag) & GSUB_RTL_CHAR)
+	    target = &subst_leftjoin;
+	  else
+	    target = &subst_rightjoin;
+	  break;
+	case FEATURE_FINA:
+	  if (grub_be_to_cpu16 (lookup->flag) & GSUB_RTL_CHAR)
+	    target = &subst_rightjoin;
+	  else
+	    target = &subst_leftjoin;
+	  break;
+	case FEATURE_MEDI:
+	  target = &subst_medijoin;
+	  break;	  
+	}
+      for (k = 0; k < grub_be_to_cpu16 (lookup->subtablecount); k++)
+	{
+	  sub = (struct gsub_substitution *)
+	    ((grub_uint8_t *) lookup + grub_be_to_cpu16 (lookup->subtables[k]));
+	  grub_uint16_t substtype;
+	  substtype = grub_be_to_cpu16 (sub->type);
+	  if (substtype != GSUB_SUBSTITUTION_MAP
+	      && substtype != GSUB_SUBSTITUTION_DELTA)
+	    {
+	      printf ("Unsupported substitution specification: %d\n",
+		      substtype);
+	      continue;
+	    }
+	  void *coverage = (grub_uint8_t *) sub
+	    + grub_be_to_cpu16 (sub->coverage_off);
+	  grub_uint32_t covertype;
+	  covertype = grub_be_to_cpu16 (*(grub_uint16_t * __attribute__ ((packed))) coverage);
+	  i = 0;
+	  if (covertype == GSUB_COVERAGE_LIST)
+	    {
+	      struct gsub_coverage_list *cover = coverage;
+	      int l;
+	      for (l = 0; l < grub_be_to_cpu16 (cover->count); l++)
+		subst (grub_be_to_cpu16 (cover->glyphs[l]));
+	    }
+	  else if (covertype == GSUB_COVERAGE_RANGE)
+	    {
+	      struct gsub_coverage_ranges *cover = coverage;
+	      int l, m;
+	      for (l = 0; l < grub_be_to_cpu16 (cover->count); l++)
+		for (m = grub_be_to_cpu16 (cover->ranges[l].start);
+		     m <= grub_be_to_cpu16 (cover->ranges[l].end); m++)
+		  subst (m);
+	    }
+	  else
+	    printf ("Unsupported coverage specification: %d\n", covertype);
+	}
+    }
+}
+
 void
 add_font (struct grub_font_info *font_info, FT_Face face)
 {
+  struct gsub_header *gsub = NULL;
+  FT_ULong gsub_len = 0;
+
+  if (!FT_Load_Sfnt_Table (face, TTAG_GSUB, 0, NULL, &gsub_len))
+    {
+      gsub = xmalloc (gsub_len);
+      if (FT_Load_Sfnt_Table (face, TTAG_GSUB, 0, (void *) gsub, &gsub_len))
+	{
+	  free (gsub);
+	  gsub = NULL;
+	  gsub_len = 0;
+	}
+    }
+  if (gsub)
+    {
+      struct gsub_features *features 
+	= (struct gsub_features *) (((grub_uint8_t *) gsub)
+				    + grub_be_to_cpu16 (gsub->features_off));
+      struct gsub_lookup_list *lookups
+	= (struct gsub_lookup_list *) (((grub_uint8_t *) gsub)
+				       + grub_be_to_cpu16 (gsub->lookups_off));
+      int i;
+      int nfeatures = grub_be_to_cpu16 (features->count);
+      for (i = 0; i < nfeatures; i++)
+	{
+	  struct gsub_feature *feature = (struct gsub_feature *)
+	    ((grub_uint8_t *) features
+	     + grub_be_to_cpu16 (features->features[i].offset));
+	  grub_uint32_t feattag
+	    = grub_be_to_cpu32 (features->features[i].feature_tag);
+	  if (feature->params)
+	    printf ("WARNING: unsupported feature parameters: %x\n",
+		    grub_be_to_cpu16 (feature->params));
+	  switch (feattag)
+	    {
+	      /* Used for retrieving all possible variants. Useless in grub.  */
+	    case FEATURE_AALT:
+	      break;
+
+	      /* Cursive form variants.  */
+	    case FEATURE_FINA:
+	    case FEATURE_INIT:
+	    case FEATURE_MEDI:
+	      process_cursive (feature, lookups, feattag);
+	      break;
+
+	    default:
+	      {
+		char str[5];
+		int j;
+		memcpy (str, &features->features[i].feature_tag,
+			sizeof (features->features[i].feature_tag));
+		str[4] = 0;
+		for (j = 0; j < 4; j++)
+		  if (!grub_isgraph (str[j]))
+		    str[j] = '?';
+		printf ("Unknown gsub feature 0x%x (%s)\n", feattag, str);
+	      }
+	    }
+	}
+    }
+
   if (font_info->num_range)
     {
       int i;
@@ -287,7 +597,8 @@ print_glyphs (struct grub_font_info *font_info)
   struct grub_glyph_info *glyph;
   char line[512];
 
-  for (glyph = font_info->glyph, num = 0; glyph; glyph = glyph->next, num++)
+  for (glyph = font_info->glyphs_sorted, num = 0; num < font_info->num_glyphs;
+       glyph++, num++)
     {
       int x, y, xmax, xmin, ymax, ymin;
       grub_uint8_t *bitmap, mask;
@@ -363,7 +674,8 @@ write_font_ascii_bitmap (struct grub_font_info *font_info, char *output_file)
     grub_util_error ("Can\'t write to file %s.", output_file);
 
   int correct_size;
-  for (glyph = font_info->glyph, num = 0; glyph; glyph = glyph->next, num++)
+  for (glyph = font_info->glyphs_sorted, num = 0; num < font_info->num_glyphs;
+       glyph++, num++)
     {
       correct_size = 1;
       if (glyph->width != 8 || glyph->height != 16)
@@ -397,7 +709,8 @@ write_font_width_spec (struct grub_font_info *font_info, char *output_file)
   if (! file)
     grub_util_error ("Can\'t write to file %s.", output_file);
 
-  for (glyph = font_info->glyph; glyph; glyph = glyph->next)
+  for (glyph = font_info->glyphs_sorted;
+       glyph < font_info->glyphs_sorted + font_info->num_glyphs; glyph++)
     if (glyph->width > 12)
       out[glyph->char_code >> 3] |= (1 << (glyph->char_code & 7));
 
@@ -412,8 +725,8 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
   FILE *file;
   grub_uint32_t leng, data;
   char style_name[20], *font_name;
-  struct grub_glyph_info *cur, *pre;
-  int num, offset;
+  int offset;
+  struct grub_glyph_info *cur;
 
   file = fopen (output_file, "wb");
   if (! file)
@@ -497,33 +810,18 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
       printf ("Font descent: %d\n", font_info->desc);
     }
 
-  num = 0;
-  pre = 0;
-  cur = font_info->glyph;
-  while (cur)
-    {
-      struct grub_glyph_info *nxt;
-
-      nxt = cur->next;
-      cur->next = pre;
-      pre = cur;
-      cur = nxt;
-      num++;
-    }
-
-  font_info->glyph = pre;
-
   if (font_verbosity > 0)
-    printf ("Number of glyph: %d\n", num);
+    printf ("Number of glyph: %d\n", font_info->num_glyphs);
 
-  leng = grub_cpu_to_be32 (num * 9);
+  leng = grub_cpu_to_be32 (font_info->num_glyphs * 9);
   grub_util_write_image (FONT_FORMAT_SECTION_NAMES_CHAR_INDEX,
   			 sizeof(FONT_FORMAT_SECTION_NAMES_CHAR_INDEX) - 1,
 			 file);
   grub_util_write_image ((char *) &leng, 4, file);
-  offset += 8 + num * 9 + 8;
+  offset += 8 + font_info->num_glyphs * 9 + 8;
 
-  for (cur = font_info->glyph; cur; cur = cur->next)
+  for (cur = font_info->glyphs_sorted;
+       cur < font_info->glyphs_sorted + font_info->num_glyphs; cur++)
     {
       data = grub_cpu_to_be32 (cur->char_code);
       grub_util_write_image ((char *) &data, 4, file);
@@ -539,7 +837,8 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
   			 sizeof(FONT_FORMAT_SECTION_NAMES_DATA) - 1, file);
   grub_util_write_image ((char *) &leng, 4, file);
 
-  for (cur = font_info->glyph; cur; cur = cur->next)
+  for (cur = font_info->glyphs_sorted;
+       cur < font_info->glyphs_sorted + font_info->num_glyphs; cur++)
     {
       data = grub_cpu_to_be16 (cur->width);
       grub_util_write_image ((char *) &data, 2, file);
@@ -741,6 +1040,36 @@ main (int argc, char *argv[])
     }
 
   FT_Done_FreeType (ft_lib);
+
+  {
+    int counter[65537];
+    struct grub_glyph_info *tmp, *cur;
+    int i;
+
+    memset (counter, 0, sizeof (counter));
+
+    for (cur = font_info.glyphs_unsorted; cur; cur = cur->next)
+      counter[(cur->char_code & 0xffff) + 1]++;
+    for (i = 0; i < 0x10000; i++)
+      counter[i+1] += counter[i];
+    tmp = xmalloc (font_info.num_glyphs
+		   * sizeof (tmp[0]));
+    for (cur = font_info.glyphs_unsorted; cur; cur = cur->next)
+      tmp[counter[(cur->char_code & 0xffff)]++] = *cur;
+
+    memset (counter, 0, sizeof (counter));
+
+    for (cur = tmp; cur < tmp + font_info.num_glyphs; cur++)
+      counter[((cur->char_code & 0xffff0000) >> 16) + 1]++;
+    for (i = 0; i < 0x10000; i++)
+      counter[i+1] += counter[i];
+    font_info.glyphs_sorted = xmalloc (font_info.num_glyphs
+					* sizeof (font_info.glyphs_sorted[0]));
+    for (cur = tmp; cur < tmp + font_info.num_glyphs; cur++)
+      font_info.glyphs_sorted[counter[(cur->char_code & 0xffff0000) >> 16]++]
+	= *cur;
+    free (tmp);
+  }
 
   switch (file_format)
     {
