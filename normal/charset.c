@@ -19,14 +19,15 @@
 /*
   Current problems with Unicode rendering: 
   - B and BN bidi type characters (ignored)
-  - Mc type characters with combining class 0 (treated as non-combining)
-  - Mn type characters with combining class 0 (treated as non-combining)
-  - Me type characters with combining class 0 (treated as non-combining)
+  - Mc type characters with combining class 0 (poorly combined)
+  - Mn type characters with combining class 0 (poorly combined)
+  - Me type characters with combining class 0 (poorly combined)
   - Cf type characters (ignored)
   - Cc type characters (ignored)
   - Line-breaking rules (e.g. Zs type characters)
   - Indic languages
   - Arabic shaping
+  - non-Semitic shaping (rarely used)
   - Zl and Zp characters
   - Combining characters of types 7, 8, 9, 21, 27, 28, 29, 30, 31,
   32, 33, 34, 35, 36, 84, 91, 103, 107, 118, 122, 129, 130, 132,
@@ -34,6 +35,11 @@
   - Private use characters (not really a problem)
   - Variations (no font support)
   - Vertical text
+  Font information ignored:
+  - Kerning
+  - Justification data
+  - Glyph posititioning
+  - Baseline data
  */
 
 /* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
