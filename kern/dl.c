@@ -348,7 +348,7 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 	      sym->st_value = (Elf_Addr) grub_dl_resolve_symbol (name);
 	      if (! sym->st_value)
 		return grub_error (GRUB_ERR_BAD_MODULE,
-				   "the symbol `%s' not found", name);
+				   "symbol not found: `%s'", name);
 	    }
 	  else
 	    {

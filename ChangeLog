@@ -1,3 +1,8 @@
+2010-03-24  Adrian Glaubitz  <glaubitz@physik.fu-berlin.de>
+
+	* kern/dl.c (grub_dl_resolve_symbols): Improve error message
+	grammar.
+
 2010-03-24  Colin Watson  <cjwatson@ubuntu.com>
 
 	* .bzrignore: Add grub-bin2h, grub-reboot, and grub-set-default.
