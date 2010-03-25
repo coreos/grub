@@ -35,6 +35,12 @@
 #include FT_TRUETYPE_TABLES_H
 #include <freetype/ftsynth.h>
 
+#undef __FTERRORS_H__
+#define FT_ERROR_START_LIST   const char *ft_errmsgs[] = { 
+#define FT_ERRORDEF(e, v, s)  [e] = s,
+#define FT_ERROR_END_LIST     };
+#include FT_ERRORS_H   
+
 #include "progname.h"
 
 #define GRUB_FONT_DEFAULT_SIZE		16
@@ -165,6 +171,7 @@ add_glyph (struct grub_font_info *font_info, FT_UInt glyph_idx, FT_Face face,
   int mask, i, j, bitmap_size;
   FT_GlyphSlot glyph;
   int flag = FT_LOAD_RENDER | FT_LOAD_MONOCHROME;
+  FT_Error err;
 
   if (font_info->flags & GRUB_FONT_FLAG_NOBITMAP)
     flag |= FT_LOAD_NO_BITMAP;
@@ -174,9 +181,15 @@ add_glyph (struct grub_font_info *font_info, FT_UInt glyph_idx, FT_Face face,
   else if (font_info->flags & GRUB_FONT_FLAG_FORCEHINT)
     flag |= FT_LOAD_FORCE_AUTOHINT;
 
-  if (FT_Load_Glyph (face, glyph_idx, flag))
+  err = FT_Load_Glyph (face, glyph_idx, flag);
+  if (err)
     {
-      printf ("WARNING: Couldn't load glyph %x\n", glyph_idx);
+      if (err < ARRAY_SIZE (ft_errmsgs))
+	printf ("Freetype Error %d loading glyph 0x%x for U+0x%x: %s\n",
+		err, glyph_idx, char_code, ft_errmsgs[err]);
+      else
+	printf ("Freetype Error %d loading glyph 0x%x for U+0x%x\n",
+		err, glyph_idx, char_code);
       return;
     }
 
