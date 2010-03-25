@@ -289,6 +289,8 @@ struct gsub_features
 #define FEATURE_INIT 0x696e6974
 #define FEATURE_MEDI 0x6d656469
 #define FEATURE_AALT 0x61616c74
+#define FEATURE_LIGA 0x6c696761
+#define FEATURE_RLIG 0x726c6967
     grub_uint32_t feature_tag;
     grub_uint16_t offset;
   } __attribute__ ((packed)) features[0];
@@ -515,6 +517,11 @@ add_font (struct grub_font_info *font_info, FT_Face face)
 	    {
 	      /* Used for retrieving all possible variants. Useless in grub.  */
 	    case FEATURE_AALT:
+	      break;
+
+	      /* FIXME: Add ligature support.  */
+	    case FEATURE_LIGA:
+	    case FEATURE_RLIG:
 	      break;
 
 	      /* Cursive form variants.  */

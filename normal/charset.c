@@ -34,6 +34,7 @@
   - Private use characters (not really a problem)
   - Variations (no font support)
   - Vertical text
+  - Ligatures
   Font information ignored:
   - Kerning
   - Justification data

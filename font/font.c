@@ -1268,8 +1268,6 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	case GRUB_UNICODE_COMB_HEBREW_QAMATS:
 	case GRUB_UNICODE_COMB_HEBREW_TSERE:
 	case GRUB_UNICODE_COMB_HEBREW_SEGOL:
-	  /* , 
-	     GRUB_UNICODE_COMB_HEBREW_DAGESH = 21*/
 	  /* TODO: placement in final kaf and under reish.  */
 
 	case GRUB_UNICODE_COMB_HEBREW_HATAF_SEGOL:
