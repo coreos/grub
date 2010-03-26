@@ -45,7 +45,7 @@ kernel_img_SOURCES = kern/i386/pc/startup.S \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
-	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
+	kern/time.c kern/list.c kern/command.c kern/corecmd.c \
 	kern/$(target_cpu)/dl.c kern/i386/pc/init.c kern/i386/pc/mmap.c \
 	kern/parser.c kern/partition.c \
 	kern/i386/tsc.c kern/i386/pit.c \
@@ -76,7 +76,7 @@ util/i386/pc/grub-setup.c_DEPENDENCIES = grub_setup_init.h
 grub_setup_SOURCES = gnulib/progname.c \
 	util/i386/pc/grub-setup.c util/hostdisk.c	\
 	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
-	kern/err.c kern/misc.c kern/parser.c kern/partition.c	\
+	kern/err.c kern/misc.c kern/partition.c	\
 	kern/file.c kern/fs.c kern/env.c kern/list.c		\
 	fs/fshelp.c						\
 	\

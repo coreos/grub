@@ -16,7 +16,7 @@ kernel_img_SOURCES = kern/i386/coreboot/startup.S \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
-	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
+	kern/time.c kern/list.c  kern/command.c kern/corecmd.c \
 	kern/$(target_cpu)/dl.c kern/parser.c kern/partition.c \
 	kern/i386/tsc.c kern/i386/pit.c \
 	kern/generic/rtc_get_time_ms.c \

@@ -324,4 +324,7 @@ int grub_script_function_call (grub_script_function_t func,
 char **
 grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count);
 
+grub_err_t
+grub_normal_parse_line (char *line, grub_reader_getline_t getline);
+
 #endif /* ! GRUB_NORMAL_PARSER_HEADER */
