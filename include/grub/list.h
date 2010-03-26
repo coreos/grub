@@ -40,6 +40,8 @@ int EXPORT_FUNC(grub_list_iterate) (grub_list_t head, grub_list_hook_t hook);
 void EXPORT_FUNC(grub_list_insert) (grub_list_t *head, grub_list_t item,
 				    grub_list_test_t test);
 
+#define FOR_LIST_ELEMENTS(var, list) for ((var) = (list); (var); (var) = (var)->next)
+
 static inline void *
 grub_bad_type_cast_real (int line, const char *file)
      ATTRIBUTE_ERROR ("bad type cast between incompatible grub types");
