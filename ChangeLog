@@ -1,3 +1,10 @@
+2010-03-26  BVK Chaitanya  <bvk@localhost>
+
+	Blank lines testcase for GRUB script.
+
+	* tests/grub_script_blanklines.in: New testcase.
+	* conf/tests.rmk: Rules for the new testcase.
+
 2010-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Don't use __FILE__.
