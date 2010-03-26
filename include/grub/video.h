@@ -21,6 +21,7 @@
 
 #include <grub/err.h>
 #include <grub/types.h>
+#include <grub/list.h>
 
 /* Video color in hardware dependent format.  Users should not assume any
    specific coding format.  */
@@ -185,6 +186,9 @@ typedef enum grub_video_driver_id
 
 struct grub_video_adapter
 {
+  /* The next video adapter.  */
+  struct grub_video_adapter *next;
+
   /* The video adapter name.  */
   const char *name;
   grub_video_driver_id_t id;
@@ -253,15 +257,28 @@ struct grub_video_adapter
   grub_err_t (*set_active_render_target) (struct grub_video_render_target *target);
 
   grub_err_t (*get_active_render_target) (struct grub_video_render_target **target);
-
-  /* The next video adapter.  */
-  struct grub_video_adapter *next;
 };
 typedef struct grub_video_adapter *grub_video_adapter_t;
 
-void EXPORT_FUNC (grub_video_register) (grub_video_adapter_t adapter);
-void grub_video_unregister (grub_video_adapter_t adapter);
-void grub_video_iterate (int (*hook) (grub_video_adapter_t adapter));
+extern grub_video_adapter_t EXPORT_VAR(grub_video_adapter_list);
+
+/* Register video driver.  */
+static inline void
+grub_video_register (grub_video_adapter_t adapter)
+{
+  grub_list_push (GRUB_AS_LIST_P (&grub_video_adapter_list),
+		  GRUB_AS_LIST (adapter));
+}
+
+/* Unregister video driver.  */
+static inline void
+grub_video_unregister (grub_video_adapter_t adapter)
+{
+  grub_list_remove (GRUB_AS_LIST_P (&grub_video_adapter_list),
+		    GRUB_AS_LIST (adapter));
+}
+
+#define FOR_VIDEO_ADAPTERS(var) FOR_LIST_ELEMENTS((var), (grub_video_adapter_list))
 
 grub_err_t EXPORT_FUNC (grub_video_restore) (void);
 
