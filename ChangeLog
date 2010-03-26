@@ -1,3 +1,82 @@
+2010-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Nested partitions
+
+	* commands/blocklist.c (grub_cmd_blocklist): Don't check whether
+	'partition' is NULL, grub_partition_get_start already does that.
+	* commands/loadenv.c (check_blocklists): Likewise.
+	(write_blocklists): Likewise.
+	* conf/common.rmk (grub_probe_SOURCES): Add partmap/bsdlabel.c.
+	(grub_fstest_SOURCES): Likewise.
+	(pkglib_MODULES): Add part_bsd.mod.
+	(part_bsd_mod_SOURCES): New variable.
+	(part_bsd_mod_CFLAGS): Likewise.
+	(part_bsd_mod_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add partmap/bsdlabel.c.
+	(grub_emu_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* include/grub/bsdlabel.h: New file.
+	* include/grub/partition.h (grub_partition_map): Remove 'probe' and
+	'get_name'.
+	(grub_partition): Add 'parent' and 'number'. Remove 'data'.
+	(grub_partition_map_list): New variable.
+	(grub_partition_map_register): Inline.
+	(grub_partition_map_unregister): Likewise.
+	(FOR_PARTITION_MAPS): New macro.
+	(grub_partition_map_iterate): Removed.
+	(grub_partition_get_start): Handle nested partitions.
+	* include/grub/msdos_partition.h: Remove bsd-related entries.
+	(grub_pc_partition): Remove.
+	* kern/disk.c (grub_disk_close): Free partition data.
+	(grub_disk_adjust_range): Handle nested partitions.
+	* kern/partition.c (grub_partition_map_probe): New function.
+	(grub_partition_probe): Parse name to number, handle subpartitions.
+	(get_partmap): New function.
+	(grub_partition_iterate): Handle subpartitions.
+	(grub_partition_get_name): Likewise.
+	* loader/i386/pc/bsd.c (grub_bsd_get_device): Likewise.
+	* loader/i386/multiboot.c (grub_multiboot_get_bootdev): Likewise.
+	* loader/i386/pc/chainloader.c (grub_chainloader_cmd): Likewise.
+	* partmap/acorn.c (acorn_partition_map_iterate): Don't force raw access.
+	Set 'number'.
+	(acorn_partition_map_probe): Remove.
+	(acorn_partition_map_get_name): Likewise.
+	* partmap/amiga.c (amiga_partition_map_iterate): Don't force raw access.
+	Set 'number'.
+	Set 'index' to 0 since there can be only one partition entry per sector.
+	(amiga_partition_map_probe): Remove.
+	(amiga_partition_map_get_name): Likewise.
+	* partmap/apple.c (apple_partition_map_iterate): Don't force raw access.
+	Set 'number'.
+	Set 'offset' and 'index' to real positions of partitions.
+	(apple_partition_map_probe): Remove.
+	(apple_partition_map_get_name): Likewise.
+	* partmap/bsdlabel.c: New file.
+	* partmap/gpt.c (gpt_partition_map_iterate): Don't force raw access.
+	Set 'number'.
+	Allocate 'data' so it can be correctly freed.
+	Set 'index' to offset inside sector.
+	(gpt_partition_map_probe): Remove.
+	(gpt_partition_map_get_name): Likewise.
+	* partmap/msdos.c (grub_partition_parse): Remove.
+	(pc_partition_map_iterate): Don't force raw access.
+	Set 'number'.
+	Make 'ext_offset' a local variable.
+	(pc_partition_map_probe): Remove.
+	(pc_partition_map_get_name): Remove.
+	* partmap/sun.c (sun_partition_map_iterate): Don't force raw access.
+	Set 'number'.
+	(sun_partition_map_probe): Remove.
+	(sun_partition_map_get_name): Likewise.
+	* parttool/msdospart.c (grub_pcpart_boot): Handle nested partitions.
+	(grub_pcpart_type): Likewise.
+	* util/hostdisk.c (open_device): Handle new numbering scheme.
+	(grub_util_biosdisk_get_grub_dev): Handle nested partitions.
+	* util/i386/pc/grub-setup.c (setup): Handle new numbering scheme.
+	* util/grub-probe.c (probe_partmap): Handle nested paritions.
+	* util/grub-install.in: Insert all subpartition modules.
+	* util/ieee1275/grub-install.in: Likewise.
+
 2010-03-24  Adrian Glaubitz  <glaubitz@physik.fu-berlin.de>
 
 	* kern/dl.c (grub_dl_resolve_symbols): Improve error message

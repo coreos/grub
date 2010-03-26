@@ -35,7 +35,8 @@ grub_probe_SOURCES = gnulib/progname.c util/grub-probe.c	\
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c	\
 	fs/befs.c fs/befs_be.c fs/tar.c		\
 	\
-	partmap/msdos.c partmap/apple.c partmap/sun.c partmap/gpt.c\
+	partmap/msdos.c partmap/bsdlabel.c partmap/apple.c \
+	partmap/sun.c partmap/gpt.c\
 	kern/fs.c kern/env.c fs/fshelp.c			\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c grub_probe_init.c
 
@@ -72,8 +73,8 @@ grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c util/hostfs.c \
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c fs/befs.c 	\
 	fs/befs_be.c fs/tar.c			\
 	\
-	kern/partition.c partmap/msdos.c partmap/apple.c partmap/sun.c	\
-	partmap/gpt.c							\
+	kern/partition.c partmap/msdos.c partmap/bsdlabel.c		\
+	partmap/apple.c partmap/sun.c partmap/gpt.c			\
 	kern/fs.c kern/env.c fs/fshelp.c disk/raid.c			\
 	disk/raid5_recover.c disk/raid6_recover.c 			\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c 		\
@@ -402,6 +403,11 @@ pkglib_MODULES += part_gpt.mod
 part_gpt_mod_SOURCES = partmap/gpt.c
 part_gpt_mod_CFLAGS = $(COMMON_CFLAGS)
 part_gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += part_bsd.mod
+part_bsd_mod_SOURCES = partmap/bsdlabel.c
+part_bsd_mod_CFLAGS = $(COMMON_CFLAGS)
+part_bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Special disk structures and generic drivers
 
