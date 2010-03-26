@@ -32,21 +32,17 @@ grub_cmd_handler (struct grub_command *cmd __attribute__ ((unused)),
   void *curr_item = 0;
   grub_handler_class_t head;
 
-  auto int list_item (grub_named_list_t item);
-  int list_item (grub_named_list_t item)
-    {
-      if (item == curr_item)
-	grub_putchar ('*');
-
-      grub_printf ("%s\n", item->name);
-
-      return 0;
-    }
-
   head = grub_handler_class_list;
   if (argc == 0)
     {
-      grub_list_iterate (GRUB_AS_LIST (head), (grub_list_hook_t) list_item);
+      grub_handler_class_t item;
+      FOR_LIST_ELEMENTS(item, head)
+	{
+	  if (item == curr_item)
+	    grub_putchar ('*');
+
+	  grub_printf ("%s\n", item->name);
+	}
     }
   else
     {
@@ -63,9 +59,15 @@ grub_cmd_handler (struct grub_command *cmd __attribute__ ((unused)),
 
       if (argc == 0)
 	{
+	  grub_handler_class_t item;
 	  curr_item = class->cur_handler;
-	  grub_list_iterate (GRUB_AS_LIST (class->handler_list),
-			     (grub_list_hook_t) list_item);
+	  FOR_LIST_ELEMENTS(item, head)
+	    {
+	      if (item == curr_item)
+		grub_putchar ('*');
+
+	      grub_printf ("%s\n", item->name);
+	    }
 	}
       else
 	{

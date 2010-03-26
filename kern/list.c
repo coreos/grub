@@ -53,18 +53,6 @@ grub_list_remove (grub_list_t *head, grub_list_t item)
       }
 }
 
-int
-grub_list_iterate (grub_list_t head, grub_list_hook_t hook)
-{
-  grub_list_t p;
-
-  for (p = head; p; p = p->next)
-    if (hook (p))
-      return 1;
-
-  return 0;
-}
-
 void
 grub_list_insert (grub_list_t *head, grub_list_t item,
 		  grub_list_test_t test)
@@ -82,22 +70,13 @@ grub_list_insert (grub_list_t *head, grub_list_t item,
 void *
 grub_named_list_find (grub_named_list_t head, const char *name)
 {
-  grub_named_list_t result = NULL;
+  grub_named_list_t item;
 
-  auto int list_find (grub_named_list_t item);
-  int list_find (grub_named_list_t item)
-    {
-      if (! grub_strcmp (item->name, name))
-	{
-	  result = item;
-	  return 1;
-	}
+  FOR_LIST_ELEMENTS (item, head)
+    if (grub_strcmp (item->name, name) == 0)
+      return item;
 
-      return 0;
-    }
-
-  grub_list_iterate (GRUB_AS_LIST (head), (grub_list_hook_t) list_find);
-  return result;
+  return NULL;
 }
 
 void
