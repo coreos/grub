@@ -31,6 +31,7 @@
 #include <grub/machine/memory.h>
 #include <grub/dl.h>
 #include <grub/command.h>
+#include <grub/msdos_partition.h>
 #include <grub/machine/biosnum.h>
 #include <grub/i18n.h>
 #include <grub/video.h>
@@ -98,10 +99,22 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
   dev = grub_device_open (0);
   if (dev && dev->disk && dev->disk->partition)
     {
-      grub_disk_read (dev->disk, dev->disk->partition->offset, 446, 64,
-		      (void *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
-      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
-			    + (dev->disk->partition->index << 4));
+      grub_disk_t disk = dev->disk;
+
+      if (disk)
+	{
+	  grub_partition_t p = disk->partition;
+
+	  if (p && grub_strcmp (p->partmap->name, "msdos") == 0)
+	    {
+	      disk->partition = p->parent;
+	      grub_disk_read (disk, p->offset, 446, 64,
+			      (void *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
+	      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
+				    + (p->index << 4));
+	      disk->partition = p;
+	    }
+	}
     }
 
   if (dev)

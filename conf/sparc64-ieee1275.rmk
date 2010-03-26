@@ -61,8 +61,8 @@ grub_setup_SOURCES = util/sparc64/ieee1275/grub-setup.c util/hostdisk.c	\
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c	\
 	fs/befs.c fs/befs_be.c fs/tar.c			\
 	\
-	partmap/amiga.c	partmap/apple.c partmap/msdos.c		\
-	partmap/sun.c partmap/acorn.c				\
+	partmap/amiga.c	partmap/apple.c partmap/msdos.c 	\
+	partmap/bsdlabel.c partmap/sun.c partmap/acorn.c	\
 	\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c		\
 	util/raid.c util/lvm.c gnulib/progname.c	\

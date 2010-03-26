@@ -379,11 +379,14 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
   {
     int is_partition = 0;
     char dev[PATH_MAX];
+    grub_disk_addr_t part_start = 0;
+
+    part_start = grub_partition_get_start (disk->partition);
 
     strcpy (dev, map[disk->id].device);
-    if (disk->partition && sector >= disk->partition->start
+    if (disk->partition && sector >= part_start
 	&& strncmp (map[disk->id].device, "/dev/", 5) == 0)
-      is_partition = linux_find_partition (dev, disk->partition->start);
+      is_partition = linux_find_partition (dev, part_start);
 
     if (data->dev && strcmp (data->dev, dev) == 0 &&
 	data->access_mode == (flags & O_ACCMODE))
@@ -416,7 +419,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
       }
 
     if (is_partition)
-      sector -= disk->partition->start;
+      sector -= part_start;
   }
 #else /* ! __linux__ */
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
@@ -1077,39 +1080,25 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     int find_partition (grub_disk_t dsk __attribute__ ((unused)),
 			const grub_partition_t partition)
       {
- 	struct grub_msdos_partition *pcdata = NULL;
+	grub_disk_addr_t part_start = 0;
+	grub_util_info ("Partition %d starts from %lu",
+			partition->number, partition->start);
 
-	if (strcmp (partition->partmap->name, "part_msdos") == 0)
-	  pcdata = partition->data;
+	part_start = grub_partition_get_start (partition);
 
-	if (pcdata)
+	if (hdg.start == part_start)
 	  {
-	    if (pcdata->bsd_part < 0)
-	      grub_util_info ("DOS partition %d starts from %lu",
-			      pcdata->dos_part, partition->start);
-	    else
-	      grub_util_info ("BSD partition %d,%c starts from %lu",
-			      pcdata->dos_part, pcdata->bsd_part + 'a',
-			      partition->start);
-	  }
-	else
-	  {
-	      grub_util_info ("Partition %d starts from %lu",
-			      partition->index, partition->start);
-	  }
-
-	if (hdg.start == partition->start)
-	  {
-	    if (pcdata)
+	    if (partition->parent)
 	      {
-		dos_part = pcdata->dos_part;
-		bsd_part = pcdata->bsd_part;
+		dos_part = partition->parent->number;
+		bsd_part = partition->number;
 	      }
 	    else
 	      {
-		dos_part = partition->index;
+		dos_part = partition->number;
 		bsd_part = -1;
 	      }
+
 	    return 1;
 	  }
 
