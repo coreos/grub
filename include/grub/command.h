@@ -115,7 +115,7 @@ grub_command_execute (const char *name, int argc, char **argv)
   return (cmd) ? cmd->func (cmd, argc, argv) : GRUB_ERR_FILE_NOT_FOUND;
 }
 
-#define FOR_COMMANDS(var) for ((var) = grub_command_list; (var); (var) = (var)->next)
+#define FOR_COMMANDS(var) FOR_LIST_ELEMENTS((var), grub_command_list)
 
 void grub_register_core_commands (void);
 

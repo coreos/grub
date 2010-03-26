@@ -28,7 +28,7 @@ grub_functional_test (struct grub_extcmd *cmd __attribute__ ((unused)),
 {
   grub_test_t test;
 
-  for (test = grub_test_list; test; test = test->next)
+  FOR_LIST_ELEMENTS (test, grub_test_list)
     grub_test_run (test);
   return GRUB_ERR_NONE;
 }

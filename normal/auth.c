@@ -140,7 +140,7 @@ is_authenticated (const char *userlist)
   if (!superusers)
     return 1;
 
-  for (user = users; user; user = user->next)
+  FOR_LIST_ELEMENTS (user, users)
     {
       if (!(user->authenticated))
 	continue;
