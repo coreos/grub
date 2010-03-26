@@ -33,7 +33,7 @@ struct grub_handler_list
   grub_command_t cmd;
 };
 
-static grub_list_t handler_list;
+static struct grub_handler_list *handler_list;
 
 static grub_err_t
 grub_handler_cmd (struct grub_command *cmd,
@@ -127,7 +127,7 @@ insert_handler (char *name, char *module)
     }
 
   item->cmd->data = data;
-  grub_list_push (&handler_list, GRUB_AS_LIST (item));
+  grub_list_push (GRUB_AS_LIST_P (&handler_list), GRUB_AS_LIST (item));
 }
 
 /* Read the file handler.lst for auto-loading.  */
@@ -211,8 +211,10 @@ free_handler_list (void)
 {
   struct grub_handler_list *item;
 
-  while ((item = grub_list_pop (&handler_list)) != 0)
+  while (handler_list)
     {
+      item = handler_list;
+      handler_list = handler_list->next;
       grub_free (item->cmd->data);
       grub_unregister_command (item->cmd);
       grub_free (item->name);

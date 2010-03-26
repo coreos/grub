@@ -66,8 +66,10 @@ free_failures (void)
 {
   grub_test_failure_t item;
 
-  while ((item = grub_list_pop (GRUB_AS_LIST_P (&failure_list))) != 0)
+  while (failure_list)
     {
+      item = failure_list;
+      failure_list = item->next;
       if (item->message)
 	grub_free (item->message);
 

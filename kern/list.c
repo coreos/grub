@@ -28,18 +28,6 @@ grub_list_push (grub_list_t *head, grub_list_t item)
   *head = item;
 }
 
-void *
-grub_list_pop (grub_list_t *head)
-{
-  grub_list_t item;
-
-  item = *head;
-  if (item)
-    *head = item->next;
-
-  return item;
-}
-
 void
 grub_list_remove (grub_list_t *head, grub_list_t item)
 {
