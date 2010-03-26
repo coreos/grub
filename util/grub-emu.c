@@ -107,10 +107,6 @@ grub_machine_fini (void)
   grub_console_fini ();
 }
 
-void
-read_command_list (void)
-{
-}
 
 
 static struct option options[] =
@@ -150,6 +146,11 @@ usage (int status)
 }
 
 
+void grub_hostfs_init (void);
+void grub_hostfs_fini (void);
+void grub_host_init (void);
+void grub_host_fini (void);
+
 int
 main (int argc, char *argv[])
 {
@@ -160,8 +161,6 @@ main (int argc, char *argv[])
   int opt;
 
   set_program_name (argv[0]);
-
-  grub_util_init_nls ();
 
   while ((opt = getopt_long (argc, argv, "r:d:m:vH:hV", options, 0)) != -1)
     switch (opt)
@@ -210,6 +209,8 @@ main (int argc, char *argv[])
 
   signal (SIGINT, SIG_IGN);
   grub_console_init ();
+  grub_host_init ();
+  grub_hostfs_init ();
 
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (dev_map);
@@ -242,6 +243,8 @@ main (int argc, char *argv[])
     grub_main ();
 
   grub_fini_all ();
+  grub_hostfs_fini ();
+  grub_host_fini ();
 
   grub_machine_fini ();
 

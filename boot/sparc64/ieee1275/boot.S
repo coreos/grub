@@ -118,7 +118,7 @@ prom_call:
 
 boot_continue:
 	mov	%o7, PIC_REG		/* PIC base */
-	sethi	%hi(SCRATCH_PAD), %l1	/* OF argument slots */
+	sethi	%hi(SCRATCH_PAD_BOOT), %l1	/* OF argument slots */
 
 	/* Find the /chosen node so we can fetch the stdout handle,
 	 * and thus perform console output.

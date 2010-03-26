@@ -39,10 +39,11 @@ enum grub_video_bitmap_scale_method
 };
 
 grub_err_t
-grub_video_bitmap_create_scaled (struct grub_video_bitmap **dst,
-                                 int dst_width, int dst_height,
-                                 struct grub_video_bitmap *src,
-                                 enum
-                                 grub_video_bitmap_scale_method scale_method);
+EXPORT_FUNC (grub_video_bitmap_create_scaled) (struct grub_video_bitmap **dst,
+					       int dst_width, int dst_height,
+					       struct grub_video_bitmap *src,
+					       enum 
+					       grub_video_bitmap_scale_method
+					       scale_method);
 
 #endif /* ! GRUB_BITMAP_SCALE_HEADER */

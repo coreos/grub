@@ -477,7 +477,7 @@ static struct grub_video_bitmap_reader tga_reader = {
   .next = 0
 };
 
-GRUB_MOD_INIT(video_reader_tga)
+GRUB_MOD_INIT(tga)
 {
   grub_video_bitmap_reader_register (&tga_reader);
 #if defined(TGA_DEBUG)
@@ -486,7 +486,7 @@ GRUB_MOD_INIT(video_reader_tga)
 #endif
 }
 
-GRUB_MOD_FINI(video_reader_tga)
+GRUB_MOD_FINI(tga)
 {
 #if defined(TGA_DEBUG)
   grub_unregister_command (cmd);

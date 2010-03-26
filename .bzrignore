@@ -25,6 +25,8 @@ docs/version.texi
 *.exec
 genkernsyms.sh
 gensymlist.sh
+gentrigtables
+grub-bin2h
 grub-dumpbios
 grub-editenv
 grub-emu
@@ -40,8 +42,13 @@ grub-pe2elf
 grub-probe
 grub_probe_init.c
 grub_probe_init.h
+grub-reboot
+grub-script-check
+grub_script_check_init.c
+grub_script_check_init.h
 grub_script.tab.c
 grub_script.tab.h
+grub-set-default
 grub-setup
 grub_setup_init.c
 grub_setup_init.h
@@ -62,4 +69,5 @@ stamp-h
 stamp-h1
 stamp-h.in
 symlist.c
+trigtables.c
 update-grub_lib
