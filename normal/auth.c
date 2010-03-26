@@ -133,25 +133,24 @@ static int
 is_authenticated (const char *userlist)
 {
   const char *superusers;
-
-  auto int hook (grub_list_t item);
-  int hook (grub_list_t item)
-  {
-    const char *name;
-    if (!((struct grub_auth_user *) item)->authenticated)
-      return 0;
-    name = ((struct grub_auth_user *) item)->name;
-
-    return (userlist && grub_strword (userlist, name))
-      || grub_strword (superusers, name);
-  }
+  struct grub_auth_user *user;
 
   superusers = grub_env_get ("superusers");
 
   if (!superusers)
     return 1;
 
-  return grub_list_iterate (GRUB_AS_LIST (users), hook);
+  for (user = users; user; user = user->next)
+    {
+      if (!(user->authenticated))
+	continue;
+
+      if ((userlist && grub_strword (userlist, user->name))
+	  || grub_strword (superusers, user->name))
+	return 1;
+    }
+
+  return 0;
 }
 
 static int
