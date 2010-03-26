@@ -204,22 +204,7 @@ grub_auth_check_authentication (const char *userlist)
   grub_err_t err;
   static unsigned long punishment_delay = 1;
   char entered[GRUB_AUTH_MAX_PASSLEN];
-
-  auto int hook (grub_list_t item);
-  int hook (grub_list_t item)
-  {
-    if (grub_strcmp (login, ((struct grub_auth_user *) item)->name) == 0)
-      cur = (struct grub_auth_user *) item;
-    return 0;
-  }
-
-  auto int hook_any (grub_list_t item);
-  int hook_any (grub_list_t item)
-  {
-    if (((struct grub_auth_user *) item)->callback)
-      cur = (struct grub_auth_user *) item;
-    return 0;
-  }
+  struct grub_auth_user *user;
 
   grub_memset (login, 0, sizeof (login));
 
@@ -239,7 +224,11 @@ grub_auth_check_authentication (const char *userlist)
   if (!grub_password_get (entered, GRUB_AUTH_MAX_PASSLEN))
     goto access_denied;
 
-  grub_list_iterate (GRUB_AS_LIST (users), hook);
+  for (user = users; user; user = user->next)
+    {
+      if (grub_strcmp (login, user->name) == 0)
+	cur = user;
+    }
 
   if (!cur || ! cur->callback)
     goto access_denied;
