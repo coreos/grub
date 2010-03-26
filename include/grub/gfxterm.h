@@ -25,20 +25,20 @@
 #include <grub/video.h>
 
 grub_err_t
-grub_gfxterm_set_window (struct grub_video_render_target *target,
-			 int x, int y, int width, int height,
-			 int double_repaint,
-			 const char *font_name, int border_width);
+EXPORT_FUNC (grub_gfxterm_set_window) (struct grub_video_render_target *target,
+				       int x, int y, int width, int height,
+				       int double_repaint,
+				       const char *font_name, int border_width);
 
 typedef void (*grub_gfxterm_repaint_callback_t)(int x, int y,
                                                 int width, int height);
 
 void grub_gfxterm_set_repaint_callback (grub_gfxterm_repaint_callback_t func);
 
-void grub_gfxterm_schedule_repaint (void);
+void EXPORT_FUNC (grub_gfxterm_schedule_repaint) (void);
 
-grub_err_t grub_gfxterm_fullscreen (void);
+grub_err_t EXPORT_FUNC (grub_gfxterm_fullscreen) (void);
 
-extern void (*grub_gfxterm_decorator_hook) (void);
+extern void (*EXPORT_VAR (grub_gfxterm_decorator_hook)) (void);
 
 #endif /* ! GRUB_GFXTERM_HEADER */

@@ -40,7 +40,6 @@ pc_partition_map_iterate (grub_disk_t disk,
 
   p.offset = 0;
   ext_offset = 0;
-  p.data = 0;
   p.number = -1;
   p.partmap = &grub_msdos_partition_map;
 
@@ -142,12 +141,12 @@ static struct grub_partition_map grub_msdos_partition_map =
     .iterate = pc_partition_map_iterate,
   };
 
-GRUB_MOD_INIT(pc_partition_map)
+GRUB_MOD_INIT(part_msdos)
 {
   grub_partition_map_register (&grub_msdos_partition_map);
 }
 
-GRUB_MOD_FINI(pc_partition_map)
+GRUB_MOD_FINI(part_msdos)
 {
   grub_partition_map_unregister (&grub_msdos_partition_map);
 }

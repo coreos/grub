@@ -38,11 +38,11 @@
 #define HEAP_MIN_SIZE		(unsigned long) (2 * 1024 * 1024)
 
 /* The maximum heap size we're going to claim */
-#define HEAP_MAX_SIZE		(unsigned long) (4 * 1024 * 1024)
+#define HEAP_MAX_SIZE		(unsigned long) (32 * 1024 * 1024)
 
 /* If possible, we will avoid claiming heap above this address, because it
    seems to cause relocation problems with OSes that link at 4 MiB */
-#define HEAP_MAX_ADDR		(unsigned long) (4 * 1024 * 1024)
+#define HEAP_MAX_ADDR		(unsigned long) (32 * 1024 * 1024)
 
 extern char _start[];
 extern char _end[];

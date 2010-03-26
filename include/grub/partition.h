@@ -60,9 +60,6 @@ struct grub_partition
   /* The index of this partition in the partition table.  */
   int index;
 
-  /* Partition map type specific data.  */
-  void *data;
-
   /* Parent partition map.  */
   struct grub_partition *parent;
 
@@ -96,20 +93,6 @@ grub_partition_map_unregister (grub_partition_map_t partmap)
 
 #define FOR_PARTITION_MAPS(var) for (var = grub_partition_map_list; var; var = var->next)
 
-#ifdef GRUB_UTIL
-void grub_msdos_partition_map_init (void);
-void grub_msdos_partition_map_fini (void);
-void grub_amiga_partition_map_init (void);
-void grub_amiga_partition_map_fini (void);
-void grub_apple_partition_map_init (void);
-void grub_apple_partition_map_fini (void);
-void grub_sun_partition_map_init (void);
-void grub_sun_partition_map_fini (void);
-void grub_gpt_partition_map_init (void);
-void grub_gpt_partition_map_fini (void);
-void grub_apple_partition_map_init (void);
-void grub_apple_partition_map_fini (void);
-#endif
 
 static inline grub_disk_addr_t
 grub_partition_get_start (const grub_partition_t p)

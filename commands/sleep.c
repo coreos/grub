@@ -22,7 +22,6 @@
 #include <grub/time.h>
 #include <grub/types.h>
 #include <grub/misc.h>
-#include <grub/machine/time.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 

@@ -19,8 +19,6 @@
 #ifndef GRUB_VBE_MACHINE_HEADER
 #define GRUB_VBE_MACHINE_HEADER	1
 
-#include <grub/video_fb.h>
-
 /* Default video mode to be used.  */
 #define GRUB_VBE_DEFAULT_VIDEO_MODE     0x101
 

@@ -354,7 +354,7 @@ grub_gfxterm_fullscreen (void)
 }
 
 static grub_err_t
-grub_gfxterm_init (void)
+grub_gfxterm_term_init (void)
 {
   char *tmp;
   grub_err_t err;
@@ -398,7 +398,7 @@ destroy_window (void)
 }
 
 static grub_err_t
-grub_gfxterm_fini (void)
+grub_gfxterm_term_fini (void)
 {
   destroy_window ();
   grub_video_restore ();
@@ -1161,8 +1161,8 @@ grub_gfxterm_background_image_cmd (grub_extcmd_t cmd __attribute__ ((unused)),
 static struct grub_term_output grub_video_term =
   {
     .name = "gfxterm",
-    .init = grub_gfxterm_init,
-    .fini = grub_gfxterm_fini,
+    .init = grub_gfxterm_term_init,
+    .fini = grub_gfxterm_term_fini,
     .putchar = grub_gfxterm_putchar,
     .getcharwidth = grub_gfxterm_getcharwidth,
     .getwh = grub_virtual_screen_getwh,
@@ -1180,7 +1180,7 @@ static struct grub_term_output grub_video_term =
 
 static grub_extcmd_t background_image_cmd_handle;
 
-GRUB_MOD_INIT(term_gfxterm)
+GRUB_MOD_INIT(gfxterm)
 {
   grub_term_register_output ("gfxterm", &grub_video_term);
   background_image_cmd_handle =
@@ -1192,7 +1192,7 @@ GRUB_MOD_INIT(term_gfxterm)
                           background_image_cmd_options);
 }
 
-GRUB_MOD_FINI(term_gfxterm)
+GRUB_MOD_FINI(gfxterm)
 {
   grub_unregister_extcmd (background_image_cmd_handle);
   grub_term_unregister_output (&grub_video_term);

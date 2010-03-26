@@ -371,7 +371,7 @@ grub_gui_progress_bar_new (void)
   self->progress.ops = &progress_bar_pb_ops;
   self->progress.component.ops = &progress_bar_ops;
   self->visible = 1;
-  self->font = grub_font_get ("Helvetica 10");
+  self->font = grub_font_get ("Unknown Regular 16");
   grub_gui_color_t black = { .red = 0, .green = 0, .blue = 0, .alpha = 255 };
   grub_gui_color_t gray = { .red = 128, .green = 128, .blue = 128, .alpha = 255 };
   grub_gui_color_t lightgray = { .red = 200, .green = 200, .blue = 200, .alpha = 255 };

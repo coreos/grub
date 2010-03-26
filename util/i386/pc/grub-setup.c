@@ -130,17 +130,21 @@ setup (const char *dir,
   int NESTED_FUNC_ATTR find_usable_region_gpt (grub_disk_t disk __attribute__ ((unused)),
 					       const grub_partition_t p)
     {
-      struct grub_gpt_partentry *gptdata = p->data;
+      struct grub_gpt_partentry gptdata;
+
+      disk->partition = p->parent;
+      if (grub_disk_read (disk, p->offset, p->index,
+			  sizeof (gptdata), &gptdata))
+	return 0;
 
       /* If there's an embed region, it is in a dedicated partition.  */
-      if (! memcmp (&gptdata->type, &grub_gpt_partition_type_bios_boot, 16))
+      if (! memcmp (&gptdata.type, &grub_gpt_partition_type_bios_boot, 16))
 	{
 	  embed_region.start = p->start;
 	  embed_region.end = p->start + p->len;
 
 	  return 1;
 	}
-
       return 0;
     }
 
@@ -412,7 +416,7 @@ unable_to_embed:
 
   grub_util_warn (_("Embedding is not possible.  GRUB can only be installed in this "
 		    "setup by using blocklists.  However, blocklists are UNRELIABLE and "
-		    "its use is discouraged."));
+		    "their use is discouraged."));
   if (! force)
     grub_util_error (_("if you really want blocklists, use --force"));
 

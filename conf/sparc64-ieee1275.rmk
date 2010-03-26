@@ -1,12 +1,8 @@
 
 # -*- makefile -*-
 
-COMMON_ASFLAGS = -nostdinc -m64
-COMMON_CFLAGS = -ffreestanding -m64 -mno-app-regs
-COMMON_LDFLAGS = -melf64_sparc -nostdlib -mno-relax
-
-# Used by various components.  These rules need to precede them.
-script/lexer.c_DEPENDENCIES = grub_script.tab.h
+COMMON_CFLAGS = -mno-app-regs
+COMMON_LDFLAGS = -melf64_sparc -mno-relax
 
 # Images.
 pkglib_IMAGES = boot.img diskboot.img kernel.img
@@ -23,15 +19,7 @@ diskboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,0x4200
 diskboot_img_FORMAT = binary
 
-MOSTLYCLEANFILES += symlist.c kernel_syms.lst
-DEFSYMFILES += kernel_syms.lst
-
-kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
-	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
-	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
-	list.h handler.h command.h i18n.h \
-	sparc64/libgcc.h ieee1275/ieee1275.h machine/kernel.h \
-	sparc64/ieee1275/ieee1275.h env_private.h
+kernel_img_HEADERS += cpu/libgcc.h ieee1275/ieee1275.h cpu/ieee1275/ieee1275.h
 kernel_img_SOURCES = kern/sparc64/ieee1275/crt0.S kern/ieee1275/cmain.c	\
 	kern/ieee1275/ieee1275.c kern/main.c kern/device.c		\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c		\
@@ -48,29 +36,24 @@ kernel_img_SOURCES = kern/sparc64/ieee1275/crt0.S kern/ieee1275/cmain.c	\
 	symlist.c kern/$(target_cpu)/cache.S
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,0x200000,-Bstatic,-melf64_sparc -static-libgcc -lgcc
+kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,0x4400,-Bstatic,-melf64_sparc -static-libgcc -lgcc
 kernel_img_FORMAT = binary
-
-symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
-	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
-
-kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
-	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
 sbin_UTILITIES = grub-setup grub-ofpathname
 
 # For grub-mkimage.
-grub_mkimage_SOURCES = util/sparc64/ieee1275/grub-mkimage.c util/misc.c \
+grub_mkimage_SOURCES = util/grub-mkrawimage.c util/misc.c \
         util/resolve.c gnulib/progname.c
 
 # For grub-setup.
 util/sparc64/ieee1275/grub-setup.c_DEPENDENCIES = grub_setup_init.h
 grub_setup_SOURCES = util/sparc64/ieee1275/grub-setup.c util/hostdisk.c	\
-	util/misc.c util/getroot.c kern/device.c kern/disk.c	 \
-	kern/err.c kern/misc.c kern/parser.c kern/partition.c	 \
-	kern/file.c kern/fs.c kern/env.c kern/list.c fs/fshelp.c \
+	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
+	kern/err.c kern/misc.c kern/parser.c kern/partition.c	\
+	kern/file.c kern/fs.c kern/env.c kern/list.c		\
+	fs/fshelp.c						\
 	\
 	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c		\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c	\
@@ -82,7 +65,7 @@ grub_setup_SOURCES = util/sparc64/ieee1275/grub-setup.c util/hostdisk.c	\
 	partmap/bsdlabel.c partmap/sun.c partmap/acorn.c	\
 	\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c		\
-	util/raid.c util/lvm.c gnulib/progname.c		\
+	util/raid.c util/lvm.c gnulib/progname.c	\
 	grub_setup_init.c
 
 # For grub-ofpathname.
@@ -96,41 +79,27 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/grub-install.in
 
 # Modules.
-pkglib_MODULES = halt.mod \
-	linux.mod \
-	reboot.mod \
-	memdisk.mod \
-	lsmmap.mod
-
-# For boot.mod.
-pkglib_MODULES += boot.mod
-boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
-boot_mod_CFLAGS = $(COMMON_CFLAGS)
-boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_MODULES += ieee1275_fb.mod 
+ieee1275_fb_mod_SOURCES = video/ieee1275.c
+ieee1275_fb_mod_CFLAGS = $(COMMON_CFLAGS)
+ieee1275_fb_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For linux.mod.
+pkglib_MODULES += linux.mod 
 linux_mod_SOURCES = loader/sparc64/ieee1275/linux.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For reboot.mod.
-reboot_mod_SOURCES = commands/reboot.c
-reboot_mod_CFLAGS = $(COMMON_CFLAGS)
-reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For halt.mod.
+pkglib_MODULES += halt.mod
 halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For memdisk.mod.
-memdisk_mod_SOURCES = disk/memdisk.c
-memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
-memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For lsmmap.mod
-lsmmap_mod_SOURCES = commands/lsmmap.c
-lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
-lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+# For datetime.mod
+pkglib_MODULES += datetime.mod
+datetime_mod_SOURCES = lib/ieee1275/datetime.c
+datetime_mod_CFLAGS = $(COMMON_CFLAGS)
+datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

@@ -106,7 +106,6 @@ acorn_partition_map_iterate (grub_disk_t disk,
     return err;
 
   part.partmap = &grub_acorn_partition_map;
-  part.data = 0;
 
   for (i = 0; i != LINUX_MAP_ENTRIES; ++i)
     {
@@ -135,12 +134,12 @@ static struct grub_partition_map grub_acorn_partition_map =
   .iterate = acorn_partition_map_iterate,
 };
 
-GRUB_MOD_INIT(acorn_partition_map)
+GRUB_MOD_INIT(part_acorn)
 {
   grub_partition_map_register (&grub_acorn_partition_map);
 }
 
-GRUB_MOD_FINI(acorn_partition_map)
+GRUB_MOD_FINI(part_acorn)
 {
   grub_partition_map_unregister (&grub_acorn_partition_map);
 }

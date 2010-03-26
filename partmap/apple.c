@@ -122,17 +122,16 @@ apple_partition_map_iterate (grub_disk_t disk,
       goto fail;
     }
 
-  part.data = 0;
   pos = grub_be_to_cpu16 (aheader.blocksize);
 
   do
     {
-       part.offset = pos / GRUB_DISK_SECTOR_SIZE;
-       part.index = pos % GRUB_DISK_SECTOR_SIZE;
+      part.offset = pos / GRUB_DISK_SECTOR_SIZE;
+      part.index = pos % GRUB_DISK_SECTOR_SIZE;
 
-       if (grub_disk_read (disk, part.offset, part.index,
-			   sizeof (struct grub_apple_part),  &apart))
-	 return grub_errno;
+      if (grub_disk_read (disk, part.offset, part.index,
+			  sizeof (struct grub_apple_part),  &apart))
+	return grub_errno;
 
       if (grub_be_to_cpu16 (apart.magic) != GRUB_APPLE_PART_MAGIC)
 	{
@@ -186,12 +185,12 @@ static struct grub_partition_map grub_apple_partition_map =
     .iterate = apple_partition_map_iterate,
   };
 
-GRUB_MOD_INIT(apple_partition_map)
+GRUB_MOD_INIT(part_apple)
 {
   grub_partition_map_register (&grub_apple_partition_map);
 }
 
-GRUB_MOD_FINI(apple_partition_map)
+GRUB_MOD_FINI(part_apple)
 {
   grub_partition_map_unregister (&grub_apple_partition_map);
 }

@@ -1,130 +1,95 @@
 # -*- makefile -*-
 
-# Used by various components.  These rules need to precede them.
-script/lexer.c_DEPENDENCIES = grub_script.tab.h
+COMMON_LDFLAGS += -nostdlib
+COMMON_CFLAGS += -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include) -fno-builtin
 
-sbin_UTILITIES += grub-emu
 util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
-grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
-	commands/configfile.c commands/echo.c commands/help.c		\
-	commands/handler.c commands/ls.c commands/test.c 		\
-	commands/search_wrap.c commands/search_file.c			\
-	commands/search_label.c commands/search_uuid.c			\
-	commands/blocklist.c commands/hexdump.c				\
-	lib/hexdump.c commands/halt.c commands/reboot.c			\
-	lib/envblk.c commands/loadenv.c					\
-	commands/gptsync.c commands/probe.c commands/xnu_uuid.c		\
-	commands/password.c commands/keystatus.c			\
-	disk/host.c disk/loopback.c disk/scsi.c				\
-	fs/fshelp.c 							\
-	\
-	io/gzio.c							\
-	kern/device.c kern/disk.c kern/dl.c kern/elf.c kern/env.c	\
-	kern/err.c kern/list.c kern/handler.c				\
-	kern/command.c kern/corecmd.c commands/extcmd.c	kern/file.c	\
-	kern/fs.c commands/boot.c kern/main.c kern/misc.c kern/parser.c	\
-	kern/partition.c kern/term.c					\
+kernel_img_RELOCATABLE = yes
+pkglib_PROGRAMS = kernel.img
+kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c kern/env.c	\
+	kern/err.c kern/list.c kern/handler.c kern/command.c		\
+	kern/corecmd.c kern/file.c kern/fs.c kern/main.c kern/misc.c	\
+	kern/parser.c kern/partition.c kern/term.c			\
 	kern/rescue_reader.c kern/rescue_parser.c			\
-	lib/arg.c normal/cmdline.c normal/datetime.c normal/misc.c	\
-	normal/handler.c normal/auth.c lib/crypto.c normal/autofs.c	\
-	normal/completion.c normal/main.c normal/color.c		\
-	normal/menu.c normal/menu_entry.c		\
-	normal/menu_text.c normal/crypto.c normal/term.c		\
-	commands/terminal.c normal/context.c lib/charset.c \
-	script/main.c script/execute.c script/function.c		\
-	script/lexer.c script/script.c grub_script.tab.c		\
-	partmap/amiga.c	partmap/apple.c partmap/msdos.c partmap/sun.c	\
-	partmap/acorn.c partmap/gpt.c partmap/bsdlabel.c 		\
-	partmap/sunpc.c		\
-	\
-	fs/affs.c fs/cpio.c  fs/fat.c fs/ext2.c fs/hfs.c		\
-	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c		\
-	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
-	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c		\
-	fs/befs.c fs/befs_be.c fs/tar.c					\
-	\
-	video/video.c video/fb/video_fb.c video/fb/fbblit.c             \
-        video/fb/fbfill.c video/fb/fbutil.c commands/videotest.c        \
-	video/bitmap.c video/bitmap_scale.c video/readers/tga.c 	\
-	video/readers/jpeg.c video/readers/png.c font/font_cmd.c 	\
-	font/font.c term/gfxterm.c io/bufio.c				\
-	\
-	gfxmenu/gfxmenu.c gfxmenu/model.c gfxmenu/view.c 		\
-	gfxmenu/icon_manager.c gfxmenu/theme_loader.c 			\
-	gfxmenu/widget-box.c gfxmenu/gui_canvas.c 			\
-	gfxmenu/gui_circular_progress.c gfxmenu/gui_box.c 		\
-	gfxmenu/gui_label.c gfxmenu/gui_list.c gfxmenu/gui_image.c 	\
-	gfxmenu/gui_progress_bar.c gfxmenu/gui_util.c 			\
-	gfxmenu/gui_string_util.c gfxmenu/named_colors.c trigtables.c   \
-	\
-	util/console.c util/hostfs.c util/grub-emu.c util/misc.c	\
-	util/hostdisk.c util/getroot.c					\
-	\
-	disk/raid.c disk/raid5_recover.c disk/raid6_recover.c		\
-	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c		\
-	commands/parttool.c parttool/msdospart.c			\
-	lib/libgcrypt-grub/cipher/md5.c \
-	grub_emu_init.c gnulib/progname.c
-grub_emu_CFLAGS += -Wno-missing-field-initializers -Wno-error -I$(srcdir)/lib/libgcrypt_wrap
+									\
+	util/console.c util/grub-emu.c util/misc.c util/hostdisk.c	\
+	util/getroot.c util/time.c					\
+									\
+	grub_emu_init.c gnulib/progname.c util/hostfs.c disk/host.c
+kernel_img_CFLAGS = $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Wno-undef -I$(srcdir)/gnulib
+kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
+TARGET_NO_STRIP = yes
+TARGET_NO_DYNAMIC_MODULES = yes
 
+# For halt.mod.
+pkglib_MODULES += halt.mod
+halt_mod_SOURCES = commands/halt.c
+halt_mod_CFLAGS = $(COMMON_CFLAGS)
+halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 ifeq ($(target_cpu), i386)
-grub_emu_SOURCES += commands/i386/cpuid.c
+pkglib_MODULES += cpuid.mod
+cpuid_mod_SOURCES = commands/i386/cpuid.c
+cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
+cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 endif
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 
 ifeq ($(enable_grub_emu_usb), yes)
-grub_emu_SOURCES += disk/usbms.c util/usb.c bus/usb/usb.c	\
-		commands/usbtest.c
-grub_emu_LDFLAGS += $(LIBCURSES) $(LIBUSB)
+pkglib_MODULES += libusb.mod
+libusb_mod_SOURCES = util/usb.c
+libusb_mod_CFLAGS = 
+libusb_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usb.mod
+pkglib_MODULES += usb.mod
+usb_mod_SOURCES = bus/usb/usb.c
+usb_mod_CFLAGS = $(COMMON_CFLAGS)
+usb_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usbtest.mod
+pkglib_MODULES += usbtest.mod
+usbtest_mod_SOURCES = commands/usbtest.c
+usbtest_mod_CFLAGS = $(COMMON_CFLAGS)
+usbtest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usbms.mod
+pkglib_MODULES += usbms.mod
+usbms_mod_SOURCES = disk/usbms.c
+usbms_mod_CFLAGS = $(COMMON_CFLAGS)
+usbms_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+grub_emu_LDFLAGS += $(LIBUSB)
 endif
 
 ifeq ($(enable_grub_emu_sdl), yes)
-grub_emu_SOURCES += util/sdl.c
+pkglib_MODULES += sdl.mod
+sdl_mod_SOURCES = util/sdl.c
+sdl_mod_CFLAGS = 
+sdl_mod_LDFLAGS = $(COMMON_LDFLAGS)
 grub_emu_LDFLAGS += $(LIBSDL)
 endif
 
 ifeq ($(enable_grub_emu_pci), yes)
-grub_emu_SOURCES += util/pci.c commands/lspci.c
+pkglib_MODULES += pci.mod
+pci_mod_SOURCES = util/pci.c commands/lspci.c
+pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 grub_emu_LDFLAGS += $(LIBPCIACCESS)
 endif
 
-grub_emu_init.lst: geninit.sh $(filter-out grub_emu_init.c,$(grub_emu_SOURCES))
-	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
-DISTCLEANFILES += grub_emu_init.lst
+include $(srcdir)/conf/common.mk
 
-grub_emu_init.h: grub_emu_init.lst $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninitheader.sh
-	rm -f $@; sh $(srcdir)/geninitheader.sh $< > $@
+grub_emu_init.h: genemuinitheader.sh $(pkglib_MODULES)
+	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinitheader.sh $(NM)  > $@
 DISTCLEANFILES += grub_emu_init.h
 
-grub_emu_init.c: grub_emu_init.lst $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninit.sh grub_emu_init.h
-	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
+grub_emu_init.c: genemuinit.sh $(pkglib_MODULES)
+	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinit.sh $(NM) > $@
 DISTCLEANFILES += grub_emu_init.c
 
+CLEANFILES += grub-emu
+grub-emu: $(pkglib_MODULES) $(pkglib_PROGRAMS)
+	$(CC) -o $@ $(pkglib_MODULES) $(pkglib_PROGRAMS) $(grub_emu_LDFLAGS) $(LDFLAGS)
+GRUB_EMU=grub-emu
 
-
-
-# FIXME: this could be shared with common.rmk
-
-trigtables.c: gentrigtables
-	./gentrigtables > $@
-DISTCLEANFILES += trigtables.c
-gentrigtables: gentrigtables.c
-	$(CC) -o $@ $^ $(CPPFLAGS) -lm
-DISTCLEANFILES += gentrigtables
-
-# For grub-mkfont.
-ifeq ($(enable_grub_mkfont), yes)
-bin_UTILITIES += grub-mkfont
-grub_mkfont_SOURCES = gnulib/progname.c util/grub-mkfont.c util/misc.c
-grub_mkfont_CFLAGS = $(freetype_cflags)
-grub_mkfont_LDFLAGS = $(freetype_libs)
-endif
-
-grub_script.tab.c grub_script.tab.h: script/parser.y
-	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/script/parser.y
-DISTCLEANFILES += grub_script.tab.c grub_script.tab.h
-
-bin_UTILITIES += grub-bin2h
-grub_bin2h_SOURCES = gnulib/progname.c util/bin2h.c
