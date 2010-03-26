@@ -30,9 +30,6 @@ struct grub_list
 };
 typedef struct grub_list *grub_list_t;
 
-typedef int (*grub_list_hook_t) (grub_list_t item);
-typedef int (*grub_list_test_t) (grub_list_t new_item, grub_list_t item);
-
 void EXPORT_FUNC(grub_list_push) (grub_list_t *head, grub_list_t item);
 void * EXPORT_FUNC(grub_list_pop) (grub_list_t *head);
 void EXPORT_FUNC(grub_list_remove) (grub_list_t *head, grub_list_t item);
