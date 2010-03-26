@@ -1,3 +1,13 @@
+2010-03-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Simplify Apple CC support.
+
+	* commands/i386/pc/drivemap_int13h.S: Use LOCAL when possible.
+	Add 0 byte at the end not to have a symbol with empty target.
+	* mmap/i386/pc/mmap_helper.S: Likewise.
+	* genmk.rb: Ignore errors 2030 and 2050.
+	* kern/i386/pc/startup.S: Use LOCAL when possible.
+
 2010-03-26  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Testcase and the fix for final semicolon on cmdline.
