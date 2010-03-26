@@ -176,21 +176,6 @@ iterate_dev (const char *devname)
   return 0;
 }
 
-static int
-iterate_command (grub_command_t cmd)
-{
-  if (cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE)
-    {
-      if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
-	{
-	  if (add_completion (cmd->name, " ", GRUB_COMPLETION_TYPE_COMMAND))
-	    return 1;
-	}
-    }
-
-  return 0;
-}
-
 /* Complete a device.  */
 static int
 complete_device (void)
@@ -421,8 +406,18 @@ grub_normal_do_completion (char *buf, int *restore,
   if (argc == 1 || argc == 0)
     {
       /* Complete a command.  */
-      if (grub_command_iterate (iterate_command))
-	goto fail;
+      grub_command_t cmd;
+      FOR_COMMANDS(cmd)
+      {
+	if (cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE)
+	  {
+	    if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
+	      {
+		if (add_completion (cmd->name, " ", GRUB_COMPLETION_TYPE_COMMAND))
+		  goto fail;
+	      }
+	  }
+      }
     }
   else if (*current_word == '-')
     {
