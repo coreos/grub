@@ -49,7 +49,7 @@ static grub_err_t grub_pcpart_boot (const grub_device_t dev,
 
   index = dev->disk->partition->index;
   part = dev->disk->partition;
-  dev->disk->partition = 0;
+  dev->disk->partition = part->parent;
 
   /* Read the MBR.  */
   if (grub_disk_read (dev->disk, 0, 0, sizeof (mbr), &mbr))
@@ -96,7 +96,7 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
 
   index = dev->disk->partition->index;
   part = dev->disk->partition;
-  dev->disk->partition = 0;
+  dev->disk->partition = part->parent;
 
   /* Read the parttable.  */
   if (grub_disk_read (dev->disk, part->offset, 0,
@@ -140,10 +140,10 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
 
 GRUB_MOD_INIT (msdospart)
 {
-  activate_table_handle = grub_parttool_register ("part_msdos",
+  activate_table_handle = grub_parttool_register ("msdos",
 						  grub_pcpart_boot,
 						  grub_pcpart_bootargs);
-  type_table_handle = grub_parttool_register ("part_msdos",
+  type_table_handle = grub_parttool_register ("msdos",
 					      grub_pcpart_type,
 					      grub_pcpart_typeargs);
 
