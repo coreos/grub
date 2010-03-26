@@ -179,32 +179,6 @@ grub_video_sdl_set_palette (unsigned int start, unsigned int count,
   return grub_video_fb_set_palette (start, count, palette_data);
 }
 
-grub_err_t
-grub_video_sdl_set_viewport (unsigned int x, unsigned int y,
-			     unsigned int width, unsigned int height)
-{
-  /* Make sure viewport is withing screen dimensions.  If viewport was set
-     to be out of the region, mark its size as zero.  */
-  if (x > (unsigned) window->w)
-    {
-      x = 0;
-      width = 0;
-    }
-
-  if (y > (unsigned) window->h)
-    {
-      y = 0;
-      height = 0;
-    }
-
-  if (x + width > (unsigned) window->w)
-    width = window->w - x;
-
-  if (y + height > (unsigned) window->h)
-    height = window->h - y;
-  return grub_video_fb_set_viewport (x, y, width, height);
-}
-
 static grub_err_t
 grub_video_sdl_swap_buffers (void)
 {

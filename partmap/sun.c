@@ -152,12 +152,12 @@ static struct grub_partition_map grub_sun_partition_map =
     .iterate = sun_partition_map_iterate,
   };
 
-GRUB_MOD_INIT(sun_partition_map)
+GRUB_MOD_INIT(part_sun)
 {
   grub_partition_map_register (&grub_sun_partition_map);
 }
 
-GRUB_MOD_FINI(sun_partition_map)
+GRUB_MOD_FINI(part_sun)
 {
   grub_partition_map_unregister (&grub_sun_partition_map);
 }

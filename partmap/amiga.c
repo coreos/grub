@@ -140,12 +140,12 @@ static struct grub_partition_map grub_amiga_partition_map =
     .iterate = amiga_partition_map_iterate,
   };
 
-GRUB_MOD_INIT(amiga_partition_map)
+GRUB_MOD_INIT(part_amiga)
 {
   grub_partition_map_register (&grub_amiga_partition_map);
 }
 
-GRUB_MOD_FINI(amiga_partition_map)
+GRUB_MOD_FINI(part_amiga)
 {
   grub_partition_map_unregister (&grub_amiga_partition_map);
 }

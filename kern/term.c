@@ -57,16 +57,17 @@ grub_putchar (int c)
 {
   static grub_size_t size = 0;
   static grub_uint8_t buf[6];
+  grub_uint8_t *rest;
   grub_uint32_t code;
-  grub_size_t ret;
 
   buf[size++] = c;
-  ret = grub_utf8_to_ucs4 (&code, 1, buf, size, 0);
 
-  if (ret != 0)
+  while (grub_utf8_to_ucs4 (&code, 1, buf, size, (const grub_uint8_t **) &rest) 
+	 != 0)
     {
       struct grub_term_output *term;
-      size = 0;
+      size -= rest - buf;
+      grub_memmove (buf, rest, size);
       FOR_ACTIVE_TERM_OUTPUTS(term)
 	grub_putcode (code, term);
       if (code == '\n' && grub_newline_hook)

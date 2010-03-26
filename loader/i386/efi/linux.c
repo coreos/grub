@@ -576,7 +576,7 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   params->lfb_line_len = line_len;
 
   params->lfb_base = fb_base;
-  params->lfb_size = (line_len * params->lfb_height + 65535) >> 16;
+  params->lfb_size = ALIGN_UP (line_len * params->lfb_height, 65536);
 
   params->red_mask_size = 8;
   params->red_field_pos = 16;
