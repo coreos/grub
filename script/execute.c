@@ -291,6 +291,32 @@ grub_script_execute_cmdif (struct grub_script_cmd *cmd)
     return grub_script_execute_cmd (cmdif->exec_on_false);
 }
 
+/* Execute a for statement.  */
+grub_err_t
+grub_script_execute_cmdfor (struct grub_script_cmd *cmd)
+{
+  int i;
+  int result;
+  char **args;
+  int argcount;
+  struct grub_script_cmdfor *cmdfor = (struct grub_script_cmdfor *) cmd;
+
+  args = grub_script_execute_arglist_to_argv (cmdfor->words, &argcount);
+  if (!args)
+    return grub_errno;
+
+  result = 0;
+  for (i = 0; i < argcount; i++)
+    {
+      grub_env_set (cmdfor->name->str, args[i]);
+      result = grub_script_execute_cmd (cmdfor->list);
+      grub_free (args[i]);
+    }
+
+  grub_free (args);
+  return result;
+}
+
 /* Execute the menu entry generate statement.  */
 grub_err_t
 grub_script_execute_menuentry (struct grub_script_cmd *cmd)

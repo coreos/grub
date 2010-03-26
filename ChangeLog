@@ -1,3 +1,19 @@
+2010-03-26  BVK Chaitanya  <bvk@localhost>
+
+	For loop support to GRUB script.
+
+	* include/grub/script_sh.h (grub_script_cmdfor): New struct.
+	(grub_script_create_cmdfor): New function prototype.
+	(grub_script_execute_cmdfor): New function prototype.
+	* script/execute.c (grub_script_execute_cmdfor): New function.
+	* script/parser.y (command): New for command.
+	(forcmd): New grammar rule.
+	* script/script.c (grub_script_create_cmdfor): New function.
+	* util/grub-script-check.c (grub_script_execute_cmdfor): New
+	function.
+	* tests/grub_script_for1.in: New testcase.
+	* conf/tests.rmk: Rules for new testcase.
+
 2010-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Nested partitions
