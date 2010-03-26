@@ -39,31 +39,17 @@
 
 
 
-struct grub_dl_list
-{
-  struct grub_dl_list *next;
-  grub_dl_t mod;
-};
-typedef struct grub_dl_list *grub_dl_list_t;
-
-static grub_dl_list_t grub_dl_head;
+grub_dl_t grub_dl_head = 0;
 
 static grub_err_t
 grub_dl_add (grub_dl_t mod)
 {
-  grub_dl_list_t l;
-
   if (grub_dl_get (mod->name))
     return grub_error (GRUB_ERR_BAD_MODULE,
 		       "`%s' is already loaded", mod->name);
 
-  l = (grub_dl_list_t) grub_malloc (sizeof (*l));
-  if (! l)
-    return grub_errno;
-
-  l->mod = mod;
-  l->next = grub_dl_head;
-  grub_dl_head = l;
+  mod->next = grub_dl_head;
+  grub_dl_head = mod;
 
   return GRUB_ERR_NONE;
 }
@@ -71,13 +57,12 @@ grub_dl_add (grub_dl_t mod)
 static void
 grub_dl_remove (grub_dl_t mod)
 {
-  grub_dl_list_t *p, q;
+  grub_dl_t *p, q;
 
   for (p = &grub_dl_head, q = *p; q; p = &q->next, q = *p)
-    if (q->mod == mod)
+    if (q == mod)
       {
 	*p = q->next;
-	grub_free (q);
 	return;
       }
 }
@@ -85,23 +70,13 @@ grub_dl_remove (grub_dl_t mod)
 grub_dl_t
 grub_dl_get (const char *name)
 {
-  grub_dl_list_t l;
+  grub_dl_t l;
 
   for (l = grub_dl_head; l; l = l->next)
-    if (grub_strcmp (name, l->mod->name) == 0)
-      return l->mod;
+    if (grub_strcmp (name, l->name) == 0)
+      return l;
 
   return 0;
-}
-
-void
-grub_dl_iterate (int (*hook) (grub_dl_t mod))
-{
-  grub_dl_list_t l;
-
-  for (l = grub_dl_head; l; l = l->next)
-    if (hook (l->mod))
-      break;
 }
 
 
@@ -690,11 +665,11 @@ grub_dl_unload_unneeded (void)
 {
   /* Because grub_dl_remove modifies the list of modules, this
      implementation is tricky.  */
-  grub_dl_list_t p = grub_dl_head;
+  grub_dl_t p = grub_dl_head;
 
   while (p)
     {
-      if (grub_dl_unload (p->mod))
+      if (grub_dl_unload (p))
 	{
 	  p = grub_dl_head;
 	  continue;
@@ -710,13 +685,13 @@ grub_dl_unload_all (void)
 {
   while (grub_dl_head)
     {
-      grub_dl_list_t p;
+      grub_dl_t p;
 
       grub_dl_unload_unneeded ();
 
       /* Force to decrement the ref count. This will purge pre-loaded
 	 modules and manually inserted modules.  */
       for (p = grub_dl_head; p; p = p->next)
-	p->mod->ref_count--;
+	p->ref_count--;
     }
 }
