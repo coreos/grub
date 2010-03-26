@@ -1,3 +1,16 @@
+2010-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Sunpc partitions support.
+
+	* conf/common.rmk (grub_probe_SOURCES): Add partmap/sunpc.c.
+	(grub_fstest_SOURCES): Likewise.
+	(pkglib_MODULES): Add part_sunpc.mod.
+	(part_sunpc_mod_SOURCES): New variable.
+	(part_sunpc_mod_CFLAGS): Likewise.
+	(part_sunpc_mod_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add partmap/sunpc.c.
+	* partmap/sunpc.c: New file.
+
 2010-03-26  BVK Chaitanya  <bvk@localhost>
 
 	For loop support to GRUB script.
