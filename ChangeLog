@@ -1,5 +1,18 @@
 2010-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't use __FILE__.
+
+	* genmk.rb: Add -DGRUB_FILE to all C targets.
+	* fs/reiserfs.c: Replace __FILE__ with GRUB_FILE.
+	* include/grub/list.h: Likewise.
+	* include/grub/misc.h: Likewise.
+	* include/grub/mm.h: Likewise.
+	* include/grub/test.h: Likewise.
+	* kern/mm.c: Likewise.
+	* lib/libgcrypt_wrap/cipher_wrap.h: Likewise.
+
+2010-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Sunpc partitions support.
 
 	* conf/common.rmk (grub_probe_SOURCES): Add partmap/sunpc.c.
