@@ -1,3 +1,11 @@
+2010-03-26  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Testcase and the fix for final semicolon on cmdline.
+
+	* tests/grub_script_final_semicolon.in: New testcase.
+	* conf/tests.rmk: Rules for the new testcase.
+	* script/parser.y: Grammar fix.
+
 2010-03-26  BVK Chaitanya  <bvk@localhost>
 
 	Blank lines testcase for GRUB script.
