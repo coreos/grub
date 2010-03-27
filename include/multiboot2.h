@@ -103,24 +103,24 @@ struct multiboot_header
 
 struct multiboot_header_tag
 {
-  multiboot_uint32_t type;
+  multiboot_uint16_t type;
+  multiboot_uint16_t flags;
   multiboot_uint32_t size;
-  multiboot_uint32_t flags;
 };
 
 struct multiboot_header_tag_information_request
 {
-  multiboot_uint32_t type;
+  multiboot_uint16_t type;
+  multiboot_uint16_t flags;
   multiboot_uint32_t size;
-  multiboot_uint32_t flags;
   multiboot_uint32_t requests[0];
 };
 
 struct multiboot_header_tag_address
 {
-  multiboot_uint32_t type;
+  multiboot_uint16_t type;
+  multiboot_uint16_t flags;
   multiboot_uint32_t size;
-  multiboot_uint32_t flags;
   multiboot_uint32_t header_addr;
   multiboot_uint32_t load_addr;
   multiboot_uint32_t load_end_addr;
@@ -129,25 +129,25 @@ struct multiboot_header_tag_address
 
 struct multiboot_header_tag_entry_address
 {
-  multiboot_uint32_t type;
+  multiboot_uint16_t type;
+  multiboot_uint16_t flags;
   multiboot_uint32_t size;
-  multiboot_uint32_t flags;
   multiboot_uint32_t entry_addr;
 };
 
 struct multiboot_header_tag_console_flags
 {
-  multiboot_uint32_t type;
+  multiboot_uint16_t type;
+  multiboot_uint16_t flags;
   multiboot_uint32_t size;
-  multiboot_uint32_t flags;
   multiboot_uint32_t console_flags;
 };
 
 struct multiboot_header_tag_framebuffer
 {
-  multiboot_uint32_t type;
+  multiboot_uint16_t type;
+  multiboot_uint16_t flags;
   multiboot_uint32_t size;
-  multiboot_uint32_t flags;
   multiboot_uint32_t width;
   multiboot_uint32_t height;
   multiboot_uint32_t depth;
@@ -155,9 +155,9 @@ struct multiboot_header_tag_framebuffer
 
 struct multiboot_header_tag_module_align
 {
-  multiboot_uint32_t type;
+  multiboot_uint16_t type;
+  multiboot_uint16_t flags;
   multiboot_uint32_t size;
-  multiboot_uint32_t flags;
   multiboot_uint32_t width;
   multiboot_uint32_t height;
   multiboot_uint32_t depth;
@@ -193,8 +193,6 @@ struct multiboot_tag_string
 {
   multiboot_uint32_t type;
   multiboot_uint32_t size;
-  multiboot_uint32_t entry_size;
-  multiboot_uint32_t entry_version;
   char string[0];
 };
 
