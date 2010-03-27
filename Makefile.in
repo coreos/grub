@@ -79,6 +79,7 @@ LIBS = @LIBS@ $(LIBINTL)
 
 CC = @CC@
 CFLAGS = @CFLAGS@
+GNULIB_CFLAGS = -Wno-undef -D_GL_UNUSED="__attribute__ ((unused))"
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@ $(LIBS)
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \

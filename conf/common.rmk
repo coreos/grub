@@ -56,7 +56,7 @@ grub_mkisofs_SOURCES = util/mkisofs/eltorito.c 				\
 	gnulib/error.c gnulib/progname.c
 grub_mkisofs_CFLAGS = -D_FILE_OFFSET_BITS=64 				\
 	-I$(srcdir)/util/mkisofs/include				\
-	-Wno-all -Werror
+	-Wno-all -Werror $(GNULIB_CFLAGS)
 
 # For grub-fstest.
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
@@ -111,7 +111,7 @@ grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c
 	kern/handler.c kern/err.c kern/parser.c kern/list.c \
 	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c \
 	grub_script.yy.c
-
+grub_script_check_CFLAGS = $(GNULIB_CFLAGS)
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 

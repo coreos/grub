@@ -1,3 +1,24 @@
+2010-03-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Resync with gnulib.
+
+	* Makefile.in (GNULIB_CFLAGS): New variable.
+	* conf/common.rmk (grub_mkisofs_CFLAGS): Add GNULIB_CFLAGS.
+	(grub_script_check_CFLAGS): New variable.
+	* gnulib/alloca.h: Resync with gnulib.
+	* gnulib/error.c: Likewise.
+	* gnulib/error.h: Likewise.
+	* gnulib/fnmatch.c: Likewise.
+	* gnulib/fnmatch_loop.c: Likewise.
+	* gnulib/getdelim.c: Likewise.
+	* gnulib/getline.c: Likewise.
+	* gnulib/getopt.c: Likewise.
+	* gnulib/getopt1.c: Likewise.
+	* gnulib/getopt_int.h: Likewise.
+	* gnulib/gettext.h: Likewise.
+	* gnulib/progname.c: Likewise.
+	* gnulib/progname.h: Likewise.
+
 2010-03-27  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	Fix a build failure (-Wundef -Werror) when ENABLE_NLS is not defined,
