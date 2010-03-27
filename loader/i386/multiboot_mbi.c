@@ -514,7 +514,6 @@ grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
 void
 grub_multiboot_set_bootdev (void)
 {
-  char *p;
   grub_uint32_t biosdev, slice = ~0, part = ~0;
   grub_device_t dev;
 
@@ -530,22 +529,13 @@ grub_multiboot_set_bootdev (void)
   dev = grub_device_open (0);
   if (dev && dev->disk && dev->disk->partition)
     {
-      char *p0;
-      p = p0 = dev->disk->partition->partmap->get_name (dev->disk->partition);
-      if (p)
-	{
-	  if ((p[0] >= '0') && (p[0] <= '9'))
-	    {
-	      slice = grub_strtoul (p, &p, 0) - 1;
-
-	      if ((p) && (p[0] == ','))
-		p++;
-	    }
-
-	  if ((p[0] >= 'a') && (p[0] <= 'z'))
-	    part = p[0] - 'a';
+      if (dev->disk->partition->parent)
+ 	{
+	  part = dev->disk->partition->number;
+	  slice = dev->disk->partition->parent->number;
 	}
-      grub_free (p0);
+      else
+	slice = dev->disk->partition->number;
     }
   if (dev)
     grub_device_close (dev);

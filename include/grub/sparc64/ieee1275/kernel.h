@@ -39,7 +39,23 @@
 /* End of the data section. */
 #define GRUB_KERNEL_MACHINE_DATA_END		0x114
 
+#define GRUB_KERNEL_MACHINE_RAW_SIZE                   0
+#define GRUB_KERNEL_MACHINE_STACK_SIZE          0x40000
+
+#define GRUB_PLATFORM_IMAGE_FORMATS     "raw, aout"
+#define GRUB_PLATFORM_IMAGE_DEFAULT_FORMAT     "raw"
+
+#define GRUB_PLATFORM_IMAGE_DEFAULT GRUB_PLATFORM_IMAGE_RAW
+
 #ifndef ASM_FILE
+
+typedef enum {
+  GRUB_PLATFORM_IMAGE_RAW,
+  GRUB_PLATFORM_IMAGE_AOUT
+}
+  grub_platform_image_format_t;
+#define GRUB_PLATFORM_IMAGE_RAW GRUB_PLATFORM_IMAGE_RAW
+#define GRUB_PLATFORM_IMAGE_AOUT GRUB_PLATFORM_IMAGE_AOUT
 
 #include <grub/symbol.h>
 #include <grub/types.h>
