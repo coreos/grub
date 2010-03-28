@@ -36,21 +36,9 @@
 #define MULTIBOOT_MOD_ALIGN			0x00001000
 
 /* Alignment of the multiboot info structure.  */
-#define MULTIBOOT_INFO_ALIGN			0x00000004
+#define MULTIBOOT_INFO_ALIGN			0x00000008
 
 /* Flags set in the 'flags' member of the multiboot header.  */
-
-/* Align all boot modules on i386 page (4KB) boundaries.  */
-#define MULTIBOOT_PAGE_ALIGN			0x00000001
-
-/* Must pass memory information to OS.  */
-#define MULTIBOOT_MEMORY_INFO			0x00000002
-
-/* Must pass video information to OS.  */
-#define MULTIBOOT_VIDEO_MODE			0x00000004
-
-/* This flag indicates the use of the address fields in the header.  */
-#define MULTIBOOT_AOUT_KLUDGE			0x00010000
 
 #define MULTIBOOT_TAG_ALIGN                  8
 #define MULTIBOOT_TAG_TYPE_END               0

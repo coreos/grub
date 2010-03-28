@@ -1,5 +1,9 @@
 2010-03-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/multiboot2.h: Resync with spec.
+
+2010-03-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Multiboot2 tag support
 
 	* conf/i386.rmk (multiboot2_mod_SOURCES): Replace
