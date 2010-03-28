@@ -1,6 +1,6 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free
+   Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -20,6 +20,32 @@
 
 #ifndef _REGEX_INTERNAL_H
 #define _REGEX_INTERNAL_H 1
+
+#include <assert.h>
+#include <ctype.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <langinfo.h>
+#ifndef _LIBC
+# include "localcharset.h"
+#endif
+#if defined HAVE_LOCALE_H || defined _LIBC
+# include <locale.h>
+#endif
+
+#include <wchar.h>
+#include <wctype.h>
+#include <stdint.h>
+#if defined _LIBC
+# include <bits/libc-lock.h>
+#else
+# define __libc_lock_init(NAME) do { } while (0)
+# define __libc_lock_lock(NAME) do { } while (0)
+# define __libc_lock_unlock(NAME) do { } while (0)
+#endif
 
 /* In case that the system doesn't have isblank().  */
 #if !defined _LIBC && ! (defined isblank || (HAVE_ISBLANK && HAVE_DECL_ISBLANK))
@@ -58,7 +84,7 @@
 # define SIZE_MAX ((size_t) -1)
 #endif
 
-#if (defined MB_CUR_MAX && HAVE_LOCALE_H && HAVE_WCTYPE_H && HAVE_ISWCTYPE && HAVE_WCSCOLL) || defined (_LIBC)
+#if (defined MB_CUR_MAX && HAVE_LOCALE_H && HAVE_WCTYPE_H && HAVE_ISWCTYPE && HAVE_WCSCOLL) || _LIBC
 # define RE_ENABLE_I18N
 #endif
 
@@ -824,5 +850,22 @@ re_string_elem_size_at (const re_string_t *pstr, Idx idx)
     return 1;
 }
 #endif /* RE_ENABLE_I18N */
+
+#ifndef __GNUC_PREREQ
+# if defined __GNUC__ && defined __GNUC_MINOR__
+#  define __GNUC_PREREQ(maj, min) \
+         ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+# else
+#  define __GNUC_PREREQ(maj, min) 0
+# endif
+#endif
+
+#if __GNUC_PREREQ (3,4)
+# undef __attribute_warn_unused_result__
+# define __attribute_warn_unused_result__ \
+   __attribute__ ((__warn_unused_result__))
+#else
+# define __attribute_warn_unused_result__ /* empty */
+#endif
 
 #endif /*  _REGEX_INTERNAL_H */

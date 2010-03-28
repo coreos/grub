@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2009, 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,47 +16,10 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_GNULIB_WRAP_H
-#define GRUB_GNULIB_WRAP_H	1
+#ifndef GRUB_POSIX_CTYPE_H
+#define GRUB_POSIX_CTYPE_H	1
 
-#include <grub/mm.h>
 #include <grub/misc.h>
-
-#define HAVE_ISBLANK 0
-#define HAVE_LIBINTL_H 0
-#define HAVE_LOCALE_H 0
-#define __STRICT_ANSI__ 0
-#define DEBUG 0
-#define _Restrict_ __restrict
-#define _Restrict_arr_ __restrict
-
-typedef grub_size_t size_t;
-typedef int bool;
-static const bool true = 1;
-static const bool false = 0;
-
-#define assert(x) assert_real(__FILE__, __LINE__, x)
-
-static inline void
-assert_real (const char *file, int line, int cond)
-{
-  if (!cond)
-    grub_fatal ("Assertion failed at %s:%d\n", file, line);
-}
-
-static inline char *
-locale_charset (void)
-{
-  return "UTF-8";
-}
-
-#define MB_CUR_MAX 6
-
-static inline void *
-realloc (void *ptr, grub_size_t size)
-{
-  return grub_realloc (ptr, size);
-}
 
 static inline int
 toupper (int c)
@@ -136,60 +99,5 @@ tolower (int c)
 {
   return grub_tolower (c);
 }
-
-static inline grub_size_t
-strlen (const char *s)
-{
-  return grub_strlen (s);
-}
-
-static inline int 
-strcmp (const char *s1, const char *s2)
-{
-  return grub_strcmp (s1, s2);
-}
-
-static inline void
-abort (void)
-{
-  grub_abort ();
-}
-
-static inline void 
-free (void *ptr)
-{
-  grub_free (ptr);
-}
-
-static inline void *
-malloc (grub_size_t size)
-{
-  return grub_malloc (size);
-}
-
-static inline void *
-calloc (grub_size_t size, grub_size_t nelem)
-{
-  return grub_zalloc (size * nelem);
-}
-
-static inline char *strncpy (char *dest, const char *src, int c)
-{
-  return grub_strncpy (dest, src, c);
-}
-
-
-#define ULONG_MAX GRUB_ULONG_MAX
-#define UCHAR_MAX 0xff
-
-/* UCS-4.  */
-typedef grub_uint32_t wchar_t;
-
-#undef __libc_lock_init
-#define __libc_lock_init(x)
-#undef __libc_lock_lock
-#define __libc_lock_lock(x)
-#undef __libc_lock_unlock
-#define __libc_lock_unlock(x)
 
 #endif
