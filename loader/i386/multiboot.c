@@ -27,10 +27,8 @@
  *  - APM table
  */
 
-/* The bits in the required part of flags field we don't support.  */
-#define UNSUPPORTED_FLAGS			0x0000fff8
-
 #include <grub/loader.h>
+#include <grub/command.h>
 #include <grub/machine/loader.h>
 #include <grub/multiboot.h>
 #include <grub/cpu/multiboot.h>
@@ -45,18 +43,78 @@
 #include <grub/env.h>
 #include <grub/i386/relocator.h>
 #include <grub/video.h>
+#include <grub/memory.h>
+#include <grub/i18n.h>
 
 #ifdef GRUB_MACHINE_EFI
 #include <grub/efi/efi.h>
 #endif
 
-extern grub_dl_t my_mod;
-static grub_size_t code_size, alloc_mbi;
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+#define DEFAULT_VIDEO_MODE "text"
+#else
+#define DEFAULT_VIDEO_MODE "auto"
+#endif
+
+grub_size_t grub_multiboot_alloc_mbi;
 
 char *grub_multiboot_payload_orig;
 grub_addr_t grub_multiboot_payload_dest;
 grub_size_t grub_multiboot_pure_size;
 grub_uint32_t grub_multiboot_payload_eip;
+static int accepts_video;
+static int accepts_ega_text;
+static int console_required;
+static grub_dl_t my_mod;
+
+
+/* Return the length of the Multiboot mmap that will be needed to allocate
+   our platform's map.  */
+grub_uint32_t
+grub_get_multiboot_mmap_count (void)
+{
+  grub_size_t count = 0;
+
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr __attribute__ ((unused)),
+			     grub_uint64_t size __attribute__ ((unused)),
+			     grub_uint32_t type __attribute__ ((unused)))
+    {
+      count++;
+      return 0;
+    }
+
+  grub_mmap_iterate (hook);
+
+  return count;
+}
+
+grub_err_t
+grub_multiboot_set_video_mode (void)
+{
+  grub_err_t err;
+  const char *modevar;
+
+  if (accepts_video || !GRUB_MACHINE_HAS_VGA_TEXT)
+    {
+      modevar = grub_env_get ("gfxpayload");
+      if (! modevar || *modevar == 0)
+	err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
+      else
+	{
+	  char *tmp;
+	  tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
+	  if (! tmp)
+	    return grub_errno;
+	  err = grub_video_set_mode (tmp, 0, 0);
+	  grub_free (tmp);
+	}
+    }
+  else
+    err = grub_video_set_mode ("text", 0, 0);
+
+  return err;
+}
 
 static grub_err_t
 grub_multiboot_boot (void)
@@ -75,14 +133,14 @@ grub_multiboot_boot (void)
     };
 
   mbi_size = grub_multiboot_get_mbi_size ();
-  if (alloc_mbi < mbi_size)
+  if (grub_multiboot_alloc_mbi < mbi_size)
     {
       grub_multiboot_payload_orig
 	= grub_relocator32_realloc (grub_multiboot_payload_orig,
 				    grub_multiboot_pure_size + mbi_size);
       if (!grub_multiboot_payload_orig)
 	return grub_errno;
-      alloc_mbi = mbi_size;
+      grub_multiboot_alloc_mbi = mbi_size;
     }
 
   state.ebx = grub_multiboot_payload_dest + grub_multiboot_pure_size;
@@ -112,7 +170,7 @@ grub_multiboot_unload (void)
 
   grub_relocator32_free (grub_multiboot_payload_orig);
 
-  alloc_mbi = 0;
+  grub_multiboot_alloc_mbi = 0;
 
   grub_multiboot_payload_orig = NULL;
   grub_dl_unref (my_mod);
@@ -129,7 +187,7 @@ grub_multiboot_unload (void)
 #undef MULTIBOOT_LOAD_ELF32
 
 /* Load ELF32 or ELF64.  */
-static grub_err_t
+grub_err_t
 grub_multiboot_load_elf (grub_file_t file, void *buffer)
 {
   if (grub_multiboot_is_elf32 (buffer))
@@ -140,136 +198,76 @@ grub_multiboot_load_elf (grub_file_t file, void *buffer)
   return grub_error (GRUB_ERR_UNKNOWN_OS, "unknown ELF class");
 }
 
-void
-grub_multiboot (int argc, char *argv[])
+grub_err_t
+grub_multiboot_set_console (int console_type, int accepted_consoles,
+			    int width, int height, int depth,
+			    int console_req)
+{
+  console_required = console_req;
+  if (!(accepted_consoles 
+	& (GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER
+	   | (GRUB_MACHINE_HAS_VGA_TEXT ? GRUB_MULTIBOOT_CONSOLE_EGA_TEXT : 0))))
+    {
+      if (console_required)
+	return grub_error (GRUB_ERR_BAD_OS,
+			   "OS requires a console but none is available");
+      grub_printf ("WARNING: no console will be available to OS");
+      accepts_video = 0;
+      accepts_ega_text = 0;
+      return GRUB_ERR_NONE;
+    }
+
+  if (console_type == GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER)
+    {
+      char *buf;
+      if (depth && width && height)
+	buf = grub_xasprintf ("%dx%dx%d,%dx%d,auto", width,
+			      height, depth, width, height);
+      else if (width && height)
+	buf = grub_xasprintf ("%dx%d,auto", width, height);
+      else
+	buf = grub_strdup ("auto");
+
+      if (!buf)
+	return grub_errno;
+      grub_env_set ("gfxpayload", buf);
+      grub_free (buf);
+    }
+ else
+   grub_env_set ("gfxpayload", "text");
+
+  accepts_video = !!(accepted_consoles & GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER);
+  accepts_ega_text = !!(accepted_consoles & GRUB_MULTIBOOT_CONSOLE_EGA_TEXT);
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_cmd_multiboot (grub_command_t cmd __attribute__ ((unused)),
+		    int argc, char *argv[])
 {
   grub_file_t file = 0;
-  char buffer[MULTIBOOT_SEARCH];
-  struct multiboot_header *header;
-  grub_ssize_t len;
+  grub_err_t err;
 
   grub_loader_unset ();
 
   if (argc == 0)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
-      goto fail;
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
 
   file = grub_gzfile_open (argv[0], 1);
   if (! file)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
-      goto fail;
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
 
-  len = grub_file_read (file, buffer, MULTIBOOT_SEARCH);
-  if (len < 32)
-    {
-      grub_error (GRUB_ERR_BAD_OS, "file too small");
-      goto fail;
-    }
-
-  /* Look for the multiboot header in the buffer.  The header should
-     be at least 12 bytes and aligned on a 4-byte boundary.  */
-  for (header = (struct multiboot_header *) buffer;
-       ((char *) header <= buffer + len - 12) || (header = 0);
-       header = (struct multiboot_header *) ((char *) header + 4))
-    {
-      if (header->magic == MULTIBOOT_HEADER_MAGIC
-	  && !(header->magic + header->flags + header->checksum))
-	break;
-    }
-
-  if (header == 0)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no multiboot header found");
-      goto fail;
-    }
-
-  if (header->flags & UNSUPPORTED_FLAGS)
-    {
-      grub_error (GRUB_ERR_UNKNOWN_OS,
-		  "unsupported flag: 0x%x", header->flags);
-      goto fail;
-    }
-
-  grub_relocator32_free (grub_multiboot_payload_orig);
-  grub_multiboot_payload_orig = NULL;
+  grub_dl_ref (my_mod);
 
   /* Skip filename.  */
   grub_multiboot_init_mbi (argc - 1, argv + 1);
 
-  if (header->flags & MULTIBOOT_AOUT_KLUDGE)
-    {
-      int offset = ((char *) header - buffer -
-		    (header->header_addr - header->load_addr));
-      int load_size = ((header->load_end_addr == 0) ? file->size - offset :
-		       header->load_end_addr - header->load_addr);
+  grub_relocator32_free (grub_multiboot_payload_orig);
+  grub_multiboot_payload_orig = NULL;
 
-      if (header->bss_end_addr)
-	code_size = (header->bss_end_addr - header->load_addr);
-      else
-	code_size = load_size;
-      grub_multiboot_payload_dest = header->load_addr;
-
-      grub_multiboot_pure_size += code_size;
-
-      /* Allocate a bit more to avoid relocations in most cases.  */
-      alloc_mbi = grub_multiboot_get_mbi_size () + 65536;
-      grub_multiboot_payload_orig
-	= grub_relocator32_alloc (grub_multiboot_pure_size + alloc_mbi);
-
-      if (! grub_multiboot_payload_orig)
-	goto fail;
-
-      if ((grub_file_seek (file, offset)) == (grub_off_t) -1)
-	goto fail;
-
-      grub_file_read (file, (void *) grub_multiboot_payload_orig, load_size);
-      if (grub_errno)
-	goto fail;
-
-      if (header->bss_end_addr)
-	grub_memset ((void *) (grub_multiboot_payload_orig + load_size), 0,
-		     header->bss_end_addr - header->load_addr - load_size);
-
-      grub_multiboot_payload_eip = header->entry_addr;
-
-    }
-  else if (grub_multiboot_load_elf (file, buffer) != GRUB_ERR_NONE)
+  err = grub_multiboot_load (file);
+  if (err)
     goto fail;
-
-  if (header->flags & MULTIBOOT_VIDEO_MODE)
-    {
-      switch (header->mode_type)
-	{
-	case 1:
-	  grub_env_set ("gfxpayload", "text");
-	  break;
-
-	case 0:
-	  {
-	    char *buf;
-	    if (header->depth && header->width && header->height)
-	      buf = grub_xasprintf ("%dx%dx%d,%dx%d,auto", header->width,
-				   header->height, header->depth, header->width,
-				   header->height);
-	    else if (header->width && header->height)
-	      buf = grub_xasprintf ("%dx%d,auto", header->width, header->height);
-	    else
-	      buf = grub_strdup ("auto");
-
-	    if (!buf)
-	      goto fail;
-	    grub_env_set ("gfxpayload", buf);
-	    grub_free (buf);
-	    break;
-	  }
-	}
-    }
-
-  grub_multiboot_set_accepts_video (!!(header->flags & MULTIBOOT_VIDEO_MODE));
 
   grub_multiboot_set_bootdev ();
 
@@ -282,12 +280,16 @@ grub_multiboot (int argc, char *argv[])
   if (grub_errno != GRUB_ERR_NONE)
     {
       grub_relocator32_free (grub_multiboot_payload_orig);
+      grub_multiboot_free_mbi ();
       grub_dl_unref (my_mod);
     }
+
+  return grub_errno;
 }
 
-void
-grub_module  (int argc, char *argv[])
+static grub_err_t
+grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
+		 int argc, char *argv[])
 {
   grub_file_t file = 0;
   grub_ssize_t size;
@@ -295,40 +297,64 @@ grub_module  (int argc, char *argv[])
   grub_err_t err;
 
   if (argc == 0)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
-      goto fail;
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
 
   if (!grub_multiboot_payload_orig)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT,
-		  "you need to load the multiboot kernel first");
-      goto fail;
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "you need to load the multiboot kernel first");
 
   file = grub_gzfile_open (argv[0], 1);
   if (! file)
-    goto fail;
+    return grub_errno;
 
   size = grub_file_size (file);
   module = grub_memalign (MULTIBOOT_MOD_ALIGN, size);
   if (! module)
-    goto fail;
+    {
+      grub_file_close (file);
+      return grub_errno;
+    }
 
   err = grub_multiboot_add_module ((grub_addr_t) module, size,
 				   argc - 1, argv + 1);
   if (err)
-    goto fail;
+    {
+      grub_file_close (file);
+      return err;
+    }
 
   if (grub_file_read (file, module, size) != size)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
-      goto fail;
+      grub_file_close (file);
+      return grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
     }
 
- fail:
-  if (file)
-    grub_file_close (file);
+  grub_file_close (file);
+  return GRUB_ERR_NONE;;
 }
 
+static grub_command_t cmd_multiboot, cmd_module;
+
+GRUB_MOD_INIT(multiboot)
+{
+  cmd_multiboot =
+#ifdef GRUB_USE_MULTIBOOT2
+    grub_register_command ("multiboot2", grub_cmd_multiboot,
+			   0, N_("Load a multiboot 2 kernel."));
+#else
+    grub_register_command ("multiboot", grub_cmd_multiboot,
+			   0, N_("Load a multiboot kernel."));
+#endif
+
+  cmd_module =
+    grub_register_command ("module", grub_cmd_module,
+			   0, N_("Load a multiboot module."));
+
+  my_mod = mod;
+}
+
+GRUB_MOD_FINI(multiboot)
+{
+  grub_unregister_command (cmd_multiboot);
+  grub_unregister_command (cmd_module);
+}
