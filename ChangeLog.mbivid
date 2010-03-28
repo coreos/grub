@@ -1,9 +1,0 @@
-2010-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
-
-	VBE multiboot support.
-
-	* loader/i386/multiboot_mbi.c (HAS_VBE): New constant.
-	(grub_multiboot_get_mbi_size) [HAS_VBE]: Account for VBE structures.
-	(grub_multiboot_make_mbi) [HAS_VBE]: Likewise.
-	(fill_vbe_info) [HAS_VBE]: New function.
-	(retrieve_video_parameters) [HAS_VBE]: Call fill_vbe_info.

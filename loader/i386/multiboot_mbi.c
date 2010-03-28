@@ -186,10 +186,6 @@ grub_multiboot_get_mbi_size (void)
     + modcnt * sizeof (struct multiboot_mod_list) + total_modcmd
     + ALIGN_UP (sizeof(PACKAGE_STRING), 4) 
     + grub_get_multiboot_mmap_count () * sizeof (struct multiboot_mmap_entry)
-#if GRUB_MACHINE_HAS_VBE
-    + sizeof (struct grub_vbe_info_block)
-    + sizeof (struct grub_vbe_mode_info_block)
-#endif
     + 256 * sizeof (struct multiboot_color);
 }
 
@@ -391,12 +387,6 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
       grub_print_error ();
       grub_errno = GRUB_ERR_NONE;
     }
-#if GRUB_MACHINE_HAS_VBE
-  ptrorig += sizeof (struct grub_vbe_info_block);
-  ptrdest += sizeof (struct grub_vbe_info_block);
-  ptrorig += sizeof (struct grub_vbe_mode_info_block);
-  ptrdest += sizeof (struct grub_vbe_mode_info_block);
-#endif
 
   return GRUB_ERR_NONE;
 }

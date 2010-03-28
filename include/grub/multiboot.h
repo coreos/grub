@@ -51,17 +51,8 @@ grub_err_t grub_multiboot_set_video_mode (void);
 
 #if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
 #include <grub/i386/pc/vbe.h>
-grub_err_t
-grub_multiboot_fill_vbe_info_real (struct grub_vbe_info_block *vbe_control_info,
-				   struct grub_vbe_mode_info_block *vbe_mode_info,
-				   multiboot_uint16_t *vbe_mode,
-				   multiboot_uint16_t *vbe_interface_seg,
-				   multiboot_uint16_t *vbe_interface_off,
-				   multiboot_uint16_t *vbe_interface_len);
-#define GRUB_MACHINE_HAS_VBE 1
 #define GRUB_MACHINE_HAS_VGA_TEXT 1
 #else
-#define GRUB_MACHINE_HAS_VBE 0
 #define GRUB_MACHINE_HAS_VGA_TEXT 0
 #endif
 

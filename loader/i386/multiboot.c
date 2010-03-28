@@ -20,6 +20,7 @@
 /*
  *  FIXME: The following features from the Multiboot specification still
  *         need to be implemented:
+ *  - VBE support
  *  - symbol table
  *  - drives table
  *  - ROM configuration table
@@ -114,54 +115,6 @@ grub_multiboot_set_video_mode (void)
 
   return err;
 }
-
-#if GRUB_MACHINE_HAS_VBE
-grub_err_t
-grub_multiboot_fill_vbe_info_real (struct grub_vbe_info_block *vbe_control_info,
-				   struct grub_vbe_mode_info_block *vbe_mode_info,
-				   multiboot_uint16_t *vbe_mode,
-				   multiboot_uint16_t *vbe_interface_seg,
-				   multiboot_uint16_t *vbe_interface_off,
-				   multiboot_uint16_t *vbe_interface_len)
-{
-  grub_vbe_status_t status;
-  void *scratch = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
-    
-  status = grub_vbe_bios_get_controller_info (scratch);
-  if (status != GRUB_VBE_STATUS_OK)
-    return grub_error (GRUB_ERR_IO, "Can't get controller info.");  
-  grub_memcpy (vbe_control_info, scratch, sizeof (struct grub_vbe_info_block));
-  
-  status = grub_vbe_bios_get_mode (scratch);
-  *vbe_mode = *(grub_uint32_t *) scratch;
-  if (status != GRUB_VBE_STATUS_OK)
-    return grub_error (GRUB_ERR_IO, "can't get VBE mode");
-
-  /* get_mode_info isn't available for mode 3.  */
-  if (*vbe_mode == 3)
-    {
-      grub_memset (vbe_mode_info, 0, sizeof (struct grub_vbe_mode_info_block));
-      vbe_mode_info->memory_model = GRUB_VBE_MEMORY_MODEL_TEXT;
-      vbe_mode_info->x_resolution = 80;
-      vbe_mode_info->y_resolution = 25;
-    }
-  else
-    {
-      status = grub_vbe_bios_get_mode_info (*vbe_mode, scratch);
-      if (status != GRUB_VBE_STATUS_OK)
-	return grub_error (GRUB_ERR_IO, "can't get mode info");
-      grub_memcpy (vbe_mode_info, scratch,
-		   sizeof (struct grub_vbe_mode_info_block));
-    }
-      
-  /* FIXME: retrieve those.  */
-  *vbe_interface_seg = 0;
-  *vbe_interface_off = 0;
-  *vbe_interface_len = 0;
-  
-  return GRUB_ERR_NONE;
-}
-#endif
 
 static grub_err_t
 grub_multiboot_boot (void)
