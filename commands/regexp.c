@@ -21,7 +21,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/command.h>
-#include <grub/regex.h>
+#include <regex.h>
 
 static grub_err_t
 grub_cmd_regexp (grub_command_t cmd __attribute__ ((unused)),
