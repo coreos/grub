@@ -1,7 +1,7 @@
 /*  init.c -- Initialize GRUB on the newworld mac (PPC).  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2007,2008 Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2007,2008,2009 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -38,11 +38,11 @@
 #define HEAP_MIN_SIZE		(unsigned long) (2 * 1024 * 1024)
 
 /* The maximum heap size we're going to claim */
-#define HEAP_MAX_SIZE		(unsigned long) (4 * 1024 * 1024)
+#define HEAP_MAX_SIZE		(unsigned long) (32 * 1024 * 1024)
 
 /* If possible, we will avoid claiming heap above this address, because it
    seems to cause relocation problems with OSes that link at 4 MiB */
-#define HEAP_MAX_ADDR		(unsigned long) (4 * 1024 * 1024)
+#define HEAP_MAX_ADDR		(unsigned long) (32 * 1024 * 1024)
 
 extern char _start[];
 extern char _end[];
@@ -74,10 +74,6 @@ grub_machine_set_prefix (void)
   char bootpath[64]; /* XXX check length */
   char *filename;
   char *prefix;
-
-  if (grub_env_get ("prefix"))
-    /* We already set prefix in grub_machine_init().  */
-    return;
 
   if (grub_prefix[0])
     {
@@ -111,11 +107,12 @@ grub_machine_set_prefix (void)
 	  *lastslash = '\0';
 	  grub_translate_ieee1275_path (filename);
 
-	  newprefix = grub_malloc (grub_strlen (prefix)
-				   + grub_strlen (filename));
-	  grub_sprintf (newprefix, "%s%s", prefix, filename);
-	  grub_free (prefix);
-	  prefix = newprefix;
+	  newprefix = grub_xasprintf ("%s%s", prefix, filename);
+	  if (newprefix)
+	    {
+	      grub_free (prefix);
+	      prefix = newprefix;
+	    }
 	}
     }
 

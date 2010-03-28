@@ -19,7 +19,7 @@
 
 #include <grub/symbol.h>
 
-#define INT13H_OFFSET(x) ((x) - EXT_C(grub_drivemap_handler))
+#define INT13H_OFFSET(x) ((x) - LOCAL (base))
 
 .code16
 
@@ -27,6 +27,7 @@
 
 /* The replacement int13 handler.   Preserve all registers.  */
 FUNCTION(grub_drivemap_handler)
+LOCAL (base):
 	/* Save %dx for future restore. */
 	push	%dx
 	/* Push flags. Used to simulate interrupt with original flags. */
@@ -35,12 +36,7 @@ FUNCTION(grub_drivemap_handler)
 	/* Map the drive number (always in DL).  */
 	push	%ax
 	push	%bx
-#ifdef APPLE_CC
-	grub_drivemap_mapstart_ofs = INT13H_OFFSET(EXT_C(grub_drivemap_mapstart))
-	movw	$grub_drivemap_mapstart_ofs, %bx
-#else
-	movw	$INT13H_OFFSET(EXT_C(grub_drivemap_mapstart)), %bx
-#endif
+	movw	$INT13H_OFFSET(LOCAL (mapstart)), %bx
 
 more_remaining:
 	movw	%cs:(%bx), %ax
@@ -66,12 +62,7 @@ not_found:
 	popf
 	pushf
 
-#ifdef APPLE_CC
-	grub_drivemap_oldhandler_ofs = INT13H_OFFSET (EXT_C (grub_drivemap_oldhandler))
-	lcall *%cs:grub_drivemap_oldhandler_ofs
-#else
-	lcall *%cs:INT13H_OFFSET (EXT_C (grub_drivemap_oldhandler))
-#endif
+	lcall *%cs:INT13H_OFFSET (LOCAL (oldhandler))
 
 	push	%bp
 	mov	%sp, %bp
@@ -94,11 +85,7 @@ norestore:
 	popf
 	pushf
 
-#ifdef APPLE_CC
-	lcall *%cs:grub_drivemap_oldhandler_ofs
-#else
-	lcall *%cs:INT13H_OFFSET (EXT_C (grub_drivemap_oldhandler))
-#endif
+	lcall *%cs:INT13H_OFFSET (LOCAL (oldhandler))
 
 	push	%bp
 	mov	%sp, %bp
@@ -111,9 +98,13 @@ norestore:
 /* Far pointer to the old handler.  Stored as a CS:IP in the style of real-mode
    IVT entries (thus PI:SC in mem).  */
 VARIABLE(grub_drivemap_oldhandler)
+LOCAL (oldhandler):
 	.word 0x0, 0x0
 
 /* This label MUST be at the end of the copied block, since the installer code
    reserves additional space for mappings at runtime and copies them over it.  */
-.align 2
+	.align 2
+	
 VARIABLE(grub_drivemap_mapstart)
+LOCAL (mapstart):
+	.byte 0

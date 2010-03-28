@@ -1,7 +1,7 @@
 /* xfs.c - XFS.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -777,12 +777,15 @@ grub_xfs_uuid (grub_device_t device, char **uuid)
   data = grub_xfs_mount (disk);
   if (data)
     {
-      *uuid = grub_malloc (sizeof ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"));
-      grub_sprintf (*uuid, "%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-		    grub_be_to_cpu16 (data->sblock.uuid[0]), grub_be_to_cpu16 (data->sblock.uuid[1]),
-		    grub_be_to_cpu16 (data->sblock.uuid[2]), grub_be_to_cpu16 (data->sblock.uuid[3]),
-		    grub_be_to_cpu16 (data->sblock.uuid[4]), grub_be_to_cpu16 (data->sblock.uuid[5]),
-		    grub_be_to_cpu16 (data->sblock.uuid[6]), grub_be_to_cpu16 (data->sblock.uuid[7]));
+      *uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+			     grub_be_to_cpu16 (data->sblock.uuid[0]),
+			     grub_be_to_cpu16 (data->sblock.uuid[1]),
+			     grub_be_to_cpu16 (data->sblock.uuid[2]),
+			     grub_be_to_cpu16 (data->sblock.uuid[3]),
+			     grub_be_to_cpu16 (data->sblock.uuid[4]),
+			     grub_be_to_cpu16 (data->sblock.uuid[5]),
+			     grub_be_to_cpu16 (data->sblock.uuid[6]),
+			     grub_be_to_cpu16 (data->sblock.uuid[7]));
     }
   else
     *uuid = NULL;

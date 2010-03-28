@@ -16,10 +16,13 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef GRUB_MACHINE_EMU
 #include <grub/machine/memory.h>
+#endif
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_lsmmap (grub_command_t cmd __attribute__ ((unused)),
@@ -33,7 +36,9 @@ grub_cmd_lsmmap (grub_command_t cmd __attribute__ ((unused)),
 		   (long long) addr, (long long) size, type);
       return 0;
     }
+#ifndef GRUB_MACHINE_EMU
   grub_machine_mmap_iterate (hook);
+#endif
 
   return 0;
 }
@@ -43,7 +48,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(lsmmap)
 {
   cmd = grub_register_command ("lsmmap", grub_cmd_lsmmap,
-			       0, "List memory map provided by firmware.");
+			       0, N_("List memory map provided by firmware."));
 }
 
 GRUB_MOD_FINI(lsmmap)

@@ -729,7 +729,7 @@ static struct grub_video_bitmap_reader jpeg_reader = {
   .next = 0
 };
 
-GRUB_MOD_INIT (video_reader_jpeg)
+GRUB_MOD_INIT (jpeg)
 {
   grub_video_bitmap_reader_register (&jpg_reader);
   grub_video_bitmap_reader_register (&jpeg_reader);
@@ -740,7 +740,7 @@ GRUB_MOD_INIT (video_reader_jpeg)
 #endif
 }
 
-GRUB_MOD_FINI (video_reader_jpeg)
+GRUB_MOD_FINI (jpeg)
 {
 #if defined(JPEG_DEBUG)
   grub_unregister_command (cmd);

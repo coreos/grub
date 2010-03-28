@@ -1,7 +1,7 @@
 /* ntfs.c - NTFS filesystem */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007,2008 Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008,2009 Free Software Foundation, Inc.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -1072,8 +1072,7 @@ grub_ntfs_uuid (grub_device_t device, char **uuid)
   data = grub_ntfs_mount (disk);
   if (data)
     {
-      *uuid = grub_malloc (16 + sizeof ('\0'));
-      grub_sprintf (*uuid, "%016llx", (unsigned long long) data->uuid);
+      *uuid = grub_xasprintf ("%016llx", (unsigned long long) data->uuid);
     }
   else
     *uuid = NULL;

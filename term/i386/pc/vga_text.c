@@ -77,7 +77,7 @@ inc_y (void)
 static void
 inc_x (void)
 {
-  if (grub_curr_x >= COLS - 2)
+  if (grub_curr_x >= COLS - 1)
     inc_y ();
   else
     grub_curr_x++;

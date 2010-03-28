@@ -1,7 +1,7 @@
 /* completion.c - complete a command, a disk, a partition or a file */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -107,16 +107,11 @@ iterate_partition (grub_disk_t disk, const grub_partition_t p)
   if (! partition_name)
     return 1;
 
-  name = grub_malloc (grub_strlen (disk_name) + 1
-		      + grub_strlen (partition_name) + 1);
-  if (! name)
-    {
-      grub_free (partition_name);
-      return 1;
-    }
-
-  grub_sprintf (name, "%s,%s", disk_name, partition_name);
+  name = grub_xasprintf ("%s,%s", disk_name, partition_name);
   grub_free (partition_name);
+
+  if (! name)
+    return 1;
 
   ret = add_completion (name, ")", GRUB_COMPLETION_TYPE_PARTITION);
   grub_free (name);
@@ -141,11 +136,15 @@ iterate_dir (const char *filename, const struct grub_dirhook_info *info)
     }
   else if (grub_strcmp (filename, ".") && grub_strcmp (filename, ".."))
     {
-      char fname[grub_strlen (filename) + 2];
+      char *fname;
 
-      grub_sprintf (fname, "%s/", filename);
+      fname = grub_xasprintf ("%s/", filename);
       if (add_completion (fname, "", GRUB_COMPLETION_TYPE_FILE))
-	return 1;
+	{
+	  grub_free (fname);
+	  return 1;
+	}
+      grub_free (fname);
     }
 
   return 0;
@@ -360,8 +359,9 @@ complete_arguments (char *command)
       if (!option->longarg)
 	continue;
 
-      longarg = grub_malloc (grub_strlen (option->longarg));
-      grub_sprintf (longarg, "--%s", option->longarg);
+      longarg = grub_xasprintf ("--%s", option->longarg);
+      if (!longarg)
+	return 1;
 
       if (add_completion (longarg, " ", GRUB_COMPLETION_TYPE_ARGUMENT))
 	{

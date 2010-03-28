@@ -53,6 +53,7 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
   char *phdr_base;
   int lowest_segment = -1, highest_segment = -1;
   int i;
+  grub_size_t code_size;
 
   if (ehdr->e_ident[EI_CLASS] != ELFCLASSXX)
     return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF class");
@@ -100,10 +101,11 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
   code_size = (phdr(highest_segment)->p_paddr + phdr(highest_segment)->p_memsz) - phdr(lowest_segment)->p_paddr;
   grub_multiboot_payload_dest = phdr(lowest_segment)->p_paddr;
 
-  grub_multiboot_payload_size += code_size;
+  grub_multiboot_pure_size += code_size;
 
+  grub_multiboot_alloc_mbi = grub_multiboot_get_mbi_size () + 65536;
   grub_multiboot_payload_orig
-    = grub_relocator32_alloc (grub_multiboot_payload_size);
+    = grub_relocator32_alloc (grub_multiboot_pure_size + grub_multiboot_alloc_mbi);
 
   if (!grub_multiboot_payload_orig)
     return grub_errno;

@@ -1170,10 +1170,15 @@ grub_video_fbblit_blend_XXXA8888_1bit (struct grub_video_fbblit_info *dst,
 	  grub_uint8_t a;
 
 	  if (*srcptr & srcmask)
-	    color = fgcolor;
+	    {
+	      color = fgcolor;
+	      a = src->mode_info->fg_alpha;
+	    }
 	  else
-	    color = bgcolor;
-	  a = (color >> 24) & 0xff;
+	    {
+	      color = bgcolor;
+	      a = src->mode_info->bg_alpha;
+	    }
 
 	  if (a == 255)
 	    *(grub_uint32_t *) dstptr = color;

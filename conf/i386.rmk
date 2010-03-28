@@ -6,7 +6,7 @@ cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
 cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += at_keyboard.mod
-at_keyboard_mod_SOURCES = term/i386/pc/at_keyboard.c
+at_keyboard_mod_SOURCES = term/at_keyboard.c
 at_keyboard_mod_CFLAGS = $(COMMON_CFLAGS)
 at_keyboard_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
@@ -25,3 +25,48 @@ pkglib_MODULES += ata.mod
 ata_mod_SOURCES = disk/ata.c
 ata_mod_CFLAGS = $(COMMON_CFLAGS)
 ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For setpci.mod
+pkglib_MODULES += setpci.mod
+setpci_mod_SOURCES = commands/setpci.c
+setpci_mod_CFLAGS = $(COMMON_CFLAGS)
+setpci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += multiboot.mod
+multiboot_mod_SOURCES = loader/i386/multiboot.c \
+			loader/i386/multiboot_mbi.c
+multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
+multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+multiboot_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+pkglib_MODULES += multiboot2.mod
+multiboot2_mod_SOURCES = loader/i386/multiboot.c \
+			 loader/i386/multiboot_mbi2.c
+multiboot2_mod_CFLAGS = $(COMMON_CFLAGS) -DGRUB_USE_MULTIBOOT2
+multiboot2_mod_LDFLAGS = $(COMMON_LDFLAGS)
+multiboot2_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+# For serial.mod.
+pkglib_MODULES += serial.mod
+serial_mod_SOURCES = term/serial.c
+serial_mod_CFLAGS = $(COMMON_CFLAGS)
+serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For pci.mod
+pkglib_MODULES += pci.mod
+pci_mod_SOURCES = bus/pci.c
+pci_mod_CFLAGS = $(COMMON_CFLAGS)
+pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For lspci.mod
+pkglib_MODULES += lspci.mod
+lspci_mod_SOURCES = commands/lspci.c
+lspci_mod_CFLAGS = $(COMMON_CFLAGS)
+lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For play.mod.
+pkglib_MODULES += play.mod
+play_mod_SOURCES = commands/i386/pc/play.c
+play_mod_CFLAGS = $(COMMON_CFLAGS)
+play_mod_LDFLAGS = $(COMMON_LDFLAGS)
+

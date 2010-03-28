@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@
 
 #include <grub_emu_init.h>
 
+#define ENABLE_RELOCATABLE 0
 #include "progname.h"
 
 /* Used for going back to the main function.  */
@@ -51,7 +52,7 @@ static char *prefix = NULL;
 grub_addr_t
 grub_arch_modules_addr (void)
 {
-  return NULL;
+  return 0;
 }
 
 grub_err_t
@@ -106,10 +107,6 @@ grub_machine_fini (void)
   grub_console_fini ();
 }
 
-void
-read_command_list (void)
-{
-}
 
 
 static struct option options[] =
@@ -129,10 +126,10 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try ``grub-emu --help'' for more information.\n");
+	     "Try `%s --help' for more information.\n", program_name);
   else
     printf (
-      "Usage: grub-emu [OPTION]...\n"
+      "Usage: %s [OPTION]...\n"
       "\n"
       "GRUB emulator.\n"
       "\n"
@@ -144,10 +141,15 @@ usage (int status)
       "  -h, --help                display this message and exit\n"
       "  -V, --version             print version information and exit\n"
       "\n"
-      "Report bugs to <%s>.\n", DEFAULT_DEVICE_MAP, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+      "Report bugs to <%s>.\n", program_name, DEFAULT_DEVICE_MAP, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
   return status;
 }
 
+
+void grub_hostfs_init (void);
+void grub_hostfs_fini (void);
+void grub_host_init (void);
+void grub_host_fini (void);
 
 int
 main (int argc, char *argv[])
@@ -159,9 +161,6 @@ main (int argc, char *argv[])
   int opt;
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
 
   while ((opt = getopt_long (argc, argv, "r:d:m:vH:hV", options, 0)) != -1)
     switch (opt)
@@ -210,6 +209,8 @@ main (int argc, char *argv[])
 
   signal (SIGINT, SIG_IGN);
   grub_console_init ();
+  grub_host_init ();
+  grub_hostfs_init ();
 
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (dev_map);
@@ -221,14 +222,14 @@ main (int argc, char *argv[])
     {
       char *device_name = grub_guess_root_device (dir);
       if (! device_name)
-        grub_util_error ("cannot find a device for %s.\n", dir);
+        grub_util_error ("cannot find a device for %s", dir);
 
       root_dev = grub_util_get_grub_dev (device_name);
       if (! root_dev)
 	{
 	  grub_util_info ("guessing the root device failed, because of `%s'",
 			  grub_errmsg);
-	  grub_util_error ("Cannot guess the root device. Specify the option ``--root-device''.");
+	  grub_util_error ("cannot guess the root device. Specify the option `--root-device'");
 	}
     }
 
@@ -242,6 +243,8 @@ main (int argc, char *argv[])
     grub_main ();
 
   grub_fini_all ();
+  grub_hostfs_fini ();
+  grub_host_fini ();
 
   grub_machine_fini ();
 
