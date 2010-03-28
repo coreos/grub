@@ -98,8 +98,6 @@ grub_bin2h_SOURCES = gnulib/progname.c util/bin2h.c
 # For the lexer.
 grub_script.yy.c grub_script.yy.h: script/yylex.l
 	$(LEX) -o grub_script.yy.c --header-file=grub_script.yy.h $(srcdir)/script/yylex.l
-	sed -i 's/^#include.*\(<stdio\.h>\|<string\.h>\|<errno\.h>\|<stdlib\.h>\|<unistd\.h>\)//g' grub_script.yy.h
-	sed -i 's/^#include.*\(<stdio\.h>\|<string\.h>\|<errno\.h>\|<stdlib\.h>\|<unistd\.h>\)//g' grub_script.yy.c
 DISTCLEANFILES += grub_script.yy.c grub_script.yy.h
 
 # For grub-script-check.
@@ -655,7 +653,7 @@ normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 # For sh.mod.
 sh_mod_SOURCES = script/main.c script/script.c script/execute.c \
 	script/function.c script/lexer.c grub_script.tab.c grub_script.yy.c
-sh_mod_CFLAGS = $(COMMON_CFLAGS)
+sh_mod_CFLAGS = $(COMMON_CFLAGS) $(POSIX_CFLAGS)
 sh_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 ifneq (, $(FONT_SOURCE))

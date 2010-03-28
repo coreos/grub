@@ -20,5 +20,10 @@
 #define GRUB_POSIX_STDIO_H	1
 
 #include <grub/misc.h>
+#include <grub/file.h>
+
+typedef struct grub_file FILE;
+
+#define EOF    -1
 
 #endif
