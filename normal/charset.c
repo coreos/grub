@@ -28,9 +28,8 @@
   - Indic languages
   - non-Semitic shaping (rarely used)
   - Zl and Zp characters
-  - Combining characters of types 7, 8, 9, 21, 27, 28, 29, 30, 31,
-  32, 33, 34, 35, 36, 84, 91, 103, 107, 118, 122, 129, 130, 132,
-  218, 224, 226, 233, 234
+  - Combining characters of types 7, 8, 9, 21, 35, 36, 84, 91, 103, 107,
+  118, 122, 129, 130, 132, 218, 224, 226, 233, 234
   - Private use characters (not really a problem)
   - Variations (no font support)
   - Vertical text
@@ -40,7 +39,7 @@
   - Justification data
   - Glyph posititioning
   - Baseline data
-  TODO: Use form characters of Unicode as last resort Arabic shaping.
+  Most underline diacritics aren't displayed in gfxterm
  */
 
 /* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
@@ -550,6 +549,22 @@ grub_unicode_estimate_width (const struct grub_unicode_glyph *c)
 
 #endif
 
+static inline int
+is_type_after (enum grub_comb_type a, enum grub_comb_type b)
+{
+  /* Shadda is numerically higher than most of Arabic diacritics but has
+     to be rendered before them.  */
+  if (a == GRUB_UNICODE_COMB_ARABIC_SHADDA 
+      && b <= GRUB_UNICODE_COMB_ARABIC_KASRA
+      && b >= GRUB_UNICODE_COMB_ARABIC_FATHATAN)
+    return 0;
+  if (b == GRUB_UNICODE_COMB_ARABIC_SHADDA 
+      && a <= GRUB_UNICODE_COMB_ARABIC_KASRA
+      && a >= GRUB_UNICODE_COMB_ARABIC_FATHATAN)
+    return 1;
+  return a > b;
+}
+
 grub_size_t
 grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 			      struct grub_unicode_glyph *out)
@@ -605,7 +620,7 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 	  out->combining = n;
 
 	  for (j = last_comb_pointer; j < out->ncomb; j++)
-	    if (out->combining[j].type > comb_type)
+	    if (is_type_after (out->combining[j].type, comb_type))
 	      break;
 	  grub_memmove (out->combining + j + 1,
 			out->combining + j,

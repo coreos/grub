@@ -1248,6 +1248,13 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	    min_devwidth = combining_glyphs[i]->width;
 	  break;
 
+	  /* TODO: Put dammah and fathah nearer to shadda.  */
+	case GRUB_UNICODE_COMB_ARABIC_DAMMAH:
+	case GRUB_UNICODE_COMB_ARABIC_DAMMATAN:
+	case GRUB_UNICODE_COMB_ARABIC_FATHATAN:
+	case GRUB_UNICODE_COMB_ARABIC_FATHAH:
+	case GRUB_UNICODE_COMB_ARABIC_SUKUN:
+	case GRUB_UNICODE_COMB_ARABIC_SHADDA:
 	case GRUB_UNICODE_COMB_HEBREW_RAFE:
 	case GRUB_UNICODE_STACK_ABOVE:
 	  space = combining_glyphs[i]->offset_y
@@ -1276,12 +1283,15 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	case GRUB_UNICODE_COMB_HEBREW_PATAH:
 	case GRUB_UNICODE_COMB_HEBREW_QUBUTS:
 	case GRUB_UNICODE_COMB_HEBREW_METEG:
+	  /* TODO: Put kasra and kasratan under shadda.  */
+	case GRUB_UNICODE_COMB_ARABIC_KASRA:
+	case GRUB_UNICODE_COMB_ARABIC_KASRATAN:
 	  /* I don't know how ypogegrammeni differs from subscript. */
 	case GRUB_UNICODE_COMB_YPOGEGRAMMENI:
 	case GRUB_UNICODE_STACK_BELOW:
 	  space = -(combining_glyphs[i]->offset_y 
 		    + combining_glyphs[i]->height);
-	  if (space < 0)
+	  if (space <= 0)
 	    space = 1 + (grub_font_get_xheight (main_glyph->font)) / 8;
 	  
 	case GRUB_UNICODE_STACK_ATTACHED_BELOW:
