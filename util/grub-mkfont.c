@@ -164,10 +164,11 @@ add_pixel (grub_uint8_t **data, int *mask, int not_blank)
 
 static void
 add_glyph (struct grub_font_info *font_info, FT_UInt glyph_idx, FT_Face face,
-	   grub_uint32_t char_code)
+	   grub_uint32_t char_code, int nocut)
 {
   struct grub_glyph_info *glyph_info;
   int width, height;
+  int cuttop, cutbottom, cutleft, cutright;
   grub_uint8_t *data;
   int mask, i, j, bitmap_size;
   FT_GlyphSlot glyph;
@@ -208,8 +209,58 @@ add_glyph (struct grub_font_info *font_info, FT_UInt glyph_idx, FT_Face face,
   if (glyph->next)
     printf ("%x\n", char_code);
 
-  width = glyph->bitmap.width;
-  height = glyph->bitmap.rows;
+  if (nocut)
+    cuttop = cutbottom = cutleft = cutright = 0;
+  else
+    {
+      for (cuttop = 0; cuttop < glyph->bitmap.rows; cuttop++)
+	{
+	  for (j = 0; j < glyph->bitmap.width; j++)
+	    if (glyph->bitmap.buffer[j / 8 + cuttop * glyph->bitmap.pitch]
+		& (1 << (7 - (j & 7))))
+	      break;
+	  if (j != glyph->bitmap.width)
+	    break;
+	}
+
+      for (cutbottom = glyph->bitmap.rows - 1; cutbottom >= 0; cutbottom--)
+	{
+	  for (j = 0; j < glyph->bitmap.width; j++)
+	    if (glyph->bitmap.buffer[j / 8 + cutbottom * glyph->bitmap.pitch]
+		& (1 << (7 - (j & 7))))
+	      break;
+	  if (j != glyph->bitmap.width)
+	    break;
+	}
+      cutbottom = glyph->bitmap.rows - 1 - cutbottom;
+      if (cutbottom + cuttop >= glyph->bitmap.rows)
+	cutbottom = 0;
+
+      for (cutleft = 0; cutleft < glyph->bitmap.width; cutleft++)
+	{
+	  for (j = 0; j < glyph->bitmap.rows; j++)
+	    if (glyph->bitmap.buffer[cutleft / 8 + j * glyph->bitmap.pitch]
+		& (1 << (7 - (cutleft & 7))))
+	      break;
+	  if (j != glyph->bitmap.rows)
+	    break;
+	}
+      for (cutright = glyph->bitmap.width - 1; cutright >= 0; cutright--)
+	{
+	  for (j = 0; j < glyph->bitmap.rows; j++)
+	    if (glyph->bitmap.buffer[cutright / 8 + j * glyph->bitmap.pitch]
+		& (1 << (7 - (cutright & 7))))
+	      break;
+	  if (j != glyph->bitmap.rows)
+	    break;
+	}
+      cutright = glyph->bitmap.width - 1 - cutright;
+      if (cutright + cutleft >= glyph->bitmap.width)
+	cutright = 0;
+    }
+
+  width = glyph->bitmap.width - cutleft - cutright;
+  height = glyph->bitmap.rows - cutbottom - cuttop;
 
   bitmap_size = ((width * height + 7) / 8);
   glyph_info = xmalloc (sizeof (struct grub_glyph_info));
@@ -223,8 +274,8 @@ add_glyph (struct grub_font_info *font_info, FT_UInt glyph_idx, FT_Face face,
   glyph_info->char_code = char_code;
   glyph_info->width = width;
   glyph_info->height = height;
-  glyph_info->x_ofs = glyph->bitmap_left;
-  glyph_info->y_ofs = glyph->bitmap_top - height;
+  glyph_info->x_ofs = glyph->bitmap_left + cutleft;
+  glyph_info->y_ofs = glyph->bitmap_top - height - cuttop;
   glyph_info->device_width = glyph->metrics.horiAdvance / 64;
 
   if (width > font_info->max_width)
@@ -241,8 +292,8 @@ add_glyph (struct grub_font_info *font_info, FT_UInt glyph_idx, FT_Face face,
 
   mask = 0;
   data = &glyph_info->bitmap[0] - 1;
-  for (j = 0; j < height; j++)
-    for (i = 0; i < width; i++)
+  for (j = cuttop; j < height + cuttop; j++)
+    for (i = cutleft; i < width + cutleft; i++)
       add_pixel (&data, &mask,
 		 glyph->bitmap.buffer[i / 8 + j * glyph->bitmap.pitch] &
 		 (1 << (7 - (i & 7))));
@@ -259,7 +310,7 @@ struct glyph_replace
 /* TODO: sort glyph_replace and use binary search if necessary.  */
 static void
 add_char (struct grub_font_info *font_info, FT_Face face,
-	  grub_uint32_t char_code)
+	  grub_uint32_t char_code, int nocut)
 {
   FT_UInt glyph_idx;
   struct glyph_replace *cur;
@@ -267,12 +318,12 @@ add_char (struct grub_font_info *font_info, FT_Face face,
   glyph_idx = FT_Get_Char_Index (face, char_code);
   if (!glyph_idx)
     return;
-  add_glyph (font_info, glyph_idx, face, char_code);
+  add_glyph (font_info, glyph_idx, face, char_code, nocut);
   for (cur = subst_rightjoin; cur; cur = cur->next)
     if (cur->from == glyph_idx)
       {
 	add_glyph (font_info, cur->to, face,
-		   char_code | GRUB_FONT_CODE_RIGHT_JOINED);
+		   char_code | GRUB_FONT_CODE_RIGHT_JOINED, nocut);
 	break;
       }
   if (!cur && char_code >= GRUB_UNICODE_ARABIC_START
@@ -288,7 +339,7 @@ add_char (struct grub_font_info *font_info, FT_Face face,
 				      .right_linked);
 	    if (idx2)
 	      add_glyph (font_info, idx2, face,
-			 char_code | GRUB_FONT_CODE_RIGHT_JOINED);
+			 char_code | GRUB_FONT_CODE_RIGHT_JOINED, nocut);
 	    break;
 	  }
 	      
@@ -298,7 +349,7 @@ add_char (struct grub_font_info *font_info, FT_Face face,
     if (cur->from == glyph_idx)
       {
 	add_glyph (font_info, cur->to, face,
-		   char_code | GRUB_FONT_CODE_LEFT_JOINED);
+		   char_code | GRUB_FONT_CODE_LEFT_JOINED, nocut);
 	break;
       }
   if (!cur && char_code >= GRUB_UNICODE_ARABIC_START
@@ -314,7 +365,7 @@ add_char (struct grub_font_info *font_info, FT_Face face,
 				      .left_linked);
 	    if (idx2)
 	      add_glyph (font_info, idx2, face,
-			 char_code | GRUB_FONT_CODE_LEFT_JOINED);
+			 char_code | GRUB_FONT_CODE_LEFT_JOINED, nocut);
 	    break;
 	  }
 	      
@@ -324,7 +375,7 @@ add_char (struct grub_font_info *font_info, FT_Face face,
       {
 	add_glyph (font_info, cur->to, face,
 		   char_code | GRUB_FONT_CODE_LEFT_JOINED
-		   | GRUB_FONT_CODE_RIGHT_JOINED);
+		   | GRUB_FONT_CODE_RIGHT_JOINED, nocut);
 	break;
       }
   if (!cur && char_code >= GRUB_UNICODE_ARABIC_START
@@ -341,7 +392,7 @@ add_char (struct grub_font_info *font_info, FT_Face face,
 	    if (idx2)
 	      add_glyph (font_info, idx2, face,
 			 char_code | GRUB_FONT_CODE_LEFT_JOINED
-			 | GRUB_FONT_CODE_RIGHT_JOINED);
+			 | GRUB_FONT_CODE_RIGHT_JOINED, nocut);
 	    break;
 	  }
 	      
@@ -554,7 +605,7 @@ process_cursive (struct gsub_feature *feature,
 }
 
 void
-add_font (struct grub_font_info *font_info, FT_Face face)
+add_font (struct grub_font_info *font_info, FT_Face face, int nocut)
 {
   struct gsub_header *gsub = NULL;
   FT_ULong gsub_len = 0;
@@ -631,7 +682,7 @@ add_font (struct grub_font_info *font_info, FT_Face face)
       for (i = 0; i < font_info->num_range; i++)
 	for (j = font_info->ranges[i * 2]; j <= font_info->ranges[i * 2 + 1];
 	     j++)
-	  add_char (font_info, face, j);
+	  add_char (font_info, face, j, nocut);
     }
   else
     {
@@ -640,7 +691,7 @@ add_font (struct grub_font_info *font_info, FT_Face face)
       for (char_code = FT_Get_First_Char (face, &glyph_index);
 	   glyph_index;
 	   char_code = FT_Get_Next_Char (face, char_code, &glyph_index))
-	add_char (font_info, face, char_code);
+	add_char (font_info, face, char_code, nocut);
     }
 }
 
@@ -1118,7 +1169,7 @@ main (int argc, char *argv[])
       font_info.size = size;
 
       FT_Set_Pixel_Sizes (ft_face, size, size);
-      add_font (&font_info, ft_face);
+      add_font (&font_info, ft_face, file_format != PF2);
       FT_Done_Face (ft_face);
     }
 
