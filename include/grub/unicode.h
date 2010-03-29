@@ -170,11 +170,22 @@ struct grub_unicode_glyph
 #define GRUB_UNICODE_VARIATION_SELECTOR_16 0xfe0f
 #define GRUB_UNICODE_VARIATION_SELECTOR_17 0xe0100
 #define GRUB_UNICODE_VARIATION_SELECTOR_256 0xe01ef
-#define GRUB_UNICODE_HEBREW_WAW  0x05d5
-#define GRUB_UNICODE_ZWNJ        0x200c
-#define GRUB_UNICODE_ZWJ         0x200d
-#define GRUB_UNICODE_ARABIC_START 0x600
-#define GRUB_UNICODE_ARABIC_END   0x700
+#define GRUB_UNICODE_HEBREW_WAW        0x05d5
+#define GRUB_UNICODE_ZWNJ              0x200c
+#define GRUB_UNICODE_ZWJ               0x200d
+#define GRUB_UNICODE_ARABIC_START      0x0600
+#define GRUB_UNICODE_ARABIC_END        0x0700
+#define GRUB_UNICODE_THAANA_ABAFILI    0x07a6
+#define GRUB_UNICODE_THAANA_AABAAFILI  0x07a7
+#define GRUB_UNICODE_THAANA_IBIFILI    0x07a8
+#define GRUB_UNICODE_THAANA_EEBEEFILI  0x07a9
+#define GRUB_UNICODE_THAANA_UBUFILI    0x07aa
+#define GRUB_UNICODE_THAANA_OOBOOFILI  0x07ab
+#define GRUB_UNICODE_THAANA_EBEFILI    0x07ac
+#define GRUB_UNICODE_THAANA_EYBEYFILI  0x07ad
+#define GRUB_UNICODE_THAANA_OBOFILI    0x07ae
+#define GRUB_UNICODE_THAANA_OABOAFILI  0x07af
+#define GRUB_UNICODE_THAANA_SUKUN      0x07b0
 
 extern struct grub_unicode_compact_range grub_unicode_compact[];
 extern struct grub_unicode_bidi_pair grub_unicode_bidi_pairs[];

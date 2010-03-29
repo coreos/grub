@@ -1259,6 +1259,7 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	case GRUB_UNICODE_COMB_ARABIC_SHADDA:
 	case GRUB_UNICODE_COMB_HEBREW_RAFE:
 	case GRUB_UNICODE_STACK_ABOVE:
+	stacked_above:
 	  space = combining_glyphs[i]->offset_y
 	    - grub_font_get_xheight (combining_glyphs[i]->font) - 1;
 	  if (space <= 0)
@@ -1291,6 +1292,7 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	  /* I don't know how ypogegrammeni differs from subscript. */
 	case GRUB_UNICODE_COMB_YPOGEGRAMMENI:
 	case GRUB_UNICODE_STACK_BELOW:
+	stacked_below:
 	  space = -(combining_glyphs[i]->offset_y 
 		    + combining_glyphs[i]->height);
 	  if (space <= 0)
@@ -1303,6 +1305,24 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	    min_devwidth = combining_glyphs[i]->width;
 	  break;
 
+	case GRUB_UNICODE_COMB_MN:
+	  switch (glyph_id->combining[i].code)
+	    {
+	    case GRUB_UNICODE_THAANA_ABAFILI:
+	    case GRUB_UNICODE_THAANA_AABAAFILI:
+	    case GRUB_UNICODE_THAANA_UBUFILI:
+	    case GRUB_UNICODE_THAANA_OOBOOFILI:
+	    case GRUB_UNICODE_THAANA_EBEFILI:
+	    case GRUB_UNICODE_THAANA_EYBEYFILI:
+	    case GRUB_UNICODE_THAANA_OBOFILI:
+	    case GRUB_UNICODE_THAANA_OABOAFILI:
+	    case GRUB_UNICODE_THAANA_SUKUN:
+	      goto stacked_above;
+	    case GRUB_UNICODE_THAANA_IBIFILI:
+	    case GRUB_UNICODE_THAANA_EEBEEFILI:
+	      goto stacked_below;	      
+	    }
+	  /* Fall through.  */
 	default:
 	  {
 	    /* Default handling. Just draw combining character on top
