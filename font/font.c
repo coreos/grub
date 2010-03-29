@@ -154,7 +154,7 @@ ascii_glyph_lookup (grub_uint32_t code)
 	  ascii_font_glyph[current]->font = NULL;
 
 	  grub_memcpy (ascii_font_glyph[current]->bitmap,
-		       &ascii_bitmaps[(0x7f - current) * ASCII_BITMAP_SIZE],
+		       &ascii_bitmaps[current * ASCII_BITMAP_SIZE],
 		       ASCII_BITMAP_SIZE);
 	}
 
