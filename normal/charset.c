@@ -1227,3 +1227,39 @@ grub_unicode_mirror_code (grub_uint32_t in)
       return grub_unicode_bidi_pairs[i].replace;
   return in;
 }
+
+grub_uint32_t
+grub_unicode_shape_code (grub_uint32_t in, grub_uint8_t attr)
+{
+  int i;
+  if (!(in >= GRUB_UNICODE_ARABIC_START
+	&& in < GRUB_UNICODE_ARABIC_END))
+    return in;
+
+  for (i = 0; grub_unicode_arabic_shapes[i].code; i++)
+    if (grub_unicode_arabic_shapes[i].code == in)
+      {
+	grub_uint32_t out;
+	switch (attr & (GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED
+			| GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED))
+	  {
+	  case 0:
+	    out = grub_unicode_arabic_shapes[i].isolated;
+	    break;
+	  case GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED:
+	    out = grub_unicode_arabic_shapes[i].right_linked;
+	    break;
+	  case GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED:
+	    out = grub_unicode_arabic_shapes[i].left_linked;
+	    break;
+	  case GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED
+	    |GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED:
+	    out = grub_unicode_arabic_shapes[i].both_linked;
+	    break;
+	  }
+	if (out)
+	  return out;
+      }
+
+  return in;
+}

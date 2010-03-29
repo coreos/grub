@@ -392,9 +392,12 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
 	    {
 	      code = c->base;
 	      if ((term->flags & GRUB_TERM_CODE_TYPE_MASK)
-		  == GRUB_TERM_CODE_TYPE_UTF8_VISUAL
-		  && (c->attributes & GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR))
-		code = grub_unicode_mirror_code (code);
+		  == GRUB_TERM_CODE_TYPE_UTF8_VISUAL)
+		{
+		  if ((c->attributes & GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR))
+		    code = grub_unicode_mirror_code (code);
+		  code = grub_unicode_shape_code (code, c->attributes);
+		}
 	    }
 	  else
 	    code = c->combining[i].code;

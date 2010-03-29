@@ -222,5 +222,7 @@ grub_unicode_glyph_from_code (grub_uint32_t code)
 
 grub_uint32_t
 grub_unicode_mirror_code (grub_uint32_t in);
+grub_uint32_t
+grub_unicode_shape_code (grub_uint32_t in, grub_uint8_t attr);
 
 #endif
