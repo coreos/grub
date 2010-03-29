@@ -23,6 +23,7 @@
 #include <grub/i18n.h>
 #include <grub/fontformat.h>
 #include <grub/font.h>
+#include <grub/unicode.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -184,12 +185,18 @@ add_glyph (struct grub_font_info *font_info, FT_UInt glyph_idx, FT_Face face,
   err = FT_Load_Glyph (face, glyph_idx, flag);
   if (err)
     {
-      if (err < ARRAY_SIZE (ft_errmsgs))
-	printf ("Freetype Error %d loading glyph 0x%x for U+0x%x: %s\n",
-		err, glyph_idx, char_code, ft_errmsgs[err]);
+      printf ("Freetype Error %d loading glyph 0x%x for U+0x%x%s",
+	      err, glyph_idx, char_code & GRUB_FONT_CODE_CHAR_MASK,
+	      char_code & GRUB_FONT_CODE_RIGHT_JOINED
+	      ? ((char_code & GRUB_FONT_CODE_LEFT_JOINED) ? " (medial)":
+		 " (leftmost)")
+	      : ((char_code & GRUB_FONT_CODE_LEFT_JOINED) ? " (rightmost)":
+		 ""));
+
+      if (err > 0 && err < (signed) ARRAY_SIZE (ft_errmsgs))
+	printf (": %s\n", ft_errmsgs[err]);
       else
-	printf ("Freetype Error %d loading glyph 0x%x for U+0x%x\n",
-		err, glyph_idx, char_code);
+	printf ("\n");
       return;
     }
 
@@ -268,6 +275,25 @@ add_char (struct grub_font_info *font_info, FT_Face face,
 		   char_code | GRUB_FONT_CODE_RIGHT_JOINED);
 	break;
       }
+  if (!cur && char_code >= GRUB_UNICODE_ARABIC_START
+      && char_code < GRUB_UNICODE_ARABIC_END)
+    {
+      int i;
+      for (i = 0; grub_unicode_arabic_shapes[i].code; i++)
+	if (grub_unicode_arabic_shapes[i].code == char_code
+	    && grub_unicode_arabic_shapes[i].right_linked)
+	  {
+	    FT_UInt idx2;
+	    idx2 = FT_Get_Char_Index (face, grub_unicode_arabic_shapes[i]
+				      .right_linked);
+	    if (idx2)
+	      add_glyph (font_info, idx2, face,
+			 char_code | GRUB_FONT_CODE_RIGHT_JOINED);
+	    break;
+	  }
+	      
+    }
+
   for (cur = subst_leftjoin; cur; cur = cur->next)
     if (cur->from == glyph_idx)
       {
@@ -275,6 +301,24 @@ add_char (struct grub_font_info *font_info, FT_Face face,
 		   char_code | GRUB_FONT_CODE_LEFT_JOINED);
 	break;
       }
+  if (!cur && char_code >= GRUB_UNICODE_ARABIC_START
+      && char_code < GRUB_UNICODE_ARABIC_END)
+    {
+      int i;
+      for (i = 0; grub_unicode_arabic_shapes[i].code; i++)
+	if (grub_unicode_arabic_shapes[i].code == char_code
+	    && grub_unicode_arabic_shapes[i].left_linked)
+	  {
+	    FT_UInt idx2;
+	    idx2 = FT_Get_Char_Index (face, grub_unicode_arabic_shapes[i]
+				      .left_linked);
+	    if (idx2)
+	      add_glyph (font_info, idx2, face,
+			 char_code | GRUB_FONT_CODE_LEFT_JOINED);
+	    break;
+	  }
+	      
+    }
   for (cur = subst_medijoin; cur; cur = cur->next)
     if (cur->from == glyph_idx)
       {
@@ -283,6 +327,25 @@ add_char (struct grub_font_info *font_info, FT_Face face,
 		   | GRUB_FONT_CODE_RIGHT_JOINED);
 	break;
       }
+  if (!cur && char_code >= GRUB_UNICODE_ARABIC_START
+      && char_code < GRUB_UNICODE_ARABIC_END)
+    {
+      int i;
+      for (i = 0; grub_unicode_arabic_shapes[i].code; i++)
+	if (grub_unicode_arabic_shapes[i].code == char_code
+	    && grub_unicode_arabic_shapes[i].both_linked)
+	  {
+	    FT_UInt idx2;
+	    idx2 = FT_Get_Char_Index (face, grub_unicode_arabic_shapes[i]
+				      .both_linked);
+	    if (idx2)
+	      add_glyph (font_info, idx2, face,
+			 char_code | GRUB_FONT_CODE_LEFT_JOINED
+			 | GRUB_FONT_CODE_RIGHT_JOINED);
+	    break;
+	  }
+	      
+    }
 }
 
 struct gsub_header

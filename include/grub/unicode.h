@@ -39,6 +39,19 @@ struct grub_unicode_compact_range
   grub_uint8_t join_type:3;
 } __attribute__ ((packed));
 
+/* Old-style Arabic shaping. Used for "visual UTF-8" and
+   in grub-mkfont to find variant glyphs in absence of GPOS tables.  */
+struct grub_unicode_arabic_shape
+{
+  grub_uint32_t code;
+  grub_uint32_t isolated;
+  grub_uint32_t right_linked;
+  grub_uint32_t both_linked;
+  grub_uint32_t left_linked;
+};
+
+extern struct grub_unicode_arabic_shape grub_unicode_arabic_shapes[];
+
 enum grub_bidi_type
   {
     GRUB_BIDI_TYPE_L = 0,
@@ -150,6 +163,8 @@ struct grub_unicode_glyph
 #define GRUB_UNICODE_HEBREW_WAW  0x05d5
 #define GRUB_UNICODE_ZWNJ        0x200c
 #define GRUB_UNICODE_ZWJ         0x200d
+#define GRUB_UNICODE_ARABIC_START 0x600
+#define GRUB_UNICODE_ARABIC_END   0x700
 
 extern struct grub_unicode_compact_range grub_unicode_compact[];
 extern struct grub_unicode_bidi_pair grub_unicode_bidi_pairs[];

@@ -82,7 +82,7 @@ grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c util/hostfs.c \
 # For grub-mkfont.
 ifeq ($(enable_grub_mkfont), yes)
 bin_UTILITIES += grub-mkfont
-grub_mkfont_SOURCES = gnulib/progname.c util/grub-mkfont.c util/misc.c
+grub_mkfont_SOURCES = gnulib/progname.c util/grub-mkfont.c util/misc.c unidata.c
 grub_mkfont_CFLAGS = $(freetype_cflags)
 grub_mkfont_LDFLAGS = $(freetype_libs)
 endif

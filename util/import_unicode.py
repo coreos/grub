@@ -35,15 +35,15 @@ for line in infile:
     sp = line.split (";")
     curcode = int (sp[0], 16)
     if sp[2] == "U":
-        joining[curcode] = "GRUB_JOIN_TYPE_NONJOINING"
+        joining[curcode] = "NONJOINING"
     elif sp[2] == "L":
-        joining[curcode] = "GRUB_JOIN_TYPE_LEFT"
+        joining[curcode] = "LEFT"
     elif sp[2] == "R":
-        joining[curcode] = "GRUB_JOIN_TYPE_RIGHT"
+        joining[curcode] = "RIGHT"
     elif sp[2] == "D":
-        joining[curcode] = "GRUB_JOIN_TYPE_DUAL"
+        joining[curcode] = "DUAL"
     elif sp[2] == "C":
-        joining[curcode] = "GRUB_JOIN_TYPE_CAUSING"
+        joining[curcode] = "CAUSING"
     else:
         print ("Unknown joining type '%s'" % sp[2])
         exit (1)
@@ -60,6 +60,7 @@ lastcode = -2
 lastbiditype = "X"
 lastmirrortype = False
 lastcombtype = -1
+arabicsubst = {}
 for line in infile:
     sp = line.split (";")
     curcode = int (sp[0], 16)
@@ -102,15 +103,35 @@ for line in infile:
     if curcode in joining:
         curjoin = joining[curcode]
     elif sp[2] == "Me" or sp[2] == "Mn" or sp[2] == "Cf":
-        curjoin = "GRUB_JOIN_TYPE_TRANSPARENT"
+        curjoin = "TRANSPARENT"
     else:
-        curjoin = "GRUB_JOIN_TYPE_NONJOINING"
+        curjoin = "NONJOINING"
+    if sp[1].startswith ("ARABIC LETTER "):
+        arabname = sp[1][len ("ARABIC LETTER "):]
+        form = 0
+        if arabname.endswith (" ISOLATED FORM"):
+            arabname = arabname[0:len (arabname) - len (" ISOLATED FORM")]
+            form = 1
+        if arabname.endswith (" FINAL FORM"):
+            arabname = arabname[0:len (arabname) - len (" FINAL FORM")]
+            form = 2
+        if arabname.endswith (" MEDIAL FORM"):
+            arabname = arabname[0:len (arabname) - len (" MEDIAL FORM")]
+            form = 3
+        if arabname.endswith (" INITIAL FORM"):
+            arabname = arabname[0:len (arabname) - len (" INITIAL FORM")]
+            form = 4
+        if arabname not in arabicsubst:
+            arabicsubst[arabname]={}
+        arabicsubst[arabname][form] = curcode;
+        if form == 0:
+            arabicsubst[arabname]['join'] = curjoin
     if lastcode + 1 != curcode or curbiditype != lastbiditype \
             or curcombtype != lastcombtype or curmirrortype != lastmirrortype \
             or curjoin != lastjoin:
         if begincode != -2 and (lastbiditype != "L" or lastcombtype != 0 or \
                                     lastmirrortype):
-            outfile.write (("{0x%x, 0x%x, GRUB_BIDI_TYPE_%s, %d, %d, %s},\n" \
+            outfile.write (("{0x%x, 0x%x, GRUB_BIDI_TYPE_%s, %d, %d, GRUB_JOIN_TYPE_%s},\n" \
                                 % (begincode, lastcode, lastbiditype, \
                                        lastcombtype, lastmirrortype, \
                                        lastjoin)))
@@ -121,7 +142,7 @@ for line in infile:
     lastcombtype = curcombtype
     lastmirrortype = curmirrortype
 if lastbiditype != "L" or lastcombtype != 0 or lastmirrortype:
-    outfile.write (("{0x%x, 0x%x, GRUB_BIDI_TYPE_%s, %d, %d, %s},\n" \
+    outfile.write (("{0x%x, 0x%x, GRUB_BIDI_TYPE_%s, %d, %d, GRUB_JOIN_TYPE_%s},\n" \
                         % (begincode, lastcode, lastbiditype, lastcombtype, \
                                lastmirrortype, lastjoin)))
 outfile.write ("{0, 0, 0, 0, 0, 0},\n")
@@ -146,4 +167,25 @@ for line in infile:
     outfile.write ("{0x%x, 0x%x},\n" % (code1, code2))
 outfile.write ("{0, 0},\n")
 outfile.write ("};\n")
+
+infile.close ()
+
+outfile.write ("struct grub_unicode_arabic_shape grub_unicode_arabic_shapes[] = {\n ")
+
+for x in arabicsubst:
+    try:
+        if arabicsubst[x]['join'] == "DUAL":
+            outfile.write ("{0x%x, 0x%x, 0x%x, 0x%x, 0x%x},\n " % (arabicsubst[x][0], arabicsubst[x][1], arabicsubst[x][2], arabicsubst[x][3], arabicsubst[x][4]))
+        elif arabicsubst[x]['join'] == "RIGHT":
+            outfile.write ("{0x%x, 0x%x, 0x%x, 0x%x, 0x%x},\n " % (arabicsubst[x][0], arabicsubst[x][1], arabicsubst[x][2], 0, 0))
+        elif arabicsubst[x]['join'] == "LEFT":
+            outfile.write ("{0x%x, 0x%x, 0x%x, 0x%x, 0x%x},\n " % (arabicsubst[x][0], arabicsubst[x][1], 0, 0, arabicsubst[x][4]))
+    except:
+        pass
+
+outfile.write ("{0, 0, 0, 0, 0},\n")
+outfile.write ("};\n")
+
+
+outfile.close ()
 
