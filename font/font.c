@@ -1248,11 +1248,13 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	    min_devwidth = combining_glyphs[i]->width;
 	  break;
 
-	  /* TODO: Put dammah and fathah nearer to shadda.  */
+	  /* TODO: Put dammah, fathah and alif nearer to shadda.  */
+	case GRUB_UNICODE_COMB_SYRIAC_SUPERSCRIPT_ALAPH:
 	case GRUB_UNICODE_COMB_ARABIC_DAMMAH:
 	case GRUB_UNICODE_COMB_ARABIC_DAMMATAN:
 	case GRUB_UNICODE_COMB_ARABIC_FATHATAN:
 	case GRUB_UNICODE_COMB_ARABIC_FATHAH:
+	case GRUB_UNICODE_COMB_ARABIC_SUPERSCRIPT_ALIF:
 	case GRUB_UNICODE_COMB_ARABIC_SUKUN:
 	case GRUB_UNICODE_COMB_ARABIC_SHADDA:
 	case GRUB_UNICODE_COMB_HEBREW_RAFE:
