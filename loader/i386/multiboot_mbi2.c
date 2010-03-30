@@ -34,13 +34,9 @@
 
 #if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
 #include <grub/i386/pc/vbe.h>
-#define DEFAULT_VIDEO_MODE "text"
 #define HAS_VGA_TEXT 1
-#define HAS_VBE 1
 #else
-#define DEFAULT_VIDEO_MODE "auto"
 #define HAS_VGA_TEXT 0
-#define HAS_VBE 0
 #endif
 
 struct module
@@ -343,14 +339,20 @@ retrieve_video_parameters (grub_uint8_t **ptrorig)
   if (driv_id == GRUB_VIDEO_DRIVER_NONE)
     {
       struct grub_vbe_mode_info_block vbe_mode_info;
-      grub_vbe_status_t status;
       grub_uint32_t vbe_mode;
-      void *scratch = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
 
-      status = grub_vbe_bios_get_mode (scratch);
-      vbe_mode = *(grub_uint32_t *) scratch;
-      if (status != GRUB_VBE_STATUS_OK)
-	return GRUB_ERR_NONE;
+#if defined (GRUB_MACHINE_PCBIOS)
+      {
+	grub_vbe_status_t status;
+	void *scratch = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+	status = grub_vbe_bios_get_mode (scratch);
+	vbe_mode = *(grub_uint32_t *) scratch;
+	if (status != GRUB_VBE_STATUS_OK)
+	  return GRUB_ERR_NONE;
+      }
+#else
+      vbe_mode = 3;
+#endif
 
       /* get_mode_info isn't available for mode 3.  */
       if (vbe_mode == 3)
@@ -361,14 +363,18 @@ retrieve_video_parameters (grub_uint8_t **ptrorig)
 	  vbe_mode_info.x_resolution = 80;
 	  vbe_mode_info.y_resolution = 25;
 	}
+#if defined (GRUB_MACHINE_PCBIOS)
       else
 	{
+	  grub_vbe_status_t status;
+	  void *scratch = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
 	  status = grub_vbe_bios_get_mode_info (vbe_mode, scratch);
 	  if (status != GRUB_VBE_STATUS_OK)
 	    return GRUB_ERR_NONE;
 	  grub_memcpy (&vbe_mode_info, scratch,
 		       sizeof (struct grub_vbe_mode_info_block));
 	}
+#endif
 
       if (vbe_mode_info.memory_model == GRUB_VBE_MEMORY_MODEL_TEXT)
 	{

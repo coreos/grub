@@ -1,3 +1,8 @@
+2010-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/multiboot_mbi2.c (retrieve_video_parameters): Fix
+	compilation on coreboot and qemu
+
 2010-03-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/multiboot2.h: Resync with spec.
