@@ -221,6 +221,30 @@ grub_script_create_cmdif (struct grub_parser_param *state,
   return (struct grub_script_cmd *) cmd;
 }
 
+/* Create a command that functions as a for statement.  */
+struct grub_script_cmd *
+grub_script_create_cmdfor (struct grub_parser_param *state,
+			   struct grub_script_arg *name,
+			   struct grub_script_arglist *words,
+			   struct grub_script_cmd *list)
+{
+  struct grub_script_cmdfor *cmd;
+
+  grub_dprintf ("scripting", "cmdfor\n");
+
+  cmd = grub_script_malloc (state, sizeof (*cmd));
+  if (! cmd)
+    return 0;
+
+  cmd->cmd.exec = grub_script_execute_cmdfor;
+  cmd->cmd.next = 0;
+  cmd->name = name;
+  cmd->words = words;
+  cmd->list = list;
+
+  return (struct grub_script_cmd *) cmd;
+}
+
 /* Create a command that adds a menu entry to the menu.  Title is an
    argument that is parsed to generate a string that can be used as
    the title.  The sourcecode for this entry is passed in SOURCECODE.

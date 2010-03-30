@@ -35,7 +35,8 @@ grub_probe_SOURCES = gnulib/progname.c util/grub-probe.c	\
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c	\
 	fs/befs.c fs/befs_be.c fs/tar.c		\
 	\
-	partmap/msdos.c partmap/apple.c partmap/sun.c partmap/gpt.c\
+	partmap/msdos.c partmap/bsdlabel.c partmap/apple.c \
+	partmap/sun.c partmap/sunpc.c partmap/gpt.c \
 	kern/fs.c kern/env.c fs/fshelp.c			\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c grub_probe_init.c
 
@@ -55,7 +56,7 @@ grub_mkisofs_SOURCES = util/mkisofs/eltorito.c 				\
 	gnulib/error.c gnulib/progname.c
 grub_mkisofs_CFLAGS = -D_FILE_OFFSET_BITS=64 				\
 	-I$(srcdir)/util/mkisofs/include				\
-	-Wno-all -Werror
+	-Wno-all -Werror $(GNULIB_CFLAGS)
 
 # For grub-fstest.
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
@@ -72,8 +73,8 @@ grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c util/hostfs.c \
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c fs/befs.c 	\
 	fs/befs_be.c fs/tar.c			\
 	\
-	kern/partition.c partmap/msdos.c partmap/apple.c partmap/sun.c	\
-	partmap/gpt.c							\
+	kern/partition.c partmap/msdos.c partmap/bsdlabel.c 		\
+	partmap/apple.c partmap/sun.c partmap/sunpc.c partmap/gpt.c	\
 	kern/fs.c kern/env.c fs/fshelp.c disk/raid.c			\
 	disk/raid5_recover.c disk/raid6_recover.c 			\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c 		\
@@ -110,7 +111,7 @@ grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c
 	kern/handler.c kern/err.c kern/parser.c kern/list.c \
 	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c \
 	grub_script.yy.c
-
+grub_script_check_CFLAGS = $(GNULIB_CFLAGS)
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
@@ -402,6 +403,16 @@ pkglib_MODULES += part_gpt.mod
 part_gpt_mod_SOURCES = partmap/gpt.c
 part_gpt_mod_CFLAGS = $(COMMON_CFLAGS)
 part_gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += part_bsd.mod
+part_bsd_mod_SOURCES = partmap/bsdlabel.c
+part_bsd_mod_CFLAGS = $(COMMON_CFLAGS)
+part_bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += part_sunpc.mod
+part_sunpc_mod_SOURCES = partmap/sunpc.c
+part_sunpc_mod_CFLAGS = $(COMMON_CFLAGS)
+part_sunpc_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Special disk structures and generic drivers
 

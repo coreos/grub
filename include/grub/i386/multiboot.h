@@ -19,14 +19,6 @@
 #ifndef GRUB_MULTIBOOT_CPU_HEADER
 #define GRUB_MULTIBOOT_CPU_HEADER	1
 
-/* The asm part of the multiboot loader.  */
-void grub_multiboot_real_boot (grub_addr_t entry,
-			       struct multiboot_info *mbi)
-     __attribute__ ((noreturn));
-void grub_multiboot2_real_boot (grub_addr_t entry,
-				struct multiboot_info *mbi)
-     __attribute__ ((noreturn));
-
 extern grub_uint32_t grub_multiboot_payload_eip;
 extern char *grub_multiboot_payload_orig;
 extern grub_addr_t grub_multiboot_payload_dest;
