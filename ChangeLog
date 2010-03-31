@@ -1,5 +1,10 @@
 2010-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/device.c (grub_device_iterate): Clear errors after failed
+	opening device.
+
+2010-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/ieee1275/openfw.c (grub_children_iterate): Skip device itself if
 	returned by firmware.
 
