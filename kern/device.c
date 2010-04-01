@@ -98,7 +98,10 @@ grub_device_iterate (int (*hook) (const char *name))
 
       dev = grub_device_open (disk_name);
       if (! dev)
-	return 0;
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  return 0;
+	}
 
       if (dev->disk && dev->disk->has_partitions)
 	{
@@ -152,7 +155,7 @@ grub_device_iterate (int (*hook) (const char *name))
 	  grub_free (partition_name);
 	  grub_free (p);
 	  return 1;
-	}      
+	}
       grub_free (partition_name);
 
       p->next = ents;

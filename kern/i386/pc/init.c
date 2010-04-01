@@ -44,12 +44,6 @@ struct mem_region
 static struct mem_region mem_regions[MAX_REGIONS];
 static int num_regions;
 
-void
-grub_arch_sync_caches (void *address __attribute__ ((unused)),
-		       grub_size_t len __attribute__ ((unused)))
-{
-}
-
 static char *
 make_install_device (void)
 {

@@ -825,7 +825,7 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 	  if (! disk)
 	    return 1;
 
-	  if (disk->id == GRUB_DISK_DEVICE_EFIDISK_ID)
+	  if (disk->dev->id == GRUB_DISK_DEVICE_EFIDISK_ID)
 	    {
 	      struct grub_efidisk_data *d;
 

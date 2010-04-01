@@ -58,9 +58,6 @@ static grub_size_t linux_size;
 
 static char *linux_args;
 
-typedef void (*kernel_entry_t) (unsigned long, unsigned long,
-				unsigned long, unsigned long, int (void *));
-
 struct linux_bootstr_info {
 	int len, valid;
 	char buf[];
@@ -92,7 +89,6 @@ static grub_err_t
 grub_linux_boot (void)
 {
   struct linux_bootstr_info *bp;
-  kernel_entry_t linuxmain;
   struct linux_hdrs *hp;
   grub_addr_t addr;
 
@@ -141,8 +137,17 @@ grub_linux_boot (void)
   grub_dprintf ("loader", "Jumping to Linux...\n");
 
   /* Boot the kernel.  */
-  linuxmain = (kernel_entry_t) linux_addr;
-  linuxmain (0, 0, 0, 0, grub_ieee1275_entry_fn);
+  asm volatile ("sethi	%hi(grub_ieee1275_entry_fn), %o1\n"
+		"ldx	[%o1 + %lo(grub_ieee1275_entry_fn)], %o4\n"
+		"sethi	%hi(grub_ieee1275_original_stack), %o1\n"
+		"ldx	[%o1 + %lo(grub_ieee1275_original_stack)], %o6\n"
+		"sethi	%hi(linux_addr), %o1\n"
+		"ldx	[%o1 + %lo(linux_addr)], %o5\n"
+		"mov    %g0, %o0\n"
+		"mov    %g0, %o2\n"
+		"mov    %g0, %o3\n"
+		"jmp    %o5\n"
+	        "mov    %g0, %o1\n");
 
   return GRUB_ERR_NONE;
 }
@@ -174,12 +179,6 @@ grub_linux_unload (void)
 #define FOUR_MB	(4 * 1024 * 1024)
 
 static grub_addr_t
-align_addr(grub_addr_t val, grub_addr_t align)
-{
-  return (val + (align - 1)) & ~(align - 1);
-}
-
-static grub_addr_t
 alloc_phys (grub_addr_t size)
 {
   grub_addr_t ret = (grub_addr_t) -1;
@@ -192,39 +191,39 @@ alloc_phys (grub_addr_t size)
     if (type != 1)
       return 0;
 
-    addr = align_addr (addr, FOUR_MB);
-    if (addr >= end)
+    addr = ALIGN_UP (addr, FOUR_MB);
+    if (addr + size >= end)
       return 0;
 
     if (addr >= grub_phys_start && addr < grub_phys_end)
       {
-	addr = align_addr (grub_phys_end, FOUR_MB);
-	if (addr >= end)
+	addr = ALIGN_UP (grub_phys_end, FOUR_MB);
+	if (addr + size >= end)
 	  return 0;
       }
     if ((addr + size) >= grub_phys_start
 	&& (addr + size) < grub_phys_end)
       {
-	addr = align_addr (grub_phys_end, FOUR_MB);
-	if (addr >= end)
+	addr = ALIGN_UP (grub_phys_end, FOUR_MB);
+	if (addr + size >= end)
 	  return 0;
       }
 
     if (loaded)
       {
-	grub_addr_t linux_end = align_addr (linux_paddr + linux_size, FOUR_MB);
+	grub_addr_t linux_end = ALIGN_UP (linux_paddr + linux_size, FOUR_MB);
 
 	if (addr >= linux_paddr && addr < linux_end)
 	  {
 	    addr = linux_end;
-	    if (addr >= end)
+	    if (addr + size >= end)
 	      return 0;
 	  }
 	if ((addr + size) >= linux_paddr
 	    && (addr + size) < linux_end)
 	  {
 	    addr = linux_end;
-	    if (addr >= end)
+	    if (addr + size >= end)
 	      return 0;
 	  }
       }
@@ -258,8 +257,8 @@ grub_linux_load64 (grub_elf_t elf)
   if (paddr == (grub_addr_t) -1)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "couldn't allocate physical memory");
-  ret = grub_ieee1275_map_physical (paddr, linux_addr - off,
-				    linux_size + off, IEEE1275_MAP_DEFAULT);
+  ret = grub_ieee1275_map (paddr, linux_addr - off,
+			   linux_size + off, IEEE1275_MAP_DEFAULT);
   if (ret)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "couldn't map physical memory");
@@ -409,7 +408,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		  "couldn't allocate physical memory");
       goto fail;
     }
-  ret = grub_ieee1275_map_physical (paddr, addr, size, IEEE1275_MAP_DEFAULT);
+  ret = grub_ieee1275_map (paddr, addr, size, IEEE1275_MAP_DEFAULT);
   if (ret)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY,

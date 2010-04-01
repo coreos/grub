@@ -55,16 +55,14 @@ setpci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += multiboot.mod
 multiboot_mod_SOURCES = loader/i386/multiboot.c \
-			loader/i386/multiboot_mbi.c \
-                        loader/multiboot_loader.c
+			loader/i386/multiboot_mbi.c
 multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
 multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 multiboot_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 pkglib_MODULES += multiboot2.mod
 multiboot2_mod_SOURCES = loader/i386/multiboot.c \
-			 loader/i386/multiboot_mbi.c \
-                         loader/multiboot_loader.c
+			 loader/i386/multiboot_mbi2.c
 multiboot2_mod_CFLAGS = $(COMMON_CFLAGS) -DGRUB_USE_MULTIBOOT2
 multiboot2_mod_LDFLAGS = $(COMMON_LDFLAGS)
 multiboot2_mod_ASFLAGS = $(COMMON_ASFLAGS)
@@ -135,3 +133,22 @@ BOOTCHECKS+=bootcheck-linux-i386 bootcheck-linux-x86_64 \
 .PHONY: bootcheck-linux-i386 bootcheck-linux-x86_64 \
 	bootcheck-kfreebsd-i386 bootcheck-kfreebsd-x86_64 \
 	bootcheck-knetbsd-i386 bootcheck-knetbsd-x86_64
+
+# For pci.mod
+pkglib_MODULES += pci.mod
+pci_mod_SOURCES = bus/pci.c
+pci_mod_CFLAGS = $(COMMON_CFLAGS)
+pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For lspci.mod
+pkglib_MODULES += lspci.mod
+lspci_mod_SOURCES = commands/lspci.c
+lspci_mod_CFLAGS = $(COMMON_CFLAGS)
+lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For play.mod.
+pkglib_MODULES += play.mod
+play_mod_SOURCES = commands/i386/pc/play.c
+play_mod_CFLAGS = $(COMMON_CFLAGS)
+play_mod_LDFLAGS = $(COMMON_LDFLAGS)
+

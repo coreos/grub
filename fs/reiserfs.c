@@ -62,7 +62,7 @@
 
 static grub_dl_t my_mod;
 
-#define assert(boolean) real_assert (boolean, __FILE__, __LINE__)
+#define assert(boolean) real_assert (boolean, GRUB_FILE, __LINE__)
 static inline void
 real_assert (int boolean, const char *file, const int line)
 {
@@ -1189,7 +1189,8 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
 		(unsigned long long) (current_position - initial_position),
 		(unsigned long) len);
   return current_position - initial_position;
-/*
+
+#if 0
   switch (found.type)
     {
       case GRUB_REISERFS_DIRECT:
@@ -1232,7 +1233,8 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
         goto fail;
     }
 
-  return read_length;*/
+  return read_length;
+#endif
 
  fail:
   grub_free (indirect_block_ptr);

@@ -88,13 +88,14 @@ read_crypto_list (void)
     }
 
   file = grub_file_open (filename);
+  grub_free (filename);
   if (!file)
     {
       grub_errno = GRUB_ERR_NONE;
       return;
     }
 
-  /* Override previous commands.lst.  */
+  /* Override previous crypto.lst.  */
   grub_crypto_spec_free ();
 
   for (;; grub_free (buf))
