@@ -1,3 +1,23 @@
+2010-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Import gnulib argp module.
+
+	* gnulib/argp-ba.c: New file.
+	* gnulib/argp-eexst.c: Likewise.
+	* gnulib/argp-fmtstream.c: Likewise.
+	* gnulib/argp-fmtstream.h: Likewise.
+	* gnulib/argp-fs-xinl.c: Likewise.
+	* gnulib/argp-help.c: Likewise.
+	* gnulib/argp-namefrob.h: Likewise.
+	* gnulib/argp-parse.c: Likewise.
+	* gnulib/argp-pin.c: Likewise.
+	* gnulib/argp-pv.c: Likewise.
+	* gnulib/argp-pvh.c: Likewise.
+	* gnulib/argp-version-etc.c: Likewise.
+	* gnulib/argp-version-etc.h: Likewise.
+	* gnulib/argp-xinl.c: Likewise.
+	* gnulib/argp.h: Likewise.
+
 2010-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/device.c (grub_device_iterate): Clear errors after failed
