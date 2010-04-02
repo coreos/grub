@@ -1,0 +1,6 @@
+2010-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	grub-mkconfig multiple terminal support.
+
+	* util/grub-mkconfig.in: Handle multiple terminals correctly.
+	* util/grub.d/00_header.in: Likewise.
