@@ -16,9 +16,16 @@ vga_text_mod_CFLAGS = $(COMMON_CFLAGS)
 vga_text_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += relocator.mod
+ifeq ($(platform), ieee1275)
+relocator_mod_SOURCES = lib/relocator.c lib/i386/relocator32.S \
+	lib/i386/relocator64.S lib/i386/relocator16.S \
+	lib/$(target_cpu)/relocator_asm.S lib/i386/relocator.c \
+	lib/ieee1275/relocator.c
+else
 relocator_mod_SOURCES = lib/relocator.c lib/i386/relocator32.S \
 	lib/i386/relocator64.S lib/i386/relocator16.S \
 	lib/$(target_cpu)/relocator_asm.S lib/i386/relocator.c
+endif
 relocator_mod_CFLAGS = $(COMMON_CFLAGS)
 relocator_mod_ASFLAGS = $(COMMON_ASFLAGS)
 relocator_mod_LDFLAGS = $(COMMON_LDFLAGS)

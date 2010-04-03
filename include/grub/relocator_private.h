@@ -21,6 +21,7 @@
 
 #include <grub/types.h>
 #include <grub/err.h>
+#include <grub/mm_private.h>
 
 extern grub_size_t grub_relocator_align;
 extern grub_size_t grub_relocator_forward_size;
@@ -37,5 +38,50 @@ void grub_cpu_relocator_forward (void *rels, void *src, void *tgt,
 void grub_cpu_relocator_backward (void *rels, void *src, void *tgt,
 				 grub_size_t size);
 void grub_cpu_relocator_jumper (void *rels, grub_addr_t addr);
+
+#ifdef GRUB_MACHINE_IEEE1275
+#define GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS 1
+#else
+#define GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS 0
+#endif
+
+struct grub_relocator_mmap_event
+{
+  enum {
+    IN_REG_START = 0, 
+    IN_REG_END = 1, 
+    REG_BEG_START = 2, 
+    REG_BEG_END = REG_BEG_START | 1,
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+    REG_FIRMWARE_START = 4, 
+    REG_FIRMWARE_END = REG_FIRMWARE_START | 1,
+    /* To track the regions already in heap.  */
+    FIRMWARE_BLOCK_START = 6, 
+    FIRMWARE_BLOCK_END = FIRMWARE_BLOCK_START | 1,
+#endif
+    COLLISION_START = 8,
+    COLLISION_END = COLLISION_START | 1
+  } type;
+  grub_addr_t pos;
+  union
+  {
+    struct
+    {
+      grub_mm_region_t reg;
+      grub_mm_header_t hancestor;
+      grub_mm_region_t *regancestor;
+      grub_mm_header_t head;
+    };
+  };
+};
+
+/* Return 0 on failure, 1 on success. The failure here 
+   can be very time-expensive, so please make sure fill events is accurate.  */
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+int grub_relocator_firmware_alloc_region (grub_addr_t start, grub_size_t size);
+unsigned grub_relocator_firmware_fill_events (struct grub_relocator_mmap_event *events);
+unsigned grub_relocator_firmware_get_max_events (void);
+void grub_relocator_firmware_free_region (grub_addr_t start, grub_size_t size);
+#endif
 
 #endif

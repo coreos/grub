@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2009, 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include <grub/cache.h>
 
 /* FIXME: check memory map.  */ 
-/* FIXME: try to request memory from firmware.  */
 
 struct grub_relocator
 {
@@ -36,7 +35,11 @@ struct grub_relocator
 
 struct grub_relocator_subchunk
 {
-  enum {CHUNK_TYPE_IN_REGION, CHUNK_TYPE_REGION_START} type;
+  enum {CHUNK_TYPE_IN_REGION, CHUNK_TYPE_REGION_START,
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+	CHUNK_TYPE_FIRMWARE
+#endif
+  } type;
   grub_addr_t host_start;
   grub_addr_t start;
   grub_size_t size;
@@ -51,6 +54,15 @@ struct grub_relocator_chunk
   struct grub_relocator_subchunk *subchunks;
   unsigned nsubchunks;
 };
+
+struct grub_relocator_extra_block
+{
+  struct grub_relocator_extra_block *next;
+  grub_addr_t start;
+  grub_addr_t end;
+};
+
+struct grub_relocator_extra_block *extra_blocks;
 
 struct grub_relocator *
 grub_relocator_new (void)
@@ -69,29 +81,6 @@ grub_relocator_new (void)
 		(unsigned long) ret->relocators_size);
   return ret;
 }
-
-struct event
-{
-  enum {
-    IN_REG_START = 0, 
-    IN_REG_END = 1, 
-    REG_BEG_START = 2, 
-    REG_BEG_END = REG_BEG_START | 1,
-    COLLISION_START = 4, 
-    COLLISION_END = COLLISION_START | 1
-  } type;
-  grub_addr_t pos;
-  union
-  {
-    struct
-    {
-      grub_mm_region_t reg;
-      grub_mm_header_t hancestor;
-      grub_mm_region_t *regancestor;
-      grub_mm_header_t head;
-    };
-  };
-};
 
 #define DIGITSORT_BITS 8
 #define DIGITSORT_MASK ((1 << DIGITSORT_BITS) - 1)
@@ -221,7 +210,7 @@ malloc_in_range (struct grub_relocator *rel,
 		 int from_low_priv, int collisioncheck)
 {
   grub_mm_region_t r, *ra, base_saved;
-  struct event *events = NULL, *eventt = NULL, *t;
+  struct grub_relocator_mmap_event *events = NULL, *eventt = NULL, *t;
   unsigned maxevents = 2;
   grub_mm_header_t p, pa;
   unsigned *counter;
@@ -254,7 +243,7 @@ malloc_in_range (struct grub_relocator *rel,
 	  p = p->next;
 	}
       while (p != r->first);
-      maxevents += 2;
+      maxevents += 4;
     }
   if (collisioncheck && rel)
     {
@@ -262,6 +251,16 @@ malloc_in_range (struct grub_relocator *rel,
       for (chunk = rel->chunks; chunk; chunk = chunk->next)
 	maxevents += 2;
     }
+
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+  {
+    struct grub_relocator_extra_block *cur;
+    for (cur = extra_blocks; cur; cur = cur->next)
+      maxevents += 2;
+  }
+#endif
+
+  maxevents += grub_relocator_firmware_get_max_events ();
 
   events = grub_malloc (maxevents * sizeof (events[0]));
   eventt = grub_malloc (maxevents * sizeof (events[0]));
@@ -289,6 +288,35 @@ malloc_in_range (struct grub_relocator *rel,
 	  N++;
 	}
     }
+
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+  for (r = grub_mm_base; r; r = r->next)
+    {
+      grub_dprintf ("relocator", "Blocking at 0x%x-0x%x\n",
+		    (grub_addr_t) r - r->pre_size, 
+		    (grub_addr_t) (r + 1) + r->size);
+      events[N].type = FIRMWARE_BLOCK_START;
+      events[N].pos = (grub_addr_t) r - r->pre_size;
+      N++;
+      events[N].type = FIRMWARE_BLOCK_END;
+      events[N].pos = (grub_addr_t) (r + 1) + r->size;
+      N++;
+    }
+  {
+    struct grub_relocator_extra_block *cur;
+    for (cur = extra_blocks; cur; cur = cur->next)
+      {
+	grub_dprintf ("relocator", "Blocking at 0x%x-0x%x\n",
+		      cur->start, cur->end);
+	events[N].type = FIRMWARE_BLOCK_START;
+	events[N].pos = cur->start;
+	N++;
+	events[N].type = FIRMWARE_BLOCK_END;
+	events[N].pos = cur->end;
+	N++;
+      }
+  }
+#endif
 
   /* No malloc from this point.  */
   base_saved = grub_mm_base;
@@ -344,6 +372,8 @@ malloc_in_range (struct grub_relocator *rel,
 	}
     }
 
+  N += grub_relocator_firmware_fill_events (events + N);
+
   /* Put ending events after starting events.  */
   {
     int st = 0, e = N / 2;
@@ -373,104 +403,86 @@ malloc_in_range (struct grub_relocator *rel,
       events = t;
     }
 
-  grub_dprintf ("relocator", "scanline events:\n");
-  for (j = 0; j < N; j++)
-    grub_dprintf ("relocator", "event %x, type %d\n", events[j].pos,
-		  events[j].type);
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+ retry:
+#endif
 
   /* Now events are nicely sorted.  */
-  if (from_low_priv)
-    {
-      int nstarted = 0, ncollisions = 0;
-      grub_addr_t starta = 0;
-      int numstarted;
-      for (j = 0; j < N; j++)
-	{
-	  switch (events[j].type)
-	    {
-	    case COLLISION_END:
-	      ncollisions--;
-	    case IN_REG_START:
-	    case REG_BEG_START:
-	      if ((events[j].type == COLLISION_END ? nstarted != 0
-		   : nstarted == 0) 
-		  && ncollisions == 0)
-		{
-		  starta = ALIGN_UP (events[j].pos, align);
-		  numstarted = j;
-		}
-	      if (events[j].type != COLLISION_END)
-		nstarted++;
-	      break;
+  {
+    int nstarted = 0, ncollisions = 0, nstartedfw = 0, nblockfw = 0;
+    grub_addr_t starta = 0;
+    int numstarted;
+    for (j = from_low_priv ? 0 : N - 1; from_low_priv ? j < N : (j + 1); 
+	 from_low_priv ? j++ : j--)
+      {
+	int isinsidebefore, isinsideafter;
+	isinsidebefore = (!ncollisions 
+			  && (nstarted || (nstartedfw && !nblockfw)));
+	switch (events[j].type)
+	  {
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+	  case REG_FIRMWARE_START:
+	    nstartedfw++;
+	    break;
 
-	    case IN_REG_END:
-	    case REG_BEG_END:
-		nstarted--;
-	    case COLLISION_START:
-	      if (((events[j].type == COLLISION_START)
-		   ? nstarted != 0 : nstarted == 0) 
-		  && ncollisions == 0)
-		{
-		  target = starta;
-		  if (target < start)
-		    target = start;
-		  grub_dprintf ("relocator", "%x, %x, %x\n", target, start,
-				events[j].pos);
-		  if (target + size <= end && target + size <= events[j].pos)
-		    /* Found an usable address.  */
-		    goto found;
-		}
-	      if (events[j].type == COLLISION_START)
-		ncollisions++;
-	      break;
-	    }
-	}
-    }
-  else
-    {
-      int nstarted = 0, ncollisions = 0;
-      grub_addr_t enda = 0;
-      int numend;
-      for (j = N - 1; j != (unsigned) -1; j--)
-	{
-	  switch (events[j].type)
-	    {
-	    case COLLISION_START:
-	      ncollisions--;
-	    case IN_REG_END:
-	    case REG_BEG_END:
-	      if ((events[j].type == COLLISION_END ? nstarted != 0 
-		   : nstarted == 0) 
-		  && ncollisions == 0)
-		{
-		  enda = ALIGN_DOWN (events[j].pos - size, align) + size;
-		  numend = j;
-		}
-	      nstarted++;
-	      break;
+	  case REG_FIRMWARE_END:
+	    nstartedfw--;
+	    break;
 
-	    case IN_REG_START:
-	    case REG_BEG_START:
-		nstarted--;
-	    case COLLISION_END:
-	      if ((events[j].type == COLLISION_START ? nstarted != 0
-		   : nstarted == 0) 
-		  && ncollisions == 0)
-		{
-		  target = enda - size;
-		  if (target > end - size)
-		    target = end - size;
-		  grub_dprintf ("relocator", "%x, %x, %x\n", target, start,
-				events[j].pos);
-		  if (target >= start && target >= events[j].pos)
-		    goto found;
-		}
-	      if (events[j].type == COLLISION_START)
-		ncollisions++;
-	      break;
-	    }
-	}
-    }
+	  case FIRMWARE_BLOCK_START:
+	    nblockfw++;
+	    break;
+
+	  case FIRMWARE_BLOCK_END:
+	    nblockfw--;
+	    break;
+#endif
+
+	  case COLLISION_START:
+	    ncollisions++;
+	    break;
+
+	  case COLLISION_END:
+	    ncollisions--;
+	    break;
+
+	  case IN_REG_START:
+	  case REG_BEG_START:
+	    nstarted++;
+	    break;
+
+	  case IN_REG_END:
+	  case REG_BEG_END:
+	    nstarted--;
+	    break;
+	  }
+	isinsideafter = (!ncollisions 
+			 && (nstarted || (nstartedfw && !nblockfw)));
+	if (!isinsidebefore && isinsideafter)
+	  {
+	    starta = from_low_priv ? ALIGN_UP (events[j].pos, align)
+	      : ALIGN_DOWN (events[j].pos - size, align) + size;
+	    numstarted = j;
+	  }
+	if (isinsidebefore && !isinsideafter && from_low_priv)
+	  {
+	    target = starta;
+	    if (target < start)
+	      target = start;
+	    if (target + size <= end && target + size <= events[j].pos)
+	      /* Found an usable address.  */
+	      goto found;
+	  }
+	if (isinsidebefore && !isinsideafter && !from_low_priv)
+	  {
+	    target = starta - size;
+	    if (target > end - size)
+	      target = end - size;
+	    if (target >= start && target >= events[j].pos)
+	      goto found;
+	  }
+      }
+  }
 
   grub_mm_base = base_saved;
   grub_free (events);
@@ -480,9 +492,24 @@ malloc_in_range (struct grub_relocator *rel,
 
  found:
   {
+    int inreg = 0, regbeg = 0, fwin = 0, fwb = 0, ncol = 0;
     int last_start = 0;
     for (j = 0; j < N; j++)
       {
+	int typepre;
+	if (ncol)
+	  typepre = -1;
+	else if (regbeg)
+	  typepre = CHUNK_TYPE_REGION_START;
+	else if (inreg)
+	  typepre = CHUNK_TYPE_IN_REGION;
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+	else if (fwin && !fwb)
+	  typepre = CHUNK_TYPE_FIRMWARE;
+#endif
+	else
+	  typepre = -1;
+
 	if (j != 0 && events[j - 1].pos != events[j].pos)
 	  {
 	    grub_addr_t alloc_start, alloc_end;
@@ -490,28 +517,84 @@ malloc_in_range (struct grub_relocator *rel,
 	    alloc_end = min (events[j].pos, target + size);
 	    if (alloc_end > alloc_start)
 	      {
-		grub_dprintf ("relocator", "%d\n", last_start);
-
-		if (events[last_start].type == REG_BEG_START
-		    || events[last_start].type == IN_REG_START)
+		switch (typepre)
 		  {
-		    if (events[last_start].type == REG_BEG_START &&
-			(grub_addr_t) (events[last_start].reg + 1) > target)
-		      allocate_regstart (alloc_start, alloc_end - alloc_start,
-					 events[last_start].reg,
-					 events[last_start].regancestor,
-					 events[last_start].hancestor);
-		    else
-		      allocate_inreg (alloc_start, alloc_end - alloc_start,
-				      events[last_start].head,
-				      events[last_start].hancestor,
-				      events[last_start].reg);
+		  case CHUNK_TYPE_REGION_START:
+		    allocate_regstart (alloc_start, alloc_end - alloc_start,
+				       events[last_start].reg,
+				       events[last_start].regancestor,
+				       events[last_start].hancestor);
+		    break;
+		  case CHUNK_TYPE_IN_REGION:
+		    allocate_inreg (alloc_start, alloc_end - alloc_start,
+				    events[last_start].head,
+				    events[last_start].hancestor,
+				    events[last_start].reg);
+		    break;
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+		  case CHUNK_TYPE_FIRMWARE:
+		    /* The failure here can be very expensive.  */
+		    if (!grub_relocator_firmware_alloc_region (alloc_start, 
+							       alloc_end - alloc_start))
+		      {
+			grub_dprintf ("relocator",
+				      "firmware allocation 0x%x-0x%x failed.\n",
+				      alloc_start, alloc_end);
+			if (from_low_priv)
+			  start = alloc_end;
+			else
+			  end = alloc_start;
+			goto retry;
+		      }
+		    break;
+#endif
 		  }
 		nallocs++;
 	      }
 	  }
-	if (is_start (events[j].type))
-	  last_start = j;
+	  
+	switch (events[j].type)
+	  {
+	  case REG_BEG_START:
+	  case IN_REG_START:
+	    if (events[j].type == REG_BEG_START &&
+		(grub_addr_t) (events[j].reg + 1) > target)
+	      regbeg++;
+	    else
+	      inreg++;
+	    last_start = j;
+	    break;
+
+	  case REG_BEG_END:
+	  case IN_REG_END:
+	    inreg = regbeg = 0;
+	    break;
+
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+	  case REG_FIRMWARE_START:
+	    fwin++;
+	    break;
+
+	  case REG_FIRMWARE_END:
+	    fwin--;
+	    break;
+
+	  case FIRMWARE_BLOCK_START:
+	    fwb++;
+	    break;
+
+	  case FIRMWARE_BLOCK_END:
+	    fwb--;
+	    break;
+#endif
+	  case COLLISION_START:
+	    ncol++;
+	    break;
+	  case COLLISION_END:
+	    ncol--;
+	    break;
+	  }
+
       }
   }
 
@@ -538,9 +621,24 @@ malloc_in_range (struct grub_relocator *rel,
 
   {
     int last_start = 0;
+    int inreg = 0, regbeg = 0, fwin = 0, fwb = 0, ncol = 0;
     int cural = 0;
     for (j = 0; j < N; j++)
       {
+	int typepre;
+	if (ncol)
+	  typepre = -1;
+	else if (regbeg)
+	  typepre = CHUNK_TYPE_REGION_START;
+	else if (inreg)
+	  typepre = CHUNK_TYPE_IN_REGION;
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+	else if (fwin && !fwb)
+	  typepre = CHUNK_TYPE_FIRMWARE;
+#endif
+	else
+	  typepre = -1;
+
 	if (j != 0 && events[j - 1].pos != events[j].pos)
 	  {
 	    grub_addr_t alloc_start, alloc_end;
@@ -548,23 +646,76 @@ malloc_in_range (struct grub_relocator *rel,
 	    alloc_end = min (events[j].pos, target + size);
 	    if (alloc_end > alloc_start)
 	      {
-		res->subchunks[cural].start = alloc_start;
-		res->subchunks[cural].size = alloc_end - alloc_start;
-		if (res->subchunks[last_start].type == IN_REG_START)
-		  res->subchunks[cural].type = CHUNK_TYPE_IN_REGION;
-		else if (res->subchunks[last_start].type == REG_BEG_START)
+		grub_dprintf ("relocator", "subchunk 0x%x-0x%x, %d\n",
+			      alloc_start, alloc_end, typepre);
+		res->subchunks[cural].type = typepre;
+		if (typepre == CHUNK_TYPE_REGION_START)
 		  {
-		    res->subchunks[cural].type = CHUNK_TYPE_REGION_START;
 		    res->subchunks[cural].host_start
 		      = (grub_addr_t) events[last_start].reg;
 		  }
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+		if (typepre == CHUNK_TYPE_REGION_START
+		    || typepre == CHUNK_TYPE_FIRMWARE)
+		  {
+		    /* FIXME: react on out of memory.  */
+		    struct grub_relocator_extra_block *ne;
+		    ne = grub_malloc (sizeof (*ne));
+		    ne->start = alloc_start;
+		    ne->end = alloc_end;
+		    ne->next = extra_blocks;
+		    extra_blocks = ne;
+		  }
+#endif
 		cural++;
 	      }
 	  }
-	if (is_start (events[j].type))
-	  last_start = j;
+	  
+	switch (events[j].type)
+	  {
+	  case REG_BEG_START:
+	  case IN_REG_START:
+	    if (events[j].type == REG_BEG_START &&
+		(grub_addr_t) (events[j].reg + 1) > target)
+	      regbeg++;
+	    else
+	      inreg++;
+	    last_start = j;
+	    break;
+
+	  case REG_BEG_END:
+	  case IN_REG_END:
+	    inreg = regbeg = 0;
+	    break;
+
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+	  case REG_FIRMWARE_START:
+	    fwin++;
+	    break;
+
+	  case REG_FIRMWARE_END:
+	    fwin--;
+	    break;
+
+	  case FIRMWARE_BLOCK_START:
+	    fwb++;
+	    break;
+
+	  case FIRMWARE_BLOCK_END:
+	    fwb--;
+	    break;
+#endif
+	  case COLLISION_START:
+	    ncol++;
+	    break;
+	  case COLLISION_END:
+	    ncol--;
+	    break;
+	  }
+
       }
   }
+
   res->src = target;
   res->size = size;
   grub_dprintf ("relocator", "allocated: %x %x\n", target, size);
@@ -801,6 +952,7 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
   return GRUB_ERR_NONE;
 }
 
+/* FIXME: remove extra blocks.  */
 void
 grub_relocator_unload (struct grub_relocator *rel)
 {
@@ -856,6 +1008,10 @@ grub_relocator_unload (struct grub_relocator *rel)
 	      grub_free (h + 1);
 	      break;
 	    }
+	  case CHUNK_TYPE_FIRMWARE:
+	    grub_relocator_firmware_free_region (chunk->subchunks[i].start,
+						 chunk->subchunks[i].size);
+	    break;
 	  }
       next = chunk->next;
       grub_free (chunk->subchunks);
