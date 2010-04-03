@@ -90,7 +90,8 @@ grub_multiboot_load (grub_file_t file)
     {
       if (header->magic == MULTIBOOT_HEADER_MAGIC
 	  && !(header->magic + header->architecture
-	       + header->header_length + header->checksum))
+	       + header->header_length + header->checksum)
+	  && header->architecture == MULTIBOOT_ARCHITECTURE_CURRENT)
 	break;
     }
 

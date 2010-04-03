@@ -24,18 +24,13 @@ extern char *grub_multiboot_payload_orig;
 extern grub_addr_t grub_multiboot_payload_dest;
 extern grub_size_t grub_multiboot_payload_size;
 
-#define MULTIBOOT_INITIAL_STATE  { .eax = MULTIBOOT_BOOTLOADER_MAGIC,	\
-    .ecx = 0,								\
-    .edx = 0,								\
-    /* Set esp to some random location in low memory to avoid breaking */ \
-    /* non-compliant kernels.  */					\
-    .esp = 0x7ff00							\
-      }
-#define MULTIBOOT_ENTRY_REGISTER eip
-#define MULTIBOOT_MBI_REGISTER ebx
-#define MULTIBOOT_ARCHITECTURE_CURRENT MULTIBOOT_ARCHITECTURE_I386
+#define MULTIBOOT_INITIAL_STATE  { .gpr[4] = MULTIBOOT_BOOTLOADER_MAGIC, \
+    .jumpreg = 1 }
+#define MULTIBOOT_ENTRY_REGISTER gpr[1]
+#define MULTIBOOT_MBI_REGISTER gpr[5]
+#define MULTIBOOT_ARCHITECTURE_CURRENT MULTIBOOT_ARCHITECTURE_MIPS32
 
-#define MULTIBOOT_ELF32_MACHINE EM_386
-#define MULTIBOOT_ELF64_MACHINE EM_X86_64
+#define MULTIBOOT_ELF32_MACHINE EM_MIPS
+#define MULTIBOOT_ELF64_MACHINE EM_MIPS
 
 #endif /* ! GRUB_MULTIBOOT_CPU_HEADER */

@@ -30,4 +30,11 @@ relocator_mod_CFLAGS = $(COMMON_CFLAGS)
 relocator_mod_ASFLAGS = $(COMMON_ASFLAGS)
 relocator_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += multiboot2.mod
+multiboot2_mod_SOURCES = loader/i386/multiboot.c \
+			 loader/i386/multiboot_mbi2.c
+multiboot2_mod_CFLAGS = $(COMMON_CFLAGS) -DGRUB_USE_MULTIBOOT2
+multiboot2_mod_LDFLAGS = $(COMMON_LDFLAGS)
+multiboot2_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
 include $(srcdir)/conf/common.mk
