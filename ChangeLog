@@ -1,5 +1,11 @@
 2010-04-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
+	* util/grub-install.in: Use mkdir -p to create grub directory.
+	* util/i386/efi/grub-install.in: Likewise.
+	* util/ieee1275/grub-install.in: Likewise.
+
+2010-04-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
 	* Makefile.in (LEX): new variable.
 
 2010-04-03  Grégoire Sutre  <gregoire.sutre@gmail.com>

@@ -219,8 +219,7 @@ else
 fi
 
 # Create the GRUB directory if it is not present.
-test -d "$bootdir" || mkdir "$bootdir" || exit 1
-test -d "$grubdir" || mkdir "$grubdir" || exit 1
+mkdir -p "$grubdir" || exit 1
 
 # If --recheck is specified, remove the device map, if present.
 if test $recheck = yes; then
