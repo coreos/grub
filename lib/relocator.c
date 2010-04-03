@@ -359,17 +359,6 @@ malloc_in_range (struct grub_relocator *rel,
 	  p = pa->next;
 	}
       while (pa != r->first);
-      /* FIXME */
-      if (0)//if (!pre_added)
-	{
-	  events[N].type = REG_BEG_START;
-	  events[N].pos = (grub_addr_t) r - r->pre_size;
-	  events[N].reg = r;
-	  N++;
-	  events[N].type = REG_BEG_END;
-	  events[N].pos = (grub_addr_t) r;
-	  N++;
-	}
     }
 
 #if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
