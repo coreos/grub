@@ -219,14 +219,12 @@ malloc_in_range (struct grub_relocator *rel,
   grub_addr_t target = 0;
 
   grub_dprintf ("relocator",
-		"trying to allocate in %x-%x aligned %x size %x\n",
-		start, end, align, size);
+		"trying to allocate in 0x%lx-0x%lx aligned 0x%lx size 0x%lx\n",
+		(unsigned long) start, (unsigned long) end,
+		(unsigned long) align, (unsigned long) size);
 
   start = ALIGN_UP (start, align);
   end = ALIGN_DOWN (end - size, align) + size;
-  grub_dprintf ("relocator",
-		"trying to allocate in %x-%x aligned %x size %x\n",
-		start, end, align, size);
 
   if (end < start + size)
     return 0;
@@ -643,8 +641,9 @@ malloc_in_range (struct grub_relocator *rel,
 	    alloc_end = min (events[j].pos, target + size);
 	    if (alloc_end > alloc_start)
 	      {
-		grub_dprintf ("relocator", "subchunk 0x%x-0x%x, %d\n",
-			      alloc_start, alloc_end, typepre);
+		grub_dprintf ("relocator", "subchunk 0x%lx-0x%lx, %d\n",
+			      (unsigned long) alloc_start,
+			      (unsigned long) alloc_end, typepre);
 		res->subchunks[cural].type = typepre;
 		if (typepre == CHUNK_TYPE_REGION_START)
 		  {
@@ -715,7 +714,8 @@ malloc_in_range (struct grub_relocator *rel,
 
   res->src = target;
   res->size = size;
-  grub_dprintf ("relocator", "allocated: %x %x\n", target, size);
+  grub_dprintf ("relocator", "allocated: 0x%lx+0x%lx\n", (unsigned long) target,
+		(unsigned long) size);
   return 1;
 }
 

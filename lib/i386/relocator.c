@@ -253,7 +253,6 @@ grub_relocator64_boot (struct grub_relocator *rel,
     return err;
 
   asm volatile ("cli");
-  grub_printf ("%x\n", relst);
   ((void (*) (void)) relst) ();
 
   /* Not reached.  */
