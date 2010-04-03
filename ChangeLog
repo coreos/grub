@@ -1,3 +1,8 @@
+2010-04-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* util/i386/efi/grub-dumpdevtree: replaced the non-portable `==' by
+	`=' and added double quotes on operands of this equality test.
+
 2010-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* Makefile.in (uninstall): Remove a leftover debug echo.
