@@ -1,5 +1,10 @@
 2010-04-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
+	* kern/misc.c: Disable the __enable_execute_stack hack for utilities.
+	* include/grub/misc.h: Likewise.
+
+2010-04-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
 	* util/grub-install.in: Add `|| exit 1' to all grub-probe calls
 	for which failure is fatal.
 

@@ -1058,7 +1058,7 @@ grub_abort (void)
 void abort (void) __attribute__ ((alias ("grub_abort")));
 #endif
 
-#ifdef NEED_ENABLE_EXECUTE_STACK
+#if defined(NEED_ENABLE_EXECUTE_STACK) && !defined(GRUB_UTIL)
 /* Some gcc versions generate a call to this function
    in trampolines for nested functions.  */
 void __enable_execute_stack (void *addr __attribute__ ((unused)))
