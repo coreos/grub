@@ -31,6 +31,7 @@
 #include <grub/command.h>
 #include <grub/machine/loader.h>
 #include <grub/multiboot.h>
+#include <grub/cpu/multiboot.h>
 #include <grub/machine/memory.h>
 #include <grub/elf.h>
 #include <grub/aout.h>
@@ -41,7 +42,7 @@
 #include <grub/misc.h>
 #include <grub/gzio.h>
 #include <grub/env.h>
-#include <grub/i386/relocator.h>
+#include <grub/cpu/relocator.h>
 #include <grub/video.h>
 #include <grub/memory.h>
 #include <grub/i18n.h>
@@ -116,18 +117,12 @@ static grub_err_t
 grub_multiboot_boot (void)
 {
   grub_err_t err;
-  struct grub_relocator32_state state =
-    {
-      .eax = MULTIBOOT_BOOTLOADER_MAGIC,
-      .ecx = 0,
-      .edx = 0,
-      .eip = grub_multiboot_payload_eip,
-      /* Set esp to some random location in low memory to avoid breaking
-	 non-compliant kernels.  */
-      .esp = 0x7ff00
-    };
+  struct grub_relocator32_state state = MULTIBOOT_INITIAL_STATE;
 
-  err = grub_multiboot_make_mbi (&state.ebx);
+  state.MULTIBOOT_ENTRY_REGISTER = grub_multiboot_payload_eip;
+
+  err = grub_multiboot_make_mbi (&state.MULTIBOOT_MBI_REGISTER);
+
   if (err)
     return err;
 

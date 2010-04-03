@@ -258,9 +258,9 @@ malloc_in_range (struct grub_relocator *rel,
     for (cur = extra_blocks; cur; cur = cur->next)
       maxevents += 2;
   }
-#endif
 
   maxevents += grub_relocator_firmware_get_max_events ();
+#endif
 
   events = grub_malloc (maxevents * sizeof (events[0]));
   eventt = grub_malloc (maxevents * sizeof (events[0]));
@@ -372,7 +372,9 @@ malloc_in_range (struct grub_relocator *rel,
 	}
     }
 
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
   N += grub_relocator_firmware_fill_events (events + N);
+#endif
 
   /* Put ending events after starting events.  */
   {
@@ -492,7 +494,10 @@ malloc_in_range (struct grub_relocator *rel,
 
  found:
   {
-    int inreg = 0, regbeg = 0, fwin = 0, fwb = 0, ncol = 0;
+    int inreg = 0, regbeg = 0, ncol = 0;
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+    int fwin = 0, fwb = 0;
+#endif
     int last_start = 0;
     for (j = 0; j < N; j++)
       {
@@ -621,7 +626,10 @@ malloc_in_range (struct grub_relocator *rel,
 
   {
     int last_start = 0;
-    int inreg = 0, regbeg = 0, fwin = 0, fwb = 0, ncol = 0;
+    int inreg = 0, regbeg = 0, ncol = 0;
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+    int fwin = 0, fwb = 0;
+#endif
     int cural = 0;
     for (j = 0; j < N; j++)
       {
@@ -1008,10 +1016,12 @@ grub_relocator_unload (struct grub_relocator *rel)
 	      grub_free (h + 1);
 	      break;
 	    }
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
 	  case CHUNK_TYPE_FIRMWARE:
 	    grub_relocator_firmware_free_region (chunk->subchunks[i].start,
 						 chunk->subchunks[i].size);
 	    break;
+#endif
 	  }
       next = chunk->next;
       grub_free (chunk->subchunks);

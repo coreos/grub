@@ -1,3 +1,55 @@
+2010-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	MIPS multiboot2 support.
+
+	* conf/mips.rmk (pkglib_MODULES): Add multiboot2.mod.
+	(multiboot2_mod_SOURCES): New variable.
+	(multiboot2_mod_CFLAGS): Likewise.
+	(multiboot2_mod_LDFLAGS): Likewise.
+	(multiboot2_mod_ASFLAGS): Likewise.
+	* include/grub/i386/multiboot.h (MULTIBOOT_INITIAL_STATE): New
+	definition.
+	(MULTIBOOT_ENTRY_REGISTER): Likewise.
+	(MULTIBOOT_MBI_REGISTER): Likewise.
+	(MULTIBOOT_ARCHITECTURE_CURRENT): Likewise.
+	(MULTIBOOT_ELF32_MACHINE): Likewise.
+	(MULTIBOOT_ELF64_MACHINE): Likewise.
+	* include/grub/mips/multiboot.h: New file.
+	* include/grub/video.h (grub_video_driver_id): New type
+	GRUB_VIDEO_DRIVER_SM712.
+	(grub_video_get_info_and_fini): Export.
+	(grub_video_get_palette): Likewise.
+	(grub_video_get_driver_id): Likewise.
+	* include/multiboot2.h: Resynced with spec.
+	* loader/i386/multiboot.c: Moved from here ...
+	* loader/multiboot.c: ... here. All users updated.
+	(grub_multiboot_boot): Use platform-specific macros.
+	* loader/i386/multiboot_elfxx.c: Moved from here ...
+	* loader/multiboot_elfxx.c: ... here. All users updated.
+	(E_MACHINE): Use MULTIBOOT_ELF32_MACHINE and MULTIBOOT_ELF64_MACHINE.
+	* loader/i386/multiboot_mbi2.c (grub_multiboot_load): Check arcitecture.
+	* video/sm712.c (grub_video_sm712_adapter): Add missing id field.
+
+2010-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Import gnulib argp module.
+
+	* gnulib/argp-ba.c: New file.
+	* gnulib/argp-eexst.c: Likewise.
+	* gnulib/argp-fmtstream.c: Likewise.
+	* gnulib/argp-fmtstream.h: Likewise.
+	* gnulib/argp-fs-xinl.c: Likewise.
+	* gnulib/argp-help.c: Likewise.
+	* gnulib/argp-namefrob.h: Likewise.
+	* gnulib/argp-parse.c: Likewise.
+	* gnulib/argp-pin.c: Likewise.
+	* gnulib/argp-pv.c: Likewise.
+	* gnulib/argp-pvh.c: Likewise.
+	* gnulib/argp-version-etc.c: Likewise.
+	* gnulib/argp-version-etc.h: Likewise.
+	* gnulib/argp-xinl.c: Likewise.
+	* gnulib/argp.h: Likewise.
+
 2010-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/device.c (grub_device_iterate): Clear errors after failed

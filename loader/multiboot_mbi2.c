@@ -22,6 +22,7 @@
 #include <grub/machine/biosnum.h>
 #endif
 #include <grub/multiboot.h>
+#include <grub/cpu/multiboot.h>
 #include <grub/cpu/relocator.h>
 #include <grub/disk.h>
 #include <grub/device.h>
@@ -89,7 +90,8 @@ grub_multiboot_load (grub_file_t file)
     {
       if (header->magic == MULTIBOOT_HEADER_MAGIC
 	  && !(header->magic + header->architecture
-	       + header->header_length + header->checksum))
+	       + header->header_length + header->checksum)
+	  && header->architecture == MULTIBOOT_ARCHITECTURE_CURRENT)
 	break;
     }
 
