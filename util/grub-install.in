@@ -270,7 +270,7 @@ for dir in ${localedir}/*; do
 done
 
 # Write device to a variable so we don't have to traverse /dev every time.
-grub_device=`$grub_probe --target=device ${grubdir}`
+grub_device=`$grub_probe --target=device ${grubdir}` || exit 1
 
 if ! test -f ${grubdir}/grubenv; then
     $grub_editenv ${grubdir}/grubenv create
@@ -312,11 +312,11 @@ if [ "x${devabstraction_module}" = "x" ] ; then
       if echo "${install_device}" | grep -qx "(.*)" ; then
         install_drive="${install_device}"
       else
-        install_drive="`$grub_probe --target=drive --device ${install_device}`"
+        install_drive="`$grub_probe --target=drive --device ${install_device}`" || exit 1
       fi
       install_drive="`echo ${install_drive} | sed -e s/,[0-9]*[a-z]*//g`"
     fi
-    grub_drive="`$grub_probe --target=drive --device ${grub_device}`"
+    grub_drive="`$grub_probe --target=drive --device ${grub_device}`" || exit 1
 
     # Strip partition number
     grub_drive="`echo ${grub_drive} | sed -e s/,[0-9]*[a-z]*//g`"
@@ -343,7 +343,7 @@ if [ "x${devabstraction_module}" = "x" ] ; then
         modules="$modules search_fs_uuid"
     fi
 else
-    prefix_drive=`$grub_probe --target=drive --device ${grub_device}`
+    prefix_drive=`$grub_probe --target=drive --device ${grub_device}` || exit 1
 fi
 
 if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
