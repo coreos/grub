@@ -1,5 +1,10 @@
 2010-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.in (uninstall): Remove a leftover debug echo.
+	Reported by: Grégoire Sutre
+
+2010-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	MIPS multiboot2 support.
 
 	* conf/mips.rmk (pkglib_MODULES): Add multiboot2.mod.
