@@ -168,6 +168,8 @@
 
 #ifndef ASM_FILE
 
+#define GRUB_PXE_SIGNATURE "PXENV+"
+
 struct grub_pxenv
 {
   grub_uint8_t signature[6];	/* 'PXENV+'.  */
@@ -302,8 +304,7 @@ struct grub_pxenv_unload_stack
   grub_uint8_t reserved[10];
 } __attribute__ ((packed));
 
-struct grub_pxenv * EXPORT_FUNC(grub_pxe_scan) (void);
-int EXPORT_FUNC(grub_pxe_call) (int func, void * data);
+int EXPORT_FUNC(grub_pxe_call) (int func, void * data, grub_uint32_t pxe_rm_entry);
 
 extern struct grub_pxenv *grub_pxe_pxenv;
 
