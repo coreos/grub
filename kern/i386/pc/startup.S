@@ -450,16 +450,6 @@ gate_a20_check_state:
  */
 	. = _start + GRUB_KERNEL_MACHINE_RAW_SIZE
 
-	/*
-	 * This next part is sort of evil.  It takes advantage of the
-	 * byte ordering on the x86 to work in either 16-bit or 32-bit
-	 * mode, so think about it before changing it.
-	 */
-
-FUNCTION(grub_hard_stop)
-	hlt
-	jmp EXT_C(grub_hard_stop)
-
 
 /*
  * grub_stop_floppy()
@@ -485,56 +475,6 @@ FUNCTION(grub_exit)
 	int	$0x18
 	jmp	cold_reboot
 	.code32
-
-/*
- * grub_halt(int no_apm)
- *
- * Halt the system, using APM if possible. If NO_APM is true, don't use
- * APM even if it is available.
- */
-FUNCTION(grub_halt)
-	/* see if zero */
-	testl	%eax, %eax
-	jnz	EXT_C(grub_stop)
-
-	call	prot_to_real
-	.code16
-
-	/* detect APM */
-	movw	$0x5300, %ax
-	xorw	%bx, %bx
-	int	$0x15
-	jc	EXT_C(grub_hard_stop)
-	/* don't check %bx for buggy BIOSes... */
-
-	/* disconnect APM first */
-	movw	$0x5304, %ax
-	xorw	%bx, %bx
-	int	$0x15
-
-	/* connect APM */
-	movw	$0x5301, %ax
-	xorw	%bx, %bx
-	int	$0x15
-	jc	EXT_C(grub_hard_stop)
-
-	/* set APM protocol level - 1.1 or bust. (this covers APM 1.2 also) */
-	movw	$0x530E, %ax
-	xorw	%bx, %bx
-	movw	$0x0101, %cx
-	int	$0x15
-	jc	EXT_C(grub_hard_stop)
-
-	/* set the power state to off */
-	movw	$0x5307, %ax
-	movw	$1, %bx
-	movw	$3, %cx
-	int	$0x15
-
-	/* shouldn't reach here */
-	jmp	EXT_C(grub_hard_stop)
-	.code32
-
 
 /*
  *  void grub_chainloader_real_boot (int drive, void *part_addr)
