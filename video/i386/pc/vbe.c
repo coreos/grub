@@ -28,6 +28,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/video.h>
+#include <grub/machine/int.h>
 
 static int vbe_detected = -1;
 
@@ -69,6 +70,200 @@ real2pm (grub_vbe_farptr_t ptr)
 {
   return (void *) ((((unsigned long) ptr & 0xFFFF0000) >> 12UL)
                    + ((unsigned long) ptr & 0x0000FFFF));
+}
+
+/* Call VESA BIOS 0x4f09 to set palette data, return status.  */
+static grub_vbe_status_t 
+grub_vbe_bios_set_palette_data (grub_uint32_t color_count,
+				grub_uint32_t start_index,
+				struct grub_vbe_palette_data *palette_data)
+{
+  struct grub_bios_int_registers regs;
+  regs.eax = 0x4f09;
+  regs.ebx = 0;
+  regs.ecx = color_count;
+  regs.edx = start_index;
+  regs.es = (((grub_addr_t) palette_data) & 0xffff0000) >> 4;
+  regs.edi = ((grub_addr_t) palette_data) & 0xffff;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+  return regs.eax & 0xffff;
+}
+
+/* Call VESA BIOS 0x4f00 to get VBE Controller Information, return status.  */
+grub_vbe_status_t 
+grub_vbe_bios_get_controller_info (struct grub_vbe_info_block *ci)
+{
+  struct grub_bios_int_registers regs;
+  /* Store *controller_info to %es:%di.  */
+  regs.es = (((grub_addr_t) ci) & 0xffff0000) >> 4;
+  regs.edi = ((grub_addr_t) ci) & 0xffff;
+  regs.eax = 0x4f00;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+  return regs.eax & 0xffff;
+}
+
+/* Call VESA BIOS 0x4f01 to get VBE Mode Information, return status.  */
+grub_vbe_status_t 
+grub_vbe_bios_get_mode_info (grub_uint32_t mode,
+			     struct grub_vbe_mode_info_block *mode_info)
+{
+  struct grub_bios_int_registers regs;
+  regs.eax = 0x4f01;
+  regs.ecx = mode;
+  /* Store *mode_info to %es:%di.  */
+  regs.es = ((grub_addr_t) mode_info & 0xffff0000) >> 4;
+  regs.edi = (grub_addr_t) mode_info & 0x0000ffff;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+  return regs.eax & 0xffff;
+}
+
+/* Call VESA BIOS 0x4f02 to set video mode, return status.  */
+static grub_vbe_status_t
+grub_vbe_bios_set_mode (grub_uint32_t mode,
+			struct grub_vbe_crtc_info_block *crtc_info)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x4f02;
+  regs.ebx = mode;
+  /* Store *crtc_info to %es:%di.  */
+  regs.es = (((grub_addr_t) crtc_info) & 0xffff0000) >> 4;
+  regs.edi = ((grub_addr_t) crtc_info) & 0xffff;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+
+  return regs.eax & 0xffff;
+}
+
+/* Call VESA BIOS 0x4f03 to return current VBE Mode, return status.  */
+grub_vbe_status_t 
+grub_vbe_bios_get_mode (grub_uint32_t *mode)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x4f03;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+  *mode = regs.ebx & 0xffff;
+
+  return regs.eax & 0xffff;
+}
+
+grub_vbe_status_t 
+grub_vbe_bios_getset_dac_palette_width (int set, int *dac_mask_size)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x4f08;
+  regs.ebx = (*dac_mask_size & 0xff) >> 8;
+  regs.ebx = set ? 1 : 0;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+  *dac_mask_size = (regs.ebx >> 8) & 0xff;
+
+  return regs.eax & 0xffff;
+}
+
+/* Call VESA BIOS 0x4f05 to set memory window, return status.  */
+grub_vbe_status_t
+grub_vbe_bios_set_memory_window (grub_uint32_t window,
+				 grub_uint32_t position)
+{
+  struct grub_bios_int_registers regs;
+
+  /* BL = window, BH = 0, Set memory window.  */
+  regs.ebx = window & 0x00ff;
+  regs.edx = position;
+  regs.eax = 0x4f05;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+  return regs.eax & 0xffff;
+}
+
+/* Call VESA BIOS 0x4f05 to return memory window, return status.  */
+grub_vbe_status_t
+grub_vbe_bios_get_memory_window (grub_uint32_t window,
+				 grub_uint32_t *position)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x4f05;
+  /* BH = 1, Get memory window. BL = window.  */
+  regs.ebx = (window & 0x00ff) | 0x100;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+
+  *position = regs.edx & 0xffff;
+  return regs.eax & 0xffff;
+}
+
+/* Call VESA BIOS 0x4f06 to set scanline length (in bytes), return status.  */
+grub_vbe_status_t 
+grub_vbe_bios_set_scanline_length (grub_uint32_t length)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.ecx = length;
+  regs.eax = 0x4f06;
+  /* BL = 2, Set Scan Line in Bytes.  */
+  regs.ebx = 0x0002;	
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+  return regs.eax & 0xffff;
+}
+
+/* Call VESA BIOS 0x4f06 to return scanline length (in bytes), return status.  */
+grub_vbe_status_t 
+grub_vbe_bios_get_scanline_length (grub_uint32_t *length)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x4f06;
+  regs.ebx = 0x0001;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  /* BL = 1, Get Scan Line Length (in bytes).  */
+  grub_bios_interrupt (0x10, &regs);
+
+  *length = regs.ebx & 0xffff;
+  return regs.eax & 0xffff;
+}
+
+/* Call VESA BIOS 0x4f07 to set display start, return status.  */
+static grub_vbe_status_t 
+grub_vbe_bios_set_display_start (grub_uint32_t x, grub_uint32_t y)
+{
+  struct grub_bios_int_registers regs;
+
+  /* Store x in %ecx.  */
+  regs.ecx = x;
+  regs.edx = y;
+  regs.eax = 0x4f07;
+  /* BL = 80h, Set Display Start during Vertical Retrace.  */
+  regs.ebx = 0x0080;	
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+  return regs.eax & 0xffff;
+}
+
+/* Call VESA BIOS 0x4f07 to get display start, return status.  */
+grub_vbe_status_t 
+grub_vbe_bios_get_display_start (grub_uint32_t *x,
+				 grub_uint32_t *y)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x4f07;
+  /* BL = 1, Get Display Start.  */
+  regs.ebx = 0x0001;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+
+  *x = regs.ecx & 0xffff;
+  *y = regs.edx & 0xffff;
+  return regs.eax & 0xffff;
 }
 
 grub_err_t

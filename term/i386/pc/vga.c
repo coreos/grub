@@ -19,6 +19,7 @@
 // TODO: Deprecated and broken. Needs to be converted to Video Driver!
 
 #include <grub/machine/vga.h>
+#include <grub/machine/int.h>
 #include <grub/machine/console.h>
 #include <grub/cpu/io.h>
 #include <grub/term.h>
@@ -81,6 +82,25 @@ static grub_font_t font = 0;
 
 #define INPUT_STATUS1_REGISTER	0x3DA
 #define INPUT_STATUS1_VERTR_BIT 0x08
+
+static unsigned char 
+grub_vga_set_mode (unsigned char mode)
+{
+  struct grub_bios_int_registers regs;
+  unsigned char ret;
+  /* get current mode */
+  regs.eax = 0x0f00;
+  regs.ebx = 0;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+
+  ret = regs.eax & 0xff;
+  regs.eax = mode;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+
+  return ret;
+}
 
 static inline void
 wait_vretrace (void)
