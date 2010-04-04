@@ -1539,33 +1539,6 @@ FUNCTION(grub_vga_set_mode)
 	popl	%ebp
 	ret
 
-
-/*
- * unsigned char *grub_vga_get_font (void)
- */
-FUNCTION(grub_vga_get_font)
-	pushl	%ebp
-	pushl	%ebx
-
-	call	prot_to_real
-	.code16
-	movw	$0x1130, %ax
-	movb	$0x06, %bh
-	int	$0x10
-	movw	%es, %bx
-	movw	%bp, %dx
-	DATA32	call	real_to_prot
-	.code32
-
-	movzwl	%bx, %ecx
-	shll	$4, %ecx
-	movw	%dx, %ax
-	addl	%ecx, %eax
-
-	popl	%ebx
-	popl	%ebp
-	ret
-
 /*
  * grub_vbe_bios_status_t grub_vbe_get_controller_info (struct grub_vbe_info_block *controller_info)
  *

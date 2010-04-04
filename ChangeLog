@@ -1,3 +1,10 @@
+2010-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove unused grub_vga_get_font.
+
+	* kern/i386/pc/startup.S (grub_vga_get_font): Removed.
+	* include/grub/i386/pc/vga.h (grub_vga_get_font): Likewise.
+
 2010-04-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* kern/misc.c: Disable the __enable_execute_stack hack for utilities.
