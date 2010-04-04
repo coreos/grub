@@ -35,7 +35,7 @@ grub_iswordseparator (int c)
 }
 
 /* grub_gettext_dummy is not translating anything.  */
-const char *
+static const char *
 grub_gettext_dummy (const char *s)
 {
   return s;
@@ -1058,7 +1058,7 @@ grub_abort (void)
 void abort (void) __attribute__ ((alias ("grub_abort")));
 #endif
 
-#ifdef NEED_ENABLE_EXECUTE_STACK
+#if defined(NEED_ENABLE_EXECUTE_STACK) && !defined(GRUB_UTIL)
 /* Some gcc versions generate a call to this function
    in trampolines for nested functions.  */
 void __enable_execute_stack (void *addr __attribute__ ((unused)))

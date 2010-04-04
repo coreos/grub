@@ -232,7 +232,12 @@ serial_get_divisor (unsigned int speed)
   /* Set the baud rate.  */
   for (i = 0; i < sizeof (divisor_tab) / sizeof (divisor_tab[0]); i++)
     if (divisor_tab[i].speed == speed)
+  /* UART in Yeeloong runs twice the usual rate.  */
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
+      return 2 * divisor_tab[i].div;
+#else
       return divisor_tab[i].div;
+#endif
   return 0;
 }
 
@@ -292,11 +297,14 @@ serial_hw_init (void)
 	     | serial_settings.stop_bits);
   grub_outb (status, serial_settings.port + UART_LCR);
 
+  /* In Yeeloong serial port has only 3 wires.  */
+#ifndef GRUB_MACHINE_MIPS_YEELOONG
   /* Enable the FIFO.  */
   grub_outb (UART_ENABLE_FIFO, serial_settings.port + UART_FCR);
 
   /* Turn on DTR, RTS, and OUT2.  */
   grub_outb (UART_ENABLE_MODEM, serial_settings.port + UART_MCR);
+#endif
 
   /* Drain the input buffer.  */
   while (grub_serial_checkkey () != -1)
@@ -613,7 +621,11 @@ GRUB_MOD_INIT(serial)
 
   /* Set default settings.  */
   serial_settings.port      = serial_hw_get_port (0);
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
+  serial_settings.divisor   = serial_get_divisor (115200);
+#else
   serial_settings.divisor   = serial_get_divisor (9600);
+#endif
   serial_settings.word_len  = UART_8BITS_WORD;
   serial_settings.parity    = UART_NO_PARITY;
   serial_settings.stop_bits = UART_1_STOP_BIT;

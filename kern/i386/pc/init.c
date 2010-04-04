@@ -47,12 +47,6 @@ static int num_regions;
 grub_addr_t grub_os_area_addr;
 grub_size_t grub_os_area_size;
 
-void
-grub_arch_sync_caches (void *address __attribute__ ((unused)),
-		       grub_size_t len __attribute__ ((unused)))
-{
-}
-
 static char *
 make_install_device (void)
 {

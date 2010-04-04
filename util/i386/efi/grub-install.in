@@ -31,6 +31,7 @@ target_cpu=@target_cpu@
 platform=@platform@
 host_os=@host_os@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
+localedir=@datadir@/locale
 
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
@@ -144,8 +145,7 @@ else
 fi
 
 # Create the GRUB directory if it is not present.
-test -d "$bootdir" || mkdir "$bootdir" || exit 1
-test -d "$grubdir" || mkdir "$grubdir" || exit 1
+mkdir -p "$grubdir" || exit 1
 
 # If --recheck is specified, remove the device map, if present.
 if test $recheck = yes; then
@@ -180,6 +180,14 @@ for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst; do
     cp -f $file ${grubdir} || exit 1
 done
 
+# Copy gettext files
+mkdir -p ${grubdir}/locale/
+for dir in ${localedir}/*; do
+    if test -f "$dir/LC_MESSAGES/grub.mo"; then
+        cp -f "$dir/LC_MESSAGES/grub.mo" "${grubdir}/locale/${dir##*/}.mo"
+    fi
+done
+
 if ! test -f ${grubdir}/grubenv; then
     $grub_editenv ${grubdir}/grubenv create
 fi
@@ -194,7 +202,10 @@ fi
 # Then the partition map module.  In order to support partition-less media,
 # this command is allowed to fail (--target=fs already grants us that the
 # filesystem will be accessible).
-partmap_module=`$grub_probe --target=partmap --device-map=${device_map} ${grubdir} 2> /dev/null`
+partmap_module=
+for x in `$grub_probe --target=partmap --device ${grub_device} 2> /dev/null`; do
+   partmap_module="$partmap_module part_$x";
+done
 
 # Device abstraction module, if any (lvm, raid).
 devabstraction_module=`$grub_probe --target=abstraction --device-map=${device_map} ${grubdir}`

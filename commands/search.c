@@ -149,11 +149,11 @@ grub_cmd_do_search (grub_command_t cmd __attribute__ ((unused)), int argc,
 static grub_command_t cmd;
 
 #ifdef DO_SEARCH_FILE
-GRUB_MOD_INIT(search_file)
+GRUB_MOD_INIT(search_fs_file)
 #elif defined (DO_SEARCH_FS_UUID)
 GRUB_MOD_INIT(search_fs_uuid)
 #else
-GRUB_MOD_INIT(search_fs_label)
+GRUB_MOD_INIT(search_label)
 #endif
 {
   cmd =
@@ -163,11 +163,11 @@ GRUB_MOD_INIT(search_fs_label)
 }
 
 #ifdef DO_SEARCH_FILE
-GRUB_MOD_FINI(search_file)
+GRUB_MOD_FINI(search_fs_file)
 #elif defined (DO_SEARCH_FS_UUID)
 GRUB_MOD_FINI(search_fs_uuid)
 #else
-GRUB_MOD_FINI(search_fs_label)
+GRUB_MOD_FINI(search_label)
 #endif
 {
   grub_unregister_command (cmd);

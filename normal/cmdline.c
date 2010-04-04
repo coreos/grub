@@ -303,8 +303,9 @@ grub_cmdline_get (const char *prompt)
 	  grub_memmove (buf + lpos, str, len * sizeof (grub_uint32_t));
 
 	  llen += len;
+	  cl_set_pos_all ();
+	  cl_print_all (lpos, 0);
 	  lpos += len;
-	  cl_print_all (lpos - len, 0);
 	  cl_set_pos_all ();
 	}
     }
@@ -473,7 +474,6 @@ grub_cmdline_get (const char *prompt)
 			if (t != 1)
 			  cl_insert (insert);
 			lpos++;
-			cl_set_pos_all ();			
 		      }
 		    else
 		      {
@@ -485,6 +485,7 @@ grub_cmdline_get (const char *prompt)
 		grub_free (insertu8);
 		grub_free (insert);
 	      }
+	    cl_set_pos_all ();
 	  }
 	  break;
 

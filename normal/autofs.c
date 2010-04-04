@@ -38,6 +38,9 @@ autoload_fs_module (void)
       if (! grub_dl_get (p->name) && grub_dl_load (p->name))
 	return 1;
 
+      if (grub_errno)
+	grub_print_error ();
+
       fs_module_list = p->next;
       grub_free (p->name);
       grub_free (p);

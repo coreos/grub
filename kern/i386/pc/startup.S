@@ -53,7 +53,7 @@
 #include <multiboot.h>
 #include <multiboot2.h>
 
-#define ABS(x)	((x) - _start + GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
+#define ABS(x)	((x) - LOCAL (base) + GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
 
 	.file	"startup.S"
 
@@ -66,16 +66,15 @@
 	.globl	start, _start
 start:
 _start:
+LOCAL (base):
 	/*
 	 *  Guarantee that "main" is loaded at 0x0:0x8200.
 	 */
-#ifdef APPLE_CC
-	codestart_abs = ABS(codestart) - 0x10000
-	ljmp $0, $(codestart_abs)
+#ifdef __APPLE__
+	ljmp $0, $(ABS(LOCAL (codestart)) - 0x10000)
 #else
-	ljmp $0, $ABS(codestart)
+	ljmp $0, $ABS(LOCAL (codestart))
 #endif
-
 	/*
 	 *  Compatibility version number
 	 *
@@ -183,7 +182,7 @@ multiboot_trampoline:
 	.code16
 
 /* the real mode code continues... */
-codestart:
+LOCAL (codestart):
 	cli		/* we're not safe here! */
 
 	/* set up %ds, %ss, and %es */
@@ -1081,7 +1080,7 @@ FUNCTION(grub_console_real_putchar)
  */
 
 /* this table is used in translate_keycode below */
-translation_table:
+LOCAL (translation_table):
 	.word	GRUB_CONSOLE_KEY_LEFT, GRUB_TERM_LEFT
 	.word	GRUB_CONSOLE_KEY_RIGHT, GRUB_TERM_RIGHT
 	.word	GRUB_CONSOLE_KEY_UP, GRUB_TERM_UP
@@ -1103,11 +1102,10 @@ translate_keycode:
 	pushw	%bx
 	pushw	%si
 
-#ifdef APPLE_CC
-	translation_table_abs = ABS (translation_table) - 0x10000
-	movw	$(translation_table_abs), %si
+#ifdef __APPLE__
+	movw	$(ABS(LOCAL (translation_table)) - 0x10000), %si
 #else
-	movw	$ABS(translation_table), %si
+	movw	$ABS(LOCAL (translation_table)), %si
 #endif
 
 1:	lodsw
@@ -1462,33 +1460,6 @@ FUNCTION(grub_vga_set_mode)
 	.code32
 
 	movb	%dl, %al
-	popl	%ebx
-	popl	%ebp
-	ret
-
-
-/*
- * unsigned char *grub_vga_get_font (void)
- */
-FUNCTION(grub_vga_get_font)
-	pushl	%ebp
-	pushl	%ebx
-
-	call	prot_to_real
-	.code16
-	movw	$0x1130, %ax
-	movb	$0x06, %bh
-	int	$0x10
-	movw	%es, %bx
-	movw	%bp, %dx
-	DATA32	call	real_to_prot
-	.code32
-
-	movzwl	%bx, %ecx
-	shll	$4, %ecx
-	movw	%dx, %ax
-	addl	%ecx, %eax
-
 	popl	%ebx
 	popl	%ebp
 	ret

@@ -79,21 +79,22 @@ LIBS = @LIBS@ $(LIBINTL)
 
 CC = @CC@
 CFLAGS = @CFLAGS@
+GNULIB_CFLAGS = -Wno-undef -D_GL_UNUSED="__attribute__ ((unused))"
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@ $(LIBS)
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
 	 -DGRUB_LIBDIR=\"$(pkglibdir)\" -DLOCALEDIR=\"$(localedir)\"
 TARGET_CC = @TARGET_CC@
-TARGET_CFLAGS = @TARGET_CFLAGS@
-TARGET_ASFLAGS = @TARGET_ASFLAGS@
+TARGET_CFLAGS = -ffreestanding @TARGET_CFLAGS@
+TARGET_ASFLAGS = -nostdinc -fno-builtin @TARGET_ASFLAGS@
 TARGET_MODULE_FORMAT = @TARGET_MODULE_FORMAT@
 TARGET_APPLE_CC = @TARGET_APPLE_CC@
 OBJCONV = @OBJCONV@
-TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include) -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
+TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
 	-Wall -W
-TARGET_LDFLAGS = @TARGET_LDFLAGS@
+TARGET_LDFLAGS = -nostdlib @TARGET_LDFLAGS@
 TARGET_IMG_LDSCRIPT = @TARGET_IMG_LDSCRIPT@
-TARGET_IMG_LDFLAGS = @TARGET_IMG_LDFLAGS@
+TARGET_IMG_LDFLAGS = -nostdlib @TARGET_IMG_LDFLAGS@
 TARGET_IMG_CFLAGS = @TARGET_IMG_CFLAGS@
 TARGET_OBJ2ELF = @TARGET_OBJ2ELF@
 EXEEXT = @EXEEXT@
@@ -116,6 +117,7 @@ LIBCURSES = @LIBCURSES@
 LIBUSB = @LIBUSB@
 LIBSDL = @LIBSDL@
 LIBPCIACCESS = @LIBPCIACCESS@
+LEX = @LEX@
 YACC = @YACC@
 FONT_SOURCE = @FONT_SOURCE@
 
@@ -147,7 +149,7 @@ INFOS = $(info_INFOS)
 CLEANFILES =
 MOSTLYCLEANFILES =
 DISTCLEANFILES = config.status config.cache config.log config.h \
-	Makefile stamp-h include/grub/cpu include/grub/machine \
+	Makefile stamp-h stamp-h1 include/grub/cpu include/grub/machine \
 	gensymlist.sh genkernsyms.sh build_env.mk \
 	docs/grub.info docs/version.texi docs/stamp-vti
 
@@ -178,7 +180,9 @@ endif
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
+ifneq ($(platform), emu)
 pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst
+endif
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
 	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UNDSYMFILES) > $@ \
@@ -239,6 +243,7 @@ else
 ifeq ($(enable_grub_mkfont),yes)
 
 pkgdata_DATA += unicode.pf2 ascii.pf2 ascii.h
+CLEANFILES += ascii.bitmaps
 
 # Arrows and lines are needed to draw the menu, so we always include them
 UNICODE_ARROWS=0x2190-0x2193
@@ -278,7 +283,7 @@ build_env.mk: Makefile
 	) > $@
 pkglib_BUILDDIR += config.h grub_script.tab.h
 
-all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES) $(foreach lang, $(LINGUAS), po/$(lang).mo)
+all-local: $(PROGRAMS) $(GRUB_EMU) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES) $(foreach lang, $(LINGUAS), po/$(lang).mo)
 
 install: install-local
 
@@ -299,7 +304,7 @@ install-local: all
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkgdatadir)/$$dest; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(bindir) $(DESTDIR)$(mandir)/man1
-	@list='$(bin_UTILITIES)'; for file in $$list; do \
+	@list='$(bin_UTILITIES) $(GRUB_EMU)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
@@ -375,7 +380,7 @@ uninstall:
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  rm -f $(DESTDIR)$(pkgdatadir)/$$dest; \
 	done
-	@list='$(bin_UTILITIES) $(bin_SCRIPTS)'; for file in $$list; do \
+	@list='$(bin_UTILITIES) $(bin_SCRIPTS) $(GRUB_EMU)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(bindir)/$$dest; \
 	  rm -f $(DESTDIR)$(mandir)/man1/$$dest.1; \
@@ -392,7 +397,6 @@ uninstall:
 	@list='$(lib_SCRIPTS)'; \
 	for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
-	  echo rm -f $(DESTDIR)$(libdir)/$$dest; \
 	  rm -f $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
 	@list='$(info_INFOS)'; \

@@ -81,7 +81,7 @@ prom_call:
 
 
 after_info_block:
-	sethi	%hi(SCRATCH_PAD), %l1	/* OF argument slots */
+	sethi	%hi(SCRATCH_PAD_DISKBOOT), %l1	/* OF argument slots */
 
 	GET_ABS(notification_string, %o2)
 	call	console_write
@@ -129,7 +129,7 @@ bootit:
 	 mov	NOTIFICATION_DONE_LEN, %o3
 	sethi	%hi(GRUB_BOOT_MACHINE_IMAGE_ADDRESS), %o2
 	jmpl	%o2 + %lo(GRUB_BOOT_MACHINE_IMAGE_ADDRESS), %o7
-	 mov	CIF_REG, %o0
+	 mov	CIF_REG, %o4
 1:	ba,a	1b
 
 lastlist:

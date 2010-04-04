@@ -90,8 +90,7 @@ grub_cmd_blocklist (grub_command_t cmd __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_DEVICE,
 		       "this command is available only for disk devices");
 
-  if (file->device->disk->partition)
-    part_start = grub_partition_get_start (file->device->disk->partition);
+  part_start = grub_partition_get_start (file->device->disk->partition);
 
   file->read_hook = read_blocklist;
 

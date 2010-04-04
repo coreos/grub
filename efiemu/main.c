@@ -265,7 +265,7 @@ grub_efiemu_autocore (void)
   grub_free (filename);
   if (err)
     return err;
-#ifndef GRUB_UTIL
+#ifndef GRUB_MACHINE_EMU
   err = grub_machine_efiemu_init_tables ();
   if (err)
     return err;
@@ -313,7 +313,7 @@ grub_cmd_efiemu_load (grub_command_t cmd __attribute__ ((unused)),
   err = grub_efiemu_load_file (args[0]);
   if (err)
     return err;
-#ifndef GRUB_UTIL
+#ifndef GRUB_MACHINE_EMU
   err = grub_machine_efiemu_init_tables ();
   if (err)
     return err;

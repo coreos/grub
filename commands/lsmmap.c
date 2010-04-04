@@ -16,7 +16,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef GRUB_MACHINE_EMU
 #include <grub/machine/memory.h>
+#endif
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/command.h>
@@ -34,7 +36,9 @@ grub_cmd_lsmmap (grub_command_t cmd __attribute__ ((unused)),
 		   (long long) addr, (long long) size, type);
       return 0;
     }
+#ifndef GRUB_MACHINE_EMU
   grub_machine_mmap_iterate (hook);
+#endif
 
   return 0;
 }
