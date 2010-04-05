@@ -1445,47 +1445,6 @@ FUNCTION(grub_console_setcursor)
 	ret
 
 /*
- * grub_getrtsecs()
- *	if a seconds value can be read, read it and return it (BCD),
- *      otherwise return 0xFF
- * BIOS call "INT 1AH Function 02H" to check whether a character is pending
- *	Call with	%ah = 0x2
- *	Return:
- *		If RT Clock can give correct values
- *			%ch = hour (BCD)
- *			%cl = minutes (BCD)
- *                      %dh = seconds (BCD)
- *                      %dl = daylight savings time (00h std, 01h daylight)
- *			Carry flag = clear
- *		else
- *			Carry flag = set
- *                         (this indicates that the clock is updating, or
- *                          that it isn't running)
- */
-FUNCTION(grub_getrtsecs)
-	pushl	%ebp
-
-	call	prot_to_real	/* enter real mode */
-	.code16
-
-	clc
-	movb	$0x2, %ah
-	int	$0x1a
-
-	DATA32	jnc	gottime
-	movb	$0xff, %dh
-
-gottime:
-	DATA32	call	real_to_prot
-	.code32
-
-	movb	%dh, %al
-
-	popl	%ebp
-	ret
-
-
-/*
  * grub_get_rtc()
  *	return the real time in ticks, of which there are about
  *	18-20 per second

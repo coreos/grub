@@ -1,5 +1,9 @@
 2010-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/i386/pc/startup.S (grub_getrtsecs): Removed (dead code).
+
+2010-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/i386/pc/init.h (grub_get_mmap_entry): Don't export.
 	* conf/i386-pc.rmk (kernel_img_HEADERS): Remove machine/init.h.
 
