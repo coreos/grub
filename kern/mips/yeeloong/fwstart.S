@@ -116,17 +116,19 @@ __start:
 	 move $a0, $v0
 
 	bal read_spd
-	 ori $a0, $zero, 2
+	 ori $a0, $zero, GRUB_SMBUS_SPD_MEMORY_TYPE_ADDR
 	ori $t0, $zero, GRUB_SMBUS_SPD_MEMORY_TYPE_DDR2
 	lui $a0, %hi(unimplemented_memory_type)
 	bne $t0, $v0, fatal
 	 addiu $a0, $a0, %hi(unimplemented_memory_type)
 
 	/* And here is our goal: DDR2 controller initialisation.  */
-        lui	$t0, 0xbfe0
-        ld	$t1, 0x0180($t0)
-	andi	$t1, $t1, 0x4ff
-        sd	$t1, 0x0180($t0)
+        lui	$t0, %hi(GRUB_CPU_LOONGSON_CORECFG)
+        ld	$t1, %lo(GRUB_CPU_LOONGSON_CORECFG) ($t0)
+	/* Use addiu for sign-extension.  */
+	addiu	$t2, $zero, ~(GRUB_CPU_LOONGSON_CORECFG_DISABLE_DDR2_SPACE|GRUB_CPU_LOONGSON_CORECFG_BUFFER_CPU)
+	and	$t1, $t1, $t2
+	sd	$t1, %lo (GRUB_CPU_LOONGSON_CORECFG) ($t0)
 
 	b continue
 
@@ -218,7 +220,7 @@ serial_hw_init:
 	sb  $t1, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_LCR)($t0)
 
 	/* Set the baud rate 115200.  */
-	ori $t1, $zero, 2
+	ori $t1, $zero, GRUB_MACHINE_SERIAL_DIVISOR_115200
 	sb $t1, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_DLL)($t0) 
 	sb $zero, (%lo (GRUB_MACHINE_SERIAL_PORT) + UART_DLH)($t0) 
 
@@ -430,7 +432,7 @@ regdump:
 write_dumpreg:	
 	ld $t2, 0($t6)
 	sd $t2, 0($t4)
-	addiu $t4, $t4, 0x10
+	addiu $t4, $t4, GRUB_MACHINE_DDR2_REG_STEP
 	jr $ra
 	 addiu $t6, $t6, GRUB_MACHINE_DDR2_REG_SIZE
 
@@ -531,10 +533,10 @@ continue:
 	sd  $t5, (%lo(GRUB_MACHINE_DDR2_BASE) + 0x30) ($t4)
 
 	/* Desactivate DDR2 registers.  */
-        lui	$t0, 0xbfe0
-        ld	$t1, 0x0180($t0)
-	ori	$t1, $t1, 0x100
-        sd	$t1, 0x0180($t0)
+        lui	$t0, %hi (GRUB_CPU_LOONGSON_CORECFG)
+        ld	$t1, %lo (GRUB_CPU_LOONGSON_CORECFG) ($t0)
+	ori	$t1, $t1, GRUB_CPU_LOONGSON_CORECFG_DISABLE_DDR2_SPACE
+        sd	$t1, %lo (GRUB_CPU_LOONGSON_CORECFG) ($t0)
 
 	/* Enable cache.  */
 	mfc0	$t0, GRUB_CPU_LOONGSON_COP0_CACHE_CONFIG
