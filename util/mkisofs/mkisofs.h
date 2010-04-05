@@ -30,12 +30,12 @@
 #include <prototyp.h>
 #include <sys/stat.h>
 
-#if ENABLE_NLS
+#if (defined(ENABLE_NLS) && ENABLE_NLS)
 
 #  include <locale.h>
 #  include <libintl.h>
 
-#else /* ! ENABLE_NLS */
+#else /* ! (defined(ENABLE_NLS) && ENABLE_NLS) */
 
 /* Disabled NLS.
    The casts to 'const char *' serve the purpose of producing warnings
@@ -43,7 +43,7 @@
    On pre-ANSI systems without 'const', the config.h file is supposed to
    contain "#define const".  */
 #  define gettext(Msgid) ((const char *) (Msgid))
-#endif /* ENABLE_NLS */
+#endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
 
 #define _(str) gettext(str)
 #define N_(str) str

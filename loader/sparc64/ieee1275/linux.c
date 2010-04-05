@@ -58,9 +58,6 @@ static grub_size_t linux_size;
 
 static char *linux_args;
 
-typedef void (*kernel_entry_t) (unsigned long, unsigned long,
-				unsigned long, unsigned long, int (void *));
-
 struct linux_bootstr_info {
 	int len, valid;
 	char buf[];
@@ -92,7 +89,6 @@ static grub_err_t
 grub_linux_boot (void)
 {
   struct linux_bootstr_info *bp;
-  kernel_entry_t linuxmain;
   struct linux_hdrs *hp;
   grub_addr_t addr;
 
@@ -141,8 +137,17 @@ grub_linux_boot (void)
   grub_dprintf ("loader", "Jumping to Linux...\n");
 
   /* Boot the kernel.  */
-  linuxmain = (kernel_entry_t) linux_addr;
-  linuxmain (0, 0, 0, 0, grub_ieee1275_entry_fn);
+  asm volatile ("sethi	%hi(grub_ieee1275_entry_fn), %o1\n"
+		"ldx	[%o1 + %lo(grub_ieee1275_entry_fn)], %o4\n"
+		"sethi	%hi(grub_ieee1275_original_stack), %o1\n"
+		"ldx	[%o1 + %lo(grub_ieee1275_original_stack)], %o6\n"
+		"sethi	%hi(linux_addr), %o1\n"
+		"ldx	[%o1 + %lo(linux_addr)], %o5\n"
+		"mov    %g0, %o0\n"
+		"mov    %g0, %o2\n"
+		"mov    %g0, %o3\n"
+		"jmp    %o5\n"
+	        "mov    %g0, %o1\n");
 
   return GRUB_ERR_NONE;
 }

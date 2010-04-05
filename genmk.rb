@@ -91,7 +91,7 @@ endif
       dir = File.dirname(src)
 
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
-	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
+	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -DGRUB_FILE=\\\"#{src}\\\" -MD -c -o $@ $<
 -include #{dep}
 
 "
@@ -143,19 +143,27 @@ mostlyclean-module-#{@name}.#{@rule_count}:
 MOSTLYCLEAN_MODULE_TARGETS += mostlyclean-module-#{@name}.#{@rule_count}
 UNDSYMFILES += #{undsym}
 
+ifeq ($(TARGET_NO_DYNAMIC_MODULES), yes)
+#{@name}: #{pre_obj} $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ #{pre_obj}
+	if test ! -z \"$(TARGET_OBJ2ELF)\"; then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@; fi
+else
 ifneq ($(TARGET_APPLE_CC),1)
 #{@name}: #{pre_obj} #{mod_obj} $(TARGET_OBJ2ELF)
 	-rm -f $@
 	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ #{pre_obj} #{mod_obj}
 	if test ! -z \"$(TARGET_OBJ2ELF)\"; then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@; fi
 else
 #{@name}: #{pre_obj} #{mod_obj} $(TARGET_OBJ2ELF)
 	-rm -f $@
 	-rm -f $@.bin
 	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@.bin #{pre_obj} #{mod_obj}
-	$(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -wd1106 -nu -nd $@.bin $@
+	$(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -wd1106 -ew2030 -ew2050 -nu -nd $@.bin $@
 	-rm -f $@.bin
+endif
 endif
 
 #{pre_obj}: $(#{prefix}_DEPENDENCIES) #{objs_str}
@@ -163,7 +171,7 @@ endif
 	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ #{objs_str}
 
 #{mod_obj}: #{mod_src}
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(#{prefix}_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(#{prefix}_CFLAGS) -DGRUB_FILE=\\\"#{mod_src}\\\" -c -o $@ $<
 
 #{mod_src}: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '#{mod_name}' $< > $@ || (rm -f $@; exit 1)
@@ -197,7 +205,7 @@ endif
       dir = File.dirname(src)
 
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
-	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
+	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -DGRUB_FILE=\\\"#{src}\\\" -MD -c -o $@ $<
 -include #{dep}
 
 clean-module-#{extra_target}.#{@rule_count}:
@@ -299,7 +307,7 @@ MOSTLYCLEAN_UTILITY_TARGETS += mostlyclean-utility-#{@name}.#{@rule_count}
       dir = File.dirname(src)
 
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
-	$(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(#{prefix}_CFLAGS) -MD -c -o $@ $<
+	$(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(#{prefix}_CFLAGS) -DGRUB_FILE=\\\"#{src}\\\" -MD -c -o $@ $<
 -include #{dep}
 
 "
@@ -330,11 +338,11 @@ MOSTLYCLEANFILES += #{deps_str}
 ifeq ($(#{prefix}_RELOCATABLE),yes)
 #{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
 	$(TARGET_CC) -Wl,-r,-d -o $@ #{objs_str} $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
-	$(STRIP) --strip-unneeded -K start -R .note -R .comment $@
+	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) --strip-unneeded -K start -R .note -R .comment $@; fi
 else
 #{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
 	$(TARGET_CC) -o $@ #{objs_str} $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
-	$(STRIP) -R .rel.dyn -R .reginfo -R .note -R .comment $@
+	if test x$(TARGET_NO_STRIP) != xyes ; then $(STRIP) -R .rel.dyn -R .reginfo -R .note -R .comment $@; fi
 endif
 
 " + objs.collect_with_index do |obj, i|
@@ -346,7 +354,7 @@ endif
       dir = File.dirname(src)
 
       "#{obj}: #{src} $(#{src}_DEPENDENCIES)
-	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
+	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -DGRUB_FILE=\\\"#{src}\\\" -MD -c -o $@ $<
 
 -include #{dep}
 

@@ -18,13 +18,13 @@
 
 #if defined(MULTIBOOT_LOAD_ELF32)
 # define XX		32
-# define E_MACHINE	EM_386
+# define E_MACHINE	MULTIBOOT_ELF32_MACHINE
 # define ELFCLASSXX	ELFCLASS32
 # define Elf_Ehdr	Elf32_Ehdr
 # define Elf_Phdr	Elf32_Phdr
 #elif defined(MULTIBOOT_LOAD_ELF64)
 # define XX		64
-# define E_MACHINE	EM_X86_64
+# define E_MACHINE	MULTIBOOT_ELF64_MACHINE
 # define ELFCLASSXX	ELFCLASS64
 # define Elf_Ehdr	Elf64_Ehdr
 # define Elf_Phdr	Elf64_Phdr
@@ -53,6 +53,7 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
   char *phdr_base;
   int lowest_segment = -1, highest_segment = -1;
   int i;
+  grub_size_t code_size;
 
   if (ehdr->e_ident[EI_CLASS] != ELFCLASSXX)
     return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF class");
@@ -102,9 +103,9 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
 
   grub_multiboot_pure_size += code_size;
 
-  alloc_mbi = grub_multiboot_get_mbi_size ();
+  grub_multiboot_alloc_mbi = grub_multiboot_get_mbi_size () + 65536;
   grub_multiboot_payload_orig
-    = grub_relocator32_alloc (grub_multiboot_pure_size + alloc_mbi + 65536);
+    = grub_relocator32_alloc (grub_multiboot_pure_size + grub_multiboot_alloc_mbi);
 
   if (!grub_multiboot_payload_orig)
     return grub_errno;

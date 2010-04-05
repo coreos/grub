@@ -91,6 +91,7 @@ fi
 if test -z "$target_alias"; then
   case "$target_cpu"-"$platform" in
     x86_64-efi) ;;
+    x86_64-emu) ;;
     x86_64-*) target_cpu=i386 ;;
     powerpc64-ieee1275) target_cpu=powerpc ;;
   esac
@@ -139,9 +140,14 @@ case "$platform" in
   qemu)		machine_CFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
   pc)		machine_CFLAGS="-DGRUB_MACHINE_PCBIOS=1" ;;
   emu)		machine_CFLAGS="-DGRUB_MACHINE_EMU=1" ;;
-  yeeloong)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
-  qemu-mips)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  yeeloong)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  qemu-mips)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
 esac
+case "$target_cpu" in
+  mips)      	machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_MIPS=1" ;;
+  sparc64)      machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
+esac
+
 CFLAGS="$CFLAGS $machine_CFLAGS"
 TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
 TARGET_CFLAGS="$TARGET_CFLAGS $machine_CFLAGS"
@@ -162,6 +168,11 @@ AC_SUBST(platform)
 AC_CHECK_PROGS([CMP], [cmp])
 if test "x$CMP" = x; then
   AC_MSG_ERROR([cmp is not found])
+fi
+
+AC_CHECK_PROGS([LEX], [flex])
+if test "x$LEX" = x; then
+  AC_MSG_ERROR([flex is not found])
 fi
 
 AC_CHECK_PROGS([YACC], [bison])
@@ -353,6 +364,7 @@ AC_MSG_RESULT([$TARGET_OBJ2ELF])
 if test "x$target_m32" = x1; then
   # Force 32-bit mode.
   TARGET_CFLAGS="$TARGET_CFLAGS -m32"
+  TARGET_ASFLAGS="$TARGET_CFLAGS -m32"
   TARGET_LDFLAGS="$TARGET_LDFLAGS -m32"
   TARGET_MODULE_FORMAT="elf32"
 fi
@@ -360,6 +372,7 @@ fi
 if test "x$target_m64" = x1; then
   # Force 64-bit mode.
   TARGET_CFLAGS="$TARGET_CFLAGS -m64"
+  TARGET_ASFLAGS="$TARGET_ASFLAGS -m64"
   TARGET_LDFLAGS="$TARGET_LDFLAGS -m64"
   TARGET_MODULE_FORMAT="elf64"
 fi
@@ -517,6 +530,7 @@ enable_efiemu=no
 fi
 AC_SUBST([enable_efiemu])
 
+if test "$platform" != emu; then
 AC_CACHE_CHECK([whether -nostdinc -isystem works], [grub_cv_cc_isystem], [
   SAVED_CPPFLAGS="$CPPFLAGS"
   CPPFLAGS="$TARGET_CPPFLAGS -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
@@ -529,6 +543,7 @@ int va_arg_func (int fixed, va_list args);]], [[]])],
 
 if test x"$grub_cv_cc_isystem" = xyes ; then
   TARGET_CPPFLAGS="$TARGET_CPPFLAGS -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
+fi
 fi
 
 # Restore the flags.

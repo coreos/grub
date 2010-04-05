@@ -25,7 +25,7 @@
 extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
 
 /* NLS can be disabled through the configure --disable-nls option.  */
-#if ENABLE_NLS
+#if (defined(ENABLE_NLS) && ENABLE_NLS)
 
 # ifdef GRUB_UTIL
 
@@ -34,7 +34,7 @@ extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
 
 # endif /* GRUB_UTIL */
 
-#else /* ! ENABLE_NLS */
+#else /* ! (defined(ENABLE_NLS) && ENABLE_NLS) */
 
 /* Disabled NLS.
    The casts to 'const char *' serve the purpose of producing warnings
@@ -47,7 +47,7 @@ extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
 #  define grub_gettext(str) ((const char *) (str))
 # endif /* GRUB_UTIL */
 
-#endif /* ENABLE_NLS */
+#endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
 
 #ifdef GRUB_UTIL
 # define _(str) gettext(str)

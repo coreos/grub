@@ -23,6 +23,7 @@
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
 #include <grub/elf.h>
+#include <grub/aout.h>
 #include <grub/i18n.h>
 #include <grub/kernel.h>
 #include <grub/disk.h>
@@ -232,6 +233,36 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
   grub_util_info ("the core size is 0x%x", core_size);
 
+#ifdef GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
+  *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE))
+    = grub_host_to_target32 (total_module_size);
+#endif
+  *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE))
+    = grub_host_to_target32 (kernel_size);
+#ifdef GRUB_KERNEL_MACHINE_COMPRESSED_SIZE
+  *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE))
+    = grub_host_to_target32 (core_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
+#endif
+
+#if defined(GRUB_KERNEL_MACHINE_INSTALL_DOS_PART) && defined(GRUB_KERNEL_MACHINE_INSTALL_BSD_PART)
+  /* If we included a drive in our prefix, let GRUB know it doesn't have to
+     prepend the drive told by BIOS.  */
+  if (prefix[0] == '(')
+    {
+      *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART))
+	= grub_host_to_target32 (-2);
+      *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART))
+	= grub_host_to_target32 (-2);
+    }
+#endif
+
+#ifdef GRUB_MACHINE_PCBIOS
+  if (GRUB_KERNEL_MACHINE_LINK_ADDR + core_size > GRUB_MEMORY_MACHINE_UPPER)
+    grub_util_error (_("core image is too big (%p > %p)"),
+ 		     GRUB_KERNEL_MACHINE_LINK_ADDR + core_size,
+		     GRUB_MEMORY_MACHINE_UPPER);
+#endif
+
 #if defined(GRUB_MACHINE_PCBIOS)
   {
     unsigned num;
@@ -300,39 +331,52 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     free (boot_img);
     free (boot_path);
   }
-#endif
-
-#ifdef GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
-  *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE))
-    = grub_host_to_target32 (total_module_size);
-#endif
-  *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE))
-    = grub_host_to_target32 (kernel_size);
-#ifdef GRUB_KERNEL_MACHINE_COMPRESSED_SIZE
-  *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE))
-    = grub_host_to_target32 (core_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
-#endif
-
-#if defined(GRUB_KERNEL_MACHINE_INSTALL_DOS_PART) && defined(GRUB_KERNEL_MACHINE_INSTALL_BSD_PART)
-  /* If we included a drive in our prefix, let GRUB know it doesn't have to
-     prepend the drive told by BIOS.  */
-  if (prefix[0] == '(')
+#elif defined (GRUB_MACHINE_SPARC64)
+  if (format == GRUB_PLATFORM_IMAGE_AOUT)
     {
-      *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART))
-	= grub_host_to_target32 (-2);
-      *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART))
-	= grub_host_to_target32 (-2);
+      void *aout_img;
+      size_t aout_size;
+      struct grub_aout32_header *aout_head;
+
+      aout_size = core_size + sizeof (*aout_head);
+      aout_img = xmalloc (aout_size);
+      aout_head = aout_img;
+      aout_head->a_midmag = grub_host_to_target32 ((AOUT_MID_SUN << 16)
+						   | AOUT32_OMAGIC);
+      aout_head->a_text = grub_host_to_target32 (core_size);
+      aout_head->a_entry
+	= grub_host_to_target32 (GRUB_BOOT_MACHINE_IMAGE_ADDRESS);
+      memcpy (aout_img + sizeof (*aout_head), core_img, core_size);
+
+      free (core_img);
+      core_img = aout_img;
+      core_size = aout_size;
     }
-#endif
+  else
+    {
+      unsigned int num;
+      char *boot_path, *boot_img;
+      size_t boot_size;
 
-#ifdef GRUB_MACHINE_PCBIOS
-  if (GRUB_KERNEL_MACHINE_LINK_ADDR + core_size > GRUB_MEMORY_MACHINE_UPPER)
-    grub_util_error (_("core image is too big (%p > %p)"),
- 		     GRUB_KERNEL_MACHINE_LINK_ADDR + core_size,
-		     GRUB_MEMORY_MACHINE_UPPER);
-#endif
+      num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
+      num <<= GRUB_DISK_SECTOR_BITS;
 
-#if defined(GRUB_MACHINE_MIPS)
+      boot_path = grub_util_get_path (dir, "diskboot.img");
+      boot_size = grub_util_get_image_size (boot_path);
+      if (boot_size != GRUB_DISK_SECTOR_SIZE)
+	grub_util_error ("diskboot.img is not one sector size");
+
+      boot_img = grub_util_read_image (boot_path);
+
+      *((grub_uint32_t *) (boot_img + GRUB_DISK_SECTOR_SIZE
+			   - GRUB_BOOT_MACHINE_LIST_SIZE + 8))
+	= grub_host_to_target32 (num);
+
+      grub_util_write_image (boot_img, boot_size, out);
+      free (boot_img);
+      free (boot_path);
+    }
+#elif defined(GRUB_MACHINE_MIPS)
   if (format == GRUB_PLATFORM_IMAGE_ELF)
     {
       char *elf_img;
@@ -533,6 +577,11 @@ main (int argc, char *argv[])
 #ifdef GRUB_PLATFORM_IMAGE_ELF
 	    if (strcmp (optarg, "elf") == 0)
 	      format = GRUB_PLATFORM_IMAGE_ELF;
+	    else 
+#endif
+#ifdef GRUB_PLATFORM_IMAGE_AOUT
+	    if (strcmp (optarg, "aout") == 0)
+	      format = GRUB_PLATFORM_IMAGE_AOUT;
 	    else 
 #endif
 	      usage (1);

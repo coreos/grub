@@ -141,8 +141,7 @@ fi
 # XXX warn on firmware-unreadable filesystems?
 
 # Create the GRUB directory if it is not present.
-test -d "$bootdir" || mkdir "$bootdir" || exit 1
-test -d "$grubdir" || mkdir "$grubdir" || exit 1
+mkdir -p "$grubdir" || exit 1
 
 # Create the device map file if it is not present.
 if test -f "$device_map"; then
@@ -179,7 +178,10 @@ fi
 # Then the partition map module.  In order to support partition-less media,
 # this command is allowed to fail (--target=fs already grants us that the
 # filesystem will be accessible).
-partmap_module=`$grub_probe --target=partmap --device-map=${device_map} ${grubdir} 2> /dev/null`
+partmap_module=
+for x in `$grub_probe --target=partmap --device ${grub_device} 2> /dev/null`; do
+   partmap_module="$partmap_module part_$x";
+done
 
 # Device abstraction module, if any (lvm, raid).
 devabstraction_module=`$grub_probe --target=abstraction --device-map=${device_map} ${grubdir}`

@@ -104,6 +104,7 @@ grub_util_error (const char *fmt, ...)
   exit (1);
 }
 
+#ifdef GRUB_UTIL
 int
 grub_err_printf (const char *fmt, ...)
 {
@@ -116,6 +117,7 @@ grub_err_printf (const char *fmt, ...)
 
   return ret;
 }
+#endif
 
 void *
 xmalloc (size_t size)
@@ -598,12 +600,14 @@ make_system_path_relative_to_its_root (const char *path)
   return buf3;
 }
 
+#ifdef GRUB_UTIL
 void
 grub_util_init_nls (void)
 {
-#if ENABLE_NLS
+#if (defined(ENABLE_NLS) && ENABLE_NLS)
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
-#endif /* ENABLE_NLS */
+#endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
 }
+#endif

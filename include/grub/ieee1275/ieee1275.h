@@ -180,4 +180,8 @@ EXPORT_FUNC(grub_ieee1275_map) (grub_addr_t phys, grub_addr_t virt,
 char *EXPORT_FUNC(grub_ieee1275_encode_devname) (const char *path);
 char *EXPORT_FUNC(grub_ieee1275_get_filename) (const char *path);
 
+int EXPORT_FUNC(grub_ieee1275_devices_iterate) (int (*hook)
+						(struct grub_ieee1275_devalias *
+						 alias));
+
 #endif /* ! GRUB_IEEE1275_HEADER */
