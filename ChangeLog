@@ -1,5 +1,10 @@
 2010-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* loader/i386/multiboot_mbi.c (grub_multiboot_load): Correctly report
+	unsupported video mode types.
+
+2010-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/i386/pc/startup.S (grub_getrtsecs): Removed (dead code).
 
 2010-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
