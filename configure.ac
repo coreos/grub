@@ -192,8 +192,8 @@ AC_PROG_MKDIR_P
 if test "x$LEX" = x; then
   AC_MSG_ERROR([flex is not found])
 else
-  version=`$LEX --version 2>/dev/null | $SED -e 's/flex //' | $AWK 'BEGIN { FS = "."; } { printf "%d", ($1 * 100 + $2) * 100 + $3;}'`
-  if test -n "$version" -a test "$version" -ge 205035; then
+  version=`$LEX --version 2>/dev/null | $SED -e 's/flex //' | $AWK 'BEGIN { FS = "."; } { printf "%d", $1 * 10000 + $2 * 100 + $3;}'`
+  if test -n "$version" -a "$version" -ge 20535; then
     :
   else
     AC_MSG_ERROR([flex is too old. GRUB requires 2.5.35 or above])
