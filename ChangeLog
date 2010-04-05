@@ -1,3 +1,42 @@
+2010-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	POSIX header file wrappers.
+
+	* lib/posix_wrap/assert.h: New file. Wrapper for its POSIX
+	equivalents.
+	* lib/posix_wrap/ctype.h: Likewise.
+	* lib/posix_wrap/errno.h: Likewise.
+	* lib/posix_wrap/langinfo.h: Likewise.
+	* lib/posix_wrap/limits.h: Likewise.
+	* lib/posix_wrap/localcharset.h: Likewise.
+	* lib/posix_wrap/stdint.h: Likewise.
+	* lib/posix_wrap/stdio.h: Likewise.
+	* lib/posix_wrap/stdlib.h: Likewise.
+	* lib/posix_wrap/string.h: Likewise.
+	* lib/posix_wrap/sys/types.h: Likewise.
+	* lib/posix_wrap/unistd.h: Likewise.
+	* lib/posix_wrap/wchar.h: Likewise.
+	* lib/posix_wrap/wctype.h: Likewise.
+	* conf/common.rmk (grub_script.yy.c): Remove #include elimination.
+	(grub_script.yy.h): Likewise.
+	* script/yylex.l: Remove POSIX emulation #defines.
+	* Makefile.in (POSIX_CFLAGS): New variable.
+	(GNULIB_UTIL_CFLAGS): Likewise.
+
+	Regexp support.
+
+	* conf/common.rmk (pkglib_MODULES): Add regexp.mod.
+	(regexp_mod_SOURCES): New variable.
+	(regexp_mod_CFLAGS): Likewise.
+	(regexp_mod_LDFLAGS): Likewise.
+	* commands/regexp.c: New file.
+	* gnulib/regcomp.c: New file. Imported from gnulib.
+	* gnulib/regex.c: Likewise.
+	* gnulib/regex_internal.c: Likewise.
+	* gnulib/regex_internal.h: Likewise.
+	* gnulib/regexec.c: Likewise.
+	* gnulib/regex.h: Likewise.
+
 2010-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* loader/i386/multiboot_mbi.c (grub_multiboot_load): Correctly report
