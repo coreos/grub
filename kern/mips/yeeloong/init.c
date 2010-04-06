@@ -67,6 +67,26 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
   return GRUB_ERR_NONE;
 }
 
+/* Dump of GPIO connections. FIXME: Remove useless and macroify.  */
+static grub_uint32_t gpiodump[] = {
+  0xffff0000, 0x2ffdd002, 0xffff0000, 0xffff0000,
+  0x2fffd000, 0xffff0000, 0x1000efff, 0xefff1000,
+  0x3ffbc004, 0xffff0000, 0xffff0000, 0xffff0000,
+  0x3ffbc004, 0x3ffbc004, 0xffff0000, 0x00000000,
+  0xffff0000, 0xffff0000, 0x3ffbc004, 0x3f9bc064,
+  0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0xffff0000, 0xffff0000, 0xffff0000, 0xffff0000,
+  0xffff0000, 0xffff0000, 0x0000ffff, 0xffff0000,
+  0xefff1000, 0xffff0000, 0xffff0000, 0xffff0000,
+  0xefff1000, 0xefff1000, 0xffff0000, 0x00000000,
+  0xffff0000, 0xffff0000, 0xefff1000, 0xffff0000,
+  0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000000, 0x50000000, 0x00000000, 0x00000000,
+};
+
 void
 grub_machine_init (void)
 {
@@ -121,6 +141,27 @@ grub_machine_init (void)
 	  grub_arch_memsize = (totalmem >> 20);
 	  grub_arch_highmemsize = 0;
 	}
+
+      /* Make sure GPIO is where we expect it to be.  */
+      grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_GPIO_BAR,
+			     GRUB_CS5536_LBAR_TURN_ON 
+			     | GRUB_CS5536_LBAR_GPIO);
+
+      for (i = 0; i < (int) ARRAY_SIZE (gpiodump); i++)
+	((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_IO_BASE 
+				     + GRUB_CS5536_LBAR_GPIO)) [i]
+	  = gpiodump[i];
+
+      /* Enable more BARs.  */
+      grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_IRQ_MAP_BAR,
+			     GRUB_CS5536_LBAR_TURN_ON 
+			     | GRUB_CS5536_LBAR_IRQ_MAP);
+      grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_MFGPT_BAR,
+			     GRUB_CS5536_LBAR_TURN_ON | GRUB_CS5536_LBAR_MFGPT);
+      grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_ACPI_BAR,
+			     GRUB_CS5536_LBAR_TURN_ON | GRUB_CS5536_LBAR_ACPI);
+      grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_PM_BAR,
+			     GRUB_CS5536_LBAR_TURN_ON | GRUB_CS5536_LBAR_PM);
     }
 
   modend = grub_modules_get_end ();
