@@ -569,6 +569,11 @@ main (int argc, char *argv[])
 
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
 	  case 'O':
+#ifdef GRUB_PLATFORM_IMAGE_YEELOONG_FLASH
+	    if (strcmp (optarg, "yeeloong_flash") == 0)
+	      format = GRUB_PLATFORM_IMAGE_YEELOONG_FLASH;
+	    else 
+#endif
 #ifdef GRUB_PLATFORM_IMAGE_RAW
 	    if (strcmp (optarg, "raw") == 0)
 	      format = GRUB_PLATFORM_IMAGE_RAW;
