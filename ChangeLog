@@ -1,3 +1,9 @@
+2010-04-06  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix unit testing framework for Qemu 0.12.
+
+	* tests/util/grub-shell.in: Remove -serial stdio option.
+
 2010-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	POSIX header file wrappers.
