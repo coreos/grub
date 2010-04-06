@@ -27,8 +27,10 @@
 #include <grub/cs5536.h>
 
 /* At the moment, only two IDE ports are supported.  */
-static const grub_port_t grub_ata_ioaddress[] = { 0x1f0, 0x170 };
-static const grub_port_t grub_ata_ioaddress2[] = { 0x3f6, 0x376 };
+static const grub_port_t grub_ata_ioaddress[] = { GRUB_ATA_CH0_PORT1,
+						  GRUB_ATA_CH1_PORT1 };
+static const grub_port_t grub_ata_ioaddress2[] = { GRUB_ATA_CH0_PORT2, 
+						   GRUB_ATA_CH1_PORT2 };
 
 static struct grub_ata_device *grub_ata_devices;
 
