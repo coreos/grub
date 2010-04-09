@@ -604,10 +604,10 @@ make_system_path_relative_to_its_root (const char *path)
 void
 grub_util_init_nls (void)
 {
-#if ENABLE_NLS
+#if (defined(ENABLE_NLS) && ENABLE_NLS)
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
-#endif /* ENABLE_NLS */
+#endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
 }
 #endif

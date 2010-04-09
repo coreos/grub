@@ -51,11 +51,8 @@ autoload_fs_module (void)
 
 /* Read the file fs.lst for auto-loading.  */
 void
-read_fs_list (void)
+read_fs_list (const char *prefix)
 {
-  const char *prefix;
-
-  prefix = grub_env_get ("prefix");
   if (prefix)
     {
       char *filename;
