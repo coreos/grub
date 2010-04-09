@@ -7,10 +7,15 @@
 	(TARGET_CFLAGS): Add -DGRUB_TARGET_NO_MODULES=1 if applicable.
 	(CFLAGS): Likewise.
 	* conf/any-emu.rmk: Generate symlist.
+	(kernel_img_HEADERS): Add util/datetime.h.
+	(kernel_img_HEADERS) [sdl]: Add sdl.h.
+	(kernel_img_HEADERS) [libusb]: Add libusb.h.
+	(kernel_img_SOURCES) [TARGET_NO_MODULES = no && !x86]: Add
+	kern/$(target_cpu)/cache.S.
 	* configure.ac (grub-emu-modules): New option.
 	* genmk.rb: Handle multiple source lists.
-	* genmoddep.awk: Output all undefined symbols.
 	* include/grub/sdl.h: New file.
+	* include/grub/libusb.h: Likewise.
 	* util/grub-emu.c (main): Hanle (host) root.
 	* util/hostdisk.c (grub_util_biosdisk_get_grub_dev): Error with
 	GRUB_ERR_UNKNOWN_DEVICE.

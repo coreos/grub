@@ -15,7 +15,7 @@ kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c kern/env.c	\
 	\
 	gnulib/progname.c util/hostfs.c disk/host.c
 kernel_img_HEADERS += datetime.h
-kernel_img_CFLAGS = $(CPPFLAGS) $(CFLAGS) -Wno-undef
+kernel_img_CFLAGS = $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Wno-undef -I$(srcdir)/gnulib
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 TARGET_NO_STRIP = yes
 
@@ -46,6 +46,8 @@ endif
 grub_emu_LDFLAGS = $(LIBCURSES)
 
 ifeq ($(enable_grub_emu_usb), yes)
+kernel_img_HEADERS += libusb.h
+
 pkglib_MODULES += libusb.mod
 libusb_mod_SOURCES = util/usb.c
 libusb_mod_CFLAGS = 
