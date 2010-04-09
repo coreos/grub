@@ -1,5 +1,11 @@
 2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.in: Fix incorrect path in coreboot part.
+	Reported by: Thomas Schmitt.
+	Add -no-emul-boot to grub-mkisofs parameters.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* font/font.c: Indented.
 
 2010-04-09  BVK Chaitanya  <bvk.groups@gmail.com>
