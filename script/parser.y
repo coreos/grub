@@ -74,8 +74,9 @@
 %token <arg> GRUB_PARSER_TOKEN_WORD      "word"
 
 %type <arglist> word argument arguments0 arguments1
+
 %type <cmd> script_init script
-%type <cmd> grubcmd ifcmd forcmd whilecmd untilcmd
+%type <cmd> grubcmd ifclause ifcmd forcmd whilecmd untilcmd
 %type <cmd> command commands1 menuentry statement
 
 %pure-parser
@@ -227,18 +228,28 @@ menuentry: "menuentry"
            }
 ;
 
-if: "if" { grub_script_lexer_ref (state->lexerstate); }
+ifcmd: "if"
+	{
+	  grub_script_lexer_ref (state->lexerstate);
+	}
+	ifclause "fi"
+	{
+	  $$ = $3;
+	  grub_script_lexer_deref (state->lexerstate);
+	}
 ;
-ifcmd: if commands1 delimiters1 "then" commands1 delimiters1 "fi"
-       {
-         $$ = grub_script_create_cmdif (state, $2, $5, 0);
-         grub_script_lexer_deref (state->lexerstate);
-       }
-     | if commands1 delimiters1 "then" commands1 delimiters1 "else" commands1 delimiters1 "fi"
-       {
-         $$ = grub_script_create_cmdif (state, $2, $5, $8);
-         grub_script_lexer_deref (state->lexerstate);
-       }
+ifclause: commands1 delimiters1 "then" commands1 delimiters1
+	  {
+	    $$ = grub_script_create_cmdif (state, $1, $4, 0);
+	  }
+	| commands1 delimiters1 "then" commands1 delimiters1 "else" commands1 delimiters1
+	  {
+	    $$ = grub_script_create_cmdif (state, $1, $4, $7);
+	  }
+	| commands1 delimiters1 "then" commands1 delimiters1 "elif" ifclause
+	  {
+	    $$ = grub_script_create_cmdif (state, $1, $4, $7);
+	  }
 ;
 
 forcmd: "for" "name"

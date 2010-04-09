@@ -1,5 +1,13 @@
 2010-04-09  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	Elif support to GRUB script (by Deepak Vankadaru).
+
+	* tests/grub_script_if.in: New testcase.
+	* conf/tests.rmk: Rule for new testcase.
+	* script/parser.y: Grammar rules for elif.
+
+2010-04-09  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	While and until loops support to GRUB script.
 
 	* include/grub/script_sh.h (grub_script_cmdwhile): New struct.
