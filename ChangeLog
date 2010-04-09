@@ -1,5 +1,12 @@
 2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Load fonts and modules for gfxmenu in grub-mkconfig.
+	Idea by: Mario Vasquez
+
+	* util/grub.d/00_header.in: Load pf2 and image modules.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	grub-mkconfig multiple terminal support.
 
 	* util/grub-mkconfig.in: Handle multiple terminals correctly.

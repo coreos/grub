@@ -98,6 +98,32 @@ EOF
 	prepare_grub_to_access_device `${grub_probe} --target=device $GRUB_THEME` | sed -e "s/^/  /"
 	cat << EOF
   insmod gfxmenu
+EOF
+	themedir="`dirname $GRUB_THEME`"
+	for x in "$themedir"/*.pf2 "$themedir"/f/*.pf2; do
+	    if [ -f "$x" ]; then
+		cat << EOF
+  loadfont (\$root)`make_system_path_relative_to_its_root $x`
+EOF
+	    fi
+	done
+	if [ x"`echo "$themedir"/*.jpg`" != x"$themedir/*.jpg" ]; then
+	    cat << EOF
+  insmod jpeg
+EOF
+	fi
+	if [ x"`echo "$themedir"/*.png`" != x"$themedir/*.png" ]; then
+	    cat << EOF
+  insmod png
+EOF
+	fi
+	if [ x"`echo "$themedir"/*.tga`" != x"$themedir/*.tga" ]; then
+	    cat << EOF
+  insmod tga
+EOF
+	fi
+	    
+	cat << EOF
   set theme=(\$root)`make_system_path_relative_to_its_root $GRUB_THEME`
 EOF
     fi
