@@ -1,3 +1,8 @@
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.in: Specify files explicitly instead of using $< and $@ since
+	we use cd $(srcdir).
+
 2010-04-08  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub.d/10_linux.in: Only use the first word of
