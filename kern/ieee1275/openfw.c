@@ -73,8 +73,14 @@ grub_children_iterate (char *devpath,
 				      IEEE1275_MAX_PROP_LEN, &actual))
 	childtype[0] = 0;
 
+      if (dev == child)
+	continue;
+
       if (grub_ieee1275_package_to_path (child, childpath,
 					 IEEE1275_MAX_PATH_LEN, &actual))
+	continue;
+
+      if (grub_strcmp (devpath, childpath) == 0)
 	continue;
 
       if (grub_ieee1275_get_property (child, "name", childname,

@@ -191,6 +191,7 @@ grub_video_sm712_get_info_and_fini (struct grub_video_mode_info *mode_info,
 static struct grub_video_adapter grub_video_sm712_adapter =
   {
     .name = "SM712 Video Driver",
+    .id = GRUB_VIDEO_DRIVER_SM712,
 
     .init = grub_video_sm712_video_init,
     .fini = grub_video_sm712_video_fini,

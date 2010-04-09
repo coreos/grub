@@ -93,7 +93,7 @@ script: newlines0
         {
           $$ = 0;
         }
-      | script statement delimiter
+      | script statement delimiter newlines0
         {
           struct grub_script_cmdblock *cmdblock;
           cmdblock = (struct grub_script_cmdblock *) $1;

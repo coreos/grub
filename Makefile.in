@@ -79,6 +79,9 @@ LIBS = @LIBS@ $(LIBINTL)
 
 CC = @CC@
 CFLAGS = @CFLAGS@
+POSIX_CFLAGS = -I$(srcdir)/lib/posix_wrap 
+GNULIB_UTIL_CFLAGS = -Wno-undef -Wno-sign-compare -Wno-unused -D_GL_UNUSED="__attribute__ ((unused))" -I$(srcdir)/gnulib
+GNULIB_CFLAGS = $(GNULIB_UTIL_CFLAGS) $(POSIX_CFLAGS)
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@ $(LIBS)
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
@@ -116,6 +119,7 @@ LIBCURSES = @LIBCURSES@
 LIBUSB = @LIBUSB@
 LIBSDL = @LIBSDL@
 LIBPCIACCESS = @LIBPCIACCESS@
+LEX = @LEX@
 YACC = @YACC@
 FONT_SOURCE = @FONT_SOURCE@
 
@@ -395,7 +399,6 @@ uninstall:
 	@list='$(lib_SCRIPTS)'; \
 	for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
-	  echo rm -f $(DESTDIR)$(libdir)/$$dest; \
 	  rm -f $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
 	@list='$(info_INFOS)'; \
