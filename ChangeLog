@@ -1,3 +1,8 @@
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/00_header.in: Add few missing quotes. Recognise *.jpeg
+	as *.jpg.
+
 2010-04-09  Mario Vazquez <mariovazq@gmail.com>
 
 	GRUB_BACKGROUND support.

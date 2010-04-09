@@ -84,22 +84,22 @@ fi
 
 if [ "x$gfxterm" = x1 ]; then
     # Make the font accessible
-    prepare_grub_to_access_device `${grub_probe} --target=device ${GRUB_FONT_PATH}`
+    prepare_grub_to_access_device `${grub_probe} --target=device "${GRUB_FONT_PATH}"`
 
     cat << EOF
-if loadfont `make_system_path_relative_to_its_root ${GRUB_FONT_PATH}` ; then
+if loadfont `make_system_path_relative_to_its_root "${GRUB_FONT_PATH}"` ; then
   set gfxmode=${GRUB_GFXMODE}
   insmod gfxterm
   insmod ${GRUB_VIDEO_BACKEND}
 EOF
-    if [ x$GRUB_THEME != x ] && [ -f $GRUB_THEME ] \
-	&& is_path_readable_by_grub $GRUB_THEME; then
+    if [ "x$GRUB_THEME" != x ] && [ -f "$GRUB_THEME" ] \
+	&& is_path_readable_by_grub "$GRUB_THEME"; then
 	echo "Found theme: $GRUB_THEME" >&2
-	prepare_grub_to_access_device `${grub_probe} --target=device $GRUB_THEME` | sed -e "s/^/  /"
+	prepare_grub_to_access_device `${grub_probe} --target=device "$GRUB_THEME"` | sed -e "s/^/  /"
 	cat << EOF
   insmod gfxmenu
 EOF
-	themedir="`dirname $GRUB_THEME`"
+	themedir="`dirname "$GRUB_THEME"`"
 	for x in "$themedir"/*.pf2 "$themedir"/f/*.pf2; do
 	    if [ -f "$x" ]; then
 		cat << EOF
@@ -107,7 +107,7 @@ EOF
 EOF
 	    fi
 	done
-	if [ x"`echo "$themedir"/*.jpg`" != x"$themedir/*.jpg" ]; then
+	if [ x"`echo "$themedir"/*.jpg`" != x"$themedir/*.jpg" ] || [ x"`echo "$themedir"/*.jpeg`" != x"$themedir/*.jpeg" ]; then
 	    cat << EOF
   insmod jpeg
 EOF
