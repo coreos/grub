@@ -74,8 +74,10 @@
 %token <arg> GRUB_PARSER_TOKEN_WORD      "word"
 
 %type <arglist> word argument arguments0 arguments1
-%type <cmd> script_init script grubcmd ifclause ifcmd forcmd command
-%type <cmd> commands1 menuentry statement
+
+%type <cmd> script_init script
+%type <cmd> grubcmd ifclause ifcmd forcmd whilecmd untilcmd
+%type <cmd> command commands1 menuentry statement
 
 %pure-parser
 %lex-param   { struct grub_parser_param *state };
@@ -171,9 +173,11 @@ grubcmd: word arguments0
 ;
 
 /* A single command.  */
-command: grubcmd { $$ = $1; }
-       | ifcmd   { $$ = $1; }
-       | forcmd  { $$ = $1; }
+command: grubcmd  { $$ = $1; }
+       | ifcmd    { $$ = $1; }
+       | forcmd   { $$ = $1; }
+       | whilecmd { $$ = $1; }
+       | untilcmd { $$ = $1; }
 ;
 
 /* A list of commands. */
@@ -257,4 +261,26 @@ forcmd: "for" "name"
 	  $$ = grub_script_create_cmdfor (state, $2, $5, $8);
 	  grub_script_lexer_deref (state->lexerstate);
 	}
+;
+
+whilecmd: "while"
+          {
+	    grub_script_lexer_ref (state->lexerstate);
+          }
+          commands1 delimiters1 "do" commands1 delimiters1 "done"
+	  {
+	    $$ = grub_script_create_cmdwhile (state, $3, $6, 0);
+	    grub_script_lexer_deref (state->lexerstate);
+	  }
+;
+
+untilcmd: "until"
+          {
+	    grub_script_lexer_ref (state->lexerstate);
+          }
+          commands1 delimiters1 "do" commands1 delimiters1 "done"
+	  {
+	    $$ = grub_script_create_cmdwhile (state, $3, $6, 1);
+	    grub_script_lexer_deref (state->lexerstate);
+	  }
 ;
