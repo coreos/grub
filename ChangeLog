@@ -1,5 +1,12 @@
 2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.in (RMKFILES): Search in srcdir and not current directory.
+	(MAINTAINER_CLEANFILES): Don't add $(srcdir) to MKFILES. Add few
+	missing files.
+	(maintainer-clean): Remove libgcrypt-grub.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* term/efi/console.c (grub_console_checkkey): Macroify key contants.
 
 2010-04-09  EFI Coder <eficoder@hotmail.com>

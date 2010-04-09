@@ -136,7 +136,7 @@ enable_efiemu = @enable_efiemu@
 
 ### General variables.
 
-RMKFILES = $(wildcard conf/*.rmk)
+RMKFILES = $(wildcard $(srcdir)/conf/*.rmk)
 
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
@@ -155,7 +155,9 @@ DISTCLEANFILES = config.status config.cache config.log config.h \
 	gensymlist.sh genkernsyms.sh build_env.mk \
 	docs/grub.info docs/version.texi docs/stamp-vti
 
-MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES)) \
+MAINTAINER_CLEANFILES = $(srcdir)/configure $(srcdir)/aclocal.m4 \
+	$(MKFILES) $(srcdir)/config.guess \
+	$(srcdir)/config.sub $(srcdir)/install-sh $(srcdir)/missing \
 	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in $(INFOS)
 
 # The default target.
@@ -427,6 +429,8 @@ distclean: mostlyclean
 
 maintainer-clean: distclean
 	-test -z "$(MAINTAINER_CLEANFILES)" || rm -f $(MAINTAINER_CLEANFILES)
+	-rmdir $(srcdir)/lib/libgcrypt-grub/cipher
+	-rmdir $(srcdir)/lib/libgcrypt-grub
 
 info:
 
