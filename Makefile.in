@@ -80,6 +80,9 @@ LIBS = @LIBS@ $(LIBINTL)
 
 CC = @CC@
 CFLAGS = @CFLAGS@
+POSIX_CFLAGS = -I$(srcdir)/lib/posix_wrap 
+GNULIB_UTIL_CFLAGS = -Wno-undef -Wno-sign-compare -Wno-unused -D_GL_UNUSED="__attribute__ ((unused))" -I$(srcdir)/gnulib
+GNULIB_CFLAGS = $(GNULIB_UTIL_CFLAGS) $(POSIX_CFLAGS)
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@ $(LIBS)
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
@@ -90,10 +93,8 @@ TARGET_ASFLAGS = -nostdinc -fno-builtin @TARGET_ASFLAGS@
 TARGET_MODULE_FORMAT = @TARGET_MODULE_FORMAT@
 TARGET_APPLE_CC = @TARGET_APPLE_CC@
 OBJCONV = @OBJCONV@
-TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(srcdir)/include -I$(builddir) -I$(builddir)/include -Wall -W
-ifneq ($(platform), emu)
-TARGET_CPPFLAGS += -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include)
-endif
+TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
+	-Wall -W
 TARGET_LDFLAGS = -nostdlib @TARGET_LDFLAGS@
 TARGET_IMG_LDSCRIPT = @TARGET_IMG_LDSCRIPT@
 TARGET_IMG_LDFLAGS = -nostdlib @TARGET_IMG_LDFLAGS@
@@ -119,6 +120,7 @@ LIBCURSES = @LIBCURSES@
 LIBUSB = @LIBUSB@
 LIBSDL = @LIBSDL@
 LIBPCIACCESS = @LIBPCIACCESS@
+LEX = @LEX@
 YACC = @YACC@
 FONT_SOURCE = @FONT_SOURCE@
 
@@ -135,7 +137,7 @@ enable_efiemu = @enable_efiemu@
 
 ### General variables.
 
-RMKFILES = $(wildcard conf/*.rmk)
+RMKFILES = $(wildcard $(srcdir)/conf/*.rmk)
 
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
@@ -150,11 +152,13 @@ INFOS = $(info_INFOS)
 CLEANFILES =
 MOSTLYCLEANFILES =
 DISTCLEANFILES = config.status config.cache config.log config.h \
-	Makefile stamp-h include/grub/cpu include/grub/machine \
+	Makefile stamp-h stamp-h1 include/grub/cpu include/grub/machine \
 	gensymlist.sh genkernsyms.sh build_env.mk \
 	docs/grub.info docs/version.texi docs/stamp-vti
 
-MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES)) \
+MAINTAINER_CLEANFILES = $(srcdir)/configure $(srcdir)/aclocal.m4 \
+	$(MKFILES) $(srcdir)/config.guess \
+	$(srcdir)/config.sub $(srcdir)/install-sh $(srcdir)/missing \
 	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in $(INFOS)
 
 # The default target.
@@ -249,6 +253,7 @@ else
 ifeq ($(enable_grub_mkfont),yes)
 
 pkgdata_DATA += unicode.pf2 ascii.pf2 ascii.h
+CLEANFILES += ascii.bitmaps
 
 # Arrows and lines are needed to draw the menu, so we always include them
 UNICODE_ARROWS=0x2190-0x2193
@@ -402,7 +407,6 @@ uninstall:
 	@list='$(lib_SCRIPTS)'; \
 	for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
-	  echo rm -f $(DESTDIR)$(libdir)/$$dest; \
 	  rm -f $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
 	@list='$(info_INFOS)'; \
@@ -431,6 +435,8 @@ distclean: mostlyclean
 
 maintainer-clean: distclean
 	-test -z "$(MAINTAINER_CLEANFILES)" || rm -f $(MAINTAINER_CLEANFILES)
+	-rmdir $(srcdir)/lib/libgcrypt-grub/cipher
+	-rmdir $(srcdir)/lib/libgcrypt-grub
 
 info:
 
@@ -534,8 +540,8 @@ genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
 
 $(srcdir)/po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
-	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o $@ -f $< --keyword=_ --keyword=N_
-	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
+	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o po/$(PACKAGE).pot -f po/POTFILES --keyword=_ --keyword=N_
+	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o po/$(PACKAGE).pot -f po/POTFILES-shell -j --language=Shell
 
 $(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): po/$(PACKAGE).pot
 	$(MSGMERGE) -U $@ $^

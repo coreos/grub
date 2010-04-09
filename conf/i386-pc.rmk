@@ -55,7 +55,7 @@ kernel_img_SOURCES = kern/i386/pc/startup.S \
 	term/i386/pc/console.c term/i386/vga_common.c \
 	symlist.c
 kernel_img_HEADERS += machine/biosdisk.h machine/vga.h machine/vbe.h \
-	machine/pxe.h i386/pit.h machine/init.h
+	machine/pxe.h i386/pit.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)  $(TARGET_IMG_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_KERNEL_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
@@ -77,15 +77,17 @@ grub_setup_SOURCES = gnulib/progname.c \
 	util/i386/pc/grub-setup.c util/hostdisk.c	\
 	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
 	kern/err.c kern/misc.c kern/parser.c kern/partition.c	\
-	kern/file.c kern/fs.c kern/env.c fs/fshelp.c		\
+	kern/file.c kern/fs.c kern/env.c kern/list.c		\
+	fs/fshelp.c						\
 	\
-	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c		\
-	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c	\
-	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
-	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c	\
+	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c		 \
+	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c	 \
+	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		 \
+	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c	 \
 	fs/befs.c fs/befs_be.c fs/tar.c			\
 	\
-	partmap/msdos.c partmap/gpt.c				\
+	partmap/msdos.c partmap/bsdlabel.c partmap/sunpc.c	\
+	partmap/gpt.c		\
 	\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c		\
 	util/raid.c util/lvm.c util/mm.c			\

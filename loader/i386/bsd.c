@@ -140,7 +140,6 @@ grub_bsd_get_device (grub_uint32_t * biosdev,
 		     grub_uint32_t * unit,
 		     grub_uint32_t * slice, grub_uint32_t * part)
 {
-  char *p;
   grub_device_t dev;
 
 #ifdef GRUB_MACHINE_PCBIOS
@@ -154,21 +153,13 @@ grub_bsd_get_device (grub_uint32_t * biosdev,
   dev = grub_device_open (0);
   if (dev && dev->disk && dev->disk->partition)
     {
-
-      p = dev->disk->partition->partmap->get_name (dev->disk->partition);
-      if (p)
+      if (dev->disk->partition->parent)
 	{
-	  if ((p[0] >= '0') && (p[0] <= '9'))
-	    {
-	      *slice = grub_strtoul (p, &p, 0);
-
-	      if ((p) && (p[0] == ','))
-		p++;
-	    }
-
-	  if ((p[0] >= 'a') && (p[0] <= 'z'))
-	    *part = p[0] - 'a';
+	  *part = dev->disk->partition->number;
+	  *slice = dev->disk->partition->parent->number + 1;
 	}
+      else
+	*slice = dev->disk->partition->number + 1;
     }
   if (dev)
     grub_device_close (dev);

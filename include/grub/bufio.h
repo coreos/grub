@@ -22,7 +22,7 @@
 
 #include <grub/file.h>
 
-grub_file_t grub_bufio_open (grub_file_t io, int size);
-grub_file_t grub_buffile_open (const char *name, int size);
+grub_file_t EXPORT_FUNC (grub_bufio_open) (grub_file_t io, int size);
+grub_file_t EXPORT_FUNC (grub_buffile_open) (const char *name, int size);
 
 #endif /* ! GRUB_BUFIO_H */

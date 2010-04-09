@@ -140,60 +140,73 @@ if [ "x${GRUB_TERMINAL}" != "x" ] ; then
   GRUB_TERMINAL_OUTPUT="${GRUB_TERMINAL}"
 fi
 
-case x${GRUB_TERMINAL_OUTPUT} in
-  x | xgfxterm)
-    # If this platform supports gfxterm, try to use it.
-    if test -e ${grub_prefix}/gfxterm.mod ; then
-      # FIXME: this should do something smarter than just loading first
-      # video backend.
-      GRUB_VIDEO_BACKEND=$(head -n 1 ${grub_prefix}/video.lst || true)
-      if [ -n "${GRUB_VIDEO_BACKEND}" ] ; then
-        GRUB_TERMINAL_OUTPUT=gfxterm
-      elif [ "${GRUB_TERMINAL_OUTPUT}" = "gfxterm" ] ; then
-        echo "No suitable backend could be found for gfxterm." >&2 ; exit 1
-      fi
-    fi
-  ;;
-  xconsole | xserial | xofconsole) ;;
-  *) echo "Invalid output terminal \"${GRUB_TERMINAL_OUTPUT}\"" >&2 ; exit 1 ;;
-esac
+termoutdefault=0
+if [ "x${GRUB_TERMINAL_OUTPUT}" == x ]; then
+    GRUB_TERMINAL_OUTPUT=gfxterm;
+    termoutdefault=1;
+fi
 
-# check for terminals that require fonts
-case ${GRUB_TERMINAL_OUTPUT} in
-  gfxterm)
-    if [ -n "$GRUB_FONT" ] ; then
-      if is_path_readable_by_grub ${GRUB_FONT} > /dev/null ; then
-        GRUB_FONT_PATH=${GRUB_FONT}
-	else
-	  echo "No such font or not readable by grub: ${GRUB_FONT}" >&2
-	  exit 1
+for x in ${GRUB_TERMINAL_OUTPUT}; do
+    if [ x${x} == xgfxterm ]; then
+        # If this platform supports gfxterm, try to use it.
+	if ! test -e ${grub_prefix}/gfxterm.mod ; then
+	    if [ "x$termoutdefault" != "x1" ]; then
+		echo "gfxterm isn't available on your platform" >&2 ; exit 1
+	    fi
+	    GRUB_TERMINAL_OUTPUT=
+	    break;
 	fi
-    else
-      for dir in ${pkgdatadir} /boot/grub /usr/share/grub ; do
-        for basename in unicode unifont ascii; do
-	  path="${dir}/${basename}.pf2"
-          if is_path_readable_by_grub ${path} > /dev/null ; then
-	    GRUB_FONT_PATH=${path}
-	  else
-	    continue
-	  fi
-	  if [ "${basename}" = "ascii" ] ; then
-	    # make sure all our children behave in conformance with ascii..
-	    export LANG=C
-	  fi
-	  break 2
-        done
-      done
+        # FIXME: this should do something smarter than just loading first
+        # video backend.
+	GRUB_VIDEO_BACKEND=$(head -n 1 ${grub_prefix}/video.lst || true)
+	if [ -z "${GRUB_VIDEO_BACKEND}" ] ; then
+	    if [ "x$termoutdefault" != "x1" ]; then
+		echo "No suitable backend could be found for gfxterm." >&2 ; exit 1
+	    fi
+	    GRUB_TERMINAL_OUTPUT=
+	fi
+	if [ -n "$GRUB_FONT" ] ; then
+	    if is_path_readable_by_grub ${GRUB_FONT} > /dev/null ; then
+		GRUB_FONT_PATH=${GRUB_FONT}
+	    else
+		echo "No such font or not readable by grub: ${GRUB_FONT}" >&2
+		exit 1
+	    fi
+	else
+	    for dir in ${pkgdatadir} /boot/grub /usr/share/grub ; do
+		for basename in unicode unifont ascii; do
+		    path="${dir}/${basename}.pf2"
+		    if is_path_readable_by_grub ${path} > /dev/null ; then
+			GRUB_FONT_PATH=${path}
+		    else
+			continue
+		    fi
+		    if [ "${basename}" = "ascii" ] ; then
+	                # make sure all our children behave in conformance with ascii..
+			export LANG=C
+		    fi
+		    break 2
+		done
+	    done
+	fi
+	if [ -z "${GRUB_FONT_PATH}" ] ; then
+	    if [ "x$termoutdefault" != "x1" ]; then
+		echo "No font for gfxterm found." >&2 ; exit 1
+	    fi
+	    GRUB_TERMINAL_OUTPUT=
+	fi
     fi
-    if [ -z "${GRUB_FONT_PATH}" ] ; then
-      # fallback to the native terminal for this platform
-      unset GRUB_TERMINAL_OUTPUT
-    fi
-  ;;
-  *)
-    # make sure all our children behave in conformance with ascii..
-    export LANG=C
-esac
+done
+
+for x in ${GRUB_TERMINAL_OUTPUT}; do
+    case "x${x}" in
+	xgfxterm) ;;
+	xconsole | xserial | xofconsole)
+            # make sure all our children behave in conformance with ascii..
+	    export LANG=C;;
+	*) echo "Invalid output terminal \"${GRUB_TERMINAL_OUTPUT}\"" >&2 ; exit 1 ;;
+    esac
+done
 
 # These are defined in this script, export them here so that user can
 # override them.
@@ -220,8 +233,12 @@ export GRUB_DEFAULT \
   GRUB_DISABLE_LINUX_UUID \
   GRUB_DISABLE_LINUX_RECOVERY \
   GRUB_GFXMODE \
+  GRUB_BACKGROUND \
   GRUB_THEME \
-  GRUB_DISABLE_OS_PROBER
+  GRUB_GFXPAYLOAD_LINUX \
+  GRUB_DISABLE_OS_PROBER \
+  GRUB_INIT_TUNE \
+  GRUB_SAVEDEFAULT
 
 if test "x${grub_cfg}" != "x"; then
   rm -f ${grub_cfg}.new

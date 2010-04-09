@@ -4,11 +4,10 @@ COMMON_CFLAGS += -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=includ
 
 kernel_img_RELOCATABLE = yes
 pkglib_PROGRAMS = kernel.img
-kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c  kern/env.c	\
-	kern/err.c kern/list.c kern/handler.c				\
-	kern/command.c kern/corecmd.c kern/file.c			\
-	kern/fs.c kern/main.c kern/misc.c kern/parser.c			\
-	kern/partition.c kern/term.c					\
+kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c kern/env.c	\
+	kern/err.c kern/list.c kern/handler.c kern/command.c		\
+	kern/corecmd.c kern/file.c kern/fs.c kern/main.c kern/misc.c	\
+	kern/parser.c kern/partition.c kern/term.c			\
 	kern/rescue_reader.c kern/rescue_parser.c			\
 	\
 	util/console.c  util/grub-emu.c util/misc.c			\
@@ -47,11 +46,29 @@ endif
 grub_emu_LDFLAGS = $(LIBCURSES)
 
 ifeq ($(enable_grub_emu_usb), yes)
+pkglib_MODULES += libusb.mod
+libusb_mod_SOURCES = util/usb.c
+libusb_mod_CFLAGS = 
+libusb_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usb.mod
 pkglib_MODULES += usb.mod
-usb_mod_SOURCES = disk/usbms.c util/usb.c bus/usb/usb.c	\
-		commands/usbtest.c
+usb_mod_SOURCES = bus/usb/usb.c
 usb_mod_CFLAGS = $(COMMON_CFLAGS)
 usb_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usbtest.mod
+pkglib_MODULES += usbtest.mod
+usbtest_mod_SOURCES = commands/usbtest.c
+usbtest_mod_CFLAGS = $(COMMON_CFLAGS)
+usbtest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usbms.mod
+pkglib_MODULES += usbms.mod
+usbms_mod_SOURCES = disk/usbms.c
+usbms_mod_CFLAGS = $(COMMON_CFLAGS)
+usbms_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 grub_emu_LDFLAGS += $(LIBUSB)
 endif
 

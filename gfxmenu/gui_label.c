@@ -216,7 +216,7 @@ grub_gui_label_new (void)
   label->comp.ops = &label_ops;
   label->visible = 1;
   label->text = grub_strdup ("");
-  label->font = grub_font_get ("Helvetica 10");
+  label->font = grub_font_get ("Unknown Regular 16");
   label->color.red = 0;
   label->color.green = 0;
   label->color.blue = 0;

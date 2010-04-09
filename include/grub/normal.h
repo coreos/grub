@@ -96,18 +96,21 @@ void read_handler_list (void);
 void free_handler_list (void);
 
 /* Defined in `dyncmd.c'.  */
-void read_command_list (void);
+void read_command_list (const char *prefix);
 
 /* Defined in `autofs.c'.  */
-void read_fs_list (void);
+void read_fs_list (const char *prefix);
 
 void grub_context_init (void);
 void grub_context_fini (void);
 
-void read_crypto_list (void);
+void read_crypto_list (const char *prefix);
 
-void read_terminal_list (void);
+void read_terminal_list (const char *prefix);
 
 void grub_set_more (int onoff);
+
+int grub_normal_get_line_counter (void);
+void grub_install_newline_hook (void);
 
 #endif /* ! GRUB_NORMAL_HEADER */

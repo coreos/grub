@@ -26,6 +26,7 @@
 #include <grub/util/hostdisk.h>
 #include <grub/misc.h>
 #include <grub/i18n.h>
+#include <grub/list.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -103,6 +104,13 @@ struct
   char *device;
 } map[256];
 
+struct grub_util_biosdisk_data
+{
+  char *dev;
+  int access_mode;
+  int fd;
+};
+
 #ifdef __linux__
 /* Check if we have devfs support.  */
 static int
@@ -165,6 +173,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 {
   int drive;
   struct stat st;
+  struct grub_util_biosdisk_data *data;
 
   drive = find_grub_drive (name);
   if (drive < 0)
@@ -173,6 +182,10 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 
   disk->has_partitions = 1;
   disk->id = drive;
+  disk->data = data = xmalloc (sizeof (struct grub_util_biosdisk_data));
+  data->dev = NULL;
+  data->access_mode = 0;
+  data->fd = -1;
 
   /* Get the size.  */
 #if defined(__MINGW32__)
@@ -254,6 +267,17 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 }
 
 #ifdef __linux__
+/* Cache of partition start sectors for each disk.  */
+struct linux_partition_cache
+{
+  struct linux_partition_cache *next;
+  char *dev;
+  unsigned long start;
+  int partno;
+};
+
+struct linux_partition_cache *linux_partition_cache_list;
+
 static int
 linux_find_partition (char *dev, unsigned long sector)
 {
@@ -262,6 +286,7 @@ linux_find_partition (char *dev, unsigned long sector)
   char *p;
   int i;
   char real_dev[PATH_MAX];
+  struct linux_partition_cache *cache;
 
   strcpy(real_dev, dev);
 
@@ -279,6 +304,16 @@ linux_find_partition (char *dev, unsigned long sector)
     {
       p = real_dev + len;
       format = "%d";
+    }
+
+  for (cache = linux_partition_cache_list; cache; cache = cache->next)
+    {
+      if (strcmp (cache->dev, dev) == 0 && cache->start == sector)
+	{
+	  sprintf (p, format, cache->partno);
+	  strcpy (dev, real_dev);
+	  return 1;
+	}
     }
 
   for (i = 1; i < 10000; i++)
@@ -301,6 +336,15 @@ linux_find_partition (char *dev, unsigned long sector)
 
       if (hdg.start == sector)
 	{
+	  struct linux_partition_cache *new_cache_item;
+
+	  new_cache_item = xmalloc (sizeof *new_cache_item);
+	  new_cache_item->dev = xstrdup (dev);
+	  new_cache_item->start = hdg.start;
+	  new_cache_item->partno = i;
+	  grub_list_push (GRUB_AS_LIST_P (&linux_partition_cache_list),
+			  GRUB_AS_LIST (new_cache_item));
+
 	  strcpy (dev, real_dev);
 	  return 1;
 	}
@@ -314,6 +358,7 @@ static int
 open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 {
   int fd;
+  struct grub_util_biosdisk_data *data = disk->data;
 
 #ifdef O_LARGEFILE
   flags |= O_LARGEFILE;
@@ -334,27 +379,47 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
   {
     int is_partition = 0;
     char dev[PATH_MAX];
+    grub_disk_addr_t part_start = 0;
+
+    part_start = grub_partition_get_start (disk->partition);
 
     strcpy (dev, map[disk->id].device);
-    if (disk->partition && sector >= disk->partition->start
+    if (disk->partition && sector >= part_start
 	&& strncmp (map[disk->id].device, "/dev/", 5) == 0)
-      is_partition = linux_find_partition (dev, disk->partition->start);
+      is_partition = linux_find_partition (dev, part_start);
 
-    /* Open the partition.  */
-    grub_dprintf ("hostdisk", "opening the device `%s' in open_device()\n", dev);
-    fd = open (dev, flags);
-    if (fd < 0)
+    if (data->dev && strcmp (data->dev, dev) == 0 &&
+	data->access_mode == (flags & O_ACCMODE))
       {
-	grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", dev);
-	return -1;
+	grub_dprintf ("hostdisk", "reusing open device `%s'\n", dev);
+	fd = data->fd;
+      }
+    else
+      {
+	free (data->dev);
+	if (data->fd != -1)
+	  close (data->fd);
+
+	/* Open the partition.  */
+	grub_dprintf ("hostdisk", "opening the device `%s' in open_device()\n", dev);
+	fd = open (dev, flags);
+	if (fd < 0)
+	  {
+	    grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", dev);
+	    return -1;
+	  }
+
+	/* Flush the buffer cache to the physical disk.
+	   XXX: This also empties the buffer cache.  */
+	ioctl (fd, BLKFLSBUF, 0);
+
+	data->dev = xstrdup (dev);
+	data->access_mode = (flags & O_ACCMODE);
+	data->fd = fd;
       }
 
-    /* Flush the buffer cache to the physical disk.
-       XXX: This also empties the buffer cache.  */
-    ioctl (fd, BLKFLSBUF, 0);
-
     if (is_partition)
-      sector -= disk->partition->start;
+      sector -= part_start;
   }
 #else /* ! __linux__ */
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
@@ -375,7 +440,26 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
     }
 #endif
 
-  fd = open (map[disk->id].device, flags);
+  if (data->dev && strcmp (data->dev, map[disk->id].device) == 0 &&
+      data->access_mode == (flags & O_ACCMODE))
+    {
+      grub_dprintf ("hostdisk", "reusing open device `%s'\n", data->dev);
+      fd = data->fd;
+    }
+  else
+    {
+      free (data->dev);
+      if (data->fd != -1)
+	close (data->fd);
+
+      fd = open (map[disk->id].device, flags);
+      if (fd >= 0)
+	{
+	  data->dev = xstrdup (map[disk->id].device);
+	  data->access_mode = (flags & O_ACCMODE);
+	  data->fd = fd;
+	}
+    }
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   if (! (sysctl_oldflags & 0x10)
@@ -535,7 +619,6 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
       != (ssize_t) (size << GRUB_DISK_SECTOR_BITS))
     grub_error (GRUB_ERR_READ_ERROR, "cannot read from `%s'", map[disk->id].device);
 
-  close (fd);
   return grub_errno;
 }
 
@@ -570,8 +653,18 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
       != (ssize_t) (size << GRUB_DISK_SECTOR_BITS))
     grub_error (GRUB_ERR_WRITE_ERROR, "cannot write to `%s'", map[disk->id].device);
 
-  close (fd);
   return grub_errno;
+}
+
+static void
+grub_util_biosdisk_close (struct grub_disk *disk)
+{
+  struct grub_util_biosdisk_data *data = disk->data;
+
+  free (data->dev);
+  if (data->fd != -1)
+    close (data->fd);
+  free (data);
 }
 
 static struct grub_disk_dev grub_util_biosdisk_dev =
@@ -580,7 +673,7 @@ static struct grub_disk_dev grub_util_biosdisk_dev =
     .id = GRUB_DISK_DEVICE_BIOSDISK_ID,
     .iterate = grub_util_biosdisk_iterate,
     .open = grub_util_biosdisk_open,
-    .close = 0,
+    .close = grub_util_biosdisk_close,
     .read = grub_util_biosdisk_read,
     .write = grub_util_biosdisk_write,
     .next = 0
@@ -987,39 +1080,25 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     int find_partition (grub_disk_t dsk __attribute__ ((unused)),
 			const grub_partition_t partition)
       {
- 	struct grub_msdos_partition *pcdata = NULL;
+	grub_disk_addr_t part_start = 0;
+	grub_util_info ("Partition %d starts from %lu",
+			partition->number, partition->start);
 
-	if (strcmp (partition->partmap->name, "part_msdos") == 0)
-	  pcdata = partition->data;
+	part_start = grub_partition_get_start (partition);
 
-	if (pcdata)
+	if (hdg.start == part_start)
 	  {
-	    if (pcdata->bsd_part < 0)
-	      grub_util_info ("DOS partition %d starts from %lu",
-			      pcdata->dos_part, partition->start);
-	    else
-	      grub_util_info ("BSD partition %d,%c starts from %lu",
-			      pcdata->dos_part, pcdata->bsd_part + 'a',
-			      partition->start);
-	  }
-	else
-	  {
-	      grub_util_info ("Partition %d starts from %lu",
-			      partition->index, partition->start);
-	  }
-
-	if (hdg.start == partition->start)
-	  {
-	    if (pcdata)
+	    if (partition->parent)
 	      {
-		dos_part = pcdata->dos_part;
-		bsd_part = pcdata->bsd_part;
+		dos_part = partition->parent->number;
+		bsd_part = partition->number;
 	      }
 	    else
 	      {
-		dos_part = partition->index;
+		dos_part = partition->number;
 		bsd_part = -1;
 	      }
+
 	    return 1;
 	  }
 

@@ -59,7 +59,7 @@ typedef union {
     double g;
 } PROPERLY_ALIGNED_TYPE;
 
-#define gcry_assert(x) grub_assert_real(__FILE__, __LINE__, x)
+#define gcry_assert(x) grub_assert_real(GRUB_FILE, __LINE__, x)
 
 static inline void
 grub_assert_real (const char *file, int line, int cond)

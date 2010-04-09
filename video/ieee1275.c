@@ -59,8 +59,8 @@ find_display (void)
   {
     if (grub_strcmp (alias->type, "display") == 0)
       {
-	grub_dprintf ("video", "Found display %s\n", alias->name);
-	display = grub_strdup (alias->name);
+	grub_dprintf ("video", "Found display %s\n", alias->path);
+	display = grub_strdup (alias->path);
 	return 1;
       }
     return 0;
@@ -124,8 +124,7 @@ grub_video_ieee1275_setup (unsigned int width, unsigned int height,
 			   unsigned int mode_type __attribute__ ((unused)),
 			   unsigned int mode_mask __attribute__ ((unused)))
 {
-  grub_uint32_t current_width, current_height;
-  grub_addr_t address;
+  grub_uint32_t current_width, current_height, address;
   grub_err_t err;
   grub_ieee1275_phandle_t dev;
 
@@ -167,7 +166,8 @@ grub_video_ieee1275_setup (unsigned int width, unsigned int height,
 					  sizeof (address), 0))
     return grub_error (GRUB_ERR_IO, "Couldn't retrieve display address.");
 
-  framebuffer.ptr = (void *) address;
+  /* For some reason sparc64 uses 32-bit pointer too.  */
+  framebuffer.ptr = (void *) (grub_addr_t) address;
 
   grub_video_ieee1275_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
 				   grub_video_fbstd_colors);
