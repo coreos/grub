@@ -19,32 +19,27 @@
 
 #include <grub/symbol.h>
 
-#define DS(x) ((x) - segstart)
+#define DS(x) ((x) - LOCAL (segstart))
 
-segstart:
+LOCAL (segstart):
 VARIABLE(grub_machine_mmaphook_start)
 	.code16
 VARIABLE(grub_machine_mmaphook_int12)
 	push %ds
 	push %cs
 	pop %ds
-#ifdef APPLE_CC
-	grub_machine_mmaphook_kblow_rel = DS (EXT_C (grub_machine_mmaphook_kblow))
-	movw (grub_machine_mmaphook_kblow_rel), %ax
-#else
-	movw DS (EXT_C (grub_machine_mmaphook_kblow)), %ax
-#endif
+	movw DS (LOCAL (kblow)), %ax
 	pop %ds
 	iret
 
 VARIABLE(grub_machine_mmaphook_int15)
 	pushf
 	cmpw $0xe801, %ax
-	jz e801
+	jz LOCAL (e801)
 	cmpw $0xe820, %ax
-	jz e820
+	jz LOCAL (e820)
 	cmpb $0x88, %ah
-	jz h88
+	jz LOCAL (h88)
 	popf
 	/* ljmp */
 	.byte	0xea
@@ -53,67 +48,44 @@ VARIABLE (grub_machine_mmaphook_int15offset)
 VARIABLE (grub_machine_mmaphook_int15segment)
 	.word	0
 
-e801:
+LOCAL (e801):
 	popf
 	push %ds
 	push %cs
 	pop %ds
-#ifdef APPLE_CC
-	grub_machine_mmaphook_kbin16mb_rel = DS (EXT_C (grub_machine_mmaphook_kbin16mb))
-	grub_machine_mmaphook_64kbin4gb_rel = DS (EXT_C (grub_machine_mmaphook_64kbin4gb))
-	movw (grub_machine_mmaphook_kbin16mb_rel), %ax
-	movw (grub_machine_mmaphook_64kbin4gb_rel), %bx
-#else
-	movw DS (EXT_C (grub_machine_mmaphook_kbin16mb)), %ax
-	movw DS (EXT_C (grub_machine_mmaphook_64kbin4gb)), %bx
-#endif
+	movw DS (LOCAL (kbin16mb)), %ax
+	movw DS (LOCAL (m64kbin4gb)), %bx
 	movw %ax, %cx
 	movw %bx, %dx
 	pop %ds
 	clc
 	iret
 
-h88:
+LOCAL (h88):
 	popf
 	push %ds
 	push %cs
 	pop %ds
-#ifdef APPLE_CC
-	movw (grub_machine_mmaphook_kbin16mb_rel), %ax
-#else
-	movw DS (EXT_C (grub_machine_mmaphook_kbin16mb)), %ax
-#endif
+	movw DS (LOCAL (kbin16mb)), %ax
 	pop %ds
 	clc
 	iret
 
-e820:
-#ifdef APPLE_CC
-	mmaphook_mmap_rel = DS(mmaphook_mmap)
-	mmaphook_mmap_num_rel = DS(EXT_C(grub_machine_mmaphook_mmap_num))
-#endif
+LOCAL (e820):
 	popf
 	push %ds
 	push %cs
 	pop %ds
 	cmpw $20, %cx
-	jb errexit
-#ifdef APPLE_CC
-	cmpw (mmaphook_mmap_num_rel), %bx
-#else
-	cmpw DS (EXT_C (grub_machine_mmaphook_mmap_num)), %bx
-#endif
-	jae errexit
+	jb LOCAL (errexit)
+	cmpw DS (LOCAL (mmap_num)), %bx
+	jae LOCAL (errexit)
 	cmp $0x534d4150, %edx
-	jne errexit
+	jne LOCAL (errexit)
 	push %si
 	push %di
 	movw $20, %cx
-#ifdef APPLE_CC
-	movl $(mmaphook_mmap_rel), %esi
-#else
-	movw $(DS(mmaphook_mmap)), %si
-#endif
+	movw $(DS(LOCAL (mmaphook_mmap))), %si
 	mov %bx, %ax
 	imul $20, %ax
 	add %ax, %si
@@ -122,19 +94,15 @@ e820:
 	pop %si
 	movl $20, %ecx
 	inc %bx
-#ifdef APPLE_CC
-	cmpw (mmaphook_mmap_num_rel), %bx
-#else
-	cmpw DS(EXT_C(grub_machine_mmaphook_mmap_num)), %bx
-#endif
-	jb noclean
+	cmpw DS(LOCAL (mmap_num)), %bx
+	jb LOCAL (noclean)
 	xor %bx, %bx
-noclean:
+LOCAL (noclean):
 	mov $0x534d4150, %eax
 	pop %ds
 	clc
 	iret
-errexit:
+LOCAL (errexit):
 	mov $0x534d4150, %eax
 	pop %ds
 	stc
@@ -142,13 +110,18 @@ errexit:
 	iret
 
 VARIABLE(grub_machine_mmaphook_mmap_num)
+LOCAL (mmap_num):
 	.word 0
 VARIABLE(grub_machine_mmaphook_kblow)
+LOCAL (kblow):
 	.word 0
 VARIABLE (grub_machine_mmaphook_kbin16mb)
+LOCAL (kbin16mb):
 	.word 0
 VARIABLE (grub_machine_mmaphook_64kbin4gb)
+LOCAL (m64kbin4gb):
 	.word 0
-mmaphook_mmap:
+LOCAL (mmaphook_mmap):
 	/* Memory map is placed just after the interrupt handlers. */
 VARIABLE(grub_machine_mmaphook_end)
+	.byte 0

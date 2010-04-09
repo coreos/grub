@@ -53,6 +53,12 @@ grub_script_vars1_SOURCES = tests/grub_script_vars1.in
 check_SCRIPTS += grub_script_for1
 grub_script_for1_SOURCES = tests/grub_script_for1.in
 
+check_SCRIPTS += grub_script_blanklines
+grub_script_blanklines_SOURCES = tests/grub_script_blanklines.in
+
+check_SCRIPTS += grub_script_final_semicolon
+grub_script_final_semicolon_SOURCES = tests/grub_script_final_semicolon.in
+
 check_SCRIPTS += grub_script_if
 grub_script_if_SOURCES = tests/grub_script_if.in
 
@@ -66,7 +72,10 @@ SCRIPTED_TESTS  = grub_script_echo1
 SCRIPTED_TESTS += grub_script_echo_keywords
 SCRIPTED_TESTS += grub_script_vars1
 SCRIPTED_TESTS += grub_script_for1
+SCRIPTED_TESTS += grub_script_blanklines
+SCRIPTED_TESTS += grub_script_final_semicolon
 SCRIPTED_TESTS += grub_script_if
+
 
 # dependencies between tests and testing-tools
 $(SCRIPTED_TESTS): grub-shell grub-shell-tester

@@ -35,7 +35,8 @@ grub_probe_SOURCES = gnulib/progname.c util/grub-probe.c	\
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c	\
 	fs/befs.c fs/befs_be.c fs/tar.c		\
 	\
-	partmap/msdos.c partmap/apple.c partmap/sun.c partmap/gpt.c\
+	partmap/msdos.c partmap/bsdlabel.c partmap/apple.c \
+	partmap/sun.c partmap/sunpc.c partmap/gpt.c \
 	kern/fs.c kern/env.c fs/fshelp.c			\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c grub_probe_init.c
 
@@ -55,7 +56,7 @@ grub_mkisofs_SOURCES = util/mkisofs/eltorito.c 				\
 	gnulib/error.c gnulib/progname.c
 grub_mkisofs_CFLAGS = -D_FILE_OFFSET_BITS=64 				\
 	-I$(srcdir)/util/mkisofs/include				\
-	-Wno-all -Werror
+	-Wno-all -Werror $(GNULIB_UTIL_CFLAGS)
 
 # For grub-fstest.
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
@@ -72,8 +73,8 @@ grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c util/hostfs.c \
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c fs/befs.c 	\
 	fs/befs_be.c fs/tar.c			\
 	\
-	kern/partition.c partmap/msdos.c partmap/apple.c partmap/sun.c	\
-	partmap/gpt.c							\
+	kern/partition.c partmap/msdos.c partmap/bsdlabel.c 		\
+	partmap/apple.c partmap/sun.c partmap/sunpc.c partmap/gpt.c	\
 	kern/fs.c kern/env.c fs/fshelp.c disk/raid.c			\
 	disk/raid5_recover.c disk/raid6_recover.c 			\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c 		\
@@ -97,8 +98,6 @@ grub_bin2h_SOURCES = gnulib/progname.c util/bin2h.c
 # For the lexer.
 grub_script.yy.c grub_script.yy.h: script/yylex.l
 	$(LEX) -o grub_script.yy.c --header-file=grub_script.yy.h $(srcdir)/script/yylex.l
-	sed -i 's/^#include.*\(<stdio\.h>\|<string\.h>\|<errno\.h>\|<stdlib\.h>\|<unistd\.h>\)//g' grub_script.yy.h
-	sed -i 's/^#include.*\(<stdio\.h>\|<string\.h>\|<errno\.h>\|<stdlib\.h>\|<unistd\.h>\)//g' grub_script.yy.c
 DISTCLEANFILES += grub_script.yy.c grub_script.yy.h
 
 # For grub-script-check.
@@ -110,7 +109,7 @@ grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c
 	kern/handler.c kern/err.c kern/parser.c kern/list.c \
 	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c \
 	grub_script.yy.c
-
+grub_script_check_CFLAGS = $(GNULIB_UTIL_CFLAGS)
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
@@ -403,6 +402,16 @@ part_gpt_mod_SOURCES = partmap/gpt.c
 part_gpt_mod_CFLAGS = $(COMMON_CFLAGS)
 part_gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += part_bsd.mod
+part_bsd_mod_SOURCES = partmap/bsdlabel.c
+part_bsd_mod_CFLAGS = $(COMMON_CFLAGS)
+part_bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += part_sunpc.mod
+part_sunpc_mod_SOURCES = partmap/sunpc.c
+part_sunpc_mod_CFLAGS = $(COMMON_CFLAGS)
+part_sunpc_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # Special disk structures and generic drivers
 
 pkglib_MODULES += raid.mod raid5rec.mod raid6rec.mod mdraid.mod dm_nv.mod \
@@ -644,7 +653,7 @@ normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 # For sh.mod.
 sh_mod_SOURCES = script/main.c script/script.c script/execute.c \
 	script/function.c script/lexer.c grub_script.tab.c grub_script.yy.c
-sh_mod_CFLAGS = $(COMMON_CFLAGS)
+sh_mod_CFLAGS = $(COMMON_CFLAGS) $(POSIX_CFLAGS)
 sh_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 ifneq (, $(FONT_SOURCE))
@@ -774,6 +783,11 @@ pkglib_MODULES += charset.mod
 charset_mod_SOURCES = lib/charset.c
 charset_mod_CFLAGS = $(COMMON_CFLAGS)
 charset_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += regexp.mod
+regexp_mod_SOURCES = gnulib/regex.c commands/regexp.c
+regexp_mod_CFLAGS = $(COMMON_CFLAGS) $(GNULIB_CFLAGS)
+regexp_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += terminal.mod
 terminal_mod_SOURCES = commands/terminal.c

@@ -20,6 +20,7 @@
 #define GRUB_PART_HEADER	1
 
 #include <grub/dl.h>
+#include <grub/list.h>
 
 struct grub_disk;
 
@@ -28,6 +29,9 @@ typedef struct grub_partition *grub_partition_t;
 /* Partition map type.  */
 struct grub_partition_map
 {
+  /* The next partition map type.  */
+  struct grub_partition_map *next;
+
   /* The name of the partition map type.  */
   const char *name;
 
@@ -35,22 +39,15 @@ struct grub_partition_map
   grub_err_t (*iterate) (struct grub_disk *disk,
 			 int (*hook) (struct grub_disk *disk,
 				      const grub_partition_t partition));
-
-  /* Return the partition named STR on the disk DISK.  */
-  grub_partition_t (*probe) (struct grub_disk *disk,
-			     const char *str);
-
-  /* Return the name of the partition PARTITION.  */
-  char *(*get_name) (const grub_partition_t partition);
-
-  /* The next partition map type.  */
-  struct grub_partition_map *next;
 };
 typedef struct grub_partition_map *grub_partition_map_t;
 
 /* Partition description.  */
 struct grub_partition
 {
+  /* The partition number.  */
+  int number;
+
   /* The start sector.  */
   grub_disk_addr_t start;
 
@@ -63,8 +60,8 @@ struct grub_partition
   /* The index of this partition in the partition table.  */
   int index;
 
-  /* Partition map type specific data.  */
-  void *data;
+  /* Parent partition map.  */
+  struct grub_partition *parent;
 
   /* The type partition map.  */
   grub_partition_map_t partmap;
@@ -77,17 +74,36 @@ int EXPORT_FUNC(grub_partition_iterate) (struct grub_disk *disk,
 						      const grub_partition_t partition));
 char *EXPORT_FUNC(grub_partition_get_name) (const grub_partition_t partition);
 
-int EXPORT_FUNC(grub_partition_map_iterate) (int (*hook) (const grub_partition_map_t partmap));
 
-void EXPORT_FUNC(grub_partition_map_register) (grub_partition_map_t partmap);
+extern grub_partition_map_t EXPORT_VAR(grub_partition_map_list);
 
-void EXPORT_FUNC(grub_partition_map_unregister) (grub_partition_map_t partmap);
+static inline void
+grub_partition_map_register (grub_partition_map_t partmap)
+{
+  grub_list_push (GRUB_AS_LIST_P (&grub_partition_map_list),
+		  GRUB_AS_LIST (partmap));
+}
+
+static inline void
+grub_partition_map_unregister (grub_partition_map_t partmap)
+{
+  grub_list_remove (GRUB_AS_LIST_P (&grub_partition_map_list),
+		    GRUB_AS_LIST (partmap));
+}
+
+#define FOR_PARTITION_MAPS(var) for (var = grub_partition_map_list; var; var = var->next)
 
 
 static inline grub_disk_addr_t
 grub_partition_get_start (const grub_partition_t p)
 {
-  return p->start;
+  grub_partition_t part;
+  grub_uint64_t part_start = 0;
+
+  for (part = p; part; part = part->parent)
+    part_start += part->start;
+
+  return part_start;
 }
 
 static inline grub_uint64_t
