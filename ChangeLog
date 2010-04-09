@@ -1,5 +1,16 @@
 2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* normal/autofs.c (read_fs_list): New parameter 'prefix'.
+	All users updated.
+	* normal/crypto.c (read_crypto_list): Likewise.
+	* normal/dyncmd.c (read_command_list): Likewise.
+	* normal/term.c (read_terminal_list): Likewise.
+	* normal/main.c (read_lists): Use explicit prefix.
+	(read_lists_hook): Use read_lists.
+	(grub_normal_execute): Likewise.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Fix incorrect path in coreboot part.
 	Reported by: Thomas Schmitt.
 	Add -no-emul-boot to grub-mkisofs parameters.
