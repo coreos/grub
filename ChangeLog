@@ -1,5 +1,12 @@
 2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	grub-mkconfig multiple terminal support.
+
+	* util/grub-mkconfig.in: Handle multiple terminals correctly.
+	* util/grub.d/00_header.in: Likewise.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.in: Specify files explicitly instead of using $< and $@ since
 	we use cd $(srcdir).
 
