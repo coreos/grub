@@ -141,8 +141,7 @@ fi
 # XXX warn on firmware-unreadable filesystems?
 
 # Create the GRUB directory if it is not present.
-test -d "$bootdir" || mkdir "$bootdir" || exit 1
-test -d "$grubdir" || mkdir "$grubdir" || exit 1
+mkdir -p "$grubdir" || exit 1
 
 # Create the device map file if it is not present.
 if test -f "$device_map"; then

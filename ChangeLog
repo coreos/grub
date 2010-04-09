@@ -1,3 +1,200 @@
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/00_header.in: Add few missing quotes. Recognise *.jpeg
+	as *.jpg.
+
+2010-04-09  Mario Vazquez <mariovazq@gmail.com>
+
+	GRUB_BACKGROUND support.
+
+	* util/grub-mkconfig.in: Export GRUB_BACKGROUND.
+	* util/grub.d/00_header.in: Parse GRUB_BACKGROUND.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Load fonts and modules for gfxmenu in grub-mkconfig.
+	Idea by: Mario Vazquez
+
+	* util/grub.d/00_header.in: Load pf2 and image modules.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	grub-mkconfig multiple terminal support.
+
+	* util/grub-mkconfig.in: Handle multiple terminals correctly.
+	* util/grub.d/00_header.in: Likewise.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.in: Specify files explicitly instead of using $< and $@ since
+	we use cd $(srcdir).
+
+2010-04-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/10_linux.in: Only use the first word of
+	GRUB_DISTRIBUTOR for --class, to avoid problems if somebody puts
+	spaces in GRUB_DISTRIBUTOR.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_hurd.in: Likewise.
+
+2010-04-06  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix unit testing framework for Qemu 0.12.
+
+	* tests/util/grub-shell.in: Remove -serial stdio option.
+
+2010-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	POSIX header file wrappers.
+
+	* lib/posix_wrap/assert.h: New file. Wrapper for its POSIX
+	equivalents.
+	* lib/posix_wrap/ctype.h: Likewise.
+	* lib/posix_wrap/errno.h: Likewise.
+	* lib/posix_wrap/langinfo.h: Likewise.
+	* lib/posix_wrap/limits.h: Likewise.
+	* lib/posix_wrap/localcharset.h: Likewise.
+	* lib/posix_wrap/stdint.h: Likewise.
+	* lib/posix_wrap/stdio.h: Likewise.
+	* lib/posix_wrap/stdlib.h: Likewise.
+	* lib/posix_wrap/string.h: Likewise.
+	* lib/posix_wrap/sys/types.h: Likewise.
+	* lib/posix_wrap/unistd.h: Likewise.
+	* lib/posix_wrap/wchar.h: Likewise.
+	* lib/posix_wrap/wctype.h: Likewise.
+	* conf/common.rmk (grub_script.yy.c): Remove #include elimination.
+	(grub_script.yy.h): Likewise.
+	* script/yylex.l: Remove POSIX emulation #defines.
+	* Makefile.in (POSIX_CFLAGS): New variable.
+	(GNULIB_UTIL_CFLAGS): Likewise.
+
+	Regexp support.
+
+	* conf/common.rmk (pkglib_MODULES): Add regexp.mod.
+	(regexp_mod_SOURCES): New variable.
+	(regexp_mod_CFLAGS): Likewise.
+	(regexp_mod_LDFLAGS): Likewise.
+	* commands/regexp.c: New file.
+	* gnulib/regcomp.c: New file. Imported from gnulib.
+	* gnulib/regex.c: Likewise.
+	* gnulib/regex_internal.c: Likewise.
+	* gnulib/regex_internal.h: Likewise.
+	* gnulib/regexec.c: Likewise.
+	* gnulib/regex.h: Likewise.
+
+2010-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/i386/multiboot_mbi.c (grub_multiboot_load): Correctly report
+	unsupported video mode types.
+
+2010-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/i386/pc/startup.S (grub_getrtsecs): Removed (dead code).
+
+2010-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i386/pc/init.h (grub_get_mmap_entry): Don't export.
+	* conf/i386-pc.rmk (kernel_img_HEADERS): Remove machine/init.h.
+
+2010-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove unused grub_vga_get_font.
+
+	* kern/i386/pc/startup.S (grub_vga_get_font): Removed.
+	* include/grub/i386/pc/vga.h (grub_vga_get_font): Likewise.
+
+2010-04-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/misc.c: Disable the __enable_execute_stack hack for utilities.
+	* include/grub/misc.h: Likewise.
+
+2010-04-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* util/grub-install.in: Add `|| exit 1' to all grub-probe calls
+	for which failure is fatal.
+
+2010-04-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* util/grub-install.in: Use mkdir -p to create grub directory.
+	* util/i386/efi/grub-install.in: Likewise.
+	* util/ieee1275/grub-install.in: Likewise.
+
+2010-04-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* Makefile.in (LEX): new variable.
+
+2010-04-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* util/i386/efi/grub-dumpdevtree: replaced the non-portable `==' by
+	`=' and added double quotes on operands of this equality test.
+
+2010-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.in (uninstall): Remove a leftover debug echo.
+	Reported by: Grégoire Sutre
+
+2010-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	MIPS multiboot2 support.
+
+	* conf/mips.rmk (pkglib_MODULES): Add multiboot2.mod.
+	(multiboot2_mod_SOURCES): New variable.
+	(multiboot2_mod_CFLAGS): Likewise.
+	(multiboot2_mod_LDFLAGS): Likewise.
+	(multiboot2_mod_ASFLAGS): Likewise.
+	* include/grub/i386/multiboot.h (MULTIBOOT_INITIAL_STATE): New
+	definition.
+	(MULTIBOOT_ENTRY_REGISTER): Likewise.
+	(MULTIBOOT_MBI_REGISTER): Likewise.
+	(MULTIBOOT_ARCHITECTURE_CURRENT): Likewise.
+	(MULTIBOOT_ELF32_MACHINE): Likewise.
+	(MULTIBOOT_ELF64_MACHINE): Likewise.
+	* include/grub/mips/multiboot.h: New file.
+	* include/grub/video.h (grub_video_driver_id): New type
+	GRUB_VIDEO_DRIVER_SM712.
+	(grub_video_get_info_and_fini): Export.
+	(grub_video_get_palette): Likewise.
+	(grub_video_get_driver_id): Likewise.
+	* include/multiboot2.h: Resynced with spec.
+	* loader/i386/multiboot.c: Moved from here ...
+	* loader/multiboot.c: ... here. All users updated.
+	(grub_multiboot_boot): Use platform-specific macros.
+	* loader/i386/multiboot_elfxx.c: Moved from here ...
+	* loader/multiboot_elfxx.c: ... here. All users updated.
+	(E_MACHINE): Use MULTIBOOT_ELF32_MACHINE and MULTIBOOT_ELF64_MACHINE.
+	* loader/i386/multiboot_mbi2.c (grub_multiboot_load): Check arcitecture.
+	* video/sm712.c (grub_video_sm712_adapter): Add missing id field.
+
+2010-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Import gnulib argp module.
+
+	* gnulib/argp-ba.c: New file.
+	* gnulib/argp-eexst.c: Likewise.
+	* gnulib/argp-fmtstream.c: Likewise.
+	* gnulib/argp-fmtstream.h: Likewise.
+	* gnulib/argp-fs-xinl.c: Likewise.
+	* gnulib/argp-help.c: Likewise.
+	* gnulib/argp-namefrob.h: Likewise.
+	* gnulib/argp-parse.c: Likewise.
+	* gnulib/argp-pin.c: Likewise.
+	* gnulib/argp-pv.c: Likewise.
+	* gnulib/argp-pvh.c: Likewise.
+	* gnulib/argp-version-etc.c: Likewise.
+	* gnulib/argp-version-etc.h: Likewise.
+	* gnulib/argp-xinl.c: Likewise.
+	* gnulib/argp.h: Likewise.
+
+2010-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/device.c (grub_device_iterate): Clear errors after failed
+	opening device.
+
+2010-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/ieee1275/openfw.c (grub_children_iterate): Skip device itself if
+	returned by firmware.
+
 2010-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* loader/i386/multiboot_mbi2.c (retrieve_video_parameters): Fix

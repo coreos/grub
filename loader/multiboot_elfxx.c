@@ -18,13 +18,13 @@
 
 #if defined(MULTIBOOT_LOAD_ELF32)
 # define XX		32
-# define E_MACHINE	EM_386
+# define E_MACHINE	MULTIBOOT_ELF32_MACHINE
 # define ELFCLASSXX	ELFCLASS32
 # define Elf_Ehdr	Elf32_Ehdr
 # define Elf_Phdr	Elf32_Phdr
 #elif defined(MULTIBOOT_LOAD_ELF64)
 # define XX		64
-# define E_MACHINE	EM_X86_64
+# define E_MACHINE	MULTIBOOT_ELF64_MACHINE
 # define ELFCLASSXX	ELFCLASS64
 # define Elf_Ehdr	Elf64_Ehdr
 # define Elf_Phdr	Elf64_Phdr

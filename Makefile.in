@@ -79,7 +79,9 @@ LIBS = @LIBS@ $(LIBINTL)
 
 CC = @CC@
 CFLAGS = @CFLAGS@
-GNULIB_CFLAGS = -Wno-undef -D_GL_UNUSED="__attribute__ ((unused))"
+POSIX_CFLAGS = -I$(srcdir)/lib/posix_wrap 
+GNULIB_UTIL_CFLAGS = -Wno-undef -Wno-sign-compare -Wno-unused -D_GL_UNUSED="__attribute__ ((unused))" -I$(srcdir)/gnulib
+GNULIB_CFLAGS = $(GNULIB_UTIL_CFLAGS) $(POSIX_CFLAGS)
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@ $(LIBS)
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
@@ -117,6 +119,7 @@ LIBCURSES = @LIBCURSES@
 LIBUSB = @LIBUSB@
 LIBSDL = @LIBSDL@
 LIBPCIACCESS = @LIBPCIACCESS@
+LEX = @LEX@
 YACC = @YACC@
 FONT_SOURCE = @FONT_SOURCE@
 
@@ -402,7 +405,6 @@ uninstall:
 	@list='$(lib_SCRIPTS)'; \
 	for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
-	  echo rm -f $(DESTDIR)$(libdir)/$$dest; \
 	  rm -f $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
 	@list='$(info_INFOS)'; \
@@ -534,8 +536,8 @@ genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
 
 $(srcdir)/po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
-	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o $@ -f $< --keyword=_ --keyword=N_
-	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
+	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o po/$(PACKAGE).pot -f po/POTFILES --keyword=_ --keyword=N_
+	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o po/$(PACKAGE).pot -f po/POTFILES-shell -j --language=Shell
 
 $(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): po/$(PACKAGE).pot
 	$(MSGMERGE) -U $@ $^
