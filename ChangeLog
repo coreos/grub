@@ -1,7 +1,14 @@
+2010-04-09  Mario Vazquez <mariovazq@gmail.com>
+
+	GRUB_BACKGROUND support.
+
+	* util/grub-mkconfig.in: Export GRUB_BACKGROUND.
+	* util/grub.d/00_header.in: Parse GRUB_BACKGROUND.
+
 2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Load fonts and modules for gfxmenu in grub-mkconfig.
-	Idea by: Mario Vasquez
+	Idea by: Mario Vazquez
 
 	* util/grub.d/00_header.in: Load pf2 and image modules.
 

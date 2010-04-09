@@ -126,6 +126,20 @@ EOF
 	cat << EOF
   set theme=(\$root)`make_system_path_relative_to_its_root $GRUB_THEME`
 EOF
+    elif [ "x$GRUB_BACKGROUND" != x ] && [ -f "$GRUB_BACKGROUND" ] \
+	    && is_path_readable_by_grub "$GRUB_BACKGROUND"; then
+	echo "Found background: $GRUB_BACKGROUND" >&2
+	case "$GRUB_BACKGROUND" in 
+	    *.png)         reader=png ;;
+	    *.tga)         reader=tga ;;
+	    *.jpg|*.jpeg)  reader=jpeg ;;
+	    *)             echo "Unsupported image format" >&2; exit 1 ;;
+	esac
+	prepare_grub_to_access_device `${grub_probe} --target=device "$GRUB_BACKGROUND"` | sed -e "s/^/  /"
+	cat << EOF
+  insmod $reader
+  background_image -m stretch `make_system_path_relative_to_its_root "$GRUB_BACKGROUND"`
+EOF
     fi
     cat << EOF
 fi
