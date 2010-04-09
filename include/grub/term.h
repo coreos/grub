@@ -427,8 +427,6 @@ grub_term_getcolor (struct grub_term_output *term,
     }
 }
 
-extern void (*EXPORT_VAR (grub_newline_hook)) (void);
-
 struct grub_term_autoload
 {
   struct grub_term_autoload *next;
