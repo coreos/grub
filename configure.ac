@@ -576,6 +576,10 @@ AC_ARG_ENABLE([grub-emu-pci],
 	      [AS_HELP_STRING([--enable-grub-emu-pci],
                              [build and install the `grub-emu' debugging utility with PCI support (potentially dangerous) (default=no)])])
 
+AC_ARG_ENABLE([grub-emu-modules],
+	      [AS_HELP_STRING([--enable-grub-emu-modules],
+                             [Support module loading in `grub-emu' debugging utility (default=no)])])
+
 if test "$platform" = emu; then
   missing_ncurses=
 [# Check for curses libraries.]
@@ -593,6 +597,13 @@ if test "$platform" = emu; then
 if test x"$missing_ncurses" = xtrue ; then
   AC_MSG_ERROR([grub-emu can't be compiled without ncurses])
 fi
+
+if test x"$enable_grub_emu_modules" = xyes ; then
+  TARGET_NO_MODULES=no
+else
+  TARGET_NO_MODULES=yes
+fi
+AC_SUBST(TARGET_NO_MODULES)
 
 if test x"$enable_grub_emu_usb" = xno ; then
   grub_emu_usb_excuse="explicitly disabled"
@@ -770,6 +781,11 @@ if [ x"$grub_emu_pci_excuse" = x ]; then
 echo PCI support for grub-emu: Yes
 else
 echo PCI support for grub-emu: No "($grub_emu_pci_excuse)"
+fi
+if [ x"$TARGET_NO_MODULES" = xno ]; then
+echo Module support for grub-emu: Yes
+else
+echo Module support for grub-emu: No
 fi
 fi
 if [ x"$enable_mm_debug" = xyes ]; then

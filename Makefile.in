@@ -43,6 +43,7 @@ pkglibdir =  $(libdir)/`echo @PACKAGE_TARNAME@/$(target_cpu)-$(platform) | sed '
 
 # Internationalization library.
 LIBINTL = @LIBINTL@
+TARGET_NO_MODULES = @TARGET_NO_MODULES@
 
 XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
@@ -181,10 +182,15 @@ include $(srcdir)/conf/tests.mk
 -include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
 endif
 
+ifeq ($(TARGET_NO_MODULES), yes)
+	TARGET_CFLAGS += -DGRUB_TARGET_NO_MODULES=1
+	CFLAGS += -DGRUB_TARGET_NO_MODULES=1
+endif
+
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
-ifneq ($(platform), emu)
+ifneq ($(TARGET_NO_MODULES), yes)
 pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst
 endif
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk

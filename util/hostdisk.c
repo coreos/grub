@@ -1042,7 +1042,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
   drive = find_system_device (os_dev);
   if (drive < 0)
     {
-      grub_error (GRUB_ERR_BAD_DEVICE,
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		  "no mapping exists for `%s'", os_dev);
       return 0;
     }

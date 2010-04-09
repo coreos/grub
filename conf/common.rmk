@@ -25,7 +25,7 @@ util/elf/grub-mkimage.c_DEPENDENCIES = Makefile
 sbin_UTILITIES += grub-probe
 util/grub-probe.c_DEPENDENCIES = grub_probe_init.h
 grub_probe_SOURCES = gnulib/progname.c util/grub-probe.c	\
-	util/hostdisk.c	util/misc.c util/getroot.c		\
+	util/hostdisk.c	util/misc.c util/getroot.c util/mm.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	kern/parser.c kern/partition.c kern/file.c kern/list.c	\
 	\
@@ -61,7 +61,7 @@ grub_mkisofs_CFLAGS = -D_FILE_OFFSET_BITS=64 				\
 # For grub-fstest.
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
 grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c util/hostfs.c \
-	util/misc.c 	\
+	util/misc.c util/mm.c 	\
 	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	disk/host.c disk/loopback.c kern/list.c kern/command.c		\
 	lib/arg.c commands/extcmd.c normal/datetime.c normal/misc.c	\
@@ -104,7 +104,7 @@ DISTCLEANFILES += grub_script.yy.c grub_script.yy.h
 bin_UTILITIES += grub-script-check
 util/grub-script-check.c_DEPENDENCIES = grub_script_check_init.h
 grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c \
-	util/grub-script-check.c util/misc.c \
+	util/grub-script-check.c util/misc.c util/mm.c \
 	script/main.c script/script.c script/function.c script/lexer.c \
 	kern/handler.c kern/err.c kern/parser.c kern/list.c \
 	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c \
@@ -116,8 +116,11 @@ DEFSYMFILES += kernel_syms.lst
 kernel_img_HEADERS += boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
-	machine/memory.h machine/loader.h machine/kernel.h \
 	list.h handler.h command.h i18n.h env_private.h
+
+ifneq ($(platform), emu)
+kernel_img_HEADERS += machine/memory.h machine/loader.h machine/kernel.h
+endif
 
 symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
@@ -184,7 +187,7 @@ DISTCLEANFILES += grub_fstest_init.c
 
 # for grub-editenv
 bin_UTILITIES += grub-editenv
-grub_editenv_SOURCES = gnulib/progname.c util/grub-editenv.c lib/envblk.c util/misc.c kern/misc.c kern/err.c
+grub_editenv_SOURCES = gnulib/progname.c util/grub-editenv.c lib/envblk.c util/misc.c util/mm.c kern/misc.c kern/err.c
 CLEANFILES += grub-editenv
 
 # Needed for genmk.rb to work
@@ -852,7 +855,7 @@ boot_mod_CFLAGS = $(COMMON_CFLAGS)
 boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 bin_UTILITIES += grub-mkpasswd-pbkdf2
-grub_mkpasswd_pbkdf2_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c util/grub-mkpasswd-pbkdf2.c lib/crypto.c lib/libgcrypt-grub/cipher/sha512.c lib/pbkdf2.c util/misc.c kern/err.c
+grub_mkpasswd_pbkdf2_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c util/grub-mkpasswd-pbkdf2.c lib/crypto.c lib/libgcrypt-grub/cipher/sha512.c lib/pbkdf2.c util/misc.c util/mm.c kern/err.c
 grub_mkpasswd_pbkdf2_CFLAGS += -Wno-missing-field-initializers -Wno-error -I$(srcdir)/lib/libgcrypt_wrap -DGRUB_MKPASSWD=1
 
 include $(srcdir)/conf/gcry.mk
