@@ -82,20 +82,19 @@ struct boot_blocklist
   grub_uint32_t len;
 } __attribute__ ((packed));
 
-void
-grub_putchar (int c)
+void 
+grub_xputs_real (const char *str)
 {
-  putchar (c);
+  fputs (str, stdout);
 }
+
+void (*grub_xputs) (const char *str) = grub_xputs_real;
 
 int
 grub_getkey (void)
 {
   return -1;
 }
-
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
 
 void
 grub_refresh (void)
