@@ -1,3 +1,9 @@
+2010-04-09  EFI Coder <eficoder@hotmail.com>
+
+	* normal/menu_text.c (print_message): Clean up the message and show
+	the Fn information when on EFI
+	* term/efi/console.c (grub_console_checkkey): Add F4 support.
+
 2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* normal/autofs.c (read_fs_list): New parameter 'prefix'.

@@ -194,6 +194,9 @@ grub_console_checkkey (void)
 	case 0x0d:
 	  read_key = 5;
 	  break;
+	case 0x0e:
+	  read_key = 3;
+	  break;
 	case 0x17:
 	  read_key = '\e';
 	  break;
