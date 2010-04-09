@@ -1,3 +1,7 @@
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* font/font.c: Indented.
+
 2010-04-09  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Elif support to GRUB script (by Deepak Vankadaru).
