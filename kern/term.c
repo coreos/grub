@@ -28,8 +28,6 @@ struct grub_term_input *grub_term_inputs_disabled;
 struct grub_term_output *grub_term_outputs;
 struct grub_term_input *grub_term_inputs;
 
-void (*grub_newline_hook) (void) = NULL;
-
 /* Put a Unicode character.  */
 static void
 grub_putcode_dumb (grub_uint32_t code,

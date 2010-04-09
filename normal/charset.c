@@ -1254,7 +1254,7 @@ grub_unicode_shape_code (grub_uint32_t in, grub_uint8_t attr)
   for (i = 0; grub_unicode_arabic_shapes[i].code; i++)
     if (grub_unicode_arabic_shapes[i].code == in)
       {
-	grub_uint32_t out;
+	grub_uint32_t out = 0;
 	switch (attr & (GRUB_UNICODE_GLYPH_ATTRIBUTE_RIGHT_JOINED
 			| GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED))
 	  {
