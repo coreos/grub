@@ -1,5 +1,11 @@
 2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/util/misc.h (canonicalise_file_name): Add missing
+	prototype.
+	Reported by: Seth Goldberg.
+
+2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* loader/multiboot.c (GRUB_MOD_INIT) [GRUB_USE_MULTIBOOT2]:
 	Rename "module" to "module2".
 	Reported by: Seth Goldberg.
