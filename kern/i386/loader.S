@@ -45,6 +45,8 @@
  *  This is the area for all of the special variables.
  */
 
+#include <grub/i386/floppy.h>
+
 	.p2align	2	/* force 4-byte alignment */
 
 /*
@@ -96,7 +98,9 @@ bzimage:
 
 	/* XXX new stack pointer in safe area for calling functions */
 	movl	$0x4000, %esp
-	call	EXT_C(grub_stop_floppy)
+	movw    $GRUB_FLOPPY_REG_DIGITAL_OUTPUT, %dx
+	xorb	%al, %al
+	outb	%al, %dx
 
 	/* final setup for linux boot */
 	call	prot_to_real

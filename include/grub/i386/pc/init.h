@@ -22,10 +22,9 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 #include <grub/machine/memory.h>
+#include <grub/cpu/floppy.h>
 
 /* Turn on/off Gate A20.  */
 void grub_gate_a20 (int on);
-
-void EXPORT_FUNC(grub_stop_floppy) (void);
 
 #endif /* ! GRUB_INIT_MACHINE_HEADER */

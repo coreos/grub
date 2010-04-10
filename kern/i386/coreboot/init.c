@@ -36,8 +36,6 @@
 #include <grub/cpu/kernel.h>
 #include <grub/cpu/tsc.h>
 
-#define GRUB_FLOPPY_REG_DIGITAL_OUTPUT		0x3f2
-
 extern char _start[];
 extern char _end[];
 
@@ -48,14 +46,6 @@ grub_uint32_t
 grub_get_rtc (void)
 {
   grub_fatal ("grub_get_rtc() is not implemented.\n");
-}
-
-/* Stop the floppy drive from spinning, so that other software is
-   jumped to with a known state.  */
-void
-grub_stop_floppy (void)
-{
-  grub_outb (0, GRUB_FLOPPY_REG_DIGITAL_OUTPUT);
 }
 
 void

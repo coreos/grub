@@ -21,8 +21,8 @@
 
 #include <grub/symbol.h>
 #include <grub/i386/pc/memory.h>
+#include <grub/i386/floppy.h>
 
 void EXPORT_FUNC(grub_stop) (void) __attribute__ ((noreturn));
-void EXPORT_FUNC(grub_stop_floppy) (void);
 
 #endif
