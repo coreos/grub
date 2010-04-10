@@ -192,7 +192,7 @@ AC_PROG_MKDIR_P
 if test "x$LEX" = x; then
   AC_MSG_ERROR([flex is not found])
 else
-  version=`$LEX --version 2>/dev/null | $SED -e 's/flex//' -e 's/version//' | $AWK -F "." '{ printf "%d", $1 * 10000 + $2 * 100 + $3;}'`
+  version=`$LEX --version | $AWK '{ split($NF,x,"."); print x[[1]]*10000+x[[2]]*100+x[[3]]; }'`
   if test -n "$version" -a "$version" -ge 20535; then
     :
   else
