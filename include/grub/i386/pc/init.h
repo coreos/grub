@@ -23,11 +23,6 @@
 #include <grub/symbol.h>
 #include <grub/machine/memory.h>
 
-/* Get a memory map entry. Return next continuation value. Zero means
-   the end.  */
-grub_uint32_t grub_get_mmap_entry (struct grub_machine_mmap_entry *entry,
-				   grub_uint32_t cont);
-
 /* Turn on/off Gate A20.  */
 void grub_gate_a20 (int on);
 

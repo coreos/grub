@@ -61,6 +61,53 @@ grub_get_eisa_mmap (void)
   return (regs.eax & 0xffff) | (regs.ebx << 16);
 }
 
+/*
+ *
+ * grub_get_mmap_entry(addr, cont) : address and old continuation value (zero to
+ *		start), for the Query System Address Map BIOS call.
+ *
+ *  Sets the first 4-byte int value of "addr" to the size returned by
+ *  the call.  If the call fails, sets it to zero.
+ *
+ *	Returns:  new (non-zero) continuation value, 0 if done.
+ */
+/* Get a memory map entry. Return next continuation value. Zero means
+   the end.  */
+static grub_uint32_t
+grub_get_mmap_entry (struct grub_machine_mmap_entry *entry,
+		     grub_uint32_t cont)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+
+  /* place address (+4) in ES:DI */
+  regs.es = ((grub_addr_t) &entry->addr) >> 4;
+  regs.edi = ((grub_addr_t) &entry->addr) & 0xf;
+	
+  /* set continuation value */
+  regs.ebx = cont;
+
+  /* set default maximum buffer size */
+  regs.ecx = sizeof (*entry) - sizeof (entry->size);
+
+  /* set EDX to 'SMAP' */
+  regs.edx = 0x534d4150;
+
+  regs.eax = 0xe820;
+  grub_bios_interrupt (0x15, &regs);
+
+  /* write length of buffer (zero if error) into ADDR */	
+  if ((regs.flags & GRUB_CPU_INT_FLAGS_CARRY) || regs.eax != 0x534d4150
+      || regs.ecx < 0x14 || regs.ecx > 0x400)
+    entry->size = 0;
+  else
+    entry->size = regs.ecx;
+
+  /* return the continuation value */
+  return regs.ebx;
+}
+
 grub_err_t
 grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t))
 {
