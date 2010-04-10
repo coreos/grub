@@ -40,7 +40,6 @@ cdboot_img_FORMAT = binary
 
 # For kernel.img.
 kernel_img_SOURCES = kern/i386/pc/startup.S \
-	kern/i386/misc.S \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/term.c \
