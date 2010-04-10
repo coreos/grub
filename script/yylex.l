@@ -86,12 +86,6 @@ typedef size_t yy_size_t;
 #define exit(...)
 #endif
 
-#pragma GCC diagnostic warning "-Wunused-variable"
-#pragma GCC diagnostic warning "-Wunused-function"
-#pragma GCC diagnostic warning "-Wunused-parameter"
-#pragma GCC diagnostic warning "-Wstrict-prototypes"
-#pragma GCC diagnostic warning "-Wmissing-prototypes"
-
 }
 
 %option ecs

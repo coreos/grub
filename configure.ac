@@ -170,11 +170,6 @@ if test "x$CMP" = x; then
   AC_MSG_ERROR([cmp is not found])
 fi
 
-AC_CHECK_PROGS([LEX], [flex])
-if test "x$LEX" = x; then
-  AC_MSG_ERROR([flex is not found])
-fi
-
 AC_CHECK_PROGS([YACC], [bison])
 if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
@@ -189,8 +184,20 @@ done
 
 AC_PROG_INSTALL
 AC_PROG_AWK
+AC_PROG_LEX
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
+
+if test "x$LEX" = x; then
+  AC_MSG_ERROR([flex is not found])
+else
+  version=`$LEX --version | $AWK '{ split($NF,x,"."); print x[[1]]*10000+x[[2]]*100+x[[3]]; }'`
+  if test -n "$version" -a "$version" -ge 20535; then
+    :
+  else
+    AC_MSG_ERROR([flex is too old. GRUB requires 2.5.35 or above])
+  fi
+fi
 
 # These are not a "must".
 AC_PATH_PROG(RUBY, ruby)

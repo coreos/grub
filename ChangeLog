@@ -1,3 +1,11 @@
+2010-04-10  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix FreeBSD build.
+
+	* configure.ac: Flex version check.
+	* conf/common.rmk: Add -Wno-error to sh.mod.
+	* script/yylex.l: Remove all #pragma.
+
 2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/util/misc.h (canonicalise_file_name): Add missing
