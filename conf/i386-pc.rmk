@@ -90,7 +90,7 @@ grub_setup_SOURCES = gnulib/progname.c \
 	partmap/gpt.c		\
 	\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c		\
-	util/raid.c util/lvm.c			\
+	util/raid.c util/lvm.c util/mm.c			\
 	grub_setup_init.c
 
 sbin_SCRIPTS += grub-install

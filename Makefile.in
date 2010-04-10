@@ -43,6 +43,7 @@ pkglibdir =  $(libdir)/`echo @PACKAGE_TARNAME@/$(target_cpu)-$(platform) | sed '
 
 # Internationalization library.
 LIBINTL = @LIBINTL@
+TARGET_NO_MODULES = @TARGET_NO_MODULES@
 
 XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
@@ -136,7 +137,7 @@ enable_efiemu = @enable_efiemu@
 
 ### General variables.
 
-RMKFILES = $(wildcard conf/*.rmk)
+RMKFILES = $(wildcard $(srcdir)/conf/*.rmk)
 
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
@@ -155,7 +156,9 @@ DISTCLEANFILES = config.status config.cache config.log config.h \
 	gensymlist.sh genkernsyms.sh build_env.mk \
 	docs/grub.info docs/version.texi docs/stamp-vti
 
-MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES)) \
+MAINTAINER_CLEANFILES = $(srcdir)/configure $(srcdir)/aclocal.m4 \
+	$(MKFILES) $(srcdir)/config.guess \
+	$(srcdir)/config.sub $(srcdir)/install-sh $(srcdir)/missing \
 	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in $(INFOS)
 
 # The default target.
@@ -179,10 +182,15 @@ include $(srcdir)/conf/tests.mk
 -include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
 endif
 
+ifeq ($(TARGET_NO_MODULES), yes)
+	TARGET_CFLAGS += -DGRUB_TARGET_NO_MODULES=1
+	CFLAGS += -DGRUB_TARGET_NO_MODULES=1
+endif
+
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
-ifneq ($(platform), emu)
+ifneq ($(TARGET_NO_MODULES), yes)
 pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst
 endif
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
@@ -427,6 +435,8 @@ distclean: mostlyclean
 
 maintainer-clean: distclean
 	-test -z "$(MAINTAINER_CLEANFILES)" || rm -f $(MAINTAINER_CLEANFILES)
+	-rmdir $(srcdir)/lib/libgcrypt-grub/cipher
+	-rmdir $(srcdir)/lib/libgcrypt-grub
 
 info:
 
@@ -530,8 +540,8 @@ genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
 
 $(srcdir)/po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
-	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o $@ -f $< --keyword=_ --keyword=N_
-	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
+	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o po/$(PACKAGE).pot -f po/POTFILES --keyword=_ --keyword=N_
+	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o po/$(PACKAGE).pot -f po/POTFILES-shell -j --language=Shell
 
 $(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): po/$(PACKAGE).pot
 	$(MSGMERGE) -U $@ $^

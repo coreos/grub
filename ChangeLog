@@ -1,3 +1,153 @@
+2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/multiboot.c (GRUB_MOD_INIT) [GRUB_USE_MULTIBOOT2]:
+	Rename "module" to "module2".
+	Reported by: Seth Goldberg.
+
+2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/efi/memory.h (grub_machine_mmap_iterate): Remove
+	EXPORT_FUNC.
+	Reported by: Seth Goldberg.
+
+2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* lib/posix_wrap/locale.h: Add missing file.
+	Reported by: Seth Goldberg.
+
+2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	grub-emu module load support.
+
+	* Makefile.in (TARGET_NO_MODULES): New variable. All users of
+	NO_DYNAMIC_MODULES switched to this.
+	(TARGET_CFLAGS): Add -DGRUB_TARGET_NO_MODULES=1 if applicable.
+	(CFLAGS): Likewise.
+	* conf/any-emu.rmk: Generate symlist.
+	(kernel_img_HEADERS): Add util/datetime.h.
+	(kernel_img_HEADERS) [sdl]: Add sdl.h.
+	(kernel_img_HEADERS) [libusb]: Add libusb.h.
+	(kernel_img_SOURCES) [TARGET_NO_MODULES = no && !x86]: Add
+	kern/$(target_cpu)/cache.S.
+	* configure.ac (grub-emu-modules): New option.
+	* genmk.rb: Handle multiple source lists.
+	* include/grub/sdl.h: New file.
+	* include/grub/libusb.h: Likewise.
+	* util/grub-emu.c (main): Hanle (host) root.
+	* util/hostdisk.c (grub_util_biosdisk_get_grub_dev): Error with
+	GRUB_ERR_UNKNOWN_DEVICE.
+	* util/misc.c: Move mm functions to ...
+	* util/mm.c: ... here. All users updated.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.in (RMKFILES): Search in srcdir and not current directory.
+	(MAINTAINER_CLEANFILES): Don't add $(srcdir) to MKFILES. Add few
+	missing files.
+	(maintainer-clean): Remove libgcrypt-grub.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/efi/console.c (grub_console_checkkey): Macroify key contants.
+
+2010-04-09  EFI Coder <eficoder@hotmail.com>
+
+	* normal/menu_text.c (print_message): Clean up the message and show
+	the Fn information when on EFI
+	* term/efi/console.c (grub_console_checkkey): Add F4 support.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/autofs.c (read_fs_list): New parameter 'prefix'.
+	All users updated.
+	* normal/crypto.c (read_crypto_list): Likewise.
+	* normal/dyncmd.c (read_command_list): Likewise.
+	* normal/term.c (read_terminal_list): Likewise.
+	* normal/main.c (read_lists): Use explicit prefix.
+	(read_lists_hook): Use read_lists.
+	(grub_normal_execute): Likewise.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrescue.in: Fix incorrect path in coreboot part.
+	Reported by: Thomas Schmitt.
+	Add -no-emul-boot to grub-mkisofs parameters.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* font/font.c: Indented.
+
+2010-04-09  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Elif support to GRUB script (by Deepak Vankadaru).
+
+	* tests/grub_script_if.in: New testcase.
+	* conf/tests.rmk: Rule for new testcase.
+	* script/parser.y: Grammar rules for elif.
+
+2010-04-09  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	While and until loops support to GRUB script.
+
+	* include/grub/script_sh.h (grub_script_cmdwhile): New struct.
+	(grub_script_create_cmdwhile): New function prototype.
+	(grub_script_execute_cmdwhile): New function prototype.
+	* script/execute.c (grub_script_execute_cmdwhile): New function.
+	* script/parser.y (command): New commands.
+	(whilecmd): New grammar rule.
+	(untilcmd): New grammar rule.
+	* script/script.c (grub_script_create_cmdwhile): New function.
+	* util/grub-script-check.c (grub_script_execute_cmdwhile): New
+	function.
+
+	* tests/grub_script_while1.in: New testcase.
+	* conf/tests.rmk: Rule for new testcase.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/00_header.in: Add few missing quotes. Recognise *.jpeg
+	as *.jpg.
+
+2010-04-09  Mario Vazquez <mariovazq@gmail.com>
+
+	GRUB_BACKGROUND support.
+
+	* util/grub-mkconfig.in: Export GRUB_BACKGROUND.
+	* util/grub.d/00_header.in: Parse GRUB_BACKGROUND.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Load fonts and modules for gfxmenu in grub-mkconfig.
+	Idea by: Mario Vazquez
+
+	* util/grub.d/00_header.in: Load pf2 and image modules.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	grub-mkconfig multiple terminal support.
+
+	* util/grub-mkconfig.in: Handle multiple terminals correctly.
+	* util/grub.d/00_header.in: Likewise.
+
+2010-04-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.in: Specify files explicitly instead of using $< and $@ since
+	we use cd $(srcdir).
+
+2010-04-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/10_linux.in: Only use the first word of
+	GRUB_DISTRIBUTOR for --class, to avoid problems if somebody puts
+	spaces in GRUB_DISTRIBUTOR.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_hurd.in: Likewise.
+
+2010-04-06  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix unit testing framework for Qemu 0.12.
+
+	* tests/util/grub-shell.in: Remove -serial stdio option.
+
 2010-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	POSIX header file wrappers.
