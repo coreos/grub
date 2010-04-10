@@ -1,3 +1,8 @@
+2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/hostdisk.c (grub_util_biosdisk_get_grub_dev): Remove
+	disk_info_msg (conflicts with gettexting into languages with cases).
+
 2010-04-10  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	Add grub-probe support for NetBSD.

@@ -1166,11 +1166,9 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     grub_disk_t disk;
     int fd;
 # if !defined(__NetBSD__)
-    const char *disk_info_msg = "geometry";
     struct hd_geometry hdg;
     typeof (hdg.start) p_offset;
 # else /* defined(__NetBSD__) */
-    const char *disk_info_msg = "label";
     struct disklabel label;
     int index;
     u_int32_t p_offset;
@@ -1223,7 +1221,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     fd = open (os_dev, O_RDONLY);
     if (fd == -1)
       {
-	grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' while attempting to get disk %s", os_dev, disk_info_msg);
+	grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' while attempting to get disk geometry", os_dev);
 	free (name);
 	return 0;
       }
@@ -1236,7 +1234,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 # endif /* !defined(__NetBSD__) */
       {
 	grub_error (GRUB_ERR_BAD_DEVICE,
-		    "cannot get disk %s of `%s'", disk_info_msg, os_dev);
+		    "cannot get disk geometry of `%s'", os_dev);
 	close (fd);
 	free (name);
 	return 0;
