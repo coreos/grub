@@ -1,5 +1,10 @@
 2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* lib/posix_wrap/locale.h: Add missing file.
+	Reported by: Seth Goldberg.
+
+2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	grub-emu module load support.
 
 	* Makefile.in (TARGET_NO_MODULES): New variable. All users of
