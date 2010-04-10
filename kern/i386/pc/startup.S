@@ -507,46 +507,6 @@ FUNCTION(grub_chainloader_real_boot)
 
 /*
  *
- * grub_get_memsize(i) :  return the memory size in KB. i == 0 for conventional
- *		memory, i == 1 for extended memory
- *	BIOS call "INT 12H" to get conventional memory size
- *	BIOS call "INT 15H, AH=88H" to get extended memory size
- *		Both have the return value in AX.
- *
- */
-
-FUNCTION(grub_get_memsize)
-	pushl	%ebp
-
-	movl	%eax, %edx
-
-	call	prot_to_real	/* enter real mode */
-	.code16
-
-	testl	%edx, %edx
-	jnz	xext
-
-	int	$0x12
-	jmp	xdone
-
-xext:
-	movb	$0x88, %ah
-	int	$0x15
-
-xdone:
-	movw	%ax, %dx
-
-	DATA32	call	real_to_prot
-	.code32
-
-	movw	%dx, %ax
-
-	popl	%ebp
-	ret
-
-
-/*
- *
  * grub_get_eisa_mmap() :  return packed EISA memory map, lower 16 bits is
  *		memory between 1M and 16M in 1K parts, upper 16 bits is
  *		memory above 16M in 64K parts.  If error, return zero.

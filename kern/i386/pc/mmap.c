@@ -17,9 +17,26 @@
  */
 
 #include <grub/machine/init.h>
+#include <grub/machine/int.h>
 #include <grub/machine/memory.h>
 #include <grub/err.h>
 #include <grub/types.h>
+
+/*
+ * grub_get_ext_memsize() :  return the extended memory size in KB.
+ *	BIOS call "INT 15H, AH=88H" to get extended memory size
+ *	The return value in AX.
+ *
+ */
+static inline grub_uint16_t
+grub_get_ext_memsize (void)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x8800;
+  grub_bios_interrupt (0x15, &regs);
+  return regs.eax & 0xffff;
+}
 
 grub_err_t
 grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t))
@@ -56,7 +73,7 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uin
 	    hook (0x1000000, eisa_mmap & ~0xFFFF, GRUB_MACHINE_MEMORY_AVAILABLE);
 	}
       else
-	hook (0x100000, grub_get_memsize (1) << 10, GRUB_MACHINE_MEMORY_AVAILABLE);
+	hook (0x100000, grub_get_ext_memsize () << 10, GRUB_MACHINE_MEMORY_AVAILABLE);
     }
 
   return 0;

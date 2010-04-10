@@ -23,10 +23,6 @@
 #include <grub/symbol.h>
 #include <grub/machine/memory.h>
 
-/* Get the memory size in KB. If EXTENDED is zero, return conventional
-   memory, otherwise return extended memory.  */
-grub_uint16_t grub_get_memsize (int extended);
-
 /* Get a packed EISA memory map. Lower 16 bits are between 1MB and 16MB
    in 1KB parts, and upper 16 bits are above 16MB in 64KB parts.  */
 grub_uint32_t grub_get_eisa_mmap (void);
