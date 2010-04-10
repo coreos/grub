@@ -180,7 +180,8 @@ typedef enum grub_video_driver_id
     GRUB_VIDEO_DRIVER_NONE,
     GRUB_VIDEO_DRIVER_VBE,
     GRUB_VIDEO_DRIVER_EFI_UGA,
-    GRUB_VIDEO_DRIVER_EFI_GOP
+    GRUB_VIDEO_DRIVER_EFI_GOP,
+    GRUB_VIDEO_DRIVER_SM712
   } grub_video_driver_id_t;
 
 struct grub_video_adapter
@@ -272,7 +273,7 @@ grub_err_t EXPORT_FUNC (grub_video_get_info) (struct grub_video_mode_info *mode_
    sure that framebuffer address doesn't change. To ensure this abstraction
    grub_video_get_info_and_fini is the only function supplying framebuffer
    address. */
-grub_err_t grub_video_get_info_and_fini (struct grub_video_mode_info *mode_info,
+grub_err_t EXPORT_FUNC (grub_video_get_info_and_fini) (struct grub_video_mode_info *mode_info,
 					 void **framebuffer);
 
 enum grub_video_blit_format grub_video_get_blit_format (struct grub_video_mode_info *mode_info);
@@ -280,8 +281,9 @@ enum grub_video_blit_format grub_video_get_blit_format (struct grub_video_mode_i
 grub_err_t grub_video_set_palette (unsigned int start, unsigned int count,
                                    struct grub_video_palette_data *palette_data);
 
-grub_err_t grub_video_get_palette (unsigned int start, unsigned int count,
-                                   struct grub_video_palette_data *palette_data);
+grub_err_t EXPORT_FUNC (grub_video_get_palette) (unsigned int start,
+						 unsigned int count,
+						 struct grub_video_palette_data *palette_data);
 
 grub_err_t EXPORT_FUNC (grub_video_set_viewport) (unsigned int x,
 						  unsigned int y,
@@ -356,7 +358,6 @@ grub_video_check_mode_flag (unsigned int flags, unsigned int mask,
   return (flag & mask) ? !! (flags & flag) : def;
 }
 
-grub_video_driver_id_t
-grub_video_get_driver_id (void);
+grub_video_driver_id_t EXPORT_FUNC (grub_video_get_driver_id) (void);
 
 #endif /* ! GRUB_VIDEO_HEADER */

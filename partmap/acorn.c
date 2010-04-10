@@ -96,17 +96,12 @@ acorn_partition_map_iterate (grub_disk_t disk,
 					  const grub_partition_t partition))
 {
   struct grub_partition part;
-  struct grub_disk raw;
   struct linux_part map[LINUX_MAP_ENTRIES];
   int i;
-  grub_disk_addr_t sector;
+  grub_disk_addr_t sector = 0;
   grub_err_t err;
 
-  /* Enforce raw disk access.  */
-  raw = *disk;
-  raw.partition = 0;
-
-  err = acorn_partition_map_find (&raw, map, &sector);
+  err = acorn_partition_map_find (disk, map, &sector);
   if (err)
     return err;
 
@@ -121,7 +116,7 @@ acorn_partition_map_iterate (grub_disk_t disk,
       part.start = sector + map[i].start;
       part.len = map[i].size;
       part.offset = 6;
-      part.index = i;
+      part.number = part.index = i;
 
       if (hook (disk, &part))
 	return grub_errno;
@@ -130,62 +125,13 @@ acorn_partition_map_iterate (grub_disk_t disk,
   return GRUB_ERR_NONE;
 }
 
-
-static grub_partition_t
-acorn_partition_map_probe (grub_disk_t disk, const char *str)
-{
-  struct linux_part map[LINUX_MAP_ENTRIES];
-  struct grub_disk raw = *disk;
-  unsigned long partnum = grub_strtoul (str, 0, 10) - 1;
-  grub_disk_addr_t sector;
-  grub_err_t err;
-  grub_partition_t p;
-
-  /* Enforce raw disk access.  */
-  raw.partition = 0;
-
-  /* Get the partition number.  */
-  if (partnum > LINUX_MAP_ENTRIES)
-    goto fail;
-
-  err = acorn_partition_map_find (&raw, map, &sector);
-  if (err)
-    return 0;
-
-  if (map[partnum].magic != LINUX_NATIVE_MAGIC
-      && map[partnum].magic != LINUX_SWAP_MAGIC)
-    goto fail;
-
-  p = grub_malloc (sizeof (struct grub_partition));
-  if (! p)
-    return 0;
-
-  p->start = sector + map[partnum].start;
-  p->len = map[partnum].size;
-  p->offset = 6;
-  p->index = partnum;
-  return p;
-
-fail:
-  grub_error (GRUB_ERR_BAD_FILENAME, "invalid partition");
-  return 0;
-}
-
-
-static char *
-acorn_partition_map_get_name (const grub_partition_t p)
-{
-  return grub_xasprintf ("%d", p->index + 1);
-}
 
 
 /* Partition map type.  */
 static struct grub_partition_map grub_acorn_partition_map =
 {
-  .name = "part_acorn",
+  .name = "acorn",
   .iterate = acorn_partition_map_iterate,
-  .probe = acorn_partition_map_probe,
-  .get_name = acorn_partition_map_get_name
 };
 
 GRUB_MOD_INIT(part_acorn)

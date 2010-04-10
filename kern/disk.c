@@ -330,6 +330,7 @@ grub_disk_open (const char *name)
 void
 grub_disk_close (grub_disk_t disk)
 {
+  grub_partition_t part;
   grub_dprintf ("disk", "Closing `%s'.\n", disk->name);
 
   if (disk->dev && disk->dev->close)
@@ -338,7 +339,12 @@ grub_disk_close (grub_disk_t disk)
   /* Reset the timer.  */
   grub_last_time = grub_get_time_ms ();
 
-  grub_free (disk->partition);
+  while (disk->partition)
+    {
+      part = disk->partition->parent;
+      grub_free (disk->partition);
+      disk->partition = part;
+    }
   grub_free ((void *) disk->name);
   grub_free (disk);
 }
@@ -349,18 +355,19 @@ grub_disk_close (grub_disk_t disk)
    - Verify that the range is inside the partition.  */
 static grub_err_t
 grub_disk_adjust_range (grub_disk_t disk, grub_disk_addr_t *sector,
-		       grub_off_t *offset, grub_size_t size)
+			grub_off_t *offset, grub_size_t size)
 {
+  grub_partition_t part;
   *sector += *offset >> GRUB_DISK_SECTOR_BITS;
   *offset &= GRUB_DISK_SECTOR_SIZE - 1;
 
-  if (disk->partition)
+  for (part = disk->partition; part; part = part->parent)
     {
       grub_disk_addr_t start;
       grub_uint64_t len;
 
-      start = grub_partition_get_start (disk->partition);
-      len = grub_partition_get_len (disk->partition);
+      start = part->start;
+      len = part->len;
 
       if (*sector >= len
 	  || len - *sector < ((*offset + size + GRUB_DISK_SECTOR_SIZE - 1)

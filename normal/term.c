@@ -167,14 +167,12 @@ grub_terminal_autoload_free (void)
 
 /* Read the file terminal.lst for auto-loading.  */
 void
-read_terminal_list (void)
+read_terminal_list (const char *prefix)
 {
-  const char *prefix;
   char *filename;
   grub_file_t file;
   char *buf = NULL;
 
-  prefix = grub_env_get ("prefix");
   if (!prefix)
     {
       grub_errno = GRUB_ERR_NONE;

@@ -74,8 +74,10 @@
 %token <arg> GRUB_PARSER_TOKEN_WORD      "word"
 
 %type <arglist> word argument arguments0 arguments1
-%type <cmd> script_init script grubcmd ifcmd command
-%type <cmd> commands1 menuentry statement
+
+%type <cmd> script_init script
+%type <cmd> grubcmd ifclause ifcmd forcmd whilecmd untilcmd
+%type <cmd> command commands1 menuentry statement
 
 %pure-parser
 %lex-param   { struct grub_parser_param *state };
@@ -92,7 +94,7 @@ script: newlines0
         {
           $$ = 0;
         }
-      | script statement delimiter
+      | script statement delimiter newlines0
         {
           struct grub_script_cmdblock *cmdblock;
           cmdblock = (struct grub_script_cmdblock *) $1;
@@ -171,8 +173,11 @@ grubcmd: word arguments0
 ;
 
 /* A single command.  */
-command: grubcmd { $$ = $1; }
-       | ifcmd   { $$ = $1; }
+command: grubcmd  { $$ = $1; }
+       | ifcmd    { $$ = $1; }
+       | forcmd   { $$ = $1; }
+       | whilecmd { $$ = $1; }
+       | untilcmd { $$ = $1; }
 ;
 
 /* A list of commands. */
@@ -223,16 +228,59 @@ menuentry: "menuentry"
            }
 ;
 
-if: "if" { grub_script_lexer_ref (state->lexerstate); }
+ifcmd: "if"
+	{
+	  grub_script_lexer_ref (state->lexerstate);
+	}
+	ifclause "fi"
+	{
+	  $$ = $3;
+	  grub_script_lexer_deref (state->lexerstate);
+	}
 ;
-ifcmd: if commands1 delimiters1 "then" commands1 delimiters1 "fi"
-       {
-         $$ = grub_script_create_cmdif (state, $2, $5, 0);
-         grub_script_lexer_deref (state->lexerstate);
-       }
-     | if commands1 delimiters1 "then" commands1 delimiters1 "else" commands1 delimiters1 "fi"
-       {
-         $$ = grub_script_create_cmdif (state, $2, $5, $8);
-         grub_script_lexer_deref (state->lexerstate);
-       }
+ifclause: commands1 delimiters1 "then" commands1 delimiters1
+	  {
+	    $$ = grub_script_create_cmdif (state, $1, $4, 0);
+	  }
+	| commands1 delimiters1 "then" commands1 delimiters1 "else" commands1 delimiters1
+	  {
+	    $$ = grub_script_create_cmdif (state, $1, $4, $7);
+	  }
+	| commands1 delimiters1 "then" commands1 delimiters1 "elif" ifclause
+	  {
+	    $$ = grub_script_create_cmdif (state, $1, $4, $7);
+	  }
+;
+
+forcmd: "for" "name"
+        {
+	  grub_script_lexer_ref (state->lexerstate);
+        }
+        "in" arguments0 delimiters1 "do" commands1 delimiters1 "done"
+	{
+	  $$ = grub_script_create_cmdfor (state, $2, $5, $8);
+	  grub_script_lexer_deref (state->lexerstate);
+	}
+;
+
+whilecmd: "while"
+          {
+	    grub_script_lexer_ref (state->lexerstate);
+          }
+          commands1 delimiters1 "do" commands1 delimiters1 "done"
+	  {
+	    $$ = grub_script_create_cmdwhile (state, $3, $6, 0);
+	    grub_script_lexer_deref (state->lexerstate);
+	  }
+;
+
+untilcmd: "until"
+          {
+	    grub_script_lexer_ref (state->lexerstate);
+          }
+          commands1 delimiters1 "do" commands1 delimiters1 "done"
+	  {
+	    $$ = grub_script_create_cmdwhile (state, $3, $6, 1);
+	    grub_script_lexer_deref (state->lexerstate);
+	  }
 ;

@@ -25,7 +25,7 @@ util/elf/grub-mkimage.c_DEPENDENCIES = Makefile
 sbin_UTILITIES += grub-probe
 util/grub-probe.c_DEPENDENCIES = grub_probe_init.h
 grub_probe_SOURCES = gnulib/progname.c util/grub-probe.c	\
-	util/hostdisk.c	util/misc.c util/getroot.c		\
+	util/hostdisk.c	util/misc.c util/getroot.c util/mm.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	kern/parser.c kern/partition.c kern/file.c kern/list.c	\
 	\
@@ -35,7 +35,8 @@ grub_probe_SOURCES = gnulib/progname.c util/grub-probe.c	\
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c	\
 	fs/befs.c fs/befs_be.c fs/tar.c		\
 	\
-	partmap/msdos.c partmap/apple.c partmap/sun.c partmap/gpt.c\
+	partmap/msdos.c partmap/bsdlabel.c partmap/apple.c \
+	partmap/sun.c partmap/sunpc.c partmap/gpt.c \
 	kern/fs.c kern/env.c fs/fshelp.c			\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c grub_probe_init.c
 
@@ -55,12 +56,12 @@ grub_mkisofs_SOURCES = util/mkisofs/eltorito.c 				\
 	gnulib/error.c gnulib/progname.c
 grub_mkisofs_CFLAGS = -D_FILE_OFFSET_BITS=64 				\
 	-I$(srcdir)/util/mkisofs/include				\
-	-Wno-all -Werror
+	-Wno-all -Werror $(GNULIB_UTIL_CFLAGS)
 
 # For grub-fstest.
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
 grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c util/hostfs.c \
-	util/misc.c 	\
+	util/misc.c util/mm.c 	\
 	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	disk/host.c disk/loopback.c kern/list.c kern/command.c		\
 	lib/arg.c commands/extcmd.c normal/datetime.c normal/misc.c	\
@@ -72,8 +73,8 @@ grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c util/hostfs.c \
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c fs/befs.c 	\
 	fs/befs_be.c fs/tar.c			\
 	\
-	kern/partition.c partmap/msdos.c partmap/apple.c partmap/sun.c	\
-	partmap/gpt.c							\
+	kern/partition.c partmap/msdos.c partmap/bsdlabel.c 		\
+	partmap/apple.c partmap/sun.c partmap/sunpc.c partmap/gpt.c	\
 	kern/fs.c kern/env.c fs/fshelp.c disk/raid.c			\
 	disk/raid5_recover.c disk/raid6_recover.c 			\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c 		\
@@ -97,28 +98,29 @@ grub_bin2h_SOURCES = gnulib/progname.c util/bin2h.c
 # For the lexer.
 grub_script.yy.c grub_script.yy.h: script/yylex.l
 	$(LEX) -o grub_script.yy.c --header-file=grub_script.yy.h $(srcdir)/script/yylex.l
-	sed -i 's/^#include.*\(<stdio\.h>\|<string\.h>\|<errno\.h>\|<stdlib\.h>\|<unistd\.h>\)//g' grub_script.yy.h
-	sed -i 's/^#include.*\(<stdio\.h>\|<string\.h>\|<errno\.h>\|<stdlib\.h>\|<unistd\.h>\)//g' grub_script.yy.c
 DISTCLEANFILES += grub_script.yy.c grub_script.yy.h
 
 # For grub-script-check.
 bin_UTILITIES += grub-script-check
 util/grub-script-check.c_DEPENDENCIES = grub_script_check_init.h
 grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c \
-	util/grub-script-check.c util/misc.c \
+	util/grub-script-check.c util/misc.c util/mm.c \
 	script/main.c script/script.c script/function.c script/lexer.c \
 	kern/handler.c kern/err.c kern/parser.c kern/list.c \
 	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c \
 	grub_script.yy.c
-
+grub_script_check_CFLAGS = $(GNULIB_UTIL_CFLAGS)
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
 kernel_img_HEADERS += boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
-	machine/memory.h machine/loader.h machine/kernel.h \
 	list.h handler.h command.h i18n.h env_private.h
+
+ifneq ($(platform), emu)
+kernel_img_HEADERS += machine/memory.h machine/loader.h machine/kernel.h
+endif
 
 symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
@@ -185,7 +187,7 @@ DISTCLEANFILES += grub_fstest_init.c
 
 # for grub-editenv
 bin_UTILITIES += grub-editenv
-grub_editenv_SOURCES = gnulib/progname.c util/grub-editenv.c lib/envblk.c util/misc.c kern/misc.c kern/err.c
+grub_editenv_SOURCES = gnulib/progname.c util/grub-editenv.c lib/envblk.c util/misc.c util/mm.c kern/misc.c kern/err.c
 CLEANFILES += grub-editenv
 
 # Needed for genmk.rb to work
@@ -402,6 +404,16 @@ pkglib_MODULES += part_gpt.mod
 part_gpt_mod_SOURCES = partmap/gpt.c
 part_gpt_mod_CFLAGS = $(COMMON_CFLAGS)
 part_gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += part_bsd.mod
+part_bsd_mod_SOURCES = partmap/bsdlabel.c
+part_bsd_mod_CFLAGS = $(COMMON_CFLAGS)
+part_bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += part_sunpc.mod
+part_sunpc_mod_SOURCES = partmap/sunpc.c
+part_sunpc_mod_CFLAGS = $(COMMON_CFLAGS)
+part_sunpc_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Special disk structures and generic drivers
 
@@ -644,7 +656,7 @@ normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 # For sh.mod.
 sh_mod_SOURCES = script/main.c script/script.c script/execute.c \
 	script/function.c script/lexer.c grub_script.tab.c grub_script.yy.c
-sh_mod_CFLAGS = $(COMMON_CFLAGS)
+sh_mod_CFLAGS = $(COMMON_CFLAGS) $(POSIX_CFLAGS) -Wno-error
 sh_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 ifneq (, $(FONT_SOURCE))
@@ -775,6 +787,11 @@ charset_mod_SOURCES = lib/charset.c
 charset_mod_CFLAGS = $(COMMON_CFLAGS)
 charset_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += regexp.mod
+regexp_mod_SOURCES = gnulib/regex.c commands/regexp.c
+regexp_mod_CFLAGS = $(COMMON_CFLAGS) $(GNULIB_CFLAGS)
+regexp_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 pkglib_MODULES += terminal.mod
 terminal_mod_SOURCES = commands/terminal.c
 terminal_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -838,7 +855,7 @@ boot_mod_CFLAGS = $(COMMON_CFLAGS)
 boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 bin_UTILITIES += grub-mkpasswd-pbkdf2
-grub_mkpasswd_pbkdf2_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c util/grub-mkpasswd-pbkdf2.c lib/crypto.c lib/libgcrypt-grub/cipher/sha512.c lib/pbkdf2.c util/misc.c kern/err.c
+grub_mkpasswd_pbkdf2_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c util/grub-mkpasswd-pbkdf2.c lib/crypto.c lib/libgcrypt-grub/cipher/sha512.c lib/pbkdf2.c util/misc.c util/mm.c kern/err.c
 grub_mkpasswd_pbkdf2_CFLAGS += -Wno-missing-field-initializers -Wno-error -I$(srcdir)/lib/libgcrypt_wrap -DGRUB_MKPASSWD=1
 
 include $(srcdir)/conf/gcry.mk
