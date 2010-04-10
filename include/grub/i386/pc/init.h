@@ -23,10 +23,6 @@
 #include <grub/symbol.h>
 #include <grub/machine/memory.h>
 
-/* Get a packed EISA memory map. Lower 16 bits are between 1MB and 16MB
-   in 1KB parts, and upper 16 bits are above 16MB in 64KB parts.  */
-grub_uint32_t grub_get_eisa_mmap (void);
-
 /* Get a memory map entry. Return next continuation value. Zero means
    the end.  */
 grub_uint32_t grub_get_mmap_entry (struct grub_machine_mmap_entry *entry,

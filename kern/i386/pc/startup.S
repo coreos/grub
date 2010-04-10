@@ -507,43 +507,6 @@ FUNCTION(grub_chainloader_real_boot)
 
 /*
  *
- * grub_get_eisa_mmap() :  return packed EISA memory map, lower 16 bits is
- *		memory between 1M and 16M in 1K parts, upper 16 bits is
- *		memory above 16M in 64K parts.  If error, return zero.
- *	BIOS call "INT 15H, AH=E801H" to get EISA memory map,
- *		AX = memory between 1M and 16M in 1K parts.
- *		BX = memory above 16M in 64K parts.
- *
- */
-
-FUNCTION(grub_get_eisa_mmap)
-	pushl	%ebp
-	pushl	%ebx
-
-	call	prot_to_real	/* enter real mode */
-	.code16
-
-	movw	$0xe801, %ax
-	int	$0x15
-
-	shll	$16, %ebx
-	movw	%ax, %bx
-
-	DATA32	call	real_to_prot
-	.code32
-
-	cmpb	$0x86, %bh
-	je	xnoteisa
-
-	movl	%ebx, %eax
-
-xnoteisa:
-	popl	%ebx
-	popl	%ebp
-	ret
-
-/*
- *
  * grub_get_mmap_entry(addr, cont) : address and old continuation value (zero to
  *		start), for the Query System Address Map BIOS call.
  *

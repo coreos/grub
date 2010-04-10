@@ -34,8 +34,31 @@ grub_get_ext_memsize (void)
   struct grub_bios_int_registers regs;
 
   regs.eax = 0x8800;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
   grub_bios_interrupt (0x15, &regs);
   return regs.eax & 0xffff;
+}
+
+/* Get a packed EISA memory map. Lower 16 bits are between 1MB and 16MB
+   in 1KB parts, and upper 16 bits are above 16MB in 64KB parts. If error, return zero.
+   BIOS call "INT 15H, AH=E801H" to get EISA memory map,
+     AX = memory between 1M and 16M in 1K parts.
+     BX = memory above 16M in 64K parts. 
+*/
+ 
+static inline grub_uint32_t
+grub_get_eisa_mmap (void)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  regs.eax = 0xe801;
+  grub_bios_interrupt (0x15, &regs);
+
+  if ((regs.eax & 0xff00) == 0x8600)
+    return 0;
+
+  return (regs.eax & 0xffff) | (regs.ebx << 16);
 }
 
 grub_err_t
