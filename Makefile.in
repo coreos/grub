@@ -45,6 +45,9 @@ pkglibdir =  $(libdir)/`echo @PACKAGE_TARNAME@/$(target_cpu)-$(platform) | sed '
 LIBINTL = @LIBINTL@
 TARGET_NO_MODULES = @TARGET_NO_MODULES@
 
+# Util library.
+LIBUTIL = @LIBUTIL@
+
 XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
 MSGFMT = @MSGFMT@
@@ -76,7 +79,7 @@ MKDIR_P = @MKDIR_P@
 
 mkinstalldirs = $(srcdir)/mkinstalldirs
 
-LIBS = @LIBS@ $(LIBINTL)
+LIBS = @LIBS@ $(LIBINTL) $(LIBUTIL)
 
 CC = @CC@
 CFLAGS = @CFLAGS@

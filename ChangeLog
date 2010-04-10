@@ -1,3 +1,24 @@
+2010-04-10  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	Add grub-probe support for NetBSD.
+
+	* util/getroot.c (find_root_device): Convert block device to
+	character device on NetBSD.
+	* util/probe.c (probe): Require character device on NetBSD.
+	* util/hostdisk.c: NetBSD specific headers.
+	(configure_device_driver): new function to tune device driver
+	parameters (currently only for NetBSD floppy driver).
+	(grub_util_biosdisk_open): NetBSD specific code (get disk size
+	via disklabel ioctl).
+	(open_device): call configure_device_driver on NetBSD.
+	(convert_system_partition_to_system_disk): NetBSD specific code.
+	(device_is_wholedisk): Likewise.
+	(grub_util_biosdisk_get_grub_dev): Likewise.
+	(make_device_name): Fixed a typo in bsd_part_str.
+	* configure.ac: check for opendisk() and getrawpartition() on
+	NetBSD and set LIBUTIL.
+	* Makefile.in: add LIBUTIL to LIBS.
+
 2010-04-10  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Documentation fix.

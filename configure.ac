@@ -130,6 +130,7 @@ case "$host_os" in
   gnu*)				host_kernel=hurd ;;
   linux*)			host_kernel=linux ;;
   freebsd* | kfreebsd*-gnu)	host_kernel=kfreebsd ;;
+  netbsd*)			host_kernel=netbsd ;;
   cygwin)			host_kernel=windows ;;
 esac
 
@@ -241,6 +242,20 @@ AC_HEADER_DIRENT
 AC_CHECK_FUNCS(memmove sbrk strdup lstat getuid getgid)
 AC_CHECK_HEADERS(sys/mkdev.h sys/sysmacros.h malloc.h termios.h sys/types.h)
 AC_CHECK_HEADERS(unistd.h string.h strings.h sys/stat.h sys/fcntl.h limits.h)
+
+# For opendisk() and getrawpartition() on NetBSD.
+# Used in util/deviceiter.c and in util/hostdisk.c.
+AC_CHECK_HEADER([util.h], [
+  AC_CHECK_LIB([util], [opendisk], [
+    LIBUTIL="-lutil"
+    AC_DEFINE(HAVE_OPENDISK, 1, [Define if opendisk() in -lutil can be used])
+  ])
+  AC_CHECK_LIB([util], [getrawpartition], [
+    LIBUTIL="-lutil"
+    AC_DEFINE(HAVE_GETRAWPARTITION, 1, [Define if getrawpartition() in -lutil can be used])
+  ])
+])
+AC_SUBST([LIBUTIL])
 
 #
 # Check for target programs.

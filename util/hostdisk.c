@@ -98,6 +98,18 @@ struct hd_geometry
 # include <sys/disk.h>
 #endif
 
+#if defined(__NetBSD__)
+# include <sys/ioctl.h>
+# include <sys/disklabel.h>    /* struct disklabel */
+# ifdef HAVE_GETRAWPARTITION
+#  include <util.h>    /* getrawpartition */
+# endif /* HAVE_GETRAWPARTITION */
+# include <sys/fdio.h>
+# ifndef RAW_FLOPPY_MAJOR
+#  define RAW_FLOPPY_MAJOR	9
+# endif /* ! RAW_FLOPPY_MAJOR */
+#endif /* defined(__NetBSD__) */
+
 struct
 {
   char *drive;
@@ -128,6 +140,31 @@ have_devfs (void)
   return dev_devfsd_exists;
 }
 #endif /* __linux__ */
+
+#if defined(__NetBSD__)
+/* Adjust device driver parameters.  This function should be called just
+   after successfully opening the device.  For now, it simply prevents the
+   floppy driver from retrying operations on failure, as otherwise the
+   driver takes a while to abort when there is no floppy in the drive.  */
+static void
+configure_device_driver (int fd)
+{
+  struct stat st;
+
+  if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))
+    return;
+  if (major(st.st_rdev) == RAW_FLOPPY_MAJOR)
+    {
+      int floppy_opts;
+
+      if (ioctl (fd, FDIOCGETOPTS, &floppy_opts) == -1)
+	return;
+      floppy_opts |= FDOPT_NORETRY;
+      if (ioctl (fd, FDIOCSETOPTS, &floppy_opts) == -1)
+	return;
+    }
+}
+#endif /* defined(__NetBSD__) */
 
 static int
 find_grub_drive (const char *name)
@@ -204,16 +241,20 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     return GRUB_ERR_NONE;
   }
 #elif defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || \
-      defined(__FreeBSD_kernel__) || defined(__APPLE__)
+      defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
   {
+# if defined(__NetBSD__)
+    struct disklabel label;
+# else
     unsigned long long nr;
+# endif
     int fd;
 
     fd = open (map[drive].device, O_RDONLY);
     if (fd == -1)
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "cannot open `%s' while attempting to get disk size", map[drive].device);
 
-# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
+# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
     if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))
 # else
     if (fstat (fd, &st) < 0 || ! S_ISBLK (st.st_mode))
@@ -227,6 +268,9 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     if (ioctl (fd, DIOCGMEDIASIZE, &nr))
 # elif defined(__APPLE__)
     if (ioctl (fd, DKIOCGETBLOCKCOUNT, &nr))
+# elif defined(__NetBSD__)
+    configure_device_driver (fd);
+    if (ioctl (fd, DIOCGDINFO, &label) == -1)
 # else
     if (ioctl (fd, BLKGETSIZE64, &nr))
 # endif
@@ -237,14 +281,16 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 
     close (fd);
 
-#if defined (__APPLE__)
+# if defined (__APPLE__)
     disk->total_sectors = nr;
-#else
+# elif defined(__NetBSD__)
+    disk->total_sectors = label.d_secperunit;
+# else
     disk->total_sectors = nr / 512;
 
     if (nr % 512)
       grub_util_error ("unaligned device size");
-#endif
+# endif
 
     grub_util_info ("the size of %s is %llu", name, disk->total_sectors);
 
@@ -482,6 +528,10 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
       return -1;
     }
 #endif /* ! __linux__ */
+
+#if defined(__NetBSD__)
+  configure_device_driver (fd);
+#endif /* defined(__NetBSD__) */
 
 #if defined(__linux__) && (!defined(__GLIBC__) || \
         ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))))
@@ -811,7 +861,7 @@ make_device_name (int drive, int dos_part, int bsd_part)
     dos_part_str = xasprintf (",%d", dos_part + 1);
 
   if (bsd_part >= 0)
-    bsd_part_str = xasprintf (",%c", dos_part + 'a');
+    bsd_part_str = xasprintf (",%c", bsd_part + 'a');
 
   ret = xasprintf ("%s%s%s", map[drive].drive,
                    dos_part_str ? : "",
@@ -981,6 +1031,27 @@ convert_system_partition_to_system_disk (const char *os_dev)
     }
   return path;
 
+#elif defined(__NetBSD__)
+  /* NetBSD uses "/dev/r[wsc]d[0-9]+[a-z]".  */
+  char *path = xstrdup (os_dev);
+  if (strncmp ("/dev/rwd", path, 8) == 0 ||
+      strncmp ("/dev/rsd", path, 8) == 0 ||
+      strncmp ("/dev/rcd", path, 8) == 0)
+    {
+      char *q;
+      q = path + strlen(path) - 1;    /* last character */
+      if (grub_isalpha(*q) && grub_isdigit(*(q-1)))
+        {
+          int rawpart = -1;
+# ifdef HAVE_GETRAWPARTITION
+          rawpart = getrawpartition();
+# endif /* HAVE_GETRAWPARTITION */
+          if (rawpart >= 0)
+            *q = 'a' + rawpart;
+        }
+    }
+  return path;
+
 #else
 # warning "The function `convert_system_partition_to_system_disk' might not work on your OS correctly."
   return xstrdup (os_dev);
@@ -998,6 +1069,26 @@ device_is_wholedisk (const char *os_dev)
   return 0;
 }
 #endif
+
+#if defined(__NetBSD__)
+/* Try to determine whether a given device name corresponds to a whole disk.
+   This function should give in most cases a definite answer, but it may
+   actually give an approximate one in the following sense: if the return
+   value is 0 then the device name does not correspond to a whole disk.  */
+static int
+device_is_wholedisk (const char *os_dev)
+{
+  int len = strlen (os_dev);
+  int rawpart = -1;
+
+# ifdef HAVE_GETRAWPARTITION
+  rawpart = getrawpartition();
+# endif /* HAVE_GETRAWPARTITION */
+  if (rawpart < 0)
+    return 1;
+  return (os_dev[len - 1] == ('a' + rawpart));
+}
+#endif /* defined(__NetBSD__) */
 
 static int
 find_system_device (const char *os_dev)
@@ -1051,14 +1142,14 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       == 0)
     return make_device_name (drive, -1, -1);
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
   if (! S_ISCHR (st.st_mode))
 #else
   if (! S_ISBLK (st.st_mode))
 #endif
     return make_device_name (drive, -1, -1);
 
-#if defined(__linux__) || defined(__CYGWIN__)
+#if defined(__linux__) || defined(__CYGWIN__) || defined(__NetBSD__)
   /* Linux counts partitions uniformly, whether a BSD partition or a DOS
      partition, so mapping them to GRUB devices is not trivial.
      Here, get the start sector of a partition by HDIO_GETGEO, and
@@ -1066,12 +1157,24 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
      Cygwin /dev/sdXN emulation uses Windows partition mapping. It
      does not count the extended partition and missing primary
-     partitions.  Use same method as on Linux here.  */
+     partitions.  Use same method as on Linux here.
+
+     For NetBSD, proceed as for Linux, except that the start sector is
+     obtained from the disk label.  */
   {
     char *name;
     grub_disk_t disk;
     int fd;
+# if !defined(__NetBSD__)
+    const char *disk_info_msg = "geometry";
     struct hd_geometry hdg;
+    typeof (hdg.start) p_offset;
+# else /* defined(__NetBSD__) */
+    const char *disk_info_msg = "label";
+    struct disklabel label;
+    int index;
+    u_int32_t p_offset;
+# endif /* !defined(__NetBSD__) */
     int dos_part = -1;
     int bsd_part = -1;
     auto int find_partition (grub_disk_t dsk,
@@ -1086,7 +1189,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
 	part_start = grub_partition_get_start (partition);
 
-	if (hdg.start == part_start)
+	if (p_offset == part_start)
 	  {
 	    if (partition->parent)
 	      {
@@ -1107,21 +1210,33 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
     name = make_device_name (drive, -1, -1);
 
+# if !defined(__NetBSD__)
     if (MAJOR (st.st_rdev) == FLOPPY_MAJOR)
       return name;
+# else /* defined(__NetBSD__) */
+    /* Since os_dev and convert_system_partition_to_system_disk (os_dev) are
+     * different, we know that os_dev is of the form /dev/r[wsc]d[0-9]+[a-z]
+     * and in particular it cannot be a floppy device.  */
+    index = os_dev[strlen(os_dev) - 1] - 'a';
+# endif /* !defined(__NetBSD__) */
 
     fd = open (os_dev, O_RDONLY);
     if (fd == -1)
       {
-	grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' while attempting to get disk geometry", os_dev);
+	grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' while attempting to get disk %s", os_dev, disk_info_msg);
 	free (name);
 	return 0;
       }
 
+# if !defined(__NetBSD__)
     if (ioctl (fd, HDIO_GETGEO, &hdg))
+# else /* defined(__NetBSD__) */
+    configure_device_driver (fd);
+    if (ioctl (fd, DIOCGDINFO, &label) == -1)
+# endif /* !defined(__NetBSD__) */
       {
 	grub_error (GRUB_ERR_BAD_DEVICE,
-		    "cannot get geometry of `%s'", os_dev);
+		    "cannot get disk %s of `%s'", disk_info_msg, os_dev);
 	close (fd);
 	free (name);
 	return 0;
@@ -1129,9 +1244,22 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
     close (fd);
 
-    grub_util_info ("%s starts from %lu", os_dev, hdg.start);
+# if !defined(__NetBSD__)
+    p_offset = hdg.start;
+# else /* defined(__NetBSD__) */
+    if (index >= label.d_npartitions)
+      {
+	grub_error (GRUB_ERR_BAD_DEVICE,
+		    "no disk label entry for `%s'", os_dev);
+	free (name);
+	return 0;
+      }
+    p_offset = label.d_partitions[index].p_offset;
+# endif /* !defined(__NetBSD__) */
 
-    if (hdg.start == 0 && device_is_wholedisk (os_dev))
+    grub_util_info ("%s starts from %lu", os_dev, p_offset);
+
+    if (p_offset == 0 && device_is_wholedisk (os_dev))
       return name;
 
     grub_util_info ("opening the device %s", name);
