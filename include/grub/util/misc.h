@@ -88,6 +88,8 @@ grub_int64_t grub_util_get_disk_size (char *name);
 
 char *make_system_path_relative_to_its_root (const char *path);
 
+char *canonicalize_file_name (const char *path);
+
 void grub_util_init_nls (void);
 
 #endif /* ! GRUB_UTIL_MISC_HEADER */
