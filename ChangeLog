@@ -1,5 +1,11 @@
 2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* loader/multiboot.c (GRUB_MOD_INIT) [GRUB_USE_MULTIBOOT2]:
+	Rename "module" to "module2".
+	Reported by: Seth Goldberg.
+
+2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/efi/memory.h (grub_machine_mmap_iterate): Remove
 	EXPORT_FUNC.
 	Reported by: Seth Goldberg.
