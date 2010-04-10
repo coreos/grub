@@ -65,7 +65,7 @@ grub_setup_SOURCES = util/sparc64/ieee1275/grub-setup.c util/hostdisk.c	\
 	partmap/bsdlabel.c partmap/sun.c partmap/acorn.c	\
 	\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c		\
-	util/raid.c util/lvm.c gnulib/progname.c	\
+	util/raid.c util/lvm.c util/mm.c gnulib/progname.c	\
 	grub_setup_init.c
 
 # For grub-ofpathname.

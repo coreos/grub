@@ -68,37 +68,23 @@ static void  copy_string (struct grub_parser_param *, const char *,
 
 %top{
 
+#include <sys/types.h>
+
+typedef size_t yy_size_t;
+#define YY_TYPEDEF_YY_SIZE_T 1
+
 /* 
  * Some flex hacks for -nostdinc; XXX We need to fix these when libc
  * support becomes availble in GRUB.
  */
 
-#include <grub/types.h>
-
-typedef grub_size_t size_t;
-typedef grub_size_t yy_size_t;
-#define YY_TYPEDEF_YY_SIZE_T 1
-
-#define FILE   void
+#ifndef GRUB_UTIL
 #define stdin  0
 #define stdout 0
-#define EOF    0
-
-#define errno  grub_errno
-#define EINVAL GRUB_ERR_BAD_NUMBER
-#define ENOMEM GRUB_ERR_OUT_OF_MEMORY
-
-#define strlen grub_strlen
-#define memset grub_memset
 
 #define fprintf(...) 0
 #define exit(...)
-
-#pragma GCC diagnostic warning "-Wunused-variable"
-#pragma GCC diagnostic warning "-Wunused-function"
-#pragma GCC diagnostic warning "-Wunused-parameter"
-#pragma GCC diagnostic warning "-Wstrict-prototypes"
-#pragma GCC diagnostic warning "-Wmissing-prototypes"
+#endif
 
 }
 
