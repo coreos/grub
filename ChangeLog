@@ -1,5 +1,11 @@
 2010-04-10  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	Documentation fix.
+
+	* util/grub-script-check.c: Better help message.
+
+2010-04-10  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	Fix FreeBSD build.
 
 	* configure.ac: Flex version check.

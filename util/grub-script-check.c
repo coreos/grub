@@ -130,7 +130,7 @@ Checks GRUB script configuration file for syntax errors.\n\
 \n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
-  -v, --verbose             print script being processed\n\
+  -v, --verbose             print the script as it is being processed\n\
 \n\
 Report bugs to <%s>.\n\
 ", program_name,
