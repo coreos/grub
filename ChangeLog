@@ -1,3 +1,31 @@
+2010-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Unify libgcc processing.
+
+	* Makefile.in (kernel_img_LDFLAGS): New variable.
+	* conf/common.rmk (kernel_img_HEADERS): Add libgcc.h.
+	* conf/i386-coreboot.rmk (kernel_img_LDFLAGS): Append instead of
+	overwriting.
+	* conf/i386-ieee1275.rmk (kernel_img_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk (kernel_img_LDFLAGS): Likewise.
+	* conf/i386-qemu.rmk (kernel_img_LDFLAGS): Likewise.
+	* conf/x86-efi.rmk (kernel_img_LDFLAGS): Likewise.
+	* conf/mips-qemu-mips.rmk (kernel_img_LDFLAGS): Append instead of
+	overwriting. Remove -lgcc and -static-libgcc
+	* conf/mips-yeeloong.rmk (kernel_img_LDFLAGS): Likewise.
+	* conf/mips.rmk (kernel_img_HEADERS): Remove cpu/libgcc.h
+	* conf/powerpc-ieee1275.rmk (kernel_img_HEADERS): Remove cpu/libgcc.h
+	(kernel_img_LDFLAGS): Append instead of overwriting.
+	Remove -lgcc and -static-libgcc
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* include/grub/powerpc/libgcc.h: Move to ...
+	* include/grub/libgcc.h: .. this.
+	* include/grub/libgcc.h: Don't export most of the function on x86.
+	(__bswapsi2): New export.
+	(__bswapdi2): Likewise.
+	* include/grub/mips/libgcc.h: Removed.
+	* include/grub/sparc64/libgcc.h: Likewise.
+
 2010-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/hostdisk.c (grub_util_biosdisk_get_grub_dev): Remove

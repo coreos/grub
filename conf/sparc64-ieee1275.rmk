@@ -19,7 +19,7 @@ diskboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,0x4200
 diskboot_img_FORMAT = binary
 
-kernel_img_HEADERS += cpu/libgcc.h ieee1275/ieee1275.h cpu/ieee1275/ieee1275.h
+kernel_img_HEADERS += ieee1275/ieee1275.h cpu/ieee1275/ieee1275.h
 kernel_img_SOURCES = kern/sparc64/ieee1275/crt0.S kern/ieee1275/cmain.c	\
 	kern/ieee1275/ieee1275.c kern/main.c kern/device.c		\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c		\
@@ -36,7 +36,7 @@ kernel_img_SOURCES = kern/sparc64/ieee1275/crt0.S kern/ieee1275/cmain.c	\
 	symlist.c kern/$(target_cpu)/cache.S
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,0x4400,-Bstatic,-melf64_sparc -static-libgcc -lgcc
+kernel_img_LDFLAGS += -nostdlib -Wl,-N,-Ttext,0x4400,-Bstatic,-melf64_sparc
 kernel_img_FORMAT = binary
 
 # Utilities.

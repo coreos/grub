@@ -40,7 +40,7 @@ endif
 kernel_img_HEADERS += efi/efi.h efi/time.h efi/disk.h i386/pit.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
+kernel_img_LDFLAGS += $(COMMON_LDFLAGS)
 
 # For acpi.mod.
 acpi_mod_SOURCES = commands/acpi.c commands/efi/acpi.c
