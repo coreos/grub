@@ -376,7 +376,11 @@ AC_SUBST(TARGET_IMG_CFLAGS)
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])
 case "${host_os}" in
-  cygwin) TARGET_OBJ2ELF='grub-pe2elf' ;;
+  cygwin) TARGET_OBJ2ELF='grub-pe2elf';
+# FIXME: put proper test here
+  AC_DEFINE([NEED_REGISTER_FRAME_INFO], 1,
+	    [Define to 1 if GCC generates calls to __register_frame_info()])
+  ;;
   *) ;;
 esac
 AC_SUBST(TARGET_OBJ2ELF)

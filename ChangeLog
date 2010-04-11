@@ -1,5 +1,17 @@
 2010-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix cygwin compilation.
+
+	* configure.ac: Define NEED_REGISTER_FRAME_INFO.
+	* include/grub/misc.h (__register_frame_info)
+	[NEED_REGISTER_FRAME_INFO && !UTIL]: New export.
+	(__deregister_frame_info) [NEED_REGISTER_FRAME_INFO && !UTIL]: Likewise.
+	* kern/misc.c (__register_frame_info)
+	[NEED_REGISTER_FRAME_INFO && !UTIL]: New empty function.
+	(__deregister_frame_info) [NEED_REGISTER_FRAME_INFO && !UTIL]: Likewise.
+
+2010-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Respect grub_cv_asm_uscore when defining dummy symbols.
 
 2010-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
