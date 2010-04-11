@@ -479,11 +479,18 @@ CC="$TARGET_CC"
 if test "x$TARGET_APPLE_CC" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wno-error"
 else
-CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wl,--defsym,abort=main -Wno-error"
+CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wno-error"
 fi
 CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
 LIBS=-lgcc
+
+grub_ASM_USCORE
+if test x$grub_cv_asm_uscore = xyes; then
+CFLAGS="$CFLAGS -Wl,--defsym,_abort=_main"
+else
+CFLAGS="$CFLAGS -Wl,--defsym,abort=main"
+fi
 
 # Check for libgcc symbols
 AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x)
@@ -501,7 +508,6 @@ if test "x$TARGET_APPLE_CC" != x1 ; then
 grub_PROG_OBJCOPY_ABSOLUTE
 fi
 grub_PROG_LD_BUILD_ID_NONE
-grub_ASM_USCORE
 if test "x$target_cpu" = xi386; then
   if test ! -z "$TARGET_IMG_LDSCRIPT"; then
     # Check symbols provided by linker script.

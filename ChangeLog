@@ -1,5 +1,9 @@
 2010-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Respect grub_cv_asm_uscore when defining dummy symbols.
+
+2010-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Unify libgcc processing.
 
 	* Makefile.in (kernel_img_LDFLAGS): New variable.
