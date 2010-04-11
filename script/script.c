@@ -245,6 +245,28 @@ grub_script_create_cmdfor (struct grub_parser_param *state,
   return (struct grub_script_cmd *) cmd;
 }
 
+/* Create a "while" or "until" command.  */
+struct grub_script_cmd *
+grub_script_create_cmdwhile (struct grub_parser_param *state,
+			     struct grub_script_cmd *cond,
+			     struct grub_script_cmd *list,
+			     int is_an_until_loop)
+{
+  struct grub_script_cmdwhile *cmd;
+
+  cmd = grub_script_malloc (state, sizeof (*cmd));
+  if (! cmd)
+    return 0;
+
+  cmd->cmd.exec = grub_script_execute_cmdwhile;
+  cmd->cmd.next = 0;
+  cmd->cond = cond;
+  cmd->list = list;
+  cmd->until = is_an_until_loop;
+
+  return (struct grub_script_cmd *) cmd;
+}
+
 /* Create a command that adds a menu entry to the menu.  Title is an
    argument that is parsed to generate a string that can be used as
    the title.  The sourcecode for this entry is passed in SOURCECODE.

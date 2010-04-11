@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004,2007,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2009, 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,14 +16,23 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
+#ifndef GRUB_POSIX_LANGINFO_H
+#define GRUB_POSIX_LANGINFO_H	1
 
-#ifdef HAVE___BSWAPSI2
-typedef int SItype __attribute__ ((mode (SI)));
-SItype EXPORT_FUNC (__bswapsi2) (SItype);
-#endif
+#include <localcharset.h>
 
-#ifdef HAVE___BSWAPDI2
-typedef int DItype __attribute__ ((mode (DI)));
-DItype EXPORT_FUNC (__bswapdi2) (DItype);
+typedef enum { CODESET } nl_item;
+
+static inline char *
+nl_langinfo (nl_item item)
+{
+  switch (item)
+    {
+    case CODESET:
+      return locale_charset ();
+    default:
+      return "";
+    }
+}
+
 #endif

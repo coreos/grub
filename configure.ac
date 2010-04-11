@@ -130,6 +130,7 @@ case "$host_os" in
   gnu*)				host_kernel=hurd ;;
   linux*)			host_kernel=linux ;;
   freebsd* | kfreebsd*-gnu)	host_kernel=kfreebsd ;;
+  netbsd*)			host_kernel=netbsd ;;
   cygwin)			host_kernel=windows ;;
 esac
 
@@ -170,11 +171,6 @@ if test "x$CMP" = x; then
   AC_MSG_ERROR([cmp is not found])
 fi
 
-AC_CHECK_PROGS([LEX], [flex])
-if test "x$LEX" = x; then
-  AC_MSG_ERROR([flex is not found])
-fi
-
 AC_CHECK_PROGS([YACC], [bison])
 if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
@@ -189,8 +185,20 @@ done
 
 AC_PROG_INSTALL
 AC_PROG_AWK
+AC_PROG_LEX
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
+
+if test "x$LEX" = x; then
+  AC_MSG_ERROR([flex is not found])
+else
+  version=`$LEX --version | $AWK '{ split($NF,x,"."); print x[[1]]*10000+x[[2]]*100+x[[3]]; }'`
+  if test -n "$version" -a "$version" -ge 20535; then
+    :
+  else
+    AC_MSG_ERROR([flex is too old. GRUB requires 2.5.35 or above])
+  fi
+fi
 
 # These are not a "must".
 AC_PATH_PROG(RUBY, ruby)
@@ -234,6 +242,20 @@ AC_HEADER_DIRENT
 AC_CHECK_FUNCS(memmove sbrk strdup lstat getuid getgid)
 AC_CHECK_HEADERS(sys/mkdev.h sys/sysmacros.h malloc.h termios.h sys/types.h)
 AC_CHECK_HEADERS(unistd.h string.h strings.h sys/stat.h sys/fcntl.h limits.h)
+
+# For opendisk() and getrawpartition() on NetBSD.
+# Used in util/deviceiter.c and in util/hostdisk.c.
+AC_CHECK_HEADER([util.h], [
+  AC_CHECK_LIB([util], [opendisk], [
+    LIBUTIL="-lutil"
+    AC_DEFINE(HAVE_OPENDISK, 1, [Define if opendisk() in -lutil can be used])
+  ])
+  AC_CHECK_LIB([util], [getrawpartition], [
+    LIBUTIL="-lutil"
+    AC_DEFINE(HAVE_GETRAWPARTITION, 1, [Define if getrawpartition() in -lutil can be used])
+  ])
+])
+AC_SUBST([LIBUTIL])
 
 #
 # Check for target programs.
@@ -354,7 +376,11 @@ AC_SUBST(TARGET_IMG_CFLAGS)
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])
 case "${host_os}" in
-  cygwin) TARGET_OBJ2ELF='grub-pe2elf' ;;
+  cygwin) TARGET_OBJ2ELF='grub-pe2elf';
+# FIXME: put proper test here
+  AC_DEFINE([NEED_REGISTER_FRAME_INFO], 1,
+	    [Define to 1 if GCC generates calls to __register_frame_info()])
+  ;;
   *) ;;
 esac
 AC_SUBST(TARGET_OBJ2ELF)
@@ -457,11 +483,18 @@ CC="$TARGET_CC"
 if test "x$TARGET_APPLE_CC" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wno-error"
 else
-CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wl,--defsym,abort=main -Wno-error"
+CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wno-error"
 fi
 CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
 LIBS=-lgcc
+
+grub_ASM_USCORE
+if test x$grub_cv_asm_uscore = xyes; then
+CFLAGS="$CFLAGS -Wl,--defsym,_abort=_main"
+else
+CFLAGS="$CFLAGS -Wl,--defsym,abort=main"
+fi
 
 # Check for libgcc symbols
 AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x)
@@ -479,7 +512,6 @@ if test "x$TARGET_APPLE_CC" != x1 ; then
 grub_PROG_OBJCOPY_ABSOLUTE
 fi
 grub_PROG_LD_BUILD_ID_NONE
-grub_ASM_USCORE
 if test "x$target_cpu" = xi386; then
   if test ! -z "$TARGET_IMG_LDSCRIPT"; then
     # Check symbols provided by linker script.
@@ -576,6 +608,10 @@ AC_ARG_ENABLE([grub-emu-pci],
 	      [AS_HELP_STRING([--enable-grub-emu-pci],
                              [build and install the `grub-emu' debugging utility with PCI support (potentially dangerous) (default=no)])])
 
+AC_ARG_ENABLE([grub-emu-modules],
+	      [AS_HELP_STRING([--enable-grub-emu-modules],
+                             [Support module loading in `grub-emu' debugging utility (default=no)])])
+
 if test "$platform" = emu; then
   missing_ncurses=
 [# Check for curses libraries.]
@@ -593,6 +629,13 @@ if test "$platform" = emu; then
 if test x"$missing_ncurses" = xtrue ; then
   AC_MSG_ERROR([grub-emu can't be compiled without ncurses])
 fi
+
+if test x"$enable_grub_emu_modules" = xyes ; then
+  TARGET_NO_MODULES=no
+else
+  TARGET_NO_MODULES=yes
+fi
+AC_SUBST(TARGET_NO_MODULES)
 
 if test x"$enable_grub_emu_usb" = xno ; then
   grub_emu_usb_excuse="explicitly disabled"
@@ -770,6 +813,11 @@ if [ x"$grub_emu_pci_excuse" = x ]; then
 echo PCI support for grub-emu: Yes
 else
 echo PCI support for grub-emu: No "($grub_emu_pci_excuse)"
+fi
+if [ x"$TARGET_NO_MODULES" = xno ]; then
+echo Module support for grub-emu: Yes
+else
+echo Module support for grub-emu: No
 fi
 fi
 if [ x"$enable_mm_debug" = xyes ]; then

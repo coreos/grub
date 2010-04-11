@@ -170,6 +170,11 @@ grub_multiboot_load (grub_file_t file)
 					    header->width, header->height,
 					    header->depth, 0);
 	  break;
+	default:
+	  err = grub_error (GRUB_ERR_BAD_OS, 
+			    "unsupported graphical mode type %d",
+			    header->mode_type);
+	  break;
 	}
     }
   else

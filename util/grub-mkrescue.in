@@ -156,7 +156,7 @@ EOF
         echo "insmod $i"
     done ; \
     echo "source /boot/grub/grub.cfg") \
-    > ${iso9660_dir}/boot/grub/i386-pc/grub.cfg
+    > ${iso9660_dir}/boot/grub/i386-coreboot/grub.cfg
 
     tar -C ${memdisk_dir} -cf ${memdisk_img} boot
     rm -rf ${memdisk_dir}
@@ -187,7 +187,7 @@ if test -e "${pc_dir}" ; then
     echo "source /boot/grub/grub.cfg") \
     > ${iso9660_dir}/boot/grub/i386-pc/grub.cfg
 
-    grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -boot-info-table \
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -no-emul-boot -boot-info-table \
 		--embedded-boot ${embed_img}"
 fi
 
