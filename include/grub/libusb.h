@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004,2007,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,23 +16,14 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
-
-#ifdef HAVE___ASHLDI3
-void EXPORT_FUNC (__ashldi3) (void);
-#endif
-#ifdef HAVE___ASHRDI3
-void EXPORT_FUNC (__ashrdi3) (void);
-#endif
-#ifdef HAVE___LSHRDI3
-void EXPORT_FUNC (__lshrdi3) (void);
-#endif
-#ifdef HAVE___UCMPDI2
-void EXPORT_FUNC (__ucmpdi2) (void);
-#endif
-#ifdef HAVE___BSWAPSI2
-void EXPORT_FUNC (__bswapsi2) (void);
-#endif
-#ifdef HAVE___BSWAPDI2
-void EXPORT_FUNC (__bswapdi2) (void);
-#endif
+void EXPORT_FUNC (usb_bulk_write) (void);
+void EXPORT_FUNC (usb_find_busses) (void);
+void EXPORT_FUNC (usb_init) (void);
+void EXPORT_FUNC (usb_find_devices) (void);
+void EXPORT_FUNC (usb_open) (void);
+void EXPORT_FUNC (usb_get_busses) (void);
+void EXPORT_FUNC (usb_control_msg) (void);
+void EXPORT_FUNC (usb_release_interface) (void);
+void EXPORT_FUNC (usb_close) (void);
+void EXPORT_FUNC (usb_bulk_read) (void);
+void EXPORT_FUNC (usb_claim_interface) (void);

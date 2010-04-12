@@ -82,6 +82,18 @@ grub_script_execute_cmdif (struct grub_script_cmd *cmd __attribute__ ((unused)))
 }
 
 grub_err_t
+grub_script_execute_cmdfor (struct grub_script_cmd *cmd __attribute__ ((unused)))
+{
+  return 0;
+}
+
+grub_err_t
+grub_script_execute_cmdwhile (struct grub_script_cmd *cmd __attribute__ ((unused)))
+{
+  return 0;
+}
+
+grub_err_t
 grub_script_execute_menuentry (struct grub_script_cmd *cmd __attribute__ ((unused)))
 {
   return 0;
@@ -118,7 +130,7 @@ Checks GRUB script configuration file for syntax errors.\n\
 \n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
-  -v, --verbose             print script being processed\n\
+  -v, --verbose             print the script as it is being processed\n\
 \n\
 Report bugs to <%s>.\n\
 ", program_name,

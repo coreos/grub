@@ -640,11 +640,11 @@ int FDECL2(main, int, argc, char **, argv){
   char *log_file = 0;
 
   set_program_name (argv[0]);
-#if ENABLE_NLS
+#if (defined(ENABLE_NLS) && ENABLE_NLS)
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
-#endif /* ENABLE_NLS */
+#endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
 
   if (argc < 2)
     usage();

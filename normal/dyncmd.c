@@ -60,11 +60,8 @@ grub_dyncmd_dispatcher (struct grub_command *cmd,
 
 /* Read the file command.lst for auto-loading.  */
 void
-read_command_list (void)
+read_command_list (const char *prefix)
 {
-  const char *prefix;
-
-  prefix = grub_env_get ("prefix");
   if (prefix)
     {
       char *filename;

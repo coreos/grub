@@ -26,13 +26,24 @@
 #include <grub/lib/arg.h>
 #include <grub/normal.h>
 
+/* Max digits for a char is 3 (0xFF is 255), similarly for an int it
+   is sizeof (int) * 3, and one extra for a possible -ve sign.  */
+#define ERRNO_DIGITS_MAX  (sizeof (int) * 3 + 1)
+
 static grub_err_t
 grub_script_execute_cmd (struct grub_script_cmd *cmd)
 {
+  int ret;
+  char errnobuf[ERRNO_DIGITS_MAX + 1];
+
   if (cmd == 0)
     return 0;
 
-  return cmd->exec (cmd);
+  ret = cmd->exec (cmd);
+
+  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", ret);
+  grub_env_set ("?", errnobuf);
+  return ret;
 }
 
 #define ARG_ALLOCATION_UNIT  (32 * sizeof (char))
@@ -260,13 +271,14 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 grub_err_t
 grub_script_execute_cmdblock (struct grub_script_cmd *cmd)
 {
+  int ret = 0;
   struct grub_script_cmdblock *cmdblock = (struct grub_script_cmdblock *) cmd;
 
   /* Loop over every command and execute it.  */
   for (cmd = cmdblock->cmdlist; cmd; cmd = cmd->next)
-    grub_script_execute_cmd (cmd);
+    ret = grub_script_execute_cmd (cmd);
 
-  return 0;
+  return ret;
 }
 
 /* Execute an if statement.  */
@@ -289,6 +301,52 @@ grub_script_execute_cmdif (struct grub_script_cmd *cmd)
     return grub_script_execute_cmd (cmdif->exec_on_true);
   else
     return grub_script_execute_cmd (cmdif->exec_on_false);
+}
+
+/* Execute a for statement.  */
+grub_err_t
+grub_script_execute_cmdfor (struct grub_script_cmd *cmd)
+{
+  int i;
+  int result;
+  char **args;
+  int argcount;
+  struct grub_script_cmdfor *cmdfor = (struct grub_script_cmdfor *) cmd;
+
+  args = grub_script_execute_arglist_to_argv (cmdfor->words, &argcount);
+  if (!args)
+    return grub_errno;
+
+  result = 0;
+  for (i = 0; i < argcount; i++)
+    {
+      grub_env_set (cmdfor->name->str, args[i]);
+      result = grub_script_execute_cmd (cmdfor->list);
+      grub_free (args[i]);
+    }
+
+  grub_free (args);
+  return result;
+}
+
+/* Execute a "while" or "until" command.  */
+grub_err_t
+grub_script_execute_cmdwhile (struct grub_script_cmd *cmd)
+{
+  int cond;
+  int result;
+  struct grub_script_cmdwhile *cmdwhile = (struct grub_script_cmdwhile *) cmd;
+
+  result = 0;
+  do {
+    cond = grub_script_execute_cmd (cmdwhile->cond);
+    if (cmdwhile->until ? !cond : cond)
+      break;
+
+    result = grub_script_execute_cmd (cmdwhile->list);
+  } while (1); /* XXX Put a check for ^C here */
+
+  return result;
 }
 
 /* Execute the menu entry generate statement.  */

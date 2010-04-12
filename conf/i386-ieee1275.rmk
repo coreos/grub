@@ -27,7 +27,7 @@ kernel_img_SOURCES = kern/i386/ieee1275/startup.S \
 kernel_img_HEADERS += ieee1275/ieee1275.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x10000,-Bstatic
+kernel_img_LDFLAGS += $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x10000,-Bstatic
 
 # Scripts.
 sbin_SCRIPTS = grub-install

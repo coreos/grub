@@ -30,7 +30,7 @@ CLASS="--class os"
 case "${GRUB_DISTRIBUTOR}" in
   Debian)
 	OS="${GRUB_DISTRIBUTOR} GNU/kFreeBSD"
-	CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr '[A-Z]' '[a-z]') --class gnu-kfreebsd --class gnu ${CLASS}"
+	CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr '[A-Z]' '[a-z]' | cut -d' ' -f1) --class gnu-kfreebsd --class gnu ${CLASS}"
   ;;
   *)
 	OS="FreeBSD"
