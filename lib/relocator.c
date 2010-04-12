@@ -22,8 +22,6 @@
 #include <grub/misc.h>
 #include <grub/cache.h>
 
-/* FIXME: check memory map.  */ 
-
 struct grub_relocator
 {
   struct grub_relocator_chunk *chunks;
@@ -185,21 +183,81 @@ allocate_inreg (grub_addr_t addr, grub_size_t size,
 	  foll->next = hb;
 	  hbp->next = foll;
 	  if (rb->first == hb)
-	    rb->first = foll;
+	    {
+	      rb->first = foll;
+	    }
 	}
     }
   else
     {
       if (foll)
-	foll->next = hb->next;
+	{
+	  foll->next = hb->next;
+	}
       else
 	foll = hb->next;
 	
       hbp->next = foll;
       if (rb->first == hb)
-	rb->first = foll;
+	{
+	  rb->first = foll;
+	}
       if (rb->first == hb)
-	rb->first = (void *) (rb + 1);
+	{
+	  rb->first = (void *) (rb + 1);
+	}
+    }
+}
+
+/* FIXME: remove extra blocks.  */
+static void
+free_subchunk (const struct grub_relocator_subchunk *subchu)
+{
+  switch (subchu->type)
+    {
+    case CHUNK_TYPE_REGION_START:
+      {
+	grub_mm_region_t r1, r2, *rp;
+	grub_mm_header_t h;
+	grub_size_t pre_size;
+	r1 = (grub_mm_region_t) ALIGN_UP (subchu->start + subchu->size,
+					  GRUB_MM_ALIGN);
+	r2 = (grub_mm_region_t) ALIGN_UP (subchu->host_start, GRUB_MM_ALIGN);
+	for (rp = &grub_mm_base; *rp && *rp != r2; rp = &((*rp)->next));
+	/* FIXME  */
+	if (!*rp)
+	  grub_fatal ("Anomaly in region alocations detected. "
+		      "Simultaneous relocators?");
+	pre_size = ALIGN_UP (subchu->host_start, GRUB_MM_ALIGN)
+	  - subchu->host_start;
+	r2->first = r1->first;
+	r2->next = r1->next;
+	r2->pre_size = pre_size;
+	r2->size = r1->size + (r2 - r1) * sizeof (*r2);
+	*rp = r1;
+	h = (grub_mm_header_t) (r1 + 1);
+	h->next = h;
+	h->magic = GRUB_MM_ALLOC_MAGIC;
+	h->size = (r2 - r1);
+	grub_free (h + 1);
+	break;
+      }
+    case CHUNK_TYPE_IN_REGION:
+      {
+	grub_mm_header_t h = (grub_mm_header_t) ALIGN_DOWN (subchu->start,
+							    GRUB_MM_ALIGN);
+	h->size = (subchu->start / GRUB_MM_ALIGN)
+	  - ((subchu->start + subchu->size + GRUB_MM_ALIGN - 1) / GRUB_MM_ALIGN);
+	h->next = h;
+	h->magic = GRUB_MM_ALLOC_MAGIC;
+	grub_free (h + 1);
+	break;
+      }
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+    case CHUNK_TYPE_FIRMWARE:
+      grub_relocator_firmware_free_region (subchu->start, subchu->size);
+      break;
+#endif
     }
 }
 
@@ -516,12 +574,24 @@ malloc_in_range (struct grub_relocator *rel,
 				       events[last_start].reg,
 				       events[last_start].regancestor,
 				       events[last_start].hancestor);
+		    {
+		      unsigned k;
+		      for (k = 0; k < N; k++)
+			if (events[k].hancestor == events[last_start].head)
+			  events[k].hancestor = events[last_start].hancestor;
+		    }
 		    break;
 		  case CHUNK_TYPE_IN_REGION:
 		    allocate_inreg (alloc_start, alloc_end - alloc_start,
 				    events[last_start].head,
 				    events[last_start].hancestor,
 				    events[last_start].reg);
+		    {
+		      unsigned k;
+		      for (k = 0; k < N; k++)
+			if (events[k].hancestor == events[last_start].head)
+			  events[k].hancestor = events[last_start].hancestor;
+		    }
 		    break;
 #if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
 		  case CHUNK_TYPE_FIRMWARE:
@@ -529,9 +599,6 @@ malloc_in_range (struct grub_relocator *rel,
 		    if (!grub_relocator_firmware_alloc_region (alloc_start, 
 							       alloc_end - alloc_start))
 		      {
-			grub_dprintf ("relocator",
-				      "firmware allocation 0x%x-0x%x failed.\n",
-				      alloc_start, alloc_end);
 			if (from_low_priv)
 			  start = alloc_end;
 			else
@@ -559,7 +626,10 @@ malloc_in_range (struct grub_relocator *rel,
 
 	  case REG_BEG_END:
 	  case IN_REG_END:
-	    inreg = regbeg = 0;
+	    if (regbeg)
+	      regbeg--;
+	    else
+	      inreg--;
 	    break;
 
 #if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
@@ -598,7 +668,7 @@ malloc_in_range (struct grub_relocator *rel,
       do
 	{
 	  if (!p)
-	    grub_fatal ("null in the ring %p %p\n", r, p);
+	    grub_fatal ("null in the ring %p\n", r);
 	  p = p->next;
 	}
       while (p != r->first);
@@ -607,9 +677,6 @@ malloc_in_range (struct grub_relocator *rel,
   /* Malloc is available again.  */
   grub_mm_base = base_saved;
 
-  /* FIXME: react on out of memory.  */
-  res->subchunks = grub_malloc (sizeof (res->subchunks[0]) * nallocs);
-  res->nsubchunks = nallocs;
 
   {
     int last_start = 0;
@@ -617,7 +684,13 @@ malloc_in_range (struct grub_relocator *rel,
 #if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
     int fwin = 0, fwb = 0;
 #endif
-    int cural = 0;
+    unsigned cural = 0;
+    int oom = 0;
+    res->subchunks = grub_malloc (sizeof (res->subchunks[0]) * nallocs);
+    if (!res->subchunks)
+      oom = 1;
+    res->nsubchunks = nallocs;
+
     for (j = 0; j < N; j++)
       {
 	int typepre;
@@ -637,6 +710,10 @@ malloc_in_range (struct grub_relocator *rel,
 	if (j != 0 && events[j - 1].pos != events[j].pos)
 	  {
 	    grub_addr_t alloc_start, alloc_end;
+	    struct grub_relocator_subchunk tofree;
+	    struct grub_relocator_subchunk *curschu = &tofree;
+	    if (!oom)
+	      curschu = &res->subchunks[cural];
 	    alloc_start = max (events[j - 1].pos, target);
 	    alloc_end = min (events[j].pos, target + size);
 	    if (alloc_end > alloc_start)
@@ -644,26 +721,33 @@ malloc_in_range (struct grub_relocator *rel,
 		grub_dprintf ("relocator", "subchunk 0x%lx-0x%lx, %d\n",
 			      (unsigned long) alloc_start,
 			      (unsigned long) alloc_end, typepre);
-		res->subchunks[cural].type = typepre;
+		curschu->type = typepre;
 		if (typepre == CHUNK_TYPE_REGION_START)
-		  {
-		    res->subchunks[cural].host_start
-		      = (grub_addr_t) events[last_start].reg;
-		  }
+		  curschu->host_start = (grub_addr_t) events[last_start].reg;
 #if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
-		if (typepre == CHUNK_TYPE_REGION_START
-		    || typepre == CHUNK_TYPE_FIRMWARE)
+		if (!oom && (typepre == CHUNK_TYPE_REGION_START
+			     || typepre == CHUNK_TYPE_FIRMWARE))
 		  {
-		    /* FIXME: react on out of memory.  */
 		    struct grub_relocator_extra_block *ne;
 		    ne = grub_malloc (sizeof (*ne));
-		    ne->start = alloc_start;
-		    ne->end = alloc_end;
-		    ne->next = extra_blocks;
-		    extra_blocks = ne;
+		    if (!ne)
+		      {
+			oom = 1;
+			grub_memcpy (&tofree, curschu, sizeof (tofree));
+		      }
+		    else
+		      {
+			ne->start = alloc_start;
+			ne->end = alloc_end;
+			ne->next = extra_blocks;
+			extra_blocks = ne;
+		      }
 		  }
 #endif
-		cural++;
+		if (!oom)
+		  cural++;
+		else
+		  free_subchunk (&tofree);
 	      }
 	  }
 	  
@@ -708,7 +792,14 @@ malloc_in_range (struct grub_relocator *rel,
 	    ncol--;
 	    break;
 	  }
-
+      }
+    if (oom)
+      {
+	for (i = 0; i < cural; i++)
+	  free_subchunk (&res->subchunks[i]);
+	grub_free (res->subchunks);
+	grub_dprintf ("relocator", "allocation failed with out-of-memory\n");
+	return 0;
       }
   }
 
@@ -949,7 +1040,6 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
   return GRUB_ERR_NONE;
 }
 
-/* FIXME: remove extra blocks.  */
 void
 grub_relocator_unload (struct grub_relocator *rel)
 {
@@ -960,58 +1050,7 @@ grub_relocator_unload (struct grub_relocator *rel)
     {
       unsigned i;
       for (i = 0; i < chunk->nsubchunks; i++) 
-	switch (chunk->subchunks[i].type)
-	  {
-	  case CHUNK_TYPE_REGION_START:
-	    {
-	      grub_mm_region_t r1, r2, *rp;
-	      grub_mm_header_t h;
-	      grub_size_t pre_size;
-	      r1 = (grub_mm_region_t) ALIGN_UP (chunk->subchunks[i].start 
-						+ chunk->subchunks[i].size,
-						GRUB_MM_ALIGN);
-	      r2 = (grub_mm_region_t) ALIGN_UP (chunk->subchunks[i].host_start,
-						GRUB_MM_ALIGN);
-	      for (rp = &grub_mm_base; *rp && *rp != r2; rp = &((*rp)->next));
-	      /* FIXME  */
-	      if (!*rp)
-		grub_fatal ("Anomaly in region alocations detected. "
-			    "Simultaneous relocators?");
-	      pre_size = ALIGN_UP (chunk->subchunks[i].host_start, 
-				   GRUB_MM_ALIGN)
-		- chunk->subchunks[i].host_start;
-	      r2->first = r1->first;
-	      r2->next = r1->next;
-	      r2->pre_size = pre_size;
-	      r2->size = r1->size + (r2 - r1) * sizeof (*r2);
-	      *rp = r1;
-	      h = (grub_mm_header_t) (r1 + 1);
-	      h->next = h;
-	      h->magic = GRUB_MM_ALLOC_MAGIC;
-	      h->size = (r2 - r1);
-	      grub_free (h + 1);
-	      break;
-	    }
-	  case CHUNK_TYPE_IN_REGION:
-	    {
-	      grub_mm_header_t h 
-		= (grub_mm_header_t) ALIGN_DOWN (chunk->subchunks[i].start,
-						 GRUB_MM_ALIGN);
-	      h->size = (chunk->subchunks[i].start / GRUB_MM_ALIGN)
-		- ((chunk->subchunks[i].start + chunk->subchunks[i].size 
-		    + GRUB_MM_ALIGN - 1) / GRUB_MM_ALIGN);
-	      h->next = h;
-	      h->magic = GRUB_MM_ALLOC_MAGIC;
-	      grub_free (h + 1);
-	      break;
-	    }
-#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
-	  case CHUNK_TYPE_FIRMWARE:
-	    grub_relocator_firmware_free_region (chunk->subchunks[i].start,
-						 chunk->subchunks[i].size);
-	    break;
-#endif
-	  }
+	free_subchunk (&chunk->subchunks[i]);
       next = chunk->next;
       grub_free (chunk->subchunks);
       grub_free (chunk);
