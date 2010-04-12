@@ -51,6 +51,17 @@ Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 
+argument () {
+  opt=$1
+  shift
+
+  if test $# -eq 0; then
+      echo "$0: option requires an argument -- '$opt'" 1>&2
+      exit 1
+  fi
+  echo $1
+}
+
 # Check the arguments.
 while test $# -gt 0
 do
@@ -66,18 +77,18 @@ do
 	exit 0 ;;
 
     --modules)
-        modules=$1; shift ;;
+        modules=`argument $option "$@"`; shift ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
 
     -o | --output)
-	output_image=$1; shift ;;
+	output_image=`argument $option "$@"`; shift ;;
     --output=*)
 	output_image=`echo "$option" | sed 's/--output=//'` ;;
 
     # Intentionally undocumented
     --override-directory)
-        override_dir=$1
+        override_dir=`argument $option "$@"`
 	shift
 	PATH=${override_dir}:$PATH
 	export PATH
@@ -93,7 +104,7 @@ do
 	exit 1
 	;;
     *)
-	source="${source} ${option}" ;;
+	source="${source} ${option} $@"; break ;;
     esac
 done
 

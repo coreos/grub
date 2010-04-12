@@ -44,6 +44,17 @@ Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 
+argument () {
+  opt=$1
+  shift
+
+  if test $# -eq 0; then
+      echo "$0: option requires an argument -- '$opt'" 1>&2
+      exit 1
+  fi
+  echo $1
+}
+
 # Check the arguments.
 while test $# -gt 0
 do
@@ -59,7 +70,7 @@ do
 	exit 0 ;;
 
     --root-directory)
-	rootdir=$1; shift ;;
+	rootdir=`argument $option "$@"`; shift ;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
 

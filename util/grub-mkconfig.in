@@ -49,6 +49,17 @@ Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 
+argument () {
+  opt=$1
+  shift
+
+  if test $# -eq 0; then
+      echo "$0: option requires an argument -- '$opt'" 1>&2
+      exit 1
+  fi
+  echo $1
+}
+
 # Check the arguments.
 while test $# -gt 0
 do
@@ -63,15 +74,17 @@ do
 	echo "$0 (GNU GRUB ${package_version})"
 	exit 0 ;;
     -o | --output)
-	grub_cfg=$1
-	shift
-	;;
+	grub_cfg=`argument $option "$@"`; shift;;
     --output=*)
 	grub_cfg=`echo "$option" | sed 's/--output=//'`
 	;;
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage
+	exit 1
+	;;
+    *)
+	echo "Invalid parameter, $option" 1>&2
 	exit 1
 	;;
     esac
