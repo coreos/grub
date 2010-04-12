@@ -574,6 +574,7 @@ malloc_in_range (struct grub_relocator *rel,
 				       events[last_start].reg,
 				       events[last_start].regancestor,
 				       events[last_start].hancestor);
+		    /* TODO: maintain a reverse lookup tree for hancestor.  */
 		    {
 		      unsigned k;
 		      for (k = 0; k < N; k++)
