@@ -44,15 +44,15 @@ kfreebsd_entry ()
   version="$2"
   recovery="$3"	# not used yet
   args="$4"	# not used yet
-  title="$(gettext "%s, with kFreeBSD %s")"
-  printf "menuentry \"${title}\" ${CLASS} {\n" "${os}" "${version}"
+  title="$(gettext_quoted "%s, with kFreeBSD %s")"
+  printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${version}"
   save_default_entry | sed -e "s/^/\t/"
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
   printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
-	echo			$(printf "$(gettext "Loading kernel of FreeBSD %s ...")" ${version})
+	echo			'$(printf "$(gettext_quoted "Loading kernel of FreeBSD %s ...")" ${version})'
 	kfreebsd		${rel_dirname}/${basename}
 EOF
 

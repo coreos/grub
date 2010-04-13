@@ -56,11 +56,11 @@ linux_entry ()
   recovery="$3"
   args="$4"
   if ${recovery} ; then
-    title="$(gettext "%s, with Linux %s (recovery mode)")"
+    title="$(gettext_quoted "%s, with Linux %s (recovery mode)")"
   else
-    title="$(gettext "%s, with Linux %s")"
+    title="$(gettext_quoted "%s, with Linux %s")"
   fi
-  printf "menuentry \"${title}\" ${CLASS} {\n" "${os}" "${version}"
+  printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${version}"
   save_default_entry | sed -e "s/^/\t/"
 
   # Use ELILO's generic "efifb" when it's known to be available.
@@ -83,12 +83,12 @@ EOF
   fi
   printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
-	echo	$(printf "$(gettext "Loading Linux %s ...")" ${version})
+	echo	'$(printf "$(gettext_quoted "Loading Linux %s ...")" ${version})'
 	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro ${args}
 EOF
   if test -n "${initrd}" ; then
     cat << EOF
-	echo	$(gettext "Loading initial ramdisk ...")
+	echo	'$(gettext_quoted "Loading initial ramdisk ...")'
 	initrd	${rel_dirname}/${initrd}
 EOF
   fi

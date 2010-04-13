@@ -188,3 +188,7 @@ version_find_latest ()
   done
   echo "$a"
 }
+
+gettext_quoted () {
+  gettext "$@" | sed "s/'/'\\\\''/g"
+}
