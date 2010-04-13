@@ -1,3 +1,11 @@
+2010-04-13  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix for escaped dollar in double quoted strings.
+
+	* script/yylex.l: Updated flex rules.
+	* conf/tests.rmk: Rule for new testcase.
+	* tests/grub_script_dollar.in: New testcase.
+
 2010-04-13  Carles Pina i Estany  <carles@pina.cat>
 2010-04-13  Colin Watson  <cjwatson@ubuntu.com>
 
