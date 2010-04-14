@@ -80,7 +80,7 @@ SUFFIX (grub_freebsd_load_elfmodule_obj) (grub_file_t file, int argc,
 {
   Elf_Ehdr e;
   Elf_Shdr *s;
-  char *shdr;
+  char *shdr = 0;
   grub_addr_t curload, module;
   grub_err_t err;
 
@@ -148,7 +148,7 @@ SUFFIX (grub_freebsd_load_elfmodule) (grub_file_t file, int argc, char *argv[],
 {
   Elf_Ehdr e;
   Elf_Shdr *s;
-  char *shdr;
+  char *shdr = 0;
   grub_addr_t curload, module;
   grub_err_t err;
 
@@ -223,7 +223,7 @@ SUFFIX (grub_freebsd_load_elf_meta) (grub_file_t file, grub_addr_t *kern_end)
   grub_err_t err;
   Elf_Ehdr e;
   Elf_Shdr *s;
-  char *shdr;
+  char *shdr = 0;
   unsigned symoff, stroff, symsize, strsize;
   grub_addr_t curload;
   grub_freebsd_addr_t symstart, symend, symentsize, dynamic;

@@ -1,3 +1,12 @@
+2010-04-14  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix a spurious, uninitialized variable warning.
+
+	* loader/i386/bsdXX.c (grub_freebsd_load_elfmodule_obj):
+	Initialize variable, shdr.
+	(grub_freebsd_load_elfmodule): Likewise.
+	(grub_freebsd_load_elf_meta): Likewise.
+
 2010-04-13  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Fix for escaped dollar in double quoted strings.
