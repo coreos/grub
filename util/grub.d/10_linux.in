@@ -23,7 +23,7 @@ libdir=@libdir@
 . ${libdir}/grub/grub-mkconfig_lib
 
 export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR=@LOCALEDIR@
+export TEXTDOMAINDIR=@localedir@
 
 CLASS="--class gnu-linux --class gnu --class os"
 

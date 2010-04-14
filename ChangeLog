@@ -1,3 +1,12 @@
+2010-04-14  Colin Watson  <cjwatson@ubuntu.com>
+
+	Restore TEXTDOMAINDIR correction from r1889, lost apparently by
+	mistake in r2156.  Noticed by Anthony Fok.
+
+	* util/grub.d/10_kfreebsd.in (TEXTDOMAINDIR): Set to lowercased
+	@localedir@.
+	* util/grub.d/10_linux.in (TEXTDOMAINDIR): Likewise.
+
 2010-04-14  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Fix a spurious, uninitialized variable warning.
