@@ -143,6 +143,12 @@ chain_mod_SOURCES = loader/i386/pc/chainloader.c
 chain_mod_CFLAGS = $(COMMON_CFLAGS)
 chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For ntldr.mod.
+pkglib_MODULES += ntldr.mod
+ntldr_mod_SOURCES = loader/i386/pc/ntldr.c
+ntldr_mod_CFLAGS = $(COMMON_CFLAGS)
+ntldr_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 pkglib_MODULES += linux16.mod
 linux16_mod_SOURCES = loader/i386/pc/linux.c
 linux16_mod_CFLAGS = $(COMMON_CFLAGS)
