@@ -151,6 +151,11 @@ VARIABLE(grub_relocator16_ss)
 VARIABLE(grub_relocator16_sp)
 	.word	0
 	movw	%ax, %ss
+
+	/* movw imm32, %edx.  */
+	.byte	0x66, 0xba
+VARIABLE(grub_relocator16_edx)
+	.long	0
 	
 	/* Cleared direction flag is of no problem with any current
 	   payload and makes this implementation easier.  */

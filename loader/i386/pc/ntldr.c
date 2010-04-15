@@ -35,6 +35,7 @@
 
 static grub_dl_t my_mod;
 static struct grub_relocator *rel;
+static grub_uint32_t edx = 0xffffffff;
 
 #define GRUB_NTLDR_SEGMENT         0x2000
 
@@ -43,7 +44,14 @@ grub_ntldr_boot (void)
 {
   struct grub_relocator16_state state = { 
     .cs = GRUB_NTLDR_SEGMENT,
-    .ip = 0
+    .ip = 0,
+    .ds = 0,
+    .es = 0,
+    .fs = 0,
+    .gs = 0,
+    .ss = 0,
+    .sp = 0x7c00,
+    .edx = edx
   };
   grub_video_set_mode ("text", 0, 0);
 
@@ -87,6 +95,7 @@ grub_cmd_ntldr (grub_command_t cmd __attribute__ ((unused)),
   if (err)
     goto fail;
 
+  edx = grub_get_root_biosnumber ();
   dev = grub_device_open (0);
 
   if (dev && dev->disk)

@@ -44,6 +44,7 @@ struct grub_relocator16_state
   grub_uint16_t ss;
   grub_uint16_t sp;
   grub_uint16_t ip;
+  grub_uint32_t edx;
 };
 
 struct grub_relocator64_state
