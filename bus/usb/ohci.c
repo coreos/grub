@@ -26,6 +26,7 @@
 #include <grub/cpu/pci.h>
 #include <grub/cpu/io.h>
 #include <grub/time.h>
+#include <grub/cs5536.h>
 
 struct grub_ohci_hcca
 {
@@ -70,6 +71,7 @@ struct grub_ohci
 {
   volatile grub_uint32_t *iobase;
   volatile struct grub_ohci_hcca *hcca;
+  grub_uint32_t hcca_addr;
   struct grub_ohci *next;
 };
 
@@ -122,51 +124,85 @@ grub_ohci_writereg32 (struct grub_ohci *o,
    controller.  If this is the case, initialize it.  */
 static int NESTED_FUNC_ATTR
 grub_ohci_pci_iter (grub_pci_device_t dev,
-		    grub_pci_id_t pciid __attribute__((unused)))
+		    grub_pci_id_t pciid)
 {
-  grub_uint32_t class_code;
-  grub_uint32_t class;
-  grub_uint32_t subclass;
   grub_uint32_t interf;
   grub_uint32_t base;
   grub_pci_address_t addr;
   struct grub_ohci *o;
   grub_uint32_t revision;
   grub_uint32_t frame_interval;
-
-  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
-  class_code = grub_pci_read (addr) >> 8;
-
-  interf = class_code & 0xFF;
-  subclass = (class_code >> 8) & 0xFF;
-  class = class_code >> 16;
-
-  /* If this is not an OHCI controller, just return.  */
-  if (class != 0x0c || subclass != 0x03 || interf != 0x10)
-    return 0;
+  int cs5536;
+  grub_uint32_t hcca_addr;
 
   /* Determine IO base address.  */
-  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
-  base = grub_pci_read (addr);
+  grub_dprintf ("ohci", "pciid = %x\n", pciid);
+  if (pciid == GRUB_CS5536_PCIID)
+    {
+      grub_uint64_t basereg;
+
+      cs5536 = 1;
+      basereg = grub_cs5536_read_msr (dev, GRUB_CS5536_MSR_USB_OHCI_BASE);
+      if (!(basereg & GRUB_CS5536_MSR_USB_BASE_MEMORY_ENABLE))
+	{
+	  /* Shouldn't happen.  */
+	  grub_dprintf ("ohci", "No OHCI address is assigned\n");
+	  return 0;
+	}
+      base = (basereg & GRUB_CS5536_MSR_USB_BASE_ADDR_MASK);
+      basereg |= GRUB_CS5536_MSR_USB_BASE_BUS_MASTER;
+      basereg &= ~GRUB_CS5536_MSR_USB_BASE_PME_ENABLED;
+      basereg &= ~GRUB_CS5536_MSR_USB_BASE_PME_STATUS;
+      grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_USB_OHCI_BASE, basereg);
+
+    }
+  else
+    {
+      grub_uint32_t class_code;
+      grub_uint32_t class;
+      grub_uint32_t subclass;
+
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
+      class_code = grub_pci_read (addr) >> 8;
+      
+      interf = class_code & 0xFF;
+      subclass = (class_code >> 8) & 0xFF;
+      class = class_code >> 16;
+
+      /* If this is not an OHCI controller, just return.  */
+      if (class != 0x0c || subclass != 0x03 || interf != 0x10)
+	return 0;
+
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
+      base = grub_pci_read (addr);
 
 #if 0
-  /* Stop if there is no IO space base address defined.  */
-  if (! (base & 1))
-    return 0;
+      /* Stop if there is no IO space base address defined.  */
+      if (! (base & 1))
+	return 0;
 #endif
+
+      grub_dprintf ("ohci", "class=0x%02x 0x%02x interface 0x%02x\n",
+		    class, subclass, interf);
+    }
 
   /* Allocate memory for the controller and register it.  */
   o = grub_malloc (sizeof (*o));
   if (! o)
     return 1;
 
-  o->iobase = (grub_uint32_t *) base;
+  o->iobase = grub_pci_device_map_range (dev, base, 0x100);
 
+  grub_dprintf ("ohci", "base=%p\n", o->iobase);
+
+  /* FIXME: create proper abstraction for this.  */
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
+  hcca_addr = 0x05000100;
+#else
   /* Reserve memory for the HCCA.  */
-  o->hcca = (struct grub_ohci_hcca *) grub_memalign (256, 256);
-
-  grub_dprintf ("ohci", "class=0x%02x 0x%02x interface 0x%02x base=%p\n",
- 		class, subclass, interf, o->iobase);
+  hcca_addr = (grub_uint32_t) grub_memalign (256, 256);
+#endif
+  o->hcca = grub_pci_device_map_range (dev, hcca_addr, 256);
 
   /* Check if the OHCI revision is actually 1.0 as supported.  */
   revision = grub_ohci_readreg32 (o, GRUB_OHCI_REG_REVISION);
@@ -200,7 +236,7 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
 			GRUB_OHCI_PERIODIC_START);
 
   /* Setup the HCCA.  */
-  grub_ohci_writereg32 (o, GRUB_OHCI_REG_HCCA, (grub_uint32_t) o->hcca);
+  grub_ohci_writereg32 (o, GRUB_OHCI_REG_HCCA, hcca_addr);
   grub_dprintf ("ohci", "OHCI HCCA\n");
 
   /* Enable the OHCI.  */
@@ -216,8 +252,10 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
   return 0;
 
  fail:
+#ifndef GRUB_MACHINE_MIPS_YEELOONG
   if (o)
     grub_free ((void *) o->hcca);
+#endif
   grub_free (o);
 
   return 1;
