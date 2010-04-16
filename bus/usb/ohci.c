@@ -24,7 +24,7 @@
 #include <grub/misc.h>
 #include <grub/pci.h>
 #include <grub/cpu/pci.h>
-#include <grub/i386/io.h>
+#include <grub/cpu/io.h>
 #include <grub/time.h>
 
 struct grub_ohci_hcca
@@ -91,9 +91,17 @@ typedef enum
   GRUB_OHCI_REG_BULKCURR,
   GRUB_OHCI_REG_DONEHEAD,
   GRUB_OHCI_REG_FRAME_INTERVAL,
+  GRUB_OHCI_REG_PERIODIC_START = 16,
   GRUB_OHCI_REG_RHUBA = 18,
   GRUB_OHCI_REG_RHUBPORT = 21
 } grub_ohci_reg_t;
+
+#define GRUB_OHCI_RHUB_PORT_POWER_MASK 0x300
+#define GRUB_OHCI_RHUB_PORT_ALL_POWERED 0x200
+
+/* XXX: Is this choice of timings sane?  */
+#define GRUB_OHCI_FSMPS 0x2778
+#define GRUB_OHCI_PERIODIC_START 0x257f
 
 static grub_uint32_t
 grub_ohci_readreg32 (struct grub_ohci *o, grub_ohci_reg_t reg)
@@ -166,6 +174,11 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
   if ((revision & 0xFF) != 0x10)
     goto fail;
 
+  grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBA,
+			(grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBA)
+			 & ~GRUB_OHCI_RHUB_PORT_POWER_MASK)
+			| GRUB_OHCI_RHUB_PORT_ALL_POWERED);
+
   /* Backup the frame interval register.  */
   frame_interval = grub_ohci_readreg32 (o, GRUB_OHCI_REG_FRAME_INTERVAL);
 
@@ -175,7 +188,16 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
   grub_dprintf ("ohci", "OHCI reset\n");
 
   /* Restore the frame interval register.  */
+#define GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_MASK 0x8fff0000
+#define GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT 16
+
+  frame_interval = (frame_interval & ~GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_MASK)
+    | (GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT
+       << GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT);
   grub_ohci_writereg32 (o, GRUB_OHCI_REG_FRAME_INTERVAL, frame_interval);
+
+  grub_ohci_writereg32 (o, GRUB_OHCI_REG_PERIODIC_START,
+			GRUB_OHCI_PERIODIC_START);
 
   /* Setup the HCCA.  */
   grub_ohci_writereg32 (o, GRUB_OHCI_REG_HCCA, (grub_uint32_t) o->hcca);
