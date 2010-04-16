@@ -105,12 +105,12 @@ grub_pci_write_byte (grub_pci_address_t addr, grub_uint8_t data)
 }
 
 volatile void *
-grub_pci_device_map_range (grub_pci_device_t dev __attribute__ ((unused)),
-			   grub_addr_t base, grub_size_t size);
+EXPORT_FUNC (grub_pci_device_map_range) (grub_pci_device_t dev,
+					 grub_addr_t base, grub_size_t size);
 void
-grub_pci_device_unmap_range (grub_pci_device_t dev __attribute__ ((unused)),
-			     volatile void *mem,
-			     grub_size_t size __attribute__ ((unused)));
+EXPORT_FUNC (grub_pci_device_unmap_range) (grub_pci_device_t dev,
+					   volatile void *mem,
+					   grub_size_t size);
 #endif
 
 #endif /* GRUB_MACHINE_PCI_H */

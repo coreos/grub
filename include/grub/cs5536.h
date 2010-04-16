@@ -169,9 +169,11 @@
 #ifndef ASM_FILE
 int EXPORT_FUNC (grub_cs5536_find) (grub_pci_device_t *devp);
 
-grub_uint64_t grub_cs5536_read_msr (grub_pci_device_t dev, grub_uint32_t addr);
-void grub_cs5536_write_msr (grub_pci_device_t dev, grub_uint32_t addr,
-			    grub_uint64_t val);
+grub_uint64_t EXPORT_FUNC (grub_cs5536_read_msr) (grub_pci_device_t dev,
+						  grub_uint32_t addr);
+void EXPORT_FUNC (grub_cs5536_write_msr) (grub_pci_device_t dev,
+					  grub_uint32_t addr,
+					  grub_uint64_t val);
 grub_err_t grub_cs5536_read_spd_byte (grub_port_t smbbase, grub_uint8_t dev,
 				      grub_uint8_t addr, grub_uint8_t *res);
 grub_err_t EXPORT_FUNC (grub_cs5536_read_spd) (grub_port_t smbbase,
