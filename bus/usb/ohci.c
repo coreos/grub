@@ -258,7 +258,7 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
 #endif
   grub_free (o);
 
-  return 1;
+  return 0;
 }
 
 
