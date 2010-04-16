@@ -101,6 +101,9 @@ typedef enum
 #define GRUB_OHCI_RHUB_PORT_POWER_MASK 0x300
 #define GRUB_OHCI_RHUB_PORT_ALL_POWERED 0x200
 
+#define GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_MASK 0x8fff0000
+#define GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT 16
+
 /* XXX: Is this choice of timings sane?  */
 #define GRUB_OHCI_FSMPS 0x2778
 #define GRUB_OHCI_PERIODIC_START 0x257f
@@ -224,9 +227,6 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
   grub_dprintf ("ohci", "OHCI reset\n");
 
   /* Restore the frame interval register.  */
-#define GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_MASK 0x8fff0000
-#define GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT 16
-
   frame_interval = (frame_interval & ~GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_MASK)
     | (GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT
        << GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT);
