@@ -239,6 +239,19 @@ grub_machine_init (void)
       set_p2d (dev, 5, GRUB_CS5536_DESTINATION_USB, 0x05024000);
       set_p2d (dev, 6, GRUB_CS5536_DESTINATION_USB, 0x05023000);
 
+      {
+	volatile grub_uint32_t *oc;
+	oc = grub_pci_device_map_range (dev, 0x05022000,
+					GRUB_CS5536_USB_OPTION_REGS_SIZE);
+
+	oc[GRUB_CS5536_USB_OPTION_REG_UOCMUX] =
+	  (oc[GRUB_CS5536_USB_OPTION_REG_UOCMUX]
+	   & ~GRUB_CS5536_USB_OPTION_REG_UOCMUX_PMUX_MASK)
+	  | GRUB_CS5536_USB_OPTION_REG_UOCMUX_PMUX_HC;
+	grub_pci_device_unmap_range (dev, oc, GRUB_CS5536_USB_OPTION_REGS_SIZE);
+      }
+
+
       /* Setup IDE controller.  */
       grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_IDE_IO_BAR,
 			     GRUB_CS5536_LBAR_IDE
