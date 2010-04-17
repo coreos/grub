@@ -1,3 +1,7 @@
+2010-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/lvm.c (grub_lvm_memberlist): Issue an error if pv->disk = 0.
+
 2010-04-17  Christian Franke <franke@computer.org>
 
 	* Makefile.in: Add missing localedir setting.
