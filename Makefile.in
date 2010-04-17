@@ -35,6 +35,7 @@ sysconfdir = @sysconfdir@
 sharedstatedir = @sharedstatedir@
 localstatedir = @localstatedir@
 libdir = @libdir@
+localedir = @localedir@
 infodir = @infodir@
 mandir = @mandir@
 includedir = @includedir@
