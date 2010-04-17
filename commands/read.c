@@ -24,6 +24,7 @@
 #include <grub/term.h>
 #include <grub/types.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static char *
 grub_getline (void)
@@ -62,7 +63,7 @@ grub_getline (void)
 }
 
 static grub_err_t
-grub_cmd_read (grub_command_t cmd UNUSED, int argc, char **args)
+grub_cmd_read (grub_command_t cmd __attribute__ ((unused)), int argc, char **args)
 {
   char *line = grub_getline ();
   if (! line)
@@ -79,8 +80,8 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(read)
 {
   cmd = grub_register_command ("read", grub_cmd_read,
-			       "read [ENVVAR]",
-			       "Set variable with user input");
+			       N_("[ENVVAR]"),
+			       N_("Set variable with user input."));
 }
 
 GRUB_MOD_FINI(read)

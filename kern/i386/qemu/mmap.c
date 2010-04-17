@@ -22,7 +22,7 @@
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/misc.h>
-#include <grub/i386/cmos.h>
+#include <grub/cmos.h>
 
 #define QEMU_CMOS_MEMSIZE_HIGH		0x35
 #define QEMU_CMOS_MEMSIZE_LOW		0x34

@@ -1,7 +1,7 @@
 /* efi.c - generic EFI support */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
  */
 
 #include <grub/misc.h>
+#include <grub/charset.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
 #include <grub/efi/console_control.h>
@@ -161,6 +162,8 @@ grub_exit (void)
   for (;;) ;
 }
 
+/* On i386, a firmware-independant grub_reboot() is provided by realmode.S.  */
+#ifndef __i386__
 void
 grub_reboot (void)
 {
@@ -168,6 +171,7 @@ grub_reboot (void)
   efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
               GRUB_EFI_RESET_COLD, GRUB_EFI_SUCCESS, 0, NULL);
 }
+#endif
 
 void
 grub_halt (void)
@@ -186,6 +190,25 @@ grub_efi_exit_boot_services (grub_efi_uintn_t map_key)
   b = grub_efi_system_table->boot_services;
   status = efi_call_2 (b->exit_boot_services, grub_efi_image_handle, map_key);
   return status == GRUB_EFI_SUCCESS;
+}
+
+grub_err_t
+grub_efi_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
+				  grub_efi_uintn_t descriptor_size,
+				  grub_efi_uint32_t descriptor_version,
+				  grub_efi_memory_descriptor_t *virtual_map)
+{
+  grub_efi_runtime_services_t *r;
+  grub_efi_status_t status;
+
+  r = grub_efi_system_table->runtime_services;
+  status = efi_call_4 (r->set_virtual_address_map, memory_map_size,
+		       descriptor_size, descriptor_version, virtual_map);
+
+  if (status == GRUB_EFI_SUCCESS)
+    return GRUB_ERR_NONE;
+
+  return grub_error (GRUB_ERR_IO, "set_virtual_address_map failed");
 }
 
 grub_uint32_t

@@ -1,7 +1,7 @@
 /* hexdump.c - command to dump the contents of a file or memory */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,11 +24,12 @@
 #include <grub/gzio.h>
 #include <grub/lib/hexdump.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] = {
-  {"skip", 's', 0, "skip offset bytes from the beginning of file.", 0,
+  {"skip", 's', 0, N_("Skip offset bytes from the beginning of file."), 0,
    ARG_TYPE_INT},
-  {"length", 'n', 0, "read only length bytes", 0, ARG_TYPE_INT},
+  {"length", 'n', 0, N_("Read only LENGTH bytes."), 0, ARG_TYPE_INT},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -38,18 +39,18 @@ grub_cmd_hexdump (grub_extcmd_t cmd, int argc, char **args)
   struct grub_arg_list *state = cmd->state;
   char buf[GRUB_DISK_SECTOR_SIZE * 4];
   grub_ssize_t size, length;
-  grub_addr_t skip;
+  grub_disk_addr_t skip;
   int namelen;
 
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
   namelen = grub_strlen (args[0]);
-  skip = (state[0].set) ? grub_strtoul (state[0].arg, 0, 0) : 0;
+  skip = (state[0].set) ? grub_strtoull (state[0].arg, 0, 0) : 0;
   length = (state[1].set) ? grub_strtoul (state[1].arg, 0, 0) : 256;
 
   if (!grub_strcmp (args[0], "(mem)"))
-    hexdump (skip, (char *) skip, length);
+    hexdump (skip, (char *) (grub_addr_t) skip, length);
   else if ((args[0][0] == '(') && (args[0][namelen - 1] == ')'))
     {
       grub_disk_t disk;
@@ -121,8 +122,8 @@ GRUB_MOD_INIT (hexdump)
 {
   cmd = grub_register_extcmd ("hexdump", grub_cmd_hexdump,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      "hexdump [OPTIONS] FILE_OR_DEVICE",
-			      "Dump the contents of a file or memory.",
+			      N_("[OPTIONS] FILE_OR_DEVICE"),
+			      N_("Dump the contents of a file or memory."),
 			      options);
 }
 

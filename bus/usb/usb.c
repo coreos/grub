@@ -156,42 +156,6 @@ grub_usb_get_endpdescriptor (grub_usb_device_t usbdev, int addr)
 }
 
 grub_usb_err_t
-grub_usb_get_string (grub_usb_device_t dev, grub_uint8_t index, int langid,
-		     char **string)
-{
-  struct grub_usb_desc_str descstr;
-  struct grub_usb_desc_str *descstrp;
-  grub_usb_err_t err;
-
-  /* Only get the length.  */
-  err = grub_usb_control_msg (dev, 1 << 7,
-			      0x06, (3 << 8) | index,
-			      langid, 1, (char *) &descstr);
-  if (err)
-    return err;
-
-  descstrp = grub_malloc (descstr.length);
-  if (! descstrp)
-    return GRUB_USB_ERR_INTERNAL;
-  err = grub_usb_control_msg (dev, 1 << 7,
-			      0x06, (3 << 8) | index,
-			      langid, descstr.length, (char *) descstrp);
-
-  *string = grub_malloc (descstr.length / 2);
-  if (! *string)
-    {
-      grub_free (descstrp);
-      return GRUB_USB_ERR_INTERNAL;
-    }
-
-  grub_utf16_to_utf8 ((grub_uint8_t *) *string, descstrp->str, descstrp->length / 2 - 1);
-  (*string)[descstr.length / 2 - 1] = '\0';
-  grub_free (descstrp);
-
-  return GRUB_USB_ERR_NONE;
-}
-
-grub_usb_err_t
 grub_usb_device_initialize (grub_usb_device_t dev)
 {
   struct grub_usb_desc_device *descdev;

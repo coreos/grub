@@ -1,29 +1,9 @@
 
 # -*- makefile -*-
 
-COMMON_ASFLAGS = -nostdinc -D__ASSEMBLY__
-COMMON_CFLAGS = -ffreestanding
-COMMON_LDFLAGS += -nostdlib
-
-# Used by various components.  These rules need to precede them.
-script/lexer.c_DEPENDENCIES = grub_script.tab.h
-
 # Images.
 
-MOSTLYCLEANFILES += symlist.c kernel_syms.lst
-DEFSYMFILES += kernel_syms.lst
-
-kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
-	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h reader.h \
-	symbol.h term.h time.h types.h powerpc/libgcc.h loader.h partition.h \
-	msdos_partition.h ieee1275/ieee1275.h machine/kernel.h handler.h list.h \
-	command.h i18n.h
-
-symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
-	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
-
-kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
-	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
+kernel_img_HEADERS += ieee1275/ieee1275.h
 
 # Programs
 pkglib_PROGRAMS = kernel.img
@@ -31,7 +11,7 @@ pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/powerpc/ieee1275/startup.S kern/ieee1275/cmain.c \
 	kern/ieee1275/ieee1275.c kern/main.c kern/device.c 		\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
-	kern/misc.c kern/mm.c kern/reader.c kern/term.c 	\
+	kern/misc.c kern/mm.c kern/term.c 	\
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/list.c kern/handler.c kern/command.c kern/corecmd.c	\
 	kern/ieee1275/init.c 						\
@@ -43,8 +23,7 @@ kernel_img_SOURCES = kern/powerpc/ieee1275/startup.S kern/ieee1275/cmain.c \
 	symlist.c kern/$(target_cpu)/cache.S
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
-	-Wl,-N,-S,-Ttext,0x200000,-Bstatic
+kernel_img_LDFLAGS += $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x200000,-Bstatic
 
 # Scripts.
 sbin_SCRIPTS = grub-install
@@ -57,49 +36,33 @@ grub_install_SOURCES = util/ieee1275/grub-install.in
 grub_mkrescue_SOURCES = util/powerpc/ieee1275/grub-mkrescue.in
 
 # Modules.
-pkglib_MODULES = halt.mod \
-	linux.mod \
-	reboot.mod \
-	suspend.mod \
-        multiboot.mod \
-	lsmmap.mod
-
-# For boot.mod.
-pkglib_MODULES += boot.mod 
-boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
-boot_mod_CFLAGS = $(COMMON_CFLAGS)
-boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_MODULES += ieee1275_fb.mod 
+ieee1275_fb_mod_SOURCES = video/ieee1275.c
+ieee1275_fb_mod_CFLAGS = $(COMMON_CFLAGS)
+ieee1275_fb_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For linux.mod.
+pkglib_MODULES += linux.mod
 linux_mod_SOURCES = loader/powerpc/ieee1275/linux.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For suspend.mod
+pkglib_MODULES += suspend.mod
 suspend_mod_SOURCES = commands/ieee1275/suspend.c
 suspend_mod_CFLAGS = $(COMMON_CFLAGS)
 suspend_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For reboot.mod
-reboot_mod_SOURCES = commands/reboot.c
-reboot_mod_CFLAGS = $(COMMON_CFLAGS)
-reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For halt.mod
+pkglib_MODULES += halt.mod
 halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For multiboot.mod
-multiboot_mod_SOURCES = loader/ieee1275/multiboot2.c \
-                         loader/multiboot2.c \
-                         loader/multiboot_loader.c
-multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
-multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For lsmmap.mod
-lsmmap_mod_SOURCES = commands/lsmmap.c
-lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
-lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+# For datetime.mod
+pkglib_MODULES += datetime.mod
+datetime_mod_SOURCES = lib/ieee1275/datetime.c
+datetime_mod_CFLAGS = $(COMMON_CFLAGS)
+datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

@@ -1,7 +1,7 @@
 /* play.c - command to play a tune  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,8 +27,9 @@
 #include <grub/machine/time.h>
 #include <grub/cpu/io.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
-#define BASE_TEMPO 120
+#define BASE_TEMPO (60 * GRUB_TICKS_PER_SECOND)
 
 /* The speaker port.  */
 #define SPEAKER			0x61
@@ -100,13 +101,13 @@
 #define PIT_CTRL_COUNT_BINARY	0x00	/* 16-bit binary counter.  */
 #define PIT_CTRL_COUNT_BCD	0x01	/* 4-decade BCD counter.  */
 
-#define T_REST			((short) 0)
-#define T_FINE			((short) -1)
+#define T_REST			((grub_uint16_t) 0)
+#define T_FINE			((grub_uint16_t) -1)
 
 struct note
 {
-  short pitch;
-  short duration;
+  grub_uint16_t pitch;
+  grub_uint16_t duration;
 };
 
 static void
@@ -119,7 +120,7 @@ beep_off (void)
 }
 
 static void
-beep_on (short pitch)
+beep_on (grub_uint16_t pitch)
 {
   unsigned char status;
   unsigned int counter;
@@ -142,59 +143,110 @@ beep_on (short pitch)
   grub_outb (status | SPEAKER_TMR2 | SPEAKER_DATA, SPEAKER);
 }
 
+/* Returns whether playing should continue.  */
+static int
+play (unsigned tempo, struct note *note)
+{
+  unsigned int to;
+
+  if (note->pitch == T_FINE || grub_checkkey () >= 0)
+    return 1;
+
+  grub_dprintf ("play", "pitch = %d, duration = %d\n", note->pitch,
+                note->duration);
+
+  switch (note->pitch)
+    {
+      case T_REST:
+        beep_off ();
+        break;
+
+      default:
+        beep_on (note->pitch);
+        break;
+    }
+
+  to = grub_get_rtc () + BASE_TEMPO * note->duration / tempo;
+  while (((unsigned int) grub_get_rtc () <= to) && (grub_checkkey () < 0))
+    ;
+
+  return 0;
+}
+
 static grub_err_t
 grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
 	       int argc, char **args)
 {
   grub_file_t file;
-  struct note buf;
-  int tempo;
-  unsigned int to;
 
-  if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
+  if (argc < 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name or tempo and notes required");
 
   file = grub_file_open (args[0]);
-  if (! file)
-    return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
-
-  if (grub_file_read (file, &tempo, sizeof(tempo)) != sizeof(tempo))
+  if (file)
     {
-      grub_file_close (file);
-      return grub_error (GRUB_ERR_FILE_READ_ERROR,
-                         "file doesn't even contains a full tempo record");
-    }
+      struct note buf;
+      grub_uint32_t tempo;
 
-  grub_dprintf ("play","tempo = %d\n", tempo);
-
-  while (grub_file_read (file, &buf,
-                         sizeof (struct note)) == sizeof (struct note)
-         && buf.pitch != T_FINE && grub_checkkey () < 0)
-    {
-
-      grub_dprintf ("play", "pitch = %d, duration = %d\n", buf.pitch,
-                    buf.duration);
-
-      switch (buf.pitch)
+      if (grub_file_read (file, &tempo, sizeof (tempo)) != sizeof (tempo))
         {
-          case T_REST:
-            beep_off ();
-            break;
+          grub_file_close (file);
+          return grub_error (GRUB_ERR_FILE_READ_ERROR,
+                             "file doesn't even contains a full tempo record");
+        }
 
-          default:
-            beep_on (buf.pitch);
+      tempo = grub_le_to_cpu32 (tempo);
+      grub_dprintf ("play","tempo = %d\n", tempo);
+
+      while (grub_file_read (file, &buf,
+                             sizeof (struct note)) == sizeof (struct note))
+        {
+          buf.pitch = grub_le_to_cpu16 (buf.pitch);
+          buf.duration = grub_le_to_cpu16 (buf.duration);
+
+          if (play (tempo, &buf))
             break;
         }
 
-      to = grub_get_rtc () + BASE_TEMPO * buf.duration / tempo;
-      while (((unsigned int) grub_get_rtc () <= to) && (grub_checkkey () < 0))
-        ;
+      grub_file_close (file);
+    }
+  else
+    {
+      char *end;
+      unsigned tempo;
+      struct note note;
+      int i;
 
+      tempo = grub_strtoul (args[0], &end, 0);
+
+      if (*end)
+        /* Was not a number either, assume it was supposed to be a file name.  */
+        return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+
+      grub_dprintf ("play","tempo = %d\n", tempo);
+
+      for (i = 1; i + 1 < argc; i += 2)
+        {
+          note.pitch = grub_strtoul (args[i], &end, 0);
+          if (*end)
+            {
+              grub_error (GRUB_ERR_BAD_NUMBER, "bogus pitch number");
+              break;
+            }
+
+          note.duration = grub_strtoul (args[i + 1], &end, 0);
+          if (*end)
+            {
+              grub_error (GRUB_ERR_BAD_NUMBER, "bogus duration number");
+              break;
+            }
+
+          if (play (tempo, &note))
+            break;
+        }
     }
 
   beep_off ();
-
-  grub_file_close (file);
 
   while (grub_checkkey () > 0)
     grub_getkey ();
@@ -207,7 +259,8 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(play)
 {
   cmd = grub_register_command ("play", grub_cmd_play,
-			       "play FILE", "Play a tune");
+			       N_("FILE | TEMPO [PITCH1 DURATION1] [PITCH2 DURATION2] ... "),
+			       N_("Play a tune."));
 }
 
 GRUB_MOD_FINI(play)

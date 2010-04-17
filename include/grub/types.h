@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@
 
 #include <config.h>
 #include <grub/cpu/types.h>
-
-#define UNUSED __attribute__ ((unused))
 
 #ifdef GRUB_UTIL
 # define GRUB_CPU_SIZEOF_VOID_P	SIZEOF_VOID_P
@@ -224,5 +222,11 @@ static inline grub_uint64_t grub_swap_bytes64(grub_uint64_t x)
 #  define grub_host_to_target64(x)	((grub_uint64_t) (x))
 # endif
 #endif /* ! WORDS_BIGENDIAN */
+
+#if GRUB_TARGET_SIZEOF_VOID_P == 8
+#  define grub_host_to_target_addr(x) grub_host_to_target64(x)
+#else
+#  define grub_host_to_target_addr(x) grub_host_to_target32(x)
+#endif
 
 #endif /* ! GRUB_TYPES_HEADER */

@@ -24,15 +24,14 @@
 #include <grub/font.h>
 #include <grub/term.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
                     int argc __attribute__ ((unused)),
                     char **args __attribute__ ((unused)))
 {
-  if (grub_video_set_mode ("1024x768;800x600;640x480", 0) != GRUB_ERR_NONE)
-    return grub_errno;
-
+  grub_err_t err;
   grub_video_color_t color;
   unsigned int x;
   unsigned int y;
@@ -48,6 +47,10 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
   grub_video_color_t palette[16];
   const char *str;
   int texty;
+
+  err = grub_video_set_mode ("auto", GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
+  if (err)
+    return err;
 
   grub_video_get_viewport (&x, &y, &width, &height);
 
@@ -66,12 +69,12 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
   color = grub_video_map_rgb (0, 255, 255);
   grub_video_fill_rect (color, 100, 100, 100, 100);
 
-  sansbig = grub_font_get ("Helvetica Bold 24");
-  sans = grub_font_get ("Helvetica Bold 14");
-  sanssmall = grub_font_get ("Helvetica 8");
+  sansbig = grub_font_get ("Unknown Regular 16");
+  sans = grub_font_get ("Unknown Regular 16");
+  sanssmall = grub_font_get ("Unknown Regular 16");
   fixed = grub_font_get ("Fixed 20");
   if (! sansbig || ! sans || ! sanssmall || ! fixed)
-    return grub_error (GRUB_ERR_BAD_FONT, "No font loaded.");
+    return grub_error (GRUB_ERR_BAD_FONT, "no font loaded");
 
   glyph = grub_font_get_glyph (fixed, '*');
   grub_font_draw_glyph (glyph, color, 200 ,0);
@@ -123,11 +126,6 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
   grub_font_draw_string (str, fixed, color, 16, texty);
   texty += grub_font_get_descent (fixed) + grub_font_get_leading (fixed);
 
-  /* Some character don't exist in the Helvetica font, so the font engine
-     will fall back to using glyphs from another font that does contain them.
-     TODO The font engine should be smart about selecting a replacement font
-     and prioritize fonts with similar sizes.  */
-
   texty += grub_font_get_ascent(sansbig);
   grub_font_draw_string (str, sansbig, color, 16, texty);
   texty += grub_font_get_descent (sansbig) + grub_font_get_leading (sansbig);
@@ -152,12 +150,13 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
 
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
-  for (i = 0; i < 255; i++)
+  for (i = 0; i < 5; i++)
     {
       color = grub_video_map_rgb (i, 33, 77);
       grub_video_fill_rect (color, 0, 0, width, height);
       grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_BLEND, 0, 0,
                                      0, 0, width, height);
+      grub_video_swap_buffers ();
     }
 
   grub_getkey ();
@@ -178,7 +177,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(videotest)
 {
   cmd = grub_register_command ("videotest", grub_cmd_videotest,
-			       0, "Test video subsystem");
+			       0, N_("Test video subsystem."));
 }
 
 GRUB_MOD_FINI(videotest)

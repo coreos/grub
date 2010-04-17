@@ -26,6 +26,7 @@
 #include <grub/env.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/biosnum.h>
+#include <grub/i18n.h>
 
 
 /* Real mode IVT slot (seg:off far pointer) for interrupt 0x13.  */
@@ -33,9 +34,9 @@ static grub_uint32_t *const int13slot = UINT_TO_PTR (4 * 0x13);
 
 /* Remember to update enum opt_idxs accordingly.  */
 static const struct grub_arg_option options[] = {
-  {"list", 'l', 0, "show the current mappings", 0, 0},
-  {"reset", 'r', 0, "reset all mappings to the default values", 0, 0},
-  {"swap", 's', 0, "perform both direct and reverse mappings", 0, 0},
+  {"list", 'l', 0, N_("Show the current mappings."), 0, 0},
+  {"reset", 'r', 0, N_("Reset all mappings to the default values."), 0, 0},
+  {"swap", 's', 0, N_("Perform both direct and reverse mappings."), 0, 0},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -308,7 +309,7 @@ install_int13_handler (int noret __attribute__ ((unused)))
 						GRUB_MACHINE_MEMORY_RESERVED,
 						GRUB_MMAP_MALLOC_LOW);
   if (! handler_base)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Could not reserve "
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't reserve "
 		       "memory for the int13h handler");
 
   /* Copy int13h handler bundle to reserved area.  */
@@ -370,7 +371,7 @@ grub_get_root_biosnumber_drivemap (void)
     return grub_strtoul (biosnum, 0, 0);
 
   dev = grub_device_open (0);
-  if (dev && dev->disk && dev->disk->dev 
+  if (dev && dev->disk && dev->disk->dev
       && dev->disk->dev->id == GRUB_DISK_DEVICE_BIOSDISK_ID)
     {
       drivemap_node_t *curnode = map_head;
@@ -403,8 +404,8 @@ GRUB_MOD_INIT (drivemap)
   cmd = grub_register_extcmd ("drivemap", grub_cmd_drivemap,
 					GRUB_COMMAND_FLAG_BOTH,
 					"drivemap"
-					" -l | -r | [-s] grubdev osdisk",
-					"Manage the BIOS drive mappings",
+					N_("-l | -r | [-s] grubdev osdisk."),
+					N_("Manage the BIOS drive mappings."),
 					options);
   drivemap_hook =
     grub_loader_register_preboot_hook (&install_int13_handler,

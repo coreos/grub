@@ -24,29 +24,30 @@
 #include <grub/mm.h>
 #include <grub/lib/hexdump.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] = {
-  {"apm",             'B', 0, "set Advanced Power Management\n"
-			      "(1=low, ..., 254=high, 255=off)",
+  {"apm",             'B', 0, N_("Set Advanced Power Management\n"
+			      "(1=low, ..., 254=high, 255=off)."),
 			      0, ARG_TYPE_INT},
-  {"power",           'C', 0, "check power mode", 0, ARG_TYPE_NONE},
-  {"security-freeze", 'F', 0, "freeze ATA security settings until reset",
+  {"power",           'C', 0, N_("Check power mode."), 0, ARG_TYPE_NONE},
+  {"security-freeze", 'F', 0, N_("Freeze ATA security settings until reset."),
 			      0, ARG_TYPE_NONE},
-  {"health",          'H', 0, "check SMART health status", 0, ARG_TYPE_NONE},
-  {"aam",             'M', 0, "set Automatic Acoustic Management\n"
-			      "(0=off, 128=quiet, ..., 254=fast)",
+  {"health",          'H', 0, N_("Check SMART health status."), 0, ARG_TYPE_NONE},
+  {"aam",             'M', 0, N_("Set Automatic Acoustic Management\n"
+			      "(0=off, 128=quiet, ..., 254=fast)."),
 			      0, ARG_TYPE_INT},
-  {"standby-timeout", 'S', 0, "set standby timeout\n"
-			      "(0=off, 1=5s, 2=10s, ..., 240=20m, 241=30m, ...)",
+  {"standby-timeout", 'S', 0, N_("Set standby timeout\n"
+			      "(0=off, 1=5s, 2=10s, ..., 240=20m, 241=30m, ...)."),
 			      0, ARG_TYPE_INT},
-  {"standby",         'y', 0, "set drive to standby mode", 0, ARG_TYPE_NONE},
-  {"sleep",           'Y', 0, "set drive to sleep mode", 0, ARG_TYPE_NONE},
-  {"identify",        'i', 0, "print drive identity and settings",
+  {"standby",         'y', 0, N_("Set drive to standby mode."), 0, ARG_TYPE_NONE},
+  {"sleep",           'Y', 0, N_("Set drive to sleep mode."), 0, ARG_TYPE_NONE},
+  {"identify",        'i', 0, N_("Print drive identity and settings."),
 			      0, ARG_TYPE_NONE},
-  {"dumpid",          'I', 0, "dump contents of ATA IDENTIFY sector",
+  {"dumpid",          'I', 0, N_("Dump contents of ATA IDENTIFY sector."),
 			       0, ARG_TYPE_NONE},
-  {"smart",            -1, 0, "disable/enable SMART (0/1)", 0, ARG_TYPE_INT},
-  {"quiet",           'q', 0, "do not print messages", 0, ARG_TYPE_NONE},
+  {"smart",            -1, 0, N_("Disable/enable SMART (0/1)."), 0, ARG_TYPE_INT},
+  {"quiet",           'q', 0, N_("Do not print messages."), 0, ARG_TYPE_NONE},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -410,8 +411,8 @@ GRUB_MOD_INIT(hdparm)
 {
   cmd = grub_register_extcmd ("hdparm", grub_cmd_hdparm,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      "hdparm [OPTIONS] DISK",
-			      "Get/set ATA disk parameters.", options);
+			      N_("[OPTIONS] DISK"),
+			      N_("Get/set ATA disk parameters."), options);
 }
 
 GRUB_MOD_FINI(hdparm)

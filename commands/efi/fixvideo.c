@@ -22,6 +22,7 @@
 #include <grub/file.h>
 #include <grub/pci.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static struct grub_video_patch
 {
@@ -38,11 +39,11 @@ static struct grub_video_patch
   };
 
 static int NESTED_FUNC_ATTR
-scan_card (int bus, int dev, int func, grub_pci_id_t pciid)
+scan_card (grub_pci_device_t dev, grub_pci_id_t pciid)
 {
   grub_pci_address_t addr;
 
-  addr = grub_pci_make_address (bus, dev, func, 2);
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
   if (grub_pci_read_byte (addr + 3) == 0x3)
     {
       struct grub_video_patch *p = video_patches;
@@ -99,7 +100,7 @@ static grub_command_t cmd_fixvideo;
 GRUB_MOD_INIT(fixvideo)
 {
   cmd_fixvideo = grub_register_command ("fix_video", grub_cmd_fixvideo,
-					0, "Fix video problem.");
+					0, N_("Fix video problem."));
 
 }
 

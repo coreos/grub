@@ -1,0 +1,40 @@
+
+# -*- makefile -*-
+
+COMMON_CFLAGS += -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
+
+# Images.
+kernel_img_HEADERS += cpu/cache.h
+
+# Scripts.
+sbin_SCRIPTS = 
+bin_SCRIPTS = 
+
+# For grub-mkimage.
+bin_UTILITIES += grub-mkimage
+grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkrawimage.c util/misc.c \
+	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
+grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(LINK_BASE)
+util/grub-mkrawimage.c_DEPENDENCIES = Makefile
+
+# For serial.mod.
+pkglib_MODULES += serial.mod
+serial_mod_SOURCES = term/serial.c
+serial_mod_CFLAGS = $(COMMON_CFLAGS)
+serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For relocator.mod.
+pkglib_MODULES += relocator.mod
+relocator_mod_SOURCES = lib/$(target_cpu)/relocator.c lib/$(target_cpu)/relocator_asm.S
+relocator_mod_CFLAGS = $(COMMON_CFLAGS)
+relocator_mod_ASFLAGS = $(COMMON_ASFLAGS)
+relocator_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += multiboot2.mod
+multiboot2_mod_SOURCES = loader/multiboot.c \
+			 loader/multiboot_mbi2.c
+multiboot2_mod_CFLAGS = $(COMMON_CFLAGS) -DGRUB_USE_MULTIBOOT2
+multiboot2_mod_LDFLAGS = $(COMMON_LDFLAGS)
+multiboot2_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+include $(srcdir)/conf/common.mk

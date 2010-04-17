@@ -1,7 +1,7 @@
 /* gzio.c - decompression support for gzip */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2005,2006,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -1121,14 +1121,13 @@ grub_gzio_open (grub_file_t io, int transparent)
   if (! file)
     return 0;
 
-  gzio = grub_malloc (sizeof (*gzio));
+  gzio = grub_zalloc (sizeof (*gzio));
   if (! gzio)
     {
       grub_free (file);
       return 0;
     }
 
-  grub_memset (gzio, 0, sizeof (*gzio));
   gzio->file = io;
 
   file->device = io->device;

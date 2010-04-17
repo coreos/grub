@@ -1,7 +1,7 @@
 /* grub-probe.c - probe device information for a given path */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -82,18 +82,26 @@ grub_refresh (void)
 static void
 probe_partmap (grub_disk_t disk)
 {
+  grub_partition_t part;
+
   if (disk->partition == NULL)
     {
-      grub_util_info ("No partition map found for %s", disk->name);
+      grub_util_info ("no partition map found for %s", disk->name);
       return;
     }
 
-  printf ("%s\n", disk->partition->partmap->name);
+  for (part = disk->partition; part; part = part->parent)
+    printf ("%s\n", part->partmap->name);
 }
 
 static int
 probe_raid_level (grub_disk_t disk)
 {
+  /* disk might be NULL in the case of a LVM physical volume with no LVM
+     signature.  Ignore such cases here.  */
+  if (!disk)
+    return -1;
+
   if (disk->dev->id != GRUB_DISK_DEVICE_RAID_ID)
     return -1;
 
@@ -111,19 +119,19 @@ probe (const char *path, char *device_name)
 
   if (path == NULL)
     {
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__)
       if (! grub_util_check_char_device (device_name))
-        grub_util_error ("%s is not a character device.\n", device_name);
+        grub_util_error ("%s is not a character device", device_name);
 #else
       if (! grub_util_check_block_device (device_name))
-        grub_util_error ("%s is not a block device.\n", device_name);
+        grub_util_error ("%s is not a block device", device_name);
 #endif
     }
   else
     device_name = grub_guess_root_device (path);
 
   if (! device_name)
-    grub_util_error ("cannot find a device for %s.\n", path);
+    grub_util_error ("cannot find a device for %s (is /dev mounted?)", path);
 
   if (print == PRINT_DEVICE)
     {
@@ -133,7 +141,7 @@ probe (const char *path, char *device_name)
 
   drive_name = grub_util_get_grub_dev (device_name);
   if (! drive_name)
-    grub_util_error ("Cannot find a GRUB drive for %s.  Check your device.map.\n", device_name);
+    grub_util_error ("cannot find a GRUB drive for %s.  Check your device.map", device_name);
 
   if (print == PRINT_DRIVE)
     {
@@ -238,33 +246,36 @@ probe (const char *path, char *device_name)
 
   if (print == PRINT_FS)
     {
-      struct stat st;
+      if (path)
+        {
+	  struct stat st;
 
-      stat (path, &st);
+	  stat (path, &st);
 
-      if (S_ISREG (st.st_mode))
-	{
-	  /* Regular file.  Verify that we can read it properly.  */
+	  if (S_ISREG (st.st_mode))
+	    {
+	      /* Regular file.  Verify that we can read it properly.  */
 
-	  grub_file_t file;
-	  char *rel_path;
-	  grub_util_info ("reading %s via OS facilities", path);
-	  filebuf_via_sys = grub_util_read_image (path);
+	      grub_file_t file;
+	      char *rel_path;
+	      grub_util_info ("reading %s via OS facilities", path);
+	      filebuf_via_sys = grub_util_read_image (path);
 
-	  rel_path = make_system_path_relative_to_its_root (path);
-	  asprintf (&grub_path, "(%s)%s", drive_name, rel_path);
-	  free (rel_path);
-	  grub_util_info ("reading %s via GRUB facilities", grub_path);
-	  file = grub_file_open (grub_path);
-	  if (! file)
-	    grub_util_error ("can not open %s via GRUB facilities", grub_path);
-	  filebuf_via_grub = xmalloc (file->size);
-	  grub_file_read (file, filebuf_via_grub, file->size);
+	      rel_path = make_system_path_relative_to_its_root (path);
+	      grub_path = xasprintf ("(%s)%s", drive_name, rel_path);
+	      free (rel_path);
+	      grub_util_info ("reading %s via GRUB facilities", grub_path);
+	      file = grub_file_open (grub_path);
+	      if (! file)
+		grub_util_error ("cannot open %s via GRUB facilities", grub_path);
+	      filebuf_via_grub = xmalloc (file->size);
+	      grub_file_read (file, filebuf_via_grub, file->size);
 
-	  grub_util_info ("comparing");
+	      grub_util_info ("comparing");
 
-	  if (memcmp (filebuf_via_grub, filebuf_via_sys, file->size))
-	    grub_util_error ("files differ");
+	      if (memcmp (filebuf_via_grub, filebuf_via_sys, file->size))
+		grub_util_error ("files differ");
+	    }
 	}
 
       printf ("%s\n", fs->name);
@@ -306,7 +317,7 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try ``%s --help'' for more information.\n", program_name);
+	     "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
 Usage: %s [OPTION]... [PATH|DEVICE]\n\
@@ -335,9 +346,8 @@ main (int argc, char *argv[])
   char *argument;
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+
+  grub_util_init_nls ();
 
   /* Check for options.  */
   while (1)

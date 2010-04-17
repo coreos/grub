@@ -68,12 +68,6 @@ grub_exit (void)
 }
 
 void
-grub_arch_sync_caches (void *address __attribute__ ((unused)),
-		       grub_size_t len __attribute__ ((unused)))
-{
-}
-
-void
 grub_machine_init (void)
 {
   /* Initialize the console as early as possible.  */

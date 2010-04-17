@@ -268,9 +268,19 @@ void grub_efiemu_free_syms (void);
 grub_err_t grub_efiemu_write_value (void * addr, grub_uint32_t value,
 				    int plus_handle,
 				    int minus_handle, int ptv_needed, int size);
+grub_err_t grub_efiemu_write_sym_markers (void);
 grub_err_t grub_efiemu_pnvram (void);
 grub_err_t grub_efiemu_prepare (void);
 char *grub_efiemu_get_default_core_name (void);
 void grub_efiemu_pnvram_cmd_unregister (void);
 grub_err_t grub_efiemu_autocore (void);
+grub_err_t grub_efiemu_crc32 (void);
+grub_err_t grub_efiemu_crc64 (void);
+grub_err_t
+grub_efiemu_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
+				     grub_efi_uintn_t descriptor_size,
+				     grub_efi_uint32_t descriptor_version
+				     __attribute__ ((unused)),
+				     grub_efi_memory_descriptor_t *virtual_map);
+
 #endif /* ! GRUB_EFI_EMU_HEADER */

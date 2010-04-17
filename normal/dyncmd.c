@@ -23,6 +23,7 @@
 #include <grub/misc.h>
 #include <grub/command.h>
 #include <grub/normal.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_dyncmd_dispatcher (struct grub_command *cmd,
@@ -59,31 +60,39 @@ grub_dyncmd_dispatcher (struct grub_command *cmd,
 
 /* Read the file command.lst for auto-loading.  */
 void
-read_command_list (void)
+read_command_list (const char *prefix)
 {
-  const char *prefix;
-  static int first_time = 1;
-
-  /* Make sure that this function does not get executed twice.  */
-  if (! first_time)
-    return;
-  first_time = 0;
-
-  prefix = grub_env_get ("prefix");
   if (prefix)
     {
       char *filename;
 
-      filename = grub_malloc (grub_strlen (prefix) + sizeof ("/command.lst"));
+      filename = grub_xasprintf ("%s/command.lst", prefix);
       if (filename)
 	{
 	  grub_file_t file;
 
-	  grub_sprintf (filename, "%s/command.lst", prefix);
 	  file = grub_file_open (filename);
 	  if (file)
 	    {
 	      char *buf = NULL;
+	      grub_command_t ptr, last = 0, next;
+
+	      /* Override previous commands.lst.  */
+	      for (ptr = grub_command_list; ptr; ptr = next)
+		{
+		  next = ptr->next;
+		  if (ptr->func == grub_dyncmd_dispatcher)
+		    {
+		      if (last)
+			last->next = ptr->next;
+		      else
+			grub_command_list = ptr->next;
+		      grub_free (ptr);
+		    }
+		  else
+		    last = ptr;
+		}
+
 	      for (;; grub_free (buf))
 		{
 		  char *p, *name, *modname;
@@ -132,7 +141,7 @@ read_command_list (void)
 
 		  cmd = grub_register_command_prio (name,
 						    grub_dyncmd_dispatcher,
-						    0, "not loaded", prio);
+						    0, N_("not loaded"), prio);
 		  if (! cmd)
 		    {
 		      grub_free (name);

@@ -24,8 +24,12 @@ bindir=@bindir@
 sbindir=@sbindir@
 pkgdatadir=${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`
 
-grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
-grub_mkrelpath=${bindir}/`echo grub-mkrelpath | sed ${transform}`
+if test "x$grub_probe" = x; then
+  grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
+fi
+if test "x$grub_mkrelpath" = x; then
+  grub_mkrelpath=${bindir}/`echo grub-mkrelpath | sed ${transform}`
+fi
 
 grub_warn ()
 {
@@ -90,13 +94,22 @@ convert_system_path_to_grub_path ()
   echo ${drive}${relative_path}
 }
 
+save_default_entry ()
+{
+  if [ "x${GRUB_SAVEDEFAULT}" = "xtrue" ] ; then
+    cat << EOF
+savedefault
+EOF
+  fi
+}
+
 prepare_grub_to_access_device ()
 {
   device=$1
 
   # Abstraction modules aren't auto-loaded.
   abstraction="`${grub_probe} --device ${device} --target=abstraction`"
-  for module in ${abstraction} ; do 
+  for module in ${abstraction} ; do
     echo "insmod ${module}"
   done
 
@@ -107,7 +120,7 @@ prepare_grub_to_access_device ()
 
   # If there's a filesystem UUID that GRUB is capable of identifying, use it;
   # otherwise set root as per value in device.map.
-  echo "set root=`${grub_probe} --device ${device} --target=drive`"
+  echo "set root='`${grub_probe} --device ${device} --target=drive`'"
   if fs_uuid="`${grub_probe} --device ${device} --target=fs_uuid 2> /dev/null`" ; then
     echo "search --no-floppy --fs-uuid --set ${fs_uuid}"
   fi
