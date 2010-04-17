@@ -203,21 +203,31 @@ if test -e "${pc_dir}" ; then
 		--embedded-boot ${embed_img}"
 fi
 
+if test -e "${efi64_dir}" || test -e "${efi32_dir}"; then
+    efi_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
+    mkdir -p "${efi_dir}/efi/boot"
+else
+    efi_dir=
+fi
+
 # build bootx64.efi
 if test -e "${efi64_dir}" ; then
     echo "Generates bootx64.efi"
-    mkdir -p ${iso9660_dir}/efi/boot
-    grub-mkimage -d ${efi64_dir}/ -o ${iso9660_dir}/efi/boot/bootx64.efi --prefix=/boot/grub/x86_64-efi \
+    grub-mkimage -d "${efi64_dir}" -o "${efi_dir}"/efi/boot/bootx64.efi --prefix=/boot/grub/x86_64-efi \
         search iso9660 configfile sh 
 
-    modules="$(cat ${efi64_dir}/partmap.lst) ${modules}"
+    modules="$(cat "${efi64_dir}"/partmap.lst) ${modules}"
     (for i in ${modules} ; do
-	if [ "x$i" != xkernel.mod ]; then
-            echo "insmod $i"
-	fi
+        echo "insmod $i"
     done ; \
     echo "source /boot/grub/grub.cfg") \
-    > ${iso9660_dir}/boot/grub/x86_64-efi/grub.cfg
+    > "${iso9660_dir}"/boot/grub/x86_64-efi/grub.cfg
+fi
+
+if test x"${efi_dir}" != x; then
+    mformat -C -f 2880 -L 16 -i "${iso9660_dir}"/efi.img ::
+    mcopy -s -i "${iso9660_dir}"/efi.img ${efi_dir}/efi ::/
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} --efi-boot efi.img"
 fi
 
 # build iso image
