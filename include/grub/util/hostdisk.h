@@ -20,8 +20,11 @@
 #ifndef GRUB_BIOSDISK_MACHINE_UTIL_HEADER
 #define GRUB_BIOSDISK_MACHINE_UTIL_HEADER	1
 
+#include <grub/disk.h>
+
 void grub_util_biosdisk_init (const char *dev_map);
 void grub_util_biosdisk_fini (void);
 char *grub_util_biosdisk_get_grub_dev (const char *os_dev);
+const char *grub_util_biosdisk_get_osdev (grub_disk_t disk);
 
 #endif /* ! GRUB_BIOSDISK_MACHINE_UTIL_HEADER */
