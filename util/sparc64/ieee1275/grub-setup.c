@@ -441,6 +441,7 @@ init_info (struct grub_setup_info *gp)
   gp->dev_map = NULL;
   gp->root_dev = NULL;
   gp->prefix = NULL;
+  gp->dest_dev = NULL;
 }
 
 static int

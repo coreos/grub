@@ -25,13 +25,6 @@ kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS += $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x200000,-Bstatic
 
-# Utilities.
-sbin_UTILITIES = grub-ofpathname
-
-# For grub-ofpathname.
-grub_ofpathname_SOURCES = util/ieee1275/grub-ofpathname.c \
-	util/ieee1275/ofpath.c util/misc.c gnulib/progname.c
-
 # Scripts.
 sbin_SCRIPTS = grub-install
 bin_SCRIPTS = grub-mkrescue
