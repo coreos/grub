@@ -115,7 +115,7 @@ setup (const char *prefix, const char *dir,
   grub_uint16_t core_sectors;
   grub_device_t root_dev, dest_dev;
   char *boot_devpath;
-  grub_disk_addr_t *kernel_sector;
+  grub_disk_addr_t *kernel_byte;
   struct boot_blocklist *first_block, *block;
   char *tmp_img;
   int i;
@@ -187,9 +187,9 @@ setup (const char *prefix, const char *dir,
   boot_devpath = (char *) (boot_img
 			   + GRUB_BOOT_AOUT_HEADER_SIZE
 			   + GRUB_BOOT_MACHINE_BOOT_DEVPATH);
-  kernel_sector = (grub_disk_addr_t *) (boot_img
-					+ GRUB_BOOT_AOUT_HEADER_SIZE
-					+ GRUB_BOOT_MACHINE_KERNEL_SECTOR);
+  kernel_byte = (grub_disk_addr_t *) (boot_img
+				      + GRUB_BOOT_AOUT_HEADER_SIZE
+				      + GRUB_BOOT_MACHINE_KERNEL_BYTE);
 
   core_path = grub_util_get_path (dir, core_file);
   core_size = grub_util_get_image_size (core_path);
@@ -350,7 +350,7 @@ setup (const char *prefix, const char *dir,
   free (core_path);
   free (tmp_img);
 
-  *kernel_sector = grub_cpu_to_be64 (first_sector);
+  *kernel_byte = grub_cpu_to_be64 (first_sector << GRUB_DISK_SECTOR_BITS);
 
   grub_util_info ("boot device path %s, prefix is %s, dest is %s",
 		  boot_devpath, prefix, dest);
