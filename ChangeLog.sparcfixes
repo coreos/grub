@@ -1,0 +1,19 @@
+2010-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* boot/sparc64/ieee1275/boot.S: Various size-reducing changes.
+	Retrieve chosen/bootpath if bootpath isn't hardcoded.
+	* conf/sparc64-ieee1275.rmk (grub_setup_SOURCES): Add
+	util/ieee1275/ofpath.c.
+	* util/sparc64/ieee1275/grub-ofpathname.c: Renamed to ...
+	* util/ieee1275/grub-ofpathname.c: ... this. All users updated
+	* include/grub/sparc64/ieee1275/boot.h
+	(GRUB_BOOT_MACHINE_KERNEL_SECTOR): Renamed to ...
+	(GRUB_BOOT_MACHINE_KERNEL_BYTE): ...this. Moved 8 bytes lower.
+	* util/hostdisk.c (grub_util_biosdisk_get_osdev): New function.
+	* util/ieee1275/ofpath.c (grub_util_devname_to_ofpath): Make argument
+	const char *.
+	* util/sparc64/ieee1275/grub-setup.c (compute_dest_ofpath): Removed.
+	(setup): Use KERNEL_BYTE instead of KERNEL_SECTOR.
+	Use grub_util_devname_to_ofpath. Zero-fill boot_devpath on same disk
+	install.
+
