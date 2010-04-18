@@ -360,7 +360,7 @@ else
 if test -f "${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"; then
   TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
   TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}  -Wl,-Ttext,"
-  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
+  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc  -Wl,-Ttext,"
 else
   TARGET_IMG_LDSCRIPT=
   TARGET_IMG_LDFLAGS='-Wl,-N  -Wl,-Ttext,'
@@ -515,7 +515,7 @@ grub_PROG_LD_BUILD_ID_NONE
 if test "x$target_cpu" = xi386; then
   if test ! -z "$TARGET_IMG_LDSCRIPT"; then
     # Check symbols provided by linker script.
-    CFLAGS="$TARGET_CFLAGS -nostdlib $TARGET_IMG_LDFLAGS_AC -Wl,-Ttext,8000,--defsym,___main=0x8100"
+    CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC}8000,--defsym,___main=0x8100"
   fi
   if test "x$TARGET_APPLE_CC" != x1 ; then
     grub_CHECK_BSS_START_SYMBOL

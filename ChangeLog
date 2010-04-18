@@ -1,3 +1,12 @@
+2010-04-18  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* util/grub-mkconfig.in: Corrected two == equality tests.
+	Set grub_prefix as in grub-install for NetBSD and OpenBSD.
+	* configure.ac: All definitions and uses of TARGET_IMG_LDFLAGS_AC now
+	expect a number appended to it.
+	* acinclude.m4 (grub_PROG_OBJCOPY_ABSOLUTE): ${TARGET_IMG_LDFLAGS_AC}
+	expects a number appended to it.
+
 2010-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* po/POTFILES: Renamed multiboot_loader.c to multiboot.c
