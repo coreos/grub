@@ -152,6 +152,22 @@ boot_continue:
 	call	console_write
 	 mov	GRUB_NAME_LEN, %o3
 
+	GET_ABS(boot_path, %o3)
+	ldub	[%o3], %o1
+	brnz,pn	%o1, bootpath_known
+	 mov	4, %g1
+
+	/* getprop(chosen_node, "bootpath", &buffer, buffer_size) */
+	 GET_ABS(prom_getprop_name, %o0)
+	mov	1, %o5
+	mov	CHOSEN_NODE_REG, %o1
+	GET_ABS(prom_bootpath_name, %o2)
+	mov	(kernel_sector - boot_path), %o4
+	call	prom_call
+	 stx	%g1, [%l1 + 256]
+
+bootpath_known:	
+
 	/* Open up the boot_path, and use that handle to read the
 	 * first block of the GRUB kernel image.
 	 *

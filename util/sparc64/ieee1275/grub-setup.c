@@ -114,7 +114,7 @@ setup (const char *prefix, const char *dir,
   size_t boot_size, core_size;
   grub_uint16_t core_sectors;
   grub_device_t root_dev, dest_dev;
-  char *boot_devpath, *dest_ofpath;
+  char *boot_devpath;
   grub_disk_addr_t *kernel_sector;
   struct boot_blocklist *first_block, *block;
   char *tmp_img;
@@ -218,11 +218,6 @@ setup (const char *prefix, const char *dir,
   dest_dev = grub_device_open (dest);
   if (! dest_dev)
     grub_util_error ("%s", grub_errmsg);
-
-  dest_ofpath
-    = grub_util_devname_to_ofpath (grub_util_biosdisk_get_osdev (dest_dev->disk));
-
-  grub_util_info ("dest_ofpath is `%s'", dest_ofpath);
 
   grub_util_info ("setting the root device to `%s'", root);
   if (grub_env_set ("root", root) != GRUB_ERR_NONE)
@@ -332,14 +327,30 @@ setup (const char *prefix, const char *dir,
       != (grub_ssize_t) core_size - GRUB_DISK_SECTOR_SIZE)
     grub_util_error ("failed to read the rest sectors of the core image");
 
+  if (file->device->disk->id != dest_dev->disk->id)
+    {
+      const char *dest_ofpath;
+      dest_ofpath
+	= grub_util_devname_to_ofpath (grub_util_biosdisk_get_osdev (file->device->disk));
+      grub_util_info ("dest_ofpath is `%s'", dest_ofpath);
+      strncpy (boot_devpath, dest_ofpath, GRUB_BOOT_MACHINE_BOOT_DEVPATH_END
+	       - GRUB_BOOT_MACHINE_BOOT_DEVPATH - 1);
+      boot_devpath[GRUB_BOOT_MACHINE_BOOT_DEVPATH_END
+		   - GRUB_BOOT_MACHINE_BOOT_DEVPATH - 1] = 0;
+    }
+  else
+    {
+      grub_util_info ("non cross-disk install");
+      memset (boot_devpath, 0, GRUB_BOOT_MACHINE_BOOT_DEVPATH_END
+	      - GRUB_BOOT_MACHINE_BOOT_DEVPATH);
+    }
+
   grub_file_close (file);
 
   free (core_path);
   free (tmp_img);
 
   *kernel_sector = grub_cpu_to_be64 (first_sector);
-
-  strcpy(boot_devpath, dest_ofpath);
 
   grub_util_info ("boot device path %s, prefix is %s, dest is %s",
 		  boot_devpath, prefix, dest);
