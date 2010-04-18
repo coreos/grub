@@ -1,5 +1,9 @@
 2010-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/POTFILES: Renamed multiboot_loader.c to multiboot.c
+
+2010-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/hostdisk.c (make_device_name): Change to new partition naming.
 
 2010-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
