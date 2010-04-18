@@ -70,7 +70,7 @@ grub_setup_SOURCES = util/sparc64/ieee1275/grub-setup.c util/hostdisk.c	\
 	grub_setup_init.c
 
 # For grub-ofpathname.
-grub_ofpathname_SOURCES = util/sparc64/ieee1275/grub-ofpathname.c \
+grub_ofpathname_SOURCES = util/ieee1275/grub-ofpathname.c \
 	util/ieee1275/ofpath.c util/misc.c gnulib/progname.c
 
 # Scripts.
