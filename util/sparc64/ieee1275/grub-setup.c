@@ -35,6 +35,7 @@
 #include <grub/term.h>
 #include <grub/util/raid.h>
 #include <grub/util/lvm.h>
+#include <grub/util/ofpath.h>
 
 #include <grub_setup_init.h>
 
@@ -101,28 +102,6 @@ void
 grub_refresh (void)
 {
   fflush (stdout);
-}
-
-static char *compute_dest_ofpath (const char *dest)
-{
-  int len = strlen (dest);
-  char *res, *p, c;
-
-  res = xmalloc (len);
-  p = res;
-  while ((c = *dest++) != '\0')
-    {
-      if (c == '\\' && *dest == ',')
-	{
-	  *p++ = ',';
-	  dest++;
-	}
-      else
-	*p++ = c;
-    }
-  *p++ = '\0';
-
-  return res;
 }
 
 static void
@@ -195,8 +174,6 @@ setup (const char *prefix, const char *dir,
       last_length = length;
     }
 
-  dest_ofpath = compute_dest_ofpath (dest);
-
   /* Read the boot image by the OS service.  */
   boot_path = grub_util_get_path (dir, boot_file);
   boot_size = grub_util_get_image_size (boot_path);
@@ -229,8 +206,7 @@ setup (const char *prefix, const char *dir,
 					   + GRUB_DISK_SECTOR_SIZE
 					   - sizeof (*block));
 
-  grub_util_info ("root is `%s', dest is `%s', and dest_ofpath is `%s'",
-		  root, dest, dest_ofpath);
+  grub_util_info ("root is `%s', dest is `%s'", root, dest);
 
   /* Open the root device and the destination device.  */
   grub_util_info ("Opening root");
@@ -242,6 +218,11 @@ setup (const char *prefix, const char *dir,
   dest_dev = grub_device_open (dest);
   if (! dest_dev)
     grub_util_error ("%s", grub_errmsg);
+
+  dest_ofpath
+    = grub_util_devname_to_ofpath (grub_util_biosdisk_get_osdev (dest_dev->disk));
+
+  grub_util_info ("dest_ofpath is `%s'", dest_ofpath);
 
   grub_util_info ("setting the root device to `%s'", root);
   if (grub_env_set ("root", root) != GRUB_ERR_NONE)
@@ -449,7 +430,6 @@ init_info (struct grub_setup_info *gp)
   gp->dev_map = NULL;
   gp->root_dev = NULL;
   gp->prefix = NULL;
-  gp->dest_dev = NULL;
 }
 
 static int

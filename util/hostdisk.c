@@ -1352,3 +1352,9 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
   return make_device_name (drive, -1, -1);
 #endif
 }
+
+const char *
+grub_util_biosdisk_get_osdev (grub_disk_t disk)
+{
+  return map[disk->id].device;
+}

@@ -50,6 +50,7 @@ grub_mkimage_SOURCES = util/grub-mkrawimage.c util/misc.c \
 # For grub-setup.
 util/sparc64/ieee1275/grub-setup.c_DEPENDENCIES = grub_setup_init.h
 grub_setup_SOURCES = util/sparc64/ieee1275/grub-setup.c util/hostdisk.c	\
+	util/ieee1275/ofpath.c \
 	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
 	kern/err.c kern/misc.c kern/parser.c kern/partition.c	\
 	kern/file.c kern/fs.c kern/env.c kern/list.c		\
