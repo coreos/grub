@@ -24,10 +24,10 @@ sbindir=@sbindir@
 libdir=@libdir@
 sysconfdir=@sysconfdir@
 package_version=@PACKAGE_VERSION@
+host_os=@host_os@
 datarootdir=@datarootdir@
 datadir=@datadir@
 pkgdatadir=${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`
-grub_prefix=`echo /boot/grub | sed ${transform}`
 grub_cfg=""
 grub_mkconfig_dir=${sysconfdir}/grub.d
 
@@ -74,6 +74,18 @@ for option in "$@"; do
 done
 
 . ${libdir}/grub/grub-mkconfig_lib
+
+case "$host_os" in
+netbsd* | openbsd*)
+    # Because /boot is used for the boot block in NetBSD and OpenBSD, use /grub
+    # instead of /boot/grub.
+    grub_prefix=`echo /grub | sed ${transform}`
+    ;;
+*)
+    # Use /boot/grub by default.
+    grub_prefix=`echo /boot/grub | sed ${transform}`
+    ;;
+esac
 
 if [ "x$EUID" = "x" ] ; then
   EUID=`id -u`
@@ -141,13 +153,13 @@ if [ "x${GRUB_TERMINAL}" != "x" ] ; then
 fi
 
 termoutdefault=0
-if [ "x${GRUB_TERMINAL_OUTPUT}" == x ]; then
+if [ "x${GRUB_TERMINAL_OUTPUT}" = "x" ]; then
     GRUB_TERMINAL_OUTPUT=gfxterm;
     termoutdefault=1;
 fi
 
 for x in ${GRUB_TERMINAL_OUTPUT}; do
-    if [ x${x} == xgfxterm ]; then
+    if [ "x${x}" = "xgfxterm" ]; then
         # If this platform supports gfxterm, try to use it.
 	if ! test -e ${grub_prefix}/gfxterm.mod ; then
 	    if [ "x$termoutdefault" != "x1" ]; then
