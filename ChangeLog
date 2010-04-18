@@ -1,3 +1,7 @@
+2010-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/hostdisk.c (make_device_name): Change to new partition naming.
+
 2010-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* disk/lvm.c (grub_lvm_memberlist): Issue an error if pv->disk = 0.

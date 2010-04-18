@@ -861,7 +861,7 @@ make_device_name (int drive, int dos_part, int bsd_part)
     dos_part_str = xasprintf (",%d", dos_part + 1);
 
   if (bsd_part >= 0)
-    bsd_part_str = xasprintf (",%c", bsd_part + 'a');
+    bsd_part_str = xasprintf (",%d", bsd_part + 1);
 
   ret = xasprintf ("%s%s%s", map[drive].drive,
                    dos_part_str ? : "",
