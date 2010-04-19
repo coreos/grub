@@ -1,5 +1,9 @@
 2010-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* fs/udf.c (grub_udf_iterate_dir): Silence a spurious warning.
+
+2010-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* fs/udf.c (grub_udf_iterate_dir): Decode the Unicode filenames.
 
 2010-04-18  Vladimir Serbinenko  <phcoder@gmail.com>

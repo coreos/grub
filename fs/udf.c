@@ -749,7 +749,7 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
 	  grub_uint8_t raw[dirent.file_ident_length];
 	  grub_uint16_t utf16[dirent.file_ident_length - 1];
 	  grub_uint8_t filename[dirent.file_ident_length * 2];
-	  grub_size_t utf16len;
+	  grub_size_t utf16len = 0;
 
 	  type = ((dirent.characteristics & GRUB_UDF_FID_CHAR_DIRECTORY) ?
 		  (GRUB_FSHELP_DIR) : (GRUB_FSHELP_REG));
