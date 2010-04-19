@@ -1,3 +1,12 @@
+2010-04-19  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	Add grub-mkconfig support for NetBSD.
+
+	* util/grub.d/10_netbsd.in: grub-mkconfig helper script for NetBSD.
+	* util/grub-mkconfig.in: export new NetBSD specific variables.
+	* po/POTFILES-shell: added 10_netbsd.in.
+	* util/grub-mkconfig_lib.in: check for gettext binary, default to echo.
+
 2010-04-19  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Fix emu build with grub-emu-pci and grub-emu-modules.
