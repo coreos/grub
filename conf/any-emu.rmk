@@ -14,7 +14,7 @@ kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c kern/env.c	\
 	util/hostdisk.c util/getroot.c util/mm.c util/time.c		\
 	\
 	gnulib/progname.c util/hostfs.c disk/host.c
-kernel_img_HEADERS += datetime.h
+kernel_img_HEADERS += datetime.h util/misc.h
 kernel_img_CFLAGS = $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Wno-undef -I$(srcdir)/gnulib
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 TARGET_NO_STRIP = yes
@@ -88,6 +88,7 @@ pkglib_MODULES += pci.mod
 pci_mod_SOURCES = util/pci.c commands/lspci.c
 pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 grub_emu_LDFLAGS += $(LIBPCIACCESS)
+kernel_img_HEADERS += libpciaccess.h
 endif
 
 include $(srcdir)/conf/common.mk
