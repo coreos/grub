@@ -1,3 +1,12 @@
+2010-04-19  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix emu build with grub-emu-pci and grub-emu-modules.
+
+	* include/grub/util/misc.h: Export grub_util_{info,error,warn}
+	functions.
+	* include/grub/libpciaccess.h: New file.
+	* conf/any-emu.rmk: Update kernel headers for emu build.
+
 2010-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* fs/udf.c (grub_udf_iterate_dir): Silence a spurious warning.
