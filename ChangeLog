@@ -1,3 +1,7 @@
+2010-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/udf.c (grub_udf_iterate_dir): Decode the Unicode filenames.
+
 2010-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* boot/sparc64/ieee1275/boot.S: Various size-reducing changes.

@@ -25,6 +25,7 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/fshelp.h>
+#include <grub/charset.h>
 
 #define GRUB_UDF_MAX_PDS		2
 #define GRUB_UDF_MAX_PMS		6
@@ -745,19 +746,41 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
       else
 	{
 	  enum grub_fshelp_filetype type;
-	  char filename[dirent.file_ident_length + 1];
+	  grub_uint8_t raw[dirent.file_ident_length];
+	  grub_uint16_t utf16[dirent.file_ident_length - 1];
+	  grub_uint8_t filename[dirent.file_ident_length * 2];
+	  grub_size_t utf16len;
 
 	  type = ((dirent.characteristics & GRUB_UDF_FID_CHAR_DIRECTORY) ?
 		  (GRUB_FSHELP_DIR) : (GRUB_FSHELP_REG));
 
 	  if ((grub_udf_read_file (dir, 0, offset,
-				   dirent.file_ident_length, filename))
+				   dirent.file_ident_length,
+				   (char *) raw))
 	      != dirent.file_ident_length)
 	    return 0;
 
-	  filename[dirent.file_ident_length] = 0;
-	  if (hook (&filename[1], type, child))
-	    return 1;
+	  if (raw[0] == 8)
+	    {
+	      unsigned i;
+	      utf16len = dirent.file_ident_length - 1;
+	      for (i = 0; i < utf16len; i++)
+		utf16[i] = raw[i + 1];
+	    }
+	  if (raw[0] == 16)
+	    {
+	      unsigned i;
+	      utf16len = (dirent.file_ident_length - 1) / 2;
+	      for (i = 0; i < utf16len; i++)
+		utf16[i] = (raw[2 * i + 1] << 8) | raw[2*i + 2];
+	    }
+	  if (raw[0] == 8 || raw[0] == 16)
+	    {
+	      *grub_utf16_to_utf8 (filename, utf16, utf16len) = '\0';
+	  
+	      if (hook ((char *) filename, type, child))
+		return 1;
+	    }
 	}
 
       /* Align to dword boundary.  */
