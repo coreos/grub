@@ -692,8 +692,9 @@ grub_freebsd_boot (void)
 	return err;
 
 #ifdef GRUB_MACHINE_EFI
-      if (! grub_efi_finish_boot_services ())
-	grub_fatal ("cannot exit boot services");
+      err = grub_efi_finish_boot_services (NULL, NULL, NULL, NULL, NULL);
+      if (err)
+	return err;
 #endif
 
       pagetable = p;
@@ -723,8 +724,9 @@ grub_freebsd_boot (void)
 	return err;
 
 #ifdef GRUB_MACHINE_EFI
-      if (! grub_efi_finish_boot_services ())
-	grub_fatal ("cannot exit boot services");
+      err = grub_efi_finish_boot_services (NULL, NULL, NULL, NULL, NULL);
+      if (err)
+	return err;
 #endif
 
       grub_memcpy (&stack[9], &bi, sizeof (bi));
@@ -804,8 +806,9 @@ grub_openbsd_boot (void)
   grub_video_set_mode ("text", 0, 0);
 
 #ifdef GRUB_MACHINE_EFI
-  if (! grub_efi_finish_boot_services ())
-    grub_fatal ("cannot exit boot services");
+  err = grub_efi_finish_boot_services (NULL, NULL, NULL, NULL, NULL);
+  if (err)
+    return err;
 #endif
 
   state.eip = entry;
@@ -1009,8 +1012,9 @@ grub_netbsd_boot (void)
     return err;
 
 #ifdef GRUB_MACHINE_EFI
-  if (! grub_efi_finish_boot_services ())
-    grub_fatal ("cannot exit boot services");
+  err = grub_efi_finish_boot_services (NULL, NULL, NULL, NULL, NULL);
+  if (err)
+    return err;
 #endif
 
   state.eip = entry;

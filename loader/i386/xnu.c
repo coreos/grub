@@ -1038,10 +1038,11 @@ grub_xnu_boot (void)
   bootparams->devtree = devtree_target;
   bootparams->devtreelen = devtreelen;
 
-  if (grub_autoefi_get_memory_map (&memory_map_size, memory_map,
-				   &map_key, &descriptor_size,
-				   &descriptor_version) <= 0)
-    return grub_errno;
+  err = grub_efi_finish_boot_services (&memory_map_size, memory_map,
+				       &map_key, &descriptor_size,
+				       &descriptor_version);
+  if (err)
+    return err;
 
   bootparams->efi_system_table = PTR_TO_UINT32 (grub_autoefi_system_table);
 
@@ -1095,9 +1096,6 @@ grub_xnu_boot (void)
   grub_xnu_stack = bootparams->heap_start
     + bootparams->heap_size + GRUB_XNU_PAGESIZE;
   grub_xnu_arg1 = bootparams_target;
-
-  if (! grub_autoefi_exit_boot_services (map_key))
-    return grub_error (GRUB_ERR_IO, "can't exit boot services");
 
   grub_autoefi_set_virtual_address_map (memory_map_size, descriptor_size,
 					descriptor_version,memory_map);

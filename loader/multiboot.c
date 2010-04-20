@@ -126,8 +126,9 @@ grub_multiboot_boot (void)
     return err;
 
 #ifdef GRUB_MACHINE_EFI
-  if (! grub_efi_finish_boot_services ())
-     grub_fatal ("cannot exit boot services");
+  err = grub_efi_finish_boot_services (NULL, NULL, NULL, NULL, NULL);
+  if (err)
+    return err;
 #endif
 
   grub_relocator32_boot (grub_multiboot_relocator, state);

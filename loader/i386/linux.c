@@ -681,15 +681,13 @@ grub_linux_boot (void)
 
 #ifdef GRUB_MACHINE_EFI
   {
-    grub_efi_uintn_t efi_map_key, efi_desc_size;
+    grub_efi_uintn_t efi_desc_size;
     grub_efi_uint32_t efi_desc_version;
-    if (grub_efi_get_memory_map (&efi_mmap_size, efi_mmap_buf, &efi_map_key,
-				 &efi_desc_size, &efi_desc_version) <= 0)
-      grub_fatal ("cannot get memory map");
+    err = grub_efi_finish_boot_services (&efi_mmap_size, efi_mmap_buf, NULL,
+					 &efi_desc_size, &efi_desc_version);
+    if (err)
+      return err;
     
-    if (! grub_efi_exit_boot_services (efi_map_key))
-      grub_fatal ("cannot exit boot services");
-
     /* Note that no boot services are available from here.  */
 
     /* Pass EFI parameters.  */

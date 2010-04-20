@@ -90,6 +90,9 @@ grub_console_putchar (grub_uint32_t c)
   grub_efi_char16_t str[2];
   grub_efi_simple_text_output_interface_t *o;
 
+  if (grub_efi_is_finished)
+    return;
+
   o = grub_efi_system_table->con_out;
 
   /* For now, do not try to use a surrogate pair.  */
@@ -119,6 +122,9 @@ grub_console_checkkey (void)
   grub_efi_simple_input_interface_t *i;
   grub_efi_input_key_t key;
   grub_efi_status_t status;
+
+  if (grub_efi_is_finished)
+    return 0;
 
   if (read_key >= 0)
     return 1;
@@ -217,6 +223,9 @@ grub_console_getkey (void)
   grub_efi_status_t status;
   int key;
 
+  if (grub_efi_is_finished)
+    return 0;
+
   if (read_key >= 0)
     {
       key = read_key;
@@ -249,7 +258,8 @@ grub_console_getwh (void)
   grub_efi_uintn_t columns, rows;
 
   o = grub_efi_system_table->con_out;
-  if (efi_call_4 (o->query_mode, o, o->mode->mode, &columns, &rows) != GRUB_EFI_SUCCESS)
+  if (grub_efi_is_finished || efi_call_4 (o->query_mode, o, o->mode->mode,
+					  &columns, &rows) != GRUB_EFI_SUCCESS)
     {
       /* Why does this fail?  */
       columns = 80;
@@ -264,6 +274,9 @@ grub_console_getxy (void)
 {
   grub_efi_simple_text_output_interface_t *o;
 
+  if (grub_efi_is_finished)
+    return 0;
+
   o = grub_efi_system_table->con_out;
   return ((o->mode->cursor_column << 8) | o->mode->cursor_row);
 }
@@ -272,6 +285,9 @@ static void
 grub_console_gotoxy (grub_uint8_t x, grub_uint8_t y)
 {
   grub_efi_simple_text_output_interface_t *o;
+
+  if (grub_efi_is_finished)
+    return;
 
   o = grub_efi_system_table->con_out;
   efi_call_3 (o->set_cursor_position, o, x, y);
@@ -282,6 +298,9 @@ grub_console_cls (void)
 {
   grub_efi_simple_text_output_interface_t *o;
   grub_efi_int32_t orig_attr;
+
+  if (grub_efi_is_finished)
+    return;
 
   o = grub_efi_system_table->con_out;
   orig_attr = o->mode->attribute;
@@ -294,6 +313,9 @@ static void
 grub_console_setcolorstate (grub_term_color_state state)
 {
   grub_efi_simple_text_output_interface_t *o;
+
+  if (grub_efi_is_finished)
+    return;
 
   o = grub_efi_system_table->con_out;
 
@@ -330,6 +352,9 @@ static void
 grub_console_setcursor (int on)
 {
   grub_efi_simple_text_output_interface_t *o;
+
+  if (grub_efi_is_finished)
+    return;
 
   o = grub_efi_system_table->con_out;
   efi_call_2 (o->enable_cursor, o, on);

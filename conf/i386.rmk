@@ -22,9 +22,16 @@ relocator_mod_SOURCES = lib/relocator.c lib/i386/relocator32.S \
 	lib/$(target_cpu)/relocator_asm.S lib/i386/relocator.c \
 	lib/ieee1275/relocator.c
 else
+ifeq ($(platform), efi)
+relocator_mod_SOURCES = lib/relocator.c lib/i386/relocator32.S \
+	lib/i386/relocator64.S lib/i386/relocator16.S \
+	lib/$(target_cpu)/relocator_asm.S lib/i386/relocator.c \
+	lib/efi/relocator.c
+else
 relocator_mod_SOURCES = lib/relocator.c lib/i386/relocator32.S \
 	lib/i386/relocator64.S lib/i386/relocator16.S \
 	lib/$(target_cpu)/relocator_asm.S lib/i386/relocator.c
+endif
 endif
 relocator_mod_CFLAGS = $(COMMON_CFLAGS)
 relocator_mod_ASFLAGS = $(COMMON_ASFLAGS)
