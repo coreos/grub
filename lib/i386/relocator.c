@@ -84,12 +84,6 @@ grub_size_t grub_relocator_jumper_size = 12;
 grub_size_t grub_relocator_jumper_size = 7;
 #endif
 
-static inline void *
-ptov (grub_addr_t a)
-{
-  return (void *) a;
-}
-
 void
 grub_cpu_relocator_init (void)
 {
@@ -154,12 +148,11 @@ grub_err_t
 grub_relocator32_boot (struct grub_relocator *rel,
 		       struct grub_relocator32_state state)
 {
-  grub_phys_addr_t target;
-  void *src;
   grub_err_t err;
   void *relst;
+  grub_relocator_chunk_t ch;
 
-  err = grub_relocator_alloc_chunk_align (rel, &src, &target, 0,
+  err = grub_relocator_alloc_chunk_align (rel, &ch, 0,
 					  (0xffffffff - RELOCATOR_SIZEOF (32))
 					  + 1, RELOCATOR_SIZEOF (32), 16,
 					  GRUB_RELOCATOR_PREFERENCE_NONE);
@@ -174,9 +167,11 @@ grub_relocator32_boot (struct grub_relocator *rel,
   grub_relocator32_esp = state.esp;
   grub_relocator32_esi = state.esi;
 
-  grub_memmove (src, &grub_relocator32_start, RELOCATOR_SIZEOF (32));
+  grub_memmove (get_virtual_current_address (ch), &grub_relocator32_start,
+		RELOCATOR_SIZEOF (32));
 
-  err = grub_relocator_prepare_relocs (rel, ptov (target), &relst, NULL);
+  err = grub_relocator_prepare_relocs (rel, get_physical_target_address (ch),
+				       &relst, NULL);
   if (err)
     return err;
 
@@ -191,12 +186,11 @@ grub_err_t
 grub_relocator16_boot (struct grub_relocator *rel,
 		       struct grub_relocator16_state state)
 {
-  grub_phys_addr_t target;
-  void *src;
   grub_err_t err;
   void *relst;
+  grub_relocator_chunk_t ch;
 
-  err = grub_relocator_alloc_chunk_align (rel, &src, &target, 0,
+  err = grub_relocator_alloc_chunk_align (rel, &ch, 0,
 					  0xa0000 - RELOCATOR_SIZEOF (16),
 					  RELOCATOR_SIZEOF (16), 16,
 					  GRUB_RELOCATOR_PREFERENCE_NONE);
@@ -216,11 +210,15 @@ grub_relocator16_boot (struct grub_relocator *rel,
 
   grub_relocator16_edx = state.edx;
 
-  grub_memmove (src, &grub_relocator16_start, RELOCATOR_SIZEOF (16));
+  grub_memmove (get_virtual_current_address (ch), &grub_relocator16_start,
+		RELOCATOR_SIZEOF (16));
 
-  err = grub_relocator_prepare_relocs (rel, ptov (target), &relst, NULL);
+  err = grub_relocator_prepare_relocs (rel, get_physical_target_address (ch),
+				       &relst, NULL);
   if (err)
     return err;
+
+  grub_printf ("%p\n", relst);
 
   asm volatile ("cli");
   ((void (*) (void)) relst) ();
@@ -234,12 +232,11 @@ grub_relocator64_boot (struct grub_relocator *rel,
 		       struct grub_relocator64_state state,
 		       grub_addr_t min_addr, grub_addr_t max_addr)
 {
-  grub_phys_addr_t target;
-  void *src;
   grub_err_t err;
   void *relst;
+  grub_relocator_chunk_t ch;
 
-  err = grub_relocator_alloc_chunk_align (rel, &src, &target, min_addr,
+  err = grub_relocator_alloc_chunk_align (rel, &ch, min_addr,
 					  max_addr - RELOCATOR_SIZEOF (64),
 					  RELOCATOR_SIZEOF (64), 16,
 					  GRUB_RELOCATOR_PREFERENCE_NONE);
@@ -255,9 +252,11 @@ grub_relocator64_boot (struct grub_relocator *rel,
   grub_relocator64_rsi = state.rsi;
   grub_relocator64_cr3 = state.cr3;
 
-  grub_memmove (src, &grub_relocator64_start, RELOCATOR_SIZEOF (64));
+  grub_memmove (get_virtual_current_address (ch), &grub_relocator64_start,
+		RELOCATOR_SIZEOF (64));
 
-  err = grub_relocator_prepare_relocs (rel, ptov (target), &relst, NULL);
+  err = grub_relocator_prepare_relocs (rel, get_physical_target_address (ch),
+				       &relst, NULL);
   if (err)
     return err;
 

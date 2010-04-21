@@ -412,20 +412,28 @@ allocate_pages (grub_size_t prot_size)
       goto fail;
     }
 
-  err = grub_relocator_alloc_chunk_addr (relocator, &real_mode_mem,
-					 real_mode_target,
-					 (real_size + mmap_size 
-					  + efi_mmap_size));
-  if (err)
-    goto fail;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   real_mode_target,
+					   (real_size + mmap_size 
+					    + efi_mmap_size));
+    if (err)
+      goto fail;
+    real_mode_mem = get_virtual_current_address (ch);
+  }
   efi_mmap_buf = (grub_uint8_t *) real_mode_mem + real_size + mmap_size;
 
   prot_mode_target = GRUB_LINUX_BZIMAGE_ADDR;
 
-  err = grub_relocator_alloc_chunk_addr (relocator, &prot_mode_mem,
-					 prot_mode_target, prot_size);
-  if (err)
-    goto fail;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   prot_mode_target, prot_size);
+    if (err)
+      goto fail;
+    prot_mode_mem = get_virtual_current_address (ch);
+  }
 
   grub_dprintf ("linux", "real_mode_mem = %lx, real_mode_pages = %x, "
                 "prot_mode_mem = %lx, prot_mode_pages = %x\n",
@@ -1111,12 +1119,16 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  err = grub_relocator_alloc_chunk_align (relocator, &initrd_mem,
-					  &initrd_mem_target,
-					  addr_min, addr, size, 0x1000,
-					  GRUB_RELOCATOR_PREFERENCE_HIGH);
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_align (relocator, &ch,
+					    addr_min, addr, size, 0x1000,
+					    GRUB_RELOCATOR_PREFERENCE_HIGH);
+    if (err)
+      return err;
+    initrd_mem = get_virtual_current_address (ch);
+    initrd_mem_target = get_physical_target_address (ch);
+  }
 
   if (grub_file_read (file, initrd_mem, size) != size)
     {

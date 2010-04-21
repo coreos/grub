@@ -255,12 +255,15 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	  }
       }
 
-  err = grub_relocator_alloc_chunk_addr (relocator, (void **)
-					 &grub_linux_real_chunk,
-					 grub_linux_real_target,
-					 GRUB_LINUX_SETUP_MOVE_SIZE);
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   grub_linux_real_target,
+					   GRUB_LINUX_SETUP_MOVE_SIZE);
+    if (err)
+      return err;
+    grub_linux_real_chunk = get_virtual_current_address (ch);
+  }
 
   /* Put the real mode code at the temporary address.  */
   grub_memmove (grub_linux_real_chunk, &lh, sizeof (lh));
@@ -301,12 +304,15 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     grub_linux_prot_target = GRUB_LINUX_BZIMAGE_ADDR;
   else
     grub_linux_prot_target = GRUB_LINUX_ZIMAGE_ADDR;
-  err = grub_relocator_alloc_chunk_addr (relocator,
-					 (void **) &grub_linux_prot_chunk,
-					 grub_linux_prot_target,
-					 grub_linux16_prot_size);
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   grub_linux_prot_target,
+					   grub_linux16_prot_size);
+    if (err)
+      return err;
+    grub_linux_prot_chunk = get_virtual_current_address (ch);
+  }
 
   len = grub_linux16_prot_size;
   if (grub_file_read (file, grub_linux_prot_chunk, grub_linux16_prot_size)
@@ -398,13 +404,17 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   size = grub_file_size (file);
 
-  err = grub_relocator_alloc_chunk_align (relocator, (void **) &initrd_chunk,
-					  &initrd_addr,
-					  addr_min, addr_max - size,
-					  size, 0x1000,
-					  GRUB_RELOCATOR_PREFERENCE_HIGH);
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_align (relocator, &ch,
+					    addr_min, addr_max - size,
+					    size, 0x1000,
+					    GRUB_RELOCATOR_PREFERENCE_HIGH);
+    if (err)
+      return err;
+    initrd_chunk = get_virtual_current_address (ch);
+    initrd_addr = get_physical_target_address (ch);
+  }
 
   if (grub_file_read (file, initrd_chunk, size) != size)
     {

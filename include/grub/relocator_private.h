@@ -32,7 +32,7 @@ void
 grub_cpu_relocator_init (void);
 grub_err_t
 grub_relocator_prepare_relocs (struct grub_relocator *rel,
-			       void *addr,
+			       grub_addr_t addr,
 			       void **relstart, grub_size_t *relsize);
 void grub_cpu_relocator_forward (void *rels, void *src, void *tgt,
 				 grub_size_t size);

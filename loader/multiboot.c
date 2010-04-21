@@ -284,16 +284,20 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
     return grub_errno;
 
   size = grub_file_size (file);
-  err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &module, 
-					  &target,
-					  0, (0xffffffff - size) + 1,
-					  size, MULTIBOOT_MOD_ALIGN,
-					  GRUB_RELOCATOR_PREFERENCE_NONE);
-  if (err)
-    {
-      grub_file_close (file);
-      return err;
-    }
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
+					    0, (0xffffffff - size) + 1,
+					    size, MULTIBOOT_MOD_ALIGN,
+					    GRUB_RELOCATOR_PREFERENCE_NONE);
+    if (err)
+      {
+	grub_file_close (file);
+	return err;
+      }
+    module = get_virtual_current_address (ch);
+    target = (grub_addr_t) get_virtual_current_address (ch);
+  }
 
   err = grub_multiboot_add_module (target, size, argc - 1, argv + 1);
   if (err)

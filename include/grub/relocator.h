@@ -21,19 +21,29 @@
 
 #include <grub/types.h>
 #include <grub/err.h>
+#include <grub/memory.h>
 
 struct grub_relocator;
+struct grub_relocator_chunk;
+typedef const struct grub_relocator_chunk *grub_relocator_chunk_t;
 
 struct grub_relocator *grub_relocator_new (void);
 
 grub_err_t
-grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
-				 grub_addr_t target, grub_size_t size);
+grub_relocator_alloc_chunk_addr (struct grub_relocator *rel,
+				 grub_relocator_chunk_t *out,
+				 grub_phys_addr_t target, grub_size_t size);
+
+void *
+get_virtual_current_address (grub_relocator_chunk_t in);
+grub_phys_addr_t
+get_physical_target_address (grub_relocator_chunk_t in);
 
 grub_err_t
-grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src, 
-				  grub_addr_t *target,
-				  grub_addr_t min_addr, grub_addr_t max_addr,
+grub_relocator_alloc_chunk_align (struct grub_relocator *rel, 
+				  grub_relocator_chunk_t *out,
+				  grub_phys_addr_t min_addr,
+				  grub_phys_addr_t max_addr,
 				  grub_size_t size, grub_size_t align,
 				  int preference);
 

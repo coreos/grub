@@ -191,6 +191,7 @@ grub_multiboot_load (grub_file_t file)
 		       addr_tag->load_end_addr - addr_tag->load_addr);
       grub_size_t code_size;
       void *source;
+      grub_relocator_chunk_t ch;
 
       if (addr_tag->bss_end_addr)
 	code_size = (addr_tag->bss_end_addr - addr_tag->load_addr);
@@ -198,7 +199,7 @@ grub_multiboot_load (grub_file_t file)
 	code_size = load_size;
 
       err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator, 
-					     &source, addr_tag->load_addr,
+					     &ch, addr_tag->load_addr,
 					     code_size);
       if (err)
 	{
@@ -206,6 +207,7 @@ grub_multiboot_load (grub_file_t file)
 	  grub_free (buffer);
 	  return err;
 	}
+      source = get_virtual_current_address (ch);
 
       if ((grub_file_seek (file, offset)) == (grub_off_t) -1)
 	{
@@ -460,19 +462,19 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   grub_uint8_t *mbistart;
   grub_err_t err;
   grub_size_t bufsize;
-  grub_addr_t ptrdest;
+  grub_relocator_chunk_t ch;
 
   bufsize = grub_multiboot_get_mbi_size ();
 
-  err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, 
-					  (void **) &ptrorig, &ptrdest,
+  err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
 					  0, 0xffffffff - bufsize,
 					  bufsize, 4,
 					  GRUB_RELOCATOR_PREFERENCE_NONE);
   if (err)
     return err;
 
-  *target = ptrdest;
+  ptrorig = get_virtual_current_address (ch);
+  *target = get_physical_target_address (ch);
 
   mbistart = ptrorig;
   ptrorig += 2 * sizeof (grub_uint32_t);

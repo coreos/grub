@@ -103,10 +103,14 @@ SUFFIX (grub_freebsd_load_elfmodule_obj) (struct grub_relocator *relocator,
       chunk_size += s->sh_size;
     }
 
-  err = grub_relocator_alloc_chunk_addr (relocator, &chunk_src,
-					 module, chunk_size);
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   module, chunk_size);
+    if (err)
+      return err;
+    chunk_src = get_virtual_current_address (ch);
+  }
 
   for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) ((char *) shdr
 						+ e.e_shnum * e.e_shentsize);
@@ -191,10 +195,16 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
 	chunk_size = s->sh_addr + s->sh_size;
     }
 
-  err = grub_relocator_alloc_chunk_addr (relocator, &chunk_src,
-					 module, chunk_size);
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   module, chunk_size);
+    if (err)
+      return err;
+
+    chunk_src = get_virtual_current_address (ch);
+  }
 
   for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) ((char *) shdr
 						+ e.e_shnum * e.e_shentsize);
@@ -300,10 +310,15 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
     + 2 * sizeof (grub_freebsd_addr_t);
 
   symtarget = ALIGN_UP (*kern_end, sizeof (grub_freebsd_addr_t));
-  err = grub_relocator_alloc_chunk_addr (relocator, &sym_chunk,
-					 symtarget, chunk_size);
-  if (err)
-    return err;
+
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   symtarget, chunk_size);
+    if (err)
+      return err;
+    sym_chunk = get_virtual_current_address (ch);
+  }
 
   symstart = symtarget;
   symend = symstart + chunk_size;
@@ -413,10 +428,14 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
     + sizeof (e) + e.e_shnum * e.e_shentsize;
 
   symtarget = ALIGN_UP (*kern_end, sizeof (grub_freebsd_addr_t));
-  err = grub_relocator_alloc_chunk_addr (relocator, &sym_chunk,
-					 symtarget, chunk_size);
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   symtarget, chunk_size);
+    if (err)
+      return err;
+    sym_chunk = get_virtual_current_address (ch);
+  }
 
   symtab.nsyms = 1;
   symtab.ssyms = symtarget;

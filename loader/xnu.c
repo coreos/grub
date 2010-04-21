@@ -51,13 +51,15 @@ grub_err_t
 grub_xnu_heap_malloc (int size, void **src, grub_addr_t *target)
 {
   grub_err_t err;
+  grub_relocator_chunk_t ch;
   
-  err = grub_relocator_alloc_chunk_addr (grub_xnu_relocator, src,
+  err = grub_relocator_alloc_chunk_addr (grub_xnu_relocator, &ch,
 					 grub_xnu_heap_target_start
 					 + grub_xnu_heap_size, size);
   if (err)
     return err;
 
+  *src = get_virtual_current_address (ch);
   *target = grub_xnu_heap_target_start + grub_xnu_heap_size;
   grub_xnu_heap_size += size;
   grub_dprintf ("xnu", "val=%p\n", *src);

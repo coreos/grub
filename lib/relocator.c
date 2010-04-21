@@ -81,6 +81,18 @@ struct grub_relocator_fw_leftover *leftovers;
 
 struct grub_relocator_extra_block *extra_blocks;
 
+void *
+get_virtual_current_address (grub_relocator_chunk_t in)
+{
+  return in->srcv;
+}
+
+grub_phys_addr_t
+get_physical_target_address (grub_relocator_chunk_t in)
+{
+  return in->target;
+}
+
 struct grub_relocator *
 grub_relocator_new (void)
 {
@@ -1126,7 +1138,8 @@ adjust_limits (struct grub_relocator *rel,
 }
 
 grub_err_t
-grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
+grub_relocator_alloc_chunk_addr (struct grub_relocator *rel,
+				 grub_relocator_chunk_t *out,
 				 grub_phys_addr_t target, grub_size_t size)
 {
   struct grub_relocator_chunk *chunk;
@@ -1221,13 +1234,14 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
   grub_dprintf ("relocator", "cur = %p, next = %p\n", rel->chunks,
 		rel->chunks->next);
 
-  *src = chunk->srcv = grub_map_memory (chunk->src, chunk->size);
+  chunk->srcv = grub_map_memory (chunk->src, chunk->size);
+  *out = chunk;
   return GRUB_ERR_NONE;
 }
 
 grub_err_t
-grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
-				  grub_phys_addr_t *target,
+grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
+				  grub_relocator_chunk_t *out,
 				  grub_phys_addr_t min_addr,
 				  grub_phys_addr_t max_addr,
 				  grub_size_t size, grub_size_t align,
@@ -1262,8 +1276,8 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
       chunk->size = size;
       chunk->next = rel->chunks;
       rel->chunks = chunk;
-      *src = (void *) chunk->src;
-      *target = chunk->target;
+      chunk->srcv = grub_map_memory (chunk->src, chunk->size);
+      *out = chunk;
       return GRUB_ERR_NONE;
     }
 
@@ -1300,12 +1314,12 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
 	return 0;
       candidate = ALIGN_UP (addr, align);
       if (candidate < min_addr)
-	candidate = min_addr;
-      if (candidate + size >= addr + sz
+	candidate = ALIGN_UP (min_addr, align);
+      if (candidate + size > addr + sz
 	  || candidate > ALIGN_DOWN (max_addr, align))
 	return 0;
       if (preference == GRUB_RELOCATOR_PREFERENCE_HIGH)
-	candidate = ALIGN_DOWN (addr + sz - size, align);
+	candidate = ALIGN_DOWN (min (addr + sz - size, max_addr), align);
       if (!found || (preference == GRUB_RELOCATOR_PREFERENCE_HIGH
 		     && candidate > chunk->target))
 	chunk->target = candidate;
@@ -1353,8 +1367,8 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
   rel->chunks = chunk;
   grub_dprintf ("relocator", "cur = %p, next = %p\n", rel->chunks,
 		rel->chunks->next);
-  *src = chunk->srcv = grub_map_memory (chunk->src, chunk->size);
-  *target = chunk->target;
+  chunk->srcv = grub_map_memory (chunk->src, chunk->size);
+  *out = chunk;
   return GRUB_ERR_NONE;
 }
 
@@ -1378,7 +1392,7 @@ grub_relocator_unload (struct grub_relocator *rel)
 }
 
 grub_err_t
-grub_relocator_prepare_relocs (struct grub_relocator *rel, void *addr,
+grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
 			       void **relstart, grub_size_t *relsize)
 {
   grub_uint8_t *rels;
@@ -1395,12 +1409,12 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, void *addr,
 			grub_relocator_align,
 			rel->relocators_size, &movers_chunk, 1, 1))
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
-  rels = rels0 = movers_chunk.srcv;
+  rels = rels0 = grub_map_memory (movers_chunk.src, movers_chunk.size);
 
   if (relsize)
     *relsize = rel->relocators_size;
 
-  grub_dprintf ("relocator", "Relocs allocated\n");
+  grub_dprintf ("relocator", "Relocs allocated at %p\n", movers_chunk.srcv);
   
   {
     unsigned i;

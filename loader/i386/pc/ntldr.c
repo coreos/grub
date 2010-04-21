@@ -90,10 +90,14 @@ grub_cmd_ntldr (grub_command_t cmd __attribute__ ((unused)),
   if (! file)
     goto fail;
 
-  err = grub_relocator_alloc_chunk_addr (rel, &bs, 0x7C00,
-					 GRUB_DISK_SECTOR_SIZE);
-  if (err)
-    goto fail;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (rel, &ch, 0x7C00,
+					   GRUB_DISK_SECTOR_SIZE);
+    if (err)
+      goto fail;
+    bs = get_virtual_current_address (ch);
+  }
 
   edx = grub_get_root_biosnumber ();
   dev = grub_device_open (0);
@@ -112,10 +116,14 @@ grub_cmd_ntldr (grub_command_t cmd __attribute__ ((unused)),
     grub_device_close (dev);
 
   ntldrsize = grub_file_size (file);
-  err = grub_relocator_alloc_chunk_addr (rel, &ntldr, GRUB_NTLDR_SEGMENT << 4,
-					 ntldrsize);
-  if (err)
-    goto fail;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (rel, &ch, GRUB_NTLDR_SEGMENT << 4,
+					   ntldrsize);
+    if (err)
+      goto fail;
+    ntldr = get_virtual_current_address (ch);
+  }
 
   if (grub_file_read (file, ntldr, ntldrsize)
       != (grub_ssize_t) ntldrsize)

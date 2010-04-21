@@ -92,14 +92,18 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
 	  grub_dprintf ("multiboot_loader", "segment %d: paddr=0x%lx, memsz=0x%lx, vaddr=0x%lx\n",
 			i, (long) phdr(i)->p_paddr, (long) phdr(i)->p_memsz, (long) phdr(i)->p_vaddr);
 
-	  err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator, 
-						 &source, phdr(i)->p_paddr,
-						 phdr(i)->p_memsz);
-	  if (err)
-	    {
-	      grub_dprintf ("multiboot_loader", "Error loading phdr %d\n", i);
-	      return err;
-	    }
+	  {
+	    grub_relocator_chunk_t ch;
+	    err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator, 
+						   &ch, phdr(i)->p_paddr,
+						   phdr(i)->p_memsz);
+	    if (err)
+	      {
+		grub_dprintf ("multiboot_loader", "Error loading phdr %d\n", i);
+		return err;
+	      }
+	    source = get_virtual_current_address (ch);
+	  }
 
 	  if (grub_file_seek (file, (grub_off_t) phdr(i)->p_offset)
 	      == (grub_off_t) -1)
@@ -163,18 +167,22 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
 	  if (sh->sh_size == 0)
 	    continue;
 
-	  err 
-	    = grub_relocator_alloc_chunk_align (grub_multiboot_relocator,
-						&src, &target, 0,
-						(0xffffffff - sh->sh_size) + 1,
-						sh->sh_size,
-						sh->sh_addralign,
-						GRUB_RELOCATOR_PREFERENCE_NONE);
-	  if (err)
-	    {
-	      grub_dprintf ("multiboot_loader", "Error loading shdr %d\n", i);
-	      return err;
-	    }
+	  {
+	    grub_relocator_chunk_t ch;
+	    err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator,
+						    &ch, 0,
+						    (0xffffffff - sh->sh_size)
+						    + 1, sh->sh_size,
+						    sh->sh_addralign,
+						    GRUB_RELOCATOR_PREFERENCE_NONE);
+	    if (err)
+	      {
+		grub_dprintf ("multiboot_loader", "Error loading shdr %d\n", i);
+		return err;
+	      }
+	    src = get_virtual_current_address (ch);
+	    target = get_physical_target_address (ch);
+	  }
 
 	  if (grub_file_seek (file, sh->sh_offset) == (grub_off_t) -1)
 	    return grub_error (GRUB_ERR_BAD_OS,

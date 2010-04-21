@@ -606,10 +606,14 @@ grub_freebsd_boot (void)
   if (is_64bit)
     p_size += 4096 * 3;
 
-  err = grub_relocator_alloc_chunk_addr (relocator, (void **) &p,
-					 kern_end, p_size);
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   kern_end, p_size);
+    if (err)
+      return err;
+    p = get_virtual_current_address (ch);
+  }
   p_target = kern_end;
   p0 = p;
   kern_end += p_size;
@@ -682,14 +686,18 @@ grub_freebsd_boot (void)
       grub_uint32_t *stack;
       grub_addr_t stack_target;
 
-      err = grub_relocator_alloc_chunk_align (relocator, (void **) &stack,
-					      &stack_target,
-					      0x10000, 0x90000,
-					      3 * sizeof (grub_uint32_t)
-					      + sizeof (bi), 4,
-					      GRUB_RELOCATOR_PREFERENCE_NONE);
-      if (err)
-	return err;
+      {
+	grub_relocator_chunk_t ch;
+	err = grub_relocator_alloc_chunk_align (relocator, &ch,
+						0x10000, 0x90000,
+						3 * sizeof (grub_uint32_t)
+						+ sizeof (bi), 4,
+						GRUB_RELOCATOR_PREFERENCE_NONE);
+	if (err)
+	  return err;
+	stack = get_virtual_current_address (ch);
+	stack_target = get_physical_target_address (ch);
+      }
 
 #ifdef GRUB_MACHINE_EFI
       err = grub_efi_finish_boot_services (NULL, NULL, NULL, NULL, NULL);
@@ -714,14 +722,19 @@ grub_freebsd_boot (void)
       struct grub_relocator32_state state;
       grub_uint32_t *stack;
       grub_addr_t stack_target;
-      err = grub_relocator_alloc_chunk_align (relocator, (void **) &stack,
-					      &stack_target,
-					      0x10000, 0x90000,
-					      9 * sizeof (grub_uint32_t)
-					      + sizeof (bi), 4,
-					      GRUB_RELOCATOR_PREFERENCE_NONE);
-      if (err)
-	return err;
+
+      {
+	grub_relocator_chunk_t ch;
+	err = grub_relocator_alloc_chunk_align (relocator, &ch,
+						0x10000, 0x90000,
+						9 * sizeof (grub_uint32_t)
+						+ sizeof (bi), 4,
+						GRUB_RELOCATOR_PREFERENCE_NONE);
+	if (err)
+	  return err;
+	stack = get_virtual_current_address (ch);
+	stack_target = get_physical_target_address (ch);
+      }
 
 #ifdef GRUB_MACHINE_EFI
       err = grub_efi_finish_boot_services (NULL, NULL, NULL, NULL, NULL);
@@ -772,12 +785,16 @@ grub_openbsd_boot (void)
   }
 
   buf_target = GRUB_BSD_TEMP_BUFFER - 9 * sizeof (grub_uint32_t);
-  err = grub_relocator_alloc_chunk_addr (relocator, &buf0,
-					 buf_target, tag_buf_len
-					 + sizeof (struct grub_openbsd_bootargs)
-					 + 9 * sizeof (grub_uint32_t));
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch, buf_target,
+					   tag_buf_len
+					   + sizeof (struct grub_openbsd_bootargs)
+					   + 9 * sizeof (grub_uint32_t));
+    if (err)
+      return err;
+    buf0 = get_virtual_current_address (ch);
+  }
 
   stack = (grub_uint32_t *) buf0;
   arg0 = curarg = stack + 9;
@@ -976,12 +993,16 @@ grub_netbsd_boot (void)
   }
 
   arg_target = kern_end;
-  err = grub_relocator_alloc_chunk_addr (relocator, &curarg,
-					 arg_target, tag_buf_len
-					 + sizeof (struct grub_netbsd_bootinfo)
-					 + tag_count * sizeof (grub_uint32_t));
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   arg_target, tag_buf_len
+					   + sizeof (struct grub_netbsd_bootinfo)
+					   + tag_count * sizeof (grub_uint32_t));
+    if (err)
+      return err;
+    curarg = get_virtual_current_address (ch);
+  }
 
   arg0 = curarg;
   bootinfo = (void *) ((grub_uint8_t *) arg0 + tag_buf_len);
@@ -1004,12 +1025,16 @@ grub_netbsd_boot (void)
       }
   }
 
-  err = grub_relocator_alloc_chunk_align (relocator, (void **) &stack,
-					  &stack_target, 0x10000, 0x90000,
-					  7 * sizeof (grub_uint32_t), 4,
-					  GRUB_RELOCATOR_PREFERENCE_NONE);
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_align (relocator, &ch, 0x10000, 0x90000,
+					    7 * sizeof (grub_uint32_t), 4,
+					    GRUB_RELOCATOR_PREFERENCE_NONE);
+    if (err)
+      return err;
+    stack = get_virtual_current_address (ch);
+    stack_target = get_physical_target_address (ch);
+  }
 
 #ifdef GRUB_MACHINE_EFI
   err = grub_efi_finish_boot_services (NULL, NULL, NULL, NULL, NULL);
@@ -1107,10 +1132,15 @@ grub_bsd_load_aout (grub_file_t file)
   if (!relocator)
     return grub_errno;
 
-  err = grub_relocator_alloc_chunk_addr (relocator, &kern_chunk_src,
-					 kern_start, kern_end - kern_start);
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   kern_start, kern_end - kern_start);
+    if (err)
+      return err;
+    kern_chunk_src = get_virtual_current_address (ch);
+  }
 
   return grub_aout_load (file, ofs, kern_chunk_src,
 			 ah.aout32.a_text + ah.aout32.a_data,
@@ -1210,14 +1240,18 @@ grub_bsd_load_elf (grub_elf_t elf)
 
   if (grub_elf_is_elf32 (elf))
     {
+      grub_relocator_chunk_t ch;
+
       entry = elf->ehdr.ehdr32.e_entry & 0xFFFFFF;
       err = grub_elf32_phdr_iterate (elf, grub_bsd_elf32_size_hook, NULL);
       if (err)
 	return err;
-      err = grub_relocator_alloc_chunk_addr (relocator, &kern_chunk_src,
+      err = grub_relocator_alloc_chunk_addr (relocator, &ch,
 					     kern_start, kern_end - kern_start);
       if (err)
 	return err;
+
+      kern_chunk_src = get_virtual_current_address (ch);
 
       return grub_elf32_load (elf, grub_bsd_elf32_hook, 0, 0);
     }
@@ -1246,10 +1280,15 @@ grub_bsd_load_elf (grub_elf_t elf)
 
       grub_dprintf ("bsd", "kern_start = %lx, kern_end = %lx\n",
 		    (unsigned long) kern_start, (unsigned long) kern_end);
-      err = grub_relocator_alloc_chunk_addr (relocator, &kern_chunk_src,
-					     kern_start, kern_end - kern_start);
-      if (err)
-	return err;
+      {
+	grub_relocator_chunk_t ch;
+
+	err = grub_relocator_alloc_chunk_addr (relocator, &ch, kern_start,
+					       kern_end - kern_start);
+	if (err)
+	  return err;
+	kern_chunk_src = get_virtual_current_address (ch);
+      }
 
       return grub_elf64_load (elf, grub_bsd_elf64_hook, 0, 0);
     }
@@ -1682,10 +1721,15 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
   if ((!file) || (!file->size))
     goto fail;
 
-  err = grub_relocator_alloc_chunk_addr (relocator, &src, kern_end, 
-					 file->size);
-  if (err)
-    goto fail;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch, kern_end, 
+					   file->size);
+    if (err)
+      goto fail;
+    src = get_virtual_current_address (ch);
+  }
+
 
   grub_file_read (file, src, file->size);
   if (grub_errno)
@@ -1728,10 +1772,15 @@ grub_netbsd_module_load (char *filename, grub_uint32_t type)
   if ((!file) || (!file->size))
     goto fail;
 
-  err = grub_relocator_alloc_chunk_addr (relocator, &src, kern_end, 
-					 file->size);
-  if (err)
-    goto fail;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch, kern_end, 
+					   file->size);
+    if (err)
+      goto fail;
+
+    src = get_virtual_current_address (ch);
+  }
 
   grub_file_read (file, src, file->size);
   if (grub_errno)

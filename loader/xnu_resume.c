@@ -103,25 +103,33 @@ grub_xnu_resume (char *imagename)
       return grub_errno;
     }
 
-  err = grub_relocator_alloc_chunk_addr (grub_xnu_relocator, &code,
-					 codedest, codesize + GRUB_XNU_PAGESIZE);
-  if (err)
-    {
-      grub_file_close (file);
-      return err;
-    }
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (grub_xnu_relocator, &ch, codedest,
+					   codesize + GRUB_XNU_PAGESIZE);
+    if (err)
+      {
+	grub_file_close (file);
+	return err;
+      }
+    code = get_virtual_current_address (ch);
+  }
 
-  err = grub_relocator_alloc_chunk_align (grub_xnu_relocator, &image,
-					  &target_image, 0,
-					  (0xffffffff - hibhead.image_size) + 1,
-					  hibhead.image_size,
-					  GRUB_XNU_PAGESIZE,
-					  GRUB_RELOCATOR_PREFERENCE_NONE);
-  if (err)
-    {
-      grub_file_close (file);
-      return err;
-    }
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_align (grub_xnu_relocator, &ch, 0,
+					    (0xffffffff - hibhead.image_size) + 1,
+					    hibhead.image_size,
+					    GRUB_XNU_PAGESIZE,
+					    GRUB_RELOCATOR_PREFERENCE_NONE);
+    if (err)
+      {
+	grub_file_close (file);
+	return err;
+      }
+    image = get_virtual_current_address (ch);
+    target_image = get_physical_target_address (ch);
+  }
 
   /* Read code part. */
   if (grub_file_seek (file, total_header_size) == (grub_off_t) -1
