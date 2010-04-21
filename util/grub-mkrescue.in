@@ -32,6 +32,8 @@ pkglib_DATA="@pkglib_DATA@"
 
 coreboot_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/${target_cpu}-coreboot
 pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/${target_cpu}-pc
+efi32_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi
+efi64_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi
 
 # Usage: usage
 # Print the usage.
@@ -128,13 +130,23 @@ if [ "${override_dir}" = "" ] ; then
     if test -e "${pc_dir}" ; then
         process_input_dir ${pc_dir} pc
     fi
+    if test -e "${efi32_dir}" ; then
+        process_input_dir ${efi32_dir} efi32
+    fi
+    if test -e "${efi64_dir}" ; then
+        process_input_dir ${efi64_dir} efi64
+    fi
 else
     process_input_dir ${override_dir} ${native_platform}
     coreboot_dir=
     pc_dir=
-    case "${native_platform}" in
-        coreboot) coreboot_dir=${override_dir} ;;
-        pc) pc_dir=${override_dir} ;;
+    efi32_dir=
+    efi64_dir=
+    case "${target_cpu}-${native_platform}" in
+        i386-coreboot) coreboot_dir=${override_dir} ;;
+        i386-pc) pc_dir=${override_dir} ;;
+	i386-efi) efi32_dir=${override_dir} ;;
+	x86_64-efi) efi64_dir=${override_dir} ;;
     esac
 fi
 
@@ -189,6 +201,33 @@ if test -e "${pc_dir}" ; then
 
     grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -no-emul-boot -boot-info-table \
 		--embedded-boot ${embed_img}"
+fi
+
+if test -e "${efi64_dir}" || test -e "${efi32_dir}"; then
+    efi_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
+    mkdir -p "${efi_dir}/efi/boot"
+else
+    efi_dir=
+fi
+
+# build bootx64.efi
+if test -e "${efi64_dir}" ; then
+    echo "Generates bootx64.efi"
+    grub-mkimage -d "${efi64_dir}" -o "${efi_dir}"/efi/boot/bootx64.efi --prefix=/boot/grub/x86_64-efi \
+        search iso9660 configfile sh 
+
+    modules="$(cat "${efi64_dir}"/partmap.lst) ${modules}"
+    (for i in ${modules} ; do
+        echo "insmod $i"
+    done ; \
+    echo "source /boot/grub/grub.cfg") \
+    > "${iso9660_dir}"/boot/grub/x86_64-efi/grub.cfg
+fi
+
+if test x"${efi_dir}" != x; then
+    mformat -C -f 2880 -L 16 -i "${iso9660_dir}"/efi.img ::
+    mcopy -s -i "${iso9660_dir}"/efi.img ${efi_dir}/efi ::/
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} --efi-boot efi.img"
 fi
 
 # build iso image

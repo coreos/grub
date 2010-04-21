@@ -66,8 +66,10 @@ struct grub_relocator_mmap_event
     /* To track the regions already in heap.  */
     FIRMWARE_BLOCK_START = 6, 
     FIRMWARE_BLOCK_END = FIRMWARE_BLOCK_START | 1,
+    REG_LEFTOVER_START = 8, 
+    REG_LEFTOVER_END = REG_LEFTOVER_START | 1,
 #endif
-    COLLISION_START = 8,
+    COLLISION_START = 10,
     COLLISION_END = COLLISION_START | 1
   } type;
   grub_addr_t pos;
@@ -80,6 +82,9 @@ struct grub_relocator_mmap_event
       grub_mm_region_t *regancestor;
       grub_mm_header_t head;
     };
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+    struct grub_relocator_fw_leftover *leftover;
+#endif
   };
 };
 
