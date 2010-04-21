@@ -21,6 +21,7 @@
 #include <grub/mm_private.h>
 #include <grub/misc.h>
 #include <grub/cache.h>
+#include <grub/memory.h>
 
 struct grub_relocator
 {
@@ -63,6 +64,7 @@ struct grub_relocator_extra_block
   grub_addr_t end;
 };
 
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
 struct grub_relocator_fw_leftover
 {
   struct grub_relocator_fw_leftover *next;
@@ -72,6 +74,8 @@ struct grub_relocator_fw_leftover
 };
 
 struct grub_relocator_fw_leftover *leftovers;
+#endif
+
 struct grub_relocator_extra_block *extra_blocks;
 
 struct grub_relocator *
@@ -220,6 +224,7 @@ allocate_inreg (grub_addr_t addr, grub_size_t size,
     }
 }
 
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
 static void
 check_leftover (struct grub_relocator_fw_leftover *lo)
 {
@@ -233,6 +238,7 @@ check_leftover (struct grub_relocator_fw_leftover *lo)
   if (lo->next)
     lo->next->prev = lo->prev;
 }
+#endif
 
 static void
 free_subchunk (const struct grub_relocator_subchunk *subchu)
@@ -923,7 +929,10 @@ malloc_in_range (struct grub_relocator *rel,
 		curschu->size = alloc_end - alloc_start;
 		if (typepre == CHUNK_TYPE_REGION_START)
 		if (!oom && (typepre == CHUNK_TYPE_REGION_START
-			     || typepre == CHUNK_TYPE_FIRMWARE))
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+			     || typepre == CHUNK_TYPE_FIRMWARE
+#endif
+			     ))
 		  {
 		    struct grub_relocator_extra_block *ne;
 		    ne = grub_malloc (sizeof (*ne));
@@ -1282,11 +1291,36 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
     }
   while (0);
 
-  /* FIXME: check memory map.  */
-  if (preference == GRUB_RELOCATOR_PREFERENCE_HIGH)
-    chunk->target = ALIGN_DOWN (max_addr, align);
-  else
-    chunk->target = ALIGN_UP (min_addr, align);    
+  {
+    int found = 0;
+    auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+    int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t sz, grub_uint32_t type)
+    {
+      grub_uint64_t candidate;
+      if (type != GRUB_MACHINE_MEMORY_AVAILABLE)
+	return 0;
+      candidate = ALIGN_UP (addr, align);
+      if (candidate < min_addr)
+	candidate = min_addr;
+      if (candidate + size >= addr + sz
+	  || candidate > ALIGN_DOWN (max_addr, align))
+	return 0;
+      if (preference == GRUB_RELOCATOR_PREFERENCE_HIGH)
+	candidate = ALIGN_DOWN (addr + sz - size, align);
+      if (!found || (preference == GRUB_RELOCATOR_PREFERENCE_HIGH
+		     && candidate > chunk->target))
+	chunk->target = candidate;
+      if (!found || (preference == GRUB_RELOCATOR_PREFERENCE_LOW
+		     && candidate < chunk->target))
+	chunk->target = candidate;
+      found = 1;
+      return 0;
+    }
+
+    grub_machine_mmap_iterate (hook);
+    if (!found)
+      return grub_error (GRUB_ERR_BAD_OS, "couldn't find suitable memory target");
+  }
   while (1)
     {
       struct grub_relocator_chunk *chunk2;
