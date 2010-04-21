@@ -1038,9 +1038,9 @@ grub_xnu_boot (void)
   bootparams->devtree = devtree_target;
   bootparams->devtreelen = devtreelen;
 
-  err = grub_efi_finish_boot_services (&memory_map_size, memory_map,
-				       &map_key, &descriptor_size,
-				       &descriptor_version);
+  err = grub_autoefi_finish_boot_services (&memory_map_size, memory_map,
+					   &map_key, &descriptor_size,
+					   &descriptor_version);
   if (err)
     return err;
 

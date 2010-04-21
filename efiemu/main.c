@@ -182,22 +182,6 @@ grub_cmd_efiemu_prepare (grub_command_t cmd __attribute__ ((unused)),
 
 
 
-
-int
-grub_efiemu_exit_boot_services (grub_efi_uintn_t map_key
-				__attribute__ ((unused)))
-{
-  /* Nothing to do here yet */
-  return 1;
-}
-
-int
-grub_efiemu_finish_boot_services (void)
-{
-  /* Nothing to do here yet */
-  return 1;
-}
-
 /* Load the runtime from the file FILENAME.  */
 static grub_err_t
 grub_efiemu_load_file (const char *filename)
