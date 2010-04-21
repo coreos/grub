@@ -31,8 +31,9 @@ extern grub_size_t grub_relocator_jumper_size;
 void
 grub_cpu_relocator_init (void);
 grub_err_t
-grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
-			       grub_addr_t *relstart, grub_size_t *relsize);
+grub_relocator_prepare_relocs (struct grub_relocator *rel,
+			       void *addr,
+			       void **relstart, grub_size_t *relsize);
 void grub_cpu_relocator_forward (void *rels, void *src, void *tgt,
 				 grub_size_t size);
 void grub_cpu_relocator_backward (void *rels, void *src, void *tgt,
@@ -72,7 +73,7 @@ struct grub_relocator_mmap_event
     COLLISION_START = 10,
     COLLISION_END = COLLISION_START | 1
   } type;
-  grub_addr_t pos;
+  grub_phys_addr_t pos;
   union
   {
     struct
@@ -91,10 +92,12 @@ struct grub_relocator_mmap_event
 /* Return 0 on failure, 1 on success. The failure here 
    can be very time-expensive, so please make sure fill events is accurate.  */
 #if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
-int grub_relocator_firmware_alloc_region (grub_addr_t start, grub_size_t size);
+int grub_relocator_firmware_alloc_region (grub_phys_addr_t start,
+					  grub_size_t size);
 unsigned grub_relocator_firmware_fill_events (struct grub_relocator_mmap_event *events);
 unsigned grub_relocator_firmware_get_max_events (void);
-void grub_relocator_firmware_free_region (grub_addr_t start, grub_size_t size);
+void grub_relocator_firmware_free_region (grub_phys_addr_t start,
+					  grub_size_t size);
 #endif
 
 #endif

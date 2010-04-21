@@ -26,9 +26,9 @@
 struct grub_relocator
 {
   struct grub_relocator_chunk *chunks;
-  grub_addr_t postchunks;
-  grub_addr_t highestaddr;
-  grub_addr_t highestnonpostaddr;
+  grub_phys_addr_t postchunks;
+  grub_phys_addr_t highestaddr;
+  grub_phys_addr_t highestnonpostaddr;
   grub_size_t relocators_size;
 };
 
@@ -39,9 +39,11 @@ struct grub_relocator_subchunk
 	CHUNK_TYPE_FIRMWARE, CHUNK_TYPE_LEFTOVER
 #endif
   } type;
-  grub_addr_t host_start;
-  grub_addr_t start;
+  grub_mm_region_t reg;
+  grub_mm_header_t head;
+  grub_phys_addr_t start;
   grub_size_t size;
+  grub_size_t pre_size;
   struct grub_relocator_extra_block *extra;
   struct grub_relocator_fw_leftover *pre, *post;
 };
@@ -49,8 +51,9 @@ struct grub_relocator_subchunk
 struct grub_relocator_chunk
 {
   struct grub_relocator_chunk *next;
-  grub_addr_t src;
-  grub_addr_t target;
+  grub_phys_addr_t src;
+  void *srcv;
+  grub_phys_addr_t target;
   grub_size_t size;
   struct grub_relocator_subchunk *subchunks;
   unsigned nsubchunks;
@@ -60,8 +63,8 @@ struct grub_relocator_extra_block
 {
   struct grub_relocator_extra_block *next;
   struct grub_relocator_extra_block **prev;
-  grub_addr_t start;
-  grub_addr_t end;
+  grub_phys_addr_t start;
+  grub_phys_addr_t end;
 };
 
 #if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
@@ -69,7 +72,7 @@ struct grub_relocator_fw_leftover
 {
   struct grub_relocator_fw_leftover *next;
   struct grub_relocator_fw_leftover **prev;
-  grub_addr_t quantstart;
+  grub_phys_addr_t quantstart;
   grub_uint8_t freebytes[GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT / 8];
 };
 
@@ -89,7 +92,7 @@ grub_relocator_new (void)
   if (!ret)
     return NULL;
     
-  ret->postchunks = ~(grub_addr_t) 0;
+  ret->postchunks = ~(grub_phys_addr_t) 0;
   ret->relocators_size = grub_relocator_jumper_size;
   grub_dprintf ("relocator", "relocators_size=%lu\n",
 		(unsigned long) ret->relocators_size);
@@ -110,10 +113,11 @@ is_start (int type)
 }
 
 static void
-allocate_regstart (grub_addr_t addr, grub_size_t size, grub_mm_region_t rb,
+allocate_regstart (grub_phys_addr_t addr, grub_size_t size, grub_mm_region_t rb,
 		   grub_mm_region_t *regancestor, grub_mm_header_t hancestor)
 {
-  grub_addr_t newreg_start, newreg_raw_start = addr + size;
+  grub_addr_t newreg_start, newreg_raw_start
+    = (grub_addr_t) rb + (addr - grub_vtop (rb)) + size;
   grub_addr_t newreg_size, newreg_presize;
   grub_mm_header_t new_header;
   grub_mm_header_t hb = (grub_mm_header_t) (rb + 1);
@@ -176,23 +180,24 @@ allocate_regstart (grub_addr_t addr, grub_size_t size, grub_mm_region_t rb,
 }
 
 static void
-allocate_inreg (grub_addr_t addr, grub_size_t size,
+allocate_inreg (grub_phys_addr_t paddr, grub_size_t size,
 		grub_mm_header_t hb, grub_mm_header_t hbp,
 		grub_mm_region_t rb)
 {
   struct grub_mm_header *foll = NULL;
+  grub_addr_t vaddr = (grub_addr_t) hb + (paddr - grub_vtop (hb));
     
-  if (ALIGN_UP (addr + size, GRUB_MM_ALIGN) + GRUB_MM_ALIGN
+  if (ALIGN_UP (vaddr + size, GRUB_MM_ALIGN) + GRUB_MM_ALIGN
       <= (grub_addr_t) (hb + hb->size))
     {
-      foll = (void *) ALIGN_UP (addr + size, GRUB_MM_ALIGN);
+      foll = (void *) ALIGN_UP (vaddr + size, GRUB_MM_ALIGN);
       foll->magic = GRUB_MM_FREE_MAGIC;
       foll->size = hb->size - (foll - hb);
     }
 
-  if (addr - (grub_addr_t) hb >= sizeof (*hb))
+  if (vaddr - (grub_addr_t) hb >= sizeof (*hb))
     {
-      hb->size = ((addr - (grub_addr_t) hb) >> GRUB_MM_ALIGN_LOG2);
+      hb->size = ((vaddr - (grub_addr_t) hb) >> GRUB_MM_ALIGN_LOG2);
       if (foll)
 	{
 	  foll->next = hb;
@@ -250,12 +255,13 @@ free_subchunk (const struct grub_relocator_subchunk *subchu)
 	grub_mm_region_t r1, r2, *rp;
 	grub_mm_header_t h;
 	grub_size_t pre_size;
-	r1 = (grub_mm_region_t) ALIGN_UP (subchu->host_start, GRUB_MM_ALIGN);
-	r2 = (grub_mm_region_t) ALIGN_UP (subchu->start + subchu->size,
+	r1 = subchu->reg;
+	r2 = (grub_mm_region_t) ALIGN_UP ((grub_addr_t) subchu->reg
+					  + (grub_vtop (subchu->reg)
+					     - subchu->start) + subchu->size,
 					  GRUB_MM_ALIGN);
 	for (rp = &grub_mm_base; *rp && *rp != r2; rp = &((*rp)->next));
-	pre_size = ALIGN_UP (subchu->host_start, GRUB_MM_ALIGN)
-	  - subchu->host_start;
+	pre_size = subchu->pre_size;
 
 	if (*rp)
 	  {
@@ -328,7 +334,7 @@ free_subchunk (const struct grub_relocator_subchunk *subchu)
       }
     case CHUNK_TYPE_IN_REGION:
       {
-	grub_mm_header_t h = (grub_mm_header_t) ALIGN_DOWN (subchu->start,
+	grub_mm_header_t h = (grub_mm_header_t) ALIGN_DOWN ((grub_addr_t) subchu->head,
 							    GRUB_MM_ALIGN);
 	h->size
 	  = ((subchu->start + subchu->size + GRUB_MM_ALIGN - 1) / GRUB_MM_ALIGN)
@@ -549,26 +555,26 @@ malloc_in_range (struct grub_relocator *rel,
 	    {
 	      pre_added = 1;
 	      events[N].type = REG_BEG_START;
-	      events[N].pos = (grub_addr_t) r - r->pre_size;
+	      events[N].pos = grub_vtop (r) - r->pre_size;
 	      events[N].reg = r;
 	      events[N].regancestor = ra;
 	      events[N].head = p;
 	      events[N].hancestor = pa;
 	      N++;
 	      events[N].type = REG_BEG_END;
-	      events[N].pos = (grub_addr_t) (p + p->size) - sizeof (*r);
+	      events[N].pos = grub_vtop (p + p->size) - sizeof (*r);
 	      N++;
 	    }
 	  else
 	    {
 	      events[N].type = IN_REG_START;
-	      events[N].pos = (grub_addr_t) p;
+	      events[N].pos = grub_vtop (p);
 	      events[N].head = p;
 	      events[N].hancestor = pa;
 	      events[N].reg = r;
 	      N++;
 	      events[N].type = IN_REG_END;
-	      events[N].pos = (grub_addr_t) (p + p->size);
+	      events[N].pos = grub_vtop (p + p->size);
 	      N++;
 	    }
 	  pa = p;
@@ -862,20 +868,6 @@ malloc_in_range (struct grub_relocator *rel,
       }
   }
 
-  grub_memset ((void *) target, 0, size);
-  grub_dprintf ("relocator", "baseptr = %p\n", &base_saved);
-  for (r = base_saved; r; r = r->next)
-    {
-      p = r->first;
-      do
-	{
-	  if (!p)
-	    grub_fatal ("null in the ring %p\n", r);
-	  p = p->next;
-	}
-      while (p != r->first);
-    }
-
   /* Malloc is available again.  */
   grub_mm_base = base_saved;
 
@@ -927,7 +919,13 @@ malloc_in_range (struct grub_relocator *rel,
 		curschu->type = typepre;
 		curschu->start = alloc_start;
 		curschu->size = alloc_end - alloc_start;
-		if (typepre == CHUNK_TYPE_REGION_START)
+		if (typepre == CHUNK_TYPE_REGION_START
+		    || typepre == CHUNK_TYPE_IN_REGION)
+		  {
+		    curschu->reg = events[last_start].reg;
+		    curschu->head = events[last_start].head;
+		    curschu->pre_size = alloc_start - events[j - 1].pos;
+		  }
 		if (!oom && (typepre == CHUNK_TYPE_REGION_START
 #if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
 			     || typepre == CHUNK_TYPE_FIRMWARE
@@ -1106,8 +1104,8 @@ malloc_in_range (struct grub_relocator *rel,
 
 static void
 adjust_limits (struct grub_relocator *rel, 
-	       grub_addr_t *min_addr, grub_addr_t *max_addr,
-	       grub_addr_t in_min, grub_addr_t in_max)
+	       grub_phys_addr_t *min_addr, grub_phys_addr_t *max_addr,
+	       grub_phys_addr_t in_min, grub_phys_addr_t in_max)
 {
   struct grub_relocator_chunk *chunk;
 
@@ -1129,10 +1127,10 @@ adjust_limits (struct grub_relocator *rel,
 
 grub_err_t
 grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
-				 grub_addr_t target, grub_size_t size)
+				 grub_phys_addr_t target, grub_size_t size)
 {
   struct grub_relocator_chunk *chunk;
-  grub_addr_t min_addr = 0, max_addr;
+  grub_phys_addr_t min_addr = 0, max_addr;
 
   if (target > ~size)
     return grub_error (GRUB_ERR_OUT_OF_RANGE, "address is out of range");
@@ -1223,14 +1221,15 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel, void **src,
   grub_dprintf ("relocator", "cur = %p, next = %p\n", rel->chunks,
 		rel->chunks->next);
 
-  *src = (void *) chunk->src;
+  *src = chunk->srcv = grub_map_memory (chunk->src, chunk->size);
   return GRUB_ERR_NONE;
 }
 
 grub_err_t
 grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
-				  grub_addr_t *target,
-				  grub_addr_t min_addr, grub_addr_t max_addr,
+				  grub_phys_addr_t *target,
+				  grub_phys_addr_t min_addr,
+				  grub_phys_addr_t max_addr,
 				  grub_size_t size, grub_size_t align,
 				  int preference)
 {
@@ -1354,7 +1353,7 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel, void **src,
   rel->chunks = chunk;
   grub_dprintf ("relocator", "cur = %p, next = %p\n", rel->chunks,
 		rel->chunks->next);
-  *src = (void *) chunk->src;
+  *src = chunk->srcv = grub_map_memory (chunk->src, chunk->size);
   *target = chunk->target;
   return GRUB_ERR_NONE;
 }
@@ -1370,6 +1369,7 @@ grub_relocator_unload (struct grub_relocator *rel)
       unsigned i;
       for (i = 0; i < chunk->nsubchunks; i++) 
 	free_subchunk (&chunk->subchunks[i]);
+      grub_unmap_memory (chunk->srcv, chunk->size);
       next = chunk->next;
       grub_free (chunk->subchunks);
       grub_free (chunk);
@@ -1378,11 +1378,11 @@ grub_relocator_unload (struct grub_relocator *rel)
 }
 
 grub_err_t
-grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
-			       grub_addr_t *relstart, grub_size_t *relsize)
+grub_relocator_prepare_relocs (struct grub_relocator *rel, void *addr,
+			       void **relstart, grub_size_t *relsize)
 {
-  grub_addr_t rels;
-  grub_addr_t rels0;
+  grub_uint8_t *rels;
+  grub_uint8_t *rels0;
   struct grub_relocator_chunk *sorted;
   grub_size_t nchunks = 0;
   unsigned j;
@@ -1395,7 +1395,7 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
 			grub_relocator_align,
 			rel->relocators_size, &movers_chunk, 1, 1))
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
-  rels = rels0 = movers_chunk.src;
+  rels = rels0 = movers_chunk.srcv;
 
   if (relsize)
     *relsize = rel->relocators_size;
@@ -1463,23 +1463,25 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
       if (sorted[j].src < sorted[j].target)
 	{
 	  grub_cpu_relocator_backward ((void *) rels,
-				       (void *) sorted[j].src,
-				       (void *) sorted[j].target,
+				       sorted[j].srcv,
+				       grub_map_memory (sorted[j].target,
+							sorted[j].size),
 				       sorted[j].size);
 	  rels += grub_relocator_backward_size;
 	}
       if (sorted[j].src > sorted[j].target)
 	{
 	  grub_cpu_relocator_forward ((void *) rels,
-				      (void *) sorted[j].src,
-				      (void *) sorted[j].target,
+				      sorted[j].srcv,
+				      grub_map_memory (sorted[j].target,
+						       sorted[j].size),
 				      sorted[j].size);
 	  rels += grub_relocator_forward_size;
 	}
       if (sorted[j].src == sorted[j].target)
-	grub_arch_sync_caches ((void *) sorted[j].src, sorted[j].size);
+	grub_arch_sync_caches (sorted[j].srcv, sorted[j].size);
     }
-  grub_cpu_relocator_jumper ((void *) rels, addr);
+  grub_cpu_relocator_jumper ((void *) rels, (grub_addr_t) addr);
   *relstart = rels0;
   grub_free (sorted);
   return GRUB_ERR_NONE;

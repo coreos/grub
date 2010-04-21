@@ -28,4 +28,28 @@
 #define GRUB_MEMORY_CPU_AMD64_MSR		0xc0000080
 #define GRUB_MEMORY_CPU_AMD64_MSR_ON		0x00000100
 
+#ifndef ASM_FILE
+
+typedef grub_addr_t grub_phys_addr_t;
+
+static inline grub_phys_addr_t
+grub_vtop (void *a)
+{
+  return (grub_phys_addr_t) a;
+}
+
+static inline void *
+grub_map_memory (grub_phys_addr_t a, grub_size_t size __attribute__ ((unused)))
+{
+  return (void *) a;
+}
+
+static inline void
+grub_unmap_memory (void *a __attribute__ ((unused)),
+		   grub_size_t size __attribute__ ((unused)))
+{
+}
+
+#endif
+
 #endif /* ! GRUB_MEMORY_CPU_HEADER */
