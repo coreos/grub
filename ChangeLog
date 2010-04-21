@@ -1,3 +1,8 @@
+2010-04-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Refuse to compile for x86_64-efi is mcmodel=large
+	is not supported.
+
 2010-04-19  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	Add grub-mkconfig support for NetBSD.

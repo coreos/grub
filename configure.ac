@@ -413,9 +413,7 @@ if test "$target_cpu"-"$platform" = x86_64-efi; then
 		      [grub_cv_cc_mcmodel=no])
   ])
   if test "x$grub_cv_cc_mcmodel" = xno; then
-    CFLAGS="$SAVED_CFLAGS -m64 -DMCMODEL_SMALL=1"
-    TARGET_CFLAGS="$TARGET_CFLAGS -DMCMODEL_SMALL=1"
-    AC_MSG_WARN([-mcmodel=large not supported. You won't be able to use the memory over 4GiB. Upgrade your gcc])
+    AC_MSG_ERROR([-mcmodel=large not supported. Upgrade your gcc.])
   else
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large"
   fi
