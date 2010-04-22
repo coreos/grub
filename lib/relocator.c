@@ -957,7 +957,8 @@ malloc_in_range (struct grub_relocator *rel,
 			ne->end = alloc_end;
 			ne->next = extra_blocks;
 			ne->prev = &extra_blocks;
-			extra_blocks->prev = &(ne->next);
+			if (extra_blocks)
+			  extra_blocks->prev = &(ne->next);
 			extra_blocks = ne;
 			curschu->extra = ne;
 		      }
