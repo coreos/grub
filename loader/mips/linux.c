@@ -33,9 +33,6 @@
 #include <grub/pci.h>
 #include <grub/machine/time.h>
 
-#define ELF32_LOADMASK (0x00000000UL)
-#define ELF64_LOADMASK (0x0000000000000000ULL)
-
 static grub_dl_t my_mod;
 
 static int loaded;
@@ -85,7 +82,7 @@ grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   grub_err_t err;
 
   /* Linux's entry point incorrectly contains a virtual address.  */
-  entry_addr = elf->ehdr.ehdr32.e_entry & ~ELF32_LOADMASK;
+  entry_addr = elf->ehdr.ehdr32.e_entry;
 
   linux_size = grub_elf32_size (elf, &base);
   if (linux_size == 0)
@@ -101,10 +98,15 @@ grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   if (!relocator)
     return grub_errno;
 
-  err = grub_relocator_alloc_chunk_addr (relocator, (void **) &playground,
-					 target_addr, linux_size);
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   target_addr & 0x1fffffff,
+					   linux_size);
+    if (err)
+      return err;
+    playground = get_virtual_current_address (ch);
+  }
 
   *extra_mem = playground + extraoff;
 
@@ -135,7 +137,7 @@ grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   grub_err_t err;
 
   /* Linux's entry point incorrectly contains a virtual address.  */
-  entry_addr = elf->ehdr.ehdr64.e_entry & ~ELF64_LOADMASK;
+  entry_addr = elf->ehdr.ehdr64.e_entry;
 
   linux_size = grub_elf64_size (elf, &base);
   if (linux_size == 0)
@@ -151,10 +153,15 @@ grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   if (!relocator)
     return grub_errno;
 
-  err = grub_relocator_alloc_chunk_addr (relocator, (void **) &playground,
-					 target_addr, linux_size);
-  if (err)
-    return err;
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   target_addr & 0x1fffffff,
+					   linux_size);
+    if (err)
+      return err;
+    playground = get_virtual_current_address (ch);
+  }
 
   *extra_mem = playground + extraoff;
 
@@ -344,18 +351,23 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   size = grub_file_size (file);
 
-  err = grub_relocator_alloc_chunk_align (relocator, &initrd_src, 
-					  &initrd_dest,
-					  target_addr + linux_size + 0x10000,
-					  (0xffffffff - size) + 1,
-					  size, 0x10000,
-					  GRUB_RELOCATOR_PREFERENCE_NONE);
+  {
+    grub_relocator_chunk_t ch;
 
-  if (err)
-    {
-      grub_file_close (file);
-      return err;
-    }
+    err = grub_relocator_alloc_chunk_align (relocator, &ch,
+					    target_addr + linux_size + 0x10000,
+					    (0xffffffff - size) + 1,
+					    size, 0x10000,
+					    GRUB_RELOCATOR_PREFERENCE_NONE);
+
+    if (err)
+      {
+	grub_file_close (file);
+	return err;
+      }
+    initrd_src = get_virtual_current_address (ch);
+    initrd_dest = get_physical_target_address (ch) | 0x80000000;
+  }
 
   if (grub_file_read (file, initrd_src, size) != size)
     {
