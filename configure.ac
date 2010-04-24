@@ -511,11 +511,11 @@ grub_PROG_OBJCOPY_ABSOLUTE
 fi
 grub_PROG_LD_BUILD_ID_NONE
 if test "x$target_cpu" = xi386; then
-  if test ! -z "$TARGET_IMG_LDSCRIPT"; then
-    # Check symbols provided by linker script.
-    CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC}8000,--defsym,___main=0x8100"
-  fi
-  if test "x$TARGET_APPLE_CC" != x1 ; then
+  if test "$platform" != emu && test "x$TARGET_APPLE_CC" != x1 ; then
+    if test ! -z "$TARGET_IMG_LDSCRIPT"; then
+      # Check symbols provided by linker script.
+      CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC}8000 -Wl,--defsym,___main=0x8100"
+    fi
     grub_CHECK_BSS_START_SYMBOL
     grub_CHECK_END_SYMBOL
   fi
@@ -634,6 +634,12 @@ else
   TARGET_NO_MODULES=yes
 fi
 AC_SUBST(TARGET_NO_MODULES)
+
+if test "$TARGET_NO_MODULES" = yes ; then
+  # Do not convert modules, otherwise linkage may fail (Cygwin only).
+  # FIXME: Should be checked above before TARGET_OBJ2ELF is set first.
+  TARGET_OBJ2ELF=
+fi
 
 if test x"$enable_grub_emu_usb" = xno ; then
   grub_emu_usb_excuse="explicitly disabled"

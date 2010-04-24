@@ -1,3 +1,10 @@
+2010-04-24  Christian Franke  <franke@computer.org>
+
+	* configure.ac: Do not CHECK_BSS_START_SYMBOL
+	and CHECK_END_SYMBOL if grub-emu is built.
+	Unset TARGET_OBJ2ELF if grub-emu is built
+	without module support.
+
 2010-04-24  Jiro SEKIBA <jir@unicus.jp>
 
 	Nilfs2 support.
