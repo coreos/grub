@@ -19,7 +19,7 @@ grub_mkimage_SOURCES = util/grub-mkrawimage.c util/misc.c \
 grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
 util/grub-mkrawimage.c_DEPENDENCIES = Makefile
 
-pkglib_IMAGES += kernel.img
+pkglib_PROGRAMS += kernel.img
 kernel_img_SOURCES = kern/i386/qemu/startup.S \
 	kern/i386/misc.S \
 	kern/i386/coreboot/init.c \

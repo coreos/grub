@@ -5,7 +5,8 @@ COMMON_CFLAGS = -mno-app-regs
 COMMON_LDFLAGS = -melf64_sparc -mno-relax
 
 # Images.
-pkglib_IMAGES = boot.img diskboot.img kernel.img
+pkglib_IMAGES = boot.img diskboot.img
+pkglib_PROGRAMS = kernel.img
 
 # For boot.img.
 boot_img_SOURCES = boot/sparc64/ieee1275/boot.S

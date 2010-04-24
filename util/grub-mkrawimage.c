@@ -36,6 +36,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <grub/efi/pe32.h>
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
@@ -43,6 +44,8 @@
 #include "progname.h"
 
 #define ALIGN_ADDR(x) (ALIGN_UP((x), GRUB_TARGET_SIZEOF_VOID_P))
+
+#define SECTION_ALIGN 1
 
 #ifdef ENABLE_LZMA
 #include <grub/lib/LzmaEnc.h>
@@ -97,6 +100,162 @@ compress_kernel (char *kernel_img, size_t kernel_size,
 
 #endif	/* No lzma compression */
 
+/* Determine if this section is a text section. Return false if this
+   section is not allocated.  */
+static int
+is_text_section (Elf_Shdr *s)
+{
+  if (grub_target_to_host32 (s->sh_type) != SHT_PROGBITS)
+    return 0;
+  return ((grub_target_to_host32 (s->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC))
+	  == (SHF_EXECINSTR | SHF_ALLOC));
+}
+
+/* Determine if this section is a data section. This assumes that
+   BSS is also a data section, since the converter initializes BSS
+   when producing PE32 to avoid a bug in EFI implementations.  */
+static int
+is_data_section (Elf_Shdr *s)
+{
+  if (grub_target_to_host32 (s->sh_type) != SHT_PROGBITS)
+    return 0;
+  return ((grub_target_to_host32 (s->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC))
+	  == SHF_ALLOC);
+}
+
+/* Locate section addresses by merging code sections and data sections
+   into .text and .data, respectively. Return the array of section
+   addresses.  */
+static Elf_Addr *
+locate_sections (Elf_Shdr *sections, Elf_Half section_entsize,
+		 Elf_Half num_sections, const char *strtab,
+		 grub_size_t *exec_size, grub_size_t *kernel_sz)
+{
+  int i;
+  Elf_Addr current_address;
+  Elf_Addr *section_addresses;
+  Elf_Shdr *s;
+
+  section_addresses = xmalloc (sizeof (*section_addresses) * num_sections);
+  memset (section_addresses, 0, sizeof (*section_addresses) * num_sections);
+
+  current_address = 0;
+
+  /* .text */
+  for (i = 0, s = sections;
+       i < num_sections;
+       i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
+    if (is_text_section (s))
+      {
+	Elf_Word align = grub_host_to_target32 (s->sh_addralign);
+	const char *name = strtab + grub_host_to_target32 (s->sh_name);
+
+	if (align)
+	  current_address = ALIGN_UP (current_address, align);
+
+	grub_util_info ("locating the section %s at 0x%x",
+			name, current_address);
+	section_addresses[i] = current_address;
+	current_address += grub_host_to_target32 (s->sh_size);
+      }
+
+  current_address = ALIGN_UP (current_address, SECTION_ALIGN);
+  *exec_size = current_address;
+
+  /* .data */
+  for (i = 0, s = sections;
+       i < num_sections;
+       i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
+    if (is_data_section (s))
+      {
+	Elf_Word align = grub_host_to_target32 (s->sh_addralign);
+	const char *name = strtab + grub_host_to_target32 (s->sh_name);
+
+	if (align)
+	  current_address = ALIGN_UP (current_address, align);
+
+	grub_util_info ("locating the section %s at 0x%x",
+			name, current_address);
+	section_addresses[i] = current_address;
+	current_address += grub_host_to_target32 (s->sh_size);
+      }
+
+  current_address = ALIGN_UP (current_address, SECTION_ALIGN);
+  *kernel_sz = current_address;
+  return section_addresses;
+}
+
+/* Return if the ELF header is valid.  */
+static int
+check_elf_header (Elf_Ehdr *e, size_t size)
+{
+  if (size < sizeof (*e)
+      || e->e_ident[EI_MAG0] != ELFMAG0
+      || e->e_ident[EI_MAG1] != ELFMAG1
+      || e->e_ident[EI_MAG2] != ELFMAG2
+      || e->e_ident[EI_MAG3] != ELFMAG3
+      || e->e_ident[EI_VERSION] != EV_CURRENT
+      || e->e_version != grub_host_to_target32 (EV_CURRENT))
+    return 0;
+
+  return 1;
+}
+
+static char *
+load_image (const char *kernel_path, grub_size_t *exec_size, 
+	    grub_size_t *kernel_sz, grub_size_t total_module_size)
+{
+  char *kernel_img, *out_img;
+  const char *strtab;
+  Elf_Ehdr *e;
+  Elf_Shdr *sections;
+  Elf_Addr *section_addresses;
+  int i;
+  Elf_Shdr *s;
+  Elf_Half num_sections;
+  Elf_Off section_offset;
+  Elf_Half section_entsize;
+  grub_size_t kernel_size;
+
+  kernel_size = grub_util_get_image_size (kernel_path);
+  kernel_img = xmalloc (kernel_size);
+  grub_util_load_image (kernel_path, kernel_img);
+
+  e = (Elf_Ehdr *) kernel_img;
+  if (! check_elf_header (e, kernel_size))
+    grub_util_error ("invalid ELF header");
+
+  section_offset = grub_target_to_host32 (e->e_shoff);
+  section_entsize = grub_target_to_host16 (e->e_shentsize);
+  num_sections = grub_target_to_host16 (e->e_shnum);
+
+  if (kernel_size < section_offset + section_entsize * num_sections)
+    grub_util_error ("invalid ELF format");
+
+  sections = (Elf_Shdr *) (kernel_img + section_offset);
+
+  /* Relocate sections then symbols in the virtual address space.  */
+  s = (Elf_Shdr *) ((char *) sections
+		      + grub_host_to_target16 (e->e_shstrndx) * section_entsize);
+  strtab = (char *) e + grub_host_to_target32 (s->sh_offset);
+
+  section_addresses = locate_sections (sections, section_entsize,
+				       num_sections, strtab,
+				       exec_size, kernel_sz);
+  out_img = xmalloc (*kernel_sz + total_module_size);
+
+  for (i = 0, s = sections;
+       i < num_sections;
+       i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
+    if (is_data_section (s) || is_text_section (s))
+      memcpy (out_img + section_addresses[i],
+	      kernel_img + grub_host_to_target32 (s->sh_offset),
+	      grub_host_to_target32 (s->sh_size));
+  free (kernel_img);
+
+  return out_img;
+}
+
 static void
 generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 		char *memdisk_path, char *font_path, char *config_path,
@@ -109,17 +268,15 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 )
 {
   char *kernel_img, *core_img;
-  size_t kernel_size, total_module_size, core_size;
+  size_t kernel_size, total_module_size, core_size, exec_size;
   size_t memdisk_size = 0, font_size = 0, config_size = 0, config_size_pure = 0;
   char *kernel_path;
   size_t offset;
   struct grub_util_path_list *path_list, *p, *next;
   struct grub_module_info *modinfo;
-
   path_list = grub_util_resolve_dependencies (dir, "moddep.lst", mods);
 
   kernel_path = grub_util_get_path (dir, "kernel.img");
-  kernel_size = grub_util_get_image_size (kernel_path);
 
   total_module_size = sizeof (struct grub_module_info);
 
@@ -150,8 +307,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
   grub_util_info ("the total module size is 0x%x", total_module_size);
 
-  kernel_img = xmalloc (kernel_size + total_module_size);
-  grub_util_load_image (kernel_path, kernel_img);
+  kernel_img = load_image (kernel_path, &exec_size, &kernel_size,
+			   total_module_size);
 
   if (GRUB_KERNEL_MACHINE_PREFIX + strlen (prefix) + 1 > GRUB_KERNEL_MACHINE_DATA_END)
     grub_util_error (_("prefix is too long"));
@@ -237,8 +394,10 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE))
     = grub_host_to_target32 (total_module_size);
 #endif
+#ifdef GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE
   *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE))
     = grub_host_to_target32 (kernel_size);
+#endif
 #ifdef GRUB_KERNEL_MACHINE_COMPRESSED_SIZE
   *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE))
     = grub_host_to_target32 (core_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
