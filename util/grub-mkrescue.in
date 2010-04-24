@@ -212,7 +212,7 @@ fi
 
 # build bootx64.efi
 if test -e "${efi64_dir}" ; then
-    echo "Generates bootx64.efi"
+    echo "Enabling EFI64 support ..."
     grub-mkimage -d "${efi64_dir}" -o "${efi_dir}"/efi/boot/bootx64.efi --prefix=/boot/grub/x86_64-efi \
         search iso9660 configfile sh 
 
@@ -231,7 +231,7 @@ if test x"${efi_dir}" != x; then
 fi
 
 # build iso image
-grub-mkisofs ${grub_mkisofs_arguments} --protective-msdos-label -o ${output_image} -r ${iso9660_dir} ${source}
+xorrisofs ${grub_mkisofs_arguments} --protective-msdos-label -o ${output_image} -r ${iso9660_dir} ${source}
 rm -rf ${iso9660_dir}
 
 rm -f ${embed_img}
