@@ -14,13 +14,6 @@ else
 grub_mkdevicemap_SOURCES += util/devicemap.c
 endif
 
-# For grub-mkelfimage.
-bin_UTILITIES += grub-mkelfimage
-grub_mkelfimage_SOURCES = gnulib/progname.c \
-	util/elf/grub-mkimage.c util/misc.c \
-	util/resolve.c
-util/elf/grub-mkimage.c_DEPENDENCIES = Makefile
-
 # For grub-mkimage.
 bin_UTILITIES += grub-mkimage
 grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkimage.c util/misc.c \
