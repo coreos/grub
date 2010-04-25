@@ -19,6 +19,9 @@
 #ifndef GRUB_BOOT_MACHINE_HEADER
 #define GRUB_BOOT_MACHINE_HEADER	1
 
+#define MACHINE I386_PC
+#include <grub/offsets.h>
+
 /* The signature for bootloader.  */
 #define GRUB_BOOT_MACHINE_SIGNATURE	0xaa55
 
@@ -57,9 +60,6 @@
    floppy.  */
 #define GRUB_BOOT_MACHINE_BIOS_HD_FLAG	0x80
 
-/* The segment where the kernel is loaded.  */
-#define GRUB_BOOT_MACHINE_KERNEL_SEG	0x800
-
 /* The address where the kernel is loaded.  */
 #define GRUB_BOOT_MACHINE_KERNEL_ADDR	(GRUB_BOOT_MACHINE_KERNEL_SEG << 4)
 
@@ -68,16 +68,7 @@
 
 #define GRUB_BOOT_MACHINE_PXE_DL	0x7f
 
-#ifndef ASM_FILE
-
 /* This is the blocklist used in the diskboot image.  */
-struct grub_boot_blocklist
-{
-  grub_uint64_t start;
-  grub_uint16_t len;
-  grub_uint16_t segment;
-} __attribute__ ((packed));
-
-#endif /* ! ASM_FILE */
+#define grub_boot_blocklist grub_pc_bios_boot_blocklist
 
 #endif /* ! BOOT_MACHINE_HEADER */
