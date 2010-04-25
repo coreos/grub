@@ -30,6 +30,7 @@
 #include <grub/util/misc.h>
 #include <grub/util/resolve.h>
 #include <grub/misc.h>
+#include <time.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -45,7 +46,19 @@
 
 #define ALIGN_ADDR(x) (ALIGN_UP((x), GRUB_TARGET_SIZEOF_VOID_P))
 
+#ifdef GRUB_MACHINE_EFI
+#define SECTION_ALIGN GRUB_PE32_SECTION_ALIGNMENT
+#define VADDR_OFFSET ALIGN_UP (sizeof (struct grub_pe32_header) + 5 * sizeof (struct grub_pe32_section_table), SECTION_ALIGN)
+#else
 #define SECTION_ALIGN 1
+#define VADDR_OFFSET 0
+#endif
+
+#if GRUB_TARGET_WORDSIZE == 32
+# define grub_target_to_host(val) grub_target_to_host32(val)
+#elif GRUB_TARGET_WORDSIZE == 64
+# define grub_target_to_host(val) grub_target_to_host64(val)
+#endif
 
 #ifdef ENABLE_LZMA
 #include <grub/lib/LzmaEnc.h>
@@ -100,13 +113,436 @@ compress_kernel (char *kernel_img, size_t kernel_size,
 
 #endif	/* No lzma compression */
 
+#ifdef GRUB_MACHINE_EFI
+
+/* Relocate symbols; note that this function overwrites the symbol table.
+   Return the address of a start symbol.  */
+static Elf_Addr
+relocate_symbols (Elf_Ehdr *e, Elf_Shdr *sections,
+		  Elf_Shdr *symtab_section, Elf_Addr *section_addresses,
+		  Elf_Half section_entsize, Elf_Half num_sections)
+{
+  Elf_Word symtab_size, sym_size, num_syms;
+  Elf_Off symtab_offset;
+  Elf_Addr start_address = 0;
+  Elf_Sym *sym;
+  Elf_Word i;
+  Elf_Shdr *strtab_section;
+  const char *strtab;
+
+  strtab_section
+    = (Elf_Shdr *) ((char *) sections
+		      + (grub_target_to_host32 (symtab_section->sh_link)
+			 * section_entsize));
+  strtab = (char *) e + grub_target_to_host32 (strtab_section->sh_offset);
+
+  symtab_size = grub_target_to_host32 (symtab_section->sh_size);
+  sym_size = grub_target_to_host32 (symtab_section->sh_entsize);
+  symtab_offset = grub_target_to_host32 (symtab_section->sh_offset);
+  num_syms = symtab_size / sym_size;
+
+  for (i = 0, sym = (Elf_Sym *) ((char *) e + symtab_offset);
+       i < num_syms;
+       i++, sym = (Elf_Sym *) ((char *) sym + sym_size))
+    {
+      Elf_Section index;
+      const char *name;
+
+      name = strtab + grub_target_to_host32 (sym->st_name);
+
+      index = grub_target_to_host16 (sym->st_shndx);
+      if (index == STN_ABS)
+        {
+          continue;
+        }
+      else if ((index == STN_UNDEF))
+	{
+	  if (sym->st_name)
+	    grub_util_error ("undefined symbol %s", name);
+	  else
+	    continue;
+	}
+      else if (index >= num_sections)
+	grub_util_error ("section %d does not exist", index);
+
+      sym->st_value = (grub_target_to_host32 (sym->st_value)
+		       + section_addresses[index]);
+      grub_util_info ("locating %s at 0x%x", name, sym->st_value);
+
+      if (! start_address)
+	if (strcmp (name, "_start") == 0 || strcmp (name, "start") == 0)
+	  start_address = sym->st_value;
+    }
+
+  return start_address;
+}
+
+/* Return the address of a symbol at the index I in the section S.  */
+static Elf_Addr
+get_symbol_address (Elf_Ehdr *e, Elf_Shdr *s, Elf_Word i)
+{
+  Elf_Sym *sym;
+
+  sym = (Elf_Sym *) ((char *) e
+		       + grub_target_to_host32 (s->sh_offset)
+		       + i * grub_target_to_host32 (s->sh_entsize));
+  return sym->st_value;
+}
+
+/* Return the address of a modified value.  */
+static Elf_Addr *
+get_target_address (Elf_Ehdr *e, Elf_Shdr *s, Elf_Addr offset)
+{
+  return (Elf_Addr *) ((char *) e + grub_target_to_host32 (s->sh_offset) + offset);
+}
+
+/* Deal with relocation information. This function relocates addresses
+   within the virtual address space starting from 0. So only relative
+   addresses can be fully resolved. Absolute addresses must be relocated
+   again by a PE32 relocator when loaded.  */
+static void
+relocate_addresses (Elf_Ehdr *e, Elf_Shdr *sections,
+		    Elf_Addr *section_addresses,
+		    Elf_Half section_entsize, Elf_Half num_sections,
+		    const char *strtab)
+{
+  Elf_Half i;
+  Elf_Shdr *s;
+
+  for (i = 0, s = sections;
+       i < num_sections;
+       i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
+    if ((s->sh_type == grub_host_to_target32 (SHT_REL)) ||
+        (s->sh_type == grub_host_to_target32 (SHT_RELA)))
+      {
+	Elf_Rela *r;
+	Elf_Word rtab_size, r_size, num_rs;
+	Elf_Off rtab_offset;
+	Elf_Shdr *symtab_section;
+	Elf_Word target_section_index;
+	Elf_Addr target_section_addr;
+	Elf_Shdr *target_section;
+	Elf_Word j;
+
+	symtab_section = (Elf_Shdr *) ((char *) sections
+					 + (grub_target_to_host32 (s->sh_link)
+					    * section_entsize));
+	target_section_index = grub_target_to_host32 (s->sh_info);
+	target_section_addr = section_addresses[target_section_index];
+	target_section = (Elf_Shdr *) ((char *) sections
+					 + (target_section_index
+					    * section_entsize));
+
+	grub_util_info ("dealing with the relocation section %s for %s",
+			strtab + grub_target_to_host32 (s->sh_name),
+			strtab + grub_target_to_host32 (target_section->sh_name));
+
+	rtab_size = grub_target_to_host32 (s->sh_size);
+	r_size = grub_target_to_host32 (s->sh_entsize);
+	rtab_offset = grub_target_to_host32 (s->sh_offset);
+	num_rs = rtab_size / r_size;
+
+	for (j = 0, r = (Elf_Rela *) ((char *) e + rtab_offset);
+	     j < num_rs;
+	     j++, r = (Elf_Rela *) ((char *) r + r_size))
+	  {
+            Elf_Addr info;
+	    Elf_Addr offset;
+	    Elf_Addr sym_addr;
+	    Elf_Addr *target;
+	    Elf_Addr addend;
+
+	    offset = grub_target_to_host (r->r_offset);
+	    target = get_target_address (e, target_section, offset);
+	    info = grub_target_to_host (r->r_info);
+	    sym_addr = get_symbol_address (e, symtab_section,
+					   ELF_R_SYM (info));
+
+            addend = (s->sh_type == grub_target_to_host32 (SHT_RELA)) ?
+	      r->r_addend : 0;
+
+            switch (ELF_R_TYPE (info))
+	      {
+#if GRUB_TARGET_SIZEOF_VOID_P == 4
+	      case R_386_NONE:
+		break;
+
+	      case R_386_32:
+		/* This is absolute.  */
+		*target = grub_host_to_target32 (grub_target_to_host32 (*target)
+                                            + addend + sym_addr);
+		grub_util_info ("relocating an R_386_32 entry to 0x%x at the offset 0x%x",
+				*target, offset);
+		break;
+
+	      case R_386_PC32:
+		/* This is relative.  */
+		*target = grub_host_to_target32 (grub_target_to_host32 (*target)
+						 + addend + sym_addr
+						 - target_section_addr - offset
+						 - VADDR_OFFSET);
+		grub_util_info ("relocating an R_386_PC32 entry to 0x%x at the offset 0x%x",
+				*target, offset);
+		break;
+
+#else
+
+              case R_X86_64_NONE:
+                break;
+
+              case R_X86_64_64:
+		*target = grub_host_to_target64 (grub_target_to_host64 (*target)
+					    + addend + sym_addr);
+		grub_util_info ("relocating an R_X86_64_64 entry to 0x%llx at the offset 0x%llx",
+				*target, offset);
+		break;
+
+              case R_X86_64_PC32:
+                {
+                  grub_uint32_t *t32 = (grub_uint32_t *) target;
+                  *t32 = grub_host_to_target64 (grub_target_to_host32 (*t32)
+						+ addend + sym_addr
+						- target_section_addr - offset
+						- VADDR_OFFSET);
+                  grub_util_info ("relocating an R_X86_64_PC32 entry to 0x%x at the offset 0x%llx",
+                                  *t32, offset);
+                  break;
+                }
+
+              case R_X86_64_32:
+              case R_X86_64_32S:
+                {
+                  grub_uint32_t *t32 = (grub_uint32_t *) target;
+                  *t32 = grub_host_to_target64 (grub_target_to_host32 (*t32)
+                                           + addend + sym_addr);
+                  grub_util_info ("relocating an R_X86_64_32(S) entry to 0x%x at the offset 0x%llx",
+                                  *t32, offset);
+                  break;
+                }
+
+#endif
+	      default:
+		grub_util_error ("unknown relocation type %d",
+				 ELF_R_TYPE (info));
+		break;
+	      }
+	  }
+      }
+}
+
+struct fixup_block_list
+{
+  struct fixup_block_list *next;
+  int state;
+  struct grub_pe32_fixup_block b;
+};
+
+/* Add a PE32's fixup entry for a relocation. Return the resulting address
+   after having written to the file OUT.  */
+Elf_Addr
+add_fixup_entry (struct fixup_block_list **cblock, grub_uint16_t type,
+		 Elf_Addr addr, int flush, Elf_Addr current_address)
+{
+  struct grub_pe32_fixup_block *b;
+
+  b = &((*cblock)->b);
+
+  /* First, check if it is necessary to write out the current block.  */
+  if ((*cblock)->state)
+    {
+      if (flush || addr < b->page_rva || b->page_rva + 0x1000 <= addr)
+	{
+	  grub_uint32_t size;
+
+	  if (flush)
+	    {
+	      /* Add as much padding as necessary to align the address
+		 with a section boundary.  */
+	      Elf_Addr next_address;
+	      unsigned padding_size;
+              size_t index;
+
+	      next_address = current_address + b->block_size;
+	      padding_size = ((ALIGN_UP (next_address, SECTION_ALIGN)
+			       - next_address)
+			      >> 1);
+              index = ((b->block_size - sizeof (*b)) >> 1);
+              grub_util_info ("adding %d padding fixup entries", padding_size);
+	      while (padding_size--)
+		{
+		  b->entries[index++] = 0;
+		  b->block_size += 2;
+		}
+	    }
+          else if (b->block_size & (8 - 1))
+            {
+	      /* If not aligned with a 32-bit boundary, add
+		 a padding entry.  */
+              size_t index;
+
+              grub_util_info ("adding a padding fixup entry");
+              index = ((b->block_size - sizeof (*b)) >> 1);
+              b->entries[index] = 0;
+              b->block_size += 2;
+            }
+
+          /* Flush it.  */
+          grub_util_info ("writing %d bytes of a fixup block starting at 0x%x",
+                          b->block_size, b->page_rva);
+          size = b->block_size;
+	  current_address += size;
+	  b->page_rva = grub_host_to_target32 (b->page_rva);
+	  b->block_size = grub_host_to_target32 (b->block_size);
+	  (*cblock)->next = xmalloc (sizeof (**cblock) + 2 * 0x1000);
+	  memset ((*cblock)->next, 0, sizeof (**cblock) + 2 * 0x1000);
+	  *cblock = (*cblock)->next;
+	}
+    }
+
+  b = &((*cblock)->b);
+
+  if (! flush)
+    {
+      grub_uint16_t entry;
+      size_t index;
+
+      /* If not allocated yet, allocate a block with enough entries.  */
+      if (! (*cblock)->state)
+	{
+	  (*cblock)->state = 1;
+
+	  /* The spec does not mention the requirement of a Page RVA.
+	     Here, align the address with a 4K boundary for safety.  */
+	  b->page_rva = (addr & ~(0x1000 - 1));
+	  b->block_size = sizeof (*b);
+	}
+
+      /* Sanity check.  */
+      if (b->block_size >= sizeof (*b) + 2 * 0x1000)
+	grub_util_error ("too many fixup entries");
+
+      /* Add a new entry.  */
+      index = ((b->block_size - sizeof (*b)) >> 1);
+      entry = GRUB_PE32_FIXUP_ENTRY (type, addr - b->page_rva);
+      b->entries[index] = grub_host_to_target16 (entry);
+      b->block_size += 2;
+    }
+
+  return current_address;
+}
+
+/* Make a .reloc section.  */
+static Elf_Addr
+make_reloc_section (Elf_Ehdr *e, void **out,
+		    Elf_Addr *section_addresses, Elf_Shdr *sections,
+		    Elf_Half section_entsize, Elf_Half num_sections,
+		    const char *strtab)
+{
+  Elf_Half i;
+  Elf_Shdr *s;
+  struct fixup_block_list *lst, *lst0;
+  Elf_Addr current_address = 0;
+
+  lst = lst0 = xmalloc (sizeof (*lst) + 2 * 0x1000);
+  memset (lst, 0, sizeof (*lst) + 2 * 0x1000);
+
+  for (i = 0, s = sections;
+       i < num_sections;
+       i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
+    if ((s->sh_type == grub_cpu_to_le32 (SHT_REL)) ||
+        (s->sh_type == grub_cpu_to_le32 (SHT_RELA)))
+      {
+	Elf_Rel *r;
+	Elf_Word rtab_size, r_size, num_rs;
+	Elf_Off rtab_offset;
+	Elf_Addr section_address;
+	Elf_Word j;
+
+	grub_util_info ("translating the relocation section %s",
+			strtab + grub_le_to_cpu32 (s->sh_name));
+
+	rtab_size = grub_le_to_cpu32 (s->sh_size);
+	r_size = grub_le_to_cpu32 (s->sh_entsize);
+	rtab_offset = grub_le_to_cpu32 (s->sh_offset);
+	num_rs = rtab_size / r_size;
+
+	section_address = section_addresses[grub_le_to_cpu32 (s->sh_info)];
+
+	for (j = 0, r = (Elf_Rel *) ((char *) e + rtab_offset);
+	     j < num_rs;
+	     j++, r = (Elf_Rel *) ((char *) r + r_size))
+	  {
+	    Elf_Addr info;
+	    Elf_Addr offset;
+
+	    offset = grub_le_to_cpu32 (r->r_offset);
+	    info = grub_le_to_cpu32 (r->r_info);
+
+	    /* Necessary to relocate only absolute addresses.  */
+#if GRUB_TARGET_SIZEOF_VOID_P == 4
+	    if (ELF_R_TYPE (info) == R_386_32)
+	      {
+		Elf_Addr addr;
+
+		addr = section_address + offset;
+		grub_util_info ("adding a relocation entry for 0x%x", addr);
+		current_address = add_fixup_entry (&lst,
+						   GRUB_PE32_REL_BASED_HIGHLOW,
+						   addr, 0, current_address);
+	      }
+#else
+	    if ((ELF_R_TYPE (info) == R_X86_64_32) ||
+                (ELF_R_TYPE (info) == R_X86_64_32S))
+	      {
+		grub_util_error ("can\'t add fixup entry for R_X86_64_32(S)");
+	      }
+	    else if (ELF_R_TYPE (info) == R_X86_64_64)
+	      {
+		Elf_Addr addr;
+
+		addr = section_address + offset;
+		grub_util_info ("adding a relocation entry for 0x%llx", addr);
+		current_address = add_fixup_entry (&lst,
+						   GRUB_PE32_REL_BASED_DIR64,
+						   addr,
+						   0, current_address);
+	      }
+#endif
+	  }
+      }
+
+  current_address = add_fixup_entry (&lst, 0, 0, 1, current_address);
+
+  {
+    grub_uint8_t *ptr;
+    ptr = *out = xmalloc (current_address);
+    for (lst = lst0; lst; lst = lst->next)
+      if (lst->state)
+	{
+	  memcpy (ptr, &lst->b, grub_target_to_host32 (lst->b.block_size));
+	  ptr += grub_target_to_host32 (lst->b.block_size);
+	}
+    if (current_address + *out != ptr)
+      {
+	grub_util_error ("Bug detected %d != %d\n", ptr - (grub_uint8_t *) *out,
+			 current_address);
+      }
+  }
+
+  return current_address;
+}
+
+#endif
+
 /* Determine if this section is a text section. Return false if this
    section is not allocated.  */
 static int
 is_text_section (Elf_Shdr *s)
 {
+#ifndef GRUB_MACHINE_EFI
   if (grub_target_to_host32 (s->sh_type) != SHT_PROGBITS)
     return 0;
+#endif
   return ((grub_target_to_host32 (s->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC))
 	  == (SHF_EXECINSTR | SHF_ALLOC));
 }
@@ -117,8 +553,10 @@ is_text_section (Elf_Shdr *s)
 static int
 is_data_section (Elf_Shdr *s)
 {
+#ifndef GRUB_MACHINE_EFI
   if (grub_target_to_host32 (s->sh_type) != SHT_PROGBITS)
     return 0;
+#endif
   return ((grub_target_to_host32 (s->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC))
 	  == SHF_ALLOC);
 }
@@ -151,7 +589,8 @@ locate_sections (Elf_Shdr *sections, Elf_Half section_entsize,
 	const char *name = strtab + grub_host_to_target32 (s->sh_name);
 
 	if (align)
-	  current_address = ALIGN_UP (current_address, align);
+	  current_address = ALIGN_UP (current_address + VADDR_OFFSET, align)
+	    - VADDR_OFFSET;
 
 	grub_util_info ("locating the section %s at 0x%x",
 			name, current_address);
@@ -159,7 +598,8 @@ locate_sections (Elf_Shdr *sections, Elf_Half section_entsize,
 	current_address += grub_host_to_target32 (s->sh_size);
       }
 
-  current_address = ALIGN_UP (current_address, SECTION_ALIGN);
+  current_address = ALIGN_UP (current_address + VADDR_OFFSET, SECTION_ALIGN)
+    - VADDR_OFFSET;
   *exec_size = current_address;
 
   /* .data */
@@ -172,7 +612,8 @@ locate_sections (Elf_Shdr *sections, Elf_Half section_entsize,
 	const char *name = strtab + grub_host_to_target32 (s->sh_name);
 
 	if (align)
-	  current_address = ALIGN_UP (current_address, align);
+	  current_address = ALIGN_UP (current_address + VADDR_OFFSET, align)
+	    - VADDR_OFFSET;
 
 	grub_util_info ("locating the section %s at 0x%x",
 			name, current_address);
@@ -180,7 +621,8 @@ locate_sections (Elf_Shdr *sections, Elf_Half section_entsize,
 	current_address += grub_host_to_target32 (s->sh_size);
       }
 
-  current_address = ALIGN_UP (current_address, SECTION_ALIGN);
+  current_address = ALIGN_UP (current_address + VADDR_OFFSET, SECTION_ALIGN)
+    - VADDR_OFFSET;
   *kernel_sz = current_address;
   return section_addresses;
 }
@@ -203,19 +645,25 @@ check_elf_header (Elf_Ehdr *e, size_t size)
 
 static char *
 load_image (const char *kernel_path, grub_size_t *exec_size, 
-	    grub_size_t *kernel_sz, grub_size_t total_module_size)
+	    grub_size_t *kernel_sz, grub_size_t *bss_size,
+	    grub_size_t total_module_size, Elf_Addr *start,
+	    void **reloc_section, grub_size_t *reloc_size)
 {
   char *kernel_img, *out_img;
   const char *strtab;
   Elf_Ehdr *e;
   Elf_Shdr *sections;
   Elf_Addr *section_addresses;
+  Elf_Addr *section_vaddresses;
   int i;
   Elf_Shdr *s;
   Elf_Half num_sections;
   Elf_Off section_offset;
   Elf_Half section_entsize;
   grub_size_t kernel_size;
+  Elf_Shdr *symtab_section;
+
+  *start = 0;
 
   kernel_size = grub_util_get_image_size (kernel_path);
   kernel_img = xmalloc (kernel_size);
@@ -242,15 +690,93 @@ load_image (const char *kernel_path, grub_size_t *exec_size,
   section_addresses = locate_sections (sections, section_entsize,
 				       num_sections, strtab,
 				       exec_size, kernel_sz);
+
+#ifdef GRUB_MACHINE_EFI
+  {
+    section_vaddresses = xmalloc (sizeof (*section_addresses) * num_sections);
+
+    for (i = 0; i < num_sections; i++)
+      section_vaddresses[i] = section_addresses[i] + VADDR_OFFSET;
+
+#if 0
+    {
+      Elf_Addr current_address = *kernel_sz;
+
+      for (i = 0, s = sections;
+	   i < num_sections;
+	   i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
+	if (grub_target_to_host32 (s->sh_type) == SHT_NOBITS)
+	  {
+	    Elf_Word align = grub_host_to_target32 (s->sh_addralign);
+	    const char *name = strtab + grub_host_to_target32 (s->sh_name);
+
+	    if (align)
+	      current_address = ALIGN_UP (current_address + VADDR_OFFSET, align)
+		- VADDR_OFFSET;
+	
+	    grub_util_info ("locating the section %s at 0x%x",
+			    name, current_address);
+	    section_vaddresses[i] = current_address + VADDR_OFFSET;
+	    current_address += grub_host_to_target32 (s->sh_size);
+	  }
+      current_address = ALIGN_UP (current_address + VADDR_OFFSET, SECTION_ALIGN)
+	- VADDR_OFFSET;
+      *bss_size = current_address - *kernel_sz;
+    }
+#else
+    *bss_size = 0;
+#endif
+
+    symtab_section = NULL;
+    for (i = 0, s = sections;
+	 i < num_sections;
+	 i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
+      if (s->sh_type == grub_host_to_target32 (SHT_SYMTAB))
+	{
+	  symtab_section = s;
+	  break;
+	}
+
+    if (! symtab_section)
+      grub_util_error ("no symbol table");
+
+    *start = relocate_symbols (e, sections, symtab_section,
+			       section_vaddresses, section_entsize,
+			       num_sections);
+    if (*start == 0)
+      grub_util_error ("start symbol is not defined");
+
+    /* Resolve addresses in the virtual address space.  */
+    relocate_addresses (e, sections, section_addresses, section_entsize,
+			num_sections, strtab);
+
+    *reloc_size = make_reloc_section (e, reloc_section,
+				      section_vaddresses, sections,
+				      section_entsize, num_sections,
+				      strtab);
+
+  }
+#else
+  *bss_size = 0;
+  *reloc_size = 0;
+  *reloc_section = NULL;
+#endif
+
   out_img = xmalloc (*kernel_sz + total_module_size);
 
   for (i = 0, s = sections;
        i < num_sections;
        i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
     if (is_data_section (s) || is_text_section (s))
-      memcpy (out_img + section_addresses[i],
-	      kernel_img + grub_host_to_target32 (s->sh_offset),
-	      grub_host_to_target32 (s->sh_size));
+      {
+	if (grub_target_to_host32 (s->sh_type) == SHT_NOBITS)
+	  memset (out_img + section_addresses[i], 0,
+		  grub_host_to_target32 (s->sh_size));
+	else
+	  memcpy (out_img + section_addresses[i],
+		  kernel_img + grub_host_to_target32 (s->sh_offset),
+		  grub_host_to_target32 (s->sh_size));
+      }
   free (kernel_img);
 
   return out_img;
@@ -274,6 +800,10 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   size_t offset;
   struct grub_util_path_list *path_list, *p, *next;
   struct grub_module_info *modinfo;
+  grub_size_t bss_size;
+  Elf_Addr start_address;
+  void *rel_section;
+  grub_size_t reloc_size;
   path_list = grub_util_resolve_dependencies (dir, "moddep.lst", mods);
 
   kernel_path = grub_util_get_path (dir, "kernel.img");
@@ -307,8 +837,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
   grub_util_info ("the total module size is 0x%x", total_module_size);
 
-  kernel_img = load_image (kernel_path, &exec_size, &kernel_size,
-			   total_module_size);
+  kernel_img = load_image (kernel_path, &exec_size, &kernel_size, &bss_size,
+			   total_module_size, &start_address, &rel_section,
+			   &reloc_size);
 
   if (GRUB_KERNEL_MACHINE_PREFIX + strlen (prefix) + 1 > GRUB_KERNEL_MACHINE_DATA_END)
     grub_util_error (_("prefix is too long"));
@@ -455,6 +986,145 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     grub_util_write_image (boot_img, boot_size, out);
     free (boot_img);
     free (boot_path);
+  }
+#elif defined(GRUB_MACHINE_EFI)
+  {
+    void *pe_img;
+    size_t pe_size;
+    struct grub_pe32_header *header;
+    struct grub_pe32_coff_header *c;
+    struct grub_pe32_optional_header *o;
+    struct grub_pe32_section_table *text_section, *data_section;
+    struct grub_pe32_section_table *mods_section, *reloc_section;
+    static const grub_uint8_t stub[] = GRUB_PE32_MSDOS_STUB;
+    int header_size = ALIGN_UP (sizeof (struct grub_pe32_header)
+				+ 5 * sizeof (struct grub_pe32_section_table),
+				SECTION_ALIGN);
+    int reloc_addr = ALIGN_UP (header_size + core_size, SECTION_ALIGN);
+
+    pe_size = ALIGN_UP (reloc_addr + reloc_size, SECTION_ALIGN);
+    pe_img = xmalloc (reloc_addr + reloc_size);
+    memset (pe_img, 0, header_size);
+    memcpy (pe_img + header_size, core_img, core_size);
+    memcpy (pe_img + reloc_addr, rel_section, reloc_size);
+    header = pe_img;
+
+    /* The magic.  */
+    memcpy (header->msdos_stub, stub, sizeof (header->msdos_stub));
+    memcpy (header->signature, "PE\0\0", sizeof (header->signature));
+
+    /* The COFF file header.  */
+    c = &header->coff_header;
+#if GRUB_TARGET_SIZEOF_VOID_P == 4
+    c->machine = grub_host_to_target16 (GRUB_PE32_MACHINE_I386);
+#else
+    c->machine = grub_host_to_target16 (GRUB_PE32_MACHINE_X86_64);
+#endif
+
+    c->num_sections = grub_host_to_target16 (4);
+    c->time = grub_host_to_target32 (time (0));
+    c->optional_header_size = grub_host_to_target16 (sizeof (header->optional_header));
+    c->characteristics = grub_host_to_target16 (GRUB_PE32_EXECUTABLE_IMAGE
+						| GRUB_PE32_LINE_NUMS_STRIPPED
+#if GRUB_TARGET_SIZEOF_VOID_P == 4
+						| GRUB_PE32_32BIT_MACHINE
+#endif
+						| GRUB_PE32_LOCAL_SYMS_STRIPPED
+						| GRUB_PE32_DEBUG_STRIPPED);
+
+    /* The PE Optional header.  */
+    o = &header->optional_header;
+    o->magic = grub_host_to_target16 (GRUB_PE32_PE32_MAGIC);
+    o->code_size = grub_host_to_target32 (exec_size);
+    o->data_size = grub_cpu_to_le32 (reloc_addr - exec_size);
+    o->bss_size = grub_cpu_to_le32 (bss_size);
+    o->entry_addr = grub_cpu_to_le32 (start_address);
+    o->code_base = grub_cpu_to_le32 (header_size);
+#if GRUB_TARGET_SIZEOF_VOID_P == 4
+    o->data_base = grub_host_to_target32 (header_size + exec_size);
+#endif
+    o->image_base = 0;
+    o->section_alignment = grub_host_to_target32 (SECTION_ALIGN);
+    o->file_alignment = grub_host_to_target32 (SECTION_ALIGN);
+    o->image_size = grub_host_to_target32 (pe_size);
+    o->header_size = grub_host_to_target32 (header_size);
+    o->subsystem = grub_host_to_target16 (GRUB_PE32_SUBSYSTEM_EFI_APPLICATION);
+
+    /* Do these really matter? */
+    o->stack_reserve_size = grub_host_to_target32 (0x10000);
+    o->stack_commit_size = grub_host_to_target32 (0x10000);
+    o->heap_reserve_size = grub_host_to_target32 (0x10000);
+    o->heap_commit_size = grub_host_to_target32 (0x10000);
+    
+    o->num_data_directories = grub_host_to_target32 (GRUB_PE32_NUM_DATA_DIRECTORIES);
+
+    o->base_relocation_table.rva = grub_host_to_target32 (reloc_addr);
+    o->base_relocation_table.size = grub_host_to_target32 (reloc_size);
+
+    /* The sections.  */
+    text_section = (struct grub_pe32_section_table *) (header + 1);
+    strcpy (text_section->name, ".text");
+    text_section->virtual_size = grub_cpu_to_le32 (exec_size);
+    text_section->virtual_address = grub_cpu_to_le32 (header_size);
+    text_section->raw_data_size = grub_cpu_to_le32 (exec_size);
+    text_section->raw_data_offset = grub_cpu_to_le32 (header_size);
+    text_section->characteristics = grub_cpu_to_le32 (GRUB_PE32_SCN_CNT_CODE
+						      | GRUB_PE32_SCN_MEM_EXECUTE
+						      | GRUB_PE32_SCN_MEM_READ
+						      | GRUB_PE32_SCN_ALIGN_64BYTES);
+
+    data_section = text_section + 1;
+    strcpy (data_section->name, ".data");
+    data_section->virtual_size = grub_cpu_to_le32 (kernel_size - exec_size);
+    data_section->virtual_address = grub_cpu_to_le32 (header_size + exec_size);
+    data_section->raw_data_size = grub_cpu_to_le32 (kernel_size - exec_size);
+    data_section->raw_data_offset = grub_cpu_to_le32 (header_size + exec_size);
+    data_section->characteristics
+      = grub_cpu_to_le32 (GRUB_PE32_SCN_CNT_INITIALIZED_DATA
+			  | GRUB_PE32_SCN_MEM_READ
+			  | GRUB_PE32_SCN_MEM_WRITE
+			  | GRUB_PE32_SCN_ALIGN_64BYTES);
+
+#if 0
+    bss_section = data_section + 1;
+    strcpy (bss_section->name, ".bss");
+    bss_section->virtual_size = grub_cpu_to_le32 (bss_size);
+    bss_section->virtual_address = grub_cpu_to_le32 (header_size + kernel_size);
+    bss_section->raw_data_size = 0;
+    bss_section->raw_data_offset = 0;
+    bss_section->characteristics
+      = grub_cpu_to_le32 (GRUB_PE32_SCN_MEM_READ
+			  | GRUB_PE32_SCN_MEM_WRITE
+			  | GRUB_PE32_SCN_ALIGN_64BYTES
+			  | GRUB_PE32_SCN_CNT_INITIALIZED_DATA
+			  | 0x80);
+#endif
+    
+    mods_section = data_section + 1;
+    strcpy (mods_section->name, "mods");
+    mods_section->virtual_size = grub_cpu_to_le32 (reloc_addr - kernel_size - header_size);
+    mods_section->virtual_address = grub_cpu_to_le32 (header_size + kernel_size + bss_size);
+    mods_section->raw_data_size = grub_cpu_to_le32 (reloc_addr - kernel_size - header_size);
+    mods_section->raw_data_offset = grub_cpu_to_le32 (header_size + kernel_size);
+    mods_section->characteristics
+      = grub_cpu_to_le32 (GRUB_PE32_SCN_CNT_INITIALIZED_DATA
+			  | GRUB_PE32_SCN_MEM_READ
+			  | GRUB_PE32_SCN_MEM_WRITE
+			  | GRUB_PE32_SCN_ALIGN_64BYTES);
+
+    reloc_section = mods_section + 1;
+    strcpy (reloc_section->name, ".reloc");
+    reloc_section->virtual_size = grub_cpu_to_le32 (reloc_size);
+    reloc_section->virtual_address = grub_cpu_to_le32 (reloc_addr + bss_size);
+    reloc_section->raw_data_size = grub_cpu_to_le32 (reloc_size);
+    reloc_section->raw_data_offset = grub_cpu_to_le32 (reloc_addr);
+    reloc_section->characteristics
+      = grub_cpu_to_le32 (GRUB_PE32_SCN_CNT_INITIALIZED_DATA
+			  | GRUB_PE32_SCN_MEM_DISCARDABLE
+			  | GRUB_PE32_SCN_MEM_READ);
+    free (core_img);
+    core_img = pe_img;
+    core_size = pe_size;
   }
 #elif defined(GRUB_MACHINE_QEMU)
   {
