@@ -31,6 +31,7 @@
 #include <grub/util/resolve.h>
 #include <grub/kernel.h>
 #include <grub/cpu/kernel.h>
+#include <grub/machine/kernel.h>
 #include <grub/i18n.h>
 
 #include "progname.h"
@@ -323,9 +324,9 @@ add_segments (char *dir, char *prefix, FILE *out, int chrp, char *mods[], char *
 
   if (prefix)
     {
-      if (GRUB_KERNEL_CPU_PREFIX + strlen (prefix) + 1 > GRUB_KERNEL_CPU_DATA_END)
+      if (GRUB_KERNEL_MACHINE_PREFIX + strlen (prefix) + 1 > GRUB_KERNEL_MACHINE_DATA_END)
         grub_util_error ("prefix too long");
-      grub_util_write_image_at (prefix, strlen (prefix) + 1, first_segment + GRUB_KERNEL_CPU_PREFIX, out);
+      grub_util_write_image_at (prefix, strlen (prefix) + 1, first_segment + GRUB_KERNEL_MACHINE_PREFIX, out);
     }
 
   free (phdrs);

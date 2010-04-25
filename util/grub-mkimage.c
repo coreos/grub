@@ -46,6 +46,36 @@
 
 #define ALIGN_ADDR(x) (ALIGN_UP((x), GRUB_TARGET_SIZEOF_VOID_P))
 
+#define GRUB_IEEE1275_NOTE_NAME "PowerPC"
+#define GRUB_IEEE1275_NOTE_TYPE 0x1275
+
+/* These structures are defined according to the CHRP binding to IEEE1275,
+   "Client Program Format" section.  */
+
+struct grub_ieee1275_note_hdr
+{
+  grub_uint32_t namesz;
+  grub_uint32_t descsz;
+  grub_uint32_t type;
+  char name[sizeof (GRUB_IEEE1275_NOTE_NAME)];
+};
+
+struct grub_ieee1275_note_desc
+{
+  grub_uint32_t real_mode;
+  grub_uint32_t real_base;
+  grub_uint32_t real_size;
+  grub_uint32_t virt_base;
+  grub_uint32_t virt_size;
+  grub_uint32_t load_base;
+};
+
+struct grub_ieee1275_note
+{
+  struct grub_ieee1275_note_hdr header;
+  struct grub_ieee1275_note_desc descriptor;
+};
+
 #ifdef GRUB_MACHINE_EFI
 #define SECTION_ALIGN GRUB_PE32_SECTION_ALIGNMENT
 #define VADDR_OFFSET ALIGN_UP (sizeof (struct grub_pe32_header) + 5 * sizeof (struct grub_pe32_section_table), SECTION_ALIGN)
@@ -786,11 +816,11 @@ static void
 generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 		char *memdisk_path, char *font_path, char *config_path,
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
-		grub_platform_image_format_t format
+		grub_platform_image_format_t format,
 #else
-		int dummy __attribute__ ((unused))
+		int dummy __attribute__ ((unused)),
 #endif
-
+		int note
 )
 {
   char *kernel_img, *core_img;
@@ -1205,7 +1235,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       free (boot_img);
       free (boot_path);
     }
-#elif defined(GRUB_MACHINE_MIPS)
+#elif defined(GRUB_MACHINE_MIPS) || defined (GRUB_MACHINE_IEEE1275)
   if (format == GRUB_PLATFORM_IMAGE_ELF)
     {
       char *elf_img;
@@ -1213,12 +1243,21 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       Elf32_Ehdr *ehdr;
       Elf32_Phdr *phdr;
       grub_uint32_t target_addr;
+      int header_size, footer_size = 0;
+      int phnum = 1;
+
+      if (note)
+	{
+	  phnum++;
+	  footer_size += sizeof (struct grub_ieee1275_note);
+	}
+      header_size = ALIGN_ADDR (sizeof (*ehdr) + phnum * sizeof (*phdr));
 
       program_size = ALIGN_ADDR (core_size);
 
-      elf_img = xmalloc (program_size + sizeof (*ehdr) + sizeof (*phdr));
-      memset (elf_img, 0, program_size + sizeof (*ehdr) + sizeof (*phdr));
-      memcpy (elf_img  + sizeof (*ehdr) + sizeof (*phdr), core_img, core_size);
+      elf_img = xmalloc (program_size + header_size + footer_size);
+      memset (elf_img, 0, program_size + header_size);
+      memcpy (elf_img  + header_size, core_img, core_size);
       ehdr = (void *) elf_img;
       phdr = (void *) (elf_img + sizeof (*ehdr));
       memcpy (ehdr->e_ident, ELFMAG, SELFMAG);
@@ -1231,12 +1270,12 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       ehdr->e_ident[EI_VERSION] = EV_CURRENT;
       ehdr->e_ident[EI_OSABI] = ELFOSABI_NONE;
       ehdr->e_type = grub_host_to_target16 (ET_EXEC);
-      ehdr->e_machine = grub_host_to_target16 (EM_MIPS);
+      ehdr->e_machine = grub_host_to_target16 (EM_TARGET);
       ehdr->e_version = grub_host_to_target32 (EV_CURRENT);
 
       ehdr->e_phoff = grub_host_to_target32 ((char *) phdr - (char *) ehdr);
       ehdr->e_phentsize = grub_host_to_target16 (sizeof (*phdr));
-      ehdr->e_phnum = grub_host_to_target16 (1);
+      ehdr->e_phnum = grub_host_to_target16 (phnum);
 
       /* No section headers.  */
       ehdr->e_shoff = grub_host_to_target32 (0);
@@ -1247,23 +1286,60 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       ehdr->e_ehsize = grub_host_to_target16 (sizeof (*ehdr));
 
       phdr->p_type = grub_host_to_target32 (PT_LOAD);
-      phdr->p_offset = grub_host_to_target32 (sizeof (*ehdr) + sizeof (*phdr));
+      phdr->p_offset = grub_host_to_target32 (header_size);
       phdr->p_flags = grub_host_to_target32 (PF_R | PF_W | PF_X);
 
-      target_addr = ALIGN_UP (GRUB_KERNEL_MACHINE_LINK_ADDR 
+#if defined(GRUB_MACHINE_MIPS)
+      target_addr = ALIGN_UP (GRUB_KERNEL_MACHINE_LINK_ADDR
 			      + kernel_size + total_module_size, 32);
+#else
+      target_addr = GRUB_KERNEL_MACHINE_LINK_ADDR;
+#endif
       ehdr->e_entry = grub_host_to_target32 (target_addr);
       phdr->p_vaddr = grub_host_to_target32 (target_addr);
       phdr->p_paddr = grub_host_to_target32 (target_addr);
       phdr->p_align = grub_host_to_target32 (GRUB_KERNEL_MACHINE_LINK_ALIGN);
+#if defined(GRUB_MACHINE_MIPS)
       ehdr->e_flags = grub_host_to_target32 (0x1000 | EF_MIPS_NOREORDER 
 					     | EF_MIPS_PIC | EF_MIPS_CPIC);
+#else
+      ehdr->e_flags = 0;
+#endif
       phdr->p_filesz = grub_host_to_target32 (core_size);
       phdr->p_memsz = grub_host_to_target32 (core_size);
 
+      if (note)
+	{
+	  int note_size = sizeof (struct grub_ieee1275_note);
+	  struct grub_ieee1275_note *note = (struct grub_ieee1275_note *) 
+	    (elf_img + program_size + header_size);
+
+	  grub_util_info ("adding CHRP NOTE segment");
+
+	  note->header.namesz = grub_host_to_target32 (sizeof (GRUB_IEEE1275_NOTE_NAME));
+	  note->header.descsz = grub_host_to_target32 (note_size);
+	  note->header.type = grub_host_to_target32 (GRUB_IEEE1275_NOTE_TYPE);
+	  strcpy (note->header.name, GRUB_IEEE1275_NOTE_NAME);
+	  note->descriptor.real_mode = grub_host_to_target32 (0xffffffff);
+	  note->descriptor.real_base = grub_host_to_target32 (0x00c00000);
+	  note->descriptor.real_size = grub_host_to_target32 (0xffffffff);
+	  note->descriptor.virt_base = grub_host_to_target32 (0xffffffff);
+	  note->descriptor.virt_size = grub_host_to_target32 (0xffffffff);
+	  note->descriptor.load_base = grub_host_to_target32 (0x00004000);
+
+	  phdr[1].p_type = grub_host_to_target32 (PT_NOTE);
+	  phdr[1].p_flags = grub_host_to_target32 (PF_R);
+	  phdr[1].p_align = grub_host_to_target32 (GRUB_TARGET_SIZEOF_LONG);
+	  phdr[1].p_vaddr = 0;
+	  phdr[1].p_paddr = 0;
+	  phdr[1].p_filesz = grub_host_to_target32 (note_size);
+	  phdr[1].p_memsz = 0;
+	  phdr[1].p_offset = grub_host_to_target32 (header_size + program_size);
+	}
+
       free (core_img);
       core_img = elf_img;
-      core_size = program_size  + sizeof (*ehdr) + sizeof (*phdr);
+      core_size = program_size + header_size + footer_size;
   }
 #endif
 
@@ -1291,6 +1367,7 @@ static struct option options[] =
     {"font", required_argument, 0, 'f'},
     {"config", required_argument, 0, 'c'},
     {"output", required_argument, 0, 'o'},
+    {"note", no_argument, 0, 'n'},
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
     {"format", required_argument, 0, 'O'},
 #endif
@@ -1316,6 +1393,7 @@ Make a bootable image of GRUB.\n\
   -m, --memdisk=FILE      embed FILE as a memdisk image\n\
   -f, --font=FILE         embed FILE as a boot font\n\
   -c, --config=FILE       embed FILE as boot config\n\
+  -n, --note              add NOTE segment for CHRP Open Firmware\n\
   -o, --output=FILE       output a generated image to FILE [default=stdout]\n"
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
 	    "\
@@ -1348,6 +1426,7 @@ main (int argc, char *argv[])
   char *font = NULL;
   char *config = NULL;
   FILE *fp = stdout;
+  int note = 0;
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
   grub_platform_image_format_t format = GRUB_PLATFORM_IMAGE_DEFAULT;
 #endif
@@ -1358,7 +1437,7 @@ main (int argc, char *argv[])
 
   while (1)
     {
-      int c = getopt_long (argc, argv, "d:p:m:c:o:O:f:hVv", options, 0);
+      int c = getopt_long (argc, argv, "d:p:m:c:o:O:f:hVvn", options, 0);
 
       if (c == -1)
 	break;
@@ -1398,6 +1477,10 @@ main (int argc, char *argv[])
 	      free (dir);
 
 	    dir = xstrdup (optarg);
+	    break;
+
+	  case 'n':
+	    note = 1;
 	    break;
 
 	  case 'm':
@@ -1462,11 +1545,11 @@ main (int argc, char *argv[])
   generate_image (dir ? : GRUB_LIBDIR, prefix ? : DEFAULT_DIRECTORY, fp,
 		  argv + optind, memdisk, font, config,
 #ifdef GRUB_PLATFORM_IMAGE_DEFAULT
-		  format
+		  format,
 #else
-		  0
+		  0,
 #endif
-		  );
+		  note);
 
   fclose (fp);
 

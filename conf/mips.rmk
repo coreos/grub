@@ -10,13 +10,6 @@ kernel_img_HEADERS += cpu/cache.h
 sbin_SCRIPTS = 
 bin_SCRIPTS = 
 
-# For grub-mkimage.
-bin_UTILITIES += grub-mkimage
-grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkimage.c util/misc.c \
-	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
-grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(LINK_BASE)
-util/grub-mkimage.c_DEPENDENCIES = Makefile
-
 # For serial.mod.
 pkglib_MODULES += serial.mod
 serial_mod_SOURCES = term/serial.c

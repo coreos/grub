@@ -61,14 +61,7 @@ kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS += $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_KERNEL_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
 
 # Utilities.
-bin_UTILITIES = grub-mkimage
 sbin_UTILITIES = grub-setup
-
-# For grub-mkimage.
-grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkimage.c util/misc.c \
-	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
-grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
-util/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-setup.
 util/i386/pc/grub-setup.c_DEPENDENCIES = grub_setup_init.h

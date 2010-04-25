@@ -26,7 +26,4 @@
    rewrite grub-mkimage to generate valid ELF files.  */
 #define GRUB_MOD_GAP 0x8000
 
-#define GRUB_KERNEL_CPU_PREFIX		0x4
-#define GRUB_KERNEL_CPU_DATA_END	0x44
-
 #endif

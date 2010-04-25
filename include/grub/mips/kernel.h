@@ -46,6 +46,8 @@
 
 #define GRUB_PLATFORM_IMAGE_DEFAULT GRUB_PLATFORM_IMAGE_RAW
 
+#define EM_TARGET EM_MIPS
+
 #ifndef ASM_FILE
 
 typedef enum {

@@ -21,6 +21,13 @@ grub_mkelfimage_SOURCES = gnulib/progname.c \
 	util/resolve.c
 util/elf/grub-mkimage.c_DEPENDENCIES = Makefile
 
+# For grub-mkimage.
+bin_UTILITIES += grub-mkimage
+grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkimage.c util/misc.c \
+	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
+grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
+util/grub-mkimage.c_DEPENDENCIES = Makefile
+
 # For grub-probe.
 sbin_UTILITIES += grub-probe
 util/grub-probe.c_DEPENDENCIES = grub_probe_init.h
