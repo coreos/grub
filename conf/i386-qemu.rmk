@@ -14,10 +14,10 @@ boot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_BOOT_MACHINE_LI
 boot_img_FORMAT = binary
 
 bin_UTILITIES += grub-mkimage
-grub_mkimage_SOURCES = util/grub-mkrawimage.c util/misc.c \
+grub_mkimage_SOURCES = util/grub-mkimage.c util/misc.c \
 	util/resolve.c gnulib/progname.c
 grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
-util/grub-mkrawimage.c_DEPENDENCIES = Makefile
+util/grub-mkimage.c_DEPENDENCIES = Makefile
 
 pkglib_PROGRAMS += kernel.img
 kernel_img_SOURCES = kern/i386/qemu/startup.S \
