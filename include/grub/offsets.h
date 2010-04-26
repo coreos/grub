@@ -136,6 +136,8 @@
 
 #define GRUB_KERNEL_POWERPC_IEEE1275_MOD_ALIGN 0x1000
 
+#define GRUB_KERNEL_MIPS_YEELOONG_MOD_ALIGN 0x1
+
 /* Minimal gap between _end and the start of the modules.  It's a hack
    for PowerMac to prevent "CLAIM failed" error.  The real fix is to
    rewrite grub-mkimage to generate valid ELF files.  */

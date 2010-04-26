@@ -22,7 +22,6 @@
 #include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
-#include <grub/machine/kernel.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/dl.h>
@@ -33,8 +32,10 @@
 #include <grub/time.h>
 #include <grub/symbol.h>
 #include <grub/cpu/io.h>
-#include <grub/cpu/kernel.h>
 #include <grub/cpu/tsc.h>
+#ifdef GRUB_MACHINE_QEMU
+#include <grub/machine/kernel.h>
+#endif
 
 #define GRUB_FLOPPY_REG_DIGITAL_OUTPUT		0x3f2
 

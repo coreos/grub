@@ -19,7 +19,6 @@
 #include <grub/symbol.h>
 #include <grub/machine/memory.h>
 #include <grub/cpu/linux.h>
-#include <grub/cpu/kernel.h>
 #include <multiboot.h>
 #include <multiboot2.h>
 

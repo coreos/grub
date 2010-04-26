@@ -17,6 +17,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#undef ELF_R_SYM
+#undef ELF_R_TYPE
+
 #if defined(MKIMAGE_ELF32)
 # define SUFFIX(x)	x ## 32
 # define ELFCLASSXX	ELFCLASS32

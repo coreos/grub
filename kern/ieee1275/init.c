@@ -29,10 +29,9 @@
 #include <grub/misc.h>
 #include <grub/time.h>
 #include <grub/machine/console.h>
-#include <grub/machine/kernel.h>
-#include <grub/cpu/kernel.h>
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
+#include <grub/offsets.h>
 
 /* The minimal heap size we can live with. */
 #define HEAP_MIN_SIZE		(unsigned long) (2 * 1024 * 1024)

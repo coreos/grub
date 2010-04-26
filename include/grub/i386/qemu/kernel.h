@@ -34,10 +34,6 @@ extern grub_int32_t grub_kernel_image_size;
 /* The total size of module images following the kernel.  */
 extern grub_int32_t grub_total_module_size;
 
-/* The prefix which points to the directory where GRUB modules and its
-   configuration file are located.  */
-extern char grub_prefix[];
-
 #endif /* ! ASM_FILE */
 
 #endif /* ! GRUB_KERNEL_MACHINE_HEADER */

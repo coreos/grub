@@ -20,7 +20,7 @@
 #include <grub/symbol.h>
 #include <grub/offsets.h>
 #include <grub/machine/memory.h>
-#include <grub/machine/kernel.h>
+#include <grub/offsets.h>
 
 #define BASE_ADDR 8
 	
@@ -177,8 +177,8 @@ cont:
 	
 	lui $t1, %hi(_end)
 	addiu $t1, %lo(_end)
-	addiu $t1, (GRUB_MOD_ALIGN-1)
-	li $t3, (GRUB_MOD_ALIGN-1)
+	addiu $t1, (GRUB_KERNEL_MACHINE_MOD_ALIGN-1)
+	li $t3, (GRUB_KERNEL_MACHINE_MOD_ALIGN-1)
 	nor $t3, $t3, $0
 	and $t1, $t1, $t3
 	

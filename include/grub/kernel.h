@@ -90,4 +90,8 @@ void grub_machine_set_prefix (void);
 /* Register all the exported symbols. This is automatically generated.  */
 void grub_register_exported_symbols (void);
 
+#if ! defined (ASM_FILE) && !defined (GRUB_MACHINE_EMU)
+extern char grub_prefix[];
+#endif
+
 #endif /* ! GRUB_KERNEL_HEADER */

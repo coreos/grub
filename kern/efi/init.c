@@ -24,7 +24,6 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/mm.h>
-#include <grub/machine/kernel.h>
 
 void
 grub_efi_init (void)

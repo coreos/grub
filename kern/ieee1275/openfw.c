@@ -21,7 +21,6 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
-#include <grub/machine/kernel.h>
 #include <grub/ieee1275/ieee1275.h>
 
 enum grub_ieee1275_parse_type

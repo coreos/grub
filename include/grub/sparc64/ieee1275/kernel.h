@@ -19,11 +19,6 @@
 #ifndef GRUB_KERNEL_MACHINE_HEADER
 #define GRUB_KERNEL_MACHINE_HEADER	1
 
-#define GRUB_MOD_ALIGN 0x2000
-
-/* Non-zero value is only needed for PowerMacs.  */
-#define GRUB_MOD_GAP 0x0
-
 #define GRUB_KERNEL_MACHINE_STACK_SIZE          0x40000
 
 #ifndef ASM_FILE
@@ -36,10 +31,6 @@ extern grub_int32_t grub_kernel_image_size;
 
 /* The total size of module images following the kernel.  */
 extern grub_int32_t grub_total_module_size;
-
-/* The prefix which points to the directory where GRUB modules and its
-   configuration file are located.  */
-extern char grub_prefix[];
 
 #endif /* ! ASM_FILE */
 

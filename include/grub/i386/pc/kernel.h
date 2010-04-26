@@ -41,10 +41,6 @@ extern grub_int32_t grub_install_dos_part;
 /* The BSD partition number of the installed partition.  */
 extern grub_int32_t grub_install_bsd_part;
 
-/* The prefix which points to the directory where GRUB modules and its
-   configuration file are located.  */
-extern char grub_prefix[];
-
 /* The boot BIOS drive number.  */
 extern grub_uint8_t EXPORT_VAR(grub_boot_drive);
 
