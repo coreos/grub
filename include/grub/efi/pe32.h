@@ -238,6 +238,7 @@ struct grub_pe32_section_table
 #define GRUB_PE32_SCN_ALIGN_SHIFT		20
 #define GRUB_PE32_SCN_ALIGN_MASK		7
 
+#define GRUB_PE32_SIGNATURE_SIZE 4
 
 struct grub_pe32_header
 {
@@ -245,16 +246,19 @@ struct grub_pe32_header
   grub_uint8_t msdos_stub[GRUB_PE32_MSDOS_STUB_SIZE];
 
   /* This is always PE\0\0.  */
-  char signature[4];
+  char signature[GRUB_PE32_SIGNATURE_SIZE];
 
   /* The COFF file header.  */
   struct grub_pe32_coff_header coff_header;
 
+#if GRUB_TARGET_SIZEOF_VOID_P == 8
+  /* The Optional header.  */
+  struct grub_pe64_optional_header optional_header;
+#else
   /* The Optional header.  */
   struct grub_pe32_optional_header optional_header;
+#endif
 };
-
-#define GRUB_PE32_SIGNATURE_SIZE 4
 
 struct grub_pe32_fixup_block
 {

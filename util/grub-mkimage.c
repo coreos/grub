@@ -82,8 +82,17 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_COREBOOT,
       .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_I386_COREBOOT_PREFIX,
+      .data_end = GRUB_KERNEL_I386_COREBOOT_DATA_END,
+      .raw_size = 0,
+      .total_module_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .compressed_size = TARGET_NO_FIELD,
       .section_align = 1,
-      .vaddr_offset = 0
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_I386_COREBOOT_LINK_ADDR
     },
     {
       .name = "i386-pc",
@@ -109,13 +118,21 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_EFI,
       .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_I386_EFI_PREFIX,
+      .data_end = GRUB_KERNEL_I386_EFI_DATA_END,
+      .raw_size = 0,
+      .total_module_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .compressed_size = TARGET_NO_FIELD,
       .section_align = GRUB_PE32_SECTION_ALIGNMENT,
       .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
 				+ GRUB_PE32_SIGNATURE_SIZE
 				+ sizeof (struct grub_pe32_coff_header)
 				+ sizeof (struct grub_pe32_optional_header)
 				+ 4 * sizeof (struct grub_pe32_section_table),
-				GRUB_PE32_SECTION_ALIGNMENT)
+				GRUB_PE32_SECTION_ALIGNMENT),
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
     },
     {
       .name = "i386-ieee1275",
@@ -123,8 +140,17 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_I386_IEEE1275, 
       .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_I386_IEEE1275_PREFIX,
+      .data_end = GRUB_KERNEL_I386_IEEE1275_DATA_END,
+      .raw_size = 0,
+      .total_module_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .compressed_size = TARGET_NO_FIELD,
       .section_align = 1,
-      .vaddr_offset = 0
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_I386_IEEE1275_LINK_ADDR
     },
     {
       .name = "i386-qemu",
@@ -150,13 +176,21 @@ struct image_target_desc image_targets[] =
       .bigendian = 0, 
       .id = IMAGE_EFI, 
       .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_X86_64_EFI_PREFIX,
+      .data_end = GRUB_KERNEL_X86_64_EFI_DATA_END,
+      .raw_size = 0,
+      .total_module_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .compressed_size = TARGET_NO_FIELD,
       .section_align = GRUB_PE32_SECTION_ALIGNMENT,
       .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
 				+ GRUB_PE32_SIGNATURE_SIZE
 				+ sizeof (struct grub_pe32_coff_header)
 				+ sizeof (struct grub_pe64_optional_header)
 				+ 4 * sizeof (struct grub_pe32_section_table),
-				GRUB_PE32_SECTION_ALIGNMENT)
+				GRUB_PE32_SECTION_ALIGNMENT),
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
     },
     {
       .name = "mipsel-yeeloong-elf",
@@ -184,8 +218,17 @@ struct image_target_desc image_targets[] =
       .bigendian = 1,
       .id = IMAGE_PPC, 
       .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_POWERPC_IEEE1275_PREFIX,
+      .data_end = GRUB_KERNEL_POWERPC_IEEE1275_DATA_END,
+      .raw_size = 0,
+      .total_module_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .compressed_size = TARGET_NO_FIELD,
       .section_align = 1,
-      .vaddr_offset = 0
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_POWERPC_IEEE1275_LINK_ADDR
     },
     {
       .name = "sparc64-ieee1275-raw",
@@ -629,6 +672,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       {
 	void *pe_img;
 	grub_uint8_t *header;
+	void *sections;
 	size_t pe_size;
 	struct grub_pe32_coff_header *c;
 	struct grub_pe32_section_table *text_section, *data_section;
@@ -669,7 +713,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 		GRUB_PE32_SIGNATURE_SIZE);
 
 	/* The COFF file header.  */
-	c = header + GRUB_PE32_MSDOS_STUB_SIZE + GRUB_PE32_SIGNATURE_SIZE;
+	c = (struct grub_pe32_coff_header *) (header + GRUB_PE32_MSDOS_STUB_SIZE
+					      + GRUB_PE32_SIGNATURE_SIZE);
 	if (image_target->voidp_sizeof == 4)
 	  c->machine = grub_host_to_target16 (GRUB_PE32_MACHINE_I386);
 	else
@@ -692,11 +737,13 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
 	    c->optional_header_size = grub_host_to_target16 (sizeof (struct grub_pe32_optional_header));
 
-	    o = header + GRUB_PE32_MSDOS_STUB_SIZE + GRUB_PE32_SIGNATURE_SIZE
-	      + sizeof (struct grub_pe32_coff_header);
+	    o = (struct grub_pe32_optional_header *)
+	      (header + GRUB_PE32_MSDOS_STUB_SIZE + GRUB_PE32_SIGNATURE_SIZE
+	       + sizeof (struct grub_pe32_coff_header));
 	    o->magic = grub_host_to_target16 (GRUB_PE32_PE32_MAGIC);
 	    o->code_size = grub_host_to_target32 (exec_size);
-	    o->data_size = grub_cpu_to_le32 (reloc_addr - exec_size);
+	    o->data_size = grub_cpu_to_le32 (reloc_addr - exec_size
+					     - header_size);
 	    o->bss_size = grub_cpu_to_le32 (bss_size);
 	    o->entry_addr = grub_cpu_to_le32 (start_address);
 	    o->code_base = grub_cpu_to_le32 (header_size);
@@ -720,18 +767,21 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
 	    o->base_relocation_table.rva = grub_host_to_target32 (reloc_addr);
 	    o->base_relocation_table.size = grub_host_to_target32 (reloc_size);
+	    sections = o + 1;
 	  }
 	else
 	  {
 	    struct grub_pe64_optional_header *o;
 
-	    c->optional_header_size = grub_host_to_target16 (sizeof (struct grub_pe32_optional_header));
+	    c->optional_header_size = grub_host_to_target16 (sizeof (struct grub_pe64_optional_header));
 
-	    o = header + GRUB_PE32_MSDOS_STUB_SIZE + GRUB_PE32_SIGNATURE_SIZE
-	      + sizeof (struct grub_pe32_coff_header);
+	    o = (struct grub_pe64_optional_header *) 
+	      (header + GRUB_PE32_MSDOS_STUB_SIZE + GRUB_PE32_SIGNATURE_SIZE
+	       + sizeof (struct grub_pe32_coff_header));
 	    o->magic = grub_host_to_target16 (GRUB_PE32_PE64_MAGIC);
 	    o->code_size = grub_host_to_target32 (exec_size);
-	    o->data_size = grub_cpu_to_le32 (reloc_addr - exec_size);
+	    o->data_size = grub_cpu_to_le32 (reloc_addr - exec_size
+					     - header_size);
 	    o->bss_size = grub_cpu_to_le32 (bss_size);
 	    o->entry_addr = grub_cpu_to_le32 (start_address);
 	    o->code_base = grub_cpu_to_le32 (header_size);
@@ -753,9 +803,10 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
 	    o->base_relocation_table.rva = grub_host_to_target32 (reloc_addr);
 	    o->base_relocation_table.size = grub_host_to_target32 (reloc_size);
+	    sections = o + 1;
 	  }
 	/* The sections.  */
-	text_section = (struct grub_pe32_section_table *) (header + 1);
+	text_section = sections;
 	strcpy (text_section->name, ".text");
 	text_section->virtual_size = grub_cpu_to_le32 (exec_size);
 	text_section->virtual_address = grub_cpu_to_le32 (header_size);
@@ -763,8 +814,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	text_section->raw_data_offset = grub_cpu_to_le32 (header_size);
 	text_section->characteristics = grub_cpu_to_le32 (GRUB_PE32_SCN_CNT_CODE
 							  | GRUB_PE32_SCN_MEM_EXECUTE
-							  | GRUB_PE32_SCN_MEM_READ
-							  | GRUB_PE32_SCN_ALIGN_64BYTES);
+							  | GRUB_PE32_SCN_MEM_READ);
 
 	data_section = text_section + 1;
 	strcpy (data_section->name, ".data");
@@ -775,8 +825,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	data_section->characteristics
 	  = grub_cpu_to_le32 (GRUB_PE32_SCN_CNT_INITIALIZED_DATA
 			      | GRUB_PE32_SCN_MEM_READ
-			      | GRUB_PE32_SCN_MEM_WRITE
-			      | GRUB_PE32_SCN_ALIGN_64BYTES);
+			      | GRUB_PE32_SCN_MEM_WRITE);
 
 #if 0
 	bss_section = data_section + 1;
@@ -802,8 +851,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	mods_section->characteristics
 	  = grub_cpu_to_le32 (GRUB_PE32_SCN_CNT_INITIALIZED_DATA
 			      | GRUB_PE32_SCN_MEM_READ
-			      | GRUB_PE32_SCN_MEM_WRITE
-			      | GRUB_PE32_SCN_ALIGN_64BYTES);
+			      | GRUB_PE32_SCN_MEM_WRITE);
 
 	reloc_section = mods_section + 1;
 	strcpy (reloc_section->name, ".reloc");

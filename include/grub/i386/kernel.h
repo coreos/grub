@@ -29,7 +29,4 @@
 /* Non-zero value is only needed for PowerMacs.  */
 #define GRUB_MOD_GAP 0x0
 
-#define GRUB_KERNEL_CPU_PREFIX	0x2
-#define GRUB_KERNEL_CPU_DATA_END	0x42
-
 #endif
