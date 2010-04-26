@@ -199,15 +199,8 @@ struct grub_pe64_optional_header
   struct grub_pe32_data_directory reserved_entry;
 };
 
-#if GRUB_TARGET_SIZEOF_VOID_P == 4
-
 #define GRUB_PE32_PE32_MAGIC	0x10b
-
-#else
-
-#define GRUB_PE32_PE32_MAGIC	0x20b
-
-#endif
+#define GRUB_PE32_PE64_MAGIC	0x20b
 
 #define GRUB_PE32_SUBSYSTEM_EFI_APPLICATION	10
 

@@ -46,6 +46,8 @@
 /* The segment where the kernel is loaded.  */
 #define GRUB_BOOT_I386_PC_KERNEL_SEG	0x800
 
+#define GRUB_KERNEL_I386_PC_LINK_ADDR  0x8200
+
 /* The upper memory area (starting at 640 kiB).  */
 #define GRUB_MEMORY_I386_PC_UPPER		0xa0000
 #define GRUB_MEMORY_I386_QEMU_UPPER		GRUB_MEMORY_I386_PC_UPPER
