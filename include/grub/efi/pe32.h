@@ -99,12 +99,8 @@ struct grub_pe32_optional_header
   grub_uint32_t entry_addr;
   grub_uint32_t code_base;
 
-#if GRUB_TARGET_SIZEOF_VOID_P == 4
   grub_uint32_t data_base;
   grub_uint32_t image_base;
-#else
-  grub_uint64_t image_base;
-#endif
 
   grub_uint32_t section_alignment;
   grub_uint32_t file_alignment;
@@ -121,21 +117,65 @@ struct grub_pe32_optional_header
   grub_uint16_t subsystem;
   grub_uint16_t dll_characteristics;
 
-#if GRUB_TARGET_SIZEOF_VOID_P == 4
-
   grub_uint32_t stack_reserve_size;
   grub_uint32_t stack_commit_size;
   grub_uint32_t heap_reserve_size;
   grub_uint32_t heap_commit_size;
 
-#else
+  grub_uint32_t loader_flags;
+  grub_uint32_t num_data_directories;
+
+  /* Data directories.  */
+  struct grub_pe32_data_directory export_table;
+  struct grub_pe32_data_directory import_table;
+  struct grub_pe32_data_directory resource_table;
+  struct grub_pe32_data_directory exception_table;
+  struct grub_pe32_data_directory certificate_table;
+  struct grub_pe32_data_directory base_relocation_table;
+  struct grub_pe32_data_directory debug;
+  struct grub_pe32_data_directory architecture;
+  struct grub_pe32_data_directory global_ptr;
+  struct grub_pe32_data_directory tls_table;
+  struct grub_pe32_data_directory load_config_table;
+  struct grub_pe32_data_directory bound_import;
+  struct grub_pe32_data_directory iat;
+  struct grub_pe32_data_directory delay_import_descriptor;
+  struct grub_pe32_data_directory com_runtime_header;
+  struct grub_pe32_data_directory reserved_entry;
+};
+
+struct grub_pe64_optional_header
+{
+  grub_uint16_t magic;
+  grub_uint8_t major_linker_version;
+  grub_uint8_t minor_linker_version;
+  grub_uint32_t code_size;
+  grub_uint32_t data_size;
+  grub_uint32_t bss_size;
+  grub_uint32_t entry_addr;
+  grub_uint32_t code_base;
+
+  grub_uint64_t image_base;
+
+  grub_uint32_t section_alignment;
+  grub_uint32_t file_alignment;
+  grub_uint16_t major_os_version;
+  grub_uint16_t minor_os_version;
+  grub_uint16_t major_image_version;
+  grub_uint16_t minor_image_version;
+  grub_uint16_t major_subsystem_version;
+  grub_uint16_t minor_subsystem_version;
+  grub_uint32_t reserved;
+  grub_uint32_t image_size;
+  grub_uint32_t header_size;
+  grub_uint32_t checksum;
+  grub_uint16_t subsystem;
+  grub_uint16_t dll_characteristics;
 
   grub_uint64_t stack_reserve_size;
   grub_uint64_t stack_commit_size;
   grub_uint64_t heap_reserve_size;
   grub_uint64_t heap_commit_size;
-
-#endif
 
   grub_uint32_t loader_flags;
   grub_uint32_t num_data_directories;
@@ -220,6 +260,8 @@ struct grub_pe32_header
   /* The Optional header.  */
   struct grub_pe32_optional_header optional_header;
 };
+
+#define GRUB_PE32_SIGNATURE_SIZE 4
 
 struct grub_pe32_fixup_block
 {

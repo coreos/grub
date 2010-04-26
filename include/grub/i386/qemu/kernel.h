@@ -19,14 +19,7 @@
 #ifndef GRUB_KERNEL_MACHINE_HEADER
 #define GRUB_KERNEL_MACHINE_HEADER	1
 
-/* The offset of GRUB_KERNEL_IMAGE_SIZE.  */
-#define GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE	0xc
-
-/* The offset of GRUB_PREFIX.  */
-#define GRUB_KERNEL_MACHINE_PREFIX		0x10
-
-/* End of the data section. */
-#define GRUB_KERNEL_MACHINE_DATA_END		0x50
+#include <grub/offsets.h>
 
 #ifndef ASM_FILE
 

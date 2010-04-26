@@ -29,7 +29,6 @@
 
 #include <grub/i386/memory.h>
 
-#define MACHINE I386_PC
 #include <grub/offsets.h>
 
 /* The scratch buffer used in real mode code.  */

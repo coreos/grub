@@ -20,27 +20,11 @@
 #define GRUB_KERNEL_MACHINE_HEADER	1
 
 #include <grub/symbol.h>
+#include <grub/offsets.h>
 
-#define GRUB_PLATFORM_IMAGE_FORMATS     "raw, elf"
-#define GRUB_PLATFORM_IMAGE_DEFAULT_FORMAT     "raw"
-
-#define GRUB_PLATFORM_IMAGE_DEFAULT GRUB_PLATFORM_IMAGE_RAW
-#define GRUB_KERNEL_MACHINE_PREFIX		0x4
-#define GRUB_KERNEL_MACHINE_DATA_END	0x44
-#define GRUB_KERNEL_MACHINE_LINK_ALIGN 4
-
-#define EM_TARGET EM_PPC
 #define GRUB_KERNEL_MACHINE_LINK_ADDR 0x200000
 
 #ifndef ASM_FILE
-
-typedef enum {
-  GRUB_PLATFORM_IMAGE_RAW,
-  GRUB_PLATFORM_IMAGE_ELF
-}
-  grub_platform_image_format_t;
-#define GRUB_PLATFORM_IMAGE_RAW GRUB_PLATFORM_IMAGE_RAW
-#define GRUB_PLATFORM_IMAGE_ELF GRUB_PLATFORM_IMAGE_ELF
 
 /* The prefix which points to the directory where GRUB modules and its
    configuration file are located.  */

@@ -72,6 +72,7 @@ struct image_target_desc
   unsigned section_align;
   signed vaddr_offset;
   unsigned install_dos_part, install_bsd_part;
+  grub_uint64_t link_addr;
 };
 
 struct image_target_desc image_targets[] =
@@ -90,8 +91,11 @@ struct image_target_desc image_targets[] =
     },
     {"i386-efi", 4, 0, IMAGE_EFI, FORMAT_PE, PLATFORM_FLAGS_NONE,
      .section_align = GRUB_PE32_SECTION_ALIGNMENT,
-     .vaddr_offset = ALIGN_UP (sizeof (struct grub_pe32_header)
-			       + 5 * sizeof (struct grub_pe32_section_table),
+     .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
+			       + GRUB_PE32_SIGNATURE_SIZE
+			       + sizeof (struct grub_pe32_coff_header)
+			       + sizeof (struct grub_pe32_optional_header)
+			       + 4 * sizeof (struct grub_pe32_section_table),
 			       GRUB_PE32_SECTION_ALIGNMENT)
     },
     {"i386-ieee1275", 4, 0, IMAGE_I386_IEEE1275, FORMAT_ELF, PLATFORM_FLAGS_NONE,
@@ -102,8 +106,11 @@ struct image_target_desc image_targets[] =
      .vaddr_offset = 0},
     {"x86_64-efi", 8, 0, IMAGE_EFI, FORMAT_PE, PLATFORM_FLAGS_NONE,
      .section_align = GRUB_PE32_SECTION_ALIGNMENT,
-     .vaddr_offset = ALIGN_UP (sizeof (struct grub_pe32_header)
-			       + 5 * sizeof (struct grub_pe32_section_table),
+     .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
+			       + GRUB_PE32_SIGNATURE_SIZE
+			       + sizeof (struct grub_pe32_coff_header)
+			       + sizeof (struct grub_pe64_optional_header)
+			       + 4 * sizeof (struct grub_pe32_section_table),
 			       GRUB_PE32_SECTION_ALIGNMENT)
     },
     {"mipsel-yeeloong-elf", 4, 0, IMAGE_YEELOONG_ELF, FORMAT_ELF, PLATFORM_FLAGS_NONE,
@@ -1150,19 +1157,35 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     case IMAGE_EFI:
       {
 	void *pe_img;
+	grub_uint8_t *header;
 	size_t pe_size;
-	struct grub_pe32_header *header;
 	struct grub_pe32_coff_header *c;
-	struct grub_pe32_optional_header *o;
 	struct grub_pe32_section_table *text_section, *data_section;
 	struct grub_pe32_section_table *mods_section, *reloc_section;
 	static const grub_uint8_t stub[] = GRUB_PE32_MSDOS_STUB;
-	int header_size = ALIGN_UP (sizeof (struct grub_pe32_header)
-				    + 5 * sizeof (struct grub_pe32_section_table),
-				    image_target->section_align);
-	int reloc_addr = ALIGN_UP (header_size + core_size, image_target->section_align);
+	int header_size;
+	int reloc_addr;
 
-	pe_size = ALIGN_UP (reloc_addr + reloc_size, image_target->section_align);
+	if (image_target->voidp_sizeof == 4)
+	  header_size = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
+				  + GRUB_PE32_SIGNATURE_SIZE
+				  + sizeof (struct grub_pe32_coff_header)
+				  + sizeof (struct grub_pe32_optional_header)
+				  + 4 * sizeof (struct grub_pe32_section_table),
+				  GRUB_PE32_SECTION_ALIGNMENT);
+	else
+	  header_size = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
+				  + GRUB_PE32_SIGNATURE_SIZE
+				  + sizeof (struct grub_pe32_coff_header)
+				  + sizeof (struct grub_pe64_optional_header)
+				  + 4 * sizeof (struct grub_pe32_section_table),
+				  GRUB_PE32_SECTION_ALIGNMENT);
+
+	reloc_addr = ALIGN_UP (header_size + core_size,
+			       image_target->section_align);
+
+	pe_size = ALIGN_UP (reloc_addr + reloc_size,
+			    image_target->section_align);
 	pe_img = xmalloc (reloc_addr + reloc_size);
 	memset (pe_img, 0, header_size);
 	memcpy (pe_img + header_size, core_img, core_size);
@@ -1170,11 +1193,12 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	header = pe_img;
 
 	/* The magic.  */
-	memcpy (header->msdos_stub, stub, sizeof (header->msdos_stub));
-	memcpy (header->signature, "PE\0\0", sizeof (header->signature));
+	memcpy (header, stub, GRUB_PE32_MSDOS_STUB_SIZE);
+	memcpy (header + GRUB_PE32_MSDOS_STUB_SIZE, "PE\0\0",
+		GRUB_PE32_SIGNATURE_SIZE);
 
 	/* The COFF file header.  */
-	c = &header->coff_header;
+	c = header + GRUB_PE32_MSDOS_STUB_SIZE + GRUB_PE32_SIGNATURE_SIZE;
 	if (image_target->voidp_sizeof == 4)
 	  c->machine = grub_host_to_target16 (GRUB_PE32_MACHINE_I386);
 	else
@@ -1182,7 +1206,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
 	c->num_sections = grub_host_to_target16 (4);
 	c->time = grub_host_to_target32 (time (0));
-	c->optional_header_size = grub_host_to_target16 (sizeof (header->optional_header));
 	c->characteristics = grub_host_to_target16 (GRUB_PE32_EXECUTABLE_IMAGE
 						    | GRUB_PE32_LINE_NUMS_STRIPPED
 						    | ((image_target->voidp_sizeof == 4)
@@ -1192,33 +1215,74 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 						    | GRUB_PE32_DEBUG_STRIPPED);
 
 	/* The PE Optional header.  */
-	o = &header->optional_header;
-	o->magic = grub_host_to_target16 (GRUB_PE32_PE32_MAGIC);
-	o->code_size = grub_host_to_target32 (exec_size);
-	o->data_size = grub_cpu_to_le32 (reloc_addr - exec_size);
-	o->bss_size = grub_cpu_to_le32 (bss_size);
-	o->entry_addr = grub_cpu_to_le32 (start_address);
-	o->code_base = grub_cpu_to_le32 (header_size);
 	if (image_target->voidp_sizeof == 4)
-	  o->data_base = grub_host_to_target32 (header_size + exec_size);
-	o->image_base = 0;
-	o->section_alignment = grub_host_to_target32 (image_target->section_align);
-	o->file_alignment = grub_host_to_target32 (image_target->section_align);
-	o->image_size = grub_host_to_target32 (pe_size);
-	o->header_size = grub_host_to_target32 (header_size);
-	o->subsystem = grub_host_to_target16 (GRUB_PE32_SUBSYSTEM_EFI_APPLICATION);
+	  {
+	    struct grub_pe32_optional_header *o;
 
-	/* Do these really matter? */
-	o->stack_reserve_size = grub_host_to_target32 (0x10000);
-	o->stack_commit_size = grub_host_to_target32 (0x10000);
-	o->heap_reserve_size = grub_host_to_target32 (0x10000);
-	o->heap_commit_size = grub_host_to_target32 (0x10000);
+	    c->optional_header_size = grub_host_to_target16 (sizeof (struct grub_pe32_optional_header));
+
+	    o = header + GRUB_PE32_MSDOS_STUB_SIZE + GRUB_PE32_SIGNATURE_SIZE
+	      + sizeof (struct grub_pe32_coff_header);
+	    o->magic = grub_host_to_target16 (GRUB_PE32_PE32_MAGIC);
+	    o->code_size = grub_host_to_target32 (exec_size);
+	    o->data_size = grub_cpu_to_le32 (reloc_addr - exec_size);
+	    o->bss_size = grub_cpu_to_le32 (bss_size);
+	    o->entry_addr = grub_cpu_to_le32 (start_address);
+	    o->code_base = grub_cpu_to_le32 (header_size);
+
+	    o->data_base = grub_host_to_target32 (header_size + exec_size);
+
+	    o->image_base = 0;
+	    o->section_alignment = grub_host_to_target32 (image_target->section_align);
+	    o->file_alignment = grub_host_to_target32 (image_target->section_align);
+	    o->image_size = grub_host_to_target32 (pe_size);
+	    o->header_size = grub_host_to_target32 (header_size);
+	    o->subsystem = grub_host_to_target16 (GRUB_PE32_SUBSYSTEM_EFI_APPLICATION);
+
+	    /* Do these really matter? */
+	    o->stack_reserve_size = grub_host_to_target32 (0x10000);
+	    o->stack_commit_size = grub_host_to_target32 (0x10000);
+	    o->heap_reserve_size = grub_host_to_target32 (0x10000);
+	    o->heap_commit_size = grub_host_to_target32 (0x10000);
     
-	o->num_data_directories = grub_host_to_target32 (GRUB_PE32_NUM_DATA_DIRECTORIES);
+	    o->num_data_directories = grub_host_to_target32 (GRUB_PE32_NUM_DATA_DIRECTORIES);
 
-	o->base_relocation_table.rva = grub_host_to_target32 (reloc_addr);
-	o->base_relocation_table.size = grub_host_to_target32 (reloc_size);
+	    o->base_relocation_table.rva = grub_host_to_target32 (reloc_addr);
+	    o->base_relocation_table.size = grub_host_to_target32 (reloc_size);
+	  }
+	else
+	  {
+	    struct grub_pe64_optional_header *o;
 
+	    c->optional_header_size = grub_host_to_target16 (sizeof (struct grub_pe32_optional_header));
+
+	    o = header + GRUB_PE32_MSDOS_STUB_SIZE + GRUB_PE32_SIGNATURE_SIZE
+	      + sizeof (struct grub_pe32_coff_header);
+	    o->magic = grub_host_to_target16 (GRUB_PE32_PE32_MAGIC);
+	    o->code_size = grub_host_to_target32 (exec_size);
+	    o->data_size = grub_cpu_to_le32 (reloc_addr - exec_size);
+	    o->bss_size = grub_cpu_to_le32 (bss_size);
+	    o->entry_addr = grub_cpu_to_le32 (start_address);
+	    o->code_base = grub_cpu_to_le32 (header_size);
+	    o->image_base = 0;
+	    o->section_alignment = grub_host_to_target32 (image_target->section_align);
+	    o->file_alignment = grub_host_to_target32 (image_target->section_align);
+	    o->image_size = grub_host_to_target32 (pe_size);
+	    o->header_size = grub_host_to_target32 (header_size);
+	    o->subsystem = grub_host_to_target16 (GRUB_PE32_SUBSYSTEM_EFI_APPLICATION);
+
+	    /* Do these really matter? */
+	    o->stack_reserve_size = grub_host_to_target32 (0x10000);
+	    o->stack_commit_size = grub_host_to_target32 (0x10000);
+	    o->heap_reserve_size = grub_host_to_target32 (0x10000);
+	    o->heap_commit_size = grub_host_to_target32 (0x10000);
+    
+	    o->num_data_directories
+	      = grub_host_to_target32 (GRUB_PE32_NUM_DATA_DIRECTORIES);
+
+	    o->base_relocation_table.rva = grub_host_to_target32 (reloc_addr);
+	    o->base_relocation_table.size = grub_host_to_target32 (reloc_size);
+	  }
 	/* The sections.  */
 	text_section = (struct grub_pe32_section_table *) (header + 1);
 	strcpy (text_section->name, ".text");
@@ -1422,10 +1486,10 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	phdr->p_flags = grub_host_to_target32 (PF_R | PF_W | PF_X);
 
 	if (image_target->id == IMAGE_YEELOONG_ELF)
-	  target_addr = ALIGN_UP (GRUB_KERNEL_MACHINE_LINK_ADDR
-				+ kernel_size + total_module_size, 32);
+	  target_addr = ALIGN_UP (image_target->link_addr
+				  + kernel_size + total_module_size, 32);
 	else
-	  target_addr = GRUB_KERNEL_MACHINE_LINK_ADDR;
+	  target_addr = image_target->link_addr;
 	ehdr->e_entry = grub_host_to_target32 (target_addr);
 	phdr->p_vaddr = grub_host_to_target32 (target_addr);
 	phdr->p_paddr = grub_host_to_target32 (target_addr);
@@ -1534,7 +1598,7 @@ Usage: %s [OPTION]... [MODULES]\n\
 \n\
 Make a bootable image of GRUB.\n\
 \n\
-  -d, --directory=DIR     use images and modules under DIR [default=%s]\n\
+  -d, --directory=DIR     use images and modules under DIR [default=%s/@platform@]\n\
   -p, --prefix=DIR        set grub_prefix directory [default=%s]\n\
   -m, --memdisk=FILE      embed FILE as a memdisk image\n\
   -f, --font=FILE         embed FILE as a boot font\n\
@@ -1677,6 +1741,21 @@ main (int argc, char *argv[])
       if (! fp)
 	grub_util_error (_("cannot open %s"), output);
       free (output);
+    }
+
+  if (!dir)
+    {
+      const char *last;
+      last = strchr (image_target->name, '-');
+      if (last)
+	last = strchr (last + 1, '-');
+      if (!last)
+	last = image_target->name + strlen (image_target->name);
+      dir = xmalloc (sizeof (GRUB_LIBDIR) + (last - image_target->name));
+      memcpy (dir, GRUB_LIBDIR, sizeof (GRUB_LIBDIR) - 1);
+      memcpy (dir + sizeof (GRUB_LIBDIR) - 1, image_target->name,
+	      last - image_target->name);
+      *(dir + sizeof (GRUB_LIBDIR) - 1 +  (last - image_target->name)) = 0;
     }
 
   generate_image (dir ? : GRUB_LIBDIR, prefix ? : DEFAULT_DIRECTORY, fp,

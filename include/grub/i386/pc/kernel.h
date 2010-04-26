@@ -19,8 +19,6 @@
 #ifndef KERNEL_MACHINE_HEADER
 #define KERNEL_MACHINE_HEADER	1
 
-#define MACHINE I386_PC
-
 #include <grub/offsets.h>
 
 /* Enable LZMA compression */

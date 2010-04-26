@@ -90,7 +90,7 @@ GNULIB_CFLAGS = $(GNULIB_UTIL_CFLAGS) $(POSIX_CFLAGS)
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@ $(LIBS)
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
-	 -DGRUB_LIBDIR=\"$(pkglibdir)\" -DLOCALEDIR=\"$(localedir)\"
+	 -DGRUB_LIBDIR=\"$(libdir)\" -DLOCALEDIR=\"$(localedir)\"
 TARGET_CC = @TARGET_CC@
 TARGET_CFLAGS = -ffreestanding @TARGET_CFLAGS@
 TARGET_ASFLAGS = -nostdinc -fno-builtin @TARGET_ASFLAGS@
@@ -287,7 +287,7 @@ build_env.mk: Makefile
 	echo "TARGET_CC=$(TARGET_CC)" ; \
 	echo "TARGET_CFLAGS=$(TARGET_CFLAGS)" ; \
 	echo "TARGET_ASFLAGS=$(TARGET_ASFLAGS)" ; \
-	echo "TARGET_CPPFLAGS=$(TARGET_CPPFLAGS) -I$(pkglibdir) -I$(includedir)" ; \
+	echo "TARGET_CPPFLAGS=$(TARGET_CPPFLAGS) -I$(libdir) -I$(includedir)" ; \
 	echo "STRIP=$(STRIP)" ; \
 	echo "OBJCONV=$(OBJCONV)" ; \
 	echo "TARGET_MODULE_FORMAT=$(TARGET_MODULE_FORMAT)" ; \

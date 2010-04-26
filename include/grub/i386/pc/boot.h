@@ -19,7 +19,6 @@
 #ifndef GRUB_BOOT_MACHINE_HEADER
 #define GRUB_BOOT_MACHINE_HEADER	1
 
-#define MACHINE I386_PC
 #include <grub/offsets.h>
 
 /* The signature for bootloader.  */
