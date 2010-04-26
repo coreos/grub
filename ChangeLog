@@ -1,3 +1,12 @@
+2010-04-26  Christian Franke  <franke@computer.org>
+
+	* include/grub/util/getroot.h (grub_get_prefix): Remove prototype.
+	* util/getroot.c [__CYGWIN__] (get_win32_path): Remove function.
+	(grub_get_prefix): Remove function.
+	* util/grub-emu.c (main): Replace grub_get_prefix () call by
+	make_system_path_relative_to_its_root ().
+	* util/sparc64/ieee1275/grub-setup.c (main): Likewise.
+
 2010-04-24  Christian Franke  <franke@computer.org>
 
 	* Makefile.in (TARGET_LDFLAGS): Add -static-libgcc.
@@ -95,7 +104,7 @@
 
 	* disk/lvm.c (grub_lvm_memberlist): Issue an error if pv->disk = 0.
 
-2010-04-17  Christian Franke <franke@computer.org>
+2010-04-17  Christian Franke  <franke@computer.org>
 
 	* Makefile.in: Add missing localedir setting.
 

@@ -242,7 +242,7 @@ main (int argc, char *argv[])
   if (strcmp (root_dev, "host") == 0)
     dir = xstrdup (dir);
   else
-    dir = grub_get_prefix (dir);
+    dir = make_system_path_relative_to_its_root (dir);
   prefix = xmalloc (strlen (root_dev) + 2 + strlen (dir) + 1);
   sprintf (prefix, "(%s)%s", root_dev, dir);
   free (dir);
