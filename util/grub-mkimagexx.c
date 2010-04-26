@@ -523,6 +523,7 @@ static Elf_Addr *
 SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
 			  Elf_Half num_sections, const char *strtab,
 			  grub_size_t *exec_size, grub_size_t *kernel_sz,
+			  grub_size_t *all_align,
 			  struct image_target_desc *image_target)
 {
   int i;
@@ -530,10 +531,20 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
   Elf_Addr *section_addresses;
   Elf_Shdr *s;
 
+  *all_align = 1;
+
   section_addresses = xmalloc (sizeof (*section_addresses) * num_sections);
   memset (section_addresses, 0, sizeof (*section_addresses) * num_sections);
 
   current_address = 0;
+
+  for (i = 0, s = sections;
+       i < num_sections;
+       i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
+    if ((grub_target_to_host (s->sh_flags) & SHF_ALLOC) 
+	&& grub_host_to_target32 (s->sh_addralign) > *all_align)
+      *all_align = grub_host_to_target32 (s->sh_addralign);
+
 
   /* .text */
   for (i = 0, s = sections;
@@ -546,7 +557,6 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
 	if (align)
 	  current_address = ALIGN_UP (current_address + image_target->vaddr_offset,
 				      align) - image_target->vaddr_offset;
-
 	grub_util_info ("locating the section %s at 0x%x",
 			name, current_address);
 	section_addresses[i] = current_address;
@@ -589,6 +599,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
 		     grub_size_t *kernel_sz, grub_size_t *bss_size,
 		     grub_size_t total_module_size, grub_uint64_t *start,
 		     void **reloc_section, grub_size_t *reloc_size,
+		     grub_size_t *align,
 		     struct image_target_desc *image_target)
 {
   char *kernel_img, *out_img;
@@ -631,44 +642,47 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
 
   section_addresses = SUFFIX (locate_sections) (sections, section_entsize,
 						num_sections, strtab,
-						exec_size, kernel_sz, image_target);
+						exec_size, kernel_sz, align,
+						image_target);
+
+  section_vaddresses = xmalloc (sizeof (*section_addresses) * num_sections);
+
+  for (i = 0; i < num_sections; i++)
+    section_vaddresses[i] = section_addresses[i] + image_target->vaddr_offset;
+
+  if (image_target->id != IMAGE_EFI)
+    {
+      Elf_Addr current_address = *kernel_sz;
+
+      for (i = 0, s = sections;
+	   i < num_sections;
+	   i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
+	if (grub_target_to_host32 (s->sh_type) == SHT_NOBITS)
+	  {
+	    Elf_Word align = grub_host_to_target32 (s->sh_addralign);
+	    const char *name = strtab + grub_host_to_target32 (s->sh_name);
+
+	    if (align)
+	      current_address = ALIGN_UP (current_address
+					  + image_target->vaddr_offset, align)
+		- image_target->vaddr_offset;
+	
+	    grub_util_info ("locating the section %s at 0x%x",
+			    name, current_address);
+	    section_vaddresses[i] = current_address
+	      + image_target->vaddr_offset;
+	    current_address += grub_host_to_target_addr (s->sh_size);
+	  }
+      current_address = ALIGN_UP (current_address + image_target->vaddr_offset,
+				  image_target->section_align)
+	- image_target->vaddr_offset;
+      *bss_size = current_address - *kernel_sz;
+    }
+  else
+    *bss_size = 0;
 
   if (image_target->id == IMAGE_EFI)
     {
-      section_vaddresses = xmalloc (sizeof (*section_addresses) * num_sections);
-
-      for (i = 0; i < num_sections; i++)
-	section_vaddresses[i] = section_addresses[i] + image_target->vaddr_offset;
-
-#if 0
-      {
-	Elf_Addr current_address = *kernel_sz;
-
-	for (i = 0, s = sections;
-	     i < num_sections;
-	     i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
-	  if (grub_target_to_host32 (s->sh_type) == SHT_NOBITS)
-	    {
-	      Elf_Word align = grub_host_to_target32 (s->sh_addralign);
-	      const char *name = strtab + grub_host_to_target32 (s->sh_name);
-
-	      if (align)
-		current_address = ALIGN_UP (current_address + VADDR_OFFSET, align)
-		  - VADDR_OFFSET;
-	
-	      grub_util_info ("locating the section %s at 0x%x",
-			      name, current_address);
-	      section_vaddresses[i] = current_address + VADDR_OFFSET;
-	      current_address += grub_host_to_target_addr (s->sh_size);
-	    }
-	current_address = ALIGN_UP (current_address + VADDR_OFFSET, SECTION_ALIGN)
-	  - VADDR_OFFSET;
-	*bss_size = current_address - *kernel_sz;
-      }
-#else
-      *bss_size = 0;
-#endif
-
       symtab_section = NULL;
       for (i = 0, s = sections;
 	   i < num_sections;
@@ -699,7 +713,6 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
     }
   else
     {
-      *bss_size = 0;
       *reloc_size = 0;
       *reloc_section = NULL;
     }

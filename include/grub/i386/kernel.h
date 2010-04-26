@@ -19,14 +19,4 @@
 #ifndef GRUB_KERNEL_CPU_HEADER
 #define GRUB_KERNEL_CPU_HEADER	1
 
-
-#ifdef GRUB_MACHINE_IEEE1275
-#define GRUB_MOD_ALIGN	0x1000
-#else
-#define GRUB_MOD_ALIGN	0x1
-#endif
-
-/* Non-zero value is only needed for PowerMacs.  */
-#define GRUB_MOD_GAP 0x0
-
 #endif

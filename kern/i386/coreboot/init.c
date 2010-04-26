@@ -144,6 +144,6 @@ grub_arch_modules_addr (void)
 #ifdef GRUB_MACHINE_QEMU
   return grub_core_entry_addr + grub_kernel_image_size;
 #else
-  return ALIGN_UP((grub_addr_t) _end, GRUB_MOD_ALIGN);
+  return ALIGN_UP((grub_addr_t) _end, GRUB_KERNEL_MACHINE_MOD_ALIGN);
 #endif
 }

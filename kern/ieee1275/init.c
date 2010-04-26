@@ -284,5 +284,5 @@ grub_get_rtc (void)
 grub_addr_t
 grub_arch_modules_addr (void)
 {
-  return ALIGN_UP((grub_addr_t) _end + GRUB_MOD_GAP, GRUB_MOD_ALIGN);
+  return ALIGN_UP((grub_addr_t) _end + GRUB_KERNEL_MACHINE_MOD_GAP, GRUB_KERNEL_MACHINE_MOD_ALIGN);
 }

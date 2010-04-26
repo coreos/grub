@@ -72,6 +72,7 @@ struct image_target_desc
   signed vaddr_offset;
   unsigned install_dos_part, install_bsd_part;
   grub_uint64_t link_addr;
+  unsigned mod_gap, mod_align;
 };
 
 struct image_target_desc image_targets[] =
@@ -92,7 +93,11 @@ struct image_target_desc image_targets[] =
       .vaddr_offset = 0,
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
-      .link_addr = GRUB_KERNEL_I386_COREBOOT_LINK_ADDR
+      .link_addr = GRUB_KERNEL_I386_COREBOOT_LINK_ADDR,
+      .elf_target = EM_386,
+      .link_align = 4,
+      .mod_gap = GRUB_KERNEL_I386_COREBOOT_MOD_GAP,
+      .mod_align = GRUB_KERNEL_I386_COREBOOT_MOD_ALIGN
     },
     {
       .name = "i386-pc",
@@ -150,7 +155,11 @@ struct image_target_desc image_targets[] =
       .vaddr_offset = 0,
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
-      .link_addr = GRUB_KERNEL_I386_IEEE1275_LINK_ADDR
+      .link_addr = GRUB_KERNEL_I386_IEEE1275_LINK_ADDR,
+      .elf_target = EM_386,
+      .mod_gap = GRUB_KERNEL_I386_IEEE1275_MOD_GAP,
+      .mod_align = GRUB_KERNEL_I386_IEEE1275_MOD_ALIGN,
+      .link_align = 4,
     },
     {
       .name = "i386-qemu",
@@ -228,7 +237,11 @@ struct image_target_desc image_targets[] =
       .vaddr_offset = 0,
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
-      .link_addr = GRUB_KERNEL_POWERPC_IEEE1275_LINK_ADDR
+      .link_addr = GRUB_KERNEL_POWERPC_IEEE1275_LINK_ADDR,
+      .elf_target = EM_PPC,
+      .mod_gap = GRUB_KERNEL_POWERPC_IEEE1275_MOD_GAP,
+      .mod_align = GRUB_KERNEL_POWERPC_IEEE1275_MOD_ALIGN,
+      .link_align = 4
     },
     {
       .name = "sparc64-ieee1275-raw",
@@ -463,7 +476,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   grub_size_t bss_size;
   grub_uint64_t start_address;
   void *rel_section;
-  grub_size_t reloc_size;
+  grub_size_t reloc_size, align;
   path_list = grub_util_resolve_dependencies (dir, "moddep.lst", mods);
 
   kernel_path = grub_util_get_path (dir, "kernel.img");
@@ -503,11 +516,11 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   if (image_target->voidp_sizeof == 4)
     kernel_img = load_image32 (kernel_path, &exec_size, &kernel_size, &bss_size,
 			       total_module_size, &start_address, &rel_section,
-			       &reloc_size, image_target);
+			       &reloc_size, &align, image_target);
   else
     kernel_img = load_image64 (kernel_path, &exec_size, &kernel_size, &bss_size,
 			       total_module_size, &start_address, &rel_section,
-			       &reloc_size, image_target);
+			       &reloc_size, &align, image_target);
 
   if (image_target->prefix + strlen (prefix) + 1 > image_target->data_end)
     grub_util_error (_("prefix is too long"));
@@ -961,6 +974,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	grub_uint32_t target_addr;
 	int header_size, footer_size = 0;
 	int phnum = 1;
+	
+	if (image_target->id != IMAGE_YEELOONG_ELF)
+	  phnum += 2;
 
 	if (note)
 	  {
@@ -994,7 +1010,10 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
 	/* No section headers.  */
 	ehdr->e_shoff = grub_host_to_target32 (0);
-	ehdr->e_shentsize = grub_host_to_target16 (0);
+	if (image_target->id == IMAGE_YEELOONG_ELF)
+	  ehdr->e_shentsize = grub_host_to_target16 (0);
+	else
+	  ehdr->e_shentsize = grub_host_to_target16 (sizeof (Elf32_Shdr));
 	ehdr->e_shnum = grub_host_to_target16 (0);
 	ehdr->e_shstrndx = grub_host_to_target16 (0);
 
@@ -1012,14 +1031,44 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	ehdr->e_entry = grub_host_to_target32 (target_addr);
 	phdr->p_vaddr = grub_host_to_target32 (target_addr);
 	phdr->p_paddr = grub_host_to_target32 (target_addr);
-	phdr->p_align = grub_host_to_target32 (image_target->link_align);
+	phdr->p_align = grub_host_to_target32 (align > image_target->link_align ? align : image_target->link_align);
 	if (image_target->id == IMAGE_YEELOONG_ELF)
 	  ehdr->e_flags = grub_host_to_target32 (0x1000 | EF_MIPS_NOREORDER 
 						 | EF_MIPS_PIC | EF_MIPS_CPIC);
 	else
 	  ehdr->e_flags = 0;
-	phdr->p_filesz = grub_host_to_target32 (core_size);
-	phdr->p_memsz = grub_host_to_target32 (core_size);
+	if (image_target->id == IMAGE_YEELOONG_ELF)
+	  {
+	    phdr->p_filesz = grub_host_to_target32 (core_size);
+	    phdr->p_memsz = grub_host_to_target32 (core_size);
+	  }
+	else
+	  {
+	    grub_uint32_t target_addr_mods;
+	    phdr->p_filesz = grub_host_to_target32 (kernel_size);
+	    phdr->p_memsz = grub_host_to_target32 (kernel_size + bss_size);
+
+	    phdr++;
+	    phdr->p_type = grub_host_to_target32 (PT_GNU_STACK);
+	    phdr->p_offset = grub_host_to_target32 (header_size + kernel_size);
+	    phdr->p_paddr = phdr->p_vaddr = phdr->p_filesz = phdr->p_memsz = 0;
+	    phdr->p_flags = grub_host_to_target32 (PF_R | PF_W | PF_X);
+	    phdr->p_align = grub_host_to_target32 (image_target->link_align);
+
+	    phdr++;
+	    phdr->p_type = grub_host_to_target32 (PT_LOAD);
+	    phdr->p_offset = grub_host_to_target32 (header_size + kernel_size);
+	    phdr->p_flags = grub_host_to_target32 (PF_R | PF_W | PF_X);
+	    phdr->p_filesz = phdr->p_memsz
+	      = grub_host_to_target32 (core_size - kernel_size);
+
+	    target_addr_mods = ALIGN_UP (target_addr + kernel_size + bss_size
+					 + image_target->mod_gap,
+					 image_target->mod_align);
+	    phdr->p_vaddr = grub_host_to_target32 (target_addr_mods);
+	    phdr->p_paddr = grub_host_to_target32 (target_addr_mods);
+	    phdr->p_align = grub_host_to_target32 (image_target->link_align);
+	  }
 
 	if (note)
 	  {
@@ -1040,14 +1089,15 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	    note->descriptor.virt_size = grub_host_to_target32 (0xffffffff);
 	    note->descriptor.load_base = grub_host_to_target32 (0x00004000);
 
-	    phdr[1].p_type = grub_host_to_target32 (PT_NOTE);
-	    phdr[1].p_flags = grub_host_to_target32 (PF_R);
-	    phdr[1].p_align = grub_host_to_target32 (image_target->voidp_sizeof);
-	    phdr[1].p_vaddr = 0;
-	    phdr[1].p_paddr = 0;
-	    phdr[1].p_filesz = grub_host_to_target32 (note_size);
-	    phdr[1].p_memsz = 0;
-	    phdr[1].p_offset = grub_host_to_target32 (header_size + program_size);
+	    phdr++;
+	    phdr->p_type = grub_host_to_target32 (PT_NOTE);
+	    phdr->p_flags = grub_host_to_target32 (PF_R);
+	    phdr->p_align = grub_host_to_target32 (image_target->voidp_sizeof);
+	    phdr->p_vaddr = 0;
+	    phdr->p_paddr = 0;
+	    phdr->p_filesz = grub_host_to_target32 (note_size);
+	    phdr->p_memsz = 0;
+	    phdr->p_offset = grub_host_to_target32 (header_size + program_size);
 	  }
 
 	free (core_img);
