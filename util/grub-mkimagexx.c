@@ -67,11 +67,11 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
     = (Elf_Shdr *) ((char *) sections
 		      + (grub_target_to_host32 (symtab_section->sh_link)
 			 * section_entsize));
-  strtab = (char *) e + grub_target_to_host32 (strtab_section->sh_offset);
+  strtab = (char *) e + grub_target_to_host (strtab_section->sh_offset);
 
-  symtab_size = grub_target_to_host32 (symtab_section->sh_size);
-  sym_size = grub_target_to_host32 (symtab_section->sh_entsize);
-  symtab_offset = grub_target_to_host32 (symtab_section->sh_offset);
+  symtab_size = grub_target_to_host (symtab_section->sh_size);
+  sym_size = grub_target_to_host (symtab_section->sh_entsize);
+  symtab_offset = grub_target_to_host (symtab_section->sh_offset);
   num_syms = symtab_size / sym_size;
 
   for (i = 0, sym = (Elf_Sym *) ((char *) e + symtab_offset);
@@ -482,7 +482,7 @@ SUFFIX (is_text_section) (Elf_Shdr *s, struct image_target_desc *image_target)
   if (image_target->id != IMAGE_EFI 
       && grub_target_to_host32 (s->sh_type) != SHT_PROGBITS)
     return 0;
-  return ((grub_target_to_host32 (s->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC))
+  return ((grub_target_to_host (s->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC))
 	  == (SHF_EXECINSTR | SHF_ALLOC));
 }
 
@@ -495,7 +495,7 @@ SUFFIX (is_data_section) (Elf_Shdr *s, struct image_target_desc *image_target)
   if (image_target->id != IMAGE_EFI 
       && grub_target_to_host32 (s->sh_type) != SHT_PROGBITS)
     return 0;
-  return ((grub_target_to_host32 (s->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC))
+  return ((grub_target_to_host (s->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC))
 	  == SHF_ALLOC);
 }
 
@@ -543,7 +543,6 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
       {
 	Elf_Word align = grub_host_to_target32 (s->sh_addralign);
 	const char *name = strtab + grub_host_to_target32 (s->sh_name);
-
 	if (align)
 	  current_address = ALIGN_UP (current_address + image_target->vaddr_offset,
 				      align) - image_target->vaddr_offset;
@@ -551,7 +550,7 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
 	grub_util_info ("locating the section %s at 0x%x",
 			name, current_address);
 	section_addresses[i] = current_address;
-	current_address += grub_host_to_target32 (s->sh_size);
+	current_address += grub_host_to_target_addr (s->sh_size);
       }
 
   current_address = ALIGN_UP (current_address + image_target->vaddr_offset,
@@ -576,7 +575,7 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
 	grub_util_info ("locating the section %s at 0x%x",
 			name, current_address);
 	section_addresses[i] = current_address;
-	current_address += grub_host_to_target32 (s->sh_size);
+	current_address += grub_host_to_target_addr (s->sh_size);
       }
 
   current_address = ALIGN_UP (current_address + image_target->vaddr_offset,
@@ -616,7 +615,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
   if (! SUFFIX (check_elf_header) (e, kernel_size, image_target))
     grub_util_error ("invalid ELF header");
 
-  section_offset = grub_target_to_host32 (e->e_shoff);
+  section_offset = grub_target_to_host (e->e_shoff);
   section_entsize = grub_target_to_host16 (e->e_shentsize);
   num_sections = grub_target_to_host16 (e->e_shnum);
 
@@ -660,7 +659,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
 	      grub_util_info ("locating the section %s at 0x%x",
 			      name, current_address);
 	      section_vaddresses[i] = current_address + VADDR_OFFSET;
-	      current_address += grub_host_to_target32 (s->sh_size);
+	      current_address += grub_host_to_target_addr (s->sh_size);
 	    }
 	current_address = ALIGN_UP (current_address + VADDR_OFFSET, SECTION_ALIGN)
 	  - VADDR_OFFSET;
@@ -715,11 +714,11 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
       {
 	if (grub_target_to_host32 (s->sh_type) == SHT_NOBITS)
 	  memset (out_img + section_addresses[i], 0,
-		  grub_host_to_target32 (s->sh_size));
+		  grub_host_to_target_addr (s->sh_size));
 	else
 	  memcpy (out_img + section_addresses[i],
-		  kernel_img + grub_host_to_target32 (s->sh_offset),
-		  grub_host_to_target32 (s->sh_size));
+		  kernel_img + grub_host_to_target_addr (s->sh_offset),
+		  grub_host_to_target_addr (s->sh_size));
       }
   free (kernel_img);
 

@@ -55,7 +55,6 @@ struct image_target_desc
     IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_I386_IEEE1275,
     IMAGE_YEELOONG_ELF, IMAGE_QEMU, IMAGE_PPC
   } id;
-  enum {FORMAT_RAW, FORMAT_AOUT, FORMAT_ELF, FORMAT_PE} format;
   enum
     {
       PLATFORM_FLAGS_NONE = 0,
@@ -77,56 +76,153 @@ struct image_target_desc
 
 struct image_target_desc image_targets[] =
   {
-    {"i386-coreboot", 4, 0, IMAGE_COREBOOT, FORMAT_ELF, PLATFORM_FLAGS_NONE,
-     .section_align = 1,
-     .vaddr_offset = 0
+    {
+      .name = "i386-coreboot",
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_COREBOOT,
+      .flags = PLATFORM_FLAGS_NONE,
+      .section_align = 1,
+      .vaddr_offset = 0
     },
-    {"i386-pc", 4, 0, IMAGE_I386_PC, FORMAT_RAW, PLATFORM_FLAGS_LZMA,
-     GRUB_KERNEL_I386_PC_PREFIX, GRUB_KERNEL_I386_PC_DATA_END,
-     GRUB_KERNEL_I386_PC_RAW_SIZE, GRUB_KERNEL_I386_PC_TOTAL_MODULE_SIZE,
-     GRUB_KERNEL_I386_PC_KERNEL_IMAGE_SIZE, GRUB_KERNEL_I386_PC_COMPRESSED_SIZE,
-     .section_align = 1,
-     .vaddr_offset = 0,
-     GRUB_KERNEL_I386_PC_INSTALL_DOS_PART, GRUB_KERNEL_I386_PC_INSTALL_BSD_PART
+    {
+      .name = "i386-pc",
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_I386_PC, 
+      .flags = PLATFORM_FLAGS_LZMA,
+      .prefix = GRUB_KERNEL_I386_PC_PREFIX,
+      .data_end = GRUB_KERNEL_I386_PC_DATA_END,
+      .raw_size = GRUB_KERNEL_I386_PC_RAW_SIZE,
+      .total_module_size = GRUB_KERNEL_I386_PC_TOTAL_MODULE_SIZE,
+      .kernel_image_size = GRUB_KERNEL_I386_PC_KERNEL_IMAGE_SIZE,
+      .compressed_size = GRUB_KERNEL_I386_PC_COMPRESSED_SIZE,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = GRUB_KERNEL_I386_PC_INSTALL_DOS_PART,
+      .install_bsd_part = GRUB_KERNEL_I386_PC_INSTALL_BSD_PART,
+      .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR
     },
-    {"i386-efi", 4, 0, IMAGE_EFI, FORMAT_PE, PLATFORM_FLAGS_NONE,
-     .section_align = GRUB_PE32_SECTION_ALIGNMENT,
-     .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
-			       + GRUB_PE32_SIGNATURE_SIZE
-			       + sizeof (struct grub_pe32_coff_header)
-			       + sizeof (struct grub_pe32_optional_header)
-			       + 4 * sizeof (struct grub_pe32_section_table),
-			       GRUB_PE32_SECTION_ALIGNMENT)
+    {
+      .name = "i386-efi",
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_EFI,
+      .flags = PLATFORM_FLAGS_NONE,
+      .section_align = GRUB_PE32_SECTION_ALIGNMENT,
+      .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
+				+ GRUB_PE32_SIGNATURE_SIZE
+				+ sizeof (struct grub_pe32_coff_header)
+				+ sizeof (struct grub_pe32_optional_header)
+				+ 4 * sizeof (struct grub_pe32_section_table),
+				GRUB_PE32_SECTION_ALIGNMENT)
     },
-    {"i386-ieee1275", 4, 0, IMAGE_I386_IEEE1275, FORMAT_ELF, PLATFORM_FLAGS_NONE,
-     .section_align = 1,
-     .vaddr_offset = 0},
-    {"i386-qemu", 4, 0, IMAGE_QEMU, FORMAT_RAW, PLATFORM_FLAGS_NONE,
-     .section_align = 1,
-     .vaddr_offset = 0},
-    {"x86_64-efi", 8, 0, IMAGE_EFI, FORMAT_PE, PLATFORM_FLAGS_NONE,
-     .section_align = GRUB_PE32_SECTION_ALIGNMENT,
-     .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
-			       + GRUB_PE32_SIGNATURE_SIZE
-			       + sizeof (struct grub_pe32_coff_header)
-			       + sizeof (struct grub_pe64_optional_header)
-			       + 4 * sizeof (struct grub_pe32_section_table),
-			       GRUB_PE32_SECTION_ALIGNMENT)
+    {
+      .name = "i386-ieee1275",
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_I386_IEEE1275, 
+      .flags = PLATFORM_FLAGS_NONE,
+      .section_align = 1,
+      .vaddr_offset = 0
     },
-    {"mipsel-yeeloong-elf", 4, 0, IMAGE_YEELOONG_ELF, FORMAT_ELF, PLATFORM_FLAGS_NONE,
-     .section_align = 1,
-     .vaddr_offset = 0},
-    {"powerpc-ieee1275", 4, 1, IMAGE_PPC, FORMAT_ELF, PLATFORM_FLAGS_NONE,
-     .section_align = 1,
-     .vaddr_offset = 0},
-    {"sparc64-ieee1275-raw", 8, 1, IMAGE_SPARC64_RAW,
-     FORMAT_RAW, PLATFORM_FLAGS_NONE,
-     .section_align = 1,
-     .vaddr_offset = 0},
-    {"sparc64-ieee1275-aout", 8, 1, IMAGE_SPARC64_AOUT,
-     FORMAT_AOUT, PLATFORM_FLAGS_NONE,
-     .section_align = 1,
-     .vaddr_offset = 0},
+    {
+      .name = "i386-qemu",
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_QEMU, 
+      .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_I386_QEMU_PREFIX,
+      .data_end = GRUB_KERNEL_I386_QEMU_DATA_END,
+      .raw_size = 0,
+      .total_module_size = TARGET_NO_FIELD,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = GRUB_KERNEL_I386_QEMU_KERNEL_IMAGE_SIZE,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_I386_QEMU_LINK_ADDR
+    },
+    {
+      .name = "x86_64-efi",
+      .voidp_sizeof = 8,
+      .bigendian = 0, 
+      .id = IMAGE_EFI, 
+      .flags = PLATFORM_FLAGS_NONE,
+      .section_align = GRUB_PE32_SECTION_ALIGNMENT,
+      .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
+				+ GRUB_PE32_SIGNATURE_SIZE
+				+ sizeof (struct grub_pe32_coff_header)
+				+ sizeof (struct grub_pe64_optional_header)
+				+ 4 * sizeof (struct grub_pe32_section_table),
+				GRUB_PE32_SECTION_ALIGNMENT)
+    },
+    {
+      .name = "mipsel-yeeloong-elf",
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_YEELOONG_ELF, 
+      .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_MIPS_YEELOONG_PREFIX,
+      .data_end = GRUB_KERNEL_MIPS_YEELOONG_DATA_END,
+      .raw_size = GRUB_KERNEL_MIPS_YEELOONG_RAW_SIZE,
+      .total_module_size = GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE,
+      .compressed_size = GRUB_KERNEL_MIPS_YEELOONG_COMPRESSED_SIZE,
+      .kernel_image_size = GRUB_KERNEL_MIPS_YEELOONG_KERNEL_IMAGE_SIZE,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_MIPS_YEELOONG_LINK_ADDR,
+      .elf_target = EM_MIPS,
+      .link_align = GRUB_KERNEL_MIPS_YEELOONG_LINK_ALIGN
+    },
+    {
+      .name = "powerpc-ieee1275",
+      .voidp_sizeof = 4,
+      .bigendian = 1,
+      .id = IMAGE_PPC, 
+      .flags = PLATFORM_FLAGS_NONE,
+      .section_align = 1,
+      .vaddr_offset = 0
+    },
+    {
+      .name = "sparc64-ieee1275-raw",
+      .voidp_sizeof = 8,
+      .bigendian = 1, 
+      .id = IMAGE_SPARC64_RAW,
+      .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX,
+      .data_end = GRUB_KERNEL_SPARC64_IEEE1275_DATA_END,
+      .raw_size = GRUB_KERNEL_SPARC64_IEEE1275_RAW_SIZE,
+      .total_module_size = GRUB_KERNEL_SPARC64_IEEE1275_TOTAL_MODULE_SIZE,
+      .kernel_image_size = GRUB_KERNEL_SPARC64_IEEE1275_KERNEL_IMAGE_SIZE,
+      .compressed_size = GRUB_KERNEL_SPARC64_IEEE1275_COMPRESSED_SIZE,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR
+    },
+    {
+      .name = "sparc64-ieee1275-aout",
+      .voidp_sizeof = 8,
+      .bigendian = 1,
+      .id = IMAGE_SPARC64_AOUT,
+      .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX,
+      .data_end = GRUB_KERNEL_SPARC64_IEEE1275_DATA_END,
+      .raw_size = GRUB_KERNEL_SPARC64_IEEE1275_RAW_SIZE,
+      .total_module_size = GRUB_KERNEL_SPARC64_IEEE1275_TOTAL_MODULE_SIZE,
+      .kernel_image_size = GRUB_KERNEL_SPARC64_IEEE1275_KERNEL_IMAGE_SIZE,
+      .compressed_size = GRUB_KERNEL_SPARC64_IEEE1275_COMPRESSED_SIZE,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR
+    },
   };
 
 #define grub_target_to_host32(x) (grub_target_to_host32_real (image_target, (x)))
@@ -191,8 +287,8 @@ grub_host_to_target16_real (struct image_target_desc *image_target, grub_uint16_
     return grub_cpu_to_le16 (in);
 }
 
-static inline grub_uint32_t
-grub_host_to_target_addr_real (struct image_target_desc *image_target, grub_uint32_t in)
+static inline grub_uint64_t
+grub_host_to_target_addr_real (struct image_target_desc *image_target, grub_uint64_t in)
 {
   if (image_target->voidp_sizeof == 8)
     return grub_host_to_target64_real (image_target, in);
@@ -200,8 +296,8 @@ grub_host_to_target_addr_real (struct image_target_desc *image_target, grub_uint
     return grub_host_to_target32_real (image_target, in);
 }
 
-static inline grub_uint32_t
-grub_target_to_host_real (struct image_target_desc *image_target, grub_uint32_t in)
+static inline grub_uint64_t
+grub_target_to_host_real (struct image_target_desc *image_target, grub_uint64_t in)
 {
   if (image_target->voidp_sizeof == 8)
     return grub_target_to_host64_real (image_target, in);
