@@ -145,8 +145,10 @@ if [ x$boot = xfd ]; then
     device=fda
     bootdev=a
 fi
-${qemu} ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} -boot ${bootdev} | tr -d "\r"
-rm -f ${isofile}
+
+echo ${qemu} ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} -boot ${bootdev}
+#${qemu} ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} -boot ${bootdev} | tr -d "\r"
+#rm -f ${isofile}
 
 rm -f ${tmpfile} ${cfgfile}
 exit 0

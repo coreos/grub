@@ -104,5 +104,7 @@ xnu_mod_CFLAGS = $(COMMON_CFLAGS)
 xnu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 xnu_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
+BOOTTARGET=cd
+
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk
