@@ -23,12 +23,15 @@
 #define SYSCALL_RESET 208
 #define SYSCALL_EXIT 1
 #define SYSCALL_MKNOD 14
+#define SYSCALL_ARCH 165
 #define SYSCALL_MOUNT 410
 #define SYSCALL_INT 0x80
+#define SYSCALL_ARCH_IOPL	2
 
 #define RESET_NOSYNC 0x4
 #define RESET_HALT 0x8
 #define RESET_POWEROFF 0x800
+#define SHUTDOWN_PORT 0x8900
 
 	.section ".init", "ax"
 	.global start,_start
@@ -63,6 +66,30 @@ _start:
 	movq $(messageend-message), %rdx
 	leaq message, %rsi
 	syscall
+
+	/* IOPL.  */
+	movq $SYSCALL_ARCH, %rax
+	movq $SYSCALL_ARCH_IOPL, %rdi
+	leaq iopl_arg, %rsi
+	syscall
+
+	movw $SHUTDOWN_PORT, %dx
+	movb $'S', %al
+	outb %al, %dx
+	movb $'h', %al
+	outb %al, %dx
+	movb $'u', %al
+	outb %al, %dx
+	movb $'t', %al
+	outb %al, %dx
+	movb $'d', %al
+	outb %al, %dx
+	movb $'o', %al
+	outb %al, %dx
+	movb $'w', %al
+	outb %al, %dx
+	movb $'n', %al
+	outb %al, %dx
 
 	/* shutdown.  */
 	movq $SYSCALL_RESET, %rax
@@ -118,4 +145,6 @@ tmpfs_args:
 	.long		0777
 	/* Alignment long.  */
 	.long 0
-tmpfs_args_end:	
+tmpfs_args_end:
+iopl_arg:
+	.long 3

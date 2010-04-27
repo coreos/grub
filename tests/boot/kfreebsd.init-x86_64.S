@@ -18,14 +18,18 @@
 
 #define MODE_RDRW 2
 #define FLAGS_NONE 0
+#define SYSCALL_ARCH 165
 #define SYSCALL_OPEN 5
 #define SYSCALL_WRITE 4
 #define SYSCALL_RESET 55
 #define SYSCALL_EXIT 1
+#define SYSCALL_ARCH_IOPL	4
+#define SYSCALL_FSYNC 95
 
 #define RESET_NOSYNC 0x4
 #define RESET_HALT 0x8
 #define RESET_POWEROFF 0x4000
+#define SHUTDOWN_PORT 0x8900
 
 	.section ".init", "ax"
 	.global start,_start
@@ -40,10 +44,38 @@ _start:
 	movq %rax, %rdi
 
 	/* write.  */
-	movq $SYSCALL_WRITE, %rax
 	leaq message, %rsi
-	movq $(messageend-message), %rdx
+	movq $SYSCALL_WRITE, %rax
+	movq $(messageend - message), %rdx
 	syscall
+
+	/* fsync.  */
+	movq $SYSCALL_FSYNC, %rax
+	syscall
+
+	/* IOPL.  */
+	movq $SYSCALL_ARCH, %rax
+	movq $SYSCALL_ARCH_IOPL, %rdi
+	leaq iopl_arg, %rsi
+	syscall
+
+	movw $SHUTDOWN_PORT, %dx
+	movb $'S', %al
+	outb %al, %dx
+	movb $'h', %al
+	outb %al, %dx
+	movb $'u', %al
+	outb %al, %dx
+	movb $'t', %al
+	outb %al, %dx
+	movb $'d', %al
+	outb %al, %dx
+	movb $'o', %al
+	outb %al, %dx
+	movb $'w', %al
+	outb %al, %dx
+	movb $'n', %al
+	outb %al, %dx
 	
 	/* shutdown.  */
 	movq $SYSCALL_RESET, %rax
@@ -60,3 +92,7 @@ device:
 message:
 	.ascii "Boot Test Passed Successfully\n" SUCCESSFUL_BOOT_STRING "\n"
 messageend:
+iopl_arg:
+	.long SHUTDOWN_PORT
+	.long 1
+	.long 1
