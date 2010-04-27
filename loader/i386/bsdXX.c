@@ -77,7 +77,7 @@ SUFFIX (grub_freebsd_load_elfmodule_obj) (struct grub_relocator *relocator,
 {
   Elf_Ehdr e;
   Elf_Shdr *s;
-  char *shdr;
+  char *shdr = 0;
   grub_addr_t curload, module;
   grub_err_t err;
   grub_size_t chunk_size = 0;
@@ -170,7 +170,7 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
 {
   Elf_Ehdr e;
   Elf_Shdr *s;
-  char *shdr;
+  char *shdr = 0;
   grub_addr_t curload, module;
   grub_err_t err;
   grub_size_t chunk_size = 0;
@@ -270,7 +270,7 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
   grub_err_t err;
   Elf_Ehdr e;
   Elf_Shdr *s;
-  char *shdr;
+  char *shdr = 0;
   unsigned symoff, stroff, symsize, strsize;
   grub_freebsd_addr_t symstart, symend, symentsize, dynamic;
   Elf_Sym *sym;

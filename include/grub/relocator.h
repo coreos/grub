@@ -22,6 +22,7 @@
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/memory.h>
+#include <grub/cpu/memory.h>
 
 struct grub_relocator;
 struct grub_relocator_chunk;

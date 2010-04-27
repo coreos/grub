@@ -861,7 +861,7 @@ make_device_name (int drive, int dos_part, int bsd_part)
     dos_part_str = xasprintf (",%d", dos_part + 1);
 
   if (bsd_part >= 0)
-    bsd_part_str = xasprintf (",%c", bsd_part + 'a');
+    bsd_part_str = xasprintf (",%d", bsd_part + 1);
 
   ret = xasprintf ("%s%s%s", map[drive].drive,
                    dos_part_str ? : "",
@@ -1351,4 +1351,10 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 # warning "The function `grub_util_biosdisk_get_grub_dev' might not work on your OS correctly."
   return make_device_name (drive, -1, -1);
 #endif
+}
+
+const char *
+grub_util_biosdisk_get_osdev (grub_disk_t disk)
+{
+  return map[disk->id].device;
 }

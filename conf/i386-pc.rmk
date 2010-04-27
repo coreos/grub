@@ -1,12 +1,9 @@
 # -*- makefile -*-
 
-GRUB_KERNEL_MACHINE_LINK_ADDR = 0x8200
-
 COMMON_CFLAGS = -mrtd -mregparm=3
 
 # Images.
-pkglib_IMAGES = boot.img cdboot.img diskboot.img kernel.img lnxboot.img \
-	pxeboot.img
+pkglib_IMAGES = boot.img cdboot.img diskboot.img lnxboot.img pxeboot.img
 
 # For boot.img.
 boot_img_SOURCES = boot/i386/pc/boot.S
@@ -39,6 +36,7 @@ cdboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)0x7C00
 cdboot_img_FORMAT = binary
 
 # For kernel.img.
+pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/i386/pc/startup.S \
 	kern/i386/misc.S \
 	kern/main.c kern/device.c \
@@ -55,21 +53,13 @@ kernel_img_SOURCES = kern/i386/pc/startup.S \
 	term/i386/pc/console.c term/i386/vga_common.c \
 	symlist.c
 kernel_img_HEADERS += machine/biosdisk.h machine/vga.h machine/vbe.h \
-	machine/pxe.h i386/pit.h
+	machine/pxe.h i386/pit.h machine/kernel.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)  $(TARGET_IMG_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS += $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_KERNEL_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
-kernel_img_FORMAT = binary
+kernel_img_LDFLAGS += $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)0x8200 $(COMMON_CFLAGS)
 
 # Utilities.
-bin_UTILITIES = grub-mkimage
 sbin_UTILITIES = grub-setup
-
-# For grub-mkimage.
-grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkrawimage.c util/misc.c \
-	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
-grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
-util/grub-mkrawimage.c_DEPENDENCIES = Makefile
 
 # For grub-setup.
 util/i386/pc/grub-setup.c_DEPENDENCIES = grub_setup_init.h
@@ -82,9 +72,9 @@ grub_setup_SOURCES = gnulib/progname.c \
 	\
 	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c		 \
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c	 \
-	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		 \
-	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c	 \
-	fs/befs.c fs/befs_be.c fs/tar.c			\
+	fs/nilfs2.c fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c	\
+	fs/sfs.c fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c		\
+	fs/afs_be.c fs/befs.c fs/befs_be.c fs/tar.c		\
 	\
 	partmap/msdos.c partmap/bsdlabel.c partmap/sunpc.c	\
 	partmap/gpt.c		\
@@ -287,13 +277,14 @@ pkglib_DATA += efiemu32.o efiemu64.o
 
 endif
 
-BOOTTARGET=bios-cd
+BOOTTARGET=cd
+QEMU32=qemu-system-i386
 
 bootcheck-linux16-i386: linux-initramfs.i386 $(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/tests/boot/linux.cfg grub-shell
-	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --boot=$(BOOTTARGET) --qemu=qemu-system-i386 --files=/initrd=linux-initramfs.i386 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/tests/boot/linux16.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
+	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=$(QEMU32) --files=/initrd=linux-initramfs.i386 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/tests/boot/linux16.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 bootcheck-linux16-x86_64: linux-initramfs.x86_64 $(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/tests/boot/linux.cfg grub-shell
-	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/initrd=linux-initramfs.x86_64 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/tests/boot/linux16.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
+	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/initrd=linux-initramfs.x86_64 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/tests/boot/linux16.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 BOOTCHECKS+=bootcheck-linux16-i386 bootcheck-linux16-x86_64
 

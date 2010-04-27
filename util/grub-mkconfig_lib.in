@@ -31,6 +31,12 @@ if test "x$grub_mkrelpath" = x; then
   grub_mkrelpath=${bindir}/`echo grub-mkrelpath | sed ${transform}`
 fi
 
+if $(which gettext >/dev/null 2>/dev/null) ; then
+  gettext="gettext"
+else
+  gettext="echo"
+fi
+
 grub_warn ()
 {
   echo "Warning: $@" >&2
@@ -187,4 +193,8 @@ version_find_latest ()
     fi
   done
   echo "$a"
+}
+
+gettext_quoted () {
+  $gettext "$@" | sed "s/'/'\\\\''/g"
 }

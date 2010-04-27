@@ -31,7 +31,7 @@ _start:
 
 	jmp	1f
 
-	. = _start + GRUB_BOOT_MACHINE_CORE_ENTRY_ADDR
+	. = _start + GRUB_BOOT_I386_QEMU_CORE_ENTRY_ADDR
 VARIABLE(grub_core_entry_addr)
 	.long	0
 1:
