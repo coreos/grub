@@ -446,6 +446,8 @@ malloc_in_range (struct grub_relocator *rel,
     for (cur = extra_blocks; cur; cur = cur->next)
       maxevents += 2;
   }
+  for (r = grub_mm_base; r; r = r->next)
+    maxevents += 2;
 
   maxevents += grub_relocator_firmware_get_max_events ();
 
@@ -791,6 +793,8 @@ malloc_in_range (struct grub_relocator *rel,
 		      fend
 			= ALIGN_UP (alloc_end,
 				    GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT);
+		      grub_dprintf ("relocator", "requesting %lx-%lx\n",
+				    fstart, fend);
 		      /* The failure here can be very expensive.  */
 		      if (!grub_relocator_firmware_alloc_region (fstart, 
 								 fend - fstart))
