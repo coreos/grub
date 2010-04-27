@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,20 +16,11 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_KERNEL_CPU_HEADER
-#define GRUB_KERNEL_CPU_HEADER	1
-
-
-#ifdef GRUB_MACHINE_IEEE1275
-#define GRUB_MOD_ALIGN	0x1000
-#else
-#define GRUB_MOD_ALIGN	0x1
-#endif
-
-/* Non-zero value is only needed for PowerMacs.  */
-#define GRUB_MOD_GAP 0x0
-
-#define GRUB_KERNEL_CPU_PREFIX	0x2
-#define GRUB_KERNEL_CPU_DATA_END	0x42
-
-#endif
+void EXPORT_FUNC (pci_slot_match_iterator_create) (void);
+void EXPORT_FUNC (pci_system_cleanup) (void);
+void EXPORT_FUNC (pci_device_unmap_range) (void);
+void EXPORT_FUNC (pci_iterator_destroy) (void);
+void EXPORT_FUNC (pci_device_map_range) (void);
+void EXPORT_FUNC (pci_device_cfg_read_u32) (void);
+void EXPORT_FUNC (pci_device_next) (void);
+void EXPORT_FUNC (pci_system_init) (void);

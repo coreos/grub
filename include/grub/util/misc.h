@@ -27,6 +27,7 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/symbol.h>
 
 #ifdef __NetBSD__
 /* NetBSD uses /boot for its boot block.  */
@@ -40,9 +41,9 @@
 extern char *progname;
 extern int verbosity;
 
-void grub_util_warn (const char *fmt, ...);
-void grub_util_info (const char *fmt, ...);
-void grub_util_error (const char *fmt, ...) __attribute__ ((noreturn));
+void EXPORT_FUNC(grub_util_warn) (const char *fmt, ...);
+void EXPORT_FUNC(grub_util_info) (const char *fmt, ...);
+void EXPORT_FUNC(grub_util_error) (const char *fmt, ...) __attribute__ ((noreturn));
 
 void *xmalloc (size_t size);
 void *xrealloc (void *ptr, size_t size);

@@ -1,3 +1,141 @@
+2010-04-24  Christian Franke  <franke@computer.org>
+
+	* Makefile.in (TARGET_LDFLAGS): Add -static-libgcc.
+	(kernel_img_LDFLAGS): Remove -static-libgcc.
+
+2010-04-24  Christian Franke  <franke@computer.org>
+
+	* configure.ac: Do not CHECK_BSS_START_SYMBOL
+	and CHECK_END_SYMBOL if grub-emu is built.
+	Unset TARGET_OBJ2ELF if grub-emu is built
+	without module support.
+
+2010-04-24  Jiro SEKIBA <jir@unicus.jp>
+
+	Nilfs2 support.
+
+	* conf/common.rmk (grub_probe_SOURCES): Add fs/nilfs2.c.
+	(grub_fstest_SOURCES): Likewise.
+	(pkglib_MODULES): Add nilfs2.mod.
+	(nilfs2_mod_SOURCES): New variable.
+	(nilfs2_mod_CFLAGS): Likewise.
+	(nilfs2_mod_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add fs/nilfs2.c.
+	* conf/sparc64-ieee1275.rmk (grub_setup_SOURCES): Add fs/nilfs2.c.
+	* fs/nilfs2.c: New file.
+
+2010-04-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Refuse to compile for x86_64-efi is mcmodel=large
+	is not supported.
+
+2010-04-19  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	Add grub-mkconfig support for NetBSD.
+
+	* util/grub.d/10_netbsd.in: grub-mkconfig helper script for NetBSD.
+	* util/grub-mkconfig.in: export new NetBSD specific variables.
+	* po/POTFILES-shell: added 10_netbsd.in.
+	* util/grub-mkconfig_lib.in: check for gettext binary, default to echo.
+
+2010-04-19  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix emu build with grub-emu-pci and grub-emu-modules.
+
+	* include/grub/util/misc.h: Export grub_util_{info,error,warn}
+	functions.
+	* include/grub/libpciaccess.h: New file.
+	* conf/any-emu.rmk: Update kernel headers for emu build.
+
+2010-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/udf.c (grub_udf_iterate_dir): Silence a spurious warning.
+
+2010-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* fs/udf.c (grub_udf_iterate_dir): Decode the Unicode filenames.
+
+2010-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* boot/sparc64/ieee1275/boot.S: Various size-reducing changes.
+	Retrieve chosen/bootpath if bootpath isn't hardcoded.
+	* conf/sparc64-ieee1275.rmk (grub_setup_SOURCES): Add
+	util/ieee1275/ofpath.c.
+	* util/sparc64/ieee1275/grub-ofpathname.c: Renamed to ...
+	* util/ieee1275/grub-ofpathname.c: ... this. All users updated
+	* include/grub/sparc64/ieee1275/boot.h
+	(GRUB_BOOT_MACHINE_KERNEL_SECTOR): Renamed to ...
+	(GRUB_BOOT_MACHINE_KERNEL_BYTE): ...this. Moved 8 bytes lower.
+	* util/hostdisk.c (grub_util_biosdisk_get_osdev): New function.
+	* util/ieee1275/ofpath.c (grub_util_devname_to_ofpath): Make argument
+	const char *.
+	* util/sparc64/ieee1275/grub-setup.c (compute_dest_ofpath): Removed.
+	(setup): Use KERNEL_BYTE instead of KERNEL_SECTOR.
+	Use grub_util_devname_to_ofpath. Zero-fill boot_devpath on same disk
+	install.
+
+2010-04-18  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* util/grub-mkconfig.in: Corrected two == equality tests.
+	Set grub_prefix as in grub-install for NetBSD and OpenBSD.
+	* configure.ac: All definitions and uses of TARGET_IMG_LDFLAGS_AC now
+	expect a number appended to it.
+	* acinclude.m4 (grub_PROG_OBJCOPY_ABSOLUTE): ${TARGET_IMG_LDFLAGS_AC}
+	expects a number appended to it.
+
+2010-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* po/POTFILES: Renamed multiboot_loader.c to multiboot.c
+
+2010-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/hostdisk.c (make_device_name): Change to new partition naming.
+
+2010-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/lvm.c (grub_lvm_memberlist): Issue an error if pv->disk = 0.
+
+2010-04-17  Christian Franke <franke@computer.org>
+
+	* Makefile.in: Add missing localedir setting.
+
+2010-04-14  Colin Watson  <cjwatson@ubuntu.com>
+
+	Restore TEXTDOMAINDIR correction from r1889, lost apparently by
+	mistake in r2156.  Noticed by Anthony Fok.
+
+	* util/grub.d/10_kfreebsd.in (TEXTDOMAINDIR): Set to lowercased
+	@localedir@.
+	* util/grub.d/10_linux.in (TEXTDOMAINDIR): Likewise.
+
+2010-04-14  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix a spurious, uninitialized variable warning.
+
+	* loader/i386/bsdXX.c (grub_freebsd_load_elfmodule_obj):
+	Initialize variable, shdr.
+	(grub_freebsd_load_elfmodule): Likewise.
+	(grub_freebsd_load_elf_meta): Likewise.
+
+2010-04-13  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix for escaped dollar in double quoted strings.
+
+	* script/yylex.l: Updated flex rules.
+	* conf/tests.rmk: Rule for new testcase.
+	* tests/grub_script_dollar.in: New testcase.
+
+2010-04-13  Carles Pina i Estany  <carles@pina.cat>
+2010-04-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	Enclose all translated strings in grub.cfg in single quotes, and
+	escape them appropriately (Ubuntu bug #552921).
+
+	* util/grub-mkconfig_lib.in (gettext_quoted): New function.
+	* util/grub.d/10_hurd.in: Use it.
+	* util/grub.d/10_kfreebsd.in (kfreebsd_entry): Likewise.
+	* util/grub.d/10_linux.in (linux_entry): Likewise.
+
 2010-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix cygwin compilation.

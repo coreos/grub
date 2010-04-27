@@ -148,6 +148,7 @@ case "$target_cpu" in
   mips)      	machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_MIPS=1" ;;
   sparc64)      machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
+machine_CFLAGS="$machine_CFLAGS -DMACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
 
 CFLAGS="$CFLAGS $machine_CFLAGS"
 TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
@@ -360,7 +361,7 @@ else
 if test -f "${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"; then
   TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
   TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}  -Wl,-Ttext,"
-  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
+  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc  -Wl,-Ttext,"
 else
   TARGET_IMG_LDSCRIPT=
   TARGET_IMG_LDFLAGS='-Wl,-N  -Wl,-Ttext,'
@@ -413,9 +414,7 @@ if test "$target_cpu"-"$platform" = x86_64-efi; then
 		      [grub_cv_cc_mcmodel=no])
   ])
   if test "x$grub_cv_cc_mcmodel" = xno; then
-    CFLAGS="$SAVED_CFLAGS -m64 -DMCMODEL_SMALL=1"
-    TARGET_CFLAGS="$TARGET_CFLAGS -DMCMODEL_SMALL=1"
-    AC_MSG_WARN([-mcmodel=large not supported. You won't be able to use the memory over 4GiB. Upgrade your gcc])
+    AC_MSG_ERROR([-mcmodel=large not supported. Upgrade your gcc.])
   else
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large"
   fi
@@ -513,11 +512,11 @@ grub_PROG_OBJCOPY_ABSOLUTE
 fi
 grub_PROG_LD_BUILD_ID_NONE
 if test "x$target_cpu" = xi386; then
-  if test ! -z "$TARGET_IMG_LDSCRIPT"; then
-    # Check symbols provided by linker script.
-    CFLAGS="$TARGET_CFLAGS -nostdlib $TARGET_IMG_LDFLAGS_AC -Wl,-Ttext,8000,--defsym,___main=0x8100"
-  fi
-  if test "x$TARGET_APPLE_CC" != x1 ; then
+  if test "$platform" != emu && test "x$TARGET_APPLE_CC" != x1 ; then
+    if test ! -z "$TARGET_IMG_LDSCRIPT"; then
+      # Check symbols provided by linker script.
+      CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC}8000 -Wl,--defsym,___main=0x8100"
+    fi
     grub_CHECK_BSS_START_SYMBOL
     grub_CHECK_END_SYMBOL
   fi
@@ -636,6 +635,12 @@ else
   TARGET_NO_MODULES=yes
 fi
 AC_SUBST(TARGET_NO_MODULES)
+
+if test "$TARGET_NO_MODULES" = yes ; then
+  # Do not convert modules, otherwise linkage may fail (Cygwin only).
+  # FIXME: Should be checked above before TARGET_OBJ2ELF is set first.
+  TARGET_OBJ2ELF=
+fi
 
 if test x"$enable_grub_emu_usb" = xno ; then
   grub_emu_usb_excuse="explicitly disabled"

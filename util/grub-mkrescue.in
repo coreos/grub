@@ -172,7 +172,7 @@ EOF
 
     tar -C ${memdisk_dir} -cf ${memdisk_img} boot
     rm -rf ${memdisk_dir}
-    grub-mkelfimage -d ${coreboot_dir}/ -m ${memdisk_img} -o ${iso9660_dir}/boot/multiboot.img \
+    grub-mkimage -O i386-coreboot -d ${coreboot_dir}/ -m ${memdisk_img} -o ${iso9660_dir}/boot/multiboot.img \
         memdisk tar search iso9660 configfile sh \
         ata at_keyboard
     rm -f ${memdisk_img}
@@ -183,7 +183,7 @@ fi
 if test -e "${pc_dir}" ; then
     echo "Enabling BIOS support ..."
     core_img=`mktemp "$MKTEMP_TEMPLATE"`
-    grub-mkimage -d ${pc_dir}/ -o ${core_img} --prefix=/boot/grub/i386-pc \
+    grub-mkimage -O i386-pc -d ${pc_dir}/ -O i386-pc -o ${core_img} --prefix=/boot/grub/i386-pc \
         iso9660 biosdisk
     cat ${pc_dir}/cdboot.img ${core_img} > ${iso9660_dir}/boot/grub/i386-pc/eltorito.img
 
@@ -213,7 +213,7 @@ fi
 # build bootx64.efi
 if test -e "${efi64_dir}" ; then
     echo "Enabling EFI64 support ..."
-    grub-mkimage -d "${efi64_dir}" -o "${efi_dir}"/efi/boot/bootx64.efi --prefix=/boot/grub/x86_64-efi \
+    grub-mkimage -O x86_64-efi -d "${efi64_dir}" -o "${efi_dir}"/efi/boot/bootx64.efi --prefix=/boot/grub/x86_64-efi \
         search iso9660 configfile sh 
 
     modules="$(cat "${efi64_dir}"/partmap.lst) ${modules}"
