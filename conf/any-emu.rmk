@@ -9,10 +9,11 @@ kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c kern/env.c	\
 	kern/corecmd.c kern/file.c kern/fs.c kern/main.c kern/misc.c	\
 	kern/parser.c kern/partition.c kern/term.c			\
 	kern/rescue_reader.c kern/rescue_parser.c			\
-	\
-	kern/emu/misc.c kern/emu/getroot.c kern/emu/time.c		\
-	kern/emu/hostdisk.c kern/emu/hostfs.c kern/emu/console.c	\
-	\
+									\
+	kern/emu/main.c kern/emu/misc.c kern/emu/getroot.c		\
+	kern/emu/time.c kern/emu/hostdisk.c kern/emu/hostfs.c		\
+	kern/emu/console.c						\
+									\
 	gnulib/progname.c disk/host.c
 kernel_img_HEADERS += datetime.h emu/misc.h
 kernel_img_CFLAGS = $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Wno-undef -I$(srcdir)/gnulib
@@ -85,7 +86,7 @@ endif
 
 ifeq ($(enable_grub_emu_pci), yes)
 pkglib_MODULES += pci.mod
-pci_mod_SOURCES = util/pci.c commands/lspci.c
+pci_mod_SOURCES = bus/emu/pci.c commands/lspci.c
 pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 grub_emu_LDFLAGS += $(LIBPCIACCESS)
 kernel_img_HEADERS += libpciaccess.h
@@ -104,13 +105,8 @@ DISTCLEANFILES += grub_emu_init.c
 CLEANFILES += grub-emu
 ifneq ($(TARGET_NO_MODULES), yes)
 grub-emu: $(pkglib_PROGRAMS)
-	$(CC) -o $@ $(pkglib_PROGRAMS) $(grub_emu_LDFLAGS) $(LDFLAGS)
+	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
 else
-
-pkglib_MODULES += emu.mod
-emu_mod_SOURCES = kern/emu/main.c
-emu_mod_CFLAGS = -I$(srcdir)/gnulib
-
 grub-emu: $(pkglib_MODULES) $(pkglib_PROGRAMS)
 	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
 endif

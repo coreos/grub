@@ -564,3 +564,17 @@ grub_util_init_nls (void)
 #endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
 }
 #endif
+
+int
+grub_dl_ref (grub_dl_t mod)
+{
+  (void) mod;
+  return 0;
+}
+
+int
+grub_dl_unref (grub_dl_t mod)
+{
+  (void) mod;
+  return 0;
+}

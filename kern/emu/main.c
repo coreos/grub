@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/setjmp.h>
 #include <grub/fs.h>
