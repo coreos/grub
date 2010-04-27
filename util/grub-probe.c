@@ -19,7 +19,7 @@
 
 #include <config.h>
 #include <grub/types.h>
-#include <grub/emu/misc.h>
+#include <grub/util/misc.h>
 #include <grub/util/misc.h>
 #include <grub/device.h>
 #include <grub/disk.h>

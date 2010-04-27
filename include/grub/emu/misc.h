@@ -28,4 +28,14 @@ void EXPORT_FUNC(grub_util_warn) (const char *fmt, ...);
 void EXPORT_FUNC(grub_util_info) (const char *fmt, ...);
 void EXPORT_FUNC(grub_util_error) (const char *fmt, ...) __attribute__ ((noreturn));
 
+#ifndef HAVE_VASPRINTF
+int EXPORT_FUNC(vasprintf) (char **buf, const char *fmt, va_list ap);
+#endif
+
+#ifndef  HAVE_ASPRINTF
+int EXPORT_FUNC(asprintf) (char **buf, const char *fmt, ...);
+#endif
+
+char * EXPORT_FUNC(xasprintf) (const char *fmt, ...);
+
 #endif /* GRUB_EMU_MISC_H */

@@ -55,8 +55,6 @@ grub_realloc (void *ptr, grub_size_t size)
 {
   void *ret;
   ret = realloc (ptr, size);
-  if (!ret)
-    grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
   return ret;
 }
 
@@ -77,9 +75,6 @@ grub_memalign (grub_size_t align, grub_size_t size)
   (void) size;
   grub_util_error ("grub_memalign is not supported");
 #endif
-
-  if (!p)
-    grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
 
   return p;
 }

@@ -6,7 +6,7 @@ script/lexer.c_DEPENDENCIES = grub_script.tab.h
 sbin_UTILITIES += grub-mkdevicemap
 grub_mkdevicemap_SOURCES = gnulib/progname.c util/grub-mkdevicemap.c \
 	util/deviceiter.c \
-	util/misc.c
+	util/misc.c kern/emu/misc.c
 
 ifeq ($(target_cpu)-$(platform), sparc64-ieee1275)
 grub_mkdevicemap_SOURCES += util/ieee1275/ofpath.c util/ieee1275/devicemap.c
@@ -16,16 +16,15 @@ endif
 
 # For grub-mkelfimage.
 bin_UTILITIES += grub-mkelfimage
-grub_mkelfimage_SOURCES = gnulib/progname.c \
-	util/elf/grub-mkimage.c util/misc.c \
-	util/resolve.c
+grub_mkelfimage_SOURCES = gnulib/progname.c util/elf/grub-mkimage.c	\
+	util/misc.c kern/emu/misc.c util/resolve.c
 util/elf/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-probe.
 sbin_UTILITIES += grub-probe
 util/grub-probe.c_DEPENDENCIES = grub_probe_init.h
 grub_probe_SOURCES = gnulib/progname.c util/grub-probe.c	\
-	kern/emu/hostdisk.c util/misc.c kern/emu/getroot.c util/mm.c	\
+	kern/emu/hostdisk.c util/misc.c kern/emu/misc.c kern/emu/getroot.c kern/emu/mm.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	kern/parser.c kern/partition.c kern/file.c kern/list.c	\
 	\
@@ -61,7 +60,7 @@ grub_mkisofs_CFLAGS = -D_FILE_OFFSET_BITS=64 				\
 # For grub-fstest.
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
 grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c kern/emu/hostfs.c \
-	util/misc.c util/mm.c 	\
+	util/misc.c kern/emu/misc.c kern/emu/mm.c 	\
 	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	disk/host.c disk/loopback.c kern/list.c kern/command.c		\
 	lib/arg.c commands/extcmd.c normal/datetime.c normal/misc.c	\
@@ -83,14 +82,14 @@ grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c kern/emu/hostfs.c \
 # For grub-mkfont.
 ifeq ($(enable_grub_mkfont), yes)
 bin_UTILITIES += grub-mkfont
-grub_mkfont_SOURCES = gnulib/progname.c util/grub-mkfont.c util/misc.c
+grub_mkfont_SOURCES = gnulib/progname.c util/grub-mkfont.c util/misc.c kern/emu/misc.c
 grub_mkfont_CFLAGS = $(freetype_cflags)
 grub_mkfont_LDFLAGS = $(freetype_libs)
 endif
 
 # For grub-mkrelpath.
 bin_UTILITIES += grub-mkrelpath
-grub_mkrelpath_SOURCES = gnulib/progname.c util/grub-mkrelpath.c util/misc.c
+grub_mkrelpath_SOURCES = gnulib/progname.c util/grub-mkrelpath.c util/misc.c kern/emu/misc.c
 
 bin_UTILITIES += grub-bin2h
 grub_bin2h_SOURCES = gnulib/progname.c util/bin2h.c
@@ -104,7 +103,7 @@ DISTCLEANFILES += grub_script.yy.c grub_script.yy.h
 bin_UTILITIES += grub-script-check
 util/grub-script-check.c_DEPENDENCIES = grub_script_check_init.h
 grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c \
-	util/grub-script-check.c util/misc.c util/mm.c \
+	util/grub-script-check.c util/misc.c kern/emu/misc.c kern/emu/mm.c \
 	script/main.c script/script.c script/function.c script/lexer.c \
 	kern/handler.c kern/err.c kern/parser.c kern/list.c \
 	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c \
@@ -187,7 +186,7 @@ DISTCLEANFILES += grub_fstest_init.c
 
 # for grub-editenv
 bin_UTILITIES += grub-editenv
-grub_editenv_SOURCES = gnulib/progname.c util/grub-editenv.c lib/envblk.c util/misc.c util/mm.c kern/misc.c kern/err.c
+grub_editenv_SOURCES = gnulib/progname.c util/grub-editenv.c lib/envblk.c util/misc.c kern/emu/misc.c kern/emu/mm.c kern/misc.c kern/err.c
 CLEANFILES += grub-editenv
 
 # Needed for genmk.rb to work
@@ -195,7 +194,7 @@ ifeq (0,1)
 bin_UTILITIES += grub-macho2img grub-pe2elf
 endif
 
-grub_pe2elf_SOURCES = gnulib/progname.c util/grub-pe2elf.c util/misc.c
+grub_pe2elf_SOURCES = gnulib/progname.c util/grub-pe2elf.c util/misc.c kern/emu/misc.c
 CLEANFILES += grub-pe2elf
 
 grub_macho2img_SOURCES = util/grub-macho2img.c
@@ -855,7 +854,7 @@ boot_mod_CFLAGS = $(COMMON_CFLAGS)
 boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 bin_UTILITIES += grub-mkpasswd-pbkdf2
-grub_mkpasswd_pbkdf2_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c util/grub-mkpasswd-pbkdf2.c lib/crypto.c lib/libgcrypt-grub/cipher/sha512.c lib/pbkdf2.c util/misc.c util/mm.c kern/err.c
+grub_mkpasswd_pbkdf2_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c util/grub-mkpasswd-pbkdf2.c lib/crypto.c lib/libgcrypt-grub/cipher/sha512.c lib/pbkdf2.c util/misc.c kern/emu/misc.c kern/emu/mm.c kern/err.c
 grub_mkpasswd_pbkdf2_CFLAGS += -Wno-missing-field-initializers -Wno-error -I$(srcdir)/lib/libgcrypt_wrap -DGRUB_MKPASSWD=1
 
 include $(srcdir)/conf/gcry.mk

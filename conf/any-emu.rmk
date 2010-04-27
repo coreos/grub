@@ -10,9 +10,9 @@ kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c kern/env.c	\
 	kern/parser.c kern/partition.c kern/term.c			\
 	kern/rescue_reader.c kern/rescue_parser.c			\
 									\
-	kern/emu/main.c kern/emu/misc.c kern/emu/getroot.c		\
-	kern/emu/time.c kern/emu/hostdisk.c kern/emu/hostfs.c		\
-	kern/emu/console.c						\
+	kern/emu/main.c kern/emu/mm.c kern/emu/misc.c			\
+	kern/emu/getroot.c kern/emu/time.c kern/emu/hostdisk.c		\
+	kern/emu/hostfs.c kern/emu/console.c				\
 									\
 	gnulib/progname.c disk/host.c
 kernel_img_HEADERS += datetime.h emu/misc.h
