@@ -165,6 +165,7 @@ if test -e "${coreboot_dir}" ; then
     cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
 search --fs-uuid --set ${iso_uuid}
 set prefix=(\${root})/boot/grub/${target_cpu}-coreboot
+source $prefix/grub.cfg
 EOF
     (for i in ${modules} ; do
         echo "insmod $i"
@@ -221,6 +222,7 @@ if test -e "${efi64_dir}" ; then
     cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
 search --fs-uuid --set ${iso_uuid}
 set prefix=(\${root})/boot/grub/${target_cpu}-efi
+source $prefix/grub.cfg
 EOF
 
     tar -C ${memdisk_dir} -cf ${memdisk_img} boot
