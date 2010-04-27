@@ -19,6 +19,7 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/device.h>
 #include <grub/disk.h>
@@ -26,8 +27,8 @@
 #include <grub/fs.h>
 #include <grub/partition.h>
 #include <grub/msdos_partition.h>
-#include <grub/util/hostdisk.h>
-#include <grub/util/getroot.h>
+#include <grub/emu/hostdisk.h>
+#include <grub/emu/getroot.h>
 #include <grub/term.h>
 #include <grub/env.h>
 #include <grub/raid.h>

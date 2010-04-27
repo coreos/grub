@@ -25,7 +25,7 @@ util/elf/grub-mkimage.c_DEPENDENCIES = Makefile
 sbin_UTILITIES += grub-probe
 util/grub-probe.c_DEPENDENCIES = grub_probe_init.h
 grub_probe_SOURCES = gnulib/progname.c util/grub-probe.c	\
-	util/hostdisk.c	util/misc.c util/getroot.c util/mm.c	\
+	kern/emu/hostdisk.c util/misc.c kern/emu/getroot.c util/mm.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	kern/parser.c kern/partition.c kern/file.c kern/list.c	\
 	\
@@ -60,7 +60,7 @@ grub_mkisofs_CFLAGS = -D_FILE_OFFSET_BITS=64 				\
 
 # For grub-fstest.
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
-grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c util/hostfs.c \
+grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c kern/emu/hostfs.c \
 	util/misc.c util/mm.c 	\
 	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	disk/host.c disk/loopback.c kern/list.c kern/command.c		\

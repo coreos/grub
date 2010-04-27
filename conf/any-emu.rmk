@@ -10,11 +10,11 @@ kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c kern/env.c	\
 	kern/parser.c kern/partition.c kern/term.c			\
 	kern/rescue_reader.c kern/rescue_parser.c			\
 	\
-	util/console.c  util/grub-emu.c util/misc.c			\
-	util/hostdisk.c util/getroot.c util/mm.c util/time.c		\
+	kern/emu/misc.c kern/emu/getroot.c kern/emu/time.c		\
+	kern/emu/hostdisk.c kern/emu/hostfs.c kern/emu/console.c	\
 	\
-	gnulib/progname.c util/hostfs.c disk/host.c
-kernel_img_HEADERS += datetime.h util/misc.h
+	gnulib/progname.c disk/host.c
+kernel_img_HEADERS += datetime.h emu/misc.h
 kernel_img_CFLAGS = $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Wno-undef -I$(srcdir)/gnulib
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 TARGET_NO_STRIP = yes
@@ -49,7 +49,7 @@ ifeq ($(enable_grub_emu_usb), yes)
 kernel_img_HEADERS += libusb.h
 
 pkglib_MODULES += libusb.mod
-libusb_mod_SOURCES = util/usb.c
+libusb_mod_SOURCES = bus/usb/emu/usb.c
 libusb_mod_CFLAGS = 
 libusb_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
@@ -76,7 +76,7 @@ endif
 
 ifeq ($(enable_grub_emu_sdl), yes)
 pkglib_MODULES += sdl.mod
-sdl_mod_SOURCES = util/sdl.c
+sdl_mod_SOURCES = video/emu/sdl.c
 sdl_mod_CFLAGS = 
 sdl_mod_LDFLAGS = $(COMMON_LDFLAGS)
 grub_emu_LDFLAGS += $(LIBSDL)
@@ -106,8 +106,13 @@ ifneq ($(TARGET_NO_MODULES), yes)
 grub-emu: $(pkglib_PROGRAMS)
 	$(CC) -o $@ $(pkglib_PROGRAMS) $(grub_emu_LDFLAGS) $(LDFLAGS)
 else
+
+pkglib_MODULES += emu.mod
+emu_mod_SOURCES = kern/emu/main.c
+emu_mod_CFLAGS = -I$(srcdir)/gnulib
+
 grub-emu: $(pkglib_MODULES) $(pkglib_PROGRAMS)
-	$(CC) -o $@ $(pkglib_MODULES) $(pkglib_PROGRAMS) $(grub_emu_LDFLAGS) $(LDFLAGS)
+	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
 endif
 GRUB_EMU=grub-emu
 
