@@ -150,14 +150,16 @@ else
     esac
 fi
 
+# obtain date-based UUID
+iso_uuid=$(date -u +%Y-%m-%d-%H-%M-%S-00)
+grub_mkisofs_arguments="${grub_mkisofs_arguments} --modification-date=$(echo ${iso_uuid} | sed -e s/-//g)"
+
 # build coreboot core.img
 if test -e "${coreboot_dir}" ; then
     echo "Enabling coreboot support ..."
     memdisk_img=`mktemp "$MKTEMP_TEMPLATE"`
     memdisk_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
     mkdir -p ${memdisk_dir}/boot/grub
-    # obtain date-based UUID
-    iso_uuid=$(date -u +%Y-%m-%d-%H-%M-%S-00)
 
     modules="$(cat ${coreboot_dir}/partmap.lst) ${modules}"
     cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
@@ -176,7 +178,6 @@ EOF
         memdisk tar search iso9660 configfile sh \
         ata at_keyboard
     rm -f ${memdisk_img}
-    grub_mkisofs_arguments="${grub_mkisofs_arguments} --modification-date=$(echo ${iso_uuid} | sed -e s/-//g)"
 fi
 
 # build BIOS core.img
@@ -213,8 +214,21 @@ fi
 # build bootx64.efi
 if test -e "${efi64_dir}" ; then
     echo "Enabling EFI64 support ..."
-    grub-mkimage -O x86_64-efi -d "${efi64_dir}" -o "${efi_dir}"/efi/boot/bootx64.efi --prefix=/boot/grub/x86_64-efi \
-        search iso9660 configfile sh 
+    memdisk_img=`mktemp "$MKTEMP_TEMPLATE"`
+    memdisk_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
+    mkdir -p ${memdisk_dir}/boot/grub
+
+    cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
+search --fs-uuid --set ${iso_uuid}
+set prefix=(\${root})/boot/grub/${target_cpu}-efi
+EOF
+
+    tar -C ${memdisk_dir} -cf ${memdisk_img} boot
+    rm -rf ${memdisk_dir}
+
+    grub-mkimage -O x86_64-efi -d "${efi64_dir}" -m "${memdisk_img}" -o "${efi_dir}"/efi/boot/bootx64.efi --prefix='(memdisk)/boot/grub' \
+        search iso9660 configfile sh memdisk tar
+    rm -f ${memdisk_img}
 
     modules="$(cat "${efi64_dir}"/partmap.lst) ${modules}"
     (for i in ${modules} ; do
