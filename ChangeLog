@@ -1,3 +1,8 @@
+2010-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* conf/x86-efi.rmk (linux_mod_SOURCES): Write explicitly to avoid
+	autogen issues.
+
 2010-04-26  Christian Franke  <franke@computer.org>
 
 	* include/grub/util/getroot.h (grub_get_prefix): Remove prototype.
