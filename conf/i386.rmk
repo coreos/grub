@@ -145,10 +145,10 @@ bootcheck-kfreebsd-x86_64: kfreebsd-mfsroot.x86_64 $(GRUB_PAYLOADS_DIR)/kfreebsd
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/mfsroot=kfreebsd-mfsroot.x86_64 --files=/kfreebsd=$(GRUB_PAYLOADS_DIR)/kfreebsd.x86_64 --files=/kfreebsd_env=$(GRUB_PAYLOADS_DIR)/kfreebsd_env.x86_64 $(srcdir)/tests/boot/kfreebsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 bootcheck-knetbsd-i386: knetbsd.miniroot-image.i386 $(GRUB_PAYLOADS_DIR)/knetbsd.i386 $(srcdir)/tests/boot/knetbsd.cfg knetbsd.miniroot-image.i386 grub-shell
-	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --boot=$(BOOTTARGET) --qemu=qemu-system-i386 --files=/miniroot=knetbsd.miniroot-image.i386 --files=/knetbsd=$(GRUB_PAYLOADS_DIR)/knetbsd.i386 $(srcdir)/tests/boot/knetbsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
+	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=qemu-system-i386 --files=/miniroot=knetbsd.miniroot-image.i386 --files=/knetbsd=$(GRUB_PAYLOADS_DIR)/knetbsd.i386 $(srcdir)/tests/boot/knetbsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 bootcheck-knetbsd-x86_64: knetbsd.miniroot-image.x86_64 $(GRUB_PAYLOADS_DIR)/knetbsd.x86_64 $(srcdir)/tests/boot/knetbsd.cfg knetbsd.miniroot-image.x86_64 grub-shell
-	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/miniroot=knetbsd.miniroot-image.x86_64 --files=/knetbsd=$(GRUB_PAYLOADS_DIR)/knetbsd.x86_64 $(srcdir)/tests/boot/knetbsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
+	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/miniroot=knetbsd.miniroot-image.x86_64 --files=/knetbsd=$(GRUB_PAYLOADS_DIR)/knetbsd.x86_64 $(srcdir)/tests/boot/knetbsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 bootcheck-linux-i386: linux-initramfs.i386 $(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/tests/boot/linux.cfg grub-shell
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=$(QEMU32) --files=/initrd=linux-initramfs.i386 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/tests/boot/linux.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
