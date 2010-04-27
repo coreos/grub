@@ -22,15 +22,20 @@
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/list.h>
+#include <grub/net/netbuff.h>
 
 struct grub_net_card;
 
 struct grub_net_card_driver
 {
-  grub_err_t (*send) (struct grub_net_card *dev, void *buf,
-		      grub_size_t buflen);
-  grub_size_t (*recv) (struct grub_net_card *dev, void *buf,
-		       grub_size_t buflen);  
+  grub_err_t (*send) (struct grub_net_card *dev,struct grub_net_buff *nb);
+  grub_size_t (*recv) (struct grub_net_card *dev,struct grub_net_buff *nb);  
+};
+
+struct grub_net_addr
+{
+  grub_uint8_t *addr;
+  grub_size_t len; 
 };
 
 struct grub_net_card
@@ -38,6 +43,12 @@ struct grub_net_card
   struct grub_net_card *next;
   char *name;
   struct grub_net_card_driver *driver;
+  /*transport layer address*/
+  struct grub_net_addr *tla;
+  /*internet layer address*/
+  struct grub_net_addr *ila;
+  /*link layer address*/
+  struct grub_net_addr *lla;
   void *data;
 };
 
