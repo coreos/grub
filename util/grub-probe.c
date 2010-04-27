@@ -82,13 +82,16 @@ grub_refresh (void)
 static void
 probe_partmap (grub_disk_t disk)
 {
+  grub_partition_t part;
+
   if (disk->partition == NULL)
     {
       grub_util_info ("no partition map found for %s", disk->name);
       return;
     }
 
-  printf ("%s\n", disk->partition->partmap->name);
+  for (part = disk->partition; part; part = part->parent)
+    printf ("%s\n", part->partmap->name);
 }
 
 static int
@@ -116,7 +119,7 @@ probe (const char *path, char *device_name)
 
   if (path == NULL)
     {
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__)
       if (! grub_util_check_char_device (device_name))
         grub_util_error ("%s is not a character device", device_name);
 #else

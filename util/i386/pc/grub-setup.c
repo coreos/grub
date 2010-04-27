@@ -57,6 +57,13 @@ static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_P
 #define DEFAULT_BOOT_FILE	"boot.img"
 #define DEFAULT_CORE_FILE	"core.img"
 
+#define grub_target_to_host16(x)	grub_le_to_cpu16(x)
+#define grub_target_to_host32(x)	grub_le_to_cpu32(x)
+#define grub_target_to_host64(x)	grub_le_to_cpu64(x)
+#define grub_host_to_target16(x)	grub_cpu_to_le16(x)
+#define grub_host_to_target32(x)	grub_cpu_to_le32(x)
+#define grub_host_to_target64(x)	grub_cpu_to_le64(x)
+
 void
 grub_putchar (int c)
 {
@@ -116,15 +123,10 @@ setup (const char *dir,
   int NESTED_FUNC_ATTR find_usable_region_msdos (grub_disk_t disk __attribute__ ((unused)),
 						 const grub_partition_t p)
     {
-      struct grub_msdos_partition *pcdata = p->data;
-
       /* There's always an embed region, and it starts right after the MBR.  */
       embed_region.start = 1;
 
-      /* For its end offset, include as many dummy partitions as we can.  */
-      if (! grub_msdos_partition_is_empty (pcdata->dos_type)
-	  && ! grub_msdos_partition_is_bsd (pcdata->dos_type)
-	  && embed_region.end > p->start)
+      if (embed_region.end > p->start)
 	embed_region.end = p->start;
 
       return 0;
@@ -135,17 +137,21 @@ setup (const char *dir,
   int NESTED_FUNC_ATTR find_usable_region_gpt (grub_disk_t disk __attribute__ ((unused)),
 					       const grub_partition_t p)
     {
-      struct grub_gpt_partentry *gptdata = p->data;
+      struct grub_gpt_partentry gptdata;
+
+      disk->partition = p->parent;
+      if (grub_disk_read (disk, p->offset, p->index,
+			  sizeof (gptdata), &gptdata))
+	return 0;
 
       /* If there's an embed region, it is in a dedicated partition.  */
-      if (! memcmp (&gptdata->type, &grub_gpt_partition_type_bios_boot, 16))
+      if (! memcmp (&gptdata.type, &grub_gpt_partition_type_bios_boot, 16))
 	{
 	  embed_region.start = p->start;
 	  embed_region.end = p->start + p->len;
 
 	  return 1;
 	}
-
       return 0;
     }
 
@@ -289,22 +295,19 @@ setup (const char *dir,
       /* Embed information about the installed location.  */
       if (root_dev->disk->partition)
 	{
-	  if (strcmp (root_dev->disk->partition->partmap->name,
-		      "part_msdos") == 0)
-	    {
-	      struct grub_msdos_partition *pcdata =
-		root_dev->disk->partition->data;
-	      dos_part = pcdata->dos_part;
-	      bsd_part = pcdata->bsd_part;
-	    }
-	  else if (strcmp (root_dev->disk->partition->partmap->name,
-			   "part_gpt") == 0)
-	    {
-	      dos_part = root_dev->disk->partition->index;
-	      bsd_part = -1;
-	    }
+	  if (root_dev->disk->partition->parent)
+ 	    {
+	      if (root_dev->disk->partition->parent->parent)
+		grub_util_error ("Installing on doubly nested partitions is "
+				 "not supported");
+	      dos_part = root_dev->disk->partition->parent->number;
+	      bsd_part = root_dev->disk->partition->number;
+ 	    }
 	  else
-	    grub_util_error (_("no DOS-style partitions found"));
+ 	    {
+	      dos_part = root_dev->disk->partition->number;
+ 	      bsd_part = -1;
+ 	    }
 	}
       else
 	dos_part = bsd_part = -1;
@@ -337,6 +340,8 @@ setup (const char *dir,
   int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk __attribute__ ((unused)),
 					 const grub_partition_t p)
     {
+      if (p->parent)
+	return 0;
       dest_partmap = p->partmap->name;
       return 1;
     }
@@ -349,16 +354,16 @@ setup (const char *dir,
       goto unable_to_embed;
     }
 
-  if (strcmp (dest_partmap, "part_msdos") == 0)
+  if (strcmp (dest_partmap, "msdos") == 0)
     grub_partition_iterate (dest_dev->disk, find_usable_region_msdos);
-  else if (strcmp (dest_partmap, "part_gpt") == 0)
+  else if (strcmp (dest_partmap, "gpt") == 0)
     grub_partition_iterate (dest_dev->disk, find_usable_region_gpt);
   else
     grub_util_error (_("No DOS-style partitions found"));
 
   if (embed_region.end == embed_region.start)
     {
-      if (! strcmp (dest_partmap, "part_msdos"))
+      if (! strcmp (dest_partmap, "msdos"))
 	grub_util_warn (_("This msdos-style partition label has no post-MBR gap; embedding won't be possible!"));
       else
 	grub_util_warn (_("This GPT partition label has no BIOS Boot Partition; embedding won't be possible!"));
@@ -418,7 +423,7 @@ unable_to_embed:
 
   grub_util_warn (_("Embedding is not possible.  GRUB can only be installed in this "
 		    "setup by using blocklists.  However, blocklists are UNRELIABLE and "
-		    "its use is discouraged."));
+		    "their use is discouraged."));
   if (! force)
     grub_util_error (_("if you really want blocklists, use --force"));
 

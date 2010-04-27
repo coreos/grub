@@ -418,6 +418,7 @@ grub_normal_init_page (struct grub_term_output *term)
  
   msg_len = grub_utf8_to_ucs4_alloc (msg_formatted,
   				     &unicode_msg, &last_position);
+  grub_free (msg_formatted);
  
   if (msg_len < 0)
     {
@@ -433,14 +434,20 @@ grub_normal_init_page (struct grub_term_output *term)
   grub_free (unicode_msg);
 }
 
-static char *
-read_lists (struct grub_env_var *var __attribute__ ((unused)),
-	    const char *val)
+static void
+read_lists (const char *val)
 {
-  read_command_list ();
-  read_fs_list ();
-  read_crypto_list ();
-  read_terminal_list ();
+  read_command_list (val);
+  read_fs_list (val);
+  read_crypto_list (val);
+  read_terminal_list (val);
+}
+
+static char *
+read_lists_hook (struct grub_env_var *var __attribute__ ((unused)),
+		 const char *val)
+{
+  read_lists (val);
   return val ? grub_strdup (val) : NULL;
 }
 
@@ -450,10 +457,11 @@ void
 grub_normal_execute (const char *config, int nested, int batch)
 {
   grub_menu_t menu = 0;
+  const char *prefix = grub_env_get ("prefix");
 
-  read_lists (NULL, NULL);
+  read_lists (prefix);
   read_handler_list ();
-  grub_register_variable_hook ("prefix", NULL, read_lists);
+  grub_register_variable_hook ("prefix", NULL, read_lists_hook);
   grub_command_execute ("parser.grub", 0, 0);
 
   if (config)
@@ -582,10 +590,13 @@ grub_normal_read_line_real (char **line, int cont, int nested)
       if (cont || nested)
 	{
 	  grub_free (*line);
+	  grub_free (prompt);
 	  *line = 0;
 	  return grub_errno;
 	}
     }
+  
+  grub_free (prompt);
 
   return 0;
 }
@@ -650,6 +661,7 @@ GRUB_MOD_INIT(normal)
 
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
+  grub_install_newline_hook ();
   grub_register_variable_hook ("pager", 0, grub_env_write_pager);
 
   /* Register a command "normal" for the rescue mode.  */

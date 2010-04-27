@@ -20,7 +20,6 @@
 #include <grub/kernel.h>
 #include <grub/misc.h>
 #include <grub/types.h>
-#include <grub/machine/kernel.h>
 #include <grub/ieee1275/ieee1275.h>
 
 int (*grub_ieee1275_entry_fn) (void *);

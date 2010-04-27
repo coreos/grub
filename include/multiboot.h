@@ -24,6 +24,7 @@
 
 /* How many bytes from the start of the file we search for the header.  */
 #define MULTIBOOT_SEARCH			8192
+#define MULTIBOOT_HEADER_ALIGN			4
 
 /* The magic field should contain this.  */
 #define MULTIBOOT_HEADER_MAGIC			0x1BADB002

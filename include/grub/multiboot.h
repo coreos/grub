@@ -20,6 +20,8 @@
 #ifndef GRUB_MULTIBOOT_HEADER
 #define GRUB_MULTIBOOT_HEADER 1
 
+#include <grub/file.h>
+
 #ifdef GRUB_USE_MULTIBOOT2
 #include <multiboot2.h>
 /* Same thing as far as our loader is concerned.  */
@@ -35,8 +37,6 @@
 void grub_multiboot (int argc, char *argv[]);
 void grub_module (int argc, char *argv[]);
 
-void grub_multiboot_set_accepts_video (int val);
-
 grub_size_t grub_multiboot_get_mbi_size (void);
 grub_err_t grub_multiboot_make_mbi (void *orig, grub_uint32_t dest,
 				    grub_off_t buf_off, grub_size_t bufsize);
@@ -46,5 +46,29 @@ grub_err_t grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
 				      int argc, char *argv[]);
 void grub_multiboot_set_bootdev (void);
 
+grub_uint32_t grub_get_multiboot_mmap_count (void);
+grub_err_t grub_multiboot_set_video_mode (void);
+
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+#include <grub/i386/pc/vbe.h>
+#define GRUB_MACHINE_HAS_VGA_TEXT 1
+#else
+#define GRUB_MACHINE_HAS_VGA_TEXT 0
+#endif
+
+#define GRUB_MULTIBOOT_CONSOLE_EGA_TEXT 1
+#define GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER 2 
+
+grub_err_t
+grub_multiboot_set_console (int console_type, int accepted_consoles,
+			    int width, int height, int depth,
+			    int console_required);
+grub_err_t
+grub_multiboot_load (grub_file_t file);
+/* Load ELF32 or ELF64.  */
+grub_err_t
+grub_multiboot_load_elf (grub_file_t file, void *buffer);
+extern grub_size_t grub_multiboot_pure_size;
+extern grub_size_t grub_multiboot_alloc_mbi;
 
 #endif /* ! GRUB_MULTIBOOT_HEADER */

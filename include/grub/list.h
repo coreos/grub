@@ -52,7 +52,7 @@ grub_bad_type_cast_real (int line, const char *file)
   return 0;
 }
 
-#define grub_bad_type_cast() grub_bad_type_cast_real(__LINE__, __FILE__)
+#define grub_bad_type_cast() grub_bad_type_cast_real(__LINE__, GRUB_FILE)
 
 #define GRUB_FIELD_MATCH(ptr, type, field) \
   ((char *) &(ptr)->field == (char *) &((type) (ptr))->field)

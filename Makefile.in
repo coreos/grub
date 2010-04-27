@@ -35,6 +35,7 @@ sysconfdir = @sysconfdir@
 sharedstatedir = @sharedstatedir@
 localstatedir = @localstatedir@
 libdir = @libdir@
+localedir = @localedir@
 infodir = @infodir@
 mandir = @mandir@
 includedir = @includedir@
@@ -43,6 +44,10 @@ pkglibdir =  $(libdir)/`echo @PACKAGE_TARNAME@/$(target_cpu)-$(platform) | sed '
 
 # Internationalization library.
 LIBINTL = @LIBINTL@
+TARGET_NO_MODULES = @TARGET_NO_MODULES@
+
+# Util library.
+LIBUTIL = @LIBUTIL@
 
 XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
@@ -75,27 +80,31 @@ MKDIR_P = @MKDIR_P@
 
 mkinstalldirs = $(srcdir)/mkinstalldirs
 
-LIBS = @LIBS@ $(LIBINTL)
+LIBS = @LIBS@ $(LIBINTL) $(LIBUTIL)
 
 CC = @CC@
 CFLAGS = @CFLAGS@
+POSIX_CFLAGS = -I$(srcdir)/lib/posix_wrap 
+GNULIB_UTIL_CFLAGS = -Wno-undef -Wno-sign-compare -Wno-unused -D_GL_UNUSED="__attribute__ ((unused))" -I$(srcdir)/gnulib
+GNULIB_CFLAGS = $(GNULIB_UTIL_CFLAGS) $(POSIX_CFLAGS)
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@ $(LIBS)
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
-	 -DGRUB_LIBDIR=\"$(pkglibdir)\" -DLOCALEDIR=\"$(localedir)\"
+	 -DGRUB_LIBDIR=\"$(libdir)\" -DLOCALEDIR=\"$(localedir)\"
 TARGET_CC = @TARGET_CC@
-TARGET_CFLAGS = @TARGET_CFLAGS@
-TARGET_ASFLAGS = @TARGET_ASFLAGS@
+TARGET_CFLAGS = -ffreestanding @TARGET_CFLAGS@
+TARGET_ASFLAGS = -nostdinc -fno-builtin @TARGET_ASFLAGS@
 TARGET_MODULE_FORMAT = @TARGET_MODULE_FORMAT@
 TARGET_APPLE_CC = @TARGET_APPLE_CC@
 OBJCONV = @OBJCONV@
-TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include) -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
+TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
 	-Wall -W
-TARGET_LDFLAGS = @TARGET_LDFLAGS@
+TARGET_LDFLAGS = -nostdlib -static-libgcc @TARGET_LDFLAGS@
 TARGET_IMG_LDSCRIPT = @TARGET_IMG_LDSCRIPT@
-TARGET_IMG_LDFLAGS = @TARGET_IMG_LDFLAGS@
+TARGET_IMG_LDFLAGS = -nostdlib @TARGET_IMG_LDFLAGS@
 TARGET_IMG_CFLAGS = @TARGET_IMG_CFLAGS@
 TARGET_OBJ2ELF = @TARGET_OBJ2ELF@
+kernel_img_LDFLAGS = -lgcc
 EXEEXT = @EXEEXT@
 OBJCOPY = @OBJCOPY@
 STRIP = @STRIP@
@@ -114,12 +123,15 @@ endif
 AWK = @AWK@
 LIBCURSES = @LIBCURSES@
 LIBUSB = @LIBUSB@
+LIBSDL = @LIBSDL@
 LIBPCIACCESS = @LIBPCIACCESS@
+LEX = @LEX@
 YACC = @YACC@
 FONT_SOURCE = @FONT_SOURCE@
 
 # Options.
 enable_grub_emu_usb = @enable_grub_emu_usb@
+enable_grub_emu_sdl = @enable_grub_emu_sdl@
 enable_grub_emu_pci = @enable_grub_emu_pci@
 enable_grub_fstest = @enable_grub_fstest@
 enable_grub_pe2elf = @enable_grub_pe2elf@
@@ -130,7 +142,7 @@ enable_efiemu = @enable_efiemu@
 
 ### General variables.
 
-RMKFILES = $(wildcard conf/*.rmk)
+RMKFILES = $(wildcard $(srcdir)/conf/*.rmk)
 
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
@@ -145,11 +157,13 @@ INFOS = $(info_INFOS)
 CLEANFILES =
 MOSTLYCLEANFILES =
 DISTCLEANFILES = config.status config.cache config.log config.h \
-	Makefile stamp-h include/grub/cpu include/grub/machine \
+	Makefile stamp-h stamp-h1 include/grub/cpu include/grub/machine \
 	gensymlist.sh genkernsyms.sh build_env.mk \
 	docs/grub.info docs/version.texi docs/stamp-vti
 
-MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES)) \
+MAINTAINER_CLEANFILES = $(srcdir)/configure $(srcdir)/aclocal.m4 \
+	$(MKFILES) $(srcdir)/config.guess \
+	$(srcdir)/config.sub $(srcdir)/install-sh $(srcdir)/missing \
 	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in $(INFOS)
 
 # The default target.
@@ -173,10 +187,17 @@ include $(srcdir)/conf/tests.mk
 -include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
 endif
 
+ifeq ($(TARGET_NO_MODULES), yes)
+	TARGET_CFLAGS += -DGRUB_TARGET_NO_MODULES=1
+	CFLAGS += -DGRUB_TARGET_NO_MODULES=1
+endif
+
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
+ifneq ($(TARGET_NO_MODULES), yes)
 pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst
+endif
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
 	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UNDSYMFILES) > $@ \
@@ -237,6 +258,7 @@ else
 ifeq ($(enable_grub_mkfont),yes)
 
 pkgdata_DATA += unicode.pf2 ascii.pf2 ascii.h
+CLEANFILES += ascii.bitmaps
 
 # Arrows and lines are needed to draw the menu, so we always include them
 UNICODE_ARROWS=0x2190-0x2193
@@ -265,7 +287,7 @@ build_env.mk: Makefile
 	echo "TARGET_CC=$(TARGET_CC)" ; \
 	echo "TARGET_CFLAGS=$(TARGET_CFLAGS)" ; \
 	echo "TARGET_ASFLAGS=$(TARGET_ASFLAGS)" ; \
-	echo "TARGET_CPPFLAGS=$(TARGET_CPPFLAGS) -I$(pkglibdir) -I$(includedir)" ; \
+	echo "TARGET_CPPFLAGS=$(TARGET_CPPFLAGS) -I$(libdir) -I$(includedir)" ; \
 	echo "STRIP=$(STRIP)" ; \
 	echo "OBJCONV=$(OBJCONV)" ; \
 	echo "TARGET_MODULE_FORMAT=$(TARGET_MODULE_FORMAT)" ; \
@@ -276,7 +298,7 @@ build_env.mk: Makefile
 	) > $@
 pkglib_BUILDDIR += config.h grub_script.tab.h
 
-all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES) $(foreach lang, $(LINGUAS), po/$(lang).mo)
+all-local: $(PROGRAMS) $(GRUB_EMU) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES) $(foreach lang, $(LINGUAS), po/$(lang).mo)
 
 install: install-local
 
@@ -297,7 +319,7 @@ install-local: all
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkgdatadir)/$$dest; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(bindir) $(DESTDIR)$(mandir)/man1
-	@list='$(bin_UTILITIES)'; for file in $$list; do \
+	@list='$(bin_UTILITIES) $(GRUB_EMU)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
@@ -373,7 +395,7 @@ uninstall:
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  rm -f $(DESTDIR)$(pkgdatadir)/$$dest; \
 	done
-	@list='$(bin_UTILITIES) $(bin_SCRIPTS)'; for file in $$list; do \
+	@list='$(bin_UTILITIES) $(bin_SCRIPTS) $(GRUB_EMU)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(bindir)/$$dest; \
 	  rm -f $(DESTDIR)$(mandir)/man1/$$dest.1; \
@@ -390,7 +412,6 @@ uninstall:
 	@list='$(lib_SCRIPTS)'; \
 	for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
-	  echo rm -f $(DESTDIR)$(libdir)/$$dest; \
 	  rm -f $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
 	@list='$(info_INFOS)'; \
@@ -419,6 +440,8 @@ distclean: mostlyclean
 
 maintainer-clean: distclean
 	-test -z "$(MAINTAINER_CLEANFILES)" || rm -f $(MAINTAINER_CLEANFILES)
+	-rmdir $(srcdir)/lib/libgcrypt-grub/cipher
+	-rmdir $(srcdir)/lib/libgcrypt-grub
 
 info:
 
@@ -473,23 +496,21 @@ distcheck: dist
 
 check: all $(UNIT_TESTS) $(FUNCTIONAL_TESTS) $(SCRIPTED_TESTS)
 	@list="$(UNIT_TESTS)"; \
+	set -e; \
 	for file in $$list; do \
 	  $(builddir)/$$file; \
 	done
 	@list="$(FUNCTIONAL_TESTS)"; \
+	set -e; \
 	for file in $$list; do \
 	  mod=`basename $$file .mod`; \
 	  echo "insmod functional_test; insmod $$mod; functional_test" \
 	    | $(builddir)/grub-shell; \
 	done
 	@list="$(SCRIPTED_TESTS)"; \
+	set -e; \
 	for file in $$list; do \
-	  echo "$$file:"; \
-	  if $(builddir)/$$file; then \
-	    echo "$$file: PASS"; \
-	  else \
-	    echo "$$file: FAIL"; \
-	  fi; \
+	  $(builddir)/$$file; \
 	done
 
 .SUFFIX:
@@ -524,8 +545,8 @@ genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
 
 $(srcdir)/po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
-	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o $@ -f $< --keyword=_ --keyword=N_
-	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
+	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o po/$(PACKAGE).pot -f po/POTFILES --keyword=_ --keyword=N_
+	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o po/$(PACKAGE).pot -f po/POTFILES-shell -j --language=Shell
 
 $(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): po/$(PACKAGE).pot
 	$(MSGMERGE) -U $@ $^

@@ -66,14 +66,12 @@ grub_crypto_spec_free (void)
 
 /* Read the file crypto.lst for auto-loading.  */
 void
-read_crypto_list (void)
+read_crypto_list (const char *prefix)
 {
-  const char *prefix;
   char *filename;
   grub_file_t file;
   char *buf = NULL;
 
-  prefix = grub_env_get ("prefix");
   if (!prefix)
     {
       grub_errno = GRUB_ERR_NONE;
@@ -88,13 +86,14 @@ read_crypto_list (void)
     }
 
   file = grub_file_open (filename);
+  grub_free (filename);
   if (!file)
     {
       grub_errno = GRUB_ERR_NONE;
       return;
     }
 
-  /* Override previous commands.lst.  */
+  /* Override previous crypto.lst.  */
   grub_crypto_spec_free ();
 
   for (;; grub_free (buf))

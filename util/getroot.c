@@ -264,10 +264,17 @@ find_root_device (const char *dir, dev_t dev)
 	  /* Found!  */
 	  char *res;
 	  char *cwd;
+#if defined(__NetBSD__)
+	  /* Convert this block device to its character (raw) device.  */
+	  const char *template = "%s/r%s";
+#else
+	  /* Keep the device name as it is.  */
+	  const char *template = "%s/%s";
+#endif
 
 	  cwd = xgetcwd ();
-	  res = xmalloc (strlen (cwd) + strlen (ent->d_name) + 2);
-	  sprintf (res, "%s/%s", cwd, ent->d_name);
+	  res = xmalloc (strlen (cwd) + strlen (ent->d_name) + 3);
+	  sprintf (res, template, cwd, ent->d_name);
 	  strip_extra_slashes (res);
 	  free (cwd);
 
@@ -460,7 +467,8 @@ grub_guess_root_device (const char *dir)
 
   return os_dev;
 }
-int
+
+static int
 grub_util_is_dmraid (const char *os_dev)
 {
   if (! strncmp (os_dev, "/dev/mapper/nvidia_", 19))

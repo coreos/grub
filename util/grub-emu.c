@@ -38,8 +38,7 @@
 #include <grub/partition.h>
 #include <grub/i18n.h>
 
-#include <grub_emu_init.h>
-
+#define ENABLE_RELOCATABLE 0
 #include "progname.h"
 
 /* Used for going back to the main function.  */
@@ -51,9 +50,10 @@ static char *prefix = NULL;
 grub_addr_t
 grub_arch_modules_addr (void)
 {
-  return NULL;
+  return 0;
 }
 
+#if GRUB_NO_MODULES
 grub_err_t
 grub_arch_dl_check_header (void *ehdr)
 {
@@ -70,6 +70,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
   return GRUB_ERR_BAD_MODULE;
 }
+#endif
 
 void
 grub_reboot (void)
@@ -106,10 +107,6 @@ grub_machine_fini (void)
   grub_console_fini ();
 }
 
-void
-read_command_list (void)
-{
-}
 
 
 static struct option options[] =
@@ -149,6 +146,15 @@ usage (int status)
 }
 
 
+void grub_hostfs_init (void);
+void grub_hostfs_fini (void);
+void grub_host_init (void);
+void grub_host_fini (void);
+#if GRUB_NO_MODULES
+void grub_init_all (void);
+void grub_fini_all (void);
+#endif
+
 int
 main (int argc, char *argv[])
 {
@@ -159,8 +165,6 @@ main (int argc, char *argv[])
   int opt;
 
   set_program_name (argv[0]);
-
-  grub_util_init_nls ();
 
   while ((opt = getopt_long (argc, argv, "r:d:m:vH:hV", options, 0)) != -1)
     switch (opt)
@@ -209,11 +213,15 @@ main (int argc, char *argv[])
 
   signal (SIGINT, SIG_IGN);
   grub_console_init ();
+  grub_host_init ();
+  grub_hostfs_init ();
 
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (dev_map);
 
+#if GRUB_NO_MODULES
   grub_init_all ();
+#endif
 
   /* Make sure that there is a root device.  */
   if (! root_dev)
@@ -231,7 +239,10 @@ main (int argc, char *argv[])
 	}
     }
 
-  dir = grub_get_prefix (dir);
+  if (strcmp (root_dev, "host") == 0)
+    dir = xstrdup (dir);
+  else
+    dir = grub_get_prefix (dir);
   prefix = xmalloc (strlen (root_dev) + 2 + strlen (dir) + 1);
   sprintf (prefix, "(%s)%s", root_dev, dir);
   free (dir);
@@ -240,7 +251,11 @@ main (int argc, char *argv[])
   if (setjmp (main_env) == 0)
     grub_main ();
 
+#if GRUB_NO_MODULES
   grub_fini_all ();
+#endif
+  grub_hostfs_fini ();
+  grub_host_fini ();
 
   grub_machine_fini ();
 
