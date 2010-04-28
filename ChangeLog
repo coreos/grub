@@ -1,6 +1,8 @@
 2010-04-28  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* docs/grub.texi (play): Document that zero pitches produce rests.
+	* commands/i386/pc/play.c (grub_cmd_play): Call 'grub_file_open' only
+	if argc is 1.
 
 2010-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
