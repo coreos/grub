@@ -157,8 +157,7 @@ bootcheck-linux-x86_64: linux-initramfs.x86_64 $(GRUB_PAYLOADS_DIR)/linux.x86_64
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/initrd=linux-initramfs.x86_64 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/tests/boot/linux.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 BOOTCHECKS += bootcheck-linux-i386 bootcheck-linux-x86_64 \
-	bootcheck-kfreebsd-i386 bootcheck-kfreebsd-x86_64 \
-	bootcheck-knetbsd-i386 bootcheck-knetbsd-x86_64
+	bootcheck-kfreebsd-i386 bootcheck-knetbsd-x86_64
 
 .PHONY: bootcheck-linux-i386 bootcheck-linux-x86_64 \
 	bootcheck-kfreebsd-i386 bootcheck-kfreebsd-x86_64 \

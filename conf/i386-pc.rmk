@@ -286,7 +286,11 @@ bootcheck-linux16-i386: linux-initramfs.i386 $(GRUB_PAYLOADS_DIR)/linux.i386 $(s
 bootcheck-linux16-x86_64: linux-initramfs.x86_64 $(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/tests/boot/linux.cfg grub-shell
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/initrd=linux-initramfs.x86_64 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/tests/boot/linux16.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
-BOOTCHECKS+=bootcheck-linux16-i386 bootcheck-linux16-x86_64
+BOOTCHECKS += bootcheck-linux16-i386 bootcheck-linux16-x86_64
+# It is defined in i386.rmk but requires ACPI
+BOOTCHECKS += bootcheck-kfreebsd-x86_64
+# It is defined in i386.rmk but crashes early on non-BIOS
+BOOTCHECKS += bootcheck-knetbsd-i386
 
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk
