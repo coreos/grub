@@ -1,3 +1,7 @@
+2010-04-28  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* docs/grub.texi (play): Document that zero pitches produce rests.
+
 2010-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* conf/x86-efi.rmk (linux_mod_SOURCES): Write explicitly to avoid

@@ -1379,7 +1379,8 @@ pitch and duration pairs.
 If the arguments are a series of numbers, play the inline tune.
 
 The tempo is the base for all note durations. 60 gives a 1-second base, 120
-gives a half-second base, etc.  Pitches are Hz.
+gives a half-second base, etc.  Pitches are Hz.  Set pitch to 0 to produce
+a rest.
 @end deffn
 
 
