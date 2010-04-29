@@ -26,8 +26,22 @@
 
 struct grub_net_card;
 
+typedef enum
+{
+ GRUB_NET_TFTP_ID,
+ GRUB_NET_UDP_ID,
+ GRUB_NET_IPV4_ID,
+ GRUB_NET_IPV6_ID,
+ GRUB_NET_ETHERNET_ID,
+ GRUB_NET_ARP_ID,
+ GRUB_NET_DHCP_ID
+
+}protocol_type_t;
+
 struct grub_net_card_driver
 {
+  grub_err_t (*init) (struct grub_net_card *dev);
+  grub_err_t (*fini) (struct grub_net_card *dev);
   grub_err_t (*send) (struct grub_net_card *dev,struct grub_net_buff *nb);
   grub_size_t (*recv) (struct grub_net_card *dev,struct grub_net_buff *nb);  
 };

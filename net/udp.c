@@ -3,9 +3,10 @@
 #include <grub/net/type_net.h>
 #include <grub/net/netbuff.h>
 #include <grub/net/protocol.h>
+#include <grub/net/interface.h>
 /*Assumes that there is allocated memory to the header before the buffer address. */
 static grub_err_t 
-send_udp_packet (struct grub_net_interface *inf, struct grub_net_protocol *prot, struct grub_net_buff *nb)
+send_udp_packet (struct grub_net_interface *inf, struct grub_net_protstack *protstack, struct grub_net_buff *nb)
 {
 
   struct udphdr *udph;
@@ -21,7 +22,7 @@ send_udp_packet (struct grub_net_interface *inf, struct grub_net_protocol *prot,
   udph->chksum = 0;  
   udph->len = sizeof (sizeof (*udph)) + nb->end - nb->head;
   
-  return prot->next->send(inf,prot->next,nb); 
+  return protstack->next->prot->send(inf,protstack->next,nb); 
 }
 
 static struct grub_net_protocol grub_udp_protocol =

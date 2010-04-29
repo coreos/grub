@@ -5,6 +5,7 @@
 #include <grub/net/ethernet.h>
 #include <grub/net/netbuff.h>
 #include <grub/net/protocol.h>
+#include <grub/net/interface.h>
 #include <grub/mm.h>
 
 struct grub_net_protocol *grub_ipv4_prot;
@@ -28,7 +29,7 @@ ipchksum(void *ipv, int len)
 
 
 static grub_err_t 
-send_ip_packet (struct grub_net_interface *inf, struct grub_net_protocol *prot, struct grub_net_buff *nb  )
+send_ip_packet (struct grub_net_interface *inf, struct grub_net_protstack *protstack, struct grub_net_buff *nb  )
 {
   
   struct iphdr *iph;
@@ -57,7 +58,7 @@ send_ip_packet (struct grub_net_interface *inf, struct grub_net_protocol *prot, 
   iph->chksum = ipchksum((void *)nb->head, sizeof(*iph));
   
   
-  return prot->next->send(inf,prot->next,nb); 
+  return protstack->next->prot->send(inf,protstack->next,nb); 
 }
 
 static struct grub_net_protocol grub_ipv4_protocol =

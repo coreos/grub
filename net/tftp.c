@@ -8,10 +8,11 @@
 #include <grub/net/ieee1275/interface.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/time.h>
+#include <grub/net/interface.h>
 
 /*send read request*/
 static grub_err_t 
-send_tftp_rr (struct grub_net_interface *inf, struct grub_net_protocol *prot,struct grub_net_buff *nb)
+send_tftp_rr (struct grub_net_interface *inf, struct grub_net_protstack *protstack,struct grub_net_buff *nb)
 {
   /*Start TFTP header*/
   
@@ -58,7 +59,7 @@ send_tftp_rr (struct grub_net_interface *inf, struct grub_net_protocol *prot,str
  
   grub_netbuff_unput (nb,nb->tail - (nb->data+hdrlen)); 
 
-  return prot->next->send(inf,prot->next,nb); 
+  return protstack->next->prot->send(inf,protstack->next,nb); 
 }
 
 /*

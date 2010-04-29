@@ -6,9 +6,10 @@
 #include <grub/net/ieee1275/interface.h>
 #include <grub/net/netbuff.h>
 #include <grub/net/protocol.h>
+#include <grub/net/interface.h>
 
 static grub_err_t 
-send_ethernet_packet (struct grub_net_interface *inf, struct grub_net_protocol *prot __attribute__ ((unused))
+send_ethernet_packet (struct grub_net_interface *inf,struct grub_net_protstack *protstack __attribute__ ((unused))
   ,struct grub_net_buff *nb)
 {
 
