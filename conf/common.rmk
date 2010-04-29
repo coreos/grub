@@ -118,7 +118,7 @@ kernel_img_HEADERS += boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	list.h handler.h command.h i18n.h env_private.h libgcc.h mm_private.h
 
 ifneq ($(platform), emu)
-kernel_img_HEADERS += machine/memory.h machine/loader.h
+kernel_img_HEADERS += machine/memory.h
 endif
 
 symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
