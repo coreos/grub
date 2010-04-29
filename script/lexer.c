@@ -38,67 +38,56 @@ grub_script_lexer_deref (struct grub_lexer_param *state)
 }
 
 /* Start recording all characters passing through the lexer.  */
-void
+unsigned
 grub_script_lexer_record_start (struct grub_parser_param *parser)
 {
   struct grub_lexer_param *lexer = parser->lexerstate;
 
-  lexer->record = 1;
-  lexer->recordpos = 0;
-  if (lexer->recording) /* reuse last record */
-    return;
+  lexer->record++;
+  if (lexer->recording)
+    return lexer->recordpos;
 
+  lexer->recordpos = 0;
   lexer->recordlen = GRUB_LEXER_INITIAL_RECORD_SIZE;
   lexer->recording = grub_malloc (lexer->recordlen);
   if (!lexer->recording)
     {
       grub_script_yyerror (parser, 0);
-      lexer->record = 0;
       lexer->recordlen = 0;
     }
+  return lexer->recordpos;
 }
 
 char *
-grub_script_lexer_record_stop (struct grub_parser_param *parser)
+grub_script_lexer_record_stop (struct grub_parser_param *parser, unsigned offset)
 {
-  char *ptr;
+  int count;
   char *result;
   struct grub_lexer_param *lexer = parser->lexerstate;
 
-  auto char *compact (char *start, char *end);
-  char *compact (char *start, char *end)
-  {
-    /* Delete '{' and '}' characters and whitespaces.  */
-    while (*start && grub_isspace (*start)) start++;
-    if (*start == '{') start++;
-    while (*start && grub_isspace (*start)) start++;
-
-    while (*end && grub_isspace (*end)) end--;
-    if (*end == '}') end--;
-    while (*end && grub_isspace (*end)) end--;
-    end[1] = '\0';
-
-    return start;
-  }
-
-  if (!lexer->record || !lexer->recording)
+  if (!lexer->record)
     return 0;
 
-  /* XXX This is not necessary in BASH.  */
+  lexer->record--;
+  if (!lexer->recording)
+    return 0;
 
-  ptr = compact (lexer->recording, lexer->recording + lexer->recordpos - 1);
-  lexer->record = 0;
-  lexer->recordpos = 0;
+  count = lexer->recordpos - offset;
+  result = grub_script_malloc (parser, count + 1);
+  if (result) {
+    grub_strncpy (result, lexer->recording + offset, count);
+    result[count] = '\0';
+  }
 
-  /* This memory would be freed by, grub_script_free.  */
-  result = grub_script_malloc (parser, grub_strlen (ptr) + 1);
-  if (result)
-    grub_strcpy (result, ptr);
-
+  if (lexer->record == 0)
+    {
+      grub_free (lexer->recording);
+      lexer->recording = 0;
+      lexer->recordlen = 0;
+      lexer->recordpos = 0;
+    }
   return result;
 }
-
-#define MAX(a,b) ((a) < (b) ? (b) : (a))
 
 /* Record STR if input recording is enabled.  */
 void
@@ -108,21 +97,20 @@ grub_script_lexer_record (struct grub_parser_param *parser, char *str)
   char *old;
   struct grub_lexer_param *lexer = parser->lexerstate;
 
-  if (!lexer->record)
+  if (!lexer->record || !lexer->recording)
     return;
 
   len = grub_strlen (str);
   if (lexer->recordpos + len + 1 > lexer->recordlen)
     {
       old = lexer->recording;
-      lexer->recordlen = MAX (len, lexer->recordlen) * 2;
+      lexer->recordlen = grub_max (len, lexer->recordlen) * 2;
       lexer->recording = grub_realloc (lexer->recording, lexer->recordlen);
       if (!lexer->recording)
 	{
 	  grub_free (old);
-	  lexer->record = 0;
 	  lexer->recordpos = 0;
-	  lexer->recordlen /= 2;
+	  lexer->recordlen = 0;
 	  grub_script_yyerror (parser, 0);
 	  return;
 	}
