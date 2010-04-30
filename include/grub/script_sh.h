@@ -282,8 +282,8 @@ struct grub_lexer_param *grub_script_lexer_init (struct grub_parser_param *parse
 void grub_script_lexer_fini (struct grub_lexer_param *);
 void grub_script_lexer_ref (struct grub_lexer_param *);
 void grub_script_lexer_deref (struct grub_lexer_param *);
-void grub_script_lexer_record_start (struct grub_parser_param *);
-char *grub_script_lexer_record_stop (struct grub_parser_param *);
+unsigned grub_script_lexer_record_start (struct grub_parser_param *);
+char *grub_script_lexer_record_stop (struct grub_parser_param *, unsigned);
 int  grub_script_lexer_yywrap (struct grub_parser_param *);
 void grub_script_lexer_record (struct grub_parser_param *, char *);
 

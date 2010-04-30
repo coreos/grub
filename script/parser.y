@@ -33,6 +33,7 @@
   struct grub_script_arglist *arglist;
   struct grub_script_arg *arg;
   char *string;
+  unsigned offset;
 }
 
 %token GRUB_PARSER_TOKEN_BAD
@@ -217,14 +218,16 @@ menuentry: "menuentry"
            }
            arguments1
            {
-             grub_script_lexer_record_start (state);
+             $<offset>$ = grub_script_lexer_record_start (state);
            }
            delimiters0 "{" commands1 delimiters1 "}"
            {
-             char *menu_entry;
-             menu_entry = grub_script_lexer_record_stop (state);
+             char *def;
+             def = grub_script_lexer_record_stop (state, $<offset>4);
+	     *grub_strrchr(def, '}') = '\0';
+
              grub_script_lexer_deref (state->lexerstate);
-             $$ = grub_script_create_cmdmenu (state, $3, menu_entry, 0);
+             $$ = grub_script_create_cmdmenu (state, $3, def, 0);
            }
 ;
 
