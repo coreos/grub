@@ -74,7 +74,7 @@
 %token <arg> GRUB_PARSER_TOKEN_NAME      "name"
 %token <arg> GRUB_PARSER_TOKEN_WORD      "word"
 
-%type <arglist> word argument arguments0 arguments1
+%type <arglist> word argument block parameters0 parameters1 arguments0 arguments1
 
 %type <cmd> script_init script
 %type <cmd> grubcmd ifclause ifcmd forcmd whilecmd untilcmd
@@ -147,6 +147,27 @@ argument : "case"      { $$ = grub_script_add_arglist (state, 0, $1); }
          | word { $$ = $1; }
 ;
 
+block: "{" 
+       {
+         grub_script_lexer_ref (state->lexerstate);
+         $<offset>$ = grub_script_lexer_record_start (state);
+       }
+       commands1 delimiters0 "}"
+       {
+         char *p;
+         struct grub_script_arg *arg;
+
+         grub_script_lexer_deref (state->lexerstate);
+         if (p = grub_script_lexer_record_stop (state, $<offset>2))
+	   *grub_strrchr (p, '}') = '\0';
+
+         if (arg = grub_script_arg_add (state, 0, GRUB_SCRIPT_ARG_TYPE_BLOCK, p))
+	   arg->block = $3;
+
+         $$ = grub_script_add_arglist (state, 0, arg);
+       }
+;
+
 arguments0: /* Empty */ { $$ = 0; }
           | arguments1  { $$ = $1; }
 ;
@@ -162,7 +183,32 @@ arguments1: argument arguments0
             }
 ;
 
-grubcmd: word arguments0
+parameters1: argument parameters0
+             {
+               if ($1 && $2)
+                 {
+                   $1->next = $2;
+                   $1->argcount += $2->argcount;
+                   $2->argcount = 0;
+                 }
+               $$ = $1;
+             }
+           | block parameters0
+             {
+               if ($1 && $2)
+                 {
+                   $1->next = $2;
+                   $1->argcount += $2->argcount;
+                   $2->argcount = 0;
+                 }
+               $$ = $1;
+             }
+;
+parameters0: /* Empty */ { $$ = 0; }
+           | parameters1 { $$ = $1; }
+;
+
+grubcmd: word parameters0
          {
            if ($1 && $2) {
              $1->next = $2;

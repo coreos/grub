@@ -114,7 +114,7 @@ typedef size_t yy_size_t;
 BLANK           [ \t]
 COMMENT         ^[ \t]*#.*$
 
-CHAR            [^|&$;<> \t\n\'\"\\]
+CHAR            [^{}|&$;<> \t\n\'\"\\]
 DIGITS          [[:digit:]]+
 NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
 

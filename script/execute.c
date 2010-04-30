@@ -152,6 +152,7 @@ grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *c
 		}
 	      break;
 
+	    case GRUB_SCRIPT_ARG_TYPE_BLOCK:
 	    case GRUB_SCRIPT_ARG_TYPE_TEXT:
 	      if (grub_strlen (arg->str) > 0)
 		{

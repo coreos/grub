@@ -49,7 +49,8 @@ typedef enum
   GRUB_SCRIPT_ARG_TYPE_TEXT,
   GRUB_SCRIPT_ARG_TYPE_DQVAR,
   GRUB_SCRIPT_ARG_TYPE_DQSTR,
-  GRUB_SCRIPT_ARG_TYPE_SQSTR
+  GRUB_SCRIPT_ARG_TYPE_SQSTR,
+  GRUB_SCRIPT_ARG_TYPE_BLOCK
 } grub_script_arg_type_t;
 
 /* A part of an argument.  */
@@ -58,6 +59,9 @@ struct grub_script_arg
   grub_script_arg_type_t type;
 
   char *str;
+
+  /* Parsed block argument.  */
+  struct grub_script_cmd *block;
 
   /* Next argument part.  */
   struct grub_script_arg *next;
