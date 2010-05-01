@@ -1,5 +1,9 @@
 2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* boot/i386/qemu/boot.S: Add a missing .code16.
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use LBIO on coreboot.
 
 	* conf/i386-coreboot.rmk (kernel_img_SOURCES): Change
