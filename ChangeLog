@@ -1,5 +1,20 @@
 2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use LBIO on coreboot.
+
+	* conf/i386-coreboot.rmk (kernel_img_SOURCES): Change
+	kern/i386/multiboot_mmap.c to kern/i386/coreboot/mmap.c.
+	* include/grub/i386/coreboot/memory.h (GRUB_LINUXBIOS_MEMBER_LINK):
+	New declaration.
+	* kern/i386/coreboot/init.c (grub_machine_init): Don't call
+	grub_machine_mmap_init on coreboot.
+	* kern/i386/coreboot/mmap.c (grub_linuxbios_table_iterate): Handle
+	GRUB_LINUXBIOS_MEMBER_LINK.
+	(grub_machine_mmap_iterate): Fix declaration.
+	* kern/i386/coreboot/startup.S: Don't save mbi location on coreboot.
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Split coreboot and multiboot ports.
 
 	* conf/i386-multiboot.rmk: New file.
