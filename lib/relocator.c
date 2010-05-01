@@ -45,7 +45,9 @@ struct grub_relocator_subchunk
   grub_size_t size;
   grub_size_t pre_size;
   struct grub_relocator_extra_block *extra;
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
   struct grub_relocator_fw_leftover *pre, *post;
+#endif
 };
 
 struct grub_relocator_chunk
@@ -67,7 +69,7 @@ struct grub_relocator_extra_block
   grub_phys_addr_t end;
 };
 
-#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
 struct grub_relocator_fw_leftover
 {
   struct grub_relocator_fw_leftover *next;
@@ -241,7 +243,7 @@ allocate_inreg (grub_phys_addr_t paddr, grub_size_t size,
     }
 }
 
-#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
 static void
 check_leftover (struct grub_relocator_fw_leftover *lo)
 {
@@ -367,6 +369,7 @@ free_subchunk (const struct grub_relocator_subchunk *subchu)
 			   GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT);
 	if (fstart < fend)
 	  grub_relocator_firmware_free_region (fstart, fend - fstart);
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
 	if (subchu->pre)
 	  {
 	    int off = subchu->start - fstart
@@ -384,6 +387,7 @@ free_subchunk (const struct grub_relocator_subchunk *subchu)
 	    subchu->pre->freebytes[off / 8] |= ((1 << (8 - (off % 8))) - 1);
 	    check_leftover (subchu->post);
 	  }
+#endif
 	*subchu->extra->prev = subchu->extra->next;
 	grub_free (subchu->extra);
       }
@@ -450,7 +454,9 @@ malloc_in_range (struct grub_relocator *rel,
     maxevents += 2;
 
   maxevents += grub_relocator_firmware_get_max_events ();
+#endif
 
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
   {
     struct grub_relocator_fw_leftover *cur;
     for (cur = leftovers; cur; cur = cur->next)
@@ -500,8 +506,8 @@ malloc_in_range (struct grub_relocator *rel,
   for (r = grub_mm_base; r; r = r->next)
     {
       grub_dprintf ("relocator", "Blocking at 0x%lx-0x%lx\n",
-		    (grub_addr_t) r - r->pre_size, 
-		    (grub_addr_t) (r + 1) + r->size);
+		    (unsigned long) r - r->pre_size, 
+		    (unsigned long) (r + 1) + r->size);
       events[N].type = FIRMWARE_BLOCK_START;
       events[N].pos = (grub_addr_t) r - r->pre_size;
       N++;
@@ -514,7 +520,7 @@ malloc_in_range (struct grub_relocator *rel,
     for (cur = extra_blocks; cur; cur = cur->next)
       {
 	grub_dprintf ("relocator", "Blocking at 0x%lx-0x%lx\n",
-		      cur->start, cur->end);
+		      (unsigned long) cur->start, (unsigned long) cur->end);
 	events[N].type = FIRMWARE_BLOCK_START;
 	events[N].pos = cur->start;
 	N++;
@@ -526,6 +532,7 @@ malloc_in_range (struct grub_relocator *rel,
 
   N += grub_relocator_firmware_fill_events (events + N);
 
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
   {
     struct grub_relocator_fw_leftover *cur;
     for (cur = leftovers; cur; cur = cur->next)
@@ -552,6 +559,7 @@ malloc_in_range (struct grub_relocator *rel,
 	  }
       }
   }
+#endif
 #endif
 
   /* No malloc from this point.  */
@@ -636,7 +644,11 @@ malloc_in_range (struct grub_relocator *rel,
   /* Now events are nicely sorted.  */
   {
     int nstarted = 0, ncollisions = 0, nstartedfw = 0, nblockfw = 0;
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
     int nlefto = 0;
+#else
+    const int nlefto = 0;
+#endif
     grub_addr_t starta = 0;
     int numstarted;
     for (j = from_low_priv ? 0 : N - 1; from_low_priv ? j < N : (j + 1); 
@@ -663,6 +675,9 @@ malloc_in_range (struct grub_relocator *rel,
 	  case FIRMWARE_BLOCK_END:
 	    nblockfw--;
 	    break;
+#endif
+
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
 	  case REG_LEFTOVER_START:
 	    nlefto++;
 	    break;
@@ -794,7 +809,8 @@ malloc_in_range (struct grub_relocator *rel,
 			= ALIGN_UP (alloc_end,
 				    GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT);
 		      grub_dprintf ("relocator", "requesting %lx-%lx\n",
-				    fstart, fend);
+				    (unsigned long) fstart,
+				    (unsigned long) fend);
 		      /* The failure here can be very expensive.  */
 		      if (!grub_relocator_firmware_alloc_region (fstart, 
 								 fend - fstart))
@@ -807,6 +823,9 @@ malloc_in_range (struct grub_relocator *rel,
 			}
 		      break;
 		    }
+#endif
+
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
 		  case CHUNK_TYPE_LEFTOVER:
 		    {
 		      unsigned offstart = alloc_start
@@ -857,20 +876,22 @@ malloc_in_range (struct grub_relocator *rel,
 	    fwin--;
 	    break;
 
-	  case REG_LEFTOVER_START:
-	    fwlefto++;
-	    break;
-
-	  case REG_LEFTOVER_END:
-	    fwlefto--;
-	    break;
-
 	  case FIRMWARE_BLOCK_START:
 	    fwb++;
 	    break;
 
 	  case FIRMWARE_BLOCK_END:
 	    fwb--;
+	    break;
+#endif
+
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
+	  case REG_LEFTOVER_START:
+	    fwlefto++;
+	    break;
+
+	  case REG_LEFTOVER_END:
+	    fwlefto--;
 	    break;
 #endif
 	  case COLLISION_START:
@@ -971,8 +992,6 @@ malloc_in_range (struct grub_relocator *rel,
 		if (!oom && typepre == CHUNK_TYPE_FIRMWARE)
 		  {
 		    grub_addr_t fstart, fend;
-		    struct grub_relocator_fw_leftover *lo1 = NULL;
-		    struct grub_relocator_fw_leftover *lo2 = NULL;
 
 		    fstart
 		      = ALIGN_DOWN (alloc_start,
@@ -981,68 +1000,77 @@ malloc_in_range (struct grub_relocator *rel,
 		      = ALIGN_UP (alloc_end,
 				  GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT);
 
-		    if (fstart != alloc_start)
-		      lo1 = grub_malloc (sizeof (*lo1));
-		    if (fend != alloc_end)
-		      lo2 = grub_malloc (sizeof (*lo2));
-		    if ((!lo1 && fstart != alloc_start)
-			|| (!lo2 && fend != alloc_end))
-		      {
-			struct grub_relocator_extra_block *ne;
-			grub_free (lo1);
-			grub_free (lo2);
-			lo1 = NULL;
-			lo2 = NULL;
-			oom = 1;
-			grub_memcpy (&tofree, curschu, sizeof (tofree));
-			ne = extra_blocks;
-			extra_blocks = extra_blocks->next;
-			grub_free (ne);
-		      }
-		    if (lo1)
-		      {
-			lo1->quantstart = fstart;
-			grub_memset (lo1->freebytes, 0xff,
-				     (alloc_start - fstart) / 8);
-			lo1->freebytes[(alloc_start - fstart) / 8]
-			  = (1 << ((alloc_start - fstart) % 8)) - 1;
-			grub_memset (lo1->freebytes
-				     + ((alloc_start - fstart) / 8) + 1, 0,
-				     sizeof (lo1->freebytes)
-				     - (alloc_start - fstart) / 8 - 1);
-			lo1->next = leftovers;
-			lo1->prev = &leftovers;
-			if (leftovers)
-			  leftovers->prev = &lo1->next;
-			leftovers = lo1;
-		      }
-		    if (lo2)
-		      {
-			lo2->quantstart
-			  = fend - GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT;
-			grub_memset (lo2->freebytes, 0,
-				     (alloc_end - lo2->quantstart) / 8);
-			lo2->freebytes[(alloc_end - lo2->quantstart) / 8]
-			  = ~((1 << ((alloc_end - lo2->quantstart) % 8)) - 1);
-			grub_memset (lo2->freebytes
-				     + ((alloc_end - lo2->quantstart) / 8)
-				     + 1, 0, sizeof (lo2->freebytes)
-				     - (alloc_end - lo2->quantstart) / 8 - 1);
-			lo2->prev = &leftovers;
-			if (leftovers)
-			  leftovers->prev = &lo2->next;
-			lo2->next = leftovers;
-			leftovers = lo2;
-		      }
-		    curschu->pre = lo1;
-		    curschu->post = lo2;
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
+		    {
+		      struct grub_relocator_fw_leftover *lo1 = NULL;
+		      struct grub_relocator_fw_leftover *lo2 = NULL;
+		      if (fstart != alloc_start)
+			lo1 = grub_malloc (sizeof (*lo1));
+		      if (fend != alloc_end)
+			lo2 = grub_malloc (sizeof (*lo2));
+		      if ((!lo1 && fstart != alloc_start)
+			  || (!lo2 && fend != alloc_end))
+			{
+			  struct grub_relocator_extra_block *ne;
+			  grub_free (lo1);
+			  grub_free (lo2);
+			  lo1 = NULL;
+			  lo2 = NULL;
+			  oom = 1;
+			  grub_memcpy (&tofree, curschu, sizeof (tofree));
+			  ne = extra_blocks;
+			  extra_blocks = extra_blocks->next;
+			  grub_free (ne);
+			}
+		      if (lo1)
+			{
+			  lo1->quantstart = fstart;
+			  grub_memset (lo1->freebytes, 0xff,
+				       (alloc_start - fstart) / 8);
+			  lo1->freebytes[(alloc_start - fstart) / 8]
+			    = (1 << ((alloc_start - fstart) % 8)) - 1;
+			  grub_memset (lo1->freebytes
+				       + ((alloc_start - fstart) / 8) + 1, 0,
+				       sizeof (lo1->freebytes)
+				       - (alloc_start - fstart) / 8 - 1);
+			  lo1->next = leftovers;
+			  lo1->prev = &leftovers;
+			  if (leftovers)
+			    leftovers->prev = &lo1->next;
+			  leftovers = lo1;
+			}
+		      if (lo2)
+			{
+			  lo2->quantstart
+			    = fend - GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT;
+			  grub_memset (lo2->freebytes, 0,
+				       (alloc_end - lo2->quantstart) / 8);
+			  lo2->freebytes[(alloc_end - lo2->quantstart) / 8]
+			    = ~((1 << ((alloc_end - lo2->quantstart) % 8)) - 1);
+			  grub_memset (lo2->freebytes
+				       + ((alloc_end - lo2->quantstart) / 8)
+				       + 1, 0, sizeof (lo2->freebytes)
+				       - (alloc_end - lo2->quantstart) / 8 - 1);
+			  lo2->prev = &leftovers;
+			  if (leftovers)
+			    leftovers->prev = &lo2->next;
+			  lo2->next = leftovers;
+			  leftovers = lo2;
+			}
+		      curschu->pre = lo1;
+		      curschu->post = lo2;
+		    }
+#endif
 		  }
 
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
 		if (typepre == CHUNK_TYPE_LEFTOVER)
 		  {
 		    curschu->pre = events[last_start].leftover;
 		    curschu->post = events[last_start].leftover;
 		  }
+#endif
+
 #endif
 		if (!oom)
 		  cural++;
@@ -1077,20 +1105,22 @@ malloc_in_range (struct grub_relocator *rel,
 	    fwin--;
 	    break;
 
-	  case REG_LEFTOVER_START:
-	    fwlefto++;
-	    break;
-
-	  case REG_LEFTOVER_END:
-	    fwlefto--;
-	    break;
-
 	  case FIRMWARE_BLOCK_START:
 	    fwb++;
 	    break;
 
 	  case FIRMWARE_BLOCK_END:
 	    fwb--;
+	    break;
+#endif
+
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
+	  case REG_LEFTOVER_START:
+	    fwlefto++;
+	    break;
+
+	  case REG_LEFTOVER_END:
+	    fwlefto--;
 	    break;
 #endif
 	  case COLLISION_START:

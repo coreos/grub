@@ -2,7 +2,7 @@
 
 # For grub-shell
 grub-shell: tests/util/grub-shell.in config.status
-	./config.status --file=$@:$<
+	./config.status --file=-:$< | sed -e 's,@pkglib_DATA@,$(pkglib_DATA),g' > $@
 	chmod +x $@
 check_SCRIPTS += grub-shell
 CLEANFILES += grub-shell

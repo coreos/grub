@@ -40,6 +40,8 @@ void grub_cpu_relocator_backward (void *rels, void *src, void *tgt,
 				 grub_size_t size);
 void grub_cpu_relocator_jumper (void *rels, grub_addr_t addr);
 
+/* Remark: GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT_LOG = 1 or 2
+   aren't supported.  */
 #ifdef GRUB_MACHINE_IEEE1275
 #define GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS 1
 #define GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT_LOG 0
@@ -48,6 +50,12 @@ void grub_cpu_relocator_jumper (void *rels, grub_addr_t addr);
 #define GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT_LOG 12
 #else
 #define GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS 0
+#endif
+
+#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS && GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT_LOG != 0
+#define GRUB_RELOCATOR_HAVE_LEFTOVERS 1
+#else
+#define GRUB_RELOCATOR_HAVE_LEFTOVERS 0
 #endif
 
 #if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
@@ -67,6 +75,8 @@ struct grub_relocator_mmap_event
     /* To track the regions already in heap.  */
     FIRMWARE_BLOCK_START = 6, 
     FIRMWARE_BLOCK_END = FIRMWARE_BLOCK_START | 1,
+#endif
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
     REG_LEFTOVER_START = 8, 
     REG_LEFTOVER_END = REG_LEFTOVER_START | 1,
 #endif

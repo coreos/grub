@@ -107,15 +107,15 @@ grub_err_t
 grub_relocator32_boot (struct grub_relocator *rel,
 		       struct grub_relocator32_state state)
 {
-  grub_addr_t target;
-  void *src, *ptr;
+  void *ptr;
   grub_err_t err;
-  grub_addr_t relst;
+  void *relst;
   grub_size_t relsize;
   grub_size_t stateset_size = 32 * REGW_SIZEOF + JUMP_SIZEOF;
   unsigned i;
+  grub_relocator_chunk_t ch;
 
-  err = grub_relocator_alloc_chunk_align (rel, &src, &target, 0,
+  err = grub_relocator_alloc_chunk_align (rel, &ch, 0,
 					  (0xffffffff - stateset_size)
 					  + 1, stateset_size,
 					  sizeof (grub_uint32_t),
@@ -123,12 +123,13 @@ grub_relocator32_boot (struct grub_relocator *rel,
   if (err)
     return err;
 
-  ptr = src;
+  ptr = get_virtual_current_address (ch);
   for (i = 0; i < 32; i++)
     write_reg (i, state.gpr[i], &ptr);
   write_jump (&ptr);
 
-  err = grub_relocator_prepare_relocs (rel, target, &relst, &relsize);
+  err = grub_relocator_prepare_relocs (rel, get_physical_target_address (ch),
+				       &relst, &relsize);
   if (err)
     return err;
 
