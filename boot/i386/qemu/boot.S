@@ -63,5 +63,8 @@ VARIABLE(grub_core_entry_addr)
 	   *right here* and this is why we need this kludge.  */
 
 	. = GRUB_BOOT_MACHINE_SIZE - 16
+
+       .code16
+       
 	jmp	_start
 	. = GRUB_BOOT_MACHINE_SIZE

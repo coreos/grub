@@ -52,7 +52,7 @@
 
 struct grub_relocator *grub_multiboot_relocator = NULL;
 grub_uint32_t grub_multiboot_payload_eip;
-#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
 #define DEFAULT_VIDEO_MODE "text"
 #else
 #define DEFAULT_VIDEO_MODE "auto"

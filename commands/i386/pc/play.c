@@ -177,16 +177,20 @@ static grub_err_t
 grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
 	       int argc, char **args)
 {
-  grub_file_t file;
 
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name or tempo and notes required");
 
-  file = grub_file_open (args[0]);
-  if (file)
+  if (argc == 1)
     {
       struct note buf;
       grub_uint32_t tempo;
+      grub_file_t file;
+
+      file = grub_file_open (args[0]);
+
+      if (! file)
+        return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
 
       if (grub_file_read (file, &tempo, sizeof (tempo)) != sizeof (tempo))
         {

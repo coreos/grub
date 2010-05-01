@@ -102,6 +102,7 @@ case "$target_cpu"-"$platform" in
   i386-efi) ;;
   x86_64-efi) ;;
   i386-pc) ;;
+  i386-multiboot) ;;
   i386-coreboot) ;;
   i386-linuxbios) platform=coreboot ;;
   i386-ieee1275) ;;
@@ -136,6 +137,7 @@ esac
 
 case "$platform" in
   coreboot)	machine_CFLAGS="-DGRUB_MACHINE_COREBOOT=1" ;;
+  multiboot)	machine_CFLAGS="-DGRUB_MACHINE_MULTIBOOT=1" ;;
   efi)		machine_CFLAGS="-DGRUB_MACHINE_EFI=1" ;;
   ieee1275)	machine_CFLAGS="-DGRUB_MACHINE_IEEE1275=1" ;;
   qemu)		machine_CFLAGS="-DGRUB_MACHINE_QEMU=1" ;;

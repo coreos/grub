@@ -100,6 +100,28 @@ struct image_target_desc image_targets[] =
       .mod_align = GRUB_KERNEL_I386_COREBOOT_MOD_ALIGN
     },
     {
+      .name = "i386-multiboot",
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_COREBOOT,
+      .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_I386_COREBOOT_PREFIX,
+      .data_end = GRUB_KERNEL_I386_COREBOOT_DATA_END,
+      .raw_size = 0,
+      .total_module_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .compressed_size = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_I386_COREBOOT_LINK_ADDR,
+      .elf_target = EM_386,
+      .link_align = 4,
+      .mod_gap = GRUB_KERNEL_I386_COREBOOT_MOD_GAP,
+      .mod_align = GRUB_KERNEL_I386_COREBOOT_MOD_ALIGN
+    },
+    {
       .name = "i386-pc",
       .voidp_sizeof = 4,
       .bigendian = 0,

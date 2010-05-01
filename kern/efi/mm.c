@@ -147,7 +147,7 @@ grub_efi_free_pages (grub_efi_physical_address_t address,
 }
 
 grub_err_t
-grub_efi_finish_boot_services (grub_size_t *outbuf_size, void *outbuf,
+grub_efi_finish_boot_services (grub_efi_uintn_t *outbuf_size, void *outbuf,
 			       grub_efi_uintn_t *map_key,
 			       grub_efi_uintn_t *efi_desc_size,
 			       grub_efi_uint32_t *efi_desc_version)
