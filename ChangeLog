@@ -1,3 +1,11 @@
+2010-05-01  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix comment handling.
+
+	* tests/grub_script_comments.in: New testcase.
+	* conf/tests.rmk: Rules for new testcase.
+	* script/yylex.l: Updated flex rules.
+
 2010-04-28  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* docs/grub.texi (play): Document that zero pitches produce rests.
