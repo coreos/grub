@@ -83,6 +83,8 @@ for option in "$@"; do
 	if   [ "$dev" = "fd" ] ; then boot=fd;
 	elif [ "$dev" = "hd" ] ; then boot=hd;
 	elif [ "$dev" = "cd" ] ; then boot=cd;
+	elif [ "$dev" = "qemu" ] ; then boot=qemu;
+	elif [ "$dev" = "coreboot" ] ; then boot=coreboot;
 	else
 	    echo "Unrecognized boot method \`$dev'" 1>&2
 	    usage
@@ -119,6 +121,8 @@ terminal_input serial
 terminal_output serial
 EOF
 
+rom_directory=`mktemp -d`
+
 for mod in ${modules}
 do
     echo "insmod ${mod}" >> ${cfgfile}
@@ -131,25 +135,43 @@ EOF
 
 isofile=`mktemp`
 grub-mkrescue --output=${isofile} --override-directory=${builddir} \
+    --rom-directory="${rom_directory}" \
     /boot/grub/grub.cfg=${cfgfile} /boot/grub/testcase.cfg=${source} \
     ${files} >/dev/null 2>&1
 if [ x$boot = xhd ]; then
     device=hda
-    bootdev=c
+    bootdev="-boot c"
 fi
 if [ x$boot = xcd ]; then
     device=cdrom
-    bootdev=d
+    bootdev="-boot d"
 fi
 if [ x$boot = xfd ]; then
     device=fda
-    bootdev=a
+    bootdev="-boot a"
 fi
 
-${qemu} ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} -boot ${bootdev} | tr -d "\r"
-rm -f ${isofile}
+if [ x$boot = xqemu ]; then
+    bootdev="-bios ${rom_directory}/qemu.img"
+    device=cdrom
+fi
 
-rm -f ${tmpfile} ${cfgfile}
+if [ x$boot = xcoreboot ]; then
+    imgfile=`mktemp`
+    cp "${GRUB_COREBOOT_ROM}" "${imgfile}"
+    "${GRUB_CBFSTOOL}" "${imgfile}" add-payload "${rom_directory}/coreboot.elf" fallback/payload
+    bootdev="-bios ${imgfile}"
+    device=cdrom
+fi
+
+${qemu} ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | tr -d "\r"
+rm -f "${isofile}" "${imgfile}"
+rm -rf "${rom_directory}"
+if [ x$boot = xcoreboot ]; then
+    rm -f "${imgfile}"
+fi
+
+rm -f "${tmpfile}" "${cfgfile}"
 exit 0
 
 

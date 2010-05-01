@@ -61,5 +61,8 @@ datetime_mod_SOURCES = lib/cmos_datetime.c
 datetime_mod_CFLAGS = $(COMMON_CFLAGS)
 datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+BOOTTARGET=qemu
+QEMU32=qemu-system-i386
+
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk
