@@ -1,3 +1,15 @@
+2010-05-01  Christian Franke  <franke@computer.org>
+
+	* util/grub-mkconfig_lib.in (make_system_path_relative_to_its_root):
+	Remove broken Cygwin path conversion.
+	* util/misc.c: [__CYGWIN__] Add include and define.
+	[__CYGWIN__] (get_win32_path): Copy function from getroot.c, modify
+	for Cygwin 1.7.
+	(make_system_path_relative_to_its_root): Simplify loop, replace early
+	return by break.
+	[__CYGWIN__] Add conversion to win32 path.
+	Include "/" case in trailing slash removal.
+
 2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/main.c (grub_load_config): Fix copy-pasted comment.

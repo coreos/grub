@@ -53,6 +53,11 @@
 # include <malloc.h>
 #endif
 
+#ifdef __CYGWIN__
+# include <sys/cygwin.h>
+# define DEV_CYGDRIVE_MAJOR 98
+#endif
+
 #ifdef __MINGW32__
 #include <windows.h>
 #include <winioctl.h>
@@ -456,6 +461,27 @@ canonicalize_file_name (const char *path)
   return ret;
 }
 
+#ifdef __CYGWIN__
+/* Convert POSIX path to Win32 path,
+   remove drive letter, replace backslashes.  */
+static char *
+get_win32_path (const char *path)
+{
+  char winpath[PATH_MAX];
+  if (cygwin_conv_path (CCP_POSIX_TO_WIN_A, path, winpath, sizeof(winpath)))
+    grub_util_error ("cygwin_conv_path() failed");
+
+  int len = strlen (winpath);
+  int offs = (len > 2 && winpath[1] == ':' ? 2 : 0);
+
+  int i;
+  for (i = offs; i < len; i++)
+    if (winpath[i] == '\\')
+      winpath[i] = '/';
+  return xstrdup (winpath + offs);
+}
+#endif
+
 /* This function never prints trailing slashes (so that its output
    can be appended a slash unconditionally).  */
 char *
@@ -521,30 +547,31 @@ make_system_path_relative_to_its_root (const char *path)
       /* offset == 1 means root directory.  */
       if (offset == 1)
 	{
-	  free (buf);
-	  len = strlen (buf2);
-	  while (buf2[len - 1] == '/' && len > 1)
-	    {
-	      buf2[len - 1] = '\0';
-	      len--;
-	    }
-	  if (len > 1)
-	    return buf2;
-	  else
-	    {
-	      /* This means path given is just a backslash.  As above
-		 we have to return an empty string.  */
-	      free (buf2);
-	      return xstrdup ("");
-	    }
+	  /* Include leading slash.  */
+	  offset = 0;
+	  break;
 	}
     }
   free (buf);
   buf3 = xstrdup (buf2 + offset);
   free (buf2);
 
+#ifdef __CYGWIN__
+  if (st.st_dev != (DEV_CYGDRIVE_MAJOR << 16))
+    {
+      /* Reached some mount point not below /cygdrive.
+	 GRUB does not know Cygwin's emulated mounts,
+	 convert to Win32 path.  */
+      grub_util_info ("Cygwin path = %s\n", buf3);
+      char * temp = get_win32_path (buf3);
+      free (buf3);
+      buf3 = temp;
+    }
+#endif
+
+  /* Remove trailing slashes, return empty string if root directory.  */
   len = strlen (buf3);
-  while (buf3[len - 1] == '/' && len > 1)
+  while (len > 0 && buf3[len - 1] == '/')
     {
       buf3[len - 1] = '\0';
       len--;
