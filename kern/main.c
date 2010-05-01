@@ -102,7 +102,7 @@ grub_load_config (void)
   auto int hook (struct grub_module_header *);
   int hook (struct grub_module_header *header)
     {
-      /* Not an ELF module, skip.  */
+      /* Not an embedded config, skip.  */
       if (header->type != OBJ_TYPE_CONFIG)
 	return 0;
 

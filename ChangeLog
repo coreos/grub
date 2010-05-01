@@ -1,5 +1,10 @@
 2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/main.c (grub_load_config): Fix copy-pasted comment.
+	Reported by: Seth Goldberg
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* commands/help.c (grub_cmd_help): Fix a typo.
 	Reported by: Seth Goldberg
 
