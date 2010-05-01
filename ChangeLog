@@ -1,6 +1,10 @@
 2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	MErge handling of input and output terminals. Fix a hang.
+	* kern/parser.c (grub_parser_execute): Cope with read-only config.
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Merge handling of input and output terminals. Fix a hang.
 
 	* commands/terminal.c (abstract_terminal): New struct.
 	(handle_command): New function. Based on grub_cmd_terminal_input.
