@@ -258,7 +258,6 @@ static void
 generate_e820_mmap (grub_size_t *len, grub_size_t *cnt, void *buf)
 {
   int count = 0;
-  int isfirstrun = 1;
   struct grub_e820_mmap *mmap = buf;
   struct grub_e820_mmap prev, cur;
 
@@ -266,21 +265,6 @@ generate_e820_mmap (grub_size_t *len, grub_size_t *cnt, void *buf)
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size,
 			     grub_uint32_t type)
     {
-      /* FreeBSD assumes that first 64KiB are available.
-	 Not always true but try to prevent panic somehow. */
-      if (kernel_type == KERNEL_TYPE_FREEBSD && isfirstrun && addr != 0)
-	{
-	  cur.addr = 0;
-	  cur.size = (addr < 0x10000) ? addr : 0x10000;
-	  cur.type = GRUB_E820_RAM;
-	  if (mmap)
-	    *mmap++ = cur;
-
-	  prev = cur;
-	  count++;
-	}
-      isfirstrun = 0;
-
       cur.addr = addr;
       cur.size = size;
       switch (type)
@@ -317,7 +301,7 @@ generate_e820_mmap (grub_size_t *len, grub_size_t *cnt, void *buf)
 	{
 	  prev.size += cur.size;
 	  if (mmap)
-	    mmap[-1] = cur;
+           mmap[-1] = prev;
 	}
       else
 	{
@@ -330,7 +314,6 @@ generate_e820_mmap (grub_size_t *len, grub_size_t *cnt, void *buf)
       return 0;
     }
 
-  isfirstrun = 1;
   grub_mmap_iterate (hook);
 
   if (len)
