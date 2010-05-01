@@ -1,5 +1,14 @@
 2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Hotkey support
+
+	* include/grub/menu.h (grub_menu_entry): New field 'hotkey'.
+	* normal/main.c (hotkey_aliases): New variable.
+	(grub_normal_add_menu_entry): Parse "--hotkey".
+	* normal/menu_text.c (run_menu): Handle hotkeys.
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/i386/coreboot/init.c (grub_machine_init): Call
 	grub_machine_mmap_init on qemu.
 
