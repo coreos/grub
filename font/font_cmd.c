@@ -21,6 +21,7 @@
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 loadfont_command (grub_command_t cmd __attribute__ ((unused)),
@@ -62,11 +63,11 @@ GRUB_MOD_INIT(font)
 
   cmd_loadfont =
     grub_register_command ("loadfont", loadfont_command,
-			 "FILE...",
-			 "Specify one or more font files to load.");
+			   N_("FILE..."),
+			   N_("Specify one or more font files to load."));
   cmd_lsfonts =
     grub_register_command ("lsfonts", lsfonts_command,
-			   0, "List the loaded fonts.");
+			   0, N_("List the loaded fonts."));
 }
 
 GRUB_MOD_FINI(font)

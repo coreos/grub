@@ -22,14 +22,15 @@
 #include <grub/extcmd.h>
 #include <grub/env.h>
 #include <grub/cpu/io.h>
+#include <grub/i18n.h>
 
 static grub_extcmd_t cmd_read_byte, cmd_read_word, cmd_read_dword;
 static grub_command_t cmd_write_byte, cmd_write_word, cmd_write_dword;
 
 static const struct grub_arg_option options[] =
   {
-    {0, 'v', 0, "Save read value into variable VARNAME.",
-     "VARNAME", ARG_TYPE_STRING},
+    {0, 'v', 0, N_("Save read value into variable VARNAME."),
+     N_("VARNAME"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -62,7 +63,7 @@ grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
 
   if (cmd->state[0].set)
     {
-      grub_sprintf (buf, "%x", value);
+      grub_snprintf (buf, sizeof (buf), "%x", value);
       grub_env_set (cmd->state[0].arg, buf);
     }
   else
@@ -117,22 +118,25 @@ GRUB_MOD_INIT(memrw)
 {
   cmd_read_byte =
     grub_register_extcmd ("inb", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
-			  "PORT", "Read byte from PORT.", options);
+			  N_("PORT"), N_("Read byte from PORT."), options);
   cmd_read_word =
     grub_register_extcmd ("inw", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
-			  "PORT", "Read word from PORT.", options);
+			  N_("PORT"), N_("Read word from PORT."), options);
   cmd_read_dword =
     grub_register_extcmd ("inl", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
-			  "PORT", "Read dword from PORT.", options);
+			  N_("PORT"), N_("Read dword from PORT."), options);
   cmd_write_byte =
     grub_register_command ("outb", grub_cmd_write,
-			   "PORT VALUE [MASK]", "Write byte VALUE to PORT.");
+			   N_("PORT VALUE [MASK]"),
+			   N_("Write byte VALUE to PORT."));
   cmd_write_word =
     grub_register_command ("outw", grub_cmd_write,
-			   "PORT VALUE [MASK]", "Write word VALUE to PORT.");
+			   N_("PORT VALUE [MASK]"),
+			   N_("Write word VALUE to PORT."));
   cmd_write_dword =
     grub_register_command ("outl", grub_cmd_write,
-			   "ADDR VALUE [MASK]", "Write dword VALUE to PORT.");
+			   N_("ADDR VALUE [MASK]"),
+			   N_("Write dword VALUE to PORT."));
 }
 
 GRUB_MOD_FINI(memrw)

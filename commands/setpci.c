@@ -23,6 +23,7 @@
 #include <grub/extcmd.h>
 #include <grub/env.h>
 #include <grub/mm.h>
+#include <grub/i18n.h>
 
 struct pci_register
 {
@@ -329,9 +330,9 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(setpci)
 {
   cmd = grub_register_extcmd ("setpci", grub_cmd_setpci, GRUB_COMMAND_FLAG_BOTH,
-			      "setpci [-s POSITION] [-d DEVICE] [-v VAR] "
-			      "[REGISTER][=VALUE[:MASK]]",
-			      "Manipulate PCI devices.", options);
+			      N_("[-s POSITION] [-d DEVICE] [-v VAR] "
+				 "[REGISTER][=VALUE[:MASK]]"),
+			      N_("Manipulate PCI devices."), options);
 }
 
 GRUB_MOD_FINI(setpci)
