@@ -1,5 +1,10 @@
 2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* commands/help.c (grub_cmd_help): Fix a typo.
+	Reported by: Seth Goldberg
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* commands/hashsum.c (GRUB_MOD_INIT): Remove duplication of command
 	name and add N_.
 	* commands/i386/pc/drivemap.c (GRUB_MOD_INIT): Likewise.
