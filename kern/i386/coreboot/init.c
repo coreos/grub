@@ -117,7 +117,7 @@ grub_machine_init (void)
     return 0;
   }
 
-#ifdef GRUB_MACHINE_MULTIBOOT
+#if defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_QEMU)
   grub_machine_mmap_init ();
 #endif
   grub_machine_mmap_iterate (heap_init);
