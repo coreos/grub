@@ -1,5 +1,24 @@
 2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Split coreboot and multiboot ports.
+
+	* conf/i386-multiboot.rmk: New file.
+	* configure.ac: Add multiboot port.
+	* include/grub/i386/multiboot/boot.h: New file.
+	* include/grub/i386/multiboot/console.h: Likewise.
+	* include/grub/i386/multiboot/init.h: Likewise.
+	* include/grub/i386/multiboot/kernel.h: Likewise.
+	* include/grub/i386/multiboot/loader.h: Likewise.
+	* include/grub/i386/multiboot/memory.h: Likewise.
+	* include/grub/i386/multiboot/serial.h: Likewise.
+	* include/grub/i386/multiboot/time.h: Likewise.
+	* include/grub/multiboot.h: Add GRUB_MACHINE_MULTIBOOT to ifdef.
+	* loader/multiboot.c: Likewise.
+	* loader/multiboot_mbi2.c: Likewise.
+	* util/grub-mkrescue.in: Generate multiboot rescue.
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/parser.c (grub_parser_execute): Cope with read-only config.
 
 2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>

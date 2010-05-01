@@ -30,7 +30,7 @@ target_cpu=@target_cpu@
 native_platform=@platform@
 pkglib_DATA="@pkglib_DATA@"
 
-coreboot_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/${target_cpu}-coreboot
+multiboot_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/${target_cpu}-multiboot
 pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/${target_cpu}-pc
 
 # Usage: usage
@@ -122,45 +122,45 @@ process_input_dir ()
 }
 
 if [ "${override_dir}" = "" ] ; then
-    if test -e "${coreboot_dir}" ; then
-        process_input_dir ${coreboot_dir} coreboot
+    if test -e "${multiboot_dir}" ; then
+        process_input_dir ${multiboot_dir} multiboot
     fi
     if test -e "${pc_dir}" ; then
         process_input_dir ${pc_dir} pc
     fi
 else
     process_input_dir ${override_dir} ${native_platform}
-    coreboot_dir=
+    multiboot_dir=
     pc_dir=
     case "${native_platform}" in
-        coreboot) coreboot_dir=${override_dir} ;;
+        multiboot) multiboot_dir=${override_dir} ;;
         pc) pc_dir=${override_dir} ;;
     esac
 fi
 
-# build coreboot core.img
-if test -e "${coreboot_dir}" ; then
-    echo "Enabling coreboot support ..."
+# build multiboot core.img
+if test -e "${multiboot_dir}" ; then
+    echo "Enabling multiboot support ..."
     memdisk_img=`mktemp "$MKTEMP_TEMPLATE"`
     memdisk_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
     mkdir -p ${memdisk_dir}/boot/grub
     # obtain date-based UUID
     iso_uuid=$(date -u +%Y-%m-%d-%H-%M-%S-00)
 
-    modules="$(cat ${coreboot_dir}/partmap.lst) ${modules}"
+    modules="$(cat ${multiboot_dir}/partmap.lst) ${modules}"
     cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
 search --fs-uuid --set ${iso_uuid}
-set prefix=(\${root})/boot/grub/${target_cpu}-coreboot
+set prefix=(\${root})/boot/grub/${target_cpu}-multiboot
 EOF
     (for i in ${modules} ; do
         echo "insmod $i"
     done ; \
     echo "source /boot/grub/grub.cfg") \
-    > ${iso9660_dir}/boot/grub/i386-coreboot/grub.cfg
+    > ${iso9660_dir}/boot/grub/i386-multiboot/grub.cfg
 
     tar -C ${memdisk_dir} -cf ${memdisk_img} boot
     rm -rf ${memdisk_dir}
-    grub-mkelfimage -d ${coreboot_dir}/ -m ${memdisk_img} -o ${iso9660_dir}/boot/multiboot.img \
+    grub-mkelfimage -d ${multiboot_dir}/ -m ${memdisk_img} -o ${iso9660_dir}/boot/multiboot.img \
         memdisk tar search iso9660 configfile sh \
         ata at_keyboard
     rm -f ${memdisk_img}

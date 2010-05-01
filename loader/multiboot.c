@@ -50,7 +50,7 @@
 #include <grub/efi/efi.h>
 #endif
 
-#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
 #define DEFAULT_VIDEO_MODE "text"
 #else
 #define DEFAULT_VIDEO_MODE "auto"
