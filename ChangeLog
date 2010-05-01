@@ -1,3 +1,12 @@
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	MErge handling of input and output terminals. Fix a hang.
+
+	* commands/terminal.c (abstract_terminal): New struct.
+	(handle_command): New function. Based on grub_cmd_terminal_input.
+	(grub_cmd_terminal_input): Use handle_command.
+	(grub_cmd_terminal_output): Use handle_command.
+
 2010-05-01  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Fix comment handling.
