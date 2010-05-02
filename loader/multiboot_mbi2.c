@@ -55,6 +55,19 @@ static unsigned modcnt;
 static char *cmdline = NULL;
 static int bootdev_set;
 static grub_uint32_t biosdev, slice, part;
+static grub_size_t elf_sec_num, elf_sec_entsize;
+static unsigned elf_sec_shstrndx;
+static void *elf_sections;
+
+void
+grub_multiboot_add_elfsyms (grub_size_t num, grub_size_t entsize,
+			    unsigned shndx, void *data)
+{
+  elf_sec_num = num;
+  elf_sec_shstrndx = shndx;
+  elf_sec_entsize = entsize;
+  elf_sections = data;
+}
 
 grub_err_t
 grub_multiboot_load (grub_file_t file)
@@ -262,6 +275,8 @@ grub_multiboot_get_mbi_size (void)
     + (modcnt * sizeof (struct multiboot_tag_module) + total_modcmd)
     + sizeof (struct multiboot_tag_basic_meminfo)
     + ALIGN_UP (sizeof (struct multiboot_tag_bootdev), MULTIBOOT_TAG_ALIGN)
+    + sizeof (struct multiboot_tag_elf_sections)
+    + elf_sec_entsize * elf_sec_num
     + (sizeof (struct multiboot_tag_mmap) + grub_get_multiboot_mmap_count ()
        * sizeof (struct multiboot_mmap_entry))
     + sizeof (struct multiboot_tag_vbe) + MULTIBOOT_TAG_ALIGN - 1;
@@ -515,6 +530,19 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   {
     struct multiboot_tag_mmap *tag = (struct multiboot_tag_mmap *) ptrorig;
     grub_fill_multiboot_mmap (tag);
+    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
+  }
+
+  {
+    struct multiboot_tag_elf_sections *tag
+      = (struct multiboot_tag_elf_sections *) ptrorig;
+    tag->type = MULTIBOOT_TAG_TYPE_ELF_SECTIONS;
+    tag->size = sizeof (struct multiboot_tag_elf_sections)
+      + elf_sec_entsize * elf_sec_num;
+    grub_memcpy (tag->sections, elf_sections, elf_sec_entsize * elf_sec_num);
+    tag->num = elf_sec_num;
+    tag->entsize = elf_sec_entsize;
+    tag->shndx = elf_sec_shstrndx;
     ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   }
 
