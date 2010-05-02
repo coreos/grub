@@ -301,12 +301,29 @@ generate_e820_mmap (grub_size_t *len, grub_size_t *cnt, void *buf)
 	{
 	  prev.size += cur.size;
 	  if (mmap)
-           mmap[-1] = prev;
+	    mmap[-1] = prev;
 	}
       else
 	{
 	  if (mmap)
 	    *mmap++ = cur;
+	  prev = cur;
+	  count++;
+	}
+
+      if (kernel_type == KERNEL_TYPE_OPENBSD && prev.addr < 0x100000
+	  && prev.addr + prev.size > 0x100000)
+	{
+	  cur.addr = 0x100000;
+	  cur.size = prev.addr + prev.size - 0x100000;
+	  cur.type = prev.type;
+	  prev.size = 0x100000 - prev.addr;
+	  if (mmap)
+	    {
+	      mmap[-1] = prev;
+	      mmap[0] = cur;
+	      mmap++;
+	    }
 	  prev = cur;
 	  count++;
 	}
@@ -1475,7 +1492,7 @@ grub_cmd_openbsd (grub_extcmd_t cmd, int argc, char *argv[])
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     {
-      grub_loader_set (grub_openbsd_boot, grub_bsd_unload, 1);
+      grub_loader_set (grub_openbsd_boot, grub_bsd_unload, 0);
       openbsd_root = bootdev;
     }
 
