@@ -92,7 +92,7 @@ grub_mkrescue_SOURCES = util/grub-mkrescue.in
 pkglib_MODULES = biosdisk.mod chain.mod halt.mod vbe.mod vbetest.mod \
 	vbeinfo.mod vga.mod pxe.mod pxecmd.mod datetime.mod ata_pthru.mod \
 	hdparm.mod usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod \
-	usb_keyboard.mod efiemu.mod mmap.mod acpi.mod drivemap.mod
+	usb_keyboard.mod mmap.mod drivemap.mod
 
 # For drivemap.mod.
 drivemap_mod_SOURCES = commands/i386/pc/drivemap.c \
@@ -101,17 +101,8 @@ drivemap_mod_ASFLAGS = $(COMMON_ASFLAGS)
 drivemap_mod_CFLAGS = $(COMMON_CFLAGS)
 drivemap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For efiemu.mod.
-efiemu_mod_SOURCES = efiemu/main.c efiemu/i386/loadcore32.c \
-		     efiemu/i386/loadcore64.c efiemu/i386/pc/cfgtables.c \
-		     efiemu/mm.c efiemu/loadcore_common.c efiemu/symbols.c \
-		     efiemu/loadcore32.c efiemu/loadcore64.c \
-		     efiemu/prepare32.c efiemu/prepare64.c efiemu/pnvram.c \
-		     efiemu/i386/coredetect.c
-efiemu_mod_CFLAGS = $(COMMON_CFLAGS)
-efiemu_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For acpi.mod.
+pkglib_MODULES += acpi.mod
 acpi_mod_SOURCES = commands/acpi.c commands/i386/pc/acpi.c
 acpi_mod_CFLAGS = $(COMMON_CFLAGS)
 acpi_mod_LDFLAGS = $(COMMON_LDFLAGS)
@@ -144,12 +135,15 @@ linux16_mod_SOURCES = loader/i386/pc/linux.c
 linux16_mod_CFLAGS = $(COMMON_CFLAGS)
 linux16_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-pkglib_MODULES += xnu.mod
-xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c \
-	 loader/macho32.c loader/macho64.c loader/macho.c loader/xnu.c
-xnu_mod_CFLAGS = $(COMMON_CFLAGS)
-xnu_mod_LDFLAGS = $(COMMON_LDFLAGS)
-xnu_mod_ASFLAGS = $(COMMON_ASFLAGS)
+pkglib_MODULES += efiemu.mod
+efiemu_mod_SOURCES = efiemu/main.c efiemu/i386/loadcore32.c \
+		     efiemu/i386/loadcore64.c efiemu/i386/pc/cfgtables.c \
+		     efiemu/mm.c efiemu/loadcore_common.c efiemu/symbols.c \
+		     efiemu/loadcore32.c efiemu/loadcore64.c \
+		     efiemu/prepare32.c efiemu/prepare64.c efiemu/pnvram.c \
+		     efiemu/i386/coredetect.c
+efiemu_mod_CFLAGS = $(COMMON_CFLAGS)
+efiemu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod.
 halt_mod_SOURCES = commands/i386/pc/halt.c
@@ -230,52 +224,6 @@ ata_pthru_mod_LDFLAGS = $(COMMON_LDFLAGS)
 hdparm_mod_SOURCES = commands/hdparm.c lib/hexdump.c
 hdparm_mod_CFLAGS = $(COMMON_CFLAGS)
 hdparm_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-ifeq ($(enable_efiemu), yes)
-
-efiemu32.o: efiemu/runtime/efiemu.c $(TARGET_OBJ2ELF)
-	-rm -f $@
-ifeq ($(TARGET_APPLE_CC), 1)
-	-rm -f $@.bin
-	$(TARGET_CC) -c -m32 -DELF32 -DAPPLE_CC -o $@.bin -Wall -Werror $< -nostdlib -O2 -I$(srcdir)/efiemu/runtime -I$(srcdir)/include -Iinclude
-	$(OBJCONV) -felf32 -nu -nd $@.bin $@
-	-rm -f $@.bin
-else
-	$(TARGET_CC) -c -m32 -DELF32 -o $@ -Wall -Werror $< -nostdlib -O2 -I$(srcdir)/efiemu/runtime -I$(srcdir)/include -Iinclude
-	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
-endif
-
-efiemu64_c.o: efiemu/runtime/efiemu.c
-ifeq ($(TARGET_APPLE_CC), 1)
-	$(TARGET_CC) -c -m64 -DAPPLE_CC=1 -DELF64 -o $@ -Wall -Werror $< -nostdlib -mno-red-zone -O2 -I$(srcdir)/efiemu/runtime -I$(srcdir)/include -Iinclude
-else
-	$(TARGET_CC) -c -m64 -DELF64 -o $@ -Wall -Werror $< -nostdlib  -mcmodel=large -mno-red-zone -O2 -I$(srcdir)/efiemu/runtime -I$(srcdir)/include -Iinclude
-endif
-
-efiemu64_s.o: efiemu/runtime/efiemu.S
-	-rm -f $@
-ifeq ($(TARGET_APPLE_CC), 1)
-	$(TARGET_CC) -c -m64 -DAPPLE_CC=1 -DELF64 -o $@ -Wall -Werror $< -nostdlib -mno-red-zone -O2 -I$(srcdir)/efiemu/runtime -I$(srcdir)/include -Iinclude
-else
-	$(TARGET_CC) -c -m64 -DELF64 -o $@ -Wall -Werror $< -nostdlib  -mcmodel=large -mno-red-zone -O2 -I$(srcdir)/efiemu/runtime -I$(srcdir)/include -Iinclude
-endif
-
-efiemu64.o: efiemu64_c.o efiemu64_s.o  $(TARGET_OBJ2ELF)
-	-rm -f $@
-ifeq ($(TARGET_APPLE_CC), 1)
-	-rm -f $@.bin
-	$(TARGET_CC) -m64 -o $@.bin -Wl,-r $^ -nostdlib
-	$(OBJCONV) -felf64 -nu -nd $@.bin $@
-	-rm -f $@.bin
-else
-	$(TARGET_CC) -m64 -o $@ -Wl,-r $^ -nostdlib
-	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
-endif
-
-CLEANFILES += efiemu32.o efiemu64.o efiemu64_c.o efiemu64_s.o
-pkglib_DATA += efiemu32.o efiemu64.o
-
-endif
 
 BOOTTARGET=cd
 QEMU32=qemu-system-i386

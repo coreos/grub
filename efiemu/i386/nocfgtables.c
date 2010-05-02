@@ -1,3 +1,4 @@
+/* Register SMBIOS and ACPI tables. */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2009  Free Software Foundation, Inc.
@@ -16,9 +17,14 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_MACHINE_EFI_EMU_HEADER
-#define GRUB_MACHINE_EFI_EMU_HEADER	1
+#include <grub/err.h>
+#include <grub/efiemu/efiemu.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
+#include <grub/acpi.h>
 
-grub_err_t grub_machine_efiemu_init_tables (void);
-
-#endif
+grub_err_t
+grub_machine_efiemu_init_tables (void)
+{
+  return GRUB_ERR_NONE;
+}

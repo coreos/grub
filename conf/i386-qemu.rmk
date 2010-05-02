@@ -31,6 +31,7 @@ kernel_img_SOURCES = kern/i386/qemu/startup.S \
 	kern/env.c \
 	term/i386/pc/vga_text.c term/i386/vga_common.c \
 	symlist.c
+kernel_img_HEADERS += i386/pit.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS) -DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS) -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
 kernel_img_LDFLAGS += $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_KERNEL_MACHINE_LINK_ADDR)
@@ -60,6 +61,16 @@ halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 datetime_mod_SOURCES = lib/cmos_datetime.c
 datetime_mod_CFLAGS = $(COMMON_CFLAGS)
 datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += efiemu.mod
+efiemu_mod_SOURCES = efiemu/main.c efiemu/i386/loadcore32.c \
+		     efiemu/i386/loadcore64.c efiemu/i386/nocfgtables.c \
+		     efiemu/mm.c efiemu/loadcore_common.c efiemu/symbols.c \
+		     efiemu/loadcore32.c efiemu/loadcore64.c \
+		     efiemu/prepare32.c efiemu/prepare64.c efiemu/pnvram.c \
+		     efiemu/i386/coredetect.c
+efiemu_mod_CFLAGS = $(COMMON_CFLAGS)
+efiemu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 BOOTTARGET=qemu
 QEMU32=qemu-system-i386

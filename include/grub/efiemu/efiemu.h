@@ -282,4 +282,6 @@ grub_efiemu_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
 				     __attribute__ ((unused)),
 				     grub_efi_memory_descriptor_t *virtual_map);
 
+grub_err_t grub_machine_efiemu_init_tables (void);
+
 #endif /* ! GRUB_EFI_EMU_HEADER */

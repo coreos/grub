@@ -105,6 +105,59 @@ play_mod_SOURCES = commands/i386/pc/play.c
 play_mod_CFLAGS = $(COMMON_CFLAGS)
 play_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += xnu.mod
+xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c \
+	 loader/macho32.c loader/macho64.c loader/macho.c loader/xnu.c
+xnu_mod_CFLAGS = $(COMMON_CFLAGS)
+xnu_mod_LDFLAGS = $(COMMON_LDFLAGS)
+xnu_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+ifeq ($(enable_efiemu), yes)
+
+efiemu32.o: efiemu/runtime/efiemu.c $(TARGET_OBJ2ELF)
+	-rm -f $@
+ifeq ($(TARGET_APPLE_CC), 1)
+	-rm -f $@.bin
+	$(TARGET_CC) -c -m32 -DELF32 -DAPPLE_CC -o $@.bin -Wall -Werror $< -nostdlib -O2 -I$(srcdir)/efiemu/runtime -I$(srcdir)/include -Iinclude
+	$(OBJCONV) -felf32 -nu -nd $@.bin $@
+	-rm -f $@.bin
+else
+	$(TARGET_CC) -c -m32 -DELF32 -o $@ -Wall -Werror $< -nostdlib -O2 -I$(srcdir)/efiemu/runtime -I$(srcdir)/include -Iinclude
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+endif
+
+efiemu64_c.o: efiemu/runtime/efiemu.c
+ifeq ($(TARGET_APPLE_CC), 1)
+	$(TARGET_CC) -c -m64 -DAPPLE_CC=1 -DELF64 -o $@ -Wall -Werror $< -nostdlib -mno-red-zone -O2 -I$(srcdir)/efiemu/runtime -I$(srcdir)/include -Iinclude
+else
+	$(TARGET_CC) -c -m64 -DELF64 -o $@ -Wall -Werror $< -nostdlib  -mcmodel=large -mno-red-zone -O2 -I$(srcdir)/efiemu/runtime -I$(srcdir)/include -Iinclude
+endif
+
+efiemu64_s.o: efiemu/runtime/efiemu.S
+	-rm -f $@
+ifeq ($(TARGET_APPLE_CC), 1)
+	$(TARGET_CC) -c -m64 -DAPPLE_CC=1 -DELF64 -o $@ -Wall -Werror $< -nostdlib -mno-red-zone -O2 -I$(srcdir)/efiemu/runtime -I$(srcdir)/include -Iinclude
+else
+	$(TARGET_CC) -c -m64 -DELF64 -o $@ -Wall -Werror $< -nostdlib  -mcmodel=large -mno-red-zone -O2 -I$(srcdir)/efiemu/runtime -I$(srcdir)/include -Iinclude
+endif
+
+efiemu64.o: efiemu64_c.o efiemu64_s.o  $(TARGET_OBJ2ELF)
+	-rm -f $@
+ifeq ($(TARGET_APPLE_CC), 1)
+	-rm -f $@.bin
+	$(TARGET_CC) -m64 -o $@.bin -Wl,-r $^ -nostdlib
+	$(OBJCONV) -felf64 -nu -nd $@.bin $@
+	-rm -f $@.bin
+else
+	$(TARGET_CC) -m64 -o $@ -Wl,-r $^ -nostdlib
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+endif
+
+CLEANFILES += efiemu32.o efiemu64.o efiemu64_c.o efiemu64_s.o
+pkglib_DATA += efiemu32.o efiemu64.o
+
+endif
+
 linux.init.x86_64: $(srcdir)/tests/boot/linux.init-x86_64.S
 	$(TARGET_CC) -o $@ $< -m64 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
@@ -160,6 +213,10 @@ bootcheck-linux-x86_64: linux-initramfs.x86_64 $(GRUB_PAYLOADS_DIR)/linux.x86_64
 
 BOOTCHECKS += bootcheck-linux-i386 bootcheck-linux-x86_64 \
 	bootcheck-kfreebsd-i386 bootcheck-knetbsd-x86_64
+
+ifneq ($(platform), coreboot) 
+BOOTCHECKS += bootcheck-kfreebsd-i386
+endif
 
 .PHONY: bootcheck-linux-i386 bootcheck-linux-x86_64 \
 	bootcheck-kfreebsd-i386 bootcheck-kfreebsd-x86_64 \

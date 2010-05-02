@@ -29,7 +29,6 @@
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/efiemu/efiemu.h>
-#include <grub/machine/efiemu.h>
 #include <grub/command.h>
 
 /* System table. Two version depending on mode */

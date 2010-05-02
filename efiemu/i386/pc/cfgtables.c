@@ -19,7 +19,6 @@
 
 #include <grub/err.h>
 #include <grub/efiemu/efiemu.h>
-#include <grub/machine/efiemu.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/acpi.h>

@@ -24,6 +24,7 @@ kernel_img_SOURCES = kern/i386/coreboot/startup.S \
 	kern/env.c \
 	term/i386/pc/vga_text.c term/i386/vga_common.c \
 	symlist.c
+kernel_img_HEADERS += i386/pit.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS += $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR),-Bstatic
@@ -35,7 +36,7 @@ bin_SCRIPTS += grub-mkrescue
 grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 # Modules.
-pkglib_MODULES = linux.mod aout.mod halt.mod datetime.mod mmap.mod
+pkglib_MODULES = linux.mod halt.mod datetime.mod mmap.mod
 
 # For mmap.mod.
 mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c
@@ -53,17 +54,21 @@ halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For aout.mod.
-aout_mod_SOURCES = loader/aout.c
-aout_mod_CFLAGS = $(COMMON_CFLAGS)
-aout_mod_LDFLAGS = $(COMMON_LDFLAGS)
+pkglib_MODULES += efiemu.mod
+efiemu_mod_SOURCES = efiemu/main.c efiemu/i386/loadcore32.c \
+		     efiemu/i386/loadcore64.c efiemu/i386/pc/cfgtables.c \
+		     efiemu/mm.c efiemu/loadcore_common.c efiemu/symbols.c \
+		     efiemu/loadcore32.c efiemu/loadcore64.c \
+		     efiemu/prepare32.c efiemu/prepare64.c efiemu/pnvram.c \
+		     efiemu/i386/coredetect.c
+efiemu_mod_CFLAGS = $(COMMON_CFLAGS)
+efiemu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For bsd.mod
-pkglib_MODULES += bsd.mod
-bsd_mod_SOURCES = loader/i386/bsd.c loader/i386/bsd32.c loader/i386/bsd64.c loader/i386/bsd_helper.S loader/i386/bsd_trampoline.S
-bsd_mod_CFLAGS = $(COMMON_CFLAGS)
-bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
-bsd_mod_ASFLAGS = $(COMMON_ASFLAGS)
+# For acpi.mod.
+pkglib_MODULES += acpi.mod
+acpi_mod_SOURCES = commands/acpi.c commands/i386/pc/acpi.c
+acpi_mod_CFLAGS = $(COMMON_CFLAGS)
+acpi_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For datetime.mod
 datetime_mod_SOURCES = lib/cmos_datetime.c

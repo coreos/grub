@@ -123,6 +123,7 @@ static grub_uint64_t
 guessfsb (void)
 {
   const grub_uint64_t sane_value = 100000000;
+#ifndef GRUB_MACHINE_IEEE1275
   grub_uint32_t manufacturer[3], max_cpuid, capabilities, msrlow;
   grub_uint64_t start_tsc;
   grub_uint64_t end_tsc;
@@ -208,6 +209,9 @@ guessfsb (void)
 
   return grub_divmod64 (2000 * tsc_ticks_per_ms,
 			((msrlow >> 7) & 0x3e) + ((msrlow >> 14) & 1), 0);
+#else
+  return sane_value;
+#endif
 }
 
 struct property_descriptor
