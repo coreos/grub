@@ -183,6 +183,8 @@ grub_err_t grub_cs5536_smbus_wait (grub_port_t smbbase);
 grub_err_t EXPORT_FUNC (grub_cs5536_init_smbus) (grub_pci_device_t dev,
 						 grub_uint16_t divisor,
 						 grub_port_t *smbbase);
+
+void grub_cs5536_init_geode (grub_pci_device_t dev);
 #endif
 
 #endif
