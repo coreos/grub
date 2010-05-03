@@ -1370,8 +1370,13 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 	  goto refresh;
 
 	case 24: /* C-x */
-	  if (! run (screen))
-	    goto fail;
+	  {
+	    int chars_before = grub_normal_get_char_counter ();
+	    run (screen);
+
+	    if (chars_before != grub_normal_get_char_counter ())
+	      grub_wait_after_message ();
+	  }
 	  goto refresh;
 
 	case 18: /* C-r */
