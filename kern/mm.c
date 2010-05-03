@@ -148,14 +148,13 @@ grub_mm_init_region (void *addr, grub_size_t size)
   grub_printf ("Using memory for heap: start=%p, end=%p\n", addr, addr + (unsigned int) size);
 #endif
 
-  /* If this region is too small, ignore it.  */
-  if (size < GRUB_MM_ALIGN * 2)
-    return;
-
   /* Allocate a region from the head.  */
-  r = (grub_mm_region_t) (((grub_addr_t) addr + GRUB_MM_ALIGN - 1)
-			  & (~(GRUB_MM_ALIGN - 1)));
+  r = (grub_mm_region_t) ALIGN_UP ((grub_addr_t) addr, GRUB_MM_ALIGN);
   size -= (char *) r - (char *) addr + sizeof (*r);
+
+  /* If this region is too small, ignore it.  */
+  if (size < GRUB_MM_ALIGN)
+    return;
 
   h = (grub_mm_header_t) ((char *) r + GRUB_MM_ALIGN);
   h->next = h;
