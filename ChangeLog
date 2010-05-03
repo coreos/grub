@@ -1,5 +1,10 @@
 2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/mm.c (grub_real_malloc): Put magic and size assignment in common
+	part.
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/mm.c (grub_mm_init_region): Check for region size after aligning
 	pointers.
 

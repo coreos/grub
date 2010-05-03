@@ -220,7 +220,6 @@ grub_real_malloc (grub_mm_header_t *first, grub_size_t n, grub_size_t align)
 	         +---------------+          v
 	       */
 	      q->next = p->next;
-	      p->magic = GRUB_MM_ALLOC_MAGIC;
 	    }
 	  else if (align == 1 || p->size == n + extra)
 	    {
@@ -242,14 +241,10 @@ grub_real_malloc (grub_mm_header_t *first, grub_size_t n, grub_size_t align)
 
 	      p->size -= n;
 	      p += p->size;
-	      p->size = n;
-	      p->magic = GRUB_MM_ALLOC_MAGIC;
 	    }
 	  else if (extra == 0)
 	    {
 	      grub_mm_header_t r;
-
-	      p->magic = GRUB_MM_ALLOC_MAGIC;
 	      
 	      r = p + extra + n;
 	      r->magic = GRUB_MM_FREE_MAGIC;
@@ -262,8 +257,6 @@ grub_real_malloc (grub_mm_header_t *first, grub_size_t n, grub_size_t align)
 		  q = r;
 		  r->next = r;
 		}
-
-	      p->size = n;
 	    }
 	  else
 	    {
@@ -296,9 +289,10 @@ grub_real_malloc (grub_mm_header_t *first, grub_size_t n, grub_size_t align)
 	      p->size = extra;
 	      p->next = r;
 	      p += extra;
-	      p->size = n;
-	      p->magic = GRUB_MM_ALLOC_MAGIC;
 	    }
+
+	  p->magic = GRUB_MM_ALLOC_MAGIC;
+	  p->size = n;
 
 	  /* Mark find as a start marker for next allocation to fasten it.
 	     This will have side effect of fragmenting memory as small
