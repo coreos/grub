@@ -251,13 +251,20 @@ grub_real_malloc (grub_mm_header_t *first, grub_size_t n, grub_size_t align)
 	      grub_mm_header_t r;
 
 	      p->magic = GRUB_MM_ALLOC_MAGIC;
-	      p->size = n;
 	      
 	      r = p + extra + n;
 	      r->magic = GRUB_MM_FREE_MAGIC;
 	      r->size = p->size - extra - n;
 	      r->next = p->next;
 	      q->next = r;
+
+	      if (q == p)
+		{
+		  q = r;
+		  r->next = r;
+		}
+
+	      p->size = n;
 	    }
 	  else
 	    {

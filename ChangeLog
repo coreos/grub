@@ -1,3 +1,7 @@
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/mm.c (grub_real_malloc): Fix size calculation when extra == 0.
+
 2010-05-01  Christian Franke  <franke@computer.org>
 
 	* util/grub-mkconfig_lib.in (make_system_path_relative_to_its_root):
