@@ -200,14 +200,20 @@ allocate_inreg (grub_phys_addr_t paddr, grub_size_t size,
 {
   struct grub_mm_header *foll = NULL;
   grub_addr_t vaddr = (grub_addr_t) hb + (paddr - grub_vtop (hb));
+
+  grub_dprintf ("relocator",
+		"inreg paddr = 0x%x, size = %d, hb = %p, hbp = %p, rb = %p, vaddr = 0x%x\n",
+		paddr, size, hb, hbp, rb, vaddr);
     
   if (ALIGN_UP (vaddr + size, GRUB_MM_ALIGN) + GRUB_MM_ALIGN
       <= (grub_addr_t) (hb + hb->size))
     {
       foll = (void *) ALIGN_UP (vaddr + size, GRUB_MM_ALIGN);
       foll->magic = GRUB_MM_FREE_MAGIC;
-      foll->size = hb->size - (foll - hb);
+      foll->size = hb + hb->size - foll;
     }
+
+  grub_dprintf ("relocator", "foll = %p, foll->size = %d\n", foll, foll->size);
 
   if (vaddr - (grub_addr_t) hb >= sizeof (*hb))
     {
@@ -431,12 +437,16 @@ malloc_in_range (struct grub_relocator *rel,
       p = r->first;
       do
 	{
+	  if ((grub_addr_t) p < (grub_addr_t) (r + 1)
+	      || (grub_addr_t) p >= (grub_addr_t) (r + 1) + r->size)
+	    grub_fatal ("%d: out of range pointer: %p\n", __LINE__, p);
 	  maxevents += 2;
 	  p = p->next;
 	}
       while (p != r->first);
       maxevents += 4;
     }
+
   if (collisioncheck && rel)
     {
       struct grub_relocator_chunk *chunk;
@@ -617,6 +627,7 @@ malloc_in_range (struct grub_relocator *rel,
     eventt = events;
     events = t;
   }
+
   {
     unsigned i;
     for (i = 0; i < (BITS_IN_BYTE * sizeof (grub_addr_t) / DIGITSORT_BITS);
@@ -1146,6 +1157,7 @@ malloc_in_range (struct grub_relocator *rel,
   res->size = size;
   grub_dprintf ("relocator", "allocated: 0x%lx+0x%lx\n", (unsigned long) target,
 		(unsigned long) size);
+
   return 1;
 }
 
@@ -1189,7 +1201,6 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel,
     if ((chunk->target <= target && target < chunk->target + chunk->size)
 	|| (target <= chunk->target && chunk->target < target + size))
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "overlap detected");
-
 
   chunk = grub_malloc (sizeof (struct grub_relocator_chunk));
   if (!chunk)
