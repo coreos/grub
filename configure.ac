@@ -545,7 +545,7 @@ fi
 if test x"$target_cpu" != xi386 ; then
   efiemu_excuse="only available on i386"
 fi
-if test x"$platform" != xefi ; then
+if test x"$platform" = xefi ; then
   efiemu_excuse="not available on efi"
 fi
 if test x"$efiemu_excuse" = x ; then
