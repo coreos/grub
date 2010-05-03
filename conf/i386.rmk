@@ -202,10 +202,10 @@ bootcheck-kfreebsd-i386: kfreebsd-mfsroot.i386.gz $(GRUB_PAYLOADS_DIR)/kfreebsd.
 bootcheck-kfreebsd-x86_64: kfreebsd-mfsroot.x86_64.gz $(GRUB_PAYLOADS_DIR)/kfreebsd.x86_64 $(GRUB_PAYLOADS_DIR)/kfreebsd_env.x86_64 $(srcdir)/tests/boot/kfreebsd.cfg grub-shell
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/mfsroot.gz=kfreebsd-mfsroot.x86_64.gz --files=/kfreebsd=$(GRUB_PAYLOADS_DIR)/kfreebsd.x86_64 --files=/kfreebsd_env=$(GRUB_PAYLOADS_DIR)/kfreebsd_env.x86_64 $(srcdir)/tests/boot/kfreebsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
-bootcheck-knetbsd-i386: knetbsd.miniroot-image.i386.gz $(GRUB_PAYLOADS_DIR)/knetbsd.i386 $(srcdir)/tests/boot/knetbsd.cfg knetbsd.miniroot-image.i386 grub-shell
+bootcheck-knetbsd-i386: knetbsd.miniroot-image.i386.gz $(GRUB_PAYLOADS_DIR)/knetbsd.i386 $(srcdir)/tests/boot/knetbsd.cfg grub-shell
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=qemu-system-i386 --files=/miniroot.gz=knetbsd.miniroot-image.i386.gz --files=/knetbsd=$(GRUB_PAYLOADS_DIR)/knetbsd.i386 $(srcdir)/tests/boot/knetbsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
-bootcheck-knetbsd-x86_64: knetbsd.miniroot-image.x86_64.gz $(GRUB_PAYLOADS_DIR)/knetbsd.x86_64 $(srcdir)/tests/boot/knetbsd.cfg knetbsd.miniroot-image.x86_64 grub-shell
+bootcheck-knetbsd-x86_64: knetbsd.miniroot-image.x86_64.gz $(GRUB_PAYLOADS_DIR)/knetbsd.x86_64 $(srcdir)/tests/boot/knetbsd.cfg grub-shell
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/miniroot.gz=knetbsd.miniroot-image.x86_64.gz --files=/knetbsd=$(GRUB_PAYLOADS_DIR)/knetbsd.x86_64 $(srcdir)/tests/boot/knetbsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 bootcheck-linux-i386: linux-initramfs.i386 $(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/tests/boot/linux.cfg grub-shell
@@ -217,7 +217,15 @@ bootcheck-linux-x86_64: linux-initramfs.x86_64 $(GRUB_PAYLOADS_DIR)/linux.x86_64
 BOOTCHECKS += bootcheck-linux-i386 bootcheck-linux-x86_64 
 
 ifneq ($(platform), coreboot)
+# Crashes because memory at 0-0x1000 is occupied
 BOOTCHECKS += bootcheck-kfreebsd-i386 bootcheck-knetbsd-x86_64
+endif
+
+ifeq ($(platform), pc)
+# Requires ACPI
+BOOTCHECKS += bootcheck-kfreebsd-x86_64
+# Crashes early on non-BIOS
+BOOTCHECKS += bootcheck-knetbsd-i386
 endif
 
 .PHONY: bootcheck-linux-i386 bootcheck-linux-x86_64 \
