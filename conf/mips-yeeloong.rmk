@@ -36,7 +36,7 @@ kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
 kernel_img_FORMAT = binary
 
 pkglib_IMAGES += fwstart.img
-fwstart_img_SOURCES = kern/$(target_cpu)/$(target_machine)/fwstart.S
+fwstart_img_SOURCES = boot/$(target_cpu)/$(target_machine)/fwstart.S
 fwstart_img_CFLAGS = $(COMMON_CFLAGS)
 fwstart_img_ASFLAGS = $(COMMON_ASFLAGS)
 fwstart_img_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
