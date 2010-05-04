@@ -211,9 +211,9 @@ allocate_inreg (grub_phys_addr_t paddr, grub_size_t size,
       foll = (void *) ALIGN_UP (vaddr + size, GRUB_MM_ALIGN);
       foll->magic = GRUB_MM_FREE_MAGIC;
       foll->size = hb + hb->size - foll;
+      grub_dprintf ("relocator", "foll = %p, foll->size = %d\n", foll,
+		    foll->size);
     }
-
-  grub_dprintf ("relocator", "foll = %p, foll->size = %d\n", foll, foll->size);
 
   if (vaddr - (grub_addr_t) hb >= sizeof (*hb))
     {
