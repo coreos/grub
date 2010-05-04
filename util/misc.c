@@ -193,12 +193,10 @@ grub_mm_init_region (void *addr __attribute__ ((unused)),
 {
 }
 
-#if GRUB_NO_MODULES
 void
 grub_register_exported_symbols (void)
 {
 }
-#endif
 
 #ifdef __MINGW32__
 
@@ -222,7 +220,7 @@ grub_millisleep (grub_uint32_t ms)
 
 #endif
 
-#if !(defined (__i386__) || defined (__x86_64__)) && GRUB_NO_MODULES
+#if !(defined (__i386__) || defined (__x86_64__)) && GRUB_MACHINE_EMU
 void
 grub_arch_sync_caches (void *address __attribute__ ((unused)),
 		       grub_size_t len __attribute__ ((unused)))

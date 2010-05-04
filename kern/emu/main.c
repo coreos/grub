@@ -57,25 +57,6 @@ grub_arch_modules_addr (void)
   return 0;
 }
 
-#if GRUB_NO_MODULES
-grub_err_t
-grub_arch_dl_check_header (void *ehdr)
-{
-  (void) ehdr;
-
-  return GRUB_ERR_BAD_MODULE;
-}
-
-grub_err_t
-grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
-{
-  (void) mod;
-  (void) ehdr;
-
-  return GRUB_ERR_BAD_MODULE;
-}
-#endif
-
 void
 grub_reboot (void)
 {
@@ -154,10 +135,7 @@ void grub_hostfs_init (void);
 void grub_hostfs_fini (void);
 void grub_host_init (void);
 void grub_host_fini (void);
-#if GRUB_NO_MODULES
-void grub_init_all (void);
-void grub_fini_all (void);
-#endif
+void grub_emu_init (void);
 
 int
 main (int argc, char *argv[])
@@ -216,6 +194,7 @@ main (int argc, char *argv[])
     }
 
   signal (SIGINT, SIG_IGN);
+  grub_emu_init ();
   grub_console_init ();
   grub_host_init ();
   grub_hostfs_init ();
@@ -223,9 +202,7 @@ main (int argc, char *argv[])
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (dev_map);
 
-#if GRUB_NO_MODULES
   grub_init_all ();
-#endif
 
   /* Make sure that there is a root device.  */
   if (! root_dev)
@@ -255,9 +232,7 @@ main (int argc, char *argv[])
   if (setjmp (main_env) == 0)
     grub_main ();
 
-#if GRUB_NO_MODULES
   grub_fini_all ();
-#endif
   grub_hostfs_fini ();
   grub_host_fini ();
 
@@ -286,11 +261,4 @@ grub_millisleep (grub_uint32_t ms)
   nanosleep (&ts, NULL);
 }
 
-#endif
-
-#if GRUB_NO_MODULES
-void
-grub_register_exported_symbols (void)
-{
-}
 #endif

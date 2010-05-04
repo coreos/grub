@@ -476,10 +476,13 @@ grub_normal_init_page (struct grub_term_output *term)
 static void
 read_lists (const char *val)
 {
-  read_command_list (val);
-  read_fs_list (val);
-  read_crypto_list (val);
-  read_terminal_list (val);
+  if (! grub_no_autoload)
+    {
+      read_command_list (val);
+      read_fs_list (val);
+      read_crypto_list (val);
+      read_terminal_list (val);
+    }
 }
 
 static char *

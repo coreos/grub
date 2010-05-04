@@ -54,14 +54,12 @@ case "$target_cpu" in
   amd64)	target_cpu=x86_64 ;;
   sparc)	target_cpu=sparc64 ;;
   mipsel|mips64el)
-                target_cpu=mips;    
-		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPSEL=1"; 
-		CFLAGS="$CFLAGS -DGRUB_CPU_MIPSEL=1";
+                target_cpu=mips;
+		cpu_CPPFLAGS="-DGRUB_CPU_MIPSEL=1";
 		;;
   mips|mips64)
-                target_cpu=mips;    
-		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPS=1"; 
-		CFLAGS="$CFLAGS -DGRUB_CPU_MIPS=1";
+                target_cpu=mips;
+		cpu_CPPFLAGS="-DGRUB_CPU_MIPS=1";
 		;;
 esac
 
@@ -136,24 +134,27 @@ case "$host_os" in
 esac
 
 case "$platform" in
-  coreboot)	machine_CFLAGS="-DGRUB_MACHINE_COREBOOT=1" ;;
-  multiboot)	machine_CFLAGS="-DGRUB_MACHINE_MULTIBOOT=1" ;;
-  efi)		machine_CFLAGS="-DGRUB_MACHINE_EFI=1" ;;
-  ieee1275)	machine_CFLAGS="-DGRUB_MACHINE_IEEE1275=1" ;;
-  qemu)		machine_CFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
-  pc)		machine_CFLAGS="-DGRUB_MACHINE_PCBIOS=1" ;;
-  emu)		machine_CFLAGS="-DGRUB_MACHINE_EMU=1" ;;
-  yeeloong)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
-  qemu-mips)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  coreboot)	machine_CPPFLAGS="-DGRUB_MACHINE_COREBOOT=1" ;;
+  multiboot)	machine_CPPFLAGS="-DGRUB_MACHINE_MULTIBOOT=1" ;;
+  efi)		machine_CPPFLAGS="-DGRUB_MACHINE_EFI=1" ;;
+  ieee1275)	machine_CPPFLAGS="-DGRUB_MACHINE_IEEE1275=1" ;;
+  qemu)		machine_CPPFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
+  pc)		machine_CPPFLAGS="-DGRUB_MACHINE_PCBIOS=1" ;;
+  emu)		machine_CPPFLAGS="-DGRUB_MACHINE_EMU=1" ;;
+  yeeloong)	machine_CPPFLAGS="-DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  qemu-mips)	machine_CPPFLAGS="-DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
 esac
 case "$target_cpu" in
-  mips)      	machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_MIPS=1" ;;
-  sparc64)      machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
+  i386)         cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_I386";;
+  x86_64)       cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_X86_64";;
+  powerpc)      cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_POWERPC";;
+  mips)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS=1" ;; # cpu_CPPFLAGS handled above
+  sparc64)      cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_SPARC64";
+                machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
 
-CFLAGS="$CFLAGS $machine_CFLAGS"
-TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
-TARGET_CFLAGS="$TARGET_CFLAGS $machine_CFLAGS"
+CPPFLAGS="$CPPFLAGS $cpu_CPPFLAGS $machine_CPPFLAGS"
+TARGET_CFLAGS="$TARGET_CFLAGS $cpu_CPPFLAGS $machine_CPPFLAGS"
 
 AC_SUBST(host_cpu)
 AC_SUBST(host_os)
@@ -608,10 +609,6 @@ AC_ARG_ENABLE([grub-emu-pci],
 	      [AS_HELP_STRING([--enable-grub-emu-pci],
                              [build and install the `grub-emu' debugging utility with PCI support (potentially dangerous) (default=no)])])
 
-AC_ARG_ENABLE([grub-emu-modules],
-	      [AS_HELP_STRING([--enable-grub-emu-modules],
-                             [Support module loading in `grub-emu' debugging utility (default=no)])])
-
 if test "$platform" = emu; then
   missing_ncurses=
 [# Check for curses libraries.]
@@ -628,19 +625,6 @@ if test "$platform" = emu; then
 [fi]
 if test x"$missing_ncurses" = xtrue ; then
   AC_MSG_ERROR([grub-emu can't be compiled without ncurses])
-fi
-
-if test x"$enable_grub_emu_modules" = xyes ; then
-  TARGET_NO_MODULES=no
-else
-  TARGET_NO_MODULES=yes
-fi
-AC_SUBST(TARGET_NO_MODULES)
-
-if test "$TARGET_NO_MODULES" = yes ; then
-  # Do not convert modules, otherwise linkage may fail (Cygwin only).
-  # FIXME: Should be checked above before TARGET_OBJ2ELF is set first.
-  TARGET_OBJ2ELF=
 fi
 
 if test x"$enable_grub_emu_usb" = xno ; then
@@ -819,11 +803,6 @@ if [ x"$grub_emu_pci_excuse" = x ]; then
 echo PCI support for grub-emu: Yes
 else
 echo PCI support for grub-emu: No "($grub_emu_pci_excuse)"
-fi
-if [ x"$TARGET_NO_MODULES" = xno ]; then
-echo Module support for grub-emu: Yes
-else
-echo Module support for grub-emu: No
 fi
 fi
 if [ x"$enable_mm_debug" = xyes ]; then

@@ -20,16 +20,13 @@ kernel_img_CFLAGS = $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Wno-undef -I$(srcdir)/g
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 TARGET_NO_STRIP = yes
 
-ifneq ($(TARGET_NO_MODULES), yes)
-kernel_img_SOURCES += symlist.c kern/$(target_cpu)/dl.c
-ifneq ($(target_cpu), i386)
-ifneq ($(target_cpu), x86_64)
-kernel_img_SOURCES += kern/$(target_cpu)/cache.S
-endif
-endif
-else
-kernel_img_SOURCES += grub_emu_init.c
-endif
+noinst_MODULES = emu-full.mod
+emu_full_mod_SOURCES = kern/emu/full.c
+emu_full_mod_CFLAGS = $(COMMON_CFLAGS)
+
+noinst_MODULES = emu-lite.mod
+emu_lite_mod_SOURCES = kern/emu/lite.c kern/emu/cache.S symlist.c
+emu_lite_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For halt.mod.
 pkglib_MODULES += halt.mod
@@ -102,13 +99,16 @@ grub_emu_init.c: genemuinit.sh $(pkglib_MODULES) grub_emu_init.h
 	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinit.sh $(NM) > $@
 DISTCLEANFILES += grub_emu_init.c
 
-CLEANFILES += grub-emu
-ifneq ($(TARGET_NO_MODULES), yes)
-grub-emu: $(pkglib_PROGRAMS)
-	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
-else
-grub-emu: $(pkglib_MODULES) $(pkglib_PROGRAMS)
-	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
-endif
-GRUB_EMU=grub-emu
+grub_emu_init.o: grub_emu_init.c grub_emu_init.h
+	rm -f $@; $(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -DGRUB_FILE=\"grub_init.c\" -c -o $@ $<
+CLEANFILES += grub_emu_init.o
 
+CLEANFILES += grub-emu-lite
+grub-emu-lite: $(pkglib_PROGRAMS) emu-lite.mod
+	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
+GRUB_EMU_LITE=grub-emu-lite
+
+CLEANFILES += grub-emu
+grub-emu: $(pkglib_MODULES) $(pkglib_PROGRAMS) emu-full.mod grub_emu_init.o
+	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
+GRUB_EMU=grub-emu
