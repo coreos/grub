@@ -165,7 +165,7 @@ xnu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 xnu_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For halt.mod.
-halt_mod_SOURCES = commands/i386/pc/halt.c
+halt_mod_SOURCES = commands/i386/pc/halt.c commands/acpihalt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
