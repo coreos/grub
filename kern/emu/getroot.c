@@ -22,6 +22,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <dirent.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 
 #ifdef __CYGWIN__
 # include <sys/fcntl.h>
@@ -36,9 +40,11 @@
 #include <hurd/fs.h>
 #endif
 
-#include <grub/util/misc.h>
-#include <grub/util/hostdisk.h>
-#include <grub/util/getroot.h>
+#include <grub/mm.h>
+#include <grub/misc.h>
+#include <grub/emu/misc.h>
+#include <grub/emu/hostdisk.h>
+#include <grub/emu/getroot.h>
 
 static void
 strip_extra_slashes (char *dir)
@@ -540,4 +546,3 @@ grub_util_check_char_device (const char *blk_dev)
   else
     return 0;
 }
-
