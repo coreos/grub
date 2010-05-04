@@ -19,7 +19,6 @@
 #include <grub/kernel.h>
 #include <grub/mm.h>
 #include <grub/machine/time.h>
-#include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
 #include <grub/machine/kernel.h>
@@ -33,6 +32,7 @@
 #include <grub/time.h>
 #include <grub/symbol.h>
 #include <grub/cpu/io.h>
+#include <grub/cpu/floppy.h>
 #include <grub/cpu/kernel.h>
 #include <grub/cpu/tsc.h>
 

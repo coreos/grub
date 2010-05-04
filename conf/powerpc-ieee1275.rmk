@@ -55,7 +55,7 @@ suspend_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod
 pkglib_MODULES += halt.mod
-halt_mod_SOURCES = commands/halt.c
+halt_mod_SOURCES = commands/halt.c lib/ieee1275/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

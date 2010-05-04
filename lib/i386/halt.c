@@ -17,10 +17,23 @@
  */
 
 #include <grub/cpu/io.h>
-#include <grub/machine/init.h>
 #include <grub/misc.h>
 
 const char bochs_shutdown[] = "Shutdown";
+
+/*
+ *  This call is special...  it never returns...  in fact it should simply
+ *  hang at this point!
+ */
+static inline void  __attribute__ ((noreturn))
+stop (void)
+{
+  asm volatile ("cli");
+  while (1)
+    {
+      asm volatile ("hlt");
+    }
+}
 
 void
 grub_halt (void)
@@ -38,5 +51,5 @@ grub_halt (void)
 
   /* In order to return we'd have to check what the previous status of IF
      flag was.  But user most likely doesn't want to return anyway ...  */
-  grub_stop ();
+  stop ();
 }

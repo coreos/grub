@@ -173,14 +173,6 @@ grub_reboot (void)
 }
 #endif
 
-void
-grub_halt (void)
-{
-  grub_efi_fini ();
-  efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
-              GRUB_EFI_RESET_SHUTDOWN, GRUB_EFI_SUCCESS, 0, NULL);
-}
-
 int
 grub_efi_exit_boot_services (grub_efi_uintn_t map_key)
 {

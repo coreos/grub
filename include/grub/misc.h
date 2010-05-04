@@ -305,7 +305,7 @@ void EXPORT_FUNC (grub_reboot) (void);
  * use APM even if it is available.  */
 void grub_halt (int no_apm);
 #else
-void EXPORT_FUNC (grub_halt) (void);
+void grub_halt (void);
 #endif
 
 #endif /* ! GRUB_MISC_HEADER */

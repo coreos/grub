@@ -8,10 +8,8 @@ GRUB_KERNEL_MACHINE_LINK_ADDR	= 0x8200
 
 pkglib_PROGRAMS += kernel.img
 kernel_img_SOURCES = kern/i386/coreboot/startup.S \
-	kern/i386/misc.S \
 	kern/i386/coreboot/init.c \
        kern/i386/coreboot/mmap.c \
-	kern/i386/halt.c \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/term.c \
@@ -35,7 +33,7 @@ bin_SCRIPTS += grub-mkrescue
 grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 # Modules.
-pkglib_MODULES = linux.mod aout.mod halt.mod datetime.mod mmap.mod
+pkglib_MODULES = linux.mod aout.mod datetime.mod mmap.mod
 
 # For mmap.mod.
 mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c
@@ -49,7 +47,8 @@ linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod.
-halt_mod_SOURCES = commands/halt.c
+pkglib_MODULES += halt.mod
+halt_mod_SOURCES = commands/halt.c lib/i386/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

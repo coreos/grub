@@ -7,7 +7,6 @@ pkglib_PROGRAMS = kernel.img
 
 # For kernel.img.
 kernel_img_SOURCES = kern/i386/ieee1275/startup.S \
-	kern/i386/misc.S \
 	kern/ieee1275/init.c \
 	kern/ieee1275/mmap.c \
 	kern/ieee1275/cmain.c kern/ieee1275/openfw.c \
@@ -35,7 +34,7 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/ieee1275/grub-install.in
 
 # Modules.
-pkglib_MODULES = halt.mod suspend.mod		\
+pkglib_MODULES = suspend.mod		\
 	aout.mod linux.mod	\
 	nand.mod datetime.mod	\
 	mmap.mod
@@ -57,7 +56,8 @@ suspend_mod_CFLAGS = $(COMMON_CFLAGS)
 suspend_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod
-halt_mod_SOURCES = commands/halt.c
+pkglib_MODULES += halt.mod
+halt_mod_SOURCES = commands/halt.c lib/ieee1275/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

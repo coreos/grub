@@ -20,7 +20,6 @@
 #include <grub/cpu/loader.h>
 #include <grub/cpu/bsd.h>
 #include <grub/i386/cpuid.h>
-#include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/memory.h>
 #include <grub/file.h>
