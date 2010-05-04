@@ -19,6 +19,8 @@ extern const char *program_name;
 void grub_init_all (void);
 void grub_fini_all (void);
 
+char *grub_make_system_path_relative_to_its_root (const char *path);
+
 void * EXPORT_FUNC(xmalloc) (grub_size_t size);
 void * EXPORT_FUNC(xrealloc) (void *ptr, grub_size_t size);
 char * EXPORT_FUNC(xstrdup) (const char *str);

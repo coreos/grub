@@ -31,6 +31,7 @@
 #include <grub/terminfo.h>
 #include <grub/tparm.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 struct terminfo
 {
@@ -178,7 +179,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(terminfo)
 {
   cmd = grub_register_command ("terminfo", grub_cmd_terminfo,
-			       "[TERM]", "Set terminfo type.");
+			       N_("[TERM]"), N_("Set terminfo type."));
   grub_terminfo_set_current ("vt100");
 }
 

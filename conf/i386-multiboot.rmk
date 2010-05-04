@@ -10,7 +10,7 @@ pkglib_PROGRAMS += kernel.img
 kernel_img_SOURCES = kern/i386/coreboot/startup.S \
 	kern/i386/misc.S \
 	kern/i386/coreboot/init.c \
-       kern/i386/coreboot/mmap.c \
+	kern/i386/multiboot_mmap.c \
 	kern/i386/halt.c \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \

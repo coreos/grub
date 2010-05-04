@@ -53,6 +53,11 @@
 # include <malloc.h>
 #endif
 
+#ifdef __CYGWIN__
+# include <sys/cygwin.h>
+# define DEV_CYGDRIVE_MAJOR 98
+#endif
+
 #ifdef __MINGW32__
 #include <windows.h>
 #include <winioctl.h>
@@ -299,102 +304,26 @@ canonicalize_file_name (const char *path)
   return ret;
 }
 
-/* This function never prints trailing slashes (so that its output
-   can be appended a slash unconditionally).  */
-char *
-make_system_path_relative_to_its_root (const char *path)
+#ifdef __CYGWIN__
+/* Convert POSIX path to Win32 path,
+   remove drive letter, replace backslashes.  */
+static char *
+get_win32_path (const char *path)
 {
-  struct stat st;
-  char *p, *buf, *buf2, *buf3;
-  uintptr_t offset = 0;
-  dev_t num;
-  size_t len;
+  char winpath[PATH_MAX];
+  if (cygwin_conv_path (CCP_POSIX_TO_WIN_A, path, winpath, sizeof(winpath)))
+    grub_util_error ("cygwin_conv_path() failed");
 
-  /* canonicalize.  */
-  p = canonicalize_file_name (path);
+  int len = strlen (winpath);
+  int offs = (len > 2 && winpath[1] == ':' ? 2 : 0);
 
-  if (p == NULL)
-    grub_util_error ("failed to get canonical path of %s", path);
-
-  len = strlen (p) + 1;
-  buf = xstrdup (p);
-  free (p);
-
-  if (stat (buf, &st) < 0)
-    grub_util_error ("cannot stat %s: %s", buf, strerror (errno));
-
-  buf2 = xstrdup (buf);
-  num = st.st_dev;
-
-  /* This loop sets offset to the number of chars of the root
-     directory we're inspecting.  */
-  while (1)
-    {
-      p = strrchr (buf, '/');
-      if (p == NULL)
-	/* This should never happen.  */
-	grub_util_error ("FIXME: no / in buf. (make_system_path_relative_to_its_root)");
-      if (p != buf)
-	*p = 0;
-      else
-	*++p = 0;
-
-      if (stat (buf, &st) < 0)
-	grub_util_error ("cannot stat %s: %s", buf, strerror (errno));
-
-      /* buf is another filesystem; we found it.  */
-      if (st.st_dev != num)
-	{
-	  /* offset == 0 means path given is the mount point.
-	     This works around special-casing of "/" in Un*x.  This function never
-	     prints trailing slashes (so that its output can be appended a slash
-	     unconditionally).  Each slash in is considered a preceding slash, and
-	     therefore the root directory is an empty string.  */
-	  if (offset == 0)
-	    {
-	      free (buf);
-	      free (buf2);
-	      return xstrdup ("");
-	    }
-	  else
-	    break;
-	}
-
-      offset = p - buf;
-      /* offset == 1 means root directory.  */
-      if (offset == 1)
-	{
-	  free (buf);
-	  len = strlen (buf2);
-	  while (buf2[len - 1] == '/' && len > 1)
-	    {
-	      buf2[len - 1] = '\0';
-	      len--;
-	    }
-	  if (len > 1)
-	    return buf2;
-	  else
-	    {
-	      /* This means path given is just a backslash.  As above
-		 we have to return an empty string.  */
-	      free (buf2);
-	      return xstrdup ("");
-	    }
-	}
-    }
-  free (buf);
-  buf3 = xstrdup (buf2 + offset);
-  free (buf2);
-
-  len = strlen (buf3);
-  while (buf3[len - 1] == '/' && len > 1)
-    {
-      buf3[len - 1] = '\0';
-      len--;
-    }
-
-  return buf3;
+  int i;
+  for (i = offs; i < len; i++)
+    if (winpath[i] == '\\')
+      winpath[i] = '/';
+  return xstrdup (winpath + offs);
 }
+#endif
 
 #ifdef GRUB_UTIL
 void
