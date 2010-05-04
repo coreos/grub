@@ -201,9 +201,10 @@ allocate_inreg (grub_phys_addr_t paddr, grub_size_t size,
   struct grub_mm_header *foll = NULL;
   grub_addr_t vaddr = (grub_addr_t) hb + (paddr - grub_vtop (hb));
 
-  grub_dprintf ("relocator",
-		"inreg paddr = 0x%x, size = %d, hb = %p, hbp = %p, rb = %p, vaddr = 0x%x\n",
-		paddr, size, hb, hbp, rb, vaddr);
+  grub_dprintf ("relocator", "inreg paddr = 0x%lx, size = %lu,"
+		" hb = %p, hbp = %p, rb = %p, vaddr = 0x%lx\n",
+		(unsigned long) paddr, (unsigned long) size, hb, hbp,
+		rb, (unsigned long) vaddr);
     
   if (ALIGN_UP (vaddr + size, GRUB_MM_ALIGN) + GRUB_MM_ALIGN
       <= (grub_addr_t) (hb + hb->size))
@@ -211,8 +212,8 @@ allocate_inreg (grub_phys_addr_t paddr, grub_size_t size,
       foll = (void *) ALIGN_UP (vaddr + size, GRUB_MM_ALIGN);
       foll->magic = GRUB_MM_FREE_MAGIC;
       foll->size = hb + hb->size - foll;
-      grub_dprintf ("relocator", "foll = %p, foll->size = %d\n", foll,
-		    foll->size);
+      grub_dprintf ("relocator", "foll = %p, foll->size = %lu\n", foll,
+		    (unsigned long) foll->size);
     }
 
   if (vaddr - (grub_addr_t) hb >= sizeof (*hb))
