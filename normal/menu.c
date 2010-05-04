@@ -478,6 +478,18 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	      goto refresh;
 
 	    default:
+	      {
+		grub_menu_entry_t entry;
+		int i;
+		for (i = 0, entry = menu->entry_list; i < menu->size;
+		     i++, entry = entry->next)
+		  if (entry->hotkey == c)
+		    {
+		      menu_fini ();
+		      *auto_boot = 0;
+		      return i;
+		    }
+	      }
 	      break;
 	    }
 	}

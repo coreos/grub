@@ -4,7 +4,7 @@
 COMMON_CFLAGS += -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
 
 # Images.
-kernel_img_HEADERS += cpu/libgcc.h cpu/cache.h
+kernel_img_HEADERS += cpu/cache.h
 
 # Scripts.
 sbin_SCRIPTS = 

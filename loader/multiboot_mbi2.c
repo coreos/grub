@@ -32,7 +32,7 @@
 #include <grub/env.h>
 #include <grub/video.h>
 
-#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_QEMU)
 #include <grub/i386/pc/vbe.h>
 #define HAS_VGA_TEXT 1
 #else

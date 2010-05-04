@@ -29,6 +29,7 @@
 #include <grub/command.h>
 #include <grub/extcmd.h>
 #include <grub/bitmap_scale.h>
+#include <grub/i18n.h>
 
 #define DEFAULT_VIDEO_MODE	"auto"
 #define DEFAULT_BORDER_WIDTH	10
@@ -1187,8 +1188,8 @@ GRUB_MOD_INIT(gfxterm)
     grub_register_extcmd ("background_image",
                           grub_gfxterm_background_image_cmd,
                           GRUB_COMMAND_FLAG_BOTH,
-                          "[-m (stretch|normal)] FILE",
-                          "Load background image for active terminal.",
+                          N_("[-m (stretch|normal)] FILE"),
+                          N_("Load background image for active terminal."),
                           background_image_cmd_options);
 }
 

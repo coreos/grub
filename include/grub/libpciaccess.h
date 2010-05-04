@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004,2007,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,14 +16,11 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
-
-#ifdef HAVE___BSWAPSI2
-typedef int SItype __attribute__ ((mode (SI)));
-SItype EXPORT_FUNC (__bswapsi2) (SItype);
-#endif
-
-#ifdef HAVE___BSWAPDI2
-typedef int DItype __attribute__ ((mode (DI)));
-DItype EXPORT_FUNC (__bswapdi2) (DItype);
-#endif
+void EXPORT_FUNC (pci_slot_match_iterator_create) (void);
+void EXPORT_FUNC (pci_system_cleanup) (void);
+void EXPORT_FUNC (pci_device_unmap_range) (void);
+void EXPORT_FUNC (pci_iterator_destroy) (void);
+void EXPORT_FUNC (pci_device_map_range) (void);
+void EXPORT_FUNC (pci_device_cfg_read_u32) (void);
+void EXPORT_FUNC (pci_device_next) (void);
+void EXPORT_FUNC (pci_system_init) (void);

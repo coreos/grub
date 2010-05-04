@@ -402,11 +402,10 @@ GRUB_MOD_INIT (drivemap)
   grub_get_root_biosnumber_saved = grub_get_root_biosnumber;
   grub_get_root_biosnumber = grub_get_root_biosnumber_drivemap;
   cmd = grub_register_extcmd ("drivemap", grub_cmd_drivemap,
-					GRUB_COMMAND_FLAG_BOTH,
-					"drivemap"
-					N_("-l | -r | [-s] grubdev osdisk."),
-					N_("Manage the BIOS drive mappings."),
-					options);
+			      GRUB_COMMAND_FLAG_BOTH,
+			      N_("-l | -r | [-s] grubdev osdisk."),
+			      N_("Manage the BIOS drive mappings."),
+			      options);
   drivemap_hook =
     grub_loader_register_preboot_hook (&install_int13_handler,
 				       &uninstall_int13_handler,

@@ -102,6 +102,7 @@ case "$target_cpu"-"$platform" in
   i386-efi) ;;
   x86_64-efi) ;;
   i386-pc) ;;
+  i386-multiboot) ;;
   i386-coreboot) ;;
   i386-linuxbios) platform=coreboot ;;
   i386-ieee1275) ;;
@@ -136,6 +137,7 @@ esac
 
 case "$platform" in
   coreboot)	machine_CFLAGS="-DGRUB_MACHINE_COREBOOT=1" ;;
+  multiboot)	machine_CFLAGS="-DGRUB_MACHINE_MULTIBOOT=1" ;;
   efi)		machine_CFLAGS="-DGRUB_MACHINE_EFI=1" ;;
   ieee1275)	machine_CFLAGS="-DGRUB_MACHINE_IEEE1275=1" ;;
   qemu)		machine_CFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
@@ -360,7 +362,7 @@ else
 if test -f "${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"; then
   TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
   TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}  -Wl,-Ttext,"
-  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
+  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc  -Wl,-Ttext,"
 else
   TARGET_IMG_LDSCRIPT=
   TARGET_IMG_LDFLAGS='-Wl,-N  -Wl,-Ttext,'
@@ -376,7 +378,11 @@ AC_SUBST(TARGET_IMG_CFLAGS)
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])
 case "${host_os}" in
-  cygwin) TARGET_OBJ2ELF='grub-pe2elf' ;;
+  cygwin) TARGET_OBJ2ELF='grub-pe2elf';
+# FIXME: put proper test here
+  AC_DEFINE([NEED_REGISTER_FRAME_INFO], 1,
+	    [Define to 1 if GCC generates calls to __register_frame_info()])
+  ;;
   *) ;;
 esac
 AC_SUBST(TARGET_OBJ2ELF)
@@ -409,9 +415,7 @@ if test "$target_cpu"-"$platform" = x86_64-efi; then
 		      [grub_cv_cc_mcmodel=no])
   ])
   if test "x$grub_cv_cc_mcmodel" = xno; then
-    CFLAGS="$SAVED_CFLAGS -m64 -DMCMODEL_SMALL=1"
-    TARGET_CFLAGS="$TARGET_CFLAGS -DMCMODEL_SMALL=1"
-    AC_MSG_WARN([-mcmodel=large not supported. You won't be able to use the memory over 4GiB. Upgrade your gcc])
+    AC_MSG_ERROR([-mcmodel=large not supported. Upgrade your gcc.])
   else
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large"
   fi
@@ -479,11 +483,18 @@ CC="$TARGET_CC"
 if test "x$TARGET_APPLE_CC" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wno-error"
 else
-CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wl,--defsym,abort=main -Wno-error"
+CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wno-error"
 fi
 CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
 LIBS=-lgcc
+
+grub_ASM_USCORE
+if test x$grub_cv_asm_uscore = xyes; then
+CFLAGS="$CFLAGS -Wl,--defsym,_abort=_main"
+else
+CFLAGS="$CFLAGS -Wl,--defsym,abort=main"
+fi
 
 # Check for libgcc symbols
 AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x)
@@ -501,13 +512,12 @@ if test "x$TARGET_APPLE_CC" != x1 ; then
 grub_PROG_OBJCOPY_ABSOLUTE
 fi
 grub_PROG_LD_BUILD_ID_NONE
-grub_ASM_USCORE
 if test "x$target_cpu" = xi386; then
-  if test ! -z "$TARGET_IMG_LDSCRIPT"; then
-    # Check symbols provided by linker script.
-    CFLAGS="$TARGET_CFLAGS -nostdlib $TARGET_IMG_LDFLAGS_AC -Wl,-Ttext,8000,--defsym,___main=0x8100"
-  fi
-  if test "x$TARGET_APPLE_CC" != x1 ; then
+  if test "$platform" != emu && test "x$TARGET_APPLE_CC" != x1 ; then
+    if test ! -z "$TARGET_IMG_LDSCRIPT"; then
+      # Check symbols provided by linker script.
+      CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC}8000 -Wl,--defsym,___main=0x8100"
+    fi
     grub_CHECK_BSS_START_SYMBOL
     grub_CHECK_END_SYMBOL
   fi
@@ -626,6 +636,12 @@ else
   TARGET_NO_MODULES=yes
 fi
 AC_SUBST(TARGET_NO_MODULES)
+
+if test "$TARGET_NO_MODULES" = yes ; then
+  # Do not convert modules, otherwise linkage may fail (Cygwin only).
+  # FIXME: Should be checked above before TARGET_OBJ2ELF is set first.
+  TARGET_OBJ2ELF=
+fi
 
 if test x"$enable_grub_emu_usb" = xno ; then
   grub_emu_usb_excuse="explicitly disabled"

@@ -23,6 +23,7 @@
 #include <grub/mm.h>
 #include <grub/command.h>
 #include <grub/normal.h>
+#include <grub/i18n.h>
 
 struct menu_pointer
 {
@@ -172,7 +173,7 @@ grub_context_init (void)
   grub_env_export ("prefix");
 
   export_cmd = grub_register_command ("export", grub_cmd_export,
-				      "export ENVVAR", "Export a variable.");
+				      N_("ENVVAR"), N_("Export a variable."));
 }
 
 void

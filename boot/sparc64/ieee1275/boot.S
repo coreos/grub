@@ -45,8 +45,9 @@ boot_version:		.byte	GRUB_BOOT_VERSION_MAJOR, GRUB_BOOT_VERSION_MINOR
 	 * load address plus the size of the prepended A.OUT header (32 bytes).
 	 */
 boot_path:
-	. = _start + GRUB_BOOT_MACHINE_KERNEL_SECTOR
-kernel_sector:		.xword 2
+	. = _start + GRUB_BOOT_MACHINE_KERNEL_BYTE
+boot_path_end:
+kernel_byte:		.xword (2 << 9)
 kernel_address:		.word  GRUB_BOOT_MACHINE_KERNEL_ADDR
 
 prom_finddev_name:	.asciz "finddevice"
@@ -77,11 +78,23 @@ prom_error:
 	/* %o0: OF call name
 	 * %o1: input arg 1
 	 */
-prom_call_1_1:
-	mov	1, %g1
-	ba	prom_call
-	 mov	1, %o5
+prom_call_1_1_o2:
+	clr	%o2
+	ba	prom_call_x_1
+	 mov	1, %g1
 
+prom_call_getprop:
+	mov	4, %g1
+	stx	%g1, [%l1 + 256]
+	mov	CHOSEN_NODE_REG, %o1
+	ba	prom_call_x_1
+	 GET_ABS(prom_getprop_name, %o0)
+
+prom_call_3_1_o1:
+	ba prom_call_3_1
+	 mov	BOOTDEV_REG, %o1
+
+	
 	/* %o2: message string
 	 * %o3: message length
 	 */
@@ -95,8 +108,9 @@ console_write:
 	 * %o2: input arg 2
 	 * %o3: input arg 3
 	 */
-prom_call_3_1:
+prom_call_3_1:	
 	mov	3, %g1
+prom_call_x_1:
 	mov	1, %o5
 	/* fallthru */
 
@@ -126,23 +140,17 @@ boot_continue:
 	 * chosen_node = prom_finddevice("/chosen")
 	 */
 	GET_ABS(prom_finddev_name, %o0)
-	GET_ABS(prom_chosen_path, %o1)
-	call	prom_call_1_1
-	 clr	%o2
+	call	prom_call_1_1_o2
+	 GET_ABS(prom_chosen_path, %o1)
 
 	ldx	[%l1 + 0x20], CHOSEN_NODE_REG
 	brz	CHOSEN_NODE_REG, prom_error
 
 	/* getprop(chosen_node, "stdout", &buffer, buffer_size) */
-	 GET_ABS(prom_getprop_name, %o0)
-	mov	4, %g1
-	mov	1, %o5
-	mov	CHOSEN_NODE_REG, %o1
-	GET_ABS(prom_stdout_name, %o2)
+	 GET_ABS(prom_stdout_name, %o2)
 	add	%l1, 256, %o3
-	mov	1024, %o4
-	call	prom_call
-	 stx	%g1, [%l1 + 256]
+	call	prom_call_getprop
+	 mov	1024, %o4
 
 	lduw	[%l1 + 256], STDOUT_NODE_REG
 	brz,pn	STDOUT_NODE_REG, prom_error
@@ -152,15 +160,25 @@ boot_continue:
 	call	console_write
 	 mov	GRUB_NAME_LEN, %o3
 
+	GET_ABS(boot_path, %o3)
+	ldub	[%o3], %o1
+	brnz,pn	%o1, bootpath_known
+
+	/* getprop(chosen_node, "bootpath", &buffer, buffer_size) */
+	 GET_ABS(prom_bootpath_name, %o2)
+	call	prom_call_getprop
+	 mov	(boot_path_end - boot_path), %o4
+
+bootpath_known:	
+
 	/* Open up the boot_path, and use that handle to read the
 	 * first block of the GRUB kernel image.
 	 *
 	 * bootdev_handle = open(boot_path)
 	 */
 	GET_ABS(prom_open_name, %o0)
-	GET_ABS(boot_path, %o1)
-	call	prom_call_1_1
-	 clr	%o2
+	call	prom_call_1_1_o2
+	 GET_ABS(boot_path, %o1)
 
 	ldx	[%l1 + 0x20], BOOTDEV_REG
 	brz,pn	BOOTDEV_REG, prom_open_error
@@ -168,27 +186,22 @@ boot_continue:
 	/* Since we have 64-bit cells, the high cell of the seek offset
 	 * is zero and the low cell is the entire value.
 	 *
-	 * seek(bootdev, 0, *kernel_sector << 9)
+	 * seek(bootdev, 0, *kernel_byte)
 	 */
 	 GET_ABS(prom_seek_name, %o0)
-	mov	BOOTDEV_REG, %o1
 	clr	%o2
-	LDX_ABS(kernel_sector, 0x00, %o3)
-	call	prom_call_3_1
-	 sllx	%o3, 9, %o3
+	call	prom_call_3_1_o1
+	 LDX_ABS(kernel_byte, 0x00, %o3)
 
 	/* read(bootdev, *kernel_address, 512) */
 	GET_ABS(prom_read_name, %o0)
-	mov	BOOTDEV_REG, %o1
 	LDUW_ABS(kernel_address, 0x00, %o2)
-	call	prom_call_3_1
+	call	prom_call_3_1_o1
 	 mov	512, %o3
 
 	LDUW_ABS(kernel_address, 0x00, %o2)
 	jmpl	%o2, %o7
 	 nop
-
-1:	ba,a	1b
 
 	. = _start + GRUB_BOOT_MACHINE_CODE_END
 

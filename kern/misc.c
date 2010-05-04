@@ -1066,3 +1066,12 @@ void __enable_execute_stack (void *addr __attribute__ ((unused)))
 }
 #endif
 
+#if defined (NEED_REGISTER_FRAME_INFO) && !defined(GRUB_UTIL)
+void __register_frame_info (void)
+{
+}
+
+void __deregister_frame_info (void)
+{
+}
+#endif

@@ -18,20 +18,30 @@
 
 #include <config.h>
 
-#ifdef HAVE___ASHLDI3
+/* On x86 these functions aren't really needed. Save some space.  */
+#if !defined (__i386__) && !defined (__x86_64__)
+# ifdef HAVE___ASHLDI3
 void EXPORT_FUNC (__ashldi3) (void);
-#endif
-#ifdef HAVE___ASHRDI3
+# endif
+# ifdef HAVE___ASHRDI3
 void EXPORT_FUNC (__ashrdi3) (void);
-#endif
-#ifdef HAVE___LSHRDI3
+# endif
+# ifdef HAVE___LSHRDI3
 void EXPORT_FUNC (__lshrdi3) (void);
+# endif
+# ifdef HAVE___UCMPDI2
+void EXPORT_FUNC (__ucmpdi2) (void);
+# endif
+# ifdef HAVE___BSWAPSI2
+void EXPORT_FUNC (__bswapsi2) (void);
+# endif
+# ifdef HAVE___BSWAPDI2
+void EXPORT_FUNC (__bswapdi2) (void);
+# endif
 #endif
+
 #ifdef HAVE___TRAMPOLINE_SETUP
 void EXPORT_FUNC (__trampoline_setup) (void);
-#endif
-#ifdef HAVE___UCMPDI2
-void EXPORT_FUNC (__ucmpdi2) (void);
 #endif
 
 #ifdef HAVE__RESTGPR_14_X
