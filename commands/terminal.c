@@ -229,14 +229,14 @@ GRUB_MOD_INIT(terminal)
 {
   cmd_terminal_input =
     grub_register_command ("terminal_input", grub_cmd_terminal_input,
-			   "[--append|--remove] "
-			   "[TERMINAL1] [TERMINAL2] ...",
-			   "List or select an input terminal.");
+			   N_("[--append|--remove] "
+			      "[TERMINAL1] [TERMINAL2] ..."),
+			   N_("List or select an input terminal."));
   cmd_terminal_output =
     grub_register_command ("terminal_output", grub_cmd_terminal_output,
-			   "[--append|--remove] "
-			   "[TERMINAL1] [TERMINAL2] ...",
-			   "List or select an output terminal.");
+			   N_("[--append|--remove] "
+			      "[TERMINAL1] [TERMINAL2] ..."),
+			   N_("List or select an output terminal."));
 }
 
 GRUB_MOD_FINI(terminal)

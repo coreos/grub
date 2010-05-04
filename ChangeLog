@@ -1,3 +1,86 @@
+2010-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/parttool.c (grub_cmd_parttool): Fix #if !GRUB_NO_MODULES
+	condition.
+
+2010-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/mm.c (grub_real_malloc): Put magic and size assignment in common
+	part.
+
+2010-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/mm.c (grub_mm_init_region): Check for region size after aligning
+	pointers.
+
+2010-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/mm.c (grub_real_malloc): Fix size calculation when extra == 0.
+
+2010-05-01  Christian Franke  <franke@computer.org>
+
+	* util/grub-mkconfig_lib.in (make_system_path_relative_to_its_root):
+	Remove broken Cygwin path conversion.
+	* util/misc.c: [__CYGWIN__] Add include and define.
+	[__CYGWIN__] (get_win32_path): Copy function from getroot.c, modify
+	for Cygwin 1.7.
+	(make_system_path_relative_to_its_root): Simplify loop, replace early
+	return by break.
+	[__CYGWIN__] Add conversion to win32 path.
+	Include "/" case in trailing slash removal.
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/main.c (grub_load_config): Fix copy-pasted comment.
+	Reported by: Seth Goldberg
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/help.c (grub_cmd_help): Fix a typo.
+	Reported by: Seth Goldberg
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/hashsum.c (GRUB_MOD_INIT): Remove duplication of command
+	name and add N_.
+	* commands/i386/pc/drivemap.c (GRUB_MOD_INIT): Likewise.
+	* commands/iorw.c (GRUB_MOD_INIT): Likewise.
+	* commands/password_pbkdf2.c (GRUB_MOD_INIT): Likewise.
+	* commands/regexp.c (GRUB_MOD_INIT): Likewise.
+	* commands/setpci.c (GRUB_MOD_INIT): Likewise.
+	* commands/terminal.c (GRUB_MOD_INIT): Likewise.
+	* efiemu/main.c (GRUB_MOD_INIT): Likewise.
+	* font/font_cmd.c (GRUB_MOD_INIT): Likewise.
+	* kern/corecmd.c (GRUB_MOD_INIT): Likewise.
+	* mmap/mmap.c (GRUB_MOD_INIT): Likewise.
+	* normal/context.c (GRUB_MOD_INIT): Likewise.
+	* normal/main.c (GRUB_MOD_INIT): Likewise.
+	* term/gfxterm.c (GRUB_MOD_INIT): Likewise.
+	* term/serial.c (GRUB_MOD_INIT): Likewise.
+	* term/terminfo.c (GRUB_MOD_INIT): Likewise.
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/mm.c (grub_real_malloc): Satisfy alignment requirement when
+        extra == 0.
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/iorw.c: New file.
+	* conf/i386.rmk (pkglib_MODULES): Add iorw.mod.
+	(iorw_mod_SOURCES): New variable.
+	(iorw_mod_CFLAGS): Likewise.
+	(iorw_mod_LDFLAGS): Likewise.
+
+2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Hotkey support
+
+	* include/grub/menu.h (grub_menu_entry): New field 'hotkey'.
+	* normal/main.c (hotkey_aliases): New variable.
+	(grub_normal_add_menu_entry): Parse "--hotkey".
+	* normal/menu_text.c (run_menu): Handle hotkeys.
+
 2010-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/i386/coreboot/init.c (grub_machine_init): Call
