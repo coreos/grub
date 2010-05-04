@@ -452,18 +452,6 @@ gate_a20_check_state:
 
 
 /*
- * grub_stop_floppy()
- *
- * Stop the floppy drive from spinning, so that other software is
- * jumped to with a known state.
- */
-FUNCTION(grub_stop_floppy)
-	movw	$0x3F2, %dx
-	xorb	%al, %al
-	outb	%al, %dx
-	ret
-
-/*
  * grub_exit()
  *
  * Exit the system.
