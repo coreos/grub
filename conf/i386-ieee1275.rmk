@@ -8,7 +8,6 @@ pkglib_PROGRAMS = kernel.img
 # For kernel.img.
 kernel_img_SOURCES = kern/i386/ieee1275/startup.S \
 	kern/i386/misc.S \
-	kern/i386/ieee1275/init.c \
 	kern/ieee1275/init.c \
 	kern/ieee1275/mmap.c \
 	kern/ieee1275/cmain.c kern/ieee1275/openfw.c \
