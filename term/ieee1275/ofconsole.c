@@ -327,7 +327,7 @@ grub_ofconsole_getkey (void)
 static grub_uint16_t
 grub_ofconsole_getxy (void)
 {
-  return ((grub_curr_x - 1) << 8) | grub_curr_y;
+  return (grub_curr_x << 8) | grub_curr_y;
 }
 
 static void
