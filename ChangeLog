@@ -1,3 +1,9 @@
+2010-05-05  Peter Hurley <No e-mail available> (tiny change)
+
+	* video/readers/jpeg.c (grub_jpeg_decode_huff_table): Loop over all
+	tables. Ignore non-last ac bit.
+	(grub_jpeg_decode_quan_table): Likewise.
+
 2010-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New value

@@ -178,8 +178,10 @@ grub_jpeg_decode_huff_table (struct grub_jpeg_data *data)
   next_marker = data->file->offset;
   next_marker += grub_jpeg_get_word (data);
 
+  while (data->file->offset + sizeof (count) + 1 <= next_marker)
+    {
   id = grub_jpeg_get_byte (data);
-  ac = (id >> 4);
+      ac = (id >> 4) & 1;
   id &= 0xF;
   if (id > 1)
     return grub_error (GRUB_ERR_BAD_FILE_TYPE,
@@ -213,6 +215,7 @@ grub_jpeg_decode_huff_table (struct grub_jpeg_data *data)
 
       base <<= 1;
     }
+    }
 
   if (data->file->offset != next_marker)
     grub_error (GRUB_ERR_BAD_FILE_TYPE, "jpeg: extra byte in huffman table");
@@ -229,6 +232,8 @@ grub_jpeg_decode_quan_table (struct grub_jpeg_data *data)
   next_marker = data->file->offset;
   next_marker += grub_jpeg_get_word (data);
 
+  while (data->file->offset + sizeof (data->quan_table[id]) + 1 <= next_marker)
+    {
   id = grub_jpeg_get_byte (data);
   if (id >= 0x10)		/* Upper 4-bit is precision.  */
     return grub_error (GRUB_ERR_BAD_FILE_TYPE,
@@ -240,6 +245,8 @@ grub_jpeg_decode_quan_table (struct grub_jpeg_data *data)
 
   if (grub_file_read (data->file, &data->quan_table[id], 64) != 64)
     return grub_errno;
+
+    }
 
   if (data->file->offset != next_marker)
     grub_error (GRUB_ERR_BAD_FILE_TYPE,
