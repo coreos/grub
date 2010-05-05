@@ -1,5 +1,14 @@
 2010-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New value
+	GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM.
+	* kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set
+	GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM on qemu.
+	* kern/ieee1275/init.c (grub_claim_heap): Don0t allocate below
+	1.5MiB if GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM is set.
+
+2010-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* term/ieee1275/ofconsole.c (grub_ofconsole_getkey): Fix off-by-one
 	error.
 
