@@ -73,6 +73,15 @@ struct grub_script_arglist
   int argcount;
 };
 
+/* Scope for grub script constructs.  */
+struct grub_script_scope
+{
+  struct grub_script_scope *next;
+
+  char **args;
+  unsigned int argc;
+};
+
 /* A single command line.  */
 struct grub_script_cmdline
 {
@@ -329,8 +338,8 @@ grub_script_function_t grub_script_function_create (struct grub_script_arg *func
 void grub_script_function_remove (const char *name);
 grub_script_function_t grub_script_function_find (char *functionname);
 int grub_script_function_iterate (int (*iterate) (grub_script_function_t));
-int grub_script_function_call (grub_script_function_t func,
-			       int argc, char **args);
+grub_err_t grub_script_function_call (grub_script_function_t func,
+				      int argc, char **args);
 
 char **
 grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count);
