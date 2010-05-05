@@ -380,7 +380,7 @@ static grub_uhci_td_t
 grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
 		       grub_transfer_type_t type, unsigned int addr,
 		       unsigned int toggle, grub_size_t size,
-		       char *data)
+		       grub_uint32_t data)
 {
   grub_uhci_td_t td;
   static const unsigned int tf[] = { 0x69, 0xE1, 0x2D };
@@ -398,7 +398,7 @@ grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
     }
 
   grub_dprintf ("uhci",
-		"transaction: endp=%d, type=%d, addr=%d, toggle=%d, size=%d data=%p td=%p\n",
+		"transaction: endp=%d, type=%d, addr=%d, toggle=%d, size=%d data=0x%x td=%p\n",
 		endp, type, addr, toggle, size, data, td);
 
   /* Don't point to any TD, just terminate.  */
@@ -418,7 +418,7 @@ grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
   td->token = ((size << 21) | (toggle << 19) | (endp << 15)
 	       | (addr << 8) | tf[type]);
 
-  td->buffer = (grub_uint32_t) data;
+  td->buffer = data;
 
   return td;
 }

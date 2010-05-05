@@ -109,6 +109,15 @@ grub_pci_address_t EXPORT_FUNC(grub_pci_make_address) (grub_pci_device_t dev,
 						       int reg);
 
 void EXPORT_FUNC(grub_pci_iterate) (grub_pci_iteratefunc_t hook);
+
+struct grub_pci_dma_chunk;
+
+struct grub_pci_dma_chunk *EXPORT_FUNC(grub_memalign_dma32) (grub_size_t align,
+							     grub_size_t size);
+void EXPORT_FUNC(grub_dma_free) (struct grub_pci_dma_chunk *ch);
+void *EXPORT_FUNC(grub_dma_get_virt) (struct grub_pci_dma_chunk *ch);
+grub_uint32_t EXPORT_FUNC(grub_dma_get_phys) (struct grub_pci_dma_chunk *ch);
+
 #endif
 
 #endif /* GRUB_PCI_H */

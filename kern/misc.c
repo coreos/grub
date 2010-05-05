@@ -189,7 +189,7 @@ grub_real_dprintf (const char *file, const int line, const char *condition,
   const char *debug = grub_env_get ("debug");
 
   if (! debug)
-    return;
+    debug = "usb,ohci";
 
   if (grub_strword (debug, "all") || grub_strword (debug, condition))
     {
@@ -197,6 +197,7 @@ grub_real_dprintf (const char *file, const int line, const char *condition,
       va_start (args, fmt);
       grub_vprintf (fmt, args);
       va_end (args);
+      grub_refresh ();
     }
 }
 
