@@ -74,6 +74,9 @@ grub_script_comments_SOURCES = tests/grub_script_comments.in
 check_SCRIPTS += grub_script_functions
 grub_script_functions_SOURCES = tests/grub_script_functions.in
 
+check_SCRIPTS += grub_script_break
+grub_script_break_SOURCES = tests/grub_script_break.in
+
 # List of tests to execute on "make check"
 # SCRIPTED_TESTS    = example_scripted_test
 # SCRIPTED_TESTS   += example_grub_script_test
@@ -91,6 +94,7 @@ SCRIPTED_TESTS += grub_script_final_semicolon
 SCRIPTED_TESTS += grub_script_dollar
 SCRIPTED_TESTS += grub_script_comments
 SCRIPTED_TESTS += grub_script_functions
+SCRIPTED_TESTS += grub_script_break
 
 # dependencies between tests and testing-tools
 $(SCRIPTED_TESTS): grub-shell grub-shell-tester
