@@ -17,6 +17,7 @@
  */
 
 #include <grub/dl.h>
+#include <grub/i18n.h>
 #include <grub/parser.h>
 #include <grub/script_sh.h>
 
@@ -49,6 +50,8 @@ static struct grub_parser grub_sh_parser =
 GRUB_MOD_INIT(sh)
 {
   grub_parser_register ("grub", &grub_sh_parser);
+  grub_register_command ("break", grub_script_break,
+			 N_("[n]"), N_("Exit from loops"));
 }
 
 GRUB_MOD_FINI(sh)

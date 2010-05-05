@@ -103,12 +103,12 @@ DISTCLEANFILES += grub_script.yy.c grub_script.yy.h
 # For grub-script-check.
 bin_UTILITIES += grub-script-check
 util/grub-script-check.c_DEPENDENCIES = grub_script_check_init.h
-grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c \
-	util/grub-script-check.c util/misc.c util/mm.c \
-	script/main.c script/script.c script/function.c script/lexer.c \
-	kern/handler.c kern/err.c kern/parser.c kern/list.c \
-	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c \
-	grub_script.yy.c
+grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c		\
+	gnulib/getline.c util/grub-script-check.c util/misc.c		\
+	util/mm.c script/main.c script/script.c script/function.c	\
+	script/lexer.c kern/handler.c kern/err.c kern/parser.c		\
+	kern/list.c kern/misc.c kern/env.c kern/command.c		\
+	grub_script_check_init.c grub_script.tab.c grub_script.yy.c
 grub_script_check_CFLAGS = $(GNULIB_UTIL_CFLAGS)
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst

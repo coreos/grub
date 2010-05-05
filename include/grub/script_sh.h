@@ -23,6 +23,7 @@
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/parser.h>
+#include <grub/command.h>
 
 struct grub_script_mem;
 
@@ -307,6 +308,9 @@ grub_err_t grub_script_execute_menuentry (struct grub_script_cmd *cmd);
 
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t grub_script_execute (struct grub_script *script);
+
+/* Break command for loops.  */
+grub_err_t grub_script_break (grub_command_t cmd, int argc, char *argv[]);
 
 /* This variable points to the parsed command.  This is used to
    communicate with the bison code.  */
