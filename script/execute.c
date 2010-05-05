@@ -30,13 +30,13 @@
    is sizeof (int) * 3, and one extra for a possible -ve sign.  */
 #define ERRNO_DIGITS_MAX  (sizeof (int) * 3 + 1)
 
+static unsigned long is_continue;
 static unsigned long active_loops;
 static unsigned long active_breaks;
 static struct grub_script_scope *scope = 0;
 
 grub_err_t
-grub_script_break (grub_command_t cmd __attribute__((unused)),
-		   int argc, char *argv[])
+grub_script_break (grub_command_t cmd, int argc, char *argv[])
 {
   char *p = 0;
   unsigned long count;
@@ -50,6 +50,8 @@ grub_script_break (grub_command_t cmd __attribute__((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad break");
 
   active_breaks = count;
+  is_continue = grub_strcmp (cmd->name, "break") ? 1 : 0;
+
   return GRUB_ERR_NONE;
 }
 
@@ -408,6 +410,9 @@ grub_script_execute_cmdfor (struct grub_script_cmd *cmd)
   result = 0;
   for (i = 0; i < argcount; i++)
     {
+      if (is_continue && active_breaks == 1)
+	active_breaks = 0;
+
       if (! active_breaks)
 	{
 	  grub_script_env_set (cmdfor->name->str, args[i]);
@@ -441,13 +446,16 @@ grub_script_execute_cmdwhile (struct grub_script_cmd *cmd)
 
     result = grub_script_execute_cmd (cmdwhile->list);
 
+    if (active_breaks == 1 && is_continue)
+      active_breaks = 0;
+
     if (active_breaks)
-      {
-	active_breaks--;
-	break;
-      }
+      break;
 
   } while (1); /* XXX Put a check for ^C here */
+
+  if (active_breaks)
+    active_breaks--;
 
   active_loops--;
   return result;

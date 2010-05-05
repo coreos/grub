@@ -52,6 +52,8 @@ GRUB_MOD_INIT(sh)
   grub_parser_register ("grub", &grub_sh_parser);
   grub_register_command ("break", grub_script_break,
 			 N_("[n]"), N_("Exit from loops"));
+  grub_register_command ("continue", grub_script_break,
+			 N_("[n]"), N_("Continue loops"));
 }
 
 GRUB_MOD_FINI(sh)
