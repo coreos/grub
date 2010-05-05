@@ -1,3 +1,11 @@
+2010-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Various jpeg cleanups.
+
+	* video/readers/jpeg.c (grub_jpeg_get_huff_code): Use ARRAY_SIZE.
+	(grub_jpeg_decode_quan_table): Use sizeof.
+	(grub_jpeg_decode_du): Use ARRAY_SIZE.
+
 2010-05-05  Peter Hurley <No e-mail available> (tiny change)
 
 	* video/readers/jpeg.c (grub_jpeg_decode_huff_table): Loop over all

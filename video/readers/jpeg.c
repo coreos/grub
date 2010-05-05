@@ -153,10 +153,11 @@ grub_jpeg_get_number (struct grub_jpeg_data *data, int num)
 static int
 grub_jpeg_get_huff_code (struct grub_jpeg_data *data, int id)
 {
-  int code, i;
+  int code;
+  unsigned i;
 
   code = 0;
-  for (i = 0; i < 16; i++)
+  for (i = 0; i < ARRAY_SIZE (data->huff_maxval[id]); i++)
     {
       code <<= 1;
       if (grub_jpeg_get_bit (data))
@@ -171,9 +172,10 @@ grub_jpeg_get_huff_code (struct grub_jpeg_data *data, int id)
 static grub_err_t
 grub_jpeg_decode_huff_table (struct grub_jpeg_data *data)
 {
-  int id, ac, i, n, base, ofs;
+  int id, ac, n, base, ofs;
   grub_uint32_t next_marker;
   grub_uint8_t count[16];
+  unsigned i;
 
   next_marker = data->file->offset;
   next_marker += grub_jpeg_get_word (data);
@@ -192,7 +194,7 @@ grub_jpeg_decode_huff_table (struct grub_jpeg_data *data)
     return grub_errno;
 
   n = 0;
-  for (i = 0; i < 16; i++)
+  for (i = 0; i < ARRAY_SIZE (count); i++)
     n += count[i];
 
   id += ac * 2;
@@ -205,7 +207,7 @@ grub_jpeg_decode_huff_table (struct grub_jpeg_data *data)
 
   base = 0;
   ofs = 0;
-  for (i = 0; i < 16; i++)
+  for (i = 0; i < ARRAY_SIZE (count); i++)
     {
       base += count[i];
       ofs += count[i];
@@ -243,7 +245,9 @@ grub_jpeg_decode_quan_table (struct grub_jpeg_data *data)
     return grub_error (GRUB_ERR_BAD_FILE_TYPE,
 		       "jpeg: too many quantization tables");
 
-  if (grub_file_read (data->file, &data->quan_table[id], 64) != 64)
+  if (grub_file_read (data->file, &data->quan_table[id],
+		      sizeof (data->quan_table[id]))
+      != sizeof (data->quan_table[id]))
     return grub_errno;
 
     }
@@ -451,7 +455,8 @@ grub_jpeg_idct_transform (jpeg_data_unit_t du)
 static void
 grub_jpeg_decode_du (struct grub_jpeg_data *data, int id, jpeg_data_unit_t du)
 {
-  int pos, h1, h2, qt;
+  int h1, h2, qt;
+  unsigned pos;
 
   grub_memset (du, 0, sizeof (jpeg_data_unit_t));
 
@@ -464,7 +469,7 @@ grub_jpeg_decode_du (struct grub_jpeg_data *data, int id, jpeg_data_unit_t du)
 
   du[0] = data->dc_value[id] * (int) data->quan_table[qt][0];
   pos = 1;
-  while (pos < 64)
+  while (pos < ARRAY_SIZE (data->quan_table[qt]))
     {
       int num, val;
 
