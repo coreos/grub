@@ -86,12 +86,6 @@ typedef size_t yy_size_t;
 #define exit(...)
 #endif
 
-#pragma GCC diagnostic warning "-Wunused-variable"
-#pragma GCC diagnostic warning "-Wunused-function"
-#pragma GCC diagnostic warning "-Wunused-parameter"
-#pragma GCC diagnostic warning "-Wstrict-prototypes"
-#pragma GCC diagnostic warning "-Wmissing-prototypes"
-
 }
 
 %option ecs
@@ -118,9 +112,9 @@ typedef size_t yy_size_t;
 %option extra-type="struct grub_parser_param*"
 
 BLANK           [ \t]
-COMMENT         ^[ \t]*#.*$
+COMMENT         #.*$
 
-CHAR            [^|&$;<> \t\n\'\"\\]
+CHAR            [^{}|&$;<> \t\n\'\"\\]
 DIGITS          [[:digit:]]+
 NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
 
@@ -217,7 +211,7 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
                   ARG (GRUB_SCRIPT_ARG_TYPE_TEXT);
                 }
   \\            |
-  [^\"\'$\\]+   { COPY (yytext, yyleng); }
+  [^\"\'\$\\]+  { COPY (yytext, yyleng); }
   <<EOF>>       {
                   yy_pop_state (yyscanner);
                   yypop_buffer_state (yyscanner);
@@ -260,6 +254,11 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 }
 
 <DQUOTE>{
+  \\\$          { COPY ("$", 1); }
+  \\\\          { COPY ("\\", 1); }
+  \\\"          { COPY ("\"", 1); }
+  \\\n          { /* ignore */ }
+  [^\"\$\\\n]+  { COPY (yytext, yyleng); }
   \"            {
                   yy_pop_state (yyscanner);
                   ARG (GRUB_SCRIPT_ARG_TYPE_DQSTR);
@@ -268,10 +267,6 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
                   yy_push_state (VAR, yyscanner);
                   ARG (GRUB_SCRIPT_ARG_TYPE_DQSTR);
                 }
-  \\\\          { COPY ("\\", 1); }
-  \\\"          { COPY ("\"", 1); }
-  \\\n          { /* ignore */ }
-  [^\"$\\\n]+   { COPY (yytext, yyleng); }
   (.|\n)        { COPY (yytext, yyleng); }
 }
 

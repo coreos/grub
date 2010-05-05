@@ -35,6 +35,7 @@
 #endif
 
 #include <grub/kernel.h>
+#include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/cache.h>
 #include <grub/util/misc.h>
@@ -50,6 +51,11 @@
    memalign is declared in malloc.h in all systems, if present.  */
 #ifdef HAVE_MEMALIGN
 # include <malloc.h>
+#endif
+
+#ifdef __CYGWIN__
+# include <sys/cygwin.h>
+# define DEV_CYGDRIVE_MAJOR 98
 #endif
 
 #ifdef __MINGW32__
@@ -262,56 +268,6 @@ grub_util_write_image (const char *img, size_t size, FILE *out)
     grub_util_error ("write failed");
 }
 
-void *
-grub_malloc (grub_size_t size)
-{
-  return xmalloc (size);
-}
-
-void *
-grub_zalloc (grub_size_t size)
-{
-  void *ret;
-
-  ret = xmalloc (size);
-  memset (ret, 0, size);
-  return ret;
-}
-
-void
-grub_free (void *ptr)
-{
-  free (ptr);
-}
-
-void *
-grub_realloc (void *ptr, grub_size_t size)
-{
-  return xrealloc (ptr, size);
-}
-
-void *
-grub_memalign (grub_size_t align, grub_size_t size)
-{
-  void *p;
-
-#if defined(HAVE_POSIX_MEMALIGN)
-  if (posix_memalign (&p, align, size) != 0)
-    p = 0;
-#elif defined(HAVE_MEMALIGN)
-  p = memalign (align, size);
-#else
-  (void) align;
-  (void) size;
-  grub_util_error ("grub_memalign is not supported");
-#endif
-
-  if (! p)
-    grub_util_error ("out of memory");
-
-  return p;
-}
-
 /* Some functions that we don't use.  */
 void
 grub_mm_init_region (void *addr __attribute__ ((unused)),
@@ -319,10 +275,12 @@ grub_mm_init_region (void *addr __attribute__ ((unused)),
 {
 }
 
+#if GRUB_NO_MODULES
 void
 grub_register_exported_symbols (void)
 {
 }
+#endif
 
 void
 grub_exit (void)
@@ -374,7 +332,7 @@ grub_millisleep (grub_uint32_t ms)
 
 #endif
 
-#if !(defined (__i386__) || defined (__x86_64__))
+#if !(defined (__i386__) || defined (__x86_64__)) && GRUB_NO_MODULES
 void
 grub_arch_sync_caches (void *address __attribute__ ((unused)),
 		       grub_size_t len __attribute__ ((unused)))
@@ -503,6 +461,27 @@ canonicalize_file_name (const char *path)
   return ret;
 }
 
+#ifdef __CYGWIN__
+/* Convert POSIX path to Win32 path,
+   remove drive letter, replace backslashes.  */
+static char *
+get_win32_path (const char *path)
+{
+  char winpath[PATH_MAX];
+  if (cygwin_conv_path (CCP_POSIX_TO_WIN_A, path, winpath, sizeof(winpath)))
+    grub_util_error ("cygwin_conv_path() failed");
+
+  int len = strlen (winpath);
+  int offs = (len > 2 && winpath[1] == ':' ? 2 : 0);
+
+  int i;
+  for (i = offs; i < len; i++)
+    if (winpath[i] == '\\')
+      winpath[i] = '/';
+  return xstrdup (winpath + offs);
+}
+#endif
+
 /* This function never prints trailing slashes (so that its output
    can be appended a slash unconditionally).  */
 char *
@@ -568,30 +547,31 @@ make_system_path_relative_to_its_root (const char *path)
       /* offset == 1 means root directory.  */
       if (offset == 1)
 	{
-	  free (buf);
-	  len = strlen (buf2);
-	  while (buf2[len - 1] == '/' && len > 1)
-	    {
-	      buf2[len - 1] = '\0';
-	      len--;
-	    }
-	  if (len > 1)
-	    return buf2;
-	  else
-	    {
-	      /* This means path given is just a backslash.  As above
-		 we have to return an empty string.  */
-	      free (buf2);
-	      return xstrdup ("");
-	    }
+	  /* Include leading slash.  */
+	  offset = 0;
+	  break;
 	}
     }
   free (buf);
   buf3 = xstrdup (buf2 + offset);
   free (buf2);
 
+#ifdef __CYGWIN__
+  if (st.st_dev != (DEV_CYGDRIVE_MAJOR << 16))
+    {
+      /* Reached some mount point not below /cygdrive.
+	 GRUB does not know Cygwin's emulated mounts,
+	 convert to Win32 path.  */
+      grub_util_info ("Cygwin path = %s\n", buf3);
+      char * temp = get_win32_path (buf3);
+      free (buf3);
+      buf3 = temp;
+    }
+#endif
+
+  /* Remove trailing slashes, return empty string if root directory.  */
   len = strlen (buf3);
-  while (buf3[len - 1] == '/' && len > 1)
+  while (len > 0 && buf3[len - 1] == '/')
     {
       buf3[len - 1] = '\0';
       len--;

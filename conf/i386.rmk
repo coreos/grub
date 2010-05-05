@@ -68,3 +68,8 @@ play_mod_SOURCES = commands/i386/pc/play.c
 play_mod_CFLAGS = $(COMMON_CFLAGS)
 play_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For iorw.mod.
+pkglib_MODULES += iorw.mod
+iorw_mod_SOURCES = commands/iorw.c
+iorw_mod_CFLAGS = $(COMMON_CFLAGS)
+iorw_mod_LDFLAGS = $(COMMON_LDFLAGS)

@@ -35,6 +35,7 @@ sysconfdir = @sysconfdir@
 sharedstatedir = @sharedstatedir@
 localstatedir = @localstatedir@
 libdir = @libdir@
+localedir = @localedir@
 infodir = @infodir@
 mandir = @mandir@
 includedir = @includedir@
@@ -43,6 +44,10 @@ pkglibdir =  $(libdir)/`echo @PACKAGE_TARNAME@/$(target_cpu)-$(platform) | sed '
 
 # Internationalization library.
 LIBINTL = @LIBINTL@
+TARGET_NO_MODULES = @TARGET_NO_MODULES@
+
+# Util library.
+LIBUTIL = @LIBUTIL@
 
 XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
@@ -75,7 +80,7 @@ MKDIR_P = @MKDIR_P@
 
 mkinstalldirs = $(srcdir)/mkinstalldirs
 
-LIBS = @LIBS@ $(LIBINTL)
+LIBS = @LIBS@ $(LIBINTL) $(LIBUTIL)
 
 CC = @CC@
 CFLAGS = @CFLAGS@
@@ -94,11 +99,12 @@ TARGET_APPLE_CC = @TARGET_APPLE_CC@
 OBJCONV = @OBJCONV@
 TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
 	-Wall -W
-TARGET_LDFLAGS = -nostdlib @TARGET_LDFLAGS@
+TARGET_LDFLAGS = -nostdlib -static-libgcc @TARGET_LDFLAGS@
 TARGET_IMG_LDSCRIPT = @TARGET_IMG_LDSCRIPT@
 TARGET_IMG_LDFLAGS = -nostdlib @TARGET_IMG_LDFLAGS@
 TARGET_IMG_CFLAGS = @TARGET_IMG_CFLAGS@
 TARGET_OBJ2ELF = @TARGET_OBJ2ELF@
+kernel_img_LDFLAGS = -lgcc
 EXEEXT = @EXEEXT@
 OBJCOPY = @OBJCOPY@
 STRIP = @STRIP@
@@ -136,7 +142,7 @@ enable_efiemu = @enable_efiemu@
 
 ### General variables.
 
-RMKFILES = $(wildcard conf/*.rmk)
+RMKFILES = $(wildcard $(srcdir)/conf/*.rmk)
 
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
@@ -155,7 +161,9 @@ DISTCLEANFILES = config.status config.cache config.log config.h \
 	gensymlist.sh genkernsyms.sh build_env.mk \
 	docs/grub.info docs/version.texi docs/stamp-vti
 
-MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES)) \
+MAINTAINER_CLEANFILES = $(srcdir)/configure $(srcdir)/aclocal.m4 \
+	$(MKFILES) $(srcdir)/config.guess \
+	$(srcdir)/config.sub $(srcdir)/install-sh $(srcdir)/missing \
 	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in $(INFOS)
 
 # The default target.
@@ -179,10 +187,15 @@ include $(srcdir)/conf/tests.mk
 -include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
 endif
 
+ifeq ($(TARGET_NO_MODULES), yes)
+	TARGET_CFLAGS += -DGRUB_TARGET_NO_MODULES=1
+	CFLAGS += -DGRUB_TARGET_NO_MODULES=1
+endif
+
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
-ifneq ($(platform), emu)
+ifneq ($(TARGET_NO_MODULES), yes)
 pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst
 endif
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
@@ -433,6 +446,8 @@ distclean: mostlyclean
 
 maintainer-clean: distclean
 	-test -z "$(MAINTAINER_CLEANFILES)" || rm -f $(MAINTAINER_CLEANFILES)
+	-rmdir $(srcdir)/lib/libgcrypt-grub/cipher
+	-rmdir $(srcdir)/lib/libgcrypt-grub
 
 info:
 
