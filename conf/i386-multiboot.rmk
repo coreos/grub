@@ -36,18 +36,13 @@ bin_SCRIPTS += grub-mkrescue
 grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 # Modules.
-pkglib_MODULES = linux.mod halt.mod datetime.mod mmap.mod
+pkglib_MODULES = halt.mod datetime.mod mmap.mod
 
 # For mmap.mod.
 mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c
 mmap_mod_CFLAGS = $(COMMON_CFLAGS)
 mmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 mmap_mod_ASFLAGS = $(COMMON_ASFLAGS)
-
-# For linux.mod.
-linux_mod_SOURCES = loader/i386/linux.c
-linux_mod_CFLAGS = $(COMMON_CFLAGS)
-linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod.
 halt_mod_SOURCES = commands/halt.c

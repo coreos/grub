@@ -36,7 +36,7 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/ieee1275/grub-install.in
 
 # Modules.
-pkglib_MODULES = halt.mod suspend.mod aout.mod nand.mod datetime.mod mmap.mod
+pkglib_MODULES = halt.mod suspend.mod nand.mod datetime.mod mmap.mod
 
 # For mmap.mod.
 mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c
