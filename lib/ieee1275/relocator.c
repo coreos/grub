@@ -54,6 +54,18 @@ grub_relocator_firmware_fill_events (struct grub_relocator_mmap_event *events)
     if (type != GRUB_MACHINE_MEMORY_AVAILABLE)
       return 0;
 
+    if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM))
+      {
+	if (addr + len <= 0x180000)
+	  return 0;
+
+	if (addr < 0x180000)
+	  {
+	    len = addr + len - 0x180000;
+	    addr = 0x180000;
+	  }
+      }
+
     events[counter].type = REG_FIRMWARE_START;
     events[counter].pos = addr;
     counter++;
