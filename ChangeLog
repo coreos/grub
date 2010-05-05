@@ -1,5 +1,9 @@
 2010-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* video/readers/jpeg.c: Indented.
+
+2010-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Various jpeg cleanups.
 
 	* video/readers/jpeg.c (grub_jpeg_get_huff_code): Use ARRAY_SIZE.
