@@ -627,8 +627,8 @@ main (int argc, char *argv[])
 
   find_dest_dev (&ginfo, argv);
 
-  ginfo.prefix = make_system_path_relative_to_its_root (ginfo.dir ?
-							: DEFAULT_DIRECTORY);
+  ginfo.prefix = grub_make_system_path_relative_to_its_root (ginfo.dir ?
+							     : DEFAULT_DIRECTORY);
 
   check_root_dev (&ginfo);
 
