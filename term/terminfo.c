@@ -32,6 +32,7 @@
 #include <grub/tparm.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/time.h>
 
 struct terminfo
 {
@@ -165,6 +166,114 @@ void
 grub_terminfo_cursor_off (grub_term_output_t oterm)
 {
   putstr (grub_terminfo_tparm (term.cursor_off), oterm);
+}
+
+#define ANSI_C0 0x9b
+
+void
+grub_terminfo_readkey (int *keys, int *len, int (*readkey) (void))
+{
+  int c;
+
+#define CONTINUE_READ						\
+  {								\
+    grub_uint64_t start;					\
+    /* On 9600 we have to wait up to 12 milliseconds.  */	\
+    start = grub_get_time_ms ();				\
+    do								\
+      c = readkey ();						\
+    while (c == -1 && grub_get_time_ms () - start < 12);	\
+    if (c == -1)						\
+      return;							\
+								\
+    keys[*len] = c;						\
+    (*len)++;							\
+  }
+
+  c = readkey ();
+  if (c < 0)
+    {
+      *len = 0;
+      return;
+    }
+  *len = 1;
+  keys[0] = c;
+  if (c != ANSI_C0 && c != '\e')
+    {
+      /* Backspace: Ctrl-h.  */
+      if (c == 0x7f)
+	c = '\b'; 
+      *len = 1;
+      keys[0] = c;
+      return;
+    }
+
+  {
+    static struct
+    {
+      char key;
+      char ascii;
+    }
+    three_code_table[] =
+      {
+	{'4', GRUB_TERM_DC},
+	{'A', GRUB_TERM_UP},
+	{'B', GRUB_TERM_DOWN},
+	{'C', GRUB_TERM_RIGHT},
+	{'D', GRUB_TERM_LEFT},
+	{'F', GRUB_TERM_END},
+	{'H', GRUB_TERM_HOME},
+	{'K', GRUB_TERM_END},
+	{'P', GRUB_TERM_DC},
+	{'?', GRUB_TERM_PPAGE},
+	{'/', GRUB_TERM_NPAGE}
+      };
+
+    static struct
+    {
+      char key;
+      char ascii;
+    }
+    four_code_table[] =
+      {
+	{'1', GRUB_TERM_HOME},
+	{'3', GRUB_TERM_DC},
+	{'5', GRUB_TERM_PPAGE},
+	{'6', GRUB_TERM_NPAGE}
+      };
+    unsigned i;
+
+    if (c == '\e')
+      {
+	CONTINUE_READ;
+
+	if (c != '[')
+	  return;
+      }
+
+    CONTINUE_READ;
+	
+    for (i = 0; i < ARRAY_SIZE (three_code_table); i++)
+      if (three_code_table[i].key == c)
+	{
+	  keys[0] = three_code_table[i].ascii;
+	  *len = 1;
+	  return;
+	}
+
+    for (i = 0; i < ARRAY_SIZE (four_code_table); i++)
+      if (four_code_table[i].key == c)
+	{
+	  CONTINUE_READ;
+	  if (c != '~')
+	    return;
+	  keys[0] = three_code_table[i].ascii;
+	  *len = 1;
+	  return;
+	}
+    return;
+  }
+#undef CONTINUE_READ
 }
 
 /* GRUB Command.  */

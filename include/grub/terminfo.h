@@ -34,4 +34,7 @@ void grub_terminfo_reverse_video_off (grub_term_output_t oterm);
 void grub_terminfo_cursor_on (grub_term_output_t oterm);
 void grub_terminfo_cursor_off (grub_term_output_t oterm);
 
+#define GRUB_TERMINFO_READKEY_MAX_LEN 4
+void grub_terminfo_readkey (int *keys, int *len, int (*readkey) (void));
+
 #endif /* ! GRUB_TERMINFO_HEADER */

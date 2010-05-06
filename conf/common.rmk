@@ -465,7 +465,7 @@ scsi_mod_LDFLAGS = $(COMMON_LDFLAGS)
 pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
 	ls.mod cmp.mod cat.mod help.mod search.mod loopback.mod	\
 	configfile.mod echo.mod		\
-	terminfo.mod test.mod blocklist.mod hexdump.mod		\
+	test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod loadenv.mod crc.mod parttool.mod	\
 	msdospart.mod memrw.mod normal.mod sh.mod 		\
 	gptsync.mod true.mod probe.mod password.mod		\
@@ -596,10 +596,13 @@ configfile_mod_SOURCES = commands/configfile.c
 configfile_mod_CFLAGS = $(COMMON_CFLAGS)
 configfile_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+ifneq ($(platform), ieee1275)
 # For terminfo.mod.
+pkglib_MODULES += terminfo.mod
 terminfo_mod_SOURCES = term/terminfo.c term/tparm.c
 terminfo_mod_CFLAGS = $(COMMON_CFLAGS)
 terminfo_mod_LDFLAGS = $(COMMON_LDFLAGS)
+endif
 
 # For blocklist.mod.
 blocklist_mod_SOURCES = commands/blocklist.c

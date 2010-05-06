@@ -22,6 +22,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/time.h>
+#include <grub/terminfo.h>
 #include <grub/machine/console.h>
 #include <grub/ieee1275/ieee1275.h>
 
@@ -34,7 +35,7 @@ static grub_uint8_t grub_ofconsole_height;
 static int grub_curr_x;
 static int grub_curr_y;
 
-static int grub_keybuf;
+static int grub_keybuf[GRUB_TERMINFO_READKEY_MAX_LEN];
 static int grub_buflen;
 
 struct color
@@ -149,116 +150,28 @@ grub_ofconsole_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_col
   *highlight_color = grub_ofconsole_highlight_color;
 }
 
-#define ANSI_C0 0x9b
-
 static int
-grub_ofconsole_readkey (int *key)
+readkey (void)
 {
   grub_uint8_t c;
   grub_ssize_t actual = 0;
 
   grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
   if (actual > 0)
-    switch(c)
-      {
-      case 0x7f:
-        /* Backspace: Ctrl-h.  */
-        c = '\b'; 
-        break;
-      case ANSI_C0:
-      case '\e':
-	{
-	  grub_uint64_t start;
-
-	  if (c == '\e')
-	    {
-	      grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-
-	      /* On 9600 we have to wait up to 12 milliseconds.  */
-	      start = grub_get_time_ms ();
-	      while (actual <= 0 && grub_get_time_ms () - start < 12)
-		grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-
-	      if (actual <= 0)
-		{
-		  *key = '\e';
-		  return 1;
-		}
-
-	      if (c != '[')
-		return 0;
-	    }
-
-	  grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-
-	  /* On 9600 we have to wait up to 12 milliseconds.  */
-	  start = grub_get_time_ms ();
-	  while (actual <= 0 && grub_get_time_ms () - start < 12)
-	    grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-	  if (actual <= 0)
-	    return 0;
-
-	  switch (c)
-	    {
-	    case 'A':
-	      /* Up: Ctrl-p.  */
-	      c = GRUB_TERM_UP;
-	      break;
-	    case 'B':
-	      /* Down: Ctrl-n.  */
-	      c = GRUB_TERM_DOWN;
-	      break;
-	    case 'C':
-	      /* Right: Ctrl-f.  */
-	      c = GRUB_TERM_RIGHT;
-	      break;
-	    case 'D':
-	      /* Left: Ctrl-b.  */
-	      c = GRUB_TERM_LEFT;
-	      break;
-	    case '3':
-	      {
-		grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-		/* On 9600 we have to wait up to 12 milliseconds.  */
-		start = grub_get_time_ms ();
-		while (actual <= 0 && grub_get_time_ms () - start < 12)
-		  grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-		
-		if (actual <= 0)
-		  return 0;
-  	    
-		/* Delete: Ctrl-d.  */
-		if (c == '~')
-		  c = GRUB_TERM_DC;
-		else
-		  return 0;
-		break;
-	      }
-	      break;
-	    }
-	}
-      }
-
-  *key = c;
-  return actual > 0;
+    return c;
+  return -1;
 }
 
 static int
 grub_ofconsole_checkkey (void)
 {
-  int key;
-  int read;
-
   if (grub_buflen)
     return 1;
 
-  read = grub_ofconsole_readkey (&key);
-  if (read)
-    {
-      grub_keybuf = key;
-      grub_buflen = 1;
-      return 1;
-    }
+  grub_terminfo_readkey (grub_keybuf, &grub_buflen, readkey);
+
+  if (grub_buflen)
+    return 1;
 
   return -1;
 }
@@ -266,17 +179,14 @@ grub_ofconsole_checkkey (void)
 static int
 grub_ofconsole_getkey (void)
 {
-  int key;
+  int ret;
+  while (! grub_buflen)
+    grub_terminfo_readkey (grub_keybuf, &grub_buflen, readkey);
 
-  if (grub_buflen)
-    {
-      grub_buflen  =0;
-      return grub_keybuf;
-    }
-
-  while (! grub_ofconsole_readkey (&key));
-
-  return key;
+  ret = grub_keybuf[0];
+  grub_buflen--;
+  grub_memmove (grub_keybuf, grub_keybuf + 1, grub_buflen);
+  return ret;
 }
 
 static grub_uint16_t

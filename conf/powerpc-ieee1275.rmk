@@ -16,7 +16,7 @@ kernel_img_SOURCES = kern/powerpc/ieee1275/startup.S kern/ieee1275/cmain.c \
 	kern/list.c kern/handler.c kern/command.c kern/corecmd.c	\
 	kern/ieee1275/init.c 						\
 	kern/ieee1275/mmap.c						\
-	term/ieee1275/ofconsole.c 		\
+	term/ieee1275/ofconsole.c term/terminfo.c term/tparm.c 		\
 	kern/ieee1275/openfw.c disk/ieee1275/ofdisk.c 		\
 	kern/parser.c kern/partition.c kern/env.c kern/$(target_cpu)/dl.c 	\
 	kern/generic/millisleep.c kern/time.c                            \
