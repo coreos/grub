@@ -166,12 +166,12 @@ static int
 grub_ofconsole_checkkey (void)
 {
   if (grub_buflen)
-    return 1;
+    return grub_keybuf[0];
 
   grub_terminfo_readkey (grub_keybuf, &grub_buflen, readkey);
 
   if (grub_buflen)
-    return 1;
+    return grub_keybuf[0];
 
   return -1;
 }

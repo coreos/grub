@@ -35,8 +35,8 @@ static unsigned int keep_track = 1;
 static unsigned int registered = 0;
 
 /* An input buffer.  */
-static char input_buf[8];
-static unsigned int npending = 0;
+static int input_buf[GRUB_TERMINFO_READKEY_MAX_LEN];
+static int npending = 0;
 
 static struct grub_term_output grub_serial_term_output;
 
@@ -114,98 +114,6 @@ serial_hw_put (const int c)
   grub_outb (c, serial_settings.port + UART_TX);
 }
 
-static void
-serial_translate_key_sequence (void)
-{
-  unsigned int i;
-  static struct
-  {
-    char key;
-    char ascii;
-  }
-  three_code_table[] =
-    {
-      {'A', 16},
-      {'B', 14},
-      {'C', 6},
-      {'D', 2},
-      {'F', 5},
-      {'H', 1},
-      {'4', 4}
-    };
-
-  static struct
-  {
-      short key;
-      char ascii;
-  }
-  four_code_table[] =
-    {
-      {('1' | ('~' << 8)), 1},
-      {('3' | ('~' << 8)), 4},
-      {('5' | ('~' << 8)), 7},
-      {('6' | ('~' << 8)), 3}
-    };
-
-  if (npending < 3)
-    return;
-
-  /* The buffer must start with "ESC [".  */
-  if (input_buf[0] != '\e' || input_buf[1] != '[')
-    return;
-
-  for (i = 0; i < ARRAY_SIZE (three_code_table); i++)
-    if (three_code_table[i].key == input_buf[2])
-      {
-	input_buf[0] = three_code_table[i].ascii;
-	npending -= 2;
-	grub_memmove (input_buf + 1, input_buf + 3, npending - 1);
-	return;
-      }
-
-  if (npending >= 4)
-    {
-      short key = input_buf[3] | (input_buf[4] << 8);
-
-      for (i = 0; i < ARRAY_SIZE (four_code_table); i++)
-	if (four_code_table[i].key == key)
-	  {
-	    input_buf[0] = four_code_table[i].ascii;
-	    npending -= 3;
-	    grub_memmove (input_buf + 1, input_buf + 4, npending - 1);
-	    return;
-	  }
-    }
-}
-
-static int
-fill_input_buf (const int nowait)
-{
-  int i;
-
-  for (i = 0; i < 10000 && npending < sizeof (input_buf); i++)
-    {
-      int c;
-
-      c = serial_hw_fetch ();
-      if (c >= 0)
-	{
-	  input_buf[npending++] = c;
-
-	  /* Reset the counter to zero, to wait for the same interval.  */
-	  i = 0;
-	}
-
-      if (nowait)
-	break;
-    }
-
-  /* Translate some key sequences.  */
-  serial_translate_key_sequence ();
-
-  return npending;
-}
-
 /* Convert speed to divisor.  */
 static unsigned short
 serial_get_divisor (unsigned int speed)
@@ -248,28 +156,29 @@ serial_get_divisor (unsigned int speed)
 static int
 grub_serial_checkkey (void)
 {
-  if (fill_input_buf (1))
+  if (npending)
     return input_buf[0];
-  else
-    return -1;
+
+  grub_terminfo_readkey (input_buf, &npending, serial_hw_fetch);
+
+  if (npending)
+    return input_buf[0];
+
+  return -1;
 }
 
 /* The serial version of getkey.  */
 static int
 grub_serial_getkey (void)
 {
-  int c;
+  int ret;
+  while (! npending)
+    grub_terminfo_readkey (input_buf, &npending, serial_hw_fetch);
 
-  while (! fill_input_buf (0))
-    ;
-
-  c = input_buf[0];
-  if (c == 0x7f)
-    c = GRUB_TERM_BACKSPACE;
-
-  grub_memmove (input_buf, input_buf + 1, --npending);
-
-  return c;
+  ret = input_buf[0];
+  npending--;
+  grub_memmove (input_buf, input_buf + 1, npending);
+  return ret;
 }
 
 /* Initialize a serial device. PORT is the port number for a serial device.

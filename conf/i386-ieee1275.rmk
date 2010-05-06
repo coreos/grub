@@ -25,7 +25,7 @@ kernel_img_SOURCES = kern/i386/ieee1275/startup.S \
 	term/terminfo.c term/tparm.c 	\
 	disk/ieee1275/ofdisk.c \
 	symlist.c
-kernel_img_HEADERS += ieee1275/ieee1275.h
+kernel_img_HEADERS += ieee1275/ieee1275.h terminfo.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS += $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x10000,-Bstatic

@@ -23,18 +23,18 @@
 #include <grub/types.h>
 #include <grub/term.h>
 
-char *grub_terminfo_get_current (void);
-grub_err_t grub_terminfo_set_current (const char *);
+char *EXPORT_FUNC(grub_terminfo_get_current) (void);
+grub_err_t EXPORT_FUNC(grub_terminfo_set_current) (const char *);
 
-void grub_terminfo_gotoxy (grub_uint8_t x, grub_uint8_t y,
-			   grub_term_output_t oterm);
-void grub_terminfo_cls (grub_term_output_t oterm);
-void grub_terminfo_reverse_video_on (grub_term_output_t oterm);
-void grub_terminfo_reverse_video_off (grub_term_output_t oterm);
-void grub_terminfo_cursor_on (grub_term_output_t oterm);
-void grub_terminfo_cursor_off (grub_term_output_t oterm);
+void EXPORT_FUNC(grub_terminfo_gotoxy) (grub_uint8_t x, grub_uint8_t y,
+					grub_term_output_t oterm);
+void EXPORT_FUNC(grub_terminfo_cls) (grub_term_output_t oterm);
+void EXPORT_FUNC(grub_terminfo_reverse_video_on) (grub_term_output_t oterm);
+void EXPORT_FUNC(grub_terminfo_reverse_video_off) (grub_term_output_t oterm);
+void EXPORT_FUNC(grub_terminfo_cursor_on) (grub_term_output_t oterm);
+void EXPORT_FUNC(grub_terminfo_cursor_off) (grub_term_output_t oterm);
 
 #define GRUB_TERMINFO_READKEY_MAX_LEN 4
-void grub_terminfo_readkey (int *keys, int *len, int (*readkey) (void));
+void EXPORT_FUNC(grub_terminfo_readkey) (int *keys, int *len, int (*readkey) (void));
 
 #endif /* ! GRUB_TERMINFO_HEADER */
