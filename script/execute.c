@@ -44,12 +44,11 @@ grub_script_break (grub_command_t cmd __attribute__((unused)),
   if (argc == 0)
     count = 1;
 
-  else if ((argc > 1) ||
-	   (count = grub_strtoul (argv[0], &p, 10)) > active_loops ||
+  else if ((argc > 1) || (count = grub_strtoul (argv[0], &p, 10)) == 0 ||
 	   (*p != '\0'))
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad break");
 
-  active_breaks = count;
+  active_breaks = grub_min (active_loops, count);
   return GRUB_ERR_NONE;
 }
 
