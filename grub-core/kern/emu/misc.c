@@ -3,8 +3,12 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include <grub/mm.h>
 #include <grub/err.h>
@@ -63,69 +67,13 @@ grub_util_error (const char *fmt, ...)
 }
 
 void *
-grub_malloc (grub_size_t size)
-{
-  return malloc (size);
-}
-
-void *
-grub_zalloc (grub_size_t size)
-{
-  void *ret;
-
-  ret = malloc (size);
-  memset (ret, 0, size);
-  return ret;
-}
-
-void
-grub_free (void *ptr)
-{
-  free (ptr);
-}
-
-void *
-grub_realloc (void *ptr, grub_size_t size)
-{
-  return realloc (ptr, size);
-}
-
-void *
-grub_memalign (grub_size_t align, grub_size_t size)
-{
-  void *p;
-
-#if defined(HAVE_POSIX_MEMALIGN)
-  if (align < sizeof (void *))
-    align = sizeof (void *);
-
-  else if (align % sizeof (void *))
-    grub_fatal ("bad alignment");
-
-  if (posix_memalign (&p, align, size) != 0)
-    p = 0;
-#elif defined(HAVE_MEMALIGN)
-  p = memalign (align, size);
-#else
-  (void) align;
-  (void) size;
-  grub_fatal ("grub_memalign is not supported");
-#endif
-
-  if (! p)
-    grub_fatal ("out of memory");
-
-  return p;
-}
-
-void *
 xmalloc (grub_size_t size)
 {
   void *p;
 
-  p = grub_malloc (size);
+  p = malloc (size);
   if (! p)
-    grub_fatal ("out of memory");
+    grub_util_error ("out of memory");
 
   return p;
 }
@@ -133,9 +81,9 @@ xmalloc (grub_size_t size)
 void *
 xrealloc (void *ptr, grub_size_t size)
 {
-  ptr = grub_realloc (ptr, size);
+  ptr = realloc (ptr, size);
   if (! ptr)
-    grub_fatal ("out of memory");
+    grub_util_error ("out of memory");
 
   return ptr;
 }
@@ -146,12 +94,42 @@ xstrdup (const char *str)
   size_t len;
   char *newstr;
 
-  len = grub_strlen (str);
+  len = strlen (str);
   newstr = (char *) xmalloc (len + 1);
-  grub_memcpy (newstr, str, len + 1);
+  memcpy (newstr, str, len + 1);
 
   return newstr;
 }
+
+#ifndef HAVE_VASPRINTF
+
+int
+vasprintf (char **buf, const char *fmt, va_list ap)
+{
+  /* Should be large enough.  */
+  *buf = xmalloc (512);
+
+  return vsprintf (*buf, fmt, ap);
+}
+
+#endif
+
+#ifndef  HAVE_ASPRINTF
+
+int
+asprintf (char **buf, const char *fmt, ...)
+{
+  int status;
+  va_list ap;
+
+  va_start (ap, fmt);
+  status = vasprintf (*buf, fmt, ap);
+  va_end (ap);
+
+  return status;
+}
+
+#endif
 
 char *
 xasprintf (const char *fmt, ...)
@@ -196,4 +174,103 @@ grub_get_rtc (void)
   return (tv.tv_sec * GRUB_TICKS_PER_SECOND
 	  + (((tv.tv_sec % GRUB_TICKS_PER_SECOND) * 1000000 + tv.tv_usec)
 	     * GRUB_TICKS_PER_SECOND / 1000000));
+}
+
+
+/* This function never prints trailing slashes (so that its output
+   can be appended a slash unconditionally).  */
+char *
+grub_make_system_path_relative_to_its_root (const char *path)
+{
+  struct stat st;
+  char *p, *buf, *buf2, *buf3;
+  uintptr_t offset = 0;
+  dev_t num;
+  size_t len;
+
+  /* canonicalize.  */
+  p = canonicalize_file_name (path);
+
+  if (p == NULL)
+    grub_util_error ("failed to get canonical path of %s", path);
+
+  len = strlen (p) + 1;
+  buf = xstrdup (p);
+  free (p);
+
+  if (stat (buf, &st) < 0)
+    grub_util_error ("cannot stat %s: %s", buf, strerror (errno));
+
+  buf2 = xstrdup (buf);
+  num = st.st_dev;
+
+  /* This loop sets offset to the number of chars of the root
+     directory we're inspecting.  */
+  while (1)
+    {
+      p = strrchr (buf, '/');
+      if (p == NULL)
+	/* This should never happen.  */
+	grub_util_error ("FIXME: no / in buf. (make_system_path_relative_to_its_root)");
+      if (p != buf)
+	*p = 0;
+      else
+	*++p = 0;
+
+      if (stat (buf, &st) < 0)
+	grub_util_error ("cannot stat %s: %s", buf, strerror (errno));
+
+      /* buf is another filesystem; we found it.  */
+      if (st.st_dev != num)
+	{
+	  /* offset == 0 means path given is the mount point.
+	     This works around special-casing of "/" in Un*x.  This function never
+	     prints trailing slashes (so that its output can be appended a slash
+	     unconditionally).  Each slash in is considered a preceding slash, and
+	     therefore the root directory is an empty string.  */
+	  if (offset == 0)
+	    {
+	      free (buf);
+	      free (buf2);
+	      return xstrdup ("");
+	    }
+	  else
+	    break;
+	}
+
+      offset = p - buf;
+      /* offset == 1 means root directory.  */
+      if (offset == 1)
+	{
+	  /* Include leading slash.  */
+	  offset = 0;
+	  break;
+	}
+    }
+  free (buf);
+  buf3 = xstrdup (buf2 + offset);
+  free (buf2);
+
+#ifdef __CYGWIN__
+  if (st.st_dev != (DEV_CYGDRIVE_MAJOR << 16))
+    {
+      /* Reached some mount point not below /cygdrive.
+	 GRUB does not know Cygwin's emulated mounts,
+	 convert to Win32 path.  */
+      grub_util_info ("Cygwin path = %s\n", buf3);
+      char * temp = get_win32_path (buf3);
+      free (buf3);
+      buf3 = temp;
+    }
+#endif
+
+  /* Remove trailing slashes, return empty string if root directory.  */
+  len = strlen (buf3);
+  while (len > 0 && buf3[len - 1] == '/')
+    {
+      buf3[len - 1] = '\0';
+      len--;
+    }
+
+  return buf3;
 }

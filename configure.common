@@ -123,7 +123,7 @@ esac
 
 case "$platform" in
   coreboot)	machine_CPPFLAGS="-DGRUB_MACHINE_COREBOOT=1" ;;
-  multiboot)	machine_CFLAGS="-DGRUB_MACHINE_MULTIBOOT=1" ;;
+  multiboot)	machine_CPPFLAGS="-DGRUB_MACHINE_MULTIBOOT=1" ;;
   efi)		machine_CPPFLAGS="-DGRUB_MACHINE_EFI=1" ;;
   ieee1275)	machine_CPPFLAGS="-DGRUB_MACHINE_IEEE1275=1" ;;
   qemu)		machine_CPPFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
@@ -801,4 +801,3 @@ AM_CONDITIONAL([COND_GRUB_MKFONT], [test x$enable_grub_mkfont = xyes])
 AM_CONDITIONAL([COND_HAVE_FONT_SOURCE], [test x$FONT_SOURCE != x])
 AM_CONDITIONAL([COND_GRUB_FSTEST], [test x$enable_grub_fstest = xyes])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
-

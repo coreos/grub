@@ -19,6 +19,7 @@ library = {
 
   source = util/misc.c;
   source = grub-core/kern/misc.c;
+  source = grub-core/kern/emu/mm.c;
   source = grub-core/kern/emu/misc.c;
   source = grub-core/kern/emu/hostfs.c;
   source = grub-core/kern/emu/getroot.c;

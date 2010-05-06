@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/setjmp.h>
 #include <grub/fs.h>
@@ -34,7 +35,6 @@
 #include <grub/time.h>
 #include <grub/emu/console.h>
 #include <grub/emu/misc.h>
-#include <grub/util/misc.h>
 #include <grub/kernel.h>
 #include <grub/normal.h>
 #include <grub/emu/getroot.h>
@@ -136,6 +136,7 @@ void grub_hostfs_init (void);
 void grub_hostfs_fini (void);
 void grub_host_init (void);
 void grub_host_fini (void);
+void grub_emu_init (void);
 
 int
 main (int argc, char *argv[])
@@ -194,6 +195,7 @@ main (int argc, char *argv[])
     }
 
   signal (SIGINT, SIG_IGN);
+  grub_emu_init ();
   grub_console_init ();
   grub_host_init ();
   grub_hostfs_init ();

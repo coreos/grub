@@ -18,12 +18,20 @@
 
 #include <config.h>
 #include <grub/dl.h>
+#include <grub/env.h>
+#include <grub/kernel.h>
+#include <grub/misc.h>
+#include <grub/emu/misc.h>
+
+void
+grub_register_exported_symbols (void)
+{
+}
 
 grub_err_t
 grub_arch_dl_check_header (void *ehdr)
 {
   (void) ehdr;
-
   return GRUB_ERR_BAD_MODULE;
 }
 
@@ -32,20 +40,11 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 {
   (void) mod;
   (void) ehdr;
-
   return GRUB_ERR_BAD_MODULE;
 }
 
-/* int */
-/* grub_dl_ref (grub_dl_t mod) */
-/* {  */
-/*   (void) mod; */
-/*   return 0; */
-/* } */
-
-/* int */
-/* grub_dl_unref (grub_dl_t mod) */
-/* {  */
-/*   (void) mod; */
-/*   return 0; */
-/* } */
+void
+grub_emu_init (void)
+{
+  grub_no_autoload = 1;
+}

@@ -474,7 +474,8 @@ grub_dl_ref (grub_dl_t mod)
 {
   grub_dl_dep_t dep;
 
-  if (!mod) return 0;
+  if (!mod)
+    return 0;
 
   for (dep = mod->dep; dep; dep = dep->next)
     grub_dl_ref (dep->mod);
@@ -487,7 +488,8 @@ grub_dl_unref (grub_dl_t mod)
 {
   grub_dl_dep_t dep;
 
-  if (!mod) return 0;
+  if (!mod)
+    return 0;
 
   for (dep = mod->dep; dep; dep = dep->next)
     grub_dl_unref (dep->mod);

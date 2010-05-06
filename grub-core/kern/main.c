@@ -30,6 +30,8 @@
 #include <grub/reader.h>
 #include <grub/parser.h>
 
+int grub_no_autoload;
+
 void
 grub_module_iterate (int (*hook) (struct grub_module_header *header))
 {

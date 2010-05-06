@@ -28,15 +28,7 @@
 #include <config.h>
 #include <grub/types.h>
 #include <grub/symbol.h>
-
-#ifdef __NetBSD__
-/* NetBSD uses /boot for its boot block.  */
-# define DEFAULT_DIRECTORY	"/grub"
-#else
-# define DEFAULT_DIRECTORY	"/boot/grub"
-#endif
-
-#define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"
+#include <grub/emu/misc.h>
 
 char *grub_util_get_path (const char *dir, const char *file);
 size_t grub_util_get_fp_size (FILE *fp);
@@ -47,18 +39,6 @@ void grub_util_load_image (const char *path, char *buf);
 void grub_util_write_image (const char *img, size_t size, FILE *out);
 void grub_util_write_image_at (const void *img, size_t size, off_t offset,
 			       FILE *out);
-
-#ifndef HAVE_VASPRINTF
-
-int vasprintf (char **buf, const char *fmt, va_list ap);
-
-#endif
-
-#ifndef  HAVE_ASPRINTF
-
-int asprintf (char **buf, const char *fmt, ...);
-
-#endif
 
 #ifdef __MINGW32__
 

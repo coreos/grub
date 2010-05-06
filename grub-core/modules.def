@@ -15,6 +15,8 @@ kernel = {
   mips_yeeloong_cppflags = '-DUSE_ASCII_FAILBACK';
   i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
   i386_qemu_ccasflags    = '-DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  emu_cflags = '$(CFLAGS_GNULIB)';
+  emu_cppflags = '$(CPPFLAGS_GNULIB)';
 
   mips_ldadd = '-lgcc';
   powerpc_ldadd = '-lgcc';
@@ -187,6 +189,8 @@ kernel = {
   sparc64_ieee1275 = disk/ieee1275/ofdisk.c;
   sparc64_ieee1275 = term/ieee1275/ofconsole.c;
 
+  emu = kern/emu/mm.c;
+  emu = kern/emu/main.c;
   emu = kern/emu/misc.c;
   emu = kern/emu/getroot.c;
   emu = kern/emu/time.c;
@@ -194,6 +198,7 @@ kernel = {
   emu = kern/emu/hostfs.c;
   emu = kern/emu/console.c;
   emu = disk/host.c;
+  emu = gnulib/progname.c;
 
   image_nostrip = { emu; };
   image_strip_keep_kernel = { i386_efi; x86_64_efi; };
@@ -205,15 +210,8 @@ program = {
   name = grub-emu;
   mansection = 1;
 
-  source = kern/emu/main.c;
-  source = kern/emu/dummy/dl.c;
-  source = kern/emu/dummy/symlist.c;
-  source = gnulib/progname.c;
-
+  source = kern/emu/full.c;
   nodist = grub_emu_init.c;
-
-  cflags = '$(CFLAGS_GNULIB)';
-  cppflags = '$(CPPFLAGS_GNULIB)';
 
   ldadd = kernel.exec;
   ldadd = '$(MODULE_FILES)';
@@ -225,15 +223,9 @@ program = {
 program = {
   name = grub-emu-lite;
 
-  source = kern/emu/main.c;
   source = kern/emu/lite.c;
-  source = kern/emu/dl.c;
   source = kern/emu/cache.S;
-  source = gnulib/progname.c;
   nodist = symlist.c;
-
-  cflags = '$(CFLAGS_GNULIB)';
-  cppflags = '$(CPPFLAGS_GNULIB)';
 
   ldadd = kernel.exec;
   ldadd = '$(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS)';

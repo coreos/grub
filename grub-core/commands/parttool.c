@@ -175,7 +175,7 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
     }
 
   /* Load modules. */
-#if defined(GRUB_MACHINE_EMU)
+  if (! grub_no_autoload)
   {
     const char *prefix;
     prefix = grub_env_get ("prefix");
@@ -233,7 +233,6 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
     /* Ignore errors.  */
     grub_errno = GRUB_ERR_NONE;
   }
-#endif
 
   if (argc == 1)
     return show_help ();

@@ -278,29 +278,39 @@ grub_mm_init_region (void *addr __attribute__ ((unused)),
 {
 }
 
-#if !(defined (__i386__) || defined (__x86_64__))
+void
+grub_register_exported_symbols (void)
+{
+}
+
+#ifdef __MINGW32__
+
+void
+grub_millisleep (grub_uint32_t ms)
+{
+  Sleep (ms);
+}
+
+#else
+
+void
+grub_millisleep (grub_uint32_t ms)
+{
+  struct timespec ts;
+
+  ts.tv_sec = ms / 1000;
+  ts.tv_nsec = (ms % 1000) * 1000000;
+  nanosleep (&ts, NULL);
+}
+
+#endif
+
+#if !(defined (__i386__) || defined (__x86_64__)) && GRUB_MACHINE_EMU
 void
 grub_arch_sync_caches (void *address __attribute__ ((unused)),
 		       grub_size_t len __attribute__ ((unused)))
 {
 }
-#endif
-
-#ifndef  HAVE_ASPRINTF
-
-int
-asprintf (char **buf, const char *fmt, ...)
-{
-  int status;
-  va_list ap;
-
-  va_start (ap, fmt);
-  status = vasprintf (*buf, fmt, ap);
-  va_end (ap);
-
-  return status;
-}
-
 #endif
 
 #ifdef __MINGW32__
