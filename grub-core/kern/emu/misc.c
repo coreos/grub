@@ -176,6 +176,26 @@ grub_get_rtc (void)
 	     * GRUB_TICKS_PER_SECOND / 1000000));
 }
 
+#ifdef __CYGWIN__
+/* Convert POSIX path to Win32 path,
+   remove drive letter, replace backslashes.  */
+static char *
+get_win32_path (const char *path)
+{
+  char winpath[PATH_MAX];
+  if (cygwin_conv_path (CCP_POSIX_TO_WIN_A, path, winpath, sizeof(winpath)))
+    grub_util_error ("cygwin_conv_path() failed");
+
+  int len = strlen (winpath);
+  int offs = (len > 2 && winpath[1] == ':' ? 2 : 0);
+
+  int i;
+  for (i = offs; i < len; i++)
+    if (winpath[i] == '\\')
+      winpath[i] = '/';
+  return xstrdup (winpath + offs);
+}
+#endif
 
 /* This function never prints trailing slashes (so that its output
    can be appended a slash unconditionally).  */

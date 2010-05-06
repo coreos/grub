@@ -4,6 +4,13 @@
 #include <grub/symbol.h>
 #include <grub/types.h>
 
+#ifdef __CYGWIN__
+# include <sys/fcntl.h>
+# include <sys/cygwin.h>
+# include <limits.h>
+# define DEV_CYGDRIVE_MAJOR 98
+#endif
+
 #ifdef __NetBSD__
 /* NetBSD uses /boot for its boot block.  */
 # define DEFAULT_DIRECTORY	"/grub"
