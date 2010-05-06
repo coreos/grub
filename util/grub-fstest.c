@@ -19,6 +19,7 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/misc.h>
 #include <grub/device.h>
@@ -33,8 +34,6 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
-#include <grub_fstest_init.h>
-
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -42,27 +41,6 @@
 #include <getopt.h>
 
 #include "progname.h"
-
-void
-grub_putchar (int c)
-{
-  putchar (c);
-}
-
-int
-grub_getkey (void)
-{
-  return -1;
-}
-
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
-
-void
-grub_refresh (void)
-{
-  fflush (stdout);
-}
 
 static grub_err_t
 execute_command (char *name, int n, char **args)

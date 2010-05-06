@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <limits.h>
 
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/deviceiter.h>
 #include <grub/i18n.h>

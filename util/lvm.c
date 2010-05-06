@@ -19,7 +19,7 @@
 
 /* We only support LVM on Linux.  */
 #ifdef __linux__
-
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/lvm.h>
 

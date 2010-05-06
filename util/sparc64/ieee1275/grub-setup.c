@@ -19,6 +19,7 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/device.h>
 #include <grub/i18n.h>
@@ -29,15 +30,13 @@
 #include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
 #include <grub/env.h>
-#include <grub/util/hostdisk.h>
+#include <grub/emu/hostdisk.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <grub/term.h>
 #include <grub/util/raid.h>
 #include <grub/util/lvm.h>
 #include <grub/util/ofpath.h>
-
-#include <grub_setup_init.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -46,7 +45,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <grub/util/getroot.h>
+#include <grub/emu/getroot.h>
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
@@ -82,27 +81,6 @@ struct boot_blocklist
   grub_uint64_t start;
   grub_uint32_t len;
 } __attribute__ ((packed));
-
-void
-grub_putchar (int c)
-{
-  putchar (c);
-}
-
-int
-grub_getkey (void)
-{
-  return -1;
-}
-
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
-
-void
-grub_refresh (void)
-{
-  fflush (stdout);
-}
 
 static void
 setup (const char *prefix, const char *dir,
@@ -627,8 +605,8 @@ main (int argc, char *argv[])
 
   find_dest_dev (&ginfo, argv);
 
-  ginfo.prefix = make_system_path_relative_to_its_root (ginfo.dir ?
-							: DEFAULT_DIRECTORY);
+  ginfo.prefix = grub_make_system_path_relative_to_its_root (ginfo.dir ?
+							     : DEFAULT_DIRECTORY);
 
   check_root_dev (&ginfo);
 

@@ -1,0 +1,192 @@
+# -*- makefile -*-
+
+KERNEL_HEADER_FILES =
+KERNEL_HEADER_FILES += include/grub/cache.h
+KERNEL_HEADER_FILES += include/grub/command.h
+KERNEL_HEADER_FILES += include/grub/device.h
+KERNEL_HEADER_FILES += include/grub/disk.h
+KERNEL_HEADER_FILES += include/grub/dl.h
+KERNEL_HEADER_FILES += include/grub/elf.h
+KERNEL_HEADER_FILES += include/grub/elfload.h
+KERNEL_HEADER_FILES += include/grub/env.h
+KERNEL_HEADER_FILES += include/grub/env_private.h
+KERNEL_HEADER_FILES += include/grub/err.h
+KERNEL_HEADER_FILES += include/grub/file.h
+KERNEL_HEADER_FILES += include/grub/fs.h
+KERNEL_HEADER_FILES += include/grub/handler.h
+KERNEL_HEADER_FILES += include/grub/i18n.h
+KERNEL_HEADER_FILES += include/grub/kernel.h
+KERNEL_HEADER_FILES += include/grub/list.h
+KERNEL_HEADER_FILES += include/grub/misc.h
+KERNEL_HEADER_FILES += include/grub/mm.h
+KERNEL_HEADER_FILES += include/grub/net.h
+KERNEL_HEADER_FILES += include/grub/parser.h
+KERNEL_HEADER_FILES += include/grub/partition.h
+KERNEL_HEADER_FILES += include/grub/reader.h
+KERNEL_HEADER_FILES += include/grub/symbol.h
+KERNEL_HEADER_FILES += include/grub/term.h
+KERNEL_HEADER_FILES += include/grub/time.h
+KERNEL_HEADER_FILES += include/grub/types.h
+
+if COND_i386_pc
+KERNEL_HEADER_FILES += include/grub/boot.h
+KERNEL_HEADER_FILES += include/grub/loader.h
+KERNEL_HEADER_FILES += include/grub/msdos_partition.h
+KERNEL_HEADER_FILES += include/grub/machine/biosdisk.h
+KERNEL_HEADER_FILES += include/grub/machine/boot.h
+KERNEL_HEADER_FILES += include/grub/machine/console.h
+KERNEL_HEADER_FILES += include/grub/machine/memory.h
+KERNEL_HEADER_FILES += include/grub/machine/loader.h
+KERNEL_HEADER_FILES += include/grub/machine/vga.h
+KERNEL_HEADER_FILES += include/grub/machine/vbe.h
+KERNEL_HEADER_FILES += include/grub/machine/kernel.h
+KERNEL_HEADER_FILES += include/grub/machine/pxe.h
+KERNEL_HEADER_FILES += include/grub/i386/pit.h
+endif
+
+if COND_i386_efi
+KERNEL_HEADER_FILES += include/grub/boot.h
+KERNEL_HEADER_FILES += include/grub/loader.h
+KERNEL_HEADER_FILES += include/grub/msdos_partition.h
+KERNEL_HEADER_FILES += include/grub/efi/efi.h
+KERNEL_HEADER_FILES += include/grub/efi/time.h
+KERNEL_HEADER_FILES += include/grub/efi/disk.h
+KERNEL_HEADER_FILES += include/grub/i386/pit.h
+endif
+
+if COND_i386_coreboot
+KERNEL_HEADER_FILES += include/grub/boot.h
+KERNEL_HEADER_FILES += include/grub/loader.h
+KERNEL_HEADER_FILES += include/grub/msdos_partition.h
+KERNEL_HEADER_FILES += include/grub/machine/boot.h
+KERNEL_HEADER_FILES += include/grub/machine/console.h
+KERNEL_HEADER_FILES += include/grub/machine/init.h
+KERNEL_HEADER_FILES += include/grub/machine/memory.h
+KERNEL_HEADER_FILES += include/grub/machine/loader.h
+endif
+
+if COND_i386_qemu
+KERNEL_HEADER_FILES += include/grub/boot.h
+KERNEL_HEADER_FILES += include/grub/loader.h
+KERNEL_HEADER_FILES += include/grub/msdos_partition.h
+KERNEL_HEADER_FILES += include/grub/machine/boot.h
+KERNEL_HEADER_FILES += include/grub/machine/console.h
+KERNEL_HEADER_FILES += include/grub/machine/init.h
+KERNEL_HEADER_FILES += include/grub/machine/memory.h
+KERNEL_HEADER_FILES += include/grub/machine/loader.h
+endif
+
+if COND_i386_ieee1275
+KERNEL_HEADER_FILES += include/grub/loader.h
+KERNEL_HEADER_FILES += include/grub/msdos_partition.h
+KERNEL_HEADER_FILES += include/grub/ieee1275/ieee1275.h
+KERNEL_HEADER_FILES += include/grub/machine/kernel.h
+KERNEL_HEADER_FILES += include/grub/machine/loader.h
+KERNEL_HEADER_FILES += include/grub/machine/memory.h
+endif
+
+if COND_x86_64_efi
+KERNEL_HEADER_FILES += include/grub/boot.h
+KERNEL_HEADER_FILES += include/grub/loader.h
+KERNEL_HEADER_FILES += include/grub/msdos_partition.h
+KERNEL_HEADER_FILES += include/grub/efi/efi.h
+KERNEL_HEADER_FILES += include/grub/efi/time.h
+KERNEL_HEADER_FILES += include/grub/efi/disk.h
+KERNEL_HEADER_FILES += include/grub/machine/loader.h
+KERNEL_HEADER_FILES += include/grub/i386/pit.h
+endif
+
+if COND_mips_yeeloong
+KERNEL_HEADER_FILES += include/grub/boot.h
+KERNEL_HEADER_FILES += include/grub/loader.h
+KERNEL_HEADER_FILES += include/grub/msdos_partition.h
+KERNEL_HEADER_FILES += include/grub/machine/kernel.h
+KERNEL_HEADER_FILES += include/grub/machine/memory.h
+KERNEL_HEADER_FILES += include/grub/cpu/cache.h
+KERNEL_HEADER_FILES += include/grub/bitmap.h
+KERNEL_HEADER_FILES += include/grub/video.h
+KERNEL_HEADER_FILES += include/grub/gfxterm.h
+KERNEL_HEADER_FILES += include/grub/font.h
+KERNEL_HEADER_FILES += include/grub/bitmap_scale.h
+KERNEL_HEADER_FILES += include/grub/bufio.h
+KERNEL_HEADER_FILES += include/grub/pci.h
+KERNEL_HEADER_FILES += include/grub/libgcc.h
+endif
+
+if COND_powerpc_ieee1275
+KERNEL_HEADER_FILES += include/grub/boot.h
+KERNEL_HEADER_FILES += include/grub/loader.h
+KERNEL_HEADER_FILES += include/grub/msdos_partition.h
+KERNEL_HEADER_FILES += include/grub/ieee1275/ieee1275.h
+KERNEL_HEADER_FILES += include/grub/machine/kernel.h
+KERNEL_HEADER_FILES += include/grub/libgcc.h
+endif
+
+if COND_sparc64_ieee1275
+KERNEL_HEADER_FILES += include/grub/boot.h
+KERNEL_HEADER_FILES += include/grub/loader.h
+KERNEL_HEADER_FILES += include/grub/msdos_partition.h
+KERNEL_HEADER_FILES += include/grub/libgcc.h
+KERNEL_HEADER_FILES += include/grub/ieee1275/ieee1275.h
+KERNEL_HEADER_FILES += include/grub/machine/kernel.h
+KERNEL_HEADER_FILES += include/grub/sparc64/ieee1275/ieee1275.h
+endif
+
+if COND_emu
+KERNEL_HEADER_FILES += include/grub/cpu/time.h
+KERNEL_HEADER_FILES += include/grub/cpu/types.h
+KERNEL_HEADER_FILES += include/grub/gzio.h
+KERNEL_HEADER_FILES += include/grub/menu.h
+KERNEL_HEADER_FILES += include/grub/datetime.h
+KERNEL_HEADER_FILES += include/grub/emu/misc.h
+if COND_GRUB_EMU_SDL
+KERNEL_HEADER_FILES += include/grub/sdl.h
+endif
+if COND_GRUB_EMU_USB
+KERNEL_HEADER_FILES += include/grub/libusb.h
+endif
+if COND_GRUB_EMU_PCI
+KERNEL_HEADER_FILES += include/grub/libpciaccess.h
+endif
+endif
+
+symlist.h: config.h $(KERNEL_HEADER_FILES)
+	@list='$^'; \
+	for p in $$list; do \
+	  echo "#include <$$p>" >> $@ || (rm -f $@; exit 1); \
+	done
+CLEANFILES += symlist.h
+BUILT_SOURCES += symlist.h
+
+symlist.c: symlist.h gensymlist.sh
+	$(TARGET_CPP) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS_KERNEL) $(CPPFLAGS) -DGRUB_SYMBOL_GENERATOR=1 symlist.h > symlist.p || (rm -f symlist.p; exit 1)
+	cat symlist.p | /bin/sh $(srcdir)/gensymlist.sh config.h $(KERNEL_HEADER_FILES) >$@ || (rm -f $@; exit 1)
+	rm -f symlist.p
+CLEANFILES += symlist.c
+BUILT_SOURCES += symlist.c
+
+noinst_DATA += kernel_syms.lst
+kernel_syms.lst: $(KERNEL_HEADER_FILES) config.h
+	if grep "^#define HAVE_ASM_USCORE" config.h; then u="_"; else u=""; fi
+	$(TARGET_CPP) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS_KERNEL) $(CPPFLAGS) $(CFLAGS) -DGRUB_SYMBOL_GENERATOR=1 $^ >kernel_syms.input
+	cat kernel_syms.input | grep -v '^#' | sed -n \
+	  -e '/EXPORT_FUNC *([a-zA-Z0-9_]*)/{s/.*EXPORT_FUNC *(\([a-zA-Z0-9_]*\)).*/'"$$u"'\1 kernel/;p;}' \
+	  -e '/EXPORT_VAR *([a-zA-Z0-9_]*)/{s/.*EXPORT_VAR *(\([a-zA-Z0-9_]*\)).*/'"$$u"'\1 kernel/;p;}' \
+	  | sort -u >$@
+	rm -f kernel_syms.input
+CLEANFILES += kernel_syms.lst
+
+if COND_emu
+kern/emu/grub_emu-main.$(OBJEXT):grub_emu_init.h
+grub_emu-grub_emu_init.$(OBJEXT):grub_emu_init.h
+kern/emu/grub_emu_dyn-main.$(OBJEXT):grub_emu_init.h
+grub_emu_dyn-grub_emu_init.$(OBJEXT):grub_emu_init.h
+
+grub_emu_init.h: genemuinitheader.sh $(MOD_FILES)
+	rm -f $@; echo $(MOD_FILES) | sh $(srcdir)/genemuinitheader.sh $(NM) > $@
+CLEANFILES += grub_emu_init.h
+
+grub_emu_init.c: grub_emu_init.h genemuinit.sh $(MOD_FILES)
+	rm -f $@; echo $(MOD_FILES) | sh $(srcdir)/genemuinit.sh $(NM) > $@
+CLEANFILES += grub_emu_init.c
+endif

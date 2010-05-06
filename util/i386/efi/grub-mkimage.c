@@ -25,6 +25,7 @@
 #include <string.h>
 #include <time.h>
 #include <grub/elf.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/resolve.h>
 #include <grub/kernel.h>

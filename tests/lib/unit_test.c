@@ -105,5 +105,4 @@ grub_exit (void)
   exit (1);
 }
 
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
+struct grub_term_input *grub_term_inputs;

@@ -19,6 +19,7 @@
 
 /* We only support RAID on Linux.  */
 #ifdef __linux__
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/raid.h>
 

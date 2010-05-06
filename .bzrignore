@@ -71,3 +71,9 @@ stamp-h.in
 symlist.c
 trigtables.c
 update-grub_lib
+Makefile.in
+modules.am
+GPATH
+GRTAGS
+GSYMS
+GTAGS

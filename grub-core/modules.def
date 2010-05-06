@@ -1,0 +1,1592 @@
+AutoGen definitions Makefile.tpl;
+
+kernel = {
+  name = kernel;
+
+  emu_ldflags              = '-Wl,-r';
+  x86_efi_ldflags          = '-Wl,-r';
+  i386_pc_ldflags          = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  i386_coreboot_ldflags    = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  i386_qemu_ldflags        = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  i386_ieee1275_ldflags    = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  mips_yeeloong_ldflags    = '-Wl,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  powerpc_ieee1275_ldflags = '-Wl,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+
+  mips_yeeloong_cppflags = '-DUSE_ASCII_FAILBACK';
+  i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
+  i386_qemu_ccasflags    = '-DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+
+  mips_ldadd = '-lgcc';
+  powerpc_ldadd = '-lgcc';
+  sparc64_ldadd = '-lgcc';
+
+  nonemu_nodist = symlist.c;
+
+  shared = kern/command.c;
+  shared = kern/corecmd.c;
+  shared = kern/device.c;
+  shared = kern/disk.c;
+  shared = kern/dl.c;
+  shared = kern/env.c;
+  shared = kern/err.c;
+  shared = kern/file.c;
+  shared = kern/fs.c;
+  shared = kern/handler.c;
+  shared = kern/list.c;
+  shared = kern/main.c;
+  shared = kern/misc.c;
+  shared = kern/parser.c;
+  shared = kern/partition.c;
+  shared = kern/rescue_parser.c;
+  shared = kern/rescue_reader.c;
+  shared = kern/term.c;
+
+  i386_pc = kern/i386/pc/startup.S;
+  i386_pc = kern/i386/misc.S;
+  i386_pc = kern/mm.c;
+  i386_pc = kern/time.c;
+  i386_pc = kern/i386/dl.c;
+  i386_pc = kern/i386/pc/init.c;
+  i386_pc = kern/i386/pc/mmap.c;
+  i386_pc = kern/i386/tsc.c;
+  i386_pc = kern/i386/pit.c;
+  i386_pc = kern/generic/rtc_get_time_ms.c;
+  i386_pc = kern/generic/millisleep.c;
+  i386_pc = term/i386/pc/console.c;
+  i386_pc = term/i386/vga_common.c;
+
+  i386_efi = kern/i386/efi/startup.S;
+  i386_efi = kern/mm.c;
+  i386_efi = kern/i386/dl.c;
+  i386_efi = kern/i386/efi/init.c;
+  i386_efi = kern/efi/efi.c;
+  i386_efi = kern/efi/init.c;
+  i386_efi = kern/efi/mm.c;
+  i386_efi = kern/time.c;
+  i386_efi = kern/i386/tsc.c;
+  i386_efi = kern/i386/pit.c;
+  i386_efi = kern/generic/rtc_get_time_ms.c;
+  i386_efi = kern/generic/millisleep.c;
+  i386_efi = term/efi/console.c;
+  i386_efi = disk/efi/efidisk.c;
+
+  i386_coreboot = kern/i386/coreboot/startup.S;
+  i386_coreboot = kern/i386/misc.S;
+  i386_coreboot = kern/i386/coreboot/init.c;
+  i386_coreboot = kern/i386/coreboot/mmap.c;
+  i386_coreboot = kern/i386/halt.c;
+  i386_coreboot = kern/mm.c;
+  i386_coreboot = kern/time.c;
+  i386_coreboot = kern/i386/dl.c;
+  i386_coreboot = kern/i386/tsc.c;
+  i386_coreboot = kern/i386/pit.c;
+  i386_coreboot = kern/generic/rtc_get_time_ms.c;
+  i386_coreboot = kern/generic/millisleep.c;
+  i386_coreboot = term/i386/pc/vga_text.c;
+  i386_coreboot = term/i386/vga_common.c;
+
+  i386_qemu = kern/i386/qemu/startup.S;
+  i386_qemu = kern/i386/misc.S;
+  i386_qemu = kern/i386/coreboot/init.c;
+  i386_qemu = kern/i386/qemu/mmap.c;
+  i386_qemu = kern/i386/halt.c;
+  i386_qemu = kern/mm.c;
+  i386_qemu = kern/time.c;
+  i386_qemu = kern/i386/dl.c;
+  i386_qemu = kern/i386/tsc.c;
+  i386_qemu = kern/i386/pit.c;
+  i386_qemu = kern/generic/rtc_get_time_ms.c;
+  i386_qemu = kern/generic/millisleep.c;
+  i386_qemu = term/i386/pc/vga_text.c;
+  i386_qemu = term/i386/vga_common.c;
+
+  i386_ieee1275 = kern/i386/ieee1275/startup.S;
+  i386_ieee1275 = kern/i386/misc.S;
+  i386_ieee1275 = kern/i386/ieee1275/init.c;
+  i386_ieee1275 = kern/ieee1275/init.c;
+  i386_ieee1275 = kern/ieee1275/mmap.c;
+  i386_ieee1275 = kern/ieee1275/cmain.c;
+  i386_ieee1275 = kern/ieee1275/openfw.c;
+  i386_ieee1275 = kern/mm.c;
+  i386_ieee1275 = kern/i386/dl.c;
+  i386_ieee1275 = kern/time.c;
+  i386_ieee1275 = kern/generic/millisleep.c;
+  i386_ieee1275 = kern/ieee1275/ieee1275.c;
+  i386_ieee1275 = term/ieee1275/ofconsole.c;
+  i386_ieee1275 = disk/ieee1275/ofdisk.c;
+
+  x86_64_efi = kern/x86_64/efi/startup.S;
+  x86_64_efi = kern/x86_64/efi/callwrap.S;
+  x86_64_efi = kern/mm.c;
+  x86_64_efi = kern/x86_64/dl.c;
+  x86_64_efi = kern/i386/efi/init.c;
+  x86_64_efi = kern/efi/efi.c;
+  x86_64_efi = kern/efi/init.c;
+  x86_64_efi = kern/efi/mm.c;
+  x86_64_efi = kern/time.c;
+  x86_64_efi = kern/i386/tsc.c;
+  x86_64_efi = kern/i386/pit.c;
+  x86_64_efi = kern/generic/millisleep.c;
+  x86_64_efi = kern/generic/rtc_get_time_ms.c;
+  x86_64_efi = term/efi/console.c;
+  x86_64_efi = disk/efi/efidisk.c;
+
+  mips_yeeloong = kern/mips/startup.S;
+  mips_yeeloong = kern/mips/init.c;
+  mips_yeeloong = kern/mips/yeeloong/init.c;
+  mips_yeeloong = kern/mm.c;
+  mips_yeeloong = kern/mips/dl.c;
+  mips_yeeloong = kern/generic/millisleep.c;
+  mips_yeeloong = kern/generic/rtc_get_time_ms.c;
+  mips_yeeloong = kern/time.c;
+  mips_yeeloong = kern/mips/cache.S;
+  mips_yeeloong = io/bufio.c;
+  mips_yeeloong = lib/arg.c;
+  mips_yeeloong = commands/extcmd.c;
+  mips_yeeloong = bus/pci.c;
+  mips_yeeloong = bus/bonito.c;
+  mips_yeeloong = font/font_cmd.c;
+  mips_yeeloong = font/font.c;
+  mips_yeeloong = term/at_keyboard.c;
+  mips_yeeloong = term/gfxterm.c;
+  mips_yeeloong = video/video.c;
+  mips_yeeloong = video/fb/video_fb.c;
+  mips_yeeloong = video/fb/fbblit.c;
+  mips_yeeloong = video/fb/fbfill.c;
+  mips_yeeloong = video/fb/fbutil.c;
+  mips_yeeloong = video/bitmap.c;
+  mips_yeeloong = video/bitmap_scale.c;
+  mips_yeeloong = video/sm712.c;
+
+  powerpc_ieee1275 = kern/powerpc/ieee1275/startup.S;
+  powerpc_ieee1275 = kern/ieee1275/cmain.c;
+  powerpc_ieee1275 = kern/ieee1275/ieee1275.c;
+  powerpc_ieee1275 = kern/mm.c;
+  powerpc_ieee1275 = kern/ieee1275/init.c;
+  powerpc_ieee1275 = kern/ieee1275/mmap.c;
+  powerpc_ieee1275 = kern/ieee1275/openfw.c;
+  powerpc_ieee1275 = kern/powerpc/dl.c;
+  powerpc_ieee1275 = kern/generic/millisleep.c;
+  powerpc_ieee1275 = kern/time.c;
+  powerpc_ieee1275 = kern/powerpc/cache.S;
+  powerpc_ieee1275 = term/ieee1275/ofconsole.c;
+  powerpc_ieee1275 = disk/ieee1275/ofdisk.c;
+
+  sparc64_ieee1275 = kern/sparc64/ieee1275/crt0.S;
+  sparc64_ieee1275 = kern/ieee1275/cmain.c;
+  sparc64_ieee1275 = kern/ieee1275/ieee1275.c;
+  sparc64_ieee1275 = kern/mm.c;
+  sparc64_ieee1275 = kern/sparc64/ieee1275/ieee1275.c;
+  sparc64_ieee1275 = kern/sparc64/ieee1275/init.c;
+  sparc64_ieee1275 = kern/ieee1275/mmap.c;
+  sparc64_ieee1275 = kern/ieee1275/openfw.c;
+  sparc64_ieee1275 = kern/sparc64/dl.c;
+  sparc64_ieee1275 = kern/generic/millisleep.c;
+  sparc64_ieee1275 = kern/time.c;
+  sparc64_ieee1275 = kern/sparc64/cache.S;
+  sparc64_ieee1275 = disk/ieee1275/ofdisk.c;
+  sparc64_ieee1275 = term/ieee1275/ofconsole.c;
+
+  emu = kern/emu/misc.c;
+  emu = kern/emu/getroot.c;
+  emu = kern/emu/time.c;
+  emu = kern/emu/hostdisk.c;
+  emu = kern/emu/hostfs.c;
+  emu = kern/emu/console.c;
+  emu = disk/host.c;
+
+  image_nostrip = { emu; };
+  image_strip_keep_kernel = { i386_efi; x86_64_efi; };
+  image_strip = { powerpc_ieee1275; i386_coreboot; i386_ieee1275; };
+  image_strip_macho2img = { mips_yeeloong; i386_pc; i386_qemu; sparc64_ieee1275; };
+};
+
+program = {
+  name = grub-emu;
+  mansection = 1;
+
+  source = kern/emu/main.c;
+  source = kern/emu/dummy/dl.c;
+  source = kern/emu/dummy/symlist.c;
+  source = gnulib/progname.c;
+
+  nodist = grub_emu_init.c;
+
+  cflags = '$(CFLAGS_GNULIB)';
+  cppflags = '$(CPPFLAGS_GNULIB)';
+
+  ldadd = kernel.exec;
+  ldadd = '$(MODULE_FILES)';
+  ldadd = '$(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS)';
+
+  emu;
+};
+
+program = {
+  name = grub-emu-lite;
+
+  source = kern/emu/main.c;
+  source = kern/emu/lite.c;
+  source = kern/emu/dl.c;
+  source = kern/emu/cache.S;
+  source = gnulib/progname.c;
+  nodist = symlist.c;
+
+  cflags = '$(CFLAGS_GNULIB)';
+  cppflags = '$(CPPFLAGS_GNULIB)';
+
+  ldadd = kernel.exec;
+  ldadd = '$(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS)';
+
+  emu;
+};
+
+module = {
+  name = trig;
+  nodist = trigtables.c;
+  common;
+};
+
+image = {
+  name = boot;
+  i386_pc = boot/i386/pc/boot.S;
+  i386_pc_ldflags = "-Wl,-Ttext=0x7C00";
+
+  i386_qemu = boot/i386/qemu/boot.S;
+  i386_qemu_ldflags = '-Wl,-Ttext,$(GRUB_BOOT_MACHINE_LINK_ADDR)';
+  i386_qemu_ccasflags = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
+
+  sparc64_ieee1275 = boot/sparc64/ieee1275/boot.S;
+  sparc64_ieee1275_format = a.out-sunos-big;
+  sparc64_ieee1275_ldflags = ' -Wl,-Ttext=0x4000';
+};
+
+image = {
+  name = cdboot;
+  source = boot/i386/pc/cdboot.S;
+  ldflags = "-Wl,-Ttext=0x7C00";
+
+  i386_pc;
+};
+
+image = {
+  name = pxeboot;
+  source = boot/i386/pc/pxeboot.S;
+  ldflags = '-Wl,-Ttext=0x7C00';
+
+  i386_pc;
+};
+
+image = {
+  name = diskboot;
+  i386_pc = boot/i386/pc/diskboot.S;
+  i386_pc_ldflags = '-Wl,-Ttext=0x8000';
+
+  sparc64_ieee1275 = boot/sparc64/ieee1275/diskboot.S;
+  sparc64_ieee1275_ldflags = '-Wl,-Ttext=0x4200';
+};
+
+image = {
+  name = lnxboot;
+  source = boot/i386/pc/lnxboot.S;
+  ldflags = '-Wl,-Ttext=0x6000';
+
+  i386_pc;
+};
+
+module = {
+  name = libusb;
+  source = bus/usb/emu/usb.c;
+  emu;
+  enable = COND_GRUB_EMU_USB;
+};
+
+module = {
+  name = pci;
+  source = bus/emu/pci.c;
+  source = commands/lspci.c;
+  emu;
+  enable = COND_GRUB_EMU_PCI;
+};
+
+module = {
+  name = usb;
+  source = bus/usb/usb.c;
+  source = bus/usb/usbtrans.c;
+  source = bus/usb/usbhub.c;
+  i386;
+};
+
+module = {
+  name = usb;
+  source = bus/usb/usb.c;
+  emu;
+  enable = COND_GRUB_EMU_USB;
+};
+
+module = {
+  name = uhci;
+  source = bus/usb/uhci.c;
+  x86;
+};
+
+module = {
+  name = ohci;
+  source = bus/usb/ohci.c;
+  x86;
+};
+
+module = {
+  name = pci;
+  source = bus/pci.c;
+  x86;
+};
+
+library = {
+  name = libgnulib.a;
+  source = gnulib/regex.c;
+  cflags = '$(CFLAGS_POSIX) $(CFLAGS_GNULIB)';
+  cppflags = '$(CPPFLAGS_POSIX) $(CPPFLAGS_GNULIB)';
+  common;
+};
+
+module = {
+  name = iorw;
+  source = commands/iorw.c;
+  i386;
+};
+
+module = {
+  name = regexp;
+  source = commands/regexp.c;
+  ldadd = libgnulib.a;
+  cflags = '$(CFLAGS_POSIX) $(CFLAGS_GNULIB)';
+  cppflags = '$(CPPFLAGS_POSIX) $(CPPFLAGS_GNULIB)';
+  common;
+};
+
+module = {
+  name = acpi;
+
+  x86_efi = commands/acpi.c;
+  x86_efi = commands/efi/acpi.c;
+
+  i386_pc = commands/acpi.c;
+  i386_pc = commands/i386/pc/acpi.c;
+};
+
+module = {
+  common;
+  name = blocklist;
+  source = commands/blocklist.c;
+};
+
+module = {
+  common;
+  name = boot;
+  source = commands/boot.c;
+
+  i386_pc = commands/boot.c;
+  i386_pc = lib/i386/pc/biosnum.c;
+};
+
+module = {
+  common;
+  name = cat;
+  source = commands/cat.c;
+};
+
+module = {
+  common;
+  name = cmp;
+  source = commands/cmp.c;
+};
+
+module = {
+  common;
+  name = configfile;
+  source = commands/configfile.c;
+};
+
+module = {
+  name = cpuid;
+  source = commands/i386/cpuid.c;
+
+  x86;
+};
+
+module = {
+  common;
+  name = crc;
+  source = commands/crc.c;
+  source = lib/crc.c;
+};
+
+module = {
+  common;
+  name = date;
+  source = commands/date.c;
+
+  x86;
+  mips;
+};
+
+module = {
+  name = drivemap;
+
+  i386_pc = commands/i386/pc/drivemap.c;
+  i386_pc = commands/i386/pc/drivemap_int13h.S;
+};
+
+module = {
+  common;
+  name = echo;
+  source = commands/echo.c;
+};
+
+module = {
+  common;
+  name = extcmd;
+  source = commands/extcmd.c;
+  source = lib/arg.c;
+};
+
+module = {
+  name = fixvideo;
+  x86_efi = commands/efi/fixvideo.c;
+};
+
+module = {
+  common;
+  name = gptsync;
+  source = commands/gptsync.c;
+};
+
+module = {
+  name = halt;
+  source = commands/halt.c;
+
+  i386_pc = commands/i386/pc/halt.c;
+  emu;
+  x86;
+  sparc64;
+  powerpc;
+};
+
+module = {
+  common;
+  name = handler;
+  source = commands/handler.c;
+};
+
+module = {
+  common;
+  name = hashsum;
+  source = commands/hashsum.c;
+};
+
+module = {
+  name = hdparm;
+  source = commands/hdparm.c;
+  source = lib/hexdump.c;
+
+  i386_pc;
+};
+
+module = {
+  common;
+  name = help;
+  source = commands/help.c;
+};
+
+module = {
+  common;
+  name = hexdump;
+  source = commands/hexdump.c;
+  source = lib/hexdump.c;
+};
+
+module = {
+  common;
+  name = keystatus;
+  source = commands/keystatus.c;
+};
+
+module = {
+  name = loadbios;
+  x86_efi = commands/efi/loadbios.c;
+};
+
+module = {
+  common;
+  name = loadenv;
+  source = commands/loadenv.c;
+  source = lib/envblk.c;
+};
+
+module = {
+  common;
+  name = ls;
+  source = commands/ls.c;
+};
+
+module = {
+  common;
+  name = lsmmap;
+  source = commands/lsmmap.c;
+
+  i386_pc;
+  i386_qemu;
+  i386_coreboot;
+  i386_ieee1275;
+  mips_yeeloong;
+  powerpc_ieee1275;
+};
+
+module = {
+  name = lspci;
+  source = commands/lspci.c;
+
+  x86;
+  mips;
+};
+
+module = {
+  common;
+  name = memrw;
+  source = commands/memrw.c;
+};
+
+module = {
+  common;
+  name = minicmd;
+  source = commands/minicmd.c;
+};
+
+module = {
+  common;
+  name = parttool;
+  source = commands/parttool.c;
+};
+
+module = {
+  common;
+  name = password;
+  source = commands/password.c;
+};
+
+module = {
+  common;
+  name = password_pbkdf2;
+  source = commands/password_pbkdf2.c;
+};
+
+module = {
+  name = play;
+  source = commands/i386/pc/play.c;
+  i386;
+};
+
+module = {
+  common;
+  name = probe;
+  source = commands/probe.c;
+};
+
+module = {
+  name = pxecmd;
+  i386_pc = commands/i386/pc/pxecmd.c;
+};
+
+module = {
+  common;
+  name = read;
+  source = commands/read.c;
+};
+
+module = {
+  common;
+  name = reboot;
+  source = commands/reboot.c;
+
+  x86; powerpc; sparc64;
+};
+
+module = {
+  common;
+  name = search;
+  source = commands/search_wrap.c;
+};
+
+module = {
+  common;
+  name = search_fs_file;
+  source = commands/search_file.c;
+};
+
+module = {
+  common;
+  name = search_fs_uuid;
+  source = commands/search_uuid.c;
+};
+
+module = {
+  common;
+  name = search_label;
+  source = commands/search_label.c;
+};
+
+module = {
+  name = setpci;
+  source = commands/setpci.c;
+
+  x86;
+};
+
+module = {
+  common;
+  name = sleep;
+  source = commands/sleep.c;
+};
+
+module = {
+  name = suspend;
+  source = commands/ieee1275/suspend.c;
+  i386_ieee1275;
+  powerpc_ieee1275;
+};
+
+module = {
+  common;
+  name = terminal;
+  source = commands/terminal.c;
+};
+
+module = {
+  common;
+  name = test;
+  source = commands/test.c;
+};
+
+module = {
+  common;
+  name = true;
+  source = commands/true.c;
+};
+
+module = {
+  name = usbtest;
+  source = commands/usbtest.c;
+  i386_pc;
+};
+
+module = {
+  name = usbtest;
+  source = commands/usbtest.c;
+  emu;
+  enable = COND_GRUB_EMU_USB;
+};
+
+module = {
+  name = vbeinfo;
+  i386_pc = commands/i386/pc/vbeinfo.c;
+};
+
+module = {
+  name = vbetest;
+  i386_pc = commands/i386/pc/vbetest.c;
+};
+
+module = {
+  common;
+  name = videotest;
+  source = commands/videotest.c;
+};
+
+module = {
+  common;
+  name = xnu_uuid;
+  source = commands/xnu_uuid.c;
+};
+
+module = {
+  common;
+  name = dm_nv;
+  source = disk/dmraid_nvidia.c;
+};
+
+module = {
+  common;
+  name = loopback;
+  source = disk/loopback.c;
+};
+
+module = {
+  common;
+  name = lvm;
+  source = disk/lvm.c;
+};
+
+module = {
+  common;
+  name = mdraid;
+  source = disk/mdraid_linux.c;
+};
+
+module = {
+  common;
+  name = raid;
+  source = disk/raid.c;
+};
+
+module = {
+  common;
+  name = raid5rec;
+  source = disk/raid5_recover.c;
+};
+
+module = {
+  common;
+  name = raid6rec;
+  source = disk/raid6_recover.c;
+};
+
+module = {
+  common;
+  name = scsi;
+  source = disk/scsi.c;
+};
+
+module = {
+  common;
+  name = memdisk;
+  source = disk/memdisk.c;
+};
+
+module = {
+  name = ata;
+  source = disk/ata.c;
+
+  x86;
+  mips;
+};
+
+module = {
+  name = ata_pthru;
+  source = disk/ata_pthru.c;
+
+  x86;
+  mips_yeeloong;
+};
+
+module = {
+  name = biosdisk;
+  i386_pc = disk/i386/pc/biosdisk.c;
+};
+
+module = {
+  name = usbms;
+  source = disk/usbms.c;
+  i386_pc;
+};
+
+module = {
+  name = usbms;
+  source = disk/usbms.c;
+  emu;
+  enable = COND_GRUB_EMU_USB;
+};
+
+module = {
+  name = nand;
+  source = disk/ieee1275/nand.c;
+
+  i386_ieee1275;
+};
+
+module = {
+  name = efiemu;
+  i386_pc = efiemu/main.c;
+  i386_pc = efiemu/i386/loadcore32.c;
+  i386_pc = efiemu/i386/loadcore64.c;
+  i386_pc = efiemu/i386/pc/cfgtables.c;
+  i386_pc = efiemu/mm.c;
+  i386_pc = efiemu/loadcore_common.c;
+  i386_pc = efiemu/symbols.c;
+  i386_pc = efiemu/loadcore32.c;
+  i386_pc = efiemu/loadcore64.c;
+  i386_pc = efiemu/prepare32.c;
+  i386_pc = efiemu/prepare64.c;
+  i386_pc = efiemu/pnvram.c;
+  i386_pc = efiemu/i386/coredetect.c;
+};
+
+module = {
+  name = font;
+  source = font/font.c;
+  source = font/font_cmd.c;
+  emu;
+  x86;
+  sparc64;
+  powerpc;
+};
+
+module = {
+  common;
+  name = affs;
+  source = fs/affs.c;
+};
+
+module = {
+  common;
+  name = afs;
+  source = fs/afs.c;
+};
+
+module = {
+  common;
+  name = afs_be;
+  source = fs/afs_be.c;
+};
+
+module = {
+  common;
+  name = befs;
+  source = fs/befs.c;
+};
+
+module = {
+  common;
+  name = befs_be;
+  source = fs/befs_be.c;
+};
+
+module = {
+  common;
+  name = cpio;
+  source = fs/cpio.c;
+};
+
+module = {
+  common;
+  name = ext2;
+  source = fs/ext2.c;
+};
+
+module = {
+  common;
+  name = fat;
+  source = fs/fat.c;
+};
+
+module = {
+  common;
+  name = fshelp;
+  source = fs/fshelp.c;
+};
+
+module = {
+  common;
+  name = hfs;
+  source = fs/hfs.c;
+};
+
+module = {
+  common;
+  name = hfsplus;
+  source = fs/hfsplus.c;
+};
+
+module = {
+  common;
+  name = iso9660;
+  source = fs/iso9660.c;
+};
+
+module = {
+  common;
+  name = jfs;
+  source = fs/jfs.c;
+};
+
+module = {
+  common;
+  name = minix;
+  source = fs/minix.c;
+};
+
+module = {
+  common;
+  name = nilfs2;
+  source = fs/nilfs2.c;
+};
+
+module = {
+  common;
+  name = ntfs;
+  source = fs/ntfs.c;
+};
+
+module = {
+  common;
+  name = ntfscomp;
+  source = fs/ntfscomp.c;
+};
+
+module = {
+  common;
+  name = reiserfs;
+  source = fs/reiserfs.c;
+};
+
+module = {
+  common;
+  name = sfs;
+  source = fs/sfs.c;
+};
+
+module = {
+  common;
+  name = tar;
+  source = fs/tar.c;
+};
+
+module = {
+  common;
+  name = udf;
+  source = fs/udf.c;
+};
+
+module = {
+  common;
+  name = ufs1;
+  source = fs/ufs.c;
+};
+
+module = {
+  common;
+  name = ufs2;
+  source = fs/ufs2.c;
+};
+
+module = {
+  common;
+  name = xfs;
+  source = fs/xfs.c;
+};
+
+module = {
+  name = pxe;
+  i386_pc = fs/i386/pc/pxe.c;
+};
+
+module = {
+  name = gettext;
+  source = gettext/gettext.c;
+  common;
+};
+
+module = {
+  common;
+  name = gfxmenu;
+  source = gfxmenu/gfxmenu.c;
+  source = gfxmenu/model.c;
+  source = gfxmenu/view.c;
+  source = gfxmenu/icon_manager.c;
+  source = gfxmenu/theme_loader.c;
+  source = gfxmenu/widget-box.c;
+  source = gfxmenu/gui_canvas.c;
+  source = gfxmenu/gui_circular_progress.c;
+  source = gfxmenu/gui_box.c;
+  source = gfxmenu/gui_label.c;
+  source = gfxmenu/gui_list.c;
+  source = gfxmenu/gui_image.c;
+  source = gfxmenu/gui_progress_bar.c;
+  source = gfxmenu/gui_util.c;
+  source = gfxmenu/gui_string_util.c;
+  source = gfxmenu/named_colors.c;
+};
+
+module = {
+  common;
+  name = hello;
+  source = hello/hello.c;
+};
+
+module = {
+  common;
+  name = gzio;
+  source = io/gzio.c;
+};
+
+module = {
+  name = bufio;
+  source = io/bufio.c;
+  emu;
+  x86;
+  sparc64;
+  powerpc;
+};
+
+module = {
+  common;
+  name = elf;
+  source = kern/elf.c;
+};
+
+module = {
+  common;
+  name = charset;
+  source = lib/charset.c;
+};
+
+module = {
+  common;
+  name = crypto;
+  source = lib/crypto.c;
+};
+
+module = {
+  common;
+  name = gcry_arcfour;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/arcfour.c;
+};
+
+module = {
+  common;
+  name = gcry_blowfish;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/blowfish.c;
+};
+
+module = {
+  common;
+  name = gcry_camellia;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/camellia.c;
+  source = lib/libgcrypt-grub/cipher/camellia-glue.c;
+};
+
+module = {
+  common;
+  name = gcry_cast5;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/cast5.c;
+};
+
+module = {
+  common;
+  name = gcry_crc;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/crc.c;
+};
+
+module = {
+  common;
+  name = gcry_des;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/des.c;
+};
+
+module = {
+  common;
+  name = gcry_md4;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/md4.c;
+};
+
+module = {
+  common;
+  name = gcry_md5;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/md5.c;
+};
+
+module = {
+  common;
+  name = gcry_rfc2268;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/rfc2268.c;
+};
+
+module = {
+  common;
+  name = gcry_rijndael;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/rijndael.c;
+};
+
+module = {
+  common;
+  name = gcry_rmd160;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/rmd160.c;
+};
+
+module = {
+  common;
+  name = gcry_seed;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/seed.c;
+};
+
+module = {
+  common;
+  name = gcry_serpent;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/serpent.c;
+};
+
+module = {
+  common;
+  name = gcry_sha1;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/sha1.c;
+};
+
+module = {
+  common;
+  name = gcry_sha256;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/sha256.c;
+};
+
+module = {
+  common;
+  name = gcry_sha512;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/sha512.c;
+};
+
+module = {
+  common;
+  name = gcry_tiger;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/tiger.c;
+};
+
+module = {
+  common;
+  name = gcry_twofish;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/twofish.c;
+};
+
+module = {
+  common;
+  name = gcry_whirlpool;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+  source = lib/libgcrypt-grub/cipher/whirlpool.c;
+};
+
+module = {
+  common;
+  name = pbkdf2;
+  source = lib/pbkdf2.c;
+};
+
+module = {
+  name = relocator;
+  mips = lib/mips/relocator.c;
+  mips = lib/mips/relocator_asm.S;
+  x86 = lib/i386/relocator.c;
+  x86 = lib/i386/relocator_asm.S;
+  x86 = lib/i386/relocator_backward.S;
+};
+
+module = {
+  name = datetime;
+  source = lib/cmos_datetime.c;
+  x86_efi = lib/efi/datetime.c;
+  sparc64_ieee1275 = lib/ieee1275/datetime.c;
+  powerpc_ieee1275 = lib/ieee1275/datetime.c;
+  x86;
+  mips;
+};
+
+module = {
+  name = setjmp;
+  i386 = lib/i386/setjmp.S;
+  x86_64 = lib/x86_64/setjmp.S;
+  mips = lib/mips/setjmp.S;
+  sparc64 = lib/sparc64/setjmp.S;
+  powerpc = lib/powerpc/setjmp.S;
+};
+
+module = {
+  name = aout;
+  source = loader/aout.c;
+  i386_pc;
+  i386_qemu;
+  i386_coreboot;
+  i386_ieee1275;
+};
+
+module = {
+  name = bsd;
+  source = loader/i386/bsd.c;
+  source = loader/i386/bsd32.c;
+  source = loader/i386/bsd64.c;
+  source = loader/i386/bsd_helper.S;
+  source = loader/i386/bsd_trampoline.S;
+  i386_pc;
+  i386_qemu;
+  i386_coreboot;
+};
+
+module = {
+  name = linux16;
+  source = loader/i386/pc/linux.c;
+  i386_pc;
+};
+
+module = {
+  name = multiboot2;
+  cppflags = "-DGRUB_USE_MULTIBOOT2";
+
+  source = loader/multiboot.c;
+  source = loader/multiboot_mbi2.c;
+  x86;
+  mips;
+};
+
+module = {
+  name = multiboot;
+  source = loader/multiboot.c;
+  source = loader/i386/multiboot_mbi.c;
+  x86;
+};
+
+module = {
+  name = linux;
+  i386 = loader/i386/linux.c;
+  i386_efi = loader/i386/efi/linux.c;
+  i386_ieee1275 = loader/i386/ieee1275/linux.c;
+  x86_64_efi = loader/i386/efi/linux.c;
+  x86_64_efi = loader/i386/linux_trampoline.S;
+  mips = loader/mips/linux.c;
+  powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
+  sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;
+};
+
+module = {
+  name = xnu;
+  x86_efi = loader/xnu_resume.c;
+  x86_efi = loader/i386/xnu.c;
+  x86_efi = loader/i386/efi/xnu.c;
+  x86_efi = loader/macho32.c;
+  x86_efi = loader/macho64.c;
+  x86_efi = loader/macho.c;
+  x86_efi = loader/xnu.c;
+
+  i386_pc = loader/xnu_resume.c;
+  i386_pc = loader/i386/xnu.c;
+  i386_pc = loader/i386/pc/xnu.c;
+  i386_pc = loader/macho32.c;
+  i386_pc = loader/macho64.c;
+  i386_pc = loader/macho.c;
+  i386_pc = loader/xnu.c;
+};
+
+module = {
+  name = appleldr;
+  x86_efi = loader/efi/appleloader.c;
+};
+
+module = {
+  name = chain;
+  x86_efi = loader/efi/chainloader.c;
+  i386_pc = loader/i386/pc/chainloader.c;
+};
+
+module = {
+  name = mmap;
+  i386_pc = mmap/mmap.c;
+  i386_pc = mmap/i386/uppermem.c;
+  i386_pc = mmap/i386/mmap.c;
+  i386_pc = mmap/i386/pc/mmap.c;
+  i386_pc = mmap/i386/pc/mmap_helper.S;
+
+  x86_efi = mmap/mmap.c;
+  x86_efi = mmap/i386/uppermem.c;
+  x86_efi = mmap/i386/mmap.c;
+  x86_efi = mmap/efi/mmap.c;
+
+  i386_coreboot = mmap/mmap.c;
+  i386_coreboot = mmap/i386/uppermem.c;
+  i386_coreboot = mmap/i386/mmap.c;
+
+  i386_qemu = mmap/mmap.c;
+  i386_qemu = mmap/i386/uppermem.c;
+  i386_qemu = mmap/i386/mmap.c;
+
+  i386_ieee1275 = mmap/mmap.c;
+  i386_ieee1275 = mmap/i386/uppermem.c;
+  i386_ieee1275 = mmap/i386/mmap.c;
+
+  mips_yeeloong = mmap/mmap.c;
+  mips_yeeloong = mmap/mips/yeeloong/uppermem.c;
+};
+
+module = {
+  common;
+  name = normal;
+  source = normal/main.c;
+  source = normal/cmdline.c;
+  source = normal/dyncmd.c;
+  source = normal/auth.c;
+  source = normal/autofs.c;
+  source = normal/handler.c;
+  source = normal/color.c;
+  source = normal/completion.c;
+  source = normal/datetime.c;
+  source = normal/menu.c;
+  source = normal/menu_entry.c;
+  source = normal/menu_text.c;
+  source = normal/misc.c;
+  source = normal/crypto.c;
+  source = normal/term.c;
+  source = normal/context.c;
+};
+
+module = {
+  common;
+  name = part_acorn;
+  source = partmap/acorn.c;
+};
+
+module = {
+  common;
+  name = part_amiga;
+  source = partmap/amiga.c;
+};
+
+module = {
+  common;
+  name = part_apple;
+  source = partmap/apple.c;
+};
+
+module = {
+  common;
+  name = part_gpt;
+  source = partmap/gpt.c;
+};
+
+module = {
+  common;
+  name = part_msdos;
+  source = partmap/msdos.c;
+};
+
+module = {
+  common;
+  name = part_sun;
+  source = partmap/sun.c;
+};
+
+module = {
+  common;
+  name = part_bsd;
+  source = partmap/bsdlabel.c;
+};
+
+module = {
+  common;
+  name = part_sunpc;
+  source = partmap/sunpc.c;
+};
+
+module = {
+  common;
+  name = msdospart;
+  source = parttool/msdospart.c;
+};
+
+module = {
+  common;
+  name = sh;
+  source = script/main.c;
+  source = script/script.c;
+  source = script/execute.c;
+  source = script/function.c;
+  source = script/lexer.c;
+  nodist = grub_script.tab.c;
+  nodist = grub_script.yy.c;
+  nodist = grub_script.tab.h;
+  nodist = grub_script.yy.h;
+  cflags = '$(CFLAGS_POSIX) -Wno-error';
+  cppflags = '$(CPPFLAGS_POSIX)';
+};
+
+module = {
+  name = at_keyboard;
+  source = term/at_keyboard.c;
+  x86;
+};
+
+module = {
+  name = gfxterm;
+  source = term/gfxterm.c;
+  emu;
+  x86;
+  sparc64;
+  powerpc;
+};
+
+module = {
+  name = serial;
+  source = term/serial.c;
+  mips;
+  i386;
+};
+
+module = {
+  common;
+  name = terminfo;
+  source = term/terminfo.c;
+  source = term/tparm.c;
+};
+
+module = {
+  name = usb_keyboard;
+  source = term/usb_keyboard.c;
+  i386_pc;
+};
+
+module = {
+  name = vga;
+  i386_pc = term/i386/pc/vga.c;
+};
+
+module = {
+  name = vga_text;
+  x86 = term/i386/pc/vga_text.c;
+  x86 = term/i386/vga_common.c;
+};
+
+module = {
+  name = functional_test;
+  source = tests/lib/functional_test.c;
+  source = tests/lib/test.c;
+  common;
+};
+
+module = {
+  name = example_functional_test;
+  source = tests/example_functional_test.c;
+  cflags = -Wno-format;
+  common;
+};
+
+module = {
+  name = bitmap;
+  source = video/bitmap.c;
+  emu;
+  x86;
+  sparc64;
+  powerpc;
+};
+
+module = {
+  name = bitmap_scale;
+  source = video/bitmap_scale.c;
+  emu;
+  x86;
+  sparc64;
+  powerpc;
+};
+
+module = {
+  name = efi_gop;
+  x86_efi = video/efi_gop.c;
+};
+
+module = {
+  name = efi_uga;
+  x86_efi = video/efi_uga.c;
+};
+
+module = {
+  common;
+  name = jpeg;
+  source = video/readers/jpeg.c;
+};
+
+module = {
+  common;
+  name = png;
+  source = video/readers/png.c;
+};
+
+module = {
+  common;
+  name = tga;
+  source = video/readers/tga.c;
+};
+
+module = {
+  name = vbe;
+  i386_pc = video/i386/pc/vbe.c;
+};
+
+module = {
+  name = video_fb;
+  source = video/fb/video_fb.c;
+  source = video/fb/fbblit.c;
+  source = video/fb/fbfill.c;
+  source = video/fb/fbutil.c;
+  emu;
+  x86;
+  sparc64;
+  powerpc;
+};
+
+module = {
+  name = video;
+  source = video/video.c;
+  emu;
+  x86;
+  sparc64;
+  powerpc;
+};
+
+module = {
+  name = ieee1275_fb;
+  source = video/ieee1275.c;
+  powerpc;
+  sparc64;
+};
+
+module = {
+  name = sdl;
+  source = video/emu/sdl.c;
+  enable = COND_GRUB_EMU_SDL;
+  emu;
+};
+
+module = {
+  name = datehook;
+  source = hook/datehook.c;
+  common;
+};

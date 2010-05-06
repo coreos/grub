@@ -123,10 +123,14 @@ source /boot/grub/testcase.cfg
 halt
 EOF
 
+rootdir=`mktemp -d`
+(cd @abs_top_builddir@ && make DESTDIR=$rootdir install) >/dev/null 2>&1
+
 isofile=`mktemp`
-grub-mkrescue --output=${isofile} --override-directory=${builddir} \
-  /boot/grub/grub.cfg=${cfgfile} /boot/grub/testcase.cfg=${source} \
-  >/dev/null 2>&1
+sh @abs_top_builddir@/grub-mkrescue --output=${isofile} \
+  --root-directory=${rootdir} /boot/grub/grub.cfg=${cfgfile} \
+  /boot/grub/testcase.cfg=${source} >/dev/null 2>&1
+rm -rf $rootdir
 
 hdafile=`mktemp`
 cp ${isofile} ${hdafile}

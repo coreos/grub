@@ -18,6 +18,7 @@
  */
 
 #include <grub/util/misc.h>
+#include <grub/emu/getroot.h>
 #include <grub/i18n.h>
 #include <getopt.h>
 
@@ -97,7 +98,7 @@ main (int argc, char *argv[])
 
   argument = argv[optind];
 
-  relpath = make_system_path_relative_to_its_root (argument);
+  relpath = grub_make_system_path_relative_to_its_root (argument);
   printf ("%s\n", relpath);
   free (relpath);
 
