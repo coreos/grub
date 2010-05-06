@@ -1,3 +1,39 @@
+2010-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* video/readers/jpeg.c: Indented.
+
+2010-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Various jpeg cleanups.
+
+	* video/readers/jpeg.c (grub_jpeg_get_huff_code): Use ARRAY_SIZE.
+	(grub_jpeg_decode_quan_table): Use sizeof.
+	(grub_jpeg_decode_du): Use ARRAY_SIZE.
+
+2010-05-05  Peter Hurley <No e-mail available> (tiny change)
+
+	* video/readers/jpeg.c (grub_jpeg_decode_huff_table): Loop over all
+	tables. Ignore non-last ac bit.
+	(grub_jpeg_decode_quan_table): Likewise.
+
+2010-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New value
+	GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM.
+	* kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set
+	GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM on qemu.
+	* kern/ieee1275/init.c (grub_claim_heap): Don0t allocate below
+	1.5MiB if GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM is set.
+
+2010-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_getkey): Fix off-by-one
+	error.
+
+2010-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_readkey): Support C0 code.
+
 2010-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* commands/parttool.c (grub_cmd_parttool): Fix #if !GRUB_NO_MODULES
