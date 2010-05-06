@@ -13,7 +13,7 @@ bin_SCRIPTS =
 # For grub-mkimage.
 bin_UTILITIES += grub-mkimage
 grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkrawimage.c util/misc.c \
-	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
+	kern/emu/misc.c util/resolve.c lib/LzmaEnc.c lib/LzFind.c
 grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(LINK_BASE)
 util/grub-mkrawimage.c_DEPENDENCIES = Makefile
 

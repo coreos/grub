@@ -16,7 +16,7 @@ kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c kern/env.c	\
 									\
 	gnulib/progname.c disk/host.c
 kernel_img_HEADERS += datetime.h emu/misc.h
-kernel_img_CFLAGS = $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Wno-undef -I$(srcdir)/gnulib
+kernel_img_CFLAGS = $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Wno-char-subscripts -Wno-unused -Wno-deprecated-declarations -Wno-undef -I$(srcdir)/gnulib
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 TARGET_NO_STRIP = yes
 

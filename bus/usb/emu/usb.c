@@ -105,14 +105,14 @@ grub_usb_root_hub (grub_usb_controller_t controller __attribute__((unused)))
 grub_usb_err_t
 grub_usb_control_msg (grub_usb_device_t dev, grub_uint8_t reqtype,
 		      grub_uint8_t request, grub_uint16_t value,
-		      grub_uint16_t index, grub_size_t size, char *data)
+		      grub_uint16_t idx, grub_size_t size, char *data)
 {
   usb_dev_handle *devh;
   struct usb_device *d = dev->data;
 
   devh = usb_open (d);
   if (usb_control_msg (devh, reqtype, request,
-		       value, index, data, size, 20) < 0)
+		       value, idx, data, size, 20) < 0)
     {
       usb_close (devh);
       return GRUB_USB_ERR_STALL;

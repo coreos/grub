@@ -19,6 +19,8 @@
 
 #include <config.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include <dirent.h>
@@ -26,13 +28,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-
-#ifdef __CYGWIN__
-# include <sys/fcntl.h>
-# include <sys/cygwin.h>
-# include <limits.h>
-# define DEV_CYGDRIVE_MAJOR 98
-#endif
 
 #ifdef __GNU__
 #include <hurd.h>
