@@ -53,11 +53,6 @@
 # include <malloc.h>
 #endif
 
-#ifdef __CYGWIN__
-# include <sys/cygwin.h>
-# define DEV_CYGDRIVE_MAJOR 98
-#endif
-
 #ifdef __MINGW32__
 #include <windows.h>
 #include <winioctl.h>
@@ -303,27 +298,6 @@ canonicalize_file_name (const char *path)
 #endif
   return ret;
 }
-
-#ifdef __CYGWIN__
-/* Convert POSIX path to Win32 path,
-   remove drive letter, replace backslashes.  */
-static char *
-get_win32_path (const char *path)
-{
-  char winpath[PATH_MAX];
-  if (cygwin_conv_path (CCP_POSIX_TO_WIN_A, path, winpath, sizeof(winpath)))
-    grub_util_error ("cygwin_conv_path() failed");
-
-  int len = strlen (winpath);
-  int offs = (len > 2 && winpath[1] == ':' ? 2 : 0);
-
-  int i;
-  for (i = offs; i < len; i++)
-    if (winpath[i] == '\\')
-      winpath[i] = '/';
-  return xstrdup (winpath + offs);
-}
-#endif
 
 #ifdef GRUB_UTIL
 void
