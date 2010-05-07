@@ -163,10 +163,10 @@ static struct grub_term_output grub_vga_text_term =
     .gotoxy = grub_vga_text_gotoxy,
     .cls = grub_vga_text_cls,
     .setcolorstate = grub_console_setcolorstate,
-    .setcolor = grub_console_setcolor,
-    .getcolor = grub_console_getcolor,
     .setcursor = grub_vga_text_setcursor,
-    .flags = GRUB_TERM_CODE_TYPE_VGA
+    .flags = GRUB_TERM_CODE_TYPE_VGA,
+    .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
+    .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };
 
 GRUB_MOD_INIT(vga_text)

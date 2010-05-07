@@ -168,9 +168,6 @@ grub_terminfo_output_register (struct grub_term_output *term,
   data = (struct grub_terminfo_output_state *) term->data;
   data->next = terminfo_outputs;
   terminfo_outputs = term;
-  
-  data->normal_color = 0x07;
-  data->highlight_color = 0x70;
 
   return GRUB_ERR_NONE;
 }
@@ -248,30 +245,6 @@ grub_terminfo_cls (struct grub_term_output *term)
 }
 
 void
-grub_terminfo_setcolor (struct grub_term_output *term,
-			grub_uint8_t normal_color,
-			grub_uint8_t highlight_color)
-{
-  struct grub_terminfo_output_state *data
-    = (struct grub_terminfo_output_state *) term->data;
-
-  data->normal_color = normal_color;
-  data->highlight_color = highlight_color;
-}
-
-void
-grub_terminfo_getcolor (struct grub_term_output *term,
-			grub_uint8_t *normal_color,
-			grub_uint8_t *highlight_color)
-{
-  struct grub_terminfo_output_state *data
-    = (struct grub_terminfo_output_state *) term->data;
-
-  *normal_color = data->normal_color;
-  *highlight_color = data->highlight_color;
-}
-
-void
 grub_terminfo_setcolorstate (struct grub_term_output *term,
 			     const grub_term_color_state state)
 {
@@ -298,12 +271,12 @@ grub_terminfo_setcolorstate (struct grub_term_output *term,
 	{
 	case GRUB_TERM_COLOR_STANDARD:
 	case GRUB_TERM_COLOR_NORMAL:
-	  fg = data->normal_color & 0x0f;
-	  bg = data->normal_color >> 4;
+	  fg = term->normal_color & 0x0f;
+	  bg = term->normal_color >> 4;
 	  break;
 	case GRUB_TERM_COLOR_HIGHLIGHT:
-	  fg = data->highlight_color & 0x0f;
-	  bg = data->highlight_color >> 4;
+	  fg = term->highlight_color & 0x0f;
+	  bg = term->highlight_color >> 4;
 	  break;
 	default:
 	  return;

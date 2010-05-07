@@ -35,8 +35,6 @@
 #define DEFAULT_BORDER_WIDTH	10
 
 #define DEFAULT_STANDARD_COLOR  0x07
-#define DEFAULT_NORMAL_COLOR    0x07
-#define DEFAULT_HIGHLIGHT_COLOR 0x70
 
 struct grub_dirty_region
 {
@@ -92,8 +90,6 @@ struct grub_virtual_screen
 
   /* Terminal color settings.  */
   grub_uint8_t standard_color_setting;
-  grub_uint8_t normal_color_setting;
-  grub_uint8_t highlight_color_setting;
   grub_uint8_t term_color;
 
   /* Color settings.  */
@@ -260,10 +256,8 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
   grub_video_set_active_render_target (text_layer);
 
   virtual_screen.standard_color_setting = DEFAULT_STANDARD_COLOR;
-  virtual_screen.normal_color_setting = DEFAULT_NORMAL_COLOR;
-  virtual_screen.highlight_color_setting = DEFAULT_HIGHLIGHT_COLOR;
 
-  virtual_screen.term_color = virtual_screen.normal_color_setting;
+  virtual_screen.term_color = GRUB_TERM_DEFAULT_NORMAL_COLOR;
 
   set_term_color (virtual_screen.term_color);
 
@@ -1041,7 +1035,7 @@ grub_gfxterm_cls (struct grub_term_output *term)
 }
 
 static void
-grub_virtual_screen_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
+grub_virtual_screen_setcolorstate (struct grub_term_output *term,
 				   grub_term_color_state state)
 {
   switch (state)
@@ -1051,11 +1045,11 @@ grub_virtual_screen_setcolorstate (struct grub_term_output *term __attribute__ (
       break;
 
     case GRUB_TERM_COLOR_NORMAL:
-      virtual_screen.term_color = virtual_screen.normal_color_setting;
+      virtual_screen.term_color = term->normal_color;
       break;
 
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      virtual_screen.term_color = virtual_screen.highlight_color_setting;
+      virtual_screen.term_color = term->highlight_color;
       break;
 
     default:
@@ -1064,24 +1058,6 @@ grub_virtual_screen_setcolorstate (struct grub_term_output *term __attribute__ (
 
   /* Change color to virtual terminal.  */
   set_term_color (virtual_screen.term_color);
-}
-
-static void
-grub_virtual_screen_setcolor (struct grub_term_output *term __attribute__ ((unused)),
-			      grub_uint8_t normal_color,
-                              grub_uint8_t highlight_color)
-{
-  virtual_screen.normal_color_setting = normal_color;
-  virtual_screen.highlight_color_setting = highlight_color;
-}
-
-static void
-grub_virtual_screen_getcolor (struct grub_term_output *term __attribute__ ((unused)),
-			      grub_uint8_t *normal_color,
-                              grub_uint8_t *highlight_color)
-{
-  *normal_color = virtual_screen.normal_color_setting;
-  *highlight_color = virtual_screen.highlight_color_setting;
 }
 
 static void
@@ -1211,11 +1187,11 @@ static struct grub_term_output grub_video_term =
     .gotoxy = grub_gfxterm_gotoxy,
     .cls = grub_gfxterm_cls,
     .setcolorstate = grub_virtual_screen_setcolorstate,
-    .setcolor = grub_virtual_screen_setcolor,
-    .getcolor = grub_virtual_screen_getcolor,
     .setcursor = grub_gfxterm_setcursor,
     .refresh = grub_gfxterm_refresh,
     .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS,
+    .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
+    .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
     .next = 0
   };
 

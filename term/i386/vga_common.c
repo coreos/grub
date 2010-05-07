@@ -21,9 +21,6 @@
 #include <grub/types.h>
 
 grub_uint8_t grub_console_cur_color = 0x7;
-static grub_uint8_t grub_console_standard_color = 0x7;
-static grub_uint8_t grub_console_normal_color = 0x7;
-static grub_uint8_t grub_console_highlight_color = 0x70;
 
 grub_uint16_t
 grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
@@ -32,36 +29,20 @@ grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
 }
 
 void
-grub_console_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
+grub_console_setcolorstate (struct grub_term_output *term,
 			    grub_term_color_state state)
 {
   switch (state) {
     case GRUB_TERM_COLOR_STANDARD:
-      grub_console_cur_color = grub_console_standard_color;
+      grub_console_cur_color = GRUB_TERM_DEFAULT_STANDARD_COLOR;
       break;
     case GRUB_TERM_COLOR_NORMAL:
-      grub_console_cur_color = grub_console_normal_color;
+      grub_console_cur_color = term->normal_color;
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      grub_console_cur_color = grub_console_highlight_color;
+      grub_console_cur_color = term->highlight_color;
       break;
     default:
       break;
   }
-}
-
-void
-grub_console_setcolor (struct grub_term_output *term __attribute__ ((unused)),
-		       grub_uint8_t normal_color, grub_uint8_t highlight_color)
-{
-  grub_console_normal_color = normal_color;
-  grub_console_highlight_color = highlight_color;
-}
-
-void
-grub_console_getcolor (struct grub_term_output *term __attribute__ ((unused)),
-		       grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
-{
-  *normal_color = grub_console_normal_color;
-  *highlight_color = grub_console_highlight_color;
 }

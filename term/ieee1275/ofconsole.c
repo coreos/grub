@@ -204,11 +204,11 @@ static struct grub_term_output grub_ofconsole_term_output =
     .gotoxy = grub_terminfo_gotoxy,
     .cls = grub_terminfo_cls,
     .setcolorstate = grub_terminfo_setcolorstate,
-    .setcolor = grub_terminfo_setcolor,
-    .getcolor = grub_terminfo_getcolor,
     .setcursor = grub_ofconsole_setcursor,
     .flags = GRUB_TERM_CODE_TYPE_ASCII,
-    .data = &grub_ofconsole_terminfo_output
+    .data = &grub_ofconsole_terminfo_output,
+    .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
+    .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };
 
 void grub_terminfo_fini (void);

@@ -511,6 +511,8 @@ static struct grub_term_output grub_vga_term =
     .setcolorstate = grub_vga_setcolorstate,
     .setcursor = grub_vga_setcursor,
     .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS,
+    .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
+    .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };
 
 GRUB_MOD_INIT(vga)

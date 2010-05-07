@@ -28,11 +28,5 @@ extern grub_uint8_t grub_console_cur_color;
 grub_uint16_t grub_console_getwh (struct grub_term_output *term);
 void grub_console_setcolorstate (struct grub_term_output *term,
 				 grub_term_color_state state);
-void grub_console_setcolor (struct grub_term_output *term,
-			    grub_uint8_t normal_color,
-			    grub_uint8_t highlight_color);
-void grub_console_getcolor (struct grub_term_output *term,
-			    grub_uint8_t *normal_color,
-			    grub_uint8_t *highlight_color);
 
 #endif /* ! GRUB_VGA_COMMON_CPU_HEADER */

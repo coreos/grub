@@ -195,16 +195,6 @@ struct grub_term_output
   void (*setcolorstate) (struct grub_term_output *term,
 			 grub_term_color_state state);
 
-  /* Set the normal color and the highlight color. The format of each
-     color is VGA's.  */
-  void (*setcolor) (struct grub_term_output *term,
-		    grub_uint8_t normal_color, grub_uint8_t highlight_color);
-
-  /* Get the normal color and the highlight color. The format of each
-     color is VGA's.  */
-  void (*getcolor) (struct grub_term_output *term,
-		    grub_uint8_t *normal_color, grub_uint8_t *highlight_color);
-
   /* Turn on/off the cursor.  */
   void (*setcursor) (struct grub_term_output *term, int on);
 
@@ -214,9 +204,17 @@ struct grub_term_output
   /* The feature flags defined above.  */
   grub_uint32_t flags;
 
+  /* Current color state.  */
+  grub_uint8_t normal_color;
+  grub_uint8_t highlight_color;
+
   void *data;
 };
 typedef struct grub_term_output *grub_term_output_t;
+
+#define GRUB_TERM_DEFAULT_NORMAL_COLOR 0x07
+#define GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR 0x70
+#define GRUB_TERM_DEFAULT_STANDARD_COLOR 0x07
 
 extern struct grub_term_output *EXPORT_VAR(grub_term_outputs_disabled);
 extern struct grub_term_input *EXPORT_VAR(grub_term_inputs_disabled);
@@ -361,14 +359,14 @@ grub_term_setcolorstate (struct grub_term_output *term,
     term->setcolorstate (term, state);
 }
 
-  /* Set the normal color and the highlight color. The format of each
-     color is VGA's.  */
+/* Set the normal color and the highlight color. The format of each
+   color is VGA's.  */
 static inline void 
 grub_term_setcolor (struct grub_term_output *term,
 		    grub_uint8_t normal_color, grub_uint8_t highlight_color)
 {
-  if (term->setcolor)
-    term->setcolor (term, normal_color, highlight_color);
+  term->normal_color = normal_color;
+  term->highlight_color = highlight_color;
 }
 
 /* Turn on/off the cursor.  */
@@ -429,13 +427,8 @@ static inline void
 grub_term_getcolor (struct grub_term_output *term, 
 		    grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
 {
-  if (term->getcolor)
-    term->getcolor (term, normal_color, highlight_color);
-  else
-    {
-      *normal_color = 0x07;
-      *highlight_color = 0x07;
-    }
+  *normal_color = term->normal_color;
+  *highlight_color = term->highlight_color;
 }
 
 struct grub_term_autoload

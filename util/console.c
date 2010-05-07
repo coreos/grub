@@ -43,9 +43,7 @@ static int grub_console_attr = A_NORMAL;
 
 grub_uint8_t grub_console_cur_color = 7;
 
-static grub_uint8_t grub_console_standard_color = 0x7;
-static grub_uint8_t grub_console_normal_color = 0x7;
-static grub_uint8_t grub_console_highlight_color = 0x70;
+static const grub_uint8_t grub_console_standard_color = 0x7;
 
 #define NUM_COLORS	8
 
@@ -71,7 +69,7 @@ grub_ncurses_putchar (struct grub_term_output *term __attribute__ ((unused)),
 }
 
 static void
-grub_ncurses_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
+grub_ncurses_setcolorstate (struct grub_term_output *term,
 			    grub_term_color_state state)
 {
   switch (state)
@@ -81,11 +79,11 @@ grub_ncurses_setcolorstate (struct grub_term_output *term __attribute__ ((unused
       grub_console_attr = A_NORMAL;
       break;
     case GRUB_TERM_COLOR_NORMAL:
-      grub_console_cur_color = grub_console_normal_color;
+      grub_console_cur_color = term->normal_color;
       grub_console_attr = A_NORMAL;
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      grub_console_cur_color = grub_console_highlight_color;
+      grub_console_cur_color = term->highlight_color;
       grub_console_attr = A_STANDOUT;
       break;
     default:
@@ -102,23 +100,6 @@ grub_ncurses_setcolorstate (struct grub_term_output *term __attribute__ ((unused
       grub_console_attr = (grub_console_cur_color & 8) ? A_BOLD : A_NORMAL;
       color_set ((bg << 3) + fg, 0);
     }
-}
-
-/* XXX: This function is never called.  */
-static void
-grub_ncurses_setcolor (struct grub_term_output *term __attribute__ ((unused)),
-		       grub_uint8_t normal_color, grub_uint8_t highlight_color)
-{
-  grub_console_normal_color = normal_color;
-  grub_console_highlight_color = highlight_color;
-}
-
-static void
-grub_ncurses_getcolor (struct grub_term_output *term __attribute__ ((unused)),
-		       grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
-{
-  *normal_color = grub_console_normal_color;
-  *highlight_color = grub_console_highlight_color;
 }
 
 static int saved_char = ERR;
@@ -322,8 +303,6 @@ static struct grub_term_output grub_ncurses_term_output =
     .gotoxy = grub_ncurses_gotoxy,
     .cls = grub_ncurses_cls,
     .setcolorstate = grub_ncurses_setcolorstate,
-    .setcolor = grub_ncurses_setcolor,
-    .getcolor = grub_ncurses_getcolor,
     .setcursor = grub_ncurses_setcursor,
     .refresh = grub_ncurses_refresh,
     .flags = GRUB_TERM_CODE_TYPE_ASCII

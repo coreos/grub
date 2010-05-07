@@ -62,10 +62,10 @@ static struct grub_term_output grub_console_term_output =
     .gotoxy = grub_console_gotoxy,
     .cls = grub_console_cls,
     .setcolorstate = grub_console_setcolorstate,
-    .setcolor = grub_console_setcolor,
-    .getcolor = grub_console_getcolor,
     .setcursor = grub_console_setcursor,
-    .flags = GRUB_TERM_CODE_TYPE_VGA
+    .flags = GRUB_TERM_CODE_TYPE_VGA,
+    .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
+    .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };
 
 void

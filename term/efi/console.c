@@ -24,15 +24,9 @@
 #include <grub/efi/api.h>
 #include <grub/efi/console.h>
 
-static grub_uint8_t
+static const grub_uint8_t
 grub_console_standard_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_YELLOW,
 						  GRUB_EFI_BACKGROUND_BLACK);
-static grub_uint8_t
-grub_console_normal_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_LIGHTGRAY,
-						GRUB_EFI_BACKGROUND_BLACK);
-static grub_uint8_t
-grub_console_highlight_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_BLACK,
-						   GRUB_EFI_BACKGROUND_LIGHTGRAY);
 
 static int read_key = -1;
 
@@ -292,7 +286,7 @@ grub_console_cls (struct grub_term_output *term __attribute__ ((unused)))
 }
 
 static void
-grub_console_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
+grub_console_setcolorstate (struct grub_term_output *term,
 			    grub_term_color_state state)
 {
   grub_efi_simple_text_output_interface_t *o;
@@ -304,30 +298,14 @@ grub_console_setcolorstate (struct grub_term_output *term __attribute__ ((unused
       efi_call_2 (o->set_attributes, o, grub_console_standard_color);
       break;
     case GRUB_TERM_COLOR_NORMAL:
-      efi_call_2 (o->set_attributes, o, grub_console_normal_color);
+      efi_call_2 (o->set_attributes, o, term->normal_color);
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      efi_call_2 (o->set_attributes, o, grub_console_highlight_color);
+      efi_call_2 (o->set_attributes, o, term->highlight_color);
       break;
     default:
       break;
   }
-}
-
-static void
-grub_console_setcolor (struct grub_term_output *term __attribute__ ((unused)),
-		       grub_uint8_t normal_color, grub_uint8_t highlight_color)
-{
-  grub_console_normal_color = normal_color;
-  grub_console_highlight_color = highlight_color;
-}
-
-static void
-grub_console_getcolor (struct grub_term_output *term __attribute__ ((unused)),
-		       grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
-{
-  *normal_color = grub_console_normal_color;
-  *highlight_color = grub_console_highlight_color;
 }
 
 static void
@@ -356,9 +334,11 @@ static struct grub_term_output grub_console_term_output =
     .gotoxy = grub_console_gotoxy,
     .cls = grub_console_cls,
     .setcolorstate = grub_console_setcolorstate,
-    .setcolor = grub_console_setcolor,
-    .getcolor = grub_console_getcolor,
     .setcursor = grub_console_setcursor,
+    .normal_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_LIGHTGRAY,
+					GRUB_EFI_BACKGROUND_BLACK),
+    .highlight_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_BLACK,
+					   GRUB_EFI_BACKGROUND_LIGHTGRAY),
     .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS
   };
 

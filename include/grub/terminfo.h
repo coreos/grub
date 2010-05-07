@@ -49,9 +49,6 @@ struct grub_terminfo_output_state
   char *cursor_off;
   char *setcolor;
 
-  grub_uint8_t normal_color;
-  grub_uint8_t highlight_color;
-
   unsigned int xpos, ypos;
 
   void (*put) (const int c);
@@ -72,12 +69,6 @@ grub_err_t EXPORT_FUNC (grub_terminfo_input_init) (struct grub_term_input *term)
 int EXPORT_FUNC (grub_terminfo_getkey) (struct grub_term_input *term);
 void EXPORT_FUNC (grub_terminfo_putchar) (struct grub_term_output *term,
 					  const struct grub_unicode_glyph *c);
-void EXPORT_FUNC (grub_terminfo_getcolor) (struct grub_term_output *term,
-					   grub_uint8_t *normal_color,
-					   grub_uint8_t *highlight_color);
-void EXPORT_FUNC (grub_terminfo_setcolor) (struct grub_term_output *term,
-					   grub_uint8_t normal_color,
-					   grub_uint8_t highlight_color);
 
 grub_err_t EXPORT_FUNC (grub_terminfo_output_register) (struct grub_term_output *term,
 							const char *type);
