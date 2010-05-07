@@ -255,9 +255,8 @@ grub_terminfo_setcolor (struct grub_term_output *term,
   struct grub_terminfo_output_state *data
     = (struct grub_terminfo_output_state *) term->data;
 
-  /* Discard bright bit.  */
-  data->normal_color = normal_color & 0x77;
-  data->highlight_color = highlight_color & 0x77;
+  data->normal_color = normal_color;
+  data->highlight_color = highlight_color;
 }
 
 void
@@ -283,6 +282,17 @@ grub_terminfo_setcolorstate (struct grub_term_output *term,
     {
       int fg;
       int bg;
+      /* Map from VGA to terminal colors.  */
+      const int colormap[8] 
+	= { 0, /* Black. */
+	    4, /* Blue. */
+	    2, /* Green. */
+	    6, /* Cyan. */
+	    1, /* Red.  */
+	    5, /* Magenta.  */
+	    3, /* Yellow.  */
+	    7, /* White.  */
+      };
 
       switch (state)
 	{
@@ -299,7 +309,8 @@ grub_terminfo_setcolorstate (struct grub_term_output *term,
 	  return;
 	}
 
-      putstr (term, grub_terminfo_tparm (data->setcolor, fg, bg));
+      putstr (term, grub_terminfo_tparm (data->setcolor, colormap[fg & 7],
+					 colormap[bg & 7]));
       return;
     }
 
