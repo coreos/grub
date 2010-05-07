@@ -27,18 +27,7 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 
-#define TEXT_WIDTH	80
-#define TEXT_HEIGHT	24
-
-static unsigned int xpos, ypos;
-static unsigned int keep_track = 1;
 static unsigned int registered = 0;
-
-/* An input buffer.  */
-static int input_buf[GRUB_TERMINFO_READKEY_MAX_LEN];
-static int npending = 0;
-
-static struct grub_term_output grub_serial_term_output;
 
 /* Argument options.  */
 static const struct grub_arg_option options[] =
@@ -152,35 +141,6 @@ serial_get_divisor (unsigned int speed)
   return 0;
 }
 
-/* The serial version of checkkey.  */
-static int
-grub_serial_checkkey (struct grub_term_input *term __attribute__ ((unused)))
-{
-  if (npending)
-    return input_buf[0];
-
-  grub_terminfo_readkey (input_buf, &npending, serial_hw_fetch);
-
-  if (npending)
-    return input_buf[0];
-
-  return -1;
-}
-
-/* The serial version of getkey.  */
-static int
-grub_serial_getkey (struct grub_term_input *term __attribute__ ((unused)))
-{
-  int ret;
-  while (! npending)
-    grub_terminfo_readkey (input_buf, &npending, serial_hw_fetch);
-
-  ret = input_buf[0];
-  npending--;
-  grub_memmove (input_buf, input_buf + 1, npending);
-  return ret;
-}
-
 /* Initialize a serial device. PORT is the port number for a serial device.
    SPEED is a DTE-DTE speed which must be one of these: 2400, 4800, 9600,
    19200, 38400, 57600 and 115200. WORD_LEN is the word length to be used
@@ -219,150 +179,56 @@ serial_hw_init (void)
 #endif
 
   /* Drain the input buffer.  */
-  while (grub_serial_checkkey (0) != -1)
-    (void) grub_serial_getkey (0);
+  while (serial_hw_fetch () != -1);
 
   /*  FIXME: should check if the serial terminal was found.  */
 
   return GRUB_ERR_NONE;
 }
 
-/* The serial version of putchar.  */
-static void
-grub_serial_putchar (struct grub_term_output *term __attribute__ ((unused)),
-		     const struct grub_unicode_glyph *c)
-{
-  /* Keep track of the cursor.  */
-  if (keep_track)
-    {
-      switch (c->base)
-	{
-	case '\a':
-	  break;
-
-	case '\b':
-	case 127:
-	  if (xpos > 0)
-	    xpos--;
-	  break;
-
-	case '\n':
-	  if (ypos < TEXT_HEIGHT - 1)
-	    ypos++;
-	  break;
-
-	case '\r':
-	  xpos = 0;
-	  break;
-
-	default:
-	  if ((c->base & 0xC0) == 0x80)
-	    break;
-	  if (xpos + c->estimated_width >= TEXT_WIDTH + 1)
-	    {
-	      xpos = 0;
-	      if (ypos < TEXT_HEIGHT - 1)
-		ypos++;
-	      serial_hw_put ('\r');
-	      serial_hw_put ('\n');
-	    }
-	  xpos += c->estimated_width;
-	  break;
-	}
-    }
-
-  serial_hw_put (c->base);
-}
-
 static grub_uint16_t
 grub_serial_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
+  const grub_uint8_t TEXT_WIDTH = 80;
+  const grub_uint8_t TEXT_HEIGHT = 24;
   return (TEXT_WIDTH << 8) | TEXT_HEIGHT;
 }
 
-static grub_uint16_t
-grub_serial_getxy (struct grub_term_output *term __attribute__ ((unused)))
-{
-  return ((xpos << 8) | ypos);
-}
+struct grub_terminfo_input_state grub_serial_terminfo_input =
+  {
+    .readkey = serial_hw_fetch
+  };
 
-static void
-grub_serial_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
-		    grub_uint8_t x, grub_uint8_t y)
-{
-  if (x > TEXT_WIDTH || y > TEXT_HEIGHT)
-    {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "invalid point (%u,%u)", x, y);
-    }
-  else
-    {
-      keep_track = 0;
-      grub_terminfo_gotoxy (x, y, &grub_serial_term_output);
-      keep_track = 1;
-
-      xpos = x;
-      ypos = y;
-    }
-}
-
-static void
-grub_serial_cls (struct grub_term_output *term __attribute__ ((unused)))
-{
-  keep_track = 0;
-  grub_terminfo_cls (&grub_serial_term_output);
-  keep_track = 1;
-
-  xpos = ypos = 0;
-}
-
-static void
-grub_serial_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
-			   const grub_term_color_state state)
-{
-  keep_track = 0;
-  switch (state)
-    {
-    case GRUB_TERM_COLOR_STANDARD:
-    case GRUB_TERM_COLOR_NORMAL:
-      grub_terminfo_reverse_video_off (&grub_serial_term_output);
-      break;
-    case GRUB_TERM_COLOR_HIGHLIGHT:
-      grub_terminfo_reverse_video_on (&grub_serial_term_output);
-      break;
-    default:
-      break;
-    }
-  keep_track = 1;
-}
-
-static void
-grub_serial_setcursor (struct grub_term_output *term __attribute__ ((unused)),
-		       const int on)
-{
-  if (on)
-    grub_terminfo_cursor_on (&grub_serial_term_output);
-  else
-    grub_terminfo_cursor_off (&grub_serial_term_output);
-}
+struct grub_terminfo_output_state grub_serial_terminfo_output =
+  {
+    .put = serial_hw_put,
+    .normal_color = 0x7,
+    .highlight_color = 0x70
+  };
 
 static struct grub_term_input grub_serial_term_input =
 {
   .name = "serial",
-  .checkkey = grub_serial_checkkey,
-  .getkey = grub_serial_getkey,
+  .init = grub_terminfo_input_init,
+  .checkkey = grub_terminfo_checkkey,
+  .getkey = grub_terminfo_getkey,
+  .data = &grub_serial_terminfo_input
 };
 
 static struct grub_term_output grub_serial_term_output =
 {
   .name = "serial",
-  .putchar = grub_serial_putchar,
+  .putchar = grub_terminfo_putchar,
   .getwh = grub_serial_getwh,
-  .getxy = grub_serial_getxy,
-  .gotoxy = grub_serial_gotoxy,
-  .cls = grub_serial_cls,
-  .setcolorstate = grub_serial_setcolorstate,
-  .setcursor = grub_serial_setcursor,
+  .getxy = grub_terminfo_getxy,
+  .gotoxy = grub_terminfo_gotoxy,
+  .cls = grub_terminfo_cls,
+  .setcolorstate = grub_terminfo_setcolorstate,
+  .setcolor = grub_terminfo_setcolor,
+  .getcolor = grub_terminfo_getcolor,
+  .setcursor = grub_terminfo_setcursor,
   .flags = GRUB_TERM_CODE_TYPE_ASCII,
+  .data = &grub_serial_terminfo_output
 };
 
 
@@ -466,6 +332,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
 	{
 	  grub_term_register_input ("serial", &grub_serial_term_input);
 	  grub_term_register_output ("serial", &grub_serial_term_output);
+	  grub_terminfo_output_register (&grub_serial_term_output, "vt100");
 	  registered = 1;
 	}
     }
@@ -482,6 +349,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
 	      /* If unable to restore settings, unregister terminal.  */
 	      grub_term_unregister_input (&grub_serial_term_input);
 	      grub_term_unregister_output (&grub_serial_term_output);
+	      grub_terminfo_output_unregister (&grub_serial_term_output);
 	      registered = 0;
 	    }
 	}
@@ -518,5 +386,6 @@ GRUB_MOD_FINI(serial)
     {
       grub_term_unregister_input (&grub_serial_term_input);
       grub_term_unregister_output (&grub_serial_term_output);
+      grub_terminfo_output_unregister (&grub_serial_term_output);
     }
 }

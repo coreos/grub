@@ -23,18 +23,64 @@
 #include <grub/types.h>
 #include <grub/term.h>
 
-char *EXPORT_FUNC(grub_terminfo_get_current) (void);
-grub_err_t EXPORT_FUNC(grub_terminfo_set_current) (const char *);
-
-void EXPORT_FUNC(grub_terminfo_gotoxy) (grub_uint8_t x, grub_uint8_t y,
-					grub_term_output_t oterm);
-void EXPORT_FUNC(grub_terminfo_cls) (grub_term_output_t oterm);
-void EXPORT_FUNC(grub_terminfo_reverse_video_on) (grub_term_output_t oterm);
-void EXPORT_FUNC(grub_terminfo_reverse_video_off) (grub_term_output_t oterm);
-void EXPORT_FUNC(grub_terminfo_cursor_on) (grub_term_output_t oterm);
-void EXPORT_FUNC(grub_terminfo_cursor_off) (grub_term_output_t oterm);
+char *EXPORT_FUNC(grub_terminfo_get_current) (struct grub_term_output *term);
+grub_err_t EXPORT_FUNC(grub_terminfo_set_current) (struct grub_term_output *term,
+												const char *);
 
 #define GRUB_TERMINFO_READKEY_MAX_LEN 4
-void EXPORT_FUNC(grub_terminfo_readkey) (int *keys, int *len, int (*readkey) (void));
+struct grub_terminfo_input_state
+{
+  int input_buf[GRUB_TERMINFO_READKEY_MAX_LEN];
+  int npending;
+  int (*readkey) (void);
+};
+
+struct grub_terminfo_output_state
+{
+  struct grub_term_output *next;
+
+  char *name;
+
+  char *gotoxy;
+  char *cls;
+  char *reverse_video_on;
+  char *reverse_video_off;
+  char *cursor_on;
+  char *cursor_off;
+  char *setcolor;
+
+  grub_uint8_t normal_color;
+  grub_uint8_t highlight_color;
+
+  unsigned int xpos, ypos;
+
+  void (*put) (const int c);
+};
+
+void EXPORT_FUNC(grub_terminfo_gotoxy) (grub_term_output_t term,
+					grub_uint8_t x, grub_uint8_t y);
+void EXPORT_FUNC(grub_terminfo_cls) (grub_term_output_t term);
+grub_uint16_t EXPORT_FUNC (grub_terminfo_getxy) (struct grub_term_output *term);
+void EXPORT_FUNC (grub_terminfo_setcursor) (struct grub_term_output *term,
+					    const int on);
+void EXPORT_FUNC (grub_terminfo_setcolorstate) (struct grub_term_output *term,
+				  const grub_term_color_state state);
+
+
+int EXPORT_FUNC (grub_terminfo_checkkey) (struct grub_term_input *term);
+grub_err_t EXPORT_FUNC (grub_terminfo_input_init) (struct grub_term_input *term);
+int EXPORT_FUNC (grub_terminfo_getkey) (struct grub_term_input *term);
+void EXPORT_FUNC (grub_terminfo_putchar) (struct grub_term_output *term,
+					  const struct grub_unicode_glyph *c);
+void EXPORT_FUNC (grub_terminfo_getcolor) (struct grub_term_output *term,
+					   grub_uint8_t *normal_color,
+					   grub_uint8_t *highlight_color);
+void EXPORT_FUNC (grub_terminfo_setcolor) (struct grub_term_output *term,
+					   grub_uint8_t normal_color,
+					   grub_uint8_t highlight_color);
+
+grub_err_t EXPORT_FUNC (grub_terminfo_output_register) (struct grub_term_output *term,
+							const char *type);
+grub_err_t EXPORT_FUNC (grub_terminfo_output_unregister) (struct grub_term_output *term);
 
 #endif /* ! GRUB_TERMINFO_HEADER */
