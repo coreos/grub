@@ -73,6 +73,15 @@ struct grub_script_arglist
   int argcount;
 };
 
+/* Scope for grub script constructs.  */
+struct grub_script_scope
+{
+  struct grub_script_scope *next;
+
+  char **args;
+  unsigned int argc;
+};
+
 /* A single command line.  */
 struct grub_script_cmdline
 {
@@ -80,15 +89,6 @@ struct grub_script_cmdline
 
   /* The arguments for this command.  */
   struct grub_script_arglist *arglist;
-};
-
-/* A block of commands, this can be used to group commands.  */
-struct grub_script_cmdblock
-{
-  struct grub_script_cmd cmd;
-
-  /* A chain of commands.  */
-  struct grub_script_cmd *cmdlist;
 };
 
 /* An if statement.  */
@@ -234,8 +234,6 @@ grub_script_add_arglist (struct grub_parser_param *state,
 struct grub_script_cmd *
 grub_script_create_cmdline (struct grub_parser_param *state,
 			    struct grub_script_arglist *arglist);
-struct grub_script_cmd *
-grub_script_create_cmdblock (struct grub_parser_param *state);
 
 struct grub_script_cmd *
 grub_script_create_cmdif (struct grub_parser_param *state,
@@ -262,9 +260,9 @@ grub_script_create_cmdmenu (struct grub_parser_param *state,
 			    int options);
 
 struct grub_script_cmd *
-grub_script_add_cmd (struct grub_parser_param *state,
-		     struct grub_script_cmdblock *cmdblock,
-		     struct grub_script_cmd *cmd);
+grub_script_append_cmd (struct grub_parser_param *state,
+			struct grub_script_cmd *list,
+			struct grub_script_cmd *last);
 struct grub_script_arg *
 grub_script_arg_add (struct grub_parser_param *state,
 		     struct grub_script_arg *arg,
@@ -301,7 +299,7 @@ void grub_script_yyerror (struct grub_parser_param *, char const *);
 
 /* Commands to execute, don't use these directly.  */
 grub_err_t grub_script_execute_cmdline (struct grub_script_cmd *cmd);
-grub_err_t grub_script_execute_cmdblock (struct grub_script_cmd *cmd);
+grub_err_t grub_script_execute_cmdlist (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdif (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdfor (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdwhile (struct grub_script_cmd *cmd);
@@ -340,8 +338,8 @@ grub_script_function_t grub_script_function_create (struct grub_script_arg *func
 void grub_script_function_remove (const char *name);
 grub_script_function_t grub_script_function_find (char *functionname);
 int grub_script_function_iterate (int (*iterate) (grub_script_function_t));
-int grub_script_function_call (grub_script_function_t func,
-			       int argc, char **args);
+grub_err_t grub_script_function_call (grub_script_function_t func,
+				      int argc, char **args);
 
 char **
 grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count);

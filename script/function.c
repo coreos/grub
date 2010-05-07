@@ -115,12 +115,3 @@ grub_script_function_iterate (int (*iterate) (grub_script_function_t))
 
   return 0;
 }
-
-int
-grub_script_function_call (grub_script_function_t func,
-			   int argc __attribute__((unused)),
-			   char **args __attribute__((unused)))
-{
-  /* XXX: Arguments are not supported yet.  */
-  return grub_script_execute (func->func);
-}
