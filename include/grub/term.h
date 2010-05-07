@@ -70,18 +70,19 @@ grub_term_color_state;
 /* Set when the terminal cannot do fancy things.  */
 #define GRUB_TERM_DUMB		        (1 << 2)
 /* Which encoding does terminal expect stream to be.  */
-#define GRUB_TERM_CODE_TYPE_MASK	        ((1 << 5) | (1 << 4) | (1 << 3))
+#define GRUB_TERM_CODE_TYPE_SHIFT       3
+#define GRUB_TERM_CODE_TYPE_MASK	        (7 << GRUB_TERM_CODE_TYPE_SHIFT)
 /* Only ASCII characters accepted.  */
-#define GRUB_TERM_CODE_TYPE_ASCII	        0
+#define GRUB_TERM_CODE_TYPE_ASCII	        (0 << GRUB_TERM_CODE_TYPE_SHIFT)
 /* Expects VGA characters (ASCII + pseudographics).  */
-#define GRUB_TERM_CODE_TYPE_VGA	                (1 << 3)
+#define GRUB_TERM_CODE_TYPE_VGA	                (1 << GRUB_TERM_CODE_TYPE_SHIFT)
 /* UTF-8 stream in logical order. Usually used for terminals
    which just forward the stream to another computer.  */
-#define GRUB_TERM_CODE_TYPE_UTF8_LOGICAL	(1 << 4)
+#define GRUB_TERM_CODE_TYPE_UTF8_LOGICAL	(2 << GRUB_TERM_CODE_TYPE_SHIFT)
 /* UTF-8 in visual order. Like UTF-8 logical but for buggy endpoints.  */
-#define GRUB_TERM_CODE_TYPE_UTF8_VISUAL	        ((1 << 4) | (1 << 3))
+#define GRUB_TERM_CODE_TYPE_UTF8_VISUAL	        (3 << GRUB_TERM_CODE_TYPE_SHIFT)
 /* Glyph description in visual order.  */
-#define GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS       (1 << 5)
+#define GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS       (4 << GRUB_TERM_CODE_TYPE_SHIFT)
 
 
 /* Bitmasks for modifier keys returned by grub_getkeystatus.  */

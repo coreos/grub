@@ -539,34 +539,99 @@ grub_terminfo_input_init (struct grub_term_input *termi)
 /* GRUB Command.  */
 
 static grub_err_t
+print_terminfo (void)
+{
+  const char *encoding_names[(GRUB_TERM_CODE_TYPE_MASK 
+			      >> GRUB_TERM_CODE_TYPE_SHIFT) + 1]
+    = {
+    /* VGA and glyph descriptor types are just for completeness,
+       they are not used on terminfo terminals.
+    */
+    [GRUB_TERM_CODE_TYPE_ASCII >> GRUB_TERM_CODE_TYPE_SHIFT] = _("ASCII"),
+    [GRUB_TERM_CODE_TYPE_VGA >> GRUB_TERM_CODE_TYPE_SHIFT] = "VGA",
+    [GRUB_TERM_CODE_TYPE_UTF8_LOGICAL >> GRUB_TERM_CODE_TYPE_SHIFT]
+    = _("UTF-8"),
+    [GRUB_TERM_CODE_TYPE_UTF8_VISUAL >> GRUB_TERM_CODE_TYPE_SHIFT]
+    = _("UTF-8 visual"),
+    [GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS >> GRUB_TERM_CODE_TYPE_SHIFT]
+    = "Glyph descriptors",
+    _("Unknown"), _("Unknown"), _("Unknown")
+  };
+  struct grub_term_output *cur;
+
+  grub_printf ("Current terminfo types: \n");
+  for (cur = terminfo_outputs; cur;
+       cur = ((struct grub_terminfo_output_state *) cur->data)->next)
+    grub_printf ("%s: %s\t%s\n", cur->name,
+		 grub_terminfo_get_current(cur),
+		 encoding_names[(cur->flags & GRUB_TERM_CODE_TYPE_MASK)
+				>> GRUB_TERM_CODE_TYPE_SHIFT]);
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
 grub_cmd_terminfo (grub_command_t cmd __attribute__ ((unused)),
 		   int argc, char **args)
 {
   struct grub_term_output *cur;
+  int encoding = GRUB_TERM_CODE_TYPE_ASCII;
+  int i;
+  char *name = NULL, *type = NULL;
 
   if (argc == 0)
-    {
-      grub_printf ("Current terminfo types: \n");
-      for (cur = terminfo_outputs; cur;
-	   cur = ((struct grub_terminfo_output_state *) cur->data)->next)
-	grub_printf ("%s: %s\n", cur->name,
-		     grub_terminfo_get_current(cur));
+    return print_terminfo ();
 
-      return GRUB_ERR_NONE;
+  for (i = 0; i < argc; i++)
+    {
+      if (grub_strcmp (args[i], "-a") == 0
+	  || grub_strcmp (args[i], "--ascii") == 0)
+	{
+	  encoding = GRUB_TERM_CODE_TYPE_ASCII;
+	  continue;
+	}
+      if (grub_strcmp (args[i], "-u") == 0
+	  || grub_strcmp (args[i], "--utf8") == 0)
+	{
+	  encoding = GRUB_TERM_CODE_TYPE_UTF8_LOGICAL;
+	  continue;
+	}
+      if (grub_strcmp (args[i], "-v") == 0
+	  || grub_strcmp (args[i], "--visual-utf8") == 0)
+	{
+	  encoding = GRUB_TERM_CODE_TYPE_UTF8_VISUAL;
+	  continue;
+	}
+      if (!name)
+	{
+	  name = args[i];
+	  continue;
+	}
+      if (!type)
+	{
+	  type = args[i];
+	  continue;
+	}
+
+      return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many parameters");
     }
 
-  if (argc == 1)
+  if (name == NULL)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "too few parameters");
-  if (argc != 2)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many parameters");
 
   for (cur = terminfo_outputs; cur;
        cur = ((struct grub_terminfo_output_state *) cur->data)->next)
-    if (grub_strcmp (args[0], cur->name) == 0)
-      return grub_terminfo_set_current (cur, args[1]);
+    if (grub_strcmp (name, cur->name) == 0)
+      {
+	cur->flags = (cur->flags & ~GRUB_TERM_CODE_TYPE_MASK) | encoding;
+	if (!type)
+	  return GRUB_ERR_NONE;
+
+	return grub_terminfo_set_current (cur, type);
+      }
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		     "no terminal %s found or it's not handled by terminfo",
-		     args[0]);
+		     name);
 }
 
 static grub_command_t cmd;
@@ -574,7 +639,13 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(terminfo)
 {
   cmd = grub_register_command ("terminfo", grub_cmd_terminfo,
-			       N_("[TERM TYPE]"), N_("Set terminfo type of TERM  to TYPE."));
+			       N_("[[-a|-u|-v] TERM [TYPE]]"),
+			       N_("Set terminfo type of TERM  to TYPE.\n"
+				  "-a, --ascii            Terminal is ASCII-only [default].\n"
+				  "-u, --utf8             Terminal is logical-ordered UTF-8.\n"
+				  "-v, --visual-utf8      Terminal is visually-ordered UTF-8.")
+
+			       );
 }
 
 GRUB_MOD_FINI(terminfo)
