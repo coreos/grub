@@ -154,7 +154,7 @@ serial_get_divisor (unsigned int speed)
 
 /* The serial version of checkkey.  */
 static int
-grub_serial_checkkey (void)
+grub_serial_checkkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   if (npending)
     return input_buf[0];
@@ -169,7 +169,7 @@ grub_serial_checkkey (void)
 
 /* The serial version of getkey.  */
 static int
-grub_serial_getkey (void)
+grub_serial_getkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   int ret;
   while (! npending)
@@ -219,8 +219,8 @@ serial_hw_init (void)
 #endif
 
   /* Drain the input buffer.  */
-  while (grub_serial_checkkey () != -1)
-    (void) grub_serial_getkey ();
+  while (grub_serial_checkkey (0) != -1)
+    (void) grub_serial_getkey (0);
 
   /*  FIXME: should check if the serial terminal was found.  */
 
@@ -229,7 +229,8 @@ serial_hw_init (void)
 
 /* The serial version of putchar.  */
 static void
-grub_serial_putchar (const struct grub_unicode_glyph *c)
+grub_serial_putchar (struct grub_term_output *term __attribute__ ((unused)),
+		     const struct grub_unicode_glyph *c)
 {
   /* Keep track of the cursor.  */
   if (keep_track)
@@ -274,19 +275,20 @@ grub_serial_putchar (const struct grub_unicode_glyph *c)
 }
 
 static grub_uint16_t
-grub_serial_getwh (void)
+grub_serial_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
   return (TEXT_WIDTH << 8) | TEXT_HEIGHT;
 }
 
 static grub_uint16_t
-grub_serial_getxy (void)
+grub_serial_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   return ((xpos << 8) | ypos);
 }
 
 static void
-grub_serial_gotoxy (grub_uint8_t x, grub_uint8_t y)
+grub_serial_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
+		    grub_uint8_t x, grub_uint8_t y)
 {
   if (x > TEXT_WIDTH || y > TEXT_HEIGHT)
     {
@@ -304,7 +306,7 @@ grub_serial_gotoxy (grub_uint8_t x, grub_uint8_t y)
 }
 
 static void
-grub_serial_cls (void)
+grub_serial_cls (struct grub_term_output *term __attribute__ ((unused)))
 {
   keep_track = 0;
   grub_terminfo_cls (&grub_serial_term_output);
@@ -314,7 +316,8 @@ grub_serial_cls (void)
 }
 
 static void
-grub_serial_setcolorstate (const grub_term_color_state state)
+grub_serial_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
+			   const grub_term_color_state state)
 {
   keep_track = 0;
   switch (state)
@@ -333,7 +336,8 @@ grub_serial_setcolorstate (const grub_term_color_state state)
 }
 
 static void
-grub_serial_setcursor (const int on)
+grub_serial_setcursor (struct grub_term_output *term __attribute__ ((unused)),
+		       const int on)
 {
   if (on)
     grub_terminfo_cursor_on (&grub_serial_term_output);

@@ -47,14 +47,14 @@ grub_putcode_dumb (grub_uint32_t code,
     {
       int n;
 
-      n = 8 - ((term->getxy () >> 8) & 7);
+      n = 8 - ((term->getxy (term) >> 8) & 7);
       while (n--)
 	grub_putcode_dumb (' ', term);
 
       return;
     }
 
-  (term->putchar) (&c);
+  (term->putchar) (term, &c);
   if (code == '\n')
     grub_putcode_dumb ('\r', term);
 }
@@ -87,9 +87,9 @@ grub_getkey (void)
     {
       FOR_ACTIVE_TERM_INPUTS(term)
       {
-	int key = term->checkkey ();
+	int key = term->checkkey (term);
 	if (key != -1)
-	  return term->getkey ();
+	  return term->getkey (term);
       }
 
       grub_cpu_idle ();
@@ -103,7 +103,7 @@ grub_checkkey (void)
 
   FOR_ACTIVE_TERM_INPUTS(term)
   {
-    int key = term->checkkey ();
+    int key = term->checkkey (term);
     if (key != -1)
       return key;
   }
@@ -120,7 +120,7 @@ grub_getkeystatus (void)
   FOR_ACTIVE_TERM_INPUTS(term)
   {
     if (term->getkeystatus)
-      status |= term->getkeystatus ();
+      status |= term->getkeystatus (term);
   }
 
   return status;
@@ -139,7 +139,7 @@ grub_cls (void)
 	grub_term_refresh (term);
       }
     else
-      (term->cls) ();
+      (term->cls) (term);
   }
 }
 

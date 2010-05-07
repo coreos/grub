@@ -122,7 +122,7 @@ putstr (const char *str, grub_term_output_t oterm)
 	  .ncomb = 0,
 	  .combining = 0
 	};
-      oterm->putchar (&c);
+      oterm->putchar (oterm, &c);
     }
 }
 

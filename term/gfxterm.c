@@ -146,10 +146,11 @@ static unsigned int calculate_normal_character_width (grub_font_t font);
 
 static unsigned char calculate_character_width (struct grub_font_glyph *glyph);
 
-static void grub_gfxterm_refresh (void);
+static void grub_gfxterm_refresh (struct grub_term_output *term __attribute__ ((unused)));
 
 static grub_ssize_t
-grub_gfxterm_getcharwidth (const struct grub_unicode_glyph *c);
+grub_gfxterm_getcharwidth (struct grub_term_output *term __attribute__ ((unused)),
+			   const struct grub_unicode_glyph *c);
 
 static void
 set_term_color (grub_uint8_t term_color)
@@ -364,7 +365,7 @@ grub_gfxterm_fullscreen (void)
 }
 
 static grub_err_t
-grub_gfxterm_term_init (void)
+grub_gfxterm_term_init (struct grub_term_output *term __attribute__ ((unused)))
 {
   char *tmp;
   grub_err_t err;
@@ -408,7 +409,7 @@ destroy_window (void)
 }
 
 static grub_err_t
-grub_gfxterm_term_fini (void)
+grub_gfxterm_term_fini (struct grub_term_output *term __attribute__ ((unused)))
 {
   destroy_window ();
   grub_video_restore ();
@@ -822,7 +823,8 @@ scroll_up (void)
 }
 
 static void
-grub_gfxterm_putchar (const struct grub_unicode_glyph *c)
+grub_gfxterm_putchar (struct grub_term_output *term,
+		      const struct grub_unicode_glyph *c)
 {
   if (c->base == '\a')
     /* FIXME */
@@ -860,7 +862,7 @@ grub_gfxterm_putchar (const struct grub_unicode_glyph *c)
 
       /* Calculate actual character width for glyph. This is number of
          times of normal_font_width.  */
-      char_width = grub_gfxterm_getcharwidth (c);
+      char_width = grub_gfxterm_getcharwidth (term, c);
 
       /* If we are about to exceed line length, wrap to next line.  */
       if (virtual_screen.cursor_x + char_width > virtual_screen.columns)
@@ -959,7 +961,8 @@ calculate_character_width (struct grub_font_glyph *glyph)
 }
 
 static grub_ssize_t
-grub_gfxterm_getcharwidth (const struct grub_unicode_glyph *c)
+grub_gfxterm_getcharwidth (struct grub_term_output *term __attribute__ ((unused)),
+			   const struct grub_unicode_glyph *c)
 {
   int dev_width;
   dev_width = grub_font_get_constructed_device_width (virtual_screen.font, c);
@@ -972,19 +975,20 @@ grub_gfxterm_getcharwidth (const struct grub_unicode_glyph *c)
 }
 
 static grub_uint16_t
-grub_virtual_screen_getwh (void)
+grub_virtual_screen_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
   return (virtual_screen.columns << 8) | virtual_screen.rows;
 }
 
 static grub_uint16_t
-grub_virtual_screen_getxy (void)
+grub_virtual_screen_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   return ((virtual_screen.cursor_x << 8) | virtual_screen.cursor_y);
 }
 
 static void
-grub_gfxterm_gotoxy (grub_uint8_t x, grub_uint8_t y)
+grub_gfxterm_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
+		     grub_uint8_t x, grub_uint8_t y)
 {
   if (x >= virtual_screen.columns)
     x = virtual_screen.columns - 1;
@@ -1005,7 +1009,7 @@ grub_gfxterm_gotoxy (grub_uint8_t x, grub_uint8_t y)
 }
 
 static void
-grub_virtual_screen_cls (void)
+grub_virtual_screen_cls (struct grub_term_output *term __attribute__ ((unused)))
 {
   grub_uint32_t i;
 
@@ -1016,12 +1020,12 @@ grub_virtual_screen_cls (void)
 }
 
 static void
-grub_gfxterm_cls (void)
+grub_gfxterm_cls (struct grub_term_output *term)
 {
   grub_video_color_t color;
 
   /* Clear virtual screen.  */
-  grub_virtual_screen_cls ();
+  grub_virtual_screen_cls (term);
 
   /* Clear text layer.  */
   grub_video_set_active_render_target (text_layer);
@@ -1033,11 +1037,12 @@ grub_gfxterm_cls (void)
   /* Mark virtual screen to be redrawn.  */
   dirty_region_add_virtualscreen ();
 
-  grub_gfxterm_refresh ();
+  grub_gfxterm_refresh (term);
 }
 
 static void
-grub_virtual_screen_setcolorstate (grub_term_color_state state)
+grub_virtual_screen_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
+				   grub_term_color_state state)
 {
   switch (state)
     {
@@ -1062,7 +1067,8 @@ grub_virtual_screen_setcolorstate (grub_term_color_state state)
 }
 
 static void
-grub_virtual_screen_setcolor (grub_uint8_t normal_color,
+grub_virtual_screen_setcolor (struct grub_term_output *term __attribute__ ((unused)),
+			      grub_uint8_t normal_color,
                               grub_uint8_t highlight_color)
 {
   virtual_screen.normal_color_setting = normal_color;
@@ -1070,7 +1076,8 @@ grub_virtual_screen_setcolor (grub_uint8_t normal_color,
 }
 
 static void
-grub_virtual_screen_getcolor (grub_uint8_t *normal_color,
+grub_virtual_screen_getcolor (struct grub_term_output *term __attribute__ ((unused)),
+			      grub_uint8_t *normal_color,
                               grub_uint8_t *highlight_color)
 {
   *normal_color = virtual_screen.normal_color_setting;
@@ -1078,7 +1085,8 @@ grub_virtual_screen_getcolor (grub_uint8_t *normal_color,
 }
 
 static void
-grub_gfxterm_setcursor (int on)
+grub_gfxterm_setcursor (struct grub_term_output *term __attribute__ ((unused)),
+			int on)
 {
   if (virtual_screen.cursor_state != on)
     {
@@ -1092,7 +1100,7 @@ grub_gfxterm_setcursor (int on)
 }
 
 static void
-grub_gfxterm_refresh (void)
+grub_gfxterm_refresh (struct grub_term_output *term __attribute__ ((unused)))
 {
   real_scroll ();
 

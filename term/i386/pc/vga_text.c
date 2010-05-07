@@ -84,7 +84,8 @@ inc_x (void)
 }
 
 static void
-grub_vga_text_putchar (const struct grub_unicode_glyph *c)
+grub_vga_text_putchar (struct grub_term_output *term __attribute__ ((unused)),
+		       const struct grub_unicode_glyph *c)
 {
   switch (c->base)
     {
@@ -108,13 +109,14 @@ grub_vga_text_putchar (const struct grub_unicode_glyph *c)
 }
 
 static grub_uint16_t
-grub_vga_text_getxy (void)
+grub_vga_text_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   return (grub_curr_x << 8) | grub_curr_y;
 }
 
 static void
-grub_vga_text_gotoxy (grub_uint8_t x, grub_uint8_t y)
+grub_vga_text_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
+		      grub_uint8_t x, grub_uint8_t y)
 {
   grub_curr_x = x;
   grub_curr_y = y;
@@ -122,16 +124,17 @@ grub_vga_text_gotoxy (grub_uint8_t x, grub_uint8_t y)
 }
 
 static void
-grub_vga_text_cls (void)
+grub_vga_text_cls (struct grub_term_output *term)
 {
   int i;
   for (i = 0; i < ROWS * COLS; i++)
     ((short *) VGA_TEXT_SCREEN)[i] = ' ' | (grub_console_cur_color << 8);
-  grub_vga_text_gotoxy (0, 0);
+  grub_vga_text_gotoxy (term, 0, 0);
 }
 
 static void
-grub_vga_text_setcursor (int on)
+grub_vga_text_setcursor (struct grub_term_output *term __attribute__ ((unused)),
+			 int on)
 {
   grub_uint8_t old;
   grub_outb (CRTC_CURSOR, CRTC_ADDR_PORT);
@@ -143,9 +146,9 @@ grub_vga_text_setcursor (int on)
 }
 
 static grub_err_t
-grub_vga_text_init_fini (void)
+grub_vga_text_init_fini (struct grub_term_output *term)
 {
-  grub_vga_text_cls ();
+  grub_vga_text_cls (term);
   return 0;
 }
 

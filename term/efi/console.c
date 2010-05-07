@@ -85,7 +85,8 @@ map_char (grub_uint32_t c)
 }
 
 static void
-grub_console_putchar (const struct grub_unicode_glyph *c)
+grub_console_putchar (struct grub_term_output *term __attribute__ ((unused)),
+		      const struct grub_unicode_glyph *c)
 {
   grub_efi_char16_t str[2 + c->ncomb];
   grub_efi_simple_text_output_interface_t *o;
@@ -113,7 +114,7 @@ grub_console_putchar (const struct grub_unicode_glyph *c)
 }
 
 static int
-grub_console_checkkey (void)
+grub_console_checkkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_efi_simple_input_interface_t *i;
   grub_efi_input_key_t key;
@@ -208,7 +209,7 @@ grub_console_checkkey (void)
 }
 
 static int
-grub_console_getkey (void)
+grub_console_getkey (struct grub_term_input *term)
 {
   grub_efi_simple_input_interface_t *i;
   grub_efi_boot_services_t *b;
@@ -232,7 +233,7 @@ grub_console_getkey (void)
       if (status != GRUB_EFI_SUCCESS)
         return -1;
 
-      grub_console_checkkey ();
+      grub_console_checkkey (term);
     }
   while (read_key < 0);
 
@@ -242,7 +243,7 @@ grub_console_getkey (void)
 }
 
 static grub_uint16_t
-grub_console_getwh (void)
+grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
   grub_efi_simple_text_output_interface_t *o;
   grub_efi_uintn_t columns, rows;
@@ -259,7 +260,7 @@ grub_console_getwh (void)
 }
 
 static grub_uint16_t
-grub_console_getxy (void)
+grub_console_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   grub_efi_simple_text_output_interface_t *o;
 
@@ -268,7 +269,8 @@ grub_console_getxy (void)
 }
 
 static void
-grub_console_gotoxy (grub_uint8_t x, grub_uint8_t y)
+grub_console_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
+		     grub_uint8_t x, grub_uint8_t y)
 {
   grub_efi_simple_text_output_interface_t *o;
 
@@ -277,7 +279,7 @@ grub_console_gotoxy (grub_uint8_t x, grub_uint8_t y)
 }
 
 static void
-grub_console_cls (void)
+grub_console_cls (struct grub_term_output *term __attribute__ ((unused)))
 {
   grub_efi_simple_text_output_interface_t *o;
   grub_efi_int32_t orig_attr;
@@ -290,7 +292,8 @@ grub_console_cls (void)
 }
 
 static void
-grub_console_setcolorstate (grub_term_color_state state)
+grub_console_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
+			    grub_term_color_state state)
 {
   grub_efi_simple_text_output_interface_t *o;
 
@@ -312,21 +315,24 @@ grub_console_setcolorstate (grub_term_color_state state)
 }
 
 static void
-grub_console_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
+grub_console_setcolor (struct grub_term_output *term __attribute__ ((unused)),
+		       grub_uint8_t normal_color, grub_uint8_t highlight_color)
 {
   grub_console_normal_color = normal_color;
   grub_console_highlight_color = highlight_color;
 }
 
 static void
-grub_console_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
+grub_console_getcolor (struct grub_term_output *term __attribute__ ((unused)),
+		       grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
 {
   *normal_color = grub_console_normal_color;
   *highlight_color = grub_console_highlight_color;
 }
 
 static void
-grub_console_setcursor (int on)
+grub_console_setcursor (struct grub_term_output *term __attribute__ ((unused)),
+			int on)
 {
   grub_efi_simple_text_output_interface_t *o;
 

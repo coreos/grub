@@ -30,7 +30,7 @@ static const struct grub_machine_bios_data_area *bios_data_area =
 #define KEYBOARD_ALT		(1 << 3)
 
 static int
-grub_console_getkeystatus (void)
+grub_console_getkeystatus (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_uint8_t status = bios_data_area->keyboard_flag_lower;
   int mods = 0;

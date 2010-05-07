@@ -1078,7 +1078,7 @@ xsmap:
  */
 FUNCTION(grub_console_putchar)
 	/* Retrieve the base character.  */
-	movl	0(%eax), %edx
+	movl	0(%edx), %edx
 	pusha
 	movb	EXT_C(grub_console_cur_color), %bl
 
@@ -1329,8 +1329,8 @@ FUNCTION(grub_console_gotoxy)
 	pushl	%ebp
 	pushl	%ebx                    /* save EBX */
 
-	movb	%dl, %dh	/* %dh = y */
-	movb	%al, %dl	/* %dl = x */
+	movb	%cl, %dh	/* %dh = y */
+	/* %dl = x */
 
 	call	prot_to_real
 	.code16
@@ -1406,7 +1406,7 @@ FUNCTION(grub_console_setcursor)
 	pushl	%ebx
 
 	/* push ON */
-	pushl	%eax
+	pushl	%edx
 
 	/* check if the standard cursor shape has already been saved */
 	movw	console_cursor_shape, %ax

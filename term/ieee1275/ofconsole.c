@@ -77,7 +77,8 @@ grub_ofconsole_writeesc (const char *str)
 }
 
 static void
-grub_ofconsole_putchar (const struct grub_unicode_glyph *c)
+grub_ofconsole_putchar (struct grub_term_output *term __attribute__ ((unused)),
+			const struct grub_unicode_glyph *c)
 {
   char chr;
 
@@ -109,7 +110,8 @@ grub_ofconsole_putchar (const struct grub_unicode_glyph *c)
 }
 
 static void
-grub_ofconsole_setcolorstate (grub_term_color_state state)
+grub_ofconsole_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
+			      grub_term_color_state state)
 {
   char setcol[256];
   int fg;
@@ -135,7 +137,8 @@ grub_ofconsole_setcolorstate (grub_term_color_state state)
 }
 
 static void
-grub_ofconsole_setcolor (grub_uint8_t normal_color,
+grub_ofconsole_setcolor (struct grub_term_output *term __attribute__ ((unused)),
+			 grub_uint8_t normal_color,
 			 grub_uint8_t highlight_color)
 {
   /* Discard bright bit.  */
@@ -144,7 +147,8 @@ grub_ofconsole_setcolor (grub_uint8_t normal_color,
 }
 
 static void
-grub_ofconsole_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
+grub_ofconsole_getcolor (struct grub_term_output *term __attribute__ ((unused)),
+			 grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
 {
   *normal_color = grub_ofconsole_normal_color;
   *highlight_color = grub_ofconsole_highlight_color;
@@ -163,7 +167,7 @@ readkey (void)
 }
 
 static int
-grub_ofconsole_checkkey (void)
+grub_ofconsole_checkkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   if (grub_buflen)
     return grub_keybuf[0];
@@ -177,7 +181,7 @@ grub_ofconsole_checkkey (void)
 }
 
 static int
-grub_ofconsole_getkey (void)
+grub_ofconsole_getkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   int ret;
   while (! grub_buflen)
@@ -190,7 +194,7 @@ grub_ofconsole_getkey (void)
 }
 
 static grub_uint16_t
-grub_ofconsole_getxy (void)
+grub_ofconsole_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   return (grub_curr_x << 8) | grub_curr_y;
 }
@@ -232,13 +236,14 @@ grub_ofconsole_dimensions (void)
 }
 
 static grub_uint16_t
-grub_ofconsole_getwh (void)
+grub_ofconsole_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
   return (grub_ofconsole_width << 8) | grub_ofconsole_height;
 }
 
 static void
-grub_ofconsole_gotoxy (grub_uint8_t x, grub_uint8_t y)
+grub_ofconsole_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
+		       grub_uint8_t x, grub_uint8_t y)
 {
   if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_ANSI))
     {
@@ -265,17 +270,18 @@ grub_ofconsole_gotoxy (grub_uint8_t x, grub_uint8_t y)
 }
 
 static void
-grub_ofconsole_cls (void)
+grub_ofconsole_cls (struct grub_term_output *term)
 {
   /* Clear the screen.  Using serial console, screen(1) only recognizes the
    * ANSI escape sequence.  Using video console, Apple Open Firmware (version
    * 3.1.1) only recognizes the literal ^L.  So use both.  */
   grub_ofconsole_writeesc ("\e[2J");
-  grub_ofconsole_gotoxy (0, 0);
+  grub_ofconsole_gotoxy (term, 0, 0);
 }
 
 static void
-grub_ofconsole_setcursor (int on)
+grub_ofconsole_setcursor (struct grub_term_output *term __attribute__ ((unused)),
+			  int on)
 {
   /* Understood by the Open Firmware flavour in OLPC.  */
   if (on)
@@ -285,13 +291,13 @@ grub_ofconsole_setcursor (int on)
 }
 
 static void
-grub_ofconsole_refresh (void)
+grub_ofconsole_refresh (struct grub_term_output *term __attribute__ ((unused)))
 {
   /* Do nothing, the current console state is ok.  */
 }
 
 static grub_err_t
-grub_ofconsole_init_input (void)
+grub_ofconsole_init_input (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_ssize_t actual;
 
@@ -304,7 +310,7 @@ grub_ofconsole_init_input (void)
 }
 
 static grub_err_t
-grub_ofconsole_init_output (void)
+grub_ofconsole_init_output (struct grub_term_output *term)
 {
   grub_ssize_t actual;
 
@@ -328,7 +334,7 @@ grub_ofconsole_init_output (void)
 				 colors[col].green, colors[col].blue);
 
     /* Set the right fg and bg colors.  */
-      grub_ofconsole_setcolorstate (GRUB_TERM_COLOR_NORMAL);
+      grub_ofconsole_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
     }
 
   grub_ofconsole_dimensions ();
@@ -336,19 +342,11 @@ grub_ofconsole_init_output (void)
   return 0;
 }
 
-static grub_err_t
-grub_ofconsole_fini (void)
-{
-  return 0;
-}
-
-
 
 static struct grub_term_input grub_ofconsole_term_input =
   {
     .name = "ofconsole",
     .init = grub_ofconsole_init_input,
-    .fini = grub_ofconsole_fini,
     .checkkey = grub_ofconsole_checkkey,
     .getkey = grub_ofconsole_getkey,
   };
@@ -357,7 +355,6 @@ static struct grub_term_output grub_ofconsole_term_output =
   {
     .name = "ofconsole",
     .init = grub_ofconsole_init_output,
-    .fini = grub_ofconsole_fini,
     .putchar = grub_ofconsole_putchar,
     .getxy = grub_ofconsole_getxy,
     .getwh = grub_ofconsole_getwh,

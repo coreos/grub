@@ -366,10 +366,10 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
     {
       int n;
 
-      n = 8 - ((term->getxy () >> 8) & 7);
+      n = 8 - ((term->getxy (term) >> 8) & 7);
       c2.base = ' ';
       while (n--)
-	(term->putchar) (&c2);
+	(term->putchar) (term, &c2);
 
       return;
     }
@@ -405,19 +405,19 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
 	  for (ptr = u8; *ptr; ptr++)
 	    {
 	      c2.base = *ptr;
-	      (term->putchar) (&c2);
+	      (term->putchar) (term, &c2);
 	      c2.estimated_width = 0;
 	    }
 	}
       c2.estimated_width = 1;
     }
   else
-    (term->putchar) (c);
+    (term->putchar) (term, c);
 
   if (c->base == '\n')
     {
       c2.base = '\r';
-      (term->putchar) (&c2);
+      (term->putchar) (term, &c2);
     }
 }
 
@@ -468,7 +468,7 @@ static grub_ssize_t
 get_startwidth (struct grub_term_output *term,
 		int margin_left)
 {
-  return ((term->getxy () >> 8) & 0xff) - margin_left;
+  return ((term->getxy (term) >> 8) & 0xff) - margin_left;
 }
 
 static int
@@ -670,8 +670,8 @@ print_ucs4_real (const grub_uint32_t * str,
   if (backlog)
     state = find_term_state (term);
 
-  if (((term->getxy () >> 8) & 0xff) < margin_left)
-    grub_print_spaces (term, margin_left - ((term->getxy () >> 8) & 0xff));
+  if (((term->getxy (term) >> 8) & 0xff) < margin_left)
+    grub_print_spaces (term, margin_left - ((term->getxy (term) >> 8) & 0xff));
 
   if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
       == GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS

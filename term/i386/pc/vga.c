@@ -152,7 +152,7 @@ set_start_address (unsigned int start)
 }
 
 static grub_err_t
-grub_vga_mod_init (void)
+grub_vga_mod_init (struct grub_term_output *term __attribute__ ((unused)))
 {
   text_mode = grub_vga_set_mode (0x10);
   cursor_state = 1;
@@ -169,7 +169,7 @@ grub_vga_mod_init (void)
 }
 
 static grub_err_t
-grub_vga_mod_fini (void)
+grub_vga_mod_fini (struct grub_term_output *term __attribute__ ((unused)))
 {
   set_map_mask (saved_map_mask);
   grub_vga_set_mode (text_mode);
@@ -287,7 +287,8 @@ scroll_up (void)
 }
 
 static void
-grub_vga_putchar (const struct grub_unicode_glyph *c)
+grub_vga_putchar (struct grub_term_output *term __attribute__ ((unused)),
+		  const struct grub_unicode_glyph *c)
 {
 #if DEBUG_VGA
   static int show = 1;
@@ -393,7 +394,8 @@ grub_vga_putchar (const struct grub_unicode_glyph *c)
 }
 
 static grub_ssize_t
-grub_vga_getcharwidth (const struct grub_unicode_glyph *c)
+grub_vga_getcharwidth (struct grub_term_output *term __attribute__ ((unused)),
+		       const struct grub_unicode_glyph *c)
 {
 #if 0
   struct grub_font_glyph glyph;
@@ -408,19 +410,20 @@ grub_vga_getcharwidth (const struct grub_unicode_glyph *c)
 }
 
 static grub_uint16_t
-grub_vga_getwh (void)
+grub_vga_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
   return (TEXT_WIDTH << 8) | TEXT_HEIGHT;
 }
 
 static grub_uint16_t
-grub_vga_getxy (void)
+grub_vga_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   return ((xpos << 8) | ypos);
 }
 
 static void
-grub_vga_gotoxy (grub_uint8_t x, grub_uint8_t y)
+grub_vga_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
+		 grub_uint8_t x, grub_uint8_t y)
 {
   if (x >= TEXT_WIDTH || y >= TEXT_HEIGHT)
     {
@@ -440,7 +443,7 @@ grub_vga_gotoxy (grub_uint8_t x, grub_uint8_t y)
 }
 
 static void
-grub_vga_cls (void)
+grub_vga_cls (struct grub_term_output *term __attribute__ ((unused)))
 {
   unsigned i;
 
@@ -460,7 +463,8 @@ grub_vga_cls (void)
 }
 
 static void
-grub_vga_setcolorstate (grub_term_color_state state)
+grub_vga_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
+			grub_term_color_state state)
 {
   switch (state)
     {
@@ -479,7 +483,8 @@ grub_vga_setcolorstate (grub_term_color_state state)
 }
 
 static void
-grub_vga_setcursor (int on)
+grub_vga_setcursor (struct grub_term_output *term __attribute__ ((unused)),
+		    int on)
 {
   if (cursor_state != on)
     {

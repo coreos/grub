@@ -136,19 +136,21 @@ struct grub_term_input
   const char *name;
 
   /* Initialize the terminal.  */
-  grub_err_t (*init) (void);
+  grub_err_t (*init) (struct grub_term_input *term);
 
   /* Clean up the terminal.  */
-  grub_err_t (*fini) (void);
+  grub_err_t (*fini) (struct grub_term_input *term);
 
   /* Check if any input character is available.  */
-  int (*checkkey) (void);
+  int (*checkkey) (struct grub_term_input *term);
 
   /* Get a character.  */
-  int (*getkey) (void);
+  int (*getkey) (struct grub_term_input *term);
 
   /* Get keyboard modifier status.  */
-  int (*getkeystatus) (void);
+  int (*getkeystatus) (struct grub_term_input *term);
+
+  void *data;
 };
 typedef struct grub_term_input *grub_term_input_t;
 
@@ -161,49 +163,57 @@ struct grub_term_output
   const char *name;
 
   /* Initialize the terminal.  */
-  grub_err_t (*init) (void);
+  grub_err_t (*init) (struct grub_term_output *term);
 
   /* Clean up the terminal.  */
-  grub_err_t (*fini) (void);
+  grub_err_t (*fini) (struct grub_term_output *term);
 
   /* Put a character. C is encoded in Unicode.  */
-  void (*putchar) (const struct grub_unicode_glyph *c);
+  void (*putchar) (struct grub_term_output *term,
+		   const struct grub_unicode_glyph *c);
 
   /* Get the number of columns occupied by a given character C. C is
      encoded in Unicode.  */
-  grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *c);
+  grub_ssize_t (*getcharwidth) (struct grub_term_output *term,
+				const struct grub_unicode_glyph *c);
 
   /* Get the screen size. The return value is ((Width << 8) | Height).  */
-  grub_uint16_t (*getwh) (void);
+  grub_uint16_t (*getwh) (struct grub_term_output *term);
 
   /* Get the cursor position. The return value is ((X << 8) | Y).  */
-  grub_uint16_t (*getxy) (void);
+  grub_uint16_t (*getxy) (struct grub_term_output *term);
 
   /* Go to the position (X, Y).  */
-  void (*gotoxy) (grub_uint8_t x, grub_uint8_t y);
+  void (*gotoxy) (struct grub_term_output *term,
+		  grub_uint8_t x, grub_uint8_t y);
 
   /* Clear the screen.  */
-  void (*cls) (void);
+  void (*cls) (struct grub_term_output *term);
 
   /* Set the current color to be used */
-  void (*setcolorstate) (grub_term_color_state state);
+  void (*setcolorstate) (struct grub_term_output *term,
+			 grub_term_color_state state);
 
   /* Set the normal color and the highlight color. The format of each
      color is VGA's.  */
-  void (*setcolor) (grub_uint8_t normal_color, grub_uint8_t highlight_color);
+  void (*setcolor) (struct grub_term_output *term,
+		    grub_uint8_t normal_color, grub_uint8_t highlight_color);
 
   /* Get the normal color and the highlight color. The format of each
      color is VGA's.  */
-  void (*getcolor) (grub_uint8_t *normal_color, grub_uint8_t *highlight_color);
+  void (*getcolor) (struct grub_term_output *term,
+		    grub_uint8_t *normal_color, grub_uint8_t *highlight_color);
 
   /* Turn on/off the cursor.  */
-  void (*setcursor) (int on);
+  void (*setcursor) (struct grub_term_output *term, int on);
 
   /* Update the screen.  */
-  void (*refresh) (void);
+  void (*refresh) (struct grub_term_output *term);
 
   /* The feature flags defined above.  */
   grub_uint32_t flags;
+
+  void *data;
 };
 typedef struct grub_term_output *grub_term_output_t;
 
@@ -222,7 +232,7 @@ grub_term_register_input (const char *name __attribute__ ((unused)),
   else
     {
       /* If this is the first terminal, enable automatically.  */
-      if (! term->init || term->init () == GRUB_ERR_NONE)
+      if (! term->init || term->init (term) == GRUB_ERR_NONE)
 	grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs), GRUB_AS_LIST (term));
     }
 }
@@ -237,7 +247,7 @@ grub_term_register_output (const char *name __attribute__ ((unused)),
   else
     {
       /* If this is the first terminal, enable automatically.  */
-      if (! term->init || term->init () == GRUB_ERR_NONE)
+      if (! term->init || term->init (term) == GRUB_ERR_NONE)
 	grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs),
 			GRUB_AS_LIST (term));
     }
@@ -277,12 +287,12 @@ void grub_term_restore_pos (grub_uint16_t *pos);
 
 static inline unsigned grub_term_width (struct grub_term_output *term)
 {
-  return ((term->getwh()&0xFF00)>>8);
+  return ((term->getwh(term)&0xFF00)>>8);
 }
 
 static inline unsigned grub_term_height (struct grub_term_output *term)
 {
-  return (term->getwh()&0xFF);
+  return (term->getwh(term)&0xFF);
 }
 
 /* The width of the border.  */
@@ -326,20 +336,20 @@ grub_term_cursor_x (struct grub_term_output *term)
 static inline grub_uint16_t
 grub_term_getxy (struct grub_term_output *term)
 {
-  return term->getxy ();
+  return term->getxy (term);
 }
 
 static inline void
 grub_term_refresh (struct grub_term_output *term)
 {
   if (term->refresh)
-    term->refresh ();
+    term->refresh (term);
 }
 
 static inline void
 grub_term_gotoxy (struct grub_term_output *term, grub_uint8_t x, grub_uint8_t y)
 {
-  term->gotoxy (x, y);
+  term->gotoxy (term, x, y);
 }
 
 static inline void 
@@ -347,7 +357,7 @@ grub_term_setcolorstate (struct grub_term_output *term,
 			 grub_term_color_state state)
 {
   if (term->setcolorstate)
-    term->setcolorstate (state);
+    term->setcolorstate (term, state);
 }
 
   /* Set the normal color and the highlight color. The format of each
@@ -357,7 +367,7 @@ grub_term_setcolor (struct grub_term_output *term,
 		    grub_uint8_t normal_color, grub_uint8_t highlight_color)
 {
   if (term->setcolor)
-    term->setcolor (normal_color, highlight_color);
+    term->setcolor (term, normal_color, highlight_color);
 }
 
 /* Turn on/off the cursor.  */
@@ -365,14 +375,14 @@ static inline void
 grub_term_setcursor (struct grub_term_output *term, int on)
 {
   if (term->setcursor)
-    term->setcursor (on);
+    term->setcursor (term, on);
 }
 
 static inline void 
 grub_term_cls (struct grub_term_output *term)
 {
   if (term->cls)
-    (term->cls) ();
+    (term->cls) (term);
   else
     {
       grub_putcode ('\n', term);
@@ -402,7 +412,7 @@ grub_term_getcharwidth (struct grub_term_output *term,
 			const struct grub_unicode_glyph *c)
 {
   if (term->getcharwidth)
-    return term->getcharwidth (c);
+    return term->getcharwidth (term, c);
   else if (((term->flags & GRUB_TERM_CODE_TYPE_MASK)
 	    == GRUB_TERM_CODE_TYPE_UTF8_LOGICAL)
 	   || ((term->flags & GRUB_TERM_CODE_TYPE_MASK)
@@ -419,7 +429,7 @@ grub_term_getcolor (struct grub_term_output *term,
 		    grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
 {
   if (term->getcolor)
-    term->getcolor (normal_color, highlight_color);
+    term->getcolor (term, normal_color, highlight_color);
   else
     {
       *normal_color = 0x07;

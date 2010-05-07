@@ -64,13 +64,15 @@ static grub_uint8_t color_map[NUM_COLORS] =
 static int use_color;
 
 static void
-grub_ncurses_putchar (const struct grub_unicode_glyph *c)
+grub_ncurses_putchar (struct grub_term_output *term __attribute__ ((unused)),
+		      const struct grub_unicode_glyph *c)
 {
   addch (c->base | grub_console_attr);
 }
 
 static void
-grub_ncurses_setcolorstate (grub_term_color_state state)
+grub_ncurses_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
+			    grub_term_color_state state)
 {
   switch (state)
     {
@@ -104,14 +106,16 @@ grub_ncurses_setcolorstate (grub_term_color_state state)
 
 /* XXX: This function is never called.  */
 static void
-grub_ncurses_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
+grub_ncurses_setcolor (struct grub_term_output *term __attribute__ ((unused)),
+		       grub_uint8_t normal_color, grub_uint8_t highlight_color)
 {
   grub_console_normal_color = normal_color;
   grub_console_highlight_color = highlight_color;
 }
 
 static void
-grub_ncurses_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
+grub_ncurses_getcolor (struct grub_term_output *term __attribute__ ((unused)),
+		       grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
 {
   *normal_color = grub_console_normal_color;
   *highlight_color = grub_console_highlight_color;
@@ -120,7 +124,7 @@ grub_ncurses_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color
 static int saved_char = ERR;
 
 static int
-grub_ncurses_checkkey (void)
+grub_ncurses_checkkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   int c;
 
@@ -142,7 +146,7 @@ grub_ncurses_checkkey (void)
 }
 
 static int
-grub_ncurses_getkey (void)
+grub_ncurses_getkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   int c;
 
@@ -212,7 +216,7 @@ grub_ncurses_getkey (void)
 }
 
 static grub_uint16_t
-grub_ncurses_getxy (void)
+grub_ncurses_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   int x;
   int y;
@@ -223,7 +227,7 @@ grub_ncurses_getxy (void)
 }
 
 static grub_uint16_t
-grub_ncurses_getwh (void)
+grub_ncurses_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
   int x;
   int y;
@@ -234,32 +238,34 @@ grub_ncurses_getwh (void)
 }
 
 static void
-grub_ncurses_gotoxy (grub_uint8_t x, grub_uint8_t y)
+grub_ncurses_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
+		     grub_uint8_t x, grub_uint8_t y)
 {
   move (y, x);
 }
 
 static void
-grub_ncurses_cls (void)
+grub_ncurses_cls (struct grub_term_output *term __attribute__ ((unused)))
 {
   clear ();
   refresh ();
 }
 
 static void
-grub_ncurses_setcursor (int on)
+grub_ncurses_setcursor (struct grub_term_output *term __attribute__ ((unused)),
+			int on)
 {
   curs_set (on ? 1 : 0);
 }
 
 static void
-grub_ncurses_refresh (void)
+grub_ncurses_refresh (struct grub_term_output *term __attribute__ ((unused)))
 {
   refresh ();
 }
 
 static grub_err_t
-grub_ncurses_init (void)
+grub_ncurses_init (struct grub_term_output *term __attribute__ ((unused)))
 {
   initscr ();
   raw ();
@@ -291,7 +297,7 @@ grub_ncurses_init (void)
 }
 
 static grub_err_t
-grub_ncurses_fini (void)
+grub_ncurses_fini (struct grub_term_output *term __attribute__ ((unused)))
 {
   endwin ();
   return 0;
@@ -333,5 +339,5 @@ grub_console_init (void)
 void
 grub_console_fini (void)
 {
-  grub_ncurses_fini ();
+  grub_ncurses_fini (&grub_ncurses_term_output);
 }
