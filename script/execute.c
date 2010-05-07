@@ -32,6 +32,31 @@
 
 static struct grub_script_scope *scope = 0;
 
+grub_err_t
+grub_script_cmd_shift (grub_command_t cmd __attribute__((unused)),
+		       int argc, char *argv[])
+{
+  char *p = 0;
+  unsigned long n = 0;
+
+  if (! scope)
+    return GRUB_ERR_NONE;
+
+  if (argc == 0)
+    n = 1;
+  else if (argc > 1)
+    return GRUB_ERR_BAD_ARGUMENT;
+  else
+    {
+      n = grub_strtoul (argv[0], &p, 10);
+      if (*p != '\0')
+	return GRUB_ERR_BAD_ARGUMENT;
+    }
+
+  scope->shift = (unsigned int)(n > scope->argc ? 0 : n);
+  return GRUB_ERR_NONE;
+}
+
 static char *
 grub_script_env_get (const char *name)
 {
@@ -49,7 +74,10 @@ grub_script_env_get (const char *name)
 	  if (num == 0)
 	    return 0; /* XXX no file name, for now.  */
 
-	  return (num > scope->argc ? 0 : scope->args[num - 1]);
+	  if (num > scope->argc - scope->shift)
+	    return 0;
+	  else
+	    return scope->args[num - 1 + scope->shift];
 	}
       else
 	{
@@ -60,7 +88,7 @@ grub_script_env_get (const char *name)
   else if (grub_strcmp (name, "#") == 0)
     {
       static char buf[32]; /* Rewritten everytime.  */
-      grub_snprintf (buf, sizeof (buf), "%u", scope->argc);
+      grub_snprintf (buf, sizeof (buf), "%u", scope->argc - scope->shift);
       return buf;
     }
   else
@@ -244,6 +272,7 @@ grub_script_function_call (grub_script_function_t func, int argc, char **args)
   grub_err_t ret = 0;
   struct grub_script_scope new_scope;
 
+  new_scope.shift = 0;
   new_scope.argc = argc;
   new_scope.args = args;
   grub_list_push (GRUB_AS_LIST_P (&scope), GRUB_AS_LIST (&new_scope));

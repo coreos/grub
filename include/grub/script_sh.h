@@ -23,6 +23,7 @@
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/parser.h>
+#include <grub/command.h>
 
 struct grub_script_mem;
 
@@ -80,6 +81,7 @@ struct grub_script_scope
 
   char **args;
   unsigned int argc;
+  unsigned int shift;
 };
 
 /* A single command line.  */
@@ -307,6 +309,9 @@ grub_err_t grub_script_execute_menuentry (struct grub_script_cmd *cmd);
 
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t grub_script_execute (struct grub_script *script);
+
+/* SHIFT command for GRUB script.  */
+grub_err_t grub_script_cmd_shift (grub_command_t cmd, int argc, char *argv[]);
 
 /* This variable points to the parsed command.  This is used to
    communicate with the bison code.  */
