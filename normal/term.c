@@ -117,6 +117,20 @@ grub_set_more (int onoff)
   grub_normal_reset_more ();
 }
 
+enum
+  {
+    GRUB_CP437_UPARROW         = 0x18,
+    GRUB_CP437_DOWNARROW       = 0x19,
+    GRUB_CP437_RIGHTARROW      = 0x1a,
+    GRUB_CP437_LEFTARROW       = 0x1b,
+    GRUB_CP437_VLINE           = 0xb3,
+    GRUB_CP437_CORNER_UR       = 0xbf,
+    GRUB_CP437_CORNER_LL       = 0xc0,
+    GRUB_CP437_HLINE           = 0xc4,
+    GRUB_CP437_CORNER_LR       = 0xd9,
+    GRUB_CP437_CORNER_UL       = 0xda,
+  };
+
 static grub_uint32_t
 map_code (grub_uint32_t in, struct grub_term_output *term)
 {
@@ -129,25 +143,25 @@ map_code (grub_uint32_t in, struct grub_term_output *term)
       switch (in)
 	{
 	case GRUB_UNICODE_LEFTARROW:
-	  return 0x1b;
+	  return GRUB_CP437_LEFTARROW;
 	case GRUB_UNICODE_UPARROW:
-	  return 0x18;
+	  return GRUB_CP437_UPARROW;
 	case GRUB_UNICODE_RIGHTARROW:
-	  return 0x1a;
+	  return GRUB_CP437_RIGHTARROW;
 	case GRUB_UNICODE_DOWNARROW:
-	  return 0x19;
+	  return GRUB_CP437_DOWNARROW;
 	case GRUB_UNICODE_HLINE:
-	  return 0xc4;
+	  return GRUB_CP437_HLINE;
 	case GRUB_UNICODE_VLINE:
-	  return 0xb3;
+	  return GRUB_CP437_VLINE;
 	case GRUB_UNICODE_CORNER_UL:
-	  return 0xda;
+	  return GRUB_CP437_CORNER_UL;
 	case GRUB_UNICODE_CORNER_UR:
-	  return 0xbf;
+	  return GRUB_CP437_CORNER_UR;
 	case GRUB_UNICODE_CORNER_LL:
-	  return  0xc0;
+	  return GRUB_CP437_CORNER_LL;
 	case GRUB_UNICODE_CORNER_LR:
-	  return 0xd9;
+	  return GRUB_CP437_CORNER_LR;
 	}
       return '?';
     case GRUB_TERM_CODE_TYPE_ASCII:
