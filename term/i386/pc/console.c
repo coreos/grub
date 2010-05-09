@@ -63,7 +63,7 @@ static struct grub_term_output grub_console_term_output =
     .cls = grub_console_cls,
     .setcolorstate = grub_console_setcolorstate,
     .setcursor = grub_console_setcursor,
-    .flags = GRUB_TERM_CODE_TYPE_VGA,
+    .flags = GRUB_TERM_CODE_TYPE_CP437,
     .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
     .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };

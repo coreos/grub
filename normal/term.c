@@ -125,7 +125,7 @@ map_code (grub_uint32_t in, struct grub_term_output *term)
 
   switch (term->flags & GRUB_TERM_CODE_TYPE_MASK)
     {
-    case GRUB_TERM_CODE_TYPE_VGA:
+    case GRUB_TERM_CODE_TYPE_CP437:
       switch (in)
 	{
 	case GRUB_UNICODE_LEFTARROW:

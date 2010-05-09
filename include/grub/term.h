@@ -74,8 +74,8 @@ grub_term_color_state;
 #define GRUB_TERM_CODE_TYPE_MASK	        (7 << GRUB_TERM_CODE_TYPE_SHIFT)
 /* Only ASCII characters accepted.  */
 #define GRUB_TERM_CODE_TYPE_ASCII	        (0 << GRUB_TERM_CODE_TYPE_SHIFT)
-/* Expects VGA characters (ASCII + pseudographics).  */
-#define GRUB_TERM_CODE_TYPE_VGA	                (1 << GRUB_TERM_CODE_TYPE_SHIFT)
+/* Expects CP-437 characters (ASCII + pseudographics).  */
+#define GRUB_TERM_CODE_TYPE_CP437	                (1 << GRUB_TERM_CODE_TYPE_SHIFT)
 /* UTF-8 stream in logical order. Usually used for terminals
    which just forward the stream to another computer.  */
 #define GRUB_TERM_CODE_TYPE_UTF8_LOGICAL	(2 << GRUB_TERM_CODE_TYPE_SHIFT)
