@@ -33,46 +33,39 @@ static int read_key = -1;
 static grub_uint32_t
 map_char (grub_uint32_t c)
 {
-  if (c > 0x7f)
+  /* Map some unicode characters to the EFI character.  */
+  switch (c)
     {
-      /* Map some unicode characters to the EFI character.  */
-      switch (c)
-	{
-	case 0x2190:	/* left arrow */
-	  c = 0x25c4;
-	  break;
-	case 0x2191:	/* up arrow */
-	  c = 0x25b2;
-	  break;
-	case 0x2192:	/* right arrow */
-	  c = 0x25ba;
-	  break;
-	case 0x2193:	/* down arrow */
-	  c = 0x25bc;
-	  break;
-	case 0x2501:	/* horizontal line */
-	  c = 0x2500;
-	  break;
-	case 0x2503:	/* vertical line */
-	  c = 0x2502;
-	  break;
-	case 0x250F:	/* upper-left corner */
-	  c = 0x250c;
-	  break;
-	case 0x2513:	/* upper-right corner */
-	  c = 0x2510;
-	  break;
-	case 0x2517:	/* lower-left corner */
-	  c = 0x2514;
-	  break;
-	case 0x251B:	/* lower-right corner */
-	  c = 0x2518;
-	  break;
-
-	default:
-	  c = '?';
-	  break;
-	}
+    case GRUB_UNICODE_LEFTARROW:
+      c = GRUB_UNICODE_BLACK_LEFT_TRIANGLE;
+      break;
+    case GRUB_UNICODE_UPARROW:
+      c = GRUB_UNICODE_BLACK_UP_TRIANGLE;
+      break;
+    case GRUB_UNICODE_RIGHTARROW:
+      c = GRUB_UNICODE_BLACK_RIGHT_TRIANGLE;
+      break;
+    case GRUB_UNICODE_DOWNARROW:
+      c = GRUB_UNICODE_BLACK_DOWN_TRIANGLE;
+      break;
+    case GRUB_UNICODE_HLINE:
+      c = GRUB_UNICODE_LIGHT_HLINE;
+      break;
+    case GRUB_UNICODE_VLINE:
+      c = GRUB_UNICODE_LIGHT_VLINE;
+      break;
+    case GRUB_UNICODE_CORNER_UL:
+      c = GRUB_UNICODE_LIGHT_CORNER_UL;
+      break;
+    case GRUB_UNICODE_CORNER_UR:
+      c = GRUB_UNICODE_LIGHT_CORNER_UR;
+      break;
+    case GRUB_UNICODE_CORNER_LL:
+      c = GRUB_UNICODE_LIGHT_CORNER_LL;
+      break;
+    case GRUB_UNICODE_CORNER_LR:
+      c = GRUB_UNICODE_LIGHT_CORNER_LR;
+      break;
     }
 
   return c;
