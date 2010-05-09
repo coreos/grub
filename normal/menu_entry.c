@@ -173,7 +173,7 @@ print_up (int flag, struct per_term_screen *term_screen)
 		    GRUB_TERM_FIRST_ENTRY_Y);
 
   if (flag)
-    grub_putcode (GRUB_TERM_DISP_UP, term_screen->term);
+    grub_putcode (GRUB_UNICODE_UPARROW, term_screen->term);
   else
     grub_putcode (' ', term_screen->term);
 }
@@ -188,7 +188,7 @@ print_down (int flag, struct per_term_screen *term_screen)
 		    + grub_term_num_entries (term_screen->term));
 
   if (flag)
-    grub_putcode (GRUB_TERM_DISP_DOWN, term_screen->term);
+    grub_putcode (GRUB_UNICODE_DOWNARROW, term_screen->term);
   else
     grub_putcode (' ', term_screen->term);
 }
@@ -1097,7 +1097,7 @@ complete (struct screen *screen, int continuous, int update)
 	    endp = p + (grub_term_width (screen->terms[i].term) - 8);
 
 	    if (p != ucs4)
-	      grub_putcode (GRUB_TERM_DISP_LEFT, screen->terms[i].term);
+	      grub_putcode (GRUB_UNICODE_LEFTARROW, screen->terms[i].term);
 	    else
 	      grub_putcode (' ', screen->terms[i].term);
 
@@ -1105,7 +1105,7 @@ complete (struct screen *screen, int continuous, int update)
 			     0, 0, screen->terms[i].term);
 
 	    if (ucs4 + ucs4len > endp)
-	      grub_putcode (GRUB_TERM_DISP_RIGHT, screen->terms[i].term);
+	      grub_putcode (GRUB_UNICODE_RIGHTARROW, screen->terms[i].term);
 	    grub_term_gotoxy (screen->terms[i].term, pos >> 8, pos & 0xFF);
 	  }
     }

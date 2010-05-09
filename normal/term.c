@@ -128,25 +128,25 @@ map_code (grub_uint32_t in, struct grub_term_output *term)
     case GRUB_TERM_CODE_TYPE_VGA:
       switch (in)
 	{
-	case GRUB_TERM_DISP_LEFT:
+	case GRUB_UNICODE_LEFTARROW:
 	  return 0x1b;
-	case GRUB_TERM_DISP_UP:
+	case GRUB_UNICODE_UPARROW:
 	  return 0x18;
-	case GRUB_TERM_DISP_RIGHT:
+	case GRUB_UNICODE_RIGHTARROW:
 	  return 0x1a;
-	case GRUB_TERM_DISP_DOWN:
+	case GRUB_UNICODE_DOWNARROW:
 	  return 0x19;
-	case GRUB_TERM_DISP_HLINE:
+	case GRUB_UNICODE_HLINE:
 	  return 0xc4;
-	case GRUB_TERM_DISP_VLINE:
+	case GRUB_UNICODE_VLINE:
 	  return 0xb3;
-	case GRUB_TERM_DISP_UL:
+	case GRUB_UNICODE_CORNER_UL:
 	  return 0xda;
-	case GRUB_TERM_DISP_UR:
+	case GRUB_UNICODE_CORNER_UR:
 	  return 0xbf;
-	case GRUB_TERM_DISP_LL:
+	case GRUB_UNICODE_CORNER_LL:
 	  return  0xc0;
-	case GRUB_TERM_DISP_LR:
+	case GRUB_UNICODE_CORNER_LR:
 	  return 0xd9;
 	}
       return '?';
@@ -154,28 +154,28 @@ map_code (grub_uint32_t in, struct grub_term_output *term)
       /* Better than nothing.  */
       switch (in)
 	{
-	case GRUB_TERM_DISP_LEFT:
+	case GRUB_UNICODE_LEFTARROW:
 	  return '<';
 		
-	case GRUB_TERM_DISP_UP:
+	case GRUB_UNICODE_UPARROW:
 	  return '^';
 	  
-	case GRUB_TERM_DISP_RIGHT:
+	case GRUB_UNICODE_RIGHTARROW:
 	  return '>';
 		
-	case GRUB_TERM_DISP_DOWN:
+	case GRUB_UNICODE_DOWNARROW:
 	  return 'v';
 		  
-	case GRUB_TERM_DISP_HLINE:
+	case GRUB_UNICODE_HLINE:
 	  return '-';
 		  
-	case GRUB_TERM_DISP_VLINE:
+	case GRUB_UNICODE_VLINE:
 	  return '|';
 		  
-	case GRUB_TERM_DISP_UL:
-	case GRUB_TERM_DISP_UR:
-	case GRUB_TERM_DISP_LL:
-	case GRUB_TERM_DISP_LR:
+	case GRUB_UNICODE_CORNER_UL:
+	case GRUB_UNICODE_CORNER_UR:
+	case GRUB_UNICODE_CORNER_LL:
+	case GRUB_UNICODE_CORNER_LR:
 	  return '+';
 		
 	}

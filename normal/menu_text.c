@@ -83,27 +83,27 @@ draw_border (struct grub_term_output *term)
   grub_term_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
 
   grub_term_gotoxy (term, GRUB_TERM_MARGIN, GRUB_TERM_TOP_BORDER_Y);
-  grub_putcode (GRUB_TERM_DISP_UL, term);
+  grub_putcode (GRUB_UNICODE_CORNER_UL, term);
   for (i = 0; i < (unsigned) grub_term_border_width (term) - 2; i++)
-    grub_putcode (GRUB_TERM_DISP_HLINE, term);
-  grub_putcode (GRUB_TERM_DISP_UR, term);
+    grub_putcode (GRUB_UNICODE_HLINE, term);
+  grub_putcode (GRUB_UNICODE_CORNER_UR, term);
 
   for (i = 0; i < (unsigned) grub_term_num_entries (term); i++)
     {
       grub_term_gotoxy (term, GRUB_TERM_MARGIN, GRUB_TERM_TOP_BORDER_Y + i + 1);
-      grub_putcode (GRUB_TERM_DISP_VLINE, term);
+      grub_putcode (GRUB_UNICODE_VLINE, term);
       grub_term_gotoxy (term, GRUB_TERM_MARGIN + grub_term_border_width (term)
 			- 1,
 			GRUB_TERM_TOP_BORDER_Y + i + 1);
-      grub_putcode (GRUB_TERM_DISP_VLINE, term);
+      grub_putcode (GRUB_UNICODE_VLINE, term);
     }
 
   grub_term_gotoxy (term, GRUB_TERM_MARGIN,
 		    GRUB_TERM_TOP_BORDER_Y + grub_term_num_entries (term) + 1);
-  grub_putcode (GRUB_TERM_DISP_LL, term);
+  grub_putcode (GRUB_UNICODE_CORNER_LL, term);
   for (i = 0; i < (unsigned) grub_term_border_width (term) - 2; i++)
-    grub_putcode (GRUB_TERM_DISP_HLINE, term);
-  grub_putcode (GRUB_TERM_DISP_LR, term);
+    grub_putcode (GRUB_UNICODE_HLINE, term);
+  grub_putcode (GRUB_UNICODE_CORNER_LR, term);
 
   grub_term_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
 
@@ -138,8 +138,8 @@ command-line or ESC to discard edits and return to the GRUB menu."),
 			  "entry is highlighted.\n");
       char *msg_translated;
 
-      msg_translated = grub_xasprintf (msg, (grub_uint32_t) GRUB_TERM_DISP_UP,
-				     (grub_uint32_t) GRUB_TERM_DISP_DOWN);
+      msg_translated = grub_xasprintf (msg, GRUB_UNICODE_UPARROW,
+				       GRUB_UNICODE_DOWNARROW);
       if (!msg_translated)
 	return;
       grub_putcode ('\n', term);
@@ -236,9 +236,9 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
 
   if (last_printed != len)
     {
-      grub_putcode (GRUB_TERM_DISP_RIGHT, term);
+      grub_putcode (GRUB_UNICODE_RIGHTARROW, term);
       struct grub_unicode_glyph pseudo_glyph = {
-	.base = GRUB_TERM_DISP_RIGHT,
+	.base = GRUB_UNICODE_RIGHTARROW,
 	.variant = 0,
 	.attributes = 0,
 	.ncomb = 0,
@@ -274,7 +274,7 @@ print_entries (grub_menu_t menu, int first, int offset,
 		    GRUB_TERM_FIRST_ENTRY_Y);
 
   if (first)
-    grub_putcode (GRUB_TERM_DISP_UP, term);
+    grub_putcode (GRUB_UNICODE_UPARROW, term);
   else
     grub_putcode (' ', term);
 
@@ -292,7 +292,7 @@ print_entries (grub_menu_t menu, int first, int offset,
 		    GRUB_TERM_TOP_BORDER_Y + grub_term_num_entries (term));
 
   if (e)
-    grub_putcode (GRUB_TERM_DISP_DOWN, term);
+    grub_putcode (GRUB_UNICODE_DOWNARROW, term);
   else
     grub_putcode (' ', term);
 

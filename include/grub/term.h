@@ -90,20 +90,6 @@ grub_term_color_state;
 #define GRUB_TERM_STATUS_CTRL	(1 << 1)
 #define GRUB_TERM_STATUS_ALT	(1 << 2)
 
-
-/* Unicode characters for fancy graphics.  */
-#define GRUB_TERM_DISP_LEFT	0x2190
-#define GRUB_TERM_DISP_UP	0x2191
-#define GRUB_TERM_DISP_RIGHT	0x2192
-#define GRUB_TERM_DISP_DOWN	0x2193
-#define GRUB_TERM_DISP_HLINE	0x2501
-#define GRUB_TERM_DISP_VLINE	0x2503
-#define GRUB_TERM_DISP_UL	0x250F
-#define GRUB_TERM_DISP_UR	0x2513
-#define GRUB_TERM_DISP_LL	0x2517
-#define GRUB_TERM_DISP_LR	0x251B
-
-
 /* Menu-related geometrical constants.  */
 
 /* The number of lines of "GRUB version..." at the top.  */
