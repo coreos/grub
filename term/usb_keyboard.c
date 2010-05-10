@@ -150,16 +150,34 @@ grub_usb_keyboard_checkkey (void)
 		data[0], data[1], data[2], data[3],
 		data[4], data[5], data[6], data[7]);
 
-  /* Check if the Control or Shift key was pressed.  */
-  if (data[0] & 0x01 || data[0] & 0x10)
-    key = keyboard_map[data[2]] - 'a' + 1;
-  else if (data[0] & 0x02 || data[0] & 0x20)
+#define GRUB_USB_KEYBOARD_LEFT_CTRL   0x01
+#define GRUB_USB_KEYBOARD_LEFT_SHIFT  0x02
+#define GRUB_USB_KEYBOARD_LEFT_ALT    0x04
+#define GRUB_USB_KEYBOARD_RIGHT_CTRL  0x10
+#define GRUB_USB_KEYBOARD_RIGHT_SHIFT 0x20
+#define GRUB_USB_KEYBOARD_RIGHT_ALT   0x40
+
+  /* Check if the Shift key was pressed.  */
+  if (data[0] & GRUB_USB_KEYBOARD_LEFT_SHIFT
+      || data[0] & GRUB_USB_KEYBOARD_RIGHT_SHIFT)
     key = keyboard_map_shift[data[2]];
   else
     key = keyboard_map[data[2]];
 
   if (key == 0)
     grub_printf ("Unknown key 0x%x detected\n", data[2]);
+
+  /* Check if the Ctrl key was pressed.  */
+  if (data[0] & GRUB_USB_KEYBOARD_LEFT_CTRL
+      || data[0] & GRUB_USB_KEYBOARD_RIGHT_CTRL)
+    key |= GRUB_TERM_CTRL;
+
+  /* Check if the Alt key was pressed.  */
+  if (data[0] & GRUB_USB_KEYBOARD_LEFT_ALT)
+    key |= GRUB_TERM_ALT;
+
+  if (data[0] & GRUB_USB_KEYBOARD_RIGHT_ALT)
+    key |= GRUB_TERM_ALT_GR;
 
 #if 0
   /* Wait until the key is released.  */
@@ -314,6 +332,7 @@ static struct grub_term_input grub_usb_keyboard_term =
     .checkkey = grub_usb_keyboard_checkkey,
     .getkey = grub_usb_keyboard_getkey,
     .getkeystatus = grub_usb_keyboard_getkeystatus,
+    .flags = GRUB_TERM_INPUT_FLAGS_TYPE_TERMCODES,
     .next = 0
   };
 
