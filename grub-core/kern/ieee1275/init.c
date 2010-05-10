@@ -133,6 +133,17 @@ static void grub_claim_heap (void)
     if (type != 1)
       return 0;
 
+    if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM))
+      {
+	if (addr + len <= 0x180000)
+	  return 0;
+
+	if (addr < 0x180000)
+	  {
+	    len = addr + len - 0x180000;
+	    addr = 0x180000;
+	  }
+      }
     len -= 1; /* Required for some firmware.  */
 
     /* Never exceed HEAP_MAX_SIZE  */
