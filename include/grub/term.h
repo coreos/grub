@@ -37,6 +37,9 @@
 #define GRUB_TERM_KEY_DC        (GRUB_TERM_EXTENDED | 7)
 #define GRUB_TERM_KEY_PPAGE     (GRUB_TERM_EXTENDED | 8)
 #define GRUB_TERM_KEY_NPAGE     (GRUB_TERM_EXTENDED | 9)
+/* Used by keylayouts code. Never returned in grub_getkey.  */
+#define GRUB_TERM_KEY_102       (GRUB_TERM_EXTENDED | 10)
+#define GRUB_TERM_KEY_SHIFT_102 (GRUB_TERM_EXTENDED | 11)
 
 #define GRUB_TERM_ESC		'\e'
 #define GRUB_TERM_TAB		'\t'

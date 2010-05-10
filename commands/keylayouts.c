@@ -83,7 +83,9 @@ get_abstract_code (grub_term_input_t term, int in)
 	      {GRUB_TERM_AT_KEY_END, GRUB_TERM_KEY_END},
 	      {GRUB_TERM_AT_KEY_DC, GRUB_TERM_KEY_DC},
 	      {GRUB_TERM_AT_KEY_PPAGE, GRUB_TERM_KEY_PPAGE},
-	      {GRUB_TERM_AT_KEY_NPAGE, GRUB_TERM_KEY_NPAGE}
+	      {GRUB_TERM_AT_KEY_NPAGE, GRUB_TERM_KEY_NPAGE},
+	      {0x5600 | '\\', GRUB_TERM_KEY_102},
+	      {0x5600 | '|', GRUB_TERM_KEY_SHIFT_102},
 	    };
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE (translations); i++)
@@ -114,6 +116,11 @@ get_abstract_code (grub_term_input_t term, int in)
 static int
 map (grub_term_input_t term __attribute__ ((unused)), int in)
 {
+  if (in == GRUB_TERM_KEY_102)
+    return '\\';
+  if (in == GRUB_TERM_KEY_SHIFT_102)
+    return '|';
+
   return in;
 }
 
@@ -128,13 +135,13 @@ translate (grub_term_input_t term, int in)
 	   && (code & 0xff) <= 'Z')
     code = (code & 0xff) + 'a' - 'A';    
 
-  code2 = map (term, code & 0xff);
+  code2 = map (term, code & 0x1ffffff);
   if ((code & GRUB_TERM_CAPS) && (code2 & 0xff) >= 'a' && (code2 & 0xff) <= 'z')
     code2 = code2 + 'A' - 'a';
   else if ((code & GRUB_TERM_CAPS) && (code2 & 0xff) >= 'A'
 	   && (code2 & 0xff) <= 'Z')
     code2 = code2 + 'a' - 'A';
-  return code2 | (code & ~0xffffff);
+  return code2 | (code & ~0x1ffffff);
 }
 
 static int
