@@ -7,6 +7,7 @@ kernel = {
   x86_efi_ldflags          = '-Wl,-r';
   i386_pc_ldflags          = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
   i386_coreboot_ldflags    = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  i386_multiboot_ldflags   = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
   i386_qemu_ldflags        = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
   i386_ieee1275_ldflags    = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
   mips_yeeloong_ldflags    = '-Wl,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
@@ -86,6 +87,21 @@ kernel = {
   i386_coreboot = kern/generic/millisleep.c;
   i386_coreboot = term/i386/pc/vga_text.c;
   i386_coreboot = term/i386/vga_common.c;
+
+  i386_multiboot = kern/i386/coreboot/startup.S;
+  i386_multiboot = kern/i386/misc.S;
+  i386_multiboot = kern/i386/coreboot/init.c;
+  i386_multiboot = kern/i386/multiboot_mmap.c;
+  i386_multiboot = kern/i386/halt.c;
+  i386_multiboot = kern/mm.c;
+  i386_multiboot = kern/time.c;
+  i386_multiboot = kern/i386/dl.c;
+  i386_multiboot = kern/i386/tsc.c;
+  i386_multiboot = kern/i386/pit.c;
+  i386_multiboot = kern/generic/rtc_get_time_ms.c;
+  i386_multiboot = kern/generic/millisleep.c;
+  i386_multiboot = term/i386/pc/vga_text.c;
+  i386_multiboot = term/i386/vga_common.c;
 
   i386_qemu = kern/i386/qemu/startup.S;
   i386_qemu = kern/i386/misc.S;
@@ -202,7 +218,7 @@ kernel = {
 
   image_nostrip = { emu; };
   image_strip_keep_kernel = { i386_efi; x86_64_efi; };
-  image_strip = { powerpc_ieee1275; i386_coreboot; i386_ieee1275; };
+  image_strip = { powerpc_ieee1275; i386_coreboot; i386_multiboot; i386_ieee1275; };
   image_strip_macho2img = { mips_yeeloong; i386_pc; i386_qemu; sparc64_ieee1275; };
 };
 
@@ -530,6 +546,7 @@ module = {
   i386_pc;
   i386_qemu;
   i386_coreboot;
+  i386_multiboot;
   i386_ieee1275;
   mips_yeeloong;
   powerpc_ieee1275;
@@ -1231,6 +1248,7 @@ module = {
   i386_pc;
   i386_qemu;
   i386_coreboot;
+  i386_multiboot;
   i386_ieee1275;
 };
 
@@ -1244,6 +1262,7 @@ module = {
   i386_pc;
   i386_qemu;
   i386_coreboot;
+  i386_multiboot;
 };
 
 module = {
@@ -1327,6 +1346,10 @@ module = {
   i386_coreboot = mmap/mmap.c;
   i386_coreboot = mmap/i386/uppermem.c;
   i386_coreboot = mmap/i386/mmap.c;
+
+  i386_multiboot = mmap/mmap.c;
+  i386_multiboot = mmap/i386/uppermem.c;
+  i386_multiboot = mmap/i386/mmap.c;
 
   i386_qemu = mmap/mmap.c;
   i386_qemu = mmap/i386/uppermem.c;

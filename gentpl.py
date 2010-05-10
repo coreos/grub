@@ -5,11 +5,12 @@
 #
 
 GRUB_PLATFORMS = [ "emu", "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot",
-                   "i386_ieee1275", "x86_64_efi", "mips_yeeloong", "sparc64_ieee1275",
+                   "i386_multiboot", "i386_ieee1275", "x86_64_efi",
+                   "mips_yeeloong", "sparc64_ieee1275",
                    "powerpc_ieee1275" ]
 
 GROUPS = {}
-GROUPS["i386"]    = [ "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot", "i386_ieee1275" ]
+GROUPS["i386"]    = [ "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot", "i386_multiboot", "i386_ieee1275" ]
 GROUPS["x86_64"]  = [ "x86_64_efi" ]
 GROUPS["mips"]    = [ "mips_yeeloong" ]
 GROUPS["sparc64"] = [ "sparc64_ieee1275" ]

@@ -65,6 +65,17 @@ KERNEL_HEADER_FILES += include/grub/machine/memory.h
 KERNEL_HEADER_FILES += include/grub/machine/loader.h
 endif
 
+if COND_i386_multiboot
+KERNEL_HEADER_FILES += include/grub/boot.h
+KERNEL_HEADER_FILES += include/grub/loader.h
+KERNEL_HEADER_FILES += include/grub/msdos_partition.h
+KERNEL_HEADER_FILES += include/grub/machine/boot.h
+KERNEL_HEADER_FILES += include/grub/machine/console.h
+KERNEL_HEADER_FILES += include/grub/machine/init.h
+KERNEL_HEADER_FILES += include/grub/machine/memory.h
+KERNEL_HEADER_FILES += include/grub/machine/loader.h
+endif
+
 if COND_i386_qemu
 KERNEL_HEADER_FILES += include/grub/boot.h
 KERNEL_HEADER_FILES += include/grub/loader.h

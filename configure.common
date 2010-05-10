@@ -766,6 +766,8 @@ AS_IF([test x$target_cpu = xi386 -a x$platform = xpc],
 	    [AC_SUBST([GRUB_KERNEL_MACHINE_LINK_ADDR], 0x8200)])
 AS_IF([test x$target_cpu = xi386 -a x$platform = xcoreboot],
 	    [AC_SUBST([GRUB_KERNEL_MACHINE_LINK_ADDR], 0x8200)])
+AS_IF([test x$target_cpu = xi386 -a x$platform = xmultiboot],
+	    [AC_SUBST([GRUB_KERNEL_MACHINE_LINK_ADDR], 0x8200)])
 AS_IF([test x$target_cpu = xmips -a x$platform = xyeeloong],
 	    [AC_SUBST([GRUB_KERNEL_MACHINE_LINK_ADDR], 0x80200000)])
 AS_IF([test x$target_cpu = xpowerpc -a x$platform = xieee1275],
@@ -784,9 +786,10 @@ AS_IF([test x$TARGET_APPLE_CC = x1],
 AM_CONDITIONAL([COND_emu], [test x$platform = xemu])
 AM_CONDITIONAL([COND_i386_pc], [test x$target_cpu = xi386 -a x$platform = xpc])
 AM_CONDITIONAL([COND_i386_efi], [test x$target_cpu = xi386 -a x$platform = xefi])
-AM_CONDITIONAL([COND_i386_coreboot], [test x$target_cpu = xi386 -a x$platform = xcoreboot])
-AM_CONDITIONAL([COND_i386_ieee1275], [test x$target_cpu = xi386 -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_i386_qemu], [test x$target_cpu = xi386 -a x$platform = xqemu])
+AM_CONDITIONAL([COND_i386_ieee1275], [test x$target_cpu = xi386 -a x$platform = xieee1275])
+AM_CONDITIONAL([COND_i386_coreboot], [test x$target_cpu = xi386 -a x$platform = xcoreboot])
+AM_CONDITIONAL([COND_i386_multiboot], [test x$target_cpu = xi386 -a x$platform = xmultiboot])
 AM_CONDITIONAL([COND_x86_64_efi], [test x$target_cpu = xx86_64 -a x$platform = xefi])
 AM_CONDITIONAL([COND_mips_yeeloong], [test x$target_cpu = xmips -a x$platform = xyeeloong])
 AM_CONDITIONAL([COND_mips_qemu_mips], [test x$target_cpu = xmips -a x$platform = xqemu_mips])
