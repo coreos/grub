@@ -420,7 +420,7 @@ grub_password_get (char buf[], unsigned buf_size)
 
   while (1)
     {
-      key = GRUB_TERM_ASCII_CHAR (grub_getkey ()); 
+      key = grub_getkey (); 
       if (key == '\n' || key == '\r')
 	break;
 

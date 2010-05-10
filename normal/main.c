@@ -163,7 +163,7 @@ static struct
   {
     {"backspace", '\b'},
     {"tab", '\t'},
-    {"delete", GRUB_TERM_DC}
+    {"delete", GRUB_TERM_KEY_DC}
   };
 
 /* Add a menu entry to the current menu context (as given by the environment

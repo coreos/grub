@@ -41,7 +41,7 @@ static grub_uint8_t led_status;
 #define KEYBOARD_LED_NUM		(1 << 1)
 #define KEYBOARD_LED_CAPS		(1 << 2)
 
-static char keyboard_map[128] =
+static int keyboard_map[128] =
 {
   '\0', GRUB_TERM_ESC, '1', '2', '3', '4', '5', '6',
   '7', '8', '9', '0', '-', '=', GRUB_TERM_BACKSPACE, GRUB_TERM_TAB,
@@ -51,9 +51,9 @@ static char keyboard_map[128] =
   '\'', '`', '\0', '\\', 'z', 'x', 'c', 'v',
   'b', 'n', 'm', ',', '.', '/', '\0', '*',
   '\0', ' ', '\0', '\0', '\0', '\0', '\0', '\0',
-  '\0', '\0', '\0', '\0', '\0', '\0', '\0', GRUB_TERM_HOME,
-  GRUB_TERM_UP, GRUB_TERM_NPAGE, '-', GRUB_TERM_LEFT, '\0', GRUB_TERM_RIGHT, '+', GRUB_TERM_END,
-  GRUB_TERM_DOWN, GRUB_TERM_PPAGE, '\0', GRUB_TERM_DC, '\0', '\0', '\0', '\0',
+  '\0', '\0', '\0', '\0', '\0', '\0', '\0', GRUB_TERM_KEY_HOME,
+  GRUB_TERM_KEY_UP, GRUB_TERM_KEY_NPAGE, '-', GRUB_TERM_KEY_LEFT, '\0', GRUB_TERM_KEY_RIGHT, '+', GRUB_TERM_KEY_END,
+  GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_PPAGE, '\0', GRUB_TERM_KEY_DC, '\0', '\0', '\0', '\0',
   '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
   '\0', '\0', '\0', '\0', '\0', OLPC_UP, OLPC_DOWN, OLPC_LEFT,
   OLPC_RIGHT
@@ -213,9 +213,8 @@ grub_at_keyboard_getkey_noblock (void)
 	key = -1;
 	break;
       default:
-	if (at_keyboard_status & (KEYBOARD_STATUS_CTRL_L | KEYBOARD_STATUS_CTRL_R))
-	  key = keyboard_map[code] - 'a' + 1;
-	else if ((at_keyboard_status & (KEYBOARD_STATUS_SHIFT_L | KEYBOARD_STATUS_SHIFT_R))
+	if ((at_keyboard_status & (KEYBOARD_STATUS_SHIFT_L
+				   | KEYBOARD_STATUS_SHIFT_R))
 	    && keyboard_map_shift[code])
 	  key = keyboard_map_shift[code];
 	else
@@ -231,6 +230,17 @@ grub_at_keyboard_getkey_noblock (void)
 	    else if ((key >= 'A') && (key <= 'Z'))
 	      key += 'a' - 'A';
 	  }
+
+	if (at_keyboard_status & KEYBOARD_STATUS_ALT_L)
+	  key |= GRUB_TERM_ALT;
+	if (at_keyboard_status & KEYBOARD_STATUS_ALT_R)
+	  key |= GRUB_TERM_ALT_GR;
+	if (at_keyboard_status & (KEYBOARD_STATUS_CTRL_L
+				  | KEYBOARD_STATUS_CTRL_R))
+	  key |= GRUB_TERM_CTRL;
+
+	if (at_keyboard_status & KEYBOARD_STATUS_CAPS_LOCK)
+	  key |= GRUB_TERM_CAPS;
     }
   return key;
 }
@@ -290,6 +300,7 @@ static struct grub_term_input grub_at_keyboard_term =
     .fini = grub_keyboard_controller_fini,
     .checkkey = grub_at_keyboard_checkkey,
     .getkey = grub_at_keyboard_getkey,
+    .flags = GRUB_TERM_INPUT_FLAGS_TYPE_AT
   };
 
 GRUB_MOD_INIT(at_keyboard)

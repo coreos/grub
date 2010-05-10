@@ -49,14 +49,13 @@ grub_putchar (int c)
   putchar (c);
 }
 
-int
-grub_getkey (void)
+static int
+grub_getkey_real (void)
 {
   return -1;
 }
 
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
+int (*grub_getkey) (void) = grub_getkey_real;
 
 void
 grub_refresh (void)

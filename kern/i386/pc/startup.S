@@ -1154,54 +1154,6 @@ FUNCTION(grub_console_real_putchar)
  *			%al = ASCII character
  */
 
-/* this table is used in translate_keycode below */
-LOCAL (translation_table):
-	.word	GRUB_CONSOLE_KEY_LEFT, GRUB_TERM_LEFT
-	.word	GRUB_CONSOLE_KEY_RIGHT, GRUB_TERM_RIGHT
-	.word	GRUB_CONSOLE_KEY_UP, GRUB_TERM_UP
-	.word	GRUB_CONSOLE_KEY_DOWN, GRUB_TERM_DOWN
-	.word	GRUB_CONSOLE_KEY_HOME, GRUB_TERM_HOME
-	.word	GRUB_CONSOLE_KEY_END, GRUB_TERM_END
-	.word	GRUB_CONSOLE_KEY_DC, GRUB_TERM_DC
-	.word	GRUB_CONSOLE_KEY_BACKSPACE, GRUB_TERM_BACKSPACE
-	.word	GRUB_CONSOLE_KEY_PPAGE, GRUB_TERM_PPAGE
-	.word	GRUB_CONSOLE_KEY_NPAGE, GRUB_TERM_NPAGE
-	.word	0
-
-/*
- * translate_keycode translates the key code %dx to an ascii code.
- */
-	.code16
-
-translate_keycode:
-	pushw	%bx
-	pushw	%si
-
-#ifdef __APPLE__
-	movw	$(ABS(LOCAL (translation_table)) - 0x10000), %si
-#else
-	movw	$ABS(LOCAL (translation_table)), %si
-#endif
-
-1:	lodsw
-	/* check if this is the end */
-	testw	%ax, %ax
-	jz	2f
-	/* load the ascii code into %ax */
-	movw	%ax, %bx
-	lodsw
-	/* check if this matches the key code */
-	cmpw	%bx, %dx
-	jne	1b
-	/* translate %dx, if successful */
-	movw	%ax, %dx
-
-2:	popw	%si
-	popw	%bx
-	ret
-
-	.code32
-
 FUNCTION(grub_console_getkey)
 	pushl	%ebp
 
@@ -1228,7 +1180,6 @@ FUNCTION(grub_console_getkey)
 	int	$0x16
 
 	movw	%ax, %dx		/* real_to_prot uses %eax */
-	call	translate_keycode
 
 	DATA32	call	real_to_prot
 	.code32

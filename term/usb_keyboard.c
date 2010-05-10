@@ -28,7 +28,7 @@
 #include <grub/time.h>
 
 
-static char keyboard_map[128] =
+static int keyboard_map[128] =
   {
     '\0', '\0', '\0', '\0', 'a', 'b', 'c', 'd',
     'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
@@ -39,8 +39,8 @@ static char keyboard_map[128] =
     ']', '\\', '#', ';', '\'', '`', ',', '.',
     '/', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-    '\0', '\0', GRUB_TERM_HOME, GRUB_TERM_PPAGE, GRUB_TERM_DC, GRUB_TERM_END, GRUB_TERM_NPAGE, GRUB_TERM_RIGHT,
-    GRUB_TERM_LEFT, GRUB_TERM_DOWN, GRUB_TERM_UP
+    '\0', '\0', GRUB_TERM_KEY_HOME, GRUB_TERM_KEY_PPAGE, GRUB_TERM_KEY_DC, GRUB_TERM_KEY_END, GRUB_TERM_KEY_NPAGE, GRUB_TERM_KEY_RIGHT,
+    GRUB_TERM_KEY_LEFT, GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_UP
   };
 
 static char keyboard_map_shift[128] =

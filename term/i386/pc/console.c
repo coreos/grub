@@ -51,6 +51,7 @@ static struct grub_term_input grub_console_term_input =
     .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
     .getkeystatus = grub_console_getkeystatus,
+    .flags = GRUB_TERM_INPUT_FLAGS_TYPE_BIOS
   };
 
 static struct grub_term_output grub_console_term_output =

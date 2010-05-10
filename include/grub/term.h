@@ -20,18 +20,27 @@
 #define GRUB_TERM_HEADER	1
 
 /* Internal codes used by GRUB to represent terminal input.  */
-#define GRUB_TERM_LEFT		2
-#define GRUB_TERM_RIGHT		6
-#define GRUB_TERM_UP		16
-#define GRUB_TERM_DOWN		14
-#define GRUB_TERM_HOME		1
-#define GRUB_TERM_END		5
-#define GRUB_TERM_DC		4
-#define GRUB_TERM_PPAGE		7
-#define GRUB_TERM_NPAGE		3
+#define GRUB_TERM_CTRL          0x02000000
+#define GRUB_TERM_ALT           0x04000000
+/* Used by keylayouts code. Never returned in grub_getkey.  */
+#define GRUB_TERM_ALT_GR        0x08000000
+#define GRUB_TERM_CAPS          0x10000000
+
+/* Keys without associated character.  */
+#define GRUB_TERM_EXTENDED      0x1000000
+#define GRUB_TERM_KEY_LEFT      (GRUB_TERM_EXTENDED | 1)
+#define GRUB_TERM_KEY_RIGHT     (GRUB_TERM_EXTENDED | 2)
+#define GRUB_TERM_KEY_UP        (GRUB_TERM_EXTENDED | 3)
+#define GRUB_TERM_KEY_DOWN      (GRUB_TERM_EXTENDED | 4)
+#define GRUB_TERM_KEY_HOME      (GRUB_TERM_EXTENDED | 5)
+#define GRUB_TERM_KEY_END       (GRUB_TERM_EXTENDED | 6)
+#define GRUB_TERM_KEY_DC        (GRUB_TERM_EXTENDED | 7)
+#define GRUB_TERM_KEY_PPAGE     (GRUB_TERM_EXTENDED | 8)
+#define GRUB_TERM_KEY_NPAGE     (GRUB_TERM_EXTENDED | 9)
+
 #define GRUB_TERM_ESC		'\e'
 #define GRUB_TERM_TAB		'\t'
-#define GRUB_TERM_BACKSPACE	8
+#define GRUB_TERM_BACKSPACE	'\b'
 
 #ifndef ASM_FILE
 
@@ -135,8 +144,14 @@ struct grub_term_input
 
   /* Get keyboard modifier status.  */
   int (*getkeystatus) (void);
+
+  grub_uint32_t flags;
 };
 typedef struct grub_term_input *grub_term_input_t;
+
+#define GRUB_TERM_INPUT_FLAGS_TYPE_MASK    0xf
+#define GRUB_TERM_INPUT_FLAGS_TYPE_AT      0x1
+#define GRUB_TERM_INPUT_FLAGS_TYPE_BIOS    0x2
 
 struct grub_term_output
 {
@@ -253,9 +268,8 @@ grub_term_unregister_output (grub_term_output_t term)
 void EXPORT_FUNC(grub_putchar) (int c);
 void EXPORT_FUNC(grub_putcode) (grub_uint32_t code,
 				struct grub_term_output *term);
-int EXPORT_FUNC(grub_getkey) (void);
-int EXPORT_FUNC(grub_checkkey) (void);
-int EXPORT_FUNC(grub_getkeystatus) (void);
+extern int (*EXPORT_VAR(grub_getkey)) (void);
+int grub_checkkey (void);
 void EXPORT_FUNC(grub_cls) (void);
 void EXPORT_FUNC(grub_setcolorstate) (grub_term_color_state state);
 void EXPORT_FUNC(grub_refresh) (void);
@@ -408,10 +422,6 @@ grub_print_spaces (struct grub_term_output *term, int number_spaces)
   while (--number_spaces >= 0)
     grub_putcode (' ', term);
 }
-
-
-/* For convenience.  */
-#define GRUB_TERM_ASCII_CHAR(c)	((c) & 0xff)
 
 #endif /* ! ASM_FILE */
 

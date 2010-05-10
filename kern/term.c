@@ -75,8 +75,8 @@ grub_putchar (int c)
     }
 }
 
-int
-grub_getkey (void)
+static int
+grub_getkey_dumb (void)
 {
   grub_term_input_t term;
 
@@ -88,42 +88,14 @@ grub_getkey (void)
       {
 	int key = term->checkkey ();
 	if (key != -1)
-	  return term->getkey ();
+	  return term->getkey () & 0xff;
       }
 
       grub_cpu_idle ();
     }
 }
 
-int
-grub_checkkey (void)
-{
-  grub_term_input_t term;
-
-  FOR_ACTIVE_TERM_INPUTS(term)
-  {
-    int key = term->checkkey ();
-    if (key != -1)
-      return key;
-  }
-
-  return -1;
-}
-
-int
-grub_getkeystatus (void)
-{
-  int status = 0;
-  grub_term_input_t term;
-
-  FOR_ACTIVE_TERM_INPUTS(term)
-  {
-    if (term->getkeystatus)
-      status |= term->getkeystatus ();
-  }
-
-  return status;
-}
+int (*grub_getkey) (void) = grub_getkey_dumb;
 
 void
 grub_cls (void)

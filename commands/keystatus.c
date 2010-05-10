@@ -31,7 +31,20 @@ static const struct grub_arg_option options[] =
     {0, 0, 0, 0, 0, 0}
   };
 
-#define grub_cur_term_input	grub_term_get_current_input ()
+static int
+grub_getkeystatus (void)
+{
+  int status = 0;
+  grub_term_input_t term;
+
+  FOR_ACTIVE_TERM_INPUTS(term)
+  {
+    if (term->getkeystatus)
+      status |= term->getkeystatus ();
+  }
+
+  return status;
+}
 
 static grub_err_t
 grub_cmd_keystatus (grub_extcmd_t cmd,
