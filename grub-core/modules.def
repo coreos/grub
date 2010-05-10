@@ -1491,7 +1491,7 @@ module = {
 
 module = {
   name = vga;
-  i386_pc = term/i386/pc/vga.c;
+  i386_pc = video/i386/pc/vga.c;
 };
 
 module = {
