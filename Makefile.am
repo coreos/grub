@@ -33,6 +33,8 @@ AM_LDFLAGS =
 AM_CPPFLAGS = $(CPPFLAGS_GRUB) -DGRUB_FILE=\"$(subst $(top_srcdir)/,,$<)\"
 AM_CCASFLAGS = -DASM_FILE=1
 
+include $(srcdir)/modules.am
+
 # XXX Use Automake's LEX & YACC support
 grub_script.tab.c grub_script.tab.h: $(top_srcdir)/grub-core/script/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(top_srcdir)/grub-core/script/parser.y
@@ -83,5 +85,3 @@ ascii.h: ascii.bitmaps grub-bin2h
 CLEANFILES += ascii.h $(top_builddir)/grub-core/include/ascii.h
 
 platform_HEADERS = config.h
-
-include $(srcdir)/modules.am

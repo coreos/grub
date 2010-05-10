@@ -329,7 +329,7 @@ def installdir(default="bin"):
 
 def manpage():
     r  = "if COND_MAN_PAGES\n"
-    r += "man_MANS += [+ name +].[+ mansection +]\n"
+    r += gvar_add("man_MANS", "[+ name +].[+ mansection +]\n")
     r += rule("[+ name +].[+ mansection +]", "", """
 $(MAKE) $(AM_MAKEFLAGS) [+ name +]
 chmod a+x [+ name +]
