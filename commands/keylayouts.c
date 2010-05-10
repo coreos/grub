@@ -58,19 +58,12 @@ get_abstract_code (grub_term_input_t term, int in)
   unsigned flags = 0;
   switch (term->flags & GRUB_TERM_INPUT_FLAGS_TYPE_MASK)
     {
+    case GRUB_TERM_INPUT_FLAGS_TYPE_TERMCODES:
     default:
       return in;
     case GRUB_TERM_INPUT_FLAGS_TYPE_BIOS:
       {
 	unsigned status = 0;
-	if (term->getkeystatus)
-	  status = term->getkeystatus ();
-	if (status & GRUB_TERM_CAPS)
-	  flags |= GRUB_TERM_CAPS;
-      }
-      /* Fall through.  */
-    case GRUB_TERM_INPUT_FLAGS_TYPE_AT:
-      {
 	struct {
 	  int from, to; 
 	} translations[] =
@@ -88,12 +81,16 @@ get_abstract_code (grub_term_input_t term, int in)
 	      {0x5600 | '|', GRUB_TERM_KEY_SHIFT_102},
 	    };
 	unsigned i;
+
+	if (term->getkeystatus)
+	  status = term->getkeystatus ();
+	if (status & GRUB_TERM_CAPS)
+	  flags |= GRUB_TERM_CAPS;
+
 	for (i = 0; i < ARRAY_SIZE (translations); i++)
 	  if (translations[i].from == (in & 0xffff))
 	    return translations[i].to | flags;
-	if ((term->flags & GRUB_TERM_INPUT_FLAGS_TYPE_MASK)
-	    == GRUB_TERM_INPUT_FLAGS_TYPE_AT)
-	  return in & ~0xff00;
+
 	/* Detect CTRL'ed keys.  */
 	if ((in & 0xff) > 0 && (in & 0xff) < 0x20
 	    && ((in & 0xffff) != (0x0100 | '\e'))

@@ -152,9 +152,9 @@ struct grub_term_input
 };
 typedef struct grub_term_input *grub_term_input_t;
 
-#define GRUB_TERM_INPUT_FLAGS_TYPE_MASK    0xf
-#define GRUB_TERM_INPUT_FLAGS_TYPE_AT      0x1
-#define GRUB_TERM_INPUT_FLAGS_TYPE_BIOS    0x2
+#define GRUB_TERM_INPUT_FLAGS_TYPE_MASK      0xf
+#define GRUB_TERM_INPUT_FLAGS_TYPE_TERMCODES 0x0
+#define GRUB_TERM_INPUT_FLAGS_TYPE_BIOS      0x1
 
 struct grub_term_output
 {

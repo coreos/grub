@@ -53,13 +53,14 @@ static int keyboard_map[128] =
   '\0', ' ', '\0', '\0', '\0', '\0', '\0', '\0',
   '\0', '\0', '\0', '\0', '\0', '\0', '\0', GRUB_TERM_KEY_HOME,
   GRUB_TERM_KEY_UP, GRUB_TERM_KEY_NPAGE, '-', GRUB_TERM_KEY_LEFT, '\0', GRUB_TERM_KEY_RIGHT, '+', GRUB_TERM_KEY_END,
-  GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_PPAGE, '\0', GRUB_TERM_KEY_DC, '\0', '\0', '\0', '\0',
+  GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_PPAGE, '\0', GRUB_TERM_KEY_DC, '\0', '\0', 
+  GRUB_TERM_KEY_102, '\0',
   '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
   '\0', '\0', '\0', '\0', '\0', OLPC_UP, OLPC_DOWN, OLPC_LEFT,
   OLPC_RIGHT
 };
 
-static char keyboard_map_shift[128] =
+static int keyboard_map_shift[128] =
 {
   '\0', '\0', '!', '@', '#', '$', '%', '^',
   '&', '*', '(', ')', '_', '+', '\0', '\0',
@@ -67,7 +68,8 @@ static char keyboard_map_shift[128] =
   'O', 'P', '{', '}', '\n', '\0', 'A', 'S',
   'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
   '\"', '~', '\0', '|', 'Z', 'X', 'C', 'V',
-  'B', 'N', 'M', '<', '>', '?'
+  'B', 'N', 'M', '<', '>', '?',
+  [0x56] = GRUB_TERM_KEY_SHIFT_102
 };
 
 static grub_uint8_t grub_keyboard_controller_orig;
@@ -300,7 +302,7 @@ static struct grub_term_input grub_at_keyboard_term =
     .fini = grub_keyboard_controller_fini,
     .checkkey = grub_at_keyboard_checkkey,
     .getkey = grub_at_keyboard_getkey,
-    .flags = GRUB_TERM_INPUT_FLAGS_TYPE_AT
+    .flags = GRUB_TERM_INPUT_FLAGS_TYPE_TERMCODES
   };
 
 GRUB_MOD_INIT(at_keyboard)
