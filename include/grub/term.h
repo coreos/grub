@@ -28,6 +28,7 @@
 
 /* Keys without associated character.  */
 #define GRUB_TERM_EXTENDED      0x1000000
+#define GRUB_TERM_KEY_MASK      0x1ffffff
 #define GRUB_TERM_KEY_LEFT      (GRUB_TERM_EXTENDED | 1)
 #define GRUB_TERM_KEY_RIGHT     (GRUB_TERM_EXTENDED | 2)
 #define GRUB_TERM_KEY_UP        (GRUB_TERM_EXTENDED | 3)

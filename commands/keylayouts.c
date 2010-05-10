@@ -111,8 +111,13 @@ get_abstract_code (grub_term_input_t term, int in)
 }
 
 static int
-map (grub_term_input_t term __attribute__ ((unused)), int in)
+map (grub_term_input_t term, int in)
 {
+  /* No match with AltGr. Interpret it as Alt rather than as L3 modifier then.  
+   */
+  if (in & GRUB_TERM_ALT_GR)
+    return map (term, in & ~GRUB_TERM_ALT_GR) | GRUB_TERM_ALT_GR;
+
   if (in == GRUB_TERM_KEY_102)
     return '\\';
   if (in == GRUB_TERM_KEY_SHIFT_102)
@@ -124,7 +129,7 @@ map (grub_term_input_t term __attribute__ ((unused)), int in)
 static int
 translate (grub_term_input_t term, int in)
 {
-  int code, code2;
+  int code, flags;
   code = get_abstract_code (term, in);
   if ((code & GRUB_TERM_CAPS) && (code & 0xff) >= 'a' && (code & 0xff) <= 'z')
     code = (code & 0xff) + 'A' - 'a';
@@ -132,13 +137,21 @@ translate (grub_term_input_t term, int in)
 	   && (code & 0xff) <= 'Z')
     code = (code & 0xff) + 'a' - 'A';    
 
-  code2 = map (term, code & 0x1ffffff);
-  if ((code & GRUB_TERM_CAPS) && (code2 & 0xff) >= 'a' && (code2 & 0xff) <= 'z')
-    code2 = code2 + 'A' - 'a';
-  else if ((code & GRUB_TERM_CAPS) && (code2 & 0xff) >= 'A'
-	   && (code2 & 0xff) <= 'Z')
-    code2 = code2 + 'a' - 'A';
-  return code2 | (code & ~0x1ffffff);
+  flags = code & ~(GRUB_TERM_KEY_MASK | GRUB_TERM_ALT_GR);
+  code &= (GRUB_TERM_KEY_MASK | GRUB_TERM_ALT_GR);
+  code = map (term, code);
+  /* Transform unconsumed AltGr into Alt.  */
+  if (code & GRUB_TERM_ALT_GR)
+    {
+      flags |= GRUB_TERM_ALT;
+      code &= ~GRUB_TERM_ALT_GR;
+    }
+  if ((flags & GRUB_TERM_CAPS) && code >= 'a' && code <= 'z')
+    code += 'A' - 'a';
+  else if ((flags & GRUB_TERM_CAPS) && code >= 'A'
+	   && code <= 'Z')
+    code += 'a' - 'A';
+  return code | flags;
 }
 
 static int
