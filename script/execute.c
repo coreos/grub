@@ -30,6 +30,12 @@
    is sizeof (int) * 3, and one extra for a possible -ve sign.  */
 #define ERRNO_DIGITS_MAX  (sizeof (int) * 3 + 1)
 
+/* Scope for grub script functions.  */
+struct grub_script_scope
+{
+  char **args;
+  unsigned int argc;
+};
 static struct grub_script_scope *scope = 0;
 
 static char *
@@ -242,15 +248,18 @@ grub_err_t
 grub_script_function_call (grub_script_function_t func, int argc, char **args)
 {
   grub_err_t ret = 0;
+  struct grub_script_scope *old_scope;
   struct grub_script_scope new_scope;
 
   new_scope.argc = argc;
   new_scope.args = args;
-  grub_list_push (GRUB_AS_LIST_P (&scope), GRUB_AS_LIST (&new_scope));
+
+  old_scope = scope;
+  scope = &new_scope;
 
   ret = grub_script_execute (func->func);
 
-  grub_list_pop (GRUB_AS_LIST_P (&scope));
+  scope = old_scope;
   return ret;
 }
 

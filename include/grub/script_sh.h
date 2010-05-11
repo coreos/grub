@@ -73,15 +73,6 @@ struct grub_script_arglist
   int argcount;
 };
 
-/* Scope for grub script constructs.  */
-struct grub_script_scope
-{
-  struct grub_script_scope *next;
-
-  char **args;
-  unsigned int argc;
-};
-
 /* A single command line.  */
 struct grub_script_cmdline
 {
