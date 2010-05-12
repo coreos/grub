@@ -89,7 +89,7 @@ struct legacy_command legacy_commands[] =
     {"kernel", "legacy_kernel %s '%s' %s\n", 3, {TYPE_TYPE_OPTION, TYPE_FILE,
 						 TYPE_REST_VERBATIM}, 0},
     /* lock is handled separately. */
-    {"makeactive", "parttool '%s' boot+\n", 1, {TYPE_PARTITION}, 0},
+    {"makeactive", "parttool \"$root\" boot+\n", 0, {}, 0},
     {"map", "drivemap '%s' '%s'\n", 2, {TYPE_PARTITION, TYPE_PARTITION},
      FLAG_IGNORE_REST},
     /* md5crypt unsupported.  */
