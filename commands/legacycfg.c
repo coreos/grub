@@ -66,8 +66,7 @@ struct legacy_command legacy_commands[] =
     {"debug",
      "if [ -z \"$debug\" ]; then set debug=all; else set debug=; fi\n",
      0, {}, 0},
-    /* FIXME: Implement command.  */
-    {"default", "legacy_default %s\n", 1, {TYPE_INT}, 0},
+    {"default", "set default='%s'; if [ x\"$default\" = xsaved ]; then load_env; set default=\"$saved_entry\"\n", 1, {TYPE_VERBATIM}, 0},
     /* dhcp unsupported.  */
     /* displayapm unsupported.  */
     {"displaymem", "lsmem\n", 0, {}, 0},
