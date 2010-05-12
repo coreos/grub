@@ -106,7 +106,7 @@ struct legacy_command legacy_commands[] =
     {"root", "set root='%s'\n", 1, {TYPE_PARTITION}, 0},
     {"rootnoverify", "set root='%s'\n", 1, {TYPE_PARTITION}, 0},
     {"savedefault", "saved_entry=${chosen}; save_env saved_entry\n", 0, {}, 0},
-    /* serial unsupported.  */
+    {"serial", "serial %s\n", 1, {TYPE_REST_VERBATIM}, 0},
     /* setkey unsupported.  */    /* NUL_TERMINATE */
     /* setup unsupported.  */
     /* terminal unsupported.  */    /* NUL_TERMINATE */
