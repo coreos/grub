@@ -285,7 +285,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 	  grub_free (assign);
 
 	  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", grub_errno);
-	  grub_script_env_set ("?", errnobuf);
+	  grub_env_set ("?", errnobuf);
 
 	  grub_print_error ();
 
