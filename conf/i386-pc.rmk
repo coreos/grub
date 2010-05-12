@@ -255,6 +255,12 @@ hdparm_mod_SOURCES = commands/hdparm.c lib/hexdump.c
 hdparm_mod_CFLAGS = $(COMMON_CFLAGS)
 hdparm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# grub legacy ever supported only i386-pc.
+pkglib_MODULES += legacycfg.mod
+legacycfg_mod_SOURCES = commands/legacycfg.c
+legacycfg_mod_CFLAGS = $(COMMON_CFLAGS)
+legacycfg_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 ifeq ($(enable_efiemu), yes)
 
 efiemu32.o: efiemu/runtime/efiemu.c $(TARGET_OBJ2ELF)
