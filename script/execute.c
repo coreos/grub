@@ -47,9 +47,6 @@ grub_script_cmd_shift (grub_command_t cmd __attribute__((unused)),
   if (! scope)
     return GRUB_ERR_NONE;
 
-  if (scope->argv.argc == 0)
-    return GRUB_ERR_NONE;
-
   if (argc == 0)
     n = 1;
 
@@ -59,9 +56,12 @@ grub_script_cmd_shift (grub_command_t cmd __attribute__((unused)),
   else
     {
       n = grub_strtoul (argv[0], &p, 10);
-      if (*p != '\0' || n > scope->argv.argc)
+      if (*p != '\0')
 	return GRUB_ERR_BAD_ARGUMENT;
     }
+
+  if (n > scope->argv.argc)
+    return GRUB_ERR_BAD_ARGUMENT;
 
   scope->argv.argc -= n;
   scope->argv.args += n;
