@@ -27,24 +27,26 @@
 #include <grub/normal.h>
 #include <grub/script_sh.h>
 #include <grub/i18n.h>
+#include <grub/term.h>
 
 struct legacy_command
 {
   const char *name;
   const char *map;
   unsigned argc;
-  enum {
+  enum arg_type {
     TYPE_VERBATIM,
     TYPE_FORCE_OPTION,
     TYPE_NOAPM_OPTION,
+    TYPE_TYPE_OPTION,
     TYPE_FILE,
     TYPE_PARTITION,
     TYPE_BOOL,
-    TYPE_INT
+    TYPE_INT,
+    TYPE_REST_VERBATIM
   } argt[3];
   enum {
-    FLAG_IGNORE_REST = 1,
-    FLAG_ALL_VERBATIM = 2
+    FLAG_IGNORE_REST = 1
   } flags;
 };
 
@@ -85,7 +87,8 @@ struct legacy_command legacy_commands[] =
     /* install unsupported.  */
     /* ioprobe unsupported.  */
     /* FIXME: implement command. */
-    {"kernel", "legacy_kernel %s\n", 0, {}, FLAG_ALL_VERBATIM},
+    {"kernel", "legacy_kernel %s '%s' %s\n", 3, {TYPE_TYPE_OPTION, TYPE_FILE,
+						 TYPE_REST_VERBATIM}, 0},
     /* lock is handled separately. */
     {"makeactive", "parttool '%s' boot+\n", 1, {TYPE_PARTITION}, 0},
     {"map", "drivemap '%s' '%s'\n", 2, {TYPE_PARTITION, TYPE_PARTITION},
@@ -116,6 +119,7 @@ struct legacy_command legacy_commands[] =
     /* title is handled separately. */
     {"unhide", "parttool '%s' hidden-\n", 1, {TYPE_PARTITION}, 0},
     /* uppermem unsupported.  */
+    {"uuid", "search -u '%s'\n", 1, {TYPE_VERBATIM}, 0},
     /* vbeprobe unsupported.  */
   };
 
@@ -139,6 +143,7 @@ escape (const char *in)
       
       *outptr++ = *ptr;
     }
+  *outptr++ = 0;
   return ret;
 }
 
@@ -188,6 +193,27 @@ adjust_file (const char *in)
   return ret;
 }
 
+static int
+is_option (enum arg_type opt, const char *curarg)
+{
+  switch (opt)
+    {
+    case TYPE_NOAPM_OPTION:
+      return grub_strcmp (curarg, "--no-apm") == 0;
+    case TYPE_FORCE_OPTION:
+      return grub_strcmp (curarg, "--force") == 0;
+    case TYPE_TYPE_OPTION:
+      return grub_strcmp (curarg, "--type=netbsd") == 0
+	|| grub_strcmp (curarg, "--type=freebsd") == 0
+	|| grub_strcmp (curarg, "--type=openbsd") == 0
+	|| grub_strcmp (curarg, "--type=linux") == 0
+	|| grub_strcmp (curarg, "--type=biglinux") == 0
+	|| grub_strcmp (curarg, "--type=multiboot") == 0;
+    default:
+      return 0;
+    } 
+}
+
 static char *
 legacy_parse (char *buf, char **entryname)
 {
@@ -197,7 +223,11 @@ legacy_parse (char *buf, char **entryname)
 
   for (ptr = buf; *ptr && grub_isspace (*ptr); ptr++);
   if ((!*ptr || *ptr == '#') && entryname && *entryname)
-    return buf;
+    {
+      char *ret = grub_xasprintf ("%s\n", buf);
+      grub_free (buf);
+      return ret;
+    }
   if (!*ptr || *ptr == '#')
     {
       grub_free (buf);
@@ -234,51 +264,6 @@ legacy_parse (char *buf, char **entryname)
   char *args[ARRAY_SIZE (legacy_commands[0].argt)];
   memset (args, 0, sizeof (args));
 
-  if (legacy_commands[cmdnum].flags & FLAG_ALL_VERBATIM)
-    {
-      char *arg0 = ptr, *outptr;
-      int overhead = 3;
-      while (*ptr)
-	{
-	  char *curarg;
-	  for (; grub_isspace (*ptr); ptr++);
-	  curarg = ptr;
-	  for (; *ptr && !grub_isspace (*ptr); ptr++)
-	    if (*ptr == '\\' || *ptr == '\'')
-	      overhead++;
-	  if (ptr)
-	    ptr++;
-	  overhead += 3;
-	}
-      args[0] = grub_malloc (overhead + (ptr - arg0));
-      if (!args[0])
-	{
-	  grub_free (buf);
-	  return NULL;
-	}
-      ptr = arg0;
-      outptr = args[0];
-      while (*ptr)
-	{
-	  char *curarg;
-	  for (; grub_isspace (*ptr); ptr++);
-	  curarg = ptr;
-	  if (outptr != args[0])
-	    *outptr++ = ' ';
-	  *outptr++ = '\'';
-	  for (; *ptr && !grub_isspace (*ptr); ptr++)
-	    {
-	      if (*ptr == '\\' || *ptr == '\'')
-		*outptr++ = '\\';
-	      *outptr++ = *ptr;
-	    }
-	  *outptr++ = '\'';
-	  if (ptr)
-	    ptr++;
-	  overhead += 3;
-	}
-    }
-
   {
     unsigned j = 0;
     for (i = 0; i < legacy_commands[cmdnum].argc; i++)
@@ -294,7 +279,8 @@ legacy_parse (char *buf, char **entryname)
 	    c = *cptr;
 	    *ptr = 0;
 	  }
-	ptr++;
+	if (*ptr)
+	  ptr++;
 	switch (legacy_commands[cmdnum].argt[i])
 	  {
 	  case TYPE_PARTITION:
@@ -302,28 +288,65 @@ legacy_parse (char *buf, char **entryname)
 	    args[j++] = adjust_file (curarg);
 	    break;
 
+	  case TYPE_REST_VERBATIM:
+	    {
+	      char *outptr, *outptr0;
+	      int overhead = 3;
+	      ptr = curarg;
+	      while (*ptr)
+		{
+		  for (; grub_isspace (*ptr); ptr++);
+		  for (; *ptr && !grub_isspace (*ptr); ptr++)
+		    if (*ptr == '\\' || *ptr == '\'')
+		      overhead++;
+		  if (*ptr)
+		    ptr++;
+		  overhead += 3;
+		}
+	      outptr0 = args[j++] = grub_malloc (overhead + (ptr - curarg));
+	      if (!outptr0)
+		{
+		  grub_free (buf);
+		  return NULL;
+		}
+	      ptr = curarg;
+	      outptr = outptr0;
+	      while (*ptr)
+		{
+		  for (; grub_isspace (*ptr); ptr++);
+		  if (outptr != outptr0)
+		    *outptr++ = ' ';
+		  *outptr++ = '\'';
+		  for (; *ptr && !grub_isspace (*ptr); ptr++)
+		    {
+		      if (*ptr == '\\' || *ptr == '\'')
+			*outptr++ = '\\';
+		      *outptr++ = *ptr;
+		    }
+		  *outptr++ = '\'';
+		  if (*ptr)
+		    ptr++;
+		  overhead += 3;
+		}
+	      *outptr++ = 0;
+	    }
+	    break;
+
 	  case TYPE_VERBATIM:
 	    args[j++] = escape (curarg);
 	    break;
 	  case TYPE_FORCE_OPTION:
-	    if (grub_strcmp (curarg, "--force") == 0)
-	      {
-		args[j++] = grub_strdup ("--force");
-		break;
-	      }
-	    if (cptr)
-	      *cptr = c;
-	    ptr = curarg;
-	    break;
 	  case TYPE_NOAPM_OPTION:
-	    if (grub_strcmp (curarg, "--no-apm") == 0)
+	  case TYPE_TYPE_OPTION:
+	    if (is_option (legacy_commands[cmdnum].argt[i], curarg))
 	      {
-		args[j++] = grub_strdup ("--no-apm");
+		args[j++] = grub_strdup (curarg);
 		break;
 	      }
 	    if (cptr)
 	      *cptr = c;
 	    ptr = curarg;
+	    args[j++] = "";
 	    break;
 	  case TYPE_INT:
 	    {
@@ -448,7 +471,7 @@ legacy_file (const char *filename)
 		  grub_free (parsed);
 		  return grub_errno;
 		}
-	      grub_memcpy (entrysrc + grub_strlen (entrysrc), buf,
+	      grub_memcpy (entrysrc + grub_strlen (entrysrc), parsed,
 			   grub_strlen (parsed) + 1);
 	      grub_free (parsed);
 	      parsed = NULL;
