@@ -66,10 +66,10 @@ struct legacy_command legacy_commands[] =
     {"debug",
      "if [ -z \"$debug\" ]; then set debug=all; else set debug=; fi\n",
      0, {}, 0},
-    {"default", "set default='%s'; if [ x\"$default\" = xsaved ]; then load_env; set default=\"$saved_entry\"\n", 1, {TYPE_VERBATIM}, 0},
+    {"default", "set default='%s'; if [ x\"$default\" = xsaved ]; then load_env; set default=\"$saved_entry\"; fi\n", 1, {TYPE_VERBATIM}, 0},
     /* dhcp unsupported.  */
     /* displayapm unsupported.  */
-    {"displaymem", "lsmem\n", 0, {}, 0},
+    {"displaymem", "lsmmap\n", 0, {}, 0},
     /* embed unsupported.  */
     {"fallback", "set fallback='%s'\n", 1, {TYPE_VERBATIM}, 0},
     {"find", "search -f '%s'\n", 1, {TYPE_FILE}, 0},
@@ -234,7 +234,7 @@ legacy_parse (char *buf, char **entryname)
     }
 
   cmdname = ptr;
-  for (ptr = buf; !grub_isspace (*ptr) && *ptr != '='; ptr++);
+  for (ptr = buf; *ptr && !grub_isspace (*ptr) && *ptr != '='; ptr++);
 
   if (entryname && grub_strncmp ("title", cmdname, ptr - cmdname) == 0
       && ptr - cmdname == sizeof ("title") - 1)
@@ -267,7 +267,7 @@ legacy_parse (char *buf, char **entryname)
     unsigned j = 0;
     for (i = 0; i < legacy_commands[cmdnum].argc; i++)
       {
-	char *curarg, *cptr = NULL, c;
+	char *curarg, *cptr = NULL, c = 0;
 	for (; grub_isspace (*ptr); ptr++);
 	curarg = ptr;
 	for (; !grub_isspace (*ptr); ptr++);
@@ -451,6 +451,7 @@ legacy_file (const char *filename)
 	  }
 
 	  grub_normal_parse_line (parsed, getline);
+	  grub_print_error ();
 	  grub_free (parsed);
 	}
       else if (parsed)
