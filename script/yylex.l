@@ -119,7 +119,7 @@ DIGITS          [[:digit:]]+
 NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
 
 ESC             \\.
-SPECIAL        \?|\#
+SPECIAL         \?|\#|\*|\@
 VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|${SPECIAL}|$\{{SPECIAL}\}
 DQSTR           \"([^\\\"]|{ESC})*\"
 SQSTR           \'[^\']*\'
