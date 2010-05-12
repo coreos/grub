@@ -28,7 +28,7 @@ foo=foo
 echo "" $foo
 
 echo $bar $foo
- 
+
 bar=""
 echo $bar $foo
 
