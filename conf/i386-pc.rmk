@@ -185,7 +185,7 @@ vbetest_mod_CFLAGS = $(COMMON_CFLAGS)
 vbetest_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vga.mod.
-vga_mod_SOURCES = term/i386/pc/vga.c
+vga_mod_SOURCES = video/i386/pc/vga.c
 vga_mod_CFLAGS = $(COMMON_CFLAGS)
 vga_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

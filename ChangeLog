@@ -1,3 +1,63 @@
+2010-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Transform (broken) vga terminal into (working) vga video driver.
+
+	* conf/i386-pc.rmk (vga_mod_SOURCES): Change term/i386/pc/vga.c to
+	video/i386/pc/vga.c.
+	* include/grub/video.h (grub_video_driver_id):
+	Add GRUB_VIDEO_DRIVER_VGA.
+	* term/i386/pc/vga.c: Renamed to ...
+	* video/i386/pc/vga.c: ...this
+	(DEBUG_VGA): Removed.
+	(CHAR_WIDTH): Likewise.
+	(CHAR_HEIGHT): Likewise.
+	(TEXT_WIDTH): Likewise.
+	(TEXT_HEIGHT): Likewise.
+	(DEFAULT_FG_COLOR): Likewise.
+	(DEFAULT_BG_COLOR): Likewise.
+	(colored_char): Likewise.
+	(xpos): Likewise.
+	(ypos): Likewise.
+	(cursor_state): Likewise.
+	(fg_color): Likewise.
+	(bg_color): Likewise.
+	(text_buf): Likewise.
+	(page): Likewise.
+	(font): Likewise.
+	(framebuffer): New variable.
+	(set_read_map): Disabled.
+	(setup): New variable.
+	(is_target): Likewise.
+	(grub_vga_mod_init): Likewise.
+	(grub_vga_mod_fini): Likewise.
+	(check_vga_mem): Likewise.
+	(write_char): Likewise.
+	(write_cursor): Likewise.
+	(scroll_up): Likewise.
+	(grub_vga_putchar): Likewise.
+	(grub_vga_getcharwidth): Likewise.
+	(grub_vga_getwh): Likewise.
+	(grub_vga_getxy): Likewise.
+	(grub_vga_gotoxy): Likewise.
+	(grub_vga_cls): Likewise.
+	(grub_vga_setcolorstate): Likewise.
+	(grub_vga_setcursor): Likewise.
+	(grub_video_vga_init): New function.
+	(grub_video_vga_setup): Likewise.
+	(grub_video_vga_fini): Likewise.
+	(update_target): Likewise.
+	(grub_video_vga_blit_bitmap): Likewise.
+	(grub_video_vga_blit_render_target): Likewise.
+	(grub_video_vga_set_active_render_target): Likewise.
+	(grub_video_vga_get_active_render_target): Likewise.
+	(grub_video_vga_swap_buffers): Likewise.
+	(grub_video_vga_set_palette): Likewise.
+	(grub_video_vga_get_info_and_fini): Likewise.
+	(grub_vga_term): Removed.
+	(grub_video_vga_adapter): New variable.
+	(GRUB_MOD_INIT): Register a video driver instead of terminal.
+	(GRUB_MOD_FINI): Unrefister a video driver instead of terminal.
+
 2010-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* video/readers/jpeg.c: Indented.
