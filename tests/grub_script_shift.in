@@ -22,30 +22,18 @@ function f1 {
   echo f1 $# $1 $2 $3
 }
 
-function f2 {
-  echo f2 $# $1 $2 $3
-  shift 1
-  echo f2 $# $1 $2 $3
-}
-
-function f3 {
-  echo f3 $# $1 $2 $3
-  shift 3
-  echo f3 $# $1 $2 $3
-}
-
-function f4 {
-  echo f4 $# $1 $2 $3
-  shift 100
-  echo f4 $# $1 $2 $3
-}
-
 f1
 f1 a
 f1 a b
 f1 a b c
 f1 a b c d
 f1 a b c d e
+
+function f2 {
+  echo f2 $# $1 $2 $3
+  shift 1
+  echo f2 $# $1 $2 $3
+}
 
 f2
 f2 a
@@ -54,12 +42,24 @@ f2 a b c
 f2 a b c d
 f2 a b c d e
 
+function f3 {
+  echo f3 $# $1 $2 $3
+  shift 3
+  echo f3 $# $1 $2 $3
+}
+
 f3
 f3 a
 f3 a b
 f3 a b c
 f3 a b c d
 f3 a b c d e
+
+function f4 {
+  echo f4 $# $1 $2 $3
+  shift 100
+  echo f4 $# $1 $2 $3
+}
 
 f4
 f4 a
