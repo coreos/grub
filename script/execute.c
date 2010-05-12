@@ -128,6 +128,13 @@ grub_script_env_get (const char *name, grub_script_arg_type_t type)
 					       scope->argv.args[num - 1]);
 	}
     }
+
+  if (errors)
+    {
+      grub_script_argv_free (&result);
+      return 0;
+    }
+
   return result.args;
 }
 
