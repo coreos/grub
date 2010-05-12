@@ -68,6 +68,11 @@ function fstar {
   do
     echo fstar $f
   done
+
+  for f in aaa$*bbb
+  do
+    echo fstar $f
+  done
 }
 
 fstar
@@ -77,6 +82,16 @@ fstar a "1 2" b
 
 function fdqstar {
   for f in "$*"
+  do
+    echo fdqstar $f
+  done
+
+  for f in aaa"$*"bbb
+  do
+    echo fdqstar $f
+  done
+
+  for f in "aaa$*bbb"
   do
     echo fdqstar $f
   done
@@ -92,6 +107,11 @@ function fat {
   do
     echo fat $f
   done
+
+  for f in aaa$@bbb
+  do
+    echo fat $f
+  done
 }
 
 fat
@@ -103,6 +123,16 @@ fat a "1 2" b "c d" e
 
 function fdqat {
   for f in "$@"
+  do
+    echo fdqat $f
+  done
+
+  for f in aaa"$@"bbb
+  do
+    echo fdqat $f
+  done
+
+  for f in "aaa$@bbb"
   do
     echo fdqat $f
   done
