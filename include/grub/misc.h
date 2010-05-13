@@ -282,6 +282,15 @@ grub_abs (int x)
 }
 
 static inline long
+grub_min (long x, long y)
+{
+  if (x < y)
+    return x;
+  else
+    return y;
+}
+
+static inline long
 grub_max (long x, long y)
 {
   if (x > y)
