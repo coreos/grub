@@ -1,3 +1,32 @@
+2010-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix gfxmenu crash.
+	Reported by: Thorsten Grützmacher.
+
+	* gfxmenu/gui_circular_progress.c (circprog_destroy): Unregister
+	timeout hook.
+	(circprog_set_property): Register and unregister timeout hook.
+	* gfxmenu/gui_label.c (grub_gui_label): New fields template and value.
+	(label_destroy): Free template. and unregister hook.
+	(label_set_state): New function.
+	(label_set_property): Handle templates and hooks.
+	* gfxmenu/gui_progress_bar.c (progress_bar_destroy): Unregister
+	timeout hook.
+	(progress_bar_set_property): Register and unregister timeout hook.
+	* gfxmenu/view.c (TIMEOUT_COMPONENT_ID): Move from here ...
+	* include/grub/gui.h (GRUB_GFXMENU_TIMEOUT_COMPONENT_ID): ...to here
+	* gfxmenu/view.c (grub_gfxmenu_timeout_notifications): New variable.
+	(update_timeout_visit): Removed.
+	(update_timeouts): New function.
+	(redraw_timeouts): Likewise.
+	(grub_gfxmenu_print_timeout): Use update_timeouts and redraw_timeouts.
+	(grub_gfxmenu_clear_timeout): Likewise.
+	* include/grub/gui.h (grub_gfxmenu_set_state_t): New type.
+	(grub_gfxmenu_timeout_notify): Likewise.
+	(grub_gfxmenu_timeout_notifications): New external variable.
+	(grub_gfxmenu_timeout_register): New function.
+	(grub_gfxmenu_timeout_unregister): Likewise.
+
 2010-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Transform (broken) vga terminal into (working) vga video driver.
