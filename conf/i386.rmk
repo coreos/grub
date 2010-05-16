@@ -20,6 +20,11 @@ video_cirrus_mod_SOURCES = video/cirrus.c
 video_cirrus_mod_CFLAGS = $(COMMON_CFLAGS)
 video_cirrus_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += video_bochs.mod
+video_bochs_mod_SOURCES = video/bochs.c
+video_bochs_mod_CFLAGS = $(COMMON_CFLAGS)
+video_bochs_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 pkglib_MODULES += relocator.mod
 relocator_mod_SOURCES = lib/i386/relocator.c lib/i386/relocator_asm.S lib/i386/relocator_backward.S
 relocator_mod_CFLAGS = $(COMMON_CFLAGS)
