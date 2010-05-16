@@ -38,7 +38,7 @@ static struct
   grub_pci_device_t dev;
 } framebuffer;
 
-#define CIRRUS_APERTURE_SIZE 0x200000
+#define CIRRUS_APERTURE_SIZE 0x1000000
 
 enum
   {
