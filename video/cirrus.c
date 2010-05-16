@@ -30,7 +30,7 @@
 static struct
 {
   struct grub_video_mode_info mode_info;
-  struct grub_video_render_target *render_target;
+  grub_size_t page_size;        /* The size of a page in bytes.  */
 
   grub_uint8_t *ptr;
   int mapped;
@@ -69,12 +69,15 @@ enum
     CIRRUS_CR_WIDTH = 0x01,
     CIRRUS_CR_OVERFLOW = 0x07,
     CIRRUS_CR_CELL_HEIGHT = 0x09,
+    CIRRUS_CR_SCREEN_START_HIGH = 0xc,
+    CIRRUS_CR_SCREEN_START_LOW = 0xd,
     CIRRUS_CR_VSYNC_END = 0x11,
     CIRRUS_CR_HEIGHT = 0x12,
     CIRRUS_CR_PITCH = 0x13,
     CIRRUS_CR_MODE = 0x17,
     CIRRUS_CR_LINE_COMPARE = 0x18,
     CIRRUS_CR_EXTENDED_DISPLAY = 0x1b,
+    CIRRUS_CR_EXTENDED_OVERLAY = 0x1d,
     CIRRUS_CR_MAX
   };
 
@@ -85,16 +88,24 @@ enum
 #define CIRRUS_CR_OVERFLOW_HEIGHT1_MASK 0x02
 #define CIRRUS_CR_OVERFLOW_HEIGHT2_SHIFT 3
 #define CIRRUS_CR_OVERFLOW_HEIGHT2_MASK 0xc0
-#define CIRRUS_CR_OVERFLOW_LINE_COMPARE_MASK 0x10
 #define CIRRUS_CR_OVERFLOW_LINE_COMPARE_SHIFT 4
-
-#define CIRRUS_CR_EXTENDED_DISPLAY_PITCH_MASK 0x10
-#define CIRRUS_CR_EXTENDED_DISPLAY_PITCH_SHIFT 4
+#define CIRRUS_CR_OVERFLOW_LINE_COMPARE_MASK 0x10
 
 #define CIRRUS_CR_MODE_TIMING_ENABLE 0x80
 #define CIRRUS_CR_MODE_BYTE_MODE 0x40
 #define CIRRUS_CR_MODE_NO_HERCULES 0x02
 #define CIRRUS_CR_MODE_NO_CGA 0x01
+
+#define CIRRUS_CR_EXTENDED_DISPLAY_PITCH_MASK 0x10
+#define CIRRUS_CR_EXTENDED_DISPLAY_PITCH_SHIFT 4
+#define CIRRUS_CR_EXTENDED_DISPLAY_START_MASK1 0x1
+#define CIRRUS_CR_EXTENDED_DISPLAY_START_SHIFT1 16
+#define CIRRUS_CR_EXTENDED_DISPLAY_START_MASK2 0xc
+#define CIRRUS_CR_EXTENDED_DISPLAY_START_SHIFT2 15
+
+#define CIRRUS_CR_EXTENDED_OVERLAY_DISPLAY_START_MASK 0x80
+#define CIRRUS_CR_EXTENDED_OVERLAY_DISPLAY_START_SHIFT 12
+
 
 enum
   {
@@ -243,6 +254,33 @@ grub_video_cirrus_video_fini (void)
 }
 
 static grub_err_t
+doublebuf_pageflipping_set_page (int page)
+{
+  int start = framebuffer.page_size * page / 4;
+  grub_uint8_t cr_ext, cr_overlay;
+
+  cr_write (start & 0xff, CIRRUS_CR_SCREEN_START_LOW);
+  cr_write ((start & 0xff00) >> 8, CIRRUS_CR_SCREEN_START_HIGH);
+
+  cr_ext = cr_read (CIRRUS_CR_EXTENDED_DISPLAY);
+  cr_ext &= ~(CIRRUS_CR_EXTENDED_DISPLAY_START_MASK1
+	      | CIRRUS_CR_EXTENDED_DISPLAY_START_MASK2);
+  cr_ext |= ((start >> CIRRUS_CR_EXTENDED_DISPLAY_START_SHIFT1)
+	     & CIRRUS_CR_EXTENDED_DISPLAY_START_MASK1);
+  cr_ext |= ((start >> CIRRUS_CR_EXTENDED_DISPLAY_START_SHIFT2)
+	     & CIRRUS_CR_EXTENDED_DISPLAY_START_MASK2);
+  cr_write (cr_ext, CIRRUS_CR_EXTENDED_DISPLAY);
+
+  cr_overlay = cr_read (CIRRUS_CR_EXTENDED_OVERLAY);
+  cr_overlay &= ~(CIRRUS_CR_EXTENDED_OVERLAY_DISPLAY_START_MASK);
+  cr_overlay |= ((start >> CIRRUS_CR_EXTENDED_OVERLAY_DISPLAY_START_SHIFT)
+		 & CIRRUS_CR_EXTENDED_OVERLAY_DISPLAY_START_MASK);
+  cr_write (cr_overlay, CIRRUS_CR_EXTENDED_OVERLAY);
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
 grub_video_cirrus_setup (unsigned int width, unsigned int height,
 			unsigned int mode_type, unsigned int mode_mask __attribute__ ((unused)))
 {
@@ -310,6 +348,11 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
 		       "screen width must be at most %d at bitdepth %d",
 		       CIRRUS_MAX_PITCH / bytes_per_pixel, depth);
 
+  framebuffer.page_size = pitch * height;
+
+  if (framebuffer.page_size > CIRRUS_APERTURE_SIZE)
+    return grub_error (GRUB_ERR_IO, "Not enough video memory for this mode");
+
   grub_pci_iterate (find_card);
   if (!found)
     return grub_error (GRUB_ERR_IO, "Couldn't find graphics card");
@@ -317,6 +360,7 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
   if (found && framebuffer.base == 0)
     {
       /* FIXME: change framebuffer base */
+      return grub_error (GRUB_ERR_IO, "PCI BAR not set");
     }
 
   /* We can safely discard volatile attribute.  */
@@ -371,6 +415,8 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
     cr_write (CIRRUS_CR_MODE_TIMING_ENABLE | CIRRUS_CR_MODE_BYTE_MODE
 	      | CIRRUS_CR_MODE_NO_HERCULES | CIRRUS_CR_MODE_NO_CGA,
 	      CIRRUS_CR_MODE);
+
+    doublebuf_pageflipping_set_page (0);
 
     sr_ext = CIRRUS_SR_EXTENDED_MODE_LFB_ENABLE
       | CIRRUS_SR_EXTENDED_MODE_ENABLE_EXT;
@@ -438,15 +484,17 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
 
   framebuffer.mode_info.blit_format = grub_video_get_blit_format (&framebuffer.mode_info);
 
-  err = grub_video_fb_create_render_target_from_pointer (&framebuffer.render_target, &framebuffer.mode_info, framebuffer.ptr);
+  if (CIRRUS_APERTURE_SIZE >= 2 * framebuffer.page_size)
+    err = grub_video_fb_setup (mode_type, mode_mask,
+			       &framebuffer.mode_info,
+			       framebuffer.ptr,
+			       doublebuf_pageflipping_set_page,
+			       framebuffer.ptr + framebuffer.page_size);
+  else
+    err = grub_video_fb_setup (mode_type, mode_mask,
+			       &framebuffer.mode_info,
+			       framebuffer.ptr, 0, 0);
 
-  if (err)
-    return err;
-
-  err = grub_video_fb_set_active_render_target (framebuffer.render_target);
-  
-  if (err)
-    return err;
 
   /* Copy default palette to initialize emulated palette.  */
   err = grub_video_fb_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
@@ -467,34 +515,6 @@ grub_video_cirrus_set_palette (unsigned int start, unsigned int count,
   return grub_video_fb_set_palette (start, count, palette_data);
 }
 
-static grub_err_t
-grub_video_cirrus_swap_buffers (void)
-{
-  /* TODO: Implement buffer swapping.  */
-  return GRUB_ERR_NONE;
-}
-
-static grub_err_t
-grub_video_cirrus_set_active_render_target (struct grub_video_render_target *target)
-{
-  if (target == GRUB_VIDEO_RENDER_TARGET_DISPLAY)
-      target = framebuffer.render_target;
-
-  return grub_video_fb_set_active_render_target (target);
-}
-
-static grub_err_t
-grub_video_cirrus_get_info_and_fini (struct grub_video_mode_info *mode_info,
-				    void **framebuf)
-{
-  grub_memcpy (mode_info, &(framebuffer.mode_info), sizeof (*mode_info));
-  *framebuf = (char *) framebuffer.ptr;
-
-  grub_video_fb_fini ();
-
-  return GRUB_ERR_NONE;
-}
-
 
 static struct grub_video_adapter grub_video_cirrus_adapter =
   {
@@ -505,7 +525,7 @@ static struct grub_video_adapter grub_video_cirrus_adapter =
     .fini = grub_video_cirrus_video_fini,
     .setup = grub_video_cirrus_setup,
     .get_info = grub_video_fb_get_info,
-    .get_info_and_fini = grub_video_cirrus_get_info_and_fini,
+    .get_info_and_fini = grub_video_fb_get_info_and_fini,
     .set_palette = grub_video_cirrus_set_palette,
     .get_palette = grub_video_fb_get_palette,
     .set_viewport = grub_video_fb_set_viewport,
@@ -518,10 +538,10 @@ static struct grub_video_adapter grub_video_cirrus_adapter =
     .blit_bitmap = grub_video_fb_blit_bitmap,
     .blit_render_target = grub_video_fb_blit_render_target,
     .scroll = grub_video_fb_scroll,
-    .swap_buffers = grub_video_cirrus_swap_buffers,
+    .swap_buffers = grub_video_fb_swap_buffers,
     .create_render_target = grub_video_fb_create_render_target,
     .delete_render_target = grub_video_fb_delete_render_target,
-    .set_active_render_target = grub_video_cirrus_set_active_render_target,
+    .set_active_render_target = grub_video_fb_set_active_render_target,
     .get_active_render_target = grub_video_fb_get_active_render_target,
 
     .next = 0
