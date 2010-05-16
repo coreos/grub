@@ -40,12 +40,19 @@ static struct
 
 #define CIRRUS_APERTURE_SIZE 0x200000
 
-#define GR_INDEX 0x3ce
-#define GR_DATA 0x3cf
-#define CR_INDEX 0x3d4
-#define CR_DATA 0x3d5
-#define SR_INDEX 0x3c4
-#define SR_DATA 0x3c5
+enum
+  {
+    SR_INDEX = 0x3c4,
+    SR_DATA = 0x3c5,
+    CIRRUS_PIXEL_MASK = 0x3c6,
+    CIRRUS_PALLETTE_READ_INDEX = 0x3c7,
+    CIRRUS_PALLETTE_WRITE_INDEX = 0x3c8,
+    CIRRUS_PALLETTE_DATA = 0x3c9,
+    GR_INDEX = 0x3ce,
+    GR_DATA = 0x3cf,
+    CR_INDEX = 0x3d4,
+    CR_DATA = 0x3d5,
+  };
 
 #define CIRRUS_MAX_WIDTH 0x800
 #define CIRRUS_WIDTH_DIVISOR 8
@@ -117,12 +124,14 @@ enum
 #define CIRRUS_SR_MEMORY_MODE_NORMAL 0
 #define CIRRUS_SR_EXTENDED_MODE_LFB_ENABLE 0xf0
 #define CIRRUS_SR_EXTENDED_MODE_ENABLE_EXT 0x01
-#define CIRRUS_SR_EXTENDED_MODE_24BPP      0x04
+#define CIRRUS_SR_EXTENDED_MODE_8BPP       0x00
 #define CIRRUS_SR_EXTENDED_MODE_16BPP      0x06
+#define CIRRUS_SR_EXTENDED_MODE_24BPP      0x04
 #define CIRRUS_SR_EXTENDED_MODE_32BPP      0x08
 
 #define CIRRUS_HIDDEN_DAC_ENABLE_EXT 0x80
 #define CIRRUS_HIDDEN_DAC_ENABLE_ALL 0x40
+#define CIRRUS_HIDDEN_DAC_8BPP 0
 #define CIRRUS_HIDDEN_DAC_15BPP (CIRRUS_HIDDEN_DAC_ENABLE_EXT \
 				 | CIRRUS_HIDDEN_DAC_ENABLE_ALL | 0)
 #define CIRRUS_HIDDEN_DAC_16BPP (CIRRUS_HIDDEN_DAC_ENABLE_EXT \
@@ -175,23 +184,43 @@ sr_read (grub_uint8_t addr)
 static void
 write_hidden_dac (grub_uint8_t data)
 {
-  grub_inb (0x3c8);
-  grub_inb (0x3c6);
-  grub_inb (0x3c6);
-  grub_inb (0x3c6);
-  grub_inb (0x3c6);
-  grub_outb (data, 0x3c6);
+  grub_inb (CIRRUS_PALLETTE_WRITE_INDEX);
+  grub_inb (CIRRUS_PIXEL_MASK);
+  grub_inb (CIRRUS_PIXEL_MASK);
+  grub_inb (CIRRUS_PIXEL_MASK);
+  grub_inb (CIRRUS_PIXEL_MASK);
+  grub_outb (data, CIRRUS_PIXEL_MASK);
 }
 
 static grub_uint8_t
 read_hidden_dac (void)
 {
-  grub_inb (0x3c8);
-  grub_inb (0x3c6);
-  grub_inb (0x3c6);
-  grub_inb (0x3c6);
-  grub_inb (0x3c6);
-  return grub_inb (0x3c6);
+  grub_inb (CIRRUS_PALLETTE_WRITE_INDEX);
+  grub_inb (CIRRUS_PIXEL_MASK);
+  grub_inb (CIRRUS_PIXEL_MASK);
+  grub_inb (CIRRUS_PIXEL_MASK);
+  grub_inb (CIRRUS_PIXEL_MASK);
+  return grub_inb (CIRRUS_PIXEL_MASK);
+}
+
+static void
+palette_read (grub_uint8_t addr, grub_uint8_t *r, grub_uint8_t *g,
+	      grub_uint8_t *b)
+{
+  grub_outb (addr, CIRRUS_PALLETTE_READ_INDEX);
+  *r = grub_inb (CIRRUS_PALLETTE_DATA);
+  *g = grub_inb (CIRRUS_PALLETTE_DATA);
+  *b = grub_inb (CIRRUS_PALLETTE_DATA);
+}
+
+static void
+palette_write (grub_uint8_t addr, grub_uint8_t r, grub_uint8_t g,
+	       grub_uint8_t b)
+{
+  grub_outb (addr, CIRRUS_PALLETTE_READ_INDEX);
+  grub_outb (r, CIRRUS_PALLETTE_DATA);
+  grub_outb (g, CIRRUS_PALLETTE_DATA);
+  grub_outb (b, CIRRUS_PALLETTE_DATA);
 }
 
 struct saved_state
@@ -202,6 +231,9 @@ struct saved_state
   grub_uint8_t hidden_dac;
   /* We need to preserve VGA font and VGA text. */
   grub_uint8_t vram[32 * 4 * 256];
+  grub_uint8_t r[256];
+  grub_uint8_t g[256];
+  grub_uint8_t b[256];
 };
 
 static struct saved_state initial_state;
@@ -217,6 +249,9 @@ save_state (struct saved_state *st)
     st->sr[i] = sr_read (i);
   for (i = 0; i < ARRAY_SIZE (st->gr); i++)
     st->gr[i] = gr_read (i);
+  for (i = 0; i < 256; i++)
+    palette_read (i, st->r + i, st->g + i, st->b + i);
+
   st->hidden_dac = read_hidden_dac ();
   sr_write (CIRRUS_SR_MEMORY_MODE_CHAIN4, CIRRUS_SR_MEMORY_MODE);
   grub_memcpy (st->vram, framebuffer.ptr, sizeof (st->vram));
@@ -234,6 +269,9 @@ restore_state (struct saved_state *st)
     sr_write (st->sr[i], i);
   for (i = 0; i < ARRAY_SIZE (st->gr); i++)
     gr_write (st->gr[i], i);
+  for (i = 0; i < 256; i++)
+    palette_write (i, st->r[i], st->g[i], st->b[i]);
+
   write_hidden_dac (st->hidden_dac);
 }
 
@@ -290,8 +328,29 @@ doublebuf_pageflipping_set_page (int page)
 }
 
 static grub_err_t
+grub_video_cirrus_set_palette (unsigned int start, unsigned int count,
+			       struct grub_video_palette_data *palette_data)
+{
+  if (framebuffer.mode_info.mode_type == GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)
+    {
+      unsigned i;
+      if (start >= 0x100)
+	return GRUB_ERR_NONE;
+      if (start + count >= 0x100)
+	count = 0x100 - start;
+
+      for (i = 0; i < count; i++)
+	palette_write (start + i, palette_data[i].r, palette_data[i].g,
+		       palette_data[i].b);
+    }
+
+  /* Then set color to emulated palette.  */
+  return grub_video_fb_set_palette (start, count, palette_data);
+}
+
+static grub_err_t
 grub_video_cirrus_setup (unsigned int width, unsigned int height,
-			unsigned int mode_type, unsigned int mode_mask __attribute__ ((unused)))
+			 unsigned int mode_type, unsigned int mode_mask)
 {
   int depth;
   grub_err_t err;
@@ -342,12 +401,17 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
     return grub_error (GRUB_ERR_IO,
 		       "screen height must be at most %d", CIRRUS_MAX_HEIGHT);
 
-  if (depth == 0)
+  if (depth == 0
+      && !grub_video_check_mode_flag (mode_type, mode_mask,
+				      GRUB_VIDEO_MODE_TYPE_INDEX_COLOR, 0))
     depth = 24;
 
-  if (depth != 32 && depth != 24 && depth != 16 && depth != 15)
-    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "only 32, 24, 16 and 15-bit bpp are supported");
+  if (depth == 0)
+    depth = 8;
+
+  if (depth != 32 && depth != 24 && depth != 16 && depth != 15 && depth != 8)
+    return grub_error (GRUB_ERR_IO, "only 32, 24, 16, 15 and 8-bit bpp are"
+		       " supported by cirrus video");
 
   bytes_per_pixel = (depth + 7) / 8;
   pitch = width * bytes_per_pixel;
@@ -448,6 +512,10 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
 	hidden_dac = CIRRUS_HIDDEN_DAC_15BPP;
 	sr_ext |= CIRRUS_SR_EXTENDED_MODE_16BPP;
 	break;
+      case 8:
+	hidden_dac = CIRRUS_HIDDEN_DAC_8BPP;
+	sr_ext |= CIRRUS_SR_EXTENDED_MODE_8BPP;
+	break;
       }
     sr_write (sr_ext, CIRRUS_SR_EXTENDED_MODE);
     write_hidden_dac (hidden_dac);
@@ -466,6 +534,9 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
 
   switch (depth)
     {
+    case 8:
+      framebuffer.mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+      break;
     case 16:
       framebuffer.mode_info.red_mask_size = 5;
       framebuffer.mode_info.red_field_pos = 11;
@@ -513,24 +584,10 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
 
 
   /* Copy default palette to initialize emulated palette.  */
-  err = grub_video_fb_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
-				   grub_video_fbstd_colors);
+  err = grub_video_cirrus_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
+				       grub_video_fbstd_colors);
   return err;
 }
-
-static grub_err_t
-grub_video_cirrus_set_palette (unsigned int start, unsigned int count,
-			       struct grub_video_palette_data *palette_data)
-{
-  /*  if (framebuffer.index_color_mode) */
-    {
-      /* TODO: Implement setting indexed color mode palette to hardware.  */
-    }
-
-  /* Then set color to emulated palette.  */
-  return grub_video_fb_set_palette (start, count, palette_data);
-}
-
 
 static struct grub_video_adapter grub_video_cirrus_adapter =
   {
