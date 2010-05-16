@@ -119,11 +119,18 @@ typedef grub_err_t
 (*grub_video_fb_doublebuf_update_screen_t) (struct grub_video_fbrender_target *front,
 					  struct grub_video_fbrender_target *back);
 
+typedef grub_err_t (*grub_video_fb_set_page_t) (int page);
+
 grub_err_t
-grub_video_fb_doublebuf_blit_init (struct grub_video_fbrender_target **front,
-				   struct grub_video_fbrender_target **back,
-				   grub_video_fb_doublebuf_update_screen_t *update_screen,
-				   struct grub_video_mode_info mode_info,
-				   void *framebuf);
+grub_video_fb_setup (unsigned int mode_type, unsigned int mode_mask,
+		     struct grub_video_mode_info *mode_info,
+		     volatile void *page0_ptr,
+		     grub_video_fb_set_page_t set_page_in,
+		     volatile void *page1_ptr);
+grub_err_t
+grub_video_fb_swap_buffers (void);
+grub_err_t
+grub_video_fb_get_info_and_fini (struct grub_video_mode_info *mode_info,
+				 void **framebuf);
 
 #endif /* ! GRUB_VIDEO_FB_HEADER */
