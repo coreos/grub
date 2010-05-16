@@ -121,6 +121,15 @@ enum
 #define CIRRUS_SR_EXTENDED_MODE_16BPP      0x06
 #define CIRRUS_SR_EXTENDED_MODE_32BPP      0x08
 
+#define CIRRUS_HIDDEN_DAC_ENABLE_EXT 0x80
+#define CIRRUS_HIDDEN_DAC_ENABLE_ALL 0x40
+#define CIRRUS_HIDDEN_DAC_15BPP (CIRRUS_HIDDEN_DAC_ENABLE_EXT \
+				 | CIRRUS_HIDDEN_DAC_ENABLE_ALL | 0)
+#define CIRRUS_HIDDEN_DAC_16BPP (CIRRUS_HIDDEN_DAC_ENABLE_EXT \
+				 | CIRRUS_HIDDEN_DAC_ENABLE_ALL | 1)
+#define CIRRUS_HIDDEN_DAC_888COLOR (CIRRUS_HIDDEN_DAC_ENABLE_EXT \
+				    | CIRRUS_HIDDEN_DAC_ENABLE_ALL | 5)
+
 static void
 gr_write (grub_uint8_t val, grub_uint8_t addr)
 {
@@ -377,7 +386,7 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
 
   {
     int pitch_reg, overflow_reg = 0, line_compare = 0x3ff;
-    grub_uint8_t sr_ext = 0;
+    grub_uint8_t sr_ext = 0, hidden_dac = 0;
 
     pitch_reg = pitch / CIRRUS_WIDTH_DIVISOR;
 
@@ -422,19 +431,26 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
       | CIRRUS_SR_EXTENDED_MODE_ENABLE_EXT;
     switch (depth)
       {
+	/* FIXME: support 8-bit grayscale and 8-bit RGB.  */
       case 32:
+	hidden_dac = CIRRUS_HIDDEN_DAC_888COLOR;
 	sr_ext |= CIRRUS_SR_EXTENDED_MODE_32BPP;
 	break;
       case 24:
+	hidden_dac = CIRRUS_HIDDEN_DAC_888COLOR;
 	sr_ext |= CIRRUS_SR_EXTENDED_MODE_24BPP;
 	break;
       case 16:
+	hidden_dac = CIRRUS_HIDDEN_DAC_16BPP;
+	sr_ext |= CIRRUS_SR_EXTENDED_MODE_16BPP;
+	break;
       case 15:
+	hidden_dac = CIRRUS_HIDDEN_DAC_15BPP;
 	sr_ext |= CIRRUS_SR_EXTENDED_MODE_16BPP;
 	break;
       }
     sr_write (sr_ext, CIRRUS_SR_EXTENDED_MODE);
-    write_hidden_dac (depth == 16);
+    write_hidden_dac (hidden_dac);
   }
 
   /* Fill mode info details.  */
