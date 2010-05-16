@@ -89,8 +89,8 @@ grub_video_fb_blit_bitmap (struct grub_video_bitmap *bitmap,
 
 grub_err_t
 grub_video_fb_blit_render_target (struct grub_video_fbrender_target *source,
-                                   enum grub_video_blit_operators oper,
-                                   int x, int y, int offset_x, int offset_y,
+				  enum grub_video_blit_operators oper,
+				  int x, int y, int offset_x, int offset_y,
 				  unsigned int width, unsigned int height);
 
 grub_err_t
