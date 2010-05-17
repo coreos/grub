@@ -1,5 +1,34 @@
 2010-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove grub-mkisofs.
+
+	* conf/common.rmk (bin_UTILITIES): Remove grub-mkisofs.
+	(grub_mkisofs_SOURCES): Removed.
+	(grub_mkisofs_CFLAGS): Removed.
+	* util/mkisofs/defaults.h: Removed.
+	* util/mkisofs/eltorito.c: Likewise.
+	* util/mkisofs/exclude.h: Likewise.
+	* util/mkisofs/hash.c: Likewise.
+	* util/mkisofs/include/: Likewise.
+	* util/mkisofs/include/fctldefs.h: Likewise.
+	* util/mkisofs/include/mconfig.h: Likewise.
+	* util/mkisofs/include/prototyp.h: Likewise.
+	* util/mkisofs/include/statdefs.h: Likewise.
+	* util/mkisofs/iso9660.h: Likewise.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/match.c: Likewise.
+	* util/mkisofs/match.h: Likewise.
+	* util/mkisofs/mkisofs.c: Likewise.
+	* util/mkisofs/mkisofs.h: Likewise.
+	* util/mkisofs/msdos_partition.h: Likewise.
+	* util/mkisofs/multi.c: Likewise.
+	* util/mkisofs/name.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+
+2010-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Unify grub-mkimage accross platforms.
 
 	* Makefile.in (CPPFLAGS): Set GRUB_LIBDIR to $(libdir).
