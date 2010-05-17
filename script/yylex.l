@@ -112,9 +112,9 @@ typedef size_t yy_size_t;
 %option extra-type="struct grub_parser_param*"
 
 BLANK           [ \t]
-COMMENT         ^[ \t]*#.*$
+COMMENT         #.*$
 
-CHAR            [^|&$;<> \t\n\'\"\\]
+CHAR            [^{}|&$;<> \t\n\'\"\\]
 DIGITS          [[:digit:]]+
 NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
 

@@ -25,7 +25,7 @@
 #include <grub/lvm.h>
 
 #ifdef GRUB_UTIL
-#include <grub/util/misc.h>
+#include <grub/emu/misc.h>
 #endif
 
 static struct grub_lvm_vg *vg_list;

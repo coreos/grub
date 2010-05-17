@@ -31,6 +31,7 @@
 #include <grub/efiemu/efiemu.h>
 #include <grub/machine/efiemu.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 /* System table. Two version depending on mode */
 grub_efi_system_table32_t *grub_efiemu_system_table32 = 0;
@@ -327,15 +328,15 @@ GRUB_MOD_INIT(efiemu)
 {
   cmd_loadcore = grub_register_command ("efiemu_loadcore",
 					grub_cmd_efiemu_load,
-				       "FILE",
-				       "Load and initialize EFI emulator.");
+					N_("FILE"),
+					N_("Load and initialize EFI emulator."));
   cmd_prepare = grub_register_command ("efiemu_prepare",
 				       grub_cmd_efiemu_prepare,
 				       0,
-				       "Finalize loading of EFI emulator.");
+				       N_("Finalize loading of EFI emulator."));
   cmd_unload = grub_register_command ("efiemu_unload", grub_cmd_efiemu_unload,
 				      0,
-				      "Unload  EFI emulator.");
+				      N_("Unload EFI emulator."));
 }
 
 GRUB_MOD_FINI(efiemu)
