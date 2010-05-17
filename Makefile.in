@@ -287,7 +287,7 @@ build_env.mk: Makefile
 	echo "TARGET_CC=$(TARGET_CC)" ; \
 	echo "TARGET_CFLAGS=$(TARGET_CFLAGS)" ; \
 	echo "TARGET_ASFLAGS=$(TARGET_ASFLAGS)" ; \
-	echo "TARGET_CPPFLAGS=$(TARGET_CPPFLAGS) -I$(libdir) -I$(includedir)" ; \
+	echo "TARGET_CPPFLAGS=$(TARGET_CPPFLAGS) -I$(pkglibdir) -I$(includedir)" ; \
 	echo "STRIP=$(STRIP)" ; \
 	echo "OBJCONV=$(OBJCONV)" ; \
 	echo "TARGET_MODULE_FORMAT=$(TARGET_MODULE_FORMAT)" ; \
