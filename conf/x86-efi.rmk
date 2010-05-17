@@ -1,18 +1,13 @@
 # -*- makefile -*-
 
-# Utilities.
-bin_UTILITIES = grub-mkimage
-
-# For grub-mkimage.
-grub_mkimage_SOURCES = gnulib/progname.c util/i386/efi/grub-mkimage.c \
-	util/misc.c kern/emu/misc.c util/resolve.c
-util/i386/efi/grub-mkimage.c_DEPENDENCIES = Makefile
-
 # Scripts.
 sbin_SCRIPTS = grub-install
 
 # For grub-install.
 grub_install_SOURCES = util/i386/efi/grub-install.in
+
+bin_SCRIPTS += grub-mkrescue
+grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 # Modules.
 pkglib_PROGRAMS = kernel.img

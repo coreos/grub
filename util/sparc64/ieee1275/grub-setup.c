@@ -76,6 +76,13 @@
 #define DEFAULT_BOOT_FILE	"boot.img"
 #define DEFAULT_CORE_FILE	"core.img"
 
+#define grub_target_to_host16(x)	grub_be_to_cpu16(x)
+#define grub_target_to_host32(x)	grub_be_to_cpu32(x)
+#define grub_target_to_host64(x)	grub_be_to_cpu64(x)
+#define grub_host_to_target16(x)	grub_cpu_to_be16(x)
+#define grub_host_to_target32(x)	grub_cpu_to_be32(x)
+#define grub_host_to_target64(x)	grub_cpu_to_be64(x)
+
 /* This is the blocklist used in the diskboot image.  */
 struct boot_blocklist
 {

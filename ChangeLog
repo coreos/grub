@@ -1,3 +1,127 @@
+2010-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Unify grub-mkimage accross platforms.
+
+	* Makefile.in (CPPFLAGS): Set GRUB_LIBDIR to $(libdir).
+	* conf/common.rmk (bin_UTILITIES): Removed grub-mkelfimage.
+	(grub_mkelfimage_SOURCES): Removed.
+	(util/elf/grub-mkimage.c_DEPENDENCIES): Renamed to ..
+	(util/grub-mkimage.c_DEPENDENCIES): .. this.
+	(bin_UTILITIES): Add grub-mkimage.
+	(grub_mkimage_SOURCES): New variable.
+	(kernel_img_HEADERS): Remove machine/kernel.h.
+	* conf/i386-pc.rmk (pkglib_IMAGES): Remove kernel.img.
+	(pkglib_PROGRAMS): Add kernel.img.
+	(kernel_img_HEADERS): Add machine/kernel.h.
+	(kernel_img_FORMAT): Removed.
+	(bin_UTILITIES): Remove grub-mkimage.
+	(grub_mkimage_SOURCES): Removed.
+	(grub_mkimage_CFLAGS): Likewise.
+	(util/grub-mkrawimage.c_DEPENDENCIES): Likewise.
+	* conf/i386-qemu.rmk (pkglib_IMAGES): Remove kernel.img.
+	(pkglib_PROGRAMS): Add kernel.img.
+	(bin_UTILITIES): Remove grub-mkimage.
+	(grub_mkimage_SOURCES): Removed.
+	(grub_mkimage_CFLAGS): Likewise.
+	(util/grub-mkrawimage.c_DEPENDENCIES): Likewise.
+	* conf/mips-qemu-mips.rmk (pkglib_IMAGES): Remove kernel.img.
+	(pkglib_PROGRAMS): Add kernel.img.
+	* conf/mips-yeeloong.rmk (pkglib_IMAGES): Remove kernel.img.
+	(pkglib_PROGRAMS): Add kernel.img.
+	* conf/mips.rmk (bin_UTILITIES): Remove grub-mkimage.
+	(grub_mkimage_SOURCES): Removed.
+	(grub_mkimage_CFLAGS): Likewise.
+	(util/grub-mkrawimage.c_DEPENDENCIES): Likewise.
+	* conf/sparc64-ieee1275.rmk (pkglib_IMAGES): Remove kernel.img.
+	(pkglib_PROGRAMS): Add kernel.img.
+	(bin_UTILITIES): Remove grub-mkimage.
+	(grub_mkimage_SOURCES): Removed.
+	(grub_mkimage_CFLAGS): Likewise.
+	(util/grub-mkrawimage.c_DEPENDENCIES): Likewise.
+	* conf/x86-efi.rmk (bin_UTILITIES): Remove grub-mkimage.
+	(grub_mkimage_SOURCES): Removed.
+	(grub_mkimage_CFLAGS): Likewise.
+	(util/grub-mkrawimage.c_DEPENDENCIES): Likewise.
+	* configure.ac (machine_CFLAGS): Add "-DMACHINE".
+	* include/grub/efi/pe32.h (grub_pe32_optional_header): Split into ...
+	(grub_pe32_optional_header): ... this.
+	(grub_pe64_optional_header): ... and this. All users updated.
+	(GRUB_PE32_PE32_MAGIC): Split into ..
+	(GRUB_PE32_PE32_MAGIC): .. this.
+	(GRUB_PE32_PE64_MAGIC): .. and this.
+	(GRUB_PE32_SIGNATURE_SIZE): New definition.
+	* include/grub/elf.h (PT_GNU_STACK): New definition.
+	* include/grub/i386/coreboot/kernel.h: Merged into include/grub/offsets.h. All users updated.
+	* include/grub/i386/efi/kernel.h: Likewise.
+	* include/grub/i386/kernel.h: Likewise.
+	* include/grub/i386/pc/kernel.h: Likewise.
+	* include/grub/i386/qemu/boot.h: Likewise.
+	* include/grub/mips/kernel.h: Likewise.
+	* include/grub/mips/qemu-mips/kernel.h: Likewise.
+	* include/grub/powerpc/ieee1275/kernel.h: Likewise.
+	* include/grub/powerpc/kernel.h: Likewise.
+	* include/grub/sparc64/ieee1275/boot.h: Likewise.
+	* include/grub/sparc64/ieee1275/kernel.h: Likewise.
+	* include/grub/sparc64/kernel.h: Likewise.
+	* include/grub/x86_64/efi/kernel.h: Likewise.
+	* include/grub/x86_64/kernel.h: Likewise.
+	* include/grub/offsets.h: New file.
+	* include/grub/kernel.h (grub_module_info): Split into ...
+	(grub_module_info32): ... this.
+	(grub_module_info64): ... and this.
+	* include/grub/i386/pc/boot.h (GRUB_BOOT_MACHINE_KERNEL_SEG): Moved from here ...
+	* include/grub/offsets.h (GRUB_BOOT_I386_PC_KERNEL_SEG): ... here.
+	(grub_boot_blocklist): Moved from here ...
+	* include/grub/offsets.h (grub_pc_bios_boot_blocklist): ... here.
+	* include/grub/i386/pc/memory.h (GRUB_MEMORY_MACHINE_UPPER): Moved from here.
+	* include/grub/offsets.h (GRUB_MEMORY_I386_PC_UPPER): .. here.
+	* include/grub/types.h (grub_target_to_host16): Removed.
+	(grub_target_to_host32): Likewise.
+	(grub_target_to_host64): Likewise.
+	(grub_host_to_target16): Likewise.
+	(grub_host_to_target32): Likewise.
+	(grub_host_to_target64): Likewise.
+	(grub_host_to_target_addr): Likewise.
+
+	Support grub-mkrescue for efi, coreboot and qemu.
+
+	* conf/x86-efi.rmk (bin_SCRIPTS): Add grub-mkrescue.
+	* kern/efi/init.c (grub_efi_set_prefix): Handle baked in prefix.
+	* util/elf/grub-mkimage.c: Merged into util/grub-mkimage.c.
+	* util/grub-mkrawimage.c: Moved from here ...
+	* util/grub-mkimage.c: ... here. All users updated.
+	(ALIGN_ADDR): Use image_target.
+	(TARGET_NO_FIELD): New const.
+	(image_target_desc): New type.
+	(image_targets): New array.
+	(grub_target_to_host64): Use image_target.
+	(grub_target_to_host32): Likewise.
+	(grub_target_to_host16): Likewise.
+	(grub_host_to_target64): Likewise.
+	(grub_host_to_target32): Likewise.
+	(grub_host_to_target16): Likewise.
+	(grub_host_to_target_addr): Likewise.
+	(generate_image): Handle multiimage.
+	(main): Require -O parameter. All users updated.
+	* util/grub-mkimagexx.c: New file. Based on util/grub-mkrawimage.c and
+	util/efi/grub-mkimage.c
+	* util/grub-mkrescue.in: Handle coreboot, efi and qemu.
+	New option --rom-directory.
+	Use xorriso.
+	* util/i386/efi/grub-mkimage.c: Removed.
+	* util/i386/pc/grub-setup.c (grub_target_to_host16): New definition.
+	(grub_target_to_host32): Likewise.
+	(grub_target_to_host64): Likewise.
+	(grub_host_to_target16): Likewise.
+	(grub_host_to_target32): Likewise.
+	(grub_host_to_target64): Likewise.
+	* util/sparc64/ieee1275/grub-setup.c (grub_target_to_host16): New definition.
+	(grub_target_to_host32): Likewise.
+	(grub_target_to_host64): Likewise.
+	(grub_host_to_target16): Likewise.
+	(grub_host_to_target32): Likewise.
+	(grub_host_to_target64): Likewise.
+
 2010-05-17  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Source tree is reorganized for emu build.

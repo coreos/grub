@@ -1,12 +1,9 @@
 # -*- makefile -*-
 
-GRUB_KERNEL_MACHINE_LINK_ADDR = 0x8200
-
 COMMON_CFLAGS = -mrtd -mregparm=3
 
 # Images.
-pkglib_IMAGES = boot.img cdboot.img diskboot.img kernel.img lnxboot.img \
-	pxeboot.img
+pkglib_IMAGES = boot.img cdboot.img diskboot.img lnxboot.img pxeboot.img
 
 # For boot.img.
 boot_img_SOURCES = boot/i386/pc/boot.S
@@ -39,6 +36,7 @@ cdboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)0x7C00
 cdboot_img_FORMAT = binary
 
 # For kernel.img.
+pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/i386/pc/startup.S \
 	kern/i386/misc.S \
 	kern/main.c kern/device.c \
@@ -55,21 +53,13 @@ kernel_img_SOURCES = kern/i386/pc/startup.S \
 	term/i386/pc/console.c term/i386/vga_common.c \
 	symlist.c
 kernel_img_HEADERS += machine/biosdisk.h machine/vga.h machine/vbe.h \
-	machine/pxe.h i386/pit.h
+	machine/pxe.h i386/pit.h machine/kernel.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)  $(TARGET_IMG_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS += $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_KERNEL_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
-kernel_img_FORMAT = binary
+kernel_img_LDFLAGS += $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)0x8200 $(COMMON_CFLAGS)
 
 # Utilities.
-bin_UTILITIES = grub-mkimage
 sbin_UTILITIES = grub-setup
-
-# For grub-mkimage.
-grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkrawimage.c util/misc.c \
-	kern/emu/misc.c util/resolve.c lib/LzmaEnc.c lib/LzFind.c
-grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
-util/grub-mkrawimage.c_DEPENDENCIES = Makefile
 
 # For grub-setup.
 util/i386/pc/grub-setup.c_DEPENDENCIES = grub_setup_init.h

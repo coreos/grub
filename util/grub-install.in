@@ -35,11 +35,7 @@ pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${t
 localedir=@datadir@/locale
 
 grub_setup=${sbindir}/`echo grub-setup | sed ${transform}`
-if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] || [ "${target_cpu}-${platform}" = "mips-yeeloong" ] ; then
-    grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
-else
-    grub_mkimage=${bindir}/`echo grub-mkelfimage | sed ${transform}`
-fi
+grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
 grub_editenv=${bindir}/`echo grub-editenv | sed ${transform}`
@@ -346,16 +342,23 @@ else
     prefix_drive=`$grub_probe --target=drive --device ${grub_device}` || exit 1
 fi
 
+case "${target_cpu}-${platform}"
+    i386-pc) mkimage_target=i386-pc ;;
+    sparc64-ieee1275) mkimage_target=sparc64-ieee1275-raw ;;
+    mips-yeeloong) mkimage_target=mipsel-yeeloong-elf ;;
+    *) mkimage_target=i386-coreboot;
+esac
+
 if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
-    $grub_mkimage ${config_opt} --output=${grubdir}/core.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
+    $grub_mkimage ${config_opt} -O ${mkimage_target} --output=${grubdir}/core.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 
     # Now perform the installation.
     $grub_setup ${setup_verbose} ${setup_force} --directory=${grubdir} --device-map=${device_map} \
         ${install_device} || exit 1
 elif [ "${target_cpu}-${platform}" = "mips-yeeloong" ] ; then
-    $grub_mkimage ${config_opt} -f ${font} -d ${pkglibdir} -O elf --output=/boot/grub.elf --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
+    $grub_mkimage ${config_opt} -f ${font} -d ${pkglibdir} -O ${mkimage_target} --output=/boot/grub.elf --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 else
-    $grub_mkimage ${config_opt} -d ${pkglibdir} --output=/boot/multiboot.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
+    $grub_mkimage -O ${mkimage_target} ${config_opt} -d ${pkglibdir} --output=/boot/multiboot.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 fi
 
 echo "Installation finished. No error reported."

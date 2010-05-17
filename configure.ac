@@ -150,6 +150,7 @@ case "$target_cpu" in
   mips)      	machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_MIPS=1" ;;
   sparc64)      machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
+machine_CFLAGS="$machine_CFLAGS -DMACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
 
 CFLAGS="$CFLAGS $machine_CFLAGS"
 TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"

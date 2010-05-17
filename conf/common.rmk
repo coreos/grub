@@ -14,11 +14,11 @@ else
 grub_mkdevicemap_SOURCES += util/devicemap.c
 endif
 
-# For grub-mkelfimage.
-bin_UTILITIES += grub-mkelfimage
-grub_mkelfimage_SOURCES = gnulib/progname.c util/elf/grub-mkimage.c	\
-	util/misc.c kern/emu/misc.c util/resolve.c
-util/elf/grub-mkimage.c_DEPENDENCIES = Makefile
+# For grub-mkimage.
+bin_UTILITIES += grub-mkimage
+grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkimage.c util/misc.c \
+	util/resolve.c kern/emu/misc.c lib/LzmaEnc.c lib/LzFind.c
+util/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-probe.
 sbin_UTILITIES += grub-probe
@@ -118,7 +118,7 @@ kernel_img_HEADERS += boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	list.h handler.h command.h i18n.h env_private.h libgcc.h
 
 ifneq ($(platform), emu)
-kernel_img_HEADERS += machine/memory.h machine/loader.h machine/kernel.h
+kernel_img_HEADERS += machine/memory.h machine/loader.h
 endif
 
 symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
