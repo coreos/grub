@@ -26,6 +26,7 @@
 #include <grub/video.h>
 #include <grub/video_fb.h>
 #include <grub/pci.h>
+#include <grub/vga.h>
 
 static struct
 {
@@ -40,68 +41,16 @@ static struct
 
 #define CIRRUS_APERTURE_SIZE 0x1000000
 
-enum
-  {
-    SR_INDEX = 0x3c4,
-    SR_DATA = 0x3c5,
-    CIRRUS_PIXEL_MASK = 0x3c6,
-    CIRRUS_PALLETTE_READ_INDEX = 0x3c7,
-    CIRRUS_PALLETTE_WRITE_INDEX = 0x3c8,
-    CIRRUS_PALLETTE_DATA = 0x3c9,
-    GR_INDEX = 0x3ce,
-    GR_DATA = 0x3cf,
-    CR_INDEX = 0x3d4,
-    CR_DATA = 0x3d5,
-  };
-
 #define CIRRUS_MAX_WIDTH 0x800
-#define CIRRUS_WIDTH_DIVISOR 8
 #define CIRRUS_MAX_HEIGHT 0x800
-#define CIRRUS_MAX_PITCH (0x1ff * CIRRUS_WIDTH_DIVISOR)
+#define CIRRUS_MAX_PITCH (0x1ff * GRUB_VGA_CR_PITCH_DIVISOR)
 
 enum
   {
-    CIRRUS_GR_MODE = 5,
-    CIRRUS_GR_GR6 = 6,
-    CIRRUS_GR_MAX
-  };
-
-#define CIRRUS_GR_GR6_GRAPHICS_MODE 1
-
-#define CIRRUS_GR_MODE_256_COLOR 0x40
-#define CIRRUS_GR_MODE_READ_MODE1 0x08
-
-enum
-  {
-    CIRRUS_CR_WIDTH = 0x01,
-    CIRRUS_CR_OVERFLOW = 0x07,
-    CIRRUS_CR_CELL_HEIGHT = 0x09,
-    CIRRUS_CR_SCREEN_START_HIGH = 0xc,
-    CIRRUS_CR_SCREEN_START_LOW = 0xd,
-    CIRRUS_CR_VSYNC_END = 0x11,
-    CIRRUS_CR_HEIGHT = 0x12,
-    CIRRUS_CR_PITCH = 0x13,
-    CIRRUS_CR_MODE = 0x17,
-    CIRRUS_CR_LINE_COMPARE = 0x18,
     CIRRUS_CR_EXTENDED_DISPLAY = 0x1b,
     CIRRUS_CR_EXTENDED_OVERLAY = 0x1d,
     CIRRUS_CR_MAX
   };
-
-#define CIRRUS_CR_CELL_HEIGHT_LINE_COMPARE_MASK 0x40
-#define CIRRUS_CR_CELL_HEIGHT_LINE_COMPARE_SHIFT 3
-
-#define CIRRUS_CR_OVERFLOW_HEIGHT1_SHIFT 7
-#define CIRRUS_CR_OVERFLOW_HEIGHT1_MASK 0x02
-#define CIRRUS_CR_OVERFLOW_HEIGHT2_SHIFT 3
-#define CIRRUS_CR_OVERFLOW_HEIGHT2_MASK 0xc0
-#define CIRRUS_CR_OVERFLOW_LINE_COMPARE_SHIFT 4
-#define CIRRUS_CR_OVERFLOW_LINE_COMPARE_MASK 0x10
-
-#define CIRRUS_CR_MODE_TIMING_ENABLE 0x80
-#define CIRRUS_CR_MODE_BYTE_MODE 0x40
-#define CIRRUS_CR_MODE_NO_HERCULES 0x02
-#define CIRRUS_CR_MODE_NO_CGA 0x01
 
 #define CIRRUS_CR_EXTENDED_DISPLAY_PITCH_MASK 0x10
 #define CIRRUS_CR_EXTENDED_DISPLAY_PITCH_SHIFT 4
@@ -113,15 +62,12 @@ enum
 #define CIRRUS_CR_EXTENDED_OVERLAY_DISPLAY_START_MASK 0x80
 #define CIRRUS_CR_EXTENDED_OVERLAY_DISPLAY_START_SHIFT 12
 
-
 enum
   {
-    CIRRUS_SR_MEMORY_MODE = 4,
     CIRRUS_SR_EXTENDED_MODE = 7,
     CIRRUS_SR_MAX
   };
-#define CIRRUS_SR_MEMORY_MODE_CHAIN4 8
-#define CIRRUS_SR_MEMORY_MODE_NORMAL 0
+
 #define CIRRUS_SR_EXTENDED_MODE_LFB_ENABLE 0xf0
 #define CIRRUS_SR_EXTENDED_MODE_ENABLE_EXT 0x01
 #define CIRRUS_SR_EXTENDED_MODE_8BPP       0x00
@@ -140,93 +86,31 @@ enum
 				    | CIRRUS_HIDDEN_DAC_ENABLE_ALL | 5)
 
 static void
-gr_write (grub_uint8_t val, grub_uint8_t addr)
-{
-  grub_outb (addr, GR_INDEX);
-  grub_outb (val, GR_DATA);
-}
-
-static grub_uint8_t
-gr_read (grub_uint8_t addr)
-{
-  grub_outb (addr, GR_INDEX);
-  return grub_inb (GR_DATA);
-}
-
-static void
-cr_write (grub_uint8_t val, grub_uint8_t addr)
-{
-  grub_outb (addr, CR_INDEX);
-  grub_outb (val, CR_DATA);
-}
-
-static grub_uint8_t
-cr_read (grub_uint8_t addr)
-{
-  grub_outb (addr, CR_INDEX);
-  return grub_inb (CR_DATA);
-}
-
-static void
-sr_write (grub_uint8_t val, grub_uint8_t addr)
-{
-  grub_outb (addr, SR_INDEX);
-  grub_outb (val, SR_DATA);
-}
-
-static grub_uint8_t
-sr_read (grub_uint8_t addr)
-{
-  grub_outb (addr, SR_INDEX);
-  return grub_inb (SR_DATA);
-}
-
-static void
 write_hidden_dac (grub_uint8_t data)
 {
-  grub_inb (CIRRUS_PALLETTE_WRITE_INDEX);
-  grub_inb (CIRRUS_PIXEL_MASK);
-  grub_inb (CIRRUS_PIXEL_MASK);
-  grub_inb (CIRRUS_PIXEL_MASK);
-  grub_inb (CIRRUS_PIXEL_MASK);
-  grub_outb (data, CIRRUS_PIXEL_MASK);
+  grub_inb (GRUB_VGA_IO_PALLETTE_WRITE_INDEX);
+  grub_inb (GRUB_VGA_IO_PIXEL_MASK);
+  grub_inb (GRUB_VGA_IO_PIXEL_MASK);
+  grub_inb (GRUB_VGA_IO_PIXEL_MASK);
+  grub_inb (GRUB_VGA_IO_PIXEL_MASK);
+  grub_outb (data, GRUB_VGA_IO_PIXEL_MASK);
 }
 
 static grub_uint8_t
 read_hidden_dac (void)
 {
-  grub_inb (CIRRUS_PALLETTE_WRITE_INDEX);
-  grub_inb (CIRRUS_PIXEL_MASK);
-  grub_inb (CIRRUS_PIXEL_MASK);
-  grub_inb (CIRRUS_PIXEL_MASK);
-  grub_inb (CIRRUS_PIXEL_MASK);
-  return grub_inb (CIRRUS_PIXEL_MASK);
-}
-
-static void
-palette_read (grub_uint8_t addr, grub_uint8_t *r, grub_uint8_t *g,
-	      grub_uint8_t *b)
-{
-  grub_outb (addr, CIRRUS_PALLETTE_READ_INDEX);
-  *r = grub_inb (CIRRUS_PALLETTE_DATA);
-  *g = grub_inb (CIRRUS_PALLETTE_DATA);
-  *b = grub_inb (CIRRUS_PALLETTE_DATA);
-}
-
-static void
-palette_write (grub_uint8_t addr, grub_uint8_t r, grub_uint8_t g,
-	       grub_uint8_t b)
-{
-  grub_outb (addr, CIRRUS_PALLETTE_READ_INDEX);
-  grub_outb (r, CIRRUS_PALLETTE_DATA);
-  grub_outb (g, CIRRUS_PALLETTE_DATA);
-  grub_outb (b, CIRRUS_PALLETTE_DATA);
+  grub_inb (GRUB_VGA_IO_PALLETTE_WRITE_INDEX);
+  grub_inb (GRUB_VGA_IO_PIXEL_MASK);
+  grub_inb (GRUB_VGA_IO_PIXEL_MASK);
+  grub_inb (GRUB_VGA_IO_PIXEL_MASK);
+  grub_inb (GRUB_VGA_IO_PIXEL_MASK);
+  return grub_inb (GRUB_VGA_IO_PIXEL_MASK);
 }
 
 struct saved_state
 {
   grub_uint8_t cr[CIRRUS_CR_MAX];
-  grub_uint8_t gr[CIRRUS_GR_MAX];
+  grub_uint8_t gr[GRUB_VGA_GR_MAX];
   grub_uint8_t sr[CIRRUS_SR_MAX];
   grub_uint8_t hidden_dac;
   /* We need to preserve VGA font and VGA text. */
@@ -244,16 +128,16 @@ save_state (struct saved_state *st)
 {
   unsigned i;
   for (i = 0; i < ARRAY_SIZE (st->cr); i++)
-    st->cr[i] = cr_read (i);
+    st->cr[i] = grub_vga_cr_read (i);
   for (i = 0; i < ARRAY_SIZE (st->sr); i++)
-    st->sr[i] = sr_read (i);
+    st->sr[i] = grub_vga_sr_read (i);
   for (i = 0; i < ARRAY_SIZE (st->gr); i++)
-    st->gr[i] = gr_read (i);
+    st->gr[i] = grub_vga_gr_read (i);
   for (i = 0; i < 256; i++)
-    palette_read (i, st->r + i, st->g + i, st->b + i);
+    grub_vga_palette_read (i, st->r + i, st->g + i, st->b + i);
 
   st->hidden_dac = read_hidden_dac ();
-  sr_write (CIRRUS_SR_MEMORY_MODE_CHAIN4, CIRRUS_SR_MEMORY_MODE);
+  grub_vga_sr_write (GRUB_VGA_SR_MEMORY_MODE_CHAIN4, GRUB_VGA_SR_MEMORY_MODE);
   grub_memcpy (st->vram, framebuffer.ptr, sizeof (st->vram));
 }
 
@@ -261,16 +145,16 @@ static void
 restore_state (struct saved_state *st)
 {
   unsigned i;
-  sr_write (CIRRUS_SR_MEMORY_MODE_CHAIN4, CIRRUS_SR_MEMORY_MODE);
+  grub_vga_sr_write (GRUB_VGA_SR_MEMORY_MODE_CHAIN4, GRUB_VGA_SR_MEMORY_MODE);
   grub_memcpy (framebuffer.ptr, st->vram, sizeof (st->vram));
   for (i = 0; i < ARRAY_SIZE (st->cr); i++)
-    cr_write (st->cr[i], i);
+    grub_vga_cr_write (st->cr[i], i);
   for (i = 0; i < ARRAY_SIZE (st->sr); i++)
-    sr_write (st->sr[i], i);
+    grub_vga_sr_write (st->sr[i], i);
   for (i = 0; i < ARRAY_SIZE (st->gr); i++)
-    gr_write (st->gr[i], i);
+    grub_vga_gr_write (st->gr[i], i);
   for (i = 0; i < 256; i++)
-    palette_write (i, st->r[i], st->g[i], st->b[i]);
+    grub_vga_palette_write (i, st->r[i], st->g[i], st->b[i]);
 
   write_hidden_dac (st->hidden_dac);
 }
@@ -306,23 +190,24 @@ doublebuf_pageflipping_set_page (int page)
   int start = framebuffer.page_size * page / 4;
   grub_uint8_t cr_ext, cr_overlay;
 
-  cr_write (start & 0xff, CIRRUS_CR_SCREEN_START_LOW);
-  cr_write ((start & 0xff00) >> 8, CIRRUS_CR_SCREEN_START_HIGH);
+  grub_vga_cr_write (start & 0xff, GRUB_VGA_CR_START_ADDR_LOW_REGISTER);
+  grub_vga_cr_write ((start & 0xff00) >> 8,
+		     GRUB_VGA_CR_START_ADDR_HIGH_REGISTER);
 
-  cr_ext = cr_read (CIRRUS_CR_EXTENDED_DISPLAY);
+  cr_ext = grub_vga_cr_read (CIRRUS_CR_EXTENDED_DISPLAY);
   cr_ext &= ~(CIRRUS_CR_EXTENDED_DISPLAY_START_MASK1
 	      | CIRRUS_CR_EXTENDED_DISPLAY_START_MASK2);
   cr_ext |= ((start >> CIRRUS_CR_EXTENDED_DISPLAY_START_SHIFT1)
 	     & CIRRUS_CR_EXTENDED_DISPLAY_START_MASK1);
   cr_ext |= ((start >> CIRRUS_CR_EXTENDED_DISPLAY_START_SHIFT2)
 	     & CIRRUS_CR_EXTENDED_DISPLAY_START_MASK2);
-  cr_write (cr_ext, CIRRUS_CR_EXTENDED_DISPLAY);
+  grub_vga_cr_write (cr_ext, CIRRUS_CR_EXTENDED_DISPLAY);
 
-  cr_overlay = cr_read (CIRRUS_CR_EXTENDED_OVERLAY);
+  cr_overlay = grub_vga_cr_read (CIRRUS_CR_EXTENDED_OVERLAY);
   cr_overlay &= ~(CIRRUS_CR_EXTENDED_OVERLAY_DISPLAY_START_MASK);
   cr_overlay |= ((start >> CIRRUS_CR_EXTENDED_OVERLAY_DISPLAY_START_SHIFT)
 		 & CIRRUS_CR_EXTENDED_OVERLAY_DISPLAY_START_MASK);
-  cr_write (cr_overlay, CIRRUS_CR_EXTENDED_OVERLAY);
+  grub_vga_cr_write (cr_overlay, CIRRUS_CR_EXTENDED_OVERLAY);
 
   return GRUB_ERR_NONE;
 }
@@ -340,8 +225,8 @@ grub_video_cirrus_set_palette (unsigned int start, unsigned int count,
 	count = 0x100 - start;
 
       for (i = 0; i < count; i++)
-	palette_write (start + i, palette_data[i].r, palette_data[i].g,
-		       palette_data[i].b);
+	grub_vga_palette_write (start + i, palette_data[i].r, palette_data[i].g,
+				palette_data[i].b);
     }
 
   /* Then set color to emulated palette.  */
@@ -388,10 +273,10 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
       height = 600;
     }
 
-  if (width & (CIRRUS_WIDTH_DIVISOR - 1))
+  if (width & (GRUB_VGA_CR_WIDTH_DIVISOR - 1))
     return grub_error (GRUB_ERR_IO,
 		       "screen width must be a multiple of %d",
-		       CIRRUS_WIDTH_DIVISOR);
+		       GRUB_VGA_CR_WIDTH_DIVISOR);
 
   if (width > CIRRUS_MAX_WIDTH)
     return grub_error (GRUB_ERR_IO,
@@ -452,42 +337,44 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
     int pitch_reg, overflow_reg = 0, line_compare = 0x3ff;
     grub_uint8_t sr_ext = 0, hidden_dac = 0;
 
-    pitch_reg = pitch / CIRRUS_WIDTH_DIVISOR;
+    pitch_reg = pitch / GRUB_VGA_CR_PITCH_DIVISOR;
 
-    gr_write (CIRRUS_GR_MODE_256_COLOR | CIRRUS_GR_MODE_READ_MODE1,
-	      CIRRUS_GR_MODE);
-    gr_write (CIRRUS_GR_GR6_GRAPHICS_MODE, CIRRUS_GR_GR6);
+    grub_vga_gr_write (GRUB_VGA_GR_MODE_256_COLOR | GRUB_VGA_GR_MODE_READ_MODE1,
+		       GRUB_VGA_GR_MODE);
+    grub_vga_gr_write (GRUB_VGA_GR_GR6_GRAPHICS_MODE, GRUB_VGA_GR_GR6);
     
-    sr_write (CIRRUS_SR_MEMORY_MODE_NORMAL, CIRRUS_SR_MEMORY_MODE);
+    grub_vga_sr_write (GRUB_VGA_SR_MEMORY_MODE_NORMAL, GRUB_VGA_SR_MEMORY_MODE);
 
     /* Disable CR0-7 write protection.  */
-    cr_write (0, CIRRUS_CR_VSYNC_END);
+    grub_vga_cr_write (0, GRUB_VGA_CR_VSYNC_END);
 
-    cr_write (width / CIRRUS_WIDTH_DIVISOR - 1, CIRRUS_CR_WIDTH);
-    cr_write ((height - 1) & 0xff, CIRRUS_CR_HEIGHT);
-    overflow_reg |= (((height - 1) >> CIRRUS_CR_OVERFLOW_HEIGHT1_SHIFT) & 
-		     CIRRUS_CR_OVERFLOW_HEIGHT1_MASK)
-      | (((height - 1) >> CIRRUS_CR_OVERFLOW_HEIGHT2_SHIFT) & 
-	 CIRRUS_CR_OVERFLOW_HEIGHT2_MASK);
+    grub_vga_cr_write (width / GRUB_VGA_CR_WIDTH_DIVISOR - 1,
+		       GRUB_VGA_CR_WIDTH);
+    grub_vga_cr_write ((height - 1) & 0xff, GRUB_VGA_CR_HEIGHT);
+    overflow_reg |= (((height - 1) >> GRUB_VGA_CR_OVERFLOW_HEIGHT1_SHIFT) & 
+		     GRUB_VGA_CR_OVERFLOW_HEIGHT1_MASK)
+      | (((height - 1) >> GRUB_VGA_CR_OVERFLOW_HEIGHT2_SHIFT) & 
+	 GRUB_VGA_CR_OVERFLOW_HEIGHT2_MASK);
 
-    cr_write (pitch_reg & 0xff, CIRRUS_CR_PITCH);
+    grub_vga_cr_write (pitch_reg & 0xff, GRUB_VGA_CR_PITCH);
 
-    cr_write (line_compare & 0xff, CIRRUS_CR_LINE_COMPARE);
-    overflow_reg |= (line_compare >> CIRRUS_CR_OVERFLOW_LINE_COMPARE_SHIFT)
-      & CIRRUS_CR_OVERFLOW_LINE_COMPARE_MASK;
+    grub_vga_cr_write (line_compare & 0xff, GRUB_VGA_CR_LINE_COMPARE);
+    overflow_reg |= (line_compare >> GRUB_VGA_CR_OVERFLOW_LINE_COMPARE_SHIFT)
+      & GRUB_VGA_CR_OVERFLOW_LINE_COMPARE_MASK;
 
-    cr_write (overflow_reg, CIRRUS_CR_OVERFLOW);
+    grub_vga_cr_write (overflow_reg, GRUB_VGA_CR_OVERFLOW);
 
-    cr_write ((pitch_reg >> CIRRUS_CR_EXTENDED_DISPLAY_PITCH_SHIFT)
+    grub_vga_cr_write ((pitch_reg >> CIRRUS_CR_EXTENDED_DISPLAY_PITCH_SHIFT)
 	      & CIRRUS_CR_EXTENDED_DISPLAY_PITCH_MASK,
 	      CIRRUS_CR_EXTENDED_DISPLAY);
 
-    cr_write ((line_compare >> CIRRUS_CR_CELL_HEIGHT_LINE_COMPARE_SHIFT)
-	      & CIRRUS_CR_CELL_HEIGHT_LINE_COMPARE_MASK, CIRRUS_CR_CELL_HEIGHT);
+    grub_vga_cr_write ((line_compare >> GRUB_VGA_CR_CELL_HEIGHT_LINE_COMPARE_SHIFT)
+		       & GRUB_VGA_CR_CELL_HEIGHT_LINE_COMPARE_MASK, GRUB_VGA_CR_CELL_HEIGHT);
 
-    cr_write (CIRRUS_CR_MODE_TIMING_ENABLE | CIRRUS_CR_MODE_BYTE_MODE
-	      | CIRRUS_CR_MODE_NO_HERCULES | CIRRUS_CR_MODE_NO_CGA,
-	      CIRRUS_CR_MODE);
+    grub_vga_cr_write (GRUB_VGA_CR_MODE_TIMING_ENABLE
+		       | GRUB_VGA_CR_MODE_BYTE_MODE
+		       | GRUB_VGA_CR_MODE_NO_HERCULES | GRUB_VGA_CR_MODE_NO_CGA,
+		       GRUB_VGA_CR_MODE);
 
     doublebuf_pageflipping_set_page (0);
 
@@ -517,7 +404,7 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
 	sr_ext |= CIRRUS_SR_EXTENDED_MODE_8BPP;
 	break;
       }
-    sr_write (sr_ext, CIRRUS_SR_EXTENDED_MODE);
+    grub_vga_sr_write (sr_ext, CIRRUS_SR_EXTENDED_MODE);
     write_hidden_dac (hidden_dac);
   }
 

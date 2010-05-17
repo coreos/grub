@@ -26,6 +26,7 @@
 #include <grub/video.h>
 #include <grub/video_fb.h>
 #include <grub/pci.h>
+#include <grub/vga.h>
 
 static struct
 {
@@ -44,25 +45,8 @@ static struct
 
 enum
   {
-    CIRRUS_SR_MEMORY_MODE = 4,
-    CIRRUS_SR_EXTENDED_MODE = 7,
-    CIRRUS_SR_MAX
-  };
-#define CIRRUS_SR_MEMORY_MODE_CHAIN4 8
-
-enum
-  {
     BOCHS_VBE_INDEX = 0x1ce,
     BOCHS_VBE_DATA = 0x1cf,
-    SR_INDEX = 0x3c4,
-    SR_DATA = 0x3c5,
-    BOCHS_PALLETTE_READ_INDEX = 0x3c7,
-    BOCHS_PALLETTE_WRITE_INDEX = 0x3c8,
-    BOCHS_PALLETTE_DATA = 0x3c9,
-    GR_INDEX = 0x3ce,
-    GR_DATA = 0x3cf,
-    CR_INDEX = 0x3d4,
-    CR_DATA = 0x3d5,
   };
 
 enum
@@ -89,68 +73,6 @@ vbe_read (grub_uint16_t addr)
   return grub_inw (BOCHS_VBE_DATA);
 }
 
-static void
-gr_write (grub_uint8_t val, grub_uint8_t addr)
-{
-  grub_outb (addr, GR_INDEX);
-  grub_outb (val, GR_DATA);
-}
-
-static grub_uint8_t
-gr_read (grub_uint8_t addr)
-{
-  grub_outb (addr, GR_INDEX);
-  return grub_inb (GR_DATA);
-}
-
-static void
-cr_write (grub_uint8_t val, grub_uint8_t addr)
-{
-  grub_outb (addr, CR_INDEX);
-  grub_outb (val, CR_DATA);
-}
-
-static grub_uint8_t
-cr_read (grub_uint8_t addr)
-{
-  grub_outb (addr, CR_INDEX);
-  return grub_inb (CR_DATA);
-}
-
-static void
-palette_read (grub_uint8_t addr, grub_uint8_t *r, grub_uint8_t *g,
-	      grub_uint8_t *b)
-{
-  grub_outb (addr, BOCHS_PALLETTE_READ_INDEX);
-  *r = grub_inb (BOCHS_PALLETTE_DATA);
-  *g = grub_inb (BOCHS_PALLETTE_DATA);
-  *b = grub_inb (BOCHS_PALLETTE_DATA);
-}
-
-static void
-palette_write (grub_uint8_t addr, grub_uint8_t r, grub_uint8_t g,
-	       grub_uint8_t b)
-{
-  grub_outb (addr, BOCHS_PALLETTE_READ_INDEX);
-  grub_outb (r, BOCHS_PALLETTE_DATA);
-  grub_outb (g, BOCHS_PALLETTE_DATA);
-  grub_outb (b, BOCHS_PALLETTE_DATA);
-}
-static void
-sr_write (grub_uint8_t val, grub_uint8_t addr)
-{
-  grub_outb (addr, SR_INDEX);
-  grub_outb (val, SR_DATA);
-}
-
-static grub_uint8_t
-sr_read (grub_uint8_t addr)
-{
-  grub_outb (addr, SR_INDEX);
-  return grub_inb (SR_DATA);
-}
-
-
 struct saved_state
 {
   grub_uint8_t cr[256];
@@ -174,24 +96,23 @@ save_state (struct saved_state *st)
   unsigned i;
 
   for (i = 0; i < ARRAY_SIZE (st->cr); i++)
-    st->cr[i] = cr_read (i);
+    st->cr[i] = grub_vga_cr_read (i);
   for (i = 0; i < ARRAY_SIZE (st->gr); i++)
-    st->gr[i] = gr_read (i);
+    st->gr[i] = grub_vga_gr_read (i);
   for (i = 0; i < ARRAY_SIZE (st->sr); i++)
-    st->sr[i] = sr_read (i);
-  grub_printf ("%d\n", st->cr[1]);
+    st->sr[i] = grub_vga_sr_read (i);
 
   for (i = 0; i < 256; i++)
-    palette_read (i, st->r + i, st->g + i, st->b + i);
+    grub_vga_palette_read (i, st->r + i, st->g + i, st->b + i);
 
   st->vbe_enable = vbe_read (BOCHS_VBE_ENABLE) & 1;
   if (st->vbe_enable)
     for (i = 0; i < ARRAY_SIZE (st->vbe); i++)
       st->vbe[i] = vbe_read (i);
 
-  sr_write (CIRRUS_SR_MEMORY_MODE_CHAIN4, CIRRUS_SR_MEMORY_MODE);
+  grub_vga_sr_write (GRUB_VGA_SR_MEMORY_MODE_CHAIN4, GRUB_VGA_SR_MEMORY_MODE);
   grub_memcpy (st->vram, framebuffer.ptr, sizeof (st->vram));
-  sr_write (st->sr[CIRRUS_SR_MEMORY_MODE], CIRRUS_SR_MEMORY_MODE);
+  grub_vga_sr_write (st->sr[GRUB_VGA_SR_MEMORY_MODE], GRUB_VGA_SR_MEMORY_MODE);
 }
 
 static void
@@ -205,20 +126,20 @@ restore_state (struct saved_state *st)
   else
     vbe_write (0, BOCHS_VBE_ENABLE);
 
-  cr_write (0, 0x11);
+  grub_vga_cr_write (0, 0x11);
   for (i = 0; i < ARRAY_SIZE (st->cr); i++)
-    cr_write (st->cr[i], i);
+    grub_vga_cr_write (st->cr[i], i);
   for (i = 0; i < ARRAY_SIZE (st->sr); i++)
-    sr_write (st->sr[i], i);
+    grub_vga_sr_write (st->sr[i], i);
   for (i = 0; i < ARRAY_SIZE (st->gr); i++)
-    gr_write (st->gr[i], i);
+    grub_vga_gr_write (st->gr[i], i);
 
   for (i = 0; i < 256; i++)
-    palette_write (i, st->r[i], st->g[i], st->b[i]);
+    grub_vga_palette_write (i, st->r[i], st->g[i], st->b[i]);
 
-  sr_write (CIRRUS_SR_MEMORY_MODE_CHAIN4, CIRRUS_SR_MEMORY_MODE);
+  grub_vga_sr_write (GRUB_VGA_SR_MEMORY_MODE_CHAIN4, GRUB_VGA_SR_MEMORY_MODE);
   grub_memcpy (framebuffer.ptr, st->vram, sizeof (st->vram));
-  sr_write (st->sr[CIRRUS_SR_MEMORY_MODE], CIRRUS_SR_MEMORY_MODE);
+  grub_vga_sr_write (st->sr[GRUB_VGA_SR_MEMORY_MODE], GRUB_VGA_SR_MEMORY_MODE);
 }
 
 static grub_err_t
@@ -268,8 +189,8 @@ grub_video_bochs_set_palette (unsigned int start, unsigned int count,
 	count = 0x100 - start;
 
       for (i = 0; i < count; i++)
-	palette_write (start + i, palette_data[i].r, palette_data[i].g,
-		       palette_data[i].b);
+	grub_vga_palette_write (start + i, palette_data[i].r, palette_data[i].g,
+				palette_data[i].b);
     }
 
   /* Then set color to emulated palette.  */
