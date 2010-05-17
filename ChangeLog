@@ -1,3 +1,60 @@
+2010-05-17  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Source tree is reorganized for emu build.
+
+	* include/grub/util/console.h: Move from here...
+	* include/grub/emu/console.h: ...to here.
+	* include/grub/util/getroot.h: Move from here...
+	* include/grub/emu/getroot.h: ...to here.
+	* include/grub/util/hostdisk.h: Move from here...
+	* include/grub/emu/hostdisk.h: ...to here.
+	* util/console.c: Move from here...
+	* kern/emu/console.c: ...to here.
+	* util/getroot.c: Move from here...
+	* kern/emu/getroot.c: ...to here.
+	* util/grub-emu.c: Move from here...
+	* kern/emu/main.c: ...to here.
+	* util/hostdisk.c: Move from here...
+	* kern/emu/hostdisk.c: ...to here.
+	* util/hostfs.c: Move from here...
+	* kern/emu/hostfs.c: ...to here.
+	* util/mm.c: Move from here...
+	* kern/emu/mm.c: ...to here.
+	* util/pci.c: Move from here...
+	* bus/emu/pci.c: ...to here.
+	* util/sdl.c: Move from here...
+	* video/emu/sdl.c: ...to here.
+	* util/time.c: Move from here...
+	* kern/emu/time.c: ...to here.
+	* util/usb.c: Move from here...
+	* bus/usb/emu/usb.c: ...to  here.
+
+	* include/grub/emu/misc.h: New header for grub-emu functions.
+	* kern/emu/misc.c: grub-emu functions separated from util/misc.c
+
+	* conf/any-emu.rmk: Rule updates for above renames.
+	* conf/common.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/i386-qemu.rmk: Likewise.
+	* conf/mips.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86-efi.rmk: Likewise.
+
+	* disk/lvm.h: #include updates for above renames.
+	* util/grub-mkrelpath.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/sparc64/ieee1275/grub-setup.c: Likewise.
+	* kern/emu/console.c: Likewise.
+	* kern/emu/getroot.c: Likewise.
+	* kern/emu/hostdisk.c: Likewise.
+	* kern/emu/main.c: Likewise. (was grub-emu.c earlier)
+
+	* include/grub/dl.h: Remove grub_dl_{ref,unref}.
+	* include/grub/util/misc.h: Move grub-emu functions to emu/misc.h.
+	* kern/dl.c: Handle null mod in grub_dl_{ref,unref}.
+	* util/misc.c: Remove grub-emu functions.
+
 2010-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix gfxmenu crash.

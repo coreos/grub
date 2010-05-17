@@ -29,7 +29,7 @@
 #include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
 #include <grub/env.h>
-#include <grub/util/hostdisk.h>
+#include <grub/emu/hostdisk.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <grub/term.h>
@@ -46,7 +46,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <grub/util/getroot.h>
+#include <grub/emu/getroot.h>
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
@@ -627,8 +627,8 @@ main (int argc, char *argv[])
 
   find_dest_dev (&ginfo, argv);
 
-  ginfo.prefix = make_system_path_relative_to_its_root (ginfo.dir ?
-							: DEFAULT_DIRECTORY);
+  ginfo.prefix = grub_make_system_path_relative_to_its_root (ginfo.dir ?
+							     : DEFAULT_DIRECTORY);
 
   check_root_dev (&ginfo);
 

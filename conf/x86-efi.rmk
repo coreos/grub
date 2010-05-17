@@ -5,7 +5,7 @@ bin_UTILITIES = grub-mkimage
 
 # For grub-mkimage.
 grub_mkimage_SOURCES = gnulib/progname.c util/i386/efi/grub-mkimage.c \
-	util/misc.c util/resolve.c
+	util/misc.c kern/emu/misc.c util/resolve.c
 util/i386/efi/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # Scripts.
