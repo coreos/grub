@@ -158,7 +158,7 @@ EOF
     tar -C ${memdisk_dir} -cf ${memdisk_img} boot
     rm -rf ${memdisk_dir}
     grub-mkimage -O ${platform} -d "${source_directory}" -m "${memdisk_img}" -o "$3" --prefix='(memdisk)/boot/grub' \
-        search iso9660 configfile normal memdisk tar $4
+        search iso9660 configfile normal sh memdisk tar $4
     rm -rf ${memdisk_img}
 }
 
