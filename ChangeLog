@@ -1,3 +1,8 @@
+2010-05-18  Justus Winter  <4winter@informatik.uni-hamburg.de>
+
+	* util/grub.d/10_hurd.in: Include all gnumach* kernels, not only
+	gnumach and gnumach.gz.
+
 2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/i18n.h (gettext): Inline instead of using #define.
