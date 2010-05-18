@@ -1,5 +1,13 @@
 2010-05-18  Colin Watson  <cjwatson@ubuntu.com>
 
+	Fix build with non-GNU libcs.
+
+	* util/misc.c (canonicalize_file_name): Move to ...
+	* kern/emu/misc.c (canonicalize_file_name): ... here.  Needed by
+	grub_make_system_path_relative_to_its_root.
+
+2010-05-18  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub-mkrescue.in: Sync up with grub-install in terms of how
 	we handle finding grub-mkimage.  Default to finding grub-mkimage in
 	${bindir} with program_transform_name applied, and provide a
