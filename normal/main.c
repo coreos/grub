@@ -155,6 +155,17 @@ free_menu_entry_classes (struct grub_menu_entry_class *head)
     }
 }
 
+static struct
+{
+  char *name;
+  int key;
+} hotkey_aliases[] =
+  {
+    {"backspace", '\b'},
+    {"tab", '\t'},
+    {"delete", GRUB_TERM_DC}
+  };
+
 /* Add a menu entry to the current menu context (as given by the environment
    variable data slot `menu').  As the configuration file is read, the script
    parser calls this when a menu entry is to be created.  */
@@ -171,6 +182,7 @@ grub_normal_add_menu_entry (int argc, const char **args,
   struct grub_menu_entry_class *classes_head;  /* Dummy head node for list.  */
   struct grub_menu_entry_class *classes_tail;
   char *users = NULL;
+  int hotkey = 0;
 
   /* Allocate dummy head node for class list.  */
   classes_head = grub_zalloc (sizeof (struct grub_menu_entry_class));
@@ -237,6 +249,32 @@ grub_normal_add_menu_entry (int argc, const char **args,
 
 	      continue;
 	    }
+	  else if (grub_strcmp(arg, "hotkey") == 0)
+	    {
+	      unsigned j;
+
+	      i++;
+	      if (args[i][1] == 0)
+		{
+		  hotkey = args[i][0];
+		  continue;
+		}
+
+	      for (j = 0; j < ARRAY_SIZE (hotkey_aliases); j++)
+		if (grub_strcmp (args[i], hotkey_aliases[j].name) == 0)
+		  {
+		    hotkey = hotkey_aliases[j].key;
+		    break;
+		  }
+
+	      if (j < ARRAY_SIZE (hotkey_aliases))
+		continue;
+
+	      failed = 1;
+	      grub_error (GRUB_ERR_MENU,
+			  "Invalid hotkey: '%s'.", args[i]);
+	      break;
+	    }
 	  else
 	    {
 	      /* Handle invalid argument.  */
@@ -293,6 +331,7 @@ grub_normal_add_menu_entry (int argc, const char **args,
     }
 
   (*last)->title = menutitle;
+  (*last)->hotkey = hotkey;
   (*last)->classes = classes_head;
   if (users)
     (*last)->restricted = 1;
@@ -418,6 +457,7 @@ grub_normal_init_page (struct grub_term_output *term)
  
   msg_len = grub_utf8_to_ucs4_alloc (msg_formatted,
   				     &unicode_msg, &last_position);
+  grub_free (msg_formatted);
  
   if (msg_len < 0)
     {
@@ -433,14 +473,20 @@ grub_normal_init_page (struct grub_term_output *term)
   grub_free (unicode_msg);
 }
 
-static char *
-read_lists (struct grub_env_var *var __attribute__ ((unused)),
-	    const char *val)
+static void
+read_lists (const char *val)
 {
-  read_command_list ();
-  read_fs_list ();
-  read_crypto_list ();
-  read_terminal_list ();
+  read_command_list (val);
+  read_fs_list (val);
+  read_crypto_list (val);
+  read_terminal_list (val);
+}
+
+static char *
+read_lists_hook (struct grub_env_var *var __attribute__ ((unused)),
+		 const char *val)
+{
+  read_lists (val);
   return val ? grub_strdup (val) : NULL;
 }
 
@@ -450,10 +496,11 @@ void
 grub_normal_execute (const char *config, int nested, int batch)
 {
   grub_menu_t menu = 0;
+  const char *prefix = grub_env_get ("prefix");
 
-  read_lists (NULL, NULL);
+  read_lists (prefix);
   read_handler_list ();
-  grub_register_variable_hook ("prefix", NULL, read_lists);
+  grub_register_variable_hook ("prefix", NULL, read_lists_hook);
   grub_command_execute ("parser.grub", 0, 0);
 
   if (config)
@@ -582,10 +629,13 @@ grub_normal_read_line_real (char **line, int cont, int nested)
       if (cont || nested)
 	{
 	  grub_free (*line);
+	  grub_free (prompt);
 	  *line = 0;
 	  return grub_errno;
 	}
     }
+  
+  grub_free (prompt);
 
   return 0;
 }
@@ -650,13 +700,14 @@ GRUB_MOD_INIT(normal)
 
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
+  grub_install_newline_hook ();
   grub_register_variable_hook ("pager", 0, grub_env_write_pager);
 
   /* Register a command "normal" for the rescue mode.  */
   grub_register_command ("normal", grub_cmd_normal,
-			 0, "Enter normal mode.");
+			 0, N_("Enter normal mode."));
   grub_register_command ("normal_exit", grub_cmd_normal_exit,
-			 0, "Exit from normal mode.");
+			 0, N_("Exit from normal mode."));
 
   /* Reload terminal colors when these variables are written to.  */
   grub_register_variable_hook ("color_normal", NULL, grub_env_write_color_normal);

@@ -1,0 +1,74 @@
+# -*- makefile -*-
+
+COMMON_CFLAGS = -mrtd -mregparm=3 
+
+# Images.
+
+GRUB_KERNEL_MACHINE_LINK_ADDR	= 0x8200
+
+pkglib_PROGRAMS += kernel.img
+kernel_img_SOURCES = kern/i386/coreboot/startup.S \
+	kern/i386/misc.S \
+	kern/i386/coreboot/init.c \
+	kern/i386/multiboot_mmap.c \
+	kern/i386/halt.c \
+	kern/main.c kern/device.c \
+	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
+	kern/misc.c kern/mm.c kern/term.c \
+	kern/rescue_parser.c kern/rescue_reader.c \
+	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
+	kern/$(target_cpu)/dl.c kern/parser.c kern/partition.c \
+	kern/i386/tsc.c kern/i386/pit.c \
+	kern/generic/rtc_get_time_ms.c \
+	kern/generic/millisleep.c \
+	kern/env.c \
+	term/i386/pc/vga_text.c term/i386/vga_common.c \
+	symlist.c
+kernel_img_CFLAGS = $(COMMON_CFLAGS)
+kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
+kernel_img_LDFLAGS += $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR),-Bstatic
+
+sbin_SCRIPTS += grub-install
+grub_install_SOURCES = util/grub-install.in
+
+bin_SCRIPTS += grub-mkrescue
+grub_mkrescue_SOURCES = util/grub-mkrescue.in
+
+# Modules.
+pkglib_MODULES = linux.mod aout.mod halt.mod datetime.mod mmap.mod
+
+# For mmap.mod.
+mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c
+mmap_mod_CFLAGS = $(COMMON_CFLAGS)
+mmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+mmap_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+# For linux.mod.
+linux_mod_SOURCES = loader/i386/linux.c
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
+linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For halt.mod.
+halt_mod_SOURCES = commands/halt.c
+halt_mod_CFLAGS = $(COMMON_CFLAGS)
+halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For aout.mod.
+aout_mod_SOURCES = loader/aout.c
+aout_mod_CFLAGS = $(COMMON_CFLAGS)
+aout_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For bsd.mod
+pkglib_MODULES += bsd.mod
+bsd_mod_SOURCES = loader/i386/bsd.c loader/i386/bsd32.c loader/i386/bsd64.c loader/i386/bsd_helper.S loader/i386/bsd_trampoline.S
+bsd_mod_CFLAGS = $(COMMON_CFLAGS)
+bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+bsd_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+# For datetime.mod
+datetime_mod_SOURCES = lib/cmos_datetime.c
+datetime_mod_CFLAGS = $(COMMON_CFLAGS)
+datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+include $(srcdir)/conf/i386.mk
+include $(srcdir)/conf/common.mk

@@ -1,10 +1,13 @@
 # -*- makefile -*-
 
+# Used by various components.  These rules need to precede them.
+script/lexer.c_DEPENDENCIES = grub_script.tab.h
+
 sbin_UTILITIES += grub-mkdevicemap
 grub_mkdevicemap_SOURCES = gnulib/progname.c util/grub-mkdevicemap.c \
 	util/deviceiter.c \
-	util/misc.c \
-	kern/env.c kern/err.c kern/list.c kern/misc.c
+	util/misc.c kern/emu/misc.c \
+	kern/env.c kern/err.c kern/list.c kern/misc.c kern/emu/mm.c
 
 ifeq ($(target_cpu)-$(platform), sparc64-ieee1275)
 grub_mkdevicemap_SOURCES += util/ieee1275/ofpath.c util/ieee1275/devicemap.c
@@ -14,26 +17,26 @@ endif
 
 # For grub-mkelfimage.
 bin_UTILITIES += grub-mkelfimage
-grub_mkelfimage_SOURCES = gnulib/progname.c \
-	util/elf/grub-mkimage.c util/misc.c \
-	util/resolve.c
+grub_mkelfimage_SOURCES = gnulib/progname.c util/elf/grub-mkimage.c	\
+	util/misc.c kern/emu/misc.c util/resolve.c
 util/elf/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-probe.
 sbin_UTILITIES += grub-probe
 util/grub-probe.c_DEPENDENCIES = grub_probe_init.h
 grub_probe_SOURCES = gnulib/progname.c util/grub-probe.c	\
-	util/hostdisk.c	util/misc.c util/getroot.c		\
+	kern/emu/hostdisk.c util/misc.c kern/emu/misc.c kern/emu/getroot.c kern/emu/mm.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c	\
-	kern/parser.c kern/partition.c kern/file.c		\
+	kern/parser.c kern/partition.c kern/file.c kern/list.c	\
 	\
 	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c		\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c	\
-	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
-	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c	\
-	fs/befs.c fs/befs_be.c fs/tar.c		\
+	fs/nilfs2.c fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c	\
+	fs/sfs.c fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c		\
+	fs/afs_be.c fs/befs.c fs/befs_be.c fs/tar.c		\
 	\
-	partmap/msdos.c partmap/apple.c partmap/sun.c partmap/gpt.c\
+	partmap/msdos.c partmap/bsdlabel.c partmap/apple.c \
+	partmap/sun.c partmap/sunpc.c partmap/gpt.c \
 	kern/fs.c kern/env.c fs/fshelp.c			\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c grub_probe_init.c
 
@@ -53,12 +56,12 @@ grub_mkisofs_SOURCES = util/mkisofs/eltorito.c 				\
 	gnulib/error.c gnulib/progname.c
 grub_mkisofs_CFLAGS = -D_FILE_OFFSET_BITS=64 				\
 	-I$(srcdir)/util/mkisofs/include				\
-	-Wno-all -Werror
+	-Wno-all -Werror $(GNULIB_UTIL_CFLAGS)
 
 # For grub-fstest.
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
-grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c util/hostfs.c \
-	util/misc.c 	\
+grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c kern/emu/hostfs.c \
+	util/misc.c kern/emu/misc.c kern/emu/mm.c 	\
 	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	disk/host.c disk/loopback.c kern/list.c kern/command.c		\
 	lib/arg.c commands/extcmd.c normal/datetime.c normal/misc.c	\
@@ -66,12 +69,12 @@ grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c util/hostfs.c \
 	\
 	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c			\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c		\
-	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
+	fs/nilfs2.c fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c	\
 	fs/ufs.c fs/ufs2.c fs/xfs.c fs/afs.c fs/afs_be.c fs/befs.c 	\
 	fs/befs_be.c fs/tar.c			\
 	\
-	kern/partition.c partmap/msdos.c partmap/apple.c partmap/sun.c	\
-	partmap/gpt.c							\
+	kern/partition.c partmap/msdos.c partmap/bsdlabel.c 		\
+	partmap/apple.c partmap/sun.c partmap/sunpc.c partmap/gpt.c	\
 	kern/fs.c kern/env.c fs/fshelp.c disk/raid.c			\
 	disk/raid5_recover.c disk/raid6_recover.c 			\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c 		\
@@ -80,25 +83,50 @@ grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c util/hostfs.c \
 # For grub-mkfont.
 ifeq ($(enable_grub_mkfont), yes)
 bin_UTILITIES += grub-mkfont
-grub_mkfont_SOURCES = gnulib/progname.c util/grub-mkfont.c util/misc.c
+grub_mkfont_SOURCES = gnulib/progname.c util/grub-mkfont.c util/misc.c kern/emu/misc.c
 grub_mkfont_CFLAGS = $(freetype_cflags)
 grub_mkfont_LDFLAGS = $(freetype_libs)
 endif
 
 # For grub-mkrelpath.
 bin_UTILITIES += grub-mkrelpath
-grub_mkrelpath_SOURCES = gnulib/progname.c util/grub-mkrelpath.c util/misc.c
+grub_mkrelpath_SOURCES = gnulib/progname.c util/grub-mkrelpath.c util/misc.c kern/emu/misc.c
 
 bin_UTILITIES += grub-bin2h
 grub_bin2h_SOURCES = gnulib/progname.c util/bin2h.c
 
+# For the lexer.
+grub_script.yy.c grub_script.yy.h: script/yylex.l
+	$(LEX) -o grub_script.yy.c --header-file=grub_script.yy.h $(srcdir)/script/yylex.l
+DISTCLEANFILES += grub_script.yy.c grub_script.yy.h
+
 # For grub-script-check.
 bin_UTILITIES += grub-script-check
 util/grub-script-check.c_DEPENDENCIES = grub_script_check_init.h
-grub_script_check_SOURCES = gnulib/progname.c util/grub-script-check.c util/misc.c \
+grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c \
+	util/grub-script-check.c util/misc.c kern/emu/misc.c kern/emu/mm.c \
 	script/main.c script/script.c script/function.c script/lexer.c \
 	kern/handler.c kern/err.c kern/parser.c kern/list.c \
-	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c
+	kern/misc.c kern/env.c grub_script_check_init.c grub_script.tab.c \
+	grub_script.yy.c
+grub_script_check_CFLAGS = $(GNULIB_UTIL_CFLAGS)
+MOSTLYCLEANFILES += symlist.c kernel_syms.lst
+DEFSYMFILES += kernel_syms.lst
+
+kernel_img_HEADERS += boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
+	partition.h msdos_partition.h reader.h symbol.h term.h time.h types.h \
+	list.h handler.h command.h i18n.h env_private.h libgcc.h
+
+ifneq ($(platform), emu)
+kernel_img_HEADERS += machine/memory.h machine/loader.h machine/kernel.h
+endif
+
+symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h gensymlist.sh
+	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
+
+kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genkernsyms.sh
+	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # For the parser.
 grub_script.tab.c grub_script.tab.h: script/parser.y
@@ -159,7 +187,7 @@ DISTCLEANFILES += grub_fstest_init.c
 
 # for grub-editenv
 bin_UTILITIES += grub-editenv
-grub_editenv_SOURCES = gnulib/progname.c util/grub-editenv.c lib/envblk.c util/misc.c kern/misc.c kern/err.c
+grub_editenv_SOURCES = gnulib/progname.c util/grub-editenv.c lib/envblk.c util/misc.c kern/emu/misc.c kern/emu/mm.c kern/misc.c kern/err.c
 CLEANFILES += grub-editenv
 
 # Needed for genmk.rb to work
@@ -167,7 +195,7 @@ ifeq (0,1)
 bin_UTILITIES += grub-macho2img grub-pe2elf
 endif
 
-grub_pe2elf_SOURCES = gnulib/progname.c util/grub-pe2elf.c util/misc.c
+grub_pe2elf_SOURCES = gnulib/progname.c util/grub-pe2elf.c util/misc.c kern/emu/misc.c
 CLEANFILES += grub-pe2elf
 
 grub_macho2img_SOURCES = util/grub-macho2img.c
@@ -269,6 +297,12 @@ ntfscomp_mod_LDFLAGS = $(COMMON_LDFLAGS)
 minix_mod_SOURCES = fs/minix.c
 minix_mod_CFLAGS = $(COMMON_CFLAGS)
 minix_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For nilfs2.mod.
+pkglib_MODULES += nilfs2.mod
+nilfs2_mod_SOURCES = fs/nilfs2.c
+nilfs2_mod_CFLAGS = $(COMMON_CFLAGS)
+nilfs2_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For hfs.mod.
 hfs_mod_SOURCES = fs/hfs.c
@@ -377,6 +411,16 @@ part_gpt_mod_SOURCES = partmap/gpt.c
 part_gpt_mod_CFLAGS = $(COMMON_CFLAGS)
 part_gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += part_bsd.mod
+part_bsd_mod_SOURCES = partmap/bsdlabel.c
+part_bsd_mod_CFLAGS = $(COMMON_CFLAGS)
+part_bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += part_sunpc.mod
+part_sunpc_mod_SOURCES = partmap/sunpc.c
+part_sunpc_mod_CFLAGS = $(COMMON_CFLAGS)
+part_sunpc_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # Special disk structures and generic drivers
 
 pkglib_MODULES += raid.mod raid5rec.mod raid6rec.mod mdraid.mod dm_nv.mod \
@@ -451,6 +495,28 @@ extcmd_mod_LDFLAGS = $(COMMON_LDFLAGS)
 hello_mod_SOURCES = hello/hello.c
 hello_mod_CFLAGS = $(COMMON_CFLAGS)
 hello_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For gfxmenu.mod.
+pkglib_MODULES += gfxmenu.mod
+gfxmenu_mod_SOURCES = \
+	gfxmenu/gfxmenu.c \
+	gfxmenu/model.c \
+	gfxmenu/view.c \
+	gfxmenu/icon_manager.c \
+	gfxmenu/theme_loader.c \
+	gfxmenu/widget-box.c \
+	gfxmenu/gui_canvas.c \
+	gfxmenu/gui_circular_progress.c \
+	gfxmenu/gui_box.c \
+	gfxmenu/gui_label.c \
+	gfxmenu/gui_list.c \
+	gfxmenu/gui_image.c \
+	gfxmenu/gui_progress_bar.c \
+	gfxmenu/gui_util.c \
+	gfxmenu/gui_string_util.c \
+	gfxmenu/named_colors.c
+gfxmenu_mod_CFLAGS = $(COMMON_CFLAGS)
+gfxmenu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For parttool.mod.
 parttool_mod_SOURCES = commands/parttool.c
@@ -595,64 +661,82 @@ normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For sh.mod.
 sh_mod_SOURCES = script/main.c script/script.c script/execute.c \
-	script/function.c script/lexer.c grub_script.tab.c
-sh_mod_CFLAGS = $(COMMON_CFLAGS)
+	script/function.c script/lexer.c grub_script.tab.c grub_script.yy.c
+sh_mod_CFLAGS = $(COMMON_CFLAGS) $(POSIX_CFLAGS) -Wno-error
 sh_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+ifneq (, $(FONT_SOURCE))
+font/font.c_DEPENDENCIES = ascii.h
+endif
+
 # Common Video Subsystem specific modules.
-pkglib_MODULES += video.mod videotest.mod bitmap.mod tga.mod jpeg.mod	\
-	png.mod	gfxterm.mod video_fb.mod
+# On Yeeloong it's part of kernel
+ifneq ($(platform), yeeloong)
 
 # For video.mod.
+pkglib_MODULES += video.mod
 video_mod_SOURCES = video/video.c
 video_mod_CFLAGS = $(COMMON_CFLAGS)
 video_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += video_fb.mod
 video_fb_mod_SOURCES = video/fb/video_fb.c video/fb/fbblit.c \
 		  video/fb/fbfill.c video/fb/fbutil.c
 video_fb_mod_CFLAGS = $(COMMON_CFLAGS)
 video_fb_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For videotest.mod.
-videotest_mod_SOURCES = commands/videotest.c
-videotest_mod_CFLAGS = $(COMMON_CFLAGS)
-videotest_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For bitmap.mod
+pkglib_MODULES += bitmap.mod
 bitmap_mod_SOURCES = video/bitmap.c
 bitmap_mod_CFLAGS = $(COMMON_CFLAGS)
 bitmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For tga.mod
-tga_mod_SOURCES = video/readers/tga.c
-tga_mod_CFLAGS = $(COMMON_CFLAGS)
-tga_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For jpeg.mod.
-jpeg_mod_SOURCES = video/readers/jpeg.c
-jpeg_mod_CFLAGS = $(COMMON_CFLAGS)
-jpeg_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For png.mod.
-png_mod_SOURCES = video/readers/png.c
-png_mod_CFLAGS = $(COMMON_CFLAGS)
-png_mod_LDFLAGS = $(COMMON_LDFLAGS)
+# For bitmap_scale.mod
+pkglib_MODULES += bitmap_scale.mod
+bitmap_scale_mod_SOURCES = video/bitmap_scale.c
+bitmap_scale_mod_CFLAGS = $(COMMON_CFLAGS)
+bitmap_scale_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += font.mod
-ifneq (, $(FONT_SOURCE))
-font/font.c_DEPENDENCIES = ascii.h
-endif
 font_mod_SOURCES = font/font_cmd.c font/font.c
 font_mod_CFLAGS = $(COMMON_CFLAGS)
 font_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For gfxterm.mod.
+pkglib_MODULES += gfxterm.mod
 gfxterm_mod_SOURCES = term/gfxterm.c
 gfxterm_mod_CFLAGS = $(COMMON_CFLAGS)
 gfxterm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+endif
+
+# For videotest.mod.
+pkglib_MODULES += videotest.mod
+videotest_mod_SOURCES = commands/videotest.c
+videotest_mod_CFLAGS = $(COMMON_CFLAGS)
+videotest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For tga.mod
+pkglib_MODULES += tga.mod
+tga_mod_SOURCES = video/readers/tga.c
+tga_mod_CFLAGS = $(COMMON_CFLAGS)
+tga_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For jpeg.mod.
+pkglib_MODULES += jpeg.mod
+jpeg_mod_SOURCES = video/readers/jpeg.c
+jpeg_mod_CFLAGS = $(COMMON_CFLAGS)
+jpeg_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For png.mod.
+pkglib_MODULES += png.mod
+png_mod_SOURCES = video/readers/png.c
+png_mod_CFLAGS = $(COMMON_CFLAGS)
+png_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+
 # Misc.
-pkglib_MODULES += gzio.mod bufio.mod elf.mod
+pkglib_MODULES += gzio.mod elf.mod
 
 # For elf.mod.
 elf_mod_SOURCES = kern/elf.c
@@ -664,10 +748,14 @@ gzio_mod_SOURCES = io/gzio.c
 gzio_mod_CFLAGS = $(COMMON_CFLAGS)
 gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# On Yeeloong it's part of kernel
+ifneq ($(platform), yeeloong)
 # For bufio.mod.
+pkglib_MODULES += bufio.mod
 bufio_mod_SOURCES = io/bufio.c
 bufio_mod_CFLAGS = $(COMMON_CFLAGS)
 bufio_mod_LDFLAGS = $(COMMON_LDFLAGS)
+endif
 
 # For gettext.mod.
 pkglib_MODULES += gettext.mod
@@ -683,6 +771,18 @@ xnu_uuid_mod_SOURCES = commands/xnu_uuid.c
 xnu_uuid_mod_CFLAGS = $(COMMON_CFLAGS)
 xnu_uuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += trig.mod
+trig_mod_SOURCES = trigtables.c
+trig_mod_CFLAGS = $(COMMON_CFLAGS)
+trig_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+trigtables.c: gentrigtables
+	./gentrigtables > $@
+DISTCLEANFILES += trigtables.c
+gentrigtables: gentrigtables.c
+	$(CC) -o $@ $^ $(CPPFLAGS) -lm
+DISTCLEANFILES += gentrigtables
+
 pkglib_MODULES += setjmp.mod
 setjmp_mod_SOURCES = lib/$(target_cpu)/setjmp.S
 setjmp_mod_ASFLAGS = $(COMMON_ASFLAGS)
@@ -692,6 +792,11 @@ pkglib_MODULES += charset.mod
 charset_mod_SOURCES = lib/charset.c
 charset_mod_CFLAGS = $(COMMON_CFLAGS)
 charset_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += regexp.mod
+regexp_mod_SOURCES = gnulib/regex.c commands/regexp.c
+regexp_mod_CFLAGS = $(COMMON_CFLAGS) $(GNULIB_CFLAGS)
+regexp_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += terminal.mod
 terminal_mod_SOURCES = commands/terminal.c
@@ -719,8 +824,44 @@ password_pbkdf2_mod_SOURCES = commands/password_pbkdf2.c
 password_pbkdf2_mod_CFLAGS = $(COMMON_CFLAGS)
 password_pbkdf2_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For memdisk.mod.
+pkglib_MODULES += memdisk.mod
+memdisk_mod_SOURCES = disk/memdisk.c
+memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
+memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For reboot.mod.
+pkglib_MODULES += reboot.mod
+reboot_mod_SOURCES = commands/reboot.c
+reboot_mod_CFLAGS = $(COMMON_CFLAGS)
+reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For date.mod
+pkglib_MODULES += date.mod
+date_mod_SOURCES = commands/date.c
+date_mod_CFLAGS = $(COMMON_CFLAGS)
+date_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datehook.mod
+pkglib_MODULES += datehook.mod
+datehook_mod_SOURCES = hook/datehook.c
+datehook_mod_CFLAGS = $(COMMON_CFLAGS)
+datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For lsmmap.mod
+pkglib_MODULES += lsmmap.mod
+lsmmap_mod_SOURCES = commands/lsmmap.c
+lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
+lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For boot.mod.
+pkglib_MODULES += boot.mod
+boot_mod_SOURCES = commands/boot.c lib/i386/pc/biosnum.c
+boot_mod_CFLAGS = $(COMMON_CFLAGS)
+boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 bin_UTILITIES += grub-mkpasswd-pbkdf2
-grub_mkpasswd_pbkdf2_SOURCES = gnulib/progname.c util/grub-mkpasswd-pbkdf2.c lib/crypto.c lib/libgcrypt-grub/cipher/sha512.c lib/pbkdf2.c util/misc.c kern/err.c
+grub_mkpasswd_pbkdf2_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c util/grub-mkpasswd-pbkdf2.c lib/crypto.c lib/libgcrypt-grub/cipher/sha512.c lib/pbkdf2.c util/misc.c kern/emu/misc.c kern/emu/mm.c kern/err.c
 grub_mkpasswd_pbkdf2_CFLAGS += -Wno-missing-field-initializers -Wno-error -I$(srcdir)/lib/libgcrypt_wrap -DGRUB_MKPASSWD=1
 
 include $(srcdir)/conf/gcry.mk

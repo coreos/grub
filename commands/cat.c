@@ -41,7 +41,7 @@ grub_cmd_cat (grub_command_t cmd __attribute__ ((unused)),
 
   file = grub_gzfile_open (args[0], 1);
   if (! file)
-    return 0;
+    return grub_errno;
 
   while ((size = grub_file_read (file, buf, sizeof (buf))) > 0
 	 && key != GRUB_TERM_ESC)

@@ -66,10 +66,12 @@ multiboot_header:
 	.long	-0x1BADB002 - MULTIBOOT_MEMORY_INFO
 
 codestart:
+#ifdef GRUB_MACHINE_MULTIBOOT
 	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC, %eax
 	jne 0f
 	movl	%ebx, EXT_C(startup_multiboot_info)
 0:
+#endif
 
 	/* initialize the stack */
 	movl $GRUB_MEMORY_MACHINE_PROT_STACK, %esp

@@ -53,6 +53,25 @@ grub_module_iterate (int (*hook) (struct grub_module_header *header))
     }
 }
 
+/* This is actualy platform-independant but used only on yeeloong and sparc.  */
+#if defined (GRUB_MACHINE_MIPS_YEELOONG) || defined (GRUB_MACHINE_SPARC64)
+grub_addr_t
+grub_modules_get_end (void)
+{
+  struct grub_module_info *modinfo;
+  grub_addr_t modbase;
+
+  modbase = grub_arch_modules_addr ();
+  modinfo = (struct grub_module_info *) modbase;
+
+  /* Check if there are any modules.  */
+  if ((modinfo == 0) || modinfo->magic != GRUB_MODULE_MAGIC)
+    return modbase;
+
+  return modbase + modinfo->size;
+}
+#endif
+
 /* Load all modules in core.  */
 static void
 grub_load_modules (void)
@@ -68,6 +87,9 @@ grub_load_modules (void)
 			       (header->size - sizeof (struct grub_module_header))))
 	grub_fatal ("%s", grub_errmsg);
 
+      if (grub_errno)
+	grub_print_error ();
+
       return 0;
     }
 
@@ -80,7 +102,7 @@ grub_load_config (void)
   auto int hook (struct grub_module_header *);
   int hook (struct grub_module_header *header)
     {
-      /* Not an ELF module, skip.  */
+      /* Not an embedded config, skip.  */
       if (header->type != OBJ_TYPE_CONFIG)
 	return 0;
 

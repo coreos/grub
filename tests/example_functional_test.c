@@ -28,7 +28,7 @@ example_test (void)
 
   /* Check if 1st argument is true and report with custom error message.  */
   grub_test_assert (2 == 2, "2 equal 2 expected");
-  grub_test_assert (2 == 3, "2 is not equal to %d", 3);
+  grub_test_assert (2 != 3, "2 matches %d", 3);
 }
 
 /* Register example_test method as a functional test.  */

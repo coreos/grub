@@ -348,7 +348,7 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 	      sym->st_value = (Elf_Addr) grub_dl_resolve_symbol (name);
 	      if (! sym->st_value)
 		return grub_error (GRUB_ERR_BAD_MODULE,
-				   "the symbol `%s' not found", name);
+				   "symbol not found: `%s'", name);
 	    }
 	  else
 	    {
@@ -469,11 +469,13 @@ grub_dl_resolve_dependencies (grub_dl_t mod, Elf_Ehdr *e)
   return GRUB_ERR_NONE;
 }
 
-#ifndef GRUB_UTIL
 int
 grub_dl_ref (grub_dl_t mod)
 {
   grub_dl_dep_t dep;
+
+  if (!mod)
+    return 0;
 
   for (dep = mod->dep; dep; dep = dep->next)
     grub_dl_ref (dep->mod);
@@ -486,12 +488,14 @@ grub_dl_unref (grub_dl_t mod)
 {
   grub_dl_dep_t dep;
 
+  if (!mod)
+    return 0;
+
   for (dep = mod->dep; dep; dep = dep->next)
     grub_dl_unref (dep->mod);
 
   return --mod->ref_count;
 }
-#endif
 
 static void
 grub_dl_flush_cache (grub_dl_t mod)

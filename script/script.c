@@ -1,7 +1,7 @@
 /* script.c -- Functions to create an in memory description of the script. */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,12 +24,10 @@
 
 /* It is not possible to deallocate the memory when a syntax error was
    found.  Because of that it is required to keep track of all memory
-   allocations.  The memory is freed in case of an error, or
-   assigned to the parsed script when parsing was successful.  */
+   allocations.  The memory is freed in case of an error, or assigned
+   to the parsed script when parsing was successful.
 
-/* XXX */
-
-/* In case of the normal malloc, some additional bytes are allocated
+   In case of the normal malloc, some additional bytes are allocated
    for this datastructure.  All reserved memory is stored in a linked
    list so it can be easily freed.  The original memory can be found
    from &mem.  */
@@ -46,6 +44,8 @@ grub_script_malloc (struct grub_parser_param *state, grub_size_t size)
   struct grub_script_mem *mem;
   mem = (struct grub_script_mem *) grub_malloc (size + sizeof (*mem)
 						- sizeof (char));
+  if (!mem)
+    return 0;
 
   grub_dprintf ("scripting", "malloc %p\n", mem);
   mem->next = state->memused;
@@ -94,32 +94,40 @@ grub_script_mem_record_stop (struct grub_parser_param *state,
 void
 grub_script_free (struct grub_script *script)
 {
-  if (! script)
+  if (!script)
     return;
   grub_script_mem_free (script->mem);
   grub_free (script);
 }
-
 
+
 
 /* Extend the argument arg with a variable or string of text.  If ARG
    is zero a new list is created.  */
 struct grub_script_arg *
-grub_script_arg_add (struct grub_parser_param *state, struct grub_script_arg *arg,
-		     grub_script_arg_type_t type, char *str)
+grub_script_arg_add (struct grub_parser_param *state,
+		     struct grub_script_arg *arg, grub_script_arg_type_t type,
+		     char *str)
 {
   struct grub_script_arg *argpart;
   struct grub_script_arg *ll;
   int len;
 
-  argpart = (struct grub_script_arg *) grub_script_malloc (state, sizeof (*arg));
+  argpart =
+    (struct grub_script_arg *) grub_script_malloc (state, sizeof (*arg));
+  if (!argpart)
+    return arg;
+
   argpart->type = type;
   len = grub_strlen (str) + 1;
   argpart->str = grub_script_malloc (state, len);
+  if (!argpart->str)
+    return arg; /* argpart is freed later, during grub_script_free.  */
+
   grub_memcpy (argpart->str, str, len);
   argpart->next = 0;
 
-  if (! arg)
+  if (!arg)
     return argpart;
 
   for (ll = arg; ll->next; ll = ll->next);
@@ -132,19 +140,24 @@ grub_script_arg_add (struct grub_parser_param *state, struct grub_script_arg *ar
    is zero, a new list will be created.  */
 struct grub_script_arglist *
 grub_script_add_arglist (struct grub_parser_param *state,
-			 struct grub_script_arglist *list, struct grub_script_arg *arg)
+			 struct grub_script_arglist *list,
+			 struct grub_script_arg *arg)
 {
   struct grub_script_arglist *link;
   struct grub_script_arglist *ll;
 
   grub_dprintf ("scripting", "arglist\n");
 
-  link = (struct grub_script_arglist *) grub_script_malloc (state, sizeof (*link));
+  link =
+    (struct grub_script_arglist *) grub_script_malloc (state, sizeof (*link));
+  if (!link)
+    return list;
+
   link->next = 0;
   link->arg = arg;
   link->argcount = 0;
 
-  if (! list)
+  if (!list)
     {
       link->argcount++;
       return link;
@@ -171,6 +184,9 @@ grub_script_create_cmdline (struct grub_parser_param *state,
   grub_dprintf ("scripting", "cmdline\n");
 
   cmd = grub_script_malloc (state, sizeof (*cmd));
+  if (!cmd)
+    return 0;
+
   cmd->cmd.exec = grub_script_execute_cmdline;
   cmd->cmd.next = 0;
   cmd->arglist = arglist;
@@ -193,11 +209,60 @@ grub_script_create_cmdif (struct grub_parser_param *state,
   grub_dprintf ("scripting", "cmdif\n");
 
   cmd = grub_script_malloc (state, sizeof (*cmd));
+  if (!cmd)
+    return 0;
+
   cmd->cmd.exec = grub_script_execute_cmdif;
   cmd->cmd.next = 0;
   cmd->exec_to_evaluate = exec_to_evaluate;
   cmd->exec_on_true = exec_on_true;
   cmd->exec_on_false = exec_on_false;
+
+  return (struct grub_script_cmd *) cmd;
+}
+
+/* Create a command that functions as a for statement.  */
+struct grub_script_cmd *
+grub_script_create_cmdfor (struct grub_parser_param *state,
+			   struct grub_script_arg *name,
+			   struct grub_script_arglist *words,
+			   struct grub_script_cmd *list)
+{
+  struct grub_script_cmdfor *cmd;
+
+  grub_dprintf ("scripting", "cmdfor\n");
+
+  cmd = grub_script_malloc (state, sizeof (*cmd));
+  if (! cmd)
+    return 0;
+
+  cmd->cmd.exec = grub_script_execute_cmdfor;
+  cmd->cmd.next = 0;
+  cmd->name = name;
+  cmd->words = words;
+  cmd->list = list;
+
+  return (struct grub_script_cmd *) cmd;
+}
+
+/* Create a "while" or "until" command.  */
+struct grub_script_cmd *
+grub_script_create_cmdwhile (struct grub_parser_param *state,
+			     struct grub_script_cmd *cond,
+			     struct grub_script_cmd *list,
+			     int is_an_until_loop)
+{
+  struct grub_script_cmdwhile *cmd;
+
+  cmd = grub_script_malloc (state, sizeof (*cmd));
+  if (! cmd)
+    return 0;
+
+  cmd->cmd.exec = grub_script_execute_cmdwhile;
+  cmd->cmd.next = 0;
+  cmd->cond = cond;
+  cmd->list = list;
+  cmd->until = is_an_until_loop;
 
   return (struct grub_script_cmd *) cmd;
 }
@@ -209,30 +274,16 @@ grub_script_create_cmdif (struct grub_parser_param *state,
 struct grub_script_cmd *
 grub_script_create_cmdmenu (struct grub_parser_param *state,
 			    struct grub_script_arglist *arglist,
-			    char *sourcecode,
-			    int options)
+			    char *sourcecode, int options)
 {
   struct grub_script_cmd_menuentry *cmd;
-  int i;
-
-  /* Skip leading newlines to make the sourcecode better readable when
-     using the editor.  */
-  while (*sourcecode == '\n')
-    sourcecode++;
-
-  /* Having trailing returns can some some annoying conflicts, remove
-     them.  XXX: Can the parser be improved to handle this?  */
-  for (i = grub_strlen (sourcecode) - 1; i > 0; i--)
-    {
-      if (sourcecode[i] != '\n')
-	break;
-      sourcecode[i] = '\0';
-    }
 
   cmd = grub_script_malloc (state, sizeof (*cmd));
+  if (!cmd)
+    return 0;
+    
   cmd->cmd.exec = grub_script_execute_menuentry;
   cmd->cmd.next = 0;
-  /* XXX: Check if this memory is properly freed.  */
   cmd->sourcecode = sourcecode;
   cmd->arglist = arglist;
   cmd->options = options;
@@ -248,15 +299,19 @@ grub_script_add_cmd (struct grub_parser_param *state,
 		     struct grub_script_cmdblock *cmdblock,
 		     struct grub_script_cmd *cmd)
 {
+  struct grub_script_cmd *ptr;
+
   grub_dprintf ("scripting", "cmdblock\n");
 
-  if (! cmd)
+  if (!cmd)
     return (struct grub_script_cmd *) cmdblock;
 
-  if (! cmdblock)
+  if (!cmdblock)
     {
-      cmdblock = (struct grub_script_cmdblock *) grub_script_malloc (state,
-								     sizeof (*cmdblock));
+      cmdblock = grub_script_malloc (state, sizeof (*cmdblock));
+      if (!cmdblock)
+	return 0;
+
       cmdblock->cmd.exec = grub_script_execute_cmdblock;
       cmdblock->cmd.next = 0;
       cmdblock->cmdlist = cmd;
@@ -264,14 +319,21 @@ grub_script_add_cmd (struct grub_parser_param *state,
     }
   else
     {
-      cmd->next = cmdblock->cmdlist;
-      cmdblock->cmdlist = cmd;
+      if (!cmdblock->cmdlist)
+	cmdblock->cmdlist = cmd;
+      else
+	{
+	  ptr = cmdblock->cmdlist;
+	  while (ptr->next)
+	    ptr = ptr->next;
+	  ptr->next = cmd;
+	}
     }
 
   return (struct grub_script_cmd *) cmdblock;
 }
-
 
+
 
 struct grub_script *
 grub_script_create (struct grub_script_cmd *cmd, struct grub_script_mem *mem)
@@ -279,7 +341,7 @@ grub_script_create (struct grub_script_cmd *cmd, struct grub_script_mem *mem)
   struct grub_script *parsed;
 
   parsed = grub_malloc (sizeof (*parsed));
-  if (! parsed)
+  if (!parsed)
     {
       grub_script_mem_free (mem);
       grub_free (cmd);
@@ -304,16 +366,16 @@ grub_script_parse (char *script, grub_reader_getline_t getline)
   struct grub_parser_param *parsestate;
 
   parsed = grub_malloc (sizeof (*parsed));
-  if (! parsed)
+  if (!parsed)
     return 0;
 
   parsestate = grub_zalloc (sizeof (*parsestate));
-  if (! parsestate)
+  if (!parsestate)
     return 0;
 
   /* Initialize the lexer.  */
-  lexstate = grub_script_lexer_init (script, getline);
-  if (! lexstate)
+  lexstate = grub_script_lexer_init (parsestate, script, getline);
+  if (!lexstate)
     {
       grub_free (parsed);
       grub_free (parsestate);
@@ -330,7 +392,7 @@ grub_script_parse (char *script, grub_reader_getline_t getline)
       struct grub_script_mem *memfree;
       memfree = grub_script_mem_record_stop (parsestate, membackup);
       grub_script_mem_free (memfree);
-      grub_free (lexstate);
+      grub_script_lexer_fini (lexstate);
       grub_free (parsestate);
       return 0;
     }
@@ -338,7 +400,7 @@ grub_script_parse (char *script, grub_reader_getline_t getline)
   parsed->mem = grub_script_mem_record_stop (parsestate, membackup);
   parsed->cmd = parsestate->parsed;
 
-  grub_free (lexstate);
+  grub_script_lexer_fini (lexstate);
   grub_free (parsestate);
 
   return parsed;

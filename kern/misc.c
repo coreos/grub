@@ -35,7 +35,7 @@ grub_iswordseparator (int c)
 }
 
 /* grub_gettext_dummy is not translating anything.  */
-const char *
+static const char *
 grub_gettext_dummy (const char *s)
 {
   return s;
@@ -206,7 +206,6 @@ grub_vprintf (const char *fmt, va_list args)
   int ret;
 
   ret = grub_vsnprintf_real (0, 0, fmt, args);
-  grub_refresh ();
   return ret;
 }
 
@@ -876,9 +875,6 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt, va_list ar
   if (str)
     *str = '\0';
 
-  if (count && !str)
-    grub_refresh ();
-
   return count;
 }
 
@@ -975,6 +971,10 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 	    {
 	      /* invalid */
 	      code = '?';
+	      /* Character c may be valid, don't eat it.  */
+	      src--;
+	      if (srcsize != (grub_size_t)-1)
+		srcsize++;
 	      count = 0;
 	    }
 	  else
@@ -1058,7 +1058,7 @@ grub_abort (void)
 void abort (void) __attribute__ ((alias ("grub_abort")));
 #endif
 
-#ifdef NEED_ENABLE_EXECUTE_STACK
+#if defined(NEED_ENABLE_EXECUTE_STACK) && !defined(GRUB_UTIL)
 /* Some gcc versions generate a call to this function
    in trampolines for nested functions.  */
 void __enable_execute_stack (void *addr __attribute__ ((unused)))
@@ -1066,3 +1066,12 @@ void __enable_execute_stack (void *addr __attribute__ ((unused)))
 }
 #endif
 
+#if defined (NEED_REGISTER_FRAME_INFO) && !defined(GRUB_UTIL)
+void __register_frame_info (void)
+{
+}
+
+void __deregister_frame_info (void)
+{
+}
+#endif

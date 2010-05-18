@@ -38,11 +38,11 @@
 #define HEAP_MIN_SIZE		(unsigned long) (2 * 1024 * 1024)
 
 /* The maximum heap size we're going to claim */
-#define HEAP_MAX_SIZE		(unsigned long) (4 * 1024 * 1024)
+#define HEAP_MAX_SIZE		(unsigned long) (32 * 1024 * 1024)
 
 /* If possible, we will avoid claiming heap above this address, because it
    seems to cause relocation problems with OSes that link at 4 MiB */
-#define HEAP_MAX_ADDR		(unsigned long) (4 * 1024 * 1024)
+#define HEAP_MAX_ADDR		(unsigned long) (32 * 1024 * 1024)
 
 extern char _start[];
 extern char _end[];
@@ -133,6 +133,17 @@ static void grub_claim_heap (void)
     if (type != 1)
       return 0;
 
+    if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM))
+      {
+	if (addr + len <= 0x180000)
+	  return 0;
+
+	if (addr < 0x180000)
+	  {
+	    len = addr + len - 0x180000;
+	    addr = 0x180000;
+	  }
+      }
     len -= 1; /* Required for some firmware.  */
 
     /* Never exceed HEAP_MAX_SIZE  */

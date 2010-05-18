@@ -280,27 +280,29 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
 {
   char *host_file;
   char *loop_name;
-  char *argv[3] = { "-p" };
+  char *argv[3];
   int i;
+
+  argv[0] = "-p";
 
   for (i = 0; i < num_disks; i++)
     {
       loop_name = grub_xasprintf ("loop%d", i);
-      host_file = grub_xasprintf ("(host)%s", images[i]);
+      if (!loop_name)
+	grub_util_error (grub_errmsg);
 
-      if (!loop_name || !host_file)
-	{
-	  grub_free (loop_name);
-	  grub_free (host_file);
-	  grub_util_error (grub_errmsg);
-	  return;
-	}
+      host_file = grub_xasprintf ("(host)%s", images[i]);
+      if (!host_file)
+	grub_util_error (grub_errmsg);
 
       argv[1] = loop_name;
       argv[2] = host_file;
 
       if (execute_command ("loopback", 3, argv))
         grub_util_error ("loopback command fails");
+
+      grub_free (loop_name);
+      grub_free (host_file);
     }
 
   grub_lvm_fini ();
@@ -336,19 +338,16 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
 
   for (i = 0; i < num_disks; i++)
     {
-      grub_free (loop_name);
       loop_name = grub_xasprintf ("loop%d", i);
       if (!loop_name)
-	{
-	  grub_free (host_file);
-	  grub_util_error (grub_errmsg);
-	  return;
-	}
-      execute_command ("loopback", 2, argv);
-    }
+	grub_util_error (grub_errmsg);
 
-  grub_free (loop_name);
-  grub_free (host_file);
+      argv[1] = loop_name;
+
+      execute_command ("loopback", 2, argv);
+
+      grub_free (loop_name);
+    }
 }
 
 static struct option options[] = {
