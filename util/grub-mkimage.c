@@ -1342,7 +1342,8 @@ main (int argc, char *argv[])
 	last = strchr (last + 1, '-');
       if (!last)
 	last = image_target->name + strlen (image_target->name);
-      dir = xmalloc (sizeof (GRUB_PKGLIBROOTDIR) + (last - image_target->name));
+      dir = xmalloc (sizeof (GRUB_PKGLIBROOTDIR) + (last - image_target->name)
+		     + 1);
       memcpy (dir, GRUB_PKGLIBROOTDIR, sizeof (GRUB_PKGLIBROOTDIR) - 1);
       *(dir + sizeof (GRUB_PKGLIBROOTDIR) - 1) = '/';
       memcpy (dir + sizeof (GRUB_PKGLIBROOTDIR), image_target->name,

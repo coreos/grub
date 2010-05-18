@@ -42,17 +42,33 @@ extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
    On pre-ANSI systems without 'const', the config.h file is supposed to
    contain "#define const".  */
 # ifdef GRUB_UTIL
-#  define gettext(Msgid) ((const char *) (Msgid))
+static inline const char * __attribute__ ((always_inline))
+gettext (const char *str)
+{
+  return str;
+}
 # else
-#  define grub_gettext(str) ((const char *) (str))
+static inline const char * __attribute__ ((always_inline))
+grub_gettext (const char *str)
+{
+  return str;
+}
 # endif /* GRUB_UTIL */
 
 #endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
 
 #ifdef GRUB_UTIL
-# define _(str) gettext(str)
+static inline const char * __attribute__ ((always_inline))
+_ (const char *str)
+{
+  return gettext(str);
+}
 #else
-# define _(str) grub_gettext(str)
+static inline const char * __attribute__ ((always_inline))
+_ (const char *str)
+{
+  return grub_gettext(str);
+}
 #endif /* GRUB_UTIL */
 
 #define N_(str) str
