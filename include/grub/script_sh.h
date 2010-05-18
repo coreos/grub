@@ -225,7 +225,12 @@ struct grub_parser_param
 void grub_script_argv_free    (struct grub_script_argv *argv);
 int grub_script_argv_next     (struct grub_script_argv *argv);
 int grub_script_argv_append   (struct grub_script_argv *argv, const char *s);
+int grub_script_argv_append_escaped (struct grub_script_argv *argv,
+				     const char *s);
+int grub_script_argv_append_unescaped (struct grub_script_argv *argv,
+				       const char *s);
 int grub_script_argv_split_append (struct grub_script_argv *argv, char *s);
+int grub_script_argv_expand   (struct grub_script_argv *argv);
 
 struct grub_script_arglist *
 grub_script_create_arglist (struct grub_parser_param *state);

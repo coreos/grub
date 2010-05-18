@@ -177,7 +177,13 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 		{
 		  if (i != 0)
 		    error += grub_script_argv_next (&result);
-		  error += grub_script_argv_append (&result, values[i]);
+
+		  if (arg->type == GRUB_SCRIPT_ARG_TYPE_VAR)
+		    error += grub_script_argv_append (&result, values[i]);
+		  else
+		    error += grub_script_argv_append_escaped (&result, values[i]);
+
+		  grub_free (values[i]);
 		}
 	      grub_free (values);
 	      break;
@@ -189,18 +195,22 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 
 	    case GRUB_SCRIPT_ARG_TYPE_DQSTR:
 	    case GRUB_SCRIPT_ARG_TYPE_SQSTR:
-	      error += grub_script_argv_append (&result, arg->str);
+	      error += grub_script_argv_append_escaped (&result, arg->str);
 	      break;
 	    }
 	  arg = arg->next;
 	}
     }
 
-  if (error)
-    return 1;
-
   if (! result.args[result.argc - 1])
     result.argc--;
+
+  error += grub_script_argv_expand (&result);
+  if (error)
+    {
+      grub_script_argv_free (&result);
+      return 1;
+    }
 
   *argv = result;
   return 0;
@@ -287,6 +297,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 	  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", grub_errno);
 	  grub_env_set ("?", errnobuf);
 
+	  grub_script_argv_free (&argv);
 	  grub_print_error ();
 
 	  return 0;
@@ -411,7 +422,6 @@ grub_script_execute_menuentry (struct grub_script_cmd *cmd)
 			      cmd_menuentry->sourcecode);
 
   grub_script_argv_free (&argv);
-
   return grub_errno;
 }
 
