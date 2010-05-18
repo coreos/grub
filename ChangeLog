@@ -1,5 +1,9 @@
 2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Add missing "in" keyword.
+
+2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Remove -O i386-pc duplication.
 	Reported by: Seth Goldberg.
 
