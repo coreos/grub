@@ -1,5 +1,12 @@
 2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.in (CPPFLAGS): Replace -DGRUB_LIBDIR with
+	-DGRUB_PKGLIBROOTDIR= and prepend @PACKAGE_TARNAME@. All users updated.
+	* util/grub-mkimage.c (image_targets): Add i386-multiboot.
+	(main): Add a slash after pkglibdirroot.
+
+2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Add missing "in" keyword.
 
 2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
