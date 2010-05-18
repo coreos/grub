@@ -1,3 +1,9 @@
+2010-05-18  Christian Franke  <franke@computer.org>
+
+	* util/grub.d/10_windows.in: Use path names instead of
+	drive letters to prevent warning from Cygwin 1.7.
+	Add drivemap command to menuentry if needed.
+
 2010-05-18  Justus Winter  <4winter@informatik.uni-hamburg.de>
 
 	* util/grub.d/10_hurd.in: Include all gnumach* kernels, not only
