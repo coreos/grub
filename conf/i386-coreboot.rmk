@@ -34,7 +34,7 @@ bin_SCRIPTS += grub-mkrescue
 grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 # Modules.
-pkglib_MODULES = aout.mod halt.mod datetime.mod mmap.mod
+pkglib_MODULES = halt.mod datetime.mod mmap.mod
 
 # For mmap.mod.
 mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c
@@ -46,26 +46,6 @@ mmap_mod_ASFLAGS = $(COMMON_ASFLAGS)
 halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For play.mod.
-play_mod_SOURCES = commands/i386/pc/play.c
-play_mod_CFLAGS = $(COMMON_CFLAGS)
-play_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For memdisk.mod.
-memdisk_mod_SOURCES = disk/memdisk.c
-memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
-memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For pci.mod
-pci_mod_SOURCES = bus/pci.c
-pci_mod_CFLAGS = $(COMMON_CFLAGS)
-pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For lspci.mod
-lspci_mod_SOURCES = commands/lspci.c
-lspci_mod_CFLAGS = $(COMMON_CFLAGS)
-lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For datetime.mod
 datetime_mod_SOURCES = lib/cmos_datetime.c
