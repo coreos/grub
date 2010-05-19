@@ -29,6 +29,7 @@ round_up_exp (unsigned v)
   v |= v >> 4;
   v |= v >> 8;
   v |= v >> 16;
+
   if (sizeof (v) > 4)
     v |= v >> 32;
 
@@ -41,7 +42,7 @@ round_up_exp (unsigned v)
 void
 grub_script_argv_free (struct grub_script_argv *argv)
 {
-  int i;
+  unsigned i;
 
   if (argv->args)
     {
