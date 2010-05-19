@@ -16,7 +16,10 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <time.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <setjmp.h>
 #include <sys/stat.h>
 #include <getopt.h>
 #include <string.h>
@@ -24,16 +27,17 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/setjmp.h>
 #include <grub/fs.h>
-#include <grub/util/hostdisk.h>
-#include <grub/dl.h>
-#include <grub/util/console.h>
-#include <grub/util/misc.h>
+#include <grub/emu/hostdisk.h>
+#include <grub/time.h>
+#include <grub/emu/console.h>
+#include <grub/emu/misc.h>
 #include <grub/kernel.h>
 #include <grub/normal.h>
-#include <grub/util/getroot.h>
+#include <grub/emu/getroot.h>
 #include <grub/env.h>
 #include <grub/partition.h>
 #include <grub/i18n.h>
@@ -242,7 +246,7 @@ main (int argc, char *argv[])
   if (strcmp (root_dev, "host") == 0)
     dir = xstrdup (dir);
   else
-    dir = make_system_path_relative_to_its_root (dir);
+    dir = grub_make_system_path_relative_to_its_root (dir);
   prefix = xmalloc (strlen (root_dev) + 2 + strlen (dir) + 1);
   sprintf (prefix, "(%s)%s", root_dev, dir);
   free (dir);
@@ -261,3 +265,32 @@ main (int argc, char *argv[])
 
   return 0;
 }
+
+#ifdef __MINGW32__
+
+void
+grub_millisleep (grub_uint32_t ms)
+{
+  Sleep (ms);
+}
+
+#else
+
+void
+grub_millisleep (grub_uint32_t ms)
+{
+  struct timespec ts;
+
+  ts.tv_sec = ms / 1000;
+  ts.tv_nsec = (ms % 1000) * 1000000;
+  nanosleep (&ts, NULL);
+}
+
+#endif
+
+#if GRUB_NO_MODULES
+void
+grub_register_exported_symbols (void)
+{
+}
+#endif

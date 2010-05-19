@@ -27,7 +27,7 @@
 # define A_STANDOUT	0
 #endif /* ! A_STANDOUT */
 
-#include <grub/util/console.h>
+#include <grub/emu/console.h>
 #include <grub/term.h>
 #include <grub/types.h>
 

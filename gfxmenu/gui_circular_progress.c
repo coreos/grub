@@ -54,6 +54,7 @@ static void
 circprog_destroy (void *vself)
 {
   circular_progress_t self = vself;
+  grub_gfxmenu_timeout_unregister ((grub_gui_component_t) self);
   grub_free (self);
 }
 
@@ -211,6 +212,17 @@ circprog_get_bounds (void *vself, grub_video_rect_t *bounds)
   *bounds = self->bounds;
 }
 
+static void
+circprog_set_state (void *vself, int visible, int start,
+		    int current, int end)
+{
+  circular_progress_t self = vself;  
+  self->visible = visible;
+  self->start = start;
+  self->value = current;
+  self->end = end;
+}
+
 static grub_err_t
 circprog_set_property (void *vself, const char *name, const char *value)
 {
@@ -247,24 +259,18 @@ circprog_set_property (void *vself, const char *name, const char *value)
     }
   else if (grub_strcmp (name, "id") == 0)
     {
+      grub_gfxmenu_timeout_unregister ((grub_gui_component_t) self);
       grub_free (self->id);
       if (value)
         self->id = grub_strdup (value);
       else
         self->id = 0;
+      if (self->id && grub_strcmp (self->id, GRUB_GFXMENU_TIMEOUT_COMPONENT_ID)
+	  == 0)
+	grub_gfxmenu_timeout_register ((grub_gui_component_t) self,
+				       circprog_set_state);
     }
   return grub_errno;
-}
-
-static void
-circprog_set_state (void *vself, int visible, int start,
-		    int current, int end)
-{
-  circular_progress_t self = vself;  
-  self->visible = visible;
-  self->start = start;
-  self->value = current;
-  self->end = end;
 }
 
 static struct grub_gui_component_ops circprog_ops =
