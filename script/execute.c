@@ -98,7 +98,7 @@ grub_script_env_get (const char *name, grub_script_arg_type_t type)
     }
   else if (grub_strcmp (name, "*") == 0)
     {
-      int i;
+      unsigned i;
 
       for (i = 0; ! errors && i < scope->argv.argc; i++)
 	if (type == GRUB_SCRIPT_ARG_TYPE_VAR)
@@ -118,7 +118,7 @@ grub_script_env_get (const char *name, grub_script_arg_type_t type)
     }
   else if (grub_strcmp (name, "@") == 0)
     {
-      int i;
+      unsigned i;
 
       for (i = 0; ! errors && i < scope->argv.argc; i++)
 	{
@@ -311,6 +311,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 	  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", grub_errno);
 	  grub_env_set ("?", errnobuf);
 
+	  grub_script_argv_free (&argv);
 	  grub_print_error ();
 
 	  return 0;
@@ -377,8 +378,8 @@ grub_script_execute_cmdif (struct grub_script_cmd *cmd)
 grub_err_t
 grub_script_execute_cmdfor (struct grub_script_cmd *cmd)
 {
-  int i;
-  int result;
+  unsigned i;
+  grub_err_t result;
   struct grub_script_argv argv;
   struct grub_script_cmdfor *cmdfor = (struct grub_script_cmdfor *) cmd;
 

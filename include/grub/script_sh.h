@@ -67,7 +67,7 @@ struct grub_script_arg
 /* An argument vector.  */
 struct grub_script_argv
 {
-  int argc;
+  unsigned argc;
   char **args;
 };
 
