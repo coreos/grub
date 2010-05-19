@@ -373,46 +373,37 @@ match_devices (const regex_t *regexp)
   int i;
   int ndev;
   char **devs;
-  char *buffer;
 
   auto int match (const char *name);
   int match (const char *name)
   {
-    void *t;
-    unsigned n;
-
-    n = grub_strlen (name);
-    t = grub_realloc (buffer, n + 3);
-    if (! t)
+    char **t;
+    char *buffer = grub_xasprintf ("(%s)", name);
+    if (! buffer)
       return 1;
-
-    buffer = (char *) t;
-    grub_snprintf (buffer, n + 3, "(%s)", name);
 
     grub_dprintf ("expand", "matching: %s\n", buffer);
     if (regexec (regexp, buffer, 0, 0, 0))
-      return 0;
+      {
+	grub_free (buffer);
+	return 0;
+      }
 
     t = grub_realloc (devs, sizeof (char*) * (ndev + 2));
     if (! t)
       return 1;
 
-    devs = (char **) t;
+    devs = t;
     devs[ndev++] = buffer;
     devs[ndev] = 0;
-    buffer = 0;
     return 0;
   }
 
   ndev = 0;
   devs = 0;
-  buffer = 0;
 
   if (grub_device_iterate (match))
     goto fail;
-
-  if (buffer)
-    grub_free (buffer);
 
   return devs;
 
@@ -424,9 +415,6 @@ match_devices (const regex_t *regexp)
   if (devs)
     grub_free (devs);
 
-  if (buffer)
-    grub_free (buffer);
-
   return 0;
 }
 
@@ -437,10 +425,8 @@ match_files (const char *prefix, const char *suffix, const char *end,
   int i;
   int error;
   char **files;
-  char *buffer;
   unsigned nfile;
   char *dir;
-  unsigned dirlen;
   const char *path;
   char *device_name;
   grub_fs_t fs;
@@ -449,8 +435,8 @@ match_files (const char *prefix, const char *suffix, const char *end,
   auto int match (const char *name, const struct grub_dirhook_info *info);
   int match (const char *name, const struct grub_dirhook_info *info)
   {
-    void *t;
-    unsigned n;
+    char **t;
+    char *buffer;
 
     /* skip hidden files, . and .. */
     if (name[0] == '.')
@@ -460,36 +446,32 @@ match_files (const char *prefix, const char *suffix, const char *end,
     if (regexec (regexp, name, 0, 0, 0))
       return 0;
 
-    n = dirlen + grub_strlen (name);
-    t = grub_realloc (buffer, n + 1);
-    if (! t)
+    buffer = grub_xasprintf ("%s%s", dir, name);
+    if (! buffer)
       return 1;
-
-    buffer = (char *) t;
-    grub_snprintf (buffer, n + 1, "%s%s", dir, name);
 
     t = grub_realloc (files, sizeof (char*) * (nfile + 2));
     if (! t)
-      return 1;
+      {
+	grub_free (buffer);
+	return 1;
+      }
 
-    files = (char **) t;
+    files = t;
     files[nfile++] = buffer;
     files[nfile] = 0;
-    buffer = 0;
     return 0;
   }
 
   nfile = 0;
   files = 0;
   dev = 0;
-  buffer = 0;
   device_name = 0;
   grub_error_push ();
 
   dir = make_dir (prefix, suffix, end);
   if (! dir)
     goto fail;
-  dirlen = grub_strlen (dir);
 
   device_name = grub_file_get_device_name (dir);
   dev = grub_device_open (device_name);
@@ -507,9 +489,6 @@ match_files (const char *prefix, const char *suffix, const char *end,
 
   if (fs->dir (dev, path, match))
     goto fail;
-
-  if (buffer)
-    grub_free (buffer);
 
   grub_free (dir);
   grub_device_close (dev);
@@ -533,9 +512,6 @@ match_files (const char *prefix, const char *suffix, const char *end,
 
   if (device_name)
     grub_free (device_name);
-
-  if (buffer)
-    grub_free (buffer);
 
   grub_error_pop ();
   return 0;
@@ -563,12 +539,10 @@ match_paths_with_escaped_suffix (char **paths,
       if (! root)
 	return 0;
 
-      n = grub_strlen (root) + 2;
-      prefix = grub_malloc (n + 1);
+      prefix = grub_xasprintf ("(%s)", root);
       if (! prefix)
 	return 0;
 
-      grub_snprintf (prefix, n + 1, "(%s)", root);
       r = match_files (prefix, suffix, end, regexp);
       grub_free (prefix);
       return r;
