@@ -20,8 +20,23 @@
 #include <grub/mm.h>
 #include <grub/script_sh.h>
 
-#define ARG_ALLOCATION_UNIT  (32 * sizeof (char))
-#define ARGV_ALLOCATION_UNIT (8 * sizeof (void*))
+static unsigned
+round_up_exp (unsigned v)
+{
+  v--;
+  v |= v >> 1;
+  v |= v >> 2;
+  v |= v >> 4;
+  v |= v >> 8;
+  v |= v >> 16;
+  if (sizeof (v) > 4)
+    v |= v >> 32;
+
+  v++;
+  v += (v == 0);
+
+  return v;
+}
 
 void
 grub_script_argv_free (struct grub_script_argv *argv)
@@ -48,7 +63,7 @@ grub_script_argv_next (struct grub_script_argv *argv)
 
   if (argv->argc == 0)
     {
-      p = grub_malloc (ALIGN_UP (2 * sizeof (char *), ARG_ALLOCATION_UNIT));
+      p = grub_malloc (2 * sizeof (char *));
       if (! p)
 	return 1;
 
@@ -62,8 +77,7 @@ grub_script_argv_next (struct grub_script_argv *argv)
   if (! argv->args[argv->argc - 1])
     return 0;
 
-  p = grub_realloc (p, ALIGN_UP ((argv->argc + 1) * sizeof (char *),
-				 ARG_ALLOCATION_UNIT));
+  p = grub_realloc (p, round_up_exp ((argv->argc + 1) * sizeof (char *)));
   if (! p)
     return 1;
 
@@ -86,8 +100,7 @@ grub_script_argv_append (struct grub_script_argv *argv, const char *s)
   a = p ? grub_strlen (p) : 0;
   b = grub_strlen (s);
 
-  p = grub_realloc (p, ALIGN_UP ((a + b + 1) * sizeof (char),
-				 ARG_ALLOCATION_UNIT));
+  p = grub_realloc (p, round_up_exp ((a + b + 1) * sizeof (char)));
   if (! p)
     return 1;
 
