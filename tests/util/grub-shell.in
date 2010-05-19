@@ -124,7 +124,8 @@ halt
 EOF
 
 isofile=`mktemp`
-grub-mkrescue --output=${isofile} --override-directory=${builddir} \
+grub-mkrescue --grub-mkimage=${builddir}/grub-mkimage --output=${isofile} \
+  --override-directory=${builddir} \
   /boot/grub/grub.cfg=${cfgfile} /boot/grub/testcase.cfg=${source} \
   >/dev/null 2>&1
 

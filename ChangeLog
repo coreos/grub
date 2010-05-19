@@ -1,3 +1,9 @@
+2010-05-19  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix grub-mkrescue usage unit testing.
+
+	* tests/util/grub-shell.in: Use --grub-mkimage with grub-mkrescue.
+
 2010-05-18  Christian Franke  <franke@computer.org>
 
 	* util/grub.d/10_windows.in: Use path names instead of
