@@ -318,6 +318,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 	  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", grub_errno);
 	  grub_script_env_set ("?", errnobuf);
 
+	  grub_script_argv_free (&argv);
 	  grub_print_error ();
 
 	  return 0;
@@ -385,7 +386,8 @@ grub_err_t
 grub_script_execute_cmdfor (struct grub_script_cmd *cmd)
 {
   unsigned i;
-  int result;
+  grub_err_t result;
+
   struct grub_script_argv argv;
   struct grub_script_cmdfor *cmdfor = (struct grub_script_cmdfor *) cmd;
 
