@@ -1,3 +1,9 @@
+2010-05-20  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/emu/hostdisk.c (grub_util_biosdisk_get_grub_dev) [__NetBSD__]:
+	Fix merge error in NetBSD code.
+	(find_partition_start) [__NetBSD__]: Likewise.
+
 2010-05-19  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Fix grub-mkrescue usage unit testing.
