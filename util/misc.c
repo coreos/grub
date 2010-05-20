@@ -284,19 +284,6 @@ fail:
 
 #endif /* __MINGW32__ */
 
-char *
-canonicalize_file_name (const char *path)
-{
-  char *ret;
-#ifdef PATH_MAX
-  ret = xmalloc (PATH_MAX);
-  (void) realpath (path, ret);
-#else
-  ret = realpath (path, NULL);
-#endif
-  return ret;
-}
-
 #ifdef GRUB_UTIL
 void
 grub_util_init_nls (void)

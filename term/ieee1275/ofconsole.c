@@ -194,14 +194,15 @@ grub_ofconsole_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_col
   *highlight_color = grub_ofconsole_highlight_color;
 }
 
+#define ANSI_C0 0x9b
+
 static int
 grub_ofconsole_readkey (int *key)
 {
-  char c;
+  grub_uint8_t c;
   grub_ssize_t actual = 0;
 
   grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-
   if (actual > 0)
     switch(c)
       {
@@ -209,25 +210,30 @@ grub_ofconsole_readkey (int *key)
         /* Backspace: Ctrl-h.  */
         c = '\b'; 
         break;
+      case ANSI_C0:
       case '\e':
 	{
 	  grub_uint64_t start;
-	  grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
 
-	  /* On 9600 we have to wait up to 12 milliseconds.  */
-	  start = grub_get_time_ms ();
-	  while (actual <= 0 && grub_get_time_ms () - start < 12)
-	    grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-
-	  if (actual <= 0)
+	  if (c == '\e')
 	    {
-	      *key = '\e';
-	      return 1;
+	      grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+
+	      /* On 9600 we have to wait up to 12 milliseconds.  */
+	      start = grub_get_time_ms ();
+	      while (actual <= 0 && grub_get_time_ms () - start < 12)
+		grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
+
+	      if (actual <= 0)
+		{
+		  *key = '\e';
+		  return 1;
+		}
+
+	      if (c != '[')
+		return 0;
 	    }
 
-	  if (c != '[')
-	    return 0;
-	  
 	  grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
 
 	  /* On 9600 we have to wait up to 12 milliseconds.  */
@@ -321,7 +327,7 @@ grub_ofconsole_getkey (void)
 static grub_uint16_t
 grub_ofconsole_getxy (void)
 {
-  return ((grub_curr_x - 1) << 8) | grub_curr_y;
+  return (grub_curr_x << 8) | grub_curr_y;
 }
 
 static void

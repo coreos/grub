@@ -152,6 +152,7 @@ case "$target_cpu" in
   sparc64)      cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_SPARC64";
                 machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
+machine_CPPFLAGS="$machine_CPPFLAGS -DMACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
 
 CPPFLAGS="$CPPFLAGS $cpu_CPPFLAGS $machine_CPPFLAGS"
 TARGET_CFLAGS="$TARGET_CFLAGS $cpu_CPPFLAGS $machine_CPPFLAGS"

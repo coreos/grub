@@ -89,7 +89,7 @@ GNULIB_CFLAGS = $(GNULIB_UTIL_CFLAGS) $(POSIX_CFLAGS)
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@ $(LIBS)
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
-	 -DGRUB_LIBDIR=\"$(pkglibdir)\" -DLOCALEDIR=\"$(localedir)\"
+	 -DGRUB_LIBDIR=\"$(libdir)\" -DLOCALEDIR=\"$(localedir)\"
 TARGET_CC = @TARGET_CC@
 TARGET_CFLAGS = -ffreestanding @TARGET_CFLAGS@
 TARGET_ASFLAGS = -nostdinc -fno-builtin @TARGET_ASFLAGS@

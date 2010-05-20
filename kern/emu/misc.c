@@ -176,6 +176,19 @@ grub_get_rtc (void)
 	     * GRUB_TICKS_PER_SECOND / 1000000));
 }
 
+char *
+canonicalize_file_name (const char *path)
+{
+  char *ret;
+#ifdef PATH_MAX
+  ret = xmalloc (PATH_MAX);
+  (void) realpath (path, ret);
+#else
+  ret = realpath (path, NULL);
+#endif
+  return ret;
+}
+
 #ifdef __CYGWIN__
 /* Convert POSIX path to Win32 path,
    remove drive letter, replace backslashes.  */
