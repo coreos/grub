@@ -37,10 +37,6 @@
 #include <grub/gui_string_util.h>
 #include <grub/icon_manager.h>
 
-/* The component ID identifying GUI components to be updated as the timeout
-   status changes.  */
-#define TIMEOUT_COMPONENT_ID "__timeout__"
-
 static void
 init_terminal (grub_gfxmenu_view_t view);
 static grub_video_rect_t term_rect;
@@ -166,16 +162,28 @@ struct progress_value_data
   int value;
 };
 
-static void
-update_timeout_visit (grub_gui_component_t component,
-                      void *userdata)
-{
-  struct progress_value_data *pv;
-  pv = (struct progress_value_data *) userdata;
+struct grub_gfxmenu_timeout_notify *grub_gfxmenu_timeout_notifications;
 
-  ((struct grub_gui_progress *) component)->ops
-    ->set_state ((struct grub_gui_progress *) component,
-		 pv->visible, pv->start, pv->value, pv->end);
+static void
+update_timeouts (int visible, int start, int value, int end)
+{
+  struct grub_gfxmenu_timeout_notify *cur;
+
+  for (cur = grub_gfxmenu_timeout_notifications; cur; cur = cur->next)
+    cur->set_state (cur->self, visible, start, value, end);
+}
+
+static void
+redraw_timeouts (struct grub_gfxmenu_view *view)
+{
+  struct grub_gfxmenu_timeout_notify *cur;
+
+  for (cur = grub_gfxmenu_timeout_notifications; cur; cur = cur->next)
+    {
+      grub_video_rect_t bounds;
+      cur->self->ops->get_bounds (cur->self, &bounds);
+      grub_gfxmenu_view_redraw (view, &bounds);
+    }
 }
 
 void 
@@ -183,67 +191,26 @@ grub_gfxmenu_print_timeout (int timeout, void *data)
 {
   struct grub_gfxmenu_view *view = data;
 
-  struct progress_value_data pv;
-
-  auto void redraw_timeout_visit (grub_gui_component_t component,
-				  void *userdata __attribute__ ((unused)));
-
-  auto void redraw_timeout_visit (grub_gui_component_t component,
-				  void *userdata __attribute__ ((unused)))
-  {
-    grub_video_rect_t bounds;
-    component->ops->get_bounds (component, &bounds);
-    grub_gfxmenu_view_redraw (view, &bounds);
-  }
-
   if (view->first_timeout == -1)
     view->first_timeout = timeout;
 
-  pv.visible = 1;
-  pv.start = -(view->first_timeout + 1);
-  pv.end = 0;
-  pv.value = -timeout;
-
-  grub_gui_find_by_id ((grub_gui_component_t) view->canvas,
-                       TIMEOUT_COMPONENT_ID, update_timeout_visit, &pv);
-  grub_gui_find_by_id ((grub_gui_component_t) view->canvas,
-		       TIMEOUT_COMPONENT_ID, redraw_timeout_visit, &pv);
+  update_timeouts (1, -(view->first_timeout + 1), -timeout, 0);
+  redraw_timeouts (view);
   grub_video_swap_buffers ();
   if (view->double_repaint)
-    grub_gui_find_by_id ((grub_gui_component_t) view->canvas,
-			 TIMEOUT_COMPONENT_ID, redraw_timeout_visit, &pv);
+    redraw_timeouts (view);
 }
 
 void 
 grub_gfxmenu_clear_timeout (void *data)
 {
-  struct progress_value_data pv;
   struct grub_gfxmenu_view *view = data;
 
-  auto void redraw_timeout_visit (grub_gui_component_t component,
-				  void *userdata __attribute__ ((unused)));
-
-  auto void redraw_timeout_visit (grub_gui_component_t component,
-				  void *userdata __attribute__ ((unused)))
-  {
-    grub_video_rect_t bounds;
-    component->ops->get_bounds (component, &bounds);
-    grub_gfxmenu_view_redraw (view, &bounds);
-  }
-
-  pv.visible = 0;
-  pv.start = 1;
-  pv.end = 0;
-  pv.value = 0;
-
-  grub_gui_find_by_id ((grub_gui_component_t) view->canvas,
-                       TIMEOUT_COMPONENT_ID, update_timeout_visit, &pv);
-  grub_gui_find_by_id ((grub_gui_component_t) view->canvas,
-		       TIMEOUT_COMPONENT_ID, redraw_timeout_visit, &pv);
+  update_timeouts (0, 1, 0, 0);
+  redraw_timeouts (view);
   grub_video_swap_buffers ();
   if (view->double_repaint)
-    grub_gui_find_by_id ((grub_gui_component_t) view->canvas,
-			 TIMEOUT_COMPONENT_ID, redraw_timeout_visit, &pv);
+    redraw_timeouts (view);
 }
 
 static void
