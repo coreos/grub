@@ -9,6 +9,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
 
 #include <grub/mm.h>
 #include <grub/err.h>

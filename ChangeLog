@@ -1,3 +1,8 @@
+2010-05-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/misc.c: Move inclusion of <limits.h> to ...
+	* kern/emu/misc.c: ... here.  Needed for canonicalize_file_name.
+
 2010-05-20  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* kern/emu/hostdisk.c (grub_util_biosdisk_get_grub_dev) [__NetBSD__]:
