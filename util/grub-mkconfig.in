@@ -50,7 +50,13 @@ EOF
 }
 
 # Check the arguments.
+next_grub_cfg=false
 for option in "$@"; do
+    if $next_grub_cfg; then
+	grub_cfg=$option
+	next_grub_cfg=false
+	continue
+    fi
     case "$option" in
     -h | --help)
 	usage
@@ -59,8 +65,7 @@ for option in "$@"; do
 	echo "$0 (GNU GRUB ${package_version})"
 	exit 0 ;;
     -o)
-	shift
-	grub_cfg=$1
+	next_grub_cfg=:
 	;;
     --output=*)
 	grub_cfg=`echo "$option" | sed 's/--output=//'`
@@ -72,6 +77,11 @@ for option in "$@"; do
 	;;
     esac
 done
+if $next_grub_cfg; then
+    echo "Missing argument to \`-o'" 1>&2
+    usage
+    exit 1
+fi
 
 . ${libdir}/grub/grub-mkconfig_lib
 
