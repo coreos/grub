@@ -86,28 +86,18 @@ grub_script_argv_next (struct grub_script_argv *argv)
 {
   char **p = argv->args;
 
-  if (argv->argc == 0)
-    {
-      p = grub_malloc (2 * sizeof (char *));
-      if (! p)
-	return 1;
-
-      argv->argc = 1;
-      argv->args = p;
-      argv->args[0] = 0;
-      argv->args[1] = 0;
-      return 0;
-    }
-
-  if (! argv->args[argv->argc - 1])
+  if (argv->args && argv->args[argv->argc - 1] == 0)
     return 0;
 
-  p = grub_realloc (p, round_up_exp ((argv->argc + 1) * sizeof (char *)));
+  p = grub_realloc (p, round_up_exp ((argv->argc + 2) * sizeof (char *)));
   if (! p)
     return 1;
 
   argv->argc++;
   argv->args = p;
+
+  if (argv->argc == 1)
+    argv->args[0] = 0;
   argv->args[argv->argc] = 0;
   return 0;
 }
