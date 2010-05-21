@@ -1,3 +1,8 @@
+2010-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/i386/pc/init.c (make_install_device): Fix a leftover usage of old
+	partition naming style.
+
 2010-05-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig.in: Fix handling of -o so that it works when
