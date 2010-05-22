@@ -36,7 +36,7 @@ grub_dma_free (struct grub_pci_dma_chunk *ch)
 #endif
 
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
-void *
+volatile void *
 grub_dma_get_virt (struct grub_pci_dma_chunk *ch)
 {
   return (void *) ((((grub_uint32_t) ch) & 0x1fffffff) | 0xa0000000);
@@ -45,7 +45,7 @@ grub_dma_get_virt (struct grub_pci_dma_chunk *ch)
 grub_uint32_t
 grub_dma_get_phys (struct grub_pci_dma_chunk *ch)
 {
-  return ((grub_uint32_t) ch) & 0x1fffffff;
+  return (((grub_uint32_t) ch) & 0x1fffffff) | 0x80000000;
 }
 #else
 
