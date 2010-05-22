@@ -66,6 +66,49 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
   return GRUB_ERR_NONE;
 }
 
+static void
+init_pci (void)
+{
+  auto int NESTED_FUNC_ATTR set_card (grub_pci_device_t dev, grub_pci_id_t pciid);
+  int NESTED_FUNC_ATTR set_card (grub_pci_device_t dev, grub_pci_id_t pciid)
+  {
+    grub_pci_address_t addr;
+    /* FIXME: autoscan for BARs and devices.  */
+    switch (pciid)
+      {
+      case 0x00351033:
+	addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
+	grub_pci_write (addr, 0x5025000);
+	addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+	grub_pci_write (addr, 0x2100146);
+	break;
+      case 0x00e01033:
+	addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
+	grub_pci_write (addr, 0x5026000);
+	addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+	grub_pci_write (addr, 0x2100146);
+	break;
+      }
+    return 0;
+  }
+
+  *((volatile grub_uint32_t *) GRUB_CPU_LOONGSON_PCI_HIT1_SEL_LO) = 0x8000000c;
+  *((volatile grub_uint32_t *) GRUB_CPU_LOONGSON_PCI_HIT1_SEL_HI) = 0xffffffff;
+
+  /* Setup PCI controller.  */
+  *((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER
+				+ GRUB_PCI_REG_COMMAND)) = 0x22b00046;
+  *((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER
+				+ GRUB_PCI_REG_CACHELINE)) = 0xff;
+  *((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER 
+				+ GRUB_PCI_REG_ADDRESS_REG0))
+    = 0x80000000 | GRUB_PCI_ADDR_MEM_TYPE_64 | GRUB_PCI_ADDR_MEM_PREFETCH;
+  *((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER 
+				+ GRUB_PCI_REG_ADDRESS_REG1)) = 0;
+
+  grub_pci_iterate (set_card);
+}
+
 void
 grub_machine_init (void)
 {
@@ -123,16 +166,7 @@ grub_machine_init (void)
 
       grub_cs5536_init_geode (dev);
 
-      /* Setup PCI controller.  */
-      *((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER
-				    + GRUB_PCI_REG_COMMAND)) = 0x22b00046;
-      *((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER
-				    + GRUB_PCI_REG_CACHELINE)) = 0xff;
-      *((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER 
-				    + GRUB_PCI_REG_ADDRESS_REG0))
-	= 0x80000000 | GRUB_PCI_ADDR_MEM_TYPE_64 | GRUB_PCI_ADDR_MEM_PREFETCH;
-      *((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER 
-				    + GRUB_PCI_REG_ADDRESS_REG1)) = 0;
+      init_pci ();
     }
 
   modend = grub_modules_get_end ();
