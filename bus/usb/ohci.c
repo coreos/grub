@@ -104,10 +104,12 @@ typedef enum
 
 #define GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_MASK 0x8fff0000
 #define GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT 16
+#define GRUB_OHCI_REG_FRAME_INTERVAL_FI_SHIFT 0
 
 /* XXX: Is this choice of timings sane?  */
 #define GRUB_OHCI_FSMPS 0x2778
 #define GRUB_OHCI_PERIODIC_START 0x257f
+#define GRUB_OHCI_FRAME_INTERVAL 0x2edf
 
 static grub_uint32_t
 grub_ohci_readreg32 (struct grub_ohci *o, grub_ohci_reg_t reg)
@@ -135,11 +137,11 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
   grub_pci_address_t addr;
   struct grub_ohci *o;
   grub_uint32_t revision;
-  grub_uint32_t frame_interval;
   int cs5536;
 
   /* Determine IO base address.  */
   grub_dprintf ("ohci", "pciid = %x\n", pciid);
+
   if (pciid == GRUB_CS5536_PCIID)
     {
       grub_uint64_t basereg;
@@ -215,19 +217,16 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
 			 & ~GRUB_OHCI_RHUB_PORT_POWER_MASK)
 			| GRUB_OHCI_RHUB_PORT_ALL_POWERED);
 
-  /* Backup the frame interval register.  */
-  frame_interval = grub_ohci_readreg32 (o, GRUB_OHCI_REG_FRAME_INTERVAL);
-
   /* Suspend the OHCI by issuing a reset.  */
   grub_ohci_writereg32 (o, GRUB_OHCI_REG_CMDSTATUS, 1); /* XXX: Magic.  */
   grub_millisleep (1);
   grub_dprintf ("ohci", "OHCI reset\n");
 
-  /* Restore the frame interval register.  */
-  frame_interval = (frame_interval & ~GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_MASK)
-    | (GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT
-       << GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT);
-  grub_ohci_writereg32 (o, GRUB_OHCI_REG_FRAME_INTERVAL, frame_interval);
+  grub_ohci_writereg32 (o, GRUB_OHCI_REG_FRAME_INTERVAL,
+			(GRUB_OHCI_FSMPS
+			 << GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT)
+			| (GRUB_OHCI_FRAME_INTERVAL
+			   << GRUB_OHCI_REG_FRAME_INTERVAL_FI_SHIFT));
 
   grub_ohci_writereg32 (o, GRUB_OHCI_REG_PERIODIC_START,
 			GRUB_OHCI_PERIODIC_START);
