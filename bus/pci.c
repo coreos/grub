@@ -91,6 +91,14 @@ grub_pci_iterate (grub_pci_iteratefunc_t hook)
 	      if (id >> 16 == 0xFFFF)
 		continue;
 
+	      /* Skip ghosts.  */
+	      if (id == GRUB_YEELOONG_OHCI_PCIID
+		  && dev.function == GRUB_YEELOONG_OHCI_GHOST_FUNCTION)
+		continue;
+	      if (id == GRUB_YEELOONG_EHCI_PCIID
+		  && dev.function == GRUB_YEELOONG_EHCI_GHOST_FUNCTION)
+		continue;
+
 	      if (hook (dev, id))
 		return;
 
