@@ -68,37 +68,23 @@ static void  copy_string (struct grub_parser_param *, const char *,
 
 %top{
 
+#include <sys/types.h>
+
+typedef size_t yy_size_t;
+#define YY_TYPEDEF_YY_SIZE_T 1
+
 /* 
  * Some flex hacks for -nostdinc; XXX We need to fix these when libc
  * support becomes availble in GRUB.
  */
 
-#include <grub/types.h>
-
-typedef grub_size_t size_t;
-typedef grub_size_t yy_size_t;
-#define YY_TYPEDEF_YY_SIZE_T 1
-
-#define FILE   void
+#ifndef GRUB_UTIL
 #define stdin  0
 #define stdout 0
-#define EOF    0
-
-#define errno  grub_errno
-#define EINVAL GRUB_ERR_BAD_NUMBER
-#define ENOMEM GRUB_ERR_OUT_OF_MEMORY
-
-#define strlen grub_strlen
-#define memset grub_memset
 
 #define fprintf(...) 0
 #define exit(...)
-
-#pragma GCC diagnostic warning "-Wunused-variable"
-#pragma GCC diagnostic warning "-Wunused-function"
-#pragma GCC diagnostic warning "-Wunused-parameter"
-#pragma GCC diagnostic warning "-Wstrict-prototypes"
-#pragma GCC diagnostic warning "-Wmissing-prototypes"
+#endif
 
 }
 
@@ -126,9 +112,9 @@ typedef grub_size_t yy_size_t;
 %option extra-type="struct grub_parser_param*"
 
 BLANK           [ \t]
-COMMENT         ^[ \t]*#.*$
+COMMENT         #.*$
 
-CHAR            [^|&$;<> \t\n\'\"\\]
+CHAR            [^{}|&$;<> \t\n\'\"\\]
 DIGITS          [[:digit:]]+
 NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
 
@@ -225,7 +211,7 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
                   ARG (GRUB_SCRIPT_ARG_TYPE_TEXT);
                 }
   \\            |
-  [^\"\'$\\]+   { COPY (yytext, yyleng); }
+  [^\"\'\$\\]+  { COPY (yytext, yyleng); }
   <<EOF>>       {
                   yy_pop_state (yyscanner);
                   yypop_buffer_state (yyscanner);
@@ -268,6 +254,11 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 }
 
 <DQUOTE>{
+  \\\$          { COPY ("$", 1); }
+  \\\\          { COPY ("\\", 1); }
+  \\\"          { COPY ("\"", 1); }
+  \\\n          { /* ignore */ }
+  [^\"\$\\\n]+  { COPY (yytext, yyleng); }
   \"            {
                   yy_pop_state (yyscanner);
                   ARG (GRUB_SCRIPT_ARG_TYPE_DQSTR);
@@ -276,10 +267,6 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
                   yy_push_state (VAR, yyscanner);
                   ARG (GRUB_SCRIPT_ARG_TYPE_DQSTR);
                 }
-  \\\\          { COPY ("\\", 1); }
-  \\\"          { COPY ("\"", 1); }
-  \\\n          { /* ignore */ }
-  [^\"$\\\n]+   { COPY (yytext, yyleng); }
   (.|\n)        { COPY (yytext, yyleng); }
 }
 

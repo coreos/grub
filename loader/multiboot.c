@@ -50,7 +50,7 @@
 #include <grub/efi/efi.h>
 #endif
 
-#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
 #define DEFAULT_VIDEO_MODE "text"
 #else
 #define DEFAULT_VIDEO_MODE "auto"
@@ -335,14 +335,16 @@ GRUB_MOD_INIT(multiboot)
 #ifdef GRUB_USE_MULTIBOOT2
     grub_register_command ("multiboot2", grub_cmd_multiboot,
 			   0, N_("Load a multiboot 2 kernel."));
+  cmd_module =
+    grub_register_command ("module2", grub_cmd_module,
+			   0, N_("Load a multiboot 2 module."));
 #else
     grub_register_command ("multiboot", grub_cmd_multiboot,
 			   0, N_("Load a multiboot kernel."));
-#endif
-
   cmd_module =
     grub_register_command ("module", grub_cmd_module,
 			   0, N_("Load a multiboot module."));
+#endif
 
   my_mod = mod;
 }

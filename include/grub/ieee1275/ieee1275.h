@@ -100,6 +100,9 @@ enum grub_ieee1275_flag
 
   /* Open Hack'Ware don't support the ANSI sequence.  */
   GRUB_IEEE1275_FLAG_NO_ANSI,
+
+  /* OpenFirmware hangs on qemu if one requests any memory below 1.5 MiB.  */
+  GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM,
 };
 
 extern int EXPORT_FUNC(grub_ieee1275_test_flag) (enum grub_ieee1275_flag flag);

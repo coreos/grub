@@ -27,25 +27,6 @@
 void EXPORT_FUNC (grub_reboot) (void);
 void EXPORT_FUNC (grub_halt) (void);
 
-/* The prefix which points to the directory where GRUB modules and its
-   configuration file are located.  */
-extern char grub_prefix[];
-
-#define GRUB_PLATFORM_IMAGE_FORMATS     "raw, elf"
-#define GRUB_PLATFORM_IMAGE_DEFAULT_FORMAT     "raw"
-
-#define GRUB_PLATFORM_IMAGE_DEFAULT GRUB_PLATFORM_IMAGE_RAW
-
-#ifndef ASM_FILE
-
-typedef enum {
-  GRUB_PLATFORM_IMAGE_RAW,
-  GRUB_PLATFORM_IMAGE_ELF
-}
-  grub_platform_image_format_t;
-#define GRUB_PLATFORM_IMAGE_RAW GRUB_PLATFORM_IMAGE_RAW
-#define GRUB_PLATFORM_IMAGE_ELF GRUB_PLATFORM_IMAGE_ELF
-
 #endif
 
 #endif /* ! GRUB_KERNEL_MACHINE_HEADER */

@@ -9,7 +9,7 @@ kernel_img_HEADERS += pci.h bitmap.h video.h gfxterm.h font.h \
 
 include $(srcdir)/conf/mips.mk
 
-pkglib_IMAGES = kernel.img
+pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
 	kern/main.c kern/device.c kern/$(target_cpu)/init.c \
 	kern/$(target_cpu)/$(target_machine)/init.c 		\
@@ -31,8 +31,7 @@ kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
 	symlist.c
 kernel_img_CFLAGS = $(COMMON_CFLAGS) -DUSE_ASCII_FAILBACK
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
-	-Wl,-N,-S,-Ttext,$(LINK_BASE),-Bstatic
+kernel_img_LDFLAGS += $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,$(LINK_BASE),-Bstatic
 kernel_img_FORMAT = binary
 
 pkglib_IMAGES += fwstart.img

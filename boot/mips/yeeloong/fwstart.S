@@ -18,7 +18,6 @@
 
 #include <grub/mips/yeeloong/serial.h>
 #include <grub/mips/yeeloong/pci.h>
-#include <grub/mips/yeeloong/boot.h>
 #include <grub/mips/loongson.h>
 #include <grub/pci.h>
 #include <grub/serial.h>
@@ -132,7 +131,7 @@ __start:
 
 	b continue
 
-	. = start + GRUB_MACHINE_FLASH_TLB_REFILL - GRUB_MACHINE_FLASH_START
+	. = start + GRUB_CPU_LOONGSON_FLASH_TLB_REFILL - GRUB_CPU_LOONGSON_FLASH_START
 tlb_refill:	
 	mfc0 $s1, GRUB_CPU_LOONGSON_COP0_EPC
 	mfc0 $s2, GRUB_CPU_LOONGSON_COP0_BADVADDR
@@ -166,13 +165,13 @@ tlb_refill:
 	b fatal
 	 addiu $a0, $a0, %lo(unhandled_tlb_refill)
 
-	. = start + GRUB_MACHINE_FLASH_CACHE_ERROR - GRUB_MACHINE_FLASH_START
+	. = start + GRUB_CPU_LOONGSON_FLASH_CACHE_ERROR - GRUB_CPU_LOONGSON_FLASH_START
 cache_error:
 	lui $a0, %hi(unhandled_cache_error)
 	b fatal
 	 addiu $a0, $a0, %lo(unhandled_cache_error)
 
-	. = start + GRUB_MACHINE_FLASH_OTHER_EXCEPTION - GRUB_MACHINE_FLASH_START
+	. = start + GRUB_CPU_LOONGSON_FLASH_OTHER_EXCEPTION - GRUB_CPU_LOONGSON_FLASH_START
 other_exception:
 	mfc0 $s0, GRUB_CPU_LOONGSON_COP0_CAUSE
 	mfc0 $s1, GRUB_CPU_LOONGSON_COP0_EPC
@@ -432,13 +431,13 @@ regdump:
 write_dumpreg:	
 	ld $t2, 0($t6)
 	sd $t2, 0($t4)
-	addiu $t4, $t4, GRUB_MACHINE_DDR2_REG_STEP
+	addiu $t4, $t4, GRUB_CPU_LOONGSON_DDR2_REG_STEP
 	jr $ra
-	 addiu $t6, $t6, GRUB_MACHINE_DDR2_REG_SIZE
+	 addiu $t6, $t6, GRUB_CPU_LOONGSON_DDR2_REG_SIZE
 
 continue:
-	lui $t4, %hi(GRUB_MACHINE_DDR2_BASE)
-	addiu $t4, $t4, %lo(GRUB_MACHINE_DDR2_BASE)
+	lui $t4, %hi(GRUB_CPU_LOONGSON_DDR2_BASE)
+	addiu $t4, $t4, %lo(GRUB_CPU_LOONGSON_DDR2_BASE)
 	lui $t6, %hi(regdump)
 
 	/* 0 */
@@ -454,12 +453,12 @@ continue:
 	ori $t7, $zero, 8
 	bne $v0, $t7, 1f
 	 ori $t5, $t5, 0x0001
-	ori $t8, $t8, GRUB_MACHINE_DDR2_REG1_HI_8BANKS
+	ori $t8, $t8, GRUB_CPU_LOONGSON_DDR2_REG1_HI_8BANKS
 1:
 	dsll $t8, $t8, 32
 	or $t5, $t5, $t8
 	sd  $t5, 0 ($t4)
-	addiu $t4, $t4, GRUB_MACHINE_DDR2_REG_STEP
+	addiu $t4, $t4, GRUB_CPU_LOONGSON_DDR2_REG_STEP
 
 	/* 2 */
 	bal write_dumpreg
@@ -513,24 +512,24 @@ continue:
 	or $t5, $t5, $v0
 	sd  $t5, 0 ($t4)
 
-	addiu $t4, $t4, GRUB_MACHINE_DDR2_REG_STEP
+	addiu $t4, $t4, GRUB_CPU_LOONGSON_DDR2_REG_STEP
 	
 	ori $t7, $zero, 0x16
 
 1:	
 	ld $t2, 0($t6)
 	sd $t2, 0($t4)
-	addiu $t4, $t4, GRUB_MACHINE_DDR2_REG_STEP
+	addiu $t4, $t4, GRUB_CPU_LOONGSON_DDR2_REG_STEP
 	addiu $t7, $t7, -1
 	bne $t7, $zero, 1b
-	 addiu $t6, $t6, GRUB_MACHINE_DDR2_REG_SIZE
+	 addiu $t6, $t6, GRUB_CPU_LOONGSON_DDR2_REG_SIZE
 	
-	lui $t4, %hi(GRUB_MACHINE_DDR2_BASE)
-	ld  $t5, (%lo(GRUB_MACHINE_DDR2_BASE) + 0x30) ($t4)
+	lui $t4, %hi(GRUB_CPU_LOONGSON_DDR2_BASE)
+	ld  $t5, (%lo(GRUB_CPU_LOONGSON_DDR2_BASE) + 0x30) ($t4)
 	ori $t0, $zero, 1
 	dsll $t0, $t0, 40
 	or $t5, $t5, $t0
-	sd  $t5, (%lo(GRUB_MACHINE_DDR2_BASE) + 0x30) ($t4)
+	sd  $t5, (%lo(GRUB_CPU_LOONGSON_DDR2_BASE) + 0x30) ($t4)
 
 	/* Desactivate DDR2 registers.  */
         lui	$t0, %hi (GRUB_CPU_LOONGSON_CORECFG)

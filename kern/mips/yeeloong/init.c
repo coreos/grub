@@ -27,7 +27,6 @@
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
 #include <grub/mips/loongson.h>
-#include <grub/cpu/kernel.h>
 #include <grub/cs5536.h>
 #include <grub/term.h>
 #include <grub/machine/ec.h>

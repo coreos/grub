@@ -4,18 +4,11 @@
 COMMON_CFLAGS += -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
 
 # Images.
-kernel_img_HEADERS += cpu/libgcc.h cpu/cache.h
+kernel_img_HEADERS += cpu/cache.h
 
 # Scripts.
 sbin_SCRIPTS = 
 bin_SCRIPTS = 
-
-# For grub-mkimage.
-bin_UTILITIES += grub-mkimage
-grub_mkimage_SOURCES = gnulib/progname.c util/grub-mkrawimage.c util/misc.c \
-	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
-grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(LINK_BASE)
-util/grub-mkrawimage.c_DEPENDENCIES = Makefile
 
 # For serial.mod.
 pkglib_MODULES += serial.mod

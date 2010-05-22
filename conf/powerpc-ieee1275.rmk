@@ -3,7 +3,7 @@
 
 # Images.
 
-kernel_img_HEADERS += cpu/libgcc.h ieee1275/ieee1275.h
+kernel_img_HEADERS += ieee1275/ieee1275.h
 
 # Programs
 pkglib_PROGRAMS = kernel.img
@@ -23,8 +23,7 @@ kernel_img_SOURCES = kern/powerpc/ieee1275/startup.S kern/ieee1275/cmain.c \
 	symlist.c kern/$(target_cpu)/cache.S
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
-	-Wl,-N,-S,-Ttext,0x200000,-Bstatic
+kernel_img_LDFLAGS += $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x200000,-Bstatic
 
 # Scripts.
 sbin_SCRIPTS = grub-install
