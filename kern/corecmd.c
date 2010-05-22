@@ -26,6 +26,7 @@
 #include <grub/file.h>
 #include <grub/device.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 /* set ENVVAR=VALUE */
 static grub_err_t
@@ -70,18 +71,6 @@ grub_core_cmd_unset (struct grub_command *cmd __attribute__ ((unused)),
 		       "no environment variable specified");
 
   grub_env_unset (argv[0]);
-  return 0;
-}
-
-static grub_err_t
-grub_core_cmd_export (struct grub_command *cmd __attribute__ ((unused)),
-		      int argc, char **args)
-{
-  if (argc < 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "no environment variable specified");
-
-  grub_env_export (args[0]);
   return 0;
 }
 
@@ -190,13 +179,13 @@ void
 grub_register_core_commands (void)
 {
   grub_register_command ("set", grub_core_cmd_set,
-			 "set [ENVVAR=VALUE]", "set an environment variable");
+			 N_("[ENVVAR=VALUE]"),
+			 N_("Set an environment variable."));
   grub_register_command ("unset", grub_core_cmd_unset,
-			 "unset ENVVAR", "remove an environment variable");
-  grub_register_command ("export", grub_core_cmd_export,
-			 "export ENVVAR", "Export a variable.");
+			 N_("ENVVAR"),
+			 N_("Remove an environment variable."));
   grub_register_command ("ls", grub_core_cmd_ls,
-			 "ls [ARG]", "list devices or files");
+			 N_("[ARG]"), N_("List devices or files."));
   grub_register_command ("insmod", grub_core_cmd_insmod,
-			 "insmod MODULE", "insert a module");
+			 N_("MODULE"), N_("Insert a module."));
 }

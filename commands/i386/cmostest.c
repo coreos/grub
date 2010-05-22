@@ -19,7 +19,7 @@
 #include <grub/dl.h>
 #include <grub/command.h>
 #include <grub/misc.h>
-#include <grub/i386/cmos.h>
+#include <grub/cmos.h>
 
 static grub_err_t
 grub_cmd_cmostest (struct grub_command *cmd __attribute__ ((unused)),

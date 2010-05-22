@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@
 
 #include <config.h>
 #include <grub/cpu/types.h>
-
-#define UNUSED __attribute__ ((unused))
 
 #ifdef GRUB_UTIL
 # define GRUB_CPU_SIZEOF_VOID_P	SIZEOF_VOID_P
@@ -180,21 +178,6 @@ static inline grub_uint64_t grub_swap_bytes64(grub_uint64_t x)
 # define grub_be_to_cpu16(x)	((grub_uint16_t) (x))
 # define grub_be_to_cpu32(x)	((grub_uint32_t) (x))
 # define grub_be_to_cpu64(x)	((grub_uint64_t) (x))
-# ifdef GRUB_TARGET_WORDS_BIGENDIAN
-#  define grub_target_to_host16(x)	((grub_uint16_t) (x))
-#  define grub_target_to_host32(x)	((grub_uint32_t) (x))
-#  define grub_target_to_host64(x)	((grub_uint64_t) (x))
-#  define grub_host_to_target16(x)	((grub_uint16_t) (x))
-#  define grub_host_to_target32(x)	((grub_uint32_t) (x))
-#  define grub_host_to_target64(x)	((grub_uint64_t) (x))
-# else /* ! GRUB_TARGET_WORDS_BIGENDIAN */
-#  define grub_target_to_host16(x)	grub_swap_bytes16(x)
-#  define grub_target_to_host32(x)	grub_swap_bytes32(x)
-#  define grub_target_to_host64(x)	grub_swap_bytes64(x)
-#  define grub_host_to_target16(x)	grub_swap_bytes16(x)
-#  define grub_host_to_target32(x)	grub_swap_bytes32(x)
-#  define grub_host_to_target64(x)	grub_swap_bytes64(x)
-# endif
 #else /* ! WORDS_BIGENDIAN */
 # define grub_cpu_to_le16(x)	((grub_uint16_t) (x))
 # define grub_cpu_to_le32(x)	((grub_uint32_t) (x))
@@ -208,21 +191,6 @@ static inline grub_uint64_t grub_swap_bytes64(grub_uint64_t x)
 # define grub_be_to_cpu16(x)	grub_swap_bytes16(x)
 # define grub_be_to_cpu32(x)	grub_swap_bytes32(x)
 # define grub_be_to_cpu64(x)	grub_swap_bytes64(x)
-# ifdef GRUB_TARGET_WORDS_BIGENDIAN
-#  define grub_target_to_host16(x)	grub_swap_bytes16(x)
-#  define grub_target_to_host32(x)	grub_swap_bytes32(x)
-#  define grub_target_to_host64(x)	grub_swap_bytes64(x)
-#  define grub_host_to_target16(x)	grub_swap_bytes16(x)
-#  define grub_host_to_target32(x)	grub_swap_bytes32(x)
-#  define grub_host_to_target64(x)	grub_swap_bytes64(x)
-# else /* ! GRUB_TARGET_WORDS_BIGENDIAN */
-#  define grub_target_to_host16(x)	((grub_uint16_t) (x))
-#  define grub_target_to_host32(x)	((grub_uint32_t) (x))
-#  define grub_target_to_host64(x)	((grub_uint64_t) (x))
-#  define grub_host_to_target16(x)	((grub_uint16_t) (x))
-#  define grub_host_to_target32(x)	((grub_uint32_t) (x))
-#  define grub_host_to_target64(x)	((grub_uint64_t) (x))
-# endif
 #endif /* ! WORDS_BIGENDIAN */
 
 #endif /* ! GRUB_TYPES_HEADER */

@@ -1,7 +1,7 @@
 /* vbeinfo.c - command to list compatible VBE video modes.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include <grub/machine/vbe.h>
 #include <grub/mm.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static void *
 real2pm (grub_vbe_farptr_t ptr)
@@ -175,7 +176,7 @@ GRUB_MOD_INIT(vbeinfo)
 {
   cmd =
     grub_register_command ("vbeinfo", grub_cmd_vbeinfo, 0,
-			   "List compatible VESA BIOS extension video modes.");
+			   N_("List compatible VESA BIOS extension video modes."));
 }
 
 GRUB_MOD_FINI(vbeinfo)

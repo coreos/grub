@@ -1,7 +1,7 @@
 /* udf.c - Universal Disk Format filesystem.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/fshelp.h>
+#include <grub/charset.h>
 
 #define GRUB_UDF_MAX_PDS		2
 #define GRUB_UDF_MAX_PMS		6
@@ -525,7 +526,7 @@ grub_udf_mount (grub_disk_t disk)
       if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
 			  sizeof (struct grub_udf_vrs), &vrs))
 	{
-	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	  goto fail;
 	}
 
@@ -539,7 +540,7 @@ grub_udf_mount (grub_disk_t disk)
 	  (grub_memcmp (vrs.magic, GRUB_UDF_STD_IDENT_CDW02, 5)) &&
 	  (grub_memcmp (vrs.magic, GRUB_UDF_STD_IDENT_TEA01, 5)))
 	{
-	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	  goto fail;
 	}
     }
@@ -552,7 +553,7 @@ grub_udf_mount (grub_disk_t disk)
       if (grub_disk_read (disk, *sblklist << GRUB_UDF_LOG2_BLKSZ, 0,
 			  sizeof (struct grub_udf_avdp), &avdp))
 	{
-	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	  goto fail;
 	}
 
@@ -565,7 +566,7 @@ grub_udf_mount (grub_disk_t disk)
       sblklist++;
       if (*sblklist == 0)
 	{
-	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	  goto fail;
 	}
     }
@@ -579,7 +580,7 @@ grub_udf_mount (grub_disk_t disk)
       if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
 			  sizeof (struct grub_udf_tag), &tag))
 	{
-	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	  goto fail;
 	}
 
@@ -596,7 +597,7 @@ grub_udf_mount (grub_disk_t disk)
 			      sizeof (struct grub_udf_pd),
 			      &data->pds[data->npd]))
 	    {
-	      grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	      grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	      goto fail;
 	    }
 
@@ -612,7 +613,7 @@ grub_udf_mount (grub_disk_t disk)
 			      sizeof (struct grub_udf_lvd),
 			      &data->lvd))
 	    {
-	      grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+	      grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
 	      goto fail;
 	    }
 
@@ -675,7 +676,7 @@ grub_udf_mount (grub_disk_t disk)
   if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
 		      sizeof (struct grub_udf_fileset), &root_fs))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
       goto fail;
     }
 
@@ -745,19 +746,41 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
       else
 	{
 	  enum grub_fshelp_filetype type;
-	  char filename[dirent.file_ident_length + 1];
+	  grub_uint8_t raw[dirent.file_ident_length];
+	  grub_uint16_t utf16[dirent.file_ident_length - 1];
+	  grub_uint8_t filename[dirent.file_ident_length * 2];
+	  grub_size_t utf16len = 0;
 
 	  type = ((dirent.characteristics & GRUB_UDF_FID_CHAR_DIRECTORY) ?
 		  (GRUB_FSHELP_DIR) : (GRUB_FSHELP_REG));
 
 	  if ((grub_udf_read_file (dir, 0, offset,
-				   dirent.file_ident_length, filename))
+				   dirent.file_ident_length,
+				   (char *) raw))
 	      != dirent.file_ident_length)
 	    return 0;
 
-	  filename[dirent.file_ident_length] = 0;
-	  if (hook (&filename[1], type, child))
-	    return 1;
+	  if (raw[0] == 8)
+	    {
+	      unsigned i;
+	      utf16len = dirent.file_ident_length - 1;
+	      for (i = 0; i < utf16len; i++)
+		utf16[i] = raw[i + 1];
+	    }
+	  if (raw[0] == 16)
+	    {
+	      unsigned i;
+	      utf16len = (dirent.file_ident_length - 1) / 2;
+	      for (i = 0; i < utf16len; i++)
+		utf16[i] = (raw[2 * i + 1] << 8) | raw[2*i + 2];
+	    }
+	  if (raw[0] == 8 || raw[0] == 16)
+	    {
+	      *grub_utf16_to_utf8 (filename, utf16, utf16len) = '\0';
+	  
+	      if (hook ((char *) filename, type, child))
+		return 1;
+	    }
 	}
 
       /* Align to dword boundary.  */

@@ -54,6 +54,10 @@ static const grub_uint8_t jpeg_zigzag_order[64] = {
   53, 60, 61, 54, 47, 55, 62, 63
 };
 
+#ifdef JPEG_DEBUG
+static grub_command_t cmd;
+#endif
+
 typedef int jpeg_data_unit_t[64];
 
 struct grub_jpeg_data
@@ -149,10 +153,11 @@ grub_jpeg_get_number (struct grub_jpeg_data *data, int num)
 static int
 grub_jpeg_get_huff_code (struct grub_jpeg_data *data, int id)
 {
-  int code, i;
+  int code;
+  unsigned i;
 
   code = 0;
-  for (i = 0; i < 16; i++)
+  for (i = 0; i < ARRAY_SIZE (data->huff_maxval[id]); i++)
     {
       code <<= 1;
       if (grub_jpeg_get_bit (data))
@@ -167,47 +172,51 @@ grub_jpeg_get_huff_code (struct grub_jpeg_data *data, int id)
 static grub_err_t
 grub_jpeg_decode_huff_table (struct grub_jpeg_data *data)
 {
-  int id, ac, i, n, base, ofs;
+  int id, ac, n, base, ofs;
   grub_uint32_t next_marker;
   grub_uint8_t count[16];
+  unsigned i;
 
   next_marker = data->file->offset;
   next_marker += grub_jpeg_get_word (data);
 
-  id = grub_jpeg_get_byte (data);
-  ac = (id >> 4);
-  id &= 0xF;
-  if (id > 1)
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE,
-		       "jpeg: too many huffman tables");
-
-  if (grub_file_read (data->file, &count, sizeof (count)) !=
-      sizeof (count))
-    return grub_errno;
-
-  n = 0;
-  for (i = 0; i < 16; i++)
-    n += count[i];
-
-  id += ac * 2;
-  data->huff_value[id] = grub_malloc (n);
-  if (grub_errno)
-    return grub_errno;
-
-  if (grub_file_read (data->file, data->huff_value[id], n) != n)
-    return grub_errno;
-
-  base = 0;
-  ofs = 0;
-  for (i = 0; i < 16; i++)
+  while (data->file->offset + sizeof (count) + 1 <= next_marker)
     {
-      base += count[i];
-      ofs += count[i];
+      id = grub_jpeg_get_byte (data);
+      ac = (id >> 4) & 1;
+      id &= 0xF;
+      if (id > 1)
+	return grub_error (GRUB_ERR_BAD_FILE_TYPE,
+			   "jpeg: too many huffman tables");
 
-      data->huff_maxval[id][i] = base;
-      data->huff_offset[id][i] = ofs - base;
+      if (grub_file_read (data->file, &count, sizeof (count)) !=
+	  sizeof (count))
+	return grub_errno;
 
-      base <<= 1;
+      n = 0;
+      for (i = 0; i < ARRAY_SIZE (count); i++)
+	n += count[i];
+
+      id += ac * 2;
+      data->huff_value[id] = grub_malloc (n);
+      if (grub_errno)
+	return grub_errno;
+
+      if (grub_file_read (data->file, data->huff_value[id], n) != n)
+	return grub_errno;
+
+      base = 0;
+      ofs = 0;
+      for (i = 0; i < ARRAY_SIZE (count); i++)
+	{
+	  base += count[i];
+	  ofs += count[i];
+
+	  data->huff_maxval[id][i] = base;
+	  data->huff_offset[id][i] = ofs - base;
+
+	  base <<= 1;
+	}
     }
 
   if (data->file->offset != next_marker)
@@ -225,17 +234,24 @@ grub_jpeg_decode_quan_table (struct grub_jpeg_data *data)
   next_marker = data->file->offset;
   next_marker += grub_jpeg_get_word (data);
 
-  id = grub_jpeg_get_byte (data);
-  if (id >= 0x10)		/* Upper 4-bit is precision.  */
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE,
-		       "jpeg: only 8-bit precision is supported");
+  while (data->file->offset + sizeof (data->quan_table[id]) + 1
+	 <= next_marker)
+    {
+      id = grub_jpeg_get_byte (data);
+      if (id >= 0x10)		/* Upper 4-bit is precision.  */
+	return grub_error (GRUB_ERR_BAD_FILE_TYPE,
+			   "jpeg: only 8-bit precision is supported");
 
-  if (id > 1)
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE,
-		       "jpeg: too many quantization tables");
+      if (id > 1)
+	return grub_error (GRUB_ERR_BAD_FILE_TYPE,
+			   "jpeg: too many quantization tables");
 
-  if (grub_file_read (data->file, &data->quan_table[id], 64) != 64)
-    return grub_errno;
+      if (grub_file_read (data->file, &data->quan_table[id],
+			  sizeof (data->quan_table[id]))
+	  != sizeof (data->quan_table[id]))
+	return grub_errno;
+
+    }
 
   if (data->file->offset != next_marker)
     grub_error (GRUB_ERR_BAD_FILE_TYPE,
@@ -440,7 +456,8 @@ grub_jpeg_idct_transform (jpeg_data_unit_t du)
 static void
 grub_jpeg_decode_du (struct grub_jpeg_data *data, int id, jpeg_data_unit_t du)
 {
-  int pos, h1, h2, qt;
+  int h1, h2, qt;
+  unsigned pos;
 
   grub_memset (du, 0, sizeof (jpeg_data_unit_t));
 
@@ -453,7 +470,7 @@ grub_jpeg_decode_du (struct grub_jpeg_data *data, int id, jpeg_data_unit_t du)
 
   du[0] = data->dc_value[id] * (int) data->quan_table[qt][0];
   pos = 1;
-  while (pos < 64)
+  while (pos < ARRAY_SIZE (data->quan_table[qt]))
     {
       int num, val;
 
@@ -695,7 +712,7 @@ grub_video_reader_jpeg (struct grub_video_bitmap **bitmap,
 
 #if defined(JPEG_DEBUG)
 static grub_err_t
-grub_cmd_jpegtest (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_jpegtest (grub_command_t cmd __attribute__ ((unused)),
 		   int argc, char **args)
 {
   struct grub_video_bitmap *bitmap = 0;
@@ -725,21 +742,20 @@ static struct grub_video_bitmap_reader jpeg_reader = {
   .next = 0
 };
 
-GRUB_MOD_INIT (video_reader_jpeg)
+GRUB_MOD_INIT (jpeg)
 {
   grub_video_bitmap_reader_register (&jpg_reader);
   grub_video_bitmap_reader_register (&jpeg_reader);
 #if defined(JPEG_DEBUG)
-  grub_register_command ("jpegtest", grub_cmd_jpegtest,
-			 GRUB_COMMAND_FLAG_BOTH, "jpegtest FILE",
-			 "Tests loading of JPEG bitmap.", 0);
+  cmd = grub_register_command ("jpegtest", grub_cmd_jpegtest,
+			       "FILE", "Tests loading of JPEG bitmap.");
 #endif
 }
 
-GRUB_MOD_FINI (video_reader_jpeg)
+GRUB_MOD_FINI (jpeg)
 {
 #if defined(JPEG_DEBUG)
-  grub_unregister_command ("jpegtest");
+  grub_unregister_command (cmd);
 #endif
   grub_video_bitmap_reader_unregister (&jpeg_reader);
   grub_video_bitmap_reader_unregister (&jpg_reader);

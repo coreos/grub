@@ -19,7 +19,7 @@
 #include <grub/symbol.h>
 #include <grub/machine/memory.h>
 #include <grub/cpu/linux.h>
-#include <grub/cpu/kernel.h>
+#include <grub/offsets.h>
 #include <multiboot.h>
 #include <multiboot2.h>
 
@@ -42,7 +42,7 @@ _start:
 	 *  This is a special data area at a fixed offset from the beginning.
 	 */
 
-	. = _start + GRUB_KERNEL_CPU_PREFIX
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX
 
 VARIABLE(grub_prefix)
 	/* to be filled by grub-mkimage */
@@ -51,7 +51,7 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = _start + GRUB_KERNEL_CPU_DATA_END
+	. = _start + GRUB_KERNEL_MACHINE_DATA_END
 
 /*
  *  Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).
@@ -66,10 +66,12 @@ multiboot_header:
 	.long	-0x1BADB002 - MULTIBOOT_MEMORY_INFO
 
 codestart:
-	cmpl	$MULTIBOOT_MAGIC2, %eax
+#ifdef GRUB_MACHINE_MULTIBOOT
+	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC, %eax
 	jne 0f
 	movl	%ebx, EXT_C(startup_multiboot_info)
 0:
+#endif
 
 	/* initialize the stack */
 	movl $GRUB_MEMORY_MACHINE_PROT_STACK, %esp

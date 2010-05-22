@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007,2009 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007,2009,2010 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/i386/pc/memory.h>
 
 /*
  * Note: These functions defined in this file may be called from C.
@@ -127,7 +128,7 @@ real_to_prot:
 
 	/* turn on protected mode */
 	movl	%cr0, %eax
-	orl	$GRUB_MEMORY_MACHINE_CR0_PE_ON, %eax
+	orl	$GRUB_MEMORY_CPU_CR0_PE_ON, %eax
 	movl	%eax, %cr0
 
 	/* jump to relocation, flush prefetch queue, and reload %cs */
@@ -196,7 +197,7 @@ tmpcseg:
 
 	/* clear the PE bit of CR0 */
 	movl	%cr0, %eax
-	andl 	$(~GRUB_MEMORY_MACHINE_CR0_PE_ON), %eax
+	andl 	$(~GRUB_MEMORY_CPU_CR0_PE_ON), %eax
 	movl	%eax, %cr0
 
 	/* flush prefetch queue, reload %cs */

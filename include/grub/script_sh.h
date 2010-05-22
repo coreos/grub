@@ -1,7 +1,7 @@
 /* normal_parser.h  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,8 +45,11 @@ struct grub_script
 
 typedef enum
 {
-  GRUB_SCRIPT_ARG_TYPE_STR,
-  GRUB_SCRIPT_ARG_TYPE_VAR
+  GRUB_SCRIPT_ARG_TYPE_VAR,
+  GRUB_SCRIPT_ARG_TYPE_TEXT,
+  GRUB_SCRIPT_ARG_TYPE_DQVAR,
+  GRUB_SCRIPT_ARG_TYPE_DQSTR,
+  GRUB_SCRIPT_ARG_TYPE_SQSTR
 } grub_script_arg_type_t;
 
 /* A part of an argument.  */
@@ -103,6 +106,36 @@ struct grub_script_cmdif
   struct grub_script_cmd *exec_on_false;
 };
 
+/* A for statement.  */
+struct grub_script_cmdfor
+{
+  struct grub_script_cmd cmd;
+
+  /* The name used as looping variable.  */
+  struct grub_script_arg *name;
+
+  /* The words loop iterates over.  */
+  struct grub_script_arglist *words;
+
+  /* The command list executed in each loop.  */
+  struct grub_script_cmd *list;
+};
+
+/* A while/until command.  */
+struct grub_script_cmdwhile
+{
+  struct grub_script_cmd cmd;
+
+  /* The command list used as condition.  */
+  struct grub_script_cmd *cond;
+
+  /* The command list executed in each loop.  */
+  struct grub_script_cmd *list;
+
+  /* The flag to indicate this as "until" loop.  */
+  int until;
+};
+
 /* A menu entry generate statement.  */
 struct grub_script_cmd_menuentry
 {
@@ -121,12 +154,6 @@ struct grub_script_cmd_menuentry
 /* State of the lexer as passed to the lexer.  */
 struct grub_lexer_param
 {
-  /* Set to 0 when the lexer is done.  */
-  int done;
-
-  /* State of the state machine.  */
-  grub_parser_state_t state;
-
   /* Function used by the lexer to get a new line when more input is
      expected, but not available.  */
   grub_reader_getline_t getline;
@@ -136,10 +163,6 @@ struct grub_lexer_param
      Otherwise the lexer can stop processing if the current buffer is
      depleted.  */
   int refs;
-
-  /* The character stream that has to be parsed.  */
-  char *script;
-  char *newscript; /* XXX */
 
   /* While walking through the databuffer, `record' the characters to
      this other buffer.  It can be used to edit the menu entry at a
@@ -157,12 +180,30 @@ struct grub_lexer_param
   /* Size of RECORDING.  */
   int recordlen;
 
-  /* The token that is already parsed but not yet returned. */
-  int tokenonhold;
+  /* End of file reached.  */
+  int eof;
 
-  /* Was the last token a newline? */
-  int was_newline;
+  /* Merge multiple word tokens.  */
+  int merge_start;
+  int merge_end;
+
+  /* Part of a multi-part token.  */
+  char *text;
+  unsigned used;
+  unsigned size;
+
+  /* Type of text.  */
+  grub_script_arg_type_t type;
+
+  /* Flex scanner.  */
+  void *yyscanner;
+
+  /* Flex scanner buffer.  */
+  void *buffer;
 };
+
+#define GRUB_LEXER_INITIAL_TEXT_SIZE   32
+#define GRUB_LEXER_INITIAL_RECORD_SIZE 256
 
 /* State of the parser as passes to the parser.  */
 struct grub_parser_param
@@ -203,6 +244,18 @@ grub_script_create_cmdif (struct grub_parser_param *state,
 			  struct grub_script_cmd *exec_on_false);
 
 struct grub_script_cmd *
+grub_script_create_cmdfor (struct grub_parser_param *state,
+			   struct grub_script_arg *name,
+			   struct grub_script_arglist *words,
+			   struct grub_script_cmd *list);
+
+struct grub_script_cmd *
+grub_script_create_cmdwhile (struct grub_parser_param *state,
+			     struct grub_script_cmd *cond,
+			     struct grub_script_cmd *list,
+			     int is_an_until_loop);
+
+struct grub_script_cmd *
 grub_script_create_cmdmenu (struct grub_parser_param *state,
 			    struct grub_script_arglist *arglist,
 			    char *sourcecode,
@@ -223,12 +276,16 @@ void grub_script_free (struct grub_script *script);
 struct grub_script *grub_script_create (struct grub_script_cmd *cmd,
 					struct grub_script_mem *mem);
 
-struct grub_lexer_param *grub_script_lexer_init (char *s,
+struct grub_lexer_param *grub_script_lexer_init (struct grub_parser_param *parser,
+						 char *script,
 						 grub_reader_getline_t getline);
+void grub_script_lexer_fini (struct grub_lexer_param *);
 void grub_script_lexer_ref (struct grub_lexer_param *);
 void grub_script_lexer_deref (struct grub_lexer_param *);
-void grub_script_lexer_record_start (struct grub_lexer_param *);
-char *grub_script_lexer_record_stop (struct grub_lexer_param *);
+void grub_script_lexer_record_start (struct grub_parser_param *);
+char *grub_script_lexer_record_stop (struct grub_parser_param *);
+int  grub_script_lexer_yywrap (struct grub_parser_param *);
+void grub_script_lexer_record (struct grub_parser_param *, char *);
 
 /* Functions to track allocated memory.  */
 struct grub_script_mem *grub_script_mem_record (struct grub_parser_param *state);
@@ -246,6 +303,8 @@ void grub_script_yyerror (struct grub_parser_param *, char const *);
 grub_err_t grub_script_execute_cmdline (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdblock (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdif (struct grub_script_cmd *cmd);
+grub_err_t grub_script_execute_cmdfor (struct grub_script_cmd *cmd);
+grub_err_t grub_script_execute_cmdwhile (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_menuentry (struct grub_script_cmd *cmd);
 
 /* Execute any GRUB pre-parsed command or script.  */
@@ -284,7 +343,7 @@ int grub_script_function_iterate (int (*iterate) (grub_script_function_t));
 int grub_script_function_call (grub_script_function_t func,
 			       int argc, char **args);
 
-char *
-grub_script_execute_argument_to_string (struct grub_script_arg *arg);
+char **
+grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count);
 
 #endif /* ! GRUB_NORMAL_PARSER_HEADER */

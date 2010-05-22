@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,17 +19,49 @@
 #ifndef	GRUB_I18N_H
 #define	GRUB_I18N_H	1
 
-#ifdef GRUB_UTIL
-# include <locale.h>
-# include <libintl.h>
-# define _(str) gettext(str)
-#else
-# define _(str) grub_gettext(str)
+#include <config.h>
+#include <grub/symbol.h>
 
-const char *EXPORT_FUNC(grub_gettext_dummy) (const char *s);
+/* NLS can be disabled through the configure --disable-nls option.  */
+#if (defined(ENABLE_NLS) && ENABLE_NLS) || !defined (GRUB_UTIL)
+
 extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
 
-#endif
+# ifdef GRUB_UTIL
+
+#  include <locale.h>
+#  include <libintl.h>
+
+# endif /* GRUB_UTIL */
+
+#else /* ! (defined(ENABLE_NLS) && ENABLE_NLS) */
+
+/* Disabled NLS.
+   The casts to 'const char *' serve the purpose of producing warnings
+   for invalid uses of the value returned from these functions.
+   On pre-ANSI systems without 'const', the config.h file is supposed to
+   contain "#define const".  */
+static inline const char * __attribute__ ((always_inline))
+gettext (const char *str)
+{
+  return str;
+}
+
+#endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
+
+#ifdef GRUB_UTIL
+static inline const char * __attribute__ ((always_inline))
+_ (const char *str)
+{
+  return gettext(str);
+}
+#else
+static inline const char * __attribute__ ((always_inline))
+_ (const char *str)
+{
+  return grub_gettext(str);
+}
+#endif /* GRUB_UTIL */
 
 #define N_(str) str
 

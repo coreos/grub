@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007,2008 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007,2008,2009 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@
 #include <multiboot.h>
 #include <multiboot2.h>
 
-#define ABS(x)	((x) - _start + GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
+#define ABS(x)	((x) - LOCAL (base) + GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
 
 	.file	"startup.S"
 
@@ -66,16 +66,15 @@
 	.globl	start, _start
 start:
 _start:
+LOCAL (base):
 	/*
 	 *  Guarantee that "main" is loaded at 0x0:0x8200.
 	 */
-#ifdef APPLE_CC
-	codestart_abs = ABS(codestart) - 0x10000
-	ljmp $0, $(codestart_abs)
+#ifdef __APPLE__
+	ljmp $0, $(ABS(LOCAL (codestart)) - 0x10000)
 #else
-	ljmp $0, $ABS(codestart)
+	ljmp $0, $ABS(LOCAL (codestart))
 #endif
-
 	/*
 	 *  Compatibility version number
 	 *
@@ -146,6 +145,9 @@ multiboot_entry:
 	/* obtain the boot device */
 	movl	12(%ebx), %edx
 
+	movl	$GRUB_MEMORY_MACHINE_PROT_STACK, %ebp
+	movl	%ebp, %esp
+
 	/* relocate the code */
 	movl	$(GRUB_KERNEL_MACHINE_RAW_SIZE + 0x200), %ecx
 	addl	EXT_C(grub_compressed_size) - _start + 0x100000 + 0x200, %ecx
@@ -180,7 +182,7 @@ multiboot_trampoline:
 	.code16
 
 /* the real mode code continues... */
-codestart:
+LOCAL (codestart):
 	cli		/* we're not safe here! */
 
 	/* set up %ds, %ss, and %es */
@@ -761,6 +763,11 @@ FUNCTION(grub_biosdisk_get_diskinfo_int13_extensions)
 	movw	%cx, %ax
 	movw	%bx, %ds
 	int	$0x13		/* do the operation */
+	jc      noclean
+	/* Clean return value if carry isn't set to workaround
+	some buggy BIOSes.  */
+	xor     %ax, %ax
+noclean:
 	movb	%ah, %bl	/* save return value in %bl */
 	/* back to protected mode */
 	DATA32	call	real_to_prot
@@ -804,6 +811,11 @@ FUNCTION(grub_biosdisk_get_diskinfo_standard)
 	.code16
 	movb	$0x8, %ah
 	int	$0x13		/* do the operation */
+	jc      noclean2
+	/* Clean return value if carry isn't set to workaround
+	some buggy BIOSes.  */
+	xor     %ax, %ax
+noclean2:
 	/* check if successful */
 	testb	%ah, %ah
 	jnz	1f
@@ -1143,7 +1155,7 @@ FUNCTION(grub_console_real_putchar)
  */
 
 /* this table is used in translate_keycode below */
-translation_table:
+LOCAL (translation_table):
 	.word	GRUB_CONSOLE_KEY_LEFT, GRUB_TERM_LEFT
 	.word	GRUB_CONSOLE_KEY_RIGHT, GRUB_TERM_RIGHT
 	.word	GRUB_CONSOLE_KEY_UP, GRUB_TERM_UP
@@ -1165,11 +1177,10 @@ translate_keycode:
 	pushw	%bx
 	pushw	%si
 
-#ifdef APPLE_CC
-	translation_table_abs = ABS (translation_table) - 0x10000
-	movw	$(translation_table_abs), %si
+#ifdef __APPLE__
+	movw	$(ABS(LOCAL (translation_table)) - 0x10000), %si
 #else
-	movw	$ABS(translation_table), %si
+	movw	$ABS(LOCAL (translation_table)), %si
 #endif
 
 1:	lodsw
@@ -1434,47 +1445,6 @@ FUNCTION(grub_console_setcursor)
 	ret
 
 /*
- * grub_getrtsecs()
- *	if a seconds value can be read, read it and return it (BCD),
- *      otherwise return 0xFF
- * BIOS call "INT 1AH Function 02H" to check whether a character is pending
- *	Call with	%ah = 0x2
- *	Return:
- *		If RT Clock can give correct values
- *			%ch = hour (BCD)
- *			%cl = minutes (BCD)
- *                      %dh = seconds (BCD)
- *                      %dl = daylight savings time (00h std, 01h daylight)
- *			Carry flag = clear
- *		else
- *			Carry flag = set
- *                         (this indicates that the clock is updating, or
- *                          that it isn't running)
- */
-FUNCTION(grub_getrtsecs)
-	pushl	%ebp
-
-	call	prot_to_real	/* enter real mode */
-	.code16
-
-	clc
-	movb	$0x2, %ah
-	int	$0x1a
-
-	DATA32	jnc	gottime
-	movb	$0xff, %dh
-
-gottime:
-	DATA32	call	real_to_prot
-	.code32
-
-	movb	%dh, %al
-
-	popl	%ebp
-	ret
-
-
-/*
  * grub_get_rtc()
  *	return the real time in ticks, of which there are about
  *	18-20 per second
@@ -1524,33 +1494,6 @@ FUNCTION(grub_vga_set_mode)
 	.code32
 
 	movb	%dl, %al
-	popl	%ebx
-	popl	%ebp
-	ret
-
-
-/*
- * unsigned char *grub_vga_get_font (void)
- */
-FUNCTION(grub_vga_get_font)
-	pushl	%ebp
-	pushl	%ebx
-
-	call	prot_to_real
-	.code16
-	movw	$0x1130, %ax
-	movb	$0x06, %bh
-	int	$0x10
-	movw	%es, %bx
-	movw	%bp, %dx
-	DATA32	call	real_to_prot
-	.code32
-
-	movzwl	%bx, %ecx
-	shll	$4, %ecx
-	movw	%dx, %ax
-	addl	%ecx, %eax
-
 	popl	%ebx
 	popl	%ebp
 	ret

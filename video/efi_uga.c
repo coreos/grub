@@ -84,21 +84,22 @@ find_framebuf (grub_uint32_t *fb_base, grub_uint32_t *line_len)
 {
   int found = 0;
 
-  auto int NESTED_FUNC_ATTR find_card (int bus, int dev, int func,
+  auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev,
 				       grub_pci_id_t pciid);
 
-  int NESTED_FUNC_ATTR find_card (int bus, int dev, int func,
+  int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev,
 				  grub_pci_id_t pciid)
     {
       grub_pci_address_t addr;
 
-      addr = grub_pci_make_address (bus, dev, func, 2);
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
       if (grub_pci_read (addr) >> 24 == 0x3)
 	{
 	  int i;
 
 	  grub_dprintf ("fb", "Display controller: %d:%d.%d\nDevice id: %x\n",
-			bus, dev, func, pciid);
+			grub_pci_get_bus (dev), grub_pci_get_device (dev),
+			grub_pci_get_function (dev), pciid);
 	  addr += 8;
 	  for (i = 0; i < 6; i++, addr += 4)
 	    {
@@ -197,7 +198,7 @@ grub_video_uga_fini (void)
 
 static grub_err_t
 grub_video_uga_setup (unsigned int width, unsigned int height,
-		      unsigned int mode_type)
+		      unsigned int mode_type, unsigned int mode_mask __attribute__ ((unused)))
 {
   unsigned int depth;
   int found = 0;
@@ -265,7 +266,7 @@ grub_video_uga_setup (unsigned int width, unsigned int height,
       return err;
     }
 
-  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found.");
+  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no matching mode found");
 }
 
 static grub_err_t
@@ -299,6 +300,7 @@ grub_video_uga_get_info_and_fini (struct grub_video_mode_info *mode_info,
 static struct grub_video_adapter grub_video_uga_adapter =
   {
     .name = "EFI UGA driver",
+    .id = GRUB_VIDEO_DRIVER_EFI_UGA,
 
     .init = grub_video_uga_init,
     .fini = grub_video_uga_fini,

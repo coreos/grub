@@ -47,24 +47,24 @@ struct grub_video_bitmap_reader
 };
 typedef struct grub_video_bitmap_reader *grub_video_bitmap_reader_t;
 
-void grub_video_bitmap_reader_register (grub_video_bitmap_reader_t reader);
-void grub_video_bitmap_reader_unregister (grub_video_bitmap_reader_t reader);
+void EXPORT_FUNC (grub_video_bitmap_reader_register) (grub_video_bitmap_reader_t reader);
+void EXPORT_FUNC (grub_video_bitmap_reader_unregister) (grub_video_bitmap_reader_t reader);
 
-grub_err_t grub_video_bitmap_create (struct grub_video_bitmap **bitmap,
-                                     unsigned int width, unsigned int height,
-                                     enum grub_video_blit_format blit_format);
+grub_err_t EXPORT_FUNC (grub_video_bitmap_create) (struct grub_video_bitmap **bitmap,
+						   unsigned int width, unsigned int height,
+						   enum grub_video_blit_format blit_format);
 
-grub_err_t grub_video_bitmap_destroy (struct grub_video_bitmap *bitmap);
+grub_err_t EXPORT_FUNC (grub_video_bitmap_destroy) (struct grub_video_bitmap *bitmap);
 
-grub_err_t grub_video_bitmap_load (struct grub_video_bitmap **bitmap,
-                                   const char *filename);
+grub_err_t EXPORT_FUNC (grub_video_bitmap_load) (struct grub_video_bitmap **bitmap,
+						 const char *filename);
 
-unsigned int grub_video_bitmap_get_width (struct grub_video_bitmap *bitmap);
-unsigned int grub_video_bitmap_get_height (struct grub_video_bitmap *bitmap);
+unsigned int EXPORT_FUNC (grub_video_bitmap_get_width) (struct grub_video_bitmap *bitmap);
+unsigned int EXPORT_FUNC (grub_video_bitmap_get_height) (struct grub_video_bitmap *bitmap);
 
-void grub_video_bitmap_get_mode_info (struct grub_video_bitmap *bitmap,
-                                      struct grub_video_mode_info *mode_info);
+void EXPORT_FUNC (grub_video_bitmap_get_mode_info) (struct grub_video_bitmap *bitmap,
+						    struct grub_video_mode_info *mode_info);
 
-void *grub_video_bitmap_get_data (struct grub_video_bitmap *bitmap);
+void *EXPORT_FUNC (grub_video_bitmap_get_data) (struct grub_video_bitmap *bitmap);
 
 #endif /* ! GRUB_BITMAP_HEADER */

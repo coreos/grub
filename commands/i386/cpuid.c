@@ -25,6 +25,7 @@
 #include <grub/command.h>
 #include <grub/extcmd.h>
 #include <grub/i386/cpuid.h>
+#include <grub/i18n.h>
 
 #define cpuid(num,a,b,c,d) \
   asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1" \
@@ -33,7 +34,7 @@
 
 static const struct grub_arg_option options[] =
   {
-    {"long-mode", 'l', 0, "check for long mode flag (default)", 0, 0},
+    {"long-mode", 'l', 0, N_("Check for long mode flag (default)."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -88,7 +89,7 @@ done:
 #endif
 
   cmd = grub_register_extcmd ("cpuid", grub_cmd_cpuid, GRUB_COMMAND_FLAG_BOTH,
-			      "cpuid [-l]", "Check for CPU features", options);
+			      "[-l]", N_("Check for CPU features."), options);
 }
 
 GRUB_MOD_FINI(cpuid)

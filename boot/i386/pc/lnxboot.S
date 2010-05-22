@@ -1,7 +1,7 @@
 /* -*-Asm-*- */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -185,7 +185,7 @@ real_code_2:
 	call	LOCAL(move_memory)
 
 	/* Check for multiboot signature.  */
-	cmpl	$MULTIBOOT_MAGIC, %ss:(DATA_ADDR + GRUB_KERNEL_MACHINE_DATA_END)
+	cmpl	$MULTIBOOT_HEADER_MAGIC, %ss:(DATA_ADDR + GRUB_KERNEL_MACHINE_DATA_END)
 	jz	1f
 
 	movl	(ramdisk_image - start), %esi

@@ -28,6 +28,7 @@
 #include <grub/mm.h>
 #include <grub/machine/memory.h>
 #include <grub/memory.h>
+#include <grub/i18n.h>
 
 #ifdef GRUB_MACHINE_EFI
 #include <grub/efi/efi.h>
@@ -36,23 +37,23 @@
 
 static const struct grub_arg_option options[] = {
   {"exclude", 'x', 0,
-   "Don't load host tables specified by comma-separated list",
+   N_("Don't load host tables specified by comma-separated list."),
    0, ARG_TYPE_STRING},
   {"load-only", 'n', 0,
-   "Load only tables specified by comma-separated list", 0, ARG_TYPE_STRING},
-  {"v1", '1', 0, "Expose v1 tables", 0, ARG_TYPE_NONE},
-  {"v2", '2', 0, "Expose v2 and v3 tables", 0, ARG_TYPE_NONE},
-  {"oemid", 'o', 0, "Set OEMID of RSDP, XSDT and RSDT", 0, ARG_TYPE_STRING},
+   N_("Load only tables specified by comma-separated list."), 0, ARG_TYPE_STRING},
+  {"v1", '1', 0, N_("Expose v1 tables."), 0, ARG_TYPE_NONE},
+  {"v2", '2', 0, N_("Expose v2 and v3 tables."), 0, ARG_TYPE_NONE},
+  {"oemid", 'o', 0, N_("Set OEMID of RSDP, XSDT and RSDT."), 0, ARG_TYPE_STRING},
   {"oemtable", 't', 0,
-   "Set OEMTABLE ID of RSDP, XSDT and RSDT", 0, ARG_TYPE_STRING},
+   N_("Set OEMTABLE ID of RSDP, XSDT and RSDT."), 0, ARG_TYPE_STRING},
   {"oemtablerev", 'r', 0,
-   "Set OEMTABLE revision of RSDP, XSDT and RSDT", 0, ARG_TYPE_INT},
+   N_("Set OEMTABLE revision of RSDP, XSDT and RSDT."), 0, ARG_TYPE_INT},
   {"oemtablecreator", 'c', 0,
-   "Set creator field of RSDP, XSDT and RSDT", 0, ARG_TYPE_STRING},
+   N_("Set creator field of RSDP, XSDT and RSDT."), 0, ARG_TYPE_STRING},
   {"oemtablecreatorrev", 'd', 0,
-   "Set creator revision of RSDP, XSDT and RSDT", 0, ARG_TYPE_INT},
-  {"no-ebda", 'e', 0, "Don't update EBDA. May fix failures or hangs on some"
-   " BIOSes but makes it ineffective with OS not receiving RSDP from GRUB",
+   N_("Set creator revision of RSDP, XSDT and RSDT."), 0, ARG_TYPE_INT},
+  {"no-ebda", 'e', 0, N_("Don't update EBDA. May fix failures or hangs on some."
+   " BIOSes but makes it ineffective with OS not receiving RSDP from GRUB."),
    0, ARG_TYPE_NONE},
   {0, 0, 0, 0, 0, 0}
 };
@@ -228,7 +229,7 @@ grub_acpi_create_ebda (void)
 				   sizeof (struct grub_acpi_rsdp_v10)) == 0)
 	  {
 	    grub_memcpy (target, v1, sizeof (struct grub_acpi_rsdp_v10));
-	    grub_dprintf ("acpi", "Copying rsdpv2 to %p\n", target);
+	    grub_dprintf ("acpi", "Copying rsdpv1 to %p\n", target);
 	    v1inebda = target;
 	    target += sizeof (struct grub_acpi_rsdp_v10);
 	    target = (grub_uint8_t *) ((((long) target - 1) | 0xf) + 1);
@@ -277,7 +278,7 @@ grub_acpi_create_ebda (void)
     {
       grub_mmap_unregister (mmapregion);
       return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			 "Couldn't find suitable spot in EBDA");
+			 "couldn't find suitable spot in EBDA");
     }
 
   /* Remove any other RSDT. */
@@ -551,7 +552,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 		      grub_free (exclude);
 		      grub_free (load_only);
 		      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-					 "Couldn't allocate table");
+					 "couldn't allocate table");
 		    }
 		  grub_memcpy (table_dsdt, dsdt, dsdt->length);
 		}
@@ -578,7 +579,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	      grub_free (exclude);
 	      grub_free (load_only);
 	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-				 "Couldn't allocate table structure");
+				 "couldn't allocate table structure");
 	    }
 	  table->size = curtable->length;
 	  table->addr = grub_malloc (table->size);
@@ -587,7 +588,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	    {
 	      free_tables ();
 	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-				 "Couldn't allocate table");
+				 "couldn't allocate table");
 	    }
 	  table->next = acpi_tables;
 	  acpi_tables = table;
@@ -674,7 +675,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	    {
 	      free_tables ();
 	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-				 "Couldn't allocate table structure");
+				 "couldn't allocate table structure");
 	    }
 
 	  table->size = size;
@@ -709,7 +710,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
     {
       free_tables ();
       return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			 "Couldn't allocate space for ACPI tables");
+			 "couldn't allocate space for ACPI tables");
     }
 
   setup_common_tables ();
@@ -759,11 +760,11 @@ GRUB_MOD_INIT(acpi)
 {
   cmd = grub_register_extcmd ("acpi", grub_cmd_acpi,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      "acpi [-1|-2] [--exclude=table1,table2|"
-			      "--load-only=table1,table2] filename1 "
-			      " [filename2] [...]",
-			      "Load host acpi tables and tables "
-			      "specified by arguments",
+			      N_("[-1|-2] [--exclude=TABLE1,TABLE2|"
+			      "--load-only=table1,table2] FILE1"
+			      " [FILE2] [...]"),
+			      N_("Load host ACPI tables and tables "
+			      "specified by arguments."),
 			      options);
 }
 

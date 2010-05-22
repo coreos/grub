@@ -21,12 +21,13 @@
 #include <grub/misc.h>
 #include <grub/extcmd.h>
 #include <grub/term.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] =
   {
-    {"shift", 's', 0, "check Shift key", 0, 0},
-    {"ctrl", 'c', 0, "check Control key", 0, 0},
-    {"alt", 'a', 0, "check Alt key", 0, 0},
+    {"shift", 's', 0, N_("Check Shift key."), 0, 0},
+    {"ctrl", 'c', 0, N_("Check Control key."), 0, 0},
+    {"alt", 'a', 0, N_("Check Alt key."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -48,13 +49,24 @@ grub_cmd_keystatus (grub_extcmd_t cmd,
   if (state[2].set)
     expect_mods |= GRUB_TERM_STATUS_ALT;
 
+  grub_dprintf ("keystatus", "expect_mods: %d\n", expect_mods);
+
   /* Without arguments, just check whether getkeystatus is supported at
      all.  */
-  if (!grub_cur_term_input->getkeystatus)
-    return grub_error (GRUB_ERR_TEST_FAILURE, "false");
-  grub_dprintf ("keystatus", "expect_mods: %d\n", expect_mods);
-  if (!expect_mods)
-    return 0;
+  if (expect_mods == 0)
+    {
+      grub_term_input_t term;
+      int nterms = 0;
+
+      FOR_ACTIVE_TERM_INPUTS (term)
+	if (!term->getkeystatus)
+	  return grub_error (GRUB_ERR_TEST_FAILURE, "false");
+	else
+	  nterms++;
+      if (!nterms)
+	return grub_error (GRUB_ERR_TEST_FAILURE, "false");
+      return 0;
+    }
 
   mods = grub_getkeystatus ();
   grub_dprintf ("keystatus", "mods: %d\n", mods);
@@ -70,8 +82,8 @@ GRUB_MOD_INIT(keystatus)
 {
   cmd = grub_register_extcmd ("keystatus", grub_cmd_keystatus,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      "keystatus [--shift] [--ctrl] [--alt]",
-			      "Check key modifier status",
+			      N_("[--shift] [--ctrl] [--alt]"),
+			      N_("Check key modifier status."),
 			      options);
 }
 

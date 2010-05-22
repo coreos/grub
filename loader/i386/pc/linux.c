@@ -1,7 +1,7 @@
 /* linux.c - boot Linux zImage or bzImage */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,9 @@
 #include <grub/dl.h>
 #include <grub/cpu/linux.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
+#include <grub/mm.h>
+#include <grub/video.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x9000
 #define GRUB_LINUX_CL_END_OFFSET	0x90FF
@@ -44,6 +47,16 @@ grub_linux_unload (void)
 {
   grub_dl_unref (my_mod);
   loaded = 0;
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_linux16_boot (void)
+{
+  grub_video_set_mode ("text", 0, 0);
+  grub_linux16_real_boot ();
+
+  /* Not reached.  */
   return GRUB_ERR_NONE;
 }
 
@@ -81,7 +94,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_file_read (file, &lh, sizeof (lh)) != sizeof (lh))
     {
-      grub_error (GRUB_ERR_READ_ERROR, "cannot read the linux header");
+      grub_error (GRUB_ERR_READ_ERROR, "cannot read the Linux header");
       goto fail;
     }
 
@@ -234,7 +247,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   len = real_size + GRUB_DISK_SECTOR_SIZE - sizeof (lh);
   if (grub_file_read (file, grub_linux_tmp_addr + sizeof (lh), len) != len)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 
@@ -265,7 +278,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   len = prot_size;
   if (grub_file_read (file, (void *) GRUB_LINUX_BZIMAGE_ADDR, len) != len)
-    grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+    grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
 
   if (grub_errno == GRUB_ERR_NONE)
     {
@@ -299,13 +312,13 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
       goto fail;
     }
 
   if (!loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load the kernel first");
       goto fail;
     }
 
@@ -314,7 +327,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   if (!(lh->header == grub_cpu_to_le32 (GRUB_LINUX_MAGIC_SIGNATURE)
 	&& grub_le_to_cpu16 (lh->version) >= 0x0200))
     {
-      grub_error (GRUB_ERR_BAD_OS, "The kernel is too old for initrd.");
+      grub_error (GRUB_ERR_BAD_OS, "the kernel is too old for initrd");
       goto fail;
     }
 
@@ -357,13 +370,13 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (addr < addr_min)
     {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "The initrd is too big");
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "the initrd is too big");
       goto fail;
     }
 
   if (grub_file_read (file, (void *) addr, size) != size)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       goto fail;
     }
 
@@ -383,10 +396,10 @@ GRUB_MOD_INIT(linux16)
 {
   cmd_linux =
     grub_register_command ("linux16", grub_cmd_linux,
-			   0, "load linux");
+			   0, N_("Load Linux."));
   cmd_initrd =
     grub_register_command ("initrd16", grub_cmd_initrd,
-			   0, "load initrd");
+			   0, N_("Load initrd."));
   my_mod = mod;
 }
 

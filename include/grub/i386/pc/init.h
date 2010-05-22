@@ -33,7 +33,7 @@ grub_uint32_t grub_get_eisa_mmap (void);
 
 /* Get a memory map entry. Return next continuation value. Zero means
    the end.  */
-grub_uint32_t EXPORT_FUNC(grub_get_mmap_entry) (struct grub_machine_mmap_entry *entry,
+grub_uint32_t grub_get_mmap_entry (struct grub_machine_mmap_entry *entry,
 				   grub_uint32_t cont);
 
 /* Turn on/off Gate A20.  */
