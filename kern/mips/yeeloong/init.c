@@ -78,13 +78,13 @@ init_pci (void)
     /* FIXME: autoscan for BARs and devices.  */
     switch (pciid)
       {
-      case 0x00351033:
+      case GRUB_YEELOONG_OHCI_PCIID:
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
 	grub_pci_write (addr, 0x5025000);
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
 	grub_pci_write (addr, 0x2100146);
 	break;
-      case 0x00e01033:
+      case GRUB_YEELOONG_EHCI_PCIID:
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
 	grub_pci_write (addr, 0x5026000);
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
