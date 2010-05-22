@@ -35,12 +35,12 @@ grub_usb_control_msg (grub_usb_device_t dev,
   int i;
   grub_usb_transfer_t transfer;
   int datablocks;
-  struct grub_usb_packet_setup *setupdata;
+  volatile struct grub_usb_packet_setup *setupdata;
   grub_uint32_t setupdata_addr;
   grub_usb_err_t err;
   unsigned int max;
   struct grub_pci_dma_chunk *data_chunk, *setupdata_chunk;
-  char *data;
+  volatile char *data;
   grub_uint32_t data_addr;
   grub_size_t size = size0;
 
@@ -50,7 +50,7 @@ grub_usb_control_msg (grub_usb_device_t dev,
     return GRUB_USB_ERR_INTERNAL;
   data = grub_dma_get_virt (data_chunk);
   data_addr = grub_dma_get_phys (data_chunk);
-  grub_memcpy (data, data_in, size);
+  grub_memcpy ((char *) data, data_in, size);
 
   grub_dprintf ("usb",
 		"control: reqtype=0x%02x req=0x%02x val=0x%02x idx=0x%02x size=%d\n",
@@ -152,7 +152,7 @@ grub_usb_control_msg (grub_usb_device_t dev,
   grub_dma_free (data_chunk);
   grub_dma_free (setupdata_chunk);
 
-  grub_memcpy (data_in, data, size0);
+  grub_memcpy (data_in, (char *) data, size0);
 
   return err;
 }
@@ -168,7 +168,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
   unsigned int max;
   grub_usb_err_t err;
   int toggle = dev->toggle[endpoint];
-  char *data;
+  volatile char *data;
   grub_uint32_t data_addr;
   struct grub_pci_dma_chunk *data_chunk;
   grub_size_t size = size0;
@@ -180,7 +180,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
   data = grub_dma_get_virt (data_chunk);
   data_addr = grub_dma_get_phys (data_chunk);
   if (type == GRUB_USB_TRANSFER_TYPE_OUT)
-    grub_memcpy (data, data_in, size);
+    grub_memcpy ((char *) data, data_in, size);
 
   /* Use the maximum packet size given in the endpoint descriptor.  */
   if (dev->initialized)
@@ -247,7 +247,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
   grub_dma_free (data_chunk);
 
   if (type == GRUB_USB_TRANSFER_TYPE_IN)
-    grub_memcpy (data_in, data, size0);
+    grub_memcpy (data_in, (char *) data, size0);
 
   return err;
 }
