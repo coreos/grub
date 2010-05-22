@@ -64,8 +64,8 @@ struct grub_ohci_td
   grub_uint32_t buffer_end;
 } __attribute__((packed));
 
-typedef struct grub_ohci_td *grub_ohci_td_t;
-typedef struct grub_ohci_ed *grub_ohci_ed_t;
+typedef volatile struct grub_ohci_td *grub_ohci_td_t;
+typedef volatile struct grub_ohci_ed *grub_ohci_ed_t;
 
 struct grub_ohci
 {
