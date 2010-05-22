@@ -636,6 +636,21 @@ GRUB_MOD_INIT(serial)
   serial_settings.word_len  = UART_8BITS_WORD;
   serial_settings.parity    = UART_NO_PARITY;
   serial_settings.stop_bits = UART_1_STOP_BIT;
+
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
+  {
+    grub_err_t hwiniterr;
+    hwiniterr = serial_hw_init ();
+
+    if (hwiniterr == GRUB_ERR_NONE)
+      {
+	grub_term_register_input_active ("serial", &grub_serial_term_input);
+	grub_term_register_output_active ("serial", &grub_serial_term_output);
+
+	registered = 1;
+      }
+  }
+#endif
 }
 
 GRUB_MOD_FINI(serial)
