@@ -1,3 +1,8 @@
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gfxmenu/gfxmenu.c (grub_gfxmenu_try): Change viewport on both buffers.
+	* term/gfxterm.c (real_scroll): Likewise.
+
 2010-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/i386/pc/mmap.c (grub_machine_mmap_iterate): Zero-fill entry
