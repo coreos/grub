@@ -1,5 +1,9 @@
 2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* commands/usbtest.c (grub_usb_get_string): Properly support UTF-16.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	cmostest support.
 
 	* commands/i386/cmostest.c: New file.
