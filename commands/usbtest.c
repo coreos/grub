@@ -83,15 +83,24 @@ grub_usb_get_string (grub_usb_device_t dev, grub_uint8_t index, int langid,
 			      0x06, (3 << 8) | index,
 			      langid, descstr.length, (char *) descstrp);
 
-  *string = grub_malloc (descstr.length / 2);
+  if (descstrp->length == 0)
+    {
+      grub_free (descstrp);
+      *string = grub_strdup ("");
+      if (! *string)
+	return GRUB_USB_ERR_INTERNAL;
+      return GRUB_USB_ERR_NONE;
+    }
+
+  *string = grub_malloc (descstr.length * 2 + 1);
   if (! *string)
     {
       grub_free (descstrp);
       return GRUB_USB_ERR_INTERNAL;
     }
 
-  grub_utf16_to_utf8 ((grub_uint8_t *) *string, descstrp->str, descstrp->length / 2 - 1);
-  (*string)[descstr.length / 2 - 1] = '\0';
+  *grub_utf16_to_utf8 ((grub_uint8_t *) *string, descstrp->str,
+		       descstrp->length / 2 - 1) = 0;
   grub_free (descstrp);
 
   return GRUB_USB_ERR_NONE;
