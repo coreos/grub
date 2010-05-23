@@ -1,5 +1,10 @@
 2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* gfxmenu/view.c (grub_gfxmenu_draw_terminal_box): Apply only to current
+	buffer since gfxterm handles double repaint.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* gfxmenu/gfxmenu.c (grub_gfxmenu_try): Change viewport on both buffers.
 	* term/gfxterm.c (real_scroll): Likewise.
 
