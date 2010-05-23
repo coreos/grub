@@ -82,13 +82,26 @@ init_pci (void)
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
 	grub_pci_write (addr, 0x5025000);
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
-	grub_pci_write (addr, 0x2100146);
+	grub_pci_write_word (addr, GRUB_PCI_COMMAND_SERR_ENABLE
+			     | GRUB_PCI_COMMAND_PARITY_ERROR
+			     | GRUB_PCI_COMMAND_BUS_MASTER
+			     | GRUB_PCI_COMMAND_MEM_ENABLED);
+
+	addr = grub_pci_make_address (dev, GRUB_PCI_REG_STATUS);
+	grub_pci_write_word (addr, 0x0200 | GRUB_PCI_STATUS_CAPABILITIES);
 	break;
       case GRUB_YEELOONG_EHCI_PCIID:
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
 	grub_pci_write (addr, 0x5026000);
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
-	grub_pci_write (addr, 0x2100146);
+	grub_pci_write_word (addr, GRUB_PCI_COMMAND_SERR_ENABLE
+			     | GRUB_PCI_COMMAND_PARITY_ERROR
+			     | GRUB_PCI_COMMAND_BUS_MASTER
+			     | GRUB_PCI_COMMAND_MEM_ENABLED);
+
+	addr = grub_pci_make_address (dev, GRUB_PCI_REG_STATUS);
+	grub_pci_write_word (addr, (1 << GRUB_PCI_STATUS_DEVSEL_TIMING_SHIFT)
+			     | GRUB_PCI_STATUS_CAPABILITIES);
 	break;
       }
     return 0;
@@ -98,8 +111,16 @@ init_pci (void)
   *((volatile grub_uint32_t *) GRUB_CPU_LOONGSON_PCI_HIT1_SEL_HI) = 0xffffffff;
 
   /* Setup PCI controller.  */
-  *((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER
-				+ GRUB_PCI_REG_COMMAND)) = 0x22b00046;
+  *((volatile grub_uint16_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER
+				+ GRUB_PCI_REG_COMMAND))
+    = GRUB_PCI_COMMAND_PARITY_ERROR | GRUB_PCI_COMMAND_BUS_MASTER
+    | GRUB_PCI_COMMAND_MEM_ENABLED;
+  *((volatile grub_uint16_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER
+				+ GRUB_PCI_REG_STATUS))
+    = (1 << GRUB_PCI_STATUS_DEVSEL_TIMING_SHIFT)
+    | GRUB_PCI_STATUS_FAST_B2B_CAPABLE | GRUB_PCI_STATUS_66MHZ_CAPABLE
+    | GRUB_PCI_STATUS_CAPABILITIES;
+
   *((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER
 				+ GRUB_PCI_REG_CACHELINE)) = 0xff;
   *((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER 
