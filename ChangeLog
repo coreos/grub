@@ -1,5 +1,21 @@
 2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	cmostest support.
+
+	* commands/i386/cmostest.c: New file.
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Add cmostest.mod.
+	(cmostest_mod_SOURCES): New variable.
+	(cmostest_mod_CFLAGS): Likewise.
+	(cmostest_mod_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* docs/grub.texi (Vendor power-on keys): New section.
+	* util/grub-mkconfig.in: export GRUB_DEFAULT_BUTTON,
+	GRUB_HIDDEN_TIMEOUT_BUTTON, GRUB_TIMEOUT_BUTTON
+	and GRUB_BUTTON_CMOS_ADDRESS.
+	* util/grub.d/00_header.in: Handle powering-on by separate button.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* gfxmenu/gui_list.c (draw_menu): Don't add scrollbar width to padding.
 	Removed drawing_scrollbar argument. All users updated
 	Fixes #29792.

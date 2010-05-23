@@ -80,6 +80,7 @@ This edition documents version @value{VERSION}.
 * Configuration::               Writing your own configuration file
 * Network::                     Downloading OS images from a network
 * Serial terminal::             Using GRUB via a serial line
+* Vendor power-on keys::        Changing GRUB behaviour on vendor power-on keys
 * Preset Menu::                 Embedding a configuration file into GRUB
 * Images::                      GRUB image files
 * Filesystem::                  Filesystem syntax and semantics
@@ -747,6 +748,23 @@ implements few VT100 escape sequences. If you specify this option then
 GRUB provides you with an alternative menu interface, because the normal
 menu requires several fancy features of your terminal.
 
+@node Vendor power-on keys
+@chapter Using GRUB with vendor power-on keys
+Some laptop vendor provide an additional power-on button which boots another OS.
+GRUB supports such buttons with GRUB_TIMEOUT_BUTTON, GRUB_DEFAULT_BUTTON,
+GRUB_HIDDEN_TIMEOUT_BUTTON and GRUB_BUTTON_CMOS_ADDRESS variables in
+default/grub. GRUB_TIMEOUT_BUTTON, GRUB_DEFAULT_BUTTON and 
+GRUB_HIDDEN_TIMEOUT_BUTTON are used instead of corresponding variables without
+_BUTTON suffix when powered using special button.
+GRUB_BUTTON_CMOS_ADDRESS is vendor specific and partially model-specific.
+Values known to GRUB team are:
+
+@table @key
+@item Dell XPS M1530
+85:3
+@end table
+
+To take full advantage of this function install GRUB into MBR.
 
 @node Filesystem
 @chapter Filesystem syntax and semantics
