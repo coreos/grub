@@ -49,7 +49,7 @@ grub_dma_get_phys (struct grub_pci_dma_chunk *ch)
 }
 #else
 
-void *
+volatile void *
 grub_dma_get_virt (struct grub_pci_dma_chunk *ch)
 {
   return (void *) ch;
@@ -91,6 +91,7 @@ grub_pci_iterate (grub_pci_iteratefunc_t hook)
 	      if (id >> 16 == 0xFFFF)
 		continue;
 
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
 	      /* Skip ghosts.  */
 	      if (id == GRUB_YEELOONG_OHCI_PCIID
 		  && dev.function == GRUB_YEELOONG_OHCI_GHOST_FUNCTION)
@@ -98,6 +99,7 @@ grub_pci_iterate (grub_pci_iteratefunc_t hook)
 	      if (id == GRUB_YEELOONG_EHCI_PCIID
 		  && dev.function == GRUB_YEELOONG_EHCI_GHOST_FUNCTION)
 		continue;
+#endif
 
 	      if (hook (dev, id))
 		return;
