@@ -342,7 +342,7 @@ else
     prefix_drive=`$grub_probe --target=drive --device ${grub_device}` || exit 1
 fi
 
-case "${target_cpu}-${platform}"
+case "${target_cpu}-${platform}" in
     i386-pc) mkimage_target=i386-pc ;;
     sparc64-ieee1275) mkimage_target=sparc64-ieee1275-raw ;;
     mips-yeeloong) mkimage_target=mipsel-yeeloong-elf ;;

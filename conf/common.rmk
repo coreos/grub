@@ -6,7 +6,8 @@ script/lexer.c_DEPENDENCIES = grub_script.tab.h
 sbin_UTILITIES += grub-mkdevicemap
 grub_mkdevicemap_SOURCES = gnulib/progname.c util/grub-mkdevicemap.c \
 	util/deviceiter.c \
-	util/misc.c kern/emu/misc.c
+	util/misc.c kern/emu/misc.c \
+	kern/env.c kern/err.c kern/list.c kern/misc.c kern/emu/mm.c
 
 ifeq ($(target_cpu)-$(platform), sparc64-ieee1275)
 grub_mkdevicemap_SOURCES += util/ieee1275/ofpath.c util/ieee1275/devicemap.c

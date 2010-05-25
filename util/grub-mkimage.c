@@ -100,6 +100,28 @@ struct image_target_desc image_targets[] =
       .mod_align = GRUB_KERNEL_I386_COREBOOT_MOD_ALIGN
     },
     {
+      .name = "i386-multiboot",
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_COREBOOT,
+      .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_I386_COREBOOT_PREFIX,
+      .data_end = GRUB_KERNEL_I386_COREBOOT_DATA_END,
+      .raw_size = 0,
+      .total_module_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .compressed_size = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_I386_COREBOOT_LINK_ADDR,
+      .elf_target = EM_386,
+      .link_align = 4,
+      .mod_gap = GRUB_KERNEL_I386_COREBOOT_MOD_GAP,
+      .mod_align = GRUB_KERNEL_I386_COREBOOT_MOD_ALIGN
+    },
+    {
       .name = "i386-pc",
       .voidp_sizeof = 4,
       .bigendian = 0,
@@ -1182,7 +1204,7 @@ Make a bootable image of GRUB.\n\
 \n\
 Report bugs to <%s>.\n\
 "), 
-	      program_name, GRUB_LIBDIR, DEFAULT_DIRECTORY,
+	      program_name, GRUB_PKGLIBROOTDIR, DEFAULT_DIRECTORY,
 	      formats,
 	      PACKAGE_BUGREPORT);
       free (formats);
@@ -1320,14 +1342,16 @@ main (int argc, char *argv[])
 	last = strchr (last + 1, '-');
       if (!last)
 	last = image_target->name + strlen (image_target->name);
-      dir = xmalloc (sizeof (GRUB_LIBDIR) + (last - image_target->name));
-      memcpy (dir, GRUB_LIBDIR, sizeof (GRUB_LIBDIR) - 1);
-      memcpy (dir + sizeof (GRUB_LIBDIR) - 1, image_target->name,
+      dir = xmalloc (sizeof (GRUB_PKGLIBROOTDIR) + (last - image_target->name)
+		     + 1);
+      memcpy (dir, GRUB_PKGLIBROOTDIR, sizeof (GRUB_PKGLIBROOTDIR) - 1);
+      *(dir + sizeof (GRUB_PKGLIBROOTDIR) - 1) = '/';
+      memcpy (dir + sizeof (GRUB_PKGLIBROOTDIR), image_target->name,
 	      last - image_target->name);
-      *(dir + sizeof (GRUB_LIBDIR) - 1 +  (last - image_target->name)) = 0;
+      *(dir + sizeof (GRUB_PKGLIBROOTDIR) + (last - image_target->name)) = 0;
     }
 
-  generate_image (dir ? : GRUB_LIBDIR, prefix ? : DEFAULT_DIRECTORY, fp,
+  generate_image (dir, prefix ? : DEFAULT_DIRECTORY, fp,
 		  argv + optind, memdisk, font, config,
 		  image_target, note);
 
