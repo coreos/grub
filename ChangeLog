@@ -1,3 +1,74 @@
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/usbtest.c (grub_usb_get_string): Properly support UTF-16.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	cmostest support.
+
+	* commands/i386/cmostest.c: New file.
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Add cmostest.mod.
+	(cmostest_mod_SOURCES): New variable.
+	(cmostest_mod_CFLAGS): Likewise.
+	(cmostest_mod_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* docs/grub.texi (Vendor power-on keys): New section.
+	* util/grub-mkconfig.in: export GRUB_DEFAULT_BUTTON,
+	GRUB_HIDDEN_TIMEOUT_BUTTON, GRUB_TIMEOUT_BUTTON
+	and GRUB_BUTTON_CMOS_ADDRESS.
+	* util/grub.d/00_header.in: Handle powering-on by separate button.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gfxmenu/gui_list.c (draw_menu): Don't add scrollbar width to padding.
+	Removed drawing_scrollbar argument. All users updated
+	Fixes #29792.
+	Reported by Jo Shields
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gfxmenu/view.c (grub_gfxmenu_draw_terminal_box): Apply only to current
+	buffer since gfxterm handles double repaint.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gfxmenu/gfxmenu.c (grub_gfxmenu_try): Change viewport on both buffers.
+	* term/gfxterm.c (real_scroll): Likewise.
+
+2010-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/i386/pc/mmap.c (grub_machine_mmap_iterate): Zero-fill entry
+	before calling BIOS.
+
+2010-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i18n.h: Always enable grub_gettext.
+
+2010-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/i386/pc/init.c (make_install_device): Fix a leftover usage of old
+	partition naming style.
+
+2010-05-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig.in: Fix handling of -o so that it works when
+	not the first option.
+
+2010-05-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrelpath.c (usage): Remove excess apostrophe.
+
+2010-05-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/misc.c: Move inclusion of <limits.h> to ...
+	* kern/emu/misc.c: ... here.  Needed for canonicalize_file_name.
+
+2010-05-20  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/emu/hostdisk.c (grub_util_biosdisk_get_grub_dev) [__NetBSD__]:
+	Fix merge error in NetBSD code.
+	(find_partition_start) [__NetBSD__]: Likewise.
+
 2010-05-19  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Fix grub-mkrescue usage unit testing.
