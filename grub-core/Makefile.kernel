@@ -91,7 +91,6 @@ if COND_i386_ieee1275
 KERNEL_HEADER_FILES += include/grub/loader.h
 KERNEL_HEADER_FILES += include/grub/msdos_partition.h
 KERNEL_HEADER_FILES += include/grub/ieee1275/ieee1275.h
-KERNEL_HEADER_FILES += include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += include/grub/machine/loader.h
 KERNEL_HEADER_FILES += include/grub/machine/memory.h
 endif
@@ -129,7 +128,6 @@ KERNEL_HEADER_FILES += include/grub/boot.h
 KERNEL_HEADER_FILES += include/grub/loader.h
 KERNEL_HEADER_FILES += include/grub/msdos_partition.h
 KERNEL_HEADER_FILES += include/grub/ieee1275/ieee1275.h
-KERNEL_HEADER_FILES += include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += include/grub/libgcc.h
 endif
 

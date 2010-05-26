@@ -32,6 +32,7 @@
 #include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/deviceiter.h>
+#include <grub/env.h>
 #include <grub/i18n.h>
 
 #define _GNU_SOURCE	1
@@ -158,6 +159,9 @@ main (int argc, char *argv[])
 	    break;
 	  }
     }
+
+  if (verbosity > 1)
+    grub_env_set ("debug", "all");
 
   make_device_map (dev_map ? : DEFAULT_DEVICE_MAP, floppy_disks);
 

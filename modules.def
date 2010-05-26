@@ -107,49 +107,12 @@ program = {
   name = grub-mkimage;
   mansection = 1;
 
-  source = util/grub-mkrawimage.c;
-  source = util/resolve.c;
-
-  x86_efi = util/i386/efi/grub-mkimage.c;
-  x86_efi = util/resolve.c;
-
-  ldadd = libutil.a;
-
-  sparc64_ieee1275_cppflags = '-DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-  mips_cppflags = '-DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-  i386_pc_cppflags = '-DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-  i386_qemu_cppflags = '-DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-
-  i386_pc; i386_qemu; mips; sparc64_ieee1275;
-};
-
-program = {
-  name = grub-mkelfimage;
-  mansection = 1;
-  source = util/elf/grub-mkimage.c;
+  source = util/grub-mkimage.c;
   source = util/resolve.c;
 
   ldadd = libutil.a;
-  common;
-};
 
-program = {
-  name = grub-mkisofs;
-  mansection = 1;
-  source = util/mkisofs/eltorito.c;
-  source = util/mkisofs/hash.c;
-  source = util/mkisofs/joliet.c;
-  source = util/mkisofs/match.c;
-  source = util/mkisofs/mkisofs.c;
-  source = util/mkisofs/multi.c;
-  source = util/mkisofs/name.c;
-  source = util/mkisofs/rock.c;
-  source = util/mkisofs/tree.c;
-  source = util/mkisofs/write.c;
-  source = grub-core/gnulib/progname.c;
-  source = grub-core/gnulib/error.c;
-  cflags = '$(CFLAGS_MKISOFS)';
-  cppflags = '$(CPPFLAGS_MKISOFS)';
+  cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibroot)\"';
   common;
 };
 

@@ -123,7 +123,7 @@ def each_platform(closure):
 
 def canonical_name():   return "[+ % name `echo -n %s | sed -e 's/[^0-9A-Za-z@_]/_/g'` +]"
 def canonical_module(): return canonical_name() + "_module"
-def canonical_kernel(): return canonical_name() + "_exec"
+def canonical_kernel(): return canonical_name() + "_img"
 def canonical_image(): return canonical_name() + "_image"
 
 def shared_sources(prefix=""):        return collect_values("shared", prefix)
@@ -184,6 +184,7 @@ def module(platform):
     r += gvar_add("CLEANFILES", "handler-[+ name +].lst terminal-[+ name +].lst")
     r += gvar_add("CLEANFILES", "video-[+ name +].lst partmap-[+ name +].lst parttool-[+ name +].lst")
 
+    r += gvar_add("CLEANFILES", "[+ name +].pp")
     r += """
 [+ name +].pp: $(""" + canonical_module() + """_SOURCES) $(nodist_""" + canonical_module() + """_SOURCES)
 	$(TARGET_CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + canonical_module() + """_CPPFLAGS) $(CPPFLAGS) $^ > $@ || (rm -f $@; exit 1)
@@ -263,7 +264,7 @@ fi
 """))
 
 def kernel(platform):
-    r  = gvar_add("noinst_PROGRAMS", "[+ name +].exec")
+    r  = gvar_add("noinst_PROGRAMS", "[+ name +].img")
     r += var_set(canonical_kernel() + "_SOURCES", platform_sources(platform))
     r += var_add(canonical_kernel() + "_SOURCES", shared_sources())
     r += var_set("nodist_" + canonical_kernel() + "_SOURCES", platform_nodist_sources(platform) + "## platform nodist sources")
@@ -278,10 +279,6 @@ def kernel(platform):
     r += gvar_add("CLEANFILES", "$(nodist_" + canonical_kernel() + "_SOURCES)")
 
     r += gvar_add("platform_DATA", "[+ name +].img")
-    r += image_nostrip(platform)
-    r += image_strip(platform)
-    r += image_strip_keep_kernel(platform)
-    r += image_strip_macho2img(platform)
     return r
 
 def image(platform):

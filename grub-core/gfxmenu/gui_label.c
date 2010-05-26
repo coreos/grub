@@ -46,8 +46,10 @@ struct grub_gui_label
   char *id;
   int visible;
   char *text;
+  char *template;
   grub_font_t font;
   grub_gui_color_t color;
+  int value;
   enum align_mode align;
 };
 
@@ -57,7 +59,9 @@ static void
 label_destroy (void *vself)
 {
   grub_gui_label_t self = vself;
+  grub_gfxmenu_timeout_unregister ((grub_gui_component_t) self);
   grub_free (self->text);
+  grub_free (self->template);
   grub_free (self);
 }
 
@@ -146,6 +150,17 @@ label_get_minimal_size (void *vself, unsigned *width, unsigned *height)
              + grub_font_get_descent (self->font));
 }
 
+static void
+label_set_state (void *vself, int visible, int start __attribute__ ((unused)),
+		 int current, int end __attribute__ ((unused)))
+{
+  grub_gui_label_t self = vself;  
+  self->value = -current;
+  self->visible = visible;
+  grub_free (self->text);
+  self->text = grub_xasprintf (self->template ? : "%d", self->value);
+}
+
 static grub_err_t
 label_set_property (void *vself, const char *name, const char *value)
 {
@@ -153,9 +168,17 @@ label_set_property (void *vself, const char *name, const char *value)
   if (grub_strcmp (name, "text") == 0)
     {
       grub_free (self->text);
+      grub_free (self->template);
       if (! value)
-        value = "";
-      self->text = grub_strdup (value);
+	{
+	  self->template = NULL;
+	  self->text = grub_strdup ("");
+	}
+      else
+	{
+	  self->template = grub_strdup (value);
+	  self->text = grub_xasprintf (value, self->value);
+	}
     }
   else if (grub_strcmp (name, "font") == 0)
     {
@@ -183,11 +206,16 @@ label_set_property (void *vself, const char *name, const char *value)
     }
   else if (grub_strcmp (name, "id") == 0)
     {
+      grub_gfxmenu_timeout_unregister ((grub_gui_component_t) self);
       grub_free (self->id);
       if (value)
         self->id = grub_strdup (value);
       else
         self->id = 0;
+      if (self->id && grub_strcmp (self->id, GRUB_GFXMENU_TIMEOUT_COMPONENT_ID)
+	  == 0)
+	grub_gfxmenu_timeout_register ((grub_gui_component_t) self,
+				       label_set_state);
     }
   return GRUB_ERR_NONE;
 }

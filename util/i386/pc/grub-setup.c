@@ -56,6 +56,13 @@ static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_P
 #define DEFAULT_BOOT_FILE	"boot.img"
 #define DEFAULT_CORE_FILE	"core.img"
 
+#define grub_target_to_host16(x)	grub_le_to_cpu16(x)
+#define grub_target_to_host32(x)	grub_le_to_cpu32(x)
+#define grub_target_to_host64(x)	grub_le_to_cpu64(x)
+#define grub_host_to_target16(x)	grub_cpu_to_le16(x)
+#define grub_host_to_target32(x)	grub_cpu_to_le32(x)
+#define grub_host_to_target64(x)	grub_cpu_to_le64(x)
+
 static void
 setup (const char *dir,
        const char *boot_file, const char *core_file,

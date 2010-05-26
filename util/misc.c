@@ -30,9 +30,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <time.h>
-#ifdef HAVE_LIMITS_H
-#include <limits.h>
-#endif
 
 #include <grub/kernel.h>
 #include <grub/dl.h>
@@ -300,14 +297,6 @@ grub_millisleep (grub_uint32_t ms)
 
 #endif
 
-#if !(defined (__i386__) || defined (__x86_64__)) && GRUB_MACHINE_EMU
-void
-grub_arch_sync_caches (void *address __attribute__ ((unused)),
-		       grub_size_t len __attribute__ ((unused)))
-{
-}
-#endif
-
 #ifdef __MINGW32__
 
 void sync (void)
@@ -368,19 +357,6 @@ fail:
 }
 
 #endif /* __MINGW32__ */
-
-char *
-canonicalize_file_name (const char *path)
-{
-  char *ret;
-#ifdef PATH_MAX
-  ret = xmalloc (PATH_MAX);
-  (void) realpath (path, ret);
-#else
-  ret = realpath (path, NULL);
-#endif
-  return ret;
-}
 
 #ifdef GRUB_UTIL
 void

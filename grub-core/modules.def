@@ -215,11 +215,6 @@ kernel = {
   emu = kern/emu/console.c;
   emu = disk/host.c;
   emu = gnulib/progname.c;
-
-  image_nostrip = { emu; };
-  image_strip_keep_kernel = { i386_efi; x86_64_efi; };
-  image_strip = { powerpc_ieee1275; i386_coreboot; i386_multiboot; i386_ieee1275; };
-  image_strip_macho2img = { mips_yeeloong; i386_pc; i386_qemu; sparc64_ieee1275; };
 };
 
 program = {
@@ -229,7 +224,7 @@ program = {
   source = kern/emu/full.c;
   nodist = grub_emu_init.c;
 
-  ldadd = kernel.exec;
+  ldadd = kernel.img;
   ldadd = '$(MODULE_FILES)';
   ldadd = '$(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS)';
 
@@ -243,7 +238,7 @@ program = {
   source = kern/emu/cache.S;
   nodist = symlist.c;
 
-  ldadd = kernel.exec;
+  ldadd = kernel.img;
   ldadd = '$(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS)';
 
   emu;

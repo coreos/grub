@@ -5,7 +5,8 @@ COMMON_CFLAGS = -mno-app-regs
 COMMON_LDFLAGS = -melf64_sparc -mno-relax
 
 # Images.
-pkglib_IMAGES = boot.img diskboot.img kernel.img
+pkglib_IMAGES = boot.img diskboot.img
+pkglib_PROGRAMS = kernel.img
 
 # For boot.img.
 boot_img_SOURCES = boot/sparc64/ieee1275/boot.S
@@ -40,12 +41,7 @@ kernel_img_LDFLAGS += -nostdlib -Wl,-N,-Ttext,0x4400,-Bstatic,-melf64_sparc
 kernel_img_FORMAT = binary
 
 # Utilities.
-bin_UTILITIES = grub-mkimage
 sbin_UTILITIES = grub-setup grub-ofpathname
-
-# For grub-mkimage.
-grub_mkimage_SOURCES = util/grub-mkrawimage.c util/misc.c kern/emu/misc.c \
-        util/resolve.c gnulib/progname.c
 
 # For grub-setup.
 util/sparc64/ieee1275/grub-setup.c_DEPENDENCIES = grub_setup_init.h

@@ -9,6 +9,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
 
 #include <grub/mm.h>
 #include <grub/err.h>
@@ -174,6 +177,19 @@ grub_get_rtc (void)
   return (tv.tv_sec * GRUB_TICKS_PER_SECOND
 	  + (((tv.tv_sec % GRUB_TICKS_PER_SECOND) * 1000000 + tv.tv_usec)
 	     * GRUB_TICKS_PER_SECOND / 1000000));
+}
+
+char *
+canonicalize_file_name (const char *path)
+{
+  char *ret;
+#ifdef PATH_MAX
+  ret = xmalloc (PATH_MAX);
+  (void) realpath (path, ret);
+#else
+  ret = realpath (path, NULL);
+#endif
+  return ret;
 }
 
 #ifdef __CYGWIN__
