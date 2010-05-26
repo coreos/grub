@@ -1,3 +1,8 @@
+2010-05-26  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/emu/hostdisk.c (find_partition_start) [__NetBSD__]: Renamed
+	variable index into p_index to suppress a warning with -Wshadow.
+
 2010-05-25  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* INSTALL: Added flex >= 2.5.35 requirement.
