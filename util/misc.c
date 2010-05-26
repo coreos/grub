@@ -212,14 +212,6 @@ grub_millisleep (grub_uint32_t ms)
 
 #endif
 
-#if !(defined (__i386__) || defined (__x86_64__)) && GRUB_MACHINE_EMU
-void
-grub_arch_sync_caches (void *address __attribute__ ((unused)),
-		       grub_size_t len __attribute__ ((unused)))
-{
-}
-#endif
-
 #ifdef __MINGW32__
 
 void sync (void)

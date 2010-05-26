@@ -1,6 +1,8 @@
 # -*- makefile -*-
 
-COMMON_CFLAGS += -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include)
+ifeq ($(target_cpu), sparc64)
+COMMON_LDFLAGS += -mno-relax
+endif
 
 kernel_img_RELOCATABLE = yes
 pkglib_PROGRAMS = kernel.img
@@ -42,6 +44,9 @@ cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 endif
 
 grub_emu_LDFLAGS = $(LIBCURSES)
+ifeq ($(target_cpu), sparc64)
+grub_emu_LDFLAGS += -m64 -mno-relax
+endif
 
 ifeq ($(enable_grub_emu_usb), yes)
 kernel_img_HEADERS += libusb.h

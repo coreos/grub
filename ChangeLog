@@ -1,3 +1,7 @@
+2010-05-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* INSTALL: Added flex >= 2.5.35 requirement.
+
 2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* commands/usbtest.c (grub_usb_get_string): Properly support UTF-16.
