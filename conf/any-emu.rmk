@@ -1,6 +1,7 @@
 # -*- makefile -*-
 
 ifeq ($(target_cpu), sparc64)
+COMMON_CFLAGS += -mno-app-regs
 COMMON_LDFLAGS += -mno-relax
 endif
 
@@ -25,10 +26,12 @@ TARGET_NO_STRIP = yes
 noinst_MODULES = emu-full.mod
 emu_full_mod_SOURCES = kern/emu/full.c
 emu_full_mod_CFLAGS = $(COMMON_CFLAGS)
+emu_full_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 noinst_MODULES = emu-lite.mod
 emu_lite_mod_SOURCES = kern/emu/lite.c kern/emu/cache.S symlist.c
 emu_lite_mod_CFLAGS = $(COMMON_CFLAGS)
+emu_lite_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod.
 pkglib_MODULES += halt.mod
@@ -45,7 +48,7 @@ endif
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 ifeq ($(target_cpu), sparc64)
-grub_emu_LDFLAGS += -m64 -mno-relax
+grub_emu_LDFLAGS += -m64 -melf64_sparc -mno-relax
 endif
 
 ifeq ($(enable_grub_emu_usb), yes)

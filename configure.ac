@@ -155,7 +155,7 @@ esac
 machine_CPPFLAGS="$machine_CPPFLAGS -DMACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
 
 CPPFLAGS="$CPPFLAGS $cpu_CPPFLAGS $machine_CPPFLAGS"
-TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CPPFLAGS"
+TARGET_ASFLAGS="$TARGET_ASFLAGS $cpu_CPPFLAGS $machine_CPPFLAGS"
 TARGET_CFLAGS="$TARGET_CFLAGS $cpu_CPPFLAGS $machine_CPPFLAGS"
 
 AC_SUBST(host_cpu)
