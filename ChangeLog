@@ -1,5 +1,10 @@
 2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub-script-check.c (main): Ensure defined behaviour on empty
+	input files (in which case exit zero).
+
+2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
 	* kern/emu/misc.c (canonicalize_file_name): realpath can still
 	return NULL for various reasons even if it has a maximum-length
 	buffer: for example, there might be a symlink loop, or the path
