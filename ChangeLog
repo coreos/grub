@@ -1,3 +1,8 @@
+2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrescue.in: Initialise override_dir rather than
+	assuming that it's unset or empty in the environment.
+
 2010-05-26  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* kern/emu/hostdisk.c (find_partition_start) [__NetBSD__]: Renamed
