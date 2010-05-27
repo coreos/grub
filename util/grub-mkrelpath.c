@@ -41,7 +41,7 @@ usage (int status)
     printf ("\
 Usage: %s [OPTIONS] PATH\n\
 \n\
-Make a system path relative to it's root.\n\
+Make a system path relative to its root.\n\
 \n\
 Options:\n\
   -h, --help                display this message and exit\n\

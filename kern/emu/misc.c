@@ -9,6 +9,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
 
 #include <grub/mm.h>
 #include <grub/err.h>
@@ -182,7 +185,8 @@ canonicalize_file_name (const char *path)
   char *ret;
 #ifdef PATH_MAX
   ret = xmalloc (PATH_MAX);
-  (void) realpath (path, ret);
+  if (!realpath (path, ret))
+    return NULL;
 #else
   ret = realpath (path, NULL);
 #endif

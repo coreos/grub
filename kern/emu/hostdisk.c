@@ -338,7 +338,7 @@ find_partition_start (const char *dev)
   struct hd_geometry hdg;
 # else /* defined(__NetBSD__) */
   struct disklabel label;
-  int index;
+  int p_index;
 # endif /* !defined(__NetBSD__) */
 
 # ifdef HAVE_DEVICE_MAPPER
@@ -412,7 +412,8 @@ devmapper_fail:
   fd = open (dev, O_RDONLY);
   if (fd == -1)
     {
-      grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' while attempting to get disk geometry", dev);
+      grub_error (GRUB_ERR_BAD_DEVICE,
+		  "cannot open `%s' while attempting to get disk geometry", dev);
       return 0;
     }
 
@@ -434,18 +435,15 @@ devmapper_fail:
 # if !defined(__NetBSD__)
   return hdg.start;
 # else /* defined(__NetBSD__) */
-  /* Since dev and convert_system_partition_to_system_disk (dev) are
-   * different, we know that dev is of the form /dev/r[wsc]d[0-9]+[a-z]
-   * and in particular it cannot be a floppy device.  */
-  index = dev[strlen(dev) - 1] - 'a';
+  p_index = dev[strlen(dev) - 1] - 'a';
 
-  if (index >= label.d_npartitions)
+  if (p_index >= label.d_npartitions)
     {
       grub_error (GRUB_ERR_BAD_DEVICE,
 		  "no disk label entry for `%s'", dev);
       return 0;
     }
-  return (grub_disk_addr_t) label.d_partitions[index].p_offset;
+  return (grub_disk_addr_t) label.d_partitions[p_index].p_offset;
 # endif /* !defined(__NetBSD__) */
 }
 #endif /* __linux__ || __CYGWIN__ */
@@ -1433,7 +1431,6 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     /* Since os_dev and convert_system_partition_to_system_disk (os_dev) are
      * different, we know that os_dev is of the form /dev/r[wsc]d[0-9]+[a-z]
      * and in particular it cannot be a floppy device.  */
-    index = os_dev[strlen(os_dev) - 1] - 'a';
 # endif /* !defined(__NetBSD__) */
 
     start = find_partition_start (os_dev);

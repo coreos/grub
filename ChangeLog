@@ -1,3 +1,149 @@
+2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-script-check.c (main): Ensure defined behaviour on empty
+	input files (in which case exit zero).
+
+2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/emu/misc.c (canonicalize_file_name): realpath can still
+	return NULL for various reasons even if it has a maximum-length
+	buffer: for example, there might be a symlink loop, or the path
+	might exceed PATH_MAX.  If this happens, return NULL.
+
+2010-05-27  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Insert
+	partmap module to handle cross-partmap setups.
+	Reported by Orestes Mas.  Gràcies!
+
+2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrescue.in: Initialise override_dir rather than
+	assuming that it's unset or empty in the environment.
+
+2010-05-26  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/emu/hostdisk.c (find_partition_start) [__NetBSD__]: Renamed
+	variable index into p_index to suppress a warning with -Wshadow.
+
+2010-05-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* INSTALL: Added flex >= 2.5.35 requirement.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/usbtest.c (grub_usb_get_string): Properly support UTF-16.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	cmostest support.
+
+	* commands/i386/cmostest.c: New file.
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Add cmostest.mod.
+	(cmostest_mod_SOURCES): New variable.
+	(cmostest_mod_CFLAGS): Likewise.
+	(cmostest_mod_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* docs/grub.texi (Vendor power-on keys): New section.
+	* util/grub-mkconfig.in: export GRUB_DEFAULT_BUTTON,
+	GRUB_HIDDEN_TIMEOUT_BUTTON, GRUB_TIMEOUT_BUTTON
+	and GRUB_BUTTON_CMOS_ADDRESS.
+	* util/grub.d/00_header.in: Handle powering-on by separate button.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gfxmenu/gui_list.c (draw_menu): Don't add scrollbar width to padding.
+	Removed drawing_scrollbar argument. All users updated
+	Fixes #29792.
+	Reported by Jo Shields
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gfxmenu/view.c (grub_gfxmenu_draw_terminal_box): Apply only to current
+	buffer since gfxterm handles double repaint.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gfxmenu/gfxmenu.c (grub_gfxmenu_try): Change viewport on both buffers.
+	* term/gfxterm.c (real_scroll): Likewise.
+
+2010-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/i386/pc/mmap.c (grub_machine_mmap_iterate): Zero-fill entry
+	before calling BIOS.
+
+2010-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i18n.h: Always enable grub_gettext.
+
+2010-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/i386/pc/init.c (make_install_device): Fix a leftover usage of old
+	partition naming style.
+
+2010-05-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig.in: Fix handling of -o so that it works when
+	not the first option.
+
+2010-05-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrelpath.c (usage): Remove excess apostrophe.
+
+2010-05-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/misc.c: Move inclusion of <limits.h> to ...
+	* kern/emu/misc.c: ... here.  Needed for canonicalize_file_name.
+
+2010-05-20  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/emu/hostdisk.c (grub_util_biosdisk_get_grub_dev) [__NetBSD__]:
+	Fix merge error in NetBSD code.
+	(find_partition_start) [__NetBSD__]: Likewise.
+
+2010-05-19  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix grub-mkrescue usage unit testing.
+
+	* tests/util/grub-shell.in: Use --grub-mkimage with grub-mkrescue.
+
+2010-05-18  Christian Franke  <franke@computer.org>
+
+	* util/grub.d/10_windows.in: Use path names instead of
+	drive letters to prevent warning from Cygwin 1.7.
+	Add drivemap command to menuentry if needed.
+
+2010-05-18  Justus Winter  <4winter@informatik.uni-hamburg.de>
+
+	* util/grub.d/10_hurd.in: Include all gnumach* kernels, not only
+	gnumach and gnumach.gz.
+
+2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i18n.h (gettext): Inline instead of using #define.
+	(grub_gettext): Likewise.
+	(_): Likewise.
+
+2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.in (CPPFLAGS): Replace -DGRUB_LIBDIR with
+	-DGRUB_PKGLIBROOTDIR= and prepend @PACKAGE_TARNAME@. All users updated.
+	* util/grub-mkimage.c (image_targets): Add i386-multiboot.
+	(main): Add a slash after pkglibdirroot.
+
+2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Add missing "in" keyword.
+
+2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrescue.in: Remove -O i386-pc duplication.
+	Reported by: Seth Goldberg.
+
+2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* po/POTFILES: Rename util/grub-mkrawimage.c to util/grub-mkimage.c.
+
 2010-05-18  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac: Check for Linux device-mapper support.

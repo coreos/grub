@@ -37,6 +37,7 @@ pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-pc
 efi32_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi
 efi64_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi
 rom_directory=
+override_dir=
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 
 # Usage: usage
@@ -219,7 +220,7 @@ grub_mkisofs_arguments="${grub_mkisofs_arguments} --modification-date=$(echo ${i
 if test -e "${pc_dir}" ; then
     echo "Enabling BIOS support ..."
     core_img=`mktemp "$MKTEMP_TEMPLATE"`
-    $grub_mkimage -O i386-pc -d ${pc_dir}/ -O i386-pc -o ${core_img} --prefix=/boot/grub/i386-pc \
+    $grub_mkimage -O i386-pc -d ${pc_dir}/ -o ${core_img} --prefix=/boot/grub/i386-pc \
         iso9660 biosdisk
     cat ${pc_dir}/cdboot.img ${core_img} > ${iso9660_dir}/boot/grub/i386-pc/eltorito.img
 
