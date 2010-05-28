@@ -1,0 +1,8 @@
+2010-05-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	Make grub-probe work with symbolic links under /dev/mapper as well
+	as with real block devices.  The Linux world seems to be (at best)
+	in transition here, and GRUB shouldn't get caught in the middle.
+
+	* kern/emu/getroot.c (find_root_device): Follow symbolic links under
+	/dev/mapper.
