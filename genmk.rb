@@ -161,6 +161,7 @@ endif
 #{pre_obj}: $(#{prefix}_DEPENDENCIES) #{objs_str}
 	-rm -f $@
 	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ #{objs_str}
+PREMODFILES += #{pre_obj}
 
 #{mod_obj}: #{mod_src}
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(#{prefix}_CFLAGS) -DGRUB_FILE=\\\"#{mod_src}\\\" -c -o $@ $<
