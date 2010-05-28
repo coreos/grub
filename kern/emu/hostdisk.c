@@ -338,7 +338,7 @@ find_partition_start (const char *dev)
   struct hd_geometry hdg;
 # else /* defined(__NetBSD__) */
   struct disklabel label;
-  int index;
+  int p_index;
 # endif /* !defined(__NetBSD__) */
 
 # ifdef HAVE_DEVICE_MAPPER
@@ -435,15 +435,15 @@ devmapper_fail:
 # if !defined(__NetBSD__)
   return hdg.start;
 # else /* defined(__NetBSD__) */
-  index = dev[strlen(dev) - 1] - 'a';
+  p_index = dev[strlen(dev) - 1] - 'a';
 
-  if (index >= label.d_npartitions)
+  if (p_index >= label.d_npartitions)
     {
       grub_error (GRUB_ERR_BAD_DEVICE,
 		  "no disk label entry for `%s'", dev);
       return 0;
     }
-  return (grub_disk_addr_t) label.d_partitions[index].p_offset;
+  return (grub_disk_addr_t) label.d_partitions[p_index].p_offset;
 # endif /* !defined(__NetBSD__) */
 }
 #endif /* __linux__ || __CYGWIN__ */
