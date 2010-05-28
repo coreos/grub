@@ -46,5 +46,6 @@ int EXPORT_FUNC(asprintf) (char **buf, const char *fmt, ...);
 #endif
 
 char * EXPORT_FUNC(xasprintf) (const char *fmt, ...);
+extern char * canonicalize_file_name (const char *path);
 
 #endif /* GRUB_EMU_MISC_H */

@@ -1,3 +1,12 @@
+2010-05-28  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix grub-emu issues on NetBSD, with gcc 4.1.3.
+
+	* conf/any-emu.rmk: Remove unnecessary COMMON_CFLAGS.
+	* include/grub/emu/misc.h (canonicalize_file_name): New Prototype.
+	* kern/misc.c (__enable_execute_stack): Disable on
+	GRUB_MACHINE_EMU.
+
 2010-05-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	Make grub-probe work with symbolic links under /dev/mapper as well
