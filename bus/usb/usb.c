@@ -107,7 +107,7 @@ grub_usb_set_configuration (grub_usb_device_t dev, int configuration)
 {
   int i;
 
-  for (i = 0; i < 16; i++)
+  for (i = 0; i < 256; i++)
     dev->toggle[i] = 0;
 
   return grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
@@ -163,6 +163,16 @@ grub_usb_device_initialize (grub_usb_device_t dev)
   grub_usb_err_t err;
   int i;
 
+  /* First we have to read first 8 bytes only and determine
+   * max. size of packet */
+  dev->descdev.maxsize0 = 0; /* invalidating, for safety only, can be removed if it is sure it is zero here */
+  err = grub_usb_get_descriptor (dev, GRUB_USB_DESCRIPTOR_DEVICE,
+				 0, 8, (char *) &dev->descdev);
+  if (err)
+    return err;
+
+  /* Now we have valid value in dev->descdev.maxsize0,
+   * so we can read whole device descriptor */
   err = grub_usb_get_descriptor (dev, GRUB_USB_DESCRIPTOR_DEVICE,
 				 0, sizeof (struct grub_usb_desc_device),
 				 (char *) &dev->descdev);

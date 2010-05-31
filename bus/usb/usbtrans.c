@@ -138,7 +138,7 @@ grub_usb_control_msg (grub_usb_device_t dev,
   /* End with an empty OUT transaction.  */
   transfer->transactions[datablocks + 1].size = 0;
   transfer->transactions[datablocks + 1].data = 0;
-  if (reqtype & 128)
+  if ((reqtype & 128) && datablocks)
     transfer->transactions[datablocks + 1].pid = GRUB_USB_TRANSFER_TYPE_OUT;
   else
     transfer->transactions[datablocks + 1].pid = GRUB_USB_TRANSFER_TYPE_IN;
@@ -148,6 +148,7 @@ grub_usb_control_msg (grub_usb_device_t dev,
   err = dev->controller.dev->transfer (&dev->controller, transfer);
 
   grub_free (transfer->transactions);
+  
   grub_free (transfer);
   grub_dma_free (data_chunk);
   grub_dma_free (setupdata_chunk);
@@ -207,7 +208,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
   datablocks = ((size + max - 1) / max);
   transfer->transcnt = datablocks;
   transfer->size = size - 1;
-  transfer->endpoint = endpoint;
+  transfer->endpoint = endpoint & 15;
   transfer->devaddr = dev->addr;
   transfer->type = GRUB_USB_TRANSACTION_TYPE_BULK;
   transfer->max = max;
