@@ -654,6 +654,39 @@ grub_ohci_hubports (grub_usb_controller_t dev)
   return portinfo & 0xFF;
 }
 
+static grub_err_t
+grub_ohci_fini_hw (int noreturn __attribute__ ((unused)))
+{
+  struct grub_ohci *o;
+
+  for (o = ohci; o; o = o->next)
+    {
+      int i, nports = grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBA) & 0xff;
+      for (i = 0; i < nports; i++)
+	grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + i,
+			      GRUB_OHCI_CLEAR_PORT_ENABLE);
+
+      grub_ohci_writereg32 (o, GRUB_OHCI_REG_HCCA, 0);
+      grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROLHEAD, 0);
+      grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROLCURR, 0);
+      grub_ohci_writereg32 (o, GRUB_OHCI_REG_BULKHEAD, 0);
+      grub_ohci_writereg32 (o, GRUB_OHCI_REG_BULKCURR, 0);
+      grub_ohci_writereg32 (o, GRUB_OHCI_REG_DONEHEAD, 0);
+    }
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_ohci_restore_hw (void)
+{
+  struct grub_ohci *o;
+
+  for (o = ohci; o; o = o->next)
+    grub_ohci_writereg32 (o, GRUB_OHCI_REG_HCCA, o->hcca_addr);
+
+  return GRUB_ERR_NONE;
+}
 
 
 static struct grub_usb_controller_dev usb_controller =
@@ -670,9 +703,12 @@ GRUB_MOD_INIT(ohci)
 {
   grub_ohci_inithw ();
   grub_usb_controller_dev_register (&usb_controller);
+  grub_loader_register_preboot_hook (grub_ohci_fini_hw, grub_ohci_restore_hw,
+				     GRUB_LOADER_PREBOOT_HOOK_PRIO_DISK);
 }
 
 GRUB_MOD_FINI(ohci)
 {
+  grub_ohci_fini_hw (0);
   grub_usb_controller_dev_unregister (&usb_controller);
 }
