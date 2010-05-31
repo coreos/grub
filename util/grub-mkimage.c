@@ -1015,14 +1015,17 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       boot_size = grub_util_get_image_size (boot_path);
       boot_img = grub_util_read_image (boot_path);
 
-      rom_size = core_size + boot_size;
+      rom_size = ALIGN_UP (core_size + boot_size, 512 * 1024);
 
       rom_img = xmalloc (rom_size);
       memset (rom_img, 0, rom_size); 
 
       memcpy (rom_img, boot_img, boot_size);
 
-      memcpy (rom_img + boot_size, core_img, core_size);      
+      memcpy (rom_img + boot_size, core_img, core_size);
+
+      memset (rom_img + boot_size + core_size, 0,
+	      rom_size - (boot_size + core_size));
 
       free (core_img);
       core_img = rom_img;
