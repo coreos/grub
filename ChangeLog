@@ -1,5 +1,11 @@
 2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* loader/multiboot_mbi2.c (grub_multiboot_make_mbi): Fix incorrect
+	addition of dest.
+	Reported by: Seth Goldberg.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* commands/setpci.c (grub_setpci_iter): Fix an incorrect function check.
 	Reported by: Seth Goldberg.
 
