@@ -19,6 +19,49 @@
 
 #include <grub/dl.h>
 #include <grub/pci.h>
+#include <grub/mm.h>
+
+#if GRUB_TARGET_SIZEOF_VOID_P == 4
+struct grub_pci_dma_chunk *
+grub_memalign_dma32 (grub_size_t align, grub_size_t size)
+{
+  return grub_memalign (align, size);
+}
+
+void
+grub_dma_free (struct grub_pci_dma_chunk *ch)
+{
+  grub_free (ch);
+}
+#endif
+
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
+volatile void *
+grub_dma_get_virt (struct grub_pci_dma_chunk *ch)
+{
+  return (void *) ((((grub_uint32_t) ch) & 0x1fffffff) | 0xa0000000);
+}
+
+grub_uint32_t
+grub_dma_get_phys (struct grub_pci_dma_chunk *ch)
+{
+  return (((grub_uint32_t) ch) & 0x1fffffff) | 0x80000000;
+}
+#else
+
+volatile void *
+grub_dma_get_virt (struct grub_pci_dma_chunk *ch)
+{
+  return (void *) ch;
+}
+
+grub_uint32_t
+grub_dma_get_phys (struct grub_pci_dma_chunk *ch)
+{
+  return (grub_uint32_t) ch;
+}
+
+#endif
 
 grub_pci_address_t
 grub_pci_make_address (grub_pci_device_t dev, int reg)
@@ -47,6 +90,16 @@ grub_pci_iterate (grub_pci_iteratefunc_t hook)
 	      /* Check if there is a device present.  */
 	      if (id >> 16 == 0xFFFF)
 		continue;
+
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
+	      /* Skip ghosts.  */
+	      if (id == GRUB_YEELOONG_OHCI_PCIID
+		  && dev.function == GRUB_YEELOONG_OHCI_GHOST_FUNCTION)
+		continue;
+	      if (id == GRUB_YEELOONG_EHCI_PCIID
+		  && dev.function == GRUB_YEELOONG_EHCI_GHOST_FUNCTION)
+		continue;
+#endif
 
 	      if (hook (dev, id))
 		return;

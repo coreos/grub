@@ -24,8 +24,9 @@
 #include <grub/misc.h>
 #include <grub/pci.h>
 #include <grub/cpu/pci.h>
-#include <grub/i386/io.h>
+#include <grub/cpu/io.h>
 #include <grub/time.h>
+#include <grub/cs5536.h>
 
 struct grub_ohci_hcca
 {
@@ -63,13 +64,15 @@ struct grub_ohci_td
   grub_uint32_t buffer_end;
 } __attribute__((packed));
 
-typedef struct grub_ohci_td *grub_ohci_td_t;
-typedef struct grub_ohci_ed *grub_ohci_ed_t;
+typedef volatile struct grub_ohci_td *grub_ohci_td_t;
+typedef volatile struct grub_ohci_ed *grub_ohci_ed_t;
 
 struct grub_ohci
 {
   volatile grub_uint32_t *iobase;
   volatile struct grub_ohci_hcca *hcca;
+  grub_uint32_t hcca_addr;
+  struct grub_pci_dma_chunk *hcca_chunk;
   struct grub_ohci *next;
 };
 
@@ -91,9 +94,22 @@ typedef enum
   GRUB_OHCI_REG_BULKCURR,
   GRUB_OHCI_REG_DONEHEAD,
   GRUB_OHCI_REG_FRAME_INTERVAL,
+  GRUB_OHCI_REG_PERIODIC_START = 16,
   GRUB_OHCI_REG_RHUBA = 18,
   GRUB_OHCI_REG_RHUBPORT = 21
 } grub_ohci_reg_t;
+
+#define GRUB_OHCI_RHUB_PORT_POWER_MASK 0x300
+#define GRUB_OHCI_RHUB_PORT_ALL_POWERED 0x200
+
+#define GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_MASK 0x8fff0000
+#define GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT 16
+#define GRUB_OHCI_REG_FRAME_INTERVAL_FI_SHIFT 0
+
+/* XXX: Is this choice of timings sane?  */
+#define GRUB_OHCI_FSMPS 0x2778
+#define GRUB_OHCI_PERIODIC_START 0x257f
+#define GRUB_OHCI_FRAME_INTERVAL 0x2edf
 
 static grub_uint32_t
 grub_ohci_readreg32 (struct grub_ohci *o, grub_ohci_reg_t reg)
@@ -114,51 +130,81 @@ grub_ohci_writereg32 (struct grub_ohci *o,
    controller.  If this is the case, initialize it.  */
 static int NESTED_FUNC_ATTR
 grub_ohci_pci_iter (grub_pci_device_t dev,
-		    grub_pci_id_t pciid __attribute__((unused)))
+		    grub_pci_id_t pciid)
 {
-  grub_uint32_t class_code;
-  grub_uint32_t class;
-  grub_uint32_t subclass;
   grub_uint32_t interf;
   grub_uint32_t base;
   grub_pci_address_t addr;
   struct grub_ohci *o;
   grub_uint32_t revision;
-  grub_uint32_t frame_interval;
-
-  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
-  class_code = grub_pci_read (addr) >> 8;
-
-  interf = class_code & 0xFF;
-  subclass = (class_code >> 8) & 0xFF;
-  class = class_code >> 16;
-
-  /* If this is not an OHCI controller, just return.  */
-  if (class != 0x0c || subclass != 0x03 || interf != 0x10)
-    return 0;
+  int cs5536;
 
   /* Determine IO base address.  */
-  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
-  base = grub_pci_read (addr);
+  grub_dprintf ("ohci", "pciid = %x\n", pciid);
+
+  if (pciid == GRUB_CS5536_PCIID)
+    {
+      grub_uint64_t basereg;
+
+      cs5536 = 1;
+      basereg = grub_cs5536_read_msr (dev, GRUB_CS5536_MSR_USB_OHCI_BASE);
+      if (!(basereg & GRUB_CS5536_MSR_USB_BASE_MEMORY_ENABLE))
+	{
+	  /* Shouldn't happen.  */
+	  grub_dprintf ("ohci", "No OHCI address is assigned\n");
+	  return 0;
+	}
+      base = (basereg & GRUB_CS5536_MSR_USB_BASE_ADDR_MASK);
+      basereg |= GRUB_CS5536_MSR_USB_BASE_BUS_MASTER;
+      basereg &= ~GRUB_CS5536_MSR_USB_BASE_PME_ENABLED;
+      basereg &= ~GRUB_CS5536_MSR_USB_BASE_PME_STATUS;
+      grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_USB_OHCI_BASE, basereg);
+    }
+  else
+    {
+      grub_uint32_t class_code;
+      grub_uint32_t class;
+      grub_uint32_t subclass;
+
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
+      class_code = grub_pci_read (addr) >> 8;
+      
+      interf = class_code & 0xFF;
+      subclass = (class_code >> 8) & 0xFF;
+      class = class_code >> 16;
+
+      /* If this is not an OHCI controller, just return.  */
+      if (class != 0x0c || subclass != 0x03 || interf != 0x10)
+	return 0;
+
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
+      base = grub_pci_read (addr);
 
 #if 0
-  /* Stop if there is no IO space base address defined.  */
-  if (! (base & 1))
-    return 0;
+      /* Stop if there is no IO space base address defined.  */
+      if (! (base & 1))
+	return 0;
 #endif
+
+      grub_dprintf ("ohci", "class=0x%02x 0x%02x interface 0x%02x\n",
+		    class, subclass, interf);
+    }
 
   /* Allocate memory for the controller and register it.  */
   o = grub_malloc (sizeof (*o));
   if (! o)
     return 1;
 
-  o->iobase = (grub_uint32_t *) base;
+  o->iobase = grub_pci_device_map_range (dev, base, 0x100);
+
+  grub_dprintf ("ohci", "base=%p\n", o->iobase);
 
   /* Reserve memory for the HCCA.  */
-  o->hcca = (struct grub_ohci_hcca *) grub_memalign (256, 256);
-
-  grub_dprintf ("ohci", "class=0x%02x 0x%02x interface 0x%02x base=%p\n",
- 		class, subclass, interf, o->iobase);
+  o->hcca_chunk = grub_memalign_dma32 (256, 256);
+  if (! o->hcca_chunk)
+    return 1;
+  o->hcca = grub_dma_get_virt (o->hcca_chunk);
+  o->hcca_addr = grub_dma_get_phys (o->hcca_chunk);
 
   /* Check if the OHCI revision is actually 1.0 as supported.  */
   revision = grub_ohci_readreg32 (o, GRUB_OHCI_REG_REVISION);
@@ -166,19 +212,27 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
   if ((revision & 0xFF) != 0x10)
     goto fail;
 
-  /* Backup the frame interval register.  */
-  frame_interval = grub_ohci_readreg32 (o, GRUB_OHCI_REG_FRAME_INTERVAL);
+  grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBA,
+			(grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBA)
+			 & ~GRUB_OHCI_RHUB_PORT_POWER_MASK)
+			| GRUB_OHCI_RHUB_PORT_ALL_POWERED);
 
   /* Suspend the OHCI by issuing a reset.  */
   grub_ohci_writereg32 (o, GRUB_OHCI_REG_CMDSTATUS, 1); /* XXX: Magic.  */
   grub_millisleep (1);
   grub_dprintf ("ohci", "OHCI reset\n");
 
-  /* Restore the frame interval register.  */
-  grub_ohci_writereg32 (o, GRUB_OHCI_REG_FRAME_INTERVAL, frame_interval);
+  grub_ohci_writereg32 (o, GRUB_OHCI_REG_FRAME_INTERVAL,
+			(GRUB_OHCI_FSMPS
+			 << GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT)
+			| (GRUB_OHCI_FRAME_INTERVAL
+			   << GRUB_OHCI_REG_FRAME_INTERVAL_FI_SHIFT));
+
+  grub_ohci_writereg32 (o, GRUB_OHCI_REG_PERIODIC_START,
+			GRUB_OHCI_PERIODIC_START);
 
   /* Setup the HCCA.  */
-  grub_ohci_writereg32 (o, GRUB_OHCI_REG_HCCA, (grub_uint32_t) o->hcca);
+  grub_ohci_writereg32 (o, GRUB_OHCI_REG_HCCA, o->hcca_addr);
   grub_dprintf ("ohci", "OHCI HCCA\n");
 
   /* Enable the OHCI.  */
@@ -194,11 +248,13 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
   return 0;
 
  fail:
+#ifndef GRUB_MACHINE_MIPS_YEELOONG
   if (o)
     grub_free ((void *) o->hcca);
+#endif
   grub_free (o);
 
-  return 1;
+  return 0;
 }
 
 
@@ -229,7 +285,7 @@ grub_ohci_iterate (int (*hook) (grub_usb_controller_t dev))
 static void
 grub_ohci_transaction (grub_ohci_td_t td,
 		       grub_transfer_type_t type, unsigned int toggle,
-		       grub_size_t size, char *data)
+		       grub_size_t size, grub_uint32_t data)
 {
   grub_uint32_t token;
   grub_uint32_t buffer;
@@ -261,7 +317,7 @@ grub_ohci_transaction (grub_ohci_td_t td,
   token |= toggle << 24;
   token |= 1 << 25;
 
-  buffer = (grub_uint32_t) data;
+  buffer = data;
   buffer_end = buffer + size - 1;
 
   td->token = grub_cpu_to_le32 (token);
@@ -276,7 +332,10 @@ grub_ohci_transfer (grub_usb_controller_t dev,
 {
   struct grub_ohci *o = (struct grub_ohci *) dev->data;
   grub_ohci_ed_t ed;
+  grub_uint32_t ed_addr;
+  struct grub_pci_dma_chunk *ed_chunk, *td_list_chunk;
   grub_ohci_td_t td_list;
+  grub_uint32_t td_list_addr;
   grub_uint32_t target;
   grub_uint32_t td_tail;
   grub_uint32_t td_head;
@@ -286,18 +345,23 @@ grub_ohci_transfer (grub_usb_controller_t dev,
   int i;
 
   /* Allocate an Endpoint Descriptor.  */
-  ed = grub_memalign (16, sizeof (*ed));
-  if (! ed)
+  ed_chunk = grub_memalign_dma32 (256, sizeof (*ed));
+  if (! ed_chunk)
     return GRUB_USB_ERR_INTERNAL;
+  ed = grub_dma_get_virt (ed_chunk);
+  ed_addr = grub_dma_get_phys (ed_chunk);
 
-  td_list = grub_memalign (16, sizeof (*td_list) * (transfer->transcnt + 1));
-  if (! td_list)
+  td_list_chunk = grub_memalign_dma32 (256, sizeof (*td_list)
+				       * (transfer->transcnt + 1));
+  if (! td_list_chunk)
     {
-      grub_free ((void *) ed);
+      grub_dma_free (ed_chunk);
       return GRUB_USB_ERR_INTERNAL;
     }
+  td_list = grub_dma_get_virt (td_list_chunk);
+  td_list_addr = grub_dma_get_phys (td_list_chunk);
 
-  grub_dprintf ("ohci", "alloc=%p\n", td_list);
+  grub_dprintf ("ohci", "alloc=%p/0x%x\n", td_list, td_list_addr);
 
   /* Setup all Transfer Descriptors.  */
   for (i = 0; i < transfer->transcnt; i++)
@@ -307,7 +371,8 @@ grub_ohci_transfer (grub_usb_controller_t dev,
       grub_ohci_transaction (&td_list[i], tr->pid, tr->toggle,
 			     tr->size, tr->data);
 
-      td_list[i].next_td = grub_cpu_to_le32 (&td_list[i + 1]);
+      td_list[i].next_td = grub_cpu_to_le32 (td_list_addr
+					     + (i + 1) * sizeof (td_list[0]));
     }
 
   /* Setup the Endpoint Descriptor.  */
@@ -324,9 +389,9 @@ grub_ohci_transfer (grub_usb_controller_t dev,
   /* Set the maximum packet size.  */
   target |= transfer->max << 16;
 
-  td_head = (grub_uint32_t) td_list;
+  td_head = td_list_addr;
 
-  td_tail = (grub_uint32_t) &td_list[transfer->transcnt];
+  td_tail = td_list_addr + transfer->transcnt * sizeof (*td_list);
 
   ed->target = grub_cpu_to_le32 (target);
   ed->td_head = grub_cpu_to_le32 (td_head);
@@ -353,7 +418,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
 	status &= ~(1 << 2);
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CMDSTATUS, status);
 
-	grub_ohci_writereg32 (o, GRUB_OHCI_REG_BULKHEAD, (grub_uint32_t) ed);
+	grub_ohci_writereg32 (o, GRUB_OHCI_REG_BULKHEAD, ed_addr);
 
 	/* Enable the Bulk list.  */
 	control |= 1 << 5;
@@ -380,10 +445,9 @@ grub_ohci_transfer (grub_usb_controller_t dev,
 	status &= ~(1 << 1);
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CMDSTATUS, status);
 
-	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROLHEAD,
-			      (grub_uint32_t) ed);
+	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROLHEAD, ed_addr);
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROLHEAD+1,
-			      (grub_uint32_t) ed);
+			      ed_addr);
 
 	/* Enable the Control list.  */
 	control |= 1 << 4;
@@ -424,9 +488,12 @@ grub_ohci_transfer (grub_usb_controller_t dev,
     {
       grub_uint8_t errcode;
       grub_ohci_td_t tderr;
+      grub_uint32_t td_err_addr;
 
-      tderr = (grub_ohci_td_t) grub_ohci_readreg32 (o,
-						    GRUB_OHCI_REG_DONEHEAD);
+      td_err_addr = grub_ohci_readreg32 (o, GRUB_OHCI_REG_DONEHEAD);
+
+      tderr = (grub_ohci_td_t) ((char *) td_list
+				+ (td_err_addr - td_list_addr));
       errcode = tderr->token >> 28;
 
       switch (errcode)
@@ -519,8 +586,8 @@ grub_ohci_transfer (grub_usb_controller_t dev,
   grub_ohci_writereg32 (o, GRUB_OHCI_REG_CMDSTATUS, status);
 
   /* XXX */
-  grub_free (td_list);
-  grub_free (ed);
+  grub_dma_free (td_list_chunk);
+  grub_dma_free (ed_chunk);
 
   return err;
 }
