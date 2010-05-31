@@ -1,7 +1,5 @@
 # -*- makefile -*-
 
-COMMON_CFLAGS += -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include)
-
 kernel_img_RELOCATABLE = yes
 pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c kern/env.c	\

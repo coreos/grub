@@ -126,9 +126,20 @@ find_root_device (const char *dir, dev_t dev)
 	/* Ignore any error.  */
 	continue;
 
-      if (S_ISLNK (st.st_mode))
-	/* Don't follow symbolic links.  */
+      if (S_ISLNK (st.st_mode)) {
+#ifdef __linux__
+	if (strcmp (dir, "mapper") == 0) {
+	  /* Follow symbolic links under /dev/mapper/; the canonical name
+	     may be something like /dev/dm-0, but the names under
+	     /dev/mapper/ are more human-readable and so we prefer them if
+	     we can get them.  */
+	  if (stat (ent->d_name, &st) < 0)
+	    continue;
+	} else
+#endif /* __linux__ */
+	/* Don't follow other symbolic links.  */
 	continue;
+      }
 
       if (S_ISDIR (st.st_mode))
 	{

@@ -192,7 +192,7 @@ AC_PROG_LEX
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 
-if test "x$LEX" = x; then
+if test "x$LEX" = "x:"; then
   AC_MSG_ERROR([flex is not found])
 else
   version=`$LEX --version | $AWK '{ split($NF,x,"."); print x[[1]]*10000+x[[2]]*100+x[[3]]; }'`

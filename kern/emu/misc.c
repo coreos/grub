@@ -185,7 +185,8 @@ canonicalize_file_name (const char *path)
   char *ret;
 #ifdef PATH_MAX
   ret = xmalloc (PATH_MAX);
-  (void) realpath (path, ret);
+  if (!realpath (path, ret))
+    return NULL;
 #else
   ret = realpath (path, NULL);
 #endif
