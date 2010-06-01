@@ -93,14 +93,15 @@ static char *
 find_root_device_from_mountinfo (const char *dir)
 {
   FILE *fp;
-  char buf[1024];	/* XXX */
+  char *buf = NULL;
+  size_t len = 0;
   char *ret = NULL;
 
   fp = fopen ("/proc/self/mountinfo", "r");
   if (! fp)
     return NULL; /* fall through to other methods */
 
-  while (fgets (buf, sizeof (buf), fp))
+  while (getline (&buf, &len, fp) > 0)
     {
       int mnt_id, parent_mnt_id;
       unsigned int major, minor;
@@ -139,7 +140,7 @@ find_root_device_from_mountinfo (const char *dir)
       if (!sep)
 	continue;
 
-      sep += strlen (" - ");
+      sep += sizeof (" - ") - 1;
       if (sscanf (sep, "%s %s", fstype, device) != 2)
 	continue;
 
@@ -152,6 +153,7 @@ find_root_device_from_mountinfo (const char *dir)
       ret = strdup (device);
     }
 
+  free (buf);
   fclose (fp);
   return ret;
 }

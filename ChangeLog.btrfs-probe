@@ -1,4 +1,4 @@
-2010-05-18  Colin Watson  <cjwatson@ubuntu.com>
+2010-06-01  Colin Watson  <cjwatson@ubuntu.com>
 
 	Add btrfs probing support, currently only in the single-device case.
 
