@@ -1,3 +1,59 @@
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_open): Use
+	GRUB_DISK_SIZE_UNKNOWN.
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_open): Likewise.
+
+2010-05-31  Jiro SEKIBA <jir@unicus.jp>
+
+	* include/grub/disk.h (GRUB_DISK_SIZE_UNKNOWN): New macro.
+	* fs/nilfs.c: Support 2nd super block in case 1st one is accidently
+	corrupted or not synced properly.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/main.c (grub_normal_add_menu_entry): Avoid going out of args.
+	Reported by: Seth Goldberg.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/multiboot_mbi2.c (grub_multiboot_make_mbi): Fix incorrect
+	addition of dest.
+	Reported by: Seth Goldberg.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/setpci.c (grub_setpci_iter): Fix an incorrect function check.
+	Reported by: Seth Goldberg.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/multiboot_elfxx.c (grub_multiboot_load_elfXX) [__mips]: Check
+	64-bit address as signed on MIPS.
+
+2010-05-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: AC_PROG_LEX sets LEX to ":" if lex is missing, not
+	to the empty string.
+
+2010-05-28  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix grub-emu issues on NetBSD, with gcc 4.1.3.
+
+	* conf/any-emu.rmk: Remove unnecessary COMMON_CFLAGS.
+	* include/grub/emu/misc.h (canonicalize_file_name): New Prototype.
+	* kern/misc.c (__enable_execute_stack): Disable on
+	GRUB_MACHINE_EMU.
+
+2010-05-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	Make grub-probe work with symbolic links under /dev/mapper as well
+	as with real block devices.  The Linux world seems to be (at best)
+	in transition here, and GRUB shouldn't get caught in the middle.
+
+	* kern/emu/getroot.c (find_root_device): Follow symbolic links under
+	/dev/mapper.
+
 2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-script-check.c (main): Ensure defined behaviour on empty
