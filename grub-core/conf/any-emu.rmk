@@ -1,6 +1,7 @@
 # -*- makefile -*-
 
 ifeq ($(target_cpu), sparc64)
+COMMON_CFLAGS += -mno-app-regs
 COMMON_LDFLAGS += -mno-relax
 endif
 
@@ -22,14 +23,6 @@ kernel_img_CFLAGS = $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Wno-char-subscripts -Wn
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 TARGET_NO_STRIP = yes
 
-noinst_MODULES = emu-full.mod
-emu_full_mod_SOURCES = kern/emu/full.c
-emu_full_mod_CFLAGS = $(COMMON_CFLAGS)
-
-noinst_MODULES = emu-lite.mod
-emu_lite_mod_SOURCES = kern/emu/lite.c kern/emu/cache.S symlist.c
-emu_lite_mod_CFLAGS = $(COMMON_CFLAGS)
-
 # For halt.mod.
 pkglib_MODULES += halt.mod
 halt_mod_SOURCES = commands/halt.c
@@ -45,7 +38,7 @@ endif
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 ifeq ($(target_cpu), sparc64)
-grub_emu_LDFLAGS += -m64 -mno-relax
+grub_emu_LDFLAGS += -m64 -melf64_sparc -mno-relax
 endif
 
 ifeq ($(enable_grub_emu_usb), yes)
@@ -108,12 +101,28 @@ grub_emu_init.o: grub_emu_init.c grub_emu_init.h
 	rm -f $@; $(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -DGRUB_FILE=\"grub_init.c\" -c -o $@ $<
 CLEANFILES += grub_emu_init.o
 
+kern_emu_lite.o: kern/emu/lite.c
+	$(TARGET_CC) $(COMMON_CFLAGS) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -DGRUB_FILE=\"kern/emu/lite.c\" -c -o $@ $<
+CLEANFILES += kern_emu_lite.o
+
+kern_emu_full.o: kern/emu/full.c
+	$(TARGET_CC) $(COMMON_CFLAGS) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -DGRUB_FILE=\"kern/emu/full.c\" -c -o $@ $<
+CLEANFILES += kern_emu_full.o
+
+kern_emu_cache.o: kern/emu/cache.S
+	$(TARGET_CC) $(COMMON_CFLAGS) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(TARGET_ASFLAGS) -DGRUB_FILE=\"kern/emu/cache.S\" -c -o $@ $<
+CLEANFILES += kern_emu_cache.o
+
+symlist.o: symlist.c
+	$(TARGET_CC) $(COMMON_CFLAGS) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -DGRUB_FILE=\"symlist.c\" -c -o $@ $<
+CLEANFILES += symlist.o
+
 CLEANFILES += grub-emu-lite
-grub-emu-lite: $(pkglib_PROGRAMS) emu-lite.mod
+grub-emu-lite: kern_emu_lite.o kern_emu_cache.o symlist.o kernel.img
 	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
 GRUB_EMU_LITE=grub-emu-lite
 
 CLEANFILES += grub-emu
-grub-emu: $(pkglib_MODULES) $(pkglib_PROGRAMS) emu-full.mod grub_emu_init.o
+grub-emu: $(PREMODFILES) kern_emu_full.o grub_emu_init.o kernel.img
 	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
 GRUB_EMU=grub-emu

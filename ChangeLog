@@ -1,3 +1,31 @@
+2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-script-check.c (main): Ensure defined behaviour on empty
+	input files (in which case exit zero).
+
+2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/emu/misc.c (canonicalize_file_name): realpath can still
+	return NULL for various reasons even if it has a maximum-length
+	buffer: for example, there might be a symlink loop, or the path
+	might exceed PATH_MAX.  If this happens, return NULL.
+
+2010-05-27  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Insert
+	partmap module to handle cross-partmap setups.
+	Reported by Orestes Mas.  Gràcies!
+
+2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrescue.in: Initialise override_dir rather than
+	assuming that it's unset or empty in the environment.
+
+2010-05-26  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/emu/hostdisk.c (find_partition_start) [__NetBSD__]: Renamed
+	variable index into p_index to suppress a warning with -Wshadow.
+
 2010-05-25  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* INSTALL: Added flex >= 2.5.35 requirement.

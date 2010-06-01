@@ -129,7 +129,7 @@ rootdir=`mktemp -d`
 isofile=`mktemp`
 sh @abs_top_builddir@/grub-mkrescue --grub-mkimage=${builddir}/grub-mkimage \
   --override-directory=${builddir}/grub-core --output=${isofile} \
-  --root-directory=${rootdir} /boot/grub/grub.cfg=${cfgfile} \
+  boot/grub/grub.cfg=${cfgfile} \
   /boot/grub/testcase.cfg=${source} >/dev/null 2>&1
 rm -rf $rootdir
 

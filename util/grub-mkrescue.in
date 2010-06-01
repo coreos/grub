@@ -37,6 +37,7 @@ pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-pc
 efi32_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi
 efi64_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi
 rom_directory=
+override_dir=
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 
 # Usage: usage
