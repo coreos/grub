@@ -35,7 +35,8 @@ typedef enum
     GRUB_USB_ERR_NAK,
     GRUB_USB_ERR_BABBLE,
     GRUB_USB_ERR_TIMEOUT,
-    GRUB_USB_ERR_BITSTUFF
+    GRUB_USB_ERR_BITSTUFF,
+    GRUB_USB_ERR_UNRECOVERABLE
   } grub_usb_err_t;
 
 typedef enum

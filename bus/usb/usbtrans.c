@@ -213,6 +213,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
   transfer->type = GRUB_USB_TRANSACTION_TYPE_BULK;
   transfer->max = max;
   transfer->dev = dev;
+  transfer->last_trans = -1; /* Reset index of last processed transaction (TD) */
 
   /* Allocate an array of transfer data structures.  */
   transfer->transactions = grub_malloc (transfer->transcnt
@@ -240,6 +241,13 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
     }
 
   err = dev->controller.dev->transfer (&dev->controller, transfer);
+  /* We must remember proper toggle value even if some transactions
+   * were not processed - correct value should be inversion of last
+   * processed transaction (TD). */
+  if (transfer->last_trans >= 0)
+    toggle = transfer->transactions[transfer->last_trans].toggle ? 0 : 1;
+  else
+    toggle = dev->toggle[endpoint]; /* Nothing done, take original */
   grub_dprintf ("usb", "toggle=%d\n", toggle);
   dev->toggle[endpoint] = toggle;
 
