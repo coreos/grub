@@ -1,3 +1,10 @@
+2009-12-15  Peter Henn  <peter.henn@web.de>
+
+	* disk/mdraid_linux.c (grub_mdraid_detect): Fix calculation of 1.x
+	chunk size and disk size, which are already given as sector counts
+	as distinct from the 0.90 units.  Fetch the correct device number
+	from the role table instead of using the table index.
+ 
 2009-11-16  Felix Zielcke  <fzielcke@z-51.de>
 
 	* disk/mdraid_linux.c (grub_mdraid_detect): Remove a wrong call

@@ -371,9 +371,12 @@ superblock_0_90:
   array->level = grub_le_to_cpu32 (sb_1x->level);
   array->layout = grub_le_to_cpu32 (sb_1x->layout);
   array->total_devs = grub_le_to_cpu32 (sb_1x->raid_disks);
-  array->disk_size = grub_le_to_cpu64 (sb_1x->size) * 2;
+  array->disk_size = grub_le_to_cpu64 (sb_1x->size);
   array->chunk_size = grub_le_to_cpu32 (sb_1x->chunksize);
-  array->index = grub_le_to_cpu32 (sb_1x->dev_number);
+  if (grub_le_to_cpu32 (sb_1x->dev_number) < grub_le_to_cpu32 (sb_1x->max_dev))
+    array->index = grub_le_to_cpu16 (sb_1x->dev_roles[grub_le_to_cpu32 (sb_1x->dev_number)]);
+  else
+    array->index = 0xffff;  /* disk will be later not used! */
   array->uuid_len = 16;
   array->uuid = grub_malloc (16);
   if (!array->uuid)
