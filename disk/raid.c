@@ -562,16 +562,16 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 	 Use it directly as GRUB device.  */
       if (! array->name)
 	{
-	array->name = grub_malloc (13);
-	if (! array->name)
-	  {
-	    grub_free (array->uuid);
-	    grub_free (array);
+	  array->name = grub_malloc (13);
+	  if (! array->name)
+	    {
+	      grub_free (array->uuid);
+	      grub_free (array);
 
-	    return grub_errno;
-	  }
-	grub_sprintf (array->name, "md%d", array->number);
-      }
+	      return grub_errno;
+	    }
+	  grub_sprintf (array->name, "md%d", array->number);
+	}
       else
 	grub_sprintf (array->name, "%s", array->name);
 
