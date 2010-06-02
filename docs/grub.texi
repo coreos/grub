@@ -685,8 +685,6 @@ Here, we describe some caveats on several operating systems.
 * GNU/Hurd::
 * GNU/Linux::
 * DOS/Windows::
-* SCO UnixWare::
-* QNX::
 @end menu
 
 
@@ -772,38 +770,6 @@ parttool (hd0,2) hidden+
 set root=(hd0,1)
 chainloader +1
 parttool @verb{'${root}'} boot+
-boot
-@end group
-@end example
-
-
-@node SCO UnixWare
-@subsection SCO UnixWare
-
-It is known that the signature in the boot loader for SCO UnixWare is
-wrong, so you will have to specify the option @option{--force} to
-@command{chainloader} (@pxref{chainloader}), like this:
-
-@example
-@group
-set root=(hd1,1)
-chainloader --force +1
-parttool @verb{'${root}'} boot+
-boot
-@end group
-@end example
-
-
-@node QNX
-@subsection QNX
-
-QNX seems to use a bigger boot loader, so you need to boot it up, like
-this:
-
-@example
-@group
-set root=(hd1,2)
-chainloader +4
 boot
 @end group
 @end example
@@ -1518,8 +1484,7 @@ filesystem code, it can use the blocklist notation (@pxref{Block list
 syntax}) to grab the first sector of the current partition with @samp{+1}.
 If you specify the option @option{--force}, then load @var{file} forcibly,
 whether it has a correct signature or not. This is required when you want to
-load a defective boot loader, such as SCO UnixWare 7.1 (@pxref{SCO
-UnixWare}).
+load a defective boot loader, such as SCO UnixWare 7.1.
 @end deffn
 
 
