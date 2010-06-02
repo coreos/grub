@@ -1,5 +1,12 @@
 2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
 
+	* commands/gptsync.c (grub_cmd_gptsync): Fix typos.
+	(GRUB_MOD_INIT): Fix capitalisation.
+	* docs/grub.texi (Command-line and menu entry commands): Document
+	gettext and gptsync commands.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
 	* conf/any-emu.rmk (kernel_img_SOURCES) [!x86]: Include
 	kern/$(target_cpu)/cache.S even if TARGET_NO_MODULES = yes.
 

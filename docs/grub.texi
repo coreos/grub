@@ -1139,6 +1139,8 @@ you forget a command, you can run the command @command{help}
 * date::                        Display or set current date and time
 * echo::                        Display a line of text
 * export::                      Export an environment variable
+* gettext::                     Translate a string
+* gptsync::                     Fill an MBR based on GPT entries
 * halt::                        Shut down your computer
 * help::                        Show help messages
 * insmod::                      Insert a module
@@ -1317,6 +1319,38 @@ character will print that character.
 @deffn Command export envvar
 Export the environment variable @var{envvar}. Exported variables are visible
 to subsidiary configuration files loaded using @command{configfile}.
+@end deffn
+
+
+@node gettext
+@subsection gettext
+
+@deffn Command gettext string
+Translate @var{string} into the current language.
+
+The current language code is stored in the @samp{lang} variable in GRUB's
+environment.  Translation files in MO format are read from
+@samp{locale_dir}, usually @file{/boot/grub/locale}.
+@end deffn
+
+
+@node gptsync
+@subsection gptsync
+
+@deffn Command gptsync device [partition[+/-[type]]] @dots{}
+Disks using the GUID Partition Table (GPT) also have a legacy Master Boot
+Record (MBR) partition table for compatibility with the BIOS and with older
+operating systems.  The legacy MBR can only represent a limited subset of
+GPT partition entries.
+
+This command populates the legacy MBR with the specified @var{partition}
+entries on @var{device}.  Up to three partitions may be used.
+
+@var{type} is an MBR partition type code; prefix with @samp{0x} if you want
+to enter this in hexadecimal.  The separator between @var{partition} and
+@var{type} may be @samp{+} to make the partition active, or @samp{-} to make
+it inactive; only one partition may be active.  If both the separator and
+type are omitted, then the partition will be inactive.
 @end deffn
 
 
