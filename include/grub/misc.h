@@ -50,9 +50,6 @@
 /* XXX: If grub_memmove is too slow, we must implement grub_memcpy.  */
 #define grub_memcpy(d,s,n)	grub_memmove ((d), (s), (n))
 
-/* Flag to control module autoloading in normal mode.  */
-extern int EXPORT_VAR(grub_no_autoload);
-
 void *EXPORT_FUNC(grub_memmove) (void *dest, const void *src, grub_size_t n);
 char *EXPORT_FUNC(grub_strcpy) (char *dest, const char *src);
 char *EXPORT_FUNC(grub_strncpy) (char *dest, const char *src, int c);

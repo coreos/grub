@@ -49,4 +49,7 @@ int EXPORT_FUNC(asprintf) (char **buf, const char *fmt, ...);
 char * EXPORT_FUNC(xasprintf) (const char *fmt, ...);
 extern char * canonicalize_file_name (const char *path);
 
+/* Flag to control module autoloading in normal mode.  */
+extern int EXPORT_VAR(grub_no_autoload);
+
 #endif /* GRUB_EMU_MISC_H */

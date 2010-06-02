@@ -54,12 +54,14 @@ case "$target_cpu" in
   amd64)	target_cpu=x86_64 ;;
   sparc)	target_cpu=sparc64 ;;
   mipsel|mips64el)
-                target_cpu=mips;
-		cpu_CPPFLAGS="-DGRUB_CPU_MIPSEL=1";
+                target_cpu=mips;    
+		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPSEL=1"; 
+		CFLAGS="$CFLAGS -DGRUB_CPU_MIPSEL=1";
 		;;
   mips|mips64)
-                target_cpu=mips;
-		cpu_CPPFLAGS="-DGRUB_CPU_MIPS=1";
+                target_cpu=mips;    
+		TARGET_CFLAGS="$TARGET_CFLAGS -DGRUB_CPU_MIPS=1"; 
+		CFLAGS="$CFLAGS -DGRUB_CPU_MIPS=1";
 		;;
 esac
 
@@ -134,29 +136,25 @@ case "$host_os" in
 esac
 
 case "$platform" in
-  coreboot)	machine_CPPFLAGS="-DGRUB_MACHINE_COREBOOT=1" ;;
-  multiboot)	machine_CPPFLAGS="-DGRUB_MACHINE_MULTIBOOT=1" ;;
-  efi)		machine_CPPFLAGS="-DGRUB_MACHINE_EFI=1" ;;
-  ieee1275)	machine_CPPFLAGS="-DGRUB_MACHINE_IEEE1275=1" ;;
-  qemu)		machine_CPPFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
-  pc)		machine_CPPFLAGS="-DGRUB_MACHINE_PCBIOS=1" ;;
-  emu)		machine_CPPFLAGS="-DGRUB_MACHINE_EMU=1" ;;
-  yeeloong)	machine_CPPFLAGS="-DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
-  qemu-mips)	machine_CPPFLAGS="-DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  coreboot)	machine_CFLAGS="-DGRUB_MACHINE_COREBOOT=1" ;;
+  multiboot)	machine_CFLAGS="-DGRUB_MACHINE_MULTIBOOT=1" ;;
+  efi)		machine_CFLAGS="-DGRUB_MACHINE_EFI=1" ;;
+  ieee1275)	machine_CFLAGS="-DGRUB_MACHINE_IEEE1275=1" ;;
+  qemu)		machine_CFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
+  pc)		machine_CFLAGS="-DGRUB_MACHINE_PCBIOS=1" ;;
+  emu)		machine_CFLAGS="-DGRUB_MACHINE_EMU=1" ;;
+  yeeloong)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  qemu-mips)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
 esac
 case "$target_cpu" in
-  i386)         cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_I386";;
-  x86_64)       cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_X86_64";;
-  powerpc)      cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_POWERPC";;
-  mips)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS=1" ;; # cpu_CPPFLAGS handled above
-  sparc64)      cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_SPARC64";
-                machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
+  mips)      	machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_MIPS=1" ;;
+  sparc64)      machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
-machine_CPPFLAGS="$machine_CPPFLAGS -DMACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
+machine_CFLAGS="$machine_CFLAGS -DMACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
 
-CPPFLAGS="$CPPFLAGS $cpu_CPPFLAGS $machine_CPPFLAGS"
-TARGET_ASFLAGS="$TARGET_ASFLAGS $cpu_CPPFLAGS $machine_CPPFLAGS"
-TARGET_CFLAGS="$TARGET_CFLAGS $cpu_CPPFLAGS $machine_CPPFLAGS"
+CFLAGS="$CFLAGS $machine_CFLAGS"
+TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
+TARGET_CFLAGS="$TARGET_CFLAGS $machine_CFLAGS"
 
 AC_SUBST(host_cpu)
 AC_SUBST(host_os)
