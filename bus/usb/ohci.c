@@ -970,7 +970,10 @@ grub_ohci_fini_hw (int noreturn __attribute__ ((unused)))
       grub_ohci_writereg32 (o, GRUB_OHCI_REG_BULKHEAD, 0);
       grub_ohci_writereg32 (o, GRUB_OHCI_REG_BULKCURR, 0);
       grub_ohci_writereg32 (o, GRUB_OHCI_REG_DONEHEAD, 0);
+      grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROL, 0);
+      grub_ohci_writereg32 (o, GRUB_OHCI_REG_CMDSTATUS, 1);
     }
+  grub_millisleep (10);
 
   return GRUB_ERR_NONE;
 }
