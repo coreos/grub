@@ -413,7 +413,11 @@ devmapper_fail:
   if (fd == -1)
     {
       grub_error (GRUB_ERR_BAD_DEVICE,
+# if !defined(__NetBSD__)
 		  "cannot open `%s' while attempting to get disk geometry", dev);
+# else /* defined(__NetBSD__) */
+		  "cannot open `%s' while attempting to get disk label", dev);
+# endif /* !defined(__NetBSD__) */
       return 0;
     }
 
@@ -425,7 +429,11 @@ devmapper_fail:
 # endif /* !defined(__NetBSD__) */
     {
       grub_error (GRUB_ERR_BAD_DEVICE,
+# if !defined(__NetBSD__)
 		  "cannot get disk geometry of `%s'", dev);
+# else /* defined(__NetBSD__) */
+		  "cannot get disk label of `%s'", dev);
+# endif /* !defined(__NetBSD__) */
       close (fd);
       return 0;
     }
@@ -1256,22 +1264,28 @@ devmapper_out:
   return path;
 
 #elif defined(__NetBSD__)
-  /* NetBSD uses "/dev/r[wsc]d[0-9]+[a-z]".  */
+  /* NetBSD uses "/dev/r[a-z]+[0-9][a-z]".  */
   char *path = xstrdup (os_dev);
-  if (strncmp ("/dev/rwd", path, 8) == 0 ||
-      strncmp ("/dev/rsd", path, 8) == 0 ||
-      strncmp ("/dev/rcd", path, 8) == 0)
+  if (strncmp ("/dev/r", path, sizeof("/dev/r") - 1) == 0 &&
+      (path[sizeof("/dev/r") - 1] >= 'a' && path[sizeof("/dev/r") - 1] <= 'z') &&
+      strncmp ("fd", path + sizeof("/dev/r") - 1, sizeof("fd") - 1) != 0)    /* not a floppy device name */
     {
-      char *q;
-      q = path + strlen(path) - 1;    /* last character */
-      if (grub_isalpha(*q) && grub_isdigit(*(q-1)))
-        {
-          int rawpart = -1;
+      char *p;
+      for (p = path + sizeof("/dev/r"); *p >= 'a' && *p <= 'z'; p++);
+      if (grub_isdigit(*p))
+	{
+	  p++;
+	  if ((*p >= 'a' && *p <= 'z') && (*(p+1) == '\0'))
+	    {
+	      /* path matches the required regular expression and
+		 p points to its last character.  */
+	      int rawpart = -1;
 # ifdef HAVE_GETRAWPARTITION
-          rawpart = getrawpartition();
+	      rawpart = getrawpartition();
 # endif /* HAVE_GETRAWPARTITION */
-          if (rawpart >= 0)
-            *q = 'a' + rawpart;
+	      if (rawpart >= 0)
+		*p = 'a' + rawpart;
+	    }
         }
     }
   return path;
@@ -1429,8 +1443,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       return name;
 # else /* defined(__NetBSD__) */
     /* Since os_dev and convert_system_partition_to_system_disk (os_dev) are
-     * different, we know that os_dev is of the form /dev/r[wsc]d[0-9]+[a-z]
-     * and in particular it cannot be a floppy device.  */
+     * different, we know that os_dev cannot be a floppy device.  */
 # endif /* !defined(__NetBSD__) */
 
     start = find_partition_start (os_dev);
