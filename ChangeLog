@@ -1,3 +1,122 @@
+2010-06-02  Aleš Nesrsta <starous@volny.cz>
+
+	Finally make USB usable.
+
+	* bus/usb/ohci.c (grub_ohci_reg_t): Add missing values.
+	(GRUB_OHCI_RHUB_PORT_POWER_MASK): New macro.
+	(GRUB_OHCI_RHUB_PORT_ALL_POWERED): Likewise.
+	(GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_MASK): Likewise.
+	(GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT): Likewise.
+	(GRUB_OHCI_REG_FRAME_INTERVAL_FI_SHIFT): Likewise.
+	(GRUB_OHCI_FSMPS): Likewise.
+	(GRUB_OHCI_PERIODIC_START): Likewise.
+	(GRUB_OHCI_FRAME_INTERVAL): Likewise.
+	(GRUB_OHCI_SET_PORT_ENABLE): Likewise.
+	(GRUB_OHCI_CLEAR_PORT_ENABLE): Likewise.
+	(GRUB_OHCI_SET_PORT_RESET): Likewise.
+	(GRUB_OHCI_SET_PORT_RESET_STATUS_CHANGE): Likewise.
+	* bus/usb/ohci.c (grub_ohci_pci_iter): Various important fixups.
+	(grub_ohci_transaction): Likewise.
+	(grub_ohci_transfer): Improve condition detection algorithms.
+	Handle toggle property. Program the transactions correctly.
+	Improve error handling. Various important fixups.
+	(grub_ohci_portstatus): Put register writes in right order.
+	* bus/usb/uhci.c (grub_free_queue): Compute last_trans.
+	(grub_uhci_transfer): Don't show "failed" message on success.
+	* bus/usb/usb.c (grub_usb_set_configuration): Zero-fill whole "toggle"
+	array.
+	(grub_usb_device_initialize): Read first 8 bytes of descriptor to
+	determine its size.
+	* bus/usb/usbtrans.c (grub_usb_control_msg): Use descdev.maxsize0 even
+	before initialization is completed. Use IN direction for empty
+	transfers. Use last_trans and compute toggle.
+	* include/grub/usbtrans.h (grub_usb_transfer): New field last_trans.
+	(GRUB_USB_FEATURE_ENDP_HALT): Correct the value.
+	(GRUB_USB_FEATURE_DEV_REMOTE_WU): Likewise.
+	(GRUB_USB_FEATURE_TEST_MODE): Likewise.
+	* include/grub/usb.h (grub_usb_err_t): New value GRUB_USB_ERR_UNRECOVERABLE.
+	(grub_usb_device): Increase toggle to 256.
+	(grub_usbms_subclass_t): New values GRUB_USBMS_SUBCLASS_RBC,
+	GRUB_USBMS_SUBCLASS_MMC2, GRUB_USBMS_SUBCLASS_UFI and
+	GRUB_USBMS_SUBCLASS_SFF8070.
+	* include/grub/scsicmd.h (grub_scsi_test_unit_ready): New structure.
+	(grub_scsi_inquiry): New member page and alloc_length.
+	(grub_scsi_request_sense): New structure.
+	(grub_scsi_request_sense_data): Likewise.
+	(grub_scsi_read_capacity): New fields logical_block_addr, PMI and
+	control.
+	* disk/scsi.c (grub_scsi_request_sense): New function.
+	(grub_scsi_test_unit_ready): Likewise.
+	(grub_scsi_inquiry): Fill new fields.
+	(grub_scsi_read_capacity): Likewise.
+	(grub_scsi_read10): Add request sense at the end.
+	(grub_scsi_read12): Likewise.
+	(grub_scsi_write10): Likewise.
+	(grub_scsi_write12): Likewise.
+	(grub_scsi_open): Add Test Unit Ready.
+	* disk/usbms.c (grub_usbms_finddevs): Check configcnt.
+	Support additional subclasses. Con't clear halt yet. Activate the
+	proper config. Calculate LUNs correctly.
+	(grub_usbms_transfer): Various important fixups.
+
+2010-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* bus/pci.c (grub_pci_iterate) [GRUB_MACHINE_MIPS_YEELOONG]: Skip ghosts.
+	* bus/usb/ohci.c (grub_ohci_portstatus): Handle R/WC correctly.
+	(grub_ohci_fini_hw): New function.
+	(grub_ohci_restore_hw): Likewise.
+	(GRUB_MOD_INIT(ohci)): Register preboot hook.
+	(GRUB_MOD_FINI(ohci)): Shutdown OHCI.
+	* term/usb_keyboard.c: Remove include of grub/machine/console.h.
+
+2010-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Dedicated DMA allocations.
+
+	* bus/pci.c (grub_memalign_dma32): New function
+	(grub_dma_free): Likewise.
+	(grub_dma_get_virt): Likewise.
+	(grub_dma_get_phys): Likewise.
+	* bus/usb/ohci.c (grub_ohci): New members hcca_addr and hcca_chunk.
+	(grub_ohci_pci_iter): Use dma32_alloc.
+	(grub_ohci_transfer): Likewise.
+	* bus/usb/usbtrans.c (grub_usb_control_msg): Likewise.
+	(grub_usb_bulk_readwrite): Likewise.
+	* include/grub/pci.h: Add declarations.
+
+2010-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	CS5536 support.
+
+	* bus/cs5536.c: New file.
+	* bus/usb/ohci.c (grub_ohci_pci_iter): Check for CS5536.
+	* conf/i386.rmk (pkglib_MODULES): Add cs5536.mod.
+	(cs5536_mod_SOURCES): New variable.
+	(cs5536_mod_CFLAGS): Likewise.
+	(cs5536_mod_LDFLAGS): Likewise.
+	* conf/mips-yeeloong.rmk (kernel_img_HEADERS): Add cs5536.h and
+	machine/pci.h.
+	(kernel_img_SOURCES): Add bus/cs5536.c.
+	(pkglib_MODULES): Add usb.mod, usbtest.mod, ohci.mod, usbms.mod and
+	usb_keyboard.mod.
+	(usb_mod_SOURCES): New variable.
+	(usb_mod_CFLAGS): New variable.
+	(usb_mod_LDFLAGS): New variable.
+	(usbtest_mod_SOURCES): New variable.
+	(usbtest_mod_CFLAGS): New variable.
+	(usbtest_mod_LDFLAGS): New variable.
+	(ohci_mod_SOURCES): New variable.
+	(ohci_mod_CFLAGS): New variable.
+	(ohci_mod_LDFLAGS): New variable.
+	(usbms_mod_SOURCES): New variable.
+	(usbms_mod_CFLAGS): New variable.
+	(usbms_mod_LDFLAGS): New variable.
+	(usb_keyboard_mod_SOURCES): New variable.
+	(usb_keyboard_mod_CFLAGS): New variable.
+	(usb_keyboard_mod_LDFLAGS): New variable.
+	* include/grub/smbus.h: New file.
+	* include/grub/cs5536.h: New file.
+
 2010-05-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac: AC_PROG_LEX sets LEX to ":" if lex is missing, not
