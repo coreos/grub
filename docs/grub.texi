@@ -34,9 +34,6 @@ Invariant Sections.
 @direntry
 * GRUB: (grub).                 The GRand Unified Bootloader
 * grub-install: (grub)Invoking grub-install.    Install GRUB on your drive
-* grub-terminfo: (grub)Invoking grub-terminfo.  Generate a terminfo
-                                                command from a
-                                                terminfo name
 @end direntry
 
 @setchapternewpage odd
@@ -89,7 +86,6 @@ This edition documents version @value{VERSION}.
 * Troubleshooting::             Error messages produced by GRUB
 * Invoking the grub shell::     How to use the grub shell
 * Invoking grub-install::       How to use the GRUB installer
-* Invoking grub-terminfo::      How to generate a terminfo command
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
 * Future::                      Some future plans on GRUB
@@ -1076,7 +1072,7 @@ Commands usable anywhere in the menu and in the command-line.
 
 @menu
 * serial::                      Set up a serial device
-* terminfo::                    Define escape sequences for a terminal
+* terminfo::                    Define terminal type
 @end menu
 
 
@@ -1108,15 +1104,16 @@ support. See also @ref{Serial terminal}.
 @node terminfo
 @subsection terminfo
 
-@deffn Command terminfo @option{--name=name} @option{--cursor-address=seq} [@option{--clear-screen=seq}] [@option{--enter-standout-mode=seq}] [@option{--exit-standout-mode=seq}]
-Define the capabilities of your terminal. Use this command to define
-escape sequences, if it is not vt100-compatible. You may use @samp{\e}
-for @key{ESC} and @samp{^X} for a control character.
+@deffn Command terminfo [term]
+Define the capabilities of your terminal by giving the name of an entry in
+the terminfo database, which should correspond roughly to a @samp{TERM}
+environment variable in Unix.
 
-You can use the utility @command{grub-terminfo} to generate
-appropriate arguments to this command. @xref{Invoking grub-terminfo}.
+At the moment, only @samp{vt100} is supported in GRUB 2.  If you need other
+terminal types, please contact us to discuss the best way to include support
+for these in GRUB.
 
-If no option is specified, the current settings are printed.
+If no option is specified, the current terminal type is printed.
 @end deffn
 
 

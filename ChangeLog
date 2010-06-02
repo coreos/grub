@@ -1,5 +1,11 @@
 2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (direntry): Remove grub-terminfo reference.
+	(GNU GRUB manual): Likewise.
+	(General commands): Update description of `terminfo' for GRUB 2.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
 	* commands/gptsync.c (grub_cmd_gptsync): Fix typos.
 	(GRUB_MOD_INIT): Fix capitalisation.
 	* docs/grub.texi (Command-line and menu entry commands): Document
