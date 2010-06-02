@@ -20,7 +20,7 @@
 This manual is for GNU GRUB (version @value{VERSION},
 @value{UPDATED}).
 
-Copyright @copyright{} 1999,2000,2001,2002,2004,2006,2008,2009 Free Software Foundation, Inc.
+Copyright @copyright{} 1999,2000,2001,2002,2004,2006,2008,2009,2010 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -34,9 +34,7 @@ Invariant Sections.
 @direntry
 * GRUB: (grub).                 The GRand Unified Bootloader
 * grub-install: (grub)Invoking grub-install.    Install GRUB on your drive
-* grub-terminfo: (grub)Invoking grub-terminfo.  Generate a terminfo
-                                                command from a
-                                                terminfo name
+* grub-mkconfig: (grub)Invoking grub-mkconfig.  Generate GRUB configuration
 @end direntry
 
 @setchapternewpage odd
@@ -87,9 +85,8 @@ This edition documents version @value{VERSION}.
 * Interface::                   The menu and the command-line
 * Commands::                    The list of available builtin commands
 * Troubleshooting::             Error messages produced by GRUB
-* Invoking the grub shell::     How to use the grub shell
 * Invoking grub-install::       How to use the GRUB installer
-* Invoking grub-terminfo::      How to generate a terminfo command
+* Invoking grub-mkconfig::      Generate a GRUB configuration file
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
 * Future::                      Some future plans on GRUB
@@ -453,6 +450,7 @@ the @dfn{boot directory}.
 
 @menu
 * Installing GRUB using grub-install::
+* Making a GRUB bootable CD-ROM::
 @end menu
 
 
@@ -532,11 +530,11 @@ quite careful. If the output is wrong, it is unlikely that your
 computer will be able to boot with no problem.
 
 Note that @command{grub-install} is actually just a shell script and the
-real task is done by the grub shell @command{grub} (@pxref{Invoking the
-grub shell}). Therefore, you may run @command{grub} directly to install
-GRUB, without using @command{grub-install}. Don't do that, however,
-unless you are very familiar with the internals of GRUB. Installing a
-boot loader on a running OS may be extremely dangerous.
+real task is done by @command{grub-mkimage} and @command{grub-setup}.
+Therefore, you may run those commands directly to install GRUB, without
+using @command{grub-install}. Don't do that, however, unless you are very
+familiar with the internals of GRUB. Installing a boot loader on a running
+OS may be extremely dangerous.
 
 
 @node Making a GRUB bootable CD-ROM
@@ -649,6 +647,35 @@ use more complicated instructions. @xref{DOS/Windows}, for more
 information.
 
 
+@node Chain-loading
+@subsection Chain-loading an OS
+
+Operating systems that do not support Multiboot and do not have specific
+support in GRUB (specific support is available for Linux, FreeBSD, NetBSD
+and OpenBSD) must be chain-loaded, which involves loading another boot
+loader and jumping to it in real mode.
+
+The @command{chainloader} command (@pxref{chainloader}) is used to set this
+up.  It is normally also necessary to load some GRUB modules and set the
+appropriate root device.  Putting this together, we get something like this,
+for a Windows system on the first partition of the first hard disk:
+
+@verbatim
+menuentry "Windows" {
+	insmod chain
+	insmod ntfs
+	set root=(hd0,1)
+	chainloader +1
+}
+@end verbatim
+@c FIXME: document UUIDs.
+
+On systems with multiple hard disks, an additional workaround may be
+required.  @xref{DOS/Windows}.
+
+Chain-loading is only supported on PC BIOS and EFI platforms.
+
+
 @node OS-specific notes
 @section Some caveats on OS-specific issues
 
@@ -657,6 +684,7 @@ Here, we describe some caveats on several operating systems.
 @menu
 * GNU/Hurd::
 * GNU/Linux::
+* DOS/Windows::
 @end menu
 
 
@@ -696,6 +724,246 @@ option to the kernel to let it use less than actual memory size, you
 will also have to specify the same memory size to GRUB. To let GRUB know
 the size, run the command @command{uppermem} @emph{before} loading the
 kernel. @xref{uppermem}, for more information.
+
+
+@node DOS/Windows
+@subsection DOS/Windows
+
+GRUB cannot boot DOS or Windows directly, so you must chain-load them
+(@pxref{Chain-loading}). However, their boot loaders have some critical
+deficiencies, so it may not work to just chain-load them. To overcome
+the problems, GRUB provides you with two helper functions.
+
+If you have installed DOS (or Windows) on a non-first hard disk, you
+have to use the disk swapping technique, because that OS cannot boot
+from any disks but the first one. The workaround used in GRUB is the
+command @command{drivemap} (@pxref{drivemap}), like this:
+
+@example
+drivemap -s (hd0) (hd1)
+@end example
+
+This performs a @dfn{virtual} swap between your first and second hard
+drive.
+
+@strong{Caution:} This is effective only if DOS (or Windows) uses BIOS
+to access the swapped disks. If that OS uses a special driver for the
+disks, this probably won't work.
+
+Another problem arises if you installed more than one set of DOS/Windows
+onto one disk, because they could be confused if there are more than one
+primary partitions for DOS/Windows. Certainly you should avoid doing
+this, but there is a solution if you do want to do so. Use the partition
+hiding/unhiding technique.
+
+If GRUB @dfn{hides} a DOS (or Windows) partition (@pxref{parttool}), DOS (or
+Windows) will ignore the partition. If GRUB @dfn{unhides} a DOS (or Windows)
+partition, DOS (or Windows) will detect the partition. Thus, if you have
+installed DOS (or Windows) on the first and the second partition of the
+first hard disk, and you want to boot the copy on the first partition, do
+the following:
+
+@example
+@group
+parttool (hd0,1) hidden-
+parttool (hd0,2) hidden+
+set root=(hd0,1)
+chainloader +1
+parttool @verb{'${root}'} boot+
+boot
+@end group
+@end example
+
+
+@node Configuration
+@chapter Writing your own configuration file
+
+GRUB is configured using @file{grub.cfg}, usually located under
+@file{/boot/grub}.  This file is quite flexible, but most users will not
+need to write the whole thing by hand.
+
+@menu
+* Simple configuration::        Recommended for most users
+* Shell-like scripting::        For power users and developers
+@end menu
+
+
+@node Simple configuration
+@section Simple configuration handling
+
+The program @command{grub-mkconfig} (@pxref{Invoking grub-mkconfig})
+generates @file{grub.cfg} files suitable for most cases.  It is suitable for
+use when upgrading a distribution, and will discover available kernels and
+attempt to generate menu entries for them.
+
+The file @file{/etc/default/grub} controls the operation of
+@command{grub-mkconfig}.  It is sourced by a shell script, and so must be
+valid POSIX shell input; normally, it will just be a sequence of
+@samp{KEY=value} lines, but if the value contains spaces or other special
+characters then it must be quoted.  For example:
+
+@example
+GRUB_TERMINAL_INPUT="console serial"
+@end example
+
+Valid keys in @file{/etc/default/grub} are as follows:
+
+@table @samp
+@item GRUB_DEFAULT
+The default menu entry.  This may be a number, in which case it identifies
+the Nth entry in the generated menu counted from zero, or the full name of a
+menu entry, or the special string @samp{saved}.  Using the full name may be
+useful if you want to set a menu entry as the default even though there may
+be a variable number of entries before it.
+
+If you set this to @samp{saved}, then the default menu entry will be that
+saved by @samp{GRUB_SAVEDEFAULT}, @command{grub-set-default}, or
+@command{grub-reboot}.
+
+The default is @samp{0}.
+
+@item GRUB_SAVEDEFAULT
+If this option is set to @samp{true}, then, when an entry is selected, save
+it as a new default entry for use by future runs of GRUB.  This is only
+useful if @samp{GRUB_DEFAULT=saved}; it is a separate option because
+@samp{GRUB_DEFAULT=saved} is useful without this option, in conjunction with
+@command{grub-set-default} or @command{grub-reboot}.  Unset by default.
+
+@item GRUB_TIMEOUT
+Boot the default entry this many seconds after the menu is displayed, unless
+a key is pressed.  The default is @samp{5}.  Set to @samp{0} to boot
+immediately without displaying the menu, or to @samp{-1} to wait
+indefinitely.
+
+@item GRUB_HIDDEN_TIMEOUT
+Wait this many seconds for a key to be pressed before displaying the menu.
+If no key is pressed during that time, boot immediately.  Unset by default.
+
+@item GRUB_HIDDEN_TIMEOUT_QUIET
+In conjunction with @samp{GRUB_HIDDEN_TIMEOUT}, set this to @samp{true} to
+suppress the verbose countdown while waiting for a key to be pressed before
+displaying the menu.  Unset by default.
+
+@item GRUB_DEFAULT_BUTTON
+@itemx GRUB_TIMEOUT_BUTTON
+@itemx GRUB_HIDDEN_TIMEOUT_BUTTON
+@itemx GRUB_BUTTON_CMOS_ADDRESS
+Variants of the corresponding variables without the @samp{_BUTTON} suffix,
+used to support vendor-specific power buttons.  @xref{Vendor power-on keys}.
+
+@item GRUB_DISTRIBUTOR
+Set by distributors of GRUB to their identifying name.  This is used to
+generate more informative menu entry titles.
+
+@item GRUB_TERMINAL_INPUT
+Select the terminal input device.  You may select multiple devices here,
+separated by spaces.
+
+Valid terminal input names depend on the platform, but may include
+@samp{console} (PC BIOS and EFI consoles), @samp{serial} (serial terminal),
+@samp{ofconsole} (Open Firmware console), @samp{at_keyboard} (PC AT
+keyboard, mainly useful with Coreboot), or @samp{usb_keyboard} (USB keyboard
+using the HID Boot Protocol, for cases where the firmware does not handle
+this).
+
+The default is to use the platform's native terminal input.
+
+@item GRUB_TERMINAL_OUTPUT
+Select the terminal output device.  You may select multiple devices here,
+separated by spaces.
+
+Valid terminal output names depend on the platform, but may include
+@samp{console} (PC BIOS and EFI consoles), @samp{serial} (serial terminal),
+@samp{gfxterm} (graphics-mode output), @samp{ofconsole} (Open Firmware
+console), or @samp{vga_text} (VGA text output, mainly useful with Coreboot).
+
+The default is to use the platform's native terminal input.
+
+@item GRUB_TERMINAL
+If this option is set, it overrides both @samp{GRUB_TERMINAL_INPUT} and
+@samp{GRUB_TERMINAL_OUTPUT} to the same value.
+
+@item GRUB_SERIAL_COMMAND
+A command to configure the serial port when using the serial console.
+@xref{serial}.  Defaults to @samp{serial}.
+
+@item GRUB_CMDLINE_LINUX
+Command-line arguments to add to menu entries for the Linux kernel.
+
+@item GRUB_CMDLINE_LINUX_DEFAULT
+Unless @samp{GRUB_DISABLE_LINUX_RECOVERY} is set, two menu entries will be
+generated for each Linux kernel: one default entry and one entry for
+recovery mode.  This option lists command-line arguments to add only to the
+default menu entry, after those listed in @samp{GRUB_CMDLINE_LINUX}.
+
+@item GRUB_CMDLINE_NETBSD
+@itemx GRUB_CMDLINE_NETBSD_DEFAULT
+As @samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT}, but for
+NetBSD.
+
+@item GRUB_DISABLE_LINUX_UUID
+Normally, @command{grub-mkconfig} will generate menu entries that use
+universally-unique identifiers (UUIDs) to identify the root filesystem to
+the Linux kernel, using a @samp{root=UUID=...} kernel parameter.  This is
+usually more reliable, but in some cases it may not be appropriate.  To
+disable the use of UUIDs, set this option to @samp{true}.
+
+@item GRUB_DISABLE_LINUX_RECOVERY
+Disable the generation of recovery mode menu entries for Linux.
+
+@item GRUB_DISABLE_NETBSD_RECOVERY
+Disable the generation of recovery mode menu entries for NetBSD.
+
+@item GRUB_GFXMODE
+Set the resolution used on the @samp{gfxterm} graphical terminal.  Note that
+you can only use modes which your graphics card supports via VESA BIOS
+Extensions (VBE), so for example native LCD panel resolutions may not be
+available.  The default is @samp{640x480}.
+
+@item GRUB_BACKGROUND
+Set a background image for use with the @samp{gfxterm} graphical terminal.
+The value of this option must be a file readable by GRUB at boot time, and
+it must end with @file{.png}, @file{.tga}, @file{.jpg}, or @file{.jpeg}.
+The image will be scaled if necessary to fit the screen.
+
+@item GRUB_THEME
+Set a theme for use with the @samp{gfxterm} graphical terminal.
+@xref{Themes}.
+
+@item GRUB_GFXPAYLOAD_LINUX
+Set to @samp{text} to force the Linux kernel to boot in normal text mode,
+@samp{keep} to preserve the graphics mode set using @samp{GRUB_GFXMODE},
+@samp{@var{width}x@var{height}}[@samp{x@var{depth}}] to set a particular
+graphics mode, or a sequence of these separated by commas or semicolons to
+try several modes in sequence.
+
+Depending on your kernel, your distribution, your graphics card, and the
+phase of the moon, note that using this option may cause GNU/Linux to suffer
+from various display problems, particularly during the early part of the
+boot sequence.  If you have problems, simply unset this option and GRUB will
+tell Linux to boot in normal text mode.
+
+@item GRUB_DISABLE_OS_PROBER
+Normally, @command{grub-mkconfig} will try to use the external
+@command{os-prober} program, if installed, to discover other operating
+systems installed on the same system and generate appropriate menu entries
+for them.  Set this option to @samp{true} to disable this.
+
+@item GRUB_INIT_TUNE
+Play a tune on the speaker when GRUB starts.  This is particularly useful
+for users unable to see the screen.  The value of this option is passed
+directly to @ref{play}.
+@end table
+
+For more detailed customisation of @command{grub-mkconfig}'s output, you may
+edit the scripts in @file{/etc/grub.d} directly.
+@file{/etc/grub.d/40_custom} is particularly useful for adding entire custom
+menu entries; simply type the menu entries you want to add at the end of
+that file, making sure to leave at least the first two lines intact.
+
+
+@node Shell-like scripting
+@section Writing full configuration files directly
 
 
 @node Serial terminal
@@ -884,6 +1152,7 @@ the command-line interface.
 @menu
 * Command-line interface::      The flexible command-line interface
 * Menu interface::              The simple menu interface
+* Menu entry editor::           Editing a menu entry
 @end menu
 
 
@@ -1076,14 +1345,14 @@ Commands usable anywhere in the menu and in the command-line.
 
 @menu
 * serial::                      Set up a serial device
-* terminfo::                    Define escape sequences for a terminal
+* terminfo::                    Define terminal type
 @end menu
 
 
 @node serial
 @subsection serial
 
-@deffn Command serial [@option{--unit=unit}] [@option{--port=port}] [@option{--speed=speed}] [@option{--word=word}] [@option{--parity=parity}] [@option{--stop=stop}] [@option{--device=dev}]
+@deffn Command serial [@option{--unit=unit}] [@option{--port=port}] [@option{--speed=speed}] [@option{--word=word}] [@option{--parity=parity}] [@option{--stop=stop}]
 Initialize a serial device. @var{unit} is a number in the range 0-3
 specifying which serial port to use; default is 0, which corresponds to
 the port often called COM1. @var{port} is the I/O port where the UART
@@ -1092,10 +1361,7 @@ is to be found; if specified it takes precedence over @var{unit}.
 @var{stop} are the number of data bits and stop bits. Data bits must
 be in the range 5-8 and stop bits must be 1 or 2. Default is 8 data
 bits and one stop bit. @var{parity} is one of @samp{no}, @samp{odd},
-@samp{even} and defaults to @samp{no}. The option @option{--device}
-can only be used in the grub shell and is used to specify the
-tty device to be used in the host operating system (@pxref{Invoking the
-grub shell}).
+@samp{even} and defaults to @samp{no}.
 
 The serial port is not used as a communication channel unless the
 @command{terminal} command is used (@pxref{terminal}).
@@ -1108,15 +1374,16 @@ support. See also @ref{Serial terminal}.
 @node terminfo
 @subsection terminfo
 
-@deffn Command terminfo @option{--name=name} @option{--cursor-address=seq} [@option{--clear-screen=seq}] [@option{--enter-standout-mode=seq}] [@option{--exit-standout-mode=seq}]
-Define the capabilities of your terminal. Use this command to define
-escape sequences, if it is not vt100-compatible. You may use @samp{\e}
-for @key{ESC} and @samp{^X} for a control character.
+@deffn Command terminfo [term]
+Define the capabilities of your terminal by giving the name of an entry in
+the terminfo database, which should correspond roughly to a @samp{TERM}
+environment variable in Unix.
 
-You can use the utility @command{grub-terminfo} to generate
-appropriate arguments to this command. @xref{Invoking grub-terminfo}.
+At the moment, only @samp{vt100} is supported in GRUB 2.  If you need other
+terminal types, please contact us to discuss the best way to include support
+for these in GRUB.
 
-If no option is specified, the current settings are printed.
+If no option is specified, the current terminal type is printed.
 @end deffn
 
 
@@ -1137,13 +1404,17 @@ you forget a command, you can run the command @command{help}
 * configfile::                  Load a configuration file
 * crc::                         Calculate CRC32 checksums
 * date::                        Display or set current date and time
+* drivemap::                    Map a drive to another
 * echo::                        Display a line of text
 * export::                      Export an environment variable
+* gettext::                     Translate a string
+* gptsync::                     Fill an MBR based on GPT entries
 * halt::                        Shut down your computer
 * help::                        Show help messages
 * insmod::                      Insert a module
 * keystatus::                   Check key modifier status
 * ls::                          List devices or files
+* parttool::                    Modify partition table entries
 * play::                        Play a tune
 * reboot::                      Reboot your computer
 * set::                         Set an environment variable
@@ -1209,11 +1480,11 @@ grub> @kbd{cat /etc/fstab}
 
 @deffn Command chainloader [@option{--force}] file
 Load @var{file} as a chain-loader. Like any other file loaded by the
-filesystem code, it can use the blocklist notation to grab the first
-sector of the current partition with @samp{+1}. If you specify the
-option @option{--force}, then load @var{file} forcibly, whether it has a
-correct signature or not. This is required when you want to load a
-defective boot loader, such as SCO UnixWare 7.1 (@pxref{SCO UnixWare}).
+filesystem code, it can use the blocklist notation (@pxref{Block list
+syntax}) to grab the first sector of the current partition with @samp{+1}.
+If you specify the option @option{--force}, then load @var{file} forcibly,
+whether it has a correct signature or not. This is required when you want to
+load a defective boot loader, such as SCO UnixWare 7.1.
 @end deffn
 
 
@@ -1268,6 +1539,32 @@ hour, minute, and second unchanged.
 @end deffn
 
 
+@node drivemap
+@subsection drivemap
+
+@deffn Command drivemap @option{-l}|@option{-r}|[@option{-s}] @
+ from_drive to_drive
+Without options, map the drive @var{from_drive} to the drive @var{to_drive}.
+This is necessary when you chain-load some operating systems, such as DOS,
+if such an OS resides at a non-first drive.  For convenience, any partition
+suffix on the drive is ignored, so you can safely use @verb{'${root}'} as a
+drive specification.
+
+With the @option{-s} option, perform the reverse mapping as well, swapping
+the two drives.
+
+With the @option{-l} option, list the current mappings.
+
+With the @option{-r} option, reset all mappings to the default values.
+
+For example:
+
+@example
+drivemap -s (hd0) (hd1)
+@end example
+@end deffn
+
+
 @node echo
 @subsection echo
 
@@ -1317,6 +1614,38 @@ character will print that character.
 @deffn Command export envvar
 Export the environment variable @var{envvar}. Exported variables are visible
 to subsidiary configuration files loaded using @command{configfile}.
+@end deffn
+
+
+@node gettext
+@subsection gettext
+
+@deffn Command gettext string
+Translate @var{string} into the current language.
+
+The current language code is stored in the @samp{lang} variable in GRUB's
+environment.  Translation files in MO format are read from
+@samp{locale_dir}, usually @file{/boot/grub/locale}.
+@end deffn
+
+
+@node gptsync
+@subsection gptsync
+
+@deffn Command gptsync device [partition[+/-[type]]] @dots{}
+Disks using the GUID Partition Table (GPT) also have a legacy Master Boot
+Record (MBR) partition table for compatibility with the BIOS and with older
+operating systems.  The legacy MBR can only represent a limited subset of
+GPT partition entries.
+
+This command populates the legacy MBR with the specified @var{partition}
+entries on @var{device}.  Up to three partitions may be used.
+
+@var{type} is an MBR partition type code; prefix with @samp{0x} if you want
+to enter this in hexadecimal.  The separator between @var{partition} and
+@var{type} may be @samp{+} to make the partition active, or @samp{-} to make
+it inactive; only one partition may be active.  If both the separator and
+type are omitted, then the partition will be inactive.
 @end deffn
 
 
@@ -1383,6 +1712,41 @@ name syntax}), then list the contents of that directory.
 @end deffn
 
 
+@node parttool
+@subsection parttool
+
+@deffn Command parttool partition commands
+Make various modifications to partition table entries.
+
+Each @var{command} is either a boolean option, in which case it must be
+followed with @samp{+} or @samp{-} (with no intervening space) to enable or
+disable that option, or else it takes a value in the form
+@samp{@var{command}=@var{value}}.
+
+Currently, @command{parttool} is only useful on DOS partition tables (also
+known as Master Boot Record, or MBR).  On these partition tables, the
+following commands are available:
+
+@table @asis
+@item @samp{boot} (boolean)
+When enabled, this makes the selected partition be the active (bootable)
+partition on its disk, clearing the active flag on all other partitions.
+This command is limited to @emph{primary} partitions.
+
+@item @samp{type} (value)
+Change the type of an existing partition.  The value must be a number in the
+range 0-0xFF (prefix with @samp{0x} to enter it in hexadecimal).
+
+@item @samp{hidden} (boolean)
+When enabled, this hides the selected partition by setting the @dfn{hidden}
+bit in its partition type code; when disabled, unhides the selected
+partition by clearing this bit.  This is useful only when booting DOS or
+Wwindows and multiple primary FAT partitions exist in one disk.  See also
+@ref{DOS/Windows}.
+@end table
+@end deffn
+
+
 @node play
 @subsection play
 
@@ -1430,9 +1794,9 @@ Unset the environment variable @var{envvar}.
 @node Invoking grub-install
 @chapter Invoking grub-install
 
-The program @command{grub-install} installs GRUB on your drive using the
-grub shell (@pxref{Invoking the grub shell}). You must specify the
-device name on which you want to install GRUB, like this:
+The program @command{grub-install} installs GRUB on your drive using
+@command{grub-mkimage} and (on some platforms) @command{grub-setup}.  You
+must specify the device name on which you want to install GRUB, like this:
 
 @example
 grub-install @var{install_device}
@@ -1465,6 +1829,32 @@ you have a separate @dfn{boot} partition which is mounted on
 Recheck the device map, even if @file{/boot/grub/device.map} already
 exists. You should use this option whenever you add/remove a disk
 into/from your computer.
+@end table
+
+
+@node Invoking grub-mkconfig
+@chapter Invoking grub-mkconfig
+
+The program @command{grub-mkconfig} generates a configuration file for GRUB
+(@pxref{Simple configuration}).
+
+@example
+grub-mkconfig -o /boot/grub/grub.cfg
+@end example
+
+@command{grub-mkconfig} accepts the following options:
+
+@table @option
+@item --help
+Print a summary of the command-line options and exit.
+
+@item --version
+Print the version number of GRUB and exit.
+
+@item -o @var{file}
+@itemx --output=@var{file}
+Send the generated configuration file to @var{file}.  The default is to send
+it to standard output.
 @end table
 
 

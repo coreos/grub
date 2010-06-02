@@ -59,7 +59,7 @@ grub_dma_get_virt (struct grub_pci_dma_chunk *ch)
 grub_uint32_t
 grub_dma_get_phys (struct grub_pci_dma_chunk *ch)
 {
-  return (grub_uint32_t) ch;
+  return (grub_uint32_t) (grub_addr_t) ch;
 }
 
 #endif

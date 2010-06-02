@@ -20,13 +20,13 @@ TARGET_NO_STRIP = yes
 
 ifneq ($(TARGET_NO_MODULES), yes)
 kernel_img_SOURCES += symlist.c kern/$(target_cpu)/dl.c
+else
+kernel_img_SOURCES += grub_emu_init.c
+endif
 ifneq ($(target_cpu), i386)
 ifneq ($(target_cpu), x86_64)
 kernel_img_SOURCES += kern/$(target_cpu)/cache.S
 endif
-endif
-else
-kernel_img_SOURCES += grub_emu_init.c
 endif
 
 # For halt.mod.

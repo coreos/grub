@@ -117,6 +117,109 @@
 	* include/grub/smbus.h: New file.
 	* include/grub/cs5536.h: New file.
 
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Add safety check to make sure that
+	${locale_dir} exists before trying to probe it.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (SCO UnixWare): Remove, at Vladimir's request and
+	per the GNU Coding Standards; this is now too obscure to be worth
+	documenting.
+	(QNX): Likewise.
+	(chainloader): Remove cross-reference to `SCO UnixWare'.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Chain-loading): New section.
+	(DOS/Windows): New section, borrowed from GRUB Legacy with details
+	adjusted for GRUB 2.
+	(SCO UnixWare): Likewise.
+	(QNX): Likewise.
+	(chainloader): Add reference to `Block list syntax'.
+	(drivemap): New section.
+	(parttool): New section.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (GNU GRUB manual): Remove reference to `Invoking
+	the grub shell'.
+	(Installation): Add reference to `Making a GRUB bootable CD-ROM'.
+	(Installing GRUB using grub-install): Remove reference to the grub
+	shell; mention `grub-mkimage' and `grub-setup' instead.
+	(Invoking grub-install): Likewise.
+	(Interface): Add reference to `Menu entry editor'.
+	(serial): Remove `--device' option.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Configuration): New section, documenting
+	configuration file generation using grub-mkconfig.  I've left a slot
+	for documenting the full shell scripting format but have not yet
+	started on writing that up.
+	(Invoking grub-mkconfig): New section.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (direntry): Remove grub-terminfo reference.
+	(GNU GRUB manual): Likewise.
+	(General commands): Update description of `terminfo' for GRUB 2.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/gptsync.c (grub_cmd_gptsync): Fix typos.
+	(GRUB_MOD_INIT): Fix capitalisation.
+	* docs/grub.texi (Command-line and menu entry commands): Document
+	gettext and gptsync commands.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* conf/any-emu.rmk (kernel_img_SOURCES) [!x86]: Include
+	kern/$(target_cpu)/cache.S even if TARGET_NO_MODULES = yes.
+
+2010-06-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	Add btrfs probing support, currently only in the single-device case.
+
+	* kern/emu/getroot.c (find_root_device_from_mountinfo): New
+	function.
+	(grub_guess_root_device): Call find_root_device_from_mountinfo
+	before looking in /dev.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_open): Use
+	GRUB_DISK_SIZE_UNKNOWN.
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_open): Likewise.
+
+2010-05-31  Jiro SEKIBA <jir@unicus.jp>
+
+	* include/grub/disk.h (GRUB_DISK_SIZE_UNKNOWN): New macro.
+	* fs/nilfs.c: Support 2nd super block in case 1st one is accidently
+	corrupted or not synced properly.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/main.c (grub_normal_add_menu_entry): Avoid going out of args.
+	Reported by: Seth Goldberg.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/multiboot_mbi2.c (grub_multiboot_make_mbi): Fix incorrect
+	addition of dest.
+	Reported by: Seth Goldberg.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/setpci.c (grub_setpci_iter): Fix an incorrect function check.
+	Reported by: Seth Goldberg.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/multiboot_elfxx.c (grub_multiboot_load_elfXX) [__mips]: Check
+	64-bit address as signed on MIPS.
+
 2010-05-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac: AC_PROG_LEX sets LEX to ":" if lex is missing, not
