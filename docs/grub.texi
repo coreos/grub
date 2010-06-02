@@ -20,7 +20,7 @@
 This manual is for GNU GRUB (version @value{VERSION},
 @value{UPDATED}).
 
-Copyright @copyright{} 1999,2000,2001,2002,2004,2006,2008,2009 Free Software Foundation, Inc.
+Copyright @copyright{} 1999,2000,2001,2002,2004,2006,2008,2009,2010 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -34,6 +34,7 @@ Invariant Sections.
 @direntry
 * GRUB: (grub).                 The GRand Unified Bootloader
 * grub-install: (grub)Invoking grub-install.    Install GRUB on your drive
+* grub-mkconfig: (grub)Invoking grub-mkconfig.  Generate GRUB configuration
 @end direntry
 
 @setchapternewpage odd
@@ -86,6 +87,7 @@ This edition documents version @value{VERSION}.
 * Troubleshooting::             Error messages produced by GRUB
 * Invoking the grub shell::     How to use the grub shell
 * Invoking grub-install::       How to use the GRUB installer
+* Invoking grub-mkconfig::      Generate a GRUB configuration file
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
 * Future::                      Some future plans on GRUB
@@ -692,6 +694,197 @@ option to the kernel to let it use less than actual memory size, you
 will also have to specify the same memory size to GRUB. To let GRUB know
 the size, run the command @command{uppermem} @emph{before} loading the
 kernel. @xref{uppermem}, for more information.
+
+
+@node Configuration
+@chapter Writing your own configuration file
+
+GRUB is configured using @file{grub.cfg}, usually located under
+@file{/boot/grub}.  This file is quite flexible, but most users will not
+need to write the whole thing by hand.
+
+@menu
+* Simple configuration::        Recommended for most users
+* Shell-like scripting::        For power users and developers
+@end menu
+
+
+@node Simple configuration
+@section Simple configuration handling
+
+The program @command{grub-mkconfig} (@pxref{Invoking grub-mkconfig})
+generates @file{grub.cfg} files suitable for most cases.  It is suitable for
+use when upgrading a distribution, and will discover available kernels and
+attempt to generate menu entries for them.
+
+The file @file{/etc/default/grub} controls the operation of
+@command{grub-mkconfig}.  It is sourced by a shell script, and so must be
+valid POSIX shell input; normally, it will just be a sequence of
+@samp{KEY=value} lines, but if the value contains spaces or other special
+characters then it must be quoted.  For example:
+
+@example
+GRUB_TERMINAL_INPUT="console serial"
+@end example
+
+Valid keys in @file{/etc/default/grub} are as follows:
+
+@table @samp
+@item GRUB_DEFAULT
+The default menu entry.  This may be a number, in which case it identifies
+the Nth entry in the generated menu counted from zero, or the full name of a
+menu entry, or the special string @samp{saved}.  Using the full name may be
+useful if you want to set a menu entry as the default even though there may
+be a variable number of entries before it.
+
+If you set this to @samp{saved}, then the default menu entry will be that
+saved by @samp{GRUB_SAVEDEFAULT}, @command{grub-set-default}, or
+@command{grub-reboot}.
+
+The default is @samp{0}.
+
+@item GRUB_SAVEDEFAULT
+If this option is set to @samp{true}, then, when an entry is selected, save
+it as a new default entry for use by future runs of GRUB.  This is only
+useful if @samp{GRUB_DEFAULT=saved}; it is a separate option because
+@samp{GRUB_DEFAULT=saved} is useful without this option, in conjunction with
+@command{grub-set-default} or @command{grub-reboot}.  Unset by default.
+
+@item GRUB_TIMEOUT
+Boot the default entry this many seconds after the menu is displayed, unless
+a key is pressed.  The default is @samp{5}.  Set to @samp{0} to boot
+immediately without displaying the menu, or to @samp{-1} to wait
+indefinitely.
+
+@item GRUB_HIDDEN_TIMEOUT
+Wait this many seconds for a key to be pressed before displaying the menu.
+If no key is pressed during that time, boot immediately.  Unset by default.
+
+@item GRUB_HIDDEN_TIMEOUT_QUIET
+In conjunction with @samp{GRUB_HIDDEN_TIMEOUT}, set this to @samp{true} to
+suppress the verbose countdown while waiting for a key to be pressed before
+displaying the menu.  Unset by default.
+
+@item GRUB_DEFAULT_BUTTON
+@itemx GRUB_TIMEOUT_BUTTON
+@itemx GRUB_HIDDEN_TIMEOUT_BUTTON
+@itemx GRUB_BUTTON_CMOS_ADDRESS
+Variants of the corresponding variables without the @samp{_BUTTON} suffix,
+used to support vendor-specific power buttons.  @xref{Vendor power-on keys}.
+
+@item GRUB_DISTRIBUTOR
+Set by distributors of GRUB to their identifying name.  This is used to
+generate more informative menu entry titles.
+
+@item GRUB_TERMINAL_INPUT
+Select the terminal input device.  You may select multiple devices here,
+separated by spaces.
+
+Valid terminal input names depend on the platform, but may include
+@samp{console} (PC BIOS and EFI consoles), @samp{serial} (serial terminal),
+@samp{ofconsole} (Open Firmware console), @samp{at_keyboard} (PC AT
+keyboard, mainly useful with Coreboot), or @samp{usb_keyboard} (USB keyboard
+using the HID Boot Protocol, for cases where the firmware does not handle
+this).
+
+The default is to use the platform's native terminal input.
+
+@item GRUB_TERMINAL_OUTPUT
+Select the terminal output device.  You may select multiple devices here,
+separated by spaces.
+
+Valid terminal output names depend on the platform, but may include
+@samp{console} (PC BIOS and EFI consoles), @samp{serial} (serial terminal),
+@samp{gfxterm} (graphics-mode output), @samp{ofconsole} (Open Firmware
+console), or @samp{vga_text} (VGA text output, mainly useful with Coreboot).
+
+The default is to use the platform's native terminal input.
+
+@item GRUB_TERMINAL
+If this option is set, it overrides both @samp{GRUB_TERMINAL_INPUT} and
+@samp{GRUB_TERMINAL_OUTPUT} to the same value.
+
+@item GRUB_SERIAL_COMMAND
+A command to configure the serial port when using the serial console.
+@xref{serial}.  Defaults to @samp{serial}.
+
+@item GRUB_CMDLINE_LINUX
+Command-line arguments to add to menu entries for the Linux kernel.
+
+@item GRUB_CMDLINE_LINUX_DEFAULT
+Unless @samp{GRUB_DISABLE_LINUX_RECOVERY} is set, two menu entries will be
+generated for each Linux kernel: one default entry and one entry for
+recovery mode.  This option lists command-line arguments to add only to the
+default menu entry, after those listed in @samp{GRUB_CMDLINE_LINUX}.
+
+@item GRUB_CMDLINE_NETBSD
+@itemx GRUB_CMDLINE_NETBSD_DEFAULT
+As @samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT}, but for
+NetBSD.
+
+@item GRUB_DISABLE_LINUX_UUID
+Normally, @command{grub-mkconfig} will generate menu entries that use
+universally-unique identifiers (UUIDs) to identify the root filesystem to
+the Linux kernel, using a @samp{root=UUID=...} kernel parameter.  This is
+usually more reliable, but in some cases it may not be appropriate.  To
+disable the use of UUIDs, set this option to @samp{true}.
+
+@item GRUB_DISABLE_LINUX_RECOVERY
+Disable the generation of recovery mode menu entries for Linux.
+
+@item GRUB_DISABLE_NETBSD_RECOVERY
+Disable the generation of recovery mode menu entries for NetBSD.
+
+@item GRUB_GFXMODE
+Set the resolution used on the @samp{gfxterm} graphical terminal.  Note that
+you can only use modes which your graphics card supports via VESA BIOS
+Extensions (VBE), so for example native LCD panel resolutions may not be
+available.  The default is @samp{640x480}.
+
+@item GRUB_BACKGROUND
+Set a background image for use with the @samp{gfxterm} graphical terminal.
+The value of this option must be a file readable by GRUB at boot time, and
+it must end with @file{.png}, @file{.tga}, @file{.jpg}, or @file{.jpeg}.
+The image will be scaled if necessary to fit the screen.
+
+@item GRUB_THEME
+Set a theme for use with the @samp{gfxterm} graphical terminal.
+@xref{Themes}.
+
+@item GRUB_GFXPAYLOAD_LINUX
+Set to @samp{text} to force the Linux kernel to boot in normal text mode,
+@samp{keep} to preserve the graphics mode set using @samp{GRUB_GFXMODE},
+@samp{@var{width}x@var{height}}[@samp{x@var{depth}}] to set a particular
+graphics mode, or a sequence of these separated by commas or semicolons to
+try several modes in sequence.
+
+Depending on your kernel, your distribution, your graphics card, and the
+phase of the moon, note that using this option may cause GNU/Linux to suffer
+from various display problems, particularly during the early part of the
+boot sequence.  If you have problems, simply unset this option and GRUB will
+tell Linux to boot in normal text mode.
+
+@item GRUB_DISABLE_OS_PROBER
+Normally, @command{grub-mkconfig} will try to use the external
+@command{os-prober} program, if installed, to discover other operating
+systems installed on the same system and generate appropriate menu entries
+for them.  Set this option to @samp{true} to disable this.
+
+@item GRUB_INIT_TUNE
+Play a tune on the speaker when GRUB starts.  This is particularly useful
+for users unable to see the screen.  The value of this option is passed
+directly to @ref{play}.
+@end table
+
+For more detailed customisation of @command{grub-mkconfig}'s output, you may
+edit the scripts in @file{/etc/grub.d} directly.
+@file{/etc/grub.d/40_custom} is particularly useful for adding entire custom
+menu entries; simply type the menu entries you want to add at the end of
+that file, making sure to leave at least the first two lines intact.
+
+
+@node Shell-like scripting
+@section Writing full configuration files directly
 
 
 @node Serial terminal
@@ -1496,6 +1689,32 @@ you have a separate @dfn{boot} partition which is mounted on
 Recheck the device map, even if @file{/boot/grub/device.map} already
 exists. You should use this option whenever you add/remove a disk
 into/from your computer.
+@end table
+
+
+@node Invoking grub-mkconfig
+@chapter Invoking grub-mkconfig
+
+The program @command{grub-mkconfig} generates a configuration file for GRUB
+(@pxref{Simple configuration}).
+
+@example
+grub-mkconfig -o /boot/grub/grub.cfg
+@end example
+
+@command{grub-mkconfig} accepts the following options:
+
+@table @option
+@item --help
+Print a summary of the command-line options and exit.
+
+@item --version
+Print the version number of GRUB and exit.
+
+@item -o @var{file}
+@itemx --output=@var{file}
+Send the generated configuration file to @var{file}.  The default is to send
+it to standard output.
 @end table
 
 

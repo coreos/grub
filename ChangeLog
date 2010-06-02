@@ -1,5 +1,13 @@
 2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (Configuration): New section, documenting
+	configuration file generation using grub-mkconfig.  I've left a slot
+	for documenting the full shell scripting format but have not yet
+	started on writing that up.
+	(Invoking grub-mkconfig): New section.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (direntry): Remove grub-terminfo reference.
 	(GNU GRUB manual): Likewise.
 	(General commands): Update description of `terminfo' for GRUB 2.
