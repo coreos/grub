@@ -147,14 +147,14 @@ struct grub_scsi_write12
 
 typedef enum
   {
-    grub_scsi_cmd_inquiry = 0x12,
     grub_scsi_cmd_test_unit_ready = 0x00,
+    grub_scsi_cmd_request_sense = 0x03,
+    grub_scsi_cmd_inquiry = 0x12,
     grub_scsi_cmd_read_capacity = 0x25,
     grub_scsi_cmd_read10 = 0x28,
     grub_scsi_cmd_write10 = 0x2a,
     grub_scsi_cmd_read12 = 0xa8,
     grub_scsi_cmd_write12 = 0xaa,
-    grub_scsi_cmd_request_sense = 0x03
   } grub_scsi_cmd_t;
 
 typedef enum
