@@ -339,10 +339,8 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
   return 0;
 
  fail:
-#ifndef GRUB_MACHINE_MIPS_YEELOONG
   if (o)
-    grub_free ((void *) o->hcca);
-#endif
+    grub_dma_free (o->hcca_chunk);
   grub_free (o);
 
   return 0;
@@ -882,11 +880,6 @@ grub_ohci_transfer (grub_usb_controller_t dev,
 
   return err;
 }
-
-#define GRUB_OHCI_SET_PORT_ENABLE (1 << 1)
-#define GRUB_OHCI_CLEAR_PORT_ENABLE (1 << 0)
-#define GRUB_OHCI_SET_PORT_RESET (1 << 4)
-#define GRUB_OHCI_SET_PORT_RESET_STATUS_CHANGE (1 << 20)
 
 static grub_err_t
 grub_ohci_portstatus (grub_usb_controller_t dev,
