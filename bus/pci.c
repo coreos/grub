@@ -21,7 +21,8 @@
 #include <grub/pci.h>
 #include <grub/mm.h>
 
-#if GRUB_TARGET_SIZEOF_VOID_P == 4
+/* FIXME: correctly support 64-bit architectures.  */
+/* #if GRUB_TARGET_SIZEOF_VOID_P == 4 */
 struct grub_pci_dma_chunk *
 grub_memalign_dma32 (grub_size_t align, grub_size_t size)
 {
@@ -33,7 +34,7 @@ grub_dma_free (struct grub_pci_dma_chunk *ch)
 {
   grub_free (ch);
 }
-#endif
+/* #endif */
 
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
 volatile void *
