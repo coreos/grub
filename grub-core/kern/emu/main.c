@@ -52,6 +52,8 @@ static jmp_buf main_env;
 /* Store the prefix specified by an argument.  */
 static char *prefix = NULL;
 
+int grub_no_autoload;
+
 grub_addr_t
 grub_arch_modules_addr (void)
 {
@@ -203,7 +205,6 @@ main (int argc, char *argv[])
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (dev_map);
 
-  /* Initialize all embedded modules.  */
   grub_init_all ();
 
   /* Make sure that there is a root device.  */
