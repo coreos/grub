@@ -594,10 +594,10 @@ grub_ohci_transfer (grub_usb_controller_t dev,
     }
 
   grub_dprintf ("ohci", "wait for completion\n");
-  grub_dprintf ("ohci",
-		"begin: control=0x%02x status=0x%02x\n\t\t intstatus=0x%02x\n",
+  grub_dprintf ("ohci", "begin: control=0x%02x status=0x%02x\n",
 		grub_ohci_readreg32 (o, GRUB_OHCI_REG_CONTROL),
-		grub_ohci_readreg32 (o, GRUB_OHCI_REG_CMDSTATUS),
+		grub_ohci_readreg32 (o, GRUB_OHCI_REG_CMDSTATUS));
+  grub_dprintf ("ohci","intstatus=0x%02x\n",
 		grub_ohci_readreg32 (o, GRUB_OHCI_REG_INTSTATUS));
 
   /* Safety measure to avoid a hang. */
@@ -621,7 +621,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
           if (tderr_addr == td_list_addr
 	      + sizeof (td_list[0]) * (transfer->transcnt - 1))
             break;
-           continue;
+	  continue;
         }
 
       if ((intstatus & 0x10) != 0)
@@ -651,9 +651,10 @@ grub_ohci_transfer (grub_usb_controller_t dev,
     }
   while (1);
 
-  grub_dprintf ("ohci", "end: control=0x%02x status=0x%02x\n\t\t intstatus=0x%02x\n",
+  grub_dprintf ("ohci", "end: control=0x%02x status=0x%02x\n",
 		grub_ohci_readreg32 (o, GRUB_OHCI_REG_CONTROL),
-		grub_ohci_readreg32 (o, GRUB_OHCI_REG_CMDSTATUS),
+		grub_ohci_readreg32 (o, GRUB_OHCI_REG_CMDSTATUS));
+  grub_dprintf ("ohci", "intstatus=0x%02x\n",
 		grub_ohci_readreg32 (o, GRUB_OHCI_REG_INTSTATUS));
 
   if (!tderr_addr)
@@ -688,21 +689,22 @@ grub_ohci_transfer (grub_usb_controller_t dev,
   if (err_timeout)
     {
       err = GRUB_ERR_TIMEOUT;
-      grub_dprintf("ohci", "Timeout, target=%08x, head=%08x\n\t\ttail=%08x, next=%08x\n",
-      grub_le_to_cpu32(ed->target),
-      grub_le_to_cpu32(ed->td_head),
-      grub_le_to_cpu32(ed->td_tail),
-      grub_le_to_cpu32(ed->next_ed));
+      grub_dprintf("ohci", "Timeout, target=%08x, head=%08x\n",
+		   grub_le_to_cpu32(ed->target),
+		   grub_le_to_cpu32(ed->td_head));
+      grub_dprintf("ohci", "tail=%08x, next=%08x\n",
+		   grub_le_to_cpu32(ed->td_tail),
+		   grub_le_to_cpu32(ed->next_ed));
     }
   /* In case of unrecoverable error do not detect error from TD */    
   else if (err_unrec)
     {
       err = GRUB_USB_ERR_UNRECOVERABLE;
       grub_dprintf("ohci",
-		   "Unrecoverable error, target=%08x, head=%08x\n"
-		   "\t\ttail=%08x, next=%08x\n",
+		   "Unrecoverable error, target=%08x, head=%08x\n",
 		   grub_le_to_cpu32(ed->target),
-		   grub_le_to_cpu32(ed->td_head),
+		   grub_le_to_cpu32(ed->td_head));
+      grub_dprintf("ohci", "tail=%08x, next=%08x\n",
 		   grub_le_to_cpu32(ed->td_tail),
 		   grub_le_to_cpu32(ed->next_ed));
     }
