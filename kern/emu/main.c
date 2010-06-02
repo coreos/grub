@@ -51,7 +51,6 @@ static jmp_buf main_env;
 /* Store the prefix specified by an argument.  */
 static char *prefix = NULL;
 
-/* Flag to control module autoloading in normal mode.  */
 int grub_no_autoload;
 
 grub_addr_t

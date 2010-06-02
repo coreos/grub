@@ -32,10 +32,6 @@
 #include <grub/i18n.h>
 #include <grub/charset.h>
 
-#if defined (GRUB_MACHINE_EMU)
-#include <grub/emu/misc.h>
-#endif
-
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
 static int nested_level = 0;
@@ -480,9 +476,7 @@ grub_normal_init_page (struct grub_term_output *term)
 static void
 read_lists (const char *val)
 {
-#if defined(GRUB_MACHINE_EMU)
   if (! grub_no_autoload)
-#endif
     {
       read_command_list (val);
       read_fs_list (val);

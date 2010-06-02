@@ -308,4 +308,11 @@ void EXPORT_FUNC (grub_halt) (int no_apm);
 void EXPORT_FUNC (grub_halt) (void);
 #endif
 
+#ifdef GRUB_MACHINE_EMU
+/* Flag to control module autoloading in normal mode.  */
+extern int EXPORT_VAR(grub_no_autoload);
+#else
+#define grub_no_autoload 0
+#endif
+
 #endif /* ! GRUB_MISC_HEADER */

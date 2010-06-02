@@ -31,10 +31,6 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
-#if defined (GRUB_MACHINE_EMU)
-#include <grub/emu/misc.h>
-#endif
-
 static struct grub_parttool *parts = 0;
 static int curhandle = 0;
 static grub_dl_t mymod;
@@ -179,9 +175,7 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
     }
 
   /* Load modules. */
-#if defined(GRUB_MACHINE_EMU)
   if (! grub_no_autoload)
-#endif
   {
     const char *prefix;
     prefix = grub_env_get ("prefix");
