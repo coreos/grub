@@ -138,6 +138,9 @@ typedef struct grub_disk_memberlist *grub_disk_memberlist_t;
 #define GRUB_DISK_CACHE_SIZE	8
 #define GRUB_DISK_CACHE_BITS	3
 
+/* Return value of grub_disk_get_size() in case disk size is unknown. */
+#define GRUB_DISK_SIZE_UNKNOWN	 0xffffffffffffffffULL
+
 /* This is called from the memory manager.  */
 void grub_disk_cache_invalidate_all (void);
 

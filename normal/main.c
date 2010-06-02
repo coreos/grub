@@ -204,7 +204,7 @@ grub_normal_add_menu_entry (int argc, const char **args,
   for (i = 0; i < argc; i++)
     {
       /* Capture arguments.  */
-      if (grub_strncmp ("--", args[i], 2) == 0)
+      if (grub_strncmp ("--", args[i], 2) == 0 && i + 1 < argc)
 	{
 	  const char *arg = &args[i][2];
 
