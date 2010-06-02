@@ -1,3 +1,8 @@
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Simple configuration): Fix copy-and-paste typo.
+	Thanks to Jordan Uggla for spotting this.
+
 2010-06-02  Aleš Nesrsta <starous@volny.cz>
 
 	Finally make USB usable.

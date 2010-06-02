@@ -877,7 +877,7 @@ Valid terminal output names depend on the platform, but may include
 @samp{gfxterm} (graphics-mode output), @samp{ofconsole} (Open Firmware
 console), or @samp{vga_text} (VGA text output, mainly useful with Coreboot).
 
-The default is to use the platform's native terminal input.
+The default is to use the platform's native terminal output.
 
 @item GRUB_TERMINAL
 If this option is set, it overrides both @samp{GRUB_TERMINAL_INPUT} and
