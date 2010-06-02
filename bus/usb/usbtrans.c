@@ -76,7 +76,7 @@ grub_usb_control_msg (grub_usb_device_t dev,
   setupdata_addr = grub_dma_get_phys (setupdata_chunk);
 
   /* Determine the maximum packet size.  */
-  if (dev->initialized && dev->descdev.maxsize0)
+  if (dev->descdev.maxsize0)
     max = dev->descdev.maxsize0;
   else
     max = 64;
