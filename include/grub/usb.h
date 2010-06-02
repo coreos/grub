@@ -125,6 +125,13 @@ struct grub_usb_interface
   struct grub_usb_desc_if *descif;
 
   struct grub_usb_desc_endp *descendp;
+
+  /* A driver is handling this interface. Do we need to support multiple drivers
+     for single interface?
+   */
+  int attached;
+
+  void (*detach_hook) (struct grub_usb_device *dev, int config, int interface);
 };
 
 struct grub_usb_configuration
@@ -206,5 +213,18 @@ grub_usb_get_config_interface (struct grub_usb_desc_config *config)
   interf = (struct grub_usb_desc_if *) (sizeof (*config) + (char *) config);
   return interf;
 }
+
+typedef int (*grub_usb_attach_hook_class) (grub_usb_device_t usbdev,
+					   int configno, int interfno);
+
+struct grub_usb_attach_desc
+{
+  struct grub_usb_attach_desc *next;
+  int class;
+  grub_usb_attach_hook_class hook;
+};
+
+void grub_usb_register_attach_hook_class (struct grub_usb_attach_desc *desc);
+void grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc);
 
 #endif /* GRUB_USB_H */

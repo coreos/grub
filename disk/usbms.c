@@ -52,20 +52,19 @@ struct grub_usbms_dev
 
   int luns;
 
+  int config;
   int interface;
   struct grub_usb_desc_endp *in;
   struct grub_usb_desc_endp *out;
 
   int in_maxsz;
   int out_maxsz;
-
-  struct grub_usbms_dev *next;
 };
 typedef struct grub_usbms_dev *grub_usbms_dev_t;
 
-static grub_usbms_dev_t grub_usbms_dev_list;
-
-static int devcnt;
+/* FIXME: remove limit.  */
+#define MAX_USBMS_DEVICES 128
+static grub_usbms_dev_t grub_usbms_devices[MAX_USBMS_DEVICES];
 
 static grub_err_t
 grub_usbms_reset (grub_usb_device_t dev, int interface)
@@ -74,149 +73,133 @@ grub_usbms_reset (grub_usb_device_t dev, int interface)
 }
 
 static void
-grub_usbms_finddevs (void)
+grub_usbms_detach (grub_usb_device_t usbdev, int config, int interface)
 {
-  auto int usb_iterate (grub_usb_device_t dev);
+  unsigned i;
+  for (i = 0; i < ARRAY_SIZE (grub_usbms_devices); i++)
+    if (grub_usbms_devices[i] && grub_usbms_devices[i]->dev == usbdev
+	&& grub_usbms_devices[i]->interface == interface
+	&& grub_usbms_devices[i]->config == config)
+      {
+	grub_free (grub_usbms_devices[i]);
+	grub_usbms_devices[i] = 0;
+      }
+}
 
-  int usb_iterate (grub_usb_device_t usbdev)
+static int
+grub_usbms_attach (grub_usb_device_t usbdev, int configno, int interfno)
+{
+  struct grub_usb_desc_if *interf
+    = usbdev->config[configno].interf[interfno].descif;
+  int j;
+  grub_uint8_t luns = 0;
+  unsigned curnum;
+  grub_usb_err_t err;
+
+  for (curnum = 0; curnum < ARRAY_SIZE (grub_usbms_devices); curnum++)
+    if (!grub_usbms_devices[curnum])
+      break;
+
+  if (curnum == ARRAY_SIZE (grub_usbms_devices))
+    return 0;
+
+  interf = usbdev->config[configno].interf[interfno].descif;
+
+  if ((interf->subclass != GRUB_USBMS_SUBCLASS_BULK
+       /* Experimental support of RBC, MMC-2, UFI, SFF-8070i devices */
+       && interf->subclass != GRUB_USBMS_SUBCLASS_RBC
+       && interf->subclass != GRUB_USBMS_SUBCLASS_MMC2
+       && interf->subclass != GRUB_USBMS_SUBCLASS_UFI 
+       && interf->subclass != GRUB_USBMS_SUBCLASS_SFF8070 )
+      || interf->protocol != GRUB_USBMS_PROTOCOL_BULK)
+    return 0;
+
+  grub_usbms_devices[curnum] = grub_zalloc (sizeof (struct grub_usbms_dev));
+  if (! grub_usbms_devices[curnum])
+    return 0;
+
+  grub_usbms_devices[curnum]->dev = usbdev;
+  grub_usbms_devices[curnum]->interface = interfno;
+
+  grub_dprintf ("usbms", "alive\n");
+
+  /* Iterate over all endpoints of this interface, at least a
+     IN and OUT bulk endpoint are required.  */
+  for (j = 0; j < interf->endpointcnt; j++)
     {
-      grub_usb_err_t err;
-      struct grub_usb_desc_device *descdev = &usbdev->descdev;
-      int i;
+      struct grub_usb_desc_endp *endp;
+      endp = &usbdev->config[0].interf[interfno].descendp[j];
 
-      if (descdev->class != 0 || descdev->subclass || descdev->protocol != 0
-	  || descdev->configcnt == 0)
-	return 0;
-
-      /* XXX: Just check configuration 0 for now.  */
-      for (i = 0; i < usbdev->config[0].descconf->numif; i++)
+      if ((endp->endp_addr & 128) && (endp->attrib & 3) == 2)
 	{
-	  struct grub_usbms_dev *usbms;
-	  struct grub_usb_desc_if *interf;
-	  int j;
-	  grub_uint8_t luns = 0;
-
-	  grub_dprintf ("usbms", "alive\n");
-
-	  interf = usbdev->config[0].interf[i].descif;
-
-	  /* If this is not a USB Mass Storage device with a supported
-	     protocol, just skip it.  */
-	  grub_dprintf ("usbms", "iterate: interf=%d, class=%d, subclass=%d, protocol=%d\n",
-	                i, interf->class, interf->subclass, interf->protocol);
-
-	  if (interf->class != GRUB_USB_CLASS_MASS_STORAGE
-	      || ( interf->subclass != GRUB_USBMS_SUBCLASS_BULK &&
-	    /* Experimental support of RBC, MMC-2, UFI, SFF-8070i devices */
-	           interf->subclass != GRUB_USBMS_SUBCLASS_RBC &&
-	           interf->subclass != GRUB_USBMS_SUBCLASS_MMC2 &&
-	           interf->subclass != GRUB_USBMS_SUBCLASS_UFI &&
-	           interf->subclass != GRUB_USBMS_SUBCLASS_SFF8070 )
-	      || interf->protocol != GRUB_USBMS_PROTOCOL_BULK)
-	    {
-	      continue;
-	    }
-
-	  grub_dprintf ("usbms", "alive\n");
-
-	  devcnt++;
-	  usbms = grub_zalloc (sizeof (struct grub_usbms_dev));
-	  if (! usbms)
-	    return 1;
-
-	  usbms->dev = usbdev;
-	  usbms->interface = i;
-
-	  grub_dprintf ("usbms", "alive\n");
-
-	  /* Iterate over all endpoints of this interface, at least a
-	     IN and OUT bulk endpoint are required.  */
-	  for (j = 0; j < interf->endpointcnt; j++)
-	    {
-	      struct grub_usb_desc_endp *endp;
-	      endp = &usbdev->config[0].interf[i].descendp[j];
-
-	      if ((endp->endp_addr & 128) && (endp->attrib & 3) == 2)
-		{
-		  /* Bulk IN endpoint.  */
-		  usbms->in = endp;
-		  /* Clear Halt is not possible yet! */
-		  /* grub_usb_clear_halt (usbdev, endp->endp_addr); */
-		  usbms->in_maxsz = endp->maxpacket;
-		}
-	      else if (!(endp->endp_addr & 128) && (endp->attrib & 3) == 2)
-		{
-		  /* Bulk OUT endpoint.  */
-		  usbms->out = endp;
-		  /* Clear Halt is not possible yet! */
-		  /* grub_usb_clear_halt (usbdev, endp->endp_addr); */
-		  usbms->out_maxsz = endp->maxpacket;
-		}
-	    }
-
-	  if (!usbms->in || !usbms->out)
-	    {
-	      grub_free (usbms);
-	      return 0;
-	    }
-
-	  grub_dprintf ("usbms", "alive\n");
-
-	  /* XXX: Activate the first configuration.  */
-	  grub_usb_set_configuration (usbdev, 1);
-
-	  /* Query the amount of LUNs.  */
-	  err = grub_usb_control_msg (usbdev, 0xA1, 254,
-				      0, i, 1, (char *) &luns);
-		
-	  if (err)
-	    {
-	      /* In case of a stall, clear the stall.  */
-	      if (err == GRUB_USB_ERR_STALL)
-		{
-		  grub_usb_clear_halt (usbdev, usbms->in->endp_addr);
-		  grub_usb_clear_halt (usbdev, usbms->out->endp_addr);
-		}
-	      /* Just set the amount of LUNs to one.  */
-	      grub_errno = GRUB_ERR_NONE;
-	      usbms->luns = 1;
-	    }
-	  else
-            /* luns = 0 means one LUN with ID 0 present ! */
-            /* We get from device not number of LUNs but highest
-             * LUN number. LUNs are numbered from 0, 
-             * i.e. number of LUNs is luns+1 ! */
-	    usbms->luns = luns + 1;
-
-	  grub_dprintf ("usbms", "alive\n");
-
-	  usbms->next = grub_usbms_dev_list;
-	  grub_usbms_dev_list = usbms;
-
-#if 0 /* All this part should be probably deleted.
-     * This make trouble on some devices if they are not in
-     * Phase Error state - and there they should be not in such state...
-     * Bulk only mass storage reset procedure should be used only
-     * on place and in time when it is really necessary. */
-	  /* Reset recovery procedure */
-	  /* Bulk-Only Mass Storage Reset, after the reset commands
-	     will be accepted.  */
-	  grub_usbms_reset (usbdev, i);
-	  grub_usb_clear_halt (usbdev, usbms->in->endp_addr);
-	  grub_usb_clear_halt (usbdev, usbms->out->endp_addr);
-#endif
-
-	  return 0;
+	  /* Bulk IN endpoint.  */
+	  grub_usbms_devices[curnum]->in = endp;
+	  /* Clear Halt is not possible yet! */
+	  /* grub_usb_clear_halt (usbdev, endp->endp_addr); */
+	  grub_usbms_devices[curnum]->in_maxsz = endp->maxpacket;
 	}
+      else if (!(endp->endp_addr & 128) && (endp->attrib & 3) == 2)
+	{
+	  /* Bulk OUT endpoint.  */
+	  grub_usbms_devices[curnum]->out = endp;
+	  /* Clear Halt is not possible yet! */
+	  /* grub_usb_clear_halt (usbdev, endp->endp_addr); */
+	  grub_usbms_devices[curnum]->out_maxsz = endp->maxpacket;
+	}
+    }
 
-      grub_dprintf ("usbms", "alive\n");
+  if (!grub_usbms_devices[curnum]->in || !grub_usbms_devices[curnum]->out)
+    {
+      grub_free (grub_usbms_devices[curnum]);
+      grub_usbms_devices[curnum] = 0;
       return 0;
     }
+
   grub_dprintf ("usbms", "alive\n");
 
-  grub_usb_iterate (usb_iterate);
+  /* XXX: Activate the first configuration.  */
+  grub_usb_set_configuration (usbdev, 1);
+
+  /* Query the amount of LUNs.  */
+  err = grub_usb_control_msg (usbdev, 0xA1, 254, 0, interfno, 1, (char *) &luns);
+		
+  if (err)
+    {
+      /* In case of a stall, clear the stall.  */
+      if (err == GRUB_USB_ERR_STALL)
+	{
+	  grub_usb_clear_halt (usbdev, grub_usbms_devices[curnum]->in->endp_addr);
+	  grub_usb_clear_halt (usbdev, grub_usbms_devices[curnum]->out->endp_addr);
+	}
+      /* Just set the amount of LUNs to one.  */
+      grub_errno = GRUB_ERR_NONE;
+      grub_usbms_devices[curnum]->luns = 1;
+    }
+  else
+    /* luns = 0 means one LUN with ID 0 present ! */
+    /* We get from device not number of LUNs but highest
+     * LUN number. LUNs are numbered from 0, 
+     * i.e. number of LUNs is luns+1 ! */
+    grub_usbms_devices[curnum]->luns = luns + 1;
+
   grub_dprintf ("usbms", "alive\n");
 
+  usbdev->config[configno].interf[interfno].detach_hook = grub_usbms_detach;
+
+#if 0 /* All this part should be probably deleted.
+       * This make trouble on some devices if they are not in
+       * Phase Error state - and there they should be not in such state...
+       * Bulk only mass storage reset procedure should be used only
+       * on place and in time when it is really necessary. */
+  /* Reset recovery procedure */
+  /* Bulk-Only Mass Storage Reset, after the reset commands
+     will be accepted.  */
+  grub_usbms_reset (usbdev, i);
+  grub_usb_clear_halt (usbdev, usbms->in->endp_addr);
+  grub_usb_clear_halt (usbdev, usbms->out->endp_addr);
+#endif
+
+  return 1;
 }
 
 
@@ -224,22 +207,21 @@ grub_usbms_finddevs (void)
 static int
 grub_usbms_iterate (int (*hook) (const char *name, int luns))
 {
-  grub_usbms_dev_t p;
-  int cnt = 0;
+  unsigned i;
 
-  for (p = grub_usbms_dev_list; p; p = p->next)
-    {
-      char *devname;
-      devname = grub_xasprintf ("usb%d", cnt);
+  for (i = 0; i < ARRAY_SIZE (grub_usbms_devices); i++)
+    if (grub_usbms_devices[i])
+      {
+	char *devname;
+	devname = grub_xasprintf ("usb%d", i);
 
-      if (hook (devname, p->luns))
-	{
-	  grub_free (devname);
-	  return 1;
-	}
-      grub_free (devname);
-      cnt++;
-    }
+	if (hook (devname, grub_usbms_devices[i]->luns))
+	  {
+	    grub_free (devname);
+	    return 1;
+	  }
+	grub_free (devname);
+      }
 
   return 0;
 }
@@ -400,34 +382,24 @@ grub_usbms_write (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 static grub_err_t
 grub_usbms_open (const char *name, struct grub_scsi *scsi)
 {
-  grub_usbms_dev_t p;
   int devnum;
-  int i = 0;
 
   if (grub_strncmp (name, "usb", 3))
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "not a USB Mass Storage device");
 
   devnum = grub_strtoul (name + 3, NULL, 10);
-  for (p = grub_usbms_dev_list; p; p = p->next)
-    {
-      /* Check if this is the devnumth device.  */
-      if (devnum == i)
-	{
-	  scsi->data = p;
-	  scsi->name = grub_strdup (name);
-	  scsi->luns = p->luns;
-	  if (! scsi->name)
-	    return grub_errno;
+  if (!grub_usbms_devices[devnum])
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+		       "not a USB Mass Storage device");
 
-	  return GRUB_ERR_NONE;
-	}
+  scsi->data = grub_usbms_devices[devnum];
+  scsi->name = grub_strdup (name);
+  scsi->luns = grub_usbms_devices[devnum]->luns;
+  if (! scsi->name)
+    return grub_errno;
 
-      i++;
-    }
-
-  return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-		     "not a USB Mass Storage device");
+  return GRUB_ERR_NONE;
 }
 
 static void
@@ -446,13 +418,28 @@ static struct grub_scsi_dev grub_usbms_dev =
     .write = grub_usbms_write
   };
 
+struct grub_usb_attach_desc attach_hook =
+{
+  .class = GRUB_USB_CLASS_MASS_STORAGE,
+  .hook = grub_usbms_attach
+};
+
 GRUB_MOD_INIT(usbms)
 {
-  grub_usbms_finddevs ();
+  grub_usb_register_attach_hook_class (&attach_hook);
   grub_scsi_dev_register (&grub_usbms_dev);
 }
 
 GRUB_MOD_FINI(usbms)
 {
+  unsigned i;
+  for (i = 0; i < ARRAY_SIZE (grub_usbms_devices); i++)
+    {
+      grub_usbms_devices[i]->dev->config[grub_usbms_devices[i]->config]
+	.interf[grub_usbms_devices[i]->interface].detach_hook = 0;
+      grub_usbms_devices[i]->dev->config[grub_usbms_devices[i]->config]
+	.interf[grub_usbms_devices[i]->interface].attached = 0;
+    }
+  grub_usb_unregister_attach_hook_class (&attach_hook);
   grub_scsi_dev_unregister (&grub_usbms_dev);
 }

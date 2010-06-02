@@ -21,6 +21,7 @@
 #include <grub/mm.h>
 #include <grub/usb.h>
 #include <grub/misc.h>
+#include <grub/list.h>
 
 static grub_usb_controller_dev_t grub_usb_list;
 
@@ -231,4 +232,54 @@ grub_usb_device_initialize (grub_usb_device_t dev)
     grub_free (dev->config[i].descconf);
 
   return err;
+}
+
+struct grub_usb_attach_desc *attach_hooks;
+
+void
+grub_usb_register_attach_hook_class (struct grub_usb_attach_desc *desc)
+{
+  auto int usb_iterate (grub_usb_device_t dev);
+
+  int usb_iterate (grub_usb_device_t usbdev)
+    {
+      struct grub_usb_desc_device *descdev = &usbdev->descdev;
+      int i;
+
+      if (descdev->class != 0 || descdev->subclass || descdev->protocol != 0
+	  || descdev->configcnt == 0)
+	return 0;
+
+      /* XXX: Just check configuration 0 for now.  */
+      for (i = 0; i < usbdev->config[0].descconf->numif; i++)
+	{
+	  struct grub_usb_desc_if *interf;
+
+	  interf = usbdev->config[0].interf[i].descif;
+
+	  grub_dprintf ("usb", "iterate: interf=%d, class=%d, subclass=%d, protocol=%d\n",
+	                i, interf->class, interf->subclass, interf->protocol);
+
+	  if (usbdev->config[0].interf[i].attached)
+	    continue;
+
+	  if (interf->class != desc->class)
+	    continue;
+	  if (desc->hook (usbdev, 0, i))
+	    usbdev->config[0].interf[i].attached = 1;
+	}
+
+      return 0;
+    }
+
+  desc->next = attach_hooks;
+  attach_hooks = desc;
+
+  grub_usb_iterate (usb_iterate);
+}
+
+void
+grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc)
+{
+  grub_list_remove (GRUB_AS_LIST_P (&attach_hooks), GRUB_AS_LIST (desc));  
 }
