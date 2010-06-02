@@ -671,15 +671,21 @@ grub_ohci_transfer (grub_usb_controller_t dev,
   
   /* Remember last processed transaction (TD) - it is necessary for
    * proper setting of toggle bit in next transaction. */
-  transfer->last_trans = (tderr_addr - td_list_addr) / sizeof (*td_list);
-  
+  transfer->last_trans = ((tderr_addr - td_list_addr) / sizeof (*td_list));
+  grub_dprintf("ohci", "tderr_addr=0x%x, td_list_addr=0x%x,\n",
+	       tderr_addr, td_list_addr);
+
+  if ((ed->td_head & ~0xf) == (ed->td_tail & ~0xf))
+    transfer->last_trans = transfer->transcnt - 1;
+
   /* Check correct value in last_trans */
   /* It could happen if timeout happens and no TD was retired */
   if (transfer->last_trans >= transfer->transcnt || !tderr_addr)
     {
-      grub_dprintf("ohci", "tder==0 or out of TDs range!\n");
-      grub_dprintf("ohci", "tderr_addr=0x%x, td_list=%p,\n\t\t last_trans=%d, transcnt=%d\n",
-                   tderr_addr, td_list, transfer->last_trans, transfer->transcnt);
+      grub_dprintf("ohci", "tderr==0 or out of TDs range!\n");
+      grub_dprintf("ohci", "last_trans=%d, transcnt=%d\n",
+		   transfer->last_trans, transfer->transcnt);
+
       /* We should set something valid... */
       transfer->last_trans = -1; /* Probably no TD done */
       tderr_addr = td_list_addr;
@@ -712,6 +718,8 @@ grub_ohci_transfer (grub_usb_controller_t dev,
     {
       grub_uint8_t errcode;
       grub_ohci_td_t tderr = NULL;
+
+      transfer->last_trans--;
 
       tderr = (grub_ohci_td_t) ((char *) td_list
 				+ (tderr_addr - td_list_addr));
