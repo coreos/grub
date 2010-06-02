@@ -209,6 +209,8 @@ grub_usbms_iterate (int (*hook) (const char *name, int luns))
 {
   unsigned i;
 
+  grub_usb_poll_devices ();
+
   for (i = 0; i < ARRAY_SIZE (grub_usbms_devices); i++)
     if (grub_usbms_devices[i])
       {
@@ -389,6 +391,9 @@ grub_usbms_open (const char *name, struct grub_scsi *scsi)
 		       "not a USB Mass Storage device");
 
   devnum = grub_strtoul (name + 3, NULL, 10);
+
+  grub_usb_poll_devices ();
+
   if (!grub_usbms_devices[devnum])
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "not a USB Mass Storage device");

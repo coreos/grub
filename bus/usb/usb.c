@@ -24,6 +24,7 @@
 #include <grub/list.h>
 
 static grub_usb_controller_dev_t grub_usb_list;
+struct grub_usb_attach_desc *attach_hooks;
 
 void
 grub_usb_controller_dev_register (grub_usb_controller_dev_t usb)
@@ -224,6 +225,25 @@ grub_usb_device_initialize (grub_usb_device_t dev)
 	}
     }
 
+  /* XXX: Just check configuration 0 for now.  */
+  for (i = 0; i < dev->config[0].descconf->numif; i++)
+    {
+      struct grub_usb_desc_if *interf;
+      struct grub_usb_attach_desc *desc;
+
+      interf = dev->config[0].interf[i].descif;
+
+      grub_dprintf ("usb", "iterate: interf=%d, class=%d, subclass=%d, protocol=%d\n",
+		    i, interf->class, interf->subclass, interf->protocol);
+
+      if (dev->config[0].interf[i].attached)
+	continue;
+
+      for (desc = attach_hooks; desc; desc = desc->next)
+	if (interf->class == desc->class && desc->hook (dev, 0, i))
+	  dev->config[0].interf[i].attached = 1;
+    }
+
   return GRUB_USB_ERR_NONE;
 
  fail:
@@ -233,8 +253,6 @@ grub_usb_device_initialize (grub_usb_device_t dev)
 
   return err;
 }
-
-struct grub_usb_attach_desc *attach_hooks;
 
 void
 grub_usb_register_attach_hook_class (struct grub_usb_attach_desc *desc)

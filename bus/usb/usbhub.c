@@ -21,9 +21,21 @@
 #include <grub/mm.h>
 #include <grub/usb.h>
 #include <grub/misc.h>
+#include <grub/time.h>
 
 /* USB Supports 127 devices, with device 0 as special case.  */
 static struct grub_usb_device *grub_usb_devs[128];
+
+struct grub_usb_hub
+{
+  struct grub_usb_hub *next;
+  grub_usb_controller_t controller;
+  int nports;
+  grub_usb_speed_t *speed;
+  grub_usb_device_t dev;
+};
+
+struct grub_usb_hub *hubs;
 
 /* Add a device that currently has device number 0 and resides on
    CONTROLLER, the Hub reported that the device speed is SPEED.  */
@@ -137,41 +149,96 @@ grub_usb_add_hub (grub_usb_device_t dev)
   return GRUB_ERR_NONE;
 }
 
+static void
+attach_root_port (grub_usb_controller_t controller, int portno,
+		  grub_usb_speed_t speed)
+{
+  grub_usb_device_t dev;
+  grub_err_t err;
+
+  /* Enable the port.  */
+  err = controller->dev->portstatus (controller, portno, 0);
+  if (err)
+    return;
+
+  /* Enable the port.  */
+  err = controller->dev->portstatus (controller, portno, 1);
+  if (err)
+    return;
+
+  /* Enable the port and create a device.  */
+  dev = grub_usb_hub_add_dev (controller, speed);
+  if (! dev)
+    return;
+
+  /* If the device is a Hub, scan it for more devices.  */
+  if (dev->descdev.class == 0x09)
+    grub_usb_add_hub (dev);
+}
+
 grub_usb_err_t
 grub_usb_root_hub (grub_usb_controller_t controller)
 {
-  grub_err_t err;
-  int ports;
   int i;
+  struct grub_usb_hub *hub;
+
+  hub = grub_malloc (sizeof (*hub));
+  if (!hub)
+    return GRUB_USB_ERR_INTERNAL;
+
+  hub->next = hubs;
+  hubs = hub;
+  hub->controller = grub_malloc (sizeof (*controller));
+  if (!hub->controller)
+    return GRUB_USB_ERR_INTERNAL;
+
+  grub_memcpy (hub->controller, controller, sizeof (*controller));
+  hub->dev = 0;
 
   /* Query the number of ports the root Hub has.  */
-  ports = controller->dev->hubports (controller);
-
-  for (i = 0; i < ports; i++)
+  hub->nports = controller->dev->hubports (controller);
+  hub->speed = grub_malloc (sizeof (hub->speed[0]) * hub->nports);
+  if (!hub->speed)
     {
-      grub_usb_speed_t speed = controller->dev->detect_dev (controller, i);
+      grub_free (hub);
+      return GRUB_USB_ERR_INTERNAL;
+    }
 
-      if (speed != GRUB_USB_SPEED_NONE)
-	{
-	  grub_usb_device_t dev;
+  for (i = 0; i < hub->nports; i++)
+    {
+      hub->speed[i] = controller->dev->detect_dev (hub->controller, i);
 
-	  /* Enable the port.  */
-	  err = controller->dev->portstatus (controller, i, 1);
-	  if (err)
-	    continue;
-
-	  /* Enable the port and create a device.  */
-	  dev = grub_usb_hub_add_dev (controller, speed);
-	  if (! dev)
-	    continue;
-
-	  /* If the device is a Hub, scan it for more devices.  */
-	  if (dev->descdev.class == 0x09)
-	    grub_usb_add_hub (dev);
-	}
+      if (hub->speed[i] != GRUB_USB_SPEED_NONE)
+	attach_root_port (hub->controller, i, hub->speed[i]);
     }
 
   return GRUB_USB_ERR_NONE;
+}
+
+void
+grub_usb_poll_devices (void)
+{
+  struct grub_usb_hub *hub;
+
+  for (hub = hubs; hub; hub = hub->next)
+    {
+      int i;
+      /* Do we have to recheck number of ports?  */
+      for (i = 0; i < hub->nports; i++)
+	{
+	  grub_usb_speed_t speed;
+
+	  speed = hub->controller->dev->detect_dev (hub->controller, i);
+
+	  if (speed == hub->speed[i])
+	    continue;
+
+	  if (hub->speed[i] == GRUB_USB_SPEED_NONE
+	      && speed != GRUB_USB_SPEED_NONE)
+	    attach_root_port (hub->controller, i, speed);
+	  hub->speed[i] = speed;
+	}
+    }
 }
 
 int
