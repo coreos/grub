@@ -647,6 +647,35 @@ use more complicated instructions. @xref{DOS/Windows}, for more
 information.
 
 
+@node Chain-loading
+@subsection Chain-loading an OS
+
+Operating systems that do not support Multiboot and do not have specific
+support in GRUB (specific support is available for Linux, FreeBSD, NetBSD
+and OpenBSD) must be chain-loaded, which involves loading another boot
+loader and jumping to it in real mode.
+
+The @command{chainloader} command (@pxref{chainloader}) is used to set this
+up.  It is normally also necessary to load some GRUB modules and set the
+appropriate root device.  Putting this together, we get something like this,
+for a Windows system on the first partition of the first hard disk:
+
+@verbatim
+menuentry "Windows" {
+	insmod chain
+	insmod ntfs
+	set root=(hd0,1)
+	chainloader +1
+}
+@end verbatim
+@c FIXME: document UUIDs.
+
+On systems with multiple hard disks, an additional workaround may be
+required.  @xref{DOS/Windows}.
+
+Chain-loading is only supported on PC BIOS and EFI platforms.
+
+
 @node OS-specific notes
 @section Some caveats on OS-specific issues
 
@@ -655,6 +684,9 @@ Here, we describe some caveats on several operating systems.
 @menu
 * GNU/Hurd::
 * GNU/Linux::
+* DOS/Windows::
+* SCO UnixWare::
+* QNX::
 @end menu
 
 
@@ -694,6 +726,87 @@ option to the kernel to let it use less than actual memory size, you
 will also have to specify the same memory size to GRUB. To let GRUB know
 the size, run the command @command{uppermem} @emph{before} loading the
 kernel. @xref{uppermem}, for more information.
+
+
+@node DOS/Windows
+@subsection DOS/Windows
+
+GRUB cannot boot DOS or Windows directly, so you must chain-load them
+(@pxref{Chain-loading}). However, their boot loaders have some critical
+deficiencies, so it may not work to just chain-load them. To overcome
+the problems, GRUB provides you with two helper functions.
+
+If you have installed DOS (or Windows) on a non-first hard disk, you
+have to use the disk swapping technique, because that OS cannot boot
+from any disks but the first one. The workaround used in GRUB is the
+command @command{drivemap} (@pxref{drivemap}), like this:
+
+@example
+drivemap -s (hd0) (hd1)
+@end example
+
+This performs a @dfn{virtual} swap between your first and second hard
+drive.
+
+@strong{Caution:} This is effective only if DOS (or Windows) uses BIOS
+to access the swapped disks. If that OS uses a special driver for the
+disks, this probably won't work.
+
+Another problem arises if you installed more than one set of DOS/Windows
+onto one disk, because they could be confused if there are more than one
+primary partitions for DOS/Windows. Certainly you should avoid doing
+this, but there is a solution if you do want to do so. Use the partition
+hiding/unhiding technique.
+
+If GRUB @dfn{hides} a DOS (or Windows) partition (@pxref{parttool}), DOS (or
+Windows) will ignore the partition. If GRUB @dfn{unhides} a DOS (or Windows)
+partition, DOS (or Windows) will detect the partition. Thus, if you have
+installed DOS (or Windows) on the first and the second partition of the
+first hard disk, and you want to boot the copy on the first partition, do
+the following:
+
+@example
+@group
+parttool (hd0,1) hidden-
+parttool (hd0,2) hidden+
+set root=(hd0,1)
+chainloader +1
+parttool @verb{'${root}'} boot+
+boot
+@end group
+@end example
+
+
+@node SCO UnixWare
+@subsection SCO UnixWare
+
+It is known that the signature in the boot loader for SCO UnixWare is
+wrong, so you will have to specify the option @option{--force} to
+@command{chainloader} (@pxref{chainloader}), like this:
+
+@example
+@group
+set root=(hd1,1)
+chainloader --force +1
+parttool @verb{'${root}'} boot+
+boot
+@end group
+@end example
+
+
+@node QNX
+@subsection QNX
+
+QNX seems to use a bigger boot loader, so you need to boot it up, like
+this:
+
+@example
+@group
+set root=(hd1,2)
+chainloader +4
+boot
+@end group
+@end example
 
 
 @node Configuration
@@ -1325,6 +1438,7 @@ you forget a command, you can run the command @command{help}
 * configfile::                  Load a configuration file
 * crc::                         Calculate CRC32 checksums
 * date::                        Display or set current date and time
+* drivemap::                    Map a drive to another
 * echo::                        Display a line of text
 * export::                      Export an environment variable
 * gettext::                     Translate a string
@@ -1334,6 +1448,7 @@ you forget a command, you can run the command @command{help}
 * insmod::                      Insert a module
 * keystatus::                   Check key modifier status
 * ls::                          List devices or files
+* parttool::                    Modify partition table entries
 * play::                        Play a tune
 * reboot::                      Reboot your computer
 * set::                         Set an environment variable
@@ -1399,11 +1514,12 @@ grub> @kbd{cat /etc/fstab}
 
 @deffn Command chainloader [@option{--force}] file
 Load @var{file} as a chain-loader. Like any other file loaded by the
-filesystem code, it can use the blocklist notation to grab the first
-sector of the current partition with @samp{+1}. If you specify the
-option @option{--force}, then load @var{file} forcibly, whether it has a
-correct signature or not. This is required when you want to load a
-defective boot loader, such as SCO UnixWare 7.1 (@pxref{SCO UnixWare}).
+filesystem code, it can use the blocklist notation (@pxref{Block list
+syntax}) to grab the first sector of the current partition with @samp{+1}.
+If you specify the option @option{--force}, then load @var{file} forcibly,
+whether it has a correct signature or not. This is required when you want to
+load a defective boot loader, such as SCO UnixWare 7.1 (@pxref{SCO
+UnixWare}).
 @end deffn
 
 
@@ -1455,6 +1571,32 @@ Otherwise, take the current date and time, change any elements specified as
 arguments, and set the result as the new date and time.  For example, `date
 01-01' will set the current month and day to January 1, but leave the year,
 hour, minute, and second unchanged.
+@end deffn
+
+
+@node drivemap
+@subsection drivemap
+
+@deffn Command drivemap @option{-l}|@option{-r}|[@option{-s}] @
+ from_drive to_drive
+Without options, map the drive @var{from_drive} to the drive @var{to_drive}.
+This is necessary when you chain-load some operating systems, such as DOS,
+if such an OS resides at a non-first drive.  For convenience, any partition
+suffix on the drive is ignored, so you can safely use @verb{'${root}'} as a
+drive specification.
+
+With the @option{-s} option, perform the reverse mapping as well, swapping
+the two drives.
+
+With the @option{-l} option, list the current mappings.
+
+With the @option{-r} option, reset all mappings to the default values.
+
+For example:
+
+@example
+drivemap -s (hd0) (hd1)
+@end example
 @end deffn
 
 
@@ -1602,6 +1744,41 @@ syntax}), then list all files at the root directory of that device.
 
 If the argument is a directory given as an absolute file name (@pxref{File
 name syntax}), then list the contents of that directory.
+@end deffn
+
+
+@node parttool
+@subsection parttool
+
+@deffn Command parttool partition commands
+Make various modifications to partition table entries.
+
+Each @var{command} is either a boolean option, in which case it must be
+followed with @samp{+} or @samp{-} (with no intervening space) to enable or
+disable that option, or else it takes a value in the form
+@samp{@var{command}=@var{value}}.
+
+Currently, @command{parttool} is only useful on DOS partition tables (also
+known as Master Boot Record, or MBR).  On these partition tables, the
+following commands are available:
+
+@table @asis
+@item @samp{boot} (boolean)
+When enabled, this makes the selected partition be the active (bootable)
+partition on its disk, clearing the active flag on all other partitions.
+This command is limited to @emph{primary} partitions.
+
+@item @samp{type} (value)
+Change the type of an existing partition.  The value must be a number in the
+range 0-0xFF (prefix with @samp{0x} to enter it in hexadecimal).
+
+@item @samp{hidden} (boolean)
+When enabled, this hides the selected partition by setting the @dfn{hidden}
+bit in its partition type code; when disabled, unhides the selected
+partition by clearing this bit.  This is useful only when booting DOS or
+Wwindows and multiple primary FAT partitions exist in one disk.  See also
+@ref{DOS/Windows}.
+@end table
 @end deffn
 
 

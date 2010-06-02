@@ -1,5 +1,16 @@
 2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (Chain-loading): New section.
+	(DOS/Windows): New section, borrowed from GRUB Legacy with details
+	adjusted for GRUB 2.
+	(SCO UnixWare): Likewise.
+	(QNX): Likewise.
+	(chainloader): Add reference to `Block list syntax'.
+	(drivemap): New section.
+	(parttool): New section.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (GNU GRUB manual): Remove reference to `Invoking
 	the grub shell'.
 	(Installation): Add reference to `Making a GRUB bootable CD-ROM'.
