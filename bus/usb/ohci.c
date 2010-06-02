@@ -563,9 +563,14 @@ grub_ohci_transfer (grub_usb_controller_t dev,
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_BULKHEAD, ed_addr);
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_BULKCURR, 0);
 
+#define GRUB_OHCI_REG_CONTROL_BULK_ENABLE (1 << 5)
+#define GRUB_OHCI_REG_CONTROL_CONTROL_ENABLE (1 << 4)
+
 	/* Enable the Bulk list.  */
 	control = grub_ohci_readreg32 (o, GRUB_OHCI_REG_CONTROL);
-	control |= 1 << 5;
+	control |= GRUB_OHCI_REG_CONTROL_BULK_ENABLE;
+	control &= ~GRUB_OHCI_REG_CONTROL_CONTROL_ENABLE;
+
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROL, control);
 
 	/* Set BulkListFilled.  */
@@ -578,12 +583,15 @@ grub_ohci_transfer (grub_usb_controller_t dev,
 
     case GRUB_USB_TRANSACTION_TYPE_CONTROL:
       {
+	grub_dprintf ("ohci", "add to control list\n");
+
 	/* Set ControlList Head and Current */
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROLHEAD, ed_addr);
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROLCURR, 0);
 
 	/* Enable the Control list.  */
-	control |= 1 << 4;
+	control |= GRUB_OHCI_REG_CONTROL_CONTROL_ENABLE;
+	control &= ~GRUB_OHCI_REG_CONTROL_BULK_ENABLE;
 	grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROL, control);
 
 	/* Set ControlListFilled.  */
