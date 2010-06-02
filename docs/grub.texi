@@ -85,7 +85,6 @@ This edition documents version @value{VERSION}.
 * Interface::                   The menu and the command-line
 * Commands::                    The list of available builtin commands
 * Troubleshooting::             Error messages produced by GRUB
-* Invoking the grub shell::     How to use the grub shell
 * Invoking grub-install::       How to use the GRUB installer
 * Invoking grub-mkconfig::      Generate a GRUB configuration file
 * Obtaining and Building GRUB:: How to obtain and build GRUB
@@ -451,6 +450,7 @@ the @dfn{boot directory}.
 
 @menu
 * Installing GRUB using grub-install::
+* Making a GRUB bootable CD-ROM::
 @end menu
 
 
@@ -530,11 +530,11 @@ quite careful. If the output is wrong, it is unlikely that your
 computer will be able to boot with no problem.
 
 Note that @command{grub-install} is actually just a shell script and the
-real task is done by the grub shell @command{grub} (@pxref{Invoking the
-grub shell}). Therefore, you may run @command{grub} directly to install
-GRUB, without using @command{grub-install}. Don't do that, however,
-unless you are very familiar with the internals of GRUB. Installing a
-boot loader on a running OS may be extremely dangerous.
+real task is done by @command{grub-mkimage} and @command{grub-setup}.
+Therefore, you may run those commands directly to install GRUB, without
+using @command{grub-install}. Don't do that, however, unless you are very
+familiar with the internals of GRUB. Installing a boot loader on a running
+OS may be extremely dangerous.
 
 
 @node Making a GRUB bootable CD-ROM
@@ -1073,6 +1073,7 @@ the command-line interface.
 @menu
 * Command-line interface::      The flexible command-line interface
 * Menu interface::              The simple menu interface
+* Menu entry editor::           Editing a menu entry
 @end menu
 
 
@@ -1272,7 +1273,7 @@ Commands usable anywhere in the menu and in the command-line.
 @node serial
 @subsection serial
 
-@deffn Command serial [@option{--unit=unit}] [@option{--port=port}] [@option{--speed=speed}] [@option{--word=word}] [@option{--parity=parity}] [@option{--stop=stop}] [@option{--device=dev}]
+@deffn Command serial [@option{--unit=unit}] [@option{--port=port}] [@option{--speed=speed}] [@option{--word=word}] [@option{--parity=parity}] [@option{--stop=stop}]
 Initialize a serial device. @var{unit} is a number in the range 0-3
 specifying which serial port to use; default is 0, which corresponds to
 the port often called COM1. @var{port} is the I/O port where the UART
@@ -1281,10 +1282,7 @@ is to be found; if specified it takes precedence over @var{unit}.
 @var{stop} are the number of data bits and stop bits. Data bits must
 be in the range 5-8 and stop bits must be 1 or 2. Default is 8 data
 bits and one stop bit. @var{parity} is one of @samp{no}, @samp{odd},
-@samp{even} and defaults to @samp{no}. The option @option{--device}
-can only be used in the grub shell and is used to specify the
-tty device to be used in the host operating system (@pxref{Invoking the
-grub shell}).
+@samp{even} and defaults to @samp{no}.
 
 The serial port is not used as a communication channel unless the
 @command{terminal} command is used (@pxref{terminal}).
@@ -1654,9 +1652,9 @@ Unset the environment variable @var{envvar}.
 @node Invoking grub-install
 @chapter Invoking grub-install
 
-The program @command{grub-install} installs GRUB on your drive using the
-grub shell (@pxref{Invoking the grub shell}). You must specify the
-device name on which you want to install GRUB, like this:
+The program @command{grub-install} installs GRUB on your drive using
+@command{grub-mkimage} and (on some platforms) @command{grub-setup}.  You
+must specify the device name on which you want to install GRUB, like this:
 
 @example
 grub-install @var{install_device}

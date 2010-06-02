@@ -1,5 +1,16 @@
 2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (GNU GRUB manual): Remove reference to `Invoking
+	the grub shell'.
+	(Installation): Add reference to `Making a GRUB bootable CD-ROM'.
+	(Installing GRUB using grub-install): Remove reference to the grub
+	shell; mention `grub-mkimage' and `grub-setup' instead.
+	(Invoking grub-install): Likewise.
+	(Interface): Add reference to `Menu entry editor'.
+	(serial): Remove `--device' option.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Configuration): New section, documenting
 	configuration file generation using grub-mkconfig.  I've left a slot
 	for documenting the full shell scripting format but have not yet
