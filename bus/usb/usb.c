@@ -105,10 +105,7 @@ grub_usb_clear_halt (grub_usb_device_t dev, int endpoint)
 grub_usb_err_t
 grub_usb_set_configuration (grub_usb_device_t dev, int configuration)
 {
-  int i;
-
-  for (i = 0; i < 256; i++)
-    dev->toggle[i] = 0;
+  grub_memset (dev->toggle, 0, sizeof (dev->toggle));
 
   return grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
 				     | GRUB_USB_REQTYPE_STANDARD
