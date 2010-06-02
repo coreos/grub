@@ -460,7 +460,7 @@ grub_scsi_open (const char *name, grub_disk_t disk)
       grub_dprintf ("scsi", "blocks=%u, blocksize=%u\n",
 		    scsi->size, scsi->blocksize);
       grub_dprintf ("scsi", "Disk total 512 sectors = %llu\n",
-		    disk->total_sectors);
+		    (unsigned long long) disk->total_sectors);
 
       return GRUB_ERR_NONE;
     }
