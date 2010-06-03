@@ -131,11 +131,12 @@ def shared_nodist_sources(prefix=""): return collect_values("nodist_shared", pre
 
 def default_sources(prefix=""):        return collect_values("source", prefix)
 def default_nodist_sources(prefix=""): return collect_values("nodist", prefix)
-def default_ldadd():     return collect_values("ldadd")
-def default_cflags():    return collect_values("cflags")
-def default_ldflags():   return collect_values("ldflags")
-def default_cppflags():  return collect_values("cppflags")
-def default_ccasflags(): return collect_values("ccasflags")
+def default_ldadd():        return collect_values("ldadd")
+def default_cflags():       return collect_values("cflags")
+def default_ldflags():      return collect_values("ldflags")
+def default_cppflags():     return collect_values("cppflags")
+def default_ccasflags():    return collect_values("ccasflags")
+def default_extra_dist(): return collect_values("extra_dist")
 
 def group_sources(group, prefix=""):        return collect_values(group, prefix) if group else default_sources(prefix)
 def group_nodist_sources(group, prefix=""): return collect_values(group + "_nodist", prefix) if group else default_nodist_sources(prefix)
@@ -143,12 +144,13 @@ def group_nodist_sources(group, prefix=""): return collect_values(group + "_nodi
 def platform_sources(platform, prefix=""):        return each_group(platform, "", lambda g: collect_values(g, prefix) if g else default_sources(prefix))
 def platform_nodist_sources(platform, prefix=""): return each_group(platform, "_nodist", lambda g: collect_values(g + "_nodist", prefix) if g else default_nodist_sources(prefix))
 
-def platform_ldadd(platform):     return each_group(platform, "_ldadd", lambda g: collect_values(g + "_ldadd") if g else default_ldadd())
-def platform_cflags(platform):    return each_group(platform, "_cflags", lambda g: collect_values(g + "_cflags") if g else default_cflags())
-def platform_ldflags(platform):   return each_group(platform, "_ldflags", lambda g: collect_values(g + "_ldflags") if g else default_ldflags())
-def platform_cppflags(platform):  return each_group(platform, "_cppflags", lambda g: collect_values(g + "_cppflags") if g else default_cppflags())
-def platform_ccasflags(platform): return each_group(platform, "_ccasflags", lambda g: collect_values(g + "_ccasflags") if g else default_ccasflags())
-def platform_format(platform):    return each_group(platform, "_format", lambda g: collect_values(g + "_format") if g else "binary")
+def platform_ldadd(platform):        return each_group(platform, "_ldadd", lambda g: collect_values(g + "_ldadd") if g else default_ldadd())
+def platform_cflags(platform):       return each_group(platform, "_cflags", lambda g: collect_values(g + "_cflags") if g else default_cflags())
+def platform_ldflags(platform):      return each_group(platform, "_ldflags", lambda g: collect_values(g + "_ldflags") if g else default_ldflags())
+def platform_cppflags(platform):     return each_group(platform, "_cppflags", lambda g: collect_values(g + "_cppflags") if g else default_cppflags())
+def platform_ccasflags(platform):    return each_group(platform, "_ccasflags", lambda g: collect_values(g + "_ccasflags") if g else default_ccasflags())
+def platform_extra_dist(platform): return each_group(platform, "_extra_dist", lambda g: collect_values(g + "_extra_dist") if g else default_extra_dist())
+def platform_format(platform):       return each_group(platform, "_format", lambda g: collect_values(g + "_format") if g else "binary")
 
 def module(platform):
     r  = gvar_add("noinst_PROGRAMS", "[+ name +].module")
@@ -164,6 +166,7 @@ def module(platform):
     r += var_set(canonical_module() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_MODULE) " + platform_cppflags(platform))
     r += var_set(canonical_module() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_MODULE) " + platform_ccasflags(platform))
 
+    r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + canonical_module() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + canonical_module() + "_SOURCES)")
 
@@ -275,6 +278,7 @@ def kernel(platform):
     r += var_set(canonical_kernel() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_KERNEL) " + platform_cppflags(platform))
     r += var_set(canonical_kernel() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_KERNEL) " + platform_ccasflags(platform))
 
+    r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + canonical_kernel() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + canonical_kernel() + "_SOURCES)")
 
@@ -293,10 +297,12 @@ def image(platform):
     r += var_set(canonical_image() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_IMAGE) " + platform_cppflags(platform))
     r += var_set(canonical_image() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_IMAGE) " + platform_ccasflags(platform))
 
+    r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + canonical_image() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + canonical_image() + "_SOURCES)")
 
     r += gvar_add("platform_DATA", "[+ name +].img")
+    r += gvar_add("CLEANFILES", "[+ name +].img")
     r += rule("[+ name +].img", "[+ name +].image", """
 if test x$(USE_APPLE_CC_FIXES) = xyes; then \
   $(MACHO2IMG) $< $@; \
@@ -316,6 +322,7 @@ def library(platform):
     r += var_set(canonical_name() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_LIBRARY) " + platform_cppflags(platform))
     r += var_set(canonical_name() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_LIBRARY) " + platform_ccasflags(platform))
 
+    r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + canonical_name() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + canonical_name() + "_SOURCES)")
 
@@ -352,6 +359,7 @@ def program(platform, test=False):
     r += var_set(canonical_name() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_PROGRAM) " + platform_cppflags(platform))
     r += var_set(canonical_name() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_PROGRAM) " + platform_ccasflags(platform))
 
+    r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + canonical_name() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + canonical_name() + "_SOURCES)")
 
@@ -366,7 +374,10 @@ def test_program(platform):
     return program(platform, True)
 
 def data(platform):
-    return gvar_add(installdir() + "_DATA", platform_sources(platform))
+    r  = gvar_add("EXTRA_DIST", platform_sources(platform))
+    r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
+    r += gvar_add(installdir() + "_DATA", platform_sources(platform))
+    return r
 
 def script(platform, test=False):
     if test:

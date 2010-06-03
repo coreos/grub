@@ -22,10 +22,7 @@ BEGIN {
 {
   module = $2
 
-  # skip if empty
-  if ($1 == "" || $2 == "")
-      ;
-  else if ($1 in symtab) {
+  if ($1 in symtab) {
     modtab[module] = modtab[module] " " symtab[$1];
   }
   else if ($1 != "__gnu_local_gp") {

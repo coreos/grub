@@ -19,12 +19,11 @@
 AC_ARG_PROGRAM
 
 # Optimization flag.  Allow user to override.
-if test "x$CFLAGS" = x; then
-  CFLAGS="$CFLAGS -Os"
+if test "x$TARGET_CFLAGS" = x; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -Os"
 fi
 
 # Default HOST_CPPFLAGS
-CPPFLAGS=''
 HOST_CPPFLAGS="$HOST_CPPFLAGS -Wall -W"
 HOST_CPPFLAGS="$HOST_CPPFLAGS -I\$(top_srcdir)/grub-core/include"
 HOST_CPPFLAGS="$HOST_CPPFLAGS -I\$(top_builddir)/include"
@@ -43,11 +42,13 @@ case "$target_cpu" in
   sparc)	target_cpu=sparc64 ;;
   mipsel|mips64el)
                 target_cpu=mips;
-		cpu_CPPFLAGS="-DGRUB_CPU_MIPSEL=1";
+		HOST_CPPFLAGS="$HOST_CPPFLAGS -DGRUB_CPU_MIPSEL=1";
+		TARGET_CPPFLAGS="$TARGET_CPPFLAGS -DGRUB_CPU_MIPSEL=1";
 		;;
   mips|mips64)
                 target_cpu=mips;
-		cpu_CPPFLAGS="-DGRUB_CPU_MIPS=1";
+		HOST_CPPFLAGS="$HOST_CPPFLAGS -DGRUB_CPU_MIPS=1";
+		TARGET_CPPFLAGS="$TARGET_CPPFLAGS -DGRUB_CPU_MIPS=1";
 		;;
 esac
 
@@ -122,28 +123,24 @@ case "$host_os" in
 esac
 
 case "$platform" in
-  coreboot)	machine_CPPFLAGS="-DGRUB_MACHINE_COREBOOT=1" ;;
-  multiboot)	machine_CPPFLAGS="-DGRUB_MACHINE_MULTIBOOT=1" ;;
-  efi)		machine_CPPFLAGS="-DGRUB_MACHINE_EFI=1" ;;
-  ieee1275)	machine_CPPFLAGS="-DGRUB_MACHINE_IEEE1275=1" ;;
-  qemu)		machine_CPPFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
-  pc)		machine_CPPFLAGS="-DGRUB_MACHINE_PCBIOS=1" ;;
-  emu)		machine_CPPFLAGS="-DGRUB_MACHINE_EMU=1" ;;
-  yeeloong)	machine_CPPFLAGS="-DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
-  qemu-mips)	machine_CPPFLAGS="-DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  coreboot)	machine_CFLAGS="-DGRUB_MACHINE_COREBOOT=1" ;;
+  multiboot)	machine_CFLAGS="-DGRUB_MACHINE_MULTIBOOT=1" ;;
+  efi)		machine_CFLAGS="-DGRUB_MACHINE_EFI=1" ;;
+  ieee1275)	machine_CFLAGS="-DGRUB_MACHINE_IEEE1275=1" ;;
+  qemu)		machine_CFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
+  pc)		machine_CFLAGS="-DGRUB_MACHINE_PCBIOS=1" ;;
+  emu)		machine_CFLAGS="-DGRUB_MACHINE_EMU=1" ;;
+  yeeloong)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  qemu-mips)	machine_CFLAGS="-DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
 esac
 case "$target_cpu" in
-  i386)         cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_I386";;
-  x86_64)       cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_X86_64";;
-  powerpc)      cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_POWERPC";;
-  mips)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS=1" ;; # cpu_CPPFLAGS handled above
-  sparc64)      cpu_CPPFLAGS="$cpu_CPPFLAGS -DGRUB_CPU_SPARC64";
-                machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
+  mips)      	machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_MIPS=1" ;;
+  sparc64)      machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
-machine_CPPFLAGS="$machine_CPPFLAGS -DMACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
+machine_CFLAGS="$machine_CFLAGS -DMACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
 
-HOST_CPPFLAGS="$HOST_CPPFLAGS $cpu_CPPFLAGS $machine_CPPFLAGS"
-TARGET_CPPFLAGS="$TARGET_CPPFLAGS $cpu_CPPFLAGS $machine_CPPFLAGS"
+HOST_CPPFLAGS="$HOST_CPPFLAGS $machine_CFLAGS"
+TARGET_CPPFLAGS="$TARGET_CPPFLAGS $machine_CFLAGS"
 
 AC_SUBST(host_cpu)
 AC_SUBST(host_os)
@@ -464,14 +461,24 @@ if test x"$enable_werror" != xno ; then
   TARGET_CFLAGS="$TARGET_CFLAGS -Werror"
 fi
 
-AC_SUBST(TARGET_MODULE_FORMAT)
+TARGET_CPP="$TARGET_CC -E"
+TARGET_CCAS=$TARGET_CC
+
 AC_SUBST(OBJCONV)
+AC_SUBST(TARGET_CPP)
+AC_SUBST(TARGET_CCAS)
+AC_SUBST(TARGET_OBJ2ELF)
 AC_SUBST(TARGET_APPLE_CC)
+AC_SUBST(TARGET_MODULE_FORMAT)
 
 AC_SUBST(TARGET_CFLAGS)
 AC_SUBST(TARGET_LDFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)
 AC_SUBST(TARGET_CCASFLAGS)
+
+AC_SUBST(TARGET_IMG_LDSCRIPT)
+AC_SUBST(TARGET_IMG_LDFLAGS)
+AC_SUBST(TARGET_IMG_CFLAGS)
 
 AC_SUBST(HOST_CFLAGS)
 AC_SUBST(HOST_LDFLAGS)

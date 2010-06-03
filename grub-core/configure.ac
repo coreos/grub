@@ -44,28 +44,12 @@ AC_CONFIG_HEADER([config.h])
 
 m4_include([configure.common])
 
-TARGET_CPP="$TARGET_CC -E"
-TARGET_CCAS=$TARGET_CC
-
 CC=$TARGET_CC
 CPP=$TARGET_CC
 CCAS=$TARGET_CC
 
-AC_SUBST(TARGET_CC)
-AC_SUBST(TARGET_CPP)
-AC_SUBST(TARGET_CCAS)
-AC_SUBST(TARGET_IMG_LDSCRIPT)
-AC_SUBST(TARGET_IMG_LDFLAGS)
-AC_SUBST(TARGET_IMG_CFLAGS)
-AC_SUBST(TARGET_OBJ2ELF)
-AC_SUBST(TARGET_MODULE_FORMAT)
-AC_SUBST(OBJCONV)
-AC_SUBST(TARGET_APPLE_CC)
-AC_SUBST(ASFLAGS)
-AC_SUBST(TARGET_CFLAGS)
-AC_SUBST(TARGET_ASFLAGS)
-AC_SUBST(TARGET_LDFLAGS)
-AC_SUBST(TARGET_CPPFLAGS)
+grub_coredir='.'
+AC_SUBST(grub_coredir)
 
 # Output files.
 grub_CHECK_LINK_DIR
@@ -77,10 +61,10 @@ if test x"$link_dir" = xyes ; then
 else
   mkdir -p include/grub 2>/dev/null
   rm -rf include/grub/cpu
-  cp -rp $srcdir/include/grub/$target_cpu include/grub/cpu 2>/dev/null
+  cp -rp $srcdir/grub-core/include/grub/$target_cpu include/grub/cpu 2>/dev/null
   if test "$platform" != emu ; then
     rm -rf include/grub/machine
-    cp -rp $srcdir/include/grub/$target_cpu/$platform include/grub/machine 2>/dev/null
+    cp -rp $srcdir/grub-core/include/grub/$target_cpu/$platform include/grub/machine 2>/dev/null
   fi
 fi
 

@@ -348,6 +348,19 @@ module = {
 library = {
   name = libgnulib.a;
   source = gnulib/regex.c;
+
+  extra_dist = gnulib/progname.h;
+  extra_dist = gnulib/alloca.h;
+  extra_dist = gnulib/error.h;
+  extra_dist = gnulib/fnmatch.h;
+  extra_dist = gnulib/getopt.h;
+  extra_dist = gnulib/getopt_int.h;
+  extra_dist = gnulib/gettext.h;
+  extra_dist = gnulib/regcomp.c;
+  extra_dist = gnulib/regexec.c;
+  extra_dist = gnulib/fnmatch_loop.c;
+  extra_dist = gnulib/regex_internal.c;
+
   cflags = '$(CFLAGS_POSIX) $(CFLAGS_GNULIB)';
   cppflags = '$(CPPFLAGS_POSIX) $(CPPFLAGS_GNULIB)';
   common;
@@ -823,6 +836,11 @@ module = {
   i386_pc = efiemu/prepare64.c;
   i386_pc = efiemu/pnvram.c;
   i386_pc = efiemu/i386/coredetect.c;
+
+  extra_dist = efiemu/prepare.c;
+  extra_dist = efiemu/loadcore.c;
+  extra_dist = efiemu/runtime/efiemu.S;
+  extra_dist = efiemu/runtime/efiemu.c;
 };
 
 module = {
@@ -1216,6 +1234,7 @@ module = {
   x86 = lib/i386/relocator.c;
   x86 = lib/i386/relocator_asm.S;
   x86 = lib/i386/relocator_backward.S;
+  extra_dist = lib/relocator.c;
 };
 
 module = {
@@ -1280,6 +1299,7 @@ module = {
   name = multiboot;
   source = loader/multiboot.c;
   source = loader/i386/multiboot_mbi.c;
+  extra_dist = loader/multiboot_elfxx.c;
   x86;
 };
 
@@ -1312,6 +1332,8 @@ module = {
   i386_pc = loader/macho64.c;
   i386_pc = loader/macho.c;
   i386_pc = loader/xnu.c;
+
+  extra_dist = loader/machoXX.c;
 };
 
 module = {
@@ -1445,6 +1467,10 @@ module = {
   nodist = grub_script.yy.c;
   nodist = grub_script.tab.h;
   nodist = grub_script.yy.h;
+
+  extra_dist = script/yylex.l;
+  extra_dist = script/parser.y;
+
   cflags = '$(CFLAGS_POSIX) -Wno-error';
   cppflags = '$(CPPFLAGS_POSIX)';
 };

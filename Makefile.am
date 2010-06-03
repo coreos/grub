@@ -1,19 +1,6 @@
 AUTOMAKE_OPTIONS = subdir-objects
 DEPDIR = .deps-util
-
-EXTRA_DIST = autogen.sh gentpl.py Makefile.tpl modules.def		\
-									\
-	geninit.sh							\
-									\
-	gnulib/progname.h gnulib/fnmatch_loop.c gnulib/alloca.h		\
-	gnulib/error.h gnulib/fnmatch.h gnulib/getopt.h			\
-	gnulib/getopt_int.h gnulib/gettext.h gnulib/progname.h		\
-									\
-	util/mkisofs/mkisofs.h util/mkisofs/iso9660.h			\
-	util/mkisofs/include/prototyp.h util/mkisofs/defaults.h		\
-	util/mkisofs/match.h util/mkisofs/exclude.h			\
-	util/mkisofs/msdos_partition.h util/mkisofs/include/fctldefs.h	\
-	util/mkisofs/include/mconfig.h util/mkisofs/include/statdefs.h
+EXTRA_DIST = autogen.sh gentpl.py Makefile.tpl modules.def geninit.sh
 
 SUBDIRS = . grub-core po docs
 
@@ -46,15 +33,17 @@ grub_script.yy.c grub_script.yy.h: $(top_srcdir)/grub-core/script/yylex.l
 CLEANFILES += grub_script.yy.c grub_script.yy.h
 
 # For libutil.a
-libutil_a_init.lst: grub_script.tab.h grub_script.yy.h $(libutil_a_SOURCES)
-	rm -f $@
+libutil.pp: grub_script.tab.h grub_script.yy.h $(libutil_a_SOURCES)
 	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libutil_a_CPPFLAGS) $(CPPFLAGS) \
-	  -D'GRUB_MOD_INIT(x)=@MARKER@x@' $^ \
-	  | grep '@MARKER@' | sed 's/@MARKER@\(.*\)@/\1/g' | sort -u > $@ || (rm -f $@; exit 1)
+	  -D'GRUB_MOD_INIT(x)=@MARKER@x@' $^ > $@ || (rm -f $@; exit 1)
+CLEANFILES += libutil.pp
+
+libutil_a_init.lst: libutil.pp
+	cat $< | grep '@MARKER@' | sed 's/@MARKER@\(.*\)@/\1/g' | sort -u > $@ || (rm -f $@; exit 1)
 CLEANFILES += libutil_a_init.lst
 
 libutil_a_init.c: libutil_a_init.lst $(top_srcdir)/geninit.sh
-	rm -f $@; sh $(top_srcdir)/geninit.sh `cat $<` > $@ || (rm -f $@; exit 1)
+	sh $(top_srcdir)/geninit.sh `cat $<` > $@ || (rm -f $@; exit 1)
 CLEANFILES += libutil_a_init.c
 
 if COND_GRUB_MKFONT

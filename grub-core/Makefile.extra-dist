@@ -27,24 +27,14 @@ EXTRA_DIST += genhandlerlist.sh
 EXTRA_DIST += genpartmaplist.sh
 EXTRA_DIST += genparttoollist.sh
 EXTRA_DIST += genterminallist.sh
+
+EXTRA_DIST += lib/libgcrypt_wrap/cipher_wrap.h
 EXTRA_DIST += lib/libgcrypt-grub/cipher/crypto.lst
-
-EXTRA_DIST += script/yylex.l
-EXTRA_DIST += script/parser.y
-
-EXTRA_DIST += lib/relocator.c
-
-EXTRA_DIST += efiemu/loadcore.c
-EXTRA_DIST += efiemu/prepare.c
-
-EXTRA_DIST += loader/machoXX.c
-
 
 EXTRA_DIST += kern/i386/loader.S
 EXTRA_DIST += kern/i386/realmode.S
 EXTRA_DIST += loader/i386/bsdXX.c
 EXTRA_DIST += loader/i386/bsd_pagetable.c
-EXTRA_DIST += loader/i386/multiboot_elfxx.c
 EXTRA_DIST += commands/search.c
 
 EXTRA_DIST += kern/i386/pc/lzma_decode.S

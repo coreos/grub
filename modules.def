@@ -109,6 +109,7 @@ program = {
 
   source = util/grub-mkimage.c;
   source = util/resolve.c;
+  extra_dist = util/grub-mkimagexx.c;
 
   ldadd = libutil.a;
 

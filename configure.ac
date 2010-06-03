@@ -44,23 +44,10 @@ AC_CONFIG_HEADER([config.h])
 
 m4_include([configure.common])
 
-# Output files.
-grub_CHECK_LINK_DIR
-if test x"$link_dir" = xyes ; then
-  AC_CONFIG_LINKS([include/grub/cpu:grub-core/include/grub/$target_cpu])
-  if test "$platform" != emu ; then
-    AC_CONFIG_LINKS([include/grub/machine:grub-core/include/grub/$target_cpu/$platform])
-  fi
-else
-  mkdir -p include/grub 2>/dev/null
-  rm -rf include/grub/cpu
-  cp -rp $srcdir/grub-core/include/grub/$target_cpu include/grub/cpu 2>/dev/null
-  if test "$platform" != emu ; then
-    rm -rf include/grub/machine
-    cp -rp $srcdir/grub-core/include/grub/$target_cpu/$platform include/grub/machine 2>/dev/null
-  fi
-fi
+grub_coredir='grub-core'
+AC_SUBST(grub_coredir)
 
+# Output files.
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([po/Makefile])
 AC_CONFIG_FILES([docs/Makefile])
