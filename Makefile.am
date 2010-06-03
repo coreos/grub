@@ -17,8 +17,8 @@ CCASFLAGS_LIBRARY = $(CCASFLAGS_PROGRAM)
 
 AM_CFLAGS =
 AM_LDFLAGS =
-AM_CPPFLAGS = $(CPPFLAGS_GRUB) -DGRUB_FILE=\"$(subst $(top_srcdir)/,,$<)\"
-AM_CCASFLAGS = -DASM_FILE=1
+AM_CPPFLAGS = $(CPPFLAGS_GRUB)
+AM_CCASFLAGS = $(CCASFLAGS_GRUB)
 
 include $(srcdir)/modules.am
 
@@ -73,4 +73,5 @@ ascii.h: ascii.bitmaps grub-bin2h
 	cp $@ $(top_builddir)/grub-core/include
 CLEANFILES += ascii.h $(top_builddir)/grub-core/include/ascii.h
 
+# Install config.h into platformdir
 platform_HEADERS = config.h

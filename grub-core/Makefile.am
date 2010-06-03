@@ -1,8 +1,12 @@
 AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS = po
 DEPDIR = .deps-core
+EXTRA_DIST = gentpl.py modules.def Makefile.tpl genmoddep.awk
+EXTRA_DIST += genmodsrc.sh gensymlist.sh genemuinit.sh genemuinitheader.sh
+EXTRA_DIST += genfslist.sh gencmdlist.sh genvideolist.sh genhandlerlist.sh
+EXTRA_DIST += genpartmaplist.sh genparttoollist.sh genterminallist.sh
+EXTRA_DIST += $(shell find $(top_srcdir) -name '*.h')
 
-include $(top_srcdir)/Makefile.extra-dist
 include $(top_srcdir)/Makefile.vars
 
 LDADD_KERNEL = -lgcc
@@ -30,10 +34,10 @@ LDFLAGS_PROGRAM = $(TARGET_LDFLAGS) $(LDFLAGS_CPU) $(LDFLAGS_PLATFORM)
 CPPFLAGS_PROGRAM = $(TARGET_CPPFLAGS) $(CPPFLAGS_CPU) $(CPPFLAGS_PLATFORM)
 CCASFLAGS_PROGRAM = $(TARGET_CCASFLAGS) $(CCASFLAGS_CPU) $(CCASFLAGS_PLATFORM)
 
-AM_CFLAGS = 
+AM_CFLAGS =
 AM_LDFLAGS =
-AM_CPPFLAGS = $(CPPFLAGS_GRUB) -DGRUB_FILE=\"$(subst $(top_srcdir)/,,$<)\"
-AM_CCASFLAGS = -DASM_FILE=1
+AM_CPPFLAGS = $(CPPFLAGS_GRUB)
+AM_CCASFLAGS = $(CCASFLAGS_GRUB)
 
 # gentrigtables
 gentrigtables: $(top_srcdir)/gentrigtables.c
