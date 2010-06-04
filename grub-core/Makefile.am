@@ -1,4 +1,5 @@
 AUTOMAKE_OPTIONS = subdir-objects
+
 SUBDIRS = po
 DEPDIR = .deps-core
 EXTRA_DIST = gentpl.py modules.def Makefile.tpl genmoddep.awk

@@ -1,13 +1,13 @@
 AutoGen definitions Makefile.tpl;
 
 library = {
-  name = libutil.a;
+  name = libgrub.a;
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
 
   nodist = grub_script.tab.c;
   nodist = grub_script.yy.c;
-  nodist = libutil_a_init.c;
+  nodist = libgrub_a_init.c;
 
   source = grub-core/gnulib/error.c;
   source = grub-core/gnulib/fnmatch.c;
@@ -98,7 +98,7 @@ library = {
 program = {
   name = grub-bin2h;
   source = util/bin2h.c;
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
   mansection = 1;
   common;
 };
@@ -111,7 +111,7 @@ program = {
   source = util/resolve.c;
   extra_dist = util/grub-mkimagexx.c;
 
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
 
   cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibroot)\"';
   common;
@@ -123,7 +123,7 @@ program = {
 
   source = util/grub-mkrelpath.c;
 
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
   common;
 };
 
@@ -133,7 +133,7 @@ program = {
 
   source = util/grub-script-check.c;
 
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
   common;
 };
 
@@ -143,7 +143,7 @@ program = {
 
   source = util/grub-editenv.c;
 
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
   common;
 };
 
@@ -153,7 +153,7 @@ program = {
 
   source = util/grub-mkpasswd-pbkdf2.c;
 
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
   common;
@@ -170,7 +170,7 @@ program = {
   mansection = 1;
   source = util/grub-pe2elf.c;
 
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
 };
 
 program = {
@@ -178,7 +178,7 @@ program = {
   mansection = 1;
   source = util/grub-fstest.c;
 
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
   enable = COND_GRUB_FSTEST;
   common;
 };
@@ -188,7 +188,7 @@ program = {
   mansection = 1;
   source = util/grub-mkfont.c;
 
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
   cflags = '$(freetype_cflags)';
   ldflags = '$(freetype_libs)';
   common;
@@ -208,7 +208,7 @@ program = {
   sparc64_ieee1275 = util/ieee1275/ofpath.c;
   sparc64_ieee1275 = util/ieee1275/devicemap.c;
 
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
   common;
 };
 
@@ -218,7 +218,7 @@ program = {
   mansection = 8;
   source = util/grub-probe.c;
 
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
   common;
 };
 
@@ -235,7 +235,7 @@ program = {
   sparc64_ieee1275 = util/raid.c;
   sparc64_ieee1275 = util/lvm.c;
 
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
 };
 
 program = {
@@ -244,7 +244,7 @@ program = {
   source = util/ieee1275/grub-ofpathname.c;
   source = util/ieee1275/ofpath.c;
 
-  ldadd = libutil.a;
+  ldadd = libgrub.a;
   sparc64_ieee1275;
 };
 
