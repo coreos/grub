@@ -6,6 +6,7 @@ EXTRA_DIST = gentpl.py modules.def Makefile.tpl genmoddep.awk
 EXTRA_DIST += genmodsrc.sh gensymlist.sh genemuinit.sh genemuinitheader.sh
 EXTRA_DIST += genfslist.sh gencmdlist.sh genvideolist.sh genhandlerlist.sh
 EXTRA_DIST += genpartmaplist.sh genparttoollist.sh genterminallist.sh
+EXTRA_DIST += conf/i386-pc-cygwin-img-ld.sc
 EXTRA_DIST += $(shell find $(top_srcdir) -name '*.h')
 
 include $(top_srcdir)/Makefile.vars

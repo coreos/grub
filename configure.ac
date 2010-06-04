@@ -42,10 +42,10 @@ AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR([grub-core/include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
 
-m4_include([configure.common])
-
 grub_coredir='grub-core'
 AC_SUBST(grub_coredir)
+
+m4_include([configure.common])
 
 # Output files.
 AC_CONFIG_FILES([Makefile])

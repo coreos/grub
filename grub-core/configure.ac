@@ -42,14 +42,14 @@ AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
 
+grub_coredir='.'
+AC_SUBST(grub_coredir)
+
 m4_include([configure.common])
 
 CC=$TARGET_CC
 CPP=$TARGET_CC
 CCAS=$TARGET_CC
-
-grub_coredir='.'
-AC_SUBST(grub_coredir)
 
 # Output files.
 grub_CHECK_LINK_DIR
