@@ -1,3 +1,10 @@
+2010-06-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkimage.c: Make target-related error messages slightly
+	more helpful; -O talks about "format".  Explicitly point to the use
+	of -O if no target is specified.
+	Reported by: Didier Raboud (Debian bug #584415).
+
 2010-06-03  Colin Watson  <cjwatson@ubuntu.com>
 
 	* INSTALL: Document several build requirements for optional features
