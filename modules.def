@@ -99,6 +99,7 @@ program = {
   name = grub-bin2h;
   source = util/bin2h.c;
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL)';
   mansection = 1;
   common;
 };
@@ -112,6 +113,7 @@ program = {
   extra_dist = util/grub-mkimagexx.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL)';
 
   cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibroot)\"';
   common;
@@ -124,6 +126,7 @@ program = {
   source = util/grub-mkrelpath.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL)';
   common;
 };
 
@@ -134,6 +137,7 @@ program = {
   source = util/grub-script-check.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL)';
   common;
 };
 
@@ -144,6 +148,7 @@ program = {
   source = util/grub-editenv.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL)';
   common;
 };
 
@@ -154,6 +159,7 @@ program = {
   source = util/grub-mkpasswd-pbkdf2.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL)';
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
   common;
@@ -179,6 +185,7 @@ program = {
   source = util/grub-fstest.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL)';
   enable = COND_GRUB_FSTEST;
   common;
 };
@@ -188,6 +195,7 @@ program = {
   mansection = 1;
   source = util/grub-mkfont.c;
 
+  ldadd = '$(LIBINTL)';
   ldadd = libgrub.a;
   cflags = '$(freetype_cflags)';
   ldflags = '$(freetype_libs)';
@@ -209,6 +217,7 @@ program = {
   sparc64_ieee1275 = util/ieee1275/devicemap.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL)';
   ldadd = '$(LIBUTIL)';
   common;
 };
@@ -220,6 +229,7 @@ program = {
   source = util/grub-probe.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL)';
   ldadd = '$(LIBUTIL)';
   common;
 };
@@ -238,6 +248,7 @@ program = {
   sparc64_ieee1275 = util/lvm.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL)';
   ldadd = '$(LIBUTIL)';
 };
 
