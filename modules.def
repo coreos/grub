@@ -209,6 +209,7 @@ program = {
   sparc64_ieee1275 = util/ieee1275/devicemap.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBUTIL)';
   common;
 };
 
@@ -219,6 +220,7 @@ program = {
   source = util/grub-probe.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBUTIL)';
   common;
 };
 
@@ -236,6 +238,7 @@ program = {
   sparc64_ieee1275 = util/lvm.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBUTIL)';
 };
 
 program = {
