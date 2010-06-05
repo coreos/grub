@@ -62,7 +62,7 @@ EOF
 fi
 cat <<EOF
 if [ \${prev_saved_entry} ]; then
-  set saved_entry=\${prev_saved_entry}
+  set saved_entry="\${prev_saved_entry}"
   save_env saved_entry
   set prev_saved_entry=
   save_env prev_saved_entry
@@ -71,7 +71,7 @@ fi
 
 function savedefault {
   if [ -z \${boot_once} ]; then
-    saved_entry=\${chosen}
+    saved_entry="\${chosen}"
     save_env saved_entry
   fi
 }

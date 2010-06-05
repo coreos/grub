@@ -1,3 +1,8 @@
+2010-06-05  Colin Watson  <cjwatson@debian.org>
+
+	* util/grub.d/00_header.in: Quote values assigned to `saved_entry',
+	in case they contain spaces.
+
 2010-06-04  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Prepend
