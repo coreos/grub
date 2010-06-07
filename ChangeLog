@@ -1,5 +1,15 @@
 2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
 
+	* kern/emu/misc.c (device_mapper_null_log): New function.
+	(grub_device_mapper_supported): New function.
+	* include/grub/emu/misc.h (grub_device_mapper_supported): Add
+	prototype.
+	* kern/emu/hostdisk.c (find_partition_start): Check whether
+	device-mapper is supported before trying to use it.
+	* util/deviceiter.c (grub_util_iterate_devices): Likewise.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Naming convention): Use GRUB 2 syntax.
 	(File name syntax): Likewise.
 	(help): --all is no longer supported in GRUB 2.  Be more precise

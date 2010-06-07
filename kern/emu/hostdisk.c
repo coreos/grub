@@ -342,7 +342,7 @@ find_partition_start (const char *dev)
 # endif /* !defined(__NetBSD__) */
 
 # ifdef HAVE_DEVICE_MAPPER
-  if (device_is_mapped (dev)) {
+  if (grub_device_mapper_supported () && device_is_mapped (dev)) {
     struct dm_task *task = NULL;
     grub_uint64_t start, length;
     char *target_type, *params, *space;
