@@ -1,5 +1,9 @@
 2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
 
+	* fs/i386/pc/pxe.c (grub_pxe_open): Fix parsing of gateway_ip.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Network): New section.
 	(Device syntax): The network device is called `(pxe)' in GRUB 2, not
 	`(nd)' as in GRUB Legacy.
