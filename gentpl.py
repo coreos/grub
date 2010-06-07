@@ -154,7 +154,7 @@ def platform_format(platform):       return each_group(platform, "_format", lamb
 
 def module(platform):
     r  = gvar_add("noinst_PROGRAMS", "[+ name +].module")
-    r += gvar_add("MODULE_FILES", "[+ name +].module")
+    r += gvar_add("MODULE_FILES", "[+ name +].module$(EXEEXT)")
 
     r += var_set(canonical_module() + "_SOURCES", platform_sources(platform) + "## platform sources")
     r += var_add(canonical_module() + "_SOURCES", shared_sources() + "## shared sources")
@@ -192,23 +192,23 @@ def module(platform):
 [+ name +].pp: $(""" + canonical_module() + """_SOURCES) $(nodist_""" + canonical_module() + """_SOURCES)
 	$(TARGET_CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + canonical_module() + """_CPPFLAGS) $(CPPFLAGS) $^ > $@ || (rm -f $@; exit 1)
 
-def-[+ name +].lst: [+ name +].module
+def-[+ name +].lst: [+ name +].module$(EXEEXT)
 	if test x$(USE_APPLE_CC_FIXES) = xyes; then \
 	  $(NM) -g -P -p $< | grep -E '^[a-zA-Z0-9_]* [TDS]' | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@; \
 	else \
 	  $(NM) -g --defined-only -P -p $< | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@; \
 	fi
 
-und-[+ name +].lst: [+ name +].module
+und-[+ name +].lst: [+ name +].module$(EXEEXT)
 	$(NM) -u -P -p $< | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@
 
-mod-[+ name +].c: [+ name +].module $(top_builddir)/moddep.lst $(top_srcdir)/genmodsrc.sh
+mod-[+ name +].c: [+ name +].module$(EXEEXT) $(top_builddir)/moddep.lst $(top_srcdir)/genmodsrc.sh
 	sh $(top_srcdir)/genmodsrc.sh [+ name +] $(top_builddir)/moddep.lst > $@ || (rm -f $@; exit 1)
 
 mod-[+ name +].o: mod-[+ name +].c
 	$(TARGET_CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS_MODULE) $(CPPFLAGS) $(CFLAGS_MODULE) $(CFLAGS) -c -o $@ $<
 
-[+ name +].mod: [+ name +].module mod-[+ name +].o
+[+ name +].mod: [+ name +].module$(EXEEXT) mod-[+ name +].o
 	if test x$(USE_APPLE_CC_FIXES) = xyes; then \
 	  $(CCLD) $(LDFLAGS_MODULE) $(LDFLAGS) -o $@.bin $^; \
 	  $(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -wd1106 -nu -nd $@.bin $@; \
@@ -303,7 +303,7 @@ def image(platform):
 
     r += gvar_add("platform_DATA", "[+ name +].img")
     r += gvar_add("CLEANFILES", "[+ name +].img")
-    r += rule("[+ name +].img", "[+ name +].image", """
+    r += rule("[+ name +].img", "[+ name +].image$(EXEEXT)", """
 if test x$(USE_APPLE_CC_FIXES) = xyes; then \
   $(MACHO2IMG) $< $@; \
 else \

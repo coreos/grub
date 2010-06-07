@@ -233,7 +233,7 @@ program = {
   source = kern/emu/full.c;
   nodist = grub_emu_init.c;
 
-  ldadd = kernel.img;
+  ldadd = 'kernel.img$(EXEEXT)';
   ldadd = '$(MODULE_FILES)';
   ldadd = '$(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS)';
 
@@ -247,17 +247,10 @@ program = {
   source = kern/emu/cache.S;
   nodist = symlist.c;
 
-  ldadd = kernel.img;
+  ldadd = 'kernel.img$(EXEEXT)';
   ldadd = '$(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS)';
 
   emu;
-};
-
-module = {
-  name = trig;
-  nodist = trigtables.c;
-  extra_dist = gentrigtables.c;
-  common;
 };
 
 image = {
@@ -309,6 +302,13 @@ image = {
 
   i386_pc_ldflags = '$(TARGET_IMG_LDFLAGS)';
   i386_pc_ldflags = '$(TARGET_IMG_BASE_LDOPT),0x6000';
+};
+
+module = {
+  name = trig;
+  nodist = trigtables.c;
+  extra_dist = gentrigtables.c;
+  common;
 };
 
 module = {
