@@ -1,5 +1,12 @@
 2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (Naming convention): Use GRUB 2 syntax.
+	(File name syntax): Likewise.
+	(help): --all is no longer supported in GRUB 2.  Be more precise
+	about pattern matching.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
 	* normal/completion.c (grub_normal_do_completion): When completing
 	arguments to "set" and the current word contains an equals sign,
 	skip to after the equals sign before starting completion.

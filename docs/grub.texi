@@ -390,14 +390,14 @@ GRUB searches for the first @sc{pc} slice which has a BSD @samp{a}
 partition.
 
 Of course, to actually access the disks or partitions with GRUB, you
-need to use the device specification in a command, like @samp{root
-(fd0)} or @samp{unhide (hd0,3)}. To help you find out which number
-specifies a partition you want, the GRUB command-line
+need to use the device specification in a command, like @samp{set
+root=(fd0)} or @samp{parttool (hd0,3) hidden-}. To help you find out
+which number specifies a partition you want, the GRUB command-line
 (@pxref{Command-line interface}) options have argument
 completion. This means that, for example, you only need to type
 
 @example
-root (
+set root=(
 @end example
 
 followed by a @key{TAB}, and GRUB will display the list of drives,
@@ -1186,8 +1186,8 @@ example is @samp{(hd0,1)/boot/grub/grub.cfg}. This means the file
 @file{/boot/grub/grub.cfg} in the first partition of the first hard
 disk. If you omit the device name in an absolute file name, GRUB uses
 GRUB's @dfn{root device} implicitly. So if you set the root device to,
-say, @samp{(hd1,1)} by the command @command{root} (@pxref{root}), then
-@code{/boot/kernel} is the same as @code{(hd1,1)/boot/kernel}.
+say, @samp{(hd1,1)} by the command @samp{set root=(hd1,1)} (@pxref{set}),
+then @code{/boot/kernel} is the same as @code{(hd1,1)/boot/kernel}.
 
 
 @node Block list syntax
@@ -1742,15 +1742,13 @@ is shut down using APM.
 @node help
 @subsection help
 
-@deffn Command help @option{--all} [pattern @dots{}]
+@deffn Command help [pattern @dots{}]
 Display helpful information about builtin commands. If you do not
-specify @var{pattern}, this command shows short descriptions of most of
-available commands. If you specify the option @option{--all} to this
-command, short descriptions of rarely used commands (such as
-@ref{testload}) are displayed as well.
+specify @var{pattern}, this command shows short descriptions of all
+available commands.
 
 If you specify any @var{patterns}, it displays longer information
-about each of the commands which match those @var{patterns}.
+about each of the commands whose names begin with those @var{patterns}.
 @end deffn
 
 
