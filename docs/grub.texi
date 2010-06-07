@@ -35,6 +35,7 @@ Invariant Sections.
 * GRUB: (grub).                 The GRand Unified Bootloader
 * grub-install: (grub)Invoking grub-install.    Install GRUB on your drive
 * grub-mkconfig: (grub)Invoking grub-mkconfig.  Generate GRUB configuration
+* grub-mkpasswd-pbkdf2: (grub)Invoking grub-mkpasswd-pbkdf2.
 @end direntry
 
 @setchapternewpage odd
@@ -84,9 +85,12 @@ This edition documents version @value{VERSION}.
 * Filesystem::                  Filesystem syntax and semantics
 * Interface::                   The menu and the command-line
 * Commands::                    The list of available builtin commands
+* Security::                    Authentication and authorisation
 * Troubleshooting::             Error messages produced by GRUB
 * Invoking grub-install::       How to use the GRUB installer
 * Invoking grub-mkconfig::      Generate a GRUB configuration file
+* Invoking grub-mkpasswd-pbkdf2::
+                                Generate GRUB password hashes
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
 * Future::                      Some future plans on GRUB
@@ -1041,8 +1045,8 @@ GRUB uses a special syntax for specifying disk drives which can be
 accessed by BIOS. Because of BIOS limitations, GRUB cannot distinguish
 between IDE, ESDI, SCSI, or others. You must know yourself which BIOS
 device is equivalent to which OS device. Normally, that will be clear if
-you see the files in a device or use the command @command{find}
-(@pxref{find}).
+you see the files in a device or use the command @command{search}
+(@pxref{search}).
 
 @menu
 * Device syntax::               How to specify devices
@@ -1415,8 +1419,11 @@ you forget a command, you can run the command @command{help}
 * keystatus::                   Check key modifier status
 * ls::                          List devices or files
 * parttool::                    Modify partition table entries
+* password::                    Set a clear-text password
+* password_pbkdf2::             Set a hashed password
 * play::                        Play a tune
 * reboot::                      Reboot your computer
+* search::                      Search devices by file, label, or UUID
 * set::                         Set an environment variable
 * unset::                       Unset an environment variable
 @end menu
@@ -1747,6 +1754,25 @@ Wwindows and multiple primary FAT partitions exist in one disk.  See also
 @end deffn
 
 
+@node password
+@subsection password
+
+@deffn Command password user clear-password
+Define a user named @var{user} with password @var{clear-password}.
+@xref{Security}.
+@end deffn
+
+
+@node password_pbkdf2
+@subsection password_pbkdf2
+
+@deffn Command password_pbkdf2 user hashed-password
+Define a user named @var{user} with password hash @var{hashed-password}.
+Use @command{grub-mkpasswd-pbkdf2} (@pxref{Invoking grub-mkpasswd-pbkdf2})
+to generate password hashes.  @xref{Security}.
+@end deffn
+
+
 @node play
 @subsection play
 
@@ -1774,6 +1800,29 @@ Reboot the computer.
 @end deffn
 
 
+@node search
+@subsection search
+
+@deffn Command search @
+ [@option{--file}|@option{--label}|@option{--fs-uuid}] @
+ [@option{--set} var] [@option{--no-floppy}] name
+Search devices by file (@option{-f}, @option{--file}), filesystem label
+(@option{-l}, @option{--label}), or filesystem UUID (@option{-u},
+@option{--fs-uuid}).
+
+If the @option{--set} option is used, the first device found is set as the
+value of environment variable @var{var}.  The default variable is
+@samp{root}.
+
+The @option{--no-floppy} option prevents searching floppy devices, which can
+be slow.
+
+The @samp{search.file}, @samp{search.fs_label}, and @samp{search.fs_uuid}
+commands are aliases for @samp{search --file}, @samp{search --label}, and
+@samp{search --fs-uuid} respectively.
+@end deffn
+
+
 @node set
 @subsection set
 
@@ -1789,6 +1838,135 @@ arguments, print all environment variables with their values.
 @deffn Command unset envvar
 Unset the environment variable @var{envvar}.
 @end deffn
+
+
+@node Security
+@chapter Authentication and authorisation
+
+By default, the boot loader interface is accessible to anyone with physical
+access to the console: anyone can select and edit any menu entry, and anyone
+can get direct access to a GRUB shell prompt.  For most systems, this is
+reasonable since anyone with direct physical access has a variety of other
+ways to gain full access, and requiring authentication at the boot loader
+level would only serve to make it difficult to recover broken systems.
+
+However, in some environments, such as kiosks, it may be appropriate to lock
+down the boot loader to require authentication before performing certain
+operations.
+
+The @samp{password} (@pxref{password}) and @samp{password_pbkdf2}
+(@pxref{password_pbkdf2}) commands can be used to define users, each of
+which has an associated password.  @samp{password} sets the password in
+plain text, requiring @file{grub.cfg} to be secure; @samp{password_pbkdf2}
+sets the password hashed using the Password-Based Key Derivation Function
+(RFC 2898), requiring the use of @command{grub-mkpasswd-pbkdf2}
+(@pxref{Invoking grub-mkpasswd-pbkdf2}) to generate password hashes.
+
+In order to enable authentication support, the @samp{superusers} environment
+variable must be set to a list of usernames, separated by any of spaces,
+commas, semicolons, pipes, or ampersands.  Superusers are permitted to use
+the GRUB command line, edit menu entries, and execute any menu entry.
+
+Other users may be given access to specific menu entries by giving a list of
+usernames (as above) using the @kbd{--users} option to the @samp{menuentry}
+command (@pxref{menuentry}).
+
+Putting this together, a typical @file{grub.cfg} fragment might look like
+this:
+
+@example
+@group
+set superusers="root"
+password_pbkdf2 root grub.pbkdf2.sha512.10000.biglongstring
+password user1 insecure
+
+menuentry "Superusers only" @{
+	set root=(hd0,1)
+	linux /vmlinuz
+@}
+
+menuentry "May be run by user1" --users user1 @{
+	set root=(hd0,2)
+	chainloader +1
+@}
+@end group
+@end example
+
+The @command{grub-mkconfig} program does not yet have built-in support for
+generating configuration files with authentication.  You can use
+@file{/etc/grub.d/40_custom} to add simple superuser authentication, by
+adding @kbd{set superusers=} and @kbd{password} or @kbd{password_pbkdf2}
+commands.
+
+
+@node Troubleshooting
+@chapter Error messages produced by GRUB
+
+@menu
+* GRUB only offers a rescue shell::
+@end menu
+
+
+@node GRUB only offers a rescue shell
+@section GRUB only offers a rescue shell
+
+GRUB's normal start-up procedure involves setting the @samp{prefix}
+environment variable to a value set in the core image by
+@command{grub-install}, setting the @samp{root} variable to match, loading
+the @samp{normal} module from the prefix, and running the @samp{normal}
+command.  This command is responsible for reading
+@file{/boot/grub/grub.cfg}, running the menu, and doing all the useful
+things GRUB is supposed to do.
+
+If, instead, you only get a rescue shell, this usually means that GRUB
+failed to load the @samp{normal} module for some reason.  It may be possible
+to work around this temporarily: for instance, if the reason for the failure
+is that @samp{prefix} is wrong (perhaps it refers to the wrong device, or
+perhaps the path to @file{/boot/grub} was not correctly made relative to the
+device), then you can correct this and enter normal mode manually:
+
+@example
+@group
+# Inspect the current prefix:
+echo @verb{'${prefix}'}
+# Set to the correct value, which might be something like this:
+set prefix=(hd0,1)/grub
+set root=(hd0,1)
+insmod normal
+normal
+@end group
+@end example
+
+However, any problem that leaves you in the rescue shell probably means that
+GRUB was not correctly installed.  It may be more useful to try to reinstall
+it properly using @kbd{grub-install @var{device}} (@pxref{Invoking
+grub-install}).  When doing this, there are a few things to remember:
+
+@itemize @bullet{}
+@item
+Drive ordering in your operating system may not be the same as the boot
+drive ordering used by your firmware.  Do not assume that your first hard
+drive (e.g. @samp{/dev/sda}) is the one that your firmware will boot from.
+
+@item
+At least on BIOS systems, if you tell @command{grub-install} to install GRUB
+to a partition but GRUB has already been installed in the master boot
+record, then the GRUB installation in the partition will be ignored.
+
+@item
+If possible, it is generally best to avoid installing GRUB to a partition
+(unless it is a special partition for the use of GRUB alone, such as the
+BIOS Boot Partition used on GPT).  Doing this means that GRUB may stop being
+able to read its core image due to a file system moving blocks around, such
+as while defragmenting, running checks, or even during normal operation.
+Installing to the whole disk device is normally more robust.
+
+@item
+Check that GRUB actually knows how to read from the device and file system
+containing @file{/boot/grub}.  It will not be able to read from encrypted
+devices, nor from file systems for which support has not yet been added to
+GRUB.
+@end itemize
 
 
 @node Invoking grub-install
@@ -1855,6 +2033,34 @@ Print the version number of GRUB and exit.
 @itemx --output=@var{file}
 Send the generated configuration file to @var{file}.  The default is to send
 it to standard output.
+@end table
+
+
+@node Invoking grub-mkpasswd-pbkdf2
+@chapter Invoking grub-mkpasswd-pbkdf2
+
+The program @command{grub-mkpasswd-pbkdf2} generates password hashes for
+GRUB (@pxref{Security}).
+
+@example
+grub-mkpasswd-pbkdf2
+@end example
+
+@command{grub-mkpasswd-pbkdf2} accepts the following options:
+
+@table @option
+@item -c @var{number}
+@itemx --iteration-count=@var{number}
+Number of iterations of the underlying pseudo-random function.  Defaults to
+10000.
+
+@item -l @var{number}
+@itemx --buflen=@var{number}
+Length of the generated hash.  Defaults to 64.
+
+@item -s @var{number}
+@itemx --salt=@var{number}
+Length of the salt.  Defaults to 64.
 @end table
 
 
@@ -1974,6 +2180,113 @@ multiple architecture support, a scripting language, and many other
 nice feature. If you are interested in the development of GRUB 2, take
 a look at @uref{http://www.gnu.org/software/grub/grub.html, the
 homepage}.
+
+
+@node Internals
+@appendix Hacking GRUB
+
+@menu
+* Getting the source code::
+* Finding your way around::
+@end menu
+
+
+@node Getting the source code
+@section Getting the source code
+
+GRUB is maintained using the @uref{http://bazaar-vcs.org/, Bazaar revision
+control system}.  To fetch the primary development branch:
+
+@example
+bzr get http://bzr.savannah.gnu.org/r/grub/trunk/grub
+@end example
+
+The GRUB developers maintain several other branches with work in progress.
+Of these, the most interesting is the experimental branch, which is a
+staging area for new code which we expect to eventually merge into trunk but
+which is not yet ready:
+
+@example
+bzr get http://bzr.savannah.gnu.org/r/grub/branches/experimental
+@end example
+
+Once you have used @kbd{bzr get} to fetch an initial copy of a branch, you
+can use @kbd{bzr pull} to keep it up to date.  If you have modified your
+local version, you may need to resolve conflicts when pulling.
+
+
+@node Finding your way around
+@section Finding your way around
+
+Here is a brief map of the GRUB code base.
+
+GRUB uses Autoconf, but not (yet) Automake.  The top-level build rules are
+in @file{configure.ac}, @file{Makefile.in}, and @file{conf/*.rmk}.  Each
+@file{conf/*.rmk} file represents a particular target configuration, and is
+processed into GNU Make rules by @file{genmk.rb} (which you only need to
+look at if you are extending the build system).  If you are adding a new
+module which follows an existing pattern, such as a new command or a new
+filesystem implementation, it is usually easiest to grep @file{conf/*.rmk}
+for an existing example of that pattern to find out where it should be
+added.
+
+Low-level boot code, such as the MBR implementation on PC BIOS systems, is
+in the @file{boot/} directory.
+
+The GRUB kernel is in @file{kern/}.  This contains core facilities such as
+the device, disk, and file frameworks, environment variable handling, list
+processing, and so on.  The kernel should contain enough to get up to a
+rescue prompt.  Header files for kernel facilities, among others, are in
+@file{include/}.
+
+Terminal implementations are in @file{term/}.
+
+Disk access code is spread across @file{disk/} (for accessing the disk
+devices themselves), @file{partmap/} (for interpreting partition table
+data), and @file{fs/} (for accessing filesystems).  Note that, with the odd
+specialised exception, GRUB only contains code to @emph{read} from
+filesystems and tries to avoid containing any code to @emph{write} to
+filesystems; this lets us confidently assure users that GRUB cannot be
+responsible for filesystem corruption.
+
+PCI and USB bus handling is in @file{bus/}.
+
+Video handling code is in @file{video/}.  The graphical menu system uses
+this heavily, but is in a separate directory, @file{gfxmenu/}.
+
+Most commands are implemented by files in @file{commands/}, with the
+following exceptions:
+
+@itemize
+@item
+A few core commands live in @file{kern/corecmd.c}.
+
+@item
+Commands related to normal mode live under @file{normal/}.
+
+@item
+Commands that load and boot kernels live under @file{loader/}.
+
+@item
+The @samp{loopback} command is really a disk device, and so lives in
+@file{disk/loopback.c}.
+
+@item
+The @samp{gettext} command lives under @file{gettext/}.
+
+@item
+The @samp{loadfont} and @samp{lsfonts} commands live under @file{font/}.
+
+@item
+The @samp{serial}, @samp{terminfo}, and @samp{background_image} commands
+live under @file{term/}.
+
+@item
+The @samp{efiemu_*} commands live under @file{efiemu/}.
+@end itemize
+
+There are a few other special-purpose exceptions; grep for them if they
+matter to you.
 
 
 

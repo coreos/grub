@@ -1,5 +1,16 @@
 2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (Filesystem): Refer to `search' instead of `find'.
+	(password): New section.
+	(password_pbkdf2): New section.
+	(search): New section.
+	(Security): New section.
+	(Troubleshooting): New section, currently very incomplete.
+	(Invoking grub-mkpasswd-pbkdf2): New section.
+	(Internals): New section, currently very incomplete.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub.d/00_header.in: Add some more quoting (of
 	"${prev_saved_entry}" and "${boot_once}") needed to make savedefault
 	work again.
