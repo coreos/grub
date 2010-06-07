@@ -414,6 +414,14 @@ grub_normal_do_completion (char *buf, int *restore,
   else
     current_word = argv[argc - 1];
 
+  if (argc > 1 && ! grub_strcmp (argv[0], "set"))
+    {
+      char *equals = grub_strchr (current_word, '=');
+      if (equals)
+	/* Complete the value of the variable.  */
+	current_word = equals + 1;
+    }
+
   /* Determine the state the command line is in, depending on the
      state, it can be determined how to complete.  */
   cmdline_state = get_state (buf);

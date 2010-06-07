@@ -1,5 +1,11 @@
 2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
 
+	* normal/completion.c (grub_normal_do_completion): When completing
+	arguments to "set" and the current word contains an equals sign,
+	skip to after the equals sign before starting completion.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
 	* fs/i386/pc/pxe.c (grub_pxe_open): Fix parsing of gateway_ip.
 
 2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
