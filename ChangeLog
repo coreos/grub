@@ -1,5 +1,12 @@
 2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (Network): New section.
+	(Device syntax): The network device is called `(pxe)' in GRUB 2, not
+	`(nd)' as in GRUB Legacy.
+	(pxe_unload): New section.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Troubleshooting): `echo' is not usually available
 	in the rescue shell, so recommend using `set' instead.  Thanks,
 	Jordan Uggla.

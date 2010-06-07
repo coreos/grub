@@ -970,6 +970,78 @@ that file, making sure to leave at least the first two lines intact.
 @section Writing full configuration files directly
 
 
+@node Network
+@chapter Booting GRUB from the network
+
+The following instructions only work on PC BIOS systems where the Preboot
+eXecution Environment (PXE) is available.
+
+To generate a PXE boot image, run:
+
+@example
+@group
+grub-mkimage --format=i386-pc --output=core.img --prefix='(pxe)/boot/grub' pxe pxecmd
+cat /boot/grub/pxeboot.img core.img >grub.pxe
+@end group
+@end example
+
+Copy @file{grub.pxe}, @file{/boot/grub/*.mod}, and @file{/boot/grub/*.lst}
+to the PXE (TFTP) server, ensuring that @file{*.mod} and @file{*.lst} are
+accessible via the @file{/boot/grub/} path from the TFTP server root.  Set
+the DHCP server configuration to offer @file{grub.pxe} as the boot file (the
+@samp{filename} option in ISC dhcpd).
+
+After GRUB has started, files on the TFTP server will be accessible via the
+@samp{(pxe)} device.
+
+The server and gateway IP address can be controlled by changing the
+@samp{(pxe)} device name to @samp{(pxe:@var{server-ip})} or
+@samp{(pxe:@var{server-ip}:@var{gateway-ip})}.  Note that this should be
+changed both in the prefix and in any references to the device name in the
+configuration file.
+
+GRUB provides several environment variables which may be used to inspect or
+change the behaviour of the PXE device:
+
+@table @samp
+@item net_pxe_ip
+The IP address of this machine.  Read-only.
+
+@item net_pxe_mac
+The network interface's MAC address.  Read-only.
+
+@item net_pxe_hostname
+The client host name provided by DHCP.  Read-only.
+
+@item net_pxe_domain
+The client domain name provided by DHCP.  Read-only.
+
+@item net_pxe_rootpath
+The path to the client's root disk provided by DHCP.  Read-only.
+
+@item net_pxe_extensionspath
+The path to additional DHCP vendor extensions provided by DHCP.  Read-only.
+
+@item net_pxe_boot_file
+The boot file name provided by DHCP.  Read-only.
+
+@item net_pxe_dhcp_server_name
+The name of the DHCP server responsible for these boot parameters.
+Read-only.
+
+@item net_pxe_blksize
+The PXE transfer block size.  Read-write, defaults to 512.
+
+@item pxe_default_server
+The default PXE server.  Read-write, although setting this is only useful
+before opening a PXE device.
+
+@item pxe_default_gateway
+The default gateway to use when contacting the PXE server.  Read-write,
+although setting this is only useful before opening a PXE device.
+@end table
+
+
 @node Serial terminal
 @chapter Using GRUB via a serial line
 
@@ -1094,7 +1166,7 @@ MBR when installing GRUB), while the syntax @samp{(hd0,1)}
 represents using the first partition of the disk (or the boot sector
 of the partition when installing GRUB).
 
-If you enabled the network support, the special drive, @samp{(nd)}, is
+If you enabled the network support, the special drive @samp{(pxe)} is
 also available. Before using the network drive, you must initialize the
 network. @xref{Network}, for more information.
 
@@ -1422,6 +1494,7 @@ you forget a command, you can run the command @command{help}
 * password::                    Set a clear-text password
 * password_pbkdf2::             Set a hashed password
 * play::                        Play a tune
+* pxe_unload::                  Unload the PXE environment
 * reboot::                      Reboot your computer
 * search::                      Search devices by file, label, or UUID
 * set::                         Set an environment variable
@@ -1789,6 +1862,16 @@ If the arguments are a series of numbers, play the inline tune.
 The tempo is the base for all note durations. 60 gives a 1-second base, 120
 gives a half-second base, etc.  Pitches are Hz.  Set pitch to 0 to produce
 a rest.
+@end deffn
+
+
+@node pxe_unload
+@subsection pxe_unload
+
+@deffn Command pxe_unload
+Unload the PXE environment (@pxref{Network}).
+
+This command is only available on PC BIOS systems.
 @end deffn
 
 
