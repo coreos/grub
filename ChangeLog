@@ -1,5 +1,12 @@
 2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub.d/00_header.in: Add some more quoting (of
+	"${prev_saved_entry}" and "${boot_once}") needed to make savedefault
+	work again.
+	Reported by: Mario 'BitKoenig' Holbe (Debian bug #584812).
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub-mkpasswd-pbkdf2.c (main): Rename top-level `c' variable
 	to `count', fixing variable shadowing that broke the -c option.
 

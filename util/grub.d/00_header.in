@@ -61,7 +61,7 @@ set default="${GRUB_DEFAULT}"
 EOF
 fi
 cat <<EOF
-if [ \${prev_saved_entry} ]; then
+if [ "\${prev_saved_entry}" ]; then
   set saved_entry="\${prev_saved_entry}"
   save_env saved_entry
   set prev_saved_entry=
@@ -70,7 +70,7 @@ if [ \${prev_saved_entry} ]; then
 fi
 
 function savedefault {
-  if [ -z \${boot_once} ]; then
+  if [ -z "\${boot_once}" ]; then
     saved_entry="\${chosen}"
     save_env saved_entry
   fi
