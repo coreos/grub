@@ -1,4 +1,9 @@
-2010-06-05  Colin Watson  <cjwatson@debian.org>
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkpasswd-pbkdf2.c (main): Rename top-level `c' variable
+	to `count', fixing variable shadowing that broke the -c option.
+
+2010-06-05  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub.d/00_header.in: Quote values assigned to `saved_entry',
 	in case they contain spaces.
