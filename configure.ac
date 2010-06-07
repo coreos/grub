@@ -45,6 +45,9 @@ AC_CONFIG_HEADER([config.h])
 grub_coredir='grub-core'
 AC_SUBST(grub_coredir)
 
+grub_utildir='.'
+AC_SUBST(grub_utildir)
+
 m4_include([configure.common])
 
 # Output files.

@@ -177,6 +177,9 @@ program = {
   source = util/grub-pe2elf.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL)';
+  enable = COND_GRUB_PE2ELF;
+  common;
 };
 
 program = {
@@ -195,10 +198,12 @@ program = {
   mansection = 1;
   source = util/grub-mkfont.c;
 
-  ldadd = '$(LIBINTL)';
-  ldadd = libgrub.a;
   cflags = '$(freetype_cflags)';
-  ldflags = '$(freetype_libs)';
+
+  ldadd = libgrub.a;
+  ldadd = '$(LIBINTL)';
+  ldadd = '$(freetype_libs)';
+
   common;
   enable = COND_GRUB_MKFONT;
 };

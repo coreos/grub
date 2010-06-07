@@ -5,10 +5,15 @@ kernel = {
 
   emu_ldflags              = '-Wl,-r';
   x86_efi_ldflags          = '-Wl,-r';
-  i386_pc_ldflags          = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+
+  i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
+  i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+
+  i386_qemu_ldflags        = '$(TARGET_IMG_LDFLAGS)';
+  i386_qemu_ldflags        = '$(TARGET_IMG_BASE_LDOPT),$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+
   i386_coreboot_ldflags    = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
   i386_multiboot_ldflags   = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-  i386_qemu_ldflags        = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
   i386_ieee1275_ldflags    = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
   mips_yeeloong_ldflags    = '-Wl,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
   powerpc_ieee1275_ldflags = '-Wl,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
@@ -258,10 +263,13 @@ module = {
 image = {
   name = boot;
   i386_pc = boot/i386/pc/boot.S;
-  i386_pc_ldflags = "-Wl,-Ttext=0x7C00";
-
   i386_qemu = boot/i386/qemu/boot.S;
-  i386_qemu_ldflags = '-Wl,-Ttext,$(GRUB_BOOT_MACHINE_LINK_ADDR)';
+
+  i386_pc_ldflags = '$(TARGET_IMG_LDFLAGS)';
+  i386_pc_ldflags = '$(TARGET_IMG_BASE_LDOPT),0x7C00';
+
+  i386_qemu_ldflags = '$(TARGET_IMG_LDFLAGS)';
+  i386_qemu_ldflags = '$(TARGET_IMG_BASE_LDOPT),$(GRUB_BOOT_MACHINE_LINK_ADDR)';
   i386_qemu_ccasflags = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
 
   sparc64_ieee1275 = boot/sparc64/ieee1275/boot.S;
@@ -271,24 +279,25 @@ image = {
 
 image = {
   name = cdboot;
-  source = boot/i386/pc/cdboot.S;
-  ldflags = "-Wl,-Ttext=0x7C00";
-
-  i386_pc;
+  i386_pc = boot/i386/pc/cdboot.S;
+  i386_pc_ldflags = '$(TARGET_IMG_LDFLAGS)';
+  i386_pc_ldflags = '$(TARGET_IMG_BASE_LDOPT),0x7C00';
 };
 
 image = {
   name = pxeboot;
-  source = boot/i386/pc/pxeboot.S;
-  ldflags = '-Wl,-Ttext=0x7C00';
+  i386_pc = boot/i386/pc/pxeboot.S;
 
-  i386_pc;
+  i386_pc_ldflags = '$(TARGET_IMG_LDFLAGS)';
+  i386_pc_ldflags = '$(TARGET_IMG_BASE_LDOPT),0x7C00';
 };
 
 image = {
   name = diskboot;
   i386_pc = boot/i386/pc/diskboot.S;
-  i386_pc_ldflags = '-Wl,-Ttext=0x8000';
+
+  i386_pc_ldflags = '$(TARGET_IMG_LDFLAGS)';
+  i386_pc_ldflags = '$(TARGET_IMG_BASE_LDOPT),0x8000';
 
   sparc64_ieee1275 = boot/sparc64/ieee1275/diskboot.S;
   sparc64_ieee1275_ldflags = '-Wl,-Ttext=0x4200';
@@ -296,10 +305,10 @@ image = {
 
 image = {
   name = lnxboot;
-  source = boot/i386/pc/lnxboot.S;
-  ldflags = '-Wl,-Ttext=0x6000';
+  i386_pc = boot/i386/pc/lnxboot.S;
 
-  i386_pc;
+  i386_pc_ldflags = '$(TARGET_IMG_LDFLAGS)';
+  i386_pc_ldflags = '$(TARGET_IMG_BASE_LDOPT),0x6000';
 };
 
 module = {

@@ -351,19 +351,22 @@ if test x$grub_cv_apple_target_cc = xyes ; then
   fi
   TARGET_IMG_LDSCRIPT=
   TARGET_IMG_CFLAGS="-static"
-  TARGET_IMG_LDFLAGS='-nostdlib -static -Wl,-preload -Wl,-segalign,20 -Wl,-image_base,'
-  TARGET_IMG_LDFLAGS_AC='-nostdlib -static -Wl,-preload -Wl,-segalign,20 -Wl,-image_base,'
+  TARGET_IMG_LDFLAGS='-nostdlib -static -Wl,-preload -Wl,-segalign,20'
+  TARGET_IMG_LDFLAGS_AC='-nostdlib -static -Wl,-preload -Wl,-segalign,20'
+  TARGET_IMG_BASE_LDOPT="-Wl,-image_base"
 else
   TARGET_APPLE_CC=0
 # Use linker script if present, otherwise use builtin -N script.
 if test -f "${srcdir}/${grub_coredir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"; then
   TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/${grub_coredir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
-  TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}  -Wl,-Ttext,"
-  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/${grub_coredir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc  -Wl,-Ttext,"
+  TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}"
+  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/${grub_coredir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
+  TARGET_IMG_BASE_LDOPT="-Wl,-Ttext"
 else
   TARGET_IMG_LDSCRIPT=
-  TARGET_IMG_LDFLAGS='-Wl,-N  -Wl,-Ttext,'
-  TARGET_IMG_LDFLAGS_AC='-Wl,-N  -Wl,-Ttext,'
+  TARGET_IMG_LDFLAGS='-Wl,-N'
+  TARGET_IMG_LDFLAGS_AC='-Wl,-N'
+  TARGET_IMG_BASE_LDOPT="-Wl,-Ttext"
 fi
 TARGET_IMG_CFLAGS=
 fi
@@ -371,7 +374,7 @@ fi
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])
 case "${host_os}" in
-  cygwin) TARGET_OBJ2ELF='grub-pe2elf';
+  cygwin) TARGET_OBJ2ELF='$(grub_utildir)/grub-pe2elf';
 # FIXME: put proper test here
   AC_DEFINE([NEED_REGISTER_FRAME_INFO], 1,
 	    [Define to 1 if GCC generates calls to __register_frame_info()])
@@ -479,6 +482,7 @@ AC_SUBST(TARGET_CCASFLAGS)
 AC_SUBST(TARGET_IMG_LDSCRIPT)
 AC_SUBST(TARGET_IMG_LDFLAGS)
 AC_SUBST(TARGET_IMG_CFLAGS)
+AC_SUBST(TARGET_IMG_BASE_LDOPT)
 
 AC_SUBST(HOST_CFLAGS)
 AC_SUBST(HOST_LDFLAGS)
@@ -523,7 +527,7 @@ if test "x$target_cpu" = xi386; then
   if test "$platform" != emu && test "x$TARGET_APPLE_CC" != x1 ; then
     if test ! -z "$TARGET_IMG_LDSCRIPT"; then
       # Check symbols provided by linker script.
-      CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC}8000 -Wl,--defsym,___main=0x8100"
+      CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC} ${TARGET_IMG_BASE_LDOPT},8000 -Wl,--defsym,___main=0x8100"
     fi
     grub_CHECK_BSS_START_SYMBOL
     grub_CHECK_END_SYMBOL
@@ -830,4 +834,5 @@ AM_CONDITIONAL([COND_GRUB_EMU_PCI], [test x$enable_grub_emu_pci = xyes])
 AM_CONDITIONAL([COND_GRUB_MKFONT], [test x$enable_grub_mkfont = xyes])
 AM_CONDITIONAL([COND_HAVE_FONT_SOURCE], [test x$FONT_SOURCE != x])
 AM_CONDITIONAL([COND_GRUB_FSTEST], [test x$enable_grub_fstest = xyes])
+AM_CONDITIONAL([COND_GRUB_PE2ELF], [test x$TARGET_OBJ2ELF != x])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])

@@ -176,8 +176,8 @@ BUILT_SOURCES += symlist.c
 
 noinst_DATA += kernel_syms.lst
 kernel_syms.lst: $(KERNEL_HEADER_FILES) config.h
-	if grep "^#define HAVE_ASM_USCORE" config.h; then u="_"; else u=""; fi
 	$(TARGET_CPP) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS_KERNEL) $(CPPFLAGS) $(CFLAGS) -DGRUB_SYMBOL_GENERATOR=1 $^ >kernel_syms.input
+	if grep "^#define HAVE_ASM_USCORE" config.h; then u="_"; else u=""; fi; \
 	cat kernel_syms.input | grep -v '^#' | sed -n \
 	  -e '/EXPORT_FUNC *([a-zA-Z0-9_]*)/{s/.*EXPORT_FUNC *(\([a-zA-Z0-9_]*\)).*/'"$$u"'\1 kernel/;p;}' \
 	  -e '/EXPORT_VAR *([a-zA-Z0-9_]*)/{s/.*EXPORT_VAR *(\([a-zA-Z0-9_]*\)).*/'"$$u"'\1 kernel/;p;}' \
