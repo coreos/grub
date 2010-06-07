@@ -1,5 +1,11 @@
 2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (Troubleshooting): `echo' is not usually available
+	in the rescue shell, so recommend using `set' instead.  Thanks,
+	Jordan Uggla.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Filesystem): Refer to `search' instead of `find'.
 	(password): New section.
 	(password_pbkdf2): New section.
