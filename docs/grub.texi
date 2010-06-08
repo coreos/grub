@@ -174,6 +174,22 @@ official GNU package, and opened its development by making the latest
 sources available via anonymous CVS. @xref{Obtaining and Building
 GRUB}, for more information.
 
+Over the next few years, GRUB was extended to meet many needs, but it
+quickly became clear that its design was not keeping up with the extensions
+being made to it, and we reached the point where it was very difficult to
+make any further changes without breaking existing features.  Around 2002,
+Yoshinori K. Okuji started work on PUPA (Preliminary Universal Programming
+Architecture for GNU GRUB), aiming to rewrite the core of GRUB to make it
+cleaner, safer, more robust, and more powerful.  PUPA was eventually renamed
+to GRUB 2, and the original version of GRUB was renamed to GRUB Legacy.
+Small amounts of maintenance continued to be done on GRUB Legacy, but the
+last release (0.97) was made in 2005 and at the time of writing it seems
+unlikely that there will be another.
+
+By around 2007, GNU/Linux distributions started to use GRUB 2 to limited
+extents, and by the end of 2009 multiple major distributions were installing
+it by default.
+
 
 @node Features
 @section GRUB features
@@ -1078,7 +1094,8 @@ you want to use COM2, you must specify @samp{--unit=1} instead. This
 command accepts many other options, so please refer to @ref{serial},
 for more details.
 
-The command @command{terminal} (@pxref{terminal}) chooses which type of
+The commands @command{terminal_input} (@pxref{terminal_input}) and
+@command{terminal_output} (@pxref{terminal_output} choose which type of
 terminal you want to use. In the case above, the terminal will be a
 serial terminal, but you can also pass @code{console} to the command,
 as @samp{terminal serial console}. In this case, a terminal in which
@@ -1421,6 +1438,8 @@ Commands usable anywhere in the menu and in the command-line.
 
 @menu
 * serial::                      Set up a serial device
+* terminal_input::              Manage input terminals
+* terminal_output::             Manage output terminals
 * terminfo::                    Define terminal type
 @end menu
 
@@ -1440,10 +1459,49 @@ bits and one stop bit. @var{parity} is one of @samp{no}, @samp{odd},
 @samp{even} and defaults to @samp{no}.
 
 The serial port is not used as a communication channel unless the
-@command{terminal} command is used (@pxref{terminal}).
+@command{terminal_input} or @command{terminal_output} command is used
+(@pxref{terminal_input}, @pxref{terminal_output}).
 
 This command is only available if GRUB is compiled with serial
 support. See also @ref{Serial terminal}.
+@end deffn
+
+
+@node terminal_input
+@subsection terminal_input
+
+@deffn Command terminal_input [@option{--append}|@option{--remove}] @
+ [terminal1] [terminal2] @dots{}
+List or select an input terminal.
+
+With no arguments, list the active and available input terminals.
+
+With @option{--append}, add the named terminals to the list of active input
+terminals; any of these may be used to provide input to GRUB.
+
+With @option{--remove}, remove the named terminals from the active list.
+
+With no options but a list of terminal names, make only the listed terminal
+names active.
+@end deffn
+
+
+@node terminal_output
+@subsection terminal_output
+
+@deffn Command terminal_output [@option{--append}|@option{--remove}] @
+ [terminal1] [terminal2] @dots{}
+List or select an output terminal.
+
+With no arguments, list the active and available output terminals.
+
+With @option{--append}, add the named terminals to the list of active output
+terminals; all of these will receive output from GRUB.
+
+With @option{--remove}, remove the named terminals from the active list.
+
+With no options but a list of terminal names, make only the listed terminal
+names active.
 @end deffn
 
 
@@ -1499,6 +1557,7 @@ you forget a command, you can run the command @command{help}
 * search::                      Search devices by file, label, or UUID
 * set::                         Set an environment variable
 * unset::                       Unset an environment variable
+* uppermem::                    Set the upper memory size
 @end menu
 
 
@@ -1921,6 +1980,12 @@ Unset the environment variable @var{envvar}.
 @end deffn
 
 
+@node uppermem
+@subsection uppermem
+
+This command is not yet implemented for GRUB 2, although it is planned.
+
+
 @node Security
 @chapter Authentication and authorisation
 
@@ -2190,8 +2255,9 @@ just do:
 @end group
 @end example
 
-Also, the latest version is available from the SVN. See
-@uref{http://savannah.gnu.org/svn/?group=grub} for more information.
+Also, the latest version is available using Bazaar. See
+@uref{http://www.gnu.org/software/grub/grub-download.en.html} for more
+information.
 
 @node Reporting bugs
 @appendix Reporting bugs

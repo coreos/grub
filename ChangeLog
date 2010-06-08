@@ -1,5 +1,16 @@
 2010-06-08  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (History): Expand to cover GRUB 2.
+	(Serial terminal): Refer to `terminal_input' and `terminal_output'
+	commands, not `terminal'.
+	(serial): Likewise.
+	(terminal_input): New section.
+	(terminal_output): New section.
+	(uppermem): New section (stub).
+	(Obtaining and Building GRUB): Refer to Bazaar, not Subversion.
+
+2010-06-08  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Security): Menu entries are unrestricted by
 	default, not restricted to superusers as I had previously thought.
 	Reword to account for this.
