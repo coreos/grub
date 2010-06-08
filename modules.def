@@ -115,7 +115,7 @@ program = {
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
 
-  cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibroot)\"';
+  cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibrootdir)\"';
   common;
 };
 
