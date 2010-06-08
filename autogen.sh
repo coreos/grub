@@ -2,6 +2,8 @@
 
 set -e
 
+autogen --version >/dev/null || (echo autogen missing; exit 1)
+
 echo "Creating symlinks..."
 ln -svf ../NEWS grub-core/
 ln -svf ../TODO grub-core/

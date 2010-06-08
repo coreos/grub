@@ -40,6 +40,7 @@ need the following.
 * Python 2.5.2 or later
 * Autoconf 2.60 or later
 * Automake 1.10.1 or later
+* Autogen 5.10 or later
 
 Prerequisites for make-check:
 
