@@ -121,6 +121,8 @@ KERNEL_HEADER_FILES += include/grub/bitmap_scale.h
 KERNEL_HEADER_FILES += include/grub/bufio.h
 KERNEL_HEADER_FILES += include/grub/pci.h
 KERNEL_HEADER_FILES += include/grub/libgcc.h
+KERNEL_HEADER_FILES += include/grub/cs5536.h
+KERNEL_HEADER_FILES += include/grub/machine/pci.h
 endif
 
 if COND_powerpc_ieee1275

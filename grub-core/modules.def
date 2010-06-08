@@ -180,6 +180,7 @@ kernel = {
   mips_yeeloong = video/bitmap.c;
   mips_yeeloong = video/bitmap_scale.c;
   mips_yeeloong = video/sm712.c;
+  mips_yeeloong = bus/cs5536.c;
 
   powerpc_ieee1275 = kern/powerpc/ieee1275/startup.S;
   powerpc_ieee1275 = kern/ieee1275/cmain.c;
@@ -312,6 +313,12 @@ module = {
 };
 
 module = {
+  name = cs5536;
+  source = bus/cs5536.c;
+  i386;
+};
+
+module = {
   name = libusb;
   source = bus/usb/emu/usb.c;
   emu;
@@ -332,6 +339,7 @@ module = {
   source = bus/usb/usbtrans.c;
   source = bus/usb/usbhub.c;
   i386;
+  mips_yeeloong;
 };
 
 module = {
@@ -351,6 +359,7 @@ module = {
   name = ohci;
   source = bus/usb/ohci.c;
   x86;
+  mips_yeeloong;
 };
 
 module = {
@@ -703,6 +712,7 @@ module = {
   name = usbtest;
   source = commands/usbtest.c;
   i386_pc;
+  mips_yeeloong;
 };
 
 module = {
@@ -813,6 +823,7 @@ module = {
   name = usbms;
   source = disk/usbms.c;
   i386_pc;
+  mips_yeeloong;
 };
 
 module = {
@@ -1522,6 +1533,7 @@ module = {
   name = usb_keyboard;
   source = term/usb_keyboard.c;
   i386_pc;
+  mips_yeeloong;
 };
 
 module = {
