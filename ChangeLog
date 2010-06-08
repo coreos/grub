@@ -1,5 +1,10 @@
 2010-06-08  Colin Watson  <cjwatson@ubuntu.com>
 
+	* .bzrignore: Add ascii.bitmaps, ascii.h, grub_script.yy.c, and
+	grub_script.yy.h.
+
+2010-06-08  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (History): Expand to cover GRUB 2.
 	(Serial terminal): Refer to `terminal_input' and `terminal_output'
 	commands, not `terminal'.
