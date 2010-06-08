@@ -174,13 +174,14 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
     return 1;
 
   u->iobase = base & GRUB_UHCI_IOMASK;
-  grub_dprintf ("uhci", "class=0x%02x 0x%02x interface 0x%02x base=0x%x\n",
-		class, subclass, interf, u->iobase);
 
   /* Reserve a page for the frame list.  */
   u->framelist = grub_memalign (4096, 4096);
   if (! u->framelist)
     goto fail;
+
+  grub_dprintf ("uhci", "class=0x%02x 0x%02x interface 0x%02x base=0x%x framelist=%p\n",
+		class, subclass, interf, u->iobase, u->framelist);
 
   /* The framelist pointer of UHCI is only 32 bits, make sure this
      code works on on 64 bits architectures.  */
@@ -220,6 +221,9 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
       goto fail;
     }
 #endif
+
+  grub_dprintf ("uhci", "QH=%p, TD=%p\n",
+		u->qh, u->td);
 
   /* Link all Transfer Descriptors in a list of available Transfer
      Descriptors.  */
@@ -328,13 +332,20 @@ grub_free_td (struct grub_uhci *u, grub_uhci_td_t td)
 }
 
 static void
-grub_free_queue (struct grub_uhci *u, grub_uhci_td_t td)
+grub_free_queue (struct grub_uhci *u, grub_uhci_td_t td,
+                 grub_usb_transfer_t transfer)
 {
-  /* Free the TDs in this queue.  */
-  while (td)
+  int i; /* Index of TD in transfer */
+  
+  /* Free the TDs in this queue and set last_trans.  */
+  for (i=0; td; i++)
     {
       grub_uhci_td_t tdprev;
 
+      /* Check state of TD and possibly set last_trans */
+      if (transfer && (td->linkptr & 1))
+        transfer->last_trans = i;
+      
       /* Unlink the queue.  */
       tdprev = td;
       td = (grub_uhci_td_t) td->linkptr2;
@@ -380,7 +391,7 @@ static grub_uhci_td_t
 grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
 		       grub_transfer_type_t type, unsigned int addr,
 		       unsigned int toggle, grub_size_t size,
-		       char *data)
+		       grub_uint32_t data)
 {
   grub_uhci_td_t td;
   static const unsigned int tf[] = { 0x69, 0xE1, 0x2D };
@@ -398,7 +409,7 @@ grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
     }
 
   grub_dprintf ("uhci",
-		"transaction: endp=%d, type=%d, addr=%d, toggle=%d, size=%d data=%p td=%p\n",
+		"transaction: endp=%d, type=%d, addr=%d, toggle=%d, size=%d data=0x%x td=%p\n",
 		endp, type, addr, toggle, size, data, td);
 
   /* Don't point to any TD, just terminate.  */
@@ -418,7 +429,7 @@ grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
   td->token = ((size << 21) | (toggle << 19) | (endp << 15)
 	       | (addr << 8) | tf[type]);
 
-  td->buffer = (grub_uint32_t) data;
+  td->buffer = data;
 
   return td;
 }
@@ -441,6 +452,8 @@ grub_uhci_transfer (grub_usb_controller_t dev,
   if (! qh)
     return grub_errno;
 
+  grub_dprintf ("uhci", "transfer, iobase:%08x\n", u->iobase);
+  
   for (i = 0; i < transfer->transcnt; i++)
     {
       grub_usb_transaction_t tr = &transfer->transactions[i];
@@ -455,7 +468,7 @@ grub_uhci_transfer (grub_usb_controller_t dev,
 	  td_prev->linkptr = 1;
 
 	  if (td_first)
-	    grub_free_queue (u, td_first);
+	    grub_free_queue (u, td_first, NULL);
 
 	  return GRUB_USB_ERR_INTERNAL;
 	}
@@ -548,12 +561,13 @@ grub_uhci_transfer (grub_usb_controller_t dev,
 
  fail:
 
-  grub_dprintf ("uhci", "transaction failed\n");
+  if (err != GRUB_USB_ERR_NONE)
+    grub_dprintf ("uhci", "transaction failed\n");
 
   /* Place the QH back in the free list and deallocate the associated
      TDs.  */
   qh->elinkptr = 1;
-  grub_free_queue (u, td_first);
+  grub_free_queue (u, td_first, transfer);
 
   return err;
 }
@@ -583,6 +597,8 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
   unsigned int status;
   grub_uint64_t endtime;
 
+  grub_dprintf ("uhci", "portstatus, iobase:%08x\n", u->iobase);
+  
   grub_dprintf ("uhci", "enable=%d port=%d\n", enable, port);
 
   if (port == 0)
@@ -600,7 +616,7 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
   grub_uhci_writereg16 (u, reg, enable << 9);
 
   /* Wait for the reset to complete.  XXX: How long exactly?  */
-  grub_millisleep (10);
+  grub_millisleep (50); /* For root hub should be nominaly 50ms */
   status = grub_uhci_readreg16 (u, reg);
   grub_uhci_writereg16 (u, reg, status & ~(1 << 9));
   grub_dprintf ("uhci", "reset completed\n");
@@ -631,6 +647,8 @@ grub_uhci_detect_dev (grub_usb_controller_t dev, int port)
   int reg;
   unsigned int status;
 
+  grub_dprintf ("uhci", "detect_dev, iobase:%08x\n", u->iobase);
+  
   if (port == 0)
     reg = GRUB_UHCI_REG_PORTSC1;
   else if (port == 1)

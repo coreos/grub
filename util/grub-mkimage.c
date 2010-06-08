@@ -1253,7 +1253,7 @@ main (int argc, char *argv[])
 		  image_target = &image_targets[i];
 	      if (!image_target)
 		{
-		  printf ("unknown target %s\n", optarg);
+		  printf ("unknown target format %s\n", optarg);
 		  usage (1);
 		}
 	      break;
@@ -1322,7 +1322,7 @@ main (int argc, char *argv[])
 
   if (!image_target)
     {
-      printf ("Target not specified.\n");
+      printf ("Target format not specified (use the -O option).\n");
       usage (1);
     }
 

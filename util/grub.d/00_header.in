@@ -61,8 +61,8 @@ set default="${GRUB_DEFAULT}"
 EOF
 fi
 cat <<EOF
-if [ \${prev_saved_entry} ]; then
-  set saved_entry=\${prev_saved_entry}
+if [ "\${prev_saved_entry}" ]; then
+  set saved_entry="\${prev_saved_entry}"
   save_env saved_entry
   set prev_saved_entry=
   save_env prev_saved_entry
@@ -70,8 +70,8 @@ if [ \${prev_saved_entry} ]; then
 fi
 
 function savedefault {
-  if [ -z \${boot_once} ]; then
-    saved_entry=\${chosen}
+  if [ -z "\${boot_once}" ]; then
+    saved_entry="\${chosen}"
     save_env saved_entry
   fi
 }
@@ -195,7 +195,7 @@ EOF
 esac
 
 # Gettext variables and module
-if [ "x${LANG}" != "xC" ] ; then
+if [ "x${LANG}" != "xC" ] && [ -d "${locale_dir}" ] ; then
     prepare_grub_to_access_device $(${grub_probe} --target=device ${locale_dir})
   cat << EOF
 set locale_dir=(\$root)$(make_system_path_relative_to_its_root ${locale_dir})
