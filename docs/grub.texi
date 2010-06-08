@@ -1946,11 +1946,14 @@ sets the password hashed using the Password-Based Key Derivation Function
 In order to enable authentication support, the @samp{superusers} environment
 variable must be set to a list of usernames, separated by any of spaces,
 commas, semicolons, pipes, or ampersands.  Superusers are permitted to use
-the GRUB command line, edit menu entries, and execute any menu entry.
+the GRUB command line, edit menu entries, and execute any menu entry.  If
+@samp{superusers} is set, then use of the command line is automatically
+restricted to superusers.
 
 Other users may be given access to specific menu entries by giving a list of
-usernames (as above) using the @kbd{--users} option to the @samp{menuentry}
-command (@pxref{menuentry}).
+usernames (as above) using the @option{--users} option to the
+@samp{menuentry} command (@pxref{menuentry}).  If the @option{--users}
+option is not used for a menu entry, then that entry is unrestricted.
 
 Putting this together, a typical @file{grub.cfg} fragment might look like
 this:
@@ -1961,12 +1964,17 @@ set superusers="root"
 password_pbkdf2 root grub.pbkdf2.sha512.10000.biglongstring
 password user1 insecure
 
-menuentry "Superusers only" @{
+menuentry "May be run by any user" @{
 	set root=(hd0,1)
 	linux /vmlinuz
 @}
 
-menuentry "May be run by user1" --users user1 @{
+menuentry "Superusers only" --users "" @{
+	set root=(hd0,1)
+	linux /vmlinuz single
+@}
+
+menuentry "May be run by user1 or a superuser" --users user1 @{
 	set root=(hd0,2)
 	chainloader +1
 @}

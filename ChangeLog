@@ -1,3 +1,9 @@
+2010-06-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Security): Menu entries are unrestricted by
+	default, not restricted to superusers as I had previously thought.
+	Reword to account for this.
+
 2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
 
 	* kern/emu/misc.c (device_mapper_null_log): New function.
