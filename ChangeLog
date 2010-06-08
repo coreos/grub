@@ -1,5 +1,10 @@
 2010-06-08  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
+	* util/i386/pc/grub-setup.c (setup): Use absolute offsets for start of
+	embedding area.  Use <= instead of == when checking for non-emptiness.
+
+2010-06-08  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
 	* configure.ac: Add `.' to the directories searched for unifont.
 
 2010-06-08  Colin Watson  <cjwatson@ubuntu.com>

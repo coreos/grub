@@ -126,8 +126,8 @@ setup (const char *dir,
       /* There's always an embed region, and it starts right after the MBR.  */
       embed_region.start = 1;
 
-      if (embed_region.end > p->start)
-	embed_region.end = p->start;
+      if (embed_region.end > grub_partition_get_start (p))
+	embed_region.end = grub_partition_get_start (p);
 
       return 0;
     }
@@ -147,8 +147,8 @@ setup (const char *dir,
       /* If there's an embed region, it is in a dedicated partition.  */
       if (! memcmp (&gptdata.type, &grub_gpt_partition_type_bios_boot, 16))
 	{
-	  embed_region.start = p->start;
-	  embed_region.end = p->start + p->len;
+	  embed_region.start = grub_partition_get_start (p);
+	  embed_region.end = grub_partition_get_start (p) + grub_partition_get_len (p);
 
 	  return 1;
 	}
@@ -361,7 +361,7 @@ setup (const char *dir,
   else
     grub_util_error (_("No DOS-style partitions found"));
 
-  if (embed_region.end == embed_region.start)
+  if (embed_region.end <= embed_region.start)
     {
       if (! strcmp (dest_partmap, "msdos"))
 	grub_util_warn (_("This msdos-style partition label has no post-MBR gap; embedding won't be possible!"));
