@@ -30,6 +30,8 @@ target_cpu=@target_cpu@
 native_platform=@platform@
 pkglib_DATA="@pkglib_DATA@"
 
+self=`basename $0`
+
 multiboot_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-multiboot
 coreboot_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-coreboot
 qemu_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-qemu
@@ -44,7 +46,7 @@ grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 # Print the usage.
 usage () {
     cat <<EOF
-Usage: $0 [OPTION] SOURCE...
+Usage: $self [OPTION] SOURCE...
 Make GRUB rescue image.
 
   -h, --help              print this message and exit
@@ -54,7 +56,7 @@ Make GRUB rescue image.
   --rom-directory=DIR     save rom images in DIR [optional]
   --grub-mkimage=FILE     use FILE as grub-mkimage
 
-$0 generates a bootable rescue image with specified source files or directories.
+$self generates a bootable rescue image with specified source files or directories.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
@@ -67,7 +69,7 @@ for option in "$@"; do
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "$0 (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;

@@ -30,13 +30,15 @@ target_cpu=@target_cpu@
 platform=@platform@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
+self=`basename $0`
+
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 
 # Usage: usage
 # Print the usage.
 usage () {
     cat <<EOF
-Usage: grub-mkrescue [OPTION] output_image
+Usage: $self [OPTION] output_image
 Make GRUB rescue image.
 
   -h, --help              print this message and exit
@@ -46,7 +48,7 @@ Make GRUB rescue image.
                           default: ${pkglibdir}
   --grub-mkimage=FILE     use FILE as grub-mkimage
 
-grub-mkimage generates a bootable rescue CD image for PowerMac and CHRP.
+$self generates a bootable rescue CD image for PowerMac and CHRP.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
@@ -61,7 +63,7 @@ for option in "$@"; do
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-mkrescue (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;

@@ -1,5 +1,24 @@
 2010-06-08  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
+	Make --version uniform and avoid hard-coded program name.
+
+	* util/grub-mkimage.c (main): Use `program_name' instead of
+	hard-coded string.
+	* util/i386/pc/grub-setup.c (main): Likewise.
+	* util/sparc64/ieee1275/grub-setup.c (parse_options): Likewise.
+	* util/grub-install.in: Save the basename of $0 in $self, and use the
+	latter in informational messages.  Use the same format for --version
+	as the binary programs.
+	* util/grub-mkconfig.in: Likewise.
+	* util/grub-mkrescue.in: Likewise.
+	* util/grub-reboot.in: Likewise.
+	* util/grub-set-default.in: Likewise.
+	* util/i386/efi/grub-install.in: Likewise.
+	* util/ieee1275/grub-install.in: Likewise.
+	* util/powerpc/ieee1275/grub-mkrescue.in: Likewise.
+
+2010-06-08  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
 	* util/i386/pc/grub-setup.c (setup): Use absolute offsets for start of
 	embedding area.  Use <= instead of == when checking for non-emptiness.
 
