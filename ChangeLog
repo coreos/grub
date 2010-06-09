@@ -1,3 +1,8 @@
+2010-06-09  Robert Millan  <rmh@gnu.org>
+
+	* util/grub.d/10_linux.in: Prefer compressed images over non-compressed
+	ones, when both are available.
+
 2010-06-08  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	Make --version uniform and avoid hard-coded program name.
