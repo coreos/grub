@@ -1,3 +1,8 @@
+2010-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Vendor power-on button): Add Asus EeePC 1005PE as
+	reported by Henrique Ferreiro.
+
 2010-06-09  Robert Millan  <rmh@gnu.org>
 
 	* util/grub.d/10_linux.in: Prefer compressed images over non-compressed
