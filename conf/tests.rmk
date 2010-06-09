@@ -68,6 +68,12 @@ grub_script_final_semicolon_SOURCES = tests/grub_script_final_semicolon.in
 check_SCRIPTS += grub_script_dollar
 grub_script_dollar_SOURCES = tests/grub_script_dollar.in
 
+check_SCRIPTS += grub_script_comments
+grub_script_comments_SOURCES = tests/grub_script_comments.in
+
+check_SCRIPTS += grub_script_functions
+grub_script_functions_SOURCES = tests/grub_script_functions.in
+
 # List of tests to execute on "make check"
 # SCRIPTED_TESTS    = example_scripted_test
 # SCRIPTED_TESTS   += example_grub_script_test
@@ -83,6 +89,8 @@ SCRIPTED_TESTS += grub_script_if
 SCRIPTED_TESTS += grub_script_blanklines
 SCRIPTED_TESTS += grub_script_final_semicolon
 SCRIPTED_TESTS += grub_script_dollar
+SCRIPTED_TESTS += grub_script_comments
+SCRIPTED_TESTS += grub_script_functions
 
 # dependencies between tests and testing-tools
 $(SCRIPTED_TESTS): grub-shell grub-shell-tester

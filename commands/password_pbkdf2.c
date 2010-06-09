@@ -24,6 +24,7 @@
 #include <grub/env.h>
 #include <grub/normal.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 
 static grub_dl_t my_mod;
 
@@ -186,8 +187,8 @@ GRUB_MOD_INIT(password_pbkdf2)
 {
   my_mod = mod;
   cmd = grub_register_command ("password_pbkdf2", grub_cmd_password,
-			       "password_pbkdf2 USER PBKDF2_PASSWORD",
-			       "Set user password (PBKDF2). ");
+			       N_("USER PBKDF2_PASSWORD"),
+			       N_("Set user password (PBKDF2). "));
 }
 
 GRUB_MOD_FINI(password_pbkdf2)

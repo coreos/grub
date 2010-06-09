@@ -28,14 +28,14 @@
 #include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
 #include <grub/env.h>
-#include <grub/util/hostdisk.h>
+#include <grub/emu/hostdisk.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <grub/term.h>
 #include <grub/i18n.h>
 #include <grub/util/raid.h>
 #include <grub/util/lvm.h>
-#include <grub/util/getroot.h>
+#include <grub/emu/getroot.h>
 
 static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_PARTITION_TYPE_BIOS_BOOT;
 
@@ -56,6 +56,13 @@ static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_P
 
 #define DEFAULT_BOOT_FILE	"boot.img"
 #define DEFAULT_CORE_FILE	"core.img"
+
+#define grub_target_to_host16(x)	grub_le_to_cpu16(x)
+#define grub_target_to_host32(x)	grub_le_to_cpu32(x)
+#define grub_target_to_host64(x)	grub_le_to_cpu64(x)
+#define grub_host_to_target16(x)	grub_cpu_to_le16(x)
+#define grub_host_to_target32(x)	grub_cpu_to_le32(x)
+#define grub_host_to_target64(x)	grub_cpu_to_le64(x)
 
 void
 grub_putchar (int c)
@@ -423,7 +430,7 @@ unable_to_embed:
   /* Make sure that GRUB reads the identical image as the OS.  */
   tmp_img = xmalloc (core_size);
   core_path_dev_full = grub_util_get_path (dir, core_file);
-  core_path_dev = make_system_path_relative_to_its_root (core_path_dev_full);
+  core_path_dev = grub_make_system_path_relative_to_its_root (core_path_dev_full);
   free (core_path_dev_full);
 
   /* It is a Good Thing to sync two times.  */

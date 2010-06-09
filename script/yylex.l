@@ -112,14 +112,15 @@ typedef size_t yy_size_t;
 %option extra-type="struct grub_parser_param*"
 
 BLANK           [ \t]
-COMMENT         ^[ \t]*#.*$
+COMMENT         #.*$
 
 CHAR            [^{}|&$;<> \t\n\'\"\\]
 DIGITS          [[:digit:]]+
 NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
 
 ESC             \\.
-VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|$\?|$\{\?\}
+SPECIAL         \?|\#|\*|\@
+VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|${SPECIAL}|$\{{SPECIAL}\}
 DQSTR           \"([^\\\"]|{ESC})*\"
 SQSTR           \'[^\']*\'
 WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
@@ -221,7 +222,7 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 }
 
 <VAR>{
-  \?            |
+  {SPECIAL}     |
   {DIGITS}      |
   {NAME}        {
                   COPY (yytext, yyleng);
@@ -231,7 +232,7 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
                   else
                     ARG (GRUB_SCRIPT_ARG_TYPE_DQVAR);
                 }
-  \{\?\}        |
+  \{{SPECIAL}\} |
   \{{DIGITS}\}  |
   \{{NAME}\}    {
                   yytext[yyleng - 1] = '\0';

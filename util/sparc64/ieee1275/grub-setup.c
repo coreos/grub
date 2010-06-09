@@ -29,7 +29,7 @@
 #include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
 #include <grub/env.h>
-#include <grub/util/hostdisk.h>
+#include <grub/emu/hostdisk.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <grub/term.h>
@@ -46,7 +46,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <grub/util/getroot.h>
+#include <grub/emu/getroot.h>
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
@@ -75,6 +75,13 @@
 
 #define DEFAULT_BOOT_FILE	"boot.img"
 #define DEFAULT_CORE_FILE	"core.img"
+
+#define grub_target_to_host16(x)	grub_be_to_cpu16(x)
+#define grub_target_to_host32(x)	grub_be_to_cpu32(x)
+#define grub_target_to_host64(x)	grub_be_to_cpu64(x)
+#define grub_host_to_target16(x)	grub_cpu_to_be16(x)
+#define grub_host_to_target32(x)	grub_cpu_to_be32(x)
+#define grub_host_to_target64(x)	grub_cpu_to_be64(x)
 
 /* This is the blocklist used in the diskboot image.  */
 struct boot_blocklist
@@ -627,7 +634,8 @@ main (int argc, char *argv[])
 
   find_dest_dev (&ginfo, argv);
 
-  ginfo.prefix = grub_get_prefix (ginfo.dir ? : DEFAULT_DIRECTORY);
+  ginfo.prefix = grub_make_system_path_relative_to_its_root (ginfo.dir ?
+							     : DEFAULT_DIRECTORY);
 
   check_root_dev (&ginfo);
 

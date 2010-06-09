@@ -19,14 +19,4 @@
 #ifndef GRUB_KERNEL_CPU_HEADER
 #define GRUB_KERNEL_CPU_HEADER	1
 
-#define GRUB_MOD_ALIGN 0x1000
-
-/* Minimal gap between _end and the start of the modules.  It's a hack
-   for PowerMac to prevent "CLAIM failed" error.  The real fix is to
-   rewrite grub-mkimage to generate valid ELF files.  */
-#define GRUB_MOD_GAP 0x8000
-
-#define GRUB_KERNEL_CPU_PREFIX		0x4
-#define GRUB_KERNEL_CPU_DATA_END	0x44
-
 #endif

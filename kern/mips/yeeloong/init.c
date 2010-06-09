@@ -26,7 +26,6 @@
 #include <grub/time.h>
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
-#include <grub/cpu/kernel.h>
 
 extern void grub_video_sm712_init (void);
 extern void grub_video_init (void);

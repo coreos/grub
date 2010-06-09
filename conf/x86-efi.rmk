@@ -1,18 +1,13 @@
 # -*- makefile -*-
 
-# Utilities.
-bin_UTILITIES = grub-mkimage
-
-# For grub-mkimage.
-grub_mkimage_SOURCES = gnulib/progname.c util/i386/efi/grub-mkimage.c \
-	util/misc.c util/resolve.c
-util/i386/efi/grub-mkimage.c_DEPENDENCIES = Makefile
-
 # Scripts.
 sbin_SCRIPTS = grub-install
 
 # For grub-install.
 grub_install_SOURCES = util/i386/efi/grub-install.in
+
+bin_SCRIPTS += grub-mkrescue
+grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 # Modules.
 pkglib_PROGRAMS = kernel.img
@@ -64,13 +59,17 @@ appleldr_mod_CFLAGS = $(COMMON_CFLAGS)
 appleldr_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For linux.mod.
-linux_mod_SOURCES = loader/i386/efi/linux.c
 ifeq ($(target_cpu), x86_64)
-linux_mod_SOURCES += loader/i386/linux_trampoline.S
-endif
+linux_mod_SOURCES = loader/i386/efi/linux.c loader/i386/linux_trampoline.S
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_ASFLAGS = $(COMMON_ASFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+else
+linux_mod_SOURCES = loader/i386/efi/linux.c
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
+linux_mod_ASFLAGS = $(COMMON_ASFLAGS)
+linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+endif
 
 # For halt.mod.
 halt_mod_SOURCES = commands/halt.c

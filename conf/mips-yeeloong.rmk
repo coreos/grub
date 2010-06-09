@@ -8,7 +8,7 @@ kernel_img_HEADERS += pci.h bitmap.h video.h gfxterm.h font.h bitmap_scale.h buf
 
 include $(srcdir)/conf/mips.mk
 
-pkglib_IMAGES = kernel.img
+pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
 	kern/main.c kern/device.c kern/$(target_cpu)/init.c \
 	kern/$(target_cpu)/$(target_machine)/init.c 		\

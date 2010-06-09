@@ -616,8 +616,8 @@ GRUB_MOD_INIT(serial)
 {
   cmd = grub_register_extcmd ("serial", grub_cmd_serial,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      "serial [OPTIONS...]",
-			      "Configure serial port.", options);
+			      N_("[OPTIONS...]"),
+			      N_("Configure serial port."), options);
 
   /* Set default settings.  */
   serial_settings.port      = serial_hw_get_port (0);
