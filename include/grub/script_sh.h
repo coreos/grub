@@ -61,7 +61,7 @@ struct grub_script_arg
   char *str;
 
   /* Parsed block argument.  */
-  struct grub_script_cmd *block;
+  struct grub_script block;
 
   /* Next argument part.  */
   struct grub_script_arg *next;

@@ -33,7 +33,10 @@
   struct grub_script_arglist *arglist;
   struct grub_script_arg *arg;
   char *string;
-  unsigned offset;
+  struct {
+    unsigned offset;
+    struct grub_script_mem *memory;
+  };
 }
 
 %token GRUB_PARSER_TOKEN_BAD
@@ -147,24 +150,30 @@ argument : "case"      { $$ = grub_script_add_arglist (state, 0, $1); }
          | word { $$ = $1; }
 ;
 
-block: "{" 
+block: "{"
        {
          grub_script_lexer_ref (state->lexerstate);
          $<offset>$ = grub_script_lexer_record_start (state);
+	 $<memory>$ = grub_script_mem_record (state);
        }
        commands1 delimiters0 "}"
        {
          char *p;
          struct grub_script_arg *arg;
+	 struct grub_script_mem *memory;
 
-         grub_script_lexer_deref (state->lexerstate);
-         if (p = grub_script_lexer_record_stop (state, $<offset>2))
+	 memory = grub_script_mem_record_stop (state, $<memory>2);
+         if ((p = grub_script_lexer_record_stop (state, $<offset>2)))
 	   *grub_strrchr (p, '}') = '\0';
 
          if (arg = grub_script_arg_add (state, 0, GRUB_SCRIPT_ARG_TYPE_BLOCK, p))
-	   arg->block = $3;
+	   {
+	     arg->block.cmd = $3;
+	     arg->block.mem = memory;
+	   }
 
          $$ = grub_script_add_arglist (state, 0, arg);
+         grub_script_lexer_deref (state->lexerstate);
        }
 ;
 
