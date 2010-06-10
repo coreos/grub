@@ -270,9 +270,9 @@ static int get_int_arg (const struct grub_arg_list *state)
 }
 
 static grub_err_t
-grub_cmd_hdparm (grub_extcmd_t cmd, int argc, char **args) // state????
+grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
 
   /* Check command line.  */
   if (argc != 1)

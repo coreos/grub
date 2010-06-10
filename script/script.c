@@ -96,7 +96,10 @@ grub_script_free (struct grub_script *script)
 {
   if (!script)
     return;
-  grub_script_mem_free (script->mem);
+
+  if (script->mem)
+    grub_script_mem_free (script->mem);
+
   grub_free (script);
 }
 
@@ -119,6 +122,9 @@ grub_script_arg_add (struct grub_parser_param *state,
     return arg;
 
   argpart->type = type;
+  argpart->block.mem = 0;
+  argpart->block.cmd = 0;
+
   len = grub_strlen (str) + 1;
   argpart->str = grub_script_malloc (state, len);
   if (!argpart->str)

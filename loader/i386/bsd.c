@@ -946,10 +946,10 @@ grub_bsd_parse_flags (const struct grub_arg_list *state,
 }
 
 static grub_err_t
-grub_cmd_freebsd (grub_extcmd_t cmd, int argc, char *argv[])
+grub_cmd_freebsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 {
   kernel_type = KERNEL_TYPE_FREEBSD;
-  bootflags = grub_bsd_parse_flags (cmd->state, freebsd_flags);
+  bootflags = grub_bsd_parse_flags (ctxt->state, freebsd_flags);
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     {
@@ -1009,16 +1009,16 @@ grub_cmd_freebsd (grub_extcmd_t cmd, int argc, char *argv[])
 }
 
 static grub_err_t
-grub_cmd_openbsd (grub_extcmd_t cmd, int argc, char *argv[])
+grub_cmd_openbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 {
   grub_uint32_t bootdev;
 
   kernel_type = KERNEL_TYPE_OPENBSD;
-  bootflags = grub_bsd_parse_flags (cmd->state, openbsd_flags);
+  bootflags = grub_bsd_parse_flags (ctxt->state, openbsd_flags);
 
-  if (cmd->state[OPENBSD_ROOT_ARG].set)
+  if (ctxt->state[OPENBSD_ROOT_ARG].set)
     {
-      const char *arg = cmd->state[OPENBSD_ROOT_ARG].arg;
+      const char *arg = ctxt->state[OPENBSD_ROOT_ARG].arg;
       int unit, part;
       if (*(arg++) != 'w' || *(arg++) != 'd')
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
@@ -1049,16 +1049,16 @@ grub_cmd_openbsd (grub_extcmd_t cmd, int argc, char *argv[])
 }
 
 static grub_err_t
-grub_cmd_netbsd (grub_extcmd_t cmd, int argc, char *argv[])
+grub_cmd_netbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 {
   kernel_type = KERNEL_TYPE_NETBSD;
-  bootflags = grub_bsd_parse_flags (cmd->state, netbsd_flags);
+  bootflags = grub_bsd_parse_flags (ctxt->state, netbsd_flags);
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     {
       grub_loader_set (grub_netbsd_boot, grub_bsd_unload, 1);
-      if (cmd->state[NETBSD_ROOT_ARG].set)
-	netbsd_root = grub_strdup (cmd->state[NETBSD_ROOT_ARG].arg);
+      if (ctxt->state[NETBSD_ROOT_ARG].set)
+	netbsd_root = grub_strdup (ctxt->state[NETBSD_ROOT_ARG].arg);
     }
 
   return grub_errno;

@@ -60,9 +60,9 @@ grub_interruptible_millisleep (grub_uint32_t ms)
 }
 
 static grub_err_t
-grub_cmd_sleep (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_sleep (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   int n;
 
   if (argc != 1)

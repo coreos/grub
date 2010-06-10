@@ -164,7 +164,7 @@ block: "{"
          if ((p = grub_script_lexer_record_stop (state, $<offset>2)))
 	   *grub_strrchr (p, '}') = '\0';
 
-         if (arg = grub_script_arg_add (state, 0, GRUB_SCRIPT_ARG_TYPE_BLOCK, p))
+         if ((arg = grub_script_arg_add (state, 0, GRUB_SCRIPT_ARG_TYPE_BLOCK, p)))
 	   {
 	     arg->block.cmd = $3;
 	     arg->block.mem = memory;

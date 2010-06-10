@@ -27,7 +27,7 @@
 #include <grub/charset.h>
 
 static grub_err_t
-grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
+grub_cmd_help (grub_extcmd_context_t ctxt __attribute__ ((unused)), int argc,
 	       char **args)
 {
   int cnt = 0;

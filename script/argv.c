@@ -52,8 +52,17 @@ grub_script_argv_free (struct grub_script_argv *argv)
       grub_free (argv->args);
     }
 
+  if (argv->scripts)
+    {
+      for (i = 0; i < argv->argc; i++)
+	grub_script_free (argv->scripts[i]);
+
+      grub_free (argv->scripts);
+    }
+
   argv->argc = 0;
   argv->args = 0;
+  argv->scripts = 0;
 }
 
 /* Prepare for next argc.  */
@@ -61,20 +70,33 @@ int
 grub_script_argv_next (struct grub_script_argv *argv)
 {
   char **p = argv->args;
+  struct grub_script **q = argv->scripts;
 
-  if (argv->args && argv->args[argv->argc - 1] == 0)
+  if (argv->args && argv->argc && argv->args[argv->argc - 1] == 0)
     return 0;
 
   p = grub_realloc (p, round_up_exp ((argv->argc + 2) * sizeof (char *)));
   if (! p)
     return 1;
 
+  q = grub_realloc (q, round_up_exp ((argv->argc + 2) * sizeof (struct grub_script *)));
+  if (! q)
+    {
+      grub_free (p);
+      return 1;
+    }
+
   argv->argc++;
   argv->args = p;
+  argv->scripts = q;
 
   if (argv->argc == 1)
-    argv->args[0] = 0;
+    {
+      argv->args[0] = 0;
+      argv->scripts[0] = 0;
+    }
   argv->args[argv->argc] = 0;
+  argv->scripts[argv->argc] = 0;
   return 0;
 }
 
@@ -97,6 +119,25 @@ grub_script_argv_append (struct grub_script_argv *argv, const char *s)
 
   grub_strcpy (p + a, s);
   argv->args[argv->argc - 1] = p;
+  return 0;
+}
+
+/* Append grub_script `s' as the last argument.  */
+int
+grub_script_argv_script_append (struct grub_script_argv *argv,
+				struct grub_script *script)
+{
+  struct grub_script *s;
+
+  s = grub_malloc (sizeof (*s));
+  if (! s)
+    return 1;
+
+  if (argv->scripts[argv->argc - 1])
+    grub_script_free (argv->scripts[argv->argc - 1]);
+
+  *s = *script;
+  argv->scripts[argv->argc - 1] = s;
   return 0;
 }
 
