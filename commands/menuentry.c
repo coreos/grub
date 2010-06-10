@@ -38,7 +38,7 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
   src = args[argc - 1];
   args[argc - 1] = '\0';
 
-  r = 0; //grub_normal_add_menu_entry (argc - 1, (const char **) args, src);
+  r = grub_normal_add_menu_entry (argc - 1, (const char **) args, src);
 
   args[argc - 1] = src;
   return r;
