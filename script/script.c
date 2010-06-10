@@ -273,30 +273,6 @@ grub_script_create_cmdwhile (struct grub_parser_param *state,
   return (struct grub_script_cmd *) cmd;
 }
 
-/* Create a command that adds a menu entry to the menu.  Title is an
-   argument that is parsed to generate a string that can be used as
-   the title.  The sourcecode for this entry is passed in SOURCECODE.
-   The options for this entry are passed in OPTIONS.  */
-struct grub_script_cmd *
-grub_script_create_cmdmenu (struct grub_parser_param *state,
-			    struct grub_script_arglist *arglist,
-			    char *sourcecode, int options)
-{
-  struct grub_script_cmd_menuentry *cmd;
-
-  cmd = grub_script_malloc (state, sizeof (*cmd));
-  if (!cmd)
-    return 0;
-    
-  cmd->cmd.exec = grub_script_execute_menuentry;
-  cmd->cmd.next = 0;
-  cmd->sourcecode = sourcecode;
-  cmd->arglist = arglist;
-  cmd->options = options;
-
-  return (struct grub_script_cmd *) cmd;
-}
-
 /* Create a chain of commands.  LAST contains the command that should
    be added at the end of LIST's list.  If LIST is zero, a new list
    will be created.  */

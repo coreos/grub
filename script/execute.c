@@ -424,31 +424,6 @@ grub_script_execute_cmdwhile (struct grub_script_cmd *cmd)
   return result;
 }
 
-/* Execute the menu entry generate statement.  */
-grub_err_t
-grub_script_execute_menuentry (struct grub_script_cmd *cmd)
-{
-  struct grub_script_cmd_menuentry *cmd_menuentry;
-  struct grub_script_argv argv = { 0, 0, 0 };
-
-  cmd_menuentry = (struct grub_script_cmd_menuentry *) cmd;
-
-  if (cmd_menuentry->arglist)
-    {
-      if (grub_script_arglist_to_argv (cmd_menuentry->arglist, &argv))
-	return grub_errno;
-    }
-
-  grub_normal_add_menu_entry (argv.argc, (const char **) argv.args,
-			      cmd_menuentry->sourcecode);
-
-  grub_script_argv_free (&argv);
-
-  return grub_errno;
-}
-
-
-
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t
 grub_script_execute (struct grub_script *script)

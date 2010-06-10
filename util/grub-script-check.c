@@ -94,12 +94,6 @@ grub_script_execute_cmdwhile (struct grub_script_cmd *cmd __attribute__ ((unused
 }
 
 grub_err_t
-grub_script_execute_menuentry (struct grub_script_cmd *cmd __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
 grub_script_execute (struct grub_script *script)
 {
   if (script == 0 || script->cmd == 0)

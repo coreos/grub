@@ -73,7 +73,6 @@
 %token <arg> GRUB_PARSER_TOKEN_WHILE     "while"
 %token <arg> GRUB_PARSER_TOKEN_TIME      "time"
 %token <arg> GRUB_PARSER_TOKEN_FUNCTION  "function"
-%token <arg> GRUB_PARSER_TOKEN_MENUENTRY "menuentry"
 %token <arg> GRUB_PARSER_TOKEN_NAME      "name"
 %token <arg> GRUB_PARSER_TOKEN_WORD      "word"
 
@@ -81,7 +80,7 @@
 
 %type <cmd> script_init script
 %type <cmd> grubcmd ifclause ifcmd forcmd whilecmd untilcmd
-%type <cmd> command commands1 menuentry statement
+%type <cmd> command commands1 statement
 
 %pure-parser
 %lex-param   { struct grub_parser_param *state };
@@ -127,8 +126,7 @@ word: GRUB_PARSER_TOKEN_NAME { $$ = grub_script_add_arglist (state, 0, $1); }
 
 statement: command   { $$ = $1; }
          | function  { $$ = 0;  }
-         | menuentry { $$ = $1; }
-
+;
 argument : "case"      { $$ = grub_script_add_arglist (state, 0, $1); }
          | "do"        { $$ = grub_script_add_arglist (state, 0, $1); }
          | "done"      { $$ = grub_script_add_arglist (state, 0, $1); }
@@ -144,7 +142,6 @@ argument : "case"      { $$ = grub_script_add_arglist (state, 0, $1); }
          | "until"     { $$ = grub_script_add_arglist (state, 0, $1); }
          | "while"     { $$ = grub_script_add_arglist (state, 0, $1); }
          | "function"  { $$ = grub_script_add_arglist (state, 0, $1); }
-         | "menuentry" { $$ = grub_script_add_arglist (state, 0, $1); }
          | word { $$ = $1; }
 ;
 
@@ -261,25 +258,6 @@ function: "function" "name"
 
             grub_script_lexer_deref (state->lexerstate);
           }
-;
-
-menuentry: "menuentry"
-           {
-             grub_script_lexer_ref (state->lexerstate);
-           }
-           arguments1
-           {
-             $<offset>$ = grub_script_lexer_record_start (state);
-           }
-           delimiters0 "{" commands1 delimiters1 "}"
-           {
-             char *def;
-             def = grub_script_lexer_record_stop (state, $<offset>4);
-	     *grub_strrchr(def, '}') = '\0';
-
-             grub_script_lexer_deref (state->lexerstate);
-             $$ = grub_script_create_cmdmenu (state, $3, def, 0);
-           }
 ;
 
 ifcmd: "if"
