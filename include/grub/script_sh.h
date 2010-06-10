@@ -49,7 +49,8 @@ typedef enum
   GRUB_SCRIPT_ARG_TYPE_TEXT,
   GRUB_SCRIPT_ARG_TYPE_DQVAR,
   GRUB_SCRIPT_ARG_TYPE_DQSTR,
-  GRUB_SCRIPT_ARG_TYPE_SQSTR
+  GRUB_SCRIPT_ARG_TYPE_SQSTR,
+  GRUB_SCRIPT_ARG_TYPE_BLOCK
 } grub_script_arg_type_t;
 
 /* A part of an argument.  */
@@ -59,8 +60,19 @@ struct grub_script_arg
 
   char *str;
 
+  /* Parsed block argument.  */
+  struct grub_script block;
+
   /* Next argument part.  */
   struct grub_script_arg *next;
+};
+
+/* An argument vector.  */
+struct grub_script_argv
+{
+  unsigned argc;
+  char **args;
+  struct grub_script **scripts;
 };
 
 /* A complete argument.  It consists of a list of one or more `struct
@@ -80,15 +92,6 @@ struct grub_script_cmdline
 
   /* The arguments for this command.  */
   struct grub_script_arglist *arglist;
-};
-
-/* A block of commands, this can be used to group commands.  */
-struct grub_script_cmdblock
-{
-  struct grub_script_cmd cmd;
-
-  /* A chain of commands.  */
-  struct grub_script_cmd *cmdlist;
 };
 
 /* An if statement.  */
@@ -224,6 +227,13 @@ struct grub_parser_param
   struct grub_lexer_param *lexerstate;
 };
 
+void grub_script_argv_free    (struct grub_script_argv *argv);
+int grub_script_argv_next     (struct grub_script_argv *argv);
+int grub_script_argv_append   (struct grub_script_argv *argv, const char *s);
+int grub_script_argv_split_append (struct grub_script_argv *argv, char *s);
+int grub_script_argv_script_append (struct grub_script_argv *argv,
+				    struct grub_script *s);
+
 struct grub_script_arglist *
 grub_script_create_arglist (struct grub_parser_param *state);
 
@@ -234,8 +244,6 @@ grub_script_add_arglist (struct grub_parser_param *state,
 struct grub_script_cmd *
 grub_script_create_cmdline (struct grub_parser_param *state,
 			    struct grub_script_arglist *arglist);
-struct grub_script_cmd *
-grub_script_create_cmdblock (struct grub_parser_param *state);
 
 struct grub_script_cmd *
 grub_script_create_cmdif (struct grub_parser_param *state,
@@ -262,9 +270,9 @@ grub_script_create_cmdmenu (struct grub_parser_param *state,
 			    int options);
 
 struct grub_script_cmd *
-grub_script_add_cmd (struct grub_parser_param *state,
-		     struct grub_script_cmdblock *cmdblock,
-		     struct grub_script_cmd *cmd);
+grub_script_append_cmd (struct grub_parser_param *state,
+			struct grub_script_cmd *list,
+			struct grub_script_cmd *last);
 struct grub_script_arg *
 grub_script_arg_add (struct grub_parser_param *state,
 		     struct grub_script_arg *arg,
@@ -282,8 +290,8 @@ struct grub_lexer_param *grub_script_lexer_init (struct grub_parser_param *parse
 void grub_script_lexer_fini (struct grub_lexer_param *);
 void grub_script_lexer_ref (struct grub_lexer_param *);
 void grub_script_lexer_deref (struct grub_lexer_param *);
-void grub_script_lexer_record_start (struct grub_parser_param *);
-char *grub_script_lexer_record_stop (struct grub_parser_param *);
+unsigned grub_script_lexer_record_start (struct grub_parser_param *);
+char *grub_script_lexer_record_stop (struct grub_parser_param *, unsigned);
 int  grub_script_lexer_yywrap (struct grub_parser_param *);
 void grub_script_lexer_record (struct grub_parser_param *, char *);
 
@@ -301,7 +309,7 @@ void grub_script_yyerror (struct grub_parser_param *, char const *);
 
 /* Commands to execute, don't use these directly.  */
 grub_err_t grub_script_execute_cmdline (struct grub_script_cmd *cmd);
-grub_err_t grub_script_execute_cmdblock (struct grub_script_cmd *cmd);
+grub_err_t grub_script_execute_cmdlist (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdif (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdfor (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdwhile (struct grub_script_cmd *cmd);
@@ -340,8 +348,8 @@ grub_script_function_t grub_script_function_create (struct grub_script_arg *func
 void grub_script_function_remove (const char *name);
 grub_script_function_t grub_script_function_find (char *functionname);
 int grub_script_function_iterate (int (*iterate) (grub_script_function_t));
-int grub_script_function_call (grub_script_function_t func,
-			       int argc, char **args);
+grub_err_t grub_script_function_call (grub_script_function_t func,
+				      int argc, char **args);
 
 char **
 grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count);

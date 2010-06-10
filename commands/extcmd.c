@@ -21,15 +21,17 @@
 #include <grub/list.h>
 #include <grub/misc.h>
 #include <grub/extcmd.h>
+#include <grub/script_sh.h>
 
-static grub_err_t
-grub_extcmd_dispatcher (struct grub_command *cmd,
-			int argc, char **args)
+grub_err_t
+grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
+			struct grub_script **scripts)
 {
   int new_argc;
   char **new_args;
   struct grub_arg_option *parser;
   struct grub_arg_list *state;
+  struct grub_extcmd_context context;
   int maxargs = 0;
   grub_err_t ret;
   grub_extcmd_t ext;
@@ -44,8 +46,11 @@ grub_extcmd_dispatcher (struct grub_command *cmd,
 
   if (grub_arg_parse (ext, argc, args, state, &new_args, &new_argc))
     {
-      ext->state = state;
-      ret = (ext->func) (ext, new_argc, new_args);
+      context.extcmd = ext;
+      context.state = state;
+      context.script_params = scripts;
+
+      ret = (ext->func) (&context, new_argc, new_args);
       grub_free (new_args);
     }
   else
@@ -54,6 +59,12 @@ grub_extcmd_dispatcher (struct grub_command *cmd,
   grub_free (state);
 
   return ret;
+}
+
+static grub_err_t
+grub_extcmd_dispatch (struct grub_command *cmd, int argc, char **args)
+{
+  return grub_extcmd_dispatcher (cmd, argc, args, 0);
 }
 
 grub_extcmd_t
@@ -69,7 +80,7 @@ grub_register_extcmd (const char *name, grub_extcmd_func_t func,
   if (! ext)
     return 0;
 
-  cmd = grub_register_command_prio (name, grub_extcmd_dispatcher,
+  cmd = grub_register_command_prio (name, grub_extcmd_dispatch,
 				    summary, description, 1);
   if (! cmd)
     {

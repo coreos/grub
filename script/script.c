@@ -96,7 +96,10 @@ grub_script_free (struct grub_script *script)
 {
   if (!script)
     return;
-  grub_script_mem_free (script->mem);
+
+  if (script->mem)
+    grub_script_mem_free (script->mem);
+
   grub_free (script);
 }
 
@@ -119,6 +122,9 @@ grub_script_arg_add (struct grub_parser_param *state,
     return arg;
 
   argpart->type = type;
+  argpart->block.mem = 0;
+  argpart->block.cmd = 0;
+
   len = grub_strlen (str) + 1;
   argpart->str = grub_script_malloc (state, len);
   if (!argpart->str)
@@ -291,46 +297,40 @@ grub_script_create_cmdmenu (struct grub_parser_param *state,
   return (struct grub_script_cmd *) cmd;
 }
 
-/* Create a block of commands.  CMD contains the command that should
-   be added at the end of CMDBLOCK's list.  If CMDBLOCK is zero, a new
-   cmdblock will be created.  */
+/* Create a chain of commands.  LAST contains the command that should
+   be added at the end of LIST's list.  If LIST is zero, a new list
+   will be created.  */
 struct grub_script_cmd *
-grub_script_add_cmd (struct grub_parser_param *state,
-		     struct grub_script_cmdblock *cmdblock,
-		     struct grub_script_cmd *cmd)
+grub_script_append_cmd (struct grub_parser_param *state,
+			struct grub_script_cmd *list,
+			struct grub_script_cmd *last)
 {
   struct grub_script_cmd *ptr;
 
-  grub_dprintf ("scripting", "cmdblock\n");
+  grub_dprintf ("scripting", "append command\n");
 
-  if (!cmd)
-    return (struct grub_script_cmd *) cmdblock;
+  if (! last)
+    return list;
 
-  if (!cmdblock)
+  if (! list)
     {
-      cmdblock = grub_script_malloc (state, sizeof (*cmdblock));
-      if (!cmdblock)
+      list = grub_script_malloc (state, sizeof (*list));
+      if (! list)
 	return 0;
 
-      cmdblock->cmd.exec = grub_script_execute_cmdblock;
-      cmdblock->cmd.next = 0;
-      cmdblock->cmdlist = cmd;
-      cmd->next = 0;
+      list->exec = grub_script_execute_cmdlist;
+      list->next = last;
     }
   else
     {
-      if (!cmdblock->cmdlist)
-	cmdblock->cmdlist = cmd;
-      else
-	{
-	  ptr = cmdblock->cmdlist;
-	  while (ptr->next)
-	    ptr = ptr->next;
-	  ptr->next = cmd;
-	}
+      ptr = list;
+      while (ptr->next)
+	ptr = ptr->next;
+
+      ptr->next = last;
     }
 
-  return (struct grub_script_cmd *) cmdblock;
+  return list;
 }
 
 

@@ -50,9 +50,9 @@ enum options
  };
 
 static grub_err_t
-grub_cmd_search (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_search (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   const char *var = 0;
 
   if (argc == 0)

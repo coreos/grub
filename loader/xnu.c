@@ -1368,15 +1368,15 @@ static const struct grub_arg_option xnu_splash_cmd_options[] =
   };
 
 static grub_err_t
-grub_cmd_xnu_splash (grub_extcmd_t cmd,
+grub_cmd_xnu_splash (grub_extcmd_context_t ctxt,
 		     int argc, char *args[])
 {
   grub_err_t err;
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
-  if (cmd->state[XNU_SPLASH_CMD_ARGINDEX_MODE].set &&
-      grub_strcmp (cmd->state[XNU_SPLASH_CMD_ARGINDEX_MODE].arg,
+  if (ctxt->state[XNU_SPLASH_CMD_ARGINDEX_MODE].set &&
+      grub_strcmp (ctxt->state[XNU_SPLASH_CMD_ARGINDEX_MODE].arg,
 		   "stretch") == 0)
     grub_xnu_bitmap_mode = GRUB_XNU_BITMAP_STRETCH;
   else

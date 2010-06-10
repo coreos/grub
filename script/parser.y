@@ -33,6 +33,10 @@
   struct grub_script_arglist *arglist;
   struct grub_script_arg *arg;
   char *string;
+  struct {
+    unsigned offset;
+    struct grub_script_mem *memory;
+  };
 }
 
 %token GRUB_PARSER_TOKEN_BAD
@@ -73,7 +77,7 @@
 %token <arg> GRUB_PARSER_TOKEN_NAME      "name"
 %token <arg> GRUB_PARSER_TOKEN_WORD      "word"
 
-%type <arglist> word argument arguments0 arguments1
+%type <arglist> word argument block parameters0 parameters1 arguments0 arguments1
 
 %type <cmd> script_init script
 %type <cmd> grubcmd ifclause ifcmd forcmd whilecmd untilcmd
@@ -96,9 +100,7 @@ script: newlines0
         }
       | script statement delimiter newlines0
         {
-          struct grub_script_cmdblock *cmdblock;
-          cmdblock = (struct grub_script_cmdblock *) $1;
-          $$ = grub_script_add_cmd (state, cmdblock, $2);
+          $$ = grub_script_append_cmd (state, $1, $2);
         }
       | error
         {
@@ -146,6 +148,33 @@ argument : "case"      { $$ = grub_script_add_arglist (state, 0, $1); }
          | word { $$ = $1; }
 ;
 
+block: "{"
+       {
+         grub_script_lexer_ref (state->lexerstate);
+         $<offset>$ = grub_script_lexer_record_start (state);
+	 $<memory>$ = grub_script_mem_record (state);
+       }
+       commands1 delimiters0 "}"
+       {
+         char *p;
+         struct grub_script_arg *arg;
+	 struct grub_script_mem *memory;
+
+	 memory = grub_script_mem_record_stop (state, $<memory>2);
+         if ((p = grub_script_lexer_record_stop (state, $<offset>2)))
+	   *grub_strrchr (p, '}') = '\0';
+
+         if ((arg = grub_script_arg_add (state, 0, GRUB_SCRIPT_ARG_TYPE_BLOCK, p)))
+	   {
+	     arg->block.cmd = $3;
+	     arg->block.mem = memory;
+	   }
+
+         $$ = grub_script_add_arglist (state, 0, arg);
+         grub_script_lexer_deref (state->lexerstate);
+       }
+;
+
 arguments0: /* Empty */ { $$ = 0; }
           | arguments1  { $$ = $1; }
 ;
@@ -161,7 +190,32 @@ arguments1: argument arguments0
             }
 ;
 
-grubcmd: word arguments0
+parameters1: argument parameters0
+             {
+               if ($1 && $2)
+                 {
+                   $1->next = $2;
+                   $1->argcount += $2->argcount;
+                   $2->argcount = 0;
+                 }
+               $$ = $1;
+             }
+           | block parameters0
+             {
+               if ($1 && $2)
+                 {
+                   $1->next = $2;
+                   $1->argcount += $2->argcount;
+                   $2->argcount = 0;
+                 }
+               $$ = $1;
+             }
+;
+parameters0: /* Empty */ { $$ = 0; }
+           | parameters1 { $$ = $1; }
+;
+
+grubcmd: word parameters0
          {
            if ($1 && $2) {
              $1->next = $2;
@@ -183,13 +237,11 @@ command: grubcmd  { $$ = $1; }
 /* A list of commands. */
 commands1: newlines0 command
            {
-             $$ = grub_script_add_cmd (state, 0, $2);
+             $$ = grub_script_append_cmd (state, 0, $2);
            }
          | commands1 delimiters1 command
            {
-             struct grub_script_cmdblock *cmdblock;
-	     cmdblock = (struct grub_script_cmdblock *) $1;
-	     $$ = grub_script_add_cmd (state, cmdblock, $3);
+	     $$ = grub_script_append_cmd (state, $1, $3);
            }
 ;
 
@@ -217,14 +269,16 @@ menuentry: "menuentry"
            }
            arguments1
            {
-             grub_script_lexer_record_start (state);
+             $<offset>$ = grub_script_lexer_record_start (state);
            }
            delimiters0 "{" commands1 delimiters1 "}"
            {
-             char *menu_entry;
-             menu_entry = grub_script_lexer_record_stop (state);
+             char *def;
+             def = grub_script_lexer_record_stop (state, $<offset>4);
+	     *grub_strrchr(def, '}') = '\0';
+
              grub_script_lexer_deref (state->lexerstate);
-             $$ = grub_script_create_cmdmenu (state, $3, menu_entry, 0);
+             $$ = grub_script_create_cmdmenu (state, $3, def, 0);
            }
 ;
 

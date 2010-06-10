@@ -26,12 +26,36 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 
+static struct grub_script *script;
+
 static grub_err_t
-grub_cmd_hello (struct grub_extcmd *cmd __attribute__ ((unused)),
-		int argc __attribute__ ((unused)),
-		char **args __attribute__ ((unused)))
+grub_cmd_hello (grub_extcmd_context_t ctxt,
+		int argc, char **args __attribute__ ((unused)))
 {
-  grub_printf ("Hello World\n");
+  if (argc == 0 && script == 0)
+    grub_printf ("Hello World\n");
+
+  else if (argc == 0)
+    grub_script_execute (script);
+
+  else
+    {
+      if (! ctxt->script_params || ! ctxt->script_params[0])
+	return 1;
+
+      if (script)
+	grub_script_free (script);
+
+      script = grub_malloc (sizeof (*script));
+      if (! script)
+	return 1;
+
+      script->cmd = ctxt->script_params[0]->cmd;
+      script->mem = ctxt->script_params[0]->mem;
+      ctxt->script_params[0]->cmd = 0;
+      ctxt->script_params[0]->mem = 0;
+    }
+
   return 0;
 }
 
@@ -39,11 +63,15 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(hello)
 {
-  cmd = grub_register_extcmd ("hello", grub_cmd_hello, GRUB_COMMAND_FLAG_BOTH,
-			      0, N_("Say \"Hello World\"."), 0);
+  cmd = grub_register_extcmd ("hello", grub_cmd_hello,
+			      GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_BLOCKS,
+			      N_("[BLOCK]"), N_("Say \"Hello World\"."), 0);
 }
 
 GRUB_MOD_FINI(hello)
 {
+  if (script)
+    grub_script_free (script);
+
   grub_unregister_extcmd (cmd);
 }
