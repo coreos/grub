@@ -198,7 +198,7 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 
 	    case GRUB_SCRIPT_ARG_TYPE_BLOCK:
 	      if (grub_script_argv_append (&result, arg->str) ||
-		  grub_script_argv_script_append (&result, &arg->block))
+		  grub_script_argv_script_append (&result, arg->block))
 		goto fail;
 	      break;
 

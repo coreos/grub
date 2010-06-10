@@ -39,6 +39,7 @@ struct grub_script_cmd
 
 struct grub_script
 {
+  unsigned refcnt;
   struct grub_script_mem *mem;
   struct grub_script_cmd *cmd;
 };
@@ -61,7 +62,7 @@ struct grub_script_arg
   char *str;
 
   /* Parsed block argument.  */
-  struct grub_script block;
+  struct grub_script *block;
 
   /* Next argument part.  */
   struct grub_script_arg *next;
@@ -212,6 +213,8 @@ struct grub_parser_param
   struct grub_lexer_param *lexerstate;
 };
 
+void grub_script_mem_free (struct grub_script_mem *mem);
+
 void grub_script_argv_free    (struct grub_script_argv *argv);
 int grub_script_argv_next     (struct grub_script_argv *argv);
 int grub_script_argv_append   (struct grub_script_argv *argv, const char *s);
@@ -331,5 +334,21 @@ grub_err_t grub_script_function_call (grub_script_function_t func,
 
 char **
 grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count);
+
+static inline struct grub_script *
+grub_script_get (struct grub_script *script)
+{
+  script->refcnt++;
+  return script;
+}
+
+static inline void
+grub_script_put (struct grub_script *script)
+{
+  if (script->refcnt == 0)
+    grub_script_free (script);
+  else
+    script->refcnt--;
+}
 
 #endif /* ! GRUB_NORMAL_PARSER_HEADER */

@@ -44,16 +44,9 @@ grub_cmd_hello (grub_extcmd_context_t ctxt,
 	return 1;
 
       if (script)
-	grub_script_free (script);
+	grub_script_put (script);
 
-      script = grub_malloc (sizeof (*script));
-      if (! script)
-	return 1;
-
-      script->cmd = ctxt->script_params[0]->cmd;
-      script->mem = ctxt->script_params[0]->mem;
-      ctxt->script_params[0]->cmd = 0;
-      ctxt->script_params[0]->mem = 0;
+      script = grub_script_get (ctxt->script_params[0]);
     }
 
   return 0;
@@ -71,7 +64,8 @@ GRUB_MOD_INIT(hello)
 GRUB_MOD_FINI(hello)
 {
   if (script)
-    grub_script_free (script);
+    grub_script_put (script);
 
+  script = 0;
   grub_unregister_extcmd (cmd);
 }
