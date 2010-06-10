@@ -55,7 +55,8 @@ grub_script_argv_free (struct grub_script_argv *argv)
   if (argv->scripts)
     {
       for (i = 0; i < argv->argc; i++)
-	grub_script_free (argv->scripts[i]);
+	if (argv->scripts[i])
+	  grub_script_put (argv->scripts[i]);
 
       grub_free (argv->scripts);
     }
@@ -127,17 +128,10 @@ int
 grub_script_argv_script_append (struct grub_script_argv *argv,
 				struct grub_script *script)
 {
-  struct grub_script *s;
-
-  s = grub_malloc (sizeof (*s));
-  if (! s)
-    return 1;
-
   if (argv->scripts[argv->argc - 1])
-    grub_script_free (argv->scripts[argv->argc - 1]);
+    grub_script_put (argv->scripts[argv->argc - 1]);
 
-  *s = *script;
-  argv->scripts[argv->argc - 1] = s;
+  argv->scripts[argv->argc - 1] = grub_script_get (script);
   return 0;
 }
 

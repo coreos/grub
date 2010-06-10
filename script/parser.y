@@ -164,11 +164,9 @@ block: "{"
          if ((p = grub_script_lexer_record_stop (state, $<offset>2)))
 	   *grub_strrchr (p, '}') = '\0';
 
-         if ((arg = grub_script_arg_add (state, 0, GRUB_SCRIPT_ARG_TYPE_BLOCK, p)))
-	   {
-	     arg->block.cmd = $3;
-	     arg->block.mem = memory;
-	   }
+	 arg = grub_script_arg_add (state, 0, GRUB_SCRIPT_ARG_TYPE_BLOCK, p);
+	 if (! arg || ! (arg->block = grub_script_create ($3, memory)))
+	   grub_script_mem_free (memory);
 
          $$ = grub_script_add_arglist (state, 0, arg);
          grub_script_lexer_deref (state->lexerstate);
@@ -256,8 +254,10 @@ function: "function" "name"
             state->func_mem = grub_script_mem_record_stop (state,
                                                            state->func_mem);
             script = grub_script_create ($6, state->func_mem);
-            if (script)
-              grub_script_function_create ($2, script);
+            if (! script)
+	      grub_script_mem_free (state->func_mem);
+	    else
+	      grub_script_function_create ($2, script);
 
             grub_script_lexer_deref (state->lexerstate);
           }

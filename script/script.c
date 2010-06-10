@@ -54,7 +54,7 @@ grub_script_malloc (struct grub_parser_param *state, grub_size_t size)
 }
 
 /* Free all memory described by MEM.  */
-static void
+void
 grub_script_mem_free (struct grub_script_mem *mem)
 {
   struct grub_script_mem *memfree;
@@ -122,8 +122,7 @@ grub_script_arg_add (struct grub_parser_param *state,
     return arg;
 
   argpart->type = type;
-  argpart->block.mem = 0;
-  argpart->block.cmd = 0;
+  argpart->block = 0;
 
   len = grub_strlen (str) + 1;
   argpart->str = grub_script_malloc (state, len);
@@ -341,16 +340,12 @@ grub_script_create (struct grub_script_cmd *cmd, struct grub_script_mem *mem)
   struct grub_script *parsed;
 
   parsed = grub_malloc (sizeof (*parsed));
-  if (!parsed)
-    {
-      grub_script_mem_free (mem);
-      grub_free (cmd);
-
-      return 0;
-    }
+  if (! parsed)
+    return 0;
 
   parsed->mem = mem;
   parsed->cmd = cmd;
+  parsed->refcnt = 0;
 
   return parsed;
 }
@@ -365,7 +360,7 @@ grub_script_parse (char *script, grub_reader_getline_t getline)
   struct grub_lexer_param *lexstate;
   struct grub_parser_param *parsestate;
 
-  parsed = grub_malloc (sizeof (*parsed));
+  parsed = grub_script_create (0, 0);
   if (!parsed)
     return 0;
 
