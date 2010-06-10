@@ -19,8 +19,10 @@
 #ifndef	GRUB_PCI_H
 #define	GRUB_PCI_H	1
 
+#ifndef ASM_FILE
 #include <grub/types.h>
 #include <grub/symbol.h>
+#endif
 
 #define  GRUB_PCI_ADDR_SPACE_MASK	0x01
 #define  GRUB_PCI_ADDR_SPACE_MEMORY	0x00
@@ -66,6 +68,20 @@
 #define  GRUB_PCI_REG_MIN_GNT      0x3e
 #define  GRUB_PCI_REG_MAX_LAT      0x3f
 
+#define  GRUB_PCI_COMMAND_IO_ENABLED    0x0001
+#define  GRUB_PCI_COMMAND_MEM_ENABLED   0x0002
+#define  GRUB_PCI_COMMAND_BUS_MASTER    0x0004
+#define  GRUB_PCI_COMMAND_PARITY_ERROR  0x0040
+#define  GRUB_PCI_COMMAND_SERR_ENABLE   0x0100
+
+#define  GRUB_PCI_STATUS_CAPABILITIES      0x0010
+#define  GRUB_PCI_STATUS_66MHZ_CAPABLE     0x0020
+#define  GRUB_PCI_STATUS_FAST_B2B_CAPABLE  0x0080
+
+#define  GRUB_PCI_STATUS_DEVSEL_TIMING_SHIFT 9
+#define  GRUB_PCI_STATUS_DEVSEL_TIMING_MASK 0x0600
+
+#ifndef ASM_FILE
 typedef grub_uint32_t grub_pci_id_t;
 
 #ifdef GRUB_MACHINE_EMU
@@ -106,5 +122,15 @@ grub_pci_address_t EXPORT_FUNC(grub_pci_make_address) (grub_pci_device_t dev,
 						       int reg);
 
 void EXPORT_FUNC(grub_pci_iterate) (grub_pci_iteratefunc_t hook);
+
+struct grub_pci_dma_chunk;
+
+struct grub_pci_dma_chunk *EXPORT_FUNC(grub_memalign_dma32) (grub_size_t align,
+							     grub_size_t size);
+void EXPORT_FUNC(grub_dma_free) (struct grub_pci_dma_chunk *ch);
+volatile void *EXPORT_FUNC(grub_dma_get_virt) (struct grub_pci_dma_chunk *ch);
+grub_uint32_t EXPORT_FUNC(grub_dma_get_phys) (struct grub_pci_dma_chunk *ch);
+
+#endif
 
 #endif /* GRUB_PCI_H */

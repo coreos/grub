@@ -34,6 +34,8 @@ target_cpu=@target_cpu@
 platform=@platform@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
+self=`basename $0`
+
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
@@ -53,7 +55,7 @@ nvsetenv=`which nvsetenv`
 # Print the usage.
 usage () {
     cat <<EOF
-Usage: grub-install [OPTION] [install_device]
+Usage: $self [OPTION] [install_device]
 Install GRUB on your drive.
 
   -h, --help              print this message and exit
@@ -66,7 +68,7 @@ Install GRUB on your drive.
   --grub-probe=FILE       use FILE as grub-probe
   --no-nvram              don't update the boot-device NVRAM variable
 
-grub-install copies GRUB images into the DIR/boot directory specified by
+$self copies GRUB images into the DIR/boot directory specified by
 --root-directory, and uses nvsetenv to set the Open Firmware boot-device
 variable.
 
@@ -81,7 +83,7 @@ for option in "$@"; do
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-install (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
@@ -231,7 +233,7 @@ fi
 echo "Installation finished. No error reported."
 echo "This is the contents of the device map $device_map."
 echo "Check if this is correct or not. If any of the lines is incorrect,"
-echo "fix it and re-run the script \`grub-install'."
+echo "fix it and re-run the script \`$self'."
 echo
 
 cat $device_map

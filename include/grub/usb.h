@@ -35,7 +35,8 @@ typedef enum
     GRUB_USB_ERR_NAK,
     GRUB_USB_ERR_BABBLE,
     GRUB_USB_ERR_TIMEOUT,
-    GRUB_USB_ERR_BITSTUFF
+    GRUB_USB_ERR_BITSTUFF,
+    GRUB_USB_ERR_UNRECOVERABLE
   } grub_usb_err_t;
 
 typedef enum
@@ -156,7 +157,7 @@ struct grub_usb_device
   int initialized;
 
   /* Data toggle values (used for bulk transfers only).  */
-  int toggle[16];
+  int toggle[256];
 
   /* Device-specific data.  */
   void *data;
@@ -184,7 +185,12 @@ typedef enum
 
 typedef enum
   {
-    GRUB_USBMS_SUBCLASS_BULK = 0x06
+    GRUB_USBMS_SUBCLASS_BULK = 0x06,
+  	/* Experimental support for non-pure SCSI devices */
+    GRUB_USBMS_SUBCLASS_RBC = 0x01,
+    GRUB_USBMS_SUBCLASS_MMC2 = 0x02,
+    GRUB_USBMS_SUBCLASS_UFI = 0x04,
+    GRUB_USBMS_SUBCLASS_SFF8070 = 0x05
   } grub_usbms_subclass_t;
 
 typedef enum
