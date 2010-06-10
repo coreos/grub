@@ -65,7 +65,7 @@ GRUB_MOD_INIT(hello)
 {
   cmd = grub_register_extcmd ("hello", grub_cmd_hello,
 			      GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_BLOCKS,
-			      0, N_("Say \"Hello World\"."), 0);
+			      N_("[BLOCK]"), N_("Say \"Hello World\"."), 0);
 }
 
 GRUB_MOD_FINI(hello)
