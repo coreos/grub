@@ -1,5 +1,10 @@
 2010-06-11  Colin Watson  <cjwatson@ubuntu.com>
 
+	* include/grub/efi/uga_draw.h (GRUB_EFI_UGA_GLT_MAX): Rename to ...
+	(GRUB_EFI_UGA_BLT_MAX): ... this (typo fix).
+
+2010-06-11  Colin Watson  <cjwatson@ubuntu.com>
+
 	* Makefile.in (install-local): Include $(srcdir)/docs/man/$$dest.h2m
 	when generating manual pages.
 	* docs/man/grub-bin2h.h2m: New file.
