@@ -1,3 +1,27 @@
+2010-06-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.in (install-local): Include $(srcdir)/docs/man/$$dest.h2m
+	when generating manual pages.
+	* docs/man/grub-bin2h.h2m: New file.
+	* docs/man/grub-editenv.h2m: New file.
+	* docs/man/grub-fstest.h2m: New file.
+	* docs/man/grub-install.h2m: New file.
+	* docs/man/grub-macho2img.h2m: New file.
+	* docs/man/grub-mkconfig.h2m: New file.
+	* docs/man/grub-mkdevicemap.h2m: New file.
+	* docs/man/grub-mkfont.h2m: New file.
+	* docs/man/grub-mkimage.h2m: New file.
+	* docs/man/grub-mkpasswd-pbkdf2.h2m: New file.
+	* docs/man/grub-mkrelpath.h2m: New file.
+	* docs/man/grub-mkrescue.h2m: New file.
+	* docs/man/grub-ofpathname.h2m: New file.
+	* docs/man/grub-pe2elf.h2m: New file.
+	* docs/man/grub-probe.h2m: New file.
+	* docs/man/grub-reboot.h2m: New file.
+	* docs/man/grub-script-check.h2m: New file.
+	* docs/man/grub-set-default.h2m: New file.
+	* docs/man/grub-setup.h2m: New file.
+
 2010-06-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Use FOR_* macros instead of *_iterate whenever possible.
