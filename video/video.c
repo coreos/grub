@@ -23,43 +23,10 @@
 #include <grub/mm.h>
 
 /* The list of video adapters registered to system.  */
-static grub_video_adapter_t grub_video_adapter_list;
+grub_video_adapter_t grub_video_adapter_list = NULL;
 
 /* Active video adapter.  */
 static grub_video_adapter_t grub_video_adapter_active;
-
-/* Register video driver.  */
-void
-grub_video_register (grub_video_adapter_t adapter)
-{
-  adapter->next = grub_video_adapter_list;
-  grub_video_adapter_list = adapter;
-}
-
-/* Unregister video driver.  */
-void
-grub_video_unregister (grub_video_adapter_t adapter)
-{
-  grub_video_adapter_t *p, q;
-
-  for (p = &grub_video_adapter_list, q = *p; q; p = &(q->next), q = q->next)
-    if (q == adapter)
-      {
-        *p = q->next;
-        break;
-      }
-}
-
-/* Iterate thru all registered video drivers.  */
-void
-grub_video_iterate (int (*hook) (grub_video_adapter_t adapter))
-{
-  grub_video_adapter_t p;
-
-  for (p = grub_video_adapter_list; p; p = p->next)
-    if (hook (p))
-      break;
-}
 
 /* Restore back to initial mode (where applicable).  */
 grub_err_t

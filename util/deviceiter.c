@@ -750,8 +750,8 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 		      free (name);
 		      while (seen)
 			{
-			  struct dmraid_seen *seen_elt =
-			    grub_list_pop (GRUB_AS_LIST_P (&seen));
+			  struct dmraid_seen *seen_elt = seen;
+			  seen = seen->next;
 			  free (seen_elt);
 			}
 		      if (task)
@@ -776,7 +776,8 @@ dmraid_next_child:
 dmraid_end:
       while (seen)
 	{
-	  struct dmraid_seen *seen_elt = grub_list_pop (GRUB_AS_LIST_P (&seen));
+	  struct dmraid_seen *seen_elt = seen;
+	  seen = seen->next;
 	  free (seen_elt);
 	}
       if (task)

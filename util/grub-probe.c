@@ -71,9 +71,6 @@ grub_getkey (void)
   return -1;
 }
 
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
-
 void
 grub_refresh (void)
 {

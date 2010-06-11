@@ -27,39 +27,9 @@
 #include <grub/mm.h>
 #include <grub/term.h>
 
-static grub_fs_t grub_fs_list;
+grub_fs_t grub_fs_list = 0;
 
 grub_fs_autoload_hook_t grub_fs_autoload_hook = 0;
-
-void
-grub_fs_register (grub_fs_t fs)
-{
-  fs->next = grub_fs_list;
-  grub_fs_list = fs;
-}
-
-void
-grub_fs_unregister (grub_fs_t fs)
-{
-  grub_fs_t *p, q;
-
-  for (p = &grub_fs_list, q = *p; q; p = &(q->next), q = q->next)
-    if (q == fs)
-      {
-	*p = q->next;
-	break;
-      }
-}
-
-void
-grub_fs_iterate (int (*hook) (const grub_fs_t fs))
-{
-  grub_fs_t p;
-
-  for (p = grub_fs_list; p; p = p->next)
-    if (hook (p))
-      break;
-}
 
 grub_fs_t
 grub_fs_probe (grub_device_t device)
