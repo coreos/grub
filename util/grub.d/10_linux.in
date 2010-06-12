@@ -78,6 +78,16 @@ EOF
 EOF
   fi
 
+  # Load video drivers, which may be needed to allow the loader to program
+  # modes for the kernel.
+  # TODO: Other kernels may need the same mode programming, especially on
+  # EFI.  Should we move this somewhere more generic?
+  for module in $(cat ${GRUB_PREFIX}/video.lst); do
+    cat << EOF
+	insmod $module
+EOF
+  done
+
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
