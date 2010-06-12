@@ -1,5 +1,10 @@
 2010-06-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.in: Add --sort-weight arguments to xorriso.
+	Suggested by: Thomas Schmitt.
+
+2010-06-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	custom.cfg support.
 
 	* conf/common.rmk (grub-mkconfig_SCRIPTS): Add 41_custom.
