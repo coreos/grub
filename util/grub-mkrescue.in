@@ -42,6 +42,8 @@ rom_directory=
 override_dir=
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 
+xorriso=xorriso
+
 # Usage: usage
 # Print the usage.
 usage () {
@@ -54,6 +56,7 @@ Make GRUB rescue image.
   --output=FILE           save output in FILE [required]
   --modules=MODULES       pre-load specified modules MODULES
   --rom-directory=DIR     save rom images in DIR [optional]
+  --xorriso=FILE          use FILE as xorriso [optional]
   --grub-mkimage=FILE     use FILE as grub-mkimage
 
 $self generates a bootable rescue image with specified source files or directories.
@@ -85,6 +88,8 @@ for option in "$@"; do
 	;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+    --xorriso=*)
+        xorriso=`echo "${option}/" | sed 's/--xorriso=//'` ;;
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage
@@ -173,7 +178,7 @@ EOF
     tar -C ${memdisk_dir} -cf ${memdisk_img} boot
     rm -rf ${memdisk_dir}
     $grub_mkimage -O ${platform} -d "${source_directory}" -m "${memdisk_img}" -o "$3" --prefix='(memdisk)/boot/grub' \
-        search iso9660 configfile normal sh memdisk tar $4
+        search iso9660 configfile normal memdisk tar $4
     rm -rf ${memdisk_img}
 }
 
@@ -269,7 +274,7 @@ if [ -e "${iso9660_dir}/boot/coreboot.elf" ] && [ -d "${rom_directory}" ]; then
 fi
 
 # build iso image
-xorriso -pathspecs on -as mkisofs ${grub_mkisofs_arguments} --protective-msdos-label -o ${output_image} -r ${iso9660_dir} ${source}
+"${xorriso}" -as mkisofs -graft-points ${grub_mkisofs_arguments} --protective-msdos-label -o ${output_image} -r ${iso9660_dir} --sort-weight 0 / --sort-weight 1 /boot ${source}
 rm -rf ${iso9660_dir}
 
 rm -f ${embed_img}

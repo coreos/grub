@@ -201,7 +201,7 @@ CLEANFILES += grub-gettext_lib
 %: util/grub.d/%.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@
-grub-mkconfig_SCRIPTS = 00_header 30_os-prober 40_custom
+grub-mkconfig_SCRIPTS = 00_header 30_os-prober 40_custom 41_custom
 ifneq (, $(host_kernel))
 grub-mkconfig_SCRIPTS += 10_$(host_kernel)
 endif
