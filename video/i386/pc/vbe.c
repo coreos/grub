@@ -783,6 +783,8 @@ static struct grub_video_adapter grub_video_vbe_adapter =
     .name = "VESA BIOS Extension Video Driver",
     .id = GRUB_VIDEO_DRIVER_VBE,
 
+    .prio = GRUB_VIDEO_ADAPTER_PRIO_FIRMWARE,
+
     .init = grub_video_vbe_init,
     .fini = grub_video_vbe_fini,
     .setup = grub_video_vbe_setup,
