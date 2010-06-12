@@ -1,3 +1,16 @@
+2010-06-12  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Add "-o grub.iso" like cmdline options support.
+
+	* util/grub-install.in: Improve cmdline option parsing.
+	* util/grub-mkconfig.in: Likewise.
+	* util/grub-mkrescue.in: Likewise.
+	* util/grub-reboot.in: Likewise.
+	* util/grub-set-default.in: Likewise.
+	* util/i386/efi/grub-install.in: Likewise.
+	* util/ieee1275/grub-install.in: Likewise.
+	* util/powerpc/ieee1275/grub-mkrescue.in: Likewise.
+
 2010-06-12  Colin Watson  <cjwatson@ubuntu.com>
 
 	* .bzrignore: Ignore 41_custom.
