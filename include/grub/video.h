@@ -264,6 +264,7 @@ typedef struct grub_video_adapter *grub_video_adapter_t;
 
 extern grub_video_adapter_t EXPORT_VAR(grub_video_adapter_list);
 
+#ifndef GRUB_LST_GENERATOR
 /* Register video driver.  */
 static inline void
 grub_video_register (grub_video_adapter_t adapter)
@@ -271,6 +272,7 @@ grub_video_register (grub_video_adapter_t adapter)
   grub_list_push (GRUB_AS_LIST_P (&grub_video_adapter_list),
 		  GRUB_AS_LIST (adapter));
 }
+#endif
 
 /* Unregister video driver.  */
 static inline void
