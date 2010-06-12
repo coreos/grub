@@ -23,12 +23,12 @@
 #include <grub/term.h>
 #include <grub/handler.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_err_t
-grub_cmd_handler (struct grub_command *cmd,
+grub_cmd_handler (struct grub_command *cmd __attribute__ ((unused)),
 		  int argc, char **args)
 {
-  char *class_name;
   void *curr_item = 0;
   grub_handler_class_t head;
 
@@ -43,23 +43,19 @@ grub_cmd_handler (struct grub_command *cmd,
       return 0;
     }
 
-  class_name = (grub_strcmp (cmd->name, "handler")) ? (char *) cmd->name : 0;
-
   head = grub_handler_class_list;
-  if ((argc == 0) && (class_name == 0))
+  if (argc == 0)
     {
       grub_list_iterate (GRUB_AS_LIST (head), (grub_list_hook_t) list_item);
     }
   else
     {
+      char *class_name;
       grub_handler_class_t class;
 
-      if (class_name == 0)
-	{
-	  class_name = args[0];
-	  argc--;
-	  args++;
-	}
+      class_name = args[0];
+      argc--;
+      args++;
 
       class = grub_named_list_find (GRUB_AS_NAMED_LIST (head), class_name);
       if (! class)
@@ -89,27 +85,17 @@ grub_cmd_handler (struct grub_command *cmd,
   return 0;
 }
 
-static grub_command_t cmd_handler, cmd_terminal_input, cmd_terminal_output;
+static grub_command_t cmd_handler;
 
 GRUB_MOD_INIT(handler)
 {
   cmd_handler =
     grub_register_command ("handler", grub_cmd_handler,
-			   "handler [class [handler]]",
-			   "List or select a handler.");
-  cmd_terminal_input =
-    grub_register_command ("terminal_input", grub_cmd_handler,
-			   "terminal_input [handler]",
-			   "List or select an input terminal.");
-  cmd_terminal_output =
-    grub_register_command ("terminal_output", grub_cmd_handler,
-			   "terminal_output [handler]",
-			   "List or select an output terminal.");
+			   N_("[class [handler]]"),
+			   N_("List or select a handler."));
 }
 
 GRUB_MOD_FINI(handler)
 {
   grub_unregister_command (cmd_handler);
-  grub_unregister_command (cmd_terminal_input);
-  grub_unregister_command (cmd_terminal_output);
 }

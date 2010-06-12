@@ -1,7 +1,7 @@
 /* grub-mkimage.c - make a bootable image */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
@@ -204,19 +205,26 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
     if (num > 0xffff)
       grub_util_error (_("the core image is too big"));
-    
+   
     boot_path = grub_util_get_path (dir, "diskboot.img");
     boot_size = grub_util_get_image_size (boot_path);
     if (boot_size != GRUB_DISK_SECTOR_SIZE)
       grub_util_error (_("diskboot.img size must be %u bytes"), GRUB_DISK_SECTOR_SIZE);
-    
+   
     boot_img = grub_util_read_image (boot_path);
-    
-    /* i386 is a little endian architecture.  */
-    *((grub_uint16_t *) (boot_img + GRUB_DISK_SECTOR_SIZE
-			 - GRUB_BOOT_MACHINE_LIST_SIZE + 8))
-      = grub_cpu_to_le16 (num);
-    
+   
+    {
+      struct grub_boot_blocklist *block;
+      block = (struct grub_boot_blocklist *) (boot_img
+					 + GRUB_DISK_SECTOR_SIZE
+					 - sizeof (*block));
+      block->len = grub_host_to_target16 (num);
+
+      /* This is filled elsewhere.  Verify it just in case.  */
+      assert (block->segment == grub_host_to_target16 (GRUB_BOOT_MACHINE_KERNEL_SEG
+						  + (GRUB_DISK_SECTOR_SIZE >> 4)));
+    }
+   
     grub_util_write_image (boot_img, boot_size, out);
     free (boot_img);
     free (boot_path);
@@ -281,7 +289,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
 #ifdef GRUB_MACHINE_PCBIOS
   if (GRUB_KERNEL_MACHINE_LINK_ADDR + core_size > GRUB_MEMORY_MACHINE_UPPER)
-    grub_util_error (_("Core image is too big (%p > %p)\n"),
+    grub_util_error (_("core image is too big (%p > %p)"),
  		     GRUB_KERNEL_MACHINE_LINK_ADDR + core_size, GRUB_MEMORY_MACHINE_UPPER);
 #endif
 
@@ -318,10 +326,10 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, _("Try ``%s --help'' for more information.\n"), program_name);
+    fprintf (stderr, _("Try `%s --help' for more information.\n"), program_name);
   else
     printf (_("\
-Usage: grub-mkimage [OPTION]... [MODULES]\n\
+Usage: %s [OPTION]... [MODULES]\n\
 \n\
 Make a bootable image of GRUB.\n\
 \n\
@@ -335,7 +343,7 @@ Make a bootable image of GRUB.\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-"), GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+"), program_name, GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -351,9 +359,8 @@ main (int argc, char *argv[])
   FILE *fp = stdout;
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+
+  grub_util_init_nls ();
 
   while (1)
     {

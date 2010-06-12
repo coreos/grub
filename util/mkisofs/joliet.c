@@ -87,13 +87,13 @@ static int DECL(joliet_sort_directory, (struct directory_entry ** sort_dir));
 static void DECL(assign_joliet_directory_addresses, (struct directory * node));
 static int jroot_gen	__PR((void));
 
-/* 
+/*
  * Function:		convert_to_unicode
  *
  * Purpose:		Perform a 1/2 assed unicode conversion on a text
  *			string.
  *
- * Notes:		
+ * Notes:	
  */
 static void FDECL3(convert_to_unicode, unsigned char *, buffer, int, size, char *, source )
 {
@@ -127,9 +127,9 @@ static void FDECL3(convert_to_unicode, unsigned char *, buffer, int, size, char 
 	 * JS integrated from: Achim_Kaiser@t-online.de
 	 *
 	 * Let all valid unicode characters pass through (assuming ISO-8859-1).
-	 * Others are set to '_' . 
-	 */ 
-	if( tmpbuf[j] != 0 &&  
+	 * Others are set to '_' .
+	 */
+	if( tmpbuf[j] != 0 && 
 	   (tmpbuf[j] <= 0x1f || (tmpbuf[j] >= 0x7F && tmpbuf[j] <= 0xA0)) )
 	{
 	  buffer[i+1]     = '_';
@@ -163,7 +163,7 @@ static void FDECL3(convert_to_unicode, unsigned char *, buffer, int, size, char 
     }
 }
 
-/* 
+/*
  * Function:		joliet_strlen
  *
  * Purpose:		Return length in bytes of string after conversion to unicode.
@@ -178,7 +178,7 @@ static int FDECL1(joliet_strlen, const char *, string)
 
   rtn = strlen(string) << 1;
 
-  /* 
+  /*
    * We do clamp the maximum length of a Joliet string to be the
    * maximum path size.  This helps to ensure that we don't completely
    * bolix things up with very long paths.    The Joliet specs say
@@ -191,7 +191,7 @@ static int FDECL1(joliet_strlen, const char *, string)
   return rtn;
 }
 
-/* 
+/*
  * Function:		get_joliet_vol_desc
  *
  * Purpose:		generate a Joliet compatible volume desc.
@@ -212,7 +212,7 @@ static void FDECL1(get_joliet_vol_desc, struct iso_primary_descriptor *, jvol_de
    * "expands" 8 bit character codes to 16 bits and does nothing
    * special with the Unicode characters, therefore shouldn't mkisofs
    * really be stating that it's using UCS-2 Level 1, not Level 3 for
-   * the Joliet directory tree.  
+   * the Joliet directory tree. 
    */
   strcpy(jvol_desc->escape_sequences, "%/@");
 
@@ -228,7 +228,7 @@ static void FDECL1(get_joliet_vol_desc, struct iso_primary_descriptor *, jvol_de
   /*
    * Set this one up.
    */
-  memcpy(jvol_desc->root_directory_record, &jroot_record, 
+  memcpy(jvol_desc->root_directory_record, &jroot_record,
 	 sizeof(struct iso_directory_record));
 
   /*
@@ -256,7 +256,7 @@ static void FDECL1(assign_joliet_directory_addresses, struct directory *, node)
      struct directory * dpnt;
 
      dpnt = node;
-     
+    
      while (dpnt)
      {
 	 if( (dpnt->dir_flags & INHIBIT_JOLIET_ENTRY) == 0 )
@@ -275,7 +275,7 @@ static void FDECL1(assign_joliet_directory_addresses, struct directory *, node)
 	 }
 
 	 /* skip if hidden - but not for the rr_moved dir */
-	 if(dpnt->subdir && (!(dpnt->dir_flags & INHIBIT_JOLIET_ENTRY) || dpnt == reloc_dir)) 
+	 if(dpnt->subdir && (!(dpnt->dir_flags & INHIBIT_JOLIET_ENTRY) || dpnt == reloc_dir))
 	 {
 	     assign_joliet_directory_addresses(dpnt->subdir);
 	 }
@@ -283,13 +283,13 @@ static void FDECL1(assign_joliet_directory_addresses, struct directory *, node)
      }
 }
 
-static 
+static
 void FDECL1(build_jpathlist, struct directory *, node)
 {
      struct directory * dpnt;
-     
+    
      dpnt = node;
-     
+    
      while (dpnt)
 
      {
@@ -302,7 +302,7 @@ void FDECL1(build_jpathlist, struct directory *, node)
      }
 } /* build_jpathlist(... */
 
-static int FDECL2(joliet_compare_paths, void const *, r, void const *, l) 
+static int FDECL2(joliet_compare_paths, void const *, r, void const *, l)
 {
   struct directory const *ll = *(struct directory * const *)l;
   struct directory const *rr = *(struct directory * const *)r;
@@ -325,13 +325,13 @@ static int FDECL2(joliet_compare_paths, void const *, r, void const *, l)
        return -1;
   }
 
-  if (rparent > lparent) 
+  if (rparent > lparent)
   {
        return 1;
   }
 
   return strcmp(rr->self->name, ll->self->name);
-  
+ 
 } /* compare_paths(... */
 
 static int generate_joliet_path_tables()
@@ -346,7 +346,7 @@ static int generate_joliet_path_tables()
   int			   tablesize;
 
   /*
-   * First allocate memory for the tables and initialize the memory 
+   * First allocate memory for the tables and initialize the memory
    */
   tablesize = jpath_blocks << 11;
   jpath_table_m = (char *) e_malloc(tablesize);
@@ -361,10 +361,10 @@ static int generate_joliet_path_tables()
       exit (1);
   }
   /*
-   * Now start filling in the path tables.  Start with root directory 
+   * Now start filling in the path tables.  Start with root directory
    */
   jpath_table_index = 0;
-  jpathlist = (struct directory **) e_malloc(sizeof(struct directory *) 
+  jpathlist = (struct directory **) e_malloc(sizeof(struct directory *)
 					    * next_jpath_index);
   memset(jpathlist, 0, sizeof(struct directory *) * next_jpath_index);
   build_jpathlist(root);
@@ -373,10 +373,10 @@ static int generate_joliet_path_tables()
   {
        fix = 0;
 #ifdef	__STDC__
-       qsort(&jpathlist[1], next_jpath_index-1, sizeof(struct directory *), 
+       qsort(&jpathlist[1], next_jpath_index-1, sizeof(struct directory *),
 	     (int (*)(const void *, const void *))joliet_compare_paths);
 #else
-       qsort(&jpathlist[1], next_jpath_index-1, sizeof(struct directory *), 
+       qsort(&jpathlist[1], next_jpath_index-1, sizeof(struct directory *),
 	     joliet_compare_paths);
 #endif
 
@@ -399,20 +399,20 @@ static int generate_joliet_path_tables()
 	    exit (1);
        }
        npnt = dpnt->de_name;
-       
+      
        npnt1 = strrchr(npnt, PATH_SEPARATOR);
-       if(npnt1) 
-       { 
+       if(npnt1)
+       {
 	    npnt = npnt1 + 1;
        }
-       
+      
        de = dpnt->self;
-       if(!de) 
+       if(!de)
        {
-	    fprintf (stderr, _("Fatal goof - directory has amnesia\n")); 
+	    fprintf (stderr, _("Fatal goof - directory has amnesia\n"));
 	    exit (1);
        }
-       
+      
        namelen = joliet_strlen(de->name);
 
        if( dpnt == root )
@@ -426,28 +426,28 @@ static int generate_joliet_path_tables()
 	   jpath_table_m[jpath_table_index] = namelen;
 	 }
        jpath_table_index += 2;
-       
-       set_731(jpath_table_l + jpath_table_index, dpnt->jextent); 
-       set_732(jpath_table_m + jpath_table_index, dpnt->jextent); 
+      
+       set_731(jpath_table_l + jpath_table_index, dpnt->jextent);
+       set_732(jpath_table_m + jpath_table_index, dpnt->jextent);
        jpath_table_index += 4;
-       
+      
        if( dpnt->parent != reloc_dir )
 	 {
-	   set_721(jpath_table_l + jpath_table_index, 
-		   dpnt->parent->jpath_index); 
-	   set_722(jpath_table_m + jpath_table_index, 
-		   dpnt->parent->jpath_index); 
+	   set_721(jpath_table_l + jpath_table_index,
+		   dpnt->parent->jpath_index);
+	   set_722(jpath_table_m + jpath_table_index,
+		   dpnt->parent->jpath_index);
 	 }
        else
 	 {
-	   set_721(jpath_table_l + jpath_table_index, 
-		   dpnt->self->parent_rec->filedir->jpath_index); 
-	   set_722(jpath_table_m + jpath_table_index, 
-		   dpnt->self->parent_rec->filedir->jpath_index); 
+	   set_721(jpath_table_l + jpath_table_index,
+		   dpnt->self->parent_rec->filedir->jpath_index);
+	   set_722(jpath_table_m + jpath_table_index,
+		   dpnt->self->parent_rec->filedir->jpath_index);
 	 }
 
        jpath_table_index += 2;
-       
+      
        /*
 	* The root directory is still represented in non-unicode fashion.
 	*/
@@ -459,19 +459,19 @@ static int generate_joliet_path_tables()
 	 }
        else
 	 {
-	   convert_to_unicode((uint8_t *)jpath_table_l + jpath_table_index,  
+	   convert_to_unicode((uint8_t *)jpath_table_l + jpath_table_index, 
 			      namelen, de->name);
-	   convert_to_unicode((uint8_t *)jpath_table_m + jpath_table_index, 
+	   convert_to_unicode((uint8_t *)jpath_table_m + jpath_table_index,
 			      namelen, de->name);
 	   jpath_table_index += namelen;
 	 }
 
-       if(jpath_table_index & 1) 
+       if(jpath_table_index & 1)
        {
 	    jpath_table_index++;  /* For odd lengths we pad */
        }
   }
-  
+ 
   free(jpathlist);
   if(jpath_table_index != jpath_table_size)
   {
@@ -493,20 +493,20 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
      unsigned int			  total_size;
      int				  cvt_len;
      struct directory			* finddir;
-     
+    
      total_size = (dpnt->jsize + (SECTOR_SIZE - 1)) &  ~(SECTOR_SIZE - 1);
      directory_buffer = (char *) e_malloc(total_size);
      memset(directory_buffer, 0, total_size);
      dir_index = 0;
-     
+    
      s_entry = dpnt->jcontents;
-     while(s_entry) 
+     while(s_entry)
      {
 	     if(s_entry->de_flags & INHIBIT_JOLIET_ENTRY) {
 		s_entry = s_entry->jnext;
 		continue;
 	     }
-		
+	
 	     /*
 	      * If this entry was a directory that was relocated, we have a bit
 	      * of trouble here.  We need to dig out the real thing and put it
@@ -535,43 +535,43 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
 	     {
 		 s_entry1 = s_entry;
 	     }
-	      
-	     /* 
-	      * We do not allow directory entries to cross sector boundaries.  
-	      * Simply pad, and then start the next entry at the next sector 
+	     
+	     /*
+	      * We do not allow directory entries to cross sector boundaries. 
+	      * Simply pad, and then start the next entry at the next sector
 	      */
 	     new_reclen = s_entry1->jreclen;
 	     if( (dir_index & (SECTOR_SIZE - 1)) + new_reclen >= SECTOR_SIZE )
 	     {
-		 dir_index = (dir_index + (SECTOR_SIZE - 1)) & 
+		 dir_index = (dir_index + (SECTOR_SIZE - 1)) &
 		     ~(SECTOR_SIZE - 1);
 	     }
-	     
+	    
 	     memcpy(&jrec, &s_entry1->isorec, sizeof(struct iso_directory_record) -
 		    sizeof(s_entry1->isorec.name));
-	     
+	    
 	     cvt_len = joliet_strlen(s_entry1->name);
-	     
+	    
 	     /*
 	      * Fix the record length - this was the non-Joliet version we
 	      * were seeing.
 	      */
 	     jrec.name_len[0] = cvt_len;
 	     jrec.length[0] = s_entry1->jreclen;
-	     
+	    
 	     /*
 	      * If this is a directory, fix the correct size and extent
 	      * number.
 	      */
 	     if( (jrec.flags[0] & 2) != 0 )
 	     {
-		 if(strcmp(s_entry1->name,".") == 0) 
+		 if(strcmp(s_entry1->name,".") == 0)
 		 {
 		     jrec.name_len[0] = 1;
 		     set_733((char *) jrec.extent, dpnt->jextent);
 		     set_733((char *) jrec.size, ROUND_UP(dpnt->jsize));
 		 }
-		 else if(strcmp(s_entry1->name,"..") == 0) 
+		 else if(strcmp(s_entry1->name,"..") == 0)
 		 {
 		     jrec.name_len[0] = 1;
 		     if( dpnt->parent == reloc_dir )
@@ -600,7 +600,7 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
 		     {
 			 if(finddir->self == s_entry1) break;
 			 finddir = finddir->next;
-			 if(!finddir) 
+			 if(!finddir)
 			 {
 			     fprintf (stderr, _("Fatal goof - unable to find directory location\n"));
 			     exit (1);
@@ -610,25 +610,25 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
 		     set_733((char *) jrec.size, ROUND_UP(finddir->jsize));
 		 }
 	     }
-	     
-	     memcpy(directory_buffer + dir_index, &jrec, 
+	    
+	     memcpy(directory_buffer + dir_index, &jrec,
 		    sizeof(struct iso_directory_record) -
 		    sizeof(s_entry1->isorec.name));
-	     
-	     
-	     dir_index += sizeof(struct iso_directory_record) - 
+	    
+	    
+	     dir_index += sizeof(struct iso_directory_record) -
 		 sizeof (s_entry1->isorec.name);
-	     
+	    
 	     /*
 	      * Finally dump the Unicode version of the filename.
 	      * Note - . and .. are the same as with non-Joliet discs.
 	      */
-	     if( (jrec.flags[0] & 2) != 0 
+	     if( (jrec.flags[0] & 2) != 0
 		 && strcmp(s_entry1->name, ".") == 0 )
 	     {
 		 directory_buffer[dir_index++] = 0;
 	     }
-	     else if( (jrec.flags[0] & 2) != 0 
+	     else if( (jrec.flags[0] & 2) != 0
 		      && strcmp(s_entry1->name, "..") == 0 )
 	     {
 		 directory_buffer[dir_index++] = 1;
@@ -640,7 +640,7 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
 				    s_entry1->name);
 		 dir_index += cvt_len;
 	     }
-	     
+	    
 	     if(dir_index & 1)
 	     {
 		 directory_buffer[dir_index++] = 0;
@@ -648,13 +648,13 @@ static void FDECL2(generate_one_joliet_directory, struct directory *, dpnt, FILE
 
 	     s_entry = s_entry->jnext;
      }
-     
+    
      if(dpnt->jsize != dir_index)
      {
 	 fprintf (stderr, _("Unexpected joliet directory length %d %d %s\n"),
 		  dpnt->jsize, dir_index, dpnt->de_name);
      }
-     
+    
      xfwrite(directory_buffer, 1, total_size, outfile);
      last_extent_written += total_size >> 11;
      free(directory_buffer);
@@ -678,7 +678,7 @@ static int FDECL1(joliet_sort_n_finish, struct directory *, this_dir)
 	{
 	  continue;
 	}
-	  
+	 
       /*
        * First update the path table sizes for directories.
        *
@@ -690,15 +690,15 @@ static int FDECL1(joliet_sort_n_finish, struct directory *, this_dir)
        */
       if(s_entry->isorec.flags[0] ==  2)
 	{
-	  if (strcmp(s_entry->name,".") && strcmp(s_entry->name,"..")) 
+	  if (strcmp(s_entry->name,".") && strcmp(s_entry->name,".."))
 	    {
 	      jpath_table_size += joliet_strlen(s_entry->name) + sizeof(struct iso_path_table) - 1;
-	      if (jpath_table_size & 1) 
+	      if (jpath_table_size & 1)
 		{
 		  jpath_table_size++;
 		}
 	    }
-	  else 
+	  else
 	    {
 	      if (this_dir == root && strlen(s_entry->name) == 1)
 		{
@@ -708,11 +708,11 @@ static int FDECL1(joliet_sort_n_finish, struct directory *, this_dir)
 	    }
 	}
 
-      if (strcmp(s_entry->name,".") && strcmp(s_entry->name,"..")) 
+      if (strcmp(s_entry->name,".") && strcmp(s_entry->name,".."))
 	{
 	  s_entry->jreclen = 	sizeof(struct iso_directory_record)
 	    - sizeof(s_entry->isorec.name)
-	    + joliet_strlen(s_entry->name) 
+	    + joliet_strlen(s_entry->name)
 	    + 1;
 	}
       else
@@ -737,9 +737,9 @@ static int FDECL1(joliet_sort_n_finish, struct directory *, this_dir)
   this_dir->jcontents = this_dir->contents;
   status = joliet_sort_directory(&this_dir->jcontents);
 
-  /* 
+  /*
    * Now go through the directory and figure out how large this one will be.
-   * Do not split a directory entry across a sector boundary 
+   * Do not split a directory entry across a sector boundary
    */
   s_entry = this_dir->jcontents;
 /*
@@ -756,10 +756,10 @@ static int FDECL1(joliet_sort_n_finish, struct directory *, this_dir)
 	}
 
       jreclen = s_entry->jreclen;
-      
+     
       if ((this_dir->jsize & (SECTOR_SIZE - 1)) + jreclen >= SECTOR_SIZE)
 	{
-	  this_dir->jsize = (this_dir->jsize + (SECTOR_SIZE - 1)) & 
+	  this_dir->jsize = (this_dir->jsize + (SECTOR_SIZE - 1)) &
 	    ~(SECTOR_SIZE - 1);
 	}
       this_dir->jsize += jreclen;
@@ -771,11 +771,11 @@ static int FDECL1(joliet_sort_n_finish, struct directory *, this_dir)
  * Similar to the iso9660 case, except here we perform a full sort based upon the
  * regular name of the file, not the 8.3 version.
  */
-static int FDECL2(joliet_compare_dirs, const void *, rr, const void *, ll) 
+static int FDECL2(joliet_compare_dirs, const void *, rr, const void *, ll)
 {
      char * rpnt, *lpnt;
      struct directory_entry ** r, **l;
-     
+    
      r = (struct directory_entry **) rr;
      l = (struct directory_entry **) ll;
      rpnt = (*r)->name;
@@ -788,7 +788,7 @@ static int FDECL2(joliet_compare_dirs, const void *, rr, const void *, ll)
        {
 	 sort_goof++;
        }
-     
+    
      /*
       *  Put the '.' and '..' entries on the head of the sorted list.
       *  For normal ASCII, this always happens to be the case, but out of
@@ -800,13 +800,13 @@ static int FDECL2(joliet_compare_dirs, const void *, rr, const void *, ll)
      if( strcmp(rpnt, "..") == 0 ) return -1;
      if( strcmp(lpnt, "..") == 0 ) return  1;
 
-     while(*rpnt && *lpnt) 
+     while(*rpnt && *lpnt)
      {
 	  if(*rpnt == ';' && *lpnt != ';') return -1;
 	  if(*rpnt != ';' && *lpnt == ';') return 1;
-	  
+	 
 	  if(*rpnt == ';' && *lpnt == ';') return 0;
-	  
+	 
 	  /*
 	   * Extensions are not special here.  Don't treat the dot as something that
 	   * must be bumped to the start of the list.
@@ -815,7 +815,7 @@ static int FDECL2(joliet_compare_dirs, const void *, rr, const void *, ll)
 	  if(*rpnt == '.' && *lpnt != '.') return -1;
 	  if(*rpnt != '.' && *lpnt == '.') return 1;
 #endif
-	  
+	 
 	  if(*rpnt < *lpnt) return -1;
 	  if(*rpnt > *lpnt) return 1;
 	  rpnt++;  lpnt++;
@@ -826,7 +826,7 @@ static int FDECL2(joliet_compare_dirs, const void *, rr, const void *, ll)
 }
 
 
-/* 
+/*
  * Function:		sort_directory
  *
  * Purpose:		Sort the directory in the appropriate ISO9660
@@ -840,7 +840,7 @@ static int FDECL1(joliet_sort_directory, struct directory_entry **, sort_dir)
      int i;
      struct directory_entry * s_entry;
      struct directory_entry ** sortlist;
-     
+    
      s_entry = *sort_dir;
      while(s_entry)
      {
@@ -851,9 +851,9 @@ static int FDECL1(joliet_sort_directory, struct directory_entry **, sort_dir)
      }
 
      /*
-      * OK, now we know how many there are.  Build a vector for sorting. 
+      * OK, now we know how many there are.  Build a vector for sorting.
       */
-     sortlist =   (struct directory_entry **) 
+     sortlist =   (struct directory_entry **)
 	  e_malloc(sizeof(struct directory_entry *) * dcount);
 
      dcount = 0;
@@ -867,18 +867,18 @@ static int FDECL1(joliet_sort_directory, struct directory_entry **, sort_dir)
 	  }
 	  s_entry = s_entry->next;
      }
-  
+ 
      sort_goof = 0;
 #ifdef	__STDC__
-     qsort(sortlist, dcount, sizeof(struct directory_entry *), 
+     qsort(sortlist, dcount, sizeof(struct directory_entry *),
 	   (int (*)(const void *, const void *))joliet_compare_dirs);
 #else
-     qsort(sortlist, dcount, sizeof(struct directory_entry *), 
+     qsort(sortlist, dcount, sizeof(struct directory_entry *),
 	   joliet_compare_dirs);
 #endif
-     
-     /* 
-      * Now reassemble the linked list in the proper sorted order 
+    
+     /*
+      * Now reassemble the linked list in the proper sorted order
       */
      for(i=0; i<dcount-1; i++)
      {
@@ -887,7 +887,7 @@ static int FDECL1(joliet_sort_directory, struct directory_entry **, sort_dir)
 
      sortlist[dcount-1]->jnext = NULL;
      *sort_dir = sortlist[0];
-     
+    
      free(sortlist);
      return sort_goof;
 }
@@ -934,7 +934,7 @@ static void FDECL2(generate_joliet_directories, struct directory *, node, FILE*,
 	    }
 	}
       /* skip if hidden - but not for the rr_moved dir */
-      if(dpnt->subdir && (!(dpnt->dir_flags & INHIBIT_JOLIET_ENTRY) || dpnt == reloc_dir)) 
+      if(dpnt->subdir && (!(dpnt->dir_flags & INHIBIT_JOLIET_ENTRY) || dpnt == reloc_dir))
 	generate_joliet_directories(dpnt->subdir, outfile);
       dpnt = dpnt->next;
     }
@@ -947,7 +947,7 @@ static void FDECL2(generate_joliet_directories, struct directory *, node, FILE*,
 static int FDECL1(jpathtab_write, FILE *, outfile)
 {
   /*
-   * Next we write the path tables 
+   * Next we write the path tables
    */
   xfwrite(jpath_table_l, 1, jpath_blocks << 11, outfile);
   xfwrite(jpath_table_m, 1, jpath_blocks << 11, outfile);
@@ -995,7 +995,7 @@ static int FDECL1(jvd_write, FILE *, outfile)
   struct iso_primary_descriptor jvol_desc;
 
   /*
-   * Next we write out the boot volume descriptor for the disc 
+   * Next we write out the boot volume descriptor for the disc
    */
   jvol_desc = vol_desc;
   get_joliet_vol_desc(&jvol_desc);
@@ -1013,7 +1013,7 @@ static int FDECL1(jpathtab_size, int, starting_extent)
   jpath_table[1] = 0;
   jpath_table[2] = jpath_table[0] + jpath_blocks;
   jpath_table[3] = 0;
-  
+ 
   last_extent += 2*jpath_blocks;
   return 0;
 }

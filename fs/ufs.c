@@ -1,7 +1,7 @@
 /* ufs.c - Unix File System */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -415,7 +415,7 @@ grub_ufs_lookup_symlink (struct grub_ufs_data *data, int ino)
 
   grub_ufs_find_file (data, symlink);
   if (grub_errno)
-    grub_error (grub_errno, "Can not follow symlink `%s'.", symlink);
+    grub_error (grub_errno, "cannot follow symlink `%s'", symlink);
 
   return grub_errno;
 }

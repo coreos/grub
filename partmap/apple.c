@@ -1,7 +1,7 @@
 /* apple.c - Read macintosh partition tables.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -176,7 +176,7 @@ apple_partition_map_iterate (grub_disk_t disk,
 
  fail:
   return grub_error (GRUB_ERR_BAD_PART_TABLE,
-		     "Apple partition map not found.");
+		     "Apple partition map not found");
 }
 
 

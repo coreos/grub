@@ -1,4 +1,3 @@
-/* reader.c - reader support */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2009  Free Software Foundation, Inc.
@@ -17,33 +16,11 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/types.h>
-#include <grub/mm.h>
-#include <grub/reader.h>
-#include <grub/parser.h>
+#ifndef GRUB_SEARCH_HEADER
+#define GRUB_SEARCH_HEADER 1
 
-struct grub_handler_class grub_reader_class =
-  {
-    .name = "reader"
-  };
+void grub_search_fs_file (const char *key, const char *var, int no_floppy);
+void grub_search_fs_uuid (const char *key, const char *var, int no_floppy);
+void grub_search_label (const char *key, const char *var, int no_floppy);
 
-grub_err_t
-grub_reader_loop (grub_reader_getline_t getline)
-{
-  while (1)
-    {
-      char *line;
-      grub_reader_getline_t func;
-
-      /* Print an error, if any.  */
-      grub_print_error ();
-      grub_errno = GRUB_ERR_NONE;
-
-      func = (getline) ? : grub_reader_get_current ()->read_line;
-      if ((func (&line, 0)) || (! line))
-	return grub_errno;
-
-      grub_parser_get_current ()->parse_line (line, func);
-      grub_free (line);
-    }
-}
+#endif

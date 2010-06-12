@@ -29,6 +29,7 @@
 
 #if defined(TGA_DEBUG)
 #define dump_int_field(x) grub_printf( #x " = %d (0x%04x)\n", x, x);
+static grub_command_t cmd;
 #endif
 
 enum
@@ -370,7 +371,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
       default:
         grub_file_close (file);
         return grub_error (GRUB_ERR_BAD_FILE_TYPE,
-                           "Unsupported bitmap format (unknown encoding).");
+                           "unsupported bitmap format (unknown encoding)");
     }
 
   /* Check that bitmap depth is supported.  */
@@ -387,7 +388,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
       default:
         grub_file_close (file);
         return grub_error (GRUB_ERR_BAD_FILE_TYPE,
-                           "Unsupported bitmap format (bpp=%d).",
+                           "unsupported bitmap format (bpp=%d)",
                            header.image_bpp);
     }
 
@@ -452,7 +453,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
 
 #if defined(TGA_DEBUG)
 static grub_err_t
-grub_cmd_tgatest (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_tgatest (grub_command_t cmd __attribute__ ((unused)),
                   int argc, char **args)
 {
   struct grub_video_bitmap *bitmap = 0;
@@ -480,15 +481,15 @@ GRUB_MOD_INIT(video_reader_tga)
 {
   grub_video_bitmap_reader_register (&tga_reader);
 #if defined(TGA_DEBUG)
-  grub_register_command ("tgatest", grub_cmd_tgatest, GRUB_COMMAND_FLAG_BOTH,
-                         "tgatest FILE", "Tests loading of TGA bitmap.", 0);
+  cmd = grub_register_command ("tgatest", grub_cmd_tgatest,
+                               "FILE", "Tests loading of TGA bitmap.");
 #endif
 }
 
 GRUB_MOD_FINI(video_reader_tga)
 {
 #if defined(TGA_DEBUG)
-  grub_unregister_command ("tgatest");
+  grub_unregister_command (cmd);
 #endif
   grub_video_bitmap_reader_unregister (&tga_reader);
 }

@@ -32,6 +32,7 @@
 #include <grub/term.h>
 #include <grub/command.h>
 #include <grub/gzio.h>
+#include <grub/i18n.h>
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #define max(a,b) (((a) > (b)) ? (a) : (b))
@@ -532,12 +533,12 @@ grub_cmd_devprop_load (grub_command_t cmd __attribute__ ((unused)),
   unsigned i, j;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "File name required. ");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
   file = grub_gzfile_open (args[0], 1);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       "Couldn't load device-propertie dump. ");
+		       "couldn't load device-propertie dump");
   size = grub_file_size (file);
   buf = grub_malloc (size);
   if (!buf)
@@ -837,7 +838,7 @@ grub_xnu_boot_resume (void)
   state.eax = grub_xnu_arg1;
 
   return grub_relocator32_boot (grub_xnu_heap_start, grub_xnu_heap_will_be_at,
-				state);  
+				state); 
 }
 
 /* Setup video for xnu. */
@@ -1109,7 +1110,7 @@ grub_cpu_xnu_init (void)
 {
   cmd_devprop_load = grub_register_command ("xnu_devprop_load",
 					    grub_cmd_devprop_load,
-					    0, "Load device-properties dump.");
+					    0, N_("Load device-properties dump."));
 }
 
 void

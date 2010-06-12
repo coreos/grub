@@ -25,6 +25,7 @@
 #include <grub/machine/init.h>
 #include <grub/machine/vbe.h>
 #include <grub/err.h>
+#include <grub/i18n.h>
 
 static grub_err_t
 grub_cmd_vbetest (grub_command_t cmd __attribute__ ((unused)),
@@ -168,7 +169,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(vbetest)
 {
   cmd = grub_register_command ("vbetest", grub_cmd_vbetest,
-			       0, "Test VESA BIOS Extension 2.0+ support.");
+			       0, N_("Test VESA BIOS Extension 2.0+ support."));
 }
 
 GRUB_MOD_FINI(vbetest)

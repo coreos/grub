@@ -344,7 +344,7 @@ grub_jfs_mount (grub_disk_t disk)
 
   if (grub_strncmp ((char *) (data->sblock.magic), "JFS1", 4))
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a jfs filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not a JFS filesystem");
       goto fail;
     }
 
@@ -363,7 +363,7 @@ grub_jfs_mount (grub_disk_t disk)
   grub_free (data);
 
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
-    grub_error (GRUB_ERR_BAD_FS, "not a jfs filesystem");
+    grub_error (GRUB_ERR_BAD_FS, "not a JFS filesystem");
 
   return 0;
 }
@@ -715,7 +715,7 @@ grub_jfs_lookup_symlink (struct grub_jfs_data *data, int ino)
 
   grub_jfs_find_file (data, symlink);
   if (grub_errno)
-    grub_error (grub_errno, "Can not follow symlink `%s'.", symlink);
+    grub_error (grub_errno, "cannot follow symlink `%s'", symlink);
 
   return grub_errno;
 }

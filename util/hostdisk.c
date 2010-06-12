@@ -348,7 +348,8 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 	return -1;
       }
 
-    /* Make the buffer cache consistent with the physical disk.  */
+    /* Flush the buffer cache to the physical disk.
+       XXX: This also empties the buffer cache.  */
     ioctl (fd, BLKFLSBUF, 0);
 
     if (is_partition)
@@ -567,7 +568,7 @@ read_device_map (const char *dev_map)
   fp = fopen (dev_map, "r");
   if (! fp)
     {
-      grub_util_info (_("Cannot open `%s'"), dev_map);
+      grub_util_info (_("cannot open `%s'"), dev_map);
       return;
     }
 
@@ -638,7 +639,7 @@ read_device_map (const char *dev_map)
 	 symbolic links.  */
       map[drive].device = xmalloc (PATH_MAX);
       if (! realpath (p, map[drive].device))
-	grub_util_error ("Cannot get the real path of `%s'", p);
+	grub_util_error ("cannot get the real path of `%s'", p);
 #else
       map[drive].device = xstrdup (p);
 #endif
