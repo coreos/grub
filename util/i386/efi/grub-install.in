@@ -33,6 +33,8 @@ host_os=@host_os@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 localedir=@datadir@/locale
 
+self=`basename $0`
+
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
@@ -50,7 +52,7 @@ debug=no
 # Print the usage.
 usage () {
     cat <<EOF
-Usage: grub-install [OPTION]
+Usage: $self [OPTION]
 Install GRUB on your EFI partition.
 
   -h, --help              print this message and exit
@@ -64,7 +66,7 @@ Install GRUB on your EFI partition.
   --no-floppy             do not probe any floppy drive
   --recheck               probe a device map even if it already exists
 
-grub-install copies GRUB images into the DIR/boot directory specified by
+$self copies GRUB images into the DIR/boot directory specified by
 --root-directory.
 
 Report bugs to <bug-grub@gnu.org>.
@@ -78,7 +80,7 @@ for option in "$@"; do
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-install (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
@@ -219,7 +221,7 @@ $grub_mkimage -O ${target_cpu}-efi --output=${grubdir}/grub.efi $modules || exit
 echo "Installation finished. No error reported."
 echo "This is the contents of the device map $device_map."
 echo "Check if this is correct or not. If any of the lines is incorrect,"
-echo "fix it and re-run the script \`grub-install'."
+echo "fix it and re-run the script \`$self'."
 echo
 
 cat $device_map

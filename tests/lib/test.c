@@ -66,8 +66,10 @@ free_failures (void)
 {
   grub_test_failure_t item;
 
-  while ((item = grub_list_pop (GRUB_AS_LIST_P (&failure_list))) != 0)
+  while (failure_list)
     {
+      item = failure_list;
+      failure_list = item->next;
       if (item->message)
 	grub_free (item->message);
 
@@ -134,23 +136,17 @@ grub_test_unregister (const char *name)
 int
 grub_test_run (grub_test_t test)
 {
-  auto int print_failure (grub_test_failure_t item);
-  int print_failure (grub_test_failure_t item)
-  {
-    grub_test_failure_t failure = (grub_test_failure_t) item;
-
-    grub_printf (" %s:%s:%u: %s\n",
-		 (failure->file ? : "<unknown_file>"),
-		 (failure->funp ? : "<unknown_function>"),
-		 failure->line, (failure->message ? : "<no message>"));
-    return 0;
-  }
+  grub_test_failure_t failure;
 
   test->main ();
 
   grub_printf ("%s:\n", test->name);
-  grub_list_iterate (GRUB_AS_LIST (failure_list),
-		     (grub_list_hook_t) print_failure);
+  FOR_LIST_ELEMENTS (failure, failure_list)
+    grub_printf (" %s:%s:%u: %s\n",
+		 (failure->file ? : "<unknown_file>"),
+		 (failure->funp ? : "<unknown_function>"),
+		 failure->line, (failure->message ? : "<no message>"));
+
   if (!failure_list)
     grub_printf ("%s: PASS\n", test->name);
   else

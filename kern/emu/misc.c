@@ -9,6 +9,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
 
 #include <grub/mm.h>
 #include <grub/err.h>
@@ -18,6 +21,10 @@
 #include <grub/i18n.h>
 #include <grub/time.h>
 #include <grub/emu/misc.h>
+
+#ifdef HAVE_DEVICE_MAPPER
+# include <libdevmapper.h>
+#endif
 
 int verbosity;
 
@@ -182,7 +189,8 @@ canonicalize_file_name (const char *path)
   char *ret;
 #ifdef PATH_MAX
   ret = xmalloc (PATH_MAX);
-  (void) realpath (path, ret);
+  if (!realpath (path, ret))
+    return NULL;
 #else
   ret = realpath (path, NULL);
 #endif
@@ -307,3 +315,38 @@ grub_make_system_path_relative_to_its_root (const char *path)
 
   return buf3;
 }
+
+#ifdef HAVE_DEVICE_MAPPER
+static void device_mapper_null_log (int level __attribute__ ((unused)),
+				    const char *file __attribute__ ((unused)),
+				    int line __attribute__ ((unused)),
+				    int dm_errno __attribute__ ((unused)),
+				    const char *f __attribute__ ((unused)),
+				    ...)
+{
+}
+
+int
+grub_device_mapper_supported (void)
+{
+  static int supported = -1;
+
+  if (supported == -1)
+    {
+      struct dm_task *dmt;
+
+      /* Suppress annoying log messages.  */
+      dm_log_with_errno_init (&device_mapper_null_log);
+
+      dmt = dm_task_create (DM_DEVICE_VERSION);
+      supported = (dmt != NULL);
+      if (dmt)
+	dm_task_destroy (dmt);
+
+      /* Restore the original logger.  */
+      dm_log_with_errno_init (NULL);
+    }
+
+  return supported;
+}
+#endif /* HAVE_DEVICE_MAPPER */

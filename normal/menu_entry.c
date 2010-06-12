@@ -23,6 +23,7 @@
 #include <grub/loader.h>
 #include <grub/command.h>
 #include <grub/parser.h>
+#include <grub/script_sh.h>
 #include <grub/auth.h>
 #include <grub/i18n.h>
 
@@ -1189,7 +1190,7 @@ run (struct screen *screen)
   while (currline < screen->num_lines)
     {
       editor_getline (&nextline, 0);
-      if (grub_parser_get_current ()->parse_line (nextline, editor_getline))
+      if (grub_normal_parse_line (nextline, editor_getline))
 	break;
     }
 

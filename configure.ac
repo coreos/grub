@@ -179,11 +179,13 @@ if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
 fi
 
-for file in /usr/src/unifont.bdf /usr/share/fonts/X11/misc/unifont.pcf.gz /usr/share/fonts/unifont/unifont.pcf.gz; do
-  if test -e $file ; then
-    AC_SUBST([FONT_SOURCE], [$file])
-    break
-  fi
+for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
+  for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont; do
+    if test -f "$dir/unifont.$ext"; then
+      AC_SUBST([FONT_SOURCE], [$dir/unifont.$ext])
+      break 2
+    fi
+  done
 done
 
 AC_PROG_INSTALL
@@ -192,7 +194,7 @@ AC_PROG_LEX
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 
-if test "x$LEX" = x; then
+if test "x$LEX" = "x:"; then
   AC_MSG_ERROR([flex is not found])
 else
   version=`$LEX --version | $AWK '{ split($NF,x,"."); print x[[1]]*10000+x[[2]]*100+x[[3]]; }'`

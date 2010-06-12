@@ -105,6 +105,11 @@ prepare_grub_to_access_device ()
     echo "insmod ${module}"
   done
 
+  partmap="`${grub_probe} --device ${device} --target=partmap`"
+  for module in ${partmap} ; do
+    echo "insmod part_${module}"
+  done
+
   fs="`${grub_probe} --device ${device} --target=fs`"
   for module in ${fs} ; do
     echo "insmod ${module}"

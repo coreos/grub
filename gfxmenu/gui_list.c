@@ -210,8 +210,7 @@ draw_scrollbar (list_impl_t self,
 
 /* Draw the list of items.  */
 static void
-draw_menu (list_impl_t self, int width, int drawing_scrollbar,
-	   int num_shown_items)
+draw_menu (list_impl_t self, int width, int num_shown_items)
 {
   if (! self->menu_box || ! self->selected_item_box)
     return;
@@ -225,8 +224,6 @@ draw_menu (list_impl_t self, int width, int drawing_scrollbar,
   int item_height = self->item_height;
 
   make_selected_item_visible (self);
-
-  int scrollbar_h_space = drawing_scrollbar ? self->scrollbar_width : 0;
 
   grub_gfxmenu_box_t selbox = self->selected_item_box;
   int sel_leftpad = selbox->get_left_pad (selbox);
@@ -244,12 +241,8 @@ draw_menu (list_impl_t self, int width, int drawing_scrollbar,
       if (is_selected)
         {
           int sel_toppad = selbox->get_top_pad (selbox);
-          selbox->set_content_size (selbox,
-                                    (width - 2 * boxpad
-                                     - scrollbar_h_space),
-                                    item_height);
-          selbox->draw (selbox,
-                        item_left - sel_leftpad,
+          selbox->set_content_size (selbox, (width - 2 * boxpad), item_height);
+          selbox->draw (selbox, item_left - sel_leftpad,
                         item_top - sel_toppad);
         }
 
@@ -320,7 +313,7 @@ list_paint (void *vself, const grub_video_rect_t *region)
     box->draw (box, 0, 0);
 
     grub_gui_set_viewport (&content_rect, &vpsave2);
-    draw_menu (self, content_rect.width, drawing_scrollbar, num_shown_items);
+    draw_menu (self, content_rect.width, num_shown_items);
     grub_gui_restore_viewport (&vpsave2);
 
     if (drawing_scrollbar)

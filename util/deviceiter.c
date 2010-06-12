@@ -33,6 +33,7 @@
 #include <grub/util/deviceiter.h>
 #include <grub/list.h>
 #include <grub/misc.h>
+#include <grub/emu/misc.h>
 
 #ifdef __linux__
 # if !defined(__GLIBC__) || \
@@ -676,112 +677,114 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
     }
 
   /* DM-RAID.  */
-  {
-    struct dm_tree *tree = NULL;
-    struct dm_task *task = NULL;
-    struct dm_names *names = NULL;
-    unsigned int next = 0;
-    void *top_handle, *second_handle;
-    struct dm_tree_node *root, *top, *second;
-    struct dmraid_seen *seen = NULL;
+  if (grub_device_mapper_supported ())
+    {
+      struct dm_tree *tree = NULL;
+      struct dm_task *task = NULL;
+      struct dm_names *names = NULL;
+      unsigned int next = 0;
+      void *top_handle, *second_handle;
+      struct dm_tree_node *root, *top, *second;
+      struct dmraid_seen *seen = NULL;
 
-    /* Build DM tree for all devices.  */
-    tree = dm_tree_create ();
-    dmraid_check (tree, "dm_tree_create failed\n");
-    task = dm_task_create (DM_DEVICE_LIST);
-    dmraid_check (task, "dm_task_create failed\n");
-    dmraid_check (dm_task_run (task), "dm_task_run failed\n");
-    names = dm_task_get_names (task);
-    dmraid_check (names, "dm_task_get_names failed\n");
-    dmraid_check (names->dev, "No DM devices found\n");
-    do
-      {
-	names = (void *) names + next;
-	dmraid_check (dm_tree_add_dev (tree, MAJOR (names->dev),
-				       MINOR (names->dev)),
-			 "dm_tree_add_dev (%s) failed\n", names->name);
-	next = names->next;
-      }
-    while (next);
+      /* Build DM tree for all devices.  */
+      tree = dm_tree_create ();
+      dmraid_check (tree, "dm_tree_create failed\n");
+      task = dm_task_create (DM_DEVICE_LIST);
+      dmraid_check (task, "dm_task_create failed\n");
+      dmraid_check (dm_task_run (task), "dm_task_run failed\n");
+      names = dm_task_get_names (task);
+      dmraid_check (names, "dm_task_get_names failed\n");
+      dmraid_check (names->dev, "No DM devices found\n");
+      do
+	{
+	  names = (void *) names + next;
+	  dmraid_check (dm_tree_add_dev (tree, MAJOR (names->dev),
+					 MINOR (names->dev)),
+			   "dm_tree_add_dev (%s) failed\n", names->name);
+	  next = names->next;
+	}
+      while (next);
 
-    /* Walk the second-level children of the inverted tree; that is, devices
-       which are directly composed of non-DM devices such as hard disks.
-       This class includes all DM-RAID disks and excludes all DM-RAID
-       partitions.  */
-    root = dm_tree_find_node (tree, 0, 0);
-    top_handle = NULL;
-    top = dm_tree_next_child (&top_handle, root, 1);
-    while (top)
-      {
-	second_handle = NULL;
-	second = dm_tree_next_child (&second_handle, top, 1);
-	while (second)
-	  {
-	    const char *node_name, *node_uuid;
-	    char *name;
-	    struct dmraid_seen *seen_elt;
+      /* Walk the second-level children of the inverted tree; that is, devices
+	 which are directly composed of non-DM devices such as hard disks.
+	 This class includes all DM-RAID disks and excludes all DM-RAID
+	 partitions.  */
+      root = dm_tree_find_node (tree, 0, 0);
+      top_handle = NULL;
+      top = dm_tree_next_child (&top_handle, root, 1);
+      while (top)
+	{
+	  second_handle = NULL;
+	  second = dm_tree_next_child (&second_handle, top, 1);
+	  while (second)
+	    {
+	      const char *node_name, *node_uuid;
+	      char *name;
+	      struct dmraid_seen *seen_elt;
 
-	    node_name = dm_tree_node_get_name (second);
-	    dmraid_check (node_name, "dm_tree_node_get_name failed\n");
-	    node_uuid = dm_tree_node_get_uuid (second);
-	    dmraid_check (node_uuid, "dm_tree_node_get_uuid failed\n");
-	    if (strncmp (node_uuid, "DMRAID-", 7) != 0)
-	      {
-		grub_dprintf ("deviceiter", "%s is not DM-RAID\n", node_name);
-		goto dmraid_next_child;
-	      }
+	      node_name = dm_tree_node_get_name (second);
+	      dmraid_check (node_name, "dm_tree_node_get_name failed\n");
+	      node_uuid = dm_tree_node_get_uuid (second);
+	      dmraid_check (node_uuid, "dm_tree_node_get_uuid failed\n");
+	      if (strncmp (node_uuid, "DMRAID-", 7) != 0)
+		{
+		  grub_dprintf ("deviceiter", "%s is not DM-RAID\n", node_name);
+		  goto dmraid_next_child;
+		}
 
-	    /* Have we already seen this node?  There are typically very few
-	       DM-RAID disks, so a list should be fast enough.  */
-	    if (grub_named_list_find (GRUB_AS_NAMED_LIST (seen), node_name))
-	      {
-		grub_dprintf ("deviceiter", "Already seen DM device %s\n",
-			      node_name);
-		goto dmraid_next_child;
-	      }
+	      /* Have we already seen this node?  There are typically very few
+		 DM-RAID disks, so a list should be fast enough.  */
+	      if (grub_named_list_find (GRUB_AS_NAMED_LIST (seen), node_name))
+		{
+		  grub_dprintf ("deviceiter", "Already seen DM device %s\n",
+				node_name);
+		  goto dmraid_next_child;
+		}
 
-	    name = xasprintf ("/dev/mapper/%s", node_name);
-	    if (check_device (name))
-	      {
-		if (hook (name, 0))
-		  {
-		    free (name);
-		    while (seen)
-		      {
-			struct dmraid_seen *seen_elt =
-			  grub_list_pop (GRUB_AS_LIST_P (&seen));
-			free (seen_elt);
-		      }
-		    if (task)
-		      dm_task_destroy (task);
-		    if (tree)
-		      dm_tree_free (tree);
-		    return;
-		  }
-	      }
-	    free (name);
+	      name = xasprintf ("/dev/mapper/%s", node_name);
+	      if (check_device (name))
+		{
+		  if (hook (name, 0))
+		    {
+		      free (name);
+		      while (seen)
+			{
+			  struct dmraid_seen *seen_elt = seen;
+			  seen = seen->next;
+			  free (seen_elt);
+			}
+		      if (task)
+			dm_task_destroy (task);
+		      if (tree)
+			dm_tree_free (tree);
+		      return;
+		    }
+		}
+	      free (name);
 
-	    seen_elt = xmalloc (sizeof *seen_elt);
-	    seen_elt->name = node_name;
-	    grub_list_push (GRUB_AS_LIST_P (&seen), GRUB_AS_LIST (seen_elt));
+	      seen_elt = xmalloc (sizeof *seen_elt);
+	      seen_elt->name = node_name;
+	      grub_list_push (GRUB_AS_LIST_P (&seen), GRUB_AS_LIST (seen_elt));
 
 dmraid_next_child:
-	    second = dm_tree_next_child (&second_handle, top, 1);
-	  }
-	top = dm_tree_next_child (&top_handle, root, 1);
-      }
+	      second = dm_tree_next_child (&second_handle, top, 1);
+	    }
+	  top = dm_tree_next_child (&top_handle, root, 1);
+	}
 
 dmraid_end:
-    while (seen)
-      {
-	struct dmraid_seen *seen_elt = grub_list_pop (GRUB_AS_LIST_P (&seen));
-	free (seen_elt);
-      }
-    if (task)
-      dm_task_destroy (task);
-    if (tree)
-      dm_tree_free (tree);
-  }
+      while (seen)
+	{
+	  struct dmraid_seen *seen_elt = seen;
+	  seen = seen->next;
+	  free (seen_elt);
+	}
+      if (task)
+	dm_task_destroy (task);
+      if (tree)
+	dm_tree_free (tree);
+    }
 # endif /* HAVE_DEVICE_MAPPER */
 #endif /* __linux__ */
 }
