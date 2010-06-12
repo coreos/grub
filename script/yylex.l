@@ -121,7 +121,7 @@ CHAR            [^{}|&$;<> \t\n\'\"\\]
 DIGITS          [[:digit:]]+
 NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
 
-ESC             \\.
+ESC             \\(.|\n)
 SQCHR           [^\']
 DQCHR           {ESC}|[^\\\"]
 DQSTR           \"{DQCHR}*\"
@@ -129,7 +129,7 @@ SQSTR           \'{SQCHR}*\'
 VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|$\?|$\{\?\}
 WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 
-MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*))
+MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
 
 %x              SPLIT
 %x              DQUOTE
@@ -177,6 +177,11 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*))
 "function"      { RECORD; return GRUB_PARSER_TOKEN_FUNCTION;  }
 "menuentry"     { RECORD; return GRUB_PARSER_TOKEN_MENUENTRY; }
 
+{MULTILINE}     {
+                  if (grub_lexer_unput (yytext, yyscanner))
+		    return GRUB_PARSER_TOKEN_BAD;
+		}
+
 {NAME}          { RECORD; return GRUB_PARSER_TOKEN_NAME; }
 {WORD}          {
                   RECORD;
@@ -188,10 +193,6 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*))
 		    }
 		  yyextra->lexerstate->resplit = 1;
                 }
-{MULTILINE}     {
-                  if (grub_lexer_unput (yytext, yyscanner))
-		    return GRUB_PARSER_TOKEN_BAD;
-		}
 .               {
                   grub_script_yyerror (yyextra, yytext);
 		  return GRUB_PARSER_TOKEN_BAD;
@@ -201,6 +202,7 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*))
 
 <SPLIT>{
   \\.           { COPY (yytext + 1, yyleng - 1); }
+  \\\n          { /* ignore */ }
   \"            {
                   yy_push_state (DQUOTE, yyscanner);
                   ARG (GRUB_SCRIPT_ARG_TYPE_TEXT);

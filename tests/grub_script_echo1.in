@@ -60,6 +60,14 @@ echo one'two
 echo one'two
 \'three
 
+# echo "one\
+# two"
+# echo 'one\
+# two'
+# echo foo\
+# bar
+# \
+# echo foo
 # echo "one
 #
 # two"
