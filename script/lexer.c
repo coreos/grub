@@ -98,8 +98,6 @@ grub_script_lexer_record_stop (struct grub_parser_param *parser)
   return result;
 }
 
-#define MAX(a,b) ((a) < (b) ? (b) : (a))
-
 /* Record STR if input recording is enabled.  */
 void
 grub_script_lexer_record (struct grub_parser_param *parser, char *str)
@@ -115,7 +113,7 @@ grub_script_lexer_record (struct grub_parser_param *parser, char *str)
   if (lexer->recordpos + len + 1 > lexer->recordlen)
     {
       old = lexer->recording;
-      lexer->recordlen = MAX (len, lexer->recordlen) * 2;
+      lexer->recordlen = grub_max (len, lexer->recordlen) * 2;
       lexer->recording = grub_realloc (lexer->recording, lexer->recordlen);
       if (!lexer->recording)
 	{
@@ -131,76 +129,85 @@ grub_script_lexer_record (struct grub_parser_param *parser, char *str)
   lexer->recordpos += len;
 }
 
-/* Append '\n' to SRC, before '\0'  */
-static char *
-append_newline (const char *src)
-{
-  char *line;
-  grub_size_t len;
-
-  len = grub_strlen (src);
-  line = grub_malloc (len + 2);
-  if (!line)
-    return 0;
-
-  grub_strcpy (line, src);
-
-  line[len] = '\n';
-  line[len + 1] = '\0';
-  return line;
-}
-
 /* Read next line of input if necessary, and set yyscanner buffers.  */
 int
-grub_script_lexer_yywrap (struct grub_parser_param *parserstate)
+grub_script_lexer_yywrap (struct grub_parser_param *parserstate,
+			  const char *input)
 {
   int len;
-  char *line;
-  char *line2;
+  char *p = 0;
+  char *line = 0;
   YY_BUFFER_STATE buffer;
   struct grub_lexer_param *lexerstate = parserstate->lexerstate;
 
-  if (!lexerstate->refs)
-    return 0;
+  if (! lexerstate->refs && ! lexerstate->prefix && ! input)
+    return 1;
 
-  if (!lexerstate->getline)
+  if (! lexerstate->getline && ! input)
     {
       grub_script_yyerror (parserstate, "unexpected end of file");
-      return 0;
+      return 1;
     }
 
   line = 0;
-  buffer = 0;
-  lexerstate->getline (&line, 1);
-  if (!line)
+  if (! input)
+    lexerstate->getline (&line, 1);
+  else
+    line = grub_strdup (input);
+  if (! line)
     {
-      grub_script_yyerror (parserstate, 0); /* XXX this could be for ^C case? */
-      return 0;
+      grub_script_yyerror (parserstate, 0);
+      return 1;
     }
 
   len = grub_strlen (line);
-  if (line[len - 1] == '\n')
+  if (lexerstate->prefix)
     {
-      buffer = yy_scan_string (line, lexerstate->yyscanner);
-    }
-  else
-    {
-      line2 = append_newline (line);
-      if (line2)
+      int plen = grub_strlen (lexerstate->prefix);
+
+      p = grub_malloc (len + plen + 2);
+      if (! p)
 	{
-	  buffer = yy_scan_string (line2, lexerstate->yyscanner);
-	  grub_free (line2);
+	  grub_free (line);
+	  return 1;
 	}
+      grub_strcpy (p, lexerstate->prefix);
+      lexerstate->prefix = 0;
+
+      if (! line[0])
+	{
+	  line = "\n";
+	  len = 1;
+	}
+      grub_strcpy (p + plen, line);
+
+      line = p;
+      len = len + plen;
     }
 
+  if (line[len - 1] != '\n')
+    {
+      char *p;
+      p = grub_realloc (line, len + 2);
+      if (! p)
+	{
+	  grub_free (line);
+	  return 1;
+	}
+      line = p;
+      line[len++] = '\n';
+      line[len] = '\0';
+    }
+
+  buffer = yy_scan_string (line, lexerstate->yyscanner);
   grub_free (line);
-  if (!buffer)
+
+  if (! buffer)
     {
       grub_script_yyerror (parserstate, 0);
-      return 0;
+      return 1;
     }
-
-  return 1;
+  return 0;
 }
 
 struct grub_lexer_param *
@@ -231,35 +238,18 @@ grub_script_lexer_init (struct grub_parser_param *parser, char *script,
       grub_free (lexerstate);
       return 0;
     }
+  yyset_extra (parser, lexerstate->yyscanner);
+  parser->lexerstate = lexerstate;
 
-  buffer = 0;
-  script = script ? : "\n";
-  len = grub_strlen (script);
-
-  if (script[len - 1] == '\n')
+  if (grub_script_lexer_yywrap (parser, script ?: "\n"))
     {
-      buffer = yy_scan_string (script, lexerstate->yyscanner);
-    }
-  else
-    {
-      script2 = append_newline (script);
-      if (script2)
-	{
-	  buffer = yy_scan_string (script2, lexerstate->yyscanner);
-	  grub_free (script2);
-	}
-    }
-
-  if (!buffer)
-    {
+      parser->lexerstate = 0;
       yylex_destroy (lexerstate->yyscanner);
       grub_free (lexerstate->yyscanner);
-
       grub_free (lexerstate->text);
       grub_free (lexerstate);
       return 0;
     }
-  yyset_extra (parser, lexerstate->yyscanner);
 
   return lexerstate;
 }

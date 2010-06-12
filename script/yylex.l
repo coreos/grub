@@ -58,7 +58,9 @@
 #define YY_INPUT(buf,res,max) do { res = 0; } while (0)
 
 /* forward declarations */
-static int resplit (const char *input, yyscan_t yyscanner);
+static int grub_lexer_unput (const char *input, yyscan_t yyscanner);
+static int grub_lexer_resplit (const char *input, yyscan_t yyscanner);
+
 static void  grub_lexer_yyfree (void *, yyscan_t yyscanner);
 static void* grub_lexer_yyalloc (yy_size_t, yyscan_t yyscanner);
 static void* grub_lexer_yyrealloc (void*, yy_size_t, yyscan_t yyscanner);
@@ -100,10 +102,9 @@ typedef size_t yy_size_t;
 %option never-interactive
 
 %option noyyfree noyyalloc noyyrealloc
-%option nounistd nostdinit nodefault noyylineno noyywrap
+%option nounistd nostdinit nodefault noyylineno
 
 /* Reduce lexer size, by not defining these.  */
-%option noyy_top_state
 %option noinput nounput
 %option noyyget_in noyyset_in
 %option noyyget_out noyyset_out
@@ -120,20 +121,19 @@ DIGITS          [[:digit:]]+
 NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
 
 ESC             \\.
+SQCHR           [^\']
+DQCHR           {ESC}|[^\"]
+DQSTR           \"{DQCHR}*\"
+SQSTR           \'{SQCHR}*\'
 VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|$\?|$\{\?\}
-DQSTR           \"([^\"]|{ESC})*\"
-SQSTR           \'([^\'])*\'
 WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 
-DQSTR2          {WORD}?\"({ESC}|[^\"])*\n
-SQSTR2          {WORD}?\'({ESC}|[^\'])*\n
+MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*))
 
 %x              SPLIT
 %x              DQUOTE
 %x              SQUOTE
 %x              VAR
-%x              DQMULTILINE
-%x              SQMULTILINE
 
 %%
 
@@ -179,55 +179,22 @@ SQSTR2          {WORD}?\'({ESC}|[^\'])*\n
 {NAME}          { RECORD; return GRUB_PARSER_TOKEN_NAME; }
 {WORD}          {
                   RECORD;
+		  yyextra->lexerstate->resplit = 1;
 		  yypush_buffer_state (YY_CURRENT_BUFFER, yyscanner);
-		  if (resplit (yytext, yyscanner))
+		  if (grub_lexer_resplit (yytext, yyscanner))
 		    {
 		      yypop_buffer_state (yyscanner);
 		      return GRUB_PARSER_TOKEN_WORD;
 		    }
                 }
-{DQSTR2}        {
-		  yy_push_state (DQMULTILINE, yyscanner);
-		  grub_script_lexer_ref (yyextra->lexerstate);
-		  yymore ();
+{MULTILINE}     {
+                  if (grub_lexer_unput (yytext, yyscanner))
+		    return GRUB_PARSER_TOKEN_BAD;
+		}
+.               {
+                  grub_script_yyerror (yyextra, yytext);
+		  return GRUB_PARSER_TOKEN_BAD;
                 }
-<DQMULTILINE>{
-  \"{WORD}?     {
-                  RECORD;
-		  grub_script_lexer_deref (yyextra->lexerstate);
-		  yy_pop_state (yyscanner);
-		  yypush_buffer_state (YY_CURRENT_BUFFER, yyscanner);
-		  if (resplit (yytext, yyscanner))
-		    {
-		      yypop_buffer_state (yyscanner);
-		      return GRUB_PARSER_TOKEN_WORD;
-		    }
-                }
-  {ESC}         { yymore(); }
-  [^\"]         { yymore(); }
-}
-
-{SQSTR2}        {
-		  yy_push_state (SQMULTILINE, yyscanner);
-		  grub_script_lexer_ref (yyextra->lexerstate);
-		  yymore ();
-                }
-
-<SQMULTILINE>{
-  \'{WORD}?     {
-                  RECORD;
-		  grub_script_lexer_deref (yyextra->lexerstate);
-		  yy_pop_state (yyscanner);
-		  yypush_buffer_state (YY_CURRENT_BUFFER, yyscanner);
-		  if (resplit (yytext, yyscanner))
-		    {
-		      yypop_buffer_state (yyscanner);
-		      return GRUB_PARSER_TOKEN_WORD;
-		    }
-                }
-  {ESC}         { yymore(); }
-  [^\']         { yymore(); }
-}
 
  /* Split word into multiple args */
 
@@ -250,6 +217,7 @@ SQSTR2          {WORD}?\'({ESC}|[^\'])*\n
   <<EOF>>       {
                   yy_pop_state (yyscanner);
                   yypop_buffer_state (yyscanner);
+		  yyextra->lexerstate->resplit = 0;
                   yyextra->lexerstate->merge_end = 1;
                   ARG (GRUB_SCRIPT_ARG_TYPE_TEXT);
                 }
@@ -305,37 +273,21 @@ SQSTR2          {WORD}?\'({ESC}|[^\'])*\n
   (.|\n)        { COPY (yytext, yyleng); }
 }
 
-.               { /* ignore */ }
 <<EOF>>         {
                   yypop_buffer_state (yyscanner);
-                  if (! grub_script_lexer_yywrap (yyextra))
-                    {
-                      yyextra->lexerstate->eof = 1;
-                      return GRUB_PARSER_TOKEN_EOF;
-                    }
+		  yyextra->lexerstate->eof = 1;
+		  return GRUB_PARSER_TOKEN_EOF;
                 }
 %%
 
-#if 0
 int
 yywrap (yyscan_t yyscanner)
 {
-  char *line = 0;
-  struct grub_lexer_param *lexerstate = yyget_extra(yyscanner)->lexerstate;
+  if (yyget_extra (yyscanner)->lexerstate->resplit)
+    return 1;
 
-  grub_printf ("yywrap\n");
-  if (lexerstate->getline)
-    {
-      lexerstate->getline (&line, 1);
-      if (! line)
-	return 1;
-
-      yy_scan_string (line, yyscanner);
-      return 0;
-    }
-  return 1;
+  return grub_script_lexer_yywrap (yyget_extra (yyscanner), 0);
 }
-#endif
 
 static void
 grub_lexer_yyfree (void *ptr, yyscan_t yyscanner __attribute__ ((unused)))
@@ -381,7 +333,7 @@ static void copy_string (struct grub_parser_param *parser, const char *str, unsi
 }
 
 static int
-resplit (const char *text, yyscan_t yyscanner)
+grub_lexer_resplit (const char *text, yyscan_t yyscanner)
 {
   /* resplit text */
   if (yy_scan_string (text, yyscanner))
@@ -392,4 +344,24 @@ resplit (const char *text, yyscan_t yyscanner)
     }
   grub_script_yyerror (yyget_extra (yyscanner), 0);
   return 1;
+}
+
+static int
+grub_lexer_unput (const char *text, yyscan_t yyscanner)
+{
+  struct grub_lexer_param *lexerstate = yyget_extra (yyscanner)->lexerstate;
+
+  if (lexerstate->prefix)
+    {
+      grub_free (lexerstate->prefix);
+      lexerstate->prefix = 0;
+    }
+
+  lexerstate->prefix = grub_strdup (text);
+  if (! lexerstate->prefix)
+    {
+      grub_script_yyerror (yyget_extra (yyscanner), "out of memory");
+      return 1;
+    }
+  return 0;
 }
