@@ -230,10 +230,6 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
   return 0;
 }
 
-struct grub_handler_class grub_parser_class = {
-  .name = "parser"
-};
-
 grub_err_t
 grub_parser_execute (char *source)
 {
@@ -261,11 +257,9 @@ grub_parser_execute (char *source)
   while (source)
     {
       char *line;
-      grub_parser_t parser;
 
       getline (&line, 0);
-      parser = grub_parser_get_current ();
-      parser->parse_line (line, getline);
+      grub_rescue_parse_line (line, getline);
       grub_free (line);
     }
 

@@ -25,14 +25,26 @@
 #define GRUB_SCSI_REMOVABLE_BIT	7
 #define GRUB_SCSI_LUN_SHIFT	5
 
+struct grub_scsi_test_unit_ready
+{
+  grub_uint8_t opcode;
+  grub_uint8_t lun; /* 7-5 LUN, 4-0 reserved */
+  grub_uint8_t reserved1;
+  grub_uint8_t reserved2;
+  grub_uint8_t reserved3;
+  grub_uint8_t control;
+  grub_uint8_t pad[6]; /* To be ATAPI compatible */
+} __attribute__((packed));
+
 struct grub_scsi_inquiry
 {
   grub_uint8_t opcode;
-  grub_uint8_t lun;
-  grub_uint16_t reserved;
-  grub_uint16_t alloc_length;
-  grub_uint8_t reserved2;
-  grub_uint8_t pad[5];
+  grub_uint8_t lun; /* 7-5 LUN, 4-1 reserved, 0 EVPD */
+  grub_uint8_t page; /* page code if EVPD=1 */
+  grub_uint8_t reserved;
+  grub_uint8_t alloc_length;
+  grub_uint8_t control;
+  grub_uint8_t pad[6]; /* To be ATAPI compatible */
 } __attribute__((packed));
 
 struct grub_scsi_inquiry_data
@@ -47,12 +59,42 @@ struct grub_scsi_inquiry_data
   char prodrev[4];
 } __attribute__((packed));
 
+struct grub_scsi_request_sense
+{
+  grub_uint8_t opcode;
+  grub_uint8_t lun; /* 7-5 LUN, 4-0 reserved */
+  grub_uint8_t reserved1;
+  grub_uint8_t reserved2;
+  grub_uint8_t alloc_length;
+  grub_uint8_t control;
+  grub_uint8_t pad[6]; /* To be ATAPI compatible */
+} __attribute__((packed));
+
+struct grub_scsi_request_sense_data
+{
+  grub_uint8_t error_code; /* 7 Valid, 6-0 Err. code */
+  grub_uint8_t segment_number;
+  grub_uint8_t sense_key; /*7 FileMark, 6 EndOfMedia, 5 ILI, 4-0 sense key */
+  grub_uint32_t information;
+  grub_uint8_t additional_sense_length;
+  grub_uint32_t cmd_specific_info;
+  grub_uint8_t additional_sense_code;
+  grub_uint8_t additional_sense_code_qualifier;
+  grub_uint8_t field_replaceable_unit_code;
+  grub_uint8_t sense_key_specific[3];
+  /* there can be additional sense field */
+} __attribute__((packed));
+
 struct grub_scsi_read_capacity
 {
   grub_uint8_t opcode;
-  grub_uint8_t lun;
-  grub_uint8_t reserved[8];
-  grub_uint8_t pad[2];
+  grub_uint8_t lun; /* 7-5 LUN, 4-1 reserved, 0 reserved */
+  grub_uint32_t logical_block_addr; /* only if PMI=1 */
+  grub_uint8_t reserved1;
+  grub_uint8_t reserved2;
+  grub_uint8_t PMI;
+  grub_uint8_t control;
+  grub_uint16_t pad; /* To be ATAPI compatible */
 } __attribute__((packed));
 
 struct grub_scsi_read_capacity_data
@@ -105,12 +147,14 @@ struct grub_scsi_write12
 
 typedef enum
   {
+    grub_scsi_cmd_test_unit_ready = 0x00,
+    grub_scsi_cmd_request_sense = 0x03,
     grub_scsi_cmd_inquiry = 0x12,
     grub_scsi_cmd_read_capacity = 0x25,
     grub_scsi_cmd_read10 = 0x28,
     grub_scsi_cmd_write10 = 0x2a,
     grub_scsi_cmd_read12 = 0xa8,
-    grub_scsi_cmd_write12 = 0xaa
+    grub_scsi_cmd_write12 = 0xaa,
   } grub_scsi_cmd_t;
 
 typedef enum

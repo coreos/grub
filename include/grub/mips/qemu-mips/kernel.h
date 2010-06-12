@@ -27,10 +27,6 @@
 void EXPORT_FUNC (grub_reboot) (void);
 void EXPORT_FUNC (grub_halt) (void);
 
-/* The prefix which points to the directory where GRUB modules and its
-   configuration file are located.  */
-extern char grub_prefix[];
-
 #endif
 
 #endif /* ! GRUB_KERNEL_MACHINE_HEADER */

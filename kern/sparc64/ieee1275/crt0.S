@@ -18,6 +18,7 @@
  */
 #include <grub/symbol.h>
 #include <grub/machine/kernel.h>
+#include <grub/offsets.h>
 
 	.text
 	.align	4
