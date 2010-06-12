@@ -269,7 +269,7 @@ if [ -e "${iso9660_dir}/boot/coreboot.elf" ] && [ -d "${rom_directory}" ]; then
 fi
 
 # build iso image
-xorriso -pathspecs on -as mkisofs ${grub_mkisofs_arguments} --protective-msdos-label -o ${output_image} -r ${iso9660_dir} --sort-weight 0 / --sort-weight 1 /boot ${source}
+xorriso -as mkisofs -graft-points ${grub_mkisofs_arguments} --protective-msdos-label -o ${output_image} -r ${iso9660_dir} --sort-weight 0 / --sort-weight 1 /boot ${source}
 rm -rf ${iso9660_dir}
 
 rm -f ${embed_img}

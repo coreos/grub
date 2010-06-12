@@ -1,5 +1,10 @@
 2010-06-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.in: Use -graft-points instead of -pathspecs.
+	Suggested by: Thomas Schmitt.
+
+2010-06-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Add --sort-weight arguments to xorriso.
 	Suggested by: Thomas Schmitt.
 
