@@ -18,6 +18,7 @@
  */
 
 #include <grub/dl.h>
+#include <grub/pci.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/usb.h>
@@ -29,29 +30,58 @@ grub_usb_control_msg (grub_usb_device_t dev,
 		      grub_uint8_t request,
 		      grub_uint16_t value,
 		      grub_uint16_t index,
-		      grub_size_t size, char *data)
+		      grub_size_t size0, char *data_in)
 {
   int i;
   grub_usb_transfer_t transfer;
   int datablocks;
-  struct grub_usb_packet_setup setupdata;
+  volatile struct grub_usb_packet_setup *setupdata;
+  grub_uint32_t setupdata_addr;
   grub_usb_err_t err;
   unsigned int max;
+  struct grub_pci_dma_chunk *data_chunk, *setupdata_chunk;
+  volatile char *data;
+  grub_uint32_t data_addr;
+  grub_size_t size = size0;
+
+  /* FIXME: avoid allocation any kind of buffer in a first place.  */
+  data_chunk = grub_memalign_dma32 (128, size ? : 16);
+  if (!data_chunk)
+    return GRUB_USB_ERR_INTERNAL;
+  data = grub_dma_get_virt (data_chunk);
+  data_addr = grub_dma_get_phys (data_chunk);
+  grub_memcpy ((char *) data, data_in, size);
 
   grub_dprintf ("usb",
 		"control: reqtype=0x%02x req=0x%02x val=0x%02x idx=0x%02x size=%d\n",
 		reqtype, request,  value, index, size);
 
   /* Create a transfer.  */
-  transfer = grub_malloc (sizeof (struct grub_usb_transfer));
+  transfer = grub_malloc (sizeof (*transfer));
   if (! transfer)
-    return grub_errno;
+    {
+      grub_dma_free (data_chunk);
+      return grub_errno;
+    }
+
+  setupdata_chunk = grub_memalign_dma32 (32, sizeof (*setupdata));
+  if (! setupdata_chunk)
+    {
+      grub_free (transfer);
+      grub_dma_free (data_chunk);
+      return grub_errno;
+    }
+
+  setupdata = grub_dma_get_virt (setupdata_chunk);
+  setupdata_addr = grub_dma_get_phys (setupdata_chunk);
 
   /* Determine the maximum packet size.  */
-  if (dev->initialized)
+  if (dev->descdev.maxsize0)
     max = dev->descdev.maxsize0;
   else
     max = 64;
+
+  grub_dprintf ("usb", "transfer = %p, dev = %p\n", transfer, dev);
 
   datablocks = (size + max - 1) / max;
 
@@ -71,18 +101,20 @@ grub_usb_control_msg (grub_usb_device_t dev,
   if (! transfer->transactions)
     {
       grub_free (transfer);
+      grub_dma_free (setupdata_chunk);
+      grub_dma_free (data_chunk);
       return grub_errno;
     }
 
   /* Build a Setup packet.  XXX: Endianness.  */
-  setupdata.reqtype = reqtype;
-  setupdata.request = request;
-  setupdata.value = value;
-  setupdata.index = index;
-  setupdata.length = size;
-  transfer->transactions[0].size = sizeof (setupdata);
+  setupdata->reqtype = reqtype;
+  setupdata->request = request;
+  setupdata->value = value;
+  setupdata->index = index;
+  setupdata->length = size;
+  transfer->transactions[0].size = sizeof (*setupdata);
   transfer->transactions[0].pid = GRUB_USB_TRANSFER_TYPE_SETUP;
-  transfer->transactions[0].data = (char *) &setupdata;
+  transfer->transactions[0].data = setupdata_addr;
   transfer->transactions[0].toggle = 0;
 
   /* Now the data...  XXX: Is this the right way to transfer control
@@ -99,14 +131,14 @@ grub_usb_control_msg (grub_usb_device_t dev,
 	tr->pid = GRUB_USB_TRANSFER_TYPE_IN;
       else
 	tr->pid = GRUB_USB_TRANSFER_TYPE_OUT;
-      tr->data = &data[i * max];
+      tr->data = data_addr + i * max;
       size -= max;
     }
 
   /* End with an empty OUT transaction.  */
   transfer->transactions[datablocks + 1].size = 0;
-  transfer->transactions[datablocks + 1].data = NULL;
-  if (reqtype & 128)
+  transfer->transactions[datablocks + 1].data = 0;
+  if ((reqtype & 128) && datablocks)
     transfer->transactions[datablocks + 1].pid = GRUB_USB_TRANSFER_TYPE_OUT;
   else
     transfer->transactions[datablocks + 1].pid = GRUB_USB_TRANSFER_TYPE_IN;
@@ -116,14 +148,19 @@ grub_usb_control_msg (grub_usb_device_t dev,
   err = dev->controller.dev->transfer (&dev->controller, transfer);
 
   grub_free (transfer->transactions);
+  
   grub_free (transfer);
+  grub_dma_free (data_chunk);
+  grub_dma_free (setupdata_chunk);
+
+  grub_memcpy (data_in, (char *) data, size0);
 
   return err;
 }
 
 static grub_usb_err_t
 grub_usb_bulk_readwrite (grub_usb_device_t dev,
-			 int endpoint, grub_size_t size, char *data,
+			 int endpoint, grub_size_t size0, char *data_in,
 			 grub_transfer_type_t type)
 {
   int i;
@@ -132,6 +169,19 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
   unsigned int max;
   grub_usb_err_t err;
   int toggle = dev->toggle[endpoint];
+  volatile char *data;
+  grub_uint32_t data_addr;
+  struct grub_pci_dma_chunk *data_chunk;
+  grub_size_t size = size0;
+
+  /* FIXME: avoid allocation any kind of buffer in a first place.  */
+  data_chunk = grub_memalign_dma32 (128, size);
+  if (!data_chunk)
+    return GRUB_USB_ERR_INTERNAL;
+  data = grub_dma_get_virt (data_chunk);
+  data_addr = grub_dma_get_phys (data_chunk);
+  if (type == GRUB_USB_TRANSFER_TYPE_OUT)
+    grub_memcpy ((char *) data, data_in, size);
 
   /* Use the maximum packet size given in the endpoint descriptor.  */
   if (dev->initialized)
@@ -150,16 +200,20 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
   /* Create a transfer.  */
   transfer = grub_malloc (sizeof (struct grub_usb_transfer));
   if (! transfer)
-    return grub_errno;
+    {
+      grub_dma_free (data_chunk);
+      return grub_errno;
+    }
 
   datablocks = ((size + max - 1) / max);
   transfer->transcnt = datablocks;
   transfer->size = size - 1;
-  transfer->endpoint = endpoint;
+  transfer->endpoint = endpoint & 15;
   transfer->devaddr = dev->addr;
   transfer->type = GRUB_USB_TRANSACTION_TYPE_BULK;
   transfer->max = max;
   transfer->dev = dev;
+  transfer->last_trans = -1; /* Reset index of last processed transaction (TD) */
 
   /* Allocate an array of transfer data structures.  */
   transfer->transactions = grub_malloc (transfer->transcnt
@@ -167,6 +221,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
   if (! transfer->transactions)
     {
       grub_free (transfer);
+      grub_dma_free (data_chunk);
       return grub_errno;
     }
 
@@ -181,16 +236,27 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
       tr->toggle = toggle;
       toggle = toggle ? 0 : 1;
       tr->pid = type;
-      tr->data = &data[i * max];
+      tr->data = data_addr + i * max;
       size -= tr->size;
     }
 
   err = dev->controller.dev->transfer (&dev->controller, transfer);
+  /* We must remember proper toggle value even if some transactions
+   * were not processed - correct value should be inversion of last
+   * processed transaction (TD). */
+  if (transfer->last_trans >= 0)
+    toggle = transfer->transactions[transfer->last_trans].toggle ? 0 : 1;
+  else
+    toggle = dev->toggle[endpoint]; /* Nothing done, take original */
   grub_dprintf ("usb", "toggle=%d\n", toggle);
   dev->toggle[endpoint] = toggle;
 
   grub_free (transfer->transactions);
   grub_free (transfer);
+  grub_dma_free (data_chunk);
+
+  if (type == GRUB_USB_TRANSFER_TYPE_IN)
+    grub_memcpy (data_in, (char *) data, size0);
 
   return err;
 }

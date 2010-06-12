@@ -22,6 +22,10 @@ transform="@program_transform_name@"
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@
+PACKAGE_NAME=@PACKAGE_NAME@
+PACKAGE_VERSION=@PACKAGE_VERSION@
+
+self=`basename $0`
 
 grub_editenv=${bindir}/`echo grub-editenv | sed ${transform}`
 rootdir=
@@ -30,7 +34,7 @@ rootdir=
 # Print the usage.
 usage () {
     cat <<EOF
-Usage: $0 [OPTION] entry
+Usage: $self [OPTION] entry
 Set the default boot entry for GRUB.
 
   -h, --help              print this message and exit
@@ -66,7 +70,7 @@ do
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-set-default (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
 
     --root-directory)

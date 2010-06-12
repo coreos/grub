@@ -148,14 +148,13 @@ grub_mm_init_region (void *addr, grub_size_t size)
   grub_printf ("Using memory for heap: start=%p, end=%p\n", addr, addr + (unsigned int) size);
 #endif
 
-  /* If this region is too small, ignore it.  */
-  if (size < GRUB_MM_ALIGN * 2)
-    return;
-
   /* Allocate a region from the head.  */
-  r = (grub_mm_region_t) (((grub_addr_t) addr + GRUB_MM_ALIGN - 1)
-			  & (~(GRUB_MM_ALIGN - 1)));
+  r = (grub_mm_region_t) ALIGN_UP ((grub_addr_t) addr, GRUB_MM_ALIGN);
   size -= (char *) r - (char *) addr + sizeof (*r);
+
+  /* If this region is too small, ignore it.  */
+  if (size < GRUB_MM_ALIGN)
+    return;
 
   h = (grub_mm_header_t) ((char *) r + GRUB_MM_ALIGN);
   h->next = h;
@@ -221,9 +220,8 @@ grub_real_malloc (grub_mm_header_t *first, grub_size_t n, grub_size_t align)
 	         +---------------+          v
 	       */
 	      q->next = p->next;
-	      p->magic = GRUB_MM_ALLOC_MAGIC;
 	    }
-	  else if (extra == 0 || p->size == n + extra)
+	  else if (align == 1 || p->size == n + extra)
 	    {
 	      /* There might be alignment requirement, when taking it into
 	         account memory block fits in.
@@ -240,10 +238,25 @@ grub_real_malloc (grub_mm_header_t *first, grub_size_t n, grub_size_t align)
 	         | alloc, size=n |        |
 	         +---------------+        v
 	       */
+
 	      p->size -= n;
 	      p += p->size;
-	      p->size = n;
-	      p->magic = GRUB_MM_ALLOC_MAGIC;
+	    }
+	  else if (extra == 0)
+	    {
+	      grub_mm_header_t r;
+	      
+	      r = p + extra + n;
+	      r->magic = GRUB_MM_FREE_MAGIC;
+	      r->size = p->size - extra - n;
+	      r->next = p->next;
+	      q->next = r;
+
+	      if (q == p)
+		{
+		  q = r;
+		  r->next = r;
+		}
 	    }
 	  else
 	    {
@@ -276,9 +289,10 @@ grub_real_malloc (grub_mm_header_t *first, grub_size_t n, grub_size_t align)
 	      p->size = extra;
 	      p->next = r;
 	      p += extra;
-	      p->size = n;
-	      p->magic = GRUB_MM_ALLOC_MAGIC;
 	    }
+
+	  p->magic = GRUB_MM_ALLOC_MAGIC;
+	  p->size = n;
 
 	  /* Mark find as a start marker for next allocation to fasten it.
 	     This will have side effect of fragmenting memory as small

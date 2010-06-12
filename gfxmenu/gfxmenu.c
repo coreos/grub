@@ -110,6 +110,13 @@ grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
   view->nested = nested;
   view->first_timeout = -1;
 
+  grub_video_set_viewport (0, 0, mode_info.width, mode_info.height);
+  if (view->double_repaint)
+    {
+      grub_video_swap_buffers ();
+      grub_video_set_viewport (0, 0, mode_info.width, mode_info.height);
+    }
+
   grub_gfxmenu_view_draw (view);
 
   instance->data = view;

@@ -30,13 +30,15 @@ target_cpu=@target_cpu@
 platform=@platform@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
-grub_mkimage=${bindir}/`echo grub-mkelfimage | sed ${transform}`
+self=`basename $0`
+
+grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 
 # Usage: usage
 # Print the usage.
 usage () {
     cat <<EOF
-Usage: grub-mkrescue [OPTION] output_image
+Usage: $self [OPTION] output_image
 Make GRUB rescue image.
 
   -h, --help              print this message and exit
@@ -46,7 +48,7 @@ Make GRUB rescue image.
                           default: ${pkglibdir}
   --grub-mkimage=FILE     use FILE as grub-mkimage
 
-grub-mkimage generates a bootable rescue CD image for PowerMac and CHRP.
+$self generates a bootable rescue CD image for PowerMac and CHRP.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
@@ -76,7 +78,7 @@ do
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-mkrescue (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
 
     --modules)
@@ -129,7 +131,7 @@ boot_dir=${iso_dir}/boot/grub
 mkdir ${iso_dir}/boot
 mkdir ${boot_dir}
 core_img=${boot_dir}/grub.img
-${grub_mkimage} -n -d ${input_dir}/ -o ${core_img} ${modules}
+${grub_mkimage} -O powerpc-ieee1275 -n -d ${input_dir}/ -o ${core_img} ${modules}
 genisoimage -hfs -part -no-desktop -r -J -o ${output_image} \
  -map ${map_file} -hfs-bless ${boot_dir} -chrp-boot -sysid PPC \
  ${iso_dir}

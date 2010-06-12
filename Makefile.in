@@ -35,6 +35,7 @@ sysconfdir = @sysconfdir@
 sharedstatedir = @sharedstatedir@
 localstatedir = @localstatedir@
 libdir = @libdir@
+localedir = @localedir@
 infodir = @infodir@
 mandir = @mandir@
 includedir = @includedir@
@@ -89,7 +90,7 @@ GNULIB_CFLAGS = $(GNULIB_UTIL_CFLAGS) $(POSIX_CFLAGS)
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@ $(LIBS)
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
-	 -DGRUB_LIBDIR=\"$(pkglibdir)\" -DLOCALEDIR=\"$(localedir)\"
+	 -DGRUB_PKGLIBROOTDIR=\"$(libdir)/`echo @PACKAGE_TARNAME@ | sed '$(transform)'`\" -DLOCALEDIR=\"$(localedir)\"
 TARGET_CC = @TARGET_CC@
 TARGET_CFLAGS = -ffreestanding @TARGET_CFLAGS@
 TARGET_ASFLAGS = -nostdinc -fno-builtin @TARGET_ASFLAGS@
@@ -98,12 +99,12 @@ TARGET_APPLE_CC = @TARGET_APPLE_CC@
 OBJCONV = @OBJCONV@
 TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
 	-Wall -W
-TARGET_LDFLAGS = -nostdlib @TARGET_LDFLAGS@
+TARGET_LDFLAGS = -nostdlib -static-libgcc @TARGET_LDFLAGS@
 TARGET_IMG_LDSCRIPT = @TARGET_IMG_LDSCRIPT@
 TARGET_IMG_LDFLAGS = -nostdlib @TARGET_IMG_LDFLAGS@
 TARGET_IMG_CFLAGS = @TARGET_IMG_CFLAGS@
 TARGET_OBJ2ELF = @TARGET_OBJ2ELF@
-kernel_img_LDFLAGS = -static-libgcc -lgcc
+kernel_img_LDFLAGS = -lgcc
 EXEEXT = @EXEEXT@
 OBJCOPY = @OBJCOPY@
 STRIP = @STRIP@
@@ -322,26 +323,26 @@ install-local: all
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
-	  $(HELP2MAN) --section=1 -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
+	  $(HELP2MAN) --section=1 -i $(srcdir)/docs/man/$$dest.h2m -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(sbindir) $(DESTDIR)$(mandir)/man8
 	@list='$(sbin_UTILITIES)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
-	  $(HELP2MAN) --section=8 -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
+	  $(HELP2MAN) --section=8 -i $(srcdir)/docs/man/$$dest.h2m -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
 	done
 	@list='$(bin_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
-	  $(HELP2MAN) --section=1 -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
+	  $(HELP2MAN) --section=1 -i $(srcdir)/docs/man/$$dest.h2m -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
 	done
 	@list='$(sbin_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
-	  $(HELP2MAN) --section=8 -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
+	  $(HELP2MAN) --section=8 -i $(srcdir)/docs/man/$$dest.h2m -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(sysconfdir)/grub.d
 	@list='$(grub-mkconfig_SCRIPTS)'; for file in $$list; do \

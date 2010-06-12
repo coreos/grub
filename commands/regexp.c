@@ -21,6 +21,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 #include <regex.h>
 
 static grub_err_t
@@ -69,8 +70,8 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(regexp)
 {
   cmd = grub_register_command ("regexp", grub_cmd_regexp,
-			       "REGEXP STRING",
-			       "Test if REGEXP matches STRING.");
+			       N_("REGEXP STRING"),
+			       N_("Test if REGEXP matches STRING."));
 }
 
 GRUB_MOD_FINI(regexp)

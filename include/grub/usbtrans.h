@@ -37,7 +37,7 @@ struct grub_usb_transaction
   int size;
   int toggle;
   grub_transfer_type_t pid;
-  char *data;
+  grub_uint32_t data;
 };
 typedef struct grub_usb_transaction *grub_usb_transaction_t;
 
@@ -58,6 +58,9 @@ struct grub_usb_transfer
   struct grub_usb_device *dev;
 
   struct grub_usb_transaction *transactions;
+  
+  int last_trans;
+  /* Index of last processed transaction in OHCI/UHCI driver. */
 };
 typedef struct grub_usb_transfer *grub_usb_transfer_t;
 
@@ -86,9 +89,9 @@ typedef struct grub_usb_transfer *grub_usb_transfer_t;
 
 #define GRUB_USB_REQ_HUB_GET_PORT_STATUS 0x00
 
-#define GRUB_USB_FEATURE_ENDP_HALT	0x01
-#define GRUB_USB_FEATURE_DEV_REMOTE_WU	0x02
-#define GRUB_USB_FEATURE_TEST_MODE	0x04
+#define GRUB_USB_FEATURE_ENDP_HALT	0x00
+#define GRUB_USB_FEATURE_DEV_REMOTE_WU	0x01
+#define GRUB_USB_FEATURE_TEST_MODE	0x02
 
 #define GRUB_USB_HUB_STATUS_CONNECTED	(1 << 0)
 #define GRUB_USB_HUB_STATUS_LOWSPEED	(1 << 9)

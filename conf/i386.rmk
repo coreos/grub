@@ -56,6 +56,12 @@ pci_mod_SOURCES = bus/pci.c
 pci_mod_CFLAGS = $(COMMON_CFLAGS)
 pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For cs5536.mod
+pkglib_MODULES += cs5536.mod
+cs5536_mod_SOURCES = bus/cs5536.c
+cs5536_mod_CFLAGS = $(COMMON_CFLAGS)
+cs5536_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For lspci.mod
 pkglib_MODULES += lspci.mod
 lspci_mod_SOURCES = commands/lspci.c
@@ -68,3 +74,8 @@ play_mod_SOURCES = commands/i386/pc/play.c
 play_mod_CFLAGS = $(COMMON_CFLAGS)
 play_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For iorw.mod.
+pkglib_MODULES += iorw.mod
+iorw_mod_SOURCES = commands/iorw.c
+iorw_mod_CFLAGS = $(COMMON_CFLAGS)
+iorw_mod_LDFLAGS = $(COMMON_LDFLAGS)

@@ -102,7 +102,7 @@ grub_load_config (void)
   auto int hook (struct grub_module_header *);
   int hook (struct grub_module_header *header)
     {
-      /* Not an ELF module, skip.  */
+      /* Not an embedded config, skip.  */
       if (header->type != OBJ_TYPE_CONFIG)
 	return 0;
 
@@ -191,7 +191,6 @@ grub_main (void)
   grub_set_root_dev ();
 
   grub_register_core_commands ();
-  grub_register_rescue_parser ();
 
   grub_load_config ();
   grub_load_normal_mode ();

@@ -24,13 +24,14 @@
 #include <grub/misc.h>
 #include <grub/crypto.h>
 #include <grub/normal.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] = {
-  {"hash", 'h', 0, "Specify hash to use.", "HASH", ARG_TYPE_STRING},
-  {"check", 'c', 0, "Check hash list file.", "FILE", ARG_TYPE_STRING},
-  {"prefix", 'p', 0, "Base directory for hash list.", "DIRECTORY",
+  {"hash", 'h', 0, N_("Specify hash to use."), N_("HASH"), ARG_TYPE_STRING},
+  {"check", 'c', 0, N_("Check hash list file."), N_("FILE"), ARG_TYPE_STRING},
+  {"prefix", 'p', 0, N_("Base directory for hash list."), N_("DIRECTORY"),
    ARG_TYPE_STRING},
-  {"keep-going", 'k', 0, "Don't stop after first error.", 0, 0},
+  {"keep-going", 'k', 0, N_("Don't stop after first error."), 0, 0},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -249,21 +250,21 @@ GRUB_MOD_INIT(hashsum)
 			      options);
   cmd_md5 = grub_register_extcmd ("md5sum", grub_cmd_hashsum,
 				  GRUB_COMMAND_FLAG_BOTH,
-				  "md5sum [-c FILE [-p PREFIX]] "
-				  "[FILE1 [FILE2 ...]]",
-				  "Compute or check hash checksum.",
+				  N_("[-c FILE [-p PREFIX]] "
+				     "[FILE1 [FILE2 ...]]"),
+				  N_("Compute or check hash checksum."),
 				  options);
   cmd_sha256 = grub_register_extcmd ("sha256sum", grub_cmd_hashsum,
 				     GRUB_COMMAND_FLAG_BOTH,
-				     "sha256sum [-c FILE [-p PREFIX]] "
-				     "[FILE1 [FILE2 ...]]",
+				     N_("[-c FILE [-p PREFIX]] "
+					"[FILE1 [FILE2 ...]]"),
 				     "Compute or check hash checksum.",
 				     options);
   cmd_sha512 = grub_register_extcmd ("sha512sum", grub_cmd_hashsum,
 				     GRUB_COMMAND_FLAG_BOTH,
-				     "sha512sum [-c FILE [-p PREFIX]] "
-				     "[FILE1 [FILE2 ...]]",
-				     "Compute or check hash checksum.",
+				     N_("[-c FILE [-p PREFIX]] "
+					"[FILE1 [FILE2 ...]]"),
+				     N_("Compute or check hash checksum."),
 				     options);
 }
 
