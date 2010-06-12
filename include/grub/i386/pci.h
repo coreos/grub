@@ -80,7 +80,7 @@ grub_pci_device_map_range (grub_pci_device_t dev __attribute__ ((unused)),
 
 static inline void
 grub_pci_device_unmap_range (grub_pci_device_t dev __attribute__ ((unused)),
-			     void *mem __attribute__ ((unused)),
+			     volatile void *mem __attribute__ ((unused)),
 			     grub_size_t size __attribute__ ((unused)))
 {
 }

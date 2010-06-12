@@ -4,8 +4,6 @@ COMMON_CFLAGS = -mrtd -mregparm=3
 
 # Images.
 
-GRUB_KERNEL_MACHINE_LINK_ADDR	= 0x8200
-
 pkglib_PROGRAMS += kernel.img
 kernel_img_SOURCES = kern/i386/coreboot/startup.S \
 	kern/i386/misc.S \
@@ -16,7 +14,7 @@ kernel_img_SOURCES = kern/i386/coreboot/startup.S \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
-	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
+	kern/time.c kern/list.c  kern/command.c kern/corecmd.c \
 	kern/$(target_cpu)/dl.c kern/parser.c kern/partition.c \
 	kern/i386/tsc.c kern/i386/pit.c \
 	kern/generic/rtc_get_time_ms.c \
@@ -26,7 +24,7 @@ kernel_img_SOURCES = kern/i386/coreboot/startup.S \
 	symlist.c
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS += $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR),-Bstatic
+kernel_img_LDFLAGS += $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x8200,-Bstatic
 
 sbin_SCRIPTS += grub-install
 grub_install_SOURCES = util/grub-install.in
@@ -69,6 +67,12 @@ bsd_mod_ASFLAGS = $(COMMON_ASFLAGS)
 datetime_mod_SOURCES = lib/cmos_datetime.c
 datetime_mod_CFLAGS = $(COMMON_CFLAGS)
 datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For cmostest.mod
+pkglib_MODULES += cmostest.mod
+cmostest_mod_SOURCES = commands/i386/cmostest.c
+cmostest_mod_CFLAGS = $(COMMON_CFLAGS)
+cmostest_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk

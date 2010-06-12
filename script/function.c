@@ -21,7 +21,7 @@
 #include <grub/parser.h>
 #include <grub/mm.h>
 
-static grub_script_function_t grub_script_function_list;
+grub_script_function_t grub_script_function_list;
 
 grub_script_function_t
 grub_script_function_create (struct grub_script_arg *functionname_arg,
@@ -102,16 +102,4 @@ grub_script_function_find (char *functionname)
     grub_error (GRUB_ERR_UNKNOWN_COMMAND, "unknown command `%.20s'", functionname);
 
   return func;
-}
-
-int
-grub_script_function_iterate (int (*iterate) (grub_script_function_t))
-{
-  grub_script_function_t func;
-
-  for (func = grub_script_function_list; func; func = func->next)
-    if (iterate (func))
-      return 1;
-
-  return 0;
 }

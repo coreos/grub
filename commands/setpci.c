@@ -96,7 +96,7 @@ grub_setpci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
   if (check_device && grub_pci_get_device (dev) != device)
     return 0;
 
-  if (check_function && grub_pci_get_function (dev) != device)
+  if (check_function && grub_pci_get_function (dev) != function)
     return 0;
 
   addr = grub_pci_make_address (dev, regaddr);

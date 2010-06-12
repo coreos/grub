@@ -38,7 +38,7 @@
 #include <grub/err.h>
 #include <grub/symbol.h>
 #include <grub/types.h>
-#include <grub/handler.h>
+#include <grub/list.h>
 
 /* These are used to represent the various color states we use.  */
 typedef enum
@@ -245,10 +245,10 @@ grub_term_unregister_output (grub_term_output_t term)
 		    GRUB_AS_LIST (term));
 }
 
-#define FOR_ACTIVE_TERM_INPUTS(var) for (var = grub_term_inputs; var; var = var->next)
-#define FOR_DISABLED_TERM_INPUTS(var) for (var = grub_term_inputs_disabled; var; var = var->next)
-#define FOR_ACTIVE_TERM_OUTPUTS(var) for (var = grub_term_outputs; var; var = var->next)
-#define FOR_DISABLED_TERM_OUTPUTS(var) for (var = grub_term_outputs_disabled; var; var = var->next)
+#define FOR_ACTIVE_TERM_INPUTS(var) FOR_LIST_ELEMENTS((var), (grub_term_inputs))
+#define FOR_DISABLED_TERM_INPUTS(var) FOR_LIST_ELEMENTS((var), (grub_term_inputs_disabled))
+#define FOR_ACTIVE_TERM_OUTPUTS(var) FOR_LIST_ELEMENTS((var), (grub_term_outputs))
+#define FOR_DISABLED_TERM_OUTPUTS(var) FOR_LIST_ELEMENTS((var), (grub_term_outputs_disabled))
 
 void EXPORT_FUNC(grub_putchar) (int c);
 void EXPORT_FUNC(grub_putcode) (grub_uint32_t code,

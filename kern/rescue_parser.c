@@ -24,7 +24,7 @@
 #include <grub/misc.h>
 #include <grub/command.h>
 
-static grub_err_t
+grub_err_t
 grub_rescue_parse_line (char *line, grub_reader_getline_t getline)
 {
   char *name;
@@ -73,16 +73,4 @@ grub_rescue_parse_line (char *line, grub_reader_getline_t getline)
   grub_free (args);
 
   return grub_errno;
-}
-
-static struct grub_parser grub_rescue_parser =
-  {
-    .name = "rescue",
-    .parse_line = grub_rescue_parse_line
-  };
-
-void
-grub_register_rescue_parser (void)
-{
-  grub_parser_register ("rescue", &grub_rescue_parser);
 }
