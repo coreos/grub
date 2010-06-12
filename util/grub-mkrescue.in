@@ -59,9 +59,12 @@ Make GRUB rescue image.
   --xorriso=FILE          use FILE as xorriso [optional]
   --grub-mkimage=FILE     use FILE as grub-mkimage
 
-$self generates a bootable rescue image with specified source files or directories.
+$self generates a bootable rescue image with specified source files, source
+directories, or mkisofs options listed by: xorriso -as mkisofs -help
+Option -- switches to native xorriso command mode. or directories.
 
 Report bugs to <bug-grub@gnu.org>.
+Mail xorriso support requests to <bug-xorriso@gnu.org>.
 EOF
 }
 
@@ -90,11 +93,6 @@ for option in "$@"; do
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
     --xorriso=*)
         xorriso=`echo "${option}/" | sed 's/--xorriso=//'` ;;
-    -*)
-	echo "Unrecognized option \`$option'" 1>&2
-	usage
-	exit 1
-	;;
     *)
 	source="${source} ${option}" ;;
     esac
