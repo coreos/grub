@@ -60,21 +60,17 @@ grub_dyncmd_dispatcher (struct grub_command *cmd,
 
 /* Read the file command.lst for auto-loading.  */
 void
-read_command_list (void)
+read_command_list (const char *prefix)
 {
-  const char *prefix;
-
-  prefix = grub_env_get ("prefix");
   if (prefix)
     {
       char *filename;
 
-      filename = grub_malloc (grub_strlen (prefix) + sizeof ("/command.lst"));
+      filename = grub_xasprintf ("%s/command.lst", prefix);
       if (filename)
 	{
 	  grub_file_t file;
 
-	  grub_sprintf (filename, "%s/command.lst", prefix);
 	  file = grub_file_open (filename);
 	  if (file)
 	    {

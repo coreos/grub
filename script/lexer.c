@@ -1,7 +1,7 @@
 /* lexer.c - The scripting lexer.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,42 +23,7 @@
 #include <grub/script_sh.h>
 
 #include "grub_script.tab.h"
-
-static int
-check_varstate (grub_parser_state_t state)
-{
-  return (state == GRUB_PARSER_STATE_VARNAME
-	  || state == GRUB_PARSER_STATE_VAR
-	  || state == GRUB_PARSER_STATE_QVAR
-	  || state == GRUB_PARSER_STATE_VARNAME2
-	  || state == GRUB_PARSER_STATE_QVARNAME
-	  || state == GRUB_PARSER_STATE_QVARNAME2);
-}
-
-static int
-check_textstate (grub_parser_state_t state)
-{
-  return (state == GRUB_PARSER_STATE_TEXT
-	  || state == GRUB_PARSER_STATE_ESC
-	  || state == GRUB_PARSER_STATE_QUOTE
-	  || state == GRUB_PARSER_STATE_DQUOTE);
-}
-
-struct grub_lexer_param *
-grub_script_lexer_init (char *script, grub_reader_getline_t getline)
-{
-  struct grub_lexer_param *param;
-
-  param = grub_zalloc (sizeof (*param));
-  if (! param)
-    return 0;
-
-  param->state = GRUB_PARSER_STATE_TEXT;
-  param->getline = getline;
-  param->script = script;
-
-  return param;
-}
+#include "grub_script.yy.h"
 
 void
 grub_script_lexer_ref (struct grub_lexer_param *state)
@@ -74,360 +39,308 @@ grub_script_lexer_deref (struct grub_lexer_param *state)
 
 /* Start recording all characters passing through the lexer.  */
 void
-grub_script_lexer_record_start (struct grub_lexer_param *state)
+grub_script_lexer_record_start (struct grub_parser_param *parser)
 {
-  state->record = 1;
-  state->recordlen = 100;
-  state->recording = grub_malloc (state->recordlen);
-  state->recordpos = 0;
+  struct grub_lexer_param *lexer = parser->lexerstate;
+
+  lexer->record = 1;
+  lexer->recordpos = 0;
+  if (lexer->recording) /* reuse last record */
+    return;
+
+  lexer->recordlen = GRUB_LEXER_INITIAL_RECORD_SIZE;
+  lexer->recording = grub_malloc (lexer->recordlen);
+  if (!lexer->recording)
+    {
+      grub_script_yyerror (parser, 0);
+      lexer->record = 0;
+      lexer->recordlen = 0;
+    }
 }
 
 char *
-grub_script_lexer_record_stop (struct grub_lexer_param *state)
+grub_script_lexer_record_stop (struct grub_parser_param *parser)
 {
-  state->record = 0;
+  char *ptr;
+  char *result;
+  struct grub_lexer_param *lexer = parser->lexerstate;
 
-  /* Delete the last character, it is a `}'.  */
-  if (state->recordpos > 0)
-    {
-      if (state->recording[--state->recordpos] != '}')
-	{
-	  grub_printf ("Internal error while parsing menu entry");
-	  for (;;); /* XXX */
-	}
-      state->recording[state->recordpos] = '\0';
-    }
+  auto char *compact (char *start, char *end);
+  char *compact (char *start, char *end)
+  {
+    /* Delete '{' and '}' characters and whitespaces.  */
+    while (*start && grub_isspace (*start)) start++;
+    if (*start == '{') start++;
+    while (*start && grub_isspace (*start)) start++;
 
-  return state->recording;
+    while (*end && grub_isspace (*end)) end--;
+    if (*end == '}') end--;
+    while (*end && grub_isspace (*end)) end--;
+    end[1] = '\0';
+
+    return start;
+  }
+
+  if (!lexer->record || !lexer->recording)
+    return 0;
+
+  /* XXX This is not necessary in BASH.  */
+
+  ptr = compact (lexer->recording, lexer->recording + lexer->recordpos - 1);
+  lexer->record = 0;
+  lexer->recordpos = 0;
+
+  /* This memory would be freed by, grub_script_free.  */
+  result = grub_script_malloc (parser, grub_strlen (ptr) + 1);
+  if (result)
+    grub_strcpy (result, ptr);
+
+  return result;
 }
 
-/* When recording is enabled, record the character C as the next item
-   in the character stream.  */
-static void
-recordchar (struct grub_lexer_param *state, char c)
+#define MAX(a,b) ((a) < (b) ? (b) : (a))
+
+/* Record STR if input recording is enabled.  */
+void
+grub_script_lexer_record (struct grub_parser_param *parser, char *str)
 {
-  if (state->recordpos == state->recordlen)
+  int len;
+  char *old;
+  struct grub_lexer_param *lexer = parser->lexerstate;
+
+  if (!lexer->record)
+    return;
+
+  len = grub_strlen (str);
+  if (lexer->recordpos + len + 1 > lexer->recordlen)
     {
-      char *old = state->recording;
-      state->recordlen += 100;
-      state->recording = grub_realloc (state->recording, state->recordlen);
-      if (! state->recording)
+      old = lexer->recording;
+      lexer->recordlen = MAX (len, lexer->recordlen) * 2;
+      lexer->recording = grub_realloc (lexer->recording, lexer->recordlen);
+      if (!lexer->recording)
 	{
 	  grub_free (old);
-	  state->record = 0;
+	  lexer->record = 0;
+	  lexer->recordpos = 0;
+	  lexer->recordlen /= 2;
+	  grub_script_yyerror (parser, 0);
+	  return;
 	}
     }
-  state->recording[state->recordpos++] = c;
+  grub_strcpy (lexer->recording + lexer->recordpos, str);
+  lexer->recordpos += len;
 }
 
-/* Fetch the next character for the lexer.  */
-static void
-nextchar (struct grub_lexer_param *state)
+/* Append '\n' to SRC, before '\0'  */
+static char *
+append_newline (const char *src)
 {
-  if (state->record)
-    recordchar (state, *state->script);
-  state->script++;
+  char *line;
+  grub_size_t len;
+
+  len = grub_strlen (src);
+  line = grub_malloc (len + 2);
+  if (!line)
+    return 0;
+
+  grub_strcpy (line, src);
+
+  line[len] = '\n';
+  line[len + 1] = '\0';
+  return line;
 }
 
+/* Read next line of input if necessary, and set yyscanner buffers.  */
 int
-grub_script_yylex (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
+grub_script_lexer_yywrap (struct grub_parser_param *parserstate)
 {
-  grub_parser_state_t newstate;
-  char use;
-  struct grub_lexer_param *state = parsestate->lexerstate;
-  int firstrun = 1;
+  int len;
+  char *line;
+  char *line2;
+  YY_BUFFER_STATE buffer;
+  struct grub_lexer_param *lexerstate = parserstate->lexerstate;
 
-  yylval->arg = 0;
+  if (!lexerstate->refs)
+    return 0;
 
-  if (state->tokenonhold)
+  if (!lexerstate->getline)
     {
-      int token = state->tokenonhold;
-      state->tokenonhold = 0;
-      return token;
+      grub_script_yyerror (parserstate, "unexpected end of file");
+      return 0;
     }
 
-  for (;! state->done; firstrun = 0)
+  line = 0;
+  buffer = 0;
+  lexerstate->getline (&line, 1);
+  if (!line)
     {
-      if (! state->script || ! *state->script)
+      grub_script_yyerror (parserstate, 0); /* XXX this could be for ^C case? */
+      return 0;
+    }
+
+  len = grub_strlen (line);
+  if (line[len - 1] == '\n')
+    {
+      buffer = yy_scan_string (line, lexerstate->yyscanner);
+    }
+  else
+    {
+      line2 = append_newline (line);
+      if (line2)
 	{
-	  /* Check if more tokens are requested by the parser.  */
-	  if (((state->refs && ! parsestate->err)
-	       || state->state == GRUB_PARSER_STATE_ESC
-	       || state->state == GRUB_PARSER_STATE_QUOTE
-	       || state->state == GRUB_PARSER_STATE_DQUOTE)
-	      && state->getline)
-	    {
-	      int doexit = 0;
-	      if (state->state != GRUB_PARSER_STATE_ESC
-		  && state->state != GRUB_PARSER_STATE_QUOTE
-		  && state->state != GRUB_PARSER_STATE_DQUOTE
-		  && ! state->was_newline)
-		{
-		  state->was_newline = 1;
-		  state->tokenonhold = '\n';
-		  break;
-		}
-	      while (! state->script || ! *state->script)
-		{
-		  grub_free (state->newscript);
-		  state->newscript = 0;
-		  state->getline (&state->newscript, 1);
-		  state->script = state->newscript;
-		  if (! state->script)
-		    {
-		      doexit = 1;
-		      break;
-		    }
-		}
-	      if (doexit)
-		break;
-	      grub_dprintf ("scripting", "token=`\\n'\n");
-	      recordchar (state, '\n');
-	      if (state->state == GRUB_PARSER_STATE_VARNAME)
-		state->state = GRUB_PARSER_STATE_TEXT;
-	      if (state->state == GRUB_PARSER_STATE_QVARNAME)
-		state->state = GRUB_PARSER_STATE_DQUOTE;
-	      if (state->state == GRUB_PARSER_STATE_DQUOTE
-		  || state->state == GRUB_PARSER_STATE_QUOTE)
-		yylval->arg = grub_script_arg_add (parsestate, yylval->arg,
-						   GRUB_SCRIPT_ARG_TYPE_STR,
-						   "\n");
-	    }
-	  else
-	    {
-	      grub_free (state->newscript);
-	      state->newscript = 0;
-	      state->done = 1;
-	      grub_dprintf ("scripting", "token=`\\n'\n");
-	      state->tokenonhold = '\n';
-	      break;
-	    }
-	}
-      state->was_newline = 0;
-
-      newstate = grub_parser_cmdline_state (state->state, *state->script, &use);
-
-      /* Check if it is a text.  */
-      if (check_textstate (newstate))
-	{
-	  char *buffer = NULL;
-	  int bufpos = 0;
-	  /* Buffer is initially large enough to hold most commands
-	     but extends automatically when needed.  */
-	  int bufsize = 128;
-
-	  buffer = grub_malloc (bufsize);
-
-	  /* In case the string is not quoted, this can be a one char
-	     length symbol.  */
-	  if (newstate == GRUB_PARSER_STATE_TEXT)
-	    {
-	      int doexit = 0;
-	      switch (*state->script)
-		{
-		case ' ':
-		  while (*state->script)
-		    {
-		      newstate = grub_parser_cmdline_state (state->state,
-							    *state->script, &use);
-		      if (! (state->state == GRUB_PARSER_STATE_TEXT
-			     && *state->script == ' '))
-			{
-			  grub_dprintf ("scripting", "token=` '\n");
-			  if (! firstrun)
-			    doexit = 1;
-			  break;
-			}
-		      state->state = newstate;
-		      nextchar (state);
-		    }
-		  grub_dprintf ("scripting", "token=` '\n");
-		  if (! firstrun)
-		    doexit = 1;
-		  break;
-		case '{':
-		case '}':
-		case ';':
-		case '\n':
-		  {
-		    char c;
-		    grub_dprintf ("scripting", "token=`%c'\n", *state->script);
-		    c = *state->script;
-		    nextchar (state);
-		    state->tokenonhold = c;
-		    doexit = 1;
-		    break;
-		  }
-		}
-	      if (doexit)
-		{
-		  grub_free (buffer);
-		  break;
-		}
-	    }
-
-	  /* Read one token, possible quoted.  */
-	  while (*state->script)
-	    {
-	      newstate = grub_parser_cmdline_state (state->state,
-						    *state->script, &use);
-
-	      /* Check if a variable name starts.  */
-	      if (check_varstate (newstate))
-		break;
-
-	      /* If the string is not quoted or escaped, stop processing
-		 when a special token was found.  It will be recognized
-		 next time when this function is called.  */
-	      if (newstate == GRUB_PARSER_STATE_TEXT
-		  && state->state != GRUB_PARSER_STATE_ESC
-		  && state->state != GRUB_PARSER_STATE_QUOTE
-		  && state->state != GRUB_PARSER_STATE_DQUOTE)
-		{
-		  int breakout = 0;
-
-		  switch (use)
-		    {
-		    case ' ':
-		    case '{':
-		    case '}':
-		    case ';':
-		    case '\n':
-		      breakout = 1;
-		    }
-		  if (breakout)
-		    break;
-		}
-
-	      if (use)
-		{
-		  if (bufsize <= bufpos + 1)
-		    {
-		      bufsize <<= 1;
-		      buffer = grub_realloc (buffer, bufsize);
-		    }
-		  buffer[bufpos++] = use;
-		}
-
-	      state->state = newstate;
-	      nextchar (state);
-	    }
-
-	  /* A string of text was read in.  */
-	  if (bufsize <= bufpos + 1)
-	    {
-	      bufsize <<= 1;
-	      buffer = grub_realloc (buffer, bufsize);
-	    }
-
-	  buffer[bufpos++] = 0;
-
-	  grub_dprintf ("scripting", "token=`%s'\n", buffer);
-	  yylval->arg = grub_script_arg_add (parsestate, yylval->arg,
-					     GRUB_SCRIPT_ARG_TYPE_STR, buffer);
-
-	  grub_free (buffer);
-	}
-      else if (newstate == GRUB_PARSER_STATE_VAR
-	       || newstate == GRUB_PARSER_STATE_QVAR)
-	{
-	  char *buffer = NULL;
-	  int bufpos = 0;
-	  /* Buffer is initially large enough to hold most commands
-	     but extends automatically when needed.  */
-	  int bufsize = 128;
-
-	  buffer = grub_malloc (bufsize);
-
-	  /* This is a variable, read the variable name.  */
-	  while (*state->script)
-	    {
-	      newstate = grub_parser_cmdline_state (state->state,
-						    *state->script, &use);
-
-	      /* Check if this character is not part of the variable name
-		 anymore.  */
-	      if (! (check_varstate (newstate)))
-		{
-		  if (state->state == GRUB_PARSER_STATE_VARNAME2
-		  || state->state == GRUB_PARSER_STATE_QVARNAME2)
-		    nextchar (state);
-		  state->state = newstate;
-		  break;
-		}
-
-	      if (use)
-		{
-		  if (bufsize <= bufpos + 1)
-		    {
-		      bufsize <<= 1;
-		      buffer = grub_realloc (buffer, bufsize);
-		    }
-		  buffer[bufpos++] = use;
-		}
-
-	      nextchar (state);
-	      state->state = newstate;
-	    }
-
-	  if (bufsize <= bufpos + 1)
-	    {
-	      bufsize <<= 1;
-	      buffer = grub_realloc (buffer, bufsize);
-	    }
-
-	  buffer[bufpos++] = 0;
-
-	  state->state = newstate;
-	  yylval->arg = grub_script_arg_add (parsestate, yylval->arg,
-					     GRUB_SCRIPT_ARG_TYPE_VAR, buffer);
-	  grub_dprintf ("scripting", "vartoken=`%s'\n", buffer);
-
-	  grub_free (buffer);
-	}
-      else
-	{
-	  /* There is either text or a variable name.  In the case you
-	 arrive here there is a serious problem with the lexer.  */
-	  grub_error (GRUB_ERR_BAD_ARGUMENT, "internal error");
-	  return 0;
+	  buffer = yy_scan_string (line2, lexerstate->yyscanner);
+	  grub_free (line2);
 	}
     }
 
-  if (yylval->arg == 0)
+  grub_free (line);
+  if (!buffer)
     {
-      int token = state->tokenonhold;
-      state->tokenonhold = 0;
-      return token;
+      grub_script_yyerror (parserstate, 0);
+      return 0;
     }
 
-  if (yylval->arg->next == 0 && yylval->arg->type == GRUB_SCRIPT_ARG_TYPE_STR)
+  return 1;
+}
+
+struct grub_lexer_param *
+grub_script_lexer_init (struct grub_parser_param *parser, char *script,
+			grub_reader_getline_t getline)
+{
+  int len;
+  char *script2;
+  YY_BUFFER_STATE buffer;
+  struct grub_lexer_param *lexerstate;
+
+  lexerstate = grub_zalloc (sizeof (*lexerstate));
+  if (!lexerstate)
+    return 0;
+
+  lexerstate->size = GRUB_LEXER_INITIAL_TEXT_SIZE;
+  lexerstate->text = grub_malloc (lexerstate->size);
+  if (!lexerstate->text)
     {
-      /* Detect some special tokens.  */
-      if (! grub_strcmp (yylval->arg->str, "while"))
-	return GRUB_PARSER_TOKEN_WHILE;
-      else if (! grub_strcmp (yylval->arg->str, "if"))
-	return GRUB_PARSER_TOKEN_IF;
-      else if (! grub_strcmp (yylval->arg->str, "function"))
-	return GRUB_PARSER_TOKEN_FUNCTION;
-      else if (! grub_strcmp (yylval->arg->str, "menuentry"))
-	return GRUB_PARSER_TOKEN_MENUENTRY;
-      else if (! grub_strcmp (yylval->arg->str, "@"))
-	return GRUB_PARSER_TOKEN_MENUENTRY;
-      else if (! grub_strcmp (yylval->arg->str, "else"))
-	return GRUB_PARSER_TOKEN_ELSE;
-      else if (! grub_strcmp (yylval->arg->str, "then"))
-	return GRUB_PARSER_TOKEN_THEN;
-      else if (! grub_strcmp (yylval->arg->str, "fi"))
-	return GRUB_PARSER_TOKEN_FI;
+      grub_free (lexerstate);
+      return 0;
     }
 
-  return GRUB_PARSER_TOKEN_ARG;
+  lexerstate->getline = getline;	/* rest are all zeros already */
+  if (yylex_init (&lexerstate->yyscanner))
+    {
+      grub_free (lexerstate->text);
+      grub_free (lexerstate);
+      return 0;
+    }
+
+  buffer = 0;
+  script = script ? : "\n";
+  len = grub_strlen (script);
+
+  if (script[len - 1] == '\n')
+    {
+      buffer = yy_scan_string (script, lexerstate->yyscanner);
+    }
+  else
+    {
+      script2 = append_newline (script);
+      if (script2)
+	{
+	  buffer = yy_scan_string (script2, lexerstate->yyscanner);
+	  grub_free (script2);
+	}
+    }
+
+  if (!buffer)
+    {
+      yylex_destroy (lexerstate->yyscanner);
+      grub_free (lexerstate->yyscanner);
+
+      grub_free (lexerstate->text);
+      grub_free (lexerstate);
+      return 0;
+    }
+  yyset_extra (parser, lexerstate->yyscanner);
+
+  return lexerstate;
 }
 
 void
-grub_script_yyerror (struct grub_parser_param *lex __attribute__ ((unused)),
-		     char const *err)
+grub_script_lexer_fini (struct grub_lexer_param *lexerstate)
 {
-  grub_printf ("%s\n", err);
+  if (!lexerstate)
+    return;
+
+  yylex_destroy (lexerstate->yyscanner);
+
+  grub_free (lexerstate->recording);
+  grub_free (lexerstate->text);
+  grub_free (lexerstate);
+}
+
+int
+grub_script_yylex (union YYSTYPE *value,
+		   struct grub_parser_param *parserstate)
+{
+  char *str;
+  int token;
+  grub_script_arg_type_t type;
+  struct grub_lexer_param *lexerstate = parserstate->lexerstate;
+
+  value->arg = 0;
+  if (parserstate->err)
+    return GRUB_PARSER_TOKEN_BAD;
+
+  if (lexerstate->eof)
+    return GRUB_PARSER_TOKEN_EOF;
+
+  /* 
+   * Words with environment variables, like foo${bar}baz needs
+   * multiple tokens to be merged into a single grub_script_arg.  We
+   * use two variables to achieve this: lexerstate->merge_start and
+   * lexerstate->merge_end
+   */
+
+  lexerstate->merge_start = 0;
+  lexerstate->merge_end = 0;
+  do
+    {
+      /* Empty lexerstate->text.  */
+      lexerstate->used = 1;
+      lexerstate->text[0] = '\0';
+
+      token = yylex (value, lexerstate->yyscanner);
+      if (token == GRUB_PARSER_TOKEN_BAD)
+	break;
+
+      /* Merging feature uses lexerstate->text instead of yytext.  */
+      if (lexerstate->merge_start)
+	{
+	  str = lexerstate->text;
+	  type = lexerstate->type;
+	}
+      else
+	{
+	  str = yyget_text (lexerstate->yyscanner);
+	  type = GRUB_SCRIPT_ARG_TYPE_TEXT;
+	}
+      grub_dprintf("lexer", "token %u text [%s]\n", token, str);
+
+      value->arg = grub_script_arg_add (parserstate, value->arg, type, str);
+    }
+  while (lexerstate->merge_start && !lexerstate->merge_end);
+
+  if (!value->arg || parserstate->err)
+    return GRUB_PARSER_TOKEN_BAD;
+
+  return token;
+}
+
+void
+grub_script_yyerror (struct grub_parser_param *state, char const *err)
+{
+  if (err)
+    grub_error (GRUB_ERR_INVALID_COMMAND, err);
+
+  grub_print_error ();
+  state->err++;
 }

@@ -66,6 +66,8 @@ grub_video_fb_init (void)
 grub_err_t
 grub_video_fb_fini (void)
 {
+  /* TODO: destroy render targets.  */
+
   grub_free (palette);
   render_target = 0;
   palette = 0;
@@ -974,32 +976,85 @@ grub_video_fb_scroll (grub_video_color_t color, int dx, int dy)
     {
       /* 3. Move data in render target.  */
       struct grub_video_fbblit_info target;
-      grub_uint8_t *src;
-      grub_uint8_t *dst;
-      int j;
+      int i, j;
+      int linedelta, linelen;
 
       target.mode_info = &render_target->mode_info;
       target.data = render_target->data;
 
-      /* Check vertical direction of the move.  */
-      if (dy <= 0)
-	/* 3a. Move data upwards.  */
-	for (j = 0; j < height; j++)
-	  {
-	    dst = grub_video_fb_get_video_ptr (&target, dst_x, dst_y + j);
-	    src = grub_video_fb_get_video_ptr (&target, src_x, src_y + j);
-	    grub_memmove (dst, src,
-			  width * target.mode_info->bytes_per_pixel);
-	  }
+      linedelta = target.mode_info->pitch
+	- width * target.mode_info->bytes_per_pixel;
+      linelen = width * target.mode_info->bytes_per_pixel;
+#define DO_SCROLL                                                    \
+      /* Check vertical direction of the move.  */                   \
+      if (dy < 0 || (dy == 0 && dx < 0))                             \
+	{                                                            \
+	  dst = (void *) grub_video_fb_get_video_ptr (&target,       \
+						      dst_x, dst_y); \
+	  src = (void *) grub_video_fb_get_video_ptr (&target,	     \
+						      src_x, src_y); \
+	  /* 3a. Move data upwards.  */                              \
+	  for (j = 0; j < height; j++)                               \
+	    {                                                        \
+	      for (i = 0; i < linelen; i++)                          \
+		*(dst++) = *(src++);	                             \
+	      dst += linedelta;                                      \
+	      src += linedelta;                                      \
+	    }							     \
+	}                                                            \
+      else                                                           \
+	{                                                            \
+	  /* 3b. Move data downwards.  */                            \
+	  dst = (void *) grub_video_fb_get_video_ptr (&target,	     \
+					              dst_x + width, \
+					     dst_y + height - 1);    \
+	  src = (void *) grub_video_fb_get_video_ptr (&target,	     \
+					              src_x + width, \
+					     src_y + height - 1);    \
+	  dst--;                                                     \
+          src--;                                                     \
+	  for (j = 0; j < height; j++)                               \
+	    {                                                        \
+	      for (i = 0; i < linelen; i++)                          \
+		*(dst--) = *(src--);                                 \
+	      dst -= linedelta;                                      \
+	      src -= linedelta;                                      \
+	    }                                                        \
+	}
+
+      /* If everything is aligned on 32-bit use 32-bit copy.  */
+      if ((grub_addr_t) grub_video_fb_get_video_ptr (&target, src_x, src_y)
+	  % sizeof (grub_uint32_t) == 0
+	  && (grub_addr_t) grub_video_fb_get_video_ptr (&target, dst_x, dst_y) 
+	  % sizeof (grub_uint32_t) == 0
+	  && linelen % sizeof (grub_uint32_t) == 0
+	  && linedelta % sizeof (grub_uint32_t) == 0)
+	{
+	  grub_uint32_t *src, *dst;
+	  linelen /= sizeof (grub_uint32_t);
+	  linedelta /= sizeof (grub_uint32_t);
+	  DO_SCROLL
+	}
+      /* If everything is aligned on 16-bit use 16-bit copy.  */
+      else if ((grub_addr_t) grub_video_fb_get_video_ptr (&target, src_x, src_y)
+	       % sizeof (grub_uint16_t) == 0
+	       && (grub_addr_t) grub_video_fb_get_video_ptr (&target,
+							     dst_x, dst_y) 
+	       % sizeof (grub_uint16_t) == 0
+	       && linelen % sizeof (grub_uint16_t) == 0
+	       && linedelta % sizeof (grub_uint16_t) == 0)
+	{
+	  grub_uint16_t *src, *dst;
+	  linelen /= sizeof (grub_uint16_t);
+	  linedelta /= sizeof (grub_uint16_t);
+	  DO_SCROLL
+	}
+      /* If not aligned at all use 8-bit copy.  */
       else
-	/* 3b. Move data downwards.  */
-	for (j = (height - 1); j >= 0; j--)
-	  {
-	    dst = grub_video_fb_get_video_ptr (&target, dst_x, dst_y + j);
-	    src = grub_video_fb_get_video_ptr (&target, src_x, src_y + j);
-	    grub_memmove (dst, src,
-			  width * target.mode_info->bytes_per_pixel);
-	  }
+	{
+	  grub_uint8_t *src, *dst;
+	  DO_SCROLL
+	}	
     }
 
   /* 4. Fill empty space with specified color.  In this implementation
@@ -1179,6 +1234,56 @@ grub_err_t
 grub_video_fb_get_active_render_target (struct grub_video_fbrender_target **target)
 {
   *target = render_target;
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+doublebuf_blit_update_screen (struct grub_video_fbrender_target *front,
+			      struct grub_video_fbrender_target *back)
+{
+  grub_memcpy (front->data, back->data,
+	       front->mode_info.pitch * front->mode_info.height);
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_video_fb_doublebuf_blit_init (struct grub_video_fbrender_target **front,
+				   struct grub_video_fbrender_target **back,
+				   grub_video_fb_doublebuf_update_screen_t *update_screen,
+				   struct grub_video_mode_info mode_info,
+				   void *framebuf)
+{
+  grub_err_t err;
+  int page_size = mode_info.pitch * mode_info.height;
+  void *offscreen_buffer;
+
+  err = grub_video_fb_create_render_target_from_pointer (front, &mode_info,
+							 framebuf);
+  if (err)
+    return err;
+
+  offscreen_buffer = grub_malloc (page_size);
+  if (! offscreen_buffer)
+    {
+      grub_video_fb_delete_render_target (*front);
+      *front = 0;
+      return grub_errno;
+    }
+
+  err = grub_video_fb_create_render_target_from_pointer (back, &mode_info,
+							 offscreen_buffer);
+
+  if (err)
+    {
+      grub_video_fb_delete_render_target (*front);
+      grub_free (offscreen_buffer);
+      *front = 0;
+      return grub_errno;
+    }
+  (*back)->is_allocated = 1;
+
+  *update_screen = doublebuf_blit_update_screen;
 
   return GRUB_ERR_NONE;
 }

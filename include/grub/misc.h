@@ -46,7 +46,7 @@
 #define ARRAY_SIZE(array) (sizeof (array) / sizeof (array[0]))
 #define COMPILE_TIME_ASSERT(cond) switch (0) { case 1: case !(cond): ; }
 
-#define grub_dprintf(condition, fmt, args...) grub_real_dprintf(__FILE__, __LINE__, condition, fmt, ## args)
+#define grub_dprintf(condition, fmt, args...) grub_real_dprintf(GRUB_FILE, __LINE__, condition, fmt, ## args)
 /* XXX: If grub_memmove is too slow, we must implement grub_memcpy.  */
 #define grub_memcpy(d,s,n)	grub_memmove ((d), (s), (n))
 
@@ -111,6 +111,12 @@ int EXPORT_FUNC(grub_isspace) (int c);
 int EXPORT_FUNC(grub_isprint) (int c);
 
 static inline int
+grub_iscntrl (int c)
+{
+  return (c >= 0x00 && c <= 0x1F) || c == 0x7F;
+}
+
+static inline int
 grub_isalpha (int c)
 {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
@@ -126,6 +132,12 @@ static inline int
 grub_isdigit (int c)
 {
   return (c >= '0' && c <= '9');
+}
+
+static inline int
+grub_isalnum (int c)
+{
+  return grub_isalpha (c) || grub_isdigit (c);
 }
 
 static inline int
@@ -182,6 +194,43 @@ grub_strncasecmp (const char *s1, const char *s2, grub_size_t n)
 
 unsigned long EXPORT_FUNC(grub_strtoul) (const char *str, char **end, int base);
 unsigned long long EXPORT_FUNC(grub_strtoull) (const char *str, char **end, int base);
+
+static inline long
+grub_strtol (const char *str, char **end, int base)
+{
+  int negative = 0;
+  unsigned long magnitude;
+
+  while (*str && grub_isspace (*str))
+    str++;
+
+  if (*str == '-')
+    {
+      negative = 1;
+      str++;
+    }
+
+  magnitude = grub_strtoull (str, end, base);
+  if (negative)
+    {
+      if (magnitude > (unsigned long) GRUB_LONG_MAX + 1)
+        {
+          grub_error (GRUB_ERR_OUT_OF_RANGE, "negative overflow");
+          return GRUB_LONG_MIN;
+        }
+      return -((long) magnitude);
+    }
+  else
+    {
+      if (magnitude > GRUB_LONG_MAX)
+        {
+          grub_error (GRUB_ERR_OUT_OF_RANGE, "positive overflow");
+          return GRUB_LONG_MAX;
+        }
+      return (long) magnitude;
+    }
+}
+
 char *EXPORT_FUNC(grub_strdup) (const char *s);
 char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n);
 void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
@@ -195,8 +244,13 @@ void EXPORT_FUNC(grub_real_dprintf) (const char *file,
                                      const char *condition,
                                      const char *fmt, ...) __attribute__ ((format (printf, 4, 5)));
 int EXPORT_FUNC(grub_vprintf) (const char *fmt, va_list args);
-int EXPORT_FUNC(grub_sprintf) (char *str, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
-int EXPORT_FUNC(grub_vsprintf) (char *str, const char *fmt, va_list args);
+int EXPORT_FUNC(grub_snprintf) (char *str, grub_size_t n, const char *fmt, ...)
+     __attribute__ ((format (printf, 3, 4)));
+int EXPORT_FUNC(grub_vsnprintf) (char *str, grub_size_t n, const char *fmt,
+				 va_list args);
+char *EXPORT_FUNC(grub_xasprintf) (const char *fmt, ...)
+     __attribute__ ((format (printf, 1, 2)));
+char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args);
 void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
 grub_size_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
@@ -207,8 +261,13 @@ grub_size_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
 grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint32_t d, grub_uint32_t *r);
 
-#ifdef NEED_ENABLE_EXECUTE_STACK
+#if defined(NEED_ENABLE_EXECUTE_STACK) && !defined(GRUB_UTIL)
 void EXPORT_FUNC(__enable_execute_stack) (void *addr);
+#endif
+
+#if defined (NEED_REGISTER_FRAME_INFO) && !defined(GRUB_UTIL)
+void EXPORT_FUNC (__register_frame_info) (void);
+void EXPORT_FUNC (__deregister_frame_info) (void);
 #endif
 
 /* Inline functions.  */

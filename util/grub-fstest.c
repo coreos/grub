@@ -55,9 +55,6 @@ grub_getkey (void)
   return -1;
 }
 
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
-
 void
 grub_refresh (void)
 {
@@ -278,21 +275,31 @@ cmd_crc (char *pathname)
 static void
 fstest (char **images, int num_disks, int cmd, int n, char **args)
 {
-  char host_file[128];
-  char loop_name[8];
-  char *argv[3] = { "-p", loop_name, host_file};
+  char *host_file;
+  char *loop_name;
+  char *argv[3];
   int i;
+
+  argv[0] = "-p";
 
   for (i = 0; i < num_disks; i++)
     {
-      if (grub_strlen (images[i]) + 7 > sizeof (host_file))
-        grub_util_error ("pathname %s too long", images[i]);
+      loop_name = grub_xasprintf ("loop%d", i);
+      if (!loop_name)
+	grub_util_error (grub_errmsg);
 
-      grub_sprintf (loop_name, "loop%d", i);
-      grub_sprintf (host_file, "(host)%s", images[i]);
+      host_file = grub_xasprintf ("(host)%s", images[i]);
+      if (!host_file)
+	grub_util_error (grub_errmsg);
+
+      argv[1] = loop_name;
+      argv[2] = host_file;
 
       if (execute_command ("loopback", 3, argv))
         grub_util_error ("loopback command fails");
+
+      grub_free (loop_name);
+      grub_free (host_file);
     }
 
   grub_lvm_fini ();
@@ -328,8 +335,15 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
 
   for (i = 0; i < num_disks; i++)
     {
-      grub_sprintf (loop_name, "loop%d", i);
+      loop_name = grub_xasprintf ("loop%d", i);
+      if (!loop_name)
+	grub_util_error (grub_errmsg);
+
+      argv[1] = loop_name;
+
       execute_command ("loopback", 2, argv);
+
+      grub_free (loop_name);
     }
 }
 

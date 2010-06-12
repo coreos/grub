@@ -82,6 +82,7 @@ struct grub_dl
   Elf_Sym *symtab;
   void (*init) (struct grub_dl *mod);
   void (*fini) (void);
+  struct grub_dl *next;
 };
 typedef struct grub_dl *grub_dl_t;
 
@@ -91,29 +92,27 @@ grub_dl_t grub_dl_load_core (void *addr, grub_size_t size);
 int EXPORT_FUNC(grub_dl_unload) (grub_dl_t mod);
 void grub_dl_unload_unneeded (void);
 void grub_dl_unload_all (void);
-#ifdef GRUB_UTIL
-static inline int
-grub_dl_ref (grub_dl_t mod)
-{
-  (void) mod;
-  return 0;
-}
-static inline int
-grub_dl_unref (grub_dl_t mod)
-{
-  (void) mod;
-  return 0;
-}
+#if defined (GRUB_UTIL) || defined (GRUB_TARGET_NO_MODULES)
+#define GRUB_NO_MODULES 1
 #else
+#define GRUB_NO_MODULES 0
+#endif
 int EXPORT_FUNC(grub_dl_ref) (grub_dl_t mod);
 int EXPORT_FUNC(grub_dl_unref) (grub_dl_t mod);
-#endif
-void EXPORT_FUNC(grub_dl_iterate) (int (*hook) (grub_dl_t mod));
+extern grub_dl_t EXPORT_VAR(grub_dl_head);
+
+#define FOR_DL_MODULES(var) FOR_LIST_ELEMENTS ((var), (grub_dl_head))
+
 grub_dl_t EXPORT_FUNC(grub_dl_get) (const char *name);
-grub_err_t EXPORT_FUNC(grub_dl_register_symbol) (const char *name, void *addr,
-					    grub_dl_t mod);
+grub_err_t grub_dl_register_symbol (const char *name, void *addr,
+				    grub_dl_t mod);
 
 grub_err_t grub_arch_dl_check_header (void *ehdr);
 grub_err_t grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr);
+
+#if defined (_mips) && ! GRUB_NO_MODULES
+#define GRUB_LINKER_HAVE_INIT 1
+void grub_arch_dl_init_linker (void);
+#endif
 
 #endif /* ! GRUB_DL_H */

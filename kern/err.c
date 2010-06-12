@@ -45,7 +45,7 @@ grub_error (grub_err_t n, const char *fmt, ...)
   grub_errno = n;
 
   va_start (ap, fmt);
-  grub_vsprintf (grub_errmsg, _(fmt), ap);
+  grub_vsnprintf (grub_errmsg, sizeof (grub_errmsg), _(fmt), ap);
   va_end (ap);
 
   return n;

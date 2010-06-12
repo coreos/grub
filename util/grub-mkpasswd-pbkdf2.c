@@ -50,9 +50,9 @@ grub_vprintf (const char *fmt, va_list args)
 }
 
 int 
-grub_vsprintf (char *str, const char *fmt, va_list args)
+grub_vsnprintf (char *str, grub_size_t n, const char *fmt, va_list args)
 {
-  return vsprintf (str, fmt, args);
+  return vsnprintf (str, n, fmt, args);
 }
 
 void
@@ -112,7 +112,7 @@ hexify (char *hex, grub_uint8_t *bin, grub_size_t n)
 int
 main (int argc, char *argv[])
 {
-  unsigned int c = 10000, buflen = 64, saltlen = 64;
+  unsigned int count = 10000, buflen = 64, saltlen = 64;
   char *pass1, *pass2;
   char *bufhex, *salthex;
   gcry_err_code_t gcry_err;
@@ -137,7 +137,7 @@ main (int argc, char *argv[])
       switch (c)
 	{
 	case 'c':
-	  c = strtoul (optarg, NULL, 0);
+	  count = strtoul (optarg, NULL, 0);
 	  break;
 
 	case 'l':
@@ -307,7 +307,7 @@ main (int argc, char *argv[])
   gcry_err = grub_crypto_pbkdf2 (GRUB_MD_SHA512,
 				 (grub_uint8_t *) pass1, strlen (pass1),
 				 salt, saltlen,
-				 c, buf, buflen);
+				 count, buf, buflen);
   memset (pass1, 0, strlen (pass1));
   free (pass1);
 
@@ -327,7 +327,8 @@ main (int argc, char *argv[])
   hexify (bufhex, buf, buflen);
   hexify (salthex, salt, saltlen);
 
-  printf ("Your PBKDF2 is grub.pbkdf2.sha512.%d.%s.%s\n", c, salthex, bufhex);
+  printf ("Your PBKDF2 is grub.pbkdf2.sha512.%d.%s.%s\n",
+	  count, salthex, bufhex);
   memset (buf, 0, buflen);
   memset (bufhex, 0, 2 * buflen);
   free (buf);

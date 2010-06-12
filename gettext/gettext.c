@@ -279,21 +279,19 @@ grub_gettext_init_ext (const char *lang)
 
   /* mo_file e.g.: /boot/grub/locale/ca.mo   */
 
-  mo_file =
-    grub_malloc (grub_strlen (locale_dir) + grub_strlen ("/") +
-		 grub_strlen (lang) + grub_strlen (".mo") + 1);
-
-  /* Warning: if changing some paths in the below line, change the grub_malloc
-     contents below.  */
-
-  grub_sprintf (mo_file, "%s/%s.mo", locale_dir, lang);
+  mo_file = grub_xasprintf ("%s/%s.mo", locale_dir, lang);
+  if (!mo_file)
+    return;
 
   fd_mo = grub_mofile_open (mo_file);
 
   /* Will try adding .gz as well.  */
   if (fd_mo == NULL)
     {
-      grub_sprintf (mo_file, "%s.gz", mo_file);
+      grub_free (mo_file);
+      mo_file = grub_xasprintf ("%s.gz", mo_file);
+      if (!mo_file)
+	return;
       fd_mo = grub_mofile_open (mo_file);
     }
 
@@ -311,14 +309,10 @@ grub_gettext_init_ext (const char *lang)
 static void
 grub_gettext_delete_list (void)
 {
-  struct grub_gettext_msg *item;
-
-  while ((item =
-	  grub_list_pop (GRUB_AS_LIST_P (&grub_gettext_msg_list))) != 0)
+  while (grub_gettext_msg_list)
     {
-      char *original = (char *) ((struct grub_gettext_msg *) item)->name;
-      grub_free (original);
-
+      grub_free ((char *) grub_gettext_msg_list->name);
+      grub_gettext_msg_list = grub_gettext_msg_list->next;
       /* Don't delete the translated message because could be in use.  */
     }
 }

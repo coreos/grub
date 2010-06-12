@@ -159,27 +159,27 @@ grub_console_checkkey (void)
 	  read_key = key.unicode_char;
 	  break;
 	case 0x01:
-	  read_key = 16;
+	  read_key = GRUB_TERM_UP;
 	  break;
 	case 0x02:
-	  read_key = 14;
+	  read_key = GRUB_TERM_DOWN;
 	  break;
 	case 0x03:
-	  read_key = 6;
+	  read_key = GRUB_TERM_RIGHT;
 	  break;
 	case 0x04:
-	  read_key = 2;
+	  read_key = GRUB_TERM_LEFT;
 	  break;
 	case 0x05:
-	  read_key = 1;
+	  read_key = GRUB_TERM_HOME;
 	  break;
 	case 0x06:
-	  read_key = 5;
+	  read_key = GRUB_TERM_END;
 	  break;
 	case 0x07:
 	  break;
 	case 0x08:
-	  read_key = 4;
+	  read_key = GRUB_TERM_DC;
 	  break;
 	case 0x09:
 	  break;
@@ -193,6 +193,9 @@ grub_console_checkkey (void)
 	  break;
 	case 0x0d:
 	  read_key = 5;
+	  break;
+	case 0x0e:
+	  read_key = 3;
 	  break;
 	case 0x17:
 	  read_key = '\e';

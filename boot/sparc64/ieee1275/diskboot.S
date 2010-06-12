@@ -19,6 +19,7 @@
 
 #include <grub/boot.h>
 #include <grub/machine/boot.h>
+#include <grub/offsets.h>
 
 	.text
 	.align	4
@@ -81,14 +82,14 @@ prom_call:
 
 
 after_info_block:
-	sethi	%hi(SCRATCH_PAD), %l1	/* OF argument slots */
+	sethi	%hi(SCRATCH_PAD_DISKBOOT), %l1	/* OF argument slots */
 
 	GET_ABS(notification_string, %o2)
 	call	console_write
 	 mov	NOTIFICATION_STRING_LEN, %o3
 
-	GET_ABS(firstlist - GRUB_BOOT_MACHINE_LIST_SIZE, %l2)
-	set	GRUB_BOOT_MACHINE_IMAGE_ADDRESS, %l3
+	GET_ABS(firstlist - GRUB_BOOT_SPARC64_IEEE1275_LIST_SIZE, %l2)
+	set	GRUB_BOOT_SPARC64_IEEE1275_IMAGE_ADDRESS, %l3
 bootloop:
 	lduw	[%l2 + 0x08], %o0
 	brz	%o0, bootit
@@ -115,7 +116,7 @@ bootloop:
 	 mov	NOTIFICATION_STEP_LEN, %o3
 
 	ba	bootloop
-	 sub	%l2, GRUB_BOOT_MACHINE_LIST_SIZE, %l2
+	 sub	%l2, GRUB_BOOT_SPARC64_IEEE1275_LIST_SIZE, %l2
 
 bootit:
 	GET_ABS(prom_close_name, %o0)
@@ -127,16 +128,16 @@ bootit:
 	GET_ABS(notification_done, %o2)
 	call	console_write
 	 mov	NOTIFICATION_DONE_LEN, %o3
-	sethi	%hi(GRUB_BOOT_MACHINE_IMAGE_ADDRESS), %o2
-	jmpl	%o2 + %lo(GRUB_BOOT_MACHINE_IMAGE_ADDRESS), %o7
-	 mov	CIF_REG, %o0
+	sethi	%hi(GRUB_BOOT_SPARC64_IEEE1275_IMAGE_ADDRESS), %o2
+	jmpl	%o2 + %lo(GRUB_BOOT_SPARC64_IEEE1275_IMAGE_ADDRESS), %o7
+	 mov	CIF_REG, %o4
 1:	ba,a	1b
 
 lastlist:
 	.word	0
 	.word	0
 
-	. = _start + (0x200 - GRUB_BOOT_MACHINE_LIST_SIZE)
+	. = _start + (0x200 - GRUB_BOOT_SPARC64_IEEE1275_LIST_SIZE)
 blocklist_default_start:
 	.word	0
 	.word	2

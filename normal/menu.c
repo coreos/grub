@@ -1,7 +1,7 @@
 /* menu.c - General supporting functionality for menus.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ grub_menu_set_timeout (int timeout)
     {
       char buf[16];
 
-      grub_sprintf (buf, "%d", timeout);
+      grub_snprintf (buf, sizeof (buf), "%d", timeout);
       grub_env_set ("timeout", buf);
     }
 }
@@ -362,6 +362,8 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
   if (timeout > 0)
     menu_print_timeout (timeout);
+  else
+    clear_timeout ();
 
   while (1)
     {
@@ -476,6 +478,18 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	      goto refresh;
 
 	    default:
+	      {
+		grub_menu_entry_t entry;
+		int i;
+		for (i = 0, entry = menu->entry_list; i < menu->size;
+		     i++, entry = entry->next)
+		  if (entry->hotkey == c)
+		    {
+		      menu_fini ();
+		      *auto_boot = 0;
+		      return i;
+		    }
+	      }
 	      break;
 	    }
 	}
@@ -519,7 +533,7 @@ notify_execution_failure (void *userdata __attribute__((unused)))
       grub_errno = GRUB_ERR_NONE;
     }
   grub_printf ("\n  ");
-  grub_printf_ (N_("Failed to boot default entries.\n"));
+  grub_printf_ (N_("Failed to boot both default and fallback entries.\n"));
   grub_wait_after_message ();
 }
 
@@ -557,14 +571,14 @@ show_menu (grub_menu_t menu, int nested)
         }
       else
         {
+	  int lines_before = grub_normal_get_line_counter ();
           grub_errno = GRUB_ERR_NONE;
           grub_menu_execute_entry (e);
-          if (grub_errno != GRUB_ERR_NONE)
-            {
-              grub_print_error ();
-              grub_errno = GRUB_ERR_NONE;
-              grub_wait_after_message ();
-            }
+	  grub_print_error ();
+	  grub_errno = GRUB_ERR_NONE;
+
+          if (lines_before != grub_normal_get_line_counter ())
+	    grub_wait_after_message ();
         }
     }
 

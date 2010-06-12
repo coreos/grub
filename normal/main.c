@@ -31,6 +31,7 @@
 #include <grub/auth.h>
 #include <grub/i18n.h>
 #include <grub/charset.h>
+#include <grub/script_sh.h>
 
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
@@ -137,7 +138,7 @@ free_menu (grub_menu_t menu)
     }
 
   grub_free (menu);
-  grub_env_unset_data_slot ("menu");
+  grub_env_unset_menu ();
 }
 
 static void
@@ -155,6 +156,17 @@ free_menu_entry_classes (struct grub_menu_entry_class *head)
     }
 }
 
+static struct
+{
+  char *name;
+  int key;
+} hotkey_aliases[] =
+  {
+    {"backspace", '\b'},
+    {"tab", '\t'},
+    {"delete", GRUB_TERM_DC}
+  };
+
 /* Add a menu entry to the current menu context (as given by the environment
    variable data slot `menu').  As the configuration file is read, the script
    parser calls this when a menu entry is to be created.  */
@@ -171,6 +183,7 @@ grub_normal_add_menu_entry (int argc, const char **args,
   struct grub_menu_entry_class *classes_head;  /* Dummy head node for list.  */
   struct grub_menu_entry_class *classes_tail;
   char *users = NULL;
+  int hotkey = 0;
 
   /* Allocate dummy head node for class list.  */
   classes_head = grub_zalloc (sizeof (struct grub_menu_entry_class));
@@ -178,7 +191,7 @@ grub_normal_add_menu_entry (int argc, const char **args,
     return grub_errno;
   classes_tail = classes_head;
 
-  menu = grub_env_get_data_slot ("menu");
+  menu = grub_env_get_menu ();
   if (! menu)
     return grub_error (GRUB_ERR_MENU, "no menu context");
 
@@ -192,7 +205,7 @@ grub_normal_add_menu_entry (int argc, const char **args,
   for (i = 0; i < argc; i++)
     {
       /* Capture arguments.  */
-      if (grub_strncmp ("--", args[i], 2) == 0)
+      if (grub_strncmp ("--", args[i], 2) == 0 && i + 1 < argc)
 	{
 	  const char *arg = &args[i][2];
 
@@ -236,6 +249,32 @@ grub_normal_add_menu_entry (int argc, const char **args,
 		}
 
 	      continue;
+	    }
+	  else if (grub_strcmp(arg, "hotkey") == 0)
+	    {
+	      unsigned j;
+
+	      i++;
+	      if (args[i][1] == 0)
+		{
+		  hotkey = args[i][0];
+		  continue;
+		}
+
+	      for (j = 0; j < ARRAY_SIZE (hotkey_aliases); j++)
+		if (grub_strcmp (args[i], hotkey_aliases[j].name) == 0)
+		  {
+		    hotkey = hotkey_aliases[j].key;
+		    break;
+		  }
+
+	      if (j < ARRAY_SIZE (hotkey_aliases))
+		continue;
+
+	      failed = 1;
+	      grub_error (GRUB_ERR_MENU,
+			  "Invalid hotkey: '%s'.", args[i]);
+	      break;
 	    }
 	  else
 	    {
@@ -293,6 +332,7 @@ grub_normal_add_menu_entry (int argc, const char **args,
     }
 
   (*last)->title = menutitle;
+  (*last)->hotkey = hotkey;
   (*last)->classes = classes_head;
   if (users)
     (*last)->restricted = 1;
@@ -308,7 +348,6 @@ static grub_menu_t
 read_config_file (const char *config)
 {
   grub_file_t file;
-  grub_parser_t old_parser = 0;
 
   auto grub_err_t getline (char **line, int cont);
   grub_err_t getline (char **line, int cont __attribute__ ((unused)))
@@ -322,36 +361,7 @@ read_config_file (const char *config)
 	    return grub_errno;
 
 	  if (buf[0] == '#')
-	    {
-	      if (buf[1] == '!')
-		{
-		  grub_parser_t parser;
-		  grub_named_list_t list;
-
-		  buf += 2;
-		  while (grub_isspace (*buf))
-		    buf++;
-
-		  if (! old_parser)
-		    old_parser = grub_parser_get_current ();
-
-		  list = GRUB_AS_NAMED_LIST (grub_parser_class.handler_list);
-		  parser = grub_named_list_find (list, buf);
-		  if (parser)
-		    grub_parser_set_current (parser);
-		  else
-		    {
-		      char cmd_name[8 + grub_strlen (buf)];
-
-		      /* Perhaps it's not loaded yet, try the autoload
-			 command.  */
-		      grub_strcpy (cmd_name, "parser.");
-		      grub_strcat (cmd_name, buf);
-		      grub_command_execute (cmd_name, 0, 0);
-		    }
-		}
-	      grub_free (*line);
-	    }
+	    grub_free (*line);
 	  else
 	    break;
 	}
@@ -361,14 +371,14 @@ read_config_file (const char *config)
 
   grub_menu_t newmenu;
 
-  newmenu = grub_env_get_data_slot ("menu");
+  newmenu = grub_env_get_menu ();
   if (! newmenu)
     {
       newmenu = grub_zalloc (sizeof (*newmenu));
       if (! newmenu)
 	return 0;
 
-      grub_env_set_data_slot ("menu", newmenu);
+      grub_env_set_menu (newmenu);
     }
 
   /* Try to open the config file.  */
@@ -387,14 +397,11 @@ read_config_file (const char *config)
       if ((getline (&line, 0)) || (! line))
 	break;
 
-      grub_parser_get_current ()->parse_line (line, getline);
+      grub_normal_parse_line (line, getline);
       grub_free (line);
     }
 
   grub_file_close (file);
-
-  if (old_parser)
-    grub_parser_set_current (old_parser);
 
   return newmenu;
 }
@@ -406,18 +413,19 @@ grub_normal_init_page (struct grub_term_output *term)
   int msg_len;
   int posx;
   const char *msg = _("GNU GRUB  version %s");
-
-  char *msg_formatted = grub_malloc (grub_strlen(msg) +
-  				     grub_strlen(PACKAGE_VERSION));
+  char *msg_formatted;
   grub_uint32_t *unicode_msg;
   grub_uint32_t *last_position;
  
   grub_term_cls (term);
 
-  grub_sprintf (msg_formatted, msg, PACKAGE_VERSION);
+  msg_formatted = grub_xasprintf (msg, PACKAGE_VERSION);
+  if (!msg_formatted)
+    return;
  
   msg_len = grub_utf8_to_ucs4_alloc (msg_formatted,
   				     &unicode_msg, &last_position);
+  grub_free (msg_formatted);
  
   if (msg_len < 0)
     {
@@ -433,14 +441,20 @@ grub_normal_init_page (struct grub_term_output *term)
   grub_free (unicode_msg);
 }
 
-static char *
-read_lists (struct grub_env_var *var __attribute__ ((unused)),
-	    const char *val)
+static void
+read_lists (const char *val)
 {
-  read_command_list ();
-  read_fs_list ();
-  read_crypto_list ();
-  read_terminal_list ();
+  read_command_list (val);
+  read_fs_list (val);
+  read_crypto_list (val);
+  read_terminal_list (val);
+}
+
+static char *
+read_lists_hook (struct grub_env_var *var __attribute__ ((unused)),
+		 const char *val)
+{
+  read_lists (val);
   return val ? grub_strdup (val) : NULL;
 }
 
@@ -450,10 +464,10 @@ void
 grub_normal_execute (const char *config, int nested, int batch)
 {
   grub_menu_t menu = 0;
+  const char *prefix = grub_env_get ("prefix");
 
-  read_lists (NULL, NULL);
-  read_handler_list ();
-  grub_register_variable_hook ("prefix", NULL, read_lists);
+  read_lists (prefix);
+  grub_register_variable_hook ("prefix", NULL, read_lists_hook);
   grub_command_execute ("parser.grub", 0, 0);
 
   if (config)
@@ -502,11 +516,10 @@ grub_cmd_normal (struct grub_command *cmd __attribute__ ((unused)),
       prefix = grub_env_get ("prefix");
       if (prefix)
 	{
-	  config = grub_malloc (grub_strlen (prefix) + sizeof ("/grub.cfg"));
+	  config = grub_xasprintf ("%s/grub.cfg", prefix);
 	  if (! config)
 	    goto quit;
 
-	  grub_sprintf (config, "%s/grub.cfg", prefix);
 	  grub_enter_normal_mode (config);
 	  grub_free (config);
 	}
@@ -540,10 +553,11 @@ grub_normal_reader_init (int nested)
 		      "the first word, TAB lists possible command completions. Anywhere "
 		      "else TAB lists possible device or file completions. %s");
   const char *msg_esc = _("ESC at any time exits.");
-  char *msg_formatted = grub_malloc (sizeof (char) * (grub_strlen (msg) +
-                grub_strlen(msg_esc) + 1));
+  char *msg_formatted;
 
-  grub_sprintf (msg_formatted, msg, nested ? msg_esc : "");
+  msg_formatted = grub_xasprintf (msg, nested ? msg_esc : "");
+  if (!msg_formatted)
+    return grub_errno;
 
   FOR_ACTIVE_TERM_OUTPUTS(term)
   {
@@ -558,17 +572,18 @@ grub_normal_reader_init (int nested)
   return 0;
 }
 
-
 static grub_err_t
 grub_normal_read_line_real (char **line, int cont, int nested)
 {
-  grub_parser_t parser = grub_parser_get_current ();
-  char prompt[sizeof(">") + grub_strlen (parser->name)];
+  const char *prompt;
 
   if (cont)
-    grub_sprintf (prompt, ">");
+    prompt = ">";
   else
-    grub_sprintf (prompt, "%s>", parser->name);
+    prompt = "grub>";
+
+  if (!prompt)
+    return grub_errno;
 
   while (1)
     {
@@ -583,7 +598,7 @@ grub_normal_read_line_real (char **line, int cont, int nested)
 	  return grub_errno;
 	}
     }
-
+  
   return 0;
 }
 
@@ -624,7 +639,7 @@ grub_cmdline_run (int nested)
       if (! line)
 	break;
 
-      grub_parser_get_current ()->parse_line (line, grub_normal_read_line);
+      grub_normal_parse_line (line, grub_normal_read_line);
       grub_free (line);
     }
 }
@@ -639,19 +654,22 @@ grub_env_write_pager (struct grub_env_var *var __attribute__ ((unused)),
 
 GRUB_MOD_INIT(normal)
 {
+  grub_context_init ();
+
   /* Normal mode shouldn't be unloaded.  */
   if (mod)
     grub_dl_ref (mod);
 
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
+  grub_install_newline_hook ();
   grub_register_variable_hook ("pager", 0, grub_env_write_pager);
 
   /* Register a command "normal" for the rescue mode.  */
   grub_register_command ("normal", grub_cmd_normal,
-			 0, "Enter normal mode.");
+			 0, N_("Enter normal mode."));
   grub_register_command ("normal_exit", grub_cmd_normal_exit,
-			 0, "Exit from normal mode.");
+			 0, N_("Exit from normal mode."));
 
   /* Reload terminal colors when these variables are written to.  */
   grub_register_variable_hook ("color_normal", NULL, grub_env_write_color_normal);
@@ -664,8 +682,9 @@ GRUB_MOD_INIT(normal)
 
 GRUB_MOD_FINI(normal)
 {
+  grub_context_fini ();
+
   grub_set_history (0);
   grub_register_variable_hook ("pager", 0, 0);
   grub_fs_autoload_hook = 0;
-  free_handler_list ();
 }

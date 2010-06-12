@@ -25,6 +25,7 @@
 #include <grub/types.h>
 #include <grub/scsi.h>
 #include <grub/scsicmd.h>
+#include <grub/time.h>
 
 
 static grub_scsi_dev_t grub_scsi_dev_list;
@@ -50,7 +51,62 @@ grub_scsi_dev_unregister (grub_scsi_dev_t dev)
 }
 
 
-/* Determine the the device is removable and the type of the device
+/* Check result of previous operation.  */
+static grub_err_t
+grub_scsi_request_sense (grub_scsi_t scsi)
+{
+  struct grub_scsi_request_sense rs;
+  struct grub_scsi_request_sense_data rsd;
+  grub_err_t err;
+
+  rs.opcode = grub_scsi_cmd_request_sense;
+  rs.lun = scsi->lun << GRUB_SCSI_LUN_SHIFT;
+  rs.reserved1 = 0;
+  rs.reserved2 = 0;
+  rs.alloc_length = 0x12; /* XXX: Hardcoded for now */
+  rs.control = 0;
+  grub_memset (rs.pad, 0, sizeof(rs.pad));
+
+  err = scsi->dev->read (scsi, sizeof (rs), (char *) &rs,
+			 sizeof (rsd), (char *) &rsd);
+  if (err)
+    return err;
+
+  return GRUB_ERR_NONE;
+}
+/* Self commenting... */
+static grub_err_t
+grub_scsi_test_unit_ready (grub_scsi_t scsi)
+{
+  struct grub_scsi_test_unit_ready tur;
+  grub_err_t err;
+  grub_err_t err_sense;
+  
+  tur.opcode = grub_scsi_cmd_test_unit_ready;
+  tur.lun = scsi->lun << GRUB_SCSI_LUN_SHIFT;
+  tur.reserved1 = 0;
+  tur.reserved2 = 0;
+  tur.reserved3 = 0;
+  tur.control = 0;
+  grub_memset (tur.pad, 0, sizeof(tur.pad));
+
+  err = scsi->dev->read (scsi, sizeof (tur), (char *) &tur,
+			 0, NULL);
+
+  /* Each SCSI command should be followed by Request Sense.
+     If not so, many devices STALLs or definitely freezes. */
+  err_sense = grub_scsi_request_sense (scsi);
+  if (err_sense != GRUB_ERR_NONE)
+  	grub_errno = err;
+  /* err_sense is ignored for now and Request Sense Data also... */
+  
+  if (err)
+    return err;
+
+  return GRUB_ERR_NONE;
+}
+
+/* Determine if the device is removable and the type of the device
    SCSI.  */
 static grub_err_t
 grub_scsi_inquiry (grub_scsi_t scsi)
@@ -58,15 +114,26 @@ grub_scsi_inquiry (grub_scsi_t scsi)
   struct grub_scsi_inquiry iq;
   struct grub_scsi_inquiry_data iqd;
   grub_err_t err;
+  grub_err_t err_sense;
 
   iq.opcode = grub_scsi_cmd_inquiry;
   iq.lun = scsi->lun << GRUB_SCSI_LUN_SHIFT;
+  iq.page = 0;
   iq.reserved = 0;
   iq.alloc_length = 0x24; /* XXX: Hardcoded for now */
-  iq.reserved2 = 0;
+  iq.control = 0;
+  grub_memset (iq.pad, 0, sizeof(iq.pad));
 
   err = scsi->dev->read (scsi, sizeof (iq), (char *) &iq,
 			 sizeof (iqd), (char *) &iqd);
+
+  /* Each SCSI command should be followed by Request Sense.
+     If not so, many devices STALLs or definitely freezes. */
+  err_sense = grub_scsi_request_sense (scsi);
+  if (err_sense != GRUB_ERR_NONE)
+  	grub_errno = err;
+  /* err_sense is ignored for now and Request Sense Data also... */
+
   if (err)
     return err;
 
@@ -83,13 +150,27 @@ grub_scsi_read_capacity (grub_scsi_t scsi)
   struct grub_scsi_read_capacity rc;
   struct grub_scsi_read_capacity_data rcd;
   grub_err_t err;
+  grub_err_t err_sense;
 
   rc.opcode = grub_scsi_cmd_read_capacity;
   rc.lun = scsi->lun << GRUB_SCSI_LUN_SHIFT;
-  grub_memset (rc.reserved, 0, sizeof (rc.reserved));
-
+  rc.logical_block_addr = 0;
+  rc.reserved1 = 0;
+  rc.reserved2 = 0;
+  rc.PMI = 0;
+  rc.control = 0;
+  rc.pad = 0;
+	
   err = scsi->dev->read (scsi, sizeof (rc), (char *) &rc,
 			 sizeof (rcd), (char *) &rcd);
+
+  /* Each SCSI command should be followed by Request Sense.
+     If not so, many devices STALLs or definitely freezes. */
+  err_sense = grub_scsi_request_sense (scsi);
+  if (err_sense != GRUB_ERR_NONE)
+  	grub_errno = err;
+/* err_sense is ignored for now and Request Sense Data also... */
+
   if (err)
     return err;
 
@@ -107,6 +188,8 @@ grub_scsi_read10 (grub_disk_t disk, grub_disk_addr_t sector,
 {
   grub_scsi_t scsi;
   struct grub_scsi_read10 rd;
+  grub_err_t err;
+  grub_err_t err_sense;
 
   scsi = disk->data;
 
@@ -118,7 +201,16 @@ grub_scsi_read10 (grub_disk_t disk, grub_disk_addr_t sector,
   rd.reserved2 = 0;
   rd.pad = 0;
 
-  return scsi->dev->read (scsi, sizeof (rd), (char *) &rd, size * scsi->blocksize, buf);
+  err = scsi->dev->read (scsi, sizeof (rd), (char *) &rd, size * scsi->blocksize, buf);
+
+  /* Each SCSI command should be followed by Request Sense.
+     If not so, many devices STALLs or definitely freezes. */
+  err_sense = grub_scsi_request_sense (scsi);
+  if (err_sense != GRUB_ERR_NONE)
+  	grub_errno = err;
+  /* err_sense is ignored for now and Request Sense Data also... */
+
+  return err;
 }
 
 /* Send a SCSI request for DISK: read SIZE sectors starting with
@@ -129,6 +221,8 @@ grub_scsi_read12 (grub_disk_t disk, grub_disk_addr_t sector,
 {
   grub_scsi_t scsi;
   struct grub_scsi_read12 rd;
+  grub_err_t err;
+  grub_err_t err_sense;
 
   scsi = disk->data;
 
@@ -139,7 +233,16 @@ grub_scsi_read12 (grub_disk_t disk, grub_disk_addr_t sector,
   rd.reserved = 0;
   rd.control = 0;
 
-  return scsi->dev->read (scsi, sizeof (rd), (char *) &rd, size * scsi->blocksize, buf);
+  err = scsi->dev->read (scsi, sizeof (rd), (char *) &rd, size * scsi->blocksize, buf);
+
+  /* Each SCSI command should be followed by Request Sense.
+     If not so, many devices STALLs or definitely freezes. */
+  err_sense = grub_scsi_request_sense (scsi);
+  if (err_sense != GRUB_ERR_NONE)
+  	grub_errno = err;
+  /* err_sense is ignored for now and Request Sense Data also... */
+
+  return err;
 }
 
 #if 0
@@ -151,6 +254,8 @@ grub_scsi_write10 (grub_disk_t disk, grub_disk_addr_t sector,
 {
   grub_scsi_t scsi;
   struct grub_scsi_write10 wr;
+  grub_err_t err;
+  grub_err_t err_sense;
 
   scsi = disk->data;
 
@@ -162,7 +267,16 @@ grub_scsi_write10 (grub_disk_t disk, grub_disk_addr_t sector,
   wr.reserved2 = 0;
   wr.pad = 0;
 
-  return scsi->dev->write (scsi, sizeof (wr), (char *) &wr, size * scsi->blocksize, buf);
+  err = scsi->dev->write (scsi, sizeof (wr), (char *) &wr, size * scsi->blocksize, buf);
+
+  /* Each SCSI command should be followed by Request Sense.
+     If not so, many devices STALLs or definitely freezes. */
+  err_sense = grub_scsi_request_sense (scsi);
+  if (err_sense != GRUB_ERR_NONE)
+  	grub_errno = err;
+  /* err_sense is ignored for now and Request Sense Data also... */
+
+  return err;
 }
 
 /* Send a SCSI request for DISK: write the data stored in BUF to SIZE
@@ -172,7 +286,9 @@ grub_scsi_write12 (grub_disk_t disk, grub_disk_addr_t sector,
 		   grub_size_t size, char *buf)
 {
   grub_scsi_t scsi;
-  struct grub_scsi_write10 wr;
+  struct grub_scsi_write12 wr;
+  grub_err_t err;
+  grub_err_t err_sense;
 
   scsi = disk->data;
 
@@ -181,9 +297,18 @@ grub_scsi_write12 (grub_disk_t disk, grub_disk_addr_t sector,
   wr.lba = grub_cpu_to_be32 (sector);
   wr.size = grub_cpu_to_be32 (size);
   wr.reserved = 0;
-  wr.pad = 0;
+  wr.control = 0;
 
-  return scsi->dev->write (scsi, sizeof (wr), (char *) &wr, size * scsi->blocksize, buf);
+  err = scsi->dev->write (scsi, sizeof (wr), (char *) &wr, size * scsi->blocksize, buf);
+
+  /* Each SCSI command should be followed by Request Sense.
+     If not so, many devices STALLs or definitely freezes. */
+  err_sense = grub_scsi_request_sense (scsi);
+  if (err_sense != GRUB_ERR_NONE)
+  	grub_errno = err;
+  /* err_sense is ignored for now and Request Sense Data also... */
+
+  return err;
 }
 #endif
 
@@ -197,7 +322,6 @@ grub_scsi_iterate (int (*hook) (const char *name))
 
   int scsi_iterate (const char *name, int luns)
     {
-      char sname[40];
       int i;
 
       /* In case of a single LUN, just return `usbX'.  */
@@ -208,8 +332,14 @@ grub_scsi_iterate (int (*hook) (const char *name))
 	 distinguish it.  */
       for (i = 0; i < luns; i++)
 	{
-	  grub_sprintf (sname, "%s%c", name, 'a' + i);
-	  if (hook (sname))
+	  char *sname;
+	  int ret;
+	  sname = grub_xasprintf ("%s%c", name, 'a' + i);
+	  if (!sname)
+	    return 1;
+	  ret = hook (sname);
+	  grub_free (sname);
+	  if (ret)
 	    return 1;
 	}
       return 0;
@@ -230,6 +360,7 @@ grub_scsi_open (const char *name, grub_disk_t disk)
   grub_err_t err;
   int len;
   int lun;
+  grub_uint64_t maxtime;
 
   scsi = grub_malloc (sizeof (*scsi));
   if (! scsi)
@@ -287,6 +418,31 @@ grub_scsi_open (const char *name, grub_disk_t disk)
       else
 	disk->has_partitions = 1;
 
+
+      /* According to USB MS tests specification, issue Test Unit Ready
+       * until OK */
+      maxtime = grub_get_time_ms () + 5000; /* It is safer value */
+      do
+        {
+	  /* Timeout is necessary - for example in case when we have
+	   * universal card reader with more LUNs and we have only
+	   * one card inserted (or none), so only one LUN (or none)
+	   * will be ready - and we want not to hang... */
+	  if (grub_get_time_ms () > maxtime)
+            {
+              err = GRUB_ERR_READ_ERROR;
+              grub_free (scsi);
+              grub_dprintf ("scsi", "LUN is not ready - timeout\n");
+              return err;
+            }
+          err = grub_scsi_test_unit_ready (scsi);
+        }
+      while (err == GRUB_ERR_READ_ERROR);
+      /* Reset grub_errno !
+       * It is set to some error code in loop before... */
+      grub_errno = GRUB_ERR_NONE;
+
+      /* Read capacity of media */
       err = grub_scsi_read_capacity (scsi);
       if (err)
 	{
@@ -297,12 +453,14 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 
       /* SCSI blocks can be something else than 512, although GRUB
 	 wants 512 byte blocks.  */
-      disk->total_sectors = ((scsi->size * scsi->blocksize)
-			     << GRUB_DISK_SECTOR_BITS);
+      disk->total_sectors = ((grub_uint64_t)scsi->size
+                             * (grub_uint64_t)scsi->blocksize)
+			    >> GRUB_DISK_SECTOR_BITS;
 
-      grub_dprintf ("scsi", "capacity=%llu, blksize=%d\n",
-		    (unsigned long long) disk->total_sectors,
-		    scsi->blocksize);
+      grub_dprintf ("scsi", "blocks=%u, blocksize=%u\n",
+		    scsi->size, scsi->blocksize);
+      grub_dprintf ("scsi", "Disk total 512 sectors = %llu\n",
+		    (unsigned long long) disk->total_sectors);
 
       return GRUB_ERR_NONE;
     }
@@ -361,6 +519,37 @@ grub_scsi_read (grub_disk_t disk, grub_disk_addr_t sector,
 
   /* XXX: Never reached.  */
   return GRUB_ERR_NONE;
+
+#if 0 /* Workaround - it works - but very slowly, from some reason
+       * unknown to me (specially on OHCI). Do not use it. */
+  /* Split transfer requests to device sector size because */
+  /* some devices are not able to transfer more than 512-1024 bytes */
+  grub_err_t err = GRUB_ERR_NONE;
+
+  for ( ; size; size--)
+    {
+      /* Depending on the type, select a read function.  */
+      switch (scsi->devtype)
+        {
+          case grub_scsi_devtype_direct:
+            err = grub_scsi_read10 (disk, sector, 1, buf);
+            break;
+
+          case grub_scsi_devtype_cdrom:
+            err = grub_scsi_read12 (disk, sector, 1, buf);
+            break;
+
+          default: /* This should not happen */
+            return GRUB_ERR_READ_ERROR;
+        }
+      if (err)
+        return err;
+      sector++;
+      buf += scsi->blocksize;
+    }
+
+  return err;
+#endif
 }
 
 static grub_err_t

@@ -44,8 +44,9 @@ typedef struct grub_linuxbios_table_header *grub_linuxbios_table_header_t;
 
 struct grub_linuxbios_table_item
 {
-#define GRUB_LINUXBIOS_MEMBER_UNUSED		0
-#define GRUB_LINUXBIOS_MEMBER_MEMORY		1
+#define GRUB_LINUXBIOS_MEMBER_UNUSED		0x00
+#define GRUB_LINUXBIOS_MEMBER_MEMORY		0x01
+#define GRUB_LINUXBIOS_MEMBER_LINK              0x11
   grub_uint32_t tag;
   grub_uint32_t size;
 };

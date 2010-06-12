@@ -30,15 +30,10 @@ struct grub_list
 };
 typedef struct grub_list *grub_list_t;
 
-typedef int (*grub_list_hook_t) (grub_list_t item);
-typedef int (*grub_list_test_t) (grub_list_t new_item, grub_list_t item);
-
 void EXPORT_FUNC(grub_list_push) (grub_list_t *head, grub_list_t item);
-void * EXPORT_FUNC(grub_list_pop) (grub_list_t *head);
 void EXPORT_FUNC(grub_list_remove) (grub_list_t *head, grub_list_t item);
-int EXPORT_FUNC(grub_list_iterate) (grub_list_t head, grub_list_hook_t hook);
-void EXPORT_FUNC(grub_list_insert) (grub_list_t *head, grub_list_t item,
-				    grub_list_test_t test);
+
+#define FOR_LIST_ELEMENTS(var, list) for ((var) = (list); (var); (var) = (var)->next)
 
 static inline void *
 grub_bad_type_cast_real (int line, const char *file)
@@ -52,7 +47,7 @@ grub_bad_type_cast_real (int line, const char *file)
   return 0;
 }
 
-#define grub_bad_type_cast() grub_bad_type_cast_real(__LINE__, __FILE__)
+#define grub_bad_type_cast() grub_bad_type_cast_real(__LINE__, GRUB_FILE)
 
 #define GRUB_FIELD_MATCH(ptr, type, field) \
   ((char *) &(ptr)->field == (char *) &((type) (ptr))->field)

@@ -57,13 +57,23 @@ signature_found:
 			       (long) table_header->size);
   for (; table_item->size;
        table_item = (grub_linuxbios_table_item_t) ((long) table_item + (long) table_item->size))
-    if (hook (table_item))
-      return 1;
+    {
+      if (table_item->tag == GRUB_LINUXBIOS_MEMBER_LINK
+         && check_signature ((grub_linuxbios_table_header_t) (grub_addr_t)
+                             *(grub_uint64_t *) (table_item + 1)))
+       {
+         table_header = (grub_linuxbios_table_header_t) (grub_addr_t)
+           *(grub_uint64_t *) (table_item + 1);
+         goto signature_found;   
+       }
+      if (hook (table_item))
+       return 1;
+    }
 
   return 0;
 }
 
-void
+grub_err_t
 grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t))
 {
   mem_region_t mem_region;
