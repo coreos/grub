@@ -1,3 +1,8 @@
+2010-06-12  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrescue.in (make_image): Remove sh module, which has
+	been merged back into normal.
+
 2010-06-11  Colin Watson  <cjwatson@ubuntu.com>
 
 	* include/grub/efi/uga_draw.h (GRUB_EFI_UGA_GLT_MAX): Rename to ...
