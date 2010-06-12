@@ -123,7 +123,7 @@ NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
 
 ESC             \\.
 SQCHR           [^\']
-DQCHR           {ESC}|[^\"]
+DQCHR           {ESC}|[^\\\"]
 DQSTR           \"{DQCHR}*\"
 SQSTR           \'{SQCHR}*\'
 VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|$\?|$\{\?\}
