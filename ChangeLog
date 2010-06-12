@@ -1,3 +1,7 @@
+2010-06-12  Javier Martín <lordhabbit@gmail.com>
+
+	* include/grub/types.h: Check for GRUB_CPU_SIZEOF_LONG when appropriate.
+
 2010-06-12  Thomas Schmitt  <scdbackup@gmx.net>
 
 	* util/grub-mkrescue.in: Support --xorriso argument.
