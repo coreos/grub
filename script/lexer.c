@@ -154,18 +154,37 @@ grub_script_lexer_yywrap (struct grub_parser_param *parserstate,
     lexerstate->getline (&line, 1);
   else
     line = grub_strdup (input);
+
+  /* Ensure '\n' at the end.  */
+  if (line && line[0] == '\0')
+    {
+      grub_free (line);
+      line = grub_strdup ("\n");
+    }
+
+  if (line && (len = grub_strlen(line)) && line[len - 1] != '\n')
+    {
+      p = grub_realloc (line, len + 2);
+      if (p)
+	{
+	  p[len++] = '\n';
+	  p[len] = '\0';
+	}
+      line = p;
+    }
+
   if (! line)
     {
-      grub_script_yyerror (parserstate, 0);
+      grub_script_yyerror (parserstate, "out of memory");
       return 1;
     }
 
-  len = grub_strlen (line);
+  /* Prepend any left over unput-text.  */
   if (lexerstate->prefix)
     {
       int plen = grub_strlen (lexerstate->prefix);
 
-      p = grub_malloc (len + plen + 2);
+      p = grub_malloc (len + plen + 1);
       if (! p)
 	{
 	  grub_free (line);
@@ -174,29 +193,11 @@ grub_script_lexer_yywrap (struct grub_parser_param *parserstate,
       grub_strcpy (p, lexerstate->prefix);
       lexerstate->prefix = 0;
 
-      if (! line[0])
-	{
-	  line = "\n";
-	  len = 1;
-	}
       grub_strcpy (p + plen, line);
+      grub_free (line);
 
       line = p;
       len = len + plen;
-    }
-
-  if (line[len - 1] != '\n')
-    {
-      char *p;
-      p = grub_realloc (line, len + 2);
-      if (! p)
-	{
-	  grub_free (line);
-	  return 1;
-	}
-      line = p;
-      line[len++] = '\n';
-      line[len] = '\0';
     }
 
   buffer = yy_scan_string (line, lexerstate->yyscanner);
