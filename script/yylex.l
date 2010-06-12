@@ -105,6 +105,7 @@ typedef size_t yy_size_t;
 %option nounistd nostdinit nodefault noyylineno
 
 /* Reduce lexer size, by not defining these.  */
+%option noyy_top_state
 %option noinput nounput
 %option noyyget_in noyyset_in
 %option noyyget_out noyyset_out
@@ -179,13 +180,13 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*))
 {NAME}          { RECORD; return GRUB_PARSER_TOKEN_NAME; }
 {WORD}          {
                   RECORD;
-		  yyextra->lexerstate->resplit = 1;
 		  yypush_buffer_state (YY_CURRENT_BUFFER, yyscanner);
 		  if (grub_lexer_resplit (yytext, yyscanner))
 		    {
 		      yypop_buffer_state (yyscanner);
 		      return GRUB_PARSER_TOKEN_WORD;
 		    }
+		  yyextra->lexerstate->resplit = 1;
                 }
 {MULTILINE}     {
                   if (grub_lexer_unput (yytext, yyscanner))
@@ -352,10 +353,7 @@ grub_lexer_unput (const char *text, yyscan_t yyscanner)
   struct grub_lexer_param *lexerstate = yyget_extra (yyscanner)->lexerstate;
 
   if (lexerstate->prefix)
-    {
-      grub_free (lexerstate->prefix);
-      lexerstate->prefix = 0;
-    }
+    grub_free (lexerstate->prefix);
 
   lexerstate->prefix = grub_strdup (text);
   if (! lexerstate->prefix)
