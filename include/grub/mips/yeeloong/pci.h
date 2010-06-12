@@ -19,16 +19,30 @@
 #ifndef	GRUB_MACHINE_PCI_H
 #define	GRUB_MACHINE_PCI_H	1
 
+#ifndef ASM_FILE
 #include <grub/types.h>
 #include <grub/cpu/io.h>
+#endif
+
+#define GRUB_YEELOONG_OHCI_PCIID 0x00351033
+#define GRUB_YEELOONG_EHCI_PCIID 0x00e01033
+#define GRUB_YEELOONG_OHCI_GHOST_FUNCTION 4
+#define GRUB_YEELOONG_EHCI_GHOST_FUNCTION 5
 
 #define GRUB_PCI_NUM_BUS        1
 #define GRUB_PCI_NUM_DEVICES    16
 
-#define GRUB_MACHINE_PCI_IO_BASE          0xbfd00000
-#define GRUB_MACHINE_PCI_CONFSPACE        0xbfe80000
-#define GRUB_MACHINE_PCI_CONF_CTRL_REG    (*(volatile grub_uint32_t *) 0xbfe00118)
+#define GRUB_MACHINE_PCI_IO_BASE           0xbfd00000
+#define GRUB_MACHINE_PCI_CONFSPACE         0xbfe80000
+#define GRUB_MACHINE_PCI_CONTROLLER_HEADER 0xbfe00000
+
+#define GRUB_MACHINE_PCI_CONF_CTRL_REG_ADDR 0xbfe00118
+
+#ifndef ASM_FILE
+#define GRUB_MACHINE_PCI_CONF_CTRL_REG    (*(volatile grub_uint32_t *) \
+					   GRUB_MACHINE_PCI_CONF_CTRL_REG_ADDR)
 #define GRUB_MACHINE_PCI_IO_CTRL_REG      (*(volatile grub_uint32_t *) 0xbfe00110)
+#endif
 #define GRUB_MACHINE_PCI_WIN_MASK_SIZE    6
 #define GRUB_MACHINE_PCI_WIN_MASK         ((1 << GRUB_MACHINE_PCI_WIN_MASK_SIZE) - 1)
 
@@ -46,6 +60,7 @@
 #define GRUB_MACHINE_PCI_WIN2_ADDR        0xb4000000
 #define GRUB_MACHINE_PCI_WIN3_ADDR        0xb8000000
 
+#ifndef ASM_FILE
 static inline grub_uint32_t
 grub_pci_read (grub_pci_address_t addr)
 {
@@ -95,11 +110,12 @@ grub_pci_write_byte (grub_pci_address_t addr, grub_uint8_t data)
 }
 
 volatile void *
-grub_pci_device_map_range (grub_pci_device_t dev __attribute__ ((unused)),
-			   grub_addr_t base, grub_size_t size);
+EXPORT_FUNC (grub_pci_device_map_range) (grub_pci_device_t dev,
+					 grub_addr_t base, grub_size_t size);
 void
-grub_pci_device_unmap_range (grub_pci_device_t dev __attribute__ ((unused)),
-			     volatile void *mem,
-			     grub_size_t size __attribute__ ((unused)));
+EXPORT_FUNC (grub_pci_device_unmap_range) (grub_pci_device_t dev,
+					   volatile void *mem,
+					   grub_size_t size);
+#endif
 
 #endif /* GRUB_MACHINE_PCI_H */

@@ -31,6 +31,7 @@
 #include <grub/auth.h>
 #include <grub/i18n.h>
 #include <grub/charset.h>
+#include <grub/script_sh.h>
 
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
@@ -204,7 +205,7 @@ grub_normal_add_menu_entry (int argc, const char **args,
   for (i = 0; i < argc; i++)
     {
       /* Capture arguments.  */
-      if (grub_strncmp ("--", args[i], 2) == 0)
+      if (grub_strncmp ("--", args[i], 2) == 0 && i + 1 < argc)
 	{
 	  const char *arg = &args[i][2];
 
@@ -347,7 +348,6 @@ static grub_menu_t
 read_config_file (const char *config)
 {
   grub_file_t file;
-  grub_parser_t old_parser = 0;
 
   auto grub_err_t getline (char **line, int cont);
   grub_err_t getline (char **line, int cont __attribute__ ((unused)))
@@ -361,36 +361,7 @@ read_config_file (const char *config)
 	    return grub_errno;
 
 	  if (buf[0] == '#')
-	    {
-	      if (buf[1] == '!')
-		{
-		  grub_parser_t parser;
-		  grub_named_list_t list;
-
-		  buf += 2;
-		  while (grub_isspace (*buf))
-		    buf++;
-
-		  if (! old_parser)
-		    old_parser = grub_parser_get_current ();
-
-		  list = GRUB_AS_NAMED_LIST (grub_parser_class.handler_list);
-		  parser = grub_named_list_find (list, buf);
-		  if (parser)
-		    grub_parser_set_current (parser);
-		  else
-		    {
-		      char cmd_name[8 + grub_strlen (buf)];
-
-		      /* Perhaps it's not loaded yet, try the autoload
-			 command.  */
-		      grub_strcpy (cmd_name, "parser.");
-		      grub_strcat (cmd_name, buf);
-		      grub_command_execute (cmd_name, 0, 0);
-		    }
-		}
-	      grub_free (*line);
-	    }
+	    grub_free (*line);
 	  else
 	    break;
 	}
@@ -426,14 +397,11 @@ read_config_file (const char *config)
       if ((getline (&line, 0)) || (! line))
 	break;
 
-      grub_parser_get_current ()->parse_line (line, getline);
+      grub_normal_parse_line (line, getline);
       grub_free (line);
     }
 
   grub_file_close (file);
-
-  if (old_parser)
-    grub_parser_set_current (old_parser);
 
   return newmenu;
 }
@@ -499,7 +467,6 @@ grub_normal_execute (const char *config, int nested, int batch)
   const char *prefix = grub_env_get ("prefix");
 
   read_lists (prefix);
-  read_handler_list ();
   grub_register_variable_hook ("prefix", NULL, read_lists_hook);
   grub_command_execute ("parser.grub", 0, 0);
 
@@ -605,17 +572,15 @@ grub_normal_reader_init (int nested)
   return 0;
 }
 
-
 static grub_err_t
 grub_normal_read_line_real (char **line, int cont, int nested)
 {
-  grub_parser_t parser = grub_parser_get_current ();
-  char *prompt;
+  const char *prompt;
 
   if (cont)
-    prompt = grub_xasprintf (">");
+    prompt = ">";
   else
-    prompt = grub_xasprintf ("%s>", parser->name);
+    prompt = "grub>";
 
   if (!prompt)
     return grub_errno;
@@ -629,14 +594,11 @@ grub_normal_read_line_real (char **line, int cont, int nested)
       if (cont || nested)
 	{
 	  grub_free (*line);
-	  grub_free (prompt);
 	  *line = 0;
 	  return grub_errno;
 	}
     }
   
-  grub_free (prompt);
-
   return 0;
 }
 
@@ -677,7 +639,7 @@ grub_cmdline_run (int nested)
       if (! line)
 	break;
 
-      grub_parser_get_current ()->parse_line (line, grub_normal_read_line);
+      grub_normal_parse_line (line, grub_normal_read_line);
       grub_free (line);
     }
 }
@@ -725,5 +687,4 @@ GRUB_MOD_FINI(normal)
   grub_set_history (0);
   grub_register_variable_hook ("pager", 0, 0);
   grub_fs_autoload_hook = 0;
-  free_handler_list ();
 }

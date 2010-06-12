@@ -97,7 +97,7 @@ EOF
 EOF
 }
 
-list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
+list=`for i in /boot/vmlinu[zx]-* /vmlinu[zx]-* ; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
 prepare_boot_cache=

@@ -22,9 +22,14 @@
 #include <grub/video.h>
 #include <grub/bitmap.h>
 #include <grub/gfxmenu_view.h>
+#include <grub/mm.h>
 
 #ifndef GRUB_GUI_H
 #define GRUB_GUI_H 1
+
+/* The component ID identifying GUI components to be updated as the timeout
+   status changes.  */
+#define GRUB_GFXMENU_TIMEOUT_COMPONENT_ID "__timeout__"
 
 /* A representation of a color.  Unlike grub_video_color_t, this
    representation is independent of any video mode specifics.  */
@@ -78,6 +83,46 @@ struct grub_gui_progress_ops
 {
   void (*set_state) (void *self, int visible, int start, int current, int end);
 };
+
+typedef void (*grub_gfxmenu_set_state_t) (void *self, int visible, int start,
+					  int current, int end);
+
+struct grub_gfxmenu_timeout_notify
+{
+  struct grub_gfxmenu_timeout_notify *next;
+  grub_gfxmenu_set_state_t set_state;
+  grub_gui_component_t self;
+};
+
+extern struct grub_gfxmenu_timeout_notify *grub_gfxmenu_timeout_notifications;
+
+static inline grub_err_t
+grub_gfxmenu_timeout_register (grub_gui_component_t self,
+			       grub_gfxmenu_set_state_t set_state)
+{
+  struct grub_gfxmenu_timeout_notify *ne = grub_malloc (sizeof (*ne));
+  if (!ne)
+    return grub_errno;
+  ne->set_state = set_state;
+  ne->self = self;
+  ne->next = grub_gfxmenu_timeout_notifications;
+  grub_gfxmenu_timeout_notifications = ne;
+  return GRUB_ERR_NONE;
+}
+
+static inline void
+grub_gfxmenu_timeout_unregister (grub_gui_component_t self)
+{
+  struct grub_gfxmenu_timeout_notify **p, *q;
+
+  for (p = &grub_gfxmenu_timeout_notifications, q = *p;
+       q; p = &(q->next), q = q->next)
+    if (q->self == self)
+      {
+	*p = q->next;
+	break;
+      }
+}
 
 typedef signed grub_fixed_signed_t;
 #define GRUB_FIXED_1 0x10000

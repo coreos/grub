@@ -77,5 +77,5 @@ normal/misc.c
 
 term/serial.c
 
-util/grub-mkrawimage.c
+util/grub-mkimage.c
 util/i386/pc/grub-setup.c
