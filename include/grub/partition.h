@@ -77,12 +77,14 @@ char *EXPORT_FUNC(grub_partition_get_name) (const grub_partition_t partition);
 
 extern grub_partition_map_t EXPORT_VAR(grub_partition_map_list);
 
+#ifndef GRUB_LST_GENERATOR
 static inline void
 grub_partition_map_register (grub_partition_map_t partmap)
 {
   grub_list_push (GRUB_AS_LIST_P (&grub_partition_map_list),
 		  GRUB_AS_LIST (partmap));
 }
+#endif
 
 static inline void
 grub_partition_map_unregister (grub_partition_map_t partmap)
@@ -91,7 +93,7 @@ grub_partition_map_unregister (grub_partition_map_t partmap)
 		    GRUB_AS_LIST (partmap));
 }
 
-#define FOR_PARTITION_MAPS(var) for (var = grub_partition_map_list; var; var = var->next)
+#define FOR_PARTITION_MAPS(var) FOR_LIST_ELEMENTS((var), (grub_partition_map_list))
 
 
 static inline grub_disk_addr_t

@@ -2,6 +2,7 @@
 10_*
 30_os-prober
 40_custom
+41_custom
 aclocal.m4
 ascii.bitmaps
 ascii.h
