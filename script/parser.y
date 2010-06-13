@@ -20,6 +20,7 @@
 %{
 #include <grub/script_sh.h>
 #include <grub/mm.h>
+#include <grub/misc.h>
 
 #define YYFREE          grub_free
 #define YYMALLOC        grub_malloc

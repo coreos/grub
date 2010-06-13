@@ -191,7 +191,6 @@ grub_main (void)
   grub_set_root_dev ();
 
   grub_register_core_commands ();
-  grub_register_rescue_parser ();
 
   grub_load_config ();
   grub_load_normal_mode ();

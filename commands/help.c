@@ -33,94 +33,87 @@ grub_cmd_help (grub_extcmd_context_t ctxt __attribute__ ((unused)), int argc,
   int cnt = 0;
   char *currarg;
 
-  auto int print_command_info (grub_command_t cmd);
-  auto int print_command_help (grub_command_t cmd);
-
-  int print_command_info (grub_command_t cmd)
-    {
-      if ((cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE) &&
-	  (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE))
-	{
-	  struct grub_term_output *term;
-	  const char *summary_translated = _(cmd->summary);
-	  char *command_help;
-	  grub_uint32_t *unicode_command_help;
-	  grub_uint32_t *unicode_last_position;
-	  			      
-	  command_help = grub_xasprintf ("%s %s", cmd->name, summary_translated);
-	  if (!command_help)
-	    return 1;
-
-	  grub_utf8_to_ucs4_alloc (command_help, &unicode_command_help,
-	  			   &unicode_last_position);
-
-	  FOR_ACTIVE_TERM_OUTPUTS(term)
-	  {
-	    unsigned stringwidth;
-	    grub_uint32_t *unicode_last_screen_position;
-
-	    unicode_last_screen_position = unicode_command_help;
-
-	    stringwidth = 0;
-
-	    while (unicode_last_screen_position < unicode_last_position && 
-		   stringwidth < ((grub_term_width (term) / 2) - 2))
-	      {
-		stringwidth
-		  += grub_term_getcharwidth (term,
-					     *unicode_last_screen_position);
-		unicode_last_screen_position++;
-	      }
-
-	    grub_print_ucs4 (unicode_command_help,
-			     unicode_last_screen_position, term);
-	    if (!(cnt % 2))
-	      grub_print_spaces (term, grub_term_width (term) / 2
-				 - stringwidth);
-	  }
-	  if (cnt % 2)
-	    grub_printf ("\n");
-	  cnt++;
-	  
-	  grub_free (command_help);
-	  grub_free (unicode_command_help);
-	}
-      return 0;
-    }
-
-  int print_command_help (grub_command_t cmd)
-    {
-      if (cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE)
-	{
-	  if (! grub_strncmp (cmd->name, currarg, grub_strlen (currarg)))
-	    {
-	      if (cnt++ > 0)
-		grub_printf ("\n\n");
-
-	      if (cmd->flags & GRUB_COMMAND_FLAG_EXTCMD)
-		grub_arg_show_help ((grub_extcmd_t) cmd->data);
-	      else
-		grub_printf ("%s %s %s\n%s\n", _("Usage:"), cmd->name, _(cmd->summary),
-			     _(cmd->description));
-	    }
-	}
-      return 0;
-    }
-
   if (argc == 0)
     {
-      grub_command_iterate (print_command_info);
+      grub_command_t cmd;
+      FOR_COMMANDS(cmd)
+      {
+	if ((cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE) &&
+	    (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE))
+	  {
+	    struct grub_term_output *term;
+	    const char *summary_translated = _(cmd->summary);
+	    char *command_help;
+	    grub_uint32_t *unicode_command_help;
+	    grub_uint32_t *unicode_last_position;
+	  			      
+	    command_help = grub_xasprintf ("%s %s", cmd->name, summary_translated);
+	    if (!command_help)
+	      break;
+
+	    grub_utf8_to_ucs4_alloc (command_help, &unicode_command_help,
+				     &unicode_last_position);
+
+	    FOR_ACTIVE_TERM_OUTPUTS(term)
+	    {
+	      unsigned stringwidth;
+	      grub_uint32_t *unicode_last_screen_position;
+
+	      unicode_last_screen_position = unicode_command_help;
+
+	      stringwidth = 0;
+
+	      while (unicode_last_screen_position < unicode_last_position && 
+		     stringwidth < ((grub_term_width (term) / 2) - 2))
+		{
+		  stringwidth
+		    += grub_term_getcharwidth (term,
+					       *unicode_last_screen_position);
+		  unicode_last_screen_position++;
+		}
+
+	      grub_print_ucs4 (unicode_command_help,
+			       unicode_last_screen_position, term);
+	      if (!(cnt % 2))
+		grub_print_spaces (term, grub_term_width (term) / 2
+				   - stringwidth);
+	    }
+	    if (cnt % 2)
+	      grub_printf ("\n");
+	    cnt++;
+	  
+	    grub_free (command_help);
+	    grub_free (unicode_command_help);
+	  }
+      }
       if (!(cnt % 2))
 	grub_printf ("\n");
     }
   else
     {
       int i;
+      grub_command_t cmd;
 
       for (i = 0; i < argc; i++)
 	{
 	  currarg = args[i];
-	  grub_command_iterate (print_command_help);
+	  FOR_COMMANDS(cmd)
+	  {
+	    if (cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE)
+	      {
+		if (! grub_strncmp (cmd->name, currarg, grub_strlen (currarg)))
+		  {
+		    if (cnt++ > 0)
+		      grub_printf ("\n\n");
+
+		    if (cmd->flags & GRUB_COMMAND_FLAG_EXTCMD)
+		      grub_arg_show_help ((grub_extcmd_t) cmd->data);
+		    else
+		      grub_printf ("%s %s %s\n%s\b", _("Usage:"), cmd->name, _(cmd->summary),
+				   _(cmd->description));
+		  }
+	      }
+	  }
 	}
     }
 

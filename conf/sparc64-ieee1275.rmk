@@ -26,7 +26,7 @@ kernel_img_SOURCES = kern/sparc64/ieee1275/crt0.S kern/ieee1275/cmain.c	\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c		\
 	kern/misc.c kern/mm.c kern/term.c			\
 	kern/rescue_parser.c kern/rescue_reader.c \
-	kern/list.c kern/handler.c kern/command.c kern/corecmd.c	\
+	kern/list.c  kern/command.c kern/corecmd.c	\
 	kern/sparc64/ieee1275/ieee1275.c 				\
 	kern/sparc64/ieee1275/init.c 					\
 	kern/ieee1275/mmap.c						\
@@ -48,7 +48,7 @@ util/sparc64/ieee1275/grub-setup.c_DEPENDENCIES = grub_setup_init.h
 grub_setup_SOURCES = util/sparc64/ieee1275/grub-setup.c			\
 	util/ieee1275/ofpath.c util/misc.c kern/emu/hostdisk.c		\
 	kern/emu/misc.c kern/emu/getroot.c kern/emu/mm.c kern/device.c	\
-	kern/disk.c kern/err.c kern/misc.c kern/parser.c		\
+	kern/disk.c kern/err.c kern/misc.c 				\
 	kern/partition.c kern/file.c kern/fs.c kern/env.c kern/list.c	\
 	fs/fshelp.c							\
 									\

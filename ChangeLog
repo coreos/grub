@@ -1,3 +1,178 @@
+2010-06-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/efi/uga_draw.h (GRUB_EFI_UGA_GLT_MAX): Rename to ...
+	(GRUB_EFI_UGA_BLT_MAX): ... this (typo fix).
+
+2010-06-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.in (install-local): Include $(srcdir)/docs/man/$$dest.h2m
+	when generating manual pages.
+	* docs/man/grub-bin2h.h2m: New file.
+	* docs/man/grub-editenv.h2m: New file.
+	* docs/man/grub-fstest.h2m: New file.
+	* docs/man/grub-install.h2m: New file.
+	* docs/man/grub-macho2img.h2m: New file.
+	* docs/man/grub-mkconfig.h2m: New file.
+	* docs/man/grub-mkdevicemap.h2m: New file.
+	* docs/man/grub-mkfont.h2m: New file.
+	* docs/man/grub-mkimage.h2m: New file.
+	* docs/man/grub-mkpasswd-pbkdf2.h2m: New file.
+	* docs/man/grub-mkrelpath.h2m: New file.
+	* docs/man/grub-mkrescue.h2m: New file.
+	* docs/man/grub-ofpathname.h2m: New file.
+	* docs/man/grub-pe2elf.h2m: New file.
+	* docs/man/grub-probe.h2m: New file.
+	* docs/man/grub-reboot.h2m: New file.
+	* docs/man/grub-script-check.h2m: New file.
+	* docs/man/grub-set-default.h2m: New file.
+	* docs/man/grub-setup.h2m: New file.
+
+2010-06-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use FOR_* macros instead of *_iterate whenever possible.
+
+	* commands/handler.c: Removed.
+	* commands/help.c (grub_cmd_help): Use FOR_COMMANDS.
+	* commands/minicmd.c (grub_mini_cmd_lsmod): Use FOR_DL_MODULES.
+	* conf/any-emu.rmk (kernel_img_SOURCES): Remove kern/handler.c.
+	* conf/common.rmk (script/lexer.c_DEPENDENCIES): Add grub_script.yy.h.
+	(grub_probe_SOURCES): Remove kern/parser.c.
+	(util/grub-script-check.c_DEPENDENCIES): Removed.
+	(grub_script_check_SOURCES): Remove kern/handler.c, kern/parser.c
+	and grub_script_check_init.c.
+	(grub_script_check_init.lst): Removed.
+	(grub_script_check_init.h): Likewise.
+	(grub_script_check_init.c): Likewise.
+	(pkglib_MODULES): Remove handler.mod and sh.mod.
+	(handler_mod_SOURCES): Removed.
+	(handler_mod_CFLAGS): Likewise.
+	(handler_mod_LDFLAGS): Likewise.
+	(normal_mod_SOURCES): Remove normal/handler.c.
+	Add script/main.c, script/script.c, script/execute.c,
+	script/function.c, script/lexer.c, grub_script.tab.c
+	and grub_script.yy.c.
+	* conf/i386-coreboot.rmk (kernel_img_SOURCES): Remove kern/handler.c.
+	* conf/i386-ieee1275.rmk (kernel_img_SOURCES): Likewise.
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Likewise.
+	(grub_setup_SOURCES): Remove kern/parser.c.
+	* conf/i386-qemu.rmk (kernel_img_SOURCES): Remove kern/handler.c.
+	* conf/mips-qemu-mips.rmk (kernel_img_SOURCES): Likewise.
+	* conf/mips-yeeloong.rmk (kernel_img_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (kernel_img_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (kernel_img_SOURCES): Likewise.
+	(grub_setup_SOURCES): Remove kern/parser.c.
+	* conf/x86-efi.rmk (kernel_img_SOURCES): Remove kern/handler.c.
+	* gettext/gettext.c (grub_gettext_delete_list): Don't use grub_list_pop.
+	* include/grub/command.h (grub_command_iterate): Removed.
+	(FOR_COMMANDS): New macro.
+	* include/grub/dl.h (grub_dl): New member next.
+	(grub_dl_iterate): Removed.
+	(grub_dl_head): New variable declaration.
+	(FOR_DL_MODULES): New macro.
+	* include/grub/fs.h: Include list.h.
+	(grub_fs): Make next first element.
+	(grub_fs_list): New variable declaration.
+	(grub_fs_register): Make inline.
+	(grub_fs_unregister): Likewise.
+	(grub_fs_iterate): Removed.
+	(FOR_FILESYSTEMS): New macro.
+	* include/grub/handler.h: Removed.
+	* include/grub/list.h (grub_list_hook_t): Removed.
+	(grub_list_test_t): Likewise.
+	(grub_list_pop): Likewise.
+	(grub_list_iterate): Likewise.
+	(grub_list_insert): Likewise.
+	(FOR_LIST_ELEMENTS): New macro.
+	* include/grub/parser.h (grub_parser_class): Removed.
+	(grub_parser_register): Likewise.
+	(grub_parser_unregister): Likewise.
+	(grub_parser_get_current): Likewise.
+	(grub_parser_set_current): Likewise.
+	(grub_register_rescue_parser): Likewise.
+	(grub_rescue_parse_line): New function.
+	* include/grub/partition.h (FOR_PARTITION_MAPS): Use FOR_LIST_ELEMENTS.
+	* include/grub/script_sh.h (grub_script_function_list): New variable
+	declaration.
+	(FOR_SCRIPT_FUNCTIONS): New macro.
+	(grub_script_function_iterate): Removed.
+	(grub_normal_parse_line): New prototype.
+	* include/grub/term.h (FOR_ACTIVE_TERM_INPUTS): Use FOR_LIST_ELEMENTS.
+	(FOR_DISABLED_TERM_INPUTS): Likewise.
+	(FOR_ACTIVE_TERM_OUTPUTS): Likewise.
+	(FOR_DISABLED_TERM_OUTPUTS): Likewise.
+	* include/grub/video.h (grub_video_adapter): Move 'next' to first
+	element.
+	(grub_video_register): Inline.
+	(grub_video_unregister): Likewise.
+	(grub_video_adapter_list): New variable declaration.
+	(grub_video_iterate): Removed.
+	(FOR_VIDEO_ADAPTERS): New macro.
+	* kern/dl.c (grub_dl_list): Removed. All users updated.
+	(grub_dl_iterate): Removed.
+	* kern/fs.c (grub_fs_list): Make global.
+	(grub_fs_register): Removed.
+	(grub_fs_unregister): Likewise.
+	(grub_fs_iterate): Likewise.
+	* kern/handler.c: Removed.
+	* kern/list.c (grub_list_pop): Removed.
+	(grub_list_iterate): Likewise.
+	(grub_list_insert): Likewise.
+	(grub_named_list_find): Use FOR_LIST_ELEMENTS.
+	(grub_prio_list_insert): Don't use grub_list_insert.
+	* kern/main.c (grub_register_rescue_parser): Don't call
+	grub_register_rescue_parser.
+	* kern/parser.c (grub_parser_class): Removed.
+	(grub_parser_execute): Use grub_rescue_parse_line.
+	* kern/rescue_parser.c (grub_rescue_parse_line): Make global.
+	(grub_rescue_parser): Removed.
+	(grub_register_rescue_parser): Likewise.
+	* kern/rescue_reader.c (grub_rescue_run): Use grub_rescue_parse_line.
+	* normal/auth.c (is_authenticated): Use FOR_LIST_ELEMENTS.
+	(grub_auth_check_authentication): Likewise.
+	* normal/completion.c (iterate_command): Removed.
+	(grub_normal_do_completion): Use FOR_COMMANDS.
+	* normal/handler.c: Removed.
+	* normal/main.c (read_config_file): Remove parser changing.
+	(grub_normal_execute): Don't call read_handler_list.
+	(grub_normal_read_line_real): Statically allocate prompt.
+	(grub_cmdline_run): Use grub_normal_parse_line.
+	(GRUB_MOD_FINI): Don't call free_handler_list.
+	* normal/menu_entry.c (run): Likewise.
+	* script/function.c (grub_script_function_list): Make global.
+	(grub_script_function_iterate): Removed.
+	* script/main.c (grub_normal_parse_line): Make global.
+	(grub_sh_parser): Removed.
+	(GRUB_MOD_INIT): Likewise.
+	(GRUB_MOD_FINI): Likewise.
+	* tests/lib/functional_test.c (grub_functional_test): Use
+	FOR_LIST_ELEMENTS.
+	* tests/lib/test.c (free_failures): Don't use grub_list_pop.
+	(grub_test_run): Use FOR_LIST_ELEMENTS.
+	* tests/lib/unit_test.c (main): Likewise.
+	* util/deviceiter.c (grub_util_iterate_devices): Don't use
+	grub_list_pop.
+	* util/grub-fstest.c (grub_term_input_class): Removed.
+	(grub_term_output_class): Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/sparc64/ieee1275/grub-setup.c: Likewise.
+	* util/grub-script-check.c (main): Don't call grub_init_all and
+	grub_fini_all.
+	* video/video.c (grub_video_adapter_list): Make global.
+	(grub_video_register): Removed.
+	(grub_video_unregister): Likewise.
+	(grub_video_iterate): Likewise.
+
+2010-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Vendor power-on button): Add Asus EeePC 1005PE as
+	reported by Henrique Ferreiro.
+
+2010-06-09  Robert Millan  <rmh@gnu.org>
+
+	* util/grub.d/10_linux.in: Prefer compressed images over non-compressed
+	ones, when both are available.
+
 2010-06-08  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	Make --version uniform and avoid hard-coded program name.

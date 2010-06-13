@@ -1123,6 +1123,8 @@ Values known to GRUB team are:
 @table @key
 @item Dell XPS M1530
 85:3
+@item Asus EeePC 1005PE 
+84:1 (unconfirmed)
 @end table
 
 To take full advantage of this function install GRUB into MBR.

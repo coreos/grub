@@ -301,27 +301,23 @@ grub_mini_cmd_lsmod (struct grub_command *cmd __attribute__ ((unused)),
 		     int argc __attribute__ ((unused)),
 		     char *argv[] __attribute__ ((unused)))
 {
-  auto int print_module (grub_dl_t mod);
-
-  int print_module (grub_dl_t mod)
-    {
-      grub_dl_dep_t dep;
-
-      grub_printf ("%s\t%d\t\t", mod->name, mod->ref_count);
-      for (dep = mod->dep; dep; dep = dep->next)
-	{
-	  if (dep != mod->dep)
-	    grub_putchar (',');
-
-	  grub_printf ("%s", dep->mod->name);
-	}
-      grub_putchar ('\n');
-
-      return 0;
-    }
+  grub_dl_t mod;
 
   grub_printf ("Name\tRef Count\tDependencies\n");
-  grub_dl_iterate (print_module);
+  FOR_DL_MODULES (mod)
+  {
+    grub_dl_dep_t dep;
+
+    grub_printf ("%s\t%d\t\t", mod->name, mod->ref_count);
+    for (dep = mod->dep; dep; dep = dep->next)
+      {
+	if (dep != mod->dep)
+	  grub_putchar (',');
+
+	grub_printf ("%s", dep->mod->name);
+      }
+    grub_putchar ('\n');
+  }
 
   return 0;
 }
