@@ -1,3 +1,9 @@
+2010-06-13  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/emu/hostdisk.c (grub_util_biosdisk_get_grub_dev): Use the
+	new partition naming style.
+	* util/grub-install.in: Adapt sed subtitutions in grub-probe calls.
+
 2010-06-12  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Add "-o grub.iso" like cmdline options support.
