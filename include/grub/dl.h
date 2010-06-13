@@ -82,6 +82,7 @@ struct grub_dl
   Elf_Sym *symtab;
   void (*init) (struct grub_dl *mod);
   void (*fini) (void);
+  struct grub_dl *next;
 };
 typedef struct grub_dl *grub_dl_t;
 
@@ -96,24 +97,12 @@ void grub_dl_unload_all (void);
 #else
 #define GRUB_NO_MODULES 0
 #endif
-#if GRUB_NO_MODULES
-static inline int
-grub_dl_ref (grub_dl_t mod)
-{
-  (void) mod;
-  return 0;
-}
-static inline int
-grub_dl_unref (grub_dl_t mod)
-{
-  (void) mod;
-  return 0;
-}
-#else
 int EXPORT_FUNC(grub_dl_ref) (grub_dl_t mod);
 int EXPORT_FUNC(grub_dl_unref) (grub_dl_t mod);
-#endif
-void EXPORT_FUNC(grub_dl_iterate) (int (*hook) (grub_dl_t mod));
+extern grub_dl_t EXPORT_VAR(grub_dl_head);
+
+#define FOR_DL_MODULES(var) FOR_LIST_ELEMENTS ((var), (grub_dl_head))
+
 grub_dl_t EXPORT_FUNC(grub_dl_get) (const char *name);
 grub_err_t grub_dl_register_symbol (const char *name, void *addr,
 				    grub_dl_t mod);

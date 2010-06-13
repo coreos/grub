@@ -24,7 +24,7 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/mm.h>
-#include <grub/machine/kernel.h>
+#include <grub/kernel.h>
 
 void
 grub_efi_init (void)
@@ -42,39 +42,58 @@ grub_efi_init (void)
 void
 grub_efi_set_prefix (void)
 {
-  grub_efi_loaded_image_t *image;
+  grub_efi_loaded_image_t *image = NULL;
+  char *device = NULL;
+  char *path = NULL;
 
-  image = grub_efi_get_loaded_image (grub_efi_image_handle);
-  if (image)
+  {
+    char *pptr = NULL;
+    if (grub_prefix[0] == '(')
+      {
+	pptr = grub_strrchr (grub_prefix, ')');
+	if (pptr)
+	  {
+	    device = grub_strndup (grub_prefix + 1, pptr - grub_prefix - 1);
+	    pptr++;
+	  }
+      }
+    if (!pptr)
+      pptr = grub_prefix;
+    if (pptr[0])
+      path = grub_strdup (pptr);
+  }
+
+  if (!device || !path)
+    image = grub_efi_get_loaded_image (grub_efi_image_handle);
+  if (image && !device)
+    device = grub_efidisk_get_device_name (image->device_handle);
+
+  if (image && !path)
     {
-      char *device;
-      char *file;
+      char *p;
 
-      device = grub_efidisk_get_device_name (image->device_handle);
-      file = grub_efi_get_filename (image->file_path);
+      path = grub_efi_get_filename (image->file_path);
 
-      if (device && file)
-	{
-	  char *p;
-	  char *prefix;
-
-	  /* Get the directory.  */
-	  p = grub_strrchr (file, '/');
-	  if (p)
-	    *p = '\0';
-
-	  prefix = grub_xasprintf ("(%s)%s", device, file);
-	  if (prefix)
-	    {
-	      
-	      grub_env_set ("prefix", prefix);
-	      grub_free (prefix);
-	    }
-	}
-
-      grub_free (device);
-      grub_free (file);
+      /* Get the directory.  */
+      p = grub_strrchr (path, '/');
+      if (p)
+	*p = '\0';
     }
+
+  if (device && path)
+    {
+      char *prefix;
+
+      prefix = grub_xasprintf ("(%s)%s", device, path);
+      if (prefix)
+	{
+	  grub_env_set ("prefix", prefix);
+	  grub_free (prefix);
+	}
+    }
+
+  grub_free (device);
+  grub_free (path);
 }
 
 void

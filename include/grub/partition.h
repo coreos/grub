@@ -91,7 +91,7 @@ grub_partition_map_unregister (grub_partition_map_t partmap)
 		    GRUB_AS_LIST (partmap));
 }
 
-#define FOR_PARTITION_MAPS(var) for (var = grub_partition_map_list; var; var = var->next)
+#define FOR_PARTITION_MAPS(var) FOR_LIST_ELEMENTS((var), (grub_partition_map_list))
 
 
 static inline grub_disk_addr_t

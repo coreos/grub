@@ -138,8 +138,8 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
 	{
 	  grub_device_close (dev);
 	  return grub_error (GRUB_ERR_OUT_OF_RANGE,
-			     "only partitions resding in the first 2TB "
-			     "can be presen in hybrid MBR");
+			     "only partitions residing in the first 2TB "
+			     "can be present in hybrid MBR");
 	}
 
 
@@ -243,8 +243,8 @@ GRUB_MOD_INIT(gptsync)
   cmd = grub_register_command ("gptsync", grub_cmd_gptsync,
 			       N_("DEVICE [PARTITION[+/-[TYPE]]] ..."),
 			       N_("Fill hybrid MBR of GPT drive DEVICE. "
-			       "specified partitions will be a part "
-			       "of hybrid mbr. Up to 3 partitions are "
+			       "Specified partitions will be a part "
+			       "of hybrid MBR. Up to 3 partitions are "
 			       "allowed. TYPE is an MBR type. "
 			       "+ means that partition is active. "
 			       "Only one partition can be active."));

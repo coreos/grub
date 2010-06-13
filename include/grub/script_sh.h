@@ -223,6 +223,9 @@ struct grub_parser_param
   struct grub_lexer_param *lexerstate;
 };
 
+void grub_script_init (void);
+void grub_script_fini (void);
+
 void grub_script_argv_free    (struct grub_script_argv *argv);
 int grub_script_argv_next     (struct grub_script_argv *argv);
 int grub_script_argv_append   (struct grub_script_argv *argv, const char *s);
@@ -312,8 +315,11 @@ grub_err_t grub_script_execute_menuentry (struct grub_script_cmd *cmd);
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t grub_script_execute (struct grub_script *script);
 
+/* Break command for loops.  */
+grub_err_t grub_script_break (grub_command_t cmd, int argc, char *argv[]);
+
 /* SHIFT command for GRUB script.  */
-grub_err_t grub_script_cmd_shift (grub_command_t cmd, int argc, char *argv[]);
+grub_err_t grub_script_shift (grub_command_t cmd, int argc, char *argv[]);
 
 /* This variable points to the parsed command.  This is used to
    communicate with the bison code.  */
@@ -340,15 +346,23 @@ struct grub_script_function
 };
 typedef struct grub_script_function *grub_script_function_t;
 
+extern grub_script_function_t grub_script_function_list;
+
+#define FOR_SCRIPT_FUNCTIONS(var) for((var) = grub_script_function_list; \
+				      (var); (var) = (var)->next)
+
 grub_script_function_t grub_script_function_create (struct grub_script_arg *functionname,
 						    struct grub_script *cmd);
 void grub_script_function_remove (const char *name);
 grub_script_function_t grub_script_function_find (char *functionname);
-int grub_script_function_iterate (int (*iterate) (grub_script_function_t));
+
 grub_err_t grub_script_function_call (grub_script_function_t func,
 				      int argc, char **args);
 
 char **
 grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count);
+
+grub_err_t
+grub_normal_parse_line (char *line, grub_reader_getline_t getline);
 
 #endif /* ! GRUB_NORMAL_PARSER_HEADER */
