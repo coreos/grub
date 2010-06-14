@@ -92,11 +92,6 @@ do
 	;;
     esac
 done
-if $next_grub_cfg; then
-    echo "Missing argument to \`-o'" 1>&2
-    usage
-    exit 1
-fi
 
 . ${libdir}/grub/grub-mkconfig_lib
 
