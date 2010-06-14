@@ -1,5 +1,10 @@
 2010-06-14  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
+	* Makefile.in (install-local): Use $$file.h2m instead of $$dest.h2m
+	for manual page generation.
+
+2010-06-14  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
 	* po/POTFILES: Remove leftover commands/handler.c.
 
 2010-06-14  Colin Watson  <cjwatson@ubuntu.com>
