@@ -86,10 +86,7 @@ do
 	usage
 	exit 1
 	;;
-    *)
-	echo "Invalid parameter, $option" 1>&2
-	exit 1
-	;;
+    # Explicitly ignore non-option arguments, for compatibility.
     esac
 done
 

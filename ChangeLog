@@ -1,3 +1,11 @@
+2010-06-16  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig.in: Ignore non-option arguments, for
+	compatibility with older versions (before 2010-06-12) which did the
+	same.  In particular, this makes it easier to ship an update-grub
+	wrapper which is compatible with that used with GRUB Legacy (Debian
+	bug #586056).
+
 2010-06-14  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* Makefile.in (install-local): Use $$file.h2m instead of $$dest.h2m
