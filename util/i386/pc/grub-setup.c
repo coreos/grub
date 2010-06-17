@@ -99,6 +99,7 @@ setup (const char *dir,
   struct grub_boot_blocklist *first_block, *block;
   grub_int32_t *install_dos_part, *install_bsd_part;
   grub_int32_t dos_part, bsd_part;
+  char *prefix;
   char *tmp_img;
   int i;
   grub_disk_addr_t first_sector;
@@ -230,6 +231,8 @@ setup (const char *dir,
 				       + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART);
   install_bsd_part = (grub_int32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
 				       + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART);
+  prefix = (char *) (core_img + GRUB_DISK_SECTOR_SIZE +
+		     GRUB_KERNEL_MACHINE_PREFIX);
 
   /* Open the root device and the destination device.  */
   root_dev = grub_device_open (root);
@@ -305,6 +308,18 @@ setup (const char *dir,
 	      dos_part = root_dev->disk->partition->number;
  	      bsd_part = -1;
  	    }
+
+	  if (prefix[0] != '(')
+	    {
+	      char *root_part_name, *new_prefix;
+
+	      root_part_name =
+		grub_partition_get_name (root_dev->disk->partition);
+	      new_prefix = xasprintf ("(,%s)%s", root_part_name, prefix);
+	      strcpy (prefix, new_prefix);
+	      free (new_prefix);
+	      free (root_part_name);
+	    }
 	}
       else
 	dos_part = bsd_part = -1;

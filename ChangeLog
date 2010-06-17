@@ -1,3 +1,18 @@
+2010-06-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix i386-pc prefix handling with nested partitions (Debian bug
+	#585068).  Note that the case where the core image is booted using
+	multiboot and relocated from its original location still requires
+	more work.
+
+	* kern/i386/pc/init.c (make_install_device): If the prefix starts
+	with "(,", fill the boot drive in between those two characters, but
+	expect that a full partition specification including partition map
+	names will follow.
+	* util/i386/pc/grub-setup.c (setup): Unless an explicit prefix was
+	specified, write a prefix without the drive name but including a
+	full partition specification.
+
 2010-06-16  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig.in: Ignore non-option arguments, for
