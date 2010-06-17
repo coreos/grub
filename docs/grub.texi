@@ -1388,6 +1388,10 @@ the global section of the configuration file (or ``menu''); most
 of them can be entered on the command-line and can be used either
 anywhere in the menu or specifically in the menu entries.
 
+In rescue mode, only the @command{insmod} (@pxref{insmod}), @command{ls}
+(@pxref{ls}), @command{set} (@pxref{set}), and @command{unset}
+(@pxref{unset}) commands are normally available.
+
 @menu
 * Menu-specific commands::
 * General commands::
@@ -1548,6 +1552,7 @@ you forget a command, you can run the command @command{help}
 * chainloader::                 Chain-load another boot loader
 * cmp::                         Compare two files
 * configfile::                  Load a configuration file
+* cpuid::                       Check for CPU features
 * crc::                         Calculate CRC32 checksums
 * date::                        Display or set current date and time
 * drivemap::                    Map a drive to another
@@ -1666,6 +1671,20 @@ If they are completely identical, nothing will be printed.
 
 @deffn Command configfile file
 Load @var{file} as a configuration file.
+@end deffn
+
+
+@node cpuid
+@subsection cpuid
+
+@deffn Command cpuid [-l]
+Check for CPU features.  This command is only available on x86 systems.
+
+With the @option{-l} option, return true if the CPU supports long mode
+(64-bit).
+
+If invoked without options, this command currently behaves as if it had been
+invoked with @option{-l}.  This may change in the future.
 @end deffn
 
 

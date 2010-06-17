@@ -52,14 +52,23 @@ Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 
+argument () {
+  opt=$1
+  shift
+
+  if test $# -eq 0; then
+      echo "$0: option requires an argument -- '$opt'" 1>&2
+      exit 1
+  fi
+  echo $1
+}
+
 # Check the arguments.
-next_grub_cfg=false
-for option in "$@"; do
-    if $next_grub_cfg; then
-	grub_cfg=$option
-	next_grub_cfg=false
-	continue
-    fi
+while test $# -gt 0
+do
+    option=$1
+    shift
+
     case "$option" in
     -h | --help)
 	usage
@@ -67,9 +76,8 @@ for option in "$@"; do
     -v | --version)
 	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
-    -o)
-	next_grub_cfg=:
-	;;
+    -o | --output)
+	grub_cfg=`argument $option "$@"`; shift;;
     --output=*)
 	grub_cfg=`echo "$option" | sed 's/--output=//'`
 	;;
@@ -78,13 +86,9 @@ for option in "$@"; do
 	usage
 	exit 1
 	;;
+    # Explicitly ignore non-option arguments, for compatibility.
     esac
 done
-if $next_grub_cfg; then
-    echo "Missing argument to \`-o'" 1>&2
-    usage
-    exit 1
-fi
 
 . ${libdir}/grub/grub-mkconfig_lib
 
