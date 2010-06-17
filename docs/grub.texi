@@ -934,6 +934,16 @@ Disable the generation of recovery mode menu entries for Linux.
 @item GRUB_DISABLE_NETBSD_RECOVERY
 Disable the generation of recovery mode menu entries for NetBSD.
 
+@item GRUB_VIDEO_BACKEND
+If graphical video support is required, either because the @samp{gfxterm}
+graphical terminal is in use or because @samp{GRUB_GFXPAYLOAD_LINUX} is set,
+then @command{grub-mkconfig} will normally load all available GRUB video
+drivers and use the one most appropriate for your hardware.  If you need to
+override this for some reason, then you can set this option.
+
+After @command{grub-install} has been run, the available video drivers are
+listed in @file{/boot/grub/video.lst}.
+
 @item GRUB_GFXMODE
 Set the resolution used on the @samp{gfxterm} graphical terminal.  Note that
 you can only use modes which your graphics card supports via VESA BIOS

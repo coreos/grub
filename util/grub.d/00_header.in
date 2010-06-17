@@ -74,6 +74,24 @@ function savedefault {
     save_env saved_entry
   fi
 }
+
+function load_video {
+EOF
+if [ -n "${GRUB_VIDEO_BACKEND}" ]; then
+    cat <<EOF
+  insmod ${GRUB_VIDEO_BACKEND}
+EOF
+else
+    # Insert all available backends; GRUB will use the most appropriate.
+    for backend in $(cat "${GRUB_PREFIX}/video.lst"); do
+	cat <<EOF
+  insmod ${backend}
+EOF
+    done
+fi
+cat <<EOF
+}
+
 EOF
 
 serial=0;
@@ -106,8 +124,8 @@ if [ "x$gfxterm" = x1 ]; then
     cat << EOF
 if loadfont `make_system_path_relative_to_its_root "${GRUB_FONT_PATH}"` ; then
   set gfxmode=${GRUB_GFXMODE}
+  load_video
   insmod gfxterm
-  insmod ${GRUB_VIDEO_BACKEND}
 EOF
     if [ "x$GRUB_THEME" != x ] && [ -f "$GRUB_THEME" ] \
 	&& is_path_readable_by_grub "$GRUB_THEME"; then
