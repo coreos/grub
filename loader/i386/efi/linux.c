@@ -368,8 +368,6 @@ grub_linux_boot (void)
 
   params = real_mode_mem;
 
-  grub_printf ("%d\n", __LINE__);
-
   grub_dprintf ("linux", "code32_start = %x, idt_desc = %lx, gdt_desc = %lx\n",
 		(unsigned) params->code32_start,
 		(unsigned long) &(idt_desc.limit),
@@ -377,8 +375,6 @@ grub_linux_boot (void)
   grub_dprintf ("linux", "idt = %x:%lx, gdt = %x:%lx\n",
 		(unsigned) idt_desc.limit, (unsigned long) idt_desc.base,
 		(unsigned) gdt_desc.limit, (unsigned long) gdt_desc.base);
-
-  grub_printf ("%d\n", __LINE__);
 
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
@@ -417,8 +413,6 @@ grub_linux_boot (void)
         }
       return 0;
     }
-
-  grub_printf ("%d\n", __LINE__);
 
   e820_num = 0;
   grub_mmap_iterate (hook);
