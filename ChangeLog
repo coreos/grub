@@ -1,5 +1,11 @@
 2010-06-17  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/i386/pc/grub-setup.c (usage): Warn against running grub-setup
+	directly, and recommend grub-install instead.
+	* util/sparc64/ieee1275/grub-setup.c (usage): Likewise.
+
+2010-06-17  Colin Watson  <cjwatson@ubuntu.com>
+
 	Fix i386-pc prefix handling with nested partitions (Debian bug
 	#585068).  Note that the case where the core image is booted using
 	multiboot and relocated from its original location still requires
