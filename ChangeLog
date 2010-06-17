@@ -1,5 +1,11 @@
 2010-06-17  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/i386/pc/grub-setup.c (usage): Pass an extra `program_name'
+	argument to printf.
+	* util/sparc64/ieee1275/grub-setup.c (usage): Likewise.
+
+2010-06-17  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/i386/pc/grub-setup.c (usage): Fix syntax error.
 	* util/sparc64/ieee1275/grub-setup.c (usage): Likewise.
 

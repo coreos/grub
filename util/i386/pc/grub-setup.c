@@ -624,7 +624,7 @@ You should not normally run %s directly.  Use grub-install instead.\n\
 \n\
 Report bugs to <%s>.\n\
 "),
-	    program_name,
+	    program_name, program_name,
 	    DEFAULT_BOOT_FILE, DEFAULT_CORE_FILE, DEFAULT_DIRECTORY,
 	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
 
