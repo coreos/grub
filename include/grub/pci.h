@@ -66,6 +66,9 @@
 #define  GRUB_PCI_REG_MIN_GNT      0x3e
 #define  GRUB_PCI_REG_MAX_LAT      0x3f
 
+#define  GRUB_PCI_REG_STATUS_MEMORY_ENABLE   0x02
+#define  GRUB_PCI_REG_STATUS_IO_ENABLE       0x01
+
 typedef grub_uint32_t grub_pci_id_t;
 
 #ifdef GRUB_MACHINE_EMU
