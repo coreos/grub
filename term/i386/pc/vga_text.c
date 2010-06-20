@@ -20,6 +20,7 @@
 #include <grub/i386/vga_common.h>
 #include <grub/i386/io.h>
 #include <grub/types.h>
+#include <grub/vga.h>
 
 #define COLS	80
 #define ROWS	25
@@ -27,15 +28,6 @@
 static int grub_curr_x, grub_curr_y;
 
 #define VGA_TEXT_SCREEN		0xb8000
-
-#define CRTC_ADDR_PORT		0x3D4
-#define CRTC_DATA_PORT		0x3D5
-
-#define CRTC_CURSOR		0x0a
-#define CRTC_CURSOR_ADDR_HIGH	0x0e
-#define CRTC_CURSOR_ADDR_LOW	0x0f
-
-#define CRTC_CURSOR_DISABLE	(1 << 5)
 
 static void
 screen_write_char (int x, int y, short c)
@@ -53,10 +45,8 @@ static void
 update_cursor (void)
 {
   unsigned int pos = grub_curr_y * COLS + grub_curr_x;
-  grub_outb (CRTC_CURSOR_ADDR_HIGH, CRTC_ADDR_PORT);
-  grub_outb (pos >> 8, CRTC_DATA_PORT);
-  grub_outb (CRTC_CURSOR_ADDR_LOW, CRTC_ADDR_PORT);
-  grub_outb (pos & 0xFF, CRTC_DATA_PORT);
+  grub_vga_cr_write (pos >> 8, GRUB_VGA_CR_CURSOR_ADDR_HIGH);
+  grub_vga_cr_write (pos & 0xFF, GRUB_VGA_CR_CURSOR_ADDR_LOW);
 }
 
 static void
@@ -134,12 +124,11 @@ static void
 grub_vga_text_setcursor (int on)
 {
   grub_uint8_t old;
-  grub_outb (CRTC_CURSOR, CRTC_ADDR_PORT);
-  old = grub_inb (CRTC_DATA_PORT);
+  old = grub_vga_cr_read (GRUB_VGA_CR_CURSOR);
   if (on)
-    grub_outb (old & ~CRTC_CURSOR_DISABLE, CRTC_DATA_PORT);
+    grub_vga_cr_write (old & ~GRUB_VGA_CR_CURSOR_DISABLE, GRUB_VGA_CR_CURSOR);
   else
-    grub_outb (old | CRTC_CURSOR_DISABLE, CRTC_DATA_PORT);
+    grub_vga_cr_write (old | GRUB_VGA_CR_CURSOR_DISABLE, GRUB_VGA_CR_CURSOR);
 }
 
 static grub_err_t

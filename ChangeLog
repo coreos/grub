@@ -1,3 +1,91 @@
+2010-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Cirrus 5446 and Bochs video cards support.
+
+	* conf/i386.rmk (pkglib_MODULES): Add video_cirrus.mod and
+	video_bochs.mod
+	(video_cirrus_mod_SOURCES): New variable.
+	(video_cirrus_mod_CFLAGS): Likewise.
+	(video_cirrus_mod_LDFLAGS): Likewise.
+	(video_bochs_mod_SOURCES): Likewise.
+	(video_bochs_mod_CFLAGS): Likewise.
+	(video_bochs_mod_LDFLAGS): Likewise.
+	* include/grub/vga.h: New file.
+	* include/grub/video_fb.h (grub_video_fb_doublebuf_blit_init): Removed.
+	(grub_video_fb_set_page_t): New type.
+	(grub_video_fb_setup): New prototype.
+	(grub_video_fb_swap_buffers): Likewise.
+	(grub_video_fb_get_info_and_fini): Likewise.
+	* term/i386/pc/vga_text.c (CRTC_ADDR_PORT): Moved to include/grub/vga.h.
+	(CRTC_DATA_PORT): Likewise.
+	(CRTC_CURSOR): Likewise.
+	(CRTC_CURSOR_ADDR_HIGH): Likewise.
+	(CRTC_CURSOR_ADDR_LOW): Likewise.
+	(CRTC_CURSOR_DISABLE): Likewise.
+	(update_cursor): Use grub_vga_cr_write.
+	(grub_vga_text_setcursor): Likewise.
+	* video/bochs.c: New file.
+	* video/fb/video_fb.c (render_target): Moved into framebuffer variable.
+	(palette): Likewise.
+	(palette_size): Likewise.
+	(framebuffer): New variable.
+	(grub_video_fb_init): Use 'framebuffer'.
+	(grub_video_fb_fini): Likewise.
+	(grub_video_fb_get_info): Likewise.
+	(grub_video_fb_get_palette): Likewise.
+	(grub_video_fb_set_palette): Likewise.
+	(grub_video_fb_set_viewport): Likewise.
+	(grub_video_fb_get_viewport): Likewise.
+	(grub_video_fb_map_color): Likewise.
+	(grub_video_fb_map_rgb): Likewise.
+	(grub_video_fb_map_rgba): Likewise.
+	(grub_video_fb_unmap_color): Likewise.
+	(grub_video_fb_unmap_color_int): Likewise.
+	(grub_video_fb_fill_rect): Likewise.
+	(grub_video_fb_blit_bitmap): Likewise.
+	(grub_video_fb_blit_render_target): Likewise.
+	(grub_video_fb_scroll): Likewise.
+	(grub_video_fb_create_render_target): Likewise.
+	(grub_video_fb_doublebuf_blit_init): Likewise.
+	(grub_video_fb_set_active_render_target): Handle doublebuffering.
+	(doublebuf_pageflipping_update_screen): New function.
+	(doublebuf_pageflipping_init): Likewise.
+	(grub_video_fb_setup): Likewise.
+	(grub_video_fb_swap_buffers): Likewise.
+	(grub_video_fb_get_info_and_fini): Likewise.
+	* video/i386/pc/vbe.c (framebuffer): Remove all doublebuffering fields.
+	All users updated.
+	(doublebuf_pageflipping_commit): Restructured into ...
+	(doublebuf_pageflipping_set_page): ... this.
+	(doublebuf_pageflipping_update_screen): Removed.
+	(doublebuf_pageflipping_init): Likewise.
+	(double_buffering_init): Likewise.
+	(grub_video_vbe_setup): Use grub_video_fb_setup.
+	(grub_video_vbe_swap_buffers): Removed.
+	(grub_video_vbe_set_active_render_target): Likewise.
+	(grub_video_vbe_get_active_render_target): Likewise.
+	(grub_video_vbe_get_info_and_fini): Use grub_video_fb_get_info_and_fini.
+	(grub_video_vbe_adapter): Use grub_video_fb_swap_buffers,
+	grub_video_fb_set_active_render_target and
+	grub_video_fb_get_active_render_target.
+	* video/i386/pc/vga.c (SEQUENCER_ADDR_PORT): Move to include/grub/vga.h.
+	(SEQUENCER_DATA_PORT): Likewise.
+	(MAP_MASK_REGISTER): Likewise.
+	(CRTC_ADDR_PORT): Likewise.
+	(CRTC_DATA_PORT): Likewise.
+	(START_ADDR_HIGH_REGISTER): Likewise.
+	(START_ADDR_LOW_REGISTER): Likewise.
+	(GRAPHICS_ADDR_PORT): Likewise.
+	(GRAPHICS_DATA_PORT): Likewise.
+	(READ_MAP_REGISTER): Likewise.
+	(INPUT_STATUS1_REGISTER): Likewise.
+	(INPUT_STATUS1_VERTR_BIT): Likewise.
+	(get_map_mask): Use grub_vga_sr_read.
+	(set_map_mask): Use grub_vga_sr_write.
+	(set_read_map): Use grub_vga_gr_write.
+	(set_start_address): Use grub_vga_cr_write.
+	* video/sm712.c (framebuffer): Remove leftover fields.
+
 2010-06-20  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig.in: Capitalise and export GRUB_PREFIX.  Stop

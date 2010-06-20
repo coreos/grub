@@ -184,6 +184,8 @@ typedef enum grub_video_driver_id
     GRUB_VIDEO_DRIVER_EFI_GOP,
     GRUB_VIDEO_DRIVER_SM712,
     GRUB_VIDEO_DRIVER_VGA,
+    GRUB_VIDEO_DRIVER_CIRRUS,
+    GRUB_VIDEO_DRIVER_BOCHS,
     GRUB_VIDEO_DRIVER_SDL
   } grub_video_driver_id_t;
 
