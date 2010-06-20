@@ -48,6 +48,8 @@ extern grub_int32_t grub_total_module_size;
    configuration file are located.  */
 extern char grub_prefix[];
 
+void grub_qemu_init_cirrus (void);
+
 #endif /* ! ASM_FILE */
 
 #endif /* ! GRUB_KERNEL_MACHINE_HEADER */

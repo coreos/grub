@@ -36,9 +36,6 @@ VARIABLE(grub_core_entry_addr)
 	.long	0
 1:
 
-	/* Process VGA rom.  */
-	call	$0xc000, $0x3
-
 	/* Set up %ds, %ss, and %es.  */
 	xorw	%ax, %ax
 	movw	%ax, %ds
