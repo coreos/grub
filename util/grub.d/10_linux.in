@@ -66,6 +66,9 @@ linux_entry ()
   # Use ELILO's generic "efifb" when it's known to be available.
   # FIXME: We need an interface to select vesafb in case efifb can't be used.
   if [ "x$GRUB_GFXPAYLOAD_LINUX" = x ]; then
+      cat << EOF
+	load_video
+EOF
       if grep -qx "CONFIG_FB_EFI=y" /boot/config-${version} 2> /dev/null \
 	  && grep -qx "CONFIG_VT_HW_CONSOLE_BINDING=y" /boot/config-${version} 2> /dev/null; then
 	  cat << EOF

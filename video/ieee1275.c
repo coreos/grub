@@ -254,6 +254,8 @@ static struct grub_video_adapter grub_video_ieee1275_adapter =
   {
     .name = "IEEE1275 video driver",
 
+    .prio = GRUB_VIDEO_ADAPTER_PRIO_FIRMWARE,
+
     .init = grub_video_ieee1275_init,
     .fini = grub_video_ieee1275_fini,
     .setup = grub_video_ieee1275_setup,

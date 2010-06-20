@@ -1,3 +1,54 @@
+2010-06-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig.in: Capitalise and export GRUB_PREFIX.  Stop
+	setting GRUB_VIDEO_BACKEND.  Make it available as a user override
+	instead.  Replace the gfxterm backend check with a check that
+	${GRUB_PREFIX}/video.lst is non-empty.
+	* util/grub.d/00_header.in: Use GRUB_PREFIX rather than computing it
+	again.
+	(load_video): New generated function.  Call it before loading
+	gfxterm rather than loading ${GRUB_VIDEO_BACKEND}.
+	* util/grub.d/10_linux.in (linux_entry): Call load_video.
+	* util/grub.d/30_os-prober.in (osx_entry): Likewise.
+	* docs/grub.texi (Simple configuration): Document
+	GRUB_VIDEO_BACKEND.
+
+2010-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use video functions in linux and xnu loaders.
+
+	* conf/i386-pc.rmk (xnu_mod_SOURCES): Remove loader/i386/pc/xnu.c.
+	* conf/x86-efi.rmk (xnu_mod_SOURCES): Remove loader/i386/efi/xnu.c.
+	* include/grub/i386/xnu.h (grub_xnu_set_video): Removed.
+	* loader/i386/efi/linux.c (grub_linux_setup_video): Copied from
+	loader/i386/pc/linux.c.
+	(grub_linux_boot): Resynced with loader/i386/pc/linux.c.
+	(find_line_len): Removed.
+	(find_framebuf): Likewise.
+	(grub_cmd_linux): Declare grub_linux_boot as possibly returning.
+	* loader/i386/efi/xnu.c: Removed.
+	* loader/i386/pc/xnu.c: Moved from here...
+	* loader/i386/xnu.c: ...here.
+
+	Enable priorities in video drivers.
+
+	* include/grub/video.h (grub_video_adapter_prio_t): New type.
+	(grub_video_adapter): New field prio.
+	(grub_video_register): Respect prio when inserting.
+	* video/efi_gop.c (grub_video_gop_adapter): Add prio.
+	* video/efi_uga.c (grub_video_uga_adapter): Likewise.
+	* video/emu/sdl.c (grub_video_sdl_adapter): Likewise.
+	* video/i386/pc/vbe.c (grub_video_vbe_adapter): Likewise.
+	* video/i386/pc/vga.c (grub_video_vga_adapter): Likewise.
+	* video/ieee1275.c (grub_video_ieee1275_adapter): Likewise.
+	* video/sm712.c (grub_video_sm712_adapter): Likewise.
+
+	Fix SDL driver ID.
+
+	* include/grub/video.h (grub_video_driver_id_t): New value
+	GRUB_VIDEO_DRIVER_SDL.
+	* video/emu/sdl.c (grub_video_sdl_adapter): Add id.
+
 2010-06-17  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/i386/pc/grub-setup.c (usage): Pass an extra `program_name'

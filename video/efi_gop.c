@@ -355,6 +355,8 @@ static struct grub_video_adapter grub_video_gop_adapter =
     .name = "EFI GOP driver",
     .id = GRUB_VIDEO_DRIVER_EFI_GOP,
 
+    .prio = GRUB_VIDEO_ADAPTER_PRIO_FIRMWARE,
+
     .init = grub_video_gop_init,
     .fini = grub_video_gop_fini,
     .setup = grub_video_gop_setup,
