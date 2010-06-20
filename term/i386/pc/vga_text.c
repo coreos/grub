@@ -124,11 +124,13 @@ static void
 grub_vga_text_setcursor (int on)
 {
   grub_uint8_t old;
-  old = grub_vga_cr_read (GRUB_VGA_CR_CURSOR);
+  old = grub_vga_cr_read (GRUB_VGA_CR_CURSOR_START);
   if (on)
-    grub_vga_cr_write (old & ~GRUB_VGA_CR_CURSOR_DISABLE, GRUB_VGA_CR_CURSOR);
+    grub_vga_cr_write (old & ~GRUB_VGA_CR_CURSOR_START_DISABLE,
+		       GRUB_VGA_CR_CURSOR_START);
   else
-    grub_vga_cr_write (old | GRUB_VGA_CR_CURSOR_DISABLE, GRUB_VGA_CR_CURSOR);
+    grub_vga_cr_write (old | GRUB_VGA_CR_CURSOR_START_DISABLE,
+		       GRUB_VGA_CR_CURSOR_START);
 }
 
 static grub_err_t
