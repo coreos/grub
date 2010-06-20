@@ -1,5 +1,19 @@
 2010-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support >3GiB and <16MiB RAM in i386-qemu.
+
+	* kern/i386/qemu/mmap.c (QEMU_CMOS_MEMSIZE2_HIGH): New const.
+	(QEMU_CMOS_MEMSIZE2_LOW): Likewise.
+	(grub_lower_mem): Removed.
+	(grub_upper_mem): Likewise.
+	(mem_size): Made static.
+	(above_4g): New variable.
+	(grub_machine_mmap_init): Detect small mem_size and above_4g.
+	(grub_machine_mmap_iterate): Order in ascending order and add above_4g
+	support.
+
+2010-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Cirrus 5446 and Bochs video cards support.
 
 	* conf/i386.rmk (pkglib_MODULES): Add video_cirrus.mod and
