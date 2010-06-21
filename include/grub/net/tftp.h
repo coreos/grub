@@ -14,7 +14,7 @@
 
 /* IP port for the TFTP server */
 #define TFTP_SERVER_PORT 69
-#define TFTP_CLIENT_PORT 2000
+#define TFTP_CLIENT_PORT 26300
 
 
 /* We define these based on what's in arpa/tftp.h. We just like our
@@ -41,10 +41,6 @@
 #define TFTP_EEXISTS 6                  /* file already exists */
 #define TFTP_ENOUSER 7                  /* no such user */
 #define TFTP_DEFAULT_FILENAME   "kernel"
-
-
-
-
 
  /*  * own here because this is cleaner, and maps to the same data layout.
  *   */
