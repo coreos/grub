@@ -1,3 +1,22 @@
+2010-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Initialise VGA video on qemu ourselves.
+
+	* boot/i386/qemu/boot.S: Don't call 0xc000.
+	* conf/i386-qemu.rmk (kern/i386/qemu/init.c_DEPENDENCIES): New variable.
+	(kernel_img_SOURCES): Add kern/i386/qemu/init.c and bus/pci.c.
+	(kernel_img_HEADERS): Add pci.h.
+	* conf/i386.rmk (pkglib_MODULES) [qemu]: Remove pci.mod.
+	* configure.ac: Force unifont on qemu and yeeloong.
+	* include/grub/i386/qemu/kernel.h (grub_qemu_init_cirrus): New proto.
+	(grub_vga_palette_write): Use correct register.
+	* kern/i386/coreboot/init.c (grub_machine_init) [GRUB_MACHINE_QEMU]:
+	Call grub_qemu_init_cirrus.
+	* kern/i386/qemu/init.c: New file.
+	* term/i386/pc/vga_text.c (inc_y): Never read outside the screen.
+
+	* commands/videotest.c (grub_cmd_videotest): Handle double buffering.
+
 2010-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support >3GiB and <16MiB RAM in i386-qemu.
