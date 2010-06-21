@@ -22,11 +22,13 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/ieee1275/ieee1275.h>
+#include <grub/ieee1275/ofnet.h>
 
 enum grub_ieee1275_parse_type
 {
   GRUB_PARSE_FILENAME,
   GRUB_PARSE_PARTITION,
+  GRUB_PARSE_DEVICE
 };
 
 /* Walk children of 'devpath', calling hook for each.  */
@@ -366,12 +368,14 @@ grub_ieee1275_parse_args (const char *path, enum grub_ieee1275_parse_type ptype)
 	    ret = grub_strndup (args, (grub_size_t)(comma - args));
 	}
     }
-  else
+
+  else if (!grub_strcmp ("network", type))
     {
-      /* XXX Handle net devices by configuring & registering a grub_net_dev
-	 here, then return its name?
-	 Example path: "net:<server ip>,<file name>,<client ip>,<gateway
-	 ip>,<bootp retries>,<tftp retries>".  */
+      if (ptype == GRUB_PARSE_DEVICE)
+        ret = grub_strdup(device);
+    }
+  else  
+    {
       grub_printf ("Unsupported type %s for device %s\n", type, device);
     }
 
@@ -379,6 +383,12 @@ fail:
   grub_free (device);
   grub_free (args);
   return ret;
+}
+
+char *
+grub_ieee1275_get_aliasdevname (const char *path)
+{
+  return grub_ieee1275_parse_args (path, GRUB_PARSE_DEVICE);
 }
 
 char *
@@ -432,3 +442,51 @@ grub_halt (void)
   grub_ieee1275_interpret ("power-off", 0);
   grub_ieee1275_interpret ("poweroff", 0);
 }
+
+static const struct
+{
+  char *name;
+  int offset;
+}
+
+bootp_response_properties[] = 
+{
+  { .name = "bootp-response", .offset = 0 },
+  { .name = "dhcp-response", .offset = 0 },
+  { .name = "bootpreply-packet", .offset = 0x2a },
+};
+
+#define SIZE(X) ( sizeof (X) / sizeof(X[0]))
+
+grub_bootp_t 
+grub_getbootp( void )
+{
+  grub_bootp_t packet = grub_malloc(sizeof *packet);
+  void *bootp_response = NULL; 
+  grub_ssize_t size;
+  unsigned int i;
+ // grub_ieee1275_finddevice ("/chosen", &grub_ieee1275_chosen);
+  for  ( i = 0; i < SIZE(bootp_response_properties); i++)
+  {
+    if (grub_ieee1275_get_property_length (grub_ieee1275_chosen, 
+                                  bootp_response_properties[i].name, &size)>=0)
+      break;
+  }
+
+  if ( size <0 )
+  {
+    grub_printf("Error to get bootp\n");
+    return NULL;
+  }
+
+  if (grub_ieee1275_get_property (grub_ieee1275_chosen, bootp_response_properties[i].name , bootp_response ,
+                                 size, 0) < 0)
+  {
+    grub_printf("Error to get bootp\n");
+    return NULL;
+  }
+
+  packet = (void *) ((int)bootp_response + bootp_response_properties[i].offset);
+  return packet;
+}
+

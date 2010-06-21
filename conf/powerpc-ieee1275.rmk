@@ -24,7 +24,8 @@ kernel_img_SOURCES = kern/powerpc/ieee1275/startup.S kern/ieee1275/cmain.c \
 	kern/parser.c kern/partition.c kern/env.c kern/$(target_cpu)/dl.c 	\
 	kern/generic/millisleep.c kern/time.c                            \
 	symlist.c kern/$(target_cpu)/cache.S net/ip.c net/tftp.c net/udp.c net/ethernet.c net/arp.c	\
-        net/ieee1275/interface.c net/interface.c net/protocol.c net/netbuff.c
+        net/ieee1275/interface.c net/interface.c net/protocol.c net/netbuff.c \
+        fs/ieee1275/ofnet.c
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS += $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x200000,-Bstatic

@@ -1,55 +1,21 @@
 #include <grub/net/ieee1275/interface.h>
+#include <grub/time.h>
 #include <grub/mm.h>
-
-grub_uint32_t get_server_ip (void)
-{
-  return bootp_pckt->siaddr;
-}
-
-grub_uint32_t get_client_ip (void)
-{
-  return bootp_pckt->yiaddr;
-}
-
-grub_uint8_t* get_server_mac (void)
-{
-  grub_uint8_t *mac; 
- 
-  mac = grub_malloc (6 * sizeof(grub_uint8_t));
-  mac[0] = 0x00 ;
-  mac[1] = 0x11 ;
-  mac[2] = 0x25 ; 
-  mac[3] = 0xca ;  
-  mac[4] = 0x1f ;  
-  mac[5] = 0x01 ;  
-
-  return mac;
-
-}
-
-grub_uint8_t* get_client_mac (void)
-{
-  grub_uint8_t *mac;
-  
-  mac = grub_malloc (6 * sizeof (grub_uint8_t));
-  mac[0] = 0x0a ;
-  mac[1] = 0x11 ;
-  mac[2] = 0xbd ;
-  mac[3] = 0xe3 ; 
-  mac[4] = 0xe3 ;   
-  mac[5] = 0x04 ;
-
-  return mac;
-}  
+#include <grub/net/ethernet.h>
+#include <grub/net/ip.h>
+#include <grub/net/arp.h>
+#include <grub/net/netbuff.h>
+#include <grub/ieee1275/ofnet.h>
 
 static grub_ieee1275_ihandle_t handle;
 int card_open (void)
 {
 
   grub_ieee1275_open (grub_net->dev , &handle);
-    return 1;//error
+    return 0;
 
 }
+
 int card_close (void)
 {
 
@@ -59,22 +25,74 @@ int card_close (void)
 }
 
 
-int send_card_buffer (void *buffer,int buff_len)
+int send_card_buffer (struct grub_net_buff *pack)
 {
   
-  int actual; 
-
-  grub_ieee1275_write (handle,buffer,buff_len,&actual);
+  int actual;
+  //grub_printf("packet size transmited: %d\n",pack->tail - pack->data);
+  grub_ieee1275_write (handle,pack->data,pack->tail - pack->data,&actual);
+//  grub_printf("actual transmited %d\n",actual);
  
   return actual; 
 }
 
-int get_card_buffer (void *buffer,int buff_len)
+int get_card_packet (struct grub_net_buff *pack __attribute__ ((unused)))
 {
 
-  int actual; 
+  int actual;
+  char *datap; 
+  struct iphdr *iph;
+  struct etherhdr *eth;
+  struct arphdr *arph;
+  pack->data = pack->tail =  pack->head;
+  datap = pack->data; 
+  do
+  {
+    grub_ieee1275_read (handle,datap,sizeof (*eth),&actual);
+   // if (actual <= 0)
+     // grub_millisleep(10);
 
-  grub_ieee1275_read (handle,buffer,buff_len,&actual);
-  
-  return actual; 
+  }while (actual <= 0);
+  eth = (struct etherhdr *) datap;
+  datap += sizeof(*eth);
+ 
+  // grub_printf("ethernet eth->dst %x:%x:%x:%x:%x:%x\n",eth->dst[0],
+  //        eth->dst[1],eth->dst[2],eth->dst[3],eth->dst[4],eth->dst[5]);
+ //  grub_printf("ethernet eth->src %x:%x:%x:%x:%x:%x\n",eth->src[0],eth->src[1],
+ //         eth->src[2],eth->src[3],eth->src[4],eth->src[5]);
+//  grub_printf ("eth.type 0x%x\n",eth->type);
+
+  switch (eth->type)
+  {
+    case 0x806:
+
+      grub_ieee1275_read (handle,datap,sizeof (*arph),&actual);
+      arph = (struct arphdr *) datap;
+      
+      grub_netbuff_put (pack,sizeof (*eth) + sizeof (*arph));
+    break;
+    case 0x800:
+      grub_ieee1275_read (handle,datap,sizeof (*iph),&actual);
+      iph = (struct iphdr *) datap;
+      datap += sizeof(*iph);
+
+     // grub_printf("ip.src 0x%x\n",iph->src);
+     // grub_printf("ip.dst 0x%x\n",iph->dest);
+     // grub_printf("ip.len 0x%x\n",iph->len);
+     // grub_printf("ip.protocol 0x%x\n",iph->protocol);
+    
+      grub_ieee1275_read (handle,datap,iph->len - sizeof (*iph),&actual);
+       
+    
+      grub_netbuff_put (pack,sizeof (*eth) + iph->len);
+    break;
+    case 0x86DD:
+      grub_printf("Ipv6 not yet implemented.\n"); 
+    break;
+    default:
+      grub_printf("Unknow  packet %x\n",eth->type); 
+    break;
+  }
+//  grub_printf("packsize %d\n",pack->tail - pack->data);
+  return 0;// sizeof (eth) + iph.len; 
 }

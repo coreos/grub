@@ -95,14 +95,14 @@ grub_load_modules (void)
 
   grub_module_iterate (hook);
 }
-
+/*
 static void
 grub_load_config (void)
 {
   auto int hook (struct grub_module_header *);
   int hook (struct grub_module_header *header)
     {
-      /* Not an embedded config, skip.  */
+      / Not an embedded config, skip.  /
       if (header->type != OBJ_TYPE_CONFIG)
 	return 0;
 
@@ -113,7 +113,7 @@ grub_load_config (void)
 
   grub_module_iterate (hook);
 }
-
+*/
 /* Write hook for the environment variables of root. Remove surrounding
    parentheses, if any.  */
 static char *
@@ -192,7 +192,7 @@ grub_main (void)
 
   grub_register_core_commands ();
 
-  grub_load_config ();
+  //grub_load_config ();
   grub_load_normal_mode ();
   grub_rescue_run ();
 }

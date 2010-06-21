@@ -32,6 +32,7 @@
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/offsets.h>
+#include <grub/ieee1275/ofnet.h>
 
 /* The minimal heap size we can live with. */
 #define HEAP_MIN_SIZE		(unsigned long) (2 * 1024 * 1024)
@@ -223,13 +224,14 @@ grub_machine_init (void)
   grub_ssize_t actual;
 
   grub_ieee1275_init ();
-
+  
   grub_console_init ();
 #ifdef __i386__
   grub_get_extended_memory ();
 #endif
   grub_claim_heap ();
   grub_ofdisk_init ();
+  grub_ofnet_init();
 
   /* Process commandline.  */
   if (grub_ieee1275_get_property (grub_ieee1275_chosen, "bootargs", &args,
