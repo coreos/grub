@@ -185,7 +185,7 @@ static inline void
 grub_vga_palette_write (grub_uint8_t addr, grub_uint8_t r, grub_uint8_t g,
 			grub_uint8_t b)
 {
-  grub_outb (addr, GRUB_VGA_IO_PALLETTE_READ_INDEX);
+  grub_outb (addr, GRUB_VGA_IO_PALLETTE_WRITE_INDEX);
   grub_outb (r, GRUB_VGA_IO_PALLETTE_DATA);
   grub_outb (g, GRUB_VGA_IO_PALLETTE_DATA);
   grub_outb (b, GRUB_VGA_IO_PALLETTE_DATA);
