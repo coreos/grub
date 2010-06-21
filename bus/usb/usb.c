@@ -166,7 +166,7 @@ grub_usb_device_initialize (grub_usb_device_t dev)
    * max. size of packet */
   dev->descdev.maxsize0 = 0; /* invalidating, for safety only, can be removed if it is sure it is zero here */
   err = grub_usb_get_descriptor (dev, GRUB_USB_DESCRIPTOR_DEVICE,
-				 0, 8, (char *) &dev->descdev);
+                                 0, 8, (char *) &dev->descdev);
   if (err)
     return err;
 

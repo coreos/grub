@@ -87,14 +87,47 @@ grub_usb_add_hub (grub_usb_device_t dev)
   struct grub_usb_usb_hubdesc hubdesc;
   grub_err_t err;
   int i;
+  grub_uint64_t timeout;
+  grub_usb_device_t next_dev;
+  
+  err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_IN
+	  		            | GRUB_USB_REQTYPE_CLASS
+			            | GRUB_USB_REQTYPE_TARGET_DEV),
+                              GRUB_USB_REQ_GET_DESCRIPTOR,
+			      (GRUB_USB_DESCRIPTOR_HUB << 8) | 0,
+			      0, sizeof (hubdesc), (char *) &hubdesc);
+  if (err)
+    return err;
+  grub_dprintf ("usb", "Hub descriptor:\n\t\t len:%d, typ:0x%02x, cnt:%d, char:0x%02x, pwg:%d, curr:%d\n",
+                hubdesc.length, hubdesc.type, hubdesc.portcnt,
+                hubdesc.characteristics, hubdesc.pwdgood,
+                hubdesc.current);
 
-  grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_IN
-			      | GRUB_USB_REQTYPE_CLASS
-			      | GRUB_USB_REQTYPE_TARGET_DEV),
-			GRUB_USB_REQ_GET_DESCRIPTOR,
-			(GRUB_USB_DESCRIPTOR_HUB << 8) | 0,
-			0, sizeof (hubdesc), (char *) &hubdesc);
+  /* Activate the first configuration. Hubs should have only one conf. */
+  grub_dprintf ("usb", "Hub set configuration\n");
+  grub_usb_set_configuration (dev, 1);
 
+  /* Power on all Hub ports.  */
+  for (i = 1; i <= hubdesc.portcnt; i++)
+    {
+      grub_dprintf ("usb", "Power on - port %d\n", i);
+      /* Power on the port and wait for possible device connect */
+      err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
+					| GRUB_USB_REQTYPE_CLASS
+					| GRUB_USB_REQTYPE_TARGET_OTHER),
+				  GRUB_USB_REQ_SET_FEATURE,
+				  GRUB_USB_HUB_FEATURE_PORT_POWER,
+				  i, 0, NULL);
+      /* Just ignore the device if some error happened */
+      if (err)
+	continue;
+    }
+  /* Wait for port power-on */
+  if (hubdesc.pwdgood >= 50)
+    grub_millisleep (hubdesc.pwdgood * 2);
+  else
+    grub_millisleep (100);
+    
   /* Iterate over the Hub ports.  */
   for (i = 1; i <= hubdesc.portcnt; i++)
     {
@@ -104,14 +137,14 @@ grub_usb_add_hub (grub_usb_device_t dev)
       err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_IN
 					| GRUB_USB_REQTYPE_CLASS
 					| GRUB_USB_REQTYPE_TARGET_OTHER),
-				  GRUB_USB_REQ_HUB_GET_PORT_STATUS,
+				  GRUB_USB_REQ_GET_STATUS,
 				  0, i, sizeof (status), (char *) &status);
-
       /* Just ignore the device if the Hub does not report the
 	 status.  */
       if (err)
 	continue;
-
+      grub_dprintf ("usb", "Hub port %d status: 0x%02x\n", i, status);
+      	    
       /* If connected, reset and enable the port.  */
       if (status & GRUB_USB_HUB_STATUS_CONNECTED)
 	{
@@ -128,21 +161,46 @@ grub_usb_add_hub (grub_usb_device_t dev)
 		speed = GRUB_USB_SPEED_FULL;
 	    }
 
-	  /* A device is actually connected to this port, not enable
-	     the port.  XXX: Why 0x03?  According to some docs it
-	     should be 0x0.  Check the specification!  */
+	  /* A device is actually connected to this port.
+	   * Now do reset of port. */
+          grub_dprintf ("usb", "Reset hub port - port %d\n", i);
 	  err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
 					    | GRUB_USB_REQTYPE_CLASS
 					    | GRUB_USB_REQTYPE_TARGET_OTHER),
-				      0x3, 0x4, i, 0, 0);
-
+				      GRUB_USB_REQ_SET_FEATURE,
+				      GRUB_USB_HUB_FEATURE_PORT_RESET,
+				      i, 0, 0);
 	  /* If the Hub does not cooperate for this port, just skip
 	     the port.  */
 	  if (err)
 	    continue;
 
+          /* Wait for reset procedure done */
+          timeout = grub_get_time_ms () + 1000;
+          do
+            {
+              /* Get the port status.  */
+              err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_IN
+	   	 			        | GRUB_USB_REQTYPE_CLASS
+					        | GRUB_USB_REQTYPE_TARGET_OTHER),
+				          GRUB_USB_REQ_GET_STATUS,
+				          0, i, sizeof (status), (char *) &status);
+            }
+          while (!err &&
+                 !(status & GRUB_USB_HUB_STATUS_C_PORT_RESET) &&
+                 (grub_get_time_ms() < timeout) );
+          if (err || !(status & GRUB_USB_HUB_STATUS_C_PORT_RESET) )
+            continue;
+   
 	  /* Add the device and assign a device address to it.  */
-	  grub_usb_hub_add_dev (&dev->controller, speed);
+          grub_dprintf ("usb", "Call hub_add_dev - port %d\n", i);
+	  next_dev = grub_usb_hub_add_dev (&dev->controller, speed);
+          if (! next_dev)
+            continue;
+
+          /* If the device is a Hub, scan it for more devices.  */
+          if (next_dev->descdev.class == 0x09)
+            grub_usb_add_hub (next_dev);
 	}
     }
 
@@ -156,7 +214,7 @@ attach_root_port (grub_usb_controller_t controller, int portno,
   grub_usb_device_t dev;
   grub_err_t err;
 
-  /* Enable the port.  */
+  /* Disable the port. XXX: Why? */
   err = controller->dev->portstatus (controller, portno, 0);
   if (err)
     return;
