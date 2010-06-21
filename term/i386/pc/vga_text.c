@@ -58,9 +58,11 @@ inc_y (void)
   else
     {
       int x, y;
-      for (y = 0; y < ROWS; y++)
+      for (y = 0; y < ROWS - 1; y++)
         for (x = 0; x < COLS; x++)
           screen_write_char (x, y, screen_read_char (x, y + 1));
+      for (x = 0; x < COLS; x++)
+	screen_write_char (x, ROWS - 1, ' ' | (grub_console_cur_color << 8));
     }
 }
 
