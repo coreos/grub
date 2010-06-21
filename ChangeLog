@@ -1,3 +1,11 @@
+2010-06-21  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix parallel build.
+
+	* conf/common.rmk: Add grub_script.tab.h as a grub-script-check
+	dependency.
+	* script/parser.y: #include grub_script.tab.h header.
+
 2010-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support >3GiB and <16MiB RAM in i386-qemu.

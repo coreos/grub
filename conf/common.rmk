@@ -95,6 +95,7 @@ grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c
 	kern/misc.c kern/env.c grub_script.tab.c \
 	grub_script.yy.c
 grub_script_check_CFLAGS = $(GNULIB_UTIL_CFLAGS)
+grub_script_check_DEPENDENCIES = grub_script.tab.h
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
