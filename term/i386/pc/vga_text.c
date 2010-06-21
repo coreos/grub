@@ -58,9 +58,11 @@ inc_y (void)
   else
     {
       int x, y;
-      for (y = 0; y < ROWS; y++)
+      for (y = 0; y < ROWS - 1; y++)
         for (x = 0; x < COLS; x++)
           screen_write_char (x, y, screen_read_char (x, y + 1));
+      for (x = 0; x < COLS; x++)
+	screen_write_char (x, ROWS - 1, ' ' | (grub_console_cur_color << 8));
     }
 }
 
@@ -124,11 +126,13 @@ static void
 grub_vga_text_setcursor (int on)
 {
   grub_uint8_t old;
-  old = grub_vga_cr_read (GRUB_VGA_CR_CURSOR);
+  old = grub_vga_cr_read (GRUB_VGA_CR_CURSOR_START);
   if (on)
-    grub_vga_cr_write (old & ~GRUB_VGA_CR_CURSOR_DISABLE, GRUB_VGA_CR_CURSOR);
+    grub_vga_cr_write (old & ~GRUB_VGA_CR_CURSOR_START_DISABLE,
+		       GRUB_VGA_CR_CURSOR_START);
   else
-    grub_vga_cr_write (old | GRUB_VGA_CR_CURSOR_DISABLE, GRUB_VGA_CR_CURSOR);
+    grub_vga_cr_write (old | GRUB_VGA_CR_CURSOR_START_DISABLE,
+		       GRUB_VGA_CR_CURSOR_START);
 }
 
 static grub_err_t

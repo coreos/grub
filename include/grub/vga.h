@@ -21,6 +21,7 @@
 
 enum
   {
+    GRUB_VGA_IO_ARX = 0x3c0,
     GRUB_VGA_IO_SR_INDEX = 0x3c4,
     GRUB_VGA_IO_SR_DATA = 0x3c5,
     GRUB_VGA_IO_PIXEL_MASK = 0x3c6,
@@ -41,7 +42,8 @@ enum
     GRUB_VGA_CR_WIDTH = 0x01,
     GRUB_VGA_CR_OVERFLOW = 0x07,
     GRUB_VGA_CR_CELL_HEIGHT = 0x09,
-    GRUB_VGA_CR_CURSOR = 0x0a,
+    GRUB_VGA_CR_CURSOR_START = 0x0a,
+    GRUB_VGA_CR_CURSOR_END = 0x0b,
     GRUB_VGA_CR_START_ADDR_HIGH_REGISTER = 0x0c,
     GRUB_VGA_CR_START_ADDR_LOW_REGISTER = 0x0d,
     GRUB_VGA_CR_CURSOR_ADDR_HIGH = 0x0e,
@@ -64,36 +66,68 @@ enum
 #define GRUB_VGA_CR_CELL_HEIGHT_LINE_COMPARE_MASK 0x40
 #define GRUB_VGA_CR_CELL_HEIGHT_LINE_COMPARE_SHIFT 3
 
-#define GRUB_VGA_CR_CURSOR_DISABLE	(1 << 5)
+enum
+  {
+    GRUB_VGA_CR_CURSOR_START_DISABLE = (1 << 5)
+  };
 
 #define GRUB_VGA_CR_PITCH_DIVISOR 8
 
-#define GRUB_VGA_CR_MODE_TIMING_ENABLE 0x80
-#define GRUB_VGA_CR_MODE_BYTE_MODE 0x40
-#define GRUB_VGA_CR_MODE_NO_HERCULES 0x02
-#define GRUB_VGA_CR_MODE_NO_CGA 0x01
-
 enum
   {
-    GRUB_VGA_SR_MAP_MASK_REGISTER = 0x02,
-    GRUB_VGA_SR_MEMORY_MODE = 0x04,
+    GRUB_VGA_CR_MODE_NO_CGA = 0x01,
+    GRUB_VGA_CR_MODE_NO_HERCULES = 0x02,
+    GRUB_VGA_CR_MODE_BYTE_MODE = 0x40,
+    GRUB_VGA_CR_MODE_TIMING_ENABLE = 0x80
   };
 
-#define GRUB_VGA_SR_MEMORY_MODE_CHAIN4 8
-#define GRUB_VGA_SR_MEMORY_MODE_NORMAL 0
+enum
+  {
+    GRUB_VGA_SR_CLOCKING_MODE = 1,
+    GRUB_VGA_SR_MAP_MASK_REGISTER = 2,
+    GRUB_VGA_SR_MEMORY_MODE = 4,
+  };
 
 enum
   {
-    GRUB_VGA_GR_READ_MAP_REGISTER = 0x04,
+    GRUB_VGA_SR_CLOCKING_MODE_8_DOT_CLOCK = 1
+  };
+
+enum
+  {
+    GRUB_VGA_SR_MEMORY_MODE_NORMAL = 0,
+    GRUB_VGA_SR_MEMORY_MODE_CHAIN4 = 8
+  };
+
+enum
+  {
+    GRUB_VGA_GR_DATA_ROTATE = 3,
+    GRUB_VGA_GR_READ_MAP_REGISTER = 4,
     GRUB_VGA_GR_MODE = 5,
     GRUB_VGA_GR_GR6 = 6,
+    GRUB_VGA_GR_BITMASK = 8,
     GRUB_VGA_GR_MAX
   };
 
-#define GRUB_VGA_GR_GR6_GRAPHICS_MODE 1
+enum
+  {
+    GRUB_VGA_TEXT_TEXT_PLANE = 0,
+    GRUB_VGA_TEXT_ATTR_PLANE = 1,
+    GRUB_VGA_TEXT_FONT_PLANE = 2
+  };
 
-#define GRUB_VGA_GR_MODE_256_COLOR 0x40
-#define GRUB_VGA_GR_MODE_READ_MODE1 0x08
+enum
+  {
+    GRUB_VGA_GR_GR6_GRAPHICS_MODE = 1,
+    GRUB_VGA_GR_GR6_MMAP_CGA = (3 << 2)
+  };
+
+enum
+  {
+    GRUB_VGA_GR_MODE_READ_MODE1 = 0x08,
+    GRUB_VGA_GR_MODE_ODD_EVEN = 0x10,
+    GRUB_VGA_GR_MODE_256_COLOR = 0x40
+  };
 
 static inline void
 grub_vga_gr_write (grub_uint8_t val, grub_uint8_t addr)
@@ -151,7 +185,7 @@ static inline void
 grub_vga_palette_write (grub_uint8_t addr, grub_uint8_t r, grub_uint8_t g,
 			grub_uint8_t b)
 {
-  grub_outb (addr, GRUB_VGA_IO_PALLETTE_READ_INDEX);
+  grub_outb (addr, GRUB_VGA_IO_PALLETTE_WRITE_INDEX);
   grub_outb (r, GRUB_VGA_IO_PALLETTE_DATA);
   grub_outb (g, GRUB_VGA_IO_PALLETTE_DATA);
   grub_outb (b, GRUB_VGA_IO_PALLETTE_DATA);

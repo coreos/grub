@@ -179,14 +179,22 @@ if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
 fi
 
+FONT_SOURCE=
+
 for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
   for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont; do
     if test -f "$dir/unifont.$ext"; then
-      AC_SUBST([FONT_SOURCE], [$dir/unifont.$ext])
+      FONT_SOURCE="$dir/unifont.$ext"
       break 2
     fi
   done
 done
+
+if test "x$FONT_SOURCE" == x && ( test "x$platform" = xqemu || test "x$platform" = xyeeloong ); then
+   AC_MSG_ERROR([qemu and yeeloong ports need unifont])
+fi
+
+AC_SUBST([FONT_SOURCE])	
 
 AC_PROG_INSTALL
 AC_PROG_AWK
