@@ -1,21 +1,37 @@
 #include <grub/net/protocol.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
 
-static grub_net_protocol_t grub_net_protocols;
-
-void grub_protocol_register (grub_net_protocol_t prot)
-{
-  prot->next = grub_net_protocols;
-  grub_net_protocols = prot;
+#define PROTOCOL_REGISTER_FUNCTIONS(layername) \
+struct grub_net_##layername##_layer_protocol *grub_net_##layername##_layer_protocols;\
+\
+void grub_net_##layername##_layer_protocol_register (struct grub_net_##layername##_layer_protocol *prot)\
+{\
+  grub_list_push (GRUB_AS_LIST_P (&grub_net_##layername##_layer_protocols),\
+		  GRUB_AS_LIST (prot));\
+}\
+\
+void grub_net_##layername##_layer_protocol_unregister (struct grub_net_##layername##_layer_protocol *prot)\
+{\
+  grub_list_remove (GRUB_AS_LIST_P (&grub_net_##layername##_layer_protocols),\
+		    GRUB_AS_LIST (prot));\
+}\
+\
+struct grub_net_##layername##_layer_protocol \
+  *grub_net_##layername##_layer_protocol_get (grub_net_protocol_id_t id)\
+{\
+ struct grub_net_##layername##_layer_protocol *p;\
+\
+  for (p = grub_net_##layername##_layer_protocols; p; p = p->next)\
+  {\
+    if (p->id == id)\
+      return p;\
+  }\
+  \
+  return  NULL; \
 }
 
-void grub_protocol_unregister (grub_net_protocol_t prot)
-{
-  grub_net_protocol_t *p, q;
-
-  for (p = &grub_net_protocols, q = *p; q; p = &(q->next), q = q->next)
-    if (q == prot)
-    {
-	*p = q->next;
-	break;
-    }
-}
+PROTOCOL_REGISTER_FUNCTIONS(application);
+PROTOCOL_REGISTER_FUNCTIONS(transport);
+PROTOCOL_REGISTER_FUNCTIONS(network);
+PROTOCOL_REGISTER_FUNCTIONS(link);

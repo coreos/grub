@@ -4,41 +4,84 @@
 #include <grub/net/netbuff.h>
 #include <grub/net/protocol.h>
 #include <grub/net/interface.h>
-/*Assumes that there is allocated memory to the header before the buffer address. */
+
 static grub_err_t 
-send_udp_packet (struct grub_net_interface *inf, struct grub_net_protstack *protstack, struct grub_net_buff *nb)
+send_udp_packet (struct grub_net_network_layer_interface *inf,
+    struct grub_net_application_transport_interface *app_trans_inf, struct grub_net_buff *nb)
 {
 
   struct udphdr *udph;
-  grub_err_t err; 
+  struct udp_interf *udp_interf;
   
-  if((err = grub_netbuff_push (nb,sizeof(*udph)) ) != GRUB_ERR_NONE)
-    return err;
+  grub_netbuff_push (nb,sizeof(*udph)); 
   
   udph = (struct udphdr *) nb->data;    
-  udph->src = *((grub_uint16_t *) inf->card->tla->addr); 
-  udph->dst = *((grub_uint16_t *) inf->tla->addr);
+  udp_interf = (struct udp_interf *) app_trans_inf->data;
+  udph->src = udp_interf->src;
+  udph->dst = udp_interf->dst;
+
   /*no chksum*/
   udph->chksum = 0;  
-  udph->len = sizeof (sizeof (*udph)) + nb->end - nb->head;
+  udph->len = nb->tail - nb->data;
   
-  return protstack->next->prot->send(inf,protstack->next,nb); 
+  return app_trans_inf->inner_layer->net_prot->send(inf,app_trans_inf->inner_layer,nb);
 }
 
-static struct grub_net_protocol grub_udp_protocol =
+static grub_err_t 
+receive_udp_packet (struct grub_net_network_layer_interface *inf,
+    struct grub_net_application_transport_interface *app_trans_inf, struct grub_net_buff *nb)
+{ 
+  
+  struct udphdr *udph;
+  struct udp_interf *udp_interf;
+  udp_interf = (struct udp_interf *) app_trans_inf->data;
+
+  while(1)
+  {
+    app_trans_inf->inner_layer->net_prot->recv(inf,app_trans_inf->inner_layer,nb);
+    
+    udph = (struct udphdr *) nb->data;
+    //  grub_printf("udph->dst %d\n",udph->dst);  
+    //  grub_printf("udp_interf->src %d\n",udp_interf->src);  
+    if (udph->dst == udp_interf->src)
+    {
+      grub_netbuff_pull (nb,sizeof(*udph));
+      
+     // udp_interf->src = udph->dst;
+      udp_interf->dst = udph->src;
+    
+   //   grub_printf("udph->dst %d\n",udph->dst);  
+    //  grub_printf("udph->src %d\n",udph->src);  
+     // grub_printf("udph->len %d\n",udph->len);  
+     // grub_printf("udph->chksum %x\n",udph->chksum);  
+    
+    /* - get udp header..
+     - verify if is  in the desired port
+     - if not. get another packet
+     - remove udp header*/
+     
+      return 0;
+    }
+  }
+}
+
+
+static struct grub_net_transport_layer_protocol grub_udp_protocol =
 {
   .name = "udp",
-  .send = send_udp_packet
+  .id = GRUB_NET_UDP_ID,
+  .send = send_udp_packet,
+  .recv = receive_udp_packet 
 };
 
 void udp_ini(void)
 {
-  grub_protocol_register (&grub_udp_protocol);
+  grub_net_transport_layer_protocol_register (&grub_udp_protocol);
 }
 
 void udp_fini(void)
 {
-  grub_protocol_unregister (&grub_udp_protocol);
+  grub_net_transport_layer_protocol_unregister (&grub_udp_protocol);
 }
 
 /*

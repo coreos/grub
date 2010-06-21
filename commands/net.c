@@ -23,14 +23,14 @@
 #include <grub/command.h>
 
 struct grub_net_route *grub_net_routes = NULL;
-struct grub_net_network_level_interface *grub_net_network_level_interfaces = NULL;
+struct grub_net_network_layer_interface *grub_net_network_layer_interfaces = NULL;
 struct grub_net_card *grub_net_cards = NULL;
-struct grub_net_network_level_protocol *grub_net_network_level_protocols = NULL;
+struct grub_net_network_layer_protocol *grub_net_network_layer_protocols = NULL;
 
 grub_err_t
-grub_net_resolve_address (struct grub_net_network_level_protocol **prot,
+grub_net_resolve_address (struct grub_net_network_layer_protocol **prot,
 			  char *name,
-			  grub_net_network_level_address_t *addr)
+			  grub_net_network_layer_address_t *addr)
 {
   FOR_NET_NETWORK_LEVEL_PROTOCOLS (*prot)
     {
@@ -50,15 +50,15 @@ grub_net_resolve_address (struct grub_net_network_level_protocol **prot,
 }
 
 grub_err_t
-grub_net_route_address (grub_net_network_level_address_t addr,
-			grub_net_network_level_address_t *gateway,
-			struct grub_net_network_level_interface **interf)
+grub_net_route_address (grub_net_network_layer_address_t addr,
+			grub_net_network_layer_address_t *gateway,
+			struct grub_net_network_layer_interface **interf)
 {
   struct grub_net_route *route;
   int depth = 0;
   int routecnt = 0;
-  struct grub_net_network_level_protocol *prot = NULL;
-  grub_net_network_level_address_t curtarget = addr;
+  struct grub_net_network_layer_protocol *prot = NULL;
+  grub_net_network_layer_address_t curtarget = addr;
 
   *gateway = addr;
 
@@ -96,7 +96,7 @@ static grub_err_t
 grub_cmd_deladdr (struct grub_command *cmd __attribute__ ((unused)),
 		  int argc, char **args)
 {
-  struct grub_net_network_level_interface *inter;
+  struct grub_net_network_layer_interface *inter;
 
   if (argc != 4)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
@@ -107,8 +107,8 @@ grub_cmd_deladdr (struct grub_command *cmd __attribute__ ((unused)),
   if (inter == NULL)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("address not found"));
 
-  inter->protocol->fini (inter);
-  grub_net_network_level_interface_unregister (inter);
+//  inter->protocol->fini (inter);
+  grub_net_network_layer_interface_unregister (inter);
   grub_free (inter->name);
   grub_free (inter);
 
@@ -120,10 +120,10 @@ grub_cmd_addaddr (struct grub_command *cmd __attribute__ ((unused)),
 		  int argc, char **args)
 {
   struct grub_net_card *card;
-  struct grub_net_network_level_protocol *prot;
+  struct grub_net_network_layer_protocol *prot;
   grub_err_t err;
-  grub_net_network_level_address_t addr;
-  struct grub_net_network_level_interface *inter;
+  grub_net_network_layer_address_t addr;
+  struct grub_net_network_layer_interface *inter;
 
   if (argc != 4)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("four arguments expected"));
@@ -154,14 +154,14 @@ grub_cmd_addaddr (struct grub_command *cmd __attribute__ ((unused)),
   grub_memcpy (&(inter->address), &addr, sizeof (inter->address));
   inter->card = card;
 
-  err = prot->init (inter);
+ // err = prot->init (inter);
   if (err)
     {
       grub_free (inter->name);
       grub_free (inter);
       return err;
     }
-  grub_net_network_level_interface_register (inter);
+  grub_net_network_layer_interface_register (inter);
 
   return GRUB_ERR_NONE;
 }
@@ -192,7 +192,7 @@ static grub_err_t
 grub_cmd_addroute (struct grub_command *cmd __attribute__ ((unused)),
 		  int argc, char **args)
 {
-  struct grub_net_network_level_protocol *prot;
+  struct grub_net_network_layer_protocol *prot;
   struct grub_net_route *route;
 
   if (argc < 3)
@@ -247,7 +247,7 @@ grub_cmd_addroute (struct grub_command *cmd __attribute__ ((unused)),
     }
   else
     {
-      struct grub_net_network_level_interface *inter;
+      struct grub_net_network_layer_interface *inter;
       route->is_gateway = 0;
 
       FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
