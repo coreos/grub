@@ -2,7 +2,10 @@
 10_*
 30_os-prober
 40_custom
+41_custom
 aclocal.m4
+ascii.bitmaps
+ascii.h
 autom4te.cache
 build_env.mk
 .bzrignore
@@ -48,6 +51,8 @@ grub_script_check_init.c
 grub_script_check_init.h
 grub_script.tab.c
 grub_script.tab.h
+grub_script.yy.c
+grub_script.yy.h
 grub-set-default
 grub-setup
 grub_setup_init.c

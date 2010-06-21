@@ -481,6 +481,8 @@ static struct grub_video_adapter grub_video_cirrus_adapter =
     .name = "Cirrus CLGD 5446 PCI Video Driver",
     .id = GRUB_VIDEO_DRIVER_CIRRUS,
 
+    .prio = GRUB_VIDEO_ADAPTER_PRIO_NATIVE,
+
     .init = grub_video_cirrus_video_init,
     .fini = grub_video_cirrus_video_fini,
     .setup = grub_video_cirrus_setup,

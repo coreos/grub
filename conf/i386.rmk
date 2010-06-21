@@ -69,6 +69,12 @@ pci_mod_CFLAGS = $(COMMON_CFLAGS)
 pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 endif
 
+# For cs5536.mod
+pkglib_MODULES += cs5536.mod
+cs5536_mod_SOURCES = bus/cs5536.c
+cs5536_mod_CFLAGS = $(COMMON_CFLAGS)
+cs5536_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For lspci.mod
 pkglib_MODULES += lspci.mod
 lspci_mod_SOURCES = commands/lspci.c

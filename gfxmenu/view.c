@@ -357,11 +357,6 @@ grub_gfxmenu_draw_terminal_box (void)
   term_box->draw (term_box,
 		  term_rect.x - term_box->get_left_pad (term_box),
 		  term_rect.y - term_box->get_top_pad (term_box));
-  grub_video_swap_buffers ();
-  if (term_view->double_repaint)
-    term_box->draw (term_box,
-		    term_rect.x - term_box->get_left_pad (term_box),
-		    term_rect.y - term_box->get_top_pad (term_box));
 }
 
 static void

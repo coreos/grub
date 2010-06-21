@@ -4,18 +4,19 @@ target_machine=yeeloong
 COMMON_CFLAGS += -march=mips3
 COMMON_ASFLAGS += -march=mips3
 
-kernel_img_HEADERS += pci.h bitmap.h video.h gfxterm.h font.h bitmap_scale.h bufio.h
+kernel_img_HEADERS += pci.h bitmap.h video.h gfxterm.h font.h \
+		      bitmap_scale.h bufio.h cs5536.h machine/pci.h
 
 include $(srcdir)/conf/mips.mk
 
-pkglib_IMAGES = kernel.img
+pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
 	kern/main.c kern/device.c kern/$(target_cpu)/init.c \
 	kern/$(target_cpu)/$(target_machine)/init.c 		\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
 	kern/misc.c kern/mm.c kern/term.c 	\
 	kern/rescue_parser.c kern/rescue_reader.c \
-	kern/list.c kern/handler.c kern/command.c kern/corecmd.c	\
+	kern/list.c  kern/command.c kern/corecmd.c	\
 	kern/parser.c kern/partition.c kern/env.c kern/$(target_cpu)/dl.c 	\
 	kern/generic/millisleep.c kern/generic/rtc_get_time_ms.c kern/time.c    \
 	kern/$(target_cpu)/cache.S \
@@ -26,6 +27,7 @@ kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
 	video/fb/fbfill.c video/fb/fbutil.c video/bitmap.c \
 	video/bitmap_scale.c video/sm712.c bus/pci.c bus/bonito.c \
 	term/gfxterm.c commands/extcmd.c lib/arg.c \
+	bus/cs5536.c \
 	symlist.c
 kernel_img_CFLAGS = $(COMMON_CFLAGS) -DUSE_ASCII_FAILBACK
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
@@ -68,6 +70,36 @@ linux_mod_SOURCES = loader/$(target_cpu)/linux.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_ASFLAGS = $(COMMON_ASFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usb.mod
+pkglib_MODULES += usb.mod
+usb_mod_SOURCES = bus/usb/usb.c bus/usb/usbtrans.c bus/usb/usbhub.c
+usb_mod_CFLAGS = $(COMMON_CFLAGS)
+usb_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usbtest.mod
+pkglib_MODULES += usbtest.mod
+usbtest_mod_SOURCES = commands/usbtest.c
+usbtest_mod_CFLAGS = $(COMMON_CFLAGS)
+usbtest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For ohci.mod
+pkglib_MODULES += ohci.mod
+ohci_mod_SOURCES = bus/usb/ohci.c
+ohci_mod_CFLAGS = $(COMMON_CFLAGS)
+ohci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usbms.mod
+pkglib_MODULES += usbms.mod
+usbms_mod_SOURCES = disk/usbms.c
+usbms_mod_CFLAGS = $(COMMON_CFLAGS)
+usbms_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usb_keyboard.mod
+pkglib_MODULES += usb_keyboard.mod
+usb_keyboard_mod_SOURCES = term/usb_keyboard.c
+usb_keyboard_mod_CFLAGS = $(COMMON_CFLAGS)
+usb_keyboard_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 sbin_SCRIPTS += grub-install
 grub_install_SOURCES = util/grub-install.in

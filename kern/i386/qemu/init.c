@@ -102,8 +102,8 @@ grub_qemu_init_cirrus (void)
 		      | GRUB_PCI_ADDR_SPACE_MEMORY | GRUB_PCI_ADDR_MEM_TYPE_32);
  
       addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
-      grub_pci_write (addr, GRUB_PCI_REG_STATUS_MEMORY_ENABLE
-		      | GRUB_PCI_REG_STATUS_IO_ENABLE);
+      grub_pci_write (addr, GRUB_PCI_COMMAND_MEM_ENABLED
+		      | GRUB_PCI_COMMAND_IO_ENABLED);
       
       return 1;
     }

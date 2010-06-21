@@ -22,7 +22,4 @@
 /* The size of boot.img.  */
 #define GRUB_BOOT_MACHINE_SIZE			(0x100000 - GRUB_BOOT_MACHINE_LINK_ADDR)
 
-/* The offset of GRUB_CORE_ENTRY_ADDR.  */
-#define GRUB_BOOT_MACHINE_CORE_ENTRY_ADDR	0x4
-
 #endif

@@ -150,6 +150,7 @@ case "$target_cpu" in
   mips)      	machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_MIPS=1" ;;
   sparc64)      machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
+machine_CFLAGS="$machine_CFLAGS -DMACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
 
 CFLAGS="$CFLAGS $machine_CFLAGS"
 TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
@@ -180,17 +181,20 @@ fi
 
 FONT_SOURCE=
 
-for file in /usr/src/unifont.bdf /usr/share/fonts/X11/misc/unifont.pcf.gz /usr/share/fonts/unifont/unifont.pcf.gz; do
-  if test -e $file ; then
-    FONT_SOURCE=$file
-    AC_SUBST([FONT_SOURCE], [$file])
-    break
-  fi
+for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
+  for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont; do
+    if test -f "$dir/unifont.$ext"; then
+      FONT_SOURCE="$dir/unifont.$ext"
+      break 2
+    fi
+  done
 done
 
 if test "x$FONT_SOURCE" == x && ( test "x$platform" = xqemu || test "x$platform" = xyeeloong ); then
    AC_MSG_ERROR([qemu and yeeloong ports need unifont])
 fi
+
+AC_SUBST([FONT_SOURCE])	
 
 AC_PROG_INSTALL
 AC_PROG_AWK
@@ -198,7 +202,7 @@ AC_PROG_LEX
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 
-if test "x$LEX" = x; then
+if test "x$LEX" = "x:"; then
   AC_MSG_ERROR([flex is not found])
 else
   version=`$LEX --version | $AWK '{ split($NF,x,"."); print x[[1]]*10000+x[[2]]*100+x[[3]]; }'`
@@ -785,6 +789,22 @@ fi
 AC_SUBST([enable_grub_mkfont])
 AC_SUBST([freetype_cflags])
 AC_SUBST([freetype_libs])
+
+AC_ARG_ENABLE([device-mapper],
+              [AS_HELP_STRING([--enable-device-mapper],
+                              [enable Linux device-mapper support (default=guessed)])])
+if test x"$enable_device_mapper" = xno ; then
+  device_mapper_excuse="explicitly disabled"
+fi
+
+if test x"$device_mapper_excuse" = x ; then
+  # Check for device-mapper library.
+  AC_CHECK_LIB([devmapper], [dm_task_create],
+               [LDFLAGS="$LDFLAGS -ldevmapper"
+                AC_DEFINE([HAVE_DEVICE_MAPPER], [1],
+                          [Define to 1 if you have the devmapper library.])],
+               [device_mapper_excuse="need devmapper library"])
+fi
 
 AC_SUBST(ASFLAGS)
 

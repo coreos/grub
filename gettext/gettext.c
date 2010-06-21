@@ -309,14 +309,10 @@ grub_gettext_init_ext (const char *lang)
 static void
 grub_gettext_delete_list (void)
 {
-  struct grub_gettext_msg *item;
-
-  while ((item =
-	  grub_list_pop (GRUB_AS_LIST_P (&grub_gettext_msg_list))) != 0)
+  while (grub_gettext_msg_list)
     {
-      char *original = (char *) ((struct grub_gettext_msg *) item)->name;
-      grub_free (original);
-
+      grub_free ((char *) grub_gettext_msg_list->name);
+      grub_gettext_msg_list = grub_gettext_msg_list->next;
       /* Don't delete the translated message because could be in use.  */
     }
 }

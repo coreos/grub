@@ -328,6 +328,8 @@ static struct grub_video_adapter grub_video_vga_adapter =
     .name = "VGA Video Driver",
     .id = GRUB_VIDEO_DRIVER_VGA,
 
+    .prio = GRUB_VIDEO_ADAPTER_PRIO_FALLBACK,
+
     .init = grub_video_vga_init,
     .fini = grub_video_vga_fini,
     .setup = grub_video_vga_setup,

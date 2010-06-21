@@ -1,3 +1,1254 @@
+2010-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support >3GiB and <16MiB RAM in i386-qemu.
+
+	* kern/i386/qemu/mmap.c (QEMU_CMOS_MEMSIZE2_HIGH): New const.
+	(QEMU_CMOS_MEMSIZE2_LOW): Likewise.
+	(grub_lower_mem): Removed.
+	(grub_upper_mem): Likewise.
+	(mem_size): Made static.
+	(above_4g): New variable.
+	(grub_machine_mmap_init): Detect small mem_size and above_4g.
+	(grub_machine_mmap_iterate): Order in ascending order and add above_4g
+	support.
+
+2010-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Cirrus 5446 and Bochs video cards support.
+
+	* conf/i386.rmk (pkglib_MODULES): Add video_cirrus.mod and
+	video_bochs.mod
+	(video_cirrus_mod_SOURCES): New variable.
+	(video_cirrus_mod_CFLAGS): Likewise.
+	(video_cirrus_mod_LDFLAGS): Likewise.
+	(video_bochs_mod_SOURCES): Likewise.
+	(video_bochs_mod_CFLAGS): Likewise.
+	(video_bochs_mod_LDFLAGS): Likewise.
+	* include/grub/vga.h: New file.
+	* include/grub/video_fb.h (grub_video_fb_doublebuf_blit_init): Removed.
+	(grub_video_fb_set_page_t): New type.
+	(grub_video_fb_setup): New prototype.
+	(grub_video_fb_swap_buffers): Likewise.
+	(grub_video_fb_get_info_and_fini): Likewise.
+	* term/i386/pc/vga_text.c (CRTC_ADDR_PORT): Moved to include/grub/vga.h.
+	(CRTC_DATA_PORT): Likewise.
+	(CRTC_CURSOR): Likewise.
+	(CRTC_CURSOR_ADDR_HIGH): Likewise.
+	(CRTC_CURSOR_ADDR_LOW): Likewise.
+	(CRTC_CURSOR_DISABLE): Likewise.
+	(update_cursor): Use grub_vga_cr_write.
+	(grub_vga_text_setcursor): Likewise.
+	* video/bochs.c: New file.
+	* video/fb/video_fb.c (render_target): Moved into framebuffer variable.
+	(palette): Likewise.
+	(palette_size): Likewise.
+	(framebuffer): New variable.
+	(grub_video_fb_init): Use 'framebuffer'.
+	(grub_video_fb_fini): Likewise.
+	(grub_video_fb_get_info): Likewise.
+	(grub_video_fb_get_palette): Likewise.
+	(grub_video_fb_set_palette): Likewise.
+	(grub_video_fb_set_viewport): Likewise.
+	(grub_video_fb_get_viewport): Likewise.
+	(grub_video_fb_map_color): Likewise.
+	(grub_video_fb_map_rgb): Likewise.
+	(grub_video_fb_map_rgba): Likewise.
+	(grub_video_fb_unmap_color): Likewise.
+	(grub_video_fb_unmap_color_int): Likewise.
+	(grub_video_fb_fill_rect): Likewise.
+	(grub_video_fb_blit_bitmap): Likewise.
+	(grub_video_fb_blit_render_target): Likewise.
+	(grub_video_fb_scroll): Likewise.
+	(grub_video_fb_create_render_target): Likewise.
+	(grub_video_fb_doublebuf_blit_init): Likewise.
+	(grub_video_fb_set_active_render_target): Handle doublebuffering.
+	(doublebuf_pageflipping_update_screen): New function.
+	(doublebuf_pageflipping_init): Likewise.
+	(grub_video_fb_setup): Likewise.
+	(grub_video_fb_swap_buffers): Likewise.
+	(grub_video_fb_get_info_and_fini): Likewise.
+	* video/i386/pc/vbe.c (framebuffer): Remove all doublebuffering fields.
+	All users updated.
+	(doublebuf_pageflipping_commit): Restructured into ...
+	(doublebuf_pageflipping_set_page): ... this.
+	(doublebuf_pageflipping_update_screen): Removed.
+	(doublebuf_pageflipping_init): Likewise.
+	(double_buffering_init): Likewise.
+	(grub_video_vbe_setup): Use grub_video_fb_setup.
+	(grub_video_vbe_swap_buffers): Removed.
+	(grub_video_vbe_set_active_render_target): Likewise.
+	(grub_video_vbe_get_active_render_target): Likewise.
+	(grub_video_vbe_get_info_and_fini): Use grub_video_fb_get_info_and_fini.
+	(grub_video_vbe_adapter): Use grub_video_fb_swap_buffers,
+	grub_video_fb_set_active_render_target and
+	grub_video_fb_get_active_render_target.
+	* video/i386/pc/vga.c (SEQUENCER_ADDR_PORT): Move to include/grub/vga.h.
+	(SEQUENCER_DATA_PORT): Likewise.
+	(MAP_MASK_REGISTER): Likewise.
+	(CRTC_ADDR_PORT): Likewise.
+	(CRTC_DATA_PORT): Likewise.
+	(START_ADDR_HIGH_REGISTER): Likewise.
+	(START_ADDR_LOW_REGISTER): Likewise.
+	(GRAPHICS_ADDR_PORT): Likewise.
+	(GRAPHICS_DATA_PORT): Likewise.
+	(READ_MAP_REGISTER): Likewise.
+	(INPUT_STATUS1_REGISTER): Likewise.
+	(INPUT_STATUS1_VERTR_BIT): Likewise.
+	(get_map_mask): Use grub_vga_sr_read.
+	(set_map_mask): Use grub_vga_sr_write.
+	(set_read_map): Use grub_vga_gr_write.
+	(set_start_address): Use grub_vga_cr_write.
+	* video/sm712.c (framebuffer): Remove leftover fields.
+
+2010-06-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig.in: Capitalise and export GRUB_PREFIX.  Stop
+	setting GRUB_VIDEO_BACKEND.  Make it available as a user override
+	instead.  Replace the gfxterm backend check with a check that
+	${GRUB_PREFIX}/video.lst is non-empty.
+	* util/grub.d/00_header.in: Use GRUB_PREFIX rather than computing it
+	again.
+	(load_video): New generated function.  Call it before loading
+	gfxterm rather than loading ${GRUB_VIDEO_BACKEND}.
+	* util/grub.d/10_linux.in (linux_entry): Call load_video.
+	* util/grub.d/30_os-prober.in (osx_entry): Likewise.
+	* docs/grub.texi (Simple configuration): Document
+	GRUB_VIDEO_BACKEND.
+
+2010-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use video functions in linux and xnu loaders.
+
+	* conf/i386-pc.rmk (xnu_mod_SOURCES): Remove loader/i386/pc/xnu.c.
+	* conf/x86-efi.rmk (xnu_mod_SOURCES): Remove loader/i386/efi/xnu.c.
+	* include/grub/i386/xnu.h (grub_xnu_set_video): Removed.
+	* loader/i386/efi/linux.c (grub_linux_setup_video): Copied from
+	loader/i386/pc/linux.c.
+	(grub_linux_boot): Resynced with loader/i386/pc/linux.c.
+	(find_line_len): Removed.
+	(find_framebuf): Likewise.
+	(grub_cmd_linux): Declare grub_linux_boot as possibly returning.
+	* loader/i386/efi/xnu.c: Removed.
+	* loader/i386/pc/xnu.c: Moved from here...
+	* loader/i386/xnu.c: ...here.
+
+	Enable priorities in video drivers.
+
+	* include/grub/video.h (grub_video_adapter_prio_t): New type.
+	(grub_video_adapter): New field prio.
+	(grub_video_register): Respect prio when inserting.
+	* video/efi_gop.c (grub_video_gop_adapter): Add prio.
+	* video/efi_uga.c (grub_video_uga_adapter): Likewise.
+	* video/emu/sdl.c (grub_video_sdl_adapter): Likewise.
+	* video/i386/pc/vbe.c (grub_video_vbe_adapter): Likewise.
+	* video/i386/pc/vga.c (grub_video_vga_adapter): Likewise.
+	* video/ieee1275.c (grub_video_ieee1275_adapter): Likewise.
+	* video/sm712.c (grub_video_sm712_adapter): Likewise.
+
+	Fix SDL driver ID.
+
+	* include/grub/video.h (grub_video_driver_id_t): New value
+	GRUB_VIDEO_DRIVER_SDL.
+	* video/emu/sdl.c (grub_video_sdl_adapter): Add id.
+
+2010-06-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/i386/pc/grub-setup.c (usage): Pass an extra `program_name'
+	argument to printf.
+	* util/sparc64/ieee1275/grub-setup.c (usage): Likewise.
+
+2010-06-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/i386/pc/grub-setup.c (usage): Fix syntax error.
+	* util/sparc64/ieee1275/grub-setup.c (usage): Likewise.
+
+2010-06-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/i386/pc/grub-setup.c (usage): Warn against running grub-setup
+	directly, and recommend grub-install instead.
+	* util/sparc64/ieee1275/grub-setup.c (usage): Likewise.
+
+2010-06-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix i386-pc prefix handling with nested partitions (Debian bug
+	#585068).  Note that the case where the core image is booted using
+	multiboot and relocated from its original location still requires
+	more work.
+
+	* kern/i386/pc/init.c (make_install_device): If the prefix starts
+	with "(,", fill the boot drive in between those two characters, but
+	expect that a full partition specification including partition map
+	names will follow.
+	* util/i386/pc/grub-setup.c (setup): Unless an explicit prefix was
+	specified, write a prefix without the drive name but including a
+	full partition specification.
+
+2010-06-16  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig.in: Ignore non-option arguments, for
+	compatibility with older versions (before 2010-06-12) which did the
+	same.  In particular, this makes it easier to ship an update-grub
+	wrapper which is compatible with that used with GRUB Legacy (Debian
+	bug #586056).
+
+2010-06-14  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* Makefile.in (install-local): Use $$file.h2m instead of $$dest.h2m
+	for manual page generation.
+
+2010-06-14  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* po/POTFILES: Remove leftover commands/handler.c.
+
+2010-06-14  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig.in: Remove vestige of old argument parsing that
+	left this script non-functional.
+
+2010-06-14  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/man/grub-emu.h2m: New file.
+
+2010-06-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Commands): Document reduced command set in rescue
+	mode.
+	(cpuid): New section.
+
+2010-06-13  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/emu/hostdisk.c (grub_util_biosdisk_get_grub_dev): Use the
+	new partition naming style.
+	* util/grub-install.in: Adapt sed subtitutions in grub-probe calls.
+
+2010-06-12  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Add "-o grub.iso" like cmdline options support.
+
+	* util/grub-install.in: Improve cmdline option parsing.
+	* util/grub-mkconfig.in: Likewise.
+	* util/grub-mkrescue.in: Likewise.
+	* util/grub-reboot.in: Likewise.
+	* util/grub-set-default.in: Likewise.
+	* util/i386/efi/grub-install.in: Likewise.
+	* util/ieee1275/grub-install.in: Likewise.
+	* util/powerpc/ieee1275/grub-mkrescue.in: Likewise.
+
+2010-06-12  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Ignore 41_custom.
+
+2010-06-12  Thomas Schmitt  <scdbackup@gmx.net>
+
+	* util/grub-mkrescue.in: Pass unrecognized options to xorriso.
+
+2010-06-12  Colin Watson  <cjwatson@ubuntu.com>
+
+	Avoid false positives in fs.lst, partmap.lst, and video.lst due to
+	prototype declarations.
+
+	* genmk.rb (PModule::rule): Define GRUB_LST_GENERATOR when
+	generating fs, partmap, and video lists.
+	* include/grub/fs.h (grub_fs_register): Omit prototype if
+	GRUB_LST_GENERATOR is defined.
+	* include/grub/partition.h (grub_partition_map_register): Likewise.
+	* include/grub/video.h (grub_video_register): Likewise.
+
+2010-06-12  Javier Martín <lordhabbit@gmail.com>
+
+	* include/grub/types.h: Check for GRUB_CPU_SIZEOF_LONG when appropriate.
+
+2010-06-12  Thomas Schmitt  <scdbackup@gmx.net>
+
+	* util/grub-mkrescue.in: Support --xorriso argument.
+
+2010-06-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrescue.in: Use -graft-points instead of -pathspecs.
+	Suggested by: Thomas Schmitt.
+
+2010-06-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrescue.in: Add --sort-weight arguments to xorriso.
+	Suggested by: Thomas Schmitt.
+
+2010-06-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	custom.cfg support.
+
+	* conf/common.rmk (grub-mkconfig_SCRIPTS): Add 41_custom.
+	* util/grub.d/41_custom.in: New file.
+
+2010-06-12  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrescue.in (make_image): Remove sh module, which has
+	been merged back into normal.
+
+2010-06-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/efi/uga_draw.h (GRUB_EFI_UGA_GLT_MAX): Rename to ...
+	(GRUB_EFI_UGA_BLT_MAX): ... this (typo fix).
+
+2010-06-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.in (install-local): Include $(srcdir)/docs/man/$$dest.h2m
+	when generating manual pages.
+	* docs/man/grub-bin2h.h2m: New file.
+	* docs/man/grub-editenv.h2m: New file.
+	* docs/man/grub-fstest.h2m: New file.
+	* docs/man/grub-install.h2m: New file.
+	* docs/man/grub-macho2img.h2m: New file.
+	* docs/man/grub-mkconfig.h2m: New file.
+	* docs/man/grub-mkdevicemap.h2m: New file.
+	* docs/man/grub-mkfont.h2m: New file.
+	* docs/man/grub-mkimage.h2m: New file.
+	* docs/man/grub-mkpasswd-pbkdf2.h2m: New file.
+	* docs/man/grub-mkrelpath.h2m: New file.
+	* docs/man/grub-mkrescue.h2m: New file.
+	* docs/man/grub-ofpathname.h2m: New file.
+	* docs/man/grub-pe2elf.h2m: New file.
+	* docs/man/grub-probe.h2m: New file.
+	* docs/man/grub-reboot.h2m: New file.
+	* docs/man/grub-script-check.h2m: New file.
+	* docs/man/grub-set-default.h2m: New file.
+	* docs/man/grub-setup.h2m: New file.
+
+2010-06-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use FOR_* macros instead of *_iterate whenever possible.
+
+	* commands/handler.c: Removed.
+	* commands/help.c (grub_cmd_help): Use FOR_COMMANDS.
+	* commands/minicmd.c (grub_mini_cmd_lsmod): Use FOR_DL_MODULES.
+	* conf/any-emu.rmk (kernel_img_SOURCES): Remove kern/handler.c.
+	* conf/common.rmk (script/lexer.c_DEPENDENCIES): Add grub_script.yy.h.
+	(grub_probe_SOURCES): Remove kern/parser.c.
+	(util/grub-script-check.c_DEPENDENCIES): Removed.
+	(grub_script_check_SOURCES): Remove kern/handler.c, kern/parser.c
+	and grub_script_check_init.c.
+	(grub_script_check_init.lst): Removed.
+	(grub_script_check_init.h): Likewise.
+	(grub_script_check_init.c): Likewise.
+	(pkglib_MODULES): Remove handler.mod and sh.mod.
+	(handler_mod_SOURCES): Removed.
+	(handler_mod_CFLAGS): Likewise.
+	(handler_mod_LDFLAGS): Likewise.
+	(normal_mod_SOURCES): Remove normal/handler.c.
+	Add script/main.c, script/script.c, script/execute.c,
+	script/function.c, script/lexer.c, grub_script.tab.c
+	and grub_script.yy.c.
+	* conf/i386-coreboot.rmk (kernel_img_SOURCES): Remove kern/handler.c.
+	* conf/i386-ieee1275.rmk (kernel_img_SOURCES): Likewise.
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Likewise.
+	(grub_setup_SOURCES): Remove kern/parser.c.
+	* conf/i386-qemu.rmk (kernel_img_SOURCES): Remove kern/handler.c.
+	* conf/mips-qemu-mips.rmk (kernel_img_SOURCES): Likewise.
+	* conf/mips-yeeloong.rmk (kernel_img_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (kernel_img_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (kernel_img_SOURCES): Likewise.
+	(grub_setup_SOURCES): Remove kern/parser.c.
+	* conf/x86-efi.rmk (kernel_img_SOURCES): Remove kern/handler.c.
+	* gettext/gettext.c (grub_gettext_delete_list): Don't use grub_list_pop.
+	* include/grub/command.h (grub_command_iterate): Removed.
+	(FOR_COMMANDS): New macro.
+	* include/grub/dl.h (grub_dl): New member next.
+	(grub_dl_iterate): Removed.
+	(grub_dl_head): New variable declaration.
+	(FOR_DL_MODULES): New macro.
+	* include/grub/fs.h: Include list.h.
+	(grub_fs): Make next first element.
+	(grub_fs_list): New variable declaration.
+	(grub_fs_register): Make inline.
+	(grub_fs_unregister): Likewise.
+	(grub_fs_iterate): Removed.
+	(FOR_FILESYSTEMS): New macro.
+	* include/grub/handler.h: Removed.
+	* include/grub/list.h (grub_list_hook_t): Removed.
+	(grub_list_test_t): Likewise.
+	(grub_list_pop): Likewise.
+	(grub_list_iterate): Likewise.
+	(grub_list_insert): Likewise.
+	(FOR_LIST_ELEMENTS): New macro.
+	* include/grub/parser.h (grub_parser_class): Removed.
+	(grub_parser_register): Likewise.
+	(grub_parser_unregister): Likewise.
+	(grub_parser_get_current): Likewise.
+	(grub_parser_set_current): Likewise.
+	(grub_register_rescue_parser): Likewise.
+	(grub_rescue_parse_line): New function.
+	* include/grub/partition.h (FOR_PARTITION_MAPS): Use FOR_LIST_ELEMENTS.
+	* include/grub/script_sh.h (grub_script_function_list): New variable
+	declaration.
+	(FOR_SCRIPT_FUNCTIONS): New macro.
+	(grub_script_function_iterate): Removed.
+	(grub_normal_parse_line): New prototype.
+	* include/grub/term.h (FOR_ACTIVE_TERM_INPUTS): Use FOR_LIST_ELEMENTS.
+	(FOR_DISABLED_TERM_INPUTS): Likewise.
+	(FOR_ACTIVE_TERM_OUTPUTS): Likewise.
+	(FOR_DISABLED_TERM_OUTPUTS): Likewise.
+	* include/grub/video.h (grub_video_adapter): Move 'next' to first
+	element.
+	(grub_video_register): Inline.
+	(grub_video_unregister): Likewise.
+	(grub_video_adapter_list): New variable declaration.
+	(grub_video_iterate): Removed.
+	(FOR_VIDEO_ADAPTERS): New macro.
+	* kern/dl.c (grub_dl_list): Removed. All users updated.
+	(grub_dl_iterate): Removed.
+	* kern/fs.c (grub_fs_list): Make global.
+	(grub_fs_register): Removed.
+	(grub_fs_unregister): Likewise.
+	(grub_fs_iterate): Likewise.
+	* kern/handler.c: Removed.
+	* kern/list.c (grub_list_pop): Removed.
+	(grub_list_iterate): Likewise.
+	(grub_list_insert): Likewise.
+	(grub_named_list_find): Use FOR_LIST_ELEMENTS.
+	(grub_prio_list_insert): Don't use grub_list_insert.
+	* kern/main.c (grub_register_rescue_parser): Don't call
+	grub_register_rescue_parser.
+	* kern/parser.c (grub_parser_class): Removed.
+	(grub_parser_execute): Use grub_rescue_parse_line.
+	* kern/rescue_parser.c (grub_rescue_parse_line): Make global.
+	(grub_rescue_parser): Removed.
+	(grub_register_rescue_parser): Likewise.
+	* kern/rescue_reader.c (grub_rescue_run): Use grub_rescue_parse_line.
+	* normal/auth.c (is_authenticated): Use FOR_LIST_ELEMENTS.
+	(grub_auth_check_authentication): Likewise.
+	* normal/completion.c (iterate_command): Removed.
+	(grub_normal_do_completion): Use FOR_COMMANDS.
+	* normal/handler.c: Removed.
+	* normal/main.c (read_config_file): Remove parser changing.
+	(grub_normal_execute): Don't call read_handler_list.
+	(grub_normal_read_line_real): Statically allocate prompt.
+	(grub_cmdline_run): Use grub_normal_parse_line.
+	(GRUB_MOD_FINI): Don't call free_handler_list.
+	* normal/menu_entry.c (run): Likewise.
+	* script/function.c (grub_script_function_list): Make global.
+	(grub_script_function_iterate): Removed.
+	* script/main.c (grub_normal_parse_line): Make global.
+	(grub_sh_parser): Removed.
+	(GRUB_MOD_INIT): Likewise.
+	(GRUB_MOD_FINI): Likewise.
+	* tests/lib/functional_test.c (grub_functional_test): Use
+	FOR_LIST_ELEMENTS.
+	* tests/lib/test.c (free_failures): Don't use grub_list_pop.
+	(grub_test_run): Use FOR_LIST_ELEMENTS.
+	* tests/lib/unit_test.c (main): Likewise.
+	* util/deviceiter.c (grub_util_iterate_devices): Don't use
+	grub_list_pop.
+	* util/grub-fstest.c (grub_term_input_class): Removed.
+	(grub_term_output_class): Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/sparc64/ieee1275/grub-setup.c: Likewise.
+	* util/grub-script-check.c (main): Don't call grub_init_all and
+	grub_fini_all.
+	* video/video.c (grub_video_adapter_list): Make global.
+	(grub_video_register): Removed.
+	(grub_video_unregister): Likewise.
+	(grub_video_iterate): Likewise.
+
+2010-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Vendor power-on button): Add Asus EeePC 1005PE as
+	reported by Henrique Ferreiro.
+
+2010-06-09  Robert Millan  <rmh@gnu.org>
+
+	* util/grub.d/10_linux.in: Prefer compressed images over non-compressed
+	ones, when both are available.
+
+2010-06-08  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	Make --version uniform and avoid hard-coded program name.
+
+	* util/grub-mkimage.c (main): Use `program_name' instead of
+	hard-coded string.
+	* util/i386/pc/grub-setup.c (main): Likewise.
+	* util/sparc64/ieee1275/grub-setup.c (parse_options): Likewise.
+	* util/grub-install.in: Save the basename of $0 in $self, and use the
+	latter in informational messages.  Use the same format for --version
+	as the binary programs.
+	* util/grub-mkconfig.in: Likewise.
+	* util/grub-mkrescue.in: Likewise.
+	* util/grub-reboot.in: Likewise.
+	* util/grub-set-default.in: Likewise.
+	* util/i386/efi/grub-install.in: Likewise.
+	* util/ieee1275/grub-install.in: Likewise.
+	* util/powerpc/ieee1275/grub-mkrescue.in: Likewise.
+
+2010-06-08  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* util/i386/pc/grub-setup.c (setup): Use absolute offsets for start of
+	embedding area.  Use <= instead of == when checking for non-emptiness.
+
+2010-06-08  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* configure.ac: Add `.' to the directories searched for unifont.
+
+2010-06-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Add ascii.bitmaps, ascii.h, grub_script.yy.c, and
+	grub_script.yy.h.
+
+2010-06-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (History): Expand to cover GRUB 2.
+	(Serial terminal): Refer to `terminal_input' and `terminal_output'
+	commands, not `terminal'.
+	(serial): Likewise.
+	(terminal_input): New section.
+	(terminal_output): New section.
+	(uppermem): New section (stub).
+	(Obtaining and Building GRUB): Refer to Bazaar, not Subversion.
+
+2010-06-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Security): Menu entries are unrestricted by
+	default, not restricted to superusers as I had previously thought.
+	Reword to account for this.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/emu/misc.c (device_mapper_null_log): New function.
+	(grub_device_mapper_supported): New function.
+	* include/grub/emu/misc.h (grub_device_mapper_supported): Add
+	prototype.
+	* kern/emu/hostdisk.c (find_partition_start): Check whether
+	device-mapper is supported before trying to use it.
+	* util/deviceiter.c (grub_util_iterate_devices): Likewise.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Naming convention): Use GRUB 2 syntax.
+	(File name syntax): Likewise.
+	(help): --all is no longer supported in GRUB 2.  Be more precise
+	about pattern matching.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* normal/completion.c (grub_normal_do_completion): When completing
+	arguments to "set" and the current word contains an equals sign,
+	skip to after the equals sign before starting completion.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* fs/i386/pc/pxe.c (grub_pxe_open): Fix parsing of gateway_ip.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Network): New section.
+	(Device syntax): The network device is called `(pxe)' in GRUB 2, not
+	`(nd)' as in GRUB Legacy.
+	(pxe_unload): New section.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Troubleshooting): `echo' is not usually available
+	in the rescue shell, so recommend using `set' instead.  Thanks,
+	Jordan Uggla.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Filesystem): Refer to `search' instead of `find'.
+	(password): New section.
+	(password_pbkdf2): New section.
+	(search): New section.
+	(Security): New section.
+	(Troubleshooting): New section, currently very incomplete.
+	(Invoking grub-mkpasswd-pbkdf2): New section.
+	(Internals): New section, currently very incomplete.
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Add some more quoting (of
+	"${prev_saved_entry}" and "${boot_once}") needed to make savedefault
+	work again.
+	Reported by: Mario 'BitKoenig' Holbe (Debian bug #584812).
+
+2010-06-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkpasswd-pbkdf2.c (main): Rename top-level `c' variable
+	to `count', fixing variable shadowing that broke the -c option.
+
+2010-06-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Quote values assigned to `saved_entry',
+	in case they contain spaces.
+
+2010-06-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Prepend
+	"part_" to partmap module names, in line with grub-install.
+	Reported by: Jindřich Makovička (Debian bug #584426).
+
+2010-06-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkimage.c: Make target-related error messages slightly
+	more helpful; -O talks about "format".  Explicitly point to the use
+	of -O if no target is specified.
+	Reported by: Didier Raboud (Debian bug #584415).
+
+2010-06-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* INSTALL: Document several build requirements for optional features
+	(libdevmapper, ncurses, libusb, SDL, FreeType, GNU Unifont).
+
+2010-06-02  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/emu/hostdisk.c (convert_system_partition_to_system_disk)
+	[__NetBSD__]: Handle all device names matching /dev/r[a-z]+[0-9][a-z].
+	(find_partition_start) [__NetBSD__]: Correct error messages for NetBSD.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Simple configuration): Fix copy-and-paste typo.
+	Thanks to Jordan Uggla for spotting this.
+
+2010-06-02  Aleš Nesrsta <starous@volny.cz>
+
+	Finally make USB usable.
+
+	* bus/usb/ohci.c (grub_ohci_reg_t): Add missing values.
+	(GRUB_OHCI_RHUB_PORT_POWER_MASK): New macro.
+	(GRUB_OHCI_RHUB_PORT_ALL_POWERED): Likewise.
+	(GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_MASK): Likewise.
+	(GRUB_OHCI_REG_FRAME_INTERVAL_FSMPS_SHIFT): Likewise.
+	(GRUB_OHCI_REG_FRAME_INTERVAL_FI_SHIFT): Likewise.
+	(GRUB_OHCI_FSMPS): Likewise.
+	(GRUB_OHCI_PERIODIC_START): Likewise.
+	(GRUB_OHCI_FRAME_INTERVAL): Likewise.
+	(GRUB_OHCI_SET_PORT_ENABLE): Likewise.
+	(GRUB_OHCI_CLEAR_PORT_ENABLE): Likewise.
+	(GRUB_OHCI_SET_PORT_RESET): Likewise.
+	(GRUB_OHCI_SET_PORT_RESET_STATUS_CHANGE): Likewise.
+	* bus/usb/ohci.c (grub_ohci_pci_iter): Various important fixups.
+	(grub_ohci_transaction): Likewise.
+	(grub_ohci_transfer): Improve condition detection algorithms.
+	Handle toggle property. Program the transactions correctly.
+	Improve error handling. Various important fixups.
+	(grub_ohci_portstatus): Put register writes in right order.
+	* bus/usb/uhci.c (grub_free_queue): Compute last_trans.
+	(grub_uhci_transfer): Don't show "failed" message on success.
+	* bus/usb/usb.c (grub_usb_set_configuration): Zero-fill whole "toggle"
+	array.
+	(grub_usb_device_initialize): Read first 8 bytes of descriptor to
+	determine its size.
+	* bus/usb/usbtrans.c (grub_usb_control_msg): Use descdev.maxsize0 even
+	before initialization is completed. Use IN direction for empty
+	transfers. Use last_trans and compute toggle.
+	* include/grub/usbtrans.h (grub_usb_transfer): New field last_trans.
+	(GRUB_USB_FEATURE_ENDP_HALT): Correct the value.
+	(GRUB_USB_FEATURE_DEV_REMOTE_WU): Likewise.
+	(GRUB_USB_FEATURE_TEST_MODE): Likewise.
+	* include/grub/usb.h (grub_usb_err_t): New value GRUB_USB_ERR_UNRECOVERABLE.
+	(grub_usb_device): Increase toggle to 256.
+	(grub_usbms_subclass_t): New values GRUB_USBMS_SUBCLASS_RBC,
+	GRUB_USBMS_SUBCLASS_MMC2, GRUB_USBMS_SUBCLASS_UFI and
+	GRUB_USBMS_SUBCLASS_SFF8070.
+	* include/grub/scsicmd.h (grub_scsi_test_unit_ready): New structure.
+	(grub_scsi_inquiry): New member page and alloc_length.
+	(grub_scsi_request_sense): New structure.
+	(grub_scsi_request_sense_data): Likewise.
+	(grub_scsi_read_capacity): New fields logical_block_addr, PMI and
+	control.
+	* disk/scsi.c (grub_scsi_request_sense): New function.
+	(grub_scsi_test_unit_ready): Likewise.
+	(grub_scsi_inquiry): Fill new fields.
+	(grub_scsi_read_capacity): Likewise.
+	(grub_scsi_read10): Add request sense at the end.
+	(grub_scsi_read12): Likewise.
+	(grub_scsi_write10): Likewise.
+	(grub_scsi_write12): Likewise.
+	(grub_scsi_open): Add Test Unit Ready.
+	* disk/usbms.c (grub_usbms_finddevs): Check configcnt.
+	Support additional subclasses. Con't clear halt yet. Activate the
+	proper config. Calculate LUNs correctly.
+	(grub_usbms_transfer): Various important fixups.
+
+2010-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* bus/pci.c (grub_pci_iterate) [GRUB_MACHINE_MIPS_YEELOONG]: Skip ghosts.
+	* bus/usb/ohci.c (grub_ohci_portstatus): Handle R/WC correctly.
+	(grub_ohci_fini_hw): New function.
+	(grub_ohci_restore_hw): Likewise.
+	(GRUB_MOD_INIT(ohci)): Register preboot hook.
+	(GRUB_MOD_FINI(ohci)): Shutdown OHCI.
+	* term/usb_keyboard.c: Remove include of grub/machine/console.h.
+
+2010-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Dedicated DMA allocations.
+
+	* bus/pci.c (grub_memalign_dma32): New function
+	(grub_dma_free): Likewise.
+	(grub_dma_get_virt): Likewise.
+	(grub_dma_get_phys): Likewise.
+	* bus/usb/ohci.c (grub_ohci): New members hcca_addr and hcca_chunk.
+	(grub_ohci_pci_iter): Use dma32_alloc.
+	(grub_ohci_transfer): Likewise.
+	* bus/usb/usbtrans.c (grub_usb_control_msg): Likewise.
+	(grub_usb_bulk_readwrite): Likewise.
+	* include/grub/pci.h: Add declarations.
+
+2010-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	CS5536 support.
+
+	* bus/cs5536.c: New file.
+	* bus/usb/ohci.c (grub_ohci_pci_iter): Check for CS5536.
+	* conf/i386.rmk (pkglib_MODULES): Add cs5536.mod.
+	(cs5536_mod_SOURCES): New variable.
+	(cs5536_mod_CFLAGS): Likewise.
+	(cs5536_mod_LDFLAGS): Likewise.
+	* conf/mips-yeeloong.rmk (kernel_img_HEADERS): Add cs5536.h and
+	machine/pci.h.
+	(kernel_img_SOURCES): Add bus/cs5536.c.
+	(pkglib_MODULES): Add usb.mod, usbtest.mod, ohci.mod, usbms.mod and
+	usb_keyboard.mod.
+	(usb_mod_SOURCES): New variable.
+	(usb_mod_CFLAGS): New variable.
+	(usb_mod_LDFLAGS): New variable.
+	(usbtest_mod_SOURCES): New variable.
+	(usbtest_mod_CFLAGS): New variable.
+	(usbtest_mod_LDFLAGS): New variable.
+	(ohci_mod_SOURCES): New variable.
+	(ohci_mod_CFLAGS): New variable.
+	(ohci_mod_LDFLAGS): New variable.
+	(usbms_mod_SOURCES): New variable.
+	(usbms_mod_CFLAGS): New variable.
+	(usbms_mod_LDFLAGS): New variable.
+	(usb_keyboard_mod_SOURCES): New variable.
+	(usb_keyboard_mod_CFLAGS): New variable.
+	(usb_keyboard_mod_LDFLAGS): New variable.
+	* include/grub/smbus.h: New file.
+	* include/grub/cs5536.h: New file.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Add safety check to make sure that
+	${locale_dir} exists before trying to probe it.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (SCO UnixWare): Remove, at Vladimir's request and
+	per the GNU Coding Standards; this is now too obscure to be worth
+	documenting.
+	(QNX): Likewise.
+	(chainloader): Remove cross-reference to `SCO UnixWare'.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Chain-loading): New section.
+	(DOS/Windows): New section, borrowed from GRUB Legacy with details
+	adjusted for GRUB 2.
+	(SCO UnixWare): Likewise.
+	(QNX): Likewise.
+	(chainloader): Add reference to `Block list syntax'.
+	(drivemap): New section.
+	(parttool): New section.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (GNU GRUB manual): Remove reference to `Invoking
+	the grub shell'.
+	(Installation): Add reference to `Making a GRUB bootable CD-ROM'.
+	(Installing GRUB using grub-install): Remove reference to the grub
+	shell; mention `grub-mkimage' and `grub-setup' instead.
+	(Invoking grub-install): Likewise.
+	(Interface): Add reference to `Menu entry editor'.
+	(serial): Remove `--device' option.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Configuration): New section, documenting
+	configuration file generation using grub-mkconfig.  I've left a slot
+	for documenting the full shell scripting format but have not yet
+	started on writing that up.
+	(Invoking grub-mkconfig): New section.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (direntry): Remove grub-terminfo reference.
+	(GNU GRUB manual): Likewise.
+	(General commands): Update description of `terminfo' for GRUB 2.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/gptsync.c (grub_cmd_gptsync): Fix typos.
+	(GRUB_MOD_INIT): Fix capitalisation.
+	* docs/grub.texi (Command-line and menu entry commands): Document
+	gettext and gptsync commands.
+
+2010-06-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* conf/any-emu.rmk (kernel_img_SOURCES) [!x86]: Include
+	kern/$(target_cpu)/cache.S even if TARGET_NO_MODULES = yes.
+
+2010-06-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	Add btrfs probing support, currently only in the single-device case.
+
+	* kern/emu/getroot.c (find_root_device_from_mountinfo): New
+	function.
+	(grub_guess_root_device): Call find_root_device_from_mountinfo
+	before looking in /dev.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_open): Use
+	GRUB_DISK_SIZE_UNKNOWN.
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_open): Likewise.
+
+2010-05-31  Jiro SEKIBA <jir@unicus.jp>
+
+	* include/grub/disk.h (GRUB_DISK_SIZE_UNKNOWN): New macro.
+	* fs/nilfs.c: Support 2nd super block in case 1st one is accidently
+	corrupted or not synced properly.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* normal/main.c (grub_normal_add_menu_entry): Avoid going out of args.
+	Reported by: Seth Goldberg.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/multiboot_mbi2.c (grub_multiboot_make_mbi): Fix incorrect
+	addition of dest.
+	Reported by: Seth Goldberg.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/setpci.c (grub_setpci_iter): Fix an incorrect function check.
+	Reported by: Seth Goldberg.
+
+2010-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/multiboot_elfxx.c (grub_multiboot_load_elfXX) [__mips]: Check
+	64-bit address as signed on MIPS.
+
+2010-05-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: AC_PROG_LEX sets LEX to ":" if lex is missing, not
+	to the empty string.
+
+2010-05-28  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix grub-emu issues on NetBSD, with gcc 4.1.3.
+
+	* conf/any-emu.rmk: Remove unnecessary COMMON_CFLAGS.
+	* include/grub/emu/misc.h (canonicalize_file_name): New Prototype.
+	* kern/misc.c (__enable_execute_stack): Disable on
+	GRUB_MACHINE_EMU.
+
+2010-05-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	Make grub-probe work with symbolic links under /dev/mapper as well
+	as with real block devices.  The Linux world seems to be (at best)
+	in transition here, and GRUB shouldn't get caught in the middle.
+
+	* kern/emu/getroot.c (find_root_device): Follow symbolic links under
+	/dev/mapper.
+
+2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-script-check.c (main): Ensure defined behaviour on empty
+	input files (in which case exit zero).
+
+2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/emu/misc.c (canonicalize_file_name): realpath can still
+	return NULL for various reasons even if it has a maximum-length
+	buffer: for example, there might be a symlink loop, or the path
+	might exceed PATH_MAX.  If this happens, return NULL.
+
+2010-05-27  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Insert
+	partmap module to handle cross-partmap setups.
+	Reported by Orestes Mas.  Gràcies!
+
+2010-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrescue.in: Initialise override_dir rather than
+	assuming that it's unset or empty in the environment.
+
+2010-05-26  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/emu/hostdisk.c (find_partition_start) [__NetBSD__]: Renamed
+	variable index into p_index to suppress a warning with -Wshadow.
+
+2010-05-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* INSTALL: Added flex >= 2.5.35 requirement.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/usbtest.c (grub_usb_get_string): Properly support UTF-16.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	cmostest support.
+
+	* commands/i386/cmostest.c: New file.
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Add cmostest.mod.
+	(cmostest_mod_SOURCES): New variable.
+	(cmostest_mod_CFLAGS): Likewise.
+	(cmostest_mod_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* docs/grub.texi (Vendor power-on keys): New section.
+	* util/grub-mkconfig.in: export GRUB_DEFAULT_BUTTON,
+	GRUB_HIDDEN_TIMEOUT_BUTTON, GRUB_TIMEOUT_BUTTON
+	and GRUB_BUTTON_CMOS_ADDRESS.
+	* util/grub.d/00_header.in: Handle powering-on by separate button.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gfxmenu/gui_list.c (draw_menu): Don't add scrollbar width to padding.
+	Removed drawing_scrollbar argument. All users updated
+	Fixes #29792.
+	Reported by Jo Shields
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gfxmenu/view.c (grub_gfxmenu_draw_terminal_box): Apply only to current
+	buffer since gfxterm handles double repaint.
+
+2010-05-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gfxmenu/gfxmenu.c (grub_gfxmenu_try): Change viewport on both buffers.
+	* term/gfxterm.c (real_scroll): Likewise.
+
+2010-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/i386/pc/mmap.c (grub_machine_mmap_iterate): Zero-fill entry
+	before calling BIOS.
+
+2010-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i18n.h: Always enable grub_gettext.
+
+2010-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/i386/pc/init.c (make_install_device): Fix a leftover usage of old
+	partition naming style.
+
+2010-05-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig.in: Fix handling of -o so that it works when
+	not the first option.
+
+2010-05-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrelpath.c (usage): Remove excess apostrophe.
+
+2010-05-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/misc.c: Move inclusion of <limits.h> to ...
+	* kern/emu/misc.c: ... here.  Needed for canonicalize_file_name.
+
+2010-05-20  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/emu/hostdisk.c (grub_util_biosdisk_get_grub_dev) [__NetBSD__]:
+	Fix merge error in NetBSD code.
+	(find_partition_start) [__NetBSD__]: Likewise.
+
+2010-05-19  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix grub-mkrescue usage unit testing.
+
+	* tests/util/grub-shell.in: Use --grub-mkimage with grub-mkrescue.
+
+2010-05-18  Christian Franke  <franke@computer.org>
+
+	* util/grub.d/10_windows.in: Use path names instead of
+	drive letters to prevent warning from Cygwin 1.7.
+	Add drivemap command to menuentry if needed.
+
+2010-05-18  Justus Winter  <4winter@informatik.uni-hamburg.de>
+
+	* util/grub.d/10_hurd.in: Include all gnumach* kernels, not only
+	gnumach and gnumach.gz.
+
+2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i18n.h (gettext): Inline instead of using #define.
+	(grub_gettext): Likewise.
+	(_): Likewise.
+
+2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.in (CPPFLAGS): Replace -DGRUB_LIBDIR with
+	-DGRUB_PKGLIBROOTDIR= and prepend @PACKAGE_TARNAME@. All users updated.
+	* util/grub-mkimage.c (image_targets): Add i386-multiboot.
+	(main): Add a slash after pkglibdirroot.
+
+2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Add missing "in" keyword.
+
+2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrescue.in: Remove -O i386-pc duplication.
+	Reported by: Seth Goldberg.
+
+2010-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* po/POTFILES: Rename util/grub-mkrawimage.c to util/grub-mkimage.c.
+
+2010-05-18  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: Check for Linux device-mapper support.
+
+	* util/hostdisk.c (device_is_mapped): New function.
+	(find_partition_start): New function, partly broken out from
+	linux_find_partition and grub_util_biosdisk_get_grub_dev but with
+	device-mapper support added.
+	(linux_find_partition): Use find_partition_start.
+	(convert_system_partition_to_system_disk): Add `st' argument.
+	Support Linux /dev/mapper/* devices if device-mapper support is
+	available; only DM-RAID devices are understood at present.
+	(find_system_device): Add `st' argument.  Pass it to
+	convert_system_partition_to_system_disk.
+	(grub_util_biosdisk_get_grub_dev): Pass stat result to
+	find_system_device and convert_system_partition_to_system_disk.  Use
+	find_partition_start.
+
+	* conf/common.rmk (grub_mkdevicemap_SOURCES): Add kern/env.c,
+	kern/err.c, kern/list.c, kern/misc.c, and kern/emu/mm.c.
+	* util/deviceiter.c [__linux__]: Define MINOR.
+	(grub_util_iterate_devices): Add support for DM-RAID disk devices.
+	* util/mkdevicemap.c (grub_putchar): New function.
+	(grub_getkey): New function.
+	(grub_refresh): New function.
+	(main): Set debug=all if -v -v is used.
+
+2010-05-18  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix build with non-GNU libcs.
+
+	* util/misc.c (canonicalize_file_name): Move to ...
+	* kern/emu/misc.c (canonicalize_file_name): ... here.  Needed by
+	grub_make_system_path_relative_to_its_root.
+
+2010-05-18  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrescue.in: Sync up with grub-install in terms of how
+	we handle finding grub-mkimage.  Default to finding grub-mkimage in
+	${bindir} with program_transform_name applied, and provide a
+	--grub-mkimage option to override this.
+
+2010-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove grub-mkisofs.
+
+	* conf/common.rmk (bin_UTILITIES): Remove grub-mkisofs.
+	(grub_mkisofs_SOURCES): Removed.
+	(grub_mkisofs_CFLAGS): Removed.
+	* util/mkisofs/defaults.h: Removed.
+	* util/mkisofs/eltorito.c: Likewise.
+	* util/mkisofs/exclude.h: Likewise.
+	* util/mkisofs/hash.c: Likewise.
+	* util/mkisofs/include/: Likewise.
+	* util/mkisofs/include/fctldefs.h: Likewise.
+	* util/mkisofs/include/mconfig.h: Likewise.
+	* util/mkisofs/include/prototyp.h: Likewise.
+	* util/mkisofs/include/statdefs.h: Likewise.
+	* util/mkisofs/iso9660.h: Likewise.
+	* util/mkisofs/joliet.c: Likewise.
+	* util/mkisofs/match.c: Likewise.
+	* util/mkisofs/match.h: Likewise.
+	* util/mkisofs/mkisofs.c: Likewise.
+	* util/mkisofs/mkisofs.h: Likewise.
+	* util/mkisofs/msdos_partition.h: Likewise.
+	* util/mkisofs/multi.c: Likewise.
+	* util/mkisofs/name.c: Likewise.
+	* util/mkisofs/rock.c: Likewise.
+	* util/mkisofs/tree.c: Likewise.
+	* util/mkisofs/write.c: Likewise.
+
+2010-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Unify grub-mkimage accross platforms.
+
+	* Makefile.in (CPPFLAGS): Set GRUB_LIBDIR to $(libdir).
+	* conf/common.rmk (bin_UTILITIES): Removed grub-mkelfimage.
+	(grub_mkelfimage_SOURCES): Removed.
+	(util/elf/grub-mkimage.c_DEPENDENCIES): Renamed to ..
+	(util/grub-mkimage.c_DEPENDENCIES): .. this.
+	(bin_UTILITIES): Add grub-mkimage.
+	(grub_mkimage_SOURCES): New variable.
+	(kernel_img_HEADERS): Remove machine/kernel.h.
+	* conf/i386-pc.rmk (pkglib_IMAGES): Remove kernel.img.
+	(pkglib_PROGRAMS): Add kernel.img.
+	(kernel_img_HEADERS): Add machine/kernel.h.
+	(kernel_img_FORMAT): Removed.
+	(bin_UTILITIES): Remove grub-mkimage.
+	(grub_mkimage_SOURCES): Removed.
+	(grub_mkimage_CFLAGS): Likewise.
+	(util/grub-mkrawimage.c_DEPENDENCIES): Likewise.
+	* conf/i386-qemu.rmk (pkglib_IMAGES): Remove kernel.img.
+	(pkglib_PROGRAMS): Add kernel.img.
+	(bin_UTILITIES): Remove grub-mkimage.
+	(grub_mkimage_SOURCES): Removed.
+	(grub_mkimage_CFLAGS): Likewise.
+	(util/grub-mkrawimage.c_DEPENDENCIES): Likewise.
+	* conf/mips-qemu-mips.rmk (pkglib_IMAGES): Remove kernel.img.
+	(pkglib_PROGRAMS): Add kernel.img.
+	* conf/mips-yeeloong.rmk (pkglib_IMAGES): Remove kernel.img.
+	(pkglib_PROGRAMS): Add kernel.img.
+	* conf/mips.rmk (bin_UTILITIES): Remove grub-mkimage.
+	(grub_mkimage_SOURCES): Removed.
+	(grub_mkimage_CFLAGS): Likewise.
+	(util/grub-mkrawimage.c_DEPENDENCIES): Likewise.
+	* conf/sparc64-ieee1275.rmk (pkglib_IMAGES): Remove kernel.img.
+	(pkglib_PROGRAMS): Add kernel.img.
+	(bin_UTILITIES): Remove grub-mkimage.
+	(grub_mkimage_SOURCES): Removed.
+	(grub_mkimage_CFLAGS): Likewise.
+	(util/grub-mkrawimage.c_DEPENDENCIES): Likewise.
+	* conf/x86-efi.rmk (bin_UTILITIES): Remove grub-mkimage.
+	(grub_mkimage_SOURCES): Removed.
+	(grub_mkimage_CFLAGS): Likewise.
+	(util/grub-mkrawimage.c_DEPENDENCIES): Likewise.
+	* configure.ac (machine_CFLAGS): Add "-DMACHINE".
+	* include/grub/efi/pe32.h (grub_pe32_optional_header): Split into ...
+	(grub_pe32_optional_header): ... this.
+	(grub_pe64_optional_header): ... and this. All users updated.
+	(GRUB_PE32_PE32_MAGIC): Split into ..
+	(GRUB_PE32_PE32_MAGIC): .. this.
+	(GRUB_PE32_PE64_MAGIC): .. and this.
+	(GRUB_PE32_SIGNATURE_SIZE): New definition.
+	* include/grub/elf.h (PT_GNU_STACK): New definition.
+	* include/grub/i386/coreboot/kernel.h: Merged into include/grub/offsets.h. All users updated.
+	* include/grub/i386/efi/kernel.h: Likewise.
+	* include/grub/i386/kernel.h: Likewise.
+	* include/grub/i386/pc/kernel.h: Likewise.
+	* include/grub/i386/qemu/boot.h: Likewise.
+	* include/grub/mips/kernel.h: Likewise.
+	* include/grub/mips/qemu-mips/kernel.h: Likewise.
+	* include/grub/powerpc/ieee1275/kernel.h: Likewise.
+	* include/grub/powerpc/kernel.h: Likewise.
+	* include/grub/sparc64/ieee1275/boot.h: Likewise.
+	* include/grub/sparc64/ieee1275/kernel.h: Likewise.
+	* include/grub/sparc64/kernel.h: Likewise.
+	* include/grub/x86_64/efi/kernel.h: Likewise.
+	* include/grub/x86_64/kernel.h: Likewise.
+	* include/grub/offsets.h: New file.
+	* include/grub/kernel.h (grub_module_info): Split into ...
+	(grub_module_info32): ... this.
+	(grub_module_info64): ... and this.
+	* include/grub/i386/pc/boot.h (GRUB_BOOT_MACHINE_KERNEL_SEG): Moved from here ...
+	* include/grub/offsets.h (GRUB_BOOT_I386_PC_KERNEL_SEG): ... here.
+	(grub_boot_blocklist): Moved from here ...
+	* include/grub/offsets.h (grub_pc_bios_boot_blocklist): ... here.
+	* include/grub/i386/pc/memory.h (GRUB_MEMORY_MACHINE_UPPER): Moved from here.
+	* include/grub/offsets.h (GRUB_MEMORY_I386_PC_UPPER): .. here.
+	* include/grub/types.h (grub_target_to_host16): Removed.
+	(grub_target_to_host32): Likewise.
+	(grub_target_to_host64): Likewise.
+	(grub_host_to_target16): Likewise.
+	(grub_host_to_target32): Likewise.
+	(grub_host_to_target64): Likewise.
+	(grub_host_to_target_addr): Likewise.
+
+	Support grub-mkrescue for efi, coreboot and qemu.
+
+	* conf/x86-efi.rmk (bin_SCRIPTS): Add grub-mkrescue.
+	* kern/efi/init.c (grub_efi_set_prefix): Handle baked in prefix.
+	* util/elf/grub-mkimage.c: Merged into util/grub-mkimage.c.
+	* util/grub-mkrawimage.c: Moved from here ...
+	* util/grub-mkimage.c: ... here. All users updated.
+	(ALIGN_ADDR): Use image_target.
+	(TARGET_NO_FIELD): New const.
+	(image_target_desc): New type.
+	(image_targets): New array.
+	(grub_target_to_host64): Use image_target.
+	(grub_target_to_host32): Likewise.
+	(grub_target_to_host16): Likewise.
+	(grub_host_to_target64): Likewise.
+	(grub_host_to_target32): Likewise.
+	(grub_host_to_target16): Likewise.
+	(grub_host_to_target_addr): Likewise.
+	(generate_image): Handle multiimage.
+	(main): Require -O parameter. All users updated.
+	* util/grub-mkimagexx.c: New file. Based on util/grub-mkrawimage.c and
+	util/efi/grub-mkimage.c
+	* util/grub-mkrescue.in: Handle coreboot, efi and qemu.
+	New option --rom-directory.
+	Use xorriso.
+	* util/i386/efi/grub-mkimage.c: Removed.
+	* util/i386/pc/grub-setup.c (grub_target_to_host16): New definition.
+	(grub_target_to_host32): Likewise.
+	(grub_target_to_host64): Likewise.
+	(grub_host_to_target16): Likewise.
+	(grub_host_to_target32): Likewise.
+	(grub_host_to_target64): Likewise.
+	* util/sparc64/ieee1275/grub-setup.c (grub_target_to_host16): New definition.
+	(grub_target_to_host32): Likewise.
+	(grub_target_to_host64): Likewise.
+	(grub_host_to_target16): Likewise.
+	(grub_host_to_target32): Likewise.
+	(grub_host_to_target64): Likewise.
+
+2010-05-17  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Source tree is reorganized for emu build.
+
+	* include/grub/util/console.h: Move from here...
+	* include/grub/emu/console.h: ...to here.
+	* include/grub/util/getroot.h: Move from here...
+	* include/grub/emu/getroot.h: ...to here.
+	* include/grub/util/hostdisk.h: Move from here...
+	* include/grub/emu/hostdisk.h: ...to here.
+	* util/console.c: Move from here...
+	* kern/emu/console.c: ...to here.
+	* util/getroot.c: Move from here...
+	* kern/emu/getroot.c: ...to here.
+	* util/grub-emu.c: Move from here...
+	* kern/emu/main.c: ...to here.
+	* util/hostdisk.c: Move from here...
+	* kern/emu/hostdisk.c: ...to here.
+	* util/hostfs.c: Move from here...
+	* kern/emu/hostfs.c: ...to here.
+	* util/mm.c: Move from here...
+	* kern/emu/mm.c: ...to here.
+	* util/pci.c: Move from here...
+	* bus/emu/pci.c: ...to here.
+	* util/sdl.c: Move from here...
+	* video/emu/sdl.c: ...to here.
+	* util/time.c: Move from here...
+	* kern/emu/time.c: ...to here.
+	* util/usb.c: Move from here...
+	* bus/usb/emu/usb.c: ...to  here.
+
+	* include/grub/emu/misc.h: New header for grub-emu functions.
+	* kern/emu/misc.c: grub-emu functions separated from util/misc.c
+
+	* conf/any-emu.rmk: Rule updates for above renames.
+	* conf/common.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/i386-qemu.rmk: Likewise.
+	* conf/mips.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86-efi.rmk: Likewise.
+
+	* disk/lvm.h: #include updates for above renames.
+	* util/grub-mkrelpath.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/sparc64/ieee1275/grub-setup.c: Likewise.
+	* kern/emu/console.c: Likewise.
+	* kern/emu/getroot.c: Likewise.
+	* kern/emu/hostdisk.c: Likewise.
+	* kern/emu/main.c: Likewise. (was grub-emu.c earlier)
+
+	* include/grub/dl.h: Remove grub_dl_{ref,unref}.
+	* include/grub/util/misc.h: Move grub-emu functions to emu/misc.h.
+	* kern/dl.c: Handle null mod in grub_dl_{ref,unref}.
+	* util/misc.c: Remove grub-emu functions.
+
 2010-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix gfxmenu crash.

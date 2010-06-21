@@ -384,6 +384,8 @@ static struct grub_video_adapter grub_video_bochs_adapter =
     .name = "Bochs PCI Video Driver",
     .id = GRUB_VIDEO_DRIVER_BOCHS,
 
+    .prio = GRUB_VIDEO_ADAPTER_PRIO_NATIVE,
+
     .init = grub_video_bochs_video_init,
     .fini = grub_video_bochs_video_fini,
     .setup = grub_video_bochs_setup,
