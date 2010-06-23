@@ -418,9 +418,9 @@ grub_linux_boot (void)
   grub_mmap_iterate (hook);
   params->mmap_size = e820_num;
 
-  grub_printf ("Trampoline at %p. code32=%x, real_mode_mem=%p\n",
-	       ((char *) prot_mode_mem + (prot_mode_pages << 12)),
-	       (unsigned) params->code32_start, real_mode_mem);
+  grub_dprintf ("linux", "Trampoline at %p. code32=%x, real_mode_mem=%p\n",
+		((char *) prot_mode_mem + (prot_mode_pages << 12)),
+		(unsigned) params->code32_start, real_mode_mem);
 
   modevar = grub_env_get ("gfxpayload");
 
@@ -732,8 +732,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_file_seek (file, real_size + GRUB_DISK_SECTOR_SIZE);
 
   /* XXX there is no way to know if the kernel really supports EFI.  */
-  grub_printf ("   [Linux-bzImage, setup=0x%x, size=0x%x]\n",
-	       (unsigned) real_size, (unsigned) prot_size);
+  grub_dprintf ("linux", "bzImage, setup=0x%x, size=0x%x\n",
+		(unsigned) real_size, (unsigned) prot_size);
 
   /* Detect explicitly specified memory size, if any.  */
   linux_mem_size = 0;
@@ -913,8 +913,8 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  grub_printf ("   [Initrd, addr=0x%x, size=0x%x]\n",
-	       (unsigned) addr, (unsigned) size);
+  grub_dprintf ("linux", "Initrd, addr=0x%x, size=0x%x\n",
+		(unsigned) addr, (unsigned) size);
 
   lh->ramdisk_image = addr;
   lh->ramdisk_size = size;

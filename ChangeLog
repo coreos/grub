@@ -1,3 +1,15 @@
+2010-06-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	Sync up other versions of the Linux loader with Robert Millan's
+	change of 2010-01-09, "Make loader output a bit more user-friendly".
+
+	* loader/i386/efi/linux.c (grub_linux_boot): Move debug info to
+	grub_dprintf().
+	(grub_cmd_linux): Likewise.
+	(grub_cmd_initrd): Likewise.
+	* loader/i386/ieee1275/linux.c (grub_cmd_linux): Likewise.
+	* loader/i386/pc/linux.c (grub_cmd_linux): Likewise.
+
 2010-06-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	* kern/efi/mm.c (grub_efi_mm_init): Handle systems with memory maps
