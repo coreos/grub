@@ -71,7 +71,6 @@ tftp_open (struct grub_net_network_layer_interface *inf __attribute((unused)),
 
   udp_interf = (struct udp_interf *) app_interface->data;
   udp_interf->src = TFTP_CLIENT_PORT + rrq_count++; 
-  grub_printf("open tfpt udp_port = %d\n",udp_interf->src); 
   udp_interf->dst = TFTP_SERVER_PORT; 
   tftph = (struct tftphdr *) nb->data; 
   
@@ -135,16 +134,15 @@ tftp_receive (struct grub_net_network_layer_interface *inf __attribute((unused))
       temp = (char *) tftph->u.oack.data;
       while(get_tok_val(&token,&value,&temp,nb->tail))
       {
-        grub_printf("tok = <%s> val = <%s>\n",token,value);
         process_option(token,value);
       }
        
       //buff_clean
       nb->data = nb->tail;
-      grub_printf("OACK---------------------------------------------------------\n");
-      grub_printf("block_size=%d\n",tftp_file.block_size);
-      grub_printf("file_size=%d\n",tftp_file.size);
-      grub_printf("OACK---------------------------------------------------------\n");
+    //  grub_printf("OACK---------------------------------------------------------\n");
+      //grub_printf("block_size=%d\n",tftp_file.block_size);
+     // grub_printf("file_size=%d\n",tftp_file.size);
+     // grub_printf("OACK---------------------------------------------------------\n");
       block = 0;
     break; 
     case TFTP_DATA:
@@ -182,11 +180,39 @@ tftp_send_ack (struct grub_net_network_layer_interface *inf __attribute((unused)
   return app_interface->trans_prot->send (inf,protstack->interface,nb); 
 }
 
+static grub_err_t 
+tftp_send_err (struct grub_net_network_layer_interface *inf __attribute((unused)),
+  struct grub_net_protocol_stack *protstack,struct grub_net_buff *nb, char *errmsg, int errcode)
+{
+  
+  struct tftphdr *tftph; 
+  struct grub_net_application_transport_interface *app_interface
+     = (struct grub_net_application_transport_interface *) protstack->interface;
+  int msglen = 0;
+  int hdrlen = 0;
+  nb->data = nb->tail = nb->end;
+ 
+  grub_netbuff_push (nb,sizeof (*tftph));
+
+  tftph = (struct tftphdr *) nb->data; 
+  tftph->opcode = TFTP_ERROR;
+  tftph->u.err.errcode = errcode;
+
+  grub_strcpy ((char *)tftph->u.err.errmsg,errmsg);
+  msglen += grub_strlen (errmsg) + 1;
+  hdrlen = sizeof (tftph->opcode) + sizeof (tftph->u.err.errcode) + msglen; 
+  grub_netbuff_unput (nb,nb->tail - (nb->data + hdrlen)); 
+  
+  return app_interface->trans_prot->send (inf,protstack->interface,nb); 
+}
+
 static int tftp_file_size (struct grub_net_network_layer_interface* inf ,
              struct grub_net_protocol_stack *protocol_stack , struct grub_net_buff *nb ,char *filename )
 {
 
   tftp_open (inf, protocol_stack,nb, filename);
+  tftp_send_err (inf, protocol_stack,nb,"Abort transference.",0);
+
   return tftp_file.size;
 }
 
