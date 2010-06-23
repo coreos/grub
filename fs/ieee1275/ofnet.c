@@ -145,7 +145,7 @@ grub_ofnetfs_open (struct grub_file *file , const char *name )
     
     return 1;
   }
-  grub_printf("name = %s\n",name); 
+ // grub_printf("name = %s\n",name); 
 
   struct grub_net_protocol_stack *stack;
   struct grub_net_buff *pack;
@@ -164,38 +164,37 @@ grub_ofnetfs_open (struct grub_file *file , const char *name )
 
   for (found_addr = 0x800000; found_addr <  + 2000 * 0x100000; found_addr += 0x100000)
     {
-      grub_printf("traing to claim %d bytes at 0x%x\n",file_size,found_addr); 
+//      grub_printf("trying to claim %d bytes at 0x%x\n",file_size,found_addr); 
       if (grub_claimmap (found_addr , file_size) != -1)
 	break;
     }
-  grub_printf("Claimed %d bytes at 0x%x\n",file_size,found_addr); 
+//  grub_printf("Claimed %d bytes at 0x%x\n",file_size,found_addr); 
   file->data = (void *) found_addr;
-  grub_printf("file->data = 0x%x\n",(int)file->data);
-  grub_printf("file_size = %d\n",file_size); 
-  grub_printf("OPEN\n"); 
+//  grub_printf("file->data = 0x%x\n",(int)file->data);
+//  grub_printf("file_size = %d\n",file_size); 
+//  grub_printf("OPEN\n"); 
   grub_netbuff_clear(pack); 
   grub_netbuff_reserve (pack,80*1024);
   app_interface->app_prot->open (NULL,stack,pack,(char *) name);
   
  do {  
     //if (app_interface->app_prot->recv (NULL,stack,pack) == GRUB_ERR_NONE)
-    grub_printf("RECEIVE PACKET\n");
+//    grub_printf("RECEIVE PACKET\n");
     grub_netbuff_clear(pack); 
     grub_netbuff_reserve (pack,80*1024);
     app_interface->app_prot->recv (NULL,stack,pack); 
     if (grub_errno != GRUB_ERR_NONE)
       return grub_errno;
-    grub_printf("RECEIVED PACKET\n");
+//    grub_printf("RECEIVED PACKET\n");
    // {
-    grub_printf("payload_size= %d\n",pack->tail - pack->data); 
-    grub_printf("amount= %d\n",amount);
-    grub_printf("file_size= %d\n",file_size);
+//    grub_printf("payload_size= %d\n",pack->tail - pack->data); 
+//    grub_printf("amount= %d\n",amount);
+//    grub_printf("file_size= %d\n",file_size);
     datap = (char *)file->data + amount;
     amount += (pack->tail - pack->data);
-    grub_printf("datap = 0x%x\n",(int)datap );
- //   amount += pack->tail - pack->data;
+//    grub_printf("datap = 0x%x\n",(int)datap );
     grub_memcpy(datap, pack->data, pack->tail - pack->data); 
-    grub_printf("SEND ACK\n"); 
+//    grub_printf("SEND ACK\n"); 
 
     grub_netbuff_clear(pack); 
     grub_netbuff_reserve (pack,80*1024);
@@ -204,12 +203,12 @@ grub_ofnetfs_open (struct grub_file *file , const char *name )
     if (grub_errno != GRUB_ERR_NONE)
       return grub_errno;
 
-    grub_printf("SENT ACK\n"); 
+//    grub_printf("SENT ACK\n"); 
     //}
  //   file->data = grub_realloc(file->data,amount);
 
   }while (amount < file_size);
- grub_printf("transfer complete\n"); 
+// grub_printf("transfer complete\n"); 
  file->size = file_size;
  
 //  grub_netbuff_free(pack);

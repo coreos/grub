@@ -44,6 +44,7 @@ int get_card_packet (struct grub_net_buff *pack __attribute__ ((unused)))
   struct iphdr *iph;
   struct etherhdr *eth;
   struct arphdr *arph;
+  struct ip6hdr *ip6h;
   pack->data = pack->tail =  pack->head;
   datap = pack->data; 
   do
@@ -86,11 +87,20 @@ int get_card_packet (struct grub_net_buff *pack __attribute__ ((unused)))
     
       grub_netbuff_put (pack,sizeof (*eth) + iph->len);
     break;
+
     case 0x86DD:
-      grub_printf("Ipv6 not yet implemented.\n"); 
+      grub_printf("!!!!!!!!!!!!!!!!!IPV6 packet received!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"); 
+      grub_ieee1275_read (handle,datap,sizeof (*ip6h),&actual);
+      ip6h = (struct ip6hdr *) datap;
+      grub_printf("ip6hdr->payload_len = %x\n",ip6h->payload_len);
+      grub_printf("ip6hdr->nexthdr = %x\n",ip6h->nexthdr);
+
+      datap += sizeof(*ip6h);
+      grub_ieee1275_read (handle,datap,ip6h->payload_len - sizeof (*ip6h),&actual);
     break;
+
     default:
-      grub_printf("Unknow  packet %x\n",eth->type); 
+      grub_printf("Unknow packet %x\n",eth->type); 
     break;
   }
 //  grub_printf("packsize %d\n",pack->tail - pack->data);
