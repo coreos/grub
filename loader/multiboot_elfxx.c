@@ -72,7 +72,11 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
   if (ehdr->e_phoff + ehdr->e_phnum * ehdr->e_phentsize > MULTIBOOT_SEARCH)
     return grub_error (GRUB_ERR_BAD_OS, "program header at a too high offset");
 
-#ifdef MULTIBOOT_LOAD_ELF64
+#if defined (MULTIBOOT_LOAD_ELF64) && defined (__mips)
+  /* We still in 32-bit mode.  */
+  if (ehdr->e_entry < 0xffffffff80000000ULL)
+    return grub_error (GRUB_ERR_BAD_OS, "invalid entry point for ELF64");
+#else
   /* We still in 32-bit mode.  */
   if (ehdr->e_entry > 0xffffffff)
     return grub_error (GRUB_ERR_BAD_OS, "invalid entry point for ELF64");

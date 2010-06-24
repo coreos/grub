@@ -17,6 +17,16 @@ vga_text_mod_CFLAGS = $(COMMON_CFLAGS)
 vga_text_mod_LDFLAGS = $(COMMON_LDFLAGS)
 endif
 
+pkglib_MODULES += video_cirrus.mod
+video_cirrus_mod_SOURCES = video/cirrus.c
+video_cirrus_mod_CFLAGS = $(COMMON_CFLAGS)
+video_cirrus_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += video_bochs.mod
+video_bochs_mod_SOURCES = video/bochs.c
+video_bochs_mod_CFLAGS = $(COMMON_CFLAGS)
+video_bochs_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 pkglib_MODULES += relocator.mod
 ifeq ($(platform), ieee1275)
 relocator_mod_SOURCES = lib/relocator.c lib/i386/relocator32.S \
@@ -87,11 +97,20 @@ serial_mod_SOURCES = term/serial.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# On qemu it's compiled in
+ifneq ($(platform), qemu)
 # For pci.mod
 pkglib_MODULES += pci.mod
 pci_mod_SOURCES = bus/pci.c
 pci_mod_CFLAGS = $(COMMON_CFLAGS)
 pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+endif
+
+# For cs5536.mod
+pkglib_MODULES += cs5536.mod
+cs5536_mod_SOURCES = bus/cs5536.c
+cs5536_mod_CFLAGS = $(COMMON_CFLAGS)
+cs5536_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For lspci.mod
 pkglib_MODULES += lspci.mod

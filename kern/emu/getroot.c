@@ -80,6 +80,86 @@ xgetcwd (void)
   return path;
 }
 
+#ifdef __linux__
+
+/* Statting something on a btrfs filesystem always returns a virtual device
+   major/minor pair rather than the real underlying device, because btrfs
+   can span multiple underlying devices (and even if it's currently only
+   using a single device it can be dynamically extended onto another).  We
+   can't deal with the multiple-device case yet, but in the meantime, we can
+   at least cope with the single-device case by scanning
+   /proc/self/mountinfo.  */
+static char *
+find_root_device_from_mountinfo (const char *dir)
+{
+  FILE *fp;
+  char *buf = NULL;
+  size_t len = 0;
+  char *ret = NULL;
+
+  fp = fopen ("/proc/self/mountinfo", "r");
+  if (! fp)
+    return NULL; /* fall through to other methods */
+
+  while (getline (&buf, &len, fp) > 0)
+    {
+      int mnt_id, parent_mnt_id;
+      unsigned int major, minor;
+      char enc_root[PATH_MAX], enc_path[PATH_MAX];
+      int count;
+      size_t enc_path_len;
+      const char *sep;
+      char fstype[PATH_MAX], device[PATH_MAX];
+      struct stat st;
+
+      if (sscanf (buf, "%d %d %u:%u %s %s%n",
+		  &mnt_id, &parent_mnt_id, &major, &minor, enc_root, enc_path,
+		  &count) < 6)
+	continue;
+
+      if (strcmp (enc_root, "/") != 0)
+	continue; /* only a subtree is mounted */
+
+      enc_path_len = strlen (enc_path);
+      if (strncmp (dir, enc_path, enc_path_len) != 0 ||
+	  (dir[enc_path_len] && dir[enc_path_len] != '/'))
+	continue;
+
+      /* This is a parent of the requested directory.  /proc/self/mountinfo
+	 is in mount order, so it must be the closest parent we've
+	 encountered so far.  If it's virtual, return its device node;
+	 otherwise, carry on to try to find something closer.  */
+
+      free (ret);
+      ret = NULL;
+
+      if (major != 0)
+	continue; /* not a virtual device */
+
+      sep = strstr (buf + count, " - ");
+      if (!sep)
+	continue;
+
+      sep += sizeof (" - ") - 1;
+      if (sscanf (sep, "%s %s", fstype, device) != 2)
+	continue;
+
+      if (stat (device, &st) < 0)
+	continue;
+
+      if (!S_ISBLK (st.st_mode))
+	continue; /* not a block device */
+
+      ret = strdup (device);
+    }
+
+  free (buf);
+  fclose (fp);
+  return ret;
+}
+
+#endif /* __linux__ */
+
 #ifdef __MINGW32__
 
 static char *
@@ -126,9 +206,20 @@ find_root_device (const char *dir, dev_t dev)
 	/* Ignore any error.  */
 	continue;
 
-      if (S_ISLNK (st.st_mode))
-	/* Don't follow symbolic links.  */
+      if (S_ISLNK (st.st_mode)) {
+#ifdef __linux__
+	if (strcmp (dir, "mapper") == 0) {
+	  /* Follow symbolic links under /dev/mapper/; the canonical name
+	     may be something like /dev/dm-0, but the names under
+	     /dev/mapper/ are more human-readable and so we prefer them if
+	     we can get them.  */
+	  if (stat (ent->d_name, &st) < 0)
+	    continue;
+	} else
+#endif /* __linux__ */
+	/* Don't follow other symbolic links.  */
 	continue;
+      }
 
       if (S_ISDIR (st.st_mode))
 	{
@@ -354,6 +445,12 @@ grub_guess_root_device (const char *dir)
   mach_port_deallocate (mach_task_self (), file);
 #else /* !__GNU__ */
   struct stat st;
+
+#ifdef __linux__
+  os_dev = find_root_device_from_mountinfo (dir);
+  if (os_dev)
+    return os_dev;
+#endif /* __linux__ */
 
   if (stat (dir, &st) < 0)
     grub_util_error ("cannot stat `%s'", dir);

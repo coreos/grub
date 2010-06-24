@@ -323,26 +323,26 @@ install-local: all
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
-	  $(HELP2MAN) --section=1 -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
+	  $(HELP2MAN) --section=1 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(sbindir) $(DESTDIR)$(mandir)/man8
 	@list='$(sbin_UTILITIES)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
-	  $(HELP2MAN) --section=8 -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
+	  $(HELP2MAN) --section=8 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
 	done
 	@list='$(bin_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
-	  $(HELP2MAN) --section=1 -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
+	  $(HELP2MAN) --section=1 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
 	done
 	@list='$(sbin_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
-	  $(HELP2MAN) --section=8 -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
+	  $(HELP2MAN) --section=8 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(sysconfdir)/grub.d
 	@list='$(grub-mkconfig_SCRIPTS)'; for file in $$list; do \

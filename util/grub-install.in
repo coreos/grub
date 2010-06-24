@@ -34,6 +34,8 @@ font=@datadir@/@PACKAGE_TARNAME@/ascii.pf2
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 localedir=@datadir@/locale
 
+self=`basename $0`
+
 grub_setup=${sbindir}/`echo grub-setup | sed ${transform}`
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
@@ -61,7 +63,7 @@ fi
 # Print the usage.
 usage () {
     cat <<EOF
-Usage: grub-install [OPTION] install_device
+Usage: $self [OPTION] install_device
 Install GRUB on your drive.
 
   -h, --help              print this message and exit
@@ -91,52 +93,96 @@ fi
 
 INSTALL_DEVICE can be a GRUB device name or a system device filename.
 
-grub-install copies GRUB images into /boot/grub (or /grub on NetBSD and
+$self copies GRUB images into /boot/grub (or /grub on NetBSD and
 OpenBSD), and uses grub-setup to install grub into the boot sector.
 
-If the --root-directory option is used, then grub-install will copy
+If the --root-directory option is used, then $self will copy
 images into the operating system installation rooted at that directory.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 
+argument () {
+  opt=$1
+  shift
+
+  if test $# -eq 0; then
+      echo "$0: option requires an argument -- '$opt'" 1>&2
+      exit 1
+  fi
+  echo $1
+}
+
 # Check the arguments.
-for option in "$@"; do
+while test $# -gt 0
+do
+    option=$1
+    shift
+
     case "$option" in
     -h | --help)
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-install (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
+
+    --modules)
+	modules=`argument $option "$@"`; shift;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
+
+    --font)
+	font=`argument $option "$@"`; shift;;
     --font=*)
 	font=`echo "$option" | sed 's/--font=//'` ;;
+
+    --root-directory)
+	rootdir=`argument $option "$@"`; shift;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
+
+    --grub-setup)
+	grub_setup=`argument $option "$@"`; shift;;
     --grub-setup=*)
 	grub_setup=`echo "$option" | sed 's/--grub-setup=//'` ;;
+
+    --grub-mkimage)
+	grub_mkimage=`argument $option "$@"`; shift;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+
+    --grub-mkdevicemap)
+	grub_mkdevicemap=`argument $option "$@"`; shift;;
     --grub-mkdevicemap=*)
 	grub_mkdevicemap=`echo "$option" | sed 's/--grub-mkdevicemap=//'` ;;
+
+    --grub-probe)
+	grub_probe=`argument $option "$@"`; shift;;
     --grub-probe=*)
 	grub_probe=`echo "$option" | sed 's/--grub-probe=//'` ;;
+
     --no-floppy)
 	no_floppy="--no-floppy" ;;
     --recheck)
 	recheck=yes ;;
+
+    --disk-module)
+	if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
+	    disk_module=`argument $option "$@"`; shift;
+	fi ;;
     --disk-module=*)
 	if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
            disk_module=`echo "$option" | sed 's/--disk-module=//'`
         fi ;;
+
     # This is an undocumented feature...
     --debug)
 	debug=yes ;;
     -f | --force)
         setup_force="--force" ;;
+
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage
@@ -310,12 +356,12 @@ if [ "x${devabstraction_module}" = "x" ] ; then
       else
         install_drive="`$grub_probe --target=drive --device ${install_device}`" || exit 1
       fi
-      install_drive="`echo ${install_drive} | sed -e s/,[0-9]*[a-z]*//g`"
+      install_drive="`echo ${install_drive} | sed -e s/,[a-z0-9,]*//g`"
     fi
     grub_drive="`$grub_probe --target=drive --device ${grub_device}`" || exit 1
 
     # Strip partition number
-    grub_drive="`echo ${grub_drive} | sed -e s/,[0-9]*[a-z]*//g`"
+    grub_drive="`echo ${grub_drive} | sed -e s/,[a-z0-9,]*//g`"
     if [ "$disk_module" = ata ] ; then
         # generic method (used on coreboot and ata mod)
         uuid="`$grub_probe --target=fs_uuid --device ${grub_device}`"

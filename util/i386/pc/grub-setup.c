@@ -76,9 +76,6 @@ grub_getkey (void)
   return -1;
 }
 
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
-
 void
 grub_refresh (void)
 {
@@ -102,6 +99,7 @@ setup (const char *dir,
   struct grub_boot_blocklist *first_block, *block;
   grub_int32_t *install_dos_part, *install_bsd_part;
   grub_int32_t dos_part, bsd_part;
+  char *prefix;
   char *tmp_img;
   int i;
   grub_disk_addr_t first_sector;
@@ -126,8 +124,8 @@ setup (const char *dir,
       /* There's always an embed region, and it starts right after the MBR.  */
       embed_region.start = 1;
 
-      if (embed_region.end > p->start)
-	embed_region.end = p->start;
+      if (embed_region.end > grub_partition_get_start (p))
+	embed_region.end = grub_partition_get_start (p);
 
       return 0;
     }
@@ -147,8 +145,8 @@ setup (const char *dir,
       /* If there's an embed region, it is in a dedicated partition.  */
       if (! memcmp (&gptdata.type, &grub_gpt_partition_type_bios_boot, 16))
 	{
-	  embed_region.start = p->start;
-	  embed_region.end = p->start + p->len;
+	  embed_region.start = grub_partition_get_start (p);
+	  embed_region.end = grub_partition_get_start (p) + grub_partition_get_len (p);
 
 	  return 1;
 	}
@@ -233,6 +231,8 @@ setup (const char *dir,
 				       + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART);
   install_bsd_part = (grub_int32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
 				       + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART);
+  prefix = (char *) (core_img + GRUB_DISK_SECTOR_SIZE +
+		     GRUB_KERNEL_MACHINE_PREFIX);
 
   /* Open the root device and the destination device.  */
   root_dev = grub_device_open (root);
@@ -308,6 +308,18 @@ setup (const char *dir,
 	      dos_part = root_dev->disk->partition->number;
  	      bsd_part = -1;
  	    }
+
+	  if (prefix[0] != '(')
+	    {
+	      char *root_part_name, *new_prefix;
+
+	      root_part_name =
+		grub_partition_get_name (root_dev->disk->partition);
+	      new_prefix = xasprintf ("(,%s)%s", root_part_name, prefix);
+	      strcpy (prefix, new_prefix);
+	      free (new_prefix);
+	      free (root_part_name);
+	    }
 	}
       else
 	dos_part = bsd_part = -1;
@@ -361,7 +373,7 @@ setup (const char *dir,
   else
     grub_util_error (_("No DOS-style partitions found"));
 
-  if (embed_region.end == embed_region.start)
+  if (embed_region.end <= embed_region.start)
     {
       if (! strcmp (dest_partmap, "msdos"))
 	grub_util_warn (_("This msdos-style partition label has no post-MBR gap; embedding won't be possible!"));
@@ -597,6 +609,8 @@ Usage: %s [OPTION]... DEVICE\n\
 Set up images to boot from DEVICE.\n\
 DEVICE must be a GRUB device (e.g. `(hd0,1)').\n\
 \n\
+You should not normally run %s directly.  Use grub-install instead.\n\
+\n\
   -b, --boot-image=FILE   use FILE as the boot image [default=%s]\n\
   -c, --core-image=FILE   use FILE as the core image [default=%s]\n\
   -d, --directory=DIR     use GRUB files in the directory DIR [default=%s]\n\
@@ -610,7 +624,7 @@ DEVICE must be a GRUB device (e.g. `(hd0,1)').\n\
 \n\
 Report bugs to <%s>.\n\
 "),
-	    program_name,
+	    program_name, program_name,
 	    DEFAULT_BOOT_FILE, DEFAULT_CORE_FILE, DEFAULT_DIRECTORY,
 	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
 
@@ -702,7 +716,7 @@ main (int argc, char *argv[])
 	    break;
 
 	  case 'V':
-	    printf ("grub-setup (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 	    return 0;
 
 	  case 'v':

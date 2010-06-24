@@ -898,6 +898,18 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
 
   if (bitmap)
     {
+      if (grub_xnu_bitmap_mode == GRUB_XNU_BITMAP_STRETCH)
+	err = grub_video_bitmap_create_scaled (&bitmap,
+					       mode_info.width,
+					       mode_info.height,
+					       grub_xnu_bitmap,
+					       GRUB_VIDEO_BITMAP_SCALE_METHOD_BEST);
+      else
+	bitmap = grub_xnu_bitmap;
+    }
+
+  if (bitmap)
+    {
       int x, y;
 
       x = mode_info.width - bitmap->mode_info.width;
@@ -914,13 +926,12 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
 					 mode_info.width),
 				    min (bitmap->mode_info.height,
 					 mode_info.height));
-      if (err)
-	{
-	  grub_print_error ();
-	  grub_errno = GRUB_ERR_NONE;
-	  grub_xnu_bitmap = 0;
-	}
-      err = GRUB_ERR_NONE;
+    }
+  if (err)
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+      bitmap = 0;
     }
 
   ret = grub_video_get_info_and_fini (&mode_info, &framebuffer);
@@ -933,7 +944,7 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
   params->lfb_line_len = mode_info.pitch;
 
   params->lfb_base = PTR_TO_UINT32 (framebuffer);
-  params->lfb_mode = bitmap ? GRUB_XNU_VIDEO_SPLASH
+  params->lfb_mode = bitmap ? GRUB_XNU_VIDEO_SPLASH 
     : GRUB_XNU_VIDEO_TEXT_IN_VIDEO;
 
   return GRUB_ERR_NONE;

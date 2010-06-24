@@ -30,13 +30,15 @@ target_cpu=@target_cpu@
 platform=@platform@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
+self=`basename $0`
+
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 
 # Usage: usage
 # Print the usage.
 usage () {
     cat <<EOF
-Usage: grub-mkrescue [OPTION] output_image
+Usage: $self [OPTION] output_image
 Make GRUB rescue image.
 
   -h, --help              print this message and exit
@@ -46,29 +48,54 @@ Make GRUB rescue image.
                           default: ${pkglibdir}
   --grub-mkimage=FILE     use FILE as grub-mkimage
 
-grub-mkimage generates a bootable rescue CD image for PowerMac and CHRP.
+$self generates a bootable rescue CD image for PowerMac and CHRP.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 
+argument () {
+  opt=$1
+  shift
+
+  if test $# -eq 0; then
+      echo "$0: option requires an argument -- '$opt'" 1>&2
+      exit 1
+  fi
+  echo $1
+}
+
 input_dir=${pkglibdir}
 
 # Check the arguments.
-for option in "$@"; do
+while test $# -gt 0
+do
+    option=$1
+    shift
+
     case "$option" in
     -h | --help)
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-mkrescue (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
+
+    --modules)
+	modules=`argument $option "$@"`; shift ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
+
+    --pkglibdir)
+	input_dir=`argument $option "$@"`; shift ;;
     --pkglibdir=*)
 	input_dir=`echo "$option" | sed 's/--pkglibdir=//'` ;;
+
+    --grub-mkimage)
+	grub_mkimage=`argument $option "$@"`; shift ;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage

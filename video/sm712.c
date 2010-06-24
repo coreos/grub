@@ -32,10 +32,7 @@ static struct
   struct grub_video_mode_info mode_info;
   struct grub_video_render_target *render_target;
 
-  unsigned int bytes_per_scan_line;
-  unsigned int bytes_per_pixel;
   grub_uint8_t *ptr;
-  int index_color_mode;
   int mapped;
   grub_uint32_t base;
   grub_pci_device_t dev;
@@ -192,6 +189,8 @@ static struct grub_video_adapter grub_video_sm712_adapter =
   {
     .name = "SM712 Video Driver",
     .id = GRUB_VIDEO_DRIVER_SM712,
+
+    .prio = GRUB_VIDEO_ADAPTER_PRIO_NATIVE,
 
     .init = grub_video_sm712_video_init,
     .fini = grub_video_sm712_video_fini,

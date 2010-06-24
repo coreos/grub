@@ -68,6 +68,9 @@ grub_exit (void)
 void
 grub_machine_init (void)
 {
+#ifdef GRUB_MACHINE_QEMU
+  grub_qemu_init_cirrus ();
+#endif
   /* Initialize the console as early as possible.  */
   grub_vga_text_init ();
 
