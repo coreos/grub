@@ -117,8 +117,9 @@ while [ "x$list" != "x" ] ; do
 
   initrd=
   for i in "initrd.img-${version}" "initrd-${version}.img" \
-	   "initrd-${version}" "initrd.img-${alt_version}" \
-	   "initrd-${alt_version}.img" "initrd-${alt_version}"; do
+	   "initrd-${version}" "initramfs-${version}.img" \
+	   "initrd.img-${alt_version}" "initrd-${alt_version}.img" \
+	   "initrd-${alt_version}" "initramfs-${alt_version}.img"; do
     if test -e "${dirname}/${i}" ; then
       initrd="$i"
       break

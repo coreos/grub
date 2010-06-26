@@ -1,3 +1,8 @@
+2010-06-26  Pavel Roskin  <proski@gnu.org>
+
+	* util/grub.d/10_linux.in: Add support for initrd images on Fedora
+	13.
+
 2010-06-26  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Simple configuration): Explain that
