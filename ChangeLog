@@ -1,5 +1,12 @@
 2010-06-26  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (Simple configuration): Explain that
+	GRUB_DISABLE_LINUX_RECOVERY and GRUB_DISABLE_NETBSD_RECOVERY must be
+	set to `true' to disable their respective recovery entries, not
+	merely set.
+
+2010-06-26  Colin Watson  <cjwatson@ubuntu.com>
+
 	Make the `source' command slightly faster.
 
 	* normal/main.c (grub_normal_execute): Don't re-read list files when
