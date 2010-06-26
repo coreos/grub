@@ -1,3 +1,10 @@
+2010-06-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	Make the `source' command slightly faster.
+
+	* normal/main.c (grub_normal_execute): Don't re-read list files when
+	nested.
+
 2010-06-23  Colin Watson  <cjwatson@ubuntu.com>
 
 	* loader/i386/multiboot_mbi.c (retrieve_video_parameters): Set red

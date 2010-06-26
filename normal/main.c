@@ -464,11 +464,15 @@ void
 grub_normal_execute (const char *config, int nested, int batch)
 {
   grub_menu_t menu = 0;
-  const char *prefix = grub_env_get ("prefix");
+  const char *prefix;
 
-  read_lists (prefix);
-  grub_register_variable_hook ("prefix", NULL, read_lists_hook);
-  grub_command_execute ("parser.grub", 0, 0);
+  if (! nested)
+    {
+      prefix = grub_env_get ("prefix");
+      read_lists (prefix);
+      grub_register_variable_hook ("prefix", NULL, read_lists_hook);
+      grub_command_execute ("parser.grub", 0, 0);
+    }
 
   if (config)
     {
