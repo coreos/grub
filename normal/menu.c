@@ -29,6 +29,7 @@
 #include <grub/auth.h>
 #include <grub/i18n.h>
 #include <grub/term.h>
+#include <grub/script_sh.h>
 
 /* Time to delay after displaying an error message about a default/fallback
    entry failing to boot.  */
@@ -141,6 +142,44 @@ get_and_remove_first_entry_number (const char *name)
   return entry;
 }
 
+static void
+grub_menu_execute_entry_real (grub_menu_entry_t entry)
+{
+  const char *source;
+
+  auto grub_err_t getline (char **line, int cont);
+  grub_err_t getline (char **line, int cont __attribute__ ((unused)))
+  {
+    const char *p;
+
+    if (!source)
+      {
+	*line = 0;
+	return 0;
+      }
+
+    p = grub_strchr (source, '\n');
+
+    if (p)
+      *line = grub_strndup (source, p - source);
+    else
+      *line = grub_strdup (source);
+    source = p ? p + 1 : 0;
+    return 0;
+  }
+
+  source = entry->sourcecode;
+
+  while (source)
+    {
+      char *line;
+
+      getline (&line, 0);
+      grub_normal_parse_line (line, getline);
+      grub_free (line);
+    }
+}
+
 /* Run a menu entry.  */
 void
 grub_menu_execute_entry(grub_menu_entry_t entry)
@@ -159,7 +198,7 @@ grub_menu_execute_entry(grub_menu_entry_t entry)
 
   grub_env_set ("chosen", entry->title);
 
-  grub_parser_execute ((char *) entry->sourcecode);
+  grub_menu_execute_entry_real (entry);
 
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */

@@ -1,3 +1,12 @@
+2010-06-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use normal parser for menu entries.
+	Reported by: Thomas Frauendorfer
+
+	* include/grub/parser.h (grub_parser_execute): Don't export.
+	* normal/menu.c (grub_menu_execute_entry_real): New function.
+	(grub_menu_execute_entry): Use grub_menu_execute_entry_real.
+
 2010-06-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Embedded configuration): New section (replacing
