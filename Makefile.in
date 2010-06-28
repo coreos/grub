@@ -247,10 +247,9 @@ docs/stamp-vti: docs/grub.texi configure.ac
 	-@rm -f vti.tmp
 	@cp $(builddir)/docs/version.texi $@
 
-# Use --force until such time as the documentation is cleaned up.
 docs/grub.info: docs/grub.texi docs/version.texi docs/fdl.texi
 	$(MKDIR_P) docs
-	-$(MAKEINFO) -P $(builddir)/docs --no-split --force $< -o $@
+	$(MAKEINFO) -P $(builddir)/docs --no-split $< -o $@
 
 ifeq (, $(FONT_SOURCE))
 else

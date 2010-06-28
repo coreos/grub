@@ -470,6 +470,7 @@ the @dfn{boot directory}.
 @menu
 * Installing GRUB using grub-install::
 * Making a GRUB bootable CD-ROM::
+* Device map::
 @end menu
 
 
@@ -612,6 +613,50 @@ You can use the device @samp{(cd)} to access a CD-ROM in your
 config file. This is not required; GRUB automatically sets the root device
 to @samp{(cd)} when booted from a CD-ROM. It is only necessary to refer to
 @samp{(cd)} if you want to access other drives as well.
+
+
+@node Device map
+@section The map between BIOS drives and OS devices
+
+The @command{grub-mkdevicemap} program can be used to create the @dfn{device
+map file}.  It is often run automatically by tools such as
+@command{grub-install} if the device map file does not already exist.  The
+file name @file{/boot/grub/device.map} is preferred.
+
+If the device map file exists, the GRUB utilities (@command{grub-probe},
+@command{grub-setup}, etc.) read it to map BIOS drives to OS devices.  This
+file consists of lines like this:
+
+@example
+@var{device} @var{file}
+@end example
+
+@var{device} is a drive specified in the GRUB syntax (@pxref{Device
+syntax}), and @var{file} is an OS file, which is normally a device file.
+
+Historically, the device map file was used because GRUB device names had to
+be used in the configuration file, and they were derived from BIOS drive
+numbers.  The map between BIOS drives and OS devices cannot always be
+guessed correctly: for example, GRUB will get the order wrong if you
+exchange the boot sequence between IDE and SCSI in your BIOS.
+
+Unfortunately, even OS device names are not always stable.  Modern versions
+of the Linux kernel may probe drives in a different order from boot to boot,
+and the prefix (@file{/dev/hd*} versus @file{/dev/sd*}) may change depending
+on the driver subsystem in use.  As a result, the device map file required
+frequent editing on some systems.
+
+GRUB avoids this problem nowadays by using UUIDs or file system labels when
+generating @file{grub.cfg}, and we advise that you do the same for any
+custom menu entries you write.  If the device map file does not exist, then
+the GRUB utilities will assume a temporary device map on the fly.  This is
+often good enough, particularly in the common case of single-disk systems.
+
+However, the device map file is not entirely obsolete yet, and there are
+still some situations that require it to exist.  If necessary, you may edit
+the file if @command{grub-mkdevicemap} makes a mistake.  You can put any
+comments in the file if needed, as the GRUB utilities assume that a line is
+just a comment if the first character is @samp{#}.
 
 
 @node Booting
@@ -805,6 +850,7 @@ need to write the whole thing by hand.
 * Simple configuration::        Recommended for most users
 * Shell-like scripting::        For power users and developers
 * Embedded configuration::      Embedding a configuration file into GRUB
+* Themes::                      Graphical menu themes
 @end menu
 
 
@@ -1065,6 +1111,10 @@ fi
 
 The embedded configuration file may not contain menu entries directly, but
 may only read them from elsewhere using @command{configfile}.
+
+
+@node Themes
+@section Graphical menu themes
 
 
 @node Network

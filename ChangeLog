@@ -1,3 +1,10 @@
+2010-06-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Device map): New section.
+	(Themes): New section (stub).
+	* Makefile.in (docs/grub.info): The info documentation now builds
+	without errors.  Make sure it stays that way.
+
 2010-06-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Use normal parser for menu entries.
