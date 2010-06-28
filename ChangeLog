@@ -1,5 +1,9 @@
 2010-06-28  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub-install.in: Add --debug-image= option.
+
+2010-06-28  Colin Watson  <cjwatson@ubuntu.com>
+
 	Change grub-mkdevicemap to emit /dev/disk/by-id/ names where
 	possible on Linux.
 
