@@ -255,8 +255,9 @@ fi
 
 # Play an initial tune
 if [ "x${GRUB_INIT_TUNE}" != "x" ] ; then
-  cat << EOF
-insmod play
-play ${GRUB_INIT_TUNE}
-EOF
+  echo "play ${GRUB_INIT_TUNE}"
+fi
+
+if [ "x${GRUB_BADRAM}" != "x" ] ; then
+  echo "badram ${GRUB_BADRAM}"
 fi

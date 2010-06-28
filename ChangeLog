@@ -1,3 +1,9 @@
+2010-06-28  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-mkconfig.in: Export `GRUB_BADRAM' variable.
+	* util/grub.d/00_header.in: When `GRUB_BADRAM' is set, issue badram
+	command using ${GRUB_BADRAM} as parameter.
+
 2010-06-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Device map): New section.
