@@ -80,7 +80,6 @@ This edition documents version @value{VERSION}.
 * Network::                     Downloading OS images from a network
 * Serial terminal::             Using GRUB via a serial line
 * Vendor power-on keys::        Changing GRUB behaviour on vendor power-on keys
-* Preset Menu::                 Embedding a configuration file into GRUB
 * Images::                      GRUB image files
 * Filesystem::                  Filesystem syntax and semantics
 * Interface::                   The menu and the command-line
@@ -805,6 +804,7 @@ need to write the whole thing by hand.
 @menu
 * Simple configuration::        Recommended for most users
 * Shell-like scripting::        For power users and developers
+* Embedded configuration::      Embedding a configuration file into GRUB
 @end menu
 
 
@@ -999,6 +999,74 @@ that file, making sure to leave at least the first two lines intact.
 @section Writing full configuration files directly
 
 
+@node Embedded configuration
+@section Embedding a configuration file into GRUB
+
+GRUB supports embedding a configuration file directly into the core image,
+so that it is loaded before entering normal mode.  This is useful, for
+example, when it is not straightforward to find the real configuration file,
+or when you need to debug problems with loading that file.
+@command{grub-install} uses this feature when it is not using BIOS disk
+functions or when installing to a different disk from the one containing
+@file{/boot/grub}, in which case it needs to use the @command{search}
+command (@pxref{search}) to find @file{/boot/grub}.
+
+To embed a configuration file, use the @option{-c} option to
+@command{grub-mkimage}.  The file is copied into the core image, so it may
+reside anywhere on the file system, and may be removed after running
+@command{grub-mkimage}.
+
+After the embedded configuration file (if any) is executed, GRUB will load
+the @samp{normal} module, which will then read the real configuration file
+from @file{$prefix/grub.cfg}.  By this point, the @code{root} variable will
+also have been set to the root device name.  For example, @code{prefix}
+might be set to @samp{(hd0,1)/boot/grub}, and @code{root} might be set to
+@samp{hd0,1}.  Thus, in most cases, the embedded configuration file only
+needs to set the @code{prefix} and @code{root} variables, and then drop
+through to GRUB's normal processing.  A typical example of this might look
+like this:
+
+@example
+@group
+search.fs_uuid 01234567-89ab-cdef-0123-456789abcdef root
+set prefix=($root)/boot/grub
+@end group
+@end example
+
+(The @samp{search_fs_uuid} module must be included in the core image for this
+example to work.)
+
+In more complex cases, it may be useful to read other configuration files
+directly from the embedded configuration file.  This allows such things as
+reading files not called @file{grub.cfg}, or reading files from a directory
+other than that where GRUB's loadable modules are installed.  To do this,
+include the @samp{configfile} and @samp{normal} modules in the core image,
+and embed a configuration file that uses the @command{configfile} command to
+load another file.  The following example of this also requires the
+@command{echo}, @command{search_label}, and @command{test} modules to be
+included in the core image:
+
+@example
+@group
+search.fs_label grub root
+if [ -e /boot/grub/example/test1.cfg ]; then
+    set prefix=($root)/boot/grub
+    configfile /boot/grub/example/test1.cfg
+else
+    if [ -e /boot/grub/example/test2.cfg ]; then
+        set prefix=($root)/boot/grub
+        configfile /boot/grub/example/test2.cfg
+    else
+        echo "Could not find an example configuration file!"
+    fi
+fi
+@end group
+@end example
+
+The embedded configuration file may not contain menu entries directly, but
+may only read them from elsewhere using @command{configfile}.
+
+
 @node Network
 @chapter Booting GRUB from the network
 
@@ -1122,6 +1190,7 @@ implements few VT100 escape sequences. If you specify this option then
 GRUB provides you with an alternative menu interface, because the normal
 menu requires several fancy features of your terminal.
 
+
 @node Vendor power-on keys
 @chapter Using GRUB with vendor power-on keys
 Some laptop vendor provide an additional power-on button which boots another OS.
@@ -1141,6 +1210,142 @@ Values known to GRUB team are:
 @end table
 
 To take full advantage of this function install GRUB into MBR.
+
+
+@node Images
+@chapter GRUB image files
+
+@c FIXME: parts of this section are specific to PC BIOS right now.
+
+GRUB consists of several images: a variety of bootstrap images for starting
+GRUB in various ways, a kernel image, and a set of modules which are
+combined with the kernel image to form a core image.  Here is a short
+overview of them.
+
+@table @file
+@item boot.img
+On PC BIOS systems, this image is the first part of GRUB to start.  It is
+written to a master boot record (MBR) or to the boot sector of a partition.
+Because a PC boot sector is 512 bytes, the size of this image is exactly 512
+bytes.
+
+The sole function of @file{boot.img} is to read the first sector of the core
+image from a local disk and jump to it.  Because of the size restriction,
+@file{boot.img} cannot understand any file system structure, so
+@command{grub-setup} hardcodes the location of the first sector of the core
+image into @file{boot.img} when installing GRUB.
+
+@item diskboot.img
+This image is used as the first sector of the core image when booting from a
+hard disk.  It reads the rest of the core image into memory and starts the
+kernel.  Since file system handling is not yet available, it encodes the
+location of the core image using a block list format.
+
+@item cdboot.img
+This image is used as the first sector of the core image when booting from a
+CD-ROM drive.  It performs a similar function to @file{diskboot.img}.
+
+@item pxeboot.img
+This image is used as the start of the core image when booting from the
+network using PXE.  @xref{Network}.
+
+@item lnxboot.img
+This image may be placed at the start of the core image in order to make
+GRUB look enough like a Linux kernel that it can be booted by LILO using an
+@samp{image=} section.
+
+@item kernel.img
+This image contains GRUB's basic run-time facilities: frameworks for device
+and file handling, environment variables, the rescue mode command-line
+parser, and so on.  It is rarely used directly, but is built into all core
+images.
+
+@item core.img
+This is the core image of GRUB.  It is built dynamically from the kernel
+image and an arbitrary list of modules by the @command{grub-mkimage}
+program.  Usually, it contains enough modules to access @file{/boot/grub},
+and loads everything else (including menu handling, the ability to load
+target operating systems, and so on) from the file system at run-time.  The
+modular design allows the core image to be kept small, since the areas of
+disk where it must be installed are often as small as 32KB.
+
+On PC systems using the traditional MBR partition table format, the core
+image is usually installed in the "MBR gap" between the master boot record
+and the first partition, or sometimes it is installed in a file system and
+read directly from that.  The latter is not recommended because GRUB needs
+to encode the location of all the core image sectors in @file{diskboot.img},
+and if the file system ever moves the core image around (as it is entitled
+to do) then GRUB must be reinstalled; it also means that GRUB will not be
+able to reliably find the core image if it resides on a different disk than
+the one to which @file{boot.img} was installed.
+
+On PC systems using the more recent GUID Partition Table (GPT) format, the
+core image should be installed to a BIOS Boot Partition.  This may be
+created by GNU Parted using a command such as the following:
+
+@example
+# @kbd{parted /dev/@var{disk} set @var{partition-number} bios_grub on}
+@end example
+
+@strong{Caution:} Be very careful which partition you select!  When GRUB
+finds a BIOS Boot Partition during installation, it will automatically
+overwrite part of it.  Make sure that the partition does not contain any
+other data.
+
+@item *.mod
+Everything else in GRUB resides in dynamically loadable modules.  These are
+often loaded automatically, or built into the core image if they are
+essential, but may also be loaded manually using the @command{insmod}
+command (@pxref{insmod}).
+@end table
+
+@heading For GRUB Legacy users
+
+GRUB 2 has a different design from GRUB Legacy, and so correspondences with
+the images it used cannot be exact.  Nevertheless, GRUB Legacy users often
+ask questions in the terms they are familiar with, and so here is a brief
+guide to how GRUB 2's images relate to that.
+
+@table @file
+@item stage1
+Stage 1 from GRUB Legacy was very similar to @file{boot.img} in GRUB 2, and
+they serve the same function.
+
+@item *_stage1_5
+In GRUB Legacy, Stage 1.5's function was to include enough filesystem code
+to allow the much larger Stage 2 to be read from an ordinary filesystem.  In
+this respect, its function was similar to @file{core.img} in GRUB 2.
+However, @file{core.img} is much more capable than Stage 1.5 was; since it
+offers a rescue shell, it is sometimes possible to recover manually in the
+event that it is unable to load any other modules, for example if partition
+numbers have changed.  @file{core.img} is built in a more flexible way,
+allowing GRUB 2 to support reading modules from advanced disk types such as
+LVM and RAID.
+
+GRUB Legacy could run with only Stage 1 and Stage 2 in some limited
+configurations, while GRUB 2 requires @file{core.img} and cannot work
+without it.
+
+@item stage2
+GRUB 2 has no single Stage 2 image.  Instead, it loads modules from
+@file{/boot/grub} at run-time.
+
+@item stage2_eltorito
+In GRUB 2, images for booting from CD-ROM drives are now constructed using
+@file{cdboot.img} and @file{core.img}, making sure that the core image
+contains the @samp{iso9660} module.  It is usually best to use the
+@command{grub-mkrescue} program for this.
+
+@item nbgrub
+There is as yet no equivalent for @file{nbgrub} in GRUB 2; it was used by
+Etherboot and some other network boot loaders.
+
+@item pxegrub
+In GRUB 2, images for PXE network booting are now constructed using
+@file{pxeboot.img} and @file{core.img}, making sure that the core image
+contains the @samp{pxe} and @samp{pxecmd} modules.  @xref{Network}.
+@end table
+
 
 @node Filesystem
 @chapter Filesystem syntax and semantics
@@ -1679,7 +1884,8 @@ If they are completely identical, nothing will be printed.
 @subsection configfile
 
 @deffn Command configfile file
-Load @var{file} as a configuration file.
+Load @var{file} as a configuration file.  If @var{file} defines any menu
+entries, then show a menu containing them immediately.
 @end deffn
 
 

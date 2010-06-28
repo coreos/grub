@@ -1,3 +1,11 @@
+2010-06-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Embedded configuration): New section (replacing
+	old "Preset Menu" stub).
+	(Images): New section.
+	(configfile): Note that any menu entries defined in `file' are shown
+	immediately.
+
 2010-06-28  Josh Triplett  <josh@joshtriplett.org>
 
 	* mmap/i386/pc/mmap_helper.S: Set CF on return.
