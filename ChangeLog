@@ -1,5 +1,22 @@
 2010-06-28  Colin Watson  <cjwatson@ubuntu.com>
 
+	Change grub-mkdevicemap to emit /dev/disk/by-id/ names where
+	possible on Linux.
+
+	* util/deviceiter.c (check_device): Rename to ...
+	(check_device_readable_unique): ... this.  Update all callers.
+	Maintain and check a list of which devices (by canonicalized name)
+	have already been seen.
+	(clear_seen_devices): New function.
+	(compare_file_names) [__linux__]: New function.
+	(grub_util_iterate_devices): Clear the list of seen devices on exit
+	and (just in case) on entry.
+	(grub_util_iterate_devices) [__linux__]: Iterate over non-partition
+	devices in /dev/disk/by-id/, in sorted order.  Remove DM-RAID
+	seen-devices list, superseded by general code in check_device.
+
+2010-06-28  Colin Watson  <cjwatson@ubuntu.com>
+
 	* commands/cat.c (options): New variable.
 	(grub_cmd_cat): Parse options.  If the --dos option is given, print
 	DOS-style "\r\n" line endings as simple newlines (Debian bug
