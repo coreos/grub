@@ -1,5 +1,14 @@
 2010-06-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	XEN with Linux grub-mkconfig support.
+
+	* conf/common.rmk (grub-mkconfig_SCRIPTS) [linux]: Add 20_linux_xen.
+	* util/grub-mkconfig.in: Export GRUB_CMDLINE_XEN and
+	GRUB_CMDLINE_XEN_DEFAULT.
+	* util/grub.d/20_linux_xen.in: New file.
+
+2010-06-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Initialise VGA video on qemu ourselves.
 
 	* boot/i386/qemu/boot.S: Don't call 0xc000.

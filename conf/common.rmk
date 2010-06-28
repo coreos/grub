@@ -206,6 +206,9 @@ grub-mkconfig_SCRIPTS = 00_header 30_os-prober 40_custom 41_custom
 ifneq (, $(host_kernel))
 grub-mkconfig_SCRIPTS += 10_$(host_kernel)
 endif
+ifeq (linux, $(host_kernel))
+grub-mkconfig_SCRIPTS += 20_linux_xen
+endif
 
 CLEANFILES += $(grub-mkconfig_SCRIPTS)
 
