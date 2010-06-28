@@ -1032,6 +1032,11 @@ for them.  Set this option to @samp{true} to disable this.
 Play a tune on the speaker when GRUB starts.  This is particularly useful
 for users unable to see the screen.  The value of this option is passed
 directly to @ref{play}.
+
+@item GRUB_BADRAM
+If this option is set, GRUB will issue a @ref{badram} command to filter
+out specified regions of RAM.
+
 @end table
 
 For more detailed customisation of @command{grub-mkconfig}'s output, you may
@@ -1804,6 +1809,7 @@ you forget a command, you can run the command @command{help}
 
 @menu
 * acpi::                        Load ACPI tables
+* badram::                      Filter out bad regions of RAM
 * blocklist::                   Print a block list
 * boot::                        Start up your operating system
 * cat::                         Show the contents of a file
@@ -1857,6 +1863,27 @@ Normally, this command will replace the Root System Description Pointer
 GRUB, but may be used by GRUB's EFI emulation.
 @end deffn
 
+@node badram
+@subsection badram
+
+@deffn Command badram addr,mask[,addr,mask...]
+Filter out bad RAM.
+@end deffn
+
+This command notifies the memory manager that specified regions of
+RAM ought to be filtered out (usually, because they're damaged).  This
+remains in effect after a payload kernel has been loaded by GRUB, as
+long as the loaded kernel obtains its memory map from GRUB.  Kernels that
+support this include Linux, GNU Mach, the kernel of FreeBSD and Multiboot
+kernels in general.
+
+Syntax is the same as provided by the @uref{http://www.memtest.org/,
+Memtest86+ utility}: a list of address/mask pairs.  Given a page-aligned
+address and a base address / mask pair, if all the bits of the page-aligned
+address that are enabled by the mask match with the base address, it means
+this page is to be filtered.  This syntax makes it easy to represent patterns
+that are often result of memory damage, due to physical distribution of memory
+cells.
 
 @node blocklist
 @subsection blocklist

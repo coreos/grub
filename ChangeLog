@@ -1,3 +1,8 @@
+2010-06-29  Robert Millan  <rmh@gnu.org>
+
+	* docs/grub.texi (Simple configuration): Document ${GRUB_BADRAM}.
+	(Command-line and menu entry commands): Document `badram' command.
+
 2010-06-28  Robert Millan  <rmh@gnu.org>
 
 	* util/grub-mkconfig.in: Export `GRUB_BADRAM' variable.
