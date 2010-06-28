@@ -1,3 +1,13 @@
+2010-06-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/cat.c (options): New variable.
+	(grub_cmd_cat): Parse options.  If the --dos option is given, print
+	DOS-style "\r\n" line endings as simple newlines (Debian bug
+	#586358).
+	(GRUB_MOD_INIT): Use extcmd.
+	(GRUB_MOD_FINI): Likewise.
+	* docs/grub.texi (cat): Document --dos.
+
 2010-06-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	XEN with Linux grub-mkconfig support.

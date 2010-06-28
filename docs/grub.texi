@@ -1624,13 +1624,19 @@ a menu entry).
 @node cat
 @subsection cat
 
-@deffn Command cat file
+@deffn Command cat [@option{--dos}] file
 Display the contents of the file @var{file}. This command may be useful
 to remind you of your OS's root partition:
 
 @example
 grub> @kbd{cat /etc/fstab}
 @end example
+
+If the @option{--dos} option is used, then carriage return / new line pairs
+will be displayed as a simple new line.  Otherwise, the carriage return will
+be displayed as a control character (@samp{<d>}) to make it easier to see
+when boot problems are caused by a file formatted using DOS-style line
+endings.
 @end deffn
 
 
