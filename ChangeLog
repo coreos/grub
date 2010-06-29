@@ -1,5 +1,20 @@
 2010-06-29  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub-mkconfig.in: Use 'set -e' rather than '#! /bin/sh -e',
+	to avoid accidents when debugging with 'sh -x'.
+	* util/grub-mkrescue.in: Likewise.
+	* util/grub.d/00_header.in: Likewise.
+	* util/grub.d/10_hurd.in: Likewise.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/10_netbsd.in: Likewise.
+	* util/grub.d/10_windows.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+	* util/grub.d/30_os-prober.in: Likewise.
+	* util/powerpc/ieee1275/grub-mkrescue.in: Likewise.
+
+2010-06-29  Colin Watson  <cjwatson@ubuntu.com>
+
 	* commands/cat.c (grub_cmd_cat): Fix buffer overrun if '\r' is the
 	last character in the buffer.
 	Reported by: Vladimir Serbinenko.
