@@ -1,3 +1,9 @@
+2010-06-29  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/cat.c (grub_cmd_cat): Fix buffer overrun if '\r' is the
+	last character in the buffer.
+	Reported by: Vladimir Serbinenko.
+
 2010-06-29  Robert Millan  <rmh@gnu.org>
 
 	* docs/grub.texi (Simple configuration): Document ${GRUB_BADRAM}.

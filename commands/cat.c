@@ -63,7 +63,7 @@ grub_cmd_cat (grub_extcmd_t cmd, int argc, char **args)
 
 	  if ((grub_isprint (c) || grub_isspace (c)) && c != '\r')
 	    grub_putchar (c);
-	  else if (dos && c == '\r' && buf[i + 1] == '\n')
+	  else if (dos && c == '\r' && i + 1 < size && buf[i + 1] == '\n')
 	    {
 	      grub_putchar ('\n');
 	      i++;
