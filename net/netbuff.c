@@ -41,11 +41,6 @@ grub_err_t grub_netbuff_unput (struct grub_net_buff *net_buff ,grub_size_t len)
 grub_err_t grub_netbuff_push (struct grub_net_buff *net_buff ,grub_size_t len)
 {
   net_buff->data -= len;
-/*  grub_printf("push len =%d\n",len);
-  grub_printf("pack->head =%x\n",(unsigned int)net_buff->head);
-  grub_printf("pack->data =%x\n",(unsigned int)net_buff->data);
-  grub_printf("pack->tail =%x\n",(unsigned int)net_buff->tail);
-  grub_printf("pack->end =%x\n",(unsigned int)net_buff->end);*/
   if (net_buff->data < net_buff->head)
     return grub_error (GRUB_ERR_OUT_OF_RANGE, "push out of the packet range.");
   return GRUB_ERR_NONE; 
@@ -87,7 +82,7 @@ struct grub_net_buff *grub_netbuff_alloc ( grub_size_t len )
 
 grub_err_t grub_netbuff_free (struct grub_net_buff *net_buff)
 {
-  grub_free (net_buff);
+  grub_free (net_buff->head);
   return 0;
    
 }

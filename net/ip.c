@@ -7,6 +7,7 @@
 #include <grub/net.h>
 #include <grub/net/netbuff.h>
 #include <grub/mm.h>
+#include <grub/time.h>
 
 struct grub_net_protocol *grub_ipv4_prot;
 
@@ -65,6 +66,8 @@ recv_ip_packet (struct grub_net_network_layer_interface *inf,
 {
   
   struct iphdr *iph;
+  grub_uint64_t start_time, current_time;
+  start_time = grub_get_time_ms();
   while (1)
   {
     trans_net_inf->inner_layer->link_prot->recv(inf,trans_net_inf->inner_layer,nb);
@@ -74,6 +77,10 @@ recv_ip_packet (struct grub_net_network_layer_interface *inf,
       grub_netbuff_pull(nb,sizeof(*iph));
       return 0; 
     }
+
+    current_time =  grub_get_time_ms();
+    if (current_time -  start_time > TIMEOUT_TIME_MS)
+      return grub_error (GRUB_ERR_TIMEOUT, "Time out.");
   }
 /*  grub_printf("ip.src 0x%x\n",iph->src);
   grub_printf("ip.dst 0x%x\n",iph->dest);

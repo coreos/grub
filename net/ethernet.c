@@ -7,6 +7,7 @@
 #include <grub/net/netbuff.h>
 #include <grub/net/interface.h>
 #include <grub/net.h>
+#include <grub/time.h>
 
 static grub_err_t 
 send_ethernet_packet (struct grub_net_network_layer_interface *inf __attribute__ ((unused)),
@@ -42,6 +43,8 @@ recv_ethernet_packet (struct grub_net_network_layer_interface *inf __attribute__
    struct grub_net_network_link_interface *net_link_inf __attribute__ ((unused)) ,struct grub_net_buff *nb)
 {
   struct etherhdr *eth;
+  grub_uint64_t start_time, current_time;
+  start_time = grub_get_time_ms();
  while (1)
  {
    get_card_packet (nb);
@@ -59,6 +62,9 @@ recv_ethernet_packet (struct grub_net_network_layer_interface *inf __attribute__
      grub_netbuff_pull(nb,sizeof(*eth));
      return 0;
    }
+    current_time =  grub_get_time_ms();
+    if (current_time -  start_time > TIMEOUT_TIME_MS)
+      return grub_error (GRUB_ERR_TIMEOUT, "Time out.");
  }
 /*  - get ethernet header
   - verify if the next layer is the desired one.

@@ -4,6 +4,7 @@
 #include <grub/net/netbuff.h>
 #include <grub/net/protocol.h>
 #include <grub/net/interface.h>
+#include <grub/time.h>
 
 static grub_err_t 
 send_udp_packet (struct grub_net_network_layer_interface *inf,
@@ -35,7 +36,8 @@ receive_udp_packet (struct grub_net_network_layer_interface *inf,
   struct udphdr *udph;
   struct udp_interf *udp_interf;
   udp_interf = (struct udp_interf *) app_trans_inf->data;
-
+  grub_uint64_t start_time, current_time;
+  start_time = grub_get_time_ms();
   while(1)
   {
     app_trans_inf->inner_layer->net_prot->recv(inf,app_trans_inf->inner_layer,nb);
@@ -62,6 +64,10 @@ receive_udp_packet (struct grub_net_network_layer_interface *inf,
      
       return 0;
     }
+    current_time =  grub_get_time_ms();
+    if (current_time -  start_time > TIMEOUT_TIME_MS)
+      return grub_error (GRUB_ERR_TIMEOUT, "Time out.");
+    
   }
 }
 

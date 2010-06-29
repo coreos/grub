@@ -5,6 +5,7 @@
 
 #define UDP_PCKT 0x11
 #define IP_PCKT 0x0800
+#define TIMEOUT_TIME_MS 3*1000 
 typedef enum
 {
  GRUB_NET_TFTP_ID,

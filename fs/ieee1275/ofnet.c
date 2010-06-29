@@ -56,7 +56,7 @@ grub_ofnet_open (const char *name, grub_disk_t disk)
 {
 
 
-  if (grub_strcmp (name, "network"))
+  if (grub_strcmp (name, "net"))
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a net disk");
 
   disk->total_sectors = U64MAXSIZE;
@@ -109,7 +109,7 @@ grub_ofnetfs_dir (grub_device_t device ,
                 int (*hook) (const char *filename,
                   const struct grub_dirhook_info *info) __attribute((unused)))
 {
-  if(grub_strcmp (device->disk->name,"network"))
+  if(grub_strcmp (device->disk->name,"net"))
   {
      return grub_error (GRUB_ERR_BAD_FS, "not an net filesystem");
   }
@@ -140,7 +140,7 @@ grub_ofnetfs_open (struct grub_file *file , const char *name )
   //grub_addr_t addr;
   if (name[0] == '/')
     name++; 
-  if(grub_strcmp (file->device->disk->name,"network"))
+  if(grub_strcmp (file->device->disk->name,"net"))
   {
     
     return 1;
@@ -161,80 +161,43 @@ grub_ofnetfs_open (struct grub_file *file , const char *name )
   grub_netbuff_reserve (pack,80*1024);
   file_size = app_interface->app_prot->get_file_size(NULL,stack,pack,(char *) name);
 
-
   for (found_addr = 0x800000; found_addr <  + 2000 * 0x100000; found_addr += 0x100000)
     {
-//      grub_printf("trying to claim %d bytes at 0x%x\n",file_size,found_addr); 
       if (grub_claimmap (found_addr , file_size) != -1)
 	break;
     }
-//  grub_printf("Claimed %d bytes at 0x%x\n",file_size,found_addr); 
   file->data = (void *) found_addr;
-//  grub_printf("file->data = 0x%x\n",(int)file->data);
-//  grub_printf("file_size = %d\n",file_size); 
-//  grub_printf("OPEN\n"); 
+
   grub_netbuff_clear(pack); 
   grub_netbuff_reserve (pack,80*1024);
   app_interface->app_prot->open (NULL,stack,pack,(char *) name);
   
- do {  
-    //if (app_interface->app_prot->recv (NULL,stack,pack) == GRUB_ERR_NONE)
-//    grub_printf("RECEIVE PACKET\n");
+  do 
+  {  
     grub_netbuff_clear(pack); 
     grub_netbuff_reserve (pack,80*1024);
     app_interface->app_prot->recv (NULL,stack,pack); 
     if (grub_errno != GRUB_ERR_NONE)
-      return grub_errno;
-//    grub_printf("RECEIVED PACKET\n");
-   // {
-//    grub_printf("payload_size= %d\n",pack->tail - pack->data); 
-//    grub_printf("amount= %d\n",amount);
-//    grub_printf("file_size= %d\n",file_size);
-    datap = (char *)file->data + amount;
-    amount += (pack->tail - pack->data);
-//    grub_printf("datap = 0x%x\n",(int)datap );
-    grub_memcpy(datap, pack->data, pack->tail - pack->data); 
-//    grub_printf("SEND ACK\n"); 
-
+      goto error;
+    if ((pack->tail - pack->data))
+    {
+     // file->data = grub_realloc(file->data,amount + pack->tail - pack->data);
+      datap = (char *)file->data + amount;
+      amount += (pack->tail - pack->data);
+      grub_memcpy(datap , pack->data, pack->tail - pack->data); 
+    }
     grub_netbuff_clear(pack); 
     grub_netbuff_reserve (pack,80*1024);
     app_interface->app_prot->send_ack (NULL,stack,pack); 
 
     if (grub_errno != GRUB_ERR_NONE)
-      return grub_errno;
-
-//    grub_printf("SENT ACK\n"); 
-    //}
- //   file->data = grub_realloc(file->data,amount);
+      goto error;
 
   }while (amount < file_size);
-// grub_printf("transfer complete\n"); 
- file->size = file_size;
- 
-//  grub_netbuff_free(pack);
-  /*Start ARP header*/
-  //  arp.arpr.hwtype = 0x1;        /* hardware type (must be ARPHRD_ETHER) */
-  //  arp.arpr.protocol = 0x0800;      /* protocol type (must be ETH_P_IP) */
-  //  arp.arpr.hwlen = 0x6;            /* hardware address length (must be 6) */
-  //  arp.arpr.protolen = 0x4;         /* protocol address length (must be 4) */
-  //  arp.arpr.opcode = 0x1;        /* ARP opcode */
-  
-  
-  /*arp.arpr.shwaddr[0] =0x0a ;
-  arp.arpr.shwaddr[1] =0x11 ;
-  arp.arpr.shwaddr[2] =0xbd ;
-  arp.arpr.shwaddr[3] =0xe3 ;
-  arp.arpr.shwaddr[4] =0xe3 ;
-  arp.arpr.shwaddr[5] =0x04 ;
-  arp.arpr.sipaddr = dhcp_pckt -> yiaddr;   */  /* sender's IP address */
-  /*arp.arpr.thwaddr[0] =0;
-  arp.arpr.thwaddr[1] =0;
-  arp.arpr.thwaddr[2] =0;
-  arp.arpr.thwaddr[3] =0;
-  arp.arpr.thwaddr[4] =0;
-  arp.arpr.thwaddr[5] =0;
-  arp.arpr.tipaddr = dhcp_pckt -> siaddr; */    /* target's IP address */
-  /*END ARP header */
+  file->size = file_size;
+
+  error: 
+  grub_netbuff_free(pack);
   return grub_errno;
 }
 
