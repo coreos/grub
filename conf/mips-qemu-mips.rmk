@@ -12,7 +12,7 @@ kernel_img_SOURCES = kern/$(target_cpu)/startup.S \
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
 	kern/misc.c kern/mm.c kern/term.c 	\
 	kern/rescue_parser.c kern/rescue_reader.c \
-	kern/list.c kern/handler.c kern/command.c kern/corecmd.c	\
+	kern/list.c  kern/command.c kern/corecmd.c	\
 	kern/parser.c kern/partition.c kern/env.c kern/$(target_cpu)/dl.c 	\
 	kern/generic/millisleep.c kern/generic/rtc_get_time_ms.c kern/time.c    \
 	symlist.c kern/$(target_cpu)/cache.S

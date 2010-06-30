@@ -36,10 +36,7 @@ static struct
   struct grub_video_mode_info mode_info;
   struct grub_video_render_target *render_target;
 
-  unsigned int bytes_per_scan_line;
-  unsigned int bytes_per_pixel;
   grub_uint8_t *ptr;
-  int index_color_mode;
   int mapped;
   grub_uint32_t base;
   grub_pci_device_t dev;
@@ -199,19 +196,6 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
 }
 
 static grub_err_t
-grub_video_sm712_set_palette (unsigned int start, unsigned int count,
-                            struct grub_video_palette_data *palette_data)
-{
-  if (framebuffer.index_color_mode)
-    {
-      /* TODO: Implement setting indexed color mode palette to hardware.  */
-    }
-
-  /* Then set color to emulated palette.  */
-  return grub_video_fb_set_palette (start, count, palette_data);
-}
-
-static grub_err_t
 grub_video_sm712_swap_buffers (void)
 {
   /* TODO: Implement buffer swapping.  */
@@ -245,12 +229,14 @@ static struct grub_video_adapter grub_video_sm712_adapter =
     .name = "SM712 Video Driver",
     .id = GRUB_VIDEO_DRIVER_SM712,
 
+    .prio = GRUB_VIDEO_ADAPTER_PRIO_NATIVE,
+
     .init = grub_video_sm712_video_init,
     .fini = grub_video_sm712_video_fini,
     .setup = grub_video_sm712_setup,
     .get_info = grub_video_fb_get_info,
     .get_info_and_fini = grub_video_sm712_get_info_and_fini,
-    .set_palette = grub_video_sm712_set_palette,
+    .set_palette = grub_video_fb_set_palette,
     .get_palette = grub_video_fb_get_palette,
     .set_viewport = grub_video_fb_set_viewport,
     .get_viewport = grub_video_fb_get_viewport,

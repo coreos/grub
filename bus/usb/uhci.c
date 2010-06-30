@@ -332,13 +332,20 @@ grub_free_td (struct grub_uhci *u, grub_uhci_td_t td)
 }
 
 static void
-grub_free_queue (struct grub_uhci *u, grub_uhci_td_t td)
+grub_free_queue (struct grub_uhci *u, grub_uhci_td_t td,
+                 grub_usb_transfer_t transfer)
 {
-  /* Free the TDs in this queue.  */
-  while (td)
+  int i; /* Index of TD in transfer */
+  
+  /* Free the TDs in this queue and set last_trans.  */
+  for (i=0; td; i++)
     {
       grub_uhci_td_t tdprev;
 
+      /* Check state of TD and possibly set last_trans */
+      if (transfer && (td->linkptr & 1))
+        transfer->last_trans = i;
+      
       /* Unlink the queue.  */
       tdprev = td;
       td = (grub_uhci_td_t) td->linkptr2;
@@ -461,7 +468,7 @@ grub_uhci_transfer (grub_usb_controller_t dev,
 	  td_prev->linkptr = 1;
 
 	  if (td_first)
-	    grub_free_queue (u, td_first);
+	    grub_free_queue (u, td_first, NULL);
 
 	  return GRUB_USB_ERR_INTERNAL;
 	}
@@ -560,7 +567,7 @@ grub_uhci_transfer (grub_usb_controller_t dev,
   /* Place the QH back in the free list and deallocate the associated
      TDs.  */
   qh->elinkptr = 1;
-  grub_free_queue (u, td_first);
+  grub_free_queue (u, td_first, transfer);
 
   return err;
 }
@@ -609,7 +616,7 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
   grub_uhci_writereg16 (u, reg, enable << 9);
 
   /* Wait for the reset to complete.  XXX: How long exactly?  */
-  grub_millisleep (10);
+  grub_millisleep (50); /* For root hub should be nominaly 50ms */
   status = grub_uhci_readreg16 (u, reg);
   grub_uhci_writereg16 (u, reg, status & ~(1 << 9));
   grub_dprintf ("uhci", "reset completed\n");

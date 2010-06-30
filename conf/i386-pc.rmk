@@ -43,7 +43,7 @@ kernel_img_SOURCES = kern/i386/pc/startup.S \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
-	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
+	kern/time.c kern/list.c kern/command.c kern/corecmd.c \
 	kern/$(target_cpu)/dl.c kern/i386/pc/init.c kern/i386/pc/mmap.c \
 	kern/parser.c kern/partition.c \
 	kern/i386/tsc.c kern/i386/pit.c \
@@ -66,7 +66,7 @@ util/i386/pc/grub-setup.c_DEPENDENCIES = grub_setup_init.h
 grub_setup_SOURCES = gnulib/progname.c util/i386/pc/grub-setup.c	\
 	util/misc.c kern/emu/misc.c kern/emu/getroot.c			\
 	kern/emu/hostdisk.c kern/device.c kern/disk.c kern/err.c	\
-	kern/misc.c kern/parser.c kern/partition.c kern/file.c		\
+	kern/misc.c kern/partition.c kern/file.c			\
 	kern/emu/mm.c kern/fs.c kern/env.c kern/list.c fs/fshelp.c	\
 									\
 	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c			\
@@ -147,7 +147,7 @@ linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += xnu.mod
-xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c loader/i386/pc/xnu.c \
+xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c \
 	 loader/macho32.c loader/macho64.c loader/macho.c loader/xnu.c
 xnu_mod_CFLAGS = $(COMMON_CFLAGS)
 xnu_mod_LDFLAGS = $(COMMON_LDFLAGS)

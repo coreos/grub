@@ -12,7 +12,6 @@ commands/efi/fixvideo.c
 commands/efi/loadbios.c
 commands/gptsync.c
 commands/halt.c
-commands/handler.c
 commands/hdparm.c
 commands/help.c
 commands/hexdump.c

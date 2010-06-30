@@ -148,8 +148,6 @@ usb_iterate (grub_usb_device_t dev)
 
   grub_printf ("%s speed device\n", usb_devspeed[dev->speed]);
 
-  return 0;
-
   for (i = 0; i < descdev->configcnt; i++)
     {
       struct grub_usb_desc_config *config;

@@ -441,9 +441,8 @@ retrieve_video_parameters (grub_uint8_t **ptrorig)
   else
     {
       tag->common.framebuffer_type = MULTIBOOT_FRAMEBUFFER_TYPE_RGB;
-      tag->common.framebuffer_type = MULTIBOOT_FRAMEBUFFER_TYPE_RGB;
-      tag->framebuffer_red_field_position = mode_info.green_field_pos;
-      tag->framebuffer_red_mask_size = mode_info.green_mask_size;
+      tag->framebuffer_red_field_position = mode_info.red_field_pos;
+      tag->framebuffer_red_mask_size = mode_info.red_mask_size;
       tag->framebuffer_green_field_position = mode_info.green_field_pos;
       tag->framebuffer_green_mask_size = mode_info.green_mask_size;
       tag->framebuffer_blue_field_position = mode_info.blue_field_pos;
@@ -496,7 +495,7 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
 	  = (struct multiboot_tag_module *) ptrorig;
 	tag->type = MULTIBOOT_TAG_TYPE_MODULE;
 	tag->size = sizeof (struct multiboot_tag_module) + cur->cmdline_size;
-	tag->mod_start = dest + cur->start;
+	tag->mod_start = cur->start;
 	tag->mod_end = tag->mod_start + cur->size;
 	grub_memcpy (tag->cmdline, cur->cmdline, cur->cmdline_size);
 	ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);

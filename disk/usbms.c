@@ -253,6 +253,7 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
   struct grub_usbms_csw status;
   static grub_uint32_t tag = 0;
   grub_usb_err_t err = GRUB_USB_ERR_NONE;
+  grub_usb_err_t errCSW = GRUB_USB_ERR_NONE;
   int retrycnt = 3 + 1;
   grub_size_t i;
 
@@ -290,9 +291,8 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
     {
       if (err == GRUB_USB_ERR_STALL)
 	{
-	  grub_usb_clear_halt (dev->dev, dev->in->endp_addr);
 	  grub_usb_clear_halt (dev->dev, dev->out->endp_addr);
-	  goto retry;
+	  goto CheckCSW;
 	}
       return grub_error (GRUB_ERR_IO, "USB Mass Storage request failed");
     }
@@ -302,7 +302,12 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
     {
       err = grub_usb_bulk_read (dev->dev, dev->in->endp_addr, size, buf);
       grub_dprintf ("usb", "read: %d %d\n", err, GRUB_USB_ERR_STALL); 
-      if (err) goto CheckCSW;
+      if (err)
+        {
+          if (err == GRUB_USB_ERR_STALL)
+	    grub_usb_clear_halt (dev->dev, dev->in->endp_addr);
+          goto CheckCSW;
+        }
       /* Debug print of received data. */
       grub_dprintf ("usb", "buf:\n");
       if (size <= 64)
@@ -316,6 +321,12 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
       err = grub_usb_bulk_write (dev->dev, dev->out->endp_addr, size, buf);
       grub_dprintf ("usb", "write: %d %d\n", err, GRUB_USB_ERR_STALL);
       grub_dprintf ("usb", "buf:\n");
+      if (err)
+        {
+          if (err == GRUB_USB_ERR_STALL)
+	    grub_usb_clear_halt (dev->dev, dev->out->endp_addr);
+          goto CheckCSW;
+        }
       /* Debug print of sent data. */
       if (size <= 256)
         for (i=0; i<size; i++)
@@ -326,15 +337,16 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 
   /* Read the status - (maybe) according to specification.  */
 CheckCSW:
-  err = grub_usb_bulk_read (dev->dev, dev->in->endp_addr,
+  errCSW = grub_usb_bulk_read (dev->dev, dev->in->endp_addr,
 		    sizeof (status), (char *) &status);
-  if (err)
+  if (errCSW)
     {
       grub_usb_clear_halt (dev->dev, dev->in->endp_addr);
-      err = grub_usb_bulk_read (dev->dev, dev->in->endp_addr,
+      errCSW = grub_usb_bulk_read (dev->dev, dev->in->endp_addr,
 			        sizeof (status), (char *) &status);
-      if (err)
+      if (errCSW)
         { /* Bulk-only reset device. */
+          grub_dprintf ("usb", "Bulk-only reset device - errCSW\n");
           grub_usbms_reset (dev->dev, dev->interface);
           grub_usb_clear_halt (dev->dev, dev->in->endp_addr);
           grub_usb_clear_halt (dev->dev, dev->out->endp_addr);
@@ -347,9 +359,11 @@ CheckCSW:
   	status.signature, status.tag, status.residue);
   grub_dprintf ("usb", "CSW: status=0x%02x\n", status.status);
   
-  /* If phase error, do bulk-only reset device. */
-  if (status.status == 2)
-    {
+  /* If phase error or not valid signature, do bulk-only reset device. */
+  if ((status.status == 2) ||
+      (status.signature != grub_cpu_to_le32(0x53425355)))
+    { /* Bulk-only reset device. */
+      grub_dprintf ("usb", "Bulk-only reset device - bad status\n");
       grub_usbms_reset (dev->dev, dev->interface);
       grub_usb_clear_halt (dev->dev, dev->in->endp_addr);
       grub_usb_clear_halt (dev->dev, dev->out->endp_addr);
@@ -357,8 +371,12 @@ CheckCSW:
       goto retry;
     }
 
-  if (status.status)
+  /* If "command failed" status or data transfer failed -> error */
+  if ((status.status || err) && !read_write)
     return grub_error (GRUB_ERR_READ_ERROR,
+		       "error communication with USB Mass Storage device");
+  else if ((status.status || err) && read_write)
+    return grub_error (GRUB_ERR_WRITE_ERROR,
 		       "error communication with USB Mass Storage device");
 
   return GRUB_ERR_NONE;

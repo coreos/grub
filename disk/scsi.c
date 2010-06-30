@@ -421,7 +421,7 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 
       /* According to USB MS tests specification, issue Test Unit Ready
        * until OK */
-      maxtime = grub_get_time_ms () + 1000;
+      maxtime = grub_get_time_ms () + 5000; /* It is safer value */
       do
         {
 	  /* Timeout is necessary - for example in case when we have
@@ -460,7 +460,7 @@ grub_scsi_open (const char *name, grub_disk_t disk)
       grub_dprintf ("scsi", "blocks=%u, blocksize=%u\n",
 		    scsi->size, scsi->blocksize);
       grub_dprintf ("scsi", "Disk total 512 sectors = %llu\n",
-		    disk->total_sectors);
+		    (unsigned long long) disk->total_sectors);
 
       return GRUB_ERR_NONE;
     }
@@ -519,6 +519,37 @@ grub_scsi_read (grub_disk_t disk, grub_disk_addr_t sector,
 
   /* XXX: Never reached.  */
   return GRUB_ERR_NONE;
+
+#if 0 /* Workaround - it works - but very slowly, from some reason
+       * unknown to me (specially on OHCI). Do not use it. */
+  /* Split transfer requests to device sector size because */
+  /* some devices are not able to transfer more than 512-1024 bytes */
+  grub_err_t err = GRUB_ERR_NONE;
+
+  for ( ; size; size--)
+    {
+      /* Depending on the type, select a read function.  */
+      switch (scsi->devtype)
+        {
+          case grub_scsi_devtype_direct:
+            err = grub_scsi_read10 (disk, sector, 1, buf);
+            break;
+
+          case grub_scsi_devtype_cdrom:
+            err = grub_scsi_read12 (disk, sector, 1, buf);
+            break;
+
+          default: /* This should not happen */
+            return GRUB_ERR_READ_ERROR;
+        }
+      if (err)
+        return err;
+      sector++;
+      buf += scsi->blocksize;
+    }
+
+  return err;
+#endif
 }
 
 static grub_err_t

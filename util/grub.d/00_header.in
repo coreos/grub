@@ -21,8 +21,7 @@ transform="@program_transform_name@"
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
-grub_prefix=`echo /boot/grub | sed ${transform}`
-locale_dir=`echo /boot/grub/locale | sed ${transform}`
+locale_dir=`echo ${GRUB_PREFIX}/locale | sed ${transform}`
 grub_lang=`echo $LANG | cut -d _ -f 1`
 
 . ${libdir}/grub/grub-mkconfig_lib
@@ -61,8 +60,8 @@ set default="${GRUB_DEFAULT}"
 EOF
 fi
 cat <<EOF
-if [ \${prev_saved_entry} ]; then
-  set saved_entry=\${prev_saved_entry}
+if [ "\${prev_saved_entry}" ]; then
+  set saved_entry="\${prev_saved_entry}"
   save_env saved_entry
   set prev_saved_entry=
   save_env prev_saved_entry
@@ -70,11 +69,29 @@ if [ \${prev_saved_entry} ]; then
 fi
 
 function savedefault {
-  if [ -z \${boot_once} ]; then
-    saved_entry=\${chosen}
+  if [ -z "\${boot_once}" ]; then
+    saved_entry="\${chosen}"
     save_env saved_entry
   fi
 }
+
+function load_video {
+EOF
+if [ -n "${GRUB_VIDEO_BACKEND}" ]; then
+    cat <<EOF
+  insmod ${GRUB_VIDEO_BACKEND}
+EOF
+else
+    # Insert all available backends; GRUB will use the most appropriate.
+    for backend in $(cat "${GRUB_PREFIX}/video.lst"); do
+	cat <<EOF
+  insmod ${backend}
+EOF
+    done
+fi
+cat <<EOF
+}
+
 EOF
 
 serial=0;
@@ -89,7 +106,7 @@ for x in ${GRUB_TERMINAL_INPUT} ${GRUB_TERMINAL_OUTPUT}; do
 done
 
 if [ "x$serial" = x1 ]; then
-    if ! test -e ${grub_prefix}/serial.mod ; then
+    if ! test -e ${GRUB_PREFIX}/serial.mod ; then
 	echo "Serial terminal not available on this platform." >&2 ; exit 1
     fi
 
@@ -107,8 +124,8 @@ if [ "x$gfxterm" = x1 ]; then
     cat << EOF
 if loadfont `make_system_path_relative_to_its_root "${GRUB_FONT_PATH}"` ; then
   set gfxmode=${GRUB_GFXMODE}
+  load_video
   insmod gfxterm
-  insmod ${GRUB_VIDEO_BACKEND}
 EOF
     if [ "x$GRUB_THEME" != x ] && [ -f "$GRUB_THEME" ] \
 	&& is_path_readable_by_grub "$GRUB_THEME"; then
@@ -195,7 +212,7 @@ EOF
 esac
 
 # Gettext variables and module
-if [ "x${LANG}" != "xC" ] ; then
+if [ "x${LANG}" != "xC" ] && [ -d "${locale_dir}" ] ; then
     prepare_grub_to_access_device $(${grub_probe} --target=device ${locale_dir})
   cat << EOF
 set locale_dir=(\$root)$(make_system_path_relative_to_its_root ${locale_dir})
