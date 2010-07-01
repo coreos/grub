@@ -1,5 +1,9 @@
 2010-07-01  Sean Finney  <seanius@seanius.net>
 
+	* util/grub.d/10_linux.in: Don't use UUID for LVM root.
+
+2010-07-01  Sean Finney  <seanius@seanius.net>
+
 	* disk/lvm.c (grub_lvm_scan_device): Skip snapshots.
 
 2010-07-01  Vladimir Serbinenko  <phcoder@gmail.com>

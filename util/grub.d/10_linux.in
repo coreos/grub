@@ -44,7 +44,8 @@ case ${GRUB_DEVICE} in
 esac
 
 if [ "x${GRUB_DEVICE_UUID}" = "x" ] || [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue" ] \
-    || ! test -e "/dev/disk/by-uuid/${GRUB_DEVICE_UUID}" ; then
+    || ! test -e "/dev/disk/by-uuid/${GRUB_DEVICE_UUID}" \
+    || [ "x`grub-probe -t abstraction --device ${GRUB_DEVICE}`" = "xlvm"  ] ; then
   LINUX_ROOT_DEVICE=${GRUB_DEVICE}
 else
   LINUX_ROOT_DEVICE=UUID=${GRUB_DEVICE_UUID}
