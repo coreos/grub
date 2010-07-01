@@ -1,3 +1,12 @@
+2010-07-01  Sean Finney  <seanius@seanius.net>
+
+	* disk/lvm.c (grub_lvm_scan_device): Skip snapshots.
+
+2010-07-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/lvm.c (grub_lvm_checkvalue): New function.
+	(grub_lvm_check_flag): Likewise.
+
 2010-07-01  Robert Millan  <rmh@gnu.org>
 
 	* kern/emu/hostdisk.c (convert_system_partition_to_system_disk):
