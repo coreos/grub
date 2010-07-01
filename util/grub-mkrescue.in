@@ -200,13 +200,12 @@ make_image ()
     memdisk_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
     mkdir -p ${memdisk_dir}/boot/grub
 
-    modules="$(cat ${source_directory}/partmap.lst) ${modules}"
     cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
 search --fs-uuid --set ${iso_uuid}
 set prefix=(\${root})/boot/grub/${platform}
 source \$prefix/grub.cfg
 EOF
-    (for i in ${modules} ; do
+    (for i in $(cat ${source_directory}/partmap.lst) ${modules} ; do
         echo "insmod $i"
     done ; \
     echo "source /boot/grub/grub.cfg") \
@@ -273,8 +272,7 @@ if test -e "${pc_dir}" ; then
 
     rm -f ${core_img}
 
-    modules="$(cat ${pc_dir}/partmap.lst) ${modules}"
-    (for i in ${modules} ; do
+    (for i in $(cat ${pc_dir}/partmap.lst) ${modules} ; do
         echo "insmod $i"
     done ; \
     echo "source /boot/grub/grub.cfg") \
