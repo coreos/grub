@@ -1,3 +1,9 @@
+2010-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/multiboot.c (grub_multiboot_boot) [GRUB_USE_MULTIBOOT2]:
+	Properly align mbi.
+	Reported by: Seth Goldberg.
+
 2010-07-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkrescue.in: Avoid module duplication.
