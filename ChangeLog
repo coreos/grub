@@ -1,3 +1,10 @@
+2010-07-01  Robert Millan  <rmh@gnu.org>
+
+	* kern/emu/hostdisk.c (convert_system_partition_to_system_disk):
+	Support 'p' as partition separator on kernel of FreeBSD (used
+	with GPT labels).
+	(grub_util_biosdisk_get_grub_dev): Likewise.
+
 2010-07-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Yeeloong firmware port.

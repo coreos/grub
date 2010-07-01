@@ -1260,7 +1260,7 @@ devmapper_out:
       for (p = path + 5; *p; ++p)
         if (grub_isdigit(*p))
           {
-            p = strchr (p, 's');
+            p = strpbrk (p, "sp");
             if (p)
               *p = '\0';
             break;
@@ -1507,7 +1507,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
   }
 
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
-  /* FreeBSD uses "/dev/[a-z]+[0-9]+(s[0-9]+[a-z]?)?".  */
+  /* FreeBSD uses "/dev/[a-z]+[0-9]+([sp][0-9]+[a-z]?)?".  */
   {
     int dos_part = -1;
     int bsd_part = -1;
@@ -1521,7 +1521,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
         for (p = os_dev + 5; *p; ++p)
           if (grub_isdigit(*p))
             {
-              p = strchr (p, 's');    /* msdos or apple (or ... ?) partition map */
+              p = strpbrk (p, "sp");    /* msdos or apple (or ... ?) partition map */
               if (p)
                 {
                   p++;
