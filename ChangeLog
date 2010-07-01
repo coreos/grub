@@ -1,3 +1,80 @@
+2010-07-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Yeeloong firmware port.
+
+	* boot/mips/yeeloong/fwstart.S: New file.
+	* bus/cs5536.c (gpiodump): New const.
+	(set_io_space): New function.
+	(set_iod): Likewise.
+	(set_p2d): Likewise.
+	(grub_cs5536_init_geode): Likewise.
+	* commands/mips/yeeloong/lsspd.c: New file.
+	* conf/mips-qemu-mips.rmk (pkglib_MODULES): Add serial.mod.
+	(serial_mod_SOURCES): New variable.
+	(serial_mod_CFLAGS): Likewise.
+	(serial_mod_LDFLAGS): Likewise.
+	* conf/mips-yeeloong.rmk (kernel_img_SOURCES): Add term/serial.c,
+	term/terminfo.c and term/tparm.c.
+	(pkglib_IMAGES): Add fwstart.img.
+	(fwstart_img_SOURCES): New variable.
+	(fwstart_img_CFLAGS): Likewise.
+	(fwstart_img_ASFLAGS): Likewise.
+	(fwstart_img_LDFLAGS): Likewise.
+	(fwstart_img_FORMAT): Likewise.
+	(pkglib_MODULES): Add lsspd.mod.
+	(lsspd_mod_SOURCES): New variable.
+	(lsspd_mod_CFLAGS): Likewise.
+	(lsspd_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES): Add halt.mod.
+	(halt_mod_SOURCES): New variable.
+	(halt_mod_CFLAGS): Likewise.
+	(halt_mod_LDFLAGS): Likewise.
+	* conf/mips.rmk (pkglib_MODULES): Remove serial.mod.
+	(serial_mod_SOURCES): Removed.
+	(serial_mod_CFLAGS): Likewise.
+	(serial_mod_LDFLAGS): Likewise.
+	* disk/ata.c (check_device): New function.
+	(grub_ata_device_initialize): Use check_device.
+	(grub_ata_iterate): Recheck devices.
+	(grub_ata_open): Likewise.
+	(grub_atapi_iterate): Likewise.
+	(grub_atapi_open): Likewise.
+	* include/grub/ata.h (GRUB_ATA_CH0_PORT1): New macro.
+	(GRUB_ATA_CH1_PORT1): Likewise.
+	(GRUB_ATA_CH0_PORT2): Likewise.
+	(GRUB_ATA_CH1_PORT2): Likewise.
+	* include/grub/mips/loongson.h: New file.
+	* include/grub/mips/yeeloong/ec.h: Likewise.
+	* include/grub/mips/yeeloong/serial.h (GRUB_MACHINE_SERIAL_PORT): New definition.
+	(GRUB_MACHINE_SERIAL_DIVISOR_115200): Likewise.
+	(GRUB_MACHINE_SERIAL_PORTS) [ASM_FILE]: Remove.
+	* include/grub/misc.h (grub_halt): Declare as noreturn.
+	* include/grub/serial.h (UART_ENABLE_FIFO): Renamed to ...
+	(UART_ENABLE_FIFO_TRIGGER14): ... this. All users updated.
+	(UART_ENABLE_FIFO_TRIGGER1): New definition.
+	(UART_ENABLE_DTRRTS): Likewise.
+	(UART_ENABLE_MODEM): Removed.
+	(UART_ENABLE_OUT2): New const.
+	* include/grub/term.h (grub_term_register_input_active): New function.
+	(grub_term_register_output_active): Likewise.
+	* kern/mips/startup.S [GRUB_MACHINE_MIPS_YEELOONG]: Handle 0xffffffff
+	argument.
+	* kern/mips/yeeloong/init.c (grub_get_rtc): Macroify.
+	(init_pci): New function.
+	(grub_machine_init): Execute platform init when firmware. Init serial.
+	(grub_halt): Implement.
+	(grub_exit): Likewise.
+	(grub_reboot): Likewise.
+	* term/serial.c (serial_hw_init): Update macros.
+	[GRUB_MACHINE_MIPS_YEELOONG]: Init on startup.
+	* util/grub-mkimage.c (image_target_desc): New id IMAGE_YEELOONG_FLASH.
+	(image_targets): New target mipsel-yeeloong-flash.
+	(generate_image): Support IMAGE_YEELOONG_FLASH.
+	* video/sm712.c (GRUB_SM712_TOTAL_MEMORY_SPACE): New definition.
+	(grub_video_sm712_setup): Init card.
+	(grub_video_sm712_set_palette): Removed.
+	* video/sm712_init.c: New file.
+
 2010-06-30  Colin Watson  <cjwatson@ubuntu.com>
 
 	* Makefile.in (install-local): Temporarily prepend $(builddir) to

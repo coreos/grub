@@ -27,6 +27,10 @@
 #include <grub/video_fb.h>
 #include <grub/pci.h>
 
+#include "sm712_init.c"
+
+#define GRUB_SM712_TOTAL_MEMORY_SPACE  0x700400
+
 static struct
 {
   struct grub_video_mode_info mode_info;
@@ -52,7 +56,7 @@ grub_video_sm712_video_fini (void)
 {
   if (framebuffer.mapped)
     grub_pci_device_unmap_range (framebuffer.dev, framebuffer.ptr,
-				 1024 * 600 * 2);
+				 GRUB_SM712_TOTAL_MEMORY_SPACE);
 
   return grub_video_fb_fini ();
 }
@@ -64,6 +68,7 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   int depth;
   grub_err_t err;
   int found = 0;
+  unsigned i;
 
   auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid __attribute__ ((unused)));
   int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid __attribute__ ((unused)))
@@ -99,11 +104,6 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   if (!found)
     return grub_error (GRUB_ERR_IO, "Couldn't find graphics card");
 
-  if (found && framebuffer.base == 0)
-    {
-      /* FIXME: change framebuffer base */
-    }
-
   /* Fill mode info details.  */
   framebuffer.mode_info.width = 1024;
   framebuffer.mode_info.height = 600;
@@ -121,11 +121,63 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   framebuffer.mode_info.reserved_mask_size = 0;
   framebuffer.mode_info.reserved_field_pos = 0;
   framebuffer.mode_info.blit_format = grub_video_get_blit_format (&framebuffer.mode_info);
+
+  if (found && framebuffer.base == 0)
+    {
+      grub_pci_address_t addr;
+      /* FIXME: choose address dynamically if needed.   */
+      framebuffer.base = 0x04000000;
+
+      addr = grub_pci_make_address (framebuffer.dev, GRUB_PCI_REG_ADDRESS_REG0);
+      grub_pci_write (addr, framebuffer.base);
+
+      /* Set latency.  */
+      addr = grub_pci_make_address (framebuffer.dev, GRUB_PCI_REG_CACHELINE);
+      grub_pci_write (addr, 0x8);
+
+      /* Enable address spaces.  */
+      addr = grub_pci_make_address (framebuffer.dev, GRUB_PCI_REG_COMMAND);
+      grub_pci_write (addr, 0x7);
+    }
+
   /* We can safely discard volatile attribute.  */
-  framebuffer.ptr = (void *) grub_pci_device_map_range (framebuffer.dev,
-							framebuffer.base,
-							1024 * 600 * 2);
+  framebuffer.ptr
+    = (void *) grub_pci_device_map_range (framebuffer.dev,
+					  framebuffer.base,
+					  GRUB_SM712_TOTAL_MEMORY_SPACE);
   framebuffer.mapped = 1;
+
+  /* Initialise SM712.  */
+  grub_outb (0x18, GRUB_MACHINE_PCI_IO_BASE + 0x3c4);
+  grub_outb (0x11, GRUB_MACHINE_PCI_IO_BASE + 0x3c5);
+
+  /* Prevent garbage from appearing on the screen.  */
+  grub_memset (framebuffer.ptr, 0, 
+	       framebuffer.mode_info.height * framebuffer.mode_info.pitch);
+
+  for (i = 0; i < ARRAY_SIZE (sm712_init); i++)
+    switch (sm712_init[i].directive)
+      {
+      case 1:
+	*(volatile grub_uint8_t *) ((char *) framebuffer.ptr 
+				    + sm712_init[i].addr) = sm712_init[i].val;
+	break;
+      case -1:
+	{
+	  grub_uint8_t val = *(volatile grub_uint8_t *) 
+	    ((char *) framebuffer.ptr + sm712_init[i].addr);
+	  (void) val;
+	}
+	break;
+      case 2:
+	*(volatile grub_uint16_t *) ((char *) framebuffer.ptr 
+				     + sm712_init[i].addr) = sm712_init[i].val;
+	break;
+      case 4:
+	*(volatile grub_uint32_t *) ((char *) framebuffer.ptr 
+				     + sm712_init[i].addr) = sm712_init[i].val;
+	break;
+      }
 
   err = grub_video_fb_create_render_target_from_pointer (&framebuffer.render_target, &framebuffer.mode_info, framebuffer.ptr);
 
@@ -141,19 +193,6 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   err = grub_video_fb_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
 				   grub_video_fbstd_colors);
   return err;
-}
-
-static grub_err_t
-grub_video_sm712_set_palette (unsigned int start, unsigned int count,
-                            struct grub_video_palette_data *palette_data)
-{
-  if (framebuffer.index_color_mode)
-    {
-      /* TODO: Implement setting indexed color mode palette to hardware.  */
-    }
-
-  /* Then set color to emulated palette.  */
-  return grub_video_fb_set_palette (start, count, palette_data);
 }
 
 static grub_err_t
@@ -197,7 +236,7 @@ static struct grub_video_adapter grub_video_sm712_adapter =
     .setup = grub_video_sm712_setup,
     .get_info = grub_video_fb_get_info,
     .get_info_and_fini = grub_video_sm712_get_info_and_fini,
-    .set_palette = grub_video_sm712_set_palette,
+    .set_palette = grub_video_fb_set_palette,
     .get_palette = grub_video_fb_get_palette,
     .set_viewport = grub_video_fb_set_viewport,
     .get_viewport = grub_video_fb_get_viewport,
