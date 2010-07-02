@@ -1,5 +1,10 @@
 2010-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* partmap/gpt.c (MAX_SECTOR_LOG): New definition.
+	(gpt_partition_map_iterate): Support non-512B sectors.
+
+2010-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/efi/init.c (grub_efi_init): Disable watchdog.
 	Tested by: Seth Goldberg.
 
