@@ -36,8 +36,8 @@ grub_efi_init (void)
   /* Initialize the memory management system.  */
   grub_efi_mm_init ();
 
-  efi_call_3 (grub_efi_system_table->boot_services->set_watchdog_timer,
-	      0, 0, 0);
+  efi_call_4 (grub_efi_system_table->boot_services->set_watchdog_timer,
+	      0, 0, 0, NULL);
 
   grub_efidisk_init ();
 }
