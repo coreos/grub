@@ -61,7 +61,7 @@ load_font (void)
   grub_vga_gr_write (0xff, GRUB_VGA_GR_BITMASK);
 
   for (i = 0; i < 128; i++)
-    grub_memcpy ((void *) (0xa0000 + 32 * i), ascii_bitmaps + 16 * (0x7f - i), 16);
+    grub_memcpy ((void *) (0xa0000 + 32 * i), ascii_bitmaps + 16 * i, 16);
 }
 
 static void
