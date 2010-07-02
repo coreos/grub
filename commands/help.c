@@ -49,19 +49,20 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 	  			      
 	    command_help = grub_xasprintf ("%s %s", cmd->name, summary_translated);
 	    if (!command_help)
-	      return 1;
+	      break;
 
 	    grub_utf8_to_ucs4_alloc (command_help, &unicode_command_help,
 				     &unicode_last_position);
+
 	    FOR_ACTIVE_TERM_OUTPUTS(term)
 	    {
 	      unsigned stringwidth;
 	      grub_uint32_t *unicode_last_screen_position;
-	    
+
 	      unicode_last_screen_position = unicode_command_help;
-	    
+
 	      stringwidth = 0;
-	    
+
 	      while (unicode_last_screen_position < unicode_last_position && 
 		     stringwidth < ((grub_term_width (term) / 2) - 2))
 		{
