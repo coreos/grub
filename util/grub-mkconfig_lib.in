@@ -190,3 +190,15 @@ version_find_latest ()
 gettext_quoted () {
   $gettext "$@" | sed "s/'/'\\\\''/g"
 }
+
+uses_abstraction () {
+  device=$1
+
+  abstraction="`${grub_probe} --device ${device} --target=abstraction`"
+  for module in ${abstraction}; do
+    if test "x${module}" = "x$2"; then
+      return 0
+    fi
+  done
+  return 1
+}

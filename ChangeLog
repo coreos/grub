@@ -1,5 +1,11 @@
 2010-07-02  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub-mkconfig_lib.in (uses_abstraction): New function.
+	* util/grub.d/10_linux.in: Use it to check for LVM, so that
+	LVM-on-RAID is handled correctly.
+
+2010-07-02  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Changes from GRUB Legacy): New section.
 	(Future): Fix typo.
 
