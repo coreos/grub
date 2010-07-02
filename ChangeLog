@@ -1,5 +1,11 @@
 2010-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* gfxmenu/gui_list.c (draw_menu): Use viewport to simplify code and fix
+	too long captions.
+	(list_get_minimal_size): Take selection box into account.
+
+2010-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* font/font.c (grub_font_get_glyph_with_fallback): Avoid dereferencing
 	NULL font.
 
