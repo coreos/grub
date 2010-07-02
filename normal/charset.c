@@ -859,6 +859,7 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
   unsigned run_start, run_end;
   struct grub_unicode_glyph *visual;
   unsigned cur_level;
+  int bidi_needed = 0;
 
   auto void push_stack (unsigned new_override, unsigned new_level);
   void push_stack (unsigned new_override, unsigned new_level)
@@ -967,9 +968,11 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 	switch (type)
 	  {
 	  case GRUB_BIDI_TYPE_RLE:
+	    bidi_needed = 1;
 	    push_stack (cur_override, (cur_level | 1) + 1);
 	    break;
 	  case GRUB_BIDI_TYPE_RLO:
+	    bidi_needed = 1;
 	    push_stack (OVERRIDE_R, (cur_level | 1) + 1);
 	    break;
 	  case GRUB_BIDI_TYPE_LRE:
@@ -983,6 +986,9 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 	    break;
 	  case GRUB_BIDI_TYPE_BN:
 	    break;
+	  case GRUB_BIDI_TYPE_R:
+	  case GRUB_BIDI_TYPE_AL:
+	    bidi_needed = 1;
 	  default:
 	    {
 	      if (join_state == JOIN_FORCE)
@@ -1017,166 +1023,174 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
       }
   }
 
-  for (run_start = 0; run_start < visual_len; run_start = run_end)
+  if (bidi_needed)
     {
-      unsigned prev_level, next_level, cur_run_level;
-      unsigned last_type, last_strong_type;
-      for (run_end = run_start; run_end < visual_len &&
-	     levels[run_end] == levels[run_start]; run_end++);
-      if (run_start == 0)
-	prev_level = base_level;
-      else
-	prev_level = levels[run_start - 1];
-      if (run_end == visual_len)
-	next_level = base_level;
-      else
-	next_level = levels[run_end];
-      cur_run_level = levels[run_start];
-      if (prev_level & 1)
-	last_type = GRUB_BIDI_TYPE_R;
-      else
-	last_type = GRUB_BIDI_TYPE_L;
-      last_strong_type = last_type;
-      for (i = run_start; i < run_end; i++)
+      for (run_start = 0; run_start < visual_len; run_start = run_end)
 	{
-	  switch (resolved_types[i])
+	  unsigned prev_level, next_level, cur_run_level;
+	  unsigned last_type, last_strong_type;
+	  for (run_end = run_start; run_end < visual_len &&
+		 levels[run_end] == levels[run_start]; run_end++);
+	  if (run_start == 0)
+	    prev_level = base_level;
+	  else
+	    prev_level = levels[run_start - 1];
+	  if (run_end == visual_len)
+	    next_level = base_level;
+	  else
+	    next_level = levels[run_end];
+	  cur_run_level = levels[run_start];
+	  if (prev_level & 1)
+	    last_type = GRUB_BIDI_TYPE_R;
+	  else
+	    last_type = GRUB_BIDI_TYPE_L;
+	  last_strong_type = last_type;
+	  for (i = run_start; i < run_end; i++)
 	    {
-	    case GRUB_BIDI_TYPE_NSM:
-	      resolved_types[i] = last_type;
-	      break;
-	    case GRUB_BIDI_TYPE_EN:
-	      if (last_strong_type == GRUB_BIDI_TYPE_AL)
-		resolved_types[i] = GRUB_BIDI_TYPE_AN;
-	      break;
-	    case GRUB_BIDI_TYPE_L:
-	    case GRUB_BIDI_TYPE_R:
-	      last_strong_type = resolved_types[i];
-	      break;
-	    case GRUB_BIDI_TYPE_ES:
-	      if (last_type == GRUB_BIDI_TYPE_EN
-		  && i + 1 < run_end 
-		  && resolved_types[i + 1] == GRUB_BIDI_TYPE_EN)
-		resolved_types[i] = GRUB_BIDI_TYPE_EN;
-	      else
-		resolved_types[i] = GRUB_BIDI_TYPE_ON;
-	      break;
-	    case GRUB_BIDI_TYPE_ET:
-	      {
-		unsigned j;
-		if (last_type == GRUB_BIDI_TYPE_EN)
-		  {
+	      switch (resolved_types[i])
+		{
+		case GRUB_BIDI_TYPE_NSM:
+		  resolved_types[i] = last_type;
+		  break;
+		case GRUB_BIDI_TYPE_EN:
+		  if (last_strong_type == GRUB_BIDI_TYPE_AL)
+		    resolved_types[i] = GRUB_BIDI_TYPE_AN;
+		  break;
+		case GRUB_BIDI_TYPE_L:
+		case GRUB_BIDI_TYPE_R:
+		  last_strong_type = resolved_types[i];
+		  break;
+		case GRUB_BIDI_TYPE_ES:
+		  if (last_type == GRUB_BIDI_TYPE_EN
+		      && i + 1 < run_end 
+		      && resolved_types[i + 1] == GRUB_BIDI_TYPE_EN)
 		    resolved_types[i] = GRUB_BIDI_TYPE_EN;
-		    break;
-		  }
-		for (j = i; j < run_end
-		       && resolved_types[j] == GRUB_BIDI_TYPE_ET; j++);
-		if (j != run_end && resolved_types[j] == GRUB_BIDI_TYPE_EN)
+		  else
+		    resolved_types[i] = GRUB_BIDI_TYPE_ON;
+		  break;
+		case GRUB_BIDI_TYPE_ET:
 		  {
+		    unsigned j;
+		    if (last_type == GRUB_BIDI_TYPE_EN)
+		      {
+			resolved_types[i] = GRUB_BIDI_TYPE_EN;
+			break;
+		      }
+		    for (j = i; j < run_end
+			   && resolved_types[j] == GRUB_BIDI_TYPE_ET; j++);
+		    if (j != run_end && resolved_types[j] == GRUB_BIDI_TYPE_EN)
+		      {
+			for (; i < run_end
+			       && resolved_types[i] == GRUB_BIDI_TYPE_ET; i++)
+			  resolved_types[i] = GRUB_BIDI_TYPE_EN;
+			i--;
+			break;
+		      }
 		    for (; i < run_end
 			   && resolved_types[i] == GRUB_BIDI_TYPE_ET; i++)
-		      resolved_types[i] = GRUB_BIDI_TYPE_EN;
+		      resolved_types[i] = GRUB_BIDI_TYPE_ON;
 		    i--;
-		    break;
+		    break;		
 		  }
-		for (; i < run_end
-		       && resolved_types[i] == GRUB_BIDI_TYPE_ET; i++)
+		  break;
+		case GRUB_BIDI_TYPE_CS:
+		  if (last_type == GRUB_BIDI_TYPE_EN
+		      && i + 1 < run_end 
+		      && resolved_types[i + 1] == GRUB_BIDI_TYPE_EN)
+		    {
+		      resolved_types[i] = GRUB_BIDI_TYPE_EN;
+		      break;
+		    }
+		  if (last_type == GRUB_BIDI_TYPE_AN
+		      && i + 1 < run_end 
+		      && (resolved_types[i + 1] == GRUB_BIDI_TYPE_AN
+			  || (resolved_types[i + 1] == GRUB_BIDI_TYPE_EN
+			      && last_strong_type == GRUB_BIDI_TYPE_AL)))
+		    {
+		      resolved_types[i] = GRUB_BIDI_TYPE_EN;
+		      break;
+		    }
 		  resolved_types[i] = GRUB_BIDI_TYPE_ON;
-		i--;
-		break;		
-	      }
-	      break;
-	    case GRUB_BIDI_TYPE_CS:
-	      if (last_type == GRUB_BIDI_TYPE_EN
-		  && i + 1 < run_end 
-		  && resolved_types[i + 1] == GRUB_BIDI_TYPE_EN)
-		{
-		  resolved_types[i] = GRUB_BIDI_TYPE_EN;
+		  break;
+		case GRUB_BIDI_TYPE_AL:
+		  last_strong_type = resolved_types[i];
+		  resolved_types[i] = GRUB_BIDI_TYPE_R;
+		  break;
+		default: /* Make GCC happy.  */
 		  break;
 		}
-	      if (last_type == GRUB_BIDI_TYPE_AN
-		  && i + 1 < run_end 
-		  && (resolved_types[i + 1] == GRUB_BIDI_TYPE_AN
-		      || (resolved_types[i + 1] == GRUB_BIDI_TYPE_EN
-			  && last_strong_type == GRUB_BIDI_TYPE_AL)))
-		{
-		  resolved_types[i] = GRUB_BIDI_TYPE_EN;
-		  break;
-		}
-	      resolved_types[i] = GRUB_BIDI_TYPE_ON;
-	      break;
-	    case GRUB_BIDI_TYPE_AL:
-	      last_strong_type = resolved_types[i];
-	      resolved_types[i] = GRUB_BIDI_TYPE_R;
-	      break;
-	    default: /* Make GCC happy.  */
-	      break;
+	      last_type = resolved_types[i];
+	      if (resolved_types[i] == GRUB_BIDI_TYPE_EN
+		  && last_strong_type == GRUB_BIDI_TYPE_L)
+		resolved_types[i] = GRUB_BIDI_TYPE_L;
 	    }
-	  last_type = resolved_types[i];
-	  if (resolved_types[i] == GRUB_BIDI_TYPE_EN
-	      && last_strong_type == GRUB_BIDI_TYPE_L)
-	    resolved_types[i] = GRUB_BIDI_TYPE_L;
-	}
-      if (prev_level & 1)
-	last_type = GRUB_BIDI_TYPE_R;
-      else
-	last_type = GRUB_BIDI_TYPE_L;
-      for (i = run_start; i < run_end; )
-	{
-	  unsigned j;
-	  unsigned next_type;
-	  for (j = i; j < run_end &&
-	  	 (resolved_types[j] == GRUB_BIDI_TYPE_B
-	  	  || resolved_types[j] == GRUB_BIDI_TYPE_S
-	  	  || resolved_types[j] == GRUB_BIDI_TYPE_WS
-	  	  || resolved_types[j] == GRUB_BIDI_TYPE_ON); j++);
-	  if (j == i)
+	  if (prev_level & 1)
+	    last_type = GRUB_BIDI_TYPE_R;
+	  else
+	    last_type = GRUB_BIDI_TYPE_L;
+	  for (i = run_start; i < run_end; )
 	    {
-	      if (resolved_types[i] == GRUB_BIDI_TYPE_L)
-		last_type = GRUB_BIDI_TYPE_L;
+	      unsigned j;
+	      unsigned next_type;
+	      for (j = i; j < run_end &&
+		     (resolved_types[j] == GRUB_BIDI_TYPE_B
+		      || resolved_types[j] == GRUB_BIDI_TYPE_S
+		      || resolved_types[j] == GRUB_BIDI_TYPE_WS
+		      || resolved_types[j] == GRUB_BIDI_TYPE_ON); j++);
+	      if (j == i)
+		{
+		  if (resolved_types[i] == GRUB_BIDI_TYPE_L)
+		    last_type = GRUB_BIDI_TYPE_L;
+		  else
+		    last_type = GRUB_BIDI_TYPE_R;
+		  i++;
+		  continue;
+		}
+	      if (j == run_end)
+		next_type = (next_level & 1) ? GRUB_BIDI_TYPE_R : GRUB_BIDI_TYPE_L;
 	      else
-		last_type = GRUB_BIDI_TYPE_R;
-	      i++;
+		{
+		  if (resolved_types[j] == GRUB_BIDI_TYPE_L)
+		    next_type = GRUB_BIDI_TYPE_L;
+		  else
+		    next_type = GRUB_BIDI_TYPE_R;
+		}
+	      if (next_type == last_type)
+		for (; i < j; i++)
+		  resolved_types[i] = last_type;
+	      else
+		for (; i < j; i++)
+		  resolved_types[i] = (cur_run_level & 1) ? GRUB_BIDI_TYPE_R
+		    : GRUB_BIDI_TYPE_L;
+	    }
+	}
+
+      for (i = 0; i < visual_len; i++)
+	{
+	  if (!(levels[i] & 1) && resolved_types[i] == GRUB_BIDI_TYPE_R)
+	    {
+	      levels[i]++;
 	      continue;
 	    }
-	  if (j == run_end)
-	    next_type = (next_level & 1) ? GRUB_BIDI_TYPE_R : GRUB_BIDI_TYPE_L;
-	  else
+	  if (!(levels[i] & 1) && (resolved_types[i] == GRUB_BIDI_TYPE_AN
+				   || resolved_types[i] == GRUB_BIDI_TYPE_EN))
 	    {
-	      if (resolved_types[j] == GRUB_BIDI_TYPE_L)
-		next_type = GRUB_BIDI_TYPE_L;
-	      else
-		next_type = GRUB_BIDI_TYPE_R;
+	      levels[i] += 2;
+	      continue;
 	    }
-	  if (next_type == last_type)
-	    for (; i < j; i++)
-	      resolved_types[i] = last_type;
-	  else
-	    for (; i < j; i++)
-	      resolved_types[i] = (cur_run_level & 1) ? GRUB_BIDI_TYPE_R
-		: GRUB_BIDI_TYPE_L;
+	  if ((levels[i] & 1) && (resolved_types[i] == GRUB_BIDI_TYPE_L
+				  || resolved_types[i] == GRUB_BIDI_TYPE_AN
+				  || resolved_types[i] == GRUB_BIDI_TYPE_EN))
+	    {
+	      levels[i]++;
+	      continue;
+	    }
 	}
     }
-
-  for (i = 0; i < visual_len; i++)
+  else
     {
-      if (!(levels[i] & 1) && resolved_types[i] == GRUB_BIDI_TYPE_R)
-	{
-	  levels[i]++;
-	  continue;
-	}
-      if (!(levels[i] & 1) && (resolved_types[i] == GRUB_BIDI_TYPE_AN
-			       || resolved_types[i] == GRUB_BIDI_TYPE_EN))
-	{
-	  levels[i] += 2;
-	  continue;
-	}
-      if ((levels[i] & 1) && (resolved_types[i] == GRUB_BIDI_TYPE_L
-			      || resolved_types[i] == GRUB_BIDI_TYPE_AN
-			      || resolved_types[i] == GRUB_BIDI_TYPE_EN))
-	{
-	  levels[i]++;
-	  continue;
-	}
+      for (i = 0; i < visual_len; i++)
+	levels[i] = 0;
     }
   grub_free (resolved_types);
 
