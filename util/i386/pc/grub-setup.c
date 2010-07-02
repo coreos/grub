@@ -64,11 +64,13 @@ static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_P
 #define grub_host_to_target32(x)	grub_cpu_to_le32(x)
 #define grub_host_to_target64(x)	grub_cpu_to_le64(x)
 
-void
-grub_putchar (int c)
+void 
+grub_xputs_real (const char *str)
 {
-  putchar (c);
+  fputs (str, stdout);
 }
+
+void (*grub_xputs) (const char *str) = grub_xputs_real;
 
 int
 grub_getkey (void)

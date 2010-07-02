@@ -75,10 +75,11 @@ inc_x (void)
     grub_curr_x++;
 }
 
-void
-grub_console_real_putchar (int c)
+static void
+grub_vga_text_putchar (struct grub_term_output *term __attribute__ ((unused)),
+		       const struct grub_unicode_glyph *c)
 {
-  switch (c)
+  switch (c->base)
     {
       case '\b':
 	if (grub_curr_x != 0)
@@ -91,8 +92,8 @@ grub_console_real_putchar (int c)
 	grub_curr_x = 0;
 	break;
       default:
-	screen_write_char (grub_curr_x,
-			   grub_curr_y, c | (grub_console_cur_color << 8));
+	screen_write_char (grub_curr_x, grub_curr_y,
+			   c->base | (grub_console_cur_color << 8));
 	inc_x ();
     }
 
@@ -100,13 +101,14 @@ grub_console_real_putchar (int c)
 }
 
 static grub_uint16_t
-grub_vga_text_getxy (void)
+grub_vga_text_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   return (grub_curr_x << 8) | grub_curr_y;
 }
 
 static void
-grub_vga_text_gotoxy (grub_uint8_t x, grub_uint8_t y)
+grub_vga_text_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
+		      grub_uint8_t x, grub_uint8_t y)
 {
   grub_curr_x = x;
   grub_curr_y = y;
@@ -114,16 +116,17 @@ grub_vga_text_gotoxy (grub_uint8_t x, grub_uint8_t y)
 }
 
 static void
-grub_vga_text_cls (void)
+grub_vga_text_cls (struct grub_term_output *term)
 {
   int i;
   for (i = 0; i < ROWS * COLS; i++)
     ((short *) VGA_TEXT_SCREEN)[i] = ' ' | (grub_console_cur_color << 8);
-  grub_vga_text_gotoxy (0, 0);
+  grub_vga_text_gotoxy (term, 0, 0);
 }
 
 static void
-grub_vga_text_setcursor (int on)
+grub_vga_text_setcursor (struct grub_term_output *term __attribute__ ((unused)),
+			 int on)
 {
   grub_uint8_t old;
   old = grub_vga_cr_read (GRUB_VGA_CR_CURSOR_START);
@@ -136,9 +139,9 @@ grub_vga_text_setcursor (int on)
 }
 
 static grub_err_t
-grub_vga_text_init_fini (void)
+grub_vga_text_init_fini (struct grub_term_output *term)
 {
-  grub_vga_text_cls ();
+  grub_vga_text_cls (term);
   return 0;
 }
 
@@ -147,16 +150,16 @@ static struct grub_term_output grub_vga_text_term =
     .name = "vga_text",
     .init = grub_vga_text_init_fini,
     .fini = grub_vga_text_init_fini,
-    .putchar = grub_console_putchar,
-    .getcharwidth = grub_console_getcharwidth,
+    .putchar = grub_vga_text_putchar,
     .getwh = grub_console_getwh,
     .getxy = grub_vga_text_getxy,
     .gotoxy = grub_vga_text_gotoxy,
     .cls = grub_vga_text_cls,
     .setcolorstate = grub_console_setcolorstate,
-    .setcolor = grub_console_setcolor,
-    .getcolor = grub_console_getcolor,
     .setcursor = grub_vga_text_setcursor,
+    .flags = GRUB_TERM_CODE_TYPE_CP437,
+    .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
+    .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };
 
 GRUB_MOD_INIT(vga_text)

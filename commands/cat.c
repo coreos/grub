@@ -62,10 +62,10 @@ grub_cmd_cat (grub_extcmd_t cmd, int argc, char **args)
 	  unsigned char c = buf[i];
 
 	  if ((grub_isprint (c) || grub_isspace (c)) && c != '\r')
-	    grub_putchar (c);
+	    grub_printf ("%c", c);
 	  else if (dos && c == '\r' && i + 1 < size && buf[i + 1] == '\n')
 	    {
-	      grub_putchar ('\n');
+	      grub_printf ("\n");
 	      i++;
 	    }
 	  else
@@ -81,7 +81,7 @@ grub_cmd_cat (grub_extcmd_t cmd, int argc, char **args)
 	;
     }
 
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_refresh ();
   grub_file_close (file);
 

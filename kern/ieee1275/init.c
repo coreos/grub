@@ -28,7 +28,7 @@
 #include <grub/env.h>
 #include <grub/misc.h>
 #include <grub/time.h>
-#include <grub/machine/console.h>
+#include <grub/ieee1275/console.h>
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/offsets.h>
@@ -224,11 +224,12 @@ grub_machine_init (void)
 
   grub_ieee1275_init ();
 
-  grub_console_init ();
+  grub_console_init_early ();
 #ifdef __i386__
   grub_get_extended_memory ();
 #endif
   grub_claim_heap ();
+  grub_console_init_lately ();
   grub_ofdisk_init ();
 
   /* Process commandline.  */

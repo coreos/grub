@@ -32,26 +32,17 @@
 #include <grub/tparm.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/time.h>
 
-struct terminfo
-{
-  char *name;
-
-  char *gotoxy;
-  char *cls;
-  char *reverse_video_on;
-  char *reverse_video_off;
-  char *cursor_on;
-  char *cursor_off;
-};
-
-static struct terminfo term;
+static struct grub_term_output *terminfo_outputs;
 
 /* Get current terminfo name.  */
 char *
-grub_terminfo_get_current (void)
+grub_terminfo_get_current (struct grub_term_output *term)
 {
-  return term.name;
+  struct grub_terminfo_output_state *data
+    = (struct grub_terminfo_output_state *) term->data;
+  return data->name;
 }
 
 /* Free *PTR and set *PTR to NULL, to prevent double-free.  */
@@ -62,10 +53,29 @@ grub_terminfo_free (char **ptr)
   *ptr = 0;
 }
 
+static void
+grub_terminfo_all_free (struct grub_term_output *term)
+{
+  struct grub_terminfo_output_state *data
+    = (struct grub_terminfo_output_state *) term->data;
+
+  /* Free previously allocated memory.  */
+  grub_terminfo_free (&data->name);
+  grub_terminfo_free (&data->gotoxy);
+  grub_terminfo_free (&data->cls);
+  grub_terminfo_free (&data->reverse_video_on);
+  grub_terminfo_free (&data->reverse_video_off);
+  grub_terminfo_free (&data->cursor_on);
+  grub_terminfo_free (&data->cursor_off);
+}
+
 /* Set current terminfo type.  */
 grub_err_t
-grub_terminfo_set_current (const char *str)
+grub_terminfo_set_current (struct grub_term_output *term,
+			   const char *str)
 {
+  struct grub_terminfo_output_state *data
+    = (struct grub_terminfo_output_state *) term->data;
   /* TODO
    * Lookup user specified terminfo type. If found, set term variables
    * as appropriate. Otherwise return an error.
@@ -83,95 +93,518 @@ grub_terminfo_set_current (const char *str)
    *  d. Your idea here.
    */
 
-  /* Free previously allocated memory.  */
-  grub_terminfo_free (&term.name);
-  grub_terminfo_free (&term.gotoxy);
-  grub_terminfo_free (&term.cls);
-  grub_terminfo_free (&term.reverse_video_on);
-  grub_terminfo_free (&term.reverse_video_off);
-  grub_terminfo_free (&term.cursor_on);
-  grub_terminfo_free (&term.cursor_off);
+  grub_terminfo_all_free (term);
 
   if (grub_strcmp ("vt100", str) == 0)
     {
-      term.name              = grub_strdup ("vt100");
-      term.gotoxy            = grub_strdup ("\e[%i%p1%d;%p2%dH");
-      term.cls               = grub_strdup ("\e[H\e[J");
-      term.reverse_video_on  = grub_strdup ("\e[7m");
-      term.reverse_video_off = grub_strdup ("\e[m");
-      term.cursor_on         = grub_strdup ("\e[?25h");
-      term.cursor_off        = grub_strdup ("\e[?25l");
+      data->name              = grub_strdup ("vt100");
+      data->gotoxy            = grub_strdup ("\e[%i%p1%d;%p2%dH");
+      data->cls               = grub_strdup ("\e[H\e[J");
+      data->reverse_video_on  = grub_strdup ("\e[7m");
+      data->reverse_video_off = grub_strdup ("\e[m");
+      data->cursor_on         = grub_strdup ("\e[?25h");
+      data->cursor_off        = grub_strdup ("\e[?25l");
+      data->setcolor          = NULL;
+      return grub_errno;
+    }
+
+  if (grub_strcmp ("vt100-color", str) == 0)
+    {
+      data->name              = grub_strdup ("vt100-color");
+      data->gotoxy            = grub_strdup ("\e[%i%p1%d;%p2%dH");
+      data->cls               = grub_strdup ("\e[H\e[J");
+      data->reverse_video_on  = grub_strdup ("\e[7m");
+      data->reverse_video_off = grub_strdup ("\e[m");
+      data->cursor_on         = grub_strdup ("\e[?25h");
+      data->cursor_off        = grub_strdup ("\e[?25l");
+      data->setcolor          = grub_strdup ("\e[3%p1%dm\e[4%p2%dm");
+      return grub_errno;
+    }
+
+  if (grub_strcmp ("ieee1275", str) == 0)
+    {
+      data->name              = grub_strdup ("ieee1275");
+      data->gotoxy            = grub_strdup ("\e[%i%p1%d;%p2%dH");
+      /* Clear the screen.  Using serial console, screen(1) only recognizes the
+       * ANSI escape sequence.  Using video console, Apple Open Firmware
+       * (version 3.1.1) only recognizes the literal ^L.  So use both.  */
+      data->cls               = grub_strdup ("\e[2J");
+      data->reverse_video_on  = grub_strdup ("\e[7m");
+      data->reverse_video_off = grub_strdup ("\e[m");
+      data->cursor_on         = grub_strdup ("\e[?25h");
+      data->cursor_off        = grub_strdup ("\e[?25l");
+      data->setcolor          = grub_strdup ("\e[3%p1%dm\e[4%p2%dm");
+      return grub_errno;
+    }
+
+  if (grub_strcmp ("dumb", str) == 0)
+    {
+      data->name              = grub_strdup ("dumb");
+      data->gotoxy            = NULL;
+      data->cls               = NULL;
+      data->reverse_video_on  = NULL;
+      data->reverse_video_off = NULL;
+      data->cursor_on         = NULL;
+      data->cursor_off        = NULL;
+      data->setcolor          = NULL;
       return grub_errno;
     }
 
   return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminfo type");
 }
 
-/* Wrapper for grub_putchar to write strings.  */
-static void
-putstr (const char *str, grub_term_output_t oterm)
+grub_err_t
+grub_terminfo_output_register (struct grub_term_output *term,
+			       const char *type)
 {
-  while (*str)
-    grub_putcode (*str++, oterm);
+  grub_err_t err;
+  struct grub_terminfo_output_state *data;
+
+  err = grub_terminfo_set_current (term, type);
+
+  if (err)
+    return err;
+
+  data = (struct grub_terminfo_output_state *) term->data;
+  data->next = terminfo_outputs;
+  terminfo_outputs = term;
+
+  return GRUB_ERR_NONE;
 }
 
-/* Move the cursor to the given position starting with "0".  */
-void
-grub_terminfo_gotoxy (grub_uint8_t x, grub_uint8_t y, grub_term_output_t oterm)
+grub_err_t
+grub_terminfo_output_unregister (struct grub_term_output *term)
 {
-  putstr (grub_terminfo_tparm (term.gotoxy, y, x), oterm);
+  struct grub_term_output **ptr;
+
+  for (ptr = &terminfo_outputs; *ptr;
+       ptr = &((struct grub_terminfo_output_state *) (*ptr)->data)->next)
+    if (*ptr == term)
+      {
+	grub_terminfo_all_free (term);
+	*ptr = ((struct grub_terminfo_output_state *) (*ptr)->data)->next;
+	return GRUB_ERR_NONE;
+      }
+  return grub_error (GRUB_ERR_BAD_ARGUMENT, "terminal not found");
+}
+
+/* Wrapper for grub_putchar to write strings.  */
+static void
+putstr (struct grub_term_output *term, const char *str)
+{
+  struct grub_terminfo_output_state *data
+    = (struct grub_terminfo_output_state *) term->data;
+  while (*str)
+    data->put (*str++);
+}
+
+grub_uint16_t
+grub_terminfo_getxy (struct grub_term_output *term)
+{
+  struct grub_terminfo_output_state *data
+    = (struct grub_terminfo_output_state *) term->data;
+
+  return ((data->xpos << 8) | data->ypos);
+}
+
+void
+grub_terminfo_gotoxy (struct grub_term_output *term,
+		      grub_uint8_t x, grub_uint8_t y)
+{
+  struct grub_terminfo_output_state *data
+    = (struct grub_terminfo_output_state *) term->data;
+
+  if (x > grub_term_width (term) || y > grub_term_height (term))
+    {
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "invalid point (%u,%u)", x, y);
+      return;
+    }
+
+  if (data->gotoxy)
+    putstr (term, grub_terminfo_tparm (data->gotoxy, y, x));
+  else
+    {
+      if ((y == data->ypos) && (x == data->xpos - 1))
+	data->put ('\b');
+    }
+
+  data->xpos = x;
+  data->ypos = y;
 }
 
 /* Clear the screen.  */
 void
-grub_terminfo_cls (grub_term_output_t oterm)
+grub_terminfo_cls (struct grub_term_output *term)
 {
-  putstr (grub_terminfo_tparm (term.cls), oterm);
+  struct grub_terminfo_output_state *data
+    = (struct grub_terminfo_output_state *) term->data;
+
+  putstr (term, grub_terminfo_tparm (data->cls));
+
+  data->xpos = data->ypos = 0;
 }
 
-/* Set reverse video mode on.  */
 void
-grub_terminfo_reverse_video_on (grub_term_output_t oterm)
+grub_terminfo_setcolorstate (struct grub_term_output *term,
+			     const grub_term_color_state state)
 {
-  putstr (grub_terminfo_tparm (term.reverse_video_on), oterm);
+  struct grub_terminfo_output_state *data
+    = (struct grub_terminfo_output_state *) term->data;
+
+  if (data->setcolor)
+    {
+      int fg;
+      int bg;
+      /* Map from VGA to terminal colors.  */
+      const int colormap[8] 
+	= { 0, /* Black. */
+	    4, /* Blue. */
+	    2, /* Green. */
+	    6, /* Cyan. */
+	    1, /* Red.  */
+	    5, /* Magenta.  */
+	    3, /* Yellow.  */
+	    7, /* White.  */
+      };
+
+      switch (state)
+	{
+	case GRUB_TERM_COLOR_STANDARD:
+	case GRUB_TERM_COLOR_NORMAL:
+	  fg = term->normal_color & 0x0f;
+	  bg = term->normal_color >> 4;
+	  break;
+	case GRUB_TERM_COLOR_HIGHLIGHT:
+	  fg = term->highlight_color & 0x0f;
+	  bg = term->highlight_color >> 4;
+	  break;
+	default:
+	  return;
+	}
+
+      putstr (term, grub_terminfo_tparm (data->setcolor, colormap[fg & 7],
+					 colormap[bg & 7]));
+      return;
+    }
+
+  switch (state)
+    {
+    case GRUB_TERM_COLOR_STANDARD:
+    case GRUB_TERM_COLOR_NORMAL:
+      putstr (term, grub_terminfo_tparm (data->reverse_video_off));
+      break;
+    case GRUB_TERM_COLOR_HIGHLIGHT:
+      putstr (term, grub_terminfo_tparm (data->reverse_video_on));
+      break;
+    default:
+      break;
+    }
 }
 
-/* Set reverse video mode off.  */
 void
-grub_terminfo_reverse_video_off (grub_term_output_t oterm)
+grub_terminfo_setcursor (struct grub_term_output *term, const int on)
 {
-  putstr (grub_terminfo_tparm (term.reverse_video_off), oterm);
+  struct grub_terminfo_output_state *data
+    = (struct grub_terminfo_output_state *) term->data;
+
+  if (on)
+    putstr (term, grub_terminfo_tparm (data->cursor_on));
+  else
+    putstr (term, grub_terminfo_tparm (data->cursor_off));
 }
 
-/* Show cursor.  */
+/* The terminfo version of putchar.  */
 void
-grub_terminfo_cursor_on (grub_term_output_t oterm)
+grub_terminfo_putchar (struct grub_term_output *term,
+		       const struct grub_unicode_glyph *c)
 {
-  putstr (grub_terminfo_tparm (term.cursor_on), oterm);
+  struct grub_terminfo_output_state *data
+    = (struct grub_terminfo_output_state *) term->data;
+
+  /* Keep track of the cursor.  */
+  switch (c->base)
+    {
+    case '\a':
+      break;
+
+    case '\b':
+    case 127:
+      if (data->xpos > 0)
+	data->xpos--;
+    break;
+
+    case '\n':
+      if (data->ypos < grub_term_height (term) - 1)
+	data->ypos++;
+      break;
+
+    case '\r':
+      data->xpos = 0;
+      break;
+
+    default:
+      if (data->xpos + c->estimated_width >= grub_term_width (term) + 1)
+	{
+	  data->xpos = 0;
+	  if (data->ypos < grub_term_height (term) - 1)
+	    data->ypos++;
+	  data->put ('\r');
+	  data->put ('\n');
+	}
+      data->xpos += c->estimated_width;
+      break;
+    }
+
+  data->put (c->base);
 }
 
-/* Hide cursor.  */
-void
-grub_terminfo_cursor_off (grub_term_output_t oterm)
+#define ANSI_C0 0x9b
+
+static void
+grub_terminfo_readkey (int *keys, int *len, int (*readkey) (void))
 {
-  putstr (grub_terminfo_tparm (term.cursor_off), oterm);
+  int c;
+
+#define CONTINUE_READ						\
+  {								\
+    grub_uint64_t start;					\
+    /* On 9600 we have to wait up to 12 milliseconds.  */	\
+    start = grub_get_time_ms ();				\
+    do								\
+      c = readkey ();						\
+    while (c == -1 && grub_get_time_ms () - start < 12);	\
+    if (c == -1)						\
+      return;							\
+								\
+    keys[*len] = c;						\
+    (*len)++;							\
+  }
+
+  c = readkey ();
+  if (c < 0)
+    {
+      *len = 0;
+      return;
+    }
+  *len = 1;
+  keys[0] = c;
+  if (c != ANSI_C0 && c != '\e')
+    {
+      /* Backspace: Ctrl-h.  */
+      if (c == 0x7f)
+	c = '\b'; 
+      *len = 1;
+      keys[0] = c;
+      return;
+    }
+
+  {
+    static struct
+    {
+      char key;
+      char ascii;
+    }
+    three_code_table[] =
+      {
+	{'4', GRUB_TERM_DC},
+	{'A', GRUB_TERM_UP},
+	{'B', GRUB_TERM_DOWN},
+	{'C', GRUB_TERM_RIGHT},
+	{'D', GRUB_TERM_LEFT},
+	{'F', GRUB_TERM_END},
+	{'H', GRUB_TERM_HOME},
+	{'K', GRUB_TERM_END},
+	{'P', GRUB_TERM_DC},
+	{'?', GRUB_TERM_PPAGE},
+	{'/', GRUB_TERM_NPAGE}
+      };
+
+    static struct
+    {
+      char key;
+      char ascii;
+    }
+    four_code_table[] =
+      {
+	{'1', GRUB_TERM_HOME},
+	{'3', GRUB_TERM_DC},
+	{'5', GRUB_TERM_PPAGE},
+	{'6', GRUB_TERM_NPAGE}
+      };
+    unsigned i;
+
+    if (c == '\e')
+      {
+	CONTINUE_READ;
+
+	if (c != '[')
+	  return;
+      }
+
+    CONTINUE_READ;
+	
+    for (i = 0; i < ARRAY_SIZE (three_code_table); i++)
+      if (three_code_table[i].key == c)
+	{
+	  keys[0] = three_code_table[i].ascii;
+	  *len = 1;
+	  return;
+	}
+
+    for (i = 0; i < ARRAY_SIZE (four_code_table); i++)
+      if (four_code_table[i].key == c)
+	{
+	  CONTINUE_READ;
+	  if (c != '~')
+	    return;
+	  keys[0] = three_code_table[i].ascii;
+	  *len = 1;
+	  return;
+	}
+    return;
+  }
+#undef CONTINUE_READ
+}
+
+/* The terminfo version of checkkey.  */
+int
+grub_terminfo_checkkey (struct grub_term_input *termi)
+{
+  struct grub_terminfo_input_state *data
+    = (struct grub_terminfo_input_state *) (termi->data);
+  if (data->npending)
+    return data->input_buf[0];
+
+  grub_terminfo_readkey (data->input_buf, &data->npending, data->readkey);
+
+  if (data->npending)
+    return data->input_buf[0];
+
+  return -1;
+}
+
+/* The terminfo version of getkey.  */
+int
+grub_terminfo_getkey (struct grub_term_input *termi)
+{
+  struct grub_terminfo_input_state *data
+    = (struct grub_terminfo_input_state *) (termi->data);
+  int ret;
+  while (! data->npending)
+    grub_terminfo_readkey (data->input_buf, &data->npending, data->readkey);
+
+  ret = data->input_buf[0];
+  data->npending--;
+  grub_memmove (data->input_buf, data->input_buf + 1, data->npending);
+  return ret;
+}
+
+grub_err_t
+grub_terminfo_input_init (struct grub_term_input *termi)
+{
+  struct grub_terminfo_input_state *data
+    = (struct grub_terminfo_input_state *) (termi->data);
+  data->npending = 0;
+
+  return GRUB_ERR_NONE;
 }
 
 /* GRUB Command.  */
 
 static grub_err_t
+print_terminfo (void)
+{
+  const char *encoding_names[(GRUB_TERM_CODE_TYPE_MASK 
+			      >> GRUB_TERM_CODE_TYPE_SHIFT) + 1]
+    = {
+    /* VGA and glyph descriptor types are just for completeness,
+       they are not used on terminfo terminals.
+    */
+    [GRUB_TERM_CODE_TYPE_ASCII >> GRUB_TERM_CODE_TYPE_SHIFT] = _("ASCII"),
+    [GRUB_TERM_CODE_TYPE_CP437 >> GRUB_TERM_CODE_TYPE_SHIFT] = "CP-437",
+    [GRUB_TERM_CODE_TYPE_UTF8_LOGICAL >> GRUB_TERM_CODE_TYPE_SHIFT]
+    = _("UTF-8"),
+    [GRUB_TERM_CODE_TYPE_UTF8_VISUAL >> GRUB_TERM_CODE_TYPE_SHIFT]
+    = _("UTF-8 visual"),
+    [GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS >> GRUB_TERM_CODE_TYPE_SHIFT]
+    = "Glyph descriptors",
+    _("Unknown"), _("Unknown"), _("Unknown")
+  };
+  struct grub_term_output *cur;
+
+  grub_printf ("Current terminfo types: \n");
+  for (cur = terminfo_outputs; cur;
+       cur = ((struct grub_terminfo_output_state *) cur->data)->next)
+    grub_printf ("%s: %s\t%s\n", cur->name,
+		 grub_terminfo_get_current(cur),
+		 encoding_names[(cur->flags & GRUB_TERM_CODE_TYPE_MASK)
+				>> GRUB_TERM_CODE_TYPE_SHIFT]);
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
 grub_cmd_terminfo (grub_command_t cmd __attribute__ ((unused)),
 		   int argc, char **args)
 {
+  struct grub_term_output *cur;
+  int encoding = GRUB_TERM_CODE_TYPE_ASCII;
+  int i;
+  char *name = NULL, *type = NULL;
+
   if (argc == 0)
-  {
-    grub_printf ("Current terminfo type: %s\n", grub_terminfo_get_current());
-    return GRUB_ERR_NONE;
-  }
-  else if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many parameters");
-  else
-    return grub_terminfo_set_current (args[0]);
+    return print_terminfo ();
+
+  for (i = 0; i < argc; i++)
+    {
+      if (grub_strcmp (args[i], "-a") == 0
+	  || grub_strcmp (args[i], "--ascii") == 0)
+	{
+	  encoding = GRUB_TERM_CODE_TYPE_ASCII;
+	  continue;
+	}
+      if (grub_strcmp (args[i], "-u") == 0
+	  || grub_strcmp (args[i], "--utf8") == 0)
+	{
+	  encoding = GRUB_TERM_CODE_TYPE_UTF8_LOGICAL;
+	  continue;
+	}
+      if (grub_strcmp (args[i], "-v") == 0
+	  || grub_strcmp (args[i], "--visual-utf8") == 0)
+	{
+	  encoding = GRUB_TERM_CODE_TYPE_UTF8_VISUAL;
+	  continue;
+	}
+      if (!name)
+	{
+	  name = args[i];
+	  continue;
+	}
+      if (!type)
+	{
+	  type = args[i];
+	  continue;
+	}
+
+      return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many parameters");
+    }
+
+  if (name == NULL)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "too few parameters");
+
+  for (cur = terminfo_outputs; cur;
+       cur = ((struct grub_terminfo_output_state *) cur->data)->next)
+    if (grub_strcmp (name, cur->name) == 0)
+      {
+	cur->flags = (cur->flags & ~GRUB_TERM_CODE_TYPE_MASK) | encoding;
+	if (!type)
+	  return GRUB_ERR_NONE;
+
+	return grub_terminfo_set_current (cur, type);
+      }
+  return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		     "no terminal %s found or it's not handled by terminfo",
+		     name);
 }
 
 static grub_command_t cmd;
@@ -179,8 +612,13 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(terminfo)
 {
   cmd = grub_register_command ("terminfo", grub_cmd_terminfo,
-			       N_("[TERM]"), N_("Set terminfo type."));
-  grub_terminfo_set_current ("vt100");
+			       N_("[[-a|-u|-v] TERM [TYPE]]"),
+			       N_("Set terminfo type of TERM  to TYPE.\n"
+				  "-a, --ascii            Terminal is ASCII-only [default].\n"
+				  "-u, --utf8             Terminal is logical-ordered UTF-8.\n"
+				  "-v, --visual-utf8      Terminal is visually-ordered UTF-8.")
+
+			       );
 }
 
 GRUB_MOD_FINI(terminfo)

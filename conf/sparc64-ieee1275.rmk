@@ -31,7 +31,8 @@ kernel_img_SOURCES = kern/sparc64/ieee1275/crt0.S kern/ieee1275/cmain.c	\
 	kern/sparc64/ieee1275/init.c 					\
 	kern/ieee1275/mmap.c						\
 	term/ieee1275/ofconsole.c 					\
-	kern/ieee1275/openfw.c disk/ieee1275/ofdisk.c 			\
+	kern/ieee1275/openfw.c term/terminfo.c term/tparm.c		\
+	disk/ieee1275/ofdisk.c	\
 	kern/parser.c kern/partition.c kern/env.c kern/$(target_cpu)/dl.c	\
 	kern/generic/millisleep.c kern/time.c				\
 	symlist.c kern/$(target_cpu)/cache.S

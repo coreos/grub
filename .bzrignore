@@ -76,3 +76,4 @@ stamp-h.in
 symlist.c
 trigtables.c
 update-grub_lib
+unidata.c

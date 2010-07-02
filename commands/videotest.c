@@ -25,6 +25,7 @@
 #include <grub/term.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/gfxmenu_view.h>
 
 static grub_err_t
 grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),

@@ -43,10 +43,10 @@ grub_err_t (*grub_gfxmenu_try_hook) (int entry, grub_menu_t menu,
 void
 grub_wait_after_message (void)
 {
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_printf_ (N_("Press any key to continue..."));
   (void) grub_getkey ();
-  grub_putchar ('\n');
+  grub_xputs ("\n");
 }
 
 /* Get a menu entry by its index in the entry list.  */
@@ -285,7 +285,6 @@ menu_init (int entry, grub_menu_t menu, int nested)
 	err = grub_gfxmenu_try_hook (entry, menu, nested);
 	if(!err)
 	  continue;
-	grub_print_error ();
 	grub_errno = GRUB_ERR_NONE;
       }
 
@@ -610,13 +609,13 @@ show_menu (grub_menu_t menu, int nested)
         }
       else
         {
-	  int lines_before = grub_normal_get_line_counter ();
+	  int chars_before = grub_normal_get_char_counter ();
           grub_errno = GRUB_ERR_NONE;
           grub_menu_execute_entry (e);
 	  grub_print_error ();
 	  grub_errno = GRUB_ERR_NONE;
 
-          if (lines_before != grub_normal_get_line_counter ())
+          if (chars_before != grub_normal_get_char_counter ())
 	    grub_wait_after_message ();
         }
     }

@@ -275,7 +275,13 @@ ascii.bitmaps: $(FONT_SOURCE) grub-mkfont
 ascii.h: ascii.bitmaps grub-bin2h
 	$(builddir)/grub-bin2h ascii_bitmaps < $< > $@
 
-TARGET_CFLAGS += -DUSE_ASCII_FAILBACK=1
+widthspec.bin: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont --width-spec -o $@ $(FONT_SOURCE)
+
+widthspec.h: widthspec.bin grub-bin2h
+	$(builddir)/grub-bin2h widthspec < $< > $@
+
+TARGET_CFLAGS += -DUSE_ASCII_FAILBACK=1 -DHAVE_UNIFONT_WIDTHSPEC=1
 endif
 endif
 

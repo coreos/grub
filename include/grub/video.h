@@ -168,6 +168,15 @@ struct grub_video_rect
 };
 typedef struct grub_video_rect grub_video_rect_t;
 
+struct grub_video_signed_rect
+{
+  signed x;
+  signed y;
+  unsigned width;
+  unsigned height;
+};
+typedef struct grub_video_signed_rect grub_video_signed_rect_t;
+
 struct grub_video_palette_data
 {
   grub_uint8_t r; /* Red color value (0-255).  */

@@ -436,8 +436,9 @@ grub_normal_init_page (struct grub_term_output *term)
   posx = (grub_term_width (term) - posx) / 2;
   grub_term_gotoxy (term, posx, 1);
 
-  grub_print_ucs4 (unicode_msg, last_position, term);
-  grub_printf("\n\n");
+  grub_print_ucs4 (unicode_msg, last_position, 0, 0, term);
+  grub_putcode ('\n', term);
+  grub_putcode ('\n', term);
   grub_free (unicode_msg);
 }
 
@@ -567,9 +568,10 @@ grub_normal_reader_init (int nested)
   {
     grub_normal_init_page (term);
     grub_term_setcursor (term, 1);
-    
+
     grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN, term);
-    grub_puts ("\n");
+    grub_putcode ('\n', term);
+    grub_putcode ('\n', term);
   }
   grub_free (msg_formatted);
  
@@ -656,17 +658,37 @@ grub_env_write_pager (struct grub_env_var *var __attribute__ ((unused)),
   return grub_strdup (val);
 }
 
+/* clear */
+static grub_err_t
+grub_mini_cmd_clear (struct grub_command *cmd __attribute__ ((unused)),
+		   int argc __attribute__ ((unused)),
+		   char *argv[] __attribute__ ((unused)))
+{
+  grub_cls ();
+  return 0;
+}
+
+static grub_command_t cmd_clear;
+
+static void (*grub_xputs_saved) (const char *str);
+
 GRUB_MOD_INIT(normal)
 {
   grub_context_init ();
+
+  grub_xputs_saved = grub_xputs;
+  grub_xputs = grub_xputs_normal;
 
   /* Normal mode shouldn't be unloaded.  */
   if (mod)
     grub_dl_ref (mod);
 
+  cmd_clear =
+    grub_register_command ("clear", grub_mini_cmd_clear,
+			   0, N_("Clear the screen."));
+
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
-  grub_install_newline_hook ();
   grub_register_variable_hook ("pager", 0, grub_env_write_pager);
 
   /* Register a command "normal" for the rescue mode.  */
@@ -688,7 +710,10 @@ GRUB_MOD_FINI(normal)
 {
   grub_context_fini ();
 
+  grub_xputs = grub_xputs_saved;
+
   grub_set_history (0);
   grub_register_variable_hook ("pager", 0, 0);
   grub_fs_autoload_hook = 0;
+  grub_unregister_command (cmd_clear);
 }
