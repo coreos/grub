@@ -1,5 +1,11 @@
 2010-07-02  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/deviceiter.c (grub_util_iterate_devices): Skip device-mapper
+	devices when iterating over /dev/disk/by-id; they will be handled
+	later if appropriate, which they aren't always (e.g. LVM).
+
+2010-07-02  Colin Watson  <cjwatson@ubuntu.com>
+
 	* include/grub/misc.h (grub_reboot): Declare as noreturn.
 	* kern/efi/efi.c (grub_reboot): Don't return, even if reset_system
 	fails.

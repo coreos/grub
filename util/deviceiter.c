@@ -519,6 +519,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	    /* Skip partition entries.  */
 	    if (strstr (entry->d_name, "-part"))
 	      continue;
+	    /* Skip device-mapper entries; we'll handle the ones we want
+	       later.  */
+	    if (strncmp (entry->d_name, "dm-", sizeof ("dm-") - 1) == 0)
+	      continue;
 	    if (names_len >= names_max)
 	      {
 		names_max *= 2;
