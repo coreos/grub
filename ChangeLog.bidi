@@ -7,7 +7,6 @@
 	(TARGET_CFLAGS): Add -DHAVE_UNIFONT_WIDTHSPEC=1 if font was available.
 	* autogen.sh: Generate unidata.c.
 	* commands/cat.c (grub_cmd_cat): Don't use grub_putchar.
-	* commands/handler.c (grub_cmd_handler): Likewise.
 	* commands/ls.c (grub_ls_list_devices): Likewise.
 	(grub_ls_list_files): Likewise.
 	* commands/minicmd.c (grub_mini_cmd_cat): Likewise.
@@ -28,6 +27,12 @@
 	(charset_mod_SOURCES): Removed.
 	(charset_mod_CFLAGS): Likewise.
 	(charset_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES) [ieee1275]: Remove terminfo.mod.
+	* conf/powerpc-ieee1275.rmk (kernel_img_SOURCES): Add term/terminfo.c
+	and term/tparm.c.
+	* conf/sparc64-ieee1275.rmk (kernel_img_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (kernel_img_SOURCES): Likewise.
+	(kernel_img_HEADERS): Add terminfo.h.
 	* font/font.c (ascii_glyph_lookup): Return NULL on failure.
 	Fill ->font. Reverse ascii bitmaps.
 	(grub_font_get_xheight): New function.
@@ -67,23 +72,45 @@
 	(grub_normal_get_char_counter): New proto.
 	(grub_normal_reset_more): Likewise.
 	(grub_xputs_normal): Likewise.
+	* include/grub/powerpc/ieee1275/console.h: Removed.
+	* include/grub/sparc64/ieee1275/console.h: Likewise.
 	* include/grub/term.h (GRUB_TERM_CODE_TYPE_MASK): New definition.
 	(GRUB_TERM_CODE_TYPE_ASCII): Likewise.
-	(GRUB_TERM_CODE_TYPE_VGA): Likewise.
+	(GRUB_TERM_CODE_TYPE_CP437): Likewise.
 	(GRUB_TERM_CODE_TYPE_UTF8_LOGICAL): Likewise.
 	(GRUB_TERM_CODE_TYPE_UTF8_VISUAL): Likewise.
 	(GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS): Likewise.
+	(grub_term_input): Pass reference to self. All users updated.
 	(grub_term_output): Pass grub_unicode_glyph to putchar and getcharwidth.
-	All users updated.
+	Pass reference to self. New fields normal_color, highlight_color and
+	data. All users updated.
 	(grub_putchar): Removed.
 	(grub_putcode): Remove EXPORT_FUNC since it's not in kernel anymore.
 	(grub_unicode_estimate_width): New function.
 	(grub_term_getcharwidth): Add defaults.
+	(GRUB_TERM_DEFAULT_NORMAL_COLOR): New definition.
+	(GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR): Likewise.
+	(GRUB_TERM_DEFAULT_STANDARD_COLOR): Likewise.
+	(grub_cls): Remove EXPORT_FUNC.
+	(grub_setcolorstate): Inline.
+	(grub_newline_hook): Removed.
+	* include/grub/terminfo.h: Rewritten. All users updated.
 	* include/grub/unicode.h: New file.
 	* include/grub/video.h (grub_video_signed_rect): New type.
+	* kern/emu/console.c (grub_console_highlight_color): Removed.
+	(grub_console_normal_color): Likewise.
+	(grub_console_standard_color): Made static.
+	(grub_ncurses_putchar): Remove mapping.
+	(grub_ncurses_getcharwidth): Removed.
+	(grub_ncurses_term_output): Declare as GRUB_TERM_CODE_TYPE_ASCII.
+	(grub_ncurses_setcolor): Removed.
+	(grub_ncurses_getcolor): Likewise.
 	* kern/i386/pc/startup.S (grub_console_real_putchar): Renamed to ...
 	(grub_console_putchar): ... this.
 	(grub_console_putchar): Handle argument difference.
+	* kern/ieee1275/init.c (grub_machine_init): Split console_init into
+	console_init_early and console_init_lately.
+	* kern/sparc64/ieee1275/init.c (grub_machine_init): Likewise.
 	* kern/misc.c (grub_puts): Removed.
 	(grub_vprintf): Store UTF-8 string instead of outputting it directly.
 	(grub_vsnprintf_real): Remove str = NULL support.
@@ -94,7 +121,6 @@
 	(grub_putchar): Removed.
 	(grub_xputs_dumb): New function.
 	(grub_xputs): New variable.
-	(grub_cls): Use grub_putcode_dumb.
 	* lib/charset.c: Move from here ...
 	* normal/charset.c: ... to here.
 	(grub_ucs4_to_utf8): New function.
@@ -174,23 +200,87 @@
 	* term/i386/vga_common.c (map_char): Removed.
 	(grub_console_putchar): Likewise.
 	(grub_console_getcharwidth): Likewise.
-	* term/ieee1275/ofconsole.c (grub_ofconsole_putchar): Remove mapping.
+	* term/ieee1275/ofconsole.c: Simplify using terminfo.
+	(colors): Reordered to match terminfo.
+	(grub_ofconsole_normal_color): Removed.
+	(grub_ofconsole_writeesc): Likewise.
+	(grub_ofconsole_highlight_color): Likewise.
+	(grub_ofconsole_getcharwidth): Likewise.
+	(grub_ofconsole_setcolorstate): Likewise.
+	(grub_ofconsole_setcolor): Likewise.
+	(grub_ofconsole_getcolor): Likewise.
+	(grub_ofconsole_readkey): Renamed to ...
+	(readkey): ... this. Remove escape sequence handling. Return -1 on no
+	key.
+	(grub_ofconsole_checkkey): Removed.
+	(grub_ofconsole_getkey): Likewise.
+	(grub_ofconsole_getxy): Likewise.
+	(grub_ofconsole_gotoxy): Likewise.
+	(grub_ofconsole_cls): Likewise.
+	(grub_ofconsole_refresh): Likewise.
+	(grub_ofconsole_terminfo_input): New struct.
+	(grub_ofconsole_terminfo_output): Likewise.
+	(grub_ofconsole_term_input): Use terminfo.
+	(grub_ofconsole_term_output): Likewise.
+	(grub_console_init): Split into ...
+	(grub_console_init_early): ...this and ...
+	(grub_console_init_lately): ...this. Use terminfo.
+	(grub_ofconsole_putchar): Renamed to ...
+	(put): ... this. Remove mapping.
 	(grub_ofconsole_term_output): Declare as GRUB_TERM_CODE_TYPE_ASCII.
-	* term/serial.c (options): New options ascii, utf8 and visual-utf8.
-	(grub_serial_putchar): Remove mapping. Use estimated_width.
-	(grub_cmd_serial): Handle charset arguments.
-	* term/terminfo.c (putstr): Use putchar directly.
+	* term/serial.c: Simplify using terminfo.
+	(xpos): Removed.
+	(ypos): Likewise.
+	(keep_track): Likewise.
+	(registered): Likewise.
+	(input_buf): Likewise.
+	(npending): Likewise.
+	(serial_translate_key_sequence): Likewise.
+	(fill_input_buf): Likewise.
+	(grub_serial_checkkey): Likewise.
+	(grub_serial_getkey): Likewise.
+	(grub_serial_getxy): Likewise.
+	(grub_serial_gotoxy): Likewise.
+	(grub_serial_putchar): Likewise.
+	(grub_serial_cls): Likewise.
+	(grub_serial_setcolorstate): Likewise.
+	(grub_serial_setcursor): Likewise.
+	(serial_hw_init): Use serial_hw_fetch.
+	(grub_serial_terminfo_input): New variable.
+	(grub_serial_terminfo_output): Likewise.
+	(grub_serial_term_input): Use terminfo.
+	(grub_serial_term_output): Likewise.
+	* term/terminfo.c (putstr): Use put.
+	(grub_terminfo_all_free): New function
+	(grub_terminfo_set_current): New types vt100-color, ieee1275 and dumb.
+	(grub_terminfo_output_register): New function.
+	(grub_terminfo_output_unregister): Likewise.
+	(grub_terminfo_getxy): Likewise.
+	(grub_terminfo_readkey): Likewise.
+	(grub_terminfo_checkkey): Likewise.
+	(grub_terminfo_getkey): Likewise.
+	(grub_terminfo_input_init): Likewise.
+	(print_terminfo): Likewise.
+	(grub_cmd_terminfo): Handle encoding.
+	(grub_terminfo_gotoxy): Track position.
+	(grub_terminfo_cls): Likewise.
+	(grub_terminfo_putchar): Likewise.
+	(grub_terminfo_setcolorstate): Handle colors
+	(grub_terminfo_cursor_on): This ...
+	(grub_terminfo_cursor_off): ... and this merged into ...
+	(grub_terminfo_setcursor): ... this.
+	* term/tparm.c (grub_terminfo_tparm): Avoid NULL dereferencing.
 	* unicode/ArabicShaping.txt: New file (imported from Unicode).
 	* unicode/BidiMirroring.txt: Likewise.
 	* unicode/UnicodeData.txt: Likewise.
 	* unicode/COPYING: Likewise.
-	* util/console.c (grub_ncurses_putchar): Remove mapping.
-	(grub_ncurses_getcharwidth): Removed.
-	(grub_ncurses_term_output): Declare as GRUB_TERM_CODE_TYPE_ASCII.
 	* util/grub-editenv.c (grub_putchar): Removed.
 	(grub_xputs_real): New function.
 	(grub_xputs): New variable.
 	* util/grub-fstest.c (grub_putchar): Removed.
+	(grub_xputs_real): New function.
+	(grub_xputs): New variable.
+	* util/grub-mkdevicemap.c (grub_putchar): Removed.
 	(grub_xputs_real): New function.
 	(grub_xputs): New variable.
 	* util/grub-probe.c (grub_putchar): Removed.
@@ -220,4 +310,7 @@
 	(add_font): Handle GSUB.
 	(write_font_width_spec): New function.
 	(main): Sort glyphs.
-
+	* commands/minicmd.c (grub_mini_cmd_clear): Moved from here ...
+	* normal/main.c (grub_mini_cmd_clear): ..here. All users updated.
+	* kern/term.c (grub_cls): Moved from here...
+	* normal/term.c (grub_cls): ... here.
