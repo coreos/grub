@@ -263,8 +263,7 @@ void grub_putcode (grub_uint32_t code, struct grub_term_output *term);
 int EXPORT_FUNC(grub_getkey) (void);
 int EXPORT_FUNC(grub_checkkey) (void);
 int EXPORT_FUNC(grub_getkeystatus) (void);
-void EXPORT_FUNC(grub_cls) (void);
-void EXPORT_FUNC(grub_setcolorstate) (grub_term_color_state state);
+void grub_cls (void);
 void EXPORT_FUNC(grub_refresh) (void);
 void grub_puts_terminal (const char *str, struct grub_term_output *term);
 grub_uint16_t *grub_term_save_pos (void);
@@ -343,6 +342,15 @@ grub_term_setcolorstate (struct grub_term_output *term,
 {
   if (term->setcolorstate)
     term->setcolorstate (term, state);
+}
+
+static inline void
+grub_setcolorstate (grub_term_color_state state)
+{
+  struct grub_term_output *term;
+  
+  FOR_ACTIVE_TERM_OUTPUTS(term)
+    grub_term_setcolorstate (term, state);
 }
 
 /* Set the normal color and the highlight color. The format of each

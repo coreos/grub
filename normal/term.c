@@ -774,3 +774,20 @@ grub_xputs_normal (const char *str)
     }
   grub_free (unicode_str);
 }
+
+void
+grub_cls (void)
+{
+  struct grub_term_output *term;
+
+  FOR_ACTIVE_TERM_OUTPUTS(term)  
+  {
+    if ((term->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
+      {
+	grub_putcode ('\n', term);
+	grub_term_refresh (term);
+      }
+    else
+      (term->cls) (term);
+  }
+}

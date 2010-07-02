@@ -127,32 +127,6 @@ grub_getkeystatus (void)
 }
 
 void
-grub_cls (void)
-{
-  struct grub_term_output *term;
-
-  FOR_ACTIVE_TERM_OUTPUTS(term)  
-  {
-    if ((term->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
-      {
-	grub_putcode_dumb ('\n', term);
-	grub_term_refresh (term);
-      }
-    else
-      (term->cls) (term);
-  }
-}
-
-void
-grub_setcolorstate (grub_term_color_state state)
-{
-  struct grub_term_output *term;
-  
-  FOR_ACTIVE_TERM_OUTPUTS(term)
-    grub_term_setcolorstate (term, state);
-}
-
-void
 grub_refresh (void)
 {
   struct grub_term_output *term;
