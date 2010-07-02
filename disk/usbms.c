@@ -312,7 +312,7 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
       grub_dprintf ("usb", "buf:\n");
       if (size <= 64)
         for (i=0; i<size; i++)
-          grub_dprintf ("usb", "0x%02x: 0x%02x\n", i, buf[i]);
+          grub_dprintf ("usb", "0x%02" PRIxGRUB_SIZE ": 0x%02x\n", i, buf[i]);
       else
           grub_dprintf ("usb", "Too much data for debug print...\n");
     }
@@ -330,7 +330,7 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
       /* Debug print of sent data. */
       if (size <= 256)
         for (i=0; i<size; i++)
-          grub_dprintf ("usb", "0x%02x: 0x%02x\n", i, buf[i]);
+          grub_dprintf ("usb", "0x%02" PRIxGRUB_SIZE ": 0x%02x\n", i, buf[i]);
       else
           grub_dprintf ("usb", "Too much data for debug print...\n");
     }

@@ -92,10 +92,18 @@ typedef grub_int32_t	grub_target_ssize_t;
 typedef grub_uint64_t	grub_addr_t;
 typedef grub_uint64_t	grub_size_t;
 typedef grub_int64_t	grub_ssize_t;
+
+# if GRUB_CPU_SIZEOF_LONG == 8
+#  define PRIxGRUB_SIZE	"lx"
+# else
+#  define PRIxGRUB_SIZE	"llx"
+# endif
 #else
 typedef grub_uint32_t	grub_addr_t;
 typedef grub_uint32_t	grub_size_t;
 typedef grub_int32_t	grub_ssize_t;
+
+# define PRIxGRUB_SIZE	"x"
 #endif
 
 #if GRUB_CPU_SIZEOF_LONG == 8

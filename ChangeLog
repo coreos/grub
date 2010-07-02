@@ -1,3 +1,11 @@
+2010-07-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/types.h: Define the C99-style PRIxGRUB_SIZE macro,
+	suitable for using within the format argument of printf when
+	converting grub_size_t.
+	* disk/usbms.c (grub_usbms_transfer): Use PRIxGRUB_SIZE rather than
+	"x" to convert grub_size_t arguments.
+
 2010-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* gfxmenu/gui_list.c (draw_menu): Use viewport to simplify code and fix
