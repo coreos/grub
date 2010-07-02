@@ -26,8 +26,6 @@
 #include <grub/parser.h>
 #include <grub/script_sh.h>
 
-#include <grub_script_check_init.h>
-
 #define _GNU_SOURCE	1
 
 #include <ctype.h>
@@ -147,7 +145,8 @@ main (int argc, char *argv[])
   char *input;
   FILE *file = 0;
   int verbose = 0;
-  struct grub_script *script;
+  int found_input = 0;
+  struct grub_script *script = NULL;
 
   auto grub_err_t get_config_line (char **line, int cont);
   grub_err_t get_config_line (char **line, int cont __attribute__ ((unused)))
@@ -240,15 +239,13 @@ main (int argc, char *argv[])
 	}
     }
 
-  /* Initialize all modules.  */
-  grub_init_all ();
-
   do
     {
       input = 0;
       get_config_line(&input, 0);
       if (! input) 
 	break;
+      found_input = 1;
 
       script = grub_script_parse (input, get_config_line);
       if (script)
@@ -260,9 +257,7 @@ main (int argc, char *argv[])
       grub_free (input);
     } while (script != 0);
 
-  /* Free resources.  */
-  grub_fini_all ();
   if (file) fclose (file);
 
-  return (script == 0);
+  return (found_input && script == 0);
 }

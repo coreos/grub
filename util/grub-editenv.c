@@ -21,7 +21,6 @@
 #include <grub/types.h>
 #include <grub/util/misc.h>
 #include <grub/lib/envblk.h>
-#include <grub/handler.h>
 #include <grub/i18n.h>
 
 #include <stdio.h>

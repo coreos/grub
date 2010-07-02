@@ -19,17 +19,7 @@
 #ifndef GRUB_KERNEL_MACHINE_HEADER
 #define GRUB_KERNEL_MACHINE_HEADER	1
 
-/* The offset of GRUB_CORE_ENTRY_ADDR.  */
-#define GRUB_KERNEL_MACHINE_CORE_ENTRY_ADDR	0x8
-
-/* The offset of GRUB_KERNEL_IMAGE_SIZE.  */
-#define GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE	0xc
-
-/* The offset of GRUB_PREFIX.  */
-#define GRUB_KERNEL_MACHINE_PREFIX		0x10
-
-/* End of the data section. */
-#define GRUB_KERNEL_MACHINE_DATA_END		0x50
+#include <grub/offsets.h>
 
 #ifndef ASM_FILE
 
@@ -44,9 +34,7 @@ extern grub_int32_t grub_kernel_image_size;
 /* The total size of module images following the kernel.  */
 extern grub_int32_t grub_total_module_size;
 
-/* The prefix which points to the directory where GRUB modules and its
-   configuration file are located.  */
-extern char grub_prefix[];
+void grub_qemu_init_cirrus (void);
 
 #endif /* ! ASM_FILE */
 

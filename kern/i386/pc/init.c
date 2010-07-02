@@ -75,12 +75,20 @@ make_install_device (void)
 	  ptr += grub_strlen (ptr);
 
 	  if (grub_install_bsd_part >= 0)
-	    grub_snprintf (ptr, sizeof (dev) - (ptr - dev), ",%c",
-			   grub_install_bsd_part + 'a');
+	    grub_snprintf (ptr, sizeof (dev) - (ptr - dev), ",%u",
+			   grub_install_bsd_part + 1);
 	  ptr += grub_strlen (ptr);
 	}
 
       grub_snprintf (ptr, sizeof (dev) - (ptr - dev), ")%s", grub_prefix);
+      grub_strcpy (grub_prefix, dev);
+    }
+  else if (grub_prefix[1] == ',' || grub_prefix[1] == ')')
+    {
+      /* We have a prefix, but still need to fill in the boot drive.  */
+      grub_snprintf (dev, sizeof (dev),
+		     "(%cd%u%s", (grub_boot_drive & 0x80) ? 'h' : 'f',
+		     grub_boot_drive & 0x7f, grub_prefix + 1);
       grub_strcpy (grub_prefix, dev);
     }
 

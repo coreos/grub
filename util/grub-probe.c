@@ -20,14 +20,15 @@
 #include <config.h>
 #include <grub/types.h>
 #include <grub/util/misc.h>
+#include <grub/util/misc.h>
 #include <grub/device.h>
 #include <grub/disk.h>
 #include <grub/file.h>
 #include <grub/fs.h>
 #include <grub/partition.h>
 #include <grub/msdos_partition.h>
-#include <grub/util/hostdisk.h>
-#include <grub/util/getroot.h>
+#include <grub/emu/hostdisk.h>
+#include <grub/emu/getroot.h>
 #include <grub/term.h>
 #include <grub/env.h>
 #include <grub/raid.h>
@@ -71,9 +72,6 @@ grub_getkey (void)
 {
   return -1;
 }
-
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
 
 void
 grub_refresh (void)
@@ -263,7 +261,7 @@ probe (const char *path, char *device_name)
 	      grub_util_info ("reading %s via OS facilities", path);
 	      filebuf_via_sys = grub_util_read_image (path);
 
-	      rel_path = make_system_path_relative_to_its_root (path);
+	      rel_path = grub_make_system_path_relative_to_its_root (path);
 	      grub_path = xasprintf ("(%s)%s", drive_name, rel_path);
 	      free (rel_path);
 	      grub_util_info ("reading %s via GRUB facilities", grub_path);

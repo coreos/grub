@@ -1018,6 +1018,8 @@ grub_font_get_glyph_with_fallback (grub_font_t font, grub_uint32_t code)
       next = node->next;
 
       glyph = grub_font_get_glyph_internal (curfont, code);
+      if (glyph && !font)
+	return glyph;
       if (glyph)
 	{
 	  int d;

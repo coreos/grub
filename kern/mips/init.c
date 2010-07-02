@@ -18,7 +18,6 @@
 
 #include <grub/kernel.h>
 #include <grub/env.h>
-#include <grub/mips/kernel.h>
 
 void
 grub_machine_set_prefix (void)

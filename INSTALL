@@ -16,7 +16,23 @@ configuring the GRUB.
 * GNU Bison 2.3 or later
 * GNU gettext 0.17 or later
 * GNU binutils 2.9.1.0.23 or later
+* Flex 2.5.35 or later
 * Other standard GNU/Unix tools
+
+On GNU/Linux, you also need:
+
+* libdevmapper (recommended)
+
+To build grub-emu, you need:
+
+* ncurses
+* libusb (recommended)
+* SDL (recommended)
+
+To build GRUB's graphical terminal (gfxterm), you need:
+
+* FreeType 2 or later
+* GNU Unifont
 
 If you use a development snapshot or want to hack on GRUB you may
 need the following.

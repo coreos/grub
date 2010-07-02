@@ -28,11 +28,10 @@
 #include <grub/env.h>
 #include <grub/misc.h>
 #include <grub/time.h>
-#include <grub/ieee1275/console.h>
-#include <grub/machine/kernel.h>
-#include <grub/cpu/kernel.h>
+#include <grub/machine/console.h>
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
+#include <grub/offsets.h>
 
 /* The minimal heap size we can live with. */
 #define HEAP_MIN_SIZE		(unsigned long) (2 * 1024 * 1024)
@@ -296,5 +295,5 @@ grub_get_rtc (void)
 grub_addr_t
 grub_arch_modules_addr (void)
 {
-  return ALIGN_UP((grub_addr_t) _end + GRUB_MOD_GAP, GRUB_MOD_ALIGN);
+  return ALIGN_UP((grub_addr_t) _end + GRUB_KERNEL_MACHINE_MOD_GAP, GRUB_KERNEL_MACHINE_MOD_ALIGN);
 }

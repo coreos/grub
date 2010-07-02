@@ -91,7 +91,7 @@ grub_rescue_run (void)
       if (! line || line[0] == '\0')
 	continue;
 
-      grub_parser_get_current ()->parse_line (line, grub_rescue_read_line);
+      grub_rescue_parse_line (line, grub_rescue_read_line);
       grub_free (line);
     }
 }

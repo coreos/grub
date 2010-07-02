@@ -717,12 +717,6 @@ real_scroll (void)
       draw_cursor (0);
 
       grub_video_set_active_render_target (render_target);
-      /* Save viewport and set it to our window.  */
-      grub_video_get_viewport ((unsigned *) &saved_view.x, 
-                               (unsigned *) &saved_view.y, 
-                               (unsigned *) &saved_view.width, 
-                               (unsigned *) &saved_view.height);
-      grub_video_set_viewport (window.x, window.y, window.width, window.height);
 
       i = window.double_repaint ? 2 : 1;
 
@@ -730,6 +724,15 @@ real_scroll (void)
 
       while (i--)
 	{
+	  /* Save viewport and set it to our window.  */
+	  grub_video_get_viewport ((unsigned *) &saved_view.x, 
+				   (unsigned *) &saved_view.y, 
+				   (unsigned *) &saved_view.width, 
+				   (unsigned *) &saved_view.height);
+
+	  grub_video_set_viewport (window.x, window.y, window.width,
+				   window.height);
+
 	  /* Clear new border area.  */
 	  grub_video_fill_rect (color,
 				virtual_screen.offset_x,
@@ -745,6 +748,10 @@ real_scroll (void)
 	  grub_video_scroll (color, 0, -virtual_screen.normal_char_height
 			     * virtual_screen.total_scroll);
 
+	  /* Restore saved viewport.  */
+	  grub_video_set_viewport (saved_view.x, saved_view.y,
+				   saved_view.width, saved_view.height);
+
 	  if (i)
 	    grub_video_swap_buffers ();
 	}
@@ -756,9 +763,6 @@ real_scroll (void)
       grub_video_scroll (color, 0, -virtual_screen.normal_char_height
 			 * virtual_screen.total_scroll);
 
-      /* Restore saved viewport.  */
-      grub_video_set_viewport (saved_view.x, saved_view.y,
-                               saved_view.width, saved_view.height);
       grub_video_set_active_render_target (render_target);
 
     }

@@ -60,6 +60,7 @@ static void
 progress_bar_destroy (void *vself)
 {
   grub_gui_progress_bar_t self = vself;
+  grub_gfxmenu_timeout_unregister ((grub_gui_component_t) self);
   grub_free (self);
 }
 
@@ -333,11 +334,16 @@ progress_bar_set_property (void *vself, const char *name, const char *value)
     }
   else if (grub_strcmp (name, "id") == 0)
     {
+      grub_gfxmenu_timeout_unregister ((grub_gui_component_t) self);
       grub_free (self->id);
       if (value)
         self->id = grub_strdup (value);
       else
         self->id = 0;
+      /*      if (self->id && grub_strcmp (self->id, GRUB_GFXMENU_TIMEOUT_COMPONENT_ID)
+	      == 0)*/
+	grub_gfxmenu_timeout_register ((grub_gui_component_t) self,
+				       progress_bar_set_state);
     }
   return grub_errno;
 }
@@ -368,6 +374,7 @@ grub_gui_progress_bar_new (void)
   self = grub_zalloc (sizeof (*self));
   if (! self)
     return 0;
+
   self->progress.ops = &progress_bar_pb_ops;
   self->progress.component.ops = &progress_bar_ops;
   self->visible = 1;

@@ -38,8 +38,8 @@
 #include <grub/err.h>
 #include <grub/symbol.h>
 #include <grub/types.h>
-#include <grub/handler.h>
 #include <grub/unicode.h>
+#include <grub/list.h>
 
 /* These are used to represent the various color states we use.  */
 typedef enum
@@ -223,6 +223,14 @@ grub_term_register_input (const char *name __attribute__ ((unused)),
 }
 
 static inline void
+grub_term_register_input_active (const char *name __attribute__ ((unused)),
+				 grub_term_input_t term)
+{
+  if (! term->init || term->init (term) == GRUB_ERR_NONE)
+    grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs), GRUB_AS_LIST (term));
+}
+
+static inline void
 grub_term_register_output (const char *name __attribute__ ((unused)),
 			   grub_term_output_t term)
 {
@@ -236,6 +244,15 @@ grub_term_register_output (const char *name __attribute__ ((unused)),
 	grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs),
 			GRUB_AS_LIST (term));
     }
+}
+
+static inline void
+grub_term_register_output_active (const char *name __attribute__ ((unused)),
+				  grub_term_output_t term)
+{
+  if (! term->init || term->init (term) == GRUB_ERR_NONE)
+    grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs),
+		    GRUB_AS_LIST (term));
 }
 
 static inline void
@@ -254,10 +271,10 @@ grub_term_unregister_output (grub_term_output_t term)
 		    GRUB_AS_LIST (term));
 }
 
-#define FOR_ACTIVE_TERM_INPUTS(var) for (var = grub_term_inputs; var; var = var->next)
-#define FOR_DISABLED_TERM_INPUTS(var) for (var = grub_term_inputs_disabled; var; var = var->next)
-#define FOR_ACTIVE_TERM_OUTPUTS(var) for (var = grub_term_outputs; var; var = var->next)
-#define FOR_DISABLED_TERM_OUTPUTS(var) for (var = grub_term_outputs_disabled; var; var = var->next)
+#define FOR_ACTIVE_TERM_INPUTS(var) FOR_LIST_ELEMENTS((var), (grub_term_inputs))
+#define FOR_DISABLED_TERM_INPUTS(var) FOR_LIST_ELEMENTS((var), (grub_term_inputs_disabled))
+#define FOR_ACTIVE_TERM_OUTPUTS(var) FOR_LIST_ELEMENTS((var), (grub_term_outputs))
+#define FOR_DISABLED_TERM_OUTPUTS(var) FOR_LIST_ELEMENTS((var), (grub_term_outputs_disabled))
 
 void grub_putcode (grub_uint32_t code, struct grub_term_output *term);
 int EXPORT_FUNC(grub_getkey) (void);

@@ -90,7 +90,7 @@ GNULIB_CFLAGS = $(GNULIB_UTIL_CFLAGS) $(POSIX_CFLAGS)
 ASFLAGS = @ASFLAGS@
 LDFLAGS = @LDFLAGS@ $(LIBS)
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
-	 -DGRUB_LIBDIR=\"$(pkglibdir)\" -DLOCALEDIR=\"$(localedir)\"
+	 -DGRUB_PKGLIBROOTDIR=\"$(libdir)/`echo @PACKAGE_TARNAME@ | sed '$(transform)'`\" -DLOCALEDIR=\"$(localedir)\"
 TARGET_CC = @TARGET_CC@
 TARGET_CFLAGS = -ffreestanding @TARGET_CFLAGS@
 TARGET_ASFLAGS = -nostdinc -fno-builtin @TARGET_ASFLAGS@
@@ -247,10 +247,9 @@ docs/stamp-vti: docs/grub.texi configure.ac
 	-@rm -f vti.tmp
 	@cp $(builddir)/docs/version.texi $@
 
-# Use --force until such time as the documentation is cleaned up.
 docs/grub.info: docs/grub.texi docs/version.texi docs/fdl.texi
 	$(MKDIR_P) docs
-	-$(MAKEINFO) -P $(builddir)/docs --no-split --force $< -o $@
+	$(MAKEINFO) -P $(builddir)/docs --no-split $< -o $@
 
 ifeq (, $(FONT_SOURCE))
 else
@@ -329,26 +328,26 @@ install-local: all
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
-	  $(HELP2MAN) --section=1 -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
+	  PATH="$(builddir):$$PATH" $(HELP2MAN) --section=1 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man1/$$dest.1 $$file; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(sbindir) $(DESTDIR)$(mandir)/man8
 	@list='$(sbin_UTILITIES)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
-	  $(HELP2MAN) --section=8 -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
+	  PATH="$(builddir):$$PATH" $(HELP2MAN) --section=8 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man8/$$dest.8 $$file; \
 	done
 	@list='$(bin_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
-	  $(HELP2MAN) --section=1 -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
+	  PATH="$(builddir):$$PATH" $(HELP2MAN) --section=1 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man1/$$dest.1 $$file; \
 	done
 	@list='$(sbin_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
-	  $(HELP2MAN) --section=8 -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
+	  PATH="$(builddir):$$PATH" $(HELP2MAN) --section=8 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man8/$$dest.8 $$file; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(sysconfdir)/grub.d
 	@list='$(grub-mkconfig_SCRIPTS)'; for file in $$list; do \

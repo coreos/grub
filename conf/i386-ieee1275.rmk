@@ -18,7 +18,7 @@ kernel_img_SOURCES = kern/i386/ieee1275/startup.S \
 	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/$(target_cpu)/dl.c kern/parser.c kern/partition.c \
 	kern/env.c \
-	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
+	kern/time.c kern/list.c  kern/command.c kern/corecmd.c \
 	kern/generic/millisleep.c \
 	kern/ieee1275/ieee1275.c \
 	term/ieee1275/ofconsole.c \
