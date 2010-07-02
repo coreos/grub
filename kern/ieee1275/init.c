@@ -28,7 +28,7 @@
 #include <grub/env.h>
 #include <grub/misc.h>
 #include <grub/time.h>
-#include <grub/machine/console.h>
+#include <grub/ieee1275/console.h>
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/offsets.h>
