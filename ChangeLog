@@ -1,5 +1,10 @@
 2010-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/efi/init.c (grub_efi_init): Disable watchdog.
+	Tested by: Seth Goldberg.
+
+2010-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* loader/multiboot.c (grub_multiboot_boot) [GRUB_USE_MULTIBOOT2]:
 	Properly align mbi.
 	Reported by: Seth Goldberg.
