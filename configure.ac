@@ -190,7 +190,7 @@ for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
   done
 done
 
-if test "x$FONT_SOURCE" == x && ( test "x$platform" = xqemu || test "x$platform" = xyeeloong ); then
+if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xyeeloong ); then
    AC_MSG_ERROR([qemu and yeeloong ports need unifont])
 fi
 

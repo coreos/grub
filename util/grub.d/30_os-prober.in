@@ -52,7 +52,7 @@ EOF
              set do_resume=1
            fi
         fi
-        if [ \$do_resume == 0 ]; then
+        if [ \$do_resume = 0 ]; then
            xnu_uuid ${OSXUUID} uuid
            if [ -f /Extra/DSDT.aml ]; then
               acpi -e /Extra/DSDT.aml
