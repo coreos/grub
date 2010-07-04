@@ -1,3 +1,7 @@
+2010-07-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/emu/getroot.c [__GNU__]: Include <sys/mman.h> for munmap.
+
 2010-07-04  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* util/i386/pc/grub-setup.c (setup): Do not embed when there are
