@@ -5,6 +5,11 @@
 
 2010-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/i386/efi/grub-install.in: Don't use empty grub_device.
+	Reported by: Tito Keitel.
+
+2010-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Bidi and diacritics support.
 
 	* Makefile.in (widthspec.bin): New target.
