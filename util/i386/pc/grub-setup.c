@@ -95,6 +95,7 @@ setup (const char *dir,
   grub_uint16_t core_sectors;
   grub_device_t root_dev, dest_dev;
   const char *dest_partmap;
+  int multiple_partmaps;
   grub_uint8_t *boot_drive;
   grub_disk_addr_t *kernel_sector;
   grub_uint16_t *boot_drive_check;
@@ -356,15 +357,27 @@ setup (const char *dir,
     {
       if (p->parent)
 	return 0;
-      dest_partmap = p->partmap->name;
-      return 1;
+      if (dest_partmap == NULL)
+	dest_partmap = p->partmap->name;
+      else if (strcmp (dest_partmap, p->partmap->name) != 0)
+	{
+	  multiple_partmaps = 1;
+	  return 1;
+	}
+      return 0;
     }
   dest_partmap = 0;
+  multiple_partmaps = 0;
   grub_partition_iterate (dest_dev->disk, identify_partmap);
 
   if (! dest_partmap)
     {
       grub_util_warn (_("Attempting to install GRUB to a partitionless disk.  This is a BAD idea."));
+      goto unable_to_embed;
+    }
+  if (multiple_partmaps)
+    {
+      grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels.  This is not supported yet."));
       goto unable_to_embed;
     }
 

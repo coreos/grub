@@ -1,3 +1,8 @@
+2010-07-04  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* util/i386/pc/grub-setup.c (setup): Do not embed when there are
+	multiple (top-level) partmaps.
+
 2010-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Bidi and diacritics support.
