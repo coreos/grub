@@ -332,10 +332,12 @@ devices, partitions, and files in a directory depending on context.
 
 @item Support multiple filesystem types
 Support multiple filesystem types transparently, plus a useful explicit
-blocklist notation. The currently supported filesystem types are
-@dfn{BSD FFS}, @dfn{DOS FAT16 and FAT32}, @dfn{Minix fs}, @dfn{Linux
-ext2fs}, @dfn{ReiserFS}, @dfn{JFS}, @dfn{XFS}, and @dfn{VSTa
-fs}. @xref{Filesystem}, for more information.
+blocklist notation. The currently supported filesystem types are @dfn{Amiga
+Fast FileSystem (AFFS)}, @dfn{AtheOS fs}, @dfn{BeFS}, @dfn{cpio}, @dfn{Linux
+ext2/ext3/ext4}, @dfn{DOS FAT12/FAT16/FAT32}, @dfn{HFS}, @dfn{HFS+},
+@dfn{ISO9660}, @dfn{JFS}, @dfn{Minix fs}, @dfn{nilfs2}, @dfn{NTFS},
+@dfn{ReiserFS}, @dfn{Amiga Smart FileSystem (SFS)}, @dfn{tar}, @dfn{UDF},
+@dfn{BSD UFS/UFS2}, and @dfn{XFS}. @xref{Filesystem}, for more information.
 
 @item Support automatic decompression
 Can decompress files which were compressed by @command{gzip}. This
@@ -842,11 +844,36 @@ Run the command @command{boot} (@pxref{boot}).
 It is relatively easy to boot GNU/Linux from GRUB, because it somewhat
 resembles to boot a Multiboot-compliant OS.
 
-FIXME: this section is incomplete.
-
 @enumerate
 @item
-Set GRUB's root device to the same drive as GNU/Linux's.
+Set GRUB's root device to the same drive as GNU/Linux's.  The command
+@code{search --file --set /vmlinuz} or similar may help you
+(@pxref{search}).
+
+@item
+Load the kernel using the command @command{linux} (@pxref{linux}):
+
+@example
+grub> @kbd{linux /vmlinuz root=/dev/sda1}
+@end example
+
+If you need to specify some kernel parameters, just append them to the
+command.  For example, to set @option{acpi} to @samp{off}, do this:
+
+@example
+grub> @kbd{linux /vmlinuz root=/dev/sda1 acpi=off}
+@end example
+
+See the documentation in the Linux source tree for complete information on
+the available options.
+
+@item
+If you use an initrd, execute the command @command{initrd} (@pxref{initrd})
+after @command{linux}:
+
+@example
+grub> @kbd{initrd /initrd}
+@end example
 
 @item
 Finally, run the command @command{boot} (@pxref{boot}).
@@ -1278,18 +1305,13 @@ minicom. Refer to a manual of your operating system, for more
 information.
 
 As for GRUB, the instruction to set up a serial terminal is quite
-simple. First of all, make sure that you haven't specified the option
-@option{--disable-serial} to the configure script when you built your
-GRUB images. If you get them in binary form, probably they have serial
-terminal support already.
-
-Then, initialize your serial terminal after GRUB starts up. Here is an
-example:
+simple.  Here is an example:
 
 @example
 @group
 grub> @kbd{serial --unit=0 --speed=9600}
-grub> @kbd{terminal serial}
+grub> @kbd{terminal_input serial}
+grub> @kbd{terminal_output serial}
 @end group
 @end example
 
@@ -1317,14 +1339,16 @@ menu requires several fancy features of your terminal.
 
 @node Vendor power-on keys
 @chapter Using GRUB with vendor power-on keys
-Some laptop vendor provide an additional power-on button which boots another OS.
-GRUB supports such buttons with GRUB_TIMEOUT_BUTTON, GRUB_DEFAULT_BUTTON,
-GRUB_HIDDEN_TIMEOUT_BUTTON and GRUB_BUTTON_CMOS_ADDRESS variables in
-default/grub. GRUB_TIMEOUT_BUTTON, GRUB_DEFAULT_BUTTON and 
-GRUB_HIDDEN_TIMEOUT_BUTTON are used instead of corresponding variables without
-_BUTTON suffix when powered using special button.
-GRUB_BUTTON_CMOS_ADDRESS is vendor specific and partially model-specific.
-Values known to GRUB team are:
+
+Some laptop vendors provide an additional power-on button which boots another
+OS.  GRUB supports such buttons with the @samp{GRUB_TIMEOUT_BUTTON},
+@samp{GRUB_DEFAULT_BUTTON}, @samp{GRUB_HIDDEN_TIMEOUT_BUTTON} and
+@samp{GRUB_BUTTON_CMOS_ADDRESS} variables in default/grub (@pxref{Simple
+configuration}).  @samp{GRUB_TIMEOUT_BUTTON}, @samp{GRUB_DEFAULT_BUTTON} and
+@samp{GRUB_HIDDEN_TIMEOUT_BUTTON} are used instead of the corresponding
+variables without the @samp{_BUTTON} suffix when powered on using the special
+button.  @samp{GRUB_BUTTON_CMOS_ADDRESS} is vendor-specific and partially
+model-specific.  Values known to the GRUB team are:
 
 @table @key
 @item Dell XPS M1530
@@ -1333,7 +1357,8 @@ Values known to GRUB team are:
 84:1 (unconfirmed)
 @end table
 
-To take full advantage of this function install GRUB into MBR.
+To take full advantage of this function, install GRUB into the MBR
+(@pxref{Installing GRUB using grub-install}).
 
 
 @node Images
@@ -1695,19 +1720,12 @@ of entry names.
 If an @key{ESC} is pressed in the editor, it aborts all the changes made
 to the configuration entry and returns to the main menu interface.
 
-When a particular line is selected, the editor places the user in a
-special version of the GRUB command-line to edit that line.  When the
-user hits @key{RET}, GRUB replaces the line in question in the boot
-entry with the changes (unless it was aborted via @key{ESC},
-in which case the changes are thrown away).
+Each line in the menu entry can be edited freely, and you can add new lines
+by pressing @key{RET} at the end of a line.  To boot the edited entry, press
+@key{Ctrl-x}.
 
-If you want to add a new line to the menu entry, press @key{o} if adding
-a line after the current line or press @key{O} if before the current
-line.
-
-To delete a line, hit the key @key{d}. Although GRUB unfortunately
-does not support @dfn{undo}, you can do almost the same thing by just
-returning to the main menu.
+Although GRUB unfortunately does not support @dfn{undo}, you can do almost
+the same thing by just returning to the main menu using @key{ESC}.
 
 
 @node Commands
@@ -1856,16 +1874,23 @@ names active.
 @node terminfo
 @subsection terminfo
 
-@deffn Command terminfo [term]
+@deffn Command terminfo [-a|-u|-v] [term]
 Define the capabilities of your terminal by giving the name of an entry in
 the terminfo database, which should correspond roughly to a @samp{TERM}
 environment variable in Unix.
 
-At the moment, only @samp{vt100} is supported in GRUB 2.  If you need other
-terminal types, please contact us to discuss the best way to include support
-for these in GRUB.
+The currently available terminal types are @samp{vt100}, @samp{vt100-color},
+@samp{ieee1275}, and @samp{dumb}.  If you need other terminal types, please
+contact us to discuss the best way to include support for these in GRUB.
 
-If no option is specified, the current terminal type is printed.
+The @option{-a} (@option{--ascii}), @option{-u} (@option{--utf8}), and
+@option{-v} (@option{--visual-utf8}) options control how non-ASCII text is
+displayed.  @option{-a} specifies an ASCII-only terminal; @option{-u}
+specifies logically-ordered UTF-8; and @option{-v} specifies
+visually-ordered UTF-8.
+
+If no option or terminal type is specified, the current terminal type is
+printed.
 @end deffn
 
 
@@ -1895,8 +1920,12 @@ you forget a command, you can run the command @command{help}
 * gptsync::                     Fill an MBR based on GPT entries
 * halt::                        Shut down your computer
 * help::                        Show help messages
+* initrd::                      Load a Linux initrd
+* initrd16::                    Load a Linux initrd (16-bit mode)
 * insmod::                      Insert a module
 * keystatus::                   Check key modifier status
+* linux::                       Load a Linux kernel
+* linux16::                     Load a Linux kernel (16-bit mode)
 * ls::                          List devices or files
 * parttool::                    Modify partition table entries
 * password::                    Set a clear-text password
@@ -2203,6 +2232,30 @@ about each of the commands whose names begin with those @var{patterns}.
 @end deffn
 
 
+@node initrd
+@subsection initrd
+
+@deffn Command initrd file
+Load an initial ramdisk for a Linux kernel image, and set the appropriate
+parameters in the Linux setup area in memory.  This may only be used after
+the @command{linux} command (@pxref{linux}) has been run.  See also
+@ref{GNU/Linux}.
+@end deffn
+
+
+@node initrd16
+@subsection initrd16
+
+@deffn Command initrd16 file
+Load an initial ramdisk for a Linux kernel image to be booted in 16-bit
+mode, and set the appropriate parameters in the Linux setup area in memory.
+This may only be used after the @command{linux16} command (@pxref{linux16})
+has been run.  See also @ref{GNU/Linux}.
+
+This command is only available on x86 systems.
+@end deffn
+
+
 @node insmod
 @subsection insmod
 
@@ -2222,6 +2275,42 @@ control over behaviour without having to wait for a keypress.
 Checking key modifier status is only supported on some platforms. If invoked
 without any options, the @command{keystatus} command returns true if and
 only if checking key modifier status is supported.
+@end deffn
+
+
+@node linux
+@subsection linux
+
+@deffn Command linux file @dots{}
+Load a Linux kernel image from @var{file}.  The rest of the line is passed
+verbatim as the @dfn{kernel command-line}.  Any initrd must be reloaded
+after using this command (@pxref{initrd}).
+
+On x86 systems, the kernel will be booted using the 32-bit boot protocol.
+Note that this means that the @samp{vga=} boot option will not work; if you
+want to set a special video mode, you will need to use GRUB commands such as
+@samp{set gfxpayload=1024x768} or @samp{set gfxpayload=keep} (to keep the
+same mode as used in GRUB) instead.  GRUB can automatically detect some uses
+of @samp{vga=} and translate them to appropriate settings of
+@samp{gfxpayload}.  The @command{linux16} command (@pxref{linux16}) avoids
+this restriction.
+@end deffn
+
+
+@node linux16
+@subsection linux16
+
+@deffn Command linux16 file @dots{}
+Load a Linux kernel image from @var{file} in 16-bit mode.  The rest of the
+line is passed verbatim as the @dfn{kernel command-line}.  Any initrd must
+be reloaded after using this command (@pxref{initrd16}).
+
+The kernel will be booted using the traditional 16-bit boot protocol.  As
+well as bypassing problems with @samp{vga=} described in @ref{linux}, this
+permits booting some other programs that implement the Linux boot protocol
+for the sake of convenience.
+
+This command is only available on x86 systems.
 @end deffn
 
 
@@ -2337,7 +2426,7 @@ Reboot the computer.
 
 @deffn Command search @
  [@option{--file}|@option{--label}|@option{--fs-uuid}] @
- [@option{--set} var] [@option{--no-floppy}] name
+ [@option{--set} [var]] [@option{--no-floppy}] name
 Search devices by file (@option{-f}, @option{--file}), filesystem label
 (@option{-l}, @option{--label}), or filesystem UUID (@option{-u},
 @option{--fs-uuid}).
@@ -2493,6 +2582,9 @@ grub-install}).  When doing this, there are a few things to remember:
 Drive ordering in your operating system may not be the same as the boot
 drive ordering used by your firmware.  Do not assume that your first hard
 drive (e.g. @samp{/dev/sda}) is the one that your firmware will boot from.
+@file{device.map} (@pxref{Device map}) can be used to override this, but it
+is usually better to use UUIDs or file system labels and avoid depending on
+drive ordering entirely.
 
 @item
 At least on BIOS systems, if you tell @command{grub-install} to install GRUB

@@ -1,5 +1,25 @@
 2010-07-05  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (Features): Update list of supported file systems.
+	(GNU/Linux): Update for GRUB 2.
+	(Serial terminal): Remove mention of --disable-serial, which was a
+	GRUB Legacy configure option.  Update instructions to use
+	`terminal_input' and `terminal_output' rather than `terminal'.
+	(Vendor power-on keys): Copy-edit.  Add cross-references to `Simple
+	configuration' and `Installing GRUB using grub-install'.
+	(Menu entry editor): Update for GRUB 2.
+	(terminfo): Add vt100-color, ieee1275, and dumb terminal types.
+	Document new -a, -u, and -v options.
+	(initrd): New section.
+	(initrd16): New section.
+	(linux): New section.
+	(linux16): New section.
+	(search): The `var' argument to `--set' is optional.
+	(GRUB only offers a rescue shell): Go into a little more detail on
+	drive ordering.
+
+2010-07-05  Colin Watson  <cjwatson@ubuntu.com>
+
 	* Makefile.in: Set LINGUAS to empty if ENABLE_NLS is undefined.
 
 2010-07-05  Colin Watson  <cjwatson@ubuntu.com>
