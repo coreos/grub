@@ -612,23 +612,8 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
   status = grub_uhci_readreg16 (u, reg);
   grub_dprintf ("uhci", "detect=0x%02x\n", status);
 
-  if (!enable) /* We don't need reset port */
-    {
-      /* Disable the port.  */
-      grub_uhci_writereg16 (u, reg, 0 << 2);
-      grub_dprintf ("uhci", "waiting for the port to be disabled\n");
-      endtime = grub_get_time_ms () + 1000;
-      while ((grub_uhci_readreg16 (u, reg) & (1 << 2)))
-        if (grub_get_time_ms () > endtime)
-          return grub_error (GRUB_ERR_IO, "UHCI Timed out");
-
-      status = grub_uhci_readreg16 (u, reg);
-      grub_dprintf ("uhci", ">3detect=0x%02x\n", status);
-      return GRUB_ERR_NONE;
-    }
-    
   /* Reset the port.  */
-  grub_uhci_writereg16 (u, reg, 1 << 9);
+  grub_uhci_writereg16 (u, reg, enable << 9);
 
   /* Wait for the reset to complete.  XXX: How long exactly?  */
   grub_millisleep (50); /* For root hub should be nominaly 50ms */
@@ -638,7 +623,7 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
   grub_millisleep (10);
 
   /* Enable the port.  */
-  grub_uhci_writereg16 (u, reg, 1 << 2);
+  grub_uhci_writereg16 (u, reg, enable << 2);
   grub_millisleep (10);
 
   grub_dprintf ("uhci", "waiting for the port to be enabled\n");

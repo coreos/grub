@@ -21,7 +21,6 @@
 #include <grub/mm.h>
 #include <grub/usb.h>
 #include <grub/misc.h>
-#include <grub/time.h>
 
 /* USB Supports 127 devices, with device 0 as special case.  */
 static struct grub_usb_device *grub_usb_devs[128];
