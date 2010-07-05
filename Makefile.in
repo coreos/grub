@@ -53,9 +53,13 @@ XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
 MSGFMT = @MSGFMT@
 
+ifdef ENABLE_NLS
 LINGUAS = $(shell for i in $(srcdir)/po/*.po ; do \
 			if test -e $$i ; then echo $$i ; fi ; \
 		done | sed -e "s,.*/po/\(.*\)\.po$$,\1,")
+else
+LINGUAS =
+endif
 
 PACKAGE = @PACKAGE@
 PACKAGE_NAME = @PACKAGE_NAME@

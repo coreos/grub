@@ -1,5 +1,9 @@
 2010-07-05  Colin Watson  <cjwatson@ubuntu.com>
 
+	* Makefile.in: Set LINGUAS to empty if ENABLE_NLS is undefined.
+
+2010-07-05  Colin Watson  <cjwatson@ubuntu.com>
+
 	* Makefile.in (MAINTAINER_CLEANFILES): Add unicode/UnicodeData.txt,
 	unicode/BidiMirroring.txt, unicode/ArabicShaping.txt, and unidata.c.
 
