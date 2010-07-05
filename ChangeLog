@@ -1,3 +1,14 @@
+2010-07-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/i386/pc/grub-setup.c (setup): Rename prefix to
+	install_prefix, in line with install_dos_part and install_bsd_part.
+	Add new prefix variable, which is copied to install_prefix after
+	comparing core.img in memory with the one read from disk in the
+	no-embedding case, and use that rather than overwriting
+	install_prefix immediately when installing to a partition.
+	Fixes Debian bug #586621; based on patches by Matt Kraai and M. Vefa
+	Bicakci.
+
 2010-07-04  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* configure.ac: Avoid == in test command, it's not portable.
