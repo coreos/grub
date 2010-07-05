@@ -1,3 +1,7 @@
+2010-07-05  Ales Nesrsta <starous@volny.cz>
+	* bus/usb/usbhub.c, usbtrans.h: Simple USB hub support
+	* bus/usb/uhci.c: UHCI portstatus correction
+
 2010-07-05  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Features): Update list of supported file systems.
