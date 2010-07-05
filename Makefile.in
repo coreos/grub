@@ -164,7 +164,10 @@ DISTCLEANFILES = config.status config.cache config.log config.h \
 MAINTAINER_CLEANFILES = $(srcdir)/configure $(srcdir)/aclocal.m4 \
 	$(MKFILES) $(srcdir)/config.guess \
 	$(srcdir)/config.sub $(srcdir)/install-sh $(srcdir)/missing \
-	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in $(INFOS)
+	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in \
+	$(srcdir)/unicode/UnicodeData.txt $(srcdir)/unicode/BidiMirroring.txt \
+	$(srcdir)/unicode/ArabicShaping.txt $(srcdir)/unidata.c \
+	$(INFOS)
 
 # The default target.
 all: all-local

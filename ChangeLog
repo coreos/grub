@@ -1,5 +1,10 @@
 2010-07-05  Colin Watson  <cjwatson@ubuntu.com>
 
+	* Makefile.in (MAINTAINER_CLEANFILES): Add unicode/UnicodeData.txt,
+	unicode/BidiMirroring.txt, unicode/ArabicShaping.txt, and unidata.c.
+
+2010-07-05  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/i386/pc/grub-setup.c (setup): Rename prefix to
 	install_prefix, in line with install_dos_part and install_bsd_part.
 	Add new prefix variable, which is copied to install_prefix after
