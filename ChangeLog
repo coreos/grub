@@ -1,3 +1,9 @@
+2010-07-06  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/00_header.in: Process GRUB_THEME and GRUB_BACKGROUND
+	after setting gfxterm as the active terminal.  GRUB_BACKGROUND
+	doesn't work otherwise.
+
 2010-07-05  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Features): Update list of supported file systems.
