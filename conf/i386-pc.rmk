@@ -78,7 +78,8 @@ grub_setup_SOURCES = gnulib/progname.c util/i386/pc/grub-setup.c	\
 	partmap/msdos.c partmap/bsdlabel.c partmap/sunpc.c		\
 	partmap/gpt.c							\
 									\
-	disk/raid.c disk/mdraid_linux.c disk/lvm.c			\
+	disk/raid.c disk/raid5_recover.c disk/raid6_recover.c		\
+	disk/mdraid_linux.c disk/lvm.c					\
 	util/raid.c util/lvm.c						\
 	grub_setup_init.c
 
