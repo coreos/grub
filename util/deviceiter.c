@@ -523,6 +523,9 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	       later.  */
 	    if (strncmp (entry->d_name, "dm-", sizeof ("dm-") - 1) == 0)
 	      continue;
+	    /* Skip RAID entries; they are handled by upper layers.  */
+	    if (strncmp (entry->d_name, "md-", sizeof ("md-") - 1) == 0)
+	      continue;
 	    if (names_len >= names_max)
 	      {
 		names_max *= 2;
