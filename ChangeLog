@@ -1,3 +1,7 @@
+2010-07-06  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* bus/usb/usbhub.c: #include time.h header.
+
 2010-07-06  Colin Watson  <cjwatson@ubuntu.com>
 
 	* fs/reiserfs.c (grub_reiserfs_iterate_dir): Zero out first byte of
