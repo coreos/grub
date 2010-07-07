@@ -1,3 +1,7 @@
+2010-07-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* tests/util/grub-shell.in: Remove bashisms and declare as sh script.
+
 2010-07-07  Colin Watson  <cjwatson@ubuntu.com>
 
 	* term/gfxterm.c (grub_gfxterm_background_image_cmd): Fix
