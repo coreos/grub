@@ -148,6 +148,7 @@ typedef enum
 #define GRUB_OHCI_REG_CONTROL_BULK_ENABLE (1 << 5)
 #define GRUB_OHCI_REG_CONTROL_CONTROL_ENABLE (1 << 4)
 
+#define GRUB_OHCI_RESET_CONNECT_CHANGE (1 << 16)
 #define GRUB_OHCI_CTRL_EDS 16
 #define GRUB_OHCI_BULK_EDS 16
 #define GRUB_OHCI_TDS 256
@@ -420,23 +421,8 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
                        (grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBA)
                         & ~GRUB_OHCI_RHUB_PORT_POWER_MASK)
                        | GRUB_OHCI_RHUB_PORT_ALL_POWERED);
-  /* Wait for stable power (100ms) and stable attachment (100ms) */
-  /* I.e. minimum wait time should be probably 200ms. */
-  /* We assume that device is attached when ohci is loaded. */
-  /* Some devices take long time to power-on or indicate attach. */
-  /* Here is some experimental value which should probably mostly work. */
-  /* Cameras with manual USB mode selection and maybe some other similar
-   * devices will not work in some cases - they are repowered during
-   * ownership change and then they are starting slowly and mostly they
-   * are wanting select proper mode again...
-   * The same situation can be on computers where BIOS not set-up OHCI
-   * to be at least powered USB bus (maybe it is Yeelong case...?)
-   * Possible workaround could be for example some prompt
-   * for user with confirmation of proper USB device connection.
-   * Another workaround - "rmmod usbms", "rmmod ohci", proper start
-   * and configuration of USB device and then "insmod ohci"
-   * and "insmod usbms". */
-  grub_millisleep (500);	
+  /* Now we have hot-plugging, we need to wait for stable power only */
+  grub_millisleep (100);
 
   /* Link to ohci now that initialisation is successful.  */
   o->next = ohci;
@@ -998,6 +984,15 @@ grub_ohci_transfer (grub_usb_controller_t dev,
             }
         }
 
+      /* Even if we have "good" OHCI, in some cases
+       * tderr_phys can be zero, check it */
+      else if ( !tderr_phys )
+        { /* Retired TD with error should be previous TD to ED->td_head */
+          tderr_phys = GRUB_OHCI_TD_PHYS2VIRT (o,
+                         grub_le_to_cpu32 ( ed_virt->td_head) & ~0xf )
+                       ->prev_td_phys;
+        }
+
       /* Prepare pointer to last processed TD and get error code */
       tderr_virt = GRUB_OHCI_TD_PHYS2VIRT (o, tderr_phys);
       /* Set index of last processed TD */
@@ -1095,8 +1090,6 @@ grub_ohci_transfer (grub_usb_controller_t dev,
 	  break;
 	}
 
-      /* Set empty ED - set HEAD = TAIL = last (not processed) TD */
-      ed_virt->td_head = ed_virt->td_tail & ~0xf; 
     }
         
   else if (err_unrec)      
@@ -1117,7 +1110,6 @@ grub_ohci_transfer (grub_usb_controller_t dev,
       grub_dprintf ("ohci", "Unrecoverable error - OHCI reset\n");
 
       /* Misc. resets. */
-      ed_virt->td_head = ed_virt->td_tail & ~0xf; /* Set empty ED - set HEAD = TAIL = last (not processed) TD */
       o->hcca->donehead = 0;
       grub_ohci_writereg32 (o, GRUB_OHCI_REG_INTSTATUS, 0x7f); /* Clears everything */
       grub_ohci_writereg32 (o, GRUB_OHCI_REG_CONTROLHEAD, o->ed_ctrl_addr);
@@ -1160,9 +1152,11 @@ grub_ohci_transfer (grub_usb_controller_t dev,
       else
         transfer->last_trans = -1;
 
-      /* Set empty ED - set HEAD = TAIL = last (not processed) TD */
-      ed_virt->td_head = ed_virt->td_tail & ~0xf; 
     }
+
+    /* Set empty ED - set HEAD = TAIL = last (not processed) TD */
+    ed_virt->td_head = grub_cpu_to_le32 ( grub_le_to_cpu32 (
+                                            ed_virt->td_tail) & ~0xf); 
 
   /* At this point always should be:
    * ED has skip bit set and halted or empty or after next SOF,
@@ -1198,10 +1192,28 @@ grub_ohci_portstatus (grub_usb_controller_t dev,
 		      unsigned int port, unsigned int enable)
 {
    struct grub_ohci *o = (struct grub_ohci *) dev->data;
+   grub_uint64_t endtime;
 
    grub_dprintf ("ohci", "begin of portstatus=0x%02x\n",
                  grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port));
 
+   if (!enable) /* We don't need reset port */
+     {
+       /* Disable the port and wait for it. */
+       grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
+                             GRUB_OHCI_CLEAR_PORT_ENABLE);
+       endtime = grub_get_time_ms () + 1000;
+       while ((grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port)
+               & (1 << 1)))
+         if (grub_get_time_ms () > endtime)
+           return grub_error (GRUB_ERR_IO, "OHCI Timed out - disable");
+
+       grub_dprintf ("ohci", "end of portstatus=0x%02x\n",
+         grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port));
+       return GRUB_ERR_NONE;
+     }
+     
+   /* Reset the port */
    grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
 			 GRUB_OHCI_SET_PORT_RESET);
    grub_millisleep (50); /* For root hub should be nominaly 50ms */
@@ -1211,13 +1223,20 @@ grub_ohci_portstatus (grub_usb_controller_t dev,
 			 GRUB_OHCI_SET_PORT_RESET_STATUS_CHANGE);
    grub_millisleep (10);
 
-   if (enable)
-     grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
-			   GRUB_OHCI_SET_PORT_ENABLE);
-   else
-     grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
-			   GRUB_OHCI_CLEAR_PORT_ENABLE);
+   /* Enable the port and wait for it. */
+   grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
+                         GRUB_OHCI_SET_PORT_ENABLE);
+   endtime = grub_get_time_ms () + 1000;
+   while (! (grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port)
+           & (1 << 1)))
+     if (grub_get_time_ms () > endtime)
+       return grub_error (GRUB_ERR_IO, "OHCI Timed out - enable");
+
    grub_millisleep (10);
+
+   /* Reset bit Connect Status Change */
+   grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
+                         GRUB_OHCI_RESET_CONNECT_CHANGE);
 
    grub_dprintf ("ohci", "end of portstatus=0x%02x\n",
 		 grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port));
@@ -1226,7 +1245,7 @@ grub_ohci_portstatus (grub_usb_controller_t dev,
 }
 
 static grub_usb_speed_t
-grub_ohci_detect_dev (grub_usb_controller_t dev, int port)
+grub_ohci_detect_dev (grub_usb_controller_t dev, int port, int *changed)
 {
    struct grub_ohci *o = (struct grub_ohci *) dev->data;
    grub_uint32_t status;
@@ -1234,6 +1253,9 @@ grub_ohci_detect_dev (grub_usb_controller_t dev, int port)
    status = grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port);
 
    grub_dprintf ("ohci", "detect_dev status=0x%02x\n", status);
+
+  /* Connect Status Change bit - it detects change of connection */
+  *changed = ((status & GRUB_OHCI_RESET_CONNECT_CHANGE) != 0);
 
    if (! (status & 1))
      return GRUB_USB_SPEED_NONE;
@@ -1253,7 +1275,6 @@ grub_ohci_hubports (grub_usb_controller_t dev)
 
   grub_dprintf ("ohci", "root hub ports=%d\n", portinfo & 0xFF);
 
-  /* The root hub has exactly two ports.  */
   return portinfo & 0xFF;
 }
 

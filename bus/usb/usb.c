@@ -225,6 +225,20 @@ grub_usb_device_initialize (grub_usb_device_t dev)
 	}
     }
 
+  return GRUB_USB_ERR_NONE;
+
+ fail:
+
+  for (i = 0; i < 8; i++)
+    grub_free (dev->config[i].descconf);
+
+  return err;
+}
+
+void grub_usb_device_attach (grub_usb_device_t dev)
+{
+  int i;
+  
   /* XXX: Just check configuration 0 for now.  */
   for (i = 0; i < dev->config[0].descconf->numif; i++)
     {
@@ -243,15 +257,6 @@ grub_usb_device_initialize (grub_usb_device_t dev)
 	if (interf->class == desc->class && desc->hook (dev, 0, i))
 	  dev->config[0].interf[i].attached = 1;
     }
-
-  return GRUB_USB_ERR_NONE;
-
- fail:
-
-  for (i = 0; i < 8; i++)
-    grub_free (dev->config[i].descconf);
-
-  return err;
 }
 
 void

@@ -104,7 +104,7 @@ struct grub_usb_controller_dev
   grub_err_t (*portstatus) (grub_usb_controller_t dev, unsigned int port,
 			    unsigned int enable);
 
-  grub_usb_speed_t (*detect_dev) (grub_usb_controller_t dev, int port);
+  grub_usb_speed_t (*detect_dev) (grub_usb_controller_t dev, int port, int *changed);
 
   /* The next host controller.  */
   struct grub_usb_controller_dev *next;
@@ -228,5 +228,7 @@ void grub_usb_register_attach_hook_class (struct grub_usb_attach_desc *desc);
 void grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc);
 
 void grub_usb_poll_devices (void);
+
+void grub_usb_device_attach (grub_usb_device_t dev);
 
 #endif /* GRUB_USB_H */
