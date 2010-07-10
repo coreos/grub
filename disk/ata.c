@@ -768,14 +768,12 @@ static struct grub_disk_dev grub_atadisk_dev =
 /* ATAPI code.  */
 
 static int
-grub_atapi_iterate (int (*hook) (const char *name, int luns))
+grub_atapi_iterate (int (*hook) (int bus, int luns))
 {
   struct grub_ata_device *dev;
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
-      char devname[10];
-
       grub_err_t err;
 
       err = check_device (dev);
@@ -785,13 +783,10 @@ grub_atapi_iterate (int (*hook) (const char *name, int luns))
 	  continue;
 	}
 
-      grub_snprintf (devname, sizeof (devname),
-		     "ata%d", dev->port * 2 + dev->device);
-
       if (! dev->atapi)
 	continue;
 
-      if (hook (devname, 1))
+      if (hook (dev->port * 2 + dev->device, 1))
 	return 1;
     }
 
@@ -851,7 +846,7 @@ grub_atapi_write (struct grub_scsi *scsi __attribute__((unused)),
 }
 
 static grub_err_t
-grub_atapi_open (const char *name, struct grub_scsi *scsi)
+grub_atapi_open (int devnum, struct grub_scsi *scsi)
 {
   struct grub_ata_device *dev;
   struct grub_ata_device *devfnd = 0;
@@ -859,18 +854,14 @@ grub_atapi_open (const char *name, struct grub_scsi *scsi)
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
-      char devname[10];
-      grub_snprintf (devname, sizeof (devname),
-		     "ata%d", dev->port * 2 + dev->device);
-
-      if (!grub_strcmp (devname, name))
+      if (dev->port * 2 + dev->device == devnum)
 	{
 	  devfnd = dev;
 	  break;
 	}
     }
 
-  grub_dprintf ("ata", "opening ATAPI dev `%s'\n", name);
+  grub_dprintf ("ata", "opening ATAPI dev `ata%d'\n", devnum);
 
   if (! devfnd)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such ATAPI device");
@@ -887,18 +878,13 @@ grub_atapi_open (const char *name, struct grub_scsi *scsi)
   return GRUB_ERR_NONE;
 }
 
-static void
-grub_atapi_close (struct grub_scsi *scsi)
-{
-  grub_free (scsi->name);
-}
 
 static struct grub_scsi_dev grub_atapi_dev =
   {
-    .name = "ATAPI",
+    .name = "ata",
+    .id = GRUB_SCSI_SUBSYSTEM_ATAPI,
     .iterate = grub_atapi_iterate,
     .open = grub_atapi_open,
-    .close = grub_atapi_close,
     .read = grub_atapi_read,
     .write = grub_atapi_write
   };

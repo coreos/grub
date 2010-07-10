@@ -1,5 +1,21 @@
 2010-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Restructure SCSI .id handling.
+	Reported and tested by: Aleš Nesrsta.
+
+	* disk/ata.c (grub_atapi_close): Removed. All users updated.
+	(grub_atapi_dev): Changed .name to "ata". New field .id.
+	* disk/usbms.c (grub_usbms_close): Removed. All users updated.
+	(grub_usbms_dev): New field .id.
+	* disk/scsi.c (grub_scsi_iterate): Generate name.
+	(grub_scsi_open): Parse name.
+	* include/grub/scsi.h (grub_make_scsi_id): New function.
+	(grub_scsi_dev): Change iterate and open to number instead of naming
+	busses. All users updated.
+	(grub_scsi): Remove name. Add .bus.
+
+2010-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* commands/help.c (grub_cmd_help): Fix a typo.
 
 2010-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
