@@ -1,3 +1,8 @@
+2010-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrescue.in: Don't use tar GNU-ism since it's not necessary
+	in this context.
+
 2010-07-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* tests/util/grub-shell.in: Remove bashisms and declare as sh script.

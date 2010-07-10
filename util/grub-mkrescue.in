@@ -211,7 +211,7 @@ EOF
     echo "source /boot/grub/grub.cfg") \
     > ${iso9660_dir}/boot/grub/${platform}/grub.cfg
 
-    tar -C ${memdisk_dir} -cf ${memdisk_img} boot
+    (cd "${memdisk_dir}"; tar -cf - boot) > "${memdisk_img}"
     rm -rf ${memdisk_dir}
     $grub_mkimage -O ${platform} -d "${source_directory}" -m "${memdisk_img}" -o "$3" --prefix='(memdisk)/boot/grub' \
         search iso9660 configfile normal memdisk tar $4
