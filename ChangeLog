@@ -1,5 +1,10 @@
 2010-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* normal/term.c (put_glyphs_terminal): Fix state->num_lines counting.
+	Reported and tested by: Colin Watson.
+
+2010-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Don't use tar GNU-ism since it's not necessary
 	in this context.
 

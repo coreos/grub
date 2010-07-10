@@ -616,16 +616,18 @@ put_glyphs_terminal (const struct grub_unicode_glyph *visual,
       if (visual_ptr->base == '\n')
 	grub_print_spaces (term, margin_right);
       putglyph (visual_ptr, term);
-      if (state && ++state->num_lines
-	  >= (grub_ssize_t) grub_term_height (term) - 2)
-      {
-	state->backlog_glyphs = visual_ptr + 1;
-	state->backlog_len = visual_len - (visual - visual_ptr) - 1;
-	return 1;
-      }
-
       if (visual_ptr->base == '\n')
-	grub_print_spaces (term, margin_left);
+	{
+	  if (state && ++state->num_lines
+	      >= (grub_ssize_t) grub_term_height (term) - 2)
+	    {
+	      state->backlog_glyphs = visual_ptr + 1;
+	      state->backlog_len = visual_len - (visual - visual_ptr) - 1;
+	      return 1;
+	    }
+
+	  grub_print_spaces (term, margin_left);
+	}
       grub_free (visual_ptr->combining);
     }
   return 0;
