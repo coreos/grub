@@ -1,3 +1,10 @@
+2010-07-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.in (MAINTAINER_CLEANFILES): Remove
+	unicode/UnicodeData.txt, unicode/BidiMirroring.txt, and
+	unicode/ArabicShaping.txt again; these are inputs to autogen.sh, not
+	outputs.
+
 2010-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Restructure SCSI .id handling.
