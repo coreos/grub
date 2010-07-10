@@ -1,5 +1,9 @@
 2010-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* commands/help.c (grub_cmd_help): Fix a typo.
+
+2010-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* normal/term.c (put_glyphs_terminal): Fix state->num_lines counting.
 	Reported and tested by: Colin Watson.
 
