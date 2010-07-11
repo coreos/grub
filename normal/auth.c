@@ -184,13 +184,13 @@ grub_username_get (char buf[], unsigned buf_size)
       if (cur_len + 2 < buf_size)
 	{
 	  buf[cur_len++] = key;
-	  grub_putchar (key);
+	  grub_printf ("%c", key);
 	}
     }
 
   grub_memset (buf + cur_len, 0, buf_size - cur_len);
 
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_refresh ();
 
   return (key != '\e');
