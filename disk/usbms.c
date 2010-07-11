@@ -222,22 +222,15 @@ grub_usbms_finddevs (void)
 
 
 static int
-grub_usbms_iterate (int (*hook) (const char *name, int luns))
+grub_usbms_iterate (int (*hook) (int bus, int luns))
 {
   grub_usbms_dev_t p;
   int cnt = 0;
 
   for (p = grub_usbms_dev_list; p; p = p->next)
     {
-      char *devname;
-      devname = grub_xasprintf ("usb%d", cnt);
-
-      if (hook (devname, p->luns))
-	{
-	  grub_free (devname);
-	  return 1;
-	}
-      grub_free (devname);
+      if (hook (cnt, p->luns))
+	return 1;
       cnt++;
     }
 
@@ -312,7 +305,7 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
       grub_dprintf ("usb", "buf:\n");
       if (size <= 64)
         for (i=0; i<size; i++)
-          grub_dprintf ("usb", "0x%02x: 0x%02x\n", i, buf[i]);
+          grub_dprintf ("usb", "0x%02" PRIxGRUB_SIZE ": 0x%02x\n", i, buf[i]);
       else
           grub_dprintf ("usb", "Too much data for debug print...\n");
     }
@@ -330,7 +323,7 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
       /* Debug print of sent data. */
       if (size <= 256)
         for (i=0; i<size; i++)
-          grub_dprintf ("usb", "0x%02x: 0x%02x\n", i, buf[i]);
+          grub_dprintf ("usb", "0x%02" PRIxGRUB_SIZE ": 0x%02x\n", i, buf[i]);
       else
           grub_dprintf ("usb", "Too much data for debug print...\n");
     }
@@ -398,28 +391,18 @@ grub_usbms_write (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 }
 
 static grub_err_t
-grub_usbms_open (const char *name, struct grub_scsi *scsi)
+grub_usbms_open (int devnum, struct grub_scsi *scsi)
 {
   grub_usbms_dev_t p;
-  int devnum;
   int i = 0;
 
-  if (grub_strncmp (name, "usb", 3))
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-		       "not a USB Mass Storage device");
-
-  devnum = grub_strtoul (name + 3, NULL, 10);
   for (p = grub_usbms_dev_list; p; p = p->next)
     {
       /* Check if this is the devnumth device.  */
       if (devnum == i)
 	{
 	  scsi->data = p;
-	  scsi->name = grub_strdup (name);
 	  scsi->luns = p->luns;
-	  if (! scsi->name)
-	    return grub_errno;
-
 	  return GRUB_ERR_NONE;
 	}
 
@@ -430,18 +413,12 @@ grub_usbms_open (const char *name, struct grub_scsi *scsi)
 		     "not a USB Mass Storage device");
 }
 
-static void
-grub_usbms_close (struct grub_scsi *scsi)
-{
-  grub_free (scsi->name);
-}
-
 static struct grub_scsi_dev grub_usbms_dev =
   {
     .name = "usb",
+    .id = GRUB_SCSI_SUBSYSTEM_USBMS,
     .iterate = grub_usbms_iterate,
     .open = grub_usbms_open,
-    .close = grub_usbms_close,
     .read = grub_usbms_read,
     .write = grub_usbms_write
   };

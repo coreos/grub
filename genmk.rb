@@ -221,7 +221,7 @@ VIDEOFILES += #{video}
 
 #{fs}: #{src} $(#{src}_DEPENDENCIES) genfslist.sh
 	set -e; \
-	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} -DGRUB_LST_GENERATOR $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/genfslist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 #{parttool}: #{src} $(#{src}_DEPENDENCIES) genparttoollist.sh
@@ -231,7 +231,7 @@ VIDEOFILES += #{video}
 
 #{partmap}: #{src} $(#{src}_DEPENDENCIES) genpartmaplist.sh
 	set -e; \
-	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} -DGRUB_LST_GENERATOR $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/genpartmaplist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 #{handler}: #{src} $(#{src}_DEPENDENCIES) genhandlerlist.sh
@@ -246,7 +246,7 @@ VIDEOFILES += #{video}
 
 #{video}: #{src} $(#{src}_DEPENDENCIES) genvideolist.sh
 	set -e; \
-	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} -DGRUB_LST_GENERATOR $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/genvideolist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 "

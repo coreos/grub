@@ -210,7 +210,7 @@ draw_scrollbar (list_impl_t self,
 
 /* Draw the list of items.  */
 static void
-draw_menu (list_impl_t self, int width, int num_shown_items)
+draw_menu (list_impl_t self, int num_shown_items)
 {
   if (! self->menu_box || ! self->selected_item_box)
     return;
@@ -227,10 +227,18 @@ draw_menu (list_impl_t self, int width, int num_shown_items)
 
   grub_gfxmenu_box_t selbox = self->selected_item_box;
   int sel_leftpad = selbox->get_left_pad (selbox);
-  int item_top = boxpad;
-  int item_left = boxpad + sel_leftpad;
+  int sel_toppad = selbox->get_top_pad (selbox);
+  int item_top = sel_toppad;
   int menu_index;
   int visible_index;
+  struct grub_video_rect oviewport;
+
+  grub_video_get_viewport (&oviewport.x, &oviewport.y,
+			   &oviewport.width, &oviewport.height);
+  grub_video_set_viewport (oviewport.x + boxpad, 
+			   oviewport.y + boxpad,
+			   oviewport.width - 2 * boxpad,
+			   oviewport.height - 2 * boxpad);
 
   for (visible_index = 0, menu_index = self->first_shown_index;
        visible_index < num_shown_items && menu_index < self->view->menu->size;
@@ -240,16 +248,16 @@ draw_menu (list_impl_t self, int width, int num_shown_items)
 
       if (is_selected)
         {
-          int sel_toppad = selbox->get_top_pad (selbox);
-          selbox->set_content_size (selbox, (width - 2 * boxpad), item_height);
-          selbox->draw (selbox, item_left - sel_leftpad,
+          selbox->set_content_size (selbox, oviewport.width - 2 * boxpad - 2,
+				    item_height - 1);
+          selbox->draw (selbox, 0,
                         item_top - sel_toppad);
         }
 
       struct grub_video_bitmap *icon;
       if ((icon = get_item_icon (self, menu_index)) != 0)
         grub_video_blit_bitmap (icon, GRUB_VIDEO_BLIT_BLEND,
-                                item_left,
+                                sel_leftpad,
                                 item_top + (item_height - self->icon_height) / 2,
                                 0, 0, self->icon_width, self->icon_height);
 
@@ -266,12 +274,16 @@ draw_menu (list_impl_t self, int width, int num_shown_items)
       grub_font_draw_string (item_title,
                              font,
                              grub_gui_map_color (text_color),
-                             item_left + self->icon_width + icon_text_space,
+                             sel_leftpad + self->icon_width + icon_text_space,
                              (item_top + (item_height - (ascent + descent))
                               / 2 + ascent));
 
       item_top += item_height + item_vspace;
     }
+  grub_video_set_viewport (oviewport.x,
+			   oviewport.y,
+			   oviewport.width,
+			   oviewport.height);
 }
 
 static void
@@ -313,7 +325,7 @@ list_paint (void *vself, const grub_video_rect_t *region)
     box->draw (box, 0, 0);
 
     grub_gui_set_viewport (&content_rect, &vpsave2);
-    draw_menu (self, content_rect.width, num_shown_items);
+    draw_menu (self, num_shown_items);
     grub_gui_restore_viewport (&vpsave2);
 
     if (drawing_scrollbar)
@@ -322,7 +334,7 @@ list_paint (void *vself, const grub_video_rect_t *region)
 		      0, self->view->menu->size,
 		      self->bounds.width - box_right_pad
 		      + self->scrollbar_width,
-		      box_top_pad + self->item_padding,
+		      box_top_pad,
 		      self->bounds.height - box_top_pad - box_bottom_pad);
   }
 
@@ -375,6 +387,9 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
       int box_right_pad = box->get_right_pad (box);
       int box_bottom_pad = box->get_bottom_pad (box);
       unsigned width_s;
+
+      grub_gfxmenu_box_t selbox = self->selected_item_box;
+      int sel_toppad = selbox->get_top_pad (selbox);
       
       *width = grub_font_get_string_width (self->item_font, "Typical OS");
       width_s = grub_font_get_string_width (self->selected_item_font,
@@ -388,7 +403,7 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
       *height = (item_height * num_items
                  + item_vspace * (num_items - 1)
                  + 2 * boxpad
-                 + box_top_pad + box_bottom_pad);
+                 + box_top_pad + box_bottom_pad + sel_toppad);
     }
   else
     {

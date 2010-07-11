@@ -302,6 +302,8 @@ static struct grub_video_adapter grub_video_uga_adapter =
     .name = "EFI UGA driver",
     .id = GRUB_VIDEO_DRIVER_EFI_UGA,
 
+    .prio = GRUB_VIDEO_ADAPTER_PRIO_FIRMWARE_DIRTY,
+
     .init = grub_video_uga_init,
     .fini = grub_video_uga_fini,
     .setup = grub_video_uga_setup,

@@ -52,9 +52,13 @@ XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
 MSGFMT = @MSGFMT@
 
+ifdef ENABLE_NLS
 LINGUAS = $(shell for i in $(srcdir)/po/*.po ; do \
 			if test -e $$i ; then echo $$i ; fi ; \
 		done | sed -e "s,.*/po/\(.*\)\.po$$,\1,")
+else
+LINGUAS =
+endif
 
 PACKAGE = @PACKAGE@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -163,7 +167,9 @@ DISTCLEANFILES = config.status config.cache config.log config.h \
 MAINTAINER_CLEANFILES = $(srcdir)/configure $(srcdir)/aclocal.m4 \
 	$(MKFILES) $(srcdir)/config.guess \
 	$(srcdir)/config.sub $(srcdir)/install-sh $(srcdir)/missing \
-	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in $(INFOS)
+	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in \
+	$(srcdir)/unidata.c \
+	$(INFOS)
 
 # The default target.
 all: all-local
@@ -239,10 +245,9 @@ docs/stamp-vti: docs/grub.texi configure.ac
 	-@rm -f vti.tmp
 	@cp $(builddir)/docs/version.texi $@
 
-# Use --force until such time as the documentation is cleaned up.
 docs/grub.info: docs/grub.texi docs/version.texi docs/fdl.texi
 	$(MKDIR_P) docs
-	-$(MAKEINFO) -P $(builddir)/docs --no-split --force $< -o $@
+	$(MAKEINFO) -P $(builddir)/docs --no-split $< -o $@
 
 ifeq (, $(FONT_SOURCE))
 else
@@ -268,7 +273,13 @@ ascii.bitmaps: $(FONT_SOURCE) grub-mkfont
 ascii.h: ascii.bitmaps grub-bin2h
 	$(builddir)/grub-bin2h ascii_bitmaps < $< > $@
 
-TARGET_CFLAGS += -DUSE_ASCII_FAILBACK=1
+widthspec.bin: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont --width-spec -o $@ $(FONT_SOURCE)
+
+widthspec.h: widthspec.bin grub-bin2h
+	$(builddir)/grub-bin2h widthspec < $< > $@
+
+TARGET_CFLAGS += -DUSE_ASCII_FAILBACK=1 -DHAVE_UNIFONT_WIDTHSPEC=1
 endif
 endif
 
@@ -315,26 +326,26 @@ install-local: all
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
-	  $(HELP2MAN) --section=1 -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
+	  PATH="$(builddir):$$PATH" $(HELP2MAN) --section=1 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man1/$$dest.1 $$file; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(sbindir) $(DESTDIR)$(mandir)/man8
 	@list='$(sbin_UTILITIES)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
-	  $(HELP2MAN) --section=8 -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
+	  PATH="$(builddir):$$PATH" $(HELP2MAN) --section=8 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man8/$$dest.8 $$file; \
 	done
 	@list='$(bin_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
-	  $(HELP2MAN) --section=1 -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
+	  PATH="$(builddir):$$PATH" $(HELP2MAN) --section=1 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man1/$$dest.1 $$file; \
 	done
 	@list='$(sbin_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
-	  $(HELP2MAN) --section=8 -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
+	  PATH="$(builddir):$$PATH" $(HELP2MAN) --section=8 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man8/$$dest.8 $$file; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(sysconfdir)/grub.d
 	@list='$(grub-mkconfig_SCRIPTS)'; for file in $$list; do \

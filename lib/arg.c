@@ -144,21 +144,8 @@ grub_arg_show_help (grub_extcmd_t cmd)
 		}
 	    }
 
-	  const char *doc = _(opt->doc);
-	  for (;;)
-	    {
-	      while (spacing-- > 0)
-		grub_putchar (' ');
-
-	      while (*doc && *doc != '\n')
-		grub_putchar (*doc++);
-	      grub_putchar ('\n');
-
-	      if (! *doc)
-		break;
-	      doc++;
-	      spacing = 4 + 20;
-	    }
+	  /* FIXME: add spacing back.  */
+	  grub_xputs (_(opt->doc));
 
 	  switch (opt->shortarg)
 	    {
