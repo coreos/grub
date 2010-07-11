@@ -54,7 +54,7 @@ grub_mini_cmd_cat (struct grub_command *cmd __attribute__ ((unused)),
 	  unsigned char c = buf[i];
 
 	  if ((grub_isprint (c) || grub_isspace (c)) && c != '\r')
-	    grub_putchar (c);
+	    grub_printf ("%c", c);
 	  else
 	    {
 	      grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
@@ -64,7 +64,7 @@ grub_mini_cmd_cat (struct grub_command *cmd __attribute__ ((unused)),
 	}
     }
 
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_refresh ();
   grub_file_close (file);
 
@@ -312,11 +312,11 @@ grub_mini_cmd_lsmod (struct grub_command *cmd __attribute__ ((unused)),
     for (dep = mod->dep; dep; dep = dep->next)
       {
 	if (dep != mod->dep)
-	  grub_putchar (',');
+	  grub_xputs (",");
 
 	grub_printf ("%s", dep->mod->name);
       }
-    grub_putchar ('\n');
+    grub_xputs ("\n");
   }
 
   return 0;
@@ -332,19 +332,8 @@ grub_mini_cmd_exit (struct grub_command *cmd __attribute__ ((unused)),
   return 0;
 }
 
-/* clear */
-static grub_err_t
-grub_mini_cmd_clear (struct grub_command *cmd __attribute__ ((unused)),
-		   int argc __attribute__ ((unused)),
-		   char *argv[] __attribute__ ((unused)))
-{
-  grub_cls ();
-  return 0;
-}
-
 static grub_command_t cmd_cat, cmd_help, cmd_root;
 static grub_command_t cmd_dump, cmd_rmmod, cmd_lsmod, cmd_exit;
-static grub_command_t cmd_clear;
 
 GRUB_MOD_INIT(minicmd)
 {
@@ -369,9 +358,6 @@ GRUB_MOD_INIT(minicmd)
   cmd_exit =
     grub_register_command ("exit", grub_mini_cmd_exit,
 			   0, N_("Exit from GRUB."));
-  cmd_clear =
-    grub_register_command ("clear", grub_mini_cmd_clear,
-			   0, N_("Clear the screen."));
 }
 
 GRUB_MOD_FINI(minicmd)
@@ -383,5 +369,4 @@ GRUB_MOD_FINI(minicmd)
   grub_unregister_command (cmd_rmmod);
   grub_unregister_command (cmd_lsmod);
   grub_unregister_command (cmd_exit);
-  grub_unregister_command (cmd_clear);
 }

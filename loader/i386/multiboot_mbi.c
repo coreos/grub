@@ -295,8 +295,8 @@ retrieve_video_parameters (struct multiboot_info *mbi,
   else
     {
       mbi->framebuffer_type = MULTIBOOT_FRAMEBUFFER_TYPE_RGB;
-      mbi->framebuffer_red_field_position = mode_info.green_field_pos;
-      mbi->framebuffer_red_mask_size = mode_info.green_mask_size;
+      mbi->framebuffer_red_field_position = mode_info.red_field_pos;
+      mbi->framebuffer_red_mask_size = mode_info.red_mask_size;
       mbi->framebuffer_green_field_position = mode_info.green_field_pos;
       mbi->framebuffer_green_mask_size = mode_info.green_mask_size;
       mbi->framebuffer_blue_field_position = mode_info.blue_field_pos;
