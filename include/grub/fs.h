@@ -91,11 +91,13 @@ typedef int (*grub_fs_autoload_hook_t) (void);
 extern grub_fs_autoload_hook_t EXPORT_VAR(grub_fs_autoload_hook);
 extern grub_fs_t EXPORT_VAR (grub_fs_list);
 
+#ifndef GRUB_LST_GENERATOR
 static inline void
 grub_fs_register (grub_fs_t fs)
 {
   grub_list_push (GRUB_AS_LIST_P (&grub_fs_list), GRUB_AS_LIST (fs));
 }
+#endif
 
 static inline void
 grub_fs_unregister (grub_fs_t fs)

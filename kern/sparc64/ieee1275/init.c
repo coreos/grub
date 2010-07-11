@@ -24,7 +24,7 @@
 #include <grub/misc.h>
 #include <grub/time.h>
 #include <grub/machine/boot.h>
-#include <grub/machine/console.h>
+#include <grub/ieee1275/console.h>
 #include <grub/machine/kernel.h>
 #include <grub/machine/time.h>
 #include <grub/ieee1275/ofdisk.h>
@@ -155,8 +155,9 @@ void
 grub_machine_init (void)
 {
   grub_ieee1275_init ();
-  grub_console_init ();
+  grub_console_init_early ();
   grub_heap_init ();
+  grub_console_init_lately ();
 
   grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0);
   grub_ofdisk_init ();

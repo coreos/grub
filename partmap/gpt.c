@@ -32,6 +32,9 @@ static grub_uint8_t grub_gpt_magic[8] =
 
 static const grub_gpt_part_type_t grub_gpt_partition_type_empty = GRUB_GPT_PARTITION_TYPE_EMPTY;
 
+/* 512 << 7 = 65536 byte sectors.  */
+#define MAX_SECTOR_LOG 7
+
 static struct grub_partition_map grub_gpt_partition_map;
 
 
@@ -48,6 +51,7 @@ gpt_partition_map_iterate (grub_disk_t disk,
   grub_uint64_t entries;
   unsigned int i;
   int last_offset = 0;
+  int sector_log = 0;
 
   /* Read the protective MBR.  */
   if (grub_disk_read (disk, 0, 0, sizeof (mbr), &mbr))
@@ -62,15 +66,20 @@ gpt_partition_map_iterate (grub_disk_t disk,
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "no GPT partition map found");
 
   /* Read the GPT header.  */
-  if (grub_disk_read (disk, 1, 0, sizeof (gpt), &gpt))
-    return grub_errno;
+  for (sector_log = 0; sector_log < MAX_SECTOR_LOG; sector_log++)
+    {
+      if (grub_disk_read (disk, 1 << sector_log, 0, sizeof (gpt), &gpt))
+	return grub_errno;
 
-  if (grub_memcmp (gpt.magic, grub_gpt_magic, sizeof (grub_gpt_magic)))
+      if (grub_memcmp (gpt.magic, grub_gpt_magic, sizeof (grub_gpt_magic)) == 0)
+	break;
+    }
+  if (sector_log == MAX_SECTOR_LOG)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "no valid GPT header");
 
   grub_dprintf ("gpt", "Read a valid GPT header\n");
 
-  entries = grub_le_to_cpu64 (gpt.partitions);
+  entries = grub_le_to_cpu64 (gpt.partitions) << sector_log;
   for (i = 0; i < grub_le_to_cpu32 (gpt.maxpart); i++)
     {
       if (grub_disk_read (disk, entries, last_offset,
@@ -81,9 +90,9 @@ gpt_partition_map_iterate (grub_disk_t disk,
 		       sizeof (grub_gpt_partition_type_empty)))
 	{
 	  /* Calculate the first block and the size of the partition.  */
-	  part.start = grub_le_to_cpu64 (entry.start);
+	  part.start = grub_le_to_cpu64 (entry.start) << sector_log;
 	  part.len = (grub_le_to_cpu64 (entry.end)
-		      - grub_le_to_cpu64 (entry.start) + 1);
+		      - grub_le_to_cpu64 (entry.start) + 1)  << sector_log;
 	  part.offset = entries;
 	  part.number = i;
 	  part.index = last_offset;

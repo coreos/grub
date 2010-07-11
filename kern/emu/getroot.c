@@ -33,6 +33,7 @@
 #include <hurd.h>
 #include <hurd/lookup.h>
 #include <hurd/fs.h>
+#include <sys/mman.h>
 #endif
 
 #include <grub/mm.h>

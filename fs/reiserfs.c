@@ -929,7 +929,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                                       "Warning : %s has no stat block !\n",
                                       entry_name);
                       grub_free (entry_item);
-                      continue;
+                      goto next;
                     }
                 }
               if (hook (entry_name, entry_type, entry_item))
@@ -940,6 +940,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                   goto found;
                 }
 
+next:
               *entry_name = 0; /* Make sure next entry name (which is just
                                   before this one in disk order) stops before
                                   the current one.  */
