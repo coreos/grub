@@ -441,9 +441,8 @@ retrieve_video_parameters (grub_uint8_t **ptrorig)
   else
     {
       tag->common.framebuffer_type = MULTIBOOT_FRAMEBUFFER_TYPE_RGB;
-      tag->common.framebuffer_type = MULTIBOOT_FRAMEBUFFER_TYPE_RGB;
-      tag->framebuffer_red_field_position = mode_info.green_field_pos;
-      tag->framebuffer_red_mask_size = mode_info.green_mask_size;
+      tag->framebuffer_red_field_position = mode_info.red_field_pos;
+      tag->framebuffer_red_mask_size = mode_info.red_mask_size;
       tag->framebuffer_green_field_position = mode_info.green_field_pos;
       tag->framebuffer_green_mask_size = mode_info.green_mask_size;
       tag->framebuffer_blue_field_position = mode_info.blue_field_pos;

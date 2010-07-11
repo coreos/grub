@@ -22,7 +22,8 @@
 #include <grub/symbol.h>
 
 /* Initialize the console system.  */
-void grub_console_init (void);
+void grub_console_init_early (void);
+void grub_console_init_lately (void);
 
 /* Finish the console system.  */
 void grub_console_fini (void);

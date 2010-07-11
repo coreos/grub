@@ -318,15 +318,24 @@ grub_scsi_iterate (int (*hook) (const char *name))
 {
   grub_scsi_dev_t p;
 
-  auto int scsi_iterate (const char *name, int luns);
+  auto int scsi_iterate (int bus, int luns);
 
-  int scsi_iterate (const char *name, int luns)
+  int scsi_iterate (int bus, int luns)
     {
       int i;
 
       /* In case of a single LUN, just return `usbX'.  */
       if (luns == 1)
-	return hook (name);
+	{
+	  char *sname;
+	  int ret;
+	  sname = grub_xasprintf ("%s%d", p->name, bus);
+	  if (!sname)
+	    return 1;
+	  ret = hook (sname);
+	  grub_free (sname);
+	  return ret;
+	}
 
       /* In case of multiple LUNs, every LUN will get a prefix to
 	 distinguish it.  */
@@ -334,7 +343,7 @@ grub_scsi_iterate (int (*hook) (const char *name))
 	{
 	  char *sname;
 	  int ret;
-	  sname = grub_xasprintf ("%s%c", name, 'a' + i);
+	  sname = grub_xasprintf ("%s%d%c", p->name, bus, 'a' + i);
 	  if (!sname)
 	    return 1;
 	  ret = hook (sname);
@@ -358,37 +367,46 @@ grub_scsi_open (const char *name, grub_disk_t disk)
   grub_scsi_dev_t p;
   grub_scsi_t scsi;
   grub_err_t err;
-  int len;
-  int lun;
+  int lun, bus;
   grub_uint64_t maxtime;
+  const char *nameend;
+
+  nameend = name + grub_strlen (name) - 1;
+  /* Try to detect a LUN ('a'-'z'), otherwise just use the first
+     LUN.  */
+  if (nameend >= name && *nameend >= 'a' && *nameend <= 'z')
+    {
+      lun = *nameend - 'a';
+      nameend--;
+    }
+  else
+    lun = 0;
+
+  while (nameend >= name && grub_isdigit (*nameend))
+    nameend--;
+
+  if (!nameend[1] || !grub_isdigit (nameend[1]))
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a SCSI disk");
+
+  bus = grub_strtoul (nameend + 1, 0, 0);
 
   scsi = grub_malloc (sizeof (*scsi));
   if (! scsi)
     return grub_errno;
 
-  len = grub_strlen (name);
-  lun = name[len - 1] - 'a';
-
-  /* Try to detect a LUN ('a'-'z'), otherwise just use the first
-     LUN.  */
-  if (lun < 0 || lun > 26)
-    lun = 0;
-
   for (p = grub_scsi_dev_list; p; p = p->next)
     {
-      if (p->open (name, scsi))
+      if (grub_strncmp (p->name, name, nameend - name) != 0)
 	continue;
 
-      disk->id = (unsigned long) "scsi"; /* XXX */
+      if (p->open (bus, scsi))
+	continue;
+
+      disk->id = grub_make_scsi_id (scsi->dev->id, bus, lun);
       disk->data = scsi;
       scsi->dev = p;
       scsi->lun = lun;
-      scsi->name = grub_strdup (name);
-      if (! scsi->name)
-	{
-	  grub_free (scsi);
-	  return grub_errno;
-	}
+      scsi->bus = bus;
 
       grub_dprintf ("scsi", "dev opened\n");
 
@@ -476,7 +494,8 @@ grub_scsi_close (grub_disk_t disk)
   grub_scsi_t scsi;
 
   scsi = disk->data;
-  scsi->dev->close (scsi);
+  if (scsi->dev->close)
+    scsi->dev->close (scsi);
   grub_free (scsi);
 }
 

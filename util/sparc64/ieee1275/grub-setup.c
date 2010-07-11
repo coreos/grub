@@ -90,11 +90,13 @@ struct boot_blocklist
   grub_uint32_t len;
 } __attribute__ ((packed));
 
-void
-grub_putchar (int c)
+void 
+grub_xputs_real (const char *str)
 {
-  putchar (c);
+  fputs (str, stdout);
 }
+
+void (*grub_xputs) (const char *str) = grub_xputs_real;
 
 int
 grub_getkey (void)
@@ -408,6 +410,8 @@ Usage: %s [OPTION]... DEVICE\n\
 Set up images to boot from DEVICE.\n\
 DEVICE must be a GRUB device (e.g. `(hd0,1)').\n\
 \n\
+You should not normally run %s directly.  Use grub-install instead.\n\
+\n\
   -b, --boot-image=FILE   use FILE as the boot image [default=%s]\n\
   -c, --core-image=FILE   use FILE as the core image [default=%s]\n\
   -d, --directory=DIR     use GRUB files in the directory DIR [default=%s]\n\
@@ -418,7 +422,7 @@ DEVICE must be a GRUB device (e.g. `(hd0,1)').\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-", program_name,
+", program_name, program_name,
 	    DEFAULT_BOOT_FILE, DEFAULT_CORE_FILE, DEFAULT_DIRECTORY,
 	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
 

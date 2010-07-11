@@ -66,18 +66,24 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 	      while (unicode_last_screen_position < unicode_last_position && 
 		     stringwidth < ((grub_term_width (term) / 2) - 2))
 		{
+		  struct grub_unicode_glyph glyph;
+		  unicode_last_screen_position 
+		    += grub_unicode_aglomerate_comb (unicode_last_screen_position,
+						     unicode_last_position
+						     - unicode_last_screen_position,
+						     &glyph);
+
 		  stringwidth
-		    += grub_term_getcharwidth (term,
-					       *unicode_last_screen_position);
-		  unicode_last_screen_position++;
+		    += grub_term_getcharwidth (term, &glyph);
 		}
 
 	      grub_print_ucs4 (unicode_command_help,
-			       unicode_last_screen_position, term);
+			       unicode_last_screen_position, 0, 0, term);
 	      if (!(cnt % 2))
 		grub_print_spaces (term, grub_term_width (term) / 2
 				   - stringwidth);
 	    }
+
 	    if (cnt % 2)
 	      grub_printf ("\n");
 	    cnt++;
@@ -109,7 +115,7 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 		    if (cmd->flags & GRUB_COMMAND_FLAG_EXTCMD)
 		      grub_arg_show_help ((grub_extcmd_t) cmd->data);
 		    else
-		      grub_printf ("%s %s %s\n%s\b", _("Usage:"), cmd->name, _(cmd->summary),
+		      grub_printf ("%s %s %s\n%s\n", _("Usage:"), cmd->name, _(cmd->summary),
 				   _(cmd->description));
 		  }
 	      }
