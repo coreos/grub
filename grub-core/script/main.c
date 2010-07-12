@@ -20,7 +20,7 @@
 #include <grub/parser.h>
 #include <grub/script_sh.h>
 
-static grub_err_t
+grub_err_t
 grub_normal_parse_line (char *line, grub_reader_getline_t getline)
 {
   struct grub_script *parsed_script;
@@ -38,20 +38,4 @@ grub_normal_parse_line (char *line, grub_reader_getline_t getline)
     }
 
   return grub_errno;
-}
-
-static struct grub_parser grub_sh_parser =
-  {
-    .name = "grub",
-    .parse_line = grub_normal_parse_line
-  };
-
-GRUB_MOD_INIT(sh)
-{
-  grub_parser_register ("grub", &grub_sh_parser);
-}
-
-GRUB_MOD_FINI(sh)
-{
-  grub_parser_unregister (&grub_sh_parser);
 }

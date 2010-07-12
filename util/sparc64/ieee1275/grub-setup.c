@@ -389,6 +389,8 @@ Usage: %s [OPTION]... DEVICE\n\
 Set up images to boot from DEVICE.\n\
 DEVICE must be a GRUB device (e.g. `(hd0,1)').\n\
 \n\
+You should not normally run %s directly.  Use grub-install instead.\n\
+\n\
   -b, --boot-image=FILE   use FILE as the boot image [default=%s]\n\
   -c, --core-image=FILE   use FILE as the core image [default=%s]\n\
   -d, --directory=DIR     use GRUB files in the directory DIR [default=%s]\n\
@@ -399,7 +401,7 @@ DEVICE must be a GRUB device (e.g. `(hd0,1)').\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-", program_name,
+", program_name, program_name,
 	    DEFAULT_BOOT_FILE, DEFAULT_CORE_FILE, DEFAULT_DIRECTORY,
 	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
 
@@ -481,7 +483,7 @@ parse_options (struct grub_setup_info *gp, int argc, char *argv[])
 	    break;
 
 	  case 'V':
-	    printf ("grub-setup (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 	    return 0;
 
 	  case 'v':

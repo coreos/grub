@@ -30,6 +30,9 @@ echo "Creating grub-core/Makefile.tpl..."
 echo "Running autogen..."
 (cd grub-core && autogen -T Makefile.tpl modules.def | sed -e '/^$/{N;/^\n$/D;}' > modules.am)
 
+echo "Importing unicode..."
+python util/import_unicode.py unicode/UnicodeData.txt unicode/BidiMirroring.txt unicode/ArabicShaping.txt grub-core/unidata.c
+
 echo "Importing libgcrypt..."
 (cd grub-core && python import_gcry.py lib/libgcrypt/ .)
 

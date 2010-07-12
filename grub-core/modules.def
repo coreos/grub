@@ -39,7 +39,6 @@ kernel = {
   shared = kern/err.c;
   shared = kern/file.c;
   shared = kern/fs.c;
-  shared = kern/handler.c;
   shared = kern/list.c;
   shared = kern/main.c;
   shared = kern/misc.c;
@@ -110,6 +109,7 @@ kernel = {
 
   i386_qemu = kern/i386/qemu/startup.S;
   i386_qemu = kern/i386/misc.S;
+  i386_qemu = kern/i386/qemu/init.c;
   i386_qemu = kern/i386/coreboot/init.c;
   i386_qemu = kern/i386/qemu/mmap.c;
   i386_qemu = kern/i386/halt.c;
@@ -122,6 +122,7 @@ kernel = {
   i386_qemu = kern/generic/millisleep.c;
   i386_qemu = term/i386/pc/vga_text.c;
   i386_qemu = term/i386/vga_common.c;
+  i386_qemu = bus/pci.c;
 
   i386_ieee1275 = kern/i386/ieee1275/startup.S;
   i386_ieee1275 = kern/i386/misc.S;
@@ -181,6 +182,9 @@ kernel = {
   mips_yeeloong = video/bitmap_scale.c;
   mips_yeeloong = video/sm712.c;
   mips_yeeloong = bus/cs5536.c;
+  mips_yeeloong = term/serial.c;
+  mips_yeeloong = term/terminfo.c;
+  mips_yeeloong = term/tparm.c;
 
   powerpc_ieee1275 = kern/powerpc/ieee1275/startup.S;
   powerpc_ieee1275 = kern/ieee1275/cmain.c;
@@ -195,6 +199,8 @@ kernel = {
   powerpc_ieee1275 = kern/powerpc/cache.S;
   powerpc_ieee1275 = term/ieee1275/ofconsole.c;
   powerpc_ieee1275 = disk/ieee1275/ofdisk.c;
+  powerpc_ieee1275 = term/terminfo.c;
+  powerpc_ieee1275 = term/tparm.c;
 
   sparc64_ieee1275 = kern/sparc64/ieee1275/crt0.S;
   sparc64_ieee1275 = kern/ieee1275/cmain.c;
@@ -210,6 +216,8 @@ kernel = {
   sparc64_ieee1275 = kern/sparc64/cache.S;
   sparc64_ieee1275 = disk/ieee1275/ofdisk.c;
   sparc64_ieee1275 = term/ieee1275/ofconsole.c;
+  sparc64_ieee1275 = term/terminfo.c;
+  sparc64_ieee1275 = term/tparm.c;
 
   emu = kern/emu/mm.c;
   emu = kern/emu/main.c;
@@ -305,6 +313,11 @@ image = {
   i386_pc_ldflags = '$(TARGET_IMG_BASE_LDOPT),0x6000';
 };
 
+image = {
+  name = fwstart;
+  mips_yeeloong = boot/mips/yeeloong/fwstart.S;
+};
+
 module = {
   name = trig;
   nodist = trigtables.c;
@@ -323,6 +336,11 @@ module = {
   source = bus/usb/emu/usb.c;
   emu;
   enable = COND_GRUB_EMU_USB;
+};
+
+module = {
+  name = lsspd;
+  mips_yeeloong = commands/mips/yeeloong/lsspd.c;
 };
 
 module = {
@@ -365,7 +383,10 @@ module = {
 module = {
   name = pci;
   source = bus/pci.c;
-  x86;
+  i386_pc;
+  i386_efi;
+  i386_ieee1275;
+  i386_coreboot;
 };
 
 library = {
@@ -503,12 +524,7 @@ module = {
   x86;
   sparc64;
   powerpc;
-};
-
-module = {
-  common;
-  name = handler;
-  source = commands/handler.c;
+  mips_yeeloong;
 };
 
 module = {
@@ -1033,6 +1049,7 @@ module = {
   source = gfxmenu/gfxmenu.c;
   source = gfxmenu/model.c;
   source = gfxmenu/view.c;
+  source = gfxmenu/font.c;
   source = gfxmenu/icon_manager.c;
   source = gfxmenu/theme_loader.c;
   source = gfxmenu/widget-box.c;
@@ -1073,12 +1090,6 @@ module = {
   common;
   name = elf;
   source = kern/elf.c;
-};
-
-module = {
-  common;
-  name = charset;
-  source = lib/charset.c;
 };
 
 module = {
@@ -1344,7 +1355,6 @@ module = {
   name = xnu;
   x86_efi = loader/xnu_resume.c;
   x86_efi = loader/i386/xnu.c;
-  x86_efi = loader/i386/efi/xnu.c;
   x86_efi = loader/macho32.c;
   x86_efi = loader/macho64.c;
   x86_efi = loader/macho.c;
@@ -1352,7 +1362,6 @@ module = {
 
   i386_pc = loader/xnu_resume.c;
   i386_pc = loader/i386/xnu.c;
-  i386_pc = loader/i386/pc/xnu.c;
   i386_pc = loader/macho32.c;
   i386_pc = loader/macho64.c;
   i386_pc = loader/macho.c;
@@ -1413,7 +1422,6 @@ module = {
   source = normal/dyncmd.c;
   source = normal/auth.c;
   source = normal/autofs.c;
-  source = normal/handler.c;
   source = normal/color.c;
   source = normal/completion.c;
   source = normal/datetime.c;
@@ -1424,6 +1432,25 @@ module = {
   source = normal/crypto.c;
   source = normal/term.c;
   source = normal/context.c;
+  source = normal/charset.c;
+
+  source = script/main.c;
+  source = script/script.c;
+  source = script/execute.c;
+  source = script/function.c;
+  source = script/lexer.c;
+
+  nodist = unidata.c;
+  nodist = grub_script.tab.c;
+  nodist = grub_script.yy.c;
+  nodist = grub_script.tab.h;
+  nodist = grub_script.yy.h;
+
+  extra_dist = script/yylex.l;
+  extra_dist = script/parser.y;
+
+  cflags = '$(CFLAGS_POSIX) -Wno-error';
+  cppflags = '$(CPPFLAGS_POSIX)';
 };
 
 module = {
@@ -1481,26 +1508,6 @@ module = {
 };
 
 module = {
-  common;
-  name = sh;
-  source = script/main.c;
-  source = script/script.c;
-  source = script/execute.c;
-  source = script/function.c;
-  source = script/lexer.c;
-  nodist = grub_script.tab.c;
-  nodist = grub_script.yy.c;
-  nodist = grub_script.tab.h;
-  nodist = grub_script.yy.h;
-
-  extra_dist = script/yylex.l;
-  extra_dist = script/parser.y;
-
-  cflags = '$(CFLAGS_POSIX) -Wno-error';
-  cppflags = '$(CPPFLAGS_POSIX)';
-};
-
-module = {
   name = at_keyboard;
   source = term/at_keyboard.c;
   x86;
@@ -1518,7 +1525,6 @@ module = {
 module = {
   name = serial;
   source = term/serial.c;
-  mips;
   i386;
 };
 
@@ -1545,6 +1551,16 @@ module = {
   name = vga_text;
   x86 = term/i386/pc/vga_text.c;
   x86 = term/i386/vga_common.c;
+};
+
+module = {
+  name = video_cirrus;
+  i386 = video/cirrus.c;
+};
+
+module = {
+  name = video_bochs;
+  i386 = video/bochs.c;
 };
 
 module = {

@@ -169,9 +169,6 @@ main (int argc, char *argv[])
 	}
     }
 
-  /* Initialize all modules.  */
-  grub_init_all ();
-
   do
     {
       input = 0;
@@ -190,8 +187,6 @@ main (int argc, char *argv[])
       grub_free (input);
     } while (script != 0);
 
-  /* Free resources.  */
-  grub_fini_all ();
   if (file) fclose (file);
 
   return (found_input && script == 0);

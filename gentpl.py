@@ -190,7 +190,7 @@ def module(platform):
     r += gvar_add("CLEANFILES", "[+ name +].pp")
     r += """
 [+ name +].pp: $(""" + canonical_module() + """_SOURCES) $(nodist_""" + canonical_module() + """_SOURCES)
-	$(TARGET_CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + canonical_module() + """_CPPFLAGS) $(CPPFLAGS) $^ > $@ || (rm -f $@; exit 1)
+	$(TARGET_CPP) -DGRUB_LST_GENERATOR $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + canonical_module() + """_CPPFLAGS) $(CPPFLAGS) $^ > $@ || (rm -f $@; exit 1)
 
 def-[+ name +].lst: [+ name +].module$(EXEEXT)
 	if test x$(USE_APPLE_CC_FIXES) = xyes; then \
@@ -337,7 +337,7 @@ def manpage():
     r += rule("[+ name +].[+ mansection +]", "", """
 $(MAKE) $(AM_MAKEFLAGS) [+ name +]
 chmod a+x [+ name +]
-$(HELP2MAN) --section=[+ mansection +] -o $@ ./[+ name +]
+PATH=$(builddir):$$PATH $(HELP2MAN) --section=[+ mansection +] -i $(top_srcdir)/docs/man/[+ name +].h2m -o $@ [+ name +]
 """)
     r += gvar_add("CLEANFILES", "[+ name +].[+ mansection +]")
     r += "endif\n"

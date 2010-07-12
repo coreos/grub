@@ -73,5 +73,15 @@ ascii.h: ascii.bitmaps grub-bin2h
 	cp $@ $(top_builddir)/grub-core/include
 CLEANFILES += ascii.h $(top_builddir)/grub-core/include/ascii.h
 
+widthspec.bin: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont --width-spec -o $@ $(FONT_SOURCE)
+CLEANFILES += widthspec.bin
+
+widthspec.h: widthspec.bin grub-bin2h
+	$(builddir)/grub-bin2h widthspec < $< > $@
+CLEANFILES += widthspec.h
+
+# XXX: TARGET_CFLAGS += -DUSE_ASCII_FAILBACK=1 -DHAVE_UNIFONT_WIDTHSPEC=1
+
 # Install config.h into platformdir
 platform_HEADERS = config.h

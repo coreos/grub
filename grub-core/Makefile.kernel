@@ -13,7 +13,6 @@ KERNEL_HEADER_FILES += include/grub/env_private.h
 KERNEL_HEADER_FILES += include/grub/err.h
 KERNEL_HEADER_FILES += include/grub/file.h
 KERNEL_HEADER_FILES += include/grub/fs.h
-KERNEL_HEADER_FILES += include/grub/handler.h
 KERNEL_HEADER_FILES += include/grub/i18n.h
 KERNEL_HEADER_FILES += include/grub/kernel.h
 KERNEL_HEADER_FILES += include/grub/list.h
@@ -85,6 +84,7 @@ KERNEL_HEADER_FILES += include/grub/machine/console.h
 KERNEL_HEADER_FILES += include/grub/machine/init.h
 KERNEL_HEADER_FILES += include/grub/machine/memory.h
 KERNEL_HEADER_FILES += include/grub/machine/loader.h
+KERNEL_HEADER_FILES += include/grub/pci.h
 endif
 
 if COND_i386_ieee1275
@@ -93,6 +93,7 @@ KERNEL_HEADER_FILES += include/grub/msdos_partition.h
 KERNEL_HEADER_FILES += include/grub/ieee1275/ieee1275.h
 KERNEL_HEADER_FILES += include/grub/machine/loader.h
 KERNEL_HEADER_FILES += include/grub/machine/memory.h
+KERNEL_HEADER_FILES += include/grub/terminfo.h
 endif
 
 if COND_x86_64_efi

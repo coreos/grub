@@ -27,6 +27,7 @@
 #include <grub/types.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
+#include <grub/vga.h>
 
 #define VGA_WIDTH	640
 #define VGA_HEIGHT	350
@@ -45,58 +46,26 @@ static struct
   int back_page;
 } framebuffer;
 
-#define SEQUENCER_ADDR_PORT	0x3C4
-#define SEQUENCER_DATA_PORT	0x3C5
-#define MAP_MASK_REGISTER	0x02
-
-#define CRTC_ADDR_PORT		0x3D4
-#define CRTC_DATA_PORT		0x3D5
-#define START_ADDR_HIGH_REGISTER 0x0C
-#define START_ADDR_LOW_REGISTER	0x0D
-
-#define GRAPHICS_ADDR_PORT	0x3CE
-#define GRAPHICS_DATA_PORT	0x3CF
-#define READ_MAP_REGISTER	0x04
-
-#define INPUT_STATUS1_REGISTER	0x3DA
-#define INPUT_STATUS1_VERTR_BIT 0x08
-
 static inline void
 wait_vretrace (void)
 {
   /* Wait until there is a vertical retrace.  */
-  while (! (grub_inb (INPUT_STATUS1_REGISTER) & INPUT_STATUS1_VERTR_BIT));
+  while (! (grub_inb (GRUB_VGA_IO_INPUT_STATUS1_REGISTER)
+	    & GRUB_VGA_IO_INPUT_STATUS1_VERTR_BIT));
 }
 
 /* Get Map Mask Register.  */
 static unsigned char
 get_map_mask (void)
 {
-  unsigned char old_addr;
-  unsigned char old_data;
-
-  old_addr = grub_inb (SEQUENCER_ADDR_PORT);
-  grub_outb (MAP_MASK_REGISTER, SEQUENCER_ADDR_PORT);
-
-  old_data = grub_inb (SEQUENCER_DATA_PORT);
-
-  grub_outb (old_addr, SEQUENCER_ADDR_PORT);
-
-  return old_data;
+  return grub_vga_sr_read (GRUB_VGA_SR_MAP_MASK_REGISTER);
 }
 
 /* Set Map Mask Register.  */
 static void
 set_map_mask (unsigned char mask)
 {
-  unsigned char old_addr;
-
-  old_addr = grub_inb (SEQUENCER_ADDR_PORT);
-  grub_outb (MAP_MASK_REGISTER, SEQUENCER_ADDR_PORT);
-
-  grub_outb (mask, SEQUENCER_DATA_PORT);
-
-  grub_outb (old_addr, SEQUENCER_ADDR_PORT);
+  grub_vga_sr_write (mask, GRUB_VGA_SR_MAP_MASK_REGISTER);
 }
 
 #if 0
@@ -104,14 +73,7 @@ set_map_mask (unsigned char mask)
 static void
 set_read_map (unsigned char map)
 {
-  unsigned char old_addr;
-
-  old_addr = grub_inb (GRAPHICS_ADDR_PORT);
-
-  grub_outb (READ_MAP_REGISTER, GRAPHICS_ADDR_PORT);
-  grub_outb (map, GRAPHICS_DATA_PORT);
-
-  grub_outb (old_addr, GRAPHICS_ADDR_PORT);
+  grub_vga_gr_write (map, GRUB_VGA_GR_READ_MAP_REGISTER);
 }
 #endif
 
@@ -119,17 +81,8 @@ set_read_map (unsigned char map)
 static void
 set_start_address (unsigned int start)
 {
-  unsigned char old_addr;
-
-  old_addr = grub_inb (CRTC_ADDR_PORT);
-
-  grub_outb (START_ADDR_LOW_REGISTER, CRTC_ADDR_PORT);
-  grub_outb (start & 0xFF, CRTC_DATA_PORT);
-
-  grub_outb (START_ADDR_HIGH_REGISTER, CRTC_ADDR_PORT);
-  grub_outb (start >> 8, CRTC_DATA_PORT);
-
-  grub_outb (old_addr, CRTC_ADDR_PORT);
+  grub_vga_cr_write (start & 0xFF, GRUB_VGA_CR_START_ADDR_LOW_REGISTER);
+  grub_vga_cr_write (start >> 8, GRUB_VGA_CR_START_ADDR_HIGH_REGISTER);
 }
 
 static int setup = 0;
@@ -374,6 +327,8 @@ static struct grub_video_adapter grub_video_vga_adapter =
   {
     .name = "VGA Video Driver",
     .id = GRUB_VIDEO_DRIVER_VGA,
+
+    .prio = GRUB_VIDEO_ADAPTER_PRIO_FALLBACK,
 
     .init = grub_video_vga_init,
     .fini = grub_video_vga_fini,

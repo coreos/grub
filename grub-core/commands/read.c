@@ -47,7 +47,7 @@ grub_getline (void)
 
       line[i] = c;
       if (grub_isprint (c))
-	grub_putchar (c);
+	grub_printf ("%c", c);
       i++;
       tmp = grub_realloc (line, 1 + i + sizeof('\0'));
       if (! tmp)

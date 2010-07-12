@@ -249,6 +249,14 @@ grub_refresh (void)
   fflush (stdout);
 }
 
+static void
+grub_xputs_real (const char *str)
+{
+  fputs (str, stdout);
+}
+
+void (*grub_xputs) (const char *str) = grub_xputs_real;
+
 int
 grub_dl_ref (grub_dl_t mod)
 {

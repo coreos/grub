@@ -22,7 +22,6 @@
 #include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/lib/envblk.h>
-#include <grub/handler.h>
 #include <grub/i18n.h>
 
 #include <stdio.h>
@@ -34,12 +33,6 @@
 #include "progname.h"
 
 #define DEFAULT_ENVBLK_SIZE	1024
-
-char *
-grub_env_get (const char *name __attribute__ ((unused)))
-{
-  return NULL;
-}
 
 static struct option options[] = {
   {"help", no_argument, 0, 'h'},

@@ -67,9 +67,7 @@ library = {
   source = grub-core/kern/err.c;
   source = grub-core/kern/file.c;
   source = grub-core/kern/fs.c;
-  source = grub-core/kern/handler.c;
   source = grub-core/kern/list.c;
-  source = grub-core/kern/parser.c;
   source = grub-core/kern/partition.c;
   source = grub-core/lib/arg.c;
   source = grub-core/lib/crc.c;
@@ -197,6 +195,7 @@ program = {
   name = grub-mkfont;
   mansection = 1;
   source = util/grub-mkfont.c;
+  nodist = grub-core/unidata.c;
 
   cflags = '$(freetype_cflags)';
 
@@ -309,6 +308,13 @@ script = {
 script = {
   name = '40_custom';
   source = util/grub.d/40_custom.in;
+  installdir = grubconf;
+  common;
+};
+
+script = {
+  name = '41_custom';
+  source = util/grub.d/41_custom.in;
   installdir = grubconf;
   common;
 };
@@ -477,5 +483,6 @@ test_program = {
   source = grub-core/kern/misc.c;
   source = grub-core/tests/lib/test.c;
   cflags = -Wno-format;
+  ldadd = libgrub.a;
   common;
 };

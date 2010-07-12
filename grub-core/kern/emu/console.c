@@ -43,9 +43,7 @@ static int grub_console_attr = A_NORMAL;
 
 grub_uint8_t grub_console_cur_color = 7;
 
-static grub_uint8_t grub_console_standard_color = 0x7;
-static grub_uint8_t grub_console_normal_color = 0x7;
-static grub_uint8_t grub_console_highlight_color = 0x70;
+static const grub_uint8_t grub_console_standard_color = 0x7;
 
 #define NUM_COLORS	8
 
@@ -64,60 +62,15 @@ static grub_uint8_t color_map[NUM_COLORS] =
 static int use_color;
 
 static void
-grub_ncurses_putchar (grub_uint32_t c)
+grub_ncurses_putchar (struct grub_term_output *term __attribute__ ((unused)),
+		      const struct grub_unicode_glyph *c)
 {
-  /* Better than nothing.  */
-  switch (c)
-    {
-    case GRUB_TERM_DISP_LEFT:
-      c = '<';
-      break;
-
-    case GRUB_TERM_DISP_UP:
-      c = '^';
-      break;
-
-    case GRUB_TERM_DISP_RIGHT:
-      c = '>';
-      break;
-
-    case GRUB_TERM_DISP_DOWN:
-      c = 'v';
-      break;
-
-    case GRUB_TERM_DISP_HLINE:
-      c = '-';
-      break;
-
-    case GRUB_TERM_DISP_VLINE:
-      c = '|';
-      break;
-
-    case GRUB_TERM_DISP_UL:
-    case GRUB_TERM_DISP_UR:
-    case GRUB_TERM_DISP_LL:
-    case GRUB_TERM_DISP_LR:
-      c = '+';
-      break;
-
-    default:
-      /* ncurses does not support Unicode.  */
-      if (c > 0x7f)
-	c = '?';
-      break;
-    }
-
-  addch (c | grub_console_attr);
-}
-
-static grub_ssize_t
-grub_ncurses_getcharwidth (grub_uint32_t code __attribute__ ((unused)))
-{
-  return 1;
+  addch (c->base | grub_console_attr);
 }
 
 static void
-grub_ncurses_setcolorstate (grub_term_color_state state)
+grub_ncurses_setcolorstate (struct grub_term_output *term,
+			    grub_term_color_state state)
 {
   switch (state)
     {
@@ -126,11 +79,11 @@ grub_ncurses_setcolorstate (grub_term_color_state state)
       grub_console_attr = A_NORMAL;
       break;
     case GRUB_TERM_COLOR_NORMAL:
-      grub_console_cur_color = grub_console_normal_color;
+      grub_console_cur_color = term->normal_color;
       grub_console_attr = A_NORMAL;
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      grub_console_cur_color = grub_console_highlight_color;
+      grub_console_cur_color = term->highlight_color;
       grub_console_attr = A_STANDOUT;
       break;
     default:
@@ -149,25 +102,10 @@ grub_ncurses_setcolorstate (grub_term_color_state state)
     }
 }
 
-/* XXX: This function is never called.  */
-static void
-grub_ncurses_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
-{
-  grub_console_normal_color = normal_color;
-  grub_console_highlight_color = highlight_color;
-}
-
-static void
-grub_ncurses_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
-{
-  *normal_color = grub_console_normal_color;
-  *highlight_color = grub_console_highlight_color;
-}
-
 static int saved_char = ERR;
 
 static int
-grub_ncurses_checkkey (void)
+grub_ncurses_checkkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   int c;
 
@@ -189,7 +127,7 @@ grub_ncurses_checkkey (void)
 }
 
 static int
-grub_ncurses_getkey (void)
+grub_ncurses_getkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   int c;
 
@@ -208,19 +146,19 @@ grub_ncurses_getkey (void)
   switch (c)
     {
     case KEY_LEFT:
-      c = 2;
+      c = GRUB_TERM_LEFT;
       break;
 
     case KEY_RIGHT:
-      c = 6;
+      c = GRUB_TERM_RIGHT;
       break;
 
     case KEY_UP:
-      c = 16;
+      c = GRUB_TERM_UP;
       break;
 
     case KEY_DOWN:
-      c = 14;
+      c = GRUB_TERM_DOWN;
       break;
 
     case KEY_IC:
@@ -228,30 +166,30 @@ grub_ncurses_getkey (void)
       break;
 
     case KEY_DC:
-      c = 4;
+      c = GRUB_TERM_DC;
       break;
 
     case KEY_BACKSPACE:
       /* XXX: For some reason ncurses on xterm does not return
 	 KEY_BACKSPACE.  */
     case 127:
-      c = 8;
+      c = GRUB_TERM_BACKSPACE;
       break;
 
     case KEY_HOME:
-      c = 1;
+      c = GRUB_TERM_HOME;
       break;
 
     case KEY_END:
-      c = 5;
+      c = GRUB_TERM_END;
       break;
 
     case KEY_NPAGE:
-      c = 3;
+      c = GRUB_TERM_NPAGE;
       break;
 
     case KEY_PPAGE:
-      c = 7;
+      c = GRUB_TERM_PPAGE;
       break;
     }
 
@@ -259,7 +197,7 @@ grub_ncurses_getkey (void)
 }
 
 static grub_uint16_t
-grub_ncurses_getxy (void)
+grub_ncurses_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   int x;
   int y;
@@ -270,7 +208,7 @@ grub_ncurses_getxy (void)
 }
 
 static grub_uint16_t
-grub_ncurses_getwh (void)
+grub_ncurses_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
   int x;
   int y;
@@ -281,32 +219,34 @@ grub_ncurses_getwh (void)
 }
 
 static void
-grub_ncurses_gotoxy (grub_uint8_t x, grub_uint8_t y)
+grub_ncurses_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
+		     grub_uint8_t x, grub_uint8_t y)
 {
   move (y, x);
 }
 
 static void
-grub_ncurses_cls (void)
+grub_ncurses_cls (struct grub_term_output *term __attribute__ ((unused)))
 {
   clear ();
   refresh ();
 }
 
 static void
-grub_ncurses_setcursor (int on)
+grub_ncurses_setcursor (struct grub_term_output *term __attribute__ ((unused)),
+			int on)
 {
   curs_set (on ? 1 : 0);
 }
 
 static void
-grub_ncurses_refresh (void)
+grub_ncurses_refresh (struct grub_term_output *term __attribute__ ((unused)))
 {
   refresh ();
 }
 
 static grub_err_t
-grub_ncurses_init (void)
+grub_ncurses_init (struct grub_term_output *term __attribute__ ((unused)))
 {
   initscr ();
   raw ();
@@ -338,7 +278,7 @@ grub_ncurses_init (void)
 }
 
 static grub_err_t
-grub_ncurses_fini (void)
+grub_ncurses_fini (struct grub_term_output *term __attribute__ ((unused)))
 {
   endwin ();
   return 0;
@@ -358,16 +298,14 @@ static struct grub_term_output grub_ncurses_term_output =
     .init = grub_ncurses_init,
     .fini = grub_ncurses_fini,
     .putchar = grub_ncurses_putchar,
-    .getcharwidth = grub_ncurses_getcharwidth,
     .getxy = grub_ncurses_getxy,
     .getwh = grub_ncurses_getwh,
     .gotoxy = grub_ncurses_gotoxy,
     .cls = grub_ncurses_cls,
     .setcolorstate = grub_ncurses_setcolorstate,
-    .setcolor = grub_ncurses_setcolor,
-    .getcolor = grub_ncurses_getcolor,
     .setcursor = grub_ncurses_setcursor,
-    .refresh = grub_ncurses_refresh
+    .refresh = grub_ncurses_refresh,
+    .flags = GRUB_TERM_CODE_TYPE_ASCII
   };
 
 void
@@ -380,5 +318,5 @@ grub_console_init (void)
 void
 grub_console_fini (void)
 {
-  grub_ncurses_fini ();
+  grub_ncurses_fini (&grub_ncurses_term_output);
 }
