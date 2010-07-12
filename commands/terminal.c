@@ -30,8 +30,8 @@ struct abstract_terminal
 {
   struct abstract_terminal *next;
   const char *name;
-  grub_err_t (*init) (void);
-  grub_err_t (*fini) (void);
+  grub_err_t (*init) (struct abstract_terminal *term);
+  grub_err_t (*fini) (struct abstract_terminal *term);
 };
 
 static grub_err_t
@@ -123,7 +123,7 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
              break;
          if (term)
            {
-              if (term->init && term->init () != GRUB_ERR_NONE)
+              if (term->init && term->init (term) != GRUB_ERR_NONE)
                 return grub_errno;
 
              grub_list_remove (GRUB_AS_LIST_P (disabled), GRUB_AS_LIST (term));
@@ -147,7 +147,7 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
                                   "can't remove the last terminal");
              grub_list_remove (GRUB_AS_LIST_P (enabled), GRUB_AS_LIST (term));
              if (term->fini)
-               term->fini ();
+               term->fini (term);
              grub_list_push (GRUB_AS_LIST_P (disabled), GRUB_AS_LIST (term));
            }
        }
@@ -160,7 +160,7 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
          break;
       if (term)
        {
-         if (term->init && term->init () != GRUB_ERR_NONE)
+         if (term->init && term->init (term) != GRUB_ERR_NONE)
            return grub_errno;
 
          grub_list_remove (GRUB_AS_LIST_P (disabled), GRUB_AS_LIST (term));
@@ -183,7 +183,7 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
                                 "can't remove the last terminal");
            grub_list_remove (GRUB_AS_LIST_P (enabled), GRUB_AS_LIST (term));
            if (term->fini)
-             term->fini ();
+             term->fini (term);
            grub_list_push (GRUB_AS_LIST_P (disabled), GRUB_AS_LIST (term));
          }
       }

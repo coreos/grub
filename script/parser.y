@@ -27,6 +27,7 @@
 #define YYLTYPE_IS_TRIVIAL      0
 #define YYENABLE_NLS    0
 
+#include "grub_script.tab.h"
 %}
 
 %union {
@@ -129,6 +130,7 @@ word: GRUB_PARSER_TOKEN_NAME { $$ = grub_script_add_arglist (state, 0, $1); }
 statement: command   { $$ = $1; }
          | function  { $$ = 0;  }
          | menuentry { $$ = $1; }
+;
 
 argument : "case"      { $$ = grub_script_add_arglist (state, 0, $1); }
          | "do"        { $$ = grub_script_add_arglist (state, 0, $1); }

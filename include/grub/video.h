@@ -168,6 +168,15 @@ struct grub_video_rect
 };
 typedef struct grub_video_rect grub_video_rect_t;
 
+struct grub_video_signed_rect
+{
+  signed x;
+  signed y;
+  unsigned width;
+  unsigned height;
+};
+typedef struct grub_video_signed_rect grub_video_signed_rect_t;
+
 struct grub_video_palette_data
 {
   grub_uint8_t r; /* Red color value (0-255).  */
@@ -183,8 +192,20 @@ typedef enum grub_video_driver_id
     GRUB_VIDEO_DRIVER_EFI_UGA,
     GRUB_VIDEO_DRIVER_EFI_GOP,
     GRUB_VIDEO_DRIVER_SM712,
-    GRUB_VIDEO_DRIVER_VGA
+    GRUB_VIDEO_DRIVER_VGA,
+    GRUB_VIDEO_DRIVER_CIRRUS,
+    GRUB_VIDEO_DRIVER_BOCHS,
+    GRUB_VIDEO_DRIVER_SDL
   } grub_video_driver_id_t;
+
+typedef enum grub_video_adapter_prio
+  {
+    GRUB_VIDEO_ADAPTER_PRIO_FALLBACK = 60,
+    GRUB_VIDEO_ADAPTER_PRIO_FIRMWARE_DIRTY = 70,
+    GRUB_VIDEO_ADAPTER_PRIO_FIRMWARE = 80,
+    GRUB_VIDEO_ADAPTER_PRIO_NATIVE = 100
+  } grub_video_adapter_prio_t;
+
 
 struct grub_video_adapter
 {
@@ -194,6 +215,8 @@ struct grub_video_adapter
   /* The video adapter name.  */
   const char *name;
   grub_video_driver_id_t id;
+
+  grub_video_adapter_prio_t prio;
 
   /* Initialize the video adapter.  */
   grub_err_t (*init) (void);
@@ -264,13 +287,18 @@ typedef struct grub_video_adapter *grub_video_adapter_t;
 
 extern grub_video_adapter_t EXPORT_VAR(grub_video_adapter_list);
 
+#ifndef GRUB_LST_GENERATOR
 /* Register video driver.  */
 static inline void
 grub_video_register (grub_video_adapter_t adapter)
 {
-  grub_list_push (GRUB_AS_LIST_P (&grub_video_adapter_list),
-		  GRUB_AS_LIST (adapter));
+  grub_video_adapter_t *p;
+  for (p = &grub_video_adapter_list; *p && (*p)->prio > adapter->prio; 
+       p = &((*p)->next));
+  adapter->next = *p;
+  *p = adapter;
 }
+#endif
 
 /* Unregister video driver.  */
 static inline void

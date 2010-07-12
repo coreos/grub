@@ -182,8 +182,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  grub_printf ("   [Linux-%s, setup=0x%x, size=0x%x]\n",
-	       grub_linux_is_bzimage ? "bzImage" : "zImage", real_size, prot_size);
+  grub_dprintf ("linux", "Linux-%s, setup=0x%x, size=0x%x\n",
+		grub_linux_is_bzimage ? "bzImage" : "zImage",
+		real_size, prot_size);
 
   for (i = 1; i < argc; i++)
     if (grub_memcmp (argv[i], "vga=", 4) == 0)

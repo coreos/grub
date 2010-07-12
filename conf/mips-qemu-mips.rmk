@@ -20,3 +20,9 @@ kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,$(LINK_BASE),-Bstatic
 kernel_img_FORMAT = binary
+
+# For serial.mod.
+pkglib_MODULES += serial.mod
+serial_mod_SOURCES = term/serial.c
+serial_mod_CFLAGS = $(COMMON_CFLAGS)
+serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
