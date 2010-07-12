@@ -420,6 +420,7 @@ void
 grub_reboot (void)
 {
   grub_ieee1275_interpret ("reset-all", 0);
+  for (;;) ;
 }
 #endif
 
@@ -431,4 +432,5 @@ grub_halt (void)
   grub_ieee1275_interpret ("shut-down", 0);
   grub_ieee1275_interpret ("power-off", 0);
   grub_ieee1275_interpret ("poweroff", 0);
+  for (;;) ;
 }

@@ -83,7 +83,7 @@ struct grub_parser
 };
 typedef struct grub_parser *grub_parser_t;
 
-grub_err_t EXPORT_FUNC(grub_parser_execute) (char *source);
+grub_err_t grub_parser_execute (char *source);
 
 grub_err_t
 grub_rescue_parse_line (char *line, grub_reader_getline_t getline);

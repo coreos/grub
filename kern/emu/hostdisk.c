@@ -992,6 +992,11 @@ grub_util_biosdisk_fini (void)
   grub_disk_dev_unregister (&grub_util_biosdisk_dev);
 }
 
+/*
+ * Note: we do not use the new partition naming scheme as dos_part does not
+ * necessarily correspond to an msdos partition.  See e.g. the FreeBSD code
+ * in function grub_util_biosdisk_get_grub_dev.
+ */
 static char *
 make_device_name (int drive, int dos_part, int bsd_part)
 {
@@ -1255,7 +1260,7 @@ devmapper_out:
       for (p = path + 5; *p; ++p)
         if (grub_isdigit(*p))
           {
-            p = strchr (p, 's');
+            p = strpbrk (p, "sp");
             if (p)
               *p = '\0';
             break;
@@ -1400,11 +1405,9 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
      For NetBSD, proceed as for Linux, except that the start sector is
      obtained from the disk label.  */
   {
-    char *name;
+    char *name, *partname;
     grub_disk_t disk;
     grub_disk_addr_t start;
-    int dos_part = -1;
-    int bsd_part = -1;
     auto int find_partition (grub_disk_t dsk,
 			     const grub_partition_t partition);
 
@@ -1419,17 +1422,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
 	if (start == part_start)
 	  {
-	    if (partition->parent)
-	      {
-		dos_part = partition->parent->number;
-		bsd_part = partition->number;
-	      }
-	    else
-	      {
-		dos_part = partition->number;
-		bsd_part = -1;
-	      }
-
+	    partname = grub_partition_get_name (partition);
 	    return 1;
 	  }
 
@@ -1465,6 +1458,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     if (! disk)
       return 0;
 
+    partname = NULL;
     grub_partition_iterate (disk, find_partition);
     if (grub_errno != GRUB_ERR_NONE)
       {
@@ -1472,7 +1466,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	return 0;
       }
 
-    if (dos_part < 0)
+    if (partname == NULL)
       {
 	grub_disk_close (disk);
 	grub_error (GRUB_ERR_BAD_DEVICE,
@@ -1480,7 +1474,9 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	return 0;
       }
 
-    return make_device_name (drive, dos_part, bsd_part);
+    name = grub_xasprintf ("%s,%s", disk->name, partname);
+    free (partname);
+    return name;
   }
 
 #elif defined(__GNU__)
@@ -1511,7 +1507,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
   }
 
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
-  /* FreeBSD uses "/dev/[a-z]+[0-9]+(s[0-9]+[a-z]?)?".  */
+  /* FreeBSD uses "/dev/[a-z]+[0-9]+([sp][0-9]+[a-z]?)?".  */
   {
     int dos_part = -1;
     int bsd_part = -1;
@@ -1525,7 +1521,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
         for (p = os_dev + 5; *p; ++p)
           if (grub_isdigit(*p))
             {
-              p = strchr (p, 's');
+              p = strpbrk (p, "sp");    /* msdos or apple (or ... ?) partition map */
               if (p)
                 {
                   p++;

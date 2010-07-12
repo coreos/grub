@@ -222,7 +222,6 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
   if ((revision & 0xFF) != 0x10)
     goto fail;
 
-
   {
     grub_uint32_t control;
     /* Check SMM/BIOS ownership of OHCI (SMM = USB Legacy Support driver for BIOS) */

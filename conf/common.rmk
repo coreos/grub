@@ -38,7 +38,8 @@ grub_probe_SOURCES = gnulib/progname.c util/grub-probe.c	\
 	partmap/msdos.c partmap/bsdlabel.c partmap/apple.c \
 	partmap/sun.c partmap/sunpc.c partmap/gpt.c \
 	kern/fs.c kern/env.c fs/fshelp.c			\
-	disk/raid.c disk/mdraid_linux.c disk/lvm.c grub_probe_init.c
+	disk/raid.c disk/raid5_recover.c disk/raid6_recover.c	\
+	disk/mdraid_linux.c disk/lvm.c grub_probe_init.c
 
 ifeq ($(enable_grub_fstest), yes)
 bin_UTILITIES += grub-fstest
@@ -69,7 +70,8 @@ grub_fstest_SOURCES = gnulib/progname.c util/grub-fstest.c kern/emu/hostfs.c \
 # For grub-mkfont.
 ifeq ($(enable_grub_mkfont), yes)
 bin_UTILITIES += grub-mkfont
-grub_mkfont_SOURCES = gnulib/progname.c util/grub-mkfont.c util/misc.c kern/emu/misc.c
+grub_mkfont_SOURCES = gnulib/progname.c util/grub-mkfont.c util/misc.c \
+	unidata.c kern/emu/misc.c
 grub_mkfont_CFLAGS = $(freetype_cflags)
 grub_mkfont_LDFLAGS = $(freetype_libs)
 endif
@@ -95,6 +97,7 @@ grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c
 	kern/command.c kern/misc.c kern/env.c grub_script.tab.c \
 	grub_script.yy.c
 grub_script_check_CFLAGS = $(GNULIB_UTIL_CFLAGS)
+grub_script_check_DEPENDENCIES = grub_script.tab.h
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
@@ -201,9 +204,12 @@ CLEANFILES += grub-gettext_lib
 %: util/grub.d/%.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@
-grub-mkconfig_SCRIPTS = 00_header 30_os-prober 40_custom
+grub-mkconfig_SCRIPTS = 00_header 30_os-prober 40_custom 41_custom
 ifneq (, $(host_kernel))
 grub-mkconfig_SCRIPTS += 10_$(host_kernel)
+endif
+ifeq (linux, $(host_kernel))
+grub-mkconfig_SCRIPTS += 20_linux_xen
 endif
 
 CLEANFILES += $(grub-mkconfig_SCRIPTS)
@@ -437,7 +443,7 @@ scsi_mod_LDFLAGS = $(COMMON_LDFLAGS)
 pkglib_MODULES += minicmd.mod extcmd.mod hello.mod 	\
 	ls.mod cmp.mod cat.mod help.mod search.mod loopback.mod	\
 	configfile.mod echo.mod		\
-	terminfo.mod test.mod blocklist.mod hexdump.mod		\
+	test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod loadenv.mod crc.mod parttool.mod	\
 	msdospart.mod memrw.mod normal.mod 			\
 	gptsync.mod true.mod probe.mod password.mod		\
@@ -486,7 +492,8 @@ gfxmenu_mod_SOURCES = \
 	gfxmenu/gui_progress_bar.c \
 	gfxmenu/gui_util.c \
 	gfxmenu/gui_string_util.c \
-	gfxmenu/named_colors.c
+	gfxmenu/named_colors.c \
+	gfxmenu/font.c
 gfxmenu_mod_CFLAGS = $(COMMON_CFLAGS)
 gfxmenu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
@@ -562,10 +569,13 @@ configfile_mod_SOURCES = commands/configfile.c
 configfile_mod_CFLAGS = $(COMMON_CFLAGS)
 configfile_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+ifneq ($(platform), ieee1275)
 # For terminfo.mod.
+pkglib_MODULES += terminfo.mod
 terminfo_mod_SOURCES = term/terminfo.c term/tparm.c
 terminfo_mod_CFLAGS = $(COMMON_CFLAGS)
 terminfo_mod_LDFLAGS = $(COMMON_LDFLAGS)
+endif
 
 # For blocklist.mod.
 blocklist_mod_SOURCES = commands/blocklist.c
@@ -618,12 +628,15 @@ keystatus_mod_CFLAGS = $(COMMON_CFLAGS)
 keystatus_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For normal.mod.
+ifneq (, $(FONT_SOURCE))
+normal/charset.c_DEPENDENCIES = widthspec.h
+endif
 normal_mod_SOURCES = normal/main.c normal/cmdline.c normal/dyncmd.c \
 	normal/auth.c normal/autofs.c  \
 	normal/color.c normal/completion.c normal/datetime.c normal/menu.c \
-	normal/menu_entry.c normal/menu_text.c \
+	normal/menu_entry.c normal/menu_text.c normal/charset.c \
 	normal/misc.c normal/crypto.c normal/term.c normal/context.c \
-	script/main.c script/script.c script/execute.c script/argv.c \
+	script/main.c script/script.c script/execute.c script/argv.c unidata.c \
 	script/function.c script/lexer.c grub_script.tab.c grub_script.yy.c
 normal_mod_CFLAGS = $(COMMON_CFLAGS) $(POSIX_CFLAGS) -Wno-error
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
@@ -697,7 +710,6 @@ png_mod_SOURCES = video/readers/png.c
 png_mod_CFLAGS = $(COMMON_CFLAGS)
 png_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-
 # Misc.
 pkglib_MODULES += gzio.mod elf.mod
 
@@ -750,11 +762,6 @@ pkglib_MODULES += setjmp.mod
 setjmp_mod_SOURCES = lib/$(target_cpu)/setjmp.S
 setjmp_mod_ASFLAGS = $(COMMON_ASFLAGS)
 setjmp_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-pkglib_MODULES += charset.mod
-charset_mod_SOURCES = lib/charset.c
-charset_mod_CFLAGS = $(COMMON_CFLAGS)
-charset_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += regexp.mod
 regexp_mod_SOURCES = gnulib/regex.c commands/regexp.c

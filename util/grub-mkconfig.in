@@ -1,7 +1,8 @@
-#! /bin/sh -e
+#! /bin/sh
+set -e
 
 # Generate grub.cfg by inspecting /boot contents.
-# Copyright (C) 2006,2007,2008,2009 Free Software Foundation, Inc.
+# Copyright (C) 2006,2007,2008,2009,2010 Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,14 +53,23 @@ Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 
+argument () {
+  opt=$1
+  shift
+
+  if test $# -eq 0; then
+      echo "$0: option requires an argument -- '$opt'" 1>&2
+      exit 1
+  fi
+  echo $1
+}
+
 # Check the arguments.
-next_grub_cfg=false
-for option in "$@"; do
-    if $next_grub_cfg; then
-	grub_cfg=$option
-	next_grub_cfg=false
-	continue
-    fi
+while test $# -gt 0
+do
+    option=$1
+    shift
+
     case "$option" in
     -h | --help)
 	usage
@@ -67,9 +77,8 @@ for option in "$@"; do
     -v | --version)
 	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
-    -o)
-	next_grub_cfg=:
-	;;
+    -o | --output)
+	grub_cfg=`argument $option "$@"`; shift;;
     --output=*)
 	grub_cfg=`echo "$option" | sed 's/--output=//'`
 	;;
@@ -78,13 +87,9 @@ for option in "$@"; do
 	usage
 	exit 1
 	;;
+    # Explicitly ignore non-option arguments, for compatibility.
     esac
 done
-if $next_grub_cfg; then
-    echo "Missing argument to \`-o'" 1>&2
-    usage
-    exit 1
-fi
 
 . ${libdir}/grub/grub-mkconfig_lib
 
@@ -92,11 +97,11 @@ case "$host_os" in
 netbsd* | openbsd*)
     # Because /boot is used for the boot block in NetBSD and OpenBSD, use /grub
     # instead of /boot/grub.
-    grub_prefix=`echo /grub | sed ${transform}`
+    GRUB_PREFIX=`echo /grub | sed ${transform}`
     ;;
 *)
     # Use /boot/grub by default.
-    grub_prefix=`echo /boot/grub | sed ${transform}`
+    GRUB_PREFIX=`echo /boot/grub | sed ${transform}`
     ;;
 esac
 
@@ -137,9 +142,9 @@ else
     exit 1
 fi
 
-mkdir -p ${grub_prefix}
+mkdir -p ${GRUB_PREFIX}
 
-if test -e ${grub_prefix}/device.map ; then : ; else
+if test -e ${GRUB_PREFIX}/device.map ; then : ; else
   ${grub_mkdevicemap}
 fi
 
@@ -174,17 +179,14 @@ fi
 for x in ${GRUB_TERMINAL_OUTPUT}; do
     if [ "x${x}" = "xgfxterm" ]; then
         # If this platform supports gfxterm, try to use it.
-	if ! test -e ${grub_prefix}/gfxterm.mod ; then
+	if ! test -e ${GRUB_PREFIX}/gfxterm.mod ; then
 	    if [ "x$termoutdefault" != "x1" ]; then
 		echo "gfxterm isn't available on your platform" >&2 ; exit 1
 	    fi
 	    GRUB_TERMINAL_OUTPUT=
 	    break;
 	fi
-        # FIXME: this should do something smarter than just loading first
-        # video backend.
-	GRUB_VIDEO_BACKEND=$(head -n 1 ${grub_prefix}/video.lst || true)
-	if [ -z "${GRUB_VIDEO_BACKEND}" ] ; then
+	if [ ! -s "${GRUB_PREFIX}/video.lst" ] ; then
 	    if [ "x$termoutdefault" != "x1" ]; then
 		echo "No suitable backend could be found for gfxterm." >&2 ; exit 1
 	    fi
@@ -242,7 +244,7 @@ export GRUB_DEVICE \
   GRUB_FS \
   GRUB_FONT_PATH \
   GRUB_PRELOAD_MODULES \
-  GRUB_VIDEO_BACKEND
+  GRUB_PREFIX
 
 # These are optional, user-defined variables.
 export GRUB_DEFAULT \
@@ -256,6 +258,8 @@ export GRUB_DEFAULT \
   GRUB_DISTRIBUTOR \
   GRUB_CMDLINE_LINUX \
   GRUB_CMDLINE_LINUX_DEFAULT \
+  GRUB_CMDLINE_XEN \
+  GRUB_CMDLINE_XEN_DEFAULT \
   GRUB_CMDLINE_NETBSD \
   GRUB_CMDLINE_NETBSD_DEFAULT \
   GRUB_TERMINAL_INPUT \
@@ -264,13 +268,15 @@ export GRUB_DEFAULT \
   GRUB_DISABLE_LINUX_UUID \
   GRUB_DISABLE_LINUX_RECOVERY \
   GRUB_DISABLE_NETBSD_RECOVERY \
+  GRUB_VIDEO_BACKEND \
   GRUB_GFXMODE \
   GRUB_BACKGROUND \
   GRUB_THEME \
   GRUB_GFXPAYLOAD_LINUX \
   GRUB_DISABLE_OS_PROBER \
   GRUB_INIT_TUNE \
-  GRUB_SAVEDEFAULT
+  GRUB_SAVEDEFAULT \
+  GRUB_BADRAM
 
 if test "x${grub_cfg}" != "x"; then
   rm -f ${grub_cfg}.new
