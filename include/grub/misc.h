@@ -237,7 +237,19 @@ void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
 grub_size_t EXPORT_FUNC(grub_strlen) (const char *s);
 int EXPORT_FUNC(grub_printf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 int EXPORT_FUNC(grub_printf_) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
-int EXPORT_FUNC(grub_puts) (const char *s);
+
+extern void (*EXPORT_VAR (grub_xputs)) (const char *str);
+
+static inline int
+grub_puts (const char *s)
+{
+  const char nl[2] = "\n";
+  grub_xputs (s);
+  grub_xputs (nl);
+
+  return 1;	/* Cannot fail.  */
+}
+
 int EXPORT_FUNC(grub_puts_) (const char *s);
 void EXPORT_FUNC(grub_real_dprintf) (const char *file,
                                      const int line,
@@ -253,11 +265,6 @@ char *EXPORT_FUNC(grub_xasprintf) (const char *fmt, ...)
 char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args);
 void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
-grub_size_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
-					    grub_size_t destsize,
-					    const grub_uint8_t *src,
-					    grub_size_t srcsize,
-					    const grub_uint8_t **srcend);
 grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint32_t d, grub_uint32_t *r);
 
@@ -307,14 +314,14 @@ grub_div_roundup (unsigned int x, unsigned int y)
 }
 
 /* Reboot the machine.  */
-void EXPORT_FUNC (grub_reboot) (void);
+void EXPORT_FUNC (grub_reboot) (void) __attribute__ ((noreturn));
 
 #ifdef GRUB_MACHINE_PCBIOS
 /* Halt the system, using APM if possible. If NO_APM is true, don't
  * use APM even if it is available.  */
-void EXPORT_FUNC (grub_halt) (int no_apm);
+void EXPORT_FUNC (grub_halt) (int no_apm) __attribute__ ((noreturn));
 #else
-void EXPORT_FUNC (grub_halt) (void);
+void EXPORT_FUNC (grub_halt) (void) __attribute__ ((noreturn));
 #endif
 
 #endif /* ! GRUB_MISC_HEADER */

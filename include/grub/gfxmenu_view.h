@@ -62,6 +62,14 @@ grub_gfxmenu_print_timeout (int timeout, void *data);
 void
 grub_gfxmenu_set_chosen_entry (int entry, void *data);
 
+grub_err_t grub_font_draw_string (const char *str,
+				  grub_font_t font,
+				  grub_video_color_t color,
+				  int left_x, int baseline_y);
+int grub_font_get_string_width (grub_font_t font,
+				const char *str);
+
+
 /* Implementation details -- this should not be used outside of the
    view itself.  */
 

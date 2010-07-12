@@ -1,4 +1,5 @@
-#! /bin/sh -e
+#! /bin/sh
+set -e
 
 # Make GRUB rescue image
 # Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
@@ -54,10 +55,25 @@ Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 
+argument () {
+  opt=$1
+  shift
+
+  if test $# -eq 0; then
+      echo "$0: option requires an argument -- '$opt'" 1>&2
+      exit 1
+  fi
+  echo $1
+}
+
 input_dir=${pkglibdir}
 
 # Check the arguments.
-for option in "$@"; do
+while test $# -gt 0
+do
+    option=$1
+    shift
+
     case "$option" in
     -h | --help)
 	usage
@@ -65,12 +81,22 @@ for option in "$@"; do
     -v | --version)
 	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
+
+    --modules)
+	modules=`argument $option "$@"`; shift ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
+
+    --pkglibdir)
+	input_dir=`argument $option "$@"`; shift ;;
     --pkglibdir=*)
 	input_dir=`echo "$option" | sed 's/--pkglibdir=//'` ;;
+
+    --grub-mkimage)
+	grub_mkimage=`argument $option "$@"`; shift ;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage

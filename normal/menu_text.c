@@ -38,26 +38,6 @@ struct menu_viewer_data
   struct grub_term_output *term;
 };
 
-static void
-print_spaces (int number_spaces, struct grub_term_output *term)
-{
-  int i;
-  for (i = 0; i < number_spaces; i++)
-    grub_putcode (' ', term);
-}
-
-void
-grub_print_ucs4 (const grub_uint32_t * str,
-		 const grub_uint32_t * last_position,
-		 struct grub_term_output *term)
-{
-  while (str < last_position)
-    {
-      grub_putcode (*str, term);
-      str++;
-    }
-}
-
 grub_ssize_t
 grub_getstringwidth (grub_uint32_t * str, const grub_uint32_t * last_position,
 		     struct grub_term_output *term)
@@ -66,8 +46,9 @@ grub_getstringwidth (grub_uint32_t * str, const grub_uint32_t * last_position,
 
   while (str < last_position)
     {
-      width += grub_term_getcharwidth (term, *str);
-      str++;
+      struct grub_unicode_glyph glyph;
+      str += grub_unicode_aglomerate_comb (str, last_position - str, &glyph);
+      width += grub_term_getcharwidth (term, &glyph);
     }
   return width;
 }
@@ -76,15 +57,10 @@ void
 grub_print_message_indented (const char *msg, int margin_left, int margin_right,
 			     struct grub_term_output *term)
 {
-  int line_len;
-
   grub_uint32_t *unicode_msg;
   grub_uint32_t *last_position;
 
   int msg_len;
-
-  line_len = grub_term_width (term) - grub_term_getcharwidth (term, 'm') *
-    (margin_left + margin_right);
 
   msg_len = grub_utf8_to_ucs4_alloc (msg, &unicode_msg, &last_position);
 
@@ -93,40 +69,8 @@ grub_print_message_indented (const char *msg, int margin_left, int margin_right,
       return;
     }
 
-  grub_uint32_t *current_position = unicode_msg;
+  grub_print_ucs4 (unicode_msg, last_position, margin_left, margin_right, term);
 
-  grub_uint32_t *next_new_line = unicode_msg;
-
-  int first_loop = 1;
-
-  while (current_position < last_position)
-    {
-      if (! first_loop)
-        grub_putcode ('\n', term);
-     
-      next_new_line = (grub_uint32_t *) last_position;
-
-      while (grub_getstringwidth (current_position, next_new_line,term) 
-	     > line_len
-            || (next_new_line != last_position && *next_new_line != ' '
-		&& next_new_line > current_position))
-       {
-         next_new_line--;
-       }
-
-      if (next_new_line == current_position)
-       {
-         next_new_line = (next_new_line + line_len > last_position) ?
-           (grub_uint32_t *) last_position : next_new_line + line_len;
-       }
-
-      print_spaces (margin_left, term);
-      grub_print_ucs4 (current_position, next_new_line, term);
-
-      next_new_line++;
-      current_position = next_new_line;
-      first_loop = 0;
-    }
   grub_free (unicode_msg);
 }
 
@@ -139,27 +83,27 @@ draw_border (struct grub_term_output *term)
   grub_term_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
 
   grub_term_gotoxy (term, GRUB_TERM_MARGIN, GRUB_TERM_TOP_BORDER_Y);
-  grub_putcode (GRUB_TERM_DISP_UL, term);
+  grub_putcode (GRUB_UNICODE_CORNER_UL, term);
   for (i = 0; i < (unsigned) grub_term_border_width (term) - 2; i++)
-    grub_putcode (GRUB_TERM_DISP_HLINE, term);
-  grub_putcode (GRUB_TERM_DISP_UR, term);
+    grub_putcode (GRUB_UNICODE_HLINE, term);
+  grub_putcode (GRUB_UNICODE_CORNER_UR, term);
 
   for (i = 0; i < (unsigned) grub_term_num_entries (term); i++)
     {
       grub_term_gotoxy (term, GRUB_TERM_MARGIN, GRUB_TERM_TOP_BORDER_Y + i + 1);
-      grub_putcode (GRUB_TERM_DISP_VLINE, term);
+      grub_putcode (GRUB_UNICODE_VLINE, term);
       grub_term_gotoxy (term, GRUB_TERM_MARGIN + grub_term_border_width (term)
 			- 1,
 			GRUB_TERM_TOP_BORDER_Y + i + 1);
-      grub_putcode (GRUB_TERM_DISP_VLINE, term);
+      grub_putcode (GRUB_UNICODE_VLINE, term);
     }
 
   grub_term_gotoxy (term, GRUB_TERM_MARGIN,
 		    GRUB_TERM_TOP_BORDER_Y + grub_term_num_entries (term) + 1);
-  grub_putcode (GRUB_TERM_DISP_LL, term);
+  grub_putcode (GRUB_UNICODE_CORNER_LL, term);
   for (i = 0; i < (unsigned) grub_term_border_width (term) - 2; i++)
-    grub_putcode (GRUB_TERM_DISP_HLINE, term);
-  grub_putcode (GRUB_TERM_DISP_LR, term);
+    grub_putcode (GRUB_UNICODE_HLINE, term);
+  grub_putcode (GRUB_UNICODE_CORNER_LR, term);
 
   grub_term_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
 
@@ -194,11 +138,11 @@ command-line or ESC to discard edits and return to the GRUB menu."),
 			  "entry is highlighted.\n");
       char *msg_translated;
 
-      msg_translated = grub_xasprintf (msg, (grub_uint32_t) GRUB_TERM_DISP_UP,
-				     (grub_uint32_t) GRUB_TERM_DISP_DOWN);
+      msg_translated = grub_xasprintf (msg, GRUB_UNICODE_UPARROW,
+				       GRUB_UNICODE_DOWNARROW);
       if (!msg_translated)
 	return;
-      grub_putchar ('\n');
+      grub_putcode ('\n', term);
       grub_print_message_indented (msg_translated, STANDARD_MARGIN,
 				   STANDARD_MARGIN, term);
 
@@ -259,34 +203,55 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
 
   grub_term_gotoxy (term, GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN, y);
 
+  int last_printed = 0;
   for (x = GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN + 1, i = 0;
        x < (int) (GRUB_TERM_LEFT_BORDER_X + grub_term_border_width (term)
-		  - GRUB_TERM_MARGIN);
-       i++)
+		  - GRUB_TERM_MARGIN);)
     {
       if (i < len
 	  && x <= (int) (GRUB_TERM_LEFT_BORDER_X + grub_term_border_width (term)
 			 - GRUB_TERM_MARGIN - 1))
 	{
 	  grub_ssize_t width;
+	  struct grub_unicode_glyph glyph;
 
-	  width = grub_term_getcharwidth (term, unicode_title[i]);
+	  i += grub_unicode_aglomerate_comb (unicode_title + i,
+					     len - i, &glyph);
 
-	  if (x + width > (int) (GRUB_TERM_LEFT_BORDER_X 
+	  width = grub_term_getcharwidth (term, &glyph);
+	  grub_free (glyph.combining);
+
+	  if (x + width <= (int) (GRUB_TERM_LEFT_BORDER_X 
 				 + grub_term_border_width (term)
 				 - GRUB_TERM_MARGIN - 1))
-	    grub_putcode (GRUB_TERM_DISP_RIGHT, term);
-	  else
-	    grub_putcode (unicode_title[i], term);
-
+	    last_printed = i;
 	  x += width;
 	}
       else
-	{
-	  grub_putcode (' ', term);
-	  x++;
-	}
+	break;
     }
+
+  grub_print_ucs4 (unicode_title,
+		   unicode_title + last_printed, 0, 0, term);
+
+  if (last_printed != len)
+    {
+      grub_putcode (GRUB_UNICODE_RIGHTARROW, term);
+      struct grub_unicode_glyph pseudo_glyph = {
+	.base = GRUB_UNICODE_RIGHTARROW,
+	.variant = 0,
+	.attributes = 0,
+	.ncomb = 0,
+	.combining = 0,
+	.estimated_width = 1
+      };
+      x += grub_term_getcharwidth (term, &pseudo_glyph);
+    }
+
+  for (; x < (int) (GRUB_TERM_LEFT_BORDER_X + grub_term_border_width (term)
+		    - GRUB_TERM_MARGIN); x++)
+    grub_putcode (' ', term);
+
   grub_term_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
   grub_putcode (' ', term);
 
@@ -309,7 +274,7 @@ print_entries (grub_menu_t menu, int first, int offset,
 		    GRUB_TERM_FIRST_ENTRY_Y);
 
   if (first)
-    grub_putcode (GRUB_TERM_DISP_UP, term);
+    grub_putcode (GRUB_UNICODE_UPARROW, term);
   else
     grub_putcode (' ', term);
 
@@ -327,7 +292,7 @@ print_entries (grub_menu_t menu, int first, int offset,
 		    GRUB_TERM_TOP_BORDER_Y + grub_term_num_entries (term));
 
   if (e)
-    grub_putcode (GRUB_TERM_DISP_DOWN, term);
+    grub_putcode (GRUB_UNICODE_DOWNARROW, term);
   else
     grub_putcode (' ', term);
 
@@ -385,7 +350,7 @@ menu_text_print_timeout (int timeout, void *dataptr)
   grub_print_message_indented (msg_translated, 3, 0, data->term);
  
   posx = grub_term_getxy (data->term) >> 8;
-  print_spaces (grub_term_width (data->term) - posx - 1, data->term);
+  grub_print_spaces (data->term, grub_term_width (data->term) - posx - 1);
 
   grub_term_gotoxy (data->term,
 		    grub_term_cursor_x (data->term),
@@ -443,7 +408,7 @@ menu_text_clear_timeout (void *dataptr)
   struct menu_viewer_data *data = dataptr;
 
   grub_term_gotoxy (data->term, 0, grub_term_height (data->term) - 3);
-  print_spaces (grub_term_width (data->term) - 1, data->term);
+  grub_print_spaces (data->term, grub_term_width (data->term) - 1);
   grub_term_gotoxy (data->term, grub_term_cursor_x (data->term),
 		    GRUB_TERM_FIRST_ENTRY_Y + data->offset);
   grub_term_refresh (data->term);

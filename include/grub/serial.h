@@ -59,9 +59,15 @@
 #define UART_DLAB	0x80
 
 /* Enable the FIFO.  */
-#define UART_ENABLE_FIFO	0xC7
+#define UART_ENABLE_FIFO_TRIGGER14	0xC7
+
+/* Enable the FIFO.  */
+#define UART_ENABLE_FIFO_TRIGGER1       0x07
 
 /* Turn on DTR, RTS, and OUT2.  */
-#define UART_ENABLE_MODEM	0x0B
+#define UART_ENABLE_DTRRTS	0x03
+
+/* Turn on DTR, RTS, and OUT2.  */
+#define UART_ENABLE_OUT2	0x08
 
 #endif /* ! GRUB_SERIAL_MACHINE_HEADER */
