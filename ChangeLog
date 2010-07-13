@@ -1,5 +1,12 @@
 2010-07-13  Colin Watson  <cjwatson@ubuntu.com>
 
+	* Makefile.in (.SUFFIX): Spell correctly, as ...
+	(.SUFFIXES): ... this.  Fixes bug where `make foo' (where foo is a
+	bare module name without `.mod', e.g. `test') tried to invoke a
+	Modula-2 compiler.
+
+2010-07-13  Colin Watson  <cjwatson@ubuntu.com>
+
 	* README: Point to the Info manual.
 
 2010-07-13  Jiro SEKIBA <jir@unicus.jp>
