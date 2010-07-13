@@ -33,6 +33,8 @@ dnl package (in grub-core directory) builds with TARGETCC.
 AC_INIT([GRUB],[1.98],[bug-grub@gnu.org])
 AC_CONFIG_AUX_DIR([.])
 
+: ${CFLAGS=""} # We don't want -g -O2
+
 # Checks for host and target systems.
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET

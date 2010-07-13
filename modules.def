@@ -90,7 +90,6 @@ library = {
   source = grub-core/script/lexer.c;
   source = grub-core/script/main.c;
   source = grub-core/script/script.c;
-  common;
 };
 
 program = {
@@ -99,7 +98,6 @@ program = {
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
   mansection = 1;
-  common;
 };
 
 program = {
@@ -114,7 +112,6 @@ program = {
   ldadd = '$(LIBINTL)';
 
   cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibrootdir)\"';
-  common;
 };
 
 program = {
@@ -125,7 +122,6 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
-  common;
 };
 
 program = {
@@ -136,7 +132,6 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
-  common;
 };
 
 program = {
@@ -147,7 +142,6 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
-  common;
 };
 
 program = {
@@ -160,13 +154,13 @@ program = {
   ldadd = '$(LIBINTL)';
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
-  common;
 };
 
 program = {
   name = grub-macho2img;
   mansection = 1;
   source = util/grub-macho2img.c;
+  condition = COND_APPLE_CC;
 };
 
 program = {
@@ -176,8 +170,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
-  enable = COND_GRUB_PE2ELF;
-  common;
+  condition = COND_GRUB_PE2ELF;
 };
 
 program = {
@@ -187,8 +180,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
-  enable = COND_GRUB_FSTEST;
-  common;
+  condition = COND_GRUB_FSTEST;
 };
 
 program = {
@@ -202,9 +194,7 @@ program = {
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
   ldadd = '$(freetype_libs)';
-
-  common;
-  enable = COND_GRUB_MKFONT;
+  condition = COND_GRUB_MKFONT;
 };
 
 program = {
@@ -223,7 +213,6 @@ program = {
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
   ldadd = '$(LIBUTIL)';
-  common;
 };
 
 program = {
@@ -235,7 +224,6 @@ program = {
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
   ldadd = '$(LIBUTIL)';
-  common;
 };
 
 program = {
@@ -254,6 +242,9 @@ program = {
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
   ldadd = '$(LIBUTIL)';
+
+  enable = i386_pc;
+  enable = sparc64_ieee1275;
 };
 
 program = {
@@ -263,20 +254,18 @@ program = {
   source = util/ieee1275/ofpath.c;
 
   ldadd = libgrub.a;
-  sparc64_ieee1275;
+  enable = sparc64_ieee1275;
 };
 
 data = {
   source = util/grub.d/README;
   installdir = grubconf;
-  common;
 };
 
 script = {
   name = '00_header';
   source = util/grub.d/00_header.in;
   installdir = grubconf;
-  common;
 };
 
 script = {
@@ -295,28 +284,24 @@ script = {
   name = '10_linux';
   source = util/grub.d/10_linux.in;
   installdir = grubconf;
-  common;
 };
 
 script = {
   name = '30_os-prober';
   source = util/grub.d/30_os-prober.in;
   installdir = grubconf;
-  common;
 };
 
 script = {
   name = '40_custom';
   source = util/grub.d/40_custom.in;
   installdir = grubconf;
-  common;
 };
 
 script = {
   name = '41_custom';
   source = util/grub.d/41_custom.in;
   installdir = grubconf;
-  common;
 };
 
 script = {
@@ -324,9 +309,10 @@ script = {
   name = grub-mkrescue;
   source = util/grub-mkrescue.in;
   powerpc_ieee1275 = util/powerpc/ieee1275/grub-mkrescue.in;
-  i386_pc;
-  i386_qemu;
-  i386_coreboot;
+  enable = i386_pc;
+  enable = i386_qemu;
+  enable = i386_coreboot;
+  enable = powerpc_ieee1275;
 };
 
 script = {
@@ -337,10 +323,10 @@ script = {
   x86_efi = util/i386/efi/grub-install.in;
   i386_ieee1275 = util/ieee1275/grub-install.in;
   powerpc_ieee1275 = util/ieee1275/grub-install.in;
-  mips;
-  i386_pc;
-  i386_qemu;
-  i386_coreboot;
+
+  enable = x86;
+  enable = mips;
+  enable = powerpc_ieee1275;
 };
 
 script = {
@@ -348,7 +334,6 @@ script = {
   source = util/grub-mkconfig.in;
   mansection = 8;
   installdir = sbin;
-  common;
 };
 
 script = {
@@ -356,7 +341,6 @@ script = {
   source = util/grub-set-default.in;
   mansection = 8;
   installdir = sbin;
-  common;
 };
 
 script = {
@@ -364,118 +348,104 @@ script = {
   source = util/grub-reboot.in;
   mansection = 8;
   installdir = sbin;
-  common;
 };
 
 script = {
   name = grub-mkconfig_lib;
   source = util/grub-mkconfig_lib.in;
   installdir = pkglib;
-  common;
 };
 
 script = {
   name = update-grub_lib;
   source = util/update-grub_lib.in;
   installdir = pkglib;
-  common;
 };
 
-test_script = {
+script = {
   name = grub-shell;
   source = tests/util/grub-shell.in;
-  common;
 };
 
-test_script = {
+script = {
   name = grub-shell-tester;
   source = tests/util/grub-shell-tester.in;
-  common;
 };
 
-test_script = {
+script = {
+  testcase;
   name = example_scripted_test;
   source = tests/example_scripted_test.in;
-  common;
 };
 
-test_script = {
+script = {
+  testcase;
   name = example_grub_script_test;
   source = tests/example_grub_script_test.in;
-  common;
 };
 
-test_script = {
+script = {
+  testcase;
   name = grub_script_echo1;
   source = tests/grub_script_echo1.in;
-  common;
-  enable;
 };
 
-test_script = {
+script = {
+  testcase;
   name = grub_script_echo_keywords;
   source = tests/grub_script_echo_keywords.in;
-  common;
-  enable;
 };
 
-test_script = {
+script = {
+  testcase;
   name = grub_script_vars1;
   source = tests/grub_script_vars1.in;
-  common;
-  enable;
 };
 
-test_script = {
+script = {
+  testcase;
   name = grub_script_for1;
   source = tests/grub_script_for1.in;
-  common;
-  enable;
 };
 
-test_script = {
+script = {
+  testcase;
   name = grub_script_while1;
   source = tests/grub_script_while1.in;
-  common;
-  enable;
 };
 
-test_script = {
+script = {
+  testcase;
   name = grub_script_if;
   source = tests/grub_script_if.in;
-  common;
-  enable;
 };
 
-test_script = {
+script = {
+  testcase;
   name = grub_script_blanklines;
   source = tests/grub_script_blanklines.in;
-  common;
-  enable;
 };
 
-test_script = {
+script = {
+  testcase;
   name = grub_script_final_semicolon;
   source = tests/grub_script_final_semicolon.in;
-  common;
-  enable;
 };
 
-test_script = {
+script = {
+  testcase;
   name = grub_script_dollar;
   source = tests/grub_script_dollar.in;
-  common;
-  enable;
 };
 
-test_script = {
+script = {
+  testcase;
   name = grub_script_comments;
   source = tests/grub_script_comments.in;
-  common;
-  enable;
 };
 
-test_program = {
+program = {
+  testcase;
   name = example_unit_test;
   source = tests/example_unit_test.c;
   source = tests/lib/unit_test.c;
@@ -484,5 +454,4 @@ test_program = {
   source = grub-core/tests/lib/test.c;
   cflags = -Wno-format;
   ldadd = libgrub.a;
-  common;
 };
