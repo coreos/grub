@@ -25,6 +25,7 @@
 
 extern void grub_ofnet_init(void);
 extern void grub_ofnet_fini(void);
+
 /*
 struct grub_net;
 

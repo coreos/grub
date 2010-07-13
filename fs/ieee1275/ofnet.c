@@ -42,6 +42,85 @@
 
 //static grub_ieee1275_ihandle_t handle = 0;
 
+static const char *
+find_sep (const char *name)
+{
+  const char *p = name;
+  char c = *p;
+
+  if (c == '\0')
+    return NULL;
+
+  do
+    {
+      if (c == '\\' && *p == ',')
+    p++;
+      else if (c == ',')
+    return p - 1;
+    } while ((c = *p++) != '\0');
+  return p - 1;
+}
+
+static grub_err_t
+retrieve_field(const char *src, char **field, const char **rest)
+{
+  const char *p;
+  grub_size_t len;
+
+  p = find_sep(src);
+  if (! p)
+    {
+      *field = NULL;
+      *rest = src;
+      return 0;
+    }
+
+  len = p - src;
+  *field = grub_malloc (len + 1);
+  if (! *field)
+  {
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY, "fail to alloc memory");
+  }
+
+  grub_memcpy (*field, src, len);
+  (*field)[len] = '\0';
+
+  if (*p == '\0')
+    *rest = p;
+  else
+    *rest = p + 1;
+  return 0;
+}
+
+static grub_err_t
+parse_ip (const char *val, grub_uint32_t *ip, const char **rest)
+{
+  grub_uint32_t newip = 0;
+  unsigned long t;
+  int i;
+  const char *ptr = val;
+
+  for (i = 0; i < 4; i++)
+    {
+      t = grub_strtoul (ptr, (char **) &ptr, 0);
+      if (grub_errno)
+	return grub_errno;
+      if (t & ~0xff)
+	return grub_error (GRUB_ERR_OUT_OF_RANGE, "Invalid IP.");
+      newip >>= 8;
+      newip |= (t << 24);
+      if (i != 3 && *ptr != '.')
+	return grub_error (GRUB_ERR_OUT_OF_RANGE, "Invalid IP.");
+      ptr++;
+    }
+  ptr = ptr - 1;
+  if ( *ptr != '\0' && *ptr != ',')
+	return grub_error (GRUB_ERR_OUT_OF_RANGE, "Invalid IP.");
+  *ip = newip;
+  if (rest)
+    *rest = ptr;
+  return 0;
+}
 
 static int
 grub_ofnet_iterate (int (*hook) (const char *name))
@@ -54,23 +133,93 @@ grub_ofnet_iterate (int (*hook) (const char *name))
 static grub_err_t
 grub_ofnet_open (const char *name, grub_disk_t disk)
 {
-
+  grub_err_t err;
+  const char *p1, *p2;
+  char *user = NULL, *pwd = NULL;
+  grub_netdisk_data_t data;
+  grub_netdisk_protocol_t proto;
+  grub_uint32_t server_ip = 0;
 
   if (grub_strcmp (name, "net"))
-      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a net disk");
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a net disk");
 
-  disk->total_sectors = U64MAXSIZE;
+  p1 = find_sep(disk->name);
+  if (! p1 || *p1 == '\0')
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "arguments missing");
+  p1++;
+
+  // parse protocol
+  p2 = find_sep(p1);
+  if (! p2)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no protocol specified");
+  if ((p2 - p1 == 4) && (! grub_strncasecmp(p1, "tftp", p2 - p1)))
+    proto = GRUB_NETDISK_PROTOCOL_TFTP;
+  else
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid protocol specified");
+
+  // parse server ip
+  if ( *p2 == '\0')
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no server ip specified");
+  p1 = p2 + 1;
+  err = parse_ip(p1, &server_ip, &p2);
+  if (err)
+    return err;
+
+  // parse username (optional)
+  if ( *p2 == ',')
+    p2++;
+  err = retrieve_field(p2, &user, &p1);
+  if (err)
+    return err;
+  if (user)
+  {
+    // parse password (optional)
+    err = retrieve_field(p1, &pwd, &p2);
+    if (err)
+    {
+      grub_free(user);
+      return err;
+    }
+  }
+
+  if (! disk->data)
+    {
+      data = grub_malloc (sizeof(*data));
+      disk->data = data;
+    }
+  else
+    {
+      data = disk->data;
+      if (data->username)
+        grub_free(data->username);
+      if (data->password)
+        grub_free(data->password);
+    }
+  data->protocol = proto;
+  data->server_ip = server_ip;
+  data->username = user;
+  data->password = pwd;
+
+  disk->total_sectors = 0;
   disk->id = (unsigned long) "net";
 
   disk->has_partitions = 0;
-  disk->data = 0;
 
   return GRUB_ERR_NONE;
 }
 
 static void
-grub_ofnet_close (grub_disk_t disk __attribute((unused)))
+grub_ofnet_close (grub_disk_t disk)
 {
+  grub_netdisk_data_t data = disk->data;
+  if (data)
+    {
+      if (data->username)
+        grub_free(data->username);
+      if (data->password)
+        grub_free(data->password);
+      grub_free(data);
+    }
 }
 
 static grub_err_t

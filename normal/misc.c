@@ -32,7 +32,46 @@ grub_err_t
 grub_normal_print_device_info (const char *name)
 {
   grub_device_t dev;
+  grub_netdisk_data_t data;
   char *p;
+
+  if ((! grub_strcmp(name, "net")) || (! grub_strncmp(name, "net,", 4)))
+    {
+      grub_printf_ (N_("Device network:"));
+      grub_putchar (' ');
+
+      dev = grub_device_open (name);
+      if (! dev || ! dev->disk || ! dev->disk->data)
+        grub_printf ("%s", _("Network information not available"));
+      else
+        {
+          data = dev->disk->data;
+          grub_putchar ('\n');
+          grub_putchar ('\t');
+          if (data->protocol == GRUB_NETDISK_PROTOCOL_TFTP)
+            grub_printf_(N_("Protocol: %s"), "TFTP"); 
+          else
+            grub_printf_(N_("Protocol: %s"), "Unknown"); 
+          grub_putchar ('\n');
+          grub_putchar ('\t');
+          grub_printf_(N_("Server IP: %d.%d.%d.%d"), data->server_ip & 0xff, data->server_ip >> 8 & 0xff, data->server_ip >> 16 & 0xff, data->server_ip >> 24 & 0xff); 
+          if (data->username)
+            {
+              grub_putchar ('\n');
+              grub_putchar ('\t');
+              grub_printf_(N_("Username: %s"), data->username); 
+              if (data->password)
+                {
+                  grub_putchar ('\n');
+                  grub_putchar ('\t');
+                  grub_printf_(N_("Password: %s"), data->password); 
+                }
+            }
+        }
+      grub_putchar ('\n');
+
+      return GRUB_ERR_NONE;
+    }
 
   p = grub_strchr (name, ',');
   if (p)

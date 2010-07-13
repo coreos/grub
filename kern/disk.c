@@ -281,7 +281,7 @@ grub_disk_open (const char *name)
       goto fail;
     }
 
-  if (p && ! disk->has_partitions)
+  if (p && ! disk->has_partitions && grub_strcmp (raw, "net"))
     {
       grub_error (GRUB_ERR_BAD_DEVICE, "no partition on this disk");
       goto fail;
@@ -289,7 +289,7 @@ grub_disk_open (const char *name)
 
   disk->dev = dev;
 
-  if (p)
+  if (p && grub_strcmp (raw, "net"))
     {
       disk->partition = grub_partition_probe (disk, p + 1);
       if (! disk->partition)
