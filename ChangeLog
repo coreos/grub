@@ -1,3 +1,8 @@
+2010-07-13  Jiro SEKIBA <jir@unicus.jp>
+
+	* fs/nilfs2.c: fix macro NILFS_2ND_SUPER_BLOCK to calculate
+	2nd superblock position from partition size.
+
 2010-07-10  Colin Watson  <cjwatson@ubuntu.com>
 
 	* Makefile.in (MAINTAINER_CLEANFILES): Remove
