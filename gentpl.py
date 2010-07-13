@@ -254,7 +254,7 @@ def kernel(platform):
     r += gvar_add("platform_DATA", "[+ name +].img")
     r += gvar_add("CLEANFILES", "[+ name +].img")
     r += rule("[+ name +].img", "[+ name +].exec$(EXEEXT)",
-              if_platform_tagged(platform, "nostrip", lambda: "cp $@ $<",
+              if_platform_tagged(platform, "nostrip", lambda: "cp $< $@",
                                  lambda: "$(STRIP) $(" + cname() + "_STRIPFLAGS) -o $@ $<"))
     return r
 

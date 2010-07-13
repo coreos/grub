@@ -3,6 +3,8 @@ AutoGen definitions Makefile.tpl;
 kernel = {
   name = kernel;
 
+  nostrip = emu;
+
   emu_ldflags              = '-Wl,-r,-d';
   x86_efi_ldflags          = '-Wl,-r,-d';
   x86_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment';
@@ -1218,6 +1220,7 @@ module = {
   mips = lib/mips/setjmp.S;
   sparc64 = lib/sparc64/setjmp.S;
   powerpc = lib/powerpc/setjmp.S;
+  emu = 'lib/$(target_cpu)/setjmp.S';
 };
 
 module = {
