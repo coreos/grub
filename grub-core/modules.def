@@ -141,6 +141,8 @@ kernel = {
   i386_ieee1275 = kern/ieee1275/ieee1275.c;
   i386_ieee1275 = term/ieee1275/ofconsole.c;
   i386_ieee1275 = disk/ieee1275/ofdisk.c;
+  i386_ieee1275 = term/terminfo.c;
+  i386_ieee1275 = term/tparm.c;
 
   x86_64_efi = kern/x86_64/efi/startup.S;
   x86_64_efi = kern/x86_64/efi/callwrap.S;
@@ -367,14 +369,6 @@ module = {
 };
 
 module = {
-  name = pci;
-  source = bus/emu/pci.c;
-  source = commands/lspci.c;
-  enable = emu;
-  condition = COND_GRUB_EMU_PCI;
-};
-
-module = {
   name = usb;
   source = bus/usb/usb.c;
   source = bus/usb/usbtrans.c;
@@ -393,23 +387,29 @@ module = {
 module = {
   name = uhci;
   source = bus/usb/uhci.c;
-  enable = x86;
+  enable = i386_pc;
 };
 
 module = {
   name = ohci;
   source = bus/usb/ohci.c;
-  enable = x86;
+  enable = i386_pc;
   enable = mips_yeeloong;
 };
 
 module = {
   name = pci;
   source = bus/pci.c;
+  emu = bus/emu/pci.c;
+  emu = commands/lspci.c;
+
+  enable = emu;
   enable = i386_pc;
-  enable = i386_efi;
+  enable = x86_efi;
   enable = i386_ieee1275;
   enable = i386_coreboot;
+
+  emu_condition = COND_GRUB_EMU_PCI;
 };
 
 library = {

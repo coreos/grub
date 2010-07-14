@@ -83,37 +83,52 @@ def rule(target, source, cmd):
     else:
         return "\n" + target + ": " + source + "\n\t" + cmd.replace("\n", "\n\t") + "\n"
 
-def if_platform_tagged(platform, tag, closure, c2=None):
+#
+# Template for keys with platform names as values, for example:
+#
+# kernel = {
+#   nostrip = emu;
+#   nostrip = i386_pc;
+# }
+#
+def if_platform_tagged(platform, tag, snippet_if, snippet_else=None):
     r = ""
     r += "[+ IF " + tag + " defined +]"
     r += "[+ FOR " + tag + " +][+ CASE " + tag + " +]"
     for group in RMAP[platform]:
-        r += "[+ = \"" + group + "\" +]" + closure()
+        r += "[+ = \"" + group + "\" +]" + snippet_if
+
+    if snippet_else != None: r += "[+ * +]" + snippet_if
     r += "[+ ESAC +][+ ENDFOR +]"
 
-    if c2 == None:
+    if snippet_else == None:
         r += "[+ ENDIF +]"
         return r
 
-    r += "[+ ELSE +]" + c2() + "[+ ENDIF +]"
+    r += "[+ ELSE +]" + snippet_else + "[+ ENDIF +]"
     return r
 
-def platform_values(platform, group_tag, default_tag):
+#
+# Template for handling platform specific values, for example:
+#
+# module = {
+#   cflags = '-Wall';
+#   emu_cflags = '-Wall -DGRUB_EMU=1';
+# }
+#
+def foreach_platform_value(platform, tag, suffix, closure):
     r = ""
     for group in RMAP[platform]:
-        gtag = group + group_tag
+        gtag = group + suffix
 
         if group == RMAP[platform][0]:
             r += "[+ IF " + gtag + " +]"
         else:
             r += "[+ ELIF " + gtag + " +]"
 
-        r += "[+ FOR " + gtag + " +][+ ." + gtag + " +] [+ ENDFOR +]"
-    r += "[+ ELSE +][+ FOR " + default_tag + " +][+ ." + default_tag + " +] [+ ENDFOR +][+ ENDIF +]"
+        r += "[+ FOR " + gtag + " +]" + closure("[+ ." + gtag + " +]") + "[+ ENDFOR +]"
+    r += "[+ ELSE +][+ FOR " + tag + " +]" + closure("[+ ." + tag + " +]") + "[+ ENDFOR +][+ ENDIF +]"
     return r
-
-def under_conditional(x):
-    return "[+ IF condition +]\nif [+ condition +]\n[+ ENDIF +]" + x + "[+ IF condition +]\nendif\n[+ ENDIF +]"
 
 def each_platform(closure):
     r = "[+ IF - enable undefined +]"
@@ -122,24 +137,33 @@ def each_platform(closure):
     r += "[+ ELSE +]"
     for platform in GRUB_PLATFORMS:
         x = "\nif COND_" + platform + "\n" + closure(platform) + "endif\n"
-        r += if_platform_tagged(platform, "enable", lambda: x)
+        r += if_platform_tagged(platform, "enable", x)
     r += "[+ ENDIF +]"
-    return r;
+    return r
+
+def under_platform_specific_conditionals(platform, snippet):
+    r  = foreach_platform_value(platform, "condition", "_condition", lambda cond: "if " + cond + "\n")
+    r += snippet
+    r += foreach_platform_value(platform, "condition", "_condition", lambda cond: "endif " + cond + "\n")
+    return r
+
+def platform_specific_values(platform, tag, suffix):
+    return foreach_platform_value(platform, tag, suffix, lambda value: value + " ")
 
 def shared_sources(): return "[+ FOR shared +][+ .shared +] [+ ENDFOR +]"
 def shared_nodist_sources(): return "[+ FOR nodist_shared +] [+ .nodist_shared +][+ ENDFOR +]"
 
-def platform_sources(p): return platform_values(p, "", "source")
-def platform_nodist_sources(p): return platform_values(p, "_nodist", "nodist")
-def platform_extra_dist(p): return platform_values(p, "_extra_dist", "extra_dist")
+def platform_sources(p): return platform_specific_values(p, "source", "")
+def platform_nodist_sources(p): return platform_specific_values(p, "nodist", "_nodist")
+def platform_extra_dist(p): return platform_specific_values(p, "extra_dist", "_extra_dist")
 
-def platform_ldadd(p): return platform_values(p, "_ldadd", "ldadd")
-def platform_cflags(p): return platform_values(p, "_cflags", "cflags")
-def platform_ldflags(p): return platform_values(p, "_ldflags", "ldflags")
-def platform_cppflags(p): return platform_values(p, "_cppflags", "cppflags")
-def platform_ccasflags(p): return platform_values(p, "_ccasflags", "ccasflags")
-def platform_stripflags(p): return platform_values(p, "_stripflags", "stripflags")
-def platform_objcopyflags(p): return platform_values(p, "_objcopyflags", "objcopyflags")
+def platform_ldadd(p): return platform_specific_values(p, "ldadd", "_ldadd")
+def platform_cflags(p): return platform_specific_values(p, "cflags", "_cflags")
+def platform_ldflags(p): return platform_specific_values(p, "ldflags", "_ldflags")
+def platform_cppflags(p): return platform_specific_values(p, "cppflags", "_cppflags")
+def platform_ccasflags(p): return platform_specific_values(p, "ccasflags", "_ccasflags")
+def platform_stripflags(p): return platform_specific_values(p, "stripflags", "_stripflags")
+def platform_objcopyflags(p): return platform_specific_values(p, "objcopyflags", "_objcopyflags")
 
 def module(platform):
     r = set_canonical_name_suffix(".module")
@@ -254,8 +278,8 @@ def kernel(platform):
     r += gvar_add("platform_DATA", "[+ name +].img")
     r += gvar_add("CLEANFILES", "[+ name +].img")
     r += rule("[+ name +].img", "[+ name +].exec$(EXEEXT)",
-              if_platform_tagged(platform, "nostrip", lambda: "cp $< $@",
-                                 lambda: "$(STRIP) $(" + cname() + "_STRIPFLAGS) -o $@ $<"))
+              if_platform_tagged(platform, "nostrip", "cp $< $@",
+                                 "$(STRIP) $(" + cname() + "_STRIPFLAGS) -o $@ $<"))
     return r
 
 def image(platform):
@@ -270,6 +294,7 @@ def image(platform):
     r += var_set(cname() + "_LDFLAGS", "$(AM_LDFLAGS) $(LDFLAGS_IMAGE) " + platform_ldflags(platform))
     r += var_set(cname() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_IMAGE) " + platform_cppflags(platform))
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_IMAGE) " + platform_ccasflags(platform))
+    r += var_set(cname() + "_OBJCOPYFLAGS", "$(OBJCOPYFLAGS_IMAGE) " + platform_objcopyflags(platform))
 
     r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
@@ -281,7 +306,7 @@ def image(platform):
 if test x$(USE_APPLE_CC_FIXES) = xyes; then \
   $(MACHO2IMG) $< $@; \
 else \
-  $(OBJCOPY) """ + platform_objcopyflags(platform) + """ --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@; \
+  $(OBJCOPY) $(""" + cname() + """_OBJCOPYFLAGS) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@; \
 fi
 """)
     return r
@@ -370,25 +395,32 @@ chmod a+x [+ name +]
     return r
 
 def module_rules():
-    return "[+ FOR module +]" + under_conditional(each_platform(lambda p: module(p))) + "[+ ENDFOR +]"
+    return "[+ FOR module +]" + each_platform(
+        lambda p: under_platform_specific_conditionals(p, module(p))) + "[+ ENDFOR +]"
 
 def kernel_rules():
-    return "[+ FOR kernel +]" + under_conditional(each_platform(lambda p: kernel(p))) + "[+ ENDFOR +]"
+    return "[+ FOR kernel +]" + each_platform(
+        lambda p: under_platform_specific_conditionals(p, kernel(p))) + "[+ ENDFOR +]"
 
 def image_rules():
-    return "[+ FOR image +]" + under_conditional(each_platform(lambda p: image(p))) + "[+ ENDFOR +]"
+    return "[+ FOR image +]" + each_platform(
+        lambda p: under_platform_specific_conditionals(p, image(p))) + "[+ ENDFOR +]"
 
 def library_rules():
-    return "[+ FOR library +]" + under_conditional(each_platform(lambda p: library(p))) + "[+ ENDFOR +]"
+    return "[+ FOR library +]" + each_platform(
+        lambda p: under_platform_specific_conditionals(p, library(p))) + "[+ ENDFOR +]"
 
 def program_rules():
-    return "[+ FOR program +]" + under_conditional(each_platform(lambda p: program(p))) + "[+ ENDFOR +]"
+    return "[+ FOR program +]" + each_platform(
+        lambda p: under_platform_specific_conditionals(p, program(p))) + "[+ ENDFOR +]"
 
 def script_rules():
-    return "[+ FOR script +]" + under_conditional(each_platform(lambda p: script(p))) + "[+ ENDFOR +]"
+    return "[+ FOR script +]" + each_platform(
+        lambda p: under_platform_specific_conditionals(p, script(p))) + "[+ ENDFOR +]"
 
 def data_rules():
-    return "[+ FOR data +]" + under_conditional(each_platform(lambda p: data(p))) + "[+ ENDFOR +]"
+    return "[+ FOR data +]" + each_platform(
+        lambda p: under_platform_specific_conditionals(p, data(p))) + "[+ ENDFOR +]"
 
 print "[+ AutoGen5 template +]\n"
 a = module_rules()

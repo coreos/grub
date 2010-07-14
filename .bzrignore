@@ -105,6 +105,8 @@ grub-core/configure.common
 grub-core/depcomp
 grub-core/gentpl.py
 grub-core/conf/gcry.rmk
+grub-core/docs
+grub-core/docs/man
 grub-core/lib/libgcrypt-grub
 grub-core/include/grub/cpu
 grub-core/include/grub/machine

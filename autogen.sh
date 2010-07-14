@@ -20,6 +20,9 @@ ln -svf ../config.rpath grub-core/
 ln -svf ../gentpl.py grub-core/
 ln -svf ../configure.common grub-core/
 
+mkdir -vp grub-core/docs/man
+ln -svf ../../../docs/man/grub-emu.h2m grub-core/docs/man
+
 echo "Creating Makefile.tpl..."
 python gentpl.py | sed -e '/^$/{N;/^\n$/D;}' > Makefile.tpl
 echo "Running autogen..."
