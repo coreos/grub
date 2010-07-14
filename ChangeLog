@@ -1,3 +1,8 @@
+2010-07-14  Anton Blanchard  <anton@samba.org>
+
+	* loader/powerpc/ieee1275/linux.c (grub_cmd_linux): Do not reject
+	ET_DYN files.
+
 2010-07-14  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* Makefile.in: Use the substituted @USE_NLS@ instead of ENABLE_NLS.
