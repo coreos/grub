@@ -1,5 +1,9 @@
 2010-07-14  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
+	* Makefile.in: Use the substituted @USE_NLS@ instead of ENABLE_NLS.
+
+2010-07-14  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
 	* kern/partition.c (grub_partition_check_containment): New function to
 	check that a partition is physically contained in a parent.  Since
 	offsets are relative (and non-negative), this reduces to checking that
