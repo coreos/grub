@@ -23,6 +23,37 @@
 
 grub_partition_map_t grub_partition_map_list;
 
+/*
+ * Checks that disk->partition contains part.  This function assumes that the
+ * start of part is relative to the start of disk->partition.  Returns 1 if
+ * disk->partition is null.
+ */
+static int
+grub_partition_check_containment (const grub_disk_t disk,
+				  const grub_partition_t part)
+{
+  if (disk->partition == NULL)
+    return 1;
+
+  if (part->start + part->len > disk->partition->len)
+    {
+      char *partname;
+
+      partname = grub_partition_get_name (disk->partition);
+      grub_dprintf ("partition", "sub-partition %s%d of (%s,%s) ends after parent.\n",
+		    part->partmap->name, part->number + 1, disk->name, partname);
+#ifdef GRUB_UTIL
+      grub_util_warn ("Discarding improperly nested partition (%s,%s,%s%d)",
+		      disk->name, partname, part->partmap->name, part->number + 1);
+#endif
+      grub_free (partname);
+
+      return 0;
+    }
+
+  return 1;
+}
+
 static grub_partition_t
 grub_partition_map_probe (const grub_partition_map_t partmap,
 			  grub_disk_t disk, int partnum)
@@ -31,20 +62,21 @@ grub_partition_map_probe (const grub_partition_map_t partmap,
 
   auto int find_func (grub_disk_t d, const grub_partition_t partition);
 
-  int find_func (grub_disk_t d __attribute__ ((unused)),
+  int find_func (grub_disk_t dsk,
 		 const grub_partition_t partition)
     {
-      if (partnum == partition->number)
-	{
-	  p = (grub_partition_t) grub_malloc (sizeof (*p));
-	  if (! p)
-	    return 1;
+      if (partnum != partition->number)
+	return 0;
 
-	  grub_memcpy (p, partition, sizeof (*p));
-	  return 1;
-	}
+      if (!(grub_partition_check_containment (dsk, partition)))
+	return 0;
 
-      return 0;
+      p = (grub_partition_t) grub_malloc (sizeof (*p));
+      if (! p)
+	return 1;
+
+      grub_memcpy (p, partition, sizeof (*p));
+      return 1;
     }
 
   partmap->iterate (disk, find_func);
@@ -138,6 +170,10 @@ grub_partition_iterate (struct grub_disk *disk,
 		    const grub_partition_t partition)
     {
       struct grub_partition p = *partition;
+
+      if (!(grub_partition_check_containment (dsk, partition)))
+	return 0;
+
       p.parent = dsk->partition;
       dsk->partition = 0;
       if (hook (dsk, &p))

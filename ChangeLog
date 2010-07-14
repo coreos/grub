@@ -1,3 +1,16 @@
+2010-07-14  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/partition.c (grub_partition_check_containment): New function to
+	check that a partition is physically contained in a parent.  Since
+	offsets are relative (and non-negative), this reduces to checking that
+	the partition ends before its parent.
+	(grub_partition_map_probe): Discard out-of-range sub-partitions.
+	(grub_partition_iterate): Likewise.
+	* include/grub/partition.h (grub_partition_map): Slightly more detailed
+	comments.
+	* partmap/bsdlabel.c (bsdlabel_partition_map_iterate): Discard
+	partitions that start before their parent, and add debug printfs.
+
 2010-07-13  Colin Watson  <cjwatson@ubuntu.com>
 
 	* Makefile.in (.SUFFIX): Spell correctly, as ...
