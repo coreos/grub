@@ -205,7 +205,7 @@ grub_usbms_attach (grub_usb_device_t usbdev, int configno, int interfno)
 
 
 static int
-grub_usbms_iterate (int (*hook) (const char *name, int luns))
+grub_usbms_iterate (int (*hook) (int bus, int luns))
 {
   unsigned i;
 
@@ -214,15 +214,8 @@ grub_usbms_iterate (int (*hook) (const char *name, int luns))
   for (i = 0; i < ARRAY_SIZE (grub_usbms_devices); i++)
     if (grub_usbms_devices[i])
       {
-	char *devname;
-	devname = grub_xasprintf ("usb%d", i);
-
-	if (hook (devname, grub_usbms_devices[i]->luns))
-	  {
-	    grub_free (devname);
-	    return 1;
-	  }
-	grub_free (devname);
+	if (hook (i, grub_usbms_devices[i]->luns))
+	  return 1;
       }
 
   return 0;
@@ -391,43 +384,26 @@ grub_usbms_write (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 }
 
 static grub_err_t
-grub_usbms_open (const char *name, struct grub_scsi *scsi)
+grub_usbms_open (int devnum, struct grub_scsi *scsi)
 {
-  int devnum;
-
-  if (grub_strncmp (name, "usb", 3))
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-		       "not a USB Mass Storage device");
-
-  devnum = grub_strtoul (name + 3, NULL, 10);
-
   grub_usb_poll_devices ();
 
   if (!grub_usbms_devices[devnum])
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-		       "not a USB Mass Storage device");
+		       "unknown USB Mass Storage device");
 
   scsi->data = grub_usbms_devices[devnum];
-  scsi->name = grub_strdup (name);
   scsi->luns = grub_usbms_devices[devnum]->luns;
-  if (! scsi->name)
-    return grub_errno;
 
   return GRUB_ERR_NONE;
-}
-
-static void
-grub_usbms_close (struct grub_scsi *scsi)
-{
-  grub_free (scsi->name);
 }
 
 static struct grub_scsi_dev grub_usbms_dev =
   {
     .name = "usb",
+    .id = GRUB_SCSI_SUBSYSTEM_USBMS,
     .iterate = grub_usbms_iterate,
     .open = grub_usbms_open,
-    .close = grub_usbms_close,
     .read = grub_usbms_read,
     .write = grub_usbms_write
   };

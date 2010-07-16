@@ -1,4 +1,5 @@
-#! /bin/sh -e
+#! /bin/sh
+set -e
 
 # grub-mkconfig helper script.
 # Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
@@ -21,8 +22,7 @@ transform="@program_transform_name@"
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
-grub_prefix=`echo /boot/grub | sed ${transform}`
-locale_dir=`echo /boot/grub/locale | sed ${transform}`
+locale_dir=`echo ${GRUB_PREFIX}/locale | sed ${transform}`
 grub_lang=`echo $LANG | cut -d _ -f 1`
 
 . ${libdir}/grub/grub-mkconfig_lib
@@ -61,8 +61,8 @@ set default="${GRUB_DEFAULT}"
 EOF
 fi
 cat <<EOF
-if [ \${prev_saved_entry} ]; then
-  set saved_entry=\${prev_saved_entry}
+if [ "\${prev_saved_entry}" ]; then
+  set saved_entry="\${prev_saved_entry}"
   save_env saved_entry
   set prev_saved_entry=
   save_env prev_saved_entry
@@ -70,11 +70,29 @@ if [ \${prev_saved_entry} ]; then
 fi
 
 function savedefault {
-  if [ -z \${boot_once} ]; then
-    saved_entry=\${chosen}
+  if [ -z "\${boot_once}" ]; then
+    saved_entry="\${chosen}"
     save_env saved_entry
   fi
 }
+
+function load_video {
+EOF
+if [ -n "${GRUB_VIDEO_BACKEND}" ]; then
+    cat <<EOF
+  insmod ${GRUB_VIDEO_BACKEND}
+EOF
+else
+    # Insert all available backends; GRUB will use the most appropriate.
+    for backend in $(cat "${GRUB_PREFIX}/video.lst"); do
+	cat <<EOF
+  insmod ${backend}
+EOF
+    done
+fi
+cat <<EOF
+}
+
 EOF
 
 serial=0;
@@ -89,7 +107,7 @@ for x in ${GRUB_TERMINAL_INPUT} ${GRUB_TERMINAL_OUTPUT}; do
 done
 
 if [ "x$serial" = x1 ]; then
-    if ! test -e ${grub_prefix}/serial.mod ; then
+    if ! test -e ${GRUB_PREFIX}/serial.mod ; then
 	echo "Serial terminal not available on this platform." >&2 ; exit 1
     fi
 
@@ -107,59 +125,8 @@ if [ "x$gfxterm" = x1 ]; then
     cat << EOF
 if loadfont `make_system_path_relative_to_its_root "${GRUB_FONT_PATH}"` ; then
   set gfxmode=${GRUB_GFXMODE}
+  load_video
   insmod gfxterm
-  insmod ${GRUB_VIDEO_BACKEND}
-EOF
-    if [ "x$GRUB_THEME" != x ] && [ -f "$GRUB_THEME" ] \
-	&& is_path_readable_by_grub "$GRUB_THEME"; then
-	echo "Found theme: $GRUB_THEME" >&2
-	prepare_grub_to_access_device `${grub_probe} --target=device "$GRUB_THEME"` | sed -e "s/^/  /"
-	cat << EOF
-  insmod gfxmenu
-EOF
-	themedir="`dirname "$GRUB_THEME"`"
-	for x in "$themedir"/*.pf2 "$themedir"/f/*.pf2; do
-	    if [ -f "$x" ]; then
-		cat << EOF
-  loadfont (\$root)`make_system_path_relative_to_its_root $x`
-EOF
-	    fi
-	done
-	if [ x"`echo "$themedir"/*.jpg`" != x"$themedir/*.jpg" ] || [ x"`echo "$themedir"/*.jpeg`" != x"$themedir/*.jpeg" ]; then
-	    cat << EOF
-  insmod jpeg
-EOF
-	fi
-	if [ x"`echo "$themedir"/*.png`" != x"$themedir/*.png" ]; then
-	    cat << EOF
-  insmod png
-EOF
-	fi
-	if [ x"`echo "$themedir"/*.tga`" != x"$themedir/*.tga" ]; then
-	    cat << EOF
-  insmod tga
-EOF
-	fi
-	    
-	cat << EOF
-  set theme=(\$root)`make_system_path_relative_to_its_root $GRUB_THEME`
-EOF
-    elif [ "x$GRUB_BACKGROUND" != x ] && [ -f "$GRUB_BACKGROUND" ] \
-	    && is_path_readable_by_grub "$GRUB_BACKGROUND"; then
-	echo "Found background: $GRUB_BACKGROUND" >&2
-	case "$GRUB_BACKGROUND" in 
-	    *.png)         reader=png ;;
-	    *.tga)         reader=tga ;;
-	    *.jpg|*.jpeg)  reader=jpeg ;;
-	    *)             echo "Unsupported image format" >&2; exit 1 ;;
-	esac
-	prepare_grub_to_access_device `${grub_probe} --target=device "$GRUB_BACKGROUND"` | sed -e "s/^/  /"
-	cat << EOF
-  insmod $reader
-  background_image -m stretch `make_system_path_relative_to_its_root "$GRUB_BACKGROUND"`
-EOF
-    fi
-    cat << EOF
 fi
 EOF
 fi
@@ -193,6 +160,58 @@ fi
 EOF
   ;;
 esac
+
+if [ "x$gfxterm" = x1 ]; then
+    if [ "x$GRUB_THEME" != x ] && [ -f "$GRUB_THEME" ] \
+	&& is_path_readable_by_grub "$GRUB_THEME"; then
+	echo "Found theme: $GRUB_THEME" >&2
+	prepare_grub_to_access_device `${grub_probe} --target=device "$GRUB_THEME"`
+	cat << EOF
+insmod gfxmenu
+EOF
+	themedir="`dirname "$GRUB_THEME"`"
+	for x in "$themedir"/*.pf2 "$themedir"/f/*.pf2; do
+	    if [ -f "$x" ]; then
+		cat << EOF
+loadfont (\$root)`make_system_path_relative_to_its_root $x`
+EOF
+	    fi
+	done
+	if [ x"`echo "$themedir"/*.jpg`" != x"$themedir/*.jpg" ] || [ x"`echo "$themedir"/*.jpeg`" != x"$themedir/*.jpeg" ]; then
+	    cat << EOF
+insmod jpeg
+EOF
+	fi
+	if [ x"`echo "$themedir"/*.png`" != x"$themedir/*.png" ]; then
+	    cat << EOF
+insmod png
+EOF
+	fi
+	if [ x"`echo "$themedir"/*.tga`" != x"$themedir/*.tga" ]; then
+	    cat << EOF
+insmod tga
+EOF
+	fi
+	    
+	cat << EOF
+set theme=(\$root)`make_system_path_relative_to_its_root $GRUB_THEME`
+EOF
+    elif [ "x$GRUB_BACKGROUND" != x ] && [ -f "$GRUB_BACKGROUND" ] \
+	    && is_path_readable_by_grub "$GRUB_BACKGROUND"; then
+	echo "Found background: $GRUB_BACKGROUND" >&2
+	case "$GRUB_BACKGROUND" in 
+	    *.png)         reader=png ;;
+	    *.tga)         reader=tga ;;
+	    *.jpg|*.jpeg)  reader=jpeg ;;
+	    *)             echo "Unsupported image format" >&2; exit 1 ;;
+	esac
+	prepare_grub_to_access_device `${grub_probe} --target=device "$GRUB_BACKGROUND"`
+	cat << EOF
+insmod $reader
+background_image -m stretch `make_system_path_relative_to_its_root "$GRUB_BACKGROUND"`
+EOF
+    fi
+fi
 
 # Gettext variables and module
 if [ "x${LANG}" != "xC" ] && [ -d "${locale_dir}" ] ; then
@@ -238,8 +257,9 @@ fi
 
 # Play an initial tune
 if [ "x${GRUB_INIT_TUNE}" != "x" ] ; then
-  cat << EOF
-insmod play
-play ${GRUB_INIT_TUNE}
-EOF
+  echo "play ${GRUB_INIT_TUNE}"
+fi
+
+if [ "x${GRUB_BADRAM}" != "x" ] ; then
+  echo "badram ${GRUB_BADRAM}"
 fi

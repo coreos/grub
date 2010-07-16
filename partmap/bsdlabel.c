@@ -54,7 +54,7 @@ bsdlabel_partition_map_iterate (grub_disk_t disk,
 
   for (p.number = 0;
        p.number < grub_cpu_to_le16 (label.num_partitions);
-       p.number++)
+       p.number++, pos += sizeof (struct grub_partition_bsd_entry))
     {
       struct grub_partition_bsd_entry be;
 
@@ -64,15 +64,43 @@ bsdlabel_partition_map_iterate (grub_disk_t disk,
       if (grub_disk_read (disk, p.offset, p.index, sizeof (be),  &be))
 	return grub_errno;
 
-      p.start = grub_le_to_cpu32 (be.offset) - delta;
+      p.start = grub_le_to_cpu32 (be.offset);
       p.len = grub_le_to_cpu32 (be.size);
       p.partmap = &grub_bsdlabel_partition_map;
 
-      if (be.fs_type != GRUB_PC_PARTITION_BSD_TYPE_UNUSED)
-	if (hook (disk, &p))
-	  return grub_errno;
+      grub_dprintf ("partition",
+		    "partition %d: type 0x%x, start 0x%llx, len 0x%llx\n",
+		    p.number, be.fs_type,
+		    (unsigned long long) p.start,
+		    (unsigned long long) p.len);
 
-      pos += sizeof (struct grub_partition_bsd_entry);
+      if (be.fs_type == GRUB_PC_PARTITION_BSD_TYPE_UNUSED)
+	continue;
+
+      if (p.start < delta)
+	{
+#ifdef GRUB_UTIL
+	  char *partname;
+#endif
+	  grub_dprintf ("partition",
+			"partition %d: invalid start (found 0x%llx, wanted >= 0x%llx)\n",
+			p.number,
+			(unsigned long long) p.start,
+			(unsigned long long) delta);
+#ifdef GRUB_UTIL
+	  /* disk->partition != NULL as 0 < delta */
+	  partname = grub_partition_get_name (disk->partition);
+	  grub_util_warn ("Discarding improperly nested partition (%s,%s,%s%d)",
+			  disk->name, partname, p.partmap->name, p.number + 1);
+	  grub_free (partname);
+#endif
+	  continue;
+	}
+
+      p.start -= delta;
+
+      if (hook (disk, &p))
+	return grub_errno;
     }
 
   return GRUB_ERR_NONE;

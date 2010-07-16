@@ -48,4 +48,8 @@ int EXPORT_FUNC(asprintf) (char **buf, const char *fmt, ...);
 char * EXPORT_FUNC(xasprintf) (const char *fmt, ...);
 extern char * canonicalize_file_name (const char *path);
 
+#ifdef HAVE_DEVICE_MAPPER
+int grub_device_mapper_supported (void);
+#endif
+
 #endif /* GRUB_EMU_MISC_H */

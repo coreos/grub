@@ -26,8 +26,6 @@
 #include <grub/parser.h>
 #include <grub/script_sh.h>
 
-#include <grub_script_check_init.h>
-
 #define _GNU_SOURCE	1
 
 #include <ctype.h>
@@ -39,11 +37,13 @@
 
 #include "progname.h"
 
-void
-grub_putchar (int c)
+void 
+grub_xputs_real (const char *str)
 {
-  putchar (c);
+  fputs (str, stdout);
 }
+
+void (*grub_xputs) (const char *str) = grub_xputs_real;
 
 int
 grub_getkey (void)
@@ -239,9 +239,6 @@ main (int argc, char *argv[])
 	}
     }
 
-  /* Initialize all modules.  */
-  grub_init_all ();
-
   do
     {
       input = 0;
@@ -260,8 +257,6 @@ main (int argc, char *argv[])
       grub_free (input);
     } while (script != 0);
 
-  /* Free resources.  */
-  grub_fini_all ();
   if (file) fclose (file);
 
   return (found_input && script == 0);
