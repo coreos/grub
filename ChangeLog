@@ -1,3 +1,7 @@
+2010-07-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/scsi.c (grub_scsi_open): Fix incorrect pointer dereference.
+
 2010-07-14  Anton Blanchard  <anton@samba.org>
 
 	* loader/powerpc/ieee1275/linux.c (grub_cmd_linux): Do not reject
