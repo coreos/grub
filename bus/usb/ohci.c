@@ -155,23 +155,44 @@ typedef enum
 
 #define GRUB_OHCI_ED_ADDR_MASK 0x7ff
 
-#define GRUB_OHCI_ED_PHYS2VIRT(o, bulk, x) ( !(x) ? NULL : ( \
-  (bulk) ? \
-  (grub_ohci_ed_t)((x) - (o)->ed_bulk_addr + (grub_uint32_t)(o)->ed_bulk) \
-  : \
-  (grub_ohci_ed_t)((x) - (o)->ed_ctrl_addr + (grub_uint32_t)(o)->ed_ctrl) ) )
-  
-#define GRUB_OHCI_ED_VIRT2PHYS(o, bulk, x) ( !(x) ? 0 : ( \
-  (bulk) ? \
-  ((grub_uint32_t)(x) - (grub_uint32_t)(o)->ed_bulk + (o)->ed_bulk_addr) \
-  : \
-  ((grub_uint32_t)(x) - (grub_uint32_t)(o)->ed_ctrl + (o)->ed_ctrl_addr) ) )
+static inline grub_ohci_ed_t
+grub_ohci_ed_phys2virt (struct grub_ohci *o, int bulk, grub_uint32_t x)
+{
+  if (!x)
+    return NULL;
+  if (bulk)
+    return (grub_ohci_ed_t) (x - o->ed_bulk_addr
+			     + (grub_uint8_t *) o->ed_bulk);
+  return (grub_ohci_ed_t) (x - o->ed_ctrl_addr
+			   + (grub_uint8_t *) o->ed_ctrl);
+}
 
-#define GRUB_OHCI_TD_PHYS2VIRT(o, x) ( !(x) ? NULL : \
-  (grub_ohci_td_t)((x) - (o)->td_addr + (grub_uint32_t)(o)->td) )
+static grub_uint32_t
+grub_ohci_virt_to_phys (struct grub_ohci *o, int bulk, grub_ohci_ed_t x)
+{
+  if (!x)
+    return 0;
 
-#define GRUB_OHCI_TD_VIRT2PHYS(o, x) ( !(x) ? 0 : \
-  ((grub_uint32_t)(x) - (grub_uint32_t)(o)->td + (o)->td_addr) )
+  if (bulk)
+    return (grub_uint8_t *) x - (grub_uint8_t *) o->ed_bulk + o->ed_bulk_addr;
+  return (grub_uint8_t *) x - (grub_uint8_t *) o->ed_ctrl + o->ed_ctrl_addr;
+}
+
+static inline grub_ohci_td_t
+grub_ohci_td_phys2virt (struct grub_ohci *o, grub_uint32_t x)
+{
+  if (!x)
+    return NULL;
+  return (grub_ohci_td_t) (x - o->td_addr + (grub_uint8_t *) o->td);
+}
+
+static grub_uint32_t
+grub_ohci_td_virt2phys (struct grub_ohci *o,  grub_ohci_td_t x)
+{
+  if (!x)
+    return 0;
+  return (grub_uint8_t *)x - (grub_uint8_t *)o->td + o->td_addr;
+}
 
   
 static grub_uint32_t
@@ -479,14 +500,14 @@ grub_ohci_find_ed (struct grub_ohci *o, int bulk, grub_uint32_t target)
     {    
       count = GRUB_OHCI_BULK_EDS;
       ed = o->ed_bulk;
-      ed_next = GRUB_OHCI_ED_PHYS2VIRT(o, bulk,
+      ed_next = grub_ohci_ed_phys2virt(o, bulk,
                   grub_le_to_cpu32 (ed->next_ed) );
     }
   else
     {
       count = GRUB_OHCI_CTRL_EDS;
       ed = o->ed_ctrl;
-      ed_next = GRUB_OHCI_ED_PHYS2VIRT(o, bulk,
+      ed_next = grub_ohci_ed_phys2virt(o, bulk,
                   grub_le_to_cpu32 (ed->next_ed) );
     }
 
@@ -500,7 +521,7 @@ grub_ohci_find_ed (struct grub_ohci *o, int bulk, grub_uint32_t target)
       if (ed_next && (i < count))
         {
           ed = ed_next;
-          ed_next = GRUB_OHCI_ED_PHYS2VIRT(o, bulk,
+          ed_next = grub_ohci_ed_phys2virt(o, bulk,
                       grub_le_to_cpu32 (ed->next_ed) );
           continue;
         }
@@ -516,7 +537,7 @@ grub_ohci_find_ed (struct grub_ohci *o, int bulk, grub_uint32_t target)
    * of unplugged devices. */
   /* We can link new ED to previous ED safely as the new ED should
    * still have set skip bit. */
-  ed->next_ed = grub_cpu_to_le32 ( GRUB_OHCI_ED_VIRT2PHYS (o,
+  ed->next_ed = grub_cpu_to_le32 ( grub_ohci_virt_to_phys (o,
                                      bulk, &ed[1]));
   return &ed[1];
 }
@@ -553,7 +574,7 @@ grub_ohci_free_tds (struct grub_ohci *o, grub_ohci_td_t td)
   /* Unchain first TD from previous TD if it is chained */
   if (td->prev_td_phys)
     {
-      grub_ohci_td_t td_prev_virt = GRUB_OHCI_TD_PHYS2VIRT(o,
+      grub_ohci_td_t td_prev_virt = grub_ohci_td_phys2virt(o,
                                       td->prev_td_phys);
 
       if (td == (grub_ohci_td_t) td_prev_virt->link_td)
@@ -714,12 +735,12 @@ grub_ohci_transfer (grub_usb_controller_t dev,
         return GRUB_USB_ERR_INTERNAL; /* We don't need de-allocate ED */
       /* We can set td_head only when ED is not active, i.e.
        * when it is newly allocated. */
-      ed_virt->td_head = grub_cpu_to_le32 ( GRUB_OHCI_TD_VIRT2PHYS (o,
+      ed_virt->td_head = grub_cpu_to_le32 ( grub_ohci_td_virt2phys (o,
                                               td_head_virt) );
       ed_virt->td_tail = ed_virt->td_head;
     }
   else
-    td_head_virt = GRUB_OHCI_TD_PHYS2VIRT ( o, td_head_phys );
+    td_head_virt = grub_ohci_td_phys2virt ( o, td_head_phys );
     
   /* Set TDs */
   td_last_phys = td_head_phys; /* initial value to make compiler happy... */
@@ -739,7 +760,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
         td_current_virt->token |= grub_cpu_to_le32 ( 7 << 21);
       
       /* Remember last used (processed) TD phys. addr. */
-      td_last_phys = GRUB_OHCI_TD_VIRT2PHYS (o, td_current_virt);
+      td_last_phys = grub_ohci_td_virt2phys (o, td_current_virt);
       
       /* Allocate next TD */
       td_next_virt = grub_ohci_alloc_td (o);
@@ -747,7 +768,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
         {
           if (i) /* if i==0 we have nothing to free... */
             grub_ohci_free_tds (o,
-              GRUB_OHCI_TD_PHYS2VIRT(o,
+              grub_ohci_td_phys2virt(o,
                 grub_le_to_cpu32 (td_head_virt->next_td) ) );
           /* Reset head TD */
           grub_memset ( (void*)td_head_virt, 0,
@@ -759,9 +780,9 @@ grub_ohci_transfer (grub_usb_controller_t dev,
       /* Chain TDs */
       td_current_virt->link_td = (grub_uint32_t) td_next_virt;
       td_current_virt->next_td = grub_cpu_to_le32 (
-                                   GRUB_OHCI_TD_VIRT2PHYS (o,
+                                   grub_ohci_td_virt2phys (o,
                                      td_next_virt) );
-      td_next_virt->prev_td_phys = GRUB_OHCI_TD_VIRT2PHYS (o,
+      td_next_virt->prev_td_phys = grub_ohci_td_virt2phys (o,
                                 td_current_virt);
       td_current_virt = td_next_virt;
     }
@@ -777,8 +798,8 @@ grub_ohci_transfer (grub_usb_controller_t dev,
    * setup sequence and we must handle it. */
   ed_virt->target = grub_cpu_to_le32 (target | (1 << 14));
   /* Set td_tail */
-  ed_virt->td_tail = grub_cpu_to_le32 ( GRUB_OHCI_TD_VIRT2PHYS (o,
-                                          td_current_virt) );
+  ed_virt->td_tail
+    = grub_cpu_to_le32 (grub_ohci_td_virt2phys (o, td_current_virt));
   /* Now reset skip bit */
   ed_virt->target = grub_cpu_to_le32 (target);
   /* ed_virt->td_head = grub_cpu_to_le32 (td_head); Must not be changed, it is maintained by OHCI */
@@ -959,7 +980,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
           /* I hope we can do it as transfer (most probably) finished OK */
         }
       /* Prepare pointer to last processed TD */
-      tderr_virt = GRUB_OHCI_TD_PHYS2VIRT (o, tderr_phys);
+      tderr_virt = grub_ohci_td_phys2virt (o, tderr_phys);
       /* Set index of last processed TD */
       if (tderr_virt)
         transfer->last_trans = tderr_virt->tr_index;
@@ -973,12 +994,12 @@ grub_ohci_transfer (grub_usb_controller_t dev,
       if (o->bad_OHCI) /* In case of bad_OHCI tderr_phys can be wrong */
         {
           if ( tderr_phys ) /* check if tderr_phys points to TD with error */
-            errcode = grub_le_to_cpu32 ( GRUB_OHCI_TD_PHYS2VIRT (o,
+            errcode = grub_le_to_cpu32 ( grub_ohci_td_phys2virt (o,
                                            tderr_phys)->token )
                       >> 28;
           if ( !tderr_phys || !errcode ) /* tderr_phys not valid or points to wrong TD */
             { /* Retired TD with error should be previous TD to ED->td_head */
-              tderr_phys = GRUB_OHCI_TD_PHYS2VIRT (o,
+              tderr_phys = grub_ohci_td_phys2virt (o,
                              grub_le_to_cpu32 ( ed_virt->td_head) & ~0xf )
                            ->prev_td_phys;
             }
@@ -988,13 +1009,13 @@ grub_ohci_transfer (grub_usb_controller_t dev,
        * tderr_phys can be zero, check it */
       else if ( !tderr_phys )
         { /* Retired TD with error should be previous TD to ED->td_head */
-          tderr_phys = GRUB_OHCI_TD_PHYS2VIRT (o,
+          tderr_phys = grub_ohci_td_phys2virt (o,
                          grub_le_to_cpu32 ( ed_virt->td_head) & ~0xf )
                        ->prev_td_phys;
         }
 
       /* Prepare pointer to last processed TD and get error code */
-      tderr_virt = GRUB_OHCI_TD_PHYS2VIRT (o, tderr_phys);
+      tderr_virt = grub_ohci_td_phys2virt (o, tderr_phys);
       /* Set index of last processed TD */
       if (tderr_virt)
         {
@@ -1142,11 +1163,11 @@ grub_ohci_transfer (grub_usb_controller_t dev,
       /* Now we must find last processed TD if bad_OHCI == TRUE */
       if (o->bad_OHCI)
         { /* Retired TD with error should be previous TD to ED->td_head */
-          tderr_phys = GRUB_OHCI_TD_PHYS2VIRT (o,
+          tderr_phys = grub_ohci_td_phys2virt (o,
                          grub_le_to_cpu32 ( ed_virt->td_head) & ~0xf)
                        ->prev_td_phys;
         }
-      tderr_virt = GRUB_OHCI_TD_PHYS2VIRT (o, tderr_phys);
+      tderr_virt = grub_ohci_td_phys2virt (o, tderr_phys);
       if (tderr_virt)
         transfer->last_trans = tderr_virt->tr_index;
       else
@@ -1173,7 +1194,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
   if (td_current_virt->prev_td_phys)
     {
       grub_ohci_td_t td_prev_virt
-                = GRUB_OHCI_TD_PHYS2VIRT (o, td_current_virt->prev_td_phys);
+                = grub_ohci_td_phys2virt (o, td_current_virt->prev_td_phys);
 
       td_next_virt = (grub_ohci_td_t) td_prev_virt->link_td;
       if (td_current_virt == td_next_virt)
