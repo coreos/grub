@@ -292,11 +292,15 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
           goto CheckCSW;
         }
       /* Debug print of received data. */
-      grub_dprintf ("usb", "First 16 bytes of received data:\n %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
-  	buf[ 0], buf[ 1], buf[ 2], buf[ 3],
-  	buf[ 4], buf[ 5], buf[ 6], buf[ 7],
-  	buf[ 8], buf[ 9], buf[10], buf[11],
-  	buf[12], buf[13], buf[14], buf[15]);
+      grub_dprintf ("usb", "buf:\n");
+      if (size <= 64)
+	{
+	  unsigned i;
+	  for (i = 0; i < size; i++)
+	    grub_dprintf ("usb", "0x%02x: 0x%02x\n", i, buf[i]);
+	}
+      else
+          grub_dprintf ("usb", "Too much data for debug print...\n");
     }
   else if (size)
     {
@@ -313,6 +317,15 @@ grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 	    grub_usb_clear_halt (dev->dev, dev->out->endp_addr);
           goto CheckCSW;
         }
+      /* Debug print of sent data. */
+      if (size <= 256)
+	{
+	  unsigned i;
+	  for (i=0; i<size; i++)
+	    grub_dprintf ("usb", "0x%02x: 0x%02x\n", i, buf[i]);
+	}
+      else
+          grub_dprintf ("usb", "Too much data for debug print...\n");
     }
 
   /* Read the status - (maybe) according to specification.  */
