@@ -88,7 +88,7 @@ def rule(target, source, cmd):
 #
 # kernel = {
 #   nostrip = emu;
-#   nostrip = i386_pc;
+#   ...
 # }
 #
 def if_platform_tagged(platform, tag, snippet_if, snippet_else=None):
@@ -114,6 +114,7 @@ def if_platform_tagged(platform, tag, snippet_if, snippet_else=None):
 # module = {
 #   cflags = '-Wall';
 #   emu_cflags = '-Wall -DGRUB_EMU=1';
+#   ...
 # }
 #
 def foreach_platform_value(platform, tag, suffix, closure):
