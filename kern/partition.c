@@ -21,6 +21,10 @@
 #include <grub/partition.h>
 #include <grub/disk.h>
 
+#ifdef GRUB_UTIL
+#include <grub/util/misc.h>
+#endif
+
 grub_partition_map_t grub_partition_map_list;
 
 /*

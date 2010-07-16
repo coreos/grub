@@ -24,6 +24,10 @@
 #include <grub/misc.h>
 #include <grub/dl.h>
 
+#ifdef GRUB_UTIL
+#include <grub/util/misc.h>
+#endif
+
 static struct grub_partition_map grub_bsdlabel_partition_map;
 
 
