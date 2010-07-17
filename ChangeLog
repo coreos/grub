@@ -1,3 +1,18 @@
+2010-07-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/bsdlabel.h (GRUB_PC_PARTITION_BSD_LABEL_WHOLE_DISK_PARTITION): New definition.
+	* partmap/bsdlabel.c (bsdlabel_partition_map_iterate): Use FreeBSD
+	delta determination style. Works with most NetBSD partitions too.
+
+2010-07-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/partition.c [GRUB_UTIL]: Add missing util/misc.h inclusion.
+	* partmap/bsdlabel.c [GRUB_UTIL]: Likewise.
+
+2010-07-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/scsi.c (grub_scsi_open): Fix incorrect pointer dereference.
+
 2010-07-14  Anton Blanchard  <anton@samba.org>
 
 	* loader/powerpc/ieee1275/linux.c (grub_cmd_linux): Do not reject
