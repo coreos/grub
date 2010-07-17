@@ -93,10 +93,12 @@ typedef struct grub_usb_transfer *grub_usb_transfer_t;
 
 #define GRUB_USB_HUB_FEATURE_PORT_RESET   0x04
 #define GRUB_USB_HUB_FEATURE_PORT_POWER   0x08
+#define GRUB_USB_HUB_FEATURE_C_CONNECTED  0x10
 
 #define GRUB_USB_HUB_STATUS_CONNECTED	 (1 << 0)
 #define GRUB_USB_HUB_STATUS_LOWSPEED	 (1 << 9)
 #define GRUB_USB_HUB_STATUS_HIGHSPEED	 (1 << 10)
+#define GRUB_USB_HUB_STATUS_C_CONNECTED  (1 << 16)
 #define GRUB_USB_HUB_STATUS_C_PORT_RESET (1 << 20)
 
 struct grub_usb_packet_setup
