@@ -175,7 +175,7 @@ grub_ns8250_init (void)
 {
   int i;
   for (i = 0; i < GRUB_SERIAL_PORT_NUM; i++)
-    //if (serial_hw_io_addr[i])
+    if (serial_hw_io_addr[i])
       {
 	grub_snprintf (com_names[i], sizeof (com_names[i]), "com%d", i);
 	com_ports[i].name = com_names[i];
