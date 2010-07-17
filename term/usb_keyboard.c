@@ -54,7 +54,6 @@ static char keyboard_map_shift[128] =
     '?'
   };
 
-static grub_usb_device_t usbdev;
 
 /* Valid values for bmRequestType.  See HID definition version 1.11 section
    7.2.  */
@@ -69,36 +68,64 @@ static grub_usb_device_t usbdev;
 #define USB_HID_SET_IDLE	0x0A
 #define USB_HID_SET_PROTOCOL	0x0B
 
+static int grub_usb_keyboard_checkkey (struct grub_term_input *term);
+static int grub_usb_keyboard_getkey (struct grub_term_input *term);
+static int grub_usb_keyboard_getkeystatus (struct grub_term_input *term);
+
+static struct grub_term_input grub_usb_keyboard_term =
+  {
+    .checkkey = grub_usb_keyboard_checkkey,
+    .getkey = grub_usb_keyboard_getkey,
+    .getkeystatus = grub_usb_keyboard_getkeystatus,
+    .next = 0
+  };
+
+static struct grub_term_input grub_usb_keyboards[16];
+
 static void
-grub_usb_hid (void)
+grub_usb_keyboard_detach (grub_usb_device_t usbdev,
+			  int config __attribute__ ((unused)),
+			  int interface __attribute__ ((unused)))
 {
-  struct grub_usb_desc_device *descdev;
+  unsigned i;
+  for (i = 0; i < ARRAY_SIZE (grub_usb_keyboards); i++)
+    if (grub_usb_keyboards[i].data && grub_usb_keyboards[i].data == usbdev)
+      {
+	grub_term_unregister_input (&grub_usb_keyboards[i]);
+	grub_free ((char *) grub_usb_keyboards[i].name);
+	grub_usb_keyboards[i].name = NULL;
+	grub_usb_keyboards[i].data = 0;
+      }
+}
 
-  auto int usb_iterate (grub_usb_device_t dev);
-  int usb_iterate (grub_usb_device_t dev)
-    {
-      descdev = &dev->descdev;
+static int
+grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
+{
+  unsigned curnum;
 
-      grub_dprintf ("usb_keyboard", "%x %x %x\n",
-		   descdev->class, descdev->subclass, descdev->protocol);
+  grub_dprintf ("usb_keyboard", "%x %x %x %d %d\n",
+		usbdev->descdev.class, usbdev->descdev.subclass,
+		usbdev->descdev.protocol, configno, interfno);
+
+  for (curnum = 0; curnum < ARRAY_SIZE (grub_usb_keyboards); curnum++)
+    if (!grub_usb_keyboards[curnum].data)
+      break;
+
+  if (curnum == ARRAY_SIZE (grub_usb_keyboards))
+    return 0;
 
 #if 0
-      if (descdev->class != 0x09
-	  || descdev->subclass == 0x01
-	  || descdev->protocol != 0x02)
+  if (descdev->class != 0x09
+      || descdev->subclass == 0x01
+      || descdev->protocol != 0x02)
 	return 0;
 #endif
 
-      if (descdev->class != 0 || descdev->subclass != 0 || descdev->protocol != 0)
-	return 0;
+  if (usbdev->descdev.class != 0 
+      || usbdev->descdev.subclass != 0 || usbdev->descdev.protocol != 0)
+    return 0;
 
-      grub_printf ("HID found!\n");
-
-      usbdev = dev;
-
-      return 1;
-    }
-  grub_usb_iterate (usb_iterate);
+  grub_printf ("HID found!\n");
 
   /* Place the device in boot mode.  */
   grub_usb_control_msg (usbdev, USB_HID_HOST_TO_DEVICE, USB_HID_SET_PROTOCOL,
@@ -107,6 +134,19 @@ grub_usb_hid (void)
   /* Reports every time an event occurs and not more often than that.  */
   grub_usb_control_msg (usbdev, USB_HID_HOST_TO_DEVICE, USB_HID_SET_IDLE,
 			0<<8, 0, 0, 0);
+
+  grub_memcpy (&grub_usb_keyboards[curnum], &grub_usb_keyboard_term,
+	       sizeof (grub_usb_keyboards[curnum]));
+  grub_usb_keyboards[curnum].data = usbdev;
+  usbdev->config[configno].interf[interfno].detach_hook
+    = grub_usb_keyboard_detach;
+  grub_usb_keyboards[curnum].name = grub_xasprintf ("usb_keyboard%d", curnum);
+  if (!grub_usb_keyboards[curnum].name)
+    return 0;
+  grub_term_register_input_active ("usb_keyboard", &grub_usb_keyboards[curnum]);
+
+
+  return 1;
 }
 
 static grub_err_t
@@ -119,13 +159,14 @@ grub_usb_keyboard_getreport (grub_usb_device_t dev, grub_uint8_t *report)
 
 
 static int
-grub_usb_keyboard_checkkey (struct grub_term_input *term __attribute__ ((unused)))
+grub_usb_keyboard_checkkey (struct grub_term_input *term)
 {
   grub_uint8_t data[8];
   int key;
   grub_err_t err;
   grub_uint64_t currtime;
   int timeout = 50;
+  grub_usb_device_t usbdev = term->data;
 
   data[2] = 0;
   currtime = grub_get_time_ms ();
@@ -196,6 +237,7 @@ grub_usb_keyboard_getkey (struct grub_term_input *term)
   grub_uint64_t currtime;
   int timeout;
   static grub_usb_keyboard_repeat_t repeat = GRUB_HIDBOOT_REPEAT_NONE;
+  grub_usb_device_t usbdev = term->data;
 
  again:
 
@@ -253,13 +295,14 @@ grub_usb_keyboard_getkey (struct grub_term_input *term)
 }
 
 static int
-grub_usb_keyboard_getkeystatus (struct grub_term_input *term __attribute__ ((unused)))
+grub_usb_keyboard_getkeystatus (struct grub_term_input *term)
 {
   grub_uint8_t data[8];
   int mods = 0;
   grub_err_t err;
   grub_uint64_t currtime;
   int timeout = 50;
+  grub_usb_device_t usbdev = term->data;
 
   /* Set idle time to the minimum offered by the spec (4 milliseconds) so
      that we can find out the current state.  */
@@ -307,22 +350,27 @@ grub_usb_keyboard_getkeystatus (struct grub_term_input *term __attribute__ ((unu
   return mods;
 }
 
-static struct grub_term_input grub_usb_keyboard_term =
-  {
-    .name = "usb_keyboard",
-    .checkkey = grub_usb_keyboard_checkkey,
-    .getkey = grub_usb_keyboard_getkey,
-    .getkeystatus = grub_usb_keyboard_getkeystatus,
-    .next = 0
-  };
+struct grub_usb_attach_desc attach_hook =
+{
+  .class = GRUB_USB_CLASS_HID,
+  .hook = grub_usb_keyboard_attach
+};
 
 GRUB_MOD_INIT(usb_keyboard)
 {
-  grub_usb_hid ();
-  grub_term_register_input ("usb_keyboard", &grub_usb_keyboard_term);
+  grub_usb_register_attach_hook_class (&attach_hook);
 }
 
 GRUB_MOD_FINI(usb_keyboard)
 {
-  grub_term_unregister_input (&grub_usb_keyboard_term);
+  unsigned i;
+  for (i = 0; i < ARRAY_SIZE (grub_usb_keyboards); i++)
+    if (grub_usb_keyboards[i].data)
+      {
+	grub_term_unregister_input (&grub_usb_keyboards[i]);
+	grub_free ((char *) grub_usb_keyboards[i].name);
+	grub_usb_keyboards[i].name = NULL;
+	grub_usb_keyboards[i].data = 0;
+      }
+  grub_usb_unregister_attach_hook_class (&attach_hook);
 }
