@@ -1,3 +1,7 @@
+2010-07-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/import_unicode.py: Remove unnecessary imports.
+
 2010-07-17  Aleš Nesrsta <starous@volny.cz>
 
 	Hotplugging and USB hub support.
