@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000,2001,2002,2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2003,2004,2005,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/memory.h>
 #include <grub/serial.h>
 #include <grub/term.h>
 #include <grub/types.h>
@@ -26,8 +25,9 @@
 #include <grub/cpu/io.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
+#include <grub/list.h>
 
-static unsigned int registered = 0;
+#define FOR_SERIAL_PORTS(var) FOR_LIST_ELEMENTS((var), (grub_serial_ports))
 
 /* Argument options.  */
 static const struct grub_arg_option options[] =
@@ -41,154 +41,19 @@ static const struct grub_arg_option options[] =
   {0, 0, 0, 0, 0, 0}
 };
 
-/* Serial port settings.  */
-struct serial_port
+struct grub_serial_port *grub_serial_ports;
+
+struct grub_serial_output_state
 {
-  grub_port_t port;
-  unsigned short divisor;
-  unsigned short word_len;
-  unsigned int   parity;
-  unsigned short stop_bits;
+  struct grub_terminfo_output_state tinfo;
+  struct grub_serial_port *port;
 };
 
-/* Serial port settings.  */
-static struct serial_port serial_settings;
-
-#ifdef GRUB_MACHINE_PCBIOS
-static const unsigned short *serial_hw_io_addr = (const unsigned short *) GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR;
-#define GRUB_SERIAL_PORT_NUM 4
-#else
-#include <grub/machine/serial.h>
-static const grub_port_t serial_hw_io_addr[] = GRUB_MACHINE_SERIAL_PORTS;
-#define GRUB_SERIAL_PORT_NUM (ARRAY_SIZE(serial_hw_io_addr))
-#endif
-
-/* Return the port number for the UNITth serial device.  */
-static inline grub_port_t
-serial_hw_get_port (const unsigned int unit)
+struct grub_serial_input_state
 {
-  if (unit < GRUB_SERIAL_PORT_NUM)
-    return serial_hw_io_addr[unit];
-  else
-    return 0;
-}
-
-/* Fetch a key.  */
-static int
-serial_hw_fetch (void)
-{
-  if (grub_inb (serial_settings.port + UART_LSR) & UART_DATA_READY)
-    return grub_inb (serial_settings.port + UART_RX);
-
-  return -1;
-}
-
-/* Put a character.  */
-static void
-serial_hw_put (const int c)
-{
-  unsigned int timeout = 100000;
-
-  /* Wait until the transmitter holding register is empty.  */
-  while ((grub_inb (serial_settings.port + UART_LSR) & UART_EMPTY_TRANSMITTER) == 0)
-    {
-      if (--timeout == 0)
-        /* There is something wrong. But what can I do?  */
-        return;
-    }
-
-  grub_outb (c, serial_settings.port + UART_TX);
-}
-
-/* Convert speed to divisor.  */
-static unsigned short
-serial_get_divisor (unsigned int speed)
-{
-  unsigned int i;
-
-  /* The structure for speed vs. divisor.  */
-  struct divisor
-  {
-    unsigned int speed;
-    unsigned short div;
-  };
-
-  /* The table which lists common configurations.  */
-  /* 1843200 / (speed * 16)  */
-  static struct divisor divisor_tab[] =
-    {
-      { 2400,   0x0030 },
-      { 4800,   0x0018 },
-      { 9600,   0x000C },
-      { 19200,  0x0006 },
-      { 38400,  0x0003 },
-      { 57600,  0x0002 },
-      { 115200, 0x0001 }
-    };
-
-  /* Set the baud rate.  */
-  for (i = 0; i < sizeof (divisor_tab) / sizeof (divisor_tab[0]); i++)
-    if (divisor_tab[i].speed == speed)
-  /* UART in Yeeloong runs twice the usual rate.  */
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
-      return 2 * divisor_tab[i].div;
-#else
-      return divisor_tab[i].div;
-#endif
-  return 0;
-}
-
-/* Initialize a serial device. PORT is the port number for a serial device.
-   SPEED is a DTE-DTE speed which must be one of these: 2400, 4800, 9600,
-   19200, 38400, 57600 and 115200. WORD_LEN is the word length to be used
-   for the device. Likewise, PARITY is the type of the parity and
-   STOP_BIT_LEN is the length of the stop bit. The possible values for
-   WORD_LEN, PARITY and STOP_BIT_LEN are defined in the header file as
-   macros.  */
-static grub_err_t
-serial_hw_init (void)
-{
-  unsigned char status = 0;
-
-  /* Turn off the interrupt.  */
-  grub_outb (0, serial_settings.port + UART_IER);
-
-  /* Set DLAB.  */
-  grub_outb (UART_DLAB, serial_settings.port + UART_LCR);
-
-  /* Set the baud rate.  */
-  grub_outb (serial_settings.divisor & 0xFF, serial_settings.port + UART_DLL);
-  grub_outb (serial_settings.divisor >> 8, serial_settings.port + UART_DLH);
-
-  /* Set the line status.  */
-  status |= (serial_settings.parity
-	     | serial_settings.word_len
-	     | serial_settings.stop_bits);
-  grub_outb (status, serial_settings.port + UART_LCR);
-
-  /* In Yeeloong serial port has only 3 wires.  */
-#ifndef GRUB_MACHINE_MIPS_YEELOONG
-  /* Enable the FIFO.  */
-  grub_outb (UART_ENABLE_FIFO_TRIGGER1, serial_settings.port + UART_FCR);
-
-  /* Turn on DTR and RTS.  */
-  grub_outb (UART_ENABLE_DTRRTS, serial_settings.port + UART_MCR);
-#else
-  /* Enable the FIFO.  */
-  grub_outb (UART_ENABLE_FIFO_TRIGGER14, serial_settings.port + UART_FCR);
-
-  /* Turn on DTR, RTS, and OUT2.  */
-  grub_outb (UART_ENABLE_DTRRTS | UART_ENABLE_OUT2,
-	     serial_settings.port + UART_MCR);
-#endif
-
-  /* Drain the input buffer.  */
-  while (serial_hw_fetch () != -1);
-
-  /*  FIXME: should check if the serial terminal was found.  */
-
-  return GRUB_ERR_NONE;
-}
+  struct grub_terminfo_input_state tinfo;
+  struct grub_serial_port *port;
+};
 
 static grub_uint16_t
 grub_serial_getwh (struct grub_term_output *term __attribute__ ((unused)))
@@ -198,15 +63,37 @@ grub_serial_getwh (struct grub_term_output *term __attribute__ ((unused)))
   return (TEXT_WIDTH << 8) | TEXT_HEIGHT;
 }
 
-struct grub_terminfo_input_state grub_serial_terminfo_input =
+static void 
+serial_put (grub_term_output_t term, const int c)
+{
+  struct grub_serial_output_state *data = term->data;
+  data->port->driver->put (data->port, c);
+}
+
+static int
+serial_fetch (grub_term_input_t term)
+{
+  struct grub_serial_input_state *data = term->data;
+  return data->port->driver->fetch (data->port);
+}
+
+struct grub_serial_input_state grub_serial_terminfo_input =
   {
-    .readkey = serial_hw_fetch
+    .tinfo =
+    {
+      .readkey = serial_fetch
+    }
   };
 
-struct grub_terminfo_output_state grub_serial_terminfo_output =
+struct grub_serial_output_state grub_serial_terminfo_output =
   {
-    .put = serial_hw_put
+    .tinfo =
+    {
+      .put = serial_put
+    }
   };
+
+int registered = 0;
 
 static struct grub_term_input grub_serial_term_input =
 {
@@ -235,121 +122,199 @@ static struct grub_term_output grub_serial_term_output =
 
 
 
+static struct grub_serial_port *
+grub_serial_find (char *name)
+{
+  struct grub_serial_port *port;
+
+  FOR_SERIAL_PORTS (port)
+    if (grub_strcmp (port->name, name) == 0)
+      break;
+
+  if (!port && grub_memcmp (name, "port", sizeof ("port") - 1) == 0
+      && grub_isdigit (name [sizeof ("port") - 1]))
+    {
+      name = grub_serial_ns8250_add_port (grub_strtoul (&name[sizeof ("port") - 1],
+							0, 16));
+      if (!name)
+	return NULL;
+
+      FOR_SERIAL_PORTS (port)
+	if (grub_strcmp (port->name, name) == 0)
+	  break;
+    }
+
+  return port;
+}
+
 static grub_err_t
-grub_cmd_serial (grub_extcmd_t cmd,
-                 int argc __attribute__ ((unused)),
-		 char **args __attribute__ ((unused)))
+grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
 {
   struct grub_arg_list *state = cmd->state;
-  struct serial_port backup_settings = serial_settings;
-  grub_err_t hwiniterr;
+  char pname[40];
+  char *name = NULL;
+  struct grub_serial_port *port;
+  signed speed = -1;
+  signed short word_len = -1;
+  signed int   parity = -1;
+  signed short stop_bits = -1;
+  grub_err_t err;
 
   if (state[0].set)
     {
-      unsigned int unit;
-
-      unit = grub_strtoul (state[0].arg, 0, 0);
-      serial_settings.port = serial_hw_get_port (unit);
-      if (!serial_settings.port)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad unit number");
+      grub_snprintf (pname, sizeof (pname), "com%ld",
+		     grub_strtoul (state[0].arg, 0, 0));
+      name = pname;
     }
 
   if (state[1].set)
-    serial_settings.port = (grub_port_t) grub_strtoul (state[1].arg, 0, 0);
+    {
+      grub_snprintf (pname, sizeof (pname), "port%lx",
+		     grub_strtoul (state[1].arg, 0, 0));
+      name = pname;
+    }
+
+  if (argc >= 1)
+    name = args[0];
+
+  if (!name)
+    name = "com0";
+
+  port = grub_serial_find (name);
+  if (!port)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown serial port");
+
+  speed = port->speed;
+  word_len = port->word_len;
+  parity = port->parity;
+  stop_bits = port->stop_bits;
 
   if (state[2].set)
-    {
-      unsigned long speed;
-
-      speed = grub_strtoul (state[2].arg, 0, 0);
-      serial_settings.divisor = serial_get_divisor ((unsigned int) speed);
-      if (serial_settings.divisor == 0)
-	{
-	  serial_settings = backup_settings;
-	  return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad speed");
-	}
-    }
+    speed = grub_strtoul (state[2].arg, 0, 0);
 
   if (state[3].set)
     {
       if (! grub_strcmp (state[3].arg, "5"))
-	serial_settings.word_len = UART_5BITS_WORD;
+	word_len = UART_5BITS_WORD;
       else if (! grub_strcmp (state[3].arg, "6"))
-	serial_settings.word_len = UART_6BITS_WORD;
+	word_len = UART_6BITS_WORD;
       else if (! grub_strcmp (state[3].arg, "7"))
-	serial_settings.word_len = UART_7BITS_WORD;
+	word_len = UART_7BITS_WORD;
       else if (! grub_strcmp (state[3].arg, "8"))
-	serial_settings.word_len = UART_8BITS_WORD;
+	word_len = UART_8BITS_WORD;
       else
-	{
-	  serial_settings = backup_settings;
-	  return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad word length");
-	}
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad word length");
     }
 
   if (state[4].set)
     {
       if (! grub_strcmp (state[4].arg, "no"))
-	serial_settings.parity = UART_NO_PARITY;
+	parity = UART_NO_PARITY;
       else if (! grub_strcmp (state[4].arg, "odd"))
-	serial_settings.parity = UART_ODD_PARITY;
+	parity = UART_ODD_PARITY;
       else if (! grub_strcmp (state[4].arg, "even"))
-	serial_settings.parity = UART_EVEN_PARITY;
+	parity = UART_EVEN_PARITY;
       else
-	{
-	  serial_settings = backup_settings;
-	  return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad parity");
-	}
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad parity");
     }
 
   if (state[5].set)
     {
       if (! grub_strcmp (state[5].arg, "1"))
-	serial_settings.stop_bits = UART_1_STOP_BIT;
+	stop_bits = UART_1_STOP_BIT;
       else if (! grub_strcmp (state[5].arg, "2"))
-	serial_settings.stop_bits = UART_2_STOP_BITS;
+	stop_bits = UART_2_STOP_BITS;
       else
-	{
-	  serial_settings = backup_settings;
-	  return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad number of stop bits");
-	}
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad number of stop bits");
     }
 
   /* Initialize with new settings.  */
-  hwiniterr = serial_hw_init ();
-
-  if (hwiniterr == GRUB_ERR_NONE)
+  err = port->driver->configure (port, speed, word_len, parity, stop_bits);
+  if (err)
+    return err;
+  if (!registered)
     {
-      /* Register terminal if not yet registered.  */
-      if (registered == 0)
-	{
-	  grub_term_register_input ("serial", &grub_serial_term_input);
-	  grub_term_register_output ("serial", &grub_serial_term_output);
-	  grub_terminfo_output_register (&grub_serial_term_output, "vt100");
-	  registered = 1;
-	}
+      grub_term_register_input ("serial", &grub_serial_term_input);
+      grub_term_register_output ("serial", &grub_serial_term_output);
     }
-  else
-    {
-      /* Initialization with new settings failed.  */
-      if (registered == 1)
-	{
-	  /* If the terminal is registered, attempt to restore previous
-	     settings.  */
-	  serial_settings = backup_settings;
-	  if (serial_hw_init () != GRUB_ERR_NONE)
-	    {
-	      /* If unable to restore settings, unregister terminal.  */
-	      grub_term_unregister_input (&grub_serial_term_input);
-	      grub_term_unregister_output (&grub_serial_term_output);
-	      grub_terminfo_output_unregister (&grub_serial_term_output);
-	      registered = 0;
-	    }
-	}
-    }
-
-  return hwiniterr;
+  grub_serial_terminfo_output.port = port;
+  grub_serial_terminfo_input.port = port;
+  registered = 1;
+  return GRUB_ERR_NONE;
 }
+
+grub_err_t
+grub_serial_register (struct grub_serial_port *port)
+{
+  struct grub_term_input *in;
+  struct grub_term_output *out;
+  struct grub_serial_input_state *indata;
+  struct grub_serial_output_state *outdata;
+
+  in = grub_malloc (sizeof (*in));
+  if (!in)
+    return grub_errno;
+
+  indata = grub_malloc (sizeof (*indata));
+  if (!indata)
+    {
+      grub_free (in);
+      return grub_errno;
+    }
+
+  grub_memcpy (in, &grub_serial_term_input, sizeof (*in));
+  in->data = indata;
+  in->name = grub_xasprintf ("serial_%s", port->name);
+  grub_memcpy (indata, &grub_serial_terminfo_input, sizeof (*indata));
+
+  if (!in->name)
+    {
+      grub_free (in);
+      grub_free (indata);
+      return grub_errno;
+    }
+  
+  out = grub_malloc (sizeof (*out));
+  if (!out)
+    {
+      grub_free (in);
+      grub_free (indata);
+      grub_free ((char *) in->name);
+      return grub_errno;
+    }
+
+  outdata = grub_malloc (sizeof (*outdata));
+  if (!outdata)
+    {
+      grub_free (in);
+      grub_free (indata);
+      grub_free ((char *) in->name);
+      grub_free (out);
+      return grub_errno;
+    }
+
+  grub_memcpy (out, &grub_serial_term_output, sizeof (*out));
+  out->data = outdata;
+  out->name = in->name;
+  grub_memcpy (outdata, &grub_serial_terminfo_output, sizeof (*outdata));
+
+  grub_list_push (GRUB_AS_LIST_P (&grub_serial_ports), GRUB_AS_LIST (port));
+  ((struct grub_serial_input_state *) in->data)->port = port;
+  ((struct grub_serial_output_state *) out->data)->port = port;
+  grub_term_register_input ("serial_*", in);
+  grub_term_register_output ("serial_*", out);
+  grub_terminfo_output_register (out, "vt100");
+
+  return GRUB_ERR_NONE;
+}
+
+void
+grub_serial_unregister (struct grub_serial_port *port)
+{
+  grub_list_remove (GRUB_AS_LIST_P (&grub_serial_ports), GRUB_AS_LIST (port));
+  /* FIXME */
+}
+
 
 static grub_extcmd_t cmd;
 
@@ -360,21 +325,13 @@ GRUB_MOD_INIT(serial)
 			      N_("[OPTIONS...]"),
 			      N_("Configure serial port."), options);
 
-  /* Set default settings.  */
-  serial_settings.port      = serial_hw_get_port (0);
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
-  serial_settings.divisor   = serial_get_divisor (115200);
-#else
-  serial_settings.divisor   = serial_get_divisor (9600);
-#endif
-  serial_settings.word_len  = UART_8BITS_WORD;
-  serial_settings.parity    = UART_NO_PARITY;
-  serial_settings.stop_bits = UART_1_STOP_BIT;
+  grub_ns8250_init ();
 
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
   {
     grub_err_t hwiniterr;
-    hwiniterr = serial_hw_init ();
+    hwiniterr = grub_ns8250_driver.init ("com0", &serial_settings);
+    serial_settings.driver = &grub_ns8250_driver;
 
     if (hwiniterr == GRUB_ERR_NONE)
       {
@@ -389,11 +346,7 @@ GRUB_MOD_INIT(serial)
 
 GRUB_MOD_FINI(serial)
 {
+  while (grub_serial_ports)
+    grub_serial_unregister (grub_serial_ports);
   grub_unregister_extcmd (cmd);
-  if (registered == 1)		/* Unregister terminal only if registered. */
-    {
-      grub_term_unregister_input (&grub_serial_term_input);
-      grub_term_unregister_output (&grub_serial_term_output);
-      grub_terminfo_output_unregister (&grub_serial_term_output);
-    }
 }

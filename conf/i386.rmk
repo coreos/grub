@@ -56,7 +56,7 @@ multiboot2_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For serial.mod.
 pkglib_MODULES += serial.mod
-serial_mod_SOURCES = term/serial.c
+serial_mod_SOURCES = term/serial.c term/ns8250.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

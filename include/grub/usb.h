@@ -19,6 +19,7 @@
 #ifndef	GRUB_USB_H
 #define	GRUB_USB_H	1
 
+#include <grub/err.h>
 #include <grub/usbdesc.h>
 #include <grub/usbtrans.h>
 

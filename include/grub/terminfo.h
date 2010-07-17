@@ -32,7 +32,7 @@ struct grub_terminfo_input_state
 {
   int input_buf[GRUB_TERMINFO_READKEY_MAX_LEN];
   int npending;
-  int (*readkey) (void);
+  int (*readkey) (struct grub_term_input *term);
 };
 
 struct grub_terminfo_output_state
@@ -51,7 +51,7 @@ struct grub_terminfo_output_state
 
   unsigned int xpos, ypos;
 
-  void (*put) (const int c);
+  void (*put) (struct grub_term_output *term, const int c);
 };
 
 void EXPORT_FUNC(grub_terminfo_gotoxy) (grub_term_output_t term,

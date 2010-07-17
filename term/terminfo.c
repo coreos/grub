@@ -195,7 +195,7 @@ putstr (struct grub_term_output *term, const char *str)
   struct grub_terminfo_output_state *data
     = (struct grub_terminfo_output_state *) term->data;
   while (*str)
-    data->put (*str++);
+    data->put (term, *str++);
 }
 
 grub_uint16_t
@@ -225,7 +225,7 @@ grub_terminfo_gotoxy (struct grub_term_output *term,
   else
     {
       if ((y == data->ypos) && (x == data->xpos - 1))
-	data->put ('\b');
+	data->put (term, '\b');
     }
 
   data->xpos = x;
@@ -348,20 +348,21 @@ grub_terminfo_putchar (struct grub_term_output *term,
 	  data->xpos = 0;
 	  if (data->ypos < grub_term_height (term) - 1)
 	    data->ypos++;
-	  data->put ('\r');
-	  data->put ('\n');
+	  data->put (term, '\r');
+	  data->put (term, '\n');
 	}
       data->xpos += c->estimated_width;
       break;
     }
 
-  data->put (c->base);
+  data->put (term, c->base);
 }
 
 #define ANSI_C0 0x9b
 
 static void
-grub_terminfo_readkey (int *keys, int *len, int (*readkey) (void))
+grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
+		       int (*readkey) (struct grub_term_input *term))
 {
   int c;
 
@@ -371,7 +372,7 @@ grub_terminfo_readkey (int *keys, int *len, int (*readkey) (void))
     /* On 9600 we have to wait up to 12 milliseconds.  */	\
     start = grub_get_time_ms ();				\
     do								\
-      c = readkey ();						\
+      c = readkey (term);					\
     while (c == -1 && grub_get_time_ms () - start < 12);	\
     if (c == -1)						\
       return;							\
@@ -380,7 +381,7 @@ grub_terminfo_readkey (int *keys, int *len, int (*readkey) (void))
     (*len)++;							\
   }
 
-  c = readkey ();
+  c = readkey (term);
   if (c < 0)
     {
       *len = 0;
@@ -475,7 +476,8 @@ grub_terminfo_checkkey (struct grub_term_input *termi)
   if (data->npending)
     return data->input_buf[0];
 
-  grub_terminfo_readkey (data->input_buf, &data->npending, data->readkey);
+  grub_terminfo_readkey (termi, data->input_buf,
+			 &data->npending, data->readkey);
 
   if (data->npending)
     return data->input_buf[0];
@@ -491,7 +493,8 @@ grub_terminfo_getkey (struct grub_term_input *termi)
     = (struct grub_terminfo_input_state *) (termi->data);
   int ret;
   while (! data->npending)
-    grub_terminfo_readkey (data->input_buf, &data->npending, data->readkey);
+    grub_terminfo_readkey (termi, data->input_buf, &data->npending,
+			   data->readkey);
 
   ret = data->input_buf[0];
   data->npending--;
