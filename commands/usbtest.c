@@ -29,11 +29,11 @@
 
 static const char *usb_classes[] =
   {
-    "",
+    "Unknown",
     "Audio",
     "Communication Interface",
     "HID",
-    "",
+    "Unknown",
     "Physical",
     "Image",
     "Printer",
@@ -138,10 +138,10 @@ usb_iterate (grub_usb_device_t dev)
   usb_print_str ("Vendor", dev, descdev->strvendor);
   usb_print_str ("Serial", dev, descdev->strserial);
 
-  if (descdev->class > 0 && descdev->class <= 0x0E)
-    grub_printf ("Class: (0x%02x) %s, Subclass: 0x%02x, Protocol: 0x%02x\n",
-		 descdev->class, usb_classes[descdev->class],
-		 descdev->subclass, descdev->protocol);
+  grub_printf ("Class: (0x%02x) %s, Subclass: 0x%02x, Protocol: 0x%02x\n",
+	       descdev->class, descdev->class < ARRAY_SIZE (usb_classes)
+	       ? usb_classes[descdev->class] : "Unknown",
+	       descdev->subclass, descdev->protocol);
   grub_printf ("USB version %d.%d, VendorID: 0x%02x, ProductID: 0x%02x, #conf: %d\n",
 	       descdev->usbrel >> 8, (descdev->usbrel >> 4) & 0x0F,
 	       descdev->vendorid, descdev->prodid, descdev->configcnt);
@@ -164,10 +164,10 @@ usb_iterate (grub_usb_device_t dev)
 
       grub_printf ("Interface #%d: #Endpoints: %d   ",
 		   i, interf->endpointcnt);
-      if (interf->class > 0 && interf->class <= 0x0E)
-	grub_printf ("Class: (0x%02x) %s, Subclass: 0x%02x, Protocol: 0x%02x\n",
-		     interf->class, usb_classes[interf->class],
-		     interf->subclass, interf->protocol);
+      grub_printf ("Class: (0x%02x) %s, Subclass: 0x%02x, Protocol: 0x%02x\n",
+		   interf->class, interf->class < ARRAY_SIZE (usb_classes)
+		   ? usb_classes[interf->class] : "Unknown",
+		   interf->subclass, interf->protocol);
 
       usb_print_str ("Interface", dev, interf->strif);
 
