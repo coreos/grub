@@ -53,75 +53,6 @@
 #define GRUB_PC_PARTITION_TYPE_GPT_DISK		0xee
 #define GRUB_PC_PARTITION_TYPE_LINUX_RAID	0xfd
 
-/* Constants for BSD disk label.  */
-#define GRUB_PC_PARTITION_BSD_LABEL_SECTOR	1
-#define GRUB_PC_PARTITION_BSD_LABEL_MAGIC	0x82564557
-#define GRUB_PC_PARTITION_BSD_MAX_ENTRIES	8
-
-/* BSD partition types.  */
-#define GRUB_PC_PARTITION_BSD_TYPE_UNUSED	0
-#define GRUB_PC_PARTITION_BSD_TYPE_SWAP		1
-#define GRUB_PC_PARTITION_BSD_TYPE_V6		2
-#define GRUB_PC_PARTITION_BSD_TYPE_V7		3
-#define GRUB_PC_PARTITION_BSD_TYPE_SYSV		4
-#define GRUB_PC_PARTITION_BSD_TYPE_V71K		5
-#define GRUB_PC_PARTITION_BSD_TYPE_V8		6
-#define GRUB_PC_PARTITION_BSD_TYPE_BSDFFS	7
-#define GRUB_PC_PARTITION_BSD_TYPE_MSDOS	8
-#define GRUB_PC_PARTITION_BSD_TYPE_BSDLFS	9
-#define GRUB_PC_PARTITION_BSD_TYPE_OTHER	10
-#define GRUB_PC_PARTITION_BSD_TYPE_HPFS		11
-#define GRUB_PC_PARTITION_BSD_TYPE_ISO9660	12
-#define GRUB_PC_PARTITION_BSD_TYPE_BOOT		13
-
-/* FreeBSD-specific types.  */
-#define GRUB_PC_PARTITION_FREEBSD_TYPE_VINUM	14
-#define GRUB_PC_PARTITION_FREEBSD_TYPE_RAID	15
-#define GRUB_PC_PARTITION_FREEBSD_TYPE_JFS2	21
-
-/* NetBSD-specific types.  */
-#define	GRUB_PC_PARTITION_NETBSD_TYPE_ADOS	14
-#define	GRUB_PC_PARTITION_NETBSD_TYPE_HFS	15
-#define	GRUB_PC_PARTITION_NETBSD_TYPE_FILECORE	16
-#define	GRUB_PC_PARTITION_NETBSD_TYPE_EXT2FS	17
-#define	GRUB_PC_PARTITION_NETBSD_TYPE_NTFS	18
-#define	GRUB_PC_PARTITION_NETBSD_TYPE_RAID	19
-#define	GRUB_PC_PARTITION_NETBSD_TYPE_CCD	20
-#define	GRUB_PC_PARTITION_NETBSD_TYPE_JFS2	21
-#define	GRUB_PC_PARTITION_NETBSD_TYPE_APPLEUFS	22
-
-/* OpenBSD-specific types.  */
-#define	GRUB_PC_PARTITION_OPENBSD_TYPE_ADOS	14
-#define	GRUB_PC_PARTITION_OPENBSD_TYPE_HFS	15
-#define	GRUB_PC_PARTITION_OPENBSD_TYPE_FILECORE	16
-#define	GRUB_PC_PARTITION_OPENBSD_TYPE_EXT2FS	17
-#define	GRUB_PC_PARTITION_OPENBSD_TYPE_NTFS	18
-#define	GRUB_PC_PARTITION_OPENBSD_TYPE_RAID	19
-
-/* The BSD partition entry.  */
-struct grub_msdos_partition_bsd_entry
-{
-  grub_uint32_t size;
-  grub_uint32_t offset;
-  grub_uint32_t fragment_size;
-  grub_uint8_t fs_type;
-  grub_uint8_t fs_fragments;
-  grub_uint16_t fs_cylinders;
-} __attribute__ ((packed));
-
-/* The BSD disk label. Only define members useful for GRUB.  */
-struct grub_msdos_partition_disk_label
-{
-  grub_uint32_t magic;
-  grub_uint8_t padding[128];
-  grub_uint32_t magic2;
-  grub_uint16_t checksum;
-  grub_uint16_t num_partitions;
-  grub_uint32_t boot_size;
-  grub_uint32_t superblock_size;
-  struct grub_msdos_partition_bsd_entry entries[GRUB_PC_PARTITION_BSD_MAX_ENTRIES];
-} __attribute__ ((packed));
-
 /* The partition entry.  */
 struct grub_msdos_partition_entry
 {
@@ -168,23 +99,6 @@ struct grub_msdos_partition_mbr
 } __attribute__ ((packed));
 
 
-struct grub_msdos_partition
-{
-    /* The DOS partition number.  */
-  int dos_part;
-
-  /* The BSD partition number (a == 0).  */
-  int bsd_part;
-
-  /* The DOS partition type.  */
-  int dos_type;
-
-  /* The BSD partition type.  */
-  int bsd_type;
-
-  /* The offset of the extended partition.  */
-  unsigned long ext_offset;
-};
 
 static inline int
 grub_msdos_partition_is_empty (int type)
@@ -198,14 +112,6 @@ grub_msdos_partition_is_extended (int type)
   return (type == GRUB_PC_PARTITION_TYPE_EXTENDED
 	  || type == GRUB_PC_PARTITION_TYPE_WIN95_EXTENDED
 	  || type == GRUB_PC_PARTITION_TYPE_LINUX_EXTENDED);
-}
-
-static inline int
-grub_msdos_partition_is_bsd (int type)
-{
-  return (type == GRUB_PC_PARTITION_TYPE_FREEBSD
-	  || type == GRUB_PC_PARTITION_TYPE_OPENBSD
-	  || type == GRUB_PC_PARTITION_TYPE_NETBSD);
 }
 
 #endif /* ! GRUB_PC_PARTITION_HEADER */

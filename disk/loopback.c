@@ -23,6 +23,7 @@
 #include <grub/disk.h>
 #include <grub/mm.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 struct grub_loopback
 {
@@ -36,8 +37,8 @@ static struct grub_loopback *loopback_list;
 
 static const struct grub_arg_option options[] =
   {
-    {"delete", 'd', 0, "delete the loopback device entry", 0, 0},
-    {"partitions", 'p', 0, "simulate a hard drive with partitions", 0, 0},
+    {"delete", 'd', 0, N_("Delete the loopback device entry."), 0, 0},
+    {"partitions", 'p', 0, N_("Simulate a hard drive with partitions."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -241,16 +242,16 @@ static struct grub_disk_dev grub_loopback_dev =
 
 static grub_extcmd_t cmd;
 
-GRUB_MOD_INIT(loop)
+GRUB_MOD_INIT(loopback)
 {
   cmd = grub_register_extcmd ("loopback", grub_cmd_loopback,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      "loopback [-d|-p] DEVICENAME FILE",
-			      "Make a device of a file.", options);
+			      N_("[-d|-p] DEVICENAME FILE."),
+			      N_("Make a device of a file."), options);
   grub_disk_dev_register (&grub_loopback_dev);
 }
 
-GRUB_MOD_FINI(loop)
+GRUB_MOD_FINI(loopback)
 {
   grub_unregister_extcmd (cmd);
   grub_disk_dev_unregister (&grub_loopback_dev);

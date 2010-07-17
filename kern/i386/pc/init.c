@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include <grub/kernel.h>
 #include <grub/mm.h>
+#include <grub/machine/boot.h>
 #include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
@@ -46,32 +47,48 @@ static int num_regions;
 grub_addr_t grub_os_area_addr;
 grub_size_t grub_os_area_size;
 
-void
-grub_arch_sync_caches (void *address __attribute__ ((unused)),
-		       grub_size_t len __attribute__ ((unused)))
-{
-}
-
 static char *
 make_install_device (void)
 {
   /* XXX: This should be enough.  */
-  char dev[100];
+  char dev[100], *ptr = dev;
 
   if (grub_prefix[0] != '(')
     {
       /* No hardcoded root partition - make it from the boot drive and the
 	 partition number encoded at the install time.  */
-      grub_sprintf (dev, "(%cd%u", (grub_boot_drive & 0x80) ? 'h' : 'f',
-		    grub_boot_drive & 0x7f);
+      if (grub_boot_drive == GRUB_BOOT_MACHINE_PXE_DL)
+	{
+	  grub_strcpy (dev, "(pxe");
+	  ptr += sizeof ("(pxe") - 1;
+	}
+      else
+	{
+	  grub_snprintf (dev, sizeof (dev),
+			 "(%cd%u", (grub_boot_drive & 0x80) ? 'h' : 'f',
+			 grub_boot_drive & 0x7f);
+	  ptr += grub_strlen (ptr);
 
-      if (grub_install_dos_part >= 0)
-	grub_sprintf (dev + grub_strlen (dev), ",%u", grub_install_dos_part + 1);
+	  if (grub_install_dos_part >= 0)
+	    grub_snprintf (ptr, sizeof (dev) - (ptr - dev),
+			   ",%u", grub_install_dos_part + 1);
+	  ptr += grub_strlen (ptr);
 
-      if (grub_install_bsd_part >= 0)
-	grub_sprintf (dev + grub_strlen (dev), ",%c", grub_install_bsd_part + 'a');
+	  if (grub_install_bsd_part >= 0)
+	    grub_snprintf (ptr, sizeof (dev) - (ptr - dev), ",%u",
+			   grub_install_bsd_part + 1);
+	  ptr += grub_strlen (ptr);
+	}
 
-      grub_sprintf (dev + grub_strlen (dev), ")%s", grub_prefix);
+      grub_snprintf (ptr, sizeof (dev) - (ptr - dev), ")%s", grub_prefix);
+      grub_strcpy (grub_prefix, dev);
+    }
+  else if (grub_prefix[1] == ',' || grub_prefix[1] == ')')
+    {
+      /* We have a prefix, but still need to fill in the boot drive.  */
+      grub_snprintf (dev, sizeof (dev),
+		     "(%cd%u%s", (grub_boot_drive & 0x80) ? 'h' : 'f',
+		     grub_boot_drive & 0x7f, grub_prefix + 1);
       grub_strcpy (grub_prefix, dev);
     }
 

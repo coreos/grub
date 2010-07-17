@@ -561,19 +561,9 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
       /* mdraid 1.x superblocks have only a name stored not a number.
 	 Use it directly as GRUB device.  */
       if (! array->name)
-	{
-	  array->name = grub_malloc (13);
-	  if (! array->name)
-	    {
-	      grub_free (array->uuid);
-	      grub_free (array);
-
-	      return grub_errno;
-	    }
-	  grub_sprintf (array->name, "md%d", array->number);
-	}
+	array->name = grub_xasprintf ("md%d", array->number);
       else
-	grub_sprintf (array->name, "%s", array->name);
+	array->name = grub_xasprintf ("%s", array->name);
 
       grub_dprintf ("raid", "Found array %s (%s)\n", array->name,
                     scanner_name);

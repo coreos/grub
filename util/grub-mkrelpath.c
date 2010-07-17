@@ -1,7 +1,7 @@
 /* grub-mkrelpath.c - make a system path relative to its root */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2009 Free Software Foundation, Inc.
+ *  Copyright (C) 2009,2010 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
 #include <grub/util/misc.h>
+#include <grub/emu/misc.h>
 #include <grub/i18n.h>
 #include <getopt.h>
 
@@ -34,12 +36,12 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
 Usage: %s [OPTIONS] PATH\n\
 \n\
-Make a system path relative to it's root.\n\
+Make a system path relative to its root.\n\
 \n\
 Options:\n\
   -h, --help                display this message and exit\n\
@@ -56,9 +58,8 @@ main (int argc, char *argv[])
   char *argument, *relpath;
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+
+  grub_util_init_nls ();
 
   /* Check for options.  */
   while (1)
@@ -98,7 +99,7 @@ main (int argc, char *argv[])
 
   argument = argv[optind];
 
-  relpath = make_system_path_relative_to_its_root (argument);
+  relpath = grub_make_system_path_relative_to_its_root (argument);
   printf ("%s\n", relpath);
   free (relpath);
 

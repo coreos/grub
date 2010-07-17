@@ -1,7 +1,7 @@
 /* grub-mkdevicemap.c - make a device map file automatically */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009,2010 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,12 +31,33 @@
 
 #include <grub/util/misc.h>
 #include <grub/util/deviceiter.h>
+#include <grub/env.h>
 #include <grub/i18n.h>
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
 
 #include "progname.h"
+
+void 
+grub_xputs_real (const char *str)
+{
+  fputs (str, stdout);
+}
+
+void (*grub_xputs) (const char *str) = grub_xputs_real;
+
+int
+grub_getkey (void)
+{
+  return -1;
+}
+
+void
+grub_refresh (void)
+{
+  fflush (stdout);
+}
 
 static void
 make_device_map (const char *device_map, int floppy_disks)
@@ -84,7 +105,7 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try ``%s --help'' for more information.\n", program_name);
+	     "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
 Usage: %s [OPTION]...\n\
@@ -112,9 +133,8 @@ main (int argc, char *argv[])
   int floppy_disks = 1;
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+
+  grub_util_init_nls ();
 
   /* Check for options.  */
   while (1)
@@ -158,6 +178,9 @@ main (int argc, char *argv[])
 	    break;
 	  }
     }
+
+  if (verbosity > 1)
+    grub_env_set ("debug", "all");
 
   make_device_map (dev_map ? : DEFAULT_DEVICE_MAP, floppy_disks);
 

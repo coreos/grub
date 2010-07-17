@@ -1,7 +1,7 @@
 /* -*-Asm-*- */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 
 	/* Print message string */
 #define MSG(x)	movw $x, %si; call LOCAL(message)
+#define ERR(x)	movw $x, %si; jmp LOCAL(error_message)
 
 	.file	"boot.S"
 
@@ -233,7 +234,7 @@ LOCAL(chs_mode):
 	jz	LOCAL(floppy_probe)
 
 	/* Nope, we definitely have a hard disk, and we're screwed. */
-	jmp	LOCAL(hd_probe_error)
+	ERR(hd_probe_error_string)
 
 LOCAL(final_init):
 	/* set the mode to zero */
@@ -360,22 +361,15 @@ LOCAL(copy_buffer):
  * BIOS Geometry translation error (past the end of the disk geometry!).
  */
 LOCAL(geometry_error):
-	MSG(geometry_error_string)
-	jmp	LOCAL(general_error)
-
-/*
- * Disk probe failure.
- */
-LOCAL(hd_probe_error):
-	MSG(hd_probe_error_string)
-	jmp	LOCAL(general_error)
+	ERR(geometry_error_string)
 
 /*
  * Read error on the disk.
  */
 LOCAL(read_error):
-	MSG(read_error_string)
-
+	movw	$read_error_string, %si
+LOCAL(error_message):
+	call	LOCAL(message)
 LOCAL(general_error):
 	MSG(general_error_string)
 

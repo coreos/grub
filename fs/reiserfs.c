@@ -62,7 +62,7 @@
 
 static grub_dl_t my_mod;
 
-#define assert(boolean) real_assert (boolean, __FILE__, __LINE__)
+#define assert(boolean) real_assert (boolean, GRUB_FILE, __LINE__)
 static inline void
 real_assert (int boolean, const char *file, const int line)
 {
@@ -929,7 +929,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                                       "Warning : %s has no stat block !\n",
                                       entry_name);
                       grub_free (entry_item);
-                      continue;
+                      goto next;
                     }
                 }
               if (hook (entry_name, entry_type, entry_item))
@@ -940,6 +940,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                   goto found;
                 }
 
+next:
               *entry_name = 0; /* Make sure next entry name (which is just
                                   before this one in disk order) stops before
                                   the current one.  */
@@ -1189,7 +1190,8 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
 		(unsigned long long) (current_position - initial_position),
 		(unsigned long) len);
   return current_position - initial_position;
-/*
+
+#if 0
   switch (found.type)
     {
       case GRUB_REISERFS_DIRECT:
@@ -1232,7 +1234,8 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
         goto fail;
     }
 
-  return read_length;*/
+  return read_length;
+#endif
 
  fail:
   grub_free (indirect_block_ptr);
@@ -1335,12 +1338,15 @@ grub_reiserfs_uuid (grub_device_t device, char **uuid)
   data = grub_reiserfs_mount (disk);
   if (data)
     {
-      *uuid = grub_malloc (sizeof ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"));
-      grub_sprintf (*uuid, "%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-		    grub_be_to_cpu16 (data->superblock.uuid[0]), grub_be_to_cpu16 (data->superblock.uuid[1]),
-		    grub_be_to_cpu16 (data->superblock.uuid[2]), grub_be_to_cpu16 (data->superblock.uuid[3]),
-		    grub_be_to_cpu16 (data->superblock.uuid[4]), grub_be_to_cpu16 (data->superblock.uuid[5]),
-		    grub_be_to_cpu16 (data->superblock.uuid[6]), grub_be_to_cpu16 (data->superblock.uuid[7]));
+      *uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+			     grub_be_to_cpu16 (data->superblock.uuid[0]),
+			     grub_be_to_cpu16 (data->superblock.uuid[1]),
+			     grub_be_to_cpu16 (data->superblock.uuid[2]),
+			     grub_be_to_cpu16 (data->superblock.uuid[3]),
+			     grub_be_to_cpu16 (data->superblock.uuid[4]),
+			     grub_be_to_cpu16 (data->superblock.uuid[5]),
+			     grub_be_to_cpu16 (data->superblock.uuid[6]),
+			     grub_be_to_cpu16 (data->superblock.uuid[7]));
     }
   else
     *uuid = NULL;

@@ -23,24 +23,34 @@
 #include <grub/term.h>
 #include <grub/misc.h>
 #include <grub/gzio.h>
-#include <grub/command.h>
+#include <grub/extcmd.h>
+#include <grub/i18n.h>
+
+static const struct grub_arg_option options[] =
+  {
+    {"dos", -1, 0, N_("Accept DOS-style CR/NL line endings."), 0, 0},
+    {0, 0, 0, 0, 0, 0}
+  };
 
 static grub_err_t
-grub_cmd_cat (grub_command_t cmd __attribute__ ((unused)),
-	      int argc, char **args)
-
+grub_cmd_cat (grub_extcmd_t cmd, int argc, char **args)
 {
+  struct grub_arg_list *state = cmd->state;
+  int dos = 0;
   grub_file_t file;
   char buf[GRUB_DISK_SECTOR_SIZE];
   grub_ssize_t size;
   int key = 0;
+
+  if (state[0].set)
+    dos = 1;
 
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
   file = grub_gzfile_open (args[0], 1);
   if (! file)
-    return 0;
+    return grub_errno;
 
   while ((size = grub_file_read (file, buf, sizeof (buf))) > 0
 	 && key != GRUB_TERM_ESC)
@@ -52,7 +62,12 @@ grub_cmd_cat (grub_command_t cmd __attribute__ ((unused)),
 	  unsigned char c = buf[i];
 
 	  if ((grub_isprint (c) || grub_isspace (c)) && c != '\r')
-	    grub_putchar (c);
+	    grub_printf ("%c", c);
+	  else if (dos && c == '\r' && i + 1 < size && buf[i + 1] == '\n')
+	    {
+	      grub_printf ("\n");
+	      i++;
+	    }
 	  else
 	    {
 	      grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
@@ -66,22 +81,23 @@ grub_cmd_cat (grub_command_t cmd __attribute__ ((unused)),
 	;
     }
 
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_refresh ();
   grub_file_close (file);
 
   return 0;
 }
 
-static grub_command_t cmd;
+static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(cat)
 {
-  cmd = grub_register_command_p1 ("cat", grub_cmd_cat,
-				  "FILE", "Show the contents of a file.");
+  cmd = grub_register_extcmd ("cat", grub_cmd_cat, GRUB_COMMAND_FLAG_BOTH,
+			      N_("FILE"), N_("Show the contents of a file."),
+			      options);
 }
 
 GRUB_MOD_FINI(cat)
 {
-  grub_unregister_command (cmd);
+  grub_unregister_extcmd (cmd);
 }

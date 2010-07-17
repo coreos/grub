@@ -22,6 +22,7 @@
 #include <grub/machine/memory.h>
 #include <grub/machine/vga.h>
 #include <grub/machine/vbe.h>
+#include <grub/video_fb.h>
 #include <grub/types.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
@@ -39,7 +40,6 @@ static grub_uint32_t last_set_mode = 3;
 static struct
 {
   struct grub_video_mode_info mode_info;
-  struct grub_video_render_target *render_target;
 
   unsigned int bytes_per_scan_line;
   unsigned int bytes_per_pixel;
@@ -350,6 +350,7 @@ static grub_err_t
 grub_video_vbe_fini (void)
 {
   grub_vbe_status_t status;
+  grub_err_t err;
 
   /* Restore old video mode.  */
   status = grub_vbe_bios_set_mode (initial_vbe_mode, 0);
@@ -362,14 +363,34 @@ grub_video_vbe_fini (void)
   grub_free (vbe_mode_list);
   vbe_mode_list = NULL;
 
-  /* TODO: destroy render targets.  */
+  err = grub_video_fb_fini ();
+  return err;
+}
 
-  return grub_video_fb_fini ();
+/*
+  Set framebuffer render target page and display the proper page, based on
+  `doublebuf_state.render_page' and `doublebuf_state.displayed_page',
+  respectively.
+*/
+static grub_err_t
+doublebuf_pageflipping_set_page (int page)
+{
+  /* Tell the video adapter to display the new front page.  */
+  int display_start_line
+    = framebuffer.mode_info.height * page;
+
+  grub_vbe_status_t vbe_err =
+    grub_vbe_bios_set_display_start (0, display_start_line);
+
+  if (vbe_err != GRUB_VBE_STATUS_OK)
+    return grub_error (GRUB_ERR_IO, "couldn't commit pageflip");
+
+  return 0;
 }
 
 static grub_err_t
 grub_video_vbe_setup (unsigned int width, unsigned int height,
-                      unsigned int mode_type)
+                      unsigned int mode_type, unsigned int mode_mask)
 {
   grub_uint16_t *p;
   struct grub_vbe_mode_info_block vbe_mode_info;
@@ -415,32 +436,40 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
         /* Not compatible memory model.  */
         continue;
 
-      if ((vbe_mode_info.x_resolution != width)
-          || (vbe_mode_info.y_resolution != height))
+      if (((vbe_mode_info.x_resolution != width)
+	   || (vbe_mode_info.y_resolution != height)) && width != 0 && height != 0)
         /* Non matching resolution.  */
         continue;
 
       /* Check if user requested RGB or index color mode.  */
-      if ((mode_type & GRUB_VIDEO_MODE_TYPE_COLOR_MASK) != 0)
+      if ((mode_mask & GRUB_VIDEO_MODE_TYPE_COLOR_MASK) != 0)
         {
-          if (((mode_type & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR) != 0)
-              && (vbe_mode_info.memory_model != GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL))
-            /* Requested only index color modes.  */
-            continue;
+	  unsigned my_mode_type = 0;
 
-          if (((mode_type & GRUB_VIDEO_MODE_TYPE_RGB) != 0)
-              && (vbe_mode_info.memory_model != GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR))
-            /* Requested only RGB modes.  */
-            continue;
+	  if (vbe_mode_info.memory_model == GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL)
+	    my_mode_type |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+
+	  if (vbe_mode_info.memory_model == GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR)
+	    my_mode_type |= GRUB_VIDEO_MODE_TYPE_RGB;
+
+	  if ((my_mode_type & mode_mask
+	       & (GRUB_VIDEO_MODE_TYPE_RGB | GRUB_VIDEO_MODE_TYPE_INDEX_COLOR))
+	      != (mode_type & mode_mask
+		  & (GRUB_VIDEO_MODE_TYPE_RGB
+		     | GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)))
+	    continue;
         }
 
       /* If there is a request for specific depth, ignore others.  */
       if ((depth != 0) && (vbe_mode_info.bits_per_pixel != depth))
         continue;
 
-      /* Select mode with most number of bits per pixel.  */
+      /* Select mode with most of "volume" (size of framebuffer in bits).  */
       if (best_vbe_mode != 0)
-        if (vbe_mode_info.bits_per_pixel < best_vbe_mode_info.bits_per_pixel)
+        if ((grub_uint64_t) vbe_mode_info.bits_per_pixel
+	    * vbe_mode_info.x_resolution * vbe_mode_info.y_resolution
+	    < (grub_uint64_t) best_vbe_mode_info.bits_per_pixel
+	    * best_vbe_mode_info.x_resolution * best_vbe_mode_info.y_resolution)
           continue;
 
       /* Save so far best mode information for later use.  */
@@ -483,15 +512,24 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
 
       framebuffer.mode_info.blit_format = grub_video_get_blit_format (&framebuffer.mode_info);
 
-      err = grub_video_fb_create_render_target_from_pointer (&framebuffer.render_target, &framebuffer.mode_info, framebuffer.ptr);
+      {
+	/* Get video RAM size in bytes.  */
+	grub_size_t vram_size = controller_info.total_memory << 16;
+	grub_size_t page_size;        /* The size of a page in bytes.  */
 
-      if (err)
-	return err;
+	page_size = framebuffer.mode_info.pitch * framebuffer.mode_info.height;
 
-      err = grub_video_fb_set_active_render_target (framebuffer.render_target);
-
-      if (err)
-	return err;
+	if (vram_size >= 2 * page_size)
+	  err = grub_video_fb_setup (mode_type, mode_mask,
+				     &framebuffer.mode_info,
+				     framebuffer.ptr,
+				     doublebuf_pageflipping_set_page,
+				     framebuffer.ptr + page_size);
+	else
+	  err = grub_video_fb_setup (mode_type, mode_mask,
+				     &framebuffer.mode_info,
+				     framebuffer.ptr, 0, 0);
+      }
 
       /* Copy default palette to initialize emulated palette.  */
       err = grub_video_fb_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
@@ -523,40 +561,20 @@ grub_video_vbe_set_palette (unsigned int start, unsigned int count,
 }
 
 static grub_err_t
-grub_video_vbe_swap_buffers (void)
-{
-  /* TODO: Implement buffer swapping.  */
-  return GRUB_ERR_NONE;
-}
-
-static grub_err_t
-grub_video_vbe_set_active_render_target (struct grub_video_render_target *target)
-{
-  if (target == GRUB_VIDEO_RENDER_TARGET_DISPLAY)
-      target = framebuffer.render_target;
-
-  return grub_video_fb_set_active_render_target (target);
-}
-
-static grub_err_t
 grub_video_vbe_get_info_and_fini (struct grub_video_mode_info *mode_info,
 				  void **framebuf)
 {
-  grub_memcpy (mode_info, &(framebuffer.mode_info), sizeof (*mode_info));
-  *framebuf = (char *) framebuffer.ptr;
-
   grub_free (vbe_mode_list);
   vbe_mode_list = NULL;
-
-  grub_video_fb_fini ();
-
-  return GRUB_ERR_NONE;
+  return grub_video_fb_get_info_and_fini (mode_info, framebuf);
 }
-
 
 static struct grub_video_adapter grub_video_vbe_adapter =
   {
     .name = "VESA BIOS Extension Video Driver",
+    .id = GRUB_VIDEO_DRIVER_VBE,
+
+    .prio = GRUB_VIDEO_ADAPTER_PRIO_FIRMWARE,
 
     .init = grub_video_vbe_init,
     .fini = grub_video_vbe_fini,
@@ -575,10 +593,10 @@ static struct grub_video_adapter grub_video_vbe_adapter =
     .blit_bitmap = grub_video_fb_blit_bitmap,
     .blit_render_target = grub_video_fb_blit_render_target,
     .scroll = grub_video_fb_scroll,
-    .swap_buffers = grub_video_vbe_swap_buffers,
+    .swap_buffers = grub_video_fb_swap_buffers,
     .create_render_target = grub_video_fb_create_render_target,
     .delete_render_target = grub_video_fb_delete_render_target,
-    .set_active_render_target = grub_video_vbe_set_active_render_target,
+    .set_active_render_target = grub_video_fb_set_active_render_target,
     .get_active_render_target = grub_video_fb_get_active_render_target,
 
     .next = 0

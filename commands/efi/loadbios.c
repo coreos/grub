@@ -23,6 +23,7 @@
 #include <grub/efi/efi.h>
 #include <grub/pci.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 static grub_efi_guid_t acpi_guid = GRUB_EFI_ACPI_TABLE_GUID;
 static grub_efi_guid_t acpi2_guid = GRUB_EFI_ACPI_20_TABLE_GUID;
@@ -50,7 +51,8 @@ enable_rom_area (void)
       return 0;
     }
 
-  addr = grub_pci_make_address (dev, 36);
+  /* FIXME: should be macroified.  */
+  addr = grub_pci_make_address (dev, 144);
   grub_pci_write_byte (addr++, 0x30);
   grub_pci_write_byte (addr++, 0x33);
   grub_pci_write_byte (addr++, 0x33);
@@ -76,7 +78,8 @@ lock_rom_area (void)
   grub_pci_address_t addr;
   grub_pci_device_t dev = { .bus = 0, .device = 0, .function = 0};
 
-  addr = grub_pci_make_address (dev, 36);
+  /* FIXME: should be macroified.  */
+  addr = grub_pci_make_address (dev, 144);
   grub_pci_write_byte (addr++, 0x10);
   grub_pci_write_byte (addr++, 0x11);
   grub_pci_write_byte (addr++, 0x11);
@@ -201,11 +204,11 @@ static grub_command_t cmd_fakebios, cmd_loadbios;
 GRUB_MOD_INIT(loadbios)
 {
   cmd_fakebios = grub_register_command ("fakebios", grub_cmd_fakebios,
-					0, "Fake bios.");
+					0, N_("Fake BIOS."));
 
   cmd_loadbios = grub_register_command ("loadbios", grub_cmd_loadbios,
 					"BIOS_DUMP [INT10_DUMP]",
-					"Load bios dump.");
+					N_("Load BIOS dump."));
 }
 
 GRUB_MOD_FINI(loadbios)

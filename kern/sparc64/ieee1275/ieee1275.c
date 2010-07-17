@@ -22,39 +22,6 @@
 /* Sun specific ieee1275 interfaces used by GRUB.  */
 
 int
-grub_ieee1275_map_physical (grub_addr_t paddr, grub_addr_t vaddr,
-			    grub_size_t size, grub_uint32_t mode)
-{
-  struct map_physical_args
-  {
-    struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_cell_t method;
-    grub_ieee1275_cell_t ihandle;
-    grub_ieee1275_cell_t mode;
-    grub_ieee1275_cell_t size;
-    grub_ieee1275_cell_t virt;
-    grub_ieee1275_cell_t phys_high;
-    grub_ieee1275_cell_t phys_low;
-    grub_ieee1275_cell_t catch_result;
-  }
-  args;
-
-  INIT_IEEE1275_COMMON (&args.common, "call-method", 7, 1);
-  args.method = (grub_ieee1275_cell_t) "map";
-  args.ihandle = grub_ieee1275_mmu;
-  args.mode = mode;
-  args.size = size;
-  args.virt = vaddr;
-  args.phys_high = 0;
-  args.phys_low = paddr;
-  args.catch_result = (grub_ieee1275_cell_t) -1;
-
-  if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
-    return -1;
-  return args.catch_result;
-}
-
-int
 grub_ieee1275_claim_vaddr (grub_addr_t vaddr, grub_size_t size)
 {
   struct claim_vaddr_args

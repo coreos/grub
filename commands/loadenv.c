@@ -1,7 +1,7 @@
 /* loadenv.c - command to load/save environment variable.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,10 +26,11 @@
 #include <grub/partition.h>
 #include <grub/lib/envblk.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 static const struct grub_arg_option options[] =
   {
-    {"file", 'f', 0, "Specify filename.", 0, ARG_TYPE_PATHNAME},
+    {"file", 'f', 0, N_("Specify filename."), 0, ARG_TYPE_PATHNAME},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -195,7 +196,7 @@ free_blocklists (struct blocklist *p)
     }
 }
 
-static int
+static grub_err_t
 check_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
                   grub_file_t file)
 {
@@ -218,8 +219,7 @@ check_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
             {
               /* This might be actually valid, but it is unbelievable that
                  any filesystem makes such a silly allocation.  */
-              grub_error (GRUB_ERR_BAD_FS, "malformed file");
-              return 0;
+              return grub_error (GRUB_ERR_BAD_FS, "malformed file");
             }
         }
 
@@ -229,17 +229,14 @@ check_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
   if (total_length != grub_file_size (file))
     {
       /* Maybe sparse, unallocated sectors. No way in GRUB.  */
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "sparse file not allowed");
-      return 0;
+      return grub_error (GRUB_ERR_BAD_FILE_TYPE, "sparse file not allowed");
     }
 
   /* One more sanity check. Re-read all sectors by blocklists, and compare
      those with the data read via a file.  */
   disk = file->device->disk;
-  if (disk->partition)
-    part_start = grub_partition_get_start (disk->partition);
-  else
-    part_start = 0;
+
+  part_start = grub_partition_get_start (disk->partition);
 
   buf = grub_envblk_buffer (envblk);
   for (p = blocklists, index = 0; p; index += p->length, p = p->next)
@@ -248,16 +245,13 @@ check_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
 
       if (grub_disk_read (disk, p->sector - part_start,
                           p->offset, p->length, blockbuf))
-        return 0;
+        return grub_errno;
 
       if (grub_memcmp (buf + index, blockbuf, p->length) != 0)
-        {
-          grub_error (GRUB_ERR_FILE_READ_ERROR, "invalid blocklist");
-          return 0;
-        }
+	return grub_error (GRUB_ERR_FILE_READ_ERROR, "invalid blocklist");
     }
 
-  return 1;
+  return GRUB_ERR_NONE;
 }
 
 static int
@@ -272,10 +266,7 @@ write_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
 
   buf = grub_envblk_buffer (envblk);
   disk = file->device->disk;
-  if (disk->partition)
-    part_start = grub_partition_get_start (disk->partition);
-  else
-    part_start = 0;
+  part_start = grub_partition_get_start (disk->partition);
 
   index = 0;
   for (p = blocklists; p; index += p->length, p = p->next)
@@ -346,7 +337,7 @@ grub_cmd_save_env (grub_extcmd_t cmd, int argc, char **args)
   if (! envblk)
     goto fail;
 
-  if (! check_blocklists (envblk, head, file))
+  if (check_blocklists (envblk, head, file))
     goto fail;
 
   while (argc)
@@ -384,20 +375,20 @@ GRUB_MOD_INIT(loadenv)
   cmd_load =
     grub_register_extcmd ("load_env", grub_cmd_load_env,
 			  GRUB_COMMAND_FLAG_BOTH,
-			  "load_env [-f FILE]",
-			  "Load variables from environment block file.",
+			  N_("[-f FILE]"),
+			  N_("Load variables from environment block file."),
 			  options);
   cmd_list =
     grub_register_extcmd ("list_env", grub_cmd_list_env,
 			  GRUB_COMMAND_FLAG_BOTH,
-			  "list_env [-f FILE]",
-			  "List variables from environment block file.",
+			  N_("[-f FILE]"),
+			  N_("List variables from environment block file."),
 			  options);
   cmd_save =
     grub_register_extcmd ("save_env", grub_cmd_save_env,
 			  GRUB_COMMAND_FLAG_BOTH,
-			  "[-f FILE] variable_name [...]",
-			  "Save variables to environment block file.",
+			  N_("[-f FILE] variable_name [...]"),
+			  N_("Save variables to environment block file."),
 			  options);
 }
 

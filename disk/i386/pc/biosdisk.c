@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -56,7 +56,8 @@ grub_biosdisk_call_hook (int (*hook) (const char *name), int drive)
 {
   char name[10];
 
-    grub_sprintf (name, (drive & 0x80) ? "hd%d" : "fd%d", drive & (~0x80));
+  grub_snprintf (name, sizeof (name),
+		 (drive & 0x80) ? "hd%d" : "fd%d", drive & (~0x80));
   return hook (name);
 }
 
@@ -119,7 +120,8 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
     {
       data->flags = GRUB_BIOSDISK_FLAG_LBA | GRUB_BIOSDISK_FLAG_CDROM;
       data->sectors = 32;
-      total_sectors = GRUB_ULONG_MAX;  /* TODO: get the correct size.  */
+      /* TODO: get the correct size.  */
+      total_sectors = GRUB_DISK_SIZE_UNKNOWN;
     }
   else if (drive & 0x80)
     {
@@ -222,7 +224,7 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	  if (cmd)
 	    return grub_error (GRUB_ERR_WRITE_ERROR, "can\'t write to cdrom");
 
-	  dap->blocks = (dap->blocks + 3) >> 2;
+	  dap->blocks = ALIGN_UP (dap->blocks, 4) >> 2;
 	  dap->block >>= 2;
 
 	  for (i = 0; i < GRUB_BIOSDISK_CDROM_RETRY_COUNT; i++)
@@ -306,8 +308,17 @@ grub_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   while (size)
     {
       grub_size_t len;
+      grub_size_t cdoff = 0;
 
       len = get_safe_sectors (sector, data->sectors);
+
+      if (data->flags & GRUB_BIOSDISK_FLAG_CDROM)
+	{
+	  cdoff = (sector & 3) << GRUB_DISK_SECTOR_BITS;
+	  len = ALIGN_UP (sector + len, 4) - (sector & ~3);
+	  sector &= ~3;
+	}
+
       if (len > size)
 	len = size;
 
@@ -315,7 +326,7 @@ grub_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 			    GRUB_MEMORY_MACHINE_SCRATCH_SEG))
 	return grub_errno;
 
-      grub_memcpy (buf, (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR,
+      grub_memcpy (buf, (void *) (GRUB_MEMORY_MACHINE_SCRATCH_ADDR + cdoff),
 		   len << GRUB_DISK_SECTOR_BITS);
       buf += len << GRUB_DISK_SECTOR_BITS;
       sector += len;
@@ -330,6 +341,9 @@ grub_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
 		     grub_size_t size, const char *buf)
 {
   struct grub_biosdisk_data *data = disk->data;
+
+  if (data->flags & GRUB_BIOSDISK_FLAG_CDROM)
+    return grub_error (GRUB_ERR_IO, "can't write to CDROM");
 
   while (size)
     {

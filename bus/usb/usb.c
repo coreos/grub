@@ -21,8 +21,10 @@
 #include <grub/mm.h>
 #include <grub/usb.h>
 #include <grub/misc.h>
+#include <grub/list.h>
 
 static grub_usb_controller_dev_t grub_usb_list;
+struct grub_usb_attach_desc *attach_hooks;
 
 void
 grub_usb_controller_dev_register (grub_usb_controller_dev_t usb)
@@ -105,10 +107,7 @@ grub_usb_clear_halt (grub_usb_device_t dev, int endpoint)
 grub_usb_err_t
 grub_usb_set_configuration (grub_usb_device_t dev, int configuration)
 {
-  int i;
-
-  for (i = 0; i < 16; i++)
-    dev->toggle[i] = 0;
+  grub_memset (dev->toggle, 0, sizeof (dev->toggle));
 
   return grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
 				     | GRUB_USB_REQTYPE_STANDARD
@@ -163,6 +162,16 @@ grub_usb_device_initialize (grub_usb_device_t dev)
   grub_usb_err_t err;
   int i;
 
+  /* First we have to read first 8 bytes only and determine
+   * max. size of packet */
+  dev->descdev.maxsize0 = 0; /* invalidating, for safety only, can be removed if it is sure it is zero here */
+  err = grub_usb_get_descriptor (dev, GRUB_USB_DESCRIPTOR_DEVICE,
+                                 0, 8, (char *) &dev->descdev);
+  if (err)
+    return err;
+
+  /* Now we have valid value in dev->descdev.maxsize0,
+   * so we can read whole device descriptor */
   err = grub_usb_get_descriptor (dev, GRUB_USB_DESCRIPTOR_DEVICE,
 				 0, sizeof (struct grub_usb_desc_device),
 				 (char *) &dev->descdev);
@@ -224,4 +233,76 @@ grub_usb_device_initialize (grub_usb_device_t dev)
     grub_free (dev->config[i].descconf);
 
   return err;
+}
+
+void grub_usb_device_attach (grub_usb_device_t dev)
+{
+  int i;
+  
+  /* XXX: Just check configuration 0 for now.  */
+  for (i = 0; i < dev->config[0].descconf->numif; i++)
+    {
+      struct grub_usb_desc_if *interf;
+      struct grub_usb_attach_desc *desc;
+
+      interf = dev->config[0].interf[i].descif;
+
+      grub_dprintf ("usb", "iterate: interf=%d, class=%d, subclass=%d, protocol=%d\n",
+		    i, interf->class, interf->subclass, interf->protocol);
+
+      if (dev->config[0].interf[i].attached)
+	continue;
+
+      for (desc = attach_hooks; desc; desc = desc->next)
+	if (interf->class == desc->class && desc->hook (dev, 0, i))
+	  dev->config[0].interf[i].attached = 1;
+    }
+}
+
+void
+grub_usb_register_attach_hook_class (struct grub_usb_attach_desc *desc)
+{
+  auto int usb_iterate (grub_usb_device_t dev);
+
+  int usb_iterate (grub_usb_device_t usbdev)
+    {
+      struct grub_usb_desc_device *descdev = &usbdev->descdev;
+      int i;
+
+      if (descdev->class != 0 || descdev->subclass || descdev->protocol != 0
+	  || descdev->configcnt == 0)
+	return 0;
+
+      /* XXX: Just check configuration 0 for now.  */
+      for (i = 0; i < usbdev->config[0].descconf->numif; i++)
+	{
+	  struct grub_usb_desc_if *interf;
+
+	  interf = usbdev->config[0].interf[i].descif;
+
+	  grub_dprintf ("usb", "iterate: interf=%d, class=%d, subclass=%d, protocol=%d\n",
+	                i, interf->class, interf->subclass, interf->protocol);
+
+	  if (usbdev->config[0].interf[i].attached)
+	    continue;
+
+	  if (interf->class != desc->class)
+	    continue;
+	  if (desc->hook (usbdev, 0, i))
+	    usbdev->config[0].interf[i].attached = 1;
+	}
+
+      return 0;
+    }
+
+  desc->next = attach_hooks;
+  attach_hooks = desc;
+
+  grub_usb_iterate (usb_iterate);
+}
+
+void
+grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc)
+{
+  grub_list_remove (GRUB_AS_LIST_P (&attach_hooks), GRUB_AS_LIST (desc));  
 }

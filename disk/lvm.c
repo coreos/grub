@@ -1,7 +1,7 @@
 /* lvm.c - module to read Logical Volumes.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,10 @@
 #include <grub/misc.h>
 #include <grub/lvm.h>
 
+#ifdef GRUB_UTIL
+#include <grub/emu/misc.h>
+#endif
+
 static struct grub_lvm_vg *vg_list;
 static int lv_count;
 
@@ -39,6 +43,52 @@ grub_lvm_getvalue (char **p, char *str)
     return 0;
   *p += grub_strlen (str);
   return grub_strtoul (*p, NULL, 10);
+}
+
+static int
+grub_lvm_checkvalue (char **p, char *str, char *tmpl)
+{
+  int tmpllen = grub_strlen (tmpl);
+  *p = grub_strstr (*p, str);
+  if (! *p)
+    return 0;
+  *p += grub_strlen (str);
+  if (**p != '"')
+    return 0;
+  return (grub_memcmp (*p + 1, tmpl, tmpllen) == 0 && (*p)[tmpllen + 1] == '"');
+}
+
+static int
+grub_lvm_check_flag (char *p, char *str, char *flag)
+{
+  int len_str = grub_strlen (str), len_flag = grub_strlen (flag);
+  while (1)
+    {
+      char *q;
+      p = grub_strstr (p, str);
+      if (! p)
+	return 0;
+      p += len_str;
+      if (grub_memcmp (p, " = [", sizeof (" = [") - 1) != 0)
+	continue;
+      q = p + sizeof (" = [") - 1;
+      while (1)
+	{
+	  while (grub_isspace (*q))
+	    q++;
+	  if (*q != '"')
+	    return 0;
+	  q++;
+	  if (grub_memcmp (q, flag, len_flag) == 0 && q[len_flag] == '"')
+	    return 1;
+	  while (*q != '"')
+	    q++;
+	  q++;
+	  if (*q == ']')
+	    return 0;
+	  q++;
+	}
+    }
 }
 
 static int
@@ -68,6 +118,9 @@ grub_lvm_memberlist (grub_disk_t disk)
   if (lv->vg->pvs)
     for (pv = lv->vg->pvs; pv; pv = pv->next)
       {
+	if (!pv->disk)
+	  grub_util_error ("Couldn't find PV %s. Check your device.map",
+			   pv->name);
 	tmp = grub_malloc (sizeof (*tmp));
 	tmp->disk = pv->disk;
 	tmp->next = list;
@@ -414,6 +467,7 @@ grub_lvm_scan_device (const char *name)
 	  while (1)
 	    {
 	      int s;
+	      int skip_lv = 0;
 	      struct grub_lvm_lv *lv;
 	      struct grub_lvm_segment *seg;
 
@@ -438,6 +492,12 @@ grub_lvm_scan_device (const char *name)
 
 	      lv->size = 0;
 
+	      if (!grub_lvm_check_flag (p, "status", "VISIBLE"))
+		{
+		  skip_lv = 1;
+		  goto lv_parsed;
+		}
+
 	      lv->segment_count = grub_lvm_getvalue (&p, "segment_count = ");
 	      if (p == NULL)
 		goto lvs_fail;
@@ -458,6 +518,14 @@ grub_lvm_scan_device (const char *name)
 		  seg->extent_count = grub_lvm_getvalue (&p, "extent_count = ");
 		  if (p == NULL)
 		    goto lvs_segment_fail;
+
+		  if (grub_lvm_checkvalue (&p, "type = ", "snapshot"))
+		    {
+		      /* Found a snapshot, give up and move on. */
+		      skip_lv = 1;
+		      break;
+		    }
+
 		  seg->stripe_count = grub_lvm_getvalue (&p, "stripe_count = ");
 		  if (p == NULL)
 		    goto lvs_segment_fail;
@@ -524,11 +592,19 @@ grub_lvm_scan_device (const char *name)
 		  goto fail4;
 		}
 
+	    lv_parsed:
 	      if (p != NULL)
 		p = grub_strchr (p, '}');
 	      if (p == NULL)
 		goto lvs_fail;
 	      p += 3;
+
+	      if (skip_lv)
+		{
+		  grub_free (lv->name);
+		  grub_free (lv);
+		  continue;
+		}
 
 	      lv->number = lv_count++;
 	      lv->vg = vg;

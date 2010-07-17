@@ -24,97 +24,84 @@
 #include <grub/efi/api.h>
 #include <grub/efi/console.h>
 
-static grub_uint8_t
+static const grub_uint8_t
 grub_console_standard_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_YELLOW,
 						  GRUB_EFI_BACKGROUND_BLACK);
-static grub_uint8_t
-grub_console_normal_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_LIGHTGRAY,
-						GRUB_EFI_BACKGROUND_BLACK);
-static grub_uint8_t
-grub_console_highlight_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_BLACK,
-						   GRUB_EFI_BACKGROUND_LIGHTGRAY);
 
 static int read_key = -1;
 
 static grub_uint32_t
 map_char (grub_uint32_t c)
 {
-  if (c > 0x7f)
+  /* Map some unicode characters to the EFI character.  */
+  switch (c)
     {
-      /* Map some unicode characters to the EFI character.  */
-      switch (c)
-	{
-	case 0x2190:	/* left arrow */
-	  c = 0x25c4;
-	  break;
-	case 0x2191:	/* up arrow */
-	  c = 0x25b2;
-	  break;
-	case 0x2192:	/* right arrow */
-	  c = 0x25ba;
-	  break;
-	case 0x2193:	/* down arrow */
-	  c = 0x25bc;
-	  break;
-	case 0x2501:	/* horizontal line */
-	  c = 0x2500;
-	  break;
-	case 0x2503:	/* vertical line */
-	  c = 0x2502;
-	  break;
-	case 0x250F:	/* upper-left corner */
-	  c = 0x250c;
-	  break;
-	case 0x2513:	/* upper-right corner */
-	  c = 0x2510;
-	  break;
-	case 0x2517:	/* lower-left corner */
-	  c = 0x2514;
-	  break;
-	case 0x251B:	/* lower-right corner */
-	  c = 0x2518;
-	  break;
-
-	default:
-	  c = '?';
-	  break;
-	}
+    case GRUB_UNICODE_LEFTARROW:
+      c = GRUB_UNICODE_BLACK_LEFT_TRIANGLE;
+      break;
+    case GRUB_UNICODE_UPARROW:
+      c = GRUB_UNICODE_BLACK_UP_TRIANGLE;
+      break;
+    case GRUB_UNICODE_RIGHTARROW:
+      c = GRUB_UNICODE_BLACK_RIGHT_TRIANGLE;
+      break;
+    case GRUB_UNICODE_DOWNARROW:
+      c = GRUB_UNICODE_BLACK_DOWN_TRIANGLE;
+      break;
+    case GRUB_UNICODE_HLINE:
+      c = GRUB_UNICODE_LIGHT_HLINE;
+      break;
+    case GRUB_UNICODE_VLINE:
+      c = GRUB_UNICODE_LIGHT_VLINE;
+      break;
+    case GRUB_UNICODE_CORNER_UL:
+      c = GRUB_UNICODE_LIGHT_CORNER_UL;
+      break;
+    case GRUB_UNICODE_CORNER_UR:
+      c = GRUB_UNICODE_LIGHT_CORNER_UR;
+      break;
+    case GRUB_UNICODE_CORNER_LL:
+      c = GRUB_UNICODE_LIGHT_CORNER_LL;
+      break;
+    case GRUB_UNICODE_CORNER_LR:
+      c = GRUB_UNICODE_LIGHT_CORNER_LR;
+      break;
     }
 
   return c;
 }
 
 static void
-grub_console_putchar (grub_uint32_t c)
+grub_console_putchar (struct grub_term_output *term __attribute__ ((unused)),
+		      const struct grub_unicode_glyph *c)
 {
-  grub_efi_char16_t str[2];
+  grub_efi_char16_t str[2 + c->ncomb];
   grub_efi_simple_text_output_interface_t *o;
+  unsigned i, j;
 
   o = grub_efi_system_table->con_out;
 
   /* For now, do not try to use a surrogate pair.  */
-  if (c > 0xffff)
-    c = '?';
-
-  str[0] = (grub_efi_char16_t)  map_char (c & 0xffff);
-  str[1] = 0;
+  if (c->base > 0xffff)
+    str[0] = '?';
+  else
+    str[0] = (grub_efi_char16_t)  map_char (c->base & 0xffff);
+  j = 1;
+  for (i = 0; i < c->ncomb; i++)
+    if (c->base < 0xffff)
+      str[j++] = c->combining[i].code;
+  str[j] = 0;
 
   /* Should this test be cached?  */
-  if (c > 0x7f && efi_call_2 (o->test_string, o, str) != GRUB_EFI_SUCCESS)
+  if ((c->base > 0x7f || c->ncomb)
+      && efi_call_2 (o->test_string, o, str) != GRUB_EFI_SUCCESS)
     return;
 
   efi_call_2 (o->output_string, o, str);
 }
 
-static grub_ssize_t
-grub_console_getcharwidth (grub_uint32_t c __attribute__ ((unused)))
-{
-  /* For now, every printable character has the width 1.  */
-  return 1;
-}
-
 static int
-grub_console_checkkey (void)
+grub_console_checkkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_efi_simple_input_interface_t *i;
   grub_efi_input_key_t key;
@@ -159,27 +146,27 @@ grub_console_checkkey (void)
 	  read_key = key.unicode_char;
 	  break;
 	case 0x01:
-	  read_key = 16;
+	  read_key = GRUB_TERM_UP;
 	  break;
 	case 0x02:
-	  read_key = 14;
+	  read_key = GRUB_TERM_DOWN;
 	  break;
 	case 0x03:
-	  read_key = 6;
+	  read_key = GRUB_TERM_RIGHT;
 	  break;
 	case 0x04:
-	  read_key = 2;
+	  read_key = GRUB_TERM_LEFT;
 	  break;
 	case 0x05:
-	  read_key = 1;
+	  read_key = GRUB_TERM_HOME;
 	  break;
 	case 0x06:
-	  read_key = 5;
+	  read_key = GRUB_TERM_END;
 	  break;
 	case 0x07:
 	  break;
 	case 0x08:
-	  read_key = 4;
+	  read_key = GRUB_TERM_DC;
 	  break;
 	case 0x09:
 	  break;
@@ -194,6 +181,9 @@ grub_console_checkkey (void)
 	case 0x0d:
 	  read_key = 5;
 	  break;
+	case 0x0e:
+	  read_key = 3;
+	  break;
 	case 0x17:
 	  read_key = '\e';
 	  break;
@@ -206,7 +196,7 @@ grub_console_checkkey (void)
 }
 
 static int
-grub_console_getkey (void)
+grub_console_getkey (struct grub_term_input *term)
 {
   grub_efi_simple_input_interface_t *i;
   grub_efi_boot_services_t *b;
@@ -230,7 +220,7 @@ grub_console_getkey (void)
       if (status != GRUB_EFI_SUCCESS)
         return -1;
 
-      grub_console_checkkey ();
+      grub_console_checkkey (term);
     }
   while (read_key < 0);
 
@@ -240,7 +230,7 @@ grub_console_getkey (void)
 }
 
 static grub_uint16_t
-grub_console_getwh (void)
+grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
   grub_efi_simple_text_output_interface_t *o;
   grub_efi_uintn_t columns, rows;
@@ -257,7 +247,7 @@ grub_console_getwh (void)
 }
 
 static grub_uint16_t
-grub_console_getxy (void)
+grub_console_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   grub_efi_simple_text_output_interface_t *o;
 
@@ -266,7 +256,8 @@ grub_console_getxy (void)
 }
 
 static void
-grub_console_gotoxy (grub_uint8_t x, grub_uint8_t y)
+grub_console_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
+		     grub_uint8_t x, grub_uint8_t y)
 {
   grub_efi_simple_text_output_interface_t *o;
 
@@ -275,7 +266,7 @@ grub_console_gotoxy (grub_uint8_t x, grub_uint8_t y)
 }
 
 static void
-grub_console_cls (void)
+grub_console_cls (struct grub_term_output *term __attribute__ ((unused)))
 {
   grub_efi_simple_text_output_interface_t *o;
   grub_efi_int32_t orig_attr;
@@ -288,7 +279,8 @@ grub_console_cls (void)
 }
 
 static void
-grub_console_setcolorstate (grub_term_color_state state)
+grub_console_setcolorstate (struct grub_term_output *term,
+			    grub_term_color_state state)
 {
   grub_efi_simple_text_output_interface_t *o;
 
@@ -299,10 +291,10 @@ grub_console_setcolorstate (grub_term_color_state state)
       efi_call_2 (o->set_attributes, o, grub_console_standard_color);
       break;
     case GRUB_TERM_COLOR_NORMAL:
-      efi_call_2 (o->set_attributes, o, grub_console_normal_color);
+      efi_call_2 (o->set_attributes, o, term->normal_color);
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      efi_call_2 (o->set_attributes, o, grub_console_highlight_color);
+      efi_call_2 (o->set_attributes, o, term->highlight_color);
       break;
     default:
       break;
@@ -310,21 +302,8 @@ grub_console_setcolorstate (grub_term_color_state state)
 }
 
 static void
-grub_console_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
-{
-  grub_console_normal_color = normal_color;
-  grub_console_highlight_color = highlight_color;
-}
-
-static void
-grub_console_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
-{
-  *normal_color = grub_console_normal_color;
-  *highlight_color = grub_console_highlight_color;
-}
-
-static void
-grub_console_setcursor (int on)
+grub_console_setcursor (struct grub_term_output *term __attribute__ ((unused)),
+			int on)
 {
   grub_efi_simple_text_output_interface_t *o;
 
@@ -343,16 +322,17 @@ static struct grub_term_output grub_console_term_output =
   {
     .name = "console",
     .putchar = grub_console_putchar,
-    .getcharwidth = grub_console_getcharwidth,
     .getwh = grub_console_getwh,
     .getxy = grub_console_getxy,
     .gotoxy = grub_console_gotoxy,
     .cls = grub_console_cls,
     .setcolorstate = grub_console_setcolorstate,
-    .setcolor = grub_console_setcolor,
-    .getcolor = grub_console_getcolor,
     .setcursor = grub_console_setcursor,
-    .flags = 0,
+    .normal_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_LIGHTGRAY,
+					GRUB_EFI_BACKGROUND_BLACK),
+    .highlight_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_BLACK,
+					   GRUB_EFI_BACKGROUND_LIGHTGRAY),
+    .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS
   };
 
 void

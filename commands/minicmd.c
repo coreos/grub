@@ -27,6 +27,7 @@
 #include <grub/term.h>
 #include <grub/loader.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 /* cat FILE */
 static grub_err_t
@@ -53,7 +54,7 @@ grub_mini_cmd_cat (struct grub_command *cmd __attribute__ ((unused)),
 	  unsigned char c = buf[i];
 
 	  if ((grub_isprint (c) || grub_isspace (c)) && c != '\r')
-	    grub_putchar (c);
+	    grub_printf ("%c", c);
 	  else
 	    {
 	      grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
@@ -63,7 +64,7 @@ grub_mini_cmd_cat (struct grub_command *cmd __attribute__ ((unused)),
 	}
     }
 
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_refresh ();
   grub_file_close (file);
 
@@ -300,28 +301,23 @@ grub_mini_cmd_lsmod (struct grub_command *cmd __attribute__ ((unused)),
 		     int argc __attribute__ ((unused)),
 		     char *argv[] __attribute__ ((unused)))
 {
-  auto int print_module (grub_dl_t mod);
-
-  int print_module (grub_dl_t mod)
-    {
-      grub_dl_dep_t dep;
-
-      grub_printf ("%s\t%d\t\t", mod->name, mod->ref_count);
-      for (dep = mod->dep; dep; dep = dep->next)
-	{
-	  if (dep != mod->dep)
-	    grub_putchar (',');
-
-	  grub_printf ("%s", dep->mod->name);
-	}
-      grub_putchar ('\n');
-      grub_refresh ();
-
-      return 0;
-    }
+  grub_dl_t mod;
 
   grub_printf ("Name\tRef Count\tDependencies\n");
-  grub_dl_iterate (print_module);
+  FOR_DL_MODULES (mod)
+  {
+    grub_dl_dep_t dep;
+
+    grub_printf ("%s\t%d\t\t", mod->name, mod->ref_count);
+    for (dep = mod->dep; dep; dep = dep->next)
+      {
+	if (dep != mod->dep)
+	  grub_xputs (",");
+
+	grub_printf ("%s", dep->mod->name);
+      }
+    grub_xputs ("\n");
+  }
 
   return 0;
 }
@@ -336,46 +332,32 @@ grub_mini_cmd_exit (struct grub_command *cmd __attribute__ ((unused)),
   return 0;
 }
 
-/* clear */
-static grub_err_t
-grub_mini_cmd_clear (struct grub_command *cmd __attribute__ ((unused)),
-		   int argc __attribute__ ((unused)),
-		   char *argv[] __attribute__ ((unused)))
-{
-  grub_cls ();
-  return 0;
-}
-
 static grub_command_t cmd_cat, cmd_help, cmd_root;
 static grub_command_t cmd_dump, cmd_rmmod, cmd_lsmod, cmd_exit;
-static grub_command_t cmd_clear;
 
 GRUB_MOD_INIT(minicmd)
 {
   cmd_cat =
     grub_register_command ("cat", grub_mini_cmd_cat,
-			   "FILE", "Show the contents of a file.");
+			   N_("FILE"), N_("Show the contents of a file."));
   cmd_help =
     grub_register_command ("help", grub_mini_cmd_help,
-			   0, "Show this message.");
+			   0, N_("Show this message."));
   cmd_root =
     grub_register_command ("root", grub_mini_cmd_root,
-			   "[DEVICE]", "Set the root device.");
+			   N_("[DEVICE]"), N_("Set the root device."));
   cmd_dump =
     grub_register_command ("dump", grub_mini_cmd_dump,
-			   "ADDR", "Dump memory.");
+			   N_("ADDR"), N_("Dump memory."));
   cmd_rmmod =
     grub_register_command ("rmmod", grub_mini_cmd_rmmod,
-			   "MODULE", "Remove a module.");
+			   N_("MODULE"), N_("Remove a module."));
   cmd_lsmod =
     grub_register_command ("lsmod", grub_mini_cmd_lsmod,
-			   0, "Show loaded modules.");
+			   0, N_("Show loaded modules."));
   cmd_exit =
     grub_register_command ("exit", grub_mini_cmd_exit,
-			   0, "Exit from GRUB.");
-  cmd_clear =
-    grub_register_command ("clear", grub_mini_cmd_clear,
-			   0, "Clear the screen.");
+			   0, N_("Exit from GRUB."));
 }
 
 GRUB_MOD_FINI(minicmd)
@@ -387,5 +369,4 @@ GRUB_MOD_FINI(minicmd)
   grub_unregister_command (cmd_rmmod);
   grub_unregister_command (cmd_lsmod);
   grub_unregister_command (cmd_exit);
-  grub_unregister_command (cmd_clear);
 }

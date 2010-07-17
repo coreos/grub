@@ -24,10 +24,13 @@
 #include <grub/time.h>
 #include <grub/pci.h>
 #include <grub/scsi.h>
+#include <grub/cs5536.h>
 
 /* At the moment, only two IDE ports are supported.  */
-static const int grub_ata_ioaddress[] = { 0x1f0, 0x170 };
-static const int grub_ata_ioaddress2[] = { 0x3f6, 0x376 };
+static const grub_port_t grub_ata_ioaddress[] = { GRUB_ATA_CH0_PORT1,
+						  GRUB_ATA_CH1_PORT1 };
+static const grub_port_t grub_ata_ioaddress2[] = { GRUB_ATA_CH0_PORT2, 
+						   GRUB_ATA_CH1_PORT2 };
 
 static struct grub_ata_device *grub_ata_devices;
 
@@ -332,25 +335,8 @@ grub_ata_identify (struct grub_ata_device *dev)
 }
 
 static grub_err_t
-grub_ata_device_initialize (int port, int device, int addr, int addr2)
+check_device (struct grub_ata_device *dev)
 {
-  struct grub_ata_device *dev;
-  struct grub_ata_device **devp;
-
-  grub_dprintf ("ata", "detecting device %d,%d (0x%x, 0x%x)\n",
-		port, device, addr, addr2);
-
-  dev = grub_malloc (sizeof(*dev));
-  if (! dev)
-    return grub_errno;
-
-  /* Setup the device information.  */
-  dev->port = port;
-  dev->device = device;
-  dev->ioaddress = addr;
-  dev->ioaddress2 = addr2;
-  dev->next = NULL;
-
   grub_ata_regset (dev, GRUB_ATA_REG_DISK, dev->device << 4);
   grub_ata_wait ();
 
@@ -362,10 +348,7 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
   grub_uint8_t sec = grub_ata_regget (dev, GRUB_ATA_REG_SECTORS);
   grub_dprintf ("ata", "sectors=0x%x\n", sec);
   if (sec != 0x5A)
-    {
-      grub_free(dev);
-      return 0;
-    }
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no device connected");
 
   /* The above test may detect a second (slave) device
      connected to a SATA controller which supports only one
@@ -374,22 +357,44 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
      ATAPI commands (RESET, DIAGNOSTIC) may clear this bit.  */
 
   /* Use the IDENTIFY DEVICE command to query the device.  */
-  if (grub_ata_identify (dev))
-    {
-      grub_free (dev);
-      return 0;
-    }
+  return grub_ata_identify (dev);
+}
+
+static grub_err_t
+grub_ata_device_initialize (int port, int device, int addr, int addr2)
+{
+  struct grub_ata_device *dev;
+  struct grub_ata_device **devp;
+  grub_err_t err;
+
+  grub_dprintf ("ata", "detecting device %d,%d (0x%x, 0x%x)\n",
+		port, device, addr, addr2);
+
+  dev = grub_malloc (sizeof(*dev));
+  if (! dev)
+    return grub_errno;
+
+  /* Setup the device information.  */
+  dev->port = port;
+  dev->device = device;
+  dev->ioaddress = addr + GRUB_MACHINE_PCI_IO_BASE;
+  dev->ioaddress2 = addr2 + GRUB_MACHINE_PCI_IO_BASE;
+  dev->next = NULL;
 
   /* Register the device.  */
   for (devp = &grub_ata_devices; *devp; devp = &(*devp)->next);
   *devp = dev;
+
+  err = check_device (dev);
+  if (err)
+    grub_print_error ();
 
   return 0;
 }
 
 static int NESTED_FUNC_ATTR
 grub_ata_pciinit (grub_pci_device_t dev,
-		  grub_pci_id_t pciid __attribute__((unused)))
+		  grub_pci_id_t pciid)
 {
   static int compat_use[2] = { 0 };
   grub_pci_address_t addr;
@@ -400,19 +405,34 @@ grub_ata_pciinit (grub_pci_device_t dev,
   int regb;
   int i;
   static int controller = 0;
+  int cs5536 = 0;
+  int nports = 2;
 
   /* Read class.  */
-  addr = grub_pci_make_address (dev, 2);
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
   class = grub_pci_read (addr);
 
+  /* AMD CS5536 Southbridge.  */
+  if (pciid == GRUB_CS5536_PCIID)
+    {
+      cs5536 = 1;
+      nports = 1;
+    }
+
   /* Check if this class ID matches that of a PCI IDE Controller.  */
-  if (class >> 16 != 0x0101)
+  if (!cs5536 && (class >> 16 != 0x0101))
     return 0;
 
-  for (i = 0; i < 2; i++)
+  for (i = 0; i < nports; i++)
     {
       /* Set to 0 when the channel operated in compatibility mode.  */
-      int compat = (class >> (8 + 2 * i)) & 1;
+      int compat;
+
+      /* We don't support non-compatibility mode for CS5536.  */
+      if (cs5536)
+	compat = 0;
+      else
+	compat = (class >> (8 + 2 * i)) & 1;
 
       rega = 0;
       regb = 0;
@@ -429,9 +449,12 @@ grub_ata_pciinit (grub_pci_device_t dev,
 	{
 	  /* Read the BARs, which either contain a mmapped IO address
 	     or the IO port address.  */
-	  addr = grub_pci_make_address (dev, 4 + 2 * i);
+	  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESSES
+					+ sizeof (grub_uint64_t) * i);
 	  bar1 = grub_pci_read (addr);
-	  addr = grub_pci_make_address (dev, 5 + 2 * i);
+	  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESSES
+					+ sizeof (grub_uint64_t) * i
+					+ sizeof (grub_uint32_t));
 	  bar2 = grub_pci_read (addr);
 
 	  /* Check if the BARs describe an IO region.  */
@@ -484,7 +507,6 @@ grub_ata_initialize (void)
   grub_pci_iterate (grub_ata_pciinit);
   return 0;
 }
-
 
 static void
 grub_ata_setlba (struct grub_ata_device *dev, grub_disk_addr_t sector,
@@ -648,11 +670,21 @@ grub_ata_iterate (int (*hook) (const char *name))
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
-      char devname[5];
-      grub_sprintf (devname, "ata%d", dev->port * 2 + dev->device);
+      char devname[10];
+      grub_err_t err;
+
+      err = check_device (dev);
+      if (err)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
 
       if (dev->atapi)
 	continue;
+
+      grub_snprintf (devname, sizeof (devname), 
+		     "ata%d", dev->port * 2 + dev->device);
 
       if (hook (devname))
 	return 1;
@@ -665,11 +697,13 @@ static grub_err_t
 grub_ata_open (const char *name, grub_disk_t disk)
 {
   struct grub_ata_device *dev;
+  grub_err_t err;
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
-      char devname[5];
-      grub_sprintf (devname, "ata%d", dev->port * 2 + dev->device);
+      char devname[10];
+      grub_snprintf (devname, sizeof (devname),
+		     "ata%d", dev->port * 2 + dev->device);
       if (grub_strcmp (name, devname) == 0)
 	break;
     }
@@ -679,6 +713,11 @@ grub_ata_open (const char *name, grub_disk_t disk)
 
   if (dev->atapi)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not an ATA harddisk");
+
+  err = check_device (dev);
+
+  if (err)
+    return err;
 
   disk->total_sectors = dev->size;
 
@@ -729,19 +768,25 @@ static struct grub_disk_dev grub_atadisk_dev =
 /* ATAPI code.  */
 
 static int
-grub_atapi_iterate (int (*hook) (const char *name, int luns))
+grub_atapi_iterate (int (*hook) (int bus, int luns))
 {
   struct grub_ata_device *dev;
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
-      char devname[7];
-      grub_sprintf (devname, "ata%d", dev->port * 2 + dev->device);
+      grub_err_t err;
+
+      err = check_device (dev);
+      if (err)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
 
       if (! dev->atapi)
 	continue;
 
-      if (hook (devname, 1))
+      if (hook (dev->port * 2 + dev->device, 1))
 	return 1;
     }
 
@@ -801,26 +846,31 @@ grub_atapi_write (struct grub_scsi *scsi __attribute__((unused)),
 }
 
 static grub_err_t
-grub_atapi_open (const char *name, struct grub_scsi *scsi)
+grub_atapi_open (int devnum, struct grub_scsi *scsi)
 {
   struct grub_ata_device *dev;
   struct grub_ata_device *devfnd = 0;
+  grub_err_t err;
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
-      char devname[7];
-      grub_sprintf (devname, "ata%d", dev->port * 2 + dev->device);
-
-      if (!grub_strcmp (devname, name))
+      if (dev->port * 2 + dev->device == devnum)
 	{
 	  devfnd = dev;
 	  break;
 	}
     }
 
-  grub_dprintf ("ata", "opening ATAPI dev `%s'\n", name);
+  grub_dprintf ("ata", "opening ATAPI dev `ata%d'\n", devnum);
 
   if (! devfnd)
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such ATAPI device");
+
+  err = check_device (devfnd);
+  if (err)
+    return err;
+
+  if (! devfnd->atapi)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such ATAPI device");
 
   scsi->data = devfnd;
@@ -828,18 +878,13 @@ grub_atapi_open (const char *name, struct grub_scsi *scsi)
   return GRUB_ERR_NONE;
 }
 
-static void
-grub_atapi_close (struct grub_scsi *scsi)
-{
-  grub_free (scsi->name);
-}
 
 static struct grub_scsi_dev grub_atapi_dev =
   {
-    .name = "ATAPI",
+    .name = "ata",
+    .id = GRUB_SCSI_SUBSYSTEM_ATAPI,
     .iterate = grub_atapi_iterate,
     .open = grub_atapi_open,
-    .close = grub_atapi_close,
     .read = grub_atapi_read,
     .write = grub_atapi_write
   };

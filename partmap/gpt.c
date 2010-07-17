@@ -32,6 +32,9 @@ static grub_uint8_t grub_gpt_magic[8] =
 
 static const grub_gpt_part_type_t grub_gpt_partition_type_empty = GRUB_GPT_PARTITION_TYPE_EMPTY;
 
+/* 512 << 7 = 65536 byte sectors.  */
+#define MAX_SECTOR_LOG 7
+
 static struct grub_partition_map grub_gpt_partition_map;
 
 
@@ -44,18 +47,14 @@ gpt_partition_map_iterate (grub_disk_t disk,
   struct grub_partition part;
   struct grub_gpt_header gpt;
   struct grub_gpt_partentry entry;
-  struct grub_disk raw;
   struct grub_msdos_partition_mbr mbr;
   grub_uint64_t entries;
   unsigned int i;
   int last_offset = 0;
-
-  /* Enforce raw disk access.  */
-  raw = *disk;
-  raw.partition = 0;
+  int sector_log = 0;
 
   /* Read the protective MBR.  */
-  if (grub_disk_read (&raw, 0, 0, sizeof (mbr), &mbr))
+  if (grub_disk_read (disk, 0, 0, sizeof (mbr), &mbr))
     return grub_errno;
 
   /* Check if it is valid.  */
@@ -67,18 +66,23 @@ gpt_partition_map_iterate (grub_disk_t disk,
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "no GPT partition map found");
 
   /* Read the GPT header.  */
-  if (grub_disk_read (&raw, 1, 0, sizeof (gpt), &gpt))
-    return grub_errno;
+  for (sector_log = 0; sector_log < MAX_SECTOR_LOG; sector_log++)
+    {
+      if (grub_disk_read (disk, 1 << sector_log, 0, sizeof (gpt), &gpt))
+	return grub_errno;
 
-  if (grub_memcmp (gpt.magic, grub_gpt_magic, sizeof (grub_gpt_magic)))
+      if (grub_memcmp (gpt.magic, grub_gpt_magic, sizeof (grub_gpt_magic)) == 0)
+	break;
+    }
+  if (sector_log == MAX_SECTOR_LOG)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "no valid GPT header");
 
   grub_dprintf ("gpt", "Read a valid GPT header\n");
 
-  entries = grub_le_to_cpu64 (gpt.partitions);
+  entries = grub_le_to_cpu64 (gpt.partitions) << sector_log;
   for (i = 0; i < grub_le_to_cpu32 (gpt.maxpart); i++)
     {
-      if (grub_disk_read (&raw, entries, last_offset,
+      if (grub_disk_read (disk, entries, last_offset,
 			  sizeof (entry), &entry))
 	return grub_errno;
 
@@ -86,20 +90,20 @@ gpt_partition_map_iterate (grub_disk_t disk,
 		       sizeof (grub_gpt_partition_type_empty)))
 	{
 	  /* Calculate the first block and the size of the partition.  */
-	  part.start = grub_le_to_cpu64 (entry.start);
+	  part.start = grub_le_to_cpu64 (entry.start) << sector_log;
 	  part.len = (grub_le_to_cpu64 (entry.end)
-		      - grub_le_to_cpu64 (entry.start) + 1);
+		      - grub_le_to_cpu64 (entry.start) + 1)  << sector_log;
 	  part.offset = entries;
-	  part.index = i;
+	  part.number = i;
+	  part.index = last_offset;
 	  part.partmap = &grub_gpt_partition_map;
-	  part.data = &entry;
 
 	  grub_dprintf ("gpt", "GPT entry %d: start=%lld, length=%lld\n", i,
 			(unsigned long long) part.start,
 			(unsigned long long) part.len);
 
 	  if (hook (disk, &part))
-	    return 1;
+	    return grub_errno;
 	}
 
       last_offset += grub_le_to_cpu32 (gpt.partentry_size);
@@ -110,84 +114,23 @@ gpt_partition_map_iterate (grub_disk_t disk,
 	}
     }
 
-  return 0;
-}
-
-
-static grub_partition_t
-gpt_partition_map_probe (grub_disk_t disk, const char *str)
-{
-  grub_partition_t p = 0;
-  int partnum = 0;
-  char *s = (char *) str;
-
-  auto int find_func (grub_disk_t d, const grub_partition_t partition);
-
-  int find_func (grub_disk_t d __attribute__ ((unused)),
-		 const grub_partition_t partition)
-    {
-      if (partnum == partition->index)
-	{
-	  p = (grub_partition_t) grub_malloc (sizeof (*p));
-	  if (! p)
-	    return 1;
-
-	  grub_memcpy (p, partition, sizeof (*p));
-	  return 1;
-	}
-
-      return 0;
-    }
-
-  /* Get the partition number.  */
-  partnum = grub_strtoul (s, 0, 10) - 1;
-  if (grub_errno)
-    {
-      grub_error (GRUB_ERR_BAD_FILENAME, "invalid partition");
-      return 0;
-    }
-
-  gpt_partition_map_iterate (disk, find_func);
-  if (grub_errno)
-    goto fail;
-
-  return p;
-
- fail:
-  grub_free (p);
-  return 0;
-}
-
-
-static char *
-gpt_partition_map_get_name (const grub_partition_t p)
-{
-  char *name;
-
-  name = grub_malloc (13);
-  if (! name)
-    return 0;
-
-  grub_sprintf (name, "%d", p->index + 1);
-  return name;
+  return GRUB_ERR_NONE;
 }
 
 
 /* Partition map type.  */
 static struct grub_partition_map grub_gpt_partition_map =
   {
-    .name = "part_gpt",
+    .name = "gpt",
     .iterate = gpt_partition_map_iterate,
-    .probe = gpt_partition_map_probe,
-    .get_name = gpt_partition_map_get_name
   };
 
-GRUB_MOD_INIT(gpt_partition_map)
+GRUB_MOD_INIT(part_gpt)
 {
   grub_partition_map_register (&grub_gpt_partition_map);
 }
 
-GRUB_MOD_FINI(gpt_partition_map)
+GRUB_MOD_FINI(part_gpt)
 {
   grub_partition_map_unregister (&grub_gpt_partition_map);
 }

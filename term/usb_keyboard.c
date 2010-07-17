@@ -18,7 +18,6 @@
  */
 
 #include <grub/term.h>
-#include <grub/machine/console.h>
 #include <grub/time.h>
 #include <grub/cpu/io.h>
 #include <grub/misc.h>
@@ -120,7 +119,7 @@ grub_usb_keyboard_getreport (grub_usb_device_t dev, grub_uint8_t *report)
 
 
 static int
-grub_usb_keyboard_checkkey (void)
+grub_usb_keyboard_checkkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_uint8_t data[8];
   int key;
@@ -189,7 +188,7 @@ typedef enum
 } grub_usb_keyboard_repeat_t;
 
 static int
-grub_usb_keyboard_getkey (void)
+grub_usb_keyboard_getkey (struct grub_term_input *term)
 {
   int key;
   grub_err_t err;
@@ -202,7 +201,7 @@ grub_usb_keyboard_getkey (void)
 
   do
     {
-      key = grub_usb_keyboard_checkkey ();
+      key = grub_usb_keyboard_checkkey (term);
     } while (key == -1);
 
   data[2] = !0; /* Or whatever.  */
@@ -254,7 +253,7 @@ grub_usb_keyboard_getkey (void)
 }
 
 static int
-grub_usb_keyboard_getkeystatus (void)
+grub_usb_keyboard_getkeystatus (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_uint8_t data[8];
   int mods = 0;

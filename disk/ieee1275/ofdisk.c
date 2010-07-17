@@ -1,7 +1,7 @@
 /* ofdisk.c - Open Firmware disk access.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -118,7 +118,7 @@ grub_ofdisk_iterate (int (*hook) (const char *name))
 static char *
 compute_dev_path (const char *name)
 {
-  char *devpath = grub_malloc (grub_strlen (name) + 2);
+  char *devpath = grub_malloc (grub_strlen (name) + 3);
   char *p, c;
 
   if (!devpath)
@@ -172,16 +172,6 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
 
   grub_dprintf ("disk", "Opening `%s'.\n", op->devpath);
 
-  grub_ieee1275_open (op->devpath, &dev_ihandle);
-  if (! dev_ihandle)
-    {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
-      goto fail;
-    }
-
-  grub_dprintf ("disk", "Opened `%s' as handle %p.\n", op->devpath,
-		(void *) (unsigned long) dev_ihandle);
-
   if (grub_ieee1275_finddevice (op->devpath, &dev))
     {
       grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read device properties");
@@ -201,10 +191,20 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
       goto fail;
     }
 
+  grub_ieee1275_open (op->devpath, &dev_ihandle);
+  if (! dev_ihandle)
+    {
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
+      goto fail;
+    }
+
+  grub_dprintf ("disk", "Opened `%s' as handle %p.\n", op->devpath,
+		(void *) (unsigned long) dev_ihandle);
+
   /* XXX: There is no property to read the number of blocks.  There
      should be a property `#blocks', but it is not there.  Perhaps it
      is possible to use seek for this.  */
-  disk->total_sectors = 0xFFFFFFFFUL;
+  disk->total_sectors = GRUB_DISK_SIZE_UNKNOWN;
 
   disk->id = (unsigned long) op;
 
@@ -234,21 +234,17 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   grub_ssize_t status, actual;
   unsigned long long pos;
 
-  grub_dprintf ("disk",
-		"Reading handle %p: sector 0x%llx, size 0x%lx, buf %p.\n",
-		(void *) disk->data, (long long) sector, (long) size, buf);
-
   pos = sector * 512UL;
 
   grub_ieee1275_seek ((grub_ieee1275_ihandle_t) (unsigned long) disk->data,
-		      (int) (pos >> 32), (int) pos & 0xFFFFFFFFUL, &status);
+		      pos, &status);
   if (status < 0)
     return grub_error (GRUB_ERR_READ_ERROR,
 		       "seek error, can't seek block %llu",
 		       (long long) sector);
   grub_ieee1275_read ((grub_ieee1275_ihandle_t) (unsigned long) disk->data,
 		      buf, size * 512UL, &actual);
-  if (actual != actual)
+  if (actual != (grub_ssize_t) (size * 512UL))
     return grub_error (GRUB_ERR_READ_ERROR, "read error on block: %llu",
 		       (long long) sector);
 

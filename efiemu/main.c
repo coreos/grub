@@ -31,6 +31,7 @@
 #include <grub/efiemu/efiemu.h>
 #include <grub/machine/efiemu.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 /* System table. Two version depending on mode */
 grub_efi_system_table32_t *grub_efiemu_system_table32 = 0;
@@ -255,18 +256,17 @@ grub_efiemu_autocore (void)
 
   suffix = grub_efiemu_get_default_core_name ();
 
-  filename = grub_malloc (grub_strlen (prefix) + grub_strlen (suffix) + 2);
+  filename = grub_xasprintf ("%s/%s", prefix, suffix);
   if (! filename)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "couldn't allocate temporary space");
 
-  grub_sprintf (filename, "%s/%s", prefix, suffix);
 
   err = grub_efiemu_load_file (filename);
   grub_free (filename);
   if (err)
     return err;
-#ifndef GRUB_UTIL
+#ifndef GRUB_MACHINE_EMU
   err = grub_machine_efiemu_init_tables ();
   if (err)
     return err;
@@ -314,7 +314,7 @@ grub_cmd_efiemu_load (grub_command_t cmd __attribute__ ((unused)),
   err = grub_efiemu_load_file (args[0]);
   if (err)
     return err;
-#ifndef GRUB_UTIL
+#ifndef GRUB_MACHINE_EMU
   err = grub_machine_efiemu_init_tables ();
   if (err)
     return err;
@@ -328,15 +328,15 @@ GRUB_MOD_INIT(efiemu)
 {
   cmd_loadcore = grub_register_command ("efiemu_loadcore",
 					grub_cmd_efiemu_load,
-				       "FILE",
-				       "Load and initialize EFI emulator.");
+					N_("FILE"),
+					N_("Load and initialize EFI emulator."));
   cmd_prepare = grub_register_command ("efiemu_prepare",
 				       grub_cmd_efiemu_prepare,
 				       0,
-				       "Finalize loading of EFI emulator.");
+				       N_("Finalize loading of EFI emulator."));
   cmd_unload = grub_register_command ("efiemu_unload", grub_cmd_efiemu_unload,
 				      0,
-				      "Unload  EFI emulator.");
+				      N_("Unload EFI emulator."));
 }
 
 GRUB_MOD_FINI(efiemu)

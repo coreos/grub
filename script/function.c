@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include <grub/parser.h>
 #include <grub/mm.h>
 
-static grub_script_function_t grub_script_function_list;
+grub_script_function_t grub_script_function_list;
 
 grub_script_function_t
 grub_script_function_create (struct grub_script_arg *functionname_arg,
@@ -34,7 +34,7 @@ grub_script_function_create (struct grub_script_arg *functionname_arg,
   if (! func)
     return 0;
 
-  func->name = grub_script_execute_argument_to_string (functionname_arg);
+  func->name = grub_strdup (functionname_arg->str);
   if (! func->name)
     {
       grub_free (func);
@@ -102,18 +102,6 @@ grub_script_function_find (char *functionname)
     grub_error (GRUB_ERR_UNKNOWN_COMMAND, "unknown command `%.20s'", functionname);
 
   return func;
-}
-
-int
-grub_script_function_iterate (int (*iterate) (grub_script_function_t))
-{
-  grub_script_function_t func;
-
-  for (func = grub_script_function_list; func; func = func->next)
-    if (iterate (func))
-      return 1;
-
-  return 0;
 }
 
 int

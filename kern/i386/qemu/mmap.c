@@ -22,26 +22,42 @@
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/misc.h>
-#include <grub/i386/cmos.h>
+#include <grub/cmos.h>
 
 #define QEMU_CMOS_MEMSIZE_HIGH		0x35
 #define QEMU_CMOS_MEMSIZE_LOW		0x34
+
+#define QEMU_CMOS_MEMSIZE2_HIGH		0x31
+#define QEMU_CMOS_MEMSIZE2_LOW		0x30
 
 #define min(a,b)	((a) > (b) ? (b) : (a))
 
 extern char _start[];
 extern char _end[];
 
-grub_size_t grub_lower_mem, grub_upper_mem;
-grub_uint64_t mem_size;
+static grub_uint64_t mem_size, above_4g;
 
 void
 grub_machine_mmap_init ()
 {
-  mem_size = grub_cmos_read (QEMU_CMOS_MEMSIZE_HIGH) << 24 | grub_cmos_read (QEMU_CMOS_MEMSIZE_LOW) << 16;
+  mem_size = ((grub_uint64_t) grub_cmos_read (QEMU_CMOS_MEMSIZE_HIGH)) << 24
+    | ((grub_uint64_t) grub_cmos_read (QEMU_CMOS_MEMSIZE_LOW)) << 16;
+  if (mem_size > 0)
+    {
+      /* Don't ask... */
+      mem_size += (16 * 1024 * 1024);
+    }
+  else
+    {
+      mem_size
+	= ((((grub_uint64_t) grub_cmos_read (QEMU_CMOS_MEMSIZE2_HIGH)) << 18)
+	   | ((grub_uint64_t) (grub_cmos_read (QEMU_CMOS_MEMSIZE2_LOW)) << 10))
+	+ 1024 * 1024;
+    }
 
-  /* Don't ask... */
-  mem_size += (16 * 1024 * 1024);
+  above_4g = (((grub_uint64_t) grub_cmos_read (0x5b)) << 16)
+    | (((grub_uint64_t) grub_cmos_read (0x5c)) << 24)
+    | (((grub_uint64_t) grub_cmos_read (0x5d)) << 32);
 }
 
 grub_err_t
@@ -57,6 +73,12 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uin
 	    GRUB_MACHINE_MEMORY_RESERVED))
     return 1;
 
+  /* Everything else is free.  */
+  if (hook (0x100000,
+	    min (mem_size, (grub_uint32_t) -GRUB_BOOT_MACHINE_SIZE) - 0x100000,
+	    GRUB_MACHINE_MEMORY_AVAILABLE))
+    return 1;
+
   /* Protect boot.img, which contains the gdt.  It is mapped at the top of memory
      (it is also mapped below 0x100000, but we already reserved that area).  */
   if (hook ((grub_uint32_t) -GRUB_BOOT_MACHINE_SIZE,
@@ -64,10 +86,8 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uin
 	    GRUB_MACHINE_MEMORY_RESERVED))
     return 1;
 
-  /* Everything else is free.  */
-  if (hook (0x100000,
-	    min (mem_size, (grub_uint32_t) -GRUB_BOOT_MACHINE_SIZE) - 0x100000,
-	    GRUB_MACHINE_MEMORY_AVAILABLE))
+  if (above_4g != 0 && hook (0x100000000ULL, above_4g,
+			     GRUB_MACHINE_MEMORY_AVAILABLE))
     return 1;
 
   return 0;

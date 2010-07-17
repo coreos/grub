@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# Copyright (C) 1994,1995,1996,1997,1998,1999,2000,2001,2002,2004,2005,2006,2007,2008,2009 Free Software Foundation, Inc.
+# Copyright (C) 1994,1995,1996,1997,1998,1999,2000,2001,2002,2004,2005,2006,2007,2008,2009,2010 Free Software Foundation, Inc.
 #
 # This Makefile.in is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -35,19 +35,31 @@ sysconfdir = @sysconfdir@
 sharedstatedir = @sharedstatedir@
 localstatedir = @localstatedir@
 libdir = @libdir@
+localedir = @localedir@
 infodir = @infodir@
 mandir = @mandir@
 includedir = @includedir@
 pkgdatadir = $(datadir)/`echo @PACKAGE_TARNAME@ | sed '$(transform)'`
 pkglibdir =  $(libdir)/`echo @PACKAGE_TARNAME@/$(target_cpu)-$(platform) | sed '$(transform)'`
 
+# Internationalization library.
+LIBINTL = @LIBINTL@
+TARGET_NO_MODULES = @TARGET_NO_MODULES@
+
+# Util library.
+LIBUTIL = @LIBUTIL@
+
 XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
 MSGFMT = @MSGFMT@
 
+ifeq (@USE_NLS@,yes)
 LINGUAS = $(shell for i in $(srcdir)/po/*.po ; do \
 			if test -e $$i ; then echo $$i ; fi ; \
 		done | sed -e "s,.*/po/\(.*\)\.po$$,\1,")
+else
+LINGUAS =
+endif
 
 PACKAGE = @PACKAGE@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -72,25 +84,31 @@ MKDIR_P = @MKDIR_P@
 
 mkinstalldirs = $(srcdir)/mkinstalldirs
 
+LIBS = @LIBS@ $(LIBINTL) $(LIBUTIL)
+
 CC = @CC@
 CFLAGS = @CFLAGS@
+POSIX_CFLAGS = -I$(srcdir)/lib/posix_wrap 
+GNULIB_UTIL_CFLAGS = -Wno-undef -Wno-sign-compare -Wno-unused -D_GL_UNUSED="__attribute__ ((unused))" -I$(srcdir)/gnulib
+GNULIB_CFLAGS = $(GNULIB_UTIL_CFLAGS) $(POSIX_CFLAGS)
 ASFLAGS = @ASFLAGS@
-LDFLAGS = @LDFLAGS@
+LDFLAGS = @LDFLAGS@ $(LIBS)
 CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/gnulib -I$(srcdir)/include -Wall -W \
-	 -DGRUB_LIBDIR=\"$(pkglibdir)\" -DLOCALEDIR=\"$(localedir)\"
+	 -DGRUB_PKGLIBROOTDIR=\"$(libdir)/`echo @PACKAGE_TARNAME@ | sed '$(transform)'`\" -DLOCALEDIR=\"$(localedir)\"
 TARGET_CC = @TARGET_CC@
-TARGET_CFLAGS = @TARGET_CFLAGS@
-TARGET_ASFLAGS = @TARGET_ASFLAGS@
+TARGET_CFLAGS = -ffreestanding @TARGET_CFLAGS@
+TARGET_ASFLAGS = -nostdinc -fno-builtin @TARGET_ASFLAGS@
 TARGET_MODULE_FORMAT = @TARGET_MODULE_FORMAT@
 TARGET_APPLE_CC = @TARGET_APPLE_CC@
 OBJCONV = @OBJCONV@
-TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -nostdinc -isystem $(shell $(TARGET_CC) -print-file-name=include) -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
+TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(srcdir)/include -I$(builddir) -I$(builddir)/include \
 	-Wall -W
-TARGET_LDFLAGS = @TARGET_LDFLAGS@
+TARGET_LDFLAGS = -nostdlib -static-libgcc @TARGET_LDFLAGS@
 TARGET_IMG_LDSCRIPT = @TARGET_IMG_LDSCRIPT@
-TARGET_IMG_LDFLAGS = @TARGET_IMG_LDFLAGS@
+TARGET_IMG_LDFLAGS = -nostdlib @TARGET_IMG_LDFLAGS@
 TARGET_IMG_CFLAGS = @TARGET_IMG_CFLAGS@
 TARGET_OBJ2ELF = @TARGET_OBJ2ELF@
+kernel_img_LDFLAGS = -lgcc
 EXEEXT = @EXEEXT@
 OBJCOPY = @OBJCOPY@
 STRIP = @STRIP@
@@ -109,12 +127,15 @@ endif
 AWK = @AWK@
 LIBCURSES = @LIBCURSES@
 LIBUSB = @LIBUSB@
+LIBSDL = @LIBSDL@
 LIBPCIACCESS = @LIBPCIACCESS@
+LEX = @LEX@
 YACC = @YACC@
 FONT_SOURCE = @FONT_SOURCE@
 
 # Options.
 enable_grub_emu_usb = @enable_grub_emu_usb@
+enable_grub_emu_sdl = @enable_grub_emu_sdl@
 enable_grub_emu_pci = @enable_grub_emu_pci@
 enable_grub_fstest = @enable_grub_fstest@
 enable_grub_pe2elf = @enable_grub_pe2elf@
@@ -125,7 +146,7 @@ enable_efiemu = @enable_efiemu@
 
 ### General variables.
 
-RMKFILES = $(wildcard conf/*.rmk)
+RMKFILES = $(wildcard $(srcdir)/conf/*.rmk)
 
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
@@ -140,12 +161,16 @@ INFOS = $(info_INFOS)
 CLEANFILES =
 MOSTLYCLEANFILES =
 DISTCLEANFILES = config.status config.cache config.log config.h \
-	Makefile stamp-h include/grub/cpu include/grub/machine \
+	Makefile stamp-h stamp-h1 include/grub/cpu include/grub/machine \
 	gensymlist.sh genkernsyms.sh build_env.mk \
 	docs/grub.info docs/version.texi docs/stamp-vti
 
-MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES)) \
-	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in $(INFOS)
+MAINTAINER_CLEANFILES = $(srcdir)/configure $(srcdir)/aclocal.m4 \
+	$(MKFILES) $(srcdir)/config.guess \
+	$(srcdir)/config.sub $(srcdir)/install-sh $(srcdir)/missing \
+	$(srcdir)/DISTLIST $(srcdir)/config.h.in $(srcdir)/stamp-h.in \
+	$(srcdir)/unidata.c \
+	$(INFOS)
 
 # The default target.
 all: all-local
@@ -162,14 +187,23 @@ ifeq ($(platform), emu)
 include $(srcdir)/conf/any-emu.mk
 else
 include $(srcdir)/conf/$(target_cpu)-$(platform).mk
+# For tests.
+include $(srcdir)/conf/tests.mk
 # For external modules.
 -include $(wildcard $(GRUB_CONTRIB)/*/conf/common.mk)
+endif
+
+ifeq ($(TARGET_NO_MODULES), yes)
+	TARGET_CFLAGS += -DGRUB_TARGET_NO_MODULES=1
+	CFLAGS += -DGRUB_TARGET_NO_MODULES=1
 endif
 
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA) po/*.mo
-pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst
+ifneq ($(TARGET_NO_MODULES), yes)
+pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst
+endif
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
 	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UNDSYMFILES) > $@ \
@@ -187,11 +221,17 @@ partmap.lst: $(PARTMAPFILES)
 handler.lst: $(HANDLERFILES)
 	cat $^ /dev/null | sort > $@
 
+terminal.lst: $(TERMINALFILES)
+	cat $^ /dev/null | sort > $@
+
 parttool.lst: $(PARTTOOLFILES)
 	cat $^ /dev/null | sort | uniq > $@
 
 video.lst: $(VIDEOFILES)
 	cat $^ /dev/null | sort | uniq > $@
+
+crypto.lst: lib/libgcrypt-grub/cipher/crypto.lst
+	cp $^ $@
 
 ifneq (true, $(MAKEINFO))
 info_INFOS += docs/grub.info
@@ -213,17 +253,17 @@ docs/stamp-vti: docs/grub.texi configure.ac
 	-@rm -f vti.tmp
 	@cp $(builddir)/docs/version.texi $@
 
-# Use --force until such time as the documentation is cleaned up.
 docs/grub.info: docs/grub.texi docs/version.texi docs/fdl.texi
 	$(MKDIR_P) docs
-	-$(MAKEINFO) -P $(builddir)/docs --no-split --force $< -o $@
+	$(MAKEINFO) -P $(builddir)/docs --no-split $< -o $@
 
 ifeq (, $(FONT_SOURCE))
 else
 
 ifeq ($(enable_grub_mkfont),yes)
 
-pkgdata_DATA += unicode.pf2 ascii.pf2
+pkgdata_DATA += unicode.pf2 ascii.pf2 ascii.h
+CLEANFILES += ascii.bitmaps
 
 # Arrows and lines are needed to draw the menu, so we always include them
 UNICODE_ARROWS=0x2190-0x2193
@@ -234,6 +274,20 @@ unicode.pf2: $(FONT_SOURCE) grub-mkfont
 
 ascii.pf2: $(FONT_SOURCE) grub-mkfont
 	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
+
+ascii.bitmaps: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont --ascii-bitmaps -o $@ $(FONT_SOURCE)
+
+ascii.h: ascii.bitmaps grub-bin2h
+	$(builddir)/grub-bin2h ascii_bitmaps < $< > $@
+
+widthspec.bin: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont --width-spec -o $@ $(FONT_SOURCE)
+
+widthspec.h: widthspec.bin grub-bin2h
+	$(builddir)/grub-bin2h widthspec < $< > $@
+
+TARGET_CFLAGS += -DUSE_ASCII_FAILBACK=1 -DHAVE_UNIFONT_WIDTHSPEC=1
 endif
 endif
 
@@ -255,7 +309,7 @@ build_env.mk: Makefile
 	) > $@
 pkglib_BUILDDIR += config.h grub_script.tab.h
 
-all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES) $(foreach lang, $(LINGUAS), po/$(lang).mo)
+all-local: $(PROGRAMS) $(GRUB_EMU) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(INFOS) $(MKFILES) $(foreach lang, $(LINGUAS), po/$(lang).mo)
 
 install: install-local
 
@@ -276,30 +330,30 @@ install-local: all
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkgdatadir)/$$dest; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(bindir) $(DESTDIR)$(mandir)/man1
-	@list='$(bin_UTILITIES)'; for file in $$list; do \
+	@list='$(bin_UTILITIES) $(GRUB_EMU)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
-	  $(HELP2MAN) --section=1 -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
+	  PATH="$(builddir):$$PATH" $(HELP2MAN) --section=1 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man1/$$dest.1 $$file; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(sbindir) $(DESTDIR)$(mandir)/man8
 	@list='$(sbin_UTILITIES)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
-	  $(HELP2MAN) --section=8 -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
+	  PATH="$(builddir):$$PATH" $(HELP2MAN) --section=8 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man8/$$dest.8 $$file; \
 	done
 	@list='$(bin_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
-	  $(HELP2MAN) --section=1 -o $(DESTDIR)$(mandir)/man1/$$dest.1 $(builddir)/$$file; \
+	  PATH="$(builddir):$$PATH" $(HELP2MAN) --section=1 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man1/$$dest.1 $$file; \
 	done
 	@list='$(sbin_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
-	  $(HELP2MAN) --section=8 -o $(DESTDIR)$(mandir)/man8/$$dest.8 $(builddir)/$$file; \
+	  PATH="$(builddir):$$PATH" $(HELP2MAN) --section=8 -i $(srcdir)/docs/man/$$file.h2m -o $(DESTDIR)$(mandir)/man8/$$dest.8 $$file; \
 	done
 	$(SHELL) $(mkinstalldirs) $(DESTDIR)$(sysconfdir)/grub.d
 	@list='$(grub-mkconfig_SCRIPTS)'; for file in $$list; do \
@@ -352,7 +406,7 @@ uninstall:
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  rm -f $(DESTDIR)$(pkgdatadir)/$$dest; \
 	done
-	@list='$(bin_UTILITIES) $(bin_SCRIPTS)'; for file in $$list; do \
+	@list='$(bin_UTILITIES) $(bin_SCRIPTS) $(GRUB_EMU)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(bindir)/$$dest; \
 	  rm -f $(DESTDIR)$(mandir)/man1/$$dest.1; \
@@ -369,7 +423,6 @@ uninstall:
 	@list='$(lib_SCRIPTS)'; \
 	for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
-	  echo rm -f $(DESTDIR)$(libdir)/$$dest; \
 	  rm -f $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
 	@list='$(info_INFOS)'; \
@@ -398,6 +451,8 @@ distclean: mostlyclean
 
 maintainer-clean: distclean
 	-test -z "$(MAINTAINER_CLEANFILES)" || rm -f $(MAINTAINER_CLEANFILES)
+	-rmdir $(srcdir)/lib/libgcrypt-grub/cipher
+	-rmdir $(srcdir)/lib/libgcrypt-grub
 
 info:
 
@@ -450,10 +505,27 @@ distcheck: dist
 	@echo "$(distdir).tar.gz is ready for distribution" | \
 	  sed 'h;s/./=/g;p;x;p;x'
 
-check:
+check: all $(UNIT_TESTS) $(FUNCTIONAL_TESTS) $(SCRIPTED_TESTS)
+	@list="$(UNIT_TESTS)"; \
+	set -e; \
+	for file in $$list; do \
+	  $(builddir)/$$file; \
+	done
+	@list="$(FUNCTIONAL_TESTS)"; \
+	set -e; \
+	for file in $$list; do \
+	  mod=`basename $$file .mod`; \
+	  echo "insmod functional_test; insmod $$mod; functional_test" \
+	    | $(builddir)/grub-shell; \
+	done
+	@list="$(SCRIPTED_TESTS)"; \
+	set -e; \
+	for file in $$list; do \
+	  $(builddir)/$$file; \
+	done
 
-.SUFFIX:
-.SUFFIX: .c .o .S .d
+.SUFFIXES:
+.SUFFIXES: .c .o .S .d
 
 # Regenerate configure and Makefile automatically.
 $(srcdir)/aclocal.m4: configure.ac acinclude.m4
@@ -484,8 +556,8 @@ genkernsyms.sh: genkernsyms.sh.in config.status
 	$(SHELL) ./config.status
 
 $(srcdir)/po/$(PACKAGE).pot: po/POTFILES po/POTFILES-shell
-	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o $@ -f $< --keyword=_ --keyword=N_
-	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o $@ -f po/POTFILES-shell -j --language=Shell
+	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o po/$(PACKAGE).pot -f po/POTFILES --keyword=_ --keyword=N_
+	cd $(srcdir) && $(XGETTEXT) -ctranslate --from-code=utf-8 -o po/$(PACKAGE).pot -f po/POTFILES-shell -j --language=Shell
 
 $(foreach lang, $(LINGUAS), $(srcdir)/po/$(lang).po): po/$(PACKAGE).pot
 	$(MSGMERGE) -U $@ $^

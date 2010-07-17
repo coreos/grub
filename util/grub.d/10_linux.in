@@ -1,7 +1,8 @@
-#! /bin/sh -e
+#! /bin/sh
+set -e
 
 # grub-mkconfig helper script.
-# Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
+# Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,14 +23,16 @@ bindir=@bindir@
 libdir=@libdir@
 . ${libdir}/grub/grub-mkconfig_lib
 
-. ${bindir}/gettext.sh
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR=@localedir@
+
+CLASS="--class gnu-linux --class gnu --class os"
 
 if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS=GNU/Linux
 else
   OS="${GRUB_DISTRIBUTOR} GNU/Linux"
+  CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr '[A-Z]' '[a-z]' | cut -d' ' -f1) ${CLASS}"
 fi
 
 # loop-AES arranges things so that /dev/loop/X can be our root device, but
@@ -41,7 +44,8 @@ case ${GRUB_DEVICE} in
 esac
 
 if [ "x${GRUB_DEVICE_UUID}" = "x" ] || [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue" ] \
-    || ! test -e "/dev/disk/by-uuid/${GRUB_DEVICE_UUID}" ; then
+    || ! test -e "/dev/disk/by-uuid/${GRUB_DEVICE_UUID}" \
+    || uses_abstraction "${GRUB_DEVICE}" lvm; then
   LINUX_ROOT_DEVICE=${GRUB_DEVICE}
 else
   LINUX_ROOT_DEVICE=UUID=${GRUB_DEVICE_UUID}
@@ -54,20 +58,42 @@ linux_entry ()
   recovery="$3"
   args="$4"
   if ${recovery} ; then
-    title="$(gettext "%s, with Linux %s (recovery mode)")"
+    title="$(gettext_quoted "%s, with Linux %s (recovery mode)")"
   else
-    title="$(gettext "%s, with Linux %s")"
+    title="$(gettext_quoted "%s, with Linux %s")"
   fi
-  printf "menuentry \"${title}\" {\n" "${os}" "${version}"
+  printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${version}"
+  save_default_entry | sed -e "s/^/\t/"
+
+  # Use ELILO's generic "efifb" when it's known to be available.
+  # FIXME: We need an interface to select vesafb in case efifb can't be used.
+  if [ "x$GRUB_GFXPAYLOAD_LINUX" = x ]; then
+      cat << EOF
+	load_video
+EOF
+      if grep -qx "CONFIG_FB_EFI=y" /boot/config-${version} 2> /dev/null \
+	  && grep -qx "CONFIG_VT_HW_CONSOLE_BINDING=y" /boot/config-${version} 2> /dev/null; then
+	  cat << EOF
+	set gfxpayload=keep
+EOF
+      fi
+  else
+	  cat << EOF
+	set gfxpayload=$GRUB_GFXPAYLOAD_LINUX
+EOF
+  fi
+
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
   printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
+	echo	'$(printf "$(gettext_quoted "Loading Linux %s ...")" ${version})'
 	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro ${args}
 EOF
   if test -n "${initrd}" ; then
     cat << EOF
+	echo	'$(gettext_quoted "Loading initial ramdisk ...")'
 	initrd	${rel_dirname}/${initrd}
 EOF
   fi
@@ -76,7 +102,7 @@ EOF
 EOF
 }
 
-list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
+list=`for i in /boot/vmlinu[zx]-* /vmlinu[zx]-* ; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
 prepare_boot_cache=
@@ -93,8 +119,9 @@ while [ "x$list" != "x" ] ; do
 
   initrd=
   for i in "initrd.img-${version}" "initrd-${version}.img" \
-	   "initrd-${version}" "initrd.img-${alt_version}" \
-	   "initrd-${alt_version}.img" "initrd-${alt_version}"; do
+	   "initrd-${version}" "initramfs-${version}.img" \
+	   "initrd.img-${alt_version}" "initrd-${alt_version}.img" \
+	   "initrd-${alt_version}" "initramfs-${alt_version}.img"; do
     if test -e "${dirname}/${i}" ; then
       initrd="$i"
       break

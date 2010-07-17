@@ -39,31 +39,17 @@
 
 
 
-struct grub_dl_list
-{
-  struct grub_dl_list *next;
-  grub_dl_t mod;
-};
-typedef struct grub_dl_list *grub_dl_list_t;
-
-static grub_dl_list_t grub_dl_head;
+grub_dl_t grub_dl_head = 0;
 
 static grub_err_t
 grub_dl_add (grub_dl_t mod)
 {
-  grub_dl_list_t l;
-
   if (grub_dl_get (mod->name))
     return grub_error (GRUB_ERR_BAD_MODULE,
 		       "`%s' is already loaded", mod->name);
 
-  l = (grub_dl_list_t) grub_malloc (sizeof (*l));
-  if (! l)
-    return grub_errno;
-
-  l->mod = mod;
-  l->next = grub_dl_head;
-  grub_dl_head = l;
+  mod->next = grub_dl_head;
+  grub_dl_head = mod;
 
   return GRUB_ERR_NONE;
 }
@@ -71,13 +57,12 @@ grub_dl_add (grub_dl_t mod)
 static void
 grub_dl_remove (grub_dl_t mod)
 {
-  grub_dl_list_t *p, q;
+  grub_dl_t *p, q;
 
   for (p = &grub_dl_head, q = *p; q; p = &q->next, q = *p)
-    if (q->mod == mod)
+    if (q == mod)
       {
 	*p = q->next;
-	grub_free (q);
 	return;
       }
 }
@@ -85,23 +70,13 @@ grub_dl_remove (grub_dl_t mod)
 grub_dl_t
 grub_dl_get (const char *name)
 {
-  grub_dl_list_t l;
+  grub_dl_t l;
 
   for (l = grub_dl_head; l; l = l->next)
-    if (grub_strcmp (name, l->mod->name) == 0)
-      return l->mod;
+    if (grub_strcmp (name, l->name) == 0)
+      return l;
 
   return 0;
-}
-
-void
-grub_dl_iterate (int (*hook) (grub_dl_t mod))
-{
-  grub_dl_list_t l;
-
-  for (l = grub_dl_head; l; l = l->next)
-    if (hook (l->mod))
-      break;
 }
 
 
@@ -341,24 +316,23 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
       switch (type)
 	{
 	case STT_NOTYPE:
+	case STT_OBJECT:
 	  /* Resolve a global symbol.  */
 	  if (sym->st_name != 0 && sym->st_shndx == 0)
 	    {
 	      sym->st_value = (Elf_Addr) grub_dl_resolve_symbol (name);
 	      if (! sym->st_value)
 		return grub_error (GRUB_ERR_BAD_MODULE,
-				   "the symbol `%s' not found", name);
+				   "symbol not found: `%s'", name);
 	    }
 	  else
-	    sym->st_value = 0;
-	  break;
-
-	case STT_OBJECT:
-	  sym->st_value += (Elf_Addr) grub_dl_get_section_addr (mod,
-								sym->st_shndx);
-	  if (bind != STB_LOCAL)
-	    if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
-	      return grub_errno;
+	    {
+	      sym->st_value += (Elf_Addr) grub_dl_get_section_addr (mod,
+								    sym->st_shndx);
+	      if (bind != STB_LOCAL)
+		if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
+		  return grub_errno;
+	    }
 	  break;
 
 	case STT_FUNC:
@@ -470,11 +444,13 @@ grub_dl_resolve_dependencies (grub_dl_t mod, Elf_Ehdr *e)
   return GRUB_ERR_NONE;
 }
 
-#ifndef GRUB_UTIL
 int
 grub_dl_ref (grub_dl_t mod)
 {
   grub_dl_dep_t dep;
+
+  if (!mod)
+    return 0;
 
   for (dep = mod->dep; dep; dep = dep->next)
     grub_dl_ref (dep->mod);
@@ -487,12 +463,14 @@ grub_dl_unref (grub_dl_t mod)
 {
   grub_dl_dep_t dep;
 
+  if (!mod)
+    return 0;
+
   for (dep = mod->dep; dep; dep = dep->next)
     grub_dl_unref (dep->mod);
 
   return --mod->ref_count;
 }
-#endif
 
 static void
 grub_dl_flush_cache (grub_dl_t mod)
@@ -628,12 +606,10 @@ grub_dl_load (const char *name)
     return 0;
   }
 
-  filename = (char *) grub_malloc (grub_strlen (grub_dl_dir) + 1
-				   + grub_strlen (name) + 4 + 1);
+  filename = grub_xasprintf ("%s/%s.mod", grub_dl_dir, name);
   if (! filename)
     return 0;
 
-  grub_sprintf (filename, "%s/%s.mod", grub_dl_dir, name);
   mod = grub_dl_load_file (filename);
   grub_free (filename);
 
@@ -693,11 +669,11 @@ grub_dl_unload_unneeded (void)
 {
   /* Because grub_dl_remove modifies the list of modules, this
      implementation is tricky.  */
-  grub_dl_list_t p = grub_dl_head;
+  grub_dl_t p = grub_dl_head;
 
   while (p)
     {
-      if (grub_dl_unload (p->mod))
+      if (grub_dl_unload (p))
 	{
 	  p = grub_dl_head;
 	  continue;
@@ -713,13 +689,13 @@ grub_dl_unload_all (void)
 {
   while (grub_dl_head)
     {
-      grub_dl_list_t p;
+      grub_dl_t p;
 
       grub_dl_unload_unneeded ();
 
       /* Force to decrement the ref count. This will purge pre-loaded
 	 modules and manually inserted modules.  */
       for (p = grub_dl_head; p; p = p->next)
-	p->mod->ref_count--;
+	p->ref_count--;
     }
 }

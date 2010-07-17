@@ -1,7 +1,7 @@
 /* grub-probe.c - probe device information for a given path */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,14 +20,15 @@
 #include <config.h>
 #include <grub/types.h>
 #include <grub/util/misc.h>
+#include <grub/util/misc.h>
 #include <grub/device.h>
 #include <grub/disk.h>
 #include <grub/file.h>
 #include <grub/fs.h>
 #include <grub/partition.h>
 #include <grub/msdos_partition.h>
-#include <grub/util/hostdisk.h>
-#include <grub/util/getroot.h>
+#include <grub/emu/hostdisk.h>
+#include <grub/emu/getroot.h>
 #include <grub/term.h>
 #include <grub/env.h>
 #include <grub/raid.h>
@@ -58,20 +59,19 @@ enum {
 int print = PRINT_FS;
 static unsigned int argument_is_device = 0;
 
-void
-grub_putchar (int c)
+void 
+grub_xputs_real (const char *str)
 {
-  putchar (c);
+  fputs (str, stdout);
 }
+
+void (*grub_xputs) (const char *str) = grub_xputs_real;
 
 int
 grub_getkey (void)
 {
   return -1;
 }
-
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
 
 void
 grub_refresh (void)
@@ -82,18 +82,26 @@ grub_refresh (void)
 static void
 probe_partmap (grub_disk_t disk)
 {
+  grub_partition_t part;
+
   if (disk->partition == NULL)
     {
-      grub_util_info ("No partition map found for %s", disk->name);
+      grub_util_info ("no partition map found for %s", disk->name);
       return;
     }
 
-  printf ("%s\n", disk->partition->partmap->name);
+  for (part = disk->partition; part; part = part->parent)
+    printf ("%s\n", part->partmap->name);
 }
 
 static int
 probe_raid_level (grub_disk_t disk)
 {
+  /* disk might be NULL in the case of a LVM physical volume with no LVM
+     signature.  Ignore such cases here.  */
+  if (!disk)
+    return -1;
+
   if (disk->dev->id != GRUB_DISK_DEVICE_RAID_ID)
     return -1;
 
@@ -111,19 +119,19 @@ probe (const char *path, char *device_name)
 
   if (path == NULL)
     {
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__)
       if (! grub_util_check_char_device (device_name))
-        grub_util_error ("%s is not a character device.\n", device_name);
+        grub_util_error ("%s is not a character device", device_name);
 #else
       if (! grub_util_check_block_device (device_name))
-        grub_util_error ("%s is not a block device.\n", device_name);
+        grub_util_error ("%s is not a block device", device_name);
 #endif
     }
   else
     device_name = grub_guess_root_device (path);
 
   if (! device_name)
-    grub_util_error ("cannot find a device for %s (is /dev mounted?).\n", path);
+    grub_util_error ("cannot find a device for %s (is /dev mounted?)", path);
 
   if (print == PRINT_DEVICE)
     {
@@ -133,7 +141,7 @@ probe (const char *path, char *device_name)
 
   drive_name = grub_util_get_grub_dev (device_name);
   if (! drive_name)
-    grub_util_error ("Cannot find a GRUB drive for %s.  Check your device.map.\n", device_name);
+    grub_util_error ("cannot find a GRUB drive for %s.  Check your device.map", device_name);
 
   if (print == PRINT_DRIVE)
     {
@@ -253,7 +261,7 @@ probe (const char *path, char *device_name)
 	      grub_util_info ("reading %s via OS facilities", path);
 	      filebuf_via_sys = grub_util_read_image (path);
 
-	      rel_path = make_system_path_relative_to_its_root (path);
+	      rel_path = grub_make_system_path_relative_to_its_root (path);
 	      grub_path = xasprintf ("(%s)%s", drive_name, rel_path);
 	      free (rel_path);
 	      grub_util_info ("reading %s via GRUB facilities", grub_path);
@@ -309,7 +317,7 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try ``%s --help'' for more information.\n", program_name);
+	     "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
 Usage: %s [OPTION]... [PATH|DEVICE]\n\
@@ -338,9 +346,8 @@ main (int argc, char *argv[])
   char *argument;
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+
+  grub_util_init_nls ();
 
   /* Check for options.  */
   while (1)

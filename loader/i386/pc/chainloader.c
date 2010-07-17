@@ -1,7 +1,7 @@
 /* chainloader.c - boot another boot loader */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2004,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004,2007,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,7 +31,11 @@
 #include <grub/machine/memory.h>
 #include <grub/dl.h>
 #include <grub/command.h>
+#include <grub/msdos_partition.h>
 #include <grub/machine/biosnum.h>
+#include <grub/i18n.h>
+#include <grub/video.h>
+#include <grub/mm.h>
 
 static grub_dl_t my_mod;
 static int boot_drive;
@@ -40,6 +44,7 @@ static void *boot_part_addr;
 static grub_err_t
 grub_chainloader_boot (void)
 {
+  grub_video_set_mode ("text", 0, 0);
   grub_chainloader_real_boot (boot_drive, boot_part_addr);
 
   /* Never reach here.  */
@@ -94,10 +99,22 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
   dev = grub_device_open (0);
   if (dev && dev->disk && dev->disk->partition)
     {
-      grub_disk_read (dev->disk, dev->disk->partition->offset, 446, 64,
-		      (void *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
-      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
-			    + (dev->disk->partition->index << 4));
+      grub_disk_t disk = dev->disk;
+
+      if (disk)
+	{
+	  grub_partition_t p = disk->partition;
+
+	  if (p && grub_strcmp (p->partmap->name, "msdos") == 0)
+	    {
+	      disk->partition = p->parent;
+	      grub_disk_read (disk, p->offset, 446, 64,
+			      (void *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
+	      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
+				    + (p->index << 4));
+	      disk->partition = p;
+	    }
+	}
     }
 
   if (dev)
@@ -146,7 +163,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(chainloader)
 {
   cmd = grub_register_command ("chainloader", grub_cmd_chainloader,
-			       0, "Load another boot loader.");
+			       0, N_("Load another boot loader."));
   my_mod = mod;
 }
 

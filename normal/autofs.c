@@ -38,6 +38,9 @@ autoload_fs_module (void)
       if (! grub_dl_get (p->name) && grub_dl_load (p->name))
 	return 1;
 
+      if (grub_errno)
+	grub_print_error ();
+
       fs_module_list = p->next;
       grub_free (p->name);
       grub_free (p);
@@ -48,30 +51,35 @@ autoload_fs_module (void)
 
 /* Read the file fs.lst for auto-loading.  */
 void
-read_fs_list (void)
+read_fs_list (const char *prefix)
 {
-  const char *prefix;
-  static int first_time = 1;
-
-  /* Make sure that this function does not get executed twice.  */
-  if (! first_time)
-    return;
-  first_time = 0;
-
-  prefix = grub_env_get ("prefix");
   if (prefix)
     {
       char *filename;
 
-      filename = grub_malloc (grub_strlen (prefix) + sizeof ("/fs.lst"));
+      filename = grub_xasprintf ("%s/fs.lst", prefix);
       if (filename)
 	{
 	  grub_file_t file;
+	  grub_fs_autoload_hook_t tmp_autoload_hook;
 
-	  grub_sprintf (filename, "%s/fs.lst", prefix);
+	  /* This rules out the possibility that read_fs_list() is invoked
+	     recursively when we call grub_file_open() below.  */
+	  tmp_autoload_hook = grub_fs_autoload_hook;
+	  grub_fs_autoload_hook = NULL;
+
 	  file = grub_file_open (filename);
 	  if (file)
 	    {
+	      /* Override previous fs.lst.  */
+	      while (fs_module_list)
+		{
+		  grub_named_list_t tmp;
+		  tmp = fs_module_list->next;
+		  grub_free (fs_module_list);
+		  fs_module_list = tmp;
+		}
+
 	      while (1)
 		{
 		  char *buf;
@@ -113,6 +121,7 @@ read_fs_list (void)
 		}
 
 	      grub_file_close (file);
+	      grub_fs_autoload_hook = tmp_autoload_hook;
 	    }
 
 	  grub_free (filename);

@@ -1,7 +1,7 @@
 /* efi.h - declare EFI types and functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -583,6 +583,16 @@ struct grub_efi_protocol_device_path
   grub_efi_guid_t guid;
 };
 typedef struct grub_efi_protocol_device_path grub_efi_protocol_device_path_t;
+
+#define GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE		6
+
+struct grub_efi_piwg_device_path
+{
+  grub_efi_device_path_t header;
+  grub_efi_guid_t guid __attribute__ ((packed));
+};
+typedef struct grub_efi_piwg_device_path grub_efi_piwg_device_path_t;
+
 
 /* BIOS Boot Specification Device Path.  */
 #define GRUB_EFI_BIOS_DEVICE_PATH_TYPE			5

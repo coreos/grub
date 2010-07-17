@@ -30,7 +30,7 @@ static const struct grub_machine_bios_data_area *bios_data_area =
 #define KEYBOARD_ALT		(1 << 3)
 
 static int
-grub_console_getkeystatus (void)
+grub_console_getkeystatus (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_uint8_t status = bios_data_area->keyboard_flag_lower;
   int mods = 0;
@@ -57,16 +57,15 @@ static struct grub_term_output grub_console_term_output =
   {
     .name = "console",
     .putchar = grub_console_putchar,
-    .getcharwidth = grub_console_getcharwidth,
     .getwh = grub_console_getwh,
     .getxy = grub_console_getxy,
     .gotoxy = grub_console_gotoxy,
     .cls = grub_console_cls,
     .setcolorstate = grub_console_setcolorstate,
-    .setcolor = grub_console_setcolor,
-    .getcolor = grub_console_getcolor,
     .setcursor = grub_console_setcursor,
-    .flags = 0,
+    .flags = GRUB_TERM_CODE_TYPE_CP437,
+    .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
+    .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };
 
 void
@@ -79,10 +78,6 @@ grub_console_init (void)
 void
 grub_console_fini (void)
 {
-  /* This is to make sure the console is restored to text mode before
-     we boot.  */
-  grub_term_set_current_output (&grub_console_term_output);
-
   grub_term_unregister_input (&grub_console_term_input);
   grub_term_unregister_output (&grub_console_term_output);
 }
