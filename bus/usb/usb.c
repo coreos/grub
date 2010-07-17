@@ -22,6 +22,7 @@
 #include <grub/usb.h>
 #include <grub/misc.h>
 #include <grub/list.h>
+#include <grub/dl.h>
 
 static grub_usb_controller_dev_t grub_usb_list;
 struct grub_usb_attach_desc *attach_hooks;
@@ -256,6 +257,19 @@ void grub_usb_device_attach (grub_usb_device_t dev)
       for (desc = attach_hooks; desc; desc = desc->next)
 	if (interf->class == desc->class && desc->hook (dev, 0, i))
 	  dev->config[0].interf[i].attached = 1;
+
+      if (dev->config[0].interf[i].attached)
+	continue;
+
+      switch (interf->class)
+	{
+	case GRUB_USB_CLASS_MASS_STORAGE:
+	  grub_dl_load ("usbms");
+	  break;
+	case GRUB_USB_CLASS_HID:
+	  grub_dl_load ("usb_keyboard");
+	  break;
+	}
     }
 }
 
