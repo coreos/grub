@@ -131,6 +131,7 @@ grub_serial_find (char *name)
     if (grub_strcmp (port->name, name) == 0)
       break;
 
+#ifndef GRUB_MACHINE_EMU
   if (!port && grub_memcmp (name, "port", sizeof ("port") - 1) == 0
       && grub_isdigit (name [sizeof ("port") - 1]))
     {
@@ -143,6 +144,7 @@ grub_serial_find (char *name)
 	if (grub_strcmp (port->name, name) == 0)
 	  break;
     }
+#endif
 
   return port;
 }
@@ -215,6 +217,7 @@ grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
   err = port->driver->configure (port, &config);
   if (err)
     return err;
+#ifndef GRUB_MACHINE_EMU
   /* Compatibility kludge.  */
   if (port->driver == &grub_ns8250_driver)
     {
@@ -227,6 +230,7 @@ grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
       grub_serial_terminfo_input.port = port;
       registered = 1;
     }
+#endif
   return GRUB_ERR_NONE;
 }
 
@@ -341,8 +345,9 @@ GRUB_MOD_INIT(serial)
 			      GRUB_COMMAND_FLAG_BOTH,
 			      N_("[OPTIONS...]"),
 			      N_("Configure serial port."), options);
-
+#ifndef GRUB_MACHINE_EMU
   grub_ns8250_init ();
+#endif
 }
 
 GRUB_MOD_FINI(serial)
