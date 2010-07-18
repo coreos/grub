@@ -34,9 +34,20 @@ grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
   struct grub_extcmd_context context;
   int maxargs = 0;
   grub_err_t ret;
-  grub_extcmd_t ext;
+  grub_extcmd_t ext = cmd->data;
 
-  ext = cmd->data;
+  context.state = 0;
+  context.extcmd = ext;
+  context.script_params = scripts;
+
+  /* Dynamic commands should not perform option parsing before
+     corresponding module gets loaded.  */
+  if (cmd->flags & GRUB_COMMAND_FLAG_DYNCMD)
+    {
+      ret = (ext->func) (&context, argc, args);
+      return ret;
+    }
+
   parser = (struct grub_arg_option *) ext->options;
   while (parser && (parser++)->doc)
     maxargs++;
@@ -46,10 +57,7 @@ grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
 
   if (grub_arg_parse (ext, argc, args, state, &new_args, &new_argc))
     {
-      context.extcmd = ext;
       context.state = state;
-      context.script_params = scripts;
-
       ret = (ext->func) (&context, new_argc, new_args);
       grub_free (new_args);
     }
