@@ -24,17 +24,6 @@
 #include <grub/usb.h>
 #include <grub/usbserial.h>
 
-enum
-  {
-    GRUB_FTDI_MODEM_CTRL = 0x01,
-    GRUB_FTDI_FLOW_CTRL = 0x02,
-    GRUB_FTDI_SPEED_CTRL = 0x03,
-    GRUB_FTDI_DATA_CTRL = 0x04
-  };
-
-#define GRUB_FTDI_MODEM_CTRL_DTRRTS 3
-#define GRUB_FTDI_FLOW_CTRL_DTRRTS 3
-
 /* Convert speed to divisor.  */
 static grub_uint32_t
 get_divisor (unsigned int speed)
@@ -68,41 +57,36 @@ get_divisor (unsigned int speed)
   return 0;
 }
 
+#define GRUB_PL2303_REQUEST_CONFIG 1
+
 static void
 real_config (struct grub_serial_port *port)
 {
-  grub_uint32_t divisor;
-  const grub_uint16_t parities[] = {
-    [GRUB_SERIAL_PARITY_NONE] = 0x0000,
-    [GRUB_SERIAL_PARITY_ODD] = 0x0100,
-    [GRUB_SERIAL_PARITY_EVEN] = 0x0200
-  };
-  const grub_uint16_t stop_bits[] = {
-    [GRUB_SERIAL_STOP_BITS_1] = 0x0000,
-    [GRUB_SERIAL_STOP_BITS_2] = 0x1000,
-  };
+  struct req20
+  {
+    char data[7];
+  } req20;
 
-  //  if (port->configured)
+  if (port->configured)
     return;
 
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_FTDI_MODEM_CTRL,
-			GRUB_FTDI_MODEM_CTRL_DTRRTS, 0, 0, 0);
-
+			GRUB_PL2303_REQUEST_CONFIG, 0, 0x61, 0, 0);
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_FTDI_FLOW_CTRL,
-			GRUB_FTDI_FLOW_CTRL_DTRRTS, 0, 0, 0);
-
-  divisor = get_divisor (port->config.speed);
+			GRUB_PL2303_REQUEST_CONFIG, 1, 0, 0, 0);
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_FTDI_SPEED_CTRL,
-			divisor & 0xffff, divisor >> 16, 0, 0);
-
+			GRUB_PL2303_REQUEST_CONFIG, 2, 0x44, 0, 0);
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_FTDI_DATA_CTRL,
-			parities[port->config.parity]
-			| stop_bits[port->config.stop_bits]
-			| port->config.word_len, 0, 0, 0);
+			GRUB_PL2303_REQUEST_CONFIG, 8, 0, 0, 0);
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
+			GRUB_PL2303_REQUEST_CONFIG, 9, 0, 0, 0);
+
+  grub_memset (&req20, 0, sizeof (req20));
+  req20.data[6] = 8;
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
+			0x20, 0, 0, sizeof (req20), (char *) &req20);
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
+			0x22, 3, 0, 0, 0);
 
   port->configured = 1;
 }
@@ -116,7 +100,8 @@ pl2303_hw_fetch (struct grub_serial_port *port)
 
   real_config (port);
 
-  err = grub_usb_bulk_read (port->usbdev, port->in_endp->endp_addr, 1, &cc);
+  err = grub_usb_bulk_read_timeout (port->usbdev, port->in_endp->endp_addr,
+				    1, &cc, 10);
   if (err != GRUB_USB_ERR_NONE)
     return -1;
 

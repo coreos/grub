@@ -272,6 +272,7 @@ void grub_usb_device_attach (grub_usb_device_t dev)
 	case 0xff:
 	  /* FIXME: don't load useless modules.  */
 	  grub_dl_load ("usbserial_ftdi");
+	  grub_dl_load ("usbserial_pl2303");
 	  break;
 	}
     }
