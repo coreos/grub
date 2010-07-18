@@ -48,13 +48,20 @@ get_divisor (unsigned int speed)
   };
 
   /* The table which lists common configurations.  */
+  /* Computed with a division formula with 3MHz as base frequency. */
   static struct divisor divisor_tab[] =
     {
+      { 2400,   0x04e2 },
+      { 4800,   0x0271 },
       { 9600,   0x4138 },
+      { 19200,  0x809c },
+      { 38400,  0xc04e },
+      { 57600,  0xc034 },
+      { 115200, 0x001a }
     };
 
   /* Set the baud rate.  */
-  for (i = 0; i < sizeof (divisor_tab) / sizeof (divisor_tab[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (divisor_tab); i++)
     if (divisor_tab[i].speed == speed)
       return divisor_tab[i].div;
   return 0;

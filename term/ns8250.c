@@ -61,7 +61,7 @@ serial_get_divisor (unsigned int speed)
     };
 
   /* Set the baud rate.  */
-  for (i = 0; i < sizeof (divisor_tab) / sizeof (divisor_tab[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (divisor_tab); i++)
     if (divisor_tab[i].speed == speed)
   /* UART in Yeeloong runs twice the usual rate.  */
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
