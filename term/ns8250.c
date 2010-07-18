@@ -81,7 +81,7 @@ do_real_config (struct grub_serial_port *port)
   if (port->configured)
     return;
 
-  divisor = serial_get_divisor (port->speed);
+  divisor = serial_get_divisor (port->config.speed);
   /* Shouldn't happen.  */
   if (divisor == 0)
     return;
@@ -97,7 +97,8 @@ do_real_config (struct grub_serial_port *port)
   grub_outb (divisor >> 8, port->port + UART_DLH);
 
   /* Set the line status.  */
-  status |= (port->parity | port->word_len | port->stop_bits);
+  status |= (port->config.parity | port->config.word_len
+	     | port->config.stop_bits);
   grub_outb (status, port->port + UART_LCR);
 
   /* In Yeeloong serial port has only 3 wires.  */
@@ -161,20 +162,15 @@ serial_hw_put (struct grub_serial_port *port, const int c)
    macros.  */
 static grub_err_t
 serial_hw_configure (struct grub_serial_port *port,
-		     unsigned speed, unsigned short word_len,
-		     unsigned int   parity, unsigned short stop_bits)
+		     struct grub_serial_config *config)
 {
   unsigned short divisor;
 
-  divisor = serial_get_divisor (speed);
+  divisor = serial_get_divisor (config->speed);
   if (divisor == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad speed");
 
-  port->speed = speed;
-  port->word_len = word_len;
-  port->parity = parity;
-  port->stop_bits = stop_bits;
-
+  port->config = *config;
   port->configured = 0;
 
   /*  FIXME: should check if the serial terminal was found.  */

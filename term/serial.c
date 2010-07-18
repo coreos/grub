@@ -154,10 +154,7 @@ grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
   char pname[40];
   char *name = NULL;
   struct grub_serial_port *port;
-  signed speed = -1;
-  signed short word_len = -1;
-  signed int   parity = -1;
-  signed short stop_bits = -1;
+  struct grub_serial_config config;
   grub_err_t err;
 
   if (state[0].set)
@@ -184,24 +181,21 @@ grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
   if (!port)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown serial port");
 
-  speed = port->speed;
-  word_len = port->word_len;
-  parity = port->parity;
-  stop_bits = port->stop_bits;
+  config = port->config;
 
   if (state[2].set)
-    speed = grub_strtoul (state[2].arg, 0, 0);
+    config.speed = grub_strtoul (state[2].arg, 0, 0);
 
   if (state[3].set)
     {
       if (! grub_strcmp (state[3].arg, "5"))
-	word_len = UART_5BITS_WORD;
+	config.word_len = UART_5BITS_WORD;
       else if (! grub_strcmp (state[3].arg, "6"))
-	word_len = UART_6BITS_WORD;
+	config.word_len = UART_6BITS_WORD;
       else if (! grub_strcmp (state[3].arg, "7"))
-	word_len = UART_7BITS_WORD;
+	config.word_len = UART_7BITS_WORD;
       else if (! grub_strcmp (state[3].arg, "8"))
-	word_len = UART_8BITS_WORD;
+	config.word_len = UART_8BITS_WORD;
       else
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad word length");
     }
@@ -209,11 +203,11 @@ grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
   if (state[4].set)
     {
       if (! grub_strcmp (state[4].arg, "no"))
-	parity = UART_NO_PARITY;
+	config.parity = UART_NO_PARITY;
       else if (! grub_strcmp (state[4].arg, "odd"))
-	parity = UART_ODD_PARITY;
+	config.parity = UART_ODD_PARITY;
       else if (! grub_strcmp (state[4].arg, "even"))
-	parity = UART_EVEN_PARITY;
+	config.parity = UART_EVEN_PARITY;
       else
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad parity");
     }
@@ -221,15 +215,15 @@ grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
   if (state[5].set)
     {
       if (! grub_strcmp (state[5].arg, "1"))
-	stop_bits = UART_1_STOP_BIT;
+	config.stop_bits = UART_1_STOP_BIT;
       else if (! grub_strcmp (state[5].arg, "2"))
-	stop_bits = UART_2_STOP_BITS;
+	config.stop_bits = UART_2_STOP_BITS;
       else
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad number of stop bits");
     }
 
   /* Initialize with new settings.  */
-  err = port->driver->configure (port, speed, word_len, parity, stop_bits);
+  err = port->driver->configure (port, &config);
   if (err)
     return err;
   if (!registered)

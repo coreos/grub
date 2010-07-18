@@ -23,12 +23,24 @@
 #include <grub/mm.h>
 #include <grub/usb.h>
 
+static void
+real_config (struct grub_serial_port *port)
+{
+  if (port->configured)
+    return;
+
+  port->configured = 1;
+}
+
 /* Fetch a key.  */
 static int
 usbserial_hw_fetch (struct grub_serial_port *port)
 {
   char cc[3];
   grub_usb_err_t err;
+
+  real_config (port);
+
   err = grub_usb_bulk_read (port->usbdev, port->in_endp->endp_addr, 2, cc);
   if (err != GRUB_USB_ERR_NAK)
     return -1;
@@ -45,20 +57,18 @@ static void
 usbserial_hw_put (struct grub_serial_port *port, const int c)
 {
   char cc = c;
+
+  real_config (port);
+
   grub_usb_bulk_write (port->usbdev, port->out_endp->endp_addr, 1, &cc);
 }
 
 /* FIXME */
 static grub_err_t
 usbserial_hw_configure (struct grub_serial_port *port,
-			unsigned speed, unsigned short word_len,
-			unsigned int   parity, unsigned short stop_bits)
+			struct grub_serial_config *config)
 {
-  port->speed = speed;
-  port->word_len = word_len;
-  port->parity = parity;
-  port->stop_bits = stop_bits;
-
+  port->config = *config;
   port->configured = 0;
 
   return GRUB_ERR_NONE;

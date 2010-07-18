@@ -48,6 +48,11 @@ typedef enum
     GRUB_USB_SPEED_HIGH
   } grub_usb_speed_t;
 
+enum
+  {
+    GRUB_USB_REQTYPE_VENDOR_OUT = 0x40
+  };
+
 /* Call HOOK with each device, until HOOK returns non-zero.  */
 int grub_usb_iterate (int (*hook) (grub_usb_device_t dev));
 

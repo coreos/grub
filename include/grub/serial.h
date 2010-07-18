@@ -26,27 +26,30 @@
 #include <grub/list.h>
 
 struct grub_serial_port;
+struct grub_serial_config;
 
 struct grub_serial_driver
 {
   grub_err_t (*configure) (struct grub_serial_port *port,
-			   unsigned speed,
-			   unsigned short word_len,
-			   unsigned int   parity,
-			   unsigned short stop_bits);
+			   struct grub_serial_config *config);
   int (*fetch) (struct grub_serial_port *port);
   void (*put) (struct grub_serial_port *port, const int c);
+};
+
+struct grub_serial_config
+{
+  unsigned speed;
+  unsigned short word_len;
+  unsigned int   parity;
+  unsigned short stop_bits;
 };
 
 struct grub_serial_port
 {
   struct grub_serial_port *next;
   char *name;
-  unsigned speed;
-  unsigned short word_len;
-  unsigned int   parity;
-  unsigned short stop_bits;
   struct grub_serial_driver *driver;
+  struct grub_serial_config config;
   int configured;
   /* This should be void *data but since serial is useful as an early console
      when malloc isn't available it's a union.
@@ -86,15 +89,19 @@ void grub_serial_unregister (struct grub_serial_port *port);
 static inline grub_err_t
 grub_serial_config_defaults (struct grub_serial_port *port)
 {
-  return port->driver->configure (port,
-
+  struct grub_serial_config config =
+    {
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
-				  115200,
+      .speed = 115200,
 #else
-				  9600,
+      .speed = 9600,
 #endif
-				  UART_8BITS_WORD, UART_NO_PARITY,
-				  UART_1_STOP_BIT);
+      .word_len = UART_8BITS_WORD,
+      .parity = UART_NO_PARITY,
+      .stop_bits = UART_1_STOP_BIT
+    };
+
+  return port->driver->configure (port, &config);
 }
 
 void grub_ns8250_init (void);
