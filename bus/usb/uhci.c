@@ -512,42 +512,37 @@ grub_uhci_transfer (grub_usb_controller_t dev,
 
       grub_dprintf ("uhci", "t status=0x%02x\n", errtd->ctrl_status);
 
-      /* Check if the TD is not longer active.  */
-      if (! (errtd->ctrl_status & (1 << 23)))
-	{
-	  grub_dprintf ("uhci", ">>t status=0x%02x\n", errtd->ctrl_status);
+      /* Check if the endpoint is stalled.  */
+      if (errtd->ctrl_status & (1 << 22))
+	err = GRUB_USB_ERR_STALL;
 
-	  /* Check if the endpoint is stalled.  */
-	  if (errtd->ctrl_status & (1 << 22))
-	    err = GRUB_USB_ERR_STALL;
+      /* Check if an error related to the data buffer occurred.  */
+      if (errtd->ctrl_status & (1 << 21))
+	err = GRUB_USB_ERR_DATA;
 
-	  /* Check if an error related to the data buffer occurred.  */
-	  if (errtd->ctrl_status & (1 << 21))
-	    err = GRUB_USB_ERR_DATA;
+      /* Check if a babble error occurred.  */
+      if (errtd->ctrl_status & (1 << 20))
+	err = GRUB_USB_ERR_BABBLE;
 
-	  /* Check if a babble error occurred.  */
-	  if (errtd->ctrl_status & (1 << 20))
-	    err = GRUB_USB_ERR_BABBLE;
+      /* Check if a NAK occurred.  */
+      if (errtd->ctrl_status & (1 << 19))
+	err = GRUB_USB_ERR_NAK;
 
-	  /* Check if a NAK occurred.  */
-	  if (errtd->ctrl_status & (1 << 19))
-	    err = GRUB_USB_ERR_NAK;
+      /* Check if a timeout occurred.  */
+      if (errtd->ctrl_status & (1 << 18))
+	err = GRUB_USB_ERR_TIMEOUT;
 
-	  /* Check if a timeout occurred.  */
-	  if (errtd->ctrl_status & (1 << 18))
-	    err = GRUB_USB_ERR_TIMEOUT;
+      /* Check if a bitstuff error occurred.  */
+      if (errtd->ctrl_status & (1 << 17))
+	err = GRUB_USB_ERR_BITSTUFF;
 
-	  /* Check if a bitstuff error occurred.  */
-	  if (errtd->ctrl_status & (1 << 17))
-	    err = GRUB_USB_ERR_BITSTUFF;
+      if (err)
+	goto fail;
 
-	  if (err)
-	    goto fail;
+      /* Fall through, no errors occurred, so the QH might be
+	 updated.  */
+      grub_dprintf ("uhci", "transaction fallthrough\n");
 
-	  /* Fall through, no errors occurred, so the QH might be
-	     updated.  */
-	  grub_dprintf ("uhci", "transaction fallthrough\n");
-	}
       if (grub_get_time_ms () > endtime)
 	{
 	  err = GRUB_USB_ERR_STALL;
