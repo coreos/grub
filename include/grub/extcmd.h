@@ -62,6 +62,14 @@ grub_extcmd_t grub_register_extcmd (const char *name,
 				    const char *description,
 				    const struct grub_arg_option *parser);
 
+grub_extcmd_t grub_register_extcmd_prio (const char *name,
+					 grub_extcmd_func_t func,
+					 unsigned flags,
+					 const char *summary,
+					 const char *description,
+					 const struct grub_arg_option *parser,
+					 int prio);
+
 void grub_unregister_extcmd (grub_extcmd_t cmd);
 
 grub_err_t

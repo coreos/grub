@@ -34,9 +34,20 @@ grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
   struct grub_extcmd_context context;
   int maxargs = 0;
   grub_err_t ret;
-  grub_extcmd_t ext;
+  grub_extcmd_t ext = cmd->data;
 
-  ext = cmd->data;
+  context.state = 0;
+  context.extcmd = ext;
+  context.script_params = scripts;
+
+  /* Dynamic commands should not perform option parsing before
+     corresponding module gets loaded.  */
+  if (cmd->flags & GRUB_COMMAND_FLAG_DYNCMD)
+    {
+      ret = (ext->func) (&context, argc, args);
+      return ret;
+    }
+
   parser = (struct grub_arg_option *) ext->options;
   while (parser && (parser++)->doc)
     maxargs++;
@@ -46,10 +57,7 @@ grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
 
   if (grub_arg_parse (ext, argc, args, state, &new_args, &new_argc))
     {
-      context.extcmd = ext;
       context.state = state;
-      context.script_params = scripts;
-
       ret = (ext->func) (&context, new_argc, new_args);
       grub_free (new_args);
     }
@@ -68,10 +76,11 @@ grub_extcmd_dispatch (struct grub_command *cmd, int argc, char **args)
 }
 
 grub_extcmd_t
-grub_register_extcmd (const char *name, grub_extcmd_func_t func,
-		      unsigned flags, const char *summary,
-		      const char *description,
-		      const struct grub_arg_option *parser)
+grub_register_extcmd_prio (const char *name, grub_extcmd_func_t func,
+			   unsigned flags, const char *summary,
+			   const char *description,
+			   const struct grub_arg_option *parser,
+			   int prio)
 {
   grub_extcmd_t ext;
   grub_command_t cmd;
@@ -81,7 +90,7 @@ grub_register_extcmd (const char *name, grub_extcmd_func_t func,
     return 0;
 
   cmd = grub_register_command_prio (name, grub_extcmd_dispatch,
-				    summary, description, 1);
+				    summary, description, prio);
   if (! cmd)
     {
       grub_free (ext);
@@ -97,6 +106,16 @@ grub_register_extcmd (const char *name, grub_extcmd_func_t func,
   ext->data = 0;
 
   return ext;
+}
+
+grub_extcmd_t
+grub_register_extcmd (const char *name, grub_extcmd_func_t func,
+		      unsigned flags, const char *summary,
+		      const char *description,
+		      const struct grub_arg_option *parser)
+{
+  return grub_register_extcmd_prio (name, func, flags,
+				    summary, description, parser, 1);
 }
 
 void
