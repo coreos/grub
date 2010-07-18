@@ -172,13 +172,22 @@ static struct grub_serial_driver grub_usbserial_driver =
     .put = usbserial_hw_put
   };
 
+static const struct 
+{
+  grub_uint16_t vendor, product;
+} products[] =
+  {
+    {0x0403, 0x6001} /* QEMU virtual USBserial.  */
+  };
+
 static int
-grub_usbserial_attach (grub_usb_device_t usbdev, int configno, int interfno)
+grub_ftdi_attach (grub_usb_device_t usbdev, int configno, int interfno)
 {
   static struct grub_serial_port *port;
   int j;
-  struct grub_usb_desc_if *interf
-    = usbdev->config[configno].interf[interfno].descif;
+  struct grub_usb_desc_if *interf;
+
+  interf = usbdev->config[configno].interf[interfno].descif;
 
   port = grub_malloc (sizeof (*port));
   if (!port)
@@ -226,13 +235,28 @@ grub_usbserial_attach (grub_usb_device_t usbdev, int configno, int interfno)
   return 1;
 }
 
+static int
+grub_usbserial_attach (grub_usb_device_t usbdev, int configno, int interfno)
+{
+  unsigned j;
+
+  for (j = 0; j < ARRAY_SIZE (products); j++)
+    if (usbdev->descdev.vendorid == products[j].vendor
+	&& usbdev->descdev.prodid == products[j].product)
+      break;
+  if (j == ARRAY_SIZE (products))
+    return 0;
+
+  return grub_ftdi_attach (usbdev, configno, interfno);
+}
+
 struct grub_usb_attach_desc attach_hook =
 {
   .class = 0xff,
   .hook = grub_usbserial_attach
 };
 
-GRUB_MOD_INIT(usbserial)
+GRUB_MOD_INIT(usbserial_ftdi)
 {
   grub_usb_register_attach_hook_class (&attach_hook);
 }
