@@ -51,7 +51,8 @@ typedef enum
 enum
   {
     GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT = 0x21,
-    GRUB_USB_REQTYPE_VENDOR_OUT = 0x40
+    GRUB_USB_REQTYPE_VENDOR_OUT = 0x40,
+    GRUB_USB_REQTYPE_VENDOR_IN = 0xc0
   };
 
 /* Call HOOK with each device, until HOOK returns non-zero.  */

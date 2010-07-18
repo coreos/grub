@@ -26,68 +26,100 @@
 
 /* Convert speed to divisor.  */
 static grub_uint32_t
-get_divisor (unsigned int speed)
+is_speed_supported (unsigned int speed)
 {
   unsigned int i;
+  unsigned int supported[] = { 2400, 4800, 9600, 19200, 38400, 57600, 115200};
 
-  /* The structure for speed vs. divisor.  */
-  struct divisor
-  {
-    unsigned int speed;
-    grub_uint32_t div;
-  };
-
-  /* The table which lists common configurations.  */
-  /* Computed with a division formula with 3MHz as base frequency. */
-  static struct divisor divisor_tab[] =
-    {
-      { 2400,   0x04e2 },
-      { 4800,   0x0271 },
-      { 9600,   0x4138 },
-      { 19200,  0x809c },
-      { 38400,  0xc04e },
-      { 57600,  0xc034 },
-      { 115200, 0x001a }
-    };
-
-  /* Set the baud rate.  */
-  for (i = 0; i < ARRAY_SIZE (divisor_tab); i++)
-    if (divisor_tab[i].speed == speed)
-      return divisor_tab[i].div;
+  for (i = 0; i < ARRAY_SIZE (supported); i++)
+    if (supported[i] == speed)
+      return 1;
   return 0;
 }
 
-#define GRUB_PL2303_REQUEST_CONFIG 1
+#define GRUB_PL2303_REQUEST_SET_CONFIG 0x20
+#define GRUB_PL2303_STOP_BITS_1 0x0
+#define GRUB_PL2303_STOP_BITS_2 0x2
+
+#define GRUB_PL2303_PARITY_NONE 0
+#define GRUB_PL2303_PARITY_ODD  1
+#define GRUB_PL2303_PARITY_EVEN 2
+
+struct grub_pl2303_config
+{
+  grub_uint32_t speed;
+  grub_uint8_t stop_bits;
+  grub_uint8_t parity;
+  grub_uint8_t word_len;
+} __attribute__ ((packed));
 
 static void
 real_config (struct grub_serial_port *port)
 {
-  struct req20
-  {
-    char data[7];
-  } req20;
+  struct grub_pl2303_config config_pl2303;
+  char xx;
 
   if (port->configured)
     return;
 
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_IN,
+			1, 0x8484, 0, 1, &xx);
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_PL2303_REQUEST_CONFIG, 0, 0x61, 0, 0);
-  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_PL2303_REQUEST_CONFIG, 1, 0, 0, 0);
-  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_PL2303_REQUEST_CONFIG, 2, 0x44, 0, 0);
-  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_PL2303_REQUEST_CONFIG, 8, 0, 0, 0);
-  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_PL2303_REQUEST_CONFIG, 9, 0, 0, 0);
+			1, 0x0404, 0, 0, 0);
 
-  grub_memset (&req20, 0, sizeof (req20));
-  req20.data[6] = 8;
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_IN,
+			1, 0x8484, 0, 1, &xx);
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_IN,
+			1, 0x8383, 0, 1, &xx);
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_IN,
+			1, 0x8484, 0, 1, &xx);
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
+			1, 0x0404, 1, 0, 0);
+
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_IN,
+			1, 0x8484, 0, 1, &xx);
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_IN,
+			1, 0x8383, 0, 1, &xx);
+
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
+			1, 0, 1, 0, 0);
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
+			1, 1, 0, 0, 0);
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
+			1, 2, 0x44, 0, 0);
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
+			1, 8, 0, 0, 0);
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
+			1, 9, 0, 0, 0);
+
+  if (port->config.stop_bits == GRUB_SERIAL_STOP_BITS_2)
+    config_pl2303.stop_bits = GRUB_PL2303_STOP_BITS_2;
+  else
+    config_pl2303.stop_bits = GRUB_PL2303_STOP_BITS_1;
+
+  switch (port->config.parity)
+    {
+    case GRUB_SERIAL_PARITY_NONE:
+      config_pl2303.parity = GRUB_PL2303_PARITY_NONE;
+      break;
+    case GRUB_SERIAL_PARITY_ODD:
+      config_pl2303.parity = GRUB_PL2303_PARITY_ODD;
+      break;
+    case GRUB_SERIAL_PARITY_EVEN:
+      config_pl2303.parity = GRUB_PL2303_PARITY_EVEN;
+      break;
+    }
+
+  config_pl2303.word_len = port->config.word_len;
+  config_pl2303.speed = port->config.speed;
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
-			0x20, 0, 0, sizeof (req20), (char *) &req20);
+			GRUB_PL2303_REQUEST_SET_CONFIG, 0, 0,
+			sizeof (config_pl2303), (char *) &config_pl2303);
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
 			0x22, 3, 0, 0, 0);
 
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
+			1, 0, 0x61, 0, 0);
   port->configured = 1;
 }
 
@@ -123,10 +155,7 @@ static grub_err_t
 pl2303_hw_configure (struct grub_serial_port *port,
 			struct grub_serial_config *config)
 {
-  grub_uint16_t divisor;
-
-  divisor = get_divisor (config->speed);
-  if (divisor == 0)
+  if (!is_speed_supported (config->speed))
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad speed");
 
   if (config->parity != GRUB_SERIAL_PARITY_NONE
