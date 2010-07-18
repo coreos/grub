@@ -67,6 +67,8 @@ struct grub_serial_port
   struct grub_serial_driver *driver;
   struct grub_serial_config config;
   int configured;
+  char buf[64];
+  int bufstart, bufend;
   /* This should be void *data but since serial is useful as an early console
      when malloc isn't available it's a union.
    */
