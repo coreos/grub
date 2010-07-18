@@ -436,7 +436,8 @@ grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
 
 static grub_usb_err_t
 grub_uhci_transfer (grub_usb_controller_t dev,
-		    grub_usb_transfer_t transfer)
+		    grub_usb_transfer_t transfer,
+		    int timeout)
 {
   struct grub_uhci *u = (struct grub_uhci *) dev->data;
   grub_uhci_qh_t qh;
@@ -496,7 +497,7 @@ grub_uhci_transfer (grub_usb_controller_t dev,
 
   /* Wait until either the transaction completed or an error
      occurred.  */
-  endtime = grub_get_time_ms () + 1000;
+  endtime = grub_get_time_ms () + timeout;
   for (;;)
     {
       grub_uhci_td_t errtd;

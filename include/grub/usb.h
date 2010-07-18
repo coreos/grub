@@ -50,6 +50,7 @@ typedef enum
 
 enum
   {
+    GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT = 0x21,
     GRUB_USB_REQTYPE_VENDOR_OUT = 0x40
   };
 
@@ -103,7 +104,8 @@ struct grub_usb_controller_dev
   int (*iterate) (int (*hook) (grub_usb_controller_t dev));
 
   grub_usb_err_t (*transfer) (grub_usb_controller_t dev,
-			      grub_usb_transfer_t transfer);
+			      grub_usb_transfer_t transfer,
+			      int timeout);
 
   int (*hubports) (grub_usb_controller_t dev);
 
@@ -235,5 +237,9 @@ void grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc);
 void grub_usb_poll_devices (void);
 
 void grub_usb_device_attach (grub_usb_device_t dev);
+grub_usb_err_t
+grub_usb_bulk_read_timeout (grub_usb_device_t dev,
+			    int endpoint, grub_size_t size, char *data,
+			    int timeout);
 
 #endif /* GRUB_USB_H */

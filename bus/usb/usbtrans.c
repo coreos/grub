@@ -145,7 +145,7 @@ grub_usb_control_msg (grub_usb_device_t dev,
 
   transfer->transactions[datablocks + 1].toggle = 1;
 
-  err = dev->controller.dev->transfer (&dev->controller, transfer);
+  err = dev->controller.dev->transfer (&dev->controller, transfer, 1000);
   grub_dprintf ("usb", "control: err=%d\n", err);
 
   grub_free (transfer->transactions);
@@ -162,7 +162,7 @@ grub_usb_control_msg (grub_usb_device_t dev,
 static grub_usb_err_t
 grub_usb_bulk_readwrite (grub_usb_device_t dev,
 			 int endpoint, grub_size_t size0, char *data_in,
-			 grub_transfer_type_t type)
+			 grub_transfer_type_t type, int timeout)
 {
   int i;
   grub_usb_transfer_t transfer;
@@ -243,7 +243,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
       size -= tr->size;
     }
 
-  err = dev->controller.dev->transfer (&dev->controller, transfer);
+  err = dev->controller.dev->transfer (&dev->controller, transfer, timeout);
   /* We must remember proper toggle value even if some transactions
    * were not processed - correct value should be inversion of last
    * processed transaction (TD). */
@@ -269,7 +269,7 @@ grub_usb_bulk_write (grub_usb_device_t dev,
 		     int endpoint, grub_size_t size, char *data)
 {
   return grub_usb_bulk_readwrite (dev, endpoint, size, data,
-				  GRUB_USB_TRANSFER_TYPE_OUT);
+				  GRUB_USB_TRANSFER_TYPE_OUT, 1000);
 }
 
 grub_usb_err_t
@@ -277,5 +277,14 @@ grub_usb_bulk_read (grub_usb_device_t dev,
 		    int endpoint, grub_size_t size, char *data)
 {
   return grub_usb_bulk_readwrite (dev, endpoint, size, data,
-				  GRUB_USB_TRANSFER_TYPE_IN);
+				  GRUB_USB_TRANSFER_TYPE_IN, 1000);
+}
+
+grub_usb_err_t
+grub_usb_bulk_read_timeout (grub_usb_device_t dev,
+			    int endpoint, grub_size_t size, char *data,
+			    int timeout)
+{
+  return grub_usb_bulk_readwrite (dev, endpoint, size, data,
+				  GRUB_USB_TRANSFER_TYPE_IN, timeout);
 }

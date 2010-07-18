@@ -654,7 +654,7 @@ grub_ohci_transaction (grub_ohci_td_t td,
 
 static grub_usb_err_t
 grub_ohci_transfer (grub_usb_controller_t dev,
-		    grub_usb_transfer_t transfer)
+		    grub_usb_transfer_t transfer, int timeout)
 {
   struct grub_ohci *o = (struct grub_ohci *) dev->data;
   grub_ohci_ed_t ed_virt;
@@ -832,7 +832,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
     }
 
   /* Safety measure to avoid a hang. */
-  maxtime = grub_get_time_ms () + 1000;
+  maxtime = grub_get_time_ms () + timeout;
 	
   /* Wait until the transfer is completed or STALLs.  */
   do
