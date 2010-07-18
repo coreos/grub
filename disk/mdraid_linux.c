@@ -229,7 +229,8 @@ struct grub_raid_super_1x
 #define WriteMostly1    1	/* Mask for writemostly flag in above devflags.  */
 
 static grub_err_t
-grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array)
+grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
+		    grub_disk_addr_t *start_sector)
 {
   grub_disk_addr_t sector;
   grub_uint64_t size, sb_size;
@@ -328,6 +329,8 @@ superblock_0_90:
   uuid[2] = sb.set_uuid2;
   uuid[3] = sb.set_uuid3;
 
+  *start_sector = 0;
+
   return 0;
 
  superblock_1_x:
@@ -386,6 +389,8 @@ superblock_0_90:
     }
 
   grub_memcpy (array->uuid, sb_1x->set_uuid, 16);
+
+  *start_sector = sb_1x->data_offset;
 
   grub_free (sb_1x);
   return 0;

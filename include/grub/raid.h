@@ -51,6 +51,8 @@ struct grub_raid_array
   char *name;              /* That will be "md<number>". */
   unsigned int nr_devs;    /* The number of devices we've found so far. */
   grub_disk_t device[GRUB_RAID_MAX_DEVICES];  /* Array of total_devs devices. */
+  grub_disk_addr_t start_sector[GRUB_RAID_MAX_DEVICES];
+			   /* Start of each device, in 512 byte sectors. */
   struct grub_raid_array *next;
 };
 
@@ -58,7 +60,8 @@ struct grub_raid
 {
   const char *name;
 
-  grub_err_t (*detect) (grub_disk_t disk, struct grub_raid_array *array);
+  grub_err_t (*detect) (grub_disk_t disk, struct grub_raid_array *array,
+                        grub_disk_addr_t *start_sector);
 
   struct grub_raid *next;
 };

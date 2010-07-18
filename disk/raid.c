@@ -254,7 +254,8 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
                           grub_errno = GRUB_ERR_NONE;
 
                         err = grub_disk_read (array->device[k],
-                                              read_sector + j * far_ofs + b,
+                                              array->start_sector[k] +
+                                                read_sector + j * far_ofs + b,
                                               0,
                                               read_size << GRUB_DISK_SECTOR_BITS,
                                               buf);
@@ -366,7 +367,8 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
                   grub_errno = GRUB_ERR_NONE;
 
                 err = grub_disk_read (array->device[disknr],
-                                      read_sector + b, 0,
+                                      array->start_sector[disknr] +
+                                        read_sector + b, 0,
                                       read_size << GRUB_DISK_SECTOR_BITS,
                                       buf);
 
@@ -475,7 +477,7 @@ grub_raid_write (grub_disk_t disk __attribute ((unused)),
 
 static grub_err_t
 insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
-              const char *scanner_name)
+              grub_disk_addr_t start_sector, const char *scanner_name)
 {
   struct grub_raid_array *array = 0, *p;
 
@@ -524,6 +526,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
       *array = *new_array;
       array->nr_devs = 0;
       grub_memset (&array->device, 0, sizeof (array->device));
+      grub_memset (&array->start_sector, 0, sizeof (array->start_sector));
 
       if (array->name)
 	goto skip_duplicate_check;
@@ -587,6 +590,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 
   /* Add the device to the array. */
   array->device[new_array->index] = disk;
+  array->start_sector[new_array->index] = start_sector;
   array->nr_devs++;
 
   return 0;
@@ -628,6 +632,7 @@ grub_raid_register (grub_raid_t raid)
     {
       grub_disk_t disk;
       struct grub_raid_array array;
+      grub_disk_addr_t start_sector;
 
       grub_dprintf ("raid", "Scanning for RAID devices on disk %s\n", name);
 
@@ -636,8 +641,8 @@ grub_raid_register (grub_raid_t raid)
         return 0;
 
       if ((disk->total_sectors != GRUB_ULONG_MAX) &&
-	  (! grub_raid_list->detect (disk, &array)) &&
-	  (! insert_array (disk, &array, grub_raid_list->name)))
+	  (! grub_raid_list->detect (disk, &array, &start_sector)) &&
+	  (! insert_array (disk, &array, start_sector, grub_raid_list->name)))
 	return 0;
 
       /* This error usually means it's not raid, no need to display

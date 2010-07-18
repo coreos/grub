@@ -1,5 +1,21 @@
 2010-07-18  Colin Watson  <cjwatson@ubuntu.com>
 
+	* disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Add start_sector
+	parameter.  Set its pointer target to 0.
+	* disk/mdraid_linux.c (grub_mdraid_detect): Add start_sector
+	parameter.  Set its pointer target to 0 for 0.9 metadata, or to the
+	`data_offset' value from the superblock for 1.x metadata.
+	* disk/raid.c (grub_raid_read): Offset reads by the start sector of
+	data on the device.
+	(insert_array): Record the start sector of data on the device.
+	(grub_raid_register): Pass start_sector parameters to
+	grub_raid_list->detect and insert_array.
+	* include/grub/raid.h (struct grub_raid_array): Add start_sector
+	member.
+	(struct grub_raid): Add start_sector parameter to `detect'.
+
+2010-07-18  Colin Watson  <cjwatson@ubuntu.com>
+
 	* disk/raid.c (insert_array): Use md/%s to name mdadm 1.x devices,
 	removing the homehost if present.
 	* kern/emu/getroot.c (get_mdadm_name) [__linux__]: New function.
