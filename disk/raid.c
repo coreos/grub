@@ -563,7 +563,14 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
       if (! array->name)
 	array->name = grub_xasprintf ("md%d", array->number);
       else
-	array->name = grub_xasprintf ("%s", array->name);
+	{
+	  /* Strip off the homehost if present.  */
+	  char *colon = grub_strchr (array->name, ':');
+	  char *new_name = grub_xasprintf ("md/%s",
+					   colon ? colon + 1 : array->name);
+	  grub_free (array->name);
+	  array->name = new_name;
+	}
 
       grub_dprintf ("raid", "Found array %s (%s)\n", array->name,
                     scanner_name);
