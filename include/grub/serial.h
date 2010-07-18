@@ -36,12 +36,26 @@ struct grub_serial_driver
   void (*put) (struct grub_serial_port *port, const int c);
 };
 
+/* The type of parity.  */
+typedef enum
+  {
+    GRUB_SERIAL_PARITY_NONE,
+    GRUB_SERIAL_PARITY_ODD,
+    GRUB_SERIAL_PARITY_EVEN,
+  } grub_serial_parity_t;
+
+typedef enum
+  {
+    GRUB_SERIAL_STOP_BITS_1,
+    GRUB_SERIAL_STOP_BITS_2,
+  } grub_serial_stop_bits_t;
+
 struct grub_serial_config
 {
   unsigned speed;
   unsigned short word_len;
-  unsigned int   parity;
-  unsigned short stop_bits;
+  grub_serial_parity_t parity;
+  grub_serial_stop_bits_t stop_bits;
 };
 
 struct grub_serial_port
@@ -76,15 +90,6 @@ void grub_serial_unregister (struct grub_serial_port *port);
 #define UART_7BITS_WORD	0x02
 #define UART_8BITS_WORD	0x03
 
-/* The type of parity.  */
-#define UART_NO_PARITY		0x00
-#define UART_ODD_PARITY		0x08
-#define UART_EVEN_PARITY	0x18
-
-/* The type of the length of stop bit.  */
-#define UART_1_STOP_BIT		0x00
-#define UART_2_STOP_BITS	0x04
-
   /* Set default settings.  */
 static inline grub_err_t
 grub_serial_config_defaults (struct grub_serial_port *port)
@@ -97,8 +102,8 @@ grub_serial_config_defaults (struct grub_serial_port *port)
       .speed = 9600,
 #endif
       .word_len = UART_8BITS_WORD,
-      .parity = UART_NO_PARITY,
-      .stop_bits = UART_1_STOP_BIT
+      .parity = GRUB_SERIAL_PARITY_NONE,
+      .stop_bits = GRUB_SERIAL_STOP_BITS_1
     };
 
   return port->driver->configure (port, &config);

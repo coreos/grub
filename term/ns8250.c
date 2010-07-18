@@ -77,14 +77,20 @@ do_real_config (struct grub_serial_port *port)
 {
   int divisor;
   unsigned char status = 0;
+  const unsigned char parities[] = {
+    [GRUB_SERIAL_PARITY_NONE] = UART_NO_PARITY,
+    [GRUB_SERIAL_PARITY_ODD] = UART_ODD_PARITY,
+    [GRUB_SERIAL_PARITY_EVEN] = UART_EVEN_PARITY
+  };
+  const unsigned char stop_bits[] = {
+    [GRUB_SERIAL_STOP_BITS_1] = UART_1_STOP_BIT,
+    [GRUB_SERIAL_STOP_BITS_2] = UART_2_STOP_BITS,
+  };
 
   if (port->configured)
     return;
 
   divisor = serial_get_divisor (port->config.speed);
-  /* Shouldn't happen.  */
-  if (divisor == 0)
-    return;
 
   /* Turn off the interrupt.  */
   grub_outb (0, port->port + UART_IER);
@@ -97,8 +103,8 @@ do_real_config (struct grub_serial_port *port)
   grub_outb (divisor >> 8, port->port + UART_DLH);
 
   /* Set the line status.  */
-  status |= (port->config.parity | port->config.word_len
-	     | port->config.stop_bits);
+  status |= (parities[port->config.parity]
+	     | port->config.word_len | stop_bits[port->config.stop_bits]);
   grub_outb (status, port->port + UART_LCR);
 
   /* In Yeeloong serial port has only 3 wires.  */
@@ -169,6 +175,15 @@ serial_hw_configure (struct grub_serial_port *port,
   divisor = serial_get_divisor (config->speed);
   if (divisor == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad speed");
+
+  if (config->parity != GRUB_SERIAL_PARITY_NONE
+      && config->parity != GRUB_SERIAL_PARITY_ODD
+      && config->parity != GRUB_SERIAL_PARITY_EVEN)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unsupported parity");
+
+  if (config->stop_bits != GRUB_SERIAL_STOP_BITS_1
+      && config->stop_bits != GRUB_SERIAL_STOP_BITS_2)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unsupported stop bits");
 
   port->config = *config;
   port->configured = 0;

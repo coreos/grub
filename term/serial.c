@@ -203,11 +203,11 @@ grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
   if (state[4].set)
     {
       if (! grub_strcmp (state[4].arg, "no"))
-	config.parity = UART_NO_PARITY;
+	config.parity = GRUB_SERIAL_PARITY_NONE;
       else if (! grub_strcmp (state[4].arg, "odd"))
-	config.parity = UART_ODD_PARITY;
+	config.parity = GRUB_SERIAL_PARITY_ODD;
       else if (! grub_strcmp (state[4].arg, "even"))
-	config.parity = UART_EVEN_PARITY;
+	config.parity = GRUB_SERIAL_PARITY_EVEN;
       else
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad parity");
     }
@@ -215,9 +215,9 @@ grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
   if (state[5].set)
     {
       if (! grub_strcmp (state[5].arg, "1"))
-	config.stop_bits = UART_1_STOP_BIT;
+	config.stop_bits = GRUB_SERIAL_STOP_BITS_1;
       else if (! grub_strcmp (state[5].arg, "2"))
-	config.stop_bits = UART_2_STOP_BITS;
+	config.stop_bits = GRUB_SERIAL_STOP_BITS_2;
       else
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad number of stop bits");
     }

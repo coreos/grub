@@ -23,11 +23,77 @@
 #include <grub/mm.h>
 #include <grub/usb.h>
 
+enum
+  {
+    GRUB_USBSERIAL_MODEM_CTRL = 0x01,
+    GRUB_USBSERIAL_FLOW_CTRL = 0x02,
+    GRUB_USBSERIAL_SPEED_CTRL = 0x03,
+    GRUB_USBSERIAL_DATA_CTRL = 0x04
+  };
+
+#define GRUB_USBSERIAL_MODEM_CTRL_DTRRTS 3
+#define GRUB_USBSERIAL_FLOW_CTRL_DTRRTS 3
+
+/* Convert speed to divisor.  */
+static grub_uint32_t
+get_divisor (unsigned int speed)
+{
+  unsigned int i;
+
+  /* The structure for speed vs. divisor.  */
+  struct divisor
+  {
+    unsigned int speed;
+    grub_uint32_t div;
+  };
+
+  /* The table which lists common configurations.  */
+  static struct divisor divisor_tab[] =
+    {
+      { 9600,   0x4138 },
+    };
+
+  /* Set the baud rate.  */
+  for (i = 0; i < sizeof (divisor_tab) / sizeof (divisor_tab[0]); i++)
+    if (divisor_tab[i].speed == speed)
+      return divisor_tab[i].div;
+  return 0;
+}
+
 static void
 real_config (struct grub_serial_port *port)
 {
+  grub_uint32_t divisor;
+  const grub_uint16_t parities[] = {
+    [GRUB_SERIAL_PARITY_NONE] = 0x0000,
+    [GRUB_SERIAL_PARITY_ODD] = 0x0100,
+    [GRUB_SERIAL_PARITY_EVEN] = 0x0200
+  };
+  const grub_uint16_t stop_bits[] = {
+    [GRUB_SERIAL_STOP_BITS_1] = 0x0000,
+    [GRUB_SERIAL_STOP_BITS_2] = 0x1000,
+  };
+
   if (port->configured)
     return;
+
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
+			GRUB_USBSERIAL_MODEM_CTRL,
+			GRUB_USBSERIAL_MODEM_CTRL_DTRRTS, 0, 0, 0);
+
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
+			GRUB_USBSERIAL_FLOW_CTRL,
+			GRUB_USBSERIAL_FLOW_CTRL_DTRRTS, 0, 0, 0);
+
+  divisor = get_divisor (port->config.speed);
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
+			GRUB_USBSERIAL_SPEED_CTRL,
+			divisor & 0xffff, divisor >> 16, 0, 0);
+
+  grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
+			GRUB_USBSERIAL_DATA_CTRL,
+			parities[port->config.parity]
+			| stop_bits[port->config.stop_bits] , 0, 0, 0);
 
   port->configured = 1;
 }
@@ -63,11 +129,25 @@ usbserial_hw_put (struct grub_serial_port *port, const int c)
   grub_usb_bulk_write (port->usbdev, port->out_endp->endp_addr, 1, &cc);
 }
 
-/* FIXME */
 static grub_err_t
 usbserial_hw_configure (struct grub_serial_port *port,
 			struct grub_serial_config *config)
 {
+  grub_uint16_t divisor;
+
+  divisor = get_divisor (config->speed);
+  if (divisor == 0)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad speed");
+
+  if (config->parity != GRUB_SERIAL_PARITY_NONE
+      && config->parity != GRUB_SERIAL_PARITY_ODD
+      && config->parity != GRUB_SERIAL_PARITY_EVEN)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unsupported parity");
+
+  if (config->stop_bits != GRUB_SERIAL_STOP_BITS_1
+      && config->stop_bits != GRUB_SERIAL_STOP_BITS_2)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unsupported stop bits");
+
   port->config = *config;
   port->configured = 0;
 
