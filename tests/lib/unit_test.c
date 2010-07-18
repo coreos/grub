@@ -34,16 +34,12 @@ main (int argc __attribute__ ((unused)),
   extern void grub_unit_test_init (void);
   extern void grub_unit_test_fini (void);
 
-  auto int run_test (grub_test_t test);
-  int run_test (grub_test_t test)
-  {
-    status = grub_test_run (test) ? : status;
-    return 0;
-  }
+  grub_test_t test;
 
   grub_unit_test_init ();
-  grub_list_iterate (GRUB_AS_LIST (grub_test_list),
-		     (grub_list_hook_t) run_test);
+  FOR_LIST_ELEMENTS (test, grub_test_list)
+    status = grub_test_run (test) ? : status;
+
   grub_unit_test_fini ();
 
   exit (status);

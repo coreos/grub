@@ -751,6 +751,9 @@ grub_terminfo_tparm (const char *string, ...)
     va_list ap;
     char *result;
 
+    if (!string)
+      return "";
+
     va_start (ap, string);
     result = tparam_internal (string, ap);
     va_end (ap);

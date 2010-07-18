@@ -64,20 +64,19 @@ static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_P
 #define grub_host_to_target32(x)	grub_cpu_to_le32(x)
 #define grub_host_to_target64(x)	grub_cpu_to_le64(x)
 
-void
-grub_putchar (int c)
+void 
+grub_xputs_real (const char *str)
 {
-  putchar (c);
+  fputs (str, stdout);
 }
+
+void (*grub_xputs) (const char *str) = grub_xputs_real;
 
 int
 grub_getkey (void)
 {
   return -1;
 }
-
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
 
 void
 grub_refresh (void)
@@ -96,12 +95,15 @@ setup (const char *dir,
   grub_uint16_t core_sectors;
   grub_device_t root_dev, dest_dev;
   const char *dest_partmap;
+  int multiple_partmaps;
   grub_uint8_t *boot_drive;
   grub_disk_addr_t *kernel_sector;
   grub_uint16_t *boot_drive_check;
   struct grub_boot_blocklist *first_block, *block;
   grub_int32_t *install_dos_part, *install_bsd_part;
   grub_int32_t dos_part, bsd_part;
+  char *install_prefix;
+  char *prefix = NULL;
   char *tmp_img;
   int i;
   grub_disk_addr_t first_sector;
@@ -233,6 +235,8 @@ setup (const char *dir,
 				       + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART);
   install_bsd_part = (grub_int32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
 				       + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART);
+  install_prefix = (char *) (core_img + GRUB_DISK_SECTOR_SIZE +
+			     GRUB_KERNEL_MACHINE_PREFIX);
 
   /* Open the root device and the destination device.  */
   root_dev = grub_device_open (root);
@@ -308,6 +312,16 @@ setup (const char *dir,
 	      dos_part = root_dev->disk->partition->number;
  	      bsd_part = -1;
  	    }
+
+	  if (install_prefix[0] != '(')
+	    {
+	      char *root_part_name;
+
+	      root_part_name =
+		grub_partition_get_name (root_dev->disk->partition);
+	      prefix = xasprintf ("(,%s)%s", root_part_name, install_prefix);
+	      free (root_part_name);
+	    }
 	}
       else
 	dos_part = bsd_part = -1;
@@ -342,15 +356,27 @@ setup (const char *dir,
     {
       if (p->parent)
 	return 0;
-      dest_partmap = p->partmap->name;
-      return 1;
+      if (dest_partmap == NULL)
+	dest_partmap = p->partmap->name;
+      else if (strcmp (dest_partmap, p->partmap->name) != 0)
+	{
+	  multiple_partmaps = 1;
+	  return 1;
+	}
+      return 0;
     }
   dest_partmap = 0;
+  multiple_partmaps = 0;
   grub_partition_iterate (dest_dev->disk, identify_partmap);
 
   if (! dest_partmap)
     {
       grub_util_warn (_("Attempting to install GRUB to a partitionless disk.  This is a BAD idea."));
+      goto unable_to_embed;
+    }
+  if (multiple_partmaps)
+    {
+      grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels.  This is not supported yet."));
       goto unable_to_embed;
     }
 
@@ -384,6 +410,8 @@ setup (const char *dir,
 
   *install_dos_part = grub_cpu_to_le32 (dos_part);
   *install_bsd_part = grub_cpu_to_le32 (bsd_part);
+  if (prefix)
+    strcpy (install_prefix, prefix);
 
   /* The first blocklist contains the whole sectors.  */
   first_block->start = grub_cpu_to_le64 (embed_region.start + 1);
@@ -544,6 +572,8 @@ unable_to_embed:
 
   *install_dos_part = grub_cpu_to_le32 (dos_part);
   *install_bsd_part = grub_cpu_to_le32 (bsd_part);
+  if (prefix)
+    strcpy (install_prefix, prefix);
 
   /* Write the first two sectors of the core image onto the disk.  */
   grub_util_info ("opening the core image `%s'", core_path);
@@ -563,6 +593,7 @@ unable_to_embed:
   /* Sync is a Good Thing.  */
   sync ();
 
+  free (prefix);
   free (core_path);
   free (core_img);
   free (boot_img);
@@ -597,6 +628,8 @@ Usage: %s [OPTION]... DEVICE\n\
 Set up images to boot from DEVICE.\n\
 DEVICE must be a GRUB device (e.g. `(hd0,1)').\n\
 \n\
+You should not normally run %s directly.  Use grub-install instead.\n\
+\n\
   -b, --boot-image=FILE   use FILE as the boot image [default=%s]\n\
   -c, --core-image=FILE   use FILE as the core image [default=%s]\n\
   -d, --directory=DIR     use GRUB files in the directory DIR [default=%s]\n\
@@ -610,7 +643,7 @@ DEVICE must be a GRUB device (e.g. `(hd0,1)').\n\
 \n\
 Report bugs to <%s>.\n\
 "),
-	    program_name,
+	    program_name, program_name,
 	    DEFAULT_BOOT_FILE, DEFAULT_CORE_FILE, DEFAULT_DIRECTORY,
 	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
 

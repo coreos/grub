@@ -83,6 +83,14 @@ make_install_device (void)
       grub_snprintf (ptr, sizeof (dev) - (ptr - dev), ")%s", grub_prefix);
       grub_strcpy (grub_prefix, dev);
     }
+  else if (grub_prefix[1] == ',' || grub_prefix[1] == ')')
+    {
+      /* We have a prefix, but still need to fill in the boot drive.  */
+      grub_snprintf (dev, sizeof (dev),
+		     "(%cd%u%s", (grub_boot_drive & 0x80) ? 'h' : 'f',
+		     grub_boot_drive & 0x7f, grub_prefix + 1);
+      grub_strcpy (grub_prefix, dev);
+    }
 
   return grub_prefix;
 }

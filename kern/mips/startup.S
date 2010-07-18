@@ -49,8 +49,15 @@ codestart:
 	/* Parse arguments. Has to be done before relocation.
 	So need to do it in asm.  */
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
+	move $s2, $zero
+	move $s3, $zero
+	move $s4, $zero
+	move $s5, $zero
+
 	/* $a2 has the environment.  */
-	move $t0, $a2
+	addiu $t0, $a2, 1
+	beq $t0, $zero, argdone
+	move $t0, $a2	
 argcont:	
 	lw $t1, 0($t0)
 	beq $t1, $zero, argdone

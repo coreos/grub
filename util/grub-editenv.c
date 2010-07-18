@@ -21,7 +21,6 @@
 #include <grub/types.h>
 #include <grub/util/misc.h>
 #include <grub/lib/envblk.h>
-#include <grub/handler.h>
 #include <grub/i18n.h>
 
 #include <stdio.h>
@@ -35,12 +34,6 @@
 #define DEFAULT_ENVBLK_SIZE	1024
 
 void
-grub_putchar (int c)
-{
-  putchar (c);
-}
-
-void
 grub_refresh (void)
 {
   fflush (stdout);
@@ -51,6 +44,14 @@ grub_getkey (void)
 {
   return 0;
 }
+
+void 
+grub_xputs_real (const char *str)
+{
+  fputs (str, stdout);
+}
+
+void (*grub_xputs) (const char *str) = grub_xputs_real;
 
 char *
 grub_env_get (const char *name __attribute__ ((unused)))

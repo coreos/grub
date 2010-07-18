@@ -31,6 +31,7 @@
 #include <grub/auth.h>
 #include <grub/i18n.h>
 #include <grub/charset.h>
+#include <grub/script_sh.h>
 
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
@@ -347,7 +348,6 @@ static grub_menu_t
 read_config_file (const char *config)
 {
   grub_file_t file;
-  grub_parser_t old_parser = 0;
 
   auto grub_err_t getline (char **line, int cont);
   grub_err_t getline (char **line, int cont __attribute__ ((unused)))
@@ -361,36 +361,7 @@ read_config_file (const char *config)
 	    return grub_errno;
 
 	  if (buf[0] == '#')
-	    {
-	      if (buf[1] == '!')
-		{
-		  grub_parser_t parser;
-		  grub_named_list_t list;
-
-		  buf += 2;
-		  while (grub_isspace (*buf))
-		    buf++;
-
-		  if (! old_parser)
-		    old_parser = grub_parser_get_current ();
-
-		  list = GRUB_AS_NAMED_LIST (grub_parser_class.handler_list);
-		  parser = grub_named_list_find (list, buf);
-		  if (parser)
-		    grub_parser_set_current (parser);
-		  else
-		    {
-		      char cmd_name[8 + grub_strlen (buf)];
-
-		      /* Perhaps it's not loaded yet, try the autoload
-			 command.  */
-		      grub_strcpy (cmd_name, "parser.");
-		      grub_strcat (cmd_name, buf);
-		      grub_command_execute (cmd_name, 0, 0);
-		    }
-		}
-	      grub_free (*line);
-	    }
+	    grub_free (*line);
 	  else
 	    break;
 	}
@@ -426,14 +397,11 @@ read_config_file (const char *config)
       if ((getline (&line, 0)) || (! line))
 	break;
 
-      grub_parser_get_current ()->parse_line (line, getline);
+      grub_normal_parse_line (line, getline);
       grub_free (line);
     }
 
   grub_file_close (file);
-
-  if (old_parser)
-    grub_parser_set_current (old_parser);
 
   return newmenu;
 }
@@ -468,8 +436,9 @@ grub_normal_init_page (struct grub_term_output *term)
   posx = (grub_term_width (term) - posx) / 2;
   grub_term_gotoxy (term, posx, 1);
 
-  grub_print_ucs4 (unicode_msg, last_position, term);
-  grub_printf("\n\n");
+  grub_print_ucs4 (unicode_msg, last_position, 0, 0, term);
+  grub_putcode ('\n', term);
+  grub_putcode ('\n', term);
   grub_free (unicode_msg);
 }
 
@@ -496,12 +465,15 @@ void
 grub_normal_execute (const char *config, int nested, int batch)
 {
   grub_menu_t menu = 0;
-  const char *prefix = grub_env_get ("prefix");
+  const char *prefix;
 
-  read_lists (prefix);
-  read_handler_list ();
-  grub_register_variable_hook ("prefix", NULL, read_lists_hook);
-  grub_command_execute ("parser.grub", 0, 0);
+  if (! nested)
+    {
+      prefix = grub_env_get ("prefix");
+      read_lists (prefix);
+      grub_register_variable_hook ("prefix", NULL, read_lists_hook);
+      grub_command_execute ("parser.grub", 0, 0);
+    }
 
   if (config)
     {
@@ -596,26 +568,25 @@ grub_normal_reader_init (int nested)
   {
     grub_normal_init_page (term);
     grub_term_setcursor (term, 1);
-    
+
     grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN, term);
-    grub_puts ("\n");
+    grub_putcode ('\n', term);
+    grub_putcode ('\n', term);
   }
   grub_free (msg_formatted);
  
   return 0;
 }
 
-
 static grub_err_t
 grub_normal_read_line_real (char **line, int cont, int nested)
 {
-  grub_parser_t parser = grub_parser_get_current ();
-  char *prompt;
+  const char *prompt;
 
   if (cont)
-    prompt = grub_xasprintf (">");
+    prompt = ">";
   else
-    prompt = grub_xasprintf ("%s>", parser->name);
+    prompt = "grub>";
 
   if (!prompt)
     return grub_errno;
@@ -629,14 +600,11 @@ grub_normal_read_line_real (char **line, int cont, int nested)
       if (cont || nested)
 	{
 	  grub_free (*line);
-	  grub_free (prompt);
 	  *line = 0;
 	  return grub_errno;
 	}
     }
   
-  grub_free (prompt);
-
   return 0;
 }
 
@@ -677,7 +645,7 @@ grub_cmdline_run (int nested)
       if (! line)
 	break;
 
-      grub_parser_get_current ()->parse_line (line, grub_normal_read_line);
+      grub_normal_parse_line (line, grub_normal_read_line);
       grub_free (line);
     }
 }
@@ -690,17 +658,37 @@ grub_env_write_pager (struct grub_env_var *var __attribute__ ((unused)),
   return grub_strdup (val);
 }
 
+/* clear */
+static grub_err_t
+grub_mini_cmd_clear (struct grub_command *cmd __attribute__ ((unused)),
+		   int argc __attribute__ ((unused)),
+		   char *argv[] __attribute__ ((unused)))
+{
+  grub_cls ();
+  return 0;
+}
+
+static grub_command_t cmd_clear;
+
+static void (*grub_xputs_saved) (const char *str);
+
 GRUB_MOD_INIT(normal)
 {
   grub_context_init ();
+
+  grub_xputs_saved = grub_xputs;
+  grub_xputs = grub_xputs_normal;
 
   /* Normal mode shouldn't be unloaded.  */
   if (mod)
     grub_dl_ref (mod);
 
+  cmd_clear =
+    grub_register_command ("clear", grub_mini_cmd_clear,
+			   0, N_("Clear the screen."));
+
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
-  grub_install_newline_hook ();
   grub_register_variable_hook ("pager", 0, grub_env_write_pager);
 
   /* Register a command "normal" for the rescue mode.  */
@@ -722,8 +710,10 @@ GRUB_MOD_FINI(normal)
 {
   grub_context_fini ();
 
+  grub_xputs = grub_xputs_saved;
+
   grub_set_history (0);
   grub_register_variable_hook ("pager", 0, 0);
   grub_fs_autoload_hook = 0;
-  free_handler_list ();
+  grub_unregister_command (cmd_clear);
 }

@@ -57,7 +57,7 @@ grub_ls_list_devices (int longlist)
     }
 
   grub_device_iterate (grub_ls_print_devices);
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_refresh ();
 
   return 0;
@@ -233,7 +233,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	}
 
       if (grub_errno == GRUB_ERR_NONE)
-	grub_putchar ('\n');
+	grub_xputs ("\n");
 
       grub_refresh ();
     }

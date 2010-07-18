@@ -23,8 +23,10 @@
 #include <grub/loader.h>
 #include <grub/command.h>
 #include <grub/parser.h>
+#include <grub/script_sh.h>
 #include <grub/auth.h>
 #include <grub/i18n.h>
+#include <grub/charset.h>
 
 enum update_mode
   {
@@ -172,7 +174,7 @@ print_up (int flag, struct per_term_screen *term_screen)
 		    GRUB_TERM_FIRST_ENTRY_Y);
 
   if (flag)
-    grub_putcode (GRUB_TERM_DISP_UP, term_screen->term);
+    grub_putcode (GRUB_UNICODE_UPARROW, term_screen->term);
   else
     grub_putcode (' ', term_screen->term);
 }
@@ -187,7 +189,7 @@ print_down (int flag, struct per_term_screen *term_screen)
 		    + grub_term_num_entries (term_screen->term));
 
   if (flag)
-    grub_putcode (GRUB_TERM_DISP_DOWN, term_screen->term);
+    grub_putcode (GRUB_UNICODE_DOWNARROW, term_screen->term);
   else
     grub_putcode (' ', term_screen->term);
 }
@@ -241,6 +243,9 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
       do
 	{
 	  int column;
+
+	  if (linep >= screen->lines + screen->num_lines)
+	    break;
 
 	  for (column = 0;
 	       column <= linep->len
@@ -336,7 +341,7 @@ insert_string (struct screen *screen, char *s, int update)
 	  screen->num_lines++;
 	  screen->lines = grub_realloc (screen->lines,
 					screen->num_lines
-					* sizeof (struct line));
+					* sizeof (screen->lines[0]));
 	  if (! screen->lines)
 	    return 0;
 
@@ -1019,87 +1024,92 @@ complete (struct screen *screen, int continuous, int update)
   insert = grub_normal_do_completion (linep->buf, &restore, store_completion);
 
   linep->buf[screen->column] = saved_char;
-
-  buflen = grub_strlen (completion_buffer.buf);
-  ucs4 = grub_malloc (sizeof (grub_uint32_t) * (buflen + 1));
-
-  if (!ucs4)
+  
+  if (completion_buffer.buf)
     {
-      grub_print_error ();
-      grub_errno = GRUB_ERR_NONE;
-      return 1;
-    }
+      buflen = grub_strlen (completion_buffer.buf);
+      ucs4 = grub_malloc (sizeof (grub_uint32_t) * (buflen + 1));
+      
+      if (!ucs4)
+	{
+	  grub_print_error ();
+	  grub_errno = GRUB_ERR_NONE;
+	  return 1;
+	}
 
-  ucs4len = grub_utf8_to_ucs4 (ucs4, buflen,
-			       (grub_uint8_t *) completion_buffer.buf,
-			       buflen, 0);
-  ucs4[ucs4len] = 0;
+      ucs4len = grub_utf8_to_ucs4 (ucs4, buflen,
+				   (grub_uint8_t *) completion_buffer.buf,
+				   buflen, 0);
+      ucs4[ucs4len] = 0;
 
-  if (restore)
-    for (i = 0; i < screen->nterms; i++)
-      {
-	int num_sections = ((completion_buffer.len
-			     + grub_term_width (screen->terms[i].term) - 8 - 1)
-			    / (grub_term_width (screen->terms[i].term) - 8));
-	grub_uint32_t *endp;
-	grub_uint16_t pos;
-	grub_uint32_t *p = ucs4;
-
-	pos = grub_term_getxy (screen->terms[i].term);
-	grub_term_gotoxy (screen->terms[i].term, 0,
-			  grub_term_height (screen->terms[i].term) - 3);
-
-	screen->completion_shown = 1;
-
-	grub_term_gotoxy (screen->terms[i].term, 0,
-			  grub_term_height (screen->terms[i].term) - 3);
-	grub_puts_terminal ("   ", screen->terms[i].term);
-	switch (completion_type)
+      if (restore)
+	for (i = 0; i < screen->nterms; i++)
 	  {
-	  case GRUB_COMPLETION_TYPE_COMMAND:
-	    grub_puts_terminal (_("Possible commands are:"),
-				screen->terms[i].term);
-	    break;
-	  case GRUB_COMPLETION_TYPE_DEVICE:
-	    grub_puts_terminal (_("Possible devices are:"),
-				screen->terms[i].term);
-	    break;
-	  case GRUB_COMPLETION_TYPE_FILE:
-	    grub_puts_terminal (_("Possible files are:"),
-				screen->terms[i].term);
-	    break;
-	  case GRUB_COMPLETION_TYPE_PARTITION:
-	    grub_puts_terminal (_("Possible partitions are:"),
-				screen->terms[i].term);
-	    break;
-	  case GRUB_COMPLETION_TYPE_ARGUMENT:
-	    grub_puts_terminal (_("Possible arguments are:"),
-				screen->terms[i].term);
-	    break;
-	  default:
-	    grub_puts_terminal (_("Possible things are:"),
-				screen->terms[i].term);
-	    break;
+	    int num_sections = ((completion_buffer.len
+				 + grub_term_width (screen->terms[i].term) 
+				 - 8 - 1)
+				/ (grub_term_width (screen->terms[i].term)
+				   - 8));
+	    grub_uint32_t *endp;
+	    grub_uint16_t pos;
+	    grub_uint32_t *p = ucs4;
+
+	    pos = grub_term_getxy (screen->terms[i].term);
+	    grub_term_gotoxy (screen->terms[i].term, 0,
+			      grub_term_height (screen->terms[i].term) - 3);
+
+	    screen->completion_shown = 1;
+
+	    grub_term_gotoxy (screen->terms[i].term, 0,
+			      grub_term_height (screen->terms[i].term) - 3);
+	    grub_puts_terminal ("   ", screen->terms[i].term);
+	    switch (completion_type)
+	      {
+	      case GRUB_COMPLETION_TYPE_COMMAND:
+		grub_puts_terminal (_("Possible commands are:"),
+				    screen->terms[i].term);
+		break;
+	      case GRUB_COMPLETION_TYPE_DEVICE:
+		grub_puts_terminal (_("Possible devices are:"),
+				    screen->terms[i].term);
+		break;
+	      case GRUB_COMPLETION_TYPE_FILE:
+		grub_puts_terminal (_("Possible files are:"),
+				    screen->terms[i].term);
+		break;
+	      case GRUB_COMPLETION_TYPE_PARTITION:
+		grub_puts_terminal (_("Possible partitions are:"),
+				    screen->terms[i].term);
+		break;
+	      case GRUB_COMPLETION_TYPE_ARGUMENT:
+		grub_puts_terminal (_("Possible arguments are:"),
+				    screen->terms[i].term);
+		break;
+	      default:
+		grub_puts_terminal (_("Possible things are:"),
+				    screen->terms[i].term);
+		break;
+	      }
+
+	    grub_puts_terminal ("\n    ", screen->terms[i].term);
+
+	    p += (count % num_sections)
+	      * (grub_term_width (screen->terms[i].term) - 8);
+	    endp = p + (grub_term_width (screen->terms[i].term) - 8);
+
+	    if (p != ucs4)
+	      grub_putcode (GRUB_UNICODE_LEFTARROW, screen->terms[i].term);
+	    else
+	      grub_putcode (' ', screen->terms[i].term);
+
+	    grub_print_ucs4 (p, ucs4 + ucs4len < endp ? ucs4 + ucs4len : endp,
+			     0, 0, screen->terms[i].term);
+
+	    if (ucs4 + ucs4len > endp)
+	      grub_putcode (GRUB_UNICODE_RIGHTARROW, screen->terms[i].term);
+	    grub_term_gotoxy (screen->terms[i].term, pos >> 8, pos & 0xFF);
 	  }
-
-	grub_puts_terminal ("\n    ", screen->terms[i].term);
-
-	p += (count % num_sections)
-	  * (grub_term_width (screen->terms[i].term) - 8);
-	endp = p + (grub_term_width (screen->terms[i].term) - 8);
-
-	if (p != ucs4)
-	  grub_putcode (GRUB_TERM_DISP_LEFT, screen->terms[i].term);
-	else
-	  grub_putcode (' ', screen->terms[i].term);
-
-	while (*p && p < endp)
-	  grub_putcode (*p++, screen->terms[i].term);
-
-	if (*p)
-	  grub_putcode (GRUB_TERM_DISP_RIGHT, screen->terms[i].term);
-	grub_term_gotoxy (screen->terms[i].term, pos >> 8, pos & 0xFF);
-      }
+    }
 
   if (insert)
     {
@@ -1189,7 +1199,7 @@ run (struct screen *screen)
   while (currline < screen->num_lines)
     {
       editor_getline (&nextline, 0);
-      if (grub_parser_get_current ()->parse_line (nextline, editor_getline))
+      if (grub_normal_parse_line (nextline, editor_getline))
 	break;
     }
 
@@ -1361,8 +1371,13 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 	  goto refresh;
 
 	case 24: /* C-x */
-	  if (! run (screen))
-	    goto fail;
+	  {
+	    int chars_before = grub_normal_get_char_counter ();
+	    run (screen);
+
+	    if (chars_before != grub_normal_get_char_counter ())
+	      grub_wait_after_message ();
+	  }
 	  goto refresh;
 
 	case 18: /* C-r */
@@ -1393,7 +1408,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
   grub_cls ();
   grub_print_error ();
   grub_errno = GRUB_ERR_NONE;
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_printf_ (N_("Press any key to continue..."));
   (void) grub_getkey ();
 }

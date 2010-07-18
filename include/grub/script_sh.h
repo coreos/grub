@@ -324,11 +324,15 @@ struct grub_script_function
 };
 typedef struct grub_script_function *grub_script_function_t;
 
+extern grub_script_function_t grub_script_function_list;
+
+#define FOR_SCRIPT_FUNCTIONS(var) for((var) = grub_script_function_list; \
+				      (var); (var) = (var)->next)
+
 grub_script_function_t grub_script_function_create (struct grub_script_arg *functionname,
 						    struct grub_script *cmd);
 void grub_script_function_remove (const char *name);
 grub_script_function_t grub_script_function_find (char *functionname);
-int grub_script_function_iterate (int (*iterate) (grub_script_function_t));
 grub_err_t grub_script_function_call (grub_script_function_t func,
 				      int argc, char **args);
 
@@ -350,5 +354,8 @@ grub_script_put (struct grub_script *script)
   else
     script->refcnt--;
 }
+
+grub_err_t
+grub_normal_parse_line (char *line, grub_reader_getline_t getline);
 
 #endif /* ! GRUB_NORMAL_PARSER_HEADER */
