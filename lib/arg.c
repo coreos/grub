@@ -228,9 +228,13 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 
   grub_err_t add_arg (char *s)
     {
+      char **p = argl;
       argl = grub_realloc (argl, (++num) * sizeof (char *));
       if (! argl)
-	return grub_errno;
+	{
+	  grub_free (p);
+	  return grub_errno;
+	}
       argl[num - 1] = s;
       return 0;
     }
