@@ -45,6 +45,12 @@
 #define UART_ODD_PARITY		0x08
 #define UART_EVEN_PARITY	0x18
 
+/* The type of word length.  */
+#define UART_5BITS_WORD	0x00
+#define UART_6BITS_WORD	0x01
+#define UART_7BITS_WORD	0x02
+#define UART_8BITS_WORD	0x03
+
 /* The type of the length of stop bit.  */
 #define UART_1_STOP_BIT		0x00
 #define UART_2_STOP_BITS	0x04

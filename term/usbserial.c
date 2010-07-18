@@ -100,7 +100,8 @@ real_config (struct grub_serial_port *port)
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
 			GRUB_USBSERIAL_DATA_CTRL,
 			parities[port->config.parity]
-			| stop_bits[port->config.stop_bits] , 0, 0, 0);
+			| stop_bits[port->config.stop_bits]
+			| port->config.word_len, 0, 0, 0);
 
   port->configured = 1;
 }
@@ -154,6 +155,9 @@ usbserial_hw_configure (struct grub_serial_port *port,
   if (config->stop_bits != GRUB_SERIAL_STOP_BITS_1
       && config->stop_bits != GRUB_SERIAL_STOP_BITS_2)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "unsupported stop bits");
+
+  if (config->word_len < 5 || config->word_len > 8)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unsupported word length");
 
   port->config = *config;
   port->configured = 0;

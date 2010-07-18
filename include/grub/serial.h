@@ -53,7 +53,7 @@ typedef enum
 struct grub_serial_config
 {
   unsigned speed;
-  unsigned short word_len;
+  int word_len;
   grub_serial_parity_t parity;
   grub_serial_stop_bits_t stop_bits;
 };
@@ -84,12 +84,6 @@ grub_err_t grub_serial_register (struct grub_serial_port *port);
 
 void grub_serial_unregister (struct grub_serial_port *port);
 
-/* The type of word length.  */
-#define UART_5BITS_WORD	0x00
-#define UART_6BITS_WORD	0x01
-#define UART_7BITS_WORD	0x02
-#define UART_8BITS_WORD	0x03
-
   /* Set default settings.  */
 static inline grub_err_t
 grub_serial_config_defaults (struct grub_serial_port *port)
@@ -101,7 +95,7 @@ grub_serial_config_defaults (struct grub_serial_port *port)
 #else
       .speed = 9600,
 #endif
-      .word_len = UART_8BITS_WORD,
+      .word_len = 8,
       .parity = GRUB_SERIAL_PARITY_NONE,
       .stop_bits = GRUB_SERIAL_STOP_BITS_1
     };

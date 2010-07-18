@@ -187,18 +187,7 @@ grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
     config.speed = grub_strtoul (state[2].arg, 0, 0);
 
   if (state[3].set)
-    {
-      if (! grub_strcmp (state[3].arg, "5"))
-	config.word_len = UART_5BITS_WORD;
-      else if (! grub_strcmp (state[3].arg, "6"))
-	config.word_len = UART_6BITS_WORD;
-      else if (! grub_strcmp (state[3].arg, "7"))
-	config.word_len = UART_7BITS_WORD;
-      else if (! grub_strcmp (state[3].arg, "8"))
-	config.word_len = UART_8BITS_WORD;
-      else
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad word length");
-    }
+    config.word_len = grub_strtoul (state[3].arg, 0, 0);
 
   if (state[4].set)
     {

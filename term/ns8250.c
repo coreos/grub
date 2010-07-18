@@ -104,7 +104,8 @@ do_real_config (struct grub_serial_port *port)
 
   /* Set the line status.  */
   status |= (parities[port->config.parity]
-	     | port->config.word_len | stop_bits[port->config.stop_bits]);
+	     | (port->config.word_len - 5)
+	     | stop_bits[port->config.stop_bits]);
   grub_outb (status, port->port + UART_LCR);
 
   /* In Yeeloong serial port has only 3 wires.  */
@@ -184,6 +185,9 @@ serial_hw_configure (struct grub_serial_port *port,
   if (config->stop_bits != GRUB_SERIAL_STOP_BITS_1
       && config->stop_bits != GRUB_SERIAL_STOP_BITS_2)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "unsupported stop bits");
+
+  if (config->word_len < 5 || config->word_len > 8)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unsupported word length");
 
   port->config = *config;
   port->configured = 0;
