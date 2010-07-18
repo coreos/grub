@@ -82,7 +82,7 @@ real_config (struct grub_serial_port *port)
     [GRUB_SERIAL_STOP_BITS_2] = 0x1000,
   };
 
-  if (port->configured)
+  //  if (port->configured)
     return;
 
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
@@ -109,23 +109,23 @@ real_config (struct grub_serial_port *port)
 
 /* Fetch a key.  */
 static int
-ftdi_hw_fetch (struct grub_serial_port *port)
+pl2303_hw_fetch (struct grub_serial_port *port)
 {
-  char cc[3];
+  char cc;
   grub_usb_err_t err;
 
   real_config (port);
 
-  err = grub_usb_bulk_read (port->usbdev, port->in_endp->endp_addr, 3, cc);
+  err = grub_usb_bulk_read (port->usbdev, port->in_endp->endp_addr, 1, &cc);
   if (err != GRUB_USB_ERR_NONE)
     return -1;
 
-  return cc[2];
+  return cc;
 }
 
 /* Put a character.  */
 static void
-ftdi_hw_put (struct grub_serial_port *port, const int c)
+pl2303_hw_put (struct grub_serial_port *port, const int c)
 {
   char cc = c;
 
@@ -135,7 +135,7 @@ ftdi_hw_put (struct grub_serial_port *port, const int c)
 }
 
 static grub_err_t
-ftdi_hw_configure (struct grub_serial_port *port,
+pl2303_hw_configure (struct grub_serial_port *port,
 			struct grub_serial_config *config)
 {
   grub_uint16_t divisor;
@@ -162,11 +162,11 @@ ftdi_hw_configure (struct grub_serial_port *port,
   return GRUB_ERR_NONE;
 }
 
-static struct grub_serial_driver grub_ftdi_driver =
+static struct grub_serial_driver grub_pl2303_driver =
   {
-    .configure = ftdi_hw_configure,
-    .fetch = ftdi_hw_fetch,
-    .put = ftdi_hw_put,
+    .configure = pl2303_hw_configure,
+    .fetch = pl2303_hw_fetch,
+    .put = pl2303_hw_put,
     .fini = grub_usbserial_fini
   };
 
@@ -175,11 +175,11 @@ static const struct
   grub_uint16_t vendor, product;
 } products[] =
   {
-    {0x0403, 0x6001} /* QEMU virtual USBserial.  */
+    {0x067b, 0x2303}
   };
 
 static int
-grub_ftdi_attach (grub_usb_device_t usbdev, int configno, int interfno)
+grub_pl2303_attach (grub_usb_device_t usbdev, int configno, int interfno)
 {
   unsigned j;
 
@@ -191,22 +191,22 @@ grub_ftdi_attach (grub_usb_device_t usbdev, int configno, int interfno)
     return 0;
 
   return grub_usbserial_attach (usbdev, configno, interfno,
-				&grub_ftdi_driver);
+				&grub_pl2303_driver);
 }
 
 static struct grub_usb_attach_desc attach_hook =
 {
   .class = 0xff,
-  .hook = grub_ftdi_attach
+  .hook = grub_pl2303_attach
 };
 
-GRUB_MOD_INIT(usbserial_ftdi)
+GRUB_MOD_INIT(usbserial_pl2303)
 {
   grub_usb_register_attach_hook_class (&attach_hook);
 }
 
-GRUB_MOD_FINI(usbserial_ftdi)
+GRUB_MOD_FINI(usbserial_pl2303)
 {
-  grub_serial_unregister_driver (&grub_ftdi_driver);
+  grub_serial_unregister_driver (&grub_pl2303_driver);
   grub_usb_unregister_attach_hook_class (&attach_hook);
 }
