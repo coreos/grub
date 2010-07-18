@@ -269,6 +269,9 @@ void grub_usb_device_attach (grub_usb_device_t dev)
 	case GRUB_USB_CLASS_HID:
 	  grub_dl_load ("usb_keyboard");
 	  break;
+	case 0xff:
+	  grub_dl_load ("usbserial");
+	  break;
 	}
     }
 }

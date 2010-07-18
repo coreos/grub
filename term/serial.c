@@ -315,7 +315,6 @@ grub_serial_unregister (struct grub_serial_port *port)
   /* FIXME */
 }
 
-
 static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(serial)

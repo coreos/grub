@@ -34,33 +34,6 @@ static const grub_port_t serial_hw_io_addr[] = GRUB_MACHINE_SERIAL_PORTS;
 #define GRUB_SERIAL_PORT_NUM (ARRAY_SIZE(serial_hw_io_addr))
 #endif
 
-/* Fetch a key.  */
-static int
-serial_hw_fetch (struct grub_serial_port *port)
-{
-  if (grub_inb (port->port + UART_LSR) & UART_DATA_READY)
-    return grub_inb (port->port + UART_RX);
-
-  return -1;
-}
-
-/* Put a character.  */
-static void
-serial_hw_put (struct grub_serial_port *port, const int c)
-{
-  unsigned int timeout = 100000;
-
-  /* Wait until the transmitter holding register is empty.  */
-  while ((grub_inb (port->port + UART_LSR) & UART_EMPTY_TRANSMITTER) == 0)
-    {
-      if (--timeout == 0)
-        /* There is something wrong. But what can I do?  */
-        return;
-    }
-
-  grub_outb (c, port->port + UART_TX);
-}
-
 /* Convert speed to divisor.  */
 static unsigned short
 serial_get_divisor (unsigned int speed)
@@ -99,29 +72,19 @@ serial_get_divisor (unsigned int speed)
   return 0;
 }
 
-/* Initialize a serial device. PORT is the port number for a serial device.
-   SPEED is a DTE-DTE speed which must be one of these: 2400, 4800, 9600,
-   19200, 38400, 57600 and 115200. WORD_LEN is the word length to be used
-   for the device. Likewise, PARITY is the type of the parity and
-   STOP_BIT_LEN is the length of the stop bit. The possible values for
-   WORD_LEN, PARITY and STOP_BIT_LEN are defined in the header file as
-   macros.  */
-static grub_err_t
-serial_hw_configure (struct grub_serial_port *port,
-		     unsigned speed, unsigned short word_len,
-		     unsigned int   parity, unsigned short stop_bits)
+static void
+do_real_config (struct grub_serial_port *port)
 {
+  int divisor;
   unsigned char status = 0;
-  unsigned short divisor;
 
-  divisor = serial_get_divisor (speed);
+  if (port->configured)
+    return;
+
+  divisor = serial_get_divisor (port->speed);
+  /* Shouldn't happen.  */
   if (divisor == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad speed");
-
-  port->speed = speed;
-  port->word_len = word_len;
-  port->parity = parity;
-  port->stop_bits = stop_bits;
+    return;
 
   /* Turn off the interrupt.  */
   grub_outb (0, port->port + UART_IER);
@@ -153,7 +116,66 @@ serial_hw_configure (struct grub_serial_port *port,
 #endif
 
   /* Drain the input buffer.  */
-  while (serial_hw_fetch (port) != -1);
+  while (grub_inb (port->port + UART_LSR) & UART_DATA_READY)
+    grub_inb (port->port + UART_RX);
+
+  port->configured = 1;
+}
+
+/* Fetch a key.  */
+static int
+serial_hw_fetch (struct grub_serial_port *port)
+{
+  do_real_config (port);
+  if (grub_inb (port->port + UART_LSR) & UART_DATA_READY)
+    return grub_inb (port->port + UART_RX);
+
+  return -1;
+}
+
+/* Put a character.  */
+static void
+serial_hw_put (struct grub_serial_port *port, const int c)
+{
+  unsigned int timeout = 100000;
+
+  do_real_config (port);
+
+  /* Wait until the transmitter holding register is empty.  */
+  while ((grub_inb (port->port + UART_LSR) & UART_EMPTY_TRANSMITTER) == 0)
+    {
+      if (--timeout == 0)
+        /* There is something wrong. But what can I do?  */
+        return;
+    }
+
+  grub_outb (c, port->port + UART_TX);
+}
+
+/* Initialize a serial device. PORT is the port number for a serial device.
+   SPEED is a DTE-DTE speed which must be one of these: 2400, 4800, 9600,
+   19200, 38400, 57600 and 115200. WORD_LEN is the word length to be used
+   for the device. Likewise, PARITY is the type of the parity and
+   STOP_BIT_LEN is the length of the stop bit. The possible values for
+   WORD_LEN, PARITY and STOP_BIT_LEN are defined in the header file as
+   macros.  */
+static grub_err_t
+serial_hw_configure (struct grub_serial_port *port,
+		     unsigned speed, unsigned short word_len,
+		     unsigned int   parity, unsigned short stop_bits)
+{
+  unsigned short divisor;
+
+  divisor = serial_get_divisor (speed);
+  if (divisor == 0)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad speed");
+
+  port->speed = speed;
+  port->word_len = word_len;
+  port->parity = parity;
+  port->stop_bits = stop_bits;
+
+  port->configured = 0;
 
   /*  FIXME: should check if the serial terminal was found.  */
 
@@ -177,11 +199,15 @@ grub_ns8250_init (void)
   for (i = 0; i < GRUB_SERIAL_PORT_NUM; i++)
     if (serial_hw_io_addr[i])
       {
+	grub_err_t err;
 	grub_snprintf (com_names[i], sizeof (com_names[i]), "com%d", i);
 	com_ports[i].name = com_names[i];
 	com_ports[i].driver = &grub_ns8250_driver;
-	grub_serial_fill_defaults (&com_ports[i]);
 	com_ports[i].port = serial_hw_io_addr[i];
+	err = grub_serial_config_defaults (&com_ports[i]);
+	if (err)
+	  grub_print_error ();
+
 	grub_serial_register (&com_ports[i]);
       }
 }
@@ -204,7 +230,7 @@ grub_serial_ns8250_add_port (grub_port_t port)
       return NULL;
     }
   p->driver = &grub_ns8250_driver;
-  grub_serial_fill_defaults (p);
+  grub_serial_config_defaults (p);
   p->port = port;
   grub_serial_register (p);  
 

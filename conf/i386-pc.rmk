@@ -195,6 +195,12 @@ usb_mod_SOURCES = bus/usb/usb.c bus/usb/usbtrans.c bus/usb/usbhub.c
 usb_mod_CFLAGS = $(COMMON_CFLAGS)
 usb_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For serial.mod.
+pkglib_MODULES += usbserial.mod
+usbserial_mod_SOURCES = term/usbserial.c
+usbserial_mod_CFLAGS = $(COMMON_CFLAGS)
+usbserial_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For usbtest.mod
 usbtest_mod_SOURCES = commands/usbtest.c
 usbtest_mod_CFLAGS = $(COMMON_CFLAGS)

@@ -47,6 +47,7 @@ struct grub_serial_port
   unsigned int   parity;
   unsigned short stop_bits;
   struct grub_serial_driver *driver;
+  int configured;
   /* This should be void *data but since serial is useful as an early console
      when malloc isn't available it's a union.
    */
@@ -55,9 +56,9 @@ struct grub_serial_port
     grub_port_t port;
     struct
     {
-      grub_usb_device_t dev;
-      int in_endp;
-      int out_endp;
+      grub_usb_device_t usbdev;
+      struct grub_usb_desc_endp *in_endp;
+      struct grub_usb_desc_endp *out_endp;
     };
   };
 };
@@ -81,18 +82,19 @@ void grub_serial_unregister (struct grub_serial_port *port);
 #define UART_1_STOP_BIT		0x00
 #define UART_2_STOP_BITS	0x04
 
-static inline void
-grub_serial_fill_defaults (struct grub_serial_port *port)
-{
   /* Set default settings.  */
+static inline grub_err_t
+grub_serial_config_defaults (struct grub_serial_port *port)
+{
+  return port->driver->configure (port,
+
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
-  port->speed     = 115200;
+				  115200,
 #else
-  port->speed     = 9600;
+				  9600,
 #endif
-  port->word_len  = UART_8BITS_WORD;
-  port->parity    = UART_NO_PARITY;
-  port->stop_bits = UART_1_STOP_BIT;
+				  UART_8BITS_WORD, UART_NO_PARITY,
+				  UART_1_STOP_BIT);
 }
 
 void grub_ns8250_init (void);
