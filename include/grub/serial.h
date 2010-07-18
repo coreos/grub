@@ -24,6 +24,7 @@
 #include <grub/cpu/io.h>
 #include <grub/usb.h>
 #include <grub/list.h>
+#include <grub/term.h>
 
 struct grub_serial_port;
 struct grub_serial_config;
@@ -34,6 +35,7 @@ struct grub_serial_driver
 			   struct grub_serial_config *config);
   int (*fetch) (struct grub_serial_port *port);
   void (*put) (struct grub_serial_port *port, const int c);
+  void (*fini) (struct grub_serial_port *port);
 };
 
 /* The type of parity.  */
@@ -74,10 +76,14 @@ struct grub_serial_port
     struct
     {
       grub_usb_device_t usbdev;
+      int configno;
+      int interfno;
       struct grub_usb_desc_endp *in_endp;
       struct grub_usb_desc_endp *out_endp;
     };
   };
+  grub_term_output_t term_out;
+  grub_term_input_t term_in;
 };
 
 grub_err_t grub_serial_register (struct grub_serial_port *port);
@@ -105,5 +111,7 @@ grub_serial_config_defaults (struct grub_serial_port *port)
 
 void grub_ns8250_init (void);
 char *grub_serial_ns8250_add_port (grub_port_t port);
+extern struct grub_serial_driver grub_ns8250_driver;
+void grub_serial_unregister_driver (struct grub_serial_driver *driver);
 
 #endif

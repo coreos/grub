@@ -138,6 +138,8 @@ struct grub_usb_interface
   int attached;
 
   void (*detach_hook) (struct grub_usb_device *dev, int config, int interface);
+
+  void *detach_data;
 };
 
 struct grub_usb_configuration
@@ -171,9 +173,6 @@ struct grub_usb_device
 
   /* Data toggle values (used for bulk transfers only).  */
   int toggle[256];
-
-  /* Device-specific data.  */
-  void *data;
 };
 
 

@@ -215,14 +215,18 @@ grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
   err = port->driver->configure (port, &config);
   if (err)
     return err;
-  if (!registered)
+  /* Compatibility kludge.  */
+  if (port->driver == &grub_ns8250_driver)
     {
-      grub_term_register_input ("serial", &grub_serial_term_input);
-      grub_term_register_output ("serial", &grub_serial_term_output);
+      if (!registered)
+	{
+	  grub_term_register_input ("serial", &grub_serial_term_input);
+	  grub_term_register_output ("serial", &grub_serial_term_output);
+	}
+      grub_serial_terminfo_output.port = port;
+      grub_serial_terminfo_input.port = port;
+      registered = 1;
     }
-  grub_serial_terminfo_output.port = port;
-  grub_serial_terminfo_input.port = port;
-  registered = 1;
   return GRUB_ERR_NONE;
 }
 
@@ -284,9 +288,21 @@ grub_serial_register (struct grub_serial_port *port)
   grub_list_push (GRUB_AS_LIST_P (&grub_serial_ports), GRUB_AS_LIST (port));
   ((struct grub_serial_input_state *) in->data)->port = port;
   ((struct grub_serial_output_state *) out->data)->port = port;
-  grub_term_register_input ("serial_*", in);
-  grub_term_register_output ("serial_*", out);
+  port->term_in = in;
+  port->term_out = out;
   grub_terminfo_output_register (out, "vt100");
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
+  if (grub_strcmp (port->name, "com0") == 0)
+    {
+      grub_term_register_input_active ("serial_*", in);
+      grub_term_register_output_active ("serial_*", out);
+    }
+  else
+#endif
+    {
+      grub_term_register_input ("serial_*", in);
+      grub_term_register_output ("serial_*", out);
+    }
 
   return GRUB_ERR_NONE;
 }
@@ -294,8 +310,27 @@ grub_serial_register (struct grub_serial_port *port)
 void
 grub_serial_unregister (struct grub_serial_port *port)
 {
+  if (port->driver->fini)
+    port->driver->fini (port);
+  
+  if (port->term_in)
+    grub_term_unregister_input (port->term_in);
+  if (port->term_out)
+    grub_term_unregister_output (port->term_out);
+
   grub_list_remove (GRUB_AS_LIST_P (&grub_serial_ports), GRUB_AS_LIST (port));
-  /* FIXME */
+}
+
+void
+grub_serial_unregister_driver (struct grub_serial_driver *driver)
+{
+  struct grub_serial_port *port, *next;
+  for (port = grub_serial_ports; port; port = next)
+    {
+      next = port->next;
+      if (port->driver == driver)
+	grub_serial_unregister (port);
+    }
 }
 
 static grub_extcmd_t cmd;
@@ -308,27 +343,16 @@ GRUB_MOD_INIT(serial)
 			      N_("Configure serial port."), options);
 
   grub_ns8250_init ();
-
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
-  {
-    grub_err_t hwiniterr;
-    hwiniterr = grub_ns8250_driver.init ("com0", &serial_settings);
-    serial_settings.driver = &grub_ns8250_driver;
-
-    if (hwiniterr == GRUB_ERR_NONE)
-      {
-	grub_term_register_input_active ("serial", &grub_serial_term_input);
-	grub_term_register_output_active ("serial", &grub_serial_term_output);
-
-	registered = 1;
-      }
-  }
-#endif
 }
 
 GRUB_MOD_FINI(serial)
 {
   while (grub_serial_ports)
     grub_serial_unregister (grub_serial_ports);
+  if (registered)
+    {
+      grub_term_unregister_input (&grub_serial_term_input);
+      grub_term_unregister_output (&grub_serial_term_output);
+    }
   grub_unregister_extcmd (cmd);
 }

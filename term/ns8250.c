@@ -197,7 +197,7 @@ serial_hw_configure (struct grub_serial_port *port,
   return GRUB_ERR_NONE;
 }
 
-static struct grub_serial_driver grub_ns8250_driver =
+struct grub_serial_driver grub_ns8250_driver =
   {
     .configure = serial_hw_configure,
     .fetch = serial_hw_fetch,

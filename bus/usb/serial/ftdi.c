@@ -25,14 +25,14 @@
 
 enum
   {
-    GRUB_USBSERIAL_MODEM_CTRL = 0x01,
-    GRUB_USBSERIAL_FLOW_CTRL = 0x02,
-    GRUB_USBSERIAL_SPEED_CTRL = 0x03,
-    GRUB_USBSERIAL_DATA_CTRL = 0x04
+    GRUB_FTDI_MODEM_CTRL = 0x01,
+    GRUB_FTDI_FLOW_CTRL = 0x02,
+    GRUB_FTDI_SPEED_CTRL = 0x03,
+    GRUB_FTDI_DATA_CTRL = 0x04
   };
 
-#define GRUB_USBSERIAL_MODEM_CTRL_DTRRTS 3
-#define GRUB_USBSERIAL_FLOW_CTRL_DTRRTS 3
+#define GRUB_FTDI_MODEM_CTRL_DTRRTS 3
+#define GRUB_FTDI_FLOW_CTRL_DTRRTS 3
 
 /* Convert speed to divisor.  */
 static grub_uint32_t
@@ -85,20 +85,20 @@ real_config (struct grub_serial_port *port)
     return;
 
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_USBSERIAL_MODEM_CTRL,
-			GRUB_USBSERIAL_MODEM_CTRL_DTRRTS, 0, 0, 0);
+			GRUB_FTDI_MODEM_CTRL,
+			GRUB_FTDI_MODEM_CTRL_DTRRTS, 0, 0, 0);
 
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_USBSERIAL_FLOW_CTRL,
-			GRUB_USBSERIAL_FLOW_CTRL_DTRRTS, 0, 0, 0);
+			GRUB_FTDI_FLOW_CTRL,
+			GRUB_FTDI_FLOW_CTRL_DTRRTS, 0, 0, 0);
 
   divisor = get_divisor (port->config.speed);
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_USBSERIAL_SPEED_CTRL,
+			GRUB_FTDI_SPEED_CTRL,
 			divisor & 0xffff, divisor >> 16, 0, 0);
 
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			GRUB_USBSERIAL_DATA_CTRL,
+			GRUB_FTDI_DATA_CTRL,
 			parities[port->config.parity]
 			| stop_bits[port->config.stop_bits]
 			| port->config.word_len, 0, 0, 0);
@@ -108,16 +108,12 @@ real_config (struct grub_serial_port *port)
 
 /* Fetch a key.  */
 static int
-usbserial_hw_fetch (struct grub_serial_port *port)
+ftdi_hw_fetch (struct grub_serial_port *port)
 {
   char cc[3];
   grub_usb_err_t err;
 
   real_config (port);
-
-  err = grub_usb_bulk_read (port->usbdev, port->in_endp->endp_addr, 2, cc);
-  if (err != GRUB_USB_ERR_NAK)
-    return -1;
 
   err = grub_usb_bulk_read (port->usbdev, port->in_endp->endp_addr, 3, cc);
   if (err != GRUB_USB_ERR_NONE)
@@ -128,7 +124,7 @@ usbserial_hw_fetch (struct grub_serial_port *port)
 
 /* Put a character.  */
 static void
-usbserial_hw_put (struct grub_serial_port *port, const int c)
+ftdi_hw_put (struct grub_serial_port *port, const int c)
 {
   char cc = c;
 
@@ -138,7 +134,7 @@ usbserial_hw_put (struct grub_serial_port *port, const int c)
 }
 
 static grub_err_t
-usbserial_hw_configure (struct grub_serial_port *port,
+ftdi_hw_configure (struct grub_serial_port *port,
 			struct grub_serial_config *config)
 {
   grub_uint16_t divisor;
@@ -165,11 +161,19 @@ usbserial_hw_configure (struct grub_serial_port *port,
   return GRUB_ERR_NONE;
 }
 
-static struct grub_serial_driver grub_usbserial_driver =
+static void
+ftdi_fini (struct grub_serial_port *port)
+{
+  port->usbdev->config[port->configno].interf[port->interfno].detach_hook = 0;
+  port->usbdev->config[port->configno].interf[port->interfno].attached = 0;
+}
+
+static struct grub_serial_driver grub_ftdi_driver =
   {
-    .configure = usbserial_hw_configure,
-    .fetch = usbserial_hw_fetch,
-    .put = usbserial_hw_put
+    .configure = ftdi_hw_configure,
+    .fetch = ftdi_hw_fetch,
+    .put = ftdi_hw_put,
+    .fini = ftdi_fini
   };
 
 static const struct 
@@ -180,8 +184,19 @@ static const struct
     {0x0403, 0x6001} /* QEMU virtual USBserial.  */
   };
 
+static int ftdinum = 0;
+
+static void
+ftdi_detach (grub_usb_device_t usbdev, int configno, int interfno)
+{
+  static struct grub_serial_port *port;
+  port = usbdev->config[configno].interf[interfno].detach_data;
+
+  grub_serial_unregister (port);
+}
+
 static int
-grub_ftdi_attach (grub_usb_device_t usbdev, int configno, int interfno)
+grub_ftdi_attach_real (grub_usb_device_t usbdev, int configno, int interfno)
 {
   static struct grub_serial_port *port;
   int j;
@@ -196,7 +211,7 @@ grub_ftdi_attach (grub_usb_device_t usbdev, int configno, int interfno)
       return 0;
     }
 
-  port->name = grub_xasprintf ("usb%d", usbdev->addr);
+  port->name = grub_xasprintf ("ftdi%d", ftdinum++);
   if (!port->name)
     {
       grub_free (port);
@@ -205,7 +220,7 @@ grub_ftdi_attach (grub_usb_device_t usbdev, int configno, int interfno)
     }
 
   port->usbdev = usbdev;
-  port->driver = &grub_usbserial_driver;
+  port->driver = &grub_ftdi_driver;
   for (j = 0; j < interf->endpointcnt; j++)
     {
       struct grub_usb_desc_endp *endp;
@@ -229,14 +244,22 @@ grub_ftdi_attach (grub_usb_device_t usbdev, int configno, int interfno)
       return 0;
     }
 
+  port->configno = configno;
+  port->interfno = interfno;
+
   grub_serial_config_defaults (port);
   grub_serial_register (port);
+
+  port->usbdev->config[port->configno].interf[port->interfno].detach_hook
+    = ftdi_detach;
+  port->usbdev->config[port->configno].interf[port->interfno].detach_data
+    = port;
 
   return 1;
 }
 
 static int
-grub_usbserial_attach (grub_usb_device_t usbdev, int configno, int interfno)
+grub_ftdi_attach (grub_usb_device_t usbdev, int configno, int interfno)
 {
   unsigned j;
 
@@ -247,16 +270,22 @@ grub_usbserial_attach (grub_usb_device_t usbdev, int configno, int interfno)
   if (j == ARRAY_SIZE (products))
     return 0;
 
-  return grub_ftdi_attach (usbdev, configno, interfno);
+  return grub_ftdi_attach_real (usbdev, configno, interfno);
 }
 
 struct grub_usb_attach_desc attach_hook =
 {
   .class = 0xff,
-  .hook = grub_usbserial_attach
+  .hook = grub_ftdi_attach
 };
 
 GRUB_MOD_INIT(usbserial_ftdi)
 {
   grub_usb_register_attach_hook_class (&attach_hook);
+}
+
+GRUB_MOD_FINI(usbserial_ftdi)
+{
+  grub_serial_unregister_driver (&grub_ftdi_driver);
+  grub_usb_unregister_attach_hook_class (&attach_hook);
 }
