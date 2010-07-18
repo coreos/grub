@@ -1,7 +1,8 @@
-#! /bin/sh -e
+#! /bin/sh
+set -e
 
 # grub-mkconfig helper script.
-# Copyright (C) 2008  Free Software Foundation, Inc.
+# Copyright (C) 2008,2009,2010  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,8 +29,8 @@ esac
 
 # Try C: even if current system is on other partition.
 case "$SYSTEMDRIVE" in
-  [Cc]:)     dirlist="C:"              ;;
-  [D-Zd-z]:) dirlist="C: $SYSTEMDRIVE" ;;
+  [Cc]:)     drives="C:"              ;;
+  [D-Zd-z]:) drives="C: $SYSTEMDRIVE" ;;
   *) exit 0 ;;
 esac
 
@@ -51,7 +52,13 @@ get_os_name_from_boot_ini ()
 }
 
 
-for dir in $dirlist ; do
+for drv in $drives ; do
+
+  # Convert to Cygwin path.
+  dir=`cygpath "$drv"`
+  test -n "$dir" || continue
+
+  needmap=
 
   # Check for Vista bootmgr.
   if [ -f "$dir"/bootmgr -a -f "$dir"/boot/bcd ] ; then
@@ -60,6 +67,7 @@ for dir in $dirlist ; do
   # Check for NTLDR.
   elif [ -f "$dir"/ntldr -a -f "$dir"/ntdetect.com -a -f "$dir"/boot.ini ] ; then
     OS=`get_os_name_from_boot_ini "$dir"/boot.ini` || OS="Windows NT/2000/XP loader"
+    needmap=t
 
   else
     continue
@@ -68,14 +76,16 @@ for dir in $dirlist ; do
   # Get boot /dev/ice.
   dev=`${grub_probe} -t device "$dir" 2>/dev/null` || continue
 
-  echo "Found $OS on $dir ($dev)" >&2
+  echo "Found $OS on $drv ($dev)" >&2
   cat << EOF
 menuentry "$OS" {
 EOF
 
   save_default_entry | sed -e 's,^,\t,'
   prepare_grub_to_access_device "$dev" | sed 's,^,\t,'
-
+  test -z "$needmap" || cat <<EOF
+	drivemap -s (hd0) \$root
+EOF
   cat << EOF
 	chainloader +1
 }

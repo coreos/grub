@@ -102,6 +102,7 @@ case "$target_cpu"-"$platform" in
   i386-efi) ;;
   x86_64-efi) ;;
   i386-pc) ;;
+  i386-multiboot) ;;
   i386-coreboot) ;;
   i386-linuxbios) platform=coreboot ;;
   i386-ieee1275) ;;
@@ -136,6 +137,7 @@ esac
 
 case "$platform" in
   coreboot)	machine_CFLAGS="-DGRUB_MACHINE_COREBOOT=1" ;;
+  multiboot)	machine_CFLAGS="-DGRUB_MACHINE_MULTIBOOT=1" ;;
   efi)		machine_CFLAGS="-DGRUB_MACHINE_EFI=1" ;;
   ieee1275)	machine_CFLAGS="-DGRUB_MACHINE_IEEE1275=1" ;;
   qemu)		machine_CFLAGS="-DGRUB_MACHINE_QEMU=1" ;;
@@ -148,6 +150,7 @@ case "$target_cpu" in
   mips)      	machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_MIPS=1" ;;
   sparc64)      machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
+machine_CFLAGS="$machine_CFLAGS -DMACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
 
 CFLAGS="$CFLAGS $machine_CFLAGS"
 TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
@@ -176,12 +179,22 @@ if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
 fi
 
-for file in /usr/src/unifont.bdf /usr/share/fonts/X11/misc/unifont.pcf.gz /usr/share/fonts/unifont/unifont.pcf.gz; do
-  if test -e $file ; then
-    AC_SUBST([FONT_SOURCE], [$file])
-    break
-  fi
+FONT_SOURCE=
+
+for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
+  for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont; do
+    if test -f "$dir/unifont.$ext"; then
+      FONT_SOURCE="$dir/unifont.$ext"
+      break 2
+    fi
+  done
 done
+
+if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xyeeloong ); then
+   AC_MSG_ERROR([qemu and yeeloong ports need unifont])
+fi
+
+AC_SUBST([FONT_SOURCE])	
 
 AC_PROG_INSTALL
 AC_PROG_AWK
@@ -189,7 +202,7 @@ AC_PROG_LEX
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 
-if test "x$LEX" = x; then
+if test "x$LEX" = "x:"; then
   AC_MSG_ERROR([flex is not found])
 else
   version=`$LEX --version | $AWK '{ split($NF,x,"."); print x[[1]]*10000+x[[2]]*100+x[[3]]; }'`
@@ -511,11 +524,11 @@ grub_PROG_OBJCOPY_ABSOLUTE
 fi
 grub_PROG_LD_BUILD_ID_NONE
 if test "x$target_cpu" = xi386; then
-  if test ! -z "$TARGET_IMG_LDSCRIPT"; then
-    # Check symbols provided by linker script.
-    CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC}8000,--defsym,___main=0x8100"
-  fi
-  if test "x$TARGET_APPLE_CC" != x1 ; then
+  if test "$platform" != emu && test "x$TARGET_APPLE_CC" != x1 ; then
+    if test ! -z "$TARGET_IMG_LDSCRIPT"; then
+      # Check symbols provided by linker script.
+      CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC}8000 -Wl,--defsym,___main=0x8100"
+    fi
     grub_CHECK_BSS_START_SYMBOL
     grub_CHECK_END_SYMBOL
   fi
@@ -634,6 +647,12 @@ else
   TARGET_NO_MODULES=yes
 fi
 AC_SUBST(TARGET_NO_MODULES)
+
+if test "$TARGET_NO_MODULES" = yes ; then
+  # Do not convert modules, otherwise linkage may fail (Cygwin only).
+  # FIXME: Should be checked above before TARGET_OBJ2ELF is set first.
+  TARGET_OBJ2ELF=
+fi
 
 if test x"$enable_grub_emu_usb" = xno ; then
   grub_emu_usb_excuse="explicitly disabled"
@@ -770,6 +789,22 @@ fi
 AC_SUBST([enable_grub_mkfont])
 AC_SUBST([freetype_cflags])
 AC_SUBST([freetype_libs])
+
+AC_ARG_ENABLE([device-mapper],
+              [AS_HELP_STRING([--enable-device-mapper],
+                              [enable Linux device-mapper support (default=guessed)])])
+if test x"$enable_device_mapper" = xno ; then
+  device_mapper_excuse="explicitly disabled"
+fi
+
+if test x"$device_mapper_excuse" = x ; then
+  # Check for device-mapper library.
+  AC_CHECK_LIB([devmapper], [dm_task_create],
+               [LDFLAGS="$LDFLAGS -ldevmapper"
+                AC_DEFINE([HAVE_DEVICE_MAPPER], [1],
+                          [Define to 1 if you have the devmapper library.])],
+               [device_mapper_excuse="need devmapper library"])
+fi
 
 AC_SUBST(ASFLAGS)
 

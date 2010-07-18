@@ -13,30 +13,28 @@ boot_img_ASFLAGS = $(COMMON_ASFLAGS) -DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_M
 boot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_BOOT_MACHINE_LINK_ADDR)
 boot_img_FORMAT = binary
 
-bin_UTILITIES += grub-mkimage
-grub_mkimage_SOURCES = util/grub-mkrawimage.c util/misc.c \
-	util/resolve.c gnulib/progname.c
-grub_mkimage_CFLAGS = -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
-util/grub-mkrawimage.c_DEPENDENCIES = Makefile
+kern/i386/qemu/init.c_DEPENDENCIES = ascii.h
 
-pkglib_IMAGES += kernel.img
+pkglib_PROGRAMS += kernel.img
 kernel_img_SOURCES = kern/i386/qemu/startup.S \
 	kern/i386/misc.S \
 	kern/i386/coreboot/init.c \
+	kern/i386/qemu/init.c \
 	kern/i386/qemu/mmap.c \
 	kern/i386/halt.c \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/term.c \
 	kern/rescue_parser.c kern/rescue_reader.c \
-	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
+	kern/time.c kern/list.c  kern/command.c kern/corecmd.c \
 	kern/$(target_cpu)/dl.c kern/parser.c kern/partition.c \
 	kern/i386/tsc.c kern/i386/pit.c \
 	kern/generic/rtc_get_time_ms.c \
 	kern/generic/millisleep.c \
 	kern/env.c \
-	term/i386/pc/vga_text.c term/i386/vga_common.c \
+	term/i386/pc/vga_text.c term/i386/vga_common.c bus/pci.c \
 	symlist.c
+kernel_img_HEADERS += pci.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS) -DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS) -DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)
 kernel_img_LDFLAGS += $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS)$(GRUB_KERNEL_MACHINE_LINK_ADDR)

@@ -22,7 +22,6 @@
 #include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
-#include <grub/machine/kernel.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/dl.h>
@@ -33,8 +32,10 @@
 #include <grub/time.h>
 #include <grub/symbol.h>
 #include <grub/cpu/io.h>
-#include <grub/cpu/kernel.h>
 #include <grub/cpu/tsc.h>
+#ifdef GRUB_MACHINE_QEMU
+#include <grub/machine/kernel.h>
+#endif
 
 #define GRUB_FLOPPY_REG_DIGITAL_OUTPUT		0x3f2
 
@@ -70,6 +71,9 @@ grub_exit (void)
 void
 grub_machine_init (void)
 {
+#ifdef GRUB_MACHINE_QEMU
+  grub_qemu_init_cirrus ();
+#endif
   /* Initialize the console as early as possible.  */
   grub_vga_text_init ();
 
@@ -117,7 +121,9 @@ grub_machine_init (void)
     return 0;
   }
 
+#if defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_QEMU)
   grub_machine_mmap_init ();
+#endif
   grub_machine_mmap_iterate (heap_init);
 
   grub_tsc_init ();
@@ -144,6 +150,6 @@ grub_arch_modules_addr (void)
 #ifdef GRUB_MACHINE_QEMU
   return grub_core_entry_addr + grub_kernel_image_size;
 #else
-  return ALIGN_UP((grub_addr_t) _end, GRUB_MOD_ALIGN);
+  return ALIGN_UP((grub_addr_t) _end, GRUB_KERNEL_MACHINE_MOD_ALIGN);
 #endif
 }

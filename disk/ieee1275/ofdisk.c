@@ -204,7 +204,7 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
   /* XXX: There is no property to read the number of blocks.  There
      should be a property `#blocks', but it is not there.  Perhaps it
      is possible to use seek for this.  */
-  disk->total_sectors = 0xFFFFFFFFUL;
+  disk->total_sectors = GRUB_DISK_SIZE_UNKNOWN;
 
   disk->id = (unsigned long) op;
 

@@ -50,7 +50,7 @@
 #include <grub/efi/efi.h>
 #endif
 
-#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
 #define DEFAULT_VIDEO_MODE "text"
 #else
 #define DEFAULT_VIDEO_MODE "auto"
@@ -136,8 +136,14 @@ grub_multiboot_boot (void)
       grub_multiboot_alloc_mbi = mbi_size;
     }
 
+#ifdef GRUB_USE_MULTIBOOT2
+  state.MULTIBOOT_MBI_REGISTER = ALIGN_UP (grub_multiboot_payload_dest
+					   + grub_multiboot_pure_size,
+					   MULTIBOOT_TAG_ALIGN);
+#else
   state.MULTIBOOT_MBI_REGISTER = grub_multiboot_payload_dest
     + grub_multiboot_pure_size;
+#endif
   err = grub_multiboot_make_mbi (grub_multiboot_payload_orig,
 				 grub_multiboot_payload_dest,
 				 grub_multiboot_pure_size, mbi_size);

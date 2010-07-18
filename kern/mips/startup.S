@@ -18,8 +18,9 @@
  */
 
 #include <grub/symbol.h>
-#include <grub/cpu/kernel.h>
+#include <grub/offsets.h>
 #include <grub/machine/memory.h>
+#include <grub/offsets.h>
 
 #define BASE_ADDR 8
 	
@@ -32,13 +33,13 @@ _start:
 start:	
 	bal codestart
 base:	
-	. = _start + GRUB_KERNEL_CPU_COMPRESSED_SIZE
+	. = _start + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE
 compressed_size:
 	.long 0
-	. = _start + GRUB_KERNEL_CPU_TOTAL_MODULE_SIZE
+	. = _start + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
 total_module_size:
 	.long 0
-	. = _start + GRUB_KERNEL_CPU_KERNEL_IMAGE_SIZE
+	. = _start + GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE
 kernel_image_size:	
 	.long	0
 codestart:
@@ -48,8 +49,15 @@ codestart:
 	/* Parse arguments. Has to be done before relocation.
 	So need to do it in asm.  */
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
+	move $s2, $zero
+	move $s3, $zero
+	move $s4, $zero
+	move $s5, $zero
+
 	/* $a2 has the environment.  */
-	move $t0, $a2
+	addiu $t0, $a2, 1
+	beq $t0, $zero, argdone
+	move $t0, $a2	
 argcont:	
 	lw $t1, 0($t0)
 	beq $t1, $zero, argdone
@@ -105,10 +113,10 @@ argdone:
 #endif
 
 	/* Decompress the payload. */
-	addiu $a0, $s0, GRUB_KERNEL_CPU_RAW_SIZE - BASE_ADDR
+	addiu $a0, $s0, GRUB_KERNEL_MACHINE_RAW_SIZE - BASE_ADDR
 	lui $a1, %hi(compressed)
 	addiu $a1, %lo(compressed)
-	lw $a2, (GRUB_KERNEL_CPU_COMPRESSED_SIZE - BASE_ADDR)($s0)
+	lw $a2, (GRUB_KERNEL_MACHINE_COMPRESSED_SIZE - BASE_ADDR)($s0)
 	move $s1, $a1
 
 	/* $a0 contains source compressed address, $a1 is destination,
@@ -134,9 +142,9 @@ reloccont:
 	addiu $t1, %lo(cont)
 
 	jr $t1
-	. = _start + GRUB_KERNEL_CPU_RAW_SIZE
+	. = _start + GRUB_KERNEL_MACHINE_RAW_SIZE
 compressed:	
-	. = _start + GRUB_KERNEL_CPU_PREFIX
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX
 
 VARIABLE(grub_prefix)
 
@@ -146,7 +154,7 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = _start + GRUB_KERNEL_CPU_DATA_END
+	. = _start + GRUB_KERNEL_MACHINE_DATA_END
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
 VARIABLE (grub_arch_busclock)
 	.long 0
@@ -171,17 +179,17 @@ cont:
 	/* Move the modules out of BSS.  */
 	lui $t1, %hi(_start)
 	addiu $t1, %lo(_start)
-	lw $t2, (GRUB_KERNEL_CPU_KERNEL_IMAGE_SIZE - BASE_ADDR)($s0)
+	lw $t2, (GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE - BASE_ADDR)($s0)
 	addu $t2, $t1, $t2
 	
 	lui $t1, %hi(_end)
 	addiu $t1, %lo(_end)
-	addiu $t1, (GRUB_MOD_ALIGN-1)
-	li $t3, (GRUB_MOD_ALIGN-1)
+	addiu $t1, (GRUB_KERNEL_MACHINE_MOD_ALIGN-1)
+	li $t3, (GRUB_KERNEL_MACHINE_MOD_ALIGN-1)
 	nor $t3, $t3, $0
 	and $t1, $t1, $t3
 	
-	lw $t3, (GRUB_KERNEL_CPU_TOTAL_MODULE_SIZE - BASE_ADDR)($s0)
+	lw $t3, (GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE - BASE_ADDR)($s0)
 
 	/* Backward copy.  */
 	add $t1, $t1, $t3

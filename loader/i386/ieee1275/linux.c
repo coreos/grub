@@ -205,8 +205,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   real_size = setup_sects << GRUB_DISK_SECTOR_BITS;
   prot_size = grub_file_size (file) - real_size - GRUB_DISK_SECTOR_SIZE;
 
-  grub_printf ("   [Linux-%s, setup=0x%x, size=0x%x]\n",
-               "bzImage", real_size, prot_size);
+  grub_dprintf ("linux", "Linux-%s, setup=0x%x, size=0x%x\n",
+		"bzImage", real_size, prot_size);
 
   grub_file_seek (file, real_size + GRUB_DISK_SECTOR_SIZE);
   if (grub_errno)

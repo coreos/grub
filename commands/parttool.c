@@ -175,7 +175,7 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
     }
 
   /* Load modules. */
-#if GRUB_NO_MODULES
+#if !GRUB_NO_MODULES
   {
     const char *prefix;
     prefix = grub_env_get ("prefix");

@@ -1,4 +1,5 @@
-#! /bin/sh -e
+#! /bin/sh
+set -e
 
 # grub-mkconfig helper script.
 # Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
@@ -43,7 +44,8 @@ case ${GRUB_DEVICE} in
 esac
 
 if [ "x${GRUB_DEVICE_UUID}" = "x" ] || [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue" ] \
-    || ! test -e "/dev/disk/by-uuid/${GRUB_DEVICE_UUID}" ; then
+    || ! test -e "/dev/disk/by-uuid/${GRUB_DEVICE_UUID}" \
+    || uses_abstraction "${GRUB_DEVICE}" lvm; then
   LINUX_ROOT_DEVICE=${GRUB_DEVICE}
 else
   LINUX_ROOT_DEVICE=UUID=${GRUB_DEVICE_UUID}
@@ -66,6 +68,9 @@ linux_entry ()
   # Use ELILO's generic "efifb" when it's known to be available.
   # FIXME: We need an interface to select vesafb in case efifb can't be used.
   if [ "x$GRUB_GFXPAYLOAD_LINUX" = x ]; then
+      cat << EOF
+	load_video
+EOF
       if grep -qx "CONFIG_FB_EFI=y" /boot/config-${version} 2> /dev/null \
 	  && grep -qx "CONFIG_VT_HW_CONSOLE_BINDING=y" /boot/config-${version} 2> /dev/null; then
 	  cat << EOF
@@ -97,7 +102,7 @@ EOF
 EOF
 }
 
-list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
+list=`for i in /boot/vmlinu[zx]-* /vmlinu[zx]-* ; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
 prepare_boot_cache=
@@ -114,8 +119,9 @@ while [ "x$list" != "x" ] ; do
 
   initrd=
   for i in "initrd.img-${version}" "initrd-${version}.img" \
-	   "initrd-${version}" "initrd.img-${alt_version}" \
-	   "initrd-${alt_version}.img" "initrd-${alt_version}"; do
+	   "initrd-${version}" "initramfs-${version}.img" \
+	   "initrd.img-${alt_version}" "initrd-${alt_version}.img" \
+	   "initrd-${alt_version}" "initramfs-${alt_version}.img"; do
     if test -e "${dirname}/${i}" ; then
       initrd="$i"
       break

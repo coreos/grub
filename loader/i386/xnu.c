@@ -33,6 +33,12 @@
 #include <grub/command.h>
 #include <grub/gzio.h>
 #include <grub/i18n.h>
+#include <grub/bitmap_scale.h>
+
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+
+#define DEFAULT_VIDEO_MODE "auto"
 
 char grub_xnu_cmdline[1024];
 grub_uint32_t grub_xnu_heap_will_be_at;
@@ -836,6 +842,98 @@ grub_xnu_boot_resume (void)
 
   return grub_relocator32_boot (grub_xnu_heap_start, grub_xnu_heap_will_be_at,
 				state); 
+}
+
+/* Setup video for xnu. */
+static grub_err_t
+grub_xnu_set_video (struct grub_xnu_boot_params *params)
+{
+  struct grub_video_mode_info mode_info;
+  int ret;
+  char *tmp;
+  const char *modevar;
+  void *framebuffer;
+  grub_err_t err;
+  struct grub_video_bitmap *bitmap = NULL;
+
+  modevar = grub_env_get ("gfxpayload");
+  /* Consider only graphical 32-bit deep modes.  */
+  if (! modevar || *modevar == 0)
+    err = grub_video_set_mode (DEFAULT_VIDEO_MODE,
+			       GRUB_VIDEO_MODE_TYPE_PURE_TEXT
+			       | GRUB_VIDEO_MODE_TYPE_DEPTH_MASK,
+			       32 << GRUB_VIDEO_MODE_TYPE_DEPTH_POS);
+  else
+    {
+      tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
+      if (! tmp)
+	return grub_errno;
+      err = grub_video_set_mode (tmp,
+				 GRUB_VIDEO_MODE_TYPE_PURE_TEXT
+				 | GRUB_VIDEO_MODE_TYPE_DEPTH_MASK,
+				 32 << GRUB_VIDEO_MODE_TYPE_DEPTH_POS);
+      grub_free (tmp);
+    }
+
+  if (err)
+    return err;
+
+  ret = grub_video_get_info (&mode_info);
+  if (ret)
+    return grub_error (GRUB_ERR_IO, "couldn't retrieve video parameters");
+
+  if (grub_xnu_bitmap)
+    {
+      if (grub_xnu_bitmap_mode == GRUB_XNU_BITMAP_STRETCH)
+	err = grub_video_bitmap_create_scaled (&bitmap,
+					       mode_info.width,
+					       mode_info.height,
+					       grub_xnu_bitmap,
+					       GRUB_VIDEO_BITMAP_SCALE_METHOD_BEST);
+      else
+	bitmap = grub_xnu_bitmap;
+    }
+
+  if (bitmap)
+    {
+      int x, y;
+
+      x = mode_info.width - bitmap->mode_info.width;
+      x /= 2;
+      y = mode_info.height - bitmap->mode_info.height;
+      y /= 2;
+      err = grub_video_blit_bitmap (bitmap,
+				    GRUB_VIDEO_BLIT_REPLACE,
+				    x > 0 ? x : 0,
+				    y > 0 ? y : 0,
+				    x < 0 ? -x : 0,
+				    y < 0 ? -y : 0,
+				    min (bitmap->mode_info.width,
+					 mode_info.width),
+				    min (bitmap->mode_info.height,
+					 mode_info.height));
+    }
+  if (err)
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+      bitmap = 0;
+    }
+
+  ret = grub_video_get_info_and_fini (&mode_info, &framebuffer);
+  if (ret)
+    return grub_error (GRUB_ERR_IO, "couldn't retrieve video parameters");
+
+  params->lfb_width = mode_info.width;
+  params->lfb_height = mode_info.height;
+  params->lfb_depth = mode_info.bpp;
+  params->lfb_line_len = mode_info.pitch;
+
+  params->lfb_base = PTR_TO_UINT32 (framebuffer);
+  params->lfb_mode = bitmap ? GRUB_XNU_VIDEO_SPLASH 
+    : GRUB_XNU_VIDEO_TEXT_IN_VIDEO;
+
+  return GRUB_ERR_NONE;
 }
 
 /* Boot xnu. */

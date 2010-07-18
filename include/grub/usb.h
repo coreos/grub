@@ -35,7 +35,8 @@ typedef enum
     GRUB_USB_ERR_NAK,
     GRUB_USB_ERR_BABBLE,
     GRUB_USB_ERR_TIMEOUT,
-    GRUB_USB_ERR_BITSTUFF
+    GRUB_USB_ERR_BITSTUFF,
+    GRUB_USB_ERR_UNRECOVERABLE
   } grub_usb_err_t;
 
 typedef enum
@@ -103,7 +104,7 @@ struct grub_usb_controller_dev
   grub_err_t (*portstatus) (grub_usb_controller_t dev, unsigned int port,
 			    unsigned int enable);
 
-  grub_usb_speed_t (*detect_dev) (grub_usb_controller_t dev, int port);
+  grub_usb_speed_t (*detect_dev) (grub_usb_controller_t dev, int port, int *changed);
 
   /* The next host controller.  */
   struct grub_usb_controller_dev *next;
@@ -124,6 +125,13 @@ struct grub_usb_interface
   struct grub_usb_desc_if *descif;
 
   struct grub_usb_desc_endp *descendp;
+
+  /* A driver is handling this interface. Do we need to support multiple drivers
+     for single interface?
+   */
+  int attached;
+
+  void (*detach_hook) (struct grub_usb_device *dev, int config, int interface);
 };
 
 struct grub_usb_configuration
@@ -156,7 +164,7 @@ struct grub_usb_device
   int initialized;
 
   /* Data toggle values (used for bulk transfers only).  */
-  int toggle[16];
+  int toggle[256];
 
   /* Device-specific data.  */
   void *data;
@@ -184,7 +192,12 @@ typedef enum
 
 typedef enum
   {
-    GRUB_USBMS_SUBCLASS_BULK = 0x06
+    GRUB_USBMS_SUBCLASS_BULK = 0x06,
+  	/* Experimental support for non-pure SCSI devices */
+    GRUB_USBMS_SUBCLASS_RBC = 0x01,
+    GRUB_USBMS_SUBCLASS_MMC2 = 0x02,
+    GRUB_USBMS_SUBCLASS_UFI = 0x04,
+    GRUB_USBMS_SUBCLASS_SFF8070 = 0x05
   } grub_usbms_subclass_t;
 
 typedef enum
@@ -200,5 +213,22 @@ grub_usb_get_config_interface (struct grub_usb_desc_config *config)
   interf = (struct grub_usb_desc_if *) (sizeof (*config) + (char *) config);
   return interf;
 }
+
+typedef int (*grub_usb_attach_hook_class) (grub_usb_device_t usbdev,
+					   int configno, int interfno);
+
+struct grub_usb_attach_desc
+{
+  struct grub_usb_attach_desc *next;
+  int class;
+  grub_usb_attach_hook_class hook;
+};
+
+void grub_usb_register_attach_hook_class (struct grub_usb_attach_desc *desc);
+void grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc);
+
+void grub_usb_poll_devices (void);
+
+void grub_usb_device_attach (grub_usb_device_t dev);
 
 #endif /* GRUB_USB_H */

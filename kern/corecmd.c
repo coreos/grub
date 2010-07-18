@@ -26,6 +26,7 @@
 #include <grub/file.h>
 #include <grub/device.h>
 #include <grub/command.h>
+#include <grub/i18n.h>
 
 /* set ENVVAR=VALUE */
 static grub_err_t
@@ -121,7 +122,7 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
   if (argc < 1)
     {
       grub_device_iterate (grub_mini_print_devices);
-      grub_putchar ('\n');
+      grub_xputs ("\n");
       grub_refresh ();
     }
   else
@@ -160,7 +161,7 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
       else if (fs)
 	{
 	  (fs->dir) (dev, path, grub_mini_print_files);
-	  grub_putchar ('\n');
+	  grub_xputs ("\n");
 	  grub_refresh ();
 	}
 
@@ -178,11 +179,13 @@ void
 grub_register_core_commands (void)
 {
   grub_register_command ("set", grub_core_cmd_set,
-			 "[ENVVAR=VALUE]", "Set an environment variable.");
+			 N_("[ENVVAR=VALUE]"),
+			 N_("Set an environment variable."));
   grub_register_command ("unset", grub_core_cmd_unset,
-			 "ENVVAR", "Remove an environment variable.");
+			 N_("ENVVAR"),
+			 N_("Remove an environment variable."));
   grub_register_command ("ls", grub_core_cmd_ls,
-			 "[ARG]", "List devices or files.");
+			 N_("[ARG]"), N_("List devices or files."));
   grub_register_command ("insmod", grub_core_cmd_insmod,
-			 "MODULE", "Insert a module.");
+			 N_("MODULE"), N_("Insert a module."));
 }

@@ -27,18 +27,7 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 
-#define TEXT_WIDTH	80
-#define TEXT_HEIGHT	24
-
-static unsigned int xpos, ypos;
-static unsigned int keep_track = 1;
 static unsigned int registered = 0;
-
-/* An input buffer.  */
-static char input_buf[8];
-static unsigned int npending = 0;
-
-static struct grub_term_output grub_serial_term_output;
 
 /* Argument options.  */
 static const struct grub_arg_option options[] =
@@ -111,98 +100,6 @@ serial_hw_put (const int c)
   grub_outb (c, serial_settings.port + UART_TX);
 }
 
-static void
-serial_translate_key_sequence (void)
-{
-  unsigned int i;
-  static struct
-  {
-    char key;
-    char ascii;
-  }
-  three_code_table[] =
-    {
-      {'A', 16},
-      {'B', 14},
-      {'C', 6},
-      {'D', 2},
-      {'F', 5},
-      {'H', 1},
-      {'4', 4}
-    };
-
-  static struct
-  {
-      short key;
-      char ascii;
-  }
-  four_code_table[] =
-    {
-      {('1' | ('~' << 8)), 1},
-      {('3' | ('~' << 8)), 4},
-      {('5' | ('~' << 8)), 7},
-      {('6' | ('~' << 8)), 3}
-    };
-
-  if (npending < 3)
-    return;
-
-  /* The buffer must start with "ESC [".  */
-  if (input_buf[0] != '\e' || input_buf[1] != '[')
-    return;
-
-  for (i = 0; i < ARRAY_SIZE (three_code_table); i++)
-    if (three_code_table[i].key == input_buf[2])
-      {
-	input_buf[0] = three_code_table[i].ascii;
-	npending -= 2;
-	grub_memmove (input_buf + 1, input_buf + 3, npending - 1);
-	return;
-      }
-
-  if (npending >= 4)
-    {
-      short key = input_buf[3] | (input_buf[4] << 8);
-
-      for (i = 0; i < ARRAY_SIZE (four_code_table); i++)
-	if (four_code_table[i].key == key)
-	  {
-	    input_buf[0] = four_code_table[i].ascii;
-	    npending -= 3;
-	    grub_memmove (input_buf + 1, input_buf + 4, npending - 1);
-	    return;
-	  }
-    }
-}
-
-static int
-fill_input_buf (const int nowait)
-{
-  int i;
-
-  for (i = 0; i < 10000 && npending < sizeof (input_buf); i++)
-    {
-      int c;
-
-      c = serial_hw_fetch ();
-      if (c >= 0)
-	{
-	  input_buf[npending++] = c;
-
-	  /* Reset the counter to zero, to wait for the same interval.  */
-	  i = 0;
-	}
-
-      if (nowait)
-	break;
-    }
-
-  /* Translate some key sequences.  */
-  serial_translate_key_sequence ();
-
-  return npending;
-}
-
 /* Convert speed to divisor.  */
 static unsigned short
 serial_get_divisor (unsigned int speed)
@@ -241,34 +138,6 @@ serial_get_divisor (unsigned int speed)
   return 0;
 }
 
-/* The serial version of checkkey.  */
-static int
-grub_serial_checkkey (void)
-{
-  if (fill_input_buf (1))
-    return input_buf[0];
-  else
-    return -1;
-}
-
-/* The serial version of getkey.  */
-static int
-grub_serial_getkey (void)
-{
-  int c;
-
-  while (! fill_input_buf (0))
-    ;
-
-  c = input_buf[0];
-  if (c == 0x7f)
-    c = GRUB_TERM_BACKSPACE;
-
-  grub_memmove (input_buf, input_buf + 1, --npending);
-
-  return c;
-}
-
 /* Initialize a serial device. PORT is the port number for a serial device.
    SPEED is a DTE-DTE speed which must be one of these: 2400, 4800, 9600,
    19200, 38400, 57600 and 115200. WORD_LEN is the word length to be used
@@ -300,198 +169,68 @@ serial_hw_init (void)
   /* In Yeeloong serial port has only 3 wires.  */
 #ifndef GRUB_MACHINE_MIPS_YEELOONG
   /* Enable the FIFO.  */
-  grub_outb (UART_ENABLE_FIFO, serial_settings.port + UART_FCR);
+  grub_outb (UART_ENABLE_FIFO_TRIGGER1, serial_settings.port + UART_FCR);
+
+  /* Turn on DTR and RTS.  */
+  grub_outb (UART_ENABLE_DTRRTS, serial_settings.port + UART_MCR);
+#else
+  /* Enable the FIFO.  */
+  grub_outb (UART_ENABLE_FIFO_TRIGGER14, serial_settings.port + UART_FCR);
 
   /* Turn on DTR, RTS, and OUT2.  */
-  grub_outb (UART_ENABLE_MODEM, serial_settings.port + UART_MCR);
+  grub_outb (UART_ENABLE_DTRRTS | UART_ENABLE_OUT2,
+	     serial_settings.port + UART_MCR);
 #endif
 
   /* Drain the input buffer.  */
-  while (grub_serial_checkkey () != -1)
-    (void) grub_serial_getkey ();
+  while (serial_hw_fetch () != -1);
 
   /*  FIXME: should check if the serial terminal was found.  */
 
   return GRUB_ERR_NONE;
 }
 
-/* The serial version of putchar.  */
-static void
-grub_serial_putchar (grub_uint32_t c)
-{
-  /* Keep track of the cursor.  */
-  if (keep_track)
-    {
-      /* The serial terminal does not have VGA fonts.  */
-      if (c > 0x7F)
-	{
-	  /* Better than nothing.  */
-	  switch (c)
-	    {
-	    case GRUB_TERM_DISP_LEFT:
-	      c = '<';
-	      break;
-
-	    case GRUB_TERM_DISP_UP:
-	      c = '^';
-	      break;
-
-	    case GRUB_TERM_DISP_RIGHT:
-	      c = '>';
-	      break;
-
-	    case GRUB_TERM_DISP_DOWN:
-	      c = 'v';
-	      break;
-
-	    case GRUB_TERM_DISP_HLINE:
-	      c = '-';
-	      break;
-
-	    case GRUB_TERM_DISP_VLINE:
-	      c = '|';
-	      break;
-
-	    case GRUB_TERM_DISP_UL:
-	    case GRUB_TERM_DISP_UR:
-	    case GRUB_TERM_DISP_LL:
-	    case GRUB_TERM_DISP_LR:
-	      c = '+';
-	      break;
-
-	    default:
-	      c = '?';
-	      break;
-	    }
-	}
-
-      switch (c)
-	{
-	case '\a':
-	  break;
-
-	case '\b':
-	case 127:
-	  if (xpos > 0)
-	    xpos--;
-	  break;
-
-	case '\n':
-	  if (ypos < TEXT_HEIGHT - 1)
-	    ypos++;
-	  break;
-
-	case '\r':
-	  xpos = 0;
-	  break;
-
-	default:
-	  if (xpos >= TEXT_WIDTH)
-	    {
-	      grub_putchar ('\r');
-	      grub_putchar ('\n');
-	    }
-	  xpos++;
-	  break;
-	}
-    }
-
-  serial_hw_put (c);
-}
-
-static grub_ssize_t
-grub_serial_getcharwidth (grub_uint32_t c __attribute__ ((unused)))
-{
-  return 1;
-}
-
 static grub_uint16_t
-grub_serial_getwh (void)
+grub_serial_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
+  const grub_uint8_t TEXT_WIDTH = 80;
+  const grub_uint8_t TEXT_HEIGHT = 24;
   return (TEXT_WIDTH << 8) | TEXT_HEIGHT;
 }
 
-static grub_uint16_t
-grub_serial_getxy (void)
-{
-  return ((xpos << 8) | ypos);
-}
+struct grub_terminfo_input_state grub_serial_terminfo_input =
+  {
+    .readkey = serial_hw_fetch
+  };
 
-static void
-grub_serial_gotoxy (grub_uint8_t x, grub_uint8_t y)
-{
-  if (x > TEXT_WIDTH || y > TEXT_HEIGHT)
-    {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "invalid point (%u,%u)", x, y);
-    }
-  else
-    {
-      keep_track = 0;
-      grub_terminfo_gotoxy (x, y, &grub_serial_term_output);
-      keep_track = 1;
-
-      xpos = x;
-      ypos = y;
-    }
-}
-
-static void
-grub_serial_cls (void)
-{
-  keep_track = 0;
-  grub_terminfo_cls (&grub_serial_term_output);
-  keep_track = 1;
-
-  xpos = ypos = 0;
-}
-
-static void
-grub_serial_setcolorstate (const grub_term_color_state state)
-{
-  keep_track = 0;
-  switch (state)
-    {
-    case GRUB_TERM_COLOR_STANDARD:
-    case GRUB_TERM_COLOR_NORMAL:
-      grub_terminfo_reverse_video_off (&grub_serial_term_output);
-      break;
-    case GRUB_TERM_COLOR_HIGHLIGHT:
-      grub_terminfo_reverse_video_on (&grub_serial_term_output);
-      break;
-    default:
-      break;
-    }
-  keep_track = 1;
-}
-
-static void
-grub_serial_setcursor (const int on)
-{
-  if (on)
-    grub_terminfo_cursor_on (&grub_serial_term_output);
-  else
-    grub_terminfo_cursor_off (&grub_serial_term_output);
-}
+struct grub_terminfo_output_state grub_serial_terminfo_output =
+  {
+    .put = serial_hw_put
+  };
 
 static struct grub_term_input grub_serial_term_input =
 {
   .name = "serial",
-  .checkkey = grub_serial_checkkey,
-  .getkey = grub_serial_getkey,
+  .init = grub_terminfo_input_init,
+  .checkkey = grub_terminfo_checkkey,
+  .getkey = grub_terminfo_getkey,
+  .data = &grub_serial_terminfo_input
 };
 
 static struct grub_term_output grub_serial_term_output =
 {
   .name = "serial",
-  .putchar = grub_serial_putchar,
-  .getcharwidth = grub_serial_getcharwidth,
+  .putchar = grub_terminfo_putchar,
   .getwh = grub_serial_getwh,
-  .getxy = grub_serial_getxy,
-  .gotoxy = grub_serial_gotoxy,
-  .cls = grub_serial_cls,
-  .setcolorstate = grub_serial_setcolorstate,
-  .setcursor = grub_serial_setcursor,
-  .flags = 0,
+  .getxy = grub_terminfo_getxy,
+  .gotoxy = grub_terminfo_gotoxy,
+  .cls = grub_terminfo_cls,
+  .setcolorstate = grub_terminfo_setcolorstate,
+  .setcursor = grub_terminfo_setcursor,
+  .flags = GRUB_TERM_CODE_TYPE_ASCII,
+  .data = &grub_serial_terminfo_output,
+  .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
+  .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
 };
 
 
@@ -586,6 +325,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
 	{
 	  grub_term_register_input ("serial", &grub_serial_term_input);
 	  grub_term_register_output ("serial", &grub_serial_term_output);
+	  grub_terminfo_output_register (&grub_serial_term_output, "vt100");
 	  registered = 1;
 	}
     }
@@ -602,6 +342,7 @@ grub_cmd_serial (grub_extcmd_t cmd,
 	      /* If unable to restore settings, unregister terminal.  */
 	      grub_term_unregister_input (&grub_serial_term_input);
 	      grub_term_unregister_output (&grub_serial_term_output);
+	      grub_terminfo_output_unregister (&grub_serial_term_output);
 	      registered = 0;
 	    }
 	}
@@ -616,8 +357,8 @@ GRUB_MOD_INIT(serial)
 {
   cmd = grub_register_extcmd ("serial", grub_cmd_serial,
 			      GRUB_COMMAND_FLAG_BOTH,
-			      "serial [OPTIONS...]",
-			      "Configure serial port.", options);
+			      N_("[OPTIONS...]"),
+			      N_("Configure serial port."), options);
 
   /* Set default settings.  */
   serial_settings.port      = serial_hw_get_port (0);
@@ -629,6 +370,21 @@ GRUB_MOD_INIT(serial)
   serial_settings.word_len  = UART_8BITS_WORD;
   serial_settings.parity    = UART_NO_PARITY;
   serial_settings.stop_bits = UART_1_STOP_BIT;
+
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
+  {
+    grub_err_t hwiniterr;
+    hwiniterr = serial_hw_init ();
+
+    if (hwiniterr == GRUB_ERR_NONE)
+      {
+	grub_term_register_input_active ("serial", &grub_serial_term_input);
+	grub_term_register_output_active ("serial", &grub_serial_term_output);
+
+	registered = 1;
+      }
+  }
+#endif
 }
 
 GRUB_MOD_FINI(serial)
@@ -638,5 +394,6 @@ GRUB_MOD_FINI(serial)
     {
       grub_term_unregister_input (&grub_serial_term_input);
       grub_term_unregister_output (&grub_serial_term_output);
+      grub_terminfo_output_unregister (&grub_serial_term_output);
     }
 }
