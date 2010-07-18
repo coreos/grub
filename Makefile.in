@@ -53,7 +53,7 @@ XGETTEXT = @XGETTEXT@
 MSGMERGE = @MSGMERGE@
 MSGFMT = @MSGFMT@
 
-ifdef ENABLE_NLS
+ifeq (@USE_NLS@,yes)
 LINGUAS = $(shell for i in $(srcdir)/po/*.po ; do \
 			if test -e $$i ; then echo $$i ; fi ; \
 		done | sed -e "s,.*/po/\(.*\)\.po$$,\1,")
@@ -524,8 +524,8 @@ check: all $(UNIT_TESTS) $(FUNCTIONAL_TESTS) $(SCRIPTED_TESTS)
 	  $(builddir)/$$file; \
 	done
 
-.SUFFIX:
-.SUFFIX: .c .o .S .d
+.SUFFIXES:
+.SUFFIXES: .c .o .S .d
 
 # Regenerate configure and Makefile automatically.
 $(srcdir)/aclocal.m4: configure.ac acinclude.m4

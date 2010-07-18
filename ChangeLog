@@ -1,3 +1,115 @@
+2010-07-17  Aleš Nesrsta <starous@volny.cz>
+
+	Hotplugging and USB hub support.
+
+	* bus/usb/ohci.c (grub_ohci_td): Add convenience fields.
+	(grub_ohci): Likewise.
+	(GRUB_OHCI_REG_CONTROL_BULK_ENABLE): New definition.
+	(GRUB_OHCI_REG_CONTROL_CONTROL_ENABLE): Likewise.
+	(GRUB_OHCI_RESET_CONNECT_CHANGE): Likewise.
+	(GRUB_OHCI_CTRL_EDS): Likewise.
+	(GRUB_OHCI_BULK_EDS): Likewise.
+	(GRUB_OHCI_TDS): Likewise.
+	(GRUB_OHCI_ED_ADDR_MASK): Likewise.
+	(grub_ohci_ed_phys2virt): New function.
+	(grub_ohci_virt_to_phys): Likewise.
+	(grub_ohci_td_phys2virt): Likewise.
+	(grub_ohci_td_virt2phys): Likewise.
+	(grub_ohci_pci_iter): Allocate memory and don't wait for stable
+	attachment.
+	(grub_ohci_find_ed): New function.
+	(grub_ohci_alloc_td): Likewise.
+	(grub_ohci_free_td): Likewise.
+	(grub_ohci_free_tds): Likewise.
+	(grub_ohci_transfer): Use previously allocated memory.
+	(grub_ohci_portstatus): Reset status changed bit.
+	(grub_ohci_detect_dev): Supply status changed.
+	(grub_ohci_fini_hw): Free memory.
+	(grub_ohci_restore_hw): Reallocate memory.
+	* bus/usb/uhci.c (grub_uhci_portstatus): Don't reset on disable.
+	Reset status change.
+	(grub_uhci_detect_dev): Supply status_change.
+	* bus/usb/usb.c (attach_hooks): New var.
+	(grub_usb_device_attach): New function.
+	(grub_usb_register_attach_hook_class): Likewise.
+	(grub_usb_unregister_attach_hook_class): Likewise.
+	* bus/usb/usbhub.c (grub_usb_hub_add_dev): Handle errors correctly.
+	(grub_usb_add_hub): Reset connection changed bit.
+	(attach_root_port): New function.
+	(grub_usb_root_hub): Likewise.
+	(poll_nonroot_hub): Likewise.
+	(grub_usb_poll_devices): Likewise.
+	* commands/usbtest.c (grub_cmd_usbtest): Poll devices before listing.
+	* disk/usbms.c (grub_usbms_open): Use device hooks.
+	(grub_usbms_iterate) :Poll devices.
+	(grub_usbms_finddevs): Split into ...
+	(grub_usbms_attach): ... this ...
+	(grub_usbms_attach): ... and this.
+	* include/grub/usb.h (grub_usb_controller_dev): Supply status_changed
+	in detect_dev.
+	(grub_usb_interface): New fields attached and detach_hook.
+	(grub_usb_attach_hook_class): New type.
+	(grub_usb_attach_desc): New struct.
+	(grub_usb_register_attach_hook_class): New function.
+	(grub_usb_unregister_attach_hook_class): Likewise.
+	(grub_usb_poll_devices): Likewise.
+	(grub_usb_device_attach): Likewise.
+	* include/grub/usbtrans.h (GRUB_USB_HUB_FEATURE_C_CONNECTED): New const.
+	(GRUB_USB_HUB_STATUS_C_CONNECTED): Likewise.
+
+2010-07-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/bsdlabel.h (GRUB_PC_PARTITION_BSD_LABEL_WHOLE_DISK_PARTITION): New definition.
+	* partmap/bsdlabel.c (bsdlabel_partition_map_iterate): Use FreeBSD
+	delta determination style. Works with most NetBSD partitions too.
+
+2010-07-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/partition.c [GRUB_UTIL]: Add missing util/misc.h inclusion.
+	* partmap/bsdlabel.c [GRUB_UTIL]: Likewise.
+
+2010-07-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/scsi.c (grub_scsi_open): Fix incorrect pointer dereference.
+
+2010-07-14  Anton Blanchard  <anton@samba.org>
+
+	* loader/powerpc/ieee1275/linux.c (grub_cmd_linux): Do not reject
+	ET_DYN files.
+
+2010-07-14  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* Makefile.in: Use the substituted @USE_NLS@ instead of ENABLE_NLS.
+
+2010-07-14  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* kern/partition.c (grub_partition_check_containment): New function to
+	check that a partition is physically contained in a parent.  Since
+	offsets are relative (and non-negative), this reduces to checking that
+	the partition ends before its parent.
+	(grub_partition_map_probe): Discard out-of-range sub-partitions.
+	(grub_partition_iterate): Likewise.
+	* include/grub/partition.h (grub_partition_map): Slightly more detailed
+	comments.
+	* partmap/bsdlabel.c (bsdlabel_partition_map_iterate): Discard
+	partitions that start before their parent, and add debug printfs.
+
+2010-07-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.in (.SUFFIX): Spell correctly, as ...
+	(.SUFFIXES): ... this.  Fixes bug where `make foo' (where foo is a
+	bare module name without `.mod', e.g. `test') tried to invoke a
+	Modula-2 compiler.
+
+2010-07-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	* README: Point to the Info manual.
+
+2010-07-13  Jiro SEKIBA <jir@unicus.jp>
+
+	* fs/nilfs2.c: fix macro NILFS_2ND_SUPER_BLOCK to calculate
+	2nd superblock position from partition size.
+
 2010-07-10  Colin Watson  <cjwatson@ubuntu.com>
 
 	* Makefile.in (MAINTAINER_CLEANFILES): Remove
