@@ -29,6 +29,7 @@ static grub_err_t
 grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   char *src;
+  unsigned len;
   grub_err_t r;
 
   /* XXX Rewrite to make use of already parsed menu definition.  */
@@ -37,9 +38,12 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
 
   src = args[argc - 1];
   args[argc - 1] = '\0';
+  len = grub_strlen(src);
+  src[len - 1] = '\0';
 
-  r = grub_normal_add_menu_entry (argc - 1, (const char **) args, src);
+  r = grub_normal_add_menu_entry (argc - 1, (const char **) args, src + 1);
 
+  src[len - 1] = '}';
   args[argc - 1] = src;
   return r;
 }
