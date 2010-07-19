@@ -111,16 +111,9 @@ real_config (struct grub_serial_port *port)
 static int
 ftdi_hw_fetch (struct grub_serial_port *port)
 {
-  char cc[3];
-  grub_usb_err_t err;
-
   real_config (port);
 
-  err = grub_usb_bulk_read (port->usbdev, port->in_endp->endp_addr, 3, cc);
-  if (err != GRUB_USB_ERR_NONE)
-    return -1;
-
-  return cc[2];
+  return grub_usbserial_fetch (port, 2);
 }
 
 /* Put a character.  */

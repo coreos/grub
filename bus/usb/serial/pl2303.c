@@ -127,26 +127,9 @@ real_config (struct grub_serial_port *port)
 static int
 pl2303_hw_fetch (struct grub_serial_port *port)
 {
-  grub_usb_err_t err;
-
   real_config (port);
 
-  if (port->bufstart < port->bufend)
-    return port->buf[port->bufstart++];
-
-  err = grub_usb_bulk_read_timeout (port->usbdev, port->in_endp->endp_addr,
-				    sizeof (port->buf), port->buf, 10);
-  if (err != GRUB_USB_ERR_NONE)
-    return -1;
-
-  port->bufstart = 0;
-  /* FIXME: nearly always only one byte is transfered.
-     It happens however that more are transfered.
-     Setting sizeof (port->buf) to 1 leads code to stop reading after
-     such transfer.  */
-  port->bufend = 1;
-
-  return port->buf[port->bufstart++];
+  return grub_usbserial_fetch (port, 0);
 }
 
 /* Put a character.  */

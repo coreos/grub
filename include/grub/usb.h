@@ -107,7 +107,7 @@ struct grub_usb_controller_dev
 
   grub_usb_err_t (*transfer) (grub_usb_controller_t dev,
 			      grub_usb_transfer_t transfer,
-			      int timeout);
+			      int timeout, grub_size_t *actual);
 
   int (*hubports) (grub_usb_controller_t dev);
 
@@ -240,8 +240,8 @@ void grub_usb_poll_devices (void);
 
 void grub_usb_device_attach (grub_usb_device_t dev);
 grub_usb_err_t
-grub_usb_bulk_read_timeout (grub_usb_device_t dev,
-			    int endpoint, grub_size_t size, char *data,
-			    int timeout);
+grub_usb_bulk_read_extended (grub_usb_device_t dev,
+			     int endpoint, grub_size_t size, char *data,
+			     int timeout, grub_size_t *actual);
 
 #endif /* GRUB_USB_H */

@@ -38,6 +38,7 @@ struct grub_usb_transaction
   int toggle;
   grub_transfer_type_t pid;
   grub_uint32_t data;
+  grub_size_t preceding;
 };
 typedef struct grub_usb_transaction *grub_usb_transaction_t;
 

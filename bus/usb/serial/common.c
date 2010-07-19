@@ -100,3 +100,26 @@ grub_usbserial_attach (grub_usb_device_t usbdev, int configno, int interfno,
 
   return 1;
 }
+
+int
+grub_usbserial_fetch (struct grub_serial_port *port, grub_size_t header_size)
+{
+  grub_usb_err_t err;
+  grub_size_t actual;
+
+  if (port->bufstart < port->bufend)
+    return port->buf[port->bufstart++];
+
+  err = grub_usb_bulk_read_extended (port->usbdev, port->in_endp->endp_addr,
+				     sizeof (port->buf), port->buf, 10,
+				     &actual);
+  if (err != GRUB_USB_ERR_NONE)
+    return -1;
+
+  port->bufstart = header_size;
+  port->bufend = actual;
+  if (port->bufstart >= port->bufend)
+    return -1;
+
+  return port->buf[port->bufstart++];
+}

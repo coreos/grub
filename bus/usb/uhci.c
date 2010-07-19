@@ -75,8 +75,10 @@ struct grub_uhci_td
      This is GRUB specific.  */
   grub_uint32_t linkptr2;
 
-  /* 3 additional 32 bits words reserved for the Host Controller Driver.  */
-  grub_uint32_t data[3];
+  grub_uint32_t buffer0;
+
+  /* 2 additional 32 bits words reserved for the Host Controller Driver.  */
+  grub_uint32_t data[2];
 } __attribute__ ((packed));
 
 typedef volatile struct grub_uhci_td *grub_uhci_td_t;
@@ -333,9 +335,11 @@ grub_free_td (struct grub_uhci *u, grub_uhci_td_t td)
 
 static void
 grub_free_queue (struct grub_uhci *u, grub_uhci_td_t td,
-                 grub_usb_transfer_t transfer)
+                 grub_usb_transfer_t transfer, grub_size_t *actual)
 {
   int i; /* Index of TD in transfer */
+
+  *actual = 0;
   
   /* Free the TDs in this queue and set last_trans.  */
   for (i=0; td; i++)
@@ -345,6 +349,8 @@ grub_free_queue (struct grub_uhci *u, grub_uhci_td_t td,
       /* Check state of TD and possibly set last_trans */
       if (transfer && (td->linkptr & 1))
         transfer->last_trans = i;
+
+      *actual += (td->ctrl_status + 1) & 0x7ff;
       
       /* Unlink the queue.  */
       tdprev = td;
@@ -430,6 +436,7 @@ grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
 	       | (addr << 8) | tf[type]);
 
   td->buffer = data;
+  td->buffer0 = data;
 
   return td;
 }
@@ -437,7 +444,7 @@ grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
 static grub_usb_err_t
 grub_uhci_transfer (grub_usb_controller_t dev,
 		    grub_usb_transfer_t transfer,
-		    int timeout)
+		    int timeout, grub_size_t *actual)
 {
   struct grub_uhci *u = (struct grub_uhci *) dev->data;
   grub_uhci_qh_t qh;
@@ -448,10 +455,12 @@ grub_uhci_transfer (grub_usb_controller_t dev,
   int i;
   grub_uint64_t endtime;
 
+  *actual = 0;
+
   /* Allocate a queue head for the transfer queue.  */
   qh = grub_alloc_qh (u, GRUB_USB_TRANSACTION_TYPE_CONTROL);
   if (! qh)
-    return grub_errno;
+    return GRUB_USB_ERR_INTERNAL;
 
   grub_dprintf ("uhci", "transfer, iobase:%08x\n", u->iobase);
   
@@ -469,7 +478,7 @@ grub_uhci_transfer (grub_usb_controller_t dev,
 	  td_prev->linkptr = 1;
 
 	  if (td_first)
-	    grub_free_queue (u, td_first, NULL);
+	    grub_free_queue (u, td_first, NULL, actual);
 
 	  return GRUB_USB_ERR_INTERNAL;
 	}
@@ -563,7 +572,7 @@ grub_uhci_transfer (grub_usb_controller_t dev,
   /* Place the QH back in the free list and deallocate the associated
      TDs.  */
   qh->elinkptr = 1;
-  grub_free_queue (u, td_first, transfer);
+  grub_free_queue (u, td_first, transfer, actual);
 
   return err;
 }
