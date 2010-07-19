@@ -564,13 +564,31 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
       /* mdraid 1.x superblocks have only a name stored not a number.
 	 Use it directly as GRUB device.  */
       if (! array->name)
-	array->name = grub_xasprintf ("md%d", array->number);
+	{
+	  array->name = grub_xasprintf ("md%d", array->number);
+	  if (! array->name)
+	    {
+	      grub_free (array->uuid);
+	      grub_free (array);
+
+	      return grub_errno;
+	    }
+	}
       else
 	{
 	  /* Strip off the homehost if present.  */
 	  char *colon = grub_strchr (array->name, ':');
 	  char *new_name = grub_xasprintf ("md/%s",
 					   colon ? colon + 1 : array->name);
+
+	  if (! new_name)
+	    {
+	      grub_free (array->uuid);
+	      grub_free (array);
+
+	      return grub_errno;
+	    }
+
 	  grub_free (array->name);
 	  array->name = new_name;
 	}
