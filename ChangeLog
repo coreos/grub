@@ -1,5 +1,10 @@
 2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/util/grub-shell-tester.in: Remove bashism and declare as
+	sh script.
+
+2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* disk/loopback.c (grub_loopback): Replace filename with file.
 	(delete_loopback): Handle new semantics.
 	(grub_cmd_loopback): Likewise.
