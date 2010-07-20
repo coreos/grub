@@ -76,6 +76,7 @@ grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
   struct grub_arg_list *state = state = cmd->state;
   grub_file_t file;
   struct grub_loopback *newdev;
+  grub_err_t ret;
 
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "device name required");
@@ -100,7 +101,7 @@ grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
     {
       char *newname = grub_strdup (args[1]);
       if (! newname)
-	return grub_errno;
+	goto fail;
 
       grub_file_close (newdev->file);
       newdev->file = file;
@@ -114,13 +115,13 @@ grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
   /* Unable to replace it, make a new entry.  */
   newdev = grub_malloc (sizeof (struct grub_loopback));
   if (! newdev)
-    return grub_errno;
+    goto fail;
 
   newdev->devname = grub_strdup (args[0]);
   if (! newdev->devname)
     {
       grub_free (newdev);
-      return grub_errno;
+      goto fail;
     }
 
   newdev->file = file;
@@ -133,6 +134,11 @@ grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
   loopback_list = newdev;
 
   return 0;
+
+fail:
+  ret = grub_errno;
+  grub_file_close (file);
+  return ret;
 }
 
 
@@ -169,11 +175,6 @@ grub_loopback_open (const char *name, grub_disk_t disk)
   disk->data = dev->file;
 
   return 0;
-}
-
-static void
-grub_loopback_close (grub_disk_t disk __attribute__  ((unused)))
-{
 }
 
 static grub_err_t
@@ -217,7 +218,6 @@ static struct grub_disk_dev grub_loopback_dev =
     .id = GRUB_DISK_DEVICE_LOOPBACK_ID,
     .iterate = grub_loopback_iterate,
     .open = grub_loopback_open,
-    .close = grub_loopback_close,
     .read = grub_loopback_read,
     .write = grub_loopback_write,
     .next = 0

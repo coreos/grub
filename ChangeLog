@@ -1,5 +1,12 @@
 2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
 
+	* disk/loopback.c (grub_cmd_loopback): Don't leak a grub_file_t
+	handle on failure.
+	(grub_loopback_close): Remove empty function.
+	(grub_loopback_dev): Remove close method.
+
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
 	Disable EFI cursor when the EFI console becomes inactive.
 
 	* term/efi/console.c (grub_efi_console_init): New function.
