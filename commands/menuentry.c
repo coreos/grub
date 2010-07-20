@@ -33,7 +33,7 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
   grub_err_t r;
 
   /* XXX Rewrite to make use of already parsed menu definition.  */
-  if (! argc || ! ctxt->script_params || ! ctxt->script_params[argc - 1])
+  if (! argc || ! ctxt->script)
     return GRUB_ERR_BAD_ARGUMENT;
 
   src = args[argc - 1];

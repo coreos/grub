@@ -122,7 +122,7 @@ grub_script_arg_add (struct grub_parser_param *state,
     return arg;
 
   argpart->type = type;
-  argpart->block = 0;
+  argpart->script = 0;
 
   len = grub_strlen (str) + 1;
   argpart->str = grub_script_malloc (state, len);

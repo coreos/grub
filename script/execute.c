@@ -199,9 +199,9 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 	    case GRUB_SCRIPT_ARG_TYPE_BLOCK:
 	      if (grub_script_argv_append (&result, "{") ||
 		  grub_script_argv_append (&result, arg->str) ||
-		  grub_script_argv_append (&result, "}") ||
-		  grub_script_argv_script_append (&result, arg->block))
+		  grub_script_argv_append (&result, "}"))
 		goto fail;
+	      result.script = arg->script;
 	      break;
 
 	    case GRUB_SCRIPT_ARG_TYPE_TEXT:
@@ -326,7 +326,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
       if ((grubcmd->flags & GRUB_COMMAND_FLAG_BLOCKS) &&
 	  (grubcmd->flags & GRUB_COMMAND_FLAG_EXTCMD))
 	ret = grub_extcmd_dispatcher (grubcmd, argv.argc - 1, argv.args + 1,
-				      argv.scripts + 1);
+				      argv.script);
       else
 	ret = (grubcmd->func) (grubcmd, argv.argc - 1, argv.args + 1);
     }

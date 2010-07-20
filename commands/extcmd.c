@@ -25,7 +25,7 @@
 
 grub_err_t
 grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
-			struct grub_script **scripts)
+			struct grub_script *script)
 {
   int new_argc;
   char **new_args;
@@ -38,7 +38,7 @@ grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
 
   context.state = 0;
   context.extcmd = ext;
-  context.script_params = scripts;
+  context.script = script;
 
   if (! ext->options)
     {
