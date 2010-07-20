@@ -50,8 +50,8 @@ struct grub_extcmd_context
 
   struct grub_arg_list *state;
 
-  /* Script parameters, if any.  */
-  struct grub_script **script_params;
+  /* Script parameter, if any.  */
+  struct grub_script *script;
 };
 typedef struct grub_extcmd_context *grub_extcmd_context_t;
 
@@ -74,6 +74,6 @@ void grub_unregister_extcmd (grub_extcmd_t cmd);
 
 grub_err_t
 grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
-			struct grub_script **scripts);
+			struct grub_script *script);
 
 #endif /* ! GRUB_EXTCMD_HEADER */

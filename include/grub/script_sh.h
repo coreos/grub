@@ -62,7 +62,7 @@ struct grub_script_arg
   char *str;
 
   /* Parsed block argument.  */
-  struct grub_script *block;
+  struct grub_script *script;
 
   /* Next argument part.  */
   struct grub_script_arg *next;
@@ -73,7 +73,7 @@ struct grub_script_argv
 {
   unsigned argc;
   char **args;
-  struct grub_script **scripts;
+  struct grub_script *script;
 };
 
 /* A complete argument.  It consists of a list of one or more `struct
@@ -234,8 +234,6 @@ void grub_script_argv_free    (struct grub_script_argv *argv);
 int grub_script_argv_next     (struct grub_script_argv *argv);
 int grub_script_argv_append   (struct grub_script_argv *argv, const char *s);
 int grub_script_argv_split_append (struct grub_script_argv *argv, char *s);
-int grub_script_argv_script_append (struct grub_script_argv *argv,
-				    struct grub_script *s);
 
 struct grub_script_arglist *
 grub_script_create_arglist (struct grub_parser_param *state);

@@ -54,8 +54,7 @@ grub_dyncmd_dispatcher (struct grub_extcmd_context *ctxt,
 	{
 	  if (cmd->flags & GRUB_COMMAND_FLAG_BLOCKS &&
 	      cmd->flags & GRUB_COMMAND_FLAG_EXTCMD)
-	    ret = grub_extcmd_dispatcher (cmd, argc, args,
-					  ctxt->script_params);
+	    ret = grub_extcmd_dispatcher (cmd, argc, args, ctxt->script);
 	  else
 	    ret = (cmd->func) (cmd, argc, args);
 	}
