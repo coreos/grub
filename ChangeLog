@@ -1,3 +1,7 @@
+2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Naming convention): Document new naming convention.
+
 2010-07-20  Vadim Solomin  <vadic052@gmail.com>
 2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
 

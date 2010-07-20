@@ -444,12 +444,13 @@ disk. The number @samp{0} is the drive number, which is counted from
 disk.
 
 @example
-(hd0,2)
+(hd0,msdos2)
 @end example
 
 Here, @samp{hd} means it is a hard disk drive. The first integer
-@samp{0} indicates the drive number, that is, the first hard disk, while
-the second integer, @samp{1}, indicates the partition number (or the
+@samp{0} indicates the drive number, that is, the first hard disk,
+the string @samp{msdos} indicates the partition scheme, while
+the second integer, @samp{2}, indicates the partition number (or the
 @sc{pc} slice number in the BSD terminology). The partition numbers are
 counted from @emph{one}, not from zero (as was the case in previous
 versions of GRUB). This expression means the second partition of the
@@ -457,7 +458,7 @@ first hard disk drive. In this case, GRUB uses one partition of the
 disk, instead of the whole disk.
 
 @example
-(hd0,5)
+(hd0,msdos5)
 @end example
 
 This specifies the first @dfn{extended partition} of the first hard disk
@@ -466,18 +467,15 @@ counted from @samp{5}, regardless of the actual number of primary
 partitions on your hard disk.
 
 @example
-(hd1,a)
+(hd1,msdos1,bsd1)
 @end example
 
-This means the BSD @samp{a} partition of the second hard disk. If you
-need to specify which @sc{pc} slice number should be used, use something
-like this: @samp{(hd1,1,a)}. If the @sc{pc} slice number is omitted,
-GRUB searches for the first @sc{pc} slice which has a BSD @samp{a}
-partition.
+This means the BSD @samp{a} partition on first @sc{pc} slice number
+of the second hard disk.
 
 Of course, to actually access the disks or partitions with GRUB, you
 need to use the device specification in a command, like @samp{set
-root=(fd0)} or @samp{parttool (hd0,3) hidden-}. To help you find out
+root=(fd0)} or @samp{parttool (hd0,msdos3) hidden-}. To help you find out
 which number specifies a partition you want, the GRUB command-line
 (@pxref{Command-line interface}) options have argument
 completion. This means that, for example, you only need to type
@@ -501,7 +499,7 @@ Now the question is, how to specify a file? Again, consider an
 example:
 
 @example
-(hd0,1)/vmlinuz
+(hd0,msdos1)/vmlinuz
 @end example
 
 This specifies the file named @samp{vmlinuz}, found on the first
