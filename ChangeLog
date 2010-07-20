@@ -1,3 +1,8 @@
+2010-07-20  Thomas Frauendorfer  <Thomas.Frauendorfer@googlemail.com>
+
+	* lib/i386/relocator_asm.S [! __x86_64__]: Don't try to disable amd64
+	on i386.
+
 2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* commands/acpi.c (setup_common_tables): Use sizeof instead of
