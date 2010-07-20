@@ -1,5 +1,9 @@
 2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
 
+	* kern/emu/getroot.c (grub_util_get_grub_dev): Use xasprintf.
+
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
 	* disk/loopback.c (grub_cmd_loopback): Don't leak a grub_file_t
 	handle on failure.
 	(grub_loopback_close): Remove empty function.

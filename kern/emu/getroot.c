@@ -695,7 +695,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	  if (q)
 	    *q = ',';
 
-	  asprintf (&grub_dev, "md/%s", p);
+	  grub_dev = xasprintf ("md/%s", p);
 	  free (p);
 	}
       else
@@ -708,7 +708,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	if (mdadm_name)
 	  {
 	    free (grub_dev);
-	    asprintf (&grub_dev, "md/%s", mdadm_name);
+	    grub_dev = xasprintf ("md/%s", mdadm_name);
 	    free (mdadm_name);
 	  }
       }
