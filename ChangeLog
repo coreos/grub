@@ -1,3 +1,7 @@
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Ignore 20_linux_xen.
+
 2010-07-17  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/import_unicode.py: Remove unnecessary imports.
