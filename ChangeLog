@@ -1,3 +1,16 @@
+2010-07-20  Vadim Solomin  <vadic052@gmail.com>
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	Generate device.map in something closer to the old ordering.
+
+	* util/deviceiter.c (struct device): New declaration.
+	(compare_file_names): Rename to ...
+	(compare_devices): ... this.  Sort by kernel name in preference to
+	the stable by-id name, but keep the latter as a fallback comparison.
+	Update header comment.
+	(grub_util_iterate_devices) [__linux__]: Construct and sort an array
+	of `struct device' rather than of plain file names.
+
 2010-07-20  Thomas Frauendorfer  <Thomas.Frauendorfer@googlemail.com>
 
 	* lib/i386/relocator_asm.S [! __x86_64__]: Don't try to disable amd64
