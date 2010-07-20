@@ -1,5 +1,11 @@
 2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/i386/efi/grub-install.in: Revert to platform-specific behaviour
+	with -p "".
+	Reported by: Tito Keitel.
+
+2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Naming convention): Document new naming convention.
 
 2010-07-20  Vadim Solomin  <vadic052@gmail.com>
