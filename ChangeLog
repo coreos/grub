@@ -1,5 +1,55 @@
 2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
 
+	* disk/raid.c (insert_array): Use md/%s to name mdadm 1.x devices,
+	removing the homehost if present.
+	* kern/emu/getroot.c (get_mdadm_name) [__linux__]: New function.
+	(grub_util_get_grub_dev): Use md/%s to name mdadm 1.x devices,
+	removing the homehost if present.
+	(grub_util_get_grub_dev) [__linux__]: Get the array name from mdadm
+	if possible.
+	* util/i386/pc/grub-setup.c (main): Handle md/* devices.
+
+	* disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Add start_sector
+	parameter.  Set its pointer target to 0.
+	* disk/mdraid_linux.c (grub_mdraid_detect): Add start_sector
+	parameter.  Set its pointer target to 0 for 0.9 metadata, or to the
+	`data_offset' value from the superblock for 1.x metadata.
+	* disk/raid.c (grub_raid_read): Offset reads by the start sector of
+	data on the device.
+	(insert_array): Record the start sector of data on the device.
+	(grub_raid_register): Pass start_sector parameters to
+	grub_raid_list->detect and insert_array.
+	* include/grub/raid.h (struct grub_raid_array): Add start_sector
+	member.
+	(struct grub_raid): Add start_sector parameter to `detect'.
+
+	* disk/mdraid_linux.c (struct grub_raid_super_1x): Remove
+	__attribute__ ((packed)), leaving a comment.
+	(grub_mdraid_detect): Split out 0.9 and 1.x detection to ...
+	(grub_mdraid_detect_09): ... here and ...
+	(grub_mdraid_detect_1x): ... here.
+
+2010-07-20  Peter Henn  <peter.henn@web.de>
+
+	* disk/mdraid_linux.c (grub_mdraid_detect): Fix calculation of 1.x
+	chunk size and disk size, which are already given as sector counts
+	as distinct from the 0.90 units.  Fetch the correct device number
+	from the role table instead of using the table index.
+
+2010-07-20  Felix Zielcke  <fzielcke@z-51.de>
+
+	* disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Set array->name to NULL.
+	* disk/mdraid_linux.c (grub_raid_super_1x): New structure.
+	(WriteMostly1): New macro.
+	Set array->name to NULL for metadata format 0.90.  Add support for
+	metadata 1.x.  Fix some comments.
+	* disk/raid.c (): Add support for name based RAID arrays.  Fix a
+	few comments.
+	* util/getroot.c (grub_util_get_grub_dev): Add support for
+	/dev/md/name style devices.
+
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
 	* .bzrignore: Ignore 20_linux_xen.
 
 2010-07-17  Colin Watson  <cjwatson@ubuntu.com>
