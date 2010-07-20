@@ -1,3 +1,9 @@
+2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/acpi.c (setup_common_tables): Use sizeof instead of
+	hardcoding size.
+	(setv1table): Likewise.
+
 2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
 
 	* disk/raid.c (insert_array): Use md/%s to name mdadm 1.x devices,
