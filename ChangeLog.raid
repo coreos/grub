@@ -1,3 +1,10 @@
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* disk/mdraid_linux.c: Update copyright years.
+	* disk/raid.c: Likewise.
+	* include/grub/raid.h: Likewise.
+	* kern/emu/getroot.c: Likewise.
+
 2010-07-19  Colin Watson  <cjwatson@ubuntu.com>
 
 	* disk/mdraid_linux.c (struct grub_raid_super_1x): Remove
