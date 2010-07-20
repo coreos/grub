@@ -28,7 +28,7 @@
 struct grub_loopback
 {
   char *devname;
-  char *filename;
+  grub_file_t file;
   int has_partitions;
   struct grub_loopback *next;
 };
@@ -63,7 +63,7 @@ delete_loopback (const char *name)
   *prev = dev->next;
 
   grub_free (dev->devname);
-  grub_free (dev->filename);
+  grub_file_close (dev->file);
   grub_free (dev);
 
   return 0;
@@ -91,9 +91,6 @@ grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
   if (! file)
     return grub_errno;
 
-  /* Close the file, the only reason for opening it is validation.  */
-  grub_file_close (file);
-
   /* First try to replace the old device.  */
   for (newdev = loopback_list; newdev; newdev = newdev->next)
     if (grub_strcmp (newdev->devname, args[0]) == 0)
@@ -105,8 +102,8 @@ grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
       if (! newname)
 	return grub_errno;
 
-      grub_free (newdev->filename);
-      newdev->filename = newname;
+      grub_file_close (newdev->file);
+      newdev->file = file;
 
       /* Set has_partitions when `--partitions' was used.  */
       newdev->has_partitions = state[1].set;
@@ -126,13 +123,7 @@ grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
       return grub_errno;
     }
 
-  newdev->filename = grub_strdup (args[1]);
-  if (! newdev->filename)
-    {
-      grub_free (newdev->devname);
-      grub_free (newdev);
-      return grub_errno;
-    }
+  newdev->file = file;
 
   /* Set has_partitions when `--partitions' was used.  */
   newdev->has_partitions = state[1].set;
@@ -160,7 +151,6 @@ grub_loopback_iterate (int (*hook) (const char *name))
 static grub_err_t
 grub_loopback_open (const char *name, grub_disk_t disk)
 {
-  grub_file_t file;
   struct grub_loopback *dev;
 
   for (dev = loopback_list; dev; dev = dev->next)
@@ -170,27 +160,20 @@ grub_loopback_open (const char *name, grub_disk_t disk)
   if (! dev)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
 
-  file = grub_file_open (dev->filename);
-  if (! file)
-    return grub_errno;
-
   /* Use the filesize for the disk size, round up to a complete sector.  */
-  disk->total_sectors = ((file->size + GRUB_DISK_SECTOR_SIZE - 1)
+  disk->total_sectors = ((dev->file->size + GRUB_DISK_SECTOR_SIZE - 1)
 			 / GRUB_DISK_SECTOR_SIZE);
   disk->id = (unsigned long) dev;
 
   disk->has_partitions = dev->has_partitions;
-  disk->data = file;
+  disk->data = dev->file;
 
   return 0;
 }
 
 static void
-grub_loopback_close (grub_disk_t disk)
+grub_loopback_close (grub_disk_t disk __attribute__  ((unused)))
 {
-  grub_file_t file = (grub_file_t) disk->data;
-
-  grub_file_close (file);
 }
 
 static grub_err_t
