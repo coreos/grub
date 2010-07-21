@@ -42,6 +42,10 @@ struct grub_script
   unsigned refcnt;
   struct grub_script_mem *mem;
   struct grub_script_cmd *cmd;
+
+  /* Other grub_script's from block arguments.  */
+  struct grub_script *siblings;
+  struct grub_script *children;
 };
 
 typedef enum
@@ -222,6 +226,9 @@ struct grub_parser_param
   /* The memory that was used while parsing and scanning.  */
   struct grub_script_mem *memused;
 
+  /* The block argument scripts.  */
+  struct grub_script *scripts;
+
   /* The result of the parser.  */
   struct grub_script_cmd *parsed;
 
@@ -365,13 +372,17 @@ grub_normal_parse_line (char *line, grub_reader_getline_t getline);
 static inline struct grub_script *
 grub_script_get (struct grub_script *script)
 {
-  script->refcnt++;
+  if (script)
+    script->refcnt++;
   return script;
 }
 
 static inline void
 grub_script_put (struct grub_script *script)
 {
+  if (! script)
+    return;
+
   if (script->refcnt == 0)
     grub_script_free (script);
   else

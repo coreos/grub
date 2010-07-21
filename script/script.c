@@ -94,12 +94,19 @@ grub_script_mem_record_stop (struct grub_parser_param *state,
 void
 grub_script_free (struct grub_script *script)
 {
+  struct grub_script *s;
+
   if (!script)
     return;
 
   if (script->mem)
     grub_script_mem_free (script->mem);
 
+  s = script->children;
+  while (s) {
+    grub_script_put (s);
+    s = s->siblings;
+  }
   grub_free (script);
 }
 
@@ -346,6 +353,8 @@ grub_script_create (struct grub_script_cmd *cmd, struct grub_script_mem *mem)
   parsed->mem = mem;
   parsed->cmd = cmd;
   parsed->refcnt = 0;
+  parsed->siblings = 0;
+  parsed->children = 0;
 
   return parsed;
 }
@@ -394,6 +403,7 @@ grub_script_parse (char *script, grub_reader_getline_t getline)
 
   parsed->mem = grub_script_mem_record_stop (parsestate, membackup);
   parsed->cmd = parsestate->parsed;
+  parsed->children = parsestate->scripts;
 
   grub_script_lexer_fini (lexstate);
   grub_free (parsestate);
