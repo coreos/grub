@@ -40,9 +40,7 @@ grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
   context.extcmd = ext;
   context.script = script;
 
-  /* Dynamic commands should not perform option parsing before
-     corresponding module gets loaded.  */
-  if (cmd->flags & GRUB_COMMAND_FLAG_DYNCMD)
+  if (! ext->options)
     {
       ret = (ext->func) (&context, argc, args);
       return ret;
