@@ -1,3 +1,9 @@
+2010-07-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	* disk/raid.c (insert_array): Don't count named arrays when looking
+	for unused array numbers.
+	Reported and tested by: maru.
+
 2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
 
 	* bus/usb/emu/usb.c (grub_usb_poll_devices): Add a dummy

@@ -533,7 +533,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
       /* Check whether we don't have multiple arrays with the same number.  */
       for (p = array_list; p != NULL; p = p->next)
         {
-          if (p->number == array->number) 
+          if (! p->name && p->number == array->number) 
 	    break;
         }
 
@@ -546,7 +546,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 	    {
 	      for (p = array_list; p != NULL; p = p->next)
 		{
-		  if (p->number == i)
+		  if (! p->name && p->number == i)
 		    break;
 		}
 
