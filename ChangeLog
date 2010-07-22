@@ -2,7 +2,7 @@
 
 	* disk/raid.c (insert_array): Don't count named arrays when looking
 	for unused array numbers.
-	Reported and tested by: maru.
+	Reported and tested by: Michael Guntsche.
 
 2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
 
