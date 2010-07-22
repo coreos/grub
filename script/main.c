@@ -34,7 +34,7 @@ grub_normal_parse_line (char *line, grub_reader_getline_t getline)
       grub_script_execute (parsed_script);
 
       /* The parsed script was executed, throw it away.  */
-      grub_script_free (parsed_script);
+      grub_script_put (parsed_script);
     }
 
   return grub_errno;

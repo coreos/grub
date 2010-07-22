@@ -52,9 +52,12 @@ grub_script_argv_free (struct grub_script_argv *argv)
 
       grub_free (argv->args);
     }
+  if (argv->script)
+    grub_script_put (argv->script);
 
   argv->argc = 0;
   argv->args = 0;
+  argv->script = 0;
 }
 
 /* Prepare for next argc.  */

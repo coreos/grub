@@ -38,6 +38,7 @@
   struct {
     unsigned offset;
     struct grub_script_mem *memory;
+    struct grub_script *scripts;
   };
 }
 
@@ -149,16 +150,45 @@ argument : "case"      { $$ = grub_script_add_arglist (state, 0, $1); }
          | word { $$ = $1; }
 ;
 
+/*
+  Block parameter is passed to commands in two forms: as unparsed
+  string and as pre-parsed grub_script object.  Passing as grub_script
+  object makes memory management difficult, because:
+
+  (1) Command may want to keep a reference to grub_script objects for
+      later use, so script framework may not free the grub_script
+      object after command completes.
+
+  (2) Command may get called multiple times with same grub_script
+      object under loops, so we should not let command implementation
+      to free the grub_script object.
+
+  To solve above problems, we rely on reference counting for
+  grub_script objects.  Commands that want to keep the grub_script
+  object must take a reference to it.
+
+  Other complexity comes with arbitrary nesting of grub_script
+  objects: a grub_script object may have commands with several block
+  parameters, and each block parameter may further contain multiple
+  block parameters nested.  We use temporary variable, state->scripts
+  to collect nested child scripts (that are linked by siblings and
+  children members), and will build grub_scripts tree from bottom.
+ */
 block: "{"
        {
          grub_script_lexer_ref (state->lexerstate);
          $<offset>$ = grub_script_lexer_record_start (state);
 	 $<memory>$ = grub_script_mem_record (state);
+
+	 /* save currently known scripts.  */
+	 $<scripts>$ = state->scripts;
+	 state->scripts = 0;
        }
        commands1 delimiters0 "}"
        {
          char *p;
 	 struct grub_script_mem *memory;
+	 struct grub_script *s = $<scripts>2;
 
 	 memory = grub_script_mem_record_stop (state, $<memory>2);
          if ((p = grub_script_lexer_record_stop (state, $<offset>2)))
@@ -167,6 +197,19 @@ block: "{"
 	 $$ = grub_script_arg_add (state, 0, GRUB_SCRIPT_ARG_TYPE_BLOCK, p);
 	 if (! $$ || ! ($$->script = grub_script_create ($3, memory)))
 	   grub_script_mem_free (memory);
+
+	 else {
+	   /* attach nested scripts to $$->script as children */
+	   $$->script->children = state->scripts;
+
+	   /* restore old scripts; append $$->script to siblings. */
+	   state->scripts = $<scripts>2 ?: $$->script;
+	   if (s) {
+	     while (s->siblings)
+	       s = s->siblings;
+	     s->siblings = $$->script;
+	   }
+	 }
 
          grub_script_lexer_deref (state->lexerstate);
        }
@@ -240,10 +283,13 @@ commands1: newlines0 command
            }
 ;
 
-function: "function" "name" 
+function: "function" "name"
           {
             grub_script_lexer_ref (state->lexerstate);
             state->func_mem = grub_script_mem_record (state);
+
+	    $<scripts>$ = state->scripts;
+	    state->scripts = 0;
           }
           delimiters0 "{" commands1 delimiters1 "}"
           {
@@ -253,9 +299,12 @@ function: "function" "name"
             script = grub_script_create ($6, state->func_mem);
             if (! script)
 	      grub_script_mem_free (state->func_mem);
-	    else
+	    else {
+	      script->children = state->scripts;
 	      grub_script_function_create ($2, script);
+	    }
 
+	    state->scripts = $<scripts>3;
             grub_script_lexer_deref (state->lexerstate);
           }
 ;

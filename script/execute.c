@@ -201,7 +201,7 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 		  grub_script_argv_append (&result, arg->str) ||
 		  grub_script_argv_append (&result, "}"))
 		goto fail;
-	      result.script = arg->script;
+	      result.script = grub_script_get (arg->script);
 	      break;
 
 	    case GRUB_SCRIPT_ARG_TYPE_TEXT:
