@@ -54,7 +54,7 @@ static char *make_dir (const char *prefix, const char *start, const char *end);
 static int make_regex (const char *regex_start, const char *regex_end,
 		       regex_t *regexp);
 static void split_path (char *path, char **suffix_end, char **regex_end);
-static char ** match_devices (const regex_t *regexp);
+static char ** match_devices (const regex_t *regexp, int noparts);
 static char ** match_files (const char *prefix, const char *suffix_start,
 			    const char *suffix_end, const regex_t *regexp);
 static char ** match_paths_with_escaped_suffix (char **paths,
@@ -375,7 +375,7 @@ split_path (char *str, char **suffix_end, char **regex_end)
 }
 
 static char **
-match_devices (const regex_t *regexp)
+match_devices (const regex_t *regexp, int noparts)
 {
   int i;
   int ndev;
@@ -385,7 +385,13 @@ match_devices (const regex_t *regexp)
   int match (const char *name)
   {
     char **t;
-    char *buffer = grub_xasprintf ("(%s)", name);
+    char *buffer;
+
+    /* skip partitions if asked to. */
+    if (noparts && grub_strchr(name, ','))
+      return 0;
+
+    buffer = grub_xasprintf ("(%s)", name);
     if (! buffer)
       return 1;
 
@@ -530,7 +536,7 @@ match_paths_with_escaped_suffix (char **paths,
 				 const regex_t *regexp)
 {
   if (paths == 0 && suffix == end)
-    return match_devices (regexp);
+    return match_devices (regexp, *suffix != '(');
 
   else if (paths == 0 && suffix[0] == '(')
     return match_files ("", suffix, end, regexp);
