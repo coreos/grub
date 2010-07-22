@@ -54,9 +54,7 @@ grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
       return ret;
     }
 
-  if (state)
-    grub_free (state);
-
+  grub_free (state);
   return grub_errno;
 }
 
