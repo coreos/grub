@@ -104,8 +104,8 @@ grub_script_free (struct grub_script *script)
 
   s = script->children;
   while (s) {
-    grub_script_put (s);
     s = s->siblings;
+    grub_script_put (s);
   }
   grub_free (script);
 }
