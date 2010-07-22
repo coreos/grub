@@ -97,7 +97,7 @@ grub_script_free (struct grub_script *script)
   struct grub_script *s;
   struct grub_script *t;
 
-  if (!script)
+  if (! script)
     return;
 
   if (script->mem)

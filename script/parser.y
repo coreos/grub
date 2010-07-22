@@ -80,7 +80,7 @@
 %token <arg> GRUB_PARSER_TOKEN_WORD      "word"
 
 %type <arg> block block0
-%type <arglist> word argument parameters0 parameters1 arguments0 arguments1
+%type <arglist> word argument arguments0 arguments1
 
 %type <cmd> script_init script
 %type <cmd> grubcmd ifclause ifcmd forcmd whilecmd untilcmd
@@ -233,22 +233,7 @@ arguments1: argument arguments0
             }
 ;
 
-parameters1: argument parameters0
-             {
-               if ($1 && $2)
-                 {
-                   $1->next = $2;
-                   $1->argcount += $2->argcount;
-                   $2->argcount = 0;
-                 }
-               $$ = $1;
-             }
-;
-parameters0: /* Empty */ { $$ = 0; }
-           | parameters1 { $$ = $1; }
-;
-
-grubcmd: word parameters0 block0
+grubcmd: word arguments0 block0
          {
 	   struct grub_script_arglist *x = $2;
 
