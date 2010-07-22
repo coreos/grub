@@ -30,9 +30,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <time.h>
-#ifdef HAVE_LIMITS_H
-#include <limits.h>
-#endif
 
 #include <grub/kernel.h>
 #include <grub/dl.h>

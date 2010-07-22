@@ -346,6 +346,7 @@ grub_efi_mm_init (void)
   grub_efi_uintn_t desc_size;
   grub_efi_uint64_t total_pages;
   grub_efi_uint64_t required_pages;
+  int mm_status;
 
   /* First of all, allocate pages to maintain allocations.  */
   allocated_pages
@@ -361,15 +362,31 @@ grub_efi_mm_init (void)
   if (! memory_map)
     grub_fatal ("cannot allocate memory");
 
-  filtered_memory_map = NEXT_MEMORY_DESCRIPTOR (memory_map, MEMORY_MAP_SIZE);
-
   /* Obtain descriptors for available memory.  */
   map_size = MEMORY_MAP_SIZE;
 
-  if (grub_efi_get_memory_map (&map_size, memory_map, 0, &desc_size, 0) < 0)
+  mm_status = grub_efi_get_memory_map (&map_size, memory_map, 0, &desc_size, 0);
+
+  if (mm_status == 0)
+    {
+      grub_efi_free_pages
+	((grub_efi_physical_address_t) ((grub_addr_t) memory_map),
+	 2 * BYTES_TO_PAGES (MEMORY_MAP_SIZE));
+
+      memory_map = grub_efi_allocate_pages (0, 2 * BYTES_TO_PAGES (map_size));
+      if (! memory_map)
+	grub_fatal ("cannot allocate memory");
+
+      mm_status = grub_efi_get_memory_map (&map_size, memory_map, 0,
+					   &desc_size, 0);
+    }
+
+  if (mm_status < 0)
     grub_fatal ("cannot get memory map");
 
   memory_map_end = NEXT_MEMORY_DESCRIPTOR (memory_map, map_size);
+
+  filtered_memory_map = memory_map_end;
 
   filtered_memory_map_end = filter_memory_map (memory_map, filtered_memory_map,
 					       desc_size, memory_map_end);

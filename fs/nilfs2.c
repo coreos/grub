@@ -49,6 +49,13 @@
 #define NILFS_BTREE_LEVEL_NODE_MIN      (NILFS_BTREE_LEVEL_DATA + 1)
 #define NILFS_BTREE_LEVEL_MAX           14
 
+/* nilfs 1st super block posission from beginning of the partition
+   in 512 block size */
+#define NILFS_1ST_SUPER_BLOCK	2
+/* nilfs 2nd super block posission from beginning of the partition
+   in 512 block size */
+#define NILFS_2ND_SUPER_BLOCK(devsize)	(((devsize >> 3) - 1) << 3)
+
 struct grub_nilfs2_inode
 {
   grub_uint64_t i_blocks;
@@ -703,6 +710,52 @@ grub_nilfs2_valid_sb (struct grub_nilfs2_super_block *sbp)
   return 1;
 }
 
+static grub_err_t
+grub_nilfs2_load_sb (struct grub_nilfs2_data *data)
+{
+  grub_disk_t disk = data->disk;
+  struct grub_nilfs2_super_block sb2;
+  grub_uint64_t partition_size;
+  int valid[2];
+  int swp = 0;
+
+  /* Read first super block. */
+  grub_disk_read (disk, NILFS_1ST_SUPER_BLOCK, 0,
+		  sizeof (struct grub_nilfs2_super_block), &data->sblock);
+  /* Make sure if 1st super block is valid.  */
+  valid[0] = grub_nilfs2_valid_sb (&data->sblock);
+
+  partition_size = grub_disk_get_size (disk);
+  if (partition_size != GRUB_DISK_SIZE_UNKNOWN)
+    {
+      /* Read second super block. */
+      grub_disk_read (disk, NILFS_2ND_SUPER_BLOCK (partition_size), 0,
+		      sizeof (struct grub_nilfs2_super_block), &sb2);
+      /* Make sure if 2nd super block is valid.  */
+      valid[1] = grub_nilfs2_valid_sb (&sb2);
+    }
+  else
+    /* 2nd super block may not exist, so it's invalid. */
+    valid[1] = 0;
+
+
+
+  if (!valid[0] && !valid[1])
+    return grub_error (GRUB_ERR_BAD_FS, "not a nilfs2 filesystem");
+
+  swp = valid[1] && (!valid[0] ||
+		     grub_le_to_cpu64 (data->sblock.s_last_cno) <
+		     grub_le_to_cpu64 (sb2.s_last_cno));
+
+  /* swap if first super block is invalid or older than second one. */
+  if (swp)
+    grub_memcpy (&data->sblock, &sb2,
+		 sizeof (struct grub_nilfs2_super_block));
+
+  grub_errno = GRUB_ERR_NONE;
+  return grub_errno;
+}
+
 static struct grub_nilfs2_data *
 grub_nilfs2_mount (grub_disk_t disk)
 {
@@ -717,18 +770,12 @@ grub_nilfs2_mount (grub_disk_t disk)
   if (!data)
     return 0;
 
+  data->disk = disk;
+
   /* Read the superblock.  */
-  grub_disk_read (disk, 1 * 2, 0, sizeof (struct grub_nilfs2_super_block),
-		  &data->sblock);
+  grub_nilfs2_load_sb (data);
   if (grub_errno)
     goto fail;
-
-  /* Make sure this is an nilfs2 filesystem.  */
-  if (!grub_nilfs2_valid_sb (&data->sblock))
-    {
-      grub_error (GRUB_ERR_BAD_FS, "not a nilfs2 filesystem");
-      goto fail;
-    }
 
   nilfs2_block_count = (1 << LOG2_NILFS2_BLOCK_SIZE (data));
 
@@ -747,8 +794,6 @@ grub_nilfs2_mount (grub_disk_t disk)
 
   if (grub_errno)
     goto fail;
-
-  data->disk = disk;
 
   grub_nilfs2_read_last_checkpoint (data, &last_checkpoint);
 

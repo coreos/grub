@@ -1,7 +1,7 @@
 /* getroot.c - Get root device */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,6 +33,12 @@
 #include <hurd.h>
 #include <hurd/lookup.h>
 #include <hurd/fs.h>
+#include <sys/mman.h>
+#endif
+
+#ifdef __linux__
+# include <sys/types.h>
+# include <sys/wait.h>
 #endif
 
 #include <grub/mm.h>
@@ -80,6 +86,86 @@ xgetcwd (void)
   return path;
 }
 
+#ifdef __linux__
+
+/* Statting something on a btrfs filesystem always returns a virtual device
+   major/minor pair rather than the real underlying device, because btrfs
+   can span multiple underlying devices (and even if it's currently only
+   using a single device it can be dynamically extended onto another).  We
+   can't deal with the multiple-device case yet, but in the meantime, we can
+   at least cope with the single-device case by scanning
+   /proc/self/mountinfo.  */
+static char *
+find_root_device_from_mountinfo (const char *dir)
+{
+  FILE *fp;
+  char *buf = NULL;
+  size_t len = 0;
+  char *ret = NULL;
+
+  fp = fopen ("/proc/self/mountinfo", "r");
+  if (! fp)
+    return NULL; /* fall through to other methods */
+
+  while (getline (&buf, &len, fp) > 0)
+    {
+      int mnt_id, parent_mnt_id;
+      unsigned int major, minor;
+      char enc_root[PATH_MAX], enc_path[PATH_MAX];
+      int count;
+      size_t enc_path_len;
+      const char *sep;
+      char fstype[PATH_MAX], device[PATH_MAX];
+      struct stat st;
+
+      if (sscanf (buf, "%d %d %u:%u %s %s%n",
+		  &mnt_id, &parent_mnt_id, &major, &minor, enc_root, enc_path,
+		  &count) < 6)
+	continue;
+
+      if (strcmp (enc_root, "/") != 0)
+	continue; /* only a subtree is mounted */
+
+      enc_path_len = strlen (enc_path);
+      if (strncmp (dir, enc_path, enc_path_len) != 0 ||
+	  (dir[enc_path_len] && dir[enc_path_len] != '/'))
+	continue;
+
+      /* This is a parent of the requested directory.  /proc/self/mountinfo
+	 is in mount order, so it must be the closest parent we've
+	 encountered so far.  If it's virtual, return its device node;
+	 otherwise, carry on to try to find something closer.  */
+
+      free (ret);
+      ret = NULL;
+
+      if (major != 0)
+	continue; /* not a virtual device */
+
+      sep = strstr (buf + count, " - ");
+      if (!sep)
+	continue;
+
+      sep += sizeof (" - ") - 1;
+      if (sscanf (sep, "%s %s", fstype, device) != 2)
+	continue;
+
+      if (stat (device, &st) < 0)
+	continue;
+
+      if (!S_ISBLK (st.st_mode))
+	continue; /* not a block device */
+
+      ret = strdup (device);
+    }
+
+  free (buf);
+  fclose (fp);
+  return ret;
+}
+
+#endif /* __linux__ */
+
 #ifdef __MINGW32__
 
 static char *
@@ -126,9 +212,20 @@ find_root_device (const char *dir, dev_t dev)
 	/* Ignore any error.  */
 	continue;
 
-      if (S_ISLNK (st.st_mode))
-	/* Don't follow symbolic links.  */
+      if (S_ISLNK (st.st_mode)) {
+#ifdef __linux__
+	if (strcmp (dir, "mapper") == 0) {
+	  /* Follow symbolic links under /dev/mapper/; the canonical name
+	     may be something like /dev/dm-0, but the names under
+	     /dev/mapper/ are more human-readable and so we prefer them if
+	     we can get them.  */
+	  if (stat (ent->d_name, &st) < 0)
+	    continue;
+	} else
+#endif /* __linux__ */
+	/* Don't follow other symbolic links.  */
 	continue;
+      }
 
       if (S_ISDIR (st.st_mode))
 	{
@@ -355,6 +452,12 @@ grub_guess_root_device (const char *dir)
 #else /* !__GNU__ */
   struct stat st;
 
+#ifdef __linux__
+  os_dev = find_root_device_from_mountinfo (dir);
+  if (os_dev)
+    return os_dev;
+#endif /* __linux__ */
+
   if (stat (dir, &st) < 0)
     grub_util_error ("cannot stat `%s'", dir);
 
@@ -418,10 +521,89 @@ grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
   return GRUB_DEV_ABSTRACTION_NONE;
 }
 
+#ifdef __linux__
+static char *
+get_mdadm_name (const char *os_dev)
+{
+  int mdadm_pipe[2];
+  pid_t mdadm_pid;
+  char *name = NULL;
+
+  if (pipe (mdadm_pipe) < 0)
+    {
+      grub_util_warn ("Unable to create pipe for mdadm: %s", strerror (errno));
+      return NULL;
+    }
+
+  mdadm_pid = fork ();
+  if (mdadm_pid < 0)
+    grub_util_warn ("Unable to fork mdadm: %s", strerror (errno));
+  else if (mdadm_pid == 0)
+    {
+      /* Child.  */
+      char *argv[5];
+
+      close (mdadm_pipe[0]);
+      dup2 (mdadm_pipe[1], STDOUT_FILENO);
+      close (mdadm_pipe[1]);
+
+      /* execvp has inconvenient types, hence the casts.  None of these
+         strings will actually be modified.  */
+      argv[0] = (char *) "mdadm";
+      argv[1] = (char *) "--detail";
+      argv[2] = (char *) "--export";
+      argv[3] = (char *) os_dev;
+      argv[4] = NULL;
+      execvp ("mdadm", argv);
+      exit (127);
+    }
+  else
+    {
+      /* Parent.  Read mdadm's output.  */
+      FILE *mdadm;
+      char *buf = NULL;
+      size_t len = 0;
+
+      close (mdadm_pipe[1]);
+      mdadm = fdopen (mdadm_pipe[0], "r");
+      if (! mdadm)
+	{
+	  grub_util_warn ("Unable to open stream from mdadm: %s",
+			  strerror (errno));
+	  goto out;
+	}
+
+      while (getline (&buf, &len, mdadm) > 0)
+	{
+	  if (strncmp (buf, "MD_NAME=", sizeof ("MD_NAME=") - 1) == 0)
+	    {
+	      char *name_start, *colon;
+	      size_t name_len;
+
+	      free (name);
+	      name_start = buf + sizeof ("MD_NAME=") - 1;
+	      /* Strip off the homehost if present.  */
+	      colon = strchr (name_start, ':');
+	      name = strdup (colon ? colon + 1 : name_start);
+	      name_len = strlen (name);
+	      if (name[name_len - 1] == '\n')
+		name[name_len - 1] = '\0';
+	    }
+	}
+
+out:
+      close (mdadm_pipe[0]);
+      waitpid (mdadm_pid, NULL, 0);
+    }
+
+  return name;
+}
+#endif /* __linux__ */
+
 char *
 grub_util_get_grub_dev (const char *os_dev)
 {
-  char *grub_dev;
+  char *grub_dev = NULL;
 
   switch (grub_util_get_dev_abstraction (os_dev))
     {
@@ -502,8 +684,35 @@ grub_util_get_grub_dev (const char *os_dev)
 	  grub_dev = xasprintf ("md%s", p);
 	  free (p);
 	}
+      else if (os_dev[7] == '/')
+	{
+	  /* mdraid 1.x with a free name.  */
+	  char *p , *q;
+
+	  p = strdup (os_dev + sizeof ("/dev/md/") - 1);
+
+	  q = strchr (p, 'p');
+	  if (q)
+	    *q = ',';
+
+	  grub_dev = xasprintf ("md/%s", p);
+	  free (p);
+	}
       else
 	grub_util_error ("unknown kind of RAID device `%s'", os_dev);
+
+#ifdef __linux__
+      {
+	char *mdadm_name = get_mdadm_name (os_dev);
+
+	if (mdadm_name)
+	  {
+	    free (grub_dev);
+	    grub_dev = xasprintf ("md/%s", mdadm_name);
+	    free (mdadm_name);
+	  }
+      }
+#endif /* __linux__ */
 
       break;
 

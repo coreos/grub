@@ -37,14 +37,14 @@ grub_normal_print_device_info (const char *name)
   p = grub_strchr (name, ',');
   if (p)
     {
-      grub_putchar ('\t');
+      grub_xputs ("\t");
       grub_printf_ (N_("Partition %s:"), name);
-      grub_putchar (' ');
+      grub_xputs (" ");
     }
   else
     {
       grub_printf_ (N_("Device %s:"), name);
-      grub_putchar (' ');
+      grub_xputs (" ");
     }
 
   dev = grub_device_open (name);
@@ -69,7 +69,7 @@ grub_normal_print_device_info (const char *name)
 		{
 		  if (label && grub_strlen (label))
 		    {
-		      grub_putchar (' ');
+		      grub_xputs (" ");
 		      grub_printf_ (N_("- Label \"%s\""), label);
 		    }
 		  grub_free (label);
@@ -84,7 +84,7 @@ grub_normal_print_device_info (const char *name)
 	      if (grub_errno == GRUB_ERR_NONE)
 		{
 		  grub_unixtime2datetime (tm, &datetime);
-		  grub_putchar (' ');
+		  grub_xputs (" ");
 		  grub_printf_ (N_("- Last modification time %d-%02d-%02d "
 			       "%02d:%02d:%02d %s"),
 			       datetime.year, datetime.month, datetime.day,
@@ -115,6 +115,6 @@ grub_normal_print_device_info (const char *name)
       grub_device_close (dev);
     }
 
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   return grub_errno;
 }

@@ -200,6 +200,9 @@ grub_video_sdl_set_active_render_target (struct grub_video_render_target *target
 static struct grub_video_adapter grub_video_sdl_adapter =
   {
     .name = "SDL Video Driver",
+    .id = GRUB_VIDEO_DRIVER_SDL,
+
+    .prio = GRUB_VIDEO_ADAPTER_PRIO_FIRMWARE,
 
     .init = grub_video_sdl_init,
     .fini = grub_video_sdl_fini,

@@ -1,4 +1,4 @@
-#! /bin/bash -e
+#! /bin/sh -e
 
 # Run GRUB script in a Qemu instance
 # Copyright (C) 2009,2010  Free Software Foundation, Inc.
@@ -94,8 +94,8 @@ done
 
 if [ "x${source}" = x ] ; then
     tmpfile=`mktemp`
-    while read; do
-	echo "$REPLY" >> ${tmpfile}
+    while read REPLY; do
+	echo $REPLY >> ${tmpfile}
     done
     source=${tmpfile}
 fi
