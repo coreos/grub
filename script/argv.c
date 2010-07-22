@@ -20,6 +20,7 @@
 #include <grub/mm.h>
 #include <grub/script_sh.h>
 
+/* Return nearest power of two that is >= v.  */
 static unsigned
 round_up_exp (unsigned v)
 {
