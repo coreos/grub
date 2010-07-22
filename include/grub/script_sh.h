@@ -350,6 +350,7 @@ grub_script_function_t grub_script_function_create (struct grub_script_arg *func
 						    struct grub_script *cmd);
 void grub_script_function_remove (const char *name);
 grub_script_function_t grub_script_function_find (char *functionname);
+
 grub_err_t grub_script_function_call (grub_script_function_t func,
 				      int argc, char **args);
 
