@@ -303,6 +303,7 @@ grub_err_t grub_script_execute_cmdwhile (struct grub_script_cmd *cmd);
 
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t grub_script_execute (struct grub_script *script);
+grub_err_t grub_script_execute_sourcecode (const char *source, int argc, char **args);
 
 /* This variable points to the parsed command.  This is used to
    communicate with the bison code.  */

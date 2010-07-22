@@ -95,6 +95,7 @@ void
 grub_script_free (struct grub_script *script)
 {
   struct grub_script *s;
+  struct grub_script *t;
 
   if (!script)
     return;
@@ -104,8 +105,9 @@ grub_script_free (struct grub_script *script)
 
   s = script->children;
   while (s) {
-    s = s->siblings;
+    t = s->siblings;
     grub_script_put (s);
+    s = t;
   }
   grub_free (script);
 }

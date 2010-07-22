@@ -51,12 +51,13 @@ static struct
    variable data slot `menu').  As the configuration file is read, the script
    parser calls this when a menu entry is to be created.  */
 static grub_err_t
-add_menu_entry (int argc, const char **args, char **classes,
-		const char *users, const char *hotkey,
-		const char *sourcecode)
+append_menu_entry (int argc, const char **args, char **classes,
+		   const char *users, const char *hotkey,
+		   const char *sourcecode)
 {
   unsigned i;
   int menu_hotkey = 0;
+  char **menu_args = NULL;
   char *menu_users = NULL;
   char *menu_title = NULL;
   char *menu_sourcecode = NULL;
@@ -120,7 +121,18 @@ add_menu_entry (int argc, const char **args, char **classes,
   if (! menu_title)
     goto fail;
 
-  /* XXX: pass args[1..end] as parameters to block arg. */
+  /* Save argc, args to pass as parameters to block arg later. */
+  menu_args = grub_malloc (sizeof (char*) * (argc + 1));
+  if (! menu_args)
+    goto fail;
+
+  for (i = 0; args[i]; i++)
+    {
+      menu_args[i] = grub_strdup (args[i]);
+      if (! menu_args[i])
+	goto fail;
+    }
+  menu_args[argc] = NULL;
 
   /* Add the menu entry at the end of the list.  */
   while (*last)
@@ -136,6 +148,8 @@ add_menu_entry (int argc, const char **args, char **classes,
   if (menu_users)
     (*last)->restricted = 1;
   (*last)->users = menu_users;
+  (*last)->argc = argc;
+  (*last)->args = menu_args;
   (*last)->sourcecode = menu_sourcecode;
 
   menu->size++;
@@ -147,6 +161,11 @@ add_menu_entry (int argc, const char **args, char **classes,
   for (i = 0; menu_classes && menu_classes[i].name; i++)
     grub_free (menu_classes[i].name);
   grub_free (menu_classes);
+
+  for (i = 0; menu_args && menu_args[i]; i++)
+    grub_free (menu_args[i]);
+  grub_free (menu_args);
+
   grub_free (menu_users);
   grub_free (menu_title);
   return grub_errno;
@@ -170,9 +189,9 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
   ch = src[len - 1];
   src[len - 1] = '\0';
 
-  r = add_menu_entry (argc - 1, (const char **) args,
-		      ctxt->state[0].args, ctxt->state[1].arg,
-		      ctxt->state[2].arg, src + 1);
+  r = append_menu_entry (argc - 1, (const char **) args,
+			 ctxt->state[0].args, ctxt->state[1].arg,
+			 ctxt->state[2].arg, src + 1);
 
   src[len - 1] = ch;
   args[argc - 1] = src;
