@@ -1,3 +1,14 @@
+2010-07-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/ieee1275/grub-install.in: Don't use empty grub_device.
+	Reported by: Lennart Sorensen.
+
+2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/00_header.in: Remove compatibility with terminal.mod
+	prior to terminal_input/terminal_output separation. It's been over 1.5
+	years and those versions weren't widely deployed.
+
 2010-07-22  Colin Watson  <cjwatson@ubuntu.com>
 
 	* disk/raid.c (insert_array): Don't count named arrays when looking
@@ -28,12 +39,6 @@
 	* term/efi/console.c (grub_efi_console_init): New function.
 	(grub_efi_console_fini): New function.
 	(grub_console_term_output): Register init and fini methods.
-
-2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
-
-	* util/grub.d/00_header.in: Remove compatibility with terminal.mod
-	prior to terminal_input/terminal_output separation. It's been over 1.5
-	years and those versions weren't widely deployed.
 
 2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
