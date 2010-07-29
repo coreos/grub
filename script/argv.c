@@ -114,7 +114,6 @@ grub_script_argv_append (struct grub_script_argv *argv, const char *s)
 {
   int a;
   int b;
-  char ch;
   char *p = argv->args[argv->argc - 1];
 
   if (! s)
