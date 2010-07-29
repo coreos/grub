@@ -140,7 +140,7 @@ tftp_receive (struct grub_net_network_layer_interface *inf __attribute((unused))
       }
        
       //buff_clean
-      nb->data = nb->tail;
+      grub_netbuff_clear(nb); 
     //  grub_printf("OACK---------------------------------------------------------\n");
       //grub_printf("block_size=%d\n",tftp_file.block_size);
      // grub_printf("file_size=%d\n",tftp_file.size);
@@ -155,7 +155,8 @@ tftp_receive (struct grub_net_network_layer_interface *inf __attribute((unused))
         grub_netbuff_clear(nb); 
     break; 
     case TFTP_ERROR:
-      nb->data = nb->tail;
+      grub_netbuff_clear (nb);
+      return grub_error (GRUB_ERR_ACCESS_DENIED, (char *)tftph->u.err.errmsg);
     break;
   }
   
