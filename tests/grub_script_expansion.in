@@ -17,19 +17,26 @@
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
 disks=`echo ls | @builddir@/grub-shell`
-other=`echo echo \\* | @builddir@/grub-shell`
+other=`echo echo \* | @builddir@/grub-shell`
 for d in $disks; do
-  if ! echo "$other" | grep "$d" >/dev/null; then
-    echo "$d missing from * expansion" >&2
-    exit 1
-  fi
+    if echo "$d" |grep ',' >/dev/null; then
+	if echo "$other" | grep "$d" >/dev/null; then
+	    echo "$d should not occur in * expansion" >&2
+	    exit 1
+	fi
+    else
+	if ! echo "$other" | grep "$d" >/dev/null; then
+	    echo "$d missing from * expansion" >&2
+	    exit 1
+	fi
+    fi
 done
 
 other=`echo echo '(*)' | @builddir@/grub-shell`
 for d in $disks; do
-  if ! echo "$other" | grep "$d" >/dev/null; then
-    echo "$d missing from (*) expansion" >&2
-    exit 1
-  fi
+    if ! echo "$other" | grep "$d" >/dev/null; then
+	echo "$d missing from (*) expansion" >&2
+	exit 1
+    fi
 done
 
