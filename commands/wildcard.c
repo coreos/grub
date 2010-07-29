@@ -277,7 +277,7 @@ match_files (const char *prefix, const char *suffix, const char *end,
     char *buffer;
 
     /* skip hidden files, . and .. */
-    if (name[0] == '.')
+    if (grub_strcmp(".", name) == 0 || grub_strcmp("..", name) == 0)
       return 0;
 
     grub_dprintf ("expand", "matching: %s in %s\n", name, dir);
