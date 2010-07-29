@@ -23,7 +23,6 @@
 #include <grub/file.h>
 #include <grub/device.h>
 #include <grub/script_sh.h>
-#include <grub/wildcard.h>
 
 #include <regex.h>
 
@@ -63,12 +62,12 @@ static char* wildcard_escape (const char *s);
 static char* wildcard_unescape (const char *s);
 static grub_err_t wildcard_expand (const char *s, char ***strs);
 
-static struct grub_wildcard_translator foo = {
+static struct grub_script_wildcard_translator translator = {
   .expand = wildcard_expand,
   .escape = wildcard_escape,
   .unescape = wildcard_unescape
 };
-
+struct grub_script_wildcard_translator *wildcard_translator = &translator;
 
 void
 grub_script_argv_free (struct grub_script_argv *argv)
@@ -109,14 +108,9 @@ grub_script_argv_next (struct grub_script_argv *argv)
   return 0;
 }
 
-enum append_type {
-  APPEND_RAW,
-  APPEND_ESCAPED,
-  APPEND_UNESCAPED
-};
-
-static int
-append (struct grub_script_argv *argv, const char *s)
+/* Append `s' to the last argument.  */
+int
+grub_script_argv_append (struct grub_script_argv *argv, const char *s)
 {
   int a;
   int b;
@@ -137,44 +131,6 @@ append (struct grub_script_argv *argv, const char *s)
   argv->args[argv->argc - 1] = p;
 
   return 0;
-}
-
-
-/* Append `s' to the last argument.  */
-int
-grub_script_argv_append (struct grub_script_argv *argv, const char *s)
-{
-  return append (argv, s);
-}
-
-/* Append `s' to the last argument, but escape any shell regex ops.  */
-int
-grub_script_argv_append_escaped (struct grub_script_argv *argv, const char *s)
-{
-  int r;
-  char *p = wildcard_escape (s);
-
-  if (! p)
-    return 1;
-
-  r = append (argv, p);
-  grub_free (p);
-  return r;
-}
-
-/* Append `s' to the last argument, but unescape any escaped shell regex ops.  */
-int
-grub_script_argv_append_unescaped (struct grub_script_argv *argv, const char *s)
-{
-  int r;
-  char *p = wildcard_unescape (s);
-
-  if (! p)
-    return 1;
-
-  r = append (argv, p);
-  grub_free (p);
-  return r;
 }
 
 /* Split `s' and append words as multiple arguments.  */
@@ -206,49 +162,6 @@ grub_script_argv_split_append (struct grub_script_argv *argv, char *s)
 	errors += grub_script_argv_next (argv);
     }
   return errors;
-}
-
-/* Expand `argv' as per shell expansion rules.  */
-int
-grub_script_argv_expand (struct grub_script_argv *argv)
-{
-  int i;
-  int j;
-  char *p;
-  char **expansions;
-  struct grub_script_argv result = { 0, 0 };
-
-  for (i = 0; argv->args[i]; i++)
-    {
-      expansions = 0;
-      if (wildcard_expand (argv->args[i], &expansions))
-	goto fail;
-
-      if (! expansions)
-	{
-	  grub_script_argv_next (&result);
-	  grub_script_argv_append_unescaped (&result, argv->args[i]);
-	}
-      else
-	{
-	  for (j = 0; expansions[j]; j++)
-	    {
-	      grub_script_argv_next (&result);
-	      grub_script_argv_append (&result, expansions[j]);
-	      grub_free (expansions[j]);
-	    }
-	  grub_free (expansions);
-	}
-    }
-
-  grub_script_argv_free (argv);
-  *argv = result;
-  return 0;
-
- fail:
-
-  grub_script_argv_free (&result);
-  return 1;
 }
 
 static char **

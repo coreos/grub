@@ -70,6 +70,15 @@ struct grub_script_argv
   char **args;
 };
 
+/* Pluggable wildcard translator.  */
+struct grub_script_wildcard_translator
+{
+  char *(*escape) (const char *str);
+  char *(*unescape) (const char *str);
+  grub_err_t (*expand) (const char *str, char ***expansions);
+};
+extern struct grub_script_wildcard_translator *wildcard_translator;
+
 /* A complete argument.  It consists of a list of one or more `struct
    grub_script_arg's.  */
 struct grub_script_arglist
@@ -225,12 +234,7 @@ struct grub_parser_param
 void grub_script_argv_free    (struct grub_script_argv *argv);
 int grub_script_argv_next     (struct grub_script_argv *argv);
 int grub_script_argv_append   (struct grub_script_argv *argv, const char *s);
-int grub_script_argv_append_escaped (struct grub_script_argv *argv,
-				     const char *s);
-int grub_script_argv_append_unescaped (struct grub_script_argv *argv,
-				       const char *s);
 int grub_script_argv_split_append (struct grub_script_argv *argv, char *s);
-int grub_script_argv_expand   (struct grub_script_argv *argv);
 
 struct grub_script_arglist *
 grub_script_create_arglist (struct grub_parser_param *state);

@@ -161,7 +161,7 @@ grub_script_env_set (const char *name, const char *val)
   return grub_env_set (name, val);
 }
 
-/* Expand arguments in ARGLIST into multiple arguments.  */
+/* Convert arguments in ARGLIST into ARGV form.  */
 static int
 grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 			     struct grub_script_argv *argv)
@@ -170,6 +170,28 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
   char **values = 0;
   struct grub_script_arg *arg = 0;
   struct grub_script_argv result = { 0, 0 };
+
+  auto int append (char *s, int escape_type);
+  int append (char *s, int escape_type)
+  {
+    int r;
+    char *p = 0;
+
+    if (! wildcard_translator || escape_type == 0)
+      return grub_script_argv_append (&result, s);
+
+    if (escape_type > 0)
+      p = wildcard_translator->escape (s);
+    else if (escape_type < 0)
+      p = wildcard_translator->unescape (s);
+
+    if (! p)
+      return 1;
+
+    r = grub_script_argv_append (&result, p);
+    grub_free (p);
+    return r;
+  }
 
   for (; arglist && arglist->arg; arglist = arglist->next)
     {
@@ -196,7 +218,7 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 		    }
 		  else
 		    {
-		      if (grub_script_argv_append_escaped (&result, values[i]))
+		      if (append (values[i], 1))
 			goto fail;
 		    }
 
@@ -224,8 +246,49 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
   if (! result.args[result.argc - 1])
     result.argc--;
 
-  if (grub_script_argv_expand (&result))
-    goto fail;
+  /* Perform wildcard expansion.  */
+
+  if (wildcard_translator)
+    {
+      int j;
+      int failed = 0;
+      char **expansions = 0;
+      struct grub_script_argv unexpanded = result;
+
+      result.argc = 0;
+      result.args = 0;
+      for (i = 0; unexpanded.args[i]; i++)
+	{
+	  if (wildcard_translator->expand (unexpanded.args[i], &expansions))
+	    {
+	      grub_script_argv_free (&unexpanded);
+	      goto fail;
+	    }
+
+	  if (! expansions)
+	    {
+	      grub_script_argv_next (&result);
+	      append (unexpanded.args[i], -1);
+	    }
+	  else
+	    {
+	      for (j = 0; expansions[j]; j++)
+		{
+		  failed = (failed || grub_script_argv_next (&result) ||
+			    append (expansions[j], -1));
+		  grub_free (expansions[j]);
+		}
+	      grub_free (expansions);
+
+	      if (failed)
+		{
+		  grub_script_argv_free (&unexpanded);
+		  goto fail;
+		}
+	    }
+	}
+      grub_script_argv_free (&unexpanded);
+    }
 
   *argv = result;
   return 0;
