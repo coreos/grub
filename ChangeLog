@@ -1,5 +1,11 @@
 2010-07-29  Robert Millan  <rmh@gnu.org>
 
+	* util/grub-probe.c (PRINT_FS_LABEL): New enum value.
+	(probe): Handle `PRINT_FS_LABEL'.
+	(main): Handle `-t fs_label'.
+
+2010-07-29  Robert Millan  <rmh@gnu.org>
+
 	* configure.ac: Remove grub-mkisofs checks.
 
 2010-07-28  Vladimir Serbinenko  <phcoder@gmail.com>
