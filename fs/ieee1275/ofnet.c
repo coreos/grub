@@ -141,6 +141,7 @@ grub_ofnet_open (const char *name, grub_disk_t disk)
   grub_uint32_t server_ip = 0;
 
   if (grub_strcmp (name, "net"))
+
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a net disk");
 
   p1 = find_sep(disk->name);
@@ -258,7 +259,7 @@ grub_ofnetfs_dir (grub_device_t device ,
                 int (*hook) (const char *filename,
                   const struct grub_dirhook_info *info) __attribute((unused)))
 {
-  if(grub_strcmp (device->disk->name,"net"))
+  if(grub_strncmp (device->disk->name,"net",3))
   {
      return grub_error (GRUB_ERR_BAD_FS, "not an net filesystem");
   }
@@ -287,9 +288,10 @@ grub_ofnetfs_open (struct grub_file *file , const char *name )
 {
   //void *buffer;
   //grub_addr_t addr;
+
   if (name[0] == '/')
     name++; 
-  if(grub_strcmp (file->device->disk->name,"net"))
+  if(grub_strncmp (file->device->disk->name,"net",3))
   {
     
     return 1;
@@ -311,15 +313,17 @@ grub_ofnetfs_open (struct grub_file *file , const char *name )
   file_size = app_interface->app_prot->get_file_size(NULL,stack,pack,(char *) name);
 
   for (found_addr = 0x800000; found_addr <  + 2000 * 0x100000; found_addr += 0x100000)
-    {
-      if (grub_claimmap (found_addr , file_size) != -1)
-	break;
-    }
+  {
+    if (grub_claimmap (found_addr , file_size) != -1)
+      break;
+  }
   file->data = (void *) found_addr;
 
   grub_netbuff_clear(pack); 
   grub_netbuff_reserve (pack,80*1024);
   app_interface->app_prot->open (NULL,stack,pack,(char *) name);
+  if (grub_errno != GRUB_ERR_NONE)
+    goto error;
   
   do 
   {  
@@ -401,7 +405,7 @@ grub_ofnet_detect (void)
   }
   devalias = grub_ieee1275_get_aliasdevname (bootpath);
   
-  if (grub_strcmp(devalias ,"network"))
+  if (grub_strncmp(devalias ,"net",3))
     return 0;
   
   grub_net = grub_malloc (sizeof *grub_net );
@@ -455,8 +459,8 @@ grub_ofnet_init(void)
     grub_get_netinfo (grub_net, bootp_pckt );
     grub_disk_dev_register (&grub_ofnet_dev);
     grub_fs_register (&grub_ofnetfs_fs);
+    card_open ();  
   }  
-  card_open ();  
 }
 void
 grub_ofnet_fini(void)
