@@ -22,6 +22,7 @@
 #include <grub/mm.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/script_sh.h>
 #include <regex.h>
 
 static grub_err_t
@@ -69,9 +70,14 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(regexp)
 {
+  extern struct grub_script_wildcard_translator translator;
+
   cmd = grub_register_command ("regexp", grub_cmd_regexp,
 			       N_("REGEXP STRING"),
 			       N_("Test if REGEXP matches STRING."));
+
+  /* Setup GRUB script wildcard translator.  */
+  wildcard_translator = &translator;
 }
 
 GRUB_MOD_FINI(regexp)

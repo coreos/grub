@@ -638,7 +638,7 @@ normal_mod_SOURCES = normal/main.c normal/cmdline.c normal/dyncmd.c \
 	normal/misc.c normal/crypto.c normal/term.c normal/context.c \
 	script/main.c script/script.c script/execute.c script/argv.c unidata.c \
 	script/function.c script/lexer.c grub_script.tab.c grub_script.yy.c
-normal_mod_CFLAGS = $(COMMON_CFLAGS) $(POSIX_CFLAGS) $(GNULIB_CFLAGS) -Wno-error
+normal_mod_CFLAGS = $(COMMON_CFLAGS) $(POSIX_CFLAGS) -Wno-error
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 ifneq (, $(FONT_SOURCE))
@@ -764,7 +764,7 @@ setjmp_mod_ASFLAGS = $(COMMON_ASFLAGS)
 setjmp_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += regexp.mod
-regexp_mod_SOURCES = gnulib/regex.c commands/regexp.c
+regexp_mod_SOURCES = gnulib/regex.c commands/regexp.c commands/wildcard.c
 regexp_mod_CFLAGS = $(COMMON_CFLAGS) $(GNULIB_CFLAGS)
 regexp_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

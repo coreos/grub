@@ -37,6 +37,9 @@ struct grub_script_scope
 };
 static struct grub_script_scope *scope = 0;
 
+/* Wildcard translator for GRUB script.  */
+struct grub_script_wildcard_translator *wildcard_translator;
+
 static int
 grub_env_special (const char *name)
 {

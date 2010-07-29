@@ -17,7 +17,7 @@
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
 disks=`echo ls | @builddir@/grub-shell`
-other=`echo echo \* | @builddir@/grub-shell`
+other=`echo insmod regexp\; echo \* | @builddir@/grub-shell`
 for d in $disks; do
     if echo "$d" |grep ',' >/dev/null; then
 	if echo "$other" | grep "$d" >/dev/null; then
@@ -32,7 +32,7 @@ for d in $disks; do
     fi
 done
 
-other=`echo echo '(*)' | @builddir@/grub-shell`
+other=`echo insmod regexp\; echo '(*)' | @builddir@/grub-shell`
 for d in $disks; do
     if ! echo "$other" | grep "$d" >/dev/null; then
 	echo "$d missing from (*) expansion" >&2
