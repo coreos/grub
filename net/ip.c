@@ -72,7 +72,9 @@ recv_ip_packet (struct grub_net_network_layer_interface *inf,
   {
     trans_net_inf->inner_layer->link_prot->recv(inf,trans_net_inf->inner_layer,nb);
     iph = (struct iphdr *) nb->data;
-    if (iph->dest == 0x0908eaaa && iph->src ==  0x0908ea92 && iph->protocol == 0x11)
+    if (iph->protocol == 0x11 &&
+           iph->dest == (grub_uint32_t) bootp_pckt -> yiaddr && 
+           iph->src ==  (grub_uint32_t) bootp_pckt -> siaddr )
     {
       grub_netbuff_pull(nb,sizeof(*iph));
       return 0; 
@@ -82,11 +84,11 @@ recv_ip_packet (struct grub_net_network_layer_interface *inf,
     if (current_time -  start_time > TIMEOUT_TIME_MS)
       return grub_error (GRUB_ERR_TIMEOUT, "Time out.");
   }
-/*  grub_printf("ip.src 0x%x\n",iph->src);
-  grub_printf("ip.dst 0x%x\n",iph->dest);
-  grub_printf("ip.len 0x%x\n",iph->len);
-  grub_printf("ip.protocol 0x%x\n",iph->protocol);
-  */
+//  grub_printf("ip.src 0x%x\n",iph->src);
+//  grub_printf("ip.dst 0x%x\n",iph->dest);
+//  grub_printf("ip.len 0x%x\n",iph->len);
+//  grub_printf("ip.protocol 0x%x\n",iph->protocol);
+  
   /* - get ip header
    - verify if is the next layer is correct
    -*/
