@@ -18,19 +18,13 @@ send_ethernet_packet (struct grub_net_network_layer_interface *inf __attribute__
    
   grub_netbuff_push (nb,sizeof(*eth));
   eth = (struct etherhdr *) nb->data; 
-  eth->dst[0] =0x00;
-  eth->dst[1] =0x11;
-  eth->dst[2] =0x25;
-  eth->dst[3] =0xca;
-  eth->dst[4] =0x1f;
-  eth->dst[5] =0x01;
-  eth->src[0] =0x0a;
-  eth->src[1] =0x11;
-  eth->src[2] =0xbd;
-  eth->src[3] =0xe3;
-  eth->src[4] =0xe3;
-  eth->src[5] =0x04;
-
+  eth->dst[0] = 0x00;
+  eth->dst[1] = 0x11;
+  eth->dst[2] = 0x25;
+  eth->dst[3] = 0xca;
+  eth->dst[4] = 0x1f;
+  eth->dst[5] = 0x01;
+  grub_memcpy (eth->src, bootp_pckt -> chaddr,6);
   eth->type = 0x0800;
 
   return  send_card_buffer(nb);  
@@ -44,25 +38,38 @@ recv_ethernet_packet (struct grub_net_network_layer_interface *inf __attribute__
 {
   struct etherhdr *eth;
   grub_uint64_t start_time, current_time;
+  struct llchdr *llch;
+  struct snaphdr *snaph;
+  grub_uint16_t type;
   start_time = grub_get_time_ms();
- while (1)
- {
-   get_card_packet (nb);
-   eth = (struct etherhdr *) nb->data; 
+  while (1)
+  {
+    get_card_packet (nb);
+    eth = (struct etherhdr *) nb->data; 
+    type = eth->type;
+    grub_netbuff_pull(nb,sizeof (*eth));
+   // grub_printf("ethernet type 58 %x\n",type); 
+   // grub_printf("ethernet eth->type 58 %x\n",type); 
+    if (eth->type <=1500)
+    {
+      llch = (struct llchdr *) nb->data;
+      type = llch->dsap & LLCADDRMASK;
+
+      if (llch->dsap == 0xaa && llch->ssap == 0xaa && llch->ctrl == 0x3)
+      {  
+        grub_netbuff_pull (nb,sizeof(*llch));
+        snaph = (struct snaphdr *) nb->data;
+        type = snaph->type;
+      }
+    }
+
    /*change for grub_memcmp*/
-   if( eth->src[0] == 0x00 &&  eth->src[1] == 0x11 &&  eth->src[2] == 0x25 && 
-               eth->src[3] == 0xca &&  eth->src[4] == 0x1f &&  eth->src[5] == 0x01 && eth->type == 0x800)
-   {
-     //grub_printf("ethernet eth->dst %x:%x:%x:%x:%x:%x\n",eth->dst[0],
-       //     eth->dst[1],eth->dst[2],eth->dst[3],eth->dst[4],eth->dst[5]);
-    // grub_printf("ethernet eth->src %x:%x:%x:%x:%x:%x\n",eth->src[0],eth->src[1],
-      //      eth->src[2],eth->src[3],eth->src[4],eth->src[5]);
-     //grub_printf("ethernet eth->type 0x%x\n",eth->type);
-     //grub_printf("out from ethernet\n");
-     grub_netbuff_pull(nb,sizeof(*eth));
+   //if( eth->src[0] == 0x00 &&  eth->src[1] == 0x11 &&  eth->src[2] == 0x25 && 
+     //          eth->src[3] == 0xca &&  eth->src[4] == 0x1f &&  eth->src[5] == 0x01 && type == 0x800)
+   if(type == 0x800) 
      return 0;
-   }
-    current_time =  grub_get_time_ms();
+   
+    current_time =  grub_get_time_ms ();
     if (current_time -  start_time > TIMEOUT_TIME_MS)
       return grub_error (GRUB_ERR_TIMEOUT, "Time out.");
  }
