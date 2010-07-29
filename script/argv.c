@@ -23,6 +23,7 @@
 #include <grub/file.h>
 #include <grub/device.h>
 #include <grub/script_sh.h>
+#include <grub/wildcard.h>
 
 #include <regex.h>
 
@@ -48,20 +49,26 @@ round_up_exp (unsigned v)
   return v;
 }
 
-static inline int regexop (char ch);
+static inline int isregexop (char ch);
 static char ** merge (char **lhs, char **rhs);
 static char *make_dir (const char *prefix, const char *start, const char *end);
 static int make_regex (const char *regex_start, const char *regex_end,
 		       regex_t *regexp);
-static void split_path (char *path, char **suffix_end, char **regex_end);
+static void split_path (const char *path, const char **suffix_end, const char **regex_end);
 static char ** match_devices (const regex_t *regexp, int noparts);
 static char ** match_files (const char *prefix, const char *suffix_start,
 			    const char *suffix_end, const regex_t *regexp);
-static char ** match_paths_with_escaped_suffix (char **paths,
-						const char *suffix_start,
-						const char *suffix_end,
-						const regex_t *regexp);
-static int expand (char *arg, struct grub_script_argv *argv);
+
+static char* wildcard_escape (const char *s);
+static char* wildcard_unescape (const char *s);
+static grub_err_t wildcard_expand (const char *s, char ***strs);
+
+static struct grub_wildcard_translator foo = {
+  .expand = wildcard_expand,
+  .escape = wildcard_escape,
+  .unescape = wildcard_unescape
+};
+
 
 void
 grub_script_argv_free (struct grub_script_argv *argv)
@@ -109,7 +116,7 @@ enum append_type {
 };
 
 static int
-append (struct grub_script_argv *argv, const char *s, enum append_type type)
+append (struct grub_script_argv *argv, const char *s)
 {
   int a;
   int b;
@@ -120,41 +127,15 @@ append (struct grub_script_argv *argv, const char *s, enum append_type type)
     return 0;
 
   a = p ? grub_strlen (p) : 0;
-  b = grub_strlen (s) * (type == APPEND_ESCAPED ? 2 : 1);
+  b = grub_strlen (s);
 
   p = grub_realloc (p, round_up_exp ((a + b + 1) * sizeof (char)));
   if (! p)
     return 1;
 
-  switch (type)
-    {
-    case APPEND_RAW:
-      grub_strcpy (p + a, s);
-      break;
-
-    case APPEND_ESCAPED:
-      while ((ch = *s++))
-	{
-	  if (regexop (ch))
-	    p[a++] = '\\';
-	  p[a++] = ch;
-	}
-      p[a] = '\0';
-      break;
-
-    case APPEND_UNESCAPED:
-      while ((ch = *s++))
-	{
-	  if (ch == '\\' && regexop (*s))
-	    p[a++] = *s++;
-	  else
-	    p[a++] = ch;
-	}
-      p[a] = '\0';
-      break;
-    }
-
+  grub_strcpy (p + a, s);
   argv->args[argv->argc - 1] = p;
+
   return 0;
 }
 
@@ -163,21 +144,37 @@ append (struct grub_script_argv *argv, const char *s, enum append_type type)
 int
 grub_script_argv_append (struct grub_script_argv *argv, const char *s)
 {
-  return append (argv, s, APPEND_RAW);
+  return append (argv, s);
 }
 
 /* Append `s' to the last argument, but escape any shell regex ops.  */
 int
 grub_script_argv_append_escaped (struct grub_script_argv *argv, const char *s)
 {
-  return append (argv, s, APPEND_ESCAPED);
+  int r;
+  char *p = wildcard_escape (s);
+
+  if (! p)
+    return 1;
+
+  r = append (argv, p);
+  grub_free (p);
+  return r;
 }
 
 /* Append `s' to the last argument, but unescape any escaped shell regex ops.  */
 int
 grub_script_argv_append_unescaped (struct grub_script_argv *argv, const char *s)
 {
-  return append (argv, s, APPEND_UNESCAPED);
+  int r;
+  char *p = wildcard_unescape (s);
+
+  if (! p)
+    return 1;
+
+  r = append (argv, p);
+  grub_free (p);
+  return r;
 }
 
 /* Split `s' and append words as multiple arguments.  */
@@ -216,11 +213,33 @@ int
 grub_script_argv_expand (struct grub_script_argv *argv)
 {
   int i;
+  int j;
+  char *p;
+  char **expansions;
   struct grub_script_argv result = { 0, 0 };
 
   for (i = 0; argv->args[i]; i++)
-    if (expand (argv->args[i], &result))
-      goto fail;
+    {
+      expansions = 0;
+      if (wildcard_expand (argv->args[i], &expansions))
+	goto fail;
+
+      if (! expansions)
+	{
+	  grub_script_argv_next (&result);
+	  grub_script_argv_append_unescaped (&result, argv->args[i]);
+	}
+      else
+	{
+	  for (j = 0; expansions[j]; j++)
+	    {
+	      grub_script_argv_next (&result);
+	      grub_script_argv_append (&result, expansions[j]);
+	      grub_free (expansions[j]);
+	    }
+	  grub_free (expansions);
+	}
+    }
 
   grub_script_argv_free (argv);
   *argv = result;
@@ -267,7 +286,7 @@ merge (char **dest, char **ps)
 }
 
 static inline int
-regexop (char ch)
+isregexop (char ch)
 {
   return grub_strchr ("*.\\", ch) ? 1 : 0;
 }
@@ -289,7 +308,7 @@ make_dir (const char *prefix, const char *start, const char *end)
 
   grub_strcpy (result, prefix);
   while (start < end && (ch = *start++))
-    if (ch == '\\' && regexop (*start))
+    if (ch == '\\' && isregexop (*start))
       result[i++] = *start++;
     else
       result[i++] = ch;
@@ -343,35 +362,41 @@ make_regex (const char *start, const char *end, regex_t *regexp)
   return 0;
 }
 
+/* Split `str' into two parts: (1) dirname that is regexop free (2)
+   dirname that has a regexop.  */
 static void
-split_path (char *str, char **suffix_end, char **regex_end)
+split_path (const char *str, const char **noregexop, const char **regexop)
 {
   char ch = 0;
   int regex = 0;
 
-  char *end;
-  char *split;
+  const char *end;
+  const char *split;  /* points till the end of dirnaname that doesn't
+			 need expansion.  */
 
   split = end = str;
   while ((ch = *end))
     {
       if (ch == '\\' && end[1])
 	end++;
-      else if (regexop (ch))
+
+      else if (isregexop (ch))
 	regex = 1;
+
       else if (ch == '/' && ! regex)
-	split = end + 1;
+	split = end + 1;  /* forward to next regexop-free dirname */
+
       else if (ch == '/' && regex)
-	break;
+	break;  /* stop at the first dirname with a regexop */
 
       end++;
     }
 
-  *regex_end = end;
+  *regexop = end;
   if (! regex)
-    *suffix_end = end;
+    *noregexop = end;
   else
-    *suffix_end = split;
+    *noregexop = split;
 }
 
 static char **
@@ -530,112 +555,139 @@ match_files (const char *prefix, const char *suffix, const char *end,
   return 0;
 }
 
-static char **
-match_paths_with_escaped_suffix (char **paths,
-				 const char *suffix, const char *end,
-				 const regex_t *regexp)
+static char*
+wildcard_escape (const char *s)
 {
-  if (paths == 0 && suffix == end)
-    return match_devices (regexp, *suffix != '(');
+  int i;
+  int len;
+  char ch;
+  char *p;
 
-  else if (paths == 0 && suffix[0] == '(')
-    return match_files ("", suffix, end, regexp);
+  len = grub_strlen (s);
+  p = grub_malloc (len * 2 + 1);
+  if (! p)
+    return NULL;
 
-  else if (paths == 0 && suffix[0] == '/')
+  i = 0;
+  while ((ch = *s++))
     {
-      char **r;
-      unsigned n;
-      char *root;
-      char *prefix;
-
-      root = grub_env_get ("root");
-      if (! root)
-	return 0;
-
-      prefix = grub_xasprintf ("(%s)", root);
-      if (! prefix)
-	return 0;
-
-      r = match_files (prefix, suffix, end, regexp);
-      grub_free (prefix);
-      return r;
+      if (isregexop (ch))
+	p[i++] = '\\';
+      p[i++] = ch;
     }
-  else if (paths)
-    {
-      int i, j;
-      char **r = 0;
-
-      for (i = 0; paths[i]; i++)
-	{
-	  char **p;
-
-	  p = match_files (paths[i], suffix, end, regexp);
-	  if (! p)
-	    continue;
-
-	  r = merge (r, p);
-	  if (! r)
-	    return 0;
-	}
-      return r;
-    }
-
-  return 0;
+  p[i] = '\0';
+  return p;
 }
 
-static int
-expand (char *arg, struct grub_script_argv *argv)
+static char*
+wildcard_unescape (const char *s)
 {
+  int i;
+  int len;
+  char ch;
   char *p;
-  char *dir;
-  char *reg;
+
+  len = grub_strlen (s);
+  p = grub_malloc (len + 1);
+  if (! p)
+    return NULL;
+
+  i = 0;
+  while ((ch = *s++))
+    {
+      if (ch == '\\' && isregexop (*s))
+	p[i++] = *s++;
+      else
+	p[i++] = ch;
+    }
+  p[i] = '\0';
+  return p;
+}
+
+static grub_err_t
+wildcard_expand (const char *s, char ***strs)
+{
+  const char *start;
+  const char *regexop;
+  const char *noregexop;
   char **paths = 0;
 
   unsigned i;
-  regex_t regex;
+  regex_t regexp;
 
-  p = arg;
-  while (*p)
+  start = s;
+  while (*start)
     {
-      /* split `p' into two components: (p..dir), (dir...reg)
+      split_path (start, &noregexop, &regexop);
+      if (noregexop >= regexop) /* no more wildcards */
+	break;
 
-	 (p...dir):  path that doesn't need expansion
+      if (make_regex (noregexop, regexop, &regexp))
+	goto fail;
 
-	 (dir...reg): part of path that needs expansion
-       */
-      split_path (p, &dir, &reg);
-      if (dir < reg)
+      if (paths == 0)
 	{
-	  if (make_regex (dir, reg, &regex))
-	    goto fail;
+	  if (start == noregexop) /* device part has regexop */
+	    paths = match_devices (&regexp, *start != '(');
 
-	  paths = match_paths_with_escaped_suffix (paths, p, dir, &regex);
-	  regfree (&regex);
+	  else if (*start == '(') /* device part explicit wo regexop */
+	    paths = match_files ("", start, noregexop, &regexp);
 
-	  if (! paths)
-	    goto done;
+	  else if (*start == '/') /* no device part */
+	    {
+	      char **r;
+	      unsigned n;
+	      char *root;
+	      char *prefix;
+
+	      root = grub_env_get ("root");
+	      if (! root)
+		goto fail;
+
+	      prefix = grub_xasprintf ("(%s)", root);
+	      if (! prefix)
+		goto fail;
+
+	      paths = match_files (prefix, start, noregexop, &regexp);
+	      grub_free (prefix);
+	    }
 	}
-      p = reg;
-    }
+      else
+	{
+	  char **r = 0;
 
-  if (! paths)
-    {
-      grub_script_argv_next (argv);
-      grub_script_argv_append_unescaped (argv, arg);
+	  for (i = 0; paths[i]; i++)
+	    {
+	      char **p;
+
+	      p = match_files (paths[i], start, noregexop, &regexp);
+	      if (! p)
+		continue;
+
+	      r = merge (r, p);
+	      if (! r)
+		goto fail;
+	    }
+	  paths = r;
+	}
+
+      regfree (&regexp);
+      if (! paths)
+	goto done;
+
+      start = regexop;
     }
-  else
-    for (i = 0; paths[i]; i++)
-      {
-	grub_script_argv_next (argv);
-	grub_script_argv_append (argv, paths[i]);
-      }
 
  done:
 
+  *strs = paths;
   return 0;
 
  fail:
 
-  regfree (&regex);
-  return 1;
+  for (i = 0; paths && paths[i]; i++)
+    grub_free (paths[i]);
+  grub_free (paths[i]);
+  regfree (&regexp);
+  return grub_errno;
 }
