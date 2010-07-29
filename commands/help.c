@@ -112,7 +112,8 @@ grub_cmd_help (grub_extcmd_context_t ctxt __attribute__ ((unused)), int argc,
 		    if (cnt++ > 0)
 		      grub_printf ("\n\n");
 
-		    if (cmd->flags & GRUB_COMMAND_FLAG_EXTCMD)
+		    if ((cmd->flags & GRUB_COMMAND_FLAG_EXTCMD) &&
+			! (cmd->flags & GRUB_COMMAND_FLAG_DYNCMD))
 		      grub_arg_show_help ((grub_extcmd_t) cmd->data);
 		    else
 		      grub_printf ("%s %s %s\n%s\n", _("Usage:"), cmd->name, _(cmd->summary),
