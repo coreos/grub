@@ -1,3 +1,7 @@
+2010-07-29  Robert Millan  <rmh@gnu.org>
+
+	* configure.ac: Remove grub-mkisofs checks.
+
 2010-07-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/ieee1275/grub-install.in: Don't use empty grub_device.
