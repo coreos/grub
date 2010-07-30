@@ -1,5 +1,9 @@
 2010-07-30  Robert Millan  <rmh@gnu.org>
 
+	* include/grub/emu/misc.h: Add missing license header.
+
+2010-07-30  Robert Millan  <rmh@gnu.org>
+
 	Enable `grub-probe -t device' resolution on ZFS.
 
 	* configure.ac: Check for getfsstat(), libzfs and libnvpair.
