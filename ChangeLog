@@ -1,5 +1,33 @@
 2010-07-30  Robert Millan  <rmh@gnu.org>
 
+	Enable `grub-probe -t device' resolution on ZFS.
+
+	* configure.ac: Check for getfsstat(), libzfs and libnvpair.
+	* include/grub/util/libnvpair.h: New file.
+	* include/grub/util/libzfs.h: New file.
+
+	* kern/emu/getroot.c: Include `<assert.h>' and `<error.h>'.
+	[HAVE_LIBZFS && HAVE_LIBNVPAIR]: Include `<grub/util/libzfs.h>' and
+	`<grub/util/libnvpair.h>'.
+	[HAVE_GETFSSTAT]: Include `<sys/mount.h>'.
+
+	(find_mount_point_from_dir): New static function.
+	[HAVE_LIBZFS && HAVE_LIBNVPAIR] (find_root_device_from_libzfs): New
+	function.
+	[HAVE_LIBZFS && HAVE_LIBNVPAIR] (grub_guess_root_device): Use
+	find_root_device_from_libzfs() before ressorting to find_root_device().
+
+	* include/grub/util/misc.h (grub_util_init_libzfs): New function
+	prototype.
+	* util/misc.c: Include `<grub/util/libzfs.h>'.
+	(grub_util_init_libzfs): New function.
+	[HAVE_LIBZFS] (libzfs_handle): New global variable.
+	[HAVE_LIBZFS] (fini_libzfs): New static function.
+	(grub_util_init_libzfs): New function.
+	* util/grub-probe.c (main): Call grub_util_init_libzfs().
+
+2010-07-30  Robert Millan  <rmh@gnu.org>
+
 	* include/grub/emu/misc.h (grub_make_system_path_relative_to_its_root)
 	(xmalloc, xrealloc, xstrdup, xasprintf): Add
 	`warn_unused_result' attribute.

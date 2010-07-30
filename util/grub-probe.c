@@ -359,6 +359,7 @@ main (int argc, char *argv[])
   set_program_name (argv[0]);
 
   grub_util_init_nls ();
+  grub_util_init_libzfs ();
 
   /* Check for options.  */
   while (1)

@@ -36,6 +36,7 @@
 #include <grub/misc.h>
 #include <grub/cache.h>
 #include <grub/util/misc.h>
+#include <grub/util/libzfs.h>
 #include <grub/mm.h>
 #include <grub/term.h>
 #include <grub/time.h>
@@ -292,6 +293,25 @@ grub_util_init_nls (void)
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
 #endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
+}
+
+#ifdef HAVE_LIBZFS
+libzfs_handle_t *libzfs_handle;
+
+static void
+fini_libzfs (void)
+{
+  libzfs_fini (libzfs_handle);
+}
+#endif
+
+void
+grub_util_init_libzfs (void)
+{
+#ifdef HAVE_LIBZFS
+  libzfs_handle = libzfs_init ();
+  atexit (fini_libzfs);
+#endif
 }
 #endif
 

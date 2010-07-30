@@ -59,5 +59,6 @@ char *make_system_path_relative_to_its_root (const char *path);
 char *canonicalize_file_name (const char *path);
 
 void grub_util_init_nls (void);
+void grub_util_init_libzfs (void);
 
 #endif /* ! GRUB_UTIL_MISC_HEADER */

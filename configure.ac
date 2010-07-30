@@ -247,7 +247,7 @@ else
 fi
 
 # Check for functions.
-AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf)
+AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf getfsstat)
 
 # For opendisk() and getrawpartition() on NetBSD.
 # Used in util/deviceiter.c and in util/hostdisk.c.
@@ -798,6 +798,15 @@ if test x"$device_mapper_excuse" = x ; then
                           [Define to 1 if you have the devmapper library.])],
                [device_mapper_excuse="need devmapper library"])
 fi
+
+AC_CHECK_LIB([zfs], [libzfs_init],
+             [LDFLAGS="$LDFLAGS -lzfs"
+              AC_DEFINE([HAVE_LIBZFS], [1],
+                        [Define to 1 if you have the ZFS library.])],)
+AC_CHECK_LIB([nvpair], [nvlist_print],
+             [LDFLAGS="$LDFLAGS -lnvpair"
+              AC_DEFINE([HAVE_LIBNVPAIR], [1],
+                        [Define to 1 if you have the NVPAIR library.])],)
 
 AC_SUBST(ASFLAGS)
 
