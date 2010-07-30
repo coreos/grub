@@ -1,3 +1,12 @@
+2010-07-30  Robert Millan  <rmh@gnu.org>
+
+	* include/grub/emu/misc.h (grub_make_system_path_relative_to_its_root)
+	(xmalloc, xrealloc, xstrdup, xasprintf): Add
+	`warn_unused_result' attribute.
+	* include/grub/misc.h (grub_strdup, grub_strndup, grub_strlen)
+	(grub_xasprintf, grub_xvasprintf): Likewise.
+	* include/grub/emu/misc.h (xasprintf): Remove duplicate prototype.
+
 2010-07-29  Robert Millan  <rmh@gnu.org>
 
 	* util/grub-probe.c (PRINT_FS_LABEL): New enum value.

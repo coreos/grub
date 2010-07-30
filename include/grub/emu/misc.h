@@ -26,12 +26,12 @@ extern const char *program_name;
 void grub_init_all (void);
 void grub_fini_all (void);
 
-char *grub_make_system_path_relative_to_its_root (const char *path);
+char *grub_make_system_path_relative_to_its_root (const char *path) __attribute__ ((warn_unused_result));
 
-void * EXPORT_FUNC(xmalloc) (grub_size_t size);
-void * EXPORT_FUNC(xrealloc) (void *ptr, grub_size_t size);
-char * EXPORT_FUNC(xstrdup) (const char *str);
-char * EXPORT_FUNC(xasprintf) (const char *fmt, ...);
+void * EXPORT_FUNC(xmalloc) (grub_size_t size) __attribute__ ((warn_unused_result));
+void * EXPORT_FUNC(xrealloc) (void *ptr, grub_size_t size) __attribute__ ((warn_unused_result));
+char * EXPORT_FUNC(xstrdup) (const char *str) __attribute__ ((warn_unused_result));
+char * EXPORT_FUNC(xasprintf) (const char *fmt, ...) __attribute__ ((warn_unused_result));
 
 void EXPORT_FUNC(grub_util_warn) (const char *fmt, ...);
 void EXPORT_FUNC(grub_util_info) (const char *fmt, ...);
@@ -45,7 +45,6 @@ int EXPORT_FUNC(vasprintf) (char **buf, const char *fmt, va_list ap);
 int EXPORT_FUNC(asprintf) (char **buf, const char *fmt, ...);
 #endif
 
-char * EXPORT_FUNC(xasprintf) (const char *fmt, ...);
 extern char * canonicalize_file_name (const char *path);
 
 #ifdef HAVE_DEVICE_MAPPER
