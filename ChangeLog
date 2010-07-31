@@ -1,5 +1,9 @@
 2010-07-31  Robert Millan  <rmh@gnu.org>
 
+	* kern/emu/misc.c: Add missing license header.
+
+2010-07-31  Robert Millan  <rmh@gnu.org>
+
 	* configure.ac: Check for `libzfs.h' and `libnvpair.h'.
 
 	* include/grub/util/libnvpair.h: Include `<config.h>'.
