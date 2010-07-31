@@ -29,6 +29,7 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 #include <grub/emu/misc.h>
+#include <grub/util/libzfs.h>
 
 char *grub_util_get_path (const char *dir, const char *file);
 size_t grub_util_get_fp_size (FILE *fp);
@@ -59,6 +60,8 @@ char *make_system_path_relative_to_its_root (const char *path);
 char *canonicalize_file_name (const char *path);
 
 void grub_util_init_nls (void);
+
 void grub_util_init_libzfs (void);
+extern libzfs_handle_t *libzfs_handle;
 
 #endif /* ! GRUB_UTIL_MISC_HEADER */

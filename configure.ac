@@ -246,8 +246,9 @@ else
   AC_PATH_PROG(HELP2MAN, help2man)
 fi
 
-# Check for functions.
+# Check for functions and headers.
 AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf getfsstat)
+AC_CHECK_HEADERS(libzfs.h libnvpair.h)
 
 # For opendisk() and getrawpartition() on NetBSD.
 # Used in util/deviceiter.c and in util/hostdisk.c.

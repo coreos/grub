@@ -19,6 +19,12 @@
 #ifndef GRUB_LIBZFS_UTIL_HEADER
 #define GRUB_LIBZFS_UTIL_HEADER 1
 
+#include <config.h>
+
+#ifdef HAVE_LIBZFS_H
+#include <libzfs.h>
+#else /* ! HAVE_LIBZFS_H */
+
 #include <grub/util/libnvpair.h>
 
 typedef void libzfs_handle_t;
@@ -34,6 +40,6 @@ extern int zpool_get_physpath (zpool_handle_t *, const char *);
 
 extern nvlist_t *zpool_get_config (zpool_handle_t *, nvlist_t **);
 
-extern libzfs_handle_t *libzfs_handle;
+#endif /* ! HAVE_LIBZFS_H */
 
 #endif

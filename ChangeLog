@@ -1,3 +1,18 @@
+2010-07-31  Robert Millan  <rmh@gnu.org>
+
+	* configure.ac: Check for `libzfs.h' and `libnvpair.h'.
+
+	* include/grub/util/libnvpair.h: Include `<config.h>'.
+	[HAVE_LIBNVPAIR_H]: Include `<libnvpair.h>' instead of
+	declaring libnvpair prototypes ourselves.
+	* include/grub/util/libzfs.h: Include `<config.h>'.
+	[HAVE_LIBZFS_H]: Include `<libzfs.h>' instead of
+	declaring libzfs prototypes ourselves.
+
+	(libzfs_handle): Moved to ...
+	* include/grub/util/misc.h (libzfs_handle): ... here.
+	Include `<grub/util/libzfs.h>'.
+
 2010-07-30  Robert Millan  <rmh@gnu.org>
 
 	* include/grub/emu/misc.h: Add missing license header.
