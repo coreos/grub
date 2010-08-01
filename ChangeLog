@@ -1,3 +1,24 @@
+2010-08-01  Robert Millan  <rmh@gnu.org>
+
+	* include/grub/emu/misc.h (grub_find_mount_point_from_dir)
+	(grub_find_zpool_from_mount_point): New function prototypes.
+
+	* kern/emu/getroot.c [HAVE_GETFSSTAT]: Move `<sys/mount.h>' to ...
+	* kern/emu/misc.c [HAVE_GETFSSTAT]: ... here.
+
+	* kern/emu/getroot.c (find_mount_point_from_dir): Move to ...
+	* kern/emu/misc.c (grub_find_mount_point_from_dir): ... this.  Remove
+	`static' attribute.
+
+	* kern/emu/getroot.c (find_root_device_from_libzfs): Split code for
+	finding zpool from mount point into ...
+	* kern/emu/misc.c (grub_find_zpool_from_mount_point): ... this.
+
+	* kern/emu/misc.c (grub_make_system_path_relative_to_its_root): When
+	requested path is part of a ZFS pool, use
+	grub_find_zpool_from_mount_point() to detect its filesystem name,
+	and generate a path with `/fsname@path' syntax.
+
 2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
 
 	* include/grub/util/libzfs.h (libzfs_init): Set argument list to
@@ -38,6 +59,27 @@
 2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
 
 	* kern/misc.c (grub_memset): Optimise to reduce cache stalls.
+
+2010-08-01  Robert Millan  <rmh@gnu.org>
+
+	* include/grub/emu/misc.h (grub_find_mount_point_from_dir)
+	(grub_find_zpool_from_mount_point): New function prototypes.
+
+	* kern/emu/getroot.c [HAVE_GETFSSTAT]: Move `<sys/mount.h>' to ...
+	* kern/emu/misc.c [HAVE_GETFSSTAT]: ... here.
+
+	* kern/emu/getroot.c (find_mount_point_from_dir): Move to ...
+	* kern/emu/misc.c (grub_find_mount_point_from_dir): ... this.  Remove
+	`static' attribute.
+
+	* kern/emu/getroot.c (find_root_device_from_libzfs): Split code for
+	finding zpool from mount point into ...
+	* kern/emu/misc.c (grub_find_zpool_from_mount_point): ... this.
+
+	* kern/emu/misc.c (grub_make_system_path_relative_to_its_root): When
+	requested path is part of a ZFS pool, use
+	grub_find_zpool_from_mount_point() to detect its filesystem name,
+	and generate a path with `/fsname@path' syntax.
 
 2010-08-01  Robert Millan  <rmh@gnu.org>
 
