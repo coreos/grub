@@ -1,5 +1,14 @@
 2010-08-01  Robert Millan  <rmh@gnu.org>
 
+	* util/grub.d/10_kfreebsd.in: Initialize ${kfreebsd_device} as the
+	kFreeBSD device name, except on ZFS where the filesystem label is
+	used.
+	(kfreebsd_entry): On ZFS root, load `opensolaris.ko', `zfs.ko' and
+	`/boot/zfs/zpool.cache'.
+	Set mountfrom kernel variable using ${kfreebsd_device}.
+
+2010-08-01  Robert Millan  <rmh@gnu.org>
+
 	Make it even harder to use uninitialized `libzfs_handle' (and
 	make the interface a bit simpler).
 

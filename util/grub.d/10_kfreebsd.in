@@ -74,8 +74,27 @@ EOF
 EOF
   fi
 
+  case "${kfreebsd_fs}" in
+    zfs)
+      test -e "${module_dir}/opensolaris.ko"
+      test -e "${module_dir}/zfs.ko"
+      test -e "${dirname}/zfs/zpool.cache"
+
+      printf '%s\n' "${prepare_module_dir_cache}"
+      cat << EOF
+	kfreebsd_module_elf	${module_dir_rel}/opensolaris.ko
+	kfreebsd_module_elf	${module_dir_rel}/zfs.ko
+EOF
+
+      printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
-	set kFreeBSD.vfs.root.mountfrom=${kfreebsd_fs}:${GRUB_DEVICE}
+	kfreebsd_module		${rel_dirname}/zfs/zpool.cache type=/boot/zfs/zpool.cache
+EOF
+    ;;
+  esac
+
+  cat << EOF
+	set kFreeBSD.vfs.root.mountfrom=${kfreebsd_fs}:${kfreebsd_device}
 	set kFreeBSD.vfs.root.mountfrom.options=rw
 }
 EOF
@@ -103,6 +122,11 @@ while [ "x$list" != "x" ] ; do
   case ${GRUB_FS} in
     ufs1 | ufs2)        kfreebsd_fs=ufs ;;
     *)                  kfreebsd_fs=${GRUB_FS} ;;
+  esac
+
+  case ${GRUB_FS} in
+    zfs)		kfreebsd_device=$(grub-probe -t label --device ${GRUB_DEVICE}) ;;
+    *)			kfreebsd_device=${GRUB_DEVICE} ;;
   esac
 
   version=`echo $basename | sed -e "s,^[^0-9]*-,,g;s/\.gz$//g"`
