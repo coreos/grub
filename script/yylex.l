@@ -116,7 +116,7 @@ COMMENT         #.*$
 
 CHAR            [^{}|&$;<> \t\n\'\"\\]
 DIGITS          [[:digit:]]+
-NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
+NAME            [[:alpha:]_][[:alnum:]_]*
 
 ESC             \\.
 VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|$\?|$\{\?\}

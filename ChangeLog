@@ -1,5 +1,9 @@
 2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
 
+	* script/yylex.l (NAME): Remove [:digit:], redundant with [:alnum:].
+
+2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Simple configuration): Document GRUB_CMDLINE_XEN
 	and GRUB_CMDLINE_XEN_DEFAULT.  Recommend setting
 	GRUB_GFXPAYLOAD_LINUX=text rather than unsetting it in order to
