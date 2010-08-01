@@ -30,7 +30,7 @@
 typedef void libzfs_handle_t;
 typedef void zpool_handle_t;
 
-extern libzfs_handle_t *libzfs_init ();
+extern libzfs_handle_t *libzfs_init (void);
 extern void libzfs_fini (libzfs_handle_t *);
 
 extern zpool_handle_t *zpool_open (libzfs_handle_t *, const char *);

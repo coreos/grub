@@ -1,3 +1,8 @@
+2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/util/libzfs.h (libzfs_init): Set argument list to
+	(void) rather than () so that this is a proper prototype.
+
 2010-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* lib/arg.c (grub_arg_show_help): Add the necessary spacing.
