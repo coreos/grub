@@ -1,5 +1,9 @@
 2010-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* lib/arg.c (grub_arg_show_help): Add the necessary spacing.
+
+2010-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* kern/emu/getroot.c (find_mount_point_from_dir): Compile only if
 	[HAVE_LIBZFS && HAVE_LIBNVPAIR]
 
