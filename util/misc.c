@@ -296,27 +296,27 @@ grub_util_init_nls (void)
 }
 
 #ifdef HAVE_LIBZFS
-libzfs_handle_t *libzfs_handle;
+static libzfs_handle_t *libzfs_handle;
 
 static void
 fini_libzfs (void)
 {
   libzfs_fini (libzfs_handle);
 }
-#endif
 
-void
-grub_util_init_libzfs (void)
+libzfs_handle_t *
+grub_get_libzfs_handle (void)
 {
-#ifdef HAVE_LIBZFS
   if (! libzfs_handle)
     {
       libzfs_handle = libzfs_init ();
       atexit (fini_libzfs);
     }
-#endif
+
+  return libzfs_handle;
 }
-#endif
+#endif /* HAVE_LIBZFS */
+#endif /* GRUB_UTIL */
 
 int
 grub_dl_ref (grub_dl_t mod)

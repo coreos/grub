@@ -1,5 +1,23 @@
 2010-08-01  Robert Millan  <rmh@gnu.org>
 
+	Make it even harder to use uninitialized `libzfs_handle' (and
+	make the interface a bit simpler).
+
+	* include/grub/util/misc.h (grub_util_init_libzfs)
+	(libzfs_handle): Remove.
+	(grub_get_libzfs_handle): New prototype.
+
+	* util/misc.c [HAVE_LIBZFS] (libzfs_handle): Add `static'
+	attribute.
+	(grub_util_init_libzfs): Remove.
+	(grub_get_libzfs_handle): New function.
+
+	* kern/emu/getroot.c (find_root_device_from_libzfs): Use
+	grub_get_libzfs_handle() to obtain a libzfs handle instead of
+	accessing `libzfs_handle' directly.
+
+2010-08-01  Robert Millan  <rmh@gnu.org>
+
 	* include/grub/emu/misc.h (grub_find_mount_point_from_dir)
 	(grub_find_zpool_from_mount_point): New function prototypes.
 

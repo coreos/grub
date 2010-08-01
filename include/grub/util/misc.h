@@ -61,7 +61,6 @@ char *canonicalize_file_name (const char *path);
 
 void grub_util_init_nls (void);
 
-void grub_util_init_libzfs (void);
-extern libzfs_handle_t *libzfs_handle;
+libzfs_handle_t *grub_get_libzfs_handle (void);
 
 #endif /* ! GRUB_UTIL_MISC_HEADER */
