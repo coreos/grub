@@ -1,3 +1,17 @@
+2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Simple configuration): Document GRUB_CMDLINE_XEN
+	and GRUB_CMDLINE_XEN_DEFAULT.  Recommend setting
+	GRUB_GFXPAYLOAD_LINUX=text rather than unsetting it in order to
+	disable gfxpayload.
+	(Shell-like scripting): Add real content.
+	(Serial terminal): Suggest `terminal_input serial; terminal_output
+	serial' rather than putting the two commands on separate lines,
+	since console input will be inoperative after the first command.
+	(menuentry): Document --class, --users, and --hotkey options.
+	(terminfo): Describe what `visually-ordered UTF-8' means (thanks,
+	Vladimir Serbinenko).
+
 2010-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
 2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
 
