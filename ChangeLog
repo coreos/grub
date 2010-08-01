@@ -1,5 +1,9 @@
 2010-07-31  Robert Millan  <rmh@gnu.org>
 
+	* util/grub.d/10_kfreebsd.in: Make module handling more generic.
+
+2010-07-31  Robert Millan  <rmh@gnu.org>
+
 	* kern/emu/misc.c: Add missing license header.
 
 2010-07-31  Robert Millan  <rmh@gnu.org>
