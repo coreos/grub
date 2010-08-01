@@ -209,14 +209,23 @@ grub_usb_device_initialize (grub_usb_device_t dev)
 	goto fail;
 
       /* Skip the configuration descriptor.  */
-      pos = sizeof (struct grub_usb_desc_config);
+      pos = dev->config[i].descconf->length;
 
       /* Read all interfaces.  */
       for (currif = 0; currif < dev->config[i].descconf->numif; currif++)
 	{
+	  while (pos < config.totallen
+		 && ((struct grub_usb_desc *)&data[pos])->type
+		 != GRUB_USB_DESCRIPTOR_INTERFACE)
+	    pos += ((struct grub_usb_desc *)&data[pos])->length;
 	  dev->config[i].interf[currif].descif
 	    = (struct grub_usb_desc_if *) &data[pos];
-	  pos += sizeof (struct grub_usb_desc_if);
+	  pos += dev->config[i].interf[currif].descif->length;
+
+	  while (pos < config.totallen
+		 && ((struct grub_usb_desc *)&data[pos])->type
+		 != GRUB_USB_DESCRIPTOR_ENDPOINT)
+	    pos += ((struct grub_usb_desc *)&data[pos])->length;
 
 	  /* Point to the first endpoint.  */
 	  dev->config[i].interf[currif].descendp
