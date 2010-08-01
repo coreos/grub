@@ -309,8 +309,11 @@ void
 grub_util_init_libzfs (void)
 {
 #ifdef HAVE_LIBZFS
-  libzfs_handle = libzfs_init ();
-  atexit (fini_libzfs);
+  if (! libzfs_handle)
+    {
+      libzfs_handle = libzfs_init ();
+      atexit (fini_libzfs);
+    }
 #endif
 }
 #endif
