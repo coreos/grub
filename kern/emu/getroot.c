@@ -98,6 +98,8 @@ xgetcwd (void)
   return path;
 }
 
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+
 static char *
 find_mount_point_from_dir (const char *dir)
 {
@@ -153,6 +155,8 @@ find_mount_point_from_dir (const char *dir)
 	}
     }
 }
+
+#endif
 
 #ifdef __linux__
 
