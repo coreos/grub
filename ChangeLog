@@ -1,3 +1,7 @@
+2010-08-01  Robert Millan  <rmh@gnu.org>
+
+	* kern/emu/getroot.c: Include `<grub/util/misc.h>'.
+	
 2010-07-31  Robert Millan  <rmh@gnu.org>
 
 	* util/grub.d/10_kfreebsd.in: Make module handling more generic.

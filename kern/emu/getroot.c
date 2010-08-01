@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <grub/util/misc.h>
 
 #ifdef __GNU__
 #include <hurd.h>
