@@ -1,3 +1,336 @@
+2010-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* lib/arg.c (grub_arg_show_help): Add the necessary spacing.
+
+2010-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/emu/getroot.c (find_mount_point_from_dir): Compile only if
+	[HAVE_LIBZFS && HAVE_LIBNVPAIR]
+
+2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrescue.in: Remove ${efi_dir} after building efi.img.
+
+2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* script/yylex.l (NAME): Remove [:digit:], redundant with [:alnum:].
+
+2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Simple configuration): Document GRUB_CMDLINE_XEN
+	and GRUB_CMDLINE_XEN_DEFAULT.  Recommend setting
+	GRUB_GFXPAYLOAD_LINUX=text rather than unsetting it in order to
+	disable gfxpayload.
+	(Shell-like scripting): Add real content.
+	(Serial terminal): Suggest `terminal_input serial; terminal_output
+	serial' rather than putting the two commands on separate lines,
+	since console input will be inoperative after the first command.
+	(menuentry): Document --class, --users, and --hotkey options.
+	(terminfo): Describe what `visually-ordered UTF-8' means (thanks,
+	Vladimir Serbinenko).
+
+2010-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
+2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/misc.c (grub_memset): Optimise to reduce cache stalls.
+
+2010-08-01  Robert Millan  <rmh@gnu.org>
+
+	Prevent accidental use of uninitialized libzfs_handle.
+
+	* util/grub-probe.c (main): Move grub_util_init_libzfs() call to ...
+	* kern/emu/getroot.c (find_root_device_from_libzfs): ... here.
+	* util/misc.c (grub_util_init_libzfs): Make this function idempotent.
+
+2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/20_linux_xen.in: Don't use UUID for LVM root (matching
+	util/grub.d/10_linux.in).  Fixes Debian bug #591093.
+
+2010-08-01  Robert Millan  <rmh@gnu.org>
+
+	* kern/emu/getroot.c: Include `<grub/util/misc.h>'.
+
+2010-07-31  Robert Millan  <rmh@gnu.org>
+
+	* util/grub.d/10_kfreebsd.in: Make module handling more generic.
+
+2010-07-31  Robert Millan  <rmh@gnu.org>
+
+	* kern/emu/misc.c: Add missing license header.
+
+2010-07-31  Robert Millan  <rmh@gnu.org>
+
+	* configure.ac: Check for `libzfs.h' and `libnvpair.h'.
+
+	* include/grub/util/libnvpair.h: Include `<config.h>'.
+	[HAVE_LIBNVPAIR_H]: Include `<libnvpair.h>' instead of
+	declaring libnvpair prototypes ourselves.
+	* include/grub/util/libzfs.h: Include `<config.h>'.
+	[HAVE_LIBZFS_H]: Include `<libzfs.h>' instead of
+	declaring libzfs prototypes ourselves.
+
+	(libzfs_handle): Moved to ...
+	* include/grub/util/misc.h (libzfs_handle): ... here.
+	Include `<grub/util/libzfs.h>'.
+
+2010-07-30  Robert Millan  <rmh@gnu.org>
+
+	* include/grub/emu/misc.h: Add missing license header.
+
+2010-07-30  Robert Millan  <rmh@gnu.org>
+
+	Enable `grub-probe -t device' resolution on ZFS.
+
+	* configure.ac: Check for getfsstat(), libzfs and libnvpair.
+	* include/grub/util/libnvpair.h: New file.
+	* include/grub/util/libzfs.h: New file.
+
+	* kern/emu/getroot.c: Include `<assert.h>' and `<error.h>'.
+	[HAVE_LIBZFS && HAVE_LIBNVPAIR]: Include `<grub/util/libzfs.h>' and
+	`<grub/util/libnvpair.h>'.
+	[HAVE_GETFSSTAT]: Include `<sys/mount.h>'.
+
+	(find_mount_point_from_dir): New static function.
+	[HAVE_LIBZFS && HAVE_LIBNVPAIR] (find_root_device_from_libzfs): New
+	function.
+	[HAVE_LIBZFS && HAVE_LIBNVPAIR] (grub_guess_root_device): Use
+	find_root_device_from_libzfs() before ressorting to find_root_device().
+
+	* include/grub/util/misc.h (grub_util_init_libzfs): New function
+	prototype.
+	* util/misc.c: Include `<grub/util/libzfs.h>'.
+	(grub_util_init_libzfs): New function.
+	[HAVE_LIBZFS] (libzfs_handle): New global variable.
+	[HAVE_LIBZFS] (fini_libzfs): New static function.
+	(grub_util_init_libzfs): New function.
+	* util/grub-probe.c (main): Call grub_util_init_libzfs().
+
+2010-07-30  Robert Millan  <rmh@gnu.org>
+
+	* include/grub/emu/misc.h (grub_make_system_path_relative_to_its_root)
+	(xmalloc, xrealloc, xstrdup, xasprintf): Add
+	`warn_unused_result' attribute.
+	* include/grub/misc.h (grub_strdup, grub_strndup, grub_strlen)
+	(grub_xasprintf, grub_xvasprintf): Likewise.
+	* include/grub/emu/misc.h (xasprintf): Remove duplicate prototype.
+
+2010-07-29  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-probe.c (PRINT_FS_LABEL): New enum value.
+	(probe): Handle `PRINT_FS_LABEL'.
+	(main): Handle `-t fs_label'.
+
+2010-07-29  Robert Millan  <rmh@gnu.org>
+
+	* configure.ac: Remove grub-mkisofs checks.
+
+2010-07-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/ieee1275/grub-install.in: Don't use empty grub_device.
+	Reported by: Lennart Sorensen.
+
+2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/00_header.in: Remove compatibility with terminal.mod
+	prior to terminal_input/terminal_output separation. It's been over 1.5
+	years and those versions weren't widely deployed.
+
+2010-07-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	* disk/raid.c (insert_array): Don't count named arrays when looking
+	for unused array numbers.
+	Reported and tested by: Michael Guntsche.
+
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* bus/usb/emu/usb.c (grub_usb_poll_devices): Add a dummy
+	implementation of this so that grub-emu links again, with a note
+	that this should support hotplugging in the future.
+
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/emu/getroot.c (grub_util_get_grub_dev): Use xasprintf.
+
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* disk/loopback.c (grub_cmd_loopback): Don't leak a grub_file_t
+	handle on failure.
+	(grub_loopback_close): Remove empty function.
+	(grub_loopback_dev): Remove close method.
+
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	Disable EFI cursor when the EFI console becomes inactive.
+
+	* term/efi/console.c (grub_efi_console_init): New function.
+	(grub_efi_console_fini): New function.
+	(grub_console_term_output): Register init and fini methods.
+
+2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* tests/util/grub-shell-tester.in: Remove bashism and declare as
+	sh script.
+
+2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* disk/loopback.c (grub_loopback): Replace filename with file.
+	(delete_loopback): Handle new semantics.
+	(grub_cmd_loopback): Likewise.
+	(grub_loopback_iterate): Likewise.
+	(grub_loopback_close): Likewise.
+
+2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/i386/efi/grub-install.in: Revert to platform-specific behaviour
+	with -p "".
+	Reported by: Tito Keitel.
+
+2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Naming convention): Document new naming convention.
+
+2010-07-20  Vadim Solomin  <vadic052@gmail.com>
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	Generate device.map in something closer to the old ordering.
+
+	* util/deviceiter.c (struct device): New declaration.
+	(compare_file_names): Rename to ...
+	(compare_devices): ... this.  Sort by kernel name in preference to
+	the stable by-id name, but keep the latter as a fallback comparison.
+	Update header comment.
+	(grub_util_iterate_devices) [__linux__]: Construct and sort an array
+	of `struct device' rather than of plain file names.
+
+2010-07-20  Thomas Frauendorfer  <Thomas.Frauendorfer@googlemail.com>
+
+	* lib/i386/relocator_asm.S [! __x86_64__]: Don't try to disable amd64
+	on i386.
+
+2010-07-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/acpi.c (setup_common_tables): Use sizeof instead of
+	hardcoding size.
+	(setv1table): Likewise.
+
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* disk/raid.c (insert_array): Use md/%s to name mdadm 1.x devices,
+	removing the homehost if present.
+	* kern/emu/getroot.c (get_mdadm_name) [__linux__]: New function.
+	(grub_util_get_grub_dev): Use md/%s to name mdadm 1.x devices,
+	removing the homehost if present.
+	(grub_util_get_grub_dev) [__linux__]: Get the array name from mdadm
+	if possible.
+	* util/i386/pc/grub-setup.c (main): Handle md/* devices.
+
+	* disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Add start_sector
+	parameter.  Set its pointer target to 0.
+	* disk/mdraid_linux.c (grub_mdraid_detect): Add start_sector
+	parameter.  Set its pointer target to 0 for 0.9 metadata, or to the
+	`data_offset' value from the superblock for 1.x metadata.
+	* disk/raid.c (grub_raid_read): Offset reads by the start sector of
+	data on the device.
+	(insert_array): Record the start sector of data on the device.
+	(grub_raid_register): Pass start_sector parameters to
+	grub_raid_list->detect and insert_array.
+	* include/grub/raid.h (struct grub_raid_array): Add start_sector
+	member.
+	(struct grub_raid): Add start_sector parameter to `detect'.
+
+	* disk/mdraid_linux.c (struct grub_raid_super_1x): Remove
+	__attribute__ ((packed)), leaving a comment.
+	(grub_mdraid_detect): Split out 0.9 and 1.x detection to ...
+	(grub_mdraid_detect_09): ... here and ...
+	(grub_mdraid_detect_1x): ... here.
+
+2010-07-20  Peter Henn  <peter.henn@web.de>
+
+	* disk/mdraid_linux.c (grub_mdraid_detect): Fix calculation of 1.x
+	chunk size and disk size, which are already given as sector counts
+	as distinct from the 0.90 units.  Fetch the correct device number
+	from the role table instead of using the table index.
+
+2010-07-20  Felix Zielcke  <fzielcke@z-51.de>
+
+	* disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Set array->name to NULL.
+	* disk/mdraid_linux.c (grub_raid_super_1x): New structure.
+	(WriteMostly1): New macro.
+	Set array->name to NULL for metadata format 0.90.  Add support for
+	metadata 1.x.  Fix some comments.
+	* disk/raid.c (): Add support for name based RAID arrays.  Fix a
+	few comments.
+	* util/getroot.c (grub_util_get_grub_dev): Add support for
+	/dev/md/name style devices.
+
+2010-07-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Ignore 20_linux_xen.
+
+2010-07-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/import_unicode.py: Remove unnecessary imports.
+
+2010-07-17  Aleš Nesrsta <starous@volny.cz>
+
+	Hotplugging and USB hub support.
+
+	* bus/usb/ohci.c (grub_ohci_td): Add convenience fields.
+	(grub_ohci): Likewise.
+	(GRUB_OHCI_REG_CONTROL_BULK_ENABLE): New definition.
+	(GRUB_OHCI_REG_CONTROL_CONTROL_ENABLE): Likewise.
+	(GRUB_OHCI_RESET_CONNECT_CHANGE): Likewise.
+	(GRUB_OHCI_CTRL_EDS): Likewise.
+	(GRUB_OHCI_BULK_EDS): Likewise.
+	(GRUB_OHCI_TDS): Likewise.
+	(GRUB_OHCI_ED_ADDR_MASK): Likewise.
+	(grub_ohci_ed_phys2virt): New function.
+	(grub_ohci_virt_to_phys): Likewise.
+	(grub_ohci_td_phys2virt): Likewise.
+	(grub_ohci_td_virt2phys): Likewise.
+	(grub_ohci_pci_iter): Allocate memory and don't wait for stable
+	attachment.
+	(grub_ohci_find_ed): New function.
+	(grub_ohci_alloc_td): Likewise.
+	(grub_ohci_free_td): Likewise.
+	(grub_ohci_free_tds): Likewise.
+	(grub_ohci_transfer): Use previously allocated memory.
+	(grub_ohci_portstatus): Reset status changed bit.
+	(grub_ohci_detect_dev): Supply status changed.
+	(grub_ohci_fini_hw): Free memory.
+	(grub_ohci_restore_hw): Reallocate memory.
+	* bus/usb/uhci.c (grub_uhci_portstatus): Don't reset on disable.
+	Reset status change.
+	(grub_uhci_detect_dev): Supply status_change.
+	* bus/usb/usb.c (attach_hooks): New var.
+	(grub_usb_device_attach): New function.
+	(grub_usb_register_attach_hook_class): Likewise.
+	(grub_usb_unregister_attach_hook_class): Likewise.
+	* bus/usb/usbhub.c (grub_usb_hub_add_dev): Handle errors correctly.
+	(grub_usb_add_hub): Reset connection changed bit.
+	(attach_root_port): New function.
+	(grub_usb_root_hub): Likewise.
+	(poll_nonroot_hub): Likewise.
+	(grub_usb_poll_devices): Likewise.
+	* commands/usbtest.c (grub_cmd_usbtest): Poll devices before listing.
+	* disk/usbms.c (grub_usbms_open): Use device hooks.
+	(grub_usbms_iterate) :Poll devices.
+	(grub_usbms_finddevs): Split into ...
+	(grub_usbms_attach): ... this ...
+	(grub_usbms_attach): ... and this.
+	* include/grub/usb.h (grub_usb_controller_dev): Supply status_changed
+	in detect_dev.
+	(grub_usb_interface): New fields attached and detach_hook.
+	(grub_usb_attach_hook_class): New type.
+	(grub_usb_attach_desc): New struct.
+	(grub_usb_register_attach_hook_class): New function.
+	(grub_usb_unregister_attach_hook_class): Likewise.
+	(grub_usb_poll_devices): Likewise.
+	(grub_usb_device_attach): Likewise.
+	* include/grub/usbtrans.h (GRUB_USB_HUB_FEATURE_C_CONNECTED): New const.
+	(GRUB_USB_HUB_STATUS_C_CONNECTED): Likewise.
+
 2010-07-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/bsdlabel.h (GRUB_PC_PARTITION_BSD_LABEL_WHOLE_DISK_PARTITION): New definition.

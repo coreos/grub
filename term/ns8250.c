@@ -210,7 +210,7 @@ static struct grub_serial_port com_ports[GRUB_SERIAL_PORT_NUM];
 void
 grub_ns8250_init (void)
 {
-  int i;
+  unsigned i;
   for (i = 0; i < GRUB_SERIAL_PORT_NUM; i++)
     if (serial_hw_io_addr[i])
       {
@@ -231,7 +231,7 @@ char *
 grub_serial_ns8250_add_port (grub_port_t port)
 {
   struct grub_serial_port *p;
-  int i;
+  unsigned i;
   for (i = 0; i < GRUB_SERIAL_PORT_NUM; i++)
     if (com_ports[i].port == port)
       return com_names[i];

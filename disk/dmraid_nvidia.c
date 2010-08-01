@@ -89,7 +89,8 @@ struct grub_nv_super
 } __attribute__ ((packed));
 
 static grub_err_t
-grub_dmraid_nv_detect (grub_disk_t disk, struct grub_raid_array *array)
+grub_dmraid_nv_detect (grub_disk_t disk, struct grub_raid_array *array,
+                       grub_disk_addr_t *start_sector)
 {
   grub_disk_addr_t sector;
   struct grub_nv_super sb;
@@ -132,6 +133,7 @@ grub_dmraid_nv_detect (grub_disk_t disk, struct grub_raid_array *array)
                          "unsupported RAID level: %d", sb.array.raid_level);
     }
 
+  array->name = NULL;
   array->number = 0;
   array->total_devs = sb.array.total_volumes;
   array->chunk_size = sb.array.stripe_block_size;
@@ -143,6 +145,8 @@ grub_dmraid_nv_detect (grub_disk_t disk, struct grub_raid_array *array)
 
   grub_memcpy (array->uuid, (char *) &sb.array.signature,
                sizeof (sb.array.signature));
+
+  *start_sector = 0;
 
   return 0;
 }

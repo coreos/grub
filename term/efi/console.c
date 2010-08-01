@@ -311,6 +311,20 @@ grub_console_setcursor (struct grub_term_output *term __attribute__ ((unused)),
   efi_call_2 (o->enable_cursor, o, on);
 }
 
+static grub_err_t
+grub_efi_console_init (struct grub_term_output *term)
+{
+  grub_console_setcursor (term, 1);
+  return 0;
+}
+
+static grub_err_t
+grub_efi_console_fini (struct grub_term_output *term)
+{
+  grub_console_setcursor (term, 0);
+  return 0;
+}
+
 static struct grub_term_input grub_console_term_input =
   {
     .name = "console",
@@ -321,6 +335,8 @@ static struct grub_term_input grub_console_term_input =
 static struct grub_term_output grub_console_term_output =
   {
     .name = "console",
+    .init = grub_efi_console_init,
+    .fini = grub_efi_console_fini,
     .putchar = grub_console_putchar,
     .getwh = grub_console_getwh,
     .getxy = grub_console_getxy,

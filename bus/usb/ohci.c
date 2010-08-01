@@ -459,7 +459,7 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
     grub_dma_free (o->hcca_chunk);
   grub_free (o);
 
-  return 1;
+  return 0;
 }
 
 
