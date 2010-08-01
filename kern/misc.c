@@ -518,12 +518,39 @@ grub_strndup (const char *s, grub_size_t n)
 }
 
 void *
-grub_memset (void *s, int c, grub_size_t n)
+grub_memset (void *s, int c, grub_size_t len)
 {
-  unsigned char *p = (unsigned char *) s;
+  void *p = s;
+  grub_uint8_t pattern8 = c;
 
-  while (n--)
-    *p++ = (unsigned char) c;
+  if (len >= 3 * sizeof (unsigned long))
+    {
+      unsigned long patternl = 0;
+      grub_size_t i;
+
+      for (i = 0; i < sizeof (unsigned long); i++)
+	patternl |= ((unsigned long) pattern8) << (8 * i);
+
+      while (len > 0 && (((grub_addr_t) p) & (sizeof (unsigned long) - 1)))
+	{
+	  *(grub_uint8_t *) p = pattern8;
+	  p = (grub_uint8_t *) p + 1;
+	  len--;
+	}
+      while (len >= sizeof (unsigned long))
+	{
+	  *(unsigned long *) p = patternl;
+	  p = (unsigned long *) p + 1;
+	  len -= sizeof (unsigned long);
+	}
+    }
+
+  while (len > 0)
+    {
+      *(grub_uint8_t *) p = pattern8;
+      p = (grub_uint8_t *) p + 1;
+      len--;
+    }
 
   return s;
 }

@@ -1,3 +1,8 @@
+2010-08-01  Vladimir Serbinenko  <phcoder@gmail.com>
+2010-08-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/misc.c (grub_memset): Optimise to reduce cache stalls.
+
 2010-08-01  Robert Millan  <rmh@gnu.org>
 
 	Prevent accidental use of uninitialized libzfs_handle.
