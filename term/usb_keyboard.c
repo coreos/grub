@@ -63,6 +63,9 @@ static char keyboard_map_shift[128] =
 #define USB_HID_SET_IDLE	0x0A
 #define USB_HID_SET_PROTOCOL	0x0B
 
+#define USB_HID_BOOT_SUBCLASS	0x01
+#define USB_HID_KBD_PROTOCOL	0x01
+
 static int grub_usb_keyboard_checkkey (struct grub_term_input *term);
 static int grub_usb_keyboard_getkey (struct grub_term_input *term);
 static int grub_usb_keyboard_getkeystatus (struct grub_term_input *term);
@@ -118,6 +121,12 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
 
   if (usbdev->descdev.class != 0 
       || usbdev->descdev.subclass != 0 || usbdev->descdev.protocol != 0)
+    return 0;
+
+  if (usbdev->config[configno].interf[interfno].descif->subclass
+      != USB_HID_BOOT_SUBCLASS
+      || usbdev->config[configno].interf[interfno].descif->protocol
+      != USB_HID_KBD_PROTOCOL)
     return 0;
 
   grub_printf ("HID found!\n");
