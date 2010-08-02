@@ -1,3 +1,8 @@
+2010-08-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* disk/raid.c (insert_array): Select unique numbers for named arrays
+	as well, for use as keys in the disk cache.
+
 2010-08-01  Robert Millan  <rmh@gnu.org>
 
 	* util/grub.d/10_kfreebsd.in: Initialize ${kfreebsd_device} as the

@@ -528,25 +528,28 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
       grub_memset (&array->device, 0, sizeof (array->device));
       grub_memset (&array->start_sector, 0, sizeof (array->start_sector));
 
-      if (array->name)
-	goto skip_duplicate_check;
-      /* Check whether we don't have multiple arrays with the same number.  */
-      for (p = array_list; p != NULL; p = p->next)
-        {
-          if (! p->name && p->number == array->number) 
-	    break;
-        }
+      if (! array->name)
+	{
+	  for (p = array_list; p != NULL; p = p->next)
+	    {
+	      if (! p->name && p->number == array->number) 
+		break;
+	    }
+	}
 
-      if (p)
+      if (array->name || p)
         {
-          /* The number is already in use, so we need to find a new one.  */
-          int i = 0;
+	  /* The number is already in use, so we need to find a new one.
+	     (Or, in the case of named arrays, the array doesn't have its
+	     own number, but we need one that doesn't clash for use as a key
+	     in the disk cache.  */
+          int i = array->name ? 0x40000000 : 0;
 
 	  while (1)
 	    {
 	      for (p = array_list; p != NULL; p = p->next)
 		{
-		  if (! p->name && p->number == i)
+		  if (p->number == i)
 		    break;
 		}
 
@@ -560,7 +563,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 	      i++;
 	    }
 	}
-    skip_duplicate_check:
+
       /* mdraid 1.x superblocks have only a name stored not a number.
 	 Use it directly as GRUB device.  */
       if (! array->name)
