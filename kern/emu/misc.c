@@ -32,6 +32,10 @@
 #include <limits.h>
 #endif
 
+#ifdef HAVE_GETMNTANY
+# include <sys/mnttab.h>
+#endif
+
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/env.h>
@@ -340,7 +344,7 @@ grub_find_zpool_from_mount_point (const char *mnt_point, char **poolname, char *
 
   *poolname = *poolfs = NULL;
 
-#ifdef HAVE_GETFSSTAT
+#if defined(HAVE_GETFSSTAT) /* FreeBSD and GNU/kFreeBSD */
   {
     int mnt_count = getfsstat (NULL, 0, MNT_WAIT);
     if (mnt_count == -1)
@@ -362,6 +366,24 @@ grub_find_zpool_from_mount_point (const char *mnt_point, char **poolname, char *
 	}
 
     free (mnt);
+  }
+#elif defined(HAVE_GETMNTANY) /* OpenSolaris */
+  {
+    FILE *mnttab = fopen ("/etc/mnttab", "r");
+    struct mnttab mp;
+    struct mnttab mpref =
+      {
+	.mnt_special = NULL,
+	.mnt_mountp = mnt_point,
+	.mnt_fstype = "zfs",
+	.mnt_mntopts = NULL,
+	.mnt_time = NULL,
+      };
+
+    if (getmntany (mnttab, &mp, &mpref) == 0)
+      *poolname = xstrdup (mp.mnt_special);
+
+    fclose (mnttab);
   }
 #endif
 
