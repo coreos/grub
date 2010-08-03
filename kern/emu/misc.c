@@ -45,8 +45,11 @@
 # include <libdevmapper.h>
 #endif
 
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+#ifdef HAVE_LIBZFS
 # include <grub/util/libzfs.h>
+#endif
+
+#ifdef HAVE_LIBNVPAIR
 # include <grub/util/libnvpair.h>
 #endif
 
@@ -245,6 +248,28 @@ get_win32_path (const char *path)
   return xstrdup (winpath + offs);
 }
 #endif
+
+#ifdef HAVE_LIBZFS
+static libzfs_handle_t *__libzfs_handle;
+
+static void
+fini_libzfs (void)
+{
+  libzfs_fini (__libzfs_handle);
+}
+
+libzfs_handle_t *
+grub_get_libzfs_handle (void)
+{
+  if (! __libzfs_handle)
+    {
+      __libzfs_handle = libzfs_init ();
+      atexit (fini_libzfs);
+    }
+
+  return __libzfs_handle;
+}
+#endif /* HAVE_LIBZFS */
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
 /* Not ZFS-specific in itself, but for now it's only used by ZFS-related code.  */
