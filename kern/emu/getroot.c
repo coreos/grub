@@ -20,14 +20,17 @@
 #include <config.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <assert.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include <dirent.h>
 #include <errno.h>
+#include <error.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <grub/util/misc.h>
 
 #ifdef __GNU__
 #include <hurd.h>
@@ -39,6 +42,11 @@
 #ifdef __linux__
 # include <sys/types.h>
 # include <sys/wait.h>
+#endif
+
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+# include <grub/util/libzfs.h>
+# include <grub/util/libnvpair.h>
 #endif
 
 #include <grub/mm.h>
@@ -165,6 +173,58 @@ find_root_device_from_mountinfo (const char *dir)
 }
 
 #endif /* __linux__ */
+
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+static char *
+find_root_device_from_libzfs (const char *dir)
+{
+  char *device;
+  char *poolname;
+  char *poolfs;
+  char *mnt_point;
+
+  mnt_point = grub_find_mount_point_from_dir (dir);
+  grub_find_zpool_from_mount_point (mnt_point, &poolname, &poolfs);
+  if (! poolname)
+    {
+      free (mnt_point);
+      return NULL;
+    }
+
+  {
+    zpool_handle_t *zpool;
+    nvlist_t *nvlist;
+    nvlist_t **nvlist_array;
+    unsigned int nvlist_count;
+
+    zpool = zpool_open (grub_get_libzfs_handle (), poolname);
+    nvlist = zpool_get_config (zpool, NULL);
+
+    if (nvlist_lookup_nvlist (nvlist, "vdev_tree", &nvlist) != 0)
+      error (1, errno, "nvlist_lookup_nvlist (\"vdev_tree\")");
+
+    if (nvlist_lookup_nvlist_array (nvlist, "children", &nvlist_array, &nvlist_count) != 0)
+      error (1, errno, "nvlist_lookup_nvlist_array (\"children\")");
+
+    do
+      {
+	assert (nvlist_count > 0);
+      } while (nvlist_lookup_nvlist_array (nvlist_array[0], "children",
+					   &nvlist_array, &nvlist_count) == 0);
+
+    if (nvlist_lookup_string (nvlist_array[0], "path", &device) != 0)
+      error (1, errno, "nvlist_lookup_string (\"path\")");
+
+    zpool_close (zpool);
+  }
+
+  free (poolname);
+  if (poolfs)
+    free (poolfs);
+
+  return device;
+}
+#endif
 
 #ifdef __MINGW32__
 
@@ -457,6 +517,12 @@ grub_guess_root_device (const char *dir)
   if (os_dev)
     return os_dev;
 #endif /* __linux__ */
+
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+  os_dev = find_root_device_from_libzfs (dir);
+  if (os_dev)
+    return os_dev;
+#endif
 
   if (stat (dir, &st) < 0)
     grub_util_error ("cannot stat `%s'", dir);
