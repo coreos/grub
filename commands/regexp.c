@@ -22,13 +22,69 @@
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/env.h>
-#include <grub/command.h>
+#include <grub/extcmd.h>
 #include <grub/i18n.h>
 #include <regex.h>
 
+static const struct grub_arg_option options[] =
+  {
+    { "set", 's', GRUB_ARG_OPTION_REPEATABLE,
+      N_("Variable names to update with matches."),
+      N_("[NUMBER:]VARNAME"), ARG_TYPE_STRING },
+    { 0, 0, 0, 0, 0, 0 }
+  };
+
 static grub_err_t
-grub_cmd_regexp (grub_command_t cmd __attribute__ ((unused)),
-		 int argc, char **args)
+set_matches (char **varnames, char *str, grub_size_t nmatches,
+	     regmatch_t *matches)
+{
+  int i;
+  char ch;
+  char *p;
+  char *q;
+  grub_err_t err;
+  unsigned long j;
+
+  auto void setvar (char *v, regmatch_t *m);
+  void setvar (char *v, regmatch_t *m)
+  {
+    ch = str[m->rm_eo];
+    str[m->rm_eo] = '\0';
+    err = grub_env_set (v, str + m->rm_so);
+    str[m->rm_eo] = ch;
+  }
+
+  for (i = 0; varnames && varnames[i]; i++)
+    {
+      if (! (p = grub_strchr (varnames[i], ':')))
+	{
+	  /* varname w/o index defaults to 1 */
+	  if (nmatches < 2 || matches[1].rm_so == -1)
+	    grub_env_unset (varnames[i]);
+	  else
+	    setvar (varnames[i], &matches[1]);
+	}
+      else
+	{
+	  j = grub_strtoul (varnames[i], &q, 10);
+	  if (q != p)
+	    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			       "invalid variable name format %s", varnames[i]);
+
+	  if (nmatches <= j || matches[j].rm_so == -1)
+	    grub_env_unset (p + 1);
+	  else
+	    setvar (p + 1, &matches[j]);
+	}
+
+      if (err != GRUB_ERR_NONE)
+	return err;
+    }
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_cmd_regexp (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   int argn = 0;
   regex_t regex;
@@ -52,25 +108,11 @@ grub_cmd_regexp (grub_command_t cmd __attribute__ ((unused)),
   ret = regexec (&regex, args[1], regex.re_nsub + 1, matches, 0);
   if (!ret)
     {
-      int i;
-      char ch;
-      char buf[5 + sizeof (size_t) * 3];
-
-      for (i = 0; i <= regex.re_nsub && matches[i].rm_so != -1; i++)
-	{
-	  ch = args[1][matches[i].rm_eo];
-	  args[1][matches[i].rm_eo] = '\0';
-
-	  grub_snprintf (buf, sizeof (buf), "%s%u", "match", i);
-	  if (grub_env_set (buf, args[1] + matches[i].rm_so))
-	    break;
-
-	  args[1][matches[i].rm_eo] = ch;
-	}
-
+      err = set_matches (ctxt->state[0].args, args[1],
+			 regex.re_nsub + 1, matches);
       regfree (&regex);
       grub_free (matches);
-      return GRUB_ERR_NONE;
+      return err;
     }
 
  fail:
@@ -89,16 +131,16 @@ grub_cmd_regexp (grub_command_t cmd __attribute__ ((unused)),
   return err;
 }
 
-static grub_command_t cmd;
+static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(regexp)
 {
-  cmd = grub_register_command ("regexp", grub_cmd_regexp,
-			       N_("REGEXP STRING"),
-			       N_("Test if REGEXP matches STRING."));
+  cmd = grub_register_extcmd ("regexp", grub_cmd_regexp,
+			      GRUB_COMMAND_FLAG_BOTH, N_("REGEXP STRING"),
+			      N_("Test if REGEXP matches STRING."), options);
 }
 
 GRUB_MOD_FINI(regexp)
 {
-  grub_unregister_command (cmd);
+  grub_unregister_extcmd (cmd);
 }
