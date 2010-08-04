@@ -1,5 +1,18 @@
 2010-08-04  Robert Millan  <rmh@gnu.org>
 
+	* include/grub/emu/misc.h (grub_find_mount_point_from_dir)
+	(grub_find_zpool_from_mount_point): Merge into ...
+	(grub_find_zpool_from_dir): ... this.
+	* kern/emu/misc.c: Likewise.
+
+	* kern/emu/misc.c
+	(grub_make_system_path_relative_to_its_root): Replace
+	grub_find_mount_point_from_dir() / grub_find_zpool_from_mount_point()
+	with grub_find_zpool_from_dir().
+	* kern/emu/getroot.c (find_root_device_from_libzfs): Likewise.
+
+2010-08-04  Robert Millan  <rmh@gnu.org>
+
 	Support OpenSolaris in ZFS device resolution.
 
 	* configure.ac: Check for getmntany().

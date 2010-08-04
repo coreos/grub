@@ -181,15 +181,10 @@ find_root_device_from_libzfs (const char *dir)
   char *device;
   char *poolname;
   char *poolfs;
-  char *mnt_point;
 
-  mnt_point = grub_find_mount_point_from_dir (dir);
-  grub_find_zpool_from_mount_point (mnt_point, &poolname, &poolfs);
+  grub_find_zpool_from_dir (dir, &poolname, &poolfs);
   if (! poolname)
-    {
-      free (mnt_point);
-      return NULL;
-    }
+    return NULL;
 
   {
     zpool_handle_t *zpool;

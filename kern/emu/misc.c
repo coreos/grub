@@ -277,8 +277,8 @@ grub_get_libzfs_handle (void)
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
 /* Not ZFS-specific in itself, but for now it's only used by ZFS-related code.  */
-char *
-grub_find_mount_point_from_dir (const char *dir)
+static char *
+find_mount_point_from_dir (const char *dir)
 {
   struct stat st;
   typeof (st.st_dev) fs;
@@ -332,17 +332,17 @@ grub_find_mount_point_from_dir (const char *dir)
 	}
     }
 }
-#endif
-
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
 
 /* ZFS has similar problems to those of btrfs (see above).  */
 void
-grub_find_zpool_from_mount_point (const char *mnt_point, char **poolname, char **poolfs)
+grub_find_zpool_from_dir (const char *dir, char **poolname, char **poolfs)
 {
   char *slash;
+  char *mnt_point;
 
   *poolname = *poolfs = NULL;
+
+  mnt_point = find_mount_point_from_dir (dir);
 
 #if defined(HAVE_GETFSSTAT) /* FreeBSD and GNU/kFreeBSD */
   {
@@ -408,7 +408,7 @@ grub_make_system_path_relative_to_its_root (const char *path)
 {
   struct stat st;
   char *p, *buf, *buf2, *buf3;
-  char *mnt_point, *poolname = NULL, *poolfs = NULL, *ret;
+  char *poolname = NULL, *poolfs = NULL, *ret;
   uintptr_t offset = 0;
   dev_t num;
   size_t len;
@@ -420,12 +420,7 @@ grub_make_system_path_relative_to_its_root (const char *path)
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
   /* For ZFS sub-pool filesystems, could be extended to others (btrfs?).  */
-  mnt_point = grub_find_mount_point_from_dir (p);
-  if (mnt_point)
-    {
-      grub_find_zpool_from_mount_point (mnt_point, &poolname, &poolfs);
-      free (mnt_point);
-    }
+  grub_find_zpool_from_dir (p, &poolname, &poolfs);
 #endif
 
   len = strlen (p) + 1;
