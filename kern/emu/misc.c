@@ -32,6 +32,10 @@
 #include <limits.h>
 #endif
 
+#ifdef HAVE_GETMNTANY
+# include <sys/mnttab.h>
+#endif
+
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/env.h>
@@ -45,8 +49,11 @@
 # include <libdevmapper.h>
 #endif
 
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+#ifdef HAVE_LIBZFS
 # include <grub/util/libzfs.h>
+#endif
+
+#ifdef HAVE_LIBNVPAIR
 # include <grub/util/libnvpair.h>
 #endif
 
@@ -246,6 +253,28 @@ get_win32_path (const char *path)
 }
 #endif
 
+#ifdef HAVE_LIBZFS
+static libzfs_handle_t *__libzfs_handle;
+
+static void
+fini_libzfs (void)
+{
+  libzfs_fini (__libzfs_handle);
+}
+
+libzfs_handle_t *
+grub_get_libzfs_handle (void)
+{
+  if (! __libzfs_handle)
+    {
+      __libzfs_handle = libzfs_init ();
+      atexit (fini_libzfs);
+    }
+
+  return __libzfs_handle;
+}
+#endif /* HAVE_LIBZFS */
+
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
 /* Not ZFS-specific in itself, but for now it's only used by ZFS-related code.  */
 char *
@@ -315,7 +344,7 @@ grub_find_zpool_from_mount_point (const char *mnt_point, char **poolname, char *
 
   *poolname = *poolfs = NULL;
 
-#ifdef HAVE_GETFSSTAT
+#if defined(HAVE_GETFSSTAT) /* FreeBSD and GNU/kFreeBSD */
   {
     int mnt_count = getfsstat (NULL, 0, MNT_WAIT);
     if (mnt_count == -1)
@@ -337,6 +366,24 @@ grub_find_zpool_from_mount_point (const char *mnt_point, char **poolname, char *
 	}
 
     free (mnt);
+  }
+#elif defined(HAVE_GETMNTANY) /* OpenSolaris */
+  {
+    FILE *mnttab = fopen ("/etc/mnttab", "r");
+    struct mnttab mp;
+    struct mnttab mpref =
+      {
+	.mnt_special = NULL,
+	.mnt_mountp = mnt_point,
+	.mnt_fstype = "zfs",
+	.mnt_mntopts = NULL,
+	.mnt_time = NULL,
+      };
+
+    if (getmntany (mnttab, &mp, &mpref) == 0)
+      *poolname = xstrdup (mp.mnt_special);
+
+    fclose (mnttab);
   }
 #endif
 

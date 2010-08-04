@@ -1,3 +1,28 @@
+2010-08-04  Robert Millan  <rmh@gnu.org>
+
+	Support OpenSolaris in ZFS device resolution.
+
+	* configure.ac: Check for getmntany().
+	* kern/emu/misc.c [HAVE_GETMNTANY]: Include `<sys/mnttab.h>'.
+	[HAVE_GETMNTANY] (grub_find_zpool_from_mount_point): Add OpenSolaris
+	support.
+
+2010-08-03  Robert Millan  <rmh@gnu.org>
+
+	Fix grub-emu build.
+
+	* include/grub/util/misc.h: Move `<grub/util/libzfs.h>' to ...
+	* include/grub/emu/misc.h: ... here.
+
+	* include/grub/util/misc.h (grub_get_libzfs_handle): Move function ...
+	* include/grub/emu/misc.h (grub_get_libzfs_handle): ... here.
+
+	* util/misc.c: Remove `<grub/util/libzfs.h>'.
+	[HAVE_LIBZFS] (libzfs_handle, fini_libzfs)
+	(grub_get_libzfs_handle): Move to ...
+	* kern/emu/misc.c [HAVE_LIBZFS] (__libzfs_handle, fini_libzfs)
+	(grub_get_libzfs_handle): ... here.
+
 2010-08-03  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* script/execute.c (grub_script_execute_cmdline): Check for NULL
