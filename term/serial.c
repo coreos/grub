@@ -236,11 +236,11 @@ static struct grub_term_output grub_serial_term_output =
 
 
 static grub_err_t
-grub_cmd_serial (grub_extcmd_t cmd,
+grub_cmd_serial (grub_extcmd_context_t ctxt,
                  int argc __attribute__ ((unused)),
 		 char **args __attribute__ ((unused)))
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   struct serial_port backup_settings = serial_settings;
   grub_err_t hwiniterr;
 

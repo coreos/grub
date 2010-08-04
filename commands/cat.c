@@ -33,9 +33,9 @@ static const struct grub_arg_option options[] =
   };
 
 static grub_err_t
-grub_cmd_cat (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_cat (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   int dos = 0;
   grub_file_t file;
   char buf[GRUB_DISK_SECTOR_SIZE];

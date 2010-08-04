@@ -54,7 +54,7 @@ grub_script_malloc (struct grub_parser_param *state, grub_size_t size)
 }
 
 /* Free all memory described by MEM.  */
-static void
+void
 grub_script_mem_free (struct grub_script_mem *mem)
 {
   struct grub_script_mem *memfree;
@@ -94,9 +94,21 @@ grub_script_mem_record_stop (struct grub_parser_param *state,
 void
 grub_script_free (struct grub_script *script)
 {
-  if (!script)
+  struct grub_script *s;
+  struct grub_script *t;
+
+  if (! script)
     return;
-  grub_script_mem_free (script->mem);
+
+  if (script->mem)
+    grub_script_mem_free (script->mem);
+
+  s = script->children;
+  while (s) {
+    t = s->siblings;
+    grub_script_put (s);
+    s = t;
+  }
   grub_free (script);
 }
 
@@ -119,6 +131,8 @@ grub_script_arg_add (struct grub_parser_param *state,
     return arg;
 
   argpart->type = type;
+  argpart->script = 0;
+
   len = grub_strlen (str) + 1;
   argpart->str = grub_script_malloc (state, len);
   if (!argpart->str)
@@ -267,70 +281,40 @@ grub_script_create_cmdwhile (struct grub_parser_param *state,
   return (struct grub_script_cmd *) cmd;
 }
 
-/* Create a command that adds a menu entry to the menu.  Title is an
-   argument that is parsed to generate a string that can be used as
-   the title.  The sourcecode for this entry is passed in SOURCECODE.
-   The options for this entry are passed in OPTIONS.  */
+/* Create a chain of commands.  LAST contains the command that should
+   be added at the end of LIST's list.  If LIST is zero, a new list
+   will be created.  */
 struct grub_script_cmd *
-grub_script_create_cmdmenu (struct grub_parser_param *state,
-			    struct grub_script_arglist *arglist,
-			    char *sourcecode, int options)
-{
-  struct grub_script_cmd_menuentry *cmd;
-
-  cmd = grub_script_malloc (state, sizeof (*cmd));
-  if (!cmd)
-    return 0;
-    
-  cmd->cmd.exec = grub_script_execute_menuentry;
-  cmd->cmd.next = 0;
-  cmd->sourcecode = sourcecode;
-  cmd->arglist = arglist;
-  cmd->options = options;
-
-  return (struct grub_script_cmd *) cmd;
-}
-
-/* Create a block of commands.  CMD contains the command that should
-   be added at the end of CMDBLOCK's list.  If CMDBLOCK is zero, a new
-   cmdblock will be created.  */
-struct grub_script_cmd *
-grub_script_add_cmd (struct grub_parser_param *state,
-		     struct grub_script_cmdblock *cmdblock,
-		     struct grub_script_cmd *cmd)
+grub_script_append_cmd (struct grub_parser_param *state,
+			struct grub_script_cmd *list,
+			struct grub_script_cmd *last)
 {
   struct grub_script_cmd *ptr;
 
-  grub_dprintf ("scripting", "cmdblock\n");
+  grub_dprintf ("scripting", "append command\n");
 
-  if (!cmd)
-    return (struct grub_script_cmd *) cmdblock;
+  if (! last)
+    return list;
 
-  if (!cmdblock)
+  if (! list)
     {
-      cmdblock = grub_script_malloc (state, sizeof (*cmdblock));
-      if (!cmdblock)
+      list = grub_script_malloc (state, sizeof (*list));
+      if (! list)
 	return 0;
 
-      cmdblock->cmd.exec = grub_script_execute_cmdblock;
-      cmdblock->cmd.next = 0;
-      cmdblock->cmdlist = cmd;
-      cmd->next = 0;
+      list->exec = grub_script_execute_cmdlist;
+      list->next = last;
     }
   else
     {
-      if (!cmdblock->cmdlist)
-	cmdblock->cmdlist = cmd;
-      else
-	{
-	  ptr = cmdblock->cmdlist;
-	  while (ptr->next)
-	    ptr = ptr->next;
-	  ptr->next = cmd;
-	}
+      ptr = list;
+      while (ptr->next)
+	ptr = ptr->next;
+
+      ptr->next = last;
     }
 
-  return (struct grub_script_cmd *) cmdblock;
+  return list;
 }
 
 
@@ -341,16 +325,14 @@ grub_script_create (struct grub_script_cmd *cmd, struct grub_script_mem *mem)
   struct grub_script *parsed;
 
   parsed = grub_malloc (sizeof (*parsed));
-  if (!parsed)
-    {
-      grub_script_mem_free (mem);
-      grub_free (cmd);
-
-      return 0;
-    }
+  if (! parsed)
+    return 0;
 
   parsed->mem = mem;
   parsed->cmd = cmd;
+  parsed->refcnt = 0;
+  parsed->siblings = 0;
+  parsed->children = 0;
 
   return parsed;
 }
@@ -365,7 +347,7 @@ grub_script_parse (char *script, grub_reader_getline_t getline)
   struct grub_lexer_param *lexstate;
   struct grub_parser_param *parsestate;
 
-  parsed = grub_malloc (sizeof (*parsed));
+  parsed = grub_script_create (0, 0);
   if (!parsed)
     return 0;
 
@@ -399,6 +381,7 @@ grub_script_parse (char *script, grub_reader_getline_t getline)
 
   parsed->mem = grub_script_mem_record_stop (parsestate, membackup);
   parsed->cmd = parsestate->parsed;
+  parsed->children = parsestate->scripts;
 
   grub_script_lexer_fini (lexstate);
   grub_free (parsestate);

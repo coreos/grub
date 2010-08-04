@@ -29,12 +29,12 @@ static const struct grub_arg_option options[] =
   };
 
 static grub_err_t
-grub_cmd_halt (grub_extcmd_t cmd,
+grub_cmd_halt (grub_extcmd_context_t ctxt,
 	       int argc __attribute__ ((unused)),
 	       char **args __attribute__ ((unused)))
 
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   int no_apm = 0;
   if (state[0].set)
     no_apm = 1;

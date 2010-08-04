@@ -458,10 +458,9 @@ free_tables (void)
 }
 
 static grub_err_t
-grub_cmd_acpi (struct grub_extcmd *cmd,
-		      int argc, char **args)
+grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   struct grub_acpi_rsdp_v10 *rsdp;
   struct efiemu_acpi_table *cur, *t;
   grub_err_t err;

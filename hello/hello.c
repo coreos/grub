@@ -27,7 +27,7 @@
 #include <grub/i18n.h>
 
 static grub_err_t
-grub_cmd_hello (struct grub_extcmd *cmd __attribute__ ((unused)),
+grub_cmd_hello (grub_extcmd_context_t ctxt __attribute__ ((unused)),
 		int argc __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {

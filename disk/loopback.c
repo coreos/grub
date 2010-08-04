@@ -71,9 +71,9 @@ delete_loopback (const char *name)
 
 /* The command to add and remove loopback devices.  */
 static grub_err_t
-grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_loopback (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   grub_file_t file;
   struct grub_loopback *newdev;
   grub_err_t ret;

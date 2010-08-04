@@ -119,7 +119,8 @@ DIGITS          [[:digit:]]+
 NAME            [[:alpha:]_][[:alnum:]_]*
 
 ESC             \\.
-VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|$\?|$\{\?\}
+SPECIAL         \?|\#|\*|\@
+VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|${SPECIAL}|$\{{SPECIAL}\}
 DQSTR           \"([^\\\"]|{ESC})*\"
 SQSTR           \'[^\']*\'
 WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
@@ -168,7 +169,6 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 "until"         { RECORD; return GRUB_PARSER_TOKEN_UNTIL;     }
 "while"         { RECORD; return GRUB_PARSER_TOKEN_WHILE;     }
 "function"      { RECORD; return GRUB_PARSER_TOKEN_FUNCTION;  }
-"menuentry"     { RECORD; return GRUB_PARSER_TOKEN_MENUENTRY; }
 
 {NAME}          { RECORD; return GRUB_PARSER_TOKEN_NAME; }
 {WORD}          {
@@ -221,7 +221,7 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 }
 
 <VAR>{
-  \?            |
+  {SPECIAL}     |
   {DIGITS}      |
   {NAME}        {
                   COPY (yytext, yyleng);
@@ -231,7 +231,7 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
                   else
                     ARG (GRUB_SCRIPT_ARG_TYPE_DQVAR);
                 }
-  \{\?\}        |
+  \{{SPECIAL}\} |
   \{{DIGITS}\}  |
   \{{NAME}\}    {
                   yytext[yyleng - 1] = '\0';
