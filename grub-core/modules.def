@@ -584,14 +584,6 @@ module = {
 module = {
   name = lsmmap;
   source = commands/lsmmap.c;
-
-  enable = i386_pc;
-  enable = i386_qemu;
-  enable = i386_coreboot;
-  enable = i386_multiboot;
-  enable = i386_ieee1275;
-  enable = mips_yeeloong;
-  enable = powerpc_ieee1275;
 };
 
 module = {
@@ -1215,12 +1207,7 @@ module = {
 
 module = {
   name = setjmp;
-  i386 = lib/i386/setjmp.S;
-  x86_64 = lib/x86_64/setjmp.S;
-  mips = lib/mips/setjmp.S;
-  sparc64 = lib/sparc64/setjmp.S;
-  powerpc = lib/powerpc/setjmp.S;
-  emu = 'lib/$(target_cpu)/setjmp.S';
+  source = lib/target_cpu/setjmp.S;
 };
 
 module = {
@@ -1289,19 +1276,12 @@ module = {
 
 module = {
   name = xnu;
-  x86_efi = loader/xnu_resume.c;
-  x86_efi = loader/i386/xnu.c;
-  x86_efi = loader/macho32.c;
-  x86_efi = loader/macho64.c;
-  x86_efi = loader/macho.c;
-  x86_efi = loader/xnu.c;
-
-  i386_pc = loader/xnu_resume.c;
-  i386_pc = loader/i386/xnu.c;
-  i386_pc = loader/macho32.c;
-  i386_pc = loader/macho64.c;
-  i386_pc = loader/macho.c;
-  i386_pc = loader/xnu.c;
+  source = loader/xnu_resume.c;
+  source = loader/i386/xnu.c;
+  source = loader/macho32.c;
+  source = loader/macho64.c;
+  source = loader/macho.c;
+  source = loader/xnu.c;
 
   extra_dist = loader/machoXX.c;
   enable = i386_pc;
@@ -1383,7 +1363,7 @@ module = {
   source = script/function.c;
   source = script/lexer.c;
 
-  nodist = unidata.c;
+  source = unidata.c;
   nodist = grub_script.tab.c;
   nodist = grub_script.yy.c;
   nodist = grub_script.tab.h;

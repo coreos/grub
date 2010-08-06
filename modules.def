@@ -90,13 +90,16 @@ library = {
   source = grub-core/script/lexer.c;
   source = grub-core/script/main.c;
   source = grub-core/script/script.c;
+
+  nodist = grub_script.yy.h;
+  nodist = grub_script.tab.h;
 };
 
 program = {
   name = grub-bin2h;
   source = util/bin2h.c;
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL)';
+  ldflags = '$(LIBINTL)';
   mansection = 1;
 };
 
@@ -109,8 +112,7 @@ program = {
   extra_dist = util/grub-mkimagexx.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL)';
-
+  ldflags = '$(LIBINTL)';
   cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibrootdir)\"';
 };
 
@@ -121,7 +123,7 @@ program = {
   source = util/grub-mkrelpath.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL)';
+  ldflags = '$(LIBINTL)';
 };
 
 program = {
@@ -131,7 +133,7 @@ program = {
   source = util/grub-script-check.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL)';
+  ldflags = '$(LIBINTL)';
 };
 
 program = {
@@ -141,7 +143,7 @@ program = {
   source = util/grub-editenv.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL)';
+  ldflags = '$(LIBINTL)';
 };
 
 program = {
@@ -151,7 +153,7 @@ program = {
   source = util/grub-mkpasswd-pbkdf2.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL)';
+  ldflags = '$(LIBINTL)';
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
 };
@@ -169,7 +171,7 @@ program = {
   source = util/grub-pe2elf.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL)';
+  ldflags = '$(LIBINTL)';
   condition = COND_GRUB_PE2ELF;
 };
 
@@ -179,7 +181,7 @@ program = {
   source = util/grub-fstest.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL)';
+  ldflags = '$(LIBINTL)';
   condition = COND_GRUB_FSTEST;
 };
 
@@ -187,13 +189,13 @@ program = {
   name = grub-mkfont;
   mansection = 1;
   source = util/grub-mkfont.c;
-  nodist = grub-core/unidata.c;
+  source = grub-core/unidata.c;
 
   cflags = '$(freetype_cflags)';
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL)';
-  ldadd = '$(freetype_libs)';
+  ldflags = '$(LIBINTL)';
+  ldflags = '$(freetype_libs)';
   condition = COND_GRUB_MKFONT;
 };
 
@@ -211,8 +213,8 @@ program = {
   sparc64_ieee1275 = util/ieee1275/devicemap.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL)';
-  ldadd = '$(LIBUTIL)';
+  ldflags = '$(LIBINTL)';
+  ldflags = '$(LIBUTIL)';
 };
 
 program = {
@@ -222,8 +224,8 @@ program = {
   source = util/grub-probe.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL)';
-  ldadd = '$(LIBUTIL)';
+  ldflags = '$(LIBINTL)';
+  ldflags = '$(LIBUTIL)';
 };
 
 program = {
@@ -240,8 +242,8 @@ program = {
   sparc64_ieee1275 = util/lvm.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL)';
-  ldadd = '$(LIBUTIL)';
+  ldflags = '$(LIBINTL)';
+  ldflags = '$(LIBUTIL)';
 
   enable = i386_pc;
   enable = sparc64_ieee1275;

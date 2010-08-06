@@ -1,7 +1,6 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
 SUBDIRS = po
-DEPDIR = .deps-core
 EXTRA_DIST = gentpl.py modules.def Makefile.tpl genmoddep.awk
 EXTRA_DIST += genmodsrc.sh gensymlist.sh genemuinit.sh genemuinitheader.sh
 EXTRA_DIST += genfslist.sh gencmdlist.sh genvideolist.sh genhandlerlist.sh
@@ -53,17 +52,15 @@ trigtables.c: gentrigtables.c configure.ac
 CLEANFILES += trigtables.c
 
 # XXX Use Automake's LEX & YACC support
-# See Recording Dependencies Manually in automake doc for below rules
-script/sh_module-lexer.$(OBJEXT):grub_script.tab.h
-grub_script.tab.c grub_script.tab.h: $(top_srcdir)/script/parser.y
+grub_script.tab.h: $(top_srcdir)/script/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(top_srcdir)/script/parser.y
+grub_script.tab.c: grub_script.tab.h
 CLEANFILES += grub_script.tab.c grub_script.tab.h
 
 # For the lexer.
-# See Recording Dependencies Manually in automake doc for below rules
-script/sh_module-lexer.$(OBJEXT):grub_script.yy.h
-grub_script.yy.c grub_script.yy.h: $(top_srcdir)/script/yylex.l
+grub_script.yy.h: $(top_srcdir)/script/yylex.l
 	$(LEX) -o grub_script.yy.c --header-file=grub_script.yy.h $(top_srcdir)/script/yylex.l
+grub_script.yy.c: grub_script.yy.h
 CLEANFILES += grub_script.yy.c grub_script.yy.h
 
 include $(srcdir)/modules.am

@@ -1,6 +1,5 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
-DEPDIR = .deps-util
 SUBDIRS = . grub-core po docs
 EXTRA_DIST = autogen.sh gentpl.py Makefile.tpl modules.def geninit.sh
 
@@ -23,13 +22,15 @@ AM_CCASFLAGS = $(CCASFLAGS_GRUB)
 include $(srcdir)/modules.am
 
 # XXX Use Automake's LEX & YACC support
-grub_script.tab.c grub_script.tab.h: $(top_srcdir)/grub-core/script/parser.y
+grub_script.tab.h: $(top_srcdir)/grub-core/script/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(top_srcdir)/grub-core/script/parser.y
+grub_script.tab.c: grub_script.tab.h
 CLEANFILES += grub_script.tab.c grub_script.tab.h
 
 # For the lexer.
-grub_script.yy.c grub_script.yy.h: $(top_srcdir)/grub-core/script/yylex.l
+grub_script.yy.h: $(top_srcdir)/grub-core/script/yylex.l
 	$(LEX) -o grub_script.yy.c --header-file=grub_script.yy.h $(top_srcdir)/grub-core/script/yylex.l
+grub_script.yy.c: grub_script.yy.h
 CLEANFILES += grub_script.yy.c grub_script.yy.h
 
 # For libgrub.a

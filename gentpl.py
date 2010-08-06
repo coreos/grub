@@ -17,6 +17,8 @@ GROUPS["sparc64"] = [ "sparc64_ieee1275" ]
 GROUPS["powerpc"] = [ "powerpc_ieee1275" ]
 GROUPS["x86"]     = GROUPS["i386"] + GROUPS["x86_64"]
 GROUPS["x86_efi"] = [ "i386_efi", "x86_64_efi" ]
+GROUPS["ieee1275"] = [ "i386_ieee1275", "sparc64_ieee1275", "powerpc_ieee1275" ]
+GROUPS["pci"]      = GROUPS["x86"] + GROUPS["mips"]
 GROUPS["nonemu"]  = GRUB_PLATFORMS[:]
 GROUPS["nonemu"].remove("emu")
 
@@ -157,6 +159,7 @@ def shared_nodist_sources(): return "[+ FOR nodist_shared +] [+ .nodist_shared +
 def platform_sources(p): return platform_specific_values(p, "source", "")
 def platform_nodist_sources(p): return platform_specific_values(p, "nodist", "_nodist")
 def platform_extra_dist(p): return platform_specific_values(p, "extra_dist", "_extra_dist")
+def platform_dependencies(p): return platform_specific_values(p, "dependencies", "_dependencies")
 
 def platform_ldadd(p): return platform_specific_values(p, "ldadd", "_ldadd")
 def platform_cflags(p): return platform_specific_values(p, "cflags", "_cflags")
@@ -181,6 +184,7 @@ def module(platform):
     r += var_set(cname() + "_LDFLAGS", "$(AM_LDFLAGS) $(LDFLAGS_MODULE) " + platform_ldflags(platform))
     r += var_set(cname() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_MODULE) " + platform_cppflags(platform))
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_MODULE) " + platform_ccasflags(platform))
+    # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
     r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
@@ -271,6 +275,7 @@ def kernel(platform):
     r += var_set(cname() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_KERNEL) " + platform_cppflags(platform))
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_KERNEL) " + platform_ccasflags(platform))
     r += var_set(cname() + "_STRIPFLAGS", "$(AM_STRIPFLAGS) $(STRIPFLAGS_KERNEL) " + platform_stripflags(platform))
+    # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
     r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
@@ -296,6 +301,7 @@ def image(platform):
     r += var_set(cname() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_IMAGE) " + platform_cppflags(platform))
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_IMAGE) " + platform_ccasflags(platform))
     r += var_set(cname() + "_OBJCOPYFLAGS", "$(OBJCOPYFLAGS_IMAGE) " + platform_objcopyflags(platform))
+    # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
     r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
@@ -322,6 +328,7 @@ def library(platform):
     r += var_set(cname() + "_CFLAGS", "$(AM_CFLAGS) $(CFLAGS_LIBRARY) " + platform_cflags(platform))
     r += var_set(cname() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_LIBRARY) " + platform_cppflags(platform))
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_LIBRARY) " + platform_ccasflags(platform))
+    # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
     r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
@@ -364,6 +371,7 @@ def program(platform, test=False):
     r += var_set(cname() + "_LDFLAGS", "$(AM_LDFLAGS) $(LDFLAGS_PROGRAM) " + platform_ldflags(platform))
     r += var_set(cname() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_PROGRAM) " + platform_cppflags(platform))
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_PROGRAM) " + platform_ccasflags(platform))
+    # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
     r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
