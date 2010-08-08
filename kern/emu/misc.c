@@ -403,7 +403,7 @@ grub_make_system_path_relative_to_its_root (const char *path)
 
   if (poolfs)
     {
-      ret = xasprintf ("/%s@%s", poolfs, buf3);
+      ret = xasprintf ("/%s/@%s", poolfs, buf3);
       free (buf3);
     }
   else

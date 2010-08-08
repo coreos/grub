@@ -1,5 +1,12 @@
 2010-08-08  Robert Millan  <rmh@gnu.org>
 
+	Fix path generation for sub-filesystems in ZFS.
+
+	* kern/emu/misc.c (grub_make_system_path_relative_to_its_root): Add
+	missing slash.
+
+2010-08-08  Robert Millan  <rmh@gnu.org>
+
 	* util/grub-fstest.c (read_file, cmd_cmp): Improve error message.
 
 2010-08-08  Robert Millan  <rmh@gnu.org>
