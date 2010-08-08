@@ -1,5 +1,9 @@
 2010-08-08  Robert Millan  <rmh@gnu.org>
 
+	* util/grub-fstest.c (read_file, cmd_cmp): Improve error message.
+
+2010-08-08  Robert Millan  <rmh@gnu.org>
+
 	* util/grub.d/10_kfreebsd.in: When files required for ZFS do not
 	exist, issue a proper error message (rely on `ls' for translated
 	strings).
