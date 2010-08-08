@@ -76,9 +76,10 @@ EOF
 
   case "${kfreebsd_fs}" in
     zfs)
-      test -e "${module_dir}/opensolaris.ko"
-      test -e "${module_dir}/zfs.ko"
-      test -e "${dirname}/zfs/zpool.cache"
+      for i in "${module_dir}/opensolaris.ko" "${module_dir}/zfs.ko" \
+          "${dirname}/zfs/zpool.cache" ; do
+        ls "$i" > /dev/null
+      done
 
       printf '%s\n' "${prepare_module_dir_cache}"
       cat << EOF

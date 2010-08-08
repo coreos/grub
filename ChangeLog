@@ -1,5 +1,11 @@
 2010-08-08  Robert Millan  <rmh@gnu.org>
 
+	* util/grub.d/10_kfreebsd.in: When files required for ZFS do not
+	exist, issue a proper error message (rely on `ls' for translated
+	strings).
+
+2010-08-08  Robert Millan  <rmh@gnu.org>
+
 	Fix grub-probe invocation.
 
 	* util/grub.d/10_kfreebsd.in: s/label/fs_label/g.
