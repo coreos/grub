@@ -125,7 +125,7 @@ while [ "x$list" != "x" ] ; do
   esac
 
   case ${GRUB_FS} in
-    zfs)		kfreebsd_device=$(grub-probe -t label --device ${GRUB_DEVICE}) ;;
+    zfs)		kfreebsd_device=$(grub-probe -t fs_label --device ${GRUB_DEVICE}) ;;
     *)			kfreebsd_device=${GRUB_DEVICE} ;;
   esac
 

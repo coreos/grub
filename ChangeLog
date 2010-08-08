@@ -1,3 +1,9 @@
+2010-08-08  Robert Millan  <rmh@gnu.org>
+
+	Fix grub-probe invocation.
+
+	* util/grub.d/10_kfreebsd.in: s/label/fs_label/g.
+
 2010-08-04  Robert Millan  <rmh@gnu.org>
 
 	* configure.ac: Remove checks for getfsstat() and getmntany().
