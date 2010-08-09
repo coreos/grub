@@ -208,9 +208,9 @@ block: "{"
 	   /* restore old scripts; append $$->script to siblings. */
 	   state->scripts = $<scripts>2 ?: $$->script;
 	   if (s) {
-	     while (s->siblings)
-	       s = s->siblings;
-	     s->siblings = $$->script;
+	     while (s->next_siblings)
+	       s = s->next_siblings;
+	     s->next_siblings = $$->script;
 	   }
 	 }
 
@@ -243,11 +243,12 @@ grubcmd: word arguments0 block0
 	   if ($3)
 	     x = grub_script_add_arglist (state, $2, $3);
 
-           if ($1 && x) {
-             $1->next = x;
-             $1->argcount += x->argcount;
-             x->argcount = 0;
-           }
+           if ($1 && x)
+	     {
+	       $1->next = x;
+	       $1->argcount += x->argcount;
+	       x->argcount = 0;
+	     }
            $$ = grub_script_create_cmdline (state, $1);
          }
 ;

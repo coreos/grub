@@ -19,6 +19,11 @@ functional_test_mod_SOURCES = tests/lib/functional_test.c tests/lib/test.c
 functional_test_mod_CFLAGS  = $(COMMON_CFLAGS)
 functional_test_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+pkglib_MODULES += test_blockarg.mod
+test_blockarg_mod_SOURCES = tests/test_blockarg.c
+test_blockarg_mod_CFLAGS = $(COMMON_CFLAGS)
+test_blockarg_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # Rules for unit tests
 check_UTILITIES += example_unit_test
 example_unit_test_SOURCES = tests/example_unit_test.c kern/list.c kern/misc.c tests/lib/test.c tests/lib/unit_test.c
@@ -74,6 +79,9 @@ grub_script_comments_SOURCES = tests/grub_script_comments.in
 check_SCRIPTS += grub_script_functions
 grub_script_functions_SOURCES = tests/grub_script_functions.in
 
+check_SCRIPTS += grub_script_blockarg
+grub_script_blockarg_SOURCES = tests/grub_script_blockarg.in
+
 # List of tests to execute on "make check"
 # SCRIPTED_TESTS    = example_scripted_test
 # SCRIPTED_TESTS   += example_grub_script_test
@@ -91,6 +99,7 @@ SCRIPTED_TESTS += grub_script_final_semicolon
 SCRIPTED_TESTS += grub_script_dollar
 SCRIPTED_TESTS += grub_script_comments
 SCRIPTED_TESTS += grub_script_functions
+SCRIPTED_TESTS += grub_script_blockarg
 
 # dependencies between tests and testing-tools
 $(SCRIPTED_TESTS): grub-shell grub-shell-tester

@@ -43,8 +43,8 @@ struct grub_script
   struct grub_script_mem *mem;
   struct grub_script_cmd *cmd;
 
-  /* Other grub_script's from block arguments.  */
-  struct grub_script *siblings;
+  /* grub_scripts from block arguments.  */
+  struct grub_script *next_siblings;
   struct grub_script *children;
 };
 
@@ -371,7 +371,7 @@ grub_err_t
 grub_normal_parse_line (char *line, grub_reader_getline_t getline);
 
 static inline struct grub_script *
-grub_script_get (struct grub_script *script)
+grub_script_ref (struct grub_script *script)
 {
   if (script)
     script->refcnt++;
@@ -379,7 +379,7 @@ grub_script_get (struct grub_script *script)
 }
 
 static inline void
-grub_script_put (struct grub_script *script)
+grub_script_unref (struct grub_script *script)
 {
   if (! script)
     return;

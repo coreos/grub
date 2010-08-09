@@ -105,8 +105,8 @@ grub_script_free (struct grub_script *script)
 
   s = script->children;
   while (s) {
-    t = s->siblings;
-    grub_script_put (s);
+    t = s->next_siblings;
+    grub_script_unref (s);
     s = t;
   }
   grub_free (script);
@@ -355,8 +355,8 @@ grub_script_create (struct grub_script_cmd *cmd, struct grub_script_mem *mem)
   parsed->mem = mem;
   parsed->cmd = cmd;
   parsed->refcnt = 0;
-  parsed->siblings = 0;
   parsed->children = 0;
+  parsed->next_siblings = 0;
 
   return parsed;
 }
