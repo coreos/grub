@@ -1,3 +1,8 @@
+2010-08-09  Robert Millan  <rmh@gnu.org>
+
+	* kern/emu/misc.c (grub_make_system_path_relative_to_its_root): Filter
+	out unused variables on non-ZFS build.
+
 2010-08-08  Robert Millan  <rmh@gnu.org>
 
 	Fix path generation for sub-filesystems in ZFS.

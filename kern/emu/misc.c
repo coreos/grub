@@ -307,11 +307,14 @@ char *
 grub_make_system_path_relative_to_its_root (const char *path)
 {
   struct stat st;
-  char *p, *buf, *buf2, *buf3;
-  char *poolname = NULL, *poolfs = NULL, *ret;
+  char *p, *buf, *buf2, *buf3, *ret;
   uintptr_t offset = 0;
   dev_t num;
   size_t len;
+
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+  char *poolfs = NULL;
+#endif
 
   /* canonicalize.  */
   p = canonicalize_file_name (path);
@@ -320,7 +323,10 @@ grub_make_system_path_relative_to_its_root (const char *path)
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
   /* For ZFS sub-pool filesystems, could be extended to others (btrfs?).  */
-  grub_find_zpool_from_dir (p, &poolname, &poolfs);
+  {
+    char *dummy;
+    grub_find_zpool_from_dir (p, &dummy, &poolfs);
+  }
 #endif
 
   len = strlen (p) + 1;
@@ -401,12 +407,14 @@ grub_make_system_path_relative_to_its_root (const char *path)
       len--;
     }
 
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
   if (poolfs)
     {
       ret = xasprintf ("/%s/@%s", poolfs, buf3);
       free (buf3);
     }
   else
+#endif
     ret = buf3;
 
   return ret;
