@@ -132,64 +132,63 @@ enum
 static inline void
 grub_vga_gr_write (grub_uint8_t val, grub_uint8_t addr)
 {
-  grub_outb (addr, GRUB_VGA_IO_GR_INDEX);
-  grub_outb (val, GRUB_VGA_IO_GR_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_GR_INDEX);
+  grub_outb (val, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_GR_DATA);
 }
 
 static inline grub_uint8_t
 grub_vga_gr_read (grub_uint8_t addr)
 {
-  grub_outb (addr, GRUB_VGA_IO_GR_INDEX);
-  return grub_inb (GRUB_VGA_IO_GR_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_GR_INDEX);
+  return grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_GR_DATA);
 }
 
 static inline void
 grub_vga_cr_write (grub_uint8_t val, grub_uint8_t addr)
 {
-  grub_outb (addr, GRUB_VGA_IO_CR_INDEX);
-  grub_outb (val, GRUB_VGA_IO_CR_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_CR_INDEX);
+  grub_outb (val, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_CR_DATA);
 }
 
 static inline grub_uint8_t
 grub_vga_cr_read (grub_uint8_t addr)
 {
-  grub_outb (addr, GRUB_VGA_IO_CR_INDEX);
-  return grub_inb (GRUB_VGA_IO_CR_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_CR_INDEX);
+  return grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_CR_DATA);
 }
 
 static inline void
 grub_vga_sr_write (grub_uint8_t val, grub_uint8_t addr)
 {
-  grub_outb (addr, GRUB_VGA_IO_SR_INDEX);
-  grub_outb (val, GRUB_VGA_IO_SR_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_SR_INDEX);
+  grub_outb (val, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_SR_DATA);
 }
 
 static inline grub_uint8_t
 grub_vga_sr_read (grub_uint8_t addr)
 {
-  grub_outb (addr, GRUB_VGA_IO_SR_INDEX);
-  return grub_inb (GRUB_VGA_IO_SR_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_SR_INDEX);
+  return grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_SR_DATA);
 }
 
 static inline void
 grub_vga_palette_read (grub_uint8_t addr, grub_uint8_t *r, grub_uint8_t *g,
 		       grub_uint8_t *b)
 {
-  grub_outb (addr, GRUB_VGA_IO_PALLETTE_READ_INDEX);
-  *r = grub_inb (GRUB_VGA_IO_PALLETTE_DATA);
-  *g = grub_inb (GRUB_VGA_IO_PALLETTE_DATA);
-  *b = grub_inb (GRUB_VGA_IO_PALLETTE_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_READ_INDEX);
+  *r = grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_DATA);
+  *g = grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_DATA);
+  *b = grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_DATA);
 }
 
 static inline void
 grub_vga_palette_write (grub_uint8_t addr, grub_uint8_t r, grub_uint8_t g,
 			grub_uint8_t b)
 {
-  grub_outb (addr, GRUB_VGA_IO_PALLETTE_WRITE_INDEX);
-  grub_outb (r, GRUB_VGA_IO_PALLETTE_DATA);
-  grub_outb (g, GRUB_VGA_IO_PALLETTE_DATA);
-  grub_outb (b, GRUB_VGA_IO_PALLETTE_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_WRITE_INDEX);
+  grub_outb (r, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_DATA);
+  grub_outb (g, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_DATA);
+  grub_outb (b, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_DATA);
 }
-
 
 #endif

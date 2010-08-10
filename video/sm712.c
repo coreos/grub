@@ -26,10 +26,12 @@
 #include <grub/video.h>
 #include <grub/video_fb.h>
 #include <grub/pci.h>
+#include <grub/vga.h>
 
 #include "sm712_init.c"
 
 #define GRUB_SM712_TOTAL_MEMORY_SPACE  0x700400
+#define GRUB_SM712_REG_BASE 0x700000
 
 static struct
 {
@@ -59,6 +61,15 @@ grub_video_sm712_video_fini (void)
 				 GRUB_SM712_TOTAL_MEMORY_SPACE);
 
   return grub_video_fb_fini ();
+}
+
+static inline grub_uint8_t
+grub_sm712_sr_read (grub_uint8_t addr)
+{
+  *(volatile grub_uint8_t *) (framebuffer.ptr + GRUB_SM712_REG_BASE
+			      + GRUB_VGA_IO_SR_INDEX) = addr;
+  return *(volatile grub_uint8_t *) (framebuffer.ptr + GRUB_SM712_REG_BASE
+				     + GRUB_VGA_IO_SR_DATA);
 }
 
 static grub_err_t
@@ -148,8 +159,7 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   framebuffer.mapped = 1;
 
   /* Initialise SM712.  */
-  grub_outb (0x18, GRUB_MACHINE_PCI_IO_BASE + 0x3c4);
-  grub_outb (0x11, GRUB_MACHINE_PCI_IO_BASE + 0x3c5);
+  grub_vga_sr_write (0x11, 0x18);
 
   /* Prevent garbage from appearing on the screen.  */
   grub_memset (framebuffer.ptr, 0, 
@@ -159,25 +169,26 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
     switch (sm712_init[i].directive)
       {
       case 1:
-	*(volatile grub_uint8_t *) ((char *) framebuffer.ptr 
+	*(volatile grub_uint8_t *) ((char *) framebuffer.ptr
+				    + GRUB_SM712_REG_BASE
 				    + sm712_init[i].addr) = sm712_init[i].val;
 	break;
       case -1:
 	{
 	  grub_uint8_t val = *(volatile grub_uint8_t *) 
-	    ((char *) framebuffer.ptr + sm712_init[i].addr);
+	    ((char *) framebuffer.ptr + GRUB_SM712_REG_BASE
+	     + sm712_init[i].addr);
 	  (void) val;
 	}
 	break;
-      case 2:
-	*(volatile grub_uint16_t *) ((char *) framebuffer.ptr 
-				     + sm712_init[i].addr) = sm712_init[i].val;
-	break;
-      case 4:
-	*(volatile grub_uint32_t *) ((char *) framebuffer.ptr 
-				     + sm712_init[i].addr) = sm712_init[i].val;
-	break;
       }
+
+  *(volatile grub_uint32_t *) ((char *) framebuffer.ptr + 0x40c00c) = 0;
+  *(volatile grub_uint32_t *) ((char *) framebuffer.ptr + 0x40c040) = 0;
+  *(volatile grub_uint32_t *) ((char *) framebuffer.ptr + 0x40c000) = 0x20000;
+  *(volatile grub_uint32_t *) ((char *) framebuffer.ptr + 0x40c010) = 0x1020100;
+
+  (void) grub_sm712_sr_read (0x16);
 
   err = grub_video_fb_create_render_target_from_pointer (&framebuffer.render_target, &framebuffer.mode_info, framebuffer.ptr);
 

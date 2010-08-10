@@ -1,3 +1,18 @@
+2010-08-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/vga.h (grub_vga_gr_write): Add GRUB_MACHINE_PCI_IO_BASE.
+	(grub_vga_gr_read): Likewise.
+	(grub_vga_cr_write): Likewise.
+	(grub_vga_cr_read): Likewise.
+	(grub_vga_sr_write): Likewise.
+	(grub_vga_sr_read): Likewise.
+	(grub_vga_palette_read): Likewise.
+	(grub_vga_palette_write): Likewise.
+	* video/sm712.c (GRUB_SM712_REG_BASE): New definition.
+	(grub_sm712_sr_read): New function.
+	(grub_video_sm712_setup): Use grub_vga_sr_write and grub_sm712_sr_read.
+	* video/sm712_init.c (sm712_init): Substract GRUB_MACHINE_PCI_IO_BASE.
+
 2010-08-09  Robert Millan  <rmh@gnu.org>
 
 	* kern/emu/misc.c (grub_make_system_path_relative_to_its_root): Filter
