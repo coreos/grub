@@ -50,6 +50,7 @@
 enum {
   PRINT_FS,
   PRINT_FS_UUID,
+  PRINT_FS_LABEL,
   PRINT_DRIVE,
   PRINT_DEVICE,
   PRINT_PARTMAP,
@@ -291,6 +292,16 @@ probe (const char *path, char *device_name)
 
       printf ("%s\n", uuid);
     }
+  else if (print == PRINT_FS_LABEL)
+    {
+      char *label;
+      if (! fs->label)
+	grub_util_error ("%s does not support labels", fs->name);
+
+      fs->label (dev, &label);
+
+      printf ("%s\n", label);
+    }
 
  end:
   if (dev)
@@ -326,7 +337,7 @@ Probe device information for a given path (or device, if the -d option is given)
 \n\
   -d, --device              given argument is a system device, not a path\n\
   -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
-  -t, --target=(fs|fs_uuid|drive|device|partmap|abstraction)\n\
+  -t, --target=(fs|fs_uuid|fs_label|drive|device|partmap|abstraction)\n\
                             print filesystem module, GRUB drive, system device, partition map module or abstraction module [default=fs]\n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
@@ -375,6 +386,8 @@ main (int argc, char *argv[])
 	      print = PRINT_FS;
 	    else if (!strcmp (optarg, "fs_uuid"))
 	      print = PRINT_FS_UUID;
+	    else if (!strcmp (optarg, "fs_label"))
+	      print = PRINT_FS_LABEL;
 	    else if (!strcmp (optarg, "drive"))
 	      print = PRINT_DRIVE;
 	    else if (!strcmp (optarg, "device"))

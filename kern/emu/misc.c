@@ -1,6 +1,25 @@
+/*
+ *  GRUB  --  GRand Unified Bootloader
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+ *
+ *  GRUB is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  GRUB is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <config.h>
 
 #include <errno.h>
+#include <error.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -24,6 +43,22 @@
 
 #ifdef HAVE_DEVICE_MAPPER
 # include <libdevmapper.h>
+#endif
+
+#ifdef HAVE_LIBZFS
+# include <grub/util/libzfs.h>
+#endif
+
+#ifdef HAVE_LIBNVPAIR
+# include <grub/util/libnvpair.h>
+#endif
+
+#ifdef HAVE_SYS_PARAM_H
+# include <sys/param.h>
+#endif
+
+#ifdef HAVE_SYS_MOUNT_H
+# include <sys/mount.h>
 #endif
 
 int verbosity;
@@ -218,6 +253,54 @@ get_win32_path (const char *path)
 }
 #endif
 
+#ifdef HAVE_LIBZFS
+static libzfs_handle_t *__libzfs_handle;
+
+static void
+fini_libzfs (void)
+{
+  libzfs_fini (__libzfs_handle);
+}
+
+libzfs_handle_t *
+grub_get_libzfs_handle (void)
+{
+  if (! __libzfs_handle)
+    {
+      __libzfs_handle = libzfs_init ();
+      atexit (fini_libzfs);
+    }
+
+  return __libzfs_handle;
+}
+#endif /* HAVE_LIBZFS */
+
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+/* ZFS has similar problems to those of btrfs (see above).  */
+void
+grub_find_zpool_from_dir (const char *dir, char **poolname, char **poolfs)
+{
+  struct statfs mnt;
+  char *slash;
+
+  *poolname = *poolfs = NULL;
+
+  if (statfs (dir, &mnt) != 0)
+    return;
+
+  *poolname = xstrdup (mnt.f_mntfromname);
+
+  slash = strchr (*poolname, '/');
+  if (slash)
+    {
+      *slash = '\0';
+      *poolfs = xstrdup (slash + 1);
+    }
+  else
+    *poolfs = xstrdup ("");
+}
+#endif
+
 /* This function never prints trailing slashes (so that its output
    can be appended a slash unconditionally).  */
 char *
@@ -225,15 +308,20 @@ grub_make_system_path_relative_to_its_root (const char *path)
 {
   struct stat st;
   char *p, *buf, *buf2, *buf3;
+  char *poolname = NULL, *poolfs = NULL, *ret;
   uintptr_t offset = 0;
   dev_t num;
   size_t len;
 
   /* canonicalize.  */
   p = canonicalize_file_name (path);
-
   if (p == NULL)
     grub_util_error ("failed to get canonical path of %s", path);
+
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+  /* For ZFS sub-pool filesystems, could be extended to others (btrfs?).  */
+  grub_find_zpool_from_dir (p, &poolname, &poolfs);
+#endif
 
   len = strlen (p) + 1;
   buf = xstrdup (p);
@@ -313,7 +401,15 @@ grub_make_system_path_relative_to_its_root (const char *path)
       len--;
     }
 
-  return buf3;
+  if (poolfs)
+    {
+      ret = xasprintf ("/%s/@%s", poolfs, buf3);
+      free (buf3);
+    }
+  else
+    ret = buf3;
+
+  return ret;
 }
 
 #ifdef HAVE_DEVICE_MAPPER
