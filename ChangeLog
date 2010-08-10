@@ -1,3 +1,7 @@
+2010-08-10  Yves Blusseau  <blusseau@zetam.org>
+
+	* util/grub-macho2img.c (main): fix typo
+
 2010-08-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/vga.h (grub_vga_gr_write): Add GRUB_MACHINE_PCI_IO_BASE.

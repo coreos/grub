@@ -79,7 +79,7 @@ main (int argc, char **argv)
       fclose (in);
       fclose (out);
       free (buf);
-      printf ("Invalid Mach-O fle\n");
+      printf ("Invalid Mach-O file\n");
       return 4;
     }
   curcmd = (struct grub_macho_segment32 *) (buf + sizeof (*head));
