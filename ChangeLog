@@ -1,5 +1,9 @@
 2010-08-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/i386/qemu/init.c (grub_qemu_init_cirrus): Fix compilation error.
+
+2010-08-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove the dump of sm712 initialisation sequence.
 
 	* include/grub/pci.h (GRUB_PCI_CLASS_SUBCLASS_VGA): New const.

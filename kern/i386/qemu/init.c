@@ -121,11 +121,11 @@ grub_qemu_init_cirrus (void)
 		     GRUB_VGA_SR_MAP_MASK_REGISTER);
 
   grub_vga_cr_write (15, GRUB_VGA_CR_CELL_HEIGHT);
-  grub_vga_cr_write (79, GRUB_VGA_CR_WIDTH);
+  grub_vga_cr_write (79, GRUB_VGA_CR_HORIZ_END);
   grub_vga_cr_write (40, GRUB_VGA_CR_PITCH);
 
   int vert = 25 * 16;
-  grub_vga_cr_write (vert & 0xff, GRUB_VGA_CR_HEIGHT);
+  grub_vga_cr_write (vert & 0xff, GRUB_VGA_CR_VDISPLAY_END);
   grub_vga_cr_write (((vert >> GRUB_VGA_CR_OVERFLOW_HEIGHT1_SHIFT)
 		      & GRUB_VGA_CR_OVERFLOW_HEIGHT1_MASK)
 		     | ((vert >> GRUB_VGA_CR_OVERFLOW_HEIGHT2_SHIFT)
