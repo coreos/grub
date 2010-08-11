@@ -19,6 +19,8 @@
 #ifndef GRUB_VGA_HEADER
 #define GRUB_VGA_HEADER	1
 
+#include <grub/pci.h>
+
 enum
   {
     GRUB_VGA_IO_ARX = 0x3c0,
