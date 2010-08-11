@@ -1,3 +1,35 @@
+2010-08-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove the dump of sm712 initialisation sequence.
+
+	* include/grub/pci.h (GRUB_PCI_CLASS_SUBCLASS_VGA): New const.
+	* include/grub/vga.h (GRUB_VGA_IO_ARX_READ): New register.
+	(GRUB_VGA_IO_MISC_WRITE): Likewise.
+	(GRUB_VGA_CR_*): Added many registers.
+	(GRUB_VGA_SR_*): Likewise.
+	(GRUB_VGA_GR_*): Likewise.
+	(grub_vga_write_arx): New function.
+	(grub_video_hw_config): New struct.
+	(grub_vga_set_geometry): New function.
+	* kern/i386/qemu/init.c (load_palette): Use grub_vga_write_arx and
+	GRUB_PCI_CLASS_SUBCLASS_VGA.
+	* video/cirrus.c (grub_video_cirrus_setup): Use grub_vga_set_geometry.
+	* video/sm712.c (grub_sm712_write_reg): New function
+	(grub_sm712_read_reg): Likewise.
+	(grub_sm712_sr_write): Likewise.
+	(grub_sm712_gr_write): Likewise.
+	(grub_sm712_cr_write): Likewise.
+	(grub_sm712_write_arx): Likewise.
+	(grub_sm712_cr_shadow_write): Likewise.
+	(grub_sm712_write_dda_lookup): Likewise.
+	(grub_video_sm712_setup): Initialise the video rather then
+	blindly replay the dump.
+	(main) [TEST]: Add a routine to be able to compile as standalone for
+	tests.
+	* video/sm712_init.c (sm712_init): Removed.
+	(sm712_sr_seq1): New array.
+	(sm712_sr_seq2): Likewise.
+
 2010-08-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/vga.h: Add missing grub/pci.h include.
