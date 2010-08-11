@@ -1,3 +1,7 @@
+2010-08-11  Yves Blusseau  <blusseau@zetam.org>
+
+	* .bzrignore: add grub-macho2img
+
 2010-08-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/i386/qemu/init.c (grub_qemu_init_cirrus): Fix compilation error.
