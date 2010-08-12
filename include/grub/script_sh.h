@@ -23,6 +23,7 @@
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/parser.h>
+#include <grub/command.h>
 
 struct grub_script_mem;
 
@@ -63,6 +64,13 @@ struct grub_script_arg
   struct grub_script_arg *next;
 };
 
+/* An argument vector.  */
+struct grub_script_argv
+{
+  unsigned argc;
+  char **args;
+};
+
 /* A complete argument.  It consists of a list of one or more `struct
    grub_script_arg's.  */
 struct grub_script_arglist
@@ -80,15 +88,6 @@ struct grub_script_cmdline
 
   /* The arguments for this command.  */
   struct grub_script_arglist *arglist;
-};
-
-/* A block of commands, this can be used to group commands.  */
-struct grub_script_cmdblock
-{
-  struct grub_script_cmd cmd;
-
-  /* A chain of commands.  */
-  struct grub_script_cmd *cmdlist;
 };
 
 /* An if statement.  */
@@ -230,6 +229,14 @@ struct grub_parser_param
   struct grub_lexer_param *lexerstate;
 };
 
+void grub_script_init (void);
+void grub_script_fini (void);
+
+void grub_script_argv_free    (struct grub_script_argv *argv);
+int grub_script_argv_next     (struct grub_script_argv *argv);
+int grub_script_argv_append   (struct grub_script_argv *argv, const char *s);
+int grub_script_argv_split_append (struct grub_script_argv *argv, char *s);
+
 struct grub_script_arglist *
 grub_script_create_arglist (struct grub_parser_param *state);
 
@@ -240,8 +247,6 @@ grub_script_add_arglist (struct grub_parser_param *state,
 struct grub_script_cmd *
 grub_script_create_cmdline (struct grub_parser_param *state,
 			    struct grub_script_arglist *arglist);
-struct grub_script_cmd *
-grub_script_create_cmdblock (struct grub_parser_param *state);
 
 struct grub_script_cmd *
 grub_script_create_cmdif (struct grub_parser_param *state,
@@ -268,9 +273,9 @@ grub_script_create_cmdmenu (struct grub_parser_param *state,
 			    int options);
 
 struct grub_script_cmd *
-grub_script_add_cmd (struct grub_parser_param *state,
-		     struct grub_script_cmdblock *cmdblock,
-		     struct grub_script_cmd *cmd);
+grub_script_append_cmd (struct grub_parser_param *state,
+			struct grub_script_cmd *list,
+			struct grub_script_cmd *last);
 struct grub_script_arg *
 grub_script_arg_add (struct grub_parser_param *state,
 		     struct grub_script_arg *arg,
@@ -307,7 +312,7 @@ void grub_script_yyerror (struct grub_parser_param *, char const *);
 
 /* Commands to execute, don't use these directly.  */
 grub_err_t grub_script_execute_cmdline (struct grub_script_cmd *cmd);
-grub_err_t grub_script_execute_cmdblock (struct grub_script_cmd *cmd);
+grub_err_t grub_script_execute_cmdlist (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdif (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdfor (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdwhile (struct grub_script_cmd *cmd);
@@ -315,6 +320,12 @@ grub_err_t grub_script_execute_menuentry (struct grub_script_cmd *cmd);
 
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t grub_script_execute (struct grub_script *script);
+
+/* Break command for loops.  */
+grub_err_t grub_script_break (grub_command_t cmd, int argc, char *argv[]);
+
+/* SHIFT command for GRUB script.  */
+grub_err_t grub_script_shift (grub_command_t cmd, int argc, char *argv[]);
 
 /* This variable points to the parsed command.  This is used to
    communicate with the bison code.  */
@@ -350,8 +361,9 @@ grub_script_function_t grub_script_function_create (struct grub_script_arg *func
 						    struct grub_script *cmd);
 void grub_script_function_remove (const char *name);
 grub_script_function_t grub_script_function_find (char *functionname);
-int grub_script_function_call (grub_script_function_t func,
-			       int argc, char **args);
+
+grub_err_t grub_script_function_call (grub_script_function_t func,
+				      int argc, char **args);
 
 char **
 grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count);

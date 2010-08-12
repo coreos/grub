@@ -325,7 +325,8 @@ setup_common_tables (void)
 
       /* If it's FADT correct DSDT and FACS addresses. */
       fadt = (struct grub_acpi_fadt *) cur->addr;
-      if (grub_memcmp (fadt->hdr.signature, "FACP", 4) == 0)
+      if (grub_memcmp (fadt->hdr.signature, "FACP",
+		       sizeof (fadt->hdr.signature)) == 0)
 	{
 	  fadt->dsdt_addr = PTR_TO_UINT32 (table_dsdt);
 	  fadt->facs_addr = facs_addr;
@@ -351,16 +352,16 @@ setup_common_tables (void)
   rsdt_addr = rsdt = (struct grub_acpi_table_header *) playground_ptr;
   playground_ptr += sizeof (struct grub_acpi_table_header) + 4 * numoftables;
 
-  rsdt_entry = (grub_uint32_t *)(rsdt + 1);
+  rsdt_entry = (grub_uint32_t *) (rsdt + 1);
 
   /* Fill RSDT header. */
   grub_memcpy (&(rsdt->signature), "RSDT", 4);
   rsdt->length = sizeof (struct grub_acpi_table_header) + 4 * numoftables;
   rsdt->revision = 1;
-  grub_memcpy (&(rsdt->oemid), root_oemid, 6);
-  grub_memcpy (&(rsdt->oemtable), root_oemtable, 4);
+  grub_memcpy (&(rsdt->oemid), root_oemid, sizeof (rsdt->oemid));
+  grub_memcpy (&(rsdt->oemtable), root_oemtable, sizeof (rsdt->oemtable));
   rsdt->oemrev = root_oemrev;
-  grub_memcpy (&(rsdt->creator_id), root_creator_id, 6);
+  grub_memcpy (&(rsdt->creator_id), root_creator_id, sizeof (rsdt->creator_id));
   rsdt->creator_rev = root_creator_rev;
 
   for (cur = acpi_tables; cur; cur = cur->next)
@@ -378,7 +379,8 @@ setv1table (void)
   /* Create RSDP. */
   rsdpv1_new = (struct grub_acpi_rsdp_v10 *) playground_ptr;
   playground_ptr += sizeof (struct grub_acpi_rsdp_v10);
-  grub_memcpy (&(rsdpv1_new->signature), "RSD PTR ", 8);
+  grub_memcpy (&(rsdpv1_new->signature), "RSD PTR ",
+	       sizeof (rsdpv1_new->signature));
   grub_memcpy (&(rsdpv1_new->oemid), root_oemid, sizeof  (rsdpv1_new->oemid));
   rsdpv1_new->revision = 0;
   rsdpv1_new->rsdt_addr = PTR_TO_UINT32 (rsdt_addr);

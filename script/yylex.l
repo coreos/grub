@@ -119,14 +119,15 @@ COMMENT         #.*$
 
 CHAR            [^{}|&$;<> \t\n\'\"\\]
 DIGITS          [[:digit:]]+
-NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
+NAME            [[:alpha:]_][[:alnum:]_]*
 
 ESC             \\(.|\n)
 SQCHR           [^\']
 DQCHR           {ESC}|[^\\\"]
 DQSTR           \"{DQCHR}*\"
 SQSTR           \'{SQCHR}*\'
-VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|$\?|$\{\?\}
+SPECIAL         \?|\#|\*|\@
+VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|${SPECIAL}|$\{{SPECIAL}\}
 WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 
 MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
@@ -227,7 +228,7 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
 }
 
 <VAR>{
-  \?            |
+  {SPECIAL}     |
   {DIGITS}      |
   {NAME}        {
                   COPY (yytext, yyleng);
@@ -237,7 +238,7 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
                   else
                     ARG (GRUB_SCRIPT_ARG_TYPE_DQVAR);
                 }
-  \{\?\}        |
+  \{{SPECIAL}\} |
   \{{DIGITS}\}  |
   \{{NAME}\}    {
                   yytext[yyleng - 1] = '\0';

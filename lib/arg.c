@@ -144,8 +144,10 @@ grub_arg_show_help (grub_extcmd_t cmd)
 		}
 	    }
 
-	  /* FIXME: add spacing back.  */
-	  grub_xputs (_(opt->doc));
+	  while (spacing--)
+	    grub_xputs (" ");
+
+	  grub_printf ("%s\n", _(opt->doc));
 
 	  switch (opt->shortarg)
 	    {
