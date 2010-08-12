@@ -21,6 +21,7 @@
 #include <grub/misc.h>
 #include <grub/script_sh.h>
 
+/* Return nearest power of two that is >= v.  */
 static unsigned
 round_up_exp (unsigned v)
 {
@@ -52,6 +53,7 @@ grub_script_argv_free (struct grub_script_argv *argv)
 
       grub_free (argv->args);
     }
+
   argv->argc = 0;
   argv->args = 0;
   argv->script = 0;

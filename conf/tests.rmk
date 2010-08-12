@@ -79,6 +79,15 @@ grub_script_comments_SOURCES = tests/grub_script_comments.in
 check_SCRIPTS += grub_script_functions
 grub_script_functions_SOURCES = tests/grub_script_functions.in
 
+check_SCRIPTS += grub_script_break
+grub_script_break_SOURCES = tests/grub_script_break.in
+
+check_SCRIPTS += grub_script_continue
+grub_script_continue_SOURCES = tests/grub_script_continue.in
+
+check_SCRIPTS += grub_script_shift
+grub_script_shift_SOURCES = tests/grub_script_shift.in
+
 check_SCRIPTS += grub_script_blockarg
 grub_script_blockarg_SOURCES = tests/grub_script_blockarg.in
 
@@ -99,6 +108,9 @@ SCRIPTED_TESTS += grub_script_final_semicolon
 SCRIPTED_TESTS += grub_script_dollar
 SCRIPTED_TESTS += grub_script_comments
 SCRIPTED_TESTS += grub_script_functions
+SCRIPTED_TESTS += grub_script_break
+SCRIPTED_TESTS += grub_script_continue
+SCRIPTED_TESTS += grub_script_shift
 SCRIPTED_TESTS += grub_script_blockarg
 
 # dependencies between tests and testing-tools

@@ -31,12 +31,65 @@
    is sizeof (int) * 3, and one extra for a possible -ve sign.  */
 #define ERRNO_DIGITS_MAX  (sizeof (int) * 3 + 1)
 
+static unsigned long is_continue;
+static unsigned long active_loops;
+static unsigned long active_breaks;
+
 /* Scope for grub script functions.  */
 struct grub_script_scope
 {
   struct grub_script_argv argv;
 };
 static struct grub_script_scope *scope = 0;
+
+grub_err_t
+grub_script_break (grub_command_t cmd, int argc, char *argv[])
+{
+  char *p = 0;
+  unsigned long count;
+
+  if (argc == 0)
+    count = 1;
+
+  else if ((argc > 1) || (count = grub_strtoul (argv[0], &p, 10)) == 0 ||
+	   (*p != '\0'))
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad break");
+
+  is_continue = grub_strcmp (cmd->name, "break") ? 1 : 0;
+  active_breaks = grub_min (active_loops, count);
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_script_shift (grub_command_t cmd __attribute__((unused)),
+		   int argc, char *argv[])
+{
+  char *p = 0;
+  unsigned long n = 0;
+
+  if (! scope)
+    return GRUB_ERR_NONE;
+
+  if (argc == 0)
+    n = 1;
+
+  else if (argc > 1)
+    return GRUB_ERR_BAD_ARGUMENT;
+
+  else
+    {
+      n = grub_strtoul (argv[0], &p, 10);
+      if (*p != '\0')
+	return GRUB_ERR_BAD_ARGUMENT;
+    }
+
+  if (n > scope->argv.argc)
+    return GRUB_ERR_BAD_ARGUMENT;
+
+  scope->argv.argc -= n;
+  scope->argv.args += n;
+  return GRUB_ERR_NONE;
+}
 
 static int
 grub_env_special (const char *name)
@@ -253,9 +306,11 @@ grub_err_t
 grub_script_function_call (grub_script_function_t func, int argc, char **args)
 {
   grub_err_t ret = 0;
+  unsigned long loops = active_loops;
   struct grub_script_scope *old_scope;
   struct grub_script_scope new_scope;
 
+  active_loops = 0;
   new_scope.argv.argc = argc;
   new_scope.argv.args = args;
 
@@ -264,6 +319,7 @@ grub_script_function_call (grub_script_function_t func, int argc, char **args)
 
   ret = grub_script_execute (func->func);
 
+  active_loops = loops;
   scope = old_scope;
   return ret;
 }
@@ -311,7 +367,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 	  grub_free (assign);
 
 	  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", grub_errno);
-	  grub_env_set ("?", errnobuf);
+	  grub_script_env_set ("?", errnobuf);
 
 	  grub_script_argv_free (&argv);
 	  grub_print_error ();
@@ -355,7 +411,7 @@ grub_script_execute_cmdlist (struct grub_script_cmd *list)
   struct grub_script_cmd *cmd;
 
   /* Loop over every command and execute it.  */
-  for (cmd = list->next; cmd; cmd = cmd->next)
+  for (cmd = list->next; cmd && ! active_breaks; cmd = cmd->next)
     ret = grub_script_execute_cmd (cmd);
 
   return ret;
@@ -395,13 +451,24 @@ grub_script_execute_cmdfor (struct grub_script_cmd *cmd)
   if (grub_script_arglist_to_argv (cmdfor->words, &argv))
     return grub_errno;
 
+  active_loops++;
   result = 0;
   for (i = 0; i < argv.argc; i++)
     {
-      grub_script_env_set (cmdfor->name->str, argv.args[i]);
-      result = grub_script_execute_cmd (cmdfor->list);
+      if (is_continue && active_breaks == 1)
+	active_breaks = 0;
+
+      if (! active_breaks)
+	{
+	  grub_script_env_set (cmdfor->name->str, argv.args[i]);
+	  result = grub_script_execute_cmd (cmdfor->list);
+	}
     }
 
+  if (active_breaks)
+    active_breaks--;
+
+  active_loops--;
   grub_script_argv_free (&argv);
   return result;
 }
@@ -414,6 +481,7 @@ grub_script_execute_cmdwhile (struct grub_script_cmd *cmd)
   int result;
   struct grub_script_cmdwhile *cmdwhile = (struct grub_script_cmdwhile *) cmd;
 
+  active_loops++;
   result = 0;
   do {
     cond = grub_script_execute_cmd (cmdwhile->cond);
@@ -421,8 +489,19 @@ grub_script_execute_cmdwhile (struct grub_script_cmd *cmd)
       break;
 
     result = grub_script_execute_cmd (cmdwhile->list);
+
+    if (active_breaks == 1 && is_continue)
+      active_breaks = 0;
+
+    if (active_breaks)
+      break;
+
   } while (1); /* XXX Put a check for ^C here */
 
+  if (active_breaks)
+    active_breaks--;
+
+  active_loops--;
   return result;
 }
 
