@@ -1,5 +1,18 @@
 2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	Fix for misspelled color names defaulting to black/black (bug
+	reported by Doug Nazar)
+
+	* include/grub/normal.h (grub_parse_color_name_pair): Add return
+	status to prototype.
+	* normal/color.c (grub_parse_color_name_pair): Return failure
+	status.
+	(grub_env_write_color_normal): Ignore bad color names.
+	(grub_env_write_color_highlight): Likewise.
+	* normal/main.c (GRUB_MOD_INIT): Set default color names.
+
+2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	"shift" command support to GRUB script.
 
 	* include/grub/script_sh.h (grub_script_shift): New prototype.
