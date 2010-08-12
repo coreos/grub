@@ -1,3 +1,15 @@
+2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	"continue" command support to GRUB script.
+
+	* script/execute.c (grub_script_execute_cmdwhile): Continue support.
+	(grub_script_break): Continue support.
+	* script/main.c (grub_script_init): Register continue command.
+	(grub_script_fini): Unregister continue command.
+
+	* tests/grub_script_continue.in: New testcase.
+	* conf/tests.rmk: Rules for new testcase.
+
 2010-08-12  BVK Chaitanya  <bvk@dbook>
 
 	"break" command support to GRUB script.

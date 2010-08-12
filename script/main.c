@@ -42,12 +42,15 @@ grub_normal_parse_line (char *line, grub_reader_getline_t getline)
 }
 
 static grub_command_t cmd_break;
+static grub_command_t cmd_continue;
 
 void
 grub_script_init (void)
 {
   cmd_break = grub_register_command ("break", grub_script_break,
 				     N_("[n]"), N_("Exit from loops"));
+  cmd_continue = grub_register_command ("continue", grub_script_break,
+					N_("[n]"), N_("Coninue loops"));
 }
 
 void
@@ -56,4 +59,9 @@ grub_script_fini (void)
   if (cmd_break)
     grub_unregister_command (cmd_break);
   cmd_break = 0;
+
+  if (cmd_continue)
+    grub_unregister_command (cmd_continue);
+  cmd_continue = 0;
+
 }

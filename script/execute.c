@@ -30,6 +30,7 @@
    is sizeof (int) * 3, and one extra for a possible -ve sign.  */
 #define ERRNO_DIGITS_MAX  (sizeof (int) * 3 + 1)
 
+static unsigned long is_continue;
 static unsigned long active_loops;
 static unsigned long active_breaks;
 
@@ -41,8 +42,7 @@ struct grub_script_scope
 static struct grub_script_scope *scope = 0;
 
 grub_err_t
-grub_script_break (grub_command_t cmd __attribute__((unused)),
-		   int argc, char *argv[])
+grub_script_break (grub_command_t cmd, int argc, char *argv[])
 {
   char *p = 0;
   unsigned long count;
@@ -54,6 +54,7 @@ grub_script_break (grub_command_t cmd __attribute__((unused)),
 	   (*p != '\0'))
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad break");
 
+  is_continue = grub_strcmp (cmd->name, "break") ? 1 : 0;
   active_breaks = grub_min (active_loops, count);
   return GRUB_ERR_NONE;
 }
@@ -398,6 +399,7 @@ grub_script_execute_cmdfor (struct grub_script_cmd *cmd)
   unsigned i;
   grub_err_t result;
   struct grub_script_argv argv = { 0, 0 };
+
   struct grub_script_cmdfor *cmdfor = (struct grub_script_cmdfor *) cmd;
 
   if (grub_script_arglist_to_argv (cmdfor->words, &argv))
@@ -407,6 +409,9 @@ grub_script_execute_cmdfor (struct grub_script_cmd *cmd)
   result = 0;
   for (i = 0; i < argv.argc; i++)
     {
+      if (is_continue && active_breaks == 1)
+	active_breaks = 0;
+
       if (! active_breaks)
 	{
 	  grub_script_env_set (cmdfor->name->str, argv.args[i]);
@@ -439,13 +444,16 @@ grub_script_execute_cmdwhile (struct grub_script_cmd *cmd)
 
     result = grub_script_execute_cmd (cmdwhile->list);
 
+    if (active_breaks == 1 && is_continue)
+      active_breaks = 0;
+
     if (active_breaks)
-      {
-	active_breaks--;
-	break;
-      }
+      break;
 
   } while (1); /* XXX Put a check for ^C here */
+
+  if (active_breaks)
+    active_breaks--;
 
   active_loops--;
   return result;
