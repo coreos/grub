@@ -81,7 +81,7 @@ grub_usb_control_msg (grub_usb_device_t dev,
   else
     max = 64;
 
-  grub_dprintf ("usb", "transfer = %p, dev = %p\n", transfer, dev);
+  grub_dprintf ("usb", "control: transfer = %p, dev = %p\n", transfer, dev);
 
   datablocks = (size + max - 1) / max;
 
@@ -146,6 +146,7 @@ grub_usb_control_msg (grub_usb_device_t dev,
   transfer->transactions[datablocks + 1].toggle = 1;
 
   err = dev->controller.dev->transfer (&dev->controller, transfer);
+  grub_dprintf ("usb", "control: err=%d\n", err);
 
   grub_free (transfer->transactions);
   
@@ -173,6 +174,8 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
   grub_uint32_t data_addr;
   struct grub_pci_dma_chunk *data_chunk;
   grub_size_t size = size0;
+
+  grub_dprintf ("usb", "bulk: size=0x%02x type=%d\n", size, type);
 
   /* FIXME: avoid allocation any kind of buffer in a first place.  */
   data_chunk = grub_memalign_dma32 (128, size);
@@ -248,7 +251,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
     toggle = transfer->transactions[transfer->last_trans].toggle ? 0 : 1;
   else
     toggle = dev->toggle[endpoint]; /* Nothing done, take original */
-  grub_dprintf ("usb", "toggle=%d\n", toggle);
+  grub_dprintf ("usb", "bulk: err=%d, toggle=%d\n", err, toggle);
   dev->toggle[endpoint] = toggle;
 
   grub_free (transfer->transactions);
