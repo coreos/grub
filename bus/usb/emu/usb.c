@@ -78,6 +78,12 @@ grub_libusb_devices (void)
   return GRUB_USB_ERR_NONE;
 }
 
+void
+grub_usb_poll_devices (void)
+{
+  /* TODO: recheck grub_usb_devs */
+}
+
 
 int
 grub_usb_iterate (int (*hook) (grub_usb_device_t dev))

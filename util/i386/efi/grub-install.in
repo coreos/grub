@@ -246,7 +246,7 @@ devabstraction_module=`$grub_probe --target=abstraction --device-map=${device_ma
 # The order in this list is critical.  Be careful when modifying it.
 modules="$modules $fs_module $partmap_module $devabstraction_module"
 
-$grub_mkimage -O ${target_cpu}-efi --output=${grubdir}/grub.efi $modules || exit 1
+$grub_mkimage -p "" -O ${target_cpu}-efi --output=${grubdir}/grub.efi $modules || exit 1
 
 # Prompt the user to check if the device map is correct.
 echo "Installation finished. No error reported."

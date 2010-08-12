@@ -207,7 +207,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 
   /* Lookup the command.  */
   args = grub_script_execute_arglist_to_argv (cmdline->arglist, &argcount);
-  if (!args)
+  if (! args || ! args[0])
     return grub_errno;
 
   cmdname = args[0];

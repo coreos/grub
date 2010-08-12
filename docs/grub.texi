@@ -444,12 +444,13 @@ disk. The number @samp{0} is the drive number, which is counted from
 disk.
 
 @example
-(hd0,2)
+(hd0,msdos2)
 @end example
 
 Here, @samp{hd} means it is a hard disk drive. The first integer
-@samp{0} indicates the drive number, that is, the first hard disk, while
-the second integer, @samp{1}, indicates the partition number (or the
+@samp{0} indicates the drive number, that is, the first hard disk,
+the string @samp{msdos} indicates the partition scheme, while
+the second integer, @samp{2}, indicates the partition number (or the
 @sc{pc} slice number in the BSD terminology). The partition numbers are
 counted from @emph{one}, not from zero (as was the case in previous
 versions of GRUB). This expression means the second partition of the
@@ -457,7 +458,7 @@ first hard disk drive. In this case, GRUB uses one partition of the
 disk, instead of the whole disk.
 
 @example
-(hd0,5)
+(hd0,msdos5)
 @end example
 
 This specifies the first @dfn{extended partition} of the first hard disk
@@ -466,18 +467,15 @@ counted from @samp{5}, regardless of the actual number of primary
 partitions on your hard disk.
 
 @example
-(hd1,a)
+(hd1,msdos1,bsd1)
 @end example
 
-This means the BSD @samp{a} partition of the second hard disk. If you
-need to specify which @sc{pc} slice number should be used, use something
-like this: @samp{(hd1,1,a)}. If the @sc{pc} slice number is omitted,
-GRUB searches for the first @sc{pc} slice which has a BSD @samp{a}
-partition.
+This means the BSD @samp{a} partition on first @sc{pc} slice number
+of the second hard disk.
 
 Of course, to actually access the disks or partitions with GRUB, you
 need to use the device specification in a command, like @samp{set
-root=(fd0)} or @samp{parttool (hd0,3) hidden-}. To help you find out
+root=(fd0)} or @samp{parttool (hd0,msdos3) hidden-}. To help you find out
 which number specifies a partition you want, the GRUB command-line
 (@pxref{Command-line interface}) options have argument
 completion. This means that, for example, you only need to type
@@ -501,7 +499,7 @@ Now the question is, how to specify a file? Again, consider an
 example:
 
 @example
-(hd0,1)/vmlinuz
+(hd0,msdos1)/vmlinuz
 @end example
 
 This specifies the file named @samp{vmlinuz}, found on the first
@@ -1064,6 +1062,11 @@ only to the default menu entry, after those listed in
 As @samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT}, but for
 NetBSD.
 
+@item GRUB_CMDLINE_XEN
+@itemx GRUB_CMDLINE_XEN_DEFAULT
+As @samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT}, but for
+Linux and Xen.
+
 @item GRUB_DISABLE_LINUX_UUID
 Normally, @command{grub-mkconfig} will generate menu entries that use
 universally-unique identifiers (UUIDs) to identify the root filesystem to
@@ -1115,8 +1118,8 @@ try several modes in sequence.
 Depending on your kernel, your distribution, your graphics card, and the
 phase of the moon, note that using this option may cause GNU/Linux to suffer
 from various display problems, particularly during the early part of the
-boot sequence.  If you have problems, simply unset this option and GRUB will
-tell Linux to boot in normal text mode.
+boot sequence.  If you have problems, set this option to @samp{text} and
+GRUB will tell Linux to boot in normal text mode.
 
 @item GRUB_DISABLE_OS_PROBER
 Normally, @command{grub-mkconfig} will try to use the external
@@ -1144,6 +1147,142 @@ that file, making sure to leave at least the first two lines intact.
 
 @node Shell-like scripting
 @section Writing full configuration files directly
+
+@c Some of this section is derived from the GNU Bash manual page, also
+@c copyrighted by the FSF.
+
+@file{grub.cfg} is written in GRUB's built-in scripting language, which has
+a syntax quite similar to that of GNU Bash and other Bourne shell
+derivatives.
+
+@heading Words
+
+A @dfn{word} is a sequence of characters considered as a single unit by
+GRUB.  Words are separated by @dfn{metacharacters}, which are the following
+plus space, tab, and newline:
+
+@example
+@{ @} | & $ ; < >
+@end example
+ 
+Quoting may be used to include metacharacters in words; see below.
+
+@heading Reserved words
+
+Reserved words have a special meaning to GRUB.  The following words are
+recognised as reserved when unquoted and either the first word of a simple
+command or the third word of a @code{for} command:
+
+@example
+! [[ ]] @{ @}
+case do done elif else esac fi for function
+if in menuentry select then time until while
+@end example
+
+Not all of these reserved words have a useful purpose yet; some are reserved
+for future expansion.
+
+@heading Quoting
+
+Quoting is used to remove the special meaning of certain characters or
+words.  It can be used to treat metacharacters as part of a word, to prevent
+reserved words from being recognised as such, and to prevent variable
+expansion.
+
+There are three quoting mechanisms: the escape character, single quotes, and
+double quotes.
+
+A non-quoted backslash (\) is the @dfn{escape character}.  It preserves the
+literal value of the next character that follows, with the exception of
+newline.
+
+Enclosing characters in single quotes preserves the literal value of each
+character within the quotes.  A single quote may not occur between single
+quotes, even when preceded by a backslash.
+
+Enclosing characters in double quotes preserves the literal value of all
+characters within the quotes, with the exception of @samp{$} and @samp{\}.
+The @samp{$} character retains its special meaning within double quotes.
+The backslash retains its special meaning only when followed by one of the
+following characters: @samp{$}, @samp{"}, @samp{\}, or newline.  A
+backslash-newline pair is treated as a line continuation (that is, it is
+removed from the input stream and effectively ignored).  A double quote may
+be quoted within double quotes by preceding it with a backslash.
+
+@heading Variable expansion
+
+The @samp{$} character introduces variable expansion.  The variable name to
+be expanded may be enclosed in braces, which are optional but serve to
+protect the variable to be expanded from characters immediately following it
+which could be interpreted as part of the name.
+
+Normal variable names begin with an alphabetic character, followed by zero
+or more alphanumeric characters.
+
+Positional variable names consist of one or more digits.  These are reserved
+for future expansion.
+
+The special variable name @samp{?} expands to the exit status of the most
+recently executed command.
+
+@heading Comments
+
+A word beginning with @samp{#} causes that word and all remaining characters
+on that line to be ignored.
+
+@heading Simple commands
+
+A @dfn{simple command} is a sequence of words separated by spaces or tabs
+and terminated by a semicolon or a newline.  The first word specifies the
+command to be executed.  The remaining words are passed as arguments to the
+invoked command.
+
+The return value of a simple command is its exit status.
+
+@heading Compound commands
+
+A @dfn{compound command} is one of the following:
+
+@table @asis
+@item for @var{name} in @var{word} @dots{}; do @var{list}; done
+The list of words following @code{in} is expanded, generating a list of
+items.  The variable @var{name} is set to each element of this list in turn,
+and @var{list} is executed each time.  The return value is the exit status
+of the last command that executes.  If the expansion of the items following
+@code{in} results in an empty list, no commands are executed, and the return
+status is 0.
+
+@item if @var{list}; then @var{list}; [elif @var{list}; then @var{list};] @dots{} [else @var{list};] fi
+The @code{if} @var{list} is executed.  If its exit status is zero, the
+@code{then} @var{list} is executed.  Otherwise, each @code{elif} @var{list}
+is executed in turn, and if its exit status is zero, the corresponding
+@code{then} @var{list} is executed and the command completes.  Otherwise,
+the @code{else} @var{list} is executed, if present.  The exit status is the
+exit status of the last command executed, or zero if no condition tested
+true.
+
+@item while @var{cond}; do @var{list}; done
+@itemx until @var{cond}; do @var{list}; done
+The @code{while} command continuously executes the @code{do} @var{list} as
+long as the last command in @var{cond} returns an exit status of zero.  The
+@code{until} command is identical to the @code{while} command, except that
+the test is negated; the @code{do} @var{list} is executed as long as the
+last command in @var{cond} returns a non-zero exit status.  The exit status
+of the @code{while} and @code{until} commands is the exit status of the last
+@code{do} @var{list} command executed, or zero if none was executed.
+
+@item function @var{name} @{ @var{command}; @dots{} @}
+This defines a function named @var{name}.  The @dfn{body} of the function is
+the list of commands within braces, each of which must be terminated with a
+semicolon or a newline.  This list of commands will be executed whenever
+@var{name} is specified as the name of a simple command.  Function
+definitions do not affect the exit status in @code{$?}.  When executed, the
+exit status of a function is the exit status of the last command executed in
+the body.
+
+@item menuentry @var{title} [@option{--class=class} @dots{}] [@option{--users=users}] [@option{--hotkey=key}] @{ @var{command}; @dots{} @}
+@xref{menuentry}.
+@end table
 
 
 @node Embedded configuration
@@ -1310,8 +1449,7 @@ simple.  Here is an example:
 @example
 @group
 grub> @kbd{serial --unit=0 --speed=9600}
-grub> @kbd{terminal_input serial}
-grub> @kbd{terminal_output serial}
+grub> @kbd{terminal_input serial; terminal_output serial}
 @end group
 @end example
 
@@ -1322,11 +1460,14 @@ command accepts many other options, so please refer to @ref{serial},
 for more details.
 
 The commands @command{terminal_input} (@pxref{terminal_input}) and
-@command{terminal_output} (@pxref{terminal_output} choose which type of
+@command{terminal_output} (@pxref{terminal_output}) choose which type of
 terminal you want to use. In the case above, the terminal will be a
 serial terminal, but you can also pass @code{console} to the command,
 as @samp{terminal serial console}. In this case, a terminal in which
-you press any key will be selected as a GRUB terminal.
+you press any key will be selected as a GRUB terminal. In the example above,
+note that you need to put both commands on the same command line, as you
+will lose the ability to type commands on the console after the first
+command.
 
 However, note that GRUB assumes that your terminal emulator is
 compatible with VT100 by default. This is true for most terminal
@@ -1791,9 +1932,26 @@ These commands can only be used in the menu:
 @node menuentry
 @subsection menuentry
 
-@deffn Command title name @dots{}
-Start a new boot entry, and set its name to the contents of the rest of
-the line, starting with the first non-space character.
+@deffn Command menuentry @var{title} @
+ [@option{--class=class} @dots{}] [@option{--users=users}] @
+ [@option{--hotkey=key}] @
+ @{ @var{command}; @dots{} @}
+This defines a GRUB menu entry named @var{title}.  When this entry is
+selected from the menu, GRUB will set the @var{chosen} environment variable
+to @var{title}, execute the list of commands given within braces, and if the
+last command in the list returned successfully and a kernel was loaded it
+will execute the @command{boot} command.
+
+The @option{--class} option may be used any number of times to group menu
+entries into classes.  Menu themes may display different classes using
+different styles.
+
+The @option{--users} option grants specific users access to specific menu
+entries.  @xref{Security}.
+
+The @option{--hotkey} option associates a hotkey with a menu entry.
+@var{key} may be a single letter, or one of the aliases @samp{backspace},
+@samp{tab}, or @samp{delete}.
 @end deffn
 
 
@@ -1887,7 +2045,9 @@ The @option{-a} (@option{--ascii}), @option{-u} (@option{--utf8}), and
 @option{-v} (@option{--visual-utf8}) options control how non-ASCII text is
 displayed.  @option{-a} specifies an ASCII-only terminal; @option{-u}
 specifies logically-ordered UTF-8; and @option{-v} specifies
-visually-ordered UTF-8.
+"visually-ordered UTF-8" (in other words, arranged such that a terminal
+emulator without bidirectional text support will display right-to-left text
+in the proper order; this is not really proper UTF-8, but a workaround).
 
 If no option or terminal type is specified, the current terminal type is
 printed.
