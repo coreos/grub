@@ -59,6 +59,37 @@ grub_script_break (grub_command_t cmd, int argc, char *argv[])
   return GRUB_ERR_NONE;
 }
 
+grub_err_t
+grub_script_shift (grub_command_t cmd __attribute__((unused)),
+		   int argc, char *argv[])
+{
+  char *p = 0;
+  unsigned long n = 0;
+
+  if (! scope)
+    return GRUB_ERR_NONE;
+
+  if (argc == 0)
+    n = 1;
+
+  else if (argc > 1)
+    return GRUB_ERR_BAD_ARGUMENT;
+
+  else
+    {
+      n = grub_strtoul (argv[0], &p, 10);
+      if (*p != '\0')
+	return GRUB_ERR_BAD_ARGUMENT;
+    }
+
+  if (n > scope->argv.argc)
+    return GRUB_ERR_BAD_ARGUMENT;
+
+  scope->argv.argc -= n;
+  scope->argv.args += n;
+  return GRUB_ERR_NONE;
+}
+
 static int
 grub_env_special (const char *name)
 {
@@ -327,7 +358,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 	  grub_free (assign);
 
 	  grub_snprintf (errnobuf, sizeof (errnobuf), "%d", grub_errno);
-	  grub_env_set ("?", errnobuf);
+	  grub_script_env_set ("?", errnobuf);
 
 	  grub_script_argv_free (&argv);
 	  grub_print_error ();

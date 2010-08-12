@@ -1,5 +1,18 @@
 2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	"shift" command support to GRUB script.
+
+	* include/grub/script_sh.h (grub_script_shift): New prototype.
+	* script/execute.c (grub_script_shift): New function.
+	* script/main.c (grub_script_init): Register shift command.
+	(grub_script_fini): Unregister shift command.
+	* util/grub-script-check.c (grub_script_cmd_shift): New function.
+
+	* tests/grub_script_shift.in: New testcase.
+	* conf/tests.rmk: Rules for new testcase.
+
+2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	"continue" command support to GRUB script.
 
 	* script/execute.c (grub_script_execute_cmdwhile): Continue support.
