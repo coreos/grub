@@ -269,13 +269,13 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 
 /* Execute a block of one or more commands.  */
 grub_err_t
-grub_script_execute_cmdblock (struct grub_script_cmd *cmd)
+grub_script_execute_cmdlist (struct grub_script_cmd *list)
 {
   int ret = 0;
-  struct grub_script_cmdblock *cmdblock = (struct grub_script_cmdblock *) cmd;
+  struct grub_script_cmd *cmd;
 
   /* Loop over every command and execute it.  */
-  for (cmd = cmdblock->cmdlist; cmd; cmd = cmd->next)
+  for (cmd = list->next; cmd; cmd = cmd->next)
     ret = grub_script_execute_cmd (cmd);
 
   return ret;

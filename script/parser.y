@@ -97,9 +97,7 @@ script: newlines0
         }
       | script statement delimiter newlines0
         {
-          struct grub_script_cmdblock *cmdblock;
-          cmdblock = (struct grub_script_cmdblock *) $1;
-          $$ = grub_script_add_cmd (state, cmdblock, $2);
+          $$ = grub_script_append_cmd (state, $1, $2);
         }
       | error
         {
@@ -185,13 +183,11 @@ command: grubcmd  { $$ = $1; }
 /* A list of commands. */
 commands1: newlines0 command
            {
-             $$ = grub_script_add_cmd (state, 0, $2);
+             $$ = grub_script_append_cmd (state, 0, $2);
            }
          | commands1 delimiters1 command
            {
-             struct grub_script_cmdblock *cmdblock;
-	     cmdblock = (struct grub_script_cmdblock *) $1;
-	     $$ = grub_script_add_cmd (state, cmdblock, $3);
+	     $$ = grub_script_append_cmd (state, $1, $3);
            }
 ;
 

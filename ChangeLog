@@ -1,3 +1,13 @@
+2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Remove grub_script_cmdblock struct.
+
+	* include/grub/script_sh.h: Remove grub_script_cmdblock.
+	* script/parser.y: Likewise.
+	* script/execute.c: Rename cmdblock suffix to cmdlist.
+	* script/script.c: Likewise.
+	* util/grub-script-check.c: Likewise.
+
 2010-08-11  Yves Blusseau  <blusseau@zetam.org>
 
 	* .bzrignore: add grub-macho2img

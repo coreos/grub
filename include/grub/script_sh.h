@@ -82,15 +82,6 @@ struct grub_script_cmdline
   struct grub_script_arglist *arglist;
 };
 
-/* A block of commands, this can be used to group commands.  */
-struct grub_script_cmdblock
-{
-  struct grub_script_cmd cmd;
-
-  /* A chain of commands.  */
-  struct grub_script_cmd *cmdlist;
-};
-
 /* An if statement.  */
 struct grub_script_cmdif
 {
@@ -234,8 +225,6 @@ grub_script_add_arglist (struct grub_parser_param *state,
 struct grub_script_cmd *
 grub_script_create_cmdline (struct grub_parser_param *state,
 			    struct grub_script_arglist *arglist);
-struct grub_script_cmd *
-grub_script_create_cmdblock (struct grub_parser_param *state);
 
 struct grub_script_cmd *
 grub_script_create_cmdif (struct grub_parser_param *state,
@@ -262,9 +251,9 @@ grub_script_create_cmdmenu (struct grub_parser_param *state,
 			    int options);
 
 struct grub_script_cmd *
-grub_script_add_cmd (struct grub_parser_param *state,
-		     struct grub_script_cmdblock *cmdblock,
-		     struct grub_script_cmd *cmd);
+grub_script_append_cmd (struct grub_parser_param *state,
+			struct grub_script_cmd *list,
+			struct grub_script_cmd *last);
 struct grub_script_arg *
 grub_script_arg_add (struct grub_parser_param *state,
 		     struct grub_script_arg *arg,
@@ -301,7 +290,7 @@ void grub_script_yyerror (struct grub_parser_param *, char const *);
 
 /* Commands to execute, don't use these directly.  */
 grub_err_t grub_script_execute_cmdline (struct grub_script_cmd *cmd);
-grub_err_t grub_script_execute_cmdblock (struct grub_script_cmd *cmd);
+grub_err_t grub_script_execute_cmdlist (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdif (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdfor (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdwhile (struct grub_script_cmd *cmd);
