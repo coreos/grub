@@ -73,7 +73,6 @@ grub_script_shift (grub_command_t cmd __attribute__((unused)),
   return 0;
 }
 
-
 char *
 grub_script_execute_argument_to_string (struct grub_script_arg *arg __attribute__ ((unused)))
 {

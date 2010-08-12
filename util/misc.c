@@ -293,7 +293,8 @@ grub_util_init_nls (void)
   textdomain (PACKAGE);
 #endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
 }
-#endif
+
+#endif /* GRUB_UTIL */
 
 int
 grub_dl_ref (grub_dl_t mod)

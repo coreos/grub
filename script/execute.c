@@ -328,7 +328,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   struct grub_script_argv argv = { 0, 0 };
 
   /* Lookup the command.  */
-  if (grub_script_arglist_to_argv (cmdline->arglist, &argv))
+  if (grub_script_arglist_to_argv (cmdline->arglist, &argv) || ! argv.args[0])
     return grub_errno;
 
   cmdname = argv.args[0];

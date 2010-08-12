@@ -18,8 +18,6 @@
 
 import re
 import sys
-import os
-import datetime
 
 if len (sys.argv) < 3:
     print ("Usage: %s SOURCE DESTINATION" % sys.argv[0])
