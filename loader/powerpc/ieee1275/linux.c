@@ -220,7 +220,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (! elf)
     goto out;
 
-  if (elf->ehdr.ehdr32.e_type != ET_EXEC)
+  if (elf->ehdr.ehdr32.e_type != ET_EXEC && elf->ehdr.ehdr32.e_type != ET_DYN)
     {
       grub_error (GRUB_ERR_UNKNOWN_OS,
 		  "this ELF file is not of the right type");

@@ -1,7 +1,7 @@
 /* getroot.c - Get root device */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,20 +20,33 @@
 #include <config.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <assert.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include <dirent.h>
 #include <errno.h>
+#include <error.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <grub/util/misc.h>
 
 #ifdef __GNU__
 #include <hurd.h>
 #include <hurd/lookup.h>
 #include <hurd/fs.h>
 #include <sys/mman.h>
+#endif
+
+#ifdef __linux__
+# include <sys/types.h>
+# include <sys/wait.h>
+#endif
+
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+# include <grub/util/libzfs.h>
+# include <grub/util/libnvpair.h>
 #endif
 
 #include <grub/mm.h>
@@ -160,6 +173,53 @@ find_root_device_from_mountinfo (const char *dir)
 }
 
 #endif /* __linux__ */
+
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+static char *
+find_root_device_from_libzfs (const char *dir)
+{
+  char *device;
+  char *poolname;
+  char *poolfs;
+
+  grub_find_zpool_from_dir (dir, &poolname, &poolfs);
+  if (! poolname)
+    return NULL;
+
+  {
+    zpool_handle_t *zpool;
+    nvlist_t *nvlist;
+    nvlist_t **nvlist_array;
+    unsigned int nvlist_count;
+
+    zpool = zpool_open (grub_get_libzfs_handle (), poolname);
+    nvlist = zpool_get_config (zpool, NULL);
+
+    if (nvlist_lookup_nvlist (nvlist, "vdev_tree", &nvlist) != 0)
+      error (1, errno, "nvlist_lookup_nvlist (\"vdev_tree\")");
+
+    if (nvlist_lookup_nvlist_array (nvlist, "children", &nvlist_array, &nvlist_count) != 0)
+      error (1, errno, "nvlist_lookup_nvlist_array (\"children\")");
+
+    do
+      {
+	assert (nvlist_count > 0);
+      } while (nvlist_lookup_nvlist_array (nvlist_array[0], "children",
+					   &nvlist_array, &nvlist_count) == 0);
+
+    if (nvlist_lookup_string (nvlist_array[0], "path", &device) != 0)
+      error (1, errno, "nvlist_lookup_string (\"path\")");
+
+    zpool_close (zpool);
+  }
+
+  free (poolname);
+  if (poolfs)
+    free (poolfs);
+
+  return device;
+}
+#endif
 
 #ifdef __MINGW32__
 
@@ -453,6 +513,12 @@ grub_guess_root_device (const char *dir)
     return os_dev;
 #endif /* __linux__ */
 
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+  os_dev = find_root_device_from_libzfs (dir);
+  if (os_dev)
+    return os_dev;
+#endif
+
   if (stat (dir, &st) < 0)
     grub_util_error ("cannot stat `%s'", dir);
 
@@ -516,10 +582,89 @@ grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
   return GRUB_DEV_ABSTRACTION_NONE;
 }
 
+#ifdef __linux__
+static char *
+get_mdadm_name (const char *os_dev)
+{
+  int mdadm_pipe[2];
+  pid_t mdadm_pid;
+  char *name = NULL;
+
+  if (pipe (mdadm_pipe) < 0)
+    {
+      grub_util_warn ("Unable to create pipe for mdadm: %s", strerror (errno));
+      return NULL;
+    }
+
+  mdadm_pid = fork ();
+  if (mdadm_pid < 0)
+    grub_util_warn ("Unable to fork mdadm: %s", strerror (errno));
+  else if (mdadm_pid == 0)
+    {
+      /* Child.  */
+      char *argv[5];
+
+      close (mdadm_pipe[0]);
+      dup2 (mdadm_pipe[1], STDOUT_FILENO);
+      close (mdadm_pipe[1]);
+
+      /* execvp has inconvenient types, hence the casts.  None of these
+         strings will actually be modified.  */
+      argv[0] = (char *) "mdadm";
+      argv[1] = (char *) "--detail";
+      argv[2] = (char *) "--export";
+      argv[3] = (char *) os_dev;
+      argv[4] = NULL;
+      execvp ("mdadm", argv);
+      exit (127);
+    }
+  else
+    {
+      /* Parent.  Read mdadm's output.  */
+      FILE *mdadm;
+      char *buf = NULL;
+      size_t len = 0;
+
+      close (mdadm_pipe[1]);
+      mdadm = fdopen (mdadm_pipe[0], "r");
+      if (! mdadm)
+	{
+	  grub_util_warn ("Unable to open stream from mdadm: %s",
+			  strerror (errno));
+	  goto out;
+	}
+
+      while (getline (&buf, &len, mdadm) > 0)
+	{
+	  if (strncmp (buf, "MD_NAME=", sizeof ("MD_NAME=") - 1) == 0)
+	    {
+	      char *name_start, *colon;
+	      size_t name_len;
+
+	      free (name);
+	      name_start = buf + sizeof ("MD_NAME=") - 1;
+	      /* Strip off the homehost if present.  */
+	      colon = strchr (name_start, ':');
+	      name = strdup (colon ? colon + 1 : name_start);
+	      name_len = strlen (name);
+	      if (name[name_len - 1] == '\n')
+		name[name_len - 1] = '\0';
+	    }
+	}
+
+out:
+      close (mdadm_pipe[0]);
+      waitpid (mdadm_pid, NULL, 0);
+    }
+
+  return name;
+}
+#endif /* __linux__ */
+
 char *
 grub_util_get_grub_dev (const char *os_dev)
 {
-  char *grub_dev;
+  char *grub_dev = NULL;
 
   switch (grub_util_get_dev_abstraction (os_dev))
     {
@@ -600,8 +745,35 @@ grub_util_get_grub_dev (const char *os_dev)
 	  grub_dev = xasprintf ("md%s", p);
 	  free (p);
 	}
+      else if (os_dev[7] == '/')
+	{
+	  /* mdraid 1.x with a free name.  */
+	  char *p , *q;
+
+	  p = strdup (os_dev + sizeof ("/dev/md/") - 1);
+
+	  q = strchr (p, 'p');
+	  if (q)
+	    *q = ',';
+
+	  grub_dev = xasprintf ("md/%s", p);
+	  free (p);
+	}
       else
 	grub_util_error ("unknown kind of RAID device `%s'", os_dev);
+
+#ifdef __linux__
+      {
+	char *mdadm_name = get_mdadm_name (os_dev);
+
+	if (mdadm_name)
+	  {
+	    free (grub_dev);
+	    grub_dev = xasprintf ("md/%s", mdadm_name);
+	    free (mdadm_name);
+	  }
+      }
+#endif /* __linux__ */
 
       break;
 
