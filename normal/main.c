@@ -675,6 +675,7 @@ static void (*grub_xputs_saved) (const char *str);
 GRUB_MOD_INIT(normal)
 {
   grub_context_init ();
+  grub_script_init ();
 
   grub_xputs_saved = grub_xputs;
   grub_xputs = grub_xputs_normal;
@@ -709,6 +710,7 @@ GRUB_MOD_INIT(normal)
 GRUB_MOD_FINI(normal)
 {
   grub_context_fini ();
+  grub_script_fini ();
 
   grub_xputs = grub_xputs_saved;
 

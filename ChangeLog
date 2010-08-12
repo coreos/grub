@@ -1,3 +1,21 @@
+2010-08-12  BVK Chaitanya  <bvk@dbook>
+
+	"break" command support to GRUB script.
+
+	* conf/common.rmk: Rule updates to grub-script-check.
+	* include/grub/misc.h (grub_min): New function.
+	* include/grub/script_sh.h (grub_script_init): New prototype.
+	(grub_script_fini): New prototype.
+	(grub_script_break): New prototype.
+	* script/main.c (grub_script_init): New function.
+	(grub_script_fini): New function.
+	* script/execute.c (grub_script_break): New function.
+	* normal/main.c: Calls to grub_script_{init,fini}.
+	* util/grub-script-check.c (grub_script_break): New function.
+
+	* tests/grub_script_break.in: New testcase.
+	* conf/tests.rmk: Rules for new test case.
+
 2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Function parameters support to GRUB script.
