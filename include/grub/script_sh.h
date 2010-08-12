@@ -63,6 +63,13 @@ struct grub_script_arg
   struct grub_script_arg *next;
 };
 
+/* An argument vector.  */
+struct grub_script_argv
+{
+  unsigned argc;
+  char **args;
+};
+
 /* A complete argument.  It consists of a list of one or more `struct
    grub_script_arg's.  */
 struct grub_script_arglist
@@ -215,6 +222,11 @@ struct grub_parser_param
   struct grub_lexer_param *lexerstate;
 };
 
+void grub_script_argv_free    (struct grub_script_argv *argv);
+int grub_script_argv_next     (struct grub_script_argv *argv);
+int grub_script_argv_append   (struct grub_script_argv *argv, const char *s);
+int grub_script_argv_split_append (struct grub_script_argv *argv, char *s);
+
 struct grub_script_arglist *
 grub_script_create_arglist (struct grub_parser_param *state);
 
@@ -333,8 +345,9 @@ grub_script_function_t grub_script_function_create (struct grub_script_arg *func
 						    struct grub_script *cmd);
 void grub_script_function_remove (const char *name);
 grub_script_function_t grub_script_function_find (char *functionname);
-int grub_script_function_call (grub_script_function_t func,
-			       int argc, char **args);
+
+grub_err_t grub_script_function_call (grub_script_function_t func,
+				      int argc, char **args);
 
 char **
 grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *count);

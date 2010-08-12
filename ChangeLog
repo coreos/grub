@@ -1,5 +1,32 @@
 2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	Function parameters support to GRUB script.
+
+	* script/yylex.l (VARIABLE): Regular expression update.
+	* script/function.c (grub_script_function_call): Moved ...
+	* script/execute.c (grub_script_function_call): ... to here.
+	(grub_script_execute_arglist_to_argv): Removed.
+	(grub_script_arglist_to_argv): New function.
+	* script/argv.c: New file.
+	(grub_script_argv_free): New function.
+	(grub_script_argv_next): Likewise.
+	(grub_script_argv_append): Likewise.
+	(grub_script_argv_split_append): Likewise.
+	* include/grub/script_sh.h (grub_script_argv): New struct.
+	(grub_script_argv_free): New function.
+	(grub_script_argv_next): Likewise.
+	(grub_script_argv_append): Likewise.
+	(grub_script_argv_split_append): Likewise.
+
+	* conf/common.rmk (normal.mod): New source script/argv.c.
+
+	* tests/grub_script_echo1.in: More tests.
+	* tests/grub_script_vars1.in: Likewise.
+	* tests/grub_script_functions.in: New test case.
+	* conf/tests.rmk: Rules for new testcase.
+
+2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	Remove grub_script_cmdblock struct.
 
 	* include/grub/script_sh.h: Remove grub_script_cmdblock.
