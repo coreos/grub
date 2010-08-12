@@ -705,6 +705,10 @@ GRUB_MOD_INIT(normal)
   /* Preserve hooks after context changes.  */
   grub_env_export ("color_normal");
   grub_env_export ("color_highlight");
+
+  /* Set default color names.  */
+  grub_env_set ("color_normal", "white/black");
+  grub_env_set ("color_highlight", "black/white");
 }
 
 GRUB_MOD_FINI(normal)
