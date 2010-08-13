@@ -8,7 +8,7 @@
 struct grub_net_protocol;
 struct grub_net_protocol_stack;
 struct grub_net_network_layer_interface;
-
+struct grub_net_addr;
 
 typedef enum grub_network_layer_protocol_id 
 {
@@ -57,6 +57,7 @@ struct grub_net_network_layer_protocol
   struct grub_net_network_layer_protocol *next;
   char *name;
   grub_net_protocol_id_t id;
+  grub_uint16_t type; /* IANA Ethertype */
   //grub_network_layer_protocol_id_t id;
   grub_err_t (*ntoa) (char *name, grub_net_network_layer_address_t *addr);
   char * (*aton) (union grub_net_network_layer_address addr);
@@ -76,11 +77,14 @@ struct grub_net_link_layer_protocol
   
   struct grub_net_link_layer_protocol *next;
   char *name;
+  grub_uint16_t type; /* ARP hardware type */
   grub_net_protocol_id_t id;
   grub_err_t (*send) (struct grub_net_network_layer_interface *inf ,
-             struct grub_net_network_link_interface *net_link_inf, struct grub_net_buff *nb);
+             struct grub_net_network_link_interface *net_link_inf, struct grub_net_buff *nb,
+             struct grub_net_addr target_addr, grub_uint16_t ethertype);
   grub_err_t (*recv) (struct grub_net_network_layer_interface *inf ,
-             struct grub_net_network_link_interface *net_link_inf, struct grub_net_buff *nb);
+             struct grub_net_network_link_interface *net_link_inf, struct grub_net_buff *nb,
+             grub_uint16_t ethertype);
 };
 
 extern struct grub_net_network_layer_protocol *grub_net_network_layer_protocols;

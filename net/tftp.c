@@ -113,7 +113,7 @@ tftp_open (struct grub_net_network_layer_interface *inf __attribute((unused)),
   app_interface->trans_prot->send (inf,protstack->interface,nb);
   /*Receive OACK*/
   grub_netbuff_clear (nb); 
-  grub_netbuff_reserve (nb,80*1024);
+  grub_netbuff_reserve (nb,2048);
   return app_interface->app_prot->recv(inf,protstack,nb);
 }
 
@@ -215,7 +215,7 @@ static int tftp_file_size (struct grub_net_network_layer_interface* inf ,
 
   tftp_open (inf, protocol_stack,nb, filename);
   grub_netbuff_clear (nb); 
-  grub_netbuff_reserve (nb,80*1024);
+  grub_netbuff_reserve (nb,2048);
   tftp_send_err (inf, protocol_stack,nb,"Abort transference.",0);
 
   return tftp_file.size;

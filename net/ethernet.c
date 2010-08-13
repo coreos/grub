@@ -8,24 +8,21 @@
 #include <grub/net/interface.h>
 #include <grub/net.h>
 #include <grub/time.h>
+#include <grub/net/arp.h>
 
 static grub_err_t 
 send_ethernet_packet (struct grub_net_network_layer_interface *inf __attribute__ ((unused)),
-   struct grub_net_network_link_interface *net_link_inf __attribute__ ((unused)) ,struct grub_net_buff *nb)
+struct grub_net_network_link_interface *net_link_inf __attribute__ ((unused)) ,struct grub_net_buff *nb,
+struct grub_net_addr target_addr, grub_uint16_t ethertype)
 {
 
   struct etherhdr *eth; 
    
   grub_netbuff_push (nb,sizeof(*eth));
   eth = (struct etherhdr *) nb->data; 
-  eth->dst[0] = 0x00;
-  eth->dst[1] = 0x11;
-  eth->dst[2] = 0x25;
-  eth->dst[3] = 0xca;
-  eth->dst[4] = 0x1f;
-  eth->dst[5] = 0x01;
-  grub_memcpy (eth->src, bootp_pckt -> chaddr,6);
-  eth->type = 0x0800;
+  grub_memcpy(eth->dst, target_addr.addr, target_addr.len);
+  grub_memcpy(eth->src, bootp_pckt->chaddr, 6);
+  eth->type = ethertype;
 
   return  send_card_buffer(nb);  
 //  return  inf->card->driver->send(inf->card,nb);
@@ -34,7 +31,8 @@ send_ethernet_packet (struct grub_net_network_layer_interface *inf __attribute__
 
 static grub_err_t 
 recv_ethernet_packet (struct grub_net_network_layer_interface *inf __attribute__ ((unused)),
-   struct grub_net_network_link_interface *net_link_inf __attribute__ ((unused)) ,struct grub_net_buff *nb)
+struct grub_net_network_link_interface *net_link_inf __attribute__ ((unused)) ,struct grub_net_buff *nb,
+grub_uint16_t ethertype)
 {
   struct etherhdr *eth;
   grub_uint64_t start_time, current_time;
@@ -63,12 +61,17 @@ recv_ethernet_packet (struct grub_net_network_layer_interface *inf __attribute__
       }
     }
 
-   /*change for grub_memcmp*/
-   //if( eth->src[0] == 0x00 &&  eth->src[1] == 0x11 &&  eth->src[2] == 0x25 && 
-     //          eth->src[3] == 0xca &&  eth->src[4] == 0x1f &&  eth->src[5] == 0x01 && type == 0x800)
-   if(type == 0x800) 
-     return 0;
-   
+    /* ARP packet */
+    if (type == ARP_ETHERTYPE)
+    {
+       arp_receive(inf, net_link_inf, nb);
+       if (ethertype == ARP_ETHERTYPE)
+        return GRUB_ERR_NONE;
+    }
+    /* IP packet */
+    else if(type == IP_ETHERTYPE && ethertype == IP_ETHERTYPE)
+      return GRUB_ERR_NONE;
+
     current_time =  grub_get_time_ms ();
     if (current_time -  start_time > TIMEOUT_TIME_MS)
       return grub_error (GRUB_ERR_TIMEOUT, "Time out.");
@@ -77,7 +80,7 @@ recv_ethernet_packet (struct grub_net_network_layer_interface *inf __attribute__
   - verify if the next layer is the desired one.
      - if not. get another packet.
   - remove ethernet header from buffer*/
-  return 0; 
+  return GRUB_ERR_NONE; 
 }
 
 
@@ -85,6 +88,7 @@ static struct grub_net_link_layer_protocol grub_ethernet_protocol =
 {
   .name = "ethernet",
   .id = GRUB_NET_ETHERNET_ID,
+  .type = ARPHRD_ETHERNET,
   .send = send_ethernet_packet,
   .recv = recv_ethernet_packet 
 };

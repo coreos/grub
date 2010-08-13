@@ -54,7 +54,7 @@ grub_normal_print_device_info (const char *name)
             grub_printf_(N_("Protocol: %s"), "Unknown"); 
           grub_putchar ('\n');
           grub_putchar ('\t');
-          grub_printf_(N_("Server IP: %d.%d.%d.%d"), data->server_ip & 0xff, data->server_ip >> 8 & 0xff, data->server_ip >> 16 & 0xff, data->server_ip >> 24 & 0xff); 
+          grub_printf_(N_("Server IP: %d.%d.%d.%d"), data->server_ip >> 24 & 0xff, data->server_ip >> 16 & 0xff, data->server_ip >> 8 & 0xff, data->server_ip & 0xff); 
           if (data->username)
             {
               grub_putchar ('\n');

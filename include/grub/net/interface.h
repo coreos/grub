@@ -37,7 +37,7 @@ struct grub_net_network_link_interface
 };
 
 
-extern struct grub_net_protocol_stack *grub_net_protocol_stacks;
+struct grub_net_protocol_stack *grub_net_protocol_stacks;
 static inline void
 grub_net_stack_register (struct grub_net_protocol_stack *stack)
 {

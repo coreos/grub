@@ -1,6 +1,7 @@
 #include <grub/net/ip.h>
 #include <grub/net/ieee1275/interface.h>
 #include <grub/misc.h>
+#include <grub/net/arp.h>
 #include <grub/net/ethernet.h>
 #include <grub/net/interface.h>
 #include <grub/net/type_net.h>
@@ -36,6 +37,8 @@ send_ip_packet (struct grub_net_network_layer_interface *inf,
   
   struct iphdr *iph;
   static int id = 0x2400; 
+  struct grub_net_addr nl_target_addr, ll_target_addr;
+  grub_err_t rc;
   
   grub_netbuff_push(nb,sizeof(*iph)); 
   iph = (struct iphdr *) nb->data;   
@@ -51,12 +54,26 @@ send_ip_packet (struct grub_net_network_layer_interface *inf,
   iph->ttl = 0xff;
   iph->protocol = 0x11;
   iph->src = (grub_uint32_t) bootp_pckt -> yiaddr; //inf->address.ipv4; // *((grub_uint32_t *)inf->card->ila->addr);
-  iph->dest = (grub_uint32_t) bootp_pckt -> siaddr;//inf->address.ipv4;// *((grub_uint32_t *)inf->ila->addr);
+  // iph->dest = (grub_uint32_t) bootp_pckt -> siaddr;//inf->address.ipv4;// *((grub_uint32_t *)inf->ila->addr);
+  iph->dest = *((grub_uint32_t *) (trans_net_inf->data));
   
   iph->chksum = 0 ;
   iph->chksum = ipchksum((void *)nb->data, sizeof(*iph));
   
-  return trans_net_inf->inner_layer->link_prot->send(inf,trans_net_inf->inner_layer,nb);
+  /* Determine link layer target address via ARP */
+  nl_target_addr.len = sizeof(iph->dest);
+  nl_target_addr.addr = grub_malloc(nl_target_addr.len);
+  if (! nl_target_addr.addr)
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "fail to alloc memory");
+  grub_memcpy(nl_target_addr.addr, &(iph->dest), nl_target_addr.len);
+  rc = arp_resolve(inf, trans_net_inf->inner_layer, &nl_target_addr, &ll_target_addr);
+  grub_free(nl_target_addr.addr);
+  if (rc != GRUB_ERR_NONE)
+    return rc;
+
+  rc = trans_net_inf->inner_layer->link_prot->send(inf,trans_net_inf->inner_layer,nb,ll_target_addr, IP_ETHERTYPE);
+  grub_free(ll_target_addr.addr);
+  return rc;
   //return protstack->next->prot->send(inf,protstack->next,nb); 
 }
 
@@ -70,11 +87,12 @@ recv_ip_packet (struct grub_net_network_layer_interface *inf,
   start_time = grub_get_time_ms();
   while (1)
   {
-    trans_net_inf->inner_layer->link_prot->recv(inf,trans_net_inf->inner_layer,nb);
+    trans_net_inf->inner_layer->link_prot->recv(inf,trans_net_inf->inner_layer,nb,IP_ETHERTYPE);
     iph = (struct iphdr *) nb->data;
     if (iph->protocol == 0x11 &&
            iph->dest == (grub_uint32_t) bootp_pckt -> yiaddr && 
-           iph->src ==  (grub_uint32_t) bootp_pckt -> siaddr )
+           //iph->src ==  (grub_uint32_t) bootp_pckt -> siaddr )
+           iph->src ==  *((grub_uint32_t *) (trans_net_inf->data)) )
     {
       grub_netbuff_pull(nb,sizeof(*iph));
       return 0; 
@@ -99,6 +117,7 @@ static struct grub_net_network_layer_protocol grub_ipv4_protocol =
 {
  .name = "ipv4",
  .id = GRUB_NET_IPV4_ID,
+ .type = IP_ETHERTYPE,
  .send = send_ip_packet,
  .recv = recv_ip_packet
 };

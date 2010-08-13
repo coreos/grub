@@ -22,6 +22,7 @@
 #include <grub/disk.h>
 #include <grub/file.h>
 #include <grub/misc.h>
+#include <grub/net.h>
 #include <grub/net/arp.h>
 #include <grub/net/ip.h>
 #include <grub/net/udp.h>
@@ -95,7 +96,7 @@ retrieve_field(const char *src, char **field, const char **rest)
 static grub_err_t
 parse_ip (const char *val, grub_uint32_t *ip, const char **rest)
 {
-  grub_uint32_t newip = 0;
+  grub_uint8_t *p = (grub_uint8_t *) ip;
   unsigned long t;
   int i;
   const char *ptr = val;
@@ -107,8 +108,7 @@ parse_ip (const char *val, grub_uint32_t *ip, const char **rest)
 	return grub_errno;
       if (t & ~0xff)
 	return grub_error (GRUB_ERR_OUT_OF_RANGE, "Invalid IP.");
-      newip >>= 8;
-      newip |= (t << 24);
+      p[i] = (grub_uint8_t) t;
       if (i != 3 && *ptr != '.')
 	return grub_error (GRUB_ERR_OUT_OF_RANGE, "Invalid IP.");
       ptr++;
@@ -116,7 +116,6 @@ parse_ip (const char *val, grub_uint32_t *ip, const char **rest)
   ptr = ptr - 1;
   if ( *ptr != '\0' && *ptr != ',')
 	return grub_error (GRUB_ERR_OUT_OF_RANGE, "Invalid IP.");
-  *ip = newip;
   if (rest)
     *rest = ptr;
   return 0;
@@ -305,12 +304,33 @@ grub_ofnetfs_open (struct grub_file *file , const char *name )
   char *datap;
   int amount = 0;
   grub_addr_t found_addr;
+  grub_netdisk_data_t netdisk_data = (grub_netdisk_data_t) file->device->disk->data;
+  // TODO: replace getting IP and MAC from bootp by routing functions
+  struct grub_net_network_layer_interface net_interface;
+  struct grub_net_card net_card;
+  struct grub_net_addr ila, lla;
+  ila.addr = (grub_uint8_t *) &(bootp_pckt->yiaddr);
+  ila.len = 4;
+  lla.addr = (grub_uint8_t *) &(bootp_pckt->chaddr);
+  lla.len = 6;
+  net_card.ila = &ila;
+  net_card.lla = &lla;
+  net_interface.card = &net_card;
+  // END TODO
 
-  stack = grub_net_protocol_stack_get ("tftp");
+  if(! netdisk_data)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "arguments missing");
+
+  if(netdisk_data->protocol == GRUB_NETDISK_PROTOCOL_TFTP)
+    stack = grub_net_protocol_stack_get ("tftp");
+  else
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid protocol specified");
+
   app_interface = (struct grub_net_application_transport_interface *) stack->interface;
-  pack =  grub_netbuff_alloc (80*1024);
-  grub_netbuff_reserve (pack,80*1024);
-  file_size = app_interface->app_prot->get_file_size(NULL,stack,pack,(char *) name);
+  app_interface->inner_layer->data = (void *) &(netdisk_data->server_ip);
+  pack =  grub_netbuff_alloc (2048);
+  grub_netbuff_reserve (pack,2048);
+  file_size = app_interface->app_prot->get_file_size(&net_interface,stack,pack,(char *) name);
 
   for (found_addr = 0x800000; found_addr <  + 2000 * 0x100000; found_addr += 0x100000)
   {
@@ -320,16 +340,16 @@ grub_ofnetfs_open (struct grub_file *file , const char *name )
   file->data = (void *) found_addr;
 
   grub_netbuff_clear(pack); 
-  grub_netbuff_reserve (pack,80*1024);
-  app_interface->app_prot->open (NULL,stack,pack,(char *) name);
+  grub_netbuff_reserve (pack,2048);
+  app_interface->app_prot->open (&net_interface,stack,pack,(char *) name);
   if (grub_errno != GRUB_ERR_NONE)
     goto error;
   
   do 
   {  
     grub_netbuff_clear(pack); 
-    grub_netbuff_reserve (pack,80*1024);
-    app_interface->app_prot->recv (NULL,stack,pack); 
+    grub_netbuff_reserve (pack,2048);
+    app_interface->app_prot->recv (&net_interface,stack,pack); 
     if (grub_errno != GRUB_ERR_NONE)
       goto error;
     if ((pack->tail - pack->data))
@@ -340,8 +360,8 @@ grub_ofnetfs_open (struct grub_file *file , const char *name )
       grub_memcpy(datap , pack->data, pack->tail - pack->data); 
     }
     grub_netbuff_clear(pack); 
-    grub_netbuff_reserve (pack,80*1024);
-    app_interface->app_prot->send_ack (NULL,stack,pack); 
+    grub_netbuff_reserve (pack,2048);
+    app_interface->app_prot->send_ack (&net_interface,stack,pack); 
 
     if (grub_errno != GRUB_ERR_NONE)
       goto error;

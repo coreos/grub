@@ -22,7 +22,6 @@ INTERFACE_REGISTER_FUNCTIONS("link");*/
 
 #include <grub/mm.h>
 #include <grub/net/interface.h>
-struct grub_net_protocol_stack *grub_net_protocol_stacks;
 struct grub_net_protocol_stack 
   *grub_net_protocol_stack_get (char *name)
 {

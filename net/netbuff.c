@@ -72,7 +72,7 @@ struct grub_net_buff *grub_netbuff_alloc ( grub_size_t len )
     len = NETBUFFMINLEN;
   
   len = ALIGN_UP (len,NETBUFF_ALIGN);
-  data = grub_memalign (len + sizeof (*nb),NETBUFF_ALIGN); 
+  data = grub_memalign (NETBUFF_ALIGN, len + sizeof (*nb));
   nb = (struct grub_net_buff *) ((int)data + len); 
   nb->head = nb->data = nb->tail = data;
   nb->end = (char *) nb; 
