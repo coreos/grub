@@ -288,6 +288,9 @@ grub_find_zpool_from_dir (const char *dir, char **poolname, char **poolfs)
   if (statfs (dir, &mnt) != 0)
     return;
 
+  if (strcmp (mnt.f_fstypename, "zfs") != 0)
+    return;
+
   *poolname = xstrdup (mnt.f_mntfromname);
 
   slash = strchr (*poolname, '/');

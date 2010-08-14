@@ -1,3 +1,8 @@
+2010-08-14  Robert Millan  <rmh@gnu.org>
+
+	* kern/emu/misc.c (grub_find_zpool_from_dir): Abort function if
+	filesystem is not ZFS.
+
 2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Fix for misspelled color names defaulting to black/black (bug
