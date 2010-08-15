@@ -83,6 +83,9 @@ grub_script_continue_SOURCES = tests/grub_script_continue.in
 check_SCRIPTS += grub_script_shift
 grub_script_shift_SOURCES = tests/grub_script_shift.in
 
+check_SCRIPTS += grub_script_setparams
+grub_script_setparams_SOURCES = tests/grub_script_setparams.in
+
 # List of tests to execute on "make check"
 # SCRIPTED_TESTS    = example_scripted_test
 # SCRIPTED_TESTS   += example_grub_script_test
@@ -103,6 +106,7 @@ SCRIPTED_TESTS += grub_script_functions
 SCRIPTED_TESTS += grub_script_break
 SCRIPTED_TESTS += grub_script_continue
 SCRIPTED_TESTS += grub_script_shift
+SCRIPTED_TESTS += grub_script_setparams
 
 # dependencies between tests and testing-tools
 $(SCRIPTED_TESTS): grub-shell grub-shell-tester
