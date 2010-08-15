@@ -60,7 +60,7 @@ CCAS=$TARGET_CC
 grub_CHECK_LINK_DIR
 if test x"$link_dir" = xyes ; then
   AC_CONFIG_LINKS([include/grub/cpu:include/grub/$target_cpu])
-  cp -rp $srcdir/lib/$target_cpu lib/target_cpu
+  cp -r $srcdir/lib/$target_cpu/* lib/target_cpu
   if test "$platform" != emu ; then
     AC_CONFIG_LINKS([include/grub/machine:include/grub/$target_cpu/$platform])
   fi
