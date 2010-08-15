@@ -57,6 +57,23 @@ grub_script_argv_free (struct grub_script_argv *argv)
   argv->args = 0;
 }
 
+/* Make argv from argc, args pair.  */
+int
+grub_script_argv_make (struct grub_script_argv *argv, int argc, char **args)
+{
+  int i;
+  struct grub_script_argv r = { 0, 0};
+
+  for (i = 0; i < argc; i++)
+    if (grub_script_argv_next (&r) || grub_script_argv_append (&r, args[i]))
+      {
+	grub_script_argv_free (&r);
+	return 1;
+      }
+  *argv = r;
+  return 0;
+}
+
 /* Prepare for next argc.  */
 int
 grub_script_argv_next (struct grub_script_argv *argv)

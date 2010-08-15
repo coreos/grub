@@ -227,6 +227,7 @@ void grub_script_init (void);
 void grub_script_fini (void);
 
 void grub_script_argv_free    (struct grub_script_argv *argv);
+int grub_script_argv_make     (struct grub_script_argv *argv, int argc, char **args);
 int grub_script_argv_next     (struct grub_script_argv *argv);
 int grub_script_argv_append   (struct grub_script_argv *argv, const char *s);
 int grub_script_argv_split_append (struct grub_script_argv *argv, char *s);
@@ -320,6 +321,9 @@ grub_err_t grub_script_break (grub_command_t cmd, int argc, char *argv[]);
 
 /* SHIFT command for GRUB script.  */
 grub_err_t grub_script_shift (grub_command_t cmd, int argc, char *argv[]);
+
+/* SETPARAMS command for GRUB script functions.  */
+grub_err_t grub_script_setparams (grub_command_t cmd, int argc, char *argv[]);
 
 /* This variable points to the parsed command.  This is used to
    communicate with the bison code.  */
