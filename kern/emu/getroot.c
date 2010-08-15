@@ -188,11 +188,16 @@ find_root_device_from_libzfs (const char *dir)
 
   {
     zpool_handle_t *zpool;
+    libzfs_handle_t *libzfs;
     nvlist_t *nvlist;
     nvlist_t **nvlist_array;
     unsigned int nvlist_count;
 
-    zpool = zpool_open (grub_get_libzfs_handle (), poolname);
+    libzfs = grub_get_libzfs_handle ();
+    if (! libzfs)
+      return NULL;
+
+    zpool = zpool_open (libzfs, poolname);
     nvlist = zpool_get_config (zpool, NULL);
 
     if (nvlist_lookup_nvlist (nvlist, "vdev_tree", &nvlist) != 0)

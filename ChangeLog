@@ -1,3 +1,10 @@
+2010-08-15  Robert Millan  <rmh@gnu.org>
+
+	* kern/emu/misc.c (grub_get_libzfs_handle): Handle libzfs_init()
+	errors.
+	* kern/emu/getroot.c (find_root_device_from_libzfs): Handle
+	grub_get_libzfs_handle() errors.
+
 2010-08-14  Robert Millan  <rmh@gnu.org>
 
 	* kern/emu/misc.c (grub_find_zpool_from_dir): Abort function if

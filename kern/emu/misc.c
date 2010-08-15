@@ -268,7 +268,9 @@ grub_get_libzfs_handle (void)
   if (! __libzfs_handle)
     {
       __libzfs_handle = libzfs_init ();
-      atexit (fini_libzfs);
+
+      if (__libzfs_handle)
+	atexit (fini_libzfs);
     }
 
   return __libzfs_handle;
