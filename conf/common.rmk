@@ -94,7 +94,7 @@ grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c
 	util/grub-script-check.c util/misc.c kern/emu/misc.c kern/emu/mm.c \
 	script/main.c script/script.c script/function.c script/lexer.c \
 	kern/err.c kern/list.c \
-	kern/misc.c kern/env.c grub_script.tab.c \
+	kern/command.c kern/misc.c kern/env.c grub_script.tab.c \
 	grub_script.yy.c
 grub_script_check_CFLAGS = $(GNULIB_UTIL_CFLAGS)
 grub_script_check_DEPENDENCIES = grub_script.tab.h

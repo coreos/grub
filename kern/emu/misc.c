@@ -32,10 +32,6 @@
 #include <limits.h>
 #endif
 
-#ifdef HAVE_GETMNTANY
-# include <sys/mnttab.h>
-#endif
-
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/env.h>
@@ -57,7 +53,11 @@
 # include <grub/util/libnvpair.h>
 #endif
 
-#ifdef HAVE_GETFSSTAT
+#ifdef HAVE_SYS_PARAM_H
+# include <sys/param.h>
+#endif
+
+#ifdef HAVE_SYS_MOUNT_H
 # include <sys/mount.h>
 #endif
 
@@ -276,119 +276,19 @@ grub_get_libzfs_handle (void)
 #endif /* HAVE_LIBZFS */
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
-/* Not ZFS-specific in itself, but for now it's only used by ZFS-related code.  */
-char *
-grub_find_mount_point_from_dir (const char *dir)
-{
-  struct stat st;
-  typeof (st.st_dev) fs;
-  char *prev, *next, *slash, *statdir;
-
-  if (stat (dir, &st) == -1)
-    error (1, errno, "stat (%s)", dir);
-
-  fs = st.st_dev;
-
-  prev = xstrdup (dir);
-
-  while (1)
-    {
-      /* Remove last slash.  */
-      next = xstrdup (prev);
-      slash = strrchr (next, '/');
-      if (! slash)
-	{
-	  free (next);
-	  free (prev);
-	  return NULL;
-	}
-      *slash = '\0';
-
-      /* A next empty string counts as /.  */
-      if (next[0] == '\0')
-	statdir = "/";
-      else
-	statdir = next;
-
-      if (stat (statdir, &st) == -1)
-	error (1, errno, "stat (%s)", next);
-
-      if (st.st_dev != fs)
-	{
-	  /* Found mount point.  */
-	  free (next);
-	  return prev;
-	}
-
-      free (prev);
-      prev = next;
-
-      /* We've already seen an empty string, which means we
-         reached /.  Nothing left to do.  */
-      if (prev[0] == '\0')
-	{
-	  free (prev);
-	  return xstrdup ("/");
-	}
-    }
-}
-#endif
-
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
-
 /* ZFS has similar problems to those of btrfs (see above).  */
 void
-grub_find_zpool_from_mount_point (const char *mnt_point, char **poolname, char **poolfs)
+grub_find_zpool_from_dir (const char *dir, char **poolname, char **poolfs)
 {
+  struct statfs mnt;
   char *slash;
 
   *poolname = *poolfs = NULL;
 
-#if defined(HAVE_GETFSSTAT) /* FreeBSD and GNU/kFreeBSD */
-  {
-    int mnt_count = getfsstat (NULL, 0, MNT_WAIT);
-    if (mnt_count == -1)
-      error (1, errno, "getfsstat");
-
-    struct statfs *mnt = xmalloc (mnt_count * sizeof (*mnt));
-
-    mnt_count = getfsstat (mnt, mnt_count * sizeof (*mnt), MNT_WAIT);
-    if (mnt_count == -1)
-      error (1, errno, "getfsstat");
-
-    unsigned int i;
-    for (i = 0; i < (unsigned) mnt_count; i++)
-      if (!strcmp (mnt[i].f_fstypename, "zfs")
-	  && !strcmp (mnt[i].f_mntonname, mnt_point))
-	{
-	  *poolname = xstrdup (mnt[i].f_mntfromname);
-	  break;
-	}
-
-    free (mnt);
-  }
-#elif defined(HAVE_GETMNTANY) /* OpenSolaris */
-  {
-    FILE *mnttab = fopen ("/etc/mnttab", "r");
-    struct mnttab mp;
-    struct mnttab mpref =
-      {
-	.mnt_special = NULL,
-	.mnt_mountp = mnt_point,
-	.mnt_fstype = "zfs",
-	.mnt_mntopts = NULL,
-	.mnt_time = NULL,
-      };
-
-    if (getmntany (mnttab, &mp, &mpref) == 0)
-      *poolname = xstrdup (mp.mnt_special);
-
-    fclose (mnttab);
-  }
-#endif
-
-  if (! *poolname)
+  if (statfs (dir, &mnt) != 0)
     return;
+
+  *poolname = xstrdup (mnt.f_mntfromname);
 
   slash = strchr (*poolname, '/');
   if (slash)
@@ -407,11 +307,14 @@ char *
 grub_make_system_path_relative_to_its_root (const char *path)
 {
   struct stat st;
-  char *p, *buf, *buf2, *buf3;
-  char *mnt_point, *poolname = NULL, *poolfs = NULL, *ret;
+  char *p, *buf, *buf2, *buf3, *ret;
   uintptr_t offset = 0;
   dev_t num;
   size_t len;
+
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+  char *poolfs = NULL;
+#endif
 
   /* canonicalize.  */
   p = canonicalize_file_name (path);
@@ -420,12 +323,10 @@ grub_make_system_path_relative_to_its_root (const char *path)
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
   /* For ZFS sub-pool filesystems, could be extended to others (btrfs?).  */
-  mnt_point = grub_find_mount_point_from_dir (p);
-  if (mnt_point)
-    {
-      grub_find_zpool_from_mount_point (mnt_point, &poolname, &poolfs);
-      free (mnt_point);
-    }
+  {
+    char *dummy;
+    grub_find_zpool_from_dir (p, &dummy, &poolfs);
+  }
 #endif
 
   len = strlen (p) + 1;
@@ -506,12 +407,14 @@ grub_make_system_path_relative_to_its_root (const char *path)
       len--;
     }
 
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
   if (poolfs)
     {
-      ret = xasprintf ("/%s@%s", poolfs, buf3);
+      ret = xasprintf ("/%s/@%s", poolfs, buf3);
       free (buf3);
     }
   else
+#endif
     ret = buf3;
 
   return ret;

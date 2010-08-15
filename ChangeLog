@@ -1,3 +1,212 @@
+2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix for misspelled color names defaulting to black/black (bug
+	reported by Doug Nazar)
+
+	* include/grub/normal.h (grub_parse_color_name_pair): Add return
+	status to prototype.
+	* normal/color.c (grub_parse_color_name_pair): Return failure
+	status.
+	(grub_env_write_color_normal): Ignore bad color names.
+	(grub_env_write_color_highlight): Likewise.
+	* normal/main.c (GRUB_MOD_INIT): Set default color names.
+
+2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	"shift" command support to GRUB script.
+
+	* include/grub/script_sh.h (grub_script_shift): New prototype.
+	* script/execute.c (grub_script_shift): New function.
+	* script/main.c (grub_script_init): Register shift command.
+	(grub_script_fini): Unregister shift command.
+	* util/grub-script-check.c (grub_script_cmd_shift): New function.
+
+	* tests/grub_script_shift.in: New testcase.
+	* conf/tests.rmk: Rules for new testcase.
+
+2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	"continue" command support to GRUB script.
+
+	* script/execute.c (grub_script_execute_cmdwhile): Continue support.
+	(grub_script_break): Continue support.
+	* script/main.c (grub_script_init): Register continue command.
+	(grub_script_fini): Unregister continue command.
+
+	* tests/grub_script_continue.in: New testcase.
+	* conf/tests.rmk: Rules for new testcase.
+
+2010-08-12  BVK Chaitanya  <bvk@dbook>
+
+	"break" command support to GRUB script.
+
+	* conf/common.rmk: Rule updates to grub-script-check.
+	* include/grub/misc.h (grub_min): New function.
+	* include/grub/script_sh.h (grub_script_init): New prototype.
+	(grub_script_fini): New prototype.
+	(grub_script_break): New prototype.
+	* script/main.c (grub_script_init): New function.
+	(grub_script_fini): New function.
+	* script/execute.c (grub_script_break): New function.
+	* normal/main.c: Calls to grub_script_{init,fini}.
+	* util/grub-script-check.c (grub_script_break): New function.
+
+	* tests/grub_script_break.in: New testcase.
+	* conf/tests.rmk: Rules for new test case.
+
+2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Function parameters support to GRUB script.
+
+	* script/yylex.l (VARIABLE): Regular expression update.
+	* script/function.c (grub_script_function_call): Moved ...
+	* script/execute.c (grub_script_function_call): ... to here.
+	(grub_script_execute_arglist_to_argv): Removed.
+	(grub_script_arglist_to_argv): New function.
+	* script/argv.c: New file.
+	(grub_script_argv_free): New function.
+	(grub_script_argv_next): Likewise.
+	(grub_script_argv_append): Likewise.
+	(grub_script_argv_split_append): Likewise.
+	* include/grub/script_sh.h (grub_script_argv): New struct.
+	(grub_script_argv_free): New function.
+	(grub_script_argv_next): Likewise.
+	(grub_script_argv_append): Likewise.
+	(grub_script_argv_split_append): Likewise.
+
+	* conf/common.rmk (normal.mod): New source script/argv.c.
+
+	* tests/grub_script_echo1.in: More tests.
+	* tests/grub_script_vars1.in: Likewise.
+	* tests/grub_script_functions.in: New test case.
+	* conf/tests.rmk: Rules for new testcase.
+
+2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Remove grub_script_cmdblock struct.
+
+	* include/grub/script_sh.h: Remove grub_script_cmdblock.
+	* script/parser.y: Likewise.
+	* script/execute.c: Rename cmdblock suffix to cmdlist.
+	* script/script.c: Likewise.
+	* util/grub-script-check.c: Likewise.
+
+2010-08-11  Yves Blusseau  <blusseau@zetam.org>
+
+	* .bzrignore: add grub-macho2img
+
+2010-08-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* kern/i386/qemu/init.c (grub_qemu_init_cirrus): Fix compilation error.
+
+2010-08-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove the dump of sm712 initialisation sequence.
+
+	* include/grub/pci.h (GRUB_PCI_CLASS_SUBCLASS_VGA): New const.
+	* include/grub/vga.h (GRUB_VGA_IO_ARX_READ): New register.
+	(GRUB_VGA_IO_MISC_WRITE): Likewise.
+	(GRUB_VGA_CR_*): Added many registers.
+	(GRUB_VGA_SR_*): Likewise.
+	(GRUB_VGA_GR_*): Likewise.
+	(grub_vga_write_arx): New function.
+	(grub_video_hw_config): New struct.
+	(grub_vga_set_geometry): New function.
+	* kern/i386/qemu/init.c (load_palette): Use grub_vga_write_arx and
+	GRUB_PCI_CLASS_SUBCLASS_VGA.
+	* video/cirrus.c (grub_video_cirrus_setup): Use grub_vga_set_geometry.
+	* video/sm712.c (grub_sm712_write_reg): New function
+	(grub_sm712_read_reg): Likewise.
+	(grub_sm712_sr_write): Likewise.
+	(grub_sm712_gr_write): Likewise.
+	(grub_sm712_cr_write): Likewise.
+	(grub_sm712_write_arx): Likewise.
+	(grub_sm712_cr_shadow_write): Likewise.
+	(grub_sm712_write_dda_lookup): Likewise.
+	(grub_video_sm712_setup): Initialise the video rather then
+	blindly replay the dump.
+	(main) [TEST]: Add a routine to be able to compile as standalone for
+	tests.
+	* video/sm712_init.c (sm712_init): Removed.
+	(sm712_sr_seq1): New array.
+	(sm712_sr_seq2): Likewise.
+
+2010-08-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/vga.h: Add missing grub/pci.h include.
+
+2010-08-10  Yves Blusseau  <blusseau@zetam.org>
+
+	* util/grub-macho2img.c (main): fix typo
+
+2010-08-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/vga.h (grub_vga_gr_write): Add GRUB_MACHINE_PCI_IO_BASE.
+	(grub_vga_gr_read): Likewise.
+	(grub_vga_cr_write): Likewise.
+	(grub_vga_cr_read): Likewise.
+	(grub_vga_sr_write): Likewise.
+	(grub_vga_sr_read): Likewise.
+	(grub_vga_palette_read): Likewise.
+	(grub_vga_palette_write): Likewise.
+	* video/sm712.c (GRUB_SM712_REG_BASE): New definition.
+	(grub_sm712_sr_read): New function.
+	(grub_video_sm712_setup): Use grub_vga_sr_write and grub_sm712_sr_read.
+	* video/sm712_init.c (sm712_init): Substract GRUB_MACHINE_PCI_IO_BASE.
+
+2010-08-09  Robert Millan  <rmh@gnu.org>
+
+	* kern/emu/misc.c (grub_make_system_path_relative_to_its_root): Filter
+	out unused variables on non-ZFS build.
+
+2010-08-08  Robert Millan  <rmh@gnu.org>
+
+	Fix path generation for sub-filesystems in ZFS.
+
+	* kern/emu/misc.c (grub_make_system_path_relative_to_its_root): Add
+	missing slash.
+
+2010-08-08  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-fstest.c (read_file, cmd_cmp): Improve error message.
+
+2010-08-08  Robert Millan  <rmh@gnu.org>
+
+	* util/grub.d/10_kfreebsd.in: When files required for ZFS do not
+	exist, issue a proper error message (rely on `ls' for translated
+	strings).
+
+2010-08-08  Robert Millan  <rmh@gnu.org>
+
+	Fix grub-probe invocation.
+
+	* util/grub.d/10_kfreebsd.in: s/label/fs_label/g.
+
+2010-08-04  Robert Millan  <rmh@gnu.org>
+
+	* configure.ac: Remove checks for getfsstat() and getmntany().
+	Add checks for `<sys/param.h>' and `<sys/mount.h>'.
+	* kern/emu/misc.c [HAVE_GETMNTANY]: Remove `<sys/mnttab.h>'.
+	[HAVE_SYS_PARAM_H]: Include `<sys/param.h>'.
+	[HAVE_SYS_MOUNT_H]: Include `<sys/mount.h>'.
+	[HAVE_LIBZFS && HAVE_LIBNVPAIR] (find_mount_point_from_dir): Remove
+	function.
+	(grub_find_zpool_from_dir): Use statfs() instead of indirect matching
+	via find_mount_point_from_dir() and getfsstat() / getmntany().
+
+2010-08-04  Robert Millan  <rmh@gnu.org>
+
+	* include/grub/emu/misc.h (grub_find_mount_point_from_dir)
+	(grub_find_zpool_from_mount_point): Merge into ...
+	(grub_find_zpool_from_dir): ... this.
+	* kern/emu/misc.c: Likewise.
+
+	* kern/emu/misc.c
+	(grub_make_system_path_relative_to_its_root): Replace
+	grub_find_mount_point_from_dir() / grub_find_zpool_from_mount_point()
+	with grub_find_zpool_from_dir().
+	* kern/emu/getroot.c (find_root_device_from_libzfs): Likewise.
+
 2010-08-04  Robert Millan  <rmh@gnu.org>
 
 	Support OpenSolaris in ZFS device resolution.

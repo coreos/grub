@@ -45,10 +45,8 @@ extern const char *program_name;
 void grub_init_all (void);
 void grub_fini_all (void);
 
-char *grub_find_mount_point_from_dir (const char *dir)
-  __attribute__ ((warn_unused_result));
-void grub_find_zpool_from_mount_point (const char *mnt_point,
-				       char **poolname, char **poolfs);
+void grub_find_zpool_from_dir (const char *dir,
+			       char **poolname, char **poolfs);
 
 char *grub_make_system_path_relative_to_its_root (const char *path)
   __attribute__ ((warn_unused_result));
