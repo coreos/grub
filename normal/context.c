@@ -158,11 +158,15 @@ static grub_err_t
 grub_cmd_export (struct grub_command *cmd __attribute__ ((unused)),
 		 int argc, char **args)
 {
+  int i;
+
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "no environment variable specified");
 
-  grub_env_export (args[0]);
+  for (i = 0; i < argc; i++)
+    grub_env_export (args[i]);
+
   return 0;
 }
 
@@ -173,7 +177,8 @@ grub_context_init (void)
   grub_env_export ("prefix");
 
   export_cmd = grub_register_command ("export", grub_cmd_export,
-				      N_("ENVVAR"), N_("Export a variable."));
+				      N_("ENVVAR..."),
+				      N_("Export variables."));
 }
 
 void
