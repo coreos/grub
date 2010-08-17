@@ -222,8 +222,8 @@ def-[+ name +].lst: [+ name +].module$(EXEEXT)
 und-[+ name +].lst: [+ name +].module$(EXEEXT)
 	$(NM) -u -P -p $< | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@
 
-mod-[+ name +].c: [+ name +].module$(EXEEXT) $(top_builddir)/moddep.lst $(top_srcdir)/genmodsrc.sh
-	sh $(top_srcdir)/genmodsrc.sh [+ name +] $(top_builddir)/moddep.lst > $@ || (rm -f $@; exit 1)
+mod-[+ name +].c: [+ name +].module$(EXEEXT) moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh [+ name +] moddep.lst > $@ || (rm -f $@; exit 1)
 
 mod-[+ name +].o: mod-[+ name +].c
 	$(TARGET_CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS_MODULE) $(CPPFLAGS) $(CFLAGS_MODULE) $(CFLAGS) -c -o $@ $<
@@ -239,26 +239,26 @@ mod-[+ name +].o: mod-[+ name +].c
 	  $(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@; \
 	fi
 
-command-[+ name +].lst: [+ name +].pp $(top_srcdir)/gencmdlist.sh
-	cat $< | sh $(top_srcdir)/gencmdlist.sh [+ name +] > $@ || (rm -f $@; exit 1)
+command-[+ name +].lst: [+ name +].pp $(srcdir)/gencmdlist.sh
+	cat $< | sh $(srcdir)/gencmdlist.sh [+ name +] > $@ || (rm -f $@; exit 1)
 
-fs-[+ name +].lst: [+ name +].pp $(top_srcdir)/genfslist.sh
-	cat $< | sh $(top_srcdir)/genfslist.sh [+ name +] > $@ || (rm -f $@; exit 1)
+fs-[+ name +].lst: [+ name +].pp $(srcdir)/genfslist.sh
+	cat $< | sh $(srcdir)/genfslist.sh [+ name +] > $@ || (rm -f $@; exit 1)
 
-video-[+ name +].lst: [+ name +].pp $(top_srcdir)/genvideolist.sh
-	cat $< | sh $(top_srcdir)/genvideolist.sh [+ name +] > $@ || (rm -f $@; exit 1)
+video-[+ name +].lst: [+ name +].pp $(srcdir)/genvideolist.sh
+	cat $< | sh $(srcdir)/genvideolist.sh [+ name +] > $@ || (rm -f $@; exit 1)
 
-partmap-[+ name +].lst: [+ name +].pp $(top_srcdir)/genpartmaplist.sh
-	cat $< | sh $(top_srcdir)/genpartmaplist.sh [+ name +] > $@ || (rm -f $@; exit 1)
+partmap-[+ name +].lst: [+ name +].pp $(srcdir)/genpartmaplist.sh
+	cat $< | sh $(srcdir)/genpartmaplist.sh [+ name +] > $@ || (rm -f $@; exit 1)
 
-parttool-[+ name +].lst: [+ name +].pp $(top_srcdir)/genparttoollist.sh
-	cat $< | sh $(top_srcdir)/genparttoollist.sh [+ name +] > $@ || (rm -f $@; exit 1)
+parttool-[+ name +].lst: [+ name +].pp $(srcdir)/genparttoollist.sh
+	cat $< | sh $(srcdir)/genparttoollist.sh [+ name +] > $@ || (rm -f $@; exit 1)
 
-handler-[+ name +].lst: [+ name +].pp $(top_srcdir)/genhandlerlist.sh
-	cat $< | sh $(top_srcdir)/genhandlerlist.sh [+ name +] > $@ || (rm -f $@; exit 1)
+handler-[+ name +].lst: [+ name +].pp $(srcdir)/genhandlerlist.sh
+	cat $< | sh $(srcdir)/genhandlerlist.sh [+ name +] > $@ || (rm -f $@; exit 1)
 
-terminal-[+ name +].lst: [+ name +].pp $(top_srcdir)/genterminallist.sh
-	cat $< | sh $(top_srcdir)/genterminallist.sh [+ name +] > $@ || (rm -f $@; exit 1)
+terminal-[+ name +].lst: [+ name +].pp $(srcdir)/genterminallist.sh
+	cat $< | sh $(srcdir)/genterminallist.sh [+ name +] > $@ || (rm -f $@; exit 1)
 """
     return r
 

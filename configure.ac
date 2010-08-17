@@ -33,13 +33,15 @@ dnl package (in grub-core directory) builds with TARGETCC.
 AC_INIT([GRUB],[1.98],[bug-grub@gnu.org])
 AC_CONFIG_AUX_DIR([.])
 
+: ${CFLAGS=""} # We don't want -g -O2
+
 # Checks for host and target systems.
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 AM_INIT_AUTOMAKE()
 AC_PREREQ(2.60)
-AC_CONFIG_SRCDIR([grub-core/include/grub/dl.h])
+AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
 
 grub_coredir='grub-core'
@@ -51,12 +53,31 @@ AC_SUBST(grub_utildir)
 m4_include([configure.common])
 
 # Output files.
+grub_CHECK_LINK_DIR
+if test x"$link_dir" = xyes ; then
+  AC_CONFIG_LINKS([include/grub/cpu:include/grub/$target_cpu])
+  mkdir -p grub-core/lib
+  cp -rp $srcdir/grub-core/lib/$target_cpu grub-core/lib/target_cpu
+  if test "$platform" != emu ; then
+    AC_CONFIG_LINKS([include/grub/machine:include/grub/$target_cpu/$platform])
+  fi
+else
+  mkdir -p include/grub 2>/dev/null
+  rm -rf include/grub/cpu
+  cp -rp $srcdir/include/grub/$target_cpu include/grub/cpu 2>/dev/null
+  cp -rp $srcdir/grub-core/lib/$target_cpu grub-core/lib/target_cpu 2>/dev/null
+  if test "$platform" != emu ; then
+    rm -rf include/grub/machine
+    cp -rp $srcdir/grub-core/include/grub/$target_cpu/$platform include/grub/machine 2>/dev/null
+  fi
+fi
+
 AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([grub-core/Makefile])
 AC_CONFIG_FILES([po/Makefile])
 AC_CONFIG_FILES([docs/Makefile])
 AC_CONFIG_FILES([stamp-h], [echo timestamp > stamp-h])
 
-AC_CONFIG_SUBDIRS([grub-core])
 AC_OUTPUT
 [
 echo "*******************************************************"

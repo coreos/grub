@@ -40,7 +40,7 @@ except:
     print ("WARNING: %s already exists" % cipher_dir_out)
 
 cipher_files = os.listdir (cipher_dir_in)
-conf = open (os.path.join (outdir, "conf", "gcry.rmk"), "w")
+conf = open (os.path.join ("conf", "gcry.rmk"), "w")
 conf.write ("# -*- makefile -*-\n\n")
 chlog = ""
 
