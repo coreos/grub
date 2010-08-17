@@ -41,18 +41,18 @@ CPPFLAGS_GRUB += -I$(top_builddir)/include
 CCASFLAGS_GRUB = -DASM_FILE=1
 
 CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers
-CPPFLAGS_GCRY = -I$(top_srcdir)/$(grub_coredir)/lib/libgcrypt_wrap
+CPPFLAGS_GCRY = -I$(top_srcdir)/grub-core/lib/libgcrypt_wrap
 
 CFLAGS_GNULIB = -Wno-undef -Wno-sign-compare -Wno-unused -D_GL_UNUSED="__attribute__ ((unused))"
-CPPFLAGS_GNULIB = -I$(top_srcdir)/$(grub_coredir)/gnulib
+CPPFLAGS_GNULIB = -I$(top_srcdir)/grub-core/gnulib
 
 CFLAGS_MKISOFS = -Wno-all -Werror
 CPPFLAGS_MKISOFS = -D_FILE_OFFSET_BITS=64 -I$(top_srcdir)/util/mkisofs/include
 
 CFLAGS_POSIX = -fno-builtin
-CPPFLAGS_POSIX = -I$(top_srcdir)/$(grub_coredir)/lib/posix_wrap
+CPPFLAGS_POSIX = -I$(top_srcdir)/grub-core/lib/posix_wrap
 
-CPPFLAGS_EFIEMU = -I$(top_srcdir)/$(grub_coredir)/efiemu/runtime
+CPPFLAGS_EFIEMU = -I$(top_srcdir)/grub-core/efiemu/runtime
 
 # to calm down automake
 BUILT_SOURCES =
