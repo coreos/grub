@@ -32,7 +32,6 @@ dnl type.
 
 
 AC_INIT([GRUB],[1.98],[bug-grub@gnu.org])
-AM_INIT_AUTOMAKE()
 AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
@@ -40,6 +39,8 @@ AC_CONFIG_HEADER([config.h])
 # Checks for host and target systems.
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
+
+AM_INIT_AUTOMAKE()
 
 # Program name transformations
 AC_ARG_PROGRAM
