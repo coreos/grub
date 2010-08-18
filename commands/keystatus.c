@@ -40,7 +40,7 @@ grub_getkeystatus (void)
   FOR_ACTIVE_TERM_INPUTS(term)
   {
     if (term->getkeystatus)
-      status |= term->getkeystatus ();
+      status |= term->getkeystatus (term);
   }
 
   return status;

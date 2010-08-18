@@ -1337,6 +1337,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 	  break;
 
 	case GRUB_TERM_CTRL | 'h':
+	case '\b':
 	  if (! backward_delete_char (screen, 1))
 	    goto fail;
 	  break;
@@ -1375,10 +1376,12 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 	  return;
 
 	case GRUB_TERM_CTRL | 'c':
+	case GRUB_TERM_KEY_F2:
 	  grub_cmdline_run (1);
 	  goto refresh;
 
 	case GRUB_TERM_CTRL | 'x':
+	case GRUB_TERM_KEY_F10:
 	  {
 	    int chars_before = grub_normal_get_char_counter ();
 	    run (screen);

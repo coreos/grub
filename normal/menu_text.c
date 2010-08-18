@@ -120,17 +120,10 @@ print_message (int nested, int edit, struct grub_term_output *term)
   if (edit)
     {
       grub_putcode ('\n', term);
-#ifdef GRUB_MACHINE_EFI
       grub_print_message_indented (_("Minimum Emacs-like screen editing is \
-supported. TAB lists completions. Press F1 to boot, F2=Ctrl-a, F3=Ctrl-e, \
-F4 for a command-line or ESC to discard edits and return to the GRUB menu."),
-                                   STANDARD_MARGIN, STANDARD_MARGIN, term);
-#else
-      grub_print_message_indented (_("Minimum Emacs-like screen editing is \
-supported. TAB lists completions. Press Ctrl-x to boot, Ctrl-c for a \
+supported. TAB lists completions. Press Ctrl-x or F10 to boot, Ctrl-c or F2 for a \
 command-line or ESC to discard edits and return to the GRUB menu."),
                                    STANDARD_MARGIN, STANDARD_MARGIN, term);
-#endif
     }
   else
     {

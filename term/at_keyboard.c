@@ -41,24 +41,7 @@ static grub_uint8_t led_status;
 #define KEYBOARD_LED_NUM		(1 << 1)
 #define KEYBOARD_LED_CAPS		(1 << 2)
 
-static int keyboard_map[128] =
-{
-  '\0', GRUB_TERM_ESC, '1', '2', '3', '4', '5', '6',
-  '7', '8', '9', '0', '-', '=', GRUB_TERM_BACKSPACE, GRUB_TERM_TAB,
-  'q', 'w', 'e', 'r', 't', 'y', 'u', 'i',
-  'o', 'p', '[', ']', '\n', '\0', 'a', 's',
-  'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
-  '\'', '`', '\0', '\\', 'z', 'x', 'c', 'v',
-  'b', 'n', 'm', ',', '.', '/', '\0', '*',
-  '\0', ' ', '\0', '\0', '\0', '\0', '\0', '\0',
-  '\0', '\0', '\0', '\0', '\0', '\0', '\0', GRUB_TERM_KEY_HOME,
-  GRUB_TERM_KEY_UP, GRUB_TERM_KEY_NPAGE, '-', GRUB_TERM_KEY_LEFT, '\0', GRUB_TERM_KEY_RIGHT, '+', GRUB_TERM_KEY_END,
-  GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_PPAGE, '\0', GRUB_TERM_KEY_DC, '\0', '\0', 
-  GRUB_TERM_KEY_102, '\0',
-  '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-  '\0', '\0', '\0', '\0', '\0', OLPC_UP, OLPC_DOWN, OLPC_LEFT,
-  OLPC_RIGHT
-};
+GRUB_AT_KEY_KEYBOARD_MAP (keyboard_map);
 
 static int keyboard_map_shift[128] =
 {

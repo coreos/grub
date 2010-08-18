@@ -402,34 +402,34 @@ grub_terminfo_readkey (int *keys, int *len, int (*readkey) (void))
     static struct
     {
       char key;
-      char ascii;
+      unsigned ascii;
     }
     three_code_table[] =
       {
-	{'4', GRUB_TERM_DC},
-	{'A', GRUB_TERM_UP},
-	{'B', GRUB_TERM_DOWN},
-	{'C', GRUB_TERM_RIGHT},
-	{'D', GRUB_TERM_LEFT},
-	{'F', GRUB_TERM_END},
-	{'H', GRUB_TERM_HOME},
-	{'K', GRUB_TERM_END},
-	{'P', GRUB_TERM_DC},
-	{'?', GRUB_TERM_PPAGE},
-	{'/', GRUB_TERM_NPAGE}
+	{'4', GRUB_TERM_KEY_DC},
+	{'A', GRUB_TERM_KEY_UP},
+	{'B', GRUB_TERM_KEY_DOWN},
+	{'C', GRUB_TERM_KEY_RIGHT},
+	{'D', GRUB_TERM_KEY_LEFT},
+	{'F', GRUB_TERM_KEY_END},
+	{'H', GRUB_TERM_KEY_HOME},
+	{'K', GRUB_TERM_KEY_END},
+	{'P', GRUB_TERM_KEY_DC},
+	{'?', GRUB_TERM_KEY_PPAGE},
+	{'/', GRUB_TERM_KEY_NPAGE}
       };
 
     static struct
     {
       char key;
-      char ascii;
+      unsigned ascii;
     }
     four_code_table[] =
       {
-	{'1', GRUB_TERM_HOME},
-	{'3', GRUB_TERM_DC},
-	{'5', GRUB_TERM_PPAGE},
-	{'6', GRUB_TERM_NPAGE}
+	{'1', GRUB_TERM_KEY_HOME},
+	{'3', GRUB_TERM_KEY_DC},
+	{'5', GRUB_TERM_KEY_PPAGE},
+	{'6', GRUB_TERM_KEY_NPAGE}
       };
     unsigned i;
 

@@ -23,39 +23,13 @@
 #include <grub/env.h>
 #include <grub/time.h>
 #include <grub/dl.h>
+#include <grub/at_keyboard.h>
 
-static int keyboard_map[128] =
-{
-  '\0', GRUB_TERM_ESC, '1', '2', '3', '4', '5', '6',
-  '7', '8', '9', '0', '-', '=', GRUB_TERM_BACKSPACE, GRUB_TERM_TAB,
-  'q', 'w', 'e', 'r', 't', 'y', 'u', 'i',
-  'o', 'p', '[', ']', '\n', '\0', 'a', 's',
-  'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
-  '\'', '`', '\0', '\\', 'z', 'x', 'c', 'v',
-  'b', 'n', 'm', ',', '.', '/', '\0', '*',
-  '\0', ' ', '\0', '\0', '\0', '\0', '\0', '\0',
-  '\0', '\0', '\0', '\0', '\0', '\0', '\0', GRUB_TERM_KEY_HOME,
-  GRUB_TERM_KEY_UP, GRUB_TERM_KEY_NPAGE, '-', GRUB_TERM_KEY_LEFT, '\0', GRUB_TERM_KEY_RIGHT, '+', GRUB_TERM_KEY_END,
-  GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_PPAGE, '\0', GRUB_TERM_KEY_DC
-};
-
-/* Define scan codes.  */
-#define GRUB_TERM_AT_KEY_LEFT		0x4B00
-#define GRUB_TERM_AT_KEY_RIGHT		0x4D00
-#define GRUB_TERM_AT_KEY_UP		0x4800
-#define GRUB_TERM_AT_KEY_DOWN		0x5000
-#define GRUB_TERM_AT_KEY_IC		0x5200
-#define GRUB_TERM_AT_KEY_DC		0x5300
-#define GRUB_TERM_AT_KEY_BACKSPACE	0x0008
-#define GRUB_TERM_AT_KEY_HOME		0x4700
-#define GRUB_TERM_AT_KEY_END		0x4F00
-#define GRUB_TERM_AT_KEY_NPAGE		0x5100
-#define GRUB_TERM_AT_KEY_PPAGE		0x4900
+GRUB_AT_KEY_KEYBOARD_MAP (keyboard_map);
 
 static int
 get_abstract_code (grub_term_input_t term, int in)
 {
-  unsigned flags = 0;
   switch (term->flags & GRUB_TERM_INPUT_FLAGS_TYPE_MASK)
     {
     case GRUB_TERM_INPUT_FLAGS_TYPE_TERMCODES:
@@ -64,32 +38,18 @@ get_abstract_code (grub_term_input_t term, int in)
     case GRUB_TERM_INPUT_FLAGS_TYPE_BIOS:
       {
 	unsigned status = 0;
-	struct {
-	  int from, to; 
-	} translations[] =
-	    {  
-	      {GRUB_TERM_AT_KEY_LEFT, GRUB_TERM_KEY_LEFT},
-	      {GRUB_TERM_AT_KEY_RIGHT, GRUB_TERM_KEY_RIGHT},
-	      {GRUB_TERM_AT_KEY_UP, GRUB_TERM_KEY_UP},
-	      {GRUB_TERM_AT_KEY_DOWN, GRUB_TERM_KEY_DOWN},
-	      {GRUB_TERM_AT_KEY_HOME, GRUB_TERM_KEY_HOME},
-	      {GRUB_TERM_AT_KEY_END, GRUB_TERM_KEY_END},
-	      {GRUB_TERM_AT_KEY_DC, GRUB_TERM_KEY_DC},
-	      {GRUB_TERM_AT_KEY_PPAGE, GRUB_TERM_KEY_PPAGE},
-	      {GRUB_TERM_AT_KEY_NPAGE, GRUB_TERM_KEY_NPAGE},
-	      {0x5600 | '\\', GRUB_TERM_KEY_102},
-	      {0x5600 | '|', GRUB_TERM_KEY_SHIFT_102},
-	    };
-	unsigned i;
+	unsigned flags = 0;
 
 	if (term->getkeystatus)
-	  status = term->getkeystatus ();
+	  status = term->getkeystatus (term);
 	if (status & GRUB_TERM_CAPS)
 	  flags |= GRUB_TERM_CAPS;
 
-	for (i = 0; i < ARRAY_SIZE (translations); i++)
-	  if (translations[i].from == (in & 0xffff))
-	    return translations[i].to | flags;
+	if ((0x5600 | '\\') == (in & 0xffff))
+	  return GRUB_TERM_KEY_102 | flags;
+
+	if ((0x5600 | '|') == (in & 0xffff))
+	  return GRUB_TERM_KEY_SHIFT_102 | flags;
 
 	/* Detect CTRL'ed keys.  */
 	if ((in & 0xff) > 0 && (in & 0xff) < 0x20
@@ -104,6 +64,9 @@ get_abstract_code (grub_term_input_t term, int in)
 	if (((in & 0xff) == 0) && keyboard_map[(in & 0xff00) >> 8] >= 'a'
 	    && keyboard_map[(in & 0xff00) >> 8] <= 'z')
 	  return keyboard_map[(in & 0xff00) >> 8] | flags | GRUB_TERM_ALT_GR;
+
+	if ((in & 0xff) == 0)
+	  return keyboard_map[(in & 0xff00) >> 8] | flags;
 
 	return (in & 0xff) | flags;
       }
@@ -165,9 +128,9 @@ grub_getkey_smart (void)
     {
       FOR_ACTIVE_TERM_INPUTS(term)
       {
-	int key = term->checkkey ();
+	int key = term->checkkey (term);
 	if (key != -1)
-	  return translate (term, term->getkey ());
+	  return translate (term, term->getkey (term));
       }
 
       grub_cpu_idle ();
@@ -181,7 +144,7 @@ grub_checkkey (void)
 
   FOR_ACTIVE_TERM_INPUTS(term)
   {
-    int key = term->checkkey ();
+    int key = term->checkkey (term);
     if (key != -1)
       return translate (term, key);
   }

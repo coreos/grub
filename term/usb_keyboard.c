@@ -27,7 +27,7 @@
 #include <grub/time.h>
 
 
-static int keyboard_map[128] =
+static unsigned keyboard_map[128] =
   {
     '\0', '\0', '\0', '\0', 'a', 'b', 'c', 'd',
     'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
@@ -36,13 +36,17 @@ static int keyboard_map[128] =
     '3', '4', '5', '6', '7', '8', '9', '0',
     '\n', GRUB_TERM_ESC, GRUB_TERM_BACKSPACE, GRUB_TERM_TAB, ' ', '-', '=', '[',
     ']', '\\', '#', ';', '\'', '`', ',', '.',
-    '/', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-    '\0', '\0', GRUB_TERM_KEY_HOME, GRUB_TERM_KEY_PPAGE, GRUB_TERM_KEY_DC, GRUB_TERM_KEY_END, GRUB_TERM_KEY_NPAGE, GRUB_TERM_KEY_RIGHT,
-    GRUB_TERM_KEY_LEFT, GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_UP
+    '/', '\0', GRUB_TERM_KEY_F1, GRUB_TERM_KEY_F2,
+    GRUB_TERM_KEY_F3, GRUB_TERM_KEY_F4, GRUB_TERM_KEY_F5, GRUB_TERM_KEY_F6,
+    GRUB_TERM_KEY_F7, GRUB_TERM_KEY_F8, GRUB_TERM_KEY_F9, GRUB_TERM_KEY_F10,
+    GRUB_TERM_KEY_F11, GRUB_TERM_KEY_F12, '\0', '\0',
+    '\0', GRUB_TERM_KEY_INSERT, GRUB_TERM_KEY_HOME, GRUB_TERM_KEY_PPAGE,
+    GRUB_TERM_KEY_DC, GRUB_TERM_KEY_END, GRUB_TERM_KEY_NPAGE, GRUB_TERM_KEY_RIGHT,
+    GRUB_TERM_KEY_LEFT, GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_UP,
+    [0x64] = GRUB_TERM_KEY_102
   };
 
-static char keyboard_map_shift[128] =
+static unsigned keyboard_map_shift[128] =
   {
     '\0', '\0', '\0', '\0', 'A', 'B', 'C', 'D',
     'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
@@ -51,7 +55,8 @@ static char keyboard_map_shift[128] =
     '#', '$', '%', '^', '&', '*', '(', ')',
     '\n', '\0', '\0', '\0', ' ', '_', '+', '{',
     '}', '|', '#', ':', '"', '`', '<', '>',
-    '?'
+    '?',
+    [0x64] = GRUB_TERM_KEY_SHIFT_102
   };
 
 static grub_usb_device_t usbdev;
@@ -157,8 +162,9 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term __attribute__ ((unused)
 #define GRUB_USB_KEYBOARD_RIGHT_ALT   0x40
 
   /* Check if the Shift key was pressed.  */
-  if (data[0] & GRUB_USB_KEYBOARD_LEFT_SHIFT
-      || data[0] & GRUB_USB_KEYBOARD_RIGHT_SHIFT)
+  if ((data[0] & GRUB_USB_KEYBOARD_LEFT_SHIFT
+       || data[0] & GRUB_USB_KEYBOARD_RIGHT_SHIFT)
+      && keyboard_map_shift[data[2]])
     key = keyboard_map_shift[data[2]];
   else
     key = keyboard_map[data[2]];

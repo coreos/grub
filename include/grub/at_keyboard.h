@@ -51,4 +51,28 @@
 #define OLPC_RIGHT	'\0'
 #endif
 
+#define GRUB_AT_KEY_KEYBOARD_MAP(name)					  \
+static const int name[128] =						  \
+{				                                          \
+  '\0', GRUB_TERM_ESC, '1', '2', '3', '4', '5', '6',			  \
+  '7', '8', '9', '0', '-', '=', GRUB_TERM_BACKSPACE, GRUB_TERM_TAB,	  \
+  'q', 'w', 'e', 'r', 't', 'y', 'u', 'i',                                 \
+  'o', 'p', '[', ']', '\n', '\0', 'a', 's',                               \
+  'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',                                 \
+  '\'', '`', '\0', '\\', 'z', 'x', 'c', 'v',                              \
+  'b', 'n', 'm', ',', '.', '/', '\0', '*',                                \
+  '\0', ' ', '\0', GRUB_TERM_KEY_F1,                                      \
+  GRUB_TERM_KEY_F2, GRUB_TERM_KEY_F3, GRUB_TERM_KEY_F4, GRUB_TERM_KEY_F5, \
+  GRUB_TERM_KEY_F6, GRUB_TERM_KEY_F7, GRUB_TERM_KEY_F8, GRUB_TERM_KEY_F9, \
+  GRUB_TERM_KEY_F10, '\0', '\0', GRUB_TERM_KEY_HOME,			  \
+  GRUB_TERM_KEY_UP, GRUB_TERM_KEY_NPAGE, '-', GRUB_TERM_KEY_LEFT,         \
+  '\0', GRUB_TERM_KEY_RIGHT, '+', GRUB_TERM_KEY_END,                      \
+  GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_PPAGE,                                \
+  GRUB_TERM_KEY_INSERT, GRUB_TERM_KEY_DC,				  \
+  '\0', '\0', GRUB_TERM_KEY_102, GRUB_TERM_KEY_F11,                       \
+  GRUB_TERM_KEY_F12, '\0', '\0', '\0', '\0', '\0', '\0', '\0',            \
+  '\0', '\0', '\0', '\0', '\0', OLPC_UP, OLPC_DOWN, OLPC_LEFT,            \
+  OLPC_RIGHT                                                              \
+}
+
 #endif
