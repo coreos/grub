@@ -59,7 +59,7 @@ LOCAL (e801):
 	movw %bx, %dx
 	pop %ds
 	clc
-	iret
+	jmp LOCAL (iret_cf)
 
 LOCAL (h88):
 	popf
@@ -69,7 +69,7 @@ LOCAL (h88):
 	movw DS (LOCAL (kbin16mb)), %ax
 	pop %ds
 	clc
-	iret
+	jmp LOCAL (iret_cf)
 
 LOCAL (e820):
 	popf
@@ -101,12 +101,18 @@ LOCAL (noclean):
 	mov $0x534d4150, %eax
 	pop %ds
 	clc
-	iret
+	jmp LOCAL (iret_cf)
 LOCAL (errexit):
 	mov $0x534d4150, %eax
 	pop %ds
-	stc
 	xor %bx, %bx
+	stc
+
+LOCAL (iret_cf):
+	push %bp
+	mov %sp, %bp
+	setc 6(%bp)
+	pop %bp
 	iret
 
 VARIABLE(grub_machine_mmaphook_mmap_num)

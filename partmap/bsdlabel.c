@@ -24,6 +24,10 @@
 #include <grub/misc.h>
 #include <grub/dl.h>
 
+#ifdef GRUB_UTIL
+#include <grub/util/misc.h>
+#endif
+
 static struct grub_partition_map grub_bsdlabel_partition_map;
 
 
@@ -37,9 +41,6 @@ bsdlabel_partition_map_iterate (grub_disk_t disk,
   grub_disk_addr_t delta = 0;
   unsigned pos;
 
-  /* BSDLabel offsets are absolute even when it's embed inside partition.  */
-  delta = grub_partition_get_start (disk->partition);
-
   /* Read the BSD label.  */
   if (grub_disk_read (disk, GRUB_PC_PARTITION_BSD_LABEL_SECTOR,
 		      0, sizeof (label), &label))
@@ -49,14 +50,35 @@ bsdlabel_partition_map_iterate (grub_disk_t disk,
   if (label.magic != grub_cpu_to_le32 (GRUB_PC_PARTITION_BSD_LABEL_MAGIC))
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "no signature");
 
+  /* A kludge to determine a base of be.offset.  */
+  if (GRUB_PC_PARTITION_BSD_LABEL_WHOLE_DISK_PARTITION
+      < grub_cpu_to_le16 (label.num_partitions))
+    {
+      struct grub_partition_bsd_entry whole_disk_be;
+
+      pos = sizeof (label) + GRUB_PC_PARTITION_BSD_LABEL_SECTOR
+	* GRUB_DISK_SECTOR_SIZE + sizeof (struct grub_partition_bsd_entry)
+	* GRUB_PC_PARTITION_BSD_LABEL_WHOLE_DISK_PARTITION;
+
+      if (grub_disk_read (disk, pos / GRUB_DISK_SECTOR_SIZE,
+			  pos % GRUB_DISK_SECTOR_SIZE, sizeof (whole_disk_be),
+			  &whole_disk_be))
+	return grub_errno;
+
+      delta = grub_le_to_cpu32 (whole_disk_be.offset);
+    }
+
   pos = sizeof (label) + GRUB_PC_PARTITION_BSD_LABEL_SECTOR
     * GRUB_DISK_SECTOR_SIZE;
 
   for (p.number = 0;
        p.number < grub_cpu_to_le16 (label.num_partitions);
-       p.number++)
+       p.number++, pos += sizeof (struct grub_partition_bsd_entry))
     {
       struct grub_partition_bsd_entry be;
+
+      if (p.number == GRUB_PC_PARTITION_BSD_LABEL_WHOLE_DISK_PARTITION)
+	continue;
 
       p.offset = pos / GRUB_DISK_SECTOR_SIZE;
       p.index = pos % GRUB_DISK_SECTOR_SIZE;
@@ -64,15 +86,43 @@ bsdlabel_partition_map_iterate (grub_disk_t disk,
       if (grub_disk_read (disk, p.offset, p.index, sizeof (be),  &be))
 	return grub_errno;
 
-      p.start = grub_le_to_cpu32 (be.offset) - delta;
+      p.start = grub_le_to_cpu32 (be.offset);
       p.len = grub_le_to_cpu32 (be.size);
       p.partmap = &grub_bsdlabel_partition_map;
 
-      if (be.fs_type != GRUB_PC_PARTITION_BSD_TYPE_UNUSED)
-	if (hook (disk, &p))
-	  return grub_errno;
+      grub_dprintf ("partition",
+		    "partition %d: type 0x%x, start 0x%llx, len 0x%llx\n",
+		    p.number, be.fs_type,
+		    (unsigned long long) p.start,
+		    (unsigned long long) p.len);
 
-      pos += sizeof (struct grub_partition_bsd_entry);
+      if (p.len == 0)
+	continue;
+
+      if (p.start < delta)
+	{
+#ifdef GRUB_UTIL
+	  char *partname;
+#endif
+	  grub_dprintf ("partition",
+			"partition %d: invalid start (found 0x%llx, wanted >= 0x%llx)\n",
+			p.number,
+			(unsigned long long) p.start,
+			(unsigned long long) delta);
+#ifdef GRUB_UTIL
+	  /* disk->partition != NULL as 0 < delta */
+	  partname = grub_partition_get_name (disk->partition);
+	  grub_util_warn ("Discarding improperly nested partition (%s,%s,%s%d)",
+			  disk->name, partname, p.partmap->name, p.number + 1);
+	  grub_free (partname);
+#endif
+	  continue;
+	}
+
+      p.start -= delta;
+
+      if (hook (disk, &p))
+	return grub_errno;
     }
 
   return GRUB_ERR_NONE;

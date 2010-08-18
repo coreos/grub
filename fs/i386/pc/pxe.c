@@ -114,7 +114,7 @@ grub_pxe_open (const char *name, grub_disk_t disk)
 	return err;
       if (*ptr == ':')
 	{
-	  err = parse_ip (ptr + 1, &(data->server_ip), 0);
+	  err = parse_ip (ptr + 1, &(data->gateway_ip), 0);
 	  if (err)
 	    return err;
 	}

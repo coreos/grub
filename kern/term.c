@@ -28,52 +28,53 @@ struct grub_term_input *grub_term_inputs_disabled;
 struct grub_term_output *grub_term_outputs;
 struct grub_term_input *grub_term_inputs;
 
-void (*grub_newline_hook) (void) = NULL;
-
 /* Put a Unicode character.  */
-void
-grub_putcode (grub_uint32_t code, struct grub_term_output *term)
+static void
+grub_putcode_dumb (grub_uint32_t code,
+		   struct grub_term_output *term)
 {
+  struct grub_unicode_glyph c =
+    {
+      .base = code,
+      .variant = 0,
+      .attributes = 0,
+      .ncomb = 0,
+      .combining = 0,
+      .estimated_width = 1
+    };
+
   if (code == '\t' && term->getxy)
     {
       int n;
 
-      n = 8 - ((term->getxy () >> 8) & 7);
+      n = 8 - ((term->getxy (term) >> 8) & 7);
       while (n--)
-	grub_putcode (' ', term);
+	grub_putcode_dumb (' ', term);
 
       return;
     }
 
-  (term->putchar) (code);
+  (term->putchar) (term, &c);
   if (code == '\n')
-    (term->putchar) ('\r');
+    grub_putcode_dumb ('\r', term);
 }
 
-/* Put a character. C is one byte of a UTF-8 stream.
-   This function gathers bytes until a valid Unicode character is found.  */
-void
-grub_putchar (int c)
+static void
+grub_xputs_dumb (const char *str)
 {
-  static grub_size_t size = 0;
-  static grub_uint8_t buf[6];
-  grub_uint8_t *rest;
-  grub_uint32_t code;
-
-  buf[size++] = c;
-
-  while (grub_utf8_to_ucs4 (&code, 1, buf, size, (const grub_uint8_t **) &rest) 
-	 != 0)
+  for (; *str; str++)
     {
-      struct grub_term_output *term;
-      size -= rest - buf;
-      grub_memmove (buf, rest, size);
+      grub_term_output_t term;
+      grub_uint32_t code = *str;
+      if (code > 0x7f)
+	code = '?';
+
       FOR_ACTIVE_TERM_OUTPUTS(term)
-	grub_putcode (code, term);
-      if (code == '\n' && grub_newline_hook)
-	grub_newline_hook ();
+	grub_putcode_dumb (code, term);
     }
 }
+
+void (*grub_xputs) (const char *str) = grub_xputs_dumb;
 
 static int
 grub_getkey_dumb (void)
@@ -86,9 +87,9 @@ grub_getkey_dumb (void)
     {
       FOR_ACTIVE_TERM_INPUTS(term)
       {
-	int key = term->checkkey ();
+	int key = term->checkkey (term);
 	if (key != -1)
-	  return term->getkey () & 0xff;
+	  return term->getkey (term) & 0xff;
       }
 
       grub_cpu_idle ();
@@ -96,32 +97,6 @@ grub_getkey_dumb (void)
 }
 
 int (*grub_getkey) (void) = grub_getkey_dumb;
-
-void
-grub_cls (void)
-{
-  struct grub_term_output *term;
-
-  FOR_ACTIVE_TERM_OUTPUTS(term)  
-  {
-    if ((term->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
-      {
-	grub_putcode ('\n', term);
-	grub_term_refresh (term);
-      }
-    else
-      (term->cls) ();
-  }
-}
-
-void
-grub_setcolorstate (grub_term_color_state state)
-{
-  struct grub_term_output *term;
-  
-  FOR_ACTIVE_TERM_OUTPUTS(term)
-    grub_term_setcolorstate (term, state);
-}
 
 void
 grub_refresh (void)

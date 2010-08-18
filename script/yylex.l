@@ -116,10 +116,11 @@ COMMENT         #.*$
 
 CHAR            [^{}|&$;<> \t\n\'\"\\]
 DIGITS          [[:digit:]]+
-NAME            [[:alpha:]_][[:alnum:][:digit:]_]*
+NAME            [[:alpha:]_][[:alnum:]_]*
 
 ESC             \\.
-VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|$\?|$\{\?\}
+SPECIAL         \?|\#|\*|\@
+VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|${SPECIAL}|$\{{SPECIAL}\}
 DQSTR           \"([^\\\"]|{ESC})*\"
 SQSTR           \'[^\']*\'
 WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
@@ -221,7 +222,7 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
 }
 
 <VAR>{
-  \?            |
+  {SPECIAL}     |
   {DIGITS}      |
   {NAME}        {
                   COPY (yytext, yyleng);
@@ -231,7 +232,7 @@ WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
                   else
                     ARG (GRUB_SCRIPT_ARG_TYPE_DQVAR);
                 }
-  \{\?\}        |
+  \{{SPECIAL}\} |
   \{{DIGITS}\}  |
   \{{NAME}\}    {
                   yytext[yyleng - 1] = '\0';

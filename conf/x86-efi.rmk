@@ -1,18 +1,13 @@
 # -*- makefile -*-
 
-# Utilities.
-bin_UTILITIES = grub-mkimage
-
-# For grub-mkimage.
-grub_mkimage_SOURCES = gnulib/progname.c util/i386/efi/grub-mkimage.c \
-	util/misc.c util/resolve.c
-util/i386/efi/grub-mkimage.c_DEPENDENCIES = Makefile
-
 # Scripts.
 sbin_SCRIPTS = grub-install
 
 # For grub-install.
 grub_install_SOURCES = util/i386/efi/grub-install.in
+
+bin_SCRIPTS += grub-mkrescue
+grub_mkrescue_SOURCES = util/grub-mkrescue.in
 
 # Modules.
 pkglib_PROGRAMS = kernel.img
@@ -30,7 +25,7 @@ kernel_img_SOURCES = kern/$(target_cpu)/efi/startup.S kern/main.c kern/device.c 
 	kern/$(target_cpu)/dl.c kern/i386/efi/init.c kern/parser.c kern/partition.c \
 	kern/env.c symlist.c kern/efi/efi.c kern/efi/init.c kern/efi/mm.c \
 	term/efi/console.c disk/efi/efidisk.c \
-	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
+	kern/time.c kern/list.c  kern/command.c kern/corecmd.c \
 	kern/i386/tsc.c kern/i386/pit.c \
 	kern/generic/rtc_get_time_ms.c \
 	kern/generic/millisleep.c
@@ -107,7 +102,7 @@ efi_gop_mod_CFLAGS = $(COMMON_CFLAGS)
 efi_gop_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 pkglib_MODULES += xnu.mod
-xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c loader/i386/efi/xnu.c \
+xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c \
 	loader/macho32.c loader/macho64.c loader/macho.c loader/xnu.c
 xnu_mod_CFLAGS = $(COMMON_CFLAGS)
 xnu_mod_LDFLAGS = $(COMMON_LDFLAGS)

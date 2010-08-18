@@ -445,7 +445,7 @@ grub_password_get (char buf[], unsigned buf_size)
 
   grub_memset (buf + cur_len, 0, buf_size - cur_len);
 
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_refresh ();
 
   return (key != '\e');

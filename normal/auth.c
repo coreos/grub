@@ -133,25 +133,24 @@ static int
 is_authenticated (const char *userlist)
 {
   const char *superusers;
-
-  auto int hook (grub_list_t item);
-  int hook (grub_list_t item)
-  {
-    const char *name;
-    if (!((struct grub_auth_user *) item)->authenticated)
-      return 0;
-    name = ((struct grub_auth_user *) item)->name;
-
-    return (userlist && grub_strword (userlist, name))
-      || grub_strword (superusers, name);
-  }
+  struct grub_auth_user *user;
 
   superusers = grub_env_get ("superusers");
 
   if (!superusers)
     return 1;
 
-  return grub_list_iterate (GRUB_AS_LIST (users), hook);
+  FOR_LIST_ELEMENTS (user, users)
+    {
+      if (!(user->authenticated))
+	continue;
+
+      if ((userlist && grub_strword (userlist, user->name))
+	  || grub_strword (superusers, user->name))
+	return 1;
+    }
+
+  return 0;
 }
 
 static int
@@ -185,13 +184,13 @@ grub_username_get (char buf[], unsigned buf_size)
       if (cur_len + 2 < buf_size)
 	{
 	  buf[cur_len++] = key;
-	  grub_putchar (key);
+	  grub_printf ("%c", key);
 	}
     }
 
   grub_memset (buf + cur_len, 0, buf_size - cur_len);
 
-  grub_putchar ('\n');
+  grub_xputs ("\n");
   grub_refresh ();
 
   return (key != '\e');
@@ -205,22 +204,7 @@ grub_auth_check_authentication (const char *userlist)
   grub_err_t err;
   static unsigned long punishment_delay = 1;
   char entered[GRUB_AUTH_MAX_PASSLEN];
-
-  auto int hook (grub_list_t item);
-  int hook (grub_list_t item)
-  {
-    if (grub_strcmp (login, ((struct grub_auth_user *) item)->name) == 0)
-      cur = (struct grub_auth_user *) item;
-    return 0;
-  }
-
-  auto int hook_any (grub_list_t item);
-  int hook_any (grub_list_t item)
-  {
-    if (((struct grub_auth_user *) item)->callback)
-      cur = (struct grub_auth_user *) item;
-    return 0;
-  }
+  struct grub_auth_user *user;
 
   grub_memset (login, 0, sizeof (login));
 
@@ -240,7 +224,11 @@ grub_auth_check_authentication (const char *userlist)
   if (!grub_password_get (entered, GRUB_AUTH_MAX_PASSLEN))
     goto access_denied;
 
-  grub_list_iterate (GRUB_AS_LIST (users), hook);
+  FOR_LIST_ELEMENTS (user, users)
+    {
+      if (grub_strcmp (login, user->name) == 0)
+	cur = user;
+    }
 
   if (!cur || ! cur->callback)
     goto access_denied;

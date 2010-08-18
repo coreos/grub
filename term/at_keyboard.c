@@ -248,7 +248,7 @@ grub_at_keyboard_getkey_noblock (void)
 }
 
 static int
-grub_at_keyboard_checkkey (void)
+grub_at_keyboard_checkkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   if (pending_key != -1)
     return 1;
@@ -262,7 +262,7 @@ grub_at_keyboard_checkkey (void)
 }
 
 static int
-grub_at_keyboard_getkey (void)
+grub_at_keyboard_getkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   int key;
   if (pending_key != -1)
@@ -279,7 +279,7 @@ grub_at_keyboard_getkey (void)
 }
 
 static grub_err_t
-grub_keyboard_controller_init (void)
+grub_keyboard_controller_init (struct grub_term_input *term __attribute__ ((unused)))
 {
   pending_key = -1;
   at_keyboard_status = 0;
@@ -289,7 +289,7 @@ grub_keyboard_controller_init (void)
 }
 
 static grub_err_t
-grub_keyboard_controller_fini (void)
+grub_keyboard_controller_fini (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_keyboard_controller_write (grub_keyboard_controller_orig);
   return GRUB_ERR_NONE;

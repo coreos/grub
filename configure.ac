@@ -32,7 +32,6 @@ dnl type.
 
 
 AC_INIT([GRUB],[1.98],[bug-grub@gnu.org])
-AM_INIT_AUTOMAKE()
 AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
@@ -40,6 +39,8 @@ AC_CONFIG_HEADER([config.h])
 # Checks for host and target systems.
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
+
+AM_INIT_AUTOMAKE()
 
 # Program name transformations
 AC_ARG_PROGRAM
@@ -150,6 +151,7 @@ case "$target_cpu" in
   mips)      	machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_MIPS=1" ;;
   sparc64)      machine_CFLAGS="$machine_CFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
+machine_CFLAGS="$machine_CFLAGS -DMACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
 
 CFLAGS="$CFLAGS $machine_CFLAGS"
 TARGET_ASFLAGS="$TARGET_ASFLAGS $machine_CFLAGS"
@@ -178,12 +180,22 @@ if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
 fi
 
-for file in /usr/src/unifont.bdf /usr/share/fonts/X11/misc/unifont.pcf.gz /usr/share/fonts/unifont/unifont.pcf.gz; do
-  if test -e $file ; then
-    AC_SUBST([FONT_SOURCE], [$file])
-    break
-  fi
+FONT_SOURCE=
+
+for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
+  for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont; do
+    if test -f "$dir/unifont.$ext"; then
+      FONT_SOURCE="$dir/unifont.$ext"
+      break 2
+    fi
+  done
 done
+
+if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xyeeloong ); then
+   AC_MSG_ERROR([qemu and yeeloong ports need unifont])
+fi
+
+AC_SUBST([FONT_SOURCE])	
 
 AC_PROG_INSTALL
 AC_PROG_AWK
@@ -191,7 +203,7 @@ AC_PROG_LEX
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 
-if test "x$LEX" = x; then
+if test "x$LEX" = "x:"; then
   AC_MSG_ERROR([flex is not found])
 else
   version=`$LEX --version | $AWK '{ split($NF,x,"."); print x[[1]]*10000+x[[2]]*100+x[[3]]; }'`
@@ -235,15 +247,9 @@ else
   AC_PATH_PROG(HELP2MAN, help2man)
 fi
 
-# Check for functions.
+# Check for functions and headers.
 AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf)
-
-# For grub-mkisofs
-AC_HEADER_MAJOR
-AC_HEADER_DIRENT
-AC_CHECK_FUNCS(memmove sbrk strdup lstat getuid getgid)
-AC_CHECK_HEADERS(sys/mkdev.h sys/sysmacros.h malloc.h termios.h sys/types.h)
-AC_CHECK_HEADERS(unistd.h string.h strings.h sys/stat.h sys/fcntl.h limits.h)
+AC_CHECK_HEADERS(libzfs.h libnvpair.h sys/param.h sys/mount.h)
 
 # For opendisk() and getrawpartition() on NetBSD.
 # Used in util/deviceiter.c and in util/hostdisk.c.
@@ -778,6 +784,31 @@ fi
 AC_SUBST([enable_grub_mkfont])
 AC_SUBST([freetype_cflags])
 AC_SUBST([freetype_libs])
+
+AC_ARG_ENABLE([device-mapper],
+              [AS_HELP_STRING([--enable-device-mapper],
+                              [enable Linux device-mapper support (default=guessed)])])
+if test x"$enable_device_mapper" = xno ; then
+  device_mapper_excuse="explicitly disabled"
+fi
+
+if test x"$device_mapper_excuse" = x ; then
+  # Check for device-mapper library.
+  AC_CHECK_LIB([devmapper], [dm_task_create],
+               [LDFLAGS="$LDFLAGS -ldevmapper"
+                AC_DEFINE([HAVE_DEVICE_MAPPER], [1],
+                          [Define to 1 if you have the devmapper library.])],
+               [device_mapper_excuse="need devmapper library"])
+fi
+
+AC_CHECK_LIB([zfs], [libzfs_init],
+             [LDFLAGS="$LDFLAGS -lzfs"
+              AC_DEFINE([HAVE_LIBZFS], [1],
+                        [Define to 1 if you have the ZFS library.])],)
+AC_CHECK_LIB([nvpair], [nvlist_print],
+             [LDFLAGS="$LDFLAGS -lnvpair"
+              AC_DEFINE([HAVE_LIBNVPAIR], [1],
+                        [Define to 1 if you have the NVPAIR library.])],)
 
 AC_SUBST(ASFLAGS)
 

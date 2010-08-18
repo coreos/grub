@@ -31,12 +31,33 @@
 
 #include <grub/util/misc.h>
 #include <grub/util/deviceiter.h>
+#include <grub/env.h>
 #include <grub/i18n.h>
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
 
 #include "progname.h"
+
+void 
+grub_xputs_real (const char *str)
+{
+  fputs (str, stdout);
+}
+
+void (*grub_xputs) (const char *str) = grub_xputs_real;
+
+int
+grub_getkey (void)
+{
+  return -1;
+}
+
+void
+grub_refresh (void)
+{
+  fflush (stdout);
+}
 
 static void
 make_device_map (const char *device_map, int floppy_disks)
@@ -157,6 +178,9 @@ main (int argc, char *argv[])
 	    break;
 	  }
     }
+
+  if (verbosity > 1)
+    grub_env_set ("debug", "all");
 
   make_device_map (dev_map ? : DEFAULT_DEVICE_MAP, floppy_disks);
 
