@@ -2,6 +2,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 SUBDIRS = . grub-core po docs
 EXTRA_DIST = autogen.sh gentpl.py Makefile.tpl modules.def geninit.sh
+EXTRA_DIST += include conf/i386-pc-cygwin-img-ld.sc
 
 grubconfdir = $(sysconfdir)/grub.d
 platformdir = $(pkglibrootdir)/$(target_cpu)-$(platform)

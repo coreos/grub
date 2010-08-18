@@ -867,8 +867,6 @@ AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
 grub_CHECK_LINK_DIR
 if test x"$link_dir" = xyes ; then
   AC_CONFIG_LINKS([include/grub/cpu:include/grub/$target_cpu])
-  mkdir -p grub-core/lib
-  cp -rp $srcdir/grub-core/lib/$target_cpu grub-core/lib/target_cpu
   if test "$platform" != emu ; then
     AC_CONFIG_LINKS([include/grub/machine:include/grub/$target_cpu/$platform])
   fi
@@ -882,6 +880,13 @@ else
     cp -rp $srcdir/grub-core/include/grub/$target_cpu/$platform include/grub/machine 2>/dev/null
   fi
 fi
+
+# Copy */setjmp.S to target_cpu/
+AC_CONFIG_COMMANDS([grub-core/lib/target_cpu],
+  [mkdir -p grub-core/lib/target_cpu])
+AC_CONFIG_COMMANDS([setjmp.S],
+  [cp -rp $srcdir/grub-core/lib/$target_cpu/setjmp.S grub-core/lib/target_cpu/],
+  [target_cpu=$target_cpu srcdir=$srcdir])
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([grub-core/Makefile])
