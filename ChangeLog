@@ -1,3 +1,9 @@
+2010-08-18  Colin Watson  <cjwatson@ubuntu.com>
+
+	* acinclude.m4 (grub_ASM_USCORE): Use a more accurate grep pattern,
+	to avoid false positives with some assemblers that output things
+	like "someprefix_func" as part of their output.
+
 2010-08-15  Robert Millan  <rmh@gnu.org>
 
 	* kern/emu/misc.c (grub_get_libzfs_handle): Handle libzfs_init()

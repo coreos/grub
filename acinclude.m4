@@ -38,6 +38,7 @@ dnl Written by Pavel Roskin. Based on grub_ASM_EXT_C written by
 dnl Erich Boleyn and modified by Yoshinori K. Okuji.
 AC_DEFUN([grub_ASM_USCORE],
 [AC_REQUIRE([AC_PROG_CC])
+AC_REQUIRE([AC_PROG_EGREP])
 AC_MSG_CHECKING([if C symbols get an underscore after compilation])
 AC_CACHE_VAL(grub_cv_asm_uscore,
 [cat > conftest.c <<\EOF
@@ -56,7 +57,7 @@ else
   AC_MSG_ERROR([${CC-cc} failed to produce assembly code])
 fi
 
-if grep _func conftest.s >/dev/null 2>&1; then
+if $EGREP '(^|[^_[:alnum]])_func' conftest.s >/dev/null 2>&1; then
   grub_cv_asm_uscore=yes
 else
   grub_cv_asm_uscore=no
