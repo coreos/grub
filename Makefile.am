@@ -1,5 +1,6 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
+DEPDIR = .deps-util
 SUBDIRS = . grub-core po docs
 EXTRA_DIST = autogen.sh gentpl.py Makefile.tpl modules.def geninit.sh
 EXTRA_DIST += include conf/i386-pc-cygwin-img-ld.sc
@@ -152,7 +153,6 @@ CLEANFILES += ascii.bitmaps
 
 ascii.h: ascii.bitmaps grub-bin2h
 	$(builddir)/grub-bin2h ascii_bitmaps < $< > $@
-	cp $@ $(top_builddir)/grub-core/include
 CLEANFILES += ascii.h $(top_builddir)/grub-core/include/ascii.h
 
 widthspec.bin: $(FONT_SOURCE) grub-mkfont

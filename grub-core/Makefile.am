@@ -3,6 +3,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 CC=$(TARGET_CC)
 CPP=$(TARGET_CC)
 CCAS=$(TARGET_CC)
+DEPDIR=.deps-core
 
 EXTRA_DIST =
 EXTRA_DIST += modules.def genmoddep.awk

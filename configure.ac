@@ -37,9 +37,7 @@ fi
 
 # Default HOST_CPPFLAGS
 HOST_CPPFLAGS="$HOST_CPPFLAGS -Wall -W"
-HOST_CPPFLAGS="$HOST_CPPFLAGS -I\$(top_srcdir)/grub-core/include"
 HOST_CPPFLAGS="$HOST_CPPFLAGS -I\$(top_builddir)/include"
-HOST_CPPFLAGS="$HOST_CPPFLAGS -I\$(top_srcdir)/grub-core/gnulib"
 HOST_CPPFLAGS="$HOST_CPPFLAGS -DGRUB_UTIL=1"
 HOST_CPPFLAGS="$HOST_CPPFLAGS -DGRUB_LIBDIR=\\\"\$(pkglibdir)\\\""
 HOST_CPPFLAGS="$HOST_CPPFLAGS -DLOCALEDIR=\\\"\$(localedir)\\\""
