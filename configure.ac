@@ -806,11 +806,12 @@ fi
 if test x"$device_mapper_excuse" = x ; then
   # Check for device-mapper library.
   AC_CHECK_LIB([devmapper], [dm_task_create],
-               [HOST_LDFLAGS="$HOST_LDFLAGS -ldevmapper"
+               [LIBDEVMAPPER="-ldevmapper"
                 AC_DEFINE([HAVE_DEVICE_MAPPER], [1],
                           [Define to 1 if you have the devmapper library.])],
                [device_mapper_excuse="need devmapper library"])
 fi
+AC_SUBST([LIBDEVMAPPER])
 
 pkglibrootdir='$(libdir)'/`echo $PACKAGE | sed "$program_transform_name"`
 AC_SUBST(pkglibrootdir)

@@ -249,7 +249,7 @@ program = {
 
   ldadd = 'kernel.img$(EXEEXT)';
   ldadd = '$(MODULE_FILES)';
-  ldadd = '$(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS)';
+  ldadd = '$(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER)';
 
   enable = emu;
 };
@@ -262,7 +262,7 @@ program = {
   nodist = symlist.c;
 
   ldadd = 'kernel.img$(EXEEXT)';
-  ldadd = '$(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS)';
+  ldadd = '$(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER)';
 
   enable = emu;
 };

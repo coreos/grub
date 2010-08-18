@@ -99,7 +99,7 @@ program = {
   name = grub-bin2h;
   source = util/bin2h.c;
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
   mansection = 1;
 };
 
@@ -112,7 +112,7 @@ program = {
   extra_dist = util/grub-mkimagexx.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
   cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibrootdir)\"';
 };
 
@@ -123,7 +123,7 @@ program = {
   source = util/grub-mkrelpath.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
 };
 
 program = {
@@ -133,7 +133,7 @@ program = {
   source = util/grub-script-check.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
 };
 
 program = {
@@ -143,7 +143,7 @@ program = {
   source = util/grub-editenv.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
 };
 
 program = {
@@ -153,7 +153,7 @@ program = {
   source = util/grub-mkpasswd-pbkdf2.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
 };
@@ -181,7 +181,7 @@ program = {
   source = util/grub-fstest.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
   condition = COND_GRUB_FSTEST;
 };
 
@@ -194,7 +194,7 @@ program = {
   cflags = '$(freetype_cflags)';
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
   ldflags = '$(freetype_libs)';
   condition = COND_GRUB_MKFONT;
 };
@@ -213,8 +213,7 @@ program = {
   sparc64_ieee1275 = util/ieee1275/devicemap.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL)';
-  ldflags = '$(LIBUTIL)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
 };
 
 program = {
@@ -224,8 +223,7 @@ program = {
   source = util/grub-probe.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL)';
-  ldflags = '$(LIBUTIL)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
 };
 
 program = {
@@ -242,8 +240,7 @@ program = {
   sparc64_ieee1275 = util/lvm.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL)';
-  ldflags = '$(LIBUTIL)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
 
   enable = i386_pc;
   enable = sparc64_ieee1275;
