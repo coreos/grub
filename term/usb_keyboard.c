@@ -25,39 +25,45 @@
 #include <grub/usb.h>
 #include <grub/dl.h>
 #include <grub/time.h>
+#include <grub/keyboard_layouts.h>
 
 
-static unsigned keyboard_map[128] =
-  {
-    '\0', '\0', '\0', '\0', 'a', 'b', 'c', 'd',
-    'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
-    'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-    'u', 'v', 'w', 'x', 'y', 'z', '1', '2',
-    '3', '4', '5', '6', '7', '8', '9', '0',
-    '\n', GRUB_TERM_ESC, GRUB_TERM_BACKSPACE, GRUB_TERM_TAB, ' ', '-', '=', '[',
-    ']', '\\', '#', ';', '\'', '`', ',', '.',
-    '/', '\0', GRUB_TERM_KEY_F1, GRUB_TERM_KEY_F2,
-    GRUB_TERM_KEY_F3, GRUB_TERM_KEY_F4, GRUB_TERM_KEY_F5, GRUB_TERM_KEY_F6,
-    GRUB_TERM_KEY_F7, GRUB_TERM_KEY_F8, GRUB_TERM_KEY_F9, GRUB_TERM_KEY_F10,
-    GRUB_TERM_KEY_F11, GRUB_TERM_KEY_F12, '\0', '\0',
-    '\0', GRUB_TERM_KEY_INSERT, GRUB_TERM_KEY_HOME, GRUB_TERM_KEY_PPAGE,
-    GRUB_TERM_KEY_DC, GRUB_TERM_KEY_END, GRUB_TERM_KEY_NPAGE, GRUB_TERM_KEY_RIGHT,
-    GRUB_TERM_KEY_LEFT, GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_UP,
-    [0x64] = '\\'
-  };
 
-static unsigned keyboard_map_shift[128] =
-  {
-    '\0', '\0', '\0', '\0', 'A', 'B', 'C', 'D',
-    'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-    'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-    'U', 'V', 'W', 'X', 'Y', 'Z', '!', '@',
-    '#', '$', '%', '^', '&', '*', '(', ')',
-    '\n', '\0', '\0', '\0', ' ', '_', '+', '{',
-    '}', '|', '#', ':', '"', '`', '<', '>',
-    '?',
-    [0x64] = '|'
-  };
+static grub_uint8_t usb_to_at_map[128] =
+{
+  /* 0x00 */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x04 */ 0x1e /* a */, 0x30 /* b */, 0x2e /* c */, 0x20 /* d */, 
+  /* 0x08 */ 0x12 /* e */, 0x21 /* f */, 0x22 /* g */, 0x23 /* h */, 
+  /* 0x0c */ 0x17 /* i */, 0x24 /* j */, 0x25 /* k */, 0x26 /* l */, 
+  /* 0x10 */ 0x32 /* m */, 0x31 /* n */, 0x18 /* o */, 0x19 /* p */, 
+  /* 0x14 */ 0x10 /* q */, 0x13 /* r */, 0x1f /* s */, 0x14 /* t */, 
+  /* 0x18 */ 0x16 /* u */, 0x2f /* v */, 0x11 /* w */, 0x2d /* x */, 
+  /* 0x1c */ 0x15 /* y */, 0x2c /* z */, 0x02 /* 1 */, 0x03 /* 2 */, 
+  /* 0x20 */ 0x04 /* 3 */, 0x05 /* 4 */, 0x06 /* 5 */, 0x07 /* 6 */, 
+  /* 0x24 */ 0x08 /* 7 */, 0x09 /* 8 */, 0x0a /* 9 */, 0x0b /* 0 */, 
+  /* 0x28 */ 0x1c /* Enter */, 0x01 /* Escape */, 0x0e /* \b */, 0x0f /* \t */, 
+  /* 0x2c */ 0x39 /* Space */, 0x4a /* - */, 0x0d /* = */, 0x1a /* [ */, 
+  /* 0x30 */ 0x1b /* ] */, 0x2b /* \ */, 0x00, 0x27 /* ; */, 
+  /* 0x34 */ 0x28 /* " */, 0x29 /* ` */, 0x33 /* , */, 0x34 /* . */, 
+  /* 0x38 */ 0x35 /* / */, 0x00, 0x00, 0x00, 
+  /* 0x3c */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x40 */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x44 */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x48 */ 0x00, 0x00, 0x47 /* HOME */, 0x51 /* PPAGE */, 
+  /* 0x4c */ 0x53 /* DC */, 0x4f /* END */, 0x49 /* NPAGE */, 0x4d /* RIGHT */, 
+  /* 0x50 */ 0x4b /* LEFT */, 0x50 /* DOWN */, 0x48 /* UP */, 0x00, 
+  /* 0x54 */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x58 */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x5c */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x60 */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x64 */ 0x56 /* 102nd key. */, 0x00, 0x00, 0x00, 
+  /* 0x68 */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x6c */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x70 */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x74 */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x78 */ 0x00, 0x00, 0x00, 0x00, 
+  /* 0x7c */ 0x00, 0x00, 0x00, 0x00, 
+};
 
 static grub_usb_device_t usbdev;
 
@@ -73,6 +79,35 @@ static grub_usb_device_t usbdev;
 #define USB_HID_SET_REPORT	0x09
 #define USB_HID_SET_IDLE	0x0A
 #define USB_HID_SET_PROTOCOL	0x0B
+
+#define GRUB_USB_KEYBOARD_LEFT_CTRL   0x01
+#define GRUB_USB_KEYBOARD_LEFT_SHIFT  0x02
+#define GRUB_USB_KEYBOARD_LEFT_ALT    0x04
+#define GRUB_USB_KEYBOARD_RIGHT_CTRL  0x10
+#define GRUB_USB_KEYBOARD_RIGHT_SHIFT 0x20
+#define GRUB_USB_KEYBOARD_RIGHT_ALT   0x40
+
+static int
+interpret_status (grub_uint8_t data0)
+{
+  int mods = 0;
+
+  /* Check Shift, Control, and Alt status.  */
+  if (data0 & GRUB_USB_KEYBOARD_LEFT_SHIFT)
+    mods |= GRUB_TERM_STATUS_LSHIFT;
+  if (data0 & GRUB_USB_KEYBOARD_RIGHT_SHIFT)
+    mods |= GRUB_TERM_STATUS_RSHIFT;
+  if (data0 & GRUB_USB_KEYBOARD_LEFT_CTRL)
+    mods |= GRUB_TERM_STATUS_LCTRL;
+  if (data0 & GRUB_USB_KEYBOARD_RIGHT_CTRL)
+    mods |= GRUB_TERM_STATUS_RCTRL;
+  if (data0 & GRUB_USB_KEYBOARD_LEFT_ALT)
+    mods |= GRUB_TERM_STATUS_LALT;
+  if (data0 & GRUB_USB_KEYBOARD_RIGHT_ALT)
+    mods |= GRUB_TERM_STATUS_RALT;
+
+  return mods;
+}
 
 static void
 grub_usb_hid (void)
@@ -127,7 +162,7 @@ static int
 grub_usb_keyboard_checkkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_uint8_t data[8];
-  int key;
+  int key = 0;
   grub_err_t err;
   grub_uint64_t currtime;
   int timeout = 50;
@@ -154,39 +189,14 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term __attribute__ ((unused)
 		data[0], data[1], data[2], data[3],
 		data[4], data[5], data[6], data[7]);
 
-#define GRUB_USB_KEYBOARD_LEFT_CTRL   0x01
-#define GRUB_USB_KEYBOARD_LEFT_SHIFT  0x02
-#define GRUB_USB_KEYBOARD_LEFT_ALT    0x04
-#define GRUB_USB_KEYBOARD_RIGHT_CTRL  0x10
-#define GRUB_USB_KEYBOARD_RIGHT_SHIFT 0x20
-#define GRUB_USB_KEYBOARD_RIGHT_ALT   0x40
-
-  /* Check if the Shift key was pressed.  */
-  if (data[0] & GRUB_USB_KEYBOARD_LEFT_SHIFT
-      || data[0] & GRUB_USB_KEYBOARD_RIGHT_SHIFT)
-    {
-      if (keyboard_map_shift[data[2]])
-	key = keyboard_map_shift[data[2]];
-      else
-	key = keyboard_map[data[2]] | GRUB_TERM_SHIFT;
-    }
-  else
-    key = keyboard_map[data[2]];
-
-  if (key == 0)
+  if (usb_to_at_map[data[2]] == 0)
     grub_printf ("Unknown key 0x%x detected\n", data[2]);
+  else
+    key = grub_term_map_key (usb_to_at_map[data[2]], interpret_status (data[0]));
 
-  /* Check if the Ctrl key was pressed.  */
-  if (data[0] & GRUB_USB_KEYBOARD_LEFT_CTRL
-      || data[0] & GRUB_USB_KEYBOARD_RIGHT_CTRL)
-    key |= GRUB_TERM_CTRL;
+  grub_errno = GRUB_ERR_NONE;
 
-  /* Check if the Alt key was pressed.  */
-  if (data[0] & GRUB_USB_KEYBOARD_LEFT_ALT)
-    key |= GRUB_TERM_ALT;
-
-  if (data[0] & GRUB_USB_KEYBOARD_RIGHT_ALT)
-    key |= GRUB_TERM_ALT;
+  return key;
 
 #if 0
   /* Wait until the key is released.  */
@@ -202,8 +212,6 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term __attribute__ ((unused)
 		    data[4], data[5], data[6], data[7]);
     }
 #endif
-
-  grub_errno = GRUB_ERR_NONE;
 
   return key;
 }
@@ -284,7 +292,6 @@ static int
 grub_usb_keyboard_getkeystatus (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_uint8_t data[8];
-  int mods = 0;
   grub_err_t err;
   grub_uint64_t currtime;
   int timeout = 50;
@@ -322,23 +329,9 @@ grub_usb_keyboard_getkeystatus (struct grub_term_input *term __attribute__ ((unu
 		data[0], data[1], data[2], data[3],
 		data[4], data[5], data[6], data[7]);
 
-  /* Check Shift, Control, and Alt status.  */
-  if (data[0] & GRUB_USB_KEYBOARD_LEFT_SHIFT)
-    mods |= GRUB_TERM_STATUS_LSHIFT;
-  if (data[0] & GRUB_USB_KEYBOARD_RIGHT_SHIFT)
-    mods |= GRUB_TERM_STATUS_RSHIFT;
-  if (data[0] & GRUB_USB_KEYBOARD_LEFT_CTRL)
-    mods |= GRUB_TERM_STATUS_LCTRL;
-  if (data[0] & GRUB_USB_KEYBOARD_RIGHT_CTRL)
-    mods |= GRUB_TERM_STATUS_RCTRL;
-  if (data[0] & GRUB_USB_KEYBOARD_LEFT_ALT)
-    mods |= GRUB_TERM_STATUS_LALT;
-  if (data[0] & GRUB_USB_KEYBOARD_RIGHT_ALT)
-    mods |= GRUB_TERM_STATUS_RALT;
-
   grub_errno = GRUB_ERR_NONE;
 
-  return mods;
+  return interpret_status (data[0]);
 }
 
 static struct grub_term_input grub_usb_keyboard_term =

@@ -46,26 +46,6 @@ struct console_grub_equivalence
   grub_uint32_t grub;
 };
 
-static int at_to_usb_map[128] =
-{
-  0, 41, 30, 31, 32, 33, 34, 35, 
-  36, 37, 38, 39, 45, 46, 42, 43, 
-  20, 26, 8, 21, 23, 28, 24, 12, 
-  18, 19, 47, 48, 40, 0, 4, 22, 
-  7, 9, 10, 11, 13, 14, 15, 51, 
-  52, 53, 0, 49, 29, 27, 6, 25, 
-  5, 17, 16, 54, 55, 56, 0, 0, 
-  0, 44, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 74, 
-  82, 78, 45, 80, 0, 79, 0, 77, 
-  81, 75, 0, 76, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0
-};
-
 static struct console_grub_equivalence console_grub_equivalences[] = {
   {"KP_1", '1'},
   {"KP_2", '2'},
@@ -108,20 +88,20 @@ Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
 void
 add_special_keys (struct grub_keyboard_layout *layout)
 {
-  layout->at.keyboard_map[71] = GRUB_TERM_KEY_HOME;
-  layout->at.keyboard_map[72] = GRUB_TERM_KEY_UP;
-  layout->at.keyboard_map[73] = GRUB_TERM_KEY_NPAGE;
-  layout->at.keyboard_map[75] = GRUB_TERM_KEY_LEFT;
-  layout->at.keyboard_map[77] = GRUB_TERM_KEY_RIGHT;
-  layout->at.keyboard_map[79] = GRUB_TERM_KEY_END;
-  layout->at.keyboard_map[80] = GRUB_TERM_KEY_DOWN;
-  layout->at.keyboard_map[81] = GRUB_TERM_KEY_PPAGE;
-  layout->at.keyboard_map[83] = GRUB_TERM_KEY_DC;
+  layout->keyboard_map[71] = GRUB_TERM_KEY_HOME;
+  layout->keyboard_map[72] = GRUB_TERM_KEY_UP;
+  layout->keyboard_map[73] = GRUB_TERM_KEY_NPAGE;
+  layout->keyboard_map[75] = GRUB_TERM_KEY_LEFT;
+  layout->keyboard_map[77] = GRUB_TERM_KEY_RIGHT;
+  layout->keyboard_map[79] = GRUB_TERM_KEY_END;
+  layout->keyboard_map[80] = GRUB_TERM_KEY_DOWN;
+  layout->keyboard_map[81] = GRUB_TERM_KEY_PPAGE;
+  layout->keyboard_map[83] = GRUB_TERM_KEY_DC;
 
-  layout->at.keyboard_map[101] = GRUB_TERM_KEY_UP;
-  layout->at.keyboard_map[102] = GRUB_TERM_KEY_DOWN;
-  layout->at.keyboard_map[103] = GRUB_TERM_KEY_LEFT;
-  layout->at.keyboard_map[104] = GRUB_TERM_KEY_RIGHT;
+  layout->keyboard_map[101] = GRUB_TERM_KEY_UP;
+  layout->keyboard_map[102] = GRUB_TERM_KEY_DOWN;
+  layout->keyboard_map[103] = GRUB_TERM_KEY_LEFT;
+  layout->keyboard_map[104] = GRUB_TERM_KEY_RIGHT;
 }
 
 static char
@@ -159,35 +139,20 @@ write_file (char* filename, struct grub_keyboard_layout *layout)
 
   version = grub_cpu_to_le32 (GRUB_KEYBOARD_LAYOUTS_VERSION);
   
-  for (i = 0; i < ARRAY_SIZE (layout->at.keyboard_map); i++)
-    layout->at.keyboard_map[i] = grub_cpu_to_le32(layout->at.keyboard_map[i]);
+  for (i = 0; i < ARRAY_SIZE (layout->keyboard_map); i++)
+    layout->keyboard_map[i] = grub_cpu_to_le32(layout->keyboard_map[i]);
 
-  for (i = 0; i < ARRAY_SIZE (layout->at.keyboard_map_shift); i++)
-    layout->at.keyboard_map_shift[i]
-      = grub_cpu_to_le32(layout->at.keyboard_map_shift[i]);
+  for (i = 0; i < ARRAY_SIZE (layout->keyboard_map_shift); i++)
+    layout->keyboard_map_shift[i]
+      = grub_cpu_to_le32(layout->keyboard_map_shift[i]);
 
-  for (i = 0; i < ARRAY_SIZE (layout->at.keyboard_map_l3); i++)
-    layout->at.keyboard_map_l3[i]
-      = grub_cpu_to_le32(layout->at.keyboard_map_l3[i]);
+  for (i = 0; i < ARRAY_SIZE (layout->keyboard_map_l3); i++)
+    layout->keyboard_map_l3[i]
+      = grub_cpu_to_le32(layout->keyboard_map_l3[i]);
 
-  for (i = 0; i < ARRAY_SIZE (layout->at.keyboard_map_shift_l3); i++)
-    layout->at.keyboard_map_shift_l3[i]
-      = grub_cpu_to_le32(layout->at.keyboard_map_shift_l3[i]);
-
-  for (i = 0; i < ARRAY_SIZE (layout->usb.keyboard_map); i++)
-    layout->usb.keyboard_map[i] = grub_cpu_to_le32(layout->usb.keyboard_map[i]);
-
-  for (i = 0; i < ARRAY_SIZE (layout->usb.keyboard_map_shift); i++)
-    layout->usb.keyboard_map_shift[i]
-      = grub_cpu_to_le32(layout->usb.keyboard_map_shift[i]);
-
-  for (i = 0; i < ARRAY_SIZE (layout->usb.keyboard_map_l3); i++)
-    layout->usb.keyboard_map_l3[i]
-      = grub_cpu_to_le32(layout->usb.keyboard_map_l3[i]);
-
-  for (i = 0; i < ARRAY_SIZE (layout->usb.keyboard_map_shift_l3); i++)
-    layout->usb.keyboard_map_shift_l3[i]
-      = grub_cpu_to_le32(layout->usb.keyboard_map_shift_l3[i]);
+  for (i = 0; i < ARRAY_SIZE (layout->keyboard_map_shift_l3); i++)
+    layout->keyboard_map_shift_l3[i]
+      = grub_cpu_to_le32(layout->keyboard_map_shift_l3[i]);
 
   fp_output = fopen (filename, "w");
   
@@ -258,27 +223,15 @@ write_keymaps (char *keymap, char *file_basename)
 		  normal, shift, normalalt, shiftalt);
 	  if (keycode < GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)
 	    {
-	      layout.at.keyboard_map[keycode] = get_grub_code (normal);
-	      layout.at.keyboard_map_shift[keycode] = get_grub_code (shift);
-	      layout.at.keyboard_map_l3[keycode] = get_grub_code (normalalt);
-	      layout.at.keyboard_map_shift_l3[keycode]
+	      layout.keyboard_map[keycode] = get_grub_code (normal);
+	      layout.keyboard_map_shift[keycode] = get_grub_code (shift);
+	      layout.keyboard_map_l3[keycode] = get_grub_code (normalalt);
+	      layout.keyboard_map_shift_l3[keycode]
 		= get_grub_code (shiftalt);
 	      ok = 1;
 	    }
 	}
     }
-
-  for (i = 0; i < GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE; i++)
-    {
-      layout.usb.keyboard_map[at_to_usb_map[i]] = layout.at.keyboard_map[i];
-      layout.usb.keyboard_map_shift[at_to_usb_map[i]]
-	= layout.at.keyboard_map_shift[i];
-      layout.usb.keyboard_map_l3[at_to_usb_map[i]]
-	= layout.at.keyboard_map_l3[i];
-      layout.usb.keyboard_map_shift_l3[at_to_usb_map[i]]
-	= layout.at.keyboard_map_shift_l3[i];
-    }
-
 
   if (ok == 0)
     {

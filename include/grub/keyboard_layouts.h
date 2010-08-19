@@ -21,22 +21,16 @@
 
 #define GRUB_KEYBOARD_LAYOUTS_FILEMAGIC "GRUBLAYO"
 #define GRUB_KEYBOARD_LAYOUTS_FILEMAGIC_SIZE (sizeof(GRUB_KEYBOARD_LAYOUTS_FILEMAGIC) - 1)
-#define GRUB_KEYBOARD_LAYOUTS_VERSION 5
+#define GRUB_KEYBOARD_LAYOUTS_VERSION 6
 
 #define GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE 128
 
-struct grub_keyboard_layout_kbd
+struct grub_keyboard_layout
 {
   grub_uint32_t keyboard_map[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
   grub_uint32_t keyboard_map_shift[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
   grub_uint32_t keyboard_map_l3[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
   grub_uint32_t keyboard_map_shift_l3[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
-};
-
-struct grub_keyboard_layout
-{
-  struct grub_keyboard_layout_kbd at;
-  struct grub_keyboard_layout_kbd usb;
 };
 
 unsigned grub_term_map_key (int code, int status);
