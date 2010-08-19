@@ -47,6 +47,10 @@ struct console_grub_equivalence
 };
 
 static struct console_grub_equivalence console_grub_equivalences[] = {
+  {"Escape", GRUB_TERM_ESC},
+  {"Tab", GRUB_TERM_TAB},
+  {"Delete", GRUB_TERM_BACKSPACE},
+
   {"KP_1", '1'},
   {"KP_2", '2'},
   {"KP_3", '3'},
