@@ -2702,7 +2702,7 @@ or taken from the following table:
 @item numdown @tab Down (numeric keypad)
 @item numpgdown @tab Page Down (numeric keypad)
 @item numleft @tab Left (numeric keypad)
-@item numlock @tab Num Lock (numeric keypad)
+@item numcenter @tab 5 with Num Lock inactive (numeric keypad)
 @item numright @tab Right (numeric keypad)
 @item numhome @tab Home (numeric keypad)
 @item numup @tab Up (numeric keypad)

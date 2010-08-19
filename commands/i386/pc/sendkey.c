@@ -144,7 +144,7 @@ static struct keysym keysym_table[] =
   {"num9",		"numpgup",		'9',	0,	0x49},
   {"numminus",		0,		'-',	0,	0x4a},
   {"num4",		"numleft",		'4',	0,	0x4b},
-  {"num5",		"numlock",		'5',	0,	0x4c},
+  {"num5",		"numcenter",		'5',	0,	0x4c},
   {"num6",		"numright",		'6',	0,	0x4d},
   {"numplus",		0,		'-',	0,	0x4e},
   {"num1",		"numend",		'1',	0,	0x4f},
