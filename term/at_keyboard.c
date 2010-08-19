@@ -42,18 +42,7 @@ static grub_uint8_t led_status;
 #define KEYBOARD_LED_CAPS		(1 << 2)
 
 GRUB_AT_KEY_KEYBOARD_MAP (keyboard_map);
-
-static int keyboard_map_shift[128] =
-{
-  '\0', '\0', '!', '@', '#', '$', '%', '^',
-  '&', '*', '(', ')', '_', '+', '\0', '\0',
-  'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I',
-  'O', 'P', '{', '}', '\n', '\0', 'A', 'S',
-  'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
-  '\"', '~', '\0', '|', 'Z', 'X', 'C', 'V',
-  'B', 'N', 'M', '<', '>', '?',
-  [0x56] = GRUB_TERM_KEY_SHIFT_102
-};
+GRUB_AT_KEY_KEYBOARD_MAP_SHIFT (keyboard_map_shift);
 
 static grub_uint8_t grub_keyboard_controller_orig;
 

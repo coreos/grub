@@ -1,0 +1,7 @@
+2010-01-18  Carles Pina i Estany  <carles@pina.cat>
+
+	Adds keyboard layouts support.
+
+	* conf/common.rmk (bin_UTILITIES): Add grub-mklayouts rules.
+	* include/grub/keyboard_layouts.h: New file.
+	* util/grub-mklayouts.c: New file.

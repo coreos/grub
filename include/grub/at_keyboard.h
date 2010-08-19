@@ -52,7 +52,7 @@
 #endif
 
 #define GRUB_AT_KEY_KEYBOARD_MAP(name)					  \
-static const int name[128] =						  \
+static const unsigned name[128] =        				  \
 {				                                          \
   '\0', GRUB_TERM_ESC, '1', '2', '3', '4', '5', '6',			  \
   '7', '8', '9', '0', '-', '=', GRUB_TERM_BACKSPACE, GRUB_TERM_TAB,	  \
@@ -73,6 +73,19 @@ static const int name[128] =						  \
   GRUB_TERM_KEY_F12, '\0', '\0', '\0', '\0', '\0', '\0', '\0',            \
   '\0', '\0', '\0', '\0', '\0', OLPC_UP, OLPC_DOWN, OLPC_LEFT,            \
   OLPC_RIGHT                                                              \
+}
+
+#define GRUB_AT_KEY_KEYBOARD_MAP_SHIFT(name)  	\
+static unsigned name[128] =                     \
+{                                               \
+  '\0', '\0', '!', '@', '#', '$', '%', '^',     \
+  '&', '*', '(', ')', '_', '+', '\0', '\0',     \
+  'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I',       \
+  'O', 'P', '{', '}', '\n', '\0', 'A', 'S',     \
+  'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',       \
+  '\"', '~', '\0', '|', 'Z', 'X', 'C', 'V',     \
+  'B', 'N', 'M', '<', '>', '?',                 \
+  [0x56] = GRUB_TERM_KEY_SHIFT_102              \
 }
 
 #endif

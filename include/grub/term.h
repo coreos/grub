@@ -53,8 +53,8 @@
 #define GRUB_TERM_KEY_INSERT    (GRUB_TERM_EXTENDED | 22)
 
 /* Used by keylayouts code. Never returned in grub_getkey.  */
-#define GRUB_TERM_KEY_102       (GRUB_TERM_EXTENDED | 23)
-#define GRUB_TERM_KEY_SHIFT_102 (GRUB_TERM_EXTENDED | 24)
+#define GRUB_TERM_KEY_102       0x80
+#define GRUB_TERM_KEY_SHIFT_102 0x81
 
 #define GRUB_TERM_ESC		'\e'
 #define GRUB_TERM_TAB		'\t'
