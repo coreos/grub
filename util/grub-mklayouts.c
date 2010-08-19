@@ -51,24 +51,136 @@ static struct console_grub_equivalence console_grub_equivalences[] = {
   {"Tab", GRUB_TERM_TAB},
   {"Delete", GRUB_TERM_BACKSPACE},
 
-  {"KP_1", '1'},
-  {"KP_2", '2'},
-  {"KP_3", '3'},
-  {"KP_4", '4'},
-  {"KP_5", '5'},
-  {"KP_6", '6'},
-  {"KP_7", '7'},
-  {"KP_8", '8'},
-  {"KP_9", '9'},
-
   {"KP_Multiply", '*'},
-  {"KP_Substract", '-'},
+  {"KP_Subtract", '-'},
   {"KP_Add", '+'},
   {"KP_Divide", '/'},
 
   {"KP_Enter", '\n'},
   {"Return", '\n'},
-  {"", '\0'}
+
+  {"F1", GRUB_TERM_KEY_F1},
+  {"F2", GRUB_TERM_KEY_F2},
+  {"F3", GRUB_TERM_KEY_F3},
+  {"F4", GRUB_TERM_KEY_F4},
+  {"F5", GRUB_TERM_KEY_F5},
+  {"F6", GRUB_TERM_KEY_F6},
+  {"F7", GRUB_TERM_KEY_F7},
+  {"F8", GRUB_TERM_KEY_F8},
+  {"F9", GRUB_TERM_KEY_F9},
+  {"F10", GRUB_TERM_KEY_F10},
+  {"F11", GRUB_TERM_KEY_F11},
+  {"F12", GRUB_TERM_KEY_F12},
+  {"F13", GRUB_TERM_KEY_F1 | GRUB_TERM_SHIFT},
+  {"F14", GRUB_TERM_KEY_F2 | GRUB_TERM_SHIFT},
+  {"F15", GRUB_TERM_KEY_F3 | GRUB_TERM_SHIFT},
+  {"F16", GRUB_TERM_KEY_F4 | GRUB_TERM_SHIFT},
+  {"F17", GRUB_TERM_KEY_F5 | GRUB_TERM_SHIFT},
+  {"F18", GRUB_TERM_KEY_F6 | GRUB_TERM_SHIFT},
+  {"F19", GRUB_TERM_KEY_F7 | GRUB_TERM_SHIFT},
+  {"F20", GRUB_TERM_KEY_F8 | GRUB_TERM_SHIFT},
+  {"F21", GRUB_TERM_KEY_F9 | GRUB_TERM_SHIFT},
+  {"F22", GRUB_TERM_KEY_F10 | GRUB_TERM_SHIFT},
+  {"F23", GRUB_TERM_KEY_F11 | GRUB_TERM_SHIFT},
+  {"F24", GRUB_TERM_KEY_F12 | GRUB_TERM_SHIFT},
+  {"Console_13", GRUB_TERM_KEY_F1 | GRUB_TERM_ALT},
+  {"Console_14", GRUB_TERM_KEY_F2 | GRUB_TERM_ALT},
+  {"Console_15", GRUB_TERM_KEY_F3 | GRUB_TERM_ALT},
+  {"Console_16", GRUB_TERM_KEY_F4 | GRUB_TERM_ALT},
+  {"Console_17", GRUB_TERM_KEY_F5 | GRUB_TERM_ALT},
+  {"Console_18", GRUB_TERM_KEY_F6 | GRUB_TERM_ALT},
+  {"Console_19", GRUB_TERM_KEY_F7 | GRUB_TERM_ALT},
+  {"Console_20", GRUB_TERM_KEY_F8 | GRUB_TERM_ALT},
+  {"Console_21", GRUB_TERM_KEY_F9 | GRUB_TERM_ALT},
+  {"Console_22", GRUB_TERM_KEY_F10 | GRUB_TERM_ALT},
+  {"Console_23", GRUB_TERM_KEY_F11 | GRUB_TERM_ALT},
+  {"Console_24", GRUB_TERM_KEY_F12 | GRUB_TERM_ALT},
+  {"Console_25", GRUB_TERM_KEY_F1 | GRUB_TERM_SHIFT | GRUB_TERM_ALT},
+  {"Console_26", GRUB_TERM_KEY_F2 | GRUB_TERM_SHIFT | GRUB_TERM_ALT},
+  {"Console_27", GRUB_TERM_KEY_F3 | GRUB_TERM_SHIFT | GRUB_TERM_ALT},
+  {"Console_28", GRUB_TERM_KEY_F4 | GRUB_TERM_SHIFT | GRUB_TERM_ALT},
+  {"Console_29", GRUB_TERM_KEY_F5 | GRUB_TERM_SHIFT | GRUB_TERM_ALT},
+  {"Console_30", GRUB_TERM_KEY_F6 | GRUB_TERM_SHIFT | GRUB_TERM_ALT},
+  {"Console_31", GRUB_TERM_KEY_F7 | GRUB_TERM_SHIFT | GRUB_TERM_ALT},
+  {"Console_32", GRUB_TERM_KEY_F8 | GRUB_TERM_SHIFT | GRUB_TERM_ALT},
+  {"Console_33", GRUB_TERM_KEY_F9 | GRUB_TERM_SHIFT | GRUB_TERM_ALT},
+  {"Console_34", GRUB_TERM_KEY_F10 | GRUB_TERM_SHIFT | GRUB_TERM_ALT},
+  {"Console_35", GRUB_TERM_KEY_F11 | GRUB_TERM_SHIFT | GRUB_TERM_ALT},
+  {"Console_36", GRUB_TERM_KEY_F12 | GRUB_TERM_SHIFT | GRUB_TERM_ALT},
+
+  {"Insert", GRUB_TERM_KEY_INSERT},
+  {"Down", GRUB_TERM_KEY_DOWN},
+  {"Up", GRUB_TERM_KEY_UP},
+  {"Home", GRUB_TERM_KEY_HOME},
+  {"End", GRUB_TERM_KEY_END},
+  {"Right", GRUB_TERM_KEY_RIGHT},
+  {"Left", GRUB_TERM_KEY_LEFT},
+  {"VoidSymbol", 0},
+
+  /* "Undead" keys since no dead key support in GRUB.  */
+  {"dead_acute", '\''},
+  {"dead_circumflex", '^'},
+  {"dead_grave", '`'},
+  {"dead_tilde", '~'},
+  {"dead_diaeresis", '"'},
+  
+  /* Following ones don't provide any useful symbols for shell.  */
+  {"dead_cedilla", 0},
+  {"dead_ogonek", 0},
+  {"dead_caron", 0},
+  {"dead_breve", 0},
+  {"dead_doubleacute", 0},
+
+  /* NumLock not supported yet.  */
+  {"KP_0", GRUB_TERM_KEY_INSERT},
+  {"KP_1", GRUB_TERM_KEY_END},
+  {"KP_2", GRUB_TERM_KEY_DOWN},
+  {"KP_3", GRUB_TERM_KEY_NPAGE},
+  {"KP_4", GRUB_TERM_KEY_LEFT},
+  {"KP_5", 0},
+  {"KP_6", GRUB_TERM_KEY_RIGHT},
+  {"KP_7", GRUB_TERM_KEY_HOME},
+  {"KP_8", GRUB_TERM_KEY_UP},
+  {"KP_9", GRUB_TERM_KEY_PPAGE},
+  {"KP_Period", GRUB_TERM_KEY_DC},
+
+  /* Unused in GRUB.  */
+  {"Pause", 0},
+  {"Remove", 0},
+  {"Next", 0},
+  {"Prior", 0},
+  {"Scroll_Forward", 0},
+  {"Scroll_Backward", 0},
+  {"Hex_0", 0},
+  {"Hex_1", 0},
+  {"Hex_2", 0},
+  {"Hex_3", 0},
+  {"Hex_4", 0},
+  {"Hex_5", 0},
+  {"Hex_6", 0},
+  {"Hex_7", 0},
+  {"Hex_8", 0},
+  {"Hex_9", 0},
+  {"Hex_A", 0},
+  {"Hex_B", 0},
+  {"Hex_C", 0},
+  {"Hex_D", 0},
+  {"Hex_E", 0},
+  {"Hex_F", 0},
+  {"Scroll_Lock", 0},
+  {"Show_Memory", 0},
+  {"Show_Registers", 0},
+  {"Control_backslash", 0},
+
+  /* Keys currently not remappable.  */
+  {"CtrlL_Lock", 0},
+  {"Num_Lock", 0},
+  {"Alt", 0},
+  {"AltGr", 0},
+  {"Control", 0},
+  {"Shift", 0},
+
+  {NULL, '\0'}
 };
 
 static void
@@ -92,16 +204,7 @@ Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
 void
 add_special_keys (struct grub_keyboard_layout *layout)
 {
-  layout->keyboard_map[71] = GRUB_TERM_KEY_HOME;
-  layout->keyboard_map[72] = GRUB_TERM_KEY_UP;
-  layout->keyboard_map[73] = GRUB_TERM_KEY_NPAGE;
-  layout->keyboard_map[75] = GRUB_TERM_KEY_LEFT;
-  layout->keyboard_map[77] = GRUB_TERM_KEY_RIGHT;
-  layout->keyboard_map[79] = GRUB_TERM_KEY_END;
-  layout->keyboard_map[80] = GRUB_TERM_KEY_DOWN;
-  layout->keyboard_map[81] = GRUB_TERM_KEY_PPAGE;
-  layout->keyboard_map[83] = GRUB_TERM_KEY_DC;
-
+  /* OLPC keys.  */
   layout->keyboard_map[101] = GRUB_TERM_KEY_UP;
   layout->keyboard_map[102] = GRUB_TERM_KEY_DOWN;
   layout->keyboard_map[103] = GRUB_TERM_KEY_LEFT;
@@ -113,9 +216,11 @@ lookup (char *code)
 {
   int i;
 
-  for (i = 0; console_grub_equivalences[i].grub != '\0'; i++)
+  for (i = 0; console_grub_equivalences[i].layout != NULL; i++)
     if (strcmp (code, console_grub_equivalences[i].layout) == 0)
       return console_grub_equivalences[i].grub;
+
+  printf ("Unknown key %s\n", code);
 
   return '\0';
 }
@@ -174,14 +279,13 @@ write_file (char* filename, struct grub_keyboard_layout *layout)
 }
 
 static void
-write_keymaps (char *keymap, char *file_basename)
+write_keymaps (char *argv[], int argc, char *file_basename)
 {
   struct grub_keyboard_layout layout;
   char line[2048];
   pid_t pid;
   int pipe_communication[2];
   int ok;
-  unsigned i;
 
   FILE *fp_pipe;
 
@@ -199,11 +303,19 @@ write_keymaps (char *keymap, char *file_basename)
     }
   else if (pid == 0)
     {
+      char **args;
+      int j;
       close (1);
       dup (pipe_communication[1]);
       close (pipe_communication[0]);
-      execlp (CKBCOMP, CKBCOMP, keymap, NULL);
-      grub_util_error ("%s %s cannot be executed", CKBCOMP, keymap);
+      args = xmalloc (sizeof (args[0]) * (argc + 2));
+      args[0] = CKBCOMP;
+      for (j = 0; j < argc; j++)
+	args[j + 1] = argv[j];
+      args[argc + 1] = NULL;
+      execvp (CKBCOMP, args);
+      grub_util_error ("%s cannot be executed", CKBCOMP);
+      free (args);
       exit (3);
     }
   close (pipe_communication[1]);
@@ -239,8 +351,8 @@ write_keymaps (char *keymap, char *file_basename)
 
   if (ok == 0)
     {
-      fprintf (stderr, "ERROR: no keycodes found. Check output of %s %s.\n",
-	       CKBCOMP, keymap);
+      fprintf (stderr, "ERROR: no keycodes found. Check output of %s.\n",
+	       CKBCOMP);
       exit (1);
     }
 
@@ -302,11 +414,11 @@ main (int argc, char *argv[])
   if (file_basename == NULL)
     {
       file_basename = xasprintf ("%s.gkb", argv[optind]);
-      write_keymaps (argv[optind], file_basename);
+      write_keymaps (argv + optind, argc - optind, file_basename);
       free (file_basename);
     }
   else
-    write_keymaps (argv[optind], file_basename);
+    write_keymaps (argv + optind, argc - optind, file_basename);
 
   return 0;
 }
