@@ -27,6 +27,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "progname.h"
 
@@ -240,9 +241,8 @@ get_grub_code (char *layout_code)
 }
 
 static void
-write_file (char* filename, struct grub_keyboard_layout *layout)
+write_file (FILE *out, struct grub_keyboard_layout *layout)
 {
-  FILE *fp_output;
   grub_uint32_t version;
   unsigned i;
 
@@ -263,69 +263,24 @@ write_file (char* filename, struct grub_keyboard_layout *layout)
     layout->keyboard_map_shift_l3[i]
       = grub_cpu_to_le32(layout->keyboard_map_shift_l3[i]);
 
-  fp_output = fopen (filename, "w");
-  
-  if (!fp_output)
-    {
-      grub_util_error ("cannot open `%s'", filename);
-      exit (1);
-    }
-
   fwrite (GRUB_KEYBOARD_LAYOUTS_FILEMAGIC, 1,
-	  GRUB_KEYBOARD_LAYOUTS_FILEMAGIC_SIZE, fp_output);
-  fwrite (&version, sizeof (version), 1, fp_output);
-  fwrite (layout, 1, sizeof (*layout), fp_output);
-  fclose (fp_output);
+	  GRUB_KEYBOARD_LAYOUTS_FILEMAGIC_SIZE, out);
+  fwrite (&version, sizeof (version), 1, out);
+  fwrite (layout, 1, sizeof (*layout), out);
 }
 
 static void
-write_keymaps (char *argv[], int argc, char *file_basename)
+write_keymaps (FILE *in, FILE *out)
 {
   struct grub_keyboard_layout layout;
   char line[2048];
-  pid_t pid;
-  int pipe_communication[2];
   int ok;
-
-  FILE *fp_pipe;
-
-  if (pipe (pipe_communication) == -1)
-    {
-      grub_util_error ("cannot prepare the pipe");
-      exit (2);
-    }
-
-  pid = fork ();
-  if (pid < 0)
-    {
-      grub_util_error ("cannot fork");
-      exit (2);
-    }
-  else if (pid == 0)
-    {
-      char **args;
-      int j;
-      close (1);
-      dup (pipe_communication[1]);
-      close (pipe_communication[0]);
-      args = xmalloc (sizeof (args[0]) * (argc + 2));
-      args[0] = CKBCOMP;
-      for (j = 0; j < argc; j++)
-	args[j + 1] = argv[j];
-      args[argc + 1] = NULL;
-      execvp (CKBCOMP, args);
-      grub_util_error ("%s cannot be executed", CKBCOMP);
-      free (args);
-      exit (3);
-    }
-  close (pipe_communication[1]);
-  fp_pipe = fdopen (pipe_communication[0], "r");
 
   memset (&layout, 0, sizeof (layout));
 
   /* Process the ckbcomp output and prepare the layouts.  */
   ok = 0;
-  while (fgets (line, sizeof (line), fp_pipe))
+  while (fgets (line, sizeof (line), in))
     {
       if (strncmp (line, "keycode", sizeof ("keycode") - 1) == 0)
 	{
@@ -358,14 +313,16 @@ write_keymaps (char *argv[], int argc, char *file_basename)
 
   add_special_keys (&layout);
 
-  write_file (file_basename, &layout);
+  write_file (out, &layout);
 }
 
 int
 main (int argc, char *argv[])
 {
   int verbosity;
-  char *file_basename = NULL;
+  char *infile_name = NULL;
+  char *outfile_name = NULL;
+  FILE *in, *out;
 
   set_program_name (argv[0]);
 
@@ -374,7 +331,7 @@ main (int argc, char *argv[])
   /* Check for options.  */
   while (1)
     {
-      int c = getopt_long (argc, argv, "o:hVv", options, 0);
+      int c = getopt_long (argc, argv, "o:i:hVv", options, 0);
 
       if (c == -1)
 	break;
@@ -385,8 +342,12 @@ main (int argc, char *argv[])
 	    usage (0);
 	    break;
 
+	  case 'i':
+	    infile_name = optarg;
+	    break;
+
 	  case 'o':
-	    file_basename = optarg;
+	    outfile_name = optarg;
 	    break;
 
 	  case 'V':
@@ -404,21 +365,33 @@ main (int argc, char *argv[])
 	  }
     }
 
-  /* Obtain LAYOUT.  */
-  if (optind >= argc)
+  if (infile_name)
+    in = fopen (infile_name, "r");
+  else
+    in = stdin;
+
+  if (!in)
+    grub_util_error ("Couldn't open input file: %s\n", strerror (errno));
+
+  if (outfile_name)
+    out = fopen (outfile_name, "r");
+  else
+    out = stdout;
+
+  if (!out)
     {
-      fprintf (stderr, "No layout is specified.\n");
-      usage (1);
+      if (in != stdin)
+	fclose (in);
+      grub_util_error ("Couldn't open input file: %s\n", strerror (errno));
     }
 
-  if (file_basename == NULL)
-    {
-      file_basename = xasprintf ("%s.gkb", argv[optind]);
-      write_keymaps (argv + optind, argc - optind, file_basename);
-      free (file_basename);
-    }
-  else
-    write_keymaps (argv + optind, argc - optind, file_basename);
+  write_keymaps (in, out);
+
+  if (in != stdin)
+    fclose (in);
+
+  if (out != stdout)
+    fclose (out);
 
   return 0;
 }
