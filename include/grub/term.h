@@ -110,9 +110,15 @@ grub_term_color_state;
 
 
 /* Bitmasks for modifier keys returned by grub_getkeystatus.  */
-#define GRUB_TERM_STATUS_SHIFT	(1 << 0)
-#define GRUB_TERM_STATUS_CTRL	(1 << 1)
-#define GRUB_TERM_STATUS_ALT	(1 << 2)
+#define GRUB_TERM_STATUS_RSHIFT	(1 << 0)
+#define GRUB_TERM_STATUS_LSHIFT	(1 << 1)
+#define GRUB_TERM_STATUS_RCTRL	(1 << 2)
+#define GRUB_TERM_STATUS_RALT	(1 << 3)
+#define GRUB_TERM_STATUS_SCROLL	(1 << 4)
+#define GRUB_TERM_STATUS_NUM	(1 << 5)
+#define GRUB_TERM_STATUS_CAPS	(1 << 6)
+#define GRUB_TERM_STATUS_LCTRL	(1 << 8)
+#define GRUB_TERM_STATUS_LALT	(1 << 9)
 
 /* Menu-related geometrical constants.  */
 

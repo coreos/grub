@@ -56,11 +56,11 @@ grub_cmd_keystatus (grub_extcmd_t cmd,
   int mods;
 
   if (state[0].set)
-    expect_mods |= GRUB_TERM_STATUS_SHIFT;
+    expect_mods |= (GRUB_TERM_STATUS_LSHIFT | GRUB_TERM_STATUS_RSHIFT);
   if (state[1].set)
-    expect_mods |= GRUB_TERM_STATUS_CTRL;
+    expect_mods |= (GRUB_TERM_STATUS_LCTRL | GRUB_TERM_STATUS_RCTRL);
   if (state[2].set)
-    expect_mods |= GRUB_TERM_STATUS_ALT;
+    expect_mods |= (GRUB_TERM_STATUS_LALT | GRUB_TERM_STATUS_RALT);
 
   grub_dprintf ("keystatus", "expect_mods: %d\n", expect_mods);
 

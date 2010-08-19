@@ -28,6 +28,115 @@
 #include <grub/gzio.h>
 #include <grub/i18n.h>
 
+static struct grub_keyboard_layout layout_us = {
+  .at = {
+    .keyboard_map = {
+      /* 0x00 */ '\0', GRUB_TERM_ESC, '1', '2', '3', '4', '5', '6',
+      /* 0x08 */ '7', '8', '9', '0', 
+      /* 0x0c */ '-', '=', GRUB_TERM_BACKSPACE, GRUB_TERM_TAB,
+      /* 0x10 */ 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i',
+      /* 0x18 */ 'o', 'p', '[', ']', '\n', '\0', 'a', 's',
+      /* 0x20 */ 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
+      /* 0x28 */ '\'', '`', '\0', '\\', 'z', 'x', 'c', 'v',
+      /* 0x30 */ 'b', 'n', 'm', ',', '.', '/', '\0', '*',
+      /* 0x38 */ '\0', ' ', '\0', GRUB_TERM_KEY_F1,
+      /* 0x3c */ GRUB_TERM_KEY_F2, GRUB_TERM_KEY_F3,
+      /* 0x3e */ GRUB_TERM_KEY_F4, GRUB_TERM_KEY_F5,
+      /* 0x40 */ GRUB_TERM_KEY_F6, GRUB_TERM_KEY_F7,
+      /* 0x42 */ GRUB_TERM_KEY_F8, GRUB_TERM_KEY_F9,
+      /* 0x44 */ GRUB_TERM_KEY_F10, '\0', '\0', GRUB_TERM_KEY_HOME,
+      /* 0x48 */ GRUB_TERM_KEY_UP, GRUB_TERM_KEY_NPAGE, '-', GRUB_TERM_KEY_LEFT,
+      /* 0x4c */ GRUB_TERM_KEY_CENTER, GRUB_TERM_KEY_RIGHT,
+      /* 0x4e */ '+', GRUB_TERM_KEY_END,
+      /* 0x50 */ GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_PPAGE,
+      /* 0x52 */ GRUB_TERM_KEY_INSERT, GRUB_TERM_KEY_DC,
+      /* 0x54 */ '\0', '\0', '\\', GRUB_TERM_KEY_F11,
+      /* 0x58 */ GRUB_TERM_KEY_F12, '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+      /* 0x60 */ '\0', '\0', '\0', '\0', 
+      /* 0x64 */ '\0', GRUB_TERM_KEY_UP, GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_LEFT,
+      /* 0x68 */ GRUB_TERM_KEY_RIGHT
+    },
+    .keyboard_map_shift = {
+      '\0', '\0', '!', '@', '#', '$', '%', '^',
+      '&', '*', '(', ')', '_', '+', '\0', '\0',
+      'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I',
+      'O', 'P', '{', '}', '\n', '\0', 'A', 'S',
+      'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
+      '\"', '~', '\0', '|', 'Z', 'X', 'C', 'V',
+      'B', 'N', 'M', '<', '>', '?',
+      [0x56] = '|'
+    }
+  }
+};
+
+static struct grub_keyboard_layout *grub_current_layout = &layout_us;
+
+static int
+map_key_core (int code, int status, int *alt_gr_consumed)
+{
+  *alt_gr_consumed = 0;
+
+  if (status & GRUB_TERM_STATUS_RALT)
+    {
+      if (status & (GRUB_TERM_STATUS_LSHIFT | GRUB_TERM_STATUS_RSHIFT))
+	{
+	  if (grub_current_layout->at.keyboard_map_shift_l3[code])
+	    {
+	      *alt_gr_consumed = 1;
+	      return grub_current_layout->at.keyboard_map_shift_l3[code];
+	    }
+	  else if (grub_current_layout->at.keyboard_map_shift[code])
+	    {
+	      *alt_gr_consumed = 1;
+	      return grub_current_layout->at.keyboard_map_l3[code]
+		| GRUB_TERM_SHIFT;  
+	    }
+	}
+      else if (grub_current_layout->at.keyboard_map_shift[code])
+	{
+	  *alt_gr_consumed = 1;
+	  return grub_current_layout->at.keyboard_map_l3[code];  
+	}
+    }
+  if (status & (GRUB_TERM_STATUS_LSHIFT | GRUB_TERM_STATUS_RSHIFT))
+    {
+      if (grub_current_layout->at.keyboard_map_shift[code])
+	return grub_current_layout->at.keyboard_map_shift[code];
+      else
+	return grub_current_layout->at.keyboard_map[code] | GRUB_TERM_SHIFT;
+    }
+  else
+    return grub_current_layout->at.keyboard_map[code];
+}
+
+unsigned
+grub_term_map_key (int code, int status)
+{
+  int alt_gr_consumed;
+  int key;
+
+  key = map_key_core (code, status, &alt_gr_consumed);
+  
+  if (key == 0 || key == GRUB_TERM_SHIFT)
+    grub_dprintf ("atkeyb", "Unknown key 0x%x detected\n", code);
+  
+  if (status & GRUB_TERM_STATUS_CAPS)
+    {
+      if ((key >= 'a') && (key <= 'z'))
+	key += 'A' - 'a';
+      else if ((key >= 'A') && (key <= 'Z'))
+	key += 'a' - 'A';
+    }
+  
+  if ((status & GRUB_TERM_STATUS_LALT) || 
+      ((status & GRUB_TERM_STATUS_RALT) && !alt_gr_consumed))
+    key |= GRUB_TERM_ALT;
+  if (status & (GRUB_TERM_STATUS_LCTRL | GRUB_TERM_STATUS_RCTRL))
+    key |= GRUB_TERM_CTRL;
+
+  return key;
+}
+
 static grub_err_t
 grub_cmd_keymap (struct grub_command *cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
@@ -110,6 +219,23 @@ grub_cmd_keymap (struct grub_command *cmd __attribute__ ((unused)),
     newmap->at.keyboard_map_shift_l3[i]
       = grub_le_to_cpu32(newmap->at.keyboard_map_shift_l3[i]);
 
+  for (i = 0; i < ARRAY_SIZE (newmap->usb.keyboard_map); i++)
+    newmap->usb.keyboard_map[i] = grub_le_to_cpu32(newmap->usb.keyboard_map[i]);
+
+  for (i = 0; i < ARRAY_SIZE (newmap->usb.keyboard_map_shift); i++)
+    newmap->usb.keyboard_map_shift[i]
+      = grub_le_to_cpu32(newmap->usb.keyboard_map_shift[i]);
+
+  for (i = 0; i < ARRAY_SIZE (newmap->usb.keyboard_map_l3); i++)
+    newmap->usb.keyboard_map_l3[i]
+      = grub_le_to_cpu32(newmap->usb.keyboard_map_l3[i]);
+
+  for (i = 0; i < ARRAY_SIZE (newmap->usb.keyboard_map_shift_l3); i++)
+    newmap->usb.keyboard_map_shift_l3[i]
+      = grub_le_to_cpu32(newmap->usb.keyboard_map_shift_l3[i]);
+
+  grub_current_layout = newmap;
+
   return GRUB_ERR_NONE;
 
  fail:
@@ -131,6 +257,5 @@ GRUB_MOD_INIT(keylayouts)
 
 GRUB_MOD_FINI(keylayouts)
 {
-  grub_current_layout = NULL;
   grub_unregister_command (cmd);
 }

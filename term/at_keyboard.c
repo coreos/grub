@@ -22,63 +22,17 @@
 #include <grub/cpu/io.h>
 #include <grub/misc.h>
 #include <grub/term.h>
+#include <grub/keyboard_layouts.h>
 
 static short at_keyboard_status = 0;
+static int extended_pending = 0;
 static int pending_key = -1;
-
-#define KEYBOARD_STATUS_SHIFT_L		(1 << 0)
-#define KEYBOARD_STATUS_SHIFT_R		(1 << 1)
-#define KEYBOARD_STATUS_ALT_L		(1 << 2)
-#define KEYBOARD_STATUS_ALT_R		(1 << 3)
-#define KEYBOARD_STATUS_CTRL_L		(1 << 4)
-#define KEYBOARD_STATUS_CTRL_R		(1 << 5)
-#define KEYBOARD_STATUS_CAPS_LOCK	(1 << 6)
-#define KEYBOARD_STATUS_NUM_LOCK	(1 << 7)
-#define KEYBOARD_STATUS_EXTENDED	(1 << 8)
 
 static grub_uint8_t led_status;
 
 #define KEYBOARD_LED_SCROLL		(1 << 0)
 #define KEYBOARD_LED_NUM		(1 << 1)
 #define KEYBOARD_LED_CAPS		(1 << 2)
-
-static const unsigned keyboard_map[128] =
-{
-  /* 0x00 */ '\0', GRUB_TERM_ESC, '1', '2', '3', '4', '5', '6',
-  /* 0x08 */ '7', '8', '9', '0', '-', '=', GRUB_TERM_BACKSPACE, GRUB_TERM_TAB,
-  /* 0x10 */ 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i',
-  /* 0x18 */ 'o', 'p', '[', ']', '\n', '\0', 'a', 's',
-  /* 0x20 */ 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
-  /* 0x28 */ '\'', '`', '\0', '\\', 'z', 'x', 'c', 'v',
-  /* 0x30 */ 'b', 'n', 'm', ',', '.', '/', '\0', '*',
-  /* 0x38 */ '\0', ' ', '\0', GRUB_TERM_KEY_F1,
-  /* 0x3c */ GRUB_TERM_KEY_F2, GRUB_TERM_KEY_F3,
-  /* 0x3e */ GRUB_TERM_KEY_F4, GRUB_TERM_KEY_F5,
-  /* 0x40 */ GRUB_TERM_KEY_F6, GRUB_TERM_KEY_F7,
-  /* 0x42 */ GRUB_TERM_KEY_F8, GRUB_TERM_KEY_F9,
-  /* 0x44 */ GRUB_TERM_KEY_F10, '\0', '\0', GRUB_TERM_KEY_HOME,
-  /* 0x48 */ GRUB_TERM_KEY_UP, GRUB_TERM_KEY_NPAGE, '-', GRUB_TERM_KEY_LEFT,
-  /* 0x4c */ GRUB_TERM_KEY_CENTER, GRUB_TERM_KEY_RIGHT, '+', GRUB_TERM_KEY_END,
-  /* 0x50 */ GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_PPAGE,
-  /* 0x52 */ GRUB_TERM_KEY_INSERT, GRUB_TERM_KEY_DC,
-  /* 0x54 */ '\0', '\0', '\\', GRUB_TERM_KEY_F11,
-  /* 0x58 */ GRUB_TERM_KEY_F12, '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-  /* 0x60 */ '\0', '\0', '\0', '\0', 
-  /* 0x64 */ '\0', GRUB_TERM_KEY_UP, GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_LEFT,
-  /* 0x68 */ GRUB_TERM_KEY_RIGHT
-};
-
-static unsigned keyboard_map_shift[128] =
-{
-  '\0', '\0', '!', '@', '#', '$', '%', '^',
-  '&', '*', '(', ')', '_', '+', '\0', '\0',
-  'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I',
-  'O', 'P', '{', '}', '\n', '\0', 'A', 'S',
-  'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
-  '\"', '~', '\0', '|', 'Z', 'X', 'C', 'V',
-  'B', 'N', 'M', '<', '>', '?',
-  [0x56] = '|'
-};
 
 static grub_uint8_t grub_keyboard_controller_orig;
 
@@ -122,45 +76,41 @@ grub_keyboard_isr (grub_uint8_t key)
     switch (KEYBOARD_SCANCODE (key))
       {
 	case SHIFT_L:
-	  at_keyboard_status |= KEYBOARD_STATUS_SHIFT_L;
+	  at_keyboard_status |= GRUB_TERM_STATUS_LSHIFT;
 	  break;
 	case SHIFT_R:
-	  at_keyboard_status |= KEYBOARD_STATUS_SHIFT_R;
+	  at_keyboard_status |= GRUB_TERM_STATUS_RSHIFT;
 	  break;
 	case CTRL:
-	  at_keyboard_status |= KEYBOARD_STATUS_CTRL_L;
+	  at_keyboard_status |= GRUB_TERM_STATUS_LCTRL;
 	  break;
 	case ALT:
-	  if (at_keyboard_status & KEYBOARD_STATUS_EXTENDED)
-	    at_keyboard_status |= KEYBOARD_STATUS_ALT_R;
+	  if (extended_pending)
+	    at_keyboard_status |= GRUB_TERM_STATUS_RALT;
 	  else
-	    at_keyboard_status |= KEYBOARD_STATUS_ALT_L;
+	    at_keyboard_status |= GRUB_TERM_STATUS_LALT;
 	  break;
       }
   else
     switch (KEYBOARD_SCANCODE (key))
       {
 	case SHIFT_L:
-	  at_keyboard_status &= ~KEYBOARD_STATUS_SHIFT_L;
+	  at_keyboard_status &= ~GRUB_TERM_STATUS_LSHIFT;
 	  break;
 	case SHIFT_R:
-	  at_keyboard_status &= ~KEYBOARD_STATUS_SHIFT_R;
+	  at_keyboard_status &= ~GRUB_TERM_STATUS_RSHIFT;
 	  break;
 	case CTRL:
-	  at_keyboard_status &= ~KEYBOARD_STATUS_CTRL_L;
+	  at_keyboard_status &= ~GRUB_TERM_STATUS_LCTRL;
 	  break;
 	case ALT:
-	  if (at_keyboard_status & KEYBOARD_STATUS_EXTENDED)
-	    at_keyboard_status &= ~KEYBOARD_STATUS_ALT_R;
+	  if (extended_pending)
+	    at_keyboard_status &= ~GRUB_TERM_STATUS_RALT;
 	  else
-	    at_keyboard_status &= ~KEYBOARD_STATUS_ALT_L;
+	    at_keyboard_status &= ~GRUB_TERM_STATUS_LALT;
 	  break;
       }
-  if (key == 0xe0)
-    at_keyboard_status |= KEYBOARD_STATUS_EXTENDED;
-  else
-    at_keyboard_status &= ~KEYBOARD_STATUS_EXTENDED;
-
+  extended_pending = (key == 0xe0);
 }
 
 /* If there is a raw key pending, return it; otherwise return -1.  */
@@ -177,11 +127,12 @@ grub_keyboard_getkey (void)
   return (KEYBOARD_SCANCODE (key));
 }
 
+
 /* If there is a character pending, return it; otherwise return -1.  */
 static int
 grub_at_keyboard_getkey_noblock (void)
 {
-  int code, key;
+  int code;
   code = grub_keyboard_getkey ();
   if (code == -1)
     return -1;
@@ -194,66 +145,34 @@ grub_at_keyboard_getkey_noblock (void)
 	/* Caps lock sends scan code twice.  Get the second one and discard it.  */
 	while (grub_keyboard_getkey () == -1);
 
-	at_keyboard_status ^= KEYBOARD_STATUS_CAPS_LOCK;
+	at_keyboard_status ^= GRUB_TERM_STATUS_CAPS;
 	led_status ^= KEYBOARD_LED_CAPS;
 	keyboard_controller_led (led_status);
 
 #ifdef DEBUG_AT_KEYBOARD
 	grub_dprintf ("atkeyb", "caps_lock = %d\n", !!(at_keyboard_status & KEYBOARD_STATUS_CAPS_LOCK));
 #endif
-	key = -1;
-	break;
+	return -1;
       case NUM_LOCK:
 	/* Num lock sends scan code twice.  Get the second one and discard it.  */
 	while (grub_keyboard_getkey () == -1);
 
-	at_keyboard_status ^= KEYBOARD_STATUS_NUM_LOCK;
+	at_keyboard_status ^= GRUB_TERM_STATUS_NUM;
 	led_status ^= KEYBOARD_LED_NUM;
 	keyboard_controller_led (led_status);
 
 #ifdef DEBUG_AT_KEYBOARD
 	grub_dprintf ("atkeyb", "num_lock = %d\n", !!(at_keyboard_status & KEYBOARD_STATUS_NUM_LOCK));
 #endif
-	key = -1;
-	break;
+	return -1;
       case SCROLL_LOCK:
-	/* For scroll lock we don't keep track of status.  Only update its led.  */
+	at_keyboard_status ^= GRUB_TERM_STATUS_SCROLL;
 	led_status ^= KEYBOARD_LED_SCROLL;
 	keyboard_controller_led (led_status);
-	key = -1;
-	break;
+	return -1;
       default:
-	if (at_keyboard_status & (KEYBOARD_STATUS_SHIFT_L
-				  | KEYBOARD_STATUS_SHIFT_R))
-	  {
-	    if (keyboard_map_shift[code])
-	      key = keyboard_map_shift[code];
-	    else
-	      key = keyboard_map[code] | GRUB_TERM_SHIFT;
-	  }
-	else
-	  key = keyboard_map[code];
-
-	if (key == 0)
-	  grub_dprintf ("atkeyb", "Unknown key 0x%x detected\n", code);
-
-	if (at_keyboard_status & KEYBOARD_STATUS_CAPS_LOCK)
-	  {
-	    if ((key >= 'a') && (key <= 'z'))
-	      key += 'A' - 'a';
-	    else if ((key >= 'A') && (key <= 'Z'))
-	      key += 'a' - 'A';
-	  }
-
-	if (at_keyboard_status & KEYBOARD_STATUS_ALT_L)
-	  key |= GRUB_TERM_ALT;
-	if (at_keyboard_status & KEYBOARD_STATUS_ALT_R)
-	  key |= GRUB_TERM_ALT;
-	if (at_keyboard_status & (KEYBOARD_STATUS_CTRL_L
-				  | KEYBOARD_STATUS_CTRL_R))
-	  key |= GRUB_TERM_CTRL;
+	return grub_term_map_key (code, at_keyboard_status);
     }
-  return key;
 }
 
 static int

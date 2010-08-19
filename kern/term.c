@@ -22,13 +22,11 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/time.h>
-#include <grub/keyboard_layouts.h>
 
 struct grub_term_output *grub_term_outputs_disabled;
 struct grub_term_input *grub_term_inputs_disabled;
 struct grub_term_output *grub_term_outputs;
 struct grub_term_input *grub_term_inputs;
-struct grub_keyboard_layout *grub_current_layout;
 
 /* Put a Unicode character.  */
 static void

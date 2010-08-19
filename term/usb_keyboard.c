@@ -163,7 +163,7 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term __attribute__ ((unused)
 
   /* Check if the Shift key was pressed.  */
   if (data[0] & GRUB_USB_KEYBOARD_LEFT_SHIFT
-       || data[0] & GRUB_USB_KEYBOARD_RIGHT_SHIFT)
+      || data[0] & GRUB_USB_KEYBOARD_RIGHT_SHIFT)
     {
       if (keyboard_map_shift[data[2]])
 	key = keyboard_map_shift[data[2]];
@@ -323,12 +323,18 @@ grub_usb_keyboard_getkeystatus (struct grub_term_input *term __attribute__ ((unu
 		data[4], data[5], data[6], data[7]);
 
   /* Check Shift, Control, and Alt status.  */
-  if (data[0] & 0x02 || data[0] & 0x20)
-    mods |= GRUB_TERM_STATUS_SHIFT;
-  if (data[0] & 0x01 || data[0] & 0x10)
-    mods |= GRUB_TERM_STATUS_CTRL;
-  if (data[0] & 0x04 || data[0] & 0x40)
-    mods |= GRUB_TERM_STATUS_ALT;
+  if (data[0] & GRUB_USB_KEYBOARD_LEFT_SHIFT)
+    mods |= GRUB_TERM_STATUS_LSHIFT;
+  if (data[0] & GRUB_USB_KEYBOARD_RIGHT_SHIFT)
+    mods |= GRUB_TERM_STATUS_RSHIFT;
+  if (data[0] & GRUB_USB_KEYBOARD_LEFT_CTRL)
+    mods |= GRUB_TERM_STATUS_LCTRL;
+  if (data[0] & GRUB_USB_KEYBOARD_RIGHT_CTRL)
+    mods |= GRUB_TERM_STATUS_RCTRL;
+  if (data[0] & GRUB_USB_KEYBOARD_LEFT_ALT)
+    mods |= GRUB_TERM_STATUS_LALT;
+  if (data[0] & GRUB_USB_KEYBOARD_RIGHT_ALT)
+    mods |= GRUB_TERM_STATUS_RALT;
 
   grub_errno = GRUB_ERR_NONE;
 
