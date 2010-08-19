@@ -1,3 +1,7 @@
+2010-08-19  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/i386/pc/sendkey.c (options): Fix three typos.
+
 2010-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Implement sendkey support.

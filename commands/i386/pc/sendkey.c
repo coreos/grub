@@ -44,11 +44,11 @@ static const struct grub_arg_option options[] =
     {"numkey", 0, 0, "press NumLock key", "[keep|on|off]", ARG_TYPE_STRING},
     {"capskey", 0, 0, "press CapsLock key", "[keep|on|off]", ARG_TYPE_STRING},
     {"scrollkey", 0, 0, "press ScrollLock key", "[keep|on|off]", ARG_TYPE_STRING},
-    {"inserkey", 0, 0, "press Insert key", "[keep|on|off]", ARG_TYPE_STRING},
+    {"insertkey", 0, 0, "press Insert key", "[keep|on|off]", ARG_TYPE_STRING},
     {"left-alt", 0, 0, "press left alt", "[keep|on|off]", ARG_TYPE_STRING},
-    {"right-alt", 0, 0, "press rightt alt", "[keep|on|off]", ARG_TYPE_STRING},
+    {"right-alt", 0, 0, "press right alt", "[keep|on|off]", ARG_TYPE_STRING},
     {"left-ctrl", 0, 0, "press left ctrl", "[keep|on|off]", ARG_TYPE_STRING},
-    {"right-ctrl", 0, 0, "press rightt ctrl", "[keep|on|off]", ARG_TYPE_STRING},
+    {"right-ctrl", 0, 0, "press right ctrl", "[keep|on|off]", ARG_TYPE_STRING},
     {"no-led", 0, 0, "don't update LED state", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
