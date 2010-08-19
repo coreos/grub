@@ -115,7 +115,8 @@ get_grub_code (char *layout_code)
 }
 
 void
-write_file (char* filename, grub_uint32_t *keyboard_map)
+write_file (char* filename, grub_uint32_t *keyboard_map,
+	    grub_uint32_t *keyboard_map_alt)
 {
   FILE *fp_output;
   grub_uint32_t version;
@@ -125,6 +126,9 @@ write_file (char* filename, grub_uint32_t *keyboard_map)
   
   for (i = 0; i < GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE; i++)
     keyboard_map[i] = grub_cpu_to_le32 (keyboard_map[i]);
+
+  for (i = 0; i < GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE; i++)
+    keyboard_map_alt[i] = grub_cpu_to_le32 (keyboard_map_alt[i]);
 
   fp_output = fopen (filename, "w");
   
@@ -139,6 +143,8 @@ write_file (char* filename, grub_uint32_t *keyboard_map)
   fwrite (&version, sizeof (version), 1, fp_output);
   fwrite (keyboard_map, sizeof (keyboard_map[0]),
 	  GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE, fp_output);
+  fwrite (keyboard_map_alt, sizeof (keyboard_map_alt[0]),
+	  GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE, fp_output);
   fclose (fp_output);
 }
 
@@ -146,6 +152,7 @@ void
 write_keymaps (char *keymap, char *file_basename)
 {
   grub_uint32_t keyboard_map[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
+  grub_uint32_t keyboard_map_alt[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
 
   char line[2048];
   pid_t pid;
@@ -189,11 +196,17 @@ write_keymaps (char *keymap, char *file_basename)
 	  unsigned keycode;
 	  char normal[64];
 	  char shift[64];
-	  sscanf (line, "keycode %u = %60s %60s", &keycode, normal, shift);
+	  char normalalt[64];
+	  char shiftalt[64];
+
+	  sscanf (line, "keycode %u = %60s %60s %60s %60s", &keycode,
+		  normal, shift, normalalt, shiftalt);
 	  if (keycode < ARRAY_SIZE (us_keyboard_map)
 	      && us_keyboard_map[keycode] < ARRAY_SIZE (keyboard_map))
 	    {
 	      keyboard_map[us_keyboard_map[keycode]] = get_grub_code (normal);
+	      keyboard_map_alt[us_keyboard_map[keycode]]
+		= get_grub_code (normalalt);
 	      ok = 1;
 	    }
 	  if (keycode < ARRAY_SIZE (us_keyboard_map_shifted)
@@ -201,6 +214,8 @@ write_keymaps (char *keymap, char *file_basename)
 	    {
 	      keyboard_map[us_keyboard_map_shifted[keycode]]
 		= get_grub_code (shift);
+	      keyboard_map_alt[us_keyboard_map_shifted[keycode]]
+		= get_grub_code (shiftalt);
 	      ok = 1;
 	    }
 	}
@@ -213,7 +228,7 @@ write_keymaps (char *keymap, char *file_basename)
       exit (1);
     }
 
-  write_file (file_basename, keyboard_map);
+  write_file (file_basename, keyboard_map, keyboard_map_alt);
 }
 
 int

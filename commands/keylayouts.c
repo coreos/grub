@@ -73,6 +73,18 @@ get_abstract_code (grub_term_input_t term, int in)
 	if (((in & 0xff) == 0) && keyboard_map[(in & 0xff00) >> 8] >= 'a'
 	    && keyboard_map[(in & 0xff00) >> 8] <= 'z')
 	  return keyboard_map[(in & 0xff00) >> 8] | flags | GRUB_TERM_ALT_GR;
+	if ((in & 0xff) == 0 && (in & 0xff00) >= 0x7800
+	    && (in & 0xff00) <= 0x8000)
+	  return (((in & 0xff00) >> 8) - 0x78 + '1') | flags | GRUB_TERM_ALT_GR;
+
+	if ((in & 0xff00) == 0x8100)
+	  return '0' | flags | GRUB_TERM_ALT_GR;
+
+	if ((in & 0xffff) == 0x8200)
+	  return '-' | flags | GRUB_TERM_ALT_GR;
+
+	if ((in & 0xffff) == 0x8300)
+	  return '+' | flags | GRUB_TERM_ALT_GR;
 
 	if ((in & 0xff) == 0)
 	  return keyboard_map[(in & 0xff00) >> 8] | flags;
@@ -83,34 +95,25 @@ get_abstract_code (grub_term_input_t term, int in)
 }
 
 static grub_uint32_t mapping[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
-
-static unsigned
-clear_internal_flags (unsigned in)
-{
-  if (in & GRUB_TERM_ALT_GR)
-    in = (in & ~GRUB_TERM_ALT_GR) | GRUB_TERM_ALT;
-  return in & ~GRUB_TERM_CAPS & ~GRUB_TERM_KEYPAD;
-}
+static grub_uint32_t mapping_alt[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
 
 static unsigned
 map (grub_term_input_t term __attribute__ ((unused)), unsigned in)
 {
   if (in & GRUB_TERM_KEYPAD)
-    return clear_internal_flags (in);
-
-  /* AltGr isn't supported yet.  */
-  if (in & GRUB_TERM_ALT_GR)
-    in = (in & ~GRUB_TERM_ALT_GR) | GRUB_TERM_ALT;
+    return in;
 
   if ((in & GRUB_TERM_EXTENDED) || (in & GRUB_TERM_KEY_MASK) == '\b'
       || (in & GRUB_TERM_KEY_MASK) == '\n' || (in & GRUB_TERM_KEY_MASK) == ' '
       || (in & GRUB_TERM_KEY_MASK) == '\t' || (in & GRUB_TERM_KEY_MASK) == '\e'
       || (in & GRUB_TERM_KEY_MASK) == '\r' 
       || (in & GRUB_TERM_KEY_MASK) >= ARRAY_SIZE (mapping))
-    return clear_internal_flags (in);
+    return in;
 
-  return mapping[in & GRUB_TERM_KEY_MASK]
-    | clear_internal_flags (in & ~GRUB_TERM_KEY_MASK);
+  if ((in & GRUB_TERM_ALT_GR) && mapping_alt[in & GRUB_TERM_KEY_MASK])
+    return mapping_alt[in & GRUB_TERM_KEY_MASK] | (in & ~GRUB_TERM_KEY_MASK & ~GRUB_TERM_ALT_GR);
+
+  return mapping[in & GRUB_TERM_KEY_MASK] | (in & ~GRUB_TERM_KEY_MASK);
 }
 
 static int
@@ -118,6 +121,9 @@ translate (grub_term_input_t term, int in)
 {
   int code, flags;
   code = get_abstract_code (term, in);
+
+  flags = code & ~(GRUB_TERM_KEY_MASK | GRUB_TERM_ALT_GR | GRUB_TERM_KEYPAD | GRUB_TERM_CAPS);
+
   if ((code & GRUB_TERM_CAPS) && (code & GRUB_TERM_KEY_MASK) >= 'a'
       && (code & GRUB_TERM_KEY_MASK) <= 'z')
     code = (code & GRUB_TERM_KEY_MASK) + 'A' - 'a';
@@ -125,7 +131,6 @@ translate (grub_term_input_t term, int in)
 	   && (code & GRUB_TERM_KEY_MASK) <= 'Z')
     code = (code & GRUB_TERM_KEY_MASK) + 'a' - 'A';    
 
-  flags = code & ~(GRUB_TERM_KEY_MASK | GRUB_TERM_ALT_GR | GRUB_TERM_KEYPAD);
   code &= (GRUB_TERM_KEY_MASK | GRUB_TERM_ALT_GR | GRUB_TERM_KEYPAD);
   code = map (term, code);
   /* Transform unconsumed AltGr into Alt.  */
@@ -134,6 +139,8 @@ translate (grub_term_input_t term, int in)
       flags |= GRUB_TERM_ALT;
       code &= ~GRUB_TERM_ALT_GR;
     }
+  code &= ~GRUB_TERM_KEYPAD;
+
   if ((flags & GRUB_TERM_CAPS) && code >= 'a' && code <= 'z')
     code += 'A' - 'a';
   else if ((flags & GRUB_TERM_CAPS) && code >= 'A'
@@ -186,6 +193,7 @@ grub_cmd_keymap (struct grub_command *cmd __attribute__ ((unused)),
   grub_uint32_t version;
   grub_uint8_t magic[GRUB_KEYBOARD_LAYOUTS_FILEMAGIC_SIZE];
   grub_uint32_t newmapping[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
+  grub_uint32_t newmapping_alt[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
   unsigned i;
 
   if (argc < 1)
@@ -241,8 +249,19 @@ grub_cmd_keymap (struct grub_command *cmd __attribute__ ((unused)),
       goto fail;
     }
 
+  if (grub_file_read (file, newmapping_alt, sizeof (newmapping_alt))
+      != sizeof (newmapping_alt))
+    {
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_ARGUMENT, "file is too short");
+      goto fail;
+    }
+
   for (i = 0; i < ARRAY_SIZE (mapping); i++)
     mapping[i] = grub_le_to_cpu32(newmapping[i]);
+
+  for (i = 0; i < ARRAY_SIZE (mapping_alt); i++)
+    mapping_alt[i] = grub_le_to_cpu32(newmapping_alt[i]);
 
   return GRUB_ERR_NONE;
 
@@ -263,6 +282,7 @@ GRUB_MOD_INIT(keylayouts)
   unsigned i;
   for (i = 0; i < ARRAY_SIZE (mapping); i++)
     mapping[i] = i;
+  grub_memset (mapping_alt, 0, sizeof (mapping_alt));
   mapping[GRUB_TERM_KEY_102] = '\\';
   mapping[GRUB_TERM_KEY_SHIFT_102] = '|';
 

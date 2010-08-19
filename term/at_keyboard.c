@@ -34,6 +34,7 @@ static int pending_key = -1;
 #define KEYBOARD_STATUS_CTRL_R		(1 << 5)
 #define KEYBOARD_STATUS_CAPS_LOCK	(1 << 6)
 #define KEYBOARD_STATUS_NUM_LOCK	(1 << 7)
+#define KEYBOARD_STATUS_EXTENDED	(1 << 8)
 
 static grub_uint8_t led_status;
 
@@ -80,12 +81,10 @@ keyboard_controller_led (grub_uint8_t leds)
 /* FIXME: This should become an interrupt service routine.  For now
    it's just used to catch events from control keys.  */
 static void
-grub_keyboard_isr (char key)
+grub_keyboard_isr (grub_uint8_t key)
 {
-  char is_make = KEYBOARD_ISMAKE (key);
-  key = KEYBOARD_SCANCODE (key);
-  if (is_make)
-    switch (key)
+  if (KEYBOARD_ISMAKE (key))
+    switch (KEYBOARD_SCANCODE (key))
       {
 	case SHIFT_L:
 	  at_keyboard_status |= KEYBOARD_STATUS_SHIFT_L;
@@ -97,14 +96,14 @@ grub_keyboard_isr (char key)
 	  at_keyboard_status |= KEYBOARD_STATUS_CTRL_L;
 	  break;
 	case ALT:
-	  at_keyboard_status |= KEYBOARD_STATUS_ALT_L;
+	  if (at_keyboard_status & KEYBOARD_STATUS_EXTENDED)
+	    at_keyboard_status |= KEYBOARD_STATUS_ALT_R;
+	  else
+	    at_keyboard_status |= KEYBOARD_STATUS_ALT_L;
 	  break;
-	default:
-	  /* Skip grub_dprintf.  */
-	  return;
       }
   else
-    switch (key)
+    switch (KEYBOARD_SCANCODE (key))
       {
 	case SHIFT_L:
 	  at_keyboard_status &= ~KEYBOARD_STATUS_SHIFT_L;
@@ -116,15 +115,17 @@ grub_keyboard_isr (char key)
 	  at_keyboard_status &= ~KEYBOARD_STATUS_CTRL_L;
 	  break;
 	case ALT:
-	  at_keyboard_status &= ~KEYBOARD_STATUS_ALT_L;
+	  if (at_keyboard_status & KEYBOARD_STATUS_EXTENDED)
+	    at_keyboard_status &= ~KEYBOARD_STATUS_ALT_R;
+	  else
+	    at_keyboard_status &= ~KEYBOARD_STATUS_ALT_L;
 	  break;
-	default:
-	  /* Skip grub_dprintf.  */
-	  return;
       }
-#ifdef DEBUG_AT_KEYBOARD
-  grub_dprintf ("atkeyb", "Control key 0x%0x was %s\n", key, is_make ? "pressed" : "unpressed");
-#endif
+  if (key == 0xe0)
+    at_keyboard_status |= KEYBOARD_STATUS_EXTENDED;
+  else
+    at_keyboard_status &= ~KEYBOARD_STATUS_EXTENDED;
+
 }
 
 /* If there is a raw key pending, return it; otherwise return -1.  */
@@ -210,9 +211,15 @@ grub_at_keyboard_getkey_noblock (void)
 	  }
 
 	if (at_keyboard_status & KEYBOARD_STATUS_ALT_L)
-	  key |= GRUB_TERM_ALT;
+	  {
+	    key |= GRUB_TERM_ALT;
+	    grub_printf ("AltL");
+	  }
 	if (at_keyboard_status & KEYBOARD_STATUS_ALT_R)
-	  key |= GRUB_TERM_ALT_GR;
+	  {
+	    key |= GRUB_TERM_ALT_GR;
+	    grub_printf ("AltGr");
+	  }
 	if (at_keyboard_status & (KEYBOARD_STATUS_CTRL_L
 				  | KEYBOARD_STATUS_CTRL_R))
 	  key |= GRUB_TERM_CTRL;
