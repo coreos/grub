@@ -1,3 +1,14 @@
+2010-08-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/i386/pc/sendkey.c (options): Remove "keep" from all
+	status flag options; simply omitting the option is equivalent and
+	simpler.  Rename "wait" to "pause".  Rename "sysreq" to "sysrq".
+	(keysym_table): Rename "num5numlock" to "numlock".
+	(grub_cmd_sendkey): Reinitialise `andmask' and `ormask', so that we
+	can uniformly say that only the last of multiple `sendkey'
+	invocations has any effect.
+	* docs/grub.texi (sendkey): New section.
+
 2010-08-19  Colin Watson  <cjwatson@ubuntu.com>
 
 	* commands/i386/pc/sendkey.c (options): Fix three typos.

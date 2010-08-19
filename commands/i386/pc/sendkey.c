@@ -33,22 +33,22 @@ static int keylen = 0;
 static int noled = 0;
 static const struct grub_arg_option options[] =
   {
-    {"num", 'n', 0, "set numlock mode", "[keep|on|off]", ARG_TYPE_STRING},
-    {"caps", 'c', 0, "set capslock mode", "[keep|on|off]", ARG_TYPE_STRING},
-    {"scroll", 's', 0, "set scrolllock mode", "[keep|on|off]", ARG_TYPE_STRING},
-    {"insert", 0, 0, "set insert mode", "[keep|on|off]", ARG_TYPE_STRING},
-    {"wait", 0, 0, "set wait mode", "[keep|on|off]", ARG_TYPE_STRING},
-    {"left-shift", 0, 0, "press left shift", "[keep|on|off]", ARG_TYPE_STRING},
-    {"right-shift", 0, 0, "press right shift", "[keep|on|off]", ARG_TYPE_STRING},
-    {"sysreq", 0, 0, "press sysreq", "[keep|on|off]", ARG_TYPE_STRING},
-    {"numkey", 0, 0, "press NumLock key", "[keep|on|off]", ARG_TYPE_STRING},
-    {"capskey", 0, 0, "press CapsLock key", "[keep|on|off]", ARG_TYPE_STRING},
-    {"scrollkey", 0, 0, "press ScrollLock key", "[keep|on|off]", ARG_TYPE_STRING},
-    {"insertkey", 0, 0, "press Insert key", "[keep|on|off]", ARG_TYPE_STRING},
-    {"left-alt", 0, 0, "press left alt", "[keep|on|off]", ARG_TYPE_STRING},
-    {"right-alt", 0, 0, "press right alt", "[keep|on|off]", ARG_TYPE_STRING},
-    {"left-ctrl", 0, 0, "press left ctrl", "[keep|on|off]", ARG_TYPE_STRING},
-    {"right-ctrl", 0, 0, "press right ctrl", "[keep|on|off]", ARG_TYPE_STRING},
+    {"num", 'n', 0, "set numlock mode", "[on|off]", ARG_TYPE_STRING},
+    {"caps", 'c', 0, "set capslock mode", "[on|off]", ARG_TYPE_STRING},
+    {"scroll", 's', 0, "set scrolllock mode", "[on|off]", ARG_TYPE_STRING},
+    {"insert", 0, 0, "set insert mode", "[on|off]", ARG_TYPE_STRING},
+    {"pause", 0, 0, "set pause mode", "[on|off]", ARG_TYPE_STRING},
+    {"left-shift", 0, 0, "press left shift", "[on|off]", ARG_TYPE_STRING},
+    {"right-shift", 0, 0, "press right shift", "[on|off]", ARG_TYPE_STRING},
+    {"sysrq", 0, 0, "press SysRq", "[on|off]", ARG_TYPE_STRING},
+    {"numkey", 0, 0, "press NumLock key", "[on|off]", ARG_TYPE_STRING},
+    {"capskey", 0, 0, "press CapsLock key", "[on|off]", ARG_TYPE_STRING},
+    {"scrollkey", 0, 0, "press ScrollLock key", "[on|off]", ARG_TYPE_STRING},
+    {"insertkey", 0, 0, "press Insert key", "[on|off]", ARG_TYPE_STRING},
+    {"left-alt", 0, 0, "press left alt", "[on|off]", ARG_TYPE_STRING},
+    {"right-alt", 0, 0, "press right alt", "[on|off]", ARG_TYPE_STRING},
+    {"left-ctrl", 0, 0, "press left ctrl", "[on|off]", ARG_TYPE_STRING},
+    {"right-ctrl", 0, 0, "press right ctrl", "[on|off]", ARG_TYPE_STRING},
     {"no-led", 0, 0, "don't update LED state", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
@@ -144,7 +144,7 @@ static struct keysym keysym_table[] =
   {"num9",		"numpgup",		'9',	0,	0x49},
   {"numminus",		0,		'-',	0,	0x4a},
   {"num4",		"numleft",		'4',	0,	0x4b},
-  {"num5",		"num5numlock",		'5',	0,	0x4c},
+  {"num5",		"numlock",		'5',	0,	0x4c},
   {"num6",		"numright",		'6',	0,	0x4d},
   {"numplus",		0,		'-',	0,	0x4e},
   {"num1",		"numend",		'1',	0,	0x4f},
@@ -324,6 +324,9 @@ grub_cmd_sendkey (grub_extcmd_t cmd, int argc, char **args)
 
       return 0;
     }
+
+  andmask = 0xffffffff;
+  ormask = 0;
 
   {
     int i;
