@@ -187,10 +187,14 @@ grub_at_keyboard_getkey_noblock (void)
 	key = -1;
 	break;
       default:
-	if ((at_keyboard_status & (KEYBOARD_STATUS_SHIFT_L
-				   | KEYBOARD_STATUS_SHIFT_R))
-	    && keyboard_map_shift[code])
-	  key = keyboard_map_shift[code];
+	if (at_keyboard_status & (KEYBOARD_STATUS_SHIFT_L
+				  | KEYBOARD_STATUS_SHIFT_R))
+	  {
+	    if (keyboard_map_shift[code])
+	      key = keyboard_map_shift[code];
+	    else
+	      key = keyboard_map[code] | GRUB_TERM_SHIFT;
+	  }
 	else
 	  key = keyboard_map[code];
 

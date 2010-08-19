@@ -162,10 +162,14 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term __attribute__ ((unused)
 #define GRUB_USB_KEYBOARD_RIGHT_ALT   0x40
 
   /* Check if the Shift key was pressed.  */
-  if ((data[0] & GRUB_USB_KEYBOARD_LEFT_SHIFT
+  if (data[0] & GRUB_USB_KEYBOARD_LEFT_SHIFT
        || data[0] & GRUB_USB_KEYBOARD_RIGHT_SHIFT)
-      && keyboard_map_shift[data[2]])
-    key = keyboard_map_shift[data[2]];
+    {
+      if (keyboard_map_shift[data[2]])
+	key = keyboard_map_shift[data[2]];
+      else
+	key = keyboard_map[data[2]] | GRUB_TERM_SHIFT;
+    }
   else
     key = keyboard_map[data[2]];
 

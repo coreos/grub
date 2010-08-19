@@ -20,6 +20,8 @@
 #define GRUB_TERM_HEADER	1
 
 /* Internal codes used by GRUB to represent terminal input.  */
+/* Only for keys otherwise not having shifted modification.  */
+#define GRUB_TERM_SHIFT         0x01000000
 #define GRUB_TERM_CTRL          0x02000000
 #define GRUB_TERM_ALT           0x04000000
 /* Used by keylayouts code. Never returned in grub_getkey.  */
@@ -27,8 +29,8 @@
 #define GRUB_TERM_CAPS          0x10000000
 
 /* Keys without associated character.  */
-#define GRUB_TERM_EXTENDED      0x1000000
-#define GRUB_TERM_KEY_MASK      0x1ffffff
+#define GRUB_TERM_EXTENDED      0x00800000
+#define GRUB_TERM_KEY_MASK      0x00ffffff
 #define GRUB_TERM_KEY_LEFT      (GRUB_TERM_EXTENDED | 1)
 #define GRUB_TERM_KEY_RIGHT     (GRUB_TERM_EXTENDED | 2)
 #define GRUB_TERM_KEY_UP        (GRUB_TERM_EXTENDED | 3)
