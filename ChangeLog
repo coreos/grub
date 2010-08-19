@@ -1,3 +1,13 @@
+2010-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Implement sendkey support.
+
+	* commands/i386/pc/sendkey.c: New file.
+	* conf/i386-pc.rmk (pkglib_MODULES): Add sendkey.mod.
+	(sendkey_mod_SOURCES): New variable.
+	(sendkey_mod_CFLAGS): Likewise.
+	(sendkey_mod_LDFLAGS): Likewise.
+
 2010-08-18  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac: Move AM_INIT_AUTOMAKE after AC_CANONICAL_TARGET to
