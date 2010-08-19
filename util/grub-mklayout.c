@@ -172,9 +172,12 @@ static struct console_grub_equivalence console_grub_equivalences[] = {
   {"Show_Memory", 0},
   {"Show_Registers", 0},
   {"Control_backslash", 0},
+  {"Compose", 0},
 
   /* Keys currently not remappable.  */
   {"CtrlL_Lock", 0},
+  {"Caps_Lock", 0},
+  {"ShiftL", 0},
   {"Num_Lock", 0},
   {"Alt", 0},
   {"AltGr", 0},
@@ -221,7 +224,7 @@ lookup (char *code)
     if (strcmp (code, console_grub_equivalences[i].layout) == 0)
       return console_grub_equivalences[i].grub;
 
-  printf ("Unknown key %s\n", code);
+  fprintf (stderr, "Unknown key %s\n", code);
 
   return '\0';
 }
@@ -374,7 +377,7 @@ main (int argc, char *argv[])
     grub_util_error ("Couldn't open input file: %s\n", strerror (errno));
 
   if (outfile_name)
-    out = fopen (outfile_name, "r");
+    out = fopen (outfile_name, "wb");
   else
     out = stdout;
 
@@ -382,7 +385,7 @@ main (int argc, char *argv[])
     {
       if (in != stdin)
 	fclose (in);
-      grub_util_error ("Couldn't open input file: %s\n", strerror (errno));
+      grub_util_error ("Couldn't open output file: %s\n", strerror (errno));
     }
 
   write_keymaps (in, out);
