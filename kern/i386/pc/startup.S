@@ -1147,6 +1147,11 @@ FUNCTION(grub_console_putchar)
 	ret
 
 
+LOCAL(bypass_table):
+	.word 0x0100 | '\e',0x0f00 | '\t', 0x0e00 | '\b', 0x1c00 | '\r'
+	.word 0x1c00 | '\n'
+LOCAL(bypass_table_end):
+
 /*
  * int grub_console_getkey (void)
  * BIOS call "INT 16H Function 00H" to read character from keyboard
@@ -1180,16 +1185,38 @@ FUNCTION(grub_console_getkey)
 	movb	$0, %ah
 	int	$0x16
 
+	xorl    %edx, %edx
 	movw	%ax, %dx		/* real_to_prot uses %eax */
 
 	DATA32	call	real_to_prot
 	.code32
 
-	movw	%dx, %ax
+	movl    $0xff, %eax
+	testl   %eax, %edx
+	jz      1f
+
+	andl	%edx, %eax
+	cmp     %eax, 0x20
+	ja      2f
+	movl	%edx, %eax
+	leal    LOCAL(bypass_table), %esi
+	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) / 2), %ecx
+	repne cmpsw
+	jz      3f
+
+	addl    $('a' - 1 | GRUB_TERM_CTRL), %eax
+	jmp     2f
+3:
+	andl    $0xff, %eax
+	jmp 2f
+
+1:	movl    %edx, %eax
+	shrl    $8, %eax
+	orl     $GRUB_TERM_EXTENDED, %eax
+2:	
 
 	popl	%ebp
 	ret
-
 
 /*
  * int grub_console_checkkey (void)
@@ -1216,6 +1243,7 @@ FUNCTION(grub_console_checkkey)
 
 	jz	notpending
 
+	xorl	%edx, %edx
 	movw	%ax, %dx
 	DATA32	jmp	pending
 
@@ -1225,8 +1253,6 @@ notpending:
 pending:
 	DATA32	call	real_to_prot
 	.code32
-
-	movl	%edx, %eax
 
 	popl	%ebp
 	ret

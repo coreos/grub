@@ -51,13 +51,11 @@ grub_xputs_real (const char *str)
 
 void (*grub_xputs) (const char *str) = grub_xputs_real;
 
-static int
-grub_getkey_real (void)
+int
+grub_getkey (void)
 {
   return -1;
 }
-
-int (*grub_getkey) (void) = grub_getkey_real;
 
 void
 grub_refresh (void)

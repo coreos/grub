@@ -21,8 +21,28 @@
 
 #define GRUB_KEYBOARD_LAYOUTS_FILEMAGIC "GRUBLAYO"
 #define GRUB_KEYBOARD_LAYOUTS_FILEMAGIC_SIZE (sizeof(GRUB_KEYBOARD_LAYOUTS_FILEMAGIC) - 1)
-#define GRUB_KEYBOARD_LAYOUTS_VERSION 3
+#define GRUB_KEYBOARD_LAYOUTS_VERSION 4
 
-#define GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE 256
+#define GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE 128
+
+struct grub_keyboard_layout
+{
+  struct
+  {
+    grub_uint32_t keyboard_map[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
+    grub_uint32_t keyboard_map_shift[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
+    grub_uint32_t keyboard_map_l3[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
+    grub_uint32_t keyboard_map_shift_l3[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
+  } at;
+  struct
+  {
+    grub_uint32_t keyboard_map[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
+    grub_uint32_t keyboard_map_shift[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
+    grub_uint32_t keyboard_map_l3[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
+    grub_uint32_t keyboard_map_shift_l3[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
+  } usb;
+};
+
+struct grub_keyboard_layout *EXPORT_VAR (grub_current_layout);
 
 #endif /* GRUB_KEYBOARD_LAYOUTS  */

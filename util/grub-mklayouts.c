@@ -67,9 +67,6 @@ static struct console_grub_equivalence console_grub_equivalences[] = {
   {"", '\0'}
 };
 
-GRUB_AT_KEY_KEYBOARD_MAP (us_keyboard_map);
-GRUB_AT_KEY_KEYBOARD_MAP_SHIFT (us_keyboard_map_shifted);
-
 static void
 usage (int status)
 {
@@ -201,23 +198,6 @@ write_keymaps (char *keymap, char *file_basename)
 
 	  sscanf (line, "keycode %u = %60s %60s %60s %60s", &keycode,
 		  normal, shift, normalalt, shiftalt);
-	  if (keycode < ARRAY_SIZE (us_keyboard_map)
-	      && us_keyboard_map[keycode] < ARRAY_SIZE (keyboard_map))
-	    {
-	      keyboard_map[us_keyboard_map[keycode]] = get_grub_code (normal);
-	      keyboard_map_alt[us_keyboard_map[keycode]]
-		= get_grub_code (normalalt);
-	      ok = 1;
-	    }
-	  if (keycode < ARRAY_SIZE (us_keyboard_map_shifted)
-	      && us_keyboard_map_shifted[keycode] < ARRAY_SIZE (keyboard_map))
-	    {
-	      keyboard_map[us_keyboard_map_shifted[keycode]]
-		= get_grub_code (shift);
-	      keyboard_map_alt[us_keyboard_map_shifted[keycode]]
-		= get_grub_code (shiftalt);
-	      ok = 1;
-	    }
 	}
     }
 

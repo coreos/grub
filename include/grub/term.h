@@ -24,41 +24,34 @@
 #define GRUB_TERM_SHIFT         0x01000000
 #define GRUB_TERM_CTRL          0x02000000
 #define GRUB_TERM_ALT           0x04000000
-/* Used by keylayouts code. Never returned in grub_getkey.  */
-#define GRUB_TERM_ALT_GR         0x08000000
-#define GRUB_TERM_CAPS           0x10000000
-#define GRUB_TERM_KEYPAD         0x20000000
 
 /* Keys without associated character.  */
 #define GRUB_TERM_EXTENDED      0x00800000
 #define GRUB_TERM_KEY_MASK      0x00ffffff
-#define GRUB_TERM_KEY_LEFT      (GRUB_TERM_EXTENDED | 1)
-#define GRUB_TERM_KEY_RIGHT     (GRUB_TERM_EXTENDED | 2)
-#define GRUB_TERM_KEY_UP        (GRUB_TERM_EXTENDED | 3)
-#define GRUB_TERM_KEY_DOWN      (GRUB_TERM_EXTENDED | 4)
-#define GRUB_TERM_KEY_HOME      (GRUB_TERM_EXTENDED | 5)
-#define GRUB_TERM_KEY_END       (GRUB_TERM_EXTENDED | 6)
-#define GRUB_TERM_KEY_DC        (GRUB_TERM_EXTENDED | 7)
-#define GRUB_TERM_KEY_PPAGE     (GRUB_TERM_EXTENDED | 8)
-#define GRUB_TERM_KEY_NPAGE     (GRUB_TERM_EXTENDED | 9)
-#define GRUB_TERM_KEY_F1        (GRUB_TERM_EXTENDED | 10)
-#define GRUB_TERM_KEY_F2        (GRUB_TERM_EXTENDED | 11)
-#define GRUB_TERM_KEY_F3        (GRUB_TERM_EXTENDED | 12)
-#define GRUB_TERM_KEY_F4        (GRUB_TERM_EXTENDED | 13)
-#define GRUB_TERM_KEY_F5        (GRUB_TERM_EXTENDED | 14)
-#define GRUB_TERM_KEY_F6        (GRUB_TERM_EXTENDED | 15)
-#define GRUB_TERM_KEY_F7        (GRUB_TERM_EXTENDED | 16)
-#define GRUB_TERM_KEY_F8        (GRUB_TERM_EXTENDED | 17)
-#define GRUB_TERM_KEY_F9        (GRUB_TERM_EXTENDED | 18)
-#define GRUB_TERM_KEY_F10       (GRUB_TERM_EXTENDED | 19)
-#define GRUB_TERM_KEY_F11       (GRUB_TERM_EXTENDED | 20)
-#define GRUB_TERM_KEY_F12       (GRUB_TERM_EXTENDED | 21)
-#define GRUB_TERM_KEY_INSERT    (GRUB_TERM_EXTENDED | 22)
-#define GRUB_TERM_KEY_CENTER    (GRUB_TERM_EXTENDED | 23)
 
-/* Used by keylayouts code. Never returned in grub_getkey.  */
-#define GRUB_TERM_KEY_102       0x80
-#define GRUB_TERM_KEY_SHIFT_102 0x81
+#define GRUB_TERM_KEY_LEFT      (GRUB_TERM_EXTENDED | 0x4b)
+#define GRUB_TERM_KEY_RIGHT     (GRUB_TERM_EXTENDED | 0x4d)
+#define GRUB_TERM_KEY_UP        (GRUB_TERM_EXTENDED | 0x48)
+#define GRUB_TERM_KEY_DOWN      (GRUB_TERM_EXTENDED | 0x50)
+#define GRUB_TERM_KEY_HOME      (GRUB_TERM_EXTENDED | 0x47)
+#define GRUB_TERM_KEY_END       (GRUB_TERM_EXTENDED | 0x4f)
+#define GRUB_TERM_KEY_DC        (GRUB_TERM_EXTENDED | 0x53)
+#define GRUB_TERM_KEY_PPAGE     (GRUB_TERM_EXTENDED | 0x49)
+#define GRUB_TERM_KEY_NPAGE     (GRUB_TERM_EXTENDED | 0x51)
+#define GRUB_TERM_KEY_F1        (GRUB_TERM_EXTENDED | 0x3b)
+#define GRUB_TERM_KEY_F2        (GRUB_TERM_EXTENDED | 0x3c)
+#define GRUB_TERM_KEY_F3        (GRUB_TERM_EXTENDED | 0x3d)
+#define GRUB_TERM_KEY_F4        (GRUB_TERM_EXTENDED | 0x3e)
+#define GRUB_TERM_KEY_F5        (GRUB_TERM_EXTENDED | 0x3f)
+#define GRUB_TERM_KEY_F6        (GRUB_TERM_EXTENDED | 0x40)
+#define GRUB_TERM_KEY_F7        (GRUB_TERM_EXTENDED | 0x41)
+#define GRUB_TERM_KEY_F8        (GRUB_TERM_EXTENDED | 0x42)
+#define GRUB_TERM_KEY_F9        (GRUB_TERM_EXTENDED | 0x43)
+#define GRUB_TERM_KEY_F10       (GRUB_TERM_EXTENDED | 0x44)
+#define GRUB_TERM_KEY_F11       (GRUB_TERM_EXTENDED | 0x57)
+#define GRUB_TERM_KEY_F12       (GRUB_TERM_EXTENDED | 0x58)
+#define GRUB_TERM_KEY_INSERT    (GRUB_TERM_EXTENDED | 0x52)
+#define GRUB_TERM_KEY_CENTER    (GRUB_TERM_EXTENDED | 0x4c)
 
 #define GRUB_TERM_ESC		'\e'
 #define GRUB_TERM_TAB		'\t'
@@ -168,15 +161,9 @@ struct grub_term_input
   /* Get keyboard modifier status.  */
   int (*getkeystatus) (struct grub_term_input *term);
 
-  grub_uint32_t flags;
-
   void *data;
 };
 typedef struct grub_term_input *grub_term_input_t;
-
-#define GRUB_TERM_INPUT_FLAGS_TYPE_MASK      0xf
-#define GRUB_TERM_INPUT_FLAGS_TYPE_TERMCODES 0x0
-#define GRUB_TERM_INPUT_FLAGS_TYPE_BIOS      0x1
 
 struct grub_term_output
 {
@@ -314,8 +301,8 @@ grub_term_unregister_output (grub_term_output_t term)
 #define FOR_DISABLED_TERM_OUTPUTS(var) FOR_LIST_ELEMENTS((var), (grub_term_outputs_disabled))
 
 void grub_putcode (grub_uint32_t code, struct grub_term_output *term);
-extern int (*EXPORT_VAR(grub_getkey)) (void);
-int grub_checkkey (void);
+int EXPORT_FUNC(grub_getkey) (void);
+int EXPORT_FUNC(grub_checkkey) (void);
 void grub_cls (void);
 void EXPORT_FUNC(grub_refresh) (void);
 void grub_puts_terminal (const char *str, struct grub_term_output *term);

@@ -42,8 +42,43 @@ static grub_uint8_t led_status;
 #define KEYBOARD_LED_NUM		(1 << 1)
 #define KEYBOARD_LED_CAPS		(1 << 2)
 
-GRUB_AT_KEY_KEYBOARD_MAP (keyboard_map);
-GRUB_AT_KEY_KEYBOARD_MAP_SHIFT (keyboard_map_shift);
+static const unsigned keyboard_map[128] =
+{
+  /* 0x00 */ '\0', GRUB_TERM_ESC, '1', '2', '3', '4', '5', '6',
+  /* 0x08 */ '7', '8', '9', '0', '-', '=', GRUB_TERM_BACKSPACE, GRUB_TERM_TAB,
+  /* 0x10 */ 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i',
+  /* 0x18 */ 'o', 'p', '[', ']', '\n', '\0', 'a', 's',
+  /* 0x20 */ 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
+  /* 0x28 */ '\'', '`', '\0', '\\', 'z', 'x', 'c', 'v',
+  /* 0x30 */ 'b', 'n', 'm', ',', '.', '/', '\0', '*',
+  /* 0x38 */ '\0', ' ', '\0', GRUB_TERM_KEY_F1,
+  /* 0x3c */ GRUB_TERM_KEY_F2, GRUB_TERM_KEY_F3,
+  /* 0x3e */ GRUB_TERM_KEY_F4, GRUB_TERM_KEY_F5,
+  /* 0x40 */ GRUB_TERM_KEY_F6, GRUB_TERM_KEY_F7,
+  /* 0x42 */ GRUB_TERM_KEY_F8, GRUB_TERM_KEY_F9,
+  /* 0x44 */ GRUB_TERM_KEY_F10, '\0', '\0', GRUB_TERM_KEY_HOME,
+  /* 0x48 */ GRUB_TERM_KEY_UP, GRUB_TERM_KEY_NPAGE, '-', GRUB_TERM_KEY_LEFT,
+  /* 0x4c */ GRUB_TERM_KEY_CENTER, GRUB_TERM_KEY_RIGHT, '+', GRUB_TERM_KEY_END,
+  /* 0x50 */ GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_PPAGE,
+  /* 0x52 */ GRUB_TERM_KEY_INSERT, GRUB_TERM_KEY_DC,
+  /* 0x54 */ '\0', '\0', '\\', GRUB_TERM_KEY_F11,
+  /* 0x58 */ GRUB_TERM_KEY_F12, '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+  /* 0x60 */ '\0', '\0', '\0', '\0', 
+  /* 0x64 */ '\0', GRUB_TERM_KEY_UP, GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_LEFT,
+  /* 0x68 */ GRUB_TERM_KEY_RIGHT
+};
+
+static unsigned keyboard_map_shift[128] =
+{
+  '\0', '\0', '!', '@', '#', '$', '%', '^',
+  '&', '*', '(', ')', '_', '+', '\0', '\0',
+  'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I',
+  'O', 'P', '{', '}', '\n', '\0', 'A', 'S',
+  'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
+  '\"', '~', '\0', '|', 'Z', 'X', 'C', 'V',
+  'B', 'N', 'M', '<', '>', '?',
+  [0x56] = '|'
+};
 
 static grub_uint8_t grub_keyboard_controller_orig;
 
@@ -211,21 +246,12 @@ grub_at_keyboard_getkey_noblock (void)
 	  }
 
 	if (at_keyboard_status & KEYBOARD_STATUS_ALT_L)
-	  {
-	    key |= GRUB_TERM_ALT;
-	    grub_printf ("AltL");
-	  }
+	  key |= GRUB_TERM_ALT;
 	if (at_keyboard_status & KEYBOARD_STATUS_ALT_R)
-	  {
-	    key |= GRUB_TERM_ALT_GR;
-	    grub_printf ("AltGr");
-	  }
+	  key |= GRUB_TERM_ALT;
 	if (at_keyboard_status & (KEYBOARD_STATUS_CTRL_L
 				  | KEYBOARD_STATUS_CTRL_R))
 	  key |= GRUB_TERM_CTRL;
-
-	if (at_keyboard_status & KEYBOARD_STATUS_CAPS_LOCK)
-	  key |= GRUB_TERM_CAPS;
     }
   return key;
 }
@@ -284,8 +310,7 @@ static struct grub_term_input grub_at_keyboard_term =
     .init = grub_keyboard_controller_init,
     .fini = grub_keyboard_controller_fini,
     .checkkey = grub_at_keyboard_checkkey,
-    .getkey = grub_at_keyboard_getkey,
-    .flags = GRUB_TERM_INPUT_FLAGS_TYPE_TERMCODES
+    .getkey = grub_at_keyboard_getkey
   };
 
 GRUB_MOD_INIT(at_keyboard)

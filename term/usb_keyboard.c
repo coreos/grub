@@ -43,7 +43,7 @@ static unsigned keyboard_map[128] =
     '\0', GRUB_TERM_KEY_INSERT, GRUB_TERM_KEY_HOME, GRUB_TERM_KEY_PPAGE,
     GRUB_TERM_KEY_DC, GRUB_TERM_KEY_END, GRUB_TERM_KEY_NPAGE, GRUB_TERM_KEY_RIGHT,
     GRUB_TERM_KEY_LEFT, GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_UP,
-    [0x64] = GRUB_TERM_KEY_102
+    [0x64] = '\\'
   };
 
 static unsigned keyboard_map_shift[128] =
@@ -56,7 +56,7 @@ static unsigned keyboard_map_shift[128] =
     '\n', '\0', '\0', '\0', ' ', '_', '+', '{',
     '}', '|', '#', ':', '"', '`', '<', '>',
     '?',
-    [0x64] = GRUB_TERM_KEY_SHIFT_102
+    [0x64] = '|'
   };
 
 static grub_usb_device_t usbdev;
@@ -186,7 +186,7 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term __attribute__ ((unused)
     key |= GRUB_TERM_ALT;
 
   if (data[0] & GRUB_USB_KEYBOARD_RIGHT_ALT)
-    key |= GRUB_TERM_ALT_GR;
+    key |= GRUB_TERM_ALT;
 
 #if 0
   /* Wait until the key is released.  */
@@ -341,7 +341,6 @@ static struct grub_term_input grub_usb_keyboard_term =
     .checkkey = grub_usb_keyboard_checkkey,
     .getkey = grub_usb_keyboard_getkey,
     .getkeystatus = grub_usb_keyboard_getkeystatus,
-    .flags = GRUB_TERM_INPUT_FLAGS_TYPE_TERMCODES,
     .next = 0
   };
 

@@ -22,11 +22,13 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/time.h>
+#include <grub/keyboard_layouts.h>
 
 struct grub_term_output *grub_term_outputs_disabled;
 struct grub_term_input *grub_term_inputs_disabled;
 struct grub_term_output *grub_term_outputs;
 struct grub_term_input *grub_term_inputs;
+struct grub_keyboard_layout *grub_current_layout;
 
 /* Put a Unicode character.  */
 static void
@@ -76,8 +78,8 @@ grub_xputs_dumb (const char *str)
 
 void (*grub_xputs) (const char *str) = grub_xputs_dumb;
 
-static int
-grub_getkey_dumb (void)
+int
+grub_getkey (void)
 {
   grub_term_input_t term;
 
@@ -89,14 +91,27 @@ grub_getkey_dumb (void)
       {
 	int key = term->checkkey (term);
 	if (key != -1)
-	  return term->getkey (term) & 0xff;
+	  return term->getkey (term);
       }
 
       grub_cpu_idle ();
     }
 }
 
-int (*grub_getkey) (void) = grub_getkey_dumb;
+int
+grub_checkkey (void)
+{
+  grub_term_input_t term;
+
+  FOR_ACTIVE_TERM_INPUTS(term)
+  {
+    int key = term->checkkey (term);
+    if (key != -1)
+      return key;
+  }
+
+  return -1;
+}
 
 void
 grub_refresh (void)
