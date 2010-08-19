@@ -17,6 +17,7 @@
  */
 
 #include <grub/dl.h>
+#include <grub/i18n.h>
 #include <grub/parser.h>
 #include <grub/script_sh.h>
 
@@ -38,4 +39,35 @@ grub_normal_parse_line (char *line, grub_reader_getline_t getline)
     }
 
   return grub_errno;
+}
+
+static grub_command_t cmd_break;
+static grub_command_t cmd_continue;
+static grub_command_t cmd_shift;
+
+void
+grub_script_init (void)
+{
+  cmd_break = grub_register_command ("break", grub_script_break,
+				     N_("[n]"), N_("Exit from loops"));
+  cmd_continue = grub_register_command ("continue", grub_script_break,
+					N_("[n]"), N_("Continue loops"));
+  cmd_shift = grub_register_command ("shift", grub_script_shift,
+				     N_("[n]"), N_("Shift positional parameters."));
+}
+
+void
+grub_script_fini (void)
+{
+  if (cmd_break)
+    grub_unregister_command (cmd_break);
+  cmd_break = 0;
+
+  if (cmd_continue)
+    grub_unregister_command (cmd_continue);
+  cmd_continue = 0;
+
+  if (cmd_shift)
+    grub_unregister_command (cmd_shift);
+  cmd_shift = 0;
 }

@@ -136,7 +136,7 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
       sz = grub_file_read (file, buf, (len > BUF_SIZE) ? BUF_SIZE : len);
       if (sz < 0)
 	{
-	  grub_util_error ("read error at offset %llu", ofs);
+	  grub_util_error ("read error at offset %llu: %s", ofs, grub_errmsg);
 	  break;
 	}
 
@@ -190,7 +190,7 @@ cmd_cmp (char *src, char *dest)
   {
     if ((int) fread (buf_1, 1, len, ff) != len)
       {
-	grub_util_error ("read error at offset %llu", ofs);
+	grub_util_error ("read error at offset %llu: %s", ofs, grub_errmsg);
 	return 1;
       }
 

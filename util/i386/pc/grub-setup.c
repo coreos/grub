@@ -791,14 +791,14 @@ main (int argc, char *argv[])
     must_embed = 1;
 
   if (root_dev[0] == 'm' && root_dev[1] == 'd'
-      && root_dev[2] >= '0' && root_dev[2] <= '9')
+      && ((root_dev[2] >= '0' && root_dev[2] <= '9') || root_dev[2] == '/'))
     {
       /* FIXME: we can avoid this on RAID1.  */
       must_embed = 1;
     }
 
   if (dest_dev[0] == 'm' && dest_dev[1] == 'd'
-      && dest_dev[2] >= '0' && dest_dev[2] <= '9')
+      && ((dest_dev[2] >= '0' && dest_dev[2] <= '9') || dest_dev[2] == '/'))
     {
       char **devicelist;
       int i;

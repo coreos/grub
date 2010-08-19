@@ -246,15 +246,9 @@ else
   AC_PATH_PROG(HELP2MAN, help2man)
 fi
 
-# Check for functions.
+# Check for functions and headers.
 AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf)
-
-# For grub-mkisofs
-AC_HEADER_MAJOR
-AC_HEADER_DIRENT
-AC_CHECK_FUNCS(memmove sbrk strdup lstat getuid getgid)
-AC_CHECK_HEADERS(sys/mkdev.h sys/sysmacros.h malloc.h termios.h sys/types.h)
-AC_CHECK_HEADERS(unistd.h string.h strings.h sys/stat.h sys/fcntl.h limits.h)
+AC_CHECK_HEADERS(libzfs.h libnvpair.h sys/param.h sys/mount.h)
 
 # For opendisk() and getrawpartition() on NetBSD.
 # Used in util/deviceiter.c and in util/hostdisk.c.
@@ -812,6 +806,18 @@ if test x"$device_mapper_excuse" = x ; then
                [device_mapper_excuse="need devmapper library"])
 fi
 AC_SUBST([LIBDEVMAPPER])
+
+AC_CHECK_LIB([zfs], [libzfs_init],
+             [LIBZFS="-lzfs"
+              AC_DEFINE([HAVE_LIBZFS], [1],
+                        [Define to 1 if you have the ZFS library.])],)
+AC_SUBST([LIBZFS])
+
+AC_CHECK_LIB([nvpair], [nvlist_print],
+             [LIBNVPAIR="-lnvpair"
+              AC_DEFINE([HAVE_LIBNVPAIR], [1],
+                        [Define to 1 if you have the NVPAIR library.])],)
+AC_SUBST([LIBNVPAIR])
 
 pkglibrootdir='$(libdir)'/`echo $PACKAGE | sed "$program_transform_name"`
 AC_SUBST(pkglibrootdir)

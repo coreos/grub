@@ -678,6 +678,7 @@ static void (*grub_xputs_saved) (const char *str);
 GRUB_MOD_INIT(normal)
 {
   grub_context_init ();
+  grub_script_init ();
 
   grub_xputs_saved = grub_xputs;
   grub_xputs = grub_xputs_normal;
@@ -707,11 +708,16 @@ GRUB_MOD_INIT(normal)
   /* Preserve hooks after context changes.  */
   grub_env_export ("color_normal");
   grub_env_export ("color_highlight");
+
+  /* Set default color names.  */
+  grub_env_set ("color_normal", "white/black");
+  grub_env_set ("color_highlight", "black/white");
 }
 
 GRUB_MOD_FINI(normal)
 {
   grub_context_fini ();
+  grub_script_fini ();
 
   grub_xputs = grub_xputs_saved;
 

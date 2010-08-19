@@ -426,6 +426,13 @@ library = {
 };
 
 module = {
+  name = cmostest;
+  source = commands/i386/cmostest.c;
+  enable = i386_pc;
+  enable = i386_coreboot;
+};
+
+module = {
   name = iorw;
   source = commands/iorw.c;
   enable = i386;
@@ -1367,6 +1374,7 @@ module = {
   source = script/execute.c;
   source = script/function.c;
   source = script/lexer.c;
+  source = script/argv.c;
 
   source = unidata.c;
   nodist = grub_script.tab.c;

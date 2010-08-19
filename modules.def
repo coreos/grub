@@ -90,6 +90,7 @@ library = {
   source = grub-core/script/lexer.c;
   source = grub-core/script/main.c;
   source = grub-core/script/script.c;
+  source = grub-core/script/argv.c;
 
   nodist = grub_script.yy.h;
   nodist = grub_script.tab.h;
@@ -441,6 +442,30 @@ script = {
   testcase;
   name = grub_script_comments;
   source = tests/grub_script_comments.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_functions;
+  source = tests/grub_script_functions.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_break;
+  source = tests/grub_script_break.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_continue;
+  source = tests/grub_script_continue.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_shift;
+  source = tests/grub_script_shift.in;
 };
 
 program = {

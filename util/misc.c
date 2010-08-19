@@ -193,7 +193,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd __attribute__ ((unused)
 }
 
 grub_err_t
-grub_script_execute_cmdblock (struct grub_script_cmd *cmd __attribute__ ((unused)))
+grub_script_execute_cmdlist (struct grub_script_cmd *cmd __attribute__ ((unused)))
 {
   return 0;
 }

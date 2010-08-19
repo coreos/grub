@@ -94,7 +94,7 @@ grub_script_check_SOURCES = gnulib/progname.c gnulib/getdelim.c gnulib/getline.c
 	util/grub-script-check.c util/misc.c kern/emu/misc.c kern/emu/mm.c \
 	script/main.c script/script.c script/function.c script/lexer.c \
 	kern/err.c kern/list.c \
-	kern/misc.c kern/env.c grub_script.tab.c \
+	kern/command.c kern/misc.c kern/env.c grub_script.tab.c \
 	grub_script.yy.c
 grub_script_check_CFLAGS = $(GNULIB_UTIL_CFLAGS)
 grub_script_check_DEPENDENCIES = grub_script.tab.h
@@ -636,7 +636,7 @@ normal_mod_SOURCES = normal/main.c normal/cmdline.c normal/dyncmd.c \
 	normal/color.c normal/completion.c normal/datetime.c normal/menu.c \
 	normal/menu_entry.c normal/menu_text.c normal/charset.c \
 	normal/misc.c normal/crypto.c normal/term.c normal/context.c \
-	script/main.c script/script.c script/execute.c unidata.c \
+	script/main.c script/script.c script/execute.c script/argv.c unidata.c \
 	script/function.c script/lexer.c grub_script.tab.c grub_script.yy.c
 normal_mod_CFLAGS = $(COMMON_CFLAGS) $(POSIX_CFLAGS) -Wno-error
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
