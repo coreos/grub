@@ -24,6 +24,10 @@
 #include <grub/time.h>
 #include <grub/dl.h>
 #include <grub/at_keyboard.h>
+#include <grub/keyboard_layouts.h>
+#include <grub/command.h>
+#include <grub/gzio.h>
+#include <grub/i18n.h>
 
 GRUB_AT_KEY_KEYBOARD_MAP (keyboard_map);
 
@@ -73,20 +77,21 @@ get_abstract_code (grub_term_input_t term, int in)
     }
 }
 
+static grub_uint32_t mapping[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
+
 static int
-map (grub_term_input_t term, int in)
+map (grub_term_input_t term __attribute__ ((unused)), int in)
 {
-  /* No match with AltGr. Interpret it as Alt rather than as L3 modifier then.  
-   */
+  /* AltGr isn't supported yet.  */
   if (in & GRUB_TERM_ALT_GR)
-    return map (term, in & ~GRUB_TERM_ALT_GR) | GRUB_TERM_ALT_GR;
+    in = (in & ~GRUB_TERM_ALT_GR) | GRUB_TERM_ALT_GR;
 
-  if (in == GRUB_TERM_KEY_102)
-    return '\\';
-  if (in == GRUB_TERM_KEY_SHIFT_102)
-    return '|';
+  if ((in & GRUB_TERM_EXTENDED) || (in & GRUB_TERM_KEY_MASK) == '\b'
+      || (in & GRUB_TERM_KEY_MASK) == '\t' || (in & GRUB_TERM_KEY_MASK) == '\e'
+      || (in & GRUB_TERM_KEY_MASK) >= ARRAY_SIZE (mapping))
+    return in;
 
-  return in;
+  return mapping[in & GRUB_TERM_KEY_MASK] | (in & ~GRUB_TERM_KEY_MASK);
 }
 
 static int
@@ -152,15 +157,104 @@ grub_checkkey (void)
   return -1;
 }
 
+static grub_err_t
+grub_cmd_keymap (struct grub_command *cmd __attribute__ ((unused)),
+		 int argc, char *argv[])
+{
+  char *filename;
+  grub_file_t file;
+  grub_uint32_t version;
+  grub_uint8_t magic[GRUB_KEYBOARD_LAYOUTS_FILEMAGIC_SIZE];
+  grub_uint32_t newmapping[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
+  unsigned i;
+
+  if (argc < 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file or layout name required");
+  if (argv[0][0] != '(' && argv[0][0] != '/' && argv[0][0] != '+')
+    {
+      const char *prefix = grub_env_get ("prefix");
+      if (!prefix)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "No prefix set");	
+      filename = grub_xasprintf ("%s/layouts/%s.gkb", prefix, argv[0]);
+      if (!filename)
+	return grub_errno;
+    }
+  else
+    filename = argv[0];
+
+  file = grub_gzfile_open (filename, 1);
+  if (! file)
+    goto fail;
+
+  if (grub_file_read (file, magic, sizeof (magic)) != sizeof (magic))
+    {
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_ARGUMENT, "file is too short");
+      goto fail;
+    }
+
+  if (grub_memcmp (magic, GRUB_KEYBOARD_LAYOUTS_FILEMAGIC,
+		   GRUB_KEYBOARD_LAYOUTS_FILEMAGIC_SIZE) != 0)
+    {
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid magic");
+      goto fail;
+    }
+
+  if (grub_file_read (file, &version, sizeof (version)) != sizeof (version))
+    {
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_ARGUMENT, "file is too short");
+      goto fail;
+    }
+
+  if (grub_le_to_cpu32 (version) != GRUB_KEYBOARD_LAYOUTS_VERSION)
+    {
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid version");
+      goto fail;
+    }
+
+  if (grub_file_read (file, newmapping, sizeof (newmapping))
+      != sizeof (newmapping))
+    {
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_ARGUMENT, "file is too short");
+      goto fail;
+    }
+
+  for (i = 0; i < ARRAY_SIZE (mapping); i++)
+    mapping[i] = grub_le_to_cpu32(newmapping[i]);
+
+  return GRUB_ERR_NONE;
+
+ fail:
+  if (filename != argv[0])
+    grub_free (filename);
+  if (file)
+    grub_file_close (file);
+  return grub_errno;
+}
+
 static int (*grub_getkey_saved) (void);
+
+static grub_command_t cmd;
 
 GRUB_MOD_INIT(keylayouts)
 {
+  unsigned i;
+  for (i = 0; i < ARRAY_SIZE (mapping); i++)
+    mapping[i] = i;
+  mapping[GRUB_TERM_KEY_102] = '\\';
+  mapping[GRUB_TERM_KEY_SHIFT_102] = '|';
+
   grub_getkey_saved = grub_getkey;
   grub_getkey = grub_getkey_smart;
+
+  cmd = grub_register_command ("keymap", grub_cmd_keymap,
+			       0, N_("Load a keyboard layout."));
 }
 
 GRUB_MOD_FINI(keylayouts)
 {
   grub_getkey = grub_getkey_saved;
+  grub_unregister_command (cmd);
 }
