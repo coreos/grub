@@ -55,6 +55,11 @@ get_abstract_code (grub_term_input_t term, int in)
 	if ((0x5600 | '|') == (in & 0xffff))
 	  return GRUB_TERM_KEY_SHIFT_102 | flags;
 
+	if ((in & 0xff00) == 0x3500 || (in & 0xff00) == 0x3700
+	    || (in & 0xff00) == 0x4500
+	    || ((in & 0xff00) >= 0x4700 && (in & 0xff00) <= 0x5300))
+	  flags |= GRUB_TERM_KEYPAD;
+
 	/* Detect CTRL'ed keys.  */
 	if ((in & 0xff) > 0 && (in & 0xff) < 0x20
 	    && ((in & 0xffff) != (0x0100 | '\e'))
@@ -79,19 +84,33 @@ get_abstract_code (grub_term_input_t term, int in)
 
 static grub_uint32_t mapping[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
 
-static int
-map (grub_term_input_t term __attribute__ ((unused)), int in)
+static unsigned
+clear_internal_flags (unsigned in)
 {
+  if (in & GRUB_TERM_ALT_GR)
+    in = (in & ~GRUB_TERM_ALT_GR) | GRUB_TERM_ALT;
+  return in & ~GRUB_TERM_CAPS & ~GRUB_TERM_KEYPAD;
+}
+
+static unsigned
+map (grub_term_input_t term __attribute__ ((unused)), unsigned in)
+{
+  if (in & GRUB_TERM_KEYPAD)
+    return clear_internal_flags (in);
+
   /* AltGr isn't supported yet.  */
   if (in & GRUB_TERM_ALT_GR)
-    in = (in & ~GRUB_TERM_ALT_GR) | GRUB_TERM_ALT_GR;
+    in = (in & ~GRUB_TERM_ALT_GR) | GRUB_TERM_ALT;
 
   if ((in & GRUB_TERM_EXTENDED) || (in & GRUB_TERM_KEY_MASK) == '\b'
+      || (in & GRUB_TERM_KEY_MASK) == '\n' || (in & GRUB_TERM_KEY_MASK) == ' '
       || (in & GRUB_TERM_KEY_MASK) == '\t' || (in & GRUB_TERM_KEY_MASK) == '\e'
+      || (in & GRUB_TERM_KEY_MASK) == '\r' 
       || (in & GRUB_TERM_KEY_MASK) >= ARRAY_SIZE (mapping))
-    return in;
+    return clear_internal_flags (in);
 
-  return mapping[in & GRUB_TERM_KEY_MASK] | (in & ~GRUB_TERM_KEY_MASK);
+  return mapping[in & GRUB_TERM_KEY_MASK]
+    | clear_internal_flags (in & ~GRUB_TERM_KEY_MASK);
 }
 
 static int
@@ -99,14 +118,15 @@ translate (grub_term_input_t term, int in)
 {
   int code, flags;
   code = get_abstract_code (term, in);
-  if ((code & GRUB_TERM_CAPS) && (code & 0xff) >= 'a' && (code & 0xff) <= 'z')
-    code = (code & 0xff) + 'A' - 'a';
-  else if ((code & GRUB_TERM_CAPS) && (code & 0xff) >= 'A'
-	   && (code & 0xff) <= 'Z')
-    code = (code & 0xff) + 'a' - 'A';    
+  if ((code & GRUB_TERM_CAPS) && (code & GRUB_TERM_KEY_MASK) >= 'a'
+      && (code & GRUB_TERM_KEY_MASK) <= 'z')
+    code = (code & GRUB_TERM_KEY_MASK) + 'A' - 'a';
+  else if ((code & GRUB_TERM_CAPS) && (code & GRUB_TERM_KEY_MASK) >= 'A'
+	   && (code & GRUB_TERM_KEY_MASK) <= 'Z')
+    code = (code & GRUB_TERM_KEY_MASK) + 'a' - 'A';    
 
-  flags = code & ~(GRUB_TERM_KEY_MASK | GRUB_TERM_ALT_GR);
-  code &= (GRUB_TERM_KEY_MASK | GRUB_TERM_ALT_GR);
+  flags = code & ~(GRUB_TERM_KEY_MASK | GRUB_TERM_ALT_GR | GRUB_TERM_KEYPAD);
+  code &= (GRUB_TERM_KEY_MASK | GRUB_TERM_ALT_GR | GRUB_TERM_KEYPAD);
   code = map (term, code);
   /* Transform unconsumed AltGr into Alt.  */
   if (code & GRUB_TERM_ALT_GR)

@@ -25,8 +25,9 @@
 #define GRUB_TERM_CTRL          0x02000000
 #define GRUB_TERM_ALT           0x04000000
 /* Used by keylayouts code. Never returned in grub_getkey.  */
-#define GRUB_TERM_ALT_GR        0x08000000
-#define GRUB_TERM_CAPS          0x10000000
+#define GRUB_TERM_ALT_GR         0x08000000
+#define GRUB_TERM_CAPS           0x10000000
+#define GRUB_TERM_KEYPAD         0x20000000
 
 /* Keys without associated character.  */
 #define GRUB_TERM_EXTENDED      0x00800000
@@ -53,6 +54,7 @@
 #define GRUB_TERM_KEY_F11       (GRUB_TERM_EXTENDED | 20)
 #define GRUB_TERM_KEY_F12       (GRUB_TERM_EXTENDED | 21)
 #define GRUB_TERM_KEY_INSERT    (GRUB_TERM_EXTENDED | 22)
+#define GRUB_TERM_KEY_CENTER    (GRUB_TERM_EXTENDED | 23)
 
 /* Used by keylayouts code. Never returned in grub_getkey.  */
 #define GRUB_TERM_KEY_102       0x80
