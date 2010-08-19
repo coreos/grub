@@ -80,9 +80,9 @@ endif
 bin_UTILITIES += grub-mkrelpath
 grub_mkrelpath_SOURCES = gnulib/progname.c util/grub-mkrelpath.c util/misc.c kern/emu/misc.c
 
-# For grub-mklayouts.
-bin_UTILITIES += grub-mklayouts
-grub_mklayouts_SOURCES = gnulib/progname.c util/grub-mklayouts.c util/misc.c kern/emu/misc.c
+# For grub-mklayout.
+bin_UTILITIES += grub-mklayout
+grub_mklayout_SOURCES = gnulib/progname.c util/grub-mklayout.c util/misc.c kern/emu/misc.c
 
 bin_UTILITIES += grub-bin2h
 grub_bin2h_SOURCES = gnulib/progname.c util/bin2h.c
