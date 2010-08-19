@@ -13,6 +13,25 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+dnl This configure script is complicated, because GRUB needs to deal
+dnl with three potentially different types:
+dnl
+dnl   build  -- the environment for building GRUB
+dnl   host   -- the environment for running utilities
+dnl   target -- the environment for running GRUB
+dnl
+dnl In addition, GRUB needs to deal with a platform specification
+dnl which specifies the system running GRUB, such as firmware.
+dnl This is necessary because the target type in autoconf does not
+dnl describe such a system very well.
+dnl
+dnl The current strategy is to use variables with no prefix (such as
+dnl CC, CFLAGS, etc.) for the host type as well as the build type,
+dnl because GRUB does not need to use those variables for the build
+dnl type, so there is no conflict. Variables with the prefix "TARGET_"
+dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
+dnl type.
+
 AC_INIT([GRUB],[1.98],[bug-grub@gnu.org])
 
 # We don't want -g -O2 by default in CFLAGS
@@ -879,10 +898,9 @@ else
   mkdir -p include/grub 2>/dev/null
   rm -rf include/grub/cpu
   cp -rp $srcdir/include/grub/$target_cpu include/grub/cpu 2>/dev/null
-  cp -rp $srcdir/grub-core/lib/$target_cpu grub-core/lib/target_cpu 2>/dev/null
   if test "$platform" != emu ; then
     rm -rf include/grub/machine
-    cp -rp $srcdir/grub-core/include/grub/$target_cpu/$platform include/grub/machine 2>/dev/null
+    cp -rp $srcdir/include/grub/$target_cpu/$platform include/grub/machine 2>/dev/null
   fi
 fi
 

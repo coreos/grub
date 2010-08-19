@@ -91,7 +91,7 @@ if [ "x${source}" = x ] ; then
 fi
 
 outfile1=`mktemp`
-@abs_top_builddir@/grub-shell --qemu-opts="${qemuopts}" --modules=${modules} ${source} >${outfile1}
+@builddir@/grub-shell --qemu-opts="${qemuopts}" --modules=${modules} ${source} >${outfile1}
 
 outfile2=`mktemp`
 bash ${source} >${outfile2}

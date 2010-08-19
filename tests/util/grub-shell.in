@@ -124,7 +124,7 @@ halt
 EOF
 
 isofile=`mktemp`
-sh @abs_top_builddir@/grub-mkrescue --grub-mkimage=${builddir}/grub-mkimage \
+sh @builddir@/grub-mkrescue --grub-mkimage=${builddir}/grub-mkimage \
   --override-directory=${builddir}/grub-core --output=${isofile} \
   boot/grub/grub.cfg=${cfgfile} \
   /boot/grub/testcase.cfg=${source} >/dev/null 2>&1
