@@ -180,6 +180,13 @@ CLEANFILES += grub-pe2elf
 grub_macho2img_SOURCES = util/grub-macho2img.c
 CLEANFILES += grub-macho2img
 
+# For grub-kbdcomp
+grub-kbdcomp: util/grub-kbdcomp.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+sbin_SCRIPTS += grub-kbdcomp
+CLEANFILES += grub-kbdcomp
+
 # For grub-mkconfig
 grub-mkconfig: util/grub-mkconfig.in config.status
 	./config.status --file=$@:$<
