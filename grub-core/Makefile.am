@@ -45,7 +45,8 @@ grub_script.yy.h: script/yylex.l
 grub_script.yy.c: grub_script.yy.h
 CLEANFILES += grub_script.yy.c grub_script.yy.h
 
-include $(srcdir)/modules.am
+include $(srcdir)/Makefile.core.am
+include $(srcdir)/Makefile.gcry.am
 
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/cache.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/command.h

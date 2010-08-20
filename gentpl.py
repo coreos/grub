@@ -448,14 +448,3 @@ print d
 print e
 print f
 print g
-
-print """.PRECIOUS: modules.am
-$(srcdir)/modules.am: $(srcdir)/modules.def $(top_srcdir)/Makefile.tpl
-	autogen -T $(top_srcdir)/Makefile.tpl $(srcdir)/modules.def | sed -e '/^$$/{N;/^\\n$$/D;}' > $@.new || (rm -f $@.new; exit 1)
-	mv $@.new $@
-
-.PRECIOUS: $(top_srcdir)/Makefile.tpl
-$(top_srcdir)/Makefile.tpl: $(top_srcdir)/gentpl.py
-	python $(top_srcdir)/gentpl.py | sed -e '/^$$/{N;/^\\n$$/D;}' > $@.new || (rm -f $@.new; exit 1)
-	mv $@.new $@
-"""

@@ -16,7 +16,7 @@ LDFLAGS_PROGRAM += $(LDFLAGS_GNULIB)
 CPPFLAGS_PROGRAM += $(CPPFLAGS_GNULIB)
 CCASFLAGS_PROGRAM += $(CCASFLAGS_GNULIB)
 
-include $(srcdir)/modules.am
+include $(srcdir)/Makefile.util.am
 
 # XXX Use Automake's LEX & YACC support
 grub_script.tab.h: $(top_srcdir)/grub-core/script/parser.y
@@ -82,3 +82,4 @@ CLEANFILES += widthspec.h
 
 # Install config.h into platformdir
 platform_HEADERS = config.h
+
