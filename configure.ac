@@ -904,13 +904,6 @@ else
   fi
 fi
 
-# Copy */setjmp.S to target_cpu/
-AC_CONFIG_COMMANDS([grub-core/lib/target_cpu],
-  [mkdir -p grub-core/lib/target_cpu])
-AC_CONFIG_COMMANDS([setjmp.S],
-  [cp -rp $srcdir/grub-core/lib/$target_cpu/setjmp.S grub-core/lib/target_cpu/],
-  [target_cpu=$target_cpu srcdir=$srcdir])
-
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([grub-core/Makefile])
 AC_CONFIG_FILES([po/Makefile])

@@ -1214,7 +1214,7 @@ module = {
 
 module = {
   name = setjmp;
-  nodist = lib/target_cpu/setjmp.S;
+  source = lib/setjmp.S;
   extra_dist = lib/i386/setjmp.S;
   extra_dist = lib/mips/setjmp.S;
   extra_dist = lib/x86_64/setjmp.S;
