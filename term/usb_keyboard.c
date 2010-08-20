@@ -55,8 +55,10 @@ static grub_uint8_t usb_to_at_map[128] =
   /* 0x2a */ 0x0e /* \b */,         0x0f /* \t */, 
   /* 0x2c */ 0x39 /* Space */,      0x0c /* - */,
   /* 0x2e */ 0x0d /* = */,          0x1a /* [ */, 
-  /* 0x30 */ 0x1b /* ] */,          0x2b /* \ */, 
-  /* 0x32 */ 0x00,                  0x27 /* ; */, 
+  /* According to usage table 0x31 should be remapped to 0x2b
+     but testing with real keyboard shows that 0x32 is remapped to 0x2b.  */
+  /* 0x30 */ 0x1b /* ] */,          0x00, 
+  /* 0x32 */ 0x2b /* \ */,          0x27 /* ; */, 
   /* 0x34 */ 0x28 /* " */,          0x29 /* ` */,
   /* 0x36 */ 0x33 /* , */,          0x34 /* . */, 
   /* 0x38 */ 0x35 /* / */,          0x00,
@@ -67,7 +69,7 @@ static grub_uint8_t usb_to_at_map[128] =
   /* 0x42 */ 0x43 /* F9 */,         0x44 /* F10 */, 
   /* 0x44 */ 0x57 /* F11 */,        0x58 /* F12 */,
   /* 0x46 */ 0x00,                  0x00, 
-  /* 0x48 */ 0x00,                  0x00, 
+  /* 0x48 */ 0x00,                  0x52 /* Insert */, 
   /* 0x4a */ 0x47 /* HOME */,       0x51 /* PPAGE */, 
   /* 0x4c */ 0x53 /* DC */,         0x4f /* END */, 
   /* 0x4e */ 0x49 /* NPAGE */,      0x4d /* RIGHT */, 
