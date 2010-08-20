@@ -989,6 +989,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
         transfer->last_trans = tderr_virt->tr_index;
       else
         transfer->last_trans = -1;
+      *actual = transfer->size;
     }
 
   else if (err_halt) /* error, ED is halted by OHCI, i.e. can be modified */
@@ -1178,8 +1179,6 @@ grub_ohci_transfer (grub_usb_controller_t dev,
       else
         transfer->last_trans = -1;
     }
-  else
-    *actual = transfer->size;
 
   /* Set empty ED - set HEAD = TAIL = last (not processed) TD */
   ed_virt->td_head = grub_cpu_to_le32 (grub_le_to_cpu32 (ed_virt->td_tail) & ~0xf); 
