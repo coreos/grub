@@ -4,15 +4,17 @@ EXTRA_DIST += autogen.sh
 EXTRA_DIST += geninit.sh
 
 EXTRA_DIST += gentpl.py
-EXTRA_DIST += modules.def
 EXTRA_DIST += Makefile.tpl
+EXTRA_DIST += Makefile.util.def
 
 EXTRA_DIST += docs/man
 EXTRA_DIST += docs/grub.cfg
 
 EXTRA_DIST += conf/i386-pc-cygwin-img-ld.sc
 
-EXTRA_DIST += grub-core/modules.def
+EXTRA_DIST += grub-core/Makefile.core.def
+EXTRA_DIST += grub-core/Makefile.gcry.def
+
 EXTRA_DIST += grub-core/genmoddep.awk
 EXTRA_DIST += grub-core/genmodsrc.sh
 EXTRA_DIST += grub-core/genfslist.sh
