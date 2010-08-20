@@ -100,7 +100,7 @@ def if_platform_tagged(platform, tag, snippet_if, snippet_else=None):
     for group in RMAP[platform]:
         r += "[+ = \"" + group + "\" +]" + snippet_if
 
-    if snippet_else != None: r += "[+ * +]" + snippet_if
+    if snippet_else != None: r += "[+ * +]" + snippet_else
     r += "[+ ESAC +][+ ENDFOR +]"
 
     if snippet_else == None:

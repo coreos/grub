@@ -28,7 +28,7 @@ endif
 
 # Other options
 
-CPPFLAGS_DEFAULT = -DGRUB_FILE=\"`basename $<`\"
+CPPFLAGS_DEFAULT = -DGRUB_FILE=\"`echo $< | sed "s@$(top_srcdir)/@@g"`\"
 CPPFLAGS_DEFAULT += -I$(builddir)
 CPPFLAGS_DEFAULT += -I$(srcdir)
 CPPFLAGS_DEFAULT += -I$(top_builddir)
@@ -42,6 +42,7 @@ CFLAGS_KERNEL = $(CFLAGS_CPU) $(CFLAGS_PLATFORM) -ffreestanding
 LDFLAGS_KERNEL = $(LDFLAGS_CPU) $(LDFLAGS_PLATFORM) -nostdlib -Wl,-N -static-libgcc
 CPPFLAGS_KERNEL = $(CPPFLAGS_CPU) $(CPPFLAGS_PLATFORM)
 CCASFLAGS_KERNEL = $(CCASFLAGS_CPU) $(CCASFLAGS_PLATFORM)
+STRIPFLAGS_KERNEL = -R .rel.dyn -R .reginfo -R .note -R .comment
 
 CFLAGS_MODULE = $(CFLAGS_CPU) $(CFLAGS_PLATFORM) -ffreestanding
 LDFLAGS_MODULE = $(LDFLAGS_CPU) $(LDFLAGS_PLATFORM) -nostdlib -Wl,-N,-r,-d
