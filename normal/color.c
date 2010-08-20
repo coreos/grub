@@ -56,22 +56,23 @@ parse_color_name (grub_uint8_t *ret, char *name)
   return -1;
 }
 
-void
-grub_parse_color_name_pair (grub_uint8_t *ret, const char *name)
+int
+grub_parse_color_name_pair (grub_uint8_t *color, const char *name)
 {
+  int result = 1;
   grub_uint8_t fg, bg;
   char *fg_name, *bg_name;
 
   /* nothing specified by user */
   if (name == NULL)
-    return;
+    return result;
 
   fg_name = grub_strdup (name);
   if (fg_name == NULL)
     {
       /* "out of memory" message was printed by grub_strdup() */
       grub_wait_after_message ();
-      return;
+      return result;
     }
 
   bg_name = grub_strchr (fg_name, '/');
@@ -97,10 +98,12 @@ grub_parse_color_name_pair (grub_uint8_t *ret, const char *name)
       goto free_and_return;
     }
 
-  *ret = (bg << 4) | fg;
+  *color = (bg << 4) | fg;
+  result = 0;
 
 free_and_return:
   grub_free (fg_name);
+  return result;
 }
 
 static grub_uint8_t color_normal, color_highlight;
@@ -122,10 +125,10 @@ set_colors (void)
 
 /* Replace default `normal' colors with the ones specified by user (if any).  */
 char *
-grub_env_write_color_normal (struct grub_env_var *var __attribute__ ((unused)),
-			     const char *val)
+grub_env_write_color_normal (struct grub_env_var *var, const char *val)
 {
-  grub_parse_color_name_pair (&color_normal, val);
+  if (grub_parse_color_name_pair (&color_normal, val))
+    return 0;
 
   set_colors ();
 
@@ -134,10 +137,10 @@ grub_env_write_color_normal (struct grub_env_var *var __attribute__ ((unused)),
 
 /* Replace default `highlight' colors with the ones specified by user (if any).  */
 char *
-grub_env_write_color_highlight (struct grub_env_var *var __attribute__ ((unused)),
-				const char *val)
+grub_env_write_color_highlight (struct grub_env_var *var, const char *val)
 {
-  grub_parse_color_name_pair (&color_highlight, val);
+  if (grub_parse_color_name_pair (&color_highlight, val))
+    return 0;
 
   set_colors ();
 

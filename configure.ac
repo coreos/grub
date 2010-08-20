@@ -32,7 +32,6 @@ dnl type.
 
 
 AC_INIT([GRUB],[1.98],[bug-grub@gnu.org])
-AM_INIT_AUTOMAKE()
 AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
@@ -40,6 +39,8 @@ AC_CONFIG_HEADER([config.h])
 # Checks for host and target systems.
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
+
+AM_INIT_AUTOMAKE()
 
 # Program name transformations
 AC_ARG_PROGRAM
@@ -247,8 +248,8 @@ else
 fi
 
 # Check for functions and headers.
-AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf getfsstat)
-AC_CHECK_HEADERS(libzfs.h libnvpair.h)
+AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf)
+AC_CHECK_HEADERS(libzfs.h libnvpair.h sys/param.h sys/mount.h)
 
 # For opendisk() and getrawpartition() on NetBSD.
 # Used in util/deviceiter.c and in util/hostdisk.c.

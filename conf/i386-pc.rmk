@@ -253,6 +253,12 @@ datetime_mod_SOURCES = lib/cmos_datetime.c
 datetime_mod_CFLAGS = $(COMMON_CFLAGS)
 datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For sendkey.mod
+pkglib_MODULES += sendkey.mod
+sendkey_mod_SOURCES = commands/i386/pc/sendkey.c
+sendkey_mod_CFLAGS = $(COMMON_CFLAGS)
+sendkey_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For ata_pthru.mod.
 ata_pthru_mod_SOURCES = disk/ata_pthru.c
 ata_pthru_mod_CFLAGS = $(COMMON_CFLAGS)

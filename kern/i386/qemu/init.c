@@ -69,10 +69,7 @@ load_palette (void)
 {
   unsigned i;
   for (i = 0; i < 16; i++)
-    {
-      grub_outb (i, GRUB_VGA_IO_ARX);
-      grub_outb (i, GRUB_VGA_IO_ARX);
-    }
+    grub_vga_write_arx (i, i);
 
   for (i = 0; i < ARRAY_SIZE (colors); i++)
     grub_vga_palette_write (i, colors[i].r, colors[i].g, colors[i].b);
@@ -90,7 +87,7 @@ grub_qemu_init_cirrus (void)
       addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
       class = grub_pci_read (addr);
 
-      if (((class >> 16) & 0xffff) != 0x0300)
+      if (((class >> 16) & 0xffff) != GRUB_PCI_CLASS_SUBCLASS_VGA)
 	return 0;
       
       /* FIXME: chooose addresses dynamically.  */
@@ -110,7 +107,7 @@ grub_qemu_init_cirrus (void)
 
   grub_pci_iterate (find_card);
 
-  grub_outb (1, 0x3c2);
+  grub_outb (GRUB_VGA_IO_MISC_COLOR, GRUB_VGA_IO_MISC_WRITE);
 
   load_font ();
 
@@ -124,11 +121,11 @@ grub_qemu_init_cirrus (void)
 		     GRUB_VGA_SR_MAP_MASK_REGISTER);
 
   grub_vga_cr_write (15, GRUB_VGA_CR_CELL_HEIGHT);
-  grub_vga_cr_write (79, GRUB_VGA_CR_WIDTH);
+  grub_vga_cr_write (79, GRUB_VGA_CR_HORIZ_END);
   grub_vga_cr_write (40, GRUB_VGA_CR_PITCH);
 
   int vert = 25 * 16;
-  grub_vga_cr_write (vert & 0xff, GRUB_VGA_CR_HEIGHT);
+  grub_vga_cr_write (vert & 0xff, GRUB_VGA_CR_VDISPLAY_END);
   grub_vga_cr_write (((vert >> GRUB_VGA_CR_OVERFLOW_HEIGHT1_SHIFT)
 		      & GRUB_VGA_CR_OVERFLOW_HEIGHT1_MASK)
 		     | ((vert >> GRUB_VGA_CR_OVERFLOW_HEIGHT2_SHIFT)
@@ -137,10 +134,8 @@ grub_qemu_init_cirrus (void)
 
   load_palette ();
 
-  grub_outb (0x10, 0x3c0);
-  grub_outb (0, 0x3c1);
-  grub_outb (0x14, 0x3c0);
-  grub_outb (0, 0x3c1);
+  grub_vga_write_arx (GRUB_VGA_ARX_MODE_TEXT, GRUB_VGA_ARX_MODE);
+  grub_vga_write_arx (0, GRUB_VGA_ARX_COLOR_SELECT);
 
   grub_vga_sr_write (GRUB_VGA_SR_CLOCKING_MODE_8_DOT_CLOCK,
 		     GRUB_VGA_SR_CLOCKING_MODE);

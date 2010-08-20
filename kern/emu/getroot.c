@@ -49,10 +49,6 @@
 # include <grub/util/libnvpair.h>
 #endif
 
-#ifdef HAVE_GETFSSTAT
-# include <sys/mount.h>
-#endif
-
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/emu/misc.h>
@@ -97,66 +93,6 @@ xgetcwd (void)
 
   return path;
 }
-
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
-
-static char *
-find_mount_point_from_dir (const char *dir)
-{
-  struct stat st;
-  typeof (st.st_dev) fs;
-  char *prev, *next, *slash, *statdir;
-
-  if (stat (dir, &st) == -1)
-    error (1, errno, "stat (%s)", dir);
-
-  fs = st.st_dev;
-
-  prev = xstrdup (dir);
-
-  while (1)
-    {
-      /* Remove last slash.  */
-      next = xstrdup (prev);
-      slash = strrchr (next, '/');
-      if (! slash)
-	{
-	  free (next);
-	  free (prev);
-	  return NULL;
-	}
-      *slash = '\0';
-
-      /* A next empty string counts as /.  */
-      if (next[0] == '\0')
-	statdir = "/";
-      else
-	statdir = next;
-
-      if (stat (statdir, &st) == -1)
-	error (1, errno, "stat (%s)", next);
-
-      if (st.st_dev != fs)
-	{
-	  /* Found mount point.  */
-	  free (next);
-	  return prev;
-	}
-
-      free (prev);
-      prev = next;
-
-      /* We've already seen an empty string, which means we
-         reached /.  Nothing left to do.  */
-      if (prev[0] == '\0')
-	{
-	  free (prev);
-	  return xstrdup ("/");
-	}
-    }
-}
-
-#endif
 
 #ifdef __linux__
 
@@ -239,63 +175,29 @@ find_root_device_from_mountinfo (const char *dir)
 #endif /* __linux__ */
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
-
-/* ZFS has similar problems to those of btrfs (see above).  */
 static char *
 find_root_device_from_libzfs (const char *dir)
 {
-  char *device = NULL;
-  char *poolname = NULL;
-  char *poolfs = NULL;
-  char *mnt_point;
-  char *slash;
+  char *device;
+  char *poolname;
+  char *poolfs;
 
-  mnt_point = find_mount_point_from_dir (dir);
-
-#ifdef HAVE_GETFSSTAT
-  {
-    int mnt_count = getfsstat (NULL, 0, MNT_WAIT);
-    if (mnt_count == -1)
-      error (1, errno, "getfsstat");
-
-    struct statfs *mnt = xmalloc (mnt_count * sizeof (*mnt));
-
-    mnt_count = getfsstat (mnt, mnt_count * sizeof (*mnt), MNT_WAIT);
-    if (mnt_count == -1)
-      error (1, errno, "getfsstat");
-
-    unsigned int i;
-    for (i = 0; i < (unsigned) mnt_count; i++)
-      if (!strcmp (mnt[i].f_fstypename, "zfs")
-	  && !strcmp (mnt[i].f_mntonname, mnt_point))
-	{
-	  poolname = xstrdup (mnt[i].f_mntfromname);
-	  break;
-	}
-
-    free (mnt);
-  }
-#endif
-
+  grub_find_zpool_from_dir (dir, &poolname, &poolfs);
   if (! poolname)
     return NULL;
 
-  slash = strchr (poolname, '/');
-  if (slash)
-    {
-      *slash = '\0';
-      poolfs = slash + 1;
-    }
-
   {
     zpool_handle_t *zpool;
+    libzfs_handle_t *libzfs;
     nvlist_t *nvlist;
     nvlist_t **nvlist_array;
     unsigned int nvlist_count;
 
-    grub_util_init_libzfs ();
+    libzfs = grub_get_libzfs_handle ();
+    if (! libzfs)
+      return NULL;
 
-    zpool = zpool_open (libzfs_handle, poolname);
+    zpool = zpool_open (libzfs, poolname);
     nvlist = zpool_get_config (zpool, NULL);
 
     if (nvlist_lookup_nvlist (nvlist, "vdev_tree", &nvlist) != 0)
@@ -317,6 +219,8 @@ find_root_device_from_libzfs (const char *dir)
   }
 
   free (poolname);
+  if (poolfs)
+    free (poolfs);
 
   return device;
 }

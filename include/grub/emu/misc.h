@@ -21,6 +21,7 @@
 
 #include <grub/symbol.h>
 #include <grub/types.h>
+#include <grub/util/libzfs.h>
 
 #ifdef __CYGWIN__
 # include <sys/fcntl.h>
@@ -44,7 +45,11 @@ extern const char *program_name;
 void grub_init_all (void);
 void grub_fini_all (void);
 
-char *grub_make_system_path_relative_to_its_root (const char *path) __attribute__ ((warn_unused_result));
+void grub_find_zpool_from_dir (const char *dir,
+			       char **poolname, char **poolfs);
+
+char *grub_make_system_path_relative_to_its_root (const char *path)
+  __attribute__ ((warn_unused_result));
 
 void * EXPORT_FUNC(xmalloc) (grub_size_t size) __attribute__ ((warn_unused_result));
 void * EXPORT_FUNC(xrealloc) (void *ptr, grub_size_t size) __attribute__ ((warn_unused_result));
@@ -68,5 +73,7 @@ extern char * canonicalize_file_name (const char *path);
 #ifdef HAVE_DEVICE_MAPPER
 int grub_device_mapper_supported (void);
 #endif
+
+libzfs_handle_t *grub_get_libzfs_handle (void);
 
 #endif /* GRUB_EMU_MISC_H */
