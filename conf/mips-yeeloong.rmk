@@ -5,7 +5,7 @@ COMMON_CFLAGS += -march=mips3
 COMMON_ASFLAGS += -march=mips3
 
 kernel_img_HEADERS += pci.h bitmap.h video.h gfxterm.h font.h \
-		      bitmap_scale.h bufio.h cs5536.h machine/pci.h
+		      bitmap_scale.h bufio.h cs5536.h machine/pci.h serial.h
 
 include $(srcdir)/conf/mips.mk
 

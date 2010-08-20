@@ -88,9 +88,9 @@ struct grub_serial_port
   grub_term_input_t term_in;
 };
 
-grub_err_t grub_serial_register (struct grub_serial_port *port);
+grub_err_t EXPORT_FUNC(grub_serial_register) (struct grub_serial_port *port);
 
-void grub_serial_unregister (struct grub_serial_port *port);
+void EXPORT_FUNC(grub_serial_unregister) (struct grub_serial_port *port);
 
   /* Set default settings.  */
 static inline grub_err_t
@@ -114,6 +114,6 @@ grub_serial_config_defaults (struct grub_serial_port *port)
 void grub_ns8250_init (void);
 char *grub_serial_ns8250_add_port (grub_port_t port);
 extern struct grub_serial_driver grub_ns8250_driver;
-void grub_serial_unregister_driver (struct grub_serial_driver *driver);
+void EXPORT_FUNC(grub_serial_unregister_driver) (struct grub_serial_driver *driver);
 
 #endif
