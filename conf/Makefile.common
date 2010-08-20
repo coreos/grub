@@ -21,6 +21,7 @@ if COND_i386_ieee1275
 endif
 if COND_mips_yeeloong
   CFLAGS_PLATFORM = -march=mips3 -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
+  CPPFLAGS_PLATFORM = -DUSE_ASCII_FAILBACK
   CCASFLAGS_PLATFORM = -march=mips3
 endif
 if COND_sparc64_ieee1275
