@@ -153,7 +153,7 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
   if (j == usbdev->config[configno].interf[interfno].descif->endpointcnt)
     return 0;
 
-  grub_printf ("HID found!\n");
+  grub_dprintf ("usb_keyboard", "HID found!\n");
 
   data = grub_malloc (sizeof (*data));
   if (!data)
