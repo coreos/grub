@@ -1036,7 +1036,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
 	{
 	case 0:
 	  /* XXX: Should not happen!  */
-	  grub_error (GRUB_ERR_IO, "OHCI without reporting the reason");
+	  grub_error (GRUB_ERR_IO, "OHCI failed without reporting the reason");
 	  err = GRUB_USB_ERR_INTERNAL;
 	  break;
 
