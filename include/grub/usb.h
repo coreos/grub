@@ -177,6 +177,12 @@ struct grub_usb_device
 
   /* Data toggle values (used for bulk transfers only).  */
   int toggle[256];
+
+  /* Array of children for a hub.  */
+  grub_usb_device_t *children;
+
+  /* Number of hub ports.  */
+  unsigned nports;
 };
 
 

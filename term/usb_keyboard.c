@@ -95,14 +95,21 @@ grub_usb_keyboard_detach (grub_usb_device_t usbdev,
 {
   unsigned i;
   for (i = 0; i < ARRAY_SIZE (grub_usb_keyboards); i++)
-    if (grub_usb_keyboards[i].data && grub_usb_keyboards[i].data == usbdev)
-      {
-	grub_term_unregister_input (&grub_usb_keyboards[i]);
-	grub_free ((char *) grub_usb_keyboards[i].name);
-	grub_usb_keyboards[i].name = NULL;
-	grub_free (grub_usb_keyboards[i].data);
-	grub_usb_keyboards[i].data = 0;
-      }
+    {
+      struct grub_usb_keyboard_data *data = grub_usb_keyboards[i].data;
+
+      if (!data)
+	continue;
+
+      if (data->usbdev != usbdev)
+	continue;
+
+      grub_term_unregister_input (&grub_usb_keyboards[i]);
+      grub_free ((char *) grub_usb_keyboards[i].name);
+      grub_usb_keyboards[i].name = NULL;
+      grub_free (grub_usb_keyboards[i].data);
+      grub_usb_keyboards[i].data = 0;
+    }
 }
 
 static int

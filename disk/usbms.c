@@ -65,6 +65,7 @@ typedef struct grub_usbms_dev *grub_usbms_dev_t;
 /* FIXME: remove limit.  */
 #define MAX_USBMS_DEVICES 128
 static grub_usbms_dev_t grub_usbms_devices[MAX_USBMS_DEVICES];
+static int first_available_slot = 0;
 
 static grub_err_t
 grub_usbms_reset (grub_usb_device_t dev, int interface)
@@ -96,12 +97,11 @@ grub_usbms_attach (grub_usb_device_t usbdev, int configno, int interfno)
   unsigned curnum;
   grub_usb_err_t err;
 
-  for (curnum = 0; curnum < ARRAY_SIZE (grub_usbms_devices); curnum++)
-    if (!grub_usbms_devices[curnum])
-      break;
-
-  if (curnum == ARRAY_SIZE (grub_usbms_devices))
+  if (first_available_slot == ARRAY_SIZE (grub_usbms_devices))
     return 0;
+
+  curnum = first_available_slot;
+  first_available_slot++;
 
   interf = usbdev->config[configno].interf[interfno].descif;
 

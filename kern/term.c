@@ -28,6 +28,8 @@ struct grub_term_input *grub_term_inputs_disabled;
 struct grub_term_output *grub_term_outputs;
 struct grub_term_input *grub_term_inputs;
 
+void (*grub_term_poll_usb) (void) = NULL;
+
 /* Put a Unicode character.  */
 static void
 grub_putcode_dumb (grub_uint32_t code,
@@ -85,6 +87,9 @@ grub_getkey (void)
 
   while (1)
     {
+      if (grub_term_poll_usb)
+	grub_term_poll_usb ();
+
       FOR_ACTIVE_TERM_INPUTS(term)
       {
 	int key = term->checkkey (term);
@@ -101,6 +106,9 @@ grub_checkkey (void)
 {
   grub_term_input_t term;
 
+  if (grub_term_poll_usb)
+    grub_term_poll_usb ();
+
   FOR_ACTIVE_TERM_INPUTS(term)
   {
     int key = term->checkkey (term);
@@ -116,6 +124,9 @@ grub_getkeystatus (void)
 {
   int status = 0;
   grub_term_input_t term;
+
+  if (grub_term_poll_usb)
+    grub_term_poll_usb ();
 
   FOR_ACTIVE_TERM_INPUTS(term)
   {

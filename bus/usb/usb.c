@@ -22,7 +22,7 @@
 #include <grub/usb.h>
 #include <grub/misc.h>
 #include <grub/list.h>
-#include <grub/dl.h>
+#include <grub/term.h>
 
 static grub_usb_controller_dev_t grub_usb_list;
 struct grub_usb_attach_desc *attach_hooks;
@@ -333,4 +333,15 @@ void
 grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc)
 {
   grub_list_remove (GRUB_AS_LIST_P (&attach_hooks), GRUB_AS_LIST (desc));  
+}
+
+
+GRUB_MOD_INIT(usb)
+{
+  grub_term_poll_usb = grub_usb_poll_devices;
+}
+
+GRUB_MOD_FINI(usb)
+{
+  grub_term_poll_usb = NULL;
 }
