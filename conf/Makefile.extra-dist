@@ -1,4 +1,4 @@
-EXTRA_DIST += include
+EXTRA_DIST += $(shell find $(top_srcdir)/include -name '*.h')
 
 EXTRA_DIST += autogen.sh
 EXTRA_DIST += geninit.sh
