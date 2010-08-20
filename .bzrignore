@@ -91,4 +91,5 @@ depcomp
 mdate-sh
 texinfo.tex
 grub-core/lib/libgcrypt-grub
-
+**/.deps-util
+**/.deps-core
