@@ -75,10 +75,8 @@ struct grub_uhci_td
      This is GRUB specific.  */
   grub_uint32_t linkptr2;
 
-  grub_uint32_t buffer0;
-
-  /* 2 additional 32 bits words reserved for the Host Controller Driver.  */
-  grub_uint32_t data[2];
+  /* 3 additional 32 bits words reserved for the Host Controller Driver.  */
+  grub_uint32_t data[3];
 } __attribute__ ((packed));
 
 typedef volatile struct grub_uhci_td *grub_uhci_td_t;
@@ -436,7 +434,6 @@ grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
 	       | (addr << 8) | tf[type]);
 
   td->buffer = data;
-  td->buffer0 = data;
 
   return td;
 }
