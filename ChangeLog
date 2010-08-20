@@ -1,3 +1,8 @@
+2010-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/multiboot.c (grub_cmd_module): Don't unzip module if
+	--nounzip is passed.
+
 2010-08-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	USB hotunplugging and USB serial support.
