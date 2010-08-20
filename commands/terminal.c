@@ -59,11 +59,17 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
       for (aut = autoloads; aut; aut = aut->next)
        {
          for (term = *disabled; term; term = term->next)
-           if (grub_strcmp (term->name, aut->name) == 0)
+           if (grub_strcmp (term->name, aut->name) == 0
+	       || (aut->name[0] && aut->name[grub_strlen (aut->name) - 1] == '*'
+		   && grub_memcmp (term->name, aut->name,
+				   grub_strlen (aut->name) - 1) == 0))
              break;
          if (!term)
            for (term = *enabled; term; term = term->next)
-             if (grub_strcmp (term->name, aut->name) == 0)
+             if (grub_strcmp (term->name, aut->name) == 0
+		 || (aut->name[0] && aut->name[grub_strlen (aut->name) - 1] == '*'
+		     && grub_memcmp (term->name, aut->name,
+				     grub_strlen (aut->name) - 1) == 0))
                break;
          if (!term)
            grub_printf ("%s ", aut->name);
@@ -98,7 +104,10 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
            return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminal '%s'\n",
                               args[i]);
          for (aut = autoloads; aut; aut = aut->next)
-           if (grub_strcmp (args[i], aut->name) == 0)
+           if (grub_strcmp (args[i], aut->name) == 0
+	       || (aut->name[0] && aut->name[grub_strlen (aut->name) - 1] == '*'
+		   && grub_memcmp (args[i], aut->name,
+				   grub_strlen (aut->name) - 1) == 0))
              {
                grub_dl_t mod;
                mod = grub_dl_load (aut->modname);

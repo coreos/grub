@@ -20,7 +20,8 @@
 #include <grub/mips/yeeloong/pci.h>
 #include <grub/mips/loongson.h>
 #include <grub/pci.h>
-#include <grub/serial.h>
+#include <grub/machine/serial.h>
+#include <grub/ns8250.h>
 #include <grub/cs5536.h>
 #include <grub/smbus.h>
 
