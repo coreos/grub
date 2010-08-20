@@ -1,172 +1,26 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
+DEPDIR=.deps-core
+
+include $(top_srcdir)/conf/Makefile.common
+
 CC=$(TARGET_CC)
 CPP=$(TARGET_CC)
 CCAS=$(TARGET_CC)
-DEPDIR=.deps-core
 
-EXTRA_DIST =
-EXTRA_DIST += modules.def genmoddep.awk
-EXTRA_DIST += genmodsrc.sh gensymlist.sh genemuinit.sh genemuinitheader.sh
-EXTRA_DIST += genfslist.sh gencmdlist.sh genvideolist.sh genhandlerlist.sh
-EXTRA_DIST += genpartmaplist.sh genparttoollist.sh genterminallist.sh
-EXTRA_DIST += lib/libgcrypt_wrap/cipher_wrap.h
-EXTRA_DIST += lib/libgcrypt/cipher/rijndael-tables.h
-EXTRA_DIST += lib/libgcrypt/cipher/bithelp.h
-EXTRA_DIST += lib/libgcrypt/cipher/rmd.h
-EXTRA_DIST += lib/libgcrypt/cipher/hash-common.h
-EXTRA_DIST += lib/libgcrypt/cipher/camellia.h
-EXTRA_DIST += lib/posix_wrap/localcharset.h
-EXTRA_DIST += lib/posix_wrap/ctype.h
-EXTRA_DIST += lib/posix_wrap/limits.h
-EXTRA_DIST += lib/posix_wrap/stdio.h
-EXTRA_DIST += lib/posix_wrap/sys/types.h
-EXTRA_DIST += lib/posix_wrap/unistd.h
-EXTRA_DIST += lib/posix_wrap/locale.h
-EXTRA_DIST += lib/posix_wrap/wchar.h
-EXTRA_DIST += lib/posix_wrap/string.h
-EXTRA_DIST += lib/posix_wrap/langinfo.h
-EXTRA_DIST += lib/posix_wrap/wctype.h
-EXTRA_DIST += lib/posix_wrap/stdint.h
-EXTRA_DIST += lib/posix_wrap/stdlib.h
-EXTRA_DIST += lib/posix_wrap/assert.h
-EXTRA_DIST += lib/posix_wrap/errno.h
-EXTRA_DIST += lib/libgcrypt-grub/cipher/types.h
-EXTRA_DIST += lib/libgcrypt-grub/cipher/cipher.h
-EXTRA_DIST += lib/libgcrypt-grub/cipher/rijndael-tables.h
-EXTRA_DIST += lib/libgcrypt-grub/cipher/memory.h
-EXTRA_DIST += lib/libgcrypt-grub/cipher/bithelp.h
-EXTRA_DIST += lib/libgcrypt-grub/cipher/g10lib.h
-EXTRA_DIST += lib/libgcrypt-grub/cipher/rmd.h
-EXTRA_DIST += lib/libgcrypt-grub/cipher/hash-common.h
-EXTRA_DIST += lib/libgcrypt-grub/cipher/camellia.h
-EXTRA_DIST += efiemu/runtime/config.h
-EXTRA_DIST += gnulib/getopt.h
-EXTRA_DIST += gnulib/argp-version-etc.h
-EXTRA_DIST += gnulib/fnmatch.h
-EXTRA_DIST += gnulib/error.h
-EXTRA_DIST += gnulib/argp-namefrob.h
-EXTRA_DIST += gnulib/argp.h
-EXTRA_DIST += gnulib/argp-fmtstream.h
-EXTRA_DIST += gnulib/gettext.h
-EXTRA_DIST += gnulib/regex_internal.h
-EXTRA_DIST += gnulib/progname.h
-EXTRA_DIST += gnulib/regex.h
-EXTRA_DIST += gnulib/alloca.h
-EXTRA_DIST += gnulib/getopt_int.h
+AM_CFLAGS = $(TARGET_CFLAGS)
+AM_LDFLAGS = $(TARGET_LDFLAGS)
+AM_CPPFLAGS = $(TARGET_CPPFLAGS) $(CPPFLAGS_DEFAULT)
+AM_CCASFLAGS = $(TARGET_CCASFLAGS) $(CCASFLAGS_DEFAULT)
 
-grubconfdir = $(sysconfdir)/grub.d
-platformdir = $(pkglibrootdir)/$(target_cpu)-$(platform)
+CFLAGS_PROGRAM += $(CFLAGS_PLATFORM)
+LDFLAGS_PROGRAM += $(LDFLAGS_PLATFORM)
+CPPFLAGS_PROGRAM += $(CPPFLAGS_PLATFORM)
+CCASFLAGS_PROGRAM += $(CCASFLAGS_PLATFORM)
 
-# to calm down automake
-BUILT_SOURCES =
-CLEANFILES =
-COMMAND_FILES =
-DEF_FILES =
-FS_FILES =
-HANDLER_FILES =
-IMG_FILES =
-MOD_FILES =
-MODULE_FILES =
-PARTMAP_FILES =
-PARTTOOL_FILES =
-TERMINAL_FILES =
-TESTS =
-UND_FILES =
-VIDEO_FILES =
-bin_PROGRAMS =
-bin_SCRIPTS =
-check_PROGRAMS =
-check_SCRIPTS =
-grubconf_DATA =
-grubconf_SCRIPTS =
-man_MANS =
-noinst_DATA =
-noinst_LIBRARIES =
-noinst_PROGRAMS =
-pkglib_SCRIPTS =
-platform_DATA =
-sbin_PROGRAMS =
-sbin_SCRIPTS =
-KERNEL_HEADER_FILES =
-
-# Platform specific options
-if COND_i386_pc
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
-endif
-if COND_i386_efi
-  LDFLAGS_PLATFORM = -melf_i386
-endif
-if COND_x86_64_efi
-  LDFLAGS_PLATFORM = -melf_x86_64
-endif
-if COND_i386_qemu
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
-endif
-if COND_i386_coreboot
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
-endif
-if COND_i386_ieee1275
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
-endif
-if COND_mips_yeeloong
-  CFLAGS_PLATFORM = -march=mips3 -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
-  CCASFLAGS_PLATFORM = -march=mips3
-endif
-if COND_sparc64_ieee1275
-  CFLAGS_PLATFORM = -mno-app-regs
-  LDFLAGS_PLATFORM = -melf64_sparc -mno-relax
-endif
-
-CPPFLAGS_GRUB = -DGRUB_FILE=\"`basename $<`\"
-CPPFLAGS_GRUB += -I$(builddir) -I$(srcdir) -I$(top_builddir) -I$(top_srcdir)
-CPPFLAGS_GRUB += -I$(top_srcdir)/include
-CPPFLAGS_GRUB += -I$(top_builddir)/include
-CCASFLAGS_GRUB = -DASM_FILE=1
-
-CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers
-CPPFLAGS_GCRY = -I$(top_srcdir)/grub-core/lib/libgcrypt_wrap
-
-CFLAGS_GNULIB = -Wno-undef -Wno-sign-compare -Wno-unused -D_GL_UNUSED="__attribute__ ((unused))"
-CPPFLAGS_GNULIB = -I$(top_srcdir)/grub-core/gnulib
-
-CFLAGS_MKISOFS = -Wno-all -Werror
-CPPFLAGS_MKISOFS = -D_FILE_OFFSET_BITS=64 -I$(top_srcdir)/util/mkisofs/include
-
-CFLAGS_POSIX = -fno-builtin
-CPPFLAGS_POSIX = -I$(top_srcdir)/grub-core/lib/posix_wrap
-
-CPPFLAGS_EFIEMU = -I$(top_srcdir)/grub-core/efiemu/runtime
-
-LDADD_KERNEL = -lgcc
-CFLAGS_KERNEL = $(TARGET_CFLAGS) $(CFLAGS_CPU) $(CFLAGS_PLATFORM) -ffreestanding
-LDFLAGS_KERNEL = $(TARGET_LDFLAGS) $(LDFLAGS_CPU) $(LDFLAGS_PLATFORM) -nostdlib -Wl,-N -static-libgcc
-CPPFLAGS_KERNEL = $(TARGET_CPPFLAGS) $(CPPFLAGS_CPU) $(CPPFLAGS_PLATFORM)
-CCASFLAGS_KERNEL = $(TARGET_CCASFLAGS) $(CCASFLAGS_CPU) $(CCASFLAGS_PLATFORM)
-
-CFLAGS_MODULE = $(TARGET_CFLAGS) $(CFLAGS_CPU) $(CFLAGS_PLATFORM) -ffreestanding
-LDFLAGS_MODULE = $(TARGET_LDFLAGS) $(LDFLAGS_CPU) $(LDFLAGS_PLATFORM) -nostdlib -Wl,-N,-r,-d
-CPPFLAGS_MODULE = $(TARGET_CPPFLAGS) $(CPPFLAGS_CPU) $(CPPFLAGS_PLATFORM)
-CCASFLAGS_MODULE = $(TARGET_CCASFLAGS) $(CCASFLAGS_CPU) $(CCASFLAGS_PLATFORM)
-
-CFLAGS_IMAGE = $(TARGET_CFLAGS) $(CFLAGS_CPU) $(CFLAGS_PLATFORM) -fno-builtin
-LDFLAGS_IMAGE = $(TARGET_LDFLAGS) $(LDFLAGS_CPU) $(LDFLAGS_PLATFORM) -nostdlib -Wl,-N,-S
-CPPFLAGS_IMAGE = $(TARGET_CPPFLAGS) $(CPPFLAGS_CPU) $(CPPFLAGS_PLATFORM)
-CCASFLAGS_IMAGE = $(TARGET_CCASFLAGS) $(CCASFLAGS_CPU) $(CCASFLAGS_PLATFORM)
-
-CFLAGS_LIBRARY = $(TARGET_CFLAGS) $(CFLAGS_CPU) $(CFLAGS_PLATFORM) -fno-builtin
-CPPFLAGS_LIBRARY = $(TARGET_CPPFLAGS) $(CPPFLAGS_CPU) $(CPPFLAGS_PLATFORM)
-CCASFLAGS_LIBRARY = $(TARGET_CCASFLAGS) $(CCASFLAGS_CPU) $(CCASFLAGS_PLATFORM)
-
-CFLAGS_PROGRAM = $(TARGET_CFLAGS) $(CFLAGS_CPU) $(CFLAGS_PLATFORM)
-LDFLAGS_PROGRAM = $(TARGET_LDFLAGS) $(LDFLAGS_CPU) $(LDFLAGS_PLATFORM)
-CPPFLAGS_PROGRAM = $(TARGET_CPPFLAGS) $(CPPFLAGS_CPU) $(CPPFLAGS_PLATFORM)
-CCASFLAGS_PROGRAM = $(TARGET_CCASFLAGS) $(CCASFLAGS_CPU) $(CCASFLAGS_PLATFORM)
-
-AM_CFLAGS =
-AM_LDFLAGS =
-AM_CPPFLAGS = $(CPPFLAGS_GRUB)
-AM_CCASFLAGS = $(CCASFLAGS_GRUB)
+CFLAGS_LIBRARY += $(CFLAGS_PLATFORM) -fno-builtin
+CPPFLAGS_LIBRARY += $(CPPFLAGS_PLATFORM)
+CCASFLAGS_LIBRARY += $(CCASFLAGS_PLATFORM)
 
 # gentrigtables
 gentrigtables: gentrigtables.c
@@ -456,27 +310,27 @@ if COND_ENABLE_EFIEMU
 efiemu32.o: efiemu/runtime/efiemu.c $(TARGET_OBJ2ELF)
 	-rm -f $@; \
 	if test "x$(TARGET_APPLE_CC)" = x1; then \
-	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_GRUB) -DELF32 -DAPPLE_CC -m32 -Wall -Werror -nostdlib -O2 -c -o $@.bin $< || exit 1; \
+	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -DELF32 -DAPPLE_CC -m32 -Wall -Werror -nostdlib -O2 -c -o $@.bin $< || exit 1; \
 	  $(OBJCONV) -felf32 -nu -nd $@.bin $@ || exit 1; \
 	  rm -f $@.bin; \
 	else \
-	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_GRUB) -DELF32 -m32 -Wall -Werror -nostdlib -O2 -c -o $@ $< || exit 1; \
+	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -DELF32 -m32 -Wall -Werror -nostdlib -O2 -c -o $@ $< || exit 1; \
 	  if test ! -z "$(TARGET_OBJ2ELF)"; then $(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi; \
 	fi
 
 efiemu64_c.o: efiemu/runtime/efiemu.c
 	if test "x$(TARGET_APPLE_CC)" = x1; then \
-	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_GRUB) -DELF64 -DAPPLE_CC=1 -m64 -nostdlib -Wall -Werror -mno-red-zone -c -o $@ $< || exit 1; \
+	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -DELF64 -DAPPLE_CC=1 -m64 -nostdlib -Wall -Werror -mno-red-zone -c -o $@ $< || exit 1; \
 	else \
-	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_GRUB) -DELF64 -m64 -nostdlib -Wall -Werror -O2 -mcmodel=large -mno-red-zone -c -o $@ $< || exit 1; \
+	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -DELF64 -m64 -nostdlib -Wall -Werror -O2 -mcmodel=large -mno-red-zone -c -o $@ $< || exit 1; \
 	fi
 
 efiemu64_s.o: efiemu/runtime/efiemu.S
 	-rm -f $@
 	if test "x$(TARGET_APPLE_CC)" = x1; then \
-	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_GRUB) -DELF64 -DAPPLE_CC=1 -m64 -Wall -Werror -nostdlib -O2 -mno-red-zone -c -o $@ $< || exit 1; \
+	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -DELF64 -DAPPLE_CC=1 -m64 -Wall -Werror -nostdlib -O2 -mno-red-zone -c -o $@ $< || exit 1; \
 	else \
-	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_GRUB) -DELF64 -m64 -Wall -Werror -nostdlib -O2 -mcmodel=large -mno-red-zone -c -o $@ $< || exit 1; \
+	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -DELF64 -m64 -Wall -Werror -nostdlib -O2 -mcmodel=large -mno-red-zone -c -o $@ $< || exit 1; \
 	fi
 
 efiemu64.o: efiemu64_c.o efiemu64_s.o $(TARGET_OBJ2ELEF)

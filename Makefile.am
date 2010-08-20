@@ -2,104 +2,19 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 DEPDIR = .deps-util
 SUBDIRS = . grub-core po docs
-EXTRA_DIST = autogen.sh gentpl.py Makefile.tpl modules.def geninit.sh
-EXTRA_DIST += include conf/i386-pc-cygwin-img-ld.sc
 
-grubconfdir = $(sysconfdir)/grub.d
-platformdir = $(pkglibrootdir)/$(target_cpu)-$(platform)
+include $(top_srcdir)/conf/Makefile.common
+include $(top_srcdir)/conf/Makefile.extra-dist
 
-# Platform specific options
-if COND_i386_pc
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
-endif
-if COND_i386_efi
-  LDFLAGS_PLATFORM = -melf_i386
-endif
-if COND_x86_64_efi
-  LDFLAGS_PLATFORM = -melf_x86_64
-endif
-if COND_i386_qemu
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
-endif
-if COND_i386_coreboot
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
-endif
-if COND_i386_ieee1275
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
-endif
-if COND_mips_yeeloong
-  CFLAGS_PLATFORM = -march=mips3 -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
-  CCASFLAGS_PLATFORM = -march=mips3
-endif
-if COND_sparc64_ieee1275
-  CFLAGS_PLATFORM = -mno-app-regs
-  LDFLAGS_PLATFORM = -melf64_sparc -mno-relax
-endif
+AM_CFLAGS = $(HOST_CFLAGS)
+AM_LDFLAGS = $(HOST_LDFLAGS)
+AM_CPPFLAGS = $(HOST_CPPFLAGS) $(CPPFLAGS_DEFAULT)
+AM_CCASFLAGS = $(HOST_CCASFLAGS) $(CCASFLAGS_DEFAULT)
 
-CPPFLAGS_GRUB = -DGRUB_FILE=\"`basename $<`\"
-CPPFLAGS_GRUB += -I$(builddir) -I$(srcdir) -I$(top_builddir) -I$(top_srcdir)
-CPPFLAGS_GRUB += -I$(top_srcdir)/include
-CPPFLAGS_GRUB += -I$(top_builddir)/include
-CCASFLAGS_GRUB = -DASM_FILE=1
-
-CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers
-CPPFLAGS_GCRY = -I$(top_srcdir)/grub-core/lib/libgcrypt_wrap
-
-CFLAGS_GNULIB = -Wno-undef -Wno-sign-compare -Wno-unused -D_GL_UNUSED="__attribute__ ((unused))"
-CPPFLAGS_GNULIB = -I$(top_srcdir)/grub-core/gnulib
-
-CFLAGS_MKISOFS = -Wno-all -Werror
-CPPFLAGS_MKISOFS = -D_FILE_OFFSET_BITS=64 -I$(top_srcdir)/util/mkisofs/include
-
-CFLAGS_POSIX = -fno-builtin
-CPPFLAGS_POSIX = -I$(top_srcdir)/grub-core/lib/posix_wrap
-
-CPPFLAGS_EFIEMU = -I$(top_srcdir)/grub-core/efiemu/runtime
-
-# to calm down automake
-BUILT_SOURCES =
-CLEANFILES =
-COMMAND_FILES =
-DEF_FILES =
-FS_FILES =
-HANDLER_FILES =
-IMG_FILES =
-MOD_FILES =
-MODULE_FILES =
-PARTMAP_FILES =
-PARTTOOL_FILES =
-TERMINAL_FILES =
-TESTS =
-UND_FILES =
-VIDEO_FILES =
-bin_PROGRAMS =
-bin_SCRIPTS =
-check_PROGRAMS =
-check_SCRIPTS =
-grubconf_DATA =
-grubconf_SCRIPTS =
-man_MANS =
-noinst_DATA =
-noinst_LIBRARIES =
-noinst_PROGRAMS =
-pkglib_SCRIPTS =
-platform_DATA =
-sbin_PROGRAMS =
-sbin_SCRIPTS =
-
-CFLAGS_PROGRAM = $(HOST_CFLAGS) $(CFLAGS_GNULIB)
-LDFLAGS_PROGRAM = $(HOST_LDFLAGS) $(LDFLAGS_GNULIB)
-CPPFLAGS_PROGRAM = $(HOST_CPPFLAGS) $(CPPFLAGS_GNULIB)
-CCASFLAGS_PROGRAM = $(HOST_CCASFLAGS) $(CCASFLAGS_GNULIB)
-
-CFLAGS_LIBRARY = $(CFLAGS_PROGRAM)
-CPPFLAGS_LIBRARY = $(CPPFLAGS_PROGRAM)
-CCASFLAGS_LIBRARY = $(CCASFLAGS_PROGRAM)
-
-AM_CFLAGS =
-AM_LDFLAGS =
-AM_CPPFLAGS = $(CPPFLAGS_GRUB)
-AM_CCASFLAGS = $(CCASFLAGS_GRUB)
+CFLAGS_PROGRAM += $(CFLAGS_GNULIB)
+LDFLAGS_PROGRAM += $(LDFLAGS_GNULIB)
+CPPFLAGS_PROGRAM += $(CPPFLAGS_GNULIB)
+CCASFLAGS_PROGRAM += $(CCASFLAGS_GNULIB)
 
 include $(srcdir)/modules.am
 

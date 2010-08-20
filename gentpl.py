@@ -226,15 +226,15 @@ mod-[+ name +].c: [+ name +].module$(EXEEXT) moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh [+ name +] moddep.lst > $@ || (rm -f $@; exit 1)
 
 mod-[+ name +].o: mod-[+ name +].c
-	$(TARGET_CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS_MODULE) $(CPPFLAGS) $(CFLAGS_MODULE) $(CFLAGS) -c -o $@ $<
+	$(TARGET_CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + cname() + """_CPPFLAGS) $(CPPFLAGS) $(""" + cname() + """_CFLAGS) $(CFLAGS) -c -o $@ $<
 
 [+ name +].mod: [+ name +].module$(EXEEXT) mod-[+ name +].o
 	if test x$(USE_APPLE_CC_FIXES) = xyes; then \
-	  $(CCLD) $(LDFLAGS_MODULE) $(LDFLAGS) -o $@.bin $^; \
+	  $(CCLD) $(""" + cname() + """_LDFLAGS) $(LDFLAGS) -o $@.bin $^; \
 	  $(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -wd1106 -nu -nd $@.bin $@; \
 	  rm -f $@.bin; \
 	else \
-	  $(CCLD) -o $@ $(LDFLAGS_MODULE) $(LDFLAGS) $^; \
+	  $(CCLD) -o $@ $(""" + cname() + """_LDFLAGS) $(LDFLAGS) $^; \
 	  if test ! -z '$(TARGET_OBJ2ELF)'; then $(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi; \
 	  $(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@; \
 	fi

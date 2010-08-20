@@ -1,0 +1,75 @@
+EXTRA_DIST += include
+
+EXTRA_DIST += autogen.sh
+EXTRA_DIST += geninit.sh
+
+EXTRA_DIST += gentpl.py
+EXTRA_DIST += modules.def
+EXTRA_DIST += Makefile.tpl
+
+EXTRA_DIST += docs/man
+EXTRA_DIST += docs/grub.cfg
+
+EXTRA_DIST += conf/i386-pc-cygwin-img-ld.sc
+
+EXTRA_DIST += grub-core/modules.def
+EXTRA_DIST += grub-core/genmoddep.awk
+EXTRA_DIST += grub-core/genmodsrc.sh
+EXTRA_DIST += grub-core/genfslist.sh
+EXTRA_DIST += grub-core/gencmdlist.sh
+EXTRA_DIST += grub-core/gensymlist.sh
+EXTRA_DIST += grub-core/genemuinit.sh
+EXTRA_DIST += grub-core/genvideolist.sh
+EXTRA_DIST += grub-core/genhandlerlist.sh
+EXTRA_DIST += grub-core/genpartmaplist.sh
+EXTRA_DIST += grub-core/genterminallist.sh
+EXTRA_DIST += grub-core/genparttoollist.sh
+EXTRA_DIST += grub-core/genemuinitheader.sh
+
+EXTRA_DIST += grub-core/gnulib/getopt.h
+EXTRA_DIST += grub-core/gnulib/argp-version-etc.h
+EXTRA_DIST += grub-core/gnulib/fnmatch.h
+EXTRA_DIST += grub-core/gnulib/error.h
+EXTRA_DIST += grub-core/gnulib/argp-namefrob.h
+EXTRA_DIST += grub-core/gnulib/argp.h
+EXTRA_DIST += grub-core/gnulib/argp-fmtstream.h
+EXTRA_DIST += grub-core/gnulib/gettext.h
+EXTRA_DIST += grub-core/gnulib/regex_internal.h
+EXTRA_DIST += grub-core/gnulib/progname.h
+EXTRA_DIST += grub-core/gnulib/regex.h
+EXTRA_DIST += grub-core/gnulib/alloca.h
+EXTRA_DIST += grub-core/gnulib/getopt_int.h
+EXTRA_DIST += grub-core/efiemu/runtime/config.h
+
+EXTRA_DIST += grub-core/lib/posix_wrap/localcharset.h
+EXTRA_DIST += grub-core/lib/posix_wrap/ctype.h
+EXTRA_DIST += grub-core/lib/posix_wrap/limits.h
+EXTRA_DIST += grub-core/lib/posix_wrap/stdio.h
+EXTRA_DIST += grub-core/lib/posix_wrap/sys/types.h
+EXTRA_DIST += grub-core/lib/posix_wrap/unistd.h
+EXTRA_DIST += grub-core/lib/posix_wrap/locale.h
+EXTRA_DIST += grub-core/lib/posix_wrap/wchar.h
+EXTRA_DIST += grub-core/lib/posix_wrap/string.h
+EXTRA_DIST += grub-core/lib/posix_wrap/langinfo.h
+EXTRA_DIST += grub-core/lib/posix_wrap/wctype.h
+EXTRA_DIST += grub-core/lib/posix_wrap/stdint.h
+EXTRA_DIST += grub-core/lib/posix_wrap/stdlib.h
+EXTRA_DIST += grub-core/lib/posix_wrap/assert.h
+EXTRA_DIST += grub-core/lib/posix_wrap/errno.h
+
+EXTRA_DIST += grub-core/lib/libgcrypt_wrap/cipher_wrap.h
+EXTRA_DIST += grub-core/lib/libgcrypt/cipher/rijndael-tables.h
+EXTRA_DIST += grub-core/lib/libgcrypt/cipher/bithelp.h
+EXTRA_DIST += grub-core/lib/libgcrypt/cipher/rmd.h
+EXTRA_DIST += grub-core/lib/libgcrypt/cipher/hash-common.h
+EXTRA_DIST += grub-core/lib/libgcrypt/cipher/camellia.h
+
+EXTRA_DIST += grub-core/lib/libgcrypt-grub/cipher/types.h
+EXTRA_DIST += grub-core/lib/libgcrypt-grub/cipher/cipher.h
+EXTRA_DIST += grub-core/lib/libgcrypt-grub/cipher/rijndael-tables.h
+EXTRA_DIST += grub-core/lib/libgcrypt-grub/cipher/memory.h
+EXTRA_DIST += grub-core/lib/libgcrypt-grub/cipher/bithelp.h
+EXTRA_DIST += grub-core/lib/libgcrypt-grub/cipher/g10lib.h
+EXTRA_DIST += grub-core/lib/libgcrypt-grub/cipher/rmd.h
+EXTRA_DIST += grub-core/lib/libgcrypt-grub/cipher/hash-common.h
+EXTRA_DIST += grub-core/lib/libgcrypt-grub/cipher/camellia.h
