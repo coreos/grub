@@ -99,6 +99,8 @@ static grub_uint8_t usb_to_at_map[128] =
   /* 0x7e */ 0x00,                  0x00, 
 };
 
+#define CAPS_LOCK               0x39
+#define CAPS_LOCK_LED           0x02
 
 /* Valid values for bRequest.  See HID definition version 1.11 section 7.2. */
 #define USB_HID_GET_REPORT	0x01
@@ -122,7 +124,9 @@ struct grub_usb_keyboard_data
 {
   grub_usb_device_t usbdev;
   grub_uint8_t status;
+  grub_uint16_t mods;
   int key;
+  int interfno;
   struct grub_usb_desc_endp *endp;
 };
 
@@ -237,6 +241,7 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
     }
 
   data->usbdev = usbdev;
+  data->interfno = interfno;
   data->endp = endp;
 
   /* Place the device in boot mode.  */
@@ -278,12 +283,27 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
       }
   }
 
+  data->mods = 0;
+
   grub_term_register_input_active ("usb_keyboard", &grub_usb_keyboards[curnum]);
 
   return 1;
 }
 
 
+
+static void
+send_leds (struct grub_usb_keyboard_data *termdata)
+{
+  char report[1];
+  report[0] = 0;
+  if (termdata->mods & GRUB_TERM_STATUS_CAPS)
+    report[0] |= CAPS_LOCK_LED;
+  grub_usb_control_msg (termdata->usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
+			USB_HID_SET_REPORT, 0x0200, termdata->interfno,
+			sizeof (report), (char *) report);
+  grub_errno = GRUB_ERR_NONE;
+}
 
 static int
 grub_usb_keyboard_checkkey (struct grub_term_input *term)
@@ -309,6 +329,13 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
   if (actual < 3 || !data[2])
     return -1;
 
+  if (data[2] == CAPS_LOCK)
+    {
+      termdata->mods ^= GRUB_TERM_STATUS_CAPS;
+      send_leds (termdata);
+      return -1;
+    }
+
   grub_dprintf ("usb_keyboard",
 		"report: 0x%02x 0x%02x 0x%02x 0x%02x"
 		" 0x%02x 0x%02x 0x%02x 0x%02x\n",
@@ -320,7 +347,8 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
 
   else
     termdata->key = grub_term_map_key (usb_to_at_map[data[2]],
-				       interpret_status (data[0]));
+				       interpret_status (data[0])
+				       | termdata->mods);
 
   grub_errno = GRUB_ERR_NONE;
 
@@ -348,7 +376,7 @@ grub_usb_keyboard_getkeystatus (struct grub_term_input *term)
 {
   struct grub_usb_keyboard_data *termdata = term->data;
 
-  return interpret_status (termdata->status);
+  return interpret_status (termdata->status) | termdata->mods;
 }
 
 struct grub_usb_attach_desc attach_hook =
