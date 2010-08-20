@@ -220,8 +220,7 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
   err = grub_usb_bulk_read_extended (termdata->usbdev,
 				     termdata->endp->endp_addr, sizeof (data),
 				     (char *) data, 10, &actual);
-
-  if (err)
+  if (err || actual < 1)
     return -1;
 
   termdata->status = data[0];
