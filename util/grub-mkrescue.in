@@ -296,6 +296,7 @@ if test -e "${efi64_dir}" || test -e "${efi32_dir}"; then
 
     mformat -C -f 2880 -L 16 -i "${iso9660_dir}"/efi.img ::
     mcopy -s -i "${iso9660_dir}"/efi.img ${efi_dir}/efi ::/
+    rm -rf ${efi_dir}
     grub_mkisofs_arguments="${grub_mkisofs_arguments} --efi-boot efi.img"
 fi
 

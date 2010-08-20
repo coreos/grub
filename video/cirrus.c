@@ -334,42 +334,25 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
     }
 
   {
-    int pitch_reg, overflow_reg = 0, line_compare = 0x3ff;
+    struct grub_video_hw_config config = {
+      .pitch = pitch / GRUB_VGA_CR_PITCH_DIVISOR,
+      .line_compare = 0x3ff,
+      .vdisplay_end = height - 1,
+      .horizontal_end = width / GRUB_VGA_CR_WIDTH_DIVISOR
+    };
     grub_uint8_t sr_ext = 0, hidden_dac = 0;
 
-    pitch_reg = pitch / GRUB_VGA_CR_PITCH_DIVISOR;
-
+    grub_vga_set_geometry (&config, grub_vga_cr_write);
+    
     grub_vga_gr_write (GRUB_VGA_GR_MODE_256_COLOR | GRUB_VGA_GR_MODE_READ_MODE1,
 		       GRUB_VGA_GR_MODE);
     grub_vga_gr_write (GRUB_VGA_GR_GR6_GRAPHICS_MODE, GRUB_VGA_GR_GR6);
     
     grub_vga_sr_write (GRUB_VGA_SR_MEMORY_MODE_NORMAL, GRUB_VGA_SR_MEMORY_MODE);
 
-    /* Disable CR0-7 write protection.  */
-    grub_vga_cr_write (0, GRUB_VGA_CR_VSYNC_END);
-
-    grub_vga_cr_write (width / GRUB_VGA_CR_WIDTH_DIVISOR - 1,
-		       GRUB_VGA_CR_WIDTH);
-    grub_vga_cr_write ((height - 1) & 0xff, GRUB_VGA_CR_HEIGHT);
-    overflow_reg |= (((height - 1) >> GRUB_VGA_CR_OVERFLOW_HEIGHT1_SHIFT) & 
-		     GRUB_VGA_CR_OVERFLOW_HEIGHT1_MASK)
-      | (((height - 1) >> GRUB_VGA_CR_OVERFLOW_HEIGHT2_SHIFT) & 
-	 GRUB_VGA_CR_OVERFLOW_HEIGHT2_MASK);
-
-    grub_vga_cr_write (pitch_reg & 0xff, GRUB_VGA_CR_PITCH);
-
-    grub_vga_cr_write (line_compare & 0xff, GRUB_VGA_CR_LINE_COMPARE);
-    overflow_reg |= (line_compare >> GRUB_VGA_CR_OVERFLOW_LINE_COMPARE_SHIFT)
-      & GRUB_VGA_CR_OVERFLOW_LINE_COMPARE_MASK;
-
-    grub_vga_cr_write (overflow_reg, GRUB_VGA_CR_OVERFLOW);
-
-    grub_vga_cr_write ((pitch_reg >> CIRRUS_CR_EXTENDED_DISPLAY_PITCH_SHIFT)
+    grub_vga_cr_write ((config.pitch >> CIRRUS_CR_EXTENDED_DISPLAY_PITCH_SHIFT)
 	      & CIRRUS_CR_EXTENDED_DISPLAY_PITCH_MASK,
 	      CIRRUS_CR_EXTENDED_DISPLAY);
-
-    grub_vga_cr_write ((line_compare >> GRUB_VGA_CR_CELL_HEIGHT_LINE_COMPARE_SHIFT)
-		       & GRUB_VGA_CR_CELL_HEIGHT_LINE_COMPARE_MASK, GRUB_VGA_CR_CELL_HEIGHT);
 
     grub_vga_cr_write (GRUB_VGA_CR_MODE_TIMING_ENABLE
 		       | GRUB_VGA_CR_MODE_BYTE_MODE

@@ -52,9 +52,9 @@
 /* nilfs 1st super block posission from beginning of the partition
    in 512 block size */
 #define NILFS_1ST_SUPER_BLOCK	2
-/* nilfs 2nd super block posission from end of the partition
+/* nilfs 2nd super block posission from beginning of the partition
    in 512 block size */
-#define NILFS_2ND_SUPER_BLOCK	8
+#define NILFS_2ND_SUPER_BLOCK(devsize)	(((devsize >> 3) - 1) << 3)
 
 struct grub_nilfs2_inode
 {
@@ -729,7 +729,7 @@ grub_nilfs2_load_sb (struct grub_nilfs2_data *data)
   if (partition_size != GRUB_DISK_SIZE_UNKNOWN)
     {
       /* Read second super block. */
-      grub_disk_read (disk, partition_size - NILFS_2ND_SUPER_BLOCK, 0,
+      grub_disk_read (disk, NILFS_2ND_SUPER_BLOCK (partition_size), 0,
 		      sizeof (struct grub_nilfs2_super_block), &sb2);
       /* Make sure if 2nd super block is valid.  */
       valid[1] = grub_nilfs2_valid_sb (&sb2);

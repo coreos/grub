@@ -23,8 +23,21 @@
 #include <grub/misc.h>
 #include <grub/time.h>
 
+#define GRUB_USBHUB_MAX_DEVICES 128
+
 /* USB Supports 127 devices, with device 0 as special case.  */
-static struct grub_usb_device *grub_usb_devs[128];
+static struct grub_usb_device *grub_usb_devs[GRUB_USBHUB_MAX_DEVICES];
+
+struct grub_usb_hub
+{
+  struct grub_usb_hub *next;
+  grub_usb_controller_t controller;
+  int nports;
+  grub_usb_speed_t *speed;
+  grub_usb_device_t dev;
+};
+
+struct grub_usb_hub *hubs;
 
 /* Add a device that currently has device number 0 and resides on
    CONTROLLER, the Hub reported that the device speed is SPEED.  */
@@ -33,6 +46,7 @@ grub_usb_hub_add_dev (grub_usb_controller_t controller, grub_usb_speed_t speed)
 {
   grub_usb_device_t dev;
   int i;
+  grub_usb_err_t err;
 
   dev = grub_zalloc (sizeof (struct grub_usb_device));
   if (! dev)
@@ -41,31 +55,51 @@ grub_usb_hub_add_dev (grub_usb_controller_t controller, grub_usb_speed_t speed)
   dev->controller = *controller;
   dev->speed = speed;
 
-  grub_usb_device_initialize (dev);
+  err = grub_usb_device_initialize (dev);
+  if (err)
+    {
+      grub_free (dev);
+      return NULL;
+    }
 
   /* Assign a new address to the device.  */
-  for (i = 1; i < 128; i++)
+  for (i = 1; i < GRUB_USBHUB_MAX_DEVICES; i++)
     {
       if (! grub_usb_devs[i])
 	break;
     }
-  if (i == 128)
+  if (i == GRUB_USBHUB_MAX_DEVICES)
     {
       grub_error (GRUB_ERR_IO, "can't assign address to USB device");
+      for (i = 0; i < 8; i++)
+        grub_free (dev->config[i].descconf);
+      grub_free (dev);
       return NULL;
     }
 
-  grub_usb_control_msg (dev,
-			(GRUB_USB_REQTYPE_OUT
-			 | GRUB_USB_REQTYPE_STANDARD
-			 | GRUB_USB_REQTYPE_TARGET_DEV),
-			GRUB_USB_REQ_SET_ADDRESS,
-			i, 0, 0, NULL);
+  err = grub_usb_control_msg (dev,
+			      (GRUB_USB_REQTYPE_OUT
+			       | GRUB_USB_REQTYPE_STANDARD
+			       | GRUB_USB_REQTYPE_TARGET_DEV),
+			      GRUB_USB_REQ_SET_ADDRESS,
+			      i, 0, 0, NULL);
+  if (err)
+    {
+      for (i = 0; i < 8; i++)
+        grub_free (dev->config[i].descconf);
+      grub_free (dev);
+      return NULL;
+    }
 
   dev->addr = i;
   dev->initialized = 1;
   grub_usb_devs[i] = dev;
 
+  /* Wait "recovery interval", spec. says 2ms */
+  grub_millisleep (2);
+  
+  grub_usb_device_attach (dev);
+  
   return dev;
 }
 
@@ -133,7 +167,7 @@ grub_usb_add_hub (grub_usb_device_t dev)
       if (err)
 	continue;
       grub_dprintf ("usb", "Hub port %d status: 0x%02x\n", i, status);
-      	    
+
       /* If connected, reset and enable the port.  */
       if (status & GRUB_USB_HUB_STATUS_CONNECTED)
 	{
@@ -180,7 +214,22 @@ grub_usb_add_hub (grub_usb_device_t dev)
                  (grub_get_time_ms() < timeout) );
           if (err || !(status & GRUB_USB_HUB_STATUS_C_PORT_RESET) )
             continue;
+
+          /* Wait a recovery time after reset, spec. says 10ms */
+          grub_millisleep (10);
    
+          /* Do reset of connection change bit */
+          err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
+                                            | GRUB_USB_REQTYPE_CLASS
+                                            | GRUB_USB_REQTYPE_TARGET_OTHER),
+                                      GRUB_USB_REQ_CLEAR_FEATURE,
+				      GRUB_USB_HUB_FEATURE_C_CONNECTED,
+				      i, 0, 0);
+          /* Just ignore the device if the Hub reports some error */
+          if (err)
+	     continue;
+          grub_dprintf ("usb", "Hub port - cleared connection change\n");
+
 	  /* Add the device and assign a device address to it.  */
           grub_dprintf ("usb", "Call hub_add_dev - port %d\n", i);
 	  next_dev = grub_usb_hub_add_dev (&dev->controller, speed);
@@ -196,41 +245,229 @@ grub_usb_add_hub (grub_usb_device_t dev)
   return GRUB_ERR_NONE;
 }
 
+static void
+attach_root_port (grub_usb_controller_t controller, int portno,
+		  grub_usb_speed_t speed)
+{
+  grub_usb_device_t dev;
+  grub_err_t err;
+
+  /* Disable the port. XXX: Why? */
+  err = controller->dev->portstatus (controller, portno, 0);
+  if (err)
+    return;
+
+  /* Enable the port.  */
+  err = controller->dev->portstatus (controller, portno, 1);
+  if (err)
+    return;
+
+  /* Enable the port and create a device.  */
+  dev = grub_usb_hub_add_dev (controller, speed);
+  if (! dev)
+    return;
+
+  /* If the device is a Hub, scan it for more devices.  */
+  if (dev->descdev.class == 0x09)
+    grub_usb_add_hub (dev);
+}
+
 grub_usb_err_t
 grub_usb_root_hub (grub_usb_controller_t controller)
 {
-  grub_err_t err;
-  int ports;
   int i;
+  struct grub_usb_hub *hub;
+  int changed=0;
+
+  hub = grub_malloc (sizeof (*hub));
+  if (!hub)
+    return GRUB_USB_ERR_INTERNAL;
+
+  hub->next = hubs;
+  hubs = hub;
+  hub->controller = grub_malloc (sizeof (*controller));
+  if (!hub->controller)
+    {
+      grub_free (hub);
+      return GRUB_USB_ERR_INTERNAL;
+    }
+
+  grub_memcpy (hub->controller, controller, sizeof (*controller));
+  hub->dev = 0;
 
   /* Query the number of ports the root Hub has.  */
-  ports = controller->dev->hubports (controller);
-
-  for (i = 0; i < ports; i++)
+  hub->nports = controller->dev->hubports (controller);
+  hub->speed = grub_malloc (sizeof (hub->speed[0]) * hub->nports);
+  if (!hub->speed)
     {
-      grub_usb_speed_t speed = controller->dev->detect_dev (controller, i);
+      grub_free (hub->controller);
+      grub_free (hub);
+      return GRUB_USB_ERR_INTERNAL;
+    }
 
-      if (speed != GRUB_USB_SPEED_NONE)
-	{
-	  grub_usb_device_t dev;
+  for (i = 0; i < hub->nports; i++)
+    {
+      hub->speed[i] = controller->dev->detect_dev (hub->controller, i,
+                                                   &changed);
 
-	  /* Enable the port.  */
-	  err = controller->dev->portstatus (controller, i, 1);
-	  if (err)
-	    continue;
-
-	  /* Enable the port and create a device.  */
-	  dev = grub_usb_hub_add_dev (controller, speed);
-	  if (! dev)
-	    continue;
-
-	  /* If the device is a Hub, scan it for more devices.  */
-	  if (dev->descdev.class == 0x09)
-	    grub_usb_add_hub (dev);
-	}
+      if (hub->speed[i] != GRUB_USB_SPEED_NONE)
+	attach_root_port (hub->controller, i, hub->speed[i]);
     }
 
   return GRUB_USB_ERR_NONE;
+}
+
+static void
+poll_nonroot_hub (grub_usb_device_t dev)
+{
+  struct grub_usb_usb_hubdesc hubdesc;
+  grub_err_t err;
+  int i;
+  grub_uint64_t timeout;
+  grub_usb_device_t next_dev;
+  
+  err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_IN
+	  		            | GRUB_USB_REQTYPE_CLASS
+			            | GRUB_USB_REQTYPE_TARGET_DEV),
+                              GRUB_USB_REQ_GET_DESCRIPTOR,
+			      (GRUB_USB_DESCRIPTOR_HUB << 8) | 0,
+			      0, sizeof (hubdesc), (char *) &hubdesc);
+  if (err)
+    return;
+    
+  /* Iterate over the Hub ports.  */
+  for (i = 1; i <= hubdesc.portcnt; i++)
+    {
+      grub_uint32_t status;
+
+      /* Get the port status.  */
+      err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_IN
+					| GRUB_USB_REQTYPE_CLASS
+					| GRUB_USB_REQTYPE_TARGET_OTHER),
+				  GRUB_USB_REQ_GET_STATUS,
+				  0, i, sizeof (status), (char *) &status);
+      /* Just ignore the device if the Hub does not report the
+	 status.  */
+      if (err)
+	continue;
+      	    
+      /* Connected and status of connection changed ? */
+      if ((status & GRUB_USB_HUB_STATUS_CONNECTED)
+          && (status & GRUB_USB_HUB_STATUS_C_CONNECTED))
+	{
+	  grub_usb_speed_t speed;
+
+	  /* Determine the device speed.  */
+	  if (status & GRUB_USB_HUB_STATUS_LOWSPEED)
+	    speed = GRUB_USB_SPEED_LOW;
+	  else
+	    {
+	      if (status & GRUB_USB_HUB_STATUS_HIGHSPEED)
+		speed = GRUB_USB_SPEED_HIGH;
+	      else
+		speed = GRUB_USB_SPEED_FULL;
+	    }
+
+	  /* A device is actually connected to this port.
+	   * Now do reset of port. */
+	  err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
+					    | GRUB_USB_REQTYPE_CLASS
+					    | GRUB_USB_REQTYPE_TARGET_OTHER),
+				      GRUB_USB_REQ_SET_FEATURE,
+				      GRUB_USB_HUB_FEATURE_PORT_RESET,
+				      i, 0, 0);
+	  /* If the Hub does not cooperate for this port, just skip
+	     the port.  */
+	  if (err)
+	    continue;
+
+          /* Wait for reset procedure done */
+          timeout = grub_get_time_ms () + 1000;
+          do
+            {
+              /* Get the port status.  */
+              err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_IN
+	   	 			        | GRUB_USB_REQTYPE_CLASS
+					        | GRUB_USB_REQTYPE_TARGET_OTHER),
+				          GRUB_USB_REQ_GET_STATUS,
+				          0, i, sizeof (status), (char *) &status);
+            }
+          while (!err &&
+                 !(status & GRUB_USB_HUB_STATUS_C_PORT_RESET) &&
+                 (grub_get_time_ms() < timeout) );
+          if (err || !(status & GRUB_USB_HUB_STATUS_C_PORT_RESET) )
+            continue;
+
+          /* Wait a recovery time after reset, spec. says 10ms */
+          grub_millisleep (10);
+
+          /* Do reset of connection change bit */
+          err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
+                                            | GRUB_USB_REQTYPE_CLASS
+                                            | GRUB_USB_REQTYPE_TARGET_OTHER),
+                                      GRUB_USB_REQ_CLEAR_FEATURE,
+				      GRUB_USB_HUB_FEATURE_C_CONNECTED,
+				      i, 0, 0);
+          /* Just ignore the device if the Hub reports some error */
+          if (err)
+	     continue;
+
+	  /* Add the device and assign a device address to it.  */
+	  next_dev = grub_usb_hub_add_dev (&dev->controller, speed);
+          if (! next_dev)
+            continue;
+
+          /* If the device is a Hub, scan it for more devices.  */
+          if (next_dev->descdev.class == 0x09)
+            grub_usb_add_hub (next_dev);
+	}
+    }
+
+  return;
+}
+
+void
+grub_usb_poll_devices (void)
+{
+  struct grub_usb_hub *hub;
+  int i;
+
+  for (hub = hubs; hub; hub = hub->next)
+    {
+      int changed=0;
+      /* Do we have to recheck number of ports?  */
+      /* No, it should be never changed, it should be constant. */
+      for (i = 0; i < hub->nports; i++)
+	{
+	  grub_usb_speed_t speed;
+
+	  speed = hub->controller->dev->detect_dev (hub->controller, i,
+	                                            &changed);
+
+	  if (speed != GRUB_USB_SPEED_NONE)
+	    {
+              if (changed)
+                attach_root_port (hub->controller, i, speed);
+	    }
+
+          /* XXX: There should be also handling
+           * of disconnected devices. */
+           
+	  hub->speed[i] = speed;
+	}
+    }
+
+  /* We should check changes of non-root hubs too. */
+  for (i = 0; i < GRUB_USBHUB_MAX_DEVICES; i++)
+    {
+      grub_usb_device_t dev = grub_usb_devs[i];
+
+      if (dev && dev->descdev.class == 0x09)
+	{
+          poll_nonroot_hub (dev);
+	}
+    }
+
 }
 
 int
@@ -238,7 +475,7 @@ grub_usb_iterate (int (*hook) (grub_usb_device_t dev))
 {
   int i;
 
-  for (i = 0; i < 128; i++)
+  for (i = 0; i < GRUB_USBHUB_MAX_DEVICES; i++)
     {
       if (grub_usb_devs[i])
 	{

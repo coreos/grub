@@ -467,13 +467,30 @@ clear_seen_devices (void)
 }
 
 #ifdef __linux__
-/* Like strcmp, but doesn't require a cast for use as a qsort comparator.  */
-static int
-compare_file_names (const void *a, const void *b)
+struct device
 {
-  const char *left = *(const char **) a;
-  const char *right = *(const char **) b;
-  return strcmp (left, right);
+	char *stable;
+	char *kernel;
+};
+
+/* Sort by the kernel name for preference since that most closely matches
+   older device.map files, but sort by stable by-id names as a fallback.
+   This is because /dev/disk/by-id/ usually has a few alternative
+   identifications of devices (e.g. ATA vs. SATA).
+   check_device_readable_unique will ensure that we only get one for any
+   given disk, but sort the list so that the choice of which one we get is
+   stable.  */
+static int
+compare_devices (const void *a, const void *b)
+{
+  const struct device *left = (const struct device *) a;
+  const struct device *right = (const struct device *) b;
+  int ret;
+  ret = strcmp (left->kernel, right->kernel);
+  if (ret)
+    return ret;
+  else
+    return strcmp (left->stable, right->stable);
 }
 #endif /* __linux__ */
 
@@ -507,10 +524,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
     if (dir)
       {
 	struct dirent *entry;
-	char **names;
-	size_t names_len = 0, names_max = 1024, i;
+	struct device *devs;
+	size_t devs_len = 0, devs_max = 1024, i;
 
-	names = xmalloc (names_max * sizeof (*names));
+	devs = xmalloc (devs_max * sizeof (*devs));
 
 	/* Dump all the directory entries into names, resizing if
 	   necessary.  */
@@ -526,35 +543,34 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	    /* Skip RAID entries; they are handled by upper layers.  */
 	    if (strncmp (entry->d_name, "md-", sizeof ("md-") - 1) == 0)
 	      continue;
-	    if (names_len >= names_max)
+	    if (devs_len >= devs_max)
 	      {
-		names_max *= 2;
-		names = xrealloc (names, names_max * sizeof (*names));
+		devs_max *= 2;
+		devs = xrealloc (devs, devs_max * sizeof (*devs));
 	      }
-	    names[names_len++] = xasprintf (entry->d_name);
+	    devs[devs_len].stable =
+	      xasprintf ("/dev/disk/by-id/%s", entry->d_name);
+	    devs[devs_len].kernel =
+	      canonicalize_file_name (devs[devs_len].stable);
+	    devs_len++;
 	  }
 
-	/* /dev/disk/by-id/ usually has a few alternative identifications of
-	   devices (e.g. ATA vs. SATA).  check_device_readable_unique will
-	   ensure that we only get one for any given disk, but sort the list
-	   so that the choice of which one we get is stable.  */
-	qsort (names, names_len, sizeof (*names), &compare_file_names);
+	qsort (devs, devs_len, sizeof (*devs), &compare_devices);
 
 	closedir (dir);
 
 	/* Now add all the devices in sorted order.  */
-	for (i = 0; i < names_len; ++i)
+	for (i = 0; i < devs_len; ++i)
 	  {
-	    char *path = xasprintf ("/dev/disk/by-id/%s", names[i]);
-	    if (check_device_readable_unique (path))
+	    if (check_device_readable_unique (devs[i].stable))
 	      {
-		if (hook (path, 0))
+		if (hook (devs[i].stable, 0))
 		  goto out;
 	      }
-	    free (path);
-	    free (names[i]);
+	    free (devs[i].stable);
+	    free (devs[i].kernel);
 	  }
-	free (names);
+	free (devs);
       }
   }
 

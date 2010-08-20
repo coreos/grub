@@ -402,7 +402,7 @@ grub_scsi_open (const char *name, grub_disk_t disk)
       if (p->open (bus, scsi))
 	continue;
 
-      disk->id = grub_make_scsi_id (scsi->dev->id, bus, lun);
+      disk->id = grub_make_scsi_id (p->id, bus, lun);
       disk->data = scsi;
       scsi->dev = p;
       scsi->lun = lun;

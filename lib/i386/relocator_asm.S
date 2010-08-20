@@ -157,11 +157,13 @@ LOCAL(cont1):
 	andl	$(~GRUB_MEMORY_CPU_CR0_PAGING_ON), %eax
 	movl	%eax, %cr0
 
+#ifdef __x86_64__
 	/* Disable amd64. */
 	movl	$GRUB_MEMORY_CPU_AMD64_MSR, %ecx
 	rdmsr
 	andl	$(~GRUB_MEMORY_CPU_AMD64_MSR_ON), %eax
 	wrmsr
+#endif
 
 	/* Turn off PAE. */
 	movl	%cr4, %eax

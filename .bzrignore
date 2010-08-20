@@ -1,5 +1,6 @@
 00_header
 10_*
+20_linux_xen
 30_os-prober
 40_custom
 41_custom
@@ -39,6 +40,7 @@ grub-fstest
 grub_fstest_init.c
 grub_fstest_init.h
 grub-install
+grub-macho2img
 grub-mk*
 grub-pbkdf2
 grub-pe2elf

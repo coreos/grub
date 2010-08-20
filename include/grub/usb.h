@@ -104,7 +104,7 @@ struct grub_usb_controller_dev
   grub_err_t (*portstatus) (grub_usb_controller_t dev, unsigned int port,
 			    unsigned int enable);
 
-  grub_usb_speed_t (*detect_dev) (grub_usb_controller_t dev, int port);
+  grub_usb_speed_t (*detect_dev) (grub_usb_controller_t dev, int port, int *changed);
 
   /* The next host controller.  */
   struct grub_usb_controller_dev *next;
@@ -125,6 +125,13 @@ struct grub_usb_interface
   struct grub_usb_desc_if *descif;
 
   struct grub_usb_desc_endp *descendp;
+
+  /* A driver is handling this interface. Do we need to support multiple drivers
+     for single interface?
+   */
+  int attached;
+
+  void (*detach_hook) (struct grub_usb_device *dev, int config, int interface);
 };
 
 struct grub_usb_configuration
@@ -206,5 +213,22 @@ grub_usb_get_config_interface (struct grub_usb_desc_config *config)
   interf = (struct grub_usb_desc_if *) (sizeof (*config) + (char *) config);
   return interf;
 }
+
+typedef int (*grub_usb_attach_hook_class) (grub_usb_device_t usbdev,
+					   int configno, int interfno);
+
+struct grub_usb_attach_desc
+{
+  struct grub_usb_attach_desc *next;
+  int class;
+  grub_usb_attach_hook_class hook;
+};
+
+void grub_usb_register_attach_hook_class (struct grub_usb_attach_desc *desc);
+void grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc);
+
+void grub_usb_poll_devices (void);
+
+void grub_usb_device_attach (grub_usb_device_t dev);
 
 #endif /* GRUB_USB_H */
