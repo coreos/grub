@@ -133,11 +133,11 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
 
   /* Place the device in boot mode.  */
   grub_usb_control_msg (usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
-			USB_HID_SET_PROTOCOL, 0, 0, 0, 0);
+  			USB_HID_SET_PROTOCOL, 0, 0, 0, 0);
 
   /* Reports every time an event occurs and not more often than that.  */
   grub_usb_control_msg (usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
-			USB_HID_SET_IDLE, 0<<8, 0, 0, 0);
+  			USB_HID_SET_IDLE, 0<<8, 0, 0, 0);
 
   grub_memcpy (&grub_usb_keyboards[curnum], &grub_usb_keyboard_term,
 	       sizeof (grub_usb_keyboards[curnum]));
@@ -157,7 +157,7 @@ static grub_err_t
 grub_usb_keyboard_getreport (grub_usb_device_t dev, grub_uint8_t *report)
 {
   return grub_usb_control_msg (dev, GRUB_USB_REQTYPE_CLASS_INTERFACE_IN,
-			       USB_HID_GET_REPORT, 0, 0, 8, (char *) report);
+			       USB_HID_GET_REPORT, 0x0100, 0, 8, (char *) report);
 }
 
 
