@@ -97,6 +97,24 @@ usb_mod_SOURCES = bus/usb/usb.c bus/usb/usbtrans.c bus/usb/usbhub.c
 usb_mod_CFLAGS = $(COMMON_CFLAGS)
 usb_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For serial.mod.
+pkglib_MODULES += usbserial_common.mod
+usbserial_common_mod_SOURCES = bus/usb/serial/common.c
+usbserial_common_mod_CFLAGS = $(COMMON_CFLAGS)
+usbserial_common_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For serial.mod.
+pkglib_MODULES += usbserial_pl2303.mod
+usbserial_pl2303_mod_SOURCES = bus/usb/serial/pl2303.c
+usbserial_pl2303_mod_CFLAGS = $(COMMON_CFLAGS)
+usbserial_pl2303_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For serial.mod.
+pkglib_MODULES += usbserial_ftdi.mod
+usbserial_ftdi_mod_SOURCES = bus/usb/serial/ftdi.c
+usbserial_ftdi_mod_CFLAGS = $(COMMON_CFLAGS)
+usbserial_ftdi_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For usbtest.mod
 pkglib_MODULES += usbtest.mod
 usbtest_mod_SOURCES = commands/usbtest.c
