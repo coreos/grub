@@ -215,7 +215,7 @@ add_special_keys (struct grub_keyboard_layout *layout)
   layout->keyboard_map[104] = GRUB_TERM_KEY_RIGHT;
 }
 
-static char
+static unsigned
 lookup (char *code)
 {
   int i;
