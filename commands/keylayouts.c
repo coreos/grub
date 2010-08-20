@@ -25,8 +25,8 @@
 #include <grub/dl.h>
 #include <grub/keyboard_layouts.h>
 #include <grub/command.h>
-#include <grub/gzio.h>
 #include <grub/i18n.h>
+#include <grub/file.h>
 
 static struct grub_keyboard_layout layout_us = {
   .keyboard_map = {
@@ -159,7 +159,7 @@ grub_cmd_keymap (struct grub_command *cmd __attribute__ ((unused)),
   else
     filename = argv[0];
 
-  file = grub_gzfile_open (filename, 1);
+  file = grub_file_open (filename);
   if (! file)
     goto fail;
 

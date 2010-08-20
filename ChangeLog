@@ -1,3 +1,113 @@
+2010-08-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	USB hotunplugging and USB serial support.
+
+	* bus/usb/ohci.c (grub_ohci_transfer): Fill *actual and respect timeout.
+	* bus/usb/uhci.c (grub_free_queue): Compute *actual.
+	(grub_uhci_transfer): Respect timeout and set *actual.
+	* bus/usb/usb.c (grub_usb_device_initialize): Correctly skip fields of
+	non-standard length.
+	(grub_usb_device_attach): Autoload modules.
+	(GRUB_MOD_INIT): Set grub_term_poll_usb.
+	(GRUB_MOD_FINI): Unset grub_term_poll_usb.
+	* bus/usb/usbhub.c (grub_usb_hub): Replace speed with devices. All
+	users updated.
+	(grub_usb_add_hub): Fill nports and children.
+	(attach_root_port): Receive hub instead of controller.
+	All users updated. Fill hub->devices.
+	(grub_usb_root_hub): Allocate hub->devices.
+	(detach_device): New function.
+	(poll_nonroot_hub): Fill children and detach devices.
+	* bus/usb/usbtrans.c (grub_usb_bulk_readwrite): Accept timeout and
+	actual arguments. All users updated.
+	(grub_usb_bulk_read_extended): New function.
+	* bus/usb/serial/common.c: New file.
+	* bus/usb/serial/ftdi.c: Likewise.
+	* bus/usb/serial/pl2303.c: Likewise.
+	* commands/terminal.c (handle_command): Support wildcard.
+	* commands/usbtest.c: Output "Unknown" instead of empty string.
+	* conf/any-emu.rmk (pkglib_MODULES): Add usbserial_common.mod.
+	(usbserial_common_mod_SOURCES): New variable.
+	(usbserial_common_mod_CFLAGS): Likewise.
+	(usbserial_common_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES): Add usbserial_pl2303.mod.
+	(usbserial_pl2303_mod_SOURCES): New variable.
+	(usbserial_pl2303_mod_CFLAGS): Likewise.
+	(usbserial_pl2303_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES): Add usbserial_ftdi.mod.
+	(usbserial_ftdi_mod_SOURCES): New variable.
+	(usbserial_ftdi_mod_CFLAGS): Likewise.
+	(usbserial_ftdi_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES): Add serial.mod.
+	(serial_mod_SOURCES): New variable.
+	(serial_mod_CFLAGS): Likewise.
+	(serial_mod_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/mips-yeeloong.rmk: Likewise.
+	* conf/i386.rmk (serial_mod_SOURCES): Add term/ns8250.c.
+	* conf/mips-yeeloong.rmk (kernel_img_SOURCES): Likewise.
+	* disk/usbms.c (first_available_slot): New variable.
+	(grub_usbms_attach): Don't reuse free slots due to potential cache
+	problems.
+	* include/grub/serial.h: Moved to ..
+	* include/grub/ns8250.h: ...this.
+	* include/grub/serial.h: New file.
+	* include/grub/term.h (grub_term_poll_usb): New variable.
+	* include/grub/terminfo.h (grub_terminfo_input_state): Pass term to
+	readkey. All users updated.
+	(grub_terminfo_output_state): Pass term to put.
+	* include/grub/usb.h (GRUB_USB_REQTYPE): New enum.
+	(grub_usb_controller_dev): Add timeout and actual arguments to
+	transfer. All users updated.
+	(grub_usb_interface): New field detach_data.
+	(grub_usb_device): New fields children and nports.
+	(grub_usb_ep_type_t): New type.
+	(grub_usb_get_ep_type): New function.
+	(grub_usb_bulk_read_extended): Likewise.
+	* include/grub/usbdesc.h (grub_usb_desc): New type.
+	* include/grub/usbserial.h: New file.
+	* include/grub/usbtrans.h (grub_usb_transaction): New field preceding.
+	* kern/term.c (grub_term_poll_usb): New variable.
+	(grub_getkey): Call grub_term_poll_usb if set.
+	(grub_checkkey): Likewise.
+	(grub_getkeystatus): Likewise.
+	* term/serial.c: Moved controller-specific parts to ...
+	* term/ns8250.c: ... here.
+	* term/serial.c: Mostly rewritten.
+	* term/usb_keyboard.c: Reorganised to use GET_REPORT only on attaching
+	according to spec.
+
+2010-08-20  Robert Millan  <rmh@gnu.org>
+
+	Make kFreeBSD code more generic to support ext2fs as root, ufs as
+	a separate module and maybe other interesting combinations.
+
+	* util/grub.d/10_kfreebsd.in (load_kfreebsd_module): New function.
+	(kfreebsd_entry): Use load_kfreebsd_module() to load modules.
+	(kfreebsd_entry): Add generic filesystem module load routine.
+	Map GRUB `ext2' to kFreeBSD `ext2fs'.
+
+2010-08-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/i386/pc/sendkey.c (keysym_table): Rename "numlock" to
+	"numcenter" (I misunderstood the purpose of this entry).
+	* docs/grub.texi (sendkey): Likewise.
+
+2010-08-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/i386/pc/sendkey.c (options): Remove "keep" from all
+	status flag options; simply omitting the option is equivalent and
+	simpler.  Rename "wait" to "pause".  Rename "sysreq" to "sysrq".
+	(keysym_table): Rename "num5numlock" to "numlock".
+	(grub_cmd_sendkey): Reinitialise `andmask' and `ormask', so that we
+	can uniformly say that only the last of multiple `sendkey'
+	invocations has any effect.
+	* docs/grub.texi (sendkey): New section.
+
+2010-08-19  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/i386/pc/sendkey.c (options): Fix three typos.
+
 2010-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Implement sendkey support.

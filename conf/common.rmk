@@ -480,10 +480,12 @@ extcmd_mod_SOURCES = commands/extcmd.c lib/arg.c
 extcmd_mod_CFLAGS = $(COMMON_CFLAGS)
 extcmd_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+ifneq ($(platform), yeeloong)
 pkglib_MODULES += keylayouts.mod
 keylayouts_mod_SOURCES = commands/keylayouts.c
 keylayouts_mod_CFLAGS = $(COMMON_CFLAGS)
 keylayouts_mod_LDFLAGS = $(COMMON_LDFLAGS)
+endif
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c

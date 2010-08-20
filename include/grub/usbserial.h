@@ -1,3 +1,4 @@
+/* serial.h - serial device interface */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2010  Free Software Foundation, Inc.
@@ -16,23 +17,18 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_KEYBOARD_LAYOUTS_H
-#define GRUB_KEYBOARD_LAYOUTS_H 1
+#ifndef GRUB_USBSERIAL_HEADER
+#define GRUB_USBSERIAL_HEADER	1
 
-#define GRUB_KEYBOARD_LAYOUTS_FILEMAGIC "GRUBLAYO"
-#define GRUB_KEYBOARD_LAYOUTS_FILEMAGIC_SIZE (sizeof(GRUB_KEYBOARD_LAYOUTS_FILEMAGIC) - 1)
-#define GRUB_KEYBOARD_LAYOUTS_VERSION 6
+void grub_usbserial_fini (struct grub_serial_port *port);
 
-#define GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE 128
+void grub_usbserial_detach (grub_usb_device_t usbdev, int configno,
+			    int interfno);
 
-struct grub_keyboard_layout
-{
-  grub_uint32_t keyboard_map[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
-  grub_uint32_t keyboard_map_shift[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
-  grub_uint32_t keyboard_map_l3[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
-  grub_uint32_t keyboard_map_shift_l3[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
-};
+int
+grub_usbserial_attach (grub_usb_device_t usbdev, int configno, int interfno,
+		       struct grub_serial_driver *driver);
+int
+grub_usbserial_fetch (struct grub_serial_port *port, grub_size_t header_size);
 
-unsigned EXPORT_FUNC(grub_term_map_key) (int code, int status);
-
-#endif /* GRUB_KEYBOARD_LAYOUTS  */
+#endif
