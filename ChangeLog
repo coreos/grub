@@ -1,3 +1,7 @@
+2010-08-21  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* docs/grub.texi (GNU/Hurd): Document booting GNU/Hurd.
+
 2010-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* loader/multiboot.c (grub_cmd_module): Don't unzip module if
