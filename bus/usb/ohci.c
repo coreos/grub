@@ -989,7 +989,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
         transfer->last_trans = tderr_virt->tr_index;
       else
         transfer->last_trans = -1;
-      *actual = transfer->size;
+      *actual = transfer->size + 1;
     }
 
   else if (err_halt) /* error, ED is halted by OHCI, i.e. can be modified */
