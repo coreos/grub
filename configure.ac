@@ -884,7 +884,7 @@ AM_CONDITIONAL([COND_GRUB_MKFONT], [test x$enable_grub_mkfont = xyes])
 AM_CONDITIONAL([COND_HAVE_FONT_SOURCE], [test x$FONT_SOURCE != x])
 AM_CONDITIONAL([COND_GRUB_FSTEST], [test x$enable_grub_fstest = xyes])
 AM_CONDITIONAL([COND_GRUB_PE2ELF], [test x$TARGET_OBJ2ELF != x])
-AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC != x])
+AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
 
 # Output files.
