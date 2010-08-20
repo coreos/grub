@@ -1,3 +1,13 @@
+2010-08-20  Robert Millan  <rmh@gnu.org>
+
+	Make kFreeBSD code more generic to support ext2fs as root, ufs as
+	a separate module and maybe other interesting combinations.
+
+	* util/grub.d/10_kfreebsd.in (load_kfreebsd_module): New function.
+	(kfreebsd_entry): Use load_kfreebsd_module() to load modules.
+	(kfreebsd_entry): Add generic filesystem module load routine.
+	Map GRUB `ext2' to kFreeBSD `ext2fs'.
+
 2010-08-20  Colin Watson  <cjwatson@ubuntu.com>
 
 	* commands/i386/pc/sendkey.c (keysym_table): Rename "numlock" to
