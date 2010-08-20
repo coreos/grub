@@ -83,6 +83,7 @@ struct grub_usb_keyboard_data
   grub_usb_device_t usbdev;
   grub_uint8_t status;
   int key;
+  struct grub_usb_desc_endp *endp;
 };
 
 static struct grub_term_input grub_usb_keyboards[16];
@@ -109,6 +110,8 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
 {
   unsigned curnum;
   struct grub_usb_keyboard_data *data;
+  struct grub_usb_desc_endp *endp = NULL;
+  int j;
 
   grub_dprintf ("usb_keyboard", "%x %x %x %d %d\n",
 		usbdev->descdev.class, usbdev->descdev.subclass,
@@ -131,6 +134,18 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
       != USB_HID_KBD_PROTOCOL)
     return 0;
 
+  for (j = 0; j < usbdev->config[configno].interf[interfno].descif->endpointcnt;
+       j++)
+    {
+      endp = &usbdev->config[configno].interf[interfno].descendp[j];
+
+      if ((endp->endp_addr & 128) && grub_usb_get_ep_type(endp)
+	  == GRUB_USB_EP_INTERRUPT)
+	break;
+    }
+  if (j == usbdev->config[configno].interf[interfno].descif->endpointcnt)
+    return 0;
+
   grub_printf ("HID found!\n");
 
   data = grub_malloc (sizeof (*data));
@@ -141,6 +156,7 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
     }
 
   data->usbdev = usbdev;
+  data->endp = endp;
 
   /* Place the device in boot mode.  */
   grub_usb_control_msg (usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
@@ -201,8 +217,9 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
 
   data[2] = 0;
   /* Poll interrupt pipe.  */
-  err = grub_usb_bulk_read_extended (termdata->usbdev, 1, sizeof (data),
-				     (char *) data, 1, &actual);
+  err = grub_usb_bulk_read_extended (termdata->usbdev,
+				     termdata->endp->endp_addr, sizeof (data),
+				     (char *) data, 10, &actual);
 
   if (err)
     return -1;

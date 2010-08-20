@@ -181,6 +181,20 @@ struct grub_usb_device
 
 
 
+typedef enum grub_usb_ep_type
+  {
+    GRUB_USB_EP_CONTROL,
+    GRUB_USB_EP_ISOCHRONOUS,
+    GRUB_USB_EP_BULK,
+    GRUB_USB_EP_INTERRUPT
+  } grub_usb_ep_type_t;
+
+static inline enum grub_usb_ep_type
+grub_usb_get_ep_type (struct grub_usb_desc_endp *ep)
+{
+  return ep->attrib & 3;
+}
+
 typedef enum
   {
     GRUB_USB_CLASS_NOTHERE,
