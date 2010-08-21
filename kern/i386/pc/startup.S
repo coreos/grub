@@ -1214,7 +1214,6 @@ FUNCTION(grub_console_getkey)
 	shrl    $8, %eax
 	orl     $GRUB_TERM_EXTENDED, %eax
 2:	
-
 	popl	%ebp
 	ret
 
@@ -1248,11 +1247,14 @@ FUNCTION(grub_console_checkkey)
 	DATA32	jmp	pending
 
 notpending:
+	xorl	%edx, %edx
 	decl	%edx
 
 pending:
 	DATA32	call	real_to_prot
 	.code32
+
+	movl    %edx, %eax
 
 	popl	%ebp
 	ret
