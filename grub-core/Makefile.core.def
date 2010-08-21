@@ -409,7 +409,7 @@ module = {
 
 module = {
   name = cpuid;
-  i386 = commands/i386/cpuid.c;
+  x86 = commands/i386/cpuid.c;
   enable = x86;
 };
 
@@ -1057,12 +1057,12 @@ module = {
 
 module = {
   name = xnu;
-  i386 = loader/xnu_resume.c;
-  i386 = loader/i386/xnu.c;
-  i386 = loader/macho32.c;
-  i386 = loader/macho64.c;
-  i386 = loader/macho.c;
-  i386 = loader/xnu.c;
+  x86_efi_pc = loader/xnu_resume.c;
+  x86_efi_pc = loader/i386/xnu.c;
+  x86_efi_pc = loader/macho32.c;
+  x86_efi_pc = loader/macho64.c;
+  x86_efi_pc = loader/macho.c;
+  x86_efi_pc = loader/xnu.c;
 
   extra_dist = loader/machoXX.c;
   enable = i386_pc;

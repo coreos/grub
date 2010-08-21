@@ -16,6 +16,7 @@ GROUPS["x86"]      = GROUPS["i386"] + GROUPS["x86_64"]
 GROUPS["x86_efi"]  = [ "i386_efi", "x86_64_efi" ]
 
 GROUPS["nopc"] = GRUB_PLATFORMS[:]; GROUPS["nopc"].remove("i386_pc")
+GROUPS["x86_efi_pc"] = GROUPS["x86_efi"] + ["i386_pc"]
 
 GROUPS["x86_noefi"] = GROUPS["x86"][:]; GROUPS["x86_noefi"].remove("i386_efi"); GROUPS["x86_noefi"].remove("x86_64_efi")
 GROUPS["i386_noefi"] = GROUPS["i386"][:]; GROUPS["i386_noefi"].remove("i386_efi")
