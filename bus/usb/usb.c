@@ -338,7 +338,7 @@ grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc)
 
 GRUB_MOD_INIT(usb)
 {
-  //  grub_term_poll_usb = grub_usb_poll_devices;
+  grub_term_poll_usb = grub_usb_poll_devices;
 }
 
 GRUB_MOD_FINI(usb)
