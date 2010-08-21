@@ -873,6 +873,11 @@ AM_CONDITIONAL([COND_mips_yeeloong], [test x$target_cpu = xmips -a x$platform = 
 AM_CONDITIONAL([COND_mips_qemu_mips], [test x$target_cpu = xmips -a x$platform = xqemu_mips])
 AM_CONDITIONAL([COND_sparc64_ieee1275], [test x$target_cpu = xsparc64 -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_powerpc_ieee1275], [test x$target_cpu = xpowerpc -a x$platform = xieee1275])
+AM_CONDITIONAL([COND_host_hurd], [test x$host_kernel = xhurd])
+AM_CONDITIONAL([COND_host_linux], [test x$host_kernel = xlinux])
+AM_CONDITIONAL([COND_host_netbsd], [test x$host_kernel = xnetbsd])
+AM_CONDITIONAL([COND_host_windows], [test x$host_kernel = xwindows])
+AM_CONDITIONAL([COND_host_kfreebsd], [test x$host_kernel = xkfreebsd])
 
 AM_CONDITIONAL([COND_MAN_PAGES], [test x$cross_compiling = xno -a x$HELP2MAN != x])
 AM_CONDITIONAL([COND_GRUB_EMU_USB], [test x$enable_grub_emu_usb = xyes])

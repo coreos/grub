@@ -203,12 +203,11 @@ program = {
   name = grub-mkdevicemap;
   installdir = sbin;
   mansection = 8;
-  nosparc64 = util/grub-mkdevicemap.c;
-  nosparc64 = util/deviceiter.c;
+
+  common = util/grub-mkdevicemap.c;
+  common = util/deviceiter.c;
   nosparc64 = util/devicemap.c;
 
-  sparc64_ieee1275 = util/grub-mkdevicemap.c;
-  sparc64_ieee1275 = util/deviceiter.c;
   sparc64_ieee1275 = util/ieee1275/ofpath.c;
   sparc64_ieee1275 = util/ieee1275/devicemap.c;
 
@@ -267,24 +266,39 @@ script = {
   installdir = grubconf;
 };
 
-/*
 script = {
   name = '10_windows';
   common = util/grub.d/10_windows.in;
   installdir = grubconf;
+  condition = COND_host_windows;
 };
 
 script = {
   name = '10_hurd';
   common = util/grub.d/10_hurd.in;
   installdir = grubconf;
+  condition = COND_host_hurd;
 };
-*/
+
+script = {
+  name = '10_kfreebsd.in';
+  common = util/grub.d/10_kfreebsd.in;
+  installdir = grubconf;
+  condition = COND_host_kfreebsd;
+};
+
+script = {
+  name = '10_netbsd.in';
+  common = util/grub.d/10_netbsd.in;
+  installdir = grubconf;
+  condition = COND_host_netbsd;
+};
 
 script = {
   name = '10_linux';
   common = util/grub.d/10_linux.in;
   installdir = grubconf;
+  condition = COND_host_linux;
 };
 
 script = {
