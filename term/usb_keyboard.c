@@ -326,11 +326,11 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
       return 0;
     }
 
+  data->last_key = -1;
   data->mods = 0;
+  data->dead = 0;
 
   grub_term_register_input_active ("usb_keyboard", &grub_usb_keyboards[curnum]);
-
-  data->dead = 0;
 
   return 1;
 }
