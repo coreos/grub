@@ -34,8 +34,7 @@ gentrigtables: gentrigtables.c
 CLEANFILES += gentrigtables
 
 # trigtables.c
-trigtables.c: gentrigtables.c $(top_srcdir)/configure.ac
-	$(MAKE) $(AM_MAKEFLAGS) gentrigtables
+trigtables.c: gentrigtables gentrigtables.c $(top_srcdir)/configure.ac
 	$(builddir)/gentrigtables > $@
 CLEANFILES += trigtables.c
 

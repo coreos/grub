@@ -46,7 +46,7 @@ CLEANFILES += libgrub_a_init.c
 
 if COND_GRUB_MKFONT
 if COND_HAVE_FONT_SOURCE
-pkgdata_DATA = unicode.pf2 ascii.pf2 ascii.h
+pkgdata_DATA = unicode.pf2 ascii.pf2 ascii.h widthspec.h
 endif
 endif
 

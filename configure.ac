@@ -71,13 +71,11 @@ case "$target_cpu" in
   sparc)	target_cpu=sparc64 ;;
   mipsel|mips64el)
                 target_cpu=mips;
-		HOST_CPPFLAGS="$HOST_CPPFLAGS -DGRUB_CPU_MIPSEL=1";
-		TARGET_CPPFLAGS="$TARGET_CPPFLAGS -DGRUB_CPU_MIPSEL=1";
+		machine_CFLAGS="-DGRUB_CPU_MIPSEL=1";
 		;;
   mips|mips64)
                 target_cpu=mips;
-		HOST_CPPFLAGS="$HOST_CPPFLAGS -DGRUB_CPU_MIPS=1";
-		TARGET_CPPFLAGS="$TARGET_CPPFLAGS -DGRUB_CPU_MIPS=1";
+		machine_CFLAGS="-DGRUB_CPU_MIPS=1";
 		;;
 esac
 
