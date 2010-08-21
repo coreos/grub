@@ -10,17 +10,44 @@ GRUB_PLATFORMS = [ "emu", "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot",
                    "powerpc_ieee1275" ]
 
 GROUPS = {}
-GROUPS["i386"]    = [ "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot", "i386_multiboot", "i386_ieee1275" ]
-GROUPS["x86_64"]  = [ "x86_64_efi" ]
-GROUPS["mips"]    = [ "mips_yeeloong" ]
-GROUPS["sparc64"] = [ "sparc64_ieee1275" ]
-GROUPS["powerpc"] = [ "powerpc_ieee1275" ]
-GROUPS["x86"]     = GROUPS["i386"] + GROUPS["x86_64"]
-GROUPS["x86_efi"] = [ "i386_efi", "x86_64_efi" ]
-GROUPS["ieee1275"] = [ "i386_ieee1275", "sparc64_ieee1275", "powerpc_ieee1275" ]
+GROUPS["i386"]     = [ "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot", "i386_multiboot", "i386_ieee1275" ]
+GROUPS["x86_64"]   = [ "x86_64_efi" ]
+GROUPS["x86"]      = GROUPS["i386"] + GROUPS["x86_64"]
+GROUPS["x86_efi"]  = [ "i386_efi", "x86_64_efi" ]
+
+GROUPS["nopc"] = GRUB_PLATFORMS[:]; GROUPS["nopc"].remove("i386_pc")
+
+GROUPS["x86_noefi"] = GROUPS["x86"][:]; GROUPS["x86_noefi"].remove("i386_efi"); GROUPS["x86_noefi"].remove("x86_64_efi")
+GROUPS["i386_noefi"] = GROUPS["i386"][:]; GROUPS["i386_noefi"].remove("i386_efi")
+
+GROUPS["x86_noieee1275"] = GROUPS["x86"][:]; GROUPS["x86_noieee1275"].remove("i386_ieee1275")
+GROUPS["i386_noieee1275"] = GROUPS["i386"][:]; GROUPS["i386_noieee1275"].remove("i386_ieee1275")
+
+GROUPS["i386_noefi_noieee1275"] = GROUPS["i386_noefi"][:]; GROUPS["i386_noefi_noieee1275"].remove("i386_ieee1275")
+
+GROUPS["i386_pc_qemu_coreboot"] = ["i386_pc", "i386_qemu", "i386_coreboot"]
+GROUPS["i386_coreboot_multiboot"] = ["i386_coreboot", "i386_multiboot"]
+GROUPS["i386_coreboot_multiboot_qemu"] = ["i386_coreboot", "i386_multiboot", "i386_qemu"]
+GROUPS["i386_pc_coreboot_multiboot_qemu"] = ["i386_pc", "i386_coreboot", "i386_multiboot", "i386_qemu"]
+
+GROUPS["mips"]     = [ "mips_yeeloong" ]
+GROUPS["sparc64"]  = [ "sparc64_ieee1275" ]
+GROUPS["powerpc"]  = [ "powerpc_ieee1275" ]
+
+GROUPS["nosparc64"] = GRUB_PLATFORMS[:]; GROUPS["nosparc64"].remove("sparc64_ieee1275")
+GROUPS["x86_noefi_mips"] = GROUPS["x86_noefi"] + GROUPS["mips"]
+
+GROUPS["ieee1275"]   = [ "i386_ieee1275", "sparc64_ieee1275", "powerpc_ieee1275" ]
+GROUPS["noieee1275"] = GRUB_PLATFORMS[:]
+for i in GROUPS["ieee1275"]: GROUPS["noieee1275"].remove(i)
+
 GROUPS["pci"]      = GROUPS["x86"] + GROUPS["mips"]
-GROUPS["nonemu"]  = GRUB_PLATFORMS[:]
-GROUPS["nonemu"].remove("emu")
+
+GROUPS["noemu"]   = GRUB_PLATFORMS[:]; GROUPS["noemu"].remove("emu")
+GROUPS["noemu_noieee1275"] = GRUB_PLATFORMS[:]
+for i in ["emu"] + GROUPS["ieee1275"]: GROUPS["noemu_noieee1275"].remove(i)
+
+GROUPS["common"]   = GRUB_PLATFORMS[:]
 
 #
 # Create platform => groups reverse map, where groups covering that
@@ -111,7 +138,19 @@ def if_platform_tagged(platform, tag, snippet_if, snippet_else=None):
     return r
 
 #
-# Template for handling platform specific values, for example:
+# Template for tagged values
+#
+# module = {
+#   extra_dist = ...
+#   extra_dist = ...
+#   ...
+# };
+#
+def foreach_value(tag, closure):
+    return "[+ FOR " + tag + " +]" + closure("[+ ." + tag + " +]") + "[+ ENDFOR +]"
+
+#
+# Template for handling best matched values for a platform, for example:
 #
 # module = {
 #   cflags = '-Wall';
@@ -119,7 +158,7 @@ def if_platform_tagged(platform, tag, snippet_if, snippet_else=None):
 #   ...
 # }
 #
-def foreach_platform_value(platform, tag, suffix, closure):
+def foreach_platform_specific_value(platform, suffix, nonetag, closure):
     r = ""
     for group in RMAP[platform]:
         gtag = group + suffix
@@ -130,10 +169,46 @@ def foreach_platform_value(platform, tag, suffix, closure):
             r += "[+ ELIF " + gtag + " +]"
 
         r += "[+ FOR " + gtag + " +]" + closure("[+ ." + gtag + " +]") + "[+ ENDFOR +]"
-    r += "[+ ELSE +][+ FOR " + tag + " +]" + closure("[+ ." + tag + " +]") + "[+ ENDFOR +][+ ENDIF +]"
+    r += "[+ ELSE +][+ FOR " + nonetag + " +]" + closure("[+ ." + nonetag + " +]") + "[+ ENDFOR +][+ ENDIF +]"
     return r
 
-def each_platform(closure):
+#
+# Template for handling values from sum of all groups for a platform,
+# for example:
+#
+# module = {
+#   common = kern/misc.c;
+#   emu = kern/emu/misc.c;
+#   ...
+# }
+#
+def foreach_platform_value (platform, suffix, closure):
+    r = ""
+    for group in RMAP[platform]:
+        gtag = group + suffix
+
+        r += "[+ IF " + gtag + " +]"
+        r += "[+ FOR " + gtag + " +]" + closure("[+ ." + gtag + " +]") + "[+ ENDFOR +]"
+        r += "[+ ENDIF +]"
+    return r
+
+#
+# Template for gaurding with platform specific "enable" keys, for example:
+#
+#  module = {
+#    name = pci;
+#    noemu = bus/pci.c;
+#    emu = bus/emu/pci.c;
+#    emu = commands/lspci.c;
+#
+#    enable = emu;
+#    enable = i386_pc;
+#    enable = x86_efi;
+#    enable = i386_ieee1275;
+#    enable = i386_coreboot;
+#  };
+#
+def foreach_enabled_platform(closure):
     r = "[+ IF - enable undefined +]"
     for platform in GRUB_PLATFORMS:
         r += "\nif COND_" + platform + "\n" + closure(platform) + "endif\n"
@@ -144,30 +219,49 @@ def each_platform(closure):
     r += "[+ ENDIF +]"
     return r
 
+#
+# Template for gaurding with platform specific automake conditionals,
+# for example:
+#
+#  module = {
+#    name = usb;
+#    common = bus/usb/usb.c;
+#    noemu = bus/usb/usbtrans.c;
+#    noemu = bus/usb/usbhub.c;
+#    enable = emu;
+#    enable = i386;
+#    enable = mips_yeeloong;
+#    emu_condition = COND_GRUB_EMU_USB;
+#  };
+#
 def under_platform_specific_conditionals(platform, snippet):
-    r  = foreach_platform_value(platform, "condition", "_condition", lambda cond: "if " + cond + "\n")
+    r  = foreach_platform_specific_value(platform, "_condition", "condition", lambda cond: "if " + cond + "\n")
     r += snippet
-    r += foreach_platform_value(platform, "condition", "_condition", lambda cond: "endif " + cond + "\n")
+    r += foreach_platform_specific_value(platform, "_condition", "condition", lambda cond: "endif " + cond + "\n")
     return r
 
-def platform_specific_values(platform, tag, suffix):
-    return foreach_platform_value(platform, tag, suffix, lambda value: value + " ")
+def platform_specific_values(platform, suffix, nonetag):
+    return foreach_platform_specific_value(platform, suffix, nonetag,
+                                           lambda value: value + " ")
 
-def shared_sources(): return "[+ FOR shared +][+ .shared +] [+ ENDFOR +]"
-def shared_nodist_sources(): return "[+ FOR nodist_shared +] [+ .nodist_shared +][+ ENDFOR +]"
+def platform_values(platform, suffix):
+    return foreach_platform_value(platform, suffix, lambda value: value + " ")
 
-def platform_sources(p): return platform_specific_values(p, "source", "")
-def platform_nodist_sources(p): return platform_specific_values(p, "nodist", "_nodist")
-def platform_extra_dist(p): return platform_specific_values(p, "extra_dist", "_extra_dist")
-def platform_dependencies(p): return platform_specific_values(p, "dependencies", "_dependencies")
+def extra_dist():
+    return foreach_value("extra_dist", lambda value: value + " ")
 
-def platform_ldadd(p): return platform_specific_values(p, "ldadd", "_ldadd")
-def platform_cflags(p): return platform_specific_values(p, "cflags", "_cflags")
-def platform_ldflags(p): return platform_specific_values(p, "ldflags", "_ldflags")
-def platform_cppflags(p): return platform_specific_values(p, "cppflags", "_cppflags")
-def platform_ccasflags(p): return platform_specific_values(p, "ccasflags", "_ccasflags")
-def platform_stripflags(p): return platform_specific_values(p, "stripflags", "_stripflags")
-def platform_objcopyflags(p): return platform_specific_values(p, "objcopyflags", "_objcopyflags")
+def platform_sources(p): return platform_values(p, "")
+def platform_nodist_sources(p): return platform_values(p, "_nodist")
+def platform_dependencies(p): return platform_values(p, "dependencies", "_dependencies")
+
+def platform_startup(p): return platform_specific_values(p, "_startup", "startup")
+def platform_ldadd(p): return platform_specific_values(p, "_ldadd", "ldadd")
+def platform_cflags(p): return platform_specific_values(p, "_cflags", "cflags")
+def platform_ldflags(p): return platform_specific_values(p, "_ldflags", "ldflags")
+def platform_cppflags(p): return platform_specific_values(p, "_cppflags", "cppflags")
+def platform_ccasflags(p): return platform_specific_values(p, "_ccasflags", "ccasflags")
+def platform_stripflags(p): return platform_specific_values(p, "_stripflags", "stripflags")
+def platform_objcopyflags(p): return platform_specific_values(p, "_objcopyflags", "objcopyflags")
 
 def module(platform):
     r = set_canonical_name_suffix(".module")
@@ -176,9 +270,7 @@ def module(platform):
     r += gvar_add("MODULE_FILES", "[+ name +].module$(EXEEXT)")
 
     r += var_set(cname() + "_SOURCES", platform_sources(platform) + " ## platform sources")
-    r += var_add(cname() + "_SOURCES", shared_sources() + " ## shared sources")
     r += var_set("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform) + " ## platform nodist sources")
-    r += var_add("nodist_" + cname() + "_SOURCES", shared_nodist_sources() + " ## shared nodist sources")
     r += var_set(cname() + "_LDADD", platform_ldadd(platform))
     r += var_set(cname() + "_CFLAGS", "$(AM_CFLAGS) $(CFLAGS_MODULE) " + platform_cflags(platform))
     r += var_set(cname() + "_LDFLAGS", "$(AM_LDFLAGS) $(LDFLAGS_MODULE) " + platform_ldflags(platform))
@@ -186,7 +278,7 @@ def module(platform):
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_MODULE) " + platform_ccasflags(platform))
     # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
-    r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
+    r += gvar_add("EXTRA_DIST", extra_dist())
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
 
@@ -265,10 +357,9 @@ terminal-[+ name +].lst: [+ name +].pp $(srcdir)/genterminallist.sh
 def kernel(platform):
     r = set_canonical_name_suffix(".exec")
     r += gvar_add("noinst_PROGRAMS", "[+ name +].exec")
-    r += var_set(cname() + "_SOURCES", platform_sources(platform))
-    r += var_add(cname() + "_SOURCES", shared_sources())
+    r += var_set(cname() + "_SOURCES", platform_startup(platform))
+    r += var_add(cname() + "_SOURCES", platform_sources(platform))
     r += var_set("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform) + " ## platform nodist sources")
-    r += var_add("nodist_" + cname() + "_SOURCES", shared_nodist_sources() + " ## shared nodist sources")
     r += var_set(cname() + "_LDADD", platform_ldadd(platform))
     r += var_set(cname() + "_CFLAGS", "$(AM_CFLAGS) $(CFLAGS_KERNEL) " + platform_cflags(platform))
     r += var_set(cname() + "_LDFLAGS", "$(AM_LDFLAGS) $(LDFLAGS_KERNEL) " + platform_ldflags(platform))
@@ -277,7 +368,7 @@ def kernel(platform):
     r += var_set(cname() + "_STRIPFLAGS", "$(AM_STRIPFLAGS) $(STRIPFLAGS_KERNEL) " + platform_stripflags(platform))
     # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
-    r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
+    r += gvar_add("EXTRA_DIST", extra_dist())
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
 
@@ -292,9 +383,7 @@ def image(platform):
     r = set_canonical_name_suffix(".image")
     r += gvar_add("noinst_PROGRAMS", "[+ name +].image")
     r += var_set(cname() + "_SOURCES", platform_sources(platform))
-    r += var_add(cname() + "_SOURCES", shared_sources())
     r += var_set("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform) + "## platform nodist sources")
-    r += var_add("nodist_" + cname() + "_SOURCES", shared_nodist_sources() + "## shared nodist sources")
     r += var_set(cname() + "_LDADD", platform_ldadd(platform))
     r += var_set(cname() + "_CFLAGS", "$(AM_CFLAGS) $(CFLAGS_IMAGE) " + platform_cflags(platform))
     r += var_set(cname() + "_LDFLAGS", "$(AM_LDFLAGS) $(LDFLAGS_IMAGE) " + platform_ldflags(platform))
@@ -303,7 +392,7 @@ def image(platform):
     r += var_set(cname() + "_OBJCOPYFLAGS", "$(OBJCOPYFLAGS_IMAGE) " + platform_objcopyflags(platform))
     # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
-    r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
+    r += gvar_add("EXTRA_DIST", extra_dist())
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
 
@@ -322,15 +411,13 @@ def library(platform):
     r = set_canonical_name_suffix("")
     r += gvar_add("noinst_LIBRARIES", "[+ name +]")
     r += var_set(cname() + "_SOURCES", platform_sources(platform))
-    r += var_add(cname() + "_SOURCES", shared_sources())
     r += var_set("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform))
-    r += var_add("nodist_" + cname() + "_SOURCES", shared_nodist_sources())
     r += var_set(cname() + "_CFLAGS", "$(AM_CFLAGS) $(CFLAGS_LIBRARY) " + platform_cflags(platform))
     r += var_set(cname() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_LIBRARY) " + platform_cppflags(platform))
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_LIBRARY) " + platform_ccasflags(platform))
     # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
-    r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
+    r += gvar_add("EXTRA_DIST", extra_dist())
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
 
@@ -362,9 +449,7 @@ def program(platform, test=False):
     r += "[+ ENDIF +]"
 
     r += var_set(cname() + "_SOURCES", platform_sources(platform))
-    r += var_add(cname() + "_SOURCES", shared_sources())
     r += var_set("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform))
-    r += var_add("nodist_" + cname() + "_SOURCES", shared_nodist_sources())
     r += var_set(cname() + "_LDADD", platform_ldadd(platform))
     r += var_set(cname() + "_CFLAGS", "$(AM_CFLAGS) $(CFLAGS_PROGRAM) " + platform_cflags(platform))
     r += var_set(cname() + "_LDFLAGS", "$(AM_LDFLAGS) $(LDFLAGS_PROGRAM) " + platform_ldflags(platform))
@@ -372,14 +457,14 @@ def program(platform, test=False):
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_PROGRAM) " + platform_ccasflags(platform))
     # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
-    r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
+    r += gvar_add("EXTRA_DIST", extra_dist())
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
     return r
 
 def data(platform):
     r  = gvar_add("EXTRA_DIST", platform_sources(platform))
-    r += gvar_add("EXTRA_DIST", platform_extra_dist(platform))
+    r += gvar_add("EXTRA_DIST", extra_dist())
     r += gvar_add(installdir() + "_DATA", platform_sources(platform))
     return r
 
@@ -403,31 +488,31 @@ chmod a+x [+ name +]
     return r
 
 def module_rules():
-    return "[+ FOR module +]" + each_platform(
+    return "[+ FOR module +]" + foreach_enabled_platform(
         lambda p: under_platform_specific_conditionals(p, module(p))) + "[+ ENDFOR +]"
 
 def kernel_rules():
-    return "[+ FOR kernel +]" + each_platform(
+    return "[+ FOR kernel +]" + foreach_enabled_platform(
         lambda p: under_platform_specific_conditionals(p, kernel(p))) + "[+ ENDFOR +]"
 
 def image_rules():
-    return "[+ FOR image +]" + each_platform(
+    return "[+ FOR image +]" + foreach_enabled_platform(
         lambda p: under_platform_specific_conditionals(p, image(p))) + "[+ ENDFOR +]"
 
 def library_rules():
-    return "[+ FOR library +]" + each_platform(
+    return "[+ FOR library +]" + foreach_enabled_platform(
         lambda p: under_platform_specific_conditionals(p, library(p))) + "[+ ENDFOR +]"
 
 def program_rules():
-    return "[+ FOR program +]" + each_platform(
+    return "[+ FOR program +]" + foreach_enabled_platform(
         lambda p: under_platform_specific_conditionals(p, program(p))) + "[+ ENDFOR +]"
 
 def script_rules():
-    return "[+ FOR script +]" + each_platform(
+    return "[+ FOR script +]" + foreach_enabled_platform(
         lambda p: under_platform_specific_conditionals(p, script(p))) + "[+ ENDFOR +]"
 
 def data_rules():
-    return "[+ FOR data +]" + each_platform(
+    return "[+ FOR data +]" + foreach_enabled_platform(
         lambda p: under_platform_specific_conditionals(p, data(p))) + "[+ ENDFOR +]"
 
 print "[+ AutoGen5 template +]\n"

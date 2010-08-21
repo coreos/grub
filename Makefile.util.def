@@ -5,100 +5,99 @@ library = {
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
 
-  nodist = grub_script.tab.c;
-  nodist = grub_script.yy.c;
-  nodist = libgrub_a_init.c;
+  common_nodist = grub_script.tab.c;
+  common_nodist = grub_script.yy.c;
+  common_nodist = libgrub_a_init.c;
+  common_nodist = grub_script.yy.h;
+  common_nodist = grub_script.tab.h;
 
-  source = grub-core/gnulib/error.c;
-  source = grub-core/gnulib/fnmatch.c;
-  source = grub-core/gnulib/getdelim.c;
-  source = grub-core/gnulib/getline.c;
-  source = grub-core/gnulib/getopt1.c;
-  source = grub-core/gnulib/getopt.c;
-  source = grub-core/gnulib/progname.c;
+  common = grub-core/gnulib/error.c;
+  common = grub-core/gnulib/fnmatch.c;
+  common = grub-core/gnulib/getdelim.c;
+  common = grub-core/gnulib/getline.c;
+  common = grub-core/gnulib/getopt1.c;
+  common = grub-core/gnulib/getopt.c;
+  common = grub-core/gnulib/progname.c;
 
-  source = util/misc.c;
-  source = grub-core/kern/misc.c;
-  source = grub-core/kern/emu/mm.c;
-  source = grub-core/kern/emu/misc.c;
-  source = grub-core/kern/emu/hostfs.c;
-  source = grub-core/kern/emu/getroot.c;
-  source = grub-core/kern/emu/hostdisk.c;
+  common = util/misc.c;
+  common = grub-core/kern/misc.c;
+  common = grub-core/kern/emu/mm.c;
+  common = grub-core/kern/emu/misc.c;
+  common = grub-core/kern/emu/hostfs.c;
+  common = grub-core/kern/emu/getroot.c;
+  common = grub-core/kern/emu/hostdisk.c;
 
-  source = grub-core/commands/blocklist.c;
-  source = grub-core/commands/extcmd.c;
-  source = grub-core/commands/ls.c;
-  source = grub-core/disk/dmraid_nvidia.c;
-  source = grub-core/disk/host.c;
-  source = grub-core/disk/loopback.c;
-  source = grub-core/disk/lvm.c;
-  source = grub-core/disk/mdraid_linux.c;
-  source = grub-core/disk/raid5_recover.c;
-  source = grub-core/disk/raid6_recover.c;
-  source = grub-core/disk/raid.c;
-  source = grub-core/fs/affs.c;
-  source = grub-core/fs/afs_be.c;
-  source = grub-core/fs/afs.c;
-  source = grub-core/fs/befs_be.c;
-  source = grub-core/fs/befs.c;
-  source = grub-core/fs/cpio.c;
-  source = grub-core/fs/ext2.c;
-  source = grub-core/fs/fat.c;
-  source = grub-core/fs/fshelp.c;
-  source = grub-core/fs/hfs.c;
-  source = grub-core/fs/hfsplus.c;
-  source = grub-core/fs/iso9660.c;
-  source = grub-core/fs/jfs.c;
-  source = grub-core/fs/minix.c;
-  source = grub-core/fs/nilfs2.c;
-  source = grub-core/fs/ntfs.c;
-  source = grub-core/fs/ntfscomp.c;
-  source = grub-core/fs/reiserfs.c;
-  source = grub-core/fs/sfs.c;
-  source = grub-core/fs/tar.c;
-  source = grub-core/fs/udf.c;
-  source = grub-core/fs/ufs2.c;
-  source = grub-core/fs/ufs.c;
-  source = grub-core/fs/xfs.c;
-  source = grub-core/kern/command.c;
-  source = grub-core/kern/device.c;
-  source = grub-core/kern/disk.c;
-  source = grub-core/kern/env.c;
-  source = grub-core/kern/err.c;
-  source = grub-core/kern/file.c;
-  source = grub-core/kern/fs.c;
-  source = grub-core/kern/list.c;
-  source = grub-core/kern/partition.c;
-  source = grub-core/lib/arg.c;
-  source = grub-core/lib/crc.c;
-  source = grub-core/lib/crypto.c;
-  source = grub-core/lib/envblk.c;
-  source = grub-core/lib/hexdump.c;
-  source = grub-core/lib/libgcrypt-grub/cipher/sha512.c;
-  source = grub-core/lib/LzFind.c;
-  source = grub-core/lib/LzmaEnc.c;
-  source = grub-core/lib/pbkdf2.c;
-  source = grub-core/normal/datetime.c;
-  source = grub-core/normal/misc.c;
-  source = grub-core/partmap/acorn.c;
-  source = grub-core/partmap/amiga.c;
-  source = grub-core/partmap/apple.c;
-  source = grub-core/partmap/gpt.c;
-  source = grub-core/partmap/msdos.c;
-  source = grub-core/partmap/sun.c;
-  source = grub-core/script/function.c;
-  source = grub-core/script/lexer.c;
-  source = grub-core/script/main.c;
-  source = grub-core/script/script.c;
-  source = grub-core/script/argv.c;
-
-  nodist = grub_script.yy.h;
-  nodist = grub_script.tab.h;
+  common = grub-core/commands/blocklist.c;
+  common = grub-core/commands/extcmd.c;
+  common = grub-core/commands/ls.c;
+  common = grub-core/disk/dmraid_nvidia.c;
+  common = grub-core/disk/host.c;
+  common = grub-core/disk/loopback.c;
+  common = grub-core/disk/lvm.c;
+  common = grub-core/disk/mdraid_linux.c;
+  common = grub-core/disk/raid5_recover.c;
+  common = grub-core/disk/raid6_recover.c;
+  common = grub-core/disk/raid.c;
+  common = grub-core/fs/affs.c;
+  common = grub-core/fs/afs_be.c;
+  common = grub-core/fs/afs.c;
+  common = grub-core/fs/befs_be.c;
+  common = grub-core/fs/befs.c;
+  common = grub-core/fs/cpio.c;
+  common = grub-core/fs/ext2.c;
+  common = grub-core/fs/fat.c;
+  common = grub-core/fs/fshelp.c;
+  common = grub-core/fs/hfs.c;
+  common = grub-core/fs/hfsplus.c;
+  common = grub-core/fs/iso9660.c;
+  common = grub-core/fs/jfs.c;
+  common = grub-core/fs/minix.c;
+  common = grub-core/fs/nilfs2.c;
+  common = grub-core/fs/ntfs.c;
+  common = grub-core/fs/ntfscomp.c;
+  common = grub-core/fs/reiserfs.c;
+  common = grub-core/fs/sfs.c;
+  common = grub-core/fs/tar.c;
+  common = grub-core/fs/udf.c;
+  common = grub-core/fs/ufs2.c;
+  common = grub-core/fs/ufs.c;
+  common = grub-core/fs/xfs.c;
+  common = grub-core/kern/command.c;
+  common = grub-core/kern/device.c;
+  common = grub-core/kern/disk.c;
+  common = grub-core/kern/env.c;
+  common = grub-core/kern/err.c;
+  common = grub-core/kern/file.c;
+  common = grub-core/kern/fs.c;
+  common = grub-core/kern/list.c;
+  common = grub-core/kern/partition.c;
+  common = grub-core/lib/arg.c;
+  common = grub-core/lib/crc.c;
+  common = grub-core/lib/crypto.c;
+  common = grub-core/lib/envblk.c;
+  common = grub-core/lib/hexdump.c;
+  common = grub-core/lib/libgcrypt-grub/cipher/sha512.c;
+  common = grub-core/lib/LzFind.c;
+  common = grub-core/lib/LzmaEnc.c;
+  common = grub-core/lib/pbkdf2.c;
+  common = grub-core/normal/datetime.c;
+  common = grub-core/normal/misc.c;
+  common = grub-core/partmap/acorn.c;
+  common = grub-core/partmap/amiga.c;
+  common = grub-core/partmap/apple.c;
+  common = grub-core/partmap/gpt.c;
+  common = grub-core/partmap/msdos.c;
+  common = grub-core/partmap/sun.c;
+  common = grub-core/script/function.c;
+  common = grub-core/script/lexer.c;
+  common = grub-core/script/main.c;
+  common = grub-core/script/script.c;
+  common = grub-core/script/argv.c;
 };
 
 program = {
   name = grub-bin2h;
-  source = util/bin2h.c;
+  common = util/bin2h.c;
   ldadd = libgrub.a;
   ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
   mansection = 1;
@@ -108,8 +107,8 @@ program = {
   name = grub-mkimage;
   mansection = 1;
 
-  source = util/grub-mkimage.c;
-  source = util/resolve.c;
+  common = util/grub-mkimage.c;
+  common = util/resolve.c;
   extra_dist = util/grub-mkimagexx.c;
 
   ldadd = libgrub.a;
@@ -121,7 +120,7 @@ program = {
   name = grub-mkrelpath;
   mansection = 1;
 
-  source = util/grub-mkrelpath.c;
+  common = util/grub-mkrelpath.c;
 
   ldadd = libgrub.a;
   ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
@@ -131,7 +130,7 @@ program = {
   name = grub-script-check;
   mansection = 1;
 
-  source = util/grub-script-check.c;
+  common = util/grub-script-check.c;
 
   ldadd = libgrub.a;
   ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
@@ -141,7 +140,7 @@ program = {
   name = grub-editenv;
   mansection = 1;
 
-  source = util/grub-editenv.c;
+  common = util/grub-editenv.c;
 
   ldadd = libgrub.a;
   ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
@@ -151,7 +150,7 @@ program = {
   name = grub-mkpasswd-pbkdf2;
   mansection = 1;
 
-  source = util/grub-mkpasswd-pbkdf2.c;
+  common = util/grub-mkpasswd-pbkdf2.c;
 
   ldadd = libgrub.a;
   ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
@@ -162,14 +161,14 @@ program = {
 program = {
   name = grub-macho2img;
   mansection = 1;
-  source = util/grub-macho2img.c;
+  common = util/grub-macho2img.c;
   condition = COND_APPLE_CC;
 };
 
 program = {
   name = grub-pe2elf;
   mansection = 1;
-  source = util/grub-pe2elf.c;
+  common = util/grub-pe2elf.c;
 
   ldadd = libgrub.a;
   ldflags = '$(LIBINTL)';
@@ -179,7 +178,7 @@ program = {
 program = {
   name = grub-fstest;
   mansection = 1;
-  source = util/grub-fstest.c;
+  common = util/grub-fstest.c;
 
   ldadd = libgrub.a;
   ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
@@ -189,8 +188,8 @@ program = {
 program = {
   name = grub-mkfont;
   mansection = 1;
-  source = util/grub-mkfont.c;
-  source = grub-core/unidata.c;
+  common = util/grub-mkfont.c;
+  common = grub-core/unidata.c;
 
   cflags = '$(freetype_cflags)';
 
@@ -204,9 +203,9 @@ program = {
   name = grub-mkdevicemap;
   installdir = sbin;
   mansection = 8;
-  source = util/grub-mkdevicemap.c;
-  source = util/deviceiter.c;
-  source = util/devicemap.c;
+  nosparc64 = util/grub-mkdevicemap.c;
+  nosparc64 = util/deviceiter.c;
+  nosparc64 = util/devicemap.c;
 
   sparc64_ieee1275 = util/grub-mkdevicemap.c;
   sparc64_ieee1275 = util/deviceiter.c;
@@ -221,7 +220,7 @@ program = {
   name = grub-probe;
   installdir = sbin;
   mansection = 8;
-  source = util/grub-probe.c;
+  common = util/grub-probe.c;
 
   ldadd = libgrub.a;
   ldflags = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
@@ -250,66 +249,66 @@ program = {
 program = {
   name = grub-ofpathname;
   installdir = sbin;
-  source = util/ieee1275/grub-ofpathname.c;
-  source = util/ieee1275/ofpath.c;
+  ieee1275 = util/ieee1275/grub-ofpathname.c;
+  ieee1275 = util/ieee1275/ofpath.c;
 
   ldadd = libgrub.a;
   enable = sparc64_ieee1275;
 };
 
 data = {
-  source = util/grub.d/README;
+  common = util/grub.d/README;
   installdir = grubconf;
 };
 
 script = {
   name = '00_header';
-  source = util/grub.d/00_header.in;
+  common = util/grub.d/00_header.in;
   installdir = grubconf;
 };
 
 /*
 script = {
   name = '10_windows';
-  source = util/grub.d/10_windows.in;
+  common = util/grub.d/10_windows.in;
   installdir = grubconf;
 };
 
 script = {
   name = '10_hurd';
-  source = util/grub.d/10_hurd.in;
+  common = util/grub.d/10_hurd.in;
   installdir = grubconf;
 };
 */
 
 script = {
   name = '10_linux';
-  source = util/grub.d/10_linux.in;
+  common = util/grub.d/10_linux.in;
   installdir = grubconf;
 };
 
 script = {
   name = '30_os-prober';
-  source = util/grub.d/30_os-prober.in;
+  common = util/grub.d/30_os-prober.in;
   installdir = grubconf;
 };
 
 script = {
   name = '40_custom';
-  source = util/grub.d/40_custom.in;
+  common = util/grub.d/40_custom.in;
   installdir = grubconf;
 };
 
 script = {
   name = '41_custom';
-  source = util/grub.d/41_custom.in;
+  common = util/grub.d/41_custom.in;
   installdir = grubconf;
 };
 
 script = {
   mansection = 1;
   name = grub-mkrescue;
-  source = util/grub-mkrescue.in;
+  i386_pc_qemu_coreboot = util/grub-mkrescue.in;
   powerpc_ieee1275 = util/powerpc/ieee1275/grub-mkrescue.in;
   enable = i386_pc;
   enable = i386_qemu;
@@ -321,7 +320,10 @@ script = {
   mansection = 8;
   installdir = sbin;
   name = grub-install;
-  source = util/grub-install.in;
+
+  mips = util/grub-install.in;
+  i386_noefi_noieee1275 = util/grub-install.in;
+
   x86_efi = util/i386/efi/grub-install.in;
   i386_ieee1275 = util/ieee1275/grub-install.in;
   powerpc_ieee1275 = util/ieee1275/grub-install.in;
@@ -333,151 +335,151 @@ script = {
 
 script = {
   name = grub-mkconfig;
-  source = util/grub-mkconfig.in;
+  common = util/grub-mkconfig.in;
   mansection = 8;
   installdir = sbin;
 };
 
 script = {
   name = grub-set-default;
-  source = util/grub-set-default.in;
+  common = util/grub-set-default.in;
   mansection = 8;
   installdir = sbin;
 };
 
 script = {
   name = grub-reboot;
-  source = util/grub-reboot.in;
+  common = util/grub-reboot.in;
   mansection = 8;
   installdir = sbin;
 };
 
 script = {
   name = grub-mkconfig_lib;
-  source = util/grub-mkconfig_lib.in;
+  common = util/grub-mkconfig_lib.in;
   installdir = pkglib;
 };
 
 script = {
   name = update-grub_lib;
-  source = util/update-grub_lib.in;
+  common = util/update-grub_lib.in;
   installdir = pkglib;
 };
 
 script = {
   name = grub-shell;
-  source = tests/util/grub-shell.in;
+  common = tests/util/grub-shell.in;
 };
 
 script = {
   name = grub-shell-tester;
-  source = tests/util/grub-shell-tester.in;
+  common = tests/util/grub-shell-tester.in;
 };
 
 script = {
   testcase;
   name = example_scripted_test;
-  source = tests/example_scripted_test.in;
+  common = tests/example_scripted_test.in;
 };
 
 script = {
   testcase;
   name = example_grub_script_test;
-  source = tests/example_grub_script_test.in;
+  common = tests/example_grub_script_test.in;
 };
 
 script = {
   testcase;
   name = grub_script_echo1;
-  source = tests/grub_script_echo1.in;
+  common = tests/grub_script_echo1.in;
 };
 
 script = {
   testcase;
   name = grub_script_echo_keywords;
-  source = tests/grub_script_echo_keywords.in;
+  common = tests/grub_script_echo_keywords.in;
 };
 
 script = {
   testcase;
   name = grub_script_vars1;
-  source = tests/grub_script_vars1.in;
+  common = tests/grub_script_vars1.in;
 };
 
 script = {
   testcase;
   name = grub_script_for1;
-  source = tests/grub_script_for1.in;
+  common = tests/grub_script_for1.in;
 };
 
 script = {
   testcase;
   name = grub_script_while1;
-  source = tests/grub_script_while1.in;
+  common = tests/grub_script_while1.in;
 };
 
 script = {
   testcase;
   name = grub_script_if;
-  source = tests/grub_script_if.in;
+  common = tests/grub_script_if.in;
 };
 
 script = {
   testcase;
   name = grub_script_blanklines;
-  source = tests/grub_script_blanklines.in;
+  common = tests/grub_script_blanklines.in;
 };
 
 script = {
   testcase;
   name = grub_script_final_semicolon;
-  source = tests/grub_script_final_semicolon.in;
+  common = tests/grub_script_final_semicolon.in;
 };
 
 script = {
   testcase;
   name = grub_script_dollar;
-  source = tests/grub_script_dollar.in;
+  common = tests/grub_script_dollar.in;
 };
 
 script = {
   testcase;
   name = grub_script_comments;
-  source = tests/grub_script_comments.in;
+  common = tests/grub_script_comments.in;
 };
 
 script = {
   testcase;
   name = grub_script_functions;
-  source = tests/grub_script_functions.in;
+  common = tests/grub_script_functions.in;
 };
 
 script = {
   testcase;
   name = grub_script_break;
-  source = tests/grub_script_break.in;
+  common = tests/grub_script_break.in;
 };
 
 script = {
   testcase;
   name = grub_script_continue;
-  source = tests/grub_script_continue.in;
+  common = tests/grub_script_continue.in;
 };
 
 script = {
   testcase;
   name = grub_script_shift;
-  source = tests/grub_script_shift.in;
+  common = tests/grub_script_shift.in;
 };
 
 program = {
   testcase;
   name = example_unit_test;
-  source = tests/example_unit_test.c;
-  source = tests/lib/unit_test.c;
-  source = grub-core/kern/list.c;
-  source = grub-core/kern/misc.c;
-  source = grub-core/tests/lib/test.c;
+  common = tests/example_unit_test.c;
+  common = tests/lib/unit_test.c;
+  common = grub-core/kern/list.c;
+  common = grub-core/kern/misc.c;
+  common = grub-core/tests/lib/test.c;
   cflags = -Wno-format;
   ldadd = libgrub.a;
   ldflags = '$(LIBDEVMAPPER)';

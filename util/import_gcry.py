@@ -277,7 +277,7 @@ for cipher_file in cipher_files:
             conf.write ("module = {\n")
             conf.write ("  name = %s;\n" % modname)
             for src in modfiles.split():
-                conf.write ("  source = %s;\n" % src)
+                conf.write ("  common = %s;\n" % src)
             conf.write ("  cflags = '$(CFLAGS_GCRY)';\n");
             conf.write ("  cppflags = '$(CPPFLAGS_GCRY)';\n");
             conf.write ("};\n\n")
