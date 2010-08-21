@@ -178,6 +178,9 @@ struct grub_usb_device
   /* Data toggle values (used for bulk transfers only).  */
   int toggle[256];
 
+  /* Used by libusb wrapper.  Schedulded for removal. */
+  void *data;
+
   /* Array of children for a hub.  */
   grub_usb_device_t *children;
 

@@ -1,3 +1,8 @@
+2010-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/usb.h (grub_usb_device): Add 'data' field back. It's
+	needed by libusb wrapper.
+
 2010-08-21  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* docs/grub.texi (GNU/Hurd): Document booting GNU/Hurd.
