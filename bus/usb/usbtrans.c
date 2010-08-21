@@ -209,7 +209,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
   if (! transfer)
     {
       grub_dma_free (data_chunk);
-      return grub_errno;
+      return GRUB_USB_ERR_INTERNAL;
     }
 
   datablocks = ((size + max - 1) / max);
@@ -229,7 +229,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
     {
       grub_free (transfer);
       grub_dma_free (data_chunk);
-      return grub_errno;
+      return GRUB_USB_ERR_INTERNAL;
     }
 
   /* Set up all transfers.  */
