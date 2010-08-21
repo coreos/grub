@@ -62,6 +62,8 @@ struct grub_usb_transfer
   
   int last_trans;
   /* Index of last processed transaction in OHCI/UHCI driver. */
+
+  void *controller_data;
 };
 typedef struct grub_usb_transfer *grub_usb_transfer_t;
 

@@ -30,6 +30,7 @@ typedef struct grub_usb_controller_dev *grub_usb_controller_dev_t;
 typedef enum
   {
     GRUB_USB_ERR_NONE,
+    GRUB_USB_ERR_WAIT,
     GRUB_USB_ERR_INTERNAL,
     GRUB_USB_ERR_STALL,
     GRUB_USB_ERR_DATA,
@@ -97,6 +98,7 @@ grub_usb_err_t
 grub_usb_root_hub (grub_usb_controller_t controller);
 
 
+
 /* XXX: All handled by libusb for now.  */
 struct grub_usb_controller_dev
 {
@@ -105,9 +107,15 @@ struct grub_usb_controller_dev
 
   int (*iterate) (int (*hook) (grub_usb_controller_t dev));
 
-  grub_usb_err_t (*transfer) (grub_usb_controller_t dev,
-			      grub_usb_transfer_t transfer,
-			      int timeout, grub_size_t *actual);
+  grub_usb_err_t (*setup_transfer) (grub_usb_controller_t dev,
+				    grub_usb_transfer_t transfer);
+
+  grub_usb_err_t (*check_transfer) (grub_usb_controller_t dev,
+				    grub_usb_transfer_t transfer,
+				    grub_size_t *actual);
+
+  grub_usb_err_t (*cancel_transfer) (grub_usb_controller_t dev,
+				     grub_usb_transfer_t transfer);
 
   int (*hubports) (grub_usb_controller_t dev);
 

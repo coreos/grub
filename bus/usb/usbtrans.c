@@ -23,6 +23,39 @@
 #include <grub/misc.h>
 #include <grub/usb.h>
 #include <grub/usbtrans.h>
+#include <grub/time.h>
+
+static grub_usb_err_t
+grub_usb_execute_and_wait_transfer (grub_usb_device_t dev, 
+				    grub_usb_transfer_t transfer,
+				    int timeout, grub_size_t *actual)
+{
+  grub_usb_err_t err;
+  grub_uint64_t endtime;
+
+  endtime = grub_get_time_ms () + timeout;
+  err = dev->controller.dev->setup_transfer (&dev->controller, transfer);
+  if (err)
+    return err;
+  while (1)
+    {
+      err = dev->controller.dev->check_transfer (&dev->controller, transfer,
+						 actual);
+      if (!err)
+	return GRUB_USB_ERR_NONE;
+      if (err != GRUB_USB_ERR_WAIT)
+	return err;
+      if (grub_get_time_ms () > endtime)
+	{
+	  err = dev->controller.dev->cancel_transfer (&dev->controller,
+						      transfer);
+	  if (err)
+	    return err;
+	  return GRUB_USB_ERR_TIMEOUT;
+	}
+      grub_cpu_idle ();
+    }
+}
 
 grub_usb_err_t
 grub_usb_control_msg (grub_usb_device_t dev,
@@ -147,8 +180,8 @@ grub_usb_control_msg (grub_usb_device_t dev,
 
   transfer->transactions[datablocks + 1].toggle = 1;
 
-  err = dev->controller.dev->transfer (&dev->controller, transfer,
-				       1000, &actual);
+  err = grub_usb_execute_and_wait_transfer (dev, transfer, 1000, &actual);
+
   grub_dprintf ("usb", "control: err=%d\n", err);
 
   grub_free (transfer->transactions);
@@ -248,8 +281,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
       size -= tr->size;
     }
 
-  err = dev->controller.dev->transfer (&dev->controller, transfer, timeout,
-				       actual);
+  err = grub_usb_execute_and_wait_transfer (dev, transfer, timeout, actual);
   /* We must remember proper toggle value even if some transactions
    * were not processed - correct value should be inversion of last
    * processed transaction (TD). */
