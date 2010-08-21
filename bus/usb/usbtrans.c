@@ -246,7 +246,7 @@ grub_usb_bulk_setup_readwrite (grub_usb_device_t dev,
   datablocks = ((size + max - 1) / max);
   transfer->transcnt = datablocks;
   transfer->size = size - 1;
-  transfer->endpoint = endpoint & 15;
+  transfer->endpoint = endpoint;
   transfer->devaddr = dev->addr;
   transfer->type = GRUB_USB_TRANSACTION_TYPE_BULK;
   transfer->dir = type;

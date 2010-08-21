@@ -474,7 +474,7 @@ grub_uhci_setup_transfer (grub_usb_controller_t dev,
     {
       grub_usb_transaction_t tr = &transfer->transactions[i];
 
-      td = grub_uhci_transaction (u, transfer->endpoint, tr->pid,
+      td = grub_uhci_transaction (u, transfer->endpoint & 15, tr->pid,
 				  transfer->devaddr, tr->toggle,
 				  tr->size, tr->data);
       if (! td)
