@@ -274,5 +274,10 @@ grub_usb_err_t
 grub_usb_bulk_read_extended (grub_usb_device_t dev,
 			     int endpoint, grub_size_t size, char *data,
 			     int timeout, grub_size_t *actual);
+grub_usb_transfer_t
+grub_usb_bulk_read_background (grub_usb_device_t dev,
+			      int endpoint, grub_size_t size, void *data);
+grub_usb_err_t
+grub_usb_check_transfer (grub_usb_transfer_t trans, grub_size_t *actual);
 
 #endif /* GRUB_USB_H */

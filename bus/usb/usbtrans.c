@@ -195,29 +195,27 @@ grub_usb_control_msg (grub_usb_device_t dev,
   return err;
 }
 
-static grub_usb_err_t
-grub_usb_bulk_readwrite (grub_usb_device_t dev,
-			 int endpoint, grub_size_t size0, char *data_in,
-			 grub_transfer_type_t type, int timeout,
-			 grub_size_t *actual)
+static grub_usb_transfer_t
+grub_usb_bulk_setup_readwrite (grub_usb_device_t dev,
+			       int endpoint, grub_size_t size0, char *data_in,
+			       grub_transfer_type_t type)
 {
   int i;
   grub_usb_transfer_t transfer;
   int datablocks;
   unsigned int max;
-  grub_usb_err_t err;
-  int toggle = dev->toggle[endpoint];
   volatile char *data;
   grub_uint32_t data_addr;
   struct grub_pci_dma_chunk *data_chunk;
   grub_size_t size = size0;
+  int toggle = dev->toggle[endpoint];
 
   grub_dprintf ("usb", "bulk: size=0x%02x type=%d\n", size, type);
 
   /* FIXME: avoid allocation any kind of buffer in a first place.  */
   data_chunk = grub_memalign_dma32 (128, size);
   if (!data_chunk)
-    return GRUB_USB_ERR_INTERNAL;
+    return NULL;
   data = grub_dma_get_virt (data_chunk);
   data_addr = grub_dma_get_phys (data_chunk);
   if (type == GRUB_USB_TRANSFER_TYPE_OUT)
@@ -242,7 +240,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
   if (! transfer)
     {
       grub_dma_free (data_chunk);
-      return GRUB_USB_ERR_INTERNAL;
+      return NULL;
     }
 
   datablocks = ((size + max - 1) / max);
@@ -251,9 +249,12 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
   transfer->endpoint = endpoint & 15;
   transfer->devaddr = dev->addr;
   transfer->type = GRUB_USB_TRANSACTION_TYPE_BULK;
+  transfer->dir = type;
   transfer->max = max;
   transfer->dev = dev;
   transfer->last_trans = -1; /* Reset index of last processed transaction (TD) */
+  transfer->data_chunk = data_chunk;
+  transfer->data = data_in;
 
   /* Allocate an array of transfer data structures.  */
   transfer->transactions = grub_malloc (transfer->transcnt
@@ -262,7 +263,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
     {
       grub_free (transfer);
       grub_dma_free (data_chunk);
-      return GRUB_USB_ERR_INTERNAL;
+      return NULL;
     }
 
   /* Set up all transfers.  */
@@ -280,24 +281,51 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
       tr->preceding = i * max;
       size -= tr->size;
     }
+  return transfer;
+}
 
-  err = grub_usb_execute_and_wait_transfer (dev, transfer, timeout, actual);
+static void
+grub_usb_bulk_finish_readwrite (grub_usb_transfer_t transfer)
+{
+  grub_usb_device_t dev = transfer->dev;
+  int toggle = dev->toggle[transfer->endpoint];
+
   /* We must remember proper toggle value even if some transactions
    * were not processed - correct value should be inversion of last
    * processed transaction (TD). */
   if (transfer->last_trans >= 0)
     toggle = transfer->transactions[transfer->last_trans].toggle ? 0 : 1;
   else
-    toggle = dev->toggle[endpoint]; /* Nothing done, take original */
-  grub_dprintf ("usb", "bulk: err=%d, toggle=%d\n", err, toggle);
-  dev->toggle[endpoint] = toggle;
+    toggle = dev->toggle[transfer->endpoint]; /* Nothing done, take original */
+  grub_dprintf ("usb", "bulk: toggle=%d\n", toggle);
+  dev->toggle[transfer->endpoint] = toggle;
+
+  if (transfer->dir == GRUB_USB_TRANSFER_TYPE_IN)
+    grub_memcpy (transfer->data, (void *)
+		 grub_dma_get_virt (transfer->data_chunk),
+		 transfer->size + 1);
 
   grub_free (transfer->transactions);
   grub_free (transfer);
-  grub_dma_free (data_chunk);
+  grub_dma_free (transfer->data_chunk);
+}
 
-  if (type == GRUB_USB_TRANSFER_TYPE_IN)
-    grub_memcpy (data_in, (char *) data, size0);
+static grub_usb_err_t
+grub_usb_bulk_readwrite (grub_usb_device_t dev,
+			 int endpoint, grub_size_t size0, char *data_in,
+			 grub_transfer_type_t type, int timeout,
+			 grub_size_t *actual)
+{
+  grub_usb_err_t err;
+  grub_usb_transfer_t transfer;
+
+  transfer = grub_usb_bulk_setup_readwrite (dev, endpoint, size0,
+					    data_in, type);
+  if (!transfer)
+    return GRUB_USB_ERR_INTERNAL;
+  err = grub_usb_execute_and_wait_transfer (dev, transfer, timeout, actual);
+
+  grub_usb_bulk_finish_readwrite (transfer);
 
   return err;
 }
@@ -327,6 +355,41 @@ grub_usb_bulk_read (grub_usb_device_t dev,
   if (!err && actual != size)
     err = GRUB_USB_ERR_DATA;
   return err;
+}
+
+grub_usb_err_t
+grub_usb_check_transfer (grub_usb_transfer_t transfer, grub_size_t *actual)
+{
+  grub_usb_err_t err;
+  grub_usb_device_t dev = transfer->dev;
+
+  err = dev->controller.dev->check_transfer (&dev->controller, transfer,
+					     actual);
+  if (err == GRUB_USB_ERR_WAIT)
+    return err;
+
+  grub_usb_bulk_finish_readwrite (transfer);
+
+  return err;
+}
+
+grub_usb_transfer_t
+grub_usb_bulk_read_background (grub_usb_device_t dev,
+			       int endpoint, grub_size_t size, void *data)
+{
+  grub_usb_err_t err;
+  grub_usb_transfer_t transfer;
+
+  transfer = grub_usb_bulk_setup_readwrite (dev, endpoint, size,
+					    data, GRUB_USB_TRANSFER_TYPE_IN);
+  if (!transfer)
+    return NULL;
+
+  err = dev->controller.dev->setup_transfer (&dev->controller, transfer);
+  if (err)
+    return NULL;
+
+  return transfer;
 }
 
 grub_usb_err_t

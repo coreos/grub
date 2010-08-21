@@ -84,6 +84,9 @@ struct grub_usb_keyboard_data
   grub_uint8_t status;
   int key;
   struct grub_usb_desc_endp *endp;
+  grub_usb_transfer_t transfer;
+  grub_uint8_t report[8];
+  int dead;
 };
 
 static struct grub_term_input grub_usb_keyboards[16];
@@ -214,7 +217,19 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
   data->key = -1;
 #endif
 
+  data->transfer = grub_usb_bulk_read_background (usbdev,
+						  data->endp->endp_addr,
+						  sizeof (data->report),
+						  (char *) data->report);
+  if (!data->transfer)
+    {
+      grub_print_error ();
+      return 0;
+    }
+
   grub_term_register_input_active ("usb_keyboard", &grub_usb_keyboards[curnum]);
+
+  data->dead = 0;
 
   return 1;
 }
@@ -224,19 +239,35 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
 static int
 grub_usb_keyboard_checkkey (struct grub_term_input *term)
 {
-  grub_uint8_t data[8];
   grub_usb_err_t err;
   struct grub_usb_keyboard_data *termdata = term->data;
+  grub_uint8_t data[sizeof (termdata->report)];
   grub_size_t actual;
 
   if (termdata->key != -1)
     return termdata->key;
 
-  data[2] = 0;
+  if (termdata->dead)
+    return -1;
+
   /* Poll interrupt pipe.  */
-  err = grub_usb_bulk_read_extended (termdata->usbdev,
-				     termdata->endp->endp_addr, sizeof (data),
-				     (char *) data, 10, &actual);
+  err = grub_usb_check_transfer (termdata->transfer, &actual);
+
+  if (err == GRUB_USB_ERR_WAIT)
+    return -1;
+
+  grub_memcpy (data, termdata->report, sizeof (data));
+
+  termdata->transfer = grub_usb_bulk_read_background (termdata->usbdev,
+						      termdata->endp->endp_addr,
+						      sizeof (termdata->report),
+						      (char *) termdata->report);
+  if (!termdata->transfer)
+    {
+      grub_printf ("%s failed. Stopped\n", term->name);
+      termdata->dead = 1;
+    }
+
   if (err || actual < 1)
     return -1;
 

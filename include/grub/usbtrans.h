@@ -56,6 +56,8 @@ struct grub_usb_transfer
 
   grub_transaction_type_t type;
 
+  grub_transfer_type_t dir;
+
   struct grub_usb_device *dev;
 
   struct grub_usb_transaction *transactions;
@@ -64,6 +66,10 @@ struct grub_usb_transfer
   /* Index of last processed transaction in OHCI/UHCI driver. */
 
   void *controller_data;
+
+  /* Used when finishing transfer to copy data back.  */
+  struct grub_pci_dma_chunk *data_chunk;
+  void *data;
 };
 typedef struct grub_usb_transfer *grub_usb_transfer_t;
 
