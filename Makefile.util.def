@@ -281,14 +281,14 @@ script = {
 };
 
 script = {
-  name = '10_kfreebsd.in';
+  name = '10_kfreebsd';
   common = util/grub.d/10_kfreebsd.in;
   installdir = grubconf;
   condition = COND_host_kfreebsd;
 };
 
 script = {
-  name = '10_netbsd.in';
+  name = '10_netbsd';
   common = util/grub.d/10_netbsd.in;
   installdir = grubconf;
   condition = COND_host_netbsd;
