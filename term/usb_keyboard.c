@@ -258,6 +258,13 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
 
   grub_memcpy (data, termdata->report, sizeof (data));
 
+  grub_dprintf ("usb_keyboard",
+		"err = %d, actual = %d report: 0x%02x 0x%02x 0x%02x 0x%02x"
+		" 0x%02x 0x%02x 0x%02x 0x%02x\n",
+		err, actual,
+		data[0], data[1], data[2], data[3],
+		data[4], data[5], data[6], data[7]);
+
   termdata->transfer = grub_usb_bulk_read_background (termdata->usbdev,
 						      termdata->endp->endp_addr,
 						      sizeof (termdata->report),
@@ -275,12 +282,6 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
 
   if (actual < 3 || !data[2])
     return -1;
-
-  grub_dprintf ("usb_keyboard",
-		"report: 0x%02x 0x%02x 0x%02x 0x%02x"
-		" 0x%02x 0x%02x 0x%02x 0x%02x\n",
-		data[0], data[1], data[2], data[3],
-		data[4], data[5], data[6], data[7]);
 
   /* Check if the Control or Shift key was pressed.  */
   if (data[0] & 0x01 || data[0] & 0x10)
