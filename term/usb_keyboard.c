@@ -167,11 +167,11 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
 
   /* Place the device in boot mode.  */
   grub_usb_control_msg (usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
-  			USB_HID_SET_PROTOCOL, 0, 0, 0, 0);
+  			USB_HID_SET_PROTOCOL, 0, interfno, 0, 0);
 
   /* Reports every time an event occurs and not more often than that.  */
   grub_usb_control_msg (usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
-  			USB_HID_SET_IDLE, 0<<8, 0, 0, 0);
+  			USB_HID_SET_IDLE, 0<<8, interfno, 0, 0);
 
   grub_memcpy (&grub_usb_keyboards[curnum], &grub_usb_keyboard_term,
 	       sizeof (grub_usb_keyboards[curnum]));
@@ -185,12 +185,18 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
       return 0;
     }
 
+  /* Test showed that getting report may make the keyboard go nuts.
+     Moreover since we're reattaching keyboard it usually sends
+     an initial message on interrupt pipe and so we retrieve
+     the same keystatus.
+   */
+#if 0
   {
     grub_uint8_t report[8];
     grub_usb_err_t err;
     grub_memset (report, 0, sizeof (report));
     err = grub_usb_control_msg (usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_IN,
-    				USB_HID_GET_REPORT, 0x0000, interfno,
+    				USB_HID_GET_REPORT, 0x0100, interfno,
 				sizeof (report), (char *) report);
     if (err)
       {
@@ -203,6 +209,10 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
 	data->key = report[2] ? : -1;
       }
   }
+#else
+  data->status = 0;
+  data->key = -1;
+#endif
 
   grub_term_register_input_active ("usb_keyboard", &grub_usb_keyboards[curnum]);
 
@@ -278,6 +288,8 @@ grub_usb_keyboard_getkeystatus (struct grub_term_input *term)
 {
   struct grub_usb_keyboard_data *termdata = term->data;
   int mods = 0;
+
+  grub_usb_keyboard_checkkey (term);
 
   /* Check Shift, Control, and Alt status.  */
   if (termdata->status & 0x02 || termdata->status & 0x20)
