@@ -99,8 +99,21 @@ static grub_uint8_t usb_to_at_map[128] =
   /* 0x7e */ 0x00,                  0x00, 
 };
 
-#define CAPS_LOCK               0x39
-#define CAPS_LOCK_LED           0x02
+enum
+  {
+    KEY_NO_KEY = 0x00,
+    KEY_ERR_BUFFER = 0x01,
+    KEY_ERR_POST  = 0x02,
+    KEY_ERR_UNDEF = 0x03,
+    KEY_CAPS_LOCK = 0x39,
+    KEY_NUM_LOCK  = 0x53,
+  };
+
+enum
+  {
+    LED_NUM_LOCK = 0x01,
+    LED_CAPS_LOCK = 0x02
+  };
 
 /* Valid values for bRequest.  See HID definition version 1.11 section 7.2. */
 #define USB_HID_GET_REPORT	0x01
@@ -328,7 +341,9 @@ send_leds (struct grub_usb_keyboard_data *termdata)
   char report[1];
   report[0] = 0;
   if (termdata->mods & GRUB_TERM_STATUS_CAPS)
-    report[0] |= CAPS_LOCK_LED;
+    report[0] |= LED_CAPS_LOCK;
+  if (termdata->mods & GRUB_TERM_STATUS_NUM)
+    report[0] |= LED_NUM_LOCK;
   grub_usb_control_msg (termdata->usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
 			USB_HID_SET_REPORT, 0x0200, termdata->interfno,
 			sizeof (report), (char *) report);
@@ -380,18 +395,29 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
 
   termdata->status = data[0];
 
-  if (actual < 3 || !data[2])
+  if (actual < 3)
     return -1;
 
-  if (data[2] == CAPS_LOCK)
+  if (data[2] == KEY_NO_KEY || data[2] == KEY_ERR_BUFFER
+      || data[2] == KEY_ERR_POST || data[2] == KEY_ERR_UNDEF)
+    return -1;
+
+  if (data[2] == KEY_CAPS_LOCK)
     {
       termdata->mods ^= GRUB_TERM_STATUS_CAPS;
       send_leds (termdata);
       return -1;
     }
 
-  if (usb_to_at_map[data[2]] == 0)
-    grub_printf ("Unknown key 0x%x detected\n", data[2]);
+  if (data[2] == KEY_NUM_LOCK)
+    {
+      termdata->mods ^= GRUB_TERM_STATUS_NUM;
+      send_leds (termdata);
+      return -1;
+    }
+
+  if (data[2] > ARRAY_SIZE (usb_to_at_map) || usb_to_at_map[data[2]] == 0)
+    grub_printf ("Unknown key 0x%02x detected\n", data[2]);
   else
     termdata->key = grub_term_map_key (usb_to_at_map[data[2]],
 				       interpret_status (data[0])
