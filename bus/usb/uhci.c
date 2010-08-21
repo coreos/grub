@@ -39,6 +39,18 @@ typedef enum
 #define GRUB_UHCI_LINK_TERMINATE	1
 #define GRUB_UHCI_LINK_QUEUE_HEAD	2
 
+enum
+  {
+    GRUB_UHCI_REG_PORTSC_CONNECT_CHANGED = 0x0002,
+    GRUB_UHCI_REG_PORTSC_PORT_ENABLED    = 0x0004,
+    GRUB_UHCI_REG_PORTSC_RESUME          = 0x0040,
+    GRUB_UHCI_REG_PORTSC_RESET           = 0x0200,
+    GRUB_UHCI_REG_PORTSC_SUSPEND         = 0x1000,
+    GRUB_UHCI_REG_PORTSC_RW = GRUB_UHCI_REG_PORTSC_PORT_ENABLED
+    | GRUB_UHCI_REG_PORTSC_RESUME | GRUB_UHCI_REG_PORTSC_RESET
+    | GRUB_UHCI_REG_PORTSC_SUSPEND
+  };
+
 
 /* UHCI Queue Head.  */
 struct grub_uhci_qh
@@ -693,7 +705,7 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
       return grub_error (GRUB_ERR_IO, "UHCI Timed out");
 
   /* Reset bit Connect Status Change */
-  grub_uhci_writereg16 (u, reg, status | (1 << 1));
+  grub_uhci_writereg16 (u, reg, status | GRUB_UHCI_REG_PORTSC_CONNECT_CHANGED);
 
   /* Read final port status */
   status = grub_uhci_readreg16 (u, reg);
@@ -725,7 +737,15 @@ grub_uhci_detect_dev (grub_usb_controller_t dev, int port, int *changed)
   grub_dprintf ("uhci", "detect=0x%02x port=%d\n", status, port);
 
   /* Connect Status Change bit - it detects change of connection */
-  *changed = ((status & (1 << 1)) != 0);
+  if (status & (1 << 1))
+    {
+      *changed = 1;
+      /* Reset bit Connect Status Change */
+      grub_uhci_writereg16 (u, reg, (status & GRUB_UHCI_REG_PORTSC_RW)
+			    | GRUB_UHCI_REG_PORTSC_CONNECT_CHANGED);
+    }
+  else
+    *changed = 0;
     
   if (! (status & 1))
     return GRUB_USB_SPEED_NONE;

@@ -1349,8 +1349,16 @@ grub_ohci_detect_dev (grub_usb_controller_t dev, int port, int *changed)
 
    grub_dprintf ("ohci", "detect_dev status=0x%02x\n", status);
 
-  /* Connect Status Change bit - it detects change of connection */
-  *changed = ((status & GRUB_OHCI_RESET_CONNECT_CHANGE) != 0);
+   /* Connect Status Change bit - it detects change of connection */
+   if (status & GRUB_OHCI_RESET_CONNECT_CHANGE)
+     {
+       *changed = 1;
+       /* Reset bit Connect Status Change */
+       grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
+			     GRUB_OHCI_RESET_CONNECT_CHANGE);
+     }
+   else
+     *changed = 0;
 
    if (! (status & 1))
      return GRUB_USB_SPEED_NONE;
