@@ -40,6 +40,7 @@ GROUPS["x86_noefi_mips"] = GROUPS["x86_noefi"] + GROUPS["mips"]
 GROUPS["ieee1275"]   = [ "i386_ieee1275", "sparc64_ieee1275", "powerpc_ieee1275" ]
 GROUPS["noieee1275"] = GRUB_PLATFORMS[:]
 for i in GROUPS["ieee1275"]: GROUPS["noieee1275"].remove(i)
+GROUPS["ieee1275_mips"] = GROUPS["ieee1275"] + GROUPS["mips"]
 
 GROUPS["pci"]      = GROUPS["x86"] + GROUPS["mips"]
 
