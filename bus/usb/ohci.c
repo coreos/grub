@@ -832,6 +832,8 @@ grub_ohci_setup_transfer (grub_usb_controller_t dev,
       }
     }
 
+  transfer->controller_data = cdata;
+
   return GRUB_USB_ERR_NONE;
 }
 
