@@ -128,6 +128,9 @@ struct grub_usb_keyboard_data
   int key;
   int interfno;
   struct grub_usb_desc_endp *endp;
+  grub_usb_transfer_t transfer;
+  grub_uint8_t report[8];
+  int dead;
 };
 
 static struct grub_term_input grub_usb_keyboards[16];
@@ -143,6 +146,8 @@ static struct grub_term_input grub_usb_keyboard_term =
     .getkeystatus = grub_usb_keyboard_getkeystatus,
     .next = 0
   };
+
+static struct grub_term_input grub_usb_keyboards[16];
 
 static int
 interpret_status (grub_uint8_t data0)
@@ -181,6 +186,9 @@ grub_usb_keyboard_detach (grub_usb_device_t usbdev,
 
       if (data->usbdev != usbdev)
 	continue;
+
+      if (data->transfer)
+	grub_usb_cancel_transfer (data->transfer);
 
       grub_term_unregister_input (&grub_usb_keyboards[i]);
       grub_free ((char *) grub_usb_keyboards[i].name);
@@ -246,11 +254,11 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
 
   /* Place the device in boot mode.  */
   grub_usb_control_msg (usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
-  			USB_HID_SET_PROTOCOL, 0, 0, 0, 0);
+  			USB_HID_SET_PROTOCOL, 0, interfno, 0, 0);
 
   /* Reports every time an event occurs and not more often than that.  */
   grub_usb_control_msg (usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
-  			USB_HID_SET_IDLE, 0<<8, 0, 0, 0);
+  			USB_HID_SET_IDLE, 0<<8, interfno, 0, 0);
 
   grub_memcpy (&grub_usb_keyboards[curnum], &grub_usb_keyboard_term,
 	       sizeof (grub_usb_keyboards[curnum]));
@@ -264,12 +272,18 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
       return 0;
     }
 
+  /* Test showed that getting report may make the keyboard go nuts.
+     Moreover since we're reattaching keyboard it usually sends
+     an initial message on interrupt pipe and so we retrieve
+     the same keystatus.
+   */
+#if 0
   {
     grub_uint8_t report[8];
     grub_usb_err_t err;
     grub_memset (report, 0, sizeof (report));
     err = grub_usb_control_msg (usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_IN,
-    				USB_HID_GET_REPORT, 0x0000, interfno,
+    				USB_HID_GET_REPORT, 0x0100, interfno,
 				sizeof (report), (char *) report);
     if (err)
       {
@@ -282,10 +296,26 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
 	data->key = report[2] ? : -1;
       }
   }
+#else
+  data->status = 0;
+  data->key = -1;
+#endif
+
+  data->transfer = grub_usb_bulk_read_background (usbdev,
+						  data->endp->endp_addr,
+						  sizeof (data->report),
+						  (char *) data->report);
+  if (!data->transfer)
+    {
+      grub_print_error ();
+      return 0;
+    }
 
   data->mods = 0;
 
   grub_term_register_input_active ("usb_keyboard", &grub_usb_keyboards[curnum]);
+
+  data->dead = 0;
 
   return 1;
 }
@@ -308,19 +338,43 @@ send_leds (struct grub_usb_keyboard_data *termdata)
 static int
 grub_usb_keyboard_checkkey (struct grub_term_input *term)
 {
-  grub_uint8_t data[8];
   grub_usb_err_t err;
   struct grub_usb_keyboard_data *termdata = term->data;
+  grub_uint8_t data[sizeof (termdata->report)];
   grub_size_t actual;
 
   if (termdata->key != -1)
     return termdata->key;
 
-  data[2] = 0;
+  if (termdata->dead)
+    return -1;
+
   /* Poll interrupt pipe.  */
-  err = grub_usb_bulk_read_extended (termdata->usbdev,
-				     termdata->endp->endp_addr, sizeof (data),
-				     (char *) data, 10, &actual);
+  err = grub_usb_check_transfer (termdata->transfer, &actual);
+
+  if (err == GRUB_USB_ERR_WAIT)
+    return -1;
+
+  grub_memcpy (data, termdata->report, sizeof (data));
+
+  termdata->transfer = grub_usb_bulk_read_background (termdata->usbdev,
+						      termdata->endp->endp_addr,
+						      sizeof (termdata->report),
+						      (char *) termdata->report);
+  if (!termdata->transfer)
+    {
+      grub_printf ("%s failed. Stopped\n", term->name);
+      termdata->dead = 1;
+    }
+
+
+  grub_dprintf ("usb_keyboard",
+		"err = %d, actual = %d report: 0x%02x 0x%02x 0x%02x 0x%02x"
+		" 0x%02x 0x%02x 0x%02x 0x%02x\n",
+		err, actual,
+		data[0], data[1], data[2], data[3],
+		data[4], data[5], data[6], data[7]);
+
   if (err || actual < 1)
     return -1;
 
@@ -336,15 +390,8 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
       return -1;
     }
 
-  grub_dprintf ("usb_keyboard",
-		"report: 0x%02x 0x%02x 0x%02x 0x%02x"
-		" 0x%02x 0x%02x 0x%02x 0x%02x\n",
-		data[0], data[1], data[2], data[3],
-		data[4], data[5], data[6], data[7]);
-
   if (usb_to_at_map[data[2]] == 0)
     grub_printf ("Unknown key 0x%x detected\n", data[2]);
-
   else
     termdata->key = grub_term_map_key (usb_to_at_map[data[2]],
 				       interpret_status (data[0])
@@ -376,6 +423,8 @@ grub_usb_keyboard_getkeystatus (struct grub_term_input *term)
 {
   struct grub_usb_keyboard_data *termdata = term->data;
 
+  grub_usb_keyboard_checkkey (term);
+
   return interpret_status (termdata->status) | termdata->mods;
 }
 
@@ -396,9 +445,18 @@ GRUB_MOD_FINI(usb_keyboard)
   for (i = 0; i < ARRAY_SIZE (grub_usb_keyboards); i++)
     if (grub_usb_keyboards[i].data)
       {
+	struct grub_usb_keyboard_data *data = grub_usb_keyboards[i].data;
+
+	if (!data)
+	  continue;
+	
+	if (data->transfer)
+	  grub_usb_cancel_transfer (data->transfer);
+
 	grub_term_unregister_input (&grub_usb_keyboards[i]);
 	grub_free ((char *) grub_usb_keyboards[i].name);
 	grub_usb_keyboards[i].name = NULL;
+	grub_free (grub_usb_keyboards[i].data);
 	grub_usb_keyboards[i].data = 0;
       }
   grub_usb_unregister_attach_hook_class (&attach_hook);

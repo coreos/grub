@@ -828,11 +828,30 @@ Since GNU/Hurd is Multiboot-compliant, it is easy to boot it; there is
 nothing special about it. But do not forget that you have to specify a
 root partition to the kernel.
 
-FIXME: this section is incomplete.
-
 @enumerate
 @item
-Run the command @command{boot} (@pxref{boot}).
+Set GRUB's root device to the same drive as GNU/Hurd's.  The command
+@code{search --file --set /boot/gnumach.gz} or similar may help you
+(@pxref{search}).
+
+@item 
+Load the kernel and the modules, like this:
+
+@example
+@group
+grub> @kbd{multiboot /boot/gnumach.gz root=device:hd0s1}
+grub> @kbd{module  /hurd/ext2fs.static ext2fs --readonly \
+                   --multiboot-command-line='$@{kernel-command-line@}' \
+                   --host-priv-port='$@{host-port@}' \
+                   --device-master-port='$@{device-port@}' \
+                   --exec-server-task='$@{exec-task@}' -T typed '$@{root@}' \
+                   '$(task-create)' '$(task-resume)'}
+grub> @kbd{module /lib/ld.so.1 exec /hurd/exec '$(exec-task=task-create)'}
+@end group
+@end example
+
+@item
+Finally, run the command @command{boot} (@pxref{boot}).
 @end enumerate
 
 
