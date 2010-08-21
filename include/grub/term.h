@@ -490,6 +490,9 @@ grub_print_spaces (struct grub_term_output *term, int number_spaces)
 
 extern void (*EXPORT_VAR (grub_term_poll_usb)) (void);
 
+#define GRUB_TERM_REPEAT_PRE_INTERVAL 100
+#define GRUB_TERM_REPEAT_INTERVAL 50
+
 #endif /* ! ASM_FILE */
 
 #endif /* ! GRUB_TERM_HEADER */

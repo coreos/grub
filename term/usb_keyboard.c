@@ -144,6 +144,8 @@ struct grub_usb_keyboard_data
   grub_usb_transfer_t transfer;
   grub_uint8_t report[8];
   int dead;
+  int last_key;
+  grub_uint64_t repeat_time;
 };
 
 static struct grub_term_input grub_usb_keyboards[16];
@@ -368,7 +370,16 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
   err = grub_usb_check_transfer (termdata->transfer, &actual);
 
   if (err == GRUB_USB_ERR_WAIT)
-    return -1;
+    {
+      if (termdata->last_key != -1
+	  && grub_get_time_ms () > termdata->repeat_time)
+	{
+	  termdata->key = termdata->last_key;
+	  termdata->repeat_time = grub_get_time_ms ()
+	    + GRUB_TERM_REPEAT_INTERVAL;
+	}
+      return termdata->key;
+    }
 
   grub_memcpy (data, termdata->report, sizeof (data));
 
@@ -382,6 +393,7 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
       termdata->dead = 1;
     }
 
+  termdata->last_key = -1;
 
   grub_dprintf ("usb_keyboard",
 		"err = %d, actual = %d report: 0x%02x 0x%02x 0x%02x 0x%02x"
@@ -419,9 +431,13 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
   if (data[2] > ARRAY_SIZE (usb_to_at_map) || usb_to_at_map[data[2]] == 0)
     grub_printf ("Unknown key 0x%02x detected\n", data[2]);
   else
-    termdata->key = grub_term_map_key (usb_to_at_map[data[2]],
-				       interpret_status (data[0])
-				       | termdata->mods);
+    {
+      termdata->last_key = termdata->key
+	= grub_term_map_key (usb_to_at_map[data[2]],
+			     interpret_status (data[0]) | termdata->mods);
+      termdata->repeat_time = grub_get_time_ms ()
+	+ GRUB_TERM_REPEAT_PRE_INTERVAL;
+    }
 
   grub_errno = GRUB_ERR_NONE;
 
