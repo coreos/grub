@@ -392,6 +392,14 @@ grub_usb_bulk_read_background (grub_usb_device_t dev,
   return transfer;
 }
 
+void
+grub_usb_cancel_transfer (grub_usb_transfer_t transfer)
+{
+  grub_usb_device_t dev = transfer->dev;
+  dev->controller.dev->cancel_transfer (&dev->controller, transfer);
+  grub_errno = GRUB_ERR_NONE;
+}
+
 grub_usb_err_t
 grub_usb_bulk_read_extended (grub_usb_device_t dev,
 			     int endpoint, grub_size_t size, char *data,

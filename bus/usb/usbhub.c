@@ -177,16 +177,16 @@ grub_usb_add_hub (grub_usb_device_t dev)
       grub_dprintf ("usb", "Hub port %d status: 0x%02x\n", i, status);
 
       /* If connected, reset and enable the port.  */
-      if (status & GRUB_USB_HUB_STATUS_CONNECTED)
+      if (status & GRUB_USB_HUB_STATUS_PORT_CONNECTED)
 	{
 	  grub_usb_speed_t speed;
 
 	  /* Determine the device speed.  */
-	  if (status & GRUB_USB_HUB_STATUS_LOWSPEED)
+	  if (status & GRUB_USB_HUB_STATUS_PORT_LOWSPEED)
 	    speed = GRUB_USB_SPEED_LOW;
 	  else
 	    {
-	      if (status & GRUB_USB_HUB_STATUS_HIGHSPEED)
+	      if (status & GRUB_USB_HUB_STATUS_PORT_HIGHSPEED)
 		speed = GRUB_USB_SPEED_HIGH;
 	      else
 		speed = GRUB_USB_SPEED_FULL;
@@ -231,7 +231,7 @@ grub_usb_add_hub (grub_usb_device_t dev)
                                             | GRUB_USB_REQTYPE_CLASS
                                             | GRUB_USB_REQTYPE_TARGET_OTHER),
                                       GRUB_USB_REQ_CLEAR_FEATURE,
-				      GRUB_USB_HUB_FEATURE_C_CONNECTED,
+				      GRUB_USB_HUB_FEATURE_C_PORT_CONNECTED,
 				      i, 0, 0);
           /* Just ignore the device if the Hub reports some error */
           if (err)
@@ -249,6 +249,25 @@ grub_usb_add_hub (grub_usb_device_t dev)
           /* If the device is a Hub, scan it for more devices.  */
           if (next_dev->descdev.class == 0x09)
             grub_usb_add_hub (next_dev);
+	}
+    }
+
+  for (i = 0; i < dev->config[0].interf[0].descif->endpointcnt;
+       i++)
+    {
+      struct grub_usb_desc_endp *endp = NULL;
+      endp = &dev->config[0].interf[0].descendp[i];
+
+      if ((endp->endp_addr & 128) && grub_usb_get_ep_type(endp)
+	  == GRUB_USB_EP_INTERRUPT)
+	{
+	  dev->hub_endpoint = endp;
+	  dev->hub_transfer
+	    = grub_usb_bulk_read_background (dev, endp->endp_addr,
+					     grub_min (endp->maxpacket,
+						       sizeof (dev->statuschange)),
+					     (char *) &dev->statuschange);
+	  break;
 	}
     }
 
@@ -341,6 +360,9 @@ detach_device (grub_usb_device_t dev)
     return;
   if (dev->descdev.class == GRUB_USB_CLASS_HUB)
     {
+      if (dev->hub_transfer)
+	grub_usb_cancel_transfer (dev->hub_transfer);
+
       for (i = 0; i < dev->nports; i++)
 	detach_device (dev->children[i]);
       grub_free (dev->children);
@@ -364,11 +386,38 @@ poll_nonroot_hub (grub_usb_device_t dev)
   grub_uint64_t timeout;
   grub_usb_device_t next_dev;
   grub_usb_device_t *attached_devices = dev->children;
-      
+  grub_uint8_t changed;
+  grub_size_t actual;
+
+  if (!dev->hub_transfer)
+    return;
+
+  err = grub_usb_check_transfer (dev->hub_transfer, &actual);
+
+  if (err == GRUB_USB_ERR_WAIT)
+    return;
+
+  changed = dev->statuschange;
+
+  dev->hub_transfer
+    = grub_usb_bulk_read_background (dev, dev->hub_endpoint->endp_addr,
+				     grub_min (dev->hub_endpoint->maxpacket,
+					       sizeof (dev->statuschange)),
+				     (char *) &dev->statuschange);
+
+  if (err || actual == 0 || changed == 0)
+    return;
+
+  grub_dprintf ("usb", "statuschanged = %02x, err = %d, actual = %d\n",
+		changed, err, actual);
+
   /* Iterate over the Hub ports.  */
   for (i = 1; i <= dev->nports; i++)
     {
       grub_uint32_t status;
+
+      if (!(changed & (1 << i)))
+	continue;
 
       /* Get the port status.  */
       err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_IN
@@ -376,29 +425,66 @@ poll_nonroot_hub (grub_usb_device_t dev)
 					| GRUB_USB_REQTYPE_TARGET_OTHER),
 				  GRUB_USB_REQ_GET_STATUS,
 				  0, i, sizeof (status), (char *) &status);
-      /* Just ignore the device if the Hub does not report the
-	 status.  */
+
       if (err)
 	continue;
 
-      if (status & GRUB_USB_HUB_STATUS_C_CONNECTED)
+      /* FIXME: properly handle these conditions.  */
+      if (status & GRUB_USB_HUB_STATUS_C_PORT_RESET)
+	grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
+				    | GRUB_USB_REQTYPE_CLASS
+				    | GRUB_USB_REQTYPE_TARGET_OTHER),
+			      GRUB_USB_REQ_CLEAR_FEATURE,
+			      GRUB_USB_HUB_FEATURE_C_PORT_RESET, i, 0, 0);
+
+      if (status & GRUB_USB_HUB_STATUS_C_PORT_ENABLED)
+	grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
+				    | GRUB_USB_REQTYPE_CLASS
+				    | GRUB_USB_REQTYPE_TARGET_OTHER),
+			      GRUB_USB_REQ_CLEAR_FEATURE,
+			      GRUB_USB_HUB_FEATURE_C_PORT_ENABLED, i, 0, 0);
+
+      if (status & GRUB_USB_HUB_STATUS_C_PORT_SUSPEND)
+	grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
+				    | GRUB_USB_REQTYPE_CLASS
+				    | GRUB_USB_REQTYPE_TARGET_OTHER),
+			      GRUB_USB_REQ_CLEAR_FEATURE,
+			      GRUB_USB_HUB_FEATURE_C_PORT_SUSPEND, i, 0, 0);
+
+      if (status & GRUB_USB_HUB_STATUS_C_PORT_OVERCURRENT)
+	grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
+				    | GRUB_USB_REQTYPE_CLASS
+				    | GRUB_USB_REQTYPE_TARGET_OTHER),
+			      GRUB_USB_REQ_CLEAR_FEATURE,
+			      GRUB_USB_HUB_FEATURE_C_PORT_OVERCURRENT, i, 0, 0);
+
+      if (!(status & GRUB_USB_HUB_STATUS_C_PORT_CONNECTED))
+	continue;
+      
+      grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
+				  | GRUB_USB_REQTYPE_CLASS
+				  | GRUB_USB_REQTYPE_TARGET_OTHER),
+				  GRUB_USB_REQ_CLEAR_FEATURE,
+			    GRUB_USB_HUB_FEATURE_C_PORT_CONNECTED, i, 0, 0);
+
+      if (status & GRUB_USB_HUB_STATUS_C_PORT_CONNECTED)
 	{
 	  detach_device (attached_devices[i-1]);
 	  attached_devices[i - 1] = NULL;
 	}
       	    
       /* Connected and status of connection changed ? */
-      if ((status & GRUB_USB_HUB_STATUS_CONNECTED)
-          && (status & GRUB_USB_HUB_STATUS_C_CONNECTED))
+      if ((status & GRUB_USB_HUB_STATUS_PORT_CONNECTED)
+          && (status & GRUB_USB_HUB_STATUS_C_PORT_CONNECTED))
 	{
 	  grub_usb_speed_t speed;
 
 	  /* Determine the device speed.  */
-	  if (status & GRUB_USB_HUB_STATUS_LOWSPEED)
+	  if (status & GRUB_USB_HUB_STATUS_PORT_LOWSPEED)
 	    speed = GRUB_USB_SPEED_LOW;
 	  else
 	    {
-	      if (status & GRUB_USB_HUB_STATUS_HIGHSPEED)
+	      if (status & GRUB_USB_HUB_STATUS_PORT_HIGHSPEED)
 		speed = GRUB_USB_SPEED_HIGH;
 	      else
 		speed = GRUB_USB_SPEED_FULL;
@@ -442,7 +528,7 @@ poll_nonroot_hub (grub_usb_device_t dev)
                                             | GRUB_USB_REQTYPE_CLASS
                                             | GRUB_USB_REQTYPE_TARGET_OTHER),
                                       GRUB_USB_REQ_CLEAR_FEATURE,
-				      GRUB_USB_HUB_FEATURE_C_CONNECTED,
+				      GRUB_USB_HUB_FEATURE_C_PORT_CONNECTED,
 				      i, 0, 0);
           /* Just ignore the device if the Hub reports some error */
           if (err)

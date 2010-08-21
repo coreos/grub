@@ -181,11 +181,19 @@ struct grub_usb_device
   /* Used by libusb wrapper.  Schedulded for removal. */
   void *data;
 
+  /* Hub information.  */
+
   /* Array of children for a hub.  */
   grub_usb_device_t *children;
 
   /* Number of hub ports.  */
   unsigned nports;
+
+  grub_usb_transfer_t hub_transfer;
+
+  grub_uint32_t statuschange;
+
+  struct grub_usb_desc_endp *hub_endpoint;
 };
 
 
@@ -271,5 +279,7 @@ grub_usb_bulk_read_background (grub_usb_device_t dev,
 			      int endpoint, grub_size_t size, void *data);
 grub_usb_err_t
 grub_usb_check_transfer (grub_usb_transfer_t trans, grub_size_t *actual);
+void
+grub_usb_cancel_transfer (grub_usb_transfer_t trans);
 
 #endif /* GRUB_USB_H */

@@ -107,6 +107,9 @@ grub_usb_keyboard_detach (grub_usb_device_t usbdev,
       if (data->usbdev != usbdev)
 	continue;
 
+      if (data->transfer)
+	grub_usb_cancel_transfer (data->transfer);
+
       grub_term_unregister_input (&grub_usb_keyboards[i]);
       grub_free ((char *) grub_usb_keyboards[i].name);
       grub_usb_keyboards[i].name = NULL;
@@ -351,9 +354,18 @@ GRUB_MOD_FINI(usb_keyboard)
   for (i = 0; i < ARRAY_SIZE (grub_usb_keyboards); i++)
     if (grub_usb_keyboards[i].data)
       {
+	struct grub_usb_keyboard_data *data = grub_usb_keyboards[i].data;
+
+	if (!data)
+	  continue;
+	
+	if (data->transfer)
+	  grub_usb_cancel_transfer (data->transfer);
+
 	grub_term_unregister_input (&grub_usb_keyboards[i]);
 	grub_free ((char *) grub_usb_keyboards[i].name);
 	grub_usb_keyboards[i].name = NULL;
+	grub_free (grub_usb_keyboards[i].data);
 	grub_usb_keyboards[i].data = 0;
       }
   grub_usb_unregister_attach_hook_class (&attach_hook);
