@@ -223,6 +223,11 @@ grub_keyboard_controller_init (struct grub_term_input *term __attribute__ ((unus
   at_keyboard_status = 0;
   grub_keyboard_controller_orig = grub_keyboard_controller_read ();
   grub_keyboard_controller_write (grub_keyboard_controller_orig | KEYBOARD_SCANCODE_SET1);
+  keyboard_controller_led (led_status);
+  /* Drain input buffer. */
+  while (KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
+    grub_inb (KEYBOARD_REG_DATA);
+
   return GRUB_ERR_NONE;
 }
 
