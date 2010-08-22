@@ -20,7 +20,7 @@
 #include <grub/i18n.h>
 #include <grub/term.h>
 #include <grub/keyboard_layouts.h>
-#include <grub/at_keyboard.h>
+#include <grub/atkeymap.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,18 +47,46 @@ struct console_grub_equivalence
   grub_uint32_t grub;
 };
 
-static struct console_grub_equivalence console_grub_equivalences[] = {
+static struct console_grub_equivalence console_grub_equivalences_shift[] = {
+  {"KP_0", '0'},
+  {"KP_1", '1'},
+  {"KP_2", '2'},
+  {"KP_3", '3'},
+  {"KP_4", '4'},
+  {"KP_5", '5'},
+  {"KP_6", '6'},
+  {"KP_7", '7'},
+  {"KP_8", '8'},
+  {"KP_9", '9'},
+  {"KP_Period", '.'},
+};
+
+static struct console_grub_equivalence console_grub_equivalences_unshift[] = {
+  {"KP_0", GRUB_TERM_KEY_INSERT},
+  {"KP_1", GRUB_TERM_KEY_END},
+  {"KP_2", GRUB_TERM_KEY_DOWN},
+  {"KP_3", GRUB_TERM_KEY_NPAGE},
+  {"KP_4", GRUB_TERM_KEY_LEFT},
+  {"KP_5", GRUB_TERM_KEY_CENTER},
+  {"KP_6", GRUB_TERM_KEY_RIGHT},
+  {"KP_7", GRUB_TERM_KEY_HOME},
+  {"KP_8", GRUB_TERM_KEY_UP},
+  {"KP_9", GRUB_TERM_KEY_PPAGE},
+  {"KP_Period", GRUB_TERM_KEY_DC},
+};
+
+static struct console_grub_equivalence console_grub_equivalences_common[] = {
   {"Escape", GRUB_TERM_ESC},
   {"Tab", GRUB_TERM_TAB},
   {"Delete", GRUB_TERM_BACKSPACE},
+
+  {"KP_Enter", '\n'},
+  {"Return", '\n'},
 
   {"KP_Multiply", '*'},
   {"KP_Subtract", '-'},
   {"KP_Add", '+'},
   {"KP_Divide", '/'},
-
-  {"KP_Enter", '\n'},
-  {"Return", '\n'},
 
   {"F1", GRUB_TERM_KEY_F1},
   {"F2", GRUB_TERM_KEY_F2},
@@ -116,6 +144,9 @@ static struct console_grub_equivalence console_grub_equivalences[] = {
   {"End", GRUB_TERM_KEY_END},
   {"Right", GRUB_TERM_KEY_RIGHT},
   {"Left", GRUB_TERM_KEY_LEFT},
+  {"Next", GRUB_TERM_KEY_NPAGE},
+  {"Prior", GRUB_TERM_KEY_PPAGE},
+  {"Remove", GRUB_TERM_KEY_DC},
   {"VoidSymbol", 0},
 
   /* "Undead" keys since no dead key support in GRUB.  */
@@ -132,24 +163,8 @@ static struct console_grub_equivalence console_grub_equivalences[] = {
   {"dead_breve", 0},
   {"dead_doubleacute", 0},
 
-  /* NumLock not supported yet.  */
-  {"KP_0", GRUB_TERM_KEY_INSERT},
-  {"KP_1", GRUB_TERM_KEY_END},
-  {"KP_2", GRUB_TERM_KEY_DOWN},
-  {"KP_3", GRUB_TERM_KEY_NPAGE},
-  {"KP_4", GRUB_TERM_KEY_LEFT},
-  {"KP_5", 0},
-  {"KP_6", GRUB_TERM_KEY_RIGHT},
-  {"KP_7", GRUB_TERM_KEY_HOME},
-  {"KP_8", GRUB_TERM_KEY_UP},
-  {"KP_9", GRUB_TERM_KEY_PPAGE},
-  {"KP_Period", GRUB_TERM_KEY_DC},
-
   /* Unused in GRUB.  */
   {"Pause", 0},
-  {"Remove", 0},
-  {"Next", 0},
-  {"Prior", 0},
   {"Scroll_Forward", 0},
   {"Scroll_Backward", 0},
   {"Hex_0", 0},
@@ -174,16 +189,6 @@ static struct console_grub_equivalence console_grub_equivalences[] = {
   {"Control_backslash", 0},
   {"Compose", 0},
 
-  /* Keys currently not remappable.  */
-  {"CtrlL_Lock", 0},
-  {"Caps_Lock", 0},
-  {"ShiftL", 0},
-  {"Num_Lock", 0},
-  {"Alt", 0},
-  {"AltGr", 0},
-  {"Control", 0},
-  {"Shift", 0},
-
   {NULL, '\0'}
 };
 
@@ -205,24 +210,30 @@ Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
   exit (status);
 }
 
-void
+static void
 add_special_keys (struct grub_keyboard_layout *layout)
 {
-  /* OLPC keys.  */
-  layout->keyboard_map[101] = GRUB_TERM_KEY_UP;
-  layout->keyboard_map[102] = GRUB_TERM_KEY_DOWN;
-  layout->keyboard_map[103] = GRUB_TERM_KEY_LEFT;
-  layout->keyboard_map[104] = GRUB_TERM_KEY_RIGHT;
+  (void) layout;
 }
 
 static unsigned
-lookup (char *code)
+lookup (char *code, int shift)
 {
   int i;
+  struct console_grub_equivalence *pr;
 
-  for (i = 0; console_grub_equivalences[i].layout != NULL; i++)
-    if (strcmp (code, console_grub_equivalences[i].layout) == 0)
-      return console_grub_equivalences[i].grub;
+  if (shift)
+    pr = console_grub_equivalences_shift;
+  else
+    pr =  console_grub_equivalences_unshift;
+
+  for (i = 0; pr[i].layout != NULL; i++)
+    if (strcmp (code, pr[i].layout) == 0)
+      return pr[i].grub;
+
+  for (i = 0; console_grub_equivalences_common[i].layout != NULL; i++)
+    if (strcmp (code, console_grub_equivalences_common[i].layout) == 0)
+      return console_grub_equivalences_common[i].grub;
 
   fprintf (stderr, "Unknown key %s\n", code);
 
@@ -230,7 +241,7 @@ lookup (char *code)
 }
 
 static unsigned int
-get_grub_code (char *layout_code)
+get_grub_code (char *layout_code, int shift)
 {
   unsigned int code;
 
@@ -239,7 +250,7 @@ get_grub_code (char *layout_code)
   else if (strncmp (layout_code, "+U+", sizeof ("+U+") - 1) == 0)
     sscanf (layout_code, "+U+%x", &code);
   else
-    code = lookup (layout_code);
+    code = lookup (layout_code, shift);
   return code;
 }
 
@@ -287,21 +298,60 @@ write_keymaps (FILE *in, FILE *out)
     {
       if (strncmp (line, "keycode", sizeof ("keycode") - 1) == 0)
 	{
-	  unsigned keycode;
+	  unsigned keycode_at, orig;
+	  unsigned keycode_usb;
 	  char normal[64];
 	  char shift[64];
 	  char normalalt[64];
 	  char shiftalt[64];
+	  static grub_uint8_t e0_remap[] = {
+	    0x9c /* Num \n */, 0x9d /* Right CTRL */, 0xb5 /* Num / */,
+	    0, 0xb8 /* Right ALT  */, 0, 
+	    0xc7 /* Home */, 0xc8 /* Up */, 0xc9 /* NPage*/, 0xcb /* Left */,
+	    0xcd /* Right */, 0xcf /* End */, 0xd0 /* Down */, 0xd1 /* PPage */,
+	    0xd2 /* Insert */, 0xd3 /* Delete */
+	  };
 
-	  sscanf (line, "keycode %u = %60s %60s %60s %60s", &keycode,
+	  sscanf (line, "keycode %u = %60s %60s %60s %60s", &keycode_at,
 		  normal, shift, normalalt, shiftalt);
-	  if (keycode < GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)
+	  orig = keycode_at;
+
+	  /* Not used.  */
+	  if (keycode_at == 0x77 /* Pause */
+	      /* Some obscure keys */
+	      || keycode_at == 0x63 || keycode_at == 0x7d || keycode_at == 0x7e)
+	    continue;
+
+	  if (keycode_at >= 96 && keycode_at < 96 + ARRAY_SIZE (e0_remap))
+	    keycode_at = e0_remap[keycode_at - 96];
+
+	  /* Not remappable.  */
+	  if (keycode_at == 0x1d /* Left CTRL */
+	      || keycode_at == 0x9d /* Right CTRL */
+	      || keycode_at == 0x2a /* Left Shift. */
+	      || keycode_at == 0x36 /* Right Shift. */
+	      || keycode_at == 0x38 /* Left ALT. */
+	      || keycode_at == 0xb8 /* Right ALT. */
+	      || keycode_at == 0x3a /* CapsLock. */
+	      || keycode_at == 0x45 /* NumLock. */
+	      || keycode_at == 0x46 /* ScrollLock. */)
+	    continue;
+
+	  keycode_usb = grub_at_map_to_usb (keycode_at);
+	  if (keycode_usb == 0
+	      || keycode_usb >= GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)
 	    {
-	      layout.keyboard_map[keycode] = get_grub_code (normal);
-	      layout.keyboard_map_shift[keycode] = get_grub_code (shift);
-	      layout.keyboard_map_l3[keycode] = get_grub_code (normalalt);
-	      layout.keyboard_map_shift_l3[keycode]
-		= get_grub_code (shiftalt);
+	      fprintf (stderr, "Unknown keycode 0x%02x\n", orig);
+	      continue;
+	    }
+	  if (keycode_usb < GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)
+	    {
+	      layout.keyboard_map[keycode_usb] = get_grub_code (normal, 0);
+	      layout.keyboard_map_shift[keycode_usb] = get_grub_code (shift, 1);
+	      layout.keyboard_map_l3[keycode_usb]
+		= get_grub_code (normalalt, 0);
+	      layout.keyboard_map_shift_l3[keycode_usb]
+		= get_grub_code (shiftalt, 1);
 	      ok = 1;
 	    }
 	}

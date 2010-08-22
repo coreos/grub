@@ -39,16 +39,4 @@
 #define KEYBOARD_ISREADY(x)	((x) & 0x01)
 #define KEYBOARD_SCANCODE(x)	((x) & 0x7f)
 
-#ifdef GRUB_MACHINE_IEEE1275
-#define OLPC_UP		GRUB_TERM_UP
-#define OLPC_DOWN	GRUB_TERM_DOWN
-#define OLPC_LEFT	GRUB_TERM_LEFT
-#define OLPC_RIGHT	GRUB_TERM_RIGHT
-#else
-#define OLPC_UP		'\0'
-#define OLPC_DOWN	'\0'
-#define OLPC_LEFT	'\0'
-#define OLPC_RIGHT	'\0'
-#endif
-
 #endif

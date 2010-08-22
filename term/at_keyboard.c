@@ -23,6 +23,7 @@
 #include <grub/misc.h>
 #include <grub/term.h>
 #include <grub/keyboard_layouts.h>
+#include <grub/atkeymap.h>
 
 static short at_keyboard_status = 0;
 static int extended_pending = 0;
@@ -123,6 +124,8 @@ grub_keyboard_getkey (void)
   key = grub_inb (KEYBOARD_REG_DATA);
   /* FIXME */ grub_keyboard_isr (key);
   ret = KEYBOARD_SCANCODE (key);
+  if (ret == SHIFT_L || ret == SHIFT_R || ret == ALT || ret == CTRL)
+    return -1;
   if (extended_pending)
     ret |= 0x80;
   extended_pending = (key == 0xe0);
@@ -175,7 +178,8 @@ grub_at_keyboard_getkey_noblock (void)
 	keyboard_controller_led (led_status);
 	return -1;
       default:
-	return grub_term_map_key (code, at_keyboard_status);
+	return grub_term_map_key (grub_at_map_to_usb (code),
+				  at_keyboard_status);
     }
 }
 
