@@ -106,13 +106,61 @@ map_key_core (int code, int status, int *alt_gr_consumed)
     return grub_current_layout->keyboard_map[code];
 }
 
+static int
+map_high_key (int code, int status)
+{
+  int ret = 0;
+  if (status & (GRUB_TERM_STATUS_RSHIFT | GRUB_TERM_STATUS_LSHIFT))
+    ret |= GRUB_TERM_SHIFT;
+
+  if (code == 0xb5)
+    return '/';
+
+  if (code == 0xb7)
+    return '*';
+
+  if (code == 0x9c)
+    return '\n';
+
+  if (code < 0xc7 || code > 0xd3 || code == 0xca || code == 0xce
+      || code == 0xcc)
+    return ret;
+  /* GRUB keyboard codes are conveniently similar to AT codes.  */
+  return ret | GRUB_TERM_EXTENDED | (code & ~0x80);
+}
+
+static int
+map_num_key (int code, int state)
+{
+  const int map_arrows[]
+    = { GRUB_TERM_KEY_HOME, GRUB_TERM_KEY_UP, GRUB_TERM_KEY_PPAGE,
+	'-', GRUB_TERM_KEY_LEFT, GRUB_TERM_KEY_CENTER, GRUB_TERM_KEY_RIGHT, '+',
+	GRUB_TERM_KEY_END, GRUB_TERM_KEY_DOWN, GRUB_TERM_KEY_NPAGE,
+	GRUB_TERM_KEY_INSERT, GRUB_TERM_KEY_DC };
+  const int map_nums[]
+    = { '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'};
+
+  if (((state & GRUB_TERM_STATUS_NUM)
+       && !(state & (GRUB_TERM_STATUS_RSHIFT | GRUB_TERM_STATUS_LSHIFT)))
+      || ((state & GRUB_TERM_STATUS_NUM)
+       && !(state & (GRUB_TERM_STATUS_RSHIFT | GRUB_TERM_STATUS_LSHIFT))))
+    return map_nums [code - 0x47];
+  else
+    return map_arrows [code - 0x47];
+}
+
 unsigned
 grub_term_map_key (int code, int status)
 {
-  int alt_gr_consumed;
+  int alt_gr_consumed = 0;
   int key;
 
-  key = map_key_core (code, status, &alt_gr_consumed);
+  if (code >= 0x47 && code <= 0x53)
+    key = map_num_key (code, status);    
+  else if (code & 0x80)
+    key = map_high_key (code, status);
+  else
+    key = map_key_core (code, status, &alt_gr_consumed);
   
   if (key == 0 || key == GRUB_TERM_SHIFT)
     grub_dprintf ("atkeyb", "Unknown key 0x%x detected\n", code);

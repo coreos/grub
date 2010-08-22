@@ -110,7 +110,6 @@ grub_keyboard_isr (grub_uint8_t key)
 	    at_keyboard_status &= ~GRUB_TERM_STATUS_LALT;
 	  break;
       }
-  extended_pending = (key == 0xe0);
 }
 
 /* If there is a raw key pending, return it; otherwise return -1.  */
@@ -118,13 +117,18 @@ static int
 grub_keyboard_getkey (void)
 {
   grub_uint8_t key;
+  grub_uint8_t ret;
   if (! KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
     return -1;
   key = grub_inb (KEYBOARD_REG_DATA);
   /* FIXME */ grub_keyboard_isr (key);
+  ret = KEYBOARD_SCANCODE (key);
+  if (extended_pending)
+    ret |= 0x80;
+  extended_pending = (key == 0xe0);
   if (! KEYBOARD_ISMAKE (key))
     return -1;
-  return (KEYBOARD_SCANCODE (key));
+  return ret;
 }
 
 

@@ -69,20 +69,20 @@ static grub_uint8_t usb_to_at_map[128] =
   /* 0x42 */ 0x43 /* F9 */,         0x44 /* F10 */, 
   /* 0x44 */ 0x57 /* F11 */,        0x58 /* F12 */,
   /* 0x46 */ 0x00,                  0x00, 
-  /* 0x48 */ 0x00,                  0x52 /* Insert */, 
-  /* 0x4a */ 0x47 /* HOME */,       0x51 /* PPAGE */, 
-  /* 0x4c */ 0x53 /* DC */,         0x4f /* END */, 
-  /* 0x4e */ 0x49 /* NPAGE */,      0x4d /* RIGHT */, 
-  /* 0x50 */ 0x4b /* LEFT */,       0x50 /* DOWN */, 
-  /* 0x52 */ 0x48 /* UP */,         0x00, 
-  /* 0x54 */ 0x00,                  0x00, 
-  /* 0x56 */ 0x00,                  0x00, 
-  /* 0x58 */ 0x00,                  0x00, 
-  /* 0x5a */ 0x00,                  0x00, 
-  /* 0x5c */ 0x00,                  0x00, 
-  /* 0x5e */ 0x00,                  0x00, 
-  /* 0x60 */ 0x00,                  0x00, 
-  /* 0x62 */ 0x00,                  0x00, 
+  /* 0x48 */ 0x00,                  0xd2 /* Insert */, 
+  /* 0x4a */ 0xc7 /* HOME */,       0xd1 /* PPAGE */, 
+  /* 0x4c */ 0xd3 /* DC */,         0xcf /* END */, 
+  /* 0x4e */ 0xc9 /* NPAGE */,      0xcd /* RIGHT */, 
+  /* 0x50 */ 0xcb /* LEFT */,       0xd0 /* DOWN */, 
+  /* 0x52 */ 0xc8 /* UP */,         0x00, 
+  /* 0x54 */ 0xb5 /* Num / */,      0xb7 /* Num * */, 
+  /* 0x56 */ 0x4a /* Num - */,      0x4e /* Num + */, 
+  /* 0x58 */ 0x9c /* Num \n */,     0x4f /* Num 1 */, 
+  /* 0x5a */ 0x50 /* Num 2 */,      0x51 /* Num 3 */, 
+  /* 0x5c */ 0x4b /* Num 4 */,      0x4c /* Num 5 */, 
+  /* 0x5e */ 0x4d /* Num 6 */,      0x47 /* Num 7 */, 
+  /* 0x60 */ 0x48 /* Num 8 */,      0x49 /* Num 9 */, 
+  /* 0x62 */ 0x52 /* Num 0 */,      0x53 /* Num . */, 
   /* 0x64 */ 0x56 /* 102nd key. */, 0x00, 
   /* 0x66 */ 0x00,                  0x00, 
   /* 0x68 */ 0x00,                  0x00, 
@@ -428,7 +428,7 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
       return -1;
     }
 
-  if (data[2] > ARRAY_SIZE (usb_to_at_map) || usb_to_at_map[data[2]] == 0)
+  if (data[2] >= ARRAY_SIZE (usb_to_at_map) || usb_to_at_map[data[2]] == 0)
     grub_printf ("Unknown key 0x%02x detected\n", data[2]);
   else
     {
