@@ -350,7 +350,7 @@ fetch_key (int *is_break)
 	{
 	  unsigned i;
 	  for (i = 0; i < ARRAY_SIZE (set1_e0_mapping); i++)
-	    if (set1_e0_mapping[i].from == (at_key & 0x80))
+	    if (set1_e0_mapping[i].from == (at_key & 0x7f))
 	      {
 		ret = set1_e0_mapping[i].to;
 		break;
