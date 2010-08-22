@@ -152,11 +152,11 @@ static const grub_uint8_t set2_mapping[256] =
     /* 0x3a */ GRUB_KEYBOARD_KEY_M,           GRUB_KEYBOARD_KEY_J,
     /* 0x3c */ GRUB_KEYBOARD_KEY_U,           GRUB_KEYBOARD_KEY_7,
     /* 0x3e */ GRUB_KEYBOARD_KEY_8,           0,
-    /* 0x40 */ 0,                             GRUB_KEYBOARD_KEY_DOT,
+    /* 0x40 */ 0,                             GRUB_KEYBOARD_KEY_COMMA,
     /* 0x42 */ GRUB_KEYBOARD_KEY_K,           GRUB_KEYBOARD_KEY_I,
     /* 0x44 */ GRUB_KEYBOARD_KEY_O,           GRUB_KEYBOARD_KEY_0,
     /* 0x46 */ GRUB_KEYBOARD_KEY_9,           0,
-    /* 0x48 */ 0,                             GRUB_KEYBOARD_KEY_COMMA,
+    /* 0x48 */ 0,                             GRUB_KEYBOARD_KEY_DOT,
     /* 0x4a */ GRUB_KEYBOARD_KEY_SLASH,       GRUB_KEYBOARD_KEY_L,
     /* 0x4c */ GRUB_KEYBOARD_KEY_SEMICOLON,   GRUB_KEYBOARD_KEY_P,
     /* 0x4e */ GRUB_KEYBOARD_KEY_DASH,        0,
@@ -220,53 +220,75 @@ grub_keyboard_controller_write (grub_uint8_t c)
 {
   keyboard_controller_wait_until_ready ();
   grub_outb (KEYBOARD_COMMAND_WRITE, KEYBOARD_REG_STATUS);
+  keyboard_controller_wait_until_ready ();
   grub_outb (c, KEYBOARD_REG_DATA);
 }
 
-static grub_uint8_t
-query_mode (int mode)
+static int
+write_mode (int mode)
 {
+  grub_uint8_t ack;
   keyboard_controller_wait_until_ready ();
   grub_outb (0xf0, KEYBOARD_REG_DATA);
   keyboard_controller_wait_until_ready ();
-  grub_inb (KEYBOARD_REG_DATA);
-  keyboard_controller_wait_until_ready ();
   grub_outb (mode, KEYBOARD_REG_DATA);
+  keyboard_controller_wait_until_ready ();
+  ack = grub_inb (KEYBOARD_REG_DATA);
+  if (ack != 0xfa)
+    return 0;
+
+  return 1;
+}
+
+static int
+query_mode (void)
+{
+  grub_uint8_t ret;
+  int e;
+
+  e = write_mode (0);
+  if (!e)
+    return 0;
 
   keyboard_controller_wait_until_ready ();
 
-  return grub_inb (KEYBOARD_REG_DATA);
+  do
+    ret = grub_inb (KEYBOARD_REG_DATA);
+  while (ret == 0xfa);
+
+  /* QEMU translates the set even in no-translate mode.  */
+  if (ret == 0x43 || ret == 1)
+    return 1;
+  if (ret == 0x41 || ret == 2)
+    return 2;
+  if (ret == 0x3f || ret == 3)
+    return 3;
+  return 0;
 }
 
-/* QEMU translates the set even in no-translate mode.  */
-static inline int
-recover_mode (grub_uint8_t report)
-{
-  if (report == 0x43 || report == 1)
-    return 1;
-  if (report == 0x41 || report == 2)
-    return 2;
-  if (report == 0x3f || report == 3)
-    return 3;
-  return -1;
-}
 
 static void
 set_scancodes (void)
 {
+  grub_keyboard_orig_set = query_mode ();
+  /* You must have visited computer museum. Keyboard without scancode set
+     knowledge. Assume XT. */
+  if (!grub_keyboard_orig_set)
+    {
+      current_set = 1;
+      return;
+    }
+
   grub_keyboard_controller_write (grub_keyboard_controller_orig
 				  & ~KEYBOARD_AT_TRANSLATE);
-  grub_keyboard_orig_set = recover_mode (query_mode (0));
 
-  query_mode (2);
-  current_set = query_mode (0);
-  current_set = recover_mode (current_set);
+  write_mode (2);
+  current_set = query_mode ();
   if (current_set == 2)
     return;
 
-  query_mode (1);
-  current_set = query_mode (0);
-  current_set = recover_mode (current_set);
+  write_mode (1);
+  current_set = query_mode ();
   if (current_set == 1)
     return;
   grub_printf ("No supported scancode set found\n");
@@ -305,6 +327,16 @@ fetch_key (int *is_break)
       return -1;
     }
 
+  if ((current_set == 2 || current_set == 3) && at_key == 0xf0)
+    {
+      f0_received = 1;
+      return -1;
+    }
+
+  /* Setting LEDs may generate ACKs.  */
+  if (at_key == 0xfa)
+    return -1;
+
   was_ext = e0_received;
   e0_received = 0;
 
@@ -326,11 +358,6 @@ fetch_key (int *is_break)
 	}
       break;
     case 2:
-      if (at_key == 0xf0)
-	{
-	  f0_received = 1;
-	  return -1;
-	}
       *is_break = f0_received;
       f0_received = 0;
       if (!was_ext)
@@ -338,10 +365,10 @@ fetch_key (int *is_break)
       else
 	{
 	  unsigned i;
-	  for (i = 0; i < ARRAY_SIZE (set1_e0_mapping); i++)
-	    if (set1_e0_mapping[i].from == (at_key & 0x80))
+	  for (i = 0; i < ARRAY_SIZE (set2_e0_mapping); i++)
+	    if (set2_e0_mapping[i].from == at_key)
 	      {
-		ret = set1_e0_mapping[i].to;
+		ret = set2_e0_mapping[i].to;
 		break;
 	      }
 	}	
@@ -351,7 +378,12 @@ fetch_key (int *is_break)
     }
   if (!ret)
     {
-      grub_printf ("Unknown key 0x%02x from set %d\n\n", at_key, current_set);
+      if (was_ext)
+	grub_printf ("Unknown key 0xe0+0x%02x from set %d\n",
+		     at_key, current_set);
+      else
+	grub_printf ("Unknown key 0x%02x from set %d\n",
+		     at_key, current_set);
       return -1;
     }
   return ret;
@@ -387,7 +419,7 @@ grub_keyboard_isr (grub_keyboard_key_t key, int is_break)
 	return 0;
       }
   else
-    switch (KEYBOARD_SCANCODE (key))
+    switch (key)
       {
       case GRUB_KEYBOARD_KEY_LEFT_SHIFT:
 	at_keyboard_status &= ~GRUB_TERM_STATUS_LSHIFT;
@@ -507,12 +539,12 @@ grub_keyboard_controller_init (struct grub_term_input *term __attribute__ ((unus
 {
   pending_key = -1;
   at_keyboard_status = 0;
-  grub_keyboard_controller_orig = grub_keyboard_controller_read ();
-  set_scancodes ();
-  keyboard_controller_led (led_status);
   /* Drain input buffer. */
   while (KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
     grub_inb (KEYBOARD_REG_DATA);
+  grub_keyboard_controller_orig = grub_keyboard_controller_read ();
+  set_scancodes ();
+  keyboard_controller_led (led_status);
 
   return GRUB_ERR_NONE;
 }
@@ -520,7 +552,8 @@ grub_keyboard_controller_init (struct grub_term_input *term __attribute__ ((unus
 static grub_err_t
 grub_keyboard_controller_fini (struct grub_term_input *term __attribute__ ((unused)))
 {
-  query_mode (grub_keyboard_orig_set);
+  if (grub_keyboard_orig_set)
+    write_mode (grub_keyboard_orig_set);
   grub_keyboard_controller_write (grub_keyboard_controller_orig);
   return GRUB_ERR_NONE;
 }

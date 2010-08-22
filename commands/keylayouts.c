@@ -153,7 +153,7 @@ map_key_core (int code, int status, int *alt_gr_consumed)
 }
 
 unsigned
-grub_term_map_key (int code, int status)
+grub_term_map_key (grub_keyboard_key_t code, int status)
 {
   int alt_gr_consumed = 0;
   int key;
