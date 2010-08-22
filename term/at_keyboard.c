@@ -149,9 +149,6 @@ grub_at_keyboard_getkey_noblock (void)
   switch (code)
     {
       case CAPS_LOCK:
-	/* Caps lock sends scan code twice.  Get the second one and discard it.  */
-	while (grub_keyboard_getkey () == -1);
-
 	at_keyboard_status ^= GRUB_TERM_STATUS_CAPS;
 	led_status ^= KEYBOARD_LED_CAPS;
 	keyboard_controller_led (led_status);
@@ -161,9 +158,6 @@ grub_at_keyboard_getkey_noblock (void)
 #endif
 	return -1;
       case NUM_LOCK:
-	/* Num lock sends scan code twice.  Get the second one and discard it.  */
-	while (grub_keyboard_getkey () == -1);
-
 	at_keyboard_status ^= GRUB_TERM_STATUS_NUM;
 	led_status ^= KEYBOARD_LED_NUM;
 	keyboard_controller_led (led_status);

@@ -1,3 +1,8 @@
+2010-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/at_keyboard.c (grub_at_keyboard_getkey_noblock): Don't discard
+	a key after CapsLock or NumLock. It's just a qemu bug.
+
 2010-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/usb.h (grub_usb_device): Add 'data' field back. It's
