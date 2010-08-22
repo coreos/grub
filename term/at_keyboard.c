@@ -122,13 +122,21 @@ grub_keyboard_getkey (void)
   if (! KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
     return -1;
   key = grub_inb (KEYBOARD_REG_DATA);
+  if (key == 0xe0)
+    {
+      extended_pending = 1;
+      return -1;
+    }
   /* FIXME */ grub_keyboard_isr (key);
   ret = KEYBOARD_SCANCODE (key);
   if (ret == SHIFT_L || ret == SHIFT_R || ret == ALT || ret == CTRL)
-    return -1;
+    {
+      extended_pending = 0;
+      return -1;
+    }
   if (extended_pending)
     ret |= 0x80;
-  extended_pending = (key == 0xe0);
+  extended_pending = 0;
   if (! KEYBOARD_ISMAKE (key))
     return -1;
   return ret;
