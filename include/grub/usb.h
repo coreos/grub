@@ -19,6 +19,7 @@
 #ifndef	GRUB_USB_H
 #define	GRUB_USB_H	1
 
+#include <grub/err.h>
 #include <grub/usbdesc.h>
 #include <grub/usbtrans.h>
 
@@ -46,6 +47,14 @@ typedef enum
     GRUB_USB_SPEED_FULL,
     GRUB_USB_SPEED_HIGH
   } grub_usb_speed_t;
+
+enum
+  {
+    GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT = 0x21,
+    GRUB_USB_REQTYPE_VENDOR_OUT = 0x40,
+    GRUB_USB_REQTYPE_CLASS_INTERFACE_IN = 0xa1,
+    GRUB_USB_REQTYPE_VENDOR_IN = 0xc0
+  };
 
 /* Call HOOK with each device, until HOOK returns non-zero.  */
 int grub_usb_iterate (int (*hook) (grub_usb_device_t dev));
@@ -97,7 +106,8 @@ struct grub_usb_controller_dev
   int (*iterate) (int (*hook) (grub_usb_controller_t dev));
 
   grub_usb_err_t (*transfer) (grub_usb_controller_t dev,
-			      grub_usb_transfer_t transfer);
+			      grub_usb_transfer_t transfer,
+			      int timeout, grub_size_t *actual);
 
   int (*hubports) (grub_usb_controller_t dev);
 
@@ -132,6 +142,8 @@ struct grub_usb_interface
   int attached;
 
   void (*detach_hook) (struct grub_usb_device *dev, int config, int interface);
+
+  void *detach_data;
 };
 
 struct grub_usb_configuration
@@ -166,11 +178,31 @@ struct grub_usb_device
   /* Data toggle values (used for bulk transfers only).  */
   int toggle[256];
 
-  /* Device-specific data.  */
+  /* Used by libusb wrapper.  Schedulded for removal. */
   void *data;
+
+  /* Array of children for a hub.  */
+  grub_usb_device_t *children;
+
+  /* Number of hub ports.  */
+  unsigned nports;
 };
 
 
+
+typedef enum grub_usb_ep_type
+  {
+    GRUB_USB_EP_CONTROL,
+    GRUB_USB_EP_ISOCHRONOUS,
+    GRUB_USB_EP_BULK,
+    GRUB_USB_EP_INTERRUPT
+  } grub_usb_ep_type_t;
+
+static inline enum grub_usb_ep_type
+grub_usb_get_ep_type (struct grub_usb_desc_endp *ep)
+{
+  return ep->attrib & 3;
+}
 
 typedef enum
   {
@@ -230,5 +262,9 @@ void grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc);
 void grub_usb_poll_devices (void);
 
 void grub_usb_device_attach (grub_usb_device_t dev);
+grub_usb_err_t
+grub_usb_bulk_read_extended (grub_usb_device_t dev,
+			     int endpoint, grub_size_t size, char *data,
+			     int timeout, grub_size_t *actual);
 
 #endif /* GRUB_USB_H */

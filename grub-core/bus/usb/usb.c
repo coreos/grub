@@ -22,6 +22,7 @@
 #include <grub/usb.h>
 #include <grub/misc.h>
 #include <grub/list.h>
+#include <grub/term.h>
 
 static grub_usb_controller_dev_t grub_usb_list;
 struct grub_usb_attach_desc *attach_hooks;
@@ -208,14 +209,23 @@ grub_usb_device_initialize (grub_usb_device_t dev)
 	goto fail;
 
       /* Skip the configuration descriptor.  */
-      pos = sizeof (struct grub_usb_desc_config);
+      pos = dev->config[i].descconf->length;
 
       /* Read all interfaces.  */
       for (currif = 0; currif < dev->config[i].descconf->numif; currif++)
 	{
+	  while (pos < config.totallen
+		 && ((struct grub_usb_desc *)&data[pos])->type
+		 != GRUB_USB_DESCRIPTOR_INTERFACE)
+	    pos += ((struct grub_usb_desc *)&data[pos])->length;
 	  dev->config[i].interf[currif].descif
 	    = (struct grub_usb_desc_if *) &data[pos];
-	  pos += sizeof (struct grub_usb_desc_if);
+	  pos += dev->config[i].interf[currif].descif->length;
+
+	  while (pos < config.totallen
+		 && ((struct grub_usb_desc *)&data[pos])->type
+		 != GRUB_USB_DESCRIPTOR_ENDPOINT)
+	    pos += ((struct grub_usb_desc *)&data[pos])->length;
 
 	  /* Point to the first endpoint.  */
 	  dev->config[i].interf[currif].descendp
@@ -256,6 +266,24 @@ void grub_usb_device_attach (grub_usb_device_t dev)
       for (desc = attach_hooks; desc; desc = desc->next)
 	if (interf->class == desc->class && desc->hook (dev, 0, i))
 	  dev->config[0].interf[i].attached = 1;
+
+      if (dev->config[0].interf[i].attached)
+	continue;
+
+      switch (interf->class)
+	{
+	case GRUB_USB_CLASS_MASS_STORAGE:
+	  grub_dl_load ("usbms");
+	  break;
+	case GRUB_USB_CLASS_HID:
+	  grub_dl_load ("usb_keyboard");
+	  break;
+	case 0xff:
+	  /* FIXME: don't load useless modules.  */
+	  grub_dl_load ("usbserial_ftdi");
+	  grub_dl_load ("usbserial_pl2303");
+	  break;
+	}
     }
 }
 
@@ -305,4 +333,15 @@ void
 grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc)
 {
   grub_list_remove (GRUB_AS_LIST_P (&attach_hooks), GRUB_AS_LIST (desc));  
+}
+
+
+GRUB_MOD_INIT(usb)
+{
+  grub_term_poll_usb = grub_usb_poll_devices;
+}
+
+GRUB_MOD_FINI(usb)
+{
+  grub_term_poll_usb = NULL;
 }

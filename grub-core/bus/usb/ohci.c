@@ -654,7 +654,8 @@ grub_ohci_transaction (grub_ohci_td_t td,
 
 static grub_usb_err_t
 grub_ohci_transfer (grub_usb_controller_t dev,
-		    grub_usb_transfer_t transfer)
+		    grub_usb_transfer_t transfer, int timeout,
+		    grub_size_t *actual)
 {
   struct grub_ohci *o = (struct grub_ohci *) dev->data;
   grub_ohci_ed_t ed_virt;
@@ -679,6 +680,8 @@ grub_ohci_transfer (grub_usb_controller_t dev,
   int err_timeout = 0;
   int err_unrec = 0;
   grub_uint32_t intstatus;
+
+  *actual = 0;
 
   /* Pre-set target for ED - we need it to find proper ED */
   /* Set the device address.  */
@@ -832,7 +835,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
     }
 
   /* Safety measure to avoid a hang. */
-  maxtime = grub_get_time_ms () + 1000;
+  maxtime = grub_get_time_ms () + timeout;
 	
   /* Wait until the transfer is completed or STALLs.  */
   do
@@ -986,6 +989,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
         transfer->last_trans = tderr_virt->tr_index;
       else
         transfer->last_trans = -1;
+      *actual = transfer->size + 1;
     }
 
   else if (err_halt) /* error, ED is halted by OHCI, i.e. can be modified */
@@ -1032,7 +1036,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
 	{
 	case 0:
 	  /* XXX: Should not happen!  */
-	  grub_error (GRUB_ERR_IO, "OHCI without reporting the reason");
+	  grub_error (GRUB_ERR_IO, "OHCI failed without reporting the reason");
 	  err = GRUB_USB_ERR_INTERNAL;
 	  break;
 
@@ -1078,12 +1082,14 @@ grub_ohci_transfer (grub_usb_controller_t dev,
 
 	case 9:
 	  /* XXX: Data underrun error.  */
-	  err = GRUB_USB_ERR_DATA;
 	  grub_dprintf ("ohci", "Underrun, failed TD address: %p, index: %d\n",
 	                tderr_virt, tderr_virt->tr_index);
-	  grub_dprintf ("ohci", "Underrun, number of not transferred bytes: %d\n",
-	                1 + grub_le_to_cpu32 (tderr_virt->buffer_end)
-	                  - grub_le_to_cpu32 (tderr_virt->buffer));
+	  if (transfer->last_trans == -1)
+	    break;
+	  *actual = transfer->transactions[transfer->last_trans].size
+	    - (grub_le_to_cpu32 (tderr_virt->buffer_end)
+	       - grub_le_to_cpu32 (tderr_virt->buffer))
+	    + transfer->transactions[transfer->last_trans].preceding;
 	  break;
 
 	case 10:
@@ -1172,12 +1178,10 @@ grub_ohci_transfer (grub_usb_controller_t dev,
         transfer->last_trans = tderr_virt->tr_index;
       else
         transfer->last_trans = -1;
-
     }
 
-    /* Set empty ED - set HEAD = TAIL = last (not processed) TD */
-    ed_virt->td_head = grub_cpu_to_le32 ( grub_le_to_cpu32 (
-                                            ed_virt->td_tail) & ~0xf); 
+  /* Set empty ED - set HEAD = TAIL = last (not processed) TD */
+  ed_virt->td_head = grub_cpu_to_le32 (grub_le_to_cpu32 (ed_virt->td_tail) & ~0xf); 
 
   /* At this point always should be:
    * ED has skip bit set and halted or empty or after next SOF,

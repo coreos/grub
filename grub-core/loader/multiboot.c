@@ -295,6 +295,17 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
   grub_ssize_t size;
   char *module = 0;
   grub_err_t err;
+  int nounzip = 0;
+
+  if (argc == 0)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
+
+  if (grub_strcmp (argv[0], "--nounzip") == 0)
+    {
+      argv++;
+      argc--;
+      nounzip = 1;
+    }
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
@@ -303,7 +314,10 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "you need to load the multiboot kernel first");
 
-  file = grub_gzfile_open (argv[0], 1);
+  if (nounzip)
+    file = grub_file_open (argv[0]);
+  else
+    file = grub_gzfile_open (argv[0], 1);
   if (! file)
     return grub_errno;
 

@@ -121,6 +121,7 @@ kernel = {
   i386_ieee1275 = kern/i386/ieee1275/init.c;
   i386_ieee1275 = kern/ieee1275/init.c;
 
+  mips_yeeloong = term/ns8250.c;
   mips_yeeloong = bus/bonito.c;
   mips_yeeloong = bus/cs5536.c;
   mips_yeeloong = bus/pci.c;
@@ -307,6 +308,30 @@ module = {
   enable = i386;
   enable = mips_yeeloong;
   emu_condition = COND_GRUB_EMU_USB;
+};
+
+module = {
+  name = usbserial_common;
+  common = bus/usb/serial/common.c;
+  enable = emu;
+  enable = i386_pc;
+  enable = mips_yeeloong;
+};
+
+module = {
+  name = usbserial_pl2303;
+  common = bus/usb/serial/pl2303.c;
+  enable = emu;
+  enable = i386_pc;
+  enable = mips_yeeloong;
+};
+
+module = {
+  name = usbserial_ftdi;
+  common = bus/usb/serial/ftdi.c;
+  enable = emu;
+  enable = i386_pc;
+  enable = mips_yeeloong;
 };
 
 module = {
@@ -1221,7 +1246,17 @@ module = {
 module = {
   name = serial;
   common = term/serial.c;
+  x86 = term/ns8250.c;
+
+  enable = emu;
   enable = i386;
+  enable = x86_64_efi;
+};
+
+module = {
+  name = sendkey;
+  i386_pc = commands/i386/pc/sendkey.c;
+  enable = i386_pc;
 };
 
 module = {
