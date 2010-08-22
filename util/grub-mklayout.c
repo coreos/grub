@@ -20,7 +20,6 @@
 #include <grub/i18n.h>
 #include <grub/term.h>
 #include <grub/keyboard_layouts.h>
-#include <grub/atkeymap.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -192,6 +191,65 @@ static struct console_grub_equivalence console_grub_equivalences_common[] = {
   {NULL, '\0'}
 };
 
+static grub_uint8_t linux_to_usb_map[128] = {
+  /* 0x00 */ 0x00 /* Unused  */,     0x29 /* Escape */, 
+  /* 0x02 */ 0x1e /* 1 */,           0x1f /* 2 */, 
+  /* 0x04 */ 0x20 /* 3 */,           0x21 /* 4 */, 
+  /* 0x06 */ 0x22 /* 5 */,           0x23 /* 6 */, 
+  /* 0x08 */ 0x24 /* 7 */,           0x25 /* 8 */, 
+  /* 0x0a */ 0x26 /* 9 */,           0x27 /* 0 */, 
+  /* 0x0c */ 0x2d /* - */,           0x2e /* = */, 
+  /* 0x0e */ 0x2a /* \b */,          0x2b /* \t */, 
+  /* 0x10 */ 0x14 /* q */,           0x1a /* w */, 
+  /* 0x12 */ 0x08 /* e */,           0x15 /* r */, 
+  /* 0x14 */ 0x17 /* t */,           0x1c /* y */, 
+  /* 0x16 */ 0x18 /* u */,           0x0c /* i */, 
+  /* 0x18 */ 0x12 /* o */,           0x13 /* p */, 
+  /* 0x1a */ 0x2f /* [ */,           0x30 /* ] */, 
+  /* 0x1c */ 0x28 /* Enter */,       0x00 /* Left CTRL */, 
+  /* 0x1e */ 0x04 /* a */,           0x16 /* s */, 
+  /* 0x20 */ 0x07 /* d */,           0x09 /* f */, 
+  /* 0x22 */ 0x0a /* g */,           0x0b /* h */, 
+  /* 0x24 */ 0x0d /* j */,           0x0e /* k */, 
+  /* 0x26 */ 0x0f /* l */,           0x33 /* ; */, 
+  /* 0x28 */ 0x34 /* " */,           0x35 /* ` */, 
+  /* 0x2a */ 0x00 /* Left Shift */,  0x32 /* \ */, 
+  /* 0x2c */ 0x1d /* z */,           0x1b /* x */, 
+  /* 0x2e */ 0x06 /* c */,           0x19 /* v */, 
+  /* 0x30 */ 0x05 /* b */,           0x11 /* n */, 
+  /* 0x32 */ 0x10 /* m */,           0x36 /* , */, 
+  /* 0x34 */ 0x37 /* . */,           0x38 /* / */, 
+  /* 0x36 */ 0x00 /* Right Shift */, 0x55 /* Num * */, 
+  /* 0x38 */ 0x00 /* Left ALT  */,   0x2c /* Space */, 
+  /* 0x3a */ 0x39 /* Caps Lock */,   0x3a /* F1 */, 
+  /* 0x3c */ 0x3b /* F2 */,          0x3c /* F3 */, 
+  /* 0x3e */ 0x3d /* F4 */,          0x3e /* F5 */, 
+  /* 0x40 */ 0x3f /* F6 */,          0x40 /* F7 */, 
+  /* 0x42 */ 0x41 /* F8 */,          0x42 /* F9 */, 
+  /* 0x44 */ 0x43 /* F10 */,         0x53 /* NumLock */, 
+  /* 0x46 */ 0x47 /* Scroll Lock */, 0x5f /* Num 7 */, 
+  /* 0x48 */ 0x60 /* Num 8 */,       0x61 /* Num 9 */, 
+  /* 0x4a */ 0x56 /* Num - */,       0x5c /* Num 4 */, 
+  /* 0x4c */ 0x5d /* Num 5 */,       0x5e /* Num 6 */, 
+  /* 0x4e */ 0x57 /* Num + */,       0x59 /* Num 1 */, 
+  /* 0x50 */ 0x5a /* Num 2 */,       0x5b /* Num 3 */, 
+  /* 0x52 */ 0x62 /* Num 0 */,       0x63 /* Num . */, 
+  /* 0x54 */ 0x00,                   0x00, 
+  /* 0x56 */ 0x64 /* 102nd key. */,  0x44 /* F11 */, 
+  /* 0x58 */ 0x45 /* F12 */,         0x00,
+  /* 0x5a */ 0x00,                   0x00,
+  /* 0x5c */ 0x00,                   0x00,
+  /* 0x5e */ 0x00,                   0x00,
+  /* 0x60 */ 0x58 /* Num \n */,      0x00 /* Right CTRL */,
+  /* 0x62 */ 0x54 /* Num / */,       0x00,
+  /* 0x64 */ 0x00 /* Right ALT  */,  0x00,
+  /* 0x66 */ 0x4a /* Home */,        0x52 /* Up */,
+  /* 0x68 */ 0x4e /* NPage */,       0x50 /* Left */,
+  /* 0x6a */ 0x4f /* Right */,       0x4d /* End */,
+  /* 0x6c */ 0x51 /* Down */,        0x4b /* PPage */, 
+  /* 0x6e */ 0x49 /* Insert */,      0x4c /* DC */
+}; 
+
 static void
 usage (int status)
 {
@@ -298,50 +356,40 @@ write_keymaps (FILE *in, FILE *out)
     {
       if (strncmp (line, "keycode", sizeof ("keycode") - 1) == 0)
 	{
-	  unsigned keycode_at, orig;
+	  unsigned keycode_linux;
 	  unsigned keycode_usb;
 	  char normal[64];
 	  char shift[64];
 	  char normalalt[64];
 	  char shiftalt[64];
-	  static grub_uint8_t e0_remap[] = {
-	    0x9c /* Num \n */, 0x9d /* Right CTRL */, 0xb5 /* Num / */,
-	    0, 0xb8 /* Right ALT  */, 0, 
-	    0xc7 /* Home */, 0xc8 /* Up */, 0xc9 /* NPage*/, 0xcb /* Left */,
-	    0xcd /* Right */, 0xcf /* End */, 0xd0 /* Down */, 0xd1 /* PPage */,
-	    0xd2 /* Insert */, 0xd3 /* Delete */
-	  };
 
-	  sscanf (line, "keycode %u = %60s %60s %60s %60s", &keycode_at,
+	  sscanf (line, "keycode %u = %60s %60s %60s %60s", &keycode_linux,
 		  normal, shift, normalalt, shiftalt);
-	  orig = keycode_at;
 
 	  /* Not used.  */
-	  if (keycode_at == 0x77 /* Pause */
+	  if (keycode_linux == 0x77 /* Pause */
 	      /* Some obscure keys */
-	      || keycode_at == 0x63 || keycode_at == 0x7d || keycode_at == 0x7e)
+	      || keycode_linux == 0x63 || keycode_linux == 0x7d
+	      || keycode_linux == 0x7e)
 	    continue;
-
-	  if (keycode_at >= 96 && keycode_at < 96 + ARRAY_SIZE (e0_remap))
-	    keycode_at = e0_remap[keycode_at - 96];
 
 	  /* Not remappable.  */
-	  if (keycode_at == 0x1d /* Left CTRL */
-	      || keycode_at == 0x9d /* Right CTRL */
-	      || keycode_at == 0x2a /* Left Shift. */
-	      || keycode_at == 0x36 /* Right Shift. */
-	      || keycode_at == 0x38 /* Left ALT. */
-	      || keycode_at == 0xb8 /* Right ALT. */
-	      || keycode_at == 0x3a /* CapsLock. */
-	      || keycode_at == 0x45 /* NumLock. */
-	      || keycode_at == 0x46 /* ScrollLock. */)
+	  if (keycode_linux == 0x1d /* Left CTRL */
+	      || keycode_linux == 0x9d /* Right CTRL */
+	      || keycode_linux == 0x2a /* Left Shift. */
+	      || keycode_linux == 0x36 /* Right Shift. */
+	      || keycode_linux == 0x38 /* Left ALT. */
+	      || keycode_linux == 0xb8 /* Right ALT. */
+	      || keycode_linux == 0x3a /* CapsLock. */
+	      || keycode_linux == 0x45 /* NumLock. */
+	      || keycode_linux == 0x46 /* ScrollLock. */)
 	    continue;
 
-	  keycode_usb = grub_at_map_to_usb (keycode_at);
+	  keycode_usb = linux_to_usb_map[keycode_linux];
 	  if (keycode_usb == 0
 	      || keycode_usb >= GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)
 	    {
-	      fprintf (stderr, "Unknown keycode 0x%02x\n", orig);
+	      fprintf (stderr, "Unknown keycode 0x%02x\n", keycode_linux);
 	      continue;
 	    }
 	  if (keycode_usb < GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)

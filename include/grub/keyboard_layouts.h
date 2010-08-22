@@ -33,6 +33,19 @@ struct grub_keyboard_layout
   grub_uint32_t keyboard_map_shift_l3[GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE];
 };
 
-unsigned EXPORT_FUNC(grub_term_map_key) (int code, int status);
+typedef enum grub_keyboard_key
+  {
+    GRUB_KEYBOARD_KEY_CAPS_LOCK  = 0x39,
+    GRUB_KEYBOARD_KEY_SCROLL_LOCK  = 0x47,
+    GRUB_KEYBOARD_KEY_NUM_LOCK   = 0x53,
+    GRUB_KEYBOARD_KEY_LEFT_CTRL  = 0xe0,
+    GRUB_KEYBOARD_KEY_LEFT_SHIFT = 0xe1,
+    GRUB_KEYBOARD_KEY_LEFT_ALT   = 0xe2,
+    GRUB_KEYBOARD_KEY_RIGHT_CTRL = 0xe4,
+    GRUB_KEYBOARD_KEY_RIGHT_SHIFT = 0xe5,
+    GRUB_KEYBOARD_KEY_RIGHT_ALT  = 0xe6,
+  } grub_keyboard_key_t;
+
+unsigned EXPORT_FUNC(grub_term_map_key) (grub_keyboard_key_t code, int status);
 
 #endif /* GRUB_KEYBOARD_LAYOUTS  */
