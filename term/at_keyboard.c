@@ -23,6 +23,7 @@
 #include <grub/misc.h>
 #include <grub/term.h>
 #include <grub/keyboard_layouts.h>
+#include <grub/time.h>
 
 static short at_keyboard_status = 0;
 static int e0_received = 0;
@@ -225,19 +226,29 @@ grub_keyboard_controller_write (grub_uint8_t c)
 }
 
 static int
-write_mode (int mode)
+wait_ack (void)
 {
   grub_uint8_t ack;
+  grub_uint64_t endtime = grub_get_time_ms () + 20;
+  do
+    {
+      ack = grub_inb (KEYBOARD_REG_DATA);
+    }
+  while (ack != GRUB_AT_ACK && grub_get_time_ms () < endtime);
+  grub_dprintf ("atkeyb", "Ack 0x%02x\n", ack);
+  return ack == GRUB_AT_ACK;
+}
+
+static int
+write_mode (int mode)
+{
   keyboard_controller_wait_until_ready ();
   grub_outb (0xf0, KEYBOARD_REG_DATA);
   keyboard_controller_wait_until_ready ();
   grub_outb (mode, KEYBOARD_REG_DATA);
   keyboard_controller_wait_until_ready ();
-  ack = grub_inb (KEYBOARD_REG_DATA);
-  if (ack != 0xfa)
-    return 0;
 
-  return 1;
+  return wait_ack ();
 }
 
 static int
@@ -254,7 +265,7 @@ query_mode (void)
 
   do
     ret = grub_inb (KEYBOARD_REG_DATA);
-  while (ret == 0xfa);
+  while (ret == GRUB_AT_ACK);
 
   /* QEMU translates the set even in no-translate mode.  */
   if (ret == 0x43 || ret == 1)
@@ -275,6 +286,7 @@ set_scancodes (void)
      knowledge. Assume XT. */
   if (!grub_keyboard_orig_set)
     {
+      grub_dprintf ("atkeyb", "No sets support assumed\n");
       current_set = 1;
       return;
     }
@@ -284,11 +296,13 @@ set_scancodes (void)
 
   write_mode (2);
   current_set = query_mode ();
+  grub_dprintf ("atkeyb", "returned set %d\n", current_set);
   if (current_set == 2)
     return;
 
   write_mode (1);
   current_set = query_mode ();
+  grub_dprintf ("atkeyb", "returned set %d\n", current_set);
   if (current_set == 1)
     return;
   grub_printf ("No supported scancode set found\n");
@@ -334,7 +348,7 @@ fetch_key (int *is_break)
     }
 
   /* Setting LEDs may generate ACKs.  */
-  if (at_key == 0xfa)
+  if (at_key == GRUB_AT_ACK)
     return -1;
 
   was_ext = e0_received;
@@ -540,8 +554,14 @@ grub_keyboard_controller_init (struct grub_term_input *term __attribute__ ((unus
   pending_key = -1;
   at_keyboard_status = 0;
   /* Drain input buffer. */
-  while (KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
-    grub_inb (KEYBOARD_REG_DATA);
+  while (1)
+    {
+      keyboard_controller_wait_until_ready ();
+      if (! KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
+	break;
+      keyboard_controller_wait_until_ready ();
+      grub_inb (KEYBOARD_REG_DATA);
+    }
   grub_keyboard_controller_orig = grub_keyboard_controller_read ();
   set_scancodes ();
   keyboard_controller_led (led_status);

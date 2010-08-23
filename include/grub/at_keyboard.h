@@ -27,6 +27,8 @@
 
 #define KEYBOARD_AT_TRANSLATE		0x40
 
+#define GRUB_AT_ACK                     0xfa
+
 #define KEYBOARD_ISMAKE(x)	!((x) & 0x80)
 #define KEYBOARD_ISREADY(x)	((x) & 0x01)
 #define KEYBOARD_SCANCODE(x)	((x) & 0x7f)
