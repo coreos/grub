@@ -24,6 +24,7 @@
 #include <grub/term.h>
 #include <grub/keyboard_layouts.h>
 #include <grub/time.h>
+#include <grub/loader.h>
 
 static short at_keyboard_status = 0;
 static int e0_received = 0;
@@ -215,39 +216,76 @@ keyboard_controller_wait_until_ready (void)
   while (! KEYBOARD_COMMAND_ISREADY (grub_inb (KEYBOARD_REG_STATUS)));
 }
 
+static grub_uint8_t
+wait_ack (void)
+{
+  grub_uint64_t endtime;
+  grub_uint8_t ack;
+
+  endtime = grub_get_time_ms () + 20;
+  do
+    ack = grub_inb (KEYBOARD_REG_DATA);
+  while (ack != GRUB_AT_ACK && ack != GRUB_AT_NACK
+	 && grub_get_time_ms () < endtime);
+  return ack;
+}
+
+static int
+at_command (grub_uint8_t data)
+{
+  unsigned i;
+  for (i = 0; i < GRUB_AT_TRIES; i++)
+    {
+      grub_uint8_t ack;
+      keyboard_controller_wait_until_ready ();
+      grub_outb (data, KEYBOARD_REG_STATUS);
+      ack = wait_ack ();
+      if (ack == GRUB_AT_NACK)
+	continue;
+      if (ack == GRUB_AT_ACK)
+	break;
+      return 0;
+    }
+  return (i != GRUB_AT_TRIES);
+}
+
 static void
 grub_keyboard_controller_write (grub_uint8_t c)
 {
-  keyboard_controller_wait_until_ready ();
-  grub_outb (KEYBOARD_COMMAND_WRITE, KEYBOARD_REG_STATUS);
+  at_command (KEYBOARD_COMMAND_WRITE);
   keyboard_controller_wait_until_ready ();
   grub_outb (c, KEYBOARD_REG_DATA);
 }
 
-static int
-wait_ack (void)
+static grub_uint8_t
+grub_keyboard_controller_read (void)
 {
-  grub_uint8_t ack;
-  grub_uint64_t endtime = grub_get_time_ms () + 20;
-  do
-    {
-      ack = grub_inb (KEYBOARD_REG_DATA);
-    }
-  while (ack != GRUB_AT_ACK && grub_get_time_ms () < endtime);
-  grub_dprintf ("atkeyb", "Ack 0x%02x\n", ack);
-  return ack == GRUB_AT_ACK;
+  at_command (KEYBOARD_COMMAND_READ);
+  keyboard_controller_wait_until_ready ();
+  return grub_inb (KEYBOARD_REG_DATA);
 }
 
 static int
 write_mode (int mode)
 {
-  keyboard_controller_wait_until_ready ();
-  grub_outb (0xf0, KEYBOARD_REG_DATA);
-  keyboard_controller_wait_until_ready ();
-  grub_outb (mode, KEYBOARD_REG_DATA);
-  keyboard_controller_wait_until_ready ();
+  unsigned i;
+  for (i = 0; i < GRUB_AT_TRIES; i++)
+    {
+      grub_uint8_t ack;
+      keyboard_controller_wait_until_ready ();
+      grub_outb (0xf0, KEYBOARD_REG_DATA);
+      keyboard_controller_wait_until_ready ();
+      grub_outb (mode, KEYBOARD_REG_DATA);
+      keyboard_controller_wait_until_ready ();
+      ack = wait_ack ();
+      if (ack == GRUB_AT_NACK)
+	continue;
+      if (ack == GRUB_AT_ACK)
+	break;
+      return 0;
+    }
 
-  return wait_ack ();
+  return (i != GRUB_AT_TRIES);
 }
 
 static int
@@ -276,11 +314,9 @@ query_mode (void)
   return 0;
 }
 
-
 static void
 set_scancodes (void)
 {
-  grub_keyboard_orig_set = query_mode ();
   /* You must have visited computer museum. Keyboard without scancode set
      knowledge. Assume XT. */
   if (!grub_keyboard_orig_set)
@@ -305,14 +341,6 @@ set_scancodes (void)
   if (current_set == 1)
     return;
   grub_printf ("No supported scancode set found\n");
-}
-
-static grub_uint8_t
-grub_keyboard_controller_read (void)
-{
-  keyboard_controller_wait_until_ready ();
-  grub_outb (KEYBOARD_COMMAND_READ, KEYBOARD_REG_STATUS);
-  return grub_inb (KEYBOARD_REG_DATA);
 }
 
 static void
@@ -531,6 +559,7 @@ grub_keyboard_controller_init (struct grub_term_input *term __attribute__ ((unus
       grub_inb (KEYBOARD_REG_DATA);
     }
   grub_keyboard_controller_orig = grub_keyboard_controller_read ();
+  grub_keyboard_orig_set = query_mode ();
   set_scancodes ();
   keyboard_controller_led (led_status);
 
@@ -546,6 +575,31 @@ grub_keyboard_controller_fini (struct grub_term_input *term __attribute__ ((unus
   return GRUB_ERR_NONE;
 }
 
+static grub_err_t
+grub_at_fini_hw (int noreturn __attribute__ ((unused)))
+{
+  return grub_keyboard_controller_fini (NULL);
+}
+
+static grub_err_t
+grub_at_restore_hw (void)
+{
+  /* Drain input buffer. */
+  while (1)
+    {
+      keyboard_controller_wait_until_ready ();
+      if (! KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
+	break;
+      keyboard_controller_wait_until_ready ();
+      grub_inb (KEYBOARD_REG_DATA);
+    }
+  set_scancodes ();
+  keyboard_controller_led (led_status);
+
+  return GRUB_ERR_NONE;
+}
+
+
 static struct grub_term_input grub_at_keyboard_term =
   {
     .name = "at_keyboard",
@@ -557,9 +611,12 @@ static struct grub_term_input grub_at_keyboard_term =
 GRUB_MOD_INIT(at_keyboard)
 {
   grub_term_register_input ("at_keyboard", &grub_at_keyboard_term);
+  grub_loader_register_preboot_hook (grub_at_fini_hw, grub_at_restore_hw,
+				     GRUB_LOADER_PREBOOT_HOOK_PRIO_CONSOLE);
 }
 
 GRUB_MOD_FINI(at_keyboard)
 {
+  grub_keyboard_controller_fini (NULL);
   grub_term_unregister_input (&grub_at_keyboard_term);
 }

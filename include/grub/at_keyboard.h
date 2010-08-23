@@ -28,6 +28,8 @@
 #define KEYBOARD_AT_TRANSLATE		0x40
 
 #define GRUB_AT_ACK                     0xfa
+#define GRUB_AT_NACK                    0xfe
+#define GRUB_AT_TRIES                   5
 
 #define KEYBOARD_ISMAKE(x)	!((x) & 0x80)
 #define KEYBOARD_ISREADY(x)	((x) & 0x01)
