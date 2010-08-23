@@ -1154,6 +1154,16 @@ LOCAL(bypass_table_end):
 
 /*
  * int grub_console_getkey (void)
+ *	if there is a character pending, return it; otherwise return -1
+ * BIOS call "INT 16H Function 01H" to check whether a character is pending
+ *	Call with	%ah = 0x1
+ *	Return:
+ *		If key waiting to be input:
+ *			%ah = keyboard scan code
+ *			%al = ASCII character
+ *			Zero flag = clear
+ *		else
+ *			Zero flag = set
  * BIOS call "INT 16H Function 00H" to read character from keyboard
  *	Call with	%ah = 0x0
  *	Return:		%ah = keyboard scan code
@@ -1173,14 +1183,9 @@ FUNCTION(grub_console_getkey)
 	 * INT 16/AH = 1 before calling INT 16/AH = 0.
 	 */
 
-1:
 	movb	$1, %ah
 	int	$0x16
-	jnz	2f
-	hlt
-	jmp	1b
-
-2:
+	jz	notpending
 
 	movb	$0, %ah
 	int	$0x16
@@ -1217,47 +1222,12 @@ FUNCTION(grub_console_getkey)
 	popl	%ebp
 	ret
 
-/*
- * int grub_console_checkkey (void)
- *	if there is a character pending, return it; otherwise return -1
- * BIOS call "INT 16H Function 01H" to check whether a character is pending
- *	Call with	%ah = 0x1
- *	Return:
- *		If key waiting to be input:
- *			%ah = keyboard scan code
- *			%al = ASCII character
- *			Zero flag = clear
- *		else
- *			Zero flag = set
- */
-FUNCTION(grub_console_checkkey)
-	pushl	%ebp
-	xorl	%edx, %edx
-
-	call	prot_to_real	/* enter real mode */
+notpending:	
 	.code16
-
-	movb	$0x1, %ah
-	int	$0x16
-
-	jz	notpending
-
-	xorl	%edx, %edx
-	movw	%ax, %dx
-	DATA32	jmp	pending
-
-notpending:
-	xorl	%edx, %edx
-	decl	%edx
-
-pending:
 	DATA32	call	real_to_prot
 	.code32
-
-	movl    %edx, %eax
-
-	popl	%ebp
-	ret
+	decl %eax
+	jmp 2b
 
 
 /*

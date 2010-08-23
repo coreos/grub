@@ -99,7 +99,6 @@ static struct grub_term_input grub_serial_term_input =
 {
   .name = "serial",
   .init = grub_terminfo_input_init,
-  .checkkey = grub_terminfo_checkkey,
   .getkey = grub_terminfo_getkey,
   .data = &grub_serial_terminfo_input
 };

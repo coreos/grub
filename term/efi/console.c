@@ -28,8 +28,6 @@ static const grub_uint8_t
 grub_console_standard_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_YELLOW,
 						  GRUB_EFI_BACKGROUND_BLACK);
 
-static int read_key = -1;
-
 static grub_uint32_t
 map_char (grub_uint32_t c)
 {
@@ -112,14 +110,11 @@ const unsigned efi_codes[] =
 
 
 static int
-grub_console_checkkey (struct grub_term_input *term __attribute__ ((unused)))
+grub_console_getkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_efi_simple_input_interface_t *i;
   grub_efi_input_key_t key;
   grub_efi_status_t status;
-
-  if (read_key >= 0)
-    return 1;
 
   i = grub_efi_system_table->con_in;
   status = efi_call_2 (i->read_key_stroke, i, &key);
@@ -128,45 +123,11 @@ grub_console_checkkey (struct grub_term_input *term __attribute__ ((unused)))
     return -1;
 
   if (key.scan_code == 0)
-    read_key = key.unicode_char;
+    return key.unicode_char;
   else if (key.scan_code < ARRAY_SIZE (efi_codes))
-    read_key = efi_codes[key.scan_code];
+    return efi_codes[key.scan_code];
 
-  return read_key;
-}
-
-static int
-grub_console_getkey (struct grub_term_input *term)
-{
-  grub_efi_simple_input_interface_t *i;
-  grub_efi_boot_services_t *b;
-  grub_efi_uintn_t index;
-  grub_efi_status_t status;
-  int key;
-
-  if (read_key >= 0)
-    {
-      key = read_key;
-      read_key = -1;
-      return key;
-    }
-
-  i = grub_efi_system_table->con_in;
-  b = grub_efi_system_table->boot_services;
-
-  do
-    {
-      status = efi_call_3 (b->wait_for_event, 1, &(i->wait_for_key), &index);
-      if (status != GRUB_EFI_SUCCESS)
-        return -1;
-
-      grub_console_checkkey (term);
-    }
-  while (read_key < 0);
-
-  key = read_key;
-  read_key = -1;
-  return key;
+  return -1;
 }
 
 static grub_uint16_t
@@ -268,7 +229,6 @@ grub_efi_console_fini (struct grub_term_output *term)
 static struct grub_term_input grub_console_term_input =
   {
     .name = "console",
-    .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
   };
 

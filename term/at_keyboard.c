@@ -28,7 +28,6 @@
 static short at_keyboard_status = 0;
 static int e0_received = 0;
 static int f0_received = 0;
-static int pending_key = -1;
 
 static grub_uint8_t led_status;
 
@@ -478,7 +477,7 @@ grub_keyboard_getkey (void)
 
 /* If there is a character pending, return it; otherwise return -1.  */
 static int
-grub_at_keyboard_getkey_noblock (void)
+grub_at_keyboard_getkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   int code;
   code = grub_keyboard_getkey ();
@@ -517,41 +516,9 @@ grub_at_keyboard_getkey_noblock (void)
     }
 }
 
-static int
-grub_at_keyboard_checkkey (struct grub_term_input *term __attribute__ ((unused)))
-{
-  if (pending_key != -1)
-    return 1;
-
-  pending_key = grub_at_keyboard_getkey_noblock ();
-
-  if (pending_key != -1)
-    return 1;
-
-  return -1;
-}
-
-static int
-grub_at_keyboard_getkey (struct grub_term_input *term __attribute__ ((unused)))
-{
-  int key;
-  if (pending_key != -1)
-    {
-      key = pending_key;
-      pending_key = -1;
-      return key;
-    }
-  do
-    {
-      key = grub_at_keyboard_getkey_noblock ();
-    } while (key == -1);
-  return key;
-}
-
 static grub_err_t
 grub_keyboard_controller_init (struct grub_term_input *term __attribute__ ((unused)))
 {
-  pending_key = -1;
   at_keyboard_status = 0;
   /* Drain input buffer. */
   while (1)
@@ -583,7 +550,6 @@ static struct grub_term_input grub_at_keyboard_term =
     .name = "at_keyboard",
     .init = grub_keyboard_controller_init,
     .fini = grub_keyboard_controller_fini,
-    .checkkey = grub_at_keyboard_checkkey,
     .getkey = grub_at_keyboard_getkey
   };
 

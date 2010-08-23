@@ -34,7 +34,6 @@ grub_console_getkeystatus (struct grub_term_input *term __attribute__ ((unused))
 static struct grub_term_input grub_console_term_input =
   {
     .name = "console",
-    .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
     .getkeystatus = grub_console_getkeystatus
   };

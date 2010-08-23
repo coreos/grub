@@ -158,10 +158,7 @@ struct grub_term_input
   /* Clean up the terminal.  */
   grub_err_t (*fini) (struct grub_term_input *term);
 
-  /* Check if any input character is available.  */
-  int (*checkkey) (struct grub_term_input *term);
-
-  /* Get a character.  */
+  /* Get a character if any input character is available. Otherwise return -1  */
   int (*getkey) (struct grub_term_input *term);
 
   /* Get keyboard modifier status.  */

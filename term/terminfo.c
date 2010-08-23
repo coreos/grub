@@ -467,39 +467,30 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 #undef CONTINUE_READ
 }
 
-/* The terminfo version of checkkey.  */
-int
-grub_terminfo_checkkey (struct grub_term_input *termi)
-{
-  struct grub_terminfo_input_state *data
-    = (struct grub_terminfo_input_state *) (termi->data);
-  if (data->npending)
-    return data->input_buf[0];
-
-  grub_terminfo_readkey (termi, data->input_buf,
-			 &data->npending, data->readkey);
-
-  if (data->npending)
-    return data->input_buf[0];
-
-  return -1;
-}
-
 /* The terminfo version of getkey.  */
 int
 grub_terminfo_getkey (struct grub_term_input *termi)
 {
   struct grub_terminfo_input_state *data
     = (struct grub_terminfo_input_state *) (termi->data);
-  int ret;
-  while (! data->npending)
-    grub_terminfo_readkey (termi, data->input_buf, &data->npending,
-			   data->readkey);
+  if (data->npending)
+    {
+      data->npending--;
+      grub_memmove (data->input_buf, data->input_buf + 1, data->npending);
+      return data->input_buf[0];
+    }
 
-  ret = data->input_buf[0];
-  data->npending--;
-  grub_memmove (data->input_buf, data->input_buf + 1, data->npending);
-  return ret;
+  grub_terminfo_readkey (termi, data->input_buf,
+			 &data->npending, data->readkey);
+
+  if (data->npending)
+    {
+      data->npending--;
+      grub_memmove (data->input_buf, data->input_buf + 1, data->npending);
+      return data->input_buf[0];
+    }
+
+  return -1;
 }
 
 grub_err_t

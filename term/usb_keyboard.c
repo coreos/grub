@@ -68,7 +68,6 @@ struct grub_usb_keyboard_data
   grub_usb_device_t usbdev;
   grub_uint8_t status;
   grub_uint16_t mods;
-  int key;
   int interfno;
   struct grub_usb_desc_endp *endp;
   grub_usb_transfer_t transfer;
@@ -78,15 +77,11 @@ struct grub_usb_keyboard_data
   grub_uint64_t repeat_time;
 };
 
-static struct grub_term_input grub_usb_keyboards[16];
-
-static int grub_usb_keyboard_checkkey (struct grub_term_input *term);
 static int grub_usb_keyboard_getkey (struct grub_term_input *term);
 static int grub_usb_keyboard_getkeystatus (struct grub_term_input *term);
 
 static struct grub_term_input grub_usb_keyboard_term =
   {
-    .checkkey = grub_usb_keyboard_checkkey,
     .getkey = grub_usb_keyboard_getkey,
     .getkeystatus = grub_usb_keyboard_getkeystatus,
     .next = 0
@@ -231,19 +226,12 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
     				USB_HID_GET_REPORT, 0x0100, interfno,
 				sizeof (report), (char *) report);
     if (err)
-      {
-	data->status = 0;
-	data->key = -1;
-      }
+      data->status = 0;
     else
-      {
-	data->status = report[0];
-	data->key = report[2] ? : -1;
-      }
+      data->status = report[0];
   }
 #else
   data->status = 0;
-  data->key = -1;
 #endif
 
   data->transfer = grub_usb_bulk_read_background (usbdev,
@@ -283,15 +271,12 @@ send_leds (struct grub_usb_keyboard_data *termdata)
 }
 
 static int
-grub_usb_keyboard_checkkey (struct grub_term_input *term)
+grub_usb_keyboard_getkey (struct grub_term_input *term)
 {
   grub_usb_err_t err;
   struct grub_usb_keyboard_data *termdata = term->data;
   grub_uint8_t data[sizeof (termdata->report)];
   grub_size_t actual;
-
-  if (termdata->key != -1)
-    return termdata->key;
 
   if (termdata->dead)
     return -1;
@@ -304,11 +289,11 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
       if (termdata->last_key != -1
 	  && grub_get_time_ms () > termdata->repeat_time)
 	{
-	  termdata->key = termdata->last_key;
 	  termdata->repeat_time = grub_get_time_ms ()
 	    + GRUB_TERM_REPEAT_INTERVAL;
+	  return termdata->last_key;
 	}
-      return termdata->key;
+      return -1;
     }
 
   grub_memcpy (data, termdata->report, sizeof (data));
@@ -358,37 +343,19 @@ grub_usb_keyboard_checkkey (struct grub_term_input *term)
       return -1;
     }
 
-  termdata->last_key = termdata->key
-    = grub_term_map_key (data[2], interpret_status (data[0]) | termdata->mods);
+  termdata->last_key = grub_term_map_key (data[2], interpret_status (data[0])
+					  | termdata->mods);
   termdata->repeat_time = grub_get_time_ms () + GRUB_TERM_REPEAT_PRE_INTERVAL;
 
   grub_errno = GRUB_ERR_NONE;
 
-  return termdata->key;
-}
-
-static int
-grub_usb_keyboard_getkey (struct grub_term_input *term)
-{
-  int ret;
-  struct grub_usb_keyboard_data *termdata = term->data;
-
-  while (termdata->key == -1)
-    grub_usb_keyboard_checkkey (term);
-
-  ret = termdata->key;
-
-  termdata->key = -1;
-
-  return ret;
+  return termdata->last_key;
 }
 
 static int
 grub_usb_keyboard_getkeystatus (struct grub_term_input *term)
 {
   struct grub_usb_keyboard_data *termdata = term->data;
-
-  grub_usb_keyboard_checkkey (term);
 
   return interpret_status (termdata->status) | termdata->mods;
 }
