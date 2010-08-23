@@ -316,6 +316,7 @@ module = {
   enable = emu;
   enable = i386_pc;
   enable = mips_yeeloong;
+  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -324,6 +325,7 @@ module = {
   enable = emu;
   enable = i386_pc;
   enable = mips_yeeloong;
+  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -332,6 +334,7 @@ module = {
   enable = emu;
   enable = i386_pc;
   enable = mips_yeeloong;
+  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
