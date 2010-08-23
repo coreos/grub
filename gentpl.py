@@ -105,7 +105,7 @@ def var_add(var, value):
 # Autogen constructs
 #
 
-def set_canonical_name_suffix(suffix): return "[+ % name `export cname=$(echo -n %s" + suffix + " | sed -e 's/[^0-9A-Za-z@_]/_/g')` +]"
+def set_canonical_name_suffix(suffix): return "[+ % name `export cname=$(echo %s" + suffix + " | sed -e 's/[^0-9A-Za-z@_]/_/g')` +]"
 def cname(): return "[+ % name `echo $cname` +]"
 
 def rule(target, source, cmd):
