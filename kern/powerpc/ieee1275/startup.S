@@ -33,7 +33,7 @@ _start:
 	. = _start + GRUB_KERNEL_MACHINE_PREFIX
 
 VARIABLE(grub_prefix)
-	/* to be filled by grub-mkelfimage */
+	/* to be filled by grub-mkimage */
 
 	/*
 	 *  Leave some breathing room for the prefix.

@@ -1,3 +1,9 @@
+2010-08-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/mips/startup.S (grub_prefix): Update comment to refer to
+	grub-mkimage rather than grub-mkelfimage.
+	* kern/powerpc/ieee1275/startup.S (grub_prefix): Likewise.
+
 2010-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* term/at_keyboard.c (grub_at_keyboard_getkey_noblock): Don't discard
