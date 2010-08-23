@@ -375,11 +375,11 @@ write_keymaps (FILE *in, FILE *out)
 
 	  /* Not remappable.  */
 	  if (keycode_linux == 0x1d /* Left CTRL */
-	      || keycode_linux == 0x9d /* Right CTRL */
+	      || keycode_linux == 0x61 /* Right CTRL */
 	      || keycode_linux == 0x2a /* Left Shift. */
 	      || keycode_linux == 0x36 /* Right Shift. */
 	      || keycode_linux == 0x38 /* Left ALT. */
-	      || keycode_linux == 0xb8 /* Right ALT. */
+	      || keycode_linux == 0x64 /* Right ALT. */
 	      || keycode_linux == 0x3a /* CapsLock. */
 	      || keycode_linux == 0x45 /* NumLock. */
 	      || keycode_linux == 0x46 /* ScrollLock. */)
