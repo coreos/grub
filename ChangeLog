@@ -1,3 +1,28 @@
+2010-08-23  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Replace --enable-grub-emu-modules with grub-emu-lite.
+
+	* kern/emu/cache.S: New file.  Wrapper for $target_cpu specific
+	cache.S.
+
+	* include/grub/emu/misc.h (grub_emu_init): New prototype.
+	* kern/emu/full.c: New file. For grub-emu specific initialization.
+	* kern/emu/lite.c: New file. For grub-emu-lite initialization.
+	* kern/emu/main.c: Call initialization function grub_emu_init.
+
+	* Makefile.in: Include grub-emu-lite in install.
+	* commands/parttool.c: Use grub_no_autoload to differentiate
+	between grub-emu and grub-emu-lite.
+	* include/grub/misc.h: New variable grub_no_autoload.
+
+	* conf/any-emu.rmk: New rules for grub-emu-lite.
+	* configure.ac: Remove --enable-grub-emu-modules.
+	* genmk.rb: Cleanup unnecessary rules.
+	* include/grub/dl.h: Remove GRUB_NO_MODULES macro.
+
+	* normal/main.c: Don't load list files on grub-emu-lite.
+	* util/misc.c (grub_arch_sync_caches): Removed.
+
 2010-08-23  Colin Watson  <cjwatson@ubuntu.com>
 
 	* kern/mips/startup.S (grub_prefix): Update comment to refer to

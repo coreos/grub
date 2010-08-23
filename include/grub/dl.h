@@ -92,11 +92,6 @@ grub_dl_t grub_dl_load_core (void *addr, grub_size_t size);
 int EXPORT_FUNC(grub_dl_unload) (grub_dl_t mod);
 void grub_dl_unload_unneeded (void);
 void grub_dl_unload_all (void);
-#if defined (GRUB_UTIL) || defined (GRUB_TARGET_NO_MODULES)
-#define GRUB_NO_MODULES 1
-#else
-#define GRUB_NO_MODULES 0
-#endif
 int EXPORT_FUNC(grub_dl_ref) (grub_dl_t mod);
 int EXPORT_FUNC(grub_dl_unref) (grub_dl_t mod);
 extern grub_dl_t EXPORT_VAR(grub_dl_head);
@@ -110,7 +105,7 @@ grub_err_t grub_dl_register_symbol (const char *name, void *addr,
 grub_err_t grub_arch_dl_check_header (void *ehdr);
 grub_err_t grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr);
 
-#if defined (_mips) && ! GRUB_NO_MODULES
+#if defined (_mips)
 #define GRUB_LINKER_HAVE_INIT 1
 void grub_arch_dl_init_linker (void);
 #endif

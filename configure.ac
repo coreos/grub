@@ -614,10 +614,6 @@ AC_ARG_ENABLE([grub-emu-pci],
 	      [AS_HELP_STRING([--enable-grub-emu-pci],
                              [build and install the `grub-emu' debugging utility with PCI support (potentially dangerous) (default=no)])])
 
-AC_ARG_ENABLE([grub-emu-modules],
-	      [AS_HELP_STRING([--enable-grub-emu-modules],
-                             [Support module loading in `grub-emu' debugging utility (default=no)])])
-
 if test "$platform" = emu; then
   missing_ncurses=
 [# Check for curses libraries.]
@@ -634,19 +630,6 @@ if test "$platform" = emu; then
 [fi]
 if test x"$missing_ncurses" = xtrue ; then
   AC_MSG_ERROR([grub-emu can't be compiled without ncurses])
-fi
-
-if test x"$enable_grub_emu_modules" = xyes ; then
-  TARGET_NO_MODULES=no
-else
-  TARGET_NO_MODULES=yes
-fi
-AC_SUBST(TARGET_NO_MODULES)
-
-if test "$TARGET_NO_MODULES" = yes ; then
-  # Do not convert modules, otherwise linkage may fail (Cygwin only).
-  # FIXME: Should be checked above before TARGET_OBJ2ELF is set first.
-  TARGET_OBJ2ELF=
 fi
 
 if test x"$enable_grub_emu_usb" = xno ; then
@@ -850,11 +833,6 @@ if [ x"$grub_emu_pci_excuse" = x ]; then
 echo PCI support for grub-emu: Yes
 else
 echo PCI support for grub-emu: No "($grub_emu_pci_excuse)"
-fi
-if [ x"$TARGET_NO_MODULES" = xno ]; then
-echo Module support for grub-emu: Yes
-else
-echo Module support for grub-emu: No
 fi
 fi
 if [ x"$enable_mm_debug" = xyes ]; then

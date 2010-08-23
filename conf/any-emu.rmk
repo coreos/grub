@@ -1,5 +1,10 @@
 # -*- makefile -*-
 
+ifeq ($(target_cpu), sparc64)
+COMMON_CFLAGS += -mno-app-regs
+COMMON_LDFLAGS += -mno-relax
+endif
+
 kernel_img_RELOCATABLE = yes
 pkglib_PROGRAMS = kernel.img
 kernel_img_SOURCES = kern/device.c kern/disk.c kern/dl.c kern/env.c	\
@@ -18,17 +23,6 @@ kernel_img_CFLAGS = $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Wno-char-subscripts -Wn
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS)
 TARGET_NO_STRIP = yes
 
-ifneq ($(TARGET_NO_MODULES), yes)
-kernel_img_SOURCES += symlist.c kern/$(target_cpu)/dl.c
-else
-kernel_img_SOURCES += grub_emu_init.c
-endif
-ifneq ($(target_cpu), i386)
-ifneq ($(target_cpu), x86_64)
-kernel_img_SOURCES += kern/$(target_cpu)/cache.S
-endif
-endif
-
 # For halt.mod.
 pkglib_MODULES += halt.mod
 halt_mod_SOURCES = commands/halt.c
@@ -43,6 +37,9 @@ cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 endif
 
 grub_emu_LDFLAGS = $(LIBCURSES)
+ifeq ($(target_cpu), sparc64)
+grub_emu_LDFLAGS += -m64 -melf64_sparc -mno-relax
+endif
 
 ifeq ($(enable_grub_emu_usb), yes)
 kernel_img_HEADERS += libusb.h
@@ -124,13 +121,32 @@ grub_emu_init.c: genemuinit.sh $(pkglib_MODULES) grub_emu_init.h
 	rm -f $@; echo $(pkglib_MODULES) | sh $(srcdir)/genemuinit.sh $(NM) > $@
 DISTCLEANFILES += grub_emu_init.c
 
-CLEANFILES += grub-emu
-ifneq ($(TARGET_NO_MODULES), yes)
-grub-emu: $(pkglib_PROGRAMS)
-	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
-else
-grub-emu: $(pkglib_MODULES) $(pkglib_PROGRAMS)
-	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
-endif
-GRUB_EMU=grub-emu
+grub_emu_init.o: grub_emu_init.c grub_emu_init.h
+	rm -f $@; $(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -DGRUB_FILE=\"grub_init.c\" -c -o $@ $<
+CLEANFILES += grub_emu_init.o
 
+kern_emu_lite.o: kern/emu/lite.c
+	$(TARGET_CC) $(COMMON_CFLAGS) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -DGRUB_FILE=\"kern/emu/lite.c\" -c -o $@ $<
+CLEANFILES += kern_emu_lite.o
+
+kern_emu_full.o: kern/emu/full.c
+	$(TARGET_CC) $(COMMON_CFLAGS) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -DGRUB_FILE=\"kern/emu/full.c\" -c -o $@ $<
+CLEANFILES += kern_emu_full.o
+
+kern_emu_cache.o: kern/emu/cache.S
+	$(TARGET_CC) $(COMMON_CFLAGS) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(TARGET_ASFLAGS) -DGRUB_FILE=\"kern/emu/cache.S\" -c -o $@ $<
+CLEANFILES += kern_emu_cache.o
+
+symlist.o: symlist.c
+	$(TARGET_CC) $(COMMON_CFLAGS) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -DGRUB_FILE=\"symlist.c\" -c -o $@ $<
+CLEANFILES += symlist.o
+
+CLEANFILES += grub-emu-lite
+grub-emu-lite: kern_emu_lite.o kern_emu_cache.o symlist.o kernel.img
+	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
+GRUB_EMU_LITE=grub-emu-lite
+
+CLEANFILES += grub-emu
+grub-emu: $(PREMODFILES) kern_emu_full.o grub_emu_init.o kernel.img
+	$(CC) -o $@ $^ $(grub_emu_LDFLAGS) $(LDFLAGS)
+GRUB_EMU=grub-emu

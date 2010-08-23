@@ -42,6 +42,7 @@
 extern int verbosity;
 extern const char *program_name;
 
+void grub_emu_init (void);
 void grub_init_all (void);
 void grub_fini_all (void);
 
