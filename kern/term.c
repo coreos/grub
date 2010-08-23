@@ -104,15 +104,19 @@ grub_checkkey (void)
 int
 grub_getkey (void)
 {
+  int ret;
+
   grub_refresh ();
 
-  while (pending_key != GRUB_TERM_NO_KEY)
+  grub_checkkey ();
+  while (pending_key == GRUB_TERM_NO_KEY)
     {
       grub_cpu_idle ();
       grub_checkkey ();
     }
+  ret = pending_key;
   pending_key = GRUB_TERM_NO_KEY;
-  return pending_key;
+  return ret;
 }
 
 
