@@ -1226,10 +1226,9 @@ notpending:
 	.code16
 	DATA32	call	real_to_prot
 	.code32
-#if GRUB_TERM_NO_KEY != -1
+#if GRUB_TERM_NO_KEY != 0
 #error Fix this asm code
 #endif
-	decl %eax
 	jmp 2b
 
 
