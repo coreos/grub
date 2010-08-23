@@ -148,7 +148,7 @@ compressed:
 
 VARIABLE(grub_prefix)
 
-	/* to be filled by grub-mkelfimage */
+	/* to be filled by grub-mkimage */
 
 	/*
 	 *  Leave some breathing room for the prefix.
