@@ -28,6 +28,8 @@
 
 #define GRUB_UHCI_IOMASK	(0x7FF << 5)
 
+#define N_QH  256
+
 typedef enum
   {
     GRUB_UHCI_REG_USBCMD = 0x00,
@@ -99,7 +101,7 @@ struct grub_uhci
   int iobase;
   grub_uint32_t *framelist;
 
-  /* 256 Queue Heads.  */
+  /* N_QH Queue Heads.  */
   grub_uhci_qh_t qh;
 
   /* 256 Transfer Descriptors.  */
@@ -107,6 +109,8 @@ struct grub_uhci
 
   /* Free Transfer Descriptors.  */
   grub_uhci_td_t tdfree;
+
+  int qh_busy[N_QH];
 
   struct grub_uhci *next;
 };
@@ -260,7 +264,7 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
 			(grub_uint32_t) u->framelist);
 
   /* Make the Queue Heads point to each other.  */
-  for (i = 0; i < 256; i++)
+  for (i = 0; i < N_QH; i++)
     {
       /* Point to the next QH.  */
       u->qh[i].linkptr = (grub_uint32_t) (&u->qh[i + 1]) & (~15);
@@ -273,9 +277,8 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
       u->qh[i].elinkptr = 1;
     }
 
-  /* The last Queue Head should terminate.  256 are too many QHs so
-     just use 50.  */
-  u->qh[50 - 1].linkptr = 1;
+  /* The last Queue Head should terminate.  */
+  u->qh[N_QH - 1].linkptr = 1;
 
   /* Enable UHCI again.  */
   grub_uhci_writereg16 (u, GRUB_UHCI_REG_USBCMD, 1 | (1 << 7));
@@ -344,10 +347,12 @@ grub_free_td (struct grub_uhci *u, grub_uhci_td_t td)
 }
 
 static void
-grub_free_queue (struct grub_uhci *u, grub_uhci_td_t td,
+grub_free_queue (struct grub_uhci *u, grub_uhci_qh_t qh, grub_uhci_td_t td,
                  grub_usb_transfer_t transfer, grub_size_t *actual)
 {
   int i; /* Index of TD in transfer */
+
+  u->qh_busy[qh - u->qh] = 0;
 
   *actual = 0;
   
@@ -387,18 +392,20 @@ grub_alloc_qh (struct grub_uhci *u,
 #endif
     i = 1;
 
-  for (; i < 255; i++)
+  for (; i < N_QH; i++)
     {
-      if (u->qh[i].elinkptr & 1)
+      if (!u->qh_busy[i])
 	break;
     }
   qh = &u->qh[i];
-  if (! (qh->elinkptr & 1))
+  if (i == N_QH)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		  "no free queue heads available");
       return NULL;
     }
+
+  u->qh_busy[qh - u->qh] = 1;
 
   return qh;
 }
@@ -497,7 +504,7 @@ grub_uhci_setup_transfer (grub_usb_controller_t dev,
 	  td_prev->linkptr = 1;
 
 	  if (cdata->td_first)
-	    grub_free_queue (u, cdata->td_first, NULL, &actual);
+	    grub_free_queue (u, cdata->qh, cdata->td_first, NULL, &actual);
 
 	  grub_free (cdata);
 	  return GRUB_USB_ERR_INTERNAL;
@@ -553,7 +560,7 @@ grub_uhci_check_transfer (grub_usb_controller_t dev,
       /* Place the QH back in the free list and deallocate the associated
 	 TDs.  */
       cdata->qh->elinkptr = 1;
-      grub_free_queue (u, cdata->td_first, transfer, actual);
+      grub_free_queue (u, cdata->qh, cdata->td_first, transfer, actual);
       grub_free (cdata);
       return GRUB_USB_ERR_NONE;
     }
@@ -595,7 +602,7 @@ grub_uhci_check_transfer (grub_usb_controller_t dev,
 	  /* Place the QH back in the free list and deallocate the associated
 	     TDs.  */
 	  cdata->qh->elinkptr = 1;
-	  grub_free_queue (u, cdata->td_first, transfer, actual);
+	  grub_free_queue (u, cdata->qh, cdata->td_first, transfer, actual);
 	  grub_free (cdata);
 
 	  return err;
@@ -622,7 +629,7 @@ grub_uhci_cancel_transfer (grub_usb_controller_t dev,
   /* Place the QH back in the free list and deallocate the associated
      TDs.  */
   cdata->qh->elinkptr = 1;
-  grub_free_queue (u, cdata->td_first, transfer, &actual);
+  grub_free_queue (u, cdata->qh, cdata->td_first, transfer, &actual);
   grub_free (cdata);
 
   return GRUB_USB_ERR_NONE;
