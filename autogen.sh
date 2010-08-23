@@ -2,7 +2,7 @@
 
 set -e
 
-autogen --version >/dev/null || (echo autogen missing; exit 1)
+autogen --version >/dev/null || exit 1
 
 echo "Importing unicode..."
 python util/import_unicode.py unicode/UnicodeData.txt unicode/BidiMirroring.txt unicode/ArabicShaping.txt grub-core/unidata.c
