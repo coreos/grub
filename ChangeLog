@@ -1,3 +1,8 @@
+2010-08-23  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/grub.d/30_os-prober.in: Fix conversion from grub-probe
+	--target=drive output to Mach device name.
+
 2010-08-23  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	New Automake based build system for GRUB.
