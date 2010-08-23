@@ -46,7 +46,7 @@ CLEANFILES += libgrub_a_init.c
 
 if COND_GRUB_MKFONT
 if COND_HAVE_FONT_SOURCE
-pkgdata_DATA = unicode.pf2 ascii.pf2 ascii.h widthspec.h
+grubdata_DATA = unicode.pf2 ascii.pf2 ascii.h widthspec.h
 endif
 endif
 
@@ -81,3 +81,5 @@ CLEANFILES += widthspec.h
 # Install config.h into platformdir
 platform_HEADERS = config.h
 
+pkglib_DATA += grub-mkconfig_lib
+pkglib_DATA += update-grub_lib

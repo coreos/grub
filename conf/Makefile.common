@@ -69,6 +69,7 @@ CCASFLAGS_LIBRARY = $(CCASFLAGS_PROGRAM)
 # Other variables
 
 grubconfdir = $(sysconfdir)/grub.d
+grubdatadir = $(datadir)/`echo @PACKAGE_TARNAME@ | sed '$(transform)'`
 platformdir = $(pkglibrootdir)/$(target_cpu)-$(platform)
 
 CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers
@@ -100,6 +101,7 @@ KERNEL_HEADER_FILES =
 
 man_MANS =
 noinst_DATA =
+pkglib_DATA =
 bin_SCRIPTS =
 sbin_SCRIPTS =
 bin_PROGRAMS =
@@ -108,6 +110,7 @@ sbin_PROGRAMS =
 check_SCRIPTS =
 grubconf_DATA =
 check_PROGRAMS =
+noinst_SCRIPTS =
 pkglib_SCRIPTS =
 noinst_PROGRAMS =
 grubconf_SCRIPTS =

@@ -282,8 +282,8 @@ module = {
 
 module = {
   name = cs5536;
-  i386 = bus/cs5536.c;
-  enable = i386;
+  x86 = bus/cs5536.c;
+  enable = x86;
 };
 
 module = {
@@ -387,7 +387,7 @@ module = {
 module = {
   name = iorw;
   common = commands/iorw.c;
-  enable = i386;
+  enable = x86;
 };
 
 module = {
@@ -573,8 +573,8 @@ module = {
 
 module = {
   name = play;
-  i386 = commands/i386/pc/play.c;
-  enable = i386;
+  x86 = commands/i386/pc/play.c;
+  enable = x86;
 };
 
 module = {
@@ -1254,6 +1254,7 @@ module = {
   enable = emu;
   enable = i386;
   enable = x86_64_efi;
+  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -1290,14 +1291,14 @@ module = {
 
 module = {
   name = video_cirrus;
-  i386 = video/cirrus.c;
-  enable = i386;
+  x86 = video/cirrus.c;
+  enable = x86;
 };
 
 module = {
   name = video_bochs;
-  i386 = video/bochs.c;
-  enable = i386;
+  x86 = video/bochs.c;
+  enable = x86;
 };
 
 module = {
