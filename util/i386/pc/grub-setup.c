@@ -19,6 +19,7 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/device.h>
 #include <grub/disk.h>
@@ -38,8 +39,6 @@
 #include <grub/emu/getroot.h>
 
 static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_PARTITION_TYPE_BIOS_BOOT;
-
-#include <grub_setup_init.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -63,26 +62,6 @@ static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_P
 #define grub_host_to_target16(x)	grub_cpu_to_le16(x)
 #define grub_host_to_target32(x)	grub_cpu_to_le32(x)
 #define grub_host_to_target64(x)	grub_cpu_to_le64(x)
-
-void 
-grub_xputs_real (const char *str)
-{
-  fputs (str, stdout);
-}
-
-void (*grub_xputs) (const char *str) = grub_xputs_real;
-
-int
-grub_getkey (void)
-{
-  return -1;
-}
-
-void
-grub_refresh (void)
-{
-  fflush (stdout);
-}
 
 static void
 setup (const char *dir,

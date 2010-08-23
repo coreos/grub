@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2007, 2008, 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2009, 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,20 +16,27 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_UTIL_GETROOT_HEADER
-#define GRUB_UTIL_GETROOT_HEADER	1
+#ifndef GRUB_POSIX_STRING_H
+#define GRUB_POSIX_STRING_H	1
 
-enum grub_dev_abstraction_types {
-  GRUB_DEV_ABSTRACTION_NONE,
-  GRUB_DEV_ABSTRACTION_LVM,
-  GRUB_DEV_ABSTRACTION_RAID,
-};
+#include <grub/misc.h>
 
-char *grub_guess_root_device (const char *dir);
-int grub_util_get_dev_abstraction (const char *os_dev);
-char *grub_util_get_grub_dev (const char *os_dev);
-char *grub_make_system_path_relative_to_its_root (const char *path);
-const char *grub_util_check_block_device (const char *blk_dev);
-const char *grub_util_check_char_device (const char *blk_dev);
+static inline grub_size_t
+strlen (const char *s)
+{
+  return grub_strlen (s);
+}
 
-#endif /* ! GRUB_UTIL_GETROOT_HEADER */
+static inline int 
+strcmp (const char *s1, const char *s2)
+{
+  return grub_strcmp (s1, s2);
+}
+
+static inline int 
+strcasecmp (const char *s1, const char *s2)
+{
+  return grub_strcasecmp (s1, s2);
+}
+
+#endif

@@ -1,5 +1,0 @@
-# -*- makefile -*-
-
-COMMON_LDFLAGS = -melf_i386
-
-include $(srcdir)/conf/x86-efi.mk

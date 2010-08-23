@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2007, 2008, 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2010 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,20 +16,20 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_UTIL_GETROOT_HEADER
-#define GRUB_UTIL_GETROOT_HEADER	1
+/* All tests need to include test.h for GRUB testing framework.  */
+#include <grub/test.h>
 
-enum grub_dev_abstraction_types {
-  GRUB_DEV_ABSTRACTION_NONE,
-  GRUB_DEV_ABSTRACTION_LVM,
-  GRUB_DEV_ABSTRACTION_RAID,
-};
+/* Functional test main method.  */
+static void
+example_test (void)
+{
+  /* Check if 1st argument is true and report with default error message.  */
+  grub_test_assert (1 == 1);
 
-char *grub_guess_root_device (const char *dir);
-int grub_util_get_dev_abstraction (const char *os_dev);
-char *grub_util_get_grub_dev (const char *os_dev);
-char *grub_make_system_path_relative_to_its_root (const char *path);
-const char *grub_util_check_block_device (const char *blk_dev);
-const char *grub_util_check_char_device (const char *blk_dev);
+  /* Check if 1st argument is true and report with custom error message.  */
+  grub_test_assert (2 == 2, "2 equal 2 expected");
+  grub_test_assert (2 != 3, "2 matches %d", 3);
+}
 
-#endif /* ! GRUB_UTIL_GETROOT_HEADER */
+/* Register example_test method as a functional test.  */
+GRUB_FUNCTIONAL_TEST (example_functional_test, example_test);

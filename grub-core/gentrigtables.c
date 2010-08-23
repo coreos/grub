@@ -1,6 +1,7 @@
+/* Generate trigonometric function tables. */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010 Free Software Foundation, Inc.
+ *  Copyright (C) 2008, 2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,30 +17,33 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
+#define _GNU_SOURCE 1
 
-#include <grub/list.h>
-#include <grub/test.h>
+#include <grub/trig.h>
+#include <math.h>
+#include <stdio.h>
 
 int
 main (int argc __attribute__ ((unused)),
-      char *argv[] __attribute__ ((unused)))
+      char **argv __attribute__ ((unused)))
 {
-  int status = 0;
+  int i;
 
-  extern void grub_unit_test_init (void);
-  extern void grub_unit_test_fini (void);
+  printf ("#include <grub/types.h>\n");
 
-  grub_test_t test;
+#define TAB(op) \
+  printf ("grub_int16_t grub_trig_" #op "tab[] =\n{"); \
+  for (i = 0; i < GRUB_TRIG_ANGLE_MAX; i++) \
+    { \
+      double x = i * 2 * M_PI / GRUB_TRIG_ANGLE_MAX; \
+      if (i % 10 == 0) \
+	printf ("\n    "); \
+      printf ("%d,", (int) (round (op (x) * GRUB_TRIG_FRACTION_SCALE))); \
+    } \
+  printf ("\n};\n")
 
-  grub_unit_test_init ();
-  FOR_LIST_ELEMENTS (test, grub_test_list)
-    status = grub_test_run (test) ? : status;
+  TAB(sin);
+  TAB(cos);
 
-  grub_unit_test_fini ();
-
-  exit (status);
+  return 0;
 }

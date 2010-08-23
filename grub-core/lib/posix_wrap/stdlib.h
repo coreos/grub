@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2007, 2008, 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2009, 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,20 +16,42 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_UTIL_GETROOT_HEADER
-#define GRUB_UTIL_GETROOT_HEADER	1
+#ifndef GRUB_POSIX_STDLIB_H
+#define GRUB_POSIX_STDLIB_H	1
 
-enum grub_dev_abstraction_types {
-  GRUB_DEV_ABSTRACTION_NONE,
-  GRUB_DEV_ABSTRACTION_LVM,
-  GRUB_DEV_ABSTRACTION_RAID,
-};
+#include <grub/mm.h>
+#include <grub/misc.h>
 
-char *grub_guess_root_device (const char *dir);
-int grub_util_get_dev_abstraction (const char *os_dev);
-char *grub_util_get_grub_dev (const char *os_dev);
-char *grub_make_system_path_relative_to_its_root (const char *path);
-const char *grub_util_check_block_device (const char *blk_dev);
-const char *grub_util_check_char_device (const char *blk_dev);
+static inline void 
+free (void *ptr)
+{
+  grub_free (ptr);
+}
 
-#endif /* ! GRUB_UTIL_GETROOT_HEADER */
+static inline void *
+malloc (grub_size_t size)
+{
+  return grub_malloc (size);
+}
+
+static inline void *
+calloc (grub_size_t size, grub_size_t nelem)
+{
+  return grub_zalloc (size * nelem);
+}
+
+static inline void *
+realloc (void *ptr, grub_size_t size)
+{
+  return grub_realloc (ptr, size);
+}
+
+static inline void
+abort (void)
+{
+  grub_abort ();
+}
+
+#define MB_CUR_MAX 6
+
+#endif

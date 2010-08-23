@@ -1,5 +1,175 @@
 2010-08-23  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	New Automake based build system for GRUB.
+
+	* ABOUT-NLS: New file.
+	* Makefile.am: New file. GRUB host utils' rules that doesn't fit
+	in Makefile.util.def file.
+	* Makefile.util.def: New file.  Autogen build definitions file for
+	GRUB host utils.
+	* conf/Makefile.common: New file.  Common variables for GRUB host
+	utils and target modules.
+	* conf/Makefile.extra-dist: New file.  Extra files for make dist.
+	* docs/Makefile.am: New file.  Automake file for docs.
+	* gentpl.py: New file.  Python script to generate Autogen
+	template.
+	* grub-core/Makefile.am: New file.  GRUB target modules' rules
+	that doesn't fit in Makefile.core.def file.
+	* grub-core/Makefile.core.def: New file.  Autogen build
+	definitions file for GRUB target modules.
+	* grub-core/lib/setjmp.S: New file.  Wrapper for target_cpu
+	specific setjmp.S file.
+	* po/Makefile.am: New file.
+
+	* .bzrignore: New ignores.
+	* INSTALL: New requirements, without Ruby.
+	* acinclude.m4: Use TARGET_IMG_BASE_LDOPT variable instead.
+	* autogen.sh: Updated to invoke autogen as necessary.
+	* configure.ac: Separate *FLAGS with HOST_ and TARGET_ prefixes,
+	and defines for Automake conditionals.
+	* geninit.sh: Refactoring.
+
+	* include/grub/dl.h: Allow build rules to define GRUB_MOD_* if
+	necessary.
+	* include/grub/emu/getroot.h (grub_make_system_path_relative_to_its_root):
+	New prototype.
+
+	* include/grub/test.h: Fix functional test modules' naming.
+	* grub-core/tests/example_functional_test.c: Fix test module name.
+
+	* util/misc.c: Hosted versions' of grub functions for libgrub.a
+	* tests/lib/unit_test.c: Remove hosted versions of grub functions.
+	* util/grub-editenv.c: Likewise.
+	* util/grub-fstest.c: Likewise.
+	* util/grub-mkdevicemap.c: Likewise.
+	* util/grub-mkfont.c: Likewise.
+	* util/grub-mkimage.c: Likewise.
+	* util/grub-mkpasswd-pbkdf2.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/grub-script-check.c: Likewise.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/sparc64/ieee1275/grub-setup.c: Likewise.
+
+	* tests/util/grub-shell.in: Fix override directory path.
+	* util/grub-mkrescue.in: Replace @pkglib_DATA@ with files.
+	* util/import_gcry.py: Create Makefile.gcry.def file instead.
+
+	* util/lvm.c: Update #includes.
+	* util/raid.c: Likewise.
+	* util/resolve.c: Likewise.
+	* grub-core/bus/emu/pci.c: Likewise.
+	* grub-core/lib/posix_wrap/stdlib.h: Likewise.
+	* grub-core/lib/posix_wrap/string.h: Likewise.
+	* grub-core/kern/emu/main.c: Likewise.
+
+	* grub-core/gensymlist.sh: New file.  Script for generating kernel
+	symbols file.
+	* grub-core/genmoddep.awk: Support new kernel_syms.lst format.
+
+	* grub-core/gentrigtables.c: Fix unused variable warnings.
+
+	* Makefile.in: Removed.
+	* conf/any-emu.rmk: Removed.
+	* conf/common.rmk: Removed.
+	* conf/i386-coreboot.rmk: Removed.
+	* conf/i386-efi.rmk: Removed.
+	* conf/i386-ieee1275.rmk: Removed.
+	* conf/i386-multiboot.rmk: Removed.
+	* conf/i386-pc.rmk: Removed.
+	* conf/i386-qemu.rmk: Removed.
+	* conf/i386.rmk: Removed.
+	* conf/mips-yeeloong.rmk: Removed.
+	* conf/mips.rmk: Removed.
+	* conf/powerpc-ieee1275.rmk: Removed.
+	* conf/sparc64-ieee1275.rmk: Removed.
+	* conf/tests.rmk: Removed.
+	* conf/x86-efi.rmk: Removed.
+	* conf/x86_64-efi.rmk: Removed.
+	* gendistlist.sh: Removed.
+	* geninitheader.sh: Removed.
+	* genkernsyms.sh.in: Removed.
+	* genmk.rb: Removed.
+	* gensymlist.sh.in: Removed.
+	* mkinstalldirs: Removed.
+	* boot: Moved ...
+	* grub-core/boot: ... to here.
+	* bus: Moved ...
+	* grub-core/bus: ... to here.
+	* commands: Moved ...
+	* grub-core/commands: ... to here.
+	* disk: Moved ...
+	* grub-core/disk: ... to here.
+	* efiemu: Moved ...
+	* grub-core/efiemu: ... to here.
+	* font: Moved ...
+	* grub-core/font: ... to here.
+	* fs: Moved ...
+	* grub-core/fs: ... to here.
+	* gencmdlist.sh: Moved ...
+	* grub-core/gencmdlist.sh: ... to here.
+	* genemuinit.sh: Moved ...
+	* grub-core/genemuinit.sh: ... to here.
+	* genemuinitheader.sh: Moved ...
+	* grub-core/genemuinitheader.sh: ... to here.
+	* genfslist.sh: Moved ...
+	* grub-core/genfslist.sh: ... to here.
+	* genhandlerlist.sh: Moved ...
+	* grub-core/genhandlerlist.sh: ... to here.
+	* genmoddep.awk: Moved ...
+	* grub-core/genmoddep.awk: ... to here.
+	* genmodsrc.sh: Moved ...
+	* grub-core/genmodsrc.sh: ... to here.
+	* genpartmaplist.sh: Moved ...
+	* grub-core/genpartmaplist.sh: ... to here.
+	* genparttoollist.sh: Moved ...
+	* grub-core/genparttoollist.sh: ... to here.
+	* genterminallist.sh: Moved ...
+	* grub-core/genterminallist.sh: ... to here.
+	* gentrigtables.c: Moved ...
+	* grub-core/gentrigtables.c: ... to here.
+	* genvideolist.sh: Moved ...
+	* grub-core/genvideolist.sh: ... to here.
+	* gettext: Moved ...
+	* grub-core/gettext: ... to here.
+	* gfxmenu: Moved ...
+	* grub-core/gfxmenu: ... to here.
+	* gnulib: Moved ...
+	* grub-core/gnulib: ... to here.
+	* hello: Moved ...
+	* grub-core/hello: ... to here.
+	* hook: Moved ...
+	* grub-core/hook: ... to here.
+	* io: Moved ...
+	* grub-core/io: ... to here.
+	* kern: Moved ...
+	* grub-core/kern: ... to here.
+	* lib: Moved ...
+	* grub-core/lib: ... to here.
+	* loader: Moved ...
+	* grub-core/loader: ... to here.
+	* mmap: Moved ...
+	* grub-core/mmap: ... to here.
+	* normal: Moved ...
+	* grub-core/normal: ... to here.
+	* partmap: Moved ...
+	* grub-core/partmap: ... to here.
+	* parttool: Moved ...
+	* grub-core/parttool: ... to here.
+	* script: Moved ...
+	* grub-core/script: ... to here.
+	* term: Moved ...
+	* grub-core/term: ... to here
+	* tests/example_functional_test.c: Moved ...
+	* grub-core/tests/example_functional_test.c: ... to here.
+	* tests/lib/functional_test.c: Moved ...
+	* grub-core/tests/lib/functional_test.c: ... to here.
+	* tests/lib/test.c: Moved ...
+	* grub-core/tests/lib/test.c: ... to here.
+	* video: Moved ...
+	* grub-core/video: ... to here.
+
+2010-08-23  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	Replace --enable-grub-emu-modules with grub-emu-lite.
 
 	* kern/emu/cache.S: New file.  Wrapper for $target_cpu specific
