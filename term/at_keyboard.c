@@ -475,14 +475,15 @@ grub_keyboard_getkey (void)
   return key;
 }
 
-/* If there is a character pending, return it; otherwise return -1.  */
+/* If there is a character pending, return it;
+   otherwise return GRUB_TERM_NO_KEY.  */
 static int
 grub_at_keyboard_getkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   int code;
   code = grub_keyboard_getkey ();
   if (code == -1)
-    return -1;
+    return GRUB_TERM_NO_KEY;
 #ifdef DEBUG_AT_KEYBOARD
   grub_dprintf ("atkeyb", "Detected key 0x%x\n", key);
 #endif
@@ -496,7 +497,7 @@ grub_at_keyboard_getkey (struct grub_term_input *term __attribute__ ((unused)))
 #ifdef DEBUG_AT_KEYBOARD
 	grub_dprintf ("atkeyb", "caps_lock = %d\n", !!(at_keyboard_status & KEYBOARD_STATUS_CAPS_LOCK));
 #endif
-	return -1;
+	return GRUB_TERM_NO_KEY;
       case GRUB_KEYBOARD_KEY_NUM_LOCK:
 	at_keyboard_status ^= GRUB_TERM_STATUS_NUM;
 	led_status ^= KEYBOARD_LED_NUM;
@@ -505,12 +506,12 @@ grub_at_keyboard_getkey (struct grub_term_input *term __attribute__ ((unused)))
 #ifdef DEBUG_AT_KEYBOARD
 	grub_dprintf ("atkeyb", "num_lock = %d\n", !!(at_keyboard_status & KEYBOARD_STATUS_NUM_LOCK));
 #endif
-	return -1;
+	return GRUB_TERM_NO_KEY;
       case GRUB_KEYBOARD_KEY_SCROLL_LOCK:
 	at_keyboard_status ^= GRUB_TERM_STATUS_SCROLL;
 	led_status ^= KEYBOARD_LED_SCROLL;
 	keyboard_controller_led (led_status);
-	return -1;
+	return GRUB_TERM_NO_KEY;
       default:
 	return grub_term_map_key (code, at_keyboard_status);
     }

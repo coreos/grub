@@ -19,6 +19,8 @@
 #ifndef GRUB_TERM_HEADER
 #define GRUB_TERM_HEADER	1
 
+#define GRUB_TERM_NO_KEY        -1
+
 /* Internal codes used by GRUB to represent terminal input.  */
 /* Only for keys otherwise not having shifted modification.  */
 #define GRUB_TERM_SHIFT         0x01000000

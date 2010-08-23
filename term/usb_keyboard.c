@@ -279,7 +279,7 @@ grub_usb_keyboard_getkey (struct grub_term_input *term)
   grub_size_t actual;
 
   if (termdata->dead)
-    return -1;
+    return GRUB_TERM_NO_KEY;
 
   /* Poll interrupt pipe.  */
   err = grub_usb_check_transfer (termdata->transfer, &actual);
@@ -293,7 +293,7 @@ grub_usb_keyboard_getkey (struct grub_term_input *term)
 	    + GRUB_TERM_REPEAT_INTERVAL;
 	  return termdata->last_key;
 	}
-      return -1;
+      return GRUB_TERM_NO_KEY;
     }
 
   grub_memcpy (data, termdata->report, sizeof (data));
@@ -318,29 +318,29 @@ grub_usb_keyboard_getkey (struct grub_term_input *term)
 		data[4], data[5], data[6], data[7]);
 
   if (err || actual < 1)
-    return -1;
+    return GRUB_TERM_NO_KEY;
 
   termdata->status = data[0];
 
   if (actual < 3)
-    return -1;
+    return GRUB_TERM_NO_KEY;
 
   if (data[2] == KEY_NO_KEY || data[2] == KEY_ERR_BUFFER
       || data[2] == KEY_ERR_POST || data[2] == KEY_ERR_UNDEF)
-    return -1;
+    return GRUB_TERM_NO_KEY;
 
   if (data[2] == KEY_CAPS_LOCK)
     {
       termdata->mods ^= GRUB_TERM_STATUS_CAPS;
       send_leds (termdata);
-      return -1;
+      return GRUB_TERM_NO_KEY;
     }
 
   if (data[2] == KEY_NUM_LOCK)
     {
       termdata->mods ^= GRUB_TERM_STATUS_NUM;
       send_leds (termdata);
-      return -1;
+      return GRUB_TERM_NO_KEY;
     }
 
   termdata->last_key = grub_term_map_key (data[2], interpret_status (data[0])

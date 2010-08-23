@@ -120,14 +120,14 @@ grub_console_getkey (struct grub_term_input *term __attribute__ ((unused)))
   status = efi_call_2 (i->read_key_stroke, i, &key);
 
   if (status != GRUB_EFI_SUCCESS)
-    return -1;
+    return GRUB_TERM_NO_KEY;
 
   if (key.scan_code == 0)
     return key.unicode_char;
   else if (key.scan_code < ARRAY_SIZE (efi_codes))
     return efi_codes[key.scan_code];
 
-  return -1;
+  return GRUB_TERM_NO_KEY;
 }
 
 static grub_uint16_t

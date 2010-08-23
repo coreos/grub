@@ -490,7 +490,7 @@ grub_terminfo_getkey (struct grub_term_input *termi)
       return data->input_buf[0];
     }
 
-  return -1;
+  return GRUB_TERM_NO_KEY;
 }
 
 grub_err_t
