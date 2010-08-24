@@ -88,7 +88,7 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
   /* Load every loadable segment in memory.  */
   for (i = 0; i < ehdr->e_phnum; i++)
     {
-      if (phdr(i)->p_type == PT_LOAD && phdr(i)->p_filesz != 0)
+      if (phdr(i)->p_type == PT_LOAD)
         {
 	  grub_err_t err;
 	  void *source;
@@ -109,15 +109,18 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
 	    source = get_virtual_current_address (ch);
 	  }
 
-	  if (grub_file_seek (file, (grub_off_t) phdr(i)->p_offset)
-	      == (grub_off_t) -1)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "invalid offset in program header");
+	  if (phdr(i)->p_filesz != 0)
+	    {
+	      if (grub_file_seek (file, (grub_off_t) phdr(i)->p_offset)
+		  == (grub_off_t) -1)
+		return grub_error (GRUB_ERR_BAD_OS,
+				   "invalid offset in program header");
 
-          if (grub_file_read (file, source, phdr(i)->p_filesz)
-              != (grub_ssize_t) phdr(i)->p_filesz)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "couldn't read segment from file");
+	      if (grub_file_read (file, source, phdr(i)->p_filesz)
+		  != (grub_ssize_t) phdr(i)->p_filesz)
+		return grub_error (GRUB_ERR_BAD_OS,
+				   "couldn't read segment from file");
+	    }
 
           if (phdr(i)->p_filesz < phdr(i)->p_memsz)
             grub_memset ((grub_uint8_t *) source + phdr(i)->p_filesz, 0,
