@@ -16,48 +16,21 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/symbol.h>
-#include <grub/i386/memory.h>
-
-#ifdef __x86_64__
-#define RAX %rax
-#define RSI %rsi
-#else
-#define RAX %eax
-#define RSI %esi
-#endif
-
 /* The code segment of the protected mode.  */
 #define CODE_SEGMENT	0x10
 
 /* The data segment of the protected mode.  */
 #define DATA_SEGMENT	0x18
 
+#include "relocator_common.S"
+
 	.p2align	4	/* force 16-byte alignment */
 
 VARIABLE(grub_relocator32_start)
-LOCAL(base):
-	/* %rax contains now our new 'base'.  */
-	mov	RAX, RSI
-	add	$(LOCAL(cont0) - LOCAL(base)), RAX
-	jmp	*RAX
-LOCAL(cont0):
-	lea	(LOCAL(cont1) - LOCAL(base)) (RSI, 1), RAX
-	movl	%eax, (LOCAL(jump_vector) - LOCAL(base)) (RSI, 1)
+	PREAMBLE
 
-	lea	(LOCAL(gdt) - LOCAL(base)) (RSI, 1), RAX
-	mov	RAX, (LOCAL(gdt_addr) - LOCAL(base)) (RSI, 1)
-
-	/* Switch to compatibility mode. */
-
-	lgdt	(LOCAL(gdtdesc) - LOCAL(base)) (RSI, 1)
-
-	/* Update %cs.  */
-	ljmp	*(LOCAL(jump_vector) - LOCAL(base)) (RSI, 1)
-
-LOCAL(cont1):
+	RELOAD_GDT
 	.code32
-
 	/* Update other registers. */
 	movl	$DATA_SEGMENT, %eax
 	movl	%eax, %ds
@@ -66,16 +39,15 @@ LOCAL(cont1):
 	movl	%eax, %gs
 	movl	%eax, %ss
 
-	/* Disable paging. */
-	movl	%cr0, %eax
-	andl	$(~GRUB_MEMORY_CPU_CR0_PAGING_ON), %eax
-	movl	%eax, %cr0
+	DISABLE_PAGING
 
+#ifdef __x86_64__
 	/* Disable amd64. */
 	movl	$GRUB_MEMORY_CPU_AMD64_MSR, %ecx
 	rdmsr
 	andl	$(~GRUB_MEMORY_CPU_AMD64_MSR_ON), %eax
 	wrmsr
+#endif
 
 	/* Turn off PAE. */
 	movl	%cr4, %eax
@@ -143,23 +115,6 @@ LOCAL(gdt):
 
 	/* Data segment.  */
 	.byte 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x92, 0xCF, 0x00
-
-	.p2align	4
-LOCAL(gdtdesc):
-	.word	0x27
-LOCAL(gdt_addr):
-#ifdef __x86_64__
-	/* Filled by the code. */
-	.quad	0
-#else
-	/* Filled by the code. */
-	.long	0
-#endif
-
-	.p2align	4
-LOCAL(jump_vector):
-	/* Jump location. Is filled by the code */
-	.long	0
-	.long	CODE_SEGMENT
+LOCAL(gdt_end):
 
 VARIABLE(grub_relocator32_end)

@@ -16,44 +16,20 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/symbol.h>
-#include <grub/i386/memory.h>
-
-#ifdef __x86_64__
-#define RAX %rax
-#define RSI %rsi
-#else
-#define RAX %eax
-#define RSI %esi
-#endif
-
 #define CODE32_SEGMENT	0x18
-#define CODE64_SEGMENT	0x08
+#define CODE_SEGMENT	0x08
 
 /* The data segment of the protected mode.  */
 #define DATA_SEGMENT	0x10
 
+#include "relocator_common.S"
+
 	.p2align	4	/* force 16-byte alignment */
 
 VARIABLE(grub_relocator64_start)
-LOCAL(base):
-	/* %rax contains now our new 'base'.  */
-	mov	RAX, RSI
-
-	add	$(LOCAL(cont0) - LOCAL(base)), RAX
-	jmp	*RAX
-LOCAL(cont0):
+	PREAMBLE
 #ifndef __x86_64__
-	lea	(LOCAL(cont1) - LOCAL(base)) (RSI, 1), RAX
-	mov	RAX, (LOCAL(jump_vector) - LOCAL(base)) (RSI, 1)
-
-	lea	(LOCAL(gdt) - LOCAL(base)) (RSI, 1), RAX
-	mov	RAX, (LOCAL(gdt_addr) - LOCAL(base)) (RSI, 1)
-
-	/* Disable paging. */
-	movl	%cr0, %eax
-	andl	$(~GRUB_MEMORY_CPU_CR0_PAGING_ON), %eax
-	movl	%eax, %cr0
+	DISABLE_PAGING
 
 	/* Turn on PAE. */
 	movl	%cr4, %eax
@@ -77,11 +53,7 @@ VARIABLE(grub_relocator64_cr3)
 	orl	$GRUB_MEMORY_CPU_CR0_PAGING_ON, %eax
 	movl	%eax, %cr0
 
-	/* Load GDT. */
-	lgdt	(LOCAL(gdtdesc) - LOCAL(base)) (RSI, 1)
-
-	/* Update %cs.  */
-	ljmp	*(LOCAL(jump_vector) - LOCAL(base)) (RSI, 1)
+	RELOAD_GDT
 #else
 	/* mov imm64, %rax */
 	.byte 	0x48
@@ -91,7 +63,6 @@ VARIABLE(grub_relocator64_cr3)
 	movq	%rax, %cr3
 #endif
 
-LOCAL(cont1):
 	.code64
 
 	/* mov imm64, %rax */
@@ -183,18 +154,7 @@ LOCAL(gdt):
 	       | (1 << 7) /* 4K granular.  */)
 	.byte 0x00 /* Base 00xxxxxx.  */
 
-	.p2align	4
-LOCAL(gdtdesc):
-	.word	0x20
-LOCAL(gdt_addr):
-	/* Filled by the code. */
-	.long	0
-
-	.p2align	4
-LOCAL(jump_vector):
-	/* Jump location. Is filled by the code */
-	.long	0
-	.long	CODE64_SEGMENT
+LOCAL(gdt_end):
 #endif
 
 VARIABLE(grub_relocator64_end)
