@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <limits.h>
 
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/deviceiter.h>
 #include <grub/env.h>
@@ -38,24 +39,6 @@
 #include <getopt.h>
 
 #include "progname.h"
-
-void
-grub_putchar (int c)
-{
-  putchar (c);
-}
-
-int
-grub_getkey (void)
-{
-  return -1;
-}
-
-void
-grub_refresh (void)
-{
-  fflush (stdout);
-}
 
 static void
 make_device_map (const char *device_map, int floppy_disks)

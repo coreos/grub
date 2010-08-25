@@ -50,6 +50,7 @@ no_floppy=
 force_lba=
 recheck=no
 debug=no
+debug_image=
 
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
     disk_module=biosdisk
@@ -180,6 +181,11 @@ do
     # This is an undocumented feature...
     --debug)
 	debug=yes ;;
+    --debug-image)
+	debug_image=`argument $option "$@"`; shift;;
+    --debug-image=*)
+	debug_image=`echo "$option" | sed 's/--debug-image=//'` ;;
+
     -f | --force)
         setup_force="--force" ;;
 
@@ -349,6 +355,13 @@ fi
 prefix_drive=
 config_opt=
 
+rm -f ${grubdir}/load.cfg
+
+if [ "x${debug_image}" != x ]; then
+    echo "set debug='${debug_image}'" >> ${grubdir}/load.cfg
+    config_opt="-c ${grubdir}/load.cfg "
+fi
+
 if [ "x${devabstraction_module}" = "x" ] ; then
     if [ x"${install_device}" != x ]; then
       if echo "${install_device}" | grep -qx "(.*)" ; then
@@ -369,7 +382,7 @@ if [ "x${devabstraction_module}" = "x" ] ; then
           echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
           exit 1
         fi
-        echo "search.fs_uuid ${uuid} root " > ${grubdir}/load.cfg
+        echo "search.fs_uuid ${uuid} root " >> ${grubdir}/load.cfg
 	echo 'set prefix=($root)'"${relative_grubdir}" >> ${grubdir}/load.cfg
 	config_opt="-c ${grubdir}/load.cfg "
         modules="$modules search_fs_uuid"
@@ -379,7 +392,7 @@ if [ "x${devabstraction_module}" = "x" ] ; then
           echo "You attempted a cross-disk install, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
           exit 1
         fi
-        echo "search.fs_uuid ${uuid} root " > ${grubdir}/load.cfg
+        echo "search.fs_uuid ${uuid} root " >> ${grubdir}/load.cfg
 	echo 'set prefix=($root)'"${relative_grubdir}" >> ${grubdir}/load.cfg
 	config_opt="-c ${grubdir}/load.cfg "
         modules="$modules search_fs_uuid"

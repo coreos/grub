@@ -48,7 +48,7 @@ struct grub_partition
   /* The partition number.  */
   int number;
 
-  /* The start sector.  */
+  /* The start sector (relative to parent).  */
   grub_disk_addr_t start;
 
   /* The length in sector units.  */
@@ -60,7 +60,7 @@ struct grub_partition
   /* The index of this partition in the partition table.  */
   int index;
 
-  /* Parent partition map.  */
+  /* Parent partition (physically contains this partition).  */
   struct grub_partition *parent;
 
   /* The type partition map.  */

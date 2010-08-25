@@ -1,7 +1,8 @@
-#! /bin/sh -e
+#! /bin/sh
+set -e
 
 # Make GRUB rescue image
-# Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+# Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,7 +29,7 @@ PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
 native_platform=@platform@
-pkglib_DATA="@pkglib_DATA@"
+pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 
 self=`basename $0`
 
@@ -199,19 +200,18 @@ make_image ()
     memdisk_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
     mkdir -p ${memdisk_dir}/boot/grub
 
-    modules="$(cat ${source_directory}/partmap.lst) ${modules}"
     cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
 search --fs-uuid --set ${iso_uuid}
 set prefix=(\${root})/boot/grub/${platform}
 source \$prefix/grub.cfg
 EOF
-    (for i in ${modules} ; do
+    (for i in $(cat ${source_directory}/partmap.lst) ${modules} ; do
         echo "insmod $i"
     done ; \
     echo "source /boot/grub/grub.cfg") \
     > ${iso9660_dir}/boot/grub/${platform}/grub.cfg
 
-    tar -C ${memdisk_dir} -cf ${memdisk_img} boot
+    (cd "${memdisk_dir}"; tar -cf - boot) > "${memdisk_img}"
     rm -rf ${memdisk_dir}
     $grub_mkimage -O ${platform} -d "${source_directory}" -m "${memdisk_img}" -o "$3" --prefix='(memdisk)/boot/grub' \
         search iso9660 configfile normal memdisk tar $4
@@ -272,8 +272,7 @@ if test -e "${pc_dir}" ; then
 
     rm -f ${core_img}
 
-    modules="$(cat ${pc_dir}/partmap.lst) ${modules}"
-    (for i in ${modules} ; do
+    (for i in $(cat ${pc_dir}/partmap.lst) ${modules} ; do
         echo "insmod $i"
     done ; \
     echo "source /boot/grub/grub.cfg") \
@@ -297,6 +296,7 @@ if test -e "${efi64_dir}" || test -e "${efi32_dir}"; then
 
     mformat -C -f 2880 -L 16 -i "${iso9660_dir}"/efi.img ::
     mcopy -s -i "${iso9660_dir}"/efi.img ${efi_dir}/efi ::/
+    rm -rf ${efi_dir}
     grub_mkisofs_arguments="${grub_mkisofs_arguments} --efi-boot efi.img"
 fi
 

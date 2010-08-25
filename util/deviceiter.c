@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <dirent.h>
 
 #include <grub/util/misc.h>
 #include <grub/util/deviceiter.h>
@@ -345,17 +346,36 @@ get_xvd_disk_name (char *name, int unit)
 }
 #endif
 
-/* Check if DEVICE can be read. If an error occurs, return zero,
-   otherwise return non-zero.  */
-static int
-check_device (const char *device)
+static struct seen_device
 {
+  struct seen_device *next;
+  const char *name;
+} *seen;
+
+/* Check if DEVICE can be read.  Skip any DEVICE that we have already seen.
+   If an error occurs, return zero, otherwise return non-zero.  */
+static int
+check_device_readable_unique (const char *device)
+{
+  char *real_device;
   char buf[512];
   FILE *fp;
+  struct seen_device *seen_elt;
 
   /* If DEVICE is empty, just return error.  */
   if (*device == 0)
     return 0;
+
+  /* Have we seen this device already?  */
+  real_device = canonicalize_file_name (device);
+  if (! real_device)
+    return 0;
+  if (grub_named_list_find (GRUB_AS_NAMED_LIST (seen), real_device))
+    {
+      grub_dprintf ("deviceiter", "Already seen %s (%s)\n",
+		    device, real_device);
+      goto fail;
+    }
 
   fp = fopen (device, "r");
   if (! fp)
@@ -379,7 +399,7 @@ check_device (const char *device)
 	  break;
 	}
       /* Error opening the device.  */
-      return 0;
+      goto fail;
     }
 
   /* Make sure CD-ROMs don't get assigned a BIOS disk number
@@ -387,7 +407,7 @@ check_device (const char *device)
 #ifdef __linux__
 # ifdef CDROM_GET_CAPABILITY
   if (ioctl (fileno (fp), CDROM_GET_CAPABILITY, 0) >= 0)
-    return 0;
+    goto fail;
 # else /* ! CDROM_GET_CAPABILITY */
   /* Check if DEVICE is a CD-ROM drive by the HDIO_GETGEO ioctl.  */
   {
@@ -395,14 +415,14 @@ check_device (const char *device)
     struct stat st;
 
     if (fstat (fileno (fp), &st))
-      return 0;
+      goto fail;
 
     /* If it is a block device and isn't a floppy, check if HDIO_GETGEO
        succeeds.  */
     if (S_ISBLK (st.st_mode)
 	&& MAJOR (st.st_rdev) != FLOPPY_MAJOR
 	&& ioctl (fileno (fp), HDIO_GETGEO, &hdg))
-      return 0;
+      goto fail;
   }
 # endif /* ! CDROM_GET_CAPABILITY */
 #endif /* __linux__ */
@@ -410,7 +430,7 @@ check_device (const char *device)
 #if defined(__FreeBSD_kernel__) || defined(__NetBSD__) || defined(__OpenBSD__)
 # ifdef CDIOCCLRDEBUG
   if (ioctl (fileno (fp), CDIOCCLRDEBUG, 0) >= 0)
-    return 0;
+    goto fail;
 # endif /* CDIOCCLRDEBUG */
 #endif /* __FreeBSD_kernel__ || __NetBSD__ || __OpenBSD__ */
 
@@ -418,21 +438,60 @@ check_device (const char *device)
   if (fread (buf, 1, 512, fp) != 512)
     {
       fclose (fp);
-      return 0;
+      goto fail;
     }
+
+  /* Remember that we've seen this device.  */
+  seen_elt = xmalloc (sizeof (*seen_elt));
+  seen_elt->name = real_device; /* steal memory */
+  grub_list_push (GRUB_AS_LIST_P (&seen), GRUB_AS_LIST (seen_elt));
 
   fclose (fp);
   return 1;
+
+fail:
+  free (real_device);
+  return 0;
+}
+
+static void
+clear_seen_devices (void)
+{
+  while (seen)
+    {
+      struct seen_device *seen_elt = seen;
+      seen = seen->next;
+      free (seen_elt);
+    }
+  seen = NULL;
 }
 
 #ifdef __linux__
-# ifdef HAVE_DEVICE_MAPPER
-struct dmraid_seen
+struct device
 {
-  struct dmraid_seen *next;
-  const char *name;
+	char *stable;
+	char *kernel;
 };
-# endif /* HAVE_DEVICE_MAPPER */
+
+/* Sort by the kernel name for preference since that most closely matches
+   older device.map files, but sort by stable by-id names as a fallback.
+   This is because /dev/disk/by-id/ usually has a few alternative
+   identifications of devices (e.g. ATA vs. SATA).
+   check_device_readable_unique will ensure that we only get one for any
+   given disk, but sort the list so that the choice of which one we get is
+   stable.  */
+static int
+compare_devices (const void *a, const void *b)
+{
+  const struct device *left = (const struct device *) a;
+  const struct device *right = (const struct device *) b;
+  int ret;
+  ret = strcmp (left->kernel, right->kernel);
+  if (ret)
+    return ret;
+  else
+    return strcmp (left->stable, right->stable);
+}
 #endif /* __linux__ */
 
 void
@@ -440,6 +499,8 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 			   int floppy_disks)
 {
   int i;
+
+  clear_seen_devices ();
 
   /* Floppies.  */
   for (i = 0; i < floppy_disks; i++)
@@ -450,13 +511,69 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
       get_floppy_disk_name (name, i);
       if (stat (name, &st) < 0)
 	break;
-      /* In floppies, write the map, whether check_device succeeds
-	 or not, because the user just may not insert floppies.  */
+      /* In floppies, write the map, whether check_device_readable_unique
+         succeeds or not, because the user just may not insert floppies.  */
       if (hook (name, 1))
-	return;
+	goto out;
     }
 
 #ifdef __linux__
+  {
+    DIR *dir = opendir ("/dev/disk/by-id");
+
+    if (dir)
+      {
+	struct dirent *entry;
+	struct device *devs;
+	size_t devs_len = 0, devs_max = 1024, i;
+
+	devs = xmalloc (devs_max * sizeof (*devs));
+
+	/* Dump all the directory entries into names, resizing if
+	   necessary.  */
+	for (entry = readdir (dir); entry; entry = readdir (dir))
+	  {
+	    /* Skip partition entries.  */
+	    if (strstr (entry->d_name, "-part"))
+	      continue;
+	    /* Skip device-mapper entries; we'll handle the ones we want
+	       later.  */
+	    if (strncmp (entry->d_name, "dm-", sizeof ("dm-") - 1) == 0)
+	      continue;
+	    /* Skip RAID entries; they are handled by upper layers.  */
+	    if (strncmp (entry->d_name, "md-", sizeof ("md-") - 1) == 0)
+	      continue;
+	    if (devs_len >= devs_max)
+	      {
+		devs_max *= 2;
+		devs = xrealloc (devs, devs_max * sizeof (*devs));
+	      }
+	    devs[devs_len].stable =
+	      xasprintf ("/dev/disk/by-id/%s", entry->d_name);
+	    devs[devs_len].kernel =
+	      canonicalize_file_name (devs[devs_len].stable);
+	    devs_len++;
+	  }
+
+	qsort (devs, devs_len, sizeof (*devs), &compare_devices);
+
+	closedir (dir);
+
+	/* Now add all the devices in sorted order.  */
+	for (i = 0; i < devs_len; ++i)
+	  {
+	    if (check_device_readable_unique (devs[i].stable))
+	      {
+		if (hook (devs[i].stable, 0))
+		  goto out;
+	      }
+	    free (devs[i].stable);
+	    free (devs[i].kernel);
+	  }
+	free (devs);
+      }
+  }
+
   if (have_devfs ())
     {
       i = 0;
@@ -476,10 +593,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	    {
 	      strcat (name, "/disc");
 	      if (hook (name, 0))
-		return;
+		goto out;
 	    }
 	}
-      return;
+      goto out;
     }
 #endif /* __linux__ */
 
@@ -489,10 +606,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
       char name[16];
 
       get_ide_disk_name (name, i);
-      if (check_device (name))
+      if (check_device_readable_unique (name))
 	{
 	  if (hook (name, 0))
-	    return;
+	    goto out;
 	}
     }
 
@@ -503,10 +620,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
       char name[16];
 
       get_virtio_disk_name (name, i);
-      if (check_device (name))
+      if (check_device_readable_unique (name))
 	{
 	  if (hook (name, 0))
-	    return;
+	    goto out;
 	}
     }
 
@@ -516,10 +633,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
       char name[20];
 
       get_ataraid_disk_name (name, i);
-      if (check_device (name))
+      if (check_device_readable_unique (name))
 	{
 	  if (hook (name, 0))
-	    return;
+	    goto out;
         }
     }
 
@@ -529,10 +646,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
       char name[16];
 
       get_xvd_disk_name (name, i);
-      if (check_device (name))
+      if (check_device_readable_unique (name))
 	{
 	  if (hook (name, 0))
-	    return;
+	    goto out;
 	}
     }
 #endif /* __linux__ */
@@ -543,10 +660,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
       char name[16];
 
       get_scsi_disk_name (name, i);
-      if (check_device (name))
+      if (check_device_readable_unique (name))
 	{
 	  if (hook (name, 0))
-	    return;
+	    goto out;
 	}
     }
 
@@ -566,10 +683,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	    char name[24];
 
 	    get_dac960_disk_name (name, controller, drive);
-	    if (check_device (name))
+	    if (check_device_readable_unique (name))
 	      {
 		if (hook (name, 0))
-		  return;
+		  goto out;
 	      }
 	  }
       }
@@ -587,10 +704,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	    char name[24];
 
 	    get_acceleraid_disk_name (name, controller, drive);
-	    if (check_device (name))
+	    if (check_device_readable_unique (name))
 	      {
 		if (hook (name, 0))
-		  return;
+		  goto out;
 	      }
 	  }
       }
@@ -608,10 +725,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	    char name[24];
 
 	    get_cciss_disk_name (name, controller, drive);
-	    if (check_device (name))
+	    if (check_device_readable_unique (name))
 	      {
 		if (hook (name, 0))
-		  return;
+		  goto out;
 	      }
 	  }
       }
@@ -629,10 +746,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	    char name[24];
 
 	    get_ida_disk_name (name, controller, drive);
-	    if (check_device (name))
+	    if (check_device_readable_unique (name))
 	      {
 		if (hook (name, 0))
-		  return;
+		  goto out;
 	      }
 	  }
       }
@@ -647,10 +764,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	char name[24];
 
 	get_i2o_disk_name (name, unit);
-	if (check_device (name))
+	if (check_device_readable_unique (name))
 	  {
 	    if (hook (name, 0))
-	      return;
+	      goto out;
 	  }
       }
   }
@@ -661,10 +778,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
       char name[16];
 
       get_mmc_disk_name (name, i);
-      if (check_device (name))
+      if (check_device_readable_unique (name))
 	{
 	  if (hook (name, 0))
-	    return;
+	    goto out;
 	}
     }
 
@@ -685,7 +802,6 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
       unsigned int next = 0;
       void *top_handle, *second_handle;
       struct dm_tree_node *root, *top, *second;
-      struct dmraid_seen *seen = NULL;
 
       /* Build DM tree for all devices.  */
       tree = dm_tree_create ();
@@ -721,7 +837,6 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	    {
 	      const char *node_name, *node_uuid;
 	      char *name;
-	      struct dmraid_seen *seen_elt;
 
 	      node_name = dm_tree_node_get_name (second);
 	      dmraid_check (node_name, "dm_tree_node_get_name failed\n");
@@ -733,39 +848,20 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 		  goto dmraid_next_child;
 		}
 
-	      /* Have we already seen this node?  There are typically very few
-		 DM-RAID disks, so a list should be fast enough.  */
-	      if (grub_named_list_find (GRUB_AS_NAMED_LIST (seen), node_name))
-		{
-		  grub_dprintf ("deviceiter", "Already seen DM device %s\n",
-				node_name);
-		  goto dmraid_next_child;
-		}
-
 	      name = xasprintf ("/dev/mapper/%s", node_name);
-	      if (check_device (name))
+	      if (check_device_readable_unique (name))
 		{
 		  if (hook (name, 0))
 		    {
 		      free (name);
-		      while (seen)
-			{
-			  struct dmraid_seen *seen_elt = seen;
-			  seen = seen->next;
-			  free (seen_elt);
-			}
 		      if (task)
 			dm_task_destroy (task);
 		      if (tree)
 			dm_tree_free (tree);
-		      return;
+		      goto out;
 		    }
 		}
 	      free (name);
-
-	      seen_elt = xmalloc (sizeof *seen_elt);
-	      seen_elt->name = node_name;
-	      grub_list_push (GRUB_AS_LIST_P (&seen), GRUB_AS_LIST (seen_elt));
 
 dmraid_next_child:
 	      second = dm_tree_next_child (&second_handle, top, 1);
@@ -774,12 +870,6 @@ dmraid_next_child:
 	}
 
 dmraid_end:
-      while (seen)
-	{
-	  struct dmraid_seen *seen_elt = seen;
-	  seen = seen->next;
-	  free (seen_elt);
-	}
       if (task)
 	dm_task_destroy (task);
       if (tree)
@@ -787,5 +877,8 @@ dmraid_end:
     }
 # endif /* HAVE_DEVICE_MAPPER */
 #endif /* __linux__ */
+
+out:
+  clear_seen_devices ();
 }
 

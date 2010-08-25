@@ -19,6 +19,7 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/device.h>
 #include <grub/disk.h>
@@ -38,8 +39,6 @@
 #include <grub/emu/getroot.h>
 
 static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_PARTITION_TYPE_BIOS_BOOT;
-
-#include <grub_setup_init.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -64,24 +63,6 @@ static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_P
 #define grub_host_to_target32(x)	grub_cpu_to_le32(x)
 #define grub_host_to_target64(x)	grub_cpu_to_le64(x)
 
-void
-grub_putchar (int c)
-{
-  putchar (c);
-}
-
-int
-grub_getkey (void)
-{
-  return -1;
-}
-
-void
-grub_refresh (void)
-{
-  fflush (stdout);
-}
-
 static void
 setup (const char *dir,
        const char *boot_file, const char *core_file,
@@ -93,13 +74,15 @@ setup (const char *dir,
   grub_uint16_t core_sectors;
   grub_device_t root_dev, dest_dev;
   const char *dest_partmap;
+  int multiple_partmaps;
   grub_uint8_t *boot_drive;
   grub_disk_addr_t *kernel_sector;
   grub_uint16_t *boot_drive_check;
   struct grub_boot_blocklist *first_block, *block;
   grub_int32_t *install_dos_part, *install_bsd_part;
   grub_int32_t dos_part, bsd_part;
-  char *prefix;
+  char *install_prefix;
+  char *prefix = NULL;
   char *tmp_img;
   int i;
   grub_disk_addr_t first_sector;
@@ -231,8 +214,8 @@ setup (const char *dir,
 				       + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART);
   install_bsd_part = (grub_int32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
 				       + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART);
-  prefix = (char *) (core_img + GRUB_DISK_SECTOR_SIZE +
-		     GRUB_KERNEL_MACHINE_PREFIX);
+  install_prefix = (char *) (core_img + GRUB_DISK_SECTOR_SIZE +
+			     GRUB_KERNEL_MACHINE_PREFIX);
 
   /* Open the root device and the destination device.  */
   root_dev = grub_device_open (root);
@@ -309,15 +292,13 @@ setup (const char *dir,
  	      bsd_part = -1;
  	    }
 
-	  if (prefix[0] != '(')
+	  if (install_prefix[0] != '(')
 	    {
-	      char *root_part_name, *new_prefix;
+	      char *root_part_name;
 
 	      root_part_name =
 		grub_partition_get_name (root_dev->disk->partition);
-	      new_prefix = xasprintf ("(,%s)%s", root_part_name, prefix);
-	      strcpy (prefix, new_prefix);
-	      free (new_prefix);
+	      prefix = xasprintf ("(,%s)%s", root_part_name, install_prefix);
 	      free (root_part_name);
 	    }
 	}
@@ -354,15 +335,27 @@ setup (const char *dir,
     {
       if (p->parent)
 	return 0;
-      dest_partmap = p->partmap->name;
-      return 1;
+      if (dest_partmap == NULL)
+	dest_partmap = p->partmap->name;
+      else if (strcmp (dest_partmap, p->partmap->name) != 0)
+	{
+	  multiple_partmaps = 1;
+	  return 1;
+	}
+      return 0;
     }
   dest_partmap = 0;
+  multiple_partmaps = 0;
   grub_partition_iterate (dest_dev->disk, identify_partmap);
 
   if (! dest_partmap)
     {
       grub_util_warn (_("Attempting to install GRUB to a partitionless disk.  This is a BAD idea."));
+      goto unable_to_embed;
+    }
+  if (multiple_partmaps)
+    {
+      grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels.  This is not supported yet."));
       goto unable_to_embed;
     }
 
@@ -396,6 +389,8 @@ setup (const char *dir,
 
   *install_dos_part = grub_cpu_to_le32 (dos_part);
   *install_bsd_part = grub_cpu_to_le32 (bsd_part);
+  if (prefix)
+    strcpy (install_prefix, prefix);
 
   /* The first blocklist contains the whole sectors.  */
   first_block->start = grub_cpu_to_le64 (embed_region.start + 1);
@@ -556,6 +551,8 @@ unable_to_embed:
 
   *install_dos_part = grub_cpu_to_le32 (dos_part);
   *install_bsd_part = grub_cpu_to_le32 (bsd_part);
+  if (prefix)
+    strcpy (install_prefix, prefix);
 
   /* Write the first two sectors of the core image onto the disk.  */
   grub_util_info ("opening the core image `%s'", core_path);
@@ -575,6 +572,7 @@ unable_to_embed:
   /* Sync is a Good Thing.  */
   sync ();
 
+  free (prefix);
   free (core_path);
   free (core_img);
   free (boot_img);
@@ -793,14 +791,14 @@ main (int argc, char *argv[])
     must_embed = 1;
 
   if (root_dev[0] == 'm' && root_dev[1] == 'd'
-      && root_dev[2] >= '0' && root_dev[2] <= '9')
+      && ((root_dev[2] >= '0' && root_dev[2] <= '9') || root_dev[2] == '/'))
     {
       /* FIXME: we can avoid this on RAID1.  */
       must_embed = 1;
     }
 
   if (dest_dev[0] == 'm' && dest_dev[1] == 'd'
-      && dest_dev[2] >= '0' && dest_dev[2] <= '9')
+      && ((dest_dev[2] >= '0' && dest_dev[2] <= '9') || dest_dev[2] == '/'))
     {
       char **devicelist;
       int i;

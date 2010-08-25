@@ -19,9 +19,13 @@
 #ifndef GRUB_VGA_HEADER
 #define GRUB_VGA_HEADER	1
 
+#include <grub/pci.h>
+
 enum
   {
     GRUB_VGA_IO_ARX = 0x3c0,
+    GRUB_VGA_IO_ARX_READ = 0x3c1,
+    GRUB_VGA_IO_MISC_WRITE = 0x3c2,
     GRUB_VGA_IO_SR_INDEX = 0x3c4,
     GRUB_VGA_IO_SR_DATA = 0x3c5,
     GRUB_VGA_IO_PIXEL_MASK = 0x3c6,
@@ -39,8 +43,15 @@ enum
 
 enum
   {
-    GRUB_VGA_CR_WIDTH = 0x01,
+    GRUB_VGA_CR_HTOTAL = 0x00,
+    GRUB_VGA_CR_HORIZ_END = 0x01,
+    GRUB_VGA_CR_HBLANK_START = 0x02,    
+    GRUB_VGA_CR_HBLANK_END = 0x03,    
+    GRUB_VGA_CR_HORIZ_SYNC_PULSE_START = 0x04,
+    GRUB_VGA_CR_HORIZ_SYNC_PULSE_END = 0x05,
+    GRUB_VGA_CR_VERT_TOTAL = 0x06,
     GRUB_VGA_CR_OVERFLOW = 0x07,
+    GRUB_VGA_CR_BYTE_PANNING = 0x08,
     GRUB_VGA_CR_CELL_HEIGHT = 0x09,
     GRUB_VGA_CR_CURSOR_START = 0x0a,
     GRUB_VGA_CR_CURSOR_END = 0x0b,
@@ -48,14 +59,71 @@ enum
     GRUB_VGA_CR_START_ADDR_LOW_REGISTER = 0x0d,
     GRUB_VGA_CR_CURSOR_ADDR_HIGH = 0x0e,
     GRUB_VGA_CR_CURSOR_ADDR_LOW = 0x0f,
+    GRUB_VGA_CR_VSYNC_START = 0x10,
     GRUB_VGA_CR_VSYNC_END = 0x11,
-    GRUB_VGA_CR_HEIGHT = 0x12,
+    GRUB_VGA_CR_VDISPLAY_END = 0x12,
     GRUB_VGA_CR_PITCH = 0x13,
+    GRUB_VGA_CR_UNDERLINE_LOCATION = 0x14,
+    GRUB_VGA_CR_VERTICAL_BLANK_START = 0x15,
+    GRUB_VGA_CR_VERTICAL_BLANK_END = 0x16,
     GRUB_VGA_CR_MODE = 0x17,
     GRUB_VGA_CR_LINE_COMPARE = 0x18,
   };
 
+enum
+  {
+    GRUB_VGA_CR_BYTE_PANNING_NORMAL = 0
+  };
+
+enum
+  {
+    GRUB_VGA_CR_UNDERLINE_LOCATION_DWORD_MODE = 0x40
+  };
+
+enum
+  {
+    GRUB_VGA_IO_MISC_COLOR = 0x01,
+    GRUB_VGA_IO_MISC_ENABLE_VRAM_ACCESS = 0x02,
+    GRUB_VGA_IO_MISC_EXTERNAL_CLOCK_0 = 0x08,
+    GRUB_VGA_IO_MISC_28MHZ = 0x04,
+    GRUB_VGA_IO_MISC_UPPER_64K = 0x20,
+    GRUB_VGA_IO_MISC_NEGATIVE_HORIZ_POLARITY = 0x40,
+    GRUB_VGA_IO_MISC_NEGATIVE_VERT_POLARITY = 0x80,
+  };
+
+enum
+  {
+    GRUB_VGA_ARX_MODE = 0x10,
+    GRUB_VGA_ARX_OVERSCAN = 0x11,
+    GRUB_VGA_ARX_COLOR_PLANE_ENABLE = 0x12,
+    GRUB_VGA_ARX_HORIZONTAL_PANNING = 0x13,
+    GRUB_VGA_ARX_COLOR_SELECT = 0x14
+  };
+
+enum
+  {
+    GRUB_VGA_ARX_MODE_TEXT = 0x00,
+    GRUB_VGA_ARX_MODE_GRAPHICS = 0x01,
+    GRUB_VGA_ARX_MODE_ENABLE_256COLOR = 0x40
+  };
+
 #define GRUB_VGA_CR_WIDTH_DIVISOR 8
+
+#define GRUB_VGA_CR_OVERFLOW_VERT_DISPLAY_ENABLE_END1_SHIFT 7
+#define GRUB_VGA_CR_OVERFLOW_VERT_DISPLAY_ENABLE_END1_MASK 0x02
+#define GRUB_VGA_CR_OVERFLOW_VERT_DISPLAY_ENABLE_END2_SHIFT 3
+#define GRUB_VGA_CR_OVERFLOW_VERT_DISPLAY_ENABLE_END2_MASK 0x40
+
+#define GRUB_VGA_CR_OVERFLOW_VERT_TOTAL1_SHIFT 8
+#define GRUB_VGA_CR_OVERFLOW_VERT_TOTAL1_MASK 0x01
+#define GRUB_VGA_CR_OVERFLOW_VERT_TOTAL2_SHIFT 4
+#define GRUB_VGA_CR_OVERFLOW_VERT_TOTAL2_MASK 0x20
+
+#define GRUB_VGA_CR_OVERFLOW_VSYNC_START1_SHIFT 6
+#define GRUB_VGA_CR_OVERFLOW_VSYNC_START1_MASK 0x04
+#define GRUB_VGA_CR_OVERFLOW_VSYNC_START2_SHIFT 2
+#define GRUB_VGA_CR_OVERFLOW_VSYNC_START2_MASK 0x80
+
 #define GRUB_VGA_CR_OVERFLOW_HEIGHT1_SHIFT 7
 #define GRUB_VGA_CR_OVERFLOW_HEIGHT1_MASK 0x02
 #define GRUB_VGA_CR_OVERFLOW_HEIGHT2_SHIFT 3
@@ -65,7 +133,9 @@ enum
 
 #define GRUB_VGA_CR_CELL_HEIGHT_LINE_COMPARE_MASK 0x40
 #define GRUB_VGA_CR_CELL_HEIGHT_LINE_COMPARE_SHIFT 3
-
+#define GRUB_VGA_CR_CELL_HEIGHT_VERTICAL_BLANK_MASK 0x20
+#define GRUB_VGA_CR_CELL_HEIGHT_VERTICAL_BLANK_SHIFT 4
+#define GRUB_VGA_CR_CELL_HEIGHT_DOUBLE_SCAN 0x80
 enum
   {
     GRUB_VGA_CR_CURSOR_START_DISABLE = (1 << 5)
@@ -77,15 +147,24 @@ enum
   {
     GRUB_VGA_CR_MODE_NO_CGA = 0x01,
     GRUB_VGA_CR_MODE_NO_HERCULES = 0x02,
+    GRUB_VGA_CR_MODE_ADDRESS_WRAP = 0x20,
     GRUB_VGA_CR_MODE_BYTE_MODE = 0x40,
     GRUB_VGA_CR_MODE_TIMING_ENABLE = 0x80
   };
 
 enum
   {
+    GRUB_VGA_SR_RESET = 0,
     GRUB_VGA_SR_CLOCKING_MODE = 1,
     GRUB_VGA_SR_MAP_MASK_REGISTER = 2,
+    GRUB_VGA_SR_CHAR_MAP_SELECT = 3,
     GRUB_VGA_SR_MEMORY_MODE = 4,
+  };
+
+enum
+  {
+    GRUB_VGA_SR_RESET_ASYNC = 1,
+    GRUB_VGA_SR_RESET_SYNC = 2
   };
 
 enum
@@ -96,17 +175,31 @@ enum
 enum
   {
     GRUB_VGA_SR_MEMORY_MODE_NORMAL = 0,
-    GRUB_VGA_SR_MEMORY_MODE_CHAIN4 = 8
+    GRUB_VGA_SR_MEMORY_MODE_EXTERNAL_VIDEO_MEMORY = 2,
+    GRUB_VGA_SR_MEMORY_MODE_SEQUENTIAL_ADDRESSING = 4,
+    GRUB_VGA_SR_MEMORY_MODE_CHAIN4 = 8,
   };
 
 enum
   {
+    GRUB_VGA_GR_SET_RESET_PLANE = 0,
+    GRUB_VGA_GR_SET_RESET_PLANE_ENABLE = 1,
+    GRUB_VGA_GR_COLOR_COMPARE = 2,
     GRUB_VGA_GR_DATA_ROTATE = 3,
     GRUB_VGA_GR_READ_MAP_REGISTER = 4,
     GRUB_VGA_GR_MODE = 5,
     GRUB_VGA_GR_GR6 = 6,
+    GRUB_VGA_GR_COLOR_COMPARE_DISABLE = 7,
     GRUB_VGA_GR_BITMASK = 8,
     GRUB_VGA_GR_MAX
+  };
+
+#define GRUB_VGA_ALL_PLANES 0xf
+#define GRUB_VGA_NO_PLANES 0x0
+
+enum
+  {
+    GRUB_VGA_GR_DATA_ROTATE_NOP = 0
   };
 
 enum
@@ -119,6 +212,7 @@ enum
 enum
   {
     GRUB_VGA_GR_GR6_GRAPHICS_MODE = 1,
+    GRUB_VGA_GR_GR6_MMAP_A0 = (1 << 2),
     GRUB_VGA_GR_GR6_MMAP_CGA = (3 << 2)
   };
 
@@ -126,70 +220,152 @@ enum
   {
     GRUB_VGA_GR_MODE_READ_MODE1 = 0x08,
     GRUB_VGA_GR_MODE_ODD_EVEN = 0x10,
+    GRUB_VGA_GR_MODE_ODD_EVEN_SHIFT = 0x20,
     GRUB_VGA_GR_MODE_256_COLOR = 0x40
   };
 
 static inline void
 grub_vga_gr_write (grub_uint8_t val, grub_uint8_t addr)
 {
-  grub_outb (addr, GRUB_VGA_IO_GR_INDEX);
-  grub_outb (val, GRUB_VGA_IO_GR_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_GR_INDEX);
+  grub_outb (val, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_GR_DATA);
 }
 
 static inline grub_uint8_t
 grub_vga_gr_read (grub_uint8_t addr)
 {
-  grub_outb (addr, GRUB_VGA_IO_GR_INDEX);
-  return grub_inb (GRUB_VGA_IO_GR_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_GR_INDEX);
+  return grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_GR_DATA);
 }
 
 static inline void
 grub_vga_cr_write (grub_uint8_t val, grub_uint8_t addr)
 {
-  grub_outb (addr, GRUB_VGA_IO_CR_INDEX);
-  grub_outb (val, GRUB_VGA_IO_CR_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_CR_INDEX);
+  grub_outb (val, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_CR_DATA);
 }
 
 static inline grub_uint8_t
 grub_vga_cr_read (grub_uint8_t addr)
 {
-  grub_outb (addr, GRUB_VGA_IO_CR_INDEX);
-  return grub_inb (GRUB_VGA_IO_CR_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_CR_INDEX);
+  return grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_CR_DATA);
 }
 
 static inline void
 grub_vga_sr_write (grub_uint8_t val, grub_uint8_t addr)
 {
-  grub_outb (addr, GRUB_VGA_IO_SR_INDEX);
-  grub_outb (val, GRUB_VGA_IO_SR_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_SR_INDEX);
+  grub_outb (val, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_SR_DATA);
 }
 
 static inline grub_uint8_t
 grub_vga_sr_read (grub_uint8_t addr)
 {
-  grub_outb (addr, GRUB_VGA_IO_SR_INDEX);
-  return grub_inb (GRUB_VGA_IO_SR_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_SR_INDEX);
+  return grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_SR_DATA);
 }
 
 static inline void
 grub_vga_palette_read (grub_uint8_t addr, grub_uint8_t *r, grub_uint8_t *g,
 		       grub_uint8_t *b)
 {
-  grub_outb (addr, GRUB_VGA_IO_PALLETTE_READ_INDEX);
-  *r = grub_inb (GRUB_VGA_IO_PALLETTE_DATA);
-  *g = grub_inb (GRUB_VGA_IO_PALLETTE_DATA);
-  *b = grub_inb (GRUB_VGA_IO_PALLETTE_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_READ_INDEX);
+  *r = grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_DATA);
+  *g = grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_DATA);
+  *b = grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_DATA);
 }
 
 static inline void
 grub_vga_palette_write (grub_uint8_t addr, grub_uint8_t r, grub_uint8_t g,
 			grub_uint8_t b)
 {
-  grub_outb (addr, GRUB_VGA_IO_PALLETTE_WRITE_INDEX);
-  grub_outb (r, GRUB_VGA_IO_PALLETTE_DATA);
-  grub_outb (g, GRUB_VGA_IO_PALLETTE_DATA);
-  grub_outb (b, GRUB_VGA_IO_PALLETTE_DATA);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_WRITE_INDEX);
+  grub_outb (r, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_DATA);
+  grub_outb (g, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_DATA);
+  grub_outb (b, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_PALLETTE_DATA);
 }
 
+static inline void
+grub_vga_write_arx (grub_uint8_t val, grub_uint8_t addr)
+{
+  grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_INPUT_STATUS1_REGISTER);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_ARX);
+  grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_ARX_READ);
+  grub_outb (val, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_ARX);
+}
+
+struct grub_video_hw_config
+{
+  unsigned vertical_total;
+  unsigned vertical_blank_start;
+  unsigned vertical_blank_end;
+  unsigned vertical_sync_start;
+  unsigned vertical_sync_end;
+  unsigned line_compare;
+  unsigned vdisplay_end;
+  unsigned pitch;
+  unsigned horizontal_total;
+  unsigned horizontal_blank_start;
+  unsigned horizontal_blank_end;
+  unsigned horizontal_sync_pulse_start;
+  unsigned horizontal_sync_pulse_end;
+  unsigned horizontal_end;
+};
+  
+static inline void
+grub_vga_set_geometry (struct grub_video_hw_config *config,
+		       void (*cr_write) (grub_uint8_t val, grub_uint8_t addr))
+{
+  unsigned vertical_total = config->vertical_total - 2;
+  unsigned vertical_blank_start = config->vertical_blank_start - 1;
+  unsigned vdisplay_end = config->vdisplay_end - 1;
+  grub_uint8_t overflow, cell_height_reg;
+
+  /* Disable CR0-7 write protection.  */
+  cr_write (0, GRUB_VGA_CR_VSYNC_END);
+
+  overflow = ((vertical_total >> GRUB_VGA_CR_OVERFLOW_VERT_TOTAL1_SHIFT)
+	      & GRUB_VGA_CR_OVERFLOW_VERT_TOTAL1_MASK)
+    | ((vertical_total >> GRUB_VGA_CR_OVERFLOW_VERT_TOTAL2_SHIFT)
+       & GRUB_VGA_CR_OVERFLOW_VERT_TOTAL2_MASK)
+    | ((config->vertical_sync_start >> GRUB_VGA_CR_OVERFLOW_VSYNC_START2_SHIFT)
+       & GRUB_VGA_CR_OVERFLOW_VSYNC_START2_MASK)
+    | ((config->vertical_sync_start >> GRUB_VGA_CR_OVERFLOW_VSYNC_START1_SHIFT)
+       & GRUB_VGA_CR_OVERFLOW_VSYNC_START1_MASK)
+    | ((vdisplay_end >> GRUB_VGA_CR_OVERFLOW_VERT_DISPLAY_ENABLE_END1_SHIFT)
+       & GRUB_VGA_CR_OVERFLOW_VERT_DISPLAY_ENABLE_END1_MASK)
+    | ((vdisplay_end >> GRUB_VGA_CR_OVERFLOW_VERT_DISPLAY_ENABLE_END2_SHIFT)
+       & GRUB_VGA_CR_OVERFLOW_VERT_DISPLAY_ENABLE_END2_MASK)
+    | ((config->vertical_sync_start >> GRUB_VGA_CR_OVERFLOW_VSYNC_START1_SHIFT)
+       & GRUB_VGA_CR_OVERFLOW_VSYNC_START1_MASK)
+    | ((config->line_compare >> GRUB_VGA_CR_OVERFLOW_LINE_COMPARE_SHIFT)
+       & GRUB_VGA_CR_OVERFLOW_LINE_COMPARE_MASK);
+
+  cell_height_reg = ((vertical_blank_start
+		      >> GRUB_VGA_CR_CELL_HEIGHT_VERTICAL_BLANK_SHIFT)
+		     & GRUB_VGA_CR_CELL_HEIGHT_VERTICAL_BLANK_MASK)
+    | ((config->line_compare >> GRUB_VGA_CR_CELL_HEIGHT_LINE_COMPARE_SHIFT)
+       & GRUB_VGA_CR_CELL_HEIGHT_LINE_COMPARE_MASK);
+
+  cr_write (config->horizontal_total - 1, GRUB_VGA_CR_HTOTAL);
+  cr_write (config->horizontal_end - 1, GRUB_VGA_CR_HORIZ_END);
+  cr_write (config->horizontal_blank_start - 1, GRUB_VGA_CR_HBLANK_START);
+  cr_write (config->horizontal_blank_end, GRUB_VGA_CR_HBLANK_END);
+  cr_write (config->horizontal_sync_pulse_start,
+	    GRUB_VGA_CR_HORIZ_SYNC_PULSE_START);
+  cr_write (config->horizontal_sync_pulse_end,
+	    GRUB_VGA_CR_HORIZ_SYNC_PULSE_END);
+  cr_write (vertical_total & 0xff, GRUB_VGA_CR_VERT_TOTAL);
+  cr_write (overflow, GRUB_VGA_CR_OVERFLOW);
+  cr_write (cell_height_reg, GRUB_VGA_CR_CELL_HEIGHT);
+  cr_write (config->vertical_sync_start & 0xff, GRUB_VGA_CR_VSYNC_START);
+  cr_write (config->vertical_sync_end & 0x0f, GRUB_VGA_CR_VSYNC_END);
+  cr_write (vdisplay_end & 0xff, GRUB_VGA_CR_VDISPLAY_END);
+  cr_write (config->pitch & 0xff, GRUB_VGA_CR_PITCH);
+  cr_write (vertical_blank_start & 0xff, GRUB_VGA_CR_VERTICAL_BLANK_START);
+  cr_write (config->vertical_blank_end & 0xff, GRUB_VGA_CR_VERTICAL_BLANK_END);
+  cr_write (config->line_compare & 0xff, GRUB_VGA_CR_LINE_COMPARE);
+}
 
 #endif

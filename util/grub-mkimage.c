@@ -24,6 +24,7 @@
 #include <grub/i18n.h>
 #include <grub/kernel.h>
 #include <grub/disk.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/resolve.h>
 #include <grub/misc.h>
@@ -53,7 +54,7 @@ struct image_target_desc
   enum {
     IMAGE_I386_PC, IMAGE_EFI, IMAGE_COREBOOT,
     IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_I386_IEEE1275,
-    IMAGE_YEELOONG_ELF, IMAGE_QEMU, IMAGE_PPC
+    IMAGE_YEELOONG_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH
   } id;
   enum
     {
@@ -222,6 +223,26 @@ struct image_target_desc image_targets[] =
 				GRUB_PE32_SECTION_ALIGNMENT),
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
+    },
+    {
+      .name = "mipsel-yeeloong-flash",
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_YEELOONG_FLASH, 
+      .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_MIPS_YEELOONG_PREFIX,
+      .data_end = GRUB_KERNEL_MIPS_YEELOONG_DATA_END,
+      .raw_size = GRUB_KERNEL_MIPS_YEELOONG_RAW_SIZE,
+      .total_module_size = GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE,
+      .compressed_size = GRUB_KERNEL_MIPS_YEELOONG_COMPRESSED_SIZE,
+      .kernel_image_size = GRUB_KERNEL_MIPS_YEELOONG_KERNEL_IMAGE_SIZE,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_MIPS_YEELOONG_LINK_ADDR,
+      .elf_target = EM_MIPS,
+      .link_align = GRUB_KERNEL_MIPS_YEELOONG_LINK_ALIGN
     },
     {
       .name = "mipsel-yeeloong-elf",
@@ -984,6 +1005,34 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	free (boot_path);
       }
       break;
+    case IMAGE_YEELOONG_FLASH:
+    {
+      char *rom_img;
+      size_t rom_size;
+      char *boot_path, *boot_img;
+      size_t boot_size;
+      
+      boot_path = grub_util_get_path (dir, "fwstart.img");
+      boot_size = grub_util_get_image_size (boot_path);
+      boot_img = grub_util_read_image (boot_path);
+
+      rom_size = ALIGN_UP (core_size + boot_size, 512 * 1024);
+
+      rom_img = xmalloc (rom_size);
+      memset (rom_img, 0, rom_size); 
+
+      memcpy (rom_img, boot_img, boot_size);
+
+      memcpy (rom_img + boot_size, core_img, core_size);
+
+      memset (rom_img + boot_size + core_size, 0,
+	      rom_size - (boot_size + core_size));
+
+      free (core_img);
+      core_img = rom_img;
+      core_size = rom_size;
+    }
+    break;
     case IMAGE_YEELOONG_ELF:
     case IMAGE_PPC:
     case IMAGE_COREBOOT:

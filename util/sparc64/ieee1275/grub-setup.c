@@ -19,6 +19,7 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/device.h>
 #include <grub/i18n.h>
@@ -36,8 +37,6 @@
 #include <grub/util/raid.h>
 #include <grub/util/lvm.h>
 #include <grub/util/ofpath.h>
-
-#include <grub_setup_init.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -89,24 +88,6 @@ struct boot_blocklist
   grub_uint64_t start;
   grub_uint32_t len;
 } __attribute__ ((packed));
-
-void
-grub_putchar (int c)
-{
-  putchar (c);
-}
-
-int
-grub_getkey (void)
-{
-  return -1;
-}
-
-void
-grub_refresh (void)
-{
-  fflush (stdout);
-}
 
 static void
 setup (const char *prefix, const char *dir,
