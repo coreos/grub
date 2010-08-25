@@ -18,6 +18,8 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/misc.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/misc.h>
 #include <grub/i18n.h>
