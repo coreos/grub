@@ -21,8 +21,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include <grub/util/resolve.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
+#include <grub/util/resolve.h>
 
 /* Module.  */
 struct mod_list

@@ -1,3 +1,366 @@
+2010-08-23  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	New Automake based build system for GRUB.
+
+	* ABOUT-NLS: New file.
+	* Makefile.am: New file. GRUB host utils' rules that doesn't fit
+	in Makefile.util.def file.
+	* Makefile.util.def: New file.  Autogen build definitions file for
+	GRUB host utils.
+	* conf/Makefile.common: New file.  Common variables for GRUB host
+	utils and target modules.
+	* conf/Makefile.extra-dist: New file.  Extra files for make dist.
+	* docs/Makefile.am: New file.  Automake file for docs.
+	* gentpl.py: New file.  Python script to generate Autogen
+	template.
+	* grub-core/Makefile.am: New file.  GRUB target modules' rules
+	that doesn't fit in Makefile.core.def file.
+	* grub-core/Makefile.core.def: New file.  Autogen build
+	definitions file for GRUB target modules.
+	* grub-core/lib/setjmp.S: New file.  Wrapper for target_cpu
+	specific setjmp.S file.
+	* po/Makefile.am: New file.
+
+	* .bzrignore: New ignores.
+	* INSTALL: New requirements, without Ruby.
+	* acinclude.m4: Use TARGET_IMG_BASE_LDOPT variable instead.
+	* autogen.sh: Updated to invoke autogen as necessary.
+	* configure.ac: Separate *FLAGS with HOST_ and TARGET_ prefixes,
+	and defines for Automake conditionals.
+	* geninit.sh: Refactoring.
+
+	* include/grub/dl.h: Allow build rules to define GRUB_MOD_* if
+	necessary.
+	* include/grub/emu/getroot.h (grub_make_system_path_relative_to_its_root):
+	New prototype.
+
+	* include/grub/test.h: Fix functional test modules' naming.
+	* grub-core/tests/example_functional_test.c: Fix test module name.
+
+	* util/misc.c: Hosted versions' of grub functions for libgrub.a
+	* tests/lib/unit_test.c: Remove hosted versions of grub functions.
+	* util/grub-editenv.c: Likewise.
+	* util/grub-fstest.c: Likewise.
+	* util/grub-mkdevicemap.c: Likewise.
+	* util/grub-mkfont.c: Likewise.
+	* util/grub-mkimage.c: Likewise.
+	* util/grub-mkpasswd-pbkdf2.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/grub-script-check.c: Likewise.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/sparc64/ieee1275/grub-setup.c: Likewise.
+
+	* tests/util/grub-shell.in: Fix override directory path.
+	* util/grub-mkrescue.in: Replace @pkglib_DATA@ with files.
+	* util/import_gcry.py: Create Makefile.gcry.def file instead.
+
+	* util/lvm.c: Update #includes.
+	* util/raid.c: Likewise.
+	* util/resolve.c: Likewise.
+	* grub-core/bus/emu/pci.c: Likewise.
+	* grub-core/lib/posix_wrap/stdlib.h: Likewise.
+	* grub-core/lib/posix_wrap/string.h: Likewise.
+	* grub-core/kern/emu/main.c: Likewise.
+
+	* grub-core/gensymlist.sh: New file.  Script for generating kernel
+	symbols file.
+	* grub-core/genmoddep.awk: Support new kernel_syms.lst format.
+
+	* grub-core/gentrigtables.c: Fix unused variable warnings.
+
+	* Makefile.in: Removed.
+	* conf/any-emu.rmk: Removed.
+	* conf/common.rmk: Removed.
+	* conf/i386-coreboot.rmk: Removed.
+	* conf/i386-efi.rmk: Removed.
+	* conf/i386-ieee1275.rmk: Removed.
+	* conf/i386-multiboot.rmk: Removed.
+	* conf/i386-pc.rmk: Removed.
+	* conf/i386-qemu.rmk: Removed.
+	* conf/i386.rmk: Removed.
+	* conf/mips-yeeloong.rmk: Removed.
+	* conf/mips.rmk: Removed.
+	* conf/powerpc-ieee1275.rmk: Removed.
+	* conf/sparc64-ieee1275.rmk: Removed.
+	* conf/tests.rmk: Removed.
+	* conf/x86-efi.rmk: Removed.
+	* conf/x86_64-efi.rmk: Removed.
+	* gendistlist.sh: Removed.
+	* geninitheader.sh: Removed.
+	* genkernsyms.sh.in: Removed.
+	* genmk.rb: Removed.
+	* gensymlist.sh.in: Removed.
+	* mkinstalldirs: Removed.
+	* boot: Moved ...
+	* grub-core/boot: ... to here.
+	* bus: Moved ...
+	* grub-core/bus: ... to here.
+	* commands: Moved ...
+	* grub-core/commands: ... to here.
+	* disk: Moved ...
+	* grub-core/disk: ... to here.
+	* efiemu: Moved ...
+	* grub-core/efiemu: ... to here.
+	* font: Moved ...
+	* grub-core/font: ... to here.
+	* fs: Moved ...
+	* grub-core/fs: ... to here.
+	* gencmdlist.sh: Moved ...
+	* grub-core/gencmdlist.sh: ... to here.
+	* genemuinit.sh: Moved ...
+	* grub-core/genemuinit.sh: ... to here.
+	* genemuinitheader.sh: Moved ...
+	* grub-core/genemuinitheader.sh: ... to here.
+	* genfslist.sh: Moved ...
+	* grub-core/genfslist.sh: ... to here.
+	* genhandlerlist.sh: Moved ...
+	* grub-core/genhandlerlist.sh: ... to here.
+	* genmoddep.awk: Moved ...
+	* grub-core/genmoddep.awk: ... to here.
+	* genmodsrc.sh: Moved ...
+	* grub-core/genmodsrc.sh: ... to here.
+	* genpartmaplist.sh: Moved ...
+	* grub-core/genpartmaplist.sh: ... to here.
+	* genparttoollist.sh: Moved ...
+	* grub-core/genparttoollist.sh: ... to here.
+	* genterminallist.sh: Moved ...
+	* grub-core/genterminallist.sh: ... to here.
+	* gentrigtables.c: Moved ...
+	* grub-core/gentrigtables.c: ... to here.
+	* genvideolist.sh: Moved ...
+	* grub-core/genvideolist.sh: ... to here.
+	* gettext: Moved ...
+	* grub-core/gettext: ... to here.
+	* gfxmenu: Moved ...
+	* grub-core/gfxmenu: ... to here.
+	* gnulib: Moved ...
+	* grub-core/gnulib: ... to here.
+	* hello: Moved ...
+	* grub-core/hello: ... to here.
+	* hook: Moved ...
+	* grub-core/hook: ... to here.
+	* io: Moved ...
+	* grub-core/io: ... to here.
+	* kern: Moved ...
+	* grub-core/kern: ... to here.
+	* lib: Moved ...
+	* grub-core/lib: ... to here.
+	* loader: Moved ...
+	* grub-core/loader: ... to here.
+	* mmap: Moved ...
+	* grub-core/mmap: ... to here.
+	* normal: Moved ...
+	* grub-core/normal: ... to here.
+	* partmap: Moved ...
+	* grub-core/partmap: ... to here.
+	* parttool: Moved ...
+	* grub-core/parttool: ... to here.
+	* script: Moved ...
+	* grub-core/script: ... to here.
+	* term: Moved ...
+	* grub-core/term: ... to here
+	* tests/example_functional_test.c: Moved ...
+	* grub-core/tests/example_functional_test.c: ... to here.
+	* tests/lib/functional_test.c: Moved ...
+	* grub-core/tests/lib/functional_test.c: ... to here.
+	* tests/lib/test.c: Moved ...
+	* grub-core/tests/lib/test.c: ... to here.
+	* video: Moved ...
+	* grub-core/video: ... to here.
+
+2010-08-23  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Replace --enable-grub-emu-modules with grub-emu-lite.
+
+	* kern/emu/cache.S: New file.  Wrapper for $target_cpu specific
+	cache.S.
+
+	* include/grub/emu/misc.h (grub_emu_init): New prototype.
+	* kern/emu/full.c: New file. For grub-emu specific initialization.
+	* kern/emu/lite.c: New file. For grub-emu-lite initialization.
+	* kern/emu/main.c: Call initialization function grub_emu_init.
+
+	* Makefile.in: Include grub-emu-lite in install.
+	* commands/parttool.c: Use grub_no_autoload to differentiate
+	between grub-emu and grub-emu-lite.
+	* include/grub/misc.h: New variable grub_no_autoload.
+
+	* conf/any-emu.rmk: New rules for grub-emu-lite.
+	* configure.ac: Remove --enable-grub-emu-modules.
+	* genmk.rb: Cleanup unnecessary rules.
+	* include/grub/dl.h: Remove GRUB_NO_MODULES macro.
+
+	* normal/main.c: Don't load list files on grub-emu-lite.
+	* util/misc.c (grub_arch_sync_caches): Removed.
+
+2010-08-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/mips/startup.S (grub_prefix): Update comment to refer to
+	grub-mkimage rather than grub-mkelfimage.
+	* kern/powerpc/ieee1275/startup.S (grub_prefix): Likewise.
+
+2010-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/at_keyboard.c (grub_at_keyboard_getkey_noblock): Don't discard
+	a key after CapsLock or NumLock. It's just a qemu bug.
+
+2010-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/usb.h (grub_usb_device): Add 'data' field back. It's
+	needed by libusb wrapper.
+
+2010-08-21  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* docs/grub.texi (GNU/Hurd): Document booting GNU/Hurd.
+
+2010-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* loader/multiboot.c (grub_cmd_module): Don't unzip module if
+	--nounzip is passed.
+
+2010-08-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	USB hotunplugging and USB serial support.
+
+	* bus/usb/ohci.c (grub_ohci_transfer): Fill *actual and respect timeout.
+	* bus/usb/uhci.c (grub_free_queue): Compute *actual.
+	(grub_uhci_transfer): Respect timeout and set *actual.
+	* bus/usb/usb.c (grub_usb_device_initialize): Correctly skip fields of
+	non-standard length.
+	(grub_usb_device_attach): Autoload modules.
+	(GRUB_MOD_INIT): Set grub_term_poll_usb.
+	(GRUB_MOD_FINI): Unset grub_term_poll_usb.
+	* bus/usb/usbhub.c (grub_usb_hub): Replace speed with devices. All
+	users updated.
+	(grub_usb_add_hub): Fill nports and children.
+	(attach_root_port): Receive hub instead of controller.
+	All users updated. Fill hub->devices.
+	(grub_usb_root_hub): Allocate hub->devices.
+	(detach_device): New function.
+	(poll_nonroot_hub): Fill children and detach devices.
+	* bus/usb/usbtrans.c (grub_usb_bulk_readwrite): Accept timeout and
+	actual arguments. All users updated.
+	(grub_usb_bulk_read_extended): New function.
+	* bus/usb/serial/common.c: New file.
+	* bus/usb/serial/ftdi.c: Likewise.
+	* bus/usb/serial/pl2303.c: Likewise.
+	* commands/terminal.c (handle_command): Support wildcard.
+	* commands/usbtest.c: Output "Unknown" instead of empty string.
+	* conf/any-emu.rmk (pkglib_MODULES): Add usbserial_common.mod.
+	(usbserial_common_mod_SOURCES): New variable.
+	(usbserial_common_mod_CFLAGS): Likewise.
+	(usbserial_common_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES): Add usbserial_pl2303.mod.
+	(usbserial_pl2303_mod_SOURCES): New variable.
+	(usbserial_pl2303_mod_CFLAGS): Likewise.
+	(usbserial_pl2303_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES): Add usbserial_ftdi.mod.
+	(usbserial_ftdi_mod_SOURCES): New variable.
+	(usbserial_ftdi_mod_CFLAGS): Likewise.
+	(usbserial_ftdi_mod_LDFLAGS): Likewise.
+	(pkglib_MODULES): Add serial.mod.
+	(serial_mod_SOURCES): New variable.
+	(serial_mod_CFLAGS): Likewise.
+	(serial_mod_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/mips-yeeloong.rmk: Likewise.
+	* conf/i386.rmk (serial_mod_SOURCES): Add term/ns8250.c.
+	* conf/mips-yeeloong.rmk (kernel_img_SOURCES): Likewise.
+	* disk/usbms.c (first_available_slot): New variable.
+	(grub_usbms_attach): Don't reuse free slots due to potential cache
+	problems.
+	* include/grub/serial.h: Moved to ..
+	* include/grub/ns8250.h: ...this.
+	* include/grub/serial.h: New file.
+	* include/grub/term.h (grub_term_poll_usb): New variable.
+	* include/grub/terminfo.h (grub_terminfo_input_state): Pass term to
+	readkey. All users updated.
+	(grub_terminfo_output_state): Pass term to put.
+	* include/grub/usb.h (GRUB_USB_REQTYPE): New enum.
+	(grub_usb_controller_dev): Add timeout and actual arguments to
+	transfer. All users updated.
+	(grub_usb_interface): New field detach_data.
+	(grub_usb_device): New fields children and nports.
+	(grub_usb_ep_type_t): New type.
+	(grub_usb_get_ep_type): New function.
+	(grub_usb_bulk_read_extended): Likewise.
+	* include/grub/usbdesc.h (grub_usb_desc): New type.
+	* include/grub/usbserial.h: New file.
+	* include/grub/usbtrans.h (grub_usb_transaction): New field preceding.
+	* kern/term.c (grub_term_poll_usb): New variable.
+	(grub_getkey): Call grub_term_poll_usb if set.
+	(grub_checkkey): Likewise.
+	(grub_getkeystatus): Likewise.
+	* term/serial.c: Moved controller-specific parts to ...
+	* term/ns8250.c: ... here.
+	* term/serial.c: Mostly rewritten.
+	* term/usb_keyboard.c: Reorganised to use GET_REPORT only on attaching
+	according to spec.
+
+2010-08-20  Robert Millan  <rmh@gnu.org>
+
+	Make kFreeBSD code more generic to support ext2fs as root, ufs as
+	a separate module and maybe other interesting combinations.
+
+	* util/grub.d/10_kfreebsd.in (load_kfreebsd_module): New function.
+	(kfreebsd_entry): Use load_kfreebsd_module() to load modules.
+	(kfreebsd_entry): Add generic filesystem module load routine.
+	Map GRUB `ext2' to kFreeBSD `ext2fs'.
+
+2010-08-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/i386/pc/sendkey.c (keysym_table): Rename "numlock" to
+	"numcenter" (I misunderstood the purpose of this entry).
+	* docs/grub.texi (sendkey): Likewise.
+
+2010-08-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/i386/pc/sendkey.c (options): Remove "keep" from all
+	status flag options; simply omitting the option is equivalent and
+	simpler.  Rename "wait" to "pause".  Rename "sysreq" to "sysrq".
+	(keysym_table): Rename "num5numlock" to "numlock".
+	(grub_cmd_sendkey): Reinitialise `andmask' and `ormask', so that we
+	can uniformly say that only the last of multiple `sendkey'
+	invocations has any effect.
+	* docs/grub.texi (sendkey): New section.
+
+2010-08-19  Colin Watson  <cjwatson@ubuntu.com>
+
+	* commands/i386/pc/sendkey.c (options): Fix three typos.
+
+2010-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Implement sendkey support.
+
+	* commands/i386/pc/sendkey.c: New file.
+	* conf/i386-pc.rmk (pkglib_MODULES): Add sendkey.mod.
+	(sendkey_mod_SOURCES): New variable.
+	(sendkey_mod_CFLAGS): Likewise.
+	(sendkey_mod_LDFLAGS): Likewise.
+
+2010-08-18  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: Move AM_INIT_AUTOMAKE after AC_CANONICAL_TARGET to
+	fix warnings from Autoconf.
+
+2010-08-18  Colin Watson  <cjwatson@ubuntu.com>
+
+	* acinclude.m4 (grub_ASM_USCORE): Use a more accurate grep pattern,
+	to avoid false positives with some assemblers that output things
+	like "someprefix_func" as part of their output.
+
+2010-08-15  Robert Millan  <rmh@gnu.org>
+
+	* kern/emu/misc.c (grub_get_libzfs_handle): Handle libzfs_init()
+	errors.
+	* kern/emu/getroot.c (find_root_device_from_libzfs): Handle
+	grub_get_libzfs_handle() errors.
+
+2010-08-14  Robert Millan  <rmh@gnu.org>
+
+	* kern/emu/misc.c (grub_find_zpool_from_dir): Abort function if
+	filesystem is not ZFS.
+
 2010-08-12  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Fix for misspelled color names defaulting to black/black (bug
