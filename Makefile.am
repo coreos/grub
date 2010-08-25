@@ -126,6 +126,12 @@ linux.init.x86_64: $(srcdir)/grub-core/tests/boot/linux.init-x86_64.S
 linux.init.i386: $(srcdir)/grub-core/tests/boot/linux.init-i386.S
 	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
+multiboot.elf: $(srcdir)/grub-core/tests/boot/multiboot.S
+	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
+
+multiboot2.elf: $(srcdir)/grub-core/tests/boot/multiboot.S
+	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include -DMULTIBOOT2=1
+
 kfreebsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kfreebsd.init-x86_64.S
 	$(TARGET_CC) -o $@ $< -m64 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" && freebsd-brandelf -t FreeBSD $@
 
@@ -200,11 +206,19 @@ bootcheck-linux16-i386: linux-initramfs.i386 $(GRUB_PAYLOADS_DIR)/linux.i386 $(s
 bootcheck-linux16-x86_64: linux-initramfs.x86_64 $(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/grub-core/tests/boot/linux.cfg grub-shell
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=qemu-system-x86_64 --files=/initrd=linux-initramfs.x86_64 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/grub-core/tests/boot/linux16.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
+bootcheck-multiboot: multiboot.elf $(srcdir)/grub-core/tests/boot/multiboot.cfg grub-shell
+	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=$(QEMU32) --files=/multiboot.elf=multiboot.elf $(srcdir)/grub-core/tests/boot/multiboot.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
+
+bootcheck-multiboot2: multiboot2.elf $(srcdir)/grub-core/tests/boot/multiboot2.cfg grub-shell
+	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu-opts="$(GRUB_QEMU_OPTS)" --boot=$(BOOTTARGET) --qemu=$(QEMU32) --files=/multiboot2.elf=multiboot2.elf $(srcdir)/grub-core/tests/boot/multiboot2.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
+
 BOOTCHECKS= 
+
+BOOTCHECKS += bootcheck-multiboot bootcheck-multiboot2
 
 BOOTCHECKS += bootcheck-linux16-i386 bootcheck-linux16-x86_64
 
-BOOTCHECKS += bootcheck-linux-i386 bootcheck-linux-x86_64 
+BOOTCHECKS += bootcheck-linux-i386 bootcheck-linux-x86_64
 
 # Crashes because memory at 0-0x1000 is occupied
 BOOTCHECKS += bootcheck-kfreebsd-i386 bootcheck-knetbsd-x86_64
