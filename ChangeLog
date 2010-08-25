@@ -1,3 +1,10 @@
+2010-08-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Multiple variable names support to "export" command.
+
+	* normal/context.c (grub_cmd_export): "export" command supports
+	multiple variable names.
+
 2010-08-23  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	New Automake based build system for GRUB.
