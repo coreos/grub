@@ -1,3 +1,8 @@
+2010-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/ieee1275/ofconsole.c (put): Correct prototype.
+	(readkey): Likewise.
+
 2010-08-25  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Multiple variable names support to "export" command.
