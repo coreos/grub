@@ -26,16 +26,35 @@ void grub_scsi_dev_unregister (grub_scsi_dev_t dev);
 
 struct grub_scsi;
 
+enum
+  {
+    GRUB_SCSI_SUBSYSTEM_USBMS,
+    GRUB_SCSI_SUBSYSTEM_ATAPI
+  };
+
+#define GRUB_SCSI_ID_SUBSYSTEM_SHIFT 24
+#define GRUB_SCSI_ID_BUS_SHIFT 8
+#define GRUB_SCSI_ID_LUN_SHIFT 0
+
+static inline grub_uint32_t
+grub_make_scsi_id (int subsystem, int bus, int lun)
+{
+  return (subsystem << GRUB_SCSI_ID_SUBSYSTEM_SHIFT)
+    | (bus << GRUB_SCSI_ID_BUS_SHIFT) | (lun << GRUB_SCSI_ID_BUS_SHIFT);
+}
+
 struct grub_scsi_dev
 {
   /* The device name.  */
   const char *name;
 
+  grub_uint8_t id;
+
   /* Call HOOK with each device name, until HOOK returns non-zero.  */
-  int (*iterate) (int (*hook) (const char *name, int luns));
+  int (*iterate) (int (*hook) (int bus, int luns));
 
   /* Open the device named NAME, and set up SCSI.  */
-  grub_err_t (*open) (const char *name, struct grub_scsi *scsi);
+  grub_err_t (*open) (int bus, struct grub_scsi *scsi);
 
   /* Close the scsi device SCSI.  */
   void (*close) (struct grub_scsi *scsi);
@@ -56,14 +75,13 @@ struct grub_scsi_dev
 
 struct grub_scsi
 {
-  /* The scsi device name.  */
-  char *name;
-
   /* The underlying scsi device.  */
   grub_scsi_dev_t dev;
 
   /* Type of SCSI device.  XXX: Make enum.  */
   grub_uint8_t devtype;
+
+  int bus;
 
   /* Number of LUNs.  */
   int luns;

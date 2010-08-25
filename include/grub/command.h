@@ -115,12 +115,7 @@ grub_command_execute (const char *name, int argc, char **argv)
   return (cmd) ? cmd->func (cmd, argc, argv) : GRUB_ERR_FILE_NOT_FOUND;
 }
 
-static inline int
-grub_command_iterate (int (*func) (grub_command_t))
-{
-  return grub_list_iterate (GRUB_AS_LIST (grub_command_list),
-			    (grub_list_hook_t) func);
-}
+#define FOR_COMMANDS(var) FOR_LIST_ELEMENTS((var), grub_command_list)
 
 void grub_register_core_commands (void);
 

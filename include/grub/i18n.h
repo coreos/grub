@@ -22,10 +22,10 @@
 #include <config.h>
 #include <grub/symbol.h>
 
-extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
-
 /* NLS can be disabled through the configure --disable-nls option.  */
-#if (defined(ENABLE_NLS) && ENABLE_NLS)
+#if (defined(ENABLE_NLS) && ENABLE_NLS) || !defined (GRUB_UTIL)
+
+extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
 
 # ifdef GRUB_UTIL
 
@@ -41,18 +41,26 @@ extern const char *(*EXPORT_VAR(grub_gettext)) (const char *s);
    for invalid uses of the value returned from these functions.
    On pre-ANSI systems without 'const', the config.h file is supposed to
    contain "#define const".  */
-# ifdef GRUB_UTIL
-#  define gettext(Msgid) ((const char *) (Msgid))
-# else
-#  define grub_gettext(str) ((const char *) (str))
-# endif /* GRUB_UTIL */
+static inline const char * __attribute__ ((always_inline))
+gettext (const char *str)
+{
+  return str;
+}
 
 #endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
 
 #ifdef GRUB_UTIL
-# define _(str) gettext(str)
+static inline const char * __attribute__ ((always_inline))
+_ (const char *str)
+{
+  return gettext(str);
+}
 #else
-# define _(str) grub_gettext(str)
+static inline const char * __attribute__ ((always_inline))
+_ (const char *str)
+{
+  return grub_gettext(str);
+}
 #endif /* GRUB_UTIL */
 
 #define N_(str) str

@@ -105,6 +105,11 @@ prepare_grub_to_access_device ()
     echo "insmod ${module}"
   done
 
+  partmap="`${grub_probe} --device ${device} --target=partmap`"
+  for module in ${partmap} ; do
+    echo "insmod part_${module}"
+  done
+
   fs="`${grub_probe} --device ${device} --target=fs`"
   for module in ${fs} ; do
     echo "insmod ${module}"
@@ -123,6 +128,7 @@ grub_file_is_not_garbage ()
   if test -f "$1" ; then
     case "$1" in
       *.dpkg-*) return 1 ;; # debian dpkg
+      README*)  return 1 ;; # documentation
     esac
   else
     return 1
@@ -183,4 +189,16 @@ version_find_latest ()
 
 gettext_quoted () {
   $gettext "$@" | sed "s/'/'\\\\''/g"
+}
+
+uses_abstraction () {
+  device=$1
+
+  abstraction="`${grub_probe} --device ${device} --target=abstraction`"
+  for module in ${abstraction}; do
+    if test "x${module}" = "x$2"; then
+      return 0
+    fi
+  done
+  return 1
 }

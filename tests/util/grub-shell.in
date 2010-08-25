@@ -1,4 +1,4 @@
-#! /bin/bash -e
+#! /bin/sh -e
 
 # Run GRUB script in a Qemu instance
 # Copyright (C) 2009,2010  Free Software Foundation, Inc.
@@ -94,7 +94,7 @@ done
 
 if [ "x${source}" = x ] ; then
     tmpfile=`mktemp`
-    while read; do
+    while read REPLY; do
 	echo $REPLY >> ${tmpfile}
     done
     source=${tmpfile}
@@ -124,9 +124,10 @@ halt
 EOF
 
 isofile=`mktemp`
-grub-mkrescue --output=${isofile} --override-directory=${builddir} \
-  /boot/grub/grub.cfg=${cfgfile} /boot/grub/testcase.cfg=${source} \
-  >/dev/null 2>&1
+sh @builddir@/grub-mkrescue --grub-mkimage=${builddir}/grub-mkimage \
+  --override-directory=${builddir}/grub-core --output=${isofile} \
+  boot/grub/grub.cfg=${cfgfile} \
+  /boot/grub/testcase.cfg=${source} >/dev/null 2>&1
 
 hdafile=`mktemp`
 cp ${isofile} ${hdafile}
