@@ -33,6 +33,7 @@
 static unsigned long is_continue;
 static unsigned long active_loops;
 static unsigned long active_breaks;
+static unsigned long function_return;
 
 /* Scope for grub script functions.  */
 struct grub_script_scope
@@ -88,6 +89,30 @@ grub_script_shift (grub_command_t cmd __attribute__((unused)),
   scope->argv.argc -= n;
   scope->argv.args += n;
   return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_script_return (grub_command_t cmd __attribute__((unused)),
+		    int argc, char *argv[])
+{
+  char *p;
+  unsigned long n;
+
+  if (! scope || argc > 1)
+    return GRUB_ERR_BAD_ARGUMENT;
+
+  if (argc == 0)
+    {
+      function_return = 1;
+      return grub_strtoul (grub_env_get ("?"), NULL, 10);
+    }
+
+  n = grub_strtoul (argv[0], &p, 10);
+  if (*p != '\0')
+    return GRUB_ERR_BAD_ARGUMENT;
+
+  function_return = 1;
+  return n;
 }
 
 static int
@@ -310,6 +335,7 @@ grub_script_function_call (grub_script_function_t func, int argc, char **args)
 
   ret = grub_script_execute (func->func);
 
+  function_return = 0;
   active_loops = loops;
   scope = old_scope;
   return ret;
@@ -395,8 +421,16 @@ grub_script_execute_cmdlist (struct grub_script_cmd *list)
   struct grub_script_cmd *cmd;
 
   /* Loop over every command and execute it.  */
-  for (cmd = list->next; cmd && ! active_breaks; cmd = cmd->next)
-    ret = grub_script_execute_cmd (cmd);
+  for (cmd = list->next; cmd; cmd = cmd->next)
+    {
+      if (active_breaks)
+	break;
+
+      ret = grub_script_execute_cmd (cmd);
+
+      if (function_return)
+	break;
+    }
 
   return ret;
 }
@@ -405,14 +439,17 @@ grub_script_execute_cmdlist (struct grub_script_cmd *list)
 grub_err_t
 grub_script_execute_cmdif (struct grub_script_cmd *cmd)
 {
-  struct grub_script_cmdif *cmdif = (struct grub_script_cmdif *) cmd;
+  int ret;
   char *result;
+  struct grub_script_cmdif *cmdif = (struct grub_script_cmdif *) cmd;
 
   /* Check if the commands results in a true or a false.  The value is
      read from the env variable `?'.  */
-  grub_script_execute_cmd (cmdif->exec_to_evaluate);
-  result = grub_env_get ("?");
+  ret = grub_script_execute_cmd (cmdif->exec_to_evaluate);
+  if (function_return)
+    return ret;
 
+  result = grub_env_get ("?");
   grub_errno = GRUB_ERR_NONE;
 
   /* Execute the `if' or the `else' part depending on the value of
@@ -447,6 +484,8 @@ grub_script_execute_cmdfor (struct grub_script_cmd *cmd)
 	{
 	  grub_script_env_set (cmdfor->name->str, argv.args[i]);
 	  result = grub_script_execute_cmd (cmdfor->list);
+	  if (function_return)
+	    break;
 	}
     }
 
@@ -462,18 +501,21 @@ grub_script_execute_cmdfor (struct grub_script_cmd *cmd)
 grub_err_t
 grub_script_execute_cmdwhile (struct grub_script_cmd *cmd)
 {
-  int cond;
   int result;
   struct grub_script_cmdwhile *cmdwhile = (struct grub_script_cmdwhile *) cmd;
 
   active_loops++;
-  result = 0;
   do {
-    cond = grub_script_execute_cmd (cmdwhile->cond);
-    if (cmdwhile->until ? !cond : cond)
+    result = grub_script_execute_cmd (cmdwhile->cond);
+    if (function_return)
+      break;
+
+    if (cmdwhile->until ? !result : result)
       break;
 
     result = grub_script_execute_cmd (cmdwhile->list);
+    if (function_return)
+      break;
 
     if (active_breaks == 1 && is_continue)
       active_breaks = 0;

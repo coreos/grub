@@ -1,3 +1,14 @@
+2010-08-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	"return" command for GRUB script functions.
+
+	* grub-core/script/main.c: Register/unregister return command.
+	* grub-core/script/execute.c (grub_script_return): New function.
+	* include/grub/script_sh.h (grub_script_return): New prototype.
+
+	* tests/grub_script_return.in: New test for return command.
+	* Makefile.util.def: Rules for grub_script_return test.
+
 2010-08-23  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	New Automake based build system for GRUB.

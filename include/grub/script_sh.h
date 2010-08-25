@@ -321,6 +321,9 @@ grub_err_t grub_script_break (grub_command_t cmd, int argc, char *argv[]);
 /* SHIFT command for GRUB script.  */
 grub_err_t grub_script_shift (grub_command_t cmd, int argc, char *argv[]);
 
+/* RETURN command for functions.  */
+grub_err_t grub_script_return (grub_command_t cmd, int argc, char *argv[]);
+
 /* This variable points to the parsed command.  This is used to
    communicate with the bison code.  */
 extern struct grub_script_cmd *grub_script_parsed;

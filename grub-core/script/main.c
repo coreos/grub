@@ -44,6 +44,7 @@ grub_normal_parse_line (char *line, grub_reader_getline_t getline)
 static grub_command_t cmd_break;
 static grub_command_t cmd_continue;
 static grub_command_t cmd_shift;
+static grub_command_t cmd_return;
 
 void
 grub_script_init (void)
@@ -54,6 +55,8 @@ grub_script_init (void)
 					N_("[n]"), N_("Continue loops"));
   cmd_shift = grub_register_command ("shift", grub_script_shift,
 				     N_("[n]"), N_("Shift positional parameters."));
+  cmd_return = grub_register_command ("return", grub_script_return,
+				      N_("[n]"), N_("Return from a function."));
 }
 
 void
@@ -70,4 +73,8 @@ grub_script_fini (void)
   if (cmd_shift)
     grub_unregister_command (cmd_shift);
   cmd_shift = 0;
+
+  if (cmd_return)
+    grub_unregister_command (cmd_return);
+  cmd_return = 0;
 }
