@@ -772,7 +772,10 @@ module = {
   common = efiemu/main.c;
   common = efiemu/i386/loadcore32.c;
   common = efiemu/i386/loadcore64.c;
-  common = efiemu/i386/pc/cfgtables.c;
+  i386_pc = efiemu/i386/pc/cfgtables.c;
+  i386_coreboot = efiemu/i386/pc/cfgtables.c;
+  i386_multiboot = efiemu/i386/pc/cfgtables.c;
+  i386_ieee1275 = efiemu/i386/nocfgtables.c;
   common = efiemu/mm.c;
   common = efiemu/loadcore_common.c;
   common = efiemu/symbols.c;
@@ -789,7 +792,7 @@ module = {
   extra_dist = efiemu/runtime/efiemu.c;
 
   enable = i386_pc;
-  enable = i386_coeboot;
+  enable = i386_coreboot;
   enable = i386_ieee1275;
   enable = i386_multiboot;
 };
