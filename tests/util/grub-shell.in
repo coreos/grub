@@ -164,7 +164,7 @@ if [ x$boot = xcoreboot ]; then
     device=cdrom
 fi
 
-${qemu} ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | tr -d "\r"
+${qemu} ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r"
 rm -f "${isofile}" "${imgfile}"
 rm -rf "${rom_directory}"
 if [ x$boot = xcoreboot ]; then
