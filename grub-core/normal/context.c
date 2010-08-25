@@ -177,7 +177,7 @@ grub_context_init (void)
   grub_env_export ("prefix");
 
   export_cmd = grub_register_command ("export", grub_cmd_export,
-				      N_("ENVVAR..."),
+				      N_("ENVVAR [ENVVAR] ..."),
 				      N_("Export variables."));
 }
 
