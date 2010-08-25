@@ -546,8 +546,6 @@ FUNCTION(grub_chainloader_real_boot)
 	pushl	%edx
 	pushl	%eax
 
-	call	EXT_C(grub_dl_unload_all)
-
 	/* Turn off Gate A20 */
 	xorl	%eax, %eax
 	call	EXT_C(grub_gate_a20)
