@@ -19,6 +19,7 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/misc.h>
 #include <grub/device.h>
@@ -33,8 +34,6 @@
 #include <grub/env.h>
 #include <grub/raid.h>
 #include <grub/i18n.h>
-
-#include <grub_probe_init.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -59,26 +58,6 @@ enum {
 
 int print = PRINT_FS;
 static unsigned int argument_is_device = 0;
-
-void 
-grub_xputs_real (const char *str)
-{
-  fputs (str, stdout);
-}
-
-void (*grub_xputs) (const char *str) = grub_xputs_real;
-
-int
-grub_getkey (void)
-{
-  return -1;
-}
-
-void
-grub_refresh (void)
-{
-  fflush (stdout);
-}
 
 static void
 probe_partmap (grub_disk_t disk)
