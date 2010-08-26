@@ -21,6 +21,7 @@
 #include <grub/types.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/i18n.h>
 #include <grub/parser.h>
@@ -36,71 +37,6 @@
 #include <getopt.h>
 
 #include "progname.h"
-
-void 
-grub_xputs_real (const char *str)
-{
-  fputs (str, stdout);
-}
-
-void (*grub_xputs) (const char *str) = grub_xputs_real;
-
-int
-grub_getkey (void)
-{
-  return -1;
-}
-
-void
-grub_refresh (void)
-{
-  fflush (stdout);
-}
-
-char *
-grub_script_execute_argument_to_string (struct grub_script_arg *arg __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
-grub_script_execute_cmdline (struct grub_script_cmd *cmd __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
-grub_script_execute_cmdlist (struct grub_script_cmd *cmd __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
-grub_script_execute_cmdif (struct grub_script_cmd *cmd __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
-grub_script_execute_cmdfor (struct grub_script_cmd *cmd __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
-grub_script_execute_cmdwhile (struct grub_script_cmd *cmd __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
-grub_script_execute (struct grub_script *script)
-{
-  if (script == 0 || script->cmd == 0)
-    return 0;
-
-  return script->cmd->exec (script->cmd);
-}
 
 static struct option options[] =
   {

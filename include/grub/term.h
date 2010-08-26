@@ -459,6 +459,7 @@ grub_print_spaces (struct grub_term_output *term, int number_spaces)
     grub_putcode (' ', term);
 }
 
+extern void (*EXPORT_VAR (grub_term_poll_usb)) (void);
 
 /* For convenience.  */
 #define GRUB_TERM_ASCII_CHAR(c)	((c) & 0xff)
