@@ -40,8 +40,8 @@ except:
     print ("WARNING: %s already exists" % cipher_dir_out)
 
 cipher_files = os.listdir (cipher_dir_in)
-conf = open (os.path.join (outdir, "conf", "gcry.rmk"), "w")
-conf.write ("# -*- makefile -*-\n\n")
+conf = open (os.path.join ("grub-core", "Makefile.gcry.def"), "w")
+conf.write ("AutoGen definitions Makefile.tpl;\n\n")
 chlog = ""
 
 # Strictly speaking CRC32/CRC24 work on bytes so this value should be 1
@@ -62,7 +62,6 @@ mdblocksizes = {"_gcry_digest_spec_crc32" : 64,
                 "_gcry_digest_spec_whirlpool" : 64}
 
 cryptolist = open (os.path.join (cipher_dir_out, "crypto.lst"), "w")
-conf.write ("MAINTAINER_CLEANFILES += $(srcdir)/conf/gcry.rmk $(srcdir)/lib/libgcrypt-grub/cipher/ChangeLog $(srcdir)/lib/libgcrypt-grub/cipher/cipher.h $(srcdir)/lib/libgcrypt-grub/cipher/crypto.lst $(srcdir)/lib/libgcrypt-grub/cipher/g10lib.h $(srcdir)/lib/libgcrypt-grub/cipher/memory.h $(srcdir)/lib/libgcrypt-grub/cipher/types.h\n");
 
 # rijndael is the only cipher using aliases. So no need for mangling, just
 # hardcode it
@@ -88,7 +87,6 @@ for cipher_file in cipher_files:
         continue
     nch = False
     if re.match (".*\.[ch]$", cipher_file):
-        conf.write ("MAINTAINER_CLEANFILES += $(srcdir)/lib/libgcrypt-grub/cipher/" + cipher_file + "\n");
         isc = re.match (".*\.c$", cipher_file)
         f = open (infile, "r")
         fw = open (outfile, "w")
@@ -276,11 +274,13 @@ for cipher_file in cipher_files:
                 chlognew = "%s\n	%s" % (chlognew, chmsg)
                 fw.write ("  grub_md_unregister (&%s);\n" % mdname)
             fw.write ("}\n")
-            conf.write ("pkglib_MODULES += %s.mod\n" % modname)
-            conf.write ("%s_mod_SOURCES = %s\n" %\
-                            (modname, modfiles))
-            conf.write ("%s_mod_CFLAGS = $(COMMON_CFLAGS) -Wno-missing-field-initializers -Wno-error -I$(srcdir)/lib/libgcrypt_wrap\n" % modname)
-            conf.write ("%s_mod_LDFLAGS = $(COMMON_LDFLAGS)\n\n" % modname)
+            conf.write ("module = {\n")
+            conf.write ("  name = %s;\n" % modname)
+            for src in modfiles.split():
+                conf.write ("  common = %s;\n" % src)
+            conf.write ("  cflags = '$(CFLAGS_GCRY)';\n");
+            conf.write ("  cppflags = '$(CPPFLAGS_GCRY)';\n");
+            conf.write ("};\n\n")
         elif isc and cipher_file != "camellia.c":
             print ("WARNING: C file isn't a module: %s" % cipher_file)
         f.close ()

@@ -828,11 +828,30 @@ Since GNU/Hurd is Multiboot-compliant, it is easy to boot it; there is
 nothing special about it. But do not forget that you have to specify a
 root partition to the kernel.
 
-FIXME: this section is incomplete.
-
 @enumerate
 @item
-Run the command @command{boot} (@pxref{boot}).
+Set GRUB's root device to the same drive as GNU/Hurd's.  The command
+@code{search --file --set /boot/gnumach.gz} or similar may help you
+(@pxref{search}).
+
+@item 
+Load the kernel and the modules, like this:
+
+@example
+@group
+grub> @kbd{multiboot /boot/gnumach.gz root=device:hd0s1}
+grub> @kbd{module  /hurd/ext2fs.static ext2fs --readonly \
+                   --multiboot-command-line='$@{kernel-command-line@}' \
+                   --host-priv-port='$@{host-port@}' \
+                   --device-master-port='$@{device-port@}' \
+                   --exec-server-task='$@{exec-task@}' -T typed '$@{root@}' \
+                   '$(task-create)' '$(task-resume)'}
+grub> @kbd{module /lib/ld.so.1 exec /hurd/exec '$(exec-task=task-create)'}
+@end group
+@end example
+
+@item
+Finally, run the command @command{boot} (@pxref{boot}).
 @end enumerate
 
 
@@ -1062,6 +1081,11 @@ only to the default menu entry, after those listed in
 As @samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT}, but for
 NetBSD.
 
+@item GRUB_CMDLINE_XEN
+@itemx GRUB_CMDLINE_XEN_DEFAULT
+As @samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT}, but for
+Linux and Xen.
+
 @item GRUB_DISABLE_LINUX_UUID
 Normally, @command{grub-mkconfig} will generate menu entries that use
 universally-unique identifiers (UUIDs) to identify the root filesystem to
@@ -1113,8 +1137,8 @@ try several modes in sequence.
 Depending on your kernel, your distribution, your graphics card, and the
 phase of the moon, note that using this option may cause GNU/Linux to suffer
 from various display problems, particularly during the early part of the
-boot sequence.  If you have problems, simply unset this option and GRUB will
-tell Linux to boot in normal text mode.
+boot sequence.  If you have problems, set this option to @samp{text} and
+GRUB will tell Linux to boot in normal text mode.
 
 @item GRUB_DISABLE_OS_PROBER
 Normally, @command{grub-mkconfig} will try to use the external
@@ -1142,6 +1166,142 @@ that file, making sure to leave at least the first two lines intact.
 
 @node Shell-like scripting
 @section Writing full configuration files directly
+
+@c Some of this section is derived from the GNU Bash manual page, also
+@c copyrighted by the FSF.
+
+@file{grub.cfg} is written in GRUB's built-in scripting language, which has
+a syntax quite similar to that of GNU Bash and other Bourne shell
+derivatives.
+
+@heading Words
+
+A @dfn{word} is a sequence of characters considered as a single unit by
+GRUB.  Words are separated by @dfn{metacharacters}, which are the following
+plus space, tab, and newline:
+
+@example
+@{ @} | & $ ; < >
+@end example
+ 
+Quoting may be used to include metacharacters in words; see below.
+
+@heading Reserved words
+
+Reserved words have a special meaning to GRUB.  The following words are
+recognised as reserved when unquoted and either the first word of a simple
+command or the third word of a @code{for} command:
+
+@example
+! [[ ]] @{ @}
+case do done elif else esac fi for function
+if in menuentry select then time until while
+@end example
+
+Not all of these reserved words have a useful purpose yet; some are reserved
+for future expansion.
+
+@heading Quoting
+
+Quoting is used to remove the special meaning of certain characters or
+words.  It can be used to treat metacharacters as part of a word, to prevent
+reserved words from being recognised as such, and to prevent variable
+expansion.
+
+There are three quoting mechanisms: the escape character, single quotes, and
+double quotes.
+
+A non-quoted backslash (\) is the @dfn{escape character}.  It preserves the
+literal value of the next character that follows, with the exception of
+newline.
+
+Enclosing characters in single quotes preserves the literal value of each
+character within the quotes.  A single quote may not occur between single
+quotes, even when preceded by a backslash.
+
+Enclosing characters in double quotes preserves the literal value of all
+characters within the quotes, with the exception of @samp{$} and @samp{\}.
+The @samp{$} character retains its special meaning within double quotes.
+The backslash retains its special meaning only when followed by one of the
+following characters: @samp{$}, @samp{"}, @samp{\}, or newline.  A
+backslash-newline pair is treated as a line continuation (that is, it is
+removed from the input stream and effectively ignored).  A double quote may
+be quoted within double quotes by preceding it with a backslash.
+
+@heading Variable expansion
+
+The @samp{$} character introduces variable expansion.  The variable name to
+be expanded may be enclosed in braces, which are optional but serve to
+protect the variable to be expanded from characters immediately following it
+which could be interpreted as part of the name.
+
+Normal variable names begin with an alphabetic character, followed by zero
+or more alphanumeric characters.
+
+Positional variable names consist of one or more digits.  These are reserved
+for future expansion.
+
+The special variable name @samp{?} expands to the exit status of the most
+recently executed command.
+
+@heading Comments
+
+A word beginning with @samp{#} causes that word and all remaining characters
+on that line to be ignored.
+
+@heading Simple commands
+
+A @dfn{simple command} is a sequence of words separated by spaces or tabs
+and terminated by a semicolon or a newline.  The first word specifies the
+command to be executed.  The remaining words are passed as arguments to the
+invoked command.
+
+The return value of a simple command is its exit status.
+
+@heading Compound commands
+
+A @dfn{compound command} is one of the following:
+
+@table @asis
+@item for @var{name} in @var{word} @dots{}; do @var{list}; done
+The list of words following @code{in} is expanded, generating a list of
+items.  The variable @var{name} is set to each element of this list in turn,
+and @var{list} is executed each time.  The return value is the exit status
+of the last command that executes.  If the expansion of the items following
+@code{in} results in an empty list, no commands are executed, and the return
+status is 0.
+
+@item if @var{list}; then @var{list}; [elif @var{list}; then @var{list};] @dots{} [else @var{list};] fi
+The @code{if} @var{list} is executed.  If its exit status is zero, the
+@code{then} @var{list} is executed.  Otherwise, each @code{elif} @var{list}
+is executed in turn, and if its exit status is zero, the corresponding
+@code{then} @var{list} is executed and the command completes.  Otherwise,
+the @code{else} @var{list} is executed, if present.  The exit status is the
+exit status of the last command executed, or zero if no condition tested
+true.
+
+@item while @var{cond}; do @var{list}; done
+@itemx until @var{cond}; do @var{list}; done
+The @code{while} command continuously executes the @code{do} @var{list} as
+long as the last command in @var{cond} returns an exit status of zero.  The
+@code{until} command is identical to the @code{while} command, except that
+the test is negated; the @code{do} @var{list} is executed as long as the
+last command in @var{cond} returns a non-zero exit status.  The exit status
+of the @code{while} and @code{until} commands is the exit status of the last
+@code{do} @var{list} command executed, or zero if none was executed.
+
+@item function @var{name} @{ @var{command}; @dots{} @}
+This defines a function named @var{name}.  The @dfn{body} of the function is
+the list of commands within braces, each of which must be terminated with a
+semicolon or a newline.  This list of commands will be executed whenever
+@var{name} is specified as the name of a simple command.  Function
+definitions do not affect the exit status in @code{$?}.  When executed, the
+exit status of a function is the exit status of the last command executed in
+the body.
+
+@item menuentry @var{title} [@option{--class=class} @dots{}] [@option{--users=users}] [@option{--hotkey=key}] @{ @var{command}; @dots{} @}
+@xref{menuentry}.
+@end table
 
 
 @node Embedded configuration
@@ -1308,8 +1468,7 @@ simple.  Here is an example:
 @example
 @group
 grub> @kbd{serial --unit=0 --speed=9600}
-grub> @kbd{terminal_input serial}
-grub> @kbd{terminal_output serial}
+grub> @kbd{terminal_input serial; terminal_output serial}
 @end group
 @end example
 
@@ -1320,11 +1479,14 @@ command accepts many other options, so please refer to @ref{serial},
 for more details.
 
 The commands @command{terminal_input} (@pxref{terminal_input}) and
-@command{terminal_output} (@pxref{terminal_output} choose which type of
+@command{terminal_output} (@pxref{terminal_output}) choose which type of
 terminal you want to use. In the case above, the terminal will be a
 serial terminal, but you can also pass @code{console} to the command,
 as @samp{terminal serial console}. In this case, a terminal in which
-you press any key will be selected as a GRUB terminal.
+you press any key will be selected as a GRUB terminal. In the example above,
+note that you need to put both commands on the same command line, as you
+will lose the ability to type commands on the console after the first
+command.
 
 However, note that GRUB assumes that your terminal emulator is
 compatible with VT100 by default. This is true for most terminal
@@ -1789,9 +1951,26 @@ These commands can only be used in the menu:
 @node menuentry
 @subsection menuentry
 
-@deffn Command title name @dots{}
-Start a new boot entry, and set its name to the contents of the rest of
-the line, starting with the first non-space character.
+@deffn Command menuentry @var{title} @
+ [@option{--class=class} @dots{}] [@option{--users=users}] @
+ [@option{--hotkey=key}] @
+ @{ @var{command}; @dots{} @}
+This defines a GRUB menu entry named @var{title}.  When this entry is
+selected from the menu, GRUB will set the @var{chosen} environment variable
+to @var{title}, execute the list of commands given within braces, and if the
+last command in the list returned successfully and a kernel was loaded it
+will execute the @command{boot} command.
+
+The @option{--class} option may be used any number of times to group menu
+entries into classes.  Menu themes may display different classes using
+different styles.
+
+The @option{--users} option grants specific users access to specific menu
+entries.  @xref{Security}.
+
+The @option{--hotkey} option associates a hotkey with a menu entry.
+@var{key} may be a single letter, or one of the aliases @samp{backspace},
+@samp{tab}, or @samp{delete}.
 @end deffn
 
 
@@ -1885,7 +2064,9 @@ The @option{-a} (@option{--ascii}), @option{-u} (@option{--utf8}), and
 @option{-v} (@option{--visual-utf8}) options control how non-ASCII text is
 displayed.  @option{-a} specifies an ASCII-only terminal; @option{-u}
 specifies logically-ordered UTF-8; and @option{-v} specifies
-visually-ordered UTF-8.
+"visually-ordered UTF-8" (in other words, arranged such that a terminal
+emulator without bidirectional text support will display right-to-left text
+in the proper order; this is not really proper UTF-8, but a workaround).
 
 If no option or terminal type is specified, the current terminal type is
 printed.
@@ -1932,6 +2113,7 @@ you forget a command, you can run the command @command{help}
 * pxe_unload::                  Unload the PXE environment
 * reboot::                      Reboot your computer
 * search::                      Search devices by file, label, or UUID
+* sendkey::                     Emulate keystrokes
 * set::                         Set an environment variable
 * unset::                       Unset an environment variable
 * uppermem::                    Set the upper memory size
@@ -2439,6 +2621,154 @@ be slow.
 The @samp{search.file}, @samp{search.fs_label}, and @samp{search.fs_uuid}
 commands are aliases for @samp{search --file}, @samp{search --label}, and
 @samp{search --fs-uuid} respectively.
+@end deffn
+
+
+@node sendkey
+@subsection sendkey
+
+@deffn Command sendkey @
+ [@option{--num}|@option{--caps}|@option{--scroll}|@option{--insert}|@
+@option{--pause}|@option{--left-shift}|@option{--right-shift}|@
+@option{--sysrq}|@option{--numkey}|@option{--capskey}|@option{--scrollkey}|@
+@option{--insertkey}|@option{--left-alt}|@option{--right-alt}|@
+@option{--left-ctrl}|@option{--right-ctrl} @
+ @samp{on}|@samp{off}]@dots{} @
+ [@option{no-led}] @
+ keystroke
+Insert keystrokes into the keyboard buffer when booting.  Sometimes an
+operating system or chainloaded boot loader requires particular keys to be
+pressed: for example, one might need to press a particular key to enter
+"safe mode", or when chainloading another boot loader one might send
+keystrokes to it to navigate its menu.  
+
+You may provide up to 16 keystrokes (the length of the BIOS keyboard
+buffer).  Keystroke names may be upper-case or lower-case letters, digits,
+or taken from the following table:
+
+@c Please keep this table in the same order as in
+@c commands/i386/pc/sendkey.c, for ease of maintenance.
+@c Exception: The function and numeric keys are sorted, for aesthetics.
+
+@multitable @columnfractions .4 .5
+@headitem Name @tab Key
+@item escape @tab Escape
+@item exclam @tab !
+@item at @tab @@
+@item numbersign @tab #
+@item dollar @tab $
+@item percent @tab %
+@item caret @tab ^
+@item ampersand @tab &
+@item asterisk @tab *
+@item parenleft @tab (
+@item parenright @tab )
+@item minus @tab -
+@item underscore @tab _
+@item equal @tab =
+@item plus @tab +
+@item backspace @tab Backspace
+@item tab @tab Tab
+@item bracketleft @tab [
+@item braceleft @tab @{
+@item bracketright @tab ]
+@item braceright @tab @}
+@item enter @tab Enter
+@item control @tab press and release Control
+@item semicolon @tab ;
+@item colon @tab :
+@item quote @tab '
+@item doublequote @tab "
+@item backquote @tab `
+@item tilde @tab ~
+@item shift @tab press and release left Shift
+@item backslash @tab \
+@item bar @tab |
+@item comma @tab ,
+@item less @tab <
+@item period @tab .
+@item greater @tab >
+@item slash @tab /
+@item question @tab ?
+@item rshift @tab press and release right Shift
+@item alt @tab press and release Alt
+@item space @tab space bar
+@item capslock @tab Caps Lock
+@item F1 @tab F1
+@item F2 @tab F2
+@item F3 @tab F3
+@item F4 @tab F4
+@item F5 @tab F5
+@item F6 @tab F6
+@item F7 @tab F7
+@item F8 @tab F8
+@item F9 @tab F9
+@item F10 @tab F10
+@item F11 @tab F11
+@item F12 @tab F12
+@item num1 @tab 1 (numeric keypad)
+@item num2 @tab 2 (numeric keypad)
+@item num3 @tab 3 (numeric keypad)
+@item num4 @tab 4 (numeric keypad)
+@item num5 @tab 5 (numeric keypad)
+@item num6 @tab 6 (numeric keypad)
+@item num7 @tab 7 (numeric keypad)
+@item num8 @tab 8 (numeric keypad)
+@item num9 @tab 9 (numeric keypad)
+@item num0 @tab 0 (numeric keypad)
+@item numperiod @tab . (numeric keypad)
+@item numend @tab End (numeric keypad)
+@item numdown @tab Down (numeric keypad)
+@item numpgdown @tab Page Down (numeric keypad)
+@item numleft @tab Left (numeric keypad)
+@item numcenter @tab 5 with Num Lock inactive (numeric keypad)
+@item numright @tab Right (numeric keypad)
+@item numhome @tab Home (numeric keypad)
+@item numup @tab Up (numeric keypad)
+@item numpgup @tab Page Up (numeric keypad)
+@item numinsert @tab Insert (numeric keypad)
+@item numdelete @tab Delete (numeric keypad)
+@item numasterisk @tab * (numeric keypad)
+@item numminus @tab - (numeric keypad)
+@item numplus @tab + (numeric keypad)
+@item numslash @tab / (numeric keypad)
+@item numenter @tab Enter (numeric keypad)
+@item delete @tab Delete
+@item insert @tab Insert
+@item home @tab Home
+@item end @tab End
+@item pgdown @tab Page Down
+@item pgup @tab Page Up
+@item down @tab Down
+@item up @tab Up
+@item left @tab Left
+@item right @tab Right
+@end multitable
+
+As well as keystrokes, the @command{sendkey} command takes various options
+that affect the BIOS keyboard status flags.  These options take an @samp{on}
+or @samp{off} parameter, specifying that the corresponding status flag be
+set or unset; omitting the option for a given status flag will leave that
+flag at its initial state at boot.  The @option{--num}, @option{--caps},
+@option{--scroll}, and @option{--insert} options emulate setting the
+corresponding mode, while the @option{--numkey}, @option{--capskey},
+@option{--scrollkey}, and @option{--insertkey} options emulate pressing and
+holding the corresponding key.  The other status flag options are
+self-explanatory.
+
+If the @option{--no-led} option is given, the status flag options will have
+no effect on keyboard LEDs.
+
+If the @command{sendkey} command is given multiple times, then only the last
+invocation has any effect.
+
+Since @command{sendkey} manipulates the BIOS keyboard buffer, it may cause
+hangs, reboots, or other misbehaviour on some systems.  If the operating
+system or boot loader that runs after GRUB uses its own keyboard driver
+rather than the BIOS keyboard functions, then @command{sendkey} will have no
+effect.
+
+This command is only available on PC BIOS systems.
 @end deffn
 
 

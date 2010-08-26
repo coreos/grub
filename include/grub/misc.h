@@ -231,10 +231,10 @@ grub_strtol (const char *str, char **end, int base)
     }
 }
 
-char *EXPORT_FUNC(grub_strdup) (const char *s);
-char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n);
+char *EXPORT_FUNC(grub_strdup) (const char *s) __attribute__ ((warn_unused_result));
+char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n) __attribute__ ((warn_unused_result));
 void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
-grub_size_t EXPORT_FUNC(grub_strlen) (const char *s);
+grub_size_t EXPORT_FUNC(grub_strlen) (const char *s) __attribute__ ((warn_unused_result));
 int EXPORT_FUNC(grub_printf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 int EXPORT_FUNC(grub_printf_) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 
@@ -261,8 +261,8 @@ int EXPORT_FUNC(grub_snprintf) (char *str, grub_size_t n, const char *fmt, ...)
 int EXPORT_FUNC(grub_vsnprintf) (char *str, grub_size_t n, const char *fmt,
 				 va_list args);
 char *EXPORT_FUNC(grub_xasprintf) (const char *fmt, ...)
-     __attribute__ ((format (printf, 1, 2)));
-char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args);
+     __attribute__ ((format (printf, 1, 2))) __attribute__ ((warn_unused_result));
+char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args) __attribute__ ((warn_unused_result));
 void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
 grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
@@ -286,6 +286,15 @@ grub_abs (int x)
     return (unsigned int) (-x);
   else
     return (unsigned int) x;
+}
+
+static inline long
+grub_min (long x, long y)
+{
+  if (x < y)
+    return x;
+  else
+    return y;
 }
 
 static inline long
@@ -313,6 +322,13 @@ void EXPORT_FUNC (grub_reboot) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC (grub_halt) (int no_apm) __attribute__ ((noreturn));
 #else
 void EXPORT_FUNC (grub_halt) (void) __attribute__ ((noreturn));
+#endif
+
+#ifdef GRUB_MACHINE_EMU
+/* Flag to control module autoloading in normal mode.  */
+extern int EXPORT_VAR(grub_no_autoload);
+#else
+#define grub_no_autoload 0
 #endif
 
 #endif /* ! GRUB_MISC_HEADER */

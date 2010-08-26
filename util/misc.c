@@ -35,11 +35,13 @@
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/cache.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/mm.h>
 #include <grub/term.h>
 #include <grub/time.h>
 #include <grub/i18n.h>
+#include <grub/script_sh.h>
 
 #define ENABLE_RELOCATABLE 0
 #include "progname.h"
@@ -178,6 +180,97 @@ grub_util_write_image (const char *img, size_t size, FILE *out)
     grub_util_error ("write failed");
 }
 
+char *
+grub_script_execute_argument_to_string (struct grub_script_arg *arg __attribute__ ((unused)))
+{
+  return 0;
+}
+
+grub_err_t
+grub_script_execute_cmdline (struct grub_script_cmd *cmd __attribute__ ((unused)))
+{
+  return 0;
+}
+
+grub_err_t
+grub_script_execute_cmdlist (struct grub_script_cmd *cmd __attribute__ ((unused)))
+{
+  return 0;
+}
+
+grub_err_t
+grub_script_execute_cmdif (struct grub_script_cmd *cmd __attribute__ ((unused)))
+{
+  return 0;
+}
+
+grub_err_t
+grub_script_execute_cmdfor (struct grub_script_cmd *cmd __attribute__ ((unused)))
+{
+  return 0;
+}
+
+grub_err_t
+grub_script_execute_cmdwhile (struct grub_script_cmd *cmd __attribute__ ((unused)))
+{
+  return 0;
+}
+
+grub_err_t
+grub_script_execute_menuentry (struct grub_script_cmd *cmd __attribute__ ((unused)))
+{
+  return 0;
+}
+
+grub_err_t
+grub_script_execute (struct grub_script *script)
+{
+  if (script == 0 || script->cmd == 0)
+    return 0;
+
+  return script->cmd->exec (script->cmd);
+}
+
+void
+grub_putchar (int c)
+{
+  putchar (c);
+}
+
+int
+grub_getkey (void)
+{
+  return -1;
+}
+
+void
+grub_refresh (void)
+{
+  fflush (stdout);
+}
+
+static void
+grub_xputs_real (const char *str)
+{
+  fputs (str, stdout);
+}
+
+void (*grub_xputs) (const char *str) = grub_xputs_real;
+
+int
+grub_dl_ref (grub_dl_t mod)
+{
+  (void) mod;
+  return 0;
+}
+
+int
+grub_dl_unref (grub_dl_t mod)
+{
+  (void) mod;
+  return 0;
+}
+
 /* Some functions that we don't use.  */
 void
 grub_mm_init_region (void *addr __attribute__ ((unused)),
@@ -185,12 +278,10 @@ grub_mm_init_region (void *addr __attribute__ ((unused)),
 {
 }
 
-#if GRUB_NO_MODULES
 void
 grub_register_exported_symbols (void)
 {
 }
-#endif
 
 #ifdef __MINGW32__
 
@@ -212,14 +303,6 @@ grub_millisleep (grub_uint32_t ms)
   nanosleep (&ts, NULL);
 }
 
-#endif
-
-#if !(defined (__i386__) || defined (__x86_64__)) && GRUB_NO_MODULES
-void
-grub_arch_sync_caches (void *address __attribute__ ((unused)),
-		       grub_size_t len __attribute__ ((unused)))
-{
-}
 #endif
 
 #ifdef __MINGW32__
@@ -294,17 +377,3 @@ grub_util_init_nls (void)
 #endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
 }
 #endif
-
-int
-grub_dl_ref (grub_dl_t mod)
-{
-  (void) mod;
-  return 0;
-}
-
-int
-grub_dl_unref (grub_dl_t mod)
-{
-  (void) mod;
-  return 0;
-}

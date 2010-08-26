@@ -124,10 +124,10 @@ halt
 EOF
 
 isofile=`mktemp`
-grub-mkrescue --grub-mkimage=${builddir}/grub-mkimage --output=${isofile} \
-  --override-directory=${builddir} \
-  /boot/grub/grub.cfg=${cfgfile} /boot/grub/testcase.cfg=${source} \
-  >/dev/null 2>&1
+sh @builddir@/grub-mkrescue --grub-mkimage=${builddir}/grub-mkimage \
+  --override-directory=${builddir}/grub-core --output=${isofile} \
+  boot/grub/grub.cfg=${cfgfile} \
+  /boot/grub/testcase.cfg=${source} >/dev/null 2>&1
 
 hdafile=`mktemp`
 cp ${isofile} ${hdafile}
