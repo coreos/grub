@@ -44,8 +44,8 @@ struct grub_script
   struct grub_script_mem *mem;
   struct grub_script_cmd *cmd;
 
-  /* Other grub_script's from block arguments.  */
-  struct grub_script *siblings;
+  /* grub_scripts from block arguments.  */
+  struct grub_script *next_siblings;
   struct grub_script *children;
 };
 
@@ -225,6 +225,7 @@ void grub_script_init (void);
 void grub_script_fini (void);
 
 void grub_script_mem_free (struct grub_script_mem *mem);
+
 void grub_script_argv_free    (struct grub_script_argv *argv);
 int grub_script_argv_make     (struct grub_script_argv *argv, int argc, char **args);
 int grub_script_argv_next     (struct grub_script_argv *argv);
@@ -318,6 +319,12 @@ grub_err_t grub_script_shift (grub_command_t cmd, int argc, char *argv[]);
 /* SETPARAMS command for GRUB script functions.  */
 grub_err_t grub_script_setparams (grub_command_t cmd, int argc, char *argv[]);
 
+/* Break command for loops.  */
+grub_err_t grub_script_break (grub_command_t cmd, int argc, char *argv[]);
+
+/* SHIFT command for GRUB script.  */
+grub_err_t grub_script_shift (grub_command_t cmd, int argc, char *argv[]);
+
 /* This variable points to the parsed command.  This is used to
    communicate with the bison code.  */
 extern struct grub_script_cmd *grub_script_parsed;
@@ -381,5 +388,25 @@ grub_script_put (struct grub_script *script)
 
 grub_err_t
 grub_normal_parse_line (char *line, grub_reader_getline_t getline);
+
+static inline struct grub_script *
+grub_script_ref (struct grub_script *script)
+{
+  if (script)
+    script->refcnt++;
+  return script;
+}
+
+static inline void
+grub_script_unref (struct grub_script *script)
+{
+  if (! script)
+    return;
+
+  if (script->refcnt == 0)
+    grub_script_free (script);
+  else
+    script->refcnt--;
+}
 
 #endif /* ! GRUB_NORMAL_PARSER_HEADER */
