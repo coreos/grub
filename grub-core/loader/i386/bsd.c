@@ -67,6 +67,7 @@ static grub_uint32_t bootflags;
 static int is_elf_kernel, is_64bit;
 static grub_uint32_t openbsd_root;
 struct grub_relocator *relocator = NULL;
+static struct grub_openbsd_ramdisk_descriptor openbsd_ramdisk;
 
 struct bsd_tag
 {
@@ -1253,7 +1254,13 @@ grub_bsd_load_elf (grub_elf_t elf)
 
       kern_chunk_src = get_virtual_current_address (ch);
 
-      return grub_elf32_load (elf, grub_bsd_elf32_hook, 0, 0);
+      err = grub_elf32_load (elf, grub_bsd_elf32_hook, 0, 0);
+      if (err)
+	return err;
+      if (kernel_type != KERNEL_TYPE_OPENBSD)
+	return GRUB_ERR_NONE;
+      return grub_openbsd_find_ramdisk32 (elf->file, kern_start,
+					  kern_chunk_src, &openbsd_ramdisk);
     }
   else if (grub_elf_is_elf64 (elf))
     {
@@ -1290,7 +1297,13 @@ grub_bsd_load_elf (grub_elf_t elf)
 	kern_chunk_src = get_virtual_current_address (ch);
       }
 
-      return grub_elf64_load (elf, grub_bsd_elf64_hook, 0, 0);
+      err = grub_elf64_load (elf, grub_bsd_elf64_hook, 0, 0);
+      if (err)
+	return err;
+      if (kernel_type != KERNEL_TYPE_OPENBSD)
+	return GRUB_ERR_NONE;
+      return grub_openbsd_find_ramdisk64 (elf->file, kern_start,
+					  kern_chunk_src, &openbsd_ramdisk);
     }
   else
     return grub_error (GRUB_ERR_BAD_OS, "invalid ELF");
@@ -1305,6 +1318,8 @@ grub_bsd_load (int argc, char *argv[])
   grub_dl_ref (my_mod);
 
   grub_loader_unset ();
+
+  grub_memset (&openbsd_ramdisk, 0, sizeof (openbsd_ramdisk));
 
   if (argc == 0)
     {
@@ -1874,11 +1889,55 @@ grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
   return err;
 }
 
+static grub_err_t
+grub_cmd_openbsd_ramdisk (grub_command_t cmd __attribute__ ((unused)),
+		      int argc, char *args[])
+{
+  grub_file_t file;
+  grub_size_t size;
+
+  if (argc != 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
+
+  if (kernel_type != KERNEL_TYPE_OPENBSD)
+    return grub_error (GRUB_ERR_BAD_OS, "no kOpenBSD loaded");
+
+  if (!openbsd_ramdisk.max_size)
+    return grub_error (GRUB_ERR_BAD_OS, "your kOpenBSD doesn't support ramdisk");
+
+  file = grub_gzfile_open (args[0], 1);
+  if (! file)
+    return grub_error (GRUB_ERR_FILE_NOT_FOUND,
+		       "couldn't load ramdisk");
+
+  size = grub_file_size (file);
+
+  if (size > openbsd_ramdisk.max_size)
+    {
+      grub_file_close (file);
+      return grub_error (GRUB_ERR_BAD_OS, "your kOpenBSD supports ramdisk only"
+			 " up to %u bytes, however you supplied a %u bytes one",
+			 openbsd_ramdisk.max_size, size);
+    }
+
+  if (grub_file_read (file, openbsd_ramdisk.target, size)
+      != (grub_ssize_t) (size))
+    {
+      grub_file_close (file);
+      grub_error_push ();
+      return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", args[0]);
+    }
+  grub_memset (openbsd_ramdisk.target + size, 0,
+	       openbsd_ramdisk.max_size - size);
+  *openbsd_ramdisk.size = ALIGN_UP (size, 512);
+
+  return GRUB_ERR_NONE;
+}
 
 static grub_extcmd_t cmd_freebsd, cmd_openbsd, cmd_netbsd;
 static grub_command_t cmd_freebsd_loadenv, cmd_freebsd_module;
 static grub_command_t cmd_netbsd_module, cmd_freebsd_module_elf;
-static grub_command_t cmd_netbsd_module_elf;
+static grub_command_t cmd_netbsd_module_elf, cmd_openbsd_ramdisk;
 
 GRUB_MOD_INIT (bsd)
 {
@@ -1910,6 +1969,10 @@ GRUB_MOD_INIT (bsd)
     grub_register_command ("kfreebsd_module_elf", grub_cmd_freebsd_module_elf,
 			   0, N_("Load FreeBSD kernel module (ELF)."));
 
+  cmd_openbsd_ramdisk = grub_register_command ("kopenbsd_ramdisk",
+					       grub_cmd_openbsd_ramdisk, 0,
+					       "Load kOpenBSD ramdisk. ");
+
   my_mod = mod;
 }
 
@@ -1924,6 +1987,7 @@ GRUB_MOD_FINI (bsd)
   grub_unregister_command (cmd_netbsd_module);
   grub_unregister_command (cmd_freebsd_module_elf);
   grub_unregister_command (cmd_netbsd_module_elf);
+  grub_unregister_command (cmd_openbsd_ramdisk);
 
   grub_bsd_unload ();
 }

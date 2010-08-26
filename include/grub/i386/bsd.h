@@ -99,6 +99,22 @@ grub_err_t grub_freebsd_add_meta_module (char *filename, char *type,
 					 int argc, char **argv,
 					 grub_addr_t addr, grub_uint32_t size);
 
+struct grub_openbsd_ramdisk_descriptor
+{
+  grub_size_t max_size;
+  grub_uint8_t *target;
+  grub_uint32_t *size;
+};
+
+grub_err_t grub_openbsd_find_ramdisk32 (grub_file_t file,
+					grub_addr_t kern_start,
+					void *kern_chunk_src,
+					struct grub_openbsd_ramdisk_descriptor *desc);
+grub_err_t grub_openbsd_find_ramdisk64 (grub_file_t file,
+					grub_addr_t kern_start,
+					void *kern_chunk_src,
+					struct grub_openbsd_ramdisk_descriptor *desc);
+
 extern grub_uint8_t grub_bsd64_trampoline_start, grub_bsd64_trampoline_end;
 extern grub_uint32_t grub_bsd64_trampoline_selfjump;
 extern grub_uint32_t grub_bsd64_trampoline_gdt;

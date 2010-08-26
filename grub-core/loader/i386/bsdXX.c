@@ -503,4 +503,118 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
   return GRUB_ERR_NONE;
 }
 
+grub_err_t
+SUFFIX(grub_openbsd_find_ramdisk) (grub_file_t file,
+				   grub_addr_t kern_start,
+				   void *kern_chunk_src,
+				   struct grub_openbsd_ramdisk_descriptor *desc)
+{
+  unsigned symoff, stroff, symsize, strsize, symentsize;
 
+  {
+    grub_err_t err;
+    Elf_Ehdr e;
+    Elf_Shdr *s;
+    char *shdr;
+    
+    err = read_headers (file, &e, &shdr);
+    if (err)
+      return err;
+
+    for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) (shdr
+						  + e.e_shnum * e.e_shentsize);
+	 s = (Elf_Shdr *) ((char *) s + e.e_shentsize))
+      if (s->sh_type == SHT_SYMTAB)
+	break;
+    if (s >= (Elf_Shdr *) ((char *) shdr + e.e_shnum * e.e_shentsize))
+      {
+	grub_free (shdr);
+	return GRUB_ERR_NONE;
+      }
+
+    symsize = s->sh_size;
+    symentsize = s->sh_entsize;
+    symoff = s->sh_offset;
+    
+    s = (Elf_Shdr *) (shdr + e.e_shentsize * s->sh_link);
+    stroff = s->sh_offset;
+    strsize = s->sh_size;
+    grub_free (shdr);
+  }
+  {
+    Elf_Sym *syms, *sym, *imagesym = NULL, *sizesym = NULL;
+    unsigned i;
+    char *strs;
+
+    syms = grub_malloc (symsize);
+    if (!syms)
+      return grub_errno;
+
+    if (grub_file_seek (file, symoff) == (grub_off_t) -1)
+      {
+	grub_free (syms);
+	return grub_errno;
+      }
+    if (grub_file_read (file, syms, symsize) != (grub_ssize_t) symsize)
+      {
+	grub_free (syms);
+	if (! grub_errno)
+	  return grub_error (GRUB_ERR_BAD_OS, "invalid ELF");
+	return grub_errno;
+      }
+
+    strs = grub_malloc (strsize);
+    if (!strs)
+      {
+	grub_free (syms);
+	return grub_errno;
+      }
+
+    if (grub_file_seek (file, stroff) == (grub_off_t) -1)
+      return grub_errno;
+    if (grub_file_read (file, strs, strsize) != (grub_ssize_t) strsize)
+      {
+	grub_free (syms);
+	grub_free (strs);
+	if (! grub_errno)
+	  return grub_error (GRUB_ERR_BAD_OS, "invalid ELF");
+	return grub_errno;
+      }
+
+    for (i = 0, sym = syms; i < symsize / symentsize;
+       i++, sym = (Elf_Sym *) ((char *) sym + symentsize))
+      {
+	if (ELF_ST_TYPE (sym->st_info) != STT_OBJECT)
+	  continue;
+	if (!sym->st_name)
+	  continue;
+	if (grub_strcmp (strs + sym->st_name, "rd_root_image") == 0)
+	  imagesym = sym;
+	if (grub_strcmp (strs + sym->st_name, "rd_root_size") == 0)
+	  sizesym = sym;
+	if (imagesym && sizesym)
+	  break;
+      }
+    if (!imagesym || !sizesym)
+      {
+	grub_free (syms);
+	grub_free (strs);
+	return GRUB_ERR_NONE;
+      }
+    if (sizeof (*desc->size) != sizesym->st_size)
+      {
+	grub_free (syms);
+	grub_free (strs);
+	return grub_error (GRUB_ERR_BAD_OS, "unexpected size of rd_root_size");
+      }
+    desc->max_size = imagesym->st_size;
+    desc->target = (imagesym->st_value & 0xFFFFFF) - kern_start
+      + (grub_uint8_t *) kern_chunk_src;
+    desc->size = (grub_uint32_t *) ((sizesym->st_value & 0xFFFFFF) - kern_start
+				    + (grub_uint8_t *) kern_chunk_src);
+    grub_free (syms);
+    grub_free (strs);
+
+    return GRUB_ERR_NONE;
+  }
+}
