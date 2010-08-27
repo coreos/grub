@@ -1407,5 +1407,6 @@ module = {
 module = {
   name = legacycfg;
   common = commands/legacycfg.c;
+  common = lib/legacy_parse.c;
   enable = i386_pc;
 };
