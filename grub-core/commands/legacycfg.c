@@ -344,7 +344,41 @@ grub_cmd_legacy_initrd (struct grub_command *mycmd __attribute__ ((unused)),
 		     "no kernel with module support is loaded in legacy way");
 }
 
+static grub_err_t
+grub_cmd_legacy_color (struct grub_command *mycmd __attribute__ ((unused)),
+			int argc, char **args)
+{
+  if (argc < 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "color required");
+  grub_env_set ("color_normal", args[0]);
+  if (argc >= 2)
+    grub_env_set ("color_highlight", args[1]);
+  else
+    {
+      char *slash = grub_strchr (args[0], '/');
+      char *invert;
+      grub_size_t len;
+
+      len = grub_strlen (args[0]);
+      if (!slash)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad color specification %s",
+			   args[0]);
+      invert = grub_malloc (len + 1);
+      if (!invert)
+	return grub_errno;
+      grub_memcpy (invert, slash + 1, len - (slash - args[0]) - 1);
+      invert[len - (slash - args[0]) - 1] = '/'; 
+      grub_memcpy (invert + len - (slash - args[0]), args[0], slash - args[0]);
+      invert[len] = 0;
+      grub_env_set ("color_highlight", invert);
+      grub_free (invert);
+    }
+
+  return grub_errno;
+}
+
 static grub_command_t cmd_source, cmd_configfile, cmd_kernel, cmd_initrd;
+static grub_command_t cmd_color;
 
 GRUB_MOD_INIT(legacycfg)
 {
@@ -364,6 +398,10 @@ GRUB_MOD_INIT(legacycfg)
 					  grub_cmd_legacy_configfile,
 					  N_("FILE"),
 					  N_("Parse legacy config"));
+  cmd_color = grub_register_command ("legacy_color",
+				     grub_cmd_legacy_color,
+				     N_("NORMAL [HIGHLIGHT]"),
+				     N_("Simulate grub-legacy color command"));
 }
 
 GRUB_MOD_FINI(legacycfg)
@@ -372,4 +410,5 @@ GRUB_MOD_FINI(legacycfg)
   grub_unregister_command (cmd_configfile);
   grub_unregister_command (cmd_kernel);
   grub_unregister_command (cmd_initrd);
+  grub_unregister_command (cmd_color);
 }

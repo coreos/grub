@@ -62,7 +62,6 @@ struct legacy_command legacy_commands[] =
      "FILE1 FILE2",
      "Compare the file FILE1 with the FILE2 and inform the different values"
      " if any."},
-    /* FIXME: Implement command.  */
     {"color", "legacy_color '%s' '%s'\n", 2, {TYPE_VERBATIM, TYPE_VERBATIM},
      FLAG_IGNORE_REST, "NORMAL [HIGHLIGHT]",
      "Change the menu colors. The color NORMAL is used for most"
