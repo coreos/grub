@@ -48,65 +48,166 @@ struct legacy_command
   enum {
     FLAG_IGNORE_REST = 1
   } flags;
+  const char *shortdesc;
+  const char *longdesc;
 };
 
 struct legacy_command legacy_commands[] =
   {
-    {"blocklist", "blocklist '%s'\n", 1, {TYPE_FILE}, 0},
-    {"boot", "boot\n", 0, {}, 0},
+    {"blocklist", "blocklist '%s'\n", 1, {TYPE_FILE}, 0, "FILE",
+     "Print the blocklist notation of the file FILE."
+    },
+    {"boot", "boot\n", 0, {}, 0, 0,
+     "Boot the OS/chain-loader which has been loaded."},
     /* bootp unsupported.  */
-    {"cat", "cat '%s'\n", 1, {TYPE_FILE}, 0},
+    {"cat", "cat '%s'\n", 1, {TYPE_FILE}, 0, "FILE",
+     "Print the contents of the file FILE."},
     {"chainloader", "chainloader %s '%s'\n", 2, {TYPE_FORCE_OPTION, TYPE_FILE},
-     0},
-    {"cmp", "cmp '%s' '%s'\n", 2, {TYPE_FILE, TYPE_FILE}, FLAG_IGNORE_REST},
+     0, "[--force] FILE",
+     "Load the chain-loader FILE. If --force is specified, then load it"
+     " forcibly, whether the boot loader signature is present or not."},
+    {"cmp", "cmp '%s' '%s'\n", 2, {TYPE_FILE, TYPE_FILE}, FLAG_IGNORE_REST,
+     "FILE1 FILE2",
+     "Compare the file FILE1 with the FILE2 and inform the different values"
+     " if any."},
     /* FIXME: Implement command.  */
     {"color", "legacy_color '%s' '%s'\n", 2, {TYPE_VERBATIM, TYPE_VERBATIM},
-     FLAG_IGNORE_REST},
-    {"configfile", "legacy_configfile '%s'\n", 1, {TYPE_FILE}, 0},
+     FLAG_IGNORE_REST, "NORMAL [HIGHLIGHT]",
+     "Change the menu colors. The color NORMAL is used for most"
+     " lines in the menu, and the color HIGHLIGHT is used to highlight the"
+     " line where the cursor points. If you omit HIGHLIGHT, then the"
+     " inverted color of NORMAL is used for the highlighted line."
+     " The format of a color is \"FG/BG\". FG and BG are symbolic color names."
+     " A symbolic color name must be one of these: black, blue, green,"
+     " cyan, red, magenta, brown, light-gray, dark-gray, light-blue,"
+     " light-green, light-cyan, light-red, light-magenta, yellow and white."
+     " But only the first eight names can be used for BG. You can prefix"
+     " \"blink-\" to FG if you want a blinking foreground color."},
+    {"configfile", "legacy_configfile '%s'\n", 1, {TYPE_FILE}, 0, "FILE",
+     "Load FILE as the configuration file."},
     {"debug",
      "if [ -z \"$debug\" ]; then set debug=all; else set debug=; fi\n",
-     0, {}, 0},
-    {"default", "set default='%s'; if [ x\"$default\" = xsaved ]; then load_env; set default=\"$saved_entry\"; fi\n", 1, {TYPE_VERBATIM}, 0},
+     0, {}, 0, 0, "Turn on/off the debug mode."},
+    {"default",
+     "set default='%s'; if [ x\"$default\" = xsaved ]; then load_env; "
+     "set default=\"$saved_entry\"; fi\n", 1, {TYPE_VERBATIM}, 0, 
+     "[NUM | `saved']",
+     "Set the default entry to entry number NUM (if not specified, it is"
+     " 0, the first entry) or the entry number saved by savedefault."},
     /* dhcp unsupported.  */
     /* displayapm unsupported.  */
-    {"displaymem", "lsmmap\n", 0, {}, 0},
+    {"displaymem", "lsmmap\n", 0, {}, 0, 0, 
+     "Display what GRUB thinks the system address space map of the"
+     " machine is, including all regions of physical RAM installed."},
     /* embed unsupported.  */
-    {"fallback", "set fallback='%s'\n", 1, {TYPE_VERBATIM}, 0},
-    {"find", "search -f '%s'\n", 1, {TYPE_FILE}, 0},
+    {"fallback", "set fallback='%s'\n", 1, {TYPE_VERBATIM}, 0, "NUM...",
+     "Go into unattended boot mode: if the default boot entry has any"
+     " errors, instead of waiting for the user to do anything, it"
+     " immediately starts over using the NUM entry (same numbering as the"
+     " `default' command). This obviously won't help if the machine"
+     " was rebooted by a kernel that GRUB loaded."},
+    {"find", "search -f '%s'\n", 1, {TYPE_FILE}, 0, "FILENAME",
+     "Search for the filename FILENAME in all of partitions and print the list of"
+     " the devices which contain the file."},
     /* fstest unsupported.  */
     /* geometry unsupported.  */
-    {"halt", "halt %s\n", 1, {TYPE_NOAPM_OPTION}, 0},
+    {"halt", "halt %s\n", 1, {TYPE_NOAPM_OPTION}, 0, "[--no-apm]",
+     "Halt your system. If APM is available on it, turn off the power using"
+     " the APM BIOS, unless you specify the option `--no-apm'."},
     /* help unsupported.  */    /* NUL_TERMINATE */
     /* hiddenmenu unsupported.  */
-    {"hide", "parttool '%s' hidden+\n", 1, {TYPE_PARTITION}, 0},
+    {"hide", "parttool '%s' hidden+\n", 1, {TYPE_PARTITION}, 0, "PARTITION",
+     "Hide PARTITION by setting the \"hidden\" bit in"
+     " its partition type code."},
     /* ifconfig unsupported.  */
     /* impsprobe unsupported.  */
     /* FIXME: Implement command.  */
-    {"initrd", "legacy_initrd '%s'\n", 1, {TYPE_FILE}, 0},
+    {"initrd", "legacy_initrd '%s' %s\n", 2, {TYPE_FILE, TYPE_REST_VERBATIM}, 0,
+     "FILE [ARG ...]",
+     "Load an initial ramdisk FILE for a Linux format boot image and set the"
+     " appropriate parameters in the Linux setup area in memory."},
     /* install unsupported.  */
     /* ioprobe unsupported.  */
     /* FIXME: implement command. */
-    {"kernel", "legacy_kernel %s '%s' %s\n", 3, {TYPE_TYPE_OPTION, TYPE_FILE,
-						 TYPE_REST_VERBATIM}, 0},
+    {"kernel", "legacy_kernel %s '%s' %s\n", 4, {TYPE_TYPE_OR_NOMEM_OPTION,
+						 TYPE_TYPE_OR_NOMEM_OPTION,
+						 TYPE_FILE,
+						 TYPE_REST_VERBATIM}, 0,
+     "[--no-mem-option] [--type=TYPE] FILE [ARG ...]",
+     "Attempt to load the primary boot image from FILE. The rest of the"
+     " line is passed verbatim as the \"kernel command line\".  Any modules"
+     " must be reloaded after using this command. The option --type is used"
+     " to suggest what type of kernel to be loaded. TYPE must be either of"
+     " \"netbsd\", \"freebsd\", \"openbsd\", \"linux\", \"biglinux\" and"
+     " \"multiboot\". The option --no-mem-option tells GRUB not to pass a"
+     " Linux's mem option automatically."},
     /* lock is handled separately. */
-    {"makeactive", "parttool \"$root\" boot+\n", 0, {}, 0},
+    {"makeactive", "parttool \"$root\" boot+\n", 0, {}, 0, 0
+     "Set the active partition on the root disk to GRUB's root device."
+     " This command is limited to _primary_ PC partitions on a hard disk."},
     {"map", "drivemap '%s' '%s'\n", 2, {TYPE_PARTITION, TYPE_PARTITION},
-     FLAG_IGNORE_REST},
+     FLAG_IGNORE_REST, "TO_DRIVE FROM_DRIVE",
+     "Map the drive FROM_DRIVE to the drive TO_DRIVE. This is necessary"
+     " when you chain-load some operating systems, such as DOS, if such an"
+     " OS resides at a non-first drive."},
     /* md5crypt unsupported.  */
-    {"module", "legacy_initrd '%s'\n", 1, {TYPE_FILE}, 0},
+    {"module", "legacy_initrd '%s' %s\n", 1, {TYPE_FILE, TYPE_REST_VERBATIM}, 0,
+     "FILE [ARG ...]",
+     "Load a boot module FILE for a Multiboot format boot image (no"
+     " interpretation of the file contents is made, so users of this"
+     " command must know what the kernel in question expects). The"
+     " rest of the line is passed as the \"module command line\", like"
+     " the `kernel' command."},
     /* modulenounzip unsupported.  */
-    {"pager", "set pager=%d\n", 1, {TYPE_BOOL}, 0},
+    /* FIXME: allow toggle.  */
+    {"pager", "set pager=%d\n", 1, {TYPE_BOOL}, 0, "[FLAG]",
+     "Toggle pager mode with no argument. If FLAG is given and its value"
+     " is `on', turn on the mode. If FLAG is `off', turn off the mode."},
     /* partnew unsupported.  */
-    {"parttype", "parttool '%s' type=%s\n", 2, {TYPE_PARTITION, TYPE_INT}, 0},
+    {"parttype", "parttool '%s' type=%s\n", 2, {TYPE_PARTITION, TYPE_INT}, 0,
+     "PART TYPE", "Change the type of the partition PART to TYPE."},
     /* password unsupported.  */    /* NUL_TERMINATE */
     /* pause unsupported.  */
     /* rarp unsupported.  */
-    {"read", "read_dword %s\n", 1, {TYPE_INT}, 0},
-    {"reboot", "reboot\n", 0, {}, 0},
-    {"root", "set root='%s'\n", 1, {TYPE_PARTITION}, 0},
-    {"rootnoverify", "set root='%s'\n", 1, {TYPE_PARTITION}, 0},
-    {"savedefault", "saved_entry=${chosen}; save_env saved_entry\n", 0, {}, 0},
-    {"serial", "serial %s\n", 1, {TYPE_REST_VERBATIM}, 0},
+    {"read", "read_dword %s\n", 1, {TYPE_INT}, 0, "ADDR",
+     "Read a 32-bit value from memory at address ADDR and"
+     " display it in hex format."},
+    {"reboot", "reboot\n", 0, {}, 0, 0, "Reboot your system."},
+    /* FIXME: Support HDBIAS.  */
+    {"root", "set root='%s'\n", 1, {TYPE_PARTITION}, 0, "[DEVICE [HDBIAS]]",
+     "Set the current \"root device\" to the device DEVICE, then"
+     " attempt to mount it to get the partition size (for passing the"
+     " partition descriptor in `ES:ESI', used by some chain-loaded"
+     " bootloaders), the BSD drive-type (for booting BSD kernels using"
+     " their native boot format), and correctly determine "
+     " the PC partition where a BSD sub-partition is located. The"
+     " optional HDBIAS parameter is a number to tell a BSD kernel"
+     " how many BIOS drive numbers are on controllers before the current"
+     " one. For example, if there is an IDE disk and a SCSI disk, and your"
+     " FreeBSD root partition is on the SCSI disk, then use a `1' for HDBIAS."},
+    {"rootnoverify", "set root='%s'\n", 1, {TYPE_PARTITION}, 0,
+     "[DEVICE [HDBIAS]]",
+     "Similar to `root', but don't attempt to mount the partition. This"
+     " is useful for when an OS is outside of the area of the disk that"
+     " GRUB can read, but setting the correct root device is still"
+     " desired. Note that the items mentioned in `root' which"
+     " derived from attempting the mount will NOT work correctly."},
+    /* FIXME: support arguments.  */
+    {"savedefault", "saved_entry=${chosen}; save_env saved_entry\n", 0, {}, 0,
+     "[NUM | `fallback']",
+     "Save the current entry as the default boot entry if no argument is"
+     " specified. If a number is specified, this number is saved. If"
+     " `fallback' is used, next fallback entry is saved."},
+    {"serial", "serial %s\n", 1, {TYPE_REST_VERBATIM}, 0, 
+     "[--unit=UNIT] [--port=PORT] [--speed=SPEED] [--word=WORD] "
+     "[--parity=PARITY] [--stop=STOP] [--device=DEV]",
+     "Initialize a serial device. UNIT is a digit that specifies which serial"
+     " device is used (e.g. 0 == COM1). If you need to specify the port number,"
+     " set it by --port. SPEED is the DTE-DTE speed. WORD is the word length,"
+     " PARITY is the type of parity, which is one of `no', `odd' and `even'."
+     " STOP is the length of stop bit(s). The option --device can be used only"
+     " in the grub shell, which specifies the file name of a tty device. The"
+     " default values are COM1, 9600, 8N1."},
     /* setkey unsupported.  */    /* NUL_TERMINATE */
     /* setup unsupported.  */
     /* terminal unsupported.  */    /* NUL_TERMINATE */
@@ -114,11 +215,16 @@ struct legacy_command legacy_commands[] =
     /* testload unsupported.  */
     /* testvbe unsupported.  */
     /* tftpserver unsupported.  */
-    {"timeout", "set timeout=%s\n", 1, {TYPE_INT}, 0},
+    {"timeout", "set timeout=%s\n", 1, {TYPE_INT}, 0, "SEC",
+     "Set a timeout, in SEC seconds, before automatically booting the"
+     " default entry (normally the first entry defined)."},
     /* title is handled separately. */
-    {"unhide", "parttool '%s' hidden-\n", 1, {TYPE_PARTITION}, 0},
+    {"unhide", "parttool '%s' hidden-\n", 1, {TYPE_PARTITION}, 0, "PARTITION",
+     "Unhide PARTITION by clearing the \"hidden\" bit in its"
+     " partition type code."},
     /* uppermem unsupported.  */
-    {"uuid", "search -u '%s'\n", 1, {TYPE_VERBATIM}, 0},
+    {"uuid", "search -u '%s'\n", 1, {TYPE_VERBATIM}, 0, "UUID",
+     "Find root by UUID"},
     /* vbeprobe unsupported.  */
   };
 
