@@ -113,14 +113,16 @@ struct legacy_command legacy_commands[] =
      " its partition type code."},
     /* ifconfig unsupported.  */
     /* impsprobe unsupported.  */
-    /* FIXME: Implement command.  */
+    /* FIXME: dublicate multiboot filename. */
     {"initrd", "legacy_initrd '%s' %s\n", 2, {TYPE_FILE, TYPE_REST_VERBATIM}, 0,
      "FILE [ARG ...]",
      "Load an initial ramdisk FILE for a Linux format boot image and set the"
      " appropriate parameters in the Linux setup area in memory."},
     /* install unsupported.  */
     /* ioprobe unsupported.  */
-    /* FIXME: implement command. */
+    /* FIXME: really support --no-mem-option.  */
+    /* FIXME: distinguish linux and biglinux.  */
+    /* FIXME: dublicate multiboot filename. */
     {"kernel", "legacy_kernel %s %s '%s' %s\n", 4, {TYPE_TYPE_OR_NOMEM_OPTION,
 						 TYPE_TYPE_OR_NOMEM_OPTION,
 						 TYPE_FILE,
@@ -133,7 +135,7 @@ struct legacy_command legacy_commands[] =
      " \"netbsd\", \"freebsd\", \"openbsd\", \"linux\", \"biglinux\" and"
      " \"multiboot\". The option --no-mem-option tells GRUB not to pass a"
      " Linux's mem option automatically."},
-    /* lock is handled separately. */
+    /* lock is unsupported. */
     {"makeactive", "parttool \"$root\" boot+\n", 0, {}, 0, 0,
      "Set the active partition on the root disk to GRUB's root device."
      " This command is limited to _primary_ PC partitions on a hard disk."},

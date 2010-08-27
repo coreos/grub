@@ -167,13 +167,199 @@ grub_cmd_legacy_configfile (struct grub_command *cmd __attribute__ ((unused)),
   return ret;
 }
 
-static grub_command_t cmd_source, cmd_configfile;
+static enum
+  { 
+    GUESS_IT, LINUX, MULTIBOOT, KFREEBSD, KNETBSD, KOPENBSD 
+  } kernel_type;
+
+static grub_err_t
+grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
+			int argc, char **args)
+{
+  int i;
+  int no_mem_option = 0;
+  struct grub_command *cmd;
+  for (i = 0; i < 2; i++)
+    {
+      /* FIXME: really support this.  */
+      if (argc >= 1 && grub_strcmp (args[0], "--no-mem-option") == 0)
+	{
+	  no_mem_option = 1;
+	  argc--;
+	  args++;
+	  continue;
+	}
+
+      /* FIXME: what's the difference?  */
+      if (argc >= 1 && (grub_strcmp (args[0], "--type=linux") == 0
+			|| grub_strcmp (args[0], "--type=biglinux") == 0))
+	{
+	  kernel_type = LINUX;
+	  argc--;
+	  args++;
+	  continue;
+	}
+
+      if (argc >= 1 && grub_strcmp (args[0], "--type=multiboot") == 0)
+	{
+	  kernel_type = MULTIBOOT;
+	  argc--;
+	  args++;
+	  continue;
+	}
+
+      if (argc >= 1 && grub_strcmp (args[0], "--type=freebsd") == 0)
+	{
+	  kernel_type = KFREEBSD;
+	  argc--;
+	  args++;
+	  continue;
+	}
+
+      if (argc >= 1 && grub_strcmp (args[0], "--type=openbsd") == 0)
+	{
+	  kernel_type = KOPENBSD;
+	  argc--;
+	  args++;
+	  continue;
+	}
+
+      if (argc >= 1 && grub_strcmp (args[0], "--type=netbsd") == 0)
+	{
+	  kernel_type = KNETBSD;
+	  argc--;
+	  args++;
+	  continue;
+	}
+    }
+
+  if (!argc)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "filename required");
+
+  do
+    {
+      /* First try Linux.  */
+      if (kernel_type == GUESS_IT || kernel_type == LINUX)
+	{
+	  cmd = grub_command_find ("linux16");
+	  if (cmd)
+	    {
+	      if (!(cmd->func) (cmd, argc, args))
+		{
+		  kernel_type = LINUX;
+		  return GRUB_ERR_NONE;
+		}
+	    }
+	  grub_errno = GRUB_ERR_NONE;
+	}
+
+      /* Then multiboot.  */
+      /* FIXME: dublicate multiboot filename. */
+      if (kernel_type == GUESS_IT || kernel_type == MULTIBOOT)
+	{
+	  cmd = grub_command_find ("multiboot");
+	  if (cmd)
+	    {
+	      if (!(cmd->func) (cmd, argc, args))
+		{
+		  kernel_type = MULTIBOOT;
+		  return GRUB_ERR_NONE;
+		}
+	    }
+	  grub_errno = GRUB_ERR_NONE;
+	}
+
+      /* k*BSD didn't really work well with grub-legacy.  */
+      if (kernel_type == GUESS_IT || kernel_type == KFREEBSD)
+	{
+	  cmd = grub_command_find ("kfreebsd");
+	  if (cmd)
+	    {
+	      if (!(cmd->func) (cmd, argc, args))
+		{
+		  kernel_type = KFREEBSD;
+		  return GRUB_ERR_NONE;
+		}
+	    }
+	  grub_errno = GRUB_ERR_NONE;
+	}
+      if (kernel_type == GUESS_IT || kernel_type == KNETBSD)
+	{
+	  cmd = grub_command_find ("knetbsd");
+	  if (cmd)
+	    {
+	      if (!(cmd->func) (cmd, argc, args))
+		{
+		  kernel_type = KNETBSD;
+		  return GRUB_ERR_NONE;
+		}
+	    }
+	  grub_errno = GRUB_ERR_NONE;
+	}
+      if (kernel_type == GUESS_IT || kernel_type == KOPENBSD)
+	{
+	  cmd = grub_command_find ("kopenbsd");
+	  if (cmd)
+	    {
+	      if (!(cmd->func) (cmd, argc, args))
+		{
+		  kernel_type = KOPENBSD;
+		  return GRUB_ERR_NONE;
+		}
+	    }
+	  grub_errno = GRUB_ERR_NONE;
+	}
+    }
+  while (0);
+
+  return grub_error (GRUB_ERR_BAD_OS, "couldn't load file %s\n",
+		     args[0]);
+}
+
+static grub_err_t
+grub_cmd_legacy_initrd (struct grub_command *mycmd __attribute__ ((unused)),
+			int argc, char **args)
+{
+  struct grub_command *cmd;
+
+  if (kernel_type == LINUX)
+    {
+      cmd = grub_command_find ("initrd16");
+      if (!cmd)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "command initrd16 not found");
+
+      return cmd->func (cmd, argc, args);
+    }
+  if (kernel_type == MULTIBOOT)
+    {
+      /* FIXME: dublicate module filename. */
+      cmd = grub_command_find ("module");
+      if (!cmd)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "command module not found");
+
+      return cmd->func (cmd, argc, args);
+    }
+
+  return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		     "no kernel with module support is loaded in legacy way");
+}
+
+static grub_command_t cmd_source, cmd_configfile, cmd_kernel, cmd_initrd;
 
 GRUB_MOD_INIT(legacycfg)
 {
   cmd_source = grub_register_command ("legacy_source",
 				      grub_cmd_legacy_source,
 				      N_("FILE"), N_("Parse legacy config"));
+  cmd_kernel = grub_register_command ("legacy_kernel",
+				      grub_cmd_legacy_kernel,
+				      N_("[--no-mem-option] [--type=TYPE] FILE [ARG ...]"),
+				      N_("Simulate grub-legacy kernel command"));
+
+  cmd_initrd = grub_register_command ("legacy_initrd",
+				      grub_cmd_legacy_initrd,
+				      N_("FILE [ARG ...]"),
+				      N_("Simulate grub-legacy initrd command"));
   cmd_configfile = grub_register_command ("legacy_configfile",
 					  grub_cmd_legacy_configfile,
 					  N_("FILE"),
@@ -184,4 +370,6 @@ GRUB_MOD_FINI(legacycfg)
 {
   grub_unregister_command (cmd_source);
   grub_unregister_command (cmd_configfile);
+  grub_unregister_command (cmd_kernel);
+  grub_unregister_command (cmd_initrd);
 }
