@@ -120,7 +120,6 @@ struct legacy_command legacy_commands[] =
     /* install unsupported.  */
     /* ioprobe unsupported.  */
     /* FIXME: really support --no-mem-option.  */
-    /* FIXME: distinguish linux and biglinux.  */
     /* FIXME: dublicate multiboot filename. */
     {"kernel", "legacy_kernel %s %s '%s' %s\n", 4, {TYPE_TYPE_OR_NOMEM_OPTION,
 						 TYPE_TYPE_OR_NOMEM_OPTION,

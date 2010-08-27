@@ -190,7 +190,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	  continue;
 	}
 
-      /* FIXME: what's the difference?  */
+      /* linux16 handles both zImages and bzImages.   */
       if (argc >= 1 && (grub_strcmp (args[0], "--type=linux") == 0
 			|| grub_strcmp (args[0], "--type=biglinux") == 0))
 	{
