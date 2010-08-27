@@ -1,3 +1,12 @@
+2010-08-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Handle USB pendrives exposed as floppies.
+
+	* grub-core/boot/i386/pc/boot.S: Check LBA even on what appears to be
+	floppy.
+	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_open): Likewise.
+	Check for partitions on all devices.
+
 2010-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/ieee1275/ofconsole.c (put): Correct prototype.
