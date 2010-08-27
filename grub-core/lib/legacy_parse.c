@@ -121,7 +121,7 @@ struct legacy_command legacy_commands[] =
     /* install unsupported.  */
     /* ioprobe unsupported.  */
     /* FIXME: implement command. */
-    {"kernel", "legacy_kernel %s '%s' %s\n", 4, {TYPE_TYPE_OR_NOMEM_OPTION,
+    {"kernel", "legacy_kernel %s %s '%s' %s\n", 4, {TYPE_TYPE_OR_NOMEM_OPTION,
 						 TYPE_TYPE_OR_NOMEM_OPTION,
 						 TYPE_FILE,
 						 TYPE_REST_VERBATIM}, 0,
@@ -380,7 +380,7 @@ grub_legacy_parse (const char *buf, char **entryname)
 	  }
 	for (; grub_isspace (*ptr); ptr++);
 	curarg = ptr;
-	for (; !grub_isspace (*ptr); ptr++);
+	for (; *ptr && !grub_isspace (*ptr); ptr++);
 	if (i != legacy_commands[cmdnum].argc - 1
 	    || (legacy_commands[cmdnum].flags & FLAG_IGNORE_REST))
 	  curarglen = ptr - curarg;
@@ -406,7 +406,7 @@ grub_legacy_parse (const char *buf, char **entryname)
 	      ptr = curarg;
 	      while (*ptr)
 		{
-		  for (; grub_isspace (*ptr); ptr++);
+		  for (; *ptr && grub_isspace (*ptr); ptr++);
 		  for (; *ptr && !grub_isspace (*ptr); ptr++)
 		    if (*ptr == '\\' || *ptr == '\'')
 		      overhead++;
@@ -421,7 +421,7 @@ grub_legacy_parse (const char *buf, char **entryname)
 	      outptr = outptr0;
 	      while (*ptr)
 		{
-		  for (; grub_isspace (*ptr); ptr++);
+		  for (; *ptr && grub_isspace (*ptr); ptr++);
 		  if (outptr != outptr0)
 		    *outptr++ = ' ';
 		  *outptr++ = '\'';
@@ -434,7 +434,6 @@ grub_legacy_parse (const char *buf, char **entryname)
 		  *outptr++ = '\'';
 		  if (*ptr)
 		    ptr++;
-		  overhead += 3;
 		}
 	      *outptr++ = 0;
 	    }
@@ -492,5 +491,7 @@ grub_legacy_parse (const char *buf, char **entryname)
 	  }
       }
   }
-  return grub_xasprintf (legacy_commands[cmdnum].map, args[0], args[1], args[2]);
+  
+  return grub_xasprintf (legacy_commands[cmdnum].map, args[0], args[1], args[2],
+			 args[3]);
 }
