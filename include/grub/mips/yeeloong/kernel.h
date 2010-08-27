@@ -20,7 +20,6 @@
 #define GRUB_KERNEL_MACHINE_HEADER	1
 
 #include <grub/symbol.h>
-#include <grub/cpu/kernel.h>
 
 #ifndef ASM_FILE
 

@@ -38,6 +38,7 @@ dnl Written by Pavel Roskin. Based on grub_ASM_EXT_C written by
 dnl Erich Boleyn and modified by Yoshinori K. Okuji.
 AC_DEFUN([grub_ASM_USCORE],
 [AC_REQUIRE([AC_PROG_CC])
+AC_REQUIRE([AC_PROG_EGREP])
 AC_MSG_CHECKING([if C symbols get an underscore after compilation])
 AC_CACHE_VAL(grub_cv_asm_uscore,
 [cat > conftest.c <<\EOF
@@ -56,7 +57,7 @@ else
   AC_MSG_ERROR([${CC-cc} failed to produce assembly code])
 fi
 
-if grep _func conftest.s >/dev/null 2>&1; then
+if $EGREP '(^|[^_[:alnum]])_func' conftest.s >/dev/null 2>&1; then
   grub_cv_asm_uscore=yes
 else
   grub_cv_asm_uscore=no
@@ -93,7 +94,7 @@ else
 fi
 grub_cv_prog_objcopy_absolute=yes
 for link_addr in 0x2000 0x8000 0x7C00; do
-  if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -nostdlib ${TARGET_IMG_LDFLAGS_AC} -Wl,-Ttext -Wl,$link_addr conftest.o -o conftest.exec]); then :
+  if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -nostdlib ${TARGET_IMG_LDFLAGS_AC} ${TARGET_IMG_BASE_LDOPT},$link_addr conftest.o -o conftest.exec]); then :
   else
     AC_MSG_ERROR([${CC-cc} cannot link at address $link_addr])
   fi

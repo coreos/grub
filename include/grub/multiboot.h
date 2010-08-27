@@ -49,7 +49,7 @@ void grub_multiboot_set_bootdev (void);
 grub_uint32_t grub_get_multiboot_mmap_count (void);
 grub_err_t grub_multiboot_set_video_mode (void);
 
-#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_QEMU)
 #include <grub/i386/pc/vbe.h>
 #define GRUB_MACHINE_HAS_VGA_TEXT 1
 #else

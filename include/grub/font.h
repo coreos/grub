@@ -22,6 +22,7 @@
 #include <grub/types.h>
 #include <grub/video.h>
 #include <grub/file.h>
+#include <grub/unicode.h>
 
 /* Forward declaration of opaque structure grub_font.
    Users only pass struct grub_font pointers to the font module functions,
@@ -69,6 +70,11 @@ struct grub_font_glyph
   grub_uint8_t bitmap[0];
 };
 
+/* Part of code field which is really used as such.  */
+#define GRUB_FONT_CODE_CHAR_MASK     0x001fffff
+#define GRUB_FONT_CODE_RIGHT_JOINED  0x80000000
+#define GRUB_FONT_CODE_LEFT_JOINED   0x40000000
+
 /* Initialize the font loader.
    Must be called before any fonts are loaded or used.  */
 void grub_font_loader_init (void);
@@ -97,8 +103,7 @@ int EXPORT_FUNC (grub_font_get_leading) (grub_font_t font);
 
 int EXPORT_FUNC (grub_font_get_height) (grub_font_t font);
 
-int EXPORT_FUNC (grub_font_get_string_width) (grub_font_t font,
-					      const char *str);
+int EXPORT_FUNC (grub_font_get_xheight) (grub_font_t font);
 
 struct grub_font_glyph *EXPORT_FUNC (grub_font_get_glyph) (grub_font_t font,
 							   grub_uint32_t code);
@@ -110,9 +115,11 @@ grub_err_t EXPORT_FUNC (grub_font_draw_glyph) (struct grub_font_glyph *glyph,
 					       grub_video_color_t color,
 					       int left_x, int baseline_y);
 
-grub_err_t EXPORT_FUNC (grub_font_draw_string) (const char *str,
-						grub_font_t font,
-						grub_video_color_t color,
-						int left_x, int baseline_y);
+int
+EXPORT_FUNC (grub_font_get_constructed_device_width) (grub_font_t hinted_font,
+					const struct grub_unicode_glyph *glyph_id);
+struct grub_font_glyph *
+EXPORT_FUNC (grub_font_construct_glyph) (grub_font_t hinted_font,
+			   const struct grub_unicode_glyph *glyph_id);
 
 #endif /* ! GRUB_FONT_HEADER */
