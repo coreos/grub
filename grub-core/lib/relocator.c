@@ -582,8 +582,15 @@ malloc_in_range (struct grub_relocator *rel,
       int pre_added = 0;
       pa = r->first;
       p = pa->next;
+      if (p->magic == GRUB_MM_ALLOC_MAGIC)
+	continue;
       do 
-	{	  
+	{
+	  grub_dprintf ("relocator", "free block %p+0x%x\n",
+			p, p->size);
+	  if (p->magic != GRUB_MM_FREE_MAGIC)
+	    grub_fatal (__FILE__":%d free magic broken at %p (0x%x)\n",
+			__LINE__, p, p->magic);
 	  if (p == (grub_mm_header_t) (r + 1))
 	    {
 	      pre_added = 1;
@@ -1585,4 +1592,31 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
   *relstart = rels0;
   grub_free (sorted);
   return GRUB_ERR_NONE;
+}
+
+void
+grub_mm_check_real (char *file, int line)
+{
+  grub_mm_region_t r;
+  grub_mm_header_t p, pa;
+
+  for (r = grub_mm_base; r; r = r->next)
+    {
+      pa = r->first;
+      p = pa->next;
+      if (p->magic == GRUB_MM_ALLOC_MAGIC)
+	continue;
+      do 
+	{
+	  if ((grub_addr_t) p < (grub_addr_t) (r + 1)
+	      || (grub_addr_t) p >= (grub_addr_t) (r + 1) + r->size)
+	    grub_fatal ("%s:%d: out of range pointer: %p\n", file, line, p);
+	  if (p->magic != GRUB_MM_FREE_MAGIC)
+	    grub_fatal ("%s:%d free magic broken at %p (0x%x)\n", file,
+			line, p, p->magic);
+	  pa = p;
+	  p = pa->next;
+	}
+      while (pa != r->first);
+    }
 }
