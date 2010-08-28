@@ -1,7 +1,7 @@
 #define ASM_FILE	1
-#ifdef MULTIBOOT2
+#ifdef TARGET_MULTIBOOT2
 #include <multiboot2.h>
-#else
+#elif defined (TARGET_MULTIBOOT)
 #include <multiboot.h>
 #endif
 
@@ -11,7 +11,7 @@
 	/* Align 32 bits boundary.  */
 	.align	8
 
-#ifdef MULTIBOOT2
+#ifdef TARGET_MULTIBOOT2
 	/* Multiboot header.  */
 multiboot_header:
 	/* magic */
@@ -26,7 +26,7 @@ multiboot_header:
 	.short 0
 	.long 8
 multiboot_header_end:
-#else
+#elif defined (TARGET_MULTIBOOT)
 	/* Multiboot header.  */
 multiboot_header:
 	/* magic */
