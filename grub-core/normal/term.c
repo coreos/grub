@@ -751,6 +751,34 @@ grub_xputs_normal (const char *str)
   if (!unicode_str)
     {
       grub_errno = GRUB_ERR_NONE;
+      for (; *str; str++)
+	{
+	  grub_term_output_t term;
+	  grub_uint32_t code = *str;
+	  if (code > 0x7f)
+	    code = '?';
+
+	  FOR_ACTIVE_TERM_OUTPUTS(term)
+	  {
+	    struct grub_unicode_glyph c =
+	      {
+		.base = code,
+		.variant = 0,
+		.attributes = 0,
+		.ncomb = 0,
+		.combining = 0,
+		.estimated_width = 1
+	      };
+
+	    (term->putchar) (term, &c);
+	    if (code == '\n')
+	      {
+		c.base = '\r';
+		(term->putchar) (term, &c);
+	      }
+	  }
+	}
+
       return;
     }
 
