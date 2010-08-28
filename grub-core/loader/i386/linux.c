@@ -531,11 +531,6 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   return GRUB_ERR_NONE;
 }
 
-#ifdef __x86_64__
-extern grub_uint8_t grub_linux_trampoline_start[];
-extern grub_uint8_t grub_linux_trampoline_end[];
-#endif
-
 static grub_err_t
 grub_linux_boot (void)
 {
