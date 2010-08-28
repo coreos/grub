@@ -284,6 +284,9 @@ grub_memalign (grub_size_t align, grub_size_t size)
   grub_size_t n = ((size + GRUB_MM_ALIGN - 1) >> GRUB_MM_ALIGN_LOG2) + 1;
   int count = 0;
 
+  if (!grub_mm_base)
+    goto fail;
+
   align = (align >> GRUB_MM_ALIGN_LOG2);
   if (align == 0)
     align = 1;
@@ -318,6 +321,7 @@ grub_memalign (grub_size_t align, grub_size_t size)
       break;
     }
 
+ fail:
   grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
   return 0;
 }
