@@ -16,17 +16,28 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef TARGET_NETBSD
+#define SYSCALL_RESET 208
+#elif defined (TARGET_OPENBSD)
+#define SYSCALL_RESET 55
+#else
+#error unknown target
+#endif
+
 #define MODE_RDRW 2
 #define FLAGS_NONE 0
 #define SYSCALL_OPEN 5
 #define SYSCALL_WRITE 4
-#define SYSCALL_RESET 208
 #define SYSCALL_EXIT 1
+#define SYSCALL_ARCH 165
 #define SYSCALL_INT 0x80
+#define SYSCALL_ARCH_IOPL	2
 
 #define RESET_NOSYNC 0x4
 #define RESET_HALT 0x8
 #define RESET_POWEROFF 0x800
+
+#define SHUTDOWN_PORT 0x8900
 
 	.section ".init", "ax"
 	.global start,_start
@@ -52,6 +63,32 @@ _start:
 	pushl $0
 	int $SYSCALL_INT
 	addl $16, %esp
+
+	/* IOPL.  */
+	movl $SYSCALL_ARCH, %eax
+	pushl $iopl_arg
+	pushl $SYSCALL_ARCH_IOPL
+	pushl $0
+	int $SYSCALL_INT
+	addl $12, %esp
+
+	movw $SHUTDOWN_PORT, %dx
+	movb $'S', %al
+	outb %al, %dx
+	movb $'h', %al
+	outb %al, %dx
+	movb $'u', %al
+	outb %al, %dx
+	movb $'t', %al
+	outb %al, %dx
+	movb $'d', %al
+	outb %al, %dx
+	movb $'o', %al
+	outb %al, %dx
+	movb $'w', %al
+	outb %al, %dx
+	movb $'n', %al
+	outb %al, %dx
 
 	/* shutdown.  */
 	movl $SYSCALL_RESET, %eax
@@ -84,3 +121,5 @@ device:
 message:
 	.ascii "Boot Test Passed Successfully\n" SUCCESSFUL_BOOT_STRING "\n"
 messageend:
+iopl_arg:
+	.long 3
