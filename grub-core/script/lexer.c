@@ -236,7 +236,7 @@ grub_script_lexer_init (struct grub_parser_param *parser, char *script,
   script = script ? : "\n";
   len = grub_strlen (script);
 
-  if (script[len - 1] == '\n')
+  if (len != 0 && script[len - 1] == '\n')
     {
       buffer = yy_scan_string (script, lexerstate->yyscanner);
     }

@@ -1,3 +1,48 @@
+2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/term.c (print_more): Fix a memory leak.
+	(grub_puts_terminal): Revert to dumb puts if memory allocation fails.
+	(grub_xputs_normal): Likewise.
+
+2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/script/lexer.c (grub_script_lexer_init): Don't look before
+	the begining of the string
+
+2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/script/script.c (grub_script_parse): Free parsed on
+	failure.
+
+2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/completion.c (grub_normal_do_completion): Free argv
+	on failure.
+
+2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/cmdline.c (grub_cmdline_get): Free cl_terms on
+	return.
+
+2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/gfxterm.c (grub_gfxterm_term_fini): Free the text buffer.
+	(scroll_up): Fix a memory leak.
+
+2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/nilfs2.c (grub_nilfs2_load_sb): Handle grub_disk_read
+	errors.
+
+2010-08-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Handle USB pendrives exposed as floppies.
+
+	* grub-core/boot/i386/pc/boot.S: Check LBA even on what appears to be
+	floppy.
+	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_open): Likewise.
+	Check for partitions on all devices.
+
 2010-08-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/ieee1275/ofconsole.c (put): Correct prototype.
