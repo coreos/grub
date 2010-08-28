@@ -57,6 +57,8 @@ typedef struct grub_mm_region
 }
 *grub_mm_region_t;
 
+#ifndef GRUB_MACHINE_EMU
 extern grub_mm_region_t EXPORT_VAR (grub_mm_base);
+#endif
 
 #endif
