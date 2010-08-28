@@ -171,6 +171,7 @@ grub_real_malloc (grub_mm_header_t *first, grub_size_t n, grub_size_t align)
 
       if (p->size >= n + extra)
 	{
+	  extra += (p->size - extra - n) & (~(align - 1));
 	  if (extra == 0 && p->size == n)
 	    {
 	      /* There is no special alignment requirement and memory block
@@ -246,7 +247,6 @@ grub_real_malloc (grub_mm_header_t *first, grub_size_t n, grub_size_t align)
 	       */
 	      grub_mm_header_t r;
 
-	      extra += (p->size - extra - n) & (~(align - 1));
 	      r = p + extra + n;
 	      r->magic = GRUB_MM_FREE_MAGIC;
 	      r->size = p->size - extra - n;
