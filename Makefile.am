@@ -159,7 +159,10 @@ linux-initramfs.x86_64: linux.init.x86_64 Makefile
 kfreebsd-mfsroot.i386.img: kfreebsd.init.i386 Makefile
 	TDIR=`mktemp -d`; mkdir $$TDIR/dev; mkdir $$TDIR/sbin; cp $< $$TDIR/sbin/init; makefs -t ffs -s 30m -f 1000 -o minfree=0,version=1 $@ $$TDIR; rm -rf $$TDIR
 
-knetbsd.image.i386: knetbsd.init.i386
+knetbsd.image.i386: knetbsd.init.i386 $(srcdir)/grub-core/tests/boot/kbsd.spec.txt
+	TDIR=`mktemp -d` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 64k -f 10 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
+
+kopenbsd.image.i386: kopenbsd.init.i386
 	TDIR=`mktemp -d` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -t ffs -s 64k -f 10 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
 
 knetbsd.miniroot-image.i386.img: knetbsd.image.i386 $(GRUB_PAYLOADS_DIR)/knetbsd.miniroot.i386
@@ -168,8 +171,8 @@ knetbsd.miniroot-image.i386.img: knetbsd.image.i386 $(GRUB_PAYLOADS_DIR)/knetbsd
 kfreebsd-mfsroot.x86_64.img: kfreebsd.init.x86_64 Makefile
 	TDIR=`mktemp -d`; mkdir $$TDIR/dev; mkdir $$TDIR/sbin; cp $< $$TDIR/sbin/init; makefs -t ffs -s 30m -f 1000 -o minfree=0,version=1 $@ $$TDIR; rm -rf $$TDIR
 
-knetbsd.image.x86_64: knetbsd.init.x86_64
-	TDIR=`mktemp -d` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -t ffs -s 64k -f 10 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
+knetbsd.image.x86_64: knetbsd.init.x86_64 $(srcdir)/grub-core/tests/boot/kbsd.spec.txt
+	TDIR=`mktemp -d` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 64k -f 10 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
 
 knetbsd.miniroot-image.x86_64.img: knetbsd.image.x86_64 $(GRUB_PAYLOADS_DIR)/knetbsd.miniroot.x86_64
 	$(OBJCOPY) --add-section=miniroot=$< $(GRUB_PAYLOADS_DIR)/knetbsd.miniroot.x86_64 $@

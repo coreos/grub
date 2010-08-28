@@ -22,8 +22,6 @@
 #define SYSCALL_WRITE 4
 #define SYSCALL_RESET 208
 #define SYSCALL_EXIT 1
-#define SYSCALL_MKNOD 14
-#define SYSCALL_MOUNT 410
 #define SYSCALL_INT 0x80
 
 #define RESET_NOSYNC 0x4
@@ -34,27 +32,6 @@
 	.global start,_start
 start:
 _start:
-	/* mount.  */
-	movl $SYSCALL_MOUNT, %eax
-	push $(tmpfs_args_end - tmpfs_args)
-	push $tmpfs_args
-	push $0
-	push $devfsdir
-	push $devfstype
-	pushl $0
-	int $SYSCALL_INT
-	addl $20, %esp
-
-	/* mknod.  */
-	movl $SYSCALL_MKNOD, %eax
-	pushl $0
-	pushl $0x2140
-	leal device, %ebx
-	pushl %ebx
-	pushl $0
-	int $SYSCALL_INT
-	addl $16, %esp
-
 	/* open.  */
 	movl $SYSCALL_OPEN, %eax
 	pushl $FLAGS_NONE
@@ -107,25 +84,3 @@ device:
 message:
 	.ascii "Boot Test Passed Successfully\n" SUCCESSFUL_BOOT_STRING "\n"
 messageend:
-devfstype:
-	.ascii "tmpfs"
-	.byte 0
-devfsdir:
-	.ascii "/dev"
-	.byte 0
-tmpfs_args:
-	/* Version.  */
-	.long 1
-
-	/* Maximum inodes.  */
-	.quad 	0
-	/* Maximum size.  */
-	.quad   0
-
-	/* UID */
-	.long		0
-	/* GID */
-	.long 		0
-	/* Mode */
-	.long		0777
-tmpfs_args_end:	
