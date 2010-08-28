@@ -1,5 +1,11 @@
 2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/term.c (print_more): Fix a memory leak.
+	(grub_puts_terminal): Revert to dumb puts if memory allocation fails.
+	(grub_xputs_normal): Likewise.
+
+2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/lexer.c (grub_script_lexer_init): Don't look before
 	the begining of the string
 

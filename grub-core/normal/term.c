@@ -44,6 +44,9 @@ static int grub_more;
 
 static int grub_normal_char_counter = 0;
 
+static void
+putcode_real (grub_uint32_t code, struct grub_term_output *term);
+
 int
 grub_normal_get_char_counter (void)
 {
@@ -94,6 +97,7 @@ print_more (void)
   FOR_ACTIVE_TERM_OUTPUTS(term)
     grub_print_spaces (term, 8);
   grub_term_restore_pos (pos);
+  grub_free (pos);
 
   /* Scroll one lines or an entire page, depending on the key.  */
 
@@ -204,6 +208,20 @@ grub_puts_terminal (const char *str, struct grub_term_output *term)
   grub_uint32_t *unicode_str, *unicode_last_position;
   grub_utf8_to_ucs4_alloc (str, &unicode_str,
 			   &unicode_last_position);
+  if (!unicode_str)
+    {
+      for (; str; str++)
+	{
+	  grub_uint32_t code = *str;
+	  if (code > 0x7f)
+	    code = '?';
+
+	  putcode_real (term, code);
+	  if (code == '\n')
+	    putcode_real (term, '\r');
+	}
+      return;
+    }
 
   grub_print_ucs4 (unicode_str, unicode_last_position, 0, 0, term);
   grub_free (unicode_str);
@@ -751,6 +769,21 @@ grub_xputs_normal (const char *str)
   if (!unicode_str)
     {
       grub_errno = GRUB_ERR_NONE;
+      for (; *str; str++)
+	{
+	  grub_term_output_t term;
+	  grub_uint32_t code = *str;
+	  if (code > 0x7f)
+	    code = '?';
+
+	  FOR_ACTIVE_TERM_OUTPUTS(term)
+	  {
+	    putcode_real (term, code);
+	    if (code == '\n')
+	      putcode_real (term, '\r');
+	  }
+	}
+
       return;
     }
 
