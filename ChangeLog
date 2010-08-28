@@ -1,5 +1,10 @@
 2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/cmdline.c (grub_cmdline_get): Free cl_terms on
+	return.
+
+2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/gfxterm.c (grub_gfxterm_term_fini): Free the text buffer.
 	(scroll_up): Fix a memory leak.
 
