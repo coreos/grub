@@ -1,5 +1,10 @@
 2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/completion.c (grub_normal_do_completion): Free argv
+	on failure.
+
+2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/cmdline.c (grub_cmdline_get): Free cl_terms on
 	return.
 
