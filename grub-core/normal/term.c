@@ -206,19 +206,36 @@ void
 grub_puts_terminal (const char *str, struct grub_term_output *term)
 {
   grub_uint32_t *unicode_str, *unicode_last_position;
+  grub_error_push ();
   grub_utf8_to_ucs4_alloc (str, &unicode_str,
 			   &unicode_last_position);
+  grub_error_pop ();
   if (!unicode_str)
     {
-      for (; str; str++)
+      for (; *str; str++)
 	{
-	  grub_uint32_t code = *str;
-	  if (code > 0x7f)
-	    code = '?';
+	  struct grub_unicode_glyph c =
+	    {
+	      .variant = 0,
+	      .attributes = 0,
+	      .ncomb = 0,
+	      .combining = 0,
+	      .estimated_width = 1,
+	      .base = *str
+	    };
 
-	  putcode_real (term, code);
-	  if (code == '\n')
-	    putcode_real (term, '\r');
+	  FOR_ACTIVE_TERM_OUTPUTS(term)
+	  {
+	    (term->putchar) (term, &c);
+	  }
+	  if (*str == '\n')
+	    {
+	      c.base = '\r';
+	      FOR_ACTIVE_TERM_OUTPUTS(term)
+	      {
+		(term->putchar) (term, &c);
+	      }
+	    }
 	}
       return;
     }
@@ -760,28 +777,41 @@ grub_print_ucs4 (const grub_uint32_t * str,
 void
 grub_xputs_normal (const char *str)
 {
-  grub_term_output_t term;
-  grub_uint32_t *unicode_str, *unicode_last_position;
+  grub_uint32_t *unicode_str = NULL, *unicode_last_position;
   int backlog = 0;
+  grub_term_output_t term;
+
+  grub_error_push ();
   grub_utf8_to_ucs4_alloc (str, &unicode_str,
-			   &unicode_last_position);
+  			   &unicode_last_position);
+  grub_error_pop ();
 
   if (!unicode_str)
     {
-      grub_errno = GRUB_ERR_NONE;
       for (; *str; str++)
 	{
-	  grub_term_output_t term;
-	  grub_uint32_t code = *str;
-	  if (code > 0x7f)
-	    code = '?';
+	  struct grub_unicode_glyph c =
+	    {
+	      .variant = 0,
+	      .attributes = 0,
+	      .ncomb = 0,
+	      .combining = 0,
+	      .estimated_width = 1,
+	      .base = *str
+	    };
 
 	  FOR_ACTIVE_TERM_OUTPUTS(term)
 	  {
-	    putcode_real (term, code);
-	    if (code == '\n')
-	      putcode_real (term, '\r');
+	    (term->putchar) (term, &c);
 	  }
+	  if (*str == '\n')
+	    {
+	      c.base = '\r';
+	      FOR_ACTIVE_TERM_OUTPUTS(term)
+	      {
+		(term->putchar) (term, &c);
+	      }
+	    }
 	}
 
       return;
