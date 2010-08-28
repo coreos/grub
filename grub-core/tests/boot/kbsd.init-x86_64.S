@@ -20,7 +20,13 @@
 #define FLAGS_NONE 0
 #define SYSCALL_OPEN 5
 #define SYSCALL_WRITE 4
+#ifdef TARGET_NETBSD
 #define SYSCALL_RESET 208
+#elif defined (TARGET_OPENBSD)
+#define SYSCALL_RESET 55
+#else
+#error unknown target
+#endif
 #define SYSCALL_EXIT 1
 #define SYSCALL_ARCH 165
 #define SYSCALL_INT 0x80
