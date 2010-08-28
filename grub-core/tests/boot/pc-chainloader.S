@@ -39,8 +39,14 @@ serialmsg:
 1:
 	ret
 
-cont:	
+cont:
+#ifdef TARGET_NTLDR
+	movw $0x2000, %ax
+#elif defined (TARGET_CHAINLOADER)
 	xorw %ax, %ax
+#else
+#error unsupported target
+#endif
 	movw %ax, %ds
 	lea message, %si
 	call serialmsg
