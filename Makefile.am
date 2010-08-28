@@ -126,28 +126,28 @@ linux.init.x86_64: $(srcdir)/grub-core/tests/boot/linux.init-x86_64.S
 linux.init.i386: $(srcdir)/grub-core/tests/boot/linux.init-i386.S
 	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
-multiboot.elf: $(srcdir)/grub-core/tests/boot/multiboot.S
+multiboot.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S
 	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -DTARGET_MULTIBOOT=1 -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
 
-kfreebsd.elf: $(srcdir)/grub-core/tests/boot/multiboot.S
+kfreebsd.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S
 	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
 
 kfreebsd.aout: kfreebsd.elf
 	$(OBJCOPY) -O a.out-i386-linux $< $@ -R .note.gnu.build-id
 
-pc-chainloader.elf: $(srcdir)/grub-core/tests/boot/pc-chainloader.S
+pc-chainloader.elf: $(srcdir)/grub-core/tests/boot/kernel-8086.S
 	$(TARGET_CC) -o $@ $< -DTARGET_CHAINLOADER=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,-N -Wl,-Ttext,0x7c00 -m32
 
 pc-chainloader.bin: pc-chainloader.elf
 	$(OBJCOPY) -O binary --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@;
 
-ntldr.elf: $(srcdir)/grub-core/tests/boot/pc-chainloader.S
+ntldr.elf: $(srcdir)/grub-core/tests/boot/kernel-8086.S
 	$(TARGET_CC) -o $@ $< -DTARGET_NTLDR=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,-N -Wl,-Ttext,0 -m32
 
 ntldr.bin: ntldr.elf
 	$(OBJCOPY) -O binary --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@;
 
-multiboot2.elf: $(srcdir)/grub-core/tests/boot/multiboot.S
+multiboot2.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S
 	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include -DTARGET_MULTIBOOT2=1
 
 kfreebsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kfreebsd.init-x86_64.S
