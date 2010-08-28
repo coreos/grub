@@ -218,8 +218,6 @@ grub_relocator16_boot (struct grub_relocator *rel,
   if (err)
     return err;
 
-  grub_printf ("%p\n", relst);
-
   asm volatile ("cli");
   ((void (*) (void)) relst) ();
 
