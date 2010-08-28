@@ -1,5 +1,10 @@
 2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/script/script.c (grub_script_parse): Free parsed on
+	failure.
+
+2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/completion.c (grub_normal_do_completion): Free argv
 	on failure.
 
