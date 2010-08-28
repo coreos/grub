@@ -85,6 +85,7 @@ This edition documents version @value{VERSION}.
 * Interface::                   The menu and the command-line
 * Commands::                    The list of available builtin commands
 * Security::                    Authentication and authorisation
+* Supported kernels::           The list of supported kernels
 * Troubleshooting::             Error messages produced by GRUB
 * Invoking grub-install::       How to use the GRUB installer
 * Invoking grub-mkconfig::      Generate a GRUB configuration file
@@ -2861,6 +2862,74 @@ generating configuration files with authentication.  You can use
 adding @kbd{set superusers=} and @kbd{password} or @kbd{password_pbkdf2}
 commands.
 
+
+@node Supported kernels
+@chapter Supported boot targets
+
+X86 support is summarised in following table. ``Yes'' means that kernel works on the given platform, ``crashes'' means an early kernel crash which we hove will be fixed by concerned kernel developpers. ``no'' means GRUB doesn't load given kernel on a given platform. ``headless'' means that the kernel works but lacks console drivers (you can still use serial or network console).  In case of ``no'' and ``crashes'' the reason is given in footnote.
+@multitable @columnfractions .50 .15 .15 .15
+@item                                @tab BIOS @tab Coreboot   @tab 32-bit EFI
+@item BIOS chainloading              @tab yes  @tab no (1)     @tab no (1)
+@item NTLDR                          @tab yes  @tab no (1)     @tab no (1)
+@item FreeBSD bootloader             @tab yes  @tab crashes (1)@tab crashes (1)
+@item 32-bit kFreeBSD                @tab yes  @tab ?          @tab headless
+@item 64-bit kFreeBSD                @tab yes  @tab crashes (2)@tab headless
+@item 32-bit kNetBSD                 @tab yes  @tab crashes (1)@tab crashes (1)
+@item 64-bit kNetBSD                 @tab yes  @tab crashes (2)@tab yes
+@item 32-bit kOpenBSD                @tab yes  @tab yes        @tab headless
+@item 64-bit kOpenBSD                @tab yes  @tab yes        @tab headless
+@item Multiboot                      @tab yes  @tab yes        @tab yes
+@item Multiboot2                     @tab yes  @tab yes        @tab yes
+@item 32-bit Linux (legacy protocol) @tab yes  @tab no (1)     @tab no (1)
+@item 64-bit Linux (legacy protocol) @tab yes  @tab no (1)     @tab no (1)
+@item 32-bit Linux (modern protocol) @tab yes  @tab yes        @tab yes
+@item 64-bit Linux (modern protocol) @tab yes  @tab yes        @tab yes
+@item 32-bit XNU                     @tab yes  @tab ?          @tab yes
+@item 64-bit XNU                     @tab yes  @tab ?          @tab yes (5)
+@item 32-bit EFI chainloader         @tab no (3)  @tab no (3)  @tab yes
+@item 64-bit EFI chainloader         @tab no (3)  @tab no (3)  @tab no (4)
+@item Appleloader                    @tab no (3)  @tab no (3)  @tab yes
+@end multitable
+
+@enumerate
+@item Requires BIOS
+@item Crashes because the memory at 0x0-0x1000 isn't available
+@item EFI only
+@item 32-bit and 64-bit EFI have different structures and work in different CPU modes so it's not possible to chainload 32-bit bootloader on 64-bit platform and vice-versa
+@item Some modules may need to be disabled
+@end enumerate
+
+
+PowerPC and Sparc ports support only Linux.
+MIPS port supports Linux and multiboot2.
+
+@chapter Boot tests
+
+As you have seen in previous chapter the support matrix is pretty big and some of the configurations are only rarely used. To ensure the quality bootchecks are available for all x86 targets except EFI chainloader, Appleloader and XNU. All x86 platforms have bootcheck facility except multiboot and ieee1275. Multiboot, multiboot2, BIOS chainloader, ntldr and freebsd-bootloader boot targets are tested only with a fake kernel images. Only Linux is tested among the payloads using Linux protocols.
+
+Following variables must be defined:
+
+@multitable  @columnfractions .30 .65
+@item GRUB_PAYLOADS_DIR @tab directory containing the required kernels
+@item GRUB_CBFSTOOL @tab cbfstoll from Coreboot package (for coreboot platform only)
+@item GRUB_COREBOOT_ROM @tab empty Coreboot ROM
+@item GRUB_QEMU_OPTS @tab additional options to be supplied to QEMU
+@end multitable
+
+Required files are:
+
+@multitable  @columnfractions .40 .55
+@item kfreebsd_env.i386 @tab 32-bit kFreeBSD device hints
+@item kfreebsd.i386 @tab 32-bit FreeBSD kernel image
+@item kfreebsd.x86_64, kfreebsd_env.x86_64 @tab same from 64-bit kFreeBSD
+@item knetbsd.i386 @tab 32-bit NetBSD kernel image
+@item knetbsd.miniroot.i386 @tab 32-bit kNetBSD miniroot.kmod.
+@item knetbsd.x86_64, knetbsd.miniroot.x86_64  @tab same from 64-bit kNetBSD
+@item kopenbsd.i386 @tab 32-bit OpenBSD kernel bsd.rd image
+@item kopenbsd.x86_64 @tab same from 64-bit kOpenBSD
+@item linux.i386 @tab 32-bit Linux
+@item linux.x86_64 @tab 64-bit Linux
+@end multitable
 
 @node Troubleshooting
 @chapter Error messages produced by GRUB
