@@ -1129,10 +1129,6 @@ grub_bsd_load_aout (grub_file_t file)
   else
     bss_size = 0;
 
-  relocator = grub_relocator_new ();
-  if (!relocator)
-    return grub_errno;
-
   {
     grub_relocator_chunk_t ch;
 
