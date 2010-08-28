@@ -777,6 +777,7 @@ module = {
   i386_coreboot = efiemu/i386/pc/cfgtables.c;
   i386_multiboot = efiemu/i386/pc/cfgtables.c;
   i386_ieee1275 = efiemu/i386/nocfgtables.c;
+  i386_qemu = efiemu/i386/nocfgtables.c;
   common = efiemu/mm.c;
   common = efiemu/loadcore_common.c;
   common = efiemu/symbols.c;
@@ -796,6 +797,7 @@ module = {
   enable = i386_coreboot;
   enable = i386_ieee1275;
   enable = i386_multiboot;
+  enable = i386_qemu;
 };
 
 module = {
