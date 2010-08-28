@@ -260,7 +260,23 @@ bootcheck-ntldr: ntldr.bin $(srcdir)/grub-core/tests/boot/ntldr.cfg grub-shell
 BOOTCHECKS= 
 
 if COND_i386_pc
-BOOTCHECKS += bootcheck-pc-chainloader bootcheck-ntldr
+#pc chainloader by definition is only for i386-pc
+BOOTCHECKS += bootcheck-pc-chainloader
+#ntldr and bootmgr require BIOS.
+BOOTCHECKS += bootcheck-ntldr
+#legacy protocol makes early BIOS calls.
+BOOTCHECKS += bootcheck-linux16-i386 bootcheck-linux16-x86_64
+# Crashes early on non-BIOS
+BOOTCHECKS += bootcheck-knetbsd-i386
+endif
+
+if !COND_i386_coreboot
+# Crashes because memory at 0-0x1000 is occupied
+BOOTCHECKS += bootcheck-kfreebsd-x86_64
+# Likewise.
+BOOTCHECKS += bootcheck-knetbsd-x86_64
+
+BOOTCHECKS += bootcheck-kfreebsd-i386
 endif
 
 BOOTCHECKS += bootcheck-kfreebsd-aout
@@ -269,17 +285,7 @@ BOOTCHECKS += bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64
 
 BOOTCHECKS += bootcheck-multiboot bootcheck-multiboot2
 
-BOOTCHECKS += bootcheck-linux16-i386 bootcheck-linux16-x86_64
-
 BOOTCHECKS += bootcheck-linux-i386 bootcheck-linux-x86_64
-
-# Crashes because memory at 0-0x1000 is occupied
-BOOTCHECKS += bootcheck-kfreebsd-i386 bootcheck-knetbsd-x86_64
-
-# Requires ACPI
-BOOTCHECKS += bootcheck-kfreebsd-x86_64
-# Crashes early on non-BIOS
-BOOTCHECKS += bootcheck-knetbsd-i386
 
 
 .PHONY: bootcheck-linux-i386 bootcheck-linux-x86_64 \
