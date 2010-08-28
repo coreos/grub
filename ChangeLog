@@ -1,5 +1,10 @@
 2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/script/lexer.c (grub_script_lexer_init): Don't look before
+	the begining of the string
+
+2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/script.c (grub_script_parse): Free parsed on
 	failure.
 
