@@ -1,5 +1,14 @@
 2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def (kernel): Add kern/mips/cache_flush.S to
+	extra_dist.
+
+2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/efiemu/runtime/efiemu.sh: Removed.
+
+2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.util.def (grub-ofpathname): Add missing ldadd.
 
 2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
