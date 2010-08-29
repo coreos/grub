@@ -1,3 +1,8 @@
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/i386/vga_common.c (grub_console_setcolorstate):
+	Mask out the bit 0x80 since it has other meaning that specifiing color.
+
 2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	New relocator. Allows for more kernel support and more straightforward
