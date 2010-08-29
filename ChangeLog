@@ -122,9 +122,13 @@
 	* grub-core/kern/i386/qemu/mmap.c (grub_machine_mmap_iterate):
 	Declare the memory after _end as available.
 	* grub-core/kern/mm.c (GRUB_MM_FREE_MAGIC): Moved from here...
+	* include/grub/mm_private.h (GRUB_MM_FREE_MAGIC): ... here.
 	(GRUB_MM_ALLOC_MAGIC): Moved from here...
-	(grub_mm_header)
-	(GRUB_MM_ALIGN)
+	* include/grub/mm_private.h (GRUB_MM_ALLOC_MAGIC): ... here.
+	* grub-core/kern/mm.c (grub_mm_header): Moved from here...
+	* include/grub/mm_private.h (grub_mm_header): ... here.
+	* grub-core/kern/mm.c (GRUB_MM_ALIGN): Moved from here...
+	* include/grub/mm_private.h (GRUB_MM_ALIGN): ... here.
 	* grub-core/kern/mm.c (grub_mm_region): Moved from here ...
 	(grub_mm_region): ..here. Removed addr. Added pre_size.
 	All users updated.
@@ -277,6 +281,143 @@
 	(grub_cmd_xnu_kernel64): Likewise.
 	(grub_xnu_register_memory): Simplified.
 	* grub-core/loader/xnu_resume.c (grub_xnu_resume): Use relocator.
+	* grub-core/term/efi/console.c (grub_console_putchar): Abort if
+	EFI is finished.
+	(grub_console_checkkey): Likewise.
+	(grub_console_getkey): Likewise.
+	(grub_console_getwh): Likewise.
+	(grub_console_getxy): Likewise.
+	(grub_console_gotoxy): Likewise.
+	(grub_console_cls): Likewise.
+	(grub_console_setcolorstate): Likewise.
+	(grub_console_setcursor): Likewise.
+	* grub-core/term/ns8250.c (grub_ns8250_hw_get_port): New function.
+	* grub-core/tests/boot/kbsd.init-i386.S: New file.
+	* grub-core/tests/boot/kbsd.init-x86_64.S: Likewise.
+	* grub-core/tests/boot/kbsd.spec.txt: Likewise.
+	* grub-core/tests/boot/kernel-8086.S: Likewise.
+	* grub-core/tests/boot/kernel-i386.S: Likewise.
+	* grub-core/tests/boot/kfreebsd-aout.cfg: Likewise.
+	* grub-core/tests/boot/kfreebsd.cfg: Likewise.
+	* grub-core/tests/boot/kfreebsd.init-i386.S: Likewise.
+	* grub-core/tests/boot/kfreebsd.init-x86_64.S: Likewise.
+	* grub-core/tests/boot/knetbsd.cfg: Likewise.
+	* grub-core/tests/boot/kopenbsd.cfg: Likewise.
+	* grub-core/tests/boot/kopenbsdlabel.txt: Likewise.
+	* grub-core/tests/boot/linux.cfg: Likewise.
+	* grub-core/tests/boot/linux.init-i386.S: Likewise.
+	* grub-core/tests/boot/linux.init-x86_64.S: Likewise.
+	* grub-core/tests/boot/linux16.cfg: Likewise.
+	* grub-core/tests/boot/multiboot.cfg: Likewise.
+	* grub-core/tests/boot/multiboot2.cfg: Likewise.
+	* grub-core/tests/boot/ntldr.cfg: Likewise.
+	* grub-core/tests/boot/pc-chainloader.cfg: Likewise.
+	* include/grub/aout.h (grub_aout_load): Make load_addr a void *.
+	* include/grub/autoefi.h (grub_autoefi_finish_boot_services):
+	New definition.
+	* include/grub/dl.h (grub_dl_unload_all): Removed.
+	* include/grub/efi/efi.h (grub_efi_exit_boot_services): Likewise.
+	(grub_efi_finish_boot_services): Change prototype.
+	(grub_efi_is_finished): New variable.
+	* include/grub/efiemu/efiemu.h (grub_efiemu_finish_boot_services):
+	Changed prototype.
+	(grub_efiemu_finish_boot_services): Removed.
+	(grub_machine_efiemu_init_tables): New prototype.
+	* include/grub/elfload.h (grub_elf32_phdr_iterate): Likewise.
+	(grub_elf64_phdr_iterate): Likewise.
+	* include/grub/i386/bsd.h: Include relocator.h.
+	(freebsd_tag_header): New struct.
+	(grub_openbsd_bios_mmap): Removed.
+	(grub_unix_real_boot): Removed.
+	(grub_freebsd_load_elfmodule32): Changed prototype.
+	(grub_freebsd_load_elfmodule_obj64): Likewise.
+	(grub_freebsd_load_elf_meta32): Likewise.
+	(grub_freebsd_load_elf_meta64): Likewise.
+	(grub_freebsd_add_meta): Removed.
+	(grub_netbsd_load_elf_meta32): New prototype.
+	(grub_netbsd_load_elf_meta64): Likewise.
+	(grub_bsd_add_meta): Likewise.
+	(grub_openbsd_ramdisk_descriptor): New struct.
+	(grub_openbsd_find_ramdisk32): New prototype.
+	(grub_openbsd_find_ramdisk64): Likewise.
+	* include/grub/i386/coreboot/loader.h: Removed.
+	* include/grub/i386/efi/loader.h: Likewise.
+	* include/grub/i386/ieee1275/loader.h: Likewise.
+	* include/grub/i386/linux.h (linux_kernel_header): Change void *
+	to grub_uint32_t.
+	* include/grub/i386/loader.h: Removed.
+	* include/grub/i386/memory.h (GRUB_MEMORY_CPU_CR4_PAE_ON): Correct the
+	value.
+	(GRUB_MEMORY_CPU_CR4_PSE_ON): New definition.
+	(grub_phys_addr_t): New type.
+	(grub_vtop): New inline function.
+	(grub_map_memory): Likewise.
+	(grub_unmap_memory): Likewise.
+	* include/grub/i386/multiboot/loader.h: Removed.
+	* include/grub/i386/netbsd_bootinfo.h (NETBSD_BTINFO_BOOTDISK): Removed.
+	(NETBSD_BTINFO_CONSOLE): New definition.
+	(NETBSD_BTINFO_SYMTAB): Likewise.
+	(NETBSD_BTINFO_MODULES): Likewise.
+	(NETBSD_BTINFO_FRAMEBUF): Likewise.
+	(grub_netbsd_bootinfo): New struct.
+	(grub_netbsd_btinfo_common): Use explicit bitsize.
+	(grub_netbsd_btinfo_mmap_entry): Removed.
+	(GRUB_NETBSD_MAX_BOOTPATH_LEN): New definition.
+	(grub_netbsd_btinfo_bootdisk): New struct.
+	(grub_netbsd_btinfo_symtab): Likewise.
+	(grub_netbsd_btinfo_serial): Likewise.
+	(grub_netbsd_btinfo_modules): Likewise.
+	(grub_netbsd_btinfo_framebuf): Likewise.
+	(GRUB_NETBSD_MAX_ROOTDEVICE_LEN): New definition.
+	* include/grub/i386/openbsd_bootarg.h (OPENBSD_BOOTARG_CONSOLE):
+	Likewise.
+	(grub_openbsd_bootargs): Use explicit bitsize.
+	(grub_openbsd_bootarg_console): New struct.
+	(GRUB_OPENBSD_COM_MAJOR): New definition.
+	(GRUB_OPENBSD_VGA_MAJOR): Likewise.
+	* include/grub/i386/pc/efiemu.h: Removed.
+	* include/grub/i386/pc/loader.h: Don't include cpu/loader.h.
+	* include/grub/i386/qemu/loader.h: Removed.
+	* include/grub/i386/relocator.h: Rewritten.
+	* include/grub/i386/xnu.h (grub_xnu_heap_will_be_at): Removed.
+	* include/grub/mips/memory.h: New file.
+	* include/grub/mips/multiboot.h: Rewritten.
+	* include/grub/mips/relocator.h: Rewritten.
+	* include/grub/mips/yeeloong/memory.h (grub_phys_addr_t): New type.
+	(grub_vtop): New function.
+	(grub_map_memory): Likewise.
+	(grub_unmap_memory): Likewise.
+	* include/grub/misc.h (ALIGN_DOWN): New definition.
+	* include/grub/mm.h (grub_mm_check_real): New proto.
+	(GRUB_MM_CHECK): New definition.
+	* include/grub/mm_private.h: New file.
+	* include/grub/multiboot.h (grub_multiboot_relocator): New variable.
+	(grub_multiboot_get_mbi_size): Removed.
+	(grub_multiboot_make_mbi): Change prottype.
+	(grub_multiboot_set_accepts_video): New proto.
+	(grub_multiboot_add_elfsyms): Likewise.
+	(grub_multiboot_payload_eip): New variable.
+	* include/grub/ns8250.h (grub_ns8250_hw_get_port) [!ASM_FILE]:
+	New prototype.
+	* include/grub/offsets.h (GRUB_KERNEL_I386_MULTIBOOT_PREFIX):
+	New definition.
+	(GRUB_KERNEL_I386_MULTIBOOT_DATA_END): Likewise.
+	(GRUB_KERNEL_I386_MULTIBOOT_MOD_ALIGN): Likewise.
+	* include/grub/powerpc/ieee1275/loader.h: Removed.
+	* include/grub/powerpc/memory.h: New file.
+	* include/grub/powerpc/relocator.h: Likewise.
+	* include/grub/relocator.h: Likewise.
+	* include/grub/relocator_private.h: Likewise.
+	* include/grub/sparc64/ieee1275/loader.h: Removed.
+	* include/grub/x86_64/memory.h: New file.
+	* include/grub/xnu.h (grub_xnu_writetree_toheap): Changed prototype.
+	(grub_xnu_heap_malloc): Likewise.
+	(grub_xnu_heap_real_start): Removed.
+	(grub_xnu_heap_start): Likewise.
+	(grub_xnu_relocator): New variable.
+	(grub_xnu_heap_target_start): Likewise.
+	* tests/util/grub-shell.in: Support non-pc.
+	* util/grub-mkimage.c (image_targets): Fix multiboot target.
 
 2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
