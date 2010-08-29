@@ -1,5 +1,10 @@
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/term.c (print_more): Return to normal and not
+	to standard state after printing "---MORE---".
+
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/i386/vga_common.c (grub_console_setcolorstate):
 	Mask out the bit 0x80 since it has other meaning that specifiing color.
 
