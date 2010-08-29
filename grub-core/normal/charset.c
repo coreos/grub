@@ -297,13 +297,10 @@ grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
 {
   grub_size_t msg_len = grub_strlen (msg);
 
-  *unicode_msg = grub_malloc (grub_strlen (msg) * sizeof (grub_uint32_t));
+  *unicode_msg = grub_malloc (msg_len * sizeof (grub_uint32_t));
  
   if (!*unicode_msg)
-    {
-      grub_printf ("utf8_to_ucs4 ERROR1: %s", msg);
-      return -1;
-    }
+    return -1;
 
   msg_len = grub_utf8_to_ucs4 (*unicode_msg, msg_len,
   			      (grub_uint8_t *) msg, -1, 0);
@@ -1215,6 +1212,8 @@ grub_bidi_logical_to_visual (const grub_uint32_t *logical,
   struct grub_unicode_glyph *visual_ptr;
   *visual_out = visual_ptr = grub_malloc (2 * sizeof (visual_ptr[0])
 					  * logical_len);
+  if (!visual_ptr)
+    return -1;
   for (ptr = logical; ptr <= logical + logical_len; ptr++)
     {
       if (ptr == logical + logical_len || *ptr == '\n')

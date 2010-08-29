@@ -585,6 +585,7 @@ grub_cmdline_get (const char *prompt)
 	  break;
 
 	case '\e':
+	  grub_free (cl_terms);
 	  return 0;
 
 	case '\b':
@@ -635,5 +636,6 @@ grub_cmdline_get (const char *prompt)
 
   ret = grub_ucs4_to_utf8_alloc (buf + lpos, llen - lpos + 1);
   grub_free (buf);
+  grub_free (cl_terms);
   return ret;
 }

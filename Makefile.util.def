@@ -99,7 +99,7 @@ program = {
   name = grub-bin2h;
   common = util/bin2h.c;
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
   mansection = 1;
 };
 
@@ -112,7 +112,7 @@ program = {
   extra_dist = util/grub-mkimagexx.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
   cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibrootdir)\"';
 };
 
@@ -123,7 +123,7 @@ program = {
   common = util/grub-mkrelpath.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
 };
 
 program = {
@@ -133,7 +133,7 @@ program = {
   common = util/grub-script-check.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
 };
 
 program = {
@@ -143,7 +143,7 @@ program = {
   common = util/grub-editenv.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
 };
 
 program = {
@@ -153,7 +153,7 @@ program = {
   common = util/grub-mkpasswd-pbkdf2.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
 };
@@ -171,7 +171,7 @@ program = {
   common = util/grub-pe2elf.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL)';
+  ldadd = '$(LIBINTL)';
   condition = COND_GRUB_PE2ELF;
 };
 
@@ -181,7 +181,7 @@ program = {
   common = util/grub-fstest.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
   condition = COND_GRUB_FSTEST;
 };
 
@@ -194,8 +194,8 @@ program = {
   cflags = '$(freetype_cflags)';
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
-  ldflags = '$(freetype_libs)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(freetype_libs)';
   condition = COND_GRUB_MKFONT;
 };
 
@@ -212,7 +212,7 @@ program = {
   sparc64_ieee1275 = util/ieee1275/devicemap.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
 };
 
 program = {
@@ -222,7 +222,7 @@ program = {
   common = util/grub-probe.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
 };
 
 program = {
@@ -239,7 +239,7 @@ program = {
   sparc64_ieee1275 = util/lvm.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
 
   enable = i386_pc;
   enable = sparc64_ieee1275;
@@ -252,6 +252,7 @@ program = {
   ieee1275 = util/ieee1275/ofpath.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
   enable = sparc64_ieee1275;
 };
 
@@ -334,6 +335,7 @@ script = {
   enable = i386_pc;
   enable = x86_efi;
   enable = i386_qemu;
+  enable = i386_multiboot;
   enable = i386_coreboot;
   enable = powerpc_ieee1275;
 };
@@ -506,5 +508,5 @@ program = {
   common = grub-core/tests/lib/test.c;
   cflags = -Wno-format;
   ldadd = libgrub.a;
-  ldflags = '$(LIBDEVMAPPER)';
+  ldadd = '$(LIBDEVMAPPER)';
 };

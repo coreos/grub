@@ -22,7 +22,6 @@
 #include <grub/misc.h>
 #include <grub/efiemu/efiemu.h>
 #include <grub/cpu/efiemu.h>
-#include <grub/machine/efiemu.h>
 #include <grub/elf.h>
 
 /* ELF symbols and their values */
