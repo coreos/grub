@@ -280,6 +280,15 @@
 
 2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/charset.c (grub_utf8_to_ucs4_alloc): Avoid deadloop
+	on malloc error.
+	(grub_bidi_logical_to_visual): Check that malloc succeded.
+	* grub-core/normal/term.c (grub_puts_terminal): Fix fallback to dumb
+	puts.
+	(grub_xputs_normal): Likewise.
+
+2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (kernel): Add kern/mips/cache_flush.S to
 	extra_dist.
 
