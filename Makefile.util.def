@@ -252,6 +252,7 @@ program = {
   ieee1275 = util/ieee1275/ofpath.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
   enable = sparc64_ieee1275;
 };
 
