@@ -76,4 +76,3 @@ start:
 message:
 	.ascii "Boot Test Passed Successfully\n" SUCCESSFUL_BOOT_STRING "\n"
 messageend:
-	
