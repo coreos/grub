@@ -166,7 +166,6 @@ kernel = {
   emu = kern/emu/mm.c;
   emu = kern/emu/time.c;
 
-  extra_dist = kern/i386/loader.S;
   extra_dist = kern/i386/realmode.S;
   extra_dist = kern/i386/pc/lzma_decode.S;
 };
