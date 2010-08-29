@@ -1,5 +1,285 @@
 2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	New relocator. Allows for more kernel support and more straightforward
+	loader writing.
+
+	* Makefile.am (BOOTTARGET): New variable.
+	(QEMU32): Likewise.
+	(linux.init.x86_64): New target.
+	(linux.init.i386): Likewise.
+	(multiboot.elf): Likewise.
+	(kfreebsd.elf): Likewise.
+	(kfreebsd.aout): Likewise.
+	(pc-chainloader.elf): Likewise.
+	(pc-chainloader.bin): Likewise.
+	(ntldr.elf): Likewise.
+	(ntldr.bin): Likewise.
+	(multiboot2.elf): Likewise.
+	(kfreebsd.init.x86_64): Likewise.
+	(kfreebsd.init.i386): Likewise.
+	(knetbsd.init.i386): Likewise.
+	(kopenbsd.init.i386): Likewise.
+	(knetbsd.init.x86_64): Likewise.
+	(kopenbsd.init.x86_64): Likewise.
+	(linux-initramfs.i386): Likewise.
+	(linux-initramfs.x86_64): Likewise.
+	(kfreebsd-mfsroot.i386.img): Likewise.
+	(knetbsd.image.i386): Likewise.
+	(kopenbsd.image.i386): Likewise.
+	(kopenbsd.image.x86_64): Likewise.
+	(knetbsd.miniroot-image.i386.img): Likewise.
+	(kfreebsd-mfsroot.x86_64.img): Likewise.
+	(knetbsd.image.x86_64): Likewise.
+	(knetbsd.miniroot-image.x86_64.img): Likewise.
+	(kfreebsd-mfsroot.i386.gz): Likewise.
+	(bootcheck-kfreebsd-i386): Likewise.
+	(kfreebsd-mfsroot.x86_64.gz): Likewise.
+	(bootcheck-kfreebsd-x86_64): Likewise.
+	(knetbsd.miniroot-image.i386.gz): Likewise.
+	(bootcheck-knetbsd-i386): Likewise.
+	(bootcheck-kopenbsd-i386): Likewise.
+	(bootcheck-kopenbsd-x86_64): Likewise.
+	(knetbsd.miniroot-image.x86_64.gz): Likewise.
+	(bootcheck-knetbsd-x86_64): Likewise.
+	(bootcheck-linux-i386): Likewise.
+	(bootcheck-linux-x86_64): Likewise.
+	(bootcheck-linux16-i386): Likewise.
+	(bootcheck-linux16-x86_64): Likewise.
+	(bootcheck-multiboot): Likewise.
+	(bootcheck-multiboot2): Likewise.
+	(bootcheck-kfreebsd-aout): Likewise.
+	(bootcheck-pc-chainloader): Likewise.
+	(bootcheck-ntldr): Likewise.
+	(CLEANFILES): Add new targets.
+	(BOOTCHECKS): New variable.
+	(.PHONY): Add bootchecks.
+	(SUCCESSFUL_BOOT_STRING): New variable.
+	(BOOTCHECK_TIMEOUT): Likewise.
+	(bootcheck): New target
+	* Makefile.util.def (grub-mkrescue): Enable on i386-multiboot.
+	* configure.ac: Correct efiemu excuse.
+	* docs/grub.texi (Supported kernels): New chapter.
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Add
+	include/grub/mm_private.h. Simplify inclusion of
+	include/grub/boot.h, include/grub/loader.h
+	and include/grub/msdos_partition.h
+	(KERNEL_HEADER_FILES) [i386_coreboot]:
+	Remove include/grub/machine/loader.h. Add include/grub/i386/pit.h.
+	(KERNEL_HEADER_FILES) [i386_multiboot]: Likewise.
+	(KERNEL_HEADER_FILES) [i386_qemu]: Likewise.
+	(KERNEL_HEADER_FILES) [i386_ieee1275]: Remove
+	include/grub/machine/loader.h.
+	(KERNEL_HEADER_FILES) [x86_64-efi]: Likewise.
+	* grub-core/Makefile.core.def (kernel): Remove kern/i386/loader.S from
+	extra_dist.
+	(pci.mod): Enable on i386-multiboot.
+	(acpi.mod): Enable on i386-multiboot and i386-coreboot.
+	(efiemu.mod): Enable on i386-coreboot, i386-ieee1275, i386-multiboot and
+	i386-qemu.
+	(relocator.mod): Rewritten.
+	(aout.mod): Enable on all x86.
+	(bsd.mod): Likewise.
+	(ntldr.mod): New module.
+	(linux.mod): Use loader/i386/linux.c on all x86.
+	(xnu.mod): Enable on all x86.
+	(vga_text.mod): disable on EFI and QEMU.
+	* grub-core/efiemu/i386/coredetect.c: Remove useless include.
+	* grub-core/efiemu/i386/pc/cfgtables.c: Likewise.
+	* grub-core/efiemu/loadcore.c: Likewise.
+	* grub-core/efiemu/main.c: Likewise.
+	(grub_efiemu_exit_boot_services): Removed.
+	(grub_efiemu_finish_boot_services): Likewise.
+	* grub-core/efiemu/mm.c (grub_efiemu_finish_boot_services): New
+	function.
+	* grub-core/efiemu/i386/nocfgtables.c: New file.
+	* grub-core/kern/dl.c (grub_dl_unload_all): Removed.
+	* grub-core/kern/efi/efi.c (grub_efi_exit_boot_services): Removed.
+	(grub_efi_finish_boot_services): Moved from here ...
+	* grub-core/kern/efi/mm.c (grub_efi_finish_boot_services): ...here.
+	Fille finish memory map and related data.
+	(finish_mmap_buf): New variable.
+	(grub_efi_uintn_t finish_mmap_size): Likewise.
+	(grub_efi_uintn_t finish_key): Likewise.
+	(grub_efi_uintn_t finish_desc_size): Likewise.
+	(grub_efi_uint32_t finish_desc_version): Likewise.
+	(grub_efi_is_finished): Likewise.
+	(grub_efi_get_memory_map): Use saved memory map if EFI is already
+	finished.
+	* grub-core/kern/elf.c (grub_elf32_phdr_iterate): Make global.
+	(grub_elf64_phdr_iterate): Likewise.
+	* grub-core/kern/i386/coreboot/init.c (grub_os_area_addr): Removed.
+	(grub_os_area_size): Likewise.
+	(grub_machine_init): Don't reserve os area.
+	* grub-core/kern/i386/coreboot/startup.S: Don't include loader.S.
+	* grub-core/kern/i386/ieee1275/startup.S: Likewise.
+	* grub-core/kern/i386/loader.S: Removed.
+	* grub-core/kern/i386/pc/init.c (grub_os_area_addr): Removed.
+	(grub_os_area_size): Likewise.
+	(grub_machine_init): Don't reserve os area.
+	* grub-core/kern/i386/pc/startup.S (grub_chainloader_real_boot):
+	Don't call grub_dl_unload_all.
+	Don't include loader.S.
+	* grub-core/kern/i386/qemu/mmap.c (grub_machine_mmap_iterate):
+	Declare the memory after _end as available.
+	* grub-core/kern/mm.c (GRUB_MM_FREE_MAGIC): Moved from here...
+	(GRUB_MM_ALLOC_MAGIC): Moved from here...
+	(grub_mm_header)
+	(GRUB_MM_ALIGN)
+	* grub-core/kern/mm.c (grub_mm_region): Moved from here ...
+	(grub_mm_region): ..here. Removed addr. Added pre_size.
+	All users updated.
+	* grub-core/kern/mm.c (base): Renamed to ...
+	(grub_mm_base): ... this. Made global.
+	(grub_real_malloc): Alloc from end of region.
+	(grub_memalign): Don't attempt to malloc if grub_mm_base is NULL.
+	* grub-core/kern/powerpc/cache.S (grub_arch_sync_caches): Move to ...
+	* grub-core/kern/powerpc/cache_flush.S: ... here.
+	* grub-core/lib/efi/relocator.c: New file.
+	* grub-core/lib/i386/relocator.c: Rewritten.
+	* grub-core/lib/i386/relocator16.S: New file.
+	* grub-core/lib/i386/relocator32.S: Likewise.
+	* grub-core/lib/i386/relocator64.S: Likewise.
+	* grub-core/lib/i386/relocator_asm.S: Rewritten.
+	* grub-core/lib/i386/relocator_common.S: New file.
+	* grub-core/lib/ieee1275/relocator.c: Likewise.
+	* grub-core/lib/mips/relocator.c: Rewritten.
+	* grub-core/lib/mips/relocator_asm.S: Renamed variables and minor
+	stylistic adjustments.
+	* grub-core/lib/powerpc/relocator.c: New file.
+	* grub-core/lib/powerpc/relocator_asm.S: Likewise.
+	* grub-core/lib/relocator.c: Rewritten.
+	* grub-core/lib/x86_64/relocator_asm.S: New file.
+	* grub-core/loader/aout.c (grub_aout_load): Make load_addr a void *.
+	* grub-core/loader/i386/bsd.c (NETBSD_DEFAULT_VIDEO_MODE): New const.
+	(bsd_tag): New struct.
+	(tags): New variable.
+	(tags_last): Likewise.
+	(netbsd_module): New struct.
+	(netbsd_mods): New variable.
+	(netbsd_mods_last): Likewise.
+	(openbsd_opts): New parameter "serial".
+	(OPENBSD_SERIAL_ARG): New definition.
+	(netbsd_opts): New parameter "serial".
+	(NETBSD_SERIAL_ARG): New definition.
+	(grub_freebsd_add_meta): Reorganised into ...
+	(grub_bsd_add_meta): ...this. All users updated.
+	(grub_freebsd_add_mmap): Reorganised into ...
+	(generate_e820_mmap):  ...this...
+	(grub_bsd_add_mmap): ...and this.  All users updated.
+	(grub_freebsd_list_modules): Use tags.
+	(grub_netbsd_add_meta_module): New function.
+	(grub_netbsd_list_modules): Likewise.
+	(grub_freebsd_boot): Use relocator and finish EFI.
+	(grub_openbsd_boot): Likewise.
+	(grub_netbsd_setup_video): New function.
+	(grub_netbsd_add_modules): Likewise.
+	(grub_netbsd_boot): Use grub_netbsd_add_modules, relocator, netbsd_tags
+	and finish EFI.
+	(grub_bsd_unload): Unload tags.
+	(grub_bsd_load_aout): Use relocator.
+	(grub_bsd_elf32_size_hook): New function.
+	(grub_bsd_elf32_hook): Use relocator.
+	(grub_bsd_elf64_size_hook): New function.
+	(grub_bsd_elf64_hook): Use relocator.
+	(grub_bsd_load_elf): Use relocator and call grub_openbsd_find_ramdisk.
+	(grub_bsd_load): Zero-out openbsd_ramdisk.
+	(grub_bsd_load): Use relocator.
+	(grub_cmd_openbsd): Support serial.
+	(grub_cmd_netbsd): Support modules.
+	(grub_cmd_freebsd_module): Use relocator.
+	(grub_netbsd_module_load): New function.
+	(grub_cmd_netbsd_module): Likewise.
+	(grub_cmd_openbsd_ramdisk): Likewise.
+	(GRUB_MOD_INIT): Register knetbsd_module, knetbsd_module_elf and
+	kopenbsd_ramdisk.
+	(GRUB_MOD_FINI): Unregister new commands.
+	* grub-core/loader/i386/bsdXX.c (load): Remove useless checks.
+	(grub_freebsd_load_elfmodule_obj): Use relocator.
+	(grub_freebsd_load_elfmodule): Likewise.
+	(grub_freebsd_load_elf_meta): Likewise.
+	(grub_netbsd_load_elf_meta): New function.
+	(grub_openbsd_find_ramdisk): Likewise.
+	* grub-core/loader/i386/bsd_helper.S: Removed.
+	* grub-core/loader/i386/bsd_pagetable.c: Support relocator.
+	* grub-core/loader/i386/bsd_trampoline.S: Removed.
+	* grub-core/loader/i386/efi/linux.c: Likewise.
+	* grub-core/loader/i386/ieee1275/linux.c: Likewise.
+	* grub-core/loader/i386/linux.c (HAS_VGA_TEXT): New const.
+	(DEFAULT_VIDEO_MODE): Likewise.
+	(real_mode_target): New variable.
+	(prot_mode_target): Likewise.
+	(initrd_mem_target): Likewise.
+	(relocator): Likewise.
+	(efi_mmap_buf): Likewise.
+	(efi_mmap_size): Likewise.
+	(find_efi_mmap_size): Moved from grub-core/loader/i386/efi/linux.c.
+	(free_pages): Use relocator.
+	(allocate_pages): Account for efi_mmap and use relocator. Return error.
+	(grub_linux_setup_video): Return error.
+	(grub_linux_trampoline_start): Removed.
+	(grub_linux_trampoline_end): Likewise.
+	(grub_linux_boot): Use relocator and DEFAULT_VIDEO_MODE. Pass console
+	andd video parameters depending on firmware.
+	[GRUB_MACHINE_IEEE1275]: Pass OFW parameters.
+	[GRUB_MACHINE_EFI]: Pass EFI parameters.
+	(grub_cmd_linux) [GRUB_MACHINE_EFI]: Likewise.
+	(grub_cmd_initrd): Use relocator.
+	* grub-core/loader/i386/linux_trampoline.S: Removed.
+	* grub-core/loader/i386/multiboot_mbi.c (elf_sec_num): New variable.
+	(elf_sec_entsize): Likewise.
+	(elf_sec_shstrndx): Likewise.
+	(elf_sections): Likewise.
+	(grub_multiboot_load): Use relocator.
+	(grub_multiboot_get_mbi_size): Account for sections.
+	(grub_multiboot_make_mbi): Use relocator and support sections.
+	(grub_multiboot_add_elfsyms): New function.
+	(grub_multiboot_free_mbi): Free sections.
+	* grub-core/loader/i386/pc/linux.c (relocator): New variable.
+	(grub_linux_real_target): Likewise.
+	(grub_linux_real_chunk): Likewise.
+	(grub_linux16_prot_size): Likewise.
+	(grub_linux16_boot): Use relocator.
+	(grub_linux_unload): Unload relocator.
+	(grub_cmd_linux): Use relocator.
+	(grub_cmd_initrd): Likewise.
+	* grub-core/loader/i386/pc/ntldr.c: New file.
+	* grub-core/loader/i386/xnu.c (guessfsb) [GRUB_MACHINE_IEEE1275]:
+	Don't try to guess CPU frequency.
+	(grub_xnu_set_video): Stretch bitmap.
+	(grub_xnu_boot): Use relocator.
+	* grub-core/loader/mips/linux.c (grub_linux_boot): Use relocator.
+	(grub_linux_unload): Free relocator.
+	(grub_linux_load32): Use relocator.
+	(grub_linux_load64): Likewise.
+	(grub_cmd_initrd): Likewise.
+	* grub-core/loader/multiboot.c (grub_multiboot_boot): Use relocator.
+	(grub_multiboot_unload): Unload relocator.
+	(grub_cmd_multiboot): Use relocator.
+	(grub_cmd_module): Likewise.
+	* grub-core/loader/multiboot_elfxx.c (grub_multiboot_load_elfXX):
+	Use relocator and support sections.
+	* grub-core/loader/multiboot_mbi2.c(elf_sec_num): New variable.
+	(elf_sec_entsize): Likewise.
+	(elf_sec_shstrndx): Likewise.
+	(elf_sections): Likewise.
+	(grub_multiboot_load): Use relocator.
+	(grub_multiboot_get_mbi_size): Account for sections.
+	(grub_multiboot_make_mbi): Use relocator and support sections.
+	(grub_multiboot_add_elfsyms): New function.
+	* grub-core/loader/powerpc/ieee1275/linux.c: Remove useless include.
+	* grub-core/loader/sparc64/ieee1275/linux.c: Likewise.
+	* grub-core/loader/xnu.c (grub_xnu_heap_malloc): Use relocator.
+	Prototype changed. All users updated.
+	(grub_xnu_align_heap): Simplified.
+	(grub_xnu_writetree_toheap): Likewise.
+	(grub_xnu_unload): Unload relocator.
+	(grub_cmd_xnu_kernel): Use relocator.
+	(grub_cmd_xnu_kernel64): Likewise.
+	(grub_xnu_register_memory): Simplified.
+	* grub-core/loader/xnu_resume.c (grub_xnu_resume): Use relocator.
+
+2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (kernel): Add kern/mips/cache_flush.S to
 	extra_dist.
 
