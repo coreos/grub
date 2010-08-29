@@ -586,8 +586,8 @@ malloc_in_range (struct grub_relocator *rel,
 	continue;
       do 
 	{
-	  grub_dprintf ("relocator", "free block %p+0x%x\n",
-			p, p->size);
+	  grub_dprintf ("relocator", "free block %p+0x%lx\n",
+			p, (unsigned long) p->size);
 	  if (p->magic != GRUB_MM_FREE_MAGIC)
 	    grub_fatal (__FILE__":%d free magic broken at %p (0x%x)\n",
 			__LINE__, p, p->magic);
