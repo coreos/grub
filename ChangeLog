@@ -1,3 +1,8 @@
+2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/misc.c (grub_real_dprintf): Always refresh after
+	dprintf.
+
 2010-08-29  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* Makefile.util.def: Use ldadd instead of ldflags for libraries.
