@@ -1,5 +1,9 @@
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Network): Fix reference to pxe_blksize.
+
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/menu.c (grub_wait_after_message): Add a 10 second
 	timeout to avoid indefinite boot stalling.
 
