@@ -235,8 +235,8 @@ kernel_syms.lst: $(KERNEL_HEADER_FILES) $(top_builddir)/config.h
 	$(TARGET_CPP) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS_KERNEL) $(CPPFLAGS) $(CFLAGS) -DGRUB_SYMBOL_GENERATOR=1 $^ >kernel_syms.input
 	if grep "^#define HAVE_ASM_USCORE" $(top_builddir)/config.h; then u="_"; else u=""; fi; \
 	cat kernel_syms.input | grep -v '^#' | sed -n \
-	  -e '/EXPORT_FUNC *([a-zA-Z0-9_]*)/{s/.*EXPORT_FUNC *(\([a-zA-Z0-9_]*\)).*/'"$$u"'\1 kernel/;p;}' \
-	  -e '/EXPORT_VAR *([a-zA-Z0-9_]*)/{s/.*EXPORT_VAR *(\([a-zA-Z0-9_]*\)).*/'"$$u"'\1 kernel/;p;}' \
+	  -e '/EXPORT_FUNC *([a-zA-Z0-9_]*)/{s/.*EXPORT_FUNC *(\([a-zA-Z0-9_]*\)).*/defined '"$$u"'kernel \1/;p;}' \
+	  -e '/EXPORT_VAR *([a-zA-Z0-9_]*)/{s/.*EXPORT_VAR *(\([a-zA-Z0-9_]*\)).*/defined '"$$u"' kernel \1/;p;}' \
 	  | sort -u >$@
 	rm -f kernel_syms.input
 CLEANFILES += kernel_syms.lst
@@ -333,15 +333,18 @@ crypto.lst: $(srcdir)/lib/libgcrypt-grub/cipher/crypto.lst
 platform_DATA += crypto.lst
 CLEANFILES += crypto.lst
 
-# .lst files
-platform_DATA += moddep.lst
-CLEANFILES += moddep.lst
+syminfo.lst: gensyminfo.sh kernel_syms.lst $(MODULE_FILES)
+	cat kernel_syms.lst > $@.new
+	for m in $(MODULE_FILES); do \
+	  sh $< $$m >> $@.new || exit 1; \
+	done
+	mv $@.new $@
 
 # generate global module dependencies list
-moddep.lst: kernel_syms.lst genmoddep.awk $(DEF_FILES) $(UND_FILES)
-	cat $(DEF_FILES) kernel_syms.lst /dev/null \
-	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UND_FILES) > $@ \
-	  || (rm -f $@; exit 1)
+moddep.lst: syminfo.lst genmoddep.awk
+	cat $< | sort | awk -f $(srcdir)/genmoddep.awk > $@ || (rm -f $@; exit 1)
+platform_DATA += moddep.lst
+CLEANFILES += moddep.lst
 
 if COND_i386_pc
 if COND_ENABLE_EFIEMU

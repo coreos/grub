@@ -1403,3 +1403,8 @@ module = {
   name = datehook;
   common = hook/datehook.c;
 };
+
+script = {
+  name = gensyminfo.sh;
+  common = gensyminfo.sh.in;
+};

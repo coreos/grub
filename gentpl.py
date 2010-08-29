@@ -284,8 +284,6 @@ def module(platform):
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
 
-    r += gvar_add("DEF_FILES", "def-[+ name +].lst")
-    r += gvar_add("UND_FILES", "und-[+ name +].lst")
     r += gvar_add("MOD_FILES", "[+ name +].mod")
     r += gvar_add("platform_DATA", "[+ name +].mod")
     r += gvar_add("CLEANFILES", "def-[+ name +].lst und-[+ name +].lst mod-[+ name +].c mod-[+ name +].o [+ name +].mod")
@@ -295,16 +293,6 @@ def module(platform):
     r += """
 [+ name +].pp: $(""" + cname() + """_SOURCES) $(nodist_""" + cname() + """_SOURCES)
 	$(TARGET_CPP) -DGRUB_LST_GENERATOR $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + cname() + """_CPPFLAGS) $(CPPFLAGS) $^ > $@ || (rm -f $@; exit 1)
-
-def-[+ name +].lst: [+ name +].module$(EXEEXT)
-	if test x$(USE_APPLE_CC_FIXES) = xyes; then \
-	  $(NM) -g -P -p $< | grep -E '^[a-zA-Z0-9_]* [TDS]' | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@; \
-	else \
-	  $(NM) -g --defined-only -P -p $< | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@; \
-	fi
-
-und-[+ name +].lst: [+ name +].module$(EXEEXT)
-	$(NM) -u -P -p $< | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@
 
 mod-[+ name +].c: [+ name +].module$(EXEEXT) moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh [+ name +] moddep.lst > $@ || (rm -f $@; exit 1)
@@ -448,9 +436,8 @@ def script(platform):
     r += "[+ IF mansection +]" + manpage() + "[+ ENDIF +]"
     r += "[+ ENDIF +]"
 
-    r += rule("[+ name +]", "$(top_builddir)/config.status " + platform_sources(platform), """
-$(top_builddir)/config.status --file=-:""" + platform_sources(platform) + """ \
-  | sed -e 's,@pkglib_DATA@,$(pkglib_DATA),g' > $@
+    r += rule("[+ name +]", platform_sources(platform) + " $(top_builddir)/config.status", """
+$(top_builddir)/config.status --file=-:$< | sed -e 's,@pkglib_DATA@,$(pkglib_DATA),g' > $@
 chmod a+x [+ name +]
 """)
 

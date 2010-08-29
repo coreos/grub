@@ -86,8 +86,6 @@ CPPFLAGS_EFIEMU = -I$(top_srcdir)/grub-core/efiemu/runtime
 # Define these variables to calm down automake
 
 PP_FILES =
-DEF_FILES =
-UND_FILES =
 IMG_FILES =
 MOD_FILES =
 MODULE_FILES =
