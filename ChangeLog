@@ -1,5 +1,10 @@
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/color.c (grub_env_write_color_normal): Fix a warning.
+	(grub_env_write_color_highlight): Likewise.
+
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/term.c (print_more): Return to normal and not
 	to standard state after printing "---MORE---".
 
