@@ -17,9 +17,10 @@ BEGIN {
   lineno = 0;
   while (getline <"/dev/stdin") {
     lineno++;
-    if ($1 == "defined")
+    if ($1 == "defined") {
       symtab[$3] = $2;
-    else if ($1 == "undefined") {
+      modtab[$2] = "" modtab[$2]
+    } else if ($1 == "undefined") {
       if ($3 in symtab)
 	modtab[$2] = modtab[$2] " " symtab[$3];
       else if ($3 != "__gnu_local_gp") {

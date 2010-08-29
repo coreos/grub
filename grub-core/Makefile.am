@@ -346,6 +346,11 @@ moddep.lst: syminfo.lst genmoddep.awk
 platform_DATA += moddep.lst
 CLEANFILES += config.log syminfo.lst moddep.lst
 
+$(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT)
+	sh $^ $@
+platform_DATA += $(MOD_FILES)
+CLEANFILES += $(MOD_FILES)
+
 if COND_i386_pc
 if COND_ENABLE_EFIEMU
 efiemu32.o: efiemu/runtime/efiemu.c $(TARGET_OBJ2ELF)

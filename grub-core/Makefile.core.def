@@ -1408,3 +1408,8 @@ script = {
   name = gensyminfo.sh;
   common = gensyminfo.sh.in;
 };
+
+script = {
+  name = genmod.sh;
+  common = genmod.sh.in;
+};
