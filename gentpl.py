@@ -290,17 +290,7 @@ def module(platform):
     r += gvar_add("platform_DATA", "[+ name +].mod")
     r += gvar_add("CLEANFILES", "def-[+ name +].lst und-[+ name +].lst mod-[+ name +].c mod-[+ name +].o [+ name +].mod")
 
-    r += gvar_add("COMMAND_FILES", "command-[+ name +].lst")
-    r += gvar_add("FS_FILES", "fs-[+ name +].lst")
-    r += gvar_add("VIDEO_FILES", "video-[+ name +].lst")
-    r += gvar_add("PARTMAP_FILES", "partmap-[+ name +].lst")
-    r += gvar_add("HANDLER_FILES", "handler-[+ name +].lst")
-    r += gvar_add("PARTTOOL_FILES", "parttool-[+ name +].lst")
-    r += gvar_add("TERMINAL_FILES", "terminal-[+ name +].lst")
-    r += gvar_add("CLEANFILES", "command-[+ name +].lst fs-[+ name +].lst")
-    r += gvar_add("CLEANFILES", "handler-[+ name +].lst terminal-[+ name +].lst")
-    r += gvar_add("CLEANFILES", "video-[+ name +].lst partmap-[+ name +].lst parttool-[+ name +].lst")
-
+    r += gvar_add("PP_FILES", "[+ name +].pp")
     r += gvar_add("CLEANFILES", "[+ name +].pp")
     r += """
 [+ name +].pp: $(""" + cname() + """_SOURCES) $(nodist_""" + cname() + """_SOURCES)
@@ -332,27 +322,6 @@ mod-[+ name +].o: mod-[+ name +].c
 	  if test ! -z '$(TARGET_OBJ2ELF)'; then $(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi; \
 	  $(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@; \
 	fi
-
-command-[+ name +].lst: [+ name +].pp $(srcdir)/gencmdlist.sh
-	cat $< | sh $(srcdir)/gencmdlist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-fs-[+ name +].lst: [+ name +].pp $(srcdir)/genfslist.sh
-	cat $< | sh $(srcdir)/genfslist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-video-[+ name +].lst: [+ name +].pp $(srcdir)/genvideolist.sh
-	cat $< | sh $(srcdir)/genvideolist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-partmap-[+ name +].lst: [+ name +].pp $(srcdir)/genpartmaplist.sh
-	cat $< | sh $(srcdir)/genpartmaplist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-parttool-[+ name +].lst: [+ name +].pp $(srcdir)/genparttoollist.sh
-	cat $< | sh $(srcdir)/genparttoollist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-handler-[+ name +].lst: [+ name +].pp $(srcdir)/genhandlerlist.sh
-	cat $< | sh $(srcdir)/genhandlerlist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-terminal-[+ name +].lst: [+ name +].pp $(srcdir)/genterminallist.sh
-	cat $< | sh $(srcdir)/genterminallist.sh [+ name +] > $@ || (rm -f $@; exit 1)
 """
     return r
 

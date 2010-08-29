@@ -256,55 +256,86 @@ grub_emu_init.c: grub_emu_init.h genemuinit.sh $(MOD_FILES)
 CLEANFILES += grub_emu_init.c
 endif
 
-# .lst files
-platform_DATA += moddep.lst
-platform_DATA += fs.lst
-platform_DATA += command.lst
-platform_DATA += partmap.lst
-platform_DATA += handler.lst
-platform_DATA += terminal.lst
-platform_DATA += parttool.lst
-platform_DATA += video.lst
-platform_DATA += crypto.lst
-CLEANFILES += moddep.lst
-CLEANFILES += handler.lst
-CLEANFILES += terminal.lst
-CLEANFILES += parttool.lst
-CLEANFILES += video.lst
-CLEANFILES += crypto.lst
+# List files
 
-fs.lst: $(FS_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+fs.lst: $(PP_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .pp`; \
+	  if grep -v "^#" $$pp | grep '^ *grub_fs_register' >/dev/null 2>&1; then \
+	    echo $$b; \
+	  fi; \
+	done) | sort -u > $@
+platform_DATA += fs.lst
 CLEANFILES += fs.lst
 
-command.lst: $(COMMAND_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+command.lst: $(PP_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .pp`; \
+	  grep -v "^#" $$pp | sed -n \
+	    -e "/grub_register_command *( *\"/{s/.*( *\"\([^\"]*\)\".*/\1: $$b/;p;}" \
+	    -e "/grub_register_extcmd *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}" \
+	    -e "/grub_register_command_p1 *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}"; \
+	done) | sort -u > $@
+platform_DATA += command.lst
 CLEANFILES += command.lst
 
-partmap.lst: $(PARTMAP_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+partmap.lst: $(PP_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .pp`; \
+	  if grep -v "^#" $$pp | grep '^ *grub_partition_map_register' >/dev/null 2>&1; then \
+	    echo $$b; \
+	  fi; \
+	done) | sort -u > $@
+platform_DATA += partmap.lst
 CLEANFILES += partmap.lst
 
-handler.lst: $(HANDLER_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+handler.lst: $(PP_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .pp`; \
+	  grep -v "^#" $$pp | sed -n \
+	    -e "/grub_parser_register *( *\"/{s/.*( *\"\([^\"]*\)\".*/parser.\1: $$b/;p;}"; \
+	done) | sort -u > $@
+platform_DATA += handler.lst
 CLEANFILES += handler.lst
 
-terminal.lst: $(TERMINAL_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+terminal.lst: $(PP_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .pp`; \
+	  grep -v "^#" $$pp | sed -n \
+	    -e "/grub_term_register_input *( *\"/{s/.*( *\"\([^\"]*\)\".*/i\1: $$b/;p;}" \
+	    -e "/grub_term_register_output *( *\"/{s/.*( *\"\([^\"]*\)\".*/o\1: $$b/;p;}"; \
+	done) | sort -u > $@
+platform_DATA += terminal.lst
 CLEANFILES += terminal.lst
 
-parttool.lst: $(PARTTOOL_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+parttool.lst: $(PP_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .pp`; \
+	  grep -v "^#" $$pp | sed -n \
+	    -e "/grub_parttool_register *( *\"/{s/.*( *\"\([^\"]*\)\".*/\1: $$b/;p;}"; \
+	done) | sort -u > $@
+platform_DATA += parttool.lst
 CLEANFILES += parttool.lst
 
-video.lst: $(VIDEO_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+video.lst: $(PP_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .pp`; \
+	  if grep -v "^#" $$pp | grep '^ *grub_video_register' >/dev/null 2>&1; then \
+	    echo $$b; \
+	  fi; \
+	done) | sort -u > $@
+platform_DATA += video.lst
 CLEANFILES += video.lst
 
 # but, crypto.lst is simply copied
 crypto.lst: $(srcdir)/lib/libgcrypt-grub/cipher/crypto.lst
 	cp $^ $@
+platform_DATA += crypto.lst
 CLEANFILES += crypto.lst
+
+# .lst files
+platform_DATA += moddep.lst
+CLEANFILES += moddep.lst
 
 # generate global module dependencies list
 moddep.lst: kernel_syms.lst genmoddep.awk $(DEF_FILES) $(UND_FILES)
