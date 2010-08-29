@@ -344,7 +344,7 @@ syminfo.lst: gensyminfo.sh kernel_syms.lst $(MODULE_FILES)
 moddep.lst: syminfo.lst genmoddep.awk
 	cat $< | sort | awk -f $(srcdir)/genmoddep.awk > $@ || (rm -f $@; exit 1)
 platform_DATA += moddep.lst
-CLEANFILES += moddep.lst
+CLEANFILES += config.log syminfo.lst moddep.lst
 
 if COND_i386_pc
 if COND_ENABLE_EFIEMU
