@@ -1,5 +1,10 @@
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu.c (grub_wait_after_message): Add a 10 second
+	timeout to avoid indefinite boot stalling.
+
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/color.c (grub_env_write_color_normal): Fix a warning.
 	(grub_env_write_color_highlight): Likewise.
 
