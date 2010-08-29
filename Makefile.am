@@ -272,11 +272,15 @@ endif
 
 if !COND_i386_coreboot
 # Crashes because memory at 0-0x1000 is occupied
-BOOTCHECKS += bootcheck-kfreebsd-x86_64
-# Likewise.
 BOOTCHECKS += bootcheck-knetbsd-x86_64
 
+# Likewise and require ACPI.
+if !COND_i386_multiboot
+if !COND_i386_qemu
+BOOTCHECKS += bootcheck-kfreebsd-x86_64
 BOOTCHECKS += bootcheck-kfreebsd-i386
+endif
+endif
 endif
 
 BOOTCHECKS += bootcheck-kfreebsd-aout
