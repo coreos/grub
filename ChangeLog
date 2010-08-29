@@ -1,3 +1,7 @@
+2010-08-29  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* Makefile.util.def: Use ldadd instead of ldflags for libraries.
+
 2010-08-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/term.c (print_more): Fix a memory leak.
