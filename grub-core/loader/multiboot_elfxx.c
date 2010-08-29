@@ -140,6 +140,14 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
   if (i == ehdr->e_phnum)
     return grub_error (GRUB_ERR_BAD_OS, "entry point isn't in a segment");
 
+#if defined (__i386__) || defined (__x86_64__)
+  
+#elif defined (__mips)
+  grub_multiboot_payload_eip |= 0x80000000;
+#else
+#error Please complete this
+#endif
+
   if (ehdr->e_shnum)
     {
       grub_uint8_t *shdr, *shdrptr;
