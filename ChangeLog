@@ -1,5 +1,9 @@
 2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.util.def (grub-ofpathname): Add missing ldadd.
+
+2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_real_dprintf): Always refresh after
 	dprintf.
 
