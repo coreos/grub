@@ -81,7 +81,7 @@ struct bsd_tag
   } data[0];
 };
 
-struct bsd_tag *tags, *tags_last;
+static struct bsd_tag *tags, *tags_last;
 
 struct netbsd_module
 {
@@ -89,7 +89,7 @@ struct netbsd_module
   struct grub_netbsd_btinfo_module mod;
 };
 
-struct netbsd_module *netbsd_mods, *netbsd_mods_last;
+static struct netbsd_module *netbsd_mods, *netbsd_mods_last;
 
 static const struct grub_arg_option freebsd_opts[] =
   {
