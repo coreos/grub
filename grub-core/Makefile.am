@@ -258,69 +258,60 @@ endif
 
 # List files
 
-fs.lst: $(PP_FILES)
+fs.lst: $(MARKER_FILES)
 	(for pp in $^; do \
-	  b=`basename $$pp .pp`; \
-	  if grep -v "^#" $$pp | grep '^ *grub_fs_register' >/dev/null 2>&1; then \
+	  b=`basename $$pp .marker`; \
+	  if grep 'FS_LIST_MARKER' $$pp >/dev/null 2>&1; then \
 	    echo $$b; \
 	  fi; \
 	done) | sort -u > $@
 platform_DATA += fs.lst
 CLEANFILES += fs.lst
 
-command.lst: $(PP_FILES)
+command.lst: $(MARKER_FILES)
 	(for pp in $^; do \
-	  b=`basename $$pp .pp`; \
-	  grep -v "^#" $$pp | sed -n \
-	    -e "/grub_register_command *( *\"/{s/.*( *\"\([^\"]*\)\".*/\1: $$b/;p;}" \
-	    -e "/grub_register_extcmd *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}" \
-	    -e "/grub_register_command_p1 *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}"; \
+	  b=`basename $$pp .marker`; \
+	  sed -n \
+	    -e "/COMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/\1: $$b/;p;}" \
+	    -e "/EXTCOMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}" \
+	    -e "/P1COMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}" $$pp; \
 	done) | sort -u > $@
 platform_DATA += command.lst
 CLEANFILES += command.lst
 
-partmap.lst: $(PP_FILES)
+partmap.lst: $(MARKER_FILES)
 	(for pp in $^; do \
-	  b=`basename $$pp .pp`; \
-	  if grep -v "^#" $$pp | grep '^ *grub_partition_map_register' >/dev/null 2>&1; then \
+	  b=`basename $$pp .marker`; \
+	  if grep 'PARTMAP_LIST_MARKER' $$pp >/dev/null 2>&1; then \
 	    echo $$b; \
 	  fi; \
 	done) | sort -u > $@
 platform_DATA += partmap.lst
 CLEANFILES += partmap.lst
 
-handler.lst: $(PP_FILES)
+terminal.lst: $(MARKER_FILES)
 	(for pp in $^; do \
-	  b=`basename $$pp .pp`; \
-	  grep -v "^#" $$pp | sed -n \
-	    -e "/grub_parser_register *( *\"/{s/.*( *\"\([^\"]*\)\".*/parser.\1: $$b/;p;}"; \
-	done) | sort -u > $@
-platform_DATA += handler.lst
-CLEANFILES += handler.lst
-
-terminal.lst: $(PP_FILES)
-	(for pp in $^; do \
-	  b=`basename $$pp .pp`; \
-	  grep -v "^#" $$pp | sed -n \
-	    -e "/grub_term_register_input *( *\"/{s/.*( *\"\([^\"]*\)\".*/i\1: $$b/;p;}" \
-	    -e "/grub_term_register_output *( *\"/{s/.*( *\"\([^\"]*\)\".*/o\1: $$b/;p;}"; \
+	  b=`basename $$pp .marker`; \
+	  sed -n \
+	    -e "/INPUT_TERMINAL_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/i\1: $$b/;p;}" \
+	    -e "/OUTPUT_TERMINAL_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/o\1: $$b/;p;}" $$pp; \
 	done) | sort -u > $@
 platform_DATA += terminal.lst
 CLEANFILES += terminal.lst
 
-parttool.lst: $(PP_FILES)
+parttool.lst: $(MARKER_FILES)
 	(for pp in $^; do \
-	  b=`basename $$pp .pp`; \
-	  grep -v "^#" $$pp | sed -n \
-	    -e "/grub_parttool_register *( *\"/{s/.*( *\"\([^\"]*\)\".*/\1: $$b/;p;}"; \
+	  b=`basename $$pp .marker`; \
+	  sed -n \
+	    -e "/PARTTOOL_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/\1: $$b/;p;}" $$pp; \
 	done) | sort -u > $@
 platform_DATA += parttool.lst
 CLEANFILES += parttool.lst
 
-video.lst: $(PP_FILES)
+video.lst: $(MARKER_FILES)
 	(for pp in $^; do \
-	  b=`basename $$pp .pp`; \
-	  if grep -v "^#" $$pp | grep '^ *grub_video_register' >/dev/null 2>&1; then \
+	  b=`basename $$pp .marker`; \
+	  if grep 'VIDEO_LIST_MARKER' $$pp >/dev/null 2>&1; then \
 	    echo $$b; \
 	  fi; \
 	done) | sort -u > $@

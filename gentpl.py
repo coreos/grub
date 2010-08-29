@@ -285,11 +285,12 @@ def module(platform):
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
 
     r += gvar_add("MOD_FILES", "[+ name +].mod")
-    r += gvar_add("PP_FILES", "[+ name +].pp")
-    r += gvar_add("CLEANFILES", "[+ name +].pp")
+    r += gvar_add("MARKER_FILES", "[+ name +].marker")
+    r += gvar_add("CLEANFILES", "[+ name +].marker")
     r += """
-[+ name +].pp: $(""" + cname() + """_SOURCES) $(nodist_""" + cname() + """_SOURCES)
-	$(TARGET_CPP) -DGRUB_LST_GENERATOR $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + cname() + """_CPPFLAGS) $(CPPFLAGS) $^ > $@ || (rm -f $@; exit 1)
+[+ name +].marker: $(""" + cname() + """_SOURCES) $(nodist_""" + cname() + """_SOURCES)
+	$(TARGET_CPP) -DGRUB_LST_GENERATOR $(CPPFLAGS_MARKER) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + cname() + """_CPPFLAGS) $(CPPFLAGS) $^ > $@.new || (rm -f $@; exit 1)
+	grep 'MARKER' $@.new > $@; rm -f $@.new
 """
     return r
 
