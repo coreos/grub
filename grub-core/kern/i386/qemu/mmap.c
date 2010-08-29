@@ -68,6 +68,11 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uin
 	    GRUB_MACHINE_MEMORY_AVAILABLE))
     return 1;
 
+  if (hook ((grub_addr_t) _end,
+           0xa0000 - (grub_addr_t) _end,
+           GRUB_MACHINE_MEMORY_AVAILABLE))
+    return 1;
+
   if (hook (GRUB_MEMORY_MACHINE_UPPER,
 	    0x100000 - GRUB_MEMORY_MACHINE_UPPER,
 	    GRUB_MACHINE_MEMORY_RESERVED))

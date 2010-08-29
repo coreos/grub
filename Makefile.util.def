@@ -335,6 +335,7 @@ script = {
   enable = i386_pc;
   enable = x86_efi;
   enable = i386_qemu;
+  enable = i386_multiboot;
   enable = i386_coreboot;
   enable = powerpc_ieee1275;
 };

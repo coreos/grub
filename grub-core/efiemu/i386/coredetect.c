@@ -17,7 +17,6 @@
  */
 
 #include <grub/efiemu/efiemu.h>
-#include <grub/machine/efiemu.h>
 #include <grub/command.h>
 
 #define cpuid(num,a,b,c,d) \

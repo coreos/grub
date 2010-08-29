@@ -166,7 +166,6 @@ kernel = {
   emu = kern/emu/mm.c;
   emu = kern/emu/time.c;
 
-  extra_dist = kern/i386/loader.S;
   extra_dist = kern/i386/realmode.S;
   extra_dist = kern/i386/pc/lzma_decode.S;
   extra_dist = kern/mips/cache_flush.S;
@@ -362,6 +361,7 @@ module = {
   enable = x86_efi;
   enable = i386_ieee1275;
   enable = i386_coreboot;
+  enable = i386_multiboot;
   emu_condition = COND_GRUB_EMU_PCI;
 };
 
@@ -405,9 +405,13 @@ module = {
   i386 = commands/acpi.c;
   x86_efi = commands/efi/acpi.c;
   i386_pc = commands/i386/pc/acpi.c;
+  i386_coreboot = commands/i386/pc/acpi.c;
+  i386_multiboot = commands/i386/pc/acpi.c;
 
   enable = x86_efi;
   enable = i386_pc;
+  enable = i386_coreboot;
+  enable = i386_multiboot;
 };
 
 module = {
@@ -766,19 +770,23 @@ module = {
 
 module = {
   name = efiemu;
-  i386_pc = efiemu/main.c;
-  i386_pc = efiemu/i386/loadcore32.c;
-  i386_pc = efiemu/i386/loadcore64.c;
+  common = efiemu/main.c;
+  common = efiemu/i386/loadcore32.c;
+  common = efiemu/i386/loadcore64.c;
   i386_pc = efiemu/i386/pc/cfgtables.c;
-  i386_pc = efiemu/mm.c;
-  i386_pc = efiemu/loadcore_common.c;
-  i386_pc = efiemu/symbols.c;
-  i386_pc = efiemu/loadcore32.c;
-  i386_pc = efiemu/loadcore64.c;
-  i386_pc = efiemu/prepare32.c;
-  i386_pc = efiemu/prepare64.c;
-  i386_pc = efiemu/pnvram.c;
-  i386_pc = efiemu/i386/coredetect.c;
+  i386_coreboot = efiemu/i386/pc/cfgtables.c;
+  i386_multiboot = efiemu/i386/pc/cfgtables.c;
+  i386_ieee1275 = efiemu/i386/nocfgtables.c;
+  i386_qemu = efiemu/i386/nocfgtables.c;
+  common = efiemu/mm.c;
+  common = efiemu/loadcore_common.c;
+  common = efiemu/symbols.c;
+  common = efiemu/loadcore32.c;
+  common = efiemu/loadcore64.c;
+  common = efiemu/prepare32.c;
+  common = efiemu/prepare64.c;
+  common = efiemu/pnvram.c;
+  common = efiemu/i386/coredetect.c;
 
   extra_dist = efiemu/prepare.c;
   extra_dist = efiemu/loadcore.c;
@@ -786,6 +794,10 @@ module = {
   extra_dist = efiemu/runtime/efiemu.c;
 
   enable = i386_pc;
+  enable = i386_coreboot;
+  enable = i386_ieee1275;
+  enable = i386_multiboot;
+  enable = i386_qemu;
 };
 
 module = {
@@ -988,13 +1000,22 @@ module = {
 
 module = {
   name = relocator;
-  mips = lib/mips/relocator.c;
-  mips = lib/mips/relocator_asm.S;
+  common = lib/relocator.c;
+  x86 = lib/i386/relocator16.S;
+  x86 = lib/i386/relocator32.S;
+  x86 = lib/i386/relocator64.S;
+  i386 = lib/i386/relocator_asm.S;
+  x86_64 = lib/x86_64/relocator_asm.S;
   x86 = lib/i386/relocator.c;
-  x86 = lib/i386/relocator_asm.S;
-  x86 = lib/i386/relocator_backward.S;
-  extra_dist = lib/relocator.c;
+  ieee1275 = lib/ieee1275/relocator.c;
+  x86_efi = lib/efi/relocator.c;
+  mips = lib/mips/relocator_asm.S;
+  mips = lib/mips/relocator.c;
+  powerpc = lib/powerpc/relocator_asm.S;
+  powerpc = lib/powerpc/relocator.c;
+
   enable = mips;
+  enable = powerpc;
   enable = x86;
 };
 
@@ -1023,33 +1044,30 @@ module = {
 module = {
   name = aout;
   common = loader/aout.c;
-  enable = i386_pc;
-  enable = i386_qemu;
-  enable = i386_coreboot;
-  enable = i386_multiboot;
-  enable = i386_ieee1275;
+  enable = x86;
 };
 
 module = {
   name = bsd;
-  i386 = loader/i386/bsd.c;
-  i386 = loader/i386/bsd32.c;
-  i386 = loader/i386/bsd64.c;
-  i386 = loader/i386/bsd_helper.S;
-  i386 = loader/i386/bsd_trampoline.S;
+  x86 = loader/i386/bsd.c;
+  x86 = loader/i386/bsd32.c;
+  x86 = loader/i386/bsd64.c;
 
   extra_dist = loader/i386/bsdXX.c;
   extra_dist = loader/i386/bsd_pagetable.c;
 
-  enable = i386_pc;
-  enable = i386_qemu;
-  enable = i386_coreboot;
-  enable = i386_multiboot;
+  enable = x86;
 };
 
 module = {
   name = linux16;
   i386_pc = loader/i386/pc/linux.c;
+  enable = i386_pc;
+};
+
+module = {
+  name = ntldr;
+  i386_pc = loader/i386/pc/ntldr.c;
   enable = i386_pc;
 };
 
@@ -1073,11 +1091,7 @@ module = {
 
 module = {
   name = linux;
-  i386_noefi_noieee1275 = loader/i386/linux.c;
-
-  x86_efi = loader/i386/efi/linux.c;
-  x86_64_efi = loader/i386/linux_trampoline.S;
-  i386_ieee1275 = loader/i386/ieee1275/linux.c;
+  x86 = loader/i386/linux.c;
   mips = loader/mips/linux.c;
   powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
   sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;
@@ -1086,16 +1100,15 @@ module = {
 
 module = {
   name = xnu;
-  x86_efi_pc = loader/xnu_resume.c;
-  x86_efi_pc = loader/i386/xnu.c;
-  x86_efi_pc = loader/macho32.c;
-  x86_efi_pc = loader/macho64.c;
-  x86_efi_pc = loader/macho.c;
-  x86_efi_pc = loader/xnu.c;
+  x86 = loader/xnu_resume.c;
+  x86 = loader/i386/xnu.c;
+  x86 = loader/macho32.c;
+  x86 = loader/macho64.c;
+  x86 = loader/macho.c;
+  x86 = loader/xnu.c;
 
   extra_dist = loader/machoXX.c;
-  enable = i386_pc;
-  enable = x86_efi;
+  enable = x86;
 };
 
 module = {
@@ -1285,9 +1298,11 @@ module = {
 
 module = {
   name = vga_text;
-  x86 = term/i386/pc/vga_text.c;
-  x86 = term/i386/vga_common.c;
-  enable = x86;
+  common = term/i386/pc/vga_text.c;
+  common = term/i386/vga_common.c;
+  enable = i386_pc;
+  enable = i386_coreboot;
+  enable = i386_multiboot;
 };
 
 module = {

@@ -44,9 +44,6 @@ struct mem_region
 static struct mem_region mem_regions[MAX_REGIONS];
 static int num_regions;
 
-grub_addr_t grub_os_area_addr;
-grub_size_t grub_os_area_size;
-
 static char *
 make_install_device (void)
 {
@@ -203,24 +200,8 @@ grub_machine_init (void)
 
   compact_mem_regions ();
 
-  /* Add the memory regions to free memory, except for the region starting
-     from 1MB. This region is partially used for loading OS images.
-     For now, 1/4 of this is added to free memory.  */
   for (i = 0; i < num_regions; i++)
-    if (mem_regions[i].addr == 0x100000)
-      {
-	grub_size_t quarter = mem_regions[i].size >> 2;
-
-	grub_os_area_addr = mem_regions[i].addr;
-	grub_os_area_size = mem_regions[i].size - quarter;
-	grub_mm_init_region ((void *) (grub_os_area_addr + grub_os_area_size),
-			     quarter);
-      }
-    else
       grub_mm_init_region ((void *) mem_regions[i].addr, mem_regions[i].size);
-
-  if (! grub_os_area_addr)
-    grub_fatal ("no upper memory");
 
   grub_tsc_init ();
 }

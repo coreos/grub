@@ -140,7 +140,7 @@ grub_elf32_load_phdrs (grub_elf_t elf)
   return GRUB_ERR_NONE;
 }
 
-static grub_err_t
+grub_err_t
 grub_elf32_phdr_iterate (grub_elf_t elf,
 			 int NESTED_FUNC_ATTR (*hook) (grub_elf_t, Elf32_Phdr *, void *),
 			 void *hook_arg)
@@ -326,7 +326,7 @@ grub_elf64_load_phdrs (grub_elf_t elf)
   return GRUB_ERR_NONE;
 }
 
-static grub_err_t
+grub_err_t
 grub_elf64_phdr_iterate (grub_elf_t elf,
 			 int NESTED_FUNC_ATTR (*hook) (grub_elf_t, Elf64_Phdr *, void *),
 			 void *hook_arg)

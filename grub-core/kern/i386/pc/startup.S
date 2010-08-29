@@ -546,8 +546,6 @@ FUNCTION(grub_chainloader_real_boot)
 	pushl	%edx
 	pushl	%eax
 
-	call	EXT_C(grub_dl_unload_all)
-
 	/* Turn off Gate A20 */
 	xorl	%eax, %eax
 	call	EXT_C(grub_gate_a20)
@@ -562,8 +560,6 @@ FUNCTION(grub_chainloader_real_boot)
 	.code16
 	ljmp	$0, $GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR
 	.code32
-
-#include "../loader.S"
 
 /*
  *   int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)

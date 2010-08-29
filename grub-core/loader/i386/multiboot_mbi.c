@@ -22,7 +22,6 @@
 #include <grub/machine/biosnum.h>
 #endif
 #include <grub/multiboot.h>
-#include <grub/cpu/multiboot.h>
 #include <grub/cpu/relocator.h>
 #include <grub/disk.h>
 #include <grub/device.h>
@@ -30,6 +29,7 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/env.h>
+#include <grub/relocator.h>
 #include <grub/video.h>
 #include <grub/file.h>
 
@@ -52,6 +52,10 @@ static unsigned modcnt;
 static char *cmdline = NULL;
 static grub_uint32_t bootdev;
 static int bootdev_set;
+static grub_size_t elf_sec_num, elf_sec_entsize;
+static unsigned elf_sec_shstrndx;
+static void *elf_sections;
+
 
 grub_err_t
 grub_multiboot_load (grub_file_t file)
@@ -103,25 +107,24 @@ grub_multiboot_load (grub_file_t file)
       int load_size = ((header->load_end_addr == 0) ? file->size - offset :
 		       header->load_end_addr - header->load_addr);
       grub_size_t code_size;
+      void *source;
+      grub_relocator_chunk_t ch;
 
       if (header->bss_end_addr)
 	code_size = (header->bss_end_addr - header->load_addr);
       else
 	code_size = load_size;
-      grub_multiboot_payload_dest = header->load_addr;
 
-      grub_multiboot_pure_size += code_size;
-
-      /* Allocate a bit more to avoid relocations in most cases.  */
-      grub_multiboot_alloc_mbi = grub_multiboot_get_mbi_size () + 65536;
-      grub_multiboot_payload_orig
-	= grub_relocator32_alloc (grub_multiboot_pure_size + grub_multiboot_alloc_mbi);
-
-      if (! grub_multiboot_payload_orig)
+      err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator, 
+					     &ch, header->load_addr,
+					     code_size);
+      if (err)
 	{
+	  grub_dprintf ("multiboot_loader", "Error loading aout kludge\n");
 	  grub_free (buffer);
-	  return grub_errno;
+	  return err;
 	}
+      source = get_virtual_current_address (ch);
 
       if ((grub_file_seek (file, offset)) == (grub_off_t) -1)
 	{
@@ -129,7 +132,7 @@ grub_multiboot_load (grub_file_t file)
 	  return grub_errno;
 	}
 
-      grub_file_read (file, (void *) grub_multiboot_payload_orig, load_size);
+      grub_file_read (file, source, load_size);
       if (grub_errno)
 	{
 	  grub_free (buffer);
@@ -137,11 +140,10 @@ grub_multiboot_load (grub_file_t file)
 	}
 
       if (header->bss_end_addr)
-	grub_memset ((void *) (grub_multiboot_payload_orig + load_size), 0,
+	grub_memset ((grub_uint32_t *) source + load_size, 0,
 		     header->bss_end_addr - header->load_addr - load_size);
 
       grub_multiboot_payload_eip = header->entry_addr;
-
     }
   else
     {
@@ -184,13 +186,14 @@ grub_multiboot_load (grub_file_t file)
   return err;
 }
 
-grub_size_t
+static grub_size_t
 grub_multiboot_get_mbi_size (void)
 {
   return sizeof (struct multiboot_info) + ALIGN_UP (cmdline_size, 4)
     + modcnt * sizeof (struct multiboot_mod_list) + total_modcmd
     + ALIGN_UP (sizeof(PACKAGE_STRING), 4) 
     + grub_get_multiboot_mmap_count () * sizeof (struct multiboot_mmap_entry)
+    + elf_sec_entsize * elf_sec_num
     + 256 * sizeof (struct multiboot_color);
 }
 
@@ -309,20 +312,32 @@ retrieve_video_parameters (struct multiboot_info *mbi,
 }
 
 grub_err_t
-grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
-			 grub_size_t bufsize)
+grub_multiboot_make_mbi (grub_uint32_t *target)
 {
-  grub_uint8_t *ptrorig = (grub_uint8_t *) orig + buf_off;
-  grub_uint32_t ptrdest = dest + buf_off;
   struct multiboot_info *mbi;
   struct multiboot_mod_list *modlist;
   unsigned i;
   struct module *cur;
   grub_size_t mmap_size;
-  grub_err_t err;
+  grub_uint8_t *ptrorig; 
+  grub_addr_t ptrdest;
 
-  if (bufsize < grub_multiboot_get_mbi_size ())
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "mbi buffer is too small");
+  grub_err_t err;
+  grub_size_t bufsize;
+  grub_relocator_chunk_t ch;
+
+  bufsize = grub_multiboot_get_mbi_size ();
+
+  err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
+					  0, 0xffffffff - bufsize,
+					  bufsize, 4,
+					  GRUB_RELOCATOR_PREFERENCE_NONE);
+  if (err)
+    return err;
+  ptrorig = get_virtual_current_address (ch);
+  ptrdest = (grub_addr_t) get_virtual_current_address (ch);
+
+  *target = ptrdest;
 
   mbi = (struct multiboot_info *) ptrorig;
   ptrorig += sizeof (*mbi);
@@ -386,6 +401,17 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
       mbi->flags |= MULTIBOOT_INFO_BOOTDEV;
     }
 
+  if (elf_sec_num)
+    {
+      mbi->u.elf_sec.addr = ptrdest;
+      grub_memcpy (ptrorig, elf_sections, elf_sec_entsize * elf_sec_num);
+      mbi->u.elf_sec.num = elf_sec_num;
+      mbi->u.elf_sec.size = elf_sec_entsize;
+      mbi->u.elf_sec.shndx = elf_sec_shstrndx;
+
+      mbi->flags |= MULTIBOOT_INFO_ELF_SHDR;
+    }
+
   err = retrieve_video_parameters (mbi, ptrorig, ptrdest);
   if (err)
     {
@@ -394,6 +420,16 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
     }
 
   return GRUB_ERR_NONE;
+}
+
+void
+grub_multiboot_add_elfsyms (grub_size_t num, grub_size_t entsize,
+			    unsigned shndx, void *data)
+{
+  elf_sec_num = num;
+  elf_sec_shstrndx = shndx;
+  elf_sec_entsize = entsize;
+  elf_sections = data;
 }
 
 void
@@ -416,6 +452,11 @@ grub_multiboot_free_mbi (void)
     }
   modules = NULL;
   modules_last = NULL;
+
+  grub_free (elf_sections);
+  elf_sections = NULL;
+  elf_sec_entsize = 0;
+  elf_sec_num = 0;
 }
 
 grub_err_t
