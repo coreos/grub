@@ -2,10 +2,236 @@
 
 	Interrupt wrapping and code simplifications.
 
+	* Makefile.util.def (grub-mkrescue): Use x86 tg instead of
+	x86_noieee1275 which are functionaly equivalent in this case.
+	(grub-install): Make source on each platform explicit. Enable on
+	all noemu.
+	* gentpl.py (x86_efi_pc): Removed group.
+	(x86_noefi): Likewise.
+	(i386_noefi): Likewise.
+	(x86_noieee1275): Likewise.
+	(i386_noieee1275): Likewise.
+	(i386_noefi_noieee1275): Likewise.
+	(i386_pc_qemu_coreboot): Likewise.
+	(i386_coreboot_multiboot): Likewise.
+	(i386_pc_coreboot_multiboot_qemu): Likewise.
+	(x86_noefi_mips): Likewise.
+	(noieee1275): Likewise.
+	(ieee1275_mips): Likewise.
+	(noemu_noieee1275): Likewise.
+	(cmos): New group.
+	(usb): Likewise.
+	(videoinkernel): Likewise.
+	(videomodules): Likewise.
 	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Remove
-	include/grub/machine/vga.h, include/grub/machine/vbe.h,
+	include/grub/elf.h, include/grub/elfload.h, include/grub/net.h,
+	include/grub/reader.h, include/grub/symbol.h, include/grub/types.h,
+	include/grub/loader.h, include/grub/msdos_partition.h,
+	include/grub/machine/biosdisk.h, include/grub/machine/boot.h,
+	include/grub/machine/console.h, include/grub/machine/vga.h,
+	include/grub/machine/vbe.h, include/grub/machine/init.h,
+	include/grub/machine/kernel.h, include/grub/cpu/time.h,
+	include/grub/cpu/types.h, include/grub/gzio.h and include/grub/menu.h
 	(KERNEL_HEADER_FILES) [i386-pc]: Add include/grub/machine/int.h.
-	Remove include/grub/machine/init.h.
+	(KERNEL_HEADER_FILES) [i386-ieee1275]: Add include/grub/i386/pit.h
+	* grub-core/Makefile.core.def (kernel): Explicit the source for
+	startup. Explicit the platforms using kern/generic/rtc_get_time_ms.c.
+	Split ieee1275_mips. Remove kern/i386/halt.c. Remove kern/i386/misc.S.
+	Enable kern/i386/pit.c on all x86. Remove kern/i386/ieee1275/init.c.
+	Use videoinkernel tag.
+	(usb): Enable on all usb.
+	(usbserial_common): Likewise.
+	(usbserial_pl2303): Likewise.
+	(usbserial_ftdi): Likewise.
+	(uhci): Enable on all x86.
+	(ohci): Enable on all pci.
+	(cmostest): Enable on all CMOS.
+	(acpi): Include commands/acpi.c on all platforms.
+	(halt): Add relevant lib/*/halt.c.
+	(hdparm): Enable on all pci.
+	(lspci): Likewise.
+	(usbtest): Enable on all usb.
+	(ata): Enable on all pci.
+	(ata_pthru): Likewise.
+	(usbms): Enable on all usb.
+	(usb_keyboard): Likewise.
+	(font): Use tag videomodules.
+	(bufio): Likewise.
+	(datetime): Use tag cmos. Enable on all noemu.
+	(mmap): Use tags common and x86.
+	(gfxterm): Use tag videomodules.
+	(bitmap): Likewise.
+	(bitmap_scale): Likewise.
+	(video_fb): Likewise.
+	(video): Likewise.
+	* grub-core/bus/usb/ohci.c (grub_ohci_td): Make link_td a pointer and
+	adjust padding accordingly. All users updated.
+	(grub_ohci_transaction): Fix bad format specification.
+	(GRUB_MOD_INIT): Add asserts for struct size.
+	* grub-core/bus/usb/uhci.c (grub_uhci_pci_iter): Add explicit casts.
+	(grub_alloc_td): Likewise.
+	(grub_free_queue): Likewise.
+	(grub_uhci_transfer): Likewise.
+	(grub_uhci_transaction): Fix bad format specification.
+	* grub-core/bus/usb/usbtrans.c (grub_usb_control_msg): Likewise.
+	(grub_usb_bulk_readwrite): Likewise.
+	* grub-core/kern/i386/misc.S (grub_stop): Moved from here ...
+	* grub-core/commands/i386/pc/halt.c (stop): ...here. Transformed into C.
+	Made static.
+	* grub-core/lib/i386/halt.c (stop): ... and here. Transformed into C.
+	Made static.
+	* grub-core/kern/i386/pc/startup.S (grub_halt): Moved from here ...
+	* grub-core/commands/i386/pc/halt.c (grub_halt): ...here.
+	Transformed into C.
+	* grub-core/kern/i386/pc/startup.S (grub_biosdisk_rw_int13_extensions):
+	Moved from here ...
+	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_rw_int13_extensions):
+	... here. Transformed into C. Made static.
+	* grub-core/kern/i386/pc/startup.S (grub_biosdisk_rw_standard):
+	Moved from here ...
+	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_rw_standard):
+	... here. Transformed into C. Made static.
+	* grub-core/kern/i386/pc/startup.S
+	(grub_biosdisk_check_int13_extensions): Moved from here ...
+	* grub-core/disk/i386/pc/biosdisk.c
+	(grub_biosdisk_check_int13_extensions): ... here. Transformed into C.
+	Made static.
+	* grub-core/kern/i386/pc/startup.S
+	(grub_biosdisk_get_cdinfo_int13_extensions): Moved from here ...
+	* grub-core/disk/i386/pc/biosdisk.c
+	(grub_biosdisk_get_cdinfo_int13_extensions): ... here.
+	Transformed into C. Made static.
+	* grub-core/kern/i386/pc/startup.S
+	(grub_biosdisk_get_diskinfo_int13_extensions): Moved from here ...
+	* grub-core/disk/i386/pc/biosdisk.c
+	(grub_biosdisk_get_diskinfo_int13_extensions): ... here.
+	Transformed into C. Made static.
+	* grub-core/kern/i386/pc/startup.S
+	(grub_biosdisk_get_diskinfo_standard): Moved from here ...
+	* grub-core/disk/i386/pc/biosdisk.c
+	(grub_biosdisk_get_diskinfo_standard): ... here.
+	Transformed into C. Made static.
+	* grub-core/kern/i386/pc/startup.S
+	(grub_biosdisk_get_num_floppies): Moved from here ...
+	* grub-core/disk/i386/pc/biosdisk.c
+	(grub_biosdisk_get_num_floppies): ... here.
+	Transformed into C. Made static.
+	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_get_diskinfo_real):
+	New function.
+	* grub-core/kern/i386/pc/startup.S (grub_pxe_scan): Moved from here ...
+	* grub-core/fs/i386/pc/pxe.c (grub_pxe_scan): ... here.
+	Transformed into C. Made static.
+	* grub-core/kern/i386/pc/startup.S (grub_rm_entry): Moved from here ...
+	* grub-core/fs/i386/pc/pxe.c (grub_rm_entry): ... here.
+	Transformed into C. Made static.
+	* grub-core/kern/i386/ieee1275/init.c: Removed.
+	* grub-core/kern/i386/misc.S: Likewise.
+	* grub-core/kern/i386/pc/startup.S (grub_get_memsize):
+	Splitted from here ...
+	* grub-core/kern/i386/pc/init.c (grub_get_conv_memsize): ... here.
+	Transformed into C. Made static. All users updated.
+	* grub-core/kern/i386/pc/mmap.c (grub_get_ext_memsize): ... and here.
+	Transformed into C. Made static. All users updated.
+	* grub-core/kern/i386/pc/startup.S (grub_get_eisa_mmap):
+	Moved from here...
+	* grub-core/kern/i386/pc/mmap.c (grub_get_eisa_mmap): ... here.
+	Transformed into C. Made static. All users updated.
+	* grub-core/kern/i386/pc/startup.S (grub_get_mmap_entry):
+	Moved from here...
+	* grub-core/kern/i386/pc/mmap.c (grub_get_mmap_entry): ... here.
+	Transformed into C. Made static. All users updated.
+	* grub-core/kern/i386/pc/startup.S (grub_stop_floppy):
+	Removed (replaced by C version).
+	* grub-core/kern/i386/pc/startup.S (grub_vga_set_mode):
+	Moved from here...
+	* grub-core/video/i386/pc/vga.c (grub_vga_set_mode): ...here.
+	Transformed into C. Made static.
+	* grub-core/kern/i386/pc/startup.S (grub_vbe_bios_get_controller_info):
+	Moved from here...
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_get_controller_info):
+	... here. Transformed into C.
+	* grub-core/kern/i386/pc/startup.S (grub_vbe_bios_get_mode_info):
+	Moved from here...
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_get_mode_info):
+	... here. Transformed into C.
+	* grub-core/kern/i386/pc/startup.S (grub_vbe_bios_set_mode):
+	Moved from here...
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_set_mode):
+	... here. Transformed into C. Made static.
+	* grub-core/kern/i386/pc/startup.S (grub_vbe_bios_get_mode):
+	Moved from here...
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_get_mode):
+	... here. Transformed into C.
+	* grub-core/kern/i386/pc/startup.S (grub_vbe_bios_getset_dac_palette_width):
+	Moved from here...
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_getset_dac_palette_width):
+	... here. Transformed into C.
+	* grub-core/kern/i386/pc/startup.S (grub_vbe_bios_set_memory_window):
+	Moved from here...
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_set_memory_window):
+	... here. Transformed into C.
+	* grub-core/kern/i386/pc/startup.S (grub_vbe_bios_get_memory_window):
+	Moved from here...
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_get_memory_window):
+	... here. Transformed into C.
+	* grub-core/kern/i386/pc/startup.S (grub_vbe_bios_set_scanline_length):
+	Moved from here...
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_set_scanline_length):
+	... here. Transformed into C.
+	* grub-core/kern/i386/pc/startup.S (grub_vbe_bios_get_scanline_length):
+	Moved from here...
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_get_scanline_length):
+	... here. Transformed into C.
+	* grub-core/kern/i386/pc/startup.S (grub_vbe_bios_set_display_start):
+	Moved from here...
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_set_display_start):
+	... here. Transformed into C. Made static.
+	* grub-core/kern/i386/pc/startup.S (grub_vbe_bios_get_display_start):
+	Moved from here...
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_get_display_start):
+	... here. Transformed into C. Made static.
+	* grub-core/kern/i386/pc/startup.S (grub_vbe_bios_set_palette_data):
+	Moved from here...
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_set_palette_data):
+	... here. Transformed into C. Made static.
+	* grub-core/kern/i386/pc/startup.S (grub_pxe_call): Receive
+	pxe_rm_entry as third argument.
+	(grub_bios_interrupt): New function.
+	* grub-core/kern/i386/qemu/mmap.c: Remove useless include.
+	* grub-core/kern/i386/qemu/startup.S (codestart): Do cli;hlt instead
+	of calling grub_stop.
+	* grub-core/kern/efi/efi.c (grub_halt): Moved from here ...
+	* grub-core/lib/efi/halt.c (grub_halt): ...here.
+	* grub-core/kern/emu/main.c (grub_halt): Moved from here ...
+	* grub-core/lib/emu/halt.c (grub_halt): ... here.
+	* grub-core/lib/i386/halt.c: Moved from here ...
+	* grub-core/lib/i386/halt.c: ... here.
+	* grub-core/kern/ieee1275/openfw.c (grub_halt): Moved from here ...
+	* grub-core/lib/ieee1275/halt.c (grub_halt): ... here.
+	* grub-core/loader/i386/pc/linux.c (grub_linux16_boot): Call
+	grub_stop_floppy.
+	* grub-core/loader/i386/xnu.c (guessfsb) [IEEE1275]: Enable.
+	* include/grub/i386/coreboot/init.h: Removed.
+	* include/grub/i386/multiboot/init.h: Likewise.
+	* include/grub/i386/pc/biosdisk.h: Removed all function prototypes.
+	* include/grub/i386/pc/init.h: Likewise except grub_gate_a20.
+	* include/grub/i386/pc/int.h: New file.
+	* include/grub/i386/pc/pxe.h (GRUB_PXE_SIGNATURE): New definition.
+	(grub_pxe_scan): Removed.
+	(grub_pxe_call): Update prototype.
+	* include/grub/i386/pc/vbe.h: Removed EXPORT_FUNC and useless
+	prototypes.
+	* include/grub/i386/pc/vga.h (grub_vga_set_mode): Removed.
+	* include/grub/i386/qemu/init.h: Removed.
+	* include/grub/mips/yeeloong/kernel.h (grub_reboot): Add missing
+	noreturn.
+	(grub_halt): Likewise.
+	* include/grub/misc.h (grub_halt): Removed EXPORT_FUNC.
+	(grub_reboot): Likewise.
+	* grub-core/kern/i386/coreboot/init.c (grub_stop_floppy): Moved from here...
+	* include/grub/i386/floppy.h (grub_stop_floppy): ...here. Inlined.
+
+	* grub-core/kern/i386/pc/startup.S (grub_hard_stop)
 
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
