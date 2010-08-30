@@ -57,10 +57,10 @@ struct grub_ohci_td
   /* next values are not for OHCI HW */
   grub_uint32_t prev_td_phys; /* we need it to find previous TD
                                * physical address in CPU endian */
-  grub_uint32_t link_td; /* pointer to next free/chained TD
+  volatile struct grub_ohci_td *link_td; /* pointer to next free/chained TD
                           * pointer as uint32 */
   grub_uint32_t tr_index; /* index of TD in transfer */
-  grub_uint8_t pad[4]; /* padding to 32 bytes */
+  grub_uint8_t pad[8 - sizeof (volatile struct grub_ohci_td *)]; /* padding to 32 bytes */
 } __attribute__((packed));
 
 /* OHCI Endpoint Descriptor.  */
@@ -334,7 +334,7 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
   /* Preset free TDs chain in TDs */
   grub_memset ((void*)o->td, 0, sizeof(struct grub_ohci_td) * GRUB_OHCI_TDS);
   for (j=0; j < (GRUB_OHCI_TDS-1); j++)
-    o->td[j].link_td = (grub_uint32_t)&o->td[j+1];
+    o->td[j].link_td = &o->td[j+1];
 
   grub_dprintf ("ohci", "TDs: chunk=%p, virt=%p, phys=0x%02x\n",
                 o->td_chunk, o->td, o->td_addr);
@@ -561,7 +561,7 @@ static void
 grub_ohci_free_td (struct grub_ohci *o, grub_ohci_td_t td)
 {
   grub_memset ( (void*)td, 0, sizeof(struct grub_ohci_td) ); 
-  td->link_td = (grub_uint32_t) o->td_free; /* Cahin new free TD & rest */
+  td->link_td = o->td_free; /* Cahin new free TD & rest */
   o->td_free = td; /* Change address of first free TD */
 }
 
@@ -604,8 +604,8 @@ grub_ohci_transaction (grub_ohci_td_t td,
   grub_uint32_t buffer;
   grub_uint32_t buffer_end;
 
-  grub_dprintf ("ohci", "OHCI transaction td=%p type=%d, toggle=%d, size=%d\n",
-		td, type, toggle, size);
+  grub_dprintf ("ohci", "OHCI transaction td=%p type=%d, toggle=%d, size=%lu\n",
+		td, type, toggle, (unsigned long) size);
 
   switch (type)
     {
@@ -781,7 +781,7 @@ grub_ohci_transfer (grub_usb_controller_t dev,
         }
 
       /* Chain TDs */
-      td_current_virt->link_td = (grub_uint32_t) td_next_virt;
+      td_current_virt->link_td = td_next_virt;
       td_current_virt->next_td = grub_cpu_to_le32 (
                                    grub_ohci_td_virt2phys (o,
                                      td_next_virt) );

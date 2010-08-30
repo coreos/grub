@@ -1,5 +1,14 @@
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Interrupt wrapping and code simplifications.
+
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Remove
+	include/grub/machine/vga.h, include/grub/machine/vbe.h,
+	(KERNEL_HEADER_FILES) [i386-pc]: Add include/grub/machine/int.h.
+	Remove include/grub/machine/init.h.
+
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Network): Fix reference to pxe_blksize.
 	Reported by: Ian Turner
 

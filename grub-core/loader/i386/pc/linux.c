@@ -34,7 +34,7 @@
 #include <grub/mm.h>
 #include <grub/cpu/relocator.h>
 #include <grub/video.h>
-#include <grub/floppy.h>
+#include <grub/i386/floppy.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x9000
 #define GRUB_LINUX_CL_END_OFFSET	0x90FF
