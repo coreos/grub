@@ -106,7 +106,4 @@ struct grub_biosdisk_dap
   grub_uint64_t block;
 } __attribute__ ((packed));
 
-void grub_biosdisk_init (void);
-void grub_biosdisk_fini (void);
-
 #endif /* ! GRUB_BIOSDISK_MACHINE_HEADER */
