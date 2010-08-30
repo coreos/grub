@@ -30,7 +30,6 @@ PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
 platform=@platform@
 host_os=@host_os@
-font=@datadir@/@PACKAGE_TARNAME@/ascii.pf2
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 localedir=@datadir@/locale
 
@@ -105,11 +104,6 @@ if [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platf
   --no-nvram              don't update the boot-device NVRAM variable
 EOF
 fi
-if [ "${target_cpu}-${platform}" = "mips-yeeloong" ] ; then
-    cat <<EOF
-  --font=FILE             font file to use
-EOF
-fi
     cat <<EOF
 
 INSTALL_DEVICE can be a GRUB device name or a system device filename.
@@ -154,10 +148,11 @@ do
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
 
+# Accept and ignore for compatibility
     --font)
-	font=`argument $option "$@"`; shift;;
+        shift;;
     --font=*)
-	font=`echo "$option" | sed 's/--font=//'` ;;
+	;;
 
     --root-directory)
 	rootdir=`argument $option "$@"`; shift;;
