@@ -1,6 +1,7 @@
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi (Network): Fix reference to pxe_blksize.
+	Reported by: Ian Turner
 
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
