@@ -23,6 +23,7 @@
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/int.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/dl.h>
@@ -139,6 +140,22 @@ compact_mem_regions (void)
       }
 }
 
+/*
+ *
+ * grub_get_conv_memsize(i) :  return the conventional memory size in KB.
+ *	BIOS call "INT 12H" to get conventional memory size
+ *      The return value in AX.
+ */
+static inline grub_uint16_t
+grub_get_conv_memsize (void)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x12, &regs);
+  return regs.eax & 0xffff;
+}
+
 void
 grub_machine_init (void)
 {
@@ -148,7 +165,7 @@ grub_machine_init (void)
   /* Initialize the console as early as possible.  */
   grub_console_init ();
 
-  grub_lower_mem = grub_get_memsize (0) << 10;
+  grub_lower_mem = grub_get_conv_memsize () << 10;
 
   /* Sanity check.  */
   if (grub_lower_mem < GRUB_MEMORY_MACHINE_RESERVED_END)

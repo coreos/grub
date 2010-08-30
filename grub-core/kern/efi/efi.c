@@ -174,15 +174,6 @@ grub_reboot (void)
 }
 #endif
 
-void
-grub_halt (void)
-{
-  grub_efi_fini ();
-  efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
-              GRUB_EFI_RESET_SHUTDOWN, GRUB_EFI_SUCCESS, 0, NULL);
-  for (;;) ;
-}
-
 grub_err_t
 grub_efi_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
 				  grub_efi_uintn_t descriptor_size,

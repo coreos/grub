@@ -106,21 +106,4 @@ struct grub_biosdisk_dap
   grub_uint64_t block;
 } __attribute__ ((packed));
 
-int EXPORT_FUNC(grub_biosdisk_rw_int13_extensions) (int ah, int drive, void *dap);
-int EXPORT_FUNC(grub_biosdisk_rw_standard) (int ah, int drive, int coff, int hoff,
-			       int soff, int nsec, int segment);
-int EXPORT_FUNC(grub_biosdisk_check_int13_extensions) (int drive);
-int EXPORT_FUNC(grub_biosdisk_get_diskinfo_int13_extensions) (int drive,
-           void *drp);
-int EXPORT_FUNC(grub_biosdisk_get_cdinfo_int13_extensions) (int drive,
-           void *cdrp);
-int EXPORT_FUNC(grub_biosdisk_get_diskinfo_standard) (int drive,
-					 unsigned long *cylinders,
-					 unsigned long *heads,
-					 unsigned long *sectors);
-int EXPORT_FUNC(grub_biosdisk_get_num_floppies) (void);
-
-void grub_biosdisk_init (void);
-void grub_biosdisk_fini (void);
-
 #endif /* ! GRUB_BIOSDISK_MACHINE_HEADER */
