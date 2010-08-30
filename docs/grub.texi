@@ -1436,7 +1436,7 @@ The boot file name provided by DHCP.  Read-only.
 The name of the DHCP server responsible for these boot parameters.
 Read-only.
 
-@item net_pxe_blksize
+@item pxe_blksize
 The PXE transfer block size.  Read-write, defaults to 512.
 
 @item pxe_default_server

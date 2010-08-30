@@ -1,3 +1,28 @@
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Network): Fix reference to pxe_blksize.
+	Reported by: Ian Turner
+
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/menu.c (grub_wait_after_message): Add a 10 second
+	timeout to avoid indefinite boot stalling.
+
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/color.c (grub_env_write_color_normal): Fix a warning.
+	(grub_env_write_color_highlight): Likewise.
+
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/term.c (print_more): Return to normal and not
+	to standard state after printing "---MORE---".
+
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/i386/vga_common.c (grub_console_setcolorstate):
+	Mask out the bit 0x80 since it has other meaning that specifiing color.
+
 2010-08-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	New relocator. Allows for more kernel support and more straightforward

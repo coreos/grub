@@ -86,7 +86,7 @@ print_more (void)
   {
     grub_print_ucs4 (unicode_str, unicode_last_position, 0, 0, term);
   }
-  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
+  grub_setcolorstate (GRUB_TERM_COLOR_NORMAL);
 
   grub_free (unicode_str);
   
