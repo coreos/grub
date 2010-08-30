@@ -55,10 +55,10 @@ struct grub_ohci_td
   grub_uint32_t next_td; /* LittleEndian physical address */
   grub_uint32_t buffer_end; /* LittleEndian physical address */
   /* next values are not for OHCI HW */
-  grub_uint32_t prev_td_phys; /* we need it to find previous TD
-                               * physical address in CPU endian */
   volatile struct grub_ohci_td *link_td; /* pointer to next free/chained TD
                           * pointer as uint32 */
+  grub_uint32_t prev_td_phys; /* we need it to find previous TD
+                               * physical address in CPU endian */
   grub_uint32_t tr_index; /* index of TD in transfer */
   grub_uint8_t pad[8 - sizeof (volatile struct grub_ohci_td *)]; /* padding to 32 bytes */
 } __attribute__((packed));
@@ -1406,6 +1406,8 @@ static struct grub_usb_controller_dev usb_controller =
 
 GRUB_MOD_INIT(ohci)
 {
+  COMPILE_TIME_ASSERT (sizeof (struct grub_ohci_td) == 32);
+  COMPILE_TIME_ASSERT (sizeof (struct grub_ohci_ed) == 16);
   grub_ohci_inithw ();
   grub_usb_controller_dev_register (&usb_controller);
   grub_loader_register_preboot_hook (grub_ohci_fini_hw, grub_ohci_restore_hw,
