@@ -507,12 +507,12 @@ struct fixup_block_list
 
 static void
 generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
-		char *memdisk_path, char *font_path, char *config_path,
+		char *memdisk_path, char *config_path,
 		struct image_target_desc *image_target, int note)
 {
   char *kernel_img, *core_img;
   size_t kernel_size, total_module_size, core_size, exec_size;
-  size_t memdisk_size = 0, font_size = 0, config_size = 0, config_size_pure = 0;
+  size_t memdisk_size = 0, config_size = 0, config_size_pure = 0;
   char *kernel_path;
   size_t offset;
   struct grub_util_path_list *path_list, *p, *next;
@@ -534,12 +534,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       memdisk_size = ALIGN_UP(grub_util_get_image_size (memdisk_path), 512);
       grub_util_info ("the size of memory disk is 0x%x", memdisk_size);
       total_module_size += memdisk_size + sizeof (struct grub_module_header);
-    }
-
-  if (font_path)
-    {
-      font_size = ALIGN_ADDR (grub_util_get_image_size (font_path));
-      total_module_size += font_size + sizeof (struct grub_module_header);
     }
 
   if (config_path)
@@ -623,20 +617,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       grub_util_load_image (memdisk_path, kernel_img + offset);
       offset += memdisk_size;
-    }
-
-  if (font_path)
-    {
-      struct grub_module_header *header;
-
-      header = (struct grub_module_header *) (kernel_img + offset);
-      memset (header, 0, sizeof (struct grub_module_header));
-      header->type = grub_host_to_target32 (OBJ_TYPE_FONT);
-      header->size = grub_host_to_target32 (font_size + sizeof (*header));
-      offset += sizeof (*header);
-
-      grub_util_load_image (font_path, kernel_img + offset);
-      offset += font_size;
     }
 
   if (config_path)
@@ -1241,7 +1221,6 @@ Make a bootable image of GRUB.\n\
   -d, --directory=DIR     use images and modules under DIR [default=%s/@platform@]\n\
   -p, --prefix=DIR        set grub_prefix directory [default=%s]\n\
   -m, --memdisk=FILE      embed FILE as a memdisk image\n\
-  -f, --font=FILE         embed FILE as a boot font\n\
   -c, --config=FILE       embed FILE as boot config\n\
   -n, --note              add NOTE segment for CHRP Open Firmware\n\
   -o, --output=FILE       output a generated image to FILE [default=stdout]\n\
@@ -1330,13 +1309,6 @@ main (int argc, char *argv[])
 	    prefix = xstrdup ("(memdisk)/boot/grub");
 	    break;
 
-	  case 'f':
-	    if (font)
-	      free (font);
-
-	    font = xstrdup (optarg);
-	    break;
-
 	  case 'c':
 	    if (config)
 	      free (config);
@@ -1401,7 +1373,7 @@ main (int argc, char *argv[])
     }
 
   generate_image (dir, prefix ? : DEFAULT_DIRECTORY, fp,
-		  argv + optind, memdisk, font, config,
+		  argv + optind, memdisk, config,
 		  image_target, note);
 
   fclose (fp);
