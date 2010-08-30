@@ -1,5 +1,14 @@
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove leftover embedding of font objects.
+
+	* include/grub/kernel.h (OBJ_TYPE_FONT): Removed.
+	* util/grub-install.in (font): Removed.
+	* util/grub-mkimage.c (generate_image): Remove font support. All users
+	updated.
+
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Network): Fix reference to pxe_blksize.
 	Reported by: Ian Turner
 
