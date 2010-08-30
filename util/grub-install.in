@@ -425,30 +425,35 @@ else
 fi
 
 case "${target_cpu}-${platform}" in
-    i386-pc) mkimage_target=i386-pc ;;
     sparc64-ieee1275) mkimage_target=sparc64-ieee1275-raw ;;
     mips-yeeloong) mkimage_target=mipsel-yeeloong-elf ;;
-    i386-coreboot) mkimage_target=i386-coreboot ;;
-    i386-multiboot) mkimage_target=i386-multiboot ;;
-    i386-qemu) mkimage_target=i386-multiboot ;;
-    i386-ieee1275) mkimage_target=i386-ieee1275 ;;
-    powerpc-ieee1275) mkimage_target=powerpc-ieee1275 ;;
-    *) echo "Unknown platform"; exit 1 ;;
+    *) mkimage_target="${target_cpu}-${platform}" ;;
 esac
 
-$grub_mkimage ${config_opt} -O ${mkimage_target} --output=${grubdir}/core.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
+case "${target_cpu}-${platform}" in
+    i386-efi | x86_64-efi) imgext=efi ;;
+    mips-yeeloong | i386-coreboot | i386-multiboot | i386-ieee1275 \
+	| powerpc-ieeee1275) imgext=elf ;;
+    *) imgext=img ;;
+esac
 
-# Copy to traditional location for compatibility
+
+$grub_mkimage ${config_opt} -O ${mkimage_target} --output=${grubdir}/core.${imgext} --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
+
+# Backward-compatibility kludges
 if [ "${target_cpu}-${platform}" = "mips-yeeloong" ]; then
-    cp ${grubdir}/core.img /boot/grub.elf
+    cp ${grubdir}/core.${imgext} /boot/grub.elf
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
-    cp ${grubdir}/core.img /boot/grub
+    cp ${grubdir}/core.${imgext} /boot/grub
+elif [ "${target_cpu}-${platform}" = "i386-efi" ] || [ "${target_cpu}-${platform}" = "x86_64-efi" ]; then
+    $grub_mkimage ${config_opt} -O ${mkimage_target} --output=${grubdir}/grub.efi --prefix="" $modules || exit 1
 fi
 
+# Perform the platform-dependent install
 if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
     # Now perform the installation.
-    $grub_setup ${setup_verbose} ${setup_force} --directory=${grubdir} --device-map=${device_map} \
-        ${install_device} || exit 1
+    $grub_setup ${setup_verbose} ${setup_force} --directory=${grubdir} \
+	--device-map=${device_map} ${install_device} || exit 1
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
     if [ x"$update_nvram" = xyes ]; then
 	set $ofpathname dummy
@@ -475,7 +480,7 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	}
 
         # Point boot-device at the new grub install
-	boot_device="$ofpath:$partno,"`grub-mkrelpath ${grubdir}/core.img | sed 's,/,\\,g'`
+	boot_device="$ofpath:$partno,"`grub-mkrelpath ${grubdir}/core.${imgext} | sed 's,/,\\,g'`
 	"$nvsetenv" boot-device "$boot_device" || {
 	    echo "$nvsetenv failed."
 	    echo "You will have to set boot-device manually.  At the Open Firmware prompt, type:"
