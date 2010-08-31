@@ -24,6 +24,7 @@
 #include <grub/i18n.h>
 #include <grub/kernel.h>
 #include <grub/disk.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/resolve.h>
 #include <grub/misc.h>
@@ -105,8 +106,8 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_COREBOOT,
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_I386_COREBOOT_PREFIX,
-      .data_end = GRUB_KERNEL_I386_COREBOOT_DATA_END,
+      .prefix = GRUB_KERNEL_I386_MULTIBOOT_PREFIX,
+      .data_end = GRUB_KERNEL_I386_MULTIBOOT_DATA_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
