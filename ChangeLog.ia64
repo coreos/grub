@@ -15,7 +15,6 @@
 	* conf/ia64-efi.rmk: New file.
 	* commands/efi/systab.c: New file.
 	* commands/efi/memmap.c: New file.
-	* commands/efi/acpi.c: New file.
 	* include/grub/efi/efi.h: Declare grub_efi_allocate_boot_pages and
 	grub_efi_free_boot_pages.
 	* include/grub/kernel.h: Export grub_machine_fini.

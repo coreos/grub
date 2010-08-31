@@ -148,7 +148,7 @@ disp_sal (struct guid_mapping *map, void *table)
 static void
 disp_acpi (struct guid_mapping *map, void *table)
 {
-  disp_acpi_rsdp_table (table);
+  grub_printf ("For more information use lsacpi\n");
 }
 
 static void

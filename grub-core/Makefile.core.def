@@ -414,13 +414,24 @@ module = {
 module = {
   name = acpi;
 
-  x86 = commands/acpi.c;
+  common = commands/acpi.c;
   efi = commands/efi/acpi.c;
   i386_pc = commands/i386/pc/acpi.c;
   i386_coreboot = commands/i386/pc/acpi.c;
   i386_multiboot = commands/i386/pc/acpi.c;
 
   enable = efi;
+  enable = i386_pc;
+  enable = i386_coreboot;
+  enable = i386_multiboot;
+};
+
+module = {
+  name = lsacpi;
+
+  common = commands/lsacpi.c;
+
+  enable = x86_efi;
   enable = i386_pc;
   enable = i386_coreboot;
   enable = i386_multiboot;
