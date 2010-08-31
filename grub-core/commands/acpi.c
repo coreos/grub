@@ -325,7 +325,7 @@ setup_common_tables (void)
 
       /* If it's FADT correct DSDT and FACS addresses. */
       fadt = (struct grub_acpi_fadt *) cur->addr;
-      if (grub_memcmp (fadt->hdr.signature, "FACP",
+      if (grub_memcmp (fadt->hdr.signature, GRUB_ACPI_FADT_SIGNATURE,
 		       sizeof (fadt->hdr.signature)) == 0)
 	{
 	  fadt->dsdt_addr = PTR_TO_UINT32 (table_dsdt);
@@ -529,7 +529,7 @@ grub_cmd_acpi (struct grub_extcmd *cmd,
 	      struct grub_acpi_fadt *fadt = (struct grub_acpi_fadt *) curtable;
 
 	      /* Set root header variables to the same values
-		 as FACP by default. */
+		 as FADT by default. */
 	      grub_memcpy (&root_oemid, &(fadt->hdr.oemid),
 			   sizeof (root_oemid));
 	      grub_memcpy (&root_oemtable, &(fadt->hdr.oemtable),
