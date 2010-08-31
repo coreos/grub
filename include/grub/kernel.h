@@ -41,22 +41,38 @@ struct grub_module_header
 /* "gmim" (GRUB Module Info Magic).  */
 #define GRUB_MODULE_MAGIC 0x676d696d
 
-struct grub_module_info
+struct grub_module_info32
 {
   /* Magic number so we know we have modules present.  */
   grub_uint32_t magic;
-#if GRUB_TARGET_SIZEOF_VOID_P == 8
-  grub_uint32_t padding;
-#endif
   /* The offset of the modules.  */
-  grub_target_off_t offset;
+  grub_uint32_t offset;
   /* The size of all modules plus this header.  */
-  grub_target_size_t size;
+  grub_uint32_t size;
 };
+
+struct grub_module_info64
+{
+  /* Magic number so we know we have modules present.  */
+  grub_uint32_t magic;
+  grub_uint32_t padding;
+  /* The offset of the modules.  */
+  grub_uint64_t offset;
+  /* The size of all modules plus this header.  */
+  grub_uint64_t size;
+};
+
+#if GRUB_TARGET_SIZEOF_VOID_P == 8
+#define grub_module_info grub_module_info64
+#else
+#define grub_module_info grub_module_info32
+#endif
 
 extern grub_addr_t grub_arch_modules_addr (void);
 
 extern void EXPORT_FUNC(grub_module_iterate) (int (*hook) (struct grub_module_header *));
+
+grub_addr_t grub_modules_get_end (void);
 
 /* The start point of the C code.  */
 void grub_main (void);
@@ -72,5 +88,9 @@ void grub_machine_set_prefix (void);
 
 /* Register all the exported symbols. This is automatically generated.  */
 void grub_register_exported_symbols (void);
+
+#if ! defined (ASM_FILE) && !defined (GRUB_MACHINE_EMU)
+extern char grub_prefix[];
+#endif
 
 #endif /* ! GRUB_KERNEL_HEADER */

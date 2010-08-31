@@ -22,6 +22,7 @@
 
 #include <grub/types.h>
 
+#define GRUB_IEEE1275_CELL_SIZEOF 8
 typedef grub_uint64_t grub_ieee1275_cell_t;
 
 /* Encoding of 'mode' argument to grub_ieee1275_map_physical() */
@@ -36,14 +37,12 @@ typedef grub_uint64_t grub_ieee1275_cell_t;
 #define IEEE1275_MAP_DEFAULT	(IEEE1275_MAP_WRITE | IEEE1275_MAP_READ | \
 				 IEEE1275_MAP_EXEC | IEEE1275_MAP_CACHED)
 
-extern int EXPORT_FUNC(grub_ieee1275_map_physical) (grub_addr_t paddr,
-						    grub_addr_t vaddr,
-						    grub_size_t size,
-						    grub_uint32_t mode);
 extern int EXPORT_FUNC(grub_ieee1275_claim_vaddr) (grub_addr_t vaddr,
 						   grub_size_t size);
 extern int EXPORT_FUNC(grub_ieee1275_alloc_physmem) (grub_addr_t *paddr,
 						     grub_size_t size,
 						     grub_uint32_t align);
+
+extern grub_addr_t EXPORT_VAR (grub_ieee1275_original_stack);
 
 #endif /* ! GRUB_IEEE1275_MACHINE_HEADER */

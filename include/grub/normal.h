@@ -73,13 +73,15 @@ grub_err_t grub_normal_print_device_info (const char *name);
 /* Defined in `color.c'.  */
 char *grub_env_write_color_normal (struct grub_env_var *var, const char *val);
 char *grub_env_write_color_highlight (struct grub_env_var *var, const char *val);
-void grub_parse_color_name_pair (grub_uint8_t *ret, const char *name);
+int grub_parse_color_name_pair (grub_uint8_t *ret, const char *name);
 
 /* Defined in `menu_text.c'.  */
 void grub_wait_after_message (void);
-void grub_print_ucs4 (const grub_uint32_t * str,
-		      const grub_uint32_t * last_position,
-		      struct grub_term_output *term);
+void
+grub_print_ucs4 (const grub_uint32_t * str,
+		 const grub_uint32_t * last_position,
+		 int margin_left, int margin_right,
+		 struct grub_term_output *term);
 grub_ssize_t grub_getstringwidth (grub_uint32_t * str,
 				  const grub_uint32_t * last_position,
 				  struct grub_term_output *term);
@@ -96,48 +98,23 @@ void read_handler_list (void);
 void free_handler_list (void);
 
 /* Defined in `dyncmd.c'.  */
-void read_command_list (void);
+void read_command_list (const char *prefix);
 
 /* Defined in `autofs.c'.  */
-void read_fs_list (void);
+void read_fs_list (const char *prefix);
 
-void read_crypto_list (void);
+void grub_context_init (void);
+void grub_context_fini (void);
 
-void read_terminal_list (void);
+void read_crypto_list (const char *prefix);
+
+void read_terminal_list (const char *prefix);
 
 void grub_set_more (int onoff);
 
-#ifdef GRUB_UTIL
-void grub_normal_init (void);
-void grub_normal_fini (void);
-void grub_hello_init (void);
-void grub_hello_fini (void);
-void grub_ls_init (void);
-void grub_ls_fini (void);
-void grub_cat_init (void);
-void grub_cat_fini (void);
-void grub_boot_init (void);
-void grub_boot_fini (void);
-void grub_cmp_init (void);
-void grub_cmp_fini (void);
-void grub_terminal_init (void);
-void grub_terminal_fini (void);
-void grub_loop_init (void);
-void grub_loop_fini (void);
-void grub_help_init (void);
-void grub_help_fini (void);
-void grub_halt_init (void);
-void grub_halt_fini (void);
-void grub_reboot_init (void);
-void grub_reboot_fini (void);
-void grub_configfile_init (void);
-void grub_configfile_fini (void);
-void grub_search_init (void);
-void grub_search_fini (void);
-void grub_test_init (void);
-void grub_test_fini (void);
-void grub_blocklist_init (void);
-void grub_blocklist_fini (void);
-#endif
+int grub_normal_get_char_counter (void);
+void grub_normal_reset_more (void);
+
+void grub_xputs_normal (const char *str);
 
 #endif /* ! GRUB_NORMAL_HEADER */

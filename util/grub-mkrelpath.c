@@ -17,7 +17,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
 #include <grub/util/misc.h>
+#include <grub/emu/misc.h>
 #include <grub/i18n.h>
 #include <getopt.h>
 
@@ -39,7 +41,7 @@ usage (int status)
     printf ("\
 Usage: %s [OPTIONS] PATH\n\
 \n\
-Make a system path relative to it's root.\n\
+Make a system path relative to its root.\n\
 \n\
 Options:\n\
   -h, --help                display this message and exit\n\
@@ -97,7 +99,7 @@ main (int argc, char *argv[])
 
   argument = argv[optind];
 
-  relpath = make_system_path_relative_to_its_root (argument);
+  relpath = grub_make_system_path_relative_to_its_root (argument);
   printf ("%s\n", relpath);
   free (relpath);
 
