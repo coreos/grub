@@ -17,10 +17,97 @@
  */
 
 #include <grub/machine/init.h>
+#include <grub/machine/int.h>
 #include <grub/machine/memory.h>
 #include <grub/err.h>
 #include <grub/types.h>
 #include <grub/misc.h>
+
+/*
+ * grub_get_ext_memsize() :  return the extended memory size in KB.
+ *	BIOS call "INT 15H, AH=88H" to get extended memory size
+ *	The return value in AX.
+ *
+ */
+static inline grub_uint16_t
+grub_get_ext_memsize (void)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x8800;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x15, &regs);
+  return regs.eax & 0xffff;
+}
+
+/* Get a packed EISA memory map. Lower 16 bits are between 1MB and 16MB
+   in 1KB parts, and upper 16 bits are above 16MB in 64KB parts. If error, return zero.
+   BIOS call "INT 15H, AH=E801H" to get EISA memory map,
+     AX = memory between 1M and 16M in 1K parts.
+     BX = memory above 16M in 64K parts. 
+*/
+ 
+static inline grub_uint32_t
+grub_get_eisa_mmap (void)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  regs.eax = 0xe801;
+  grub_bios_interrupt (0x15, &regs);
+
+  if ((regs.eax & 0xff00) == 0x8600)
+    return 0;
+
+  return (regs.eax & 0xffff) | (regs.ebx << 16);
+}
+
+/*
+ *
+ * grub_get_mmap_entry(addr, cont) : address and old continuation value (zero to
+ *		start), for the Query System Address Map BIOS call.
+ *
+ *  Sets the first 4-byte int value of "addr" to the size returned by
+ *  the call.  If the call fails, sets it to zero.
+ *
+ *	Returns:  new (non-zero) continuation value, 0 if done.
+ */
+/* Get a memory map entry. Return next continuation value. Zero means
+   the end.  */
+static grub_uint32_t
+grub_get_mmap_entry (struct grub_machine_mmap_entry *entry,
+		     grub_uint32_t cont)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+
+  /* place address (+4) in ES:DI */
+  regs.es = ((grub_addr_t) &entry->addr) >> 4;
+  regs.edi = ((grub_addr_t) &entry->addr) & 0xf;
+	
+  /* set continuation value */
+  regs.ebx = cont;
+
+  /* set default maximum buffer size */
+  regs.ecx = sizeof (*entry) - sizeof (entry->size);
+
+  /* set EDX to 'SMAP' */
+  regs.edx = 0x534d4150;
+
+  regs.eax = 0xe820;
+  grub_bios_interrupt (0x15, &regs);
+
+  /* write length of buffer (zero if error) into ADDR */	
+  if ((regs.flags & GRUB_CPU_INT_FLAGS_CARRY) || regs.eax != 0x534d4150
+      || regs.ecx < 0x14 || regs.ecx > 0x400)
+    entry->size = 0;
+  else
+    entry->size = regs.ecx;
+
+  /* return the continuation value */
+  return regs.ebx;
+}
 
 grub_err_t
 grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t))
@@ -61,7 +148,7 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uin
 	    hook (0x1000000, eisa_mmap & ~0xFFFF, GRUB_MACHINE_MEMORY_AVAILABLE);
 	}
       else
-	hook (0x100000, grub_get_memsize (1) << 10, GRUB_MACHINE_MEMORY_AVAILABLE);
+	hook (0x100000, grub_get_ext_memsize () << 10, GRUB_MACHINE_MEMORY_AVAILABLE);
     }
 
   return 0;

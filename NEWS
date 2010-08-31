@@ -1,3 +1,9 @@
+New in 1.99:
+
+* ZFS support in `grub-install' and `grub-mkconfig'.  Note: complete
+  functionality requires external ZFS implementation (available from
+  grub-extras).
+
 New in 1.98 - 2010-03-06:
 
 * Multiboot on EFI support.

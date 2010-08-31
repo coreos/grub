@@ -58,8 +58,6 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/command.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/device.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/dl.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/elf.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/elfload.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/env.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/env_private.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/err.h
@@ -70,29 +68,19 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/kernel.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/list.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/misc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/mm.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/net.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/parser.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/partition.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/reader.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/symbol.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/term.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/time.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/types.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/mm_private.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/boot.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/msdos_partition.h
 
 if COND_i386_pc
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/biosdisk.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/boot.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/console.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/loader.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/vga.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/vbe.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/pxe.h
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/int.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
@@ -104,36 +92,26 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
 if COND_i386_coreboot
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/boot.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/console.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/init.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
 if COND_i386_multiboot
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/boot.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/console.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/init.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
 if COND_i386_qemu
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/boot.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/console.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/init.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
 if COND_i386_ieee1275
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/msdos_partition.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ieee1275.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
 if COND_x86_64_efi
@@ -169,15 +147,10 @@ endif
 if COND_sparc64_ieee1275
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libgcc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ieee1275.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/sparc64/ieee1275/ieee1275.h
 endif
 
 if COND_emu
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/time.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/types.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/gzio.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/menu.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/datetime.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/emu/misc.h
 if COND_GRUB_EMU_SDL

@@ -94,6 +94,9 @@ codestart:
 	call	EXT_C(grub_main)
 
 	/* This should never happen.  */
-	jmp	EXT_C(grub_stop)
+	cli
+1:	
+	hlt
+	jmp 1b
 
 #include "../realmode.S"

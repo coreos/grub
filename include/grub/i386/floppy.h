@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,27 +16,21 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef GRUB_FLOPPY_CPU_HEADER
+#define GRUB_FLOPPY_CPU_HEADER	1
+
+#define GRUB_FLOPPY_REG_DIGITAL_OUTPUT		0x3f2
+
+#ifndef ASM_FILE
 #include <grub/cpu/io.h>
-#include <grub/machine/init.h>
-#include <grub/misc.h>
 
-const char bochs_shutdown[] = "Shutdown";
-
-void
-grub_halt (void)
+/* Stop the floppy drive from spinning, so that other software is
+   jumped to with a known state.  */
+static inline void
+grub_stop_floppy (void)
 {
-  unsigned int i;
-
-  /* Disable interrupts.  */
-  __asm__ __volatile__ ("cli");
-
-  /* Bochs, QEMU, etc.  */
-  for (i = 0; i < sizeof (bochs_shutdown) - 1; i++)
-    grub_outb (bochs_shutdown[i], 0x8900);
-
-  grub_printf ("GRUB doesn't know how to halt this machine yet!\n");
-
-  /* In order to return we'd have to check what the previous status of IF
-     flag was.  But user most likely doesn't want to return anyway ...  */
-  grub_stop ();
+  grub_outb (0, GRUB_FLOPPY_REG_DIGITAL_OUTPUT);
 }
+#endif
+
+#endif

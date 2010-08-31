@@ -244,7 +244,7 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
   /* Link all Transfer Descriptors in a list of available Transfer
      Descriptors.  */
   for (i = 0; i < 256; i++)
-    u->td[i].linkptr = (grub_uint32_t) &u->td[i + 1];
+    u->td[i].linkptr = (grub_uint32_t) (grub_addr_t) &u->td[i + 1];
   u->td[255 - 1].linkptr = 0;
   u->tdfree = u->td;
 
@@ -254,20 +254,20 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
   /* Setup the frame list pointers.  Since no isochronous transfers
      are and will be supported, they all point to the (same!) queue
      head.  */
-  fp = (grub_uint32_t) u->qh & (~15);
+  fp = (grub_uint32_t) (grub_addr_t) u->qh & (~15);
   /* Mark this as a queue head.  */
   fp |= 2;
   for (i = 0; i < 1024; i++)
     u->framelist[i] = fp;
   /* Program the framelist address into the UHCI controller.  */
   grub_uhci_writereg32 (u, GRUB_UHCI_REG_FLBASEADD,
-			(grub_uint32_t) u->framelist);
+			(grub_uint32_t) (grub_addr_t) u->framelist);
 
   /* Make the Queue Heads point to each other.  */
   for (i = 0; i < N_QH; i++)
     {
       /* Point to the next QH.  */
-      u->qh[i].linkptr = (grub_uint32_t) (&u->qh[i + 1]) & (~15);
+      u->qh[i].linkptr = (grub_uint32_t) (grub_addr_t) (&u->qh[i + 1]) & (~15);
 
       /* This is a QH.  */
       u->qh[i].linkptr |= GRUB_UHCI_LINK_QUEUE_HEAD;
@@ -334,7 +334,7 @@ grub_alloc_td (struct grub_uhci *u)
     return NULL;
 
   ret = u->tdfree;
-  u->tdfree = (grub_uhci_td_t) u->tdfree->linkptr;
+  u->tdfree = (grub_uhci_td_t) (grub_addr_t) u->tdfree->linkptr;
 
   return ret;
 }
@@ -342,7 +342,7 @@ grub_alloc_td (struct grub_uhci *u)
 static void
 grub_free_td (struct grub_uhci *u, grub_uhci_td_t td)
 {
-  td->linkptr = (grub_uint32_t) u->tdfree;
+  td->linkptr = (grub_uint32_t) (grub_addr_t) u->tdfree;
   u->tdfree = td;
 }
 
@@ -369,7 +369,7 @@ grub_free_queue (struct grub_uhci *u, grub_uhci_qh_t qh, grub_uhci_td_t td,
       
       /* Unlink the queue.  */
       tdprev = td;
-      td = (grub_uhci_td_t) td->linkptr2;
+      td = (grub_uhci_td_t) (grub_addr_t) td->linkptr2;
 
       /* Free the TD.  */
       grub_free_td (u, tdprev);
@@ -432,8 +432,8 @@ grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
     }
 
   grub_dprintf ("uhci",
-		"transaction: endp=%d, type=%d, addr=%d, toggle=%d, size=%d data=0x%x td=%p\n",
-		endp, type, addr, toggle, size, data, td);
+		"transaction: endp=%d, type=%d, addr=%d, toggle=%d, size=%lu data=0x%x td=%p\n",
+		endp, type, addr, toggle, (unsigned long) size, data, td);
 
   /* Don't point to any TD, just terminate.  */
   td->linkptr = 1;
@@ -514,8 +514,8 @@ grub_uhci_setup_transfer (grub_usb_controller_t dev,
 	cdata->td_first = td;
       else
 	{
-	  td_prev->linkptr2 = (grub_uint32_t) td;
-	  td_prev->linkptr = (grub_uint32_t) td;
+	  td_prev->linkptr2 = (grub_uint32_t) (grub_addr_t) td;
+	  td_prev->linkptr = (grub_uint32_t) (grub_addr_t) td;
 	  td_prev->linkptr |= 4;
 	}
       td_prev = td;
@@ -527,7 +527,7 @@ grub_uhci_setup_transfer (grub_usb_controller_t dev,
 
   /* Link it into the queue and terminate.  Now the transaction can
      take place.  */
-  cdata->qh->elinkptr = (grub_uint32_t) cdata->td_first;
+  cdata->qh->elinkptr = (grub_uint32_t) (grub_addr_t) cdata->td_first;
 
   grub_dprintf ("uhci", "initiate transaction\n");
 

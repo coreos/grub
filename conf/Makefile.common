@@ -31,7 +31,7 @@ endif
 
 # Other options
 
-CPPFLAGS_DEFAULT = -DGRUB_FILE=\"$(subst $(srcdir),,$<)\"
+CPPFLAGS_DEFAULT = -DGRUB_FILE=\"$(subst $(srcdir)/,,$<)\"
 CPPFLAGS_DEFAULT += -I$(builddir)
 CPPFLAGS_DEFAULT += -I$(srcdir)
 CPPFLAGS_DEFAULT += -I$(top_builddir)

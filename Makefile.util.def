@@ -340,7 +340,7 @@ script = {
 script = {
   mansection = 1;
   name = grub-mkrescue;
-  x86_noieee1275 = util/grub-mkrescue.in;
+  x86 = util/grub-mkrescue.in;
   powerpc_ieee1275 = util/powerpc/ieee1275/grub-mkrescue.in;
   enable = i386_pc;
   enable = x86_efi;
@@ -356,15 +356,17 @@ script = {
   name = grub-install;
 
   mips = util/grub-install.in;
-  i386_noefi_noieee1275 = util/grub-install.in;
+  i386_pc = util/grub-install.in;
+  i386_qemu = util/grub-install.in;
+  i386_coreboot = util/grub-install.in;
+  i386_multiboot = util/grub-install.in;
+  sparc64_ieee1275 = util/grub-install.in;
 
   x86_efi = util/i386/efi/grub-install.in;
   i386_ieee1275 = util/ieee1275/grub-install.in;
   powerpc_ieee1275 = util/ieee1275/grub-install.in;
 
-  enable = x86;
-  enable = mips;
-  enable = powerpc_ieee1275;
+  enable = noemu;
 };
 
 script = {

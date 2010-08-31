@@ -34,6 +34,7 @@
 #include <grub/mm.h>
 #include <grub/cpu/relocator.h>
 #include <grub/video.h>
+#include <grub/i386/floppy.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x9000
 #define GRUB_LINUX_CL_END_OFFSET	0x90FF
@@ -60,6 +61,8 @@ grub_linux16_boot (void)
   state.ip = 0;
 
   grub_video_set_mode ("text", 0, 0);
+
+  grub_stop_floppy ();
   
   return grub_relocator16_boot (relocator, state);
 }

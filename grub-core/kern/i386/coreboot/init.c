@@ -19,7 +19,6 @@
 #include <grub/kernel.h>
 #include <grub/mm.h>
 #include <grub/machine/time.h>
-#include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
 #include <grub/types.h>
@@ -32,12 +31,11 @@
 #include <grub/time.h>
 #include <grub/symbol.h>
 #include <grub/cpu/io.h>
+#include <grub/cpu/floppy.h>
 #include <grub/cpu/tsc.h>
 #ifdef GRUB_MACHINE_QEMU
 #include <grub/machine/kernel.h>
 #endif
-
-#define GRUB_FLOPPY_REG_DIGITAL_OUTPUT		0x3f2
 
 extern char _start[];
 extern char _end[];
@@ -46,14 +44,6 @@ grub_uint32_t
 grub_get_rtc (void)
 {
   grub_fatal ("grub_get_rtc() is not implemented.\n");
-}
-
-/* Stop the floppy drive from spinning, so that other software is
-   jumped to with a known state.  */
-void
-grub_stop_floppy (void)
-{
-  grub_outb (0, GRUB_FLOPPY_REG_DIGITAL_OUTPUT);
 }
 
 void

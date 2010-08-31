@@ -87,8 +87,8 @@ grub_usb_control_msg (grub_usb_device_t dev,
   grub_memcpy ((char *) data, data_in, size);
 
   grub_dprintf ("usb",
-		"control: reqtype=0x%02x req=0x%02x val=0x%02x idx=0x%02x size=%d\n",
-		reqtype, request,  value, index, size);
+		"control: reqtype=0x%02x req=0x%02x val=0x%02x idx=0x%02x size=%lu\n",
+		reqtype, request,  value, index, (unsigned long)size);
 
   /* Create a transfer.  */
   transfer = grub_malloc (sizeof (*transfer));
@@ -210,7 +210,8 @@ grub_usb_bulk_setup_readwrite (grub_usb_device_t dev,
   grub_size_t size = size0;
   int toggle = dev->toggle[endpoint];
 
-  grub_dprintf ("usb", "bulk: size=0x%02x type=%d\n", size, type);
+  grub_dprintf ("usb", "bulk: size=0x%02lx type=%d\n", (unsigned long) size,
+		type);
 
   /* FIXME: avoid allocation any kind of buffer in a first place.  */
   data_chunk = grub_memalign_dma32 (128, size);
