@@ -1,3 +1,8 @@
+2010-09-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.util.def (libgrub.a): Add missing sunpc.
+	Reported by: Seth Goldberg.
+
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Interrupt wrapping and code simplifications.
