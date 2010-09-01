@@ -327,6 +327,7 @@ grub_linux_boot (void)
   grub_efi_uintn_t desc_size;
   grub_efi_uint32_t desc_version;
   grub_efi_memory_descriptor_t *mmap_buf;
+  grub_err_t err;
 
   /* FPSWA.  */
   query_fpswa ();
@@ -349,17 +350,15 @@ grub_linux_boot (void)
   mmap_buf = grub_efi_allocate_boot_pages (0, page_align (mmap_size) >> 12);
   if (! mmap_buf)
     grub_fatal ("cannot allocate memory map");
-  if (grub_efi_get_memory_map (&mmap_size, mmap_buf, &map_key,
-			       &desc_size, &desc_version) <= 0)
-    grub_fatal ("cannot get memory map");
+  err = grub_efi_finish_boot_services (&mmap_size, mmap_buf, &map_key,
+				       &desc_size, &desc_version);
+  if (err)
+    return err;
 
   boot_param->efi_memmap = (grub_uint64_t)mmap_buf;
   boot_param->efi_memmap_size = mmap_size;
   boot_param->efi_memdesc_size = desc_size;
   boot_param->efi_memdesc_version = desc_version;
-
-  if (! grub_efi_exit_boot_services (map_key))
-    grub_fatal ("cannot exit boot services");
 
   /* See you next boot.  */
   asm volatile ("mov r28=%1; br.sptk.few %0" :: "b"(entry),"r"(boot_param));
@@ -494,8 +493,9 @@ grub_load_elf64 (grub_file_t file, void *buffer)
   return 0;
 }
 
-void
-grub_rescue_cmd_linux (int argc, char *argv[])
+static grub_err_t
+grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
+		int argc, char *argv[])
 {
   grub_file_t file = 0;
   char buffer[GRUB_ELF_SEARCH];
@@ -574,10 +574,12 @@ grub_rescue_cmd_linux (int argc, char *argv[])
 				boot_param_pages);
       grub_dl_unref (my_mod);
     }
+  return grub_errno;
 }
 
-void
-grub_rescue_cmd_initrd (int argc, char *argv[])
+static grub_err_t
+grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
+		 int argc, char *argv[])
 {
   grub_file_t file = 0;
 
@@ -617,10 +619,12 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
  fail:
   if (file)
     grub_file_close (file);
+  return grub_errno;
 }
 
-void
-grub_rescue_cmd_payload  (int argc, char *argv[])
+static grub_err_t
+grub_cmd_payload  (grub_command_t cmd __attribute__ ((unused)),
+		   int argc, char *argv[])
 {
   grub_file_t file = 0;
   grub_ssize_t size, len = 0;
@@ -708,10 +712,12 @@ grub_rescue_cmd_payload  (int argc, char *argv[])
       grub_free (base);
       grub_free (cmdline);
     }
+  return grub_errno;
 }
 
-void
-grub_rescue_cmd_relocate  (int argc, char *argv[])
+static grub_err_t
+grub_cmd_relocate (grub_command_t cmd __attribute__ ((unused)),
+		   int argc, char *argv[])
 {
   static const char * const vals[] = { "off", "on", "force"};
   unsigned int i;
@@ -719,6 +725,7 @@ grub_rescue_cmd_relocate  (int argc, char *argv[])
   if (argc == 0)
     {
       grub_printf ("relocate is %s\n", vals[relocate]);
+      return GRUB_ERR_NONE;
     }
   else if (argc == 1)
     {
@@ -728,67 +735,63 @@ grub_rescue_cmd_relocate  (int argc, char *argv[])
 	if (grub_strcmp (argv[0], vals[i]) == 0)
 	  {
 	    relocate = i;
-	    return;
+	    return GRUB_ERR_NONE;
 	  }
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown relocate value");
+      return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown relocate value");
     }
   else
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "accept 0 or 1 argument");
+      return grub_error (GRUB_ERR_BAD_ARGUMENT, "accept 0 or 1 argument");
     }
+  
 }
 
 
-void
-grub_rescue_cmd_fpswa  (int argc, char *argv[] __attribute__((unused)))
+static grub_err_t
+grub_cmd_fpswa (grub_command_t cmd __attribute__ ((unused)),
+		int argc, char *argv[] __attribute__((unused)))
 {
   if (argc != 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "Arguments not expected");
-      return;
+      return grub_error (GRUB_ERR_BAD_ARGUMENT, "Arguments not expected");
     }
   query_fpswa ();
   if (fpswa == NULL)
     grub_printf ("No FPSWA loaded\n");
   else
     grub_printf ("FPSWA revision: %x\n", fpswa->revision);
+  return GRUB_ERR_NONE;
 }
+
+static grub_command_t cmd_linux, cmd_initrd, cmd_payload, cmd_relocate, cmd_fpswa;
 
 GRUB_MOD_INIT(linux)
 {
-  grub_register_extcmd ("linux", grub_normal_linux_command,
-			GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
-			"linux FILE [ARGS...]",
-			"Load Linux.", 0);
+  cmd_linux = grub_register_command ("linux", grub_cmd_linux,
+				     "FILE [ARGS...]", "Load Linux.");
   
-  grub_register_extcmd ("initrd", grub_normal_initrd_command,
-			GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
-			"initrd FILE",
-			"Load initrd.", 0);
+  cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
+				      "FILE", "Load initrd.");
 
-  grub_register_extcmd ("payload", grub_normal_cmd_payload,
-			GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
-			"payload FILE [ARGS...]",
-			"Load an additional file.", 0);
+  cmd_payload = grub_register_command ("payload", grub_cmd_payload,
+				       "FILE [ARGS...]",
+				       "Load an additional file.");
 
-  grub_register_extcmd ("relocate", grub_normal_cmd_relocate,
-			GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
-			"relocate [on|off|force]",
-			"Set relocate feature.", 0);
+  cmd_relocate = grub_register_command ("relocate", grub_cmd_relocate,
+					"[on|off|force]",
+					"Set relocate feature.");
 
-  grub_register_extcmd ("fpswa", grub_normal_cmd_fpswa,
-			GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
-			"fpswa",
-			"Display FPSWA version.", 0);
+  cmd_fpswa = grub_register_command ("fpswa", grub_cmd_fpswa,
+				     "", "Display FPSWA version.");
 
   my_mod = mod;
 }
 
 GRUB_MOD_FINI(linux)
 {
-  grub_unregister_command ("linux");
-  grub_unregister_command ("initrd");
-  grub_unregister_command ("payload");
-  grub_unregister_command ("relocate");
-  grub_unregister_command ("fpswa");
+  grub_unregister_command (cmd_linux);
+  grub_unregister_command (cmd_initrd);
+  grub_unregister_command (cmd_payload);
+  grub_unregister_command (cmd_relocate);
+  grub_unregister_command (cmd_fpswa);
 }
