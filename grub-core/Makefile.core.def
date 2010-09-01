@@ -1425,15 +1425,3 @@ module = {
   common = commands/efi/memmap.c;
   enable = ia64_efi;
 };
-
-module = {
-  name = systab;
-  common = commands/efi/systab.c;
-  enable = ia64_efi;
-};
-
-module = {
-  name = acpi2;
-  common = commands/efi/acpi2.c;
-  enable = ia64_efi;
-};
