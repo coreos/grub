@@ -17,7 +17,6 @@
  */
 
 #include <grub/loader.h>
-#include <grub/machine/loader.h>
 #include <grub/file.h>
 #include <grub/disk.h>
 #include <grub/err.h>

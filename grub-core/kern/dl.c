@@ -692,7 +692,6 @@ grub_dl_unload (grub_dl_t mod)
   return 1;
 }
 
-#ifdef __ia64__
 /* Unload unneeded modules.  */
 void
 grub_dl_unload_unneeded (void)
@@ -712,4 +711,3 @@ grub_dl_unload_unneeded (void)
       p = p->next;
     }
 }
-#endif
