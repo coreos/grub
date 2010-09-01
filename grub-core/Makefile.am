@@ -74,6 +74,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/term.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/time.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/mm_private.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/boot.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/net.h
 
 if COND_i386_pc
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h

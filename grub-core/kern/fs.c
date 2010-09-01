@@ -95,7 +95,7 @@ grub_fs_probe (grub_device_t device)
 	}
     }
   else if (device->net)
-    return device->net->fs;
+    return device->net->protocol;
 
   grub_error (GRUB_ERR_UNKNOWN_FS, "unknown filesystem");
   return 0;

@@ -22,6 +22,17 @@
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/list.h>
+#include <grub/fs.h>
+
+typedef struct grub_fs *grub_net_app_level_t;
+
+typedef struct grub_net
+{
+  char *name;
+  grub_net_app_level_t protocol;
+} *grub_net_t;
+
+extern grub_net_t (*EXPORT_VAR (grub_net_open)) (const char *name);
 
 struct grub_net_card;
 
@@ -46,7 +57,7 @@ struct grub_net_network_level_interface;
 typedef union grub_net_network_level_address
 {
   grub_uint32_t ipv4;
-} grub_net_network_level_netaddress_t;
+} grub_net_network_level_address_t;
 
 typedef union grub_net_network_level_netaddress
 {
@@ -54,7 +65,7 @@ typedef union grub_net_network_level_netaddress
     grub_uint32_t base;
     int masksize; 
   } ipv4;
-} grub_net_network_level_address_t;
+} grub_net_network_level_netaddress_t;
 
 typedef enum grub_network_level_protocol_id 
 {
@@ -162,6 +173,28 @@ grub_net_network_level_interface_unregister (struct grub_net_network_level_inter
 }
 
 #define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
+
+extern grub_net_app_level_t grub_net_app_level_list;
+
+#ifndef GRUB_LST_GENERATOR
+static inline void
+grub_net_app_level_register (grub_net_app_level_t proto)
+{
+  grub_list_push (GRUB_AS_LIST_P (&grub_net_app_level_list),
+		  GRUB_AS_LIST (proto));
+}
+#endif
+
+static inline void
+grub_net_app_level_unregister (grub_net_app_level_t proto)
+{
+  grub_list_remove (GRUB_AS_LIST_P (&grub_net_app_level_list),
+		    GRUB_AS_LIST (proto));
+}
+
+#define FOR_NET_APP_LEVEL(var) FOR_LIST_ELEMENTS((var), \
+						 (grub_net_app_level_list))
+
 
 extern struct grub_net_route *grub_net_routes;
 

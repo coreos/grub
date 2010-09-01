@@ -269,6 +269,37 @@ grub_cmd_addroute (struct grub_command *cmd __attribute__ ((unused)),
   return GRUB_ERR_NONE;
 }
 
+grub_net_app_level_t grub_net_app_level_list;
+
+static grub_net_t
+grub_net_open_real (const char *name)
+{
+  const char *comma = grub_strchr (name, ',');
+  grub_net_app_level_t proto;
+
+  if (!comma)
+    comma = name + grub_strlen (name);
+  FOR_NET_APP_LEVEL (proto)
+  {
+    if (comma - name == (grub_ssize_t) grub_strlen (proto->name)
+	&& grub_memcmp (proto->name, name, comma - name) == 0)
+      {
+	grub_net_t ret = grub_malloc (sizeof (*ret));
+	if (!ret)
+	  return NULL;
+	ret->protocol = proto;
+	ret->name = grub_strdup (name);
+	if (!ret->name)
+	  {
+	    grub_free (ret);
+	    return NULL;
+	  }
+	return ret;
+      }
+  }
+  return NULL;
+}
+
 static grub_command_t cmd_addaddr, cmd_deladdr, cmd_addroute, cmd_delroute;
 
 GRUB_MOD_INIT(net)
@@ -285,6 +316,7 @@ GRUB_MOD_INIT(net)
   cmd_delroute = grub_register_command ("net_del_route", grub_cmd_delroute,
 					"SHORTNAME",
 					N_("Delete a network route."));
+  grub_net_open = grub_net_open_real;
 }
 
 GRUB_MOD_FINI(net)
@@ -293,4 +325,5 @@ GRUB_MOD_FINI(net)
   grub_unregister_command (cmd_deladdr);
   grub_unregister_command (cmd_addroute);
   grub_unregister_command (cmd_delroute);
+  grub_net_open = NULL;
 }
