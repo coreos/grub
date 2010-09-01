@@ -19,7 +19,6 @@
 #include <grub/types.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
-#include <grub/normal.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
 #include <grub/command.h>
@@ -28,9 +27,9 @@
   ((grub_efi_memory_descriptor_t *) ((char *) (desc) + (size)))
 
 static grub_err_t
-grub_cmd_memmap (grub_command_t cmd __attribute__ ((unused)),
-		 int argc __attribute__ ((unused)),
-		 char **args __attribute__ ((unused)))
+grub_cmd_lsefimmap (grub_command_t cmd __attribute__ ((unused)),
+		    int argc __attribute__ ((unused)),
+		    char **args __attribute__ ((unused)))
 {
   grub_efi_uintn_t map_size;
   grub_efi_memory_descriptor_t *memory_map;
@@ -44,21 +43,19 @@ grub_cmd_memmap (grub_command_t cmd __attribute__ ((unused)),
 
   memory_map = grub_malloc (map_size);
   if (memory_map == NULL)
-    return 0;
-  if (grub_efi_get_memory_map (&map_size, memory_map, NULL, &desc_size, 0) < 0)
+    return grub_errno;
+  if (grub_efi_get_memory_map (&map_size, memory_map, NULL, &desc_size, 0) <= 0)
     goto fail;
-
-  grub_set_more (1);
 
   grub_printf
     ("Type      Physical start  - end             #Pages   "
      "  Size Attributes\n");
-  memory_map_end = ADD_MEMORY_DESCRIPTOR(memory_map, map_size);
+  memory_map_end = ADD_MEMORY_DESCRIPTOR (memory_map, map_size);
   for (desc = memory_map;
        desc < memory_map_end;
        desc = ADD_MEMORY_DESCRIPTOR (desc, desc_size))
     {
-      grub_efi_uintn_t size;
+      grub_efi_uint64_t size;
       grub_efi_uint64_t attr;
       static const char types_str[][9] = 
 	{
@@ -77,28 +74,30 @@ grub_cmd_memmap (grub_command_t cmd __attribute__ ((unused)),
 	  "IO-ports",
 	  "PAL-code"
 	};
-      if (desc->type < sizeof (types_str) / sizeof (types_str[0]))
+      if (desc->type < ARRAY_SIZE (types_str))
 	grub_printf ("%s ", types_str[desc->type]);
       else
 	grub_printf ("Unk %02x   ", desc->type);
       
-      grub_printf (" %016llx-%016llx %08lx",
-		   (unsigned long long) desc->physical_start,
-		   (unsigned long long) desc->physical_start + (desc->num_pages << 12) - 1,
-		   (unsigned long) desc->num_pages);
+      grub_printf (" %016" PRIxGRUB_UINT64_T "-%016" PRIxGRUB_UINT64_T
+		   " %08" PRIxGRUB_EFI_UINTN_T,
+		   desc->physical_start,
+		   desc->physical_start + (desc->num_pages << 12) - 1,
+		   desc->num_pages);
 
-      size = desc->num_pages << (12 - 10);
+      size = desc->num_pages;
+      size <<= (12 - 10);
       if (size < 1024)
-	grub_printf (" %4uKB", (unsigned) size);
+	grub_printf (" %4" PRIuGRUB_UINT64_T "KB", size);
       else
 	{
 	  size /= 1024;
 	  if (size < 1024)
-	    grub_printf (" %4uMB", (unsigned) size);
+	    grub_printf (" %4" PRIuGRUB_UINT64_T "MB", size);
 	  else
 	    {
 	      size /= 1024;
-	      grub_printf (" %4uGB", (unsigned) size);
+	      grub_printf (" %4" PRIuGRUB_UINT64_T "GB", size);
 	    }
 	}
 
@@ -125,8 +124,6 @@ grub_cmd_memmap (grub_command_t cmd __attribute__ ((unused)),
       grub_printf ("\n");
     }
 
-  grub_set_more (0);
-
  fail:
   grub_free (memory_map);
   return 0;
@@ -134,13 +131,13 @@ grub_cmd_memmap (grub_command_t cmd __attribute__ ((unused)),
 
 static grub_command_t cmd;
 
-GRUB_MOD_INIT(memmap)
+GRUB_MOD_INIT(lsefimmap)
 {
-  cmd = grub_register_command ("memmap", grub_cmd_memmap,
-			       "", "Display memory map.");
+  cmd = grub_register_command ("lsefimmap", grub_cmd_lsefimmap,
+			       "", "Display EFI memory map.");
 }
 
-GRUB_MOD_FINI(memmap)
+GRUB_MOD_FINI(lsefimmap)
 {
   grub_unregister_command (cmd);
 }

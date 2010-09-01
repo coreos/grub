@@ -454,6 +454,14 @@ module = {
 };
 
 module = {
+  name = lsefimmap;
+
+  common = commands/efi/lsefimmap.c;
+
+  enable = efi;
+};
+
+module = {
   name = blocklist;
   common = commands/blocklist.c;
 };
@@ -1418,10 +1426,4 @@ module = {
 module = {
   name = datehook;
   common = hook/datehook.c;
-};
-
-module = {
-  name = memmap;
-  common = commands/efi/memmap.c;
-  enable = ia64_efi;
 };
