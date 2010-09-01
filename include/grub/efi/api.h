@@ -287,6 +287,8 @@ typedef grub_uint64_t grub_efi_uint64_t;
 typedef grub_uint8_t grub_efi_char8_t;
 typedef grub_uint16_t grub_efi_char16_t;
 
+#define PRIxGRUB_EFI_UINTN_T "lx"
+
 typedef grub_efi_intn_t grub_efi_status_t;
 
 #define GRUB_EFI_ERROR_CODE(value)	\
