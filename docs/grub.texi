@@ -46,6 +46,7 @@ Invariant Sections.
 @subtitle The GRand Unified Bootloader, version @value{VERSION}, @value{UPDATED}.
 @author Gordon Matzigkeit
 @author Yoshinori K. Okuji
+@author Colin Watson
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll

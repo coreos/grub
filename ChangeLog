@@ -1,3 +1,7 @@
+2010-09-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi: Add myself as an author.
+
 2010-09-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* Makefile.util.def (libgrub.a): Add missing sunpc.
