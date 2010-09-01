@@ -193,13 +193,13 @@ free_pages (void)
 {
   if (kernel_mem)
     {
-      grub_efi_free_boot_pages ((grub_addr_t) kernel_mem, kernel_pages);
+      grub_efi_free_pages ((grub_addr_t) kernel_mem, kernel_pages);
       kernel_mem = 0;
     }
 
   if (initrd_mem)
     {
-      grub_efi_free_boot_pages ((grub_addr_t) initrd_mem, initrd_pages);
+      grub_efi_free_pages ((grub_addr_t) initrd_mem, initrd_pages);
       initrd_mem = 0;
     }
 
@@ -214,16 +214,16 @@ free_pages (void)
 	{
 	  next_payload = (struct ia64_boot_payload *)payload->next;
 
-	  grub_efi_free_boot_pages
+	  grub_efi_free_pages
 	    (payload->start, page_align (payload->length) >> 12);
-	  grub_efi_free_boot_pages ((grub_efi_physical_address_t)payload, 1);
+	  grub_efi_free_pages ((grub_efi_physical_address_t)payload, 1);
 
 	  payload = next_payload;
 	}
 
       /* Free bootparam.  */
-      grub_efi_free_boot_pages ((grub_efi_physical_address_t)boot_param,
-				boot_param_pages);
+      grub_efi_free_pages ((grub_efi_physical_address_t)boot_param,
+			   boot_param_pages);
       boot_param = 0;
     }
 }
@@ -347,7 +347,7 @@ grub_linux_boot (void)
      Must be done after grub_machine_fini because map_key is used by
      exit_boot_services.  */
   mmap_size = find_mmap_size ();
-  mmap_buf = grub_efi_allocate_boot_pages (0, page_align (mmap_size) >> 12);
+  mmap_buf = grub_efi_allocate_pages (0, page_align (mmap_size) >> 12);
   if (! mmap_buf)
     grub_fatal ("cannot allocate memory map");
   err = grub_efi_finish_boot_services (&mmap_size, mmap_buf, &map_key,
@@ -437,7 +437,7 @@ grub_load_elf64 (grub_file_t file, void *buffer)
 
   if (relocate != RELOCATE_FORCE)
     {
-      kernel_mem = grub_efi_allocate_boot_pages (low_addr, kernel_pages);
+      kernel_mem = grub_efi_allocate_pages (low_addr, kernel_pages);
       reloc_offset = 0;
     }
   /* Try to relocate.  */
@@ -537,7 +537,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     len += grub_strlen (argv[i]) + 1;
   len += sizeof (struct ia64_boot_param) + 256; /* Room for extensions.  */
   boot_param_pages = page_align (len) >> 12;
-  boot_param = grub_efi_allocate_boot_pages (0, boot_param_pages);
+  boot_param = grub_efi_allocate_pages (0, boot_param_pages);
   if (boot_param == 0)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY,
@@ -557,8 +557,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     }
   cmdline[10] = '=';
   
-  boot_param->command_line = (grub_uint64_t)cmdline;
-  boot_param->efi_systab = (grub_uint64_t)grub_efi_system_table;
+  boot_param->command_line = (grub_uint64_t) cmdline;
+  boot_param->efi_systab = (grub_uint64_t) grub_efi_system_table;
 
   grub_errno = GRUB_ERR_NONE;
 
@@ -570,8 +570,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_errno != GRUB_ERR_NONE)
     {
-      grub_efi_free_boot_pages ((grub_efi_physical_address_t)boot_param,
-				boot_param_pages);
+      grub_efi_free_pages ((grub_efi_physical_address_t) boot_param,
+			   boot_param_pages);
       grub_dl_unref (my_mod);
     }
   return grub_errno;
@@ -603,7 +603,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   initrd_size = grub_file_size (file);
   initrd_pages = (page_align (initrd_size) >> 12);
-  initrd_mem = grub_efi_allocate_boot_pages (0, initrd_pages);
+  initrd_mem = grub_efi_allocate_pages (0, initrd_pages);
   if (! initrd_mem)
     grub_fatal ("cannot allocate pages");
   
@@ -650,7 +650,7 @@ grub_cmd_payload  (grub_command_t cmd __attribute__ ((unused)),
     goto fail;
 
   size = grub_file_size (file);
-  base = grub_efi_allocate_boot_pages (0, page_align (size) >> 12);
+  base = grub_efi_allocate_pages (0, page_align (size) >> 12);
   if (! base)
     goto fail;
 
@@ -672,7 +672,7 @@ grub_cmd_payload  (grub_command_t cmd __attribute__ ((unused)),
       grub_error (GRUB_ERR_OUT_OF_RANGE, "payload command line too long");
       goto fail;
     }
-  payload = grub_efi_allocate_boot_pages (0, 1);
+  payload = grub_efi_allocate_pages (0, 1);
   if (! payload)
     goto fail;
 
