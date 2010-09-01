@@ -431,10 +431,26 @@ module = {
 
   common = commands/lsacpi.c;
 
-  enable = x86_efi;
+  enable = efi;
   enable = i386_pc;
   enable = i386_coreboot;
   enable = i386_multiboot;
+};
+
+module = {
+  name = lsefisystab;
+
+  common = commands/efi/lsefisystab.c;
+
+  enable = efi;
+};
+
+module = {
+  name = lssal;
+
+  common = commands/efi/lssal.c;
+
+  enable = efi;
 };
 
 module = {

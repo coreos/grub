@@ -10,10 +10,8 @@
 	* util/ia64/efi/elf2pe.c: New file.
 	* normal/ia64/setjmp.S: New file (from glibc).
 	* normal/ia64/longjmp.S: New file (from glibc).
-	* loader/ia64/efi/linux_normal.c: New file.
 	* loader/ia64/efi/linux.c: New file.
 	* conf/ia64-efi.rmk: New file.
-	* commands/efi/systab.c: New file.
 	* commands/efi/memmap.c: New file.
 	* include/grub/efi/efi.h: Declare grub_efi_allocate_boot_pages and
 	grub_efi_free_boot_pages.
