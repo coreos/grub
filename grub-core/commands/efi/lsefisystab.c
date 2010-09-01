@@ -63,6 +63,7 @@ grub_cmd_lsefisystab (struct grub_command *cmd __attribute__ ((unused)),
     *grub_utf16_to_utf8 ((grub_uint8_t *) vendor, st->firmware_vendor,
 			 vendor_utf16 - st->firmware_vendor) = 0;
     grub_printf ("%s", vendor);
+    grub_free (vendor);
   }
 
   grub_printf (", Version=%x\n", st->firmware_revision);
