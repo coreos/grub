@@ -12,7 +12,6 @@ commands/efi/fixvideo.c
 commands/efi/loadbios.c
 commands/gptsync.c
 commands/halt.c
-commands/handler.c
 commands/hdparm.c
 commands/help.c
 commands/hexdump.c
@@ -62,7 +61,7 @@ loader/i386/linux.c
 loader/i386/pc/chainloader.c
 loader/i386/pc/linux.c
 loader/i386/xnu.c
-loader/multiboot_loader.c
+loader/multiboot.c
 loader/powerpc/ieee1275/linux.c
 loader/sparc64/ieee1275/linux.c
 loader/xnu.c
@@ -77,5 +76,5 @@ normal/misc.c
 
 term/serial.c
 
-util/grub-mkrawimage.c
+util/grub-mkimage.c
 util/i386/pc/grub-setup.c

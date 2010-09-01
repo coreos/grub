@@ -19,6 +19,8 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/emu/misc.h>
+#include <grub/util/misc.h>
 #include <grub/util/misc.h>
 #include <grub/device.h>
 #include <grub/disk.h>
@@ -26,14 +28,12 @@
 #include <grub/fs.h>
 #include <grub/partition.h>
 #include <grub/msdos_partition.h>
-#include <grub/util/hostdisk.h>
-#include <grub/util/getroot.h>
+#include <grub/emu/hostdisk.h>
+#include <grub/emu/getroot.h>
 #include <grub/term.h>
 #include <grub/env.h>
 #include <grub/raid.h>
 #include <grub/i18n.h>
-
-#include <grub_probe_init.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -49,6 +49,7 @@
 enum {
   PRINT_FS,
   PRINT_FS_UUID,
+  PRINT_FS_LABEL,
   PRINT_DRIVE,
   PRINT_DEVICE,
   PRINT_PARTMAP,
@@ -58,37 +59,19 @@ enum {
 int print = PRINT_FS;
 static unsigned int argument_is_device = 0;
 
-void
-grub_putchar (int c)
-{
-  putchar (c);
-}
-
-int
-grub_getkey (void)
-{
-  return -1;
-}
-
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
-
-void
-grub_refresh (void)
-{
-  fflush (stdout);
-}
-
 static void
 probe_partmap (grub_disk_t disk)
 {
+  grub_partition_t part;
+
   if (disk->partition == NULL)
     {
       grub_util_info ("no partition map found for %s", disk->name);
       return;
     }
 
-  printf ("%s\n", disk->partition->partmap->name);
+  for (part = disk->partition; part; part = part->parent)
+    printf ("%s\n", part->partmap->name);
 }
 
 static int
@@ -116,7 +99,7 @@ probe (const char *path, char *device_name)
 
   if (path == NULL)
     {
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__)
       if (! grub_util_check_char_device (device_name))
         grub_util_error ("%s is not a character device", device_name);
 #else
@@ -258,7 +241,7 @@ probe (const char *path, char *device_name)
 	      grub_util_info ("reading %s via OS facilities", path);
 	      filebuf_via_sys = grub_util_read_image (path);
 
-	      rel_path = make_system_path_relative_to_its_root (path);
+	      rel_path = grub_make_system_path_relative_to_its_root (path);
 	      grub_path = xasprintf ("(%s)%s", drive_name, rel_path);
 	      free (rel_path);
 	      grub_util_info ("reading %s via GRUB facilities", grub_path);
@@ -287,6 +270,16 @@ probe (const char *path, char *device_name)
       fs->uuid (dev, &uuid);
 
       printf ("%s\n", uuid);
+    }
+  else if (print == PRINT_FS_LABEL)
+    {
+      char *label;
+      if (! fs->label)
+	grub_util_error ("%s does not support labels", fs->name);
+
+      fs->label (dev, &label);
+
+      printf ("%s\n", label);
     }
 
  end:
@@ -323,7 +316,7 @@ Probe device information for a given path (or device, if the -d option is given)
 \n\
   -d, --device              given argument is a system device, not a path\n\
   -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
-  -t, --target=(fs|fs_uuid|drive|device|partmap|abstraction)\n\
+  -t, --target=(fs|fs_uuid|fs_label|drive|device|partmap|abstraction)\n\
                             print filesystem module, GRUB drive, system device, partition map module or abstraction module [default=fs]\n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
@@ -372,6 +365,8 @@ main (int argc, char *argv[])
 	      print = PRINT_FS;
 	    else if (!strcmp (optarg, "fs_uuid"))
 	      print = PRINT_FS_UUID;
+	    else if (!strcmp (optarg, "fs_label"))
+	      print = PRINT_FS_LABEL;
 	    else if (!strcmp (optarg, "drive"))
 	      print = PRINT_DRIVE;
 	    else if (!strcmp (optarg, "device"))

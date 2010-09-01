@@ -32,6 +32,12 @@ typedef enum
     GRUB_ATA_LBA48
   } grub_ata_addressing_t;
 
+#define GRUB_ATA_CH0_PORT1 0x1f0
+#define GRUB_ATA_CH1_PORT1 0x170
+
+#define GRUB_ATA_CH0_PORT2 0x3f6
+#define GRUB_ATA_CH1_PORT2 0x376
+
 #define GRUB_ATA_REG_DATA	0
 #define GRUB_ATA_REG_ERROR	1
 #define GRUB_ATA_REG_FEATURES	1

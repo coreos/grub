@@ -1,7 +1,7 @@
 /* grub-script-check.c - check grub script file for syntax errors */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+ *  Copyright (C) 2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,12 +21,11 @@
 #include <grub/types.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/i18n.h>
 #include <grub/parser.h>
 #include <grub/script_sh.h>
-
-#include <grub_script_check_init.h>
 
 #define _GNU_SOURCE	1
 
@@ -38,63 +37,6 @@
 #include <getopt.h>
 
 #include "progname.h"
-
-void
-grub_putchar (int c)
-{
-  putchar (c);
-}
-
-int
-grub_getkey (void)
-{
-  return -1;
-}
-
-void
-grub_refresh (void)
-{
-  fflush (stdout);
-}
-
-char *
-grub_script_execute_argument_to_string (struct grub_script_arg *arg __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
-grub_script_execute_cmdline (struct grub_script_cmd *cmd __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
-grub_script_execute_cmdblock (struct grub_script_cmd *cmd __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
-grub_script_execute_cmdif (struct grub_script_cmd *cmd __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
-grub_script_execute_menuentry (struct grub_script_cmd *cmd __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
-grub_script_execute (struct grub_script *script)
-{
-  if (script == 0 || script->cmd == 0)
-    return 0;
-
-  return script->cmd->exec (script->cmd);
-}
 
 static struct option options[] =
   {
@@ -118,7 +60,7 @@ Checks GRUB script configuration file for syntax errors.\n\
 \n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
-  -v, --verbose             print script being processed\n\
+  -v, --verbose             print the script as it is being processed\n\
 \n\
 Report bugs to <%s>.\n\
 ", program_name,
@@ -133,7 +75,8 @@ main (int argc, char *argv[])
   char *input;
   FILE *file = 0;
   int verbose = 0;
-  struct grub_script *script;
+  int found_input = 0;
+  struct grub_script *script = NULL;
 
   auto grub_err_t get_config_line (char **line, int cont);
   grub_err_t get_config_line (char **line, int cont __attribute__ ((unused)))
@@ -226,15 +169,13 @@ main (int argc, char *argv[])
 	}
     }
 
-  /* Initialize all modules.  */
-  grub_init_all ();
-
   do
     {
       input = 0;
       get_config_line(&input, 0);
       if (! input) 
 	break;
+      found_input = 1;
 
       script = grub_script_parse (input, get_config_line);
       if (script)
@@ -246,9 +187,7 @@ main (int argc, char *argv[])
       grub_free (input);
     } while (script != 0);
 
-  /* Free resources.  */
-  grub_fini_all ();
   if (file) fclose (file);
 
-  return (script == 0);
+  return (found_input && script == 0);
 }

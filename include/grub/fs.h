@@ -24,6 +24,8 @@
 #include <grub/symbol.h>
 #include <grub/types.h>
 
+#include <grub/list.h>
+
 /* Forward declaration is required, because of mutual reference.  */
 struct grub_file;
 
@@ -38,6 +40,9 @@ struct grub_dirhook_info
 /* Filesystem descriptor.  */
 struct grub_fs
 {
+  /* The next filesystem.  */
+  struct grub_fs *next;
+
   /* My name.  */
   const char *name;
 
@@ -72,9 +77,6 @@ struct grub_fs
   /* Whether this filesystem reserves first sector for DOS-style boot.  */
   int reserved_first_sector;
 #endif
-
-  /* The next filesystem.  */
-  struct grub_fs *next;
 };
 typedef struct grub_fs *grub_fs_t;
 
@@ -87,10 +89,24 @@ extern struct grub_fs grub_fs_blocklist;
    the linked list GRUB_FS_LIST through the function grub_fs_register.  */
 typedef int (*grub_fs_autoload_hook_t) (void);
 extern grub_fs_autoload_hook_t EXPORT_VAR(grub_fs_autoload_hook);
+extern grub_fs_t EXPORT_VAR (grub_fs_list);
 
-void EXPORT_FUNC(grub_fs_register) (grub_fs_t fs);
-void EXPORT_FUNC(grub_fs_unregister) (grub_fs_t fs);
-void EXPORT_FUNC(grub_fs_iterate) (int (*hook) (const grub_fs_t fs));
+#ifndef GRUB_LST_GENERATOR
+static inline void
+grub_fs_register (grub_fs_t fs)
+{
+  grub_list_push (GRUB_AS_LIST_P (&grub_fs_list), GRUB_AS_LIST (fs));
+}
+#endif
+
+static inline void
+grub_fs_unregister (grub_fs_t fs)
+{
+  grub_list_remove (GRUB_AS_LIST_P (&grub_fs_list), GRUB_AS_LIST (fs));
+}
+
+#define FOR_FILESYSTEMS(var) FOR_LIST_ELEMENTS((var), (grub_fs_list))
+
 grub_fs_t EXPORT_FUNC(grub_fs_probe) (grub_device_t device);
 
 #endif /* ! GRUB_FS_HEADER */

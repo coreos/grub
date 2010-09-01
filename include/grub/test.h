@@ -54,7 +54,7 @@ void grub_test_nonzero (int cond, const char *file,
 
 /* Macro to fill in location details and an optional error message.  */
 #define grub_test_assert(cond, ...)				\
-  grub_test_nonzero(cond, __FILE__, __FUNCTION__, __LINE__,	\
+  grub_test_nonzero(cond, GRUB_FILE, __FUNCTION__, __LINE__,	\
 		    ## __VA_ARGS__,				\
 		    "assert failed: %s", #cond)
 
@@ -72,14 +72,14 @@ void grub_test_nonzero (int cond, const char *file,
 
 /* Macro to define a functional test.  */
 #define GRUB_FUNCTIONAL_TEST(name, funp)	\
-  GRUB_MOD_INIT(functional_test_##funp)		\
+  GRUB_MOD_INIT(name)				\
   {						\
-    grub_test_register (name, funp);		\
+    grub_test_register (#name, funp);		\
   }						\
 						\
-  GRUB_MOD_FINI(functional_test_##funp)		\
+  GRUB_MOD_FINI(name)				\
   {						\
-    grub_test_unregister (name);		\
+    grub_test_unregister (#name);		\
   }
 
 #endif /* ! GRUB_TEST_HEADER */

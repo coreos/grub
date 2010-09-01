@@ -33,10 +33,17 @@ struct grub_datetime
 };
 
 /* Return date and time.  */
+#ifdef GRUB_MACHINE_EMU
+grub_err_t EXPORT_FUNC(grub_get_datetime) (struct grub_datetime *datetime);
+
+/* Set date and time.  */
+grub_err_t EXPORT_FUNC(grub_set_datetime) (struct grub_datetime *datetime);
+#else
 grub_err_t grub_get_datetime (struct grub_datetime *datetime);
 
 /* Set date and time.  */
 grub_err_t grub_set_datetime (struct grub_datetime *datetime);
+#endif
 
 int grub_get_weekday (struct grub_datetime *datetime);
 char *grub_get_weekday_name (struct grub_datetime *datetime);

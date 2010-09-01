@@ -368,7 +368,7 @@ strip_trailing_digits (const char *p)
 }
 
 char *
-grub_util_devname_to_ofpath (char *devname)
+grub_util_devname_to_ofpath (const char *devname)
 {
   char *name_buf, *device, *devnode, *devicenode, *ofpath;
 

@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <getopt.h>
 
+#include "progname.h"
+
 static struct option options[] = {
   {"help", no_argument, 0, 'h'},
   {"version", no_argument, 0, 'V'},
