@@ -19,5 +19,9 @@
 void EXPORT_FUNC (__ia64_trampoline) (void);
 void EXPORT_FUNC (grub_init_modules) (void);
 
+void
+grub_init_module (const char *name,
+		  void (*init)(grub_dl_t), void (*fini)(void));
+
 extern unsigned long EXPORT_VAR (__gp);
 

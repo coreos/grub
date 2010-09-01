@@ -365,6 +365,7 @@ script = {
 
   i386_efi = util/i386/efi/grub-install.in;
   x86_64_efi = util/i386/efi/grub-install.in;
+  ia64_efi = util/grub-install.in;
   i386_ieee1275 = util/ieee1275/grub-install.in;
   powerpc_ieee1275 = util/ieee1275/grub-install.in;
 

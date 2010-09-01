@@ -37,6 +37,10 @@
 #define GRUB_MODULES_MACHINE_READONLY
 #endif
 
+#ifdef __ia64__
+#include <grub/machine/misc.h>
+#endif
+
 
 
 grub_dl_t grub_dl_head = 0;
@@ -545,6 +549,7 @@ grub_dl_load_core (void *addr, grub_size_t size)
   return mod;
 }
 
+#ifdef __ia64__
 void
 grub_init_module (const char *name,
 		  void (*init)(grub_dl_t), void (*fini)(void))
@@ -555,7 +560,7 @@ grub_init_module (const char *name,
   if (! mod)
     return;
 
-  mod->name = name;
+  mod->name = (char *) name;
   mod->ref_count = 1;
   mod->dep = 0;
   mod->segment = 0;
@@ -567,6 +572,7 @@ grub_init_module (const char *name,
   /* Can't fail.  */
   grub_dl_add (mod);
 }
+#endif
 
 /* Load a module from the file FILENAME.  */
 grub_dl_t
@@ -686,6 +692,7 @@ grub_dl_unload (grub_dl_t mod)
   return 1;
 }
 
+#ifdef __ia64__
 /* Unload unneeded modules.  */
 void
 grub_dl_unload_unneeded (void)
@@ -705,3 +712,4 @@ grub_dl_unload_unneeded (void)
       p = p->next;
     }
 }
+#endif

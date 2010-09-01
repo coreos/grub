@@ -22,12 +22,15 @@
 #include <grub/normal.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
+#include <grub/command.h>
 
 #define ADD_MEMORY_DESCRIPTOR(desc, size)	\
   ((grub_efi_memory_descriptor_t *) ((char *) (desc) + (size)))
 
 static grub_err_t
-grub_cmd_memmap (struct grub_arg_list *state, int argc, char **args)
+grub_cmd_memmap (grub_command_t cmd __attribute__ ((unused)),
+		 int argc __attribute__ ((unused)),
+		 char **args __attribute__ ((unused)))
 {
   grub_efi_uintn_t map_size;
   grub_efi_memory_descriptor_t *memory_map;
@@ -80,22 +83,22 @@ grub_cmd_memmap (struct grub_arg_list *state, int argc, char **args)
 	grub_printf ("Unk %02x   ", desc->type);
       
       grub_printf (" %016llx-%016llx %08lx",
-		   desc->physical_start,
-		   desc->physical_start + (desc->num_pages << 12) - 1,
-		   desc->num_pages);
+		   (unsigned long long) desc->physical_start,
+		   (unsigned long long) desc->physical_start + (desc->num_pages << 12) - 1,
+		   (unsigned long) desc->num_pages);
 
       size = desc->num_pages << (12 - 10);
       if (size < 1024)
-	grub_printf (" %4uKB", size);
+	grub_printf (" %4uKB", (unsigned) size);
       else
 	{
 	  size /= 1024;
 	  if (size < 1024)
-	    grub_printf (" %4uMB", size);
+	    grub_printf (" %4uMB", (unsigned) size);
 	  else
 	    {
 	      size /= 1024;
-	      grub_printf (" %4uGB", size);
+	      grub_printf (" %4uGB", (unsigned) size);
 	    }
 	}
 
@@ -129,15 +132,15 @@ grub_cmd_memmap (struct grub_arg_list *state, int argc, char **args)
   return 0;
 }
 
+static grub_command_t cmd;
+
 GRUB_MOD_INIT(memmap)
 {
-  (void)mod;			/* To stop warning. */
-  grub_register_extcmd ("memmap", grub_cmd_memmap, GRUB_COMMAND_FLAG_BOTH,
-			"memmap",
-			"Display memory map.", NULL);
+  cmd = grub_register_command ("memmap", grub_cmd_memmap,
+			       "", "Display memory map.");
 }
 
 GRUB_MOD_FINI(memmap)
 {
-  grub_unregister_extcmd ("memmap");
+  grub_unregister_command (cmd);
 }

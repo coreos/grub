@@ -34,9 +34,9 @@
 #ifndef GRUB_MOD_INIT
 #define GRUB_MOD_INIT(name)	\
 static void grub_mod_init (grub_dl_t mod __attribute__ ((unused))) __attribute__ ((used)); \
-void grub_module_##name##_init (grub_dl_t); \
+void grub_##name##_init (grub_dl_t); \
 void \
-grub_module_##name##_init (grub_dl_t mod) { grub_mod_init (mod); } \
+grub_##name##_init (grub_dl_t mod) { grub_mod_init (mod); } \
 static void \
 grub_mod_init (grub_dl_t mod __attribute__ ((unused)))
 #endif
@@ -44,9 +44,9 @@ grub_mod_init (grub_dl_t mod __attribute__ ((unused)))
 #ifndef GRUB_MOD_FINI
 #define GRUB_MOD_FINI(name)	\
 static void grub_mod_fini (void) __attribute__ ((used)); \
-void grub_module_##name##_fini (void); \
+void grub_##name##_fini (void); \
 void \
-grub_module_##name##_fini (void) { grub_mod_fini (); } \
+grub_##name##_fini (void) { grub_mod_fini (); } \
 static void \
 grub_mod_fini (void)
 #endif
