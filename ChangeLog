@@ -1,5 +1,9 @@
 2010-09-01  Colin Watson  <cjwatson@ubuntu.com>
 
+	* NEWS: Document most of the important changes since 1.98.
+
+2010-09-01  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub-mkrescue.in (usage): Tidy up usage output (and hence
 	generated manual page) a little.
 
