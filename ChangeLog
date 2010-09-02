@@ -1,5 +1,14 @@
 2010-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add i386-pc-pxe image target.
+
+	* util/grub-mkimage.c (image_target_desc): New enum value
+	IMAGE_I386_PC_PXE.
+	(image_targets): New target i386-pc-pxe.
+	(generate_image): Handle i386-pc-pxe image.
+
+2010-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix grub_pxe_scan.
 
 	* grub-core/fs/i386/pc/pxe.c (grub_pxe_pxenv): Put correct type bangpxe.
