@@ -21,6 +21,7 @@
 #include <grub/mm.h>
 #include <grub/dl.h>
 #include <grub/command.h>
+#include <grub/env.h>
 
 struct grub_net_route
 {
@@ -40,13 +41,6 @@ struct grub_net_route *grub_net_routes = NULL;
 struct grub_net_network_level_interface *grub_net_network_level_interfaces = NULL;
 struct grub_net_card *grub_net_cards = NULL;
 struct grub_net_network_level_protocol *grub_net_network_level_protocols = NULL;
-
-static inline void
-grub_net_network_level_interface_register (struct grub_net_network_level_interface *inter)
-{
-  grub_list_push (GRUB_AS_LIST_P (&grub_net_network_level_interfaces),
-		  GRUB_AS_LIST (inter));
-}
 
 static inline void
 grub_net_network_level_interface_unregister (struct grub_net_network_level_interface *inter)
@@ -212,6 +206,10 @@ grub_cmd_deladdr (struct grub_command *cmd __attribute__ ((unused)),
   if (inter == NULL)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("address not found"));
 
+  if (inter->flags & GRUB_NET_INTERFACE_PERMANENT)
+    return grub_error (GRUB_ERR_IO,
+		       N_("you can't delete this address"));
+
   grub_net_network_level_interface_unregister (inter);
   grub_free (inter->name);
   grub_free (inter);
@@ -219,9 +217,104 @@ grub_cmd_deladdr (struct grub_command *cmd __attribute__ ((unused)),
   return GRUB_ERR_NONE;  
 }
 
+/*
+  Currently suppoerted adresses:
+  IPv4:   XXX.XXX.XXX.XXX
+ */
+#define MAX_STR_ADDR_LEN sizeof ("XXX.XXX.XXX.XXX")
+
+static void
+addr_to_str (const grub_net_network_level_address_t *target, char *buf)
+{
+  switch (target->type)
+    {
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
+      {
+	grub_uint32_t n = grub_be_to_cpu32 (target->ipv4);
+	grub_snprintf (buf, MAX_STR_ADDR_LEN, "%d.%d.%d.%d",
+		       ((n >> 24) & 0xff), ((n >> 16) & 0xff),
+		       ((n >> 8) & 0xff), ((n >> 0) & 0xff));
+      }
+      return;
+    }
+  grub_printf ("Unknown address type %d\n", target->type);
+}
+
+/*
+  Currently suppoerted adresses:
+  ethernet:   XX:XX:XX:XX:XX:XX
+ */
+
+#define MAX_STR_HWADDR_LEN (sizeof ("XX:XX:XX:XX:XX:XX"))
+
+static void
+hwaddr_to_str (const grub_net_link_level_address_t *addr, char *str)
+{
+  str[0] = 0;
+  switch (addr->type)
+    {
+    case GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET:
+      {
+	char *ptr;
+	unsigned i;
+	for (ptr = str, i = 0; i < ARRAY_SIZE (addr->mac); i++)
+	  {
+	    grub_snprintf (ptr, MAX_STR_HWADDR_LEN - (ptr - str),
+			   "%02x:", addr->mac[i] & 0xff);
+	    ptr += (sizeof ("XX:") - 1);
+	  }
+      return;
+      }
+    }
+  grub_printf ("Unsupported hw address type %d\n", addr->type);
+}
+
+/* FIXME: implement this. */
+static char *
+hwaddr_set_env (struct grub_env_var *var __attribute__ ((unused)),
+		const char *val __attribute__ ((unused)))
+{
+  return NULL;
+}
+
+/* FIXME: implement this. */
+static char *
+addr_set_env (struct grub_env_var *var __attribute__ ((unused)),
+	      const char *val __attribute__ ((unused)))
+{
+  return NULL;
+}
+
+static void
+grub_net_network_level_interface_register (struct grub_net_network_level_interface *inter)
+{
+  {
+    char buf[MAX_STR_HWADDR_LEN];
+    char name[grub_strlen (inter->name) + sizeof ("net__mac")];
+    hwaddr_to_str (&inter->hwaddress, buf);
+    grub_snprintf (name, sizeof (name), "net_%s_mac", inter->name);
+    grub_env_set (name, buf);
+    grub_register_variable_hook (name, 0, hwaddr_set_env);
+  }
+
+  {
+    char buf[MAX_STR_ADDR_LEN];
+    char name[grub_strlen (inter->name) + sizeof ("net__ip")];
+    addr_to_str (&inter->address, buf);
+    grub_snprintf (name, sizeof (name), "net_%s_ip", inter->name);
+    grub_env_set (name, buf);
+    grub_register_variable_hook (name, 0, addr_set_env);
+  }
+
+  grub_list_push (GRUB_AS_LIST_P (&grub_net_network_level_interfaces),
+		  GRUB_AS_LIST (inter));
+}
+
 struct grub_net_network_level_interface *
 grub_net_add_addr (const char *name, struct grub_net_card *card,
-		   grub_net_network_level_address_t addr)
+		   grub_net_network_level_address_t addr,
+		   grub_net_link_level_address_t hwaddress,
+		   grub_net_interface_flags_t flags)
 {
   struct grub_net_network_level_interface *inter;
 
@@ -231,6 +324,8 @@ grub_net_add_addr (const char *name, struct grub_net_card *card,
 
   inter->name = grub_strdup (name);
   grub_memcpy (&(inter->address), &addr, sizeof (inter->address));
+  grub_memcpy (&(inter->hwaddress), &hwaddress, sizeof (inter->hwaddress));
+  inter->flags = flags;
   inter->card = card;
 
   grub_net_network_level_interface_register (inter);
@@ -238,6 +333,7 @@ grub_net_add_addr (const char *name, struct grub_net_card *card,
   return inter;
 }
 
+/* FIXME: support MAC specifying.  */
 static grub_err_t
 grub_cmd_addaddr (struct grub_command *cmd __attribute__ ((unused)),
 		  int argc, char **args)
@@ -245,6 +341,7 @@ grub_cmd_addaddr (struct grub_command *cmd __attribute__ ((unused)),
   struct grub_net_card *card;
   grub_net_network_level_address_t addr;
   grub_err_t err;
+  grub_net_interface_flags_t flags = 0;
 
   if (argc != 3)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("three arguments expected"));
@@ -259,7 +356,15 @@ grub_cmd_addaddr (struct grub_command *cmd __attribute__ ((unused)),
   if (err)
     return err;
 
-  grub_net_add_addr (args[0], card, addr);
+  if (card->flags & GRUB_NET_CARD_NO_MANUAL_INTERFACES)
+    return grub_error (GRUB_ERR_IO,
+		       "this card doesn't support address addition");
+
+  if (card->flags & GRUB_NET_CARD_HWADDRESS_IMMUTABLE)
+    flags |= GRUB_NET_INTERFACE_HWADDRESS_IMMUTABLE;
+
+  grub_net_add_addr (args[0], card, addr, card->default_address,
+		     flags);
   return grub_errno;
 }
 
@@ -397,19 +502,9 @@ print_net_address (const grub_net_network_level_netaddress_t *target)
 static void
 print_address (const grub_net_network_level_address_t *target)
 {
-  switch (target->type)
-    {
-    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
-      {
-	grub_uint32_t n = grub_be_to_cpu32 (target->ipv4);
-	grub_printf ("%d.%d.%d.%d ", ((n >> 24) & 0xff),
-		     ((n >> 16) & 0xff),
-		     ((n >> 8) & 0xff),
-		     ((n >> 0) & 0xff));
-      }
-      return;
-    }
-  grub_printf ("Unknown address type %d\n", target->type);
+  char buf[MAX_STR_ADDR_LEN];
+  addr_to_str (target, buf);
+  grub_xputs (buf);
 }
 
 static grub_err_t
@@ -487,7 +582,7 @@ static grub_command_t cmd_lsroutes, cmd_lscards;
 GRUB_MOD_INIT(net)
 {
   cmd_addaddr = grub_register_command ("net_add_addr", grub_cmd_addaddr,
-				       "SHORTNAME CARD ADDRESS",
+				       "SHORTNAME CARD ADDRESS [HWADDRESS]",
 				       N_("Add a network address."));
   cmd_deladdr = grub_register_command ("net_del_addr", grub_cmd_deladdr,
 				       "SHORTNAME",

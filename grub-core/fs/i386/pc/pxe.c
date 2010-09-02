@@ -41,6 +41,7 @@ static grub_uint32_t grub_pxe_default_gateway_ip;
 static unsigned grub_pxe_blksize = GRUB_PXE_MIN_BLKSIZE;
 
 static grub_file_t curr_file = 0;
+static grub_net_link_level_address_t pxe_hwaddr;
 
 struct grub_pxe_data
 {
@@ -323,29 +324,6 @@ grub_env_write_readonly (struct grub_env_var *var __attribute__ ((unused)),
 }
 
 static void
-set_mac_env (grub_uint8_t *mac_addr, grub_size_t mac_len)
-{
-  char buf[(sizeof ("XX:") - 1) * mac_len + 1];
-  char *ptr = buf;
-  unsigned i;
-
-  for (i = 0; i < mac_len; i++)
-    {
-      grub_snprintf (ptr, sizeof (buf) - (ptr - buf),
-		     "%02x:", mac_addr[i] & 0xff);
-      ptr += (sizeof ("XX:") - 1);
-    }
-  if (mac_len)
-    *(ptr - 1) = 0;
-  else
-    buf[0] = 0;
-
-  grub_env_set ("net_pxe_mac", buf);
-  /* XXX: Is it possible to change MAC in PXE?  */
-  grub_register_variable_hook ("net_pxe_mac", 0, grub_env_write_readonly);
-}
-
-static void
 set_env_limn_ro (const char *varname, char *value, grub_size_t len)
 {
   char c;
@@ -432,8 +410,10 @@ grub_pxe_detect (void)
   grub_pxe_your_ip = bp->your_ip;
   grub_pxe_default_server_ip = bp->server_ip;
   grub_pxe_default_gateway_ip = bp->gateway_ip;
-  set_mac_env (bp->mac_addr, bp->hw_len < sizeof (bp->mac_addr) ? bp->hw_len
-	       : sizeof (bp->mac_addr));
+  grub_memcpy (pxe_hwaddr.mac, bp->mac_addr,
+	       bp->hw_len < sizeof (pxe_hwaddr.mac)
+	       ? bp->hw_len : sizeof (pxe_hwaddr.mac));
+  pxe_hwaddr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
   set_env_limn_ro ("net_pxe_boot_file", (char *) bp->boot_file,
 		   sizeof (bp->boot_file));
   set_env_limn_ro ("net_pxe_dhcp_server_name", (char *) bp->server_name,
@@ -589,7 +569,10 @@ GRUB_MOD_INIT(pxe)
       grub_net_card_register (&grub_pxe_card);
       addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
       addr.ipv4 = grub_pxe_your_ip;
-      inter = grub_net_add_addr ("pxe", &grub_pxe_card, addr);
+      inter = grub_net_add_addr ("pxe", &grub_pxe_card, addr, pxe_hwaddr,
+				 GRUB_NET_INTERFACE_PERMANENT
+				 | GRUB_NET_INTERFACE_ADDRESS_IMMUTABLE
+				 | GRUB_NET_INTERFACE_HWADDRESS_IMMUTABLE);
       if (grub_pxe_default_gateway_ip != grub_pxe_default_server_ip)
 	{
 	  grub_net_network_level_netaddress_t target;

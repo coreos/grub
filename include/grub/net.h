@@ -34,6 +34,33 @@ typedef struct grub_net
 
 extern grub_net_t (*EXPORT_VAR (grub_net_open)) (const char *name);
 
+typedef enum grub_link_level_protocol_id 
+{
+  GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET
+} grub_link_level_protocol_id_t;
+
+typedef struct grub_net_link_level_address
+{
+  grub_link_level_protocol_id_t type;
+  union
+  {
+    grub_uint8_t mac[6];
+  };
+} grub_net_link_level_address_t;
+
+typedef enum grub_net_interface_flags
+  {
+    GRUB_NET_INTERFACE_HWADDRESS_IMMUTABLE = 1,
+    GRUB_NET_INTERFACE_ADDRESS_IMMUTABLE = 2,
+    GRUB_NET_INTERFACE_PERMANENT = 4
+  } grub_net_interface_flags_t;
+
+typedef enum grub_net_card_flags
+  {
+    GRUB_NET_CARD_HWADDRESS_IMMUTABLE = 1,
+    GRUB_NET_CARD_NO_MANUAL_INTERFACES = 2
+  } grub_net_card_flags_t;
+
 struct grub_net_card;
 
 struct grub_net_card_driver
@@ -49,6 +76,8 @@ struct grub_net_card
   struct grub_net_card *next;
   char *name;
   struct grub_net_card_driver *driver;
+  grub_net_link_level_address_t default_address;
+  grub_net_card_flags_t flags;
   void *data;
 };
 
@@ -88,6 +117,8 @@ struct grub_net_network_level_interface
   char *name;
   struct grub_net_card *card;
   grub_net_network_level_address_t address;
+  grub_net_link_level_address_t hwaddress;
+  grub_net_interface_flags_t flags;
   void *data;
 };
 
@@ -130,7 +161,9 @@ grub_net_session_recv (struct grub_net_session *session, void *buf,
 
 struct grub_net_network_level_interface *
 grub_net_add_addr (const char *name, struct grub_net_card *card,
-		   grub_net_network_level_address_t addr);
+		   grub_net_network_level_address_t addr,
+		   grub_net_link_level_address_t hwaddress,
+		   grub_net_interface_flags_t flags);
 
 extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
 
