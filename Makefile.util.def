@@ -30,6 +30,7 @@ library = {
   common = grub-core/commands/blocklist.c;
   common = grub-core/commands/extcmd.c;
   common = grub-core/commands/ls.c;
+  common = grub-core/commands/net.c;
   common = grub-core/disk/dmraid_nvidia.c;
   common = grub-core/disk/host.c;
   common = grub-core/disk/loopback.c;

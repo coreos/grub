@@ -31,6 +31,7 @@
 #include <grub/extcmd.h>
 #include <grub/datetime.h>
 #include <grub/i18n.h>
+#include <grub/net.h>
 
 static const struct grub_arg_option options[] =
   {
@@ -45,6 +46,8 @@ static const char grub_human_sizes[] = {' ', 'K', 'M', 'G', 'T'};
 static grub_err_t
 grub_ls_list_devices (int longlist)
 {
+  grub_net_app_level_t proto;
+
   auto int grub_ls_print_devices (const char *name);
   int grub_ls_print_devices (const char *name)
     {
@@ -58,6 +61,16 @@ grub_ls_list_devices (int longlist)
 
   grub_device_iterate (grub_ls_print_devices);
   grub_xputs ("\n");
+
+  grub_puts_ (N_ ("Network protocols:\n"));
+
+  FOR_NET_APP_LEVEL (proto)
+  {
+    grub_printf ("%s ", proto->name);
+  }
+
+  grub_xputs ("\n");
+
   grub_refresh ();
 
   return 0;

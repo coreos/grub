@@ -54,69 +54,35 @@ struct grub_net_card
 
 struct grub_net_network_level_interface;
 
+typedef enum grub_network_level_protocol_id 
+{
+  GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
+} grub_network_level_protocol_id_t;
+
 typedef union grub_net_network_level_address
 {
+  grub_network_level_protocol_id_t type;
   grub_uint32_t ipv4;
 } grub_net_network_level_address_t;
 
 typedef union grub_net_network_level_netaddress
 {
+  grub_network_level_protocol_id_t type;
   struct {
     grub_uint32_t base;
     int masksize; 
   } ipv4;
 } grub_net_network_level_netaddress_t;
 
-typedef enum grub_network_level_protocol_id 
-{
-  GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
-} grub_network_level_protocol_id_t;
-
 struct grub_net_network_level_interface;
-
-struct grub_net_network_level_protocol
-{
-  struct grub_net_network_level_protocol *next;
-  char *name;
-  grub_network_level_protocol_id_t id;
-  grub_err_t (*ntoa) (char *name, grub_net_network_level_address_t *addr);
-  char * (*aton) (union grub_net_network_level_address addr);
-  grub_err_t (*net_ntoa) (char *name,
-			  grub_net_network_level_netaddress_t *addr);
-  char * (*net_aton) (grub_net_network_level_netaddress_t addr);
-  int (* match_net) (grub_net_network_level_netaddress_t net,
-		     grub_net_network_level_address_t addr);
-  grub_err_t (*init) (struct grub_net_network_level_interface *dev);
-  grub_err_t (*fini) (struct grub_net_network_level_interface *dev);
-  grub_err_t (*send) (struct grub_net_network_level_interface *dev, void *buf,
-		      grub_size_t buflen);
-  grub_size_t (*recv) (struct grub_net_network_level_interface *dev, void *buf,
-		       grub_size_t buflen);  
-};
 
 struct grub_net_network_level_interface
 {
   struct grub_net_network_level_interface *next;
   char *name;
-  /* Underlying protocol.  */
-  struct grub_net_network_level_protocol *protocol;
   struct grub_net_card *card;
   union grub_net_network_level_address address;
   void *data;
-};
-
-struct grub_net_route
-{
-  struct grub_net_route *next;
-  grub_net_network_level_netaddress_t target;
-  char *name;
-  struct grub_net_network_level_protocol *prot;
-  int is_gateway;
-  union
-  {
-    struct grub_net_network_level_interface *interface;
-    grub_net_network_level_address_t gw;
-  };
 };
 
 struct grub_net_session;
@@ -156,23 +122,11 @@ grub_net_session_recv (struct grub_net_session *session, void *buf,
   return session->protocol->recv (session, buf, size);
 }
 
+struct grub_net_network_level_interface *
+grub_net_add_addr (const char *name, struct grub_net_card *card,
+		   grub_net_network_level_address_t addr);
+
 extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
-
-static inline void
-grub_net_network_level_interface_register (struct grub_net_network_level_interface *inter)
-{
-  grub_list_push (GRUB_AS_LIST_P (&grub_net_network_level_interfaces),
-		  GRUB_AS_LIST (inter));
-}
-
-static inline void
-grub_net_network_level_interface_unregister (struct grub_net_network_level_interface *inter)
-{
-  grub_list_remove (GRUB_AS_LIST_P (&grub_net_network_level_interfaces),
-		    GRUB_AS_LIST (inter));
-}
-
-#define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
 
 extern grub_net_app_level_t grub_net_app_level_list;
 
@@ -195,25 +149,6 @@ grub_net_app_level_unregister (grub_net_app_level_t proto)
 #define FOR_NET_APP_LEVEL(var) FOR_LIST_ELEMENTS((var), \
 						 (grub_net_app_level_list))
 
-
-extern struct grub_net_route *grub_net_routes;
-
-static inline void
-grub_net_route_register (struct grub_net_route *route)
-{
-  grub_list_push (GRUB_AS_LIST_P (&grub_net_routes),
-		  GRUB_AS_LIST (route));
-}
-
-static inline void
-grub_net_route_unregister (struct grub_net_route *route)
-{
-  grub_list_remove (GRUB_AS_LIST_P (&grub_net_routes),
-		    GRUB_AS_LIST (route));
-}
-
-#define FOR_NET_ROUTES(var) for (var = grub_net_routes; var; var = var->next)
-
 extern struct grub_net_card *grub_net_cards;
 
 static inline void
@@ -232,44 +167,32 @@ grub_net_card_unregister (struct grub_net_card *card)
 
 #define FOR_NET_CARDS(var) for (var = grub_net_cards; var; var = var->next)
 
-extern struct grub_net_network_level_protocol *grub_net_network_level_protocols;
-
-static inline void
-grub_net_network_level_protocol_register (struct grub_net_network_level_protocol *prot)
-{
-  grub_list_push (GRUB_AS_LIST_P (&grub_net_network_level_protocols),
-		  GRUB_AS_LIST (prot));
-}
-
-static inline void
-grub_net_network_level_protocol_unregister (struct grub_net_network_level_protocol *prot)
-{
-  grub_list_remove (GRUB_AS_LIST_P (&grub_net_network_level_protocols),
-		    GRUB_AS_LIST (prot));
-}
-
-#define FOR_NET_NETWORK_LEVEL_PROTOCOLS(var) for ((var) = grub_net_network_level_protocols; (var); (var) = (var)->next)
-
-static inline grub_err_t
-grub_net_resolve_address_in_protocol (struct grub_net_network_level_protocol *prot,
-				      char *name,
-				      grub_net_network_level_address_t *addr)
-{
-  return prot->ntoa (name, addr);
-}
-
 struct grub_net_session *
 grub_net_open_tcp (char *address, grub_uint16_t port);
 
 grub_err_t
-grub_net_resolve_address (struct grub_net_network_level_protocol **prot,
-			  char *name,
+grub_net_resolve_address (const char *name,
 			  grub_net_network_level_address_t *addr);
+
+grub_err_t
+grub_net_resolve_net_address (const char *name,
+			      grub_net_network_level_netaddress_t *addr);
 
 grub_err_t
 grub_net_route_address (grub_net_network_level_address_t addr,
 			grub_net_network_level_address_t *gateway,
 			struct grub_net_network_level_interface **interf);
+
+
+grub_err_t
+grub_net_add_route (const char *name,
+		    grub_net_network_level_netaddress_t target,
+		    struct grub_net_network_level_interface *inter);
+
+grub_err_t
+grub_net_add_route_gw (const char *name,
+		       grub_net_network_level_netaddress_t target,
+		       grub_net_network_level_address_t gw);
 
 
 #endif /* ! GRUB_NET_HEADER */
