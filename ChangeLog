@@ -1,3 +1,8 @@
+2010-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Check for dm_log_with_errno_init in libdevmapper and
+	echo if libdevmapper will be used.
+
 2010-09-02  Ian Turner  <Ian.Turner@deshaw.com>
 
 	* grub-core/fs/i386/pc/pxe.c (grub_pxefs_read): Keep the blocksize

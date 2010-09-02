@@ -822,12 +822,23 @@ fi
 
 if test x"$device_mapper_excuse" = x ; then
   # Check for device-mapper library.
-  AC_CHECK_LIB([devmapper], [dm_task_create],
-               [LIBDEVMAPPER="-ldevmapper"
-                AC_DEFINE([HAVE_DEVICE_MAPPER], [1],
-                          [Define to 1 if you have the devmapper library.])],
+  AC_CHECK_LIB([devmapper], [dm_task_create], [],
                [device_mapper_excuse="need devmapper library"])
 fi
+
+if test x"$device_mapper_excuse" = x ; then
+  # Check for device-mapper library.
+  AC_CHECK_LIB([devmapper], [dm_log_with_errno_init],
+               [],
+               [device_mapper_excuse="need devmapper library"])
+fi
+
+if test x"$device_mapper_excuse" = x ; then
+   LIBDEVMAPPER="-ldevmapper";
+   AC_DEFINE([HAVE_DEVICE_MAPPER], [1],
+             [Define to 1 if you have the devmapper library.])
+fi
+
 AC_SUBST([LIBDEVMAPPER])
 
 AC_CHECK_LIB([zfs], [libzfs_init],
@@ -941,6 +952,11 @@ echo PCI support for grub-emu: Yes
 else
 echo PCI support for grub-emu: No "($grub_emu_pci_excuse)"
 fi
+fi
+if test x"$device_mapper_excuse" = x ; then
+echo With devmapper support: Yes
+else
+echo With devmapper support: No "($device_mapper_excuse)"
 fi
 if [ x"$enable_mm_debug" = xyes ]; then
 echo With memory debugging: Yes
