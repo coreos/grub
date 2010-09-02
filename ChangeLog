@@ -1,3 +1,7 @@
+2010-09-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* INSTALL: Document that libdevmapper needs to be 1.02.34 or later.
+
 2010-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Check for dm_log_with_errno_init in libdevmapper and
