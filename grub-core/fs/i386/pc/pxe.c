@@ -121,54 +121,35 @@ grub_pxefs_open (struct grub_file *file, const char *name)
   if (!data)
     return grub_errno;
 
-#if 0
-  if (grub_strncmp (file->device->net->name, "pxe:", sizeof ("pxe:") - 1) == 0)
-    {
-      const char *ptr;
-      grub_err_t err;
-
-      ptr = name + sizeof ("pxe:") - 1;
-      err = parse_ip (ptr, &(data->server_ip), &ptr);
-      if (err)
-	return err;
-      if (*ptr == ':')
-	{
-	  err = parse_ip (ptr + 1, &(data->gateway_ip), 0);
-	  if (err)
-	    return err;
-	}
-      else
-	data->gateway_ip = grub_pxe_default_gateway_ip;
-    }
-  else 
-#endif
-    {
-      grub_net_network_level_address_t addr;
-      grub_net_network_level_address_t gateway;
-      struct grub_net_network_level_interface *interf;
-      grub_err_t err;
-
-      if (grub_strncmp (file->device->net->name,
-			"pxe,", sizeof ("pxe,") - 1) == 0)
-	{
-	  const char *ptr;
-	  
-	  ptr = name + sizeof ("pxe,") - 1;
-	  err = grub_net_resolve_address (name + sizeof ("pxe,") - 1, &addr);
-	  if (err)
-	    return err;
-	}
-      else
-	{
-	  addr.ipv4 = grub_pxe_default_server_ip;
-	  addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-	}
-      err = grub_net_route_address (addr, &gateway, &interf);
-      if (err)
-	return err;
-      data->server_ip = addr.ipv4;
-      data->gateway_ip = gateway.ipv4;
-    }
+  {
+    grub_net_network_level_address_t addr;
+    grub_net_network_level_address_t gateway;
+    struct grub_net_network_level_interface *interf;
+    grub_err_t err;
+    
+    if (grub_strncmp (file->device->net->name,
+		      "pxe,", sizeof ("pxe,") - 1) == 0
+	|| grub_strncmp (file->device->net->name,
+			 "pxe:", sizeof ("pxe:") - 1) == 0)
+      {
+	const char *ptr;
+	
+	ptr = name + sizeof ("pxe,") - 1;
+	err = grub_net_resolve_address (name + sizeof ("pxe,") - 1, &addr);
+	if (err)
+	  return err;
+      }
+    else
+      {
+	addr.ipv4 = grub_pxe_default_server_ip;
+	addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      }
+    err = grub_net_route_address (addr, &gateway, &interf);
+    if (err)
+      return err;
+    data->server_ip = addr.ipv4;
+    data->gateway_ip = gateway.ipv4;
+  }
 
   if (curr_file != 0)
     {
