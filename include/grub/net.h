@@ -119,6 +119,8 @@ struct grub_net_network_level_interface
   grub_net_network_level_address_t address;
   grub_net_link_level_address_t hwaddress;
   grub_net_interface_flags_t flags;
+  struct grub_net_bootp_ack *dhcp_ack;
+  grub_size_t dhcp_acklen;
   void *data;
 };
 
@@ -233,5 +235,46 @@ grub_net_add_route_gw (const char *name,
 		       grub_net_network_level_netaddress_t target,
 		       grub_net_network_level_address_t gw);
 
+
+#define GRUB_NET_BOOTP_MAC_ADDR_LEN	16
+
+typedef grub_uint8_t grub_net_bootp_mac_addr_t[GRUB_NET_BOOTP_MAC_ADDR_LEN];
+
+struct grub_net_bootp_ack
+{
+  grub_uint8_t opcode;
+  grub_uint8_t hw_type;		/* hardware type.  */
+  grub_uint8_t hw_len;		/* hardware addr len.  */
+  grub_uint8_t gate_hops;	/* zero it.  */
+  grub_uint32_t ident;		/* random number chosen by client.  */
+  grub_uint16_t seconds;	/* seconds since did initial bootstrap.  */
+  grub_uint16_t flags;
+  grub_uint32_t	client_ip;
+  grub_uint32_t your_ip;
+  grub_uint32_t	server_ip;
+  grub_uint32_t	gateway_ip;
+  grub_net_bootp_mac_addr_t mac_addr;
+  grub_uint8_t server_name[64];
+  grub_uint8_t boot_file[128];
+  grub_uint8_t vendor[0];
+} __attribute__ ((packed));
+
+#define	GRUB_NET_BOOTP_RFC1048_MAGIC	0x63825363L
+
+struct grub_net_network_level_interface *
+grub_net_configure_by_dhcp_ack (const char *name, struct grub_net_card *card,
+				grub_net_interface_flags_t flags,
+				struct grub_net_bootp_ack *bp,
+				grub_size_t size);
+
+/*
+  Currently suppoerted adresses:
+  IPv4:   XXX.XXX.XXX.XXX
+ */
+#define GRUB_NET_MAX_STR_ADDR_LEN sizeof ("XXX.XXX.XXX.XXX")
+
+void
+grub_net_addr_to_str (const grub_net_network_level_address_t *target,
+		      char *buf);
 
 #endif /* ! GRUB_NET_HEADER */

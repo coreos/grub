@@ -217,21 +217,15 @@ grub_cmd_deladdr (struct grub_command *cmd __attribute__ ((unused)),
   return GRUB_ERR_NONE;  
 }
 
-/*
-  Currently suppoerted adresses:
-  IPv4:   XXX.XXX.XXX.XXX
- */
-#define MAX_STR_ADDR_LEN sizeof ("XXX.XXX.XXX.XXX")
-
-static void
-addr_to_str (const grub_net_network_level_address_t *target, char *buf)
+void
+grub_net_addr_to_str (const grub_net_network_level_address_t *target, char *buf)
 {
   switch (target->type)
     {
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
 	grub_uint32_t n = grub_be_to_cpu32 (target->ipv4);
-	grub_snprintf (buf, MAX_STR_ADDR_LEN, "%d.%d.%d.%d",
+	grub_snprintf (buf, GRUB_NET_MAX_STR_ADDR_LEN, "%d.%d.%d.%d",
 		       ((n >> 24) & 0xff), ((n >> 16) & 0xff),
 		       ((n >> 8) & 0xff), ((n >> 0) & 0xff));
       }
@@ -298,9 +292,9 @@ grub_net_network_level_interface_register (struct grub_net_network_level_interfa
   }
 
   {
-    char buf[MAX_STR_ADDR_LEN];
+    char buf[GRUB_NET_MAX_STR_ADDR_LEN];
     char name[grub_strlen (inter->name) + sizeof ("net__ip")];
-    addr_to_str (&inter->address, buf);
+    grub_net_addr_to_str (&inter->address, buf);
     grub_snprintf (name, sizeof (name), "net_%s_ip", inter->name);
     grub_env_set (name, buf);
     grub_register_variable_hook (name, 0, addr_set_env);
@@ -327,6 +321,8 @@ grub_net_add_addr (const char *name, struct grub_net_card *card,
   grub_memcpy (&(inter->hwaddress), &hwaddress, sizeof (inter->hwaddress));
   inter->flags = flags;
   inter->card = card;
+  inter->dhcp_ack = NULL;
+  inter->dhcp_acklen = 0;
 
   grub_net_network_level_interface_register (inter);
 
@@ -502,8 +498,8 @@ print_net_address (const grub_net_network_level_netaddress_t *target)
 static void
 print_address (const grub_net_network_level_address_t *target)
 {
-  char buf[MAX_STR_ADDR_LEN];
-  addr_to_str (target, buf);
+  char buf[GRUB_NET_MAX_STR_ADDR_LEN];
+  grub_net_addr_to_str (target, buf);
   grub_xputs (buf);
 }
 
@@ -574,6 +570,145 @@ grub_net_open_real (const char *name)
   grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such device");
 
   return NULL;
+}
+
+static char *
+grub_env_write_readonly (struct grub_env_var *var __attribute__ ((unused)),
+			 const char *val __attribute__ ((unused)))
+{
+  return NULL;
+}
+
+static void
+set_env_limn_ro (const char *intername, const char *suffix,
+		 char *value, grub_size_t len)
+{
+  char c;
+  char varname[sizeof ("net_") + grub_strlen (intername) + sizeof ("_")
+	       + grub_strlen (suffix)];
+  grub_snprintf (varname, sizeof (varname), "net_%s_%s", intername, suffix);
+  c = value[len];
+  value[len] = 0;
+  grub_env_set (varname, value);
+  value[len] = c;
+  grub_register_variable_hook (varname, 0, grub_env_write_readonly);
+}
+
+static void
+parse_dhcp_vendor (const char *name, void *vend, int limit)
+{
+  grub_uint8_t *ptr, *ptr0;
+
+  ptr = ptr0 = vend;
+
+  if (grub_be_to_cpu32 (*(grub_uint32_t *) ptr) != GRUB_NET_BOOTP_RFC1048_MAGIC)
+    return;
+  ptr = ptr + sizeof (grub_uint32_t);
+  while (ptr - ptr0 < limit)
+    {
+      grub_uint8_t tagtype;
+      grub_uint8_t taglength;
+
+      tagtype = *ptr++;
+
+      /* Pad tag.  */
+      if (tagtype == 0)
+	continue;
+
+      /* End tag.  */
+      if (tagtype == 0xff)
+	return;
+
+      taglength = *ptr++;
+
+      switch (tagtype)
+	{
+	case 12:
+	  set_env_limn_ro (name, "hostname", (char *) ptr, taglength);
+	  break;
+
+	case 15:
+	  set_env_limn_ro (name, "domain", (char *) ptr, taglength);
+	  break;
+
+	case 17:
+	  set_env_limn_ro (name, "rootpath", (char *) ptr, taglength);
+	  break;
+
+	case 18:
+	  set_env_limn_ro (name, "extensionspath", (char *) ptr, taglength);
+	  break;
+
+	  /* If you need any other options please contact GRUB
+	     developpement team.  */
+	}
+
+      ptr += taglength;
+    }
+}
+
+#define OFFSET_OF(x, y) ((grub_uint8_t *)((y)->x) - (grub_uint8_t *)(y))
+
+struct grub_net_network_level_interface *
+grub_net_configure_by_dhcp_ack (const char *name, struct grub_net_card *card,
+				grub_net_interface_flags_t flags,
+				struct grub_net_bootp_ack *bp,
+				grub_size_t size)
+{
+  grub_net_network_level_address_t addr;
+  grub_net_link_level_address_t hwaddr;
+  struct grub_net_network_level_interface *inter;
+
+  addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+  addr.ipv4 = bp->your_ip;
+
+  grub_memcpy (hwaddr.mac, bp->mac_addr,
+	       bp->hw_len < sizeof (hwaddr.mac) ? bp->hw_len
+	       : sizeof (hwaddr.mac));
+  hwaddr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
+
+  inter = grub_net_add_addr (name, card, addr, hwaddr, flags);
+  if (bp->gateway_ip != bp->server_ip)
+    {
+      grub_net_network_level_netaddress_t target;
+      grub_net_network_level_address_t gw;
+      char rname[grub_strlen (name) + sizeof ("_gw")];
+	  
+      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      target.ipv4.base = bp->server_ip;
+      target.ipv4.masksize = 32;
+      gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      gw.ipv4 = bp->gateway_ip;
+      grub_snprintf (rname, sizeof (rname), "%s_gw", name);
+      grub_net_add_route_gw (rname, target, gw);
+    }
+  {
+    grub_net_network_level_netaddress_t target;
+    target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+    target.ipv4.base = bp->gateway_ip;
+    target.ipv4.masksize = 32;
+    grub_net_add_route (name, target, inter);
+  }
+
+  if (size > OFFSET_OF (boot_file, bp))
+    set_env_limn_ro (name, "boot_file", (char *) bp->boot_file,
+		     sizeof (bp->boot_file));
+  if (size > OFFSET_OF (server_name, bp))
+    set_env_limn_ro (name, "dhcp_server_name", (char *) bp->server_name,
+		     sizeof (bp->server_name));
+  if (size > OFFSET_OF (vendor, bp))
+    parse_dhcp_vendor (name, &bp->vendor, size - OFFSET_OF (vendor, bp));
+
+  inter->dhcp_ack = grub_malloc (size);
+  if (inter->dhcp_ack)
+    {
+      grub_memcpy (inter->dhcp_ack, bp, size);
+      inter->dhcp_acklen = size;
+    }
+  else
+    grub_errno = GRUB_ERR_NONE;
+
+  return inter;
 }
 
 static grub_command_t cmd_addaddr, cmd_deladdr, cmd_addroute, cmd_delroute;

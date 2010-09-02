@@ -35,13 +35,13 @@
 #define LINEAR(x)	(void *) (((x >> 16) << 4) + (x & 0xFFFF))
 
 struct grub_pxe_bangpxe *grub_pxe_pxenv;
-static grub_uint32_t grub_pxe_your_ip;
 static grub_uint32_t grub_pxe_default_server_ip;
+#if 0
 static grub_uint32_t grub_pxe_default_gateway_ip;
+#endif
 static unsigned grub_pxe_blksize = GRUB_PXE_MIN_BLKSIZE;
-
+static grub_uint32_t pxe_rm_entry = 0;
 static grub_file_t curr_file = 0;
-static grub_net_link_level_address_t pxe_hwaddr;
 
 struct grub_pxe_data
 {
@@ -52,7 +52,6 @@ struct grub_pxe_data
   char filename[0];
 };
 
-static grub_uint32_t pxe_rm_entry = 0;
 
 static struct grub_pxe_bangpxe *
 grub_pxe_scan (void)
@@ -316,112 +315,6 @@ static struct grub_fs grub_pxefs_fs =
     .next = 0
   };
 
-static char *
-grub_env_write_readonly (struct grub_env_var *var __attribute__ ((unused)),
-			 const char *val __attribute__ ((unused)))
-{
-  return NULL;
-}
-
-static void
-set_env_limn_ro (const char *varname, char *value, grub_size_t len)
-{
-  char c;
-  c = value[len];
-  value[len] = 0;
-  grub_env_set (varname, value);
-  value[len] = c;
-  grub_register_variable_hook (varname, 0, grub_env_write_readonly);
-}
-
-static void
-parse_dhcp_vendor (void *vend, int limit)
-{
-  grub_uint8_t *ptr, *ptr0;
-
-  ptr = ptr0 = vend;
-
-  if (grub_be_to_cpu32 (*(grub_uint32_t *) ptr) != 0x63825363)
-    return;
-  ptr = ptr + sizeof (grub_uint32_t);
-  while (ptr - ptr0 < limit)
-    {
-      grub_uint8_t tagtype;
-      grub_uint8_t taglength;
-
-      tagtype = *ptr++;
-
-      /* Pad tag.  */
-      if (tagtype == 0)
-	continue;
-
-      /* End tag.  */
-      if (tagtype == 0xff)
-	return;
-
-      taglength = *ptr++;
-
-      switch (tagtype)
-	{
-	case 12:
-	  set_env_limn_ro ("net_pxe_hostname", (char *) ptr, taglength);
-	  break;
-
-	case 15:
-	  set_env_limn_ro ("net_pxe_domain", (char *) ptr, taglength);
-	  break;
-
-	case 17:
-	  set_env_limn_ro ("net_pxe_rootpath", (char *) ptr, taglength);
-	  break;
-
-	case 18:
-	  set_env_limn_ro ("net_pxe_extensionspath", (char *) ptr, taglength);
-	  break;
-
-	  /* If you need any other options please contact GRUB
-	     developpement team.  */
-	}
-
-      ptr += taglength;
-    }
-}
-
-static void
-grub_pxe_detect (void)
-{
-  struct grub_pxe_bangpxe *pxenv;
-  struct grub_pxenv_get_cached_info ci;
-  struct grub_pxenv_boot_player *bp;
-
-  pxenv = grub_pxe_scan ();
-  if (! pxenv)
-    return;
-
-  ci.packet_type = GRUB_PXENV_PACKET_TYPE_DHCP_ACK;
-  ci.buffer = 0;
-  ci.buffer_size = 0;
-  grub_pxe_call (GRUB_PXENV_GET_CACHED_INFO, &ci, pxe_rm_entry);
-  if (ci.status)
-    return;
-
-  bp = LINEAR (ci.buffer);
-
-  grub_pxe_your_ip = bp->your_ip;
-  grub_pxe_default_server_ip = bp->server_ip;
-  grub_pxe_default_gateway_ip = bp->gateway_ip;
-  grub_memcpy (pxe_hwaddr.mac, bp->mac_addr,
-	       bp->hw_len < sizeof (pxe_hwaddr.mac)
-	       ? bp->hw_len : sizeof (pxe_hwaddr.mac));
-  pxe_hwaddr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
-  set_env_limn_ro ("net_pxe_boot_file", (char *) bp->boot_file,
-		   sizeof (bp->boot_file));
-  set_env_limn_ro ("net_pxe_dhcp_server_name", (char *) bp->server_name,
-		   sizeof (bp->server_name));
-  parse_dhcp_vendor (&bp->vendor, sizeof (bp->vendor));
-  grub_pxe_pxenv = pxenv;
-}
-
 static grub_size_t 
 grub_pxe_recv (struct grub_net_card *dev __attribute__ ((unused)),
 	       void *buf __attribute__ ((unused)),
@@ -461,14 +354,15 @@ grub_pxe_unload (void)
     }
 }
 
-#if 0
 static void
 set_ip_env (char *varname, grub_uint32_t ip)
 {
-  char buf[sizeof ("XXX.XXX.XXX.XXX")];
+  char buf[GRUB_NET_MAX_STR_ADDR_LEN];
+  grub_net_network_level_address_t addr;
+  addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+  addr.ipv4 = ip;
 
-  grub_snprintf (buf, sizeof (buf), "%d.%d.%d.%d", (ip & 0xff),
-		 (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+  grub_net_addr_to_str (&addr, buf);
   grub_env_set (varname, buf);
 }
 
@@ -477,25 +371,25 @@ write_ip_env (grub_uint32_t *ip, const char *val)
 {
   char *buf;
   grub_err_t err;
-  grub_uint32_t newip;
-  
-  err = parse_ip (val, &newip, 0);
+  grub_net_network_level_address_t addr;
+
+  err = grub_net_resolve_address (val, &addr);
   if (err)
     return 0;
+  if (addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
+    return NULL;
 
   /* Normalize the IP.  */
-  buf = grub_xasprintf ("%d.%d.%d.%d", (newip & 0xff), (newip >> 8) & 0xff,
-		       (newip >> 16) & 0xff, (newip >> 24) & 0xff);
+  buf = grub_malloc (GRUB_NET_MAX_STR_ADDR_LEN);
   if (!buf)
     return 0;
+  grub_net_addr_to_str (&addr, buf);
 
-  *ip = newip;
+  *ip = addr.ipv4;
 
   return buf; 
 }
-#endif
 
-#if 0
 static char *
 grub_env_write_pxe_default_server (struct grub_env_var *var 
 				   __attribute__ ((unused)),
@@ -504,6 +398,7 @@ grub_env_write_pxe_default_server (struct grub_env_var *var
   return write_ip_env (&grub_pxe_default_server_ip, val);
 }
 
+#if 0
 static char *
 grub_env_write_pxe_default_gateway (struct grub_env_var *var
 				    __attribute__ ((unused)),
@@ -540,60 +435,58 @@ grub_env_write_pxe_blocksize (struct grub_env_var *var __attribute__ ((unused)),
 
 GRUB_MOD_INIT(pxe)
 {
-  grub_pxe_detect ();
-  if (grub_pxe_pxenv)
-    {
-      char *buf;
-      grub_net_network_level_address_t addr;
-      struct grub_net_network_level_interface *inter;
-      
+  struct grub_pxe_bangpxe *pxenv;
+  struct grub_pxenv_get_cached_info ci;
+  struct grub_net_bootp_ack *bp;
+  char *buf;
+
+  pxenv = grub_pxe_scan ();
+  if (! pxenv)
+    return;
+
+  ci.packet_type = GRUB_PXENV_PACKET_TYPE_DHCP_ACK;
+  ci.buffer = 0;
+  ci.buffer_size = 0;
+  grub_pxe_call (GRUB_PXENV_GET_CACHED_INFO, &ci, pxe_rm_entry);
+  if (ci.status)
+    return;
+
+  bp = LINEAR (ci.buffer);
+
+  grub_pxe_default_server_ip = bp->server_ip;
+  grub_pxe_pxenv = pxenv;
+
+  set_ip_env ("pxe_default_server", grub_pxe_default_server_ip);      
+  grub_register_variable_hook ("pxe_default_server", 0,
+			       grub_env_write_pxe_default_server);
+
 #if 0
-      grub_register_variable_hook ("pxe_default_server", 0,
-				   grub_env_write_pxe_default_server);
-      grub_register_variable_hook ("pxe_default_gateway", 0,
-				   grub_env_write_pxe_default_gateway);
-#endif
-      grub_register_variable_hook ("pxe_blksize", 0,
-				   grub_env_write_pxe_blocksize);
+  grub_pxe_default_gateway_ip = bp->gateway_ip;
 
-      buf = grub_xasprintf ("%d", grub_pxe_blksize);
-      if (buf)
-	grub_env_set ("pxe_blksize", buf);
-      grub_free (buf);
-
-#if 0
-      set_ip_env ("pxe_default_server", grub_pxe_default_server_ip);
+  grub_register_variable_hook ("pxe_default_gateway", 0,
+			       grub_env_write_pxe_default_gateway);
 #endif
 
-      grub_net_app_level_register (&grub_pxefs_fs);
-      grub_net_card_register (&grub_pxe_card);
-      addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-      addr.ipv4 = grub_pxe_your_ip;
-      inter = grub_net_add_addr ("pxe", &grub_pxe_card, addr, pxe_hwaddr,
-				 GRUB_NET_INTERFACE_PERMANENT
-				 | GRUB_NET_INTERFACE_ADDRESS_IMMUTABLE
-				 | GRUB_NET_INTERFACE_HWADDRESS_IMMUTABLE);
-      if (grub_pxe_default_gateway_ip != grub_pxe_default_server_ip)
-	{
-	  grub_net_network_level_netaddress_t target;
-	  grub_net_network_level_address_t gw;
-	  
-	  target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-	  target.ipv4.base = grub_pxe_default_server_ip;
-	  target.ipv4.masksize = 32;
-	  gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-	  gw.ipv4 = grub_pxe_default_gateway_ip;
-	  grub_net_add_route_gw ("pxe_gw", target, gw);
-	}
-      {
-	grub_net_network_level_netaddress_t target;
-	target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-	target.ipv4.base = grub_pxe_default_gateway_ip ?
-	  : grub_pxe_default_server_ip;
-	target.ipv4.masksize = 32;
-	grub_net_add_route ("pxe", target, inter);
-      }
-    }
+  buf = grub_xasprintf ("%d", grub_pxe_blksize);
+  if (buf)
+    grub_env_set ("pxe_blksize", buf);
+  grub_free (buf);
+
+  grub_register_variable_hook ("pxe_blksize", 0,
+			       grub_env_write_pxe_blocksize);
+
+  grub_memcpy (grub_pxe_card.default_address.mac, bp->mac_addr,
+	       bp->hw_len < sizeof (grub_pxe_card.default_address.mac)
+	       ? bp->hw_len : sizeof (grub_pxe_card.default_address.mac));
+  grub_pxe_card.default_address.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
+
+  grub_net_app_level_register (&grub_pxefs_fs);
+  grub_net_card_register (&grub_pxe_card);
+  grub_net_configure_by_dhcp_ack ("pxe", &grub_pxe_card,
+				  GRUB_NET_INTERFACE_PERMANENT
+				  | GRUB_NET_INTERFACE_ADDRESS_IMMUTABLE
+				  | GRUB_NET_INTERFACE_HWADDRESS_IMMUTABLE,
+				  bp, GRUB_PXE_BOOTP_SIZE);
 }
 
 GRUB_MOD_FINI(pxe)
