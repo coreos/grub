@@ -327,7 +327,7 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
       o.gateway_ip = disk_data->gateway_ip;
       grub_strcpy ((char *)&o.filename[0], data->filename);
       o.tftp_port = grub_cpu_to_be16 (GRUB_PXE_TFTP_PORT);
-      o.packet_size = grub_pxe_blksize;
+      o.packet_size = data->block_size;
       grub_pxe_call (GRUB_PXENV_TFTP_OPEN, &o, pxe_rm_entry);
       if (o.status)
 	{
