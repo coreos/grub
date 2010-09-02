@@ -1,3 +1,18 @@
+2010-09-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	Zero %ebp and %edi when entering Linux's 32-bit entry point, as
+	required by the boot protocol.
+
+	* include/grub/i386/relocator.h (struct grub_relocator32_state): Add
+	ebp and edi members.
+	* grub-core/lib/i386/relocator.c (grub_relocator_boot): Handle
+	state.ebp and state.edi.
+	* grub-core/lib/i386/relocator32.S (grub_relocator32_start): Set
+	%ebp and %edi according to grub_relocator32_ebp and
+	grub_relocator32_edi respectively.
+	* grub-core/loader/i386/linux.c (grub_linux_boot): Zero state.ebp
+	and state.edi.
+
 2010-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Add i386-pc-pxe image target.
