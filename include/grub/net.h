@@ -59,19 +59,25 @@ typedef enum grub_network_level_protocol_id
   GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
 } grub_network_level_protocol_id_t;
 
-typedef union grub_net_network_level_address
+typedef struct grub_net_network_level_address
 {
   grub_network_level_protocol_id_t type;
-  grub_uint32_t ipv4;
+  union
+  {
+    grub_uint32_t ipv4;
+  };
 } grub_net_network_level_address_t;
 
-typedef union grub_net_network_level_netaddress
+typedef struct grub_net_network_level_netaddress
 {
   grub_network_level_protocol_id_t type;
-  struct {
-    grub_uint32_t base;
-    int masksize; 
-  } ipv4;
+  union
+  {
+    struct {
+      grub_uint32_t base;
+      int masksize; 
+    } ipv4;
+  };
 } grub_net_network_level_netaddress_t;
 
 struct grub_net_network_level_interface;
@@ -81,7 +87,7 @@ struct grub_net_network_level_interface
   struct grub_net_network_level_interface *next;
   char *name;
   struct grub_net_card *card;
-  union grub_net_network_level_address address;
+  grub_net_network_level_address_t address;
   void *data;
 };
 

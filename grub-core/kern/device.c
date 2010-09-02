@@ -53,8 +53,11 @@ grub_device_open (const char *name)
   dev->disk = grub_disk_open (name);
   if (dev->disk)
     return dev;
-  if (grub_net_open)
-    dev->net = grub_net_open (name); 
+  if (grub_net_open && grub_errno == GRUB_ERR_UNKNOWN_DEVICE)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      dev->net = grub_net_open (name); 
+    }
 
   if (dev->net)
     return dev;

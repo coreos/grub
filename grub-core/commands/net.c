@@ -97,7 +97,7 @@ parse_ip (const char *val, grub_uint32_t *ip, const char **rest)
 	return 0;
       ptr++;
     }
-  *ip = newip;
+  *ip = grub_cpu_to_le32 (newip);
   if (rest)
     *rest = ptr - 1;
   return 0;
@@ -114,7 +114,8 @@ match_net (const grub_net_network_level_netaddress_t *net,
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
 	grub_int32_t mask = (1 << net->ipv4.masksize) - 1;
-	return ((net->ipv4.base & mask) == (addr->ipv4 & mask));
+	return ((grub_be_to_cpu32 (net->ipv4.base) & mask)
+		== (grub_be_to_cpu32 (addr->ipv4) & mask));
       }
     }
   return 0;
@@ -380,13 +381,17 @@ print_net_address (const grub_net_network_level_netaddress_t *target)
   switch (target->type)
     {
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
-      grub_printf ("%d.%d.%d.%d/%d ", ((target->ipv4.base >> 24) & 0xff),
-		   ((target->ipv4.base >> 16) & 0xff),
-		   ((target->ipv4.base >> 8) & 0xff),
-		   ((target->ipv4.base >> 0) & 0xff),
-		   target->ipv4.masksize);
-      break;
+      {
+	grub_uint32_t n = grub_be_to_cpu32 (target->ipv4.base);
+	grub_printf ("%d.%d.%d.%d/%d ", ((n >> 24) & 0xff),
+		     ((n >> 16) & 0xff),
+		     ((n >> 8) & 0xff),
+		     ((n >> 0) & 0xff),
+		     target->ipv4.masksize);
+      }
+      return;
     }
+  grub_printf ("Unknown address type %d\n", target->type);
 }
 
 static void
@@ -395,12 +400,16 @@ print_address (const grub_net_network_level_address_t *target)
   switch (target->type)
     {
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
-      grub_printf ("%d.%d.%d.%d ", ((target->ipv4 >> 24) & 0xff),
-		   ((target->ipv4 >> 16) & 0xff),
-		   ((target->ipv4 >> 8) & 0xff),
-		   ((target->ipv4 >> 0) & 0xff));
-      break;
+      {
+	grub_uint32_t n = grub_be_to_cpu32 (target->ipv4);
+	grub_printf ("%d.%d.%d.%d ", ((n >> 24) & 0xff),
+		     ((n >> 16) & 0xff),
+		     ((n >> 8) & 0xff),
+		     ((n >> 0) & 0xff));
+      }
+      return;
     }
+  grub_printf ("Unknown address type %d\n", target->type);
 }
 
 static grub_err_t
@@ -420,6 +429,7 @@ grub_cmd_listroutes (struct grub_command *cmd __attribute__ ((unused)),
       }
     else
       grub_printf ("%s", route->interface->name);      
+    grub_printf ("\n");
   }
   return GRUB_ERR_NONE;
 }
@@ -466,6 +476,8 @@ grub_net_open_real (const char *name)
 	return ret;
       }
   }
+  grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such device");
+
   return NULL;
 }
 

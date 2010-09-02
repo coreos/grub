@@ -306,7 +306,7 @@ grub_pxefs_label (grub_device_t device __attribute ((unused)),
 
 static struct grub_fs grub_pxefs_fs =
   {
-    .name = "pxefs",
+    .name = "pxe",
     .dir = grub_pxefs_dir,
     .open = grub_pxefs_open,
     .read = grub_pxefs_read,
@@ -590,7 +590,7 @@ GRUB_MOD_INIT(pxe)
       addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
       addr.ipv4 = grub_pxe_your_ip;
       inter = grub_net_add_addr ("pxe", &grub_pxe_card, addr);
-      if (grub_pxe_default_gateway_ip)
+      if (grub_pxe_default_gateway_ip != grub_pxe_default_server_ip)
 	{
 	  grub_net_network_level_netaddress_t target;
 	  grub_net_network_level_address_t gw;
@@ -600,7 +600,7 @@ GRUB_MOD_INIT(pxe)
 	  target.ipv4.masksize = 32;
 	  gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
 	  gw.ipv4 = grub_pxe_default_gateway_ip;
-	  grub_net_add_route_gw ("pxe_default", target, gw);
+	  grub_net_add_route_gw ("pxe_gw", target, gw);
 	}
       {
 	grub_net_network_level_netaddress_t target;
@@ -608,7 +608,7 @@ GRUB_MOD_INIT(pxe)
 	target.ipv4.base = grub_pxe_default_gateway_ip ?
 	  : grub_pxe_default_server_ip;
 	target.ipv4.masksize = 32;
-	grub_net_add_route ("pxe_default", target, inter);
+	grub_net_add_route ("pxe", target, inter);
       }
     }
 }
