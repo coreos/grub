@@ -930,7 +930,7 @@ module = {
 
 module = {
   name = pxe;
-  i386_pc = fs/i386/pc/pxe.c;
+  i386_pc = net/i386/pc/pxe.c;
   enable = i386_pc;
 };
 
@@ -1379,5 +1379,5 @@ module = {
 
 module = {
   name = net;
-  common = commands/net.c;
+  common = net/net.c;
 };
