@@ -52,13 +52,7 @@ iterate_real (grub_disk_t disk, grub_disk_addr_t sector, int freebsd,
 
   /* Check if it is valid.  */
   if (label.magic != grub_cpu_to_le32 (GRUB_PC_PARTITION_BSD_LABEL_MAGIC))
-    {
-      grub_dprintf ("partition",
-		    "bad signature (found 0x%08x, expected 0x%08x)\n",
-		    label.magic,
-		    grub_cpu_to_le32 (GRUB_PC_PARTITION_BSD_LABEL_MAGIC));
-      return grub_error (GRUB_ERR_BAD_PART_TABLE, "no signature");
-    }
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "no signature");
 
   /* A kludge to determine a base of be.offset.  */
   if (GRUB_PC_PARTITION_BSD_LABEL_WHOLE_DISK_PARTITION
@@ -80,9 +74,6 @@ iterate_real (grub_disk_t disk, grub_disk_addr_t sector, int freebsd,
 
   pos = sizeof (label) + sector * GRUB_DISK_SECTOR_SIZE;
 
-  grub_dprintf ("partition", "bsdlabel with %d partitions detected\n",
-		grub_cpu_to_le16 (label.num_partitions));
-
   for (p.number = 0;
        p.number < grub_cpu_to_le16 (label.num_partitions);
        p.number++, pos += sizeof (struct grub_partition_bsd_entry))
@@ -102,12 +93,6 @@ iterate_real (grub_disk_t disk, grub_disk_addr_t sector, int freebsd,
       p.len = grub_le_to_cpu32 (be.size);
       p.partmap = pmap;
 
-      grub_dprintf ("partition",
-		    "partition %d: type 0x%x, start 0x%llx, len 0x%llx\n",
-		    p.number, be.fs_type,
-		    (unsigned long long) p.start,
-		    (unsigned long long) p.len);
-
       if (p.len == 0)
 	continue;
 
@@ -115,13 +100,6 @@ iterate_real (grub_disk_t disk, grub_disk_addr_t sector, int freebsd,
 	{
 #ifdef GRUB_UTIL
 	  char *partname;
-#endif
-	  grub_dprintf ("partition",
-			"partition %d: invalid start (found 0x%llx, wanted >= 0x%llx)\n",
-			p.number,
-			(unsigned long long) p.start,
-			(unsigned long long) delta);
-#ifdef GRUB_UTIL
 	  /* disk->partition != NULL as 0 < delta */
 	  partname = grub_partition_get_name (disk->partition);
 	  grub_util_warn ("Discarding improperly nested partition (%s,%s,%s%d)",
@@ -147,21 +125,15 @@ bsdlabel_partition_map_iterate (grub_disk_t disk,
 
   if (disk->partition && grub_strcmp (disk->partition->partmap->name, "msdos")
       == 0 && disk->partition->msdostype == GRUB_PC_PARTITION_TYPE_FREEBSD)
-    {
-      grub_dprintf ("partition", "FreeBSD embedded iterating\n");
-      return iterate_real (disk, GRUB_PC_PARTITION_BSD_LABEL_SECTOR, 1,
-			   &grub_bsdlabel_partition_map, hook);
-    }
+    return iterate_real (disk, GRUB_PC_PARTITION_BSD_LABEL_SECTOR, 1,
+			 &grub_bsdlabel_partition_map, hook);
 
   if (disk->partition 
       && (grub_strcmp (disk->partition->partmap->name, "msdos") == 0
 	  || disk->partition->partmap == &grub_bsdlabel_partition_map
 	  || disk->partition->partmap == &grub_netbsdlabel_partition_map
 	  || disk->partition->partmap == &grub_openbsdlabel_partition_map))
-    {
-      grub_dprintf ("partition", "no embedded iterating\n");
       return grub_error (GRUB_ERR_BAD_PART_TABLE, "no embedding supported");
-    }
 
   return iterate_real (disk, GRUB_PC_PARTITION_BSD_LABEL_SECTOR, 0, 
 		       &grub_bsdlabel_partition_map, hook);
