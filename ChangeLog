@@ -1,3 +1,12 @@
+2010-09-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/bsd.c (grub_freebsd_boot): Set %ebp to sane
+	value.
+	(grub_openbsd_boot): Likewise.
+	(grub_netbsd_boot): Likewise.
+	* grub-core/loader/i386/xnu.c (grub_xnu_boot_resume): Likewise.
+	(grub_xnu_boot): Likewise.
+
 2010-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Clean LIBS variable after tests.
