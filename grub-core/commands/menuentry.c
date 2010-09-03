@@ -107,8 +107,8 @@ append_menu_entry (int argc, const char **args, char **classes,
 	    menu_hotkey = hotkey_aliases[i].key;
 	    break;
 	  }
-      if (i > ARRAY_SIZE (hotkey_aliases))
-	goto fail;
+      if (i == ARRAY_SIZE (hotkey_aliases))
+	menu_hotkey = hotkey[0];
     }
 
   if (! argc)
