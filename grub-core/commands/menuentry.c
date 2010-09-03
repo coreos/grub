@@ -53,7 +53,7 @@ static struct
 static grub_err_t
 append_menu_entry (int argc, const char **args, char **classes,
 		   const char *users, const char *hotkey,
-		   const char *sourcecode)
+		   const char *prefix, const char *sourcecode)
 {
   unsigned i;
   int menu_hotkey = 0;
@@ -72,7 +72,7 @@ append_menu_entry (int argc, const char **args, char **classes,
 
   last = &menu->entry_list;
 
-  menu_sourcecode = grub_strdup (sourcecode);
+  menu_sourcecode = grub_xasprintf ("%s%s", prefix ?: "", sourcecode);
   if (! menu_sourcecode)
     return grub_errno;
 
@@ -171,11 +171,63 @@ append_menu_entry (int argc, const char **args, char **classes,
   return grub_errno;
 }
 
+static char *
+setparams_prefix (int argc, char **args)
+{
+  int i;
+  int j;
+  char *p;
+  char *result;
+  grub_size_t len = 10;
+  static const char *escape_characters = "\"\\";
+
+  auto char *strescpy (char *, const char *, const char *);
+  char * strescpy (char *d, const char *s, const char *escapes)
+  {
+    while (*s)
+      {
+	if (grub_strchr (escapes, *s))
+	  *d++ = '\\';
+	*d++ = *s++;
+      }
+    *d = '\0';
+    return d;
+  }
+
+  /* Count resulting string length */
+  for (i = 0; i < argc; i++)
+    {
+      len += 3; /* 3 = 1 space + 2 quotes */
+      p = args[i];
+      while (*p)
+	len += grub_strchr (escape_characters, *p++) ? 2 : 1;
+    }
+
+  result = grub_malloc (len + 2);
+  if (! result)
+    return 0;
+
+  grub_strcpy (result, "setparams");
+  i = 9;
+
+  for (j = 0; j < argc; j++)
+    {
+      result[i++] = ' ';
+      result[i++] = '"';
+      i = strescpy (result + i, args[j], escape_characters) - result;
+      result[i++] = '"';
+    }
+  result[i++] = '\n';
+  result[i] = '\0';
+  return result;
+}
+
 static grub_err_t
 grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   char ch;
   char *src;
+  char *prefix;
   unsigned len;
   grub_err_t r;
 
@@ -189,12 +241,17 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
   ch = src[len - 1];
   src[len - 1] = '\0';
 
+  prefix = setparams_prefix (argc - 1, args);
+  if (! prefix)
+    return grub_errno;
+
   r = append_menu_entry (argc - 1, (const char **) args,
 			 ctxt->state[0].args, ctxt->state[1].arg,
-			 ctxt->state[2].arg, src + 1);
+			 ctxt->state[2].arg, prefix, src + 1);
 
   src[len - 1] = ch;
   args[argc - 1] = src;
+  grub_free (prefix);
   return r;
 }
 
