@@ -1,5 +1,21 @@
 2010-09-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Compress grub_prefix.
+
+	* grub-core/boot/i386/pc/lnxboot.S: Use
+	GRUB_KERNEL_I386_PC_MULTIBOOT_SIGNATURE.
+	* grub-core/kern/i386/pc/startup.S: Move grub_prefix to compressed part.
+	* include/grub/offsets.h: Rename GRUB_MACHINE_DATA_END to
+	GRUB_MACHINE_PREFIX_END. All users updated.
+	(GRUB_KERNEL_I386_PC_PREFIX): Set to GRUB_KERNEL_I386_PC_RAW_SIZE.
+	(GRUB_KERNEL_I386_PC_PREFIX_END): Set to GRUB_KERNEL_I386_PC_PREFIX
+	+ 0x40.
+	(GRUB_KERNEL_I386_PC_RAW_SIZE): Decrease.
+	* util/grub-mkimage.c (image_target_desc): Change data_end to
+	prefix_end. All users updated.
+
+2010-09-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/bsd.c (grub_freebsd_boot): Set %ebp to sane
 	value.
 	(grub_openbsd_boot): Likewise.
