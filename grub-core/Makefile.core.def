@@ -677,6 +677,11 @@ module = {
 };
 
 module = {
+  name = videoinfo;
+  common = commands/videoinfo.c;
+};
+
+module = {
   name = vbetest;
   i386_pc = commands/i386/pc/vbetest.c;
   enable = i386_pc;

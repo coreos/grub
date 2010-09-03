@@ -33,7 +33,6 @@
 static int vbe_detected = -1;
 
 static struct grub_vbe_info_block controller_info;
-static struct grub_vbe_mode_info_block active_vbe_mode_info;
 
 /* Track last mode to support cards which fail on get_mode.  */
 static grub_uint32_t last_set_mode = 3;
@@ -42,11 +41,7 @@ static struct
 {
   struct grub_video_mode_info mode_info;
 
-  unsigned int bytes_per_scan_line;
-  unsigned int bytes_per_pixel;
-  grub_uint32_t active_vbe_mode;
   grub_uint8_t *ptr;
-  int index_color_mode;
 } framebuffer;
 
 static grub_uint32_t initial_vbe_mode;
@@ -332,21 +327,12 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
       vbe_mode |= 1 << 14;
 
       /* Determine frame buffer pixel format.  */
-      switch (new_vbe_mode_info.memory_model)
-        {
-        case GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL:
-          framebuffer.index_color_mode = 1;
-          break;
-
-        case GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR:
-          framebuffer.index_color_mode = 0;
-          break;
-
-        default:
-          return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-                             "unsupported pixel format 0x%x",
-                             new_vbe_mode_info.memory_model);
-        }
+      if (new_vbe_mode_info.memory_model != GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL
+	  && new_vbe_mode_info.memory_model
+	  != GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR)
+	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			   "unsupported pixel format 0x%x",
+			   new_vbe_mode_info.memory_model);
     }
 
   /* Get current mode.  */
@@ -360,24 +346,14 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
     return grub_error (GRUB_ERR_BAD_DEVICE, "cannot set VBE mode %x", vbe_mode);
   last_set_mode = vbe_mode;
 
-  /* Save information for later usage.  */
-  framebuffer.active_vbe_mode = vbe_mode;
-  grub_memcpy (&active_vbe_mode_info, &new_vbe_mode_info, sizeof (active_vbe_mode_info));
-
   if (vbe_mode < 0x100)
     {
       /* If this is not a VESA mode, guess address.  */
       framebuffer.ptr = (grub_uint8_t *) GRUB_MEMORY_MACHINE_VGA_ADDR;
-      framebuffer.index_color_mode = 1;
     }
   else
     {
       framebuffer.ptr = (grub_uint8_t *) new_vbe_mode_info.phys_base_addr;
-
-      if (controller_info.version >= 0x300)
-        framebuffer.bytes_per_scan_line = new_vbe_mode_info.lin_bytes_per_scan_line;
-      else
-        framebuffer.bytes_per_scan_line = new_vbe_mode_info.bytes_per_scan_line;
     }
 
   /* Check whether mode is text mode or graphics mode.  */
@@ -392,25 +368,9 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
     {
       /* Graphics mode.  */
 
-      /* Calculate bytes_per_pixel value.  */
-      switch(new_vbe_mode_info.bits_per_pixel)
-	{
-	case 32: framebuffer.bytes_per_pixel = 4; break;
-	case 24: framebuffer.bytes_per_pixel = 3; break;
-	case 16: framebuffer.bytes_per_pixel = 2; break;
-	case 15: framebuffer.bytes_per_pixel = 2; break;
-	case 8: framebuffer.bytes_per_pixel = 1; break;
-	default:
-	  grub_vbe_bios_set_mode (old_vbe_mode, 0);
-	  last_set_mode = old_vbe_mode;
-	  return grub_error (GRUB_ERR_BAD_DEVICE,
-			     "cannot set VBE mode %x",
-			     vbe_mode);
-	  break;
-	}
-
       /* If video mode is in indexed color, setup default VGA palette.  */
-      if (framebuffer.index_color_mode)
+      if (vbe_mode < 0x100 || new_vbe_mode_info.memory_model
+	  == GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL)
 	{
 	  struct grub_vbe_palette_data *palette
 	    = (struct grub_vbe_palette_data *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
@@ -548,10 +508,13 @@ grub_video_vbe_fini (void)
   grub_err_t err;
 
   /* Restore old video mode.  */
-  status = grub_vbe_bios_set_mode (initial_vbe_mode, 0);
-  if (status != GRUB_VBE_STATUS_OK)
-    /* TODO: Decide, is this something we want to do.  */
-    return grub_errno;
+  if (last_set_mode != initial_vbe_mode)
+    {
+      status = grub_vbe_bios_set_mode (initial_vbe_mode, 0);
+      if (status != GRUB_VBE_STATUS_OK)
+	/* TODO: Decide, is this something we want to do.  */
+	return grub_errno;
+    }
   last_set_mode = initial_vbe_mode;
 
   /* TODO: Free any resources allocated by driver.  */
@@ -580,6 +543,86 @@ doublebuf_pageflipping_set_page (int page)
   if (vbe_err != GRUB_VBE_STATUS_OK)
     return grub_error (GRUB_ERR_IO, "couldn't commit pageflip");
 
+  return 0;
+}
+
+static void
+vbe2videoinfo (const struct grub_vbe_mode_info_block *vbeinfo,
+	       struct grub_video_mode_info *mode_info)
+{
+  mode_info->width = vbeinfo->x_resolution;
+  mode_info->height = vbeinfo->y_resolution;
+  switch (vbeinfo->memory_model)
+    {
+    case GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL:
+      mode_info->mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+      break;
+	  
+    case GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR:
+      mode_info->mode_type = GRUB_VIDEO_MODE_TYPE_RGB;
+      break;
+    }
+
+  mode_info->bpp = vbeinfo->bits_per_pixel;
+  /* Calculate bytes_per_pixel value.  */
+  switch(vbeinfo->bits_per_pixel)
+    {
+    case 32:
+      mode_info->bytes_per_pixel = 4;
+      break;
+    case 24:
+      mode_info->bytes_per_pixel = 3;
+      break;
+    case 16:
+      mode_info->bytes_per_pixel = 2;
+      break;
+    case 15:
+      mode_info->bytes_per_pixel = 2;
+      break;
+    case 8:
+      mode_info->bytes_per_pixel = 1;
+      break;  
+    }
+
+  if (controller_info.version >= 0x300)
+    mode_info->pitch = vbeinfo->lin_bytes_per_scan_line;
+  else
+    mode_info->pitch = vbeinfo->bytes_per_scan_line;
+
+  mode_info->number_of_colors = 256; /* TODO: fix me.  */
+  mode_info->red_mask_size = vbeinfo->red_mask_size;
+  mode_info->red_field_pos = vbeinfo->red_field_position;
+  mode_info->green_mask_size = vbeinfo->green_mask_size;
+  mode_info->green_field_pos = vbeinfo->green_field_position;
+  mode_info->blue_mask_size = vbeinfo->blue_mask_size;
+  mode_info->blue_field_pos = vbeinfo->blue_field_position;
+  mode_info->reserved_mask_size = vbeinfo->rsvd_mask_size;
+  mode_info->reserved_field_pos = vbeinfo->rsvd_field_position;
+
+  mode_info->blit_format = grub_video_get_blit_format (mode_info);
+}
+
+static int
+grub_video_vbe_iterate (int (*hook) (const struct grub_video_mode_info *info))
+{
+  grub_uint16_t *p;
+  struct grub_vbe_mode_info_block vbe_mode_info;
+  struct grub_video_mode_info mode_info;
+
+  for (p = vbe_mode_list; *p != 0xFFFF; p++)
+    {
+      grub_vbe_get_video_mode_info (*p, &vbe_mode_info);
+      if (grub_errno != GRUB_ERR_NONE)
+        {
+          /* Could not retrieve mode info, retreat.  */
+          grub_errno = GRUB_ERR_NONE;
+          break;
+        }
+
+      vbe2videoinfo (&vbe_mode_info, &mode_info);
+      if (hook (&mode_info))
+	return 1;
+    }
   return 0;
 }
 
@@ -631,6 +674,14 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
         /* Not compatible memory model.  */
         continue;
 
+      if (vbe_mode_info.bits_per_pixel != 8
+	  && vbe_mode_info.bits_per_pixel != 15
+	  && vbe_mode_info.bits_per_pixel != 16
+	  && vbe_mode_info.bits_per_pixel != 24
+	  && vbe_mode_info.bits_per_pixel != 32)
+	/* Unsupported bitdepth . */
+        continue;
+
       if (((vbe_mode_info.x_resolution != width)
 	   || (vbe_mode_info.y_resolution != height)) && width != 0 && height != 0)
         /* Non matching resolution.  */
@@ -676,36 +727,15 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
   if (best_vbe_mode != 0)
     {
       grub_err_t err;
+      static struct grub_vbe_mode_info_block active_vbe_mode_info;
       /* If this fails, then we have mode selection heuristics problem,
          or adapter failure.  */
-      /* grub_vbe_set_video_mode already sets active_vbe_mode_info. */
-      grub_vbe_set_video_mode (best_vbe_mode, NULL);
+      grub_vbe_set_video_mode (best_vbe_mode, &active_vbe_mode_info);
       if (grub_errno != GRUB_ERR_NONE)
         return grub_errno;
 
       /* Fill mode info details.  */
-      framebuffer.mode_info.width = active_vbe_mode_info.x_resolution;
-      framebuffer.mode_info.height = active_vbe_mode_info.y_resolution;
-
-      if (framebuffer.index_color_mode)
-        framebuffer.mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
-      else
-        framebuffer.mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_RGB;
-
-      framebuffer.mode_info.bpp = active_vbe_mode_info.bits_per_pixel;
-      framebuffer.mode_info.bytes_per_pixel = framebuffer.bytes_per_pixel;
-      framebuffer.mode_info.pitch = framebuffer.bytes_per_scan_line;
-      framebuffer.mode_info.number_of_colors = 256; /* TODO: fix me.  */
-      framebuffer.mode_info.red_mask_size = active_vbe_mode_info.red_mask_size;
-      framebuffer.mode_info.red_field_pos = active_vbe_mode_info.red_field_position;
-      framebuffer.mode_info.green_mask_size = active_vbe_mode_info.green_mask_size;
-      framebuffer.mode_info.green_field_pos = active_vbe_mode_info.green_field_position;
-      framebuffer.mode_info.blue_mask_size = active_vbe_mode_info.blue_mask_size;
-      framebuffer.mode_info.blue_field_pos = active_vbe_mode_info.blue_field_position;
-      framebuffer.mode_info.reserved_mask_size = active_vbe_mode_info.rsvd_mask_size;
-      framebuffer.mode_info.reserved_field_pos = active_vbe_mode_info.rsvd_field_position;
-
-      framebuffer.mode_info.blit_format = grub_video_get_blit_format (&framebuffer.mode_info);
+      vbe2videoinfo (&active_vbe_mode_info, &framebuffer.mode_info);
 
       {
 	/* Get video RAM size in bytes.  */
@@ -740,7 +770,7 @@ static grub_err_t
 grub_video_vbe_set_palette (unsigned int start, unsigned int count,
                             struct grub_video_palette_data *palette_data)
 {
-  if (framebuffer.index_color_mode)
+  if (framebuffer.mode_info.mode_type == GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)
     {
       /* TODO: Implement setting indexed color mode palette to hardware.  */
       //status = grub_vbe_bios_set_palette_data (sizeof (vga_colors)
@@ -793,6 +823,7 @@ static struct grub_video_adapter grub_video_vbe_adapter =
     .delete_render_target = grub_video_fb_delete_render_target,
     .set_active_render_target = grub_video_fb_set_active_render_target,
     .get_active_render_target = grub_video_fb_get_active_render_target,
+    .iterate = grub_video_vbe_iterate,
 
     .next = 0
   };

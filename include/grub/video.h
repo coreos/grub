@@ -282,6 +282,8 @@ struct grub_video_adapter
   grub_err_t (*set_active_render_target) (struct grub_video_render_target *target);
 
   grub_err_t (*get_active_render_target) (struct grub_video_render_target **target);
+
+  int (*iterate) (int (*hook) (const struct grub_video_mode_info *info));
 };
 typedef struct grub_video_adapter *grub_video_adapter_t;
 
