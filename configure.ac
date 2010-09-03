@@ -853,6 +853,8 @@ AC_CHECK_LIB([nvpair], [nvlist_print],
                         [Define to 1 if you have the NVPAIR library.])],)
 AC_SUBST([LIBNVPAIR])
 
+LIBS=""
+
 pkglibrootdir='$(libdir)'/`echo $PACKAGE | sed "$program_transform_name"`
 AC_SUBST(pkglibrootdir)
 
