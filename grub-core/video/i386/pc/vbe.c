@@ -798,6 +798,20 @@ grub_video_vbe_get_info_and_fini (struct grub_video_mode_info *mode_info,
   return grub_video_fb_get_info_and_fini (mode_info, framebuf);
 }
 
+static void
+grub_video_vbe_print_adapter_specific_info (void)
+{
+  grub_printf ("  VBE info:   version: %d.%d  OEM software rev: %d.%d\n",
+	       controller_info.version >> 8,
+               controller_info.version & 0xFF,
+               controller_info.oem_software_rev >> 8,
+               controller_info.oem_software_rev & 0xFF);
+
+  /* The total_memory field is in 64 KiB units.  */
+  grub_printf ("              total memory: %d KiB\n",
+               (controller_info.total_memory << 16) / 1024);
+}
+
 static struct grub_video_adapter grub_video_vbe_adapter =
   {
     .name = "VESA BIOS Extension Video Driver",
@@ -828,6 +842,7 @@ static struct grub_video_adapter grub_video_vbe_adapter =
     .set_active_render_target = grub_video_fb_set_active_render_target,
     .get_active_render_target = grub_video_fb_get_active_render_target,
     .iterate = grub_video_vbe_iterate,
+    .print_adapter_specific_info = grub_video_vbe_print_adapter_specific_info,
 
     .next = 0
   };

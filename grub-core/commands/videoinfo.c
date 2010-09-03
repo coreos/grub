@@ -66,16 +66,27 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
 
   FOR_VIDEO_ADAPTERS (adapter)
   {
+    grub_printf ("Adapter '%s':\n", adapter->name);
+
+    if (!adapter->iterate)
+      {
+	grub_printf ("  No info available\n");
+	continue;
+      }
+
     if (adapter->id != id)
       {
 	if (adapter->init ())
 	  {
+	    grub_printf ("  Failed\n");
 	    grub_errno = GRUB_ERR_NONE;
 	    continue;
 	  }
       }
 
-    grub_printf ("Adapter '%s':\n", adapter->name);
+    if (adapter->print_adapter_specific_info)
+      adapter->print_adapter_specific_info ();
+
     adapter->iterate (hook);
 
     if (adapter->id != id)
