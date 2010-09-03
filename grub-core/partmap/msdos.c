@@ -37,6 +37,15 @@ pc_partition_map_iterate (grub_disk_t disk,
   int labeln = 0;
   grub_disk_addr_t lastaddr;
   grub_disk_addr_t ext_offset;
+  grub_disk_addr_t delta = 0;
+
+  if (disk->partition && disk->partition->partmap == &grub_msdos_partition_map)
+    {
+      if (disk->partition->msdostype == GRUB_PC_PARTITION_TYPE_LINUX_MINIX)
+	delta = disk->partition->offset;
+      else
+	return grub_error (GRUB_ERR_BAD_PART_TABLE, "no embedding supported");
+    }
 
   p.offset = 0;
   ext_offset = 0;
@@ -81,8 +90,9 @@ pc_partition_map_iterate (grub_disk_t disk,
 	{
 	  e = mbr.entries + p.index;
 
-	  p.start = p.offset + grub_le_to_cpu32 (e->start);
+	  p.start = p.offset + grub_le_to_cpu32 (e->start) - delta;
 	  p.len = grub_le_to_cpu32 (e->length);
+	  p.msdostype = e->type;
 
 	  grub_dprintf ("partition",
 			"partition %d: flag 0x%x, type 0x%x, start 0x%llx, len 0x%llx\n",
