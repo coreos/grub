@@ -1209,16 +1209,6 @@ module = {
 };
 
 module = {
-  name = part_netbsd;
-  common = partmap/netbsdlabel.c;
-};
-
-module = {
-  name = part_openbsd;
-  common = partmap/openbsdlabel.c;
-};
-
-module = {
   name = part_sunpc;
   common = partmap/sunpc.c;
 };
