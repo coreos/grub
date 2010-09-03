@@ -32,7 +32,7 @@ hook (const struct grub_video_mode_info *info)
     grub_printf ("        ");
   else
     grub_printf ("  0x%03x ", info->mode_number);
-  grub_printf ("%4d x %4d x %2d  ", info->height, info->width, info->bpp);
+  grub_printf ("%4d x %4d x %2d  ", info->width, info->height, info->bpp);
 
   /* Show mask and position details for direct color modes.  */
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_RGB)
