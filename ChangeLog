@@ -1,3 +1,12 @@
+2010-09-03  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Add missing files into "make dist" tarball for other platforms.
+
+	* gentpl.py (script): Use dist_noinst_DATA instead of EXTRA_DIST.
+	* conf/Makefile.common (dist_noinst_DATA): New variable.
+	* conf/Makefile.extra-dist: Added missing make dist files.
+	* grub-core/Makefile.core.def: Likewise.
+
 2010-09-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Compress grub_prefix.
