@@ -49,64 +49,90 @@
 
 #include <grub/types.h>
 
-
 #define NETBSD_BTINFO_BOOTPATH		0
 #define NETBSD_BTINFO_ROOTDEVICE	1
-#define NETBSD_BTINFO_BOOTDISK		3
+#define NETBSD_BTINFO_CONSOLE		6
+#define NETBSD_BTINFO_SYMTAB		8
 #define NETBSD_BTINFO_MEMMAP		9
+#define NETBSD_BTINFO_MODULES		11
+#define NETBSD_BTINFO_FRAMEBUF		12
+
+struct grub_netbsd_bootinfo
+{
+  grub_uint32_t bi_count;
+  grub_uint32_t bi_data[0];
+};
 
 struct grub_netbsd_btinfo_common
 {
-  int len;
-  int type;
-};
-
-struct grub_netbsd_btinfo_mmap_header
-{
-  struct grub_netbsd_btinfo_common common;
-  grub_uint32_t count;
-};
-
-struct grub_netbsd_btinfo_mmap_entry
-{
-  grub_uint64_t addr;
-  grub_uint64_t len;
-#define	NETBSD_MMAP_AVAILABLE	1
-#define	NETBSD_MMAP_RESERVED 	2
-#define	NETBSD_MMAP_ACPI	3
-#define	NETBSD_MMAP_NVS 	4
+  grub_uint32_t len;
   grub_uint32_t type;
 };
 
-struct grub_netbsd_btinfo_bootpath
-{
-  struct grub_netbsd_btinfo_common common;
-  char bootpath[80];
-};
-
-struct grub_netbsd_btinfo_rootdevice
-{
-  struct grub_netbsd_btinfo_common common;
-  char devname[16];
-};
+#define GRUB_NETBSD_MAX_BOOTPATH_LEN 80
 
 struct grub_netbsd_btinfo_bootdisk
 {
-  struct grub_netbsd_btinfo_common common;
-  int labelsector;  /* label valid if != -1 */
+  grub_uint32_t labelsector;  /* label valid if != 0xffffffff */
   struct
     {
       grub_uint16_t type, checksum;
       char packname[16];
     } label;
-  int biosdev;
-  int partition;
+  grub_uint32_t biosdev;
+  grub_uint32_t partition;
 };
 
-struct grub_netbsd_bootinfo
+struct grub_netbsd_btinfo_symtab
 {
-  grub_uint32_t bi_count;
-  void *bi_data[1];
+  grub_uint32_t nsyms;
+  grub_uint32_t ssyms;
+  grub_uint32_t esyms;
 };
+
+
+struct grub_netbsd_btinfo_serial
+{
+  char devname[16];
+  grub_uint32_t addr;
+  grub_uint32_t speed;
+};
+
+struct grub_netbsd_btinfo_modules
+{
+  grub_uint32_t num;
+  grub_uint32_t last_addr;
+  struct grub_netbsd_btinfo_module
+  {
+    char name[80];
+#define GRUB_NETBSD_MODULE_RAW 0
+#define GRUB_NETBSD_MODULE_ELF 1
+    grub_uint32_t type;
+    grub_uint32_t size;
+    grub_uint32_t addr;
+  } mods[0];
+};
+
+struct grub_netbsd_btinfo_framebuf
+{
+  grub_uint64_t fbaddr;
+  grub_uint32_t flags;
+  grub_uint32_t width;
+  grub_uint32_t height;
+  grub_uint16_t pitch;
+  grub_uint8_t bpp;
+
+  grub_uint8_t red_mask_size;
+  grub_uint8_t green_mask_size;
+  grub_uint8_t blue_mask_size;
+
+  grub_uint8_t red_field_pos;
+  grub_uint8_t green_field_pos;
+  grub_uint8_t blue_field_pos;
+
+  grub_uint8_t reserved[16];
+};
+
+#define GRUB_NETBSD_MAX_ROOTDEVICE_LEN 16
 
 #endif

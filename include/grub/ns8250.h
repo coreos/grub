@@ -70,4 +70,11 @@
 /* Turn on DTR, RTS, and OUT2.  */
 #define UART_ENABLE_OUT2	0x08
 
+#ifndef ASM_FILE
+#include <grub/cpu/io.h>
+
+grub_port_t
+grub_ns8250_hw_get_port (const unsigned int unit);
+#endif
+
 #endif /* ! GRUB_SERIAL_MACHINE_HEADER */
