@@ -30,10 +30,14 @@
 #endif
 
 static struct grub_partition_map grub_bsdlabel_partition_map;
+static struct grub_partition_map grub_netbsdlabel_partition_map;
+static struct grub_partition_map grub_openbsdlabel_partition_map;
+
 
 
 static grub_err_t
 iterate_real (grub_disk_t disk, grub_disk_addr_t sector, int freebsd,
+	      struct grub_partition_map *pmap,
 	      int (*hook) (grub_disk_t disk,
 			   const grub_partition_t partition))
 {
@@ -96,7 +100,7 @@ iterate_real (grub_disk_t disk, grub_disk_addr_t sector, int freebsd,
 
       p.start = grub_le_to_cpu32 (be.offset);
       p.len = grub_le_to_cpu32 (be.size);
-      p.partmap = &grub_bsdlabel_partition_map;
+      p.partmap = pmap;
 
       grub_dprintf ("partition",
 		    "partition %d: type 0x%x, start 0x%llx, len 0x%llx\n",
@@ -135,8 +139,6 @@ iterate_real (grub_disk_t disk, grub_disk_addr_t sector, int freebsd,
   return GRUB_ERR_NONE;
 }
 
-#if !defined (NETBSDLABEL) && !defined (OPENBSDLABEL)
-
 static grub_err_t
 bsdlabel_partition_map_iterate (grub_disk_t disk,
 				int (*hook) (grub_disk_t disk,
@@ -148,34 +150,28 @@ bsdlabel_partition_map_iterate (grub_disk_t disk,
     {
       grub_dprintf ("partition", "FreeBSD embedded iterating\n");
       return iterate_real (disk, GRUB_PC_PARTITION_BSD_LABEL_SECTOR, 1,
-			   hook);
+			   &grub_bsdlabel_partition_map, hook);
     }
 
   if (disk->partition 
       && (grub_strcmp (disk->partition->partmap->name, "msdos") == 0
-	  || grub_strcmp (disk->partition->partmap->name, "bsd") == 0
-	  || grub_strcmp (disk->partition->partmap->name, "netbsd") == 0
-	  || grub_strcmp (disk->partition->partmap->name, "openbsd") == 0))
+	  || disk->partition->partmap == &grub_bsdlabel_partition_map
+	  || disk->partition->partmap == &grub_netbsdlabel_partition_map
+	  || disk->partition->partmap == &grub_openbsdlabel_partition_map))
     {
       grub_dprintf ("partition", "no embedded iterating\n");
       return grub_error (GRUB_ERR_BAD_PART_TABLE, "no embedding supported");
     }
 
-  return iterate_real (disk, GRUB_PC_PARTITION_BSD_LABEL_SECTOR, 0, hook);
+  return iterate_real (disk, GRUB_PC_PARTITION_BSD_LABEL_SECTOR, 0, 
+		       &grub_bsdlabel_partition_map, hook);
 }
 
-#else
-
-#ifdef OPENBSDLABEL
-#define GRUB_PC_PARTITION_TYPE_BSD GRUB_PC_PARTITION_TYPE_OPENBSD
-#else
-#define GRUB_PC_PARTITION_TYPE_BSD GRUB_PC_PARTITION_TYPE_NETBSD
-#endif
-
 static grub_err_t
-bsdlabel_partition_map_iterate (grub_disk_t disk,
-				int (*hook) (grub_disk_t disk,
-					     const grub_partition_t partition))
+netopenbsdlabel_partition_map_iterate (grub_disk_t disk, grub_uint8_t type,
+				       struct grub_partition_map *pmap,
+				       int (*hook) (grub_disk_t disk,
+						    const grub_partition_t partition))
 {
   grub_err_t err;
 
@@ -192,10 +188,11 @@ bsdlabel_partition_map_iterate (grub_disk_t disk,
       return err;
 
     for (i = 0; i < ARRAY_SIZE (mbr.entries); i++)
-      if (mbr.entries[i].type == GRUB_PC_PARTITION_TYPE_BSD)
+      if (mbr.entries[i].type == type)
 	{
 	  err = iterate_real (disk, mbr.entries[i].start
-			      + GRUB_PC_PARTITION_BSD_LABEL_SECTOR, 0, hook);
+			      + GRUB_PC_PARTITION_BSD_LABEL_SECTOR, 0, pmap,
+			      hook);
 	  if (err != GRUB_ERR_BAD_PART_TABLE)
 	    return err;
 	}
@@ -204,40 +201,59 @@ bsdlabel_partition_map_iterate (grub_disk_t disk,
   return grub_error (GRUB_ERR_BAD_PART_TABLE, "no bsdlabel found");
 }
 
-#endif
+static grub_err_t
+netbsdlabel_partition_map_iterate (grub_disk_t disk,
+				   int (*hook) (grub_disk_t disk,
+						const grub_partition_t partition))
+{
+  return netopenbsdlabel_partition_map_iterate (disk,
+						GRUB_PC_PARTITION_TYPE_NETBSD,
+						&grub_netbsdlabel_partition_map,
+						hook);
+}
 
-
-/* Partition map type.  */
+static grub_err_t
+openbsdlabel_partition_map_iterate (grub_disk_t disk,
+				   int (*hook) (grub_disk_t disk,
+						const grub_partition_t partition))
+{
+  return netopenbsdlabel_partition_map_iterate (disk,
+						GRUB_PC_PARTITION_TYPE_OPENBSD,
+						&grub_openbsdlabel_partition_map,
+						hook);
+}
+
+
 static struct grub_partition_map grub_bsdlabel_partition_map =
   {
-#if defined (OPENBSDLABEL)
-    .name = "openbsd",
-#elif defined (NETBSDLABEL)
-    .name = "netbsd",
-#else
     .name = "bsd",
-#endif
     .iterate = bsdlabel_partition_map_iterate,
   };
 
-#if defined (OPENBSDLABEL)
-GRUB_MOD_INIT(part_openbsd)
-#elif defined (NETBSDLABEL)
-GRUB_MOD_INIT(part_netbsd)
-#else
+static struct grub_partition_map grub_openbsdlabel_partition_map =
+  {
+    .name = "openbsd",
+    .iterate = openbsdlabel_partition_map_iterate,
+  };
+
+static struct grub_partition_map grub_netbsdlabel_partition_map =
+  {
+    .name = "netbsd",
+    .iterate = netbsdlabel_partition_map_iterate,
+  };
+
+
+
 GRUB_MOD_INIT(part_bsd)
-#endif
 {
   grub_partition_map_register (&grub_bsdlabel_partition_map);
+  grub_partition_map_register (&grub_netbsdlabel_partition_map);
+  grub_partition_map_register (&grub_openbsdlabel_partition_map);
 }
 
-#if defined (OPENBSDLABEL)
-GRUB_MOD_FINI(part_openbsd)
-#elif defined (NETBSDLABEL)
-GRUB_MOD_FINI(part_netbsd)
-#else
 GRUB_MOD_FINI(part_bsd)
-#endif
 {
   grub_partition_map_unregister (&grub_bsdlabel_partition_map);
+  grub_partition_map_unregister (&grub_netbsdlabel_partition_map);
+  grub_partition_map_unregister (&grub_openbsdlabel_partition_map);
 }
