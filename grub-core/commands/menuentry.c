@@ -200,14 +200,16 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
 
 static grub_extcmd_t cmd;
 
-GRUB_MOD_INIT(menuentry)
+void
+grub_menu_init (void)
 {
   cmd = grub_register_extcmd ("menuentry", grub_cmd_menuentry,
 			      GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_BLOCKS,
 			      N_("BLOCK"), N_("Define a menuentry."), options);
 }
 
-GRUB_MOD_FINI(menuentry)
+void
+grub_menu_fini (void)
 {
   grub_unregister_extcmd (cmd);
 }

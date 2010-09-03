@@ -1173,6 +1173,8 @@ module = {
   common = script/lexer.c;
   common = script/argv.c;
 
+  common = commands/menuentry.c;
+
   common = unidata.c;
   common_nodist = grub_script.tab.c;
   common_nodist = grub_script.yy.c;
@@ -1407,9 +1409,4 @@ module = {
 module = {
   name = test_blockarg;
   common = tests/test_blockarg.c;
-};
-
-module = {
-  name = menuentry;
-  common = commands/menuentry.c;
 };
