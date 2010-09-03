@@ -78,7 +78,8 @@ struct grub_script_wildcard_translator
   char *(*unescape) (const char *str);
   grub_err_t (*expand) (const char *str, char ***expansions);
 };
-extern struct grub_script_wildcard_translator *wildcard_translator;
+extern struct grub_script_wildcard_translator *grub_wildcard_translator;
+extern struct grub_script_wildcard_translator *grub_filename_translator;
 
 /* A complete argument.  It consists of a list of one or more `struct
    grub_script_arg's.  */

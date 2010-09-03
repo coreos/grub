@@ -70,17 +70,16 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(regexp)
 {
-  extern struct grub_script_wildcard_translator translator;
-
   cmd = grub_register_command ("regexp", grub_cmd_regexp,
 			       N_("REGEXP STRING"),
 			       N_("Test if REGEXP matches STRING."));
 
   /* Setup GRUB script wildcard translator.  */
-  wildcard_translator = &translator;
+  grub_wildcard_translator = &grub_filename_translator;
 }
 
 GRUB_MOD_FINI(regexp)
 {
   grub_unregister_command (cmd);
+  grub_wildcard_translator = 0;
 }

@@ -40,7 +40,7 @@ static char* wildcard_escape (const char *s);
 static char* wildcard_unescape (const char *s);
 static grub_err_t wildcard_expand (const char *s, char ***strs);
 
-struct grub_script_wildcard_translator translator = {
+struct grub_script_wildcard_translator grub_filename_translator = {
   .expand = wildcard_expand,
   .escape = wildcard_escape,
   .unescape = wildcard_unescape
@@ -276,7 +276,7 @@ match_files (const char *prefix, const char *suffix, const char *end,
     char **t;
     char *buffer;
 
-    /* skip hidden files, . and .. */
+    /* skip . and .. names */
     if (grub_strcmp(".", name) == 0 || grub_strcmp("..", name) == 0)
       return 0;
 

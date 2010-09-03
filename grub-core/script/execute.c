@@ -42,7 +42,7 @@ struct grub_script_scope
 static struct grub_script_scope *scope = 0;
 
 /* Wildcard translator for GRUB script.  */
-struct grub_script_wildcard_translator *wildcard_translator;
+struct grub_script_wildcard_translator *grub_wildcard_translator;
 
 grub_err_t
 grub_script_break (grub_command_t cmd, int argc, char *argv[])
@@ -233,13 +233,13 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
     int r;
     char *p = 0;
 
-    if (! wildcard_translator || escape_type == 0)
+    if (! grub_wildcard_translator || escape_type == 0)
       return grub_script_argv_append (&result, s);
 
     if (escape_type > 0)
-      p = wildcard_translator->escape (s);
+      p = grub_wildcard_translator->escape (s);
     else if (escape_type < 0)
-      p = wildcard_translator->unescape (s);
+      p = grub_wildcard_translator->unescape (s);
 
     if (! p)
       return 1;
@@ -304,7 +304,7 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 
   /* Perform wildcard expansion.  */
 
-  if (wildcard_translator)
+  if (grub_wildcard_translator)
     {
       int j;
       int failed = 0;
@@ -315,7 +315,8 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
       result.args = 0;
       for (i = 0; unexpanded.args[i]; i++)
 	{
-	  if (wildcard_translator->expand (unexpanded.args[i], &expansions))
+	  if (grub_wildcard_translator->expand (unexpanded.args[i],
+						&expansions))
 	    {
 	      grub_script_argv_free (&unexpanded);
 	      goto fail;
