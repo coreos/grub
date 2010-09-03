@@ -127,9 +127,11 @@ grub_video_gop_get_bitmask (grub_uint32_t mask, unsigned int *mask_size,
 }
 
 static grub_err_t
-grub_video_gop_fill_mode_info (struct grub_efi_gop_mode_info *in,
+grub_video_gop_fill_mode_info (unsigned mode,
+			       struct grub_efi_gop_mode_info *in,
 			       struct grub_video_mode_info *out)
 {
+  out->mode_number = mode;
   out->number_of_colors = 256;
   out->width = in->width;
   out->height = in->height;
@@ -183,6 +185,39 @@ grub_video_gop_fill_mode_info (struct grub_efi_gop_mode_info *in,
   return GRUB_ERR_NONE;
 }
 
+static int
+grub_video_gop_iterate (int (*hook) (const struct grub_video_mode_info *info))
+{
+  unsigned mode;
+
+  for (mode = 0; mode < gop->mode->max_mode; mode++)
+    {
+      grub_efi_uintn_t size;
+      grub_efi_status_t status;
+      struct grub_efi_gop_mode_info *info = NULL;
+      grub_err_t err;
+      struct grub_video_mode_info mode_info;
+	 
+      status = efi_call_4 (gop->query_mode, gop, mode, &size, &info);
+
+      if (status)
+	{
+	  info = 0;
+	  continue;
+	}
+
+      err = grub_video_gop_fill_mode_info (mode, info, &mode_info);
+      if (err)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
+      if (hook (&mode_info))
+	return 1;
+    }
+  return 0;
+}
+
 static grub_err_t
 grub_video_gop_setup (unsigned int width, unsigned int height,
 		      unsigned int mode_type, unsigned int mode_mask __attribute__ ((unused)))
@@ -226,7 +261,7 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
 	  if (status)
 	    {
 	      info = 0;
-	      break;
+	      continue;
 	    }
 
 	  grub_dprintf ("video", "GOP: mode %d: %dx%d\n", mode, info->width,
@@ -281,7 +316,8 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
 
   info = gop->mode->info;
 
-  err = grub_video_gop_fill_mode_info (info, &framebuffer.mode_info);
+  err = grub_video_gop_fill_mode_info (gop->mode->mode, info,
+				       &framebuffer.mode_info);
   if (err)
     {
       grub_dprintf ("video", "GOP: couldn't fill mode info\n");
@@ -379,6 +415,7 @@ static struct grub_video_adapter grub_video_gop_adapter =
     .delete_render_target = grub_video_fb_delete_render_target,
     .set_active_render_target = grub_video_gop_set_active_render_target,
     .get_active_render_target = grub_video_fb_get_active_render_target,
+    .iterate = grub_video_gop_iterate,
 
     .next = 0
   };
