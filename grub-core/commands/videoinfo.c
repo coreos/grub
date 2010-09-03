@@ -28,11 +28,15 @@
 static int
 hook (const struct grub_video_mode_info *info)
 {
-  grub_printf ("  %4d x %4d x %2d  ", info->height, info->width, info->bpp);
+  if (info->mode_number == GRUB_VIDEO_MODE_NUMBER_INVALID)
+    grub_printf ("        ");
+  else
+    grub_printf ("  0x%03x ", info->mode_number);
+  grub_printf ("%4d x %4d x %2d  ", info->height, info->width, info->bpp);
 
   /* Show mask and position details for direct color modes.  */
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_RGB)
-    grub_printf ("D, mask: %d/%d/%d/%d  pos: %d/%d/%d/%d",
+    grub_printf ("Direct, mask: %d/%d/%d/%d  pos: %d/%d/%d/%d",
 		 info->red_mask_size,
 		 info->green_mask_size,
 		 info->blue_mask_size,
@@ -42,7 +46,7 @@ hook (const struct grub_video_mode_info *info)
 		 info->blue_field_pos,
 		 info->reserved_field_pos);
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)
-    grub_printf ("P");
+    grub_printf ("Packed");
   grub_printf ("\n");
 
   return 0;

@@ -547,9 +547,12 @@ doublebuf_pageflipping_set_page (int page)
 }
 
 static void
-vbe2videoinfo (const struct grub_vbe_mode_info_block *vbeinfo,
+vbe2videoinfo (grub_uint32_t mode,
+	       const struct grub_vbe_mode_info_block *vbeinfo,
 	       struct grub_video_mode_info *mode_info)
 {
+  mode_info->mode_number = mode;
+
   mode_info->width = vbeinfo->x_resolution;
   mode_info->height = vbeinfo->y_resolution;
   switch (vbeinfo->memory_model)
@@ -619,7 +622,7 @@ grub_video_vbe_iterate (int (*hook) (const struct grub_video_mode_info *info))
           break;
         }
 
-      vbe2videoinfo (&vbe_mode_info, &mode_info);
+      vbe2videoinfo (*p, &vbe_mode_info, &mode_info);
       if (hook (&mode_info))
 	return 1;
     }
@@ -735,7 +738,8 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
         return grub_errno;
 
       /* Fill mode info details.  */
-      vbe2videoinfo (&active_vbe_mode_info, &framebuffer.mode_info);
+      vbe2videoinfo (best_vbe_mode, &active_vbe_mode_info,
+		     &framebuffer.mode_info);
 
       {
 	/* Get video RAM size in bytes.  */

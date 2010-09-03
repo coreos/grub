@@ -117,6 +117,9 @@ struct grub_video_mode_info
   /* In index color mode, number of colors.  In RGB mode this is 256.  */
   unsigned int number_of_colors;
 
+  unsigned int mode_number;
+#define GRUB_VIDEO_MODE_NUMBER_INVALID 0xffffffff
+
   /* Optimization hint how binary data is coded.  */
   enum grub_video_blit_format blit_format;
 
