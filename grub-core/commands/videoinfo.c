@@ -58,7 +58,14 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
 		    char **args __attribute__ ((unused)))
 {
   grub_video_adapter_t adapter;
-  grub_video_driver_id_t id = grub_video_get_driver_id ();
+  grub_video_driver_id_t id;
+
+#ifdef GRUB_MACHINE_PCBIOS
+  if (grub_strcmp (cmd->name, "vbeinfo") == 0)
+    grub_dl_load ("vbe");
+#endif
+
+  id = grub_video_get_driver_id ();
 
   grub_printf ("List of supported video modes:\n");
   grub_printf ("Legend: P=Packed pixel, D=Direct color, "
@@ -102,15 +109,25 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
 }
 
 static grub_command_t cmd;
+#ifdef GRUB_MACHINE_PCBIOS
+static grub_command_t cmd_vbe;
+#endif
 
 GRUB_MOD_INIT(videoinfo)
 {
   cmd = grub_register_command ("videoinfo", grub_cmd_videoinfo, 0,
 			       N_("List available video modes."));
+#ifdef GRUB_MACHINE_PCBIOS
+  cmd_vbe = grub_register_command ("vbeinfo", grub_cmd_videoinfo, 0,
+				   N_("List available video modes."));
+#endif
 }
 
 GRUB_MOD_FINI(videoinfo)
 {
   grub_unregister_command (cmd);
+#ifdef GRUB_MACHINE_PCBIOS
+  grub_unregister_command (cmd_vbe);
+#endif
 }
 

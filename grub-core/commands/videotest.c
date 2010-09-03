@@ -42,6 +42,11 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
   struct grub_video_render_target *text_layer;
   grub_video_color_t palette[16];
 
+#ifdef GRUB_MACHINE_PCBIOS
+  if (grub_strcmp (cmd->name, "vbetest") == 0)
+    grub_dl_load ("vbe");
+#endif
+
   err = grub_video_set_mode ("auto", GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
   if (err)
     return err;
@@ -180,14 +185,24 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
 }
 
 static grub_command_t cmd;
+#ifdef GRUB_MACHINE_PCBIOS
+static grub_command_t cmd_vbe;
+#endif
 
 GRUB_MOD_INIT(videotest)
 {
   cmd = grub_register_command ("videotest", grub_cmd_videotest,
 			       0, N_("Test video subsystem."));
+#ifdef GRUB_MACHINE_PCBIOS
+  cmd_vbe = grub_register_command ("vbetest", grub_cmd_videotest,
+			       0, N_("Test video subsystem."));
+#endif
 }
 
 GRUB_MOD_FINI(videotest)
 {
   grub_unregister_command (cmd);
+#ifdef GRUB_MACHINE_PCBIOS
+  grub_unregister_command (cmd_vbe);
+#endif
 }
