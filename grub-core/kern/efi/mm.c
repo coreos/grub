@@ -49,6 +49,12 @@ static struct allocated_page *allocated_pages = 0;
 #define MIN_HEAP_SIZE	0x100000
 #define MAX_HEAP_SIZE	(1600 * 0x100000)
 
+static void *finish_mmap_buf = 0;
+static grub_efi_uintn_t finish_mmap_size = 0;
+static grub_efi_uintn_t finish_key = 0;
+static grub_efi_uintn_t finish_desc_size;
+static grub_efi_uint32_t finish_desc_version;
+int grub_efi_is_finished = 0;
 
 /* Allocate pages. Return the pointer to the first of allocated pages.  */
 void *
@@ -140,6 +146,51 @@ grub_efi_free_pages (grub_efi_physical_address_t address,
   efi_call_2 (b->free_pages, address, pages);
 }
 
+grub_err_t
+grub_efi_finish_boot_services (grub_efi_uintn_t *outbuf_size, void *outbuf,
+			       grub_efi_uintn_t *map_key,
+			       grub_efi_uintn_t *efi_desc_size,
+			       grub_efi_uint32_t *efi_desc_version)
+{
+  grub_efi_boot_services_t *b;
+  grub_efi_status_t status;
+
+  if (grub_efi_get_memory_map (&finish_mmap_size, finish_mmap_buf, &finish_key,
+			       &finish_desc_size, &finish_desc_version) < 0)
+    return grub_error (GRUB_ERR_IO, "couldn't retrieve memory map");
+
+  if (outbuf && *outbuf_size < finish_mmap_size)
+    return grub_error (GRUB_ERR_IO, "memory map buffer is too small");
+
+  finish_mmap_buf = grub_malloc (finish_mmap_size);
+  if (!finish_mmap_buf)
+    return grub_errno;
+
+  if (grub_efi_get_memory_map (&finish_mmap_size, finish_mmap_buf, &finish_key,
+			       &finish_desc_size, &finish_desc_version) <= 0)
+    return grub_error (GRUB_ERR_IO, "couldn't retrieve memory map");
+
+  b = grub_efi_system_table->boot_services;
+  status = efi_call_2 (b->exit_boot_services, grub_efi_image_handle,
+		       finish_key);
+  if (status != GRUB_EFI_SUCCESS)
+    return grub_error (GRUB_ERR_IO, "couldn't terminate EFI services");
+
+  grub_efi_is_finished = 1;
+  if (outbuf_size)
+    *outbuf_size = finish_mmap_size;
+  if (outbuf)
+    grub_memcpy (outbuf, finish_mmap_buf, finish_mmap_size);
+  if (map_key)
+    *map_key = finish_key;
+  if (efi_desc_size)
+    *efi_desc_size = finish_desc_size;
+  if (efi_desc_version)
+    *efi_desc_version = finish_desc_version;
+
+  return GRUB_ERR_NONE;
+}
+
 /* Get the memory map as defined in the EFI spec. Return 1 if successful,
    return 0 if partial, or return -1 if an error occurs.  */
 int
@@ -153,6 +204,29 @@ grub_efi_get_memory_map (grub_efi_uintn_t *memory_map_size,
   grub_efi_boot_services_t *b;
   grub_efi_uintn_t key;
   grub_efi_uint32_t version;
+
+  if (grub_efi_is_finished)
+    {
+      int ret = 1;
+      if (*memory_map_size < finish_mmap_size)
+	{
+	  grub_memcpy (memory_map, finish_mmap_buf, *memory_map_size);
+	  ret = 0;
+	}
+      else
+	{
+	  grub_memcpy (memory_map, finish_mmap_buf, finish_mmap_size);
+	  ret = 1;
+	}
+      *memory_map_size = finish_mmap_size;
+      if (map_key)
+	*map_key = finish_key;
+      if (descriptor_size)
+	*descriptor_size = finish_desc_size;
+      if (descriptor_version)
+	*descriptor_version = finish_desc_version;
+      return ret;
+    }
 
   /* Allow some parameters to be missing.  */
   if (! map_key)

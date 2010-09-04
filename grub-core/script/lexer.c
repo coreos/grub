@@ -216,7 +216,6 @@ grub_script_lexer_init (struct grub_parser_param *parser, char *script,
 			grub_reader_getline_t getline)
 {
   int len;
-  char *script2;
   YY_BUFFER_STATE buffer;
   struct grub_lexer_param *lexerstate;
 
@@ -239,6 +238,7 @@ grub_script_lexer_init (struct grub_parser_param *parser, char *script,
       grub_free (lexerstate);
       return 0;
     }
+
   yyset_extra (parser, lexerstate->yyscanner);
   parser->lexerstate = lexerstate;
 

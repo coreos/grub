@@ -44,6 +44,9 @@ static int grub_more;
 
 static int grub_normal_char_counter = 0;
 
+static void
+putcode_real (grub_uint32_t code, struct grub_term_output *term);
+
 int
 grub_normal_get_char_counter (void)
 {
@@ -83,7 +86,7 @@ print_more (void)
   {
     grub_print_ucs4 (unicode_str, unicode_last_position, 0, 0, term);
   }
-  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
+  grub_setcolorstate (GRUB_TERM_COLOR_NORMAL);
 
   grub_free (unicode_str);
   
@@ -94,6 +97,7 @@ print_more (void)
   FOR_ACTIVE_TERM_OUTPUTS(term)
     grub_print_spaces (term, 8);
   grub_term_restore_pos (pos);
+  grub_free (pos);
 
   /* Scroll one lines or an entire page, depending on the key.  */
 
@@ -202,8 +206,39 @@ void
 grub_puts_terminal (const char *str, struct grub_term_output *term)
 {
   grub_uint32_t *unicode_str, *unicode_last_position;
+  grub_error_push ();
   grub_utf8_to_ucs4_alloc (str, &unicode_str,
 			   &unicode_last_position);
+  grub_error_pop ();
+  if (!unicode_str)
+    {
+      for (; *str; str++)
+	{
+	  struct grub_unicode_glyph c =
+	    {
+	      .variant = 0,
+	      .attributes = 0,
+	      .ncomb = 0,
+	      .combining = 0,
+	      .estimated_width = 1,
+	      .base = *str
+	    };
+
+	  FOR_ACTIVE_TERM_OUTPUTS(term)
+	  {
+	    (term->putchar) (term, &c);
+	  }
+	  if (*str == '\n')
+	    {
+	      c.base = '\r';
+	      FOR_ACTIVE_TERM_OUTPUTS(term)
+	      {
+		(term->putchar) (term, &c);
+	      }
+	    }
+	}
+      return;
+    }
 
   grub_print_ucs4 (unicode_str, unicode_last_position, 0, 0, term);
   grub_free (unicode_str);
@@ -742,15 +777,43 @@ grub_print_ucs4 (const grub_uint32_t * str,
 void
 grub_xputs_normal (const char *str)
 {
-  grub_term_output_t term;
-  grub_uint32_t *unicode_str, *unicode_last_position;
+  grub_uint32_t *unicode_str = NULL, *unicode_last_position;
   int backlog = 0;
+  grub_term_output_t term;
+
+  grub_error_push ();
   grub_utf8_to_ucs4_alloc (str, &unicode_str,
-			   &unicode_last_position);
+  			   &unicode_last_position);
+  grub_error_pop ();
 
   if (!unicode_str)
     {
-      grub_errno = GRUB_ERR_NONE;
+      for (; *str; str++)
+	{
+	  struct grub_unicode_glyph c =
+	    {
+	      .variant = 0,
+	      .attributes = 0,
+	      .ncomb = 0,
+	      .combining = 0,
+	      .estimated_width = 1,
+	      .base = *str
+	    };
+
+	  FOR_ACTIVE_TERM_OUTPUTS(term)
+	  {
+	    (term->putchar) (term, &c);
+	  }
+	  if (*str == '\n')
+	    {
+	      c.base = '\r';
+	      FOR_ACTIVE_TERM_OUTPUTS(term)
+	      {
+		(term->putchar) (term, &c);
+	      }
+	    }
+	}
+
       return;
     }
 

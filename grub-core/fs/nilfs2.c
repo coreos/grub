@@ -718,10 +718,13 @@ grub_nilfs2_load_sb (struct grub_nilfs2_data *data)
   grub_uint64_t partition_size;
   int valid[2];
   int swp = 0;
+  grub_err_t err;
 
   /* Read first super block. */
-  grub_disk_read (disk, NILFS_1ST_SUPER_BLOCK, 0,
-		  sizeof (struct grub_nilfs2_super_block), &data->sblock);
+  err = grub_disk_read (disk, NILFS_1ST_SUPER_BLOCK, 0,
+			sizeof (struct grub_nilfs2_super_block), &data->sblock);
+  if (err)
+    return err;
   /* Make sure if 1st super block is valid.  */
   valid[0] = grub_nilfs2_valid_sb (&data->sblock);
 
@@ -729,16 +732,20 @@ grub_nilfs2_load_sb (struct grub_nilfs2_data *data)
   if (partition_size != GRUB_DISK_SIZE_UNKNOWN)
     {
       /* Read second super block. */
-      grub_disk_read (disk, NILFS_2ND_SUPER_BLOCK (partition_size), 0,
-		      sizeof (struct grub_nilfs2_super_block), &sb2);
-      /* Make sure if 2nd super block is valid.  */
-      valid[1] = grub_nilfs2_valid_sb (&sb2);
+      err = grub_disk_read (disk, NILFS_2ND_SUPER_BLOCK (partition_size), 0,
+			    sizeof (struct grub_nilfs2_super_block), &sb2);
+      if (err)
+	{
+	  valid[1] = 0;
+	  grub_errno = GRUB_ERR_NONE;
+	}
+      else
+	/* Make sure if 2nd super block is valid.  */
+	valid[1] = grub_nilfs2_valid_sb (&sb2);
     }
   else
     /* 2nd super block may not exist, so it's invalid. */
     valid[1] = 0;
-
-
 
   if (!valid[0] && !valid[1])
     return grub_error (GRUB_ERR_BAD_FS, "not a nilfs2 filesystem");
@@ -752,8 +759,7 @@ grub_nilfs2_load_sb (struct grub_nilfs2_data *data)
     grub_memcpy (&data->sblock, &sb2,
 		 sizeof (struct grub_nilfs2_super_block));
 
-  grub_errno = GRUB_ERR_NONE;
-  return grub_errno;
+  return GRUB_ERR_NONE;
 }
 
 static struct grub_nilfs2_data *

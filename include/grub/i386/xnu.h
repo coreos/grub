@@ -115,5 +115,4 @@ extern grub_uint32_t grub_xnu_arg1;
 extern char grub_xnu_cmdline[1024];
 grub_err_t grub_xnu_boot (void);
 grub_err_t grub_cpu_xnu_fill_devicetree (void);
-extern grub_uint32_t grub_xnu_heap_will_be_at;
 #endif
