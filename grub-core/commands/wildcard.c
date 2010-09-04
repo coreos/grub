@@ -72,6 +72,7 @@ merge (char **dest, char **ps)
       return 0;
     }
 
+  dest = p;
   for (j = 0; ps[j]; j++)
     dest[i++] = ps[j];
   dest[i] = 0;
