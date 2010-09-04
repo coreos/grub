@@ -682,20 +682,3 @@ grub_dl_unload_unneeded (void)
       p = p->next;
     }
 }
-
-/* Unload all modules.  */
-void
-grub_dl_unload_all (void)
-{
-  while (grub_dl_head)
-    {
-      grub_dl_t p;
-
-      grub_dl_unload_unneeded ();
-
-      /* Force to decrement the ref count. This will purge pre-loaded
-	 modules and manually inserted modules.  */
-      for (p = grub_dl_head; p; p = p->next)
-	p->ref_count--;
-    }
-}

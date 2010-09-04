@@ -55,7 +55,7 @@ static struct color colors[] =
   };
 
 static void
-put (const int c)
+put (struct grub_term_output *term __attribute__ ((unused)), const int c)
 {
   char chr = c;
 
@@ -63,7 +63,7 @@ put (const int c)
 }
 
 static int
-readkey (void)
+readkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_uint8_t c;
   grub_ssize_t actual = 0;

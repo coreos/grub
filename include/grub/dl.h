@@ -101,7 +101,6 @@ grub_dl_t EXPORT_FUNC(grub_dl_load) (const char *name);
 grub_dl_t grub_dl_load_core (void *addr, grub_size_t size);
 int EXPORT_FUNC(grub_dl_unload) (grub_dl_t mod);
 void grub_dl_unload_unneeded (void);
-void grub_dl_unload_all (void);
 int EXPORT_FUNC(grub_dl_ref) (grub_dl_t mod);
 int EXPORT_FUNC(grub_dl_unref) (grub_dl_t mod);
 extern grub_dl_t EXPORT_VAR(grub_dl_head);

@@ -19,6 +19,7 @@
 #define grub_video_render_target grub_video_fbrender_target
 
 #include <grub/machine/vga.h>
+#include <grub/machine/int.h>
 #include <grub/machine/console.h>
 #include <grub/cpu/io.h>
 #include <grub/mm.h>
@@ -45,6 +46,25 @@ static struct
   int front_page;
   int back_page;
 } framebuffer;
+
+static unsigned char 
+grub_vga_set_mode (unsigned char mode)
+{
+  struct grub_bios_int_registers regs;
+  unsigned char ret;
+  /* get current mode */
+  regs.eax = 0x0f00;
+  regs.ebx = 0;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+
+  ret = regs.eax & 0xff;
+  regs.eax = mode;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+
+  return ret;
+}
 
 static inline void
 wait_vretrace (void)

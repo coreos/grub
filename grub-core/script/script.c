@@ -353,7 +353,10 @@ grub_script_parse (char *script, grub_reader_getline_t getline)
 
   parsestate = grub_zalloc (sizeof (*parsestate));
   if (!parsestate)
-    return 0;
+    {
+      grub_free (parsed);
+      return 0;
+    }
 
   /* Initialize the lexer.  */
   lexstate = grub_script_lexer_init (parsestate, script, getline);
@@ -376,6 +379,7 @@ grub_script_parse (char *script, grub_reader_getline_t getline)
       grub_script_mem_free (memfree);
       grub_script_lexer_fini (lexstate);
       grub_free (parsestate);
+      grub_free (parsed);
       return 0;
     }
 

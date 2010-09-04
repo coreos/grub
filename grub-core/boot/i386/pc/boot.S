@@ -153,10 +153,6 @@ real_start:
 	/* set %si to the disk address packet */
 	movw	$disk_address_packet, %si
 
-	/* do not probe LBA if the drive is a floppy */
-	testb	$GRUB_BOOT_MACHINE_BIOS_HD_FLAG, %dl
-	jz	LOCAL(chs_mode)
-
 	/* check if LBA is supported */
 	movb	$0x41, %ah
 	movw	$0x55aa, %bx
