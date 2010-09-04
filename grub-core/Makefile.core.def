@@ -1380,3 +1380,8 @@ module = {
   name = datehook;
   common = hook/datehook.c;
 };
+
+module = {
+  name = test_blockarg;
+  common = tests/test_blockarg.c;
+};

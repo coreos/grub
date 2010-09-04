@@ -1,5 +1,71 @@
 2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	Support for passing block of commands as an argument to extcmds.
+
+	* Makefile.util.def: Rules for new test.
+	* tests/grub_script_blockarg.in: New test.
+	* grub-core/tests/test_blockarg.c: New file, block argument
+	command used in the test.
+
+	* include/grub/extcmd.h (grub_extcmd_context): New struct.
+	(grub_register_extcmd_prio): New function prototype.
+	(grub_extcmd_dispatcher): New function prototype.
+	* include/grub/command.h (GRUB_COMMAND_FLAG_BLOCKS): New command
+	type.
+	* include/grub/script_sh.h (struct grub_script): New members
+	`children', `next_siblings' and `refcnt' for block arguments and
+	reference counting.
+	(GRUB_SCRIPT_ARG_TYPE_BLOCK): New argument type.
+	(grub_script_arg): New member `script' for block argument.
+	(grub_script_argv): New member `script' for block argument.
+	(grub_parser_param): New member `scripts' for block argument.
+	(grub_script_mem_free): New extern function prototype.
+	(grub_script_ref): New function prototype.
+	(grub_script_unref): New function prototype.
+
+	* grub-core/normal/dyncmd.c (grub_dyncmd_dispatcher): Moved to
+	extcmd form to support block arguments.
+	* grub-core/script/argv.c: Block arguments support.
+	* grub-core/script/execute.c: Likewise.
+	* grub-core/script/lexer.c: Likewise.
+	* grub-core/script/main.c: Likewise.
+	* grub-core/script/script.c: Likewise.
+	* grub-core/script/parser.y: Likewise.  New `block' and `block0'
+	non-terminals.
+
+	* grub-core/commands/acpi.c: Update extcmd implementations with
+	grub_extcmd_context_t.
+	* grub-core/commands/cat.c: Likewise.
+	* grub-core/commands/echo.c: Likewise.
+	* grub-core/commands/extcmd.c: Likewise.
+	* grub-core/commands/hashsum.c: Likewise.
+	* grub-core/commands/hdparm.c: Likewise.
+	* grub-core/commands/help.c: Likewise.
+	* grub-core/commands/hexdump.c: Likewise.
+	* grub-core/commands/i386/cpuid.c: Likewise.
+	* grub-core/commands/i386/pc/drivemap.c: Likewise.
+	* grub-core/commands/i386/pc/halt.c: Likewise.
+	* grub-core/commands/i386/pc/sendkey.c: Likewise.
+	* grub-core/commands/iorw.c: Likewise.
+	* grub-core/commands/keystatus.c: Likewise.
+	* grub-core/commands/loadenv.c: Likewise.
+	* grub-core/commands/ls.c: Likewise.
+	* grub-core/commands/lspci.c: Likewise.
+	* grub-core/commands/memrw.c: Likewise.
+	* grub-core/commands/probe.c: Likewise.
+	* grub-core/commands/search_wrap.c: Likewise.
+	* grub-core/commands/setpci.c: Likewise.
+	* grub-core/commands/sleep.c: Likewise.
+	* grub-core/disk/loopback.c: Likewise.
+	* grub-core/hello/hello.c: Likewise.
+	* grub-core/loader/i386/bsd.c: Likewise.
+	* grub-core/loader/xnu.c: Likewise.
+	* grub-core/term/gfxterm.c: Likewise.
+	* grub-core/term/serial.c: Likewise.
+	* grub-core/tests/lib/functional_test.c: Likewise.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	Multi-line quoted strings support.
 
 	* grub-core/script/lexer.c (append_newline): Removed.

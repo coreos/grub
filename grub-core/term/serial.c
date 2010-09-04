@@ -150,9 +150,9 @@ grub_serial_find (char *name)
 }
 
 static grub_err_t
-grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   char pname[40];
   char *name = NULL;
   struct grub_serial_port *port;

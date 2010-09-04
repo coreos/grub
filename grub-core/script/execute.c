@@ -25,6 +25,7 @@
 #include <grub/menu.h>
 #include <grub/lib/arg.h>
 #include <grub/normal.h>
+#include <grub/extcmd.h>
 
 /* Max digits for a char is 3 (0xFF is 255), similarly for an int it
    is sizeof (int) * 3, and one extra for a possible -ve sign.  */
@@ -104,7 +105,7 @@ grub_env_special (const char *name)
 static char **
 grub_script_env_get (const char *name, grub_script_arg_type_t type)
 {
-  struct grub_script_argv result = { 0, 0 };
+  struct grub_script_argv result = { 0, 0, 0 };
 
   if (grub_script_argv_next (&result))
     goto fail;
@@ -222,7 +223,7 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
   int i;
   char **values = 0;
   struct grub_script_arg *arg = 0;
-  struct grub_script_argv result = { 0, 0 };
+  struct grub_script_argv result = { 0, 0, 0 };
 
   for (; arglist && arglist->arg; arglist = arglist->next)
     {
@@ -246,6 +247,14 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 		    goto fail;
 		}
 	      grub_free (values);
+	      break;
+
+	    case GRUB_SCRIPT_ARG_TYPE_BLOCK:
+	      if (grub_script_argv_append (&result, "{") ||
+		  grub_script_argv_append (&result, arg->str) ||
+		  grub_script_argv_append (&result, "}"))
+		goto fail;
+	      result.script = arg->script;
 	      break;
 
 	    case GRUB_SCRIPT_ARG_TYPE_TEXT:
@@ -325,7 +334,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   grub_script_function_t func = 0;
   char errnobuf[18];
   char *cmdname;
-  struct grub_script_argv argv = { 0, 0 };
+  struct grub_script_argv argv = { 0, 0, 0 };
 
   /* Lookup the command.  */
   if (grub_script_arglist_to_argv (cmdline->arglist, &argv) || ! argv.args[0])
@@ -369,7 +378,14 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 
   /* Execute the GRUB command or function.  */
   if (grubcmd)
-    ret = (grubcmd->func) (grubcmd, argv.argc - 1, argv.args + 1);
+    {
+      if ((grubcmd->flags & GRUB_COMMAND_FLAG_BLOCKS) &&
+	  (grubcmd->flags & GRUB_COMMAND_FLAG_EXTCMD))
+	ret = grub_extcmd_dispatcher (grubcmd, argv.argc - 1, argv.args + 1,
+				      argv.script);
+      else
+	ret = (grubcmd->func) (grubcmd, argv.argc - 1, argv.args + 1);
+    }
   else
     ret = grub_script_function_call (func, argv.argc - 1, argv.args + 1);
 
@@ -429,8 +445,7 @@ grub_script_execute_cmdfor (struct grub_script_cmd *cmd)
 {
   unsigned i;
   grub_err_t result;
-  struct grub_script_argv argv = { 0, 0 };
-
+  struct grub_script_argv argv = { 0, 0, 0 };
   struct grub_script_cmdfor *cmdfor = (struct grub_script_cmdfor *) cmd;
 
   if (grub_script_arglist_to_argv (cmdfor->words, &argv))
@@ -495,7 +510,7 @@ grub_err_t
 grub_script_execute_menuentry (struct grub_script_cmd *cmd)
 {
   struct grub_script_cmd_menuentry *cmd_menuentry;
-  struct grub_script_argv argv = { 0, 0 };
+  struct grub_script_argv argv = { 0, 0, 0 };
 
   cmd_menuentry = (struct grub_script_cmd_menuentry *) cmd;
 
