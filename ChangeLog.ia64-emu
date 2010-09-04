@@ -1,0 +1,6 @@
+2008-01-28  Tristan Gingold  <gingold@free.fr>
+2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* grub-core/lib/ia64/setjmp.S: New file (from glibc).
+	* grub-core/lib/ia64/longjmp.S: New file (from glibc).
+	* grub-core/lib/setjmp.S [__ia64__]: include ia64/setjmp.S.
