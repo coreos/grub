@@ -1,3 +1,17 @@
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Multi-line quoted strings support.
+
+	* grub-core/script/lexer.c (append_newline): Removed.
+	(grub_script_lexer_yywrap): Refactored.
+	(grub_script_lexer_init): Refactored.
+	* grub-core/script/yylex.l (yywrap): New function.
+	(grub_lexer_resplit): New function.
+	(grub_lexer_unput): New function.
+	* include/grub/script_sh.h (grub_lexer_param): New members, unput
+	and resplit.
+	* tests/grub_script_echo1.in: Added few more testcases.
+
 2010-09-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/misc.c: Don't add abort alias in utils.
