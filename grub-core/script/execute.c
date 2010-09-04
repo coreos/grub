@@ -36,12 +36,34 @@ static unsigned long active_loops;
 static unsigned long active_breaks;
 static unsigned long function_return;
 
+#define GRUB_SCRIPT_SCOPE_MALLOCED      1
+#define GRUB_SCRIPT_SCOPE_ARGS_MALLOCED 2
+
 /* Scope for grub script functions.  */
 struct grub_script_scope
 {
+  unsigned flags;
+  unsigned shifts;
   struct grub_script_argv argv;
 };
 static struct grub_script_scope *scope = 0;
+
+static void
+replace_scope (struct grub_script_scope *new_scope)
+{
+  if (scope)
+    {
+      scope->argv.argc += scope->shifts;
+      scope->argv.args -= scope->shifts;
+
+      if (scope->flags & GRUB_SCRIPT_SCOPE_ARGS_MALLOCED)
+	grub_script_argv_free (&scope->argv);
+
+      if (scope->flags & GRUB_SCRIPT_SCOPE_MALLOCED)
+	grub_free (scope);
+    }
+  scope = new_scope;
+}
 
 grub_err_t
 grub_script_break (grub_command_t cmd, int argc, char *argv[])
@@ -87,8 +109,38 @@ grub_script_shift (grub_command_t cmd __attribute__((unused)),
   if (n > scope->argv.argc)
     return GRUB_ERR_BAD_ARGUMENT;
 
+  scope->shifts += n;
   scope->argv.argc -= n;
   scope->argv.args += n;
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_script_setparams (grub_command_t cmd __attribute__((unused)),
+		       int argc, char **args)
+{
+  struct grub_script_scope *new_scope;
+  struct grub_script_argv argv = { 0, 0, 0 };
+
+  if (! scope)
+    return GRUB_ERR_INVALID_COMMAND;
+
+  new_scope = grub_malloc (sizeof (*new_scope));
+  if (! new_scope)
+    return grub_errno;
+
+  if (grub_script_argv_make (&argv, argc, args))
+    {
+      grub_free (new_scope);
+      return grub_errno;
+    }
+
+  new_scope->shifts = 0;
+  new_scope->argv = argv;
+  new_scope->flags = GRUB_SCRIPT_SCOPE_MALLOCED |
+    GRUB_SCRIPT_SCOPE_ARGS_MALLOCED;
+
+  replace_scope (new_scope);
   return GRUB_ERR_NONE;
 }
 
@@ -130,6 +182,7 @@ grub_env_special (const char *name)
 static char **
 grub_script_env_get (const char *name, grub_script_arg_type_t type)
 {
+  unsigned i;
   struct grub_script_argv result = { 0, 0, 0 };
 
   if (grub_script_argv_next (&result))
@@ -164,8 +217,6 @@ grub_script_env_get (const char *name, grub_script_arg_type_t type)
     }
   else if (grub_strcmp (name, "*") == 0)
     {
-      unsigned i;
-
       for (i = 0; i < scope->argv.argc; i++)
 	if (type == GRUB_SCRIPT_ARG_TYPE_VAR)
 	  {
@@ -186,8 +237,6 @@ grub_script_env_get (const char *name, grub_script_arg_type_t type)
     }
   else if (grub_strcmp (name, "@") == 0)
     {
-      unsigned i;
-
       for (i = 0; i < scope->argv.argc; i++)
 	{
 	  if (i != 0 && grub_script_argv_next (&result))
@@ -336,6 +385,8 @@ grub_script_function_call (grub_script_function_t func, int argc, char **args)
   struct grub_script_scope new_scope;
 
   active_loops = 0;
+  new_scope.flags = 0;
+  new_scope.shifts = 0;
   new_scope.argv.argc = argc;
   new_scope.argv.args = args;
 
@@ -346,7 +397,7 @@ grub_script_function_call (grub_script_function_t func, int argc, char **args)
 
   function_return = 0;
   active_loops = loops;
-  scope = old_scope;
+  replace_scope (old_scope); /* free any scopes by setparams */
   return ret;
 }
 
