@@ -1,5 +1,10 @@
 2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	* grub-core/normal/completion.c (grub_normal_do_completion): Fix
+	grub_free order.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	Support for passing block of commands as an argument to extcmds.
 
 	* Makefile.util.def: Rules for new test.
