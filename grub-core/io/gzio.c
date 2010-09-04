@@ -214,12 +214,14 @@ test_header (grub_file_t file)
 
   grub_file_seek (gzio->file, grub_file_size (gzio->file) - 4);
 
-  if (grub_file_read (gzio->file, &orig_len, 4) != 4)
+  if (grub_file_seekable (gzio->file))
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "unsupported gzip format");
-      return 0;
+      if (grub_file_read (gzio->file, &orig_len, 4) != 4)
+	{
+	  grub_error (GRUB_ERR_BAD_FILE_TYPE, "unsupported gzip format");
+	  return 0;
+	}
     }
-
   /* FIXME: this does not handle files whose original size is over 4GB.
      But how can we know the real original size?  */
   file->size = grub_le_to_cpu32 (orig_len);
@@ -1135,6 +1137,7 @@ grub_gzio_open (grub_file_t io, int transparent)
   file->data = gzio;
   file->read_hook = 0;
   file->fs = &grub_gzio_fs;
+  file->not_easly_seekable = 1;
 
   if (! test_header (file))
     {

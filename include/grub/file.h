@@ -39,6 +39,9 @@ struct grub_file
   /* The file size.  */
   grub_off_t size;
 
+  /* If file is not easly seekable. Should be set by underlying layer.  */
+  int not_easly_seekable;
+
   /* Filesystem-specific data.  */
   void *data;
 
@@ -67,6 +70,12 @@ static inline grub_off_t
 grub_file_tell (const grub_file_t file)
 {
   return file->offset;
+}
+
+static inline int
+grub_file_seekable (const grub_file_t file)
+{
+  return !file->not_easly_seekable;
 }
 
 #endif /* ! GRUB_FILE_HEADER */

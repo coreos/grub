@@ -1,3 +1,13 @@
+2010-09-04  Szymon Janc <szymon@janc.net.pl>
+
+	* include/grub/file.h (grub_file): New member not_easly_seekable.
+	(grub_file_seekable): New inline function.
+	* grub-core/io/gzio.c (test_header): Don't test end magic if file isn't
+	easily seekable.
+	(grub_gzio_open): Set not_easly_seekable.
+	* grub-core/fs/i386/pc/pxe.c (grub_pxefs_open): Set not_easily_seekable.
+	* grub-core/io/bufio.c (grub_bufio_open): Propagate not_easily_seekable.
+
 2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Support for options to appear multiple times on cmdline.
