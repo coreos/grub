@@ -248,9 +248,9 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 }
 
 static grub_err_t
-grub_cmd_ls (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_ls (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
 
   if (argc == 0)
     grub_ls_list_devices (state[0].set);

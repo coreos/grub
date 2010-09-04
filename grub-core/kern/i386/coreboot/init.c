@@ -19,7 +19,6 @@
 #include <grub/kernel.h>
 #include <grub/mm.h>
 #include <grub/machine/time.h>
-#include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
 #include <grub/types.h>
@@ -32,31 +31,19 @@
 #include <grub/time.h>
 #include <grub/symbol.h>
 #include <grub/cpu/io.h>
+#include <grub/cpu/floppy.h>
 #include <grub/cpu/tsc.h>
 #ifdef GRUB_MACHINE_QEMU
 #include <grub/machine/kernel.h>
 #endif
 
-#define GRUB_FLOPPY_REG_DIGITAL_OUTPUT		0x3f2
-
 extern char _start[];
 extern char _end[];
-
-grub_addr_t grub_os_area_addr;
-grub_size_t grub_os_area_size;
 
 grub_uint32_t
 grub_get_rtc (void)
 {
   grub_fatal ("grub_get_rtc() is not implemented.\n");
-}
-
-/* Stop the floppy drive from spinning, so that other software is
-   jumped to with a known state.  */
-void
-grub_stop_floppy (void)
-{
-  grub_outb (0, GRUB_FLOPPY_REG_DIGITAL_OUTPUT);
 }
 
 void
@@ -103,20 +90,7 @@ grub_machine_init (void)
 	  }
       }
 
-    if (addr == GRUB_MEMORY_MACHINE_UPPER_START
-	|| (addr >= GRUB_MEMORY_MACHINE_LOWER_SIZE
-	    && addr <= GRUB_MEMORY_MACHINE_UPPER_START
-	    && (addr + size > GRUB_MEMORY_MACHINE_UPPER_START)))
-      {
-	grub_size_t quarter = size >> 2;
-
-	grub_os_area_addr = addr;
-	grub_os_area_size = size - quarter;
-	grub_mm_init_region ((void *) (grub_os_area_addr + grub_os_area_size),
-			     quarter);
-      }
-    else
-      grub_mm_init_region ((void *) (grub_addr_t) addr, (grub_size_t) size);
+    grub_mm_init_region ((void *) (grub_addr_t) addr, (grub_size_t) size);
 
     return 0;
   }

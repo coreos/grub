@@ -61,12 +61,22 @@
 #define OPENBSD_BOOTARG_END	-1
 
 #define	OPENBSD_BOOTARG_MMAP	0
+#define	OPENBSD_BOOTARG_CONSOLE 5
 
 struct grub_openbsd_bootargs
 {
-  int ba_type;
-  int ba_size;
-  struct grub_openbsd_bootargs *ba_next;
+  grub_uint32_t ba_type;
+  grub_uint32_t ba_size;
+  grub_uint32_t ba_next;
 } __attribute__ ((packed));
+
+struct grub_openbsd_bootarg_console
+{
+  grub_uint32_t device;
+  grub_uint32_t speed;
+};
+
+#define GRUB_OPENBSD_COM_MAJOR 8
+#define GRUB_OPENBSD_VGA_MAJOR 12
 
 #endif

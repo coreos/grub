@@ -165,10 +165,10 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
 }
 
 static grub_err_t
-grub_cmd_hashsum (struct grub_extcmd *cmd,
+grub_cmd_hashsum (struct grub_extcmd_context *ctxt,
 		  int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   const char *hashname = NULL;
   const char *prefix = NULL;
   const gcry_md_spec_t *hash;
@@ -177,7 +177,7 @@ grub_cmd_hashsum (struct grub_extcmd *cmd,
   unsigned unread = 0;
 
   for (i = 0; i < ARRAY_SIZE (aliases); i++)
-    if (grub_strcmp (cmd->cmd->name, aliases[i].name) == 0)
+    if (grub_strcmp (ctxt->extcmd->cmd->name, aliases[i].name) == 0)
       hashname = aliases[i].hashname;
   if (state[0].set)
     hashname = state[0].arg;

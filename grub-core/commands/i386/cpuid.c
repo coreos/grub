@@ -43,7 +43,7 @@ static const struct grub_arg_option options[] =
 unsigned char grub_cpuid_has_longmode = 0;
 
 static grub_err_t
-grub_cmd_cpuid (grub_extcmd_t cmd __attribute__ ((unused)),
+grub_cmd_cpuid (grub_extcmd_context_t ctxt __attribute__ ((unused)),
 		int argc __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {

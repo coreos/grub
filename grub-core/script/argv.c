@@ -18,6 +18,7 @@
  */
 
 #include <grub/mm.h>
+#include <grub/misc.h>
 #include <grub/script_sh.h>
 
 /* Return nearest power of two that is >= v.  */
@@ -55,6 +56,7 @@ grub_script_argv_free (struct grub_script_argv *argv)
 
   argv->argc = 0;
   argv->args = 0;
+  argv->script = 0;
 }
 
 /* Make argv from argc, args pair.  */
@@ -62,7 +64,7 @@ int
 grub_script_argv_make (struct grub_script_argv *argv, int argc, char **args)
 {
   int i;
-  struct grub_script_argv r = { 0, 0};
+  struct grub_script_argv r = { 0, 0, 0 };
 
   for (i = 0; i < argc; i++)
     if (grub_script_argv_next (&r) || grub_script_argv_append (&r, args[i]))
@@ -80,7 +82,7 @@ grub_script_argv_next (struct grub_script_argv *argv)
 {
   char **p = argv->args;
 
-  if (argv->args && argv->args[argv->argc - 1] == 0)
+  if (argv->args && argv->argc && argv->args[argv->argc - 1] == 0)
     return 0;
 
   p = grub_realloc (p, round_up_exp ((argv->argc + 2) * sizeof (char *)));

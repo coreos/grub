@@ -125,10 +125,11 @@ set_colors (void)
 
 /* Replace default `normal' colors with the ones specified by user (if any).  */
 char *
-grub_env_write_color_normal (struct grub_env_var *var, const char *val)
+grub_env_write_color_normal (struct grub_env_var *var __attribute__ ((unused)),
+			     const char *val)
 {
   if (grub_parse_color_name_pair (&color_normal, val))
-    return 0;
+    return NULL;
 
   set_colors ();
 
@@ -137,10 +138,11 @@ grub_env_write_color_normal (struct grub_env_var *var, const char *val)
 
 /* Replace default `highlight' colors with the ones specified by user (if any).  */
 char *
-grub_env_write_color_highlight (struct grub_env_var *var, const char *val)
+grub_env_write_color_highlight (struct grub_env_var *var __attribute__ ((unused)),
+				const char *val)
 {
   if (grub_parse_color_name_pair (&color_highlight, val))
-    return 0;
+    return NULL;
 
   set_colors ();
 
