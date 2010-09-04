@@ -1,5 +1,20 @@
 2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	"setparams" command to update positional parameters.
+
+	* tests/grub_script_setparams.in: New test.
+	* Makefile.util.def: Rules for new test.
+
+	* grub-core/script/argv.c (grub_script_argv_make): New function.
+	* grub-core/script/execute.c (replace_scope): New function.
+	(grub_script_setparams): New function.
+	* grub-core/script/lexer.c: Remove unused variables.
+	* grub-core/script/main.c: Register/unregister setparams command.
+	* include/grub/script_sh.h (grub_script_argv_make): New prototype.
+	(grub_script_setparams): New prototype.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	* grub-core/normal/completion.c (grub_normal_do_completion): Fix
 	grub_free order.
 

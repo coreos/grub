@@ -44,6 +44,7 @@ grub_normal_parse_line (char *line, grub_reader_getline_t getline)
 static grub_command_t cmd_break;
 static grub_command_t cmd_continue;
 static grub_command_t cmd_shift;
+static grub_command_t cmd_setparams;
 
 void
 grub_script_init (void)
@@ -54,6 +55,9 @@ grub_script_init (void)
 					N_("[n]"), N_("Continue loops"));
   cmd_shift = grub_register_command ("shift", grub_script_shift,
 				     N_("[n]"), N_("Shift positional parameters."));
+  cmd_setparams = grub_register_command ("setparams", grub_script_setparams,
+					 N_("[VALUE]..."),
+					 N_("Set positional parameters."));
 }
 
 void
@@ -70,4 +74,8 @@ grub_script_fini (void)
   if (cmd_shift)
     grub_unregister_command (cmd_shift);
   cmd_shift = 0;
+
+  if (cmd_setparams)
+    grub_unregister_command (cmd_setparams);
+  cmd_setparams = 0;
 }
