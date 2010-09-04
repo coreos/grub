@@ -401,6 +401,62 @@ grub_script_function_call (grub_script_function_t func, int argc, char **args)
   return ret;
 }
 
+/* Execute a source script.  */
+grub_err_t
+grub_script_execute_sourcecode (const char *source, int argc, char **args)
+{
+  grub_err_t ret = 0;
+  struct grub_script *parsed_script;
+  struct grub_script_scope new_scope;
+  struct grub_script_scope *old_scope;
+
+  auto grub_err_t getline (char **line, int cont);
+  grub_err_t getline (char **line, int cont __attribute__ ((unused)))
+  {
+    const char *p;
+
+    if (! source)
+      {
+	*line = 0;
+	return 0;
+      }
+
+    p = grub_strchr (source, '\n');
+
+    if (p)
+      *line = grub_strndup (source, p - source);
+    else
+      *line = grub_strdup (source);
+    source = p ? p + 1 : 0;
+    return 0;
+  }
+
+  new_scope.argv.argc = argc;
+  new_scope.argv.args = args;
+
+  old_scope = scope;
+  scope = &new_scope;
+
+  while (source)
+    {
+      char *line;
+
+      getline (&line, 0);
+      parsed_script = grub_script_parse (line, getline);
+      if (! parsed_script)
+	{
+	  ret = grub_errno;
+	  break;
+	}
+
+      ret = grub_script_execute (parsed_script);
+      grub_free (line);
+    }
+
+  scope = old_scope;
+  return ret;
+}
+
 /* Execute a single command line.  */
 grub_err_t
 grub_script_execute_cmdline (struct grub_script_cmd *cmd)
@@ -597,31 +653,6 @@ grub_script_execute_cmdwhile (struct grub_script_cmd *cmd)
   active_loops--;
   return result;
 }
-
-/* Execute the menu entry generate statement.  */
-grub_err_t
-grub_script_execute_menuentry (struct grub_script_cmd *cmd)
-{
-  struct grub_script_cmd_menuentry *cmd_menuentry;
-  struct grub_script_argv argv = { 0, 0, 0 };
-
-  cmd_menuentry = (struct grub_script_cmd_menuentry *) cmd;
-
-  if (cmd_menuentry->arglist)
-    {
-      if (grub_script_arglist_to_argv (cmd_menuentry->arglist, &argv))
-	return grub_errno;
-    }
-
-  grub_normal_add_menu_entry (argv.argc, (const char **) argv.args,
-			      cmd_menuentry->sourcecode);
-
-  grub_script_argv_free (&argv);
-
-  return grub_errno;
-}
-
-
 
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t

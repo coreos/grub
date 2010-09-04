@@ -1,5 +1,35 @@
 2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	Support for options to appear multiple times on cmdline.
+
+	* include/grub/lib/arg.h (grub_arg_list_alloc): New prototype.
+	* grub-core/commands/extcmd.c: Support for repeatable option.
+	* grub-core/lib/arg.c (grub_arg_list_alloc): New function for
+	repeatable option support.
+
+	Refactor menuentry into a regular command.
+
+	* grub-core/commands/menuentry.c: New file, menuentry command
+	implementation.
+	* grub-core/Makefile.core.def: Rule update for normal.mod.
+	* grub-core/normal/main.c: Moved menuentry creation to
+	grub-core/commands/menuentry.c.
+	* grub-core/normal/menu.c (grub_menu_execute_entry): Removed.
+	(grub_menu_execute_entry_real): Removed.
+	* grub-core/script/execute.c (grub_script_execute_sourcecode): New
+	function.
+	(grub_script_execute_menuentry): Removed.
+	* grub-core/script/parser.y (menuentry): Removed.
+	* grub-core/script/script.c (grub_script_create_cmdmenu): Removed.
+	* grub-core/script/yylex.l (menuentry): Removed.
+	* include/grub/menu.h (grub_menu_init): New prototype.
+	(grub_menu_fini): New prototype.
+	* include/grub/normal.h (grub_normal_add_menu_entry): Removed.
+	* include/grub/script_sh.h (grub_script_cmd_menuentry): Removed.
+	(grub_script_execute_sourcecode): New prototype.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	"return" command for GRUB script functions.
 
 	* tests/grub_script_return.in: New test.

@@ -145,21 +145,6 @@ struct grub_script_cmdwhile
   int until;
 };
 
-/* A menu entry generate statement.  */
-struct grub_script_cmd_menuentry
-{
-  struct grub_script_cmd cmd;
-
-  /* The arguments for this menu entry.  */
-  struct grub_script_arglist *arglist;
-
-  /* The sourcecode the entry will be generated from.  */
-  const char *sourcecode;
-
-  /* Options.  XXX: Not used yet.  */
-  int options;
-};
-
 /* State of the lexer as passed to the lexer.  */
 struct grub_lexer_param
 {
@@ -283,12 +268,6 @@ grub_script_create_cmdwhile (struct grub_parser_param *state,
 			     int is_an_until_loop);
 
 struct grub_script_cmd *
-grub_script_create_cmdmenu (struct grub_parser_param *state,
-			    struct grub_script_arglist *arglist,
-			    char *sourcecode,
-			    int options);
-
-struct grub_script_cmd *
 grub_script_append_cmd (struct grub_parser_param *state,
 			struct grub_script_cmd *list,
 			struct grub_script_cmd *last);
@@ -332,10 +311,10 @@ grub_err_t grub_script_execute_cmdlist (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdif (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdfor (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdwhile (struct grub_script_cmd *cmd);
-grub_err_t grub_script_execute_menuentry (struct grub_script_cmd *cmd);
 
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t grub_script_execute (struct grub_script *script);
+grub_err_t grub_script_execute_sourcecode (const char *source, int argc, char **args);
 
 /* Break command for loops.  */
 grub_err_t grub_script_break (grub_command_t cmd, int argc, char *argv[]);
