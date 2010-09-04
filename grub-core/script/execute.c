@@ -99,7 +99,7 @@ grub_script_return (grub_command_t cmd __attribute__((unused)),
   unsigned long n;
 
   if (! scope || argc > 1)
-    return GRUB_ERR_BAD_ARGUMENT;
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "not in function scope");
 
   if (argc == 0)
     {
@@ -109,10 +109,10 @@ grub_script_return (grub_command_t cmd __attribute__((unused)),
 
   n = grub_strtoul (argv[0], &p, 10);
   if (*p != '\0')
-    return GRUB_ERR_BAD_ARGUMENT;
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad argument");
 
   function_return = 1;
-  return n;
+  return n ? grub_error (GRUB_ERR_TEST_FAILURE, "false") : GRUB_ERR_NONE;
 }
 
 static int
