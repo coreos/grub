@@ -40,8 +40,13 @@ struct grub_script_cmd
 
 struct grub_script
 {
+  unsigned refcnt;
   struct grub_script_mem *mem;
   struct grub_script_cmd *cmd;
+
+  /* grub_scripts from block arguments.  */
+  struct grub_script *next_siblings;
+  struct grub_script *children;
 };
 
 typedef enum
@@ -50,7 +55,8 @@ typedef enum
   GRUB_SCRIPT_ARG_TYPE_TEXT,
   GRUB_SCRIPT_ARG_TYPE_DQVAR,
   GRUB_SCRIPT_ARG_TYPE_DQSTR,
-  GRUB_SCRIPT_ARG_TYPE_SQSTR
+  GRUB_SCRIPT_ARG_TYPE_SQSTR,
+  GRUB_SCRIPT_ARG_TYPE_BLOCK
 } grub_script_arg_type_t;
 
 /* A part of an argument.  */
@@ -59,6 +65,9 @@ struct grub_script_arg
   grub_script_arg_type_t type;
 
   char *str;
+
+  /* Parsed block argument.  */
+  struct grub_script *script;
 
   /* Next argument part.  */
   struct grub_script_arg *next;
@@ -69,6 +78,7 @@ struct grub_script_argv
 {
   unsigned argc;
   char **args;
+  struct grub_script *script;
 };
 
 /* Pluggable wildcard translator.  */
@@ -79,7 +89,7 @@ struct grub_script_wildcard_translator
   grub_err_t (*expand) (const char *str, char ***expansions);
 };
 extern struct grub_script_wildcard_translator *grub_wildcard_translator;
-extern struct grub_script_wildcard_translator *grub_filename_translator;
+extern struct grub_script_wildcard_translator grub_filename_translator;
 
 /* A complete argument.  It consists of a list of one or more `struct
    grub_script_arg's.  */
@@ -204,6 +214,12 @@ struct grub_lexer_param
   /* Type of text.  */
   grub_script_arg_type_t type;
 
+  /* Flag to indicate resplit in progres.  */
+  unsigned resplit;
+
+  /* Text that is unput.  */
+  char *prefix;
+
   /* Flex scanner.  */
   void *yyscanner;
 
@@ -227,6 +243,9 @@ struct grub_parser_param
   /* The memory that was used while parsing and scanning.  */
   struct grub_script_mem *memused;
 
+  /* The block argument scripts.  */
+  struct grub_script *scripts;
+
   /* The result of the parser.  */
   struct grub_script_cmd *parsed;
 
@@ -235,6 +254,8 @@ struct grub_parser_param
 
 void grub_script_init (void);
 void grub_script_fini (void);
+
+void grub_script_mem_free (struct grub_script_mem *mem);
 
 void grub_script_argv_free    (struct grub_script_argv *argv);
 int grub_script_argv_next     (struct grub_script_argv *argv);
@@ -297,9 +318,9 @@ struct grub_lexer_param *grub_script_lexer_init (struct grub_parser_param *parse
 void grub_script_lexer_fini (struct grub_lexer_param *);
 void grub_script_lexer_ref (struct grub_lexer_param *);
 void grub_script_lexer_deref (struct grub_lexer_param *);
-void grub_script_lexer_record_start (struct grub_parser_param *);
-char *grub_script_lexer_record_stop (struct grub_parser_param *);
-int  grub_script_lexer_yywrap (struct grub_parser_param *);
+unsigned grub_script_lexer_record_start (struct grub_parser_param *);
+char *grub_script_lexer_record_stop (struct grub_parser_param *, unsigned);
+int  grub_script_lexer_yywrap (struct grub_parser_param *, const char *input);
 void grub_script_lexer_record (struct grub_parser_param *, char *);
 
 /* Functions to track allocated memory.  */
@@ -374,5 +395,25 @@ grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *c
 
 grub_err_t
 grub_normal_parse_line (char *line, grub_reader_getline_t getline);
+
+static inline struct grub_script *
+grub_script_ref (struct grub_script *script)
+{
+  if (script)
+    script->refcnt++;
+  return script;
+}
+
+static inline void
+grub_script_unref (struct grub_script *script)
+{
+  if (! script)
+    return;
+
+  if (script->refcnt == 0)
+    grub_script_free (script);
+  else
+    script->refcnt--;
+}
 
 #endif /* ! GRUB_NORMAL_PARSER_HEADER */

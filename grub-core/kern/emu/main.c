@@ -67,16 +67,6 @@ grub_reboot (void)
 }
 
 void
-grub_halt (
-#ifdef GRUB_MACHINE_PCBIOS
-	   int no_apm __attribute__ ((unused))
-#endif
-	   )
-{
-  grub_reboot ();
-}
-
-void
 grub_machine_init (void)
 {
 }

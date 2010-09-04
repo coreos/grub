@@ -37,6 +37,8 @@
 #define GRUB_COMMAND_FLAG_EXTCMD	0x10
 /* This is an dynamic command.  */
 #define GRUB_COMMAND_FLAG_DYNCMD	0x20
+/* This command accepts block arguments.  */
+#define GRUB_COMMAND_FLAG_BLOCKS	0x40
 
 struct grub_command;
 

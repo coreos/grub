@@ -54,7 +54,7 @@ grub_script_malloc (struct grub_parser_param *state, grub_size_t size)
 }
 
 /* Free all memory described by MEM.  */
-static void
+void
 grub_script_mem_free (struct grub_script_mem *mem)
 {
   struct grub_script_mem *memfree;
@@ -94,9 +94,21 @@ grub_script_mem_record_stop (struct grub_parser_param *state,
 void
 grub_script_free (struct grub_script *script)
 {
-  if (!script)
+  struct grub_script *s;
+  struct grub_script *t;
+
+  if (! script)
     return;
-  grub_script_mem_free (script->mem);
+
+  if (script->mem)
+    grub_script_mem_free (script->mem);
+
+  s = script->children;
+  while (s) {
+    t = s->next_siblings;
+    grub_script_unref (s);
+    s = t;
+  }
   grub_free (script);
 }
 
@@ -119,6 +131,8 @@ grub_script_arg_add (struct grub_parser_param *state,
     return arg;
 
   argpart->type = type;
+  argpart->script = 0;
+
   len = grub_strlen (str) + 1;
   argpart->str = grub_script_malloc (state, len);
   if (!argpart->str)
@@ -335,16 +349,14 @@ grub_script_create (struct grub_script_cmd *cmd, struct grub_script_mem *mem)
   struct grub_script *parsed;
 
   parsed = grub_malloc (sizeof (*parsed));
-  if (!parsed)
-    {
-      grub_script_mem_free (mem);
-      grub_free (cmd);
-
-      return 0;
-    }
+  if (! parsed)
+    return 0;
 
   parsed->mem = mem;
   parsed->cmd = cmd;
+  parsed->refcnt = 0;
+  parsed->children = 0;
+  parsed->next_siblings = 0;
 
   return parsed;
 }
@@ -359,13 +371,16 @@ grub_script_parse (char *script, grub_reader_getline_t getline)
   struct grub_lexer_param *lexstate;
   struct grub_parser_param *parsestate;
 
-  parsed = grub_malloc (sizeof (*parsed));
+  parsed = grub_script_create (0, 0);
   if (!parsed)
     return 0;
 
   parsestate = grub_zalloc (sizeof (*parsestate));
   if (!parsestate)
-    return 0;
+    {
+      grub_free (parsed);
+      return 0;
+    }
 
   /* Initialize the lexer.  */
   lexstate = grub_script_lexer_init (parsestate, script, getline);
@@ -388,11 +403,13 @@ grub_script_parse (char *script, grub_reader_getline_t getline)
       grub_script_mem_free (memfree);
       grub_script_lexer_fini (lexstate);
       grub_free (parsestate);
+      grub_free (parsed);
       return 0;
     }
 
   parsed->mem = grub_script_mem_record_stop (parsestate, membackup);
   parsed->cmd = parsestate->parsed;
+  parsed->children = parsestate->scripts;
 
   grub_script_lexer_fini (lexstate);
   grub_free (parsestate);

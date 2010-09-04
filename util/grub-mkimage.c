@@ -54,7 +54,8 @@ struct image_target_desc
   enum {
     IMAGE_I386_PC, IMAGE_EFI, IMAGE_COREBOOT,
     IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_I386_IEEE1275,
-    IMAGE_YEELOONG_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH
+    IMAGE_YEELOONG_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
+    IMAGE_I386_PC_PXE
   } id;
   enum
     {
@@ -62,7 +63,7 @@ struct image_target_desc
       PLATFORM_FLAGS_LZMA = 1
     } flags;
   unsigned prefix;
-  unsigned data_end;
+  unsigned prefix_end;
   unsigned raw_size;
   unsigned total_module_size;
   unsigned kernel_image_size;
@@ -85,7 +86,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_COREBOOT,
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_I386_COREBOOT_PREFIX,
-      .data_end = GRUB_KERNEL_I386_COREBOOT_DATA_END,
+      .prefix_end = GRUB_KERNEL_I386_COREBOOT_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -106,8 +107,8 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_COREBOOT,
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_I386_COREBOOT_PREFIX,
-      .data_end = GRUB_KERNEL_I386_COREBOOT_DATA_END,
+      .prefix = GRUB_KERNEL_I386_MULTIBOOT_PREFIX,
+      .prefix_end = GRUB_KERNEL_I386_MULTIBOOT_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -129,7 +130,25 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_I386_PC, 
       .flags = PLATFORM_FLAGS_LZMA,
       .prefix = GRUB_KERNEL_I386_PC_PREFIX,
-      .data_end = GRUB_KERNEL_I386_PC_DATA_END,
+      .prefix_end = GRUB_KERNEL_I386_PC_PREFIX_END,
+      .raw_size = GRUB_KERNEL_I386_PC_RAW_SIZE,
+      .total_module_size = GRUB_KERNEL_I386_PC_TOTAL_MODULE_SIZE,
+      .kernel_image_size = GRUB_KERNEL_I386_PC_KERNEL_IMAGE_SIZE,
+      .compressed_size = GRUB_KERNEL_I386_PC_COMPRESSED_SIZE,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = GRUB_KERNEL_I386_PC_INSTALL_DOS_PART,
+      .install_bsd_part = GRUB_KERNEL_I386_PC_INSTALL_BSD_PART,
+      .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR
+    },
+    {
+      .name = "i386-pc-pxe",
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_I386_PC_PXE, 
+      .flags = PLATFORM_FLAGS_LZMA,
+      .prefix = GRUB_KERNEL_I386_PC_PREFIX,
+      .prefix_end = GRUB_KERNEL_I386_PC_PREFIX_END,
       .raw_size = GRUB_KERNEL_I386_PC_RAW_SIZE,
       .total_module_size = GRUB_KERNEL_I386_PC_TOTAL_MODULE_SIZE,
       .kernel_image_size = GRUB_KERNEL_I386_PC_KERNEL_IMAGE_SIZE,
@@ -147,7 +166,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_EFI,
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_I386_EFI_PREFIX,
-      .data_end = GRUB_KERNEL_I386_EFI_DATA_END,
+      .prefix_end = GRUB_KERNEL_I386_EFI_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -169,7 +188,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_I386_IEEE1275, 
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_I386_IEEE1275_PREFIX,
-      .data_end = GRUB_KERNEL_I386_IEEE1275_DATA_END,
+      .prefix_end = GRUB_KERNEL_I386_IEEE1275_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -191,7 +210,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_QEMU, 
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_I386_QEMU_PREFIX,
-      .data_end = GRUB_KERNEL_I386_QEMU_DATA_END,
+      .prefix_end = GRUB_KERNEL_I386_QEMU_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .compressed_size = TARGET_NO_FIELD,
@@ -209,7 +228,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_EFI, 
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_X86_64_EFI_PREFIX,
-      .data_end = GRUB_KERNEL_X86_64_EFI_DATA_END,
+      .prefix_end = GRUB_KERNEL_X86_64_EFI_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -231,7 +250,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_YEELOONG_FLASH, 
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_MIPS_YEELOONG_PREFIX,
-      .data_end = GRUB_KERNEL_MIPS_YEELOONG_DATA_END,
+      .prefix_end = GRUB_KERNEL_MIPS_YEELOONG_PREFIX_END,
       .raw_size = GRUB_KERNEL_MIPS_YEELOONG_RAW_SIZE,
       .total_module_size = GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE,
       .compressed_size = GRUB_KERNEL_MIPS_YEELOONG_COMPRESSED_SIZE,
@@ -251,7 +270,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_YEELOONG_ELF, 
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_MIPS_YEELOONG_PREFIX,
-      .data_end = GRUB_KERNEL_MIPS_YEELOONG_DATA_END,
+      .prefix_end = GRUB_KERNEL_MIPS_YEELOONG_PREFIX_END,
       .raw_size = GRUB_KERNEL_MIPS_YEELOONG_RAW_SIZE,
       .total_module_size = GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE,
       .compressed_size = GRUB_KERNEL_MIPS_YEELOONG_COMPRESSED_SIZE,
@@ -271,7 +290,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_PPC, 
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_POWERPC_IEEE1275_PREFIX,
-      .data_end = GRUB_KERNEL_POWERPC_IEEE1275_DATA_END,
+      .prefix_end = GRUB_KERNEL_POWERPC_IEEE1275_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -293,7 +312,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_SPARC64_RAW,
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX,
-      .data_end = GRUB_KERNEL_SPARC64_IEEE1275_DATA_END,
+      .prefix_end = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX_END,
       .raw_size = GRUB_KERNEL_SPARC64_IEEE1275_RAW_SIZE,
       .total_module_size = GRUB_KERNEL_SPARC64_IEEE1275_TOTAL_MODULE_SIZE,
       .kernel_image_size = GRUB_KERNEL_SPARC64_IEEE1275_KERNEL_IMAGE_SIZE,
@@ -311,7 +330,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_SPARC64_AOUT,
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX,
-      .data_end = GRUB_KERNEL_SPARC64_IEEE1275_DATA_END,
+      .prefix_end = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX_END,
       .raw_size = GRUB_KERNEL_SPARC64_IEEE1275_RAW_SIZE,
       .total_module_size = GRUB_KERNEL_SPARC64_IEEE1275_TOTAL_MODULE_SIZE,
       .kernel_image_size = GRUB_KERNEL_SPARC64_IEEE1275_KERNEL_IMAGE_SIZE,
@@ -507,12 +526,12 @@ struct fixup_block_list
 
 static void
 generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
-		char *memdisk_path, char *font_path, char *config_path,
+		char *memdisk_path, char *config_path,
 		struct image_target_desc *image_target, int note)
 {
   char *kernel_img, *core_img;
   size_t kernel_size, total_module_size, core_size, exec_size;
-  size_t memdisk_size = 0, font_size = 0, config_size = 0, config_size_pure = 0;
+  size_t memdisk_size = 0, config_size = 0, config_size_pure = 0;
   char *kernel_path;
   size_t offset;
   struct grub_util_path_list *path_list, *p, *next;
@@ -534,12 +553,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       memdisk_size = ALIGN_UP(grub_util_get_image_size (memdisk_path), 512);
       grub_util_info ("the size of memory disk is 0x%x", memdisk_size);
       total_module_size += memdisk_size + sizeof (struct grub_module_header);
-    }
-
-  if (font_path)
-    {
-      font_size = ALIGN_ADDR (grub_util_get_image_size (font_path));
-      total_module_size += font_size + sizeof (struct grub_module_header);
     }
 
   if (config_path)
@@ -565,7 +578,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 			       total_module_size, &start_address, &rel_section,
 			       &reloc_size, &align, image_target);
 
-  if (image_target->prefix + strlen (prefix) + 1 > image_target->data_end)
+  if (image_target->prefix + strlen (prefix) + 1 > image_target->prefix_end)
     grub_util_error (_("prefix is too long"));
   strcpy (kernel_img + image_target->prefix, prefix);
 
@@ -625,20 +638,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       offset += memdisk_size;
     }
 
-  if (font_path)
-    {
-      struct grub_module_header *header;
-
-      header = (struct grub_module_header *) (kernel_img + offset);
-      memset (header, 0, sizeof (struct grub_module_header));
-      header->type = grub_host_to_target32 (OBJ_TYPE_FONT);
-      header->size = grub_host_to_target32 (font_size + sizeof (*header));
-      offset += sizeof (*header);
-
-      grub_util_load_image (font_path, kernel_img + offset);
-      offset += font_size;
-    }
-
   if (config_path)
     {
       struct grub_module_header *header;
@@ -684,6 +683,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   switch (image_target->id)
     {
     case IMAGE_I386_PC:
+    case IMAGE_I386_PC_PXE:
       {
 	unsigned num;
 	char *boot_path, *boot_img;
@@ -697,6 +697,20 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
 	if (num > 0xffff)
 	  grub_util_error (_("the core image is too big"));
+
+	if (image_target->id == IMAGE_I386_PC_PXE)
+	  {
+	    char *pxeboot_path, *pxeboot_img;
+	    size_t pxeboot_size;
+	    
+	    pxeboot_path = grub_util_get_path (dir, "pxeboot.img");
+	    pxeboot_size = grub_util_get_image_size (pxeboot_path);
+	    pxeboot_img = grub_util_read_image (pxeboot_path);
+	    
+	    grub_util_write_image (pxeboot_img, pxeboot_size, out);
+	    free (pxeboot_img);
+	    free (pxeboot_path);
+	  }
 
 	boot_path = grub_util_get_path (dir, "diskboot.img");
 	boot_size = grub_util_get_image_size (boot_path);
@@ -1241,7 +1255,6 @@ Make a bootable image of GRUB.\n\
   -d, --directory=DIR     use images and modules under DIR [default=%s/@platform@]\n\
   -p, --prefix=DIR        set grub_prefix directory [default=%s]\n\
   -m, --memdisk=FILE      embed FILE as a memdisk image\n\
-  -f, --font=FILE         embed FILE as a boot font\n\
   -c, --config=FILE       embed FILE as boot config\n\
   -n, --note              add NOTE segment for CHRP Open Firmware\n\
   -o, --output=FILE       output a generated image to FILE [default=stdout]\n\
@@ -1330,13 +1343,6 @@ main (int argc, char *argv[])
 	    prefix = xstrdup ("(memdisk)/boot/grub");
 	    break;
 
-	  case 'f':
-	    if (font)
-	      free (font);
-
-	    font = xstrdup (optarg);
-	    break;
-
 	  case 'c':
 	    if (config)
 	      free (config);
@@ -1401,7 +1407,7 @@ main (int argc, char *argv[])
     }
 
   generate_image (dir, prefix ? : DEFAULT_DIRECTORY, fp,
-		  argv + optind, memdisk, font, config,
+		  argv + optind, memdisk, config,
 		  image_target, note);
 
   fclose (fp);

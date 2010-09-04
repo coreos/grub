@@ -43,9 +43,20 @@ grub_err_t (*grub_gfxmenu_try_hook) (int entry, grub_menu_t menu,
 void
 grub_wait_after_message (void)
 {
+  grub_uint64_t endtime;
   grub_xputs ("\n");
   grub_printf_ (N_("Press any key to continue..."));
-  (void) grub_getkey ();
+  grub_refresh ();
+
+  endtime = grub_get_time_ms () + 10000;
+
+  while (grub_get_time_ms () < endtime)
+    if (grub_checkkey () >= 0)
+      {
+	grub_getkey ();
+	break;
+      }
+
   grub_xputs ("\n");
 }
 

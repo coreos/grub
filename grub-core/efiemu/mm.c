@@ -323,6 +323,25 @@ grub_efiemu_get_memory_map (grub_efi_uintn_t *memory_map_size,
   return 1;
 }
 
+grub_err_t
+grub_efiemu_finish_boot_services (grub_efi_uintn_t *memory_map_size,
+				  grub_efi_memory_descriptor_t *memory_map,
+				  grub_efi_uintn_t *map_key,
+				  grub_efi_uintn_t *descriptor_size,
+				  grub_efi_uint32_t *descriptor_version)
+{
+  int val = grub_efiemu_get_memory_map (memory_map_size,
+					memory_map, map_key,
+					descriptor_size,
+					descriptor_version);
+  if (val == 1)
+    return GRUB_ERR_NONE;
+  if (val == -1)
+    return grub_errno;
+  return grub_error (GRUB_ERR_IO, "memory map buffer is too small");
+}
+
+
 /* Free everything */
 grub_err_t
 grub_efiemu_mm_unload (void)

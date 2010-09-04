@@ -227,6 +227,16 @@ grub_ns8250_init (void)
       }
 }
 
+/* Return the port number for the UNITth serial device.  */
+grub_port_t
+grub_ns8250_hw_get_port (const unsigned int unit)
+{
+  if (unit < GRUB_SERIAL_PORT_NUM)
+    return serial_hw_io_addr[unit];
+  else
+    return 0;
+}
+
 char *
 grub_serial_ns8250_add_port (grub_port_t port)
 {

@@ -16,7 +16,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/boot.h>
 #include <grub/types.h>
@@ -66,6 +65,11 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uin
   if (hook (0x0,
 	    (grub_addr_t) _start,
 	    GRUB_MACHINE_MEMORY_AVAILABLE))
+    return 1;
+
+  if (hook ((grub_addr_t) _end,
+           0xa0000 - (grub_addr_t) _end,
+           GRUB_MACHINE_MEMORY_AVAILABLE))
     return 1;
 
   if (hook (GRUB_MEMORY_MACHINE_UPPER,

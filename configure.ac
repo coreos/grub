@@ -586,6 +586,12 @@ AC_ARG_ENABLE([efiemu],
 if test x"$enable_efiemu" = xno ; then
   efiemu_excuse="explicitly disabled"
 fi
+if test x"$target_cpu" != xi386 ; then
+  efiemu_excuse="only available on i386"
+fi
+if test x"$platform" = xefi ; then
+  efiemu_excuse="not available on efi"
+fi
 if test x"$efiemu_excuse" = x ; then
   AC_CACHE_CHECK([whether options required for efiemu work], grub_cv_cc_efiemu, [
     CFLAGS="$CFLAGS -m64 -mcmodel=large -mno-red-zone -nostdlib"
@@ -816,12 +822,23 @@ fi
 
 if test x"$device_mapper_excuse" = x ; then
   # Check for device-mapper library.
-  AC_CHECK_LIB([devmapper], [dm_task_create],
-               [LIBDEVMAPPER="-ldevmapper"
-                AC_DEFINE([HAVE_DEVICE_MAPPER], [1],
-                          [Define to 1 if you have the devmapper library.])],
+  AC_CHECK_LIB([devmapper], [dm_task_create], [],
                [device_mapper_excuse="need devmapper library"])
 fi
+
+if test x"$device_mapper_excuse" = x ; then
+  # Check for device-mapper library.
+  AC_CHECK_LIB([devmapper], [dm_log_with_errno_init],
+               [],
+               [device_mapper_excuse="need devmapper library"])
+fi
+
+if test x"$device_mapper_excuse" = x ; then
+   LIBDEVMAPPER="-ldevmapper";
+   AC_DEFINE([HAVE_DEVICE_MAPPER], [1],
+             [Define to 1 if you have the devmapper library.])
+fi
+
 AC_SUBST([LIBDEVMAPPER])
 
 AC_CHECK_LIB([zfs], [libzfs_init],
@@ -835,6 +852,8 @@ AC_CHECK_LIB([nvpair], [nvlist_print],
               AC_DEFINE([HAVE_LIBNVPAIR], [1],
                         [Define to 1 if you have the NVPAIR library.])],)
 AC_SUBST([LIBNVPAIR])
+
+LIBS=""
 
 pkglibrootdir='$(libdir)'/`echo $PACKAGE | sed "$program_transform_name"`
 AC_SUBST(pkglibrootdir)
@@ -935,6 +954,11 @@ echo PCI support for grub-emu: Yes
 else
 echo PCI support for grub-emu: No "($grub_emu_pci_excuse)"
 fi
+fi
+if test x"$device_mapper_excuse" = x ; then
+echo With devmapper support: Yes
+else
+echo With devmapper support: No "($device_mapper_excuse)"
 fi
 if [ x"$enable_mm_debug" = xyes ]; then
 echo With memory debugging: Yes

@@ -16,7 +16,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/types.h>
 #include <grub/multiboot.h>
