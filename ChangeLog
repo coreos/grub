@@ -1,3 +1,8 @@
+2010-09-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/misc.c: Don't add abort alias in utils.
+	Reported by: echoline.
+
 2010-09-03  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Add missing files into "make dist" tarball for other platforms.

@@ -990,7 +990,7 @@ grub_abort (void)
   grub_exit ();
 }
 
-#ifndef APPLE_CC
+#if ! defined (APPLE_CC) && !defined (GRUB_UTIL)
 /* GCC emits references to abort().  */
 void abort (void) __attribute__ ((alias ("grub_abort")));
 #endif
