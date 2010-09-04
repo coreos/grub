@@ -205,8 +205,6 @@ struct grub_lexer_param *
 grub_script_lexer_init (struct grub_parser_param *parser, char *script,
 			grub_reader_getline_t getline)
 {
-  int len;
-  YY_BUFFER_STATE buffer;
   struct grub_lexer_param *lexerstate;
 
   lexerstate = grub_zalloc (sizeof (*lexerstate));

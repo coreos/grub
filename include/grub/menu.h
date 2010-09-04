@@ -100,4 +100,7 @@ void grub_menu_execute_with_fallback (grub_menu_t menu,
 void grub_menu_entry_run (grub_menu_entry_t entry);
 int grub_menu_get_default_entry_index (grub_menu_t menu);
 
+void grub_menu_init (void);
+void grub_menu_fini (void);
+
 #endif /* GRUB_MENU_HEADER */
