@@ -21,6 +21,7 @@
 #include <grub/machine/time.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
+#include <grub/offsets.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/dl.h>
@@ -64,8 +65,10 @@ grub_machine_init (void)
   /* Initialize the console as early as possible.  */
   grub_vga_text_init ();
 
-  auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t, grub_uint64_t, 
+				       grub_memory_type_t);
+  int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t size,
+				  grub_memory_type_t type)
   {
 #if GRUB_CPU_SIZEOF_VOID_P == 4
     /* Restrict ourselves to 32-bit memory space.  */
@@ -75,7 +78,7 @@ grub_machine_init (void)
       size = GRUB_ULONG_MAX - addr;
 #endif
 
-    if (type != GRUB_MACHINE_MEMORY_AVAILABLE)
+    if (type != GRUB_MEMORY_AVAILABLE)
       return 0;
 
     /* Avoid the lower memory.  */

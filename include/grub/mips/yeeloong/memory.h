@@ -31,13 +31,6 @@
 #define GRUB_ARCH_LOWMEMMAXSIZE 0x10000000
 #define GRUB_ARCH_HIGHMEMPSTART 0x10000000
 
-#define GRUB_MACHINE_MEMORY_AVAILABLE        1
-#define GRUB_MACHINE_MEMORY_MAX_TYPE         1
-  /* This one is special: it's used internally but is never reported
-     by firmware. */
-#define GRUB_MACHINE_MEMORY_HOLE 	2
-#define GRUB_MACHINE_MEMORY_RESERVED GRUB_MACHINE_MEMORY_HOLE
-
 #ifndef ASM_FILE
 
 typedef grub_addr_t grub_phys_addr_t;

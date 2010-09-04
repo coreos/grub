@@ -32,6 +32,7 @@
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/offsets.h>
+#include <grub/memory.h>
 
 /* The minimal heap size we can live with. */
 #define HEAP_MIN_SIZE		(unsigned long) (2 * 1024 * 1024)
@@ -126,8 +127,10 @@ static void grub_claim_heap (void)
 {
   unsigned long total = 0;
 
-  auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t len, grub_uint32_t type);
-  int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t len, grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t len,
+				       grub_memory_type_t type);
+  int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t len,
+				  grub_memory_type_t type)
   {
     if (type != 1)
       return 0;
@@ -189,31 +192,6 @@ static void grub_claim_heap (void)
     grub_machine_mmap_iterate (heap_init);
 }
 
-#ifdef __i386__
-
-grub_uint32_t grub_upper_mem;
-
-/* We need to call this before grub_claim_memory.  */
-static void
-grub_get_extended_memory (void)
-{
-  auto int NESTED_FUNC_ATTR find_ext_mem (grub_uint64_t addr, grub_uint64_t len, grub_uint32_t type);
-  int NESTED_FUNC_ATTR find_ext_mem (grub_uint64_t addr, grub_uint64_t len, grub_uint32_t type)
-    {
-      if (type == 1 && addr == 0x100000)
-        {
-          grub_upper_mem = len;
-          return 1;
-        }
-
-      return 0;
-    }
-
-  grub_machine_mmap_iterate (find_ext_mem);
-}
-
-#endif
-
 static grub_uint64_t ieee1275_get_time_ms (void);
 
 void
@@ -225,9 +203,6 @@ grub_machine_init (void)
   grub_ieee1275_init ();
 
   grub_console_init_early ();
-#ifdef __i386__
-  grub_get_extended_memory ();
-#endif
   grub_claim_heap ();
   grub_console_init_lately ();
   grub_ofdisk_init ();
