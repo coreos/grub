@@ -1,3 +1,14 @@
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Support for updating environment variables with matched substrings
+	of regexp.
+
+	* tests/grub_cmd_regexp.in: New test.
+	* Makefile.util.def: Rule for new test.
+
+	* grub-core/commands/regexp.c: New option -s to update environment
+	variables with regexp matches.
+
 2010-09-04  Szymon Janc <szymon@janc.net.pl>
 
 	* include/grub/file.h (grub_file): New member not_easly_seekable.

@@ -519,6 +519,12 @@ script = {
   common = tests/grub_script_return.in;
 };
 
+script = {
+  testcase;
+  name = grub_cmd_regexp;
+  common = tests/grub_cmd_regexp.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;
