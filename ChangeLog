@@ -1,3 +1,118 @@
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* grub-core/normal/completion.c (grub_normal_do_completion): Fix
+	grub_free order.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Support for passing block of commands as an argument to extcmds.
+
+	* Makefile.util.def: Rules for new test.
+	* tests/grub_script_blockarg.in: New test.
+	* grub-core/tests/test_blockarg.c: New file, block argument
+	command used in the test.
+
+	* include/grub/extcmd.h (grub_extcmd_context): New struct.
+	(grub_register_extcmd_prio): New function prototype.
+	(grub_extcmd_dispatcher): New function prototype.
+	* include/grub/command.h (GRUB_COMMAND_FLAG_BLOCKS): New command
+	type.
+	* include/grub/script_sh.h (struct grub_script): New members
+	`children', `next_siblings' and `refcnt' for block arguments and
+	reference counting.
+	(GRUB_SCRIPT_ARG_TYPE_BLOCK): New argument type.
+	(grub_script_arg): New member `script' for block argument.
+	(grub_script_argv): New member `script' for block argument.
+	(grub_parser_param): New member `scripts' for block argument.
+	(grub_script_mem_free): New extern function prototype.
+	(grub_script_ref): New function prototype.
+	(grub_script_unref): New function prototype.
+
+	* grub-core/normal/dyncmd.c (grub_dyncmd_dispatcher): Moved to
+	extcmd form to support block arguments.
+	* grub-core/script/argv.c: Block arguments support.
+	* grub-core/script/execute.c: Likewise.
+	* grub-core/script/lexer.c: Likewise.
+	* grub-core/script/main.c: Likewise.
+	* grub-core/script/script.c: Likewise.
+	* grub-core/script/parser.y: Likewise.  New `block' and `block0'
+	non-terminals.
+
+	* grub-core/commands/acpi.c: Update extcmd implementations with
+	grub_extcmd_context_t.
+	* grub-core/commands/cat.c: Likewise.
+	* grub-core/commands/echo.c: Likewise.
+	* grub-core/commands/extcmd.c: Likewise.
+	* grub-core/commands/hashsum.c: Likewise.
+	* grub-core/commands/hdparm.c: Likewise.
+	* grub-core/commands/help.c: Likewise.
+	* grub-core/commands/hexdump.c: Likewise.
+	* grub-core/commands/i386/cpuid.c: Likewise.
+	* grub-core/commands/i386/pc/drivemap.c: Likewise.
+	* grub-core/commands/i386/pc/halt.c: Likewise.
+	* grub-core/commands/i386/pc/sendkey.c: Likewise.
+	* grub-core/commands/iorw.c: Likewise.
+	* grub-core/commands/keystatus.c: Likewise.
+	* grub-core/commands/loadenv.c: Likewise.
+	* grub-core/commands/ls.c: Likewise.
+	* grub-core/commands/lspci.c: Likewise.
+	* grub-core/commands/memrw.c: Likewise.
+	* grub-core/commands/probe.c: Likewise.
+	* grub-core/commands/search_wrap.c: Likewise.
+	* grub-core/commands/setpci.c: Likewise.
+	* grub-core/commands/sleep.c: Likewise.
+	* grub-core/disk/loopback.c: Likewise.
+	* grub-core/hello/hello.c: Likewise.
+	* grub-core/loader/i386/bsd.c: Likewise.
+	* grub-core/loader/xnu.c: Likewise.
+	* grub-core/term/gfxterm.c: Likewise.
+	* grub-core/term/serial.c: Likewise.
+	* grub-core/tests/lib/functional_test.c: Likewise.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Multi-line quoted strings support.
+
+	* grub-core/script/lexer.c (append_newline): Removed.
+	(grub_script_lexer_yywrap): Refactored.
+	(grub_script_lexer_init): Refactored.
+	* grub-core/script/yylex.l (yywrap): New function.
+	(grub_lexer_resplit): New function.
+	(grub_lexer_unput): New function.
+	* include/grub/script_sh.h (grub_lexer_param): New members, unput
+	and resplit.
+	* tests/grub_script_echo1.in: Added few more testcases.
+
+2010-09-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/misc.c: Don't add abort alias in utils.
+	Reported by: echoline.
+
+2010-09-03  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Add missing files into "make dist" tarball for other platforms.
+
+	* gentpl.py (script): Use dist_noinst_DATA instead of EXTRA_DIST.
+	* conf/Makefile.common (dist_noinst_DATA): New variable.
+	* conf/Makefile.extra-dist: Added missing make dist files.
+	* grub-core/Makefile.core.def: Likewise.
+
+2010-09-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Compress grub_prefix.
+
+	* grub-core/boot/i386/pc/lnxboot.S: Use
+	GRUB_KERNEL_I386_PC_MULTIBOOT_SIGNATURE.
+	* grub-core/kern/i386/pc/startup.S: Move grub_prefix to compressed part.
+	* include/grub/offsets.h: Rename GRUB_MACHINE_DATA_END to
+	GRUB_MACHINE_PREFIX_END. All users updated.
+	(GRUB_KERNEL_I386_PC_PREFIX): Set to GRUB_KERNEL_I386_PC_RAW_SIZE.
+	(GRUB_KERNEL_I386_PC_PREFIX_END): Set to GRUB_KERNEL_I386_PC_PREFIX
+	+ 0x40.
+	(GRUB_KERNEL_I386_PC_RAW_SIZE): Decrease.
+	* util/grub-mkimage.c (image_target_desc): Change data_end to
+	prefix_end. All users updated.
+
 2010-09-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/bsd.c (grub_freebsd_boot): Set %ebp to sane

@@ -115,6 +115,7 @@ pkglib_SCRIPTS =
 noinst_PROGRAMS =
 grubconf_SCRIPTS =
 noinst_LIBRARIES =
+dist_noinst_DATA =
 
 TESTS =
 EXTRA_DIST =

@@ -137,6 +137,7 @@ kernel = {
   mips_yeeloong = term/at_keyboard.c;
   mips_yeeloong = term/serial.c;
   mips_yeeloong = video/sm712.c;
+  extra_dist = video/sm712_init.c;
 
   powerpc_ieee1275 = kern/ieee1275/init.c;
   powerpc_ieee1275 = kern/powerpc/cache.S;
@@ -1009,6 +1010,9 @@ module = {
   powerpc = lib/powerpc/relocator_asm.S;
   powerpc = lib/powerpc/relocator.c;
 
+  extra_dist = lib/i386/relocator_common.S;
+  extra_dist = kern/powerpc/cache_flush.S;
+
   enable = mips;
   enable = powerpc;
   enable = x86;
@@ -1375,4 +1379,9 @@ module = {
 module = {
   name = datehook;
   common = hook/datehook.c;
+};
+
+module = {
+  name = test_blockarg;
+  common = tests/test_blockarg.c;
 };

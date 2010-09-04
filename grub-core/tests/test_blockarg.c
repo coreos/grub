@@ -1,8 +1,7 @@
-/* hello.c - test module for dynamic loading */
+/* test_blockarg.c - print and execute block argument  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2007  Free Software Foundation, Inc.
- *  Copyright (C) 2003  NIIBE Yutaka <gniibe@m17n.org>
+ *  Copyright (C) 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,32 +17,35 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/types.h>
-#include <grub/misc.h>
-#include <grub/mm.h>
-#include <grub/err.h>
 #include <grub/dl.h>
-#include <grub/extcmd.h>
+#include <grub/err.h>
+#include <grub/misc.h>
 #include <grub/i18n.h>
+#include <grub/extcmd.h>
+#include <grub/script_sh.h>
 
 static grub_err_t
-grub_cmd_hello (grub_extcmd_context_t ctxt __attribute__ ((unused)),
-		int argc __attribute__ ((unused)),
-		char **args __attribute__ ((unused)))
+test_blockarg (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  grub_printf ("Hello World\n");
-  return 0;
+  if (! ctxt->script)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no block parameter");
+
+  grub_printf ("%s\n", args[argc - 1]);
+  grub_script_execute (ctxt->script);
+  return GRUB_ERR_NONE;
 }
 
 static grub_extcmd_t cmd;
 
-GRUB_MOD_INIT(hello)
+GRUB_MOD_INIT(test_blockarg)
 {
-  cmd = grub_register_extcmd ("hello", grub_cmd_hello, GRUB_COMMAND_FLAG_BOTH,
-			      0, N_("Say \"Hello World\"."), 0);
+  cmd = grub_register_extcmd ("test_blockarg", test_blockarg,
+			      GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_BLOCKS,
+			      N_("BLOCK"),
+			      N_("Print and execute block argument."), 0);
 }
 
-GRUB_MOD_FINI(hello)
+GRUB_MOD_FINI(test_blockarg)
 {
   grub_unregister_extcmd (cmd);
 }

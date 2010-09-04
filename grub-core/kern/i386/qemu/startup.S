@@ -39,7 +39,7 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = _start + GRUB_KERNEL_MACHINE_DATA_END
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
 
 codestart:
 	/* Relocate to low memory.  First we figure out our location.
