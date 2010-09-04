@@ -102,7 +102,8 @@ grub_script_argv_next (struct grub_script_argv *argv)
 int
 grub_script_argv_append (struct grub_script_argv *argv, const char *s)
 {
-  int a, b;
+  int a;
+  int b;
   char *p = argv->args[argv->argc - 1];
 
   if (! s)
@@ -117,6 +118,7 @@ grub_script_argv_append (struct grub_script_argv *argv, const char *s)
 
   grub_strcpy (p + a, s);
   argv->args[argv->argc - 1] = p;
+
   return 0;
 }
 

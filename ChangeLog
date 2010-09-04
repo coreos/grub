@@ -1,5 +1,23 @@
 2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	Filename expansion support for wildcards in GRUB script.
+
+	* tests/grub_script_expansion.in: New test.
+	* Makefile.util.def: Rule for new test.
+
+	* grub-core/commands/wildcard.c: New file, implements filename
+	expansion support for GRUB script.
+	* grub-core/Makefile.core.def: Rule update for regexp.mod.
+	* grub-core/script/argv.c: Cosmetic changes.
+	* grub-core/script/execute.c (grub_script_arglist_to_argv):
+	Refactored to perform wildcard expansion on arguments.
+	* include/grub/script_sh.h (grub_script_wildcard_translator): New
+	struct.
+
+	* tests/util/grub-shell.in: Fix quoting for read input.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	Support for updating environment variables with matched substrings
 	of regexp.
 

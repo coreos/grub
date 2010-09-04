@@ -525,6 +525,12 @@ script = {
   common = tests/grub_cmd_regexp.in;
 };
 
+script = {
+  testcase;
+  name = grub_script_expansion;
+  common = tests/grub_script_expansion.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;

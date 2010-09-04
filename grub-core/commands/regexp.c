@@ -24,6 +24,7 @@
 #include <grub/env.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
+#include <grub/script_sh.h>
 #include <regex.h>
 
 static const struct grub_arg_option options[] =
@@ -138,9 +139,13 @@ GRUB_MOD_INIT(regexp)
   cmd = grub_register_extcmd ("regexp", grub_cmd_regexp,
 			      GRUB_COMMAND_FLAG_BOTH, N_("REGEXP STRING"),
 			      N_("Test if REGEXP matches STRING."), options);
+
+  /* Setup GRUB script wildcard translator.  */
+  grub_wildcard_translator = &grub_filename_translator;
 }
 
 GRUB_MOD_FINI(regexp)
 {
   grub_unregister_extcmd (cmd);
+  grub_wildcard_translator = 0;
 }

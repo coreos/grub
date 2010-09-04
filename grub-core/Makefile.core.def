@@ -395,6 +395,7 @@ module = {
 module = {
   name = regexp;
   common = commands/regexp.c;
+  common = commands/wildcard.c;
   ldadd = libgnulib.a;
   cflags = '$(CFLAGS_POSIX) $(CFLAGS_GNULIB)';
   cppflags = '$(CPPFLAGS_POSIX) $(CPPFLAGS_GNULIB)';
