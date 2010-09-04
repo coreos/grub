@@ -1,5 +1,82 @@
 2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	Support for updating environment variables with matched substrings
+	of regexp.
+
+	* tests/grub_cmd_regexp.in: New test.
+	* Makefile.util.def: Rule for new test.
+
+	* grub-core/commands/regexp.c: New option -s to update environment
+	variables with regexp matches.
+
+2010-09-04  Szymon Janc <szymon@janc.net.pl>
+
+	* include/grub/file.h (grub_file): New member not_easly_seekable.
+	(grub_file_seekable): New inline function.
+	* grub-core/io/gzio.c (test_header): Don't test end magic if file isn't
+	easily seekable.
+	(grub_gzio_open): Set not_easly_seekable.
+	* grub-core/fs/i386/pc/pxe.c (grub_pxefs_open): Set not_easily_seekable.
+	* grub-core/io/bufio.c (grub_bufio_open): Propagate not_easily_seekable.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Support for options to appear multiple times on cmdline.
+
+	* include/grub/lib/arg.h (grub_arg_list_alloc): New prototype.
+	* grub-core/commands/extcmd.c: Support for repeatable option.
+	* grub-core/lib/arg.c (grub_arg_list_alloc): New function for
+	repeatable option support.
+
+	Refactor menuentry into a regular command.
+
+	* grub-core/commands/menuentry.c: New file, menuentry command
+	implementation.
+	* grub-core/Makefile.core.def: Rule update for normal.mod.
+	* grub-core/normal/main.c: Moved menuentry creation to
+	grub-core/commands/menuentry.c.
+	* grub-core/normal/menu.c (grub_menu_execute_entry): Removed.
+	(grub_menu_execute_entry_real): Removed.
+	* grub-core/script/execute.c (grub_script_execute_sourcecode): New
+	function.
+	(grub_script_execute_menuentry): Removed.
+	* grub-core/script/parser.y (menuentry): Removed.
+	* grub-core/script/script.c (grub_script_create_cmdmenu): Removed.
+	* grub-core/script/yylex.l (menuentry): Removed.
+	* include/grub/menu.h (grub_menu_init): New prototype.
+	(grub_menu_fini): New prototype.
+	* include/grub/normal.h (grub_normal_add_menu_entry): Removed.
+	* include/grub/script_sh.h (grub_script_cmd_menuentry): Removed.
+	(grub_script_execute_sourcecode): New prototype.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	"return" command for GRUB script functions.
+
+	* tests/grub_script_return.in: New test.
+	* Makefile.util.def: Rules for new test.
+
+	* grub-core/script/execute.c (grub_script_return): New function.
+	* grub-core/script/main.c: Register/unregister return commaond.
+	* include/grub/script_sh.h (grub_script_return): New prototype.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	"setparams" command to update positional parameters.
+
+	* tests/grub_script_setparams.in: New test.
+	* Makefile.util.def: Rules for new test.
+
+	* grub-core/script/argv.c (grub_script_argv_make): New function.
+	* grub-core/script/execute.c (replace_scope): New function.
+	(grub_script_setparams): New function.
+	* grub-core/script/lexer.c: Remove unused variables.
+	* grub-core/script/main.c: Register/unregister setparams command.
+	* include/grub/script_sh.h (grub_script_argv_make): New prototype.
+	(grub_script_setparams): New prototype.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	* grub-core/normal/completion.c (grub_normal_do_completion): Fix
 	grub_free order.
 

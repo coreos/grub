@@ -29,10 +29,8 @@ grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
 {
   int new_argc;
   char **new_args;
-  struct grub_arg_option *parser;
   struct grub_arg_list *state;
   struct grub_extcmd_context context;
-  int maxargs = 0;
   grub_err_t ret;
   grub_extcmd_t ext = cmd->data;
 
@@ -46,25 +44,18 @@ grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
       return ret;
     }
 
-  parser = (struct grub_arg_option *) ext->options;
-  while (parser && (parser++)->doc)
-    maxargs++;
-
-  /* Set up the option state.  */
-  state = grub_zalloc (sizeof (struct grub_arg_list) * maxargs);
-
+  state = grub_arg_list_alloc (ext, argc, args);
   if (grub_arg_parse (ext, argc, args, state, &new_args, &new_argc))
     {
       context.state = state;
       ret = (ext->func) (&context, new_argc, new_args);
       grub_free (new_args);
+      grub_free (state);
+      return ret;
     }
-  else
-    ret = grub_errno;
 
   grub_free (state);
-
-  return ret;
+  return grub_errno;
 }
 
 static grub_err_t

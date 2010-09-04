@@ -176,7 +176,6 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
 "until"         { RECORD; return GRUB_PARSER_TOKEN_UNTIL;     }
 "while"         { RECORD; return GRUB_PARSER_TOKEN_WHILE;     }
 "function"      { RECORD; return GRUB_PARSER_TOKEN_FUNCTION;  }
-"menuentry"     { RECORD; return GRUB_PARSER_TOKEN_MENUENTRY; }
 
 {MULTILINE}     {
                   if (grub_lexer_unput (yytext, yyscanner))
