@@ -34,13 +34,13 @@ grub_console_setcolorstate (struct grub_term_output *term,
 {
   switch (state) {
     case GRUB_TERM_COLOR_STANDARD:
-      grub_console_cur_color = GRUB_TERM_DEFAULT_STANDARD_COLOR;
+      grub_console_cur_color = GRUB_TERM_DEFAULT_STANDARD_COLOR & 0x7f;
       break;
     case GRUB_TERM_COLOR_NORMAL:
-      grub_console_cur_color = term->normal_color;
+      grub_console_cur_color = term->normal_color & 0x7f;
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      grub_console_cur_color = term->highlight_color;
+      grub_console_cur_color = term->highlight_color & 0x7f;
       break;
     default:
       break;

@@ -23,6 +23,7 @@
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/int.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/dl.h>
@@ -43,9 +44,6 @@ struct mem_region
 
 static struct mem_region mem_regions[MAX_REGIONS];
 static int num_regions;
-
-grub_addr_t grub_os_area_addr;
-grub_size_t grub_os_area_size;
 
 static char *
 make_install_device (void)
@@ -142,6 +140,22 @@ compact_mem_regions (void)
       }
 }
 
+/*
+ *
+ * grub_get_conv_memsize(i) :  return the conventional memory size in KB.
+ *	BIOS call "INT 12H" to get conventional memory size
+ *      The return value in AX.
+ */
+static inline grub_uint16_t
+grub_get_conv_memsize (void)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x12, &regs);
+  return regs.eax & 0xffff;
+}
+
 void
 grub_machine_init (void)
 {
@@ -151,7 +165,7 @@ grub_machine_init (void)
   /* Initialize the console as early as possible.  */
   grub_console_init ();
 
-  grub_lower_mem = grub_get_memsize (0) << 10;
+  grub_lower_mem = grub_get_conv_memsize () << 10;
 
   /* Sanity check.  */
   if (grub_lower_mem < GRUB_MEMORY_MACHINE_RESERVED_END)
@@ -203,24 +217,8 @@ grub_machine_init (void)
 
   compact_mem_regions ();
 
-  /* Add the memory regions to free memory, except for the region starting
-     from 1MB. This region is partially used for loading OS images.
-     For now, 1/4 of this is added to free memory.  */
   for (i = 0; i < num_regions; i++)
-    if (mem_regions[i].addr == 0x100000)
-      {
-	grub_size_t quarter = mem_regions[i].size >> 2;
-
-	grub_os_area_addr = mem_regions[i].addr;
-	grub_os_area_size = mem_regions[i].size - quarter;
-	grub_mm_init_region ((void *) (grub_os_area_addr + grub_os_area_size),
-			     quarter);
-      }
-    else
       grub_mm_init_region ((void *) mem_regions[i].addr, mem_regions[i].size);
-
-  if (! grub_os_area_addr)
-    grub_fatal ("no upper memory");
 
   grub_tsc_init ();
 }

@@ -39,9 +39,8 @@ grub_aout_get_type (union grub_aout_header *header)
 
 grub_err_t
 grub_aout_load (grub_file_t file, int offset,
-                grub_addr_t load_addr,
-		int load_size,
-                grub_addr_t bss_end_addr)
+                void *load_addr,
+		int load_size, grub_size_t bss_size)
 {
   if ((grub_file_seek (file, offset)) == (grub_off_t) - 1)
     return grub_errno;
@@ -49,14 +48,13 @@ grub_aout_load (grub_file_t file, int offset,
   if (!load_size)
     load_size = file->size - offset;
 
-  grub_file_read (file, (void *) load_addr, load_size);
+  grub_file_read (file, load_addr, load_size);
 
   if (grub_errno)
     return grub_errno;
 
-  if (bss_end_addr)
-    grub_memset ((char *) load_addr + load_size, 0,
-                 bss_end_addr - load_addr - load_size);
+  if (bss_size)
+    grub_memset ((char *) load_addr + load_size, 0, bss_size);
 
   return GRUB_ERR_NONE;
 }

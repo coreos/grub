@@ -19,11 +19,6 @@
 #ifndef GRUB_MULTIBOOT_CPU_HEADER
 #define GRUB_MULTIBOOT_CPU_HEADER	1
 
-extern grub_uint32_t grub_multiboot_payload_eip;
-extern char *grub_multiboot_payload_orig;
-extern grub_addr_t grub_multiboot_payload_dest;
-extern grub_size_t grub_multiboot_payload_size;
-
 #define MULTIBOOT_INITIAL_STATE  { .gpr[4] = MULTIBOOT_BOOTLOADER_MAGIC, \
     .jumpreg = 1 }
 #define MULTIBOOT_ENTRY_REGISTER gpr[1]
