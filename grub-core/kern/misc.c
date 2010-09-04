@@ -184,6 +184,7 @@ grub_real_dprintf (const char *file, const int line, const char *condition,
       va_start (args, fmt);
       grub_vprintf (fmt, args);
       va_end (args);
+      grub_refresh ();
     }
 }
 
@@ -989,7 +990,7 @@ grub_abort (void)
   grub_exit ();
 }
 
-#ifndef APPLE_CC
+#if ! defined (APPLE_CC) && !defined (GRUB_UTIL)
 /* GCC emits references to abort().  */
 void abort (void) __attribute__ ((alias ("grub_abort")));
 #endif

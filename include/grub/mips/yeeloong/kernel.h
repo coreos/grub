@@ -23,8 +23,8 @@
 
 #ifndef ASM_FILE
 
-void EXPORT_FUNC (grub_reboot) (void);
-void EXPORT_FUNC (grub_halt) (void);
+void EXPORT_FUNC (grub_reboot) (void) __attribute__ ((noreturn));
+void EXPORT_FUNC (grub_halt) (void) __attribute__ ((noreturn));
 
 #endif
 

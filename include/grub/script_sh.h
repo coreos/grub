@@ -204,6 +204,12 @@ struct grub_lexer_param
   /* Type of text.  */
   grub_script_arg_type_t type;
 
+  /* Flag to indicate resplit in progres.  */
+  unsigned resplit;
+
+  /* Text that is unput.  */
+  char *prefix;
+
   /* Flex scanner.  */
   void *yyscanner;
 
@@ -304,7 +310,7 @@ void grub_script_lexer_ref (struct grub_lexer_param *);
 void grub_script_lexer_deref (struct grub_lexer_param *);
 unsigned grub_script_lexer_record_start (struct grub_parser_param *);
 char *grub_script_lexer_record_stop (struct grub_parser_param *, unsigned);
-int  grub_script_lexer_yywrap (struct grub_parser_param *);
+int  grub_script_lexer_yywrap (struct grub_parser_param *, const char *input);
 void grub_script_lexer_record (struct grub_parser_param *, char *);
 
 /* Functions to track allocated memory.  */

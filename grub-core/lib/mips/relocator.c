@@ -25,26 +25,33 @@
 #include <grub/cache.h>
 
 #include <grub/mips/relocator.h>
+#include <grub/relocator_private.h>
 
-/* Remark: doesn't work with source outside of 4G.
-   Use relocator64 in this case. 
- */
+/* Do we need mips64? */
 
-extern grub_uint8_t grub_relocator32_forward_start;
-extern grub_uint8_t grub_relocator32_forward_end;
-extern grub_uint8_t grub_relocator32_backward_start;
-extern grub_uint8_t grub_relocator32_backward_end;
+extern grub_uint8_t grub_relocator_forward_start;
+extern grub_uint8_t grub_relocator_forward_end;
+extern grub_uint8_t grub_relocator_backward_start;
+extern grub_uint8_t grub_relocator_backward_end;
 
 #define REGW_SIZEOF (2 * sizeof (grub_uint32_t))
 #define JUMP_SIZEOF (2 * sizeof (grub_uint32_t))
 
-#define RELOCATOR_SRC_SIZEOF(x) (&grub_relocator32_##x##_end \
-				 - &grub_relocator32_##x##_start)
+#define RELOCATOR_SRC_SIZEOF(x) (&grub_relocator_##x##_end \
+				 - &grub_relocator_##x##_start)
 #define RELOCATOR_SIZEOF(x)	(RELOCATOR_SRC_SIZEOF(x) \
-				 + REGW_SIZEOF * (31 + 3) + JUMP_SIZEOF)
-#define RELOCATOR_ALIGN 16
+				 + REGW_SIZEOF * 3)
+grub_size_t grub_relocator_align = sizeof (grub_uint32_t);
+grub_size_t grub_relocator_forward_size;
+grub_size_t grub_relocator_backward_size;
+grub_size_t grub_relocator_jumper_size = JUMP_SIZEOF + REGW_SIZEOF;
 
-#define PREFIX(x) grub_relocator32_ ## x
+void
+grub_cpu_relocator_init (void)
+{
+  grub_relocator_forward_size = RELOCATOR_SIZEOF(forward);
+  grub_relocator_backward_size = RELOCATOR_SIZEOF(backward);
+}
 
 static void
 write_reg (int regn, grub_uint32_t val, void **target)
@@ -69,44 +76,74 @@ write_jump (int regn, void **target)
   *target = ((grub_uint32_t *) *target) + 1;
 }
 
-static void
-write_call_relocator_bw (void *ptr0, void *src, grub_uint32_t dest,
-			 grub_size_t size, struct grub_relocator32_state state)
+void
+grub_cpu_relocator_jumper (void *rels, grub_addr_t addr)
+{
+  write_reg (1, addr, &rels);
+  write_jump (1, &rels);
+}
+
+void
+grub_cpu_relocator_backward (void *ptr0, void *src, void *dest,
+			     grub_size_t size)
 {
   void *ptr = ptr0;
-  int i;
   write_reg (8, (grub_uint32_t) src, &ptr);
-  write_reg (9, dest, &ptr);
-  write_reg (10, size, &ptr);
-  grub_memcpy (ptr, &grub_relocator32_backward_start,
+  write_reg (9, (grub_uint32_t) dest, &ptr);
+  write_reg (10, (grub_uint32_t) size, &ptr);
+  grub_memcpy (ptr, &grub_relocator_backward_start,
 	       RELOCATOR_SRC_SIZEOF (backward));
-  ptr = (grub_uint8_t *) ptr + RELOCATOR_SRC_SIZEOF (backward);
-  for (i = 1; i < 32; i++)
-    write_reg (i, state.gpr[i], &ptr);
-  write_jump (state.jumpreg, &ptr);
-  grub_arch_sync_caches (ptr0, (grub_uint8_t *) ptr -  (grub_uint8_t *) ptr0);
-  grub_dprintf ("relocator", "Backward relocator: about to jump to %p\n", ptr0);
-  ((void (*) (void)) ptr0) ();
 }
 
-static void
-write_call_relocator_fw (void *ptr0, void *src, grub_uint32_t dest,
-			 grub_size_t size, struct grub_relocator32_state state)
+void
+grub_cpu_relocator_forward (void *ptr0, void *src, void *dest,
+			     grub_size_t size)
 {
   void *ptr = ptr0;
-  int i;
   write_reg (8, (grub_uint32_t) src, &ptr);
-  write_reg (9, dest, &ptr);
-  write_reg (10, size, &ptr);
-  grub_memcpy (ptr, &grub_relocator32_forward_start,
+  write_reg (9, (grub_uint32_t) dest, &ptr);
+  write_reg (10, (grub_uint32_t) size, &ptr);
+  grub_memcpy (ptr, &grub_relocator_forward_start, 
 	       RELOCATOR_SRC_SIZEOF (forward));
-  ptr = (grub_uint8_t *) ptr + RELOCATOR_SRC_SIZEOF (forward);
+}
+
+grub_err_t
+grub_relocator32_boot (struct grub_relocator *rel,
+		       struct grub_relocator32_state state)
+{
+  grub_relocator_chunk_t ch;
+  void *ptr;
+  grub_err_t err;
+  void *relst;
+  grub_size_t relsize;
+  grub_size_t stateset_size = 31 * REGW_SIZEOF + JUMP_SIZEOF;
+  unsigned i;
+  grub_addr_t vtarget;
+
+  err = grub_relocator_alloc_chunk_align (rel, &ch, 0,
+					  (0xffffffff - stateset_size)
+					  + 1, stateset_size,
+					  sizeof (grub_uint32_t),
+					  GRUB_RELOCATOR_PREFERENCE_NONE);
+  if (err)
+    return err;
+
+  ptr = get_virtual_current_address (ch);
   for (i = 1; i < 32; i++)
     write_reg (i, state.gpr[i], &ptr);
   write_jump (state.jumpreg, &ptr);
-  grub_arch_sync_caches (ptr0, (grub_uint8_t *) ptr -  (grub_uint8_t *) ptr0);
-  grub_dprintf ("relocator", "Forward relocator: about to jump to %p\n", ptr0);
-  ((void (*) (void)) ptr0) ();
-}
 
-#include "../relocator.c"
+  vtarget = (grub_addr_t) grub_map_memory (get_physical_target_address (ch),
+					   stateset_size);
+
+  err = grub_relocator_prepare_relocs (rel, vtarget, &relst, &relsize);
+  if (err)
+    return err;
+
+  grub_arch_sync_caches ((void *) relst, relsize);
+
+  ((void (*) (void)) relst) ();
+
+  /* Not reached.  */
+  return GRUB_ERR_NONE;
+}
