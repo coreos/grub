@@ -33,6 +33,8 @@ static const struct grub_arg_option options[] =
      N_("Users allowed to boot this entry."), "USERNAME", ARG_TYPE_STRING},
     {"hotkey", 3, 0,
      N_("Keyboard key for this entry."), "KEY", ARG_TYPE_STRING},
+    {"source", 4, 0,
+     N_("Menu entry definition as a string."), "STRING", ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -231,8 +233,19 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
   unsigned len;
   grub_err_t r;
 
-  if (! argc || ! ctxt->script)
-    return GRUB_ERR_BAD_ARGUMENT;
+  if (! argc)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing arguments");
+
+  if (ctxt->state[3].set && ctxt->script)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "multiple menuentry definitions");
+
+  if (! ctxt->state[3].set && ! ctxt->script)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no menuentry definition");
+
+  if (! ctxt->script)
+    return append_menu_entry (argc, (const char **) args,
+			      ctxt->state[0].args, ctxt->state[1].arg,
+			      ctxt->state[2].arg, 0, ctxt->state[3].arg);
 
   src = args[argc - 1];
   args[argc - 1] = NULL;
