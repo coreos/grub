@@ -513,6 +513,12 @@ script = {
   common = tests/grub_script_setparams.in;
 };
 
+script = {
+  testcase;
+  name = grub_script_return;
+  common = tests/grub_script_return.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;
