@@ -1,3 +1,7 @@
+2010-09-05  Szymon Janc <szymon@janc.net.pl>
+
+	* include/grub/crypto.h (GRUB_MD_CRC32): New definition.
+
 2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/io/gzio.c (grub_gzio_open): Removed "transparent" parameter.
