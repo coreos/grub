@@ -1388,3 +1388,8 @@ module = {
   name = test_blockarg;
   common = tests/test_blockarg.c;
 };
+
+module = {
+  name = testload;
+  common = commands/testload.c;
+};
