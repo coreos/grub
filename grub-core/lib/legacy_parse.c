@@ -205,7 +205,12 @@ struct legacy_command legacy_commands[] =
     /* setup unsupported.  */
     /* terminal unsupported.  */    /* NUL_TERMINATE */
     /* terminfo unsupported.  */    /* NUL_TERMINATE */
-    /* testload unsupported.  */
+    {"testload", "cat '%s'\n", 1, {TYPE_FILE}, 0, "FILE",
+     "Read the entire contents of FILE in several different ways and"
+     " compares them, to test the filesystem code. "
+     " If this test succeeds, then a good next"
+     " step is to try loading a kernel."},
+     "Print the contents of the file FILE."},
     /* testvbe unsupported.  */
     /* tftpserver unsupported.  */
     {"timeout", "set timeout=%s\n", 1, {TYPE_INT}, 0, "SEC",
