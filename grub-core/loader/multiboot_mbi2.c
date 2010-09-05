@@ -55,6 +55,19 @@ static unsigned modcnt;
 static char *cmdline = NULL;
 static int bootdev_set;
 static grub_uint32_t biosdev, slice, part;
+static grub_size_t elf_sec_num, elf_sec_entsize;
+static unsigned elf_sec_shstrndx;
+static void *elf_sections;
+
+void
+grub_multiboot_add_elfsyms (grub_size_t num, grub_size_t entsize,
+			    unsigned shndx, void *data)
+{
+  elf_sec_num = num;
+  elf_sec_shstrndx = shndx;
+  elf_sec_entsize = entsize;
+  elf_sections = data;
+}
 
 grub_err_t
 grub_multiboot_load (grub_file_t file)
@@ -190,25 +203,24 @@ grub_multiboot_load (grub_file_t file)
       int load_size = ((addr_tag->load_end_addr == 0) ? file->size - offset :
 		       addr_tag->load_end_addr - addr_tag->load_addr);
       grub_size_t code_size;
+      void *source;
+      grub_relocator_chunk_t ch;
 
       if (addr_tag->bss_end_addr)
 	code_size = (addr_tag->bss_end_addr - addr_tag->load_addr);
       else
 	code_size = load_size;
-      grub_multiboot_payload_dest = addr_tag->load_addr;
 
-      grub_multiboot_pure_size += code_size;
-
-      /* Allocate a bit more to avoid relocations in most cases.  */
-      grub_multiboot_alloc_mbi = grub_multiboot_get_mbi_size () + 65536;
-      grub_multiboot_payload_orig
-	= grub_relocator32_alloc (grub_multiboot_pure_size + grub_multiboot_alloc_mbi);
-
-      if (! grub_multiboot_payload_orig)
+      err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator, 
+					     &ch, addr_tag->load_addr,
+					     code_size);
+      if (err)
 	{
+	  grub_dprintf ("multiboot_loader", "Error loading aout kludge\n");
 	  grub_free (buffer);
-	  return grub_errno;
+	  return err;
 	}
+      source = get_virtual_current_address (ch);
 
       if ((grub_file_seek (file, offset)) == (grub_off_t) -1)
 	{
@@ -216,7 +228,7 @@ grub_multiboot_load (grub_file_t file)
 	  return grub_errno;
 	}
 
-      grub_file_read (file, (void *) grub_multiboot_payload_orig, load_size);
+      grub_file_read (file, source, load_size);
       if (grub_errno)
 	{
 	  grub_free (buffer);
@@ -224,7 +236,7 @@ grub_multiboot_load (grub_file_t file)
 	}
 
       if (addr_tag->bss_end_addr)
-	grub_memset ((void *) (grub_multiboot_payload_orig + load_size), 0,
+	grub_memset ((grub_uint32_t *) source + load_size, 0,
 		     addr_tag->bss_end_addr - addr_tag->load_addr - load_size);
     }
   else
@@ -252,7 +264,7 @@ grub_multiboot_load (grub_file_t file)
   return err;
 }
 
-grub_size_t
+static grub_size_t
 grub_multiboot_get_mbi_size (void)
 {
   return 2 * sizeof (grub_uint32_t) + sizeof (struct multiboot_tag)
@@ -263,6 +275,8 @@ grub_multiboot_get_mbi_size (void)
     + (modcnt * sizeof (struct multiboot_tag_module) + total_modcmd)
     + sizeof (struct multiboot_tag_basic_meminfo)
     + ALIGN_UP (sizeof (struct multiboot_tag_bootdev), MULTIBOOT_TAG_ALIGN)
+    + sizeof (struct multiboot_tag_elf_sections)
+    + elf_sec_entsize * elf_sec_num
     + (sizeof (struct multiboot_tag_mmap) + grub_get_multiboot_mmap_count ()
        * sizeof (struct multiboot_mmap_entry))
     + sizeof (struct multiboot_tag_vbe) + MULTIBOOT_TAG_ALIGN - 1;
@@ -456,18 +470,34 @@ retrieve_video_parameters (grub_uint8_t **ptrorig)
 }
 
 grub_err_t
-grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
-			 grub_size_t bufsize)
+grub_multiboot_make_mbi (grub_uint32_t *target)
 {
   grub_uint8_t *ptrorig;
-  grub_uint8_t *mbistart = (grub_uint8_t *) orig + buf_off 
-    + (ALIGN_UP (dest + buf_off, MULTIBOOT_TAG_ALIGN) - (dest + buf_off));
+  grub_uint8_t *mbistart;
   grub_err_t err;
+  grub_size_t bufsize;
+  grub_relocator_chunk_t ch;
 
-  if (bufsize < grub_multiboot_get_mbi_size ())
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "mbi buffer is too small");
+  bufsize = grub_multiboot_get_mbi_size ();
 
-  ptrorig = mbistart + 2 * sizeof (grub_uint32_t);
+  err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
+					  0, 0xffffffff - bufsize,
+					  bufsize, 4,
+					  GRUB_RELOCATOR_PREFERENCE_NONE);
+  if (err)
+    return err;
+
+  ptrorig = get_virtual_current_address (ch);
+#if defined (__i386__) || defined (__x86_64__)
+  *target = get_physical_target_address (ch);
+#elif defined (__mips)
+  *target = get_physical_target_address (ch) | 0x80000000;
+#else
+#error Please complete this
+#endif
+
+  mbistart = ptrorig;
+  ptrorig += 2 * sizeof (grub_uint32_t);
 
   {
     struct multiboot_tag_string *tag = (struct multiboot_tag_string *) ptrorig;
@@ -505,6 +535,19 @@ grub_multiboot_make_mbi (void *orig, grub_uint32_t dest, grub_off_t buf_off,
   {
     struct multiboot_tag_mmap *tag = (struct multiboot_tag_mmap *) ptrorig;
     grub_fill_multiboot_mmap (tag);
+    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
+  }
+
+  {
+    struct multiboot_tag_elf_sections *tag
+      = (struct multiboot_tag_elf_sections *) ptrorig;
+    tag->type = MULTIBOOT_TAG_TYPE_ELF_SECTIONS;
+    tag->size = sizeof (struct multiboot_tag_elf_sections)
+      + elf_sec_entsize * elf_sec_num;
+    grub_memcpy (tag->sections, elf_sections, elf_sec_entsize * elf_sec_num);
+    tag->num = elf_sec_num;
+    tag->entsize = elf_sec_entsize;
+    tag->shndx = elf_sec_shstrndx;
     ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   }
 

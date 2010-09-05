@@ -43,9 +43,20 @@ grub_err_t (*grub_gfxmenu_try_hook) (int entry, grub_menu_t menu,
 void
 grub_wait_after_message (void)
 {
+  grub_uint64_t endtime;
   grub_xputs ("\n");
   grub_printf_ (N_("Press any key to continue..."));
-  (void) grub_getkey ();
+  grub_refresh ();
+
+  endtime = grub_get_time_ms () + 10000;
+
+  while (grub_get_time_ms () < endtime)
+    if (grub_checkkey () >= 0)
+      {
+	grub_getkey ();
+	break;
+      }
+
   grub_xputs ("\n");
 }
 
@@ -142,44 +153,6 @@ get_and_remove_first_entry_number (const char *name)
   return entry;
 }
 
-static void
-grub_menu_execute_entry_real (grub_menu_entry_t entry)
-{
-  const char *source;
-
-  auto grub_err_t getline (char **line, int cont);
-  grub_err_t getline (char **line, int cont __attribute__ ((unused)))
-  {
-    const char *p;
-
-    if (!source)
-      {
-	*line = 0;
-	return 0;
-      }
-
-    p = grub_strchr (source, '\n');
-
-    if (p)
-      *line = grub_strndup (source, p - source);
-    else
-      *line = grub_strdup (source);
-    source = p ? p + 1 : 0;
-    return 0;
-  }
-
-  source = entry->sourcecode;
-
-  while (source)
-    {
-      char *line;
-
-      getline (&line, 0);
-      grub_normal_parse_line (line, getline);
-      grub_free (line);
-    }
-}
-
 /* Run a menu entry.  */
 void
 grub_menu_execute_entry(grub_menu_entry_t entry)
@@ -197,8 +170,7 @@ grub_menu_execute_entry(grub_menu_entry_t entry)
     }
 
   grub_env_set ("chosen", entry->title);
-
-  grub_menu_execute_entry_real (entry);
+  grub_script_execute_sourcecode (entry->sourcecode, entry->argc, entry->args);
 
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */

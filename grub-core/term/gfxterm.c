@@ -405,8 +405,15 @@ destroy_window (void)
 static grub_err_t
 grub_gfxterm_term_fini (struct grub_term_output *term __attribute__ ((unused)))
 {
+  unsigned i;
   destroy_window ();
   grub_video_restore ();
+
+  for (i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
+    {
+      grub_free (virtual_screen.text_buffer[i].code);
+      virtual_screen.text_buffer[i].code = 0;
+    }
 
   /* Clear error state.  */
   grub_errno = GRUB_ERR_NONE;
@@ -793,13 +800,8 @@ scroll_up (void)
   unsigned int i;
 
   /* Clear first line in text buffer.  */
-  for (i = 0;
-       i < virtual_screen.columns;
-       i++)
-    {
-      virtual_screen.text_buffer[i].code = 0;
-      clear_char (&(virtual_screen.text_buffer[i]));
-    }
+  for (i = 0; i < virtual_screen.columns; i++)
+    grub_free (virtual_screen.text_buffer[i].code);
 
   /* Scroll text buffer with one line to up.  */
   grub_memmove (virtual_screen.text_buffer,
@@ -1111,11 +1113,10 @@ static const struct grub_arg_option background_image_cmd_options[] =
   };
 
 static grub_err_t
-grub_gfxterm_background_image_cmd (grub_extcmd_t cmd __attribute__ ((unused)),
-                                   int argc,
-                                   char **args)
+grub_gfxterm_background_image_cmd (grub_extcmd_context_t ctxt,
+                                   int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
 
   /* Check that we have video adapter active.  */
   if (grub_video_get_info(NULL) != GRUB_ERR_NONE)

@@ -56,6 +56,7 @@ open_envblk_file (char *filename)
           grub_strcpy (filename, prefix);
           filename[len] = '/';
           grub_strcpy (filename + len + 1, GRUB_ENVBLK_DEFCFG);
+	  grub_file_filter_disable_compression ();
           file = grub_file_open (filename);
           grub_free (filename);
           return file;
@@ -67,6 +68,7 @@ open_envblk_file (char *filename)
         }
     }
 
+  grub_file_filter_disable_compression ();
   return grub_file_open (filename);
 }
 
@@ -111,11 +113,11 @@ read_envblk_file (grub_file_t file)
 }
 
 static grub_err_t
-grub_cmd_load_env (grub_extcmd_t cmd,
+grub_cmd_load_env (grub_extcmd_context_t ctxt,
 		   int argc __attribute__ ((unused)),
 		   char **args __attribute__ ((unused)))
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   grub_file_t file;
   grub_envblk_t envblk;
 
@@ -143,11 +145,11 @@ grub_cmd_load_env (grub_extcmd_t cmd,
 }
 
 static grub_err_t
-grub_cmd_list_env (grub_extcmd_t cmd,
+grub_cmd_list_env (grub_extcmd_context_t ctxt,
 		   int argc __attribute__ ((unused)),
 		   char **args __attribute__ ((unused)))
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   grub_file_t file;
   grub_envblk_t envblk;
 
@@ -280,9 +282,9 @@ write_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
 }
 
 static grub_err_t
-grub_cmd_save_env (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_save_env (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   grub_file_t file;
   grub_envblk_t envblk;
   struct blocklist *head = 0;

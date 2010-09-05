@@ -31,7 +31,6 @@
 #include <grub/charset.h>
 #include <grub/term.h>
 #include <grub/command.h>
-#include <grub/gzio.h>
 #include <grub/i18n.h>
 #include <grub/bitmap_scale.h>
 
@@ -41,7 +40,6 @@
 #define DEFAULT_VIDEO_MODE "auto"
 
 char grub_xnu_cmdline[1024];
-grub_uint32_t grub_xnu_heap_will_be_at;
 grub_uint32_t grub_xnu_entry_point, grub_xnu_arg1, grub_xnu_stack;
 
 /* Aliases set for some tables. */
@@ -536,7 +534,7 @@ grub_cmd_devprop_load (grub_command_t cmd __attribute__ ((unused)),
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
-  file = grub_gzfile_open (args[0], 1);
+  file = grub_file_open (args[0]);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
 		       "couldn't load device-propertie dump");
@@ -837,11 +835,11 @@ grub_xnu_boot_resume (void)
   struct grub_relocator32_state state;
 
   state.esp = grub_xnu_stack;
+  state.ebp = grub_xnu_stack;
   state.eip = grub_xnu_entry_point;
   state.eax = grub_xnu_arg1;
 
-  return grub_relocator32_boot (grub_xnu_heap_start, grub_xnu_heap_will_be_at,
-				state); 
+  return grub_relocator32_boot (grub_xnu_relocator, state); 
 }
 
 /* Setup video for xnu. */
@@ -883,6 +881,18 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
     return grub_error (GRUB_ERR_IO, "couldn't retrieve video parameters");
 
   if (grub_xnu_bitmap)
+     {
+       if (grub_xnu_bitmap_mode == GRUB_XNU_BITMAP_STRETCH)
+	 err = grub_video_bitmap_create_scaled (&bitmap,
+						mode_info.width,
+						mode_info.height,
+						grub_xnu_bitmap,
+						GRUB_VIDEO_BITMAP_SCALE_METHOD_BEST);
+       else
+	 bitmap = grub_xnu_bitmap;
+     }
+
+  if (bitmap)
     {
       if (grub_xnu_bitmap_mode == GRUB_XNU_BITMAP_STRETCH)
 	err = grub_video_bitmap_create_scaled (&bitmap,
@@ -940,18 +950,18 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
 grub_err_t
 grub_xnu_boot (void)
 {
-  struct grub_xnu_boot_params *bootparams_relloc;
-  grub_off_t bootparams_relloc_off;
-  grub_off_t mmap_relloc_off;
+  struct grub_xnu_boot_params *bootparams;
+  grub_addr_t bootparams_target;
   grub_err_t err;
   grub_efi_uintn_t memory_map_size = 0;
   grub_efi_memory_descriptor_t *memory_map;
+  grub_addr_t memory_map_target;
   grub_efi_uintn_t map_key = 0;
   grub_efi_uintn_t descriptor_size = 0;
   grub_efi_uint32_t descriptor_version = 0;
   grub_uint64_t firstruntimepage, lastruntimepage;
   grub_uint64_t curruntimepage;
-  void *devtree;
+  grub_addr_t devtree_target;
   grub_size_t devtreelen;
   int i;
   struct grub_relocator32_state state;
@@ -995,26 +1005,25 @@ grub_xnu_boot (void)
     }
 
   /* Relocate the boot parameters to heap. */
-  bootparams_relloc = grub_xnu_heap_malloc (sizeof (*bootparams_relloc));
-  if (! bootparams_relloc)
-    return grub_errno;
-  bootparams_relloc_off = (grub_uint8_t *) bootparams_relloc
-    - (grub_uint8_t *) grub_xnu_heap_start;
+  err = grub_xnu_heap_malloc (sizeof (*bootparams),
+			      (void **) &bootparams, &bootparams_target);
+  if (err)
+    return err;
 
   /* Set video. */
-  err = grub_xnu_set_video (bootparams_relloc);
+  err = grub_xnu_set_video (bootparams);
   if (err != GRUB_ERR_NONE)
     {
       grub_print_error ();
       grub_errno = GRUB_ERR_NONE;
       grub_printf ("Booting in blind mode\n");
 
-      bootparams_relloc->lfb_mode = 0;
-      bootparams_relloc->lfb_width = 0;
-      bootparams_relloc->lfb_height = 0;
-      bootparams_relloc->lfb_depth = 0;
-      bootparams_relloc->lfb_line_len = 0;
-      bootparams_relloc->lfb_base = 0;
+      bootparams->lfb_mode = 0;
+      bootparams->lfb_width = 0;
+      bootparams->lfb_height = 0;
+      bootparams->lfb_depth = 0;
+      bootparams->lfb_line_len = 0;
+      bootparams->lfb_base = 0;
     }
 
   if (grub_autoefi_get_memory_map (&memory_map_size, memory_map,
@@ -1025,38 +1034,30 @@ grub_xnu_boot (void)
   /* We will do few allocations later. Reserve some space for possible
      memory map growth.  */
   memory_map_size += 20 * descriptor_size;
-  memory_map = grub_xnu_heap_malloc (memory_map_size);
-  if (! memory_map)
-    return grub_errno;
-  mmap_relloc_off = (grub_uint8_t *) memory_map
-    - (grub_uint8_t *) grub_xnu_heap_start;
-
-  err = grub_xnu_writetree_toheap (&devtree, &devtreelen);
+  err = grub_xnu_heap_malloc (memory_map_size,
+			      (void **) &memory_map, &memory_map_target);
   if (err)
     return err;
-  bootparams_relloc = (struct grub_xnu_boot_params *)
-    (bootparams_relloc_off + (grub_uint8_t *) grub_xnu_heap_start);
 
-  grub_memcpy (bootparams_relloc->cmdline, grub_xnu_cmdline,
-	       sizeof (bootparams_relloc->cmdline));
+  err = grub_xnu_writetree_toheap (&devtree_target, &devtreelen);
+  if (err)
+    return err;
 
-  bootparams_relloc->devtree
-    = ((grub_uint8_t *) devtree - (grub_uint8_t *) grub_xnu_heap_start)
-    + grub_xnu_heap_will_be_at;
-  bootparams_relloc->devtreelen = devtreelen;
+  grub_memcpy (bootparams->cmdline, grub_xnu_cmdline,
+	       sizeof (bootparams->cmdline));
 
-  memory_map = (grub_efi_memory_descriptor_t *)
-    ((grub_uint8_t *) grub_xnu_heap_start + mmap_relloc_off);
+  bootparams->devtree = devtree_target;
+  bootparams->devtreelen = devtreelen;
 
-  if (grub_autoefi_get_memory_map (&memory_map_size, memory_map,
-				   &map_key, &descriptor_size,
-				   &descriptor_version) <= 0)
-    return grub_errno;
+  err = grub_autoefi_finish_boot_services (&memory_map_size, memory_map,
+					   &map_key, &descriptor_size,
+					   &descriptor_version);
+  if (err)
+    return err;
 
-  bootparams_relloc->efi_system_table
-    = PTR_TO_UINT32 (grub_autoefi_system_table);
+  bootparams->efi_system_table = PTR_TO_UINT32 (grub_autoefi_system_table);
 
-  firstruntimepage = (((grub_addr_t) grub_xnu_heap_will_be_at
+  firstruntimepage = (((grub_addr_t) grub_xnu_heap_target_start
 		       + grub_xnu_heap_size + GRUB_XNU_PAGESIZE - 1)
 		      / GRUB_XNU_PAGESIZE) + 20;
   curruntimepage = firstruntimepage;
@@ -1077,7 +1078,7 @@ grub_xnu_boot (void)
 	      <= PTR_TO_UINT64 (grub_autoefi_system_table)
 	      && curdesc->physical_start + (curdesc->num_pages << 12)
 	      > PTR_TO_UINT64 (grub_autoefi_system_table))
-	    bootparams_relloc->efi_system_table
+	    bootparams->efi_system_table
 	      = PTR_TO_UINT64 (grub_autoefi_system_table)
 	      - curdesc->physical_start + curdesc->virtual_start;
 	  if (SIZEOF_OF_UINTN == 8 && grub_xnu_is_64bit)
@@ -1087,28 +1088,25 @@ grub_xnu_boot (void)
 
   lastruntimepage = curruntimepage;
 
-  bootparams_relloc->efi_mmap = grub_xnu_heap_will_be_at + mmap_relloc_off;
-  bootparams_relloc->efi_mmap_size = memory_map_size;
-  bootparams_relloc->efi_mem_desc_size = descriptor_size;
-  bootparams_relloc->efi_mem_desc_version = descriptor_version;
+  bootparams->efi_mmap = memory_map_target;
+  bootparams->efi_mmap_size = memory_map_size;
+  bootparams->efi_mem_desc_size = descriptor_size;
+  bootparams->efi_mem_desc_version = descriptor_version;
 
-  bootparams_relloc->heap_start = grub_xnu_heap_will_be_at;
-  bootparams_relloc->heap_size = grub_xnu_heap_size;
-  bootparams_relloc->efi_runtime_first_page = firstruntimepage;
+  bootparams->heap_start = grub_xnu_heap_target_start;
+  bootparams->heap_size = grub_xnu_heap_size;
+  bootparams->efi_runtime_first_page = firstruntimepage;
 
-  bootparams_relloc->efi_runtime_npages = lastruntimepage - firstruntimepage;
-  bootparams_relloc->efi_uintnbits = SIZEOF_OF_UINTN * 8;
+  bootparams->efi_runtime_npages = lastruntimepage - firstruntimepage;
+  bootparams->efi_uintnbits = SIZEOF_OF_UINTN * 8;
 
-  bootparams_relloc->verminor = GRUB_XNU_BOOTARGS_VERMINOR;
-  bootparams_relloc->vermajor = GRUB_XNU_BOOTARGS_VERMAJOR;
+  bootparams->verminor = GRUB_XNU_BOOTARGS_VERMINOR;
+  bootparams->vermajor = GRUB_XNU_BOOTARGS_VERMAJOR;
 
   /* Parameters for asm helper. */
-  grub_xnu_stack = bootparams_relloc->heap_start
-    + bootparams_relloc->heap_size + GRUB_XNU_PAGESIZE;
-  grub_xnu_arg1 = bootparams_relloc_off + grub_xnu_heap_will_be_at;
-
-  if (! grub_autoefi_exit_boot_services (map_key))
-    return grub_error (GRUB_ERR_IO, "can't exit boot services");
+  grub_xnu_stack = bootparams->heap_start
+    + bootparams->heap_size + GRUB_XNU_PAGESIZE;
+  grub_xnu_arg1 = bootparams_target;
 
   grub_autoefi_set_virtual_address_map (memory_map_size, descriptor_size,
 					descriptor_version,memory_map);
@@ -1116,8 +1114,8 @@ grub_xnu_boot (void)
   state.eip = grub_xnu_entry_point;
   state.eax = grub_xnu_arg1;
   state.esp = grub_xnu_stack;
-  return grub_relocator32_boot (grub_xnu_heap_start, grub_xnu_heap_will_be_at,
-				state);
+  state.ebp = grub_xnu_stack;
+  return grub_relocator32_boot (grub_xnu_relocator, state);
 }
 
 static grub_command_t cmd_devprop_load;

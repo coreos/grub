@@ -24,7 +24,6 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/ieee1275/ieee1275.h>
-#include <grub/machine/loader.h>
 #include <grub/gzio.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
@@ -306,7 +305,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto out;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if (!file)
     goto out;
 
@@ -394,6 +393,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (argv[0]);
   if (! file)
     goto fail;

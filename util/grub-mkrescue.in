@@ -62,7 +62,8 @@ Make GRUB rescue image.
 
 $self generates a bootable rescue image with specified source files, source
 directories, or mkisofs options listed by: xorriso -as mkisofs -help
-Option -- switches to native xorriso command mode. or directories.
+
+Option -- switches to native xorriso command mode.
 
 Report bugs to <bug-grub@gnu.org>.
 Mail xorriso support requests to <bug-xorriso@gnu.org>.

@@ -168,6 +168,8 @@
 
 #ifndef ASM_FILE
 
+#define GRUB_PXE_SIGNATURE "PXENV+"
+
 struct grub_pxenv
 {
   grub_uint8_t signature[6];	/* 'PXENV+'.  */
@@ -188,6 +190,19 @@ struct grub_pxenv
   grub_uint16_t	undi_code_seg;	/* UNDI Code segment address.  */
   grub_uint16_t	undi_code_size;	/* UNDI Code segment size (bytes).  */
   grub_uint32_t pxe_ptr;	/* SEG:OFF to !PXE struct.  */
+} __attribute__ ((packed));
+
+struct grub_pxe_bangpxe
+{
+  grub_uint8_t signature[4];
+#define GRUB_PXE_BANGPXE_SIGNATURE "!PXE"
+  grub_uint8_t length;
+  grub_uint8_t chksum;
+  grub_uint8_t rev;
+  grub_uint8_t reserved;
+  grub_uint32_t undiromid;
+  grub_uint32_t baseromid;
+  grub_uint32_t rm_entry;
 } __attribute__ ((packed));
 
 struct grub_pxenv_get_cached_info
@@ -302,10 +317,9 @@ struct grub_pxenv_unload_stack
   grub_uint8_t reserved[10];
 } __attribute__ ((packed));
 
-struct grub_pxenv * EXPORT_FUNC(grub_pxe_scan) (void);
-int EXPORT_FUNC(grub_pxe_call) (int func, void * data);
+int EXPORT_FUNC(grub_pxe_call) (int func, void * data, grub_uint32_t pxe_rm_entry);
 
-extern struct grub_pxenv *grub_pxe_pxenv;
+extern struct grub_pxe_bangpxe *grub_pxe_pxenv;
 
 void grub_pxe_unload (void);
 

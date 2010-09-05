@@ -22,7 +22,7 @@
 #include <grub/test.h>
 
 static grub_err_t
-grub_functional_test (struct grub_extcmd *cmd __attribute__ ((unused)),
+grub_functional_test (grub_extcmd_context_t ctxt __attribute__ ((unused)),
 		      int argc __attribute__ ((unused)),
 		      char **args __attribute__ ((unused)))
 {

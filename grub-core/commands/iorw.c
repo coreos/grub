@@ -36,7 +36,7 @@ static const struct grub_arg_option options[] =
 
 
 static grub_err_t
-grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
+grub_cmd_read (grub_extcmd_context_t ctxt, int argc, char **argv)
 {
   grub_target_addr_t addr;
   grub_uint32_t value = 0;
@@ -46,7 +46,7 @@ grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid number of arguments");
 
   addr = grub_strtoul (argv[0], 0, 0);
-  switch (cmd->cmd->name[sizeof ("in") - 1])
+  switch (ctxt->extcmd->cmd->name[sizeof ("in") - 1])
     {
     case 'l':
       value = grub_inl (addr);
@@ -61,10 +61,10 @@ grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
       break;
     }
 
-  if (cmd->state[0].set)
+  if (ctxt->state[0].set)
     {
       grub_snprintf (buf, sizeof (buf), "%x", value);
-      grub_env_set (cmd->state[0].arg, buf);
+      grub_env_set (ctxt->state[0].arg, buf);
     }
   else
     grub_printf ("0x%x\n", value);
