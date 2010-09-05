@@ -1,3 +1,7 @@
+2010-09-05  Jo Shields <directhex@apebox.org>
+
+	* util/grub.d/30_os-prober.in: Add missing classes.
+
 2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi (Theme file format): Document new position format.
