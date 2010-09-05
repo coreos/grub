@@ -1,3 +1,18 @@
+2010-09-05  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/Makefile.core.def (xzio): New module.
+	* grub-core/io/xzio.c: New file.
+	* grub-core/lib/xzembed/xz.h: New file (from xembed).
+	* grub-core/lib/xzembed/xz_config.h: Likewise.
+	* grub-core/lib/xzembed/xz_dec_bcj.c: Likewise.
+	* grub-core/lib/xzembed/xz_dec_lzma2.c: Likewise.
+	* grub-core/lib/xzembed/xz_dec_stream.c: Likewise.
+	* grub-core/lib/xzembed/xz_lzma2.h: Likewise.
+	* grub-core/lib/xzembed/xz_private.h: Likewise.
+	* grub-core/lib/xzembed/xz_stream.h: Likewise.
+	* include/grub/file.h (grub_file_filter_id): New compression filter
+	GRUB_FILE_FILTER_XZIO.
+
 2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/file.h (GRUB_FILE_SIZE_UNKNOWN): New definition.
