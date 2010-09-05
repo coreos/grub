@@ -1,3 +1,14 @@
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Reintroduce testload.
+
+	* grub-core/commands/minicmd.c (grub_rescue_cmd_testload) [0]: Moved
+	from here ...
+	* grub-core/commands/testload.c (grub_cmd_testload): ... here.
+	(GRUB_MOD_INIT): New function.
+	(GRUB_MOD_FINI): Likewise.
+	* grub-core/Makefile.core.def (testload): New module.
+
 2010-09-05  Szymon Janc <szymon@janc.net.pl>
 
 	* grub-core/lib/posix_wrap/sys/types.h (bool): Transform into an enum.
