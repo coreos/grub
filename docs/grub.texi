@@ -1467,10 +1467,11 @@ One of the most important features for customizing the layout is the use of
  *styled boxes*.  A styled box is composed of 9 rectangular (and potentially
 empty) regions, which are used to seamlessly draw the styled box on screen:
 
-@float Figure, The 9 slices that make up a box.  The abbreviation below each name is used to identify the image for that slice.
-@c @image{Box_slice_names,,,,.png}
-@end float
-
+@multitable @columnfractions 0.3 0.3 0.3
+@item Northwest (nw) @tab North (n)  @tab Northeast (ne)
+@item West (w)       @tab Center (c) @tab East (e)
+@item Southwest (sw) @tab South (s)  @tab Southeast (se)
+@end multitable
 
 To support any size of box on screen, the center slice and the slices for the
 top, bottom, and sides are all scaled to the correct size for the component on
@@ -1557,9 +1558,7 @@ of a *canvas* container.
 Components are created in the theme file by prefixing the type of component
 with a '+' sign:
 
-@verbatim
-   + label { text="GRUB" font="aqui 11" color="#8FF" }
-@end verbatim
+@code{   + label @{ text="GRUB" font="aqui 11" color="#8FF" @} }
 
 properties of a component are specified as "name = value" (whitespace
 surrounding tokens is optional and is ignored) where *value* may be:
