@@ -751,6 +751,13 @@ main (int argc, char *argv[])
   /* Initialize all modules. */
   grub_init_all ();
 
+  grub_lvm_fini ();
+  grub_mdraid_fini ();
+  grub_raid_fini ();
+  grub_raid_init ();
+  grub_mdraid_init ();
+  grub_lvm_init ();
+
   dest_dev = get_device_name (argv[optind]);
   if (! dest_dev)
     {
