@@ -1,5 +1,11 @@
 2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/file.h (GRUB_FILE_SIZE_UNKNOWN): New definition.
+	* grub-core/disk/loopback.c (grub_loopback_open): Handle unknown file
+	size.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/err.h (grub_err_t): Replace GRUB_ERR_BAD_GZIP_DATA with
 	GRUB_ERR_BAD_COMPRESSED_DATA. All users updated.
 
