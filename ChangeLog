@@ -1,3 +1,8 @@
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/lvm.c (grub_lvm_scan_device) [GRUB_UTIL]: Output more
+	diagnostic info.
+
 2010-09-05  Jo Shields <directhex@apebox.org>
 
 	* util/grub.d/30_os-prober.in: Add missing classes.
