@@ -1,5 +1,13 @@
 2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Uncompressed checksum support.
+
+	* grub-core/commands/hashsum.c (options): Add option --uncompress.
+	(check_list): New parameter uncompress.
+	(grub_cmd_hashsum): Handle --uncompress.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Reintroduce testload.
 
 	* grub-core/commands/minicmd.c (grub_rescue_cmd_testload) [0]: Moved
