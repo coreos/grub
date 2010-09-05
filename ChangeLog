@@ -1,5 +1,9 @@
 2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Theme file format): Document new position format.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Theme file format): Replace Box_slice_names.png with
 	a table. Use @code instead of @verbatim.
 

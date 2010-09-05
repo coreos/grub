@@ -1714,9 +1714,21 @@ The following is a list of the components and the properties they support.
 @subsection Common properties
 
 The following properties are supported by all components:
-@itemize
-
-@item id
+@table @samp
+@item left
+     The distance from the left border of container to left border of the object in either of three formats:
+        @multitable @columnfractions 0.2 0.7
+             @item x @tab Value in pixels
+             @item p% @tab Percentage
+             @item p%+x @tab mixture of both
+        @end multitable
+@item top
+      The distance from the left border of container to left border of the object in same format.
+@item width
+      The width of object in same format.
+@item height
+      The height of object in same format.
+@item id 
    The identifier for the component.  This can be any arbitrary string.
    The ID can be used by scripts to refer to various components in the GUI
    component tree.  Currently, there is one special ID value that GRUB
@@ -1725,7 +1737,7 @@ The following properties are supported by all components:
    @multitable @columnfractions 0.2 0.7
    @item ``__timeout__`` @tab Any component with this ID will have its *text*, *start*, *end*, *value*, and *visible* properties set by GRUB when it is counting down to an automatic boot of the default menu entry.
    @end multitable
-@end itemize
+@end table
 
 
 
