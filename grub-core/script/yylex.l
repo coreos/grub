@@ -155,7 +155,6 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
 ">"             { RECORD; return GRUB_PARSER_TOKEN_GT;      }
 
  /* Reserved words */
-"!"             { RECORD; return GRUB_PARSER_TOKEN_NOT;       }
 "{"             { RECORD; return GRUB_PARSER_TOKEN_LBR;       }
 "}"             { RECORD; return GRUB_PARSER_TOKEN_RBR;       }
 "[["            { RECORD; return GRUB_PARSER_TOKEN_RSQBR2;    }
