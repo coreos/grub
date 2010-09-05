@@ -1,5 +1,13 @@
 2010-09-05  Szymon Janc <szymon@janc.net.pl>
 
+	* grub-core/lib/posix_wrap/sys/types.h (bool): Transform into an enum.
+	(uint8_t): New type.
+	(uint16_t): Likewise.
+	(uint32_t): Likewise.
+	(uint64_t): Likewise.
+
+2010-09-05  Szymon Janc <szymon@janc.net.pl>
+
 	* include/grub/crypto.h (GRUB_MD_CRC32): New definition.
 
 2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
