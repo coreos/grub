@@ -1,3 +1,9 @@
+2010-09-05  Colin D Bennett  <colin@gibibit.com>
+
+	Gfxmenu documentation.
+
+	* docs/grub.texi (Theme file format): New chapter.
+
 2010-09-05  Szymon Janc <szymon@janc.net.pl>
 
 	* grub-core/Makefile.core.def (xzio): New module.
