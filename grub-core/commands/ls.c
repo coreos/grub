@@ -105,6 +105,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 
 	  /* XXX: For ext2fs symlinks are detected as files while they
 	     should be reported as directories.  */
+	  grub_file_filter_disable_compression ();
 	  file = grub_file_open (pathname);
 	  if (! file)
 	    {
@@ -211,6 +212,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	  struct grub_dirhook_info info;
 	  grub_errno = 0;
 
+	  grub_file_filter_disable_compression ();
 	  file = grub_file_open (dirname);
 	  if (! file)
 	    goto fail;

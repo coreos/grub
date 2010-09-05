@@ -28,7 +28,6 @@
 #include <grub/elfload.h>
 #include <grub/env.h>
 #include <grub/misc.h>
-#include <grub/gzio.h>
 #include <grub/aout.h>
 #include <grub/command.h>
 #include <grub/extcmd.h>
@@ -1326,7 +1325,7 @@ grub_bsd_load (int argc, char *argv[])
       goto fail;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if (!file)
     goto fail;
 
@@ -1396,7 +1395,7 @@ grub_cmd_freebsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 	  if (err)
 	    return err;
 
-	  file = grub_gzfile_open (argv[0], 1);
+	  file = grub_file_open (argv[0]);
 	  if (! file)
 	    return grub_errno;
 
@@ -1526,7 +1525,7 @@ grub_cmd_netbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 	{
 	  grub_file_t file;
 
-	  file = grub_gzfile_open (argv[0], 1);
+	  file = grub_file_open (argv[0]);
 	  if (! file)
 	    return grub_errno;
 
@@ -1630,7 +1629,7 @@ grub_cmd_freebsd_loadenv (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if ((!file) || (!file->size))
     goto fail;
 
@@ -1731,7 +1730,7 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
       return 0;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if ((!file) || (!file->size))
     goto fail;
 
@@ -1782,7 +1781,7 @@ grub_netbsd_module_load (char *filename, grub_uint32_t type)
   void *src;
   grub_err_t err;
 
-  file = grub_gzfile_open (filename, 1);
+  file = grub_file_open (filename);
   if ((!file) || (!file->size))
     goto fail;
 
@@ -1868,7 +1867,7 @@ grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
       return 0;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if (!file)
     return grub_errno;
   if (!file->size)
@@ -1904,7 +1903,7 @@ grub_cmd_openbsd_ramdisk (grub_command_t cmd __attribute__ ((unused)),
   if (!openbsd_ramdisk.max_size)
     return grub_error (GRUB_ERR_BAD_OS, "your kOpenBSD doesn't support ramdisk");
 
-  file = grub_gzfile_open (args[0], 1);
+  file = grub_file_open (args[0]);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
 		       "couldn't load ramdisk");
@@ -1940,6 +1939,9 @@ static grub_command_t cmd_netbsd_module_elf, cmd_openbsd_ramdisk;
 
 GRUB_MOD_INIT (bsd)
 {
+  /* Net and OpenBSD kernels are often compressed.  */
+  grub_dl_load ("gzio");
+
   cmd_freebsd = grub_register_extcmd ("kfreebsd", grub_cmd_freebsd,
 				      GRUB_COMMAND_FLAG_BOTH,
 				      N_("FILE"), N_("Load kernel of FreeBSD."),

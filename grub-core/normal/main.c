@@ -474,6 +474,9 @@ static void (*grub_xputs_saved) (const char *str);
 
 GRUB_MOD_INIT(normal)
 {
+  /* Previously many modules depended on gzio. Be nice to user and load it.  */
+  grub_dl_load ("gzio");
+
   grub_context_init ();
   grub_script_init ();
   grub_menu_init ();

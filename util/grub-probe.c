@@ -245,6 +245,7 @@ probe (const char *path, char *device_name)
 	      grub_path = xasprintf ("(%s)%s", drive_name, rel_path);
 	      free (rel_path);
 	      grub_util_info ("reading %s via GRUB facilities", grub_path);
+	      grub_file_filter_disable_compression ();
 	      file = grub_file_open (grub_path);
 	      if (! file)
 		grub_util_error ("cannot open %s via GRUB facilities", grub_path);

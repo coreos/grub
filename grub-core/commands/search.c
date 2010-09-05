@@ -54,6 +54,7 @@ FUNC_NAME (const char *key, const char *var, int no_floppy)
 	if (! buf)
 	  return 1;
 
+	grub_file_filter_disable_compression ();
 	file = grub_file_open (buf);
 	if (file)
 	  {

@@ -115,11 +115,15 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
 	  filename = grub_xasprintf ("%s/%s", prefix, p);
 	  if (!filename)
 	    return grub_errno;
+	  grub_file_filter_disable_compression ();
 	  file = grub_file_open (filename);
 	  grub_free (filename);
 	}
       else
-	file = grub_file_open (p);
+	{
+	  grub_file_filter_disable_compression ();
+	  file = grub_file_open (p);
+	}
       if (!file)
 	{
 	  grub_file_close (hashlist);
@@ -206,6 +210,7 @@ grub_cmd_hashsum (struct grub_extcmd_context *ctxt,
       grub_file_t file;
       grub_err_t err;
       unsigned j;
+      grub_file_filter_disable_compression ();
       file = grub_file_open (args[i]);
       if (!file)
 	{

@@ -40,7 +40,7 @@
 #include <grub/misc.h>
 #include <grub/fs.h>
 #include <grub/file.h>
-#include <grub/gzio.h>
+#include <grub/dl.h>
 
 /*
  *  Window Size
@@ -1113,8 +1113,8 @@ initialize_tables (grub_file_t file)
 /* Open a new decompressing object on the top of IO. If TRANSPARENT is true,
    even if IO does not contain data compressed by gzip, return a valid file
    object. Note that this function won't close IO, even if an error occurs.  */
-grub_file_t
-grub_gzio_open (grub_file_t io, int transparent)
+static grub_file_t
+grub_gzio_open (grub_file_t io)
 {
   grub_file_t file;
   grub_gzio_t gzio = 0;
@@ -1145,33 +1145,11 @@ grub_gzio_open (grub_file_t io, int transparent)
       grub_free (file);
       grub_file_seek (io, 0);
 
-      if (grub_errno == GRUB_ERR_BAD_FILE_TYPE && transparent)
+      if (grub_errno == GRUB_ERR_BAD_FILE_TYPE)
 	{
 	  grub_errno = GRUB_ERR_NONE;
 	  return io;
 	}
-      else
-	return 0;
-    }
-
-  return file;
-}
-
-/* This is similar to grub_gzio_open, but takes a file name as an argument.  */
-grub_file_t
-grub_gzfile_open (const char *name, int transparent)
-{
-  grub_file_t io, file;
-
-  io = grub_file_open (name);
-  if (! io)
-    return 0;
-
-  file = grub_gzio_open (io, transparent);
-  if (! file)
-    {
-      grub_file_close (io);
-      return 0;
     }
 
   return file;
@@ -1252,3 +1230,13 @@ static struct grub_fs grub_gzio_fs =
     .label = 0,
     .next = 0
   };
+
+GRUB_MOD_INIT(gzio)
+{
+  grub_file_filter_register (GRUB_FILE_FILTER_GZIO, grub_gzio_open);
+}
+
+GRUB_MOD_FINI(gzio)
+{
+  grub_file_filter_unregister (GRUB_FILE_FILTER_GZIO);
+}

@@ -51,6 +51,50 @@ struct grub_file
 };
 typedef struct grub_file *grub_file_t;
 
+/* Filters with lower ID are executed first.  */
+typedef enum grub_file_filter_id
+  {
+    GRUB_FILE_FILTER_GZIO,
+    GRUB_FILE_FILTER_MAX,
+    GRUB_FILE_FILTER_COMPRESSION_FIRST = GRUB_FILE_FILTER_GZIO,
+    GRUB_FILE_FILTER_COMPRESSION_LAST = GRUB_FILE_FILTER_GZIO,
+  } grub_file_filter_id_t;
+
+typedef grub_file_t (*grub_file_filter_t) (grub_file_t in);
+
+extern grub_file_filter_t EXPORT_VAR(grub_file_filters_all)[GRUB_FILE_FILTER_MAX];
+extern grub_file_filter_t EXPORT_VAR(grub_file_filters_enabled)[GRUB_FILE_FILTER_MAX];
+
+static inline void
+grub_file_filter_register (grub_file_filter_id_t id, grub_file_filter_t filter)
+{
+  grub_file_filters_all[id] = filter;
+  grub_file_filters_enabled[id] = filter;
+};
+
+static inline void
+grub_file_filter_unregister (grub_file_filter_id_t id)
+{
+  grub_file_filters_all[id] = 0;
+  grub_file_filters_enabled[id] = 0;
+};
+
+static inline void
+grub_file_filter_disable (grub_file_filter_id_t id)
+{
+  grub_file_filters_enabled[id] = 0;
+};
+
+static inline void
+grub_file_filter_disable_compression (void)
+{
+  grub_file_filter_id_t id;
+
+  for (id = GRUB_FILE_FILTER_COMPRESSION_FIRST;
+       id <= GRUB_FILE_FILTER_COMPRESSION_LAST; id++)
+    grub_file_filters_enabled[id] = 0;
+};
+
 /* Get a device name from NAME.  */
 char *EXPORT_FUNC(grub_file_get_device_name) (const char *name);
 
