@@ -1,3 +1,11 @@
+2010-09-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Rename CD-ROM to cd on BIOS.
+
+	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_get_drive): Recognise
+	"cd".
+	(grub_biosdisk_call_hook): Call with "cd" instead of arbitrary hdX.
+
 2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/main.c (main): Reinit LVM and RAID.
