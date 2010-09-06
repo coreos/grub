@@ -63,7 +63,7 @@ efi_quiet=
 
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
     disk_module=biosdisk
-elif [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
+elif [ "${platform}" = "ieee1275" ] || [ "${platform}" = "efi" ] ; then
     disk_module=
 else
     disk_module=ata
@@ -445,7 +445,7 @@ esac
 case "${target_cpu}-${platform}" in
     i386-efi | x86_64-efi) imgext=efi ;;
     mips-yeeloong | i386-coreboot | i386-multiboot | i386-ieee1275 \
-	| powerpc-ieeee1275) imgext=elf ;;
+	| powerpc-ieee1275) imgext=elf ;;
     *) imgext=img ;;
 esac
 
@@ -456,7 +456,7 @@ $grub_mkimage ${config_opt} -O ${mkimage_target} --output=${grubdir}/core.${imge
 if [ "${target_cpu}-${platform}" = "mips-yeeloong" ]; then
     cp ${grubdir}/core.${imgext} /boot/grub.elf
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
-    cp ${grubdir}/core.${imgext} /boot/grub
+    cp ${grubdir}/core.${imgext} /boot/grub/grub
 elif [ "${target_cpu}-${platform}" = "i386-efi" ] || [ "${target_cpu}-${platform}" = "x86_64-efi" ]; then
     $grub_mkimage ${config_opt} -O ${mkimage_target} --output=${grubdir}/grub.efi --prefix="" $modules || exit 1
 fi
@@ -492,7 +492,7 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	}
 
         # Point boot-device at the new grub install
-	boot_device="$ofpath:$partno,"`grub-mkrelpath ${grubdir}/core.${imgext} | sed 's,/,\\,g'`
+	boot_device="$ofpath:$partno,"`grub-mkrelpath ${grubdir}/core.${imgext} | sed 's,/,\\\\,g'`
 	"$nvsetenv" boot-device "$boot_device" || {
 	    echo "$nvsetenv failed."
 	    echo "You will have to set boot-device manually.  At the Open Firmware prompt, type:"
