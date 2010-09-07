@@ -1,3 +1,135 @@
+2010-09-07  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* grub-core/commands/wildcard.c (wildcard_expand): Fix wrong grub_free.
+
+2010-09-07  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* docs/grub.texi (Shell-like scripting): Fix @dots to @dots{}.
+
+2010-09-07  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* docs/grub.texi (Shell-like scripting): Documentation for break,
+	continue, shift and return commands.
+
+2010-09-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Rename CD-ROM to cd on BIOS.
+
+	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_get_drive): Recognise
+	"cd".
+	(grub_biosdisk_call_hook): Call with "cd" instead of arbitrary hdX.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/main.c (main): Reinit LVM and RAID.
+	* util/grub-probe.c (main): Likewise.
+	* util/i386/pc/grub-setup.c (main): Likewise.
+	* util/sparc64/ieee1275/grub-setup.c (main): Likewise.
+	Reported and debugged by: alexxy
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/lvm.c (grub_lvm_scan_device) [GRUB_UTIL]: Output more
+	diagnostic info.
+
+2010-09-05  Jo Shields <directhex@apebox.org>
+
+	* util/grub.d/30_os-prober.in: Add missing classes.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Theme file format): Document new position format.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Theme file format): Replace Box_slice_names.png with
+	a table. Use @code instead of @verbatim.
+
+2010-09-05  Colin D Bennett  <colin@gibibit.com>
+
+	Gfxmenu documentation.
+
+	* docs/grub.texi (Theme file format): New chapter.
+
+2010-09-05  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/Makefile.core.def (xzio): New module.
+	* grub-core/io/xzio.c: New file.
+	* grub-core/lib/xzembed/xz.h: New file (from xembed).
+	* grub-core/lib/xzembed/xz_config.h: Likewise.
+	* grub-core/lib/xzembed/xz_dec_bcj.c: Likewise.
+	* grub-core/lib/xzembed/xz_dec_lzma2.c: Likewise.
+	* grub-core/lib/xzembed/xz_dec_stream.c: Likewise.
+	* grub-core/lib/xzembed/xz_lzma2.h: Likewise.
+	* grub-core/lib/xzembed/xz_private.h: Likewise.
+	* grub-core/lib/xzembed/xz_stream.h: Likewise.
+	* include/grub/file.h (grub_file_filter_id): New compression filter
+	GRUB_FILE_FILTER_XZIO.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/file.h (GRUB_FILE_SIZE_UNKNOWN): New definition.
+	* grub-core/disk/loopback.c (grub_loopback_open): Handle unknown file
+	size.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/err.h (grub_err_t): Replace GRUB_ERR_BAD_GZIP_DATA with
+	GRUB_ERR_BAD_COMPRESSED_DATA. All users updated.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Uncompressed checksum support.
+
+	* grub-core/commands/hashsum.c (options): Add option --uncompress.
+	(check_list): New parameter uncompress.
+	(grub_cmd_hashsum): Handle --uncompress.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Reintroduce testload.
+
+	* grub-core/commands/minicmd.c (grub_rescue_cmd_testload) [0]: Moved
+	from here ...
+	* grub-core/commands/testload.c (grub_cmd_testload): ... here.
+	(GRUB_MOD_INIT): New function.
+	(GRUB_MOD_FINI): Likewise.
+	* grub-core/Makefile.core.def (testload): New module.
+
+2010-09-05  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/lib/posix_wrap/sys/types.h (bool): Transform into an enum.
+	(uint8_t): New type.
+	(uint16_t): Likewise.
+	(uint32_t): Likewise.
+	(uint64_t): Likewise.
+
+2010-09-05  Szymon Janc <szymon@janc.net.pl>
+
+	* include/grub/crypto.h (GRUB_MD_CRC32): New definition.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/io/gzio.c (grub_gzio_open): Removed "transparent" parameter.
+	Made static.
+	(grub_gzfile_open): Removed. All users updated.
+	(GRUB_MOD_INIT): New function.
+	(GRUB_MOD_FINI): Likewise.
+	* grub-core/kern/file.c (grub_file_filters_all): New variable.
+	(grub_file_filters_enabled): Likewise.
+	(grub_file_open): Handle filters.
+	* grub-core/loader/i386/bsd.c (GRUB_MOD_INIT): Load gzio.
+	* grub-core/normal/main.c (GRUB_MOD_INIT): Likewise.
+	* include/grub/file.h (grub_file_filter_id_t): New type.
+	(grub_file_filter_t): Likewise.
+	(grub_file_filters_all): New extern variable.
+	(grub_file_filters_enabled): Likewise.
+	(grub_file_filter_register): New inline function.
+	(grub_file_filter_unregister): Likewise.
+	(grub_file_filter_disable): Likewise.
+	(grub_file_filter_disable_compression): Likewise.
+	* include/grub/gzio.h: Removed.
+
 2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Filename expansion support for wildcards in GRUB script.

@@ -1388,3 +1388,17 @@ module = {
   name = test_blockarg;
   common = tests/test_blockarg.c;
 };
+
+module = {
+  name = xzio;
+  common = io/xzio.c;
+  common = lib/xzembed/xz_dec_bcj.c;
+  common = lib/xzembed/xz_dec_lzma2.c;
+  common = lib/xzembed/xz_dec_stream.c;
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed';
+};
+
+module = {
+  name = testload;
+  common = commands/testload.c;
+};

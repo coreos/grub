@@ -32,6 +32,7 @@ static const struct grub_arg_option options[] = {
   {"prefix", 'p', 0, N_("Base directory for hash list."), N_("DIRECTORY"),
    ARG_TYPE_STRING},
   {"keep-going", 'k', 0, N_("Don't stop after first error."), 0, 0},
+  {"uncompress", 'u', 0, N_("Uncompress file before checksumming."), 0, 0},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -80,7 +81,7 @@ hash_file (grub_file_t file, const gcry_md_spec_t *hash, void *result)
 
 static grub_err_t
 check_list (const gcry_md_spec_t *hash, const char *hashfilename,
-	    const char *prefix, int keep)
+	    const char *prefix, int keep, int uncompress)
 {
   grub_file_t hashlist, file;
   char *buf = NULL;
@@ -115,11 +116,17 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
 	  filename = grub_xasprintf ("%s/%s", prefix, p);
 	  if (!filename)
 	    return grub_errno;
+	  if (!uncompress)
+	    grub_file_filter_disable_compression ();
 	  file = grub_file_open (filename);
 	  grub_free (filename);
 	}
       else
-	file = grub_file_open (p);
+	{
+	  if (!uncompress)
+	    grub_file_filter_disable_compression ();
+	  file = grub_file_open (p);
+	}
       if (!file)
 	{
 	  grub_file_close (hashlist);
@@ -174,6 +181,7 @@ grub_cmd_hashsum (struct grub_extcmd_context *ctxt,
   const gcry_md_spec_t *hash;
   unsigned i;
   int keep = state[3].set;
+  int uncompress = state[4].set;
   unsigned unread = 0;
 
   for (i = 0; i < ARRAY_SIZE (aliases); i++)
@@ -197,7 +205,7 @@ grub_cmd_hashsum (struct grub_extcmd_context *ctxt,
       if (argc != 0)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
 			   "--check is incompatible with file list");
-      return check_list (hash, state[1].arg, prefix, keep);
+      return check_list (hash, state[1].arg, prefix, keep, uncompress);
     }
 
   for (i = 0; i < (unsigned) argc; i++)
@@ -206,6 +214,8 @@ grub_cmd_hashsum (struct grub_extcmd_context *ctxt,
       grub_file_t file;
       grub_err_t err;
       unsigned j;
+      if (!uncompress)
+	grub_file_filter_disable_compression ();
       file = grub_file_open (args[i]);
       if (!file)
 	{

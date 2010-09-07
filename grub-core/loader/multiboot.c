@@ -39,7 +39,6 @@
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
-#include <grub/gzio.h>
 #include <grub/env.h>
 #include <grub/cpu/relocator.h>
 #include <grub/video.h>
@@ -225,7 +224,7 @@ grub_cmd_multiboot (grub_command_t cmd __attribute__ ((unused)),
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if (! file)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
 
@@ -291,9 +290,9 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
 		       "you need to load the multiboot kernel first");
 
   if (nounzip)
-    file = grub_file_open (argv[0]);
-  else
-    file = grub_gzfile_open (argv[0], 1);
+    grub_file_filter_disable_compression ();
+
+  file = grub_file_open (argv[0]);
   if (! file)
     return grub_errno;
 
