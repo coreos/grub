@@ -488,7 +488,7 @@ wildcard_expand (const char *s, char ***strs)
 
   for (i = 0; paths && paths[i]; i++)
     grub_free (paths[i]);
-  grub_free (paths[i]);
+  grub_free (paths);
   regfree (&regexp);
   return grub_errno;
 }
