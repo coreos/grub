@@ -621,7 +621,17 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
     ret = grub_script_function_call (func, argc, args);
 
   if (invert)
-    ret = ! ret;
+    {
+      if (ret == GRUB_ERR_TEST_FAILURE)
+	grub_errno = ret = GRUB_ERR_NONE;
+      else if (ret == GRUB_ERR_NONE)
+	ret = grub_error (GRUB_ERR_TEST_FAILURE, "false");
+      else
+	{
+	  grub_print_error ();
+	  grub_errno = ret = GRUB_ERR_NONE;
+	}
+    }
 
   /* Free arguments.  */
   grub_script_argv_free (&argv);
