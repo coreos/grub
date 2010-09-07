@@ -1,3 +1,217 @@
+2010-09-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Rename CD-ROM to cd on BIOS.
+
+	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_get_drive): Recognise
+	"cd".
+	(grub_biosdisk_call_hook): Call with "cd" instead of arbitrary hdX.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/main.c (main): Reinit LVM and RAID.
+	* util/grub-probe.c (main): Likewise.
+	* util/i386/pc/grub-setup.c (main): Likewise.
+	* util/sparc64/ieee1275/grub-setup.c (main): Likewise.
+	Reported and debugged by: alexxy
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/lvm.c (grub_lvm_scan_device) [GRUB_UTIL]: Output more
+	diagnostic info.
+
+2010-09-05  Jo Shields <directhex@apebox.org>
+
+	* util/grub.d/30_os-prober.in: Add missing classes.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Theme file format): Document new position format.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Theme file format): Replace Box_slice_names.png with
+	a table. Use @code instead of @verbatim.
+
+2010-09-05  Colin D Bennett  <colin@gibibit.com>
+
+	Gfxmenu documentation.
+
+	* docs/grub.texi (Theme file format): New chapter.
+
+2010-09-05  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/Makefile.core.def (xzio): New module.
+	* grub-core/io/xzio.c: New file.
+	* grub-core/lib/xzembed/xz.h: New file (from xembed).
+	* grub-core/lib/xzembed/xz_config.h: Likewise.
+	* grub-core/lib/xzembed/xz_dec_bcj.c: Likewise.
+	* grub-core/lib/xzembed/xz_dec_lzma2.c: Likewise.
+	* grub-core/lib/xzembed/xz_dec_stream.c: Likewise.
+	* grub-core/lib/xzembed/xz_lzma2.h: Likewise.
+	* grub-core/lib/xzembed/xz_private.h: Likewise.
+	* grub-core/lib/xzembed/xz_stream.h: Likewise.
+	* include/grub/file.h (grub_file_filter_id): New compression filter
+	GRUB_FILE_FILTER_XZIO.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/file.h (GRUB_FILE_SIZE_UNKNOWN): New definition.
+	* grub-core/disk/loopback.c (grub_loopback_open): Handle unknown file
+	size.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/err.h (grub_err_t): Replace GRUB_ERR_BAD_GZIP_DATA with
+	GRUB_ERR_BAD_COMPRESSED_DATA. All users updated.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Uncompressed checksum support.
+
+	* grub-core/commands/hashsum.c (options): Add option --uncompress.
+	(check_list): New parameter uncompress.
+	(grub_cmd_hashsum): Handle --uncompress.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Reintroduce testload.
+
+	* grub-core/commands/minicmd.c (grub_rescue_cmd_testload) [0]: Moved
+	from here ...
+	* grub-core/commands/testload.c (grub_cmd_testload): ... here.
+	(GRUB_MOD_INIT): New function.
+	(GRUB_MOD_FINI): Likewise.
+	* grub-core/Makefile.core.def (testload): New module.
+
+2010-09-05  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/lib/posix_wrap/sys/types.h (bool): Transform into an enum.
+	(uint8_t): New type.
+	(uint16_t): Likewise.
+	(uint32_t): Likewise.
+	(uint64_t): Likewise.
+
+2010-09-05  Szymon Janc <szymon@janc.net.pl>
+
+	* include/grub/crypto.h (GRUB_MD_CRC32): New definition.
+
+2010-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/io/gzio.c (grub_gzio_open): Removed "transparent" parameter.
+	Made static.
+	(grub_gzfile_open): Removed. All users updated.
+	(GRUB_MOD_INIT): New function.
+	(GRUB_MOD_FINI): Likewise.
+	* grub-core/kern/file.c (grub_file_filters_all): New variable.
+	(grub_file_filters_enabled): Likewise.
+	(grub_file_open): Handle filters.
+	* grub-core/loader/i386/bsd.c (GRUB_MOD_INIT): Load gzio.
+	* grub-core/normal/main.c (GRUB_MOD_INIT): Likewise.
+	* include/grub/file.h (grub_file_filter_id_t): New type.
+	(grub_file_filter_t): Likewise.
+	(grub_file_filters_all): New extern variable.
+	(grub_file_filters_enabled): Likewise.
+	(grub_file_filter_register): New inline function.
+	(grub_file_filter_unregister): Likewise.
+	(grub_file_filter_disable): Likewise.
+	(grub_file_filter_disable_compression): Likewise.
+	* include/grub/gzio.h: Removed.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Filename expansion support for wildcards in GRUB script.
+
+	* tests/grub_script_expansion.in: New test.
+	* Makefile.util.def: Rule for new test.
+
+	* grub-core/commands/wildcard.c: New file, implements filename
+	expansion support for GRUB script.
+	* grub-core/Makefile.core.def: Rule update for regexp.mod.
+	* grub-core/script/argv.c: Cosmetic changes.
+	* grub-core/script/execute.c (grub_script_arglist_to_argv):
+	Refactored to perform wildcard expansion on arguments.
+	* include/grub/script_sh.h (grub_script_wildcard_translator): New
+	struct.
+
+	* tests/util/grub-shell.in: Fix quoting for read input.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Support for updating environment variables with matched substrings
+	of regexp.
+
+	* tests/grub_cmd_regexp.in: New test.
+	* Makefile.util.def: Rule for new test.
+
+	* grub-core/commands/regexp.c: New option -s to update environment
+	variables with regexp matches.
+
+2010-09-04  Szymon Janc <szymon@janc.net.pl>
+
+	* include/grub/file.h (grub_file): New member not_easly_seekable.
+	(grub_file_seekable): New inline function.
+	* grub-core/io/gzio.c (test_header): Don't test end magic if file isn't
+	easily seekable.
+	(grub_gzio_open): Set not_easly_seekable.
+	* grub-core/fs/i386/pc/pxe.c (grub_pxefs_open): Set not_easily_seekable.
+	* grub-core/io/bufio.c (grub_bufio_open): Propagate not_easily_seekable.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Support for options to appear multiple times on cmdline.
+
+	* include/grub/lib/arg.h (grub_arg_list_alloc): New prototype.
+	* grub-core/commands/extcmd.c: Support for repeatable option.
+	* grub-core/lib/arg.c (grub_arg_list_alloc): New function for
+	repeatable option support.
+
+	Refactor menuentry into a regular command.
+
+	* grub-core/commands/menuentry.c: New file, menuentry command
+	implementation.
+	* grub-core/Makefile.core.def: Rule update for normal.mod.
+	* grub-core/normal/main.c: Moved menuentry creation to
+	grub-core/commands/menuentry.c.
+	* grub-core/normal/menu.c (grub_menu_execute_entry): Removed.
+	(grub_menu_execute_entry_real): Removed.
+	* grub-core/script/execute.c (grub_script_execute_sourcecode): New
+	function.
+	(grub_script_execute_menuentry): Removed.
+	* grub-core/script/parser.y (menuentry): Removed.
+	* grub-core/script/script.c (grub_script_create_cmdmenu): Removed.
+	* grub-core/script/yylex.l (menuentry): Removed.
+	* include/grub/menu.h (grub_menu_init): New prototype.
+	(grub_menu_fini): New prototype.
+	* include/grub/normal.h (grub_normal_add_menu_entry): Removed.
+	* include/grub/script_sh.h (grub_script_cmd_menuentry): Removed.
+	(grub_script_execute_sourcecode): New prototype.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	"return" command for GRUB script functions.
+
+	* tests/grub_script_return.in: New test.
+	* Makefile.util.def: Rules for new test.
+
+	* grub-core/script/execute.c (grub_script_return): New function.
+	* grub-core/script/main.c: Register/unregister return commaond.
+	* include/grub/script_sh.h (grub_script_return): New prototype.
+
+2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	"setparams" command to update positional parameters.
+
+	* tests/grub_script_setparams.in: New test.
+	* Makefile.util.def: Rules for new test.
+
+	* grub-core/script/argv.c (grub_script_argv_make): New function.
+	* grub-core/script/execute.c (replace_scope): New function.
+	(grub_script_setparams): New function.
+	* grub-core/script/lexer.c: Remove unused variables.
+	* grub-core/script/main.c: Register/unregister setparams command.
+	* include/grub/script_sh.h (grub_script_argv_make): New prototype.
+	(grub_script_setparams): New prototype.
+
 2010-09-04  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* grub-core/normal/completion.c (grub_normal_do_completion): Fix

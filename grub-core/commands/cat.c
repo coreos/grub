@@ -22,7 +22,6 @@
 #include <grub/disk.h>
 #include <grub/term.h>
 #include <grub/misc.h>
-#include <grub/gzio.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 
@@ -48,7 +47,7 @@ grub_cmd_cat (grub_extcmd_context_t ctxt, int argc, char **args)
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
-  file = grub_gzfile_open (args[0], 1);
+  file = grub_file_open (args[0]);
   if (! file)
     return grub_errno;
 

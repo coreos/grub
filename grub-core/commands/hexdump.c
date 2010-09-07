@@ -21,7 +21,6 @@
 #include <grub/file.h>
 #include <grub/disk.h>
 #include <grub/misc.h>
-#include <grub/gzio.h>
 #include <grub/lib/hexdump.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
@@ -89,7 +88,7 @@ grub_cmd_hexdump (grub_extcmd_context_t ctxt, int argc, char **args)
     {
       grub_file_t file;
 
-      file = grub_gzfile_open (args[0], 1);
+      file = grub_file_open (args[0]);
       if (! file)
 	return 0;
 

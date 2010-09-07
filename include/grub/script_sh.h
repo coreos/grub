@@ -81,6 +81,16 @@ struct grub_script_argv
   struct grub_script *script;
 };
 
+/* Pluggable wildcard translator.  */
+struct grub_script_wildcard_translator
+{
+  char *(*escape) (const char *str);
+  char *(*unescape) (const char *str);
+  grub_err_t (*expand) (const char *str, char ***expansions);
+};
+extern struct grub_script_wildcard_translator *grub_wildcard_translator;
+extern struct grub_script_wildcard_translator grub_filename_translator;
+
 /* A complete argument.  It consists of a list of one or more `struct
    grub_script_arg's.  */
 struct grub_script_arglist
@@ -143,21 +153,6 @@ struct grub_script_cmdwhile
 
   /* The flag to indicate this as "until" loop.  */
   int until;
-};
-
-/* A menu entry generate statement.  */
-struct grub_script_cmd_menuentry
-{
-  struct grub_script_cmd cmd;
-
-  /* The arguments for this menu entry.  */
-  struct grub_script_arglist *arglist;
-
-  /* The sourcecode the entry will be generated from.  */
-  const char *sourcecode;
-
-  /* Options.  XXX: Not used yet.  */
-  int options;
 };
 
 /* State of the lexer as passed to the lexer.  */
@@ -248,6 +243,7 @@ void grub_script_fini (void);
 void grub_script_mem_free (struct grub_script_mem *mem);
 
 void grub_script_argv_free    (struct grub_script_argv *argv);
+int grub_script_argv_make     (struct grub_script_argv *argv, int argc, char **args);
 int grub_script_argv_next     (struct grub_script_argv *argv);
 int grub_script_argv_append   (struct grub_script_argv *argv, const char *s);
 int grub_script_argv_split_append (struct grub_script_argv *argv, char *s);
@@ -280,12 +276,6 @@ grub_script_create_cmdwhile (struct grub_parser_param *state,
 			     struct grub_script_cmd *cond,
 			     struct grub_script_cmd *list,
 			     int is_an_until_loop);
-
-struct grub_script_cmd *
-grub_script_create_cmdmenu (struct grub_parser_param *state,
-			    struct grub_script_arglist *arglist,
-			    char *sourcecode,
-			    int options);
 
 struct grub_script_cmd *
 grub_script_append_cmd (struct grub_parser_param *state,
@@ -331,16 +321,22 @@ grub_err_t grub_script_execute_cmdlist (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdif (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdfor (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdwhile (struct grub_script_cmd *cmd);
-grub_err_t grub_script_execute_menuentry (struct grub_script_cmd *cmd);
 
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t grub_script_execute (struct grub_script *script);
+grub_err_t grub_script_execute_sourcecode (const char *source, int argc, char **args);
 
 /* Break command for loops.  */
 grub_err_t grub_script_break (grub_command_t cmd, int argc, char *argv[]);
 
 /* SHIFT command for GRUB script.  */
 grub_err_t grub_script_shift (grub_command_t cmd, int argc, char *argv[]);
+
+/* SETPARAMS command for GRUB script functions.  */
+grub_err_t grub_script_setparams (grub_command_t cmd, int argc, char *argv[]);
+
+/* RETURN command for functions.  */
+grub_err_t grub_script_return (grub_command_t cmd, int argc, char *argv[]);
 
 /* This variable points to the parsed command.  This is used to
    communicate with the bison code.  */

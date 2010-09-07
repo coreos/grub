@@ -28,7 +28,6 @@
 #include <grub/machoload.h>
 #include <grub/macho.h>
 #include <grub/cpu/macho.h>
-#include <grub/gzio.h>
 #include <grub/command.h>
 #include <grub/misc.h>
 #include <grub/extcmd.h>
@@ -661,7 +660,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
     macho = 0;
 
   if (infoplistname)
-    infoplist = grub_gzfile_open (infoplistname, 1);
+    infoplist = grub_file_open (infoplistname);
   else
     infoplist = 0;
   grub_errno = GRUB_ERR_NONE;
@@ -756,7 +755,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
   if (! grub_xnu_heap_size)
     return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
 
-  file = grub_gzfile_open (args[0], 1);
+  file = grub_file_open (args[0]);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
 		       "couldn't load driver package");
@@ -869,7 +868,7 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
   if (! grub_xnu_heap_size)
     return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
 
-  file = grub_gzfile_open (args[0], 1);
+  file = grub_file_open (args[0]);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
 		       "couldn't load ramdisk");
@@ -909,7 +908,7 @@ grub_xnu_check_os_bundle_required (char *plistname, char *osbundlereq,
   if (binname)
     *binname = 0;
 
-  file = grub_gzfile_open (plistname, 1);
+  file = grub_file_open (plistname);
   if (! file)
     {
       grub_file_close (file);
@@ -1166,7 +1165,7 @@ grub_xnu_load_kext_from_dir (char *dirname, char *osbundlerequired,
 		grub_strcpy (binname + grub_strlen (binname), "/");
 	      grub_strcpy (binname + grub_strlen (binname), binsuffix);
 	      grub_dprintf ("xnu", "%s:%s\n", plistname, binname);
-	      binfile = grub_gzfile_open (binname, 1);
+	      binfile = grub_file_open (binname);
 	      if (! binfile)
 		grub_errno = GRUB_ERR_NONE;
 
@@ -1204,7 +1203,7 @@ grub_cmd_xnu_kext (grub_command_t cmd __attribute__ ((unused)),
       /* User explicitly specified plist and binary. */
       if (grub_strcmp (args[1], "-") != 0)
 	{
-	  binfile = grub_gzfile_open (args[1], 1);
+	  binfile = grub_file_open (args[1]);
 	  if (! binfile)
 	    {
 	      grub_error (GRUB_ERR_BAD_OS, "can't open file");

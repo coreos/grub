@@ -56,6 +56,7 @@ open_envblk_file (char *filename)
           grub_strcpy (filename, prefix);
           filename[len] = '/';
           grub_strcpy (filename + len + 1, GRUB_ENVBLK_DEFCFG);
+	  grub_file_filter_disable_compression ();
           file = grub_file_open (filename);
           grub_free (filename);
           return file;
@@ -67,6 +68,7 @@ open_envblk_file (char *filename)
         }
     }
 
+  grub_file_filter_disable_compression ();
   return grub_file_open (filename);
 }
 

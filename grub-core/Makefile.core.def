@@ -395,6 +395,7 @@ module = {
 module = {
   name = regexp;
   common = commands/regexp.c;
+  common = commands/wildcard.c;
   ldadd = libgnulib.a;
   cflags = '$(CFLAGS_POSIX) $(CFLAGS_GNULIB)';
   cppflags = '$(CPPFLAGS_POSIX) $(CPPFLAGS_GNULIB)';
@@ -1164,6 +1165,8 @@ module = {
   common = script/lexer.c;
   common = script/argv.c;
 
+  common = commands/menuentry.c;
+
   common = unidata.c;
   common_nodist = grub_script.tab.c;
   common_nodist = grub_script.yy.c;
@@ -1384,4 +1387,18 @@ module = {
 module = {
   name = test_blockarg;
   common = tests/test_blockarg.c;
+};
+
+module = {
+  name = xzio;
+  common = io/xzio.c;
+  common = lib/xzembed/xz_dec_bcj.c;
+  common = lib/xzembed/xz_dec_lzma2.c;
+  common = lib/xzembed/xz_dec_stream.c;
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed';
+};
+
+module = {
+  name = testload;
+  common = commands/testload.c;
 };

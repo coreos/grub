@@ -23,7 +23,6 @@
 #include <grub/disk.h>
 #include <grub/term.h>
 #include <grub/misc.h>
-#include <grub/gzio.h>
 #include <grub/acpi.h>
 #include <grub/mm.h>
 #include <grub/machine/memory.h>
@@ -628,7 +627,7 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
       grub_size_t size;
       char *buf;
 
-      file = grub_gzfile_open (args[i], 1);
+      file = grub_file_open (args[i]);
       if (! file)
 	{
 	  free_tables ();
