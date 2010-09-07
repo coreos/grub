@@ -1,5 +1,9 @@
 2010-09-07  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	* docs/grub.texi (Shell-like scripting): Fix @dots to @dots{}.
+
+2010-09-07  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	* docs/grub.texi (Shell-like scripting): Documentation for break,
 	continue, shift and return commands.
 

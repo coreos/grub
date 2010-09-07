@@ -1341,7 +1341,7 @@ false.
 
 @item shift [@code{n}]
 The positional parameters from @code{n}+1 @dots{} are renamed to
-@code{$1}@dots.  Parameters represented by the numbers @code{$#} down to
+@code{$1}@dots{}.  Parameters represented by the numbers @code{$#} down to
 @code{$#}-@code{n}+1 are unset.  @code{n} must be a non-negative number less
 than or equal to @code{$#}.  If @code{n} is 0, no parameters are changed.
 If @code{n} is not given, it is assumed to be 1.  If @code{n} is greater
