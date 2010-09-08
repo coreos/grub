@@ -731,7 +731,7 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
     {
       /* This is a hard disk partition.  */
       grub_disk_t parent = 0;
-      char *partition_name = 0;
+      const grub_partition_t tpart = NULL;
       char *device_name;
       grub_efi_device_path_t *dup_dp, *dup_ldp;
       grub_efi_hard_drive_device_path_t hd;
@@ -770,7 +770,7 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 	  if (grub_partition_get_start (part) == hd.partition_start
 	      && grub_partition_get_len (part) == hd.partition_size)
 	    {
-	      partition_name = grub_partition_get_name (part);
+	      tpart = part;
 	      return 1;
 	    }
 
@@ -799,13 +799,15 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
       grub_memcpy (&hd, ldp, sizeof (hd));
       grub_partition_iterate (parent, find_partition);
 
-      if (! partition_name)
+      if (! tpart)
 	{
 	  grub_disk_close (parent);
 	  return 0;
 	}
 
-      device_name = grub_xasprintf ("%s,%s", parent->name, partition_name);
+      device_name = grub_xasprintf ("%s,%s%d", parent->name,
+				    tpart->partmap->name,
+				    tpart->number + 1);
       grub_free (partition_name);
       grub_disk_close (parent);
 
