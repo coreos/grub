@@ -1,3 +1,12 @@
+2010-09-08  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-mkconfig_lib.in (is_path_readable_by_grub): Improve
+	with (optional) parameters to specify device and relative path.
+	* util/grub-install.in: Use is_path_readable_by_grub() to
+	verify readability of a few critical files.
+	* util/grub-mkconfig.in: Use is_path_readable_by_grub() to
+	verify readability of grub.cfg.new.
+
 2010-09-08  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/kern/efi/init.c (grub_efi_set_prefix): If the prefix
