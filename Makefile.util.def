@@ -88,6 +88,7 @@ library = {
   common = grub-core/partmap/gpt.c;
   common = grub-core/partmap/msdos.c;
   common = grub-core/partmap/sun.c;
+  common = grub-core/partmap/sunpc.c;
   common = grub-core/script/function.c;
   common = grub-core/script/lexer.c;
   common = grub-core/script/main.c;
@@ -182,7 +183,6 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
-  condition = COND_GRUB_FSTEST;
 };
 
 program = {
@@ -488,6 +488,42 @@ script = {
   testcase;
   name = grub_script_shift;
   common = tests/grub_script_shift.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_blockarg;
+  common = tests/grub_script_blockarg.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_setparams;
+  common = tests/grub_script_setparams.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_return;
+  common = tests/grub_script_return.in;
+};
+
+script = {
+  testcase;
+  name = grub_cmd_regexp;
+  common = tests/grub_cmd_regexp.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_expansion;
+  common = tests/grub_script_expansion.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_not;
+  common = tests/grub_script_not.in;
 };
 
 program = {

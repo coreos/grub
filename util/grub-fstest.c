@@ -107,6 +107,7 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
       return;
     }
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (pathname);
   if (!file)
     {

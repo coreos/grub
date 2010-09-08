@@ -34,11 +34,11 @@ static const struct grub_arg_option options[] =
 #define grub_cur_term_input	grub_term_get_current_input ()
 
 static grub_err_t
-grub_cmd_keystatus (grub_extcmd_t cmd,
+grub_cmd_keystatus (grub_extcmd_context_t ctxt,
 		    int argc __attribute__ ((unused)),
 		    char **args __attribute__ ((unused)))
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   int expect_mods = 0;
   int mods;
 

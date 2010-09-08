@@ -284,9 +284,9 @@ grub_sendkey_preboot (int noret __attribute__ ((unused)))
 }
 
 static grub_err_t
-grub_cmd_sendkey (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_sendkey (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
 
   auto int find_key_code (char *key); 
   auto int find_ascii_code (char *key);

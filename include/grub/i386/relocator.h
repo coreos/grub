@@ -26,12 +26,14 @@
 struct grub_relocator32_state
 {
   grub_uint32_t esp;
+  grub_uint32_t ebp;
   grub_uint32_t eax;
   grub_uint32_t ebx;
   grub_uint32_t ecx;
   grub_uint32_t edx;
   grub_uint32_t eip;
   grub_uint32_t esi;
+  grub_uint32_t edi;
 };
 
 struct grub_relocator16_state

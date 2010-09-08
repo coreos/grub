@@ -500,8 +500,8 @@ grub_normal_do_completion (char *buf, int *restore,
  fail:
   if (argc != 0)
     {
-      grub_free (argv);
       grub_free (argv[0]);
+      grub_free (argv);
     }
   grub_free (match);
   grub_errno = GRUB_ERR_NONE;

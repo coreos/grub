@@ -52,6 +52,7 @@ grub_xnu_resume (char *imagename)
   grub_addr_t target_image;
   grub_err_t err;
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (imagename);
   if (! file)
     return 0;

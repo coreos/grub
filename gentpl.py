@@ -478,7 +478,7 @@ chmod a+x [+ name +]
 """)
 
     r += gvar_add("CLEANFILES", "[+ name +]")
-    r += gvar_add("EXTRA_DIST", platform_sources(platform))
+    r += gvar_add("dist_noinst_DATA", platform_sources(platform))
     return r
 
 def module_rules():

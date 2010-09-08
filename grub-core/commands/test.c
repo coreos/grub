@@ -334,6 +334,7 @@ test_parse (char **args, int *argn, int argc)
 	  if (grub_strcmp (args[*argn], "-s") == 0)
 	    {
 	      grub_file_t file;
+	      grub_file_filter_disable_compression ();
 	      file = grub_file_open (args[*argn + 1]);
 	      update_val (file && (grub_file_size (file) != 0));
 	      if (file)

@@ -1113,11 +1113,10 @@ static const struct grub_arg_option background_image_cmd_options[] =
   };
 
 static grub_err_t
-grub_gfxterm_background_image_cmd (grub_extcmd_t cmd __attribute__ ((unused)),
-                                   int argc,
-                                   char **args)
+grub_gfxterm_background_image_cmd (grub_extcmd_context_t ctxt,
+                                   int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
 
   /* Check that we have video adapter active.  */
   if (grub_video_get_info(NULL) != GRUB_ERR_NONE)
