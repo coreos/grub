@@ -28,7 +28,6 @@
 #include <grub/elfload.h>
 #include <grub/env.h>
 #include <grub/misc.h>
-#include <grub/gzio.h>
 #include <grub/aout.h>
 #include <grub/command.h>
 #include <grub/extcmd.h>
@@ -1326,7 +1325,7 @@ grub_bsd_load (int argc, char *argv[])
       goto fail;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if (!file)
     goto fail;
 
@@ -1372,10 +1371,10 @@ grub_bsd_parse_flags (const struct grub_arg_list *state,
 }
 
 static grub_err_t
-grub_cmd_freebsd (grub_extcmd_t cmd, int argc, char *argv[])
+grub_cmd_freebsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 {
   kernel_type = KERNEL_TYPE_FREEBSD;
-  bootflags = grub_bsd_parse_flags (cmd->state, freebsd_flags);
+  bootflags = grub_bsd_parse_flags (ctxt->state, freebsd_flags);
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     {
@@ -1396,7 +1395,7 @@ grub_cmd_freebsd (grub_extcmd_t cmd, int argc, char *argv[])
 	  if (err)
 	    return err;
 
-	  file = grub_gzfile_open (argv[0], 1);
+	  file = grub_file_open (argv[0]);
 	  if (! file)
 	    return grub_errno;
 
@@ -1429,16 +1428,16 @@ grub_cmd_freebsd (grub_extcmd_t cmd, int argc, char *argv[])
 }
 
 static grub_err_t
-grub_cmd_openbsd (grub_extcmd_t cmd, int argc, char *argv[])
+grub_cmd_openbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 {
   grub_uint32_t bootdev;
 
   kernel_type = KERNEL_TYPE_OPENBSD;
-  bootflags = grub_bsd_parse_flags (cmd->state, openbsd_flags);
+  bootflags = grub_bsd_parse_flags (ctxt->state, openbsd_flags);
 
-  if (cmd->state[OPENBSD_ROOT_ARG].set)
+  if (ctxt->state[OPENBSD_ROOT_ARG].set)
     {
-      const char *arg = cmd->state[OPENBSD_ROOT_ARG].arg;
+      const char *arg = ctxt->state[OPENBSD_ROOT_ARG].arg;
       int unit, part;
       if (*(arg++) != 'w' || *(arg++) != 'd')
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
@@ -1459,7 +1458,7 @@ grub_cmd_openbsd (grub_extcmd_t cmd, int argc, char *argv[])
   else
     bootdev = 0;
 
-  if (cmd->state[OPENBSD_SERIAL_ARG].set)
+  if (ctxt->state[OPENBSD_SERIAL_ARG].set)
     {
       struct grub_openbsd_bootarg_console serial;
       char *ptr;
@@ -1468,9 +1467,9 @@ grub_cmd_openbsd (grub_extcmd_t cmd, int argc, char *argv[])
 
       grub_memset (&serial, 0, sizeof (serial));
 
-      if (cmd->state[OPENBSD_SERIAL_ARG].arg)
+      if (ctxt->state[OPENBSD_SERIAL_ARG].arg)
 	{
-	  ptr = cmd->state[OPENBSD_SERIAL_ARG].arg;
+	  ptr = ctxt->state[OPENBSD_SERIAL_ARG].arg;
 	  if (grub_memcmp (ptr, "com", sizeof ("com") - 1) != 0)
 	    return grub_error (GRUB_ERR_BAD_ARGUMENT,
 			       "only com0-com3 are supported");
@@ -1514,11 +1513,11 @@ grub_cmd_openbsd (grub_extcmd_t cmd, int argc, char *argv[])
 }
 
 static grub_err_t
-grub_cmd_netbsd (grub_extcmd_t cmd, int argc, char *argv[])
+grub_cmd_netbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 {
   grub_err_t err;
   kernel_type = KERNEL_TYPE_NETBSD;
-  bootflags = grub_bsd_parse_flags (cmd->state, netbsd_flags);
+  bootflags = grub_bsd_parse_flags (ctxt->state, netbsd_flags);
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     {
@@ -1526,7 +1525,7 @@ grub_cmd_netbsd (grub_extcmd_t cmd, int argc, char *argv[])
 	{
 	  grub_file_t file;
 
-	  file = grub_gzfile_open (argv[0], 1);
+	  file = grub_file_open (argv[0]);
 	  if (! file)
 	    return grub_errno;
 
@@ -1551,15 +1550,15 @@ grub_cmd_netbsd (grub_extcmd_t cmd, int argc, char *argv[])
 	grub_bsd_add_meta (NETBSD_BTINFO_BOOTPATH, bootpath, sizeof (bootpath));
       }
 
-      if (cmd->state[NETBSD_ROOT_ARG].set)
+      if (ctxt->state[NETBSD_ROOT_ARG].set)
 	{
 	  char root[GRUB_NETBSD_MAX_ROOTDEVICE_LEN];
 	  grub_memset (root, 0, sizeof (root));
-	  grub_strncpy (root, cmd->state[NETBSD_ROOT_ARG].arg,
+	  grub_strncpy (root, ctxt->state[NETBSD_ROOT_ARG].arg,
 			sizeof (root) - 1);
 	  grub_bsd_add_meta (NETBSD_BTINFO_ROOTDEVICE, root, sizeof (root));
 	}
-      if (cmd->state[NETBSD_SERIAL_ARG].set)
+      if (ctxt->state[NETBSD_SERIAL_ARG].set)
 	{
 	  struct grub_netbsd_btinfo_serial serial;
 	  char *ptr;
@@ -1567,9 +1566,9 @@ grub_cmd_netbsd (grub_extcmd_t cmd, int argc, char *argv[])
 	  grub_memset (&serial, 0, sizeof (serial));
 	  grub_strcpy (serial.devname, "com");
 
-	  if (cmd->state[NETBSD_SERIAL_ARG].arg)
+	  if (ctxt->state[NETBSD_SERIAL_ARG].arg)
 	    {
-	      ptr = cmd->state[NETBSD_SERIAL_ARG].arg;
+	      ptr = ctxt->state[NETBSD_SERIAL_ARG].arg;
 	      if (grub_memcmp (ptr, "com", sizeof ("com") - 1) == 0)
 		{
 		  ptr += sizeof ("com") - 1;
@@ -1630,7 +1629,7 @@ grub_cmd_freebsd_loadenv (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if ((!file) || (!file->size))
     goto fail;
 
@@ -1731,7 +1730,7 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
       return 0;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if ((!file) || (!file->size))
     goto fail;
 
@@ -1782,7 +1781,7 @@ grub_netbsd_module_load (char *filename, grub_uint32_t type)
   void *src;
   grub_err_t err;
 
-  file = grub_gzfile_open (filename, 1);
+  file = grub_file_open (filename);
   if ((!file) || (!file->size))
     goto fail;
 
@@ -1868,7 +1867,7 @@ grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
       return 0;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if (!file)
     return grub_errno;
   if (!file->size)
@@ -1904,7 +1903,7 @@ grub_cmd_openbsd_ramdisk (grub_command_t cmd __attribute__ ((unused)),
   if (!openbsd_ramdisk.max_size)
     return grub_error (GRUB_ERR_BAD_OS, "your kOpenBSD doesn't support ramdisk");
 
-  file = grub_gzfile_open (args[0], 1);
+  file = grub_file_open (args[0]);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
 		       "couldn't load ramdisk");
@@ -1940,6 +1939,9 @@ static grub_command_t cmd_netbsd_module_elf, cmd_openbsd_ramdisk;
 
 GRUB_MOD_INIT (bsd)
 {
+  /* Net and OpenBSD kernels are often compressed.  */
+  grub_dl_load ("gzio");
+
   cmd_freebsd = grub_register_extcmd ("kfreebsd", grub_cmd_freebsd,
 				      GRUB_COMMAND_FLAG_BOTH,
 				      N_("FILE"), N_("Load kernel of FreeBSD."),

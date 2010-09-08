@@ -71,9 +71,9 @@ delete_loopback (const char *name)
 
 /* The command to add and remove loopback devices.  */
 static grub_err_t
-grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_loopback (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   grub_file_t file;
   struct grub_loopback *newdev;
   grub_err_t ret;
@@ -167,8 +167,11 @@ grub_loopback_open (const char *name, grub_disk_t disk)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
 
   /* Use the filesize for the disk size, round up to a complete sector.  */
-  disk->total_sectors = ((dev->file->size + GRUB_DISK_SECTOR_SIZE - 1)
-			 / GRUB_DISK_SECTOR_SIZE);
+  if (dev->file->size != GRUB_FILE_SIZE_UNKNOWN)
+    disk->total_sectors = ((dev->file->size + GRUB_DISK_SECTOR_SIZE - 1)
+			   / GRUB_DISK_SECTOR_SIZE);
+  else
+    disk->total_sectors = GRUB_DISK_SIZE_UNKNOWN;
   disk->id = (unsigned long) dev;
 
   disk->has_partitions = dev->has_partitions;

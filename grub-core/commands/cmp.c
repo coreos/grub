@@ -21,7 +21,6 @@
 #include <grub/misc.h>
 #include <grub/file.h>
 #include <grub/mm.h>
-#include <grub/gzio.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
 
@@ -44,8 +43,8 @@ grub_cmd_cmp (grub_command_t cmd __attribute__ ((unused)),
   grub_printf ("Compare file `%s' with `%s':\n", args[0],
 	       args[1]);
 
-  file1 = grub_gzfile_open (args[0], 1);
-  file2 = grub_gzfile_open (args[1], 1);
+  file1 = grub_file_open (args[0]);
+  file2 = grub_file_open (args[1]);
   if (! file1 || ! file2)
     goto cleanup;
 

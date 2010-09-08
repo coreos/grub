@@ -52,6 +52,7 @@ library = {
   common = grub-core/fs/iso9660.c;
   common = grub-core/fs/jfs.c;
   common = grub-core/fs/minix.c;
+  common = grub-core/fs/minix2.c;
   common = grub-core/fs/nilfs2.c;
   common = grub-core/fs/ntfs.c;
   common = grub-core/fs/ntfscomp.c;
@@ -184,7 +185,6 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
-  condition = COND_GRUB_FSTEST;
 };
 
 program = {
@@ -500,6 +500,42 @@ script = {
   testcase;
   name = grub_script_shift;
   common = tests/grub_script_shift.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_blockarg;
+  common = tests/grub_script_blockarg.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_setparams;
+  common = tests/grub_script_setparams.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_return;
+  common = tests/grub_script_return.in;
+};
+
+script = {
+  testcase;
+  name = grub_cmd_regexp;
+  common = tests/grub_cmd_regexp.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_expansion;
+  common = tests/grub_script_expansion.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_not;
+  common = tests/grub_script_not.in;
 };
 
 program = {

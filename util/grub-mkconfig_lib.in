@@ -30,6 +30,9 @@ fi
 if test "x$grub_mkrelpath" = x; then
   grub_mkrelpath=${bindir}/`echo grub-mkrelpath | sed ${transform}`
 fi
+if test "x$grub_fstest" = x; then
+  grub_fstest=${bindir}/`echo grub-fstest | sed ${transform}`
+fi
 
 if $(which gettext >/dev/null 2>/dev/null) ; then
   gettext="gettext"
@@ -56,8 +59,11 @@ is_path_readable_by_grub ()
     return 1
   fi
 
-  # abort if file is in a filesystem we can't read
-  if ${grub_probe} -t fs $path > /dev/null 2>&1 ; then : ; else
+  # abort if file read through GRUB doesn't match file read through system
+  # facilities
+  device=$(${grub_probe} --target=device $path)
+  relpath=$(${grub_mkrelpath} $path)
+  if ${grub_fstest} $device cmp $relpath $path > /dev/null 2>&1 ; then : ; else
     return 1
   fi
 

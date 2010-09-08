@@ -176,6 +176,19 @@ AC_SUBST(host_kernel)
 AC_SUBST(target_cpu)
 AC_SUBST(platform)
 
+# Define default variables
+case "$host_os" in
+  netbsd* | openbsd*)
+        # Because /boot is used for the boot block in NetBSD and OpenBSD,
+        bootdirname=''      ;;
+  *)    bootdirname='boot'  ;;
+esac
+bootdirname=`echo "$bootdirname" | sed "$program_transform_name"`
+AC_SUBST(bootdirname)
+
+grubdirname=`echo "$PACKAGE" | sed "$program_transform_name"`
+AC_SUBST(grubdirname)
+
 #
 # Checks for build programs.
 #
@@ -762,19 +775,6 @@ AC_SUBST([enable_grub_emu_usb])
 AC_SUBST([enable_grub_emu_pci])
 fi
 
-AC_ARG_ENABLE([grub-fstest],
-	      [AS_HELP_STRING([--enable-grub-fstest],
-                             [build and install the `grub-fstest' debugging utility (default=guessed)])])
-if test x"$enable_grub_fstest" = xno ; then
-  grub_fstest_excuse="explicitly disabled"
-fi
-if test x"$grub_fstest_excuse" = x ; then
-enable_grub_fstest=yes
-else
-enable_grub_fstest=no
-fi
-AC_SUBST([enable_grub_fstest])
-
 AC_ARG_ENABLE([grub-mkfont],
 	      [AS_HELP_STRING([--enable-grub-mkfont],
                              [build and install the `grub-mkfont' utility (default=guessed)])])
@@ -905,7 +905,6 @@ AM_CONDITIONAL([COND_GRUB_EMU_SDL], [test x$enable_grub_emu_sdl = xyes])
 AM_CONDITIONAL([COND_GRUB_EMU_PCI], [test x$enable_grub_emu_pci = xyes])
 AM_CONDITIONAL([COND_GRUB_MKFONT], [test x$enable_grub_mkfont = xyes])
 AM_CONDITIONAL([COND_HAVE_FONT_SOURCE], [test x$FONT_SOURCE != x])
-AM_CONDITIONAL([COND_GRUB_FSTEST], [test x$enable_grub_fstest = xyes])
 AM_CONDITIONAL([COND_GRUB_PE2ELF], [test x$TARGET_OBJ2ELF != x])
 AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
@@ -969,11 +968,6 @@ if [ x"$efiemu_excuse" = x ]; then
 echo efiemu runtime: Yes
 else
 echo efiemu runtime: No "($efiemu_excuse)"
-fi
-if [ x"$grub_fstest_excuse" = x ]; then
-echo grub-fstest: Yes
-else
-echo grub-fstest: No "($grub_fstest_excuse)"
 fi
 if [ x"$grub_mkfont_excuse" = x ]; then
 echo grub-mkfont: Yes

@@ -38,6 +38,7 @@ grub_cmd_crc (grub_command_t cmd __attribute__ ((unused)),
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (args[0]);
   if (! file)
     return 0;

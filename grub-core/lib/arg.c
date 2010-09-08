@@ -209,8 +209,16 @@ parse_option (grub_extcmd_t cmd, int key, char *arg, struct grub_arg_list *usr)
 	if (found == -1)
 	  return -1;
 
-	usr[found].set = 1;
-	usr[found].arg = arg;
+	if (opt->flags & GRUB_ARG_OPTION_REPEATABLE)
+	  {
+	    usr[found].args[usr[found].set++] = arg;
+	    usr[found].args[usr[found].set] = NULL;
+	  }
+	else
+	  {
+	    usr[found].set = 1;
+	    usr[found].arg = arg;
+	  }
       }
     }
 
@@ -230,10 +238,15 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 
   grub_err_t add_arg (char *s)
     {
-      argl = grub_realloc (argl, (++num) * sizeof (char *));
+      char **p = argl;
+      argl = grub_realloc (argl, (++num + 1) * sizeof (char *));
       if (! argl)
-	return grub_errno;
+	{
+	  grub_free (p);
+	  return grub_errno;
+	}
       argl[num - 1] = s;
+      argl[num] = NULL;
       return 0;
     }
 
@@ -310,8 +323,11 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 	  if (option) {
 	    arglen = option - arg - 2;
 	    option++;
-	  } else
+	  } else {
 	    arglen = grub_strlen (arg) - 2;
+	    if (argv[curarg + 1])
+	      option = argv[curarg + 1][0] == '-' ? 0 : argv[++curarg];
+	  }
 
 	  opt = find_long (cmd->options, arg + 2, arglen);
 	  if (! opt)
@@ -389,4 +405,44 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 
  fail:
   return complete;
+}
+
+struct grub_arg_list*
+grub_arg_list_alloc(grub_extcmd_t extcmd, int argc,
+		    char **argv __attribute__((unused)))
+{
+  int i;
+  char **args;
+  unsigned argcnt;
+  struct grub_arg_list *list;
+  const struct grub_arg_option *options;
+
+  options = extcmd->options;
+  if (! options)
+    return 0;
+
+  argcnt = 0;
+  for (i = 0; options[i].doc; i++)
+    {
+      if (options[i].flags & GRUB_ARG_OPTION_REPEATABLE)
+	argcnt += (argc + 1) / 2 + 1; /* max possible for any option */
+    }
+
+  list = grub_zalloc (sizeof (*list) * i + sizeof (char*) * argcnt);
+  if (! list)
+    return 0;
+
+  args = (char**) (list + i);
+  for (i = 0; options[i].doc; i++)
+    {
+      list[i].set = 0;
+      list[i].arg = 0;
+
+      if (options[i].flags & GRUB_ARG_OPTION_REPEATABLE)
+	{
+	  list[i].args = args;
+	  args += argc / 2 + 1;
+	}
+    }
+  return list;
 }
