@@ -1,3 +1,10 @@
+2010-09-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/efi/init.c (grub_efi_set_prefix): If the prefix
+	starts with "(,", fill the drive containing the loaded image in
+	between those two characters, but expect that a full partition
+	specification including partition map names will follow.
+
 2010-09-08  Robert Millan  <rmh@gnu.org>
 
 	* configure.ac: Remove `--enable-grub-fstest' option.
