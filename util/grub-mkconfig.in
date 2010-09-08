@@ -158,7 +158,7 @@ GRUB_DEVICE_BOOT_UUID="`${grub_probe} --device ${GRUB_DEVICE_BOOT} --target=fs_u
 
 # Filesystem for the device containing our userland.  Used for stuff like
 # choosing Hurd filesystem module.
-GRUB_FS="`${grub_probe} --target=fs / 2> /dev/null || echo unknown`"
+GRUB_FS="`${grub_probe} --device ${GRUB_DEVICE} --target=fs 2> /dev/null || echo unknown`"
 
 if test -f ${sysconfdir}/default/grub ; then
   . ${sysconfdir}/default/grub

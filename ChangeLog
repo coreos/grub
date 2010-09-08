@@ -1,3 +1,8 @@
+2010-09-08  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-mkconfig.in: Pass `--device ${GRUB_DEVICE}' when
+	initializing `GRUB_FS'.
+
 2010-09-08  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Not command (!) support to GRUB script.
