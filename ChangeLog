@@ -1,5 +1,14 @@
 2010-09-08  Robert Millan  <rmh@gnu.org>
 
+	* configure.ac: Remove `--enable-grub-fstest' option.
+	* Makefile.util.def (grub-fstest): Remove COND_GRUB_FSTEST condition.
+
+	* util/grub-mkconfig_lib.in (is_path_readable_by_grub): Use
+	`grub-fstest' instead of `grub-probe' for readability verification.
+	* util/grub-probe.c (probe): Remove readability verification kludge.
+
+2010-09-08  Robert Millan  <rmh@gnu.org>
+
 	* util/grub-mkconfig.in: Pass `--device ${GRUB_DEVICE}' when
 	initializing `GRUB_FS'.
 

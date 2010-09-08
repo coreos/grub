@@ -183,7 +183,6 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
-  condition = COND_GRUB_FSTEST;
 };
 
 program = {
