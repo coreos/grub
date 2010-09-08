@@ -102,8 +102,14 @@ iterate_partition (grub_disk_t disk, const grub_partition_t p)
   const char *disk_name = disk->name;
   char *name;
   int ret;
+  char *part_name;
 
-  name = grub_xasprintf ("%s,%s%d", disk_name, p->partmap->name, p->number + 1);
+  part_name = grub_partition_get_name (p);
+  if (! part_name)
+    return 1;
+
+  name = grub_xasprintf ("%s,%s", disk_name, part_name);
+  grub_free (part_name);
 
   if (! name)
     return 1;
