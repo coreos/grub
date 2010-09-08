@@ -188,7 +188,13 @@ grub_partition_iterate (struct grub_disk *disk,
       if (p.start != 0)
 	{
 	  const struct grub_partition_map *partmap;
+	  const char *name;
+	  char *newname;
 	  dsk->partition = &p;
+	  name = dsk->name;
+	  dsk->name = newname = grub_xasprintf ("%s,%s%d", dsk->name,
+						p.partmap->name,
+						p.number + 1);
 	  FOR_PARTITION_MAPS(partmap)
 	  {
 	    grub_err_t err;
@@ -198,6 +204,8 @@ grub_partition_iterate (struct grub_disk *disk,
 	    if (ret)
 	      break;
 	  }
+	  grub_free (newname);
+	  dsk->name = name;
 	}
       dsk->partition = p.parent;
       return ret;
