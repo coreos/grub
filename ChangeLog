@@ -1,5 +1,10 @@
 2010-09-09  Robert Millan  <rmh@gnu.org>
 
+	* util/grub-probe.c (probe): Fix a pair of unhandled error
+	conditions.
+
+2010-09-09  Robert Millan  <rmh@gnu.org>
+
 	Basic Btrfs support (detection and UUID).
 
 	* grub-core/fs/btrfs.c: New file.
