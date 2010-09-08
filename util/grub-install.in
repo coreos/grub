@@ -603,7 +603,7 @@ elif [ x"$platform" = xefi ]; then
 
         # Delete old entries from the same distributor.
 	for bootnum in `efibootmgr | grep '^Boot[0-9]' | \
-	    fgrep " $efi_distributor" | cut -b5-8`; do
+	    fgrep -i " $efi_distributor" | cut -b5-8`; do
 	    efibootmgr $efi_quiet -b "$bootnum" -B
 	done
 
