@@ -547,13 +547,32 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   grub_script_function_t func = 0;
   char errnobuf[18];
   char *cmdname;
+  int argc;
+  char **args;
+  int invert;
   struct grub_script_argv argv = { 0, 0, 0 };
 
   /* Lookup the command.  */
   if (grub_script_arglist_to_argv (cmdline->arglist, &argv) || ! argv.args[0])
     return grub_errno;
 
+  invert = 0;
+  argc = argv.argc - 1;
+  args = argv.args + 1;
   cmdname = argv.args[0];
+  if (grub_strcmp (cmdname, "!") == 0)
+    {
+      if (argv.argc < 2 || ! argv.args[1])
+	{
+	  grub_script_argv_free (&argv);
+	  return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing arguments");
+	}
+
+      invert = 1;
+      argc = argv.argc - 2;
+      args = argv.args + 2;
+      cmdname = argv.args[1];
+    }
   grubcmd = grub_command_find (cmdname);
   if (! grubcmd)
     {
@@ -594,13 +613,25 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
     {
       if ((grubcmd->flags & GRUB_COMMAND_FLAG_BLOCKS) &&
 	  (grubcmd->flags & GRUB_COMMAND_FLAG_EXTCMD))
-	ret = grub_extcmd_dispatcher (grubcmd, argv.argc - 1, argv.args + 1,
-				      argv.script);
+	ret = grub_extcmd_dispatcher (grubcmd, argc, args, argv.script);
       else
-	ret = (grubcmd->func) (grubcmd, argv.argc - 1, argv.args + 1);
+	ret = (grubcmd->func) (grubcmd, argc, args);
     }
   else
-    ret = grub_script_function_call (func, argv.argc - 1, argv.args + 1);
+    ret = grub_script_function_call (func, argc, args);
+
+  if (invert)
+    {
+      if (ret == GRUB_ERR_TEST_FAILURE)
+	grub_errno = ret = GRUB_ERR_NONE;
+      else if (ret == GRUB_ERR_NONE)
+	ret = grub_error (GRUB_ERR_TEST_FAILURE, "false");
+      else
+	{
+	  grub_print_error ();
+	  ret = GRUB_ERR_NONE;
+	}
+    }
 
   /* Free arguments.  */
   grub_script_argv_free (&argv);

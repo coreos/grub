@@ -531,6 +531,12 @@ script = {
   common = tests/grub_script_expansion.in;
 };
 
+script = {
+  testcase;
+  name = grub_script_not;
+  common = tests/grub_script_not.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;

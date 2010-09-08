@@ -1,6 +1,18 @@
+2010-09-08  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Not command (!) support to GRUB script.
+
+	* tests/grub_script_not.in: New test.
+	* Makefile.util.def: Rules for new test.
+
+	* grub-core/script/execute.c (grub_script_execute_cmdline): Handle
+	! command as a special case.
+	* grub-core/script/yylex.l (GRUB_PARSER_TOKEN_NOT): Removed.
+
 2010-09-07  BVK Chaitanya  <bvk.groups@gmail.com>
 
-	* grub-core/commands/wildcard.c (wildcard_expand): Fix wrong grub_free.
+	* grub-core/commands/wildcard.c (wildcard_expand): Fix wrong
+	grub_free.
 
 2010-09-07  BVK Chaitanya  <bvk.groups@gmail.com>
 
