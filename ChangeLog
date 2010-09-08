@@ -1,5 +1,9 @@
 2010-09-08  Yves Blusseau  <blusseau@zetam.org>
 
+        * util/grub-mkconfig.in: Use new variable.
+
+2010-09-08  Yves Blusseau  <blusseau@zetam.org>
+
 	* configure.ac: Define some useful variables.
 
 2010-09-08  Vladimir Serbinenko  <phcoder@gmail.com>
