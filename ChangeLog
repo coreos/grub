@@ -1,5 +1,13 @@
 2010-09-08  Yves Blusseau  <blusseau@zetam.org>
 
+	Add new --boot-directory option to replace --root-directory
+
+	* util/grub-install.in: Add new --boot-directory option
+	* util/grub-reboot.in: Likewise.
+	* util/grub-set-default.in: Likewise.
+
+2010-09-08  Yves Blusseau  <blusseau@zetam.org>
+
         * util/grub-mkconfig.in: Use new variable.
 
 2010-09-08  Yves Blusseau  <blusseau@zetam.org>
