@@ -1,3 +1,13 @@
+2010-09-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Split minix.mod into minix.mod and minix2.mod.
+
+	* Makefile.util.def (libgrub.a): Add grub-core/fs/minix2.c.
+	* grub-core/Makefile.core.def (minix2): New module.
+	* grub-core/fs/minix.c: Use definitions instead of runtime version
+	checking.
+	* grub-core/fs/minix2.c: New file.
+
 2010-09-08  Yves Blusseau  <blusseau@zetam.org>
 
 	Add new --boot-directory option to replace --root-directory
