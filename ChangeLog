@@ -1,3 +1,11 @@
+2010-09-09  Robert Millan  <rmh@gnu.org>
+
+	Basic Btrfs support (detection and UUID).
+
+	* grub-core/fs/btrfs.c: New file.
+	* Makefile.util.def (library): Register btrfs.c.
+	* grub-core/Makefile.core.def: Likewise.
+
 2010-09-08  Robert Millan  <rmh@gnu.org>
 
 	* util/grub-mkconfig_lib.in (is_path_readable_by_grub): Improve

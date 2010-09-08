@@ -836,6 +836,11 @@ module = {
 };
 
 module = {
+  name = btrfs;
+  common = fs/btrfs.c;
+};
+
+module = {
   name = cpio;
   common = fs/cpio.c;
 };

@@ -43,6 +43,7 @@ library = {
   common = grub-core/fs/afs.c;
   common = grub-core/fs/befs_be.c;
   common = grub-core/fs/befs.c;
+  common = grub-core/fs/btrfs.c;
   common = grub-core/fs/cpio.c;
   common = grub-core/fs/ext2.c;
   common = grub-core/fs/fat.c;
