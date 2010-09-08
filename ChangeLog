@@ -1,3 +1,7 @@
+2010-09-08  Yves Blusseau  <blusseau@zetam.org>
+
+	* configure.ac: Define some useful variables.
+
 2010-09-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set
