@@ -301,6 +301,95 @@ else
     exit 1
 fi
 
+if [ x"$platform" = xefi ]; then
+    # Get GRUB_DISTRIBUTOR.
+    if test -f ${sysconfdir}/default/grub ; then
+	. ${sysconfdir}/default/grub
+    fi
+
+    # Find the EFI System Partition.
+    efidir=
+    if test -d ${bootdir}/efi; then
+	install_device=`$grub_mkdevicemap --device-map=/dev/stdout | $grub_probe --target=device --device-map=/dev/stdin ${bootdir}/efi`
+        # Is it a mount point?
+	if test "x$install_device" != "x`$grub_mkdevicemap --device-map=/dev/stdout | $grub_probe --target=device --device-map=/dev/stdin ${bootdir}`"; then
+	    efidir=${bootdir}/efi
+	fi
+    elif test -n "$rootdir" && test "x$rootdir" != "x/"; then
+        # The EFI System Partition may have been given directly using
+        # --root-directory.
+	install_device=`$grub_mkdevicemap --device-map=/dev/stdout | $grub_probe --target=device --device-map=/dev/stdin ${rootdir}`
+        # Is it a mount point?
+	if test "x$install_device" != "x`$grub_mkdevicemap --device-map=/dev/stdout | $grub_probe --target=device --device-map=/dev/stdin ${rootdir}/..`"; then
+	    efidir=${rootdir}
+	fi
+    fi
+    
+    if test -n "$efidir"; then
+	efi_fs=`$grub_probe --target=fs --device-map=${device_map} ${efidir}`
+	if test "x$efi_fs" = xfat; then :; else
+	    echo "${efidir} doesn't look like an EFI partition." 1>&2
+	    efidir=
+	fi
+    fi
+    
+    if test -n "$efidir"; then
+        # The EFI specification requires that an EFI System Partition must
+        # contain an "EFI" subdirectory, and that OS loaders are stored in
+        # subdirectories below EFI.  Vendors are expected to pick names that do
+        # not collide with other vendors.  To minimise collisions, we use the
+        # name of our distributor if possible.
+	if test $removable = yes; then
+      	   # The specification makes stricter requirements of removable
+	   # devices, in order that only one image can be automatically loaded
+	   # from them.  The image must always reside under /EFI/BOOT, and it
+	   # must have a specific file name depending on the architecture.
+	    efi_distributor=BOOT
+	    case "$target_cpu" in
+		i386)
+		    efi_file=BOOTIA32.EFI ;;
+		x86-64)
+		    efi_file=BOOTX64.EFI ;;
+	    # GRUB does not yet support these architectures, but they're defined
+	    # by the specification so we include them here to ease future
+	    # expansion.
+		ia64)
+		    efi_file=BOOTIA64.EFI ;;
+	    esac
+	else
+	    efi_distributor="$(echo "$GRUB_DISTRIBUTOR" | tr '[A-Z]' '[a-z]' | cut -d' ' -f1)"
+	    if test -z "$efi_distributor"; then
+	    	efi_distributor=grub
+	    fi
+	    # It is convenient for each architecture to have a different
+	    # efi_file, so that different versions can be installed in parallel.
+	    case "$target_cpu" in
+		i386)
+		    efi_file=grubia32.efi ;;
+		x86-64)
+		    efi_file=grubx64.efi ;;
+	 # GRUB does not yet support these architectures, but they're defined
+ 	 # by the specification so we include them here to ease future
+	 # expansion.
+		ia64)
+		    efi_file=grubia64.efi ;;
+		*)
+		    efi_file=grub.efi ;;
+	    esac
+	   # TODO: We should also use efibootmgr, if available, to add a Boot
+	   # entry for ourselves.
+	fi
+	efidir="$efidir/EFI/$efi_distributor"
+	mkdir -p "$efidir" || exit 1
+    else
+        # We don't know what's going on.  Fall back to traditional
+        # (non-specification-compliant) behaviour.
+	efidir="$grubdir"
+	efi_distributor=
+	efi_file=grub.efi
+    fi
+fi
+
 # Create the GRUB directory if it is not present.
 mkdir -p "$grubdir" || exit 1
 
@@ -501,93 +590,8 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	}
     fi
 elif [ x"$platform" = xefi ]; then
-    # Get GRUB_DISTRIBUTOR.
-    if test -f ${sysconfdir}/default/grub ; then
-	. ${sysconfdir}/default/grub
-    fi
-
-    # Find the EFI System Partition.
-    efidir=
-    if test -d ${bootdir}/efi; then
-	install_device=`$grub_mkdevicemap --device-map=/dev/stdout | $grub_probe --target=device --device-map=/dev/stdin ${bootdir}/efi`
-        # Is it a mount point?
-	if test "x$install_device" != "x`$grub_mkdevicemap --device-map=/dev/stdout | $grub_probe --target=device --device-map=/dev/stdin ${bootdir}`"; then
-	    efidir=${bootdir}/efi
-	fi
-    elif test -n "$rootdir" && test "x$rootdir" != "x/"; then
-        # The EFI System Partition may have been given directly using
-        # --root-directory.
-	install_device=`$grub_mkdevicemap --device-map=/dev/stdout | $grub_probe --target=device --device-map=/dev/stdin ${rootdir}`
-        # Is it a mount point?
-	if test "x$install_device" != "x`$grub_mkdevicemap --device-map=/dev/stdout | $grub_probe --target=device --device-map=/dev/stdin ${rootdir}/..`"; then
-	    efidir=${rootdir}
-	fi
-    fi
-    
-    if test -n "$efidir"; then
-	efi_fs=`$grub_probe --target=fs --device-map=${device_map} ${efidir}`
-	if test "x$efi_fs" = xfat; then :; else
-	    echo "${efidir} doesn't look like an EFI partition." 1>&2
-	    efidir=
-	fi
-    fi
-    
-    if test -n "$efidir"; then
-        # The EFI specification requires that an EFI System Partition must
-        # contain an "EFI" subdirectory, and that OS loaders are stored in
-        # subdirectories below EFI.  Vendors are expected to pick names that do
-        # not collide with other vendors.  To minimise collisions, we use the
-        # name of our distributor if possible.
-	if test $removable = yes; then
-      	   # The specification makes stricter requirements of removable
-	   # devices, in order that only one image can be automatically loaded
-	   # from them.  The image must always reside under /EFI/BOOT, and it
-	   # must have a specific file name depending on the architecture.
-	    efi_distributor=BOOT
-	    case "$target_cpu" in
-		i386)
-		    efi_file=BOOTIA32.EFI ;;
-		x86-64)
-		    efi_file=BOOTX64.EFI ;;
-	    # GRUB does not yet support these architectures, but they're defined
-	    # by the specification so we include them here to ease future
-	    # expansion.
-		ia64)
-		    efi_file=BOOTIA64.EFI ;;
-	    esac
-	else
-	    efi_distributor="$(echo "$GRUB_DISTRIBUTOR" | tr '[A-Z]' '[a-z]' | cut -d' ' -f1)"
-	    if test -z "$efi_distributor"; then
-	    	efi_distributor=grub
-	    fi
-	    # It is convenient for each architecture to have a different
-	    # efi_file, so that different versions can be installed in parallel.
-	    case "$target_cpu" in
-		i386)
-		    efi_file=grubia32.efi ;;
-		x86-64)
-		    efi_file=grubx64.efi ;;
-	 # GRUB does not yet support these architectures, but they're defined
- 	 # by the specification so we include them here to ease future
-	 # expansion.
-		ia64)
-		    efi_file=grubia64.efi ;;
-		*)
-		    efi_file=grub.efi ;;
-	    esac
-	   # TODO: We should also use efibootmgr, if available, to add a Boot
-	   # entry for ourselves.
-	fi
-	efidir="$efidir/EFI/$efi_distributor"
-	mkdir -p "$efidir" || exit 1
-    else
-        # We don't know what's going on.  Fall back to traditional
-        # (non-specification-compliant) behaviour.
-	efidir="$grubdir"
-	efi_distributor=
-	efi_file=grub.efi
-    fi
     cp ${grubdir}/core.${imgext} ${efidir}/${efi_file}
+
     # Try to make this image bootable using the EFI Boot Manager, if available.
     if test "$removable" = no && test -n "$efi_distributor" && \
 	test -n "$efibootmgr"; then
@@ -619,7 +623,6 @@ elif [ x"$platform" = xefi ]; then
 		-L "$GRUB_DISTRIBUTOR" -l "\\EFI\\$efi_distributor\\$efi_file"
 	fi
     fi
-
 fi
 
 echo "Installation finished. No error reported."
