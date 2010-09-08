@@ -42,7 +42,7 @@ pc_partition_map_iterate (grub_disk_t disk,
   if (disk->partition && disk->partition->partmap == &grub_msdos_partition_map)
     {
       if (disk->partition->msdostype == GRUB_PC_PARTITION_TYPE_LINUX_MINIX)
-	delta = disk->partition->offset;
+	delta = disk->partition->start;
       else
 	return grub_error (GRUB_ERR_BAD_PART_TABLE, "no embedding supported");
     }
