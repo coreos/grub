@@ -538,6 +538,12 @@ script = {
   common = tests/grub_script_not.in;
 };
 
+script = {
+  testcase;
+  name = partmap_test;
+  common = tests/partmap_test.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;
