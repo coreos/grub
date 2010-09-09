@@ -1,3 +1,13 @@
+2010-09-09  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.util.def (libgrub.a): Move grub-core/kern/emu/hostfs.c
+	and grub-core/disk/host.c to ...
+	(grub-fstest): ... here.  Having the host disk implementation
+	present confuses grub-probe and other utility programs.
+
+	* util/grub-mkconfig.in: Only verify readability of grub.cfg.new
+	when writing to a file, not when writing to stdout.
+
 2010-09-09  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* tests/partmap_test.in: New test for partitions.
