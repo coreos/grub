@@ -1,3 +1,8 @@
+2010-09-09  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* tests/partmap_test.in: New test for partitions.
+	* Makefile.util.def: Rules for new test.
+
 2010-09-09  Robert Millan  <rmh@gnu.org>
 
 	* util/grub-probe.c (probe): Fix a pair of unhandled error
