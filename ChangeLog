@@ -1,3 +1,8 @@
+2010-09-10  Robert Millan  <rmh@gnu.org>
+
+	* util/grub.d/10_kfreebsd.in: Fix ${kfreebsd_device} initialization
+	on ZFS.  Now non-main filesystems are supported as / too.
+
 2010-09-09  Colin Watson  <cjwatson@ubuntu.com>
 
 	* Makefile.util.def (libgrub.a): Move grub-core/kern/emu/hostfs.c
