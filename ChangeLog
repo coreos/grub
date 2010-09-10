@@ -1,3 +1,9 @@
+2010-09-10  Robert Millan  <rmh@gnu.org>
+
+	* util/grub.d/10_hurd.in: Add misc readability checks.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+
 2010-09-10  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-install.in: ${imgext} won't be defined here until the
