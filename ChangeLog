@@ -1,3 +1,16 @@
+2010-09-10  Robert Millan  <rmh@gnu.org>
+
+	Solaris support in grub_find_zpool_from_dir().  Thanks
+	Seth Goldberg for referring to getextmntent() facility.
+
+	* configure.ac: Check for getextmntent(), `sys/mnttab.h' and
+	`sys/mkdev.h'.
+	* grub-core/kern/emu/misc.c [HAVE_SYS_MNTTAB_H]: Include
+	`<sys/mnttab.h>'.
+	[HAVE_SYS_MKDEV_H]: Include `<sys/mkdev.h>'.
+	[HAVE_GETEXTMNTENT] (grub_find_zpool_from_dir): Add getextmntent()
+	method for finding zpool name.
+
 2010-09-10  Colin Watson  <cjwatson@ubuntu.com>
 
 	grub-fstest needs the host and hostfs modules while other utilities
