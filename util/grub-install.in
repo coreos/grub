@@ -402,7 +402,14 @@ case "${target_cpu}-${platform}" in
 esac
 
 # Verify readability of a few critical files
-for file in grubenv core.${imgext} normal.mod ; do
+# verify_files is a temporary workaround; drop this once the install branch
+# is merged.
+verify_files=grubenv
+if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]; then
+    verify_files="$verify_files core.img"
+fi
+verify_files="$verify_files normal.mod"
+for file in $verify_files ; do
     if is_path_readable_by_grub ${grubdir}/${file} ${grub_device} ${relative_grubdir}/${file} ; then : ; else
         echo "GRUB is unable to read ${grubdir}/${file}" >&2
         exit 1

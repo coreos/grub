@@ -1,3 +1,9 @@
+2010-09-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in: ${imgext} won't be defined here until the
+	install branch is merged.  For the meantime, only verify core.img on
+	i386-pc and sparc64-ieee1275 platforms.
+
 2010-09-10  Robert Millan  <rmh@gnu.org>
 
 	Solaris support in grub_find_zpool_from_dir().  Thanks
