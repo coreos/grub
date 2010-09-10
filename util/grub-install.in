@@ -402,14 +402,7 @@ case "${target_cpu}-${platform}" in
 esac
 
 # Verify readability of a few critical files
-# verify_files is a temporary workaround; drop this once the install branch
-# is merged.
-verify_files=grubenv
-if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]; then
-    verify_files="$verify_files core.img"
-fi
-verify_files="$verify_files normal.mod"
-for file in $verify_files ; do
+for file in grubenv normal.mod ; do
     if is_path_readable_by_grub ${grubdir}/${file} ${grub_device} ${relative_grubdir}/${file} ; then : ; else
         echo "GRUB is unable to read ${grubdir}/${file}" >&2
         exit 1
@@ -418,6 +411,13 @@ done
 
 if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
     $grub_mkimage ${config_opt} -O ${mkimage_target} --output=${grubdir}/core.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
+
+    # This is a temporary workaround; it can be merged back into the check
+    # above once the install branch is merged.
+    if is_path_readable_by_grub ${grubdir}/core.img ${grub_device} ${relative_grubdir}/core.img ; then : ; else
+        echo "GRUB is unable to read ${grubdir}/core.img" >&2
+        exit 1
+    fi
 
     # Now perform the installation.
     $grub_setup ${setup_verbose} ${setup_force} --directory=${grubdir} --device-map=${device_map} \
