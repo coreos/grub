@@ -1,3 +1,14 @@
+2010-09-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	grub-fstest needs the host and hostfs modules while other utilities
+	actively require those modules to be absent, so grub-fstest needs
+	its own initialisation and finalisation code.
+
+	* Makefile.am (grub_fstest.pp): New target.
+	(grub_fstest_init.lst): Likewise.
+	(grub_fstest_init.c): Likewise.
+	* Makefile.util.def (grub-fstest): Add grub_fstest_init.c.
+
 2010-09-10  Robert Millan  <rmh@gnu.org>
 
 	* configure.ac: Check for `struct statfs.f_fstypename' and
