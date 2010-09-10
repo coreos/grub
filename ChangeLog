@@ -1,5 +1,13 @@
 2010-09-10  Robert Millan  <rmh@gnu.org>
 
+	* configure.ac: Check for `struct statfs.f_fstypename' and
+	`struct statfs.f_mntfromname'.
+
+	* grub-core/kern/emu/misc.c (grub_find_zpool_from_dir): Conditionalize
+	kFreeBSD-specific code.
+
+2010-09-10  Robert Millan  <rmh@gnu.org>
+
 	* util/grub.d/10_kfreebsd.in: Fix ${kfreebsd_device} initialization
 	on ZFS.  Now non-main filesystems are supported as / too.
 

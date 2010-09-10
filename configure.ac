@@ -280,6 +280,14 @@ fi
 AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf)
 AC_CHECK_HEADERS(libzfs.h libnvpair.h sys/param.h sys/mount.h)
 
+AC_CHECK_MEMBERS([struct statfs.f_fstypename],,,[$ac_includes_default
+#include <sys/param.h>
+#include <sys/mount.h>])
+
+AC_CHECK_MEMBERS([struct statfs.f_mntfromname],,,[$ac_includes_default
+#include <sys/param.h>
+#include <sys/mount.h>])
+
 # For opendisk() and getrawpartition() on NetBSD.
 # Used in util/deviceiter.c and in util/hostdisk.c.
 AC_CHECK_HEADER([util.h], [

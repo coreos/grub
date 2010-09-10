@@ -282,18 +282,26 @@ grub_get_libzfs_handle (void)
 void
 grub_find_zpool_from_dir (const char *dir, char **poolname, char **poolfs)
 {
-  struct statfs mnt;
   char *slash;
 
   *poolname = *poolfs = NULL;
 
-  if (statfs (dir, &mnt) != 0)
-    return;
+#if defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) && defined(HAVE_STRUCT_STATFS_F_MNTFROMNAME)
+  /* FreeBSD and GNU/kFreeBSD.  */
+  {
+    struct statfs mnt;
 
-  if (strcmp (mnt.f_fstypename, "zfs") != 0)
-    return;
+    if (statfs (dir, &mnt) != 0)
+      return;
 
-  *poolname = xstrdup (mnt.f_mntfromname);
+    if (strcmp (mnt.f_fstypename, "zfs") != 0)
+      return;
+
+    *poolname = xstrdup (mnt.f_mntfromname);
+  }
+#else
+  return;
+#endif
 
   slash = strchr (*poolname, '/');
   if (slash)
