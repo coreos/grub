@@ -1,3 +1,17 @@
+2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Shutdown using ACPI.
+
+	* grub-core/Makefile.core.def (halt): Add commands/acpihalt.c on i386-pc.
+	* grub-core/commands/acpihalt.c: New file.
+	* grub-core/commands/i386/pc/halt.c (grub_cmd_halt): Call grub_acpi_halt.
+	* include/grub/acpi.h (grub_acpi_fadt): New member pm1a.
+	(grub_acpi_halt): New proto.
+	(GRUB_ACPI_SLP_EN): New const.
+	(GRUB_ACPI_SLP_TYP_OFFSET): Likewise.
+	(GRUB_ACPI_OPCODE_*): New enum.
+	(GRUB_ACPI_EXTOPCODE_*): Likewise.
+
 2010-09-11  Tristan Gingold  <gingold@free.fr>
 2010-09-11  Robert Millan  <rmh.grub@aybabtu.com>
 2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
