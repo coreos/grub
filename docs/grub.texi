@@ -1227,8 +1227,10 @@ The @samp{$} character retains its special meaning within double quotes.
 The backslash retains its special meaning only when followed by one of the
 following characters: @samp{$}, @samp{"}, @samp{\}, or newline.  A
 backslash-newline pair is treated as a line continuation (that is, it is
-removed from the input stream and effectively ignored).  A double quote may
-be quoted within double quotes by preceding it with a backslash.
+removed from the input stream and effectively ignored@footnote{Currently a
+backslash-newline pair within a variable name is not handled properly, so
+use this feature with some care.}).  A double quote may be quoted within
+double quotes by preceding it with a backslash.
 
 @heading Variable expansion
 
@@ -1240,11 +1242,15 @@ which could be interpreted as part of the name.
 Normal variable names begin with an alphabetic character, followed by zero
 or more alphanumeric characters.
 
-Positional variable names consist of one or more digits.  These are reserved
-for future expansion.
+Positional variable names consist of one or more digits.  They represent
+parameters passed to function calls, with @samp{$1} representing the first
+parameter, and so on.
 
 The special variable name @samp{?} expands to the exit status of the most
-recently executed command.
+recently executed command.  When positional variable names are active, other
+special variable names @samp{@@}, @samp{*} and @samp{#} are defined and they
+expand to all positional parameters with necessary quoting, positional
+parameters without any quoting, and positional parameter count respectively.
 
 @heading Comments
 
@@ -1305,6 +1311,45 @@ the body.
 @xref{menuentry}.
 @end table
 
+@heading Built-in Commands
+
+Some built-in commands are also provided by GRUB script to help script
+writers perform actions that are otherwise not possible.  For example, these
+include commands to jump out of a loop without fully completing it, etc.
+
+@table @asis
+@item break [@code{n}]
+Exit from within a @code{for}, @code{while}, or @code{until} loop.  If
+@code{n} is specified, break @code{n} levels.  @code{n} must be greater than
+or equal to 1.  If @code{n} is greater than the number of enclosing loops,
+all enclosing loops are exited.  The return value is 0 unless @code{n} is
+not greater than or equal to 1.
+
+@item continue [@code{n}]
+Resume the next iteration of the enclosing @code{for}, @code{while} or
+@code{until} loop.  If @code{n} is specified, resume at the @code{n}th
+enclosing loop.  @code{n} must be greater than or equal to 1.  If @code{n}
+is greater than the number of enclosing loops, the last enclosing loop (the
+@dfn{top-level} loop) is resumed.  The return value is 0 unless @code{n} is
+not greater than or equal to 1.
+
+@item return [@code{n}]
+Causes a function to exit with the return value specified by @code{n}.  If
+@code{n} is omitted, the return status is that of the last command executed
+in the function body.  If used outside a function the return status is
+false.
+
+@item shift [@code{n}]
+The positional parameters from @code{n}+1 @dots{} are renamed to
+@code{$1}@dots{}.  Parameters represented by the numbers @code{$#} down to
+@code{$#}-@code{n}+1 are unset.  @code{n} must be a non-negative number less
+than or equal to @code{$#}.  If @code{n} is 0, no parameters are changed.
+If @code{n} is not given, it is assumed to be 1.  If @code{n} is greater
+than @code{$#}, the positional parameters are not changed.  The return
+status is greater than zero if @code{n} is greater than @code{$#} or less
+than zero; otherwise 0.
+
+@end table
 
 @node Embedded configuration
 @section Embedding a configuration file into GRUB

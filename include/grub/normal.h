@@ -115,4 +115,9 @@ void grub_normal_reset_more (void);
 
 void grub_xputs_normal (const char *str);
 
+grub_err_t
+grub_normal_add_menu_entry (int argc, const char **args, char **classes,
+			    const char *users, const char *hotkey,
+			    const char *prefix, const char *sourcecode);
+
 #endif /* ! GRUB_NORMAL_HEADER */

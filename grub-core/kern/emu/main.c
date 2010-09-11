@@ -197,6 +197,8 @@ main (int argc, char *argv[])
 
   grub_init_all ();
 
+  grub_emu_post_init ();
+
   /* Make sure that there is a root device.  */
   if (! root_dev)
     {

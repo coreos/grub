@@ -22,6 +22,7 @@
 #include <grub/kernel.h>
 #include <grub/misc.h>
 #include <grub/emu/misc.h>
+#include <grub/disk.h>
 
 void
 grub_register_exported_symbols (void)
@@ -47,4 +48,22 @@ void
 grub_emu_init (void)
 {
   grub_no_autoload = 1;
+}
+
+#ifdef GRUB_LINKER_HAVE_INIT
+void
+grub_arch_dl_init_linker (void)
+{
+}
+#endif
+
+void
+grub_emu_post_init (void)
+{
+  grub_lvm_fini ();
+  grub_mdraid_fini ();
+  grub_raid_fini ();
+  grub_raid_init ();
+  grub_mdraid_init ();
+  grub_lvm_init ();
 }

@@ -66,10 +66,33 @@ grub_efi_set_prefix (void)
       path = grub_strdup (pptr);
   }
 
-  if (!device || !path)
+  if ((!device || device[0] == ',' || !device[0]) || !path)
     image = grub_efi_get_loaded_image (grub_efi_image_handle);
-  if (image && !device)
-    device = grub_efidisk_get_device_name (image->device_handle);
+  if (image)
+    {
+      if (!device)
+	device = grub_efidisk_get_device_name (image->device_handle);
+      else if (device[0] == ',' || !device[0])
+	{
+	  /* We have a partition, but still need to fill in the drive.  */
+	  char *image_device, *comma, *new_device;
+
+	  image_device = grub_efidisk_get_device_name (image->device_handle);
+	  comma = grub_strchr (image_device, ',');
+	  if (comma)
+	    {
+	      char *drive = grub_strndup (image_device, comma - image_device);
+	      new_device = grub_xasprintf ("%s%s", drive, device);
+	      grub_free (drive);
+	    }
+	  else
+	    new_device = grub_xasprintf ("%s%s", image_device, device);
+
+	  grub_free (image_device);
+	  grub_free (device);
+	  device = new_device;
+	}
+    }
 
   if (image && !path)
     {

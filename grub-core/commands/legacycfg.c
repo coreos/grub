@@ -23,7 +23,6 @@
 #include <grub/err.h>
 #include <grub/dl.h>
 #include <grub/file.h>
-#include <grub/gzio.h>
 #include <grub/normal.h>
 #include <grub/script_sh.h>
 #include <grub/i18n.h>
@@ -37,7 +36,7 @@ legacy_file (const char *filename)
   char *entryname = NULL, *entrysrc = NULL;
   grub_menu_t menu;
 
-  file = grub_gzfile_open (filename, 1);
+  file = grub_file_open (filename);
   if (! file)
     return grub_errno;
 
@@ -80,7 +79,8 @@ legacy_file (const char *filename)
 		return grub_errno;
 	      }
 	    args[0] = oldname;
-	    grub_normal_add_menu_entry (1, args, entrysrc);
+	    grub_normal_add_menu_entry (1, args, NULL, NULL, NULL, NULL,
+					entrysrc);
 	  }
       }
 
@@ -132,7 +132,7 @@ legacy_file (const char *filename)
 	  return grub_errno;
 	}
       args[0] = entryname;
-      grub_normal_add_menu_entry (1, args, entrysrc);
+      grub_normal_add_menu_entry (1, args, NULL, NULL, NULL, NULL, entrysrc);
     }
 
   if (menu && menu->size)
@@ -238,9 +238,9 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
   if (argc < 2)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "filename required");
 
-  cutargs = grub_malloc (sizeof (cutargsp[0]) * (argc - 1));
+  cutargs = grub_malloc (sizeof (cutargs[0]) * (argc - 1));
   cutargc = argc - 1;
-  grub_memcpy (cutargs + 1, args + 2, sizeof (cutargsp[0]) * (argc - 2));
+  grub_memcpy (cutargs + 1, args + 2, sizeof (cutargs[0]) * (argc - 2));
   cutargs[0] = args[0];
 
   do

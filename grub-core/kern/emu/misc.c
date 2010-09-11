@@ -61,6 +61,15 @@
 # include <sys/mount.h>
 #endif
 
+#ifdef HAVE_SYS_MNTTAB_H
+# include <stdio.h> /* Needed by sys/mnttab.h.  */
+# include <sys/mnttab.h>
+#endif
+
+#ifdef HAVE_SYS_MKDEV_H
+# include <sys/mkdev.h> /* makedev */
+#endif
+
 int verbosity;
 
 void
@@ -282,18 +291,52 @@ grub_get_libzfs_handle (void)
 void
 grub_find_zpool_from_dir (const char *dir, char **poolname, char **poolfs)
 {
-  struct statfs mnt;
   char *slash;
 
   *poolname = *poolfs = NULL;
 
-  if (statfs (dir, &mnt) != 0)
-    return;
+#if defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) && defined(HAVE_STRUCT_STATFS_F_MNTFROMNAME)
+  /* FreeBSD and GNU/kFreeBSD.  */
+  {
+    struct statfs mnt;
 
-  if (strcmp (mnt.f_fstypename, "zfs") != 0)
-    return;
+    if (statfs (dir, &mnt) != 0)
+      return;
 
-  *poolname = xstrdup (mnt.f_mntfromname);
+    if (strcmp (mnt.f_fstypename, "zfs") != 0)
+      return;
+
+    *poolname = xstrdup (mnt.f_mntfromname);
+  }
+#elif defined(HAVE_GETEXTMNTENT)
+  /* Solaris.  */
+  {
+    struct stat st;
+    struct extmnttab mnt;
+
+    if (stat (dir, &st) != 0)
+      return;
+
+    FILE *mnttab = fopen ("/etc/mnttab", "r");
+    if (! mnttab)
+      return;
+
+    while (getextmntent (mnttab, &mnt, sizeof (mnt)) == 0)
+      {
+	if (makedev (mnt.mnt_major, mnt.mnt_minor) == st.st_dev
+	    && !strcmp (mnt.mnt_fstype, "zfs"))
+	  {
+	    *poolname = xstrdup (mnt.mnt_special);
+	    break;
+	  }
+      }
+
+    fclose (mnttab);
+  }
+#endif
+
+  if (! *poolname)
+    return;
 
   slash = strchr (*poolname, '/');
   if (slash)

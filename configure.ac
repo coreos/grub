@@ -176,6 +176,19 @@ AC_SUBST(host_kernel)
 AC_SUBST(target_cpu)
 AC_SUBST(platform)
 
+# Define default variables
+case "$host_os" in
+  netbsd* | openbsd*)
+        # Because /boot is used for the boot block in NetBSD and OpenBSD,
+        bootdirname=''      ;;
+  *)    bootdirname='boot'  ;;
+esac
+bootdirname=`echo "$bootdirname" | sed "$program_transform_name"`
+AC_SUBST(bootdirname)
+
+grubdirname=`echo "$PACKAGE" | sed "$program_transform_name"`
+AC_SUBST(grubdirname)
+
 #
 # Checks for build programs.
 #
@@ -264,8 +277,16 @@ else
 fi
 
 # Check for functions and headers.
-AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf)
-AC_CHECK_HEADERS(libzfs.h libnvpair.h sys/param.h sys/mount.h)
+AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf getextmntent)
+AC_CHECK_HEADERS(libzfs.h libnvpair.h sys/param.h sys/mount.h sys/mnttab.h sys/mkdev.h)
+
+AC_CHECK_MEMBERS([struct statfs.f_fstypename],,,[$ac_includes_default
+#include <sys/param.h>
+#include <sys/mount.h>])
+
+AC_CHECK_MEMBERS([struct statfs.f_mntfromname],,,[$ac_includes_default
+#include <sys/param.h>
+#include <sys/mount.h>])
 
 # For opendisk() and getrawpartition() on NetBSD.
 # Used in util/deviceiter.c and in util/hostdisk.c.
@@ -762,19 +783,6 @@ AC_SUBST([enable_grub_emu_usb])
 AC_SUBST([enable_grub_emu_pci])
 fi
 
-AC_ARG_ENABLE([grub-fstest],
-	      [AS_HELP_STRING([--enable-grub-fstest],
-                             [build and install the `grub-fstest' debugging utility (default=guessed)])])
-if test x"$enable_grub_fstest" = xno ; then
-  grub_fstest_excuse="explicitly disabled"
-fi
-if test x"$grub_fstest_excuse" = x ; then
-enable_grub_fstest=yes
-else
-enable_grub_fstest=no
-fi
-AC_SUBST([enable_grub_fstest])
-
 AC_ARG_ENABLE([grub-mkfont],
 	      [AS_HELP_STRING([--enable-grub-mkfont],
                              [build and install the `grub-mkfont' utility (default=guessed)])])
@@ -892,6 +900,7 @@ AM_CONDITIONAL([COND_mips_yeeloong], [test x$target_cpu = xmips -a x$platform = 
 AM_CONDITIONAL([COND_mips_qemu_mips], [test x$target_cpu = xmips -a x$platform = xqemu_mips])
 AM_CONDITIONAL([COND_sparc64_ieee1275], [test x$target_cpu = xsparc64 -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_powerpc_ieee1275], [test x$target_cpu = xpowerpc -a x$platform = xieee1275])
+AM_CONDITIONAL([COND_mips], [test x$target_cpu = xmips])
 
 AM_CONDITIONAL([COND_HOST_HURD], [test x$host_kernel = xhurd])
 AM_CONDITIONAL([COND_HOST_LINUX], [test x$host_kernel = xlinux])
@@ -905,7 +914,6 @@ AM_CONDITIONAL([COND_GRUB_EMU_SDL], [test x$enable_grub_emu_sdl = xyes])
 AM_CONDITIONAL([COND_GRUB_EMU_PCI], [test x$enable_grub_emu_pci = xyes])
 AM_CONDITIONAL([COND_GRUB_MKFONT], [test x$enable_grub_mkfont = xyes])
 AM_CONDITIONAL([COND_HAVE_FONT_SOURCE], [test x$FONT_SOURCE != x])
-AM_CONDITIONAL([COND_GRUB_FSTEST], [test x$enable_grub_fstest = xyes])
 AM_CONDITIONAL([COND_GRUB_PE2ELF], [test x$TARGET_OBJ2ELF != x])
 AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
@@ -969,11 +977,6 @@ if [ x"$efiemu_excuse" = x ]; then
 echo efiemu runtime: Yes
 else
 echo efiemu runtime: No "($efiemu_excuse)"
-fi
-if [ x"$grub_fstest_excuse" = x ]; then
-echo grub-fstest: Yes
-else
-echo grub-fstest: No "($grub_fstest_excuse)"
 fi
 if [ x"$grub_mkfont_excuse" = x ]; then
 echo grub-mkfont: Yes

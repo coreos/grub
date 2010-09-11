@@ -44,6 +44,20 @@ libgrub_a_init.c: libgrub_a_init.lst $(top_srcdir)/geninit.sh
 	sh $(top_srcdir)/geninit.sh `cat $<` > $@ || (rm -f $@; exit 1)
 CLEANFILES += libgrub_a_init.c
 
+# For grub-fstest
+grub_fstest.pp: $(grub_fstest_SOURCES)
+	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(grub_fstest_CPPFLAGS) $(CPPFLAGS) \
+	  -D'GRUB_MOD_INIT(x)=@MARKER@x@' $^ > $@ || (rm -f $@; exit 1)
+CLEANFILES += grub_fstest.pp
+
+grub_fstest_init.lst: libgrub.pp grub_fstest.pp
+	cat $^ | grep '@MARKER@' | sed 's/@MARKER@\(.*\)@/\1/g' | sort -u > $@ || (rm -f $@; exit 1)
+CLEANFILES += grub_fstest_init.lst
+
+grub_fstest_init.c: grub_fstest_init.lst $(top_srcdir)/geninit.sh
+	sh $(top_srcdir)/geninit.sh `cat $<` > $@ || (rm -f $@; exit 1)
+CLEANFILES += grub_fstest_init.c
+
 if COND_GRUB_MKFONT
 if COND_HAVE_FONT_SOURCE
 grubdata_DATA = unicode.pf2 ascii.pf2 ascii.h widthspec.h

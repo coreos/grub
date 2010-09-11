@@ -32,6 +32,8 @@
 static unsigned old_width, old_height;
 static int restore_needed;
 static char *display;
+static grub_ieee1275_ihandle_t stdout_ihandle;
+static int have_setcolors = 0;
 
 static struct
 {
@@ -72,7 +74,17 @@ find_display (void)
 static grub_err_t
 grub_video_ieee1275_init (void)
 {
+  grub_ssize_t actual;
+
   grub_memset (&framebuffer, 0, sizeof(framebuffer));
+
+  if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_CANNOT_SET_COLORS)
+      && !grub_ieee1275_get_integer_property (grub_ieee1275_chosen,
+					      "stdout", &stdout_ihandle,
+					      sizeof (stdout_ihandle), &actual)
+      && actual == sizeof (stdout_ihandle))
+    have_setcolors = 1;
+
   return grub_video_fb_init ();
 }
 
@@ -169,9 +181,6 @@ grub_video_ieee1275_setup (unsigned int width, unsigned int height,
   /* For some reason sparc64 uses 32-bit pointer too.  */
   framebuffer.ptr = (void *) (grub_addr_t) address;
 
-  grub_video_ieee1275_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
-				   grub_video_fbstd_colors);
-
   grub_dprintf ("video", "IEEE1275: initialising FB @ %p %dx%dx%d\n",
 		framebuffer.ptr, framebuffer.mode_info.width,
 		framebuffer.mode_info.height, framebuffer.mode_info.bpp);
@@ -192,15 +201,10 @@ grub_video_ieee1275_setup (unsigned int width, unsigned int height,
       grub_dprintf ("video", "IEEE1275: Couldn't set FB target\n");
       return err;
     }
-  
-  err = grub_video_fb_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
-				   grub_video_fbstd_colors);
 
-  if (err)
-    grub_dprintf ("video", "IEEE1275: Couldn't set palette\n");
-  else
-    grub_dprintf ("video", "IEEE1275: Success\n");
-  
+  grub_video_ieee1275_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
+				   grub_video_fbstd_colors);
+    
   return err;
 }
 
@@ -243,9 +247,17 @@ grub_video_ieee1275_set_palette (unsigned int start, unsigned int count,
   if (err)
     return err;
 
-  grub_video_fb_get_palette (0, 256, fb_palette_data);
+  grub_video_fb_get_palette (0, ARRAY_SIZE (fb_palette_data), fb_palette_data);
 
-  /* TODO. */
+  /* Set colors.  */
+  if (have_setcolors)
+    {
+      unsigned col;
+      for (col = 0; col < ARRAY_SIZE (fb_palette_data); col++)
+	grub_ieee1275_set_color (stdout_ihandle, col, fb_palette_data[col].r,
+				 fb_palette_data[col].g,
+				 fb_palette_data[col].b);
+    }
 
   return GRUB_ERR_NONE;
 }

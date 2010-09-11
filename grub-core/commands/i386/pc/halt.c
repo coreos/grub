@@ -22,6 +22,7 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 #include <grub/machine/int.h>
+#include <grub/acpi.h>
 
 static const struct grub_arg_option options[] =
   {
@@ -100,6 +101,9 @@ grub_cmd_halt (grub_extcmd_context_t ctxt,
 {
   struct grub_arg_list *state = ctxt->state;
   int no_apm = 0;
+
+  grub_acpi_halt ();
+
   if (state[0].set)
     no_apm = 1;
   grub_halt (no_apm);

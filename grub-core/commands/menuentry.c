@@ -52,10 +52,10 @@ static struct
 /* Add a menu entry to the current menu context (as given by the environment
    variable data slot `menu').  As the configuration file is read, the script
    parser calls this when a menu entry is to be created.  */
-static grub_err_t
-append_menu_entry (int argc, const char **args, char **classes,
-		   const char *users, const char *hotkey,
-		   const char *prefix, const char *sourcecode)
+grub_err_t
+grub_normal_add_menu_entry (int argc, const char **args, char **classes,
+			    const char *users, const char *hotkey,
+			    const char *prefix, const char *sourcecode)
 {
   unsigned i;
   int menu_hotkey = 0;
@@ -243,9 +243,10 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no menuentry definition");
 
   if (! ctxt->script)
-    return append_menu_entry (argc, (const char **) args,
-			      ctxt->state[0].args, ctxt->state[1].arg,
-			      ctxt->state[2].arg, 0, ctxt->state[3].arg);
+    return grub_normal_add_menu_entry (argc, (const char **) args,
+				       ctxt->state[0].args, ctxt->state[1].arg,
+				       ctxt->state[2].arg, 0,
+				       ctxt->state[3].arg);
 
   src = args[argc - 1];
   args[argc - 1] = NULL;
@@ -258,9 +259,9 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
   if (! prefix)
     return grub_errno;
 
-  r = append_menu_entry (argc - 1, (const char **) args,
-			 ctxt->state[0].args, ctxt->state[1].arg,
-			 ctxt->state[2].arg, prefix, src + 1);
+  r = grub_normal_add_menu_entry (argc - 1, (const char **) args,
+				  ctxt->state[0].args, ctxt->state[1].arg,
+				  ctxt->state[2].arg, prefix, src + 1);
 
   src[len - 1] = ch;
   args[argc - 1] = src;

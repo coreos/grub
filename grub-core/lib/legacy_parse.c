@@ -296,6 +296,7 @@ adjust_file (const char *in, grub_size_t len)
       
       *outptr++ = *ptr;
     }
+  *outptr = 0;
   return ret;
 }
 

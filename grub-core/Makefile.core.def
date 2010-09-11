@@ -404,11 +404,22 @@ module = {
 module = {
   name = acpi;
 
-  x86 = commands/acpi.c;
+  common = commands/acpi.c;
   x86_efi = commands/efi/acpi.c;
   i386_pc = commands/i386/pc/acpi.c;
   i386_coreboot = commands/i386/pc/acpi.c;
   i386_multiboot = commands/i386/pc/acpi.c;
+
+  enable = x86_efi;
+  enable = i386_pc;
+  enable = i386_coreboot;
+  enable = i386_multiboot;
+};
+
+module = {
+  name = lsacpi;
+
+  common = commands/lsacpi.c;
 
   enable = x86_efi;
   enable = i386_pc;
@@ -493,6 +504,7 @@ module = {
   name = halt;
   nopc = commands/halt.c;
   i386_pc = commands/i386/pc/halt.c;
+  i386_pc = commands/acpihalt.c;
   i386_multiboot = lib/i386/halt.c;
   i386_coreboot = lib/i386/halt.c;
   i386_qemu = lib/i386/halt.c;
@@ -836,6 +848,11 @@ module = {
 };
 
 module = {
+  name = btrfs;
+  common = fs/btrfs.c;
+};
+
+module = {
   name = cpio;
   common = fs/cpio.c;
 };
@@ -878,6 +895,11 @@ module = {
 module = {
   name = minix;
   common = fs/minix.c;
+};
+
+module = {
+  name = minix2;
+  common = fs/minix2.c;
 };
 
 module = {
@@ -1389,7 +1411,7 @@ module = {
   common = commands/legacycfg.c;
   common = lib/legacy_parse.c;
   enable = i386_pc;
-}
+};
 
 module = {
   name = test_blockarg;
@@ -1408,5 +1430,4 @@ module = {
 module = {
   name = testload;
   common = commands/testload.c;
->>>>>>> MERGE-SOURCE
 };
