@@ -120,4 +120,7 @@ grub_normal_add_menu_entry (int argc, const char **args, char **classes,
 			    const char *users, const char *hotkey,
 			    const char *prefix, const char *sourcecode);
 
+grub_err_t
+grub_normal_set_password (const char *user, const char *password);
+
 #endif /* ! GRUB_NORMAL_HEADER */

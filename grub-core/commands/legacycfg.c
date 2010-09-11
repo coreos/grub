@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010  Free Software Foundation, Inc.
+ *  Copyright (C) 2000, 2001, 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,6 +28,8 @@
 #include <grub/i18n.h>
 #include <grub/term.h>
 #include <grub/legacy_parse.h>
+#include <grub/crypto.h>
+#include <grub/auth.h>
 
 static grub_err_t
 legacy_file (const char *filename)
@@ -351,7 +353,7 @@ grub_cmd_legacy_initrd (struct grub_command *mycmd __attribute__ ((unused)),
 
 static grub_err_t
 grub_cmd_legacy_color (struct grub_command *mycmd __attribute__ ((unused)),
-			int argc, char **args)
+		       int argc, char **args)
 {
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "color required");
@@ -382,8 +384,188 @@ grub_cmd_legacy_color (struct grub_command *mycmd __attribute__ ((unused)),
   return grub_errno;
 }
 
+static grub_err_t
+check_password_deny (const char *user __attribute__ ((unused)),
+		     const char *entered  __attribute__ ((unused)),
+		     void *password __attribute__ ((unused)))
+{
+  return GRUB_ACCESS_DENIED;
+}
+
+#define MD5_HASHLEN 16
+
+struct legacy_md5_password
+{
+  grub_uint8_t *salt;
+  int saltlen;
+  grub_uint8_t hash[MD5_HASHLEN];
+};
+
+static int
+check_password_md5_real (const char *entered,
+			 struct legacy_md5_password *pw)
+{
+  int enteredlen = grub_strlen (entered);
+  unsigned char alt_result[MD5_HASHLEN];
+  unsigned char *digest;
+  grub_uint8_t ctx[GRUB_MD_MD5->contextsize];
+  int i;
+
+  GRUB_MD_MD5->init (ctx);
+  GRUB_MD_MD5->write (ctx, entered, enteredlen);
+  GRUB_MD_MD5->write (ctx, pw->salt + 3, pw->saltlen - 3);
+  GRUB_MD_MD5->write (ctx, entered, enteredlen);
+  digest = GRUB_MD_MD5->read (ctx);
+  GRUB_MD_MD5->final (ctx);
+  memcpy (alt_result, digest, MD5_HASHLEN);
+  
+  GRUB_MD_MD5->init (ctx);
+  GRUB_MD_MD5->write (ctx, entered, enteredlen);
+  GRUB_MD_MD5->write (ctx, pw->salt, pw->saltlen); /* include the $1$ header */
+  for (i = enteredlen; i > 16; i -= 16)
+    GRUB_MD_MD5->write (ctx, alt_result, 16);
+  GRUB_MD_MD5->write (ctx, alt_result, i);
+
+  for (i = enteredlen; i > 0; i >>= 1)
+    GRUB_MD_MD5->write (ctx, entered + ((i & 1) ? enteredlen : 0), 1);
+  digest = GRUB_MD_MD5->read (ctx);
+  GRUB_MD_MD5->final (ctx);
+
+  for (i = 0; i < 1000; i++)
+    {
+      memcpy (alt_result, digest, 16);
+
+      GRUB_MD_MD5->init (ctx);
+      if ((i & 1) != 0)
+	GRUB_MD_MD5->write (ctx, entered, enteredlen);
+      else
+	GRUB_MD_MD5->write (ctx, alt_result, 16);
+      
+      if (i % 3 != 0)
+	GRUB_MD_MD5->write (ctx, pw->salt + 3, pw->saltlen - 3);
+
+      if (i % 7 != 0)
+	GRUB_MD_MD5->write (ctx, entered, enteredlen);
+
+      if ((i & 1) != 0)
+	GRUB_MD_MD5->write (ctx, alt_result, 16);
+      else
+	GRUB_MD_MD5->write (ctx, entered, enteredlen);
+      digest = GRUB_MD_MD5->read (ctx);
+      GRUB_MD_MD5->final (ctx);
+    }
+
+  return (grub_crypto_memcmp (digest, pw->hash, MD5_HASHLEN) == 0);
+}
+
+static grub_err_t
+check_password_md5 (const char *user,
+		    const char *entered,
+		    void *password)
+{
+  if (!check_password_md5_real (entered, password))
+    return GRUB_ACCESS_DENIED;
+
+  grub_auth_authenticate (user);
+
+  return GRUB_ERR_NONE;
+}
+
+static inline int
+ib64t (char c)
+{
+  if (c == '.')
+    return 0;
+  if (c == '/')
+    return 1;
+  if (c >= '0' && c <= '9')
+    return c - '0' + 2;
+  if (c >= 'A' && c <= 'Z')
+    return c - 'A' + 12;
+  if (c >= 'a' && c <= 'z')
+    return c - 'a' + 38;
+  return -1;
+}
+
+static grub_err_t
+grub_cmd_legacy_password (struct grub_command *mycmd __attribute__ ((unused)),
+			  int argc, char **args)
+{
+  const char *salt, *saltend;
+  const char *p;
+  struct legacy_md5_password *pw = NULL;
+  int i;
+
+  if (argc == 0)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "arguments expected");
+  if (args[0][0] != '-' || args[0][1] != '-')
+    return grub_normal_set_password ("legacy", args[0]);
+  if (grub_memcmp (args[0], "--md5", sizeof ("--md5")) != 0)
+    goto fail;
+  if (argc == 1)
+    goto fail;
+  if (grub_strlen(args[1]) <= 3)
+    goto fail;
+  salt = args[1];
+  saltend = grub_strchr (salt + 3, '$');
+  if (!saltend)
+    goto fail;
+  pw = grub_malloc (sizeof (*pw));
+  if (!pw)
+    goto fail;
+
+  p = saltend + 1;
+  for (i = 0; i < 5; i++)
+    {
+      int n;
+      grub_uint32_t w = 0;
+
+      for (n = 0; n < 4; n++)
+	{
+	  int ww = ib64t(*p++);
+	  if (ww == -1)
+	    goto fail;
+	  w |= ww << (n * 6);
+	}
+      pw->hash[i == 4 ? 5 : 12+i] = w & 0xff;
+      pw->hash[6+i] = (w >> 8) & 0xff;
+      pw->hash[i] = (w >> 16) & 0xff;
+    }
+  {
+    int n;
+    grub_uint32_t w = 0;
+    for (n = 0; n < 2; n++)
+      {
+	int ww = ib64t(*p++);
+	if (ww == -1)
+	  goto fail;
+	w |= ww << (6 * n);
+      }
+    if (w >= 0x100)
+      goto fail;
+    pw->hash[11] = w;
+  }
+
+  pw->saltlen = saltend - salt;
+  pw->salt = (grub_uint8_t *) grub_strndup (salt, pw->saltlen);
+  if (!pw->salt)
+    goto fail;
+
+  return grub_auth_register_authentication ("legacy", check_password_md5, pw);
+
+ fail:
+  grub_free (pw);
+  /* This is to imitate minor difference between grub-legacy in GRUB2.
+     If 2 password commands are executed in a row and second one fails
+     on GRUB2 the password of first one is used, whereas in grub-legacy
+     authenthication is denied. In case of no password command was executed
+     early both versions deny any access.  */
+  return grub_auth_register_authentication ("legacy", check_password_deny,
+					    NULL);
+}
+
 static grub_command_t cmd_source, cmd_configfile, cmd_kernel, cmd_initrd;
-static grub_command_t cmd_color;
+static grub_command_t cmd_color, cmd_password;
 
 GRUB_MOD_INIT(legacycfg)
 {
@@ -407,6 +589,10 @@ GRUB_MOD_INIT(legacycfg)
 				     grub_cmd_legacy_color,
 				     N_("NORMAL [HIGHLIGHT]"),
 				     N_("Simulate grub-legacy color command"));
+  cmd_password = grub_register_command ("legacy_password",
+					grub_cmd_legacy_password,
+					N_("[--md5] PASSWD [FILE]"),
+					N_("Simulate grub-legacy password command"));
 }
 
 GRUB_MOD_FINI(legacycfg)
@@ -416,4 +602,5 @@ GRUB_MOD_FINI(legacycfg)
   grub_unregister_command (cmd_kernel);
   grub_unregister_command (cmd_initrd);
   grub_unregister_command (cmd_color);
+  grub_unregister_command (cmd_password);
 }

@@ -32,6 +32,7 @@ struct legacy_command
     TYPE_FORCE_OPTION,
     TYPE_NOAPM_OPTION,
     TYPE_TYPE_OR_NOMEM_OPTION,
+    TYPE_OPTION,
     TYPE_FILE,
     TYPE_FILE_NO_CONSUME,
     TYPE_PARTITION,
@@ -159,7 +160,21 @@ struct legacy_command legacy_commands[] =
     /* partnew unsupported.  */
     {"parttype", "parttool '%s' type=%s\n", 2, {TYPE_PARTITION, TYPE_INT}, 0,
      "PART TYPE", "Change the type of the partition PART to TYPE."},
-    /* password unsupported.  */    /* NUL_TERMINATE */
+    /* FIXME: support config file reloading.  */
+    /* FIXME: support usage in menuentry.  */
+    {"password", "if [ \"$superusers\" = "" ]; then superusers=legacy; fi; "
+     "legacy_password %s '%s' %s", 3, {TYPE_OPTION, TYPE_VERBATIM,
+				       TYPE_FILE}, FLAG_IGNORE_REST,
+     "[--md5] PASSWD [FILE]",
+     "If used in the first section of a menu file, disable all"
+     " interactive editing control (menu entry editor and"
+     " command line). If the password PASSWD is entered, it loads the"
+     " FILE as a new config file and restarts the GRUB Stage 2. If you"
+     " omit the argument FILE, then GRUB just unlocks privileged"
+     " instructions.  You can also use it in the script section, in"
+     " which case it will ask for the password, before continuing."
+     " The option --md5 tells GRUB that PASSWD is encrypted with"
+     " md5crypt."},
     /* pause unsupported.  */
     /* rarp unsupported.  */
     {"read", "read_dword %s\n", 1, {TYPE_INT}, 0, "ADDR",
@@ -323,6 +338,8 @@ is_option (enum arg_type opt, const char *curarg, grub_size_t len)
 	|| check_option (curarg, "--type=biglinux", len)
 	|| check_option (curarg, "--type=multiboot", len)
 	|| check_option (curarg, "--no-mem-option", len);
+    case TYPE_OPTION:
+      return (len >= 2 && curarg[0] == '-' && curarg[1] == '-');
     default:
       return 0;
     } 
@@ -453,6 +470,7 @@ grub_legacy_parse (const char *buf, char **entryname)
 	  case TYPE_FORCE_OPTION:
 	  case TYPE_NOAPM_OPTION:
 	  case TYPE_TYPE_OR_NOMEM_OPTION:
+	  case TYPE_OPTION:
 	    if (is_option (legacy_commands[cmdnum].argt[i], curarg, curarglen))
 	      {
 		args[j++] = grub_strndup (curarg, curarglen);
