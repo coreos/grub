@@ -31,7 +31,7 @@ main (int argc, char **argv)
 
   if (argc >= 2 && argv[1][0] == '-')
     {
-      fprintf (stderr, "Usage: %s [INFILE [OUTFILE]]\n", argv[0]);
+      fprintf (stdout, "Usage: %s [INFILE [OUTFILE]]\n", argv[0]);
       return 0;
     }
 
@@ -79,7 +79,7 @@ main (int argc, char **argv)
 	  fprintf (out, "}\n\n");
 	if (oldname != entryname)
 	  fprintf (out, "menuentry \'%s\' {\n",
-		   grub_legacy_escape (entryname, grub_strlen (entryname)));
+		   grub_legacy_escape (entryname, strlen (entryname)));
       }
 
       if (parsed)
