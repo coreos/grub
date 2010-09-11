@@ -1,8 +1,10 @@
 # -*- makefile -*-
 
+CFLAGS_PLATFORM=
+
 # Platform specific options
 if COND_i386_pc
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
+  CFLAGS_PLATFORM += -mrtd -mregparm=3
 endif
 if COND_i386_efi
   LDFLAGS_PLATFORM = -melf_i386
@@ -11,21 +13,24 @@ if COND_x86_64_efi
   LDFLAGS_PLATFORM = -melf_x86_64
 endif
 if COND_i386_qemu
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
+  CFLAGS_PLATFORM += -mrtd -mregparm=3
 endif
 if COND_i386_coreboot
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
+  CFLAGS_PLATFORM += -mrtd -mregparm=3
 endif
 if COND_i386_ieee1275
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
+  CFLAGS_PLATFORM += -mrtd -mregparm=3
 endif
 if COND_mips_yeeloong
-  CFLAGS_PLATFORM = -march=mips3 -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
+  CFLAGS_PLATFORM += -march=mips3 -mexplicit-relocs
   CPPFLAGS_PLATFORM = -DUSE_ASCII_FAILBACK
   CCASFLAGS_PLATFORM = -march=mips3
 endif
+if COND_mips
+  CFLAGS_PLATFORM += -mflush-func=grub_cpu_flush_cache
+endif
 if COND_sparc64_ieee1275
-  CFLAGS_PLATFORM = -mno-app-regs
+  CFLAGS_PLATFORM += -mno-app-regs
   LDFLAGS_PLATFORM = -melf64_sparc -mno-relax
 endif
 

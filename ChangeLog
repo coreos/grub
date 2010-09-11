@@ -1,3 +1,25 @@
+2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix emu on mipsel.
+
+	* conf/Makefile.common (CFLAGS_PLATFORM): Add -mflush-func
+	=grub_cpu_flush_cache on all mips and not only yeeloong.
+	* configure.ac (COND_mips): New conditional.
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Add libgcc on all
+	platforms.
+	* grub-core/kern/emu/cache.S (__mips__): Use _flush_cache.
+	* grub-core/kern/emu/full.c (grub_arch_dl_init_linker)
+	[GRUB_LINKER_HAVE_INIT]: New function.
+	(grub_emu_post_init): Likewise.
+	* grub-core/kern/emu/lite.c (grub_emu_post_init): Likewise.
+	* grub-core/kern/emu/main.c: Use grub_emu_post_init.
+	* include/grub/cache.h (_mips): Include mips/cache.h.
+	* include/grub/disk.h [GRUB_UTIL || GRUB_MACHINE_EMU]: Add missing
+	LVM and RAID prototypes.
+	* include/grub/emu/misc.h (grub_emu_post_init): New proto.
+	* include/grub/mips/time.h (grub_cpu_idle) [GRUB_MACHINE_EMU]: New
+	function.
+
 2010-09-10  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-install.in: Don't try to verify core.img until after
