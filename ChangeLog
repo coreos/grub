@@ -1,3 +1,7 @@
+2010-09-11  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/commands/lsacpi.c (grub_cmd_lsacpi): Fix prototype.
+
 2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Shutdown using ACPI.

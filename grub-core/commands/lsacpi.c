@@ -196,10 +196,11 @@ static const struct grub_arg_option options[] = {
 };
 
 static grub_err_t
-grub_cmd_lsacpi (struct grub_extcmd *cmd, int argc __attribute__ ((unused)),
+grub_cmd_lsacpi (struct grub_extcmd_context *ctxt,
+		 int argc __attribute__ ((unused)),
 		 char **args __attribute__ ((unused)))
 {
-  if (!cmd->state[1].set)
+  if (!ctxt->state[1].set)
     {
       struct grub_acpi_rsdp_v10 *rsdp1 = grub_acpi_get_rsdpv1 ();
       if (!rsdp1)
@@ -212,7 +213,7 @@ grub_cmd_lsacpi (struct grub_extcmd *cmd, int argc __attribute__ ((unused)),
 	}
     }
 
-  if (!cmd->state[0].set)
+  if (!ctxt->state[0].set)
     {
       struct grub_acpi_rsdp_v20 *rsdp2 = grub_acpi_get_rsdpv2 ();
       if (!rsdp2)
