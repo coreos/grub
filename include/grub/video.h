@@ -38,6 +38,10 @@ struct grub_video_bitmap;
 /* If following is set render target contains currenly displayed image
    after swapping buffers (otherwise it contains previously displayed image).
  */
+#define GRUB_VIDEO_MODE_TYPE_YUV                0x00000800
+#define GRUB_VIDEO_MODE_TYPE_PLANAR             0x00000400
+#define GRUB_VIDEO_MODE_TYPE_HERCULES           0x00000200
+#define GRUB_VIDEO_MODE_TYPE_UNKNOWN            0x00000100
 #define GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP	0x00000080
 #define GRUB_VIDEO_MODE_TYPE_PURE_TEXT		0x00000040
 #define GRUB_VIDEO_MODE_TYPE_ALPHA		0x00000020

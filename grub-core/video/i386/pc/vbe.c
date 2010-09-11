@@ -555,14 +555,39 @@ vbe2videoinfo (grub_uint32_t mode,
 
   mode_info->width = vbeinfo->x_resolution;
   mode_info->height = vbeinfo->y_resolution;
+  mode_info->mode_type = 0;
   switch (vbeinfo->memory_model)
     {
-    case GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL:
-      mode_info->mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+    case GRUB_VBE_MEMORY_MODEL_TEXT:
+      mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_PURE_TEXT;
       break;
-	  
+
+      /* CGA is basically 4-bit packed pixel.  */
+    case GRUB_VBE_MEMORY_MODEL_CGA:
+    case GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL:
+      mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+      break;
+
+    case GRUB_VBE_MEMORY_MODEL_HERCULES:
+      mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_HERCULES
+	| GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP;
+      break;
+
+      /* Non chain 4 is a special case of planar.  */
+    case GRUB_VBE_MEMORY_MODEL_NONCHAIN4_256:
+    case GRUB_VBE_MEMORY_MODEL_PLANAR:
+      mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_PLANAR;
+      break;
+
+    case GRUB_VBE_MEMORY_MODEL_YUV:
+      mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_YUV;
+      break;
+      
     case GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR:
-      mode_info->mode_type = GRUB_VIDEO_MODE_TYPE_RGB;
+      mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_RGB;
+      break;
+    default:
+      mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_UNKNOWN;
       break;
     }
 
@@ -584,6 +609,9 @@ vbe2videoinfo (grub_uint32_t mode,
       break;
     case 8:
       mode_info->bytes_per_pixel = 1;
+      break;  
+    case 4:
+      mode_info->bytes_per_pixel = 0;
       break;  
     }
 

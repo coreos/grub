@@ -34,6 +34,8 @@ hook (const struct grub_video_mode_info *info)
     grub_printf ("  0x%03x ", info->mode_number);
   grub_printf ("%4d x %4d x %2d  ", info->width, info->height, info->bpp);
 
+  if (info->mode_type & GRUB_VIDEO_MODE_TYPE_PURE_TEXT)
+    grub_printf ("Text-only ");
   /* Show mask and position details for direct color modes.  */
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_RGB)
     grub_printf ("Direct, mask: %d/%d/%d/%d  pos: %d/%d/%d/%d",
@@ -46,7 +48,18 @@ hook (const struct grub_video_mode_info *info)
 		 info->blue_field_pos,
 		 info->reserved_field_pos);
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)
-    grub_printf ("Packed");
+    grub_printf ("Packed ");
+  if (info->mode_type & GRUB_VIDEO_MODE_TYPE_YUV)
+    grub_printf ("YUV ");
+  if (info->mode_type & GRUB_VIDEO_MODE_TYPE_PLANAR)
+    grub_printf ("Planar ");
+  if (info->mode_type & GRUB_VIDEO_MODE_TYPE_HERCULES)
+    grub_printf ("Hercules ");
+  if (info->mode_type & GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP)
+    grub_printf ("Monochrome ");
+  if (info->mode_type & GRUB_VIDEO_MODE_TYPE_UNKNOWN)
+    grub_printf ("Unknown ");
+
   grub_printf ("\n");
 
   return 0;
