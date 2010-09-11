@@ -33,6 +33,7 @@ struct legacy_command
     TYPE_NOAPM_OPTION,
     TYPE_TYPE_OR_NOMEM_OPTION,
     TYPE_FILE,
+    TYPE_FILE_NO_CONSUME,
     TYPE_PARTITION,
     TYPE_BOOL,
     TYPE_INT,
@@ -113,7 +114,8 @@ struct legacy_command legacy_commands[] =
     /* ifconfig unsupported.  */
     /* impsprobe unsupported.  */
     /* FIXME: dublicate multiboot filename. */
-    {"initrd", "legacy_initrd '%s' %s\n", 2, {TYPE_FILE, TYPE_REST_VERBATIM}, 0,
+    {"initrd", "legacy_initrd '%s' %s\n", 2, {TYPE_FILE_NO_CONSUME,
+					      TYPE_REST_VERBATIM}, 0,
      "FILE [ARG ...]",
      "Load an initial ramdisk FILE for a Linux format boot image and set the"
      " appropriate parameters in the Linux setup area in memory."},
@@ -122,9 +124,9 @@ struct legacy_command legacy_commands[] =
     /* FIXME: really support --no-mem-option.  */
     /* FIXME: dublicate multiboot filename. */
     {"kernel", "legacy_kernel %s %s '%s' %s\n", 4, {TYPE_TYPE_OR_NOMEM_OPTION,
-						 TYPE_TYPE_OR_NOMEM_OPTION,
-						 TYPE_FILE,
-						 TYPE_REST_VERBATIM}, 0,
+						    TYPE_TYPE_OR_NOMEM_OPTION,
+						    TYPE_FILE_NO_CONSUME,
+						    TYPE_REST_VERBATIM}, 0,
      "[--no-mem-option] [--type=TYPE] FILE [ARG ...]",
      "Attempt to load the primary boot image from FILE. The rest of the"
      " line is passed verbatim as the \"kernel command line\".  Any modules"
@@ -143,7 +145,8 @@ struct legacy_command legacy_commands[] =
      " when you chain-load some operating systems, such as DOS, if such an"
      " OS resides at a non-first drive."},
     /* md5crypt unsupported.  */
-    {"module", "legacy_initrd '%s' %s\n", 1, {TYPE_FILE, TYPE_REST_VERBATIM}, 0,
+    {"module", "legacy_initrd '%s' %s\n", 1, {TYPE_FILE_NO_CONSUME,
+					      TYPE_REST_VERBATIM}, 0,
      "FILE [ARG ...]",
      "Load a boot module FILE for a Multiboot format boot image (no"
      " interpretation of the file contents is made, so users of this"
@@ -210,7 +213,6 @@ struct legacy_command legacy_commands[] =
      " compares them, to test the filesystem code. "
      " If this test succeeds, then a good next"
      " step is to try loading a kernel."},
-     "Print the contents of the file FILE."},
     /* testvbe unsupported.  */
     /* tftpserver unsupported.  */
     {"timeout", "set timeout=%s\n", 1, {TYPE_INT}, 0, "SEC",
@@ -399,6 +401,8 @@ grub_legacy_parse (const char *buf, char **entryname)
 	  ptr++;
 	switch (legacy_commands[cmdnum].argt[i])
 	  {
+	  case TYPE_FILE_NO_CONSUME:
+	    hold_arg = 1;
 	  case TYPE_PARTITION:
 	  case TYPE_FILE:
 	    args[j++] = adjust_file (curarg, curarglen);

@@ -179,6 +179,8 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
   int i;
   int no_mem_option = 0;
   struct grub_command *cmd;
+  char **cutargs;
+  int cutargc;
   for (i = 0; i < 2; i++)
     {
       /* FIXME: really support this.  */
@@ -233,8 +235,13 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	}
     }
 
-  if (!argc)
+  if (argc < 2)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "filename required");
+
+  cutargs = grub_malloc (sizeof (cutargsp[0]) * (argc - 1));
+  cutargc = argc - 1;
+  grub_memcpy (cutargs + 1, args + 2, sizeof (cutargsp[0]) * (argc - 2));
+  cutargs[0] = args[0];
 
   do
     {
@@ -244,7 +251,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	  cmd = grub_command_find ("linux16");
 	  if (cmd)
 	    {
-	      if (!(cmd->func) (cmd, argc, args))
+	      if (!(cmd->func) (cmd, cutargc, cutargs))
 		{
 		  kernel_type = LINUX;
 		  return GRUB_ERR_NONE;
@@ -275,7 +282,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	  cmd = grub_command_find ("kfreebsd");
 	  if (cmd)
 	    {
-	      if (!(cmd->func) (cmd, argc, args))
+	      if (!(cmd->func) (cmd, cutargc, cutargs))
 		{
 		  kernel_type = KFREEBSD;
 		  return GRUB_ERR_NONE;
@@ -288,7 +295,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	  cmd = grub_command_find ("knetbsd");
 	  if (cmd)
 	    {
-	      if (!(cmd->func) (cmd, argc, args))
+	      if (!(cmd->func) (cmd, cutargc, cutargs))
 		{
 		  kernel_type = KNETBSD;
 		  return GRUB_ERR_NONE;
@@ -301,7 +308,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	  cmd = grub_command_find ("kopenbsd");
 	  if (cmd)
 	    {
-	      if (!(cmd->func) (cmd, argc, args))
+	      if (!(cmd->func) (cmd, cutargc, cutargs))
 		{
 		  kernel_type = KOPENBSD;
 		  return GRUB_ERR_NONE;
