@@ -1,4 +1,12 @@
 2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+2010-09-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in (grub_partition): New variable.
+	Set prefix_drive on EFI and PC to (,$grub_partition) as last resort.
+	* util/i386/pc/grub-setup.c (setup): Don't touch prefix.
+	Fixes a bug reported by Yves Blusseau.
+
+2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix emu on mipsel.
 
