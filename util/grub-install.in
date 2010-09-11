@@ -61,6 +61,16 @@ efibootmgr=`which efibootmgr 2>/dev/null || true`
 removable=no
 efi_quiet=
 
+# Get GRUB_DISTRIBUTOR.
+if test -f ${sysconfdir}/default/grub ; then
+    . ${sysconfdir}/default/grub
+fi
+
+bootloader_id="$(echo "$GRUB_DISTRIBUTOR" | tr '[A-Z]' '[a-z]' | cut -d' ' -f1)"
+if test -z "$bootloader_id"; then
+    bootloader_id=grub
+fi
+
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
     disk_module=biosdisk
 elif [ "${platform}" = "ieee1275" ] || [ "${platform}" = "efi" ] ; then
@@ -111,6 +121,7 @@ fi
 if [ "${platform}" = "efi" ]; then
     cat <<EOF
    --removable             the installation device is removable
+   --bootloader-id=ID      the ID of bootloader.
 EOF
 fi
     cat <<EOF
@@ -172,6 +183,11 @@ do
 	grub_setup=`argument $option "$@"`; shift;;
     --grub-setup=*)
 	grub_setup=`echo "$option" | sed 's/--grub-setup=//'` ;;
+
+    --bootloader-id)
+	bootloader_id=`argument $option "$@"`; shift;;
+    --bootloader_id=*)
+	bootloader_id=`echo "$option" | sed 's/--bootloader_id=//'` ;;
 
     --grub-mkimage)
 	grub_mkimage=`argument $option "$@"`; shift;;
@@ -302,11 +318,6 @@ else
 fi
 
 if [ x"$platform" = xefi ]; then
-    # Get GRUB_DISTRIBUTOR.
-    if test -f ${sysconfdir}/default/grub ; then
-	. ${sysconfdir}/default/grub
-    fi
-
     # Find the EFI System Partition.
     efidir=
     if test -d ${bootdir}/efi; then
@@ -339,6 +350,7 @@ if [ x"$platform" = xefi ]; then
         # subdirectories below EFI.  Vendors are expected to pick names that do
         # not collide with other vendors.  To minimise collisions, we use the
         # name of our distributor if possible.
+	efi_distributor="$bootloader_id"
 	if test $removable = yes; then
       	   # The specification makes stricter requirements of removable
 	   # devices, in order that only one image can be automatically loaded
@@ -357,10 +369,6 @@ if [ x"$platform" = xefi ]; then
 		    efi_file=BOOTIA64.EFI ;;
 	    esac
 	else
-	    efi_distributor="$(echo "$GRUB_DISTRIBUTOR" | tr '[A-Z]' '[a-z]' | cut -d' ' -f1)"
-	    if test -z "$efi_distributor"; then
-	    	efi_distributor=grub
-	    fi
 	    # It is convenient for each architecture to have a different
 	    # efi_file, so that different versions can be installed in parallel.
 	    case "$target_cpu" in
