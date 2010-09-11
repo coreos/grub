@@ -261,7 +261,6 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	}
 
       /* Then multiboot.  */
-      /* FIXME: dublicate multiboot filename. */
       if (kernel_type == GUESS_IT || kernel_type == MULTIBOOT)
 	{
 	  cmd = grub_command_find ("multiboot");
@@ -339,7 +338,6 @@ grub_cmd_legacy_initrd (struct grub_command *mycmd __attribute__ ((unused)),
     }
   if (kernel_type == MULTIBOOT)
     {
-      /* FIXME: dublicate module filename. */
       cmd = grub_command_find ("module");
       if (!cmd)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, "command module not found");

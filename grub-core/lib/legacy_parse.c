@@ -113,7 +113,6 @@ struct legacy_command legacy_commands[] =
      " its partition type code."},
     /* ifconfig unsupported.  */
     /* impsprobe unsupported.  */
-    /* FIXME: dublicate multiboot filename. */
     {"initrd", "legacy_initrd '%s' %s\n", 2, {TYPE_FILE_NO_CONSUME,
 					      TYPE_REST_VERBATIM}, 0,
      "FILE [ARG ...]",
@@ -122,7 +121,6 @@ struct legacy_command legacy_commands[] =
     /* install unsupported.  */
     /* ioprobe unsupported.  */
     /* FIXME: really support --no-mem-option.  */
-    /* FIXME: dublicate multiboot filename. */
     {"kernel", "legacy_kernel %s %s '%s' %s\n", 4, {TYPE_TYPE_OR_NOMEM_OPTION,
 						    TYPE_TYPE_OR_NOMEM_OPTION,
 						    TYPE_FILE_NO_CONSUME,
