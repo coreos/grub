@@ -43,7 +43,8 @@ grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
 grub_editenv=${bindir}/`echo grub-editenv | sed ${transform}`
 grub_mkrelpath=${bindir}/`echo grub-mkrelpath | sed ${transform}`
 rootdir=
-grub_prefix=`echo /boot/grub | sed ${transform}`
+bootdir=
+grubdir=`echo "/@bootdirname@/@grubdirname@" | sed 's,//*,/,g'`
 modules=
 
 install_device=
@@ -97,8 +98,8 @@ Install GRUB on your drive.
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
   --modules=MODULES       pre-load specified modules MODULES
-  --root-directory=DIR    install GRUB images under the directory DIR
-                          instead of the root directory
+  --boot-directory=DIR    install GRUB images under the directory DIR/@grubdirname@
+                          instead of the $grubdir directory
   --grub-setup=FILE       use FILE as grub-setup
   --grub-mkimage=FILE     use FILE as grub-mkimage
   --grub-mkrelpath=FILE   use FILE as grub-mkrelpath
@@ -128,11 +129,8 @@ fi
 
 INSTALL_DEVICE can be a GRUB device name or a system device filename.
 
-$self copies GRUB images into /boot/grub (or /grub on NetBSD and
-OpenBSD), and uses grub-setup to install grub into the boot sector.
-
-If the --root-directory option is used, then $self will copy
-images into the operating system installation rooted at that directory.
+$self copies GRUB images into $grubdir, and uses grub-setup
+to install grub into the boot sector.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
@@ -174,10 +172,16 @@ do
     --font=*)
 	;;
 
+# Accept for compatibility
     --root-directory)
 	rootdir=`argument $option "$@"`; shift;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
+
+    --boot-directory)
+	bootdir=`argument $option "$@"`; shift;;
+    --boot-directory=*)
+	bootdir=`echo "$option" | sed 's/--boot-directory=//'` ;;
 
     --grub-setup)
 	grub_setup=`argument $option "$@"`; shift;;
@@ -271,23 +275,18 @@ if test $debug = yes; then
     efi_quiet=-q
 fi
 
-# Initialize these directories here, since ROOTDIR was initialized.
-case "$host_os" in
-netbsd* | openbsd*)
-    # Because /boot is used for the boot block in NetBSD and OpenBSD, use /grub
-    # instead of /boot/grub.
-    grub_prefix=`echo /grub | sed ${transform}`
-    bootdir=${rootdir}
-    ;;
-*)
-    # Use /boot/grub by default.
-    bootdir=${rootdir}/boot
-    ;;
-esac
+if [ -z "$bootdir" ]; then
+    # Default bootdir if bootdir not initialized.
+    bootdir=/@bootdirname@
 
-grubdir=${bootdir}/`echo grub | sed ${transform}`
+    if [ -n "$rootdir" ] ; then
+        # Initialize bootdir if rootdir was initialized.
+        bootdir=${rootdir}/@bootdirname@
+    fi
+fi
+
+grubdir=`echo "${bootdir}/@grubdirname@" | sed 's,//*,/,g'`
 device_map=${grubdir}/device.map
-
 grub_probe="${grub_probe} --device-map=${device_map}"
 
 # Check if GRUB is installed.
@@ -564,10 +563,10 @@ fi
 
 # Verify readability of a few critical files
 for file in grubenv core.${imgext} normal.mod ; do
-  if is_path_readable_by_grub ${grubdir}/${file} ${grub_device} ${relative_grubdir}/${file} ; then : ; else
-    echo "GRUB is unable to read ${grubdir}/${file}" >&2
-    exit 1
-  fi
+    if is_path_readable_by_grub ${grubdir}/${file} ${grub_device} ${relative_grubdir}/${file} ; then : ; else
+        echo "GRUB is unable to read ${grubdir}/${file}" >&2
+        exit 1
+    fi
 done
 
 # Perform the platform-dependent install

@@ -7,6 +7,42 @@
 	* util/grub-mkconfig.in: Use is_path_readable_by_grub() to
 	verify readability of grub.cfg.new.
 
+2010-09-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Split minix.mod into minix.mod and minix2.mod.
+
+	* Makefile.util.def (libgrub.a): Add grub-core/fs/minix2.c.
+	* grub-core/Makefile.core.def (minix2): New module.
+	* grub-core/fs/minix.c: Use definitions instead of runtime version
+	checking.
+	* grub-core/fs/minix2.c: New file.
+
+2010-09-08  Yves Blusseau  <blusseau@zetam.org>
+
+	Add new --boot-directory option to replace --root-directory
+
+	* util/grub-install.in: Add new --boot-directory option
+	* util/grub-reboot.in: Likewise.
+	* util/grub-set-default.in: Likewise.
+
+2010-09-08  Yves Blusseau  <blusseau@zetam.org>
+
+        * util/grub-mkconfig.in: Use new variable.
+
+2010-09-08  Yves Blusseau  <blusseau@zetam.org>
+
+	* configure.ac: Define some useful variables.
+
+2010-09-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set
+	GRUB_IEEE1275_FLAG_HAS_CURSORONOFF when appropriate.
+	* grub-core/term/ieee1275/ofconsole.c (grub_ofconsole_setcursor):
+	Use terminfo and don't use cursor-on/cursor-off unless it's known
+	to work.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New element
+	GRUB_IEEE1275_FLAG_HAS_CURSORONOFF.
+
 2010-09-08  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/kern/efi/init.c (grub_efi_set_prefix): If the prefix

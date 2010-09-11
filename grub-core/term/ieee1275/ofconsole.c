@@ -117,9 +117,14 @@ grub_ofconsole_getwh (struct grub_term_output *term __attribute__ ((unused)))
 }
 
 static void
-grub_ofconsole_setcursor (struct grub_term_output *term __attribute__ ((unused)),
+grub_ofconsole_setcursor (struct grub_term_output *term,
 			  int on)
 {
+  grub_terminfo_setcursor (term, on);
+
+  if (!grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_HAS_CURSORONOFF))
+    return;
+
   /* Understood by the Open Firmware flavour in OLPC.  */
   if (on)
     grub_ieee1275_interpret ("cursor-on", 0);

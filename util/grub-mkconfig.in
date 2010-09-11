@@ -38,6 +38,8 @@ self=`basename $0`
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
 
+GRUB_PREFIX=`echo '/@bootdirname@/@grubdirname@' | sed "s,//*,/,g"`
+
 # Usage: usage
 # Print the usage.
 usage () {
@@ -92,18 +94,6 @@ do
 done
 
 . ${libdir}/grub/grub-mkconfig_lib
-
-case "$host_os" in
-netbsd* | openbsd*)
-    # Because /boot is used for the boot block in NetBSD and OpenBSD, use /grub
-    # instead of /boot/grub.
-    GRUB_PREFIX=`echo /grub | sed ${transform}`
-    ;;
-*)
-    # Use /boot/grub by default.
-    GRUB_PREFIX=`echo /boot/grub | sed ${transform}`
-    ;;
-esac
 
 if [ "x$EUID" = "x" ] ; then
   EUID=`id -u`
@@ -200,7 +190,7 @@ for x in ${GRUB_TERMINAL_OUTPUT}; do
 		exit 1
 	    fi
 	else
-	    for dir in ${pkgdatadir} /boot/grub /usr/share/grub ; do
+	    for dir in ${pkgdatadir} ${GRUB_PREFIX} /usr/share/grub ; do
 		for basename in unicode unifont ascii; do
 		    path="${dir}/${basename}.pf2"
 		    if is_path_readable_by_grub ${path} > /dev/null ; then

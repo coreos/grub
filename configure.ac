@@ -176,6 +176,19 @@ AC_SUBST(host_kernel)
 AC_SUBST(target_cpu)
 AC_SUBST(platform)
 
+# Define default variables
+case "$host_os" in
+  netbsd* | openbsd*)
+        # Because /boot is used for the boot block in NetBSD and OpenBSD,
+        bootdirname=''      ;;
+  *)    bootdirname='boot'  ;;
+esac
+bootdirname=`echo "$bootdirname" | sed "$program_transform_name"`
+AC_SUBST(bootdirname)
+
+grubdirname=`echo "$PACKAGE" | sed "$program_transform_name"`
+AC_SUBST(grubdirname)
+
 #
 # Checks for build programs.
 #
