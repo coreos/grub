@@ -1,4 +1,14 @@
 2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Implement loading palette on ieee1275_fb.
+
+	* grub-core/video/ieee1275.c (stdout_ihandle): New variable.
+	(have_setcolors): Likewise.
+	(grub_video_ieee1275_init): Fill stdout_ihandle and have_setcolors.
+	(grub_video_ieee1275_setup): Use grub_video_ieee1275_set_palette.
+	(grub_video_ieee1275_set_palette): Implement.
+
+2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
 2010-09-11  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-install.in (grub_partition): New variable.
