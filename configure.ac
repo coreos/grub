@@ -277,8 +277,16 @@ else
 fi
 
 # Check for functions and headers.
-AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf)
-AC_CHECK_HEADERS(libzfs.h libnvpair.h sys/param.h sys/mount.h)
+AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf getextmntent)
+AC_CHECK_HEADERS(libzfs.h libnvpair.h sys/param.h sys/mount.h sys/mnttab.h sys/mkdev.h)
+
+AC_CHECK_MEMBERS([struct statfs.f_fstypename],,,[$ac_includes_default
+#include <sys/param.h>
+#include <sys/mount.h>])
+
+AC_CHECK_MEMBERS([struct statfs.f_mntfromname],,,[$ac_includes_default
+#include <sys/param.h>
+#include <sys/mount.h>])
 
 # For opendisk() and getrawpartition() on NetBSD.
 # Used in util/deviceiter.c and in util/hostdisk.c.
@@ -892,6 +900,7 @@ AM_CONDITIONAL([COND_mips_yeeloong], [test x$target_cpu = xmips -a x$platform = 
 AM_CONDITIONAL([COND_mips_qemu_mips], [test x$target_cpu = xmips -a x$platform = xqemu_mips])
 AM_CONDITIONAL([COND_sparc64_ieee1275], [test x$target_cpu = xsparc64 -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_powerpc_ieee1275], [test x$target_cpu = xpowerpc -a x$platform = xieee1275])
+AM_CONDITIONAL([COND_mips], [test x$target_cpu = xmips])
 
 AM_CONDITIONAL([COND_HOST_HURD], [test x$host_kernel = xhurd])
 AM_CONDITIONAL([COND_HOST_LINUX], [test x$host_kernel = xlinux])

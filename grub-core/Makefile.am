@@ -74,6 +74,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/term.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/time.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/mm_private.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/boot.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libgcc.h
 
 if COND_i386_pc
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
@@ -132,7 +133,6 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/font.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap_scale.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bufio.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libgcc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/cs5536.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/pci.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/serial.h
@@ -140,11 +140,9 @@ endif
 
 if COND_powerpc_ieee1275
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ieee1275.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libgcc.h
 endif
 
 if COND_sparc64_ieee1275
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libgcc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ieee1275.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/sparc64/ieee1275/ieee1275.h
 endif

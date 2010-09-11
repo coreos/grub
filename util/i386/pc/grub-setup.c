@@ -81,8 +81,6 @@ setup (const char *dir,
   struct grub_boot_blocklist *first_block, *block;
   grub_int32_t *install_dos_part, *install_bsd_part;
   grub_int32_t dos_part, bsd_part;
-  char *install_prefix;
-  char *prefix = NULL;
   char *tmp_img;
   int i;
   grub_disk_addr_t first_sector;
@@ -214,8 +212,6 @@ setup (const char *dir,
 				       + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART);
   install_bsd_part = (grub_int32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
 				       + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART);
-  install_prefix = (char *) (core_img + GRUB_DISK_SECTOR_SIZE +
-			     GRUB_KERNEL_MACHINE_PREFIX);
 
   /* Open the root device and the destination device.  */
   root_dev = grub_device_open (root);
@@ -291,16 +287,6 @@ setup (const char *dir,
 	      dos_part = root_dev->disk->partition->number;
  	      bsd_part = -1;
  	    }
-
-	  if (install_prefix[0] != '(')
-	    {
-	      char *root_part_name;
-
-	      root_part_name =
-		grub_partition_get_name (root_dev->disk->partition);
-	      prefix = xasprintf ("(,%s)%s", root_part_name, install_prefix);
-	      free (root_part_name);
-	    }
 	}
       else
 	dos_part = bsd_part = -1;
@@ -389,8 +375,6 @@ setup (const char *dir,
 
   *install_dos_part = grub_cpu_to_le32 (dos_part);
   *install_bsd_part = grub_cpu_to_le32 (bsd_part);
-  if (prefix)
-    strcpy (install_prefix, prefix);
 
   /* The first blocklist contains the whole sectors.  */
   first_block->start = grub_cpu_to_le64 (embed_region.start + 1);
@@ -553,8 +537,6 @@ unable_to_embed:
 
   *install_dos_part = grub_cpu_to_le32 (dos_part);
   *install_bsd_part = grub_cpu_to_le32 (bsd_part);
-  if (prefix)
-    strcpy (install_prefix, prefix);
 
   /* Write the first two sectors of the core image onto the disk.  */
   grub_util_info ("opening the core image `%s'", core_path);
@@ -574,7 +556,6 @@ unable_to_embed:
   /* Sync is a Good Thing.  */
   sync ();
 
-  free (prefix);
   free (core_path);
   free (core_img);
   free (boot_img);

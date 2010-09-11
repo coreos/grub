@@ -234,7 +234,8 @@ probe (const char *path, char *device_name)
       if (! fs->uuid)
 	grub_util_error ("%s does not support UUIDs", fs->name);
 
-      fs->uuid (dev, &uuid);
+      if (fs->uuid (dev, &uuid) != GRUB_ERR_NONE)
+	grub_util_error ("%s", grub_errmsg);
 
       printf ("%s\n", uuid);
     }
@@ -244,7 +245,8 @@ probe (const char *path, char *device_name)
       if (! fs->label)
 	grub_util_error ("%s does not support labels", fs->name);
 
-      fs->label (dev, &label);
+      if (fs->label (dev, &label) != GRUB_ERR_NONE)
+	grub_util_error ("%s", grub_errmsg);
 
       printf ("%s\n", label);
     }

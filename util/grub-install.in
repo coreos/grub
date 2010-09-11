@@ -527,9 +527,8 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 	echo 'set prefix=($root)'"${relative_grubdir}" >> ${grubdir}/load.cfg
 	config_opt="-c ${grubdir}/load.cfg "
         modules="$modules search_fs_uuid"
-    elif [ "x$platform" = xefi ]; then
-        # No grub-setup, so we need to hardcode the partition number in the
-        # core image's prefix.
+    elif [ "x$platform" = xefi ] || [ "x$platform" = xpc ]; then
+        # we need to hardcode the partition number in the core image's prefix.
         prefix_drive="(,$grub_partition)"
     fi
 else
@@ -562,7 +561,7 @@ elif [ "${target_cpu}-${platform}" = "i386-efi" ] || [ "${target_cpu}-${platform
 fi
 
 # Verify readability of a few critical files
-for file in grubenv core.${imgext} normal.mod ; do
+for file in grubenv normal.mod core.${imgext} ; do
     if is_path_readable_by_grub ${grubdir}/${file} ${grub_device} ${relative_grubdir}/${file} ; then : ; else
         echo "GRUB is unable to read ${grubdir}/${file}" >&2
         exit 1

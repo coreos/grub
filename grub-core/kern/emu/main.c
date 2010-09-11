@@ -197,12 +197,7 @@ main (int argc, char *argv[])
 
   grub_init_all ();
 
-  grub_lvm_fini ();
-  grub_mdraid_fini ();
-  grub_raid_fini ();
-  grub_raid_init ();
-  grub_mdraid_init ();
-  grub_lvm_init ();
+  grub_emu_post_init ();
 
   /* Make sure that there is a root device.  */
   if (! root_dev)

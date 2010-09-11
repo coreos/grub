@@ -1,3 +1,115 @@
+2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+2010-09-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in (grub_partition): New variable.
+	Set prefix_drive on EFI and PC to (,$grub_partition) as last resort.
+	* util/i386/pc/grub-setup.c (setup): Don't touch prefix.
+	Fixes a bug reported by Yves Blusseau.
+
+2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix emu on mipsel.
+
+	* conf/Makefile.common (CFLAGS_PLATFORM): Add -mflush-func
+	=grub_cpu_flush_cache on all mips and not only yeeloong.
+	* configure.ac (COND_mips): New conditional.
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Add libgcc on all
+	platforms.
+	* grub-core/kern/emu/cache.S (__mips__): Use _flush_cache.
+	* grub-core/kern/emu/full.c (grub_arch_dl_init_linker)
+	[GRUB_LINKER_HAVE_INIT]: New function.
+	(grub_emu_post_init): Likewise.
+	* grub-core/kern/emu/lite.c (grub_emu_post_init): Likewise.
+	* grub-core/kern/emu/main.c: Use grub_emu_post_init.
+	* include/grub/cache.h (_mips): Include mips/cache.h.
+	* include/grub/disk.h [GRUB_UTIL || GRUB_MACHINE_EMU]: Add missing
+	LVM and RAID prototypes.
+	* include/grub/emu/misc.h (grub_emu_post_init): New proto.
+	* include/grub/mips/time.h (grub_cpu_idle) [GRUB_MACHINE_EMU]: New
+	function.
+
+2010-09-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in: Don't try to verify core.img until after
+	running grub-mkimage to create it.
+
+2010-09-10  Robert Millan  <rmh@gnu.org>
+
+	* util/grub.d/10_hurd.in: Add misc readability checks.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+
+2010-09-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in: ${imgext} won't be defined here until the
+	install branch is merged.  For the meantime, only verify core.img on
+	i386-pc and sparc64-ieee1275 platforms.
+
+2010-09-10  Robert Millan  <rmh@gnu.org>
+
+	Solaris support in grub_find_zpool_from_dir().  Thanks
+	Seth Goldberg for referring to getextmntent() facility.
+
+	* configure.ac: Check for getextmntent(), `sys/mnttab.h' and
+	`sys/mkdev.h'.
+	* grub-core/kern/emu/misc.c [HAVE_SYS_MNTTAB_H]: Include
+	`<sys/mnttab.h>'.
+	[HAVE_SYS_MKDEV_H]: Include `<sys/mkdev.h>'.
+	[HAVE_GETEXTMNTENT] (grub_find_zpool_from_dir): Add getextmntent()
+	method for finding zpool name.
+
+2010-09-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	grub-fstest needs the host and hostfs modules while other utilities
+	actively require those modules to be absent, so grub-fstest needs
+	its own initialisation and finalisation code.
+
+	* Makefile.am (grub_fstest.pp): New target.
+	(grub_fstest_init.lst): Likewise.
+	(grub_fstest_init.c): Likewise.
+	* Makefile.util.def (grub-fstest): Add grub_fstest_init.c.
+
+2010-09-10  Robert Millan  <rmh@gnu.org>
+
+	* configure.ac: Check for `struct statfs.f_fstypename' and
+	`struct statfs.f_mntfromname'.
+
+	* grub-core/kern/emu/misc.c (grub_find_zpool_from_dir): Conditionalize
+	kFreeBSD-specific code.
+
+2010-09-10  Robert Millan  <rmh@gnu.org>
+
+	* util/grub.d/10_kfreebsd.in: Fix ${kfreebsd_device} initialization
+	on ZFS.  Now non-main filesystems are supported as / too.
+
+2010-09-09  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.util.def (libgrub.a): Move grub-core/kern/emu/hostfs.c
+	and grub-core/disk/host.c to ...
+	(grub-fstest): ... here.  Having the host disk implementation
+	present confuses grub-probe and other utility programs.
+
+	* util/grub-mkconfig.in: Only verify readability of grub.cfg.new
+	when writing to a file, not when writing to stdout.
+
+2010-09-09  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* tests/partmap_test.in: New test for partitions.
+	* Makefile.util.def: Rules for new test.
+
+2010-09-09  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-probe.c (probe): Fix a pair of unhandled error
+	conditions.
+
+2010-09-09  Robert Millan  <rmh@gnu.org>
+
+	Basic Btrfs support (detection and UUID).
+
+	* grub-core/fs/btrfs.c: New file.
+	* Makefile.util.def (library): Register btrfs.c.
+	* grub-core/Makefile.core.def: Likewise.
+
 2010-09-08  Robert Millan  <rmh@gnu.org>
 
 	* util/grub-mkconfig_lib.in (is_path_readable_by_grub): Improve
