@@ -69,6 +69,7 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
 
   grub_dl_ref (my_mod);
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (filename);
   if (! file)
     goto fail;

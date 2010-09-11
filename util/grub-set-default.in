@@ -29,6 +29,8 @@ self=`basename $0`
 
 grub_editenv=${bindir}/`echo grub-editenv | sed ${transform}`
 rootdir=
+bootdir=
+grubdir=`echo "/@bootdirname@/@grubdirname@" | sed 's,//*,/,g'`
 
 # Usage: usage
 # Print the usage.
@@ -39,8 +41,8 @@ Set the default boot entry for GRUB.
 
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
-  --root-directory=DIR    expect GRUB images under the directory DIR
-                          instead of the root directory
+  --boot-directory=DIR    expect GRUB images under the directory DIR/@grubdirname@
+                          instead of the $grubdir directory
 
 ENTRY is a number or a menu item title.
 
@@ -73,10 +75,16 @@ do
 	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
 
+# Accept for compatibility
     --root-directory)
 	rootdir=`argument $option "$@"`; shift ;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
+
+    --boot-directory)
+    bootdir=`argument $option "$@"`; shift;;
+    --boot-directory=*)
+    bootdir=`echo "$option" | sed 's/--boot-directory=//'` ;;
 
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
@@ -99,21 +107,17 @@ if test "x$entry" = x; then
     exit 1
 fi
 
-# Initialize these directories here, since ROOTDIR was initialized.
-case "$host_os" in
-netbsd* | openbsd*)
-    # Because /boot is used for the boot block in NetBSD and OpenBSD, use /grub
-    # instead of /boot/grub.
-    grub_prefix=`echo /grub | sed ${transform}`
-    bootdir=${rootdir}
-    ;;
-*)
-    # Use /boot/grub by default.
-    bootdir=${rootdir}/boot
-    ;;
-esac
+if [ -z "$bootdir" ]; then
+    # Default bootdir if bootdir not initialized.
+    bootdir=/@bootdirname@
 
-grubdir=${bootdir}/`echo grub | sed ${transform}`
+    if [ -n "$rootdir" ] ; then
+        # Initialize bootdir if rootdir was initialized.
+        bootdir=${rootdir}/@bootdirname@
+    fi
+fi
+
+grubdir=`echo "${bootdir}/@grubdirname@" | sed 's,//*,/,g'`
 
 $grub_editenv ${grubdir}/grubenv unset prev_saved_entry
 $grub_editenv ${grubdir}/grubenv set saved_entry="$entry"

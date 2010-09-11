@@ -228,6 +228,7 @@ setup (const char *prefix, const char *dir,
 
       grub_disk_cache_invalidate_all ();
 
+      grub_file_filter_disable_compression ();
       file = grub_file_open (core_path);
       if (file)
 	{
@@ -297,6 +298,7 @@ setup (const char *prefix, const char *dir,
     }
 
   /* Now read the core image to determine where the sectors are.  */
+  grub_file_filter_disable_compression ();
   file = grub_file_open (core_path);
   if (! file)
     grub_util_error ("%s", grub_errmsg);
@@ -611,6 +613,13 @@ main (int argc, char *argv[])
 
   /* Initialize all modules. */
   grub_init_all ();
+
+  grub_lvm_fini ();
+  grub_mdraid_fini ();
+  grub_raid_fini ();
+  grub_raid_init ();
+  grub_mdraid_init ();
+  grub_lvm_init ();
 
   find_dest_dev (&ginfo, argv);
 

@@ -59,7 +59,9 @@ extern grub_uint32_t grub_relocator32_ecx;
 extern grub_uint32_t grub_relocator32_edx;
 extern grub_uint32_t grub_relocator32_eip;
 extern grub_uint32_t grub_relocator32_esp;
+extern grub_uint32_t grub_relocator32_ebp;
 extern grub_uint32_t grub_relocator32_esi;
+extern grub_uint32_t grub_relocator32_edi;
 
 extern grub_uint8_t grub_relocator64_start;
 extern grub_uint8_t grub_relocator64_end;
@@ -165,7 +167,9 @@ grub_relocator32_boot (struct grub_relocator *rel,
   grub_relocator32_edx = state.edx;
   grub_relocator32_eip = state.eip;
   grub_relocator32_esp = state.esp;
+  grub_relocator32_ebp = state.ebp;
   grub_relocator32_esi = state.esi;
+  grub_relocator32_edi = state.edi;
 
   grub_memmove (get_virtual_current_address (ch), &grub_relocator32_start,
 		RELOCATOR_SIZEOF (32));

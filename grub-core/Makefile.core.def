@@ -137,6 +137,7 @@ kernel = {
   mips_yeeloong = term/at_keyboard.c;
   mips_yeeloong = term/serial.c;
   mips_yeeloong = video/sm712.c;
+  extra_dist = video/sm712_init.c;
 
   powerpc_ieee1275 = kern/ieee1275/init.c;
   powerpc_ieee1275 = kern/powerpc/cache.S;
@@ -394,6 +395,7 @@ module = {
 module = {
   name = regexp;
   common = commands/regexp.c;
+  common = commands/wildcard.c;
   ldadd = libgnulib.a;
   cflags = '$(CFLAGS_POSIX) $(CFLAGS_GNULIB)';
   cppflags = '$(CPPFLAGS_POSIX) $(CPPFLAGS_GNULIB)';
@@ -518,6 +520,7 @@ module = {
   name = halt;
   nopc = commands/halt.c;
   i386_pc = commands/i386/pc/halt.c;
+  i386_pc = commands/acpihalt.c;
   i386_multiboot = lib/i386/halt.c;
   i386_coreboot = lib/i386/halt.c;
   i386_qemu = lib/i386/halt.c;
@@ -861,6 +864,11 @@ module = {
 };
 
 module = {
+  name = btrfs;
+  common = fs/btrfs.c;
+};
+
+module = {
   name = cpio;
   common = fs/cpio.c;
 };
@@ -903,6 +911,11 @@ module = {
 module = {
   name = minix;
   common = fs/minix.c;
+};
+
+module = {
+  name = minix2;
+  common = fs/minix2.c;
 };
 
 module = {
@@ -1035,6 +1048,9 @@ module = {
   mips = lib/mips/relocator.c;
   powerpc = lib/powerpc/relocator_asm.S;
   powerpc = lib/powerpc/relocator.c;
+
+  extra_dist = lib/i386/relocator_common.S;
+  extra_dist = kern/powerpc/cache_flush.S;
 
   enable = mips;
   enable = powerpc;
@@ -1186,6 +1202,8 @@ module = {
   common = script/function.c;
   common = script/lexer.c;
   common = script/argv.c;
+
+  common = commands/menuentry.c;
 
   common = unidata.c;
   common_nodist = grub_script.tab.c;
@@ -1402,4 +1420,23 @@ module = {
 module = {
   name = datehook;
   common = hook/datehook.c;
+};
+
+module = {
+  name = test_blockarg;
+  common = tests/test_blockarg.c;
+};
+
+module = {
+  name = xzio;
+  common = io/xzio.c;
+  common = lib/xzembed/xz_dec_bcj.c;
+  common = lib/xzembed/xz_dec_lzma2.c;
+  common = lib/xzembed/xz_dec_stream.c;
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed';
+};
+
+module = {
+  name = testload;
+  common = commands/testload.c;
 };
