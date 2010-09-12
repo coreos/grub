@@ -352,6 +352,42 @@ grub_cmd_legacy_initrd (struct grub_command *mycmd __attribute__ ((unused)),
 }
 
 static grub_err_t
+grub_cmd_legacy_initrdnounzip (struct grub_command *mycmd __attribute__ ((unused)),
+			       int argc, char **args)
+{
+  struct grub_command *cmd;
+
+  if (kernel_type == LINUX)
+    {
+      cmd = grub_command_find ("initrd16");
+      if (!cmd)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "command initrd16 not found");
+
+      return cmd->func (cmd, argc, args);
+    }
+  if (kernel_type == MULTIBOOT)
+    {
+      char **newargs;
+      grub_err_t err;
+      newargs = grub_malloc ((argc + 1) * sizeof (newargs[0]));
+      if (!newargs)
+	return grub_errno;
+      grub_memcpy (newargs + 1, args, argc * sizeof (newargs[0]));
+      newargs[0] = "--nounzip";
+      cmd = grub_command_find ("module");
+      if (!cmd)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "command module not found");
+
+      err = cmd->func (cmd, argc + 1, newargs);
+      grub_free (newargs);
+      return err;
+    }
+
+  return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		     "no kernel with module support is loaded in legacy way");
+}
+
+static grub_err_t
 grub_cmd_legacy_color (struct grub_command *mycmd __attribute__ ((unused)),
 		       int argc, char **args)
 {
@@ -565,7 +601,7 @@ grub_cmd_legacy_password (struct grub_command *mycmd __attribute__ ((unused)),
 }
 
 static grub_command_t cmd_source, cmd_configfile, cmd_kernel, cmd_initrd;
-static grub_command_t cmd_color, cmd_password;
+static grub_command_t cmd_color, cmd_password, cmd_initrdnounzip;
 
 GRUB_MOD_INIT(legacycfg)
 {
@@ -581,6 +617,11 @@ GRUB_MOD_INIT(legacycfg)
 				      grub_cmd_legacy_initrd,
 				      N_("FILE [ARG ...]"),
 				      N_("Simulate grub-legacy initrd command"));
+  cmd_initrdnounzip = grub_register_command ("legacy_initrd_nounzip",
+					     grub_cmd_legacy_initrdnounzip,
+					     N_("FILE [ARG ...]"),
+					     N_("Simulate grub-legacy modulenounzip command"));
+
   cmd_configfile = grub_register_command ("legacy_configfile",
 					  grub_cmd_legacy_configfile,
 					  N_("FILE"),
@@ -601,6 +642,7 @@ GRUB_MOD_FINI(legacycfg)
   grub_unregister_command (cmd_configfile);
   grub_unregister_command (cmd_kernel);
   grub_unregister_command (cmd_initrd);
+  grub_unregister_command (cmd_initrdnounzip);
   grub_unregister_command (cmd_color);
   grub_unregister_command (cmd_password);
 }

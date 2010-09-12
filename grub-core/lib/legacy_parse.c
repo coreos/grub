@@ -53,7 +53,7 @@ struct legacy_command legacy_commands[] =
      "Print the blocklist notation of the file FILE."},
     {"boot", "boot\n", 0, {}, 0, 0,
      "Boot the OS/chain-loader which has been loaded."},
-    /* bootp unsupported.  */
+    /* FIXME: bootp unsupported.  */
     {"cat", "cat '%s'\n", 1, {TYPE_FILE}, 0, "FILE",
      "Print the contents of the file FILE."},
     {"chainloader", "chainloader %s '%s'\n", 2, {TYPE_FORCE_OPTION, TYPE_FILE},
@@ -87,8 +87,8 @@ struct legacy_command legacy_commands[] =
      "[NUM | `saved']",
      "Set the default entry to entry number NUM (if not specified, it is"
      " 0, the first entry) or the entry number saved by savedefault."},
-    /* dhcp unsupported.  */
-    /* displayapm unsupported.  */
+    /* FIXME: dhcp unsupported.  */
+    /* FIXME: displayapm unsupported.  */
     {"displaymem", "lsmmap\n", 0, {}, 0, 0, 
      "Display what GRUB thinks the system address space map of the"
      " machine is, including all regions of physical RAM installed."},
@@ -102,25 +102,25 @@ struct legacy_command legacy_commands[] =
     {"find", "search -sf '%s'\n", 1, {TYPE_FILE}, 0, "FILENAME",
      "Search for the filename FILENAME in all of partitions and print the list of"
      " the devices which contain the file."},
-    /* fstest unsupported.  */
-    /* geometry unsupported.  */
+    /* FIXME: fstest unsupported.  */
+    /* FIXME: geometry unsupported.  */
     {"halt", "halt %s\n", 1, {TYPE_NOAPM_OPTION}, 0, "[--no-apm]",
      "Halt your system. If APM is available on it, turn off the power using"
      " the APM BIOS, unless you specify the option `--no-apm'."},
-    /* help unsupported.  */    /* NUL_TERMINATE */
-    /* hiddenmenu unsupported.  */
+    /* FIXME: help unsupported.  */    /* NUL_TERMINATE */
+    /* FIXME: hiddenmenu unsupported.  */
     {"hide", "parttool '%s' hidden+\n", 1, {TYPE_PARTITION}, 0, "PARTITION",
      "Hide PARTITION by setting the \"hidden\" bit in"
      " its partition type code."},
-    /* ifconfig unsupported.  */
-    /* impsprobe unsupported.  */
+    /* FIXME: ifconfig unsupported.  */
+    /* FIXME: impsprobe unsupported.  */
     {"initrd", "legacy_initrd '%s' %s\n", 2, {TYPE_FILE_NO_CONSUME,
 					      TYPE_REST_VERBATIM}, 0,
      "FILE [ARG ...]",
      "Load an initial ramdisk FILE for a Linux format boot image and set the"
      " appropriate parameters in the Linux setup area in memory."},
     /* install unsupported.  */
-    /* ioprobe unsupported.  */
+    /* FIXME: ioprobe unsupported.  */
     /* FIXME: really support --no-mem-option.  */
     {"kernel", "legacy_kernel %s %s '%s' %s\n", 4, {TYPE_TYPE_OR_NOMEM_OPTION,
 						    TYPE_TYPE_OR_NOMEM_OPTION,
@@ -134,7 +134,7 @@ struct legacy_command legacy_commands[] =
      " \"netbsd\", \"freebsd\", \"openbsd\", \"linux\", \"biglinux\" and"
      " \"multiboot\". The option --no-mem-option tells GRUB not to pass a"
      " Linux's mem option automatically."},
-    /* lock is unsupported. */
+    /* FIXME: lock is unsupported. */
     {"makeactive", "parttool \"$root\" boot+\n", 0, {}, 0, 0,
      "Set the active partition on the root disk to GRUB's root device."
      " This command is limited to _primary_ PC partitions on a hard disk."},
@@ -143,7 +143,8 @@ struct legacy_command legacy_commands[] =
      "Map the drive FROM_DRIVE to the drive TO_DRIVE. This is necessary"
      " when you chain-load some operating systems, such as DOS, if such an"
      " OS resides at a non-first drive."},
-    /* md5crypt unsupported.  */
+    /* md5crypt unsupported since GRUB has not enough entropy and this
+       hash shouldn't be used anymore.  */
     {"module", "legacy_initrd '%s' %s\n", 1, {TYPE_FILE_NO_CONSUME,
 					      TYPE_REST_VERBATIM}, 0,
      "FILE [ARG ...]",
@@ -152,12 +153,16 @@ struct legacy_command legacy_commands[] =
      " command must know what the kernel in question expects). The"
      " rest of the line is passed as the \"module command line\", like"
      " the `kernel' command."},
-    /* modulenounzip unsupported.  */
+    {"modulenounzip", "legacy_initrd_nounzip '%s' %s\n", 1,
+     {TYPE_FILE_NO_CONSUME, TYPE_REST_VERBATIM}, 0,
+     "FILE [ARG ...]",
+     "The same as `module', except that automatic decompression is"
+     " disabled."},
     /* FIXME: allow toggle.  */
     {"pager", "set pager=%d\n", 1, {TYPE_BOOL}, 0, "[FLAG]",
      "Toggle pager mode with no argument. If FLAG is given and its value"
      " is `on', turn on the mode. If FLAG is `off', turn off the mode."},
-    /* partnew unsupported.  */
+    /* FIXME: partnew unsupported.  */
     {"parttype", "parttool '%s' type=%s\n", 2, {TYPE_PARTITION, TYPE_INT}, 0,
      "PART TYPE", "Change the type of the partition PART to TYPE."},
     /* FIXME: support config file reloading.  */
@@ -175,8 +180,8 @@ struct legacy_command legacy_commands[] =
      " which case it will ask for the password, before continuing."
      " The option --md5 tells GRUB that PASSWD is encrypted with"
      " md5crypt."},
-    /* pause unsupported.  */
-    /* rarp unsupported.  */
+    /* FIXME: pause unsupported.  */
+    /* FIXME: rarp unsupported.  */
     {"read", "read_dword %s\n", 1, {TYPE_INT}, 0, "ADDR",
      "Read a 32-bit value from memory at address ADDR and"
      " display it in hex format."},
@@ -217,17 +222,17 @@ struct legacy_command legacy_commands[] =
      " STOP is the length of stop bit(s). The option --device can be used only"
      " in the grub shell, which specifies the file name of a tty device. The"
      " default values are COM1, 9600, 8N1."},
-    /* setkey unsupported.  */    /* NUL_TERMINATE */
-    /* setup unsupported.  */
-    /* terminal unsupported.  */    /* NUL_TERMINATE */
-    /* terminfo unsupported.  */    /* NUL_TERMINATE */
+    /* FIXME: setkey unsupported.  */    /* NUL_TERMINATE */
+    /* FIXME: setup unsupported.  */
+    /* FIXME: terminal unsupported.  */    /* NUL_TERMINATE */
+    /* FIXME: terminfo unsupported.  */    /* NUL_TERMINATE */
     {"testload", "cat '%s'\n", 1, {TYPE_FILE}, 0, "FILE",
      "Read the entire contents of FILE in several different ways and"
      " compares them, to test the filesystem code. "
      " If this test succeeds, then a good next"
      " step is to try loading a kernel."},
-    /* testvbe unsupported.  */
-    /* tftpserver unsupported.  */
+    /* FIXME: testvbe unsupported.  */
+    /* FIXME: tftpserver unsupported.  */
     {"timeout", "set timeout=%s\n", 1, {TYPE_INT}, 0, "SEC",
      "Set a timeout, in SEC seconds, before automatically booting the"
      " default entry (normally the first entry defined)."},
@@ -235,10 +240,13 @@ struct legacy_command legacy_commands[] =
     {"unhide", "parttool '%s' hidden-\n", 1, {TYPE_PARTITION}, 0, "PARTITION",
      "Unhide PARTITION by clearing the \"hidden\" bit in its"
      " partition type code."},
-    /* uppermem unsupported.  */
+    /* FIXME: uppermem unsupported.  */
     {"uuid", "search -u '%s'\n", 1, {TYPE_VERBATIM}, 0, "UUID",
      "Find root by UUID"},
-    /* vbeprobe unsupported.  */
+    /* FIXME: support MODE.  */
+    {"vbeprobe", "vbeinfo", 0, {}, 0, "[MODE]",
+     "Probe VBE information. If the mode number MODE is specified, show only"
+     " the information about only the mode."}
   };
 
 char *
