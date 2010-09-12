@@ -185,12 +185,12 @@ struct legacy_command legacy_commands[] =
     {"parttype", "parttool '%s' type=%s\n", NULL, 0,
      2, {TYPE_PARTITION, TYPE_INT}, 0,
      "PART TYPE", "Change the type of the partition PART to TYPE."},
-    /* FIXME: support config file reloading.  */
     /* FIXME: support usage in menuentry.  */
     {"password", "if [ \"$superusers\" = "" ]; then superusers=legacy; fi;\n"
-     "legacy_password %s '%s' %s", NULL, 0, 3, {TYPE_OPTION, TYPE_VERBATIM,
-						TYPE_FILE}, FLAG_IGNORE_REST,
-     "[--md5] PASSWD [FILE]",
+     "legacy_password %s '%s'",
+     "menuentry \"Superuser menu\" --users \"legacy\" { configfile '%s'; }\n",
+     2, 3, {TYPE_OPTION, TYPE_VERBATIM, TYPE_FILE},
+     FLAG_IGNORE_REST | FLAG_FALLBACK_AVAILABLE, "[--md5] PASSWD [FILE]",
      "If used in the first section of a menu file, disable all"
      " interactive editing control (menu entry editor and"
      " command line). If the password PASSWD is entered, it loads the"
@@ -200,6 +200,9 @@ struct legacy_command legacy_commands[] =
      " which case it will ask for the password, before continuing."
      " The option --md5 tells GRUB that PASSWD is encrypted with"
      " md5crypt."},
+    {"password", "if [ \"$superusers\" = "" ]; then superusers=legacy; fi;\n"
+     "legacy_password %s '%s'", NULL, 0, 2, {TYPE_OPTION, TYPE_VERBATIM},
+     FLAG_IGNORE_REST | FLAG_FALLBACK, NULL, NULL},
     /* NOTE: GRUB2 has a design principle of not eternally waiting for user
        input. 60 seconds should be enough.
      */
