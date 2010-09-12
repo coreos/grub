@@ -256,7 +256,7 @@ struct legacy_command legacy_commands[] =
      " in the grub shell, which specifies the file name of a tty device. The"
      " default values are COM1, 9600, 8N1."},
     /* FIXME: setkey unsupported.  */    /* NUL_TERMINATE */
-    /* FIXME: setup unsupported.  */
+    /* NOTE: setup unsupported.  */
     /* FIXME: terminal unsupported.  */    /* NUL_TERMINATE */
     /* FIXME: terminfo unsupported.  */    /* NUL_TERMINATE */
     {"testload", "cat '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
