@@ -1,5 +1,10 @@
 2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_vprintf): Use va_copy when necessary.
+	(grub_xvasprintf): Likewise.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/main.c (main): Call hostfs_init only after init_all.
 
 2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
