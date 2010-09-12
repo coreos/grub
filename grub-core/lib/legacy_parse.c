@@ -193,7 +193,6 @@ struct legacy_command legacy_commands[] =
      "Read a 32-bit value from memory at address ADDR and"
      " display it in hex format."},
     {"reboot", "reboot\n", 0, {}, 0, 0, "Reboot your system."},
-    /* FIXME: Support HDBIAS.  */
     /* FIXME: Support printing.  */
     {"root", "set root='%s'; set legacy_hdbias='%s'\n",
      2, {TYPE_PARTITION, TYPE_INT}, 0,
