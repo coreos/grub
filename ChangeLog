@@ -1,5 +1,9 @@
 2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/ls.c (grub_cmd_ls): Accept multiple files.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_vprintf): Use va_copy when necessary.
 	(grub_xvasprintf): Likewise.
 
