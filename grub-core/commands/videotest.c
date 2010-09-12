@@ -26,11 +26,11 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 #include <grub/gfxmenu_view.h>
+#include <grub/env.h>
 
 static grub_err_t
 grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
-                    int argc __attribute__ ((unused)),
-                    char **args __attribute__ ((unused)))
+                    int argc, char **args)
 {
   grub_err_t err;
   grub_video_color_t color;
@@ -41,13 +41,20 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
   int i;
   struct grub_video_render_target *text_layer;
   grub_video_color_t palette[16];
+  const char *mode = NULL;
 
 #ifdef GRUB_MACHINE_PCBIOS
   if (grub_strcmp (cmd->name, "vbetest") == 0)
     grub_dl_load ("vbe");
 #endif
 
-  err = grub_video_set_mode ("auto", GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
+  mode = grub_env_get ("gfxmode");
+  if (argc)
+    mode = args[0];
+  if (!mode)
+    mode = "auto";
+
+  err = grub_video_set_mode (mode, GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
   if (err)
     return err;
 
@@ -192,7 +199,8 @@ static grub_command_t cmd_vbe;
 GRUB_MOD_INIT(videotest)
 {
   cmd = grub_register_command ("videotest", grub_cmd_videotest,
-			       0, N_("Test video subsystem."));
+			       "[WxH]",
+			       N_("Test video subsystem in mode WxH."));
 #ifdef GRUB_MACHINE_PCBIOS
   cmd_vbe = grub_register_command ("vbetest", grub_cmd_videotest,
 			       0, N_("Test video subsystem."));
