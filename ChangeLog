@@ -1,5 +1,9 @@
 2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/wildcard.c (make_regex): Escape brackets.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/ls.c (grub_cmd_ls): Accept multiple files.
 
 2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
