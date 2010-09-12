@@ -288,7 +288,7 @@ adjust_file (const char *in, grub_size_t len)
   const char *comma, *ptr, *rest;
   char *ret, *outptr;
   int overhead = 0;
-  int part;
+  int part = -1, subpart = -1;
   if (in[0] != '(')
     return grub_legacy_escape (in, len);
   for (ptr = in + 1; ptr < in + len && *ptr && *ptr != ')'
@@ -299,12 +299,17 @@ adjust_file (const char *in, grub_size_t len)
   if (*comma != ',')
     return grub_legacy_escape (in, len);
   part = grub_strtoull (comma + 1, (char **) &rest, 0);
+  if (rest[0] == ',' && rest[1] >= 'a' && rest[1] <= 'z')
+    {
+      subpart = rest[1] - 'a';
+      rest += 2;
+    }
   for (ptr = rest; ptr < in + len && *ptr; ptr++)
     if (*ptr == '\'' || *ptr == '\\')
       overhead++;
 
-  /* 30 is enough for any number.  */
-  ret = grub_malloc (ptr - in + overhead + 30);
+  /* 35 is enough for any 2 numbers.  */
+  ret = grub_malloc (ptr - in + overhead + 35);
   if (!ret)
     return NULL;
 
@@ -316,7 +321,10 @@ adjust_file (const char *in, grub_size_t len)
       
       *outptr++ = *ptr;
     }
-  grub_snprintf (outptr, 30, "%d", part + 1);
+  if (subpart != -1)
+    grub_snprintf (outptr, 35, "%d,%d", part + 1, subpart + 1);
+  else
+    grub_snprintf (outptr, 35, "%d", part + 1);
   while (*outptr)
     outptr++;
   for (ptr = rest; ptr < in + len; ptr++)
@@ -378,8 +386,13 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
       int len = grub_strlen (buf);
       ret = grub_malloc (len + 2);
       grub_memcpy (ret, buf, len);
-      ret[len] = '\n';
-      ret[len + 1] = 0;
+      if (len && ret[len - 1] == '\n')
+	ret[len] = 0;
+      else
+	{
+	  ret[len] = '\n';
+	  ret[len + 1] = 0;
+	}
       return ret;
     }
 
