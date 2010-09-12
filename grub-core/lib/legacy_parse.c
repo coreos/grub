@@ -169,7 +169,7 @@ struct legacy_command legacy_commands[] =
      "PART TYPE", "Change the type of the partition PART to TYPE."},
     /* FIXME: support config file reloading.  */
     /* FIXME: support usage in menuentry.  */
-    {"password", "if [ \"$superusers\" = "" ]; then superusers=legacy; fi; "
+    {"password", "if [ \"$superusers\" = "" ]; then superusers=legacy; fi;\n"
      "legacy_password %s '%s' %s", 3, {TYPE_OPTION, TYPE_VERBATIM,
 				       TYPE_FILE}, FLAG_IGNORE_REST,
      "[--md5] PASSWD [FILE]",
@@ -185,7 +185,7 @@ struct legacy_command legacy_commands[] =
     /* NOTE: GRUB2 has a design principle of not eternally waiting for user
        input. 60 seconds should be enough.
      */
-    {"pause", "echo %s; if ! sleep -i 60; then return; fi", 1,
+    {"pause", "echo %s; if ! sleep -i 60; then return; fi\n", 1,
      {TYPE_REST_VERBATIM}, 0,
      "[MESSAGE ...]", "Print MESSAGE, then wait until a key is pressed."},
     /* FIXME: rarp unsupported.  */
@@ -251,7 +251,7 @@ struct legacy_command legacy_commands[] =
     {"uuid", "search -u '%s'\n", 1, {TYPE_VERBATIM}, 0, "UUID",
      "Find root by UUID"},
     /* FIXME: support MODE.  */
-    {"vbeprobe", "vbeinfo", 0, {}, 0, "[MODE]",
+    {"vbeprobe", "vbeinfo\n", 0, {}, 0, "[MODE]",
      "Probe VBE information. If the mode number MODE is specified, show only"
      " the information about only the mode."}
   };
