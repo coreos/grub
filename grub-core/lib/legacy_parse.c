@@ -195,7 +195,9 @@ struct legacy_command legacy_commands[] =
     {"reboot", "reboot\n", 0, {}, 0, 0, "Reboot your system."},
     /* FIXME: Support HDBIAS.  */
     /* FIXME: Support printing.  */
-    {"root", "set root='%s'\n", 1, {TYPE_PARTITION}, 0, "[DEVICE [HDBIAS]]",
+    {"root", "set root='%s'; set legacy_hdbias='%s'\n",
+     2, {TYPE_PARTITION, TYPE_INT}, 0,
+     "[DEVICE [HDBIAS]]",
      "Set the current \"root device\" to the device DEVICE, then"
      " attempt to mount it to get the partition size (for passing the"
      " partition descriptor in `ES:ESI', used by some chain-loaded"
@@ -206,7 +208,8 @@ struct legacy_command legacy_commands[] =
      " how many BIOS drive numbers are on controllers before the current"
      " one. For example, if there is an IDE disk and a SCSI disk, and your"
      " FreeBSD root partition is on the SCSI disk, then use a `1' for HDBIAS."},
-    {"rootnoverify", "set root='%s'\n", 1, {TYPE_PARTITION}, 0,
+    {"rootnoverify", "set root='%s'; set legacy_hdbias='%s'\n",
+     2, {TYPE_PARTITION, TYPE_INT}, 0,
      "[DEVICE [HDBIAS]]",
      "Similar to `root', but don't attempt to mount the partition. This"
      " is useful for when an OS is outside of the area of the disk that"
@@ -265,7 +268,7 @@ grub_legacy_escape (const char *in, grub_size_t len)
   for (ptr = in; ptr < in + len && *ptr; ptr++)
     if (*ptr == '\'' || *ptr == '\\')
       overhead++;
-  ret = grub_malloc (ptr - in + overhead);
+  ret = grub_malloc (ptr - in + overhead + 1);
   if (!ret)
     return NULL;
   outptr = ret;
@@ -371,7 +374,15 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
 
   for (ptr = buf; *ptr && grub_isspace (*ptr); ptr++);
   if (!*ptr || *ptr == '#')
-    return grub_strdup (buf);
+    {
+      char *ret;
+      int len = grub_strlen (buf);
+      ret = grub_malloc (len + 2);
+      grub_memcpy (ret, buf, len);
+      ret[len] = '\n';
+      ret[len + 1] = 0;
+      return ret;
+    }
 
   cmdname = ptr;
   for (ptr = buf; *ptr && !grub_isspace (*ptr) && *ptr != '='; ptr++);
@@ -412,7 +423,7 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
     unsigned j = 0;
     int hold_arg = 0;
     const char *curarg = NULL; 
-    for (i = 0; i < legacy_commands[cmdnum].argc; i++)
+    for (i = 0; i < legacy_commands[cmdnum].argc + hold_arg; i++)
       {
  	grub_size_t curarglen;
 	if (hold_arg)
@@ -495,7 +506,7 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
 		args[j++] = grub_strndup (curarg, curarglen);
 		break;
 	      }
-	    args[j++] = "";
+	    args[j++] = grub_strdup ("");
 	    hold_arg = 1;
 	    break;
 	  case TYPE_INT:
@@ -536,7 +547,14 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
 	  }
       }
   }
-  
-  return grub_xasprintf (legacy_commands[cmdnum].map, args[0], args[1], args[2],
-			 args[3]);
+
+  {
+    char *ret = grub_xasprintf (legacy_commands[cmdnum].map, args[0], args[1],
+				args[2], args[3]);
+    grub_free (args[0]);
+    grub_free (args[1]);
+    grub_free (args[2]);
+    grub_free (args[3]);
+    return ret;
+  }
 }

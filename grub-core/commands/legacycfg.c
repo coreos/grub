@@ -30,6 +30,8 @@
 #include <grub/legacy_parse.h>
 #include <grub/crypto.h>
 #include <grub/auth.h>
+#include <grub/disk.h>
+#include <grub/partition.h>
 
 static grub_err_t
 legacy_file (const char *filename)
@@ -67,7 +69,7 @@ legacy_file (const char *filename)
   while (1)
     {
       char *buf = grub_file_getline (file);
-      char *parsed;
+      char *parsed = NULL;
 
       if (!buf && grub_errno)
 	{
@@ -84,7 +86,7 @@ legacy_file (const char *filename)
 
 	oldname = entryname;
 	parsed = grub_legacy_parse (buf, &entryname, &is_suffix);
-	grub_free (buf);
+	buf = NULL;
 	if (is_suffix)
 	  {
 	    char *t;
@@ -100,7 +102,7 @@ legacy_file (const char *filename)
 		grub_free (suffix);
 		return grub_errno;
 	      }
-	    grub_memcpy (entrysrc + grub_strlen (entrysrc), parsed,
+	    grub_memcpy (suffix + grub_strlen (suffix), parsed,
 			 grub_strlen (parsed) + 1);
 	    grub_free (parsed);
 	    parsed = NULL;
@@ -117,6 +119,9 @@ legacy_file (const char *filename)
 	    args[0] = oldname;
 	    grub_normal_add_menu_entry (1, args, NULL, NULL, NULL, NULL,
 					entrysrc);
+	    grub_free (args);
+	    entrysrc[0] = 0;
+	    grub_free (oldname);
 	  }
       }
 
@@ -125,6 +130,7 @@ legacy_file (const char *filename)
 	  grub_normal_parse_line (parsed, getline);
 	  grub_print_error ();
 	  grub_free (parsed);
+	  parsed = NULL;
 	}
       else if (parsed)
 	{
@@ -163,11 +169,13 @@ legacy_file (const char *filename)
 	}
       args[0] = entryname;
       grub_normal_add_menu_entry (1, args, NULL, NULL, NULL, NULL, entrysrc);
+      grub_free (args);
     }
 
   grub_normal_parse_line (suffix, getline);
   grub_print_error ();
   grub_free (suffix);
+  grub_free (entrysrc);
 
   if (menu && menu->size)
     grub_show_menu (menu, 1);
@@ -215,6 +223,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
   struct grub_command *cmd;
   char **cutargs;
   int cutargc;
+  
   for (i = 0; i < 2; i++)
     {
       /* FIXME: really support this.  */
@@ -309,46 +318,118 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	  grub_errno = GRUB_ERR_NONE;
 	}
 
-      /* k*BSD didn't really work well with grub-legacy.  */
-      if (kernel_type == GUESS_IT || kernel_type == KFREEBSD)
+      {
+	int bsd_device = -1;
+	int bsd_slice = -1;
+	int bsd_part = -1;
 	{
-	  cmd = grub_command_find ("kfreebsd");
-	  if (cmd)
+	  grub_device_t dev;
+	  char *hdbiasstr;
+	  int hdbias = 0;
+	  hdbiasstr = grub_env_get ("legacy_hdbias");
+	  if (hdbiasstr)
 	    {
-	      if (!(cmd->func) (cmd, cutargc, cutargs))
-		{
-		  kernel_type = KFREEBSD;
-		  return GRUB_ERR_NONE;
-		}
+	      hdbias = grub_strtoul (hdbiasstr, 0, 0);
+	      grub_errno = GRUB_ERR_NONE;
 	    }
-	  grub_errno = GRUB_ERR_NONE;
+	  dev = grub_device_open (0);
+	  if (dev && dev->disk
+	      && dev->disk->dev->id == GRUB_DISK_DEVICE_BIOSDISK_ID
+	      && dev->disk->dev->id >= 0x80 && dev->disk->dev->id <= 0x90)
+	    {
+	      struct grub_partition *part = dev->disk->partition;
+	      bsd_device = dev->disk->id - 0x80 - hdbias;
+	      if (part && (grub_strcmp (part->partmap->name, "netbsd") == 0
+			   || grub_strcmp (part->partmap->name, "openbsd") == 0
+			   || grub_strcmp (part->partmap->name, "bsd") == 0))
+		{
+		  bsd_part = part->number;
+		  part = part->parent;
+		}
+	      if (part && grub_strcmp (part->partmap->name, "msdos") == 0)
+		bsd_slice = part->number;
+	    }
 	}
-      if (kernel_type == GUESS_IT || kernel_type == KNETBSD)
+	
+	/* k*BSD didn't really work well with grub-legacy.  */
+	if (kernel_type == GUESS_IT || kernel_type == KFREEBSD)
+	  {
+	    char buf[sizeof("adXXXXXXXXXXXXsXXXXXXXXXXXXYYY")];
+	    if (bsd_device != -1)
+	      {
+		if (bsd_slice != -1 && bsd_part != -1)
+		  grub_snprintf(buf, sizeof(buf), "ad%ds%d%c", bsd_device,
+				bsd_slice, 'a' + bsd_part);
+		else if (bsd_slice != -1)
+		  grub_snprintf(buf, sizeof(buf), "ad%ds%d", bsd_device,
+				bsd_slice);
+		else
+		  grub_snprintf(buf, sizeof(buf), "ad%d", bsd_device);
+		grub_env_set ("kFreeBSD.vfs.root.mountfrom", buf);
+	      }
+	    else
+	      grub_env_unset ("kFreeBSD.vfs.root.mountfrom");
+	    cmd = grub_command_find ("kfreebsd");
+	    if (cmd)
+	      {
+		if (!(cmd->func) (cmd, cutargc, cutargs))
+		  {
+		    kernel_type = KFREEBSD;
+		    return GRUB_ERR_NONE;
+		  }
+	      }
+	    grub_errno = GRUB_ERR_NONE;
+	  }
 	{
-	  cmd = grub_command_find ("knetbsd");
-	  if (cmd)
+	  char **bsdargs;
+	  int bsdargc;
+	  char bsddevname[sizeof ("wdXXXXXXXXXXXXY")];
+	  if (bsd_device == -1)
 	    {
-	      if (!(cmd->func) (cmd, cutargc, cutargs))
-		{
-		  kernel_type = KNETBSD;
-		  return GRUB_ERR_NONE;
-		}
+	      bsdargs = cutargs;
+	      bsdargc = cutargc;
 	    }
-	  grub_errno = GRUB_ERR_NONE;
-	}
-      if (kernel_type == GUESS_IT || kernel_type == KOPENBSD)
-	{
-	  cmd = grub_command_find ("kopenbsd");
-	  if (cmd)
+	  else
 	    {
-	      if (!(cmd->func) (cmd, cutargc, cutargs))
-		{
-		  kernel_type = KOPENBSD;
-		  return GRUB_ERR_NONE;
-		}
+	      bsdargc = cutargc + 2;
+	      bsdargs = grub_malloc (sizeof (bsdargs[0]) * bsdargc);
+	      grub_memcpy (bsdargs, args, argc * sizeof (bsdargs[0]));
+	      bsdargs[argc] = "-r";
+	      bsdargs[argc + 1] = bsddevname;
+	      grub_snprintf (bsddevname, sizeof (bsddevname),
+			     "wd%d%c", bsd_device,
+			     bsd_part != -1 ? bsd_part + 'a' : 'c');
 	    }
-	  grub_errno = GRUB_ERR_NONE;
+	  if (kernel_type == GUESS_IT || kernel_type == KNETBSD)
+	    {
+	      cmd = grub_command_find ("knetbsd");
+	      if (cmd)
+		{
+		  if (!(cmd->func) (cmd, bsdargc, bsdargs))
+		    {
+		      kernel_type = KNETBSD;
+		      return GRUB_ERR_NONE;
+		    }
+		}
+	      grub_errno = GRUB_ERR_NONE;
+	    }
+	  if (kernel_type == GUESS_IT || kernel_type == KOPENBSD)
+	    {
+	      cmd = grub_command_find ("kopenbsd");
+	      if (cmd)
+		{
+		  if (!(cmd->func) (cmd, bsdargc, bsdargs))
+		    {
+		      kernel_type = KOPENBSD;
+		      return GRUB_ERR_NONE;
+		    }
+		}
+	      grub_errno = GRUB_ERR_NONE;
+	    }
+	  if (bsdargs != cutargs)
+	    grub_free (bsdargs);
 	}
+      }
     }
   while (0);
 

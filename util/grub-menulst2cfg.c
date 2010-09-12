@@ -88,18 +88,28 @@ main (int argc, char **argv)
 	if (oldname != entryname && oldname)
 	  fprintf (out, "}\n\n");
 	if (oldname != entryname)
-	  fprintf (out, "menuentry \'%s\' {\n",
-		   grub_legacy_escape (entryname, strlen (entryname)));
+	  {
+	    char *escaped = grub_legacy_escape (entryname, strlen (entryname));
+	    fprintf (out, "menuentry \'%s\' {\n", escaped);
+	    grub_free (escaped);
+	    grub_free (oldname);
+	  }
       }
 
       if (parsed)
 	fprintf (out, "%s%s", entryname ? "  " : "", parsed);
+      grub_free (parsed);
+      parsed = NULL;
     }
 
   if (entryname)
     fprintf (out, "}\n\n");
 
   fwrite (out, 1, suffixlen, suffix);
+
+  grub_free (buf);
+  grub_free (suffix);
+  grub_free (entryname);
 
   if (in != stdin)
     fclose (in);
