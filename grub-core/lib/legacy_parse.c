@@ -146,7 +146,8 @@ struct legacy_command legacy_commands[] =
      " \"netbsd\", \"freebsd\", \"openbsd\", \"linux\", \"biglinux\" and"
      " \"multiboot\". The option --no-mem-option tells GRUB not to pass a"
      " Linux's mem option automatically."},
-    /* FIXME: lock is unsupported. */
+    {"lock", "if ! authenticate legacy; then return; fi", NULL, 0, 0, {}, 0,
+     0, "Break a command execution unless the user is authenticated."},
     {"makeactive", "parttool \"$root\" boot+\n", NULL, 0, 0, {}, 0, 0,
      "Set the active partition on the root disk to GRUB's root device."
      " This command is limited to _primary_ PC partitions on a hard disk."},
@@ -433,12 +434,6 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 	ptr2--;
       *entryname = grub_strndup (ptr, ptr2 - ptr);
       return NULL;
-    }
-
-  if (grub_strncmp ("lock", cmdname, ptr - cmdname) == 0
-      && ptr - cmdname == sizeof ("lock") - 1)
-    {
-      /* FIXME */
     }
 
   for (cmdnum = 0; cmdnum < ARRAY_SIZE (legacy_commands); cmdnum++)
