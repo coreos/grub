@@ -1411,6 +1411,7 @@ module = {
   common = commands/legacycfg.c;
   common = lib/legacy_parse.c;
   enable = i386_pc;
+  enable = emu;
 };
 
 module = {
