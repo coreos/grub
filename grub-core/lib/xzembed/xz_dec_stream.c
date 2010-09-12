@@ -830,8 +830,15 @@ void xz_dec_reset(struct xz_dec *s)
 	s->allow_buf_error = false;
 	s->pos = 0;
 
-	memzero(&s->block, sizeof(s->block));
-	memzero(&s->index, sizeof(s->index));
+	{
+		uint8_t *t;
+		t = s->block.hash.crc32_context;
+		memzero(&s->block, sizeof(s->block));
+		s->block.hash.crc32_context = t;
+		t = s->index.hash.crc32_context;
+		memzero(&s->index, sizeof(s->index));
+		s->index.hash.crc32_context = t;
+	}
 	s->temp.pos = 0;
 	s->temp.size = STREAM_HEADER_SIZE;
 

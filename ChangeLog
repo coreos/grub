@@ -1,3 +1,8 @@
+2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/xzembed/xz_dec_stream.c (xz_dec_reset): Preserve context
+	pointer.
+
 2010-09-11  Szymon Janc <szymon@janc.net.pl>
 
 	* grub-core/commands/lsacpi.c (grub_cmd_lsacpi): Fix prototype.
