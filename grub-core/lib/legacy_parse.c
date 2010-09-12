@@ -93,7 +93,7 @@ struct legacy_command legacy_commands[] =
     {"displaymem", "lsmmap\n", 0, {}, 0, 0, 
      "Display what GRUB thinks the system address space map of the"
      " machine is, including all regions of physical RAM installed."},
-    /* embed unsupported.  */
+    /* NOTE: embed unsupported.  */
     {"fallback", "set fallback='%s'\n", 1, {TYPE_VERBATIM}, 0, "NUM...",
      "Go into unattended boot mode: if the default boot entry has any"
      " errors, instead of waiting for the user to do anything, it"
@@ -121,7 +121,7 @@ struct legacy_command legacy_commands[] =
      "FILE [ARG ...]",
      "Load an initial ramdisk FILE for a Linux format boot image and set the"
      " appropriate parameters in the Linux setup area in memory."},
-    /* install unsupported.  */
+    /* NOTE: install unsupported.  */
     /* FIXME: ioprobe unsupported.  */
     /* FIXME: really support --no-mem-option.  */
     {"kernel", "legacy_kernel %s %s '%s' %s\n", 4, {TYPE_TYPE_OR_NOMEM_OPTION,
@@ -145,7 +145,7 @@ struct legacy_command legacy_commands[] =
      "Map the drive FROM_DRIVE to the drive TO_DRIVE. This is necessary"
      " when you chain-load some operating systems, such as DOS, if such an"
      " OS resides at a non-first drive."},
-    /* md5crypt unsupported since GRUB has not enough entropy and this
+    /* NOTE: md5crypt unsupported since GRUB has not enough entropy and this
        hash shouldn't be used anymore.  */
     {"module", "legacy_initrd '%s' %s\n", 1, {TYPE_FILE_NO_CONSUME,
 					      TYPE_REST_VERBATIM}, 0,
@@ -182,7 +182,12 @@ struct legacy_command legacy_commands[] =
      " which case it will ask for the password, before continuing."
      " The option --md5 tells GRUB that PASSWD is encrypted with"
      " md5crypt."},
-    /* FIXME: pause unsupported.  */
+    /* NOTE: GRUB2 has a design principle of not eternally waiting for user
+       input. 60 seconds should be enough.
+     */
+    {"pause", "echo %s; if ! sleep -i 60; then return; fi", 1,
+     {TYPE_REST_VERBATIM}, 0,
+     "[MESSAGE ...]", "Print MESSAGE, then wait until a key is pressed."},
     /* FIXME: rarp unsupported.  */
     {"read", "read_dword %s\n", 1, {TYPE_INT}, 0, "ADDR",
      "Read a 32-bit value from memory at address ADDR and"
@@ -208,7 +213,7 @@ struct legacy_command legacy_commands[] =
      " GRUB can read, but setting the correct root device is still"
      " desired. Note that the items mentioned in `root' which"
      " derived from attempting the mount will NOT work correctly."},
-    /* FIXME: support arguments.  */
+    /* FIXME: support saving NUM and fallback.  */
     {"savedefault", "saved_entry=${chosen}; save_env saved_entry\n", 0, {}, 0,
      "[NUM | `fallback']",
      "Save the current entry as the default boot entry if no argument is"
