@@ -55,6 +55,10 @@ hook (const struct grub_video_mode_info *info)
     grub_printf ("Planar ");
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_HERCULES)
     grub_printf ("Hercules ");
+  if (info->mode_type & GRUB_VIDEO_MODE_TYPE_CGA)
+    grub_printf ("CGA ");
+  if (info->mode_type & GRUB_VIDEO_MODE_TYPE_NONCHAIN4)
+    grub_printf ("Non-chain 4 ");
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP)
     grub_printf ("Monochrome ");
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_UNKNOWN)
