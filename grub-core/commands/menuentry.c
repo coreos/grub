@@ -128,7 +128,7 @@ grub_normal_add_menu_entry (int argc, const char **args, char **classes,
   if (! menu_args)
     goto fail;
 
-  for (i = 0; args[i]; i++)
+  for (i = 0; i < argc; i++)
     {
       menu_args[i] = grub_strdup (args[i]);
       if (! menu_args[i])
