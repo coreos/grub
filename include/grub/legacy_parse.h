@@ -21,7 +21,7 @@
 
 #include <grub/types.h>
 
-char *grub_legacy_parse (const char *buf, char **entryname, int *suffix);
+char *grub_legacy_parse (const char *buf, char **entryname, char **suffix);
 char *grub_legacy_escape (const char *in, grub_size_t len);
 
 #endif

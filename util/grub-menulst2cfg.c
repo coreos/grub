@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <grub/util/misc.h>
 
 int
 main (int argc, char **argv)
@@ -30,7 +31,6 @@ main (int argc, char **argv)
   size_t bufsize = 0;
   char *suffix = xstrdup ("");
   int suffixlen = 0;
-  int is_suffix = 0;
 
   if (argc >= 2 && argv[1][0] == '-')
     {
@@ -75,15 +75,15 @@ main (int argc, char **argv)
 
       {
 	char *oldname = NULL;
+	char *newsuffix;
 
 	oldname = entryname;
-	parsed = grub_legacy_parse (buf, &entryname, &is_suffix);
-	if (is_suffix)
+	parsed = grub_legacy_parse (buf, &entryname, &newsuffix);
+	if (newsuffix)
 	  {
-	    suffixlen += strlen (parsed);
+	    suffixlen += strlen (newsuffix);
 	    suffix = xrealloc (suffix, suffixlen + 1);
-	    strcat (suffix, parsed);
-	    continue;
+	    strcat (suffix, newsuffix);
 	  }
 	if (oldname != entryname && oldname)
 	  fprintf (out, "}\n\n");
@@ -91,25 +91,25 @@ main (int argc, char **argv)
 	  {
 	    char *escaped = grub_legacy_escape (entryname, strlen (entryname));
 	    fprintf (out, "menuentry \'%s\' {\n", escaped);
-	    grub_free (escaped);
-	    grub_free (oldname);
+	    free (escaped);
+	    free (oldname);
 	  }
       }
 
       if (parsed)
 	fprintf (out, "%s%s", entryname ? "  " : "", parsed);
-      grub_free (parsed);
+      free (parsed);
       parsed = NULL;
     }
 
   if (entryname)
     fprintf (out, "}\n\n");
 
-  fwrite (out, 1, suffixlen, suffix);
+  fwrite (suffix, 1, suffixlen, out);
 
-  grub_free (buf);
-  grub_free (suffix);
-  grub_free (entryname);
+  free (buf);
+  free (suffix);
+  free (entryname);
 
   if (in != stdin)
     fclose (in);

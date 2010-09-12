@@ -26,6 +26,8 @@ struct legacy_command
 {
   const char *name;
   const char *map;
+  const char *suffix;
+  unsigned suffixarg;
   unsigned argc;
   enum arg_type {
     TYPE_VERBATIM,
@@ -42,7 +44,6 @@ struct legacy_command
   } argt[4];
   enum {
     FLAG_IGNORE_REST        =  1,
-    FLAG_SUFFIX             =  2,
     FLAG_FALLBACK_AVAILABLE =  4,
     FLAG_FALLBACK           =  8,
     FLAG_COLOR_INVERT       = 16,
@@ -53,22 +54,22 @@ struct legacy_command
 
 struct legacy_command legacy_commands[] =
   {
-    {"blocklist", "blocklist '%s'\n", 1, {TYPE_FILE}, 0, "FILE",
+    {"blocklist", "blocklist '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
      "Print the blocklist notation of the file FILE."},
-    {"boot", "boot\n", 0, {}, 0, 0,
+    {"boot", "boot\n", NULL, 0, 0, {}, 0, 0,
      "Boot the OS/chain-loader which has been loaded."},
     /* FIXME: bootp unsupported.  */
-    {"cat", "cat '%s'\n", 1, {TYPE_FILE}, 0, "FILE",
+    {"cat", "cat '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
      "Print the contents of the file FILE."},
-    {"chainloader", "chainloader %s '%s'\n", 2, {TYPE_FORCE_OPTION, TYPE_FILE},
-     0, "[--force] FILE",
+    {"chainloader", "chainloader %s '%s'\n", NULL, 0,
+     2, {TYPE_FORCE_OPTION, TYPE_FILE}, 0, "[--force] FILE",
      "Load the chain-loader FILE. If --force is specified, then load it"
      " forcibly, whether the boot loader signature is present or not."},
-    {"cmp", "cmp '%s' '%s'\n", 2, {TYPE_FILE, TYPE_FILE}, FLAG_IGNORE_REST,
-     "FILE1 FILE2",
+    {"cmp", "cmp '%s' '%s'\n", NULL, 0,
+     2, {TYPE_FILE, TYPE_FILE}, FLAG_IGNORE_REST, "FILE1 FILE2",
      "Compare the file FILE1 with the FILE2 and inform the different values"
      " if any."},
-    {"color", "set color_normal='%s'; set color_highlight='%s'\n", 
+    {"color", "set color_normal='%s'; set color_highlight='%s'\n", NULL, 0, 
      2, {TYPE_VERBATIM, TYPE_VERBATIM},
      FLAG_IGNORE_REST | FLAG_FALLBACK_AVAILABLE, "NORMAL [HIGHLIGHT]",
      "Change the menu colors. The color NORMAL is used for most"
@@ -81,60 +82,62 @@ struct legacy_command legacy_commands[] =
      " light-green, light-cyan, light-red, light-magenta, yellow and white."
      " But only the first eight names can be used for BG. You can prefix"
      " \"blink-\" to FG if you want a blinking foreground color."},
-    {"color", "set color_normal='%s'; set color_highlight='%s'\n",
+    {"color", "set color_normal='%s'; set color_highlight='%s'\n", NULL, 0,
      1, {TYPE_VERBATIM},
      FLAG_IGNORE_REST | FLAG_FALLBACK | FLAG_COLOR_INVERT, NULL, NULL},
-    {"configfile", "legacy_configfile '%s'\n", 1, {TYPE_FILE}, 0, "FILE",
-     "Load FILE as the configuration file."},
+    {"configfile", "legacy_configfile '%s'\n", NULL, 0, 1, {TYPE_FILE},
+     0, "FILE", "Load FILE as the configuration file."},
     {"debug",
-     "if [ -z \"$debug\" ]; then set debug=all; else set debug=; fi\n",
+     "if [ -z \"$debug\" ]; then set debug=all; else set debug=; fi\n", NULL, 0,
      0, {}, 0, 0, "Turn on/off the debug mode."},
     {"default",
      "set default='%s'; if [ x\"$default\" = xsaved ]; then load_env; "
-     "set default=\"$saved_entry\"; fi\n", 1, {TYPE_VERBATIM}, 0, 
+     "set default=\"$saved_entry\"; fi\n", NULL, 0, 1, {TYPE_VERBATIM}, 0, 
      "[NUM | `saved']",
      "Set the default entry to entry number NUM (if not specified, it is"
      " 0, the first entry) or the entry number saved by savedefault."},
     /* FIXME: dhcp unsupported.  */
     /* FIXME: displayapm unsupported.  */
-    {"displaymem", "lsmmap\n", 0, {}, 0, 0, 
+    {"displaymem", "lsmmap\n", NULL, 0, 0, {}, 0, 0, 
      "Display what GRUB thinks the system address space map of the"
      " machine is, including all regions of physical RAM installed."},
     /* NOTE: embed unsupported.  */
-    {"fallback", "set fallback='%s'\n", 1, {TYPE_VERBATIM}, 0, "NUM...",
+    {"fallback", "set fallback='%s'\n", NULL, 0,
+     1, {TYPE_VERBATIM}, 0, "NUM...",
      "Go into unattended boot mode: if the default boot entry has any"
      " errors, instead of waiting for the user to do anything, it"
      " immediately starts over using the NUM entry (same numbering as the"
      " `default' command). This obviously won't help if the machine"
      " was rebooted by a kernel that GRUB loaded."},
-    {"find", "search -sf '%s'\n", 1, {TYPE_FILE}, 0, "FILENAME",
+    {"find", "search -sf '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILENAME",
      "Search for the filename FILENAME in all of partitions and print the list of"
      " the devices which contain the file."},
     /* FIXME: fstest unsupported.  */
     /* FIXME: geometry unsupported.  */
-    {"halt", "halt %s\n", 1, {TYPE_NOAPM_OPTION}, 0, "[--no-apm]",
+    {"halt", "halt %s\n", NULL, 0, 1, {TYPE_NOAPM_OPTION}, 0, "[--no-apm]",
      "Halt your system. If APM is available on it, turn off the power using"
      " the APM BIOS, unless you specify the option `--no-apm'."},
     /* FIXME: help unsupported.  */    /* NUL_TERMINATE */
-    {"hiddenmenu", "if sleep -i $timeout; then timeout=0; else timeout=-1; fi\n",
-     0, {}, FLAG_SUFFIX, "", "Hide the menu."},
-    {"hide", "parttool '%s' hidden+\n", 1, {TYPE_PARTITION}, 0, "PARTITION",
+    {"hiddenmenu", NULL,
+     "if sleep -i $timeout; then timeout=0; else timeout=-1; fi\n", 0,
+     0, {}, 0, "", "Hide the menu."},
+    {"hide", "parttool '%s' hidden+\n", NULL, 0, 1, {TYPE_PARTITION},
+     0, "PARTITION",
      "Hide PARTITION by setting the \"hidden\" bit in"
      " its partition type code."},
     /* FIXME: ifconfig unsupported.  */
     /* FIXME: impsprobe unsupported.  */
-    {"initrd", "legacy_initrd '%s' %s\n", 2, {TYPE_FILE_NO_CONSUME,
-					      TYPE_REST_VERBATIM}, 0,
+    {"initrd", "legacy_initrd '%s' %s\n", NULL, 0, 2, {TYPE_FILE_NO_CONSUME,
+						       TYPE_REST_VERBATIM}, 0,
      "FILE [ARG ...]",
      "Load an initial ramdisk FILE for a Linux format boot image and set the"
      " appropriate parameters in the Linux setup area in memory."},
     /* NOTE: install unsupported.  */
     /* FIXME: ioprobe unsupported.  */
     /* FIXME: really support --no-mem-option.  */
-    {"kernel", "legacy_kernel %s %s '%s' %s\n", 4, {TYPE_TYPE_OR_NOMEM_OPTION,
-						    TYPE_TYPE_OR_NOMEM_OPTION,
-						    TYPE_FILE_NO_CONSUME,
-						    TYPE_REST_VERBATIM}, 0,
+    {"kernel", "legacy_kernel %s %s '%s' %s\n", NULL, 0,
+     4, {TYPE_TYPE_OR_NOMEM_OPTION, TYPE_TYPE_OR_NOMEM_OPTION,
+	 TYPE_FILE_NO_CONSUME, TYPE_REST_VERBATIM}, 0,
      "[--no-mem-option] [--type=TYPE] FILE [ARG ...]",
      "Attempt to load the primary boot image from FILE. The rest of the"
      " line is passed verbatim as the \"kernel command line\".  Any modules"
@@ -144,46 +147,49 @@ struct legacy_command legacy_commands[] =
      " \"multiboot\". The option --no-mem-option tells GRUB not to pass a"
      " Linux's mem option automatically."},
     /* FIXME: lock is unsupported. */
-    {"makeactive", "parttool \"$root\" boot+\n", 0, {}, 0, 0,
+    {"makeactive", "parttool \"$root\" boot+\n", NULL, 0, 0, {}, 0, 0,
      "Set the active partition on the root disk to GRUB's root device."
      " This command is limited to _primary_ PC partitions on a hard disk."},
-    {"map", "drivemap '%s' '%s'\n", 2, {TYPE_PARTITION, TYPE_PARTITION},
+    {"map", "drivemap '%s' '%s'\n", NULL, 0,
+     2, {TYPE_PARTITION, TYPE_PARTITION},
      FLAG_IGNORE_REST, "TO_DRIVE FROM_DRIVE",
      "Map the drive FROM_DRIVE to the drive TO_DRIVE. This is necessary"
      " when you chain-load some operating systems, such as DOS, if such an"
      " OS resides at a non-first drive."},
     /* NOTE: md5crypt unsupported since GRUB has not enough entropy and this
        hash shouldn't be used anymore.  */
-    {"module", "legacy_initrd '%s' %s\n", 1, {TYPE_FILE_NO_CONSUME,
-					      TYPE_REST_VERBATIM}, 0,
+    {"module", "legacy_initrd '%s' %s\n", NULL, 0, 2, {TYPE_FILE_NO_CONSUME,
+						       TYPE_REST_VERBATIM}, 0,
      "FILE [ARG ...]",
      "Load a boot module FILE for a Multiboot format boot image (no"
      " interpretation of the file contents is made, so users of this"
      " command must know what the kernel in question expects). The"
      " rest of the line is passed as the \"module command line\", like"
      " the `kernel' command."},
-    {"modulenounzip", "legacy_initrd_nounzip '%s' %s\n", 1,
+    {"modulenounzip", "legacy_initrd_nounzip '%s' %s\n", NULL, 0, 2,
      {TYPE_FILE_NO_CONSUME, TYPE_REST_VERBATIM}, 0,
      "FILE [ARG ...]",
      "The same as `module', except that automatic decompression is"
      " disabled."},
     {"pager", "set pager=%s; if [ \"$pager\" = 0 ]; then "
-     " echo Internal pager is now off; else echo Internal pager is now on; fi\n",
+     " echo Internal pager is now off; else "
+     "echo Internal pager is now on; fi\n", NULL, 0,
      1, {TYPE_BOOL}, FLAG_FALLBACK_AVAILABLE, "[FLAG]",
      "Toggle pager mode with no argument. If FLAG is given and its value"
      " is `on', turn on the mode. If FLAG is `off', turn off the mode."},
     {"pager", 
      "if [ \"$pager\" = 1 ]; then pager=0; echo Internal pager is now off;"
-      "else pager=1; echo Internal pager is now on; fi\n", 0, {},
+      "else pager=1; echo Internal pager is now on; fi\n", NULL, 0, 0, {},
      FLAG_FALLBACK, NULL, NULL},
     /* FIXME: partnew unsupported.  */
-    {"parttype", "parttool '%s' type=%s\n", 2, {TYPE_PARTITION, TYPE_INT}, 0,
+    {"parttype", "parttool '%s' type=%s\n", NULL, 0,
+     2, {TYPE_PARTITION, TYPE_INT}, 0,
      "PART TYPE", "Change the type of the partition PART to TYPE."},
     /* FIXME: support config file reloading.  */
     /* FIXME: support usage in menuentry.  */
     {"password", "if [ \"$superusers\" = "" ]; then superusers=legacy; fi;\n"
-     "legacy_password %s '%s' %s", 3, {TYPE_OPTION, TYPE_VERBATIM,
-				       TYPE_FILE}, FLAG_IGNORE_REST,
+     "legacy_password %s '%s' %s", NULL, 0, 3, {TYPE_OPTION, TYPE_VERBATIM,
+						TYPE_FILE}, FLAG_IGNORE_REST,
      "[--md5] PASSWD [FILE]",
      "If used in the first section of a menu file, disable all"
      " interactive editing control (menu entry editor and"
@@ -197,15 +203,15 @@ struct legacy_command legacy_commands[] =
     /* NOTE: GRUB2 has a design principle of not eternally waiting for user
        input. 60 seconds should be enough.
      */
-    {"pause", "echo %s; if ! sleep -i 60; then return; fi\n", 1,
+    {"pause", "echo %s; if ! sleep -i 60; then return; fi\n", NULL, 0, 1,
      {TYPE_REST_VERBATIM}, 0,
      "[MESSAGE ...]", "Print MESSAGE, then wait until a key is pressed."},
     /* FIXME: rarp unsupported.  */
-    {"read", "read_dword %s\n", 1, {TYPE_INT}, 0, "ADDR",
+    {"read", "read_dword %s\n", NULL, 0, 1, {TYPE_INT}, 0, "ADDR",
      "Read a 32-bit value from memory at address ADDR and"
      " display it in hex format."},
-    {"reboot", "reboot\n", 0, {}, 0, 0, "Reboot your system."},
-    {"root", "set root='%s'; set legacy_hdbias='%s'\n",
+    {"reboot", "reboot\n", NULL, 0, 0, {}, 0, 0, "Reboot your system."},
+    {"root", "set root='%s'; set legacy_hdbias='%s'\n", NULL, 0,
      2, {TYPE_PARTITION, TYPE_INT}, FLAG_FALLBACK_AVAILABLE,
      "[DEVICE [HDBIAS]]",
      "Set the current \"root device\" to the device DEVICE, then"
@@ -218,8 +224,8 @@ struct legacy_command legacy_commands[] =
      " how many BIOS drive numbers are on controllers before the current"
      " one. For example, if there is an IDE disk and a SCSI disk, and your"
      " FreeBSD root partition is on the SCSI disk, then use a `1' for HDBIAS."},
-    {"root", "echo \"$root\"\n", 0, {}, FLAG_FALLBACK, NULL, NULL},
-    {"rootnoverify", "set root='%s'; set legacy_hdbias='%s'\n",
+    {"root", "echo \"$root\"\n", NULL, 0, 0, {}, FLAG_FALLBACK, NULL, NULL},
+    {"rootnoverify", "set root='%s'; set legacy_hdbias='%s'\n", NULL, 0,
      2, {TYPE_PARTITION, TYPE_INT}, 0,
      "[DEVICE [HDBIAS]]",
      "Similar to `root', but don't attempt to mount the partition. This"
@@ -227,14 +233,15 @@ struct legacy_command legacy_commands[] =
      " GRUB can read, but setting the correct root device is still"
      " desired. Note that the items mentioned in `root' which"
      " derived from attempting the mount will NOT work correctly."},
-    {"rootnoverify", "echo \"$root\"\n", 0, {}, FLAG_FALLBACK, NULL, NULL},
+    {"rootnoverify", "echo \"$root\"\n", NULL, 0,
+     0, {}, FLAG_FALLBACK, NULL, NULL},
     /* FIXME: support saving NUM and fallback.  */
-    {"savedefault", "saved_entry=${chosen}; save_env saved_entry\n", 0, {}, 0,
-     "[NUM | `fallback']",
+    {"savedefault", "saved_entry=${chosen}; save_env saved_entry\n", NULL, 0,
+     0, {}, 0, "[NUM | `fallback']",
      "Save the current entry as the default boot entry if no argument is"
      " specified. If a number is specified, this number is saved. If"
      " `fallback' is used, next fallback entry is saved."},
-    {"serial", "serial %s\n", 1, {TYPE_REST_VERBATIM}, 0, 
+    {"serial", "serial %s\n", NULL, 0, 1, {TYPE_REST_VERBATIM}, 0, 
      "[--unit=UNIT] [--port=PORT] [--speed=SPEED] [--word=WORD] "
      "[--parity=PARITY] [--stop=STOP] [--device=DEV]",
      "Initialize a serial device. UNIT is a digit that specifies which serial"
@@ -248,25 +255,26 @@ struct legacy_command legacy_commands[] =
     /* FIXME: setup unsupported.  */
     /* FIXME: terminal unsupported.  */    /* NUL_TERMINATE */
     /* FIXME: terminfo unsupported.  */    /* NUL_TERMINATE */
-    {"testload", "cat '%s'\n", 1, {TYPE_FILE}, 0, "FILE",
+    {"testload", "cat '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
      "Read the entire contents of FILE in several different ways and"
      " compares them, to test the filesystem code. "
      " If this test succeeds, then a good next"
      " step is to try loading a kernel."},
     /* FIXME: testvbe unsupported.  */
     /* FIXME: tftpserver unsupported.  */
-    {"timeout", "set timeout=%s\n", 1, {TYPE_INT}, 0, "SEC",
+    {"timeout", "set timeout=%s\n", NULL, 0, 1, {TYPE_INT}, 0, "SEC",
      "Set a timeout, in SEC seconds, before automatically booting the"
      " default entry (normally the first entry defined)."},
     /* title is handled separately. */
-    {"unhide", "parttool '%s' hidden-\n", 1, {TYPE_PARTITION}, 0, "PARTITION",
+    {"unhide", "parttool '%s' hidden-\n", NULL, 0,
+     1, {TYPE_PARTITION}, 0, "PARTITION",
      "Unhide PARTITION by clearing the \"hidden\" bit in its"
      " partition type code."},
     /* FIXME: uppermem unsupported.  */
-    {"uuid", "search -u '%s'\n", 1, {TYPE_VERBATIM}, 0, "UUID",
+    {"uuid", "search -u '%s'\n", NULL, 0, 1, {TYPE_VERBATIM}, 0, "UUID",
      "Find root by UUID"},
     /* FIXME: support MODE.  */
-    {"vbeprobe", "vbeinfo\n", 0, {}, 0, "[MODE]",
+    {"vbeprobe", "vbeinfo\n", NULL, 0, 0, {}, 0, "[MODE]",
      "Probe VBE information. If the mode number MODE is specified, show only"
      " the information about only the mode."}
   };
@@ -384,13 +392,13 @@ is_option (enum arg_type opt, const char *curarg, grub_size_t len)
 }
 
 char *
-grub_legacy_parse (const char *buf, char **entryname, int *suffix)
+grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 {
   const char *ptr;
   const char *cmdname;
   unsigned i, cmdnum;
 
-  *suffix = 0;
+  *suffix = NULL;
 
   for (ptr = buf; *ptr && grub_isspace (*ptr); ptr++);
   if (!*ptr || *ptr == '#')
@@ -437,8 +445,6 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
   if (cmdnum == ARRAY_SIZE (legacy_commands))
     return grub_xasprintf ("# Unsupported legacy command: %s\n", buf);
 
-  *suffix = !!(legacy_commands[cmdnum].flags & FLAG_SUFFIX);
-
   for (; grub_isspace (*ptr) || *ptr == '='; ptr++);
 
   char *args[ARRAY_SIZE (legacy_commands[0].argt)];
@@ -447,7 +453,7 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
   {
     int hold_arg = 0;
     const char *curarg = NULL; 
-    for (i = 0; i < legacy_commands[cmdnum].argc + hold_arg; i++)
+    for (i = 0; i < legacy_commands[cmdnum].argc; i++)
       {
  	grub_size_t curarglen;
 	if (hold_arg)
@@ -620,6 +626,14 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
       grub_memcpy (invert + len - (slash - corig), corig, slash - corig);
       invert[len] = 0;
       args[legacy_commands[cmdnum].argc] = invert;
+    }
+
+  if (legacy_commands[cmdnum].suffix)
+    {
+      *suffix = grub_xasprintf (legacy_commands[cmdnum].suffix,
+				args[legacy_commands[cmdnum].suffixarg]);
+      if (*suffix)
+	return NULL;
     }
 
   {

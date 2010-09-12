@@ -82,31 +82,31 @@ legacy_file (const char *filename)
 
       {
 	char *oldname = NULL;
-	int is_suffix;
+	char *newsuffix;
 
 	oldname = entryname;
-	parsed = grub_legacy_parse (buf, &entryname, &is_suffix);
+	parsed = grub_legacy_parse (buf, &entryname, &newsuffix);
 	buf = NULL;
-	if (is_suffix)
+	if (newsuffix)
 	  {
 	    char *t;
 	    
 	    t = suffix;
 	    suffix = grub_realloc (suffix, grub_strlen (suffix)
-				       + grub_strlen (parsed) + 1);
+				   + grub_strlen (newsuffix) + 1);
 	    if (!suffix)
 	      {
 		grub_free (t);
 		grub_free (entrysrc);
 		grub_free (parsed);
+		grub_free (newsuffix);
 		grub_free (suffix);
 		return grub_errno;
 	      }
-	    grub_memcpy (suffix + grub_strlen (suffix), parsed,
-			 grub_strlen (parsed) + 1);
-	    grub_free (parsed);
-	    parsed = NULL;
-	    continue;
+	    grub_memcpy (suffix + grub_strlen (suffix), newsuffix,
+			 grub_strlen (newsuffix) + 1);
+	    grub_free (newsuffix);
+	    newsuffix = NULL;
 	  }
 	if (oldname != entryname && oldname)
 	  {
