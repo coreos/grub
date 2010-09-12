@@ -501,39 +501,6 @@ grub_cmd_legacy_initrdnounzip (struct grub_command *mycmd __attribute__ ((unused
 }
 
 static grub_err_t
-grub_cmd_legacy_color (struct grub_command *mycmd __attribute__ ((unused)),
-		       int argc, char **args)
-{
-  if (argc < 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "color required");
-  grub_env_set ("color_normal", args[0]);
-  if (argc >= 2)
-    grub_env_set ("color_highlight", args[1]);
-  else
-    {
-      char *slash = grub_strchr (args[0], '/');
-      char *invert;
-      grub_size_t len;
-
-      len = grub_strlen (args[0]);
-      if (!slash)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad color specification %s",
-			   args[0]);
-      invert = grub_malloc (len + 1);
-      if (!invert)
-	return grub_errno;
-      grub_memcpy (invert, slash + 1, len - (slash - args[0]) - 1);
-      invert[len - (slash - args[0]) - 1] = '/'; 
-      grub_memcpy (invert + len - (slash - args[0]), args[0], slash - args[0]);
-      invert[len] = 0;
-      grub_env_set ("color_highlight", invert);
-      grub_free (invert);
-    }
-
-  return grub_errno;
-}
-
-static grub_err_t
 check_password_deny (const char *user __attribute__ ((unused)),
 		     const char *entered  __attribute__ ((unused)),
 		     void *password __attribute__ ((unused)))
@@ -714,13 +681,18 @@ grub_cmd_legacy_password (struct grub_command *mycmd __attribute__ ((unused)),
 }
 
 static grub_command_t cmd_source, cmd_configfile, cmd_kernel, cmd_initrd;
-static grub_command_t cmd_color, cmd_password, cmd_initrdnounzip;
+static grub_command_t cmd_password, cmd_initrdnounzip;
 
 GRUB_MOD_INIT(legacycfg)
 {
   cmd_source = grub_register_command ("legacy_source",
 				      grub_cmd_legacy_source,
 				      N_("FILE"), N_("Parse legacy config"));
+  cmd_configfile = grub_register_command ("legacy_configfile",
+					  grub_cmd_legacy_configfile,
+					  N_("FILE"),
+					  N_("Parse legacy config"));
+
   cmd_kernel = grub_register_command ("legacy_kernel",
 				      grub_cmd_legacy_kernel,
 				      N_("[--no-mem-option] [--type=TYPE] FILE [ARG ...]"),
@@ -735,14 +707,6 @@ GRUB_MOD_INIT(legacycfg)
 					     N_("FILE [ARG ...]"),
 					     N_("Simulate grub-legacy modulenounzip command"));
 
-  cmd_configfile = grub_register_command ("legacy_configfile",
-					  grub_cmd_legacy_configfile,
-					  N_("FILE"),
-					  N_("Parse legacy config"));
-  cmd_color = grub_register_command ("legacy_color",
-				     grub_cmd_legacy_color,
-				     N_("NORMAL [HIGHLIGHT]"),
-				     N_("Simulate grub-legacy color command"));
   cmd_password = grub_register_command ("legacy_password",
 					grub_cmd_legacy_password,
 					N_("[--md5] PASSWD [FILE]"),
@@ -756,6 +720,5 @@ GRUB_MOD_FINI(legacycfg)
   grub_unregister_command (cmd_kernel);
   grub_unregister_command (cmd_initrd);
   grub_unregister_command (cmd_initrdnounzip);
-  grub_unregister_command (cmd_color);
   grub_unregister_command (cmd_password);
 }

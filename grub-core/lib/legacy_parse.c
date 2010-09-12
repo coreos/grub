@@ -41,8 +41,11 @@ struct legacy_command
     TYPE_REST_VERBATIM
   } argt[4];
   enum {
-    FLAG_IGNORE_REST = 1,
-    FLAG_SUFFIX      = 2
+    FLAG_IGNORE_REST        =  1,
+    FLAG_SUFFIX             =  2,
+    FLAG_FALLBACK_AVAILABLE =  4,
+    FLAG_FALLBACK           =  8,
+    FLAG_COLOR_INVERT       = 16,
   } flags;
   const char *shortdesc;
   const char *longdesc;
@@ -65,8 +68,9 @@ struct legacy_command legacy_commands[] =
      "FILE1 FILE2",
      "Compare the file FILE1 with the FILE2 and inform the different values"
      " if any."},
-    {"color", "legacy_color '%s' '%s'\n", 2, {TYPE_VERBATIM, TYPE_VERBATIM},
-     FLAG_IGNORE_REST, "NORMAL [HIGHLIGHT]",
+    {"color", "set color_normal='%s'; set color_highlight='%s'\n", 
+     2, {TYPE_VERBATIM, TYPE_VERBATIM},
+     FLAG_IGNORE_REST | FLAG_FALLBACK_AVAILABLE, "NORMAL [HIGHLIGHT]",
      "Change the menu colors. The color NORMAL is used for most"
      " lines in the menu, and the color HIGHLIGHT is used to highlight the"
      " line where the cursor points. If you omit HIGHLIGHT, then the"
@@ -77,6 +81,9 @@ struct legacy_command legacy_commands[] =
      " light-green, light-cyan, light-red, light-magenta, yellow and white."
      " But only the first eight names can be used for BG. You can prefix"
      " \"blink-\" to FG if you want a blinking foreground color."},
+    {"color", "set color_normal='%s'; set color_highlight='%s'\n",
+     1, {TYPE_VERBATIM},
+     FLAG_IGNORE_REST | FLAG_FALLBACK | FLAG_COLOR_INVERT, NULL, NULL},
     {"configfile", "legacy_configfile '%s'\n", 1, {TYPE_FILE}, 0, "FILE",
      "Load FILE as the configuration file."},
     {"debug",
@@ -160,10 +167,15 @@ struct legacy_command legacy_commands[] =
      "FILE [ARG ...]",
      "The same as `module', except that automatic decompression is"
      " disabled."},
-    /* FIXME: allow toggle.  */
-    {"pager", "set pager=%d\n", 1, {TYPE_BOOL}, 0, "[FLAG]",
+    {"pager", "set pager=%s; if [ \"$pager\" = 0 ]; then "
+     " echo Internal pager is now off; else echo Internal pager is now on; fi\n",
+     1, {TYPE_BOOL}, FLAG_FALLBACK_AVAILABLE, "[FLAG]",
      "Toggle pager mode with no argument. If FLAG is given and its value"
      " is `on', turn on the mode. If FLAG is `off', turn off the mode."},
+    {"pager", 
+     "if [ \"$pager\" = 1 ]; then pager=0; echo Internal pager is now off;"
+      "else pager=1; echo Internal pager is now on; fi\n", 0, {},
+     FLAG_FALLBACK, NULL, NULL},
     /* FIXME: partnew unsupported.  */
     {"parttype", "parttool '%s' type=%s\n", 2, {TYPE_PARTITION, TYPE_INT}, 0,
      "PART TYPE", "Change the type of the partition PART to TYPE."},
@@ -193,9 +205,8 @@ struct legacy_command legacy_commands[] =
      "Read a 32-bit value from memory at address ADDR and"
      " display it in hex format."},
     {"reboot", "reboot\n", 0, {}, 0, 0, "Reboot your system."},
-    /* FIXME: Support printing.  */
     {"root", "set root='%s'; set legacy_hdbias='%s'\n",
-     2, {TYPE_PARTITION, TYPE_INT}, 0,
+     2, {TYPE_PARTITION, TYPE_INT}, FLAG_FALLBACK_AVAILABLE,
      "[DEVICE [HDBIAS]]",
      "Set the current \"root device\" to the device DEVICE, then"
      " attempt to mount it to get the partition size (for passing the"
@@ -207,6 +218,7 @@ struct legacy_command legacy_commands[] =
      " how many BIOS drive numbers are on controllers before the current"
      " one. For example, if there is an IDE disk and a SCSI disk, and your"
      " FreeBSD root partition is on the SCSI disk, then use a `1' for HDBIAS."},
+    {"root", "echo \"$root\"\n", 0, {}, FLAG_FALLBACK, NULL, NULL},
     {"rootnoverify", "set root='%s'; set legacy_hdbias='%s'\n",
      2, {TYPE_PARTITION, TYPE_INT}, 0,
      "[DEVICE [HDBIAS]]",
@@ -215,6 +227,7 @@ struct legacy_command legacy_commands[] =
      " GRUB can read, but setting the correct root device is still"
      " desired. Note that the items mentioned in `root' which"
      " derived from attempting the mount will NOT work correctly."},
+    {"rootnoverify", "echo \"$root\"\n", 0, {}, FLAG_FALLBACK, NULL, NULL},
     /* FIXME: support saving NUM and fallback.  */
     {"savedefault", "saved_entry=${chosen}; save_env saved_entry\n", 0, {}, 0,
      "[NUM | `fallback']",
@@ -432,7 +445,6 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
   grub_memset (args, 0, sizeof (args));
 
   {
-    unsigned j = 0;
     int hold_arg = 0;
     const char *curarg = NULL; 
     for (i = 0; i < legacy_commands[cmdnum].argc + hold_arg; i++)
@@ -445,6 +457,8 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
 	  }
 	for (; grub_isspace (*ptr); ptr++);
 	curarg = ptr;
+	if (!*curarg)
+	  break;
 	for (; *ptr && !grub_isspace (*ptr); ptr++);
 	if (i != legacy_commands[cmdnum].argc - 1
 	    || (legacy_commands[cmdnum].flags & FLAG_IGNORE_REST))
@@ -463,7 +477,7 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
 	    hold_arg = 1;
 	  case TYPE_PARTITION:
 	  case TYPE_FILE:
-	    args[j++] = adjust_file (curarg, curarglen);
+	    args[i] = adjust_file (curarg, curarglen);
 	    break;
 
 	  case TYPE_REST_VERBATIM:
@@ -481,7 +495,7 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
 		    ptr++;
 		  overhead += 3;
 		}
-	      outptr0 = args[j++] = grub_malloc (overhead + (ptr - curarg));
+	      outptr0 = args[i] = grub_malloc (overhead + (ptr - curarg));
 	      if (!outptr0)
 		return NULL;
 	      ptr = curarg;
@@ -507,7 +521,7 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
 	    break;
 
 	  case TYPE_VERBATIM:
-	    args[j++] = grub_legacy_escape (curarg, curarglen);
+	    args[i] = grub_legacy_escape (curarg, curarglen);
 	    break;
 	  case TYPE_FORCE_OPTION:
 	  case TYPE_NOAPM_OPTION:
@@ -515,10 +529,10 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
 	  case TYPE_OPTION:
 	    if (is_option (legacy_commands[cmdnum].argt[i], curarg, curarglen))
 	      {
-		args[j++] = grub_strndup (curarg, curarglen);
+		args[i] = grub_strndup (curarg, curarglen);
 		break;
 	      }
-	    args[j++] = grub_strdup ("");
+	    args[i] = grub_strdup ("");
 	    hold_arg = 1;
 	    break;
 	  case TYPE_INT:
@@ -526,8 +540,6 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
 	      const char *brk;
 	      int base = 10;
 	      brk = curarg;
-	      if (curarglen < 1)
-		args[j++] = grub_strdup ("0");
 	      if (brk[0] == '0' && brk[1] == 'x')
 		base = 16;
 	      else if (brk[0] == '0')
@@ -545,20 +557,70 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
 		    break;
 		}
 	      if (brk == curarg)
-		args[j++] = grub_strdup ("0");
+		args[i] = grub_strdup ("0");
 	      else
-		args[j++] = grub_strndup (curarg, brk - curarg);
+		args[i] = grub_strndup (curarg, brk - curarg);
 	    }
 	    break;
 	  case TYPE_BOOL:
 	    if (curarglen == 2 && curarg[0] == 'o' && curarg[1] == 'n')
-	      args[j++] = grub_strdup ("1");
+	      args[i] = grub_strdup ("1");
 	    else
-	      args[j++] = grub_strdup ("0");
+	      args[i] = grub_strdup ("0");
 	    break;
 	  }
       }
   }
+
+  while (legacy_commands[cmdnum].argc > 0
+	 && args[legacy_commands[cmdnum].argc - 1] == NULL
+	 && (legacy_commands[cmdnum].flags & FLAG_FALLBACK_AVAILABLE)
+	 && args[legacy_commands[cmdnum + 1].argc] == NULL)
+    cmdnum++;
+
+  for (; i < legacy_commands[cmdnum].argc; i++)
+    switch (legacy_commands[cmdnum].argt[i])
+      {
+      case TYPE_FILE_NO_CONSUME:
+      case TYPE_PARTITION:
+      case TYPE_FILE:
+      case TYPE_REST_VERBATIM:
+      case TYPE_VERBATIM:
+      case TYPE_FORCE_OPTION:
+      case TYPE_NOAPM_OPTION:
+      case TYPE_TYPE_OR_NOMEM_OPTION:
+      case TYPE_OPTION:	
+	args[i] = grub_strdup ("");
+	break;
+      case TYPE_BOOL:
+      case TYPE_INT:
+	args[i] = grub_strdup ("0");
+	    break;
+      }
+
+  if (legacy_commands[cmdnum].flags & FLAG_COLOR_INVERT)
+    {
+      char *corig = args[legacy_commands[cmdnum].argc - 1];
+      char *slash = grub_strchr (corig, '/');
+      char *invert;
+      grub_size_t len;
+
+      len = grub_strlen (corig);
+      if (!slash)
+	{
+	  grub_error (GRUB_ERR_BAD_ARGUMENT, "bad color specification %s",
+		      args[0]);
+	  return NULL;
+	}
+      invert = grub_malloc (len + 1);
+      if (!invert)
+	return NULL;
+      grub_memcpy (invert, slash + 1, len - (slash - corig) - 1);
+      invert[len - (slash - args[0]) - 1] = '/'; 
+      grub_memcpy (invert + len - (slash - corig), corig, slash - corig);
+      invert[len] = 0;
+      args[legacy_commands[cmdnum].argc] = invert;
+    }
 
   {
     char *ret = grub_xasprintf (legacy_commands[cmdnum].map, args[0], args[1],
