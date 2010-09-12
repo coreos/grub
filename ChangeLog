@@ -1,5 +1,9 @@
 2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/main.c (main): Call hostfs_init only after init_all.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/menuentry.c (append_menu_entry): Don't rely on
 	args ending with NULL.
 
