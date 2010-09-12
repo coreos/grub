@@ -411,10 +411,10 @@ grub_legacy_parse (const char *buf, char **entryname, int *suffix)
   {
     unsigned j = 0;
     int hold_arg = 0;
+    const char *curarg = NULL; 
     for (i = 0; i < legacy_commands[cmdnum].argc; i++)
       {
-	const char *curarg;
-	grub_size_t curarglen;
+ 	grub_size_t curarglen;
 	if (hold_arg)
 	  {
 	    ptr = curarg;
