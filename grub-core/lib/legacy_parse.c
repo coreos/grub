@@ -41,7 +41,8 @@ struct legacy_command
     TYPE_REST_VERBATIM
   } argt[4];
   enum {
-    FLAG_IGNORE_REST = 1
+    FLAG_IGNORE_REST = 1,
+    FLAG_SUFFIX      = 2
   } flags;
   const char *shortdesc;
   const char *longdesc;
@@ -108,7 +109,8 @@ struct legacy_command legacy_commands[] =
      "Halt your system. If APM is available on it, turn off the power using"
      " the APM BIOS, unless you specify the option `--no-apm'."},
     /* FIXME: help unsupported.  */    /* NUL_TERMINATE */
-    /* FIXME: hiddenmenu unsupported.  */
+    {"hiddenmenu", "if sleep -i $timeout; then timeout=0; else timeout=-1; fi\n",
+     0, {}, FLAG_SUFFIX, "", "Hide the menu."},
     {"hide", "parttool '%s' hidden+\n", 1, {TYPE_PARTITION}, 0, "PARTITION",
      "Hide PARTITION by setting the \"hidden\" bit in"
      " its partition type code."},
@@ -354,11 +356,13 @@ is_option (enum arg_type opt, const char *curarg, grub_size_t len)
 }
 
 char *
-grub_legacy_parse (const char *buf, char **entryname)
+grub_legacy_parse (const char *buf, char **entryname, int *suffix)
 {
   const char *ptr;
   const char *cmdname;
   unsigned i, cmdnum;
+
+  *suffix = 0;
 
   for (ptr = buf; *ptr && grub_isspace (*ptr); ptr++);
   if (!*ptr || *ptr == '#')
@@ -391,6 +395,8 @@ grub_legacy_parse (const char *buf, char **entryname)
       break;
   if (cmdnum == ARRAY_SIZE (legacy_commands))
     return grub_xasprintf ("# Unsupported legacy command: %s\n", buf);
+
+  *suffix = !!(legacy_commands[cmdnum].flags & FLAG_SUFFIX);
 
   for (; grub_isspace (*ptr) || *ptr == '='; ptr++);
 

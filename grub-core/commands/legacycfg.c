@@ -37,6 +37,18 @@ legacy_file (const char *filename)
   grub_file_t file;
   char *entryname = NULL, *entrysrc = NULL;
   grub_menu_t menu;
+  char *suffix = grub_strdup ("");
+
+  auto grub_err_t getline (char **line, int cont);
+  grub_err_t getline (char **line, 
+		      int cont __attribute__ ((unused)))
+  {
+    *line = 0;
+    return GRUB_ERR_NONE;
+  }
+
+  if (!suffix)
+    return grub_errno;
 
   file = grub_file_open (filename);
   if (! file)
@@ -68,10 +80,32 @@ legacy_file (const char *filename)
 
       {
 	char *oldname = NULL;
+	int is_suffix;
 
 	oldname = entryname;
-	parsed = grub_legacy_parse (buf, &entryname);
+	parsed = grub_legacy_parse (buf, &entryname, &is_suffix);
 	grub_free (buf);
+	if (is_suffix)
+	  {
+	    char *t;
+	    
+	    t = suffix;
+	    suffix = grub_realloc (suffix, grub_strlen (suffix)
+				       + grub_strlen (parsed) + 1);
+	    if (!suffix)
+	      {
+		grub_free (t);
+		grub_free (entrysrc);
+		grub_free (parsed);
+		grub_free (suffix);
+		return grub_errno;
+	      }
+	    grub_memcpy (entrysrc + grub_strlen (entrysrc), parsed,
+			 grub_strlen (parsed) + 1);
+	    grub_free (parsed);
+	    parsed = NULL;
+	    continue;
+	  }
 	if (oldname != entryname && oldname)
 	  {
 	    const char **args = grub_malloc (sizeof (args[0]));
@@ -88,13 +122,6 @@ legacy_file (const char *filename)
 
       if (parsed && !entryname)
 	{
-	  auto grub_err_t getline (char **line, int cont);
-	  grub_err_t getline (char **line __attribute__ ((unused)), 
-			      int cont __attribute__ ((unused)))
-	  {
-	    return GRUB_ERR_NONE;
-	  }
-
 	  grub_normal_parse_line (parsed, getline);
 	  grub_print_error ();
 	  grub_free (parsed);
@@ -114,6 +141,7 @@ legacy_file (const char *filename)
 		{
 		  grub_free (t);
 		  grub_free (parsed);
+		  grub_free (suffix);
 		  return grub_errno;
 		}
 	      grub_memcpy (entrysrc + grub_strlen (entrysrc), parsed,
@@ -136,6 +164,10 @@ legacy_file (const char *filename)
       args[0] = entryname;
       grub_normal_add_menu_entry (1, args, NULL, NULL, NULL, NULL, entrysrc);
     }
+
+  grub_normal_parse_line (suffix, getline);
+  grub_print_error ();
+  grub_free (suffix);
 
   if (menu && menu->size)
     grub_show_menu (menu, 1);

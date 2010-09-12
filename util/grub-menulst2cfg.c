@@ -28,6 +28,9 @@ main (int argc, char **argv)
   char *entryname = NULL;
   char *buf = NULL;
   size_t bufsize = 0;
+  char *suffix = xstrdup ("");
+  int suffixlen = 0;
+  int is_suffix = 0;
 
   if (argc >= 2 && argv[1][0] == '-')
     {
@@ -74,7 +77,14 @@ main (int argc, char **argv)
 	char *oldname = NULL;
 
 	oldname = entryname;
-	parsed = grub_legacy_parse (buf, &entryname);
+	parsed = grub_legacy_parse (buf, &entryname, &is_suffix);
+	if (is_suffix)
+	  {
+	    suffixlen += strlen (parsed);
+	    suffix = xrealloc (suffix, suffixlen + 1);
+	    strcat (suffix, parsed);
+	    continue;
+	  }
 	if (oldname != entryname && oldname)
 	  fprintf (out, "}\n\n");
 	if (oldname != entryname)
@@ -89,6 +99,7 @@ main (int argc, char **argv)
   if (entryname)
     fprintf (out, "}\n\n");
 
+  fwrite (out, 1, suffixlen, suffix);
 
   if (in != stdin)
     fclose (in);
