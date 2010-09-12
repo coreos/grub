@@ -1,5 +1,11 @@
 2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/term.c (put_glyphs_terminal): Correct sign.
+	(print_backlog): set backlog_ucs4 and backlog_glyphs.
+	Reported by: Yves Blusseau.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/misc.c (grub_normal_print_device_info): Show
 	partition size and offset.
 
