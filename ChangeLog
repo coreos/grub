@@ -1,4 +1,9 @@
-2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/menuentry.c (append_menu_entry): Don't rely on
+	args ending with NULL.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/xzembed/xz_dec_stream.c (xz_dec_reset): Preserve context
 	pointer.
