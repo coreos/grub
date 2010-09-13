@@ -701,15 +701,8 @@ module = {
 };
 
 module = {
-  name = vbeinfo;
-  i386_pc = commands/i386/pc/vbeinfo.c;
-  enable = i386_pc;
-};
-
-module = {
-  name = vbetest;
-  i386_pc = commands/i386/pc/vbetest.c;
-  enable = i386_pc;
+  name = videoinfo;
+  common = commands/videoinfo.c;
 };
 
 module = {

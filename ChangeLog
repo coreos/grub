@@ -1,3 +1,37 @@
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	videoinfo on non-vbe.
+
+	* grub-core/Makefile.core.def (vbeinfo): Removed.
+	(vbetest): Removed.
+	(videoinfo): New module.
+	* grub-core/commands/i386/pc/vbeinfo.c: Removed.
+	* grub-core/commands/i386/pc/vbetest.c: Removed.
+	* grub-core/commands/videoinfo.c: New file.
+	* grub-core/commands/videotest.c (grub_cmd_videotest): Support mode
+	specification.
+	(grub_cmd_videotest) [GRUB_MACHINE_PCBIOS]: Load vbe.mod when invoked
+	as vbetest.
+	(GRUB_MOD_INIT) [GRUB_MACHINE_PCBIOS]: New command vbetest.
+	(GRUB_MOD_FINI) [GRUB_MACHINE_PCBIOS]: Unregister vbetest.
+	* grub-core/video/efi_gop.c (grub_video_gop_fill_mode_info): Fill
+	mode_number. New parameter mode. All users updated.
+	(grub_video_gop_iterate): New function.
+	(grub_video_efi_gop): New member iterate.
+	* grub-core/video/i386/pc/vbe.c (framebuffer): Removed leftover fields.
+	(grub_vbe_set_video_mode): Remove setting useless fields.
+	(vbe2videoinfo): New function.
+	(grub_video_vbe_iterate): Likewise.
+	(grub_video_vbe_setup): Use vbe2videoinfo.
+	(grub_video_vbe_print_adapter_specific_info): New function.
+	(grub_video_vbe_adapter): New fields iterate and
+	print_adapter_specific_info.
+	* include/grub/video.h (GRUB_VIDEO_MODE_*): Transform into enum.
+	All users updated.
+	(grub_video_mode_info): New field mode_number.
+	(grub_video_adapter): New fields iterate and
+	print_adapter_specific_info.
+
 2010-09-13  Tristan Gingold  <gingold@free.fr>
 2010-09-13  Robert Millan  <rmh.grub@aybabtu.com>
 2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
