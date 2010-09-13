@@ -28,10 +28,12 @@
 #include <grub/command.h>
 #include <grub/search.h>
 #include <grub/i18n.h>
+#include <grub/disk.h>
+#include <grub/partition.h>
 
 void
 FUNC_NAME (const char *key, const char *var, int no_floppy,
-	   const char **hints, unsigned nhints)
+	   char **hints, unsigned nhints)
 {
   int count = 0;
   grub_fs_autoload_hook_t saved_autoload;
@@ -115,13 +117,67 @@ FUNC_NAME (const char *key, const char *var, int no_floppy,
     return (found && var);
   }
 
+  auto int part_hook (grub_disk_t disk, const grub_partition_t partition);
+  int part_hook (grub_disk_t disk, const grub_partition_t partition)
+  {
+    char *partition_name, *devname;
+    int ret;
+
+    partition_name = grub_partition_get_name (partition);
+    if (! partition_name)
+      return 1;
+
+    devname = grub_xasprintf ("%s,%s", disk->name, partition_name);
+    grub_free (partition_name);
+    if (!devname)
+      return 1;
+    ret = iterate_device (devname);
+    grub_free (devname);    
+
+    return ret;
+  }
+
   auto void try (void);
   void try (void)    
   {
     unsigned i;
     for (i = 0; i < nhints; i++)
-      if (iterate_device (hints[i]))
-	return;
+      {
+	char *end;
+	if (!hints[i][0])
+	  continue;
+	end = hints[i] + grub_strlen (hints[i]) - 1;
+	if (*end == ',')
+	  *end = 0;
+	if (iterate_device (hints[i]))
+	  {
+	    if (!*end)
+	      *end = ',';
+	    return;
+	  }
+	if (!*end)
+	  {
+	    grub_device_t dev;
+	    int ret;
+	    dev = grub_device_open (hints[i]);
+	    if (!dev)
+	      {
+		*end = ',';
+		continue;
+	      }
+	    if (!dev->disk)
+	      {
+		grub_device_close (dev);
+		*end = ',';
+		continue;
+	      }
+	    ret = grub_partition_iterate (dev->disk, part_hook);
+	    *end = ',';
+	    grub_device_close (dev);
+	    if (ret)
+	      return;
+	  }
+      }
     grub_device_iterate (iterate_device);
   }
 
@@ -153,7 +209,7 @@ grub_cmd_do_search (grub_command_t cmd __attribute__ ((unused)), int argc,
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no argument specified");
 
-  FUNC_NAME (args[0], argc == 1 ? 0 : args[1], 0, (const char **) (args + 2),
+  FUNC_NAME (args[0], argc == 1 ? 0 : args[1], 0, (args + 2),
 	     argc > 2 ? argc - 2 : 0);
 
   return grub_errno;
