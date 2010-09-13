@@ -1,5 +1,10 @@
 2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/iorw.c (grub_cmd_read): Declare buf in smallest
+	context.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/efi_gop.c: Fix over-80-chars line.
 	* grub-core/video/efi_uga.c: Likewise.
 
