@@ -19,7 +19,7 @@
 #include <grub/kernel.h>
 #include <grub/mm.h>
 #include <grub/machine/boot.h>
-#include <grub/machine/init.h>
+#include <grub/i386/floppy.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
 #include <grub/machine/kernel.h>
@@ -170,11 +170,6 @@ grub_machine_init (void)
   /* Sanity check.  */
   if (grub_lower_mem < GRUB_MEMORY_MACHINE_RESERVED_END)
     grub_fatal ("too small memory");
-
-#if 0
-  /* Turn on Gate A20 to access >1MB.  */
-  grub_gate_a20 (1);
-#endif
 
 /* FIXME: This prevents loader/i386/linux.c from using low memory.  When our
    heap implements support for requesting a chunk in low memory, this should

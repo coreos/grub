@@ -1,5 +1,15 @@
 2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't export grub_gate_a20.
+
+	* grub-core/kern/i386/pc/init.c: Remove leftovers.
+	* grub-core/kern/i386/pc/startup.S (FUNCTION(grub_gate_a20)): Rename
+	to ...
+	(grub_gate_a20): ... this. All users updated.
+	* include/grub/i386/pc/init.h: Removed. All users updated.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Create euro.pf2 which supports most European languages.
 
 	* Makefile.am (grubdata_DATA): Add euro.pf2.

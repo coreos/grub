@@ -202,7 +202,7 @@ LOCAL (codestart):
 	.code32
 
 	incl	%eax
-	call	EXT_C(grub_gate_a20)
+	call	grub_gate_a20
 
 #ifdef ENABLE_LZMA
 	movl	$GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %edi
@@ -292,7 +292,7 @@ VARIABLE(grub_boot_drive)
  * It also eats any keystrokes in the keyboard buffer.  :-(
  */
 
-FUNCTION(grub_gate_a20)
+grub_gate_a20:	
 	movl	%eax, %edx
 
 gate_a20_test_current_state:
@@ -478,7 +478,7 @@ FUNCTION(grub_chainloader_real_boot)
 
 	/* Turn off Gate A20 */
 	xorl	%eax, %eax
-	call	EXT_C(grub_gate_a20)
+	call	grub_gate_a20
 
 	/* set up to pass boot drive */
 	popl	%edx
