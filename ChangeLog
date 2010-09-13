@@ -1,3 +1,22 @@
+2010-09-13  Tristan Gingold  <gingold@free.fr>
+2010-09-13  Robert Millan  <rmh.grub@aybabtu.com>
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/efi/lsefisystab.c: New file.
+	* grub-core/commands/efi/lssal.c: Likewise.
+	* grub-core/Makefile.core.def (lsacpi): New module.
+	(lsefisystab): Likewise.
+	* include/grub/efi/api.h (GRUB_EFI_SAL_TABLE_GUID): New definition.
+	(GRUB_EFI_HCDP_TABLE_GUID): Likewise.
+	(grub_efi_sal_system_table): New struct.
+	(grub_efi_sal_system_table_entrypoint_descriptor): Likewise.
+	(grub_efi_sal_system_table_memory_descriptor): Likewise.
+	(grub_efi_sal_system_table_platform_features): Likewise.
+	(grub_efi_sal_system_table_translation_register_descriptor): Likewise.
+	(grub_efi_sal_system_table_purge_translation_coherence): Likewise.
+	(grub_efi_sal_system_table_ap_wakeup): Likewise.
+	* include/grub/types.h (PRIuGRUB_UINT64_T): New definition.
+
 2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support explicit user claim that a device is BIOS-visible.
