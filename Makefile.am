@@ -60,7 +60,7 @@ CLEANFILES += grub_fstest_init.c
 
 if COND_GRUB_MKFONT
 if COND_HAVE_FONT_SOURCE
-grubdata_DATA = unicode.pf2 ascii.pf2 ascii.h widthspec.h
+grubdata_DATA = unicode.pf2 ascii.pf2 euro.pf2 ascii.h widthspec.h
 endif
 endif
 
@@ -75,6 +75,10 @@ UNICODE_LINES=0x2501-0x251B
 ascii.pf2: $(FONT_SOURCE) grub-mkfont
 	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
 CLEANFILES += ascii.pf2
+
+euro.pf2: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x4ff,0x1e00-0x1fff,$(UNICODE_ARROWS),$(UNICODE_LINES)
+CLEANFILES += euro.pf2
 
 ascii.bitmaps: $(FONT_SOURCE) grub-mkfont
 	$(builddir)/grub-mkfont --ascii-bitmaps -o $@ $(FONT_SOURCE)
