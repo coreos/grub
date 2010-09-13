@@ -1,0 +1,6 @@
+2009-12-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Search hints support.
+
+	* commands/search.c (FUNC_NAME): New arguments hints and nhints.
+	All users updated.
