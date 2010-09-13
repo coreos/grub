@@ -37,6 +37,8 @@ static const struct grub_arg_option options[] =
     {"set",		's', GRUB_ARG_OPTION_OPTIONAL,
      N_("Set a variable to the first device found."), "VAR", ARG_TYPE_STRING},
     {"no-floppy",	'n', 0, N_("Do not probe any floppy drive."), 0, 0},
+    {"hint",	        'h', GRUB_ARG_OPTION_REPEATABLE,
+     N_("First try the device HINT"), N_("HINT"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -47,6 +49,7 @@ enum options
     SEARCH_FS_UUID,
     SEARCH_SET,
     SEARCH_NO_FLOPPY,
+    SEARCH_HINT
  };
 
 static grub_err_t
@@ -54,6 +57,11 @@ grub_cmd_search (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
   const char *var = 0;
+  int nhints = 0;
+
+  if (state[SEARCH_HINT].set)
+    while (state[SEARCH_HINT].args[nhints])
+      nhints++;
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no argument specified");
@@ -63,13 +71,13 @@ grub_cmd_search (grub_extcmd_context_t ctxt, int argc, char **args)
 
   if (state[SEARCH_LABEL].set)
     grub_search_label (args[0], var, state[SEARCH_NO_FLOPPY].set, 
-		       (const char **) (args + 1), argc - 1);
+		       (const char **) state[SEARCH_HINT].args, nhints);
   else if (state[SEARCH_FS_UUID].set)
     grub_search_fs_uuid (args[0], var, state[SEARCH_NO_FLOPPY].set,
-			 (const char **) (args + 1), argc - 1);
+			 (const char **) state[SEARCH_HINT].args, nhints);
   else if (state[SEARCH_FILE].set)
     grub_search_fs_file (args[0], var, state[SEARCH_NO_FLOPPY].set, 
-			 (const char **) (args + 1), argc - 1);
+			 (const char **) state[SEARCH_HINT].args, nhints);
   else
     return grub_error (GRUB_ERR_INVALID_COMMAND, "unspecified search type");
 
@@ -83,7 +91,8 @@ GRUB_MOD_INIT(search)
   cmd =
     grub_register_extcmd ("search", grub_cmd_search,
 			  GRUB_COMMAND_FLAG_BOTH,
-			  N_("[-f|-l|-u|-s|-n] NAME [HINTS]"),
+			  N_("[-f|-l|-u|-s|-n] [--hint HINT [--hint HINT] ...]"
+			     " NAME"),
 			  N_("Search devices by file, filesystem label"
 			     " or filesystem UUID."
 			     " If --set is specified, the first device found is"
