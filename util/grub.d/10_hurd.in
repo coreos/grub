@@ -41,14 +41,6 @@ for i in /boot/gnumach* ; do
     basename=`basename $i`
     dirname=`dirname $i`
     rel_dirname=`make_system_path_relative_to_its_root $dirname`
-
-    if ! is_path_readable_by_grub ${dirname}/${basename} \
-        ${GRUB_DEVICE_BOOT} \
-        ${rel_dirname}/${basename} ; then
-      echo "${dirname}/${basename} is not readable by GRUB" >&2
-      exit 1
-    fi
-
     echo "Found GNU Mach: $i" >&2
     kernels="${kernels} ${rel_dirname}/${basename}"
     at_least_one=true

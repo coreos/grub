@@ -1,5 +1,17 @@
 2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove readability checks (too many false negatives).
+
+	* util/grub-install.in: Remove readability checks.
+	* util/grub-mkconfig.in: Likewise.
+	* util/grub.d/10_hurd.in: Likewise.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub-mkconfig_lib.in (is_path_readable_by_grub): Revert to old
+	way.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Enable acpi shutdown on all ACPI platforms.
 
 	* grub-core/Makefile.core.def (halt): Inlude commands/acpihalt.c
