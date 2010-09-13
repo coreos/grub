@@ -1,5 +1,13 @@
 2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	grub-mknetdir script.
+
+	* Makefile.util.def (grub-mknetdir): New module.
+	* tests/util/grub-shell.in: Support boot=net
+	* util/grub-mknetdir.in: New file.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	videoinfo on non-vbe.
 
 	* grub-core/Makefile.core.def (vbeinfo): Removed.

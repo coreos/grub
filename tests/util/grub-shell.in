@@ -28,6 +28,7 @@ PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
+platform=@platform@
 
 # Force build directory components
 PATH=${builddir}:$PATH
@@ -42,7 +43,7 @@ Run GRUB script in a Qemu instance.
 
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
-  --boot=[fd|hd|cd]       boot method for Qemu instance
+  --boot=[fd|hd|cd|net]       boot method for Qemu instance
   --modules=MODULES       pre-load specified modules MODULES
   --qemu=FILE             Name of qemu binary
   --qemu-opts=OPTIONS     extra options to pass to Qemu instance
@@ -83,6 +84,7 @@ for option in "$@"; do
 	if   [ "$dev" = "fd" ] ; then boot=fd;
 	elif [ "$dev" = "hd" ] ; then boot=hd;
 	elif [ "$dev" = "cd" ] ; then boot=cd;
+	elif [ "$dev" = "net" ] ; then boot=net;
 	elif [ "$dev" = "qemu" ] ; then boot=qemu;
 	elif [ "$dev" = "coreboot" ] ; then boot=coreboot;
 	else
@@ -134,10 +136,12 @@ halt
 EOF
 
 isofile=`mktemp`
-sh @builddir@/grub-mkrescue --grub-mkimage=${builddir}/grub-mkimage --output=${isofile} --override-directory=${builddir}/grub-core \
-    --rom-directory="${rom_directory}" \
-    /boot/grub/grub.cfg=${cfgfile} /boot/grub/testcase.cfg=${source} \
-    ${files} >/dev/null 2>&1
+if [ x$boot != xnet ]; then
+    sh @builddir@/grub-mkrescue --grub-mkimage=${builddir}/grub-mkimage --output=${isofile} --override-directory=${builddir}/grub-core \
+	--rom-directory="${rom_directory}" \
+	/boot/grub/grub.cfg=${cfgfile} /boot/grub/testcase.cfg=${source} \
+	${files} >/dev/null 2>&1
+fi
 if [ x$boot = xhd ]; then
     device=hda
     bootdev="-boot c"
@@ -164,7 +168,15 @@ if [ x$boot = xcoreboot ]; then
     device=cdrom
 fi
 
-${qemu} ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r"
+if [ x$boot = xnet ]; then
+    netdir=`mktemp -d`
+    sh @builddir@/grub-mknetdir --grub-mkimage=${builddir}/grub-mkimage --override-directory=${builddir}/grub-core --net-directory=$netdir
+    cp ${cfgfile} $netdir/boot/grub/grub.cfg
+    cp ${source} $netdir/boot/grub/testcase.cfg
+    ${qemu} ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -boot n -net user,tftp=$netdir,bootfile=/boot/grub/$target_cpu-$platform/core.0  -net nic  | cat | tr -d "\r"
+else
+    ${qemu} ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r"
+fi
 rm -f "${isofile}" "${imgfile}"
 rm -rf "${rom_directory}"
 if [ x$boot = xcoreboot ]; then

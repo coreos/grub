@@ -363,6 +363,14 @@ script = {
 };
 
 script = {
+  mansection = 8;
+  installdir = sbin;
+  name = grub-mknetdir;
+
+  common = util/grub-mknetdir.in;
+};
+
+script = {
   name = grub-mkconfig;
   common = util/grub-mkconfig.in;
   mansection = 8;
