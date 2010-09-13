@@ -23,9 +23,15 @@
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/ieee1275/ofdisk.h>
 
+static char *last_devpath;
+static grub_ieee1275_ihandle_t last_ihandle;
+
 struct ofdisk_hash_ent
 {
   char *devpath;
+  /* Pointer to shortest available name on nodes representing canonical names,
+     otherwise NULL.  */
+  const char *shortest;
   struct ofdisk_hash_ent *next;
 };
 
@@ -59,60 +65,125 @@ static struct ofdisk_hash_ent *
 ofdisk_hash_add (char *devpath)
 {
   struct ofdisk_hash_ent **head = &ofdisk_hash[ofdisk_hash_fn(devpath)];
-  struct ofdisk_hash_ent *p = grub_malloc(sizeof (*p));
+  struct ofdisk_hash_ent *p, *pcan;
+  char *curcan;
 
-  if (p)
+  p = grub_malloc(sizeof (*p));
+  if (!p)
+    return NULL;
+
+  p->devpath = devpath;
+  p->next = *head;
+  p->shortest = 0;
+  *head = p;
+
+  curcan = grub_ieee1275_canonicalise_devname (devpath);
+  if (!curcan)
     {
-      p->devpath = devpath;
-      p->next = *head;
-      *head = p;
+      grub_errno = GRUB_ERR_NONE;
+      return p;
     }
+
+  pcan = ofdisk_hash_find (curcan);
+  if (!pcan)
+    pcan = ofdisk_hash_add (curcan);
+  else
+    grub_free (curcan);
+
+  if (!pcan)
+    grub_errno = GRUB_ERR_NONE;
+  else
+    {
+      if (!pcan->shortest
+	  || grub_strlen (pcan->shortest) > grub_strlen (devpath))
+	pcan->shortest = devpath;
+    }
+
   return p;
 }
 
-static int
-grub_ofdisk_iterate (int (*hook) (const char *name))
+static void
+scan (void)
 {
   auto int dev_iterate (struct grub_ieee1275_devalias *alias);
 
   int dev_iterate (struct grub_ieee1275_devalias *alias)
     {
-      int ret = 0;
+      struct ofdisk_hash_ent *op;
+
+      grub_dprintf ("disk", "device name = %s type = %s\n", alias->name,
+		    alias->type);
+
+      if (grub_strcmp (alias->type, "block") != 0)
+	return 0;
 
       grub_dprintf ("disk", "disk name = %s\n", alias->name);
 
-      if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_OFDISK_SDCARD_ONLY))
+      op = ofdisk_hash_find (alias->path);
+      if (!op)
 	{
-	  grub_ieee1275_phandle_t dev;
-	  char tmp[8];
-
-	  if (grub_ieee1275_finddevice (alias->path, &dev))
+	  char *name = grub_strdup (alias->name);
+	  if (!name)
 	    {
-	      grub_dprintf ("disk", "finddevice (%s) failed\n", alias->path);
+	      grub_errno = GRUB_ERR_NONE;
 	      return 0;
 	    }
-
-	  if (grub_ieee1275_get_property (dev, "iconname", tmp,
-					  sizeof tmp, 0))
-	    {
-	      grub_dprintf ("disk", "get iconname failed\n");
-	      return 0;
-	    }
-
-	  if (grub_strcmp (tmp, "sdmmc"))
-	    {
-	      grub_dprintf ("disk", "device is not an SD card\n");
-	      return 0;
-	    }
+	  op = ofdisk_hash_add (name);
 	}
-
-      if (! grub_strcmp (alias->type, "block") &&
-	  grub_strncmp (alias->name, "cdrom", 5))
-	ret = hook (alias->name);
-      return ret;
+      return 0;
     }
 
-  return grub_devalias_iterate (dev_iterate);
+  grub_devalias_iterate (dev_iterate);
+  grub_ieee1275_devices_iterate (dev_iterate);
+}
+
+static int
+grub_ofdisk_iterate (int (*hook) (const char *name))
+{
+  unsigned i;
+  scan ();
+  
+  for (i = 0; i < ARRAY_SIZE (ofdisk_hash); i++)
+    {
+      static struct ofdisk_hash_ent *ent;
+      for (ent = ofdisk_hash[i]; ent; ent = ent->next)
+	{
+	  if (!ent->shortest)
+	    continue;
+	  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_OFDISK_SDCARD_ONLY))
+	    {
+	      grub_ieee1275_phandle_t dev;
+	      char tmp[8];
+
+	      if (grub_ieee1275_finddevice (ent->devpath, &dev))
+		{
+		  grub_dprintf ("disk", "finddevice (%s) failed\n",
+				ent->devpath);
+		  continue;
+		}
+
+	      if (grub_ieee1275_get_property (dev, "iconname", tmp,
+					      sizeof tmp, 0))
+		{
+		  grub_dprintf ("disk", "get iconname failed\n");
+		  continue;
+		}
+
+	      if (grub_strcmp (tmp, "sdmmc") != 0)
+		{
+		  grub_dprintf ("disk", "device is not an SD card\n");
+		  continue;
+		}
+	    }
+
+	  if (grub_strncmp (ent->shortest, "cdrom", 5) == 0)
+	    continue;
+
+	  if (hook (ent->shortest))
+	    return 1;
+	}
+    }	  
+  return 0;
 }
 
 static char *
@@ -137,11 +208,6 @@ compute_dev_path (const char *name)
 	*p++ = c;
     }
 
-  if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0))
-    {
-      *p++ = ':';
-      *p++ = '0';
-    }
   *p++ = '\0';
 
   return devpath;
@@ -151,8 +217,6 @@ static grub_err_t
 grub_ofdisk_open (const char *name, grub_disk_t disk)
 {
   grub_ieee1275_phandle_t dev;
-  grub_ieee1275_ihandle_t dev_ihandle = 0;
-  struct ofdisk_hash_ent *op;
   char *devpath;
   /* XXX: This should be large enough for any possible case.  */
   char prop[64];
@@ -162,69 +226,52 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
   if (! devpath)
     return grub_errno;
 
-  op = ofdisk_hash_find (devpath);
-  if (!op)
-    op = ofdisk_hash_add (devpath);
+  grub_dprintf ("disk", "Opening `%s'.\n", devpath);
 
-  grub_free (devpath);
-  if (!op)
-    return grub_errno;
-
-  grub_dprintf ("disk", "Opening `%s'.\n", op->devpath);
-
-  if (grub_ieee1275_finddevice (op->devpath, &dev))
-    {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read device properties");
-      goto fail;
-    }
+  if (grub_ieee1275_finddevice (devpath, &dev))
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read device properties");
 
   if (grub_ieee1275_get_property (dev, "device_type", prop, sizeof (prop),
 				  &actual))
-    {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read the device type");
-      goto fail;
-    }
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read the device type");
 
   if (grub_strcmp (prop, "block"))
-    {
-      grub_error (GRUB_ERR_BAD_DEVICE, "not a block device");
-      goto fail;
-    }
-
-  grub_ieee1275_open (op->devpath, &dev_ihandle);
-  if (! dev_ihandle)
-    {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
-      goto fail;
-    }
-
-  grub_dprintf ("disk", "Opened `%s' as handle %p.\n", op->devpath,
-		(void *) (unsigned long) dev_ihandle);
+    return grub_error (GRUB_ERR_BAD_DEVICE, "not a block device");
 
   /* XXX: There is no property to read the number of blocks.  There
      should be a property `#blocks', but it is not there.  Perhaps it
      is possible to use seek for this.  */
   disk->total_sectors = GRUB_DISK_SIZE_UNKNOWN;
 
-  disk->id = (unsigned long) op;
+  {
+    struct ofdisk_hash_ent *op;
+    op = ofdisk_hash_find (devpath);
+    if (!op)
+      op = ofdisk_hash_add (devpath);
+    else
+      grub_free (devpath);
+    if (!op)
+      return grub_errno;
+    disk->id = (unsigned long) op;
+    disk->data = op->devpath;
+  }
 
   /* XXX: Read this, somehow.  */
   disk->has_partitions = 1;
-  disk->data = (void *) (unsigned long) dev_ihandle;
   return 0;
-
- fail:
-  if (dev_ihandle)
-    grub_ieee1275_close (dev_ihandle);
-  return grub_errno;
 }
 
 static void
 grub_ofdisk_close (grub_disk_t disk)
 {
-  grub_dprintf ("disk", "Closing handle %p.\n",
-		(void *) disk->data);
-  grub_ieee1275_close ((grub_ieee1275_ihandle_t) (unsigned long) disk->data);
+  if (disk->data == last_devpath)
+    {
+      if (last_ihandle)
+	grub_ieee1275_close (last_ihandle);
+      last_ihandle = 0;
+      last_devpath = NULL;
+    }
+  disk->data = 0;
 }
 
 static grub_err_t
@@ -234,16 +281,40 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   grub_ssize_t status, actual;
   unsigned long long pos;
 
+  if (disk->data != last_devpath)
+    {
+      if (last_ihandle)
+	grub_ieee1275_close (last_ihandle);
+      last_ihandle = 0;
+      last_devpath = NULL;
+
+      if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0))
+	{
+	  char name2[grub_strlen (disk->data) + 3];
+	  char *p;
+	  
+	  grub_strcpy (name2, disk->data);
+	  p = name2 + grub_strlen (name2);
+	  *p++ = ':';
+	  *p++ = '0';
+	  *p = 0;
+	  grub_ieee1275_open (name2, &last_ihandle);
+	}
+      else
+	grub_ieee1275_open (disk->data, &last_ihandle);
+      if (! last_ihandle)
+	return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
+      last_devpath = disk->data;      
+    }
+
   pos = sector * 512UL;
 
-  grub_ieee1275_seek ((grub_ieee1275_ihandle_t) (unsigned long) disk->data,
-		      pos, &status);
+  grub_ieee1275_seek (last_ihandle, pos, &status);
   if (status < 0)
     return grub_error (GRUB_ERR_READ_ERROR,
 		       "seek error, can't seek block %llu",
 		       (long long) sector);
-  grub_ieee1275_read ((grub_ieee1275_ihandle_t) (unsigned long) disk->data,
-		      buf, size * 512UL, &actual);
+  grub_ieee1275_read (last_ihandle, buf, size * 512UL, &actual);
   if (actual != (grub_ssize_t) (size * 512UL))
     return grub_error (GRUB_ERR_READ_ERROR, "read error on block: %llu",
 		       (long long) sector);
@@ -281,5 +352,10 @@ grub_ofdisk_init (void)
 void
 grub_ofdisk_fini (void)
 {
+  if (last_ihandle)
+    grub_ieee1275_close (last_ihandle);
+  last_ihandle = 0;
+  last_devpath = NULL;
+
   grub_disk_dev_unregister (&grub_ofdisk_dev);
 }

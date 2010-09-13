@@ -1,5 +1,24 @@
 2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Filter devaliases and never open same device twice.
+
+	* grub-core/disk/ieee1275/ofdisk.c (last_devpath): New variable.
+	(last_ihandle): Likewise.
+	(ofdisk_hash_ent): New member shortest.
+	(ofdisk_hash_add): Add canonical path too.
+	(scan): New function.
+	(grub_ofdisk_iterate): Iterate over hashed entries.
+	(compute_dev_path): Don't add :0.
+	(grub_ofdisk_open): Don't really open the disk.
+	(grub_ofdisk_close): Avoid closing unrelated disk.
+	(grub_ofdisk_read): Implement reopen logic.
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_canonicalise_devname):
+	New function.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_canonicalise_devname):
+	New proto.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix sparc64.
 
 	* configure.ac (GRUB_KERNEL_MACHINE_LINK_ADDR): Removed.
