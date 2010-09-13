@@ -160,14 +160,23 @@ iterate_dev (const char *devname)
 
   if (dev)
     {
-      if (dev->disk && dev->disk->has_partitions)
+      char tmp[grub_strlen (devname) + sizeof (",")];
+
+      grub_memcpy (tmp, devname, grub_strlen (devname));
+
+      if (grub_strcmp (devname, current_word) == 0)
 	{
-	  if (add_completion (devname, ",", GRUB_COMPLETION_TYPE_DEVICE))
+	  if (add_completion (devname, ")", GRUB_COMPLETION_TYPE_PARTITION))
 	    return 1;
+
+	  if (dev->disk)
+	    if (grub_partition_iterate (dev->disk, iterate_partition))
+	      return 1;
 	}
       else
 	{
-	  if (add_completion (devname, ")", GRUB_COMPLETION_TYPE_DEVICE))
+	  grub_memcpy (tmp + grub_strlen (devname), "", sizeof (""));
+	  if (add_completion (tmp, "", GRUB_COMPLETION_TYPE_DEVICE))
 	    return 1;
 	}
     }
@@ -200,7 +209,7 @@ complete_device (void)
 
       if (dev)
 	{
-	  if (dev->disk && dev->disk->has_partitions)
+	  if (dev->disk)
 	    {
 	      if (grub_partition_iterate (dev->disk, iterate_partition))
 		{

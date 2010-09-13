@@ -252,14 +252,6 @@ setup (const char *dir,
 	  tmp_img + GRUB_BOOT_MACHINE_BPB_START,
 	  GRUB_BOOT_MACHINE_BPB_END - GRUB_BOOT_MACHINE_BPB_START);
 
-  /* Copy the possible partition table.  */
-  if (dest_dev->disk->has_partitions)
-    memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
-	    tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
-	    GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
-
-  free (tmp_img);
-
   /* If DEST_DRIVE is a hard disk, enable the workaround, which is
      for buggy BIOSes which don't pass boot drive correctly. Instead,
      they pass 0x00 or 0x01 even when booted from 0x80.  */
@@ -300,12 +292,6 @@ setup (const char *dir,
   grub_util_info ("dos partition is %d, bsd partition is %d",
 		  dos_part, bsd_part);
 
-  if (! dest_dev->disk->has_partitions)
-    {
-      grub_util_warn (_("Attempting to install GRUB to a partitionless disk.  This is a BAD idea."));
-      goto unable_to_embed;
-    }
-
   if (dest_dev->disk->partition)
     {
       grub_util_warn (_("Attempting to install GRUB to a partition instead of the MBR.  This is a BAD idea."));
@@ -344,6 +330,14 @@ setup (const char *dir,
       grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels.  This is not supported yet."));
       goto unable_to_embed;
     }
+
+  /* Copy the partition table.  */
+  if (dest_partmap)
+    memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
+	    tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
+	    GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
+
+  free (tmp_img);
 
   if (strcmp (dest_partmap, "msdos") == 0)
     grub_partition_iterate (dest_dev->disk, find_usable_region_msdos);

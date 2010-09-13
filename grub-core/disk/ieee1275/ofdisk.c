@@ -256,8 +256,6 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
     disk->data = op->devpath;
   }
 
-  /* XXX: Read this, somehow.  */
-  disk->has_partitions = 1;
   return 0;
 }
 

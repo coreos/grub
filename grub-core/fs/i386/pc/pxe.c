@@ -176,7 +176,6 @@ grub_pxe_open (const char *name, grub_disk_t disk)
   disk->total_sectors = 0;
   disk->id = (unsigned long) data;
 
-  disk->has_partitions = 0;
   disk->data = data;
 
   return GRUB_ERR_NONE;

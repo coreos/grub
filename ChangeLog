@@ -1,5 +1,16 @@
 2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/disk.h (grub_disk): Remove has_partitions.
+	All users updated.
+	* disk/loopback.c (grub_loopback): Remove has_partitions.
+	All users updated.
+	(options): Remove partitions. All users updated.
+	* util/grub-fstest.c (fstest): Don't pass "-p" to loopback.
+	* util/i386/pc/grub-setup.c (setup): copy partition table only when
+	actual partition table is found.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove readability checks (too many false negatives).
 
 	* util/grub-install.in: Remove readability checks.

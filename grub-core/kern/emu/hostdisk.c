@@ -221,7 +221,6 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "no mapping exists for `%s'", name);
 
-  disk->has_partitions = 1;
   disk->id = drive;
   disk->data = data = xmalloc (sizeof (struct grub_util_biosdisk_data));
   data->dev = NULL;
