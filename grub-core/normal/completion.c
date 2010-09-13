@@ -247,7 +247,8 @@ complete_file (void)
       goto fail;
     }
 
-  dir = grub_strchr (current_word, '/');
+  dir = grub_strchr (current_word + (device ? 2 + grub_strlen (device) : 0),
+		     '/');
   last_dir = grub_strrchr (current_word, '/');
   if (dir)
     {
