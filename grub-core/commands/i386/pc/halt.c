@@ -47,6 +47,8 @@ grub_halt (int no_apm)
 {
   struct grub_bios_int_registers regs;
 
+  grub_acpi_halt ();
+
   if (no_apm)
     stop ();
 
@@ -101,8 +103,6 @@ grub_cmd_halt (grub_extcmd_context_t ctxt,
 {
   struct grub_arg_list *state = ctxt->state;
   int no_apm = 0;
-
-  grub_acpi_halt ();
 
   if (state[0].set)
     no_apm = 1;

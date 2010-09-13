@@ -1,5 +1,19 @@
 2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Enable acpi shutdown on all ACPI platforms.
+
+	* grub-core/Makefile.core.def (halt): Inlude commands/acpihalt.c
+	on coreboo, multiboot and EFI.
+	* grub-core/commands/acpihalt.c (get_sleep_type): Add missing casts.
+	(grub_acpi_halt): Likewise.
+	* grub-core/commands/i386/pc/halt.c (grub_halt): Call grub_acpi_halt.
+	(grub_cmd_halt): Don't call grub_acpi_halt directly.
+	* grub-core/lib/efi/halt.c (grub_halt): Call grub_acpi_halt.
+	* grub-core/lib/i386/halt.c (grub_halt)
+	[GRUB_MACHINE_COREBOOT || GRUB_MACHINE_MULTIBOOT]: Likewise.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/iorw.c (grub_cmd_read): Declare buf in smallest
 	context.
 

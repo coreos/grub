@@ -22,11 +22,13 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/kernel.h>
+#include <grub/acpi.h>
 
 void
 grub_halt (void)
 {
   grub_machine_fini ();
+  grub_acpi_halt ();
   efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
               GRUB_EFI_RESET_SHUTDOWN, GRUB_EFI_SUCCESS, 0, NULL);
 
