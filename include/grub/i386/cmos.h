@@ -20,55 +20,9 @@
 #define	GRUB_CPU_CMOS_H	1
 
 #include <grub/types.h>
-#include <grub/i386/io.h>
+#include <grub/cpu/io.h>
 
 #define GRUB_CMOS_ADDR_REG	0x70
 #define GRUB_CMOS_DATA_REG	0x71
-
-#define GRUB_CMOS_INDEX_SECOND		0
-#define GRUB_CMOS_INDEX_SECOND_ALARM	1
-#define GRUB_CMOS_INDEX_MINUTE		2
-#define GRUB_CMOS_INDEX_MINUTE_ALARM	3
-#define GRUB_CMOS_INDEX_HOUR		4
-#define GRUB_CMOS_INDEX_HOUR_ALARM	5
-#define GRUB_CMOS_INDEX_DAY_OF_WEEK	6
-#define GRUB_CMOS_INDEX_DAY_OF_MONTH	7
-#define GRUB_CMOS_INDEX_MONTH		8
-#define GRUB_CMOS_INDEX_YEAR		9
-
-#define GRUB_CMOS_INDEX_STATUS_A	0xA
-#define GRUB_CMOS_INDEX_STATUS_B	0xB
-#define GRUB_CMOS_INDEX_STATUS_C	0xC
-#define GRUB_CMOS_INDEX_STATUS_D	0xD
-
-#define GRUB_CMOS_STATUS_B_DAYLIGHT	1
-#define GRUB_CMOS_STATUS_B_24HOUR	2
-#define GRUB_CMOS_STATUS_B_BINARY	4
-
-static inline grub_uint8_t
-grub_bcd_to_num (grub_uint8_t a)
-{
-  return ((a >> 4) * 10 + (a & 0xF));
-}
-
-static inline grub_uint8_t
-grub_num_to_bcd (grub_uint8_t a)
-{
-  return (((a / 10) << 4) + (a % 10));
-}
-
-static inline grub_uint8_t
-grub_cmos_read (grub_uint8_t index)
-{
-  grub_outb (index, GRUB_CMOS_ADDR_REG);
-  return grub_inb (GRUB_CMOS_DATA_REG);
-}
-
-static inline void
-grub_cmos_write (grub_uint8_t index, grub_uint8_t value)
-{
-  grub_outb (index, GRUB_CMOS_ADDR_REG);
-  grub_outb (value, GRUB_CMOS_DATA_REG);
-}
 
 #endif /* GRUB_CPU_CMOS_H */

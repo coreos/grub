@@ -37,6 +37,8 @@
 #define GRUB_COMMAND_FLAG_EXTCMD	0x10
 /* This is an dynamic command.  */
 #define GRUB_COMMAND_FLAG_DYNCMD	0x20
+/* This command accepts block arguments.  */
+#define GRUB_COMMAND_FLAG_BLOCKS	0x40
 
 struct grub_command;
 
@@ -115,12 +117,7 @@ grub_command_execute (const char *name, int argc, char **argv)
   return (cmd) ? cmd->func (cmd, argc, argv) : GRUB_ERR_FILE_NOT_FOUND;
 }
 
-static inline int
-grub_command_iterate (int (*func) (grub_command_t))
-{
-  return grub_list_iterate (GRUB_AS_LIST (grub_command_list),
-			    (grub_list_hook_t) func);
-}
+#define FOR_COMMANDS(var) FOR_LIST_ELEMENTS((var), grub_command_list)
 
 void grub_register_core_commands (void);
 

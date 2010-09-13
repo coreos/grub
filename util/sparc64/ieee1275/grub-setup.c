@@ -1,7 +1,7 @@
 /* grub-setup.c - make GRUB usable */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/device.h>
 #include <grub/i18n.h>
@@ -29,14 +30,13 @@
 #include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
 #include <grub/env.h>
-#include <grub/util/hostdisk.h>
+#include <grub/emu/hostdisk.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <grub/term.h>
 #include <grub/util/raid.h>
 #include <grub/util/lvm.h>
-
-#include <grub_setup_init.h>
+#include <grub/util/ofpath.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -45,7 +45,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <grub/util/getroot.h>
+#include <grub/emu/getroot.h>
 
 #define _GNU_SOURCE	1
 #include <getopt.h>
@@ -75,55 +75,19 @@
 #define DEFAULT_BOOT_FILE	"boot.img"
 #define DEFAULT_CORE_FILE	"core.img"
 
+#define grub_target_to_host16(x)	grub_be_to_cpu16(x)
+#define grub_target_to_host32(x)	grub_be_to_cpu32(x)
+#define grub_target_to_host64(x)	grub_be_to_cpu64(x)
+#define grub_host_to_target16(x)	grub_cpu_to_be16(x)
+#define grub_host_to_target32(x)	grub_cpu_to_be32(x)
+#define grub_host_to_target64(x)	grub_cpu_to_be64(x)
+
 /* This is the blocklist used in the diskboot image.  */
 struct boot_blocklist
 {
   grub_uint64_t start;
   grub_uint32_t len;
 } __attribute__ ((packed));
-
-void
-grub_putchar (int c)
-{
-  putchar (c);
-}
-
-int
-grub_getkey (void)
-{
-  return -1;
-}
-
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
-
-void
-grub_refresh (void)
-{
-  fflush (stdout);
-}
-
-static char *compute_dest_ofpath (const char *dest)
-{
-  int len = strlen (dest);
-  char *res, *p, c;
-
-  res = xmalloc (len);
-  p = res;
-  while ((c = *dest++) != '\0')
-    {
-      if (c == '\\' && *dest == ',')
-	{
-	  *p++ = ',';
-	  dest++;
-	}
-      else
-	*p++ = c;
-    }
-  *p++ = '\0';
-
-  return res;
-}
 
 static void
 setup (const char *prefix, const char *dir,
@@ -135,8 +99,8 @@ setup (const char *prefix, const char *dir,
   size_t boot_size, core_size;
   grub_uint16_t core_sectors;
   grub_device_t root_dev, dest_dev;
-  char *boot_devpath, *dest_ofpath;
-  grub_disk_addr_t *kernel_sector;
+  char *boot_devpath;
+  grub_disk_addr_t *kernel_byte;
   struct boot_blocklist *first_block, *block;
   char *tmp_img;
   int i;
@@ -161,7 +125,7 @@ setup (const char *prefix, const char *dir,
       grub_util_info ("first sector is <%llu,%u,%u>", sector, offset, length);
 
       if (offset != 0 || length != GRUB_DISK_SECTOR_SIZE)
-	grub_util_error ("The first sector of the core file "
+	grub_util_error ("the first sector of the core file "
 			 "is not sector-aligned");
 
       first_sector = sector;
@@ -176,7 +140,7 @@ setup (const char *prefix, const char *dir,
       grub_util_info ("saving <%llu,%u,%u>", sector, offset, length);
 
       if (offset != 0 || last_length != GRUB_DISK_SECTOR_SIZE)
-	grub_util_error ("Non-sector-aligned data is found in the core file");
+	grub_util_error ("non-sector-aligned data is found in the core file");
 
       if (block != first_block
 	  && (grub_be_to_cpu64 (prev->start)
@@ -189,19 +153,17 @@ setup (const char *prefix, const char *dir,
 
 	  block--;
 	  if (block->len)
-	    grub_util_error ("The sectors of the core file are too fragmented");
+	    grub_util_error ("the sectors of the core file are too fragmented");
 	}
 
       last_length = length;
     }
 
-  dest_ofpath = compute_dest_ofpath (dest);
-
   /* Read the boot image by the OS service.  */
   boot_path = grub_util_get_path (dir, boot_file);
   boot_size = grub_util_get_image_size (boot_path);
   if (boot_size != GRUB_DISK_SECTOR_SIZE)
-    grub_util_error ("The size of `%s' is not %d",
+    grub_util_error ("the size of `%s' is not %d",
 		     boot_path, GRUB_DISK_SECTOR_SIZE);
   boot_img = grub_util_read_image (boot_path);
   free (boot_path);
@@ -210,16 +172,16 @@ setup (const char *prefix, const char *dir,
   boot_devpath = (char *) (boot_img
 			   + GRUB_BOOT_AOUT_HEADER_SIZE
 			   + GRUB_BOOT_MACHINE_BOOT_DEVPATH);
-  kernel_sector = (grub_disk_addr_t *) (boot_img
-					+ GRUB_BOOT_AOUT_HEADER_SIZE
-					+ GRUB_BOOT_MACHINE_KERNEL_SECTOR);
+  kernel_byte = (grub_disk_addr_t *) (boot_img
+				      + GRUB_BOOT_AOUT_HEADER_SIZE
+				      + GRUB_BOOT_MACHINE_KERNEL_BYTE);
 
   core_path = grub_util_get_path (dir, core_file);
   core_size = grub_util_get_image_size (core_path);
   core_sectors = ((core_size + GRUB_DISK_SECTOR_SIZE - 1)
 		  >> GRUB_DISK_SECTOR_BITS);
   if (core_size < GRUB_DISK_SECTOR_SIZE)
-    grub_util_error ("The size of `%s' is too small", core_path);
+    grub_util_error ("the size of `%s' is too small", core_path);
 
   core_img = grub_util_read_image (core_path);
   free (core_path);
@@ -229,8 +191,7 @@ setup (const char *prefix, const char *dir,
 					   + GRUB_DISK_SECTOR_SIZE
 					   - sizeof (*block));
 
-  grub_util_info ("root is '%s', dest is '%s', and dest_ofpath is '%s'",
-		  root, dest, dest_ofpath);
+  grub_util_info ("root is `%s', dest is `%s'", root, dest);
 
   /* Open the root device and the destination device.  */
   grub_util_info ("Opening root");
@@ -267,6 +228,7 @@ setup (const char *prefix, const char *dir,
 
       grub_disk_cache_invalidate_all ();
 
+      grub_file_filter_disable_compression ();
       file = grub_file_open (core_path);
       if (file)
 	{
@@ -320,7 +282,7 @@ setup (const char *prefix, const char *dir,
     }
 
   if (i == MAX_TRIES)
-    grub_util_error ("Cannot read `%s' correctly", core_path);
+    grub_util_error ("cannot read `%s' correctly", core_path);
 
   /* Clean out the blocklists.  */
   block = first_block;
@@ -332,10 +294,11 @@ setup (const char *prefix, const char *dir,
       block--;
 
       if ((char *) block <= core_img)
-	grub_util_error ("No terminator in the core image");
+	grub_util_error ("no terminator in the core image");
     }
 
   /* Now read the core image to determine where the sectors are.  */
+  grub_file_filter_disable_compression ();
   file = grub_file_open (core_path);
   if (! file)
     grub_util_error ("%s", grub_errmsg);
@@ -343,22 +306,38 @@ setup (const char *prefix, const char *dir,
   file->read_hook = save_first_sector;
   if (grub_file_read (file, tmp_img, GRUB_DISK_SECTOR_SIZE)
       != GRUB_DISK_SECTOR_SIZE)
-    grub_util_error ("Failed to read the first sector of the core image");
+    grub_util_error ("failed to read the first sector of the core image");
 
   block = first_block;
   file->read_hook = save_blocklists;
   if (grub_file_read (file, tmp_img, core_size - GRUB_DISK_SECTOR_SIZE)
       != (grub_ssize_t) core_size - GRUB_DISK_SECTOR_SIZE)
-    grub_util_error ("Failed to read the rest sectors of the core image");
+    grub_util_error ("failed to read the rest sectors of the core image");
+
+  if (file->device->disk->id != dest_dev->disk->id)
+    {
+      const char *dest_ofpath;
+      dest_ofpath
+	= grub_util_devname_to_ofpath (grub_util_biosdisk_get_osdev (file->device->disk));
+      grub_util_info ("dest_ofpath is `%s'", dest_ofpath);
+      strncpy (boot_devpath, dest_ofpath, GRUB_BOOT_MACHINE_BOOT_DEVPATH_END
+	       - GRUB_BOOT_MACHINE_BOOT_DEVPATH - 1);
+      boot_devpath[GRUB_BOOT_MACHINE_BOOT_DEVPATH_END
+		   - GRUB_BOOT_MACHINE_BOOT_DEVPATH - 1] = 0;
+    }
+  else
+    {
+      grub_util_info ("non cross-disk install");
+      memset (boot_devpath, 0, GRUB_BOOT_MACHINE_BOOT_DEVPATH_END
+	      - GRUB_BOOT_MACHINE_BOOT_DEVPATH);
+    }
 
   grub_file_close (file);
 
   free (core_path);
   free (tmp_img);
 
-  *kernel_sector = grub_cpu_to_be64 (first_sector);
-
-  strcpy(boot_devpath, dest_ofpath);
+  *kernel_byte = grub_cpu_to_be64 (first_sector << GRUB_DISK_SECTOR_BITS);
 
   grub_util_info ("boot device path %s, prefix is %s, dest is %s",
 		  boot_devpath, prefix, dest);
@@ -368,7 +347,7 @@ setup (const char *prefix, const char *dir,
   grub_util_info ("opening the core image `%s'", core_path);
   fp = fopen (core_path, "r+b");
   if (! fp)
-    grub_util_error ("Cannot open `%s'", core_path);
+    grub_util_error ("cannot open `%s'", core_path);
 
   grub_util_write_image (core_img, GRUB_DISK_SECTOR_SIZE, fp);
   fclose (fp);
@@ -404,13 +383,15 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``%s --help'' for more information.\n", program_name);
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
 Usage: %s [OPTION]... DEVICE\n\
 \n\
 Set up images to boot from DEVICE.\n\
-DEVICE must be a GRUB device (e.g. ``(hd0,1)'').\n\
+DEVICE must be a GRUB device (e.g. `(hd0,1)').\n\
+\n\
+You should not normally run %s directly.  Use grub-install instead.\n\
 \n\
   -b, --boot-image=FILE   use FILE as the boot image [default=%s]\n\
   -c, --core-image=FILE   use FILE as the core image [default=%s]\n\
@@ -422,7 +403,7 @@ DEVICE must be a GRUB device (e.g. ``(hd0,1)'').\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-", program_name,
+", program_name, program_name,
 	    DEFAULT_BOOT_FILE, DEFAULT_CORE_FILE, DEFAULT_DIRECTORY,
 	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
 
@@ -504,7 +485,7 @@ parse_options (struct grub_setup_info *gp, int argc, char *argv[])
 	    break;
 
 	  case 'V':
-	    printf ("grub-setup (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 	    return 0;
 
 	  case 'v':
@@ -559,14 +540,14 @@ find_dest_dev (struct grub_setup_info *gp, char *argv[])
 	  fprintf (stderr, "Invalid device `%s'.\n", argv[optind]);
 	  usage (1);
 	}
-      grub_util_info ("transformed OS device '%s' into GRUB device '%s'",
+      grub_util_info ("transformed OS device `%s' into GRUB device `%s'",
 		      argv[optind], gp->dest_dev);
     }
   else
     {
       /* For simplicity.  */
       gp->dest_dev = xstrdup (gp->dest_dev);
-      grub_util_info ("Using '%s' as GRUB device", gp->dest_dev);
+      grub_util_info ("Using `%s' as GRUB device", gp->dest_dev);
     }
 }
 
@@ -578,7 +559,7 @@ check_root_dev (struct grub_setup_info *gp)
       char *tmp = get_device_name (gp->root_dev);
 
       if (! tmp)
-	grub_util_error ("Invalid root device `%s'", gp->root_dev);
+	grub_util_error ("invalid root device `%s'", gp->root_dev);
 
       tmp = xstrdup (tmp);
       free (gp->root_dev);
@@ -594,11 +575,11 @@ check_root_dev (struct grub_setup_info *gp)
 	{
 	  grub_util_info ("guessing the root device failed, because of `%s'",
 			  grub_errmsg);
-	  grub_util_error ("Cannot guess the root device. "
-			   "Specify the option ``--root-device''.");
+	  grub_util_error ("cannot guess the root device. "
+			   "Specify the option `--root-device'");
 	}
-      grub_util_info ("Guessed root device '%s' and root_dev '%s' from "
-		      "dir '%s'", root_device, gp->root_dev, dir);
+      grub_util_info ("guessed root device `%s' and root_dev `%s' from "
+		      "dir `%s'", root_device, gp->root_dev, dir);
     }
 }
 
@@ -620,9 +601,8 @@ main (int argc, char *argv[])
   struct grub_setup_info ginfo;
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+
+  grub_util_init_nls ();
 
   init_info (&ginfo);
   if (!parse_options (&ginfo, argc, argv))
@@ -634,9 +614,17 @@ main (int argc, char *argv[])
   /* Initialize all modules. */
   grub_init_all ();
 
+  grub_lvm_fini ();
+  grub_mdraid_fini ();
+  grub_raid_fini ();
+  grub_raid_init ();
+  grub_mdraid_init ();
+  grub_lvm_init ();
+
   find_dest_dev (&ginfo, argv);
 
-  ginfo.prefix = grub_get_prefix (ginfo.dir ? : DEFAULT_DIRECTORY);
+  ginfo.prefix = grub_make_system_path_relative_to_its_root (ginfo.dir ?
+							     : DEFAULT_DIRECTORY);
 
   check_root_dev (&ginfo);
 

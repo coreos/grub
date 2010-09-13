@@ -1,7 +1,7 @@
 /* ieee1275.h - Access the Open Firmware client interface.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -100,6 +100,12 @@ enum grub_ieee1275_flag
 
   /* Open Hack'Ware don't support the ANSI sequence.  */
   GRUB_IEEE1275_FLAG_NO_ANSI,
+
+  /* OpenFirmware hangs on qemu if one requests any memory below 1.5 MiB.  */
+  GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM,
+
+  /* OLPC / XO firmware has the cursor ON/OFF routines.  */
+  GRUB_IEEE1275_FLAG_HAS_CURSORONOFF,
 };
 
 extern int EXPORT_FUNC(grub_ieee1275_test_flag) (enum grub_ieee1275_flag flag);
@@ -138,7 +144,7 @@ int EXPORT_FUNC(grub_ieee1275_read) (grub_ieee1275_ihandle_t ihandle,
 				     void *buffer, grub_size_t len,
 				     grub_ssize_t *actualp);
 int EXPORT_FUNC(grub_ieee1275_seek) (grub_ieee1275_ihandle_t ihandle,
-				     int pos_hi, int pos_lo,
+				     grub_disk_addr_t pos,
 				     grub_ssize_t *result);
 int EXPORT_FUNC(grub_ieee1275_peer) (grub_ieee1275_phandle_t node,
 				     grub_ieee1275_phandle_t *result);
@@ -173,7 +179,15 @@ grub_err_t EXPORT_FUNC(grub_machine_mmap_iterate)
      (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));
 int EXPORT_FUNC(grub_claimmap) (grub_addr_t addr, grub_size_t size);
 
+int
+EXPORT_FUNC(grub_ieee1275_map) (grub_addr_t phys, grub_addr_t virt,
+				grub_size_t size, grub_uint32_t mode);
+
 char *EXPORT_FUNC(grub_ieee1275_encode_devname) (const char *path);
 char *EXPORT_FUNC(grub_ieee1275_get_filename) (const char *path);
+
+int EXPORT_FUNC(grub_ieee1275_devices_iterate) (int (*hook)
+						(struct grub_ieee1275_devalias *
+						 alias));
 
 #endif /* ! GRUB_IEEE1275_HEADER */

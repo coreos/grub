@@ -22,23 +22,9 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 #include <grub/machine/memory.h>
-
-/* Get the memory size in KB. If EXTENDED is zero, return conventional
-   memory, otherwise return extended memory.  */
-grub_uint16_t grub_get_memsize (int extended);
-
-/* Get a packed EISA memory map. Lower 16 bits are between 1MB and 16MB
-   in 1KB parts, and upper 16 bits are above 16MB in 64KB parts.  */
-grub_uint32_t grub_get_eisa_mmap (void);
-
-/* Get a memory map entry. Return next continuation value. Zero means
-   the end.  */
-grub_uint32_t EXPORT_FUNC(grub_get_mmap_entry) (struct grub_machine_mmap_entry *entry,
-				   grub_uint32_t cont);
+#include <grub/cpu/floppy.h>
 
 /* Turn on/off Gate A20.  */
 void grub_gate_a20 (int on);
-
-void EXPORT_FUNC(grub_stop_floppy) (void);
 
 #endif /* ! GRUB_INIT_MACHINE_HEADER */

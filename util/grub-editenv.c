@@ -1,7 +1,7 @@
 /* grub-editenv.c - tool to edit environment block.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2008,2009 Free Software Foundation, Inc.
+ *  Copyright (C) 2008,2009,2010 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/lib/envblk.h>
-#include <grub/handler.h>
 #include <grub/i18n.h>
 
 #include <stdio.h>
@@ -34,33 +34,6 @@
 
 #define DEFAULT_ENVBLK_SIZE	1024
 
-void
-grub_putchar (int c)
-{
-  putchar (c);
-}
-
-void
-grub_refresh (void)
-{
-  fflush (stdout);
-}
-
-struct grub_handler_class grub_term_input_class;
-struct grub_handler_class grub_term_output_class;
-
-int
-grub_getkey (void)
-{
-  return 0;
-}
-
-char *
-grub_env_get (const char *name __attribute__ ((unused)))
-{
-  return NULL;
-}
-
 static struct option options[] = {
   {"help", no_argument, 0, 'h'},
   {"version", no_argument, 0, 'V'},
@@ -72,10 +45,10 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-editenv --help'' for more information.\n");
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-editenv [OPTIONS] [FILENAME] COMMAND\n\
+Usage: %s [OPTIONS] [FILENAME] COMMAND\n\
 \n\
 Tool to edit environment block.\n\
 \nCommands:\n\
@@ -91,7 +64,7 @@ Tool to edit environment block.\n\
 If not given explicitly, FILENAME defaults to %s.\n\
 \n\
 Report bugs to <%s>.\n",
-DEFAULT_DIRECTORY "/" GRUB_ENVBLK_DEFCFG, PACKAGE_BUGREPORT);
+program_name, DEFAULT_DIRECTORY "/" GRUB_ENVBLK_DEFCFG, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -256,9 +229,8 @@ main (int argc, char *argv[])
   char *command;
 
   set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+
+  grub_util_init_nls ();
 
   /* Check for options.  */
   while (1)

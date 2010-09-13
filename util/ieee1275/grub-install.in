@@ -34,9 +34,12 @@ target_cpu=@target_cpu@
 platform=@platform@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
-grub_mkimage=${bindir}/`echo grub-mkelfimage | sed ${transform}`
+self=`basename $0`
+
+grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
+grub_editenv=${bindir}/`echo grub-editenv | sed ${transform}`
 rootdir=
 grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
@@ -45,14 +48,14 @@ install_device=
 debug=no
 update_nvram=yes
 
-ofpathname=/usr/sbin/ofpathname
-nvsetenv=/sbin/nvsetenv
+ofpathname=`which ofpathname`
+nvsetenv=`which nvsetenv`
 
 # Usage: usage
 # Print the usage.
 usage () {
     cat <<EOF
-Usage: grub-install [OPTION] [install_device]
+Usage: $self [OPTION] [install_device]
 Install GRUB on your drive.
 
   -h, --help              print this message and exit
@@ -65,7 +68,7 @@ Install GRUB on your drive.
   --grub-probe=FILE       use FILE as grub-probe
   --no-nvram              don't update the boot-device NVRAM variable
 
-grub-install copies GRUB images into the DIR/boot directory specified by
+$self copies GRUB images into the DIR/boot directory specified by
 --root-directory, and uses nvsetenv to set the Open Firmware boot-device
 variable.
 
@@ -73,25 +76,56 @@ Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 
+argument () {
+  opt=$1
+  shift
+
+  if test $# -eq 0; then
+      echo "$0: option requires an argument -- '$opt'" 1>&2
+      exit 1
+  fi
+  echo $1
+}
+
 # Check the arguments.
-for option in "$@"; do
+while test $# -gt 0
+do
+    option=$1
+    shift
+
     case "$option" in
     -h | --help)
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-install (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
+
+    --modules)
+	modules=`argument $option "$@"`; shift ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
+
+    --root-directory)
+	rootdir=`argument $option "$@"`; shift ;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
+
+    --grub-mkdevicemap)
+	grub_mkdevicemap=`argument $option "$@"`; shift ;;
     --grub-mkdevicemap=*)
 	grub_mkdevicemap=`echo "$option" | sed 's/--grub-mkdevicemap=//'` ;;
+
+    --grub-mkimage)
+	grub_mkimage=`argument $option "$@"`; shift ;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+
+    --grub-probe)
+	grub_probe=`argument $option "$@"`; shift ;;
     --grub-probe=*)
 	grub_probe=`echo "$option" | sed 's/--grub-probe=//'` ;;
+
     --no-nvram)
 	update_nvram=no ;;
     # This is an undocumented feature...
@@ -140,8 +174,7 @@ fi
 # XXX warn on firmware-unreadable filesystems?
 
 # Create the GRUB directory if it is not present.
-test -d "$bootdir" || mkdir "$bootdir" || exit 1
-test -d "$grubdir" || mkdir "$grubdir" || exit 1
+mkdir -p "$grubdir" || exit 1
 
 # Create the device map file if it is not present.
 if test -f "$device_map"; then
@@ -163,6 +196,10 @@ for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst ; do
     cp -f $file ${grubdir} || exit 1
 done
 
+if ! test -f ${grubdir}/grubenv; then
+    $grub_editenv ${grubdir}/grubenv create
+fi
+
 # Create the core image. First, auto-detect the filesystem module.
 fs_module=`$grub_probe --target=fs --device-map=${device_map} ${grubdir}`
 if test "x$fs_module" = x -a "x$modules" = x; then
@@ -174,7 +211,10 @@ fi
 # Then the partition map module.  In order to support partition-less media,
 # this command is allowed to fail (--target=fs already grants us that the
 # filesystem will be accessible).
-partmap_module=`$grub_probe --target=partmap --device-map=${device_map} ${grubdir} 2> /dev/null`
+partmap_module=
+for x in `$grub_probe --target=partmap --device-map=${device_map} ${grubdir} 2> /dev/null`; do
+   partmap_module="$partmap_module part_$x";
+done
 
 # Device abstraction module, if any (lvm, raid).
 devabstraction_module=`$grub_probe --target=abstraction --device-map=${device_map} ${grubdir}`
@@ -182,7 +222,7 @@ devabstraction_module=`$grub_probe --target=abstraction --device-map=${device_ma
 modules="$modules $fs_module $partmap_module $devabstraction_module"
 
 # Now perform the installation.
-"$grub_mkimage" --directory=${pkglibdir} --output=${grubdir}/grub $modules || exit 1
+"$grub_mkimage" -O ${target_cpu}-ieee1275 --directory=${pkglibdir} --output=${grubdir}/grub $modules || exit 1
 
 if test $update_nvram = yes; then
     set $ofpathname dummy
@@ -211,11 +251,11 @@ if test $update_nvram = yes; then
     }
 
     # Point boot-device at the new grub install
-    boot_device="boot-device $ofpath:$partno,\\grub"
-    "$nvsetenv" "$boot_device" || {
+    boot_device="$ofpath:$partno,\\grub"
+    "$nvsetenv" boot-device "$boot_device" || {
 	echo "$nvsetenv failed."
 	echo "You will have to set boot-device manually.  At the Open Firmware prompt, type:"
-	echo "  setenv $boot_device"
+	echo "  setenv boot-device $boot_device"
 	exit 1
     }
 fi
@@ -224,7 +264,7 @@ fi
 echo "Installation finished. No error reported."
 echo "This is the contents of the device map $device_map."
 echo "Check if this is correct or not. If any of the lines is incorrect,"
-echo "fix it and re-run the script \`grub-install'."
+echo "fix it and re-run the script \`$self'."
 echo
 
 cat $device_map

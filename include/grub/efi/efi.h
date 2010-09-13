@@ -1,7 +1,7 @@
 /* efi.h - declare variables and functions for EFI support */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -53,8 +53,10 @@ void EXPORT_FUNC(grub_efi_print_device_path) (grub_efi_device_path_t *dp);
 char *EXPORT_FUNC(grub_efi_get_filename) (grub_efi_device_path_t *dp);
 grub_efi_device_path_t *
 EXPORT_FUNC(grub_efi_get_device_path) (grub_efi_handle_t handle);
-int EXPORT_FUNC(grub_efi_exit_boot_services) (grub_efi_uintn_t map_key);
-int EXPORT_FUNC (grub_efi_finish_boot_services) (void);
+grub_err_t EXPORT_FUNC (grub_efi_finish_boot_services) (grub_efi_uintn_t *outbuf_size, void *outbuf,
+							grub_efi_uintn_t *map_key,
+							grub_efi_uintn_t *efi_desc_size,
+							grub_efi_uint32_t *efi_desc_version);
 grub_err_t EXPORT_FUNC (grub_efi_set_virtual_address_map) (grub_efi_uintn_t memory_map_size,
 							   grub_efi_uintn_t descriptor_size,
 							   grub_efi_uint32_t descriptor_version,
@@ -69,5 +71,7 @@ void grub_efi_set_prefix (void);
 /* Variables.  */
 extern grub_efi_system_table_t *EXPORT_VAR(grub_efi_system_table);
 extern grub_efi_handle_t EXPORT_VAR(grub_efi_image_handle);
+
+extern int EXPORT_VAR(grub_efi_is_finished);
 
 #endif /* ! GRUB_EFI_EFI_HEADER */

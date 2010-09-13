@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ enum grub_disk_dev_id
     GRUB_DISK_DEVICE_PXE_ID,
     GRUB_DISK_DEVICE_SCSI_ID,
     GRUB_DISK_DEVICE_FILE_ID,
+    GRUB_DISK_DEVICE_LUKS_ID
   };
 
 struct grub_disk;
@@ -137,6 +138,9 @@ typedef struct grub_disk_memberlist *grub_disk_memberlist_t;
 #define GRUB_DISK_CACHE_SIZE	8
 #define GRUB_DISK_CACHE_BITS	3
 
+/* Return value of grub_disk_get_size() in case disk size is unknown. */
+#define GRUB_DISK_SIZE_UNKNOWN	 0xffffffffffffffffULL
+
 /* This is called from the memory manager.  */
 void grub_disk_cache_invalidate_all (void);
 
@@ -172,5 +176,14 @@ struct grub_disk_ata_pass_through_parms
 
 extern grub_err_t (* EXPORT_VAR(grub_disk_ata_pass_through)) (grub_disk_t,
 		   struct grub_disk_ata_pass_through_parms *);
+
+#if defined (GRUB_UTIL) || defined (GRUB_MACHINE_EMU)
+void grub_lvm_init (void);
+void grub_mdraid_init (void);
+void grub_raid_init (void);
+void grub_lvm_fini (void);
+void grub_mdraid_fini (void);
+void grub_raid_fini (void);
+#endif
 
 #endif /* ! GRUB_DISK_HEADER */
