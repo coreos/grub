@@ -1,3 +1,12 @@
+2010-09-13  Yves Blusseau  <blusseau@zetam.org>
+
+	Bash completion script for util commands
+
+	* Makefile.am:  Add util/bash-completion.d directory
+	* configure.ac: Likewise.
+	* util/bash-completion.d/Makefile.am: New file.
+	* util/bash-completion.d/grub-completion.bash.in: Likewise.
+
 2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/term.c (put_glyphs_terminal): Correct sign.

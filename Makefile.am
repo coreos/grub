@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
 DEPDIR = .deps-util
-SUBDIRS = . grub-core po docs
+SUBDIRS = . grub-core po docs util/bash-completion.d
 
 include $(top_srcdir)/conf/Makefile.common
 include $(top_srcdir)/conf/Makefile.extra-dist
