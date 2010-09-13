@@ -319,25 +319,19 @@ module = {
 module = {
   name = usbserial_common;
   common = bus/usb/serial/common.c;
-  enable = emu;
   enable = usb;
-  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
   name = usbserial_pl2303;
   common = bus/usb/serial/pl2303.c;
-  enable = emu;
   enable = usb;
-  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
   name = usbserial_ftdi;
   common = bus/usb/serial/ftdi.c;
-  enable = emu;
   enable = usb;
-  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {

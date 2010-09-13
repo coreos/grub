@@ -1,5 +1,14 @@
 2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Disable usbserial on grub-emu since our libusb code isn't good enough
+	yet.
+
+	* grub-core/Makefile.core.def (usbserial_common): Disable on emu.
+	(usbserial_pl2303): Likewise.
+	(usbserial_ftdi): Likewise.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/disk.h (grub_disk): Remove has_partitions.
 	All users updated.
 	* disk/loopback.c (grub_loopback): Remove has_partitions.
