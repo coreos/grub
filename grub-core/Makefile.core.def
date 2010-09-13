@@ -10,20 +10,20 @@ kernel = {
   x86_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment';
 
   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
-  i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x8200';
 
   i386_qemu_ldflags        = '$(TARGET_IMG_LDFLAGS)';
-  i386_qemu_ldflags        = '$(TARGET_IMG_BASE_LDOPT),$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  i386_qemu_ldflags        = '$(TARGET_IMG_BASE_LDOPT),0x8200';
 
-  i386_coreboot_ldflags    = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-  i386_multiboot_ldflags   = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-  i386_ieee1275_ldflags    = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-  mips_yeeloong_ldflags    = '-Wl,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-  powerpc_ieee1275_ldflags = '-Wl,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  i386_coreboot_ldflags    = '-Wl,-Ttext=0x8200';
+  i386_multiboot_ldflags   = '-Wl,-Ttext=0x8200';
+  i386_ieee1275_ldflags    = '-Wl,-Ttext=0x10000';
+  mips_yeeloong_ldflags    = '-Wl,-Ttext,0x80200000';
+  powerpc_ieee1275_ldflags = '-Wl,-Ttext,0x200000';
+  sparc64_ieee1275_ldflags = '-Wl,-Ttext,0x4400';
 
   mips_yeeloong_cppflags = '-DUSE_ASCII_FAILBACK';
   i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
-  i386_qemu_ccasflags    = '-DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
   emu_cflags = '$(CFLAGS_GNULIB)';
   emu_cppflags = '$(CPPFLAGS_GNULIB)';
 

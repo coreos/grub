@@ -24,7 +24,6 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/ieee1275/ieee1275.h>
-#include <grub/gzio.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
 

@@ -1,5 +1,17 @@
 2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix sparc64.
+
+	* configure.ac (GRUB_KERNEL_MACHINE_LINK_ADDR): Removed.
+	* grub-core/Makefile.core.def (kernel): Make ldflags just use the
+	right address. Add sparc64_ieee1275_ldflags.
+	* grub-core/loader/sparc64/ieee1275/linux.c: Remove leftover include.
+	* util/grub-mkimagexx.c (locate_sections): Correct grub_host_to_target32
+	to grub_host_to_target_addr
+	(load_image): Likewise.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/completion.c (complete_file): Handle device
 	containing slash.
 	Fix based on patch by Doug Nazar.

@@ -867,20 +867,8 @@ pkglibrootdir='$(libdir)'/`echo $PACKAGE | sed "$program_transform_name"`
 AC_SUBST(pkglibrootdir)
 
 AC_SUBST([FONT_SOURCE])
-AS_IF([test x$target_cpu = xi386 -a x$platform = xpc],
-	    [AC_SUBST([GRUB_KERNEL_MACHINE_LINK_ADDR], 0x8200)])
-AS_IF([test x$target_cpu = xi386 -a x$platform = xcoreboot],
-	    [AC_SUBST([GRUB_KERNEL_MACHINE_LINK_ADDR], 0x8200)])
-AS_IF([test x$target_cpu = xi386 -a x$platform = xmultiboot],
-	    [AC_SUBST([GRUB_KERNEL_MACHINE_LINK_ADDR], 0x8200)])
-AS_IF([test x$target_cpu = xmips -a x$platform = xyeeloong],
-	    [AC_SUBST([GRUB_KERNEL_MACHINE_LINK_ADDR], 0x80200000)])
-AS_IF([test x$target_cpu = xpowerpc -a x$platform = xieee1275],
-	    [AC_SUBST([GRUB_KERNEL_MACHINE_LINK_ADDR], 0x200000)])
 AS_IF([test x$target_cpu = xi386 -a x$platform = xqemu],
 	    [AC_SUBST([GRUB_BOOT_MACHINE_LINK_ADDR], 0xffe00)])
-AS_IF([test x$target_cpu = xi386 -a x$platform = xieee1275],
-	    [AC_SUBST([GRUB_KERNEL_MACHINE_LINK_ADDR], 0x10000)])
 AS_IF([test x$TARGET_APPLE_CC = x1],
 	    [AC_SUBST([USE_APPLE_CC_FIXES], yes)])
 
