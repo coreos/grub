@@ -1,3 +1,8 @@
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Disable emu-usb by default to prevent inadvertent
+	device takeover.
+
 2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Disable usbserial on grub-emu since our libusb code isn't good enough

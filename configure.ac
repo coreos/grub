@@ -698,8 +698,8 @@ if test x"$missing_ncurses" = xtrue ; then
   AC_MSG_ERROR([grub-emu can't be compiled without ncurses])
 fi
 
-if test x"$enable_grub_emu_usb" = xno ; then
-  grub_emu_usb_excuse="explicitly disabled"
+if test x"$enable_grub_emu_usb" != xyes ; then
+   grub_emu_usb_excuse="not enabled"
 fi
 
 if test x"$enable_grub_emu_pci" = xyes ; then
