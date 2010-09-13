@@ -1,5 +1,18 @@
 2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support explicit user claim that a device is BIOS-visible.
+
+	* grub-core/kern/emu/getroot.c (grub_util_get_dev_abstraction):
+	Return GRUB_DEV_ABSTRACTION_NONE if device is in device.map.
+	* grub-core/kern/emu/hostdisk.c
+	(convert_system_partition_to_system_disk): Support mdX.
+	(find_system_device): New parameter add. All users updated.
+	(grub_util_biosdisk_is_present): New function.
+	* include/grub/emu/hostdisk.h (grub_util_biosdisk_is_present): New
+	proto.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Search hints support.
 
 	* commands/search.c (FUNC_NAME): New arguments hints and nhints.
