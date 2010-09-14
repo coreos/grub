@@ -1,5 +1,12 @@
 2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove deprecated root command.
+
+	* grub-core/commands/minicmd.c (grub_mini_cmd_root): Removed. All users
+	updated.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/i386/pc/grub-setup.c: Merge this ...
 	* util/sparc64/ieee1275/grub-setup.c:  ... and this ...
 	* util/grub-setup.c: ... into this.
