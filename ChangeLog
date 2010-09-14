@@ -1,5 +1,9 @@
 2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/sparc64/ieee1275/crt0.S: Align stack.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't export grub_gate_a20.
 
 	* grub-core/kern/i386/pc/init.c: Remove leftovers.
