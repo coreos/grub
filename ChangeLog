@@ -1,5 +1,12 @@
 2010-09-15  Szymon Janc <szymon@janc.net.pl>
 
+	* grub-core/lib/xzembed/xz_dec_stream.c (dec_main): Fix index and block
+	CRC calculations and validity checks.
+	* grub-core/lib/xzembed/xz_dec_stream.c (dec_index): Fix index CRC
+	calculations.
+
+2010-09-15  Szymon Janc <szymon@janc.net.pl>
+
 	* grub-core/lib/xzembed/xz_dec_stream.c (xz_dec_end): Fix memory leak.
 
 2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
