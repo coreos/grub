@@ -1,3 +1,7 @@
+2010-09-15  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/lib/xzembed/xz_dec_stream.c (xz_dec_end): Fix memory leak.
+
 2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix incorrect echo options handling.

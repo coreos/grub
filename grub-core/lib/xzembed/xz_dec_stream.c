@@ -853,6 +853,10 @@ void xz_dec_end(struct xz_dec *s)
 {
 	if (s != NULL) {
 		xz_dec_lzma2_end(s->lzma2);
+		kfree(s->index.hash.crc32_context);
+		kfree(s->block.hash.crc32_context);
+		kfree(s->crc32_context);
+
 #ifdef XZ_DEC_BCJ
 		xz_dec_bcj_end(s->bcj);
 #endif
