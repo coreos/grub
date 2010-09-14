@@ -1,5 +1,11 @@
 2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Add
+	explicit root argument to set to prevent UUID to be interpreted as
+	argument to set.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/sparc64/ieee1275/crt0.S: Align stack.
 
 2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
