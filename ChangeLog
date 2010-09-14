@@ -1,3 +1,11 @@
+2010-09-14  Seth Goldberg <seth.goldberg@oracle.com>
+
+	Fix solaris compilation.
+
+	* grub-core/Makefile.core.def (kernel): Include gnulib/error.c on emu.
+	(grub-emu): Add LIBZFS and LIBNVPAIR to ldadd.
+	(grub-emu-list): Likewise.
+
 2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove deprecated root command.
