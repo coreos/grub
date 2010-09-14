@@ -1,5 +1,18 @@
 2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/i386/pc/grub-setup.c: Merge this ...
+	* util/sparc64/ieee1275/grub-setup.c:  ... and this ...
+	* util/grub-setup.c: ... into this.
+	* include/grub/sparc64/ieee1275/boot.h (grub_boot_blocklist) [ASM_FILE]:
+	New struct.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/ext2.c (grub_ext2_open): Use return error value when
+	possible.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/partmap/sun.c (sun_partition_map_iterate): Don't needlesly
 	allocate p.
 
