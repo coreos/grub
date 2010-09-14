@@ -119,8 +119,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT (hexdump)
 {
-  cmd = grub_register_extcmd ("hexdump", grub_cmd_hexdump,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("hexdump", grub_cmd_hexdump, 0,
 			      N_("[OPTIONS] FILE_OR_DEVICE"),
 			      N_("Dump the contents of a file or memory."),
 			      options);

@@ -1,3 +1,16 @@
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/command.h (GRUB_COMMAND_FLAG_CMDLINE): Removed. All
+	users updated.
+	(GRUB_COMMAND_FLAG_MENU): Likewise.
+	(GRUB_COMMAND_FLAG_BOTH): Likewise.
+	(GRUB_COMMAND_FLAG_TITLE): Removed.
+	(GRUB_COMMAND_FLAG_NO_ECHO): Likewise.
+	(GRUB_COMMAND_FLAG_EXTCMD): Moved into enum.
+	(GRUB_COMMAND_FLAG_DYNCMD): Likewise.
+	(GRUB_COMMAND_FLAG_BLOCKS): Likewise.
+	(grub_command_flags_t): New enum. All users updated.
+
 2010-09-14  Seth Goldberg <seth.goldberg@oracle.com>
 
 	Fix solaris compilation.

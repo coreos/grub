@@ -375,20 +375,15 @@ static grub_extcmd_t cmd_load, cmd_list, cmd_save;
 GRUB_MOD_INIT(loadenv)
 {
   cmd_load =
-    grub_register_extcmd ("load_env", grub_cmd_load_env,
-			  GRUB_COMMAND_FLAG_BOTH,
-			  N_("[-f FILE]"),
+    grub_register_extcmd ("load_env", grub_cmd_load_env, 0, N_("[-f FILE]"),
 			  N_("Load variables from environment block file."),
 			  options);
   cmd_list =
-    grub_register_extcmd ("list_env", grub_cmd_list_env,
-			  GRUB_COMMAND_FLAG_BOTH,
-			  N_("[-f FILE]"),
+    grub_register_extcmd ("list_env", grub_cmd_list_env, 0, N_("[-f FILE]"),
 			  N_("List variables from environment block file."),
 			  options);
   cmd_save =
-    grub_register_extcmd ("save_env", grub_cmd_save_env,
-			  GRUB_COMMAND_FLAG_BOTH,
+    grub_register_extcmd ("save_env", grub_cmd_save_env, 0,
 			  N_("[-f FILE] variable_name [...]"),
 			  N_("Save variables to environment block file."),
 			  options);

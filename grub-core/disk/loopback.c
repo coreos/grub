@@ -221,8 +221,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(loopback)
 {
-  cmd = grub_register_extcmd ("loopback", grub_cmd_loopback,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("loopback", grub_cmd_loopback, 0,
 			      N_("[-d|-p] DEVICENAME FILE."),
 			      N_("Make a device of a file."), options);
   grub_disk_dev_register (&grub_loopback_dev);

@@ -40,7 +40,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(test_blockarg)
 {
   cmd = grub_register_extcmd ("test_blockarg", test_blockarg,
-			      GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_BLOCKS,
+			      GRUB_COMMAND_FLAG_BLOCKS,
 			      N_("BLOCK"),
 			      N_("Print and execute block argument."), 0);
 }

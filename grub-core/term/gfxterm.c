@@ -1207,8 +1207,7 @@ GRUB_MOD_INIT(gfxterm)
   grub_term_register_output ("gfxterm", &grub_video_term);
   background_image_cmd_handle =
     grub_register_extcmd ("background_image",
-                          grub_gfxterm_background_image_cmd,
-                          GRUB_COMMAND_FLAG_BOTH,
+                          grub_gfxterm_background_image_cmd, 0,
                           N_("[-m (stretch|normal)] FILE"),
                           N_("Load background image for active terminal."),
                           background_image_cmd_options);

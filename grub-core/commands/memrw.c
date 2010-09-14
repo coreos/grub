@@ -119,13 +119,13 @@ grub_cmd_write (grub_command_t cmd, int argc, char **argv)
 GRUB_MOD_INIT(memrw)
 {
   cmd_read_byte =
-    grub_register_extcmd ("read_byte", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
+    grub_register_extcmd ("read_byte", grub_cmd_read, 0,
 			  N_("ADDR"), N_("Read byte from ADDR."), options);
   cmd_read_word =
-    grub_register_extcmd ("read_word", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
+    grub_register_extcmd ("read_word", grub_cmd_read, 0,
 			  N_("ADDR"), N_("Read word from ADDR."), options);
   cmd_read_dword =
-    grub_register_extcmd ("read_dword", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
+    grub_register_extcmd ("read_dword", grub_cmd_read, 0,
 			  N_("ADDR"), N_("Read dword from ADDR."), options);
   cmd_write_byte =
     grub_register_command ("write_byte", grub_cmd_write,

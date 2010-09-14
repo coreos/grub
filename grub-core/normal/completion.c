@@ -429,11 +429,8 @@ grub_normal_do_completion (char *buf, int *restore,
       {
 	if (cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE)
 	  {
-	    if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
-	      {
-		if (add_completion (cmd->name, " ", GRUB_COMPLETION_TYPE_COMMAND))
-		  goto fail;
-	      }
+	    if (add_completion (cmd->name, " ", GRUB_COMPLETION_TYPE_COMMAND))
+	      goto fail;
 	  }
       }
     }

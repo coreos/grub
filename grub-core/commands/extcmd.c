@@ -66,7 +66,7 @@ grub_extcmd_dispatch (struct grub_command *cmd, int argc, char **args)
 
 grub_extcmd_t
 grub_register_extcmd_prio (const char *name, grub_extcmd_func_t func,
-			   unsigned flags, const char *summary,
+			   grub_command_flags_t flags, const char *summary,
 			   const char *description,
 			   const struct grub_arg_option *parser,
 			   int prio)
@@ -99,7 +99,7 @@ grub_register_extcmd_prio (const char *name, grub_extcmd_func_t func,
 
 grub_extcmd_t
 grub_register_extcmd (const char *name, grub_extcmd_func_t func,
-		      unsigned flags, const char *summary,
+		      grub_command_flags_t flags, const char *summary,
 		      const char *description,
 		      const struct grub_arg_option *parser)
 {
