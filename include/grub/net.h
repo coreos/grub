@@ -277,4 +277,8 @@ void
 grub_net_addr_to_str (const grub_net_network_level_address_t *target,
 		      char *buf);
 
+extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
+#define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
+
+
 #endif /* ! GRUB_NET_HEADER */

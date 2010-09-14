@@ -49,8 +49,6 @@ grub_net_network_level_interface_unregister (struct grub_net_network_level_inter
 		    GRUB_AS_LIST (inter));
 }
 
-#define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
-
 static inline void
 grub_net_route_register (struct grub_net_route *route)
 {
