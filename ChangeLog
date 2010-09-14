@@ -1,5 +1,10 @@
 2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/sun.c (sun_partition_map_iterate): Don't needlesly
+	allocate p.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Add
 	explicit root argument to set to prevent UUID to be interpreted as
 	argument to set.
