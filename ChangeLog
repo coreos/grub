@@ -1,5 +1,15 @@
 2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix incorrect echo options handling.
+	Reported by: Yves Blusseau.
+
+	* include/grub/command.h (grub_command_flags_t): New flags
+	GRUB_COMMAND_ACCEPT_DASH and GRUB_COMMAND_OPTIONS_AT_START.
+	* grub-core/lib/arg.c (grub_arg_parse): Handle new flags.
+	* grub-core/commands/echo.c (GRUB_MOD_INIT): Use new flags.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/command.h (GRUB_COMMAND_FLAG_CMDLINE): Removed. All
 	users updated.
 	(GRUB_COMMAND_FLAG_MENU): Likewise.

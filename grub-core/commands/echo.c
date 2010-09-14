@@ -113,7 +113,9 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(echo)
 {
-  cmd = grub_register_extcmd ("echo", grub_cmd_echo, 0,
+  cmd = grub_register_extcmd ("echo", grub_cmd_echo,
+			      GRUB_COMMAND_ACCEPT_DASH
+			      | GRUB_COMMAND_OPTIONS_AT_START,
 			      N_("[-e|-n] STRING"), N_("Display a line of text."),
 			      options);
 }

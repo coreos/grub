@@ -30,7 +30,11 @@ typedef enum grub_command_flags
     /* This is an dynamic command.  */
     GRUB_COMMAND_FLAG_DYNCMD = 0x20,
     /* This command accepts block arguments.  */
-    GRUB_COMMAND_FLAG_BLOCKS = 0x40
+    GRUB_COMMAND_FLAG_BLOCKS = 0x40,
+    /* This command accepts unknown arguments as direct parameters.  */
+    GRUB_COMMAND_ACCEPT_DASH = 0x80,
+    /* This command accepts only options preceding direct arguments.  */
+    GRUB_COMMAND_OPTIONS_AT_START = 0x100,
   } grub_command_flags_t;
 
 struct grub_command;
