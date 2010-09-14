@@ -709,8 +709,130 @@ grub_net_configure_by_dhcp_ack (const char *name, struct grub_net_card *card,
   return inter;
 }
 
+static char
+hexdigit (grub_uint8_t val)
+{
+  if (val < 10)
+    return val + '0';
+  return val + 'a' - 10;
+}
+
+static grub_err_t
+grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
+		  int argc, char **args)
+{
+  struct grub_net_network_level_interface *inter;
+  int num;
+  grub_uint8_t *ptr;
+  grub_uint8_t taglength;
+
+  if (argc < 4)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "4 arguments expected");
+
+  FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
+    if (grub_strcmp (inter->name, args[1]))
+      break;
+
+  if (!inter)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("unrecognised interface %s"), args[1]);
+
+  if (!inter->dhcp_ack)
+    return grub_error (GRUB_ERR_IO, N_("no DHCP info found"));
+
+  if (inter->dhcp_acklen <= OFFSET_OF (vendor, inter->dhcp_ack))
+    return grub_error (GRUB_ERR_IO, N_("no DHCP options found"));
+
+  num = grub_strtoul (args[2], 0, 0);
+  if (grub_errno)
+    return grub_errno;
+
+  ptr = inter->dhcp_ack->vendor;
+
+  if (grub_be_to_cpu32 (*(grub_uint32_t *) ptr)
+      != GRUB_NET_BOOTP_RFC1048_MAGIC)
+    return grub_error (GRUB_ERR_IO, N_("no DHCP options found"));
+  ptr = ptr + sizeof (grub_uint32_t);
+  while (1)
+    {
+      grub_uint8_t tagtype;
+
+      if (ptr >= ((grub_uint8_t *) inter->dhcp_ack) + inter->dhcp_acklen)
+	return grub_error (GRUB_ERR_IO, N_("no DHCP option %d found"), num);
+
+      tagtype = *ptr++;
+
+      /* Pad tag.  */
+      if (tagtype == 0)
+	continue;
+
+      /* End tag.  */
+      if (tagtype == 0xff)
+	return grub_error (GRUB_ERR_IO, N_("no DHCP option %d found"), num);
+
+      taglength = *ptr++;
+	
+      if (tagtype == num)
+	break;
+      ptr += taglength;
+    }
+
+  if (grub_strcmp (args[3], "string") == 0)
+    {
+      char *val = grub_malloc (taglength + 1);
+      if (!val)
+	return grub_errno;
+      grub_memcpy (val, ptr, taglength);
+      val[taglength] = 0;
+      if (args[0][0] == '-' && args[0][1] == 0)
+	grub_printf ("%s\n", val);
+      else
+	return grub_env_set (args[0], val);
+      return GRUB_ERR_NONE;
+    }
+
+  if (grub_strcmp (args[3], "number") == 0)
+    {
+      grub_uint64_t val = 0;
+      int i;
+      for (i = 0; i < taglength; i++)
+	val = (val << 8) | ptr[i];
+      if (args[0][0] == '-' && args[0][1] == 0)
+	grub_printf ("%llu\n", (unsigned long long) val);
+      else
+	{
+	  char valn[64];
+	  grub_printf (valn, sizeof (valn), "%lld\n", (unsigned long long) val);
+	  return grub_env_set (args[0], valn);
+	}
+      return GRUB_ERR_NONE;
+    }
+
+  if (grub_strcmp (args[3], "hex") == 0)
+    {
+      char *val = grub_malloc (2 * taglength + 1);
+      int i;
+      if (!val)
+	return grub_errno;
+      for (i = 0; i < taglength; i++)
+	{
+	  val[2 * i] = hexdigit (ptr[i] >> 4);
+	  val[2 * i + 1] = hexdigit (ptr[i] & 0xf);
+	}
+      val[2 * taglength] = 0;
+      if (args[0][0] == '-' && args[0][1] == 0)
+	grub_printf ("%s\n", val);
+      else
+	return grub_env_set (args[0], val);
+      return GRUB_ERR_NONE;
+    }
+
+  return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		     "unrecognised format specification %s", args[3]);
+}
+
 static grub_command_t cmd_addaddr, cmd_deladdr, cmd_addroute, cmd_delroute;
-static grub_command_t cmd_lsroutes, cmd_lscards;
+static grub_command_t cmd_lsroutes, cmd_lscards, cmd_getdhcp;
 
 GRUB_MOD_INIT(net)
 {
@@ -730,6 +852,9 @@ GRUB_MOD_INIT(net)
 					"", N_("list network routes"));
   cmd_lscards = grub_register_command ("net_ls_cards", grub_cmd_listcards,
 				       "", N_("list network cards"));
+  cmd_getdhcp = grub_register_command ("net_get_dhcp_option", grub_cmd_dhcpopt,
+				       N_("VAR INTERFACE NUMBER DESCRIPTION"),
+				       N_("retrieve DHCP option and save it into VAR. If VAR is - then print the value."));
 
   grub_net_open = grub_net_open_real;
 }
@@ -742,5 +867,6 @@ GRUB_MOD_FINI(net)
   grub_unregister_command (cmd_delroute);
   grub_unregister_command (cmd_lsroutes);
   grub_unregister_command (cmd_lscards);
+  grub_unregister_command (cmd_getdhcp);
   grub_net_open = NULL;
 }
