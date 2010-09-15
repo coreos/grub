@@ -1111,6 +1111,7 @@ module = {
 module = {
   name = linux;
   x86 = loader/i386/linux.c;
+  i386_pc = lib/i386/pc/vesa_modes_table.c;
   mips = loader/mips/linux.c;
   powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
   sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;

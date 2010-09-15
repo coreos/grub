@@ -21,6 +21,7 @@
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/legacy_parse.h>
+#include <grub/i386/pc/vesa_modes_table.h>
 
 struct legacy_command
 {
@@ -40,7 +41,8 @@ struct legacy_command
     TYPE_PARTITION,
     TYPE_BOOL,
     TYPE_INT,
-    TYPE_REST_VERBATIM
+    TYPE_REST_VERBATIM,
+    TYPE_VBE_MODE
   } argt[4];
   enum {
     FLAG_IGNORE_REST        =  1,
@@ -264,7 +266,8 @@ struct legacy_command legacy_commands[] =
      " compares them, to test the filesystem code. "
      " If this test succeeds, then a good next"
      " step is to try loading a kernel."},
-    /* FIXME: testvbe unsupported.  */
+    {"testvbe", "insmod vbe; videotest '%s'\n", NULL, 0, 1, {TYPE_VBE_MODE}, 0,
+     "MODE", "Test the VBE mode MODE. Hit any key to return."},
     /* FIXME: tftpserver unsupported.  */
     {"timeout", "set timeout=%s\n", NULL, 0, 1, {TYPE_INT}, 0, "SEC",
      "Set a timeout, in SEC seconds, before automatically booting the"
@@ -278,7 +281,7 @@ struct legacy_command legacy_commands[] =
     {"uuid", "search --set=root --fs-uuid '%s'\n", NULL, 0, 1, {TYPE_VERBATIM},
      0, "UUID", "Find root by UUID"},
     /* FIXME: support MODE.  */
-    {"vbeprobe", "vbeinfo\n", NULL, 0, 0, {}, 0, "[MODE]",
+    {"vbeprobe", "insmod vbe; videoinfo\n", NULL, 0, 0, {}, 0, "[MODE]",
      "Probe VBE information. If the mode number MODE is specified, show only"
      " the information about only the mode."}
   };
@@ -566,6 +569,34 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 		args[i] = grub_strndup (curarg, brk - curarg);
 	    }
 	    break;
+	  case TYPE_VBE_MODE:
+	    {
+	      unsigned mod;
+	      struct grub_vesa_mode_table_entry *modedesc;
+
+	      mod = grub_strtoul (curarg, 0, 0);
+	      if (grub_errno)
+		{
+		  mod = 0;
+		  grub_errno = GRUB_ERR_NONE;
+		}
+	      if (mod < GRUB_VESA_MODE_TABLE_START
+		  || mod > GRUB_VESA_MODE_TABLE_END)
+		{
+		  args[i] = grub_strdup ("auto");
+		  break;
+		}
+	      modedesc = &grub_vesa_mode_table[mod - GRUB_VESA_MODE_TABLE_START];
+	      if (!modedesc->width)
+		{
+		  args[i] = grub_strdup ("auto");
+		  break;
+		}
+	      args[i] = grub_xasprintf ("%ux%ux%u",
+					modedesc->width, modedesc->height,
+					modedesc->depth);
+	      break;
+	    }
 	  case TYPE_BOOL:
 	    if (curarglen == 2 && curarg[0] == 'o' && curarg[1] == 'n')
 	      args[i] = grub_strdup ("1");
@@ -599,7 +630,10 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
       case TYPE_BOOL:
       case TYPE_INT:
 	args[i] = grub_strdup ("0");
-	    break;
+	break;
+      case TYPE_VBE_MODE:    
+	args[i] = grub_strdup ("auto");
+	break;
       }
 
   if (legacy_commands[cmdnum].flags & FLAG_COLOR_INVERT)
