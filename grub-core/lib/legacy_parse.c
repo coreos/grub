@@ -118,7 +118,9 @@ struct legacy_command legacy_commands[] =
      "Search for the filename FILENAME in all of partitions and print the list of"
      " the devices which contain the file."},
     /* FIXME: fstest unsupported.  */
-    /* FIXME: geometry unsupported.  */
+    /* NOTE: The obsolete C/H/S geometry isn't shown anymore.  */
+    {"geometry", "insmod regexp; ls -l (%s*)\n", NULL, 0, 1, {TYPE_VERBATIM}, 0, "DRIVE",
+     "Print the information for a drive DRIVE. "},
     {"halt", "halt %s\n", NULL, 0, 1, {TYPE_NOAPM_OPTION}, 0, "[--no-apm]",
      "Halt your system. If APM is available on it, turn off the power using"
      " the APM BIOS, unless you specify the option `--no-apm'."},
