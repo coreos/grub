@@ -333,7 +333,7 @@ setup (const char *dir,
 #ifdef GRUB_MACHINE_PCBIOS
   {
     grub_partition_map_t dest_partmap = NULL;
-    grub_partition_map_t container = dest_dev->disk->partition;
+    grub_partition_t container = dest_dev->disk->partition;
     int multiple_partmaps = 0;
     grub_err_t err;
     grub_disk_addr_t sectors[core_sectors];
@@ -453,11 +453,6 @@ setup (const char *dir,
 		       - i * GRUB_DISK_SECTOR_SIZE
 		       : GRUB_DISK_SECTOR_SIZE,
 		       core_img + i * GRUB_DISK_SECTOR_SIZE);
-
-    /* Write the boot image onto the disk.  */
-    if (grub_disk_write (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE,
-			 boot_img))
-      grub_util_error ("%s", grub_errmsg);
 
     goto finish;
   }
@@ -630,12 +625,13 @@ unable_to_embed:
   grub_util_write_image (core_img, GRUB_DISK_SECTOR_SIZE * 2, fp);
   fclose (fp);
 
+ finish:
+
   /* Write the boot image onto the disk.  */
   if (grub_disk_write (dest_dev->disk, BOOT_SECTOR,
 		       0, GRUB_DISK_SECTOR_SIZE, boot_img))
     grub_util_error ("%s", grub_errmsg);
 
- finish:
 
   /* Sync is a Good Thing.  */
   sync ();
