@@ -292,10 +292,12 @@ struct legacy_command legacy_commands[] =
     /* FIXME: uppermem unsupported.  */
     {"uuid", "search --set=root --fs-uuid '%s'\n", NULL, 0, 1, {TYPE_VERBATIM},
      0, "UUID", "Find root by UUID"},
-    /* FIXME: support MODE.  */
-    {"vbeprobe", "insmod vbe; videoinfo\n", NULL, 0, 0, {}, 0, "[MODE]",
+    {"vbeprobe", "insmod vbe; videoinfo '%s'\n", NULL, 0, 1, {TYPE_VBE_MODE},
+     FLAG_FALLBACK_AVAILABLE, "[MODE]",
      "Probe VBE information. If the mode number MODE is specified, show only"
-     " the information about only the mode."}
+     " the information about only the mode."},
+    {"vbeprobe", "insmod vbe; videoinfo\n", NULL, 0, 0, {},
+     FLAG_FALLBACK, NULL, NULL}
   };
 
 char *
