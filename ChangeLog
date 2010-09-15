@@ -1,5 +1,9 @@
 2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-setup.c (setup): Fix incorrect container semantics.
+
+2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/parttool.c (grub_cmd_parttool): Fix a variable
 	misusage.
 	Reported by: J. Nick Terry
