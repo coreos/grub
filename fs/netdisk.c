@@ -23,25 +23,24 @@
 #include <grub/file.h>
 #include <grub/misc.h>
 #include <grub/net.h>
-#include <grub/net/arp.h>
-#include <grub/net/ip.h>
-#include <grub/net/udp.h>
 #include <grub/net/tftp.h>
 #include <grub/net/ethernet.h>
 #include <grub/net/protocol.h>
 #include <grub/net/interface.h>
 #include <grub/bufio.h>
-#include <grub/ieee1275/ofnet.h>
 #include <grub/machine/memory.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/net/ieee1275/interface.h>
+#include <grub/net/mem.h>
+#include <grub/net/disknet.h>
+
+struct grub_net_card *grub_net_cards = NULL;
+struct grub_net_network_layer_interface *grub_net_network_layer_interfaces = NULL;
+struct grub_net_route *grub_net_routes = NULL;
 
 #define BUFFERADDR 0X00000000
 #define BUFFERSIZE 0x02000000
 #define U64MAXSIZE 18446744073709551615ULL
-
-
-//static grub_ieee1275_ihandle_t handle = 0;
 
 static const char *
 find_sep (const char *name)
@@ -295,28 +294,44 @@ grub_ofnetfs_open (struct grub_file *file , const char *name )
     
     return 1;
   }
- // grub_printf("name = %s\n",name); 
 
+/*TESt*/
+ // grub_printf("name = %s\n",name); 
+  struct grub_net_card *card;
+  struct grub_ofnetcard_data *ofdata; 
+  FOR_NET_CARDS(card)
+  {
+    grub_printf("card address = %x\n", (int) card);
+    grub_printf ("card name = %s\n", card->name);
+    ofdata = card->data;
+    grub_printf("card path = %s\n", (char *) ofdata->path);
+    grub_printf("card handle = %d\n", ofdata->handle);
+  }
+  grub_printf("card list address  in disknet.c = %x\n",(int) grub_net_cards);
+  card = grub_net_cards;     
+  grub_printf("card address = %x\n", (int) card);
+/*TESt*/
+ 
   struct grub_net_protocol_stack *stack;
   struct grub_net_buff *pack;
   struct grub_net_application_transport_interface *app_interface;
   int file_size; 
   char *datap;
   int amount = 0;
-  grub_addr_t found_addr;
   grub_netdisk_data_t netdisk_data = (grub_netdisk_data_t) file->device->disk->data;
+
   // TODO: replace getting IP and MAC from bootp by routing functions
   struct grub_net_network_layer_interface net_interface;
-  struct grub_net_card net_card;
   struct grub_net_addr ila, lla;
-  ila.addr = (grub_uint8_t *) &(bootp_pckt->yiaddr);
+  ila.addr = (grub_uint8_t *) & (bootp_pckt->yiaddr);
   ila.len = 4;
-  lla.addr = (grub_uint8_t *) &(bootp_pckt->chaddr);
+  lla.addr = (grub_uint8_t *) & (bootp_pckt->chaddr);
   lla.len = 6;
-  net_card.ila = &ila;
-  net_card.lla = &lla;
-  net_interface.card = &net_card;
   // END TODO
+
+  card->ila = &ila;
+  card->lla = &lla;
+  net_interface.card = card;
 
   if(! netdisk_data)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "arguments missing");
@@ -328,37 +343,35 @@ grub_ofnetfs_open (struct grub_file *file , const char *name )
 
   app_interface = (struct grub_net_application_transport_interface *) stack->interface;
   app_interface->inner_layer->data = (void *) &(netdisk_data->server_ip);
+
   pack =  grub_netbuff_alloc (2048);
   grub_netbuff_reserve (pack,2048);
+
   file_size = app_interface->app_prot->get_file_size(&net_interface,stack,pack,(char *) name);
 
-  for (found_addr = 0x800000; found_addr <  + 2000 * 0x100000; found_addr += 0x100000)
-  {
-    if (grub_claimmap (found_addr , file_size) != -1)
-      break;
-  }
-  file->data = (void *) found_addr;
+  file->data = grub_net_malloc (file_size);
 
   grub_netbuff_clear(pack); 
   grub_netbuff_reserve (pack,2048);
+
   app_interface->app_prot->open (&net_interface,stack,pack,(char *) name);
   if (grub_errno != GRUB_ERR_NONE)
     goto error;
   
   do 
   {  
-    grub_netbuff_clear(pack); 
-    grub_netbuff_reserve (pack,2048);
     app_interface->app_prot->recv (&net_interface,stack,pack); 
+
     if (grub_errno != GRUB_ERR_NONE)
       goto error;
+
     if ((pack->tail - pack->data))
     {
-     // file->data = grub_realloc(file->data,amount + pack->tail - pack->data);
       datap = (char *)file->data + amount;
       amount += (pack->tail - pack->data);
-      grub_memcpy(datap , pack->data, pack->tail - pack->data); 
+      grub_memcpy (datap , pack->data, pack->tail - pack->data); 
     }
+
     grub_netbuff_clear(pack); 
     grub_netbuff_reserve (pack,2048);
     app_interface->app_prot->send_ack (&net_interface,stack,pack); 
@@ -394,54 +407,6 @@ static struct grub_fs grub_ofnetfs_fs =
     .next = 0
   };
 
-static char *
-grub_ieee1275_get_devargs (const char *path)
-{
-  int len;
-  char *colon = grub_strchr (path, ':');
-  len = colon - path;
-  if (! colon)
-    return 0;
-
-  return grub_strndup (path,len);
-}
-
-static int
-grub_ofnet_detect (void)
-{
-  
-  char *devalias; 
-  char bootpath[64]; /* XXX check length */
-  grub_ieee1275_phandle_t root;
-  grub_uint32_t net_type;
-  
-  grub_ieee1275_finddevice ("/chosen", &grub_ieee1275_chosen);
-  if (grub_ieee1275_get_property (grub_ieee1275_chosen, "bootpath", &bootpath,
-			                                  sizeof (bootpath), 0))
-  {
-    /* Should never happen.  */
-    grub_printf ("/chosen/bootpath property missing!\n");
-    return 0;
-  }
-  devalias = grub_ieee1275_get_aliasdevname (bootpath);
-  
-  if (grub_strncmp(devalias ,"net",3))
-    return 0;
-  
-  grub_net = grub_malloc (sizeof *grub_net );
-  grub_net->name = "net";
-  grub_net->dev = grub_ieee1275_get_devargs (bootpath);
-  grub_ieee1275_finddevice ("/", &root);
-  grub_ieee1275_get_integer_property (root, "ibm,fw-net-compatibility",
-				             &net_type,	sizeof net_type, 0);
-  grub_printf("root = %d\n",root);
-  grub_printf("net_type= %d\n",net_type);
-  grub_net->type = net_type;
-  
-  return 1; 
-}
-
-
 #define IPMASK 0x000000FF
 #define IPSIZE 16
 #define IPTEMPLATE "%d.%d.%d.%d"
@@ -456,34 +421,17 @@ grub_ip2str (grub_uint32_t ip)
   return str_ip;
 }
 
+
 void
-grub_get_netinfo (grub_ofnet_t netinfo,grub_bootp_t packet)
+grub_disknet_init(void)
 {
-  netinfo->sip = grub_ip2str(packet->siaddr);
-  netinfo->cip = grub_ip2str(packet->yiaddr);
-  netinfo->gat = grub_ip2str(packet->giaddr);
-  grub_printf("packet->siaddr = %x\n",packet->siaddr);
-  grub_printf("netinfo-> = %s\n",netinfo->sip);
-  grub_printf("packet->yiaddr = %x\n",packet->yiaddr);
-  grub_printf("netinfo-> = %s\n",netinfo->cip);
-  grub_printf("packet->giaddr = %x\n",packet->giaddr);
-  grub_printf("netinfo-> = %s\n",netinfo->gat);
+  
+  grub_disk_dev_register (&grub_ofnet_dev);
+  grub_fs_register (&grub_ofnetfs_fs);
 }
+
 void
-grub_ofnet_init(void)
-{
- tftp_ini ();
- bootp_pckt = grub_getbootp ();
-  if(grub_ofnet_detect ())
-  {
-    grub_get_netinfo (grub_net, bootp_pckt );
-    grub_disk_dev_register (&grub_ofnet_dev);
-    grub_fs_register (&grub_ofnetfs_fs);
-    card_open ();  
-  }  
-}
-void
-grub_ofnet_fini(void)
+grub_disknet_fini(void)
 {
       grub_fs_unregister (&grub_ofnetfs_fs);
       grub_disk_dev_unregister (&grub_ofnet_dev);

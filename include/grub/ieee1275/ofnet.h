@@ -23,32 +23,9 @@
 #include <grub/err.h>
 #include <grub/types.h>
 
-extern void grub_ofnet_init(void);
-extern void grub_ofnet_fini(void);
+void grub_ofnet_init(void);
+void grub_ofnet_fini(void);
 
-/*
-struct grub_net;
-
-struct grub_net_dev
-{
-  / The device name.  /
-  const char *name;
-
-  / FIXME: Just a template.  /
-  int (*probe) (struct grub_net *net, const void *addr);
-  void (*reset) (struct grub_net *net);
-  int (*poll) (struct grub_net *net);
-  void (*transmit) (struct grub_net *net, const void *destip,
-		    unsigned srcsock, unsigned destsock, const void *packet);
-  void (*disable) (struct grub_net *net);
-
-  / The next net device.  /
-  struct grub_net_dev *next;
-};
-typedef struct grub_net_dev *grub_net_dev_t;
-
-struct grub_fs;
-*/
 struct grub_ofnet
 {
   /* The net name.  */
@@ -85,7 +62,7 @@ struct grub_bootp {
   char file [128];      /*  Boot filename */
 //  grub_uint32_t filesize ; /*File size (testing)*/
   unsigned char vend [64];
-};     
+}; 
 
 typedef struct grub_bootp* grub_bootp_t;
 

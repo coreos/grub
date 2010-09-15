@@ -2,6 +2,8 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 
+struct grub_net_network_layer_protocol *grub_net_network_layer_protocols = NULL;
+
 #define PROTOCOL_REGISTER_FUNCTIONS(layername) \
 struct grub_net_##layername##_layer_protocol *grub_net_##layername##_layer_protocols;\
 \

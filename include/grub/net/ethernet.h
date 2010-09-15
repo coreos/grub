@@ -10,9 +10,18 @@ struct etherhdr
   grub_uint16_t type;
 } __attribute__ ((packed));
 
-#define PCP (x) x & 0xe000 
-#define CFI (x) x & 0x1000
-#define VID (x) x & 0x0fff
+#define PCP(x) x & 0xe000 
+#define CFI(x) x & 0x1000
+#define VID(x) x & 0x0fff
+#define PRINT_ETH_ADDR(name,addr) grub_printf("%s %x:%x:%x:%x:%x:%x\n",\
+                            name,\
+                            addr[0],\
+                            addr[1],\
+                            addr[2],\
+                            addr[3],\
+                            addr[4],\
+                            addr[5]\
+                           )
 
 struct llchdr
 {

@@ -24,7 +24,6 @@
 #include <grub/types.h>
 #include <grub/machine/ieee1275.h>
 
-/* Maps a device alias to a pathname.  */
 struct grub_ieee1275_devalias
 {
   char *name;
@@ -65,6 +64,13 @@ struct grub_ieee1275_common_hdr
 typedef grub_uint32_t grub_ieee1275_ihandle_t;
 typedef grub_uint32_t grub_ieee1275_phandle_t;
 
+struct grub_ofnetcard_data
+{
+  char *path;
+  grub_ieee1275_ihandle_t handle;
+};
+
+/* Maps a device alias to a pathname.  */
 extern grub_ieee1275_phandle_t EXPORT_VAR(grub_ieee1275_chosen);
 extern grub_ieee1275_ihandle_t EXPORT_VAR(grub_ieee1275_mmu);
 extern int (* EXPORT_VAR(grub_ieee1275_entry_fn)) (void *);
@@ -186,4 +192,6 @@ int EXPORT_FUNC(grub_ieee1275_devices_iterate) (int (*hook)
 						(struct grub_ieee1275_devalias *
 						 alias));
 char *EXPORT_FUNC(grub_ieee1275_get_aliasdevname) (const char *path);
+void EXPORT_FUNC(grub_ofnet_findcards) (void);
+void EXPORT_FUNC(grub_ofnet_probecards) (void);
 #endif /* ! GRUB_IEEE1275_HEADER */

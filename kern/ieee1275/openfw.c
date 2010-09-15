@@ -23,6 +23,10 @@
 #include <grub/mm.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/ieee1275/ofnet.h>
+#include <grub/net/ieee1275/interface.h>
+#include <grub/net.h>
+#include <grub/net/disknet.h>
+#include <grub/net/tftp.h>
 
 enum grub_ieee1275_parse_type
 {
@@ -490,3 +494,63 @@ grub_getbootp( void )
   return packet;
 }
 
+void grub_ofnet_findcards (void)
+{
+  struct grub_net_card *card;
+  int i = 0;
+
+  auto int search_net_devices (struct grub_ieee1275_devalias *alias);
+
+  int search_net_devices (struct grub_ieee1275_devalias *alias)
+  {  
+     if ( !grub_strcmp (alias->type,"network") )
+     {
+        
+        card = grub_malloc (sizeof (struct grub_net_card));
+        struct grub_ofnetcard_data *ofdata = grub_malloc (sizeof (struct grub_ofnetcard_data));
+        ofdata->path = grub_strdup (alias->path);
+        card->data = ofdata; 
+        card->name = grub_xasprintf("eth%d",i++); // grub_strdup (alias->name);
+        grub_net_card_register (card); 
+     }
+     return 0;
+  }
+
+  /*Look at all nodes for devices of the type network*/
+  grub_ieee1275_devices_iterate (search_net_devices);
+
+}
+
+void grub_ofnet_probecards (void)
+{
+  struct grub_net_card *card;
+  struct grub_net_card_driver *driver;
+
+ /*Assign correspondent driver for each device. */
+  FOR_NET_CARDS (card)
+  {
+    FOR_NET_CARD_DRIVERS (driver)
+    {
+      if (driver->init(card) == GRUB_ERR_NONE)
+      {
+        card->driver = driver;
+        continue;
+      } 
+    }
+  }
+}
+
+void
+grub_ofnet_init(void)
+{
+  
+  ofdriver_ini();
+  grub_ofnet_findcards(); 
+  grub_ofnet_probecards(); 
+
+  /*init tftp stack - will be handled by module subsystem in the future*/
+  tftp_ini ();
+  /*get bootp packet - won't be needed in the future*/
+  bootp_pckt = grub_getbootp ();
+  grub_disknet_init();
+}

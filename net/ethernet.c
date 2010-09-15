@@ -22,10 +22,10 @@ struct grub_net_addr target_addr, grub_uint16_t ethertype)
   eth = (struct etherhdr *) nb->data; 
   grub_memcpy(eth->dst, target_addr.addr, target_addr.len);
   grub_memcpy(eth->src, bootp_pckt->chaddr, 6);
+
   eth->type = ethertype;
 
-  return  send_card_buffer(nb);  
-//  return  inf->card->driver->send(inf->card,nb);
+  return  inf->card->driver->send (inf->card,nb);
 }
 
 
@@ -42,12 +42,11 @@ grub_uint16_t ethertype)
   start_time = grub_get_time_ms();
   while (1)
   {
-    get_card_packet (nb);
+    inf->card->driver->recv (inf->card,nb);
     eth = (struct etherhdr *) nb->data; 
     type = eth->type;
     grub_netbuff_pull(nb,sizeof (*eth));
-   // grub_printf("ethernet type 58 %x\n",type); 
-   // grub_printf("ethernet eth->type 58 %x\n",type); 
+    
     if (eth->type <=1500)
     {
       llch = (struct llchdr *) nb->data;
