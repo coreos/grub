@@ -1,5 +1,11 @@
 2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/parttool.c (grub_cmd_parttool): Fix a variable
+	misusage.
+	Reported by: J. Nick Terry
+
+2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move embedding routines to partmap sources files.
 
 	* grub-core/partmap/gpt.c (grub_gpt_partition_type_bios_boot)
