@@ -83,15 +83,6 @@ EOF
 EOF
   fi
 
-  for i in ${basename} ${initrd} ; do
-    if ! is_path_readable_by_grub ${dirname}/${i} \
-        ${GRUB_DEVICE_BOOT} \
-        ${rel_dirname}/${i} ; then
-      echo "${dirname}/${i} is not readable by GRUB" >&2
-      exit 1
-    fi
-  done
-
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi

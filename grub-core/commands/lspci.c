@@ -224,8 +224,8 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(lspci)
 {
-  cmd = grub_register_extcmd ("lspci", grub_cmd_lspci, GRUB_COMMAND_FLAG_BOTH,
-			      "[-i]", N_("List PCI devices."), options);
+  cmd = grub_register_extcmd ("lspci", grub_cmd_lspci, 0, "[-i]",
+			      N_("List PCI devices."), options);
 }
 
 GRUB_MOD_FINI(lspci)

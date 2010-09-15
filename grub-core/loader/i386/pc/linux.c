@@ -25,7 +25,6 @@
 #include <grub/disk.h>
 #include <grub/misc.h>
 #include <grub/types.h>
-#include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/dl.h>
 #include <grub/cpu/linux.h>

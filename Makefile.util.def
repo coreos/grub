@@ -232,14 +232,11 @@ program = {
   name = grub-setup;
   installdir = sbin;
   mansection = 8;
-  i386_pc = util/i386/pc/grub-setup.c;
-  i386_pc = util/raid.c;
-  i386_pc = util/lvm.c;
+  common = util/grub-setup.c;
+  common = util/raid.c;
+  common = util/lvm.c;
 
   sparc64_ieee1275 = util/ieee1275/ofpath.c;
-  sparc64_ieee1275 = util/sparc64/ieee1275/grub-setup.c;
-  sparc64_ieee1275 = util/raid.c;
-  sparc64_ieee1275 = util/lvm.c;
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
@@ -360,6 +357,14 @@ script = {
   powerpc_ieee1275 = util/ieee1275/grub-install.in;
 
   enable = noemu;
+};
+
+script = {
+  mansection = 8;
+  installdir = sbin;
+  name = grub-mknetdir;
+
+  common = util/grub-mknetdir.in;
 };
 
 script = {

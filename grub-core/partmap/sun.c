@@ -87,36 +87,23 @@ sun_partition_map_iterate (grub_disk_t disk,
                            int (*hook) (grub_disk_t disk,
 					const grub_partition_t partition))
 {
-  grub_partition_t p;
+  struct grub_partition p;
   struct grub_sun_block block;
   int partnum;
   grub_err_t err;
 
-  p = (grub_partition_t) grub_zalloc (sizeof (struct grub_partition));
-  if (! p)
-    return grub_errno;
-
-  p->partmap = &grub_sun_partition_map;
+  p.partmap = &grub_sun_partition_map;
   err = grub_disk_read (disk, 0, 0, sizeof (struct grub_sun_block),
 			&block);
   if (err)
-    {
-      grub_free (p);
-      return err;
-    }
+    return err;
 
   if (GRUB_PARTMAP_SUN_MAGIC != grub_be_to_cpu16 (block.magic))
-    {
-      grub_free (p);
-      return grub_error (GRUB_ERR_BAD_PART_TABLE, "not a sun partition table");
-    }
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "not a sun partition table");
 
   if (! grub_sun_is_valid (&block))
-    {
-      grub_free (p);      
       return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid checksum");
-    }
-
+  
   /* Maybe another error value would be better, because partition
      table _is_ recognized but invalid.  */
   for (partnum = 0; partnum < GRUB_PARTMAP_SUN_MAX_PARTS; partnum++)
@@ -128,19 +115,17 @@ sun_partition_map_iterate (grub_disk_t disk,
 	continue;
 
       desc = &block.partitions[partnum];
-      p->start = ((grub_uint64_t) grub_be_to_cpu32 (desc->start_cylinder)
+      p.start = ((grub_uint64_t) grub_be_to_cpu32 (desc->start_cylinder)
 		  * grub_be_to_cpu16 (block.ntrks)
 		  * grub_be_to_cpu16 (block.nsect));
-      p->len = grub_be_to_cpu32 (desc->num_sectors);
-      p->number = p->index = partnum;
-      if (p->len)
+      p.len = grub_be_to_cpu32 (desc->num_sectors);
+      p.number = p.index = partnum;
+      if (p.len)
 	{
-	  if (hook (disk, p))
+	  if (hook (disk, &p))
 	    partnum = GRUB_PARTMAP_SUN_MAX_PARTS;
 	}
     }
-
-  grub_free (p);
 
   return grub_errno;
 }

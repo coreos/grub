@@ -155,7 +155,6 @@ read_command_list (const char *prefix)
 						   grub_dyncmd_dispatcher,
 						   GRUB_COMMAND_FLAG_BLOCKS
 						   | GRUB_COMMAND_FLAG_EXTCMD
-						   | GRUB_COMMAND_FLAG_CMDLINE
 						   | GRUB_COMMAND_FLAG_DYNCMD,
 						   0, N_("not loaded"), 0,
 						   prio);

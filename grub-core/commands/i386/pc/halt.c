@@ -47,6 +47,8 @@ grub_halt (int no_apm)
 {
   struct grub_bios_int_registers regs;
 
+  grub_acpi_halt ();
+
   if (no_apm)
     stop ();
 
@@ -102,8 +104,6 @@ grub_cmd_halt (grub_extcmd_context_t ctxt,
   struct grub_arg_list *state = ctxt->state;
   int no_apm = 0;
 
-  grub_acpi_halt ();
-
   if (state[0].set)
     no_apm = 1;
   grub_halt (no_apm);
@@ -114,8 +114,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(halt)
 {
-  cmd = grub_register_extcmd ("halt", grub_cmd_halt, GRUB_COMMAND_FLAG_BOTH,
-			      "[-n]",
+  cmd = grub_register_extcmd ("halt", grub_cmd_halt, 0, "[-n]",
 			      N_("Halt the system, if possible using APM."),
 			      options);
 }

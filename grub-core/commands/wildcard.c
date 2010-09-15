@@ -137,8 +137,10 @@ make_regex (const char *start, const char *end, regex_t *regexp)
 	  break;
 
 	case '.':
+	case '(':
+	case ')':
 	  buffer[i++] = '\\';
-	  buffer[i++] = '.';
+	  buffer[i++] = ch;
 	  break;
 
 	case '*':
@@ -152,6 +154,7 @@ make_regex (const char *start, const char *end, regex_t *regexp)
     }
   buffer[i++] = '$';
   buffer[i] = '\0';
+  grub_dprintf ("expand", "Regexp is %s\n", buffer);
 
   if (regcomp (regexp, buffer, RE_SYNTAX_GNU_AWK))
     {
@@ -224,6 +227,7 @@ match_devices (const regex_t *regexp, int noparts)
     grub_dprintf ("expand", "matching: %s\n", buffer);
     if (regexec (regexp, buffer, 0, 0, 0))
       {
+	grub_dprintf ("expand", "not matched\n");
 	grub_free (buffer);
 	return 0;
       }

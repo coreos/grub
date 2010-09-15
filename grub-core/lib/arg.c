@@ -231,7 +231,6 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 {
   int curarg;
   int arglen;
-  int complete = 0;
   char **argl = 0;
   int num = 0;
   auto grub_err_t add_arg (char *s);
@@ -258,7 +257,8 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
       char *option = 0;
 
       /* No option is used.  */
-      if (arg[0] != '-' || grub_strlen (arg) == 1)
+      if ((num && GRUB_COMMAND_OPTIONS_AT_START)
+	  || arg[0] != '-' || grub_strlen (arg) == 1)
 	{
 	  if (add_arg (arg) != 0)
 	    goto fail;
@@ -269,11 +269,28 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
       /* One or more short options.  */
       if (arg[1] != '-')
 	{
-	  char *curshort = arg + 1;
+	  char *curshort;
+
+	  if (cmd->cmd->flags & GRUB_COMMAND_ACCEPT_DASH)
+	    {
+	      for (curshort = arg + 1; *curshort; curshort++)
+		if (!find_short (cmd->options, *curshort))
+		  break;
+	    
+	      if (*curshort)
+		{
+		  if (add_arg (arg) != 0)
+		    goto fail;
+		  continue;
+		}
+	    }
+
+	  curshort = arg + 1;
 
 	  while (1)
 	    {
 	      opt = find_short (cmd->options, *curshort);
+
 	      if (! opt)
 		{
 		  grub_error (GRUB_ERR_BAD_ARGUMENT,
@@ -330,6 +347,14 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 	  }
 
 	  opt = find_long (cmd->options, arg + 2, arglen);
+
+	  if (!opt && (cmd->cmd->flags & GRUB_COMMAND_ACCEPT_DASH))
+	    {
+	      if (add_arg (arg) != 0)
+		goto fail;
+	      continue;
+	    }
+
 	  if (! opt)
 	    {
 	      grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown argument `%s'", arg);
@@ -398,13 +423,12 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 	}
     }
 
-  complete = 1;
-
   *args = argl;
   *argnum = num;
+  return 1;
 
  fail:
-  return complete;
+  return 0;
 }
 
 struct grub_arg_list*

@@ -190,4 +190,6 @@ int EXPORT_FUNC(grub_ieee1275_devices_iterate) (int (*hook)
 						(struct grub_ieee1275_devalias *
 						 alias));
 
+char *EXPORT_FUNC(grub_ieee1275_canonicalise_devname) (const char *path);
+
 #endif /* ! GRUB_IEEE1275_HEADER */

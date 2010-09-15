@@ -270,7 +270,7 @@ static enum xz_ret dec_block(struct xz_dec *s, struct xz_buf *b)
 		s->block.hash.uncompressed += s->block.uncompressed;
 
 		GRUB_MD_CRC32->write(s->block.hash.crc32_context,
-				(const uint8_t *)&s->block.hash, sizeof(s->block.hash));
+				(const uint8_t *)&s->block.hash, 2 * sizeof(vli_type));
 
 		++s->block.count;
 	}
@@ -329,8 +329,7 @@ static enum xz_ret dec_index(struct xz_dec *s, struct xz_buf *b)
 			s->index.hash.uncompressed += s->vli;
 
 			GRUB_MD_CRC32->write(s->index.hash.crc32_context,
-					(const uint8_t *)&s->index.hash,
-					sizeof(s->index.hash));
+					(const uint8_t *)&s->index.hash, 2 * sizeof(vli_type));
 
 			--s->index.count;
 			s->index.sequence = SEQ_INDEX_UNPADDED;
@@ -671,8 +670,17 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 			index_update(s, b);
 
 			/* Compare the hashes to validate the Index field. */
-			if (! memeq(&s->block.hash, &s->index.hash, sizeof(s->block.hash)))
+			GRUB_MD_CRC32->final(s->block.hash.crc32_context);
+			GRUB_MD_CRC32->final(s->index.hash.crc32_context);
+			uint32_t block_crc = *(uint32_t*)GRUB_MD_CRC32->read(s->block.hash.crc32_context);
+			uint32_t index_crc = *(uint32_t*)GRUB_MD_CRC32->read(s->index.hash.crc32_context);
+
+			if (s->block.hash.unpadded != s->index.hash.unpadded
+			    || s->block.hash.uncompressed != s->index.hash.uncompressed
+			    || block_crc != index_crc)
+			{
 				return XZ_DATA_ERROR;
+			}
 
 			s->sequence = SEQ_INDEX_CRC32;
 
@@ -853,6 +861,9 @@ void xz_dec_end(struct xz_dec *s)
 {
 	if (s != NULL) {
 		xz_dec_lzma2_end(s->lzma2);
+		kfree(s->index.hash.crc32_context);
+		kfree(s->block.hash.crc32_context);
+		kfree(s->crc32_context);
 #ifdef XZ_DEC_BCJ
 		xz_dec_bcj_end(s->bcj);
 #endif

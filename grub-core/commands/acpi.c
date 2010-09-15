@@ -758,8 +758,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(acpi)
 {
-  cmd = grub_register_extcmd ("acpi", grub_cmd_acpi,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("acpi", grub_cmd_acpi, 0,
 			      N_("[-1|-2] [--exclude=TABLE1,TABLE2|"
 			      "--load-only=table1,table2] FILE1"
 			      " [FILE2] [...]"),

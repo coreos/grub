@@ -401,8 +401,7 @@ GRUB_MOD_INIT (drivemap)
 {
   grub_get_root_biosnumber_saved = grub_get_root_biosnumber;
   grub_get_root_biosnumber = grub_get_root_biosnumber_drivemap;
-  cmd = grub_register_extcmd ("drivemap", grub_cmd_drivemap,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("drivemap", grub_cmd_drivemap, 0,
 			      N_("-l | -r | [-s] grubdev osdisk."),
 			      N_("Manage the BIOS drive mappings."),
 			      options);

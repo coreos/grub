@@ -1942,16 +1942,13 @@ GRUB_MOD_INIT (bsd)
   /* Net and OpenBSD kernels are often compressed.  */
   grub_dl_load ("gzio");
 
-  cmd_freebsd = grub_register_extcmd ("kfreebsd", grub_cmd_freebsd,
-				      GRUB_COMMAND_FLAG_BOTH,
+  cmd_freebsd = grub_register_extcmd ("kfreebsd", grub_cmd_freebsd, 0,
 				      N_("FILE"), N_("Load kernel of FreeBSD."),
 				      freebsd_opts);
-  cmd_openbsd = grub_register_extcmd ("kopenbsd", grub_cmd_openbsd,
-				      GRUB_COMMAND_FLAG_BOTH,
+  cmd_openbsd = grub_register_extcmd ("kopenbsd", grub_cmd_openbsd, 0,
 				      N_("FILE"), N_("Load kernel of OpenBSD."),
 				      openbsd_opts);
-  cmd_netbsd = grub_register_extcmd ("knetbsd", grub_cmd_netbsd,
-				     GRUB_COMMAND_FLAG_BOTH,
+  cmd_netbsd = grub_register_extcmd ("knetbsd", grub_cmd_netbsd,  0,
 				     N_("FILE"), N_("Load kernel of NetBSD."),
 				     netbsd_opts);
   cmd_freebsd_loadenv =

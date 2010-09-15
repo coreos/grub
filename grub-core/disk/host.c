@@ -43,7 +43,6 @@ grub_host_open (const char *name, grub_disk_t disk)
   disk->total_sectors = 0;
   disk->id = (unsigned long) "host";
 
-  disk->has_partitions = 0;
   disk->data = 0;
 
   return GRUB_ERR_NONE;

@@ -303,14 +303,6 @@ for i in ${grub_mkconfig_dir}/* ; do
   esac
 done
 
-# Verify readability of ${grub_cfg}.new
-if test "x${grub_cfg}" != "x"; then
-  if is_path_readable_by_grub ${grub_cfg}.new ; then : ; else
-    echo "GRUB is unable to read ${grubdir}/${file}" >&2
-    exit 1   
-  fi
-fi
-
 if test "x${grub_cfg}" != "x" ; then
   # none of the children aborted with error, install the new grub.cfg
   mv -f ${grub_cfg}.new ${grub_cfg}

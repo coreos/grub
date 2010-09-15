@@ -144,8 +144,8 @@ get_sleep_type (grub_uint8_t *table, grub_uint8_t *end)
     {
       int add;
       prev = ptr;
-      grub_dprintf ("acpi", "Opcode %x\n", *ptr);
-      grub_dprintf ("acpi", "Tell %x\n", ptr - table);
+      grub_dprintf ("acpi", "Opcode 0x%x\n", *ptr);
+      grub_dprintf ("acpi", "Tell %x\n", (unsigned) (ptr - table));
       switch (*ptr)
 	{
 	case GRUB_ACPI_OPCODE_EXTOP:
@@ -225,19 +225,19 @@ grub_acpi_halt (void)
   if (!rsdp1)
     return;
 
-  rsdt = (struct grub_acpi_table_header *) rsdp1->rsdt_addr;
+  rsdt = (struct grub_acpi_table_header *) (grub_addr_t) rsdp1->rsdt_addr;
   for (entry_ptr = (grub_uint32_t *) (rsdt + 1);
        entry_ptr < (grub_uint32_t *) (((grub_uint8_t *) rsdt)
 				      + rsdt->length);
        entry_ptr++)
     {
-      if (grub_memcmp ((void *)*entry_ptr, "FACP", 4) == 0)
+      if (grub_memcmp ((void *) (grub_addr_t) *entry_ptr, "FACP", 4) == 0)
 	{
 	  grub_uint32_t port;
 	  struct grub_acpi_fadt *fadt
-	    = ((struct grub_acpi_fadt *) *entry_ptr);
+	    = ((struct grub_acpi_fadt *) (grub_addr_t) *entry_ptr);
 	  struct grub_acpi_table_header *dsdt
-	    = (struct grub_acpi_table_header *) fadt->dsdt_addr;
+	    = (struct grub_acpi_table_header *) (grub_addr_t) fadt->dsdt_addr;
 	  int sleep_type = -1;
 
 	  port = fadt->pm1a;

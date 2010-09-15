@@ -728,22 +728,27 @@ grub_ext2_open (struct grub_file *file, const char *name)
 {
   struct grub_ext2_data *data;
   struct grub_fshelp_node *fdiro = 0;
+  grub_err_t err;
 
   grub_dl_ref (my_mod);
 
   data = grub_ext2_mount (file->device->disk);
   if (! data)
-    goto fail;
+    {
+      err = grub_errno;
+      goto fail;
+    }
 
-  grub_fshelp_find_file (name, &data->diropen, &fdiro, grub_ext2_iterate_dir,
-			 grub_ext2_read_symlink, GRUB_FSHELP_REG);
-  if (grub_errno)
+  err = grub_fshelp_find_file (name, &data->diropen, &fdiro,
+			       grub_ext2_iterate_dir,
+			       grub_ext2_read_symlink, GRUB_FSHELP_REG);
+  if (err)
     goto fail;
 
   if (! fdiro->inode_read)
     {
-      grub_ext2_read_inode (data, fdiro->ino, &fdiro->inode);
-      if (grub_errno)
+      err = grub_ext2_read_inode (data, fdiro->ino, &fdiro->inode);
+      if (err)
 	goto fail;
     }
 
@@ -763,7 +768,7 @@ grub_ext2_open (struct grub_file *file, const char *name)
 
   grub_dl_unref (my_mod);
 
-  return grub_errno;
+  return err;
 }
 
 static grub_err_t
