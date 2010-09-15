@@ -1575,3 +1575,29 @@ grub_util_biosdisk_get_osdev (grub_disk_t disk)
 {
   return map[disk->id].device;
 }
+
+int
+grub_util_biosdisk_is_floppy (grub_disk_t disk)
+{
+  struct stat st;
+  int fd;
+
+  fd = open (map[disk->id].device, O_RDONLY);
+  /* Shouldn't happen.  */
+  if (fd == -1)
+    return 0;
+
+  /* Shouldn't happen either.  */
+  if (fstat (fd, &st) < 0)
+    return 0;
+
+#if defined(__NetBSD__)
+  if (major(st.st_rdev) == RAW_FLOPPY_MAJOR)
+    return 1;
+#endif
+
+  if (major(st.st_rdev) == FLOPPY_MAJOR)
+    return 1;
+
+  return 0;
+}

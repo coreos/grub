@@ -1,3 +1,10 @@
+2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_is_floppy): New
+	function.
+	* include/grub/emu/hostdisk.h (grub_util_biosdisk_is_floppy): New proto.
+	* util/grub-setup.c (setup): Use grub_util_biosdisk_is_floppy.
+
 2010-09-15  Yves Blusseau  <blusseau@zetam.org>
 
 	Add function to get completions from usage.

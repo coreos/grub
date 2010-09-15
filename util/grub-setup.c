@@ -339,8 +339,8 @@ setup (const char *dir,
     /* If DEST_DRIVE is a hard disk, enable the workaround, which is
        for buggy BIOSes which don't pass boot drive correctly. Instead,
        they pass 0x00 or 0x01 even when booted from 0x80.  */
-    if (dest_dev->disk->id & 0x80)
-    /* Replace the jmp (2 bytes) with double nop's.  */
+    if (!grub_util_biosdisk_is_floppy (dest_dev->disk))
+      /* Replace the jmp (2 bytes) with double nop's.  */
       *boot_drive_check = 0x9090;
   }
 #endif
