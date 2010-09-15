@@ -1,3 +1,12 @@
+2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gnulib/error.c: Resynced.
+	* grub-core/gnulib/getopt.c: Likewise.
+	* grub-core/gnulib/getopt_int.h: Likewise.
+	* grub-core/gnulib/regex.h: Likewise.
+	* grub-core/gnulib/regex_internal.c: Likewise.
+	* grub-core/gnulib/regex_internal.h: Likewise.
+
 2010-09-15  Szymon Janc <szymon@janc.net.pl>
 
 	* grub-core/lib/xzembed/xz_dec_stream.c (dec_main): Fix index and block
