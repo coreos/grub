@@ -1,5 +1,22 @@
 2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Move embedding routines to partmap sources files.
+
+	* grub-core/partmap/gpt.c (grub_gpt_partition_type_bios_boot)
+	[GRUB_UTIL]: New variable.
+	(gpt_partition_map_iterate): Set part.parent.
+	(gpt_partition_map_embed) [GRUB_UTIL]: New function.
+	(grub_gpt_partition_map) [GRUB_UTIL]: Set .embed.
+	* grub-core/partmap/msdos.c (pc_partition_map_embed) [GRUB_UTIL]:
+	New function.
+	(grub_msdos_partition_map) [GRUB_UTIL]: Set .embed.
+	* include/grub/partition.h (grub_embed_type_t) [GRUB_UTIL]: New type.
+	(grub_partition_map) [GRUB_UTIL]: New field embed.
+	* util/grub-setup.c (grub_gpt_partition_type_bios_boot): Removed.
+	(setup): Use ->embed.
+
+2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_is_floppy): New
 	function.
 	* include/grub/emu/hostdisk.h (grub_util_biosdisk_is_floppy): New proto.

@@ -26,8 +26,6 @@
 #include <grub/file.h>
 #include <grub/fs.h>
 #include <grub/partition.h>
-#include <grub/msdos_partition.h>
-#include <grub/gpt_partition.h>
 #include <grub/env.h>
 #include <grub/emu/hostdisk.h>
 #include <grub/machine/boot.h>
@@ -73,10 +71,6 @@
  * We patch up the images with the necessary values and write out the
  * result.
  */
-
-#ifdef GRUB_MACHINE_PCBIOS
-static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_PARTITION_TYPE_BIOS_BOOT;
-#endif
 
 #define DEFAULT_BOOT_FILE	"boot.img"
 #define DEFAULT_CORE_FILE	"core.img"
@@ -200,8 +194,6 @@ setup (const char *dir,
   grub_uint16_t last_length = GRUB_DISK_SECTOR_SIZE;
   grub_file_t file;
   FILE *fp;
-  struct { grub_uint64_t start; grub_uint64_t end; } embed_region;
-  embed_region.start = embed_region.end = ~0UL;
 
   auto void NESTED_FUNC_ATTR save_first_sector (grub_disk_addr_t sector,
 						unsigned offset,
@@ -283,7 +275,6 @@ setup (const char *dir,
   first_block = (struct grub_boot_blocklist *) (core_img
 						+ GRUB_DISK_SECTOR_SIZE
 						- sizeof (*block));
-
   grub_util_info ("root is `%s', dest is `%s'", root, dest);
 
   /* Open the root device and the destination device.  */
@@ -309,24 +300,6 @@ setup (const char *dir,
 #endif
 
 #ifdef GRUB_MACHINE_PCBIOS
-  if (dest_dev->disk->partition && fs_probe)
-    {
-      grub_fs_t fs;
-      fs = grub_fs_probe (dest_dev);
-      if (! fs)
-	grub_util_error (_("unable to identify a filesystem in %s; safety check can't be performed"),
-			 dest_dev->disk->name);
-
-      if (! fs->reserved_first_sector)
-	grub_util_error (_("%s appears to contain a %s filesystem which isn't known to "
-			   "reserve space for DOS-style boot.  Installing GRUB there could "
-			   "result in FILESYSTEM DESTRUCTION if valuable data is overwritten "
-			   "by grub-setup (--skip-fs-probe disables this "
-			   "check, use at your own risk)"), dest_dev->disk->name, fs->name);
-    }
-#endif
-
-#ifdef GRUB_MACHINE_PCBIOS
   {
     grub_uint16_t *boot_drive_check;
     boot_drive_check = (grub_uint16_t *) (boot_img
@@ -345,53 +318,27 @@ setup (const char *dir,
   }
 #endif
 
+  /* Clean out the blocklists.  */
+  block = first_block;
+  while (block->len)
+    {
+      grub_memset (block, 0, sizeof (block));
+
+      block--;
+
+      if ((char *) block <= core_img)
+	grub_util_error ("No terminator in the core image");
+    }
+
 #ifdef GRUB_MACHINE_PCBIOS
   {
-    const char *dest_partmap;
-    int multiple_partmaps;
-
-    auto int NESTED_FUNC_ATTR find_usable_region_msdos (grub_disk_t disk,
-							const grub_partition_t p);
-    int NESTED_FUNC_ATTR find_usable_region_msdos (grub_disk_t disk __attribute__ ((unused)),
-						   const grub_partition_t p)
-    {
-      /* There's always an embed region, and it starts right after the MBR.  */
-      embed_region.start = 1;
-
-      if (embed_region.end > grub_partition_get_start (p))
-	embed_region.end = grub_partition_get_start (p);
-
-      return 0;
-    }
-
-    auto int NESTED_FUNC_ATTR find_usable_region_gpt (grub_disk_t disk,
-						      const grub_partition_t p);
-    int NESTED_FUNC_ATTR find_usable_region_gpt (grub_disk_t disk __attribute__ ((unused)),
-						 const grub_partition_t p)
-    {
-      struct grub_gpt_partentry gptdata;
-
-      disk->partition = p->parent;
-      if (grub_disk_read (disk, p->offset, p->index,
-			  sizeof (gptdata), &gptdata))
-	return 0;
-
-      /* If there's an embed region, it is in a dedicated partition.  */
-      if (! memcmp (&gptdata.type, &grub_gpt_partition_type_bios_boot, 16))
-	{
-	  embed_region.start = grub_partition_get_start (p);
-	  embed_region.end = grub_partition_get_start (p) + grub_partition_get_len (p);
-
-	  return 1;
-	}
-      return 0;
-    }
-
-    if (dest_dev->disk->partition)
-      {
-	grub_util_warn (_("Attempting to install GRUB to a partition instead of the MBR.  This is a BAD idea."));
-	goto unable_to_embed;
-      }
+    grub_partition_map_t dest_partmap = NULL;
+    grub_partition_map_t container = dest_dev->disk->partition;
+    int multiple_partmaps = 0;
+    grub_err_t err;
+    grub_disk_addr_t sectors[core_sectors];
+    int i;
+    grub_fs_t fs;
 
     /* Unlike root_dev, with dest_dev we're interested in the partition map even
        if dest_dev itself is a whole disk.  */
@@ -400,29 +347,60 @@ setup (const char *dir,
     int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk __attribute__ ((unused)),
 					   const grub_partition_t p)
     {
-      if (p->parent)
+      if (p->parent != container)
 	return 0;
       if (dest_partmap == NULL)
-	dest_partmap = p->partmap->name;
-      else if (strcmp (dest_partmap, p->partmap->name) != 0)
 	{
-	  multiple_partmaps = 1;
-	  return 1;
+	  dest_partmap = p->partmap;
+	  return 0;
 	}
-      return 0;
+      if (dest_partmap == p->partmap)
+	return 0;
+      multiple_partmaps = 1;
+      return 1;
     }
-    dest_partmap = 0;
-    multiple_partmaps = 0;
+
     grub_partition_iterate (dest_dev->disk, identify_partmap);
+
+    fs = grub_fs_probe (dest_dev);
+    if (!fs)
+      grub_errno = GRUB_ERR_NONE;
+
+#ifdef GRUB_MACHINE_PCBIOS
+    if (fs_probe)
+      {
+	if (!fs && !dest_partmap)
+	  grub_util_error (_("unable to identify a filesystem in %s; safety check can't be performed"),
+			   dest_dev->disk->name);
+	if (fs && !fs->reserved_first_sector)
+	  grub_util_error (_("%s appears to contain a %s filesystem which isn't known to "
+			     "reserve space for DOS-style boot.  Installing GRUB there could "
+			     "result in FILESYSTEM DESTRUCTION if valuable data is overwritten "
+			     "by grub-setup (--skip-fs-probe disables this "
+			     "check, use at your own risk)"), dest_dev->disk->name, fs->name);
+
+	if (dest_partmap && strcmp (dest_partmap->name, "msdos") != 0
+	    && strcmp (dest_partmap->name, "gpt") != 0
+	    && strcmp (dest_partmap->name, "bsd") != 0
+	    && strcmp (dest_partmap->name, "netbsd") != 0
+	    && strcmp (dest_partmap->name, "openbsd") != 0
+	    && strcmp (dest_partmap->name, "sunpc") != 0)
+	  grub_util_error (_("%s appears to contain a %s partition map which isn't known to "
+			     "reserve space for DOS-style boot.  Installing GRUB there could "
+			     "result in FILESYSTEM DESTRUCTION if valuable data is overwritten "
+			     "by grub-setup (--skip-fs-probe disables this "
+			     "check, use at your own risk)"), dest_dev->disk->name, dest_partmap->name);
+      }
+#endif
 
     if (! dest_partmap)
       {
 	grub_util_warn (_("Attempting to install GRUB to a partitionless disk.  This is a BAD idea."));
 	goto unable_to_embed;
       }
-    if (multiple_partmaps)
+    if (multiple_partmaps || fs)
       {
-	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels.  This is not supported yet."));
+	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
 	goto unable_to_embed;
       }
 
@@ -433,44 +411,33 @@ setup (const char *dir,
 	      GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
 
     free (tmp_img);
-
-    if (strcmp (dest_partmap, "msdos") == 0)
-      grub_partition_iterate (dest_dev->disk, find_usable_region_msdos);
-    else if (strcmp (dest_partmap, "gpt") == 0)
-      grub_partition_iterate (dest_dev->disk, find_usable_region_gpt);
-    else
-      grub_util_error (_("No DOS-style partitions found"));
-
-    if (embed_region.end <= embed_region.start)
+    
+    if (!dest_partmap->embed)
       {
-	if (! strcmp (dest_partmap, "msdos"))
-	  grub_util_warn (_("This msdos-style partition label has no post-MBR gap; embedding won't be possible!"));
-	else
-	  grub_util_warn (_("This GPT partition label has no BIOS Boot Partition; embedding won't be possible!"));
+	grub_util_warn ("Partition style '%s' doesn't support embeding",
+			dest_partmap->name);
 	goto unable_to_embed;
       }
 
-    if ((unsigned long) core_sectors > embed_region.end - embed_region.start)
+    err = dest_partmap->embed (dest_dev->disk, core_sectors,
+			       GRUB_EMBED_PCBIOS, sectors);
+    
+    if (err)
       {
-	if (core_sectors > 62)
-	  grub_util_warn (_("Your core.img is unusually large.  It won't fit in the embedding area."));
-	else /* embed_region.end - embed_region.start < 62 */
-	  grub_util_warn (_("Your embedding area is unusually small.  core.img won't fit in it."));
+	grub_util_warn ("%s", grub_errmsg);
+	grub_errno = GRUB_ERR_NONE;
 	goto unable_to_embed;
       }
 
-    write_rootdev (core_img, root_dev,
-		   boot_img, embed_region.start);
+    save_first_sector (sectors[0] + grub_partition_get_start (container),
+		       0, GRUB_DISK_SECTOR_SIZE);
 
-    grub_util_info ("the core image will be embedded at sector 0x%llx", embed_region.start);
+    block = first_block;
+    for (i = 1; i < core_sectors; i++)
+      save_blocklists (sectors[i] + grub_partition_get_start (container),
+		       0, GRUB_DISK_SECTOR_SIZE);
 
-    /* The first blocklist contains the whole sectors.  */
-    first_block->start = grub_cpu_to_le64 (embed_region.start + 1);
-
-    /* These are filled elsewhere.  Verify them just in case.  */
-    assert (first_block->len == grub_host_to_target16 (core_sectors - 1));
-    assert (first_block->segment == grub_host_to_target16 (GRUB_BOOT_MACHINE_KERNEL_SEG
-							   + (GRUB_DISK_SECTOR_SIZE >> 4)));
+    write_rootdev (core_img, root_dev, boot_img, first_sector);
 
     /* Make sure that the second blocklist is a terminator.  */
     block = first_block - 1;
@@ -479,8 +446,13 @@ setup (const char *dir,
     block->segment = 0;
 
     /* Write the core image onto the disk.  */
-    if (grub_disk_write (dest_dev->disk, embed_region.start, 0, core_size, core_img))
-      grub_util_error ("%s", grub_errmsg);
+    for (i = 0; i < core_sectors; i++)
+      grub_disk_write (dest_dev->disk, sectors[i], 0,
+		       (core_size - i * GRUB_DISK_SECTOR_SIZE
+			< GRUB_DISK_SECTOR_SIZE) ? core_size
+		       - i * GRUB_DISK_SECTOR_SIZE
+		       : GRUB_DISK_SECTOR_SIZE,
+		       core_img + i * GRUB_DISK_SECTOR_SIZE);
 
     /* Write the boot image onto the disk.  */
     if (grub_disk_write (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE,
