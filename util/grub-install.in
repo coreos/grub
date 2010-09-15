@@ -83,7 +83,8 @@ fi
 # Usage: usage
 # Print the usage.
 usage () {
-if test "x$install_device" = x && test "${target_cpu}-${platform}" != "mips-yeeloong" && test "${target_cpu}-${platform}" != "i386-ieee1275" && test "${target_cpu}-${platform}" != "powerpc-ieee1275"; then
+if [ "${target_cpu}-${platform}" = "i386-pc" ] \
+    || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]; then
     cat <<EOF
 Usage: $self [OPTION] install_device
 EOF
@@ -261,7 +262,8 @@ done
 # for make_system_path_relative_to_its_root()
 . ${libdir}/grub/grub-mkconfig_lib
 
-if test "x$install_device" = x && test "${target_cpu}-${platform}" != "mips-yeeloong" && test "${target_cpu}-${platform}" != "i386-ieee1275" && test "${target_cpu}-${platform}" != "powerpc-ieee1275"; then
+if test "x$install_device" = x && ([ "${target_cpu}-${platform}" = "i386-pc" ] \
+    || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]); then
     echo "install_device not specified." 1>&2
     usage
     exit 1
