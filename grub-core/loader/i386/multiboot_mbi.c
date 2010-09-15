@@ -194,7 +194,7 @@ grub_multiboot_get_mbi_size (void)
     + ALIGN_UP (sizeof(PACKAGE_STRING), 4) 
     + grub_get_multiboot_mmap_count () * sizeof (struct multiboot_mmap_entry)
     + elf_sec_entsize * elf_sec_num
-#if HAS_VBE
+#if GRUB_MACHINE_HAS_VBE
     + sizeof (struct grub_vbe_info_block)
     + sizeof (struct grub_vbe_mode_info_block)
 #endif
@@ -243,7 +243,7 @@ grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
   grub_mmap_iterate (hook);
 }
 
-#if HAS_VBE
+#if GRUB_MACHINE_HAS_VBE
 static grub_err_t
 fill_vbe_info (struct multiboot_info *mbi, grub_uint8_t *ptrorig,
 	       grub_uint32_t ptrdest, int fill_generic)
