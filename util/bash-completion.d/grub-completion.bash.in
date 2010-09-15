@@ -58,7 +58,7 @@ __grubcomp () {
     esac
 }
 
-# Function that return long options from the help
+# Function that return long options from the help of the command
 # - arg: $1 (optional) command to get the long options from
 __grub_get_options_from_help () {
      local prog
@@ -70,10 +70,32 @@ __grub_get_options_from_help () {
      fi
 
      local i IFS=" "$'\t'$'\n'
-     for i in $($prog --help)
+     for i in $(LC_ALL=C $prog --help)
      do
         case $i in
              --*) echo "${i%=*}";;
+         esac
+     done
+}
+
+# Function that return long options from the usage of the command
+# - arg: $1 (optional) command to get the long options from
+__grub_get_options_from_usage () {
+     local prog
+
+     if [ $# -ge 1 ]; then
+         prog="$1"
+     else
+         prog="${COMP_WORDS[0]}"
+     fi
+
+     local i IFS=" "$'\t'$'\n'
+     for i in $(LC_ALL=C $prog --usage)
+     do
+        case $i in
+            \[--*\]) i=${i#[}           # Remove leading [
+                     echo ${i%%?(=*)]}  # Remove optional value and trailing ]
+                     ;;
          esac
      done
 }
@@ -355,7 +377,7 @@ _grub_mkimage () {
         -O|--format)
             # Get available format from help
             local prog=${COMP_WORDS[0]}
-            __grubcomp "$($prog --help | \
+            __grubcomp "$(LC_ALL=C $prog --help | \
                         awk -F ":" '/available formats/ { print $2 }' | \
                         sed 's/, / /g')"
             return
@@ -415,7 +437,7 @@ _grub_probe () {
         -t|--target)
             # Get target type from help
             local prog=${COMP_WORDS[0]}
-            __grubcomp "$($prog --help | \
+            __grubcomp "$(LC_ALL=C $prog --help | \
                         awk -F "[()]" '/--target=/ { print $2 }' | \
                         sed 's/|/ /g')"
             return

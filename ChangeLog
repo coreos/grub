@@ -1,3 +1,10 @@
+2010-09-15  Yves Blusseau  <blusseau@zetam.org>
+
+	Add function to get completions from usage.
+
+	* util/bash-completion.d/grub-completion.bash.in: Add function to get
+	completions from usage. Use LC_ALL=C to get options properly.
+
 2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/gnulib/basename-lgpl.c: Imported.
