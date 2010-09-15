@@ -49,6 +49,8 @@ struct legacy_command
     FLAG_FALLBACK_AVAILABLE =  4,
     FLAG_FALLBACK           =  8,
     FLAG_COLOR_INVERT       = 16,
+    FLAG_NO_MENUENTRY       = 32,
+    FLAG_MENUENTRY_ONLY     = 64,
   } flags;
   const char *shortdesc;
   const char *longdesc;
@@ -189,12 +191,12 @@ struct legacy_command legacy_commands[] =
     {"parttype", "parttool '%s' type=%s\n", NULL, 0,
      2, {TYPE_PARTITION, TYPE_INT}, 0,
      "PART TYPE", "Change the type of the partition PART to TYPE."},
-    /* FIXME: support usage in menuentry.  */
     {"password", "if [ \"$superusers\" = "" ]; then superusers=legacy; fi;\n"
-     "legacy_password %s '%s'",
+     "legacy_password %s '%s'\n",
      "menuentry \"Superuser menu\" --users \"legacy\" { configfile '%s'; }\n",
      2, 3, {TYPE_OPTION, TYPE_VERBATIM, TYPE_FILE},
-     FLAG_IGNORE_REST | FLAG_FALLBACK_AVAILABLE, "[--md5] PASSWD [FILE]",
+     FLAG_IGNORE_REST | FLAG_FALLBACK_AVAILABLE | FLAG_NO_MENUENTRY,
+     "[--md5] PASSWD [FILE]",
      "If used in the first section of a menu file, disable all"
      " interactive editing control (menu entry editor and"
      " command line). If the password PASSWD is entered, it loads the"
@@ -205,8 +207,15 @@ struct legacy_command legacy_commands[] =
      " The option --md5 tells GRUB that PASSWD is encrypted with"
      " md5crypt."},
     {"password", "if [ \"$superusers\" = "" ]; then superusers=legacy; fi;\n"
-     "legacy_password %s '%s'", NULL, 0, 2, {TYPE_OPTION, TYPE_VERBATIM},
-     FLAG_IGNORE_REST | FLAG_FALLBACK, NULL, NULL},
+     "legacy_password %s '%s'\n", NULL, 0, 2, {TYPE_OPTION, TYPE_VERBATIM},
+     FLAG_IGNORE_REST | FLAG_FALLBACK | FLAG_NO_MENUENTRY, NULL, NULL},
+    {"password", "if legacy_check_password %s '%s'; then configfile '%s'; "
+     "else return; fi\n", NULL, 2, 3, {TYPE_OPTION, TYPE_VERBATIM, TYPE_FILE},
+     FLAG_IGNORE_REST | FLAG_FALLBACK_AVAILABLE | FLAG_MENUENTRY_ONLY,
+     NULL, NULL},
+    {"password", "if ! legacy_check_password %s '%s'; then return fi;\n",
+     NULL, 0, 2, {TYPE_OPTION, TYPE_VERBATIM},
+     FLAG_IGNORE_REST | FLAG_FALLBACK | FLAG_MENUENTRY_ONLY, NULL, NULL},
     /* NOTE: GRUB2 has a design principle of not eternally waiting for user
        input. 60 seconds should be enough.
      */
@@ -442,7 +451,11 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 
   for (cmdnum = 0; cmdnum < ARRAY_SIZE (legacy_commands); cmdnum++)
     if (grub_strncmp (legacy_commands[cmdnum].name, cmdname, ptr - cmdname) == 0
-	&& legacy_commands[cmdnum].name[ptr - cmdname] == 0)
+	&& legacy_commands[cmdnum].name[ptr - cmdname] == 0
+	&& (!(*entryname != NULL && (legacy_commands[cmdnum].flags
+				     & FLAG_NO_MENUENTRY)))
+	&& (!(*entryname == NULL && (legacy_commands[cmdnum].flags
+				     & FLAG_MENUENTRY_ONLY))))
       break;
   if (cmdnum == ARRAY_SIZE (legacy_commands))
     return grub_xasprintf ("# Unsupported legacy command: %s\n", buf);

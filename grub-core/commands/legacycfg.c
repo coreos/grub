@@ -603,19 +603,14 @@ ib64t (char c)
   return -1;
 }
 
-static grub_err_t
-grub_cmd_legacy_password (struct grub_command *mycmd __attribute__ ((unused)),
-			  int argc, char **args)
+static struct legacy_md5_password *
+parse_legacy_md5 (int argc, char **args)
 {
   const char *salt, *saltend;
-  const char *p;
   struct legacy_md5_password *pw = NULL;
   int i;
+  const char *p;
 
-  if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "arguments expected");
-  if (args[0][0] != '-' || args[0][1] != '-')
-    return grub_normal_set_password ("legacy", args[0]);
   if (grub_memcmp (args[0], "--md5", sizeof ("--md5")) != 0)
     goto fail;
   if (argc == 1)
@@ -667,21 +662,76 @@ grub_cmd_legacy_password (struct grub_command *mycmd __attribute__ ((unused)),
   if (!pw->salt)
     goto fail;
 
-  return grub_auth_register_authentication ("legacy", check_password_md5, pw);
+  return pw;
 
  fail:
   grub_free (pw);
-  /* This is to imitate minor difference between grub-legacy in GRUB2.
-     If 2 password commands are executed in a row and second one fails
-     on GRUB2 the password of first one is used, whereas in grub-legacy
-     authenthication is denied. In case of no password command was executed
-     early both versions deny any access.  */
-  return grub_auth_register_authentication ("legacy", check_password_deny,
-					    NULL);
+  return NULL;
+}
+
+static grub_err_t
+grub_cmd_legacy_password (struct grub_command *mycmd __attribute__ ((unused)),
+			  int argc, char **args)
+{
+  struct legacy_md5_password *pw = NULL;
+
+  if (argc == 0)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "arguments expected");
+  if (args[0][0] != '-' || args[0][1] != '-')
+    return grub_normal_set_password ("legacy", args[0]);
+
+  pw = parse_legacy_md5 (argc, args);
+
+  if (pw)
+    return grub_auth_register_authentication ("legacy", check_password_md5, pw);
+  else
+    /* This is to imitate minor difference between grub-legacy in GRUB2.
+       If 2 password commands are executed in a row and second one fails
+       on GRUB2 the password of first one is used, whereas in grub-legacy
+       authenthication is denied. In case of no password command was executed
+       early both versions deny any access.  */
+    return grub_auth_register_authentication ("legacy", check_password_deny,
+					      NULL);
+}
+
+static grub_err_t
+grub_cmd_legacy_check_password (struct grub_command *mycmd __attribute__ ((unused)),
+				int argc, char **args)
+{
+  struct legacy_md5_password *pw = NULL;
+  char entered[GRUB_AUTH_MAX_PASSLEN];
+
+  if (argc == 0)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "arguments expected");
+  grub_printf ("Enter password:");
+  if (!grub_password_get (entered, GRUB_AUTH_MAX_PASSLEN))
+    return GRUB_ACCESS_DENIED;
+
+  if (args[0][0] != '-' || args[0][1] != '-')
+    {
+      char correct[GRUB_AUTH_MAX_PASSLEN];
+
+      grub_memset (correct, 0, sizeof (correct));
+      grub_strncpy (correct, args[0], sizeof (correct));
+
+      if (grub_crypto_memcmp (entered, correct, GRUB_AUTH_MAX_PASSLEN) != 0)
+	return GRUB_ACCESS_DENIED;
+      return GRUB_ERR_NONE;
+    }
+
+  pw = parse_legacy_md5 (argc, args);
+
+  if (!pw)
+    return GRUB_ACCESS_DENIED;
+
+  if (!check_password_md5_real (entered, pw))
+    return GRUB_ACCESS_DENIED;
+
+  return GRUB_ERR_NONE;
 }
 
 static grub_command_t cmd_source, cmd_configfile, cmd_kernel, cmd_initrd;
-static grub_command_t cmd_password, cmd_initrdnounzip;
+static grub_command_t cmd_password, cmd_check_password, cmd_initrdnounzip;
 
 GRUB_MOD_INIT(legacycfg)
 {
@@ -711,6 +761,12 @@ GRUB_MOD_INIT(legacycfg)
 					grub_cmd_legacy_password,
 					N_("[--md5] PASSWD [FILE]"),
 					N_("Simulate grub-legacy password command"));
+
+  cmd_check_password = grub_register_command ("legacy_check_password",
+					      grub_cmd_legacy_check_password,
+					      N_("[--md5] PASSWD [FILE]"),
+					      N_("Simulate grub-legacy password command in menuentry mode"));
+
 }
 
 GRUB_MOD_FINI(legacycfg)
@@ -721,4 +777,5 @@ GRUB_MOD_FINI(legacycfg)
   grub_unregister_command (cmd_initrd);
   grub_unregister_command (cmd_initrdnounzip);
   grub_unregister_command (cmd_password);
+  grub_unregister_command (cmd_check_password);
 }
