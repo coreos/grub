@@ -275,8 +275,8 @@ struct legacy_command legacy_commands[] =
      "Unhide PARTITION by clearing the \"hidden\" bit in its"
      " partition type code."},
     /* FIXME: uppermem unsupported.  */
-    {"uuid", "search -u '%s'\n", NULL, 0, 1, {TYPE_VERBATIM}, 0, "UUID",
-     "Find root by UUID"},
+    {"uuid", "search --set=root --fs-uuid '%s'\n", NULL, 0, 1, {TYPE_VERBATIM},
+     0, "UUID", "Find root by UUID"},
     /* FIXME: support MODE.  */
     {"vbeprobe", "vbeinfo\n", NULL, 0, 0, {}, 0, "[MODE]",
      "Probe VBE information. If the mode number MODE is specified, show only"
