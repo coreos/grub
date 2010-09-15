@@ -12,7 +12,6 @@ commands/efi/fixvideo.c
 commands/efi/loadbios.c
 commands/gptsync.c
 commands/halt.c
-commands/handler.c
 commands/hdparm.c
 commands/help.c
 commands/hexdump.c
@@ -62,7 +61,7 @@ loader/i386/linux.c
 loader/i386/pc/chainloader.c
 loader/i386/pc/linux.c
 loader/i386/xnu.c
-loader/multiboot_loader.c
+loader/multiboot.c
 loader/powerpc/ieee1275/linux.c
 loader/sparc64/ieee1275/linux.c
 loader/xnu.c
@@ -75,16 +74,7 @@ normal/menu_entry.c
 normal/menu_text.c
 normal/misc.c
 
-term/i386/pc/serial.c
+term/serial.c
 
-util/i386/pc/grub-mkimage.c
+util/grub-mkimage.c
 util/i386/pc/grub-setup.c
-
-util/mkisofs/eltorito.c
-util/mkisofs/joliet.c
-util/mkisofs/mkisofs.c
-util/mkisofs/mkisofs.h
-util/mkisofs/multi.c
-util/mkisofs/rock.c
-util/mkisofs/tree.c
-util/mkisofs/write.c

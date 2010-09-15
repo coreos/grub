@@ -18,6 +18,7 @@
 
 #include <grub/types.h>
 #include <grub/crypto.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/i18n.h>
 
@@ -29,37 +30,6 @@
 #include <termios.h>
 
 #include "progname.h"
-
-/* Few functions to make crypto happy.  */
-void *
-grub_memmove (void *dest, const void *src, grub_size_t n)
-{
-  return memmove (dest, src, n);
-}
-
-void *
-grub_memset (void *s, int c, grub_size_t n)
-{
-  return memset (s, c, n);
-}
-
-int 
-grub_vprintf (const char *fmt, va_list args)
-{
-  return vprintf (fmt, args);
-}
-
-int 
-grub_vsprintf (char *str, const char *fmt, va_list args)
-{
-  return vsprintf (str, fmt, args);
-}
-
-void
-grub_abort (void)
-{
-  abort ();
-}
 
 static struct option options[] =
   {
@@ -74,16 +44,16 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try ``grub-scrypt --help'' for more information.\n");
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
-Usage: grub-scrypt [OPTIONS]\n\
+Usage: %s [OPTIONS]\n\
 \nOptions:\n\
      -c number, --iteration-count=number  Number of PBKDF2 iterations\n\
      -l number, --buflen=number           Length of generated hash\n\
      -s number, --salt=number             Length of salt\n\
 \n\
-Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
+Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -112,7 +82,7 @@ hexify (char *hex, grub_uint8_t *bin, grub_size_t n)
 int
 main (int argc, char *argv[])
 {
-  unsigned int c = 10000, buflen = 64, saltlen = 64;
+  unsigned int count = 10000, buflen = 64, saltlen = 64;
   char *pass1, *pass2;
   char *bufhex, *salthex;
   gcry_err_code_t gcry_err;
@@ -137,7 +107,7 @@ main (int argc, char *argv[])
       switch (c)
 	{
 	case 'c':
-	  c = strtoul (optarg, NULL, 0);
+	  count = strtoul (optarg, NULL, 0);
 	  break;
 
 	case 'l':
@@ -165,12 +135,12 @@ main (int argc, char *argv[])
 
   bufhex = malloc (buflen * 2 + 1);
   if (!bufhex)
-    grub_util_error ("Out of memory");
+    grub_util_error ("out of memory");
   buf = malloc (buflen);
   if (!buf)
     {
       free (bufhex);
-      grub_util_error ("Out of memory");
+      grub_util_error ("out of memory");
     }
 
   salt = malloc (saltlen);
@@ -178,7 +148,7 @@ main (int argc, char *argv[])
     {
       free (bufhex);
       free (buf);
-      grub_util_error ("Out of memory");
+      grub_util_error ("out of memory");
     }
   salthex = malloc (saltlen * 2 + 1);
   if (!salthex)
@@ -186,7 +156,7 @@ main (int argc, char *argv[])
       free (salt);
       free (bufhex);
       free (buf);
-      grub_util_error ("Out of memory");
+      grub_util_error ("out of memory");
     }
 
   /* Disable echoing. Based on glibc.  */
@@ -225,7 +195,7 @@ main (int argc, char *argv[])
       /* Restore the original setting.  */
       if (tty_changed)
 	(void) tcsetattr (fileno (in), TCSAFLUSH, &s);
-      grub_util_error ("Failure to read password");
+      grub_util_error ("failure to read password");
     }
   if (nr >= 1 && pass1[nr-1] == '\n')
     pass1[nr-1] = 0;
@@ -249,7 +219,7 @@ main (int argc, char *argv[])
       free (bufhex);
       free (salthex);
       free (salt);
-      grub_util_error ("Failure to read password");
+      grub_util_error ("failure to read password");
     }
   if (nr >= 1 && pass2[nr-1] == '\n')
     pass2[nr-1] = 0;
@@ -264,7 +234,7 @@ main (int argc, char *argv[])
       free (bufhex);
       free (salthex);
       free (salt);
-      grub_util_error ("Passwords don't match");
+      grub_util_error ("passwords don't match");
     }
   memset (pass2, 0, strlen (pass2));
   free (pass2);
@@ -286,7 +256,7 @@ main (int argc, char *argv[])
 	free (salthex);
 	free (salt);
 	fclose (f);
-	grub_util_error ("Couldn't retrieve random data for salt");
+	grub_util_error ("couldn't retrieve random data for salt");
       }
     rd = fread (salt, 1, saltlen, f);
     if (rd != saltlen)
@@ -299,7 +269,7 @@ main (int argc, char *argv[])
 	free (salthex);
 	free (salt);
 	fclose (f);
-	grub_util_error ("Couldn't retrieve random data for salt");
+	grub_util_error ("couldn't retrieve random data for salt");
       }
     fclose (f);
   }
@@ -307,7 +277,7 @@ main (int argc, char *argv[])
   gcry_err = grub_crypto_pbkdf2 (GRUB_MD_SHA512,
 				 (grub_uint8_t *) pass1, strlen (pass1),
 				 salt, saltlen,
-				 c, buf, buflen);
+				 count, buf, buflen);
   memset (pass1, 0, strlen (pass1));
   free (pass1);
 
@@ -321,13 +291,14 @@ main (int argc, char *argv[])
       memset (salthex, 0, 2 * saltlen);
       free (salt);
       free (salthex);
-      grub_util_error ("Cryptographic error number %d", gcry_err);
+      grub_util_error ("cryptographic error number %d", gcry_err);
     }
 
   hexify (bufhex, buf, buflen);
   hexify (salthex, salt, saltlen);
 
-  printf ("Your PBKDF2 is grub.pbkdf2.sha512.%d.%s.%s\n", c, salthex, bufhex);
+  printf ("Your PBKDF2 is grub.pbkdf2.sha512.%d.%s.%s\n",
+	  count, salthex, bufhex);
   memset (buf, 0, buflen);
   memset (bufhex, 0, 2 * buflen);
   free (buf);

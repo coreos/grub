@@ -29,6 +29,8 @@
 
 #include <grub/i386/memory.h>
 
+#include <grub/offsets.h>
+
 /* The scratch buffer used in real mode code.  */
 #define GRUB_MEMORY_MACHINE_SCRATCH_ADDR	0x68000
 #define GRUB_MEMORY_MACHINE_SCRATCH_SEG	(GRUB_MEMORY_MACHINE_SCRATCH_ADDR >> 4)
@@ -39,9 +41,6 @@
 
 /* The size of the protect mode stack.  */
 #define GRUB_MEMORY_MACHINE_PROT_STACK_SIZE	0x8000
-
-/* The upper memory area (starting at 640 kiB).  */
-#define GRUB_MEMORY_MACHINE_UPPER		0xa0000
 
 /* The protected mode stack.  */
 #define GRUB_MEMORY_MACHINE_PROT_STACK	\

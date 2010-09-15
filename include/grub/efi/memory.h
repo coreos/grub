@@ -34,9 +34,9 @@
      by firmware. */
 #define GRUB_MACHINE_MEMORY_HOLE 	6
 
-
-grub_err_t EXPORT_FUNC(grub_machine_mmap_iterate)
-(int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));
+grub_err_t grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
+								    grub_uint64_t,
+								    grub_uint32_t));
 grub_err_t grub_machine_mmap_register (grub_uint64_t start, grub_uint64_t size,
 				       int type, int handle);
 grub_err_t grub_machine_mmap_unregister (int handle);

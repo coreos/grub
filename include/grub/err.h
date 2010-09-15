@@ -50,7 +50,7 @@ typedef enum
     GRUB_ERR_BAD_FONT,
     GRUB_ERR_NOT_IMPLEMENTED_YET,
     GRUB_ERR_SYMLINK_LOOP,
-    GRUB_ERR_BAD_GZIP_DATA,
+    GRUB_ERR_BAD_COMPRESSED_DATA,
     GRUB_ERR_MENU,
     GRUB_ERR_TIMEOUT,
     GRUB_ERR_IO,
@@ -66,7 +66,7 @@ void EXPORT_FUNC(grub_fatal) (const char *fmt, ...) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_error_push) (void);
 int EXPORT_FUNC(grub_error_pop) (void);
 void EXPORT_FUNC(grub_print_error) (void);
-int EXPORT_FUNC(grub_err_printf) (const char *fmt, ...)
-__attribute__ ((format (printf, 1, 2)));
+int grub_err_printf (const char *fmt, ...)
+     __attribute__ ((format (printf, 1, 2)));
 
 #endif /* ! GRUB_ERR_HEADER */

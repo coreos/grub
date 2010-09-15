@@ -79,9 +79,9 @@ struct grub_e820_mmap
   grub_uint32_t type;
 } __attribute__((packed));
 
-#define GRUB_VIDEO_TYPE_TEXT	0x01
-#define GRUB_VIDEO_TYPE_VLFB	0x23    /* VESA VGA in graphic mode     */
-#define GRUB_VIDEO_TYPE_EFI	0x70
+#define GRUB_VIDEO_LINUX_TYPE_TEXT	0x01
+#define GRUB_VIDEO_LINUX_TYPE_VESA	0x23    /* VESA VGA in graphic mode.  */
+#define GRUB_VIDEO_LINUX_TYPE_SIMPLE	0x70    /* Linear framebuffer without any additional functions.  */
 
 /* For the Linux/i386 boot protocol version 2.03.  */
 struct linux_kernel_header
@@ -124,7 +124,7 @@ struct linux_kernel_header
   grub_uint32_t bootsect_kludge;	/* obsolete */
   grub_uint16_t heap_end_ptr;		/* Free memory after setup end */
   grub_uint16_t pad1;			/* Unused */
-  char *cmd_line_ptr;			/* Points to the kernel command line */
+  grub_uint32_t cmd_line_ptr;		/* Points to the kernel command line */
   grub_uint32_t initrd_addr_max;        /* Highest address for initrd */
 } __attribute__ ((packed));
 

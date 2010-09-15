@@ -24,6 +24,7 @@
 
 /* How many bytes from the start of the file we search for the header.  */
 #define MULTIBOOT_SEARCH			8192
+#define MULTIBOOT_HEADER_ALIGN			4
 
 /* The magic field should contain this.  */
 #define MULTIBOOT_HEADER_MAGIC			0x1BADB002
@@ -233,6 +234,8 @@ struct multiboot_mmap_entry
   multiboot_uint64_t len;
 #define MULTIBOOT_MEMORY_AVAILABLE		1
 #define MULTIBOOT_MEMORY_RESERVED		2
+#define MULTIBOOT_MEMORY_ACPI_RECLAIMABLE       3
+#define MULTIBOOT_MEMORY_NVS                    4
   multiboot_uint32_t type;
 } __attribute__((packed));
 typedef struct multiboot_mmap_entry multiboot_memory_map_t;
