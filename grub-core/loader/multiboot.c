@@ -21,10 +21,8 @@
  *  FIXME: The following features from the Multiboot specification still
  *         need to be implemented:
  *  - VBE support
- *  - symbol table
  *  - drives table
  *  - ROM configuration table
- *  - APM table
  */
 
 #include <grub/loader.h>

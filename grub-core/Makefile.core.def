@@ -1433,3 +1433,9 @@ module = {
   name = testload;
   common = commands/testload.c;
 };
+
+module = {
+  name = lsapm;
+  common = commands/i386/pc/lsapm.c;
+  enable = i386_pc;
+};

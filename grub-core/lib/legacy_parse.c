@@ -99,7 +99,8 @@ struct legacy_command legacy_commands[] =
      "Set the default entry to entry number NUM (if not specified, it is"
      " 0, the first entry) or the entry number saved by savedefault."},
     /* FIXME: dhcp unsupported.  */
-    /* FIXME: displayapm unsupported.  */
+    {"displayapm", "lsapm\n", NULL, 0, 0, {}, 0, 0,
+     "Display APM BIOS information."},
     {"displaymem", "lsmmap\n", NULL, 0, 0, {}, 0, 0, 
      "Display what GRUB thinks the system address space map of the"
      " machine is, including all regions of physical RAM installed."},

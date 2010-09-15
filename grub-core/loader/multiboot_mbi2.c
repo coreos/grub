@@ -20,6 +20,7 @@
 #include <grub/memory.h>
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>
+#include <grub/machine/apm.h>
 #endif
 #include <grub/multiboot.h>
 #include <grub/cpu/multiboot.h>
@@ -279,7 +280,8 @@ grub_multiboot_get_mbi_size (void)
     + elf_sec_entsize * elf_sec_num
     + (sizeof (struct multiboot_tag_mmap) + grub_get_multiboot_mmap_count ()
        * sizeof (struct multiboot_mmap_entry))
-    + sizeof (struct multiboot_tag_vbe) + MULTIBOOT_TAG_ALIGN - 1;
+    + sizeof (struct multiboot_tag_vbe) + MULTIBOOT_TAG_ALIGN - 1
+    + sizeof (struct multiboot_tag_apm) + MULTIBOOT_TAG_ALIGN - 1;
 }
 
 /* Fill previously allocated Multiboot mmap.  */
@@ -514,6 +516,31 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
     grub_memcpy (tag->string, PACKAGE_STRING, sizeof (PACKAGE_STRING));
     ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   }
+
+#ifdef GRUB_MACHINE_PCBIOS
+  {
+    struct grub_apm_info info;
+    if (grub_apm_get_info (&info))
+      {
+	struct multiboot_tag_apm *tag = (struct multiboot_tag_apm *) ptrorig;
+
+	tag->type = MULTIBOOT_TAG_TYPE_APM;
+	tag->size = sizeof (struct multiboot_tag_apm); 
+
+	tag->cseg = info.cseg;
+	tag->offset = info.offset;
+	tag->cseg_16 = info.cseg_16;
+	tag->dseg = info.dseg;
+	tag->flags = info.flags;
+	tag->cseg_len = info.cseg_len;
+	tag->dseg_len = info.dseg_len;
+	tag->cseg_16_len = info.cseg_16_len;
+	tag->version = info.version;
+
+	ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
+      }
+  }
+#endif
 
   {
     unsigned i;
