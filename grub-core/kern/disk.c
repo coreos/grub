@@ -281,12 +281,6 @@ grub_disk_open (const char *name)
       goto fail;
     }
 
-  if (p && ! disk->has_partitions)
-    {
-      grub_error (GRUB_ERR_BAD_DEVICE, "no partition on this disk");
-      goto fail;
-    }
-
   disk->dev = dev;
 
   if (p)

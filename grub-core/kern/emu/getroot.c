@@ -572,6 +572,10 @@ int
 grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
 {
 #ifdef __linux__
+  /* User explicitly claims that this drive is visible by BIOS.  */
+  if (grub_util_biosdisk_is_present (os_dev))
+    return GRUB_DEV_ABSTRACTION_NONE;
+
   /* Check for LVM.  */
   if (!strncmp (os_dev, "/dev/mapper/", 12)
       && ! grub_util_is_dmraid (os_dev)

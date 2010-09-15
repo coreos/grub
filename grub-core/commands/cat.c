@@ -91,7 +91,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(cat)
 {
-  cmd = grub_register_extcmd ("cat", grub_cmd_cat, GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("cat", grub_cmd_cat, 0,
 			      N_("FILE"), N_("Show the contents of a file."),
 			      options);
 }

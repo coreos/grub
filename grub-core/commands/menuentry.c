@@ -128,7 +128,7 @@ append_menu_entry (int argc, const char **args, char **classes,
   if (! menu_args)
     goto fail;
 
-  for (i = 0; args[i]; i++)
+  for (i = 0; i < argc; i++)
     {
       menu_args[i] = grub_strdup (args[i]);
       if (! menu_args[i])
@@ -274,7 +274,7 @@ void
 grub_menu_init (void)
 {
   cmd = grub_register_extcmd ("menuentry", grub_cmd_menuentry,
-			      GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_BLOCKS,
+			      GRUB_COMMAND_FLAG_BLOCKS,
 			      N_("BLOCK"), N_("Define a menuentry."), options);
 }
 

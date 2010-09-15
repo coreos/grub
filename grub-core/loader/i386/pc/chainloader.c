@@ -26,13 +26,13 @@
 #include <grub/disk.h>
 #include <grub/misc.h>
 #include <grub/types.h>
-#include <grub/machine/init.h>
 #include <grub/partition.h>
 #include <grub/machine/memory.h>
 #include <grub/dl.h>
 #include <grub/command.h>
 #include <grub/msdos_partition.h>
 #include <grub/machine/biosnum.h>
+#include <grub/cpu/floppy.h>
 #include <grub/i18n.h>
 #include <grub/video.h>
 #include <grub/mm.h>

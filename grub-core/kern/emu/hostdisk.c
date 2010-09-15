@@ -221,7 +221,6 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "no mapping exists for `%s'", name);
 
-  disk->has_partitions = 1;
   disk->id = drive;
   disk->data = data = xmalloc (sizeof (struct grub_util_biosdisk_data));
   data->dev = NULL;
@@ -1117,6 +1116,16 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  return path;
 	}
 
+      if (strncmp ("md", p, 2) == 0
+	  && p[2] >= '0' && p[2] <= '9')
+	{
+	  char *ptr = p + 2;
+	  while (*ptr >= '0' && *ptr <= '9')
+	    ptr++;
+	  *ptr = 0;
+	  return path;
+	}
+
       /* If this is an IDE, SCSI or Virtio disk.  */
       if (strncmp ("vdisk", p, 5) == 0
 	  && p[5] >= 'a' && p[5] <= 'z')
@@ -1334,7 +1343,7 @@ device_is_wholedisk (const char *os_dev)
 #endif /* defined(__NetBSD__) */
 
 static int
-find_system_device (const char *os_dev, struct stat *st)
+find_system_device (const char *os_dev, struct stat *st, int add)
 {
   unsigned int i;
   char *os_disk;
@@ -1352,6 +1361,9 @@ find_system_device (const char *os_dev, struct stat *st)
 	return i;
       }
 
+  if (!add)
+    return -1;
+
   if (i == ARRAY_SIZE (map))
     grub_util_error (_("device count exceeds limit"));
 
@@ -1359,6 +1371,17 @@ find_system_device (const char *os_dev, struct stat *st)
   map[i].drive = xstrdup (os_disk);
 
   return i;
+}
+
+int
+grub_util_biosdisk_is_present (const char *os_dev)
+{
+  struct stat st;
+
+  if (stat (os_dev, &st) < 0)
+    return 0;
+
+  return find_system_device (os_dev, &st, 0) != -1;
 }
 
 char *
@@ -1373,7 +1396,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       return 0;
     }
 
-  drive = find_system_device (os_dev, &st);
+  drive = find_system_device (os_dev, &st, 1);
   if (drive < 0)
     {
       grub_error (GRUB_ERR_UNKNOWN_DEVICE,

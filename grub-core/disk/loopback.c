@@ -29,7 +29,6 @@ struct grub_loopback
 {
   char *devname;
   grub_file_t file;
-  int has_partitions;
   struct grub_loopback *next;
 };
 
@@ -38,7 +37,6 @@ static struct grub_loopback *loopback_list;
 static const struct grub_arg_option options[] =
   {
     {"delete", 'd', 0, N_("Delete the loopback device entry."), 0, 0},
-    {"partitions", 'p', 0, N_("Simulate a hard drive with partitions."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -106,9 +104,6 @@ grub_cmd_loopback (grub_extcmd_context_t ctxt, int argc, char **args)
       grub_file_close (newdev->file);
       newdev->file = file;
 
-      /* Set has_partitions when `--partitions' was used.  */
-      newdev->has_partitions = state[1].set;
-
       return 0;
     }
 
@@ -125,9 +120,6 @@ grub_cmd_loopback (grub_extcmd_context_t ctxt, int argc, char **args)
     }
 
   newdev->file = file;
-
-  /* Set has_partitions when `--partitions' was used.  */
-  newdev->has_partitions = state[1].set;
 
   /* Add the new entry to the list.  */
   newdev->next = loopback_list;
@@ -174,7 +166,6 @@ grub_loopback_open (const char *name, grub_disk_t disk)
     disk->total_sectors = GRUB_DISK_SIZE_UNKNOWN;
   disk->id = (unsigned long) dev;
 
-  disk->has_partitions = dev->has_partitions;
   disk->data = dev->file;
 
   return 0;
@@ -230,8 +221,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(loopback)
 {
-  cmd = grub_register_extcmd ("loopback", grub_cmd_loopback,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("loopback", grub_cmd_loopback, 0,
 			      N_("[-d|-p] DEVICENAME FILE."),
 			      N_("Make a device of a file."), options);
   grub_disk_dev_register (&grub_loopback_dev);

@@ -252,26 +252,22 @@ static grub_extcmd_t cmd, cmd_md5, cmd_sha256, cmd_sha512;
 
 GRUB_MOD_INIT(hashsum)
 {
-  cmd = grub_register_extcmd ("hashsum", grub_cmd_hashsum,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("hashsum", grub_cmd_hashsum, 0,
 			      "hashsum -h HASH [-c FILE [-p PREFIX]] "
 			      "[FILE1 [FILE2 ...]]",
 			      "Compute or check hash checksum.",
 			      options);
-  cmd_md5 = grub_register_extcmd ("md5sum", grub_cmd_hashsum,
-				  GRUB_COMMAND_FLAG_BOTH,
+  cmd_md5 = grub_register_extcmd ("md5sum", grub_cmd_hashsum, 0,
 				  N_("[-c FILE [-p PREFIX]] "
 				     "[FILE1 [FILE2 ...]]"),
 				  N_("Compute or check hash checksum."),
 				  options);
-  cmd_sha256 = grub_register_extcmd ("sha256sum", grub_cmd_hashsum,
-				     GRUB_COMMAND_FLAG_BOTH,
+  cmd_sha256 = grub_register_extcmd ("sha256sum", grub_cmd_hashsum, 0,
 				     N_("[-c FILE [-p PREFIX]] "
 					"[FILE1 [FILE2 ...]]"),
 				     "Compute or check hash checksum.",
 				     options);
-  cmd_sha512 = grub_register_extcmd ("sha512sum", grub_cmd_hashsum,
-				     GRUB_COMMAND_FLAG_BOTH,
+  cmd_sha512 = grub_register_extcmd ("sha512sum", grub_cmd_hashsum, 0,
 				     N_("[-c FILE [-p PREFIX]] "
 					"[FILE1 [FILE2 ...]]"),
 				     N_("Compute or check hash checksum."),

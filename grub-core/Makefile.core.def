@@ -10,20 +10,20 @@ kernel = {
   x86_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment';
 
   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
-  i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x8200';
 
   i386_qemu_ldflags        = '$(TARGET_IMG_LDFLAGS)';
-  i386_qemu_ldflags        = '$(TARGET_IMG_BASE_LDOPT),$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  i386_qemu_ldflags        = '$(TARGET_IMG_BASE_LDOPT),0x8200';
 
-  i386_coreboot_ldflags    = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-  i386_multiboot_ldflags   = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-  i386_ieee1275_ldflags    = '-Wl,-Ttext=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-  mips_yeeloong_ldflags    = '-Wl,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
-  powerpc_ieee1275_ldflags = '-Wl,-Ttext,$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
+  i386_coreboot_ldflags    = '-Wl,-Ttext=0x8200';
+  i386_multiboot_ldflags   = '-Wl,-Ttext=0x8200';
+  i386_ieee1275_ldflags    = '-Wl,-Ttext=0x10000';
+  mips_yeeloong_ldflags    = '-Wl,-Ttext,0x80200000';
+  powerpc_ieee1275_ldflags = '-Wl,-Ttext,0x200000';
+  sparc64_ieee1275_ldflags = '-Wl,-Ttext,0x4400';
 
   mips_yeeloong_cppflags = '-DUSE_ASCII_FAILBACK';
   i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
-  i386_qemu_ccasflags    = '-DGRUB_KERNEL_MACHINE_LINK_ADDR=$(GRUB_KERNEL_MACHINE_LINK_ADDR)';
   emu_cflags = '$(CFLAGS_GNULIB)';
   emu_cppflags = '$(CPPFLAGS_GNULIB)';
 
@@ -150,6 +150,7 @@ kernel = {
 
   emu = disk/host.c;
   emu = gnulib/progname.c;
+  emu = gnulib/error.c;
   emu = kern/emu/console.c;
   emu = kern/emu/getroot.c;
   emu = kern/emu/hostdisk.c;
@@ -187,7 +188,7 @@ program = {
 
   ldadd = 'kernel.img$(EXEEXT)';
   ldadd = '$(MODULE_FILES)';
-  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
 
   enable = emu;
 };
@@ -200,7 +201,7 @@ program = {
   emu_nodist = symlist.c;
 
   ldadd = 'kernel.img$(EXEEXT)';
-  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
 
   enable = emu;
 };
@@ -319,25 +320,19 @@ module = {
 module = {
   name = usbserial_common;
   common = bus/usb/serial/common.c;
-  enable = emu;
   enable = usb;
-  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
   name = usbserial_pl2303;
   common = bus/usb/serial/pl2303.c;
-  enable = emu;
   enable = usb;
-  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
   name = usbserial_ftdi;
   common = bus/usb/serial/ftdi.c;
-  enable = emu;
   enable = usb;
-  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -404,7 +399,7 @@ module = {
 module = {
   name = acpi;
 
-  x86 = commands/acpi.c;
+  common = commands/acpi.c;
   x86_efi = commands/efi/acpi.c;
   i386_pc = commands/i386/pc/acpi.c;
   i386_coreboot = commands/i386/pc/acpi.c;
@@ -414,6 +409,33 @@ module = {
   enable = i386_pc;
   enable = i386_coreboot;
   enable = i386_multiboot;
+};
+
+module = {
+  name = lsacpi;
+
+  common = commands/lsacpi.c;
+
+  enable = x86_efi;
+  enable = i386_pc;
+  enable = i386_coreboot;
+  enable = i386_multiboot;
+};
+
+module = {
+  name = lsefisystab;
+
+  common = commands/efi/lsefisystab.c;
+
+  enable = x86_efi;
+};
+
+module = {
+  name = lssal;
+
+  common = commands/efi/lssal.c;
+
+  enable = x86_efi;
 };
 
 module = {
@@ -493,6 +515,10 @@ module = {
   name = halt;
   nopc = commands/halt.c;
   i386_pc = commands/i386/pc/halt.c;
+  i386_pc = commands/acpihalt.c;
+  i386_coreboot = commands/acpihalt.c;
+  i386_multiboot = commands/acpihalt.c;
+  x86_efi = commands/acpihalt.c;
   i386_multiboot = lib/i386/halt.c;
   i386_coreboot = lib/i386/halt.c;
   i386_qemu = lib/i386/halt.c;
@@ -673,15 +699,8 @@ module = {
 };
 
 module = {
-  name = vbeinfo;
-  i386_pc = commands/i386/pc/vbeinfo.c;
-  enable = i386_pc;
-};
-
-module = {
-  name = vbetest;
-  i386_pc = commands/i386/pc/vbetest.c;
-  enable = i386_pc;
+  name = videoinfo;
+  common = commands/videoinfo.c;
 };
 
 module = {

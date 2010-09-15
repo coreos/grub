@@ -99,9 +99,6 @@ struct grub_disk
   /* The total number of sectors.  */
   grub_uint64_t total_sectors;
 
-  /* If partitions can be stored.  */
-  int has_partitions;
-
   /* The id used by the disk cache manager.  */
   unsigned long id;
 

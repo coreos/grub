@@ -44,7 +44,7 @@ load_kfreebsd_module ()
   mod="$1"
   allow_fail="$2"
 
-  if ! is_path_readable_by_grub "${module_dir}/${mod}.ko" ; then
+  if ! test -e "${module_dir}/${mod}.ko" ; then
     if [ "${allow_fail}" = "true" ] ; then
       # Return silently
       return
@@ -77,13 +77,6 @@ kfreebsd_entry ()
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
 
-  if ! is_path_readable_by_grub ${dirname}/${basename} \
-      ${GRUB_DEVICE_BOOT} \
-      ${rel_dirname}/${basename} ; then
-    echo "${dirname}/${basename} is not readable by GRUB" >&2
-    exit 1
-  fi
-
   printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
 	echo			'$(printf "$(gettext_quoted "Loading kernel of FreeBSD %s ...")" ${version})'
@@ -102,13 +95,7 @@ EOF
     zfs)
       load_kfreebsd_module opensolaris false
 
-      if ! is_path_readable_by_grub ${dirname}/zfs/zpool.cache \
-          ${GRUB_DEVICE_BOOT} \
-          ${rel_dirname}/zfs/zpool.cache ; then
-        echo "${dirname}/zfs/zpool.cache is not readable by GRUB" >&2
-        exit 1
-      fi
-
+      ls "${dirname}/zfs/zpool.cache" > /dev/null
       printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
 	kfreebsd_module		${rel_dirname}/zfs/zpool.cache type=/boot/zfs/zpool.cache

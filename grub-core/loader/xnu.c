@@ -1434,8 +1434,7 @@ GRUB_MOD_INIT(xnu)
 				       "Load XNU ramdisk. "
 				       "It will be seen as md0.");
   cmd_splash = grub_register_extcmd ("xnu_splash",
-				     grub_cmd_xnu_splash,
-				     GRUB_COMMAND_FLAG_BOTH, 0,
+				     grub_cmd_xnu_splash, 0, 0,
 				     N_("Load a splash image for XNU."),
 				     xnu_splash_cmd_options);
 

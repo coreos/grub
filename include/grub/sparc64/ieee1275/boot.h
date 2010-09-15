@@ -52,4 +52,13 @@
 
 #define GRUB_BOOT_MACHINE_KERNEL_ADDR 0x4200
 
+#ifndef ASM_FILE
+/* This is the blocklist used in the diskboot image.  */
+struct grub_boot_blocklist
+{
+  grub_uint64_t start;
+  grub_uint32_t len;
+} __attribute__ ((packed));
+#endif
+
 #endif /* ! BOOT_MACHINE_HEADER */
