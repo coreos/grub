@@ -1,5 +1,14 @@
 2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gnulib/basename-lgpl.c: Imported.
+	* grub-core/gnulib/basename.c: Likewise.
+	* grub-core/gnulib/dirname-lgpl.c: Likewise.
+	* grub-core/gnulib/dirname.c: Likewise.
+	* grub-core/gnulib/dirname.h: Likewise.
+	* grub-core/gnulib/stripslash.c: Likewise.
+
+2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gnulib/error.c: Resynced.
 	* grub-core/gnulib/getopt.c: Likewise.
 	* grub-core/gnulib/getopt_int.h: Likewise.
