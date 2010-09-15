@@ -22,11 +22,8 @@
 #include <grub/dl.h>
 #include <grub/command.h>
 
-struct grub_net_route *grub_net_routes = NULL;
-struct grub_net_network_layer_interface *grub_net_network_layer_interfaces = NULL;
-struct grub_net_card *grub_net_cards = NULL;
-struct grub_net_network_layer_protocol *grub_net_network_layer_protocols = NULL;
 
+/*Find which protocol understands the given address*/
 grub_err_t
 grub_net_resolve_address (struct grub_net_network_layer_protocol **prot,
 			  char *name,
@@ -102,7 +99,7 @@ grub_cmd_deladdr (struct grub_command *cmd __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
-    if (grub_strcmp (inter->name, args[1]))
+    if ( !grub_strcmp (inter->name, args[1]))
       break;
   if (inter == NULL)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("address not found"));
@@ -124,21 +121,36 @@ grub_cmd_addaddr (struct grub_command *cmd __attribute__ ((unused)),
   grub_err_t err;
   grub_net_network_layer_address_t addr;
   struct grub_net_network_layer_interface *inter;
+  grub_printf("Enter add addr function.\n");
+
+  grub_printf("card list address  in net.c = %x\n", (int) grub_net_cards);
 
   if (argc != 4)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("four arguments expected"));
   
   FOR_NET_CARDS (card)
-    if (grub_strcmp (card->name, args[1]))
+  {
+    grub_printf("card address = %x\n", (int) card);
+    grub_printf("card->name = %s\n",card->name);
+    grub_printf("args[1] = %s\n",args[1]);
+    if ( !grub_strcmp (card->name, args[1]))
       break;
+  }
+  
+  grub_printf("Out of the loop.\n");
+  grub_printf("card address = %x\n", (int) card);
+  
   if (card == NULL)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("card not found")); 
 
+  grub_printf("protocols loop.\n");
   FOR_NET_NETWORK_LEVEL_PROTOCOLS (prot)
-    if (grub_strcmp (prot->name, args[2]))
+    if ( !grub_strcmp (prot->name, args[2]))
       break;
 
-  if (card == NULL)
+  grub_printf("end protocols loop.\n");
+
+  if (prot == NULL)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("protocol not found")); 
 
   err = grub_net_resolve_address_in_protocol (prot, args[3], &addr);
@@ -163,6 +175,12 @@ grub_cmd_addaddr (struct grub_command *cmd __attribute__ ((unused)),
     }
   grub_net_network_layer_interface_register (inter);
 
+  FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
+  {
+    grub_printf("inter->name = %s\n",inter->name);
+    grub_printf("inter->address = %x\n",(int) (inter->address.ipv4));
+  
+  }
   return GRUB_ERR_NONE;
 }
 
@@ -178,7 +196,7 @@ grub_cmd_delroute (struct grub_command *cmd __attribute__ ((unused)),
   
   for (prev = &grub_net_routes, route = *prev; route; prev = &((*prev)->next),
 	 route = *prev)
-    if (grub_strcmp (route->name, args[0]) == 0)
+    if ( !grub_strcmp (route->name, args[0]) == 0)
       {
 	*prev = route->next;
 	grub_free (route->name);
@@ -232,7 +250,7 @@ grub_cmd_addroute (struct grub_command *cmd __attribute__ ((unused)),
 			 N_("Unrecognised address %s"), args[1]);
     }
 
-  if (grub_strcmp (args[2], "gw") == 0 && argc >= 4)
+  if ( !grub_strcmp (args[2], "gw") == 0 && argc >= 4)
     {
       grub_err_t err;
       route->is_gateway = 1;
@@ -251,7 +269,7 @@ grub_cmd_addroute (struct grub_command *cmd __attribute__ ((unused)),
       route->is_gateway = 0;
 
       FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
-	if (grub_strcmp (inter->name, args[2]))
+	if ( !grub_strcmp (inter->name, args[2]))
 	  break;
 
       if (!inter)

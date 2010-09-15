@@ -31,6 +31,8 @@ struct grub_net_card;
 
 struct grub_net_card_driver
 {
+  struct grub_net_card_driver *next;
+  char *name;
   grub_err_t (*init) (struct grub_net_card *dev);
   grub_err_t (*fini) (struct grub_net_card *dev);
   grub_err_t (*send) (struct grub_net_card *dev,struct grub_net_buff *nb);
@@ -66,7 +68,7 @@ struct grub_net_network_layer_interface
   /* Underlying protocol.  */
   struct grub_net_network_layer_protocol *protocol;
   struct grub_net_card *card;
-  union grub_net_network_layer_address address;
+  grub_net_network_layer_address_t address;
   void *data;
 };
 
@@ -121,7 +123,7 @@ grub_net_session_recv (struct grub_net_session *session, void *buf,
   return session->protocol->recv (session, buf, size);
 }
 
-struct grub_net_network_layer_interface *grub_net_network_layer_interfaces;
+extern struct grub_net_network_layer_interface *EXPORT_VAR(grub_net_network_layer_interfaces);
 
 static inline void
 grub_net_network_layer_interface_register (struct grub_net_network_layer_interface *inter)
@@ -139,7 +141,7 @@ grub_net_network_layer_interface_unregister (struct grub_net_network_layer_inter
 
 #define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_layer_interfaces; var; var = var->next)
 
-extern struct grub_net_route *grub_net_routes;
+extern struct grub_net_route *EXPORT_VAR(grub_net_routes);
 
 static inline void
 grub_net_route_register (struct grub_net_route *route)
@@ -157,7 +159,7 @@ grub_net_route_unregister (struct grub_net_route *route)
 
 #define FOR_NET_ROUTES(var) for (var = grub_net_routes; var; var = var->next)
 
-extern struct grub_net_card *grub_net_cards;
+extern struct grub_net_card *EXPORT_VAR(grub_net_cards);
 
 static inline void
 grub_net_card_register (struct grub_net_card *card)
@@ -174,7 +176,26 @@ grub_net_card_unregister (struct grub_net_card *card)
 }
 
 #define FOR_NET_CARDS(var) for (var = grub_net_cards; var; var = var->next)
+struct grub_net_card_driver *grub_net_card_drivers;
 
+static inline void
+grub_net_card_driver_register (struct grub_net_card_driver *driver)
+{
+  grub_list_push (GRUB_AS_LIST_P (&grub_net_card_drivers),
+		  GRUB_AS_LIST (driver));
+}
+
+static inline void
+grub_net_card_driver_unregister (struct grub_net_card_driver *driver)
+{
+  grub_list_remove (GRUB_AS_LIST_P (&grub_net_card_drivers),
+		    GRUB_AS_LIST (driver));
+}
+
+void ofdriver_ini(void);
+void ofdriver_fini(void);
+
+#define FOR_NET_CARD_DRIVERS(var) for (var = grub_net_card_drivers; var; var = var->next)
 
 #define FOR_NET_NETWORK_LEVEL_PROTOCOLS(var) for ((var) = grub_net_network_layer_protocols; (var); (var) = (var)->next)
 

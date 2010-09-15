@@ -68,8 +68,10 @@ send_ip_packet (struct grub_net_network_layer_interface *inf,
   grub_memcpy(nl_target_addr.addr, &(iph->dest), nl_target_addr.len);
   rc = arp_resolve(inf, trans_net_inf->inner_layer, &nl_target_addr, &ll_target_addr);
   grub_free(nl_target_addr.addr);
-  if (rc != GRUB_ERR_NONE)
+  if (rc != GRUB_ERR_NONE){
+    grub_printf("Error in the ARP resolve.\n");
     return rc;
+  }
 
   rc = trans_net_inf->inner_layer->link_prot->send(inf,trans_net_inf->inner_layer,nb,ll_target_addr, IP_ETHERTYPE);
   grub_free(ll_target_addr.addr);
@@ -113,13 +115,45 @@ recv_ip_packet (struct grub_net_network_layer_interface *inf,
   return 0; 
 }
 
+
+static grub_err_t
+ipv4_ntoa (char *val, grub_net_network_layer_address_t *addr )
+{
+  grub_uint8_t *p = (grub_uint8_t *) addr;
+  unsigned long t;
+  int i;
+
+  for (i = 0; i < 4; i++)
+  {
+      t = grub_strtoul (val, (char **) &val, 0);
+      if (grub_errno)
+	return grub_errno;
+
+      if (t & ~0xff)
+	return grub_error (GRUB_ERR_OUT_OF_RANGE, "Invalid IP.");
+      
+      p[i] = (grub_uint8_t) t;
+      if (i != 3 && *val != '.')
+	return grub_error (GRUB_ERR_OUT_OF_RANGE, "Invalid IP.");
+      
+      val++;
+  }
+
+  val = val - 1;
+  if (*val != '\0')
+	return grub_error (GRUB_ERR_OUT_OF_RANGE, "Invalid IP.");
+  
+  return GRUB_ERR_NONE;
+}
+
 static struct grub_net_network_layer_protocol grub_ipv4_protocol =
 {
  .name = "ipv4",
  .id = GRUB_NET_IPV4_ID,
  .type = IP_ETHERTYPE,
  .send = send_ip_packet,
- .recv = recv_ip_packet
+ .recv = recv_ip_packet,
+ .ntoa = ipv4_ntoa 
 };
 
 void ipv4_ini(void)

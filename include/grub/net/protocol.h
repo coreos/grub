@@ -1,6 +1,7 @@
 #ifndef GRUB_PROTOCOL_HEADER
 #define GRUB_PROTOCOL_HEADER
 #include <grub/err.h>
+#include <grub/mm.h>
 #include <grub/net/interface.h>
 #include <grub/net/netbuff.h>
 #include <grub/net/type_net.h>
@@ -60,7 +61,7 @@ struct grub_net_network_layer_protocol
   grub_uint16_t type; /* IANA Ethertype */
   //grub_network_layer_protocol_id_t id;
   grub_err_t (*ntoa) (char *name, grub_net_network_layer_address_t *addr);
-  char * (*aton) (union grub_net_network_layer_address addr);
+  char * (*aton) (grub_net_network_layer_address_t addr);
   grub_err_t (*net_ntoa) (char *name,
 			  grub_net_network_layer_netaddress_t *addr);
   char * (*net_aton) (grub_net_network_layer_netaddress_t addr);
@@ -87,7 +88,7 @@ struct grub_net_link_layer_protocol
              grub_uint16_t ethertype);
 };
 
-extern struct grub_net_network_layer_protocol *grub_net_network_layer_protocols;
+extern struct grub_net_network_layer_protocol *EXPORT_VAR(grub_net_network_layer_protocols);
 
 typedef struct grub_net_protocol *grub_net_protocol_t;
 void grub_net_application_layer_protocol_register (struct grub_net_application_layer_protocol *prot);

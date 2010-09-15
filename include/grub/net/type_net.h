@@ -18,16 +18,16 @@ typedef enum
 }grub_net_protocol_id_t;
 
 
-typedef union grub_net_network_layer_address
+typedef union grub_net_network_layer_netaddress
 {
   grub_uint32_t ipv4;
-} grub_net_network_layer_netaddress_t;
+} grub_net_network_layer_address_t;
 
-typedef union grub_net_network_layer_netaddress
+typedef union grub_net_network_layer_address
 {
   struct {
     grub_uint32_t base;
     int masksize; 
   } ipv4;
-} grub_net_network_layer_address_t;
+} grub_net_network_layer_netaddress_t;
 #endif 
