@@ -1,4 +1,0 @@
-2010-09-15  Yves Blusseau  <blusseau@zetam.org>
-
-	* util/bash-completion.d/grub-completion.bash.in: Add function to get
-	completions from usage.
