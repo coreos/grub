@@ -248,6 +248,32 @@ grub_vbe_bios_get_display_start (grub_uint32_t *x,
   return regs.eax & 0xffff;
 }
 
+/* Call VESA BIOS 0x4f0a.  */
+grub_vbe_status_t 
+grub_vbe_bios_get_pm_interface (grub_uint16_t *segment, grub_uint16_t *offset,
+				grub_uint16_t *length)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x4f0a;
+  regs.ebx = 0x0000;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+
+  if ((regs.eax & 0xffff) != GRUB_VBE_STATUS_OK)
+    {
+      *segment = 0;
+      *offset = 0;
+      *length = 0;
+    }
+
+  *segment = regs.es & 0xffff;
+  *offset = regs.edi & 0xffff;
+  *length = regs.ecx & 0xffff;
+  return regs.eax & 0xffff;
+}
+
+
 grub_err_t
 grub_vbe_probe (struct grub_vbe_info_block *info_block)
 {

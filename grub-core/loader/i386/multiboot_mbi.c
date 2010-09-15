@@ -289,10 +289,9 @@ fill_vbe_info (struct multiboot_info *mbi, grub_uint8_t *ptrorig,
   ptrorig += sizeof (struct grub_vbe_mode_info_block);
   ptrdest += sizeof (struct grub_vbe_mode_info_block);
       
-  /* FIXME: retrieve those.  */
-  mbi->vbe_interface_seg = 0;
-  mbi->vbe_interface_off = 0;
-  mbi->vbe_interface_len = 0;
+  grub_vbe_bios_get_pm_interface (&mbi->vbe_interface_seg,
+				  &mbi->vbe_interface_off,
+				  &mbi->vbe_interface_len);
   
   mbi->flags |= MULTIBOOT_INFO_VBE_INFO;
 
