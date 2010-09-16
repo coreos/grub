@@ -796,12 +796,12 @@ if test x"$grub_mkfont_excuse" = x ; then
   if test "x$FREETYPE" = x ; then
     grub_mkfont_excuse=["need freetype2 library"]
   fi
-  freetype_cflags=`freetype-config --cflags`
-  freetype_libs=`freetype-config --libs`
 fi
 
 if test x"$grub_mkfont_excuse" = x ; then
   # Check for freetype libraries.
+  freetype_cflags=`freetype-config --cflags`
+  freetype_libs=`freetype-config --libs`
   SAVED_CPPFLAGS="$CPPFLAGS"
   CPPFLAGS="$CPPFLAGS $freetype_cflags"
   AC_CHECK_HEADERS([ft2build.h], [],

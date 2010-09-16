@@ -1,3 +1,8 @@
+2010-09-16  Yves Blusseau  <blusseau@zetam.org>
+
+	* configure.ac: Avoid some annoying error messages if freetype-config
+	program is not found.
+
 2010-09-16  Colin Watson  <cjwatson@ubuntu.com>
 
 	Support RAID on virtio devices, and others.
