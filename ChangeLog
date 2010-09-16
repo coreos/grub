@@ -1,5 +1,13 @@
 2010-09-16  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (serial): Remove obsolete comment about GRUB
+	needing to be compiled with serial support.
+	(ls): Indicate that multiple files are accepted.
+	* grub-core/commands/ls.c (GRUB_MOD_INIT): Update help text to
+	indicate that multiple files are accepted.
+
+2010-09-16  Colin Watson  <cjwatson@ubuntu.com>
+
 	* .bzrignore: Add *.1, *.8, grub-shell, grub-shell-tester,
 	libgrub_a_init.c, and util/bash-completion.d/grub.
 

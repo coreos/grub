@@ -270,7 +270,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(ls)
 {
   cmd = grub_register_extcmd ("ls", grub_cmd_ls, 0,
-			      N_("[-l|-h|-a] [FILE]"),
+			      N_("[-l|-h|-a] [FILE ...]"),
 			      N_("List devices and files."), options);
 }
 

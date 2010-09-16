@@ -2415,8 +2415,7 @@ The serial port is not used as a communication channel unless the
 @command{terminal_input} or @command{terminal_output} command is used
 (@pxref{terminal_input}, @pxref{terminal_output}).
 
-This command is only available if GRUB is compiled with serial
-support. See also @ref{Serial terminal}.
+See also @ref{Serial terminal}.
 @end deffn
 
 
@@ -2907,7 +2906,7 @@ This command is only available on x86 systems.
 @node ls
 @subsection ls
 
-@deffn Command ls [arg]
+@deffn Command ls [arg @dots{}]
 List devices or files.
 
 With no arguments, print all devices known to GRUB.
