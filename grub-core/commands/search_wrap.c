@@ -90,7 +90,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(search)
 {
   cmd =
-    grub_register_extcmd ("search", grub_cmd_search, 0,
+    grub_register_extcmd ("search", grub_cmd_search, GRUB_COMMAND_FLAG_UNJAILED,
 			  N_("[-f|-l|-u|-s|-n] [--hint HINT [--hint HINT] ...]"
 			     " NAME"),
 			  N_("Search devices by file, filesystem label"

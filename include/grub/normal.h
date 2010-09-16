@@ -115,4 +115,6 @@ void grub_normal_reset_more (void);
 
 void grub_xputs_normal (const char *str);
 
+extern int grub_jail_level;
+
 #endif /* ! GRUB_NORMAL_HEADER */

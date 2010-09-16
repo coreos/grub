@@ -178,9 +178,12 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
 void
 grub_register_core_commands (void)
 {
-  grub_register_command ("set", grub_core_cmd_set,
-			 N_("[ENVVAR=VALUE]"),
-			 N_("Set an environment variable."));
+  grub_command_t cmd;
+  cmd = grub_register_command ("set", grub_core_cmd_set,
+			       N_("[ENVVAR=VALUE]"),
+			       N_("Set an environment variable."));
+  if (cmd)
+    cmd->flags |= GRUB_COMMAND_FLAG_UNJAILED;
   grub_register_command ("unset", grub_core_cmd_unset,
 			 N_("ENVVAR"),
 			 N_("Remove an environment variable."));

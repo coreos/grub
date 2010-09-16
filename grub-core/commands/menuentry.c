@@ -274,7 +274,8 @@ void
 grub_menu_init (void)
 {
   cmd = grub_register_extcmd ("menuentry", grub_cmd_menuentry,
-			      GRUB_COMMAND_FLAG_BLOCKS,
+			      GRUB_COMMAND_FLAG_BLOCKS
+			      | GRUB_COMMAND_FLAG_UNJAILED,
 			      N_("BLOCK"), N_("Define a menuentry."), options);
 }
 
