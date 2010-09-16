@@ -4,6 +4,8 @@
 30_os-prober
 40_custom
 41_custom
+*.1
+*.8
 aclocal.m4
 ascii.bitmaps
 ascii.h
@@ -57,11 +59,14 @@ grub-set-default
 grub-setup
 grub_setup_init.c
 grub_setup_init.h
+grub-shell
+grub-shell-tester
 *.img
 include/grub/cpu
 include/grub/machine
 install-sh
 lib/libgcrypt-grub
+libgrub_a_init.c
 *.lst
 Makefile
 *.mod
@@ -98,3 +103,4 @@ grub-core/Makefile.gcry.am
 grub-core/Makefile.gcry.def
 grub-core/*.module
 grub-core/*.pp
+util/bash-completion.d/grub

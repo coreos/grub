@@ -1,3 +1,8 @@
+2010-09-16  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Add *.1, *.8, grub-shell, grub-shell-tester,
+	libgrub_a_init.c, and util/bash-completion.d/grub.
+
 2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-setup.c (setup): Fix incorrect container semantics.
