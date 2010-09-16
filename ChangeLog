@@ -1,5 +1,25 @@
 2010-09-16  Colin Watson  <cjwatson@ubuntu.com>
 
+	Support RAID on virtio devices, and others.
+
+	* grub-core/kern/emu/getroot.c [__MINGW32__] (find_root_device):
+	Rename to ...
+	[__MINGW32__] (grub_find_device): ... this.
+	[! __MINGW32__ && ! __CYGWIN__] (find_root_device): Rename to ...
+	[! __MINGW32__ && ! __CYGWIN__] (grub_find_device): ... this.  Use a
+	reasonable default if dir is NULL.
+	[! __MINGW32__ && __CYGWIN__] (find_cygwin_root_device): Rename to
+	...
+	[! __MINGW32__ && __CYGWIN__] (grub_find_device): ... this.
+	(grub_guess_root_device): Update callers.
+	* include/grub/emu/getroot.h (grub_find_device): Add prototype.
+
+	* util/raid.c (grub_util_getdiskname): Remove.
+	(grub_util_raid_getmembers): Use grub_find_device rather than
+	grub_util_getdiskname.
+
+2010-09-16  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (serial): Remove obsolete comment about GRUB
 	needing to be compiled with serial support.
 	(ls): Indicate that multiple files are accepted.
