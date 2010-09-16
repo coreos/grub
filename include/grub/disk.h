@@ -42,7 +42,8 @@ enum grub_disk_dev_id
     GRUB_DISK_DEVICE_PXE_ID,
     GRUB_DISK_DEVICE_SCSI_ID,
     GRUB_DISK_DEVICE_FILE_ID,
-    GRUB_DISK_DEVICE_LUKS_ID
+    GRUB_DISK_DEVICE_LUKS_ID,
+    GRUB_DISK_DEVICE_OFNET_ID
   };
 
 struct grub_disk;
@@ -117,6 +118,23 @@ struct grub_disk
   void *data;
 };
 typedef struct grub_disk *grub_disk_t;
+
+/* Net Disk */
+enum grub_netdisk_protocol 
+{
+  GRUB_NETDISK_PROTOCOL_TFTP
+};
+typedef enum grub_netdisk_protocol grub_netdisk_protocol_t;
+
+struct grub_netdisk_data
+{
+  grub_netdisk_protocol_t protocol;
+  grub_uint32_t server_ip;
+  grub_uint32_t port;
+  char *username;
+  char *password;
+};
+typedef struct grub_netdisk_data *grub_netdisk_data_t;
 
 #ifdef GRUB_UTIL
 struct grub_disk_memberlist

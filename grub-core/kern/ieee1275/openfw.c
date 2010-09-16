@@ -22,11 +22,17 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/ieee1275/ieee1275.h>
+#include <grub/ieee1275/ofnet.h>
+#include <grub/net/ieee1275/interface.h>
+#include <grub/net.h>
+#include <grub/net/disknet.h>
+#include <grub/net/tftp.h>
 
 enum grub_ieee1275_parse_type
 {
   GRUB_PARSE_FILENAME,
   GRUB_PARSE_PARTITION,
+  GRUB_PARSE_DEVICE
 };
 
 /* Walk children of 'devpath', calling hook for each.  */
@@ -366,12 +372,14 @@ grub_ieee1275_parse_args (const char *path, enum grub_ieee1275_parse_type ptype)
 	    ret = grub_strndup (args, (grub_size_t)(comma - args));
 	}
     }
-  else
+
+  else if (!grub_strcmp ("network", type))
     {
-      /* XXX Handle net devices by configuring & registering a grub_net_dev
-	 here, then return its name?
-	 Example path: "net:<server ip>,<file name>,<client ip>,<gateway
-	 ip>,<bootp retries>,<tftp retries>".  */
+      if (ptype == GRUB_PARSE_DEVICE)
+        ret = grub_strdup(device);
+    }
+  else  
+    {
       grub_printf ("Unsupported type %s for device %s\n", type, device);
     }
 
@@ -379,6 +387,12 @@ fail:
   grub_free (device);
   grub_free (args);
   return ret;
+}
+
+char *
+grub_ieee1275_get_aliasdevname (const char *path)
+{
+  return grub_ieee1275_parse_args (path, GRUB_PARSE_DEVICE);
 }
 
 char *
@@ -423,3 +437,4 @@ grub_reboot (void)
   for (;;) ;
 }
 #endif
+

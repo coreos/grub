@@ -132,10 +132,8 @@ grub_pxefs_open (struct grub_file *file, const char *name)
 	|| grub_strncmp (file->device->net->name,
 			 "pxe:", sizeof ("pxe:") - 1) == 0)
       {
-	const char *ptr;
-	
-	ptr = name + sizeof ("pxe,") - 1;
-	err = grub_net_resolve_address (name + sizeof ("pxe,") - 1, &addr);
+	err = grub_net_resolve_address (file->device->net->name
+					+ sizeof ("pxe,") - 1, &addr);
 	if (err)
 	  return err;
       }
@@ -298,16 +296,14 @@ static struct grub_fs grub_pxefs_fs =
 
 static grub_size_t 
 grub_pxe_recv (struct grub_net_card *dev __attribute__ ((unused)),
-	       void *buf __attribute__ ((unused)),
-	       grub_size_t buflen __attribute__ ((unused)))
+	       struct grub_net_buff *buf __attribute__ ((unused)))
 {
   return 0;
 }
 
 static grub_err_t 
 grub_pxe_send (struct grub_net_card *dev __attribute__ ((unused)),
-	       void *buf __attribute__ ((unused)),
-	       grub_size_t buflen __attribute__ ((unused)))
+	       struct grub_net_buff *buf __attribute__ ((unused)))
 {
   return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "not implemented");
 }

@@ -23,6 +23,9 @@
 #include <grub/err.h>
 #include <grub/list.h>
 #include <grub/fs.h>
+#include <grub/net/netbuff.h>
+#include <grub/net/type_net.h>
+#include <grub/net/protocol.h>
 
 typedef struct grub_fs *grub_net_app_level_t;
 
@@ -65,11 +68,14 @@ struct grub_net_card;
 
 struct grub_net_card_driver
 {
-  grub_err_t (*send) (struct grub_net_card *dev, void *buf,
-		      grub_size_t buflen);
-  grub_size_t (*recv) (struct grub_net_card *dev, void *buf,
-		       grub_size_t buflen);  
+  struct grub_net_card_driver *next;
+  char *name;
+  grub_err_t (*init) (struct grub_net_card *dev);
+  grub_err_t (*fini) (struct grub_net_card *dev);
+  grub_err_t (*send) (struct grub_net_card *dev, struct grub_net_buff *buf);
+  grub_size_t (*recv) (struct grub_net_card *dev, struct grub_net_buff *buf);  
 };
+
 
 struct grub_net_card
 {
@@ -109,7 +115,59 @@ typedef struct grub_net_network_level_netaddress
   };
 } grub_net_network_level_netaddress_t;
 
-struct grub_net_network_level_interface;
+typedef struct grub_net_packet
+{
+  struct grub_net_packet *next;
+  struct grub_net_packet *prev;
+  struct grub_net_packets *up;
+  struct grub_net_buff *nb;
+} grub_net_packet_t;
+
+typedef struct grub_net_packets
+{
+  struct grub_net_packet *first;
+  struct grub_net_packet *last;
+} grub_net_packets_t;
+
+#define FOR_PACKETS(cont,var) for (var = (cont).first; var; var = var->next)
+
+static inline grub_err_t
+grub_net_put_packet (grub_net_packets_t *pkts, struct grub_net_buff *nb)
+{
+  struct grub_net_packet *n;
+
+  n = grub_malloc (sizeof (*n));
+  if (!n)
+    return grub_errno;
+
+  n->nb = nb;
+  n->next = NULL;
+  n->prev = NULL;
+  n->up = pkts;
+  if (pkts->first)
+    {
+      pkts->last->next = n;
+      pkts->last = n;
+      n->prev = pkts->last;
+    }
+  else
+    pkts->first = pkts->last = n;
+
+  return GRUB_ERR_NONE;
+}
+
+static inline void
+grub_net_remove_packet (grub_net_packet_t *pkt)
+{
+  if (pkt->prev)
+    pkt->prev->next = pkt->next;
+  else
+    pkt->up->first = pkt->next;
+  if (pkt->next)
+    pkt->next->prev = pkt->prev;
+  else
+    pkt->up->last = pkt->prev;
+}
 
 struct grub_net_network_level_interface
 {
@@ -121,6 +179,7 @@ struct grub_net_network_level_interface
   grub_net_interface_flags_t flags;
   struct grub_net_bootp_ack *dhcp_ack;
   grub_size_t dhcp_acklen;
+  grub_net_packets_t nl_pending;
   void *data;
 };
 
@@ -280,5 +339,25 @@ grub_net_addr_to_str (const grub_net_network_level_address_t *target,
 extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
 #define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
 
+grub_err_t grub_net_send_link_layer (struct grub_net_network_level_interface *inf,
+				     struct grub_net_buff *nb,
+				     grub_net_link_level_address_t *target); 
+
+typedef int
+(*grub_net_packet_handler_t) (struct grub_net_buff *nb,
+			      struct grub_net_network_level_interface *inf);
+
+grub_err_t grub_net_recv_link_layer (struct grub_net_network_level_interface *inf,
+				     grub_net_packet_handler_t handler); 
+
+grub_err_t 
+grub_net_recv_ip_packets (struct grub_net_network_level_interface *inf);
+
+grub_err_t
+grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
+			 const grub_net_network_level_address_t *target,
+			 struct grub_net_buff *nb);
+
+#define FOR_NET_NL_PACKETS(inf, var) FOR_PACKETS(inf->nl_pending, var)
 
 #endif /* ! GRUB_NET_HEADER */

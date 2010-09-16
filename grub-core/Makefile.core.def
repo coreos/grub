@@ -1380,4 +1380,21 @@ module = {
 module = {
   name = net;
   common = net/net.c;
+  common = net/ip.c;
+  common = net/udp.c;
+  common = net/ethernet.c;
+  common = net/arp.c;
+  common = net/interface.c;
+  common = net/netbuff.c;
+};
+
+module = {
+  name = tftp;
+  common = net/tftp.c;
+};
+
+module = {
+  name = ofnet;
+  ieee1275 = net/drivers/ieee1275/ofnet.c;
+  enable = ieee1275;
 };
