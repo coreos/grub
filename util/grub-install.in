@@ -552,7 +552,7 @@ case "${target_cpu}-${platform}" in
 esac
 
 
-$grub_mkimage ${config_opt} -O ${mkimage_target} --output=${grubdir}/core.${imgext} --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
+$grub_mkimage ${config_opt} -d ${pkglibdir} -O ${mkimage_target} --output=${grubdir}/core.${imgext} --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 
 # Backward-compatibility kludges
 if [ "${target_cpu}-${platform}" = "mips-yeeloong" ]; then
@@ -560,7 +560,7 @@ if [ "${target_cpu}-${platform}" = "mips-yeeloong" ]; then
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
     cp ${grubdir}/core.${imgext} /boot/grub/grub
 elif [ "${target_cpu}-${platform}" = "i386-efi" ] || [ "${target_cpu}-${platform}" = "x86_64-efi" ]; then
-    $grub_mkimage ${config_opt} -O ${mkimage_target} --output=${grubdir}/grub.efi --prefix="" $modules || exit 1
+    $grub_mkimage ${config_opt} -d ${pkglibdir} -O ${mkimage_target} --output=${grubdir}/grub.efi --prefix="" $modules || exit 1
 fi
 
 
