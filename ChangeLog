@@ -1,3 +1,7 @@
+2010-09-17  Yves Blusseau  <blusseau@zetam.org>
+
+	* .bzrignore: *.d removed (old rule), add *.image and symlist.h.
+
 2010-09-16  Yves Blusseau  <blusseau@zetam.org>
 
 	* configure.ac: Avoid some annoying error messages if freetype-config
