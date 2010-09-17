@@ -1163,7 +1163,7 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	{
 	  struct dm_tree *tree;
 	  uint32_t maj, min;
-	  struct dm_tree_node *node, *child;
+	  struct dm_tree_node *node = NULL, *child;
 	  void *handle;
 	  const char *node_uuid, *mapper_name = NULL, *child_uuid, *child_name;
 
