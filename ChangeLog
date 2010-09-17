@@ -1,3 +1,14 @@
+2010-09-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix DM-RAID probing with recent versions of device-mapper udev
+	rules.
+
+	* grub-core/kern/emu/hostdisk.c (read_device_map): Don't
+	canonicalise device paths under /dev/mapper/.
+	(convert_system_partition_to_system_disk): Compare the
+	uncanonicalised path to /dev/mapper/ rather than the canonicalised
+	path, since device nodes under /dev/mapper/ are often symlinks.
+
 2010-09-17  Yves Blusseau  <blusseau@zetam.org>
 
 	* .bzrignore: *.d removed (old rule), add *.image and symlist.h.

@@ -955,13 +955,16 @@ read_device_map (const char *dev_map)
 #ifdef __linux__
       /* On Linux, the devfs uses symbolic links horribly, and that
 	 confuses the interface very much, so use realpath to expand
-	 symbolic links.  */
-      map[drive].device = xmalloc (PATH_MAX);
-      if (! realpath (p, map[drive].device))
-	grub_util_error ("cannot get the real path of `%s'", p);
-#else
-      map[drive].device = xstrdup (p);
+	 symbolic links.  Leave /dev/mapper/ alone, though.  */
+      if (strncmp (p, "/dev/mapper/", 12) != 0)
+	{
+	  map[drive].device = xmalloc (PATH_MAX);
+	  if (! realpath (p, map[drive].device))
+	    grub_util_error ("cannot get the real path of `%s'", p);
+	}
+      else
 #endif
+      map[drive].device = xstrdup (p);
     }
 
   fclose (fp);
@@ -1153,8 +1156,10 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	}
 
 #ifdef HAVE_DEVICE_MAPPER
-      /* If this is a DM-RAID device.  */
-      if ((strncmp ("mapper/", p, 7) == 0))
+      /* If this is a DM-RAID device.
+         Compare os_dev rather than path here, since nodes under
+         /dev/mapper/ are often symlinks.  */
+      if ((strncmp ("/dev/mapper/", os_dev, 12) == 0))
 	{
 	  static struct dm_tree *tree = NULL;
 	  uint32_t maj, min;
