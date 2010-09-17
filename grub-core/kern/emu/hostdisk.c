@@ -1161,19 +1161,17 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
          /dev/mapper/ are often symlinks.  */
       if ((strncmp ("/dev/mapper/", os_dev, 12) == 0))
 	{
-	  static struct dm_tree *tree = NULL;
+	  struct dm_tree *tree;
 	  uint32_t maj, min;
 	  struct dm_tree_node *node, *child;
 	  void *handle;
-	  const char *node_uuid, *mapper_name, *child_uuid, *child_name;
+	  const char *node_uuid, *mapper_name = NULL, *child_uuid, *child_name;
 
-	  if (! tree)
-	    tree = dm_tree_create ();
-
+	  tree = dm_tree_create ();
 	  if (! tree)
 	    {
 	      grub_dprintf ("hostdisk", "dm_tree_create failed\n");
-	      return NULL;
+	      goto devmapper_out;
 	    }
 
 	  maj = major (st->st_rdev);
@@ -1181,29 +1179,30 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  if (! dm_tree_add_dev (tree, maj, min))
 	    {
 	      grub_dprintf ("hostdisk", "dm_tree_add_dev failed\n");
-	      return NULL;
+	      goto devmapper_out;
 	    }
 
 	  node = dm_tree_find_node (tree, maj, min);
 	  if (! node)
 	    {
 	      grub_dprintf ("hostdisk", "dm_tree_find_node failed\n");
-	      return NULL;
+	      goto devmapper_out;
 	    }
 	  node_uuid = dm_tree_node_get_uuid (node);
 	  if (! node_uuid)
 	    {
 	      grub_dprintf ("hostdisk", "%s has no DM uuid\n", path);
-	      return NULL;
+	      node = NULL;
+	      goto devmapper_out;
 	    }
 	  else if (strncmp (node_uuid, "DMRAID-", 7) != 0)
 	    {
 	      grub_dprintf ("hostdisk", "%s is not DM-RAID\n", path);
-	      return NULL;
+	      node = NULL;
+	      goto devmapper_out;
 	    }
 
 	  handle = NULL;
-	  mapper_name = NULL;
 	  /* Counter-intuitively, device-mapper refers to the disk-like
 	     device containing a DM-RAID partition device as a "child" of
 	     the partition device.  */
@@ -1233,17 +1232,20 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  mapper_name = child_name;
 
 devmapper_out:
-	  if (! mapper_name)
+	  if (! mapper_name && node)
 	    {
 	      /* This is a DM-RAID disk, not a partition.  */
 	      mapper_name = dm_tree_node_get_name (node);
 	      if (! mapper_name)
-		{
-		  grub_dprintf ("hostdisk", "%s has no DM name\n", path);
-		  return NULL;
-		}
+		grub_dprintf ("hostdisk", "%s has no DM name\n", path);
 	    }
-	  return xasprintf ("/dev/mapper/%s", mapper_name);
+	  if (tree)
+	    dm_tree_free (tree);
+	  free (path);
+	  if (mapper_name)
+	    return xasprintf ("/dev/mapper/%s", mapper_name);
+	  else
+	    return NULL;
 	}
 #endif /* HAVE_DEVICE_MAPPER */
     }

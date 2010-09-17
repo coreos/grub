@@ -1,5 +1,12 @@
 2010-09-17  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/kern/emu/hostdisk.c
+	(convert_system_partition_to_system_disk): Fix devmapper memory pool
+	leak.
+	Reported and based on patch by: Modestas Vainius.
+
+2010-09-17  Colin Watson  <cjwatson@ubuntu.com>
+
 	Fix DM-RAID probing with recent versions of device-mapper udev
 	rules.
 
