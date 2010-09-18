@@ -119,6 +119,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
 if COND_mips_yeeloong
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap.h
@@ -131,6 +132,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/cs5536.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/pci.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/serial.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
 endif
 
 if COND_powerpc_ieee1275

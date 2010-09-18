@@ -256,6 +256,16 @@ program = {
   enable = sparc64_ieee1275;
 };
 
+program = {
+  name = grub-mklayout;
+  mansection = 1;
+
+  common = util/grub-mklayout.c;
+
+  ldadd = libgrub.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+};
+
 data = {
   common = util/grub.d/README;
   installdir = grubconf;
@@ -398,6 +408,11 @@ script = {
   name = update-grub_lib;
   common = util/update-grub_lib.in;
   installdir = noinst;
+};
+
+script = {
+  name = grub-kbdcomp;
+  common = util/grub-kbdcomp.in;
 };
 
 script = {

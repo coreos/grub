@@ -40,6 +40,7 @@ extern void grub_gfxterm_init (void);
 extern void grub_at_keyboard_init (void);
 extern void grub_serial_init (void);
 extern void grub_terminfo_init (void);
+extern void grub_keylayouts_init (void);
 
 /* FIXME: use interrupt to count high.  */
 grub_uint64_t
@@ -204,6 +205,7 @@ grub_machine_init (void)
   grub_font_init ();
   grub_gfxterm_init ();
 
+  grub_keylayouts_init ();
   grub_at_keyboard_init ();
 
   grub_terminfo_init ();

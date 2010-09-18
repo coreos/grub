@@ -138,6 +138,7 @@ kernel = {
   mips_yeeloong = term/serial.c;
   mips_yeeloong = video/sm712.c;
   extra_dist = video/sm712_init.c;
+  mips_yeeloong = commands/keylayouts.c;
 
   powerpc_ieee1275 = kern/ieee1275/init.c;
   powerpc_ieee1275 = kern/powerpc/cache.S;
@@ -173,6 +174,8 @@ kernel = {
   videoinkernel = video/fb/fbutil.c;
   videoinkernel = video/fb/video_fb.c;
   videoinkernel = video/video.c;
+
+  videoinkernel = commands/boot.c;
 
   extra_dist = kern/i386/realmode.S;
   extra_dist = kern/i386/pc/lzma_decode.S;
@@ -447,6 +450,7 @@ module = {
   name = boot;
   common = commands/boot.c;
   i386_pc = lib/i386/pc/biosnum.c;
+  enable = videomodules;
 };
 
 module = {
@@ -1445,4 +1449,10 @@ module = {
   name = lsapm;
   common = commands/i386/pc/lsapm.c;
   enable = i386_pc;
+};
+
+module = {
+  name = keylayouts;
+  common = commands/keylayouts.c;
+  enable = videomodules;
 };

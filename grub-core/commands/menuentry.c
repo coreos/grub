@@ -46,7 +46,20 @@ static struct
   {
     {"backspace", '\b'},
     {"tab", '\t'},
-    {"delete", GRUB_TERM_DC}
+    {"delete", GRUB_TERM_KEY_DC},
+    {"insert", GRUB_TERM_KEY_INSERT},
+    {"f1", GRUB_TERM_KEY_F1},
+    {"f2", GRUB_TERM_KEY_F2},
+    {"f3", GRUB_TERM_KEY_F3},
+    {"f4", GRUB_TERM_KEY_F4},
+    {"f5", GRUB_TERM_KEY_F5},
+    {"f6", GRUB_TERM_KEY_F6},
+    {"f7", GRUB_TERM_KEY_F7},
+    {"f8", GRUB_TERM_KEY_F8},
+    {"f9", GRUB_TERM_KEY_F9},
+    {"f10", GRUB_TERM_KEY_F10},
+    {"f11", GRUB_TERM_KEY_F11},
+    {"f12", GRUB_TERM_KEY_F12},
   };
 
 /* Add a menu entry to the current menu context (as given by the environment

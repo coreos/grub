@@ -194,7 +194,6 @@ static struct grub_term_input grub_ofconsole_term_input =
   {
     .name = "ofconsole",
     .init = grub_ofconsole_init_input,
-    .checkkey = grub_terminfo_checkkey,
     .getkey = grub_terminfo_getkey,
     .data = &grub_ofconsole_terminfo_input
   };

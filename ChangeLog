@@ -1,3 +1,39 @@
+2010-09-18  Carles Pina i Estany  <carles@pina.cat>
+2010-09-18  Aleš Nesrsta <starous@volny.cz>
+2010-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add keyboard layouts support.
+
+	* Makefile.util.def (grub-mklayout): New file.
+	(grub-kbdcomp): New script.
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES) [COND_mips_yeeloong]:
+	Add keyboard_layouts.h.
+	* grub-core/Makefile.core.def (kernel): Add commands/keylayouts.c and
+	commands/boot.c on yeeloong.
+	(keylayouts): New module.
+	* grub-core/bus/usb/ohci.c
+	* grub-core/bus/usb/uhci.c
+	* grub-core/bus/usb/usbhub.c (rescan): New variable.
+	(grub_usb_add_hub): Poll interrupt pipe for device handling.
+	(attach_root_port): Likewise.
+	(poll_nonroot_hub): Likewise.
+	(grub_usb_poll_devices): Likewise.
+	(detach_device): Close transfer.
+	* grub-core/bus/usb/usbtrans.c (grub_usb_execute_and_wait_transfer): New
+	function.
+	(grub_usb_bulk_setup_readwrite): Likewise.
+	(grub_usb_bulk_finish_readwrite): Likewise.
+	* grub-core/commands/keylayouts.c: New file.
+	* grub-core/commands/keystatus.c (grub_getkeystatus): New function.
+	* grub-core/commands/menuentry.c (hotkey_aliases): All several new
+	aliases.
+	* grub-core/term/at_keyboard.c: Restructured to use keylayouts and
+	support scancode 2.
+	* grub-core/term/usb_keyboard.c: Restructured to use keylayouts.
+	* include/grub/keyboard_layouts.h: New file.
+	* util/grub-mklayout.c: New file.
+	* util/grub-kbdcomp.in: Likewise.
+
 2010-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Unify memory types.

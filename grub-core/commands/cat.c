@@ -76,7 +76,7 @@ grub_cmd_cat (grub_extcmd_context_t ctxt, int argc, char **args)
 	}
 
       while (grub_checkkey () >= 0 &&
-	     (key = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != GRUB_TERM_ESC)
+	     (key = grub_getkey ()) != GRUB_TERM_ESC)
 	;
     }
 
