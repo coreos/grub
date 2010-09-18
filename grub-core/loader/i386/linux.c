@@ -17,7 +17,6 @@
  */
 
 #include <grub/loader.h>
-#include <grub/machine/memory.h>
 #include <grub/memory.h>
 #include <grub/normal.h>
 #include <grub/file.h>
@@ -147,10 +146,11 @@ find_mmap_size (void)
 {
   grub_size_t count = 0, mmap_size;
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+				  grub_memory_type_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr __attribute__ ((unused)),
 			     grub_uint64_t size __attribute__ ((unused)),
-			     grub_uint32_t type __attribute__ ((unused)))
+			     grub_memory_type_t type __attribute__ ((unused)))
     {
       count++;
       return 0;
@@ -214,12 +214,14 @@ allocate_pages (grub_size_t prot_size)
   /* FIXME: Should request low memory from the heap when this feature is
      implemented.  */
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+				  grub_memory_type_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size,
+			     grub_memory_type_t type)
     {
       /* We must put real mode code in the traditional space.  */
 
-      if (type == GRUB_MACHINE_MEMORY_AVAILABLE
+      if (type == GRUB_MEMORY_AVAILABLE
 	  && addr <= 0x90000)
 	{
 	  if (addr < 0x10000)
@@ -394,36 +396,32 @@ grub_linux_boot (void)
   grub_dprintf ("linux", "code32_start = %x\n",
 		(unsigned) params->code32_start);
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+				  grub_memory_type_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, 
+			     grub_memory_type_t type)
     {
       switch (type)
         {
-        case GRUB_MACHINE_MEMORY_AVAILABLE:
+        case GRUB_MEMORY_AVAILABLE:
 	  grub_e820_add_region (params->e820_map, &e820_num,
 				addr, size, GRUB_E820_RAM);
 	  break;
 
-#ifdef GRUB_MACHINE_MEMORY_ACPI
-        case GRUB_MACHINE_MEMORY_ACPI:
+        case GRUB_MEMORY_ACPI:
 	  grub_e820_add_region (params->e820_map, &e820_num,
 				addr, size, GRUB_E820_ACPI);
 	  break;
-#endif
 
-#ifdef GRUB_MACHINE_MEMORY_NVS
-        case GRUB_MACHINE_MEMORY_NVS:
+        case GRUB_MEMORY_NVS:
 	  grub_e820_add_region (params->e820_map, &e820_num,
 				addr, size, GRUB_E820_NVS);
 	  break;
-#endif
 
-#ifdef GRUB_MACHINE_MEMORY_CODE
-        case GRUB_MACHINE_MEMORY_CODE:
+        case GRUB_MEMORY_CODE:
 	  grub_e820_add_region (params->e820_map, &e820_num,
 				addr, size, GRUB_E820_EXEC_CODE);
 	  break;
-#endif
 
         default:
           grub_e820_add_region (params->e820_map, &e820_num,

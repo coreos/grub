@@ -29,7 +29,6 @@
 #include <grub/command.h>
 #include <grub/multiboot.h>
 #include <grub/cpu/multiboot.h>
-#include <grub/machine/memory.h>
 #include <grub/elf.h>
 #include <grub/aout.h>
 #include <grub/file.h>
@@ -71,7 +70,7 @@ grub_get_multiboot_mmap_count (void)
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr __attribute__ ((unused)),
 			     grub_uint64_t size __attribute__ ((unused)),
-			     grub_uint32_t type __attribute__ ((unused)))
+			     grub_memory_type_t type __attribute__ ((unused)))
     {
       count++;
       return 0;

@@ -26,6 +26,7 @@
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/memory.h>
 
 static grub_dl_t my_mod;
 
@@ -181,8 +182,10 @@ alloc_phys (grub_addr_t size)
 {
   grub_addr_t ret = (grub_addr_t) -1;
 
-  auto int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len __attribute__((unused)), grub_uint32_t type);
-  int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len __attribute__((unused)), grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len,
+				    grub_memory_type_t type);
+  int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len,
+			       grub_memory_type_t type)
   {
     grub_addr_t end = addr + len;
 

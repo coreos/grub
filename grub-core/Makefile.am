@@ -75,9 +75,9 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/time.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/mm_private.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/boot.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libgcc.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/memory.h
 
 if COND_i386_pc
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/loader.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/pxe.h
@@ -93,24 +93,20 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
 if COND_i386_coreboot
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
 if COND_i386_multiboot
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
 if COND_i386_qemu
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
 if COND_i386_ieee1275
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ieee1275.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
@@ -124,7 +120,6 @@ endif
 
 if COND_mips_yeeloong
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h
@@ -135,7 +130,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bufio.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/cs5536.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/pci.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/serial.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/serial.h
 endif
 
 if COND_powerpc_ieee1275

@@ -26,6 +26,7 @@
 #include <grub/time.h>
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
+#include <grub/memory.h>
 #include <grub/mips/loongson.h>
 #include <grub/cs5536.h>
 #include <grub/term.h>
@@ -57,14 +58,12 @@ grub_get_rtc (void)
 }
 
 grub_err_t
-grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
-							 grub_uint64_t,
-							 grub_uint32_t))
+grub_machine_mmap_iterate (grub_memory_hook_t hook)
 {
   hook (GRUB_ARCH_LOWMEMPSTART, grub_arch_memsize << 20,
-	GRUB_MACHINE_MEMORY_AVAILABLE);
+	GRUB_MEMORY_AVAILABLE);
   hook (GRUB_ARCH_HIGHMEMPSTART, grub_arch_highmemsize << 20,
-	GRUB_MACHINE_MEMORY_AVAILABLE);
+	GRUB_MEMORY_AVAILABLE);
   return GRUB_ERR_NONE;
 }
 

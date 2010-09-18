@@ -233,11 +233,6 @@ grub_efiemu_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
 int grub_efiemu_sizeof_uintn_t (void);
 grub_err_t
 grub_efiemu_get_lower_upper_memory (grub_uint64_t *lower, grub_uint64_t *upper);
-#define GRUB_EFIEMU_MEMORY_AVAILABLE	1
-#define GRUB_EFIEMU_MEMORY_RESERVED	2
-#define GRUB_EFIEMU_MEMORY_ACPI	3
-#define GRUB_EFIEMU_MEMORY_NVS         4
-#define GRUB_EFIEMU_MEMORY_CODE         5
 
 /* efiemu main control definitions and functions*/
 typedef enum {GRUB_EFIEMU_NOTLOADED,

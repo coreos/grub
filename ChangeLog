@@ -1,5 +1,18 @@
 2010-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Unify memory types.
+
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Include memory.h.
+	* grub-core/commands/lsmmap.c (grub_cmd_lsmmap): Output user-readable
+	types.
+	* grub-core/kern/i386/multiboot_mmap.c (grub_lower_mem): Removed.
+	(grub_upper_mem): Likewise.
+	* grub-core/kern/ieee1275/init.c (grub_upper_mem): Likewise.
+	* include/grub/memory.h (grub_memory_type_t): New enum.
+	All users updated.
+
+2010-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (lsapm): New module.
 	* grub-core/commands/i386/pc/lsapm.c: New file.
 	* grub-core/loader/i386/multiboot_mbi.c (make_mbi) [GRUB_MACHINE_PCBIOS]: Pass APM info.
