@@ -1,3 +1,11 @@
+2010-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/i386/cmostest.c (+parse_args): New function.
+	(grub_cmd_cmosclean): Likewise.
+	(GRUB_MOD_INIT): Register command cmosclean.
+	* util/grub-mkconfig.in: Export GRUB_BUTTON_CMOS_CLEAN.
+	* util/grub.d/00_header.in: Handle GRUB_BUTTON_CMOS_CLEAN.
+
 2010-09-18  Carles Pina i Estany  <carles@pina.cat>
 2010-09-18  Aleš Nesrsta <starous@volny.cz>
 2010-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
