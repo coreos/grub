@@ -137,6 +137,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libgcc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/cs5536.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/pci.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/serial.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
 endif
 
 if COND_powerpc_ieee1275
