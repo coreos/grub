@@ -562,3 +562,14 @@ program = {
   ldadd = libgrub.a;
   ldadd = '$(LIBDEVMAPPER)';
 };
+
+program = {
+  name = grub-menulst2cfg;
+  mansection = 1;
+  common = util/grub-menulst2cfg.c;
+  common = grub-core/lib/legacy_parse.c;
+  common = grub-core/lib/i386/pc/vesa_modes_table.c;
+
+  ldadd = libgrub.a;
+  ldflags = '$(LIBDEVMAPPER)';
+};

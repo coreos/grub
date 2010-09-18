@@ -20,6 +20,7 @@
 #include <grub/memory.h>
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>
+#include <grub/machine/apm.h>
 #endif
 #include <grub/multiboot.h>
 #include <grub/cpu/relocator.h>
@@ -194,7 +195,8 @@ grub_multiboot_get_mbi_size (void)
     + ALIGN_UP (sizeof(PACKAGE_STRING), 4) 
     + grub_get_multiboot_mmap_count () * sizeof (struct multiboot_mmap_entry)
     + elf_sec_entsize * elf_sec_num
-    + 256 * sizeof (struct multiboot_color);
+    + 256 * sizeof (struct multiboot_color)
+    + ALIGN_UP (sizeof (struct multiboot_apm_info), 4);
 }
 
 /* Fill previously allocated Multiboot mmap.  */
@@ -355,6 +357,29 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   mbi->boot_loader_name = ptrdest;
   ptrorig += ALIGN_UP (sizeof(PACKAGE_STRING), 4);
   ptrdest += ALIGN_UP (sizeof(PACKAGE_STRING), 4);
+
+#ifdef GRUB_MACHINE_PCBIOS
+  {
+    struct grub_apm_info info;
+    if (grub_apm_get_info (&info))
+      {
+	struct multiboot_apm_info *mbinfo = (void *) ptrorig;
+
+	mbinfo->cseg = info.cseg;
+	mbinfo->offset = info.offset;
+	mbinfo->cseg_16 = info.cseg_16;
+	mbinfo->dseg = info.dseg;
+	mbinfo->flags = info.flags;
+	mbinfo->cseg_len = info.cseg_len;
+	mbinfo->dseg_len = info.dseg_len;
+	mbinfo->cseg_16_len = info.cseg_16_len;
+	mbinfo->version = info.version;
+
+	ptrorig += ALIGN_UP (sizeof (struct multiboot_apm_info), 4);
+	ptrdest += ALIGN_UP (sizeof (struct multiboot_apm_info), 4);
+      }
+  }
+#endif
 
   if (modcnt)
     {

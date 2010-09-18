@@ -25,9 +25,17 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+static unsigned height, width, depth; 
+
 static int
 hook (const struct grub_video_mode_info *info)
 {
+  if (height && width && (info->width != width || info->height != height))
+    return 0;
+
+  if (depth && info->bpp != depth)
+    return 0;
+
   if (info->mode_number == GRUB_VIDEO_MODE_NUMBER_INVALID)
     grub_printf ("        ");
   else
@@ -71,11 +79,33 @@ hook (const struct grub_video_mode_info *info)
 
 static grub_err_t
 grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
-		    int argc __attribute__ ((unused)),
-		    char **args __attribute__ ((unused)))
+		    int argc, char **args)
 {
   grub_video_adapter_t adapter;
   grub_video_driver_id_t id;
+
+  height = width = depth = 0;
+  if (argc)
+    {
+      char *ptr;
+      ptr = args[0];
+      width = grub_strtoul (ptr, &ptr, 0);
+      if (grub_errno)
+	return grub_errno;
+      if (*ptr != 'x')
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid mode specification");
+      ptr++;
+      height = grub_strtoul (ptr, &ptr, 0);
+      if (grub_errno)
+	return grub_errno;
+      if (*ptr == 'x')
+	{
+	  ptr++;
+	  depth = grub_strtoul (ptr, &ptr, 0);
+	  if (grub_errno)
+	    return grub_errno;
+	}
+    }
 
 #ifdef GRUB_MACHINE_PCBIOS
   if (grub_strcmp (cmd->name, "vbeinfo") == 0)
@@ -132,11 +162,15 @@ static grub_command_t cmd_vbe;
 
 GRUB_MOD_INIT(videoinfo)
 {
-  cmd = grub_register_command ("videoinfo", grub_cmd_videoinfo, 0,
-			       N_("List available video modes."));
+  cmd = grub_register_command ("videoinfo", grub_cmd_videoinfo, "[WxH[xD]]",
+			       N_("List available video modes. If "
+				     "resolution is given show only modes"
+				     " matching it."));
 #ifdef GRUB_MACHINE_PCBIOS
-  cmd_vbe = grub_register_command ("vbeinfo", grub_cmd_videoinfo, 0,
-				   N_("List available video modes."));
+  cmd_vbe = grub_register_command ("vbeinfo", grub_cmd_videoinfo, "[WxH[xD]]",
+				   N_("List available video modes. If "
+				      "resolution is given show only modes"
+				      " matching it."));
 #endif
 }
 

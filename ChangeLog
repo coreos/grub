@@ -1,3 +1,35 @@
+2010-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.core.def (lsapm): New module.
+	* grub-core/commands/i386/pc/lsapm.c: New file.
+	* grub-core/loader/i386/multiboot_mbi.c (make_mbi) [GRUB_MACHINE_PCBIOS]: Pass APM info.
+	* grub-core/loader/multiboot_mbi2.c (make_mbi) [GRUB_MACHINE_PCBIOS]:
+	Likewise.
+	* include/grub/i386/pc/apm.h: New file.
+	* include/multiboot.h (multiboot_apm_info): New struct.
+
+2010-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	GRUB-legacy configuration file support.
+
+	* Makefile.util.def (grub-menulst2cfg): New util.
+	* docs/man/grub-menulst2cfg.h2m: New file.
+	* grub-core/Makefile.core.def (legacycfg): New module.
+	* grub-core/commands/legacycfg.c: New file.
+	* grub-core/commands/menuentry.c (append_menu_entry): Rename to ...
+	(grub_normal_add_menu_entry): ... this.
+	* grub-core/commands/password.c (grub_cmd_password): Split main part to ...
+	(grub_normal_set_password): ...this.
+	* grub-core/commands/videoinfo.c (grub_cmd_videoinfo): Support MODE.
+	* grub-core/loader/i386/linux.c (linux_vesafb_res): Move to ..,
+	* grub-core/lib/i386/pc/vesa_modes_table.c: ... here.
+	* grub-core/lib/legacy_parse.c: New file.
+	* grub-core/normal/auth.c (grub_cmd_authenticate): New command.
+	* include/grub/i386/pc/vesa_modes_table.h: New file.
+	* include/grub/legacy_parse.h: Likewise.
+	* include/grub/normal.h (grub_normal_add_menu_entry): New proto.
+	* util/grub-menulst2cfg.c: New file.
+
 2010-09-17  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/kern/emu/hostdisk.c

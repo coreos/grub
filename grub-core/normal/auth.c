@@ -248,3 +248,27 @@ grub_auth_check_authentication (const char *userlist)
 
   return GRUB_ACCESS_DENIED;
 }
+
+static grub_err_t
+grub_cmd_authenticate (struct grub_command *cmd __attribute__ ((unused)),
+		       int argc, char **args)
+{
+  return grub_auth_check_authentication ((argc >= 1) ? args[0] : "");
+}
+
+static grub_command_t cmd;
+
+void
+grub_normal_auth_init (void)
+{
+  cmd = grub_register_command ("authenticate",
+			       grub_cmd_authenticate,
+			       N_("[USERLIST]"), N_("Authenticate users"));
+
+}
+
+void
+grub_normal_auth_fini (void)
+{
+  grub_unregister_command (cmd);
+}
