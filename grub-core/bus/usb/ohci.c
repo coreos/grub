@@ -98,7 +98,6 @@ struct grub_ohci
   struct grub_pci_dma_chunk *td_chunk;
   struct grub_ohci *next;
   grub_ohci_td_t td_free; /* Pointer to first free TD */
-  int bad_OHCI;
 };
 
 static struct grub_ohci *ohci;
@@ -149,8 +148,8 @@ typedef enum
 #define GRUB_OHCI_REG_CONTROL_CONTROL_ENABLE (1 << 4)
 
 #define GRUB_OHCI_RESET_CONNECT_CHANGE (1 << 16)
-#define GRUB_OHCI_CTRL_EDS 16
-#define GRUB_OHCI_BULK_EDS 16
+#define GRUB_OHCI_CTRL_EDS 256
+#define GRUB_OHCI_BULK_EDS 510
 #define GRUB_OHCI_TDS 256
 
 #define GRUB_OHCI_ED_ADDR_MASK 0x7ff
@@ -442,8 +441,10 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
                        (grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBA)
                         & ~GRUB_OHCI_RHUB_PORT_POWER_MASK)
                        | GRUB_OHCI_RHUB_PORT_ALL_POWERED);
+#if 0 /* We don't need it at all, handled via hotplugging */
   /* Now we have hot-plugging, we need to wait for stable power only */
   grub_millisleep (100);
+#endif
 
   /* Link to ohci now that initialisation is successful.  */
   o->next = ohci;
@@ -623,7 +624,8 @@ grub_ohci_transaction (grub_ohci_td_t td,
       break;
     }
 
-  /* Set the token (Always generate interrupt - bits 21-23 = 0).  */
+  /* Set the token */
+  token |= ( 7 << 21); /* Never generate interrupt */
   token |= toggle << 24;
   token |= 1 << 25;
 
@@ -659,7 +661,6 @@ struct grub_ohci_transfer_controller_data
   grub_ohci_ed_t ed_virt;
   grub_ohci_td_t td_current_virt;
   grub_ohci_td_t td_head_virt;
-  grub_uint64_t bad_OHCI_delay;
 };
 
 static grub_usb_err_t
@@ -756,10 +757,6 @@ grub_ohci_setup_transfer (grub_usb_controller_t dev,
 
       /* Set index of TD in transfer */
       cdata->td_current_virt->tr_index = (grub_uint32_t) i;
-
-      /* No IRQ request in TD if bad_OHCI set */
-      if (o->bad_OHCI)
-        cdata->td_current_virt->token |= grub_cpu_to_le32 ( 7 << 21);
       
       /* Remember last used (processed) TD phys. addr. */
       cdata->td_last_phys = grub_ohci_td_virt2phys (o, cdata->td_current_virt);
@@ -891,8 +888,8 @@ pre_finish_transfer (grub_usb_controller_t dev,
   /* Now print debug values - to have full info what happened */
   grub_dprintf ("ohci", "loop finished: control=0x%02x status=0x%02x\n",
 		control, status);
-  grub_dprintf ("ohci", "intstatus=0x%02x \n\t\t tderr_phys=0x%02x, td_last_phys=0x%02x\n",
-		intstatus, cdata->tderr_phys, cdata->td_last_phys);
+  grub_dprintf ("ohci", "intstatus=0x%02x, td_last_phys=0x%02x\n",
+		intstatus, cdata->td_last_phys);
   grub_dprintf ("ohci", "TARGET=0x%02x, HEAD=0x%02x, TAIL=0x%02x\n",
                 target,
                 grub_le_to_cpu32 (cdata->ed_virt->td_head),
@@ -915,12 +912,6 @@ finish_transfer (grub_usb_controller_t dev,
    *    i.e. it is safe to free all TDs except last not processed
    * ED HEAD == TAIL == phys. addr. of td_current_virt */
 
-  /* Reset DoneHead - sanity cleanup */
-  o->hcca->donehead = 0;
-  grub_ohci_writereg32 (o, GRUB_OHCI_REG_INTSTATUS, (1 << 1));
-  /* Read back of register should ensure it is really written */
-  grub_ohci_readreg32 (o, GRUB_OHCI_REG_INTSTATUS);
-
   /* Un-chainig of last TD */
   if (cdata->td_current_virt->prev_td_phys)
     {
@@ -929,10 +920,13 @@ finish_transfer (grub_usb_controller_t dev,
       
       if (cdata->td_current_virt == (grub_ohci_td_t) td_prev_virt->link_td)
         td_prev_virt->link_td = 0;
+
+      cdata->td_current_virt->prev_td_phys = 0;
     }
 
   grub_dprintf ("ohci", "OHCI finished, freeing\n");
   grub_ohci_free_tds (o, cdata->td_head_virt);
+  grub_free (cdata);
 }
 
 static grub_usb_err_t
@@ -951,28 +945,10 @@ parse_halt (grub_usb_controller_t dev,
   pre_finish_transfer (dev, transfer);
 
   /* First we must get proper tderr_phys value */
-  if (o->bad_OHCI) /* In case of bad_OHCI tderr_phys can be wrong */
-    {
-      if (cdata->tderr_phys) /* check if tderr_phys points to TD with error */
-	errcode = grub_le_to_cpu32 (grub_ohci_td_phys2virt (o,
-							    cdata->tderr_phys)->token)
-	  >> 28;
-      if ( !cdata->tderr_phys || !errcode ) /* tderr_phys not valid or points to wrong TD */
-	{ /* Retired TD with error should be previous TD to ED->td_head */
-	  cdata->tderr_phys = grub_ohci_td_phys2virt (o,
-						      grub_le_to_cpu32 (cdata->ed_virt->td_head) & ~0xf )
-	    ->prev_td_phys;
-	}
-    }
-  /* Even if we have "good" OHCI, in some cases
-   * tderr_phys can be zero, check it */
-  else if (!cdata->tderr_phys)
-    /* Retired TD with error should be previous TD to ED->td_head */
-    cdata->tderr_phys 
-      = grub_ohci_td_phys2virt (o,
-				grub_le_to_cpu32 (cdata->ed_virt->td_head)
-				& ~0xf)->prev_td_phys;
-    
+  /* Retired TD with error should be previous TD to ED->td_head */
+  cdata->tderr_phys = grub_ohci_td_phys2virt (o,
+                                                grub_le_to_cpu32 (cdata->ed_virt->td_head) & ~0xf )
+	              ->prev_td_phys;
 
   /* Prepare pointer to last processed TD and get error code */
   tderr_virt = grub_ohci_td_phys2virt (o, cdata->tderr_phys);
@@ -1090,16 +1066,12 @@ parse_success (grub_usb_controller_t dev,
 
   pre_finish_transfer (dev, transfer);
 
-  /* Simple workaround if donehead is not working */
-  if (o->bad_OHCI &&
-      (!cdata->tderr_phys || (cdata->tderr_phys != cdata->td_last_phys)))
-    {
-      grub_dprintf ("ohci", "normal finish, but tderr_phys corrected\n");
-      cdata->tderr_phys = cdata->td_last_phys;
-      /* I hope we can do it as transfer (most probably) finished OK */
-    }
+  /* I hope we can do it as transfer (most probably) finished OK */
+  cdata->tderr_phys = cdata->td_last_phys;
+
   /* Prepare pointer to last processed TD */
   tderr_virt = grub_ohci_td_phys2virt (o, cdata->tderr_phys);
+  
   /* Set index of last processed TD */
   if (tderr_virt)
     transfer->last_trans = tderr_virt->tr_index;
@@ -1168,25 +1140,6 @@ grub_ohci_check_transfer (grub_usb_controller_t dev,
 
   /* Check transfer status */
   intstatus = grub_ohci_readreg32 (o, GRUB_OHCI_REG_INTSTATUS);
-  if (!o->bad_OHCI && (intstatus & 0x2) != 0)
-    {
-      /* Remember last successful TD */
-      cdata->tderr_phys = grub_le_to_cpu32 (o->hcca->donehead) & ~0xf;
-      /* Reset DoneHead */
-      o->hcca->donehead = 0;
-      grub_ohci_writereg32 (o, GRUB_OHCI_REG_INTSTATUS, (1 << 1));
-      /* Read back of register should ensure it is really written */
-      grub_ohci_readreg32 (o, GRUB_OHCI_REG_INTSTATUS);
-      /* if TD is last, finish */
-      if (cdata->tderr_phys == cdata->td_last_phys)
-	{
-	  if (grub_le_to_cpu32 (cdata->ed_virt->td_head) & 1)
-	    return parse_halt (dev, transfer, actual);
-	  else
-	    return parse_success (dev, transfer, actual);
-	}
-      return GRUB_USB_ERR_WAIT;
-    }
 
   if ((intstatus & 0x10) != 0)
     /* Unrecoverable error - only reset can help...! */
@@ -1194,54 +1147,20 @@ grub_ohci_check_transfer (grub_usb_controller_t dev,
 
   /* Detected a HALT.  */
   if ((grub_le_to_cpu32 (cdata->ed_virt->td_head) & 1))
-    {
-      /* ED is halted, but donehead event can happened in the meantime */
-      intstatus = grub_ohci_readreg32 (o, GRUB_OHCI_REG_INTSTATUS);
-      if (!o->bad_OHCI && (intstatus & 0x2) != 0)
-	{
-	  /* Remember last successful TD */
-	  cdata->tderr_phys = grub_le_to_cpu32 (o->hcca->donehead) & ~0xf;
-	  /* Reset DoneHead */
-	  o->hcca->donehead = 0;
-	  grub_ohci_writereg32 (o, GRUB_OHCI_REG_INTSTATUS, (1 << 1));
-	  /* Read back of register should ensure it is really written */
-	  grub_ohci_readreg32 (o, GRUB_OHCI_REG_INTSTATUS);
-	  /* if TD is last, finish */
-	}
-      return parse_halt (dev, transfer, actual);
-    }
+    return parse_halt (dev, transfer, actual);
 
-  /* bad OHCI handling */
+  /* Finished ED detection */
   if ( (grub_le_to_cpu32 (cdata->ed_virt->td_head) & ~0xf) ==
        (grub_le_to_cpu32 (cdata->ed_virt->td_tail) & ~0xf) ) /* Empty ED */
     {
-      if (o->bad_OHCI) /* Bad OHCI detected previously */
-	{
-	  /* Try get last successful TD. */
-	  cdata->tderr_phys = grub_le_to_cpu32 (o->hcca->donehead) & ~0xf;
-	  if (cdata->tderr_phys)/* Reset DoneHead if we were successful */
-	    {
-	      o->hcca->donehead = 0;
-	      grub_ohci_writereg32 (o, GRUB_OHCI_REG_INTSTATUS, (1 << 1));
-	      /* Read back of register should ensure it is really written */
-	      grub_ohci_readreg32 (o, GRUB_OHCI_REG_INTSTATUS);
-	    }
-	  /* Check the HALT bit */
-	  if (grub_le_to_cpu32 (cdata->ed_virt->td_head) & 1)
-	    return parse_halt (dev, transfer, actual);
-	  else
-	    return parse_success (dev, transfer, actual);
-	}
-      else /* Detection of bad OHCI */
-	/* We should wait short time (~2ms) before we say that
-	 * it is bad OHCI to prevent some hazard -
-	 * donehead can react in the meantime. This waiting is done
-	 * only once per OHCI driver "live cycle". */
-	if (!cdata->bad_OHCI_delay) /* Set delay time */
-	  cdata->bad_OHCI_delay = grub_get_time_ms () + 2;
-	else if (grub_get_time_ms () >= cdata->bad_OHCI_delay)
-	  o->bad_OHCI = 1;
-      return GRUB_USB_ERR_WAIT;
+      /* Check the HALT bit */
+      /* It looks like nonsense - it was tested previously...
+       * but it can change because OHCI is working
+       * simultaneously via DMA... */
+      if (grub_le_to_cpu32 (cdata->ed_virt->td_head) & 1)
+	return parse_halt (dev, transfer, actual);
+      else
+        return parse_success (dev, transfer, actual);
     }
 
   return GRUB_USB_ERR_WAIT;
@@ -1266,14 +1185,16 @@ grub_ohci_cancel_transfer (grub_usb_controller_t dev,
   /* Wait for new SOF */
   while ((grub_ohci_readreg32 (o, GRUB_OHCI_REG_INTSTATUS) & 0x4) == 0);
 
-  /* Now we must find last processed TD if bad_OHCI == TRUE */
-  if (o->bad_OHCI)
-    /* Retired TD with error should be previous TD to ED->td_head */
-    cdata->tderr_phys
-      = grub_ohci_td_phys2virt (o, grub_le_to_cpu32 (cdata->ed_virt->td_head)
-				& ~0xf)->prev_td_phys;
+  /* Possible retired TD with error should be previous TD to ED->td_head */
+  cdata->tderr_phys
+    = grub_ohci_td_phys2virt (o, grub_le_to_cpu32 (cdata->ed_virt->td_head)
+                              & ~0xf)->prev_td_phys;
     
   tderr_virt = grub_ohci_td_phys2virt (o,cdata-> tderr_phys);
+
+  grub_dprintf ("ohci", "Cancel: tderr_phys=0x%08x, tderr_virt=0x%08x\n",
+                cdata->tderr_phys, (unsigned int)tderr_virt);
+
   if (tderr_virt)
     transfer->last_trans = tderr_virt->tr_index;
   else
@@ -1290,6 +1211,7 @@ grub_ohci_portstatus (grub_usb_controller_t dev,
 {
    struct grub_ohci *o = (struct grub_ohci *) dev->data;
    grub_uint64_t endtime;
+   int i;
 
    grub_dprintf ("ohci", "begin of portstatus=0x%02x\n",
                  grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port));
@@ -1310,31 +1232,47 @@ grub_ohci_portstatus (grub_usb_controller_t dev,
        return GRUB_ERR_NONE;
      }
      
-   /* Reset the port */
-   grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
-			 GRUB_OHCI_SET_PORT_RESET);
-   grub_millisleep (50); /* For root hub should be nominaly 50ms */
- 
-    /* End the reset signaling.  */
-   grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
-			 GRUB_OHCI_SET_PORT_RESET_STATUS_CHANGE);
-   grub_millisleep (10);
+   /* OHCI does one reset signal 10ms long but USB spec.
+    * requests 50ms for root hub (no need to be continuous).
+    * So, we do reset 5 times... */
+   for (i = 0; i < 5; i++)
+     {
+       /* Reset the port - timing of reset is done by OHCI */
+       grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
+                             GRUB_OHCI_SET_PORT_RESET);
 
-   /* Enable the port and wait for it. */
+       /* Wait for reset completion */
+       endtime = grub_get_time_ms () + 1000;
+       while (! (grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port)
+               & GRUB_OHCI_SET_PORT_RESET_STATUS_CHANGE))
+         if (grub_get_time_ms () > endtime)
+           return grub_error (GRUB_ERR_IO, "OHCI Timed out - reset");
+
+       /* End the reset signaling - reset the reset status change */
+       grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
+			     GRUB_OHCI_SET_PORT_RESET_STATUS_CHANGE);
+       grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port);
+     }
+
+   /* Enable port */
    grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
                          GRUB_OHCI_SET_PORT_ENABLE);
+   grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port);
+   
+   /* Wait for signal enabled */
    endtime = grub_get_time_ms () + 1000;
    while (! (grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port)
            & (1 << 1)))
      if (grub_get_time_ms () > endtime)
        return grub_error (GRUB_ERR_IO, "OHCI Timed out - enable");
 
-   grub_millisleep (10);
-
    /* Reset bit Connect Status Change */
    grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
                          GRUB_OHCI_RESET_CONNECT_CHANGE);
 
+   /* "Reset recovery time" (USB spec.) */
+   grub_millisleep (10);
+   
    grub_dprintf ("ohci", "end of portstatus=0x%02x\n",
 		 grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port));
  

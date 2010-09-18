@@ -33,10 +33,12 @@ grub_usb_execute_and_wait_transfer (grub_usb_device_t dev,
   grub_usb_err_t err;
   grub_uint64_t endtime;
 
-  endtime = grub_get_time_ms () + timeout;
   err = dev->controller.dev->setup_transfer (&dev->controller, transfer);
   if (err)
     return err;
+  /* endtime moved behind setup transfer to prevent false timeouts
+   * while debugging... */
+  endtime = grub_get_time_ms () + timeout;
   while (1)
     {
       err = dev->controller.dev->check_transfer (&dev->controller, transfer,

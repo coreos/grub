@@ -116,6 +116,9 @@ struct grub_usb_controller_dev
 
   grub_usb_speed_t (*detect_dev) (grub_usb_controller_t dev, int port, int *changed);
 
+  /* Per controller flag - port reset pending, don't do another reset */
+  grub_uint64_t pending_reset;
+  
   /* The next host controller.  */
   struct grub_usb_controller_dev *next;
 };

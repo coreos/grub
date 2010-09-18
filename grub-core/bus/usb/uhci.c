@@ -50,9 +50,12 @@ enum
     GRUB_UHCI_REG_PORTSC_SUSPEND         = 0x1000,
     GRUB_UHCI_REG_PORTSC_RW = GRUB_UHCI_REG_PORTSC_PORT_ENABLED
     | GRUB_UHCI_REG_PORTSC_RESUME | GRUB_UHCI_REG_PORTSC_RESET
-    | GRUB_UHCI_REG_PORTSC_SUSPEND
+    | GRUB_UHCI_REG_PORTSC_SUSPEND,
+    /* These bits should not be written as 1 unless we really need it */
+    GRUB_UHCI_PORTSC_RWC = ((1 << 1) | (1 << 3) | (1 << 11) | (3 << 13))
   };
 
+#define 
 
 /* UHCI Queue Head.  */
 struct grub_uhci_qh
@@ -578,23 +581,23 @@ grub_uhci_check_transfer (grub_usb_controller_t dev,
 	err = GRUB_USB_ERR_STALL;
       
       /* Check if an error related to the data buffer occurred.  */
-      if (errtd->ctrl_status & (1 << 21))
+      else if (errtd->ctrl_status & (1 << 21))
 	err = GRUB_USB_ERR_DATA;
       
       /* Check if a babble error occurred.  */
-      if (errtd->ctrl_status & (1 << 20))
+      else if (errtd->ctrl_status & (1 << 20))
 	err = GRUB_USB_ERR_BABBLE;
       
       /* Check if a NAK occurred.  */
-      if (errtd->ctrl_status & (1 << 19))
+      else if (errtd->ctrl_status & (1 << 19))
 	err = GRUB_USB_ERR_NAK;
       
       /* Check if a timeout occurred.  */
-      if (errtd->ctrl_status & (1 << 18))
+      else if (errtd->ctrl_status & (1 << 18))
 	err = GRUB_USB_ERR_TIMEOUT;
       
       /* Check if a bitstuff error occurred.  */
-      if (errtd->ctrl_status & (1 << 17))
+      else if (errtd->ctrl_status & (1 << 17))
 	err = GRUB_USB_ERR_BITSTUFF;
       
       if (err)
@@ -685,7 +688,7 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
       endtime = grub_get_time_ms () + 1000;
       while ((grub_uhci_readreg16 (u, reg) & (1 << 2)))
         if (grub_get_time_ms () > endtime)
-          return grub_error (GRUB_ERR_IO, "UHCI Timed out");
+          return grub_error (GRUB_ERR_IO, "UHCI Timed out - disable");
 
       status = grub_uhci_readreg16 (u, reg);
       grub_dprintf ("uhci", ">3detect=0x%02x\n", status);
@@ -693,28 +696,37 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
     }
     
   /* Reset the port.  */
-  grub_uhci_writereg16 (u, reg, 1 << 9);
+  status = grub_uhci_readreg16 (u, reg) & ~GRUB_UHCI_PORTSC_RWC;
+  grub_uhci_writereg16 (u, reg, status | (1 << 9));
+  grub_uhci_readreg16 (u, reg); /* Ensure it is writen... */
 
   /* Wait for the reset to complete.  XXX: How long exactly?  */
   grub_millisleep (50); /* For root hub should be nominaly 50ms */
-  status = grub_uhci_readreg16 (u, reg);
+  status = grub_uhci_readreg16 (u, reg) & ~GRUB_UHCI_PORTSC_RWC;
   grub_uhci_writereg16 (u, reg, status & ~(1 << 9));
-  grub_dprintf ("uhci", "reset completed\n");
-  grub_millisleep (10);
+  grub_uhci_readreg16 (u, reg); /* Ensure it is writen... */
+
+  /* Note: some debug prints were removed because they affected reset/enable timing. */
+
+  grub_millisleep (1); /* Probably not needed at all or only few microsecs. */
+
+  /* Reset bits Connect & Enable Status Change */
+  status = grub_uhci_readreg16 (u, reg) & ~GRUB_UHCI_PORTSC_RWC;
+  grub_uhci_writereg16 (u, reg, status | (1 << 3) | GRUB_UHCI_REG_PORTSC_CONNECT_CHANGED);
+  grub_uhci_readreg16 (u, reg); /* Ensure it is writen... */
 
   /* Enable the port.  */
-  grub_uhci_writereg16 (u, reg, 1 << 2);
-  grub_millisleep (10);
-
-  grub_dprintf ("uhci", "waiting for the port to be enabled\n");
+  status = grub_uhci_readreg16 (u, reg) & ~GRUB_UHCI_PORTSC_RWC;
+  grub_uhci_writereg16 (u, reg, status | (1 << 2));
+  grub_uhci_readreg16 (u, reg); /* Ensure it is writen... */
 
   endtime = grub_get_time_ms () + 1000;
   while (! ((status = grub_uhci_readreg16 (u, reg)) & (1 << 2)))
     if (grub_get_time_ms () > endtime)
-      return grub_error (GRUB_ERR_IO, "UHCI Timed out");
+      return grub_error (GRUB_ERR_IO, "UHCI Timed out - enable");
 
-  /* Reset bit Connect Status Change */
-  grub_uhci_writereg16 (u, reg, status | GRUB_UHCI_REG_PORTSC_CONNECT_CHANGED);
+  /* Reset recovery time */
+  grub_millisleep (10);
 
   /* Read final port status */
   status = grub_uhci_readreg16 (u, reg);

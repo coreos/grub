@@ -262,7 +262,7 @@ void grub_usb_device_attach (grub_usb_device_t dev)
 
       if (dev->config[0].interf[i].attached)
 	continue;
-
+	
       for (desc = attach_hooks; desc; desc = desc->next)
 	if (interf->class == desc->class && desc->hook (dev, 0, i))
 	  dev->config[0].interf[i].attached = 1;
