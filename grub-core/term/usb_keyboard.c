@@ -75,6 +75,10 @@ struct grub_usb_keyboard_data
   int dead;
   int last_key;
   grub_uint64_t repeat_time;
+  grub_uint8_t current_report[8];
+  grub_uint8_t last_report[8];
+  int index;
+  int max_index;
 };
 
 static int grub_usb_keyboard_getkey (struct grub_term_input *term);
@@ -192,6 +196,9 @@ grub_usb_keyboard_attach (grub_usb_device_t usbdev, int configno, int interfno)
   data->interfno = interfno;
   data->endp = endp;
 
+  /* Configure device */
+  grub_usb_set_configuration (usbdev, configno + 1);
+  
   /* Place the device in boot mode.  */
   grub_usb_control_msg (usbdev, GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT,
   			USB_HID_SET_PROTOCOL, 0, interfno, 0, 0);
@@ -271,16 +278,95 @@ send_leds (struct grub_usb_keyboard_data *termdata)
 }
 
 static int
+parse_keycode (struct grub_usb_keyboard_data *termdata)
+{
+  int index = termdata->index;
+  int i, keycode;
+
+  /* Sanity check */
+  if (index < 2)
+    index = 2;
+
+  for ( ; index < termdata->max_index; index++)
+    {
+      keycode = termdata->current_report[index];
+      
+      if (keycode == KEY_NO_KEY
+          || keycode == KEY_ERR_BUFFER
+          || keycode == KEY_ERR_POST
+          || keycode == KEY_ERR_UNDEF)
+        {
+          /* Don't parse (rest of) this report */
+          termdata->index = 0;
+          if (keycode != KEY_NO_KEY)
+          /* Don't replace last report with current faulty report
+           * in future ! */
+            grub_memcpy (termdata->current_report,
+                         termdata->last_report,
+                         sizeof (termdata->report));
+          return GRUB_TERM_NO_KEY;
+        }
+
+      /* Try to find current keycode in last report. */
+      for (i = 2; i < 8; i++)
+        if (keycode == termdata->last_report[i])
+          break;
+      if (i < 8)
+        /* Keycode is in last report, it means it was not released,
+         * ignore it. */
+        continue;
+        
+      if (keycode == KEY_CAPS_LOCK)
+        {
+          termdata->mods ^= GRUB_TERM_STATUS_CAPS;
+          send_leds (termdata);
+          continue;
+        }
+
+      if (keycode == KEY_NUM_LOCK)
+        {
+          termdata->mods ^= GRUB_TERM_STATUS_NUM;
+          send_leds (termdata);
+          continue;
+        }
+
+      termdata->last_key = grub_term_map_key (keycode,
+                                              interpret_status (termdata->current_report[0])
+					        | termdata->mods);
+      termdata->repeat_time = grub_get_time_ms () + GRUB_TERM_REPEAT_PRE_INTERVAL;
+
+      grub_errno = GRUB_ERR_NONE;
+
+      index++;
+      if (index >= termdata->max_index)
+        termdata->index = 0;
+      else
+        termdata->index = index;
+
+      return termdata->last_key;
+    }
+
+  /* All keycodes parsed */
+  termdata->index = 0;
+  return GRUB_TERM_NO_KEY;
+}
+
+static int
 grub_usb_keyboard_getkey (struct grub_term_input *term)
 {
   grub_usb_err_t err;
   struct grub_usb_keyboard_data *termdata = term->data;
-  grub_uint8_t data[sizeof (termdata->report)];
   grub_size_t actual;
+  int keycode = GRUB_TERM_NO_KEY;
 
   if (termdata->dead)
     return GRUB_TERM_NO_KEY;
 
+  if (termdata->index)
+    keycode = parse_keycode (termdata);
+  if (keycode != GRUB_TERM_NO_KEY)
+    return keycode;
+    
   /* Poll interrupt pipe.  */
   err = grub_usb_check_transfer (termdata->transfer, &actual);
 
@@ -296,7 +382,14 @@ grub_usb_keyboard_getkey (struct grub_term_input *term)
       return GRUB_TERM_NO_KEY;
     }
 
-  grub_memcpy (data, termdata->report, sizeof (data));
+  if (!err && (actual >= 3))
+    grub_memcpy (termdata->last_report,
+                 termdata->current_report,
+                 sizeof (termdata->report));
+                 
+  grub_memcpy (termdata->current_report,
+               termdata->report,
+               sizeof (termdata->report));
 
   termdata->transfer = grub_usb_bulk_read_background (termdata->usbdev,
 						      termdata->endp->endp_addr,
@@ -314,42 +407,23 @@ grub_usb_keyboard_getkey (struct grub_term_input *term)
 		"err = %d, actual = %d report: 0x%02x 0x%02x 0x%02x 0x%02x"
 		" 0x%02x 0x%02x 0x%02x 0x%02x\n",
 		err, actual,
-		data[0], data[1], data[2], data[3],
-		data[4], data[5], data[6], data[7]);
+		termdata->current_report[0], termdata->current_report[1],
+		termdata->current_report[2], termdata->current_report[3],
+		termdata->current_report[4], termdata->current_report[5],
+		termdata->current_report[6], termdata->current_report[7]);
 
   if (err || actual < 1)
     return GRUB_TERM_NO_KEY;
 
-  termdata->status = data[0];
+  termdata->status = termdata->current_report[0];
 
   if (actual < 3)
     return GRUB_TERM_NO_KEY;
 
-  if (data[2] == KEY_NO_KEY || data[2] == KEY_ERR_BUFFER
-      || data[2] == KEY_ERR_POST || data[2] == KEY_ERR_UNDEF)
-    return GRUB_TERM_NO_KEY;
-
-  if (data[2] == KEY_CAPS_LOCK)
-    {
-      termdata->mods ^= GRUB_TERM_STATUS_CAPS;
-      send_leds (termdata);
-      return GRUB_TERM_NO_KEY;
-    }
-
-  if (data[2] == KEY_NUM_LOCK)
-    {
-      termdata->mods ^= GRUB_TERM_STATUS_NUM;
-      send_leds (termdata);
-      return GRUB_TERM_NO_KEY;
-    }
-
-  termdata->last_key = grub_term_map_key (data[2], interpret_status (data[0])
-					  | termdata->mods);
-  termdata->repeat_time = grub_get_time_ms () + GRUB_TERM_REPEAT_PRE_INTERVAL;
-
-  grub_errno = GRUB_ERR_NONE;
-
-  return termdata->last_key;
+  termdata->index = 2; /* New data received. */
+  termdata->max_index = actual;
+  
+  return parse_keycode (termdata);
 }
 
 static int
