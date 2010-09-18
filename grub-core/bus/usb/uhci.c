@@ -414,7 +414,7 @@ static grub_uhci_td_t
 grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
 		       grub_transfer_type_t type, unsigned int addr,
 		       unsigned int toggle, grub_size_t size,
-		       grub_uint32_t data)
+		       grub_uint32_t data, grub_usb_speed_t speed)
 {
   grub_uhci_td_t td;
   static const unsigned int tf[] = { 0x69, 0xE1, 0x2D };
@@ -439,7 +439,8 @@ grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
   td->linkptr = 1;
 
   /* Active!  Only retry a transfer 3 times.  */
-  td->ctrl_status = (1 << 23) | (3 << 27);
+  td->ctrl_status = (1 << 23) | (3 << 27) |
+                    ((speed == GRUB_USB_SPEED_LOW) ? (1 << 26) : 0);
 
   /* If zero bytes are transmitted, size is 0x7FF.  Otherwise size is
      size-1.  */
@@ -495,7 +496,8 @@ grub_uhci_setup_transfer (grub_usb_controller_t dev,
 
       td = grub_uhci_transaction (u, transfer->endpoint & 15, tr->pid,
 				  transfer->devaddr, tr->toggle,
-				  tr->size, tr->data);
+				  tr->size, tr->data,
+				  transfer->dev->speed);
       if (! td)
 	{
 	  grub_size_t actual = 0;
