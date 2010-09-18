@@ -355,17 +355,7 @@ script = {
   installdir = sbin;
   name = grub-install;
 
-  mips = util/grub-install.in;
-  i386_pc = util/grub-install.in;
-  i386_qemu = util/grub-install.in;
-  i386_coreboot = util/grub-install.in;
-  i386_multiboot = util/grub-install.in;
-  sparc64_ieee1275 = util/grub-install.in;
-
-  x86_efi = util/i386/efi/grub-install.in;
-  i386_ieee1275 = util/ieee1275/grub-install.in;
-  powerpc_ieee1275 = util/ieee1275/grub-install.in;
-
+  common = util/grub-install.in;
   enable = noemu;
 };
 

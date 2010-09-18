@@ -1,3 +1,12 @@
+2010-09-19  Colin Watson  <cjwatson@ubuntu.com>
+2010-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.util.def (grub-install): Use util/grub-install.in on all
+	platforms.
+	* util/grub-install.in: Add EFI and IEEE1275 support.
+	* util/i386/efi/grub-install.in: Removed.
+	* util/ieee1275/grub-install.in: Likewise.
+
 2010-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/i386/cmostest.c (+parse_args): New function.
@@ -1441,6 +1450,15 @@
 
 	* conf/Makefile.common (CPPFLAGS_DEFAULT): Remove leading / from
 	dprintf output.
+
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove leftover embedding of font objects.
+
+	* include/grub/kernel.h (OBJ_TYPE_FONT): Removed.
+	* util/grub-install.in (font): Removed.
+	* util/grub-mkimage.c (generate_image): Remove font support. All users
+	updated.
 
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
