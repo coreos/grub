@@ -31,7 +31,23 @@ static const struct grub_arg_option options[] =
     {0, 0, 0, 0, 0, 0}
   };
 
-#define grub_cur_term_input	grub_term_get_current_input ()
+static int
+grub_getkeystatus (void)
+{
+  int status = 0;
+  grub_term_input_t term;
+
+  if (grub_term_poll_usb)
+    grub_term_poll_usb ();
+
+  FOR_ACTIVE_TERM_INPUTS(term)
+  {
+    if (term->getkeystatus)
+      status |= term->getkeystatus (term);
+  }
+
+  return status;
+}
 
 static grub_err_t
 grub_cmd_keystatus (grub_extcmd_context_t ctxt,
@@ -43,11 +59,11 @@ grub_cmd_keystatus (grub_extcmd_context_t ctxt,
   int mods;
 
   if (state[0].set)
-    expect_mods |= GRUB_TERM_STATUS_SHIFT;
+    expect_mods |= (GRUB_TERM_STATUS_LSHIFT | GRUB_TERM_STATUS_RSHIFT);
   if (state[1].set)
-    expect_mods |= GRUB_TERM_STATUS_CTRL;
+    expect_mods |= (GRUB_TERM_STATUS_LCTRL | GRUB_TERM_STATUS_RCTRL);
   if (state[2].set)
-    expect_mods |= GRUB_TERM_STATUS_ALT;
+    expect_mods |= (GRUB_TERM_STATUS_LALT | GRUB_TERM_STATUS_RALT);
 
   grub_dprintf ("keystatus", "expect_mods: %d\n", expect_mods);
 
@@ -80,8 +96,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(keystatus)
 {
-  cmd = grub_register_extcmd ("keystatus", grub_cmd_keystatus,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("keystatus", grub_cmd_keystatus, 0,
 			      N_("[--shift] [--ctrl] [--alt]"),
 			      N_("Check key modifier status."),
 			      options);

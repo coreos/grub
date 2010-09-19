@@ -24,9 +24,10 @@
 #include <grub/disk.h>
 #include <grub/loader.h>
 #include <grub/env.h>
-#include <grub/machine/memory.h>
 #include <grub/machine/biosnum.h>
 #include <grub/i18n.h>
+#include <grub/memory.h>
+#include <grub/machine/memory.h>
 
 
 /* Real mode IVT slot (seg:off far pointer) for interrupt 0x13.  */
@@ -306,7 +307,7 @@ install_int13_handler (int noret __attribute__ ((unused)))
   grub_dprintf ("drivemap", "Payload is %u bytes long\n", total_size);
   handler_base = grub_mmap_malign_and_register (16, total_size,
 						&drivemap_mmap,
-						GRUB_MACHINE_MEMORY_RESERVED,
+						GRUB_MEMORY_RESERVED,
 						GRUB_MMAP_MALLOC_LOW);
   if (! handler_base)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't reserve "
@@ -401,8 +402,7 @@ GRUB_MOD_INIT (drivemap)
 {
   grub_get_root_biosnumber_saved = grub_get_root_biosnumber;
   grub_get_root_biosnumber = grub_get_root_biosnumber_drivemap;
-  cmd = grub_register_extcmd ("drivemap", grub_cmd_drivemap,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("drivemap", grub_cmd_drivemap, 0,
 			      N_("-l | -r | [-s] grubdev osdisk."),
 			      N_("Manage the BIOS drive mappings."),
 			      options);

@@ -25,7 +25,6 @@
 #include <grub/misc.h>
 #include <grub/acpi.h>
 #include <grub/mm.h>
-#include <grub/machine/memory.h>
 #include <grub/memory.h>
 #include <grub/i18n.h>
 
@@ -151,10 +150,10 @@ grub_acpi_create_ebda (void)
   auto int NESTED_FUNC_ATTR find_hook (grub_uint64_t, grub_uint64_t,
 				       grub_uint32_t);
   int NESTED_FUNC_ATTR find_hook (grub_uint64_t start, grub_uint64_t size,
-				  grub_uint32_t type)
+				  grub_memory_type_t type)
   {
     grub_uint64_t end = start + size;
-    if (type != GRUB_MACHINE_MEMORY_AVAILABLE)
+    if (type != GRUB_MEMORY_AVAILABLE)
       return 0;
     if (end > 0x100000)
       end = 0x100000;
@@ -180,7 +179,7 @@ grub_acpi_create_ebda (void)
 		       "couldn't find space for the new EBDA");
 
   mmapregion = grub_mmap_register (PTR_TO_UINT64 (targetebda), ebda_len,
-				   GRUB_MACHINE_MEMORY_RESERVED);
+				   GRUB_MEMORY_RESERVED);
   if (! mmapregion)
     return grub_errno;
 
@@ -324,7 +323,7 @@ setup_common_tables (void)
 
       /* If it's FADT correct DSDT and FACS addresses. */
       fadt = (struct grub_acpi_fadt *) cur->addr;
-      if (grub_memcmp (fadt->hdr.signature, "FACP",
+      if (grub_memcmp (fadt->hdr.signature, GRUB_ACPI_FADT_SIGNATURE,
 		       sizeof (fadt->hdr.signature)) == 0)
 	{
 	  fadt->dsdt_addr = PTR_TO_UINT32 (table_dsdt);
@@ -527,7 +526,7 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
 	      struct grub_acpi_fadt *fadt = (struct grub_acpi_fadt *) curtable;
 
 	      /* Set root header variables to the same values
-		 as FACP by default. */
+		 as FADT by default. */
 	      grub_memcpy (&root_oemid, &(fadt->hdr.oemid),
 			   sizeof (root_oemid));
 	      grub_memcpy (&root_oemtable, &(fadt->hdr.oemtable),
@@ -704,7 +703,7 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
 
   playground = playground_ptr
     = grub_mmap_malign_and_register (1, playground_size, &mmapregion,
-				     GRUB_MACHINE_MEMORY_ACPI, 0);
+				     GRUB_MEMORY_ACPI, 0);
 
   if (! playground)
     {
@@ -758,8 +757,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(acpi)
 {
-  cmd = grub_register_extcmd ("acpi", grub_cmd_acpi,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("acpi", grub_cmd_acpi, 0,
 			      N_("[-1|-2] [--exclude=TABLE1,TABLE2|"
 			      "--load-only=table1,table2] FILE1"
 			      " [FILE2] [...]"),

@@ -1,3 +1,786 @@
+2010-09-19  Colin Watson  <cjwatson@ubuntu.com>
+2010-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.util.def (grub-install): Use util/grub-install.in on all
+	platforms.
+	* util/grub-install.in: Add EFI and IEEE1275 support.
+	* util/i386/efi/grub-install.in: Removed.
+	* util/ieee1275/grub-install.in: Likewise.
+
+2010-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/i386/cmostest.c (+parse_args): New function.
+	(grub_cmd_cmosclean): Likewise.
+	(GRUB_MOD_INIT): Register command cmosclean.
+	* util/grub-mkconfig.in: Export GRUB_BUTTON_CMOS_CLEAN.
+	* util/grub.d/00_header.in: Handle GRUB_BUTTON_CMOS_CLEAN.
+
+2010-09-18  Carles Pina i Estany  <carles@pina.cat>
+2010-09-18  Aleš Nesrsta <starous@volny.cz>
+2010-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add keyboard layouts support.
+
+	* Makefile.util.def (grub-mklayout): New file.
+	(grub-kbdcomp): New script.
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES) [COND_mips_yeeloong]:
+	Add keyboard_layouts.h.
+	* grub-core/Makefile.core.def (kernel): Add commands/keylayouts.c and
+	commands/boot.c on yeeloong.
+	(keylayouts): New module.
+	* grub-core/bus/usb/ohci.c
+	* grub-core/bus/usb/uhci.c
+	* grub-core/bus/usb/usbhub.c (rescan): New variable.
+	(grub_usb_add_hub): Poll interrupt pipe for device handling.
+	(attach_root_port): Likewise.
+	(poll_nonroot_hub): Likewise.
+	(grub_usb_poll_devices): Likewise.
+	(detach_device): Close transfer.
+	* grub-core/bus/usb/usbtrans.c (grub_usb_execute_and_wait_transfer): New
+	function.
+	(grub_usb_bulk_setup_readwrite): Likewise.
+	(grub_usb_bulk_finish_readwrite): Likewise.
+	* grub-core/commands/keylayouts.c: New file.
+	* grub-core/commands/keystatus.c (grub_getkeystatus): New function.
+	* grub-core/commands/menuentry.c (hotkey_aliases): All several new
+	aliases.
+	* grub-core/term/at_keyboard.c: Restructured to use keylayouts and
+	support scancode 2.
+	* grub-core/term/usb_keyboard.c: Restructured to use keylayouts.
+	* include/grub/keyboard_layouts.h: New file.
+	* util/grub-mklayout.c: New file.
+	* util/grub-kbdcomp.in: Likewise.
+
+2010-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Unify memory types.
+
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Include memory.h.
+	* grub-core/commands/lsmmap.c (grub_cmd_lsmmap): Output user-readable
+	types.
+	* grub-core/kern/i386/multiboot_mmap.c (grub_lower_mem): Removed.
+	(grub_upper_mem): Likewise.
+	* grub-core/kern/ieee1275/init.c (grub_upper_mem): Likewise.
+	* include/grub/memory.h (grub_memory_type_t): New enum.
+	All users updated.
+
+2010-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.core.def (lsapm): New module.
+	* grub-core/commands/i386/pc/lsapm.c: New file.
+	* grub-core/loader/i386/multiboot_mbi.c (make_mbi) [GRUB_MACHINE_PCBIOS]: Pass APM info.
+	* grub-core/loader/multiboot_mbi2.c (make_mbi) [GRUB_MACHINE_PCBIOS]:
+	Likewise.
+	* include/grub/i386/pc/apm.h: New file.
+	* include/multiboot.h (multiboot_apm_info): New struct.
+
+2010-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	GRUB-legacy configuration file support.
+
+	* Makefile.util.def (grub-menulst2cfg): New util.
+	* docs/man/grub-menulst2cfg.h2m: New file.
+	* grub-core/Makefile.core.def (legacycfg): New module.
+	* grub-core/commands/legacycfg.c: New file.
+	* grub-core/commands/menuentry.c (append_menu_entry): Rename to ...
+	(grub_normal_add_menu_entry): ... this.
+	* grub-core/commands/password.c (grub_cmd_password): Split main part to ...
+	(grub_normal_set_password): ...this.
+	* grub-core/commands/videoinfo.c (grub_cmd_videoinfo): Support MODE.
+	* grub-core/loader/i386/linux.c (linux_vesafb_res): Move to ..,
+	* grub-core/lib/i386/pc/vesa_modes_table.c: ... here.
+	* grub-core/lib/legacy_parse.c: New file.
+	* grub-core/normal/auth.c (grub_cmd_authenticate): New command.
+	* include/grub/i386/pc/vesa_modes_table.h: New file.
+	* include/grub/legacy_parse.h: Likewise.
+	* include/grub/normal.h (grub_normal_add_menu_entry): New proto.
+	* util/grub-menulst2cfg.c: New file.
+
+2010-09-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/emu/hostdisk.c
+	(convert_system_partition_to_system_disk): Initialise node.
+
+2010-09-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/emu/hostdisk.c
+	(convert_system_partition_to_system_disk): Fix devmapper memory pool
+	leak.
+	Reported and based on patch by: Modestas Vainius.
+
+2010-09-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix DM-RAID probing with recent versions of device-mapper udev
+	rules.
+
+	* grub-core/kern/emu/hostdisk.c (read_device_map): Don't
+	canonicalise device paths under /dev/mapper/.
+	(convert_system_partition_to_system_disk): Compare the
+	uncanonicalised path to /dev/mapper/ rather than the canonicalised
+	path, since device nodes under /dev/mapper/ are often symlinks.
+
+2010-09-17  Yves Blusseau  <blusseau@zetam.org>
+
+	* .bzrignore: *.d removed (old rule), add *.image and symlist.h.
+
+2010-09-16  Yves Blusseau  <blusseau@zetam.org>
+
+	* configure.ac: Avoid some annoying error messages if freetype-config
+	program is not found.
+
+2010-09-16  Colin Watson  <cjwatson@ubuntu.com>
+
+	Support RAID on virtio devices, and others.
+
+	* grub-core/kern/emu/getroot.c [__MINGW32__] (find_root_device):
+	Rename to ...
+	[__MINGW32__] (grub_find_device): ... this.
+	[! __MINGW32__ && ! __CYGWIN__] (find_root_device): Rename to ...
+	[! __MINGW32__ && ! __CYGWIN__] (grub_find_device): ... this.  Use a
+	reasonable default if dir is NULL.
+	[! __MINGW32__ && __CYGWIN__] (find_cygwin_root_device): Rename to
+	...
+	[! __MINGW32__ && __CYGWIN__] (grub_find_device): ... this.
+	(grub_guess_root_device): Update callers.
+	* include/grub/emu/getroot.h (grub_find_device): Add prototype.
+
+	* util/raid.c (grub_util_getdiskname): Remove.
+	(grub_util_raid_getmembers): Use grub_find_device rather than
+	grub_util_getdiskname.
+
+2010-09-16  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (serial): Remove obsolete comment about GRUB
+	needing to be compiled with serial support.
+	(ls): Indicate that multiple files are accepted.
+	* grub-core/commands/ls.c (GRUB_MOD_INIT): Update help text to
+	indicate that multiple files are accepted.
+
+2010-09-16  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Add *.1, *.8, grub-shell, grub-shell-tester,
+	libgrub_a_init.c, and util/bash-completion.d/grub.
+
+2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-setup.c (setup): Fix incorrect container semantics.
+
+2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/parttool.c (grub_cmd_parttool): Fix a variable
+	misusage.
+	Reported by: J. Nick Terry
+
+2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Move embedding routines to partmap sources files.
+
+	* grub-core/partmap/gpt.c (grub_gpt_partition_type_bios_boot)
+	[GRUB_UTIL]: New variable.
+	(gpt_partition_map_iterate): Set part.parent.
+	(gpt_partition_map_embed) [GRUB_UTIL]: New function.
+	(grub_gpt_partition_map) [GRUB_UTIL]: Set .embed.
+	* grub-core/partmap/msdos.c (pc_partition_map_embed) [GRUB_UTIL]:
+	New function.
+	(grub_msdos_partition_map) [GRUB_UTIL]: Set .embed.
+	* include/grub/partition.h (grub_embed_type_t) [GRUB_UTIL]: New type.
+	(grub_partition_map) [GRUB_UTIL]: New field embed.
+	* util/grub-setup.c (grub_gpt_partition_type_bios_boot): Removed.
+	(setup): Use ->embed.
+
+2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_is_floppy): New
+	function.
+	* include/grub/emu/hostdisk.h (grub_util_biosdisk_is_floppy): New proto.
+	* util/grub-setup.c (setup): Use grub_util_biosdisk_is_floppy.
+
+2010-09-15  Yves Blusseau  <blusseau@zetam.org>
+
+	Add function to get completions from usage.
+
+	* util/bash-completion.d/grub-completion.bash.in: Add function to get
+	completions from usage. Use LC_ALL=C to get options properly.
+
+2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gnulib/basename-lgpl.c: Imported.
+	* grub-core/gnulib/basename.c: Likewise.
+	* grub-core/gnulib/dirname-lgpl.c: Likewise.
+	* grub-core/gnulib/dirname.c: Likewise.
+	* grub-core/gnulib/dirname.h: Likewise.
+	* grub-core/gnulib/stripslash.c: Likewise.
+
+2010-09-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gnulib/error.c: Resynced.
+	* grub-core/gnulib/getopt.c: Likewise.
+	* grub-core/gnulib/getopt_int.h: Likewise.
+	* grub-core/gnulib/regex.h: Likewise.
+	* grub-core/gnulib/regex_internal.c: Likewise.
+	* grub-core/gnulib/regex_internal.h: Likewise.
+
+2010-09-15  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/lib/xzembed/xz_dec_stream.c (dec_main): Fix index and block
+	CRC calculations and validity checks.
+	* grub-core/lib/xzembed/xz_dec_stream.c (dec_index): Fix index CRC
+	calculations.
+
+2010-09-15  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/lib/xzembed/xz_dec_stream.c (xz_dec_end): Fix memory leak.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix incorrect echo options handling.
+	Reported by: Yves Blusseau.
+
+	* include/grub/command.h (grub_command_flags_t): New flags
+	GRUB_COMMAND_ACCEPT_DASH and GRUB_COMMAND_OPTIONS_AT_START.
+	* grub-core/lib/arg.c (grub_arg_parse): Handle new flags.
+	* grub-core/commands/echo.c (GRUB_MOD_INIT): Use new flags.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/command.h (GRUB_COMMAND_FLAG_CMDLINE): Removed. All
+	users updated.
+	(GRUB_COMMAND_FLAG_MENU): Likewise.
+	(GRUB_COMMAND_FLAG_BOTH): Likewise.
+	(GRUB_COMMAND_FLAG_TITLE): Removed.
+	(GRUB_COMMAND_FLAG_NO_ECHO): Likewise.
+	(GRUB_COMMAND_FLAG_EXTCMD): Moved into enum.
+	(GRUB_COMMAND_FLAG_DYNCMD): Likewise.
+	(GRUB_COMMAND_FLAG_BLOCKS): Likewise.
+	(grub_command_flags_t): New enum. All users updated.
+
+2010-09-14  Seth Goldberg <seth.goldberg@oracle.com>
+
+	Fix solaris compilation.
+
+	* grub-core/Makefile.core.def (kernel): Include gnulib/error.c on emu.
+	(grub-emu): Add LIBZFS and LIBNVPAIR to ldadd.
+	(grub-emu-list): Likewise.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove deprecated root command.
+
+	* grub-core/commands/minicmd.c (grub_mini_cmd_root): Removed. All users
+	updated.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/i386/pc/grub-setup.c: Merge this ...
+	* util/sparc64/ieee1275/grub-setup.c:  ... and this ...
+	* util/grub-setup.c: ... into this.
+	* include/grub/sparc64/ieee1275/boot.h (grub_boot_blocklist) [ASM_FILE]:
+	New struct.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/ext2.c (grub_ext2_open): Use return error value when
+	possible.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/partmap/sun.c (sun_partition_map_iterate): Don't needlesly
+	allocate p.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Add
+	explicit root argument to set to prevent UUID to be interpreted as
+	argument to set.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/sparc64/ieee1275/crt0.S: Align stack.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't export grub_gate_a20.
+
+	* grub-core/kern/i386/pc/init.c: Remove leftovers.
+	* grub-core/kern/i386/pc/startup.S (FUNCTION(grub_gate_a20)): Rename
+	to ...
+	(grub_gate_a20): ... this. All users updated.
+	* include/grub/i386/pc/init.h: Removed. All users updated.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Create euro.pf2 which supports most European languages.
+
+	* Makefile.am (grubdata_DATA): Add euro.pf2.
+	(euro.pf2): New target.
+	(CLEANFILES): Add euro.pf2.
+
+2010-09-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Disable emu-usb by default to prevent inadvertent
+	device takeover.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Disable usbserial on grub-emu since our libusb code isn't good enough
+	yet.
+
+	* grub-core/Makefile.core.def (usbserial_common): Disable on emu.
+	(usbserial_pl2303): Likewise.
+	(usbserial_ftdi): Likewise.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/disk.h (grub_disk): Remove has_partitions.
+	All users updated.
+	* disk/loopback.c (grub_loopback): Remove has_partitions.
+	All users updated.
+	(options): Remove partitions. All users updated.
+	* util/grub-fstest.c (fstest): Don't pass "-p" to loopback.
+	* util/i386/pc/grub-setup.c (setup): copy partition table only when
+	actual partition table is found.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove readability checks (too many false negatives).
+
+	* util/grub-install.in: Remove readability checks.
+	* util/grub-mkconfig.in: Likewise.
+	* util/grub.d/10_hurd.in: Likewise.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub-mkconfig_lib.in (is_path_readable_by_grub): Revert to old
+	way.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Enable acpi shutdown on all ACPI platforms.
+
+	* grub-core/Makefile.core.def (halt): Inlude commands/acpihalt.c
+	on coreboo, multiboot and EFI.
+	* grub-core/commands/acpihalt.c (get_sleep_type): Add missing casts.
+	(grub_acpi_halt): Likewise.
+	* grub-core/commands/i386/pc/halt.c (grub_halt): Call grub_acpi_halt.
+	(grub_cmd_halt): Don't call grub_acpi_halt directly.
+	* grub-core/lib/efi/halt.c (grub_halt): Call grub_acpi_halt.
+	* grub-core/lib/i386/halt.c (grub_halt)
+	[GRUB_MACHINE_COREBOOT || GRUB_MACHINE_MULTIBOOT]: Likewise.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/iorw.c (grub_cmd_read): Declare buf in smallest
+	context.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/video/efi_gop.c: Fix over-80-chars line.
+	* grub-core/video/efi_uga.c: Likewise.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Filter devaliases and never open same device twice.
+
+	* grub-core/disk/ieee1275/ofdisk.c (last_devpath): New variable.
+	(last_ihandle): Likewise.
+	(ofdisk_hash_ent): New member shortest.
+	(ofdisk_hash_add): Add canonical path too.
+	(scan): New function.
+	(grub_ofdisk_iterate): Iterate over hashed entries.
+	(compute_dev_path): Don't add :0.
+	(grub_ofdisk_open): Don't really open the disk.
+	(grub_ofdisk_close): Avoid closing unrelated disk.
+	(grub_ofdisk_read): Implement reopen logic.
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_canonicalise_devname):
+	New function.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_canonicalise_devname):
+	New proto.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix sparc64.
+
+	* configure.ac (GRUB_KERNEL_MACHINE_LINK_ADDR): Removed.
+	* grub-core/Makefile.core.def (kernel): Make ldflags just use the
+	right address. Add sparc64_ieee1275_ldflags.
+	* grub-core/loader/sparc64/ieee1275/linux.c: Remove leftover include.
+	* util/grub-mkimagexx.c (locate_sections): Correct grub_host_to_target32
+	to grub_host_to_target_addr
+	(load_image): Likewise.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/completion.c (complete_file): Handle device
+	containing slash.
+	Fix based on patch by Doug Nazar.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	grub-mknetdir script.
+
+	* Makefile.util.def (grub-mknetdir): New module.
+	* tests/util/grub-shell.in: Support boot=net
+	* util/grub-mknetdir.in: New file.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	videoinfo on non-vbe.
+
+	* grub-core/Makefile.core.def (vbeinfo): Removed.
+	(vbetest): Removed.
+	(videoinfo): New module.
+	* grub-core/commands/i386/pc/vbeinfo.c: Removed.
+	* grub-core/commands/i386/pc/vbetest.c: Removed.
+	* grub-core/commands/videoinfo.c: New file.
+	* grub-core/commands/videotest.c (grub_cmd_videotest): Support mode
+	specification.
+	(grub_cmd_videotest) [GRUB_MACHINE_PCBIOS]: Load vbe.mod when invoked
+	as vbetest.
+	(GRUB_MOD_INIT) [GRUB_MACHINE_PCBIOS]: New command vbetest.
+	(GRUB_MOD_FINI) [GRUB_MACHINE_PCBIOS]: Unregister vbetest.
+	* grub-core/video/efi_gop.c (grub_video_gop_fill_mode_info): Fill
+	mode_number. New parameter mode. All users updated.
+	(grub_video_gop_iterate): New function.
+	(grub_video_efi_gop): New member iterate.
+	* grub-core/video/i386/pc/vbe.c (framebuffer): Removed leftover fields.
+	(grub_vbe_set_video_mode): Remove setting useless fields.
+	(vbe2videoinfo): New function.
+	(grub_video_vbe_iterate): Likewise.
+	(grub_video_vbe_setup): Use vbe2videoinfo.
+	(grub_video_vbe_print_adapter_specific_info): New function.
+	(grub_video_vbe_adapter): New fields iterate and
+	print_adapter_specific_info.
+	* include/grub/video.h (GRUB_VIDEO_MODE_*): Transform into enum.
+	All users updated.
+	(grub_video_mode_info): New field mode_number.
+	(grub_video_adapter): New fields iterate and
+	print_adapter_specific_info.
+
+2010-09-13  Tristan Gingold  <gingold@free.fr>
+2010-09-13  Robert Millan  <rmh.grub@aybabtu.com>
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/efi/lsefisystab.c: New file.
+	* grub-core/commands/efi/lssal.c: Likewise.
+	* grub-core/Makefile.core.def (lsacpi): New module.
+	(lsefisystab): Likewise.
+	* include/grub/efi/api.h (GRUB_EFI_SAL_TABLE_GUID): New definition.
+	(GRUB_EFI_HCDP_TABLE_GUID): Likewise.
+	(grub_efi_sal_system_table): New struct.
+	(grub_efi_sal_system_table_entrypoint_descriptor): Likewise.
+	(grub_efi_sal_system_table_memory_descriptor): Likewise.
+	(grub_efi_sal_system_table_platform_features): Likewise.
+	(grub_efi_sal_system_table_translation_register_descriptor): Likewise.
+	(grub_efi_sal_system_table_purge_translation_coherence): Likewise.
+	(grub_efi_sal_system_table_ap_wakeup): Likewise.
+	* include/grub/types.h (PRIuGRUB_UINT64_T): New definition.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support explicit user claim that a device is BIOS-visible.
+
+	* grub-core/kern/emu/getroot.c (grub_util_get_dev_abstraction):
+	Return GRUB_DEV_ABSTRACTION_NONE if device is in device.map.
+	* grub-core/kern/emu/hostdisk.c
+	(convert_system_partition_to_system_disk): Support mdX.
+	(find_system_device): New parameter add. All users updated.
+	(grub_util_biosdisk_is_present): New function.
+	* include/grub/emu/hostdisk.h (grub_util_biosdisk_is_present): New
+	proto.
+
+2010-09-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Search hints support.
+
+	* commands/search.c (FUNC_NAME): New arguments hints and nhints.
+	All users updated.
+
+2010-09-13  Yves Blusseau  <blusseau@zetam.org>
+
+	Bash completion script for util commands
+
+	* Makefile.am:  Add util/bash-completion.d directory
+	* configure.ac: Likewise.
+	* util/bash-completion.d/Makefile.am: New file.
+	* util/bash-completion.d/grub-completion.bash.in: Likewise.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/term.c (put_glyphs_terminal): Correct sign.
+	(print_backlog): set backlog_ucs4 and backlog_glyphs.
+	Reported by: Yves Blusseau.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/misc.c (grub_normal_print_device_info): Show
+	partition size and offset.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/wildcard.c (make_regex): Escape brackets.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/ls.c (grub_cmd_ls): Accept multiple files.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/misc.c (grub_vprintf): Use va_copy when necessary.
+	(grub_xvasprintf): Likewise.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/main.c (main): Call hostfs_init only after init_all.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/menuentry.c (append_menu_entry): Don't rely on
+	args ending with NULL.
+
+2010-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/xzembed/xz_dec_stream.c (xz_dec_reset): Preserve context
+	pointer.
+
+2010-09-11  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/commands/lsacpi.c (grub_cmd_lsacpi): Fix prototype.
+
+2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Shutdown using ACPI.
+
+	* grub-core/Makefile.core.def (halt): Add commands/acpihalt.c on i386-pc.
+	* grub-core/commands/acpihalt.c: New file.
+	* grub-core/commands/i386/pc/halt.c (grub_cmd_halt): Call grub_acpi_halt.
+	* include/grub/acpi.h (grub_acpi_fadt): New member pm1a.
+	(grub_acpi_halt): New proto.
+	(GRUB_ACPI_SLP_EN): New const.
+	(GRUB_ACPI_SLP_TYP_OFFSET): Likewise.
+	(GRUB_ACPI_OPCODE_*): New enum.
+	(GRUB_ACPI_EXTOPCODE_*): Likewise.
+
+2010-09-11  Tristan Gingold  <gingold@free.fr>
+2010-09-11  Robert Millan  <rmh.grub@aybabtu.com>
+2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* commands/lsacpi.c: New file.
+	* grub-core/Makefile.core.def (lsacpi): New module.
+	* include/grub/acpi.h (GRUB_ACPI_FADT_SIGNATURE): New definition.
+	(GRUB_ACPI_MADT_SIGNATURE): Likewise.
+	(grub_acpi_madt_entry_header): New struct.
+	(grub_acpi_madt): Likewise.
+	(grub_acpi_madt_entry_interrupt_override): Likewise.
+	(grub_acpi_madt_entry_sapic): Likewise.
+	(grub_acpi_madt_entry_lsapic): Likewise.
+	(grub_acpi_madt_entry_platform_int_source): Likewise.
+	* include/grub/types.h (PRIxGRUB_UINT32_T): New definition.
+	(PRIuGRUB_UINT32_T): Likewise.
+	(PRIxGRUB_UINT64_T): Likewise.
+
+2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Implement loading palette on ieee1275_fb.
+
+	* grub-core/video/ieee1275.c (stdout_ihandle): New variable.
+	(have_setcolors): Likewise.
+	(grub_video_ieee1275_init): Fill stdout_ihandle and have_setcolors.
+	(grub_video_ieee1275_setup): Use grub_video_ieee1275_set_palette.
+	(grub_video_ieee1275_set_palette): Implement.
+
+2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+2010-09-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in (grub_partition): New variable.
+	Set prefix_drive on EFI and PC to (,$grub_partition) as last resort.
+	* util/i386/pc/grub-setup.c (setup): Don't touch prefix.
+	Fixes a bug reported by Yves Blusseau.
+
+2010-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix emu on mipsel.
+
+	* conf/Makefile.common (CFLAGS_PLATFORM): Add -mflush-func
+	=grub_cpu_flush_cache on all mips and not only yeeloong.
+	* configure.ac (COND_mips): New conditional.
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Add libgcc on all
+	platforms.
+	* grub-core/kern/emu/cache.S (__mips__): Use _flush_cache.
+	* grub-core/kern/emu/full.c (grub_arch_dl_init_linker)
+	[GRUB_LINKER_HAVE_INIT]: New function.
+	(grub_emu_post_init): Likewise.
+	* grub-core/kern/emu/lite.c (grub_emu_post_init): Likewise.
+	* grub-core/kern/emu/main.c: Use grub_emu_post_init.
+	* include/grub/cache.h (_mips): Include mips/cache.h.
+	* include/grub/disk.h [GRUB_UTIL || GRUB_MACHINE_EMU]: Add missing
+	LVM and RAID prototypes.
+	* include/grub/emu/misc.h (grub_emu_post_init): New proto.
+	* include/grub/mips/time.h (grub_cpu_idle) [GRUB_MACHINE_EMU]: New
+	function.
+
+2010-09-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in: Don't try to verify core.img until after
+	running grub-mkimage to create it.
+
+2010-09-10  Robert Millan  <rmh@gnu.org>
+
+	* util/grub.d/10_hurd.in: Add misc readability checks.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+
+2010-09-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in: ${imgext} won't be defined here until the
+	install branch is merged.  For the meantime, only verify core.img on
+	i386-pc and sparc64-ieee1275 platforms.
+
+2010-09-10  Robert Millan  <rmh@gnu.org>
+
+	Solaris support in grub_find_zpool_from_dir().  Thanks
+	Seth Goldberg for referring to getextmntent() facility.
+
+	* configure.ac: Check for getextmntent(), `sys/mnttab.h' and
+	`sys/mkdev.h'.
+	* grub-core/kern/emu/misc.c [HAVE_SYS_MNTTAB_H]: Include
+	`<sys/mnttab.h>'.
+	[HAVE_SYS_MKDEV_H]: Include `<sys/mkdev.h>'.
+	[HAVE_GETEXTMNTENT] (grub_find_zpool_from_dir): Add getextmntent()
+	method for finding zpool name.
+
+2010-09-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	grub-fstest needs the host and hostfs modules while other utilities
+	actively require those modules to be absent, so grub-fstest needs
+	its own initialisation and finalisation code.
+
+	* Makefile.am (grub_fstest.pp): New target.
+	(grub_fstest_init.lst): Likewise.
+	(grub_fstest_init.c): Likewise.
+	* Makefile.util.def (grub-fstest): Add grub_fstest_init.c.
+
+2010-09-10  Robert Millan  <rmh@gnu.org>
+
+	* configure.ac: Check for `struct statfs.f_fstypename' and
+	`struct statfs.f_mntfromname'.
+
+	* grub-core/kern/emu/misc.c (grub_find_zpool_from_dir): Conditionalize
+	kFreeBSD-specific code.
+
+2010-09-10  Robert Millan  <rmh@gnu.org>
+
+	* util/grub.d/10_kfreebsd.in: Fix ${kfreebsd_device} initialization
+	on ZFS.  Now non-main filesystems are supported as / too.
+
+2010-09-09  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.util.def (libgrub.a): Move grub-core/kern/emu/hostfs.c
+	and grub-core/disk/host.c to ...
+	(grub-fstest): ... here.  Having the host disk implementation
+	present confuses grub-probe and other utility programs.
+
+	* util/grub-mkconfig.in: Only verify readability of grub.cfg.new
+	when writing to a file, not when writing to stdout.
+
+2010-09-09  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* tests/partmap_test.in: New test for partitions.
+	* Makefile.util.def: Rules for new test.
+
+2010-09-09  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-probe.c (probe): Fix a pair of unhandled error
+	conditions.
+
+2010-09-09  Robert Millan  <rmh@gnu.org>
+
+	Basic Btrfs support (detection and UUID).
+
+	* grub-core/fs/btrfs.c: New file.
+	* Makefile.util.def (library): Register btrfs.c.
+	* grub-core/Makefile.core.def: Likewise.
+
+2010-09-08  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-mkconfig_lib.in (is_path_readable_by_grub): Improve
+	with (optional) parameters to specify device and relative path.
+	* util/grub-install.in: Use is_path_readable_by_grub() to
+	verify readability of a few critical files.
+	* util/grub-mkconfig.in: Use is_path_readable_by_grub() to
+	verify readability of grub.cfg.new.
+
+2010-09-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Split minix.mod into minix.mod and minix2.mod.
+
+	* Makefile.util.def (libgrub.a): Add grub-core/fs/minix2.c.
+	* grub-core/Makefile.core.def (minix2): New module.
+	* grub-core/fs/minix.c: Use definitions instead of runtime version
+	checking.
+	* grub-core/fs/minix2.c: New file.
+
+2010-09-08  Yves Blusseau  <blusseau@zetam.org>
+
+	Add new --boot-directory option to replace --root-directory
+
+	* util/grub-install.in: Add new --boot-directory option
+	* util/grub-reboot.in: Likewise.
+	* util/grub-set-default.in: Likewise.
+
+2010-09-08  Yves Blusseau  <blusseau@zetam.org>
+
+        * util/grub-mkconfig.in: Use new variable.
+
+2010-09-08  Yves Blusseau  <blusseau@zetam.org>
+
+	* configure.ac: Define some useful variables.
+
+2010-09-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set
+	GRUB_IEEE1275_FLAG_HAS_CURSORONOFF when appropriate.
+	* grub-core/term/ieee1275/ofconsole.c (grub_ofconsole_setcursor):
+	Use terminfo and don't use cursor-on/cursor-off unless it's known
+	to work.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New element
+	GRUB_IEEE1275_FLAG_HAS_CURSORONOFF.
+
+2010-09-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/efi/init.c (grub_efi_set_prefix): If the prefix
+	starts with "(,", fill the drive containing the loaded image in
+	between those two characters, but expect that a full partition
+	specification including partition map names will follow.
+
+2010-09-08  Robert Millan  <rmh@gnu.org>
+
+	* configure.ac: Remove `--enable-grub-fstest' option.
+	* Makefile.util.def (grub-fstest): Remove COND_GRUB_FSTEST condition.
+
+	* util/grub-mkconfig_lib.in (is_path_readable_by_grub): Use
+	`grub-fstest' instead of `grub-probe' for readability verification.
+	* util/grub-probe.c (probe): Remove readability verification kludge.
+
+2010-09-08  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-mkconfig.in: Pass `--device ${GRUB_DEVICE}' when
+	initializing `GRUB_FS'.
+
+2010-09-08  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Not command (!) support to GRUB script.
+
+	* tests/grub_script_not.in: New test.
+	* Makefile.util.def: Rules for new test.
+
+	* grub-core/script/execute.c (grub_script_execute_cmdline): Handle
+	! command as a special case.
+	* grub-core/script/yylex.l (GRUB_PARSER_TOKEN_NOT): Removed.
+
+2010-09-07  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* grub-core/commands/wildcard.c (wildcard_expand): Fix wrong
+	grub_free.
+
 2010-09-07  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* docs/grub.texi (Shell-like scripting): Fix @dots to @dots{}.
@@ -667,6 +1450,15 @@
 
 	* conf/Makefile.common (CPPFLAGS_DEFAULT): Remove leading / from
 	dprintf output.
+
+2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove leftover embedding of font objects.
+
+	* include/grub/kernel.h (OBJ_TYPE_FONT): Removed.
+	* util/grub-install.in (font): Removed.
+	* util/grub-mkimage.c (generate_image): Remove font support. All users
+	updated.
 
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 

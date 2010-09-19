@@ -99,7 +99,6 @@ static struct grub_term_input grub_serial_term_input =
 {
   .name = "serial",
   .init = grub_terminfo_input_init,
-  .checkkey = grub_terminfo_checkkey,
   .getkey = grub_terminfo_getkey,
   .data = &grub_serial_terminfo_input
 };
@@ -341,8 +340,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(serial)
 {
-  cmd = grub_register_extcmd ("serial", grub_cmd_serial,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("serial", grub_cmd_serial, 0,
 			      N_("[OPTIONS...]"),
 			      N_("Configure serial port."), options);
 #ifndef GRUB_MACHINE_EMU

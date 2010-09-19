@@ -514,16 +514,12 @@ grub_efidisk_open (const char *name, struct grub_disk *disk)
   switch (name[0])
     {
     case 'f':
-      disk->has_partitions = 0;
       d = get_device (fd_devices, num);
       break;
     case 'c':
-      /* FIXME: a CDROM should have partitions, but not implemented yet.  */
-      disk->has_partitions = 0;
       d = get_device (cd_devices, num);
       break;
     case 'h':
-      disk->has_partitions = 1;
       d = get_device (hd_devices, num);
       break;
     default:

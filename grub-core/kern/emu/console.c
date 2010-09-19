@@ -102,49 +102,18 @@ grub_ncurses_setcolorstate (struct grub_term_output *term,
     }
 }
 
-static int saved_char = ERR;
-
-static int
-grub_ncurses_checkkey (struct grub_term_input *term __attribute__ ((unused)))
-{
-  int c;
-
-  /* Check for SAVED_CHAR. This should not be true, because this
-     means checkkey is called twice continuously.  */
-  if (saved_char != ERR)
-    return saved_char;
-
-  wtimeout (stdscr, 100);
-  c = getch ();
-  /* If C is not ERR, then put it back in the input queue.  */
-  if (c != ERR)
-    {
-      saved_char = c;
-      return c;
-    }
-
-  return -1;
-}
-
 static int
 grub_ncurses_getkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   int c;
 
-  /* If checkkey has already got a character, then return it.  */
-  if (saved_char != ERR)
-    {
-      c = saved_char;
-      saved_char = ERR;
-    }
-  else
-    {
-      wtimeout (stdscr, -1);
-      c = getch ();
-    }
+  wtimeout (stdscr, 100);
+  c = getch ();
 
   switch (c)
     {
+    case ERR:
+      return -1;
     case KEY_LEFT:
       c = GRUB_TERM_LEFT;
       break;
@@ -288,7 +257,6 @@ grub_ncurses_fini (struct grub_term_output *term __attribute__ ((unused)))
 static struct grub_term_input grub_ncurses_term_input =
   {
     .name = "console",
-    .checkkey = grub_ncurses_checkkey,
     .getkey = grub_ncurses_getkey,
   };
 

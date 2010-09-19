@@ -160,14 +160,23 @@ iterate_dev (const char *devname)
 
   if (dev)
     {
-      if (dev->disk && dev->disk->has_partitions)
+      char tmp[grub_strlen (devname) + sizeof (",")];
+
+      grub_memcpy (tmp, devname, grub_strlen (devname));
+
+      if (grub_strcmp (devname, current_word) == 0)
 	{
-	  if (add_completion (devname, ",", GRUB_COMPLETION_TYPE_DEVICE))
+	  if (add_completion (devname, ")", GRUB_COMPLETION_TYPE_PARTITION))
 	    return 1;
+
+	  if (dev->disk)
+	    if (grub_partition_iterate (dev->disk, iterate_partition))
+	      return 1;
 	}
       else
 	{
-	  if (add_completion (devname, ")", GRUB_COMPLETION_TYPE_DEVICE))
+	  grub_memcpy (tmp + grub_strlen (devname), "", sizeof (""));
+	  if (add_completion (tmp, "", GRUB_COMPLETION_TYPE_DEVICE))
 	    return 1;
 	}
     }
@@ -200,7 +209,7 @@ complete_device (void)
 
       if (dev)
 	{
-	  if (dev->disk && dev->disk->has_partitions)
+	  if (dev->disk)
 	    {
 	      if (grub_partition_iterate (dev->disk, iterate_partition))
 		{
@@ -247,7 +256,8 @@ complete_file (void)
       goto fail;
     }
 
-  dir = grub_strchr (current_word, '/');
+  dir = grub_strchr (current_word + (device ? 2 + grub_strlen (device) : 0),
+		     '/');
   last_dir = grub_strrchr (current_word, '/');
   if (dir)
     {
@@ -419,11 +429,8 @@ grub_normal_do_completion (char *buf, int *restore,
       {
 	if (cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE)
 	  {
-	    if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
-	      {
-		if (add_completion (cmd->name, " ", GRUB_COMPLETION_TYPE_COMMAND))
-		  goto fail;
-	      }
+	    if (add_completion (cmd->name, " ", GRUB_COMPLETION_TYPE_COMMAND))
+	      goto fail;
 	  }
       }
     }

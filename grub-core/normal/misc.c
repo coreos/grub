@@ -26,6 +26,7 @@
 #include <grub/datetime.h>
 #include <grub/term.h>
 #include <grub/i18n.h>
+#include <grub/partition.h>
 
 /* Print the information on the device NAME.  */
 grub_err_t
@@ -107,10 +108,18 @@ grub_normal_print_device_info (const char *name)
 	      grub_errno = GRUB_ERR_NONE;
 	    }
 	}
-      else if (! dev->disk->has_partitions || dev->disk->partition)
-	grub_printf ("%s", _("Unknown filesystem"));
       else
-	grub_printf ("%s", _("Partition table"));
+	grub_printf ("%s", _("Not a known filesystem"));
+
+      if (dev->disk->partition)
+	grub_printf (_(" - Partition start at %u"),
+		     grub_partition_get_start (dev->disk->partition));
+      if (grub_disk_get_size (dev->disk) == GRUB_DISK_SIZE_UNKNOWN)
+	grub_printf (_(" - Total size unknown"),
+		     grub_disk_get_size (dev->disk));
+      else
+	grub_printf (_(" - Total size %u sectors"),
+		     grub_disk_get_size (dev->disk));
 
       grub_device_close (dev);
     }

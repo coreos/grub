@@ -407,7 +407,7 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
       if (grub_checkkey () >= 0 || timeout < 0)
 	{
-	  c = GRUB_TERM_ASCII_CHAR (grub_getkey ());
+	  c = grub_getkey ();
 
 	  if (timeout >= 0)
 	    {
@@ -418,31 +418,36 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
 	  switch (c)
 	    {
-	    case GRUB_TERM_HOME:
+	    case GRUB_TERM_KEY_HOME:
+	    case GRUB_TERM_CTRL | 'a':
 	      current_entry = 0;
 	      menu_set_chosen_entry (current_entry);
 	      break;
 
-	    case GRUB_TERM_END:
+	    case GRUB_TERM_KEY_END:
+	    case GRUB_TERM_CTRL | 'e':
 	      current_entry = menu->size - 1;
 	      menu_set_chosen_entry (current_entry);
 	      break;
 
-	    case GRUB_TERM_UP:
+	    case GRUB_TERM_KEY_UP:
+	    case GRUB_TERM_CTRL | 'p':
 	    case '^':
 	      if (current_entry > 0)
 		current_entry--;
 	      menu_set_chosen_entry (current_entry);
 	      break;
 
-	    case GRUB_TERM_DOWN:
+	    case GRUB_TERM_CTRL | 'n':
+	    case GRUB_TERM_KEY_DOWN:
 	    case 'v':
 	      if (current_entry < menu->size - 1)
 		current_entry++;
 	      menu_set_chosen_entry (current_entry);
 	      break;
 
-	    case GRUB_TERM_PPAGE:
+	    case GRUB_TERM_CTRL | 'g':
+	    case GRUB_TERM_KEY_PPAGE:
 	      if (current_entry < GRUB_MENU_PAGE_SIZE)
 		current_entry = 0;
 	      else
@@ -450,7 +455,8 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	      menu_set_chosen_entry (current_entry);
 	      break;
 
-	    case GRUB_TERM_NPAGE:
+	    case GRUB_TERM_CTRL | 'c':
+	    case GRUB_TERM_KEY_NPAGE:
 	      if (current_entry + GRUB_MENU_PAGE_SIZE < menu->size)
 		current_entry += GRUB_MENU_PAGE_SIZE;
 	      else
@@ -460,7 +466,8 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
 	    case '\n':
 	    case '\r':
-	    case 6:
+	    case GRUB_TERM_KEY_RIGHT:
+	    case GRUB_TERM_CTRL | 'f':
 	      menu_fini ();
               *auto_boot = 0;
 	      return current_entry;

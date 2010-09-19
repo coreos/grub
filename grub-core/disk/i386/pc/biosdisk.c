@@ -17,8 +17,8 @@
  */
 
 #include <grub/machine/biosdisk.h>
-#include <grub/machine/memory.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/memory.h>
 #include <grub/machine/int.h>
 #include <grub/disk.h>
 #include <grub/dl.h>
@@ -327,7 +327,6 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
   if (drive < 0)
     return grub_errno;
 
-  disk->has_partitions = 1;
   disk->id = drive;
 
   data = (struct grub_biosdisk_data *) grub_zalloc (sizeof (*data));

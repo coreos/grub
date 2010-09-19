@@ -23,22 +23,19 @@
 #include <grub/err.h>
 #include <grub/list.h>
 
-/* Can be run in the command-line.  */
-#define GRUB_COMMAND_FLAG_CMDLINE	0x1
-/* Can be run in the menu.  */
-#define GRUB_COMMAND_FLAG_MENU		0x2
-/* Can be run in both interfaces.  */
-#define GRUB_COMMAND_FLAG_BOTH		0x3
-/* Only for the command title.  */
-#define GRUB_COMMAND_FLAG_TITLE		0x4
-/* Don't print the command on booting.  */
-#define GRUB_COMMAND_FLAG_NO_ECHO	0x8
-/* This is an extended command.  */
-#define GRUB_COMMAND_FLAG_EXTCMD	0x10
-/* This is an dynamic command.  */
-#define GRUB_COMMAND_FLAG_DYNCMD	0x20
-/* This command accepts block arguments.  */
-#define GRUB_COMMAND_FLAG_BLOCKS	0x40
+typedef enum grub_command_flags
+  {
+    /* This is an extended command.  */
+    GRUB_COMMAND_FLAG_EXTCMD = 0x10,
+    /* This is an dynamic command.  */
+    GRUB_COMMAND_FLAG_DYNCMD = 0x20,
+    /* This command accepts block arguments.  */
+    GRUB_COMMAND_FLAG_BLOCKS = 0x40,
+    /* This command accepts unknown arguments as direct parameters.  */
+    GRUB_COMMAND_ACCEPT_DASH = 0x80,
+    /* This command accepts only options preceding direct arguments.  */
+    GRUB_COMMAND_OPTIONS_AT_START = 0x100,
+  } grub_command_flags_t;
 
 struct grub_command;
 
@@ -61,7 +58,7 @@ struct grub_command
   grub_command_func_t func;
 
   /* The flags.  */
-  unsigned flags;
+  grub_command_flags_t flags;
 
   /* The summary of the command usage.  */
   const char *summary;

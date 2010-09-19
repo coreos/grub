@@ -423,3 +423,47 @@ grub_reboot (void)
   for (;;) ;
 }
 #endif
+
+/* Resolve aliases.  */
+char *
+grub_ieee1275_canonicalise_devname (const char *path)
+{
+  struct canon_args
+  {
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_cell_t path;
+    grub_ieee1275_cell_t buf;
+    grub_ieee1275_cell_t inlen;
+    grub_ieee1275_cell_t outlen;
+  }
+  args;
+  char *buf = NULL;
+  grub_size_t bufsize = 64;
+  int i;
+
+  for (i = 0; i < 2; i++)
+    {
+      grub_free (buf);
+
+      buf = grub_malloc (bufsize);
+      if (!buf)
+	return NULL;
+
+      INIT_IEEE1275_COMMON (&args.common, "canon", 3, 1);
+      args.path = (grub_ieee1275_cell_t) path;
+      args.buf = (grub_ieee1275_cell_t) buf;
+      args.inlen = (grub_ieee1275_cell_t) (bufsize - 1);
+
+      if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
+	return 0;
+      if (args.outlen > bufsize - 1)
+	{
+	  bufsize = args.outlen + 2;
+	  continue;
+	}
+      return buf;
+    }
+  /* Shouldn't reach here.  */
+  grub_free (buf);
+  return NULL;
+}

@@ -24,33 +24,18 @@
 static const struct grub_machine_bios_data_area *bios_data_area =
   (struct grub_machine_bios_data_area *) GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR;
 
-#define KEYBOARD_LEFT_SHIFT	(1 << 0)
-#define KEYBOARD_RIGHT_SHIFT	(1 << 1)
-#define KEYBOARD_CTRL		(1 << 2)
-#define KEYBOARD_ALT		(1 << 3)
-
 static int
 grub_console_getkeystatus (struct grub_term_input *term __attribute__ ((unused)))
 {
-  grub_uint8_t status = bios_data_area->keyboard_flag_lower;
-  int mods = 0;
-
-  if (status & (KEYBOARD_LEFT_SHIFT | KEYBOARD_RIGHT_SHIFT))
-    mods |= GRUB_TERM_STATUS_SHIFT;
-  if (status & KEYBOARD_CTRL)
-    mods |= GRUB_TERM_STATUS_CTRL;
-  if (status & KEYBOARD_ALT)
-    mods |= GRUB_TERM_STATUS_ALT;
-
-  return mods;
+  /* conveniently GRUB keystatus is modelled after BIOS one.  */
+  return bios_data_area->keyboard_flag_lower & ~0x80;
 }
 
 static struct grub_term_input grub_console_term_input =
   {
     .name = "console",
-    .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
-    .getkeystatus = grub_console_getkeystatus,
+    .getkeystatus = grub_console_getkeystatus
   };
 
 static struct grub_term_output grub_console_term_output =

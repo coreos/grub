@@ -19,8 +19,8 @@
 #include <grub/loader.h>
 #include <grub/i386/bsd.h>
 #include <grub/i386/cpuid.h>
-#include <grub/machine/memory.h>
 #include <grub/memory.h>
+#include <grub/i386/memory.h>
 #include <grub/file.h>
 #include <grub/err.h>
 #include <grub/dl.h>
@@ -261,37 +261,30 @@ generate_e820_mmap (grub_size_t *len, grub_size_t *cnt, void *buf)
   struct grub_e820_mmap *mmap = buf;
   struct grub_e820_mmap prev, cur;
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+				  grub_memory_type_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size,
-			     grub_uint32_t type)
+			     grub_memory_type_t type)
     {
       cur.addr = addr;
       cur.size = size;
       switch (type)
 	{
-	case GRUB_MACHINE_MEMORY_AVAILABLE:
+	case GRUB_MEMORY_AVAILABLE:
 	  cur.type = GRUB_E820_RAM;
 	  break;
 
-#ifdef GRUB_MACHINE_MEMORY_ACPI
-	case GRUB_MACHINE_MEMORY_ACPI:
+	case GRUB_MEMORY_ACPI:
 	  cur.type = GRUB_E820_ACPI;
 	  break;
-#endif
 
-#ifdef GRUB_MACHINE_MEMORY_NVS
-	case GRUB_MACHINE_MEMORY_NVS:
+	case GRUB_MEMORY_NVS:
 	  cur.type = GRUB_E820_NVS;
 	  break;
-#endif
 
 	default:
-#ifdef GRUB_MACHINE_MEMORY_CODE
-	case GRUB_MACHINE_MEMORY_CODE:
-#endif
-#ifdef GRUB_MACHINE_MEMORY_RESERVED
-	case GRUB_MACHINE_MEMORY_RESERVED:
-#endif
+	case GRUB_MEMORY_CODE:
+	case GRUB_MEMORY_RESERVED:
 	  cur.type = GRUB_E820_RESERVED;
 	  break;
 	}
@@ -1942,16 +1935,13 @@ GRUB_MOD_INIT (bsd)
   /* Net and OpenBSD kernels are often compressed.  */
   grub_dl_load ("gzio");
 
-  cmd_freebsd = grub_register_extcmd ("kfreebsd", grub_cmd_freebsd,
-				      GRUB_COMMAND_FLAG_BOTH,
+  cmd_freebsd = grub_register_extcmd ("kfreebsd", grub_cmd_freebsd, 0,
 				      N_("FILE"), N_("Load kernel of FreeBSD."),
 				      freebsd_opts);
-  cmd_openbsd = grub_register_extcmd ("kopenbsd", grub_cmd_openbsd,
-				      GRUB_COMMAND_FLAG_BOTH,
+  cmd_openbsd = grub_register_extcmd ("kopenbsd", grub_cmd_openbsd, 0,
 				      N_("FILE"), N_("Load kernel of OpenBSD."),
 				      openbsd_opts);
-  cmd_netbsd = grub_register_extcmd ("knetbsd", grub_cmd_netbsd,
-				     GRUB_COMMAND_FLAG_BOTH,
+  cmd_netbsd = grub_register_extcmd ("knetbsd", grub_cmd_netbsd,  0,
 				     N_("FILE"), N_("Load kernel of NetBSD."),
 				     netbsd_opts);
   cmd_freebsd_loadenv =

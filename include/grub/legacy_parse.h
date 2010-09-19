@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2004,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,15 +16,12 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_INIT_MACHINE_HEADER
-#define GRUB_INIT_MACHINE_HEADER	1
+#ifndef GRUB_LEGACY_PARSE_HEADER
+#define GRUB_LEGACY_PARSE_HEADER 1
 
 #include <grub/types.h>
-#include <grub/symbol.h>
-#include <grub/machine/memory.h>
-#include <grub/cpu/floppy.h>
 
-/* Turn on/off Gate A20.  */
-void grub_gate_a20 (int on);
+char *grub_legacy_parse (const char *buf, char **entryname, char **suffix);
+char *grub_legacy_escape (const char *in, grub_size_t len);
 
-#endif /* ! GRUB_INIT_MACHINE_HEADER */
+#endif

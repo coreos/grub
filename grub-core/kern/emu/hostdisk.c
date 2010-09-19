@@ -221,7 +221,6 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "no mapping exists for `%s'", name);
 
-  disk->has_partitions = 1;
   disk->id = drive;
   disk->data = data = xmalloc (sizeof (struct grub_util_biosdisk_data));
   data->dev = NULL;
@@ -956,13 +955,16 @@ read_device_map (const char *dev_map)
 #ifdef __linux__
       /* On Linux, the devfs uses symbolic links horribly, and that
 	 confuses the interface very much, so use realpath to expand
-	 symbolic links.  */
-      map[drive].device = xmalloc (PATH_MAX);
-      if (! realpath (p, map[drive].device))
-	grub_util_error ("cannot get the real path of `%s'", p);
-#else
-      map[drive].device = xstrdup (p);
+	 symbolic links.  Leave /dev/mapper/ alone, though.  */
+      if (strncmp (p, "/dev/mapper/", 12) != 0)
+	{
+	  map[drive].device = xmalloc (PATH_MAX);
+	  if (! realpath (p, map[drive].device))
+	    grub_util_error ("cannot get the real path of `%s'", p);
+	}
+      else
 #endif
+      map[drive].device = xstrdup (p);
     }
 
   fclose (fp);
@@ -1117,6 +1119,16 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  return path;
 	}
 
+      if (strncmp ("md", p, 2) == 0
+	  && p[2] >= '0' && p[2] <= '9')
+	{
+	  char *ptr = p + 2;
+	  while (*ptr >= '0' && *ptr <= '9')
+	    ptr++;
+	  *ptr = 0;
+	  return path;
+	}
+
       /* If this is an IDE, SCSI or Virtio disk.  */
       if (strncmp ("vdisk", p, 5) == 0
 	  && p[5] >= 'a' && p[5] <= 'z')
@@ -1144,22 +1156,22 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	}
 
 #ifdef HAVE_DEVICE_MAPPER
-      /* If this is a DM-RAID device.  */
-      if ((strncmp ("mapper/", p, 7) == 0))
+      /* If this is a DM-RAID device.
+         Compare os_dev rather than path here, since nodes under
+         /dev/mapper/ are often symlinks.  */
+      if ((strncmp ("/dev/mapper/", os_dev, 12) == 0))
 	{
-	  static struct dm_tree *tree = NULL;
+	  struct dm_tree *tree;
 	  uint32_t maj, min;
-	  struct dm_tree_node *node, *child;
+	  struct dm_tree_node *node = NULL, *child;
 	  void *handle;
-	  const char *node_uuid, *mapper_name, *child_uuid, *child_name;
+	  const char *node_uuid, *mapper_name = NULL, *child_uuid, *child_name;
 
-	  if (! tree)
-	    tree = dm_tree_create ();
-
+	  tree = dm_tree_create ();
 	  if (! tree)
 	    {
 	      grub_dprintf ("hostdisk", "dm_tree_create failed\n");
-	      return NULL;
+	      goto devmapper_out;
 	    }
 
 	  maj = major (st->st_rdev);
@@ -1167,29 +1179,30 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  if (! dm_tree_add_dev (tree, maj, min))
 	    {
 	      grub_dprintf ("hostdisk", "dm_tree_add_dev failed\n");
-	      return NULL;
+	      goto devmapper_out;
 	    }
 
 	  node = dm_tree_find_node (tree, maj, min);
 	  if (! node)
 	    {
 	      grub_dprintf ("hostdisk", "dm_tree_find_node failed\n");
-	      return NULL;
+	      goto devmapper_out;
 	    }
 	  node_uuid = dm_tree_node_get_uuid (node);
 	  if (! node_uuid)
 	    {
 	      grub_dprintf ("hostdisk", "%s has no DM uuid\n", path);
-	      return NULL;
+	      node = NULL;
+	      goto devmapper_out;
 	    }
 	  else if (strncmp (node_uuid, "DMRAID-", 7) != 0)
 	    {
 	      grub_dprintf ("hostdisk", "%s is not DM-RAID\n", path);
-	      return NULL;
+	      node = NULL;
+	      goto devmapper_out;
 	    }
 
 	  handle = NULL;
-	  mapper_name = NULL;
 	  /* Counter-intuitively, device-mapper refers to the disk-like
 	     device containing a DM-RAID partition device as a "child" of
 	     the partition device.  */
@@ -1219,17 +1232,20 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  mapper_name = child_name;
 
 devmapper_out:
-	  if (! mapper_name)
+	  if (! mapper_name && node)
 	    {
 	      /* This is a DM-RAID disk, not a partition.  */
 	      mapper_name = dm_tree_node_get_name (node);
 	      if (! mapper_name)
-		{
-		  grub_dprintf ("hostdisk", "%s has no DM name\n", path);
-		  return NULL;
-		}
+		grub_dprintf ("hostdisk", "%s has no DM name\n", path);
 	    }
-	  return xasprintf ("/dev/mapper/%s", mapper_name);
+	  if (tree)
+	    dm_tree_free (tree);
+	  free (path);
+	  if (mapper_name)
+	    return xasprintf ("/dev/mapper/%s", mapper_name);
+	  else
+	    return NULL;
 	}
 #endif /* HAVE_DEVICE_MAPPER */
     }
@@ -1334,7 +1350,7 @@ device_is_wholedisk (const char *os_dev)
 #endif /* defined(__NetBSD__) */
 
 static int
-find_system_device (const char *os_dev, struct stat *st)
+find_system_device (const char *os_dev, struct stat *st, int add)
 {
   unsigned int i;
   char *os_disk;
@@ -1352,6 +1368,9 @@ find_system_device (const char *os_dev, struct stat *st)
 	return i;
       }
 
+  if (!add)
+    return -1;
+
   if (i == ARRAY_SIZE (map))
     grub_util_error (_("device count exceeds limit"));
 
@@ -1359,6 +1378,17 @@ find_system_device (const char *os_dev, struct stat *st)
   map[i].drive = xstrdup (os_disk);
 
   return i;
+}
+
+int
+grub_util_biosdisk_is_present (const char *os_dev)
+{
+  struct stat st;
+
+  if (stat (os_dev, &st) < 0)
+    return 0;
+
+  return find_system_device (os_dev, &st, 0) != -1;
 }
 
 char *
@@ -1373,7 +1403,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       return 0;
     }
 
-  drive = find_system_device (os_dev, &st);
+  drive = find_system_device (os_dev, &st, 1);
   if (drive < 0)
     {
       grub_error (GRUB_ERR_UNKNOWN_DEVICE,
@@ -1551,4 +1581,30 @@ const char *
 grub_util_biosdisk_get_osdev (grub_disk_t disk)
 {
   return map[disk->id].device;
+}
+
+int
+grub_util_biosdisk_is_floppy (grub_disk_t disk)
+{
+  struct stat st;
+  int fd;
+
+  fd = open (map[disk->id].device, O_RDONLY);
+  /* Shouldn't happen.  */
+  if (fd == -1)
+    return 0;
+
+  /* Shouldn't happen either.  */
+  if (fstat (fd, &st) < 0)
+    return 0;
+
+#if defined(__NetBSD__)
+  if (major(st.st_rdev) == RAW_FLOPPY_MAJOR)
+    return 1;
+#endif
+
+  if (major(st.st_rdev) == FLOPPY_MAJOR)
+    return 1;
+
+  return 0;
 }

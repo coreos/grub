@@ -150,7 +150,6 @@ grub_lvm_open (const char *name, grub_disk_t disk)
   if (! lv)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown LVM device %s", name);
 
-  disk->has_partitions = 0;
   disk->id = lv->number;
   disk->data = lv;
   disk->total_sectors = lv->size;
@@ -280,7 +279,11 @@ grub_lvm_scan_device (const char *name)
 
   disk = grub_disk_open (name);
   if (!disk)
-    return 0;
+    {
+      if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+	grub_errno = GRUB_ERR_NONE;
+      return 0;
+    }
 
   /* Search for label. */
   for (i = 0; i < GRUB_LVM_LABEL_SCAN_SECTORS; i++)
@@ -725,6 +728,8 @@ grub_lvm_scan_device (const char *name)
   grub_free (metadatabuf);
  fail:
   grub_disk_close (disk);
+  if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+    grub_errno = GRUB_ERR_NONE;
   return 0;
 }
 

@@ -136,8 +136,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(regexp)
 {
-  cmd = grub_register_extcmd ("regexp", grub_cmd_regexp,
-			      GRUB_COMMAND_FLAG_BOTH, N_("REGEXP STRING"),
+  cmd = grub_register_extcmd ("regexp", grub_cmd_regexp, 0, N_("REGEXP STRING"),
 			      N_("Test if REGEXP matches STRING."), options);
 
   /* Setup GRUB script wildcard translator.  */

@@ -76,7 +76,7 @@ grub_cmd_cat (grub_extcmd_context_t ctxt, int argc, char **args)
 	}
 
       while (grub_checkkey () >= 0 &&
-	     (key = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != GRUB_TERM_ESC)
+	     (key = grub_getkey ()) != GRUB_TERM_ESC)
 	;
     }
 
@@ -91,7 +91,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(cat)
 {
-  cmd = grub_register_extcmd ("cat", grub_cmd_cat, GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("cat", grub_cmd_cat, 0,
 			      N_("FILE"), N_("Show the contents of a file."),
 			      options);
 }

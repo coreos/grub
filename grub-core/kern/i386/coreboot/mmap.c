@@ -17,6 +17,7 @@
  */
 
 #include <grub/machine/memory.h>
+#include <grub/machine/lbio.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/misc.h>
@@ -74,7 +75,7 @@ signature_found:
 }
 
 grub_err_t
-grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t))
+grub_machine_mmap_iterate (grub_memory_hook_t hook)
 {
   mem_region_t mem_region;
 
