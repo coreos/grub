@@ -1,5 +1,32 @@
 2010-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Split config.h for util and core.
+
+	* acinclude.m4 (HAVE_ASM_USCORE): Transformed into a variable.
+	(ADDR32): Likewise.
+	(DATA32): Likewise.
+	(BSS_START_SYMBOL): Likewise.
+	(END_SYMBOL): Likewise.
+	(NEED_ENABLE_EXECUTE_STACK): Likewise. All users updated.
+	(grub_I386_ASM_ABSOLUTE_WITHOUT_ASTERISK): Removed.
+	* config.h.in: New file.
+	* configure.ac: Use config-util.h as config define file.
+	Rename MACHINE into GRUB_MACHINE. All users updated.
+	(NEED_REGISTER_FRAME_INFO): Transformed into a variable. All users
+	updated.
+	(NESTED_FUNC_ATTR): Likewise.
+	Substitue new variables.
+	(COND_HAVE_ASM_USCORE): New conditional.
+	* grub-core/Makefile.am (ASM_PREFIX): New variable.
+	(kernel_syms.lst): Use ASM_PREFIX.
+	* grub-core/kern/emu/console.c: Include config-util.h.
+	* grub-core/kern/emu/misc.c: Likewise.
+	* grub-core/kern/emu/mm.c: Likewise.
+	* include/grub/emu/misc.h: Likewise.
+	* include/grub/libgcc.h: Likewise.
+
+2010-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/efi/console.c (efi_codes): Fix GRUB_TERM_KEY_*
 	constants usage.
 	* grub-core/kern/emu/console.c (grub_ncurses_getkey):

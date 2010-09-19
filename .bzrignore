@@ -15,7 +15,8 @@ build_env.mk
 config.cache
 config.guess
 config.h
-config.h.in
+config-util.h
+config-util.h.in
 config.log
 config.status
 config.sub

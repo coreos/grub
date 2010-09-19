@@ -18,6 +18,7 @@
  */
 
 #include <config.h>
+#include <config-util.h>
 
 /* For compatibility.  */
 #ifndef A_NORMAL
@@ -37,6 +38,8 @@
 # include <ncurses.h>
 #elif defined(HAVE_CURSES_H)
 # include <curses.h>
+#else
+#error What the hell?
 #endif
 
 static int grub_console_attr = A_NORMAL;
