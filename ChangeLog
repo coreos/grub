@@ -1,5 +1,17 @@
 2010-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/ohci.c (grub_ohci_cancel_transfer): Use %p to
+	print pointer.
+	* grub-core/bus/usb/uhci.c: Remove empty define.
+	(grub_uhci_check_transfer): Add missing cast.
+	* grub-core/bus/usb/usbhub.c (poll_nonroot_hub): Use %p to
+	print pointer.
+	* grub-core/term/usb_keyboard.c (grub_usb_keyboard_getkey): Use
+	PRIuGRUB_SIZE.
+	* include/grub/types.h (PRIuGRUB_SIZE): New definition.
+
+2010-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (legacycfg): Add
 	lib/i386/pc/vesa_modes_table.c on emu.
 

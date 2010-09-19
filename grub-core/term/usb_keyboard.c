@@ -404,7 +404,8 @@ grub_usb_keyboard_getkey (struct grub_term_input *term)
   termdata->last_key = -1;
 
   grub_dprintf ("usb_keyboard",
-		"err = %d, actual = %d report: 0x%02x 0x%02x 0x%02x 0x%02x"
+		"err = %d, actual = %" PRIuGRUB_SIZE
+		" report: 0x%02x 0x%02x 0x%02x 0x%02x"
 		" 0x%02x 0x%02x 0x%02x 0x%02x\n",
 		err, actual,
 		termdata->current_report[0], termdata->current_report[1],

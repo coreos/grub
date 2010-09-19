@@ -1192,8 +1192,8 @@ grub_ohci_cancel_transfer (grub_usb_controller_t dev,
     
   tderr_virt = grub_ohci_td_phys2virt (o,cdata-> tderr_phys);
 
-  grub_dprintf ("ohci", "Cancel: tderr_phys=0x%08x, tderr_virt=0x%08x\n",
-                cdata->tderr_phys, (unsigned int)tderr_virt);
+  grub_dprintf ("ohci", "Cancel: tderr_phys=0x%x, tderr_virt=%p\n",
+                cdata->tderr_phys, tderr_virt);
 
   if (tderr_virt)
     transfer->last_trans = tderr_virt->tr_index;

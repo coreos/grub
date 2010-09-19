@@ -550,7 +550,7 @@ grub_uhci_check_transfer (grub_usb_controller_t dev,
 
   *actual = 0;
 
-  errtd = (grub_uhci_td_t) (cdata->qh->elinkptr & ~0x0f);
+  errtd = (grub_uhci_td_t) (grub_addr_t) (cdata->qh->elinkptr & ~0x0f);
   
   grub_dprintf ("uhci", ">t status=0x%02x data=0x%02x td=%p\n",
 		errtd->ctrl_status, errtd->buffer & (~15), errtd);
