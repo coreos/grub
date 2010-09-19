@@ -22,7 +22,6 @@
 #include <grub/disk.h>
 #include <grub/term.h>
 #include <grub/misc.h>
-#include <grub/gzio.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 
@@ -33,9 +32,9 @@ static const struct grub_arg_option options[] =
   };
 
 static grub_err_t
-grub_cmd_cat (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_cat (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   int dos = 0;
   grub_file_t file;
   char buf[GRUB_DISK_SECTOR_SIZE];
@@ -48,7 +47,7 @@ grub_cmd_cat (grub_extcmd_t cmd, int argc, char **args)
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
-  file = grub_gzfile_open (args[0], 1);
+  file = grub_file_open (args[0]);
   if (! file)
     return grub_errno;
 
@@ -77,7 +76,7 @@ grub_cmd_cat (grub_extcmd_t cmd, int argc, char **args)
 	}
 
       while (grub_checkkey () >= 0 &&
-	     (key = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != GRUB_TERM_ESC)
+	     (key = grub_getkey ()) != GRUB_TERM_ESC)
 	;
     }
 
@@ -92,7 +91,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(cat)
 {
-  cmd = grub_register_extcmd ("cat", grub_cmd_cat, GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("cat", grub_cmd_cat, 0,
 			      N_("FILE"), N_("Show the contents of a file."),
 			      options);
 }

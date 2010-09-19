@@ -1272,7 +1272,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 
   while (1)
     {
-      int c = GRUB_TERM_ASCII_CHAR (grub_getkey ());
+      int c = grub_getkey ();
 
       if (screen->completion_shown)
 	{
@@ -1288,70 +1288,79 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 
       switch (c)
 	{
-	case 16: /* C-p */
+	case GRUB_TERM_KEY_UP:
+	case GRUB_TERM_CTRL | 'p':
 	  if (! previous_line (screen, 1))
 	    goto fail;
 	  break;
 
-	case 14: /* C-n */
+	case GRUB_TERM_CTRL | 'n':
+	case GRUB_TERM_KEY_DOWN:
 	  if (! next_line (screen, 1))
 	    goto fail;
 	  break;
 
-	case 6: /* C-f */
+	case GRUB_TERM_CTRL | 'f':
+	case GRUB_TERM_KEY_RIGHT:
 	  if (! forward_char (screen, 1))
 	    goto fail;
 	  break;
 
-	case 2: /* C-b */
+	case GRUB_TERM_CTRL | 'b':
+	case GRUB_TERM_KEY_LEFT:
 	  if (! backward_char (screen, 1))
 	    goto fail;
 	  break;
 
-	case 1: /* C-a */
+	case GRUB_TERM_CTRL | 'a':
+	case GRUB_TERM_KEY_HOME:
 	  if (! beginning_of_line (screen, 1))
 	    goto fail;
 	  break;
 
-	case 5: /* C-e */
+	case GRUB_TERM_CTRL | 'e':
+	case GRUB_TERM_KEY_END:
 	  if (! end_of_line (screen, 1))
 	    goto fail;
 	  break;
 
-	case '\t': /* C-i */
+	case GRUB_TERM_CTRL | 'i':
+	case '\t':
 	  if (! complete (screen, prev_c == c, 1))
 	    goto fail;
 	  break;
 
-	case 4: /* C-d */
+	case GRUB_TERM_CTRL | 'd':
+	case GRUB_TERM_KEY_DC:
 	  if (! delete_char (screen, 1))
 	    goto fail;
 	  break;
 
-	case 8: /* C-h */
+	case GRUB_TERM_CTRL | 'h':
+	case '\b':
 	  if (! backward_delete_char (screen, 1))
 	    goto fail;
 	  break;
 
-	case 11: /* C-k */
+	case GRUB_TERM_CTRL | 'k':
 	  if (! kill_line (screen, prev_c == c, 1))
 	    goto fail;
 	  break;
 
-	case 21: /* C-u */
+	case GRUB_TERM_CTRL | 'u':
 	  /* FIXME: What behavior is good for this key?  */
 	  break;
 
-	case 25: /* C-y */
+	case GRUB_TERM_CTRL | 'y':
 	  if (! yank (screen, 1))
 	    goto fail;
 	  break;
 
-	case 12: /* C-l */
+	case GRUB_TERM_CTRL | 'l':
 	  /* FIXME: centering.  */
 	  goto refresh;
 
-	case 15: /* C-o */
+	case GRUB_TERM_CTRL | 'o':
 	  if (! open_line (screen, 1))
 	    goto fail;
 	  break;
@@ -1366,11 +1375,13 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 	  destroy_screen (screen);
 	  return;
 
-	case 3: /* C-c */
+	case GRUB_TERM_CTRL | 'c':
+	case GRUB_TERM_KEY_F2:
 	  grub_cmdline_run (1);
 	  goto refresh;
 
-	case 24: /* C-x */
+	case GRUB_TERM_CTRL | 'x':
+	case GRUB_TERM_KEY_F10:
 	  {
 	    int chars_before = grub_normal_get_char_counter ();
 	    run (screen);
@@ -1380,9 +1391,9 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 	  }
 	  goto refresh;
 
-	case 18: /* C-r */
-	case 19: /* C-s */
-	case 20: /* C-t */
+	case GRUB_TERM_CTRL | 'r':
+	case GRUB_TERM_CTRL | 's':
+	case GRUB_TERM_CTRL | 't':
 	  /* FIXME */
 	  break;
 

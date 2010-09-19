@@ -247,6 +247,12 @@ else
 make_timeout "${GRUB_HIDDEN_TIMEOUT}" "${GRUB_TIMEOUT}"
 fi
 
+if [ "x$GRUB_BUTTON_CMOS_ADDRESS" != "x" ] && [ "x$GRUB_BUTTON_CMOS_CLEAN" = "xyes" ]; then
+    cat <<EOF
+cmosclean $GRUB_BUTTON_CMOS_ADDRESS
+EOF
+fi
+
 # Play an initial tune
 if [ "x${GRUB_INIT_TUNE}" != "x" ] ; then
   echo "play ${GRUB_INIT_TUNE}"

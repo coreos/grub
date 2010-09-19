@@ -17,8 +17,9 @@
  */
 
 #include <grub/machine/biosdisk.h>
-#include <grub/machine/memory.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/memory.h>
+#include <grub/machine/int.h>
 #include <grub/disk.h>
 #include <grub/dl.h>
 #include <grub/mm.h>
@@ -28,11 +29,227 @@
 #include <grub/term.h>
 
 static int cd_drive = 0;
+static int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap);
+
+static int grub_biosdisk_get_num_floppies (void)
+{
+  struct grub_bios_int_registers regs;
+  int drive;
+
+  /* reset the disk system first */
+  regs.eax = 0;
+  regs.edx = 0;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+
+  grub_bios_interrupt (0x13, &regs);
+
+  for (drive = 0; drive < 2; drive++)
+    {
+      regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT | GRUB_CPU_INT_FLAGS_CARRY;
+      regs.edx = drive;
+
+      /* call GET DISK TYPE */
+      regs.eax = 0x1500;
+      grub_bios_interrupt (0x13, &regs);
+      if (regs.flags & GRUB_CPU_INT_FLAGS_CARRY)
+	break;
+
+      /* check if this drive exists */
+      if (!(regs.eax & 0x300))
+	break;
+    }
+
+  return drive;
+}
+
+/*
+ *   Call IBM/MS INT13 Extensions (int 13 %ah=AH) for DRIVE. DAP
+ *   is passed for disk address packet. If an error occurs, return
+ *   non-zero, otherwise zero.
+ */
+
+static int 
+grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)
+{
+  struct grub_bios_int_registers regs;
+  regs.eax = ah << 8;
+  /* compute the address of disk_address_packet */
+  regs.ds = (((grub_addr_t) dap) & 0xffff0000) >> 4;
+  regs.esi = (((grub_addr_t) dap) & 0xffff);
+  regs.edx = drive;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+
+  grub_bios_interrupt (0x13, &regs);
+  return (regs.eax >> 8) & 0xff;
+}
+
+/*
+ *   Call standard and old INT13 (int 13 %ah=AH) for DRIVE. Read/write
+ *   NSEC sectors from COFF/HOFF/SOFF into SEGMENT. If an error occurs,
+ *   return non-zero, otherwise zero.
+ */
+static int 
+grub_biosdisk_rw_standard (int ah, int drive, int coff, int hoff,
+			   int soff, int nsec, int segment)
+{
+  int ret, i;
+
+  /* Try 3 times.  */
+  for (i = 0; i < 3; i++)
+    {
+      struct grub_bios_int_registers regs;
+
+      /* set up CHS information */
+      /* set %ch to low eight bits of cylinder */
+      regs.ecx = (coff << 8) & 0xff00;
+      /* set bits 6-7 of %cl to high two bits of cylinder */
+      regs.ecx |= (coff >> 2) & 0xc0;
+      /* set bits 0-5 of %cl to sector */
+      regs.ecx |= soff & 0x3f;
+
+      /* set %dh to head and %dl to drive */  
+      regs.edx = (drive & 0xff) | ((hoff << 8) & 0xff00);
+      /* set %ah to AH */
+      regs.eax = (ah << 8) & 0xff00;
+      /* set %al to NSEC */
+      regs.eax |= nsec & 0xff;
+
+      regs.ebx = 0;
+      regs.es = segment;
+
+      regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+
+      grub_bios_interrupt (0x13, &regs);
+      /* check if successful */
+      if (!(regs.flags & GRUB_CPU_INT_FLAGS_CARRY))
+	return 0;
+
+      /* save return value */
+      ret = regs.eax >> 8;
+
+      /* if fail, reset the disk system */
+      regs.eax = 0;
+      regs.edx = (drive & 0xff);
+      regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+      grub_bios_interrupt (0x13, &regs);
+    }
+  return ret;
+}
+
+/*
+ *   Check if LBA is supported for DRIVE. If it is supported, then return
+ *   the major version of extensions, otherwise zero.
+ */
+static int
+grub_biosdisk_check_int13_extensions (int drive)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.edx = drive & 0xff;
+  regs.eax = 0x4100;
+  regs.ebx = 0x55aa;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x13, &regs);
+  
+  if (regs.flags & GRUB_CPU_INT_FLAGS_CARRY)
+    return 0;
+
+  if ((regs.ebx & 0xffff) != 0xaa55)
+    return 0;
+
+  /* check if AH=0x42 is supported */
+  if (!(regs.ecx & 1))
+    return 0;
+
+  return (regs.eax >> 8) & 0xff;
+}
+
+/*
+ *   Return the geometry of DRIVE in CYLINDERS, HEADS and SECTORS. If an
+ *   error occurs, then return non-zero, otherwise zero.
+ */
+static int 
+grub_biosdisk_get_diskinfo_standard (int drive,
+				     unsigned long *cylinders,
+				     unsigned long *heads,
+				     unsigned long *sectors)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x0800;
+  regs.edx = drive & 0xff;
+
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x13, &regs);
+
+  /* Check if unsuccessful. Ignore return value if carry isn't set to 
+     workaround some buggy BIOSes. */
+  if ((regs.flags & GRUB_CPU_INT_FLAGS_CARRY) && ((regs.eax & 0xff00) != 0))
+    return (regs.eax & 0xff00) >> 8;
+
+  /* bogus BIOSes may not return an error number */  
+  /* 0 sectors means no disk */
+  if (!(regs.ecx & 0x3f))
+    /* XXX 0x60 is one of the unused error numbers */
+    return 0x60;
+
+  /* the number of heads is counted from zero */
+  *heads = ((regs.edx >> 8) & 0xff) + 1;
+  *cylinders = (((regs.ecx >> 8) & 0xff) | ((regs.ecx << 2) & 0x0300)) + 1;
+  *sectors = regs.ecx & 0x3f;
+  return 0;
+}
+
+static int
+grub_biosdisk_get_diskinfo_real (int drive, void *drp, grub_uint16_t ax)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = ax;
+
+  /* compute the address of drive parameters */
+  regs.esi = ((grub_addr_t) drp) & 0xf;
+  regs.ds = ((grub_addr_t) drp) >> 4;
+  regs.edx = drive & 0xff;
+
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x13, &regs);
+
+  /* Check if unsuccessful. Ignore return value if carry isn't set to 
+     workaround some buggy BIOSes. */
+  if ((regs.flags & GRUB_CPU_INT_FLAGS_CARRY) && ((regs.eax & 0xff00) != 0))
+    return (regs.eax & 0xff00) >> 8;
+
+  return 0;
+}
+
+/*
+ *   Return the cdrom information of DRIVE in CDRP. If an error occurs,
+ *   then return non-zero, otherwise zero.
+ */
+static int
+grub_biosdisk_get_cdinfo_int13_extensions (int drive, void *cdrp)
+{
+  return grub_biosdisk_get_diskinfo_real (drive, cdrp, 0x4b01);
+}
+
+/*
+ *   Return the geometry of DRIVE in a drive parameters, DRP. If an error
+ *   occurs, then return non-zero, otherwise zero.
+ */
+static int
+grub_biosdisk_get_diskinfo_int13_extensions (int drive, void *drp)
+{
+  return grub_biosdisk_get_diskinfo_real (drive, drp, 0x4800);
+}
 
 static int
 grub_biosdisk_get_drive (const char *name)
 {
   unsigned long drive;
+
+  if (name[0] == 'c' && name[1] == 'd' && name[2] == 0 && cd_drive)
+    return cd_drive;
 
   if ((name[0] != 'f' && name[0] != 'h') || name[1] != 'd')
     goto fail;
@@ -55,6 +272,9 @@ static int
 grub_biosdisk_call_hook (int (*hook) (const char *name), int drive)
 {
   char name[10];
+
+  if (cd_drive && drive == cd_drive)
+    return hook ("cd");
 
   grub_snprintf (name, sizeof (name),
 		 (drive & 0x80) ? "hd%d" : "fd%d", drive & (~0x80));
@@ -107,7 +327,6 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
   if (drive < 0)
     return grub_errno;
 
-  disk->has_partitions = 1;
   disk->id = drive;
 
   data = (struct grub_biosdisk_data *) grub_zalloc (sizeof (*data));

@@ -20,13 +20,14 @@
 #define GRUB_BSD_CPU_HEADER	1
 
 #include <grub/types.h>
+#include <grub/relocator.h>
+
 #include <grub/i386/freebsd_reboot.h>
 #include <grub/i386/netbsd_reboot.h>
 #include <grub/i386/openbsd_reboot.h>
 #include <grub/i386/freebsd_linker.h>
 #include <grub/i386/netbsd_bootinfo.h>
 #include <grub/i386/openbsd_bootarg.h>
-
 
 enum bsd_kernel_types
   {
@@ -65,34 +66,54 @@ struct grub_freebsd_bootinfo
   grub_uint32_t tags;
 } __attribute__ ((packed));
 
-struct grub_openbsd_bios_mmap
+struct freebsd_tag_header
 {
-  grub_uint64_t addr;
-  grub_uint64_t len;
-#define	OPENBSD_MMAP_AVAILABLE	1
-#define	OPENBSD_MMAP_RESERVED 2
-#define	OPENBSD_MMAP_ACPI	3
-#define	OPENBSD_MMAP_NVS 	4
   grub_uint32_t type;
+  grub_uint32_t len;
 };
 
-void grub_unix_real_boot (grub_addr_t entry, ...)
-     __attribute__ ((cdecl,noreturn));
-grub_err_t grub_freebsd_load_elfmodule32 (grub_file_t file, int argc,
+grub_err_t grub_freebsd_load_elfmodule32 (struct grub_relocator *relocator,
+					  grub_file_t file, int argc,
 					  char *argv[], grub_addr_t *kern_end);
-grub_err_t grub_freebsd_load_elfmodule_obj64 (grub_file_t file, int argc,
+grub_err_t grub_freebsd_load_elfmodule_obj64 (struct grub_relocator *relocator,
+					      grub_file_t file, int argc,
 					      char *argv[],
 					      grub_addr_t *kern_end);
-grub_err_t grub_freebsd_load_elf_meta32 (grub_file_t file,
+grub_err_t grub_freebsd_load_elf_meta32 (struct grub_relocator *relocator,
+					 grub_file_t file,
 					 grub_addr_t *kern_end);
-grub_err_t grub_freebsd_load_elf_meta64 (grub_file_t file,
+grub_err_t grub_freebsd_load_elf_meta64 (struct grub_relocator *relocator,
+					 grub_file_t file,
 					 grub_addr_t *kern_end);
 
-grub_err_t grub_freebsd_add_meta (grub_uint32_t type, void *data,
-				  grub_uint32_t len);
+grub_err_t grub_netbsd_load_elf_meta32 (struct grub_relocator *relocator,
+					grub_file_t file,
+					grub_addr_t *kern_end);
+grub_err_t grub_netbsd_load_elf_meta64 (struct grub_relocator *relocator,
+					grub_file_t file,
+					grub_addr_t *kern_end);
+
+grub_err_t grub_bsd_add_meta (grub_uint32_t type, 
+			      void *data, grub_uint32_t len);
 grub_err_t grub_freebsd_add_meta_module (char *filename, char *type,
 					 int argc, char **argv,
 					 grub_addr_t addr, grub_uint32_t size);
+
+struct grub_openbsd_ramdisk_descriptor
+{
+  grub_size_t max_size;
+  grub_uint8_t *target;
+  grub_uint32_t *size;
+};
+
+grub_err_t grub_openbsd_find_ramdisk32 (grub_file_t file,
+					grub_addr_t kern_start,
+					void *kern_chunk_src,
+					struct grub_openbsd_ramdisk_descriptor *desc);
+grub_err_t grub_openbsd_find_ramdisk64 (grub_file_t file,
+					grub_addr_t kern_start,
+					void *kern_chunk_src,
+					struct grub_openbsd_ramdisk_descriptor *desc);
 
 extern grub_uint8_t grub_bsd64_trampoline_start, grub_bsd64_trampoline_end;
 extern grub_uint32_t grub_bsd64_trampoline_selfjump;

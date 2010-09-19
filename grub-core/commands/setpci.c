@@ -155,7 +155,7 @@ grub_setpci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
 }
 
 static grub_err_t
-grub_cmd_setpci (grub_extcmd_t cmd, int argc, char **argv)
+grub_cmd_setpci (grub_extcmd_context_t ctxt, int argc, char **argv)
 {
   const char *ptr;
   unsigned i;
@@ -163,14 +163,14 @@ grub_cmd_setpci (grub_extcmd_t cmd, int argc, char **argv)
   pciid_check_value = 0;
   pciid_check_mask = 0;
 
-  if (cmd->state[0].set)
+  if (ctxt->state[0].set)
     {
-      ptr = cmd->state[0].arg;
+      ptr = ctxt->state[0].arg;
       pciid_check_value |= (grub_strtoul (ptr, (char **) &ptr, 16) & 0xffff);
       if (grub_errno == GRUB_ERR_BAD_NUMBER)
 	{
 	  grub_errno = GRUB_ERR_NONE;
-	  ptr = cmd->state[0].arg;
+	  ptr = ctxt->state[0].arg;
 	}
       else
 	pciid_check_mask |= 0xffff;
@@ -191,11 +191,11 @@ grub_cmd_setpci (grub_extcmd_t cmd, int argc, char **argv)
 
   check_bus = check_device = check_function = 0;
 
-  if (cmd->state[1].set)
+  if (ctxt->state[1].set)
     {
       const char *optr;
       
-      ptr = cmd->state[1].arg;
+      ptr = ctxt->state[1].arg;
       optr = ptr;
       bus = grub_strtoul (ptr, (char **) &ptr, 16);
       if (grub_errno == GRUB_ERR_BAD_NUMBER)
@@ -229,8 +229,8 @@ grub_cmd_setpci (grub_extcmd_t cmd, int argc, char **argv)
 	}
     }
 
-  if (cmd->state[2].set)
-    varname = cmd->state[2].arg;
+  if (ctxt->state[2].set)
+    varname = ctxt->state[2].arg;
   else
     varname = NULL;
 
@@ -329,7 +329,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(setpci)
 {
-  cmd = grub_register_extcmd ("setpci", grub_cmd_setpci, GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("setpci", grub_cmd_setpci, 0,
 			      N_("[-s POSITION] [-d DEVICE] [-v VAR] "
 				 "[REGISTER][=VALUE[:MASK]]"),
 			      N_("Manipulate PCI devices."), options);

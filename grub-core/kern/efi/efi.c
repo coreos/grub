@@ -174,26 +174,6 @@ grub_reboot (void)
 }
 #endif
 
-void
-grub_halt (void)
-{
-  grub_efi_fini ();
-  efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
-              GRUB_EFI_RESET_SHUTDOWN, GRUB_EFI_SUCCESS, 0, NULL);
-  for (;;) ;
-}
-
-int
-grub_efi_exit_boot_services (grub_efi_uintn_t map_key)
-{
-  grub_efi_boot_services_t *b;
-  grub_efi_status_t status;
-
-  b = grub_efi_system_table->boot_services;
-  status = efi_call_2 (b->exit_boot_services, grub_efi_image_handle, map_key);
-  return status == GRUB_EFI_SUCCESS;
-}
-
 grub_err_t
 grub_efi_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
 				  grub_efi_uintn_t descriptor_size,
@@ -760,26 +740,3 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
       dp = (grub_efi_device_path_t *) ((char *) dp + len);
     }
 }
-
-int
-grub_efi_finish_boot_services (void)
-{
-  grub_efi_uintn_t mmap_size = 0;
-  grub_efi_uintn_t map_key;
-  grub_efi_uintn_t desc_size;
-  grub_efi_uint32_t desc_version;
-  void *mmap_buf = 0;
-
-  if (grub_efi_get_memory_map (&mmap_size, mmap_buf, &map_key,
-			       &desc_size, &desc_version) < 0)
-    return 0;
-
-  mmap_buf = grub_malloc (mmap_size);
-
-  if (grub_efi_get_memory_map (&mmap_size, mmap_buf, &map_key,
-			       &desc_size, &desc_version) <= 0)
-    return 0;
-
-  return grub_efi_exit_boot_services (map_key);
-}
-

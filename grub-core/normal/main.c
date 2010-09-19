@@ -141,209 +141,6 @@ free_menu (grub_menu_t menu)
   grub_env_unset_menu ();
 }
 
-static void
-free_menu_entry_classes (struct grub_menu_entry_class *head)
-{
-  /* Free all the classes.  */
-  while (head)
-    {
-      struct grub_menu_entry_class *next;
-
-      grub_free (head->name);
-      next = head->next;
-      grub_free (head);
-      head = next;
-    }
-}
-
-static struct
-{
-  char *name;
-  int key;
-} hotkey_aliases[] =
-  {
-    {"backspace", '\b'},
-    {"tab", '\t'},
-    {"delete", GRUB_TERM_DC}
-  };
-
-/* Add a menu entry to the current menu context (as given by the environment
-   variable data slot `menu').  As the configuration file is read, the script
-   parser calls this when a menu entry is to be created.  */
-grub_err_t
-grub_normal_add_menu_entry (int argc, const char **args,
-			    const char *sourcecode)
-{
-  const char *menutitle = 0;
-  const char *menusourcecode;
-  grub_menu_t menu;
-  grub_menu_entry_t *last;
-  int failed = 0;
-  int i;
-  struct grub_menu_entry_class *classes_head;  /* Dummy head node for list.  */
-  struct grub_menu_entry_class *classes_tail;
-  char *users = NULL;
-  int hotkey = 0;
-
-  /* Allocate dummy head node for class list.  */
-  classes_head = grub_zalloc (sizeof (struct grub_menu_entry_class));
-  if (! classes_head)
-    return grub_errno;
-  classes_tail = classes_head;
-
-  menu = grub_env_get_menu ();
-  if (! menu)
-    return grub_error (GRUB_ERR_MENU, "no menu context");
-
-  last = &menu->entry_list;
-
-  menusourcecode = grub_strdup (sourcecode);
-  if (! menusourcecode)
-    return grub_errno;
-
-  /* Parse menu arguments.  */
-  for (i = 0; i < argc; i++)
-    {
-      /* Capture arguments.  */
-      if (grub_strncmp ("--", args[i], 2) == 0 && i + 1 < argc)
-	{
-	  const char *arg = &args[i][2];
-
-	  /* Handle menu class.  */
-	  if (grub_strcmp(arg, "class") == 0)
-	    {
-	      char *class_name;
-	      struct grub_menu_entry_class *new_class;
-
-	      i++;
-	      class_name = grub_strdup (args[i]);
-	      if (! class_name)
-		{
-		  failed = 1;
-		  break;
-		}
-
-	      /* Create a new class and add it at the tail of the list.  */
-	      new_class = grub_zalloc (sizeof (struct grub_menu_entry_class));
-	      if (! new_class)
-		{
-		  grub_free (class_name);
-		  failed = 1;
-		  break;
-		}
-	      /* Fill in the new class node.  */
-	      new_class->name = class_name;
-	      /* Link the tail to it, and make it the new tail.  */
-	      classes_tail->next = new_class;
-	      classes_tail = new_class;
-	      continue;
-	    }
-	  else if (grub_strcmp(arg, "users") == 0)
-	    {
-	      i++;
-	      users = grub_strdup (args[i]);
-	      if (! users)
-		{
-		  failed = 1;
-		  break;
-		}
-
-	      continue;
-	    }
-	  else if (grub_strcmp(arg, "hotkey") == 0)
-	    {
-	      unsigned j;
-
-	      i++;
-	      if (args[i][1] == 0)
-		{
-		  hotkey = args[i][0];
-		  continue;
-		}
-
-	      for (j = 0; j < ARRAY_SIZE (hotkey_aliases); j++)
-		if (grub_strcmp (args[i], hotkey_aliases[j].name) == 0)
-		  {
-		    hotkey = hotkey_aliases[j].key;
-		    break;
-		  }
-
-	      if (j < ARRAY_SIZE (hotkey_aliases))
-		continue;
-
-	      failed = 1;
-	      grub_error (GRUB_ERR_MENU,
-			  "Invalid hotkey: '%s'.", args[i]);
-	      break;
-	    }
-	  else
-	    {
-	      /* Handle invalid argument.  */
-	      failed = 1;
-	      grub_error (GRUB_ERR_MENU,
-			  "invalid argument for menuentry: %s", args[i]);
-	      break;
-	    }
-	}
-
-      /* Capture title.  */
-      if (! menutitle)
-	{
-	  menutitle = grub_strdup (args[i]);
-	}
-      else
-	{
-	  failed = 1;
-	  grub_error (GRUB_ERR_MENU,
-		      "too many titles for menuentry: %s", args[i]);
-	  break;
-	}
-    }
-
-  /* Validate arguments.  */
-  if ((! failed) && (! menutitle))
-    {
-      grub_error (GRUB_ERR_MENU, "menuentry is missing title");
-      failed = 1;
-    }
-
-  /* If argument parsing failed, free any allocated resources.  */
-  if (failed)
-    {
-      free_menu_entry_classes (classes_head);
-      grub_free ((void *) menutitle);
-      grub_free ((void *) menusourcecode);
-
-      /* Here we assume that grub_error has been used to specify failure details.  */
-      return grub_errno;
-    }
-
-  /* Add the menu entry at the end of the list.  */
-  while (*last)
-    last = &(*last)->next;
-
-  *last = grub_zalloc (sizeof (**last));
-  if (! *last)
-    {
-      free_menu_entry_classes (classes_head);
-      grub_free ((void *) menutitle);
-      grub_free ((void *) menusourcecode);
-      return grub_errno;
-    }
-
-  (*last)->title = menutitle;
-  (*last)->hotkey = hotkey;
-  (*last)->classes = classes_head;
-  if (users)
-    (*last)->restricted = 1;
-  (*last)->users = users;
-  (*last)->sourcecode = menusourcecode;
-
-  menu->size++;
-
-  return GRUB_ERR_NONE;
-}
-
 static grub_menu_t
 read_config_file (const char *config)
 {
@@ -677,8 +474,13 @@ static void (*grub_xputs_saved) (const char *str);
 
 GRUB_MOD_INIT(normal)
 {
+  /* Previously many modules depended on gzio. Be nice to user and load it.  */
+  grub_dl_load ("gzio");
+
+  grub_normal_auth_init ();
   grub_context_init ();
   grub_script_init ();
+  grub_menu_init ();
 
   grub_xputs_saved = grub_xputs;
   grub_xputs = grub_xputs_normal;
@@ -718,6 +520,8 @@ GRUB_MOD_FINI(normal)
 {
   grub_context_fini ();
   grub_script_fini ();
+  grub_menu_fini ();
+  grub_normal_auth_fini ();
 
   grub_xputs = grub_xputs_saved;
 

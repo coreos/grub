@@ -26,7 +26,6 @@
 #include <grub/cpu/macho.h>
 #include <grub/machoload.h>
 #include <grub/file.h>
-#include <grub/gzio.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
 
@@ -149,7 +148,7 @@ grub_macho_open (const char *name)
   grub_file_t file;
   grub_macho_t macho;
 
-  file = grub_gzfile_open (name, 1);
+  file = grub_file_open (name);
   if (! file)
     return 0;
 

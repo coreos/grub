@@ -18,6 +18,8 @@
 
 #include <config.h>
 #include <grub/symbol.h>
+
+#include <grub/i386/pc/memory.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/kernel.h>
 
@@ -39,7 +41,7 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = _start + GRUB_KERNEL_MACHINE_DATA_END
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
 
 codestart:
 	/* Relocate to low memory.  First we figure out our location.
@@ -94,6 +96,9 @@ codestart:
 	call	EXT_C(grub_main)
 
 	/* This should never happen.  */
-	jmp	EXT_C(grub_stop)
+	cli
+1:	
+	hlt
+	jmp 1b
 
 #include "../realmode.S"

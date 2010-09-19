@@ -32,6 +32,7 @@ static const struct grub_arg_option options[] = {
   {"prefix", 'p', 0, N_("Base directory for hash list."), N_("DIRECTORY"),
    ARG_TYPE_STRING},
   {"keep-going", 'k', 0, N_("Don't stop after first error."), 0, 0},
+  {"uncompress", 'u', 0, N_("Uncompress file before checksumming."), 0, 0},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -80,7 +81,7 @@ hash_file (grub_file_t file, const gcry_md_spec_t *hash, void *result)
 
 static grub_err_t
 check_list (const gcry_md_spec_t *hash, const char *hashfilename,
-	    const char *prefix, int keep)
+	    const char *prefix, int keep, int uncompress)
 {
   grub_file_t hashlist, file;
   char *buf = NULL;
@@ -115,11 +116,17 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
 	  filename = grub_xasprintf ("%s/%s", prefix, p);
 	  if (!filename)
 	    return grub_errno;
+	  if (!uncompress)
+	    grub_file_filter_disable_compression ();
 	  file = grub_file_open (filename);
 	  grub_free (filename);
 	}
       else
-	file = grub_file_open (p);
+	{
+	  if (!uncompress)
+	    grub_file_filter_disable_compression ();
+	  file = grub_file_open (p);
+	}
       if (!file)
 	{
 	  grub_file_close (hashlist);
@@ -165,19 +172,20 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
 }
 
 static grub_err_t
-grub_cmd_hashsum (struct grub_extcmd *cmd,
+grub_cmd_hashsum (struct grub_extcmd_context *ctxt,
 		  int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   const char *hashname = NULL;
   const char *prefix = NULL;
   const gcry_md_spec_t *hash;
   unsigned i;
   int keep = state[3].set;
+  int uncompress = state[4].set;
   unsigned unread = 0;
 
   for (i = 0; i < ARRAY_SIZE (aliases); i++)
-    if (grub_strcmp (cmd->cmd->name, aliases[i].name) == 0)
+    if (grub_strcmp (ctxt->extcmd->cmd->name, aliases[i].name) == 0)
       hashname = aliases[i].hashname;
   if (state[0].set)
     hashname = state[0].arg;
@@ -197,7 +205,7 @@ grub_cmd_hashsum (struct grub_extcmd *cmd,
       if (argc != 0)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
 			   "--check is incompatible with file list");
-      return check_list (hash, state[1].arg, prefix, keep);
+      return check_list (hash, state[1].arg, prefix, keep, uncompress);
     }
 
   for (i = 0; i < (unsigned) argc; i++)
@@ -206,6 +214,8 @@ grub_cmd_hashsum (struct grub_extcmd *cmd,
       grub_file_t file;
       grub_err_t err;
       unsigned j;
+      if (!uncompress)
+	grub_file_filter_disable_compression ();
       file = grub_file_open (args[i]);
       if (!file)
 	{
@@ -242,26 +252,22 @@ static grub_extcmd_t cmd, cmd_md5, cmd_sha256, cmd_sha512;
 
 GRUB_MOD_INIT(hashsum)
 {
-  cmd = grub_register_extcmd ("hashsum", grub_cmd_hashsum,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("hashsum", grub_cmd_hashsum, 0,
 			      "hashsum -h HASH [-c FILE [-p PREFIX]] "
 			      "[FILE1 [FILE2 ...]]",
 			      "Compute or check hash checksum.",
 			      options);
-  cmd_md5 = grub_register_extcmd ("md5sum", grub_cmd_hashsum,
-				  GRUB_COMMAND_FLAG_BOTH,
+  cmd_md5 = grub_register_extcmd ("md5sum", grub_cmd_hashsum, 0,
 				  N_("[-c FILE [-p PREFIX]] "
 				     "[FILE1 [FILE2 ...]]"),
 				  N_("Compute or check hash checksum."),
 				  options);
-  cmd_sha256 = grub_register_extcmd ("sha256sum", grub_cmd_hashsum,
-				     GRUB_COMMAND_FLAG_BOTH,
+  cmd_sha256 = grub_register_extcmd ("sha256sum", grub_cmd_hashsum, 0,
 				     N_("[-c FILE [-p PREFIX]] "
 					"[FILE1 [FILE2 ...]]"),
 				     "Compute or check hash checksum.",
 				     options);
-  cmd_sha512 = grub_register_extcmd ("sha512sum", grub_cmd_hashsum,
-				     GRUB_COMMAND_FLAG_BOTH,
+  cmd_sha512 = grub_register_extcmd ("sha512sum", grub_cmd_hashsum, 0,
 				     N_("[-c FILE [-p PREFIX]] "
 					"[FILE1 [FILE2 ...]]"),
 				     N_("Compute or check hash checksum."),

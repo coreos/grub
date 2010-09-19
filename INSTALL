@@ -21,7 +21,7 @@ configuring the GRUB.
 
 On GNU/Linux, you also need:
 
-* libdevmapper (recommended)
+* libdevmapper 1.02.34 or later (recommended)
 
 To build grub-emu, you need:
 

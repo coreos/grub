@@ -28,8 +28,6 @@ static const grub_uint8_t
 grub_console_standard_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_YELLOW,
 						  GRUB_EFI_BACKGROUND_BLACK);
 
-static int read_key = -1;
-
 static grub_uint32_t
 map_char (grub_uint32_t c)
 {
@@ -79,6 +77,9 @@ grub_console_putchar (struct grub_term_output *term __attribute__ ((unused)),
   grub_efi_simple_text_output_interface_t *o;
   unsigned i, j;
 
+  if (grub_efi_is_finished)
+    return;
+
   o = grub_efi_system_table->con_out;
 
   /* For now, do not try to use a surrogate pair.  */
@@ -100,133 +101,39 @@ grub_console_putchar (struct grub_term_output *term __attribute__ ((unused)),
   efi_call_2 (o->output_string, o, str);
 }
 
+const unsigned efi_codes[] =
+  {
+    0, GRUB_TERM_UP, GRUB_TERM_DOWN, GRUB_TERM_RIGHT,
+    GRUB_TERM_LEFT, GRUB_TERM_HOME, GRUB_TERM_END, GRUB_TERM_KEY_INSERT,
+    GRUB_TERM_DC, GRUB_TERM_KEY_PPAGE, GRUB_TERM_KEY_NPAGE, GRUB_TERM_KEY_F1,
+    GRUB_TERM_KEY_F2, GRUB_TERM_KEY_F3, GRUB_TERM_KEY_F4, GRUB_TERM_KEY_F5,
+    GRUB_TERM_KEY_F6, GRUB_TERM_KEY_F7, GRUB_TERM_KEY_F8, GRUB_TERM_KEY_F9,
+    GRUB_TERM_KEY_F10, 0, 0, '\e'
+  };
+
+
 static int
-grub_console_checkkey (struct grub_term_input *term __attribute__ ((unused)))
+grub_console_getkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   grub_efi_simple_input_interface_t *i;
   grub_efi_input_key_t key;
   grub_efi_status_t status;
 
-  if (read_key >= 0)
-    return 1;
+  if (grub_efi_is_finished)
+    return 0;
 
   i = grub_efi_system_table->con_in;
   status = efi_call_2 (i->read_key_stroke, i, &key);
-#if 0
-  switch (status)
-    {
-    case GRUB_EFI_SUCCESS:
-      {
-	grub_uint16_t xy;
 
-	xy = grub_getxy ();
-	grub_gotoxy (0, 0);
-	grub_printf ("scan_code=%x,unicode_char=%x  ",
-		     (unsigned) key.scan_code,
-		     (unsigned) key.unicode_char);
-	grub_gotoxy (xy >> 8, xy & 0xff);
-      }
-      break;
+  if (status != GRUB_EFI_SUCCESS)
+    return GRUB_TERM_NO_KEY;
 
-    case GRUB_EFI_NOT_READY:
-      //grub_printf ("not ready   ");
-      break;
+  if (key.scan_code == 0)
+    return key.unicode_char;
+  else if (key.scan_code < ARRAY_SIZE (efi_codes))
+    return efi_codes[key.scan_code];
 
-    default:
-      //grub_printf ("device error   ");
-      break;
-    }
-#endif
-
-  if (status == GRUB_EFI_SUCCESS)
-    {
-      switch (key.scan_code)
-	{
-	case 0x00:
-	  read_key = key.unicode_char;
-	  break;
-	case 0x01:
-	  read_key = GRUB_TERM_UP;
-	  break;
-	case 0x02:
-	  read_key = GRUB_TERM_DOWN;
-	  break;
-	case 0x03:
-	  read_key = GRUB_TERM_RIGHT;
-	  break;
-	case 0x04:
-	  read_key = GRUB_TERM_LEFT;
-	  break;
-	case 0x05:
-	  read_key = GRUB_TERM_HOME;
-	  break;
-	case 0x06:
-	  read_key = GRUB_TERM_END;
-	  break;
-	case 0x07:
-	  break;
-	case 0x08:
-	  read_key = GRUB_TERM_DC;
-	  break;
-	case 0x09:
-	  break;
-	case 0x0a:
-	  break;
-	case 0x0b:
-	  read_key = 24;
-	  break;
-	case 0x0c:
-	  read_key = 1;
-	  break;
-	case 0x0d:
-	  read_key = 5;
-	  break;
-	case 0x0e:
-	  read_key = 3;
-	  break;
-	case 0x17:
-	  read_key = '\e';
-	  break;
-	default:
-	  break;
-	}
-    }
-
-  return read_key;
-}
-
-static int
-grub_console_getkey (struct grub_term_input *term)
-{
-  grub_efi_simple_input_interface_t *i;
-  grub_efi_boot_services_t *b;
-  grub_efi_uintn_t index;
-  grub_efi_status_t status;
-  int key;
-
-  if (read_key >= 0)
-    {
-      key = read_key;
-      read_key = -1;
-      return key;
-    }
-
-  i = grub_efi_system_table->con_in;
-  b = grub_efi_system_table->boot_services;
-
-  do
-    {
-      status = efi_call_3 (b->wait_for_event, 1, &(i->wait_for_key), &index);
-      if (status != GRUB_EFI_SUCCESS)
-        return -1;
-
-      grub_console_checkkey (term);
-    }
-  while (read_key < 0);
-
-  key = read_key;
-  read_key = -1;
-  return key;
+  return GRUB_TERM_NO_KEY;
 }
 
 static grub_uint16_t
@@ -236,7 +143,8 @@ grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
   grub_efi_uintn_t columns, rows;
 
   o = grub_efi_system_table->con_out;
-  if (efi_call_4 (o->query_mode, o, o->mode->mode, &columns, &rows) != GRUB_EFI_SUCCESS)
+  if (grub_efi_is_finished || efi_call_4 (o->query_mode, o, o->mode->mode,
+					  &columns, &rows) != GRUB_EFI_SUCCESS)
     {
       /* Why does this fail?  */
       columns = 80;
@@ -251,6 +159,9 @@ grub_console_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   grub_efi_simple_text_output_interface_t *o;
 
+  if (grub_efi_is_finished)
+    return 0;
+
   o = grub_efi_system_table->con_out;
   return ((o->mode->cursor_column << 8) | o->mode->cursor_row);
 }
@@ -261,6 +172,9 @@ grub_console_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
 {
   grub_efi_simple_text_output_interface_t *o;
 
+  if (grub_efi_is_finished)
+    return;
+
   o = grub_efi_system_table->con_out;
   efi_call_3 (o->set_cursor_position, o, x, y);
 }
@@ -270,6 +184,9 @@ grub_console_cls (struct grub_term_output *term __attribute__ ((unused)))
 {
   grub_efi_simple_text_output_interface_t *o;
   grub_efi_int32_t orig_attr;
+
+  if (grub_efi_is_finished)
+    return;
 
   o = grub_efi_system_table->con_out;
   orig_attr = o->mode->attribute;
@@ -283,6 +200,9 @@ grub_console_setcolorstate (struct grub_term_output *term,
 			    grub_term_color_state state)
 {
   grub_efi_simple_text_output_interface_t *o;
+
+  if (grub_efi_is_finished)
+    return;
 
   o = grub_efi_system_table->con_out;
 
@@ -307,6 +227,9 @@ grub_console_setcursor (struct grub_term_output *term __attribute__ ((unused)),
 {
   grub_efi_simple_text_output_interface_t *o;
 
+  if (grub_efi_is_finished)
+    return;
+
   o = grub_efi_system_table->con_out;
   efi_call_2 (o->enable_cursor, o, on);
 }
@@ -328,7 +251,6 @@ grub_efi_console_fini (struct grub_term_output *term)
 static struct grub_term_input grub_console_term_input =
   {
     .name = "console",
-    .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
   };
 

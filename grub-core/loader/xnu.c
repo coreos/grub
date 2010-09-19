@@ -28,7 +28,6 @@
 #include <grub/machoload.h>
 #include <grub/macho.h>
 #include <grub/cpu/macho.h>
-#include <grub/gzio.h>
 #include <grub/command.h>
 #include <grub/misc.h>
 #include <grub/extcmd.h>
@@ -40,45 +39,30 @@ static int driverspackagenum = 0;
 static int driversnum = 0;
 int grub_xnu_is_64bit = 0;
 
-void *grub_xnu_heap_start = 0;
+grub_addr_t grub_xnu_heap_target_start = 0;
 grub_size_t grub_xnu_heap_size = 0;
-
-/* Allocate heap by 32MB-blocks. */
-#define GRUB_XNU_HEAP_ALLOC_BLOCK 0x2000000
+struct grub_relocator *grub_xnu_relocator;
 
 static grub_err_t
 grub_xnu_register_memory (char *prefix, int *suffix,
-			  void *addr, grub_size_t size);
-void *
-grub_xnu_heap_malloc (int size)
+			  grub_addr_t addr, grub_size_t size);
+grub_err_t
+grub_xnu_heap_malloc (int size, void **src, grub_addr_t *target)
 {
-  void *val;
-  int oldblknum, newblknum;
+  grub_err_t err;
+  grub_relocator_chunk_t ch;
+  
+  err = grub_relocator_alloc_chunk_addr (grub_xnu_relocator, &ch,
+					 grub_xnu_heap_target_start
+					 + grub_xnu_heap_size, size);
+  if (err)
+    return err;
 
-  /* The page after the heap is used for stack. Ensure it's usable. */
-  if (grub_xnu_heap_size)
-    oldblknum = (grub_xnu_heap_size + GRUB_XNU_PAGESIZE
-		 + GRUB_XNU_HEAP_ALLOC_BLOCK - 1) / GRUB_XNU_HEAP_ALLOC_BLOCK;
-  else
-    oldblknum = 0;
-  newblknum = (grub_xnu_heap_size + size + GRUB_XNU_PAGESIZE
-	       + GRUB_XNU_HEAP_ALLOC_BLOCK - 1) / GRUB_XNU_HEAP_ALLOC_BLOCK;
-  if (oldblknum != newblknum)
-    {
-      /* FIXME: instruct realloc to allocate at 1MB if possible once
-	 advanced mm is ready. */
-      grub_xnu_heap_start
-	= XNU_RELOCATOR (realloc) (grub_xnu_heap_start,
-				   newblknum
-				   * GRUB_XNU_HEAP_ALLOC_BLOCK);
-      if (!grub_xnu_heap_start)
-	return NULL;
-    }
-
-  val = (grub_uint8_t *) grub_xnu_heap_start + grub_xnu_heap_size;
+  *src = get_virtual_current_address (ch);
+  *target = grub_xnu_heap_target_start + grub_xnu_heap_size;
   grub_xnu_heap_size += size;
-  grub_dprintf ("xnu", "val=%p\n", val);
-  return val;
+  grub_dprintf ("xnu", "val=%p\n", *src);
+  return GRUB_ERR_NONE;
 }
 
 /* Make sure next block of the heap will be aligned.
@@ -87,11 +71,9 @@ grub_xnu_heap_malloc (int size)
 grub_err_t
 grub_xnu_align_heap (int align)
 {
-  int align_overhead = align - grub_xnu_heap_size % align;
-  if (align_overhead == align)
-    return GRUB_ERR_NONE;
-  if (! grub_xnu_heap_malloc (align_overhead))
-    return grub_errno;
+  grub_xnu_heap_size
+    = ALIGN_UP (grub_xnu_heap_target_start+ grub_xnu_heap_size, align)
+    - grub_xnu_heap_target_start;
   return GRUB_ERR_NONE;
 }
 
@@ -207,13 +189,14 @@ grub_xnu_writetree_toheap_real (void *curptr,
 }
 
 grub_err_t
-grub_xnu_writetree_toheap (void **start, grub_size_t *size)
+grub_xnu_writetree_toheap (grub_addr_t *target, grub_size_t *size)
 {
   struct grub_xnu_devtree_key *chosen;
   struct grub_xnu_devtree_key *memorymap;
   struct grub_xnu_devtree_key *driverkey;
   struct grub_xnu_extdesc *extdesc;
   grub_err_t err;
+  void *src;
 
   err = grub_xnu_align_heap (GRUB_XNU_PAGESIZE);
   if (err)
@@ -244,16 +227,17 @@ grub_xnu_writetree_toheap (void **start, grub_size_t *size)
 
   /* Allocate the space based on the size with dummy value. */
   *size = grub_xnu_writetree_get_size (grub_xnu_devtree_root, "/");
-  *start = grub_xnu_heap_malloc (*size + GRUB_XNU_PAGESIZE
-				 - *size % GRUB_XNU_PAGESIZE);
+  err = grub_xnu_heap_malloc (ALIGN_UP (*size + 1, GRUB_XNU_PAGESIZE),
+			      &src, target);
+  if (err)
+    return err;
 
   /* Put real data in the dummy. */
-  extdesc->addr = (grub_uint8_t *) *start - (grub_uint8_t *) grub_xnu_heap_start
-    + grub_xnu_heap_will_be_at;
+  extdesc->addr = *target;
   extdesc->size = (grub_uint32_t) *size;
 
   /* Write the tree to heap. */
-  grub_xnu_writetree_toheap_real (*start, grub_xnu_devtree_root, "/");
+  grub_xnu_writetree_toheap_real (src, grub_xnu_devtree_root, "/");
   return GRUB_ERR_NONE;
 }
 
@@ -338,8 +322,9 @@ grub_xnu_unload (void)
   /* Free loaded image. */
   driversnum = 0;
   driverspackagenum = 0;
-  grub_free (grub_xnu_heap_start);
-  grub_xnu_heap_start = 0;
+  grub_relocator_unload (grub_xnu_relocator);
+  grub_xnu_relocator = NULL;
+  grub_xnu_heap_target_start = 0;
   grub_xnu_heap_size = 0;
   grub_xnu_unlock ();
   return GRUB_ERR_NONE;
@@ -354,6 +339,7 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
   grub_uint32_t startcode, endcode;
   int i;
   char *ptr, *loadaddr;
+  grub_addr_t loadaddr_target;
 
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
@@ -381,15 +367,18 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
   grub_dprintf ("xnu", "endcode = %lx, startcode = %lx\n",
 		(unsigned long) endcode, (unsigned long) startcode);
 
-  loadaddr = grub_xnu_heap_malloc (endcode - startcode);
-  grub_xnu_heap_will_be_at = startcode;
+  grub_xnu_relocator = grub_relocator_new ();
+  if (!grub_xnu_relocator)
+    return grub_errno;
+  grub_xnu_heap_target_start = startcode;
+  err = grub_xnu_heap_malloc (endcode - startcode, (void **) &loadaddr,
+			      &loadaddr_target);
 
-  if (! loadaddr)
+  if (err)
     {
       grub_macho_close (macho);
       grub_xnu_unload ();
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			 "not enough memory to load kernel");
+      return err;
     }
 
   /* Load kernel. */
@@ -452,6 +441,7 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
   grub_uint64_t startcode, endcode;
   int i;
   char *ptr, *loadaddr;
+  grub_addr_t loadaddr_target;
 
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
@@ -482,15 +472,18 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
   grub_dprintf ("xnu", "endcode = %lx, startcode = %lx\n",
 		(unsigned long) endcode, (unsigned long) startcode);
 
-  loadaddr = grub_xnu_heap_malloc (endcode - startcode);
-  grub_xnu_heap_will_be_at = startcode;
+  grub_xnu_relocator = grub_relocator_new ();
+  if (!grub_xnu_relocator)
+    return grub_errno;
+  grub_xnu_heap_target_start = startcode;
+  err = grub_xnu_heap_malloc (endcode - startcode, (void **) &loadaddr,
+			      &loadaddr_target);
 
-  if (! loadaddr)
+  if (err)
     {
       grub_macho_close (macho);
       grub_xnu_unload ();
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			 "not enough memory to load kernel");
+      return err;
     }
 
   /* Load kernel. */
@@ -548,7 +541,7 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
    and increment SUFFIX. */
 static grub_err_t
 grub_xnu_register_memory (char *prefix, int *suffix,
-			  void *addr, grub_size_t size)
+			  grub_addr_t addr, grub_size_t size)
 {
   struct grub_xnu_devtree_key *chosen;
   struct grub_xnu_devtree_key *memorymap;
@@ -585,8 +578,7 @@ grub_xnu_register_memory (char *prefix, int *suffix,
     = (struct grub_xnu_extdesc *) grub_malloc (sizeof (*extdesc));
   if (! driverkey->data)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "can't register extension");
-  extdesc->addr = grub_xnu_heap_will_be_at +
-    ((grub_uint8_t *) addr - (grub_uint8_t *) grub_xnu_heap_start);
+  extdesc->addr = addr;
   extdesc->size = (grub_uint32_t) size;
   return GRUB_ERR_NONE;
 }
@@ -628,7 +620,8 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
   grub_file_t infoplist;
   struct grub_xnu_extheader *exthead;
   int neededspace = sizeof (*exthead);
-  grub_uint8_t *buf;
+  grub_uint8_t *buf, *buf0;
+  grub_addr_t buf_target;
   grub_size_t infoplistsize = 0, machosize = 0;
   char *name, *nameend;
   int namelen;
@@ -667,7 +660,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
     macho = 0;
 
   if (infoplistname)
-    infoplist = grub_gzfile_open (infoplistname, 1);
+    infoplist = grub_file_open (infoplistname);
   else
     infoplist = 0;
   grub_errno = GRUB_ERR_NONE;
@@ -683,7 +676,10 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
   err = grub_xnu_align_heap (GRUB_XNU_PAGESIZE);
   if (err)
     return err;
-  buf = grub_xnu_heap_malloc (neededspace);
+  err = grub_xnu_heap_malloc (neededspace, (void **) &buf0, &buf_target);
+  if (err)
+    return err;
+  buf = buf0;
 
   exthead = (struct grub_xnu_extheader *) buf;
   grub_memset (exthead, 0, sizeof (*exthead));
@@ -692,8 +688,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
   /* Load the binary. */
   if (macho)
     {
-      exthead->binaryaddr = (buf - (grub_uint8_t *) grub_xnu_heap_start)
-	+ grub_xnu_heap_will_be_at;
+      exthead->binaryaddr = buf_target + (buf - buf0);
       exthead->binarysize = machosize;
       if (grub_xnu_is_64bit)
 	err = grub_macho_readfile64 (macho, buf);
@@ -712,8 +707,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
   /* Load the plist. */
   if (infoplist)
     {
-      exthead->infoplistaddr = (buf - (grub_uint8_t *) grub_xnu_heap_start)
-	+ grub_xnu_heap_will_be_at;
+      exthead->infoplistaddr = buf_target + (buf - buf0);
       exthead->infoplistsize = infoplistsize + 1;
       if (grub_file_read (infoplist, buf, infoplistsize)
 	  != (grub_ssize_t) (infoplistsize))
@@ -729,15 +723,14 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
     }
   grub_errno = GRUB_ERR_NONE;
 
-  exthead->nameaddr = (buf - (grub_uint8_t *) grub_xnu_heap_start)
-    + grub_xnu_heap_will_be_at;
+  exthead->nameaddr = (buf - buf0) + buf_target;
   exthead->namesize = namelen + 1;
   grub_memcpy (buf, name, namelen);
   buf[namelen] = 0;
   buf += namelen + 1;
 
   /* Announce to kernel */
-  return grub_xnu_register_memory ("Driver-", &driversnum, exthead,
+  return grub_xnu_register_memory ("Driver-", &driversnum, buf_target,
 				   neededspace);
 }
 
@@ -748,6 +741,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_file_t file;
   void *loadto;
+  grub_addr_t loadto_target;
   grub_err_t err;
   grub_off_t readoff = 0;
   grub_ssize_t readlen = -1;
@@ -761,7 +755,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
   if (! grub_xnu_heap_size)
     return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
 
-  file = grub_gzfile_open (args[0], 1);
+  file = grub_file_open (args[0]);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
 		       "couldn't load driver package");
@@ -836,11 +830,11 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
       return err;
     }
 
-  loadto = grub_xnu_heap_malloc (readlen);
-  if (! loadto)
+  err = grub_xnu_heap_malloc (readlen, &loadto, &loadto_target);
+  if (err)
     {
       grub_file_close (file);
-      return grub_errno;
+      return err;
     }
 
   /* Read the file. */
@@ -855,7 +849,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
 
   /* Pass it to kernel. */
   return grub_xnu_register_memory ("DriversPackage-", &driverspackagenum,
-				   loadto, readlen);
+				   loadto_target, readlen);
 }
 
 static grub_err_t
@@ -864,6 +858,7 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_file_t file;
   void *loadto;
+  grub_addr_t loadto_target;
   grub_err_t err;
   grub_size_t size;
 
@@ -873,7 +868,7 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
   if (! grub_xnu_heap_size)
     return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
 
-  file = grub_gzfile_open (args[0], 1);
+  file = grub_file_open (args[0]);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
 		       "couldn't load ramdisk");
@@ -884,9 +879,9 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
 
   size = grub_file_size (file);
 
-  loadto = grub_xnu_heap_malloc (size);
-  if (! loadto)
-    return grub_errno;
+  err = grub_xnu_heap_malloc (size, &loadto, &loadto_target);
+  if (err)
+    return err;
   if (grub_file_read (file, loadto, size)
       != (grub_ssize_t) (size))
     {
@@ -894,7 +889,7 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
       grub_error_push ();
       return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", args[0]);
     }
-  return grub_xnu_register_memory ("RAMDisk", 0, loadto, size);
+  return grub_xnu_register_memory ("RAMDisk", 0, loadto_target, size);
 }
 
 /* Returns true if the kext should be loaded according to plist
@@ -913,7 +908,7 @@ grub_xnu_check_os_bundle_required (char *plistname, char *osbundlereq,
   if (binname)
     *binname = 0;
 
-  file = grub_gzfile_open (plistname, 1);
+  file = grub_file_open (plistname);
   if (! file)
     {
       grub_file_close (file);
@@ -1170,7 +1165,7 @@ grub_xnu_load_kext_from_dir (char *dirname, char *osbundlerequired,
 		grub_strcpy (binname + grub_strlen (binname), "/");
 	      grub_strcpy (binname + grub_strlen (binname), binsuffix);
 	      grub_dprintf ("xnu", "%s:%s\n", plistname, binname);
-	      binfile = grub_gzfile_open (binname, 1);
+	      binfile = grub_file_open (binname);
 	      if (! binfile)
 		grub_errno = GRUB_ERR_NONE;
 
@@ -1208,7 +1203,7 @@ grub_cmd_xnu_kext (grub_command_t cmd __attribute__ ((unused)),
       /* User explicitly specified plist and binary. */
       if (grub_strcmp (args[1], "-") != 0)
 	{
-	  binfile = grub_gzfile_open (args[1], 1);
+	  binfile = grub_file_open (args[1]);
 	  if (! binfile)
 	    {
 	      grub_error (GRUB_ERR_BAD_OS, "can't open file");
@@ -1368,15 +1363,15 @@ static const struct grub_arg_option xnu_splash_cmd_options[] =
   };
 
 static grub_err_t
-grub_cmd_xnu_splash (grub_extcmd_t cmd,
+grub_cmd_xnu_splash (grub_extcmd_context_t ctxt,
 		     int argc, char *args[])
 {
   grub_err_t err;
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
-  if (cmd->state[XNU_SPLASH_CMD_ARGINDEX_MODE].set &&
-      grub_strcmp (cmd->state[XNU_SPLASH_CMD_ARGINDEX_MODE].arg,
+  if (ctxt->state[XNU_SPLASH_CMD_ARGINDEX_MODE].set &&
+      grub_strcmp (ctxt->state[XNU_SPLASH_CMD_ARGINDEX_MODE].arg,
 		   "stretch") == 0)
     grub_xnu_bitmap_mode = GRUB_XNU_BITMAP_STRETCH;
   else
@@ -1439,8 +1434,7 @@ GRUB_MOD_INIT(xnu)
 				       "Load XNU ramdisk. "
 				       "It will be seen as md0.");
   cmd_splash = grub_register_extcmd ("xnu_splash",
-				     grub_cmd_xnu_splash,
-				     GRUB_COMMAND_FLAG_BOTH, 0,
+				     grub_cmd_xnu_splash, 0, 0,
 				     N_("Load a splash image for XNU."),
 				     xnu_splash_cmd_options);
 

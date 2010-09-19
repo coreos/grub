@@ -22,39 +22,18 @@
 #include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/raid.h>
+#include <grub/emu/getroot.h>
 
 #include <string.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+#include <sys/types.h>
 
 #include <linux/types.h>
 #include <linux/major.h>
 #include <linux/raid/md_p.h>
 #include <linux/raid/md_u.h>
-
-static char *
-grub_util_getdiskname (int major, int minor)
-{
-  char *name = xmalloc (15);
-
-  if (major == LOOP_MAJOR)
-    sprintf (name, "/dev/loop%d", minor);
-  else if (major == IDE0_MAJOR)
-    sprintf (name, "/dev/hd%c", 'a' + minor / 64);
-  else if (major == IDE1_MAJOR)
-    sprintf (name, "/dev/hd%c", 'c' + minor / 64);
-  else if (major == IDE2_MAJOR)
-    sprintf (name, "/dev/hd%c", 'e' + minor / 64);
-  else if (major == IDE3_MAJOR)
-    sprintf (name, "/dev/hd%c", 'g' + minor / 64);
-  else if (major == SCSI_DISK0_MAJOR)
-    sprintf (name, "/dev/sd%c", 'a' + minor / 16);
-  else
-    grub_util_error ("unknown device number: %d, %d", major, minor);
-
-  return name;
-}
 
 char **
 grub_util_raid_getmembers (char *name)
@@ -100,7 +79,8 @@ grub_util_raid_getmembers (char *name)
 
       if (disk.state & (1 << MD_DISK_ACTIVE))
 	{
-	  devicelist[j] = grub_util_getdiskname (disk.major, disk.minor);
+	  devicelist[j] = grub_find_device (NULL,
+					    makedev (disk.major, disk.minor));
 	  j++;
 	}
     }

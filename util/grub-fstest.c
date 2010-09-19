@@ -107,6 +107,7 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
       return;
     }
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (pathname);
   if (!file)
     {
@@ -258,13 +259,11 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
 {
   char *host_file;
   char *loop_name;
-  char *argv[3];
   int i;
-
-  argv[0] = "-p";
 
   for (i = 0; i < num_disks; i++)
     {
+      char *argv[2];
       loop_name = grub_xasprintf ("loop%d", i);
       if (!loop_name)
 	grub_util_error (grub_errmsg);
@@ -273,10 +272,10 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
       if (!host_file)
 	grub_util_error (grub_errmsg);
 
-      argv[1] = loop_name;
-      argv[2] = host_file;
+      argv[0] = loop_name;
+      argv[1] = host_file;
 
-      if (execute_command ("loopback", 3, argv))
+      if (execute_command ("loopback", 2, argv))
         grub_util_error ("loopback command fails");
 
       grub_free (loop_name);
@@ -311,15 +310,16 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
       execute_command ("blocklist", n, args);
       grub_printf ("\n");
     }
-
-  argv[0] = "-d";
-
+    
   for (i = 0; i < num_disks; i++)
     {
+      char *argv[2];
+
       loop_name = grub_xasprintf ("loop%d", i);
       if (!loop_name)
 	grub_util_error (grub_errmsg);
 
+      argv[0] = "-d";      
       argv[1] = loop_name;
 
       execute_command ("loopback", 2, argv);

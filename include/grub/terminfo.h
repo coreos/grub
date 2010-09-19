@@ -64,7 +64,6 @@ void EXPORT_FUNC (grub_terminfo_setcolorstate) (struct grub_term_output *term,
 				  const grub_term_color_state state);
 
 
-int EXPORT_FUNC (grub_terminfo_checkkey) (struct grub_term_input *term);
 grub_err_t EXPORT_FUNC (grub_terminfo_input_init) (struct grub_term_input *term);
 int EXPORT_FUNC (grub_terminfo_getkey) (struct grub_term_input *term);
 void EXPORT_FUNC (grub_terminfo_putchar) (struct grub_term_output *term,

@@ -5,6 +5,11 @@ EXTRA_DIST += gentpl.py
 EXTRA_DIST += Makefile.tpl
 EXTRA_DIST += Makefile.util.def
 
+EXTRA_DIST += unicode
+
+EXTRA_DIST += util/import_gcry.py
+EXTRA_DIST += util/import_unicode.py
+
 EXTRA_DIST += docs/man
 EXTRA_DIST += docs/grub.cfg
 
@@ -20,6 +25,7 @@ EXTRA_DIST += grub-core/gensymlist.sh
 EXTRA_DIST += grub-core/genemuinit.sh
 EXTRA_DIST += grub-core/genemuinitheader.sh
 
+EXTRA_DIST += grub-core/lib/libgcrypt/cipher
 EXTRA_DIST += $(shell find $(top_srcdir)/include -name '*.h')
 EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/lib -name '*.h')
 EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/gnulib -name '*.h')

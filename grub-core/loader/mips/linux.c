@@ -23,18 +23,14 @@
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
-#include <grub/machine/loader.h>
 #include <grub/command.h>
 #include <grub/mips/relocator.h>
-#include <grub/machine/memory.h>
+#include <grub/memory.h>
 #include <grub/i18n.h>
 
 /* For frequencies.  */
 #include <grub/pci.h>
 #include <grub/machine/time.h>
-
-#define ELF32_LOADMASK (0x00000000UL)
-#define ELF64_LOADMASK (0x0000000000000000ULL)
 
 static grub_dl_t my_mod;
 
@@ -42,6 +38,7 @@ static int loaded;
 
 static grub_size_t linux_size;
 
+static struct grub_relocator *relocator;
 static grub_uint8_t *playground;
 static grub_addr_t target_addr, entry_addr;
 static int linux_argc;
@@ -60,15 +57,7 @@ grub_linux_boot (void)
   state.gpr[5] = target_addr + argv_off;
   state.gpr[6] = target_addr + envp_off;
   state.jumpreg = 1;
-  grub_relocator32_boot (playground, target_addr, state);
-
-  return GRUB_ERR_NONE;
-}
-
-static grub_err_t
-grub_linux_release_mem (void)
-{
-  grub_relocator32_free (playground);
+  grub_relocator32_boot (relocator, state);
 
   return GRUB_ERR_NONE;
 }
@@ -76,14 +65,12 @@ grub_linux_release_mem (void)
 static grub_err_t
 grub_linux_unload (void)
 {
-  grub_err_t err;
-
-  err = grub_linux_release_mem ();
+  grub_relocator_unload (relocator);
   grub_dl_unref (my_mod);
 
   loaded = 0;
 
-  return err;
+  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
@@ -91,9 +78,10 @@ grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
 {
   Elf32_Addr base;
   int extraoff;
+  grub_err_t err;
 
   /* Linux's entry point incorrectly contains a virtual address.  */
-  entry_addr = elf->ehdr.ehdr32.e_entry & ~ELF32_LOADMASK;
+  entry_addr = elf->ehdr.ehdr32.e_entry;
 
   linux_size = grub_elf32_size (elf, &base);
   if (linux_size == 0)
@@ -105,9 +93,19 @@ grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   extraoff = linux_size;
   linux_size += extra_size;
 
-  playground = grub_relocator32_alloc (linux_size);
-  if (!playground)
+  relocator = grub_relocator_new ();
+  if (!relocator)
     return grub_errno;
+
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   target_addr & 0x1fffffff,
+					   linux_size);
+    if (err)
+      return err;
+    playground = get_virtual_current_address (ch);
+  }
 
   *extra_mem = playground + extraoff;
 
@@ -135,9 +133,10 @@ grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
 {
   Elf64_Addr base;
   int extraoff;
+  grub_err_t err;
 
   /* Linux's entry point incorrectly contains a virtual address.  */
-  entry_addr = elf->ehdr.ehdr64.e_entry & ~ELF64_LOADMASK;
+  entry_addr = elf->ehdr.ehdr64.e_entry;
 
   linux_size = grub_elf64_size (elf, &base);
   if (linux_size == 0)
@@ -149,9 +148,19 @@ grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   extraoff = linux_size;
   linux_size += extra_size;
 
-  playground = grub_relocator32_alloc (linux_size);
-  if (!playground)
+  relocator = grub_relocator_new ();
+  if (!relocator)
     return grub_errno;
+
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   target_addr & 0x1fffffff,
+					   linux_size);
+    if (err)
+      return err;
+    playground = get_virtual_current_address (ch);
+  }
 
   *extra_mem = playground + extraoff;
 
@@ -322,7 +331,9 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_file_t file = 0;
   grub_ssize_t size;
-  grub_size_t overhead;
+  void *initrd_src;
+  grub_addr_t initrd_dest;
+  grub_err_t err;
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
@@ -333,25 +344,32 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   if (initrd_loaded)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "only one initrd can be loaded.");
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (argv[0]);
   if (! file)
     return grub_errno;
 
   size = grub_file_size (file);
 
-  overhead = ALIGN_UP (target_addr + linux_size + 0x10000, 0x10000)
-    - (target_addr + linux_size);
+  {
+    grub_relocator_chunk_t ch;
 
-  playground = grub_relocator32_realloc (playground,
-					 linux_size + overhead + size);
+    err = grub_relocator_alloc_chunk_align (relocator, &ch,
+					    target_addr + linux_size + 0x10000,
+					    (0xffffffff - size) + 1,
+					    size, 0x10000,
+					    GRUB_RELOCATOR_PREFERENCE_NONE);
 
-  if (!playground)
-    {
-      grub_file_close (file);
-      return grub_errno;
-    }
+    if (err)
+      {
+	grub_file_close (file);
+	return err;
+      }
+    initrd_src = get_virtual_current_address (ch);
+    initrd_dest = get_physical_target_address (ch) | 0x80000000;
+  }
 
-  if (grub_file_read (file, playground + linux_size + overhead, size) != size)
+  if (grub_file_read (file, initrd_src, size) != size)
     {
       grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
       grub_file_close (file);
@@ -361,7 +379,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   grub_snprintf ((char *) playground + rd_addr_arg_off,
 		 sizeof ("rd_start=0xXXXXXXXXXXXXXXXX"), "rd_start=0x%llx",
-		(unsigned long long) target_addr + linux_size  + overhead);
+		(unsigned long long) initrd_dest);
   ((grub_uint32_t *) (playground + argv_off))[linux_argc]
     = target_addr + rd_addr_arg_off;
   linux_argc++;

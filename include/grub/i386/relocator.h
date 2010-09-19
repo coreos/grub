@@ -21,21 +21,54 @@
 
 #include <grub/types.h>
 #include <grub/err.h>
+#include <grub/relocator.h>
 
 struct grub_relocator32_state
 {
   grub_uint32_t esp;
+  grub_uint32_t ebp;
   grub_uint32_t eax;
   grub_uint32_t ebx;
   grub_uint32_t ecx;
   grub_uint32_t edx;
   grub_uint32_t eip;
+  grub_uint32_t esi;
+  grub_uint32_t edi;
 };
 
-void *grub_relocator32_alloc (grub_size_t size);
-grub_err_t grub_relocator32_boot (void *relocator, grub_uint32_t dest,
+struct grub_relocator16_state
+{
+  grub_uint16_t cs;
+  grub_uint16_t ds;
+  grub_uint16_t es;
+  grub_uint16_t fs;
+  grub_uint16_t gs;
+  grub_uint16_t ss;
+  grub_uint16_t sp;
+  grub_uint16_t ip;
+  grub_uint32_t edx;
+};
+
+struct grub_relocator64_state
+{
+  grub_uint64_t rsp;
+  grub_uint64_t rax;
+  grub_uint64_t rbx;
+  grub_uint64_t rcx;
+  grub_uint64_t rdx;
+  grub_uint64_t rip;
+  grub_uint64_t rsi;
+  grub_addr_t cr3;
+};
+
+grub_err_t grub_relocator16_boot (struct grub_relocator *rel,
+				  struct grub_relocator16_state state);
+
+grub_err_t grub_relocator32_boot (struct grub_relocator *rel,
 				  struct grub_relocator32_state state);
-void *grub_relocator32_realloc (void *relocator, grub_size_t size);
-void grub_relocator32_free (void *relocator);
+
+grub_err_t grub_relocator64_boot (struct grub_relocator *rel,
+				  struct grub_relocator64_state state,
+				  grub_addr_t min_addr, grub_addr_t max_addr);
 
 #endif /* ! GRUB_RELOCATOR_CPU_HEADER */

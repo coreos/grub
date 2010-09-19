@@ -100,14 +100,6 @@ VARIABLE(grub_install_dos_part)
 	.long	0xFFFFFFFF
 VARIABLE(grub_install_bsd_part)
 	.long	0xFFFFFFFF
-VARIABLE(grub_prefix)
-	/* to be filled by grub-mkimage */
-
-	/*
-	 *  Leave some breathing room for the prefix.
-	 */
-
-	. = _start + GRUB_KERNEL_MACHINE_DATA_END
 
 #ifdef APPLE_CC
 bss_start:
@@ -210,7 +202,7 @@ LOCAL (codestart):
 	.code32
 
 	incl	%eax
-	call	EXT_C(grub_gate_a20)
+	call	grub_gate_a20
 
 #ifdef ENABLE_LZMA
 	movl	$GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %edi
@@ -300,7 +292,7 @@ VARIABLE(grub_boot_drive)
  * It also eats any keystrokes in the keyboard buffer.  :-(
  */
 
-FUNCTION(grub_gate_a20)
+grub_gate_a20:	
 	movl	%eax, %edx
 
 gate_a20_test_current_state:
@@ -450,28 +442,16 @@ gate_a20_check_state:
  */
 	. = _start + GRUB_KERNEL_MACHINE_RAW_SIZE
 
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX
+VARIABLE(grub_prefix)
+	/* to be filled by grub-mkimage */
+
 	/*
-	 * This next part is sort of evil.  It takes advantage of the
-	 * byte ordering on the x86 to work in either 16-bit or 32-bit
-	 * mode, so think about it before changing it.
+	 *  Leave some breathing room for the prefix.
 	 */
-
-FUNCTION(grub_hard_stop)
-	hlt
-	jmp EXT_C(grub_hard_stop)
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
 
 
-/*
- * grub_stop_floppy()
- *
- * Stop the floppy drive from spinning, so that other software is
- * jumped to with a known state.
- */
-FUNCTION(grub_stop_floppy)
-	movw	$0x3F2, %dx
-	xorb	%al, %al
-	outb	%al, %dx
-	ret
 
 /*
  * grub_exit()
@@ -487,56 +467,6 @@ FUNCTION(grub_exit)
 	.code32
 
 /*
- * grub_halt(int no_apm)
- *
- * Halt the system, using APM if possible. If NO_APM is true, don't use
- * APM even if it is available.
- */
-FUNCTION(grub_halt)
-	/* see if zero */
-	testl	%eax, %eax
-	jnz	EXT_C(grub_stop)
-
-	call	prot_to_real
-	.code16
-
-	/* detect APM */
-	movw	$0x5300, %ax
-	xorw	%bx, %bx
-	int	$0x15
-	jc	EXT_C(grub_hard_stop)
-	/* don't check %bx for buggy BIOSes... */
-
-	/* disconnect APM first */
-	movw	$0x5304, %ax
-	xorw	%bx, %bx
-	int	$0x15
-
-	/* connect APM */
-	movw	$0x5301, %ax
-	xorw	%bx, %bx
-	int	$0x15
-	jc	EXT_C(grub_hard_stop)
-
-	/* set APM protocol level - 1.1 or bust. (this covers APM 1.2 also) */
-	movw	$0x530E, %ax
-	xorw	%bx, %bx
-	movw	$0x0101, %cx
-	int	$0x15
-	jc	EXT_C(grub_hard_stop)
-
-	/* set the power state to off */
-	movw	$0x5307, %ax
-	movw	$1, %bx
-	movw	$3, %cx
-	int	$0x15
-
-	/* shouldn't reach here */
-	jmp	EXT_C(grub_hard_stop)
-	.code32
-
-
-/*
  *  void grub_chainloader_real_boot (int drive, void *part_addr)
  *
  *  This starts another boot loader.
@@ -546,11 +476,9 @@ FUNCTION(grub_chainloader_real_boot)
 	pushl	%edx
 	pushl	%eax
 
-	call	EXT_C(grub_dl_unload_all)
-
 	/* Turn off Gate A20 */
 	xorl	%eax, %eax
-	call	EXT_C(grub_gate_a20)
+	call	grub_gate_a20
 
 	/* set up to pass boot drive */
 	popl	%edx
@@ -563,507 +491,8 @@ FUNCTION(grub_chainloader_real_boot)
 	ljmp	$0, $GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR
 	.code32
 
-#include "../loader.S"
-
 /*
- *   int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)
- *
- *   Call IBM/MS INT13 Extensions (int 13 %ah=AH) for DRIVE. DAP
- *   is passed for disk address packet. If an error occurs, return
- *   non-zero, otherwise zero.
- */
-
-FUNCTION(grub_biosdisk_rw_int13_extensions)
-	pushl	%ebp
-	pushl	%esi
-
-	/* compute the address of disk_address_packet */
-	movw	%cx, %si
-	xorw	%cx, %cx
-	shrl	$4, %ecx	/* save the segment to cx */
-
-	/* ah */
-	movb	%al, %dh
-	/* enter real mode */
-	call	prot_to_real
-
-	.code16
-	movb	%dh, %ah
-	movw	%cx, %ds
-	int	$0x13		/* do the operation */
-	movb	%ah, %dl	/* save return value */
-	/* back to protected mode */
-	DATA32	call	real_to_prot
-	.code32
-
-	movb	%dl, %al	/* return value in %eax */
-
-	popl	%esi
-	popl	%ebp
-
-	ret
-
-/*
- *   int grub_biosdisk_rw_standard (int ah, int drive, int coff, int hoff,
- *                                  int soff, int nsec, int segment)
- *
- *   Call standard and old INT13 (int 13 %ah=AH) for DRIVE. Read/write
- *   NSEC sectors from COFF/HOFF/SOFF into SEGMENT. If an error occurs,
- *   return non-zero, otherwise zero.
- */
-
-FUNCTION(grub_biosdisk_rw_standard)
-	pushl	%ebp
-	movl	%esp, %ebp
-
-	pushl	%ebx
-	pushl	%edi
-	pushl	%esi
-
-	/* set up CHS information */
-
-	/* set %ch to low eight bits of cylinder */
-	xchgb	%cl, %ch
-	/* set bits 6-7 of %cl to high two bits of cylinder */
-	shlb	$6, %cl
-	/* set bits 0-5 of %cl to sector */
-	addb	0xc(%ebp), %cl
-	/* set %dh to head */
-	movb	0x8(%ebp), %dh
-	/* set %ah to AH */
-	movb	%al, %ah
-	/* set %al to NSEC */
-	movb	0x10(%ebp), %al
-	/* save %ax in %di */
-	movw	%ax, %di
-	/* save SEGMENT in %bx */
-	movw	0x14(%ebp), %bx
-
-	/* enter real mode */
-	call	prot_to_real
-
-	.code16
-	movw	%bx, %es
-	xorw	%bx, %bx
-	movw	$3, %si		/* attempt at least three times */
-
-1:
-	movw	%di, %ax
-	int	$0x13		/* do the operation */
-	jnc	2f		/* check if successful */
-
-	movb	%ah, %bl	/* save return value */
-	/* if fail, reset the disk system */
-	xorw	%ax, %ax
-	int	$0x13
-
-	decw	%si
-	cmpw	$0, %si
-	je	2f
-	xorb	%bl, %bl
-	jmp	1b		/* retry */
-2:
-	/* back to protected mode */
-	DATA32	call	real_to_prot
-	.code32
-
-	movb	%bl, %al	/* return value in %eax */
-
-	popl	%esi
-	popl	%edi
-	popl	%ebx
-	popl	%ebp
-
-	ret	$(4 * 4)
-
-
-/*
- *   int grub_biosdisk_check_int13_extensions (int drive)
- *
- *   Check if LBA is supported for DRIVE. If it is supported, then return
- *   the major version of extensions, otherwise zero.
- */
-
-FUNCTION(grub_biosdisk_check_int13_extensions)
-	pushl	%ebp
-	pushl	%ebx
-
-	/* drive */
-	movb	%al, %dl
-	/* enter real mode */
-	call	prot_to_real
-
-	.code16
-	movb	$0x41, %ah
-	movw	$0x55aa, %bx
-	int	$0x13		/* do the operation */
-
-	/* check the result */
-	jc	1f
-	cmpw	$0xaa55, %bx
-	jne	1f
-
-	movb	%ah, %bl	/* save the major version into %bl */
-
-	/* check if AH=0x42 is supported */
-	andw	$1, %cx
-	jnz	2f
-
-1:
-	xorb	%bl, %bl
-2:
-	/* back to protected mode */
-	DATA32	call	real_to_prot
-	.code32
-
-	movb	%bl, %al	/* return value in %eax */
-
-	popl	%ebx
-	popl	%ebp
-
-	ret
-
-
-/*
- *   int grub_biosdisk_get_cdinfo_int13_extensions (int drive, void *cdrp)
- *
- *   Return the cdrom information of DRIVE in CDRP. If an error occurs,
- *   then return non-zero, otherwise zero.
- */
-
-FUNCTION(grub_biosdisk_get_cdinfo_int13_extensions)
-	movw	$0x4B01, %cx
-	jmp	1f
-
-/*
- *   int grub_biosdisk_get_diskinfo_int13_extensions (int drive, void *drp)
- *
- *   Return the geometry of DRIVE in a drive parameters, DRP. If an error
- *   occurs, then return non-zero, otherwise zero.
- */
-
-FUNCTION(grub_biosdisk_get_diskinfo_int13_extensions)
-	movb	$0x48, %ch
-1:
-	pushl	%ebp
-	pushl	%ebx
-	pushl	%esi
-
-	/* compute the address of drive parameters */
-	movw	%dx, %si
-	andl	$0xf, %esi
-	shrl	$4, %edx
-	movw	%dx, %bx	/* save the segment into %bx */
-	/* drive */
-	movb	%al, %dl
-	/* enter real mode */
-	call	prot_to_real
-
-	.code16
-	movw	%cx, %ax
-	movw	%bx, %ds
-	int	$0x13		/* do the operation */
-	jc      noclean
-	/* Clean return value if carry isn't set to workaround
-	some buggy BIOSes.  */
-	xor     %ax, %ax
-noclean:
-	movb	%ah, %bl	/* save return value in %bl */
-	/* back to protected mode */
-	DATA32	call	real_to_prot
-	.code32
-
-	movb	%bl, %al	/* return value in %eax */
-
-	popl	%esi
-	popl	%ebx
-	popl	%ebp
-
-	ret
-
-
-/*
- *   int grub_biosdisk_get_diskinfo_standard (int drive,
- *                                            unsigned long *cylinders,
- *                                            unsigned long *heads,
- *                                            unsigned long *sectors)
- *
- *   Return the geometry of DRIVE in CYLINDERS, HEADS and SECTORS. If an
- *   error occurs, then return non-zero, otherwise zero.
- */
-
-FUNCTION(grub_biosdisk_get_diskinfo_standard)
-	pushl	%ebp
-	pushl	%ebx
-	pushl	%edi
-
-	/* push CYLINDERS */
-	pushl	%edx
-	/* push HEADS */
-	pushl	%ecx
-	/* SECTORS is on the stack */
-
-	/* drive */
-	movb	%al, %dl
-	/* enter real mode */
-	call	prot_to_real
-
-	.code16
-	movb	$0x8, %ah
-	int	$0x13		/* do the operation */
-	jc      noclean2
-	/* Clean return value if carry isn't set to workaround
-	some buggy BIOSes.  */
-	xor     %ax, %ax
-noclean2:
-	/* check if successful */
-	testb	%ah, %ah
-	jnz	1f
-	/* bogus BIOSes may not return an error number */
-	testb	$0x3f, %cl	/* 0 sectors means no disk */
-	jnz	1f		/* if non-zero, then succeed */
-	/* XXX 0x60 is one of the unused error numbers */
-	movb	$0x60, %ah
-1:
-	movb	%ah, %bl	/* save return value in %bl */
-	/* back to protected mode */
-	DATA32	call	real_to_prot
-	.code32
-
-	/* pop HEADS */
-	popl	%edi
-	movb	%dh, %al
-	incl	%eax	/* the number of heads is counted from zero */
-	movl	%eax, (%edi)
-
-	/* pop CYLINDERS */
-	popl	%edi
-	movb	%ch, %al
-	movb	%cl, %ah
-	shrb	$6, %ah	/* the number of cylinders is counted from zero */
-	incl	%eax
-	movl	%eax, (%edi)
-
-	/* SECTORS */
-	movl	0x10(%esp), %edi
-	andb	$0x3f, %cl
-	movzbl	%cl, %eax
-	movl	%eax, (%edi)
-
-	xorl	%eax, %eax
-	movb	%bl, %al	/* return value in %eax */
-
-	popl	%edi
-	popl	%ebx
-	popl	%ebp
-
-	ret	$4
-
-
-/*
- * int grub_biosdisk_get_num_floppies (void)
- */
-FUNCTION(grub_biosdisk_get_num_floppies)
-	pushl	%ebp
-
-	xorl	%edx, %edx
-	call	prot_to_real
-
-	.code16
-	/* reset the disk system first */
-	int	$0x13
-1:
-	stc
-
-	/* call GET DISK TYPE */
-	movb	$0x15, %ah
-	int	$0x13
-
-	jc	2f
-
-	/* check if this drive exists */
-	testb	$0x3, %ah
-	jz	2f
-
-	incb	%dl
-	cmpb	$2, %dl
-	jne	1b
-2:
-	DATA32	call	real_to_prot
-	.code32
-
-	movl	%edx, %eax
-	popl	%ebp
-	ret
-
-
-/*
- *
- * grub_get_memsize(i) :  return the memory size in KB. i == 0 for conventional
- *		memory, i == 1 for extended memory
- *	BIOS call "INT 12H" to get conventional memory size
- *	BIOS call "INT 15H, AH=88H" to get extended memory size
- *		Both have the return value in AX.
- *
- */
-
-FUNCTION(grub_get_memsize)
-	pushl	%ebp
-
-	movl	%eax, %edx
-
-	call	prot_to_real	/* enter real mode */
-	.code16
-
-	testl	%edx, %edx
-	jnz	xext
-
-	int	$0x12
-	jmp	xdone
-
-xext:
-	movb	$0x88, %ah
-	int	$0x15
-
-xdone:
-	movw	%ax, %dx
-
-	DATA32	call	real_to_prot
-	.code32
-
-	movw	%dx, %ax
-
-	popl	%ebp
-	ret
-
-
-/*
- *
- * grub_get_eisa_mmap() :  return packed EISA memory map, lower 16 bits is
- *		memory between 1M and 16M in 1K parts, upper 16 bits is
- *		memory above 16M in 64K parts.  If error, return zero.
- *	BIOS call "INT 15H, AH=E801H" to get EISA memory map,
- *		AX = memory between 1M and 16M in 1K parts.
- *		BX = memory above 16M in 64K parts.
- *
- */
-
-FUNCTION(grub_get_eisa_mmap)
-	pushl	%ebp
-	pushl	%ebx
-
-	call	prot_to_real	/* enter real mode */
-	.code16
-
-	movw	$0xe801, %ax
-	int	$0x15
-
-	shll	$16, %ebx
-	movw	%ax, %bx
-
-	DATA32	call	real_to_prot
-	.code32
-
-	cmpb	$0x86, %bh
-	je	xnoteisa
-
-	movl	%ebx, %eax
-
-xnoteisa:
-	popl	%ebx
-	popl	%ebp
-	ret
-
-/*
- *
- * grub_get_mmap_entry(addr, cont) : address and old continuation value (zero to
- *		start), for the Query System Address Map BIOS call.
- *
- *  Sets the first 4-byte int value of "addr" to the size returned by
- *  the call.  If the call fails, sets it to zero.
- *
- *	Returns:  new (non-zero) continuation value, 0 if done.
- */
-
-FUNCTION(grub_get_mmap_entry)
-	pushl	%ebp
-	pushl	%ebx
-	pushl	%edi
-	pushl	%esi
-
-	/* push ADDR */
-	pushl	%eax
-
-	/* place address (+4) in ES:DI */
-	addl	$4, %eax
-	movl	%eax, %edi
-	andl	$0xf, %edi
-	shrl	$4, %eax
-	movl	%eax, %esi
-
-	/* set continuation value */
-	movl	%edx, %ebx
-
-	/* set default maximum buffer size */
-	movl	$0x14, %ecx
-
-	/* set EDX to 'SMAP' */
-	movl	$0x534d4150, %edx
-
-	call	prot_to_real	/* enter real mode */
-	.code16
-
-	movw	%si, %es
-	movl	$0xe820, %eax
-	int	$0x15
-
-	DATA32	jc	xnosmap
-
-	cmpl	$0x534d4150, %eax
-	jne	xnosmap
-
-	cmpl	$0x14, %ecx
-	jl	xnosmap
-
-	cmpl	$0x400, %ecx
-	jg	xnosmap
-
-	jmp	xsmap
-
-xnosmap:
-	xorl	%ecx, %ecx
-
-/* 	Apple's cc jumps few bytes before the correct
-	label in this context. Hence nops. */
-#ifdef APPLE_CC
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-#endif
-
-xsmap:
-	DATA32	call	real_to_prot
-	.code32
-
-	/* write length of buffer (zero if error) into ADDR */
-	popl	%eax
-	movl	%ecx, (%eax)
-
-	/* set return value to continuation */
-	movl	%ebx, %eax
-
-	popl	%esi
-	popl	%edi
-	popl	%ebx
-	popl	%ebp
-	ret
-
-
-/*
- * void grub_console_putchar (const struct grub_unicode_glyph *c)
+ * void grub_console_putchar (int c)
  *
  * Put the character C on the console. Because GRUB wants to write a
  * character with an attribute, this implementation is a bit tricky.
@@ -1147,61 +576,28 @@ FUNCTION(grub_console_putchar)
 	ret
 
 
+LOCAL(bypass_table):
+	.word 0x0100 | '\e',0x0f00 | '\t', 0x0e00 | '\b', 0x1c00 | '\r'
+	.word 0x1c00 | '\n'
+LOCAL(bypass_table_end):
+
 /*
  * int grub_console_getkey (void)
+ *	if there is a character pending, return it; otherwise return -1
+ * BIOS call "INT 16H Function 01H" to check whether a character is pending
+ *	Call with	%ah = 0x1
+ *	Return:
+ *		If key waiting to be input:
+ *			%ah = keyboard scan code
+ *			%al = ASCII character
+ *			Zero flag = clear
+ *		else
+ *			Zero flag = set
  * BIOS call "INT 16H Function 00H" to read character from keyboard
  *	Call with	%ah = 0x0
  *	Return:		%ah = keyboard scan code
  *			%al = ASCII character
  */
-
-/* this table is used in translate_keycode below */
-LOCAL (translation_table):
-	.word	GRUB_CONSOLE_KEY_LEFT, GRUB_TERM_LEFT
-	.word	GRUB_CONSOLE_KEY_RIGHT, GRUB_TERM_RIGHT
-	.word	GRUB_CONSOLE_KEY_UP, GRUB_TERM_UP
-	.word	GRUB_CONSOLE_KEY_DOWN, GRUB_TERM_DOWN
-	.word	GRUB_CONSOLE_KEY_HOME, GRUB_TERM_HOME
-	.word	GRUB_CONSOLE_KEY_END, GRUB_TERM_END
-	.word	GRUB_CONSOLE_KEY_DC, GRUB_TERM_DC
-	.word	GRUB_CONSOLE_KEY_BACKSPACE, GRUB_TERM_BACKSPACE
-	.word	GRUB_CONSOLE_KEY_PPAGE, GRUB_TERM_PPAGE
-	.word	GRUB_CONSOLE_KEY_NPAGE, GRUB_TERM_NPAGE
-	.word	0
-
-/*
- * translate_keycode translates the key code %dx to an ascii code.
- */
-	.code16
-
-translate_keycode:
-	pushw	%bx
-	pushw	%si
-
-#ifdef __APPLE__
-	movw	$(ABS(LOCAL (translation_table)) - 0x10000), %si
-#else
-	movw	$ABS(LOCAL (translation_table)), %si
-#endif
-
-1:	lodsw
-	/* check if this is the end */
-	testw	%ax, %ax
-	jz	2f
-	/* load the ascii code into %ax */
-	movw	%ax, %bx
-	lodsw
-	/* check if this matches the key code */
-	cmpw	%bx, %dx
-	jne	1b
-	/* translate %dx, if successful */
-	movw	%ax, %dx
-
-2:	popw	%si
-	popw	%bx
-	ret
-
-	.code32
 
 FUNCTION(grub_console_getkey)
 	pushl	%ebp
@@ -1216,69 +612,53 @@ FUNCTION(grub_console_getkey)
 	 * INT 16/AH = 1 before calling INT 16/AH = 0.
 	 */
 
-1:
 	movb	$1, %ah
 	int	$0x16
-	jnz	2f
-	hlt
-	jmp	1b
-
-2:
+	jz	notpending
 
 	movb	$0, %ah
 	int	$0x16
 
+	xorl    %edx, %edx
 	movw	%ax, %dx		/* real_to_prot uses %eax */
-	call	translate_keycode
 
 	DATA32	call	real_to_prot
 	.code32
 
-	movw	%dx, %ax
+	movl    $0xff, %eax
+	testl   %eax, %edx
+	jz      1f
 
-	popl	%ebp
-	ret
-
-
-/*
- * int grub_console_checkkey (void)
- *	if there is a character pending, return it; otherwise return -1
- * BIOS call "INT 16H Function 01H" to check whether a character is pending
- *	Call with	%ah = 0x1
- *	Return:
- *		If key waiting to be input:
- *			%ah = keyboard scan code
- *			%al = ASCII character
- *			Zero flag = clear
- *		else
- *			Zero flag = set
- */
-FUNCTION(grub_console_checkkey)
-	pushl	%ebp
-	xorl	%edx, %edx
-
-	call	prot_to_real	/* enter real mode */
-	.code16
-
-	movb	$0x1, %ah
-	int	$0x16
-
-	jz	notpending
-
-	movw	%ax, %dx
-	DATA32	jmp	pending
-
-notpending:
-	decl	%edx
-
-pending:
-	DATA32	call	real_to_prot
-	.code32
-
+	andl	%edx, %eax
+	cmp     %eax, 0x20
+	ja      2f
 	movl	%edx, %eax
+	leal    LOCAL(bypass_table), %esi
+	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) / 2), %ecx
+	repne cmpsw
+	jz      3f
 
+	addl    $('a' - 1 | GRUB_TERM_CTRL), %eax
+	jmp     2f
+3:
+	andl    $0xff, %eax
+	jmp 2f
+
+1:	movl    %edx, %eax
+	shrl    $8, %eax
+	orl     $GRUB_TERM_EXTENDED, %eax
+2:	
 	popl	%ebp
 	ret
+
+notpending:	
+	.code16
+	DATA32	call	real_to_prot
+	.code32
+#if GRUB_TERM_NO_KEY != 0
+#error Fix this asm code
+#endif
+	jmp 2b
 
 
 /*
@@ -1469,572 +849,8 @@ FUNCTION(grub_get_rtc)
 	popl	%ebp
 	ret
 
-
 /*
- * unsigned char grub_vga_set_mode (unsigned char mode)
- */
-FUNCTION(grub_vga_set_mode)
-	pushl	%ebp
-	pushl	%ebx
-	movl	%eax, %ecx
-
-	call	prot_to_real
-	.code16
-	/* get current mode */
-	xorw	%bx, %bx
-	movb	$0x0f, %ah
-	int	$0x10
-	movb	%al, %dl
-
-	/* set the new mode */
-	movb	%cl, %al
-	xorb	%ah, %ah
-	int	$0x10
-
-	DATA32	call	real_to_prot
-	.code32
-
-	movb	%dl, %al
-	popl	%ebx
-	popl	%ebp
-	ret
-
-/*
- * grub_vbe_bios_status_t grub_vbe_get_controller_info (struct grub_vbe_info_block *controller_info)
- *
- * Register allocations for parameters:
- * %eax		*controller_info
- */
-FUNCTION(grub_vbe_bios_get_controller_info)
-	pushl	%ebp
-	pushl	%edi
-	pushl	%edx
-
-	movw	%ax, %di	/* Store *controller_info to %edx:%di.  */
-	xorw	%ax, %ax
-	shrl	$4, %eax
-	mov	%eax, %edx	/* prot_to_real destroys %eax.  */
-
-	call	prot_to_real
-	.code16
-
-	pushw	%es
-
-	movw	%dx, %es	/* *controller_info is now on %es:%di.  */
-	movw	$0x4f00, %ax
-	int	$0x10
-
-	movw	%ax, %dx	/* real_to_prot destroys %eax.  */
-
-	popw	%es
-
-	DATA32 call	real_to_prot
-	.code32
-
-	movl	%edx, %eax
-	andl	$0x0FFFF, %eax	/* Return value in %eax.  */
-
-	pop	%edx
-	popl	%edi
-	popl	%ebp
-	ret
-
-/*
- * grub_vbe_status_t grub_vbe_bios_get_mode_info (grub_uint32_t mode,
- *						  struct grub_vbe_mode_info_block *mode_info)
- *
- * Register allocations for parameters:
- * %eax		mode
- * %edx		*mode_info
- */
-FUNCTION(grub_vbe_bios_get_mode_info)
-	pushl   %ebp
-	pushl   %edi
-
-	movl	%eax, %ecx	/* Store mode number to %ecx.  */
-
-	movw    %dx, %di	/* Store *mode_info to %edx:%di.  */
-	xorw    %dx, %dx
-	shrl    $4, %edx
-
-	call    prot_to_real
-	.code16
-
-	pushw   %es
-
-	movw    %dx, %es	/* *mode_info is now on %es:%di.  */
-	movw    $0x4f01, %ax
-	int     $0x10
-
-	movw    %ax, %dx        /* real_to_prot destroys %eax.  */
-
-	popw    %es
-
-	DATA32 call     real_to_prot
-	.code32
-
-	movl    %edx, %eax
-	andl    $0x0FFFF, %eax  /* Return value in %eax.  */
-
-	popl    %edi
-	popl    %ebp
-	ret
-
-/*
- * grub_vbe_status_t grub_vbe_bios_set_mode (grub_uint32_t mode,
- *					     struct grub_vbe_crtc_info_block *crtc_info)
- *
- * Register allocations for parameters:
- * %eax		mode
- * %edx		*crtc_info
- */
-FUNCTION(grub_vbe_bios_set_mode)
-	pushl	%ebp
-	pushl	%ebx
-	pushl	%edi
-
-	movl	%eax, %ebx	/* Store mode in %ebx.  */
-
-	movw    %dx, %di	/* Store *crtc_info to %edx:%di.  */
-	xorw    %dx, %dx
-	shrl    $4, %edx
-
-	call    prot_to_real
-	.code16
-
-	pushw   %es
-
-	movw    %dx, %es	/* *crtc_info is now on %es:%di.  */
-
-	movw	$0x4f02, %ax
-	int	$0x10
-
-	movw	%ax, %dx	/* real_to_prot destroys %eax.  */
-
-	popw	%es
-
-	DATA32 call	real_to_prot
-	.code32
-
-	movw	%dx, %ax
-	andl	$0xFFFF, %eax	/* Return value in %eax.  */
-
-	popl	%edi
-	popl	%ebx
-	popl	%ebp
-	ret
-
-/*
- * grub_vbe_status_t grub_vbe_bios_get_mode (grub_uint32_t *mode)
- *
- * Register allocations for parameters:
- * %eax		*mode
- */
-FUNCTION(grub_vbe_bios_get_mode)
-	pushl   %ebp
-	pushl   %ebx
-	pushl	%edi
-	pushl	%edx
-	pushl	%eax		/* Push *mode to stack.  */
-
-	call    prot_to_real
-	.code16
-
-	movw    $0x4f03, %ax
-	int     $0x10
-
-	movw	%ax, %dx	/* real_to_prot destroys %eax.  */
-
-	DATA32 call     real_to_prot
-	.code32
-
-	popl	%edi		/* Pops *mode from stack to %edi.  */
-	andl	$0xFFFF, %ebx
-	movl	%ebx, (%edi)
-
-	movw	%dx, %ax
-	andl	$0xFFFF, %eax	/* Return value in %eax.  */
-
-	popl	%edx
-	popl	%edi
-	popl    %ebx
-	popl    %ebp
-	ret
-
-/*
- * grub_vbe_status_t grub_vbe_bios_getset_dac_palette_width (int set, int *dac_mask_size)
- *
- * Register allocations for parameters:
- * %eax		set
- * %edx		*dac_mask_size
- */
-FUNCTION(grub_vbe_bios_getset_dac_palette_width)
-	pushl	%ebp
-	pushl	%ebx
-
-	xorl	%ebx, %ebx
-
-	/* If we only want to fetch the value, set %bl to 1.  */
-	testl	%eax, %eax
-	jne	1f
-	incb	%bl
-1:
-
-	/* Put desired width in %bh.  */
-	movl	(%edx), %eax
-	movb	%al, %bh
-
-	call    prot_to_real
-	.code16
-
-	movw	$0x4f08, %ax
-	int	$0x10
-
-	movw	%ax, %cx	/* real_to_prot destroys %eax.  */
-
-	DATA32 call	real_to_prot
-	.code32
-
-	/* Move result back to *dac_mask_size.  */
-	xorl	%eax, %eax
-	movb	%bh, %al
-	movl	%eax, (%edx)
-
-	/* Return value in %eax.  */
-	movw	%cx, %ax
-
-	popl	%ebx
-	popl	%ebp
-	ret
-
-/*
- * grub_vbe_status_t grub_vbe_bios_set_memory_window (grub_uint32_t window,
- *						      grub_uint32_t position);
- *
- * Register allocations for parameters:
- * %eax		window
- * %edx		position
- */
-FUNCTION(grub_vbe_bios_set_memory_window)
-	pushl	%ebp
-	pushl	%ebx
-
-	movl	%eax, %ebx
-
-	call	prot_to_real
-	.code16
-
-	movw	$0x4f05, %ax
-	andw	$0x00ff, %bx	/* BL = window, BH = 0, Set memory window.  */
-	int	$0x10
-
-	movw	%ax, %dx	/* real_to_prot destroys %eax.  */
-
-	DATA32 call	real_to_prot
-	.code32
-
-	movw	%dx, %ax
-	andl	$0xFFFF, %eax	/* Return value in %eax.  */
-
-	popl	%ebx
-	popl	%ebp
-	ret
-
-/*
- * grub_vbe_status_t grub_vbe_bios_get_memory_window (grub_uint32_t window,
- * 						      grub_uint32_t *position);
- *
- * Register allocations for parameters:
- * %eax		window
- * %edx		*position
- */
-FUNCTION(grub_vbe_bios_get_memory_window)
-	pushl   %ebp
-	pushl   %ebx
-	pushl	%edi
-	pushl	%edx		/* Push *position to stack.  */
-
-	movl	%eax, %ebx	/* Store window in %ebx.  */
-
-	call    prot_to_real
-	.code16
-
-	movw    $0x4f05, %ax
-	andw	$0x00ff, %bx	/* BL = window.  */
-	orw	$0x0100, %bx	/* BH = 1, Get memory window.  */
-	int     $0x10
-
-	movw	%ax, %bx	/* real_to_prot destroys %eax.  */
-
-	DATA32 call     real_to_prot
-	.code32
-
-	popl	%edi		/* pops *position from stack to %edi.  */
-	andl	$0xFFFF, %edx
-	movl	%edx, (%edi)	/* Return position to caller.  */
-
-	movw	%bx, %ax
-	andl	$0xFFFF, %eax	/* Return value in %eax.  */
-
-	popl	%edi
-	popl    %ebx
-	popl    %ebp
-	ret
-
-/*
- * grub_vbe_status_t grub_vbe_bios_set_scanline_length (grub_uint32_t length)
- *
- * Register allocations for parameters:
- * %eax		length
- */
-FUNCTION(grub_vbe_bios_set_scanline_length)
-	pushl	%ebp
-	pushl	%ebx
-	pushl	%edx
-
-	movl	%eax, %ecx	/* Store length in %ecx.  */
-
-	call	prot_to_real
-	.code16
-
-	movw	$0x4f06, %ax
-	movw	$0x0002, %bx	/* BL = 2, Set Scan Line in Bytes.  */
-	int	$0x10
-
-	movw	%ax, %dx	/* real_to_prot destroys %eax.  */
-
-	DATA32 call	real_to_prot
-	.code32
-
-	movw	%dx, %ax
-	andl	$0xFFFF, %eax	/* Return value in %eax.  */
-
-	popl	%edx
-	popl	%ebx
-	popl	%ebp
-	ret
-
-/*
- * grub_vbe_status_t grub_vbe_bios_get_scanline_length (grub_uint32_t *length)
- *
- * Register allocations for parameters:
- * %eax		*length
- */
-FUNCTION(grub_vbe_bios_get_scanline_length)
-	pushl   %ebp
-	pushl   %ebx
-	pushl	%edi
-	pushl	%edx		/* Push *length to stack.  */
-
-	call    prot_to_real
-	.code16
-
-	movw    $0x4f06, %ax
-	movw	$0x0001, %bx	/* BL = 1, Get Scan Line Length (in bytes).  */
-	int     $0x10
-
-	movw	%ax, %dx	/* real_to_prot destroys %eax.  */
-
-	DATA32 call     real_to_prot
-	.code32
-
-	popl	%edi		/* Pops *length from stack to %edi.  */
-	andl	$0xFFFF, %ebx
-	movl	%ebx, (%edi)	/* Return length to caller.  */
-
-	movw	%dx, %ax
-	andl	$0xFFFF, %eax	/* Return value in %eax.  */
-
-	popl	%edi
-	popl    %ebx
-	popl    %ebp
-	ret
-
-/*
- * grub_vbe_status_t grub_vbe_bios_set_display_start (grub_uint32_t x,
- *						      grub_uint32_t y)
- *
- * Register allocations for parameters:
- * %eax		x
- * %edx		y
- */
-FUNCTION(grub_vbe_bios_set_display_start)
-	pushl	%ebp
-	pushl	%ebx
-
-	movl	%eax, %ecx	/* Store x in %ecx.  */
-
-	call	prot_to_real
-	.code16
-
-	movw	$0x4f07, %ax
-	movw	$0x0080, %bx	/* BL = 80h, Set Display Start
-				   during Vertical Retrace.  */
-	int	$0x10
-
-	movw	%ax, %dx	/* real_to_prot destroys %eax.  */
-
-	DATA32 call	real_to_prot
-	.code32
-
-	movw	%dx, %ax
-	andl	$0xFFFF, %eax	/* Return value in %eax.  */
-
-	popl	%ebx
-	popl	%ebp
-	ret
-
-/*
- * grub_vbe_status_t grub_vbe_bios_get_display_start (grub_uint32_t *x,
- *						      grub_uint32_t *y)
- *
- * Register allocations for parameters:
- * %eax		*x
- * %edx		*y
- */
-FUNCTION(grub_vbe_bios_get_display_start)
-	pushl   %ebp
-	pushl   %ebx
-	pushl	%edi
-	pushl	%eax		/* Push *x to stack.  */
-	pushl	%edx		/* Push *y to stack.  */
-
-	call    prot_to_real
-	.code16
-
-	movw    $0x4f07, %ax
-	movw	$0x0001, %bx	/* BL = 1, Get Display Start.  */
-	int     $0x10
-
-	movw	%ax, %bx	/* real_to_prot destroys %eax.  */
-
-	DATA32 call     real_to_prot
-	.code32
-
-	popl	%edi		/* Pops *y from stack to %edi.  */
-	andl	$0xFFFF, %edx
-	movl	%edx, (%edi)	/* Return y-position to caller.  */
-
-	popl	%edi		/* Pops *x from stack to %edi.  */
-	andl	$0xFFFF, %ecx
-	movl	%ecx, (%edi)	/* Return x-position to caller.  */
-
-	movw	%bx, %ax
-	andl	$0xFFFF, %eax	/* Return value in %eax.  */
-
-	popl	%edi
-	popl    %ebx
-	popl    %ebp
-	ret
-
-/*
- * grub_vbe_status_t grub_vbe_bios_set_palette_data (grub_uint32_t color_count,
- *						     grub_uint32_t start_index,
- *						     struct grub_vbe_palette_data *palette_data)
- *
- * Register allocations for parameters:
- * %eax		color_count
- * %edx		start_index
- * %ecx		*palette_data
- */
-FUNCTION(grub_vbe_bios_set_palette_data)
-	pushl	%ebp
-	pushl	%ebx
-	pushl	%edi
-
-	movl	%eax, %ebx	/* Store color_count in %ebx.  */
-
-	movw    %cx, %di	/* Store *palette_data to %ecx:%di.  */
-	xorw    %cx, %cx
-	shrl    $4, %ecx
-
-	call    prot_to_real
-	.code16
-
-	pushw   %es
-
-	movw    %cx, %es	/* *palette_data is now on %es:%di.  */
-	movw	%bx, %cx	/* color_count is now on %cx.  */
-
-	movw	$0x4f09, %ax
-	xorw	%bx, %bx	/* BL = 0, Set Palette Data.  */
-	int	$0x10
-
-	movw	%ax, %dx	/* real_to_prot destroys %eax.  */
-
-	popw	%es
-
-	DATA32 call	real_to_prot
-	.code32
-
-	movw	%dx, %ax
-	andl	$0xFFFF, %eax	/* Return value in %eax.  */
-
-	popl	%edi
-	popl	%ebx
-	popl	%ebp
-	ret
-
-
-pxe_rm_entry:
-	.long	0
-
-/*
- * struct grub_pxenv *grub_pxe_scan (void);
- */
-FUNCTION(grub_pxe_scan)
-	pushl	%ebp
-	pushl	%ebx
-
-	xorl	%ebx, %ebx
-	xorl	%ecx, %ecx
-
-	call    prot_to_real
-	.code16
-
-	pushw	%es
-
-	movw	$0x5650, %ax
-	int	$0x1A
-	cmpw	$0x564E, %ax
-	jnz	1f
-	cmpl	$0x4E455850, %es:(%bx)		/* PXEN(V+)  */
-	jnz	1f
-	cmpw	$0x201, %es:6(%bx)		/* API version  */
-	jb	1f
-	lesw	%es:0x28(%bx), %bx		/* !PXE structure  */
-	cmpl	$0x45585021, %es:(%bx)		/* !PXE  */
-	jnz	1f
-	movw	%es, %cx
-	jmp	2f
-1:
-	xorw	%bx, %bx
-	xorw	%cx, %cx
-2:
-
-	popw	%es
-
-	DATA32 call	real_to_prot
-	.code32
-
-	xorl	%eax, %eax
-	leal	(%eax, %ecx, 4), %ecx
-	leal	(%ebx, %ecx, 4), %eax		/* eax = ecx * 16 + ebx  */
-
-	orl	%eax, %eax
-	jz	1f
-
-	movl	0x10(%eax), %ecx
-	movl	%ecx, pxe_rm_entry
-
-1:
-
-	popl	%ebx
-	popl	%ebp
-	ret
-
-/*
- * int grub_pxe_call (int func, void* data);
+ * int grub_pxe_call (int func, void* data, grub_uint32_t pxe_rm_entry);
  */
 FUNCTION(grub_pxe_call)
 	pushl	%ebp
@@ -2043,13 +859,13 @@ FUNCTION(grub_pxe_call)
 	pushl	%edi
 	pushl	%ebx
 
+	movl	%ecx, %ebx
 	movl	%eax, %ecx
 	movl	%edx, %eax
 	andl	$0xF, %eax
 	shrl	$4, %edx
 	shll	$16, %edx
 	addl	%eax, %edx
-	movl	pxe_rm_entry, %ebx
 
 	call    prot_to_real
 	.code16
@@ -2072,4 +888,104 @@ FUNCTION(grub_pxe_call)
 	popl	%edi
 	popl	%esi
 	popl	%ebp
+	ret
+
+FUNCTION(grub_bios_interrupt)
+	pushl    %ebp
+	pushl    %ecx
+	pushl    %eax
+	pushl    %ebx
+	pushl    %esi
+	pushl    %edi	
+	pushl    %edx
+	
+	movb     %al, intno
+	movl	 (%edx), %eax
+	movl	 %eax, LOCAL(bios_register_eax)
+	movw	 4(%edx), %ax
+	movw	 %ax, LOCAL(bios_register_es)
+	movw	 6(%edx), %ax
+	movw	 %ax, LOCAL(bios_register_ds)
+	movw	 8(%edx), %ax
+	movw	 %ax, LOCAL(bios_register_flags)
+
+	movl 	12(%edx), %ebx
+	movl 	16(%edx), %ecx
+	movl 	20(%edx), %edi
+	movl 	24(%edx), %esi
+	movl 	28(%edx), %edx
+
+	call    prot_to_real
+	.code16
+
+	mov	%ds, %ax
+	push	%ax
+
+	/* movw imm16, %ax*/
+	.byte	0xb8
+LOCAL(bios_register_es):
+	.short 	0
+	movw	%ax, %es
+	/* movw imm16, %ax*/
+	.byte	0xb8
+LOCAL(bios_register_ds):
+	.short 	0
+	movw	%ax, %ds
+
+	/* movw imm16, %ax*/
+	.byte	0xb8
+LOCAL(bios_register_flags):
+	.short 	0
+	push	%ax
+	popf
+
+	/* movl imm32, %eax*/
+	.byte	0x66, 0xb8
+LOCAL(bios_register_eax):
+	.long 	0
+	
+	/* int imm8.  */
+	.byte   0xcd
+intno:	
+	.byte   0
+
+	movl 	%eax, %cs:LOCAL(bios_register_eax)
+	movw	%ds, %ax
+	movw 	%ax, %cs:LOCAL(bios_register_ds)
+	pop 	%ax
+	mov	%ax, %ds
+	pushf
+	pop	%ax
+	movw	%ax, LOCAL(bios_register_flags)
+	mov 	%es, %ax
+	movw	%ax, LOCAL(bios_register_es)
+
+	DATA32  call	real_to_prot
+	.code32
+
+	popl    %eax
+
+	movl 	%ebx, 12(%eax)
+	movl 	%ecx, 16(%eax)
+	movl 	%edi, 20(%eax)
+	movl 	%esi, 24(%eax)
+	movl 	%edx, 28(%eax)
+
+	movl     %eax, %edx
+
+	movl	 LOCAL(bios_register_eax), %eax
+	movl	 %eax, (%edx)
+	movw	 LOCAL(bios_register_es), %ax
+	movw	 %ax, 4(%edx)
+	movw	 LOCAL(bios_register_ds), %ax
+	movw	 %ax, 6(%edx)
+	movw	 LOCAL(bios_register_flags), %ax
+	movw	 %ax, 8(%edx)
+
+	popl 	%edi
+	popl 	%esi
+	popl    %ebx
+	popl    %eax
+	popl    %ecx
+	popl    %ebp
 	ret

@@ -53,16 +53,91 @@ struct grub_acpi_table_header
   grub_uint32_t creator_rev;
 } __attribute__ ((packed));
 
+#define GRUB_ACPI_FADT_SIGNATURE "FACP"
+
 struct grub_acpi_fadt
 {
   struct grub_acpi_table_header hdr;
   grub_uint32_t facs_addr;
   grub_uint32_t dsdt_addr;
-  grub_uint8_t somefields1[88];
+  grub_uint8_t somefields1[20];
+  grub_uint32_t pm1a;
+  grub_uint8_t somefields2[64];
   grub_uint64_t facs_xaddr;
   grub_uint64_t dsdt_xaddr;
-  grub_uint8_t somefields2[96];
+  grub_uint8_t somefields3[96];
 } __attribute__ ((packed));
+
+#define GRUB_ACPI_MADT_SIGNATURE "APIC"
+
+struct grub_acpi_madt_entry_header
+{
+  grub_uint8_t type;
+  grub_uint8_t len;
+};
+
+struct grub_acpi_madt
+{
+  struct grub_acpi_table_header hdr;
+  grub_uint32_t lapic_addr;
+  grub_uint32_t flags;
+  struct grub_acpi_madt_entry_header entries[0];
+};
+
+enum
+  {
+    GRUB_ACPI_MADT_ENTRY_TYPE_INTERRUPT_OVERRIDE = 2,
+    GRUB_ACPI_MADT_ENTRY_TYPE_SAPIC = 6,
+    GRUB_ACPI_MADT_ENTRY_TYPE_LSAPIC = 7,
+    GRUB_ACPI_MADT_ENTRY_TYPE_PLATFORM_INT_SOURCE = 8
+  };
+
+struct grub_acpi_madt_entry_interrupt_override
+{
+  struct grub_acpi_madt_entry_header hdr;
+  grub_uint8_t bus;
+  grub_uint8_t source;
+  grub_uint32_t global_sys_interrupt;
+  grub_uint16_t flags;
+};
+
+struct grub_acpi_madt_entry_sapic
+{
+  struct grub_acpi_madt_entry_header hdr;
+  grub_uint8_t id;
+  grub_uint8_t pad;
+  grub_uint32_t global_sys_interrupt_base;
+  grub_uint64_t addr;
+};
+
+struct grub_acpi_madt_entry_lsapic
+{
+  struct grub_acpi_madt_entry_header hdr;
+  grub_uint8_t cpu_id;
+  grub_uint8_t id;
+  grub_uint8_t eid;
+  grub_uint8_t pad[3];
+  grub_uint32_t flags;
+  grub_uint32_t cpu_uid;
+  grub_uint8_t cpu_uid_str[0];
+};
+
+struct grub_acpi_madt_entry_platform_int_source
+{
+  struct grub_acpi_madt_entry_header hdr;
+  grub_uint16_t flags;
+  grub_uint8_t inttype;
+  grub_uint8_t cpu_id;
+  grub_uint8_t cpu_eid;
+  grub_uint8_t sapic_vector;
+  grub_uint32_t global_sys_int;
+  grub_uint32_t src_flags;
+};
+
+enum
+  {
+    GRUB_ACPI_MADT_ENTRY_SAPIC_FLAGS_ENABLED = 1
+  };
 
 struct grub_acpi_rsdp_v10 *grub_acpi_get_rsdpv1 (void);
 struct grub_acpi_rsdp_v20 *grub_acpi_get_rsdpv2 (void);
@@ -71,5 +146,26 @@ struct grub_acpi_rsdp_v20 *grub_machine_acpi_get_rsdpv2 (void);
 grub_uint8_t grub_byte_checksum (void *base, grub_size_t size);
 
 grub_err_t grub_acpi_create_ebda (void);
+
+void grub_acpi_halt (void);
+
+#define GRUB_ACPI_SLP_EN (1 << 13)
+#define GRUB_ACPI_SLP_TYP_OFFSET 10
+
+enum
+  {
+    GRUB_ACPI_OPCODE_ZERO = 0, GRUB_ACPI_OPCODE_ONE = 1,
+    GRUB_ACPI_OPCODE_NAME = 8, GRUB_ACPI_OPCODE_BYTE_CONST = 0x0a,
+    GRUB_ACPI_OPCODE_WORD_CONST = 0x0b, GRUB_ACPI_OPCODE_DWORD_CONST = 0x0c,
+    GRUB_ACPI_OPCODE_SCOPE = 0x10, GRUB_ACPI_OPCODE_PACKAGE = 0x12,
+    GRUB_ACPI_OPCODE_METHOD = 0x14, GRUB_ACPI_OPCODE_EXTOP = 0x5b,
+    GRUB_ACPI_OPCODE_IF = 0xa0, GRUB_ACPI_OPCODE_ONES = 0xff
+  };
+enum
+  {
+    GRUB_ACPI_EXTOPCODE_MUTEX = 0x01,
+    GRUB_ACPI_EXTOPCODE_OPERATION_REGION = 0x80,
+    GRUB_ACPI_EXTOPCODE_FIELD_OP = 0x81
+  };
 
 #endif /* ! GRUB_ACPI_HEADER */

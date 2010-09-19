@@ -21,46 +21,55 @@
 #include <grub/list.h>
 #include <grub/misc.h>
 #include <grub/extcmd.h>
+#include <grub/script_sh.h>
 
-static grub_err_t
-grub_extcmd_dispatcher (struct grub_command *cmd,
-			int argc, char **args)
+grub_err_t
+grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
+			struct grub_script *script)
 {
   int new_argc;
   char **new_args;
-  struct grub_arg_option *parser;
   struct grub_arg_list *state;
-  int maxargs = 0;
+  struct grub_extcmd_context context;
   grub_err_t ret;
-  grub_extcmd_t ext;
+  grub_extcmd_t ext = cmd->data;
 
-  ext = cmd->data;
-  parser = (struct grub_arg_option *) ext->options;
-  while (parser && (parser++)->doc)
-    maxargs++;
+  context.state = 0;
+  context.extcmd = ext;
+  context.script = script;
 
-  /* Set up the option state.  */
-  state = grub_zalloc (sizeof (struct grub_arg_list) * maxargs);
+  if (! ext->options)
+    {
+      ret = (ext->func) (&context, argc, args);
+      return ret;
+    }
 
+  state = grub_arg_list_alloc (ext, argc, args);
   if (grub_arg_parse (ext, argc, args, state, &new_args, &new_argc))
     {
-      ext->state = state;
-      ret = (ext->func) (ext, new_argc, new_args);
+      context.state = state;
+      ret = (ext->func) (&context, new_argc, new_args);
       grub_free (new_args);
+      grub_free (state);
+      return ret;
     }
-  else
-    ret = grub_errno;
 
   grub_free (state);
+  return grub_errno;
+}
 
-  return ret;
+static grub_err_t
+grub_extcmd_dispatch (struct grub_command *cmd, int argc, char **args)
+{
+  return grub_extcmd_dispatcher (cmd, argc, args, 0);
 }
 
 grub_extcmd_t
-grub_register_extcmd (const char *name, grub_extcmd_func_t func,
-		      unsigned flags, const char *summary,
-		      const char *description,
-		      const struct grub_arg_option *parser)
+grub_register_extcmd_prio (const char *name, grub_extcmd_func_t func,
+			   grub_command_flags_t flags, const char *summary,
+			   const char *description,
+			   const struct grub_arg_option *parser,
+			   int prio)
 {
   grub_extcmd_t ext;
   grub_command_t cmd;
@@ -69,8 +78,8 @@ grub_register_extcmd (const char *name, grub_extcmd_func_t func,
   if (! ext)
     return 0;
 
-  cmd = grub_register_command_prio (name, grub_extcmd_dispatcher,
-				    summary, description, 1);
+  cmd = grub_register_command_prio (name, grub_extcmd_dispatch,
+				    summary, description, prio);
   if (! cmd)
     {
       grub_free (ext);
@@ -86,6 +95,16 @@ grub_register_extcmd (const char *name, grub_extcmd_func_t func,
   ext->data = 0;
 
   return ext;
+}
+
+grub_extcmd_t
+grub_register_extcmd (const char *name, grub_extcmd_func_t func,
+		      grub_command_flags_t flags, const char *summary,
+		      const char *description,
+		      const struct grub_arg_option *parser)
+{
+  return grub_register_extcmd_prio (name, func, flags,
+				    summary, description, parser, 1);
 }
 
 void

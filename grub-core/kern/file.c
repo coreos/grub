@@ -24,6 +24,9 @@
 #include <grub/fs.h>
 #include <grub/device.h>
 
+grub_file_filter_t grub_file_filters_all[GRUB_FILE_FILTER_MAX];
+grub_file_filter_t grub_file_filters_enabled[GRUB_FILE_FILTER_MAX];
+
 /* Get the device part of the filename NAME. It is enclosed by parentheses.  */
 char *
 grub_file_get_device_name (const char *name)
@@ -54,14 +57,15 @@ grub_file_get_device_name (const char *name)
 grub_file_t
 grub_file_open (const char *name)
 {
-  grub_device_t device;
-  grub_file_t file = 0;
+  grub_device_t device = 0;
+  grub_file_t file = 0, last_file = 0;
   char *device_name;
   char *file_name;
+  grub_file_filter_id_t filter;
 
   device_name = grub_file_get_device_name (name);
   if (grub_errno)
-    return 0;
+    goto fail;
 
   /* Get the file part of NAME.  */
   file_name = grub_strchr (name, ')');
@@ -94,6 +98,19 @@ grub_file_open (const char *name)
   if ((file->fs->open) (file, file_name) != GRUB_ERR_NONE)
     goto fail;
 
+  for (filter = 0; file && filter < ARRAY_SIZE (grub_file_filters_enabled);
+       filter++)
+    if (grub_file_filters_enabled[filter])
+      {
+	last_file = file;
+	file = grub_file_filters_enabled[filter] (file);
+      }
+  if (!file)
+    grub_file_close (last_file);
+    
+  grub_memcpy (grub_file_filters_enabled, grub_file_filters_all,
+	       sizeof (grub_file_filters_enabled));
+
   return file;
 
  fail:
@@ -103,6 +120,9 @@ grub_file_open (const char *name)
   /* if (net) grub_net_close (net);  */
 
   grub_free (file);
+
+  grub_memcpy (grub_file_filters_enabled, grub_file_filters_all,
+	       sizeof (grub_file_filters_enabled));
 
   return 0;
 }

@@ -555,7 +555,7 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
        i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
     if (SUFFIX (is_text_section) (s, image_target))
       {
-	Elf_Word align = grub_host_to_target32 (s->sh_addralign);
+	Elf_Word align = grub_host_to_target_addr (s->sh_addralign);
 	const char *name = strtab + grub_host_to_target32 (s->sh_name);
 	if (align)
 	  current_address = ALIGN_UP (current_address + image_target->vaddr_offset,
@@ -577,7 +577,7 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
        i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
     if (SUFFIX (is_data_section) (s, image_target))
       {
-	Elf_Word align = grub_host_to_target32 (s->sh_addralign);
+	Elf_Word align = grub_host_to_target_addr (s->sh_addralign);
 	const char *name = strtab + grub_host_to_target32 (s->sh_name);
 
 	if (align)
@@ -641,7 +641,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
   /* Relocate sections then symbols in the virtual address space.  */
   s = (Elf_Shdr *) ((char *) sections
 		      + grub_host_to_target16 (e->e_shstrndx) * section_entsize);
-  strtab = (char *) e + grub_host_to_target32 (s->sh_offset);
+  strtab = (char *) e + grub_host_to_target_addr (s->sh_offset);
 
   section_addresses = SUFFIX (locate_sections) (sections, section_entsize,
 						num_sections, strtab,
@@ -662,7 +662,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
 	   i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
 	if (grub_target_to_host32 (s->sh_type) == SHT_NOBITS)
 	  {
-	    Elf_Word align = grub_host_to_target32 (s->sh_addralign);
+	    Elf_Word align = grub_host_to_target_addr (s->sh_addralign);
 	    const char *name = strtab + grub_host_to_target32 (s->sh_name);
 
 	    if (align)

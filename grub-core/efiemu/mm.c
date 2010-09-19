@@ -29,8 +29,8 @@
 #include <grub/normal.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
-#include <grub/machine/memory.h>
 #include <grub/efiemu/efiemu.h>
+#include <grub/memory.h>
 
 struct grub_efiemu_memrequest
 {
@@ -269,10 +269,11 @@ static grub_err_t
 grub_efiemu_mmap_init (void)
 {
   auto int NESTED_FUNC_ATTR bounds_hook (grub_uint64_t, grub_uint64_t,
-					 grub_uint32_t);
+					 grub_memory_type_t);
   int NESTED_FUNC_ATTR bounds_hook (grub_uint64_t addr __attribute__ ((unused)),
 				    grub_uint64_t size __attribute__ ((unused)),
-				    grub_uint32_t type __attribute__ ((unused)))
+				    grub_memory_type_t type
+				    __attribute__ ((unused)))
     {
       mmap_reserved_size++;
       return 0;
@@ -323,6 +324,25 @@ grub_efiemu_get_memory_map (grub_efi_uintn_t *memory_map_size,
   return 1;
 }
 
+grub_err_t
+grub_efiemu_finish_boot_services (grub_efi_uintn_t *memory_map_size,
+				  grub_efi_memory_descriptor_t *memory_map,
+				  grub_efi_uintn_t *map_key,
+				  grub_efi_uintn_t *descriptor_size,
+				  grub_efi_uint32_t *descriptor_version)
+{
+  int val = grub_efiemu_get_memory_map (memory_map_size,
+					memory_map, map_key,
+					descriptor_size,
+					descriptor_version);
+  if (val == 1)
+    return GRUB_ERR_NONE;
+  if (val == -1)
+    return grub_errno;
+  return grub_error (GRUB_ERR_IO, "memory map buffer is too small");
+}
+
+
 /* Free everything */
 grub_err_t
 grub_efiemu_mm_unload (void)
@@ -363,32 +383,29 @@ grub_efiemu_mm_init (void)
 static grub_err_t
 grub_efiemu_mmap_fill (void)
 {
-  auto int NESTED_FUNC_ATTR fill_hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  auto int NESTED_FUNC_ATTR fill_hook (grub_uint64_t, grub_uint64_t,
+				       grub_memory_type_t);
   int NESTED_FUNC_ATTR fill_hook (grub_uint64_t addr,
 				  grub_uint64_t size,
-				  grub_uint32_t type)
+				  grub_memory_type_t type)
     {
       switch (type)
 	{
-	case GRUB_MACHINE_MEMORY_AVAILABLE:
+	case GRUB_MEMORY_AVAILABLE:
 	  return grub_efiemu_add_to_mmap (addr, size,
 					  GRUB_EFI_CONVENTIONAL_MEMORY);
 
-#ifdef GRUB_MACHINE_MEMORY_ACPI
-	case GRUB_MACHINE_MEMORY_ACPI:
+	case GRUB_MEMORY_ACPI:
 	  return grub_efiemu_add_to_mmap (addr, size,
 					  GRUB_EFI_ACPI_RECLAIM_MEMORY);
-#endif
 
-#ifdef GRUB_MACHINE_MEMORY_NVS
-	case GRUB_MACHINE_MEMORY_NVS:
+	case GRUB_MEMORY_NVS:
 	  return grub_efiemu_add_to_mmap (addr, size,
 					  GRUB_EFI_ACPI_MEMORY_NVS);
-#endif
 
 	default:
-	  grub_printf ("Unknown memory type %d. Marking as unusable\n", type);
-	case GRUB_MACHINE_MEMORY_RESERVED:
+	  grub_printf ("Unknown memory type %d. Assuming unusable\n", type);
+	case GRUB_MEMORY_RESERVED:
 	  return grub_efiemu_add_to_mmap (addr, size,
 					  GRUB_EFI_UNUSABLE_MEMORY);
 	}
@@ -402,9 +419,7 @@ grub_efiemu_mmap_fill (void)
 }
 
 grub_err_t
-grub_efiemu_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
-							grub_uint64_t,
-							grub_uint32_t))
+grub_efiemu_mmap_iterate (grub_memory_hook_t hook)
 {
   unsigned i;
 
@@ -413,18 +428,22 @@ grub_efiemu_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
       {
       case GRUB_EFI_RUNTIME_SERVICES_CODE:
 	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
-	      GRUB_EFIEMU_MEMORY_CODE);
+	      GRUB_MEMORY_CODE);
+	break;
+
+      case GRUB_EFI_UNUSABLE_MEMORY:
+	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
+	      GRUB_MEMORY_BADRAM);
 	break;
 
       case GRUB_EFI_RESERVED_MEMORY_TYPE:
       case GRUB_EFI_RUNTIME_SERVICES_DATA:
-      case GRUB_EFI_UNUSABLE_MEMORY:
       case GRUB_EFI_MEMORY_MAPPED_IO:
       case GRUB_EFI_MEMORY_MAPPED_IO_PORT_SPACE:
       case GRUB_EFI_PAL_CODE:
       case GRUB_EFI_MAX_MEMORY_TYPE:
 	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
-	      GRUB_EFIEMU_MEMORY_RESERVED);
+	      GRUB_MEMORY_RESERVED);
 	break;
 
       case GRUB_EFI_LOADER_CODE:
@@ -433,17 +452,17 @@ grub_efiemu_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
       case GRUB_EFI_BOOT_SERVICES_DATA:
       case GRUB_EFI_CONVENTIONAL_MEMORY:
 	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
-	      GRUB_EFIEMU_MEMORY_AVAILABLE);
+	      GRUB_MEMORY_AVAILABLE);
 	break;
 
       case GRUB_EFI_ACPI_RECLAIM_MEMORY:
 	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
-	      GRUB_EFIEMU_MEMORY_ACPI);
+	      GRUB_MEMORY_ACPI);
 	break;
 
       case GRUB_EFI_ACPI_MEMORY_NVS:
 	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
-	      GRUB_EFIEMU_MEMORY_NVS);
+	      GRUB_MEMORY_NVS);
 	break;
       }
 

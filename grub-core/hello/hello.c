@@ -27,7 +27,7 @@
 #include <grub/i18n.h>
 
 static grub_err_t
-grub_cmd_hello (struct grub_extcmd *cmd __attribute__ ((unused)),
+grub_cmd_hello (grub_extcmd_context_t ctxt __attribute__ ((unused)),
 		int argc __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {
@@ -39,8 +39,8 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(hello)
 {
-  cmd = grub_register_extcmd ("hello", grub_cmd_hello, GRUB_COMMAND_FLAG_BOTH,
-			      0, N_("Say \"Hello World\"."), 0);
+  cmd = grub_register_extcmd ("hello", grub_cmd_hello, 0, 0,
+			      N_("Say \"Hello World\"."), 0);
 }
 
 GRUB_MOD_FINI(hello)

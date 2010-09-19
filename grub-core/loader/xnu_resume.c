@@ -45,11 +45,14 @@ grub_xnu_resume (char *imagename)
   grub_file_t file;
   grub_size_t total_header_size;
   struct grub_xnu_hibernate_header hibhead;
-  grub_uint8_t *buf;
-
+  void *code;
+  void *image;
   grub_uint32_t codedest;
   grub_uint32_t codesize;
+  grub_addr_t target_image;
+  grub_err_t err;
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (imagename);
   if (! file)
     return 0;
@@ -94,18 +97,44 @@ grub_xnu_resume (char *imagename)
   /* Try to allocate necessary space.
      FIXME: mm isn't good enough yet to handle huge allocations.
    */
-  grub_xnu_hibernate_image = buf = XNU_RELOCATOR (alloc) (hibhead.image_size
-							  + codesize
-							  + GRUB_XNU_PAGESIZE);
-  if (! buf)
+  grub_xnu_relocator = grub_relocator_new ();
+  if (!grub_xnu_relocator)
     {
       grub_file_close (file);
       return grub_errno;
     }
 
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (grub_xnu_relocator, &ch, codedest,
+					   codesize + GRUB_XNU_PAGESIZE);
+    if (err)
+      {
+	grub_file_close (file);
+	return err;
+      }
+    code = get_virtual_current_address (ch);
+  }
+
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_align (grub_xnu_relocator, &ch, 0,
+					    (0xffffffff - hibhead.image_size) + 1,
+					    hibhead.image_size,
+					    GRUB_XNU_PAGESIZE,
+					    GRUB_RELOCATOR_PREFERENCE_NONE);
+    if (err)
+      {
+	grub_file_close (file);
+	return err;
+      }
+    image = get_virtual_current_address (ch);
+    target_image = get_physical_target_address (ch);
+  }
+
   /* Read code part. */
   if (grub_file_seek (file, total_header_size) == (grub_off_t) -1
-      || grub_file_read (file, buf, codesize)
+      || grub_file_read (file, code, codesize)
       != (grub_ssize_t) codesize)
     {
       grub_file_close (file);
@@ -114,8 +143,7 @@ grub_xnu_resume (char *imagename)
 
   /* Read image. */
   if (grub_file_seek (file, 0) == (grub_off_t) -1
-      || grub_file_read (file, buf + codesize + GRUB_XNU_PAGESIZE,
-			 hibhead.image_size)
+      || grub_file_read (file, image, hibhead.image_size)
       != (grub_ssize_t) hibhead.image_size)
     {
       grub_file_close (file);
@@ -124,12 +152,11 @@ grub_xnu_resume (char *imagename)
   grub_file_close (file);
 
   /* Setup variables needed by asm helper. */
-  grub_xnu_heap_will_be_at = codedest;
-  grub_xnu_heap_start = buf;
-  grub_xnu_heap_size = codesize + GRUB_XNU_PAGESIZE + hibhead.image_size;
+  grub_xnu_heap_target_start = codedest;
+  grub_xnu_heap_size = target_image + hibhead.image_size - codedest;
   grub_xnu_stack = (codedest + hibhead.stack);
   grub_xnu_entry_point = (codedest + hibhead.entry_point);
-  grub_xnu_arg1 = codedest + codesize + GRUB_XNU_PAGESIZE;
+  grub_xnu_arg1 = target_image;
 
   grub_dprintf ("xnu", "entry point 0x%x\n", codedest + hibhead.entry_point);
   grub_dprintf ("xnu", "image at 0x%x\n",

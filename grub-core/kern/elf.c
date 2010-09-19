@@ -21,7 +21,6 @@
 #include <grub/elf.h>
 #include <grub/elfload.h>
 #include <grub/file.h>
-#include <grub/gzio.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
 
@@ -95,7 +94,7 @@ grub_elf_open (const char *name)
   grub_file_t file;
   grub_elf_t elf;
 
-  file = grub_gzfile_open (name, 1);
+  file = grub_file_open (name);
   if (! file)
     return 0;
 
@@ -140,7 +139,7 @@ grub_elf32_load_phdrs (grub_elf_t elf)
   return GRUB_ERR_NONE;
 }
 
-static grub_err_t
+grub_err_t
 grub_elf32_phdr_iterate (grub_elf_t elf,
 			 int NESTED_FUNC_ATTR (*hook) (grub_elf_t, Elf32_Phdr *, void *),
 			 void *hook_arg)
@@ -326,7 +325,7 @@ grub_elf64_load_phdrs (grub_elf_t elf)
   return GRUB_ERR_NONE;
 }
 
-static grub_err_t
+grub_err_t
 grub_elf64_phdr_iterate (grub_elf_t elf,
 			 int NESTED_FUNC_ATTR (*hook) (grub_elf_t, Elf64_Phdr *, void *),
 			 void *hook_arg)

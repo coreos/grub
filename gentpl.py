@@ -10,46 +10,38 @@ GRUB_PLATFORMS = [ "emu", "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot",
                    "powerpc_ieee1275" ]
 
 GROUPS = {}
+
+GROUPS["common"]   = GRUB_PLATFORMS[:]
+
+# Groups based on CPU
 GROUPS["i386"]     = [ "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot", "i386_multiboot", "i386_ieee1275" ]
 GROUPS["x86_64"]   = [ "x86_64_efi" ]
 GROUPS["x86"]      = GROUPS["i386"] + GROUPS["x86_64"]
-GROUPS["x86_efi"]  = [ "i386_efi", "x86_64_efi" ]
-
-GROUPS["nopc"] = GRUB_PLATFORMS[:]; GROUPS["nopc"].remove("i386_pc")
-GROUPS["x86_efi_pc"] = GROUPS["x86_efi"] + ["i386_pc"]
-
-GROUPS["x86_noefi"] = GROUPS["x86"][:]; GROUPS["x86_noefi"].remove("i386_efi"); GROUPS["x86_noefi"].remove("x86_64_efi")
-GROUPS["i386_noefi"] = GROUPS["i386"][:]; GROUPS["i386_noefi"].remove("i386_efi")
-
-GROUPS["x86_noieee1275"] = GROUPS["x86"][:]; GROUPS["x86_noieee1275"].remove("i386_ieee1275")
-GROUPS["i386_noieee1275"] = GROUPS["i386"][:]; GROUPS["i386_noieee1275"].remove("i386_ieee1275")
-
-GROUPS["i386_noefi_noieee1275"] = GROUPS["i386_noefi"][:]; GROUPS["i386_noefi_noieee1275"].remove("i386_ieee1275")
-
-GROUPS["i386_pc_qemu_coreboot"] = ["i386_pc", "i386_qemu", "i386_coreboot"]
-GROUPS["i386_coreboot_multiboot"] = ["i386_coreboot", "i386_multiboot"]
-GROUPS["i386_coreboot_multiboot_qemu"] = ["i386_coreboot", "i386_multiboot", "i386_qemu"]
-GROUPS["i386_pc_coreboot_multiboot_qemu"] = ["i386_pc", "i386_coreboot", "i386_multiboot", "i386_qemu"]
-
 GROUPS["mips"]     = [ "mips_yeeloong" ]
 GROUPS["sparc64"]  = [ "sparc64_ieee1275" ]
 GROUPS["powerpc"]  = [ "powerpc_ieee1275" ]
 
-GROUPS["nosparc64"] = GRUB_PLATFORMS[:]; GROUPS["nosparc64"].remove("sparc64_ieee1275")
-GROUPS["x86_noefi_mips"] = GROUPS["x86_noefi"] + GROUPS["mips"]
-
+# Groups based on firmware
+GROUPS["x86_efi"]  = [ "i386_efi", "x86_64_efi" ]
 GROUPS["ieee1275"]   = [ "i386_ieee1275", "sparc64_ieee1275", "powerpc_ieee1275" ]
-GROUPS["noieee1275"] = GRUB_PLATFORMS[:]
-for i in GROUPS["ieee1275"]: GROUPS["noieee1275"].remove(i)
-GROUPS["ieee1275_mips"] = GROUPS["ieee1275"] + GROUPS["mips"]
 
-GROUPS["pci"]      = GROUPS["x86"] + GROUPS["mips"]
-
+# emu is a special case so many core functionality isn't needed on this platform
 GROUPS["noemu"]   = GRUB_PLATFORMS[:]; GROUPS["noemu"].remove("emu")
-GROUPS["noemu_noieee1275"] = GRUB_PLATFORMS[:]
-for i in ["emu"] + GROUPS["ieee1275"]: GROUPS["noemu_noieee1275"].remove(i)
 
-GROUPS["common"]   = GRUB_PLATFORMS[:]
+# Groups based on hardware features
+GROUPS["cmos"] = GROUPS["x86"][:] + ["mips_yeeloong"]; GROUPS["cmos"].remove("i386_efi"); GROUPS["cmos"].remove("x86_64_efi")
+GROUPS["pci"]      = GROUPS["x86"] + GROUPS["mips"]
+GROUPS["usb"]      = GROUPS["pci"]
+
+# If gfxterm is main output console integrate it into kernel
+GROUPS["videoinkernel"] = ["mips_yeeloong"]
+GROUPS["videomodules"]   = GRUB_PLATFORMS[:];
+for i in GROUPS["videoinkernel"]: GROUPS["videomodules"].remove(i)
+
+# Miscelaneous groups schedulded to disappear in future
+GROUPS["nosparc64"] = GRUB_PLATFORMS[:]; GROUPS["nosparc64"].remove("sparc64_ieee1275")
+GROUPS["i386_coreboot_multiboot_qemu"] = ["i386_coreboot", "i386_multiboot", "i386_qemu"]
+GROUPS["nopc"] = GRUB_PLATFORMS[:]; GROUPS["nopc"].remove("i386_pc")
 
 #
 # Create platform => groups reverse map, where groups covering that
@@ -423,7 +415,7 @@ chmod a+x [+ name +]
 """)
 
     r += gvar_add("CLEANFILES", "[+ name +]")
-    r += gvar_add("EXTRA_DIST", platform_sources(platform))
+    r += gvar_add("dist_noinst_DATA", platform_sources(platform))
     return r
 
 def module_rules():

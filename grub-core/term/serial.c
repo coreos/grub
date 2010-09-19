@@ -99,7 +99,6 @@ static struct grub_term_input grub_serial_term_input =
 {
   .name = "serial",
   .init = grub_terminfo_input_init,
-  .checkkey = grub_terminfo_checkkey,
   .getkey = grub_terminfo_getkey,
   .data = &grub_serial_terminfo_input
 };
@@ -150,9 +149,9 @@ grub_serial_find (char *name)
 }
 
 static grub_err_t
-grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   char pname[40];
   char *name = NULL;
   struct grub_serial_port *port;
@@ -341,8 +340,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(serial)
 {
-  cmd = grub_register_extcmd ("serial", grub_cmd_serial,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("serial", grub_cmd_serial, 0,
 			      N_("[OPTIONS...]"),
 			      N_("Configure serial port."), options);
 #ifndef GRUB_MACHINE_EMU

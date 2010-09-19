@@ -27,6 +27,7 @@
 #include <grub/env.h>
 
 #include <grub/machine/pxe.h>
+#include <grub/machine/int.h>
 #include <grub/machine/memory.h>
 
 #define SEGMENT(x)	((x) >> 4)
@@ -40,7 +41,7 @@ struct grub_pxe_disk_data
   grub_uint32_t gateway_ip;
 };
 
-struct grub_pxenv *grub_pxe_pxenv;
+struct grub_pxe_bangpxe *grub_pxe_pxenv;
 static grub_uint32_t grub_pxe_your_ip;
 static grub_uint32_t grub_pxe_default_server_ip;
 static grub_uint32_t grub_pxe_default_gateway_ip;
@@ -54,6 +55,51 @@ struct grub_pxe_data
   grub_uint32_t block_size;
   char filename[0];
 };
+
+static grub_uint32_t pxe_rm_entry = 0;
+
+static struct grub_pxe_bangpxe *
+grub_pxe_scan (void)
+{
+  struct grub_bios_int_registers regs;
+  struct grub_pxenv *pxenv;
+  struct grub_pxe_bangpxe *bangpxe;
+
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+
+  regs.ebx = 0;
+  regs.ecx = 0;
+  regs.eax = 0x5650;
+  regs.es = 0;
+
+  grub_bios_interrupt (0x1a, &regs);
+
+  if ((regs.eax & 0xffff) != 0x564e)
+    return NULL;
+
+  pxenv = (struct grub_pxenv *) ((regs.es << 4) + (regs.ebx & 0xffff));
+  if (grub_memcmp (pxenv->signature, GRUB_PXE_SIGNATURE,
+		   sizeof (pxenv->signature))
+      != 0)
+    return NULL;
+
+  if (pxenv->version < 0x201)
+    return NULL;
+
+  bangpxe = (void *) ((((pxenv->pxe_ptr & 0xffff0000) >> 16) << 4)
+		      + (pxenv->pxe_ptr & 0xffff));
+
+  if (!bangpxe)
+    return NULL;
+
+  if (grub_memcmp (bangpxe->signature, GRUB_PXE_BANGPXE_SIGNATURE,
+		   sizeof (bangpxe->signature)) != 0)
+    return NULL;
+
+  pxe_rm_entry = bangpxe->rm_entry;
+
+  return bangpxe;
+}
 
 static int
 grub_pxe_iterate (int (*hook) (const char *name))
@@ -130,7 +176,6 @@ grub_pxe_open (const char *name, grub_disk_t disk)
   disk->total_sectors = 0;
   disk->id = (unsigned long) data;
 
-  disk->has_partitions = 0;
   disk->data = data;
 
   return GRUB_ERR_NONE;
@@ -202,14 +247,14 @@ grub_pxefs_open (struct grub_file *file, const char *name)
 
   if (curr_file != 0)
     {
-      grub_pxe_call (GRUB_PXENV_TFTP_CLOSE, &c.c2);
+      grub_pxe_call (GRUB_PXENV_TFTP_CLOSE, &c.c2, pxe_rm_entry);
       curr_file = 0;
     }
 
   c.c1.server_ip = disk_data->server_ip;
   c.c1.gateway_ip = disk_data->gateway_ip;
   grub_strcpy ((char *)&c.c1.filename[0], name);
-  grub_pxe_call (GRUB_PXENV_TFTP_GET_FSIZE, &c.c1);
+  grub_pxe_call (GRUB_PXENV_TFTP_GET_FSIZE, &c.c1, pxe_rm_entry);
   if (c.c1.status)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
 
@@ -217,7 +262,7 @@ grub_pxefs_open (struct grub_file *file, const char *name)
 
   c.c2.tftp_port = grub_cpu_to_be16 (GRUB_PXE_TFTP_PORT);
   c.c2.packet_size = grub_pxe_blksize;
-  grub_pxe_call (GRUB_PXENV_TFTP_OPEN, &c.c2);
+  grub_pxe_call (GRUB_PXENV_TFTP_OPEN, &c.c2, pxe_rm_entry);
   if (c.c2.status)
     return grub_error (GRUB_ERR_BAD_FS, "open fails");
 
@@ -236,6 +281,7 @@ grub_pxefs_open (struct grub_file *file, const char *name)
     }
 
   file->data = data;
+  file->not_easly_seekable = 1;
   grub_memcpy (file_int, file, sizeof (struct grub_file));
   curr_file = file_int;
 
@@ -275,14 +321,14 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
       struct grub_pxenv_tftp_open o;
 
       if (curr_file != 0)
-        grub_pxe_call (GRUB_PXENV_TFTP_CLOSE, &o);
+        grub_pxe_call (GRUB_PXENV_TFTP_CLOSE, &o, pxe_rm_entry);
 
       o.server_ip = disk_data->server_ip;
       o.gateway_ip = disk_data->gateway_ip;
       grub_strcpy ((char *)&o.filename[0], data->filename);
       o.tftp_port = grub_cpu_to_be16 (GRUB_PXE_TFTP_PORT);
-      o.packet_size = grub_pxe_blksize;
-      grub_pxe_call (GRUB_PXENV_TFTP_OPEN, &o);
+      o.packet_size = data->block_size;
+      grub_pxe_call (GRUB_PXENV_TFTP_OPEN, &o, pxe_rm_entry);
       if (o.status)
 	{
 	  grub_error (GRUB_ERR_BAD_FS, "open fails");
@@ -297,7 +343,7 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
   while (pn >= data->packet_number)
     {
       c.buffer_size = data->block_size;
-      grub_pxe_call (GRUB_PXENV_TFTP_READ, &c);
+      grub_pxe_call (GRUB_PXENV_TFTP_READ, &c, pxe_rm_entry);
       if (c.status)
         {
           grub_error (GRUB_ERR_BAD_FS, "read fails");
@@ -318,7 +364,7 @@ grub_pxefs_close (grub_file_t file)
 
   if (curr_file == file)
     {
-      grub_pxe_call (GRUB_PXENV_TFTP_CLOSE, &c);
+      grub_pxe_call (GRUB_PXENV_TFTP_CLOSE, &c, pxe_rm_entry);
       curr_file = 0;
     }
 
@@ -443,7 +489,7 @@ parse_dhcp_vendor (void *vend, int limit)
 static void
 grub_pxe_detect (void)
 {
-  struct grub_pxenv *pxenv;
+  struct grub_pxe_bangpxe *pxenv;
   struct grub_pxenv_get_cached_info ci;
   struct grub_pxenv_boot_player *bp;
 
@@ -454,7 +500,7 @@ grub_pxe_detect (void)
   ci.packet_type = GRUB_PXENV_PACKET_TYPE_DHCP_ACK;
   ci.buffer = 0;
   ci.buffer_size = 0;
-  grub_pxe_call (GRUB_PXENV_GET_CACHED_INFO, &ci);
+  grub_pxe_call (GRUB_PXENV_GET_CACHED_INFO, &ci, pxe_rm_entry);
   if (ci.status)
     return;
 

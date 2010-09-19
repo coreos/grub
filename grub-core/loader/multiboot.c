@@ -21,15 +21,12 @@
  *  FIXME: The following features from the Multiboot specification still
  *         need to be implemented:
  *  - VBE support
- *  - symbol table
  *  - drives table
  *  - ROM configuration table
- *  - APM table
  */
 
 #include <grub/loader.h>
 #include <grub/command.h>
-#include <grub/machine/loader.h>
 #include <grub/multiboot.h>
 #include <grub/cpu/multiboot.h>
 #include <grub/elf.h>
@@ -39,7 +36,6 @@
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
-#include <grub/gzio.h>
 #include <grub/env.h>
 #include <grub/cpu/relocator.h>
 #include <grub/video.h>
@@ -50,18 +46,14 @@
 #include <grub/efi/efi.h>
 #endif
 
+struct grub_relocator *grub_multiboot_relocator = NULL;
+grub_uint32_t grub_multiboot_payload_eip;
 #if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
 #define DEFAULT_VIDEO_MODE "text"
 #else
 #define DEFAULT_VIDEO_MODE "auto"
 #endif
 
-grub_size_t grub_multiboot_alloc_mbi;
-
-char *grub_multiboot_payload_orig;
-grub_addr_t grub_multiboot_payload_dest;
-grub_size_t grub_multiboot_pure_size;
-grub_uint32_t grub_multiboot_payload_eip;
 static int accepts_video;
 static int accepts_ega_text;
 static int console_required;
@@ -78,7 +70,7 @@ grub_get_multiboot_mmap_count (void)
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr __attribute__ ((unused)),
 			     grub_uint64_t size __attribute__ ((unused)),
-			     grub_uint32_t type __attribute__ ((unused)))
+			     grub_memory_type_t type __attribute__ ((unused)))
     {
       count++;
       return 0;
@@ -119,45 +111,23 @@ grub_multiboot_set_video_mode (void)
 static grub_err_t
 grub_multiboot_boot (void)
 {
-  grub_size_t mbi_size;
   grub_err_t err;
   struct grub_relocator32_state state = MULTIBOOT_INITIAL_STATE;
 
   state.MULTIBOOT_ENTRY_REGISTER = grub_multiboot_payload_eip;
 
-  mbi_size = grub_multiboot_get_mbi_size ();
-  if (grub_multiboot_alloc_mbi < mbi_size)
-    {
-      grub_multiboot_payload_orig
-	= grub_relocator32_realloc (grub_multiboot_payload_orig,
-				    grub_multiboot_pure_size + mbi_size);
-      if (!grub_multiboot_payload_orig)
-	return grub_errno;
-      grub_multiboot_alloc_mbi = mbi_size;
-    }
+  err = grub_multiboot_make_mbi (&state.MULTIBOOT_MBI_REGISTER);
 
-#ifdef GRUB_USE_MULTIBOOT2
-  state.MULTIBOOT_MBI_REGISTER = ALIGN_UP (grub_multiboot_payload_dest
-					   + grub_multiboot_pure_size,
-					   MULTIBOOT_TAG_ALIGN);
-#else
-  state.MULTIBOOT_MBI_REGISTER = grub_multiboot_payload_dest
-    + grub_multiboot_pure_size;
-#endif
-  err = grub_multiboot_make_mbi (grub_multiboot_payload_orig,
-				 grub_multiboot_payload_dest,
-				 grub_multiboot_pure_size, mbi_size);
   if (err)
     return err;
 
 #ifdef GRUB_MACHINE_EFI
-  if (! grub_efi_finish_boot_services ())
-     grub_fatal ("cannot exit boot services");
+  err = grub_efi_finish_boot_services (NULL, NULL, NULL, NULL, NULL);
+  if (err)
+    return err;
 #endif
 
-  grub_relocator32_boot (grub_multiboot_payload_orig,
-			 grub_multiboot_payload_dest,
-			 state);
+  grub_relocator32_boot (grub_multiboot_relocator, state);
 
   /* Not reached.  */
   return GRUB_ERR_NONE;
@@ -168,11 +138,9 @@ grub_multiboot_unload (void)
 {
   grub_multiboot_free_mbi ();
 
-  grub_relocator32_free (grub_multiboot_payload_orig);
+  grub_relocator_unload (grub_multiboot_relocator);
+  grub_multiboot_relocator = NULL;
 
-  grub_multiboot_alloc_mbi = 0;
-
-  grub_multiboot_payload_orig = NULL;
   grub_dl_unref (my_mod);
 
   return GRUB_ERR_NONE;
@@ -253,7 +221,7 @@ grub_cmd_multiboot (grub_command_t cmd __attribute__ ((unused)),
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if (! file)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
 
@@ -262,8 +230,11 @@ grub_cmd_multiboot (grub_command_t cmd __attribute__ ((unused)),
   /* Skip filename.  */
   grub_multiboot_init_mbi (argc - 1, argv + 1);
 
-  grub_relocator32_free (grub_multiboot_payload_orig);
-  grub_multiboot_payload_orig = NULL;
+  grub_relocator_unload (grub_multiboot_relocator);
+  grub_multiboot_relocator = grub_relocator_new ();
+
+  if (!grub_multiboot_relocator)
+    goto fail;
 
   err = grub_multiboot_load (file);
   if (err)
@@ -279,8 +250,8 @@ grub_cmd_multiboot (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_errno != GRUB_ERR_NONE)
     {
-      grub_relocator32_free (grub_multiboot_payload_orig);
-      grub_multiboot_free_mbi ();
+      grub_relocator_unload (grub_multiboot_relocator);
+      grub_multiboot_relocator = NULL;
       grub_dl_unref (my_mod);
     }
 
@@ -293,7 +264,8 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_file_t file = 0;
   grub_ssize_t size;
-  char *module = 0;
+  void *module = NULL;
+  grub_addr_t target;
   grub_err_t err;
   int nounzip = 0;
 
@@ -310,27 +282,34 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
 
-  if (!grub_multiboot_payload_orig)
+  if (!grub_multiboot_relocator)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "you need to load the multiboot kernel first");
 
   if (nounzip)
-    file = grub_file_open (argv[0]);
-  else
-    file = grub_gzfile_open (argv[0], 1);
+    grub_file_filter_disable_compression ();
+
+  file = grub_file_open (argv[0]);
   if (! file)
     return grub_errno;
 
   size = grub_file_size (file);
-  module = grub_memalign (MULTIBOOT_MOD_ALIGN, size);
-  if (! module)
-    {
-      grub_file_close (file);
-      return grub_errno;
-    }
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
+					    0, (0xffffffff - size) + 1,
+					    size, MULTIBOOT_MOD_ALIGN,
+					    GRUB_RELOCATOR_PREFERENCE_NONE);
+    if (err)
+      {
+	grub_file_close (file);
+	return err;
+      }
+    module = get_virtual_current_address (ch);
+    target = (grub_addr_t) get_virtual_current_address (ch);
+  }
 
-  err = grub_multiboot_add_module ((grub_addr_t) module, size,
-				   argc - 1, argv + 1);
+  err = grub_multiboot_add_module (target, size, argc - 1, argv + 1);
   if (err)
     {
       grub_file_close (file);

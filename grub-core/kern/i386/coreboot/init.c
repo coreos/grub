@@ -19,9 +19,9 @@
 #include <grub/kernel.h>
 #include <grub/mm.h>
 #include <grub/machine/time.h>
-#include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
+#include <grub/offsets.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/dl.h>
@@ -32,31 +32,19 @@
 #include <grub/time.h>
 #include <grub/symbol.h>
 #include <grub/cpu/io.h>
+#include <grub/cpu/floppy.h>
 #include <grub/cpu/tsc.h>
 #ifdef GRUB_MACHINE_QEMU
 #include <grub/machine/kernel.h>
 #endif
 
-#define GRUB_FLOPPY_REG_DIGITAL_OUTPUT		0x3f2
-
 extern char _start[];
 extern char _end[];
-
-grub_addr_t grub_os_area_addr;
-grub_size_t grub_os_area_size;
 
 grub_uint32_t
 grub_get_rtc (void)
 {
   grub_fatal ("grub_get_rtc() is not implemented.\n");
-}
-
-/* Stop the floppy drive from spinning, so that other software is
-   jumped to with a known state.  */
-void
-grub_stop_floppy (void)
-{
-  grub_outb (0, GRUB_FLOPPY_REG_DIGITAL_OUTPUT);
 }
 
 void
@@ -77,8 +65,10 @@ grub_machine_init (void)
   /* Initialize the console as early as possible.  */
   grub_vga_text_init ();
 
-  auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t, grub_uint64_t, 
+				       grub_memory_type_t);
+  int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t size,
+				  grub_memory_type_t type)
   {
 #if GRUB_CPU_SIZEOF_VOID_P == 4
     /* Restrict ourselves to 32-bit memory space.  */
@@ -88,7 +78,7 @@ grub_machine_init (void)
       size = GRUB_ULONG_MAX - addr;
 #endif
 
-    if (type != GRUB_MACHINE_MEMORY_AVAILABLE)
+    if (type != GRUB_MEMORY_AVAILABLE)
       return 0;
 
     /* Avoid the lower memory.  */
@@ -103,20 +93,7 @@ grub_machine_init (void)
 	  }
       }
 
-    if (addr == GRUB_MEMORY_MACHINE_UPPER_START
-	|| (addr >= GRUB_MEMORY_MACHINE_LOWER_SIZE
-	    && addr <= GRUB_MEMORY_MACHINE_UPPER_START
-	    && (addr + size > GRUB_MEMORY_MACHINE_UPPER_START)))
-      {
-	grub_size_t quarter = size >> 2;
-
-	grub_os_area_addr = addr;
-	grub_os_area_size = size - quarter;
-	grub_mm_init_region ((void *) (grub_os_area_addr + grub_os_area_size),
-			     quarter);
-      }
-    else
-      grub_mm_init_region ((void *) (grub_addr_t) addr, (grub_size_t) size);
+    grub_mm_init_region ((void *) (grub_addr_t) addr, (grub_size_t) size);
 
     return 0;
   }

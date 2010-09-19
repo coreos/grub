@@ -17,7 +17,7 @@
  */
 
 #include <grub/symbol.h>
-#include <grub/machine/memory.h>
+#include <grub/offsets.h>
 #include <grub/cpu/linux.h>
 #include <multiboot.h>
 #include <multiboot2.h>
@@ -51,7 +51,7 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = _start + GRUB_KERNEL_MACHINE_DATA_END
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
 
 codestart:
 	movl %eax, EXT_C(grub_ieee1275_entry_fn)
@@ -63,7 +63,3 @@ codestart:
  */
 #include "../realmode.S"
 
-/*
- *  Routines needed by Linux and Multiboot loaders.
- */
-#include "../loader.S"

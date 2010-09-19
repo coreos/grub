@@ -16,7 +16,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/memory.h>
 #include <grub/serial.h>
 #include <grub/ns8250.h>
 #include <grub/types.h>
@@ -26,6 +25,7 @@
 #include <grub/mm.h>
 
 #ifdef GRUB_MACHINE_PCBIOS
+#include <grub/machine/memory.h>
 static const unsigned short *serial_hw_io_addr = (const unsigned short *) GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR;
 #define GRUB_SERIAL_PORT_NUM 4
 #else
@@ -225,6 +225,16 @@ grub_ns8250_init (void)
 
 	grub_serial_register (&com_ports[i]);
       }
+}
+
+/* Return the port number for the UNITth serial device.  */
+grub_port_t
+grub_ns8250_hw_get_port (const unsigned int unit)
+{
+  if (unit < GRUB_SERIAL_PORT_NUM)
+    return serial_hw_io_addr[unit];
+  else
+    return 0;
 }
 
 char *

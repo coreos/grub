@@ -119,7 +119,7 @@ prepare_grub_to_access_device ()
   # otherwise set root as per value in device.map.
   echo "set root='`${grub_probe} --device ${device} --target=drive`'"
   if fs_uuid="`${grub_probe} --device ${device} --target=fs_uuid 2> /dev/null`" ; then
-    echo "search --no-floppy --fs-uuid --set ${fs_uuid}"
+    echo "search --no-floppy --fs-uuid --set=root ${fs_uuid}"
   fi
 }
 

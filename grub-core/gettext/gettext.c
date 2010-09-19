@@ -26,7 +26,6 @@
 #include <grub/normal.h>
 #include <grub/file.h>
 #include <grub/kernel.h>
-#include <grub/gzio.h>
 #include <grub/i18n.h>
 
 /*
@@ -219,7 +218,7 @@ grub_gettext_translate (const char *orig)
   return ret;
 }
 
-/* This is similar to grub_gzfile_open. */
+/* This is similar to grub_file_open. */
 static grub_file_t
 grub_mofile_open (const char *filename)
 {
@@ -229,7 +228,7 @@ grub_mofile_open (const char *filename)
   /* Using fd_mo and not another variable because
      it's needed for grub_gettext_get_info.  */
 
-  fd_mo = grub_gzfile_open (filename, 1);
+  fd_mo = grub_file_open (filename);
   grub_errno = GRUB_ERR_NONE;
 
   if (!fd_mo)

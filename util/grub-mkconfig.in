@@ -38,6 +38,8 @@ self=`basename $0`
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
 
+GRUB_PREFIX=`echo '/@bootdirname@/@grubdirname@' | sed "s,//*,/,g"`
+
 # Usage: usage
 # Print the usage.
 usage () {
@@ -93,18 +95,6 @@ done
 
 . ${libdir}/grub/grub-mkconfig_lib
 
-case "$host_os" in
-netbsd* | openbsd*)
-    # Because /boot is used for the boot block in NetBSD and OpenBSD, use /grub
-    # instead of /boot/grub.
-    GRUB_PREFIX=`echo /grub | sed ${transform}`
-    ;;
-*)
-    # Use /boot/grub by default.
-    GRUB_PREFIX=`echo /boot/grub | sed ${transform}`
-    ;;
-esac
-
 if [ "x$EUID" = "x" ] ; then
   EUID=`id -u`
 fi
@@ -158,7 +148,7 @@ GRUB_DEVICE_BOOT_UUID="`${grub_probe} --device ${GRUB_DEVICE_BOOT} --target=fs_u
 
 # Filesystem for the device containing our userland.  Used for stuff like
 # choosing Hurd filesystem module.
-GRUB_FS="`${grub_probe} --target=fs / 2> /dev/null || echo unknown`"
+GRUB_FS="`${grub_probe} --device ${GRUB_DEVICE} --target=fs 2> /dev/null || echo unknown`"
 
 if test -f ${sysconfdir}/default/grub ; then
   . ${sysconfdir}/default/grub
@@ -200,7 +190,7 @@ for x in ${GRUB_TERMINAL_OUTPUT}; do
 		exit 1
 	    fi
 	else
-	    for dir in ${pkgdatadir} /boot/grub /usr/share/grub ; do
+	    for dir in ${pkgdatadir} ${GRUB_PREFIX} /usr/share/grub ; do
 		for basename in unicode unifont ascii; do
 		    path="${dir}/${basename}.pf2"
 		    if is_path_readable_by_grub ${path} > /dev/null ; then
@@ -255,6 +245,7 @@ export GRUB_DEFAULT \
   GRUB_HIDDEN_TIMEOUT_BUTTON \
   GRUB_TIMEOUT_BUTTON \
   GRUB_BUTTON_CMOS_ADDRESS \
+  GRUB_BUTTON_CMOS_CLEAN \
   GRUB_DISTRIBUTOR \
   GRUB_CMDLINE_LINUX \
   GRUB_CMDLINE_LINUX_DEFAULT \
@@ -314,8 +305,15 @@ for i in ${grub_mkconfig_dir}/* ; do
 done
 
 if test "x${grub_cfg}" != "x" ; then
-  # none of the children aborted with error, install the new grub.cfg
-  mv -f ${grub_cfg}.new ${grub_cfg}
+  if ! grub-script-check ${grub_cfg}.new; then
+    echo "Syntax errors are detected in generated GRUB config file." >&2
+    echo "Ensure that there are no errors in /etc/default/grub" >&2
+    echo "and /etc/grub.d/* files or please file a bug report with" >&2
+    echo "${grub_cfg}.new file attached." >&2
+  else
+    # none of the children aborted with error, install the new grub.cfg
+    mv -f ${grub_cfg}.new ${grub_cfg}
+  fi
 fi
 
 echo "done" >&2
