@@ -1,5 +1,17 @@
 AutoGen definitions Makefile.tpl;
 
+script = {
+  installdir = noinst;
+  name = gensyminfo.sh;
+  common = gensyminfo.sh.in;
+};
+
+script = {
+  installdir = noinst;
+  name = genmod.sh;
+  common = genmod.sh.in;
+};
+
 kernel = {
   name = kernel;
 

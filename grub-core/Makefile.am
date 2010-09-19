@@ -178,8 +178,8 @@ kernel_syms.lst: $(KERNEL_HEADER_FILES) $(top_builddir)/config.h
 	$(TARGET_CPP) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS_KERNEL) $(CPPFLAGS) $(CFLAGS) -DGRUB_SYMBOL_GENERATOR=1 $^ >kernel_syms.input
 	if grep "^#define HAVE_ASM_USCORE" $(top_builddir)/config.h; then u="_"; else u=""; fi; \
 	cat kernel_syms.input | grep -v '^#' | sed -n \
-	  -e '/EXPORT_FUNC *([a-zA-Z0-9_]*)/{s/.*EXPORT_FUNC *(\([a-zA-Z0-9_]*\)).*/'"$$u"'\1 kernel/;p;}' \
-	  -e '/EXPORT_VAR *([a-zA-Z0-9_]*)/{s/.*EXPORT_VAR *(\([a-zA-Z0-9_]*\)).*/'"$$u"'\1 kernel/;p;}' \
+	  -e '/EXPORT_FUNC *([a-zA-Z0-9_]*)/{s/.*EXPORT_FUNC *(\([a-zA-Z0-9_]*\)).*/defined '"$$u"'kernel \1/;p;}' \
+	  -e '/EXPORT_VAR *([a-zA-Z0-9_]*)/{s/.*EXPORT_VAR *(\([a-zA-Z0-9_]*\)).*/defined '"$$u"' kernel \1/;p;}' \
 	  | sort -u >$@
 	rm -f kernel_syms.input
 CLEANFILES += kernel_syms.lst
@@ -199,61 +199,91 @@ grub_emu_init.c: grub_emu_init.h genemuinit.sh $(MOD_FILES)
 CLEANFILES += grub_emu_init.c
 endif
 
-# .lst files
-platform_DATA += moddep.lst
-platform_DATA += fs.lst
-platform_DATA += command.lst
-platform_DATA += partmap.lst
-platform_DATA += handler.lst
-platform_DATA += terminal.lst
-platform_DATA += parttool.lst
-platform_DATA += video.lst
-platform_DATA += crypto.lst
-CLEANFILES += moddep.lst
-CLEANFILES += handler.lst
-CLEANFILES += terminal.lst
-CLEANFILES += parttool.lst
-CLEANFILES += video.lst
-CLEANFILES += crypto.lst
+# List files
 
-fs.lst: $(FS_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+fs.lst: $(MARKER_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .marker`; \
+	  if grep 'FS_LIST_MARKER' $$pp >/dev/null 2>&1; then \
+	    echo $$b; \
+	  fi; \
+	done) | sort -u > $@
+platform_DATA += fs.lst
 CLEANFILES += fs.lst
 
-command.lst: $(COMMAND_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+command.lst: $(MARKER_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .marker`; \
+	  sed -n \
+	    -e "/COMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/\1: $$b/;p;}" \
+	    -e "/EXTCOMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}" \
+	    -e "/P1COMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}" $$pp; \
+	done) | sort -u > $@
+platform_DATA += command.lst
 CLEANFILES += command.lst
 
-partmap.lst: $(PARTMAP_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+partmap.lst: $(MARKER_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .marker`; \
+	  if grep 'PARTMAP_LIST_MARKER' $$pp >/dev/null 2>&1; then \
+	    echo $$b; \
+	  fi; \
+	done) | sort -u > $@
+platform_DATA += partmap.lst
 CLEANFILES += partmap.lst
 
-handler.lst: $(HANDLER_FILES)
-	cat $^ /dev/null | sort | uniq > $@
-CLEANFILES += handler.lst
-
-terminal.lst: $(TERMINAL_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+terminal.lst: $(MARKER_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .marker`; \
+	  sed -n \
+	    -e "/INPUT_TERMINAL_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/i\1: $$b/;p;}" \
+	    -e "/OUTPUT_TERMINAL_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/o\1: $$b/;p;}" $$pp; \
+	done) | sort -u > $@
+platform_DATA += terminal.lst
 CLEANFILES += terminal.lst
 
-parttool.lst: $(PARTTOOL_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+parttool.lst: $(MARKER_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .marker`; \
+	  sed -n \
+	    -e "/PARTTOOL_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/\1: $$b/;p;}" $$pp; \
+	done) | sort -u > $@
+platform_DATA += parttool.lst
 CLEANFILES += parttool.lst
 
-video.lst: $(VIDEO_FILES)
-	cat $^ /dev/null | sort | uniq > $@
+video.lst: $(MARKER_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .marker`; \
+	  if grep 'VIDEO_LIST_MARKER' $$pp >/dev/null 2>&1; then \
+	    echo $$b; \
+	  fi; \
+	done) | sort -u > $@
+platform_DATA += video.lst
 CLEANFILES += video.lst
 
 # but, crypto.lst is simply copied
 crypto.lst: $(srcdir)/lib/libgcrypt-grub/cipher/crypto.lst
 	cp $^ $@
+platform_DATA += crypto.lst
 CLEANFILES += crypto.lst
 
+syminfo.lst: gensyminfo.sh kernel_syms.lst $(MODULE_FILES)
+	cat kernel_syms.lst > $@.new
+	for m in $(MODULE_FILES); do \
+	  sh $< $$m >> $@.new || exit 1; \
+	done
+	mv $@.new $@
+
 # generate global module dependencies list
-moddep.lst: kernel_syms.lst genmoddep.awk $(DEF_FILES) $(UND_FILES)
-	cat $(DEF_FILES) kernel_syms.lst /dev/null \
-	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UND_FILES) > $@ \
-	  || (rm -f $@; exit 1)
+moddep.lst: syminfo.lst genmoddep.awk
+	cat $< | sort | awk -f $(srcdir)/genmoddep.awk > $@ || (rm -f $@; exit 1)
+platform_DATA += moddep.lst
+CLEANFILES += config.log syminfo.lst moddep.lst
+
+$(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT)
+	sh $^ $@
+platform_DATA += $(MOD_FILES)
+CLEANFILES += $(MOD_FILES)
 
 if COND_ENABLE_EFIEMU
 efiemu32.o: efiemu/runtime/efiemu.c $(TARGET_OBJ2ELF)

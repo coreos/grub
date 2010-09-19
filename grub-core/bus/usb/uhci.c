@@ -55,8 +55,6 @@ enum
     GRUB_UHCI_PORTSC_RWC = ((1 << 1) | (1 << 3) | (1 << 11) | (3 << 13))
   };
 
-#define 
-
 /* UHCI Queue Head.  */
 struct grub_uhci_qh
 {

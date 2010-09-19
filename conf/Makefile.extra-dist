@@ -19,20 +19,14 @@ EXTRA_DIST += grub-core/Makefile.core.def
 EXTRA_DIST += grub-core/Makefile.gcry.def
 
 EXTRA_DIST += grub-core/genmoddep.awk
-EXTRA_DIST += grub-core/genmodsrc.sh
-EXTRA_DIST += grub-core/genfslist.sh
-EXTRA_DIST += grub-core/gencmdlist.sh
+EXTRA_DIST += grub-core/genmod.sh.in
+EXTRA_DIST += grub-core/gensyminfo.sh.in
 EXTRA_DIST += grub-core/gensymlist.sh
 EXTRA_DIST += grub-core/genemuinit.sh
-EXTRA_DIST += grub-core/genvideolist.sh
-EXTRA_DIST += grub-core/genhandlerlist.sh
-EXTRA_DIST += grub-core/genpartmaplist.sh
-EXTRA_DIST += grub-core/genterminallist.sh
-EXTRA_DIST += grub-core/genparttoollist.sh
 EXTRA_DIST += grub-core/genemuinitheader.sh
 
 EXTRA_DIST += grub-core/lib/libgcrypt/cipher
 EXTRA_DIST += $(shell find $(top_srcdir)/include -name '*.h')
+EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/lib -name '*.h')
 EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/gnulib -name '*.h')
 EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/efiemu -name '*.h')
-EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/lib -name '*.h')

@@ -88,20 +88,26 @@ CPPFLAGS_POSIX = -I$(top_srcdir)/grub-core/lib/posix_wrap
 
 CPPFLAGS_EFIEMU = -I$(top_srcdir)/grub-core/efiemu/runtime
 
+# List file macros for recognizing /interesting/ modules
+CPPFLAGS_FS_LIST = -Dgrub_fs_register=FS_LIST_MARKER
+CPPFLAGS_VIDEO_LIST= -Dgrub_video_register=VIDEO_LIST_MARKER
+CPPFLAGS_PARTMAP_LIST = -Dgrub_partition_map_register=PARTMAP_LIST_MARKER
+CPPFLAGS_PARTTOOL_LIST = -Dgrub_parttool_register=PARTTOOL_LIST_MARKER
+CPPFLAGS_TERMINAL_LIST = '-Dgrub_term_register_input(...)=INPUT_TERMINAL_LIST_MARKER(__VA_ARGS__)'
+CPPFLAGS_TERMINAL_LIST += '-Dgrub_term_register_output(...)=OUTPUT_TERMINAL_LIST_MARKER(__VA_ARGS__)'
+CPPFLAGS_COMMAND_LIST = '-Dgrub_register_command(...)=COMMAND_LIST_MARKER(__VA_ARGS__)'
+CPPFLAGS_COMMAND_LIST += '-Dgrub_register_extcmd(...)=EXTCOMMAND_LIST_MARKER(__VA_ARGS__)'
+CPPFLAGS_COMMAND_LIST += '-Dgrub_register_command_p1(...)=P1COMMAND_LIST_MARKER(__VA_ARGS__)'
+CPPFLAGS_MARKER = $(CPPFLAGS_FS_LIST) $(CPPFLAGS_VIDEO_LIST) \
+	$(CPPFLAGS_PARTTOOL_LIST) $(CPPFLAGS_PARTMAP_LIST) \
+	$(CPPFLAGS_TERMINAL_LIST) $(CPPFLAGS_COMMAND_LIST)
+
 # Define these variables to calm down automake
 
-FS_FILES =
-DEF_FILES =
-UND_FILES =
 IMG_FILES =
 MOD_FILES =
-VIDEO_FILES =
 MODULE_FILES =
-HANDLER_FILES =
-PARTMAP_FILES =
-COMMAND_FILES =
-PARTTOOL_FILES =
-TERMINAL_FILES =
+MARKER_FILES =
 KERNEL_HEADER_FILES =
 
 man_MANS =
