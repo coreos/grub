@@ -72,11 +72,11 @@ library = {
   common = grub-core/kern/list.c;
   common = grub-core/kern/partition.c;
   common = grub-core/lib/arg.c;
-  common = grub-core/lib/crc.c;
   common = grub-core/lib/crypto.c;
   common = grub-core/lib/envblk.c;
   common = grub-core/lib/hexdump.c;
   common = grub-core/lib/libgcrypt-grub/cipher/sha512.c;
+  common = grub-core/lib/libgcrypt-grub/cipher/crc.c;
   common = grub-core/lib/LzFind.c;
   common = grub-core/lib/LzmaEnc.c;
   common = grub-core/lib/pbkdf2.c;
@@ -186,6 +186,8 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
 };
 
 program = {

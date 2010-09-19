@@ -30,7 +30,7 @@
 #include <grub/term.h>
 #include <grub/mm.h>
 #include <grub/lib/hexdump.h>
-#include <grub/lib/crc.h>
+#include <grub/crypto.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
 
@@ -239,19 +239,22 @@ cmd_hex (char *pathname)
 static void
 cmd_crc (char *pathname)
 {
-  grub_uint32_t crc = 0;
+  grub_uint8_t crc32_context[GRUB_MD_CRC32->contextsize];
+  GRUB_MD_CRC32->init(crc32_context);
 
   auto int crc_hook (grub_off_t ofs, char *buf, int len);
   int crc_hook (grub_off_t ofs, char *buf, int len)
   {
     (void) ofs;
 
-    crc = grub_getcrc32 (crc, buf, len);
+    GRUB_MD_CRC32->write(crc32_context, buf, len);
     return 0;
   }
 
   read_file (pathname, crc_hook);
-  printf ("%08x\n", crc);
+  GRUB_MD_CRC32->final(crc32_context);
+  printf ("%08x\n",
+      grub_be_to_cpu32(*(grub_uint32_t*)GRUB_MD_CRC32->read(crc32_context)));
 }
 
 static void

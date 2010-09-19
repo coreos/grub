@@ -1,3 +1,23 @@
+2010-09-20  Szymon Janc <szymon@janc.net.pl>
+
+	Remove crc.mod and move crc command to hashsum.mod.
+	Remove lib/crc.c - users updated to use gcrypt implementation.
+
+	* grub-core/commands/crc.c: Removed.
+	* grub-core/Makefile.core.def (crc): Module removed.
+	* grub-core/commands/hashsum.c (aliases[]): Add crc alias.
+	* grub-core/commands/hashsum.c (GRUB_MOD_INIT): Register crc command.
+	* grub-core/commands/hashsum.c (GRUB_MOD_FINI): Unregister crc command.
+	* grub-core/lib/crc.c: Removed.
+	* include/grub/lib/crc.h: Removed.
+	* Makefile.util.def (crc): Remove lib/crc.c
+	* grub-core/Makefile.core.def (libgrub.a): Remove grub-core/lib/crc.c.
+	* util/grub-fstest.c (cmd_crd): Use libgcrypt crc implementation.
+	* Makefile.util.def (libgrub.a): Add grub-core/lib/libgcrypt-grub/cipher/crc.c.
+	* Makefile.util.def (grub-fstest): Add CFLAGS_GCRY to cflags.
+	* Makefile.util.def (grub-fstest): Add CPPFLAGS_GCRY to cppflags.
+	* grub-core/efiemu/prepare.c (grub_efiemu_crc): Use libgcrypt crc implementation.
+
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/boot/i386/pc/boot.S: Ignore %dl if it's not in a sane range.

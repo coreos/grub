@@ -487,12 +487,6 @@ module = {
 };
 
 module = {
-  name = crc;
-  common = commands/crc.c;
-  common = lib/crc.c;
-};
-
-module = {
   name = date;
   common = commands/date.c;
 };
