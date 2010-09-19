@@ -115,19 +115,19 @@ grub_ncurses_getkey (struct grub_term_input *term __attribute__ ((unused)))
     case ERR:
       return -1;
     case KEY_LEFT:
-      c = GRUB_TERM_LEFT;
+      c = GRUB_TERM_KEY_LEFT;
       break;
 
     case KEY_RIGHT:
-      c = GRUB_TERM_RIGHT;
+      c = GRUB_TERM_KEY_RIGHT;
       break;
 
     case KEY_UP:
-      c = GRUB_TERM_UP;
+      c = GRUB_TERM_KEY_UP;
       break;
 
     case KEY_DOWN:
-      c = GRUB_TERM_DOWN;
+      c = GRUB_TERM_KEY_DOWN;
       break;
 
     case KEY_IC:
@@ -135,30 +135,30 @@ grub_ncurses_getkey (struct grub_term_input *term __attribute__ ((unused)))
       break;
 
     case KEY_DC:
-      c = GRUB_TERM_DC;
+      c = GRUB_TERM_KEY_DC;
       break;
 
     case KEY_BACKSPACE:
       /* XXX: For some reason ncurses on xterm does not return
 	 KEY_BACKSPACE.  */
     case 127:
-      c = GRUB_TERM_BACKSPACE;
+      c = '\b';
       break;
 
     case KEY_HOME:
-      c = GRUB_TERM_HOME;
+      c = GRUB_TERM_KEY_HOME;
       break;
 
     case KEY_END:
-      c = GRUB_TERM_END;
+      c = GRUB_TERM_KEY_END;
       break;
 
     case KEY_NPAGE:
-      c = GRUB_TERM_NPAGE;
+      c = GRUB_TERM_KEY_NPAGE;
       break;
 
     case KEY_PPAGE:
-      c = GRUB_TERM_PPAGE;
+      c = GRUB_TERM_KEY_PPAGE;
       break;
     }
 
