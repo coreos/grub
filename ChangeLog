@@ -1,3 +1,8 @@
+2010-09-19  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* util/grub-mkconfig.in: Check the config script for syntax errors
+	before saving.
+
 2010-09-19  Colin Watson  <cjwatson@ubuntu.com>
 2010-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
 

@@ -305,8 +305,15 @@ for i in ${grub_mkconfig_dir}/* ; do
 done
 
 if test "x${grub_cfg}" != "x" ; then
-  # none of the children aborted with error, install the new grub.cfg
-  mv -f ${grub_cfg}.new ${grub_cfg}
+  if ! grub-script-check ${grub_cfg}.new; then
+    echo "Syntax errors are detected in generated GRUB config file." >&2
+    echo "Ensure that there are no errors in /etc/default/grub" >&2
+    echo "and /etc/grub.d/* files or please file a bug report with" >&2
+    echo "${grub_cfg}.new file attached." >&2
+  else
+    # none of the children aborted with error, install the new grub.cfg
+    mv -f ${grub_cfg}.new ${grub_cfg}
+  fi
 fi
 
 echo "done" >&2
