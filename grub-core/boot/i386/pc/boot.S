@@ -112,12 +112,16 @@ LOCAL(after_BPB):
          */
 	. = _start + GRUB_BOOT_MACHINE_DRIVE_CHECK
 boot_drive_check:
-        jmp     1f	/* grub-setup may overwrite this jump */
+        jmp     3f	/* grub-setup may overwrite this jump */
         testb   $0x80, %dl
-        jnz     1f
+        jz      2f
+3:
+	/* Ignore %dl different from 0-0x0f and 0x80-0x8f.  */
+	testb   $0x70, %dl
+	jz      1f
+2:	
         movb    $0x80, %dl
 1:
-
 	/*
 	 * ljmp to the next instruction because some bogus BIOSes
 	 * jump to 07C0:0000 instead of 0000:7C00.
