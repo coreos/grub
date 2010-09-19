@@ -1,3 +1,7 @@
+2010-09-19  Yves Blusseau  <blusseau@zetam.org>
+
+	* Makefile.util.def: Add forgotten $(LIBINTL) library.
+
 2010-09-19  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* util/grub-mkconfig.in: Check the config script for syntax errors

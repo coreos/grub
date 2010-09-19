@@ -576,5 +576,5 @@ program = {
   common = grub-core/lib/i386/pc/vesa_modes_table.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBDEVMAPPER)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
 };
