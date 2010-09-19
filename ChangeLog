@@ -1,5 +1,13 @@
 2010-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/efi/console.c (efi_codes): Fix GRUB_TERM_KEY_*
+	constants usage.
+	* grub-core/kern/emu/console.c (grub_ncurses_getkey):
+	Fix GRUB_TERM_KEY_* constants usage.
+	* grub-core/kern/emu/misc.c (asprintf): Fix vasprintf usage.
+
+2010-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/ohci.c (grub_ohci_cancel_transfer): Use %p to
 	print pointer.
 	* grub-core/bus/usb/uhci.c: Remove empty define.

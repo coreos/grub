@@ -174,7 +174,7 @@ asprintf (char **buf, const char *fmt, ...)
   va_list ap;
 
   va_start (ap, fmt);
-  status = vasprintf (*buf, fmt, ap);
+  status = vasprintf (buf, fmt, ap);
   va_end (ap);
 
   return status;
