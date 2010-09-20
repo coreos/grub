@@ -1,5 +1,11 @@
 2010-09-20  Colin Watson  <cjwatson@ubuntu.com>
 
+	* Makefile.am (SUBDIRS): Restore "."; it's important to force
+	ordering, so that e.g. ascii.h is built before grub-core/font/font.c
+	when needed.
+
+2010-09-20  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/commands/efi/lsefisystab.c: Correct header.
 	* grub-core/commands/efi/lssal.c: Likewise.
 	* grub-core/commands/testload.c: Likewise.
