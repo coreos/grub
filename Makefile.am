@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
 DEPDIR = .deps-util
-SUBDIRS = . grub-core po docs util/bash-completion.d
+SUBDIRS = grub-core/gnulib grub-core po docs util/bash-completion.d
 
 include $(top_srcdir)/conf/Makefile.common
 include $(top_srcdir)/conf/Makefile.extra-dist
@@ -10,6 +10,8 @@ AM_CFLAGS = $(HOST_CFLAGS)
 AM_LDFLAGS = $(HOST_LDFLAGS)
 AM_CPPFLAGS = $(HOST_CPPFLAGS) $(CPPFLAGS_DEFAULT)
 AM_CCASFLAGS = $(HOST_CCASFLAGS) $(CCASFLAGS_DEFAULT)
+
+ACLOCAL_AMFLAGS = -I m4
 
 CFLAGS_PROGRAM += $(CFLAGS_GNULIB)
 LDFLAGS_PROGRAM += $(LDFLAGS_GNULIB)

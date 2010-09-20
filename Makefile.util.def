@@ -11,14 +11,6 @@ library = {
   common_nodist = grub_script.yy.h;
   common_nodist = grub_script.tab.h;
 
-  common = grub-core/gnulib/error.c;
-  common = grub-core/gnulib/fnmatch.c;
-  common = grub-core/gnulib/getdelim.c;
-  common = grub-core/gnulib/getline.c;
-  common = grub-core/gnulib/getopt1.c;
-  common = grub-core/gnulib/getopt.c;
-  common = grub-core/gnulib/progname.c;
-
   common = util/misc.c;
   common = grub-core/kern/misc.c;
   common = grub-core/kern/emu/mm.c;
@@ -101,6 +93,7 @@ program = {
   common = util/bin2h.c;
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
   mansection = 1;
 };
 
@@ -114,6 +107,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
   cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibrootdir)\"';
 };
 
@@ -125,6 +119,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 program = {
@@ -135,6 +130,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 program = {
@@ -145,6 +141,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 program = {
@@ -155,6 +152,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
 };
@@ -173,6 +171,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
+  ldadd = grub-core/gnulib/libgnu.a;
   condition = COND_GRUB_PE2ELF;
 };
 
@@ -184,10 +183,12 @@ program = {
   common = grub-core/kern/emu/hostfs.c;
   common = grub-core/disk/host.c;
 
-  ldadd = libgrub.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
+
+  ldadd = libgrub.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 program = {
@@ -200,6 +201,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(freetype_libs)';
   condition = COND_GRUB_MKFONT;
 };
@@ -218,6 +220,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 program = {
@@ -228,6 +231,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 program = {
@@ -242,6 +246,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = grub-core/gnulib/libgnu.a;
 
   enable = i386_pc;
   enable = sparc64_ieee1275;
@@ -255,6 +260,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = grub-core/gnulib/libgnu.a;
   enable = sparc64_ieee1275;
 };
 
@@ -266,6 +272,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 data = {
@@ -585,4 +592,5 @@ program = {
 
   ldadd = libgrub.a;
   ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };

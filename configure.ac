@@ -34,6 +34,8 @@ dnl type.
 
 AC_INIT([GRUB],[1.98],[bug-grub@gnu.org])
 
+AC_CONFIG_AUX_DIR([build-aux])
+
 # We don't want -g -O2 by default in CFLAGS
 : ${CFLAGS=""}
 
@@ -249,6 +251,7 @@ AC_PATH_PROG(MAKEINFO, makeinfo)
 #
 
 AC_PROG_CC
+gl_EARLY
 AM_PROG_CC_C_O
 AM_PROG_AS
 
@@ -308,6 +311,9 @@ AC_SUBST([LIBUTIL])
 HOST_CC=$CC
 AC_CHECK_PROGS(BUILD_CC, [gcc egcs cc],
                  [AC_MSG_ERROR([none of gcc, egcs and cc is found. set BUILD_CC manually.])])
+
+# For gnulib.
+gl_INIT
 
 #
 # Check for target programs.
@@ -927,6 +933,7 @@ fi
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([grub-core/Makefile])
+AC_CONFIG_FILES([grub-core/gnulib/Makefile])
 AC_CONFIG_FILES([po/Makefile])
 AC_CONFIG_FILES([docs/Makefile])
 AC_CONFIG_FILES([util/bash-completion.d/Makefile])

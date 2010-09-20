@@ -380,12 +380,6 @@ module = {
 library = {
   name = libgnulib.a;
   common = gnulib/regex.c;
-
-  extra_dist = gnulib/regcomp.c;
-  extra_dist = gnulib/regexec.c;
-  extra_dist = gnulib/fnmatch_loop.c;
-  extra_dist = gnulib/regex_internal.c;
-
   cflags = '$(CFLAGS_POSIX) $(CFLAGS_GNULIB)';
   cppflags = '$(CPPFLAGS_POSIX) $(CPPFLAGS_GNULIB)';
 };
