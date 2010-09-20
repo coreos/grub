@@ -1,3 +1,24 @@
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use argp in grub-fstest.
+
+	* util/grub-fstest.c: Don't include getopt.h.
+	Include argp.h.
+	(root): New variable.
+	(args_count): Likewise.
+	(nparm): Likewise.
+	(num_disks): Likewise.
+	(images): Likewise.
+	(cmd): Likewise.
+	(debug_str): Likewise.
+	(args): Likewise.
+	(options): Transformed to argp.
+	(usage): Removed.
+	(main): Split argument parsing into ...
+	(argp_parser): ... this. Changed to argp format.
+	(argp): New variable.
+	(main): Use argp_parse.
+
 2010-09-20  Tristan Gingold  <gingold@free.fr>
 2010-09-20  Robert Millan  <rmh.grub@aybabtu.com>
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
