@@ -1,3 +1,48 @@
+2010-09-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix po directory handling.
+
+	* configure.ac: Create po/Makefile.in rather than po/Makefile.
+	* grub-core/gnulib/Makefile.am: Import gettext module.
+	* m4/gnulib-cache.m4: Likewise.
+	* m4/gnulib-comp.m4: Likewise.
+	* m4/gettext.m4: New file, from gnulib.
+	* m4/glibc2.m4: Likewise.
+	* m4/iconv.m4: Likewise.
+	* m4/intdiv0.m4: Likewise.
+	* m4/intl.m4: Likewise.
+	* m4/intldir.m4: Likewise.
+	* m4/intlmacosx.m4: Likewise.
+	* m4/intmax.m4: Likewise.
+	* m4/inttypes-pri.m4: Likewise.
+	* m4/lcmessage.m4: Likewise.
+	* m4/lib-ld.m4: Likewise.
+	* m4/lib-link.m4: Likewise.
+	* m4/lib-prefix.m4: Likewise.
+	* m4/lock.m4: Likewise.
+	* m4/nls.m4: Likewise.
+	* m4/po.m4: Likewise.
+	* m4/printf-posix.m4: Likewise.
+	* m4/progtest.m4: Likewise.
+	* m4/threadlib.m4: Likewise.
+	* m4/uintmax_t.m4: Likewise.
+	* m4/visibility.m4: Likewise.
+	* po/Makefile.am: Remove.
+	* po/Makefile.in.in: New file, from gettext.
+	($(DOMAIN).pot-update): Support POTFILES-shell.
+	* po/Makevars: New file.
+	* po/POTFILES-shell: Rename to ...
+	* po/POTFILES-shell.in: ... this.  Update.
+	* po/POTFILES: Rename to ...
+	* po/POTFILES.in: ... this.  Update.
+	* po/Rules-quot: New file, from gettext.
+	* po/boldquot.sed: Likewise.
+	* po/en@boldquot.header: Likewise.
+	* po/en@quot.header: Likewise.
+	* po/insert-header.sin: Likewise.
+	* po/quot.sed: Likewise.
+	* po/remove-potcdate.sin: Likewise.
+
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub.d/10_kfreebsd.in (kfreebsd_entry): Use UUID when possible.

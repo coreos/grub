@@ -934,7 +934,7 @@ fi
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([grub-core/Makefile])
 AC_CONFIG_FILES([grub-core/gnulib/Makefile])
-AC_CONFIG_FILES([po/Makefile])
+AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([docs/Makefile])
 AC_CONFIG_FILES([util/bash-completion.d/Makefile])
 AC_CONFIG_FILES([stamp-h], [echo timestamp > stamp-h])

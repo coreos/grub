@@ -45,7 +45,9 @@ AC_DEFUN([gl_EARLY],
   # Code from module getline:
   # Code from module getopt-gnu:
   # Code from module getopt-posix:
+  # Code from module gettext:
   # Code from module gettext-h:
+  # Code from module havelib:
   # Code from module include_next:
   # Code from module intprops:
   # Code from module langinfo:
@@ -150,9 +152,13 @@ AC_DEFUN([gl_INIT],
   gl_MODULE_INDICATOR_FOR_TESTS([getopt-gnu])
   # Code from module getopt-posix:
   gl_FUNC_GETOPT_POSIX
+  # Code from module gettext:
+  dnl you must add AM_GNU_GETTEXT([external]) or similar to configure.ac.
+  AM_GNU_GETTEXT_VERSION([0.18.1])
   # Code from module gettext-h:
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
+  # Code from module havelib:
   # Code from module include_next:
   # Code from module intprops:
   # Code from module langinfo:
@@ -400,6 +406,7 @@ AC_DEFUN([gltests_LIBSOURCES], [
 AC_DEFUN([gl_FILE_LIST], [
   build-aux/arg-nonnull.h
   build-aux/c++defs.h
+  build-aux/config.rpath
   build-aux/warn-on-use.h
   lib/alloca.c
   lib/alloca.in.h
@@ -517,16 +524,30 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/getdelim.m4
   m4/getline.m4
   m4/getopt.m4
+  m4/gettext.m4
+  m4/glibc2.m4
   m4/glibc21.m4
   m4/gnulib-common.m4
+  m4/iconv.m4
   m4/include_next.m4
+  m4/intdiv0.m4
+  m4/intl.m4
+  m4/intldir.m4
+  m4/intlmacosx.m4
+  m4/intmax.m4
   m4/intmax_t.m4
+  m4/inttypes-pri.m4
   m4/inttypes_h.m4
   m4/langinfo_h.m4
+  m4/lcmessage.m4
+  m4/lib-ld.m4
+  m4/lib-link.m4
+  m4/lib-prefix.m4
   m4/localcharset.m4
   m4/locale-fr.m4
   m4/locale-ja.m4
   m4/locale-zh.m4
+  m4/lock.m4
   m4/longlong.m4
   m4/malloc.m4
   m4/mbrtowc.m4
@@ -538,7 +559,11 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/mmap-anon.m4
   m4/multiarch.m4
   m4/nl_langinfo.m4
+  m4/nls.m4
+  m4/po.m4
+  m4/printf-posix.m4
   m4/printf.m4
+  m4/progtest.m4
   m4/rawmemchr.m4
   m4/realloc.m4
   m4/regex.m4
@@ -560,8 +585,11 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/strnlen.m4
   m4/sys_wait_h.m4
   m4/sysexits.m4
+  m4/threadlib.m4
+  m4/uintmax_t.m4
   m4/unistd_h.m4
   m4/vasnprintf.m4
+  m4/visibility.m4
   m4/vsnprintf.m4
   m4/warn-on-use.m4
   m4/wchar_h.m4
