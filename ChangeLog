@@ -1,5 +1,13 @@
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	New command cutmem.
+
+	* grub-core/mmap/mmap.c (grub_cmd_cutmem): New function.
+	(GRUB_MOD_INIT): Register new command.
+	(GRUB_MOD_FINI): Unregister new command.
+
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support some annoying BSD and Minix subpartitions.
 
 	* Makefile.util.def (libgrub.a): Add grub-core/partmap/bsdlabel.c.

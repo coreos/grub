@@ -398,7 +398,57 @@ grub_cmd_badram (grub_command_t cmd __attribute__ ((unused)),
     }
 }
 
-static grub_command_t cmd;
+static grub_err_t
+grub_cmd_cutmem (grub_command_t cmd __attribute__ ((unused)),
+		 int argc, char **args)
+{
+  grub_uint64_t cutmem;
+  char *ptr;
+
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+				 grub_memory_type_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr,
+			     grub_uint64_t size,
+			     grub_memory_type_t type __attribute__ ((unused)))
+  {
+    grub_uint64_t end = addr + size;
+
+    if (end >= cutmem)
+      return 0;
+    if (addr < cutmem)
+      addr = cutmem;
+
+    grub_mmap_register (addr, end - addr, GRUB_MEMORY_HOLE);
+    return 0;
+  }
+
+  if (argc != 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "number required");
+
+  cutmem = grub_strtoul (args[0], &ptr, 0);
+  if (grub_errno)
+    return grub_errno;
+  switch (*ptr)
+    {
+    case 'K':
+      cutmem <<= 10;
+      break;
+    case 'M':
+      cutmem <<= 20;
+      break;
+    case 'G':
+      cutmem <<= 30;
+      break;
+    case 'T':
+      cutmem <<= 40;
+      break;
+    }
+  grub_mmap_iterate (hook);
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_command_t cmd, cmd_cut;
 
 
 GRUB_MOD_INIT(mmap)
@@ -406,10 +456,15 @@ GRUB_MOD_INIT(mmap)
   cmd = grub_register_command ("badram", grub_cmd_badram,
 			       N_("ADDR1,MASK1[,ADDR2,MASK2[,...]]"),
 			       N_("Declare memory regions as badram."));
+  cmd_cut = grub_register_command ("cutmem", grub_cmd_cutmem,
+				   N_("ADDR[K|M|G]"),
+				   N_("Remove any memory regions above ADDR."));
+
 }
 
 GRUB_MOD_FINI(mmap)
 {
   grub_unregister_command (cmd);
+  grub_unregister_command (cmd_cut);
 }
 
