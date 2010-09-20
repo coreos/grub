@@ -139,6 +139,9 @@ bsdlabel_partition_map_iterate (grub_disk_t disk,
 		       &grub_bsdlabel_partition_map, hook);
 }
 
+/* This is a total breakage. Even when net-/openbsd label is inside partition
+   it actually describes the whole disk.
+ */
 static grub_err_t
 netopenbsdlabel_partition_map_iterate (grub_disk_t disk, grub_uint8_t type,
 				       struct grub_partition_map *pmap,
