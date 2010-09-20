@@ -296,10 +296,12 @@ fstest (int n, char **args)
     }
 
   grub_lvm_fini ();
-  grub_mdraid_fini ();
+  grub_mdraid09_fini ();
+  grub_mdraid1x_fini ();
   grub_raid_fini ();
   grub_raid_init ();
-  grub_mdraid_init ();
+  grub_mdraid09_init ();
+  grub_mdraid1x_init ();
   grub_lvm_init ();
 
   switch (cmd)

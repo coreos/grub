@@ -176,10 +176,12 @@ extern grub_err_t (* EXPORT_VAR(grub_disk_ata_pass_through)) (grub_disk_t,
 
 #if defined (GRUB_UTIL) || defined (GRUB_MACHINE_EMU)
 void grub_lvm_init (void);
-void grub_mdraid_init (void);
+void grub_mdraid09_init (void);
+void grub_mdraid1x_init (void);
 void grub_raid_init (void);
 void grub_lvm_fini (void);
-void grub_mdraid_fini (void);
+void grub_mdraid09_fini (void);
+void grub_mdraid1x_fini (void);
 void grub_raid_fini (void);
 #endif
 

@@ -1,5 +1,16 @@
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Split mdraid.mod into mdraid09.mod and mdraid1x.mod.
+
+	* Makefile.util.def (libgrub.a): Add grub-core/disk/mdraid1x_linux.c.
+	* grub-core/Makefile.core.def (mdraid): Renamed to ...
+	(mdraid09): ... this.
+	(mdraid1x): New module.
+	* grub-core/disk/mdraid_linux.c: Move 1.x parts ...
+	* grub-core/disk/mdraid1x_linux.c: ...here. All users updated.
+
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/misc.c (asprintf): Use vsnprintf instead of
 	vsprintf.
 

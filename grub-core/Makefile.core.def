@@ -741,8 +741,13 @@ module = {
 };
 
 module = {
-  name = mdraid;
+  name = mdraid09;
   common = disk/mdraid_linux.c;
+};
+
+module = {
+  name = mdraid1x;
+  common = disk/mdraid1x_linux.c;
 };
 
 module = {
