@@ -1,5 +1,9 @@
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/10_kfreebsd.in (kfreebsd_entry): Use UUID when possible.
+
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/20_linux_xen.in: Use submenus.
 
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>

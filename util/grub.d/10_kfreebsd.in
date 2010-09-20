@@ -144,7 +144,16 @@ while [ "x$list" != "x" ] ; do
 			# filesystem name (empty string for the main filesystem)
 			kfreebsd_device="${kfreebsd_device}$(grub-mkrelpath / | sed -e "s,/*@$,,")"
     ;;
-    *)			kfreebsd_device=${GRUB_DEVICE} ;;
+    *)
+	  kfreebsd_device=${kfreebsd_fs}id/${GRUB_DEVICE_UUID}
+	  # Debian GNU/kFreeBSD can't remount root if it's supplied as UUID but
+	  # as an UUID
+	  if [ "x${GRUB_DISTRIBUTOR}" = "xDebian" ] \
+	      && ! (cat /etc/fstab | awk '!/^[[:space:]]*#/ && $2=="/" { print $1; }' \
+	      | grep "${kfreebsd_fs}id/${GRUB_DEVICE_UUID}" > /dev/null); then
+	      kfreebsd_device=${GRUB_DEVICE} 
+	  fi
+	  ;;
   esac
 
   version=`echo $basename | sed -e "s,^[^0-9]*-,,g;s/\.gz$//g"`
