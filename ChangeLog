@@ -1,5 +1,9 @@
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/20_linux_xen.in: Use submenus.
+
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support submenus.
 
 	* grub-core/commands/menuentry.c (grub_normal_add_menu_entry): New
