@@ -11,14 +11,6 @@ library = {
   common_nodist = grub_script.yy.h;
   common_nodist = grub_script.tab.h;
 
-  common = grub-core/gnulib/error.c;
-  common = grub-core/gnulib/fnmatch.c;
-  common = grub-core/gnulib/getdelim.c;
-  common = grub-core/gnulib/getline.c;
-  common = grub-core/gnulib/getopt1.c;
-  common = grub-core/gnulib/getopt.c;
-  common = grub-core/gnulib/progname.c;
-
   common = util/misc.c;
   common = grub-core/kern/misc.c;
   common = grub-core/kern/emu/mm.c;
@@ -33,6 +25,7 @@ library = {
   common = grub-core/disk/loopback.c;
   common = grub-core/disk/lvm.c;
   common = grub-core/disk/mdraid_linux.c;
+  common = grub-core/disk/mdraid1x_linux.c;
   common = grub-core/disk/raid5_recover.c;
   common = grub-core/disk/raid6_recover.c;
   common = grub-core/disk/raid.c;
@@ -72,11 +65,11 @@ library = {
   common = grub-core/kern/list.c;
   common = grub-core/kern/partition.c;
   common = grub-core/lib/arg.c;
-  common = grub-core/lib/crc.c;
   common = grub-core/lib/crypto.c;
   common = grub-core/lib/envblk.c;
   common = grub-core/lib/hexdump.c;
   common = grub-core/lib/libgcrypt-grub/cipher/sha512.c;
+  common = grub-core/lib/libgcrypt-grub/cipher/crc.c;
   common = grub-core/lib/LzFind.c;
   common = grub-core/lib/LzmaEnc.c;
   common = grub-core/lib/pbkdf2.c;
@@ -89,6 +82,7 @@ library = {
   common = grub-core/partmap/msdos.c;
   common = grub-core/partmap/sun.c;
   common = grub-core/partmap/sunpc.c;
+  common = grub-core/partmap/bsdlabel.c;
   common = grub-core/script/function.c;
   common = grub-core/script/lexer.c;
   common = grub-core/script/main.c;
@@ -101,6 +95,7 @@ program = {
   common = util/bin2h.c;
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
   mansection = 1;
 };
 
@@ -114,6 +109,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
   cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibrootdir)\"';
 };
 
@@ -125,6 +121,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 program = {
@@ -135,6 +132,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 program = {
@@ -145,6 +143,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 program = {
@@ -155,6 +154,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
 };
@@ -173,6 +173,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL)';
+  ldadd = grub-core/gnulib/libgnu.a;
   condition = COND_GRUB_PE2ELF;
 };
 
@@ -184,8 +185,12 @@ program = {
   common = grub-core/kern/emu/hostfs.c;
   common = grub-core/disk/host.c;
 
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
+
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 program = {
@@ -198,6 +203,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(freetype_libs)';
   condition = COND_GRUB_MKFONT;
 };
@@ -216,6 +222,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 program = {
@@ -226,6 +233,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 program = {
@@ -240,6 +248,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = grub-core/gnulib/libgnu.a;
 
   enable = i386_pc;
   enable = sparc64_ieee1275;
@@ -253,7 +262,19 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = grub-core/gnulib/libgnu.a;
   enable = sparc64_ieee1275;
+};
+
+program = {
+  name = grub-mklayout;
+  mansection = 1;
+
+  common = util/grub-mklayout.c;
+
+  ldadd = libgrub.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };
 
 data = {
@@ -345,17 +366,7 @@ script = {
   installdir = sbin;
   name = grub-install;
 
-  mips = util/grub-install.in;
-  i386_pc = util/grub-install.in;
-  i386_qemu = util/grub-install.in;
-  i386_coreboot = util/grub-install.in;
-  i386_multiboot = util/grub-install.in;
-  sparc64_ieee1275 = util/grub-install.in;
-
-  x86_efi = util/i386/efi/grub-install.in;
-  i386_ieee1275 = util/ieee1275/grub-install.in;
-  powerpc_ieee1275 = util/ieee1275/grub-install.in;
-
+  common = util/grub-install.in;
   enable = noemu;
 };
 
@@ -398,6 +409,11 @@ script = {
   name = update-grub_lib;
   common = util/update-grub_lib.in;
   installdir = noinst;
+};
+
+script = {
+  name = grub-kbdcomp;
+  common = util/grub-kbdcomp.in;
 };
 
 script = {
@@ -550,6 +566,12 @@ script = {
   common = tests/partmap_test.in;
 };
 
+script = {
+  testcase;
+  name = grub_cmd_echo;
+  common = tests/grub_cmd_echo.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;
@@ -561,4 +583,16 @@ program = {
   cflags = -Wno-format;
   ldadd = libgrub.a;
   ldadd = '$(LIBDEVMAPPER)';
+};
+
+program = {
+  name = grub-menulst2cfg;
+  mansection = 1;
+  common = util/grub-menulst2cfg.c;
+  common = grub-core/lib/legacy_parse.c;
+  common = grub-core/lib/i386/pc/vesa_modes_table.c;
+
+  ldadd = libgrub.a;
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = grub-core/gnulib/libgnu.a;
 };

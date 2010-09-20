@@ -477,6 +477,7 @@ GRUB_MOD_INIT(normal)
   /* Previously many modules depended on gzio. Be nice to user and load it.  */
   grub_dl_load ("gzio");
 
+  grub_normal_auth_init ();
   grub_context_init ();
   grub_script_init ();
   grub_menu_init ();
@@ -520,6 +521,7 @@ GRUB_MOD_FINI(normal)
   grub_context_fini ();
   grub_script_fini ();
   grub_menu_fini ();
+  grub_normal_auth_fini ();
 
   grub_xputs = grub_xputs_saved;
 

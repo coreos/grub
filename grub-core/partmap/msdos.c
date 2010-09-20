@@ -27,16 +27,25 @@
 static struct grub_partition_map grub_msdos_partition_map;
 
 
-static grub_err_t
-pc_partition_map_iterate (grub_disk_t disk,
-			  int (*hook) (grub_disk_t disk,
-				       const grub_partition_t partition))
+grub_err_t
+grub_partition_msdos_iterate (grub_disk_t disk,
+			      int (*hook) (grub_disk_t disk,
+					   const grub_partition_t partition))
 {
   struct grub_partition p;
   struct grub_msdos_partition_mbr mbr;
   int labeln = 0;
   grub_disk_addr_t lastaddr;
   grub_disk_addr_t ext_offset;
+  grub_disk_addr_t delta = 0;
+
+  if (disk->partition && disk->partition->partmap == &grub_msdos_partition_map)
+    {
+      if (disk->partition->msdostype == GRUB_PC_PARTITION_TYPE_LINUX_MINIX)
+	delta = disk->partition->start;
+      else
+	return grub_error (GRUB_ERR_BAD_PART_TABLE, "no embedding supported");
+    }
 
   p.offset = 0;
   ext_offset = 0;
@@ -81,8 +90,9 @@ pc_partition_map_iterate (grub_disk_t disk,
 	{
 	  e = mbr.entries + p.index;
 
-	  p.start = p.offset + grub_le_to_cpu32 (e->start);
+	  p.start = p.offset + grub_le_to_cpu32 (e->start) - delta;
 	  p.len = grub_le_to_cpu32 (e->length);
+	  p.msdostype = e->type;
 
 	  grub_dprintf ("partition",
 			"partition %d: flag 0x%x, type 0x%x, start 0x%llx, len 0x%llx\n",
@@ -251,7 +261,7 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
 static struct grub_partition_map grub_msdos_partition_map =
   {
     .name = "msdos",
-    .iterate = pc_partition_map_iterate,
+    .iterate = grub_partition_msdos_iterate,
 #ifdef GRUB_UTIL
     .embed = pc_partition_map_embed
 #endif

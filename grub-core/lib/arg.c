@@ -144,6 +144,9 @@ grub_arg_show_help (grub_extcmd_t cmd)
 		}
 	    }
 
+	  if (spacing < 0)
+	    spacing = 3;
+
 	  while (spacing--)
 	    grub_xputs (" ");
 

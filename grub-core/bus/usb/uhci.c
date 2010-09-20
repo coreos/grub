@@ -28,6 +28,8 @@
 
 #define GRUB_UHCI_IOMASK	(0x7FF << 5)
 
+#define N_QH  256
+
 typedef enum
   {
     GRUB_UHCI_REG_USBCMD = 0x00,
@@ -39,6 +41,19 @@ typedef enum
 #define GRUB_UHCI_LINK_TERMINATE	1
 #define GRUB_UHCI_LINK_QUEUE_HEAD	2
 
+enum
+  {
+    GRUB_UHCI_REG_PORTSC_CONNECT_CHANGED = 0x0002,
+    GRUB_UHCI_REG_PORTSC_PORT_ENABLED    = 0x0004,
+    GRUB_UHCI_REG_PORTSC_RESUME          = 0x0040,
+    GRUB_UHCI_REG_PORTSC_RESET           = 0x0200,
+    GRUB_UHCI_REG_PORTSC_SUSPEND         = 0x1000,
+    GRUB_UHCI_REG_PORTSC_RW = GRUB_UHCI_REG_PORTSC_PORT_ENABLED
+    | GRUB_UHCI_REG_PORTSC_RESUME | GRUB_UHCI_REG_PORTSC_RESET
+    | GRUB_UHCI_REG_PORTSC_SUSPEND,
+    /* These bits should not be written as 1 unless we really need it */
+    GRUB_UHCI_PORTSC_RWC = ((1 << 1) | (1 << 3) | (1 << 11) | (3 << 13))
+  };
 
 /* UHCI Queue Head.  */
 struct grub_uhci_qh
@@ -87,7 +102,7 @@ struct grub_uhci
   int iobase;
   grub_uint32_t *framelist;
 
-  /* 256 Queue Heads.  */
+  /* N_QH Queue Heads.  */
   grub_uhci_qh_t qh;
 
   /* 256 Transfer Descriptors.  */
@@ -95,6 +110,8 @@ struct grub_uhci
 
   /* Free Transfer Descriptors.  */
   grub_uhci_td_t tdfree;
+
+  int qh_busy[N_QH];
 
   struct grub_uhci *next;
 };
@@ -248,7 +265,7 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
 			(grub_uint32_t) (grub_addr_t) u->framelist);
 
   /* Make the Queue Heads point to each other.  */
-  for (i = 0; i < 256; i++)
+  for (i = 0; i < N_QH; i++)
     {
       /* Point to the next QH.  */
       u->qh[i].linkptr = (grub_uint32_t) (grub_addr_t) (&u->qh[i + 1]) & (~15);
@@ -261,9 +278,8 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
       u->qh[i].elinkptr = 1;
     }
 
-  /* The last Queue Head should terminate.  256 are too many QHs so
-     just use 50.  */
-  u->qh[50 - 1].linkptr = 1;
+  /* The last Queue Head should terminate.  */
+  u->qh[N_QH - 1].linkptr = 1;
 
   /* Enable UHCI again.  */
   grub_uhci_writereg16 (u, GRUB_UHCI_REG_USBCMD, 1 | (1 << 7));
@@ -332,10 +348,12 @@ grub_free_td (struct grub_uhci *u, grub_uhci_td_t td)
 }
 
 static void
-grub_free_queue (struct grub_uhci *u, grub_uhci_td_t td,
+grub_free_queue (struct grub_uhci *u, grub_uhci_qh_t qh, grub_uhci_td_t td,
                  grub_usb_transfer_t transfer, grub_size_t *actual)
 {
   int i; /* Index of TD in transfer */
+
+  u->qh_busy[qh - u->qh] = 0;
 
   *actual = 0;
   
@@ -375,18 +393,20 @@ grub_alloc_qh (struct grub_uhci *u,
 #endif
     i = 1;
 
-  for (; i < 255; i++)
+  for (; i < N_QH; i++)
     {
-      if (u->qh[i].elinkptr & 1)
+      if (!u->qh_busy[i])
 	break;
     }
   qh = &u->qh[i];
-  if (! (qh->elinkptr & 1))
+  if (i == N_QH)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		  "no free queue heads available");
       return NULL;
     }
+
+  u->qh_busy[qh - u->qh] = 1;
 
   return qh;
 }
@@ -395,7 +415,7 @@ static grub_uhci_td_t
 grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
 		       grub_transfer_type_t type, unsigned int addr,
 		       unsigned int toggle, grub_size_t size,
-		       grub_uint32_t data)
+		       grub_uint32_t data, grub_usb_speed_t speed)
 {
   grub_uhci_td_t td;
   static const unsigned int tf[] = { 0x69, 0xE1, 0x2D };
@@ -420,7 +440,8 @@ grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
   td->linkptr = 1;
 
   /* Active!  Only retry a transfer 3 times.  */
-  td->ctrl_status = (1 << 23) | (3 << 27);
+  td->ctrl_status = (1 << 23) | (3 << 27) |
+                    ((speed == GRUB_USB_SPEED_LOW) ? (1 << 26) : 0);
 
   /* If zero bytes are transmitted, size is 0x7FF.  Otherwise size is
      size-1.  */
@@ -438,26 +459,35 @@ grub_uhci_transaction (struct grub_uhci *u, unsigned int endp,
   return td;
 }
 
+struct grub_uhci_transfer_controller_data
+{
+  grub_uhci_qh_t qh;
+  grub_uhci_td_t td_first;
+};
+
 static grub_usb_err_t
-grub_uhci_transfer (grub_usb_controller_t dev,
-		    grub_usb_transfer_t transfer,
-		    int timeout, grub_size_t *actual)
+grub_uhci_setup_transfer (grub_usb_controller_t dev,
+			  grub_usb_transfer_t transfer)
 {
   struct grub_uhci *u = (struct grub_uhci *) dev->data;
-  grub_uhci_qh_t qh;
   grub_uhci_td_t td;
-  grub_uhci_td_t td_first = NULL;
   grub_uhci_td_t td_prev = NULL;
-  grub_usb_err_t err = GRUB_USB_ERR_NONE;
   int i;
-  grub_uint64_t endtime;
+  struct grub_uhci_transfer_controller_data *cdata;
 
-  *actual = 0;
+  cdata = grub_malloc (sizeof (*cdata));
+  if (!cdata)
+    return GRUB_USB_ERR_INTERNAL;
+
+  cdata->td_first = NULL;
 
   /* Allocate a queue head for the transfer queue.  */
-  qh = grub_alloc_qh (u, GRUB_USB_TRANSACTION_TYPE_CONTROL);
-  if (! qh)
-    return GRUB_USB_ERR_INTERNAL;
+  cdata->qh = grub_alloc_qh (u, GRUB_USB_TRANSACTION_TYPE_CONTROL);
+  if (! cdata->qh)
+    {
+      grub_free (cdata);
+      return GRUB_USB_ERR_INTERNAL;
+    }
 
   grub_dprintf ("uhci", "transfer, iobase:%08x\n", u->iobase);
   
@@ -465,23 +495,26 @@ grub_uhci_transfer (grub_usb_controller_t dev,
     {
       grub_usb_transaction_t tr = &transfer->transactions[i];
 
-      td = grub_uhci_transaction (u, transfer->endpoint, tr->pid,
+      td = grub_uhci_transaction (u, transfer->endpoint & 15, tr->pid,
 				  transfer->devaddr, tr->toggle,
-				  tr->size, tr->data);
+				  tr->size, tr->data,
+				  transfer->dev->speed);
       if (! td)
 	{
+	  grub_size_t actual = 0;
 	  /* Terminate and free.  */
 	  td_prev->linkptr2 = 0;
 	  td_prev->linkptr = 1;
 
-	  if (td_first)
-	    grub_free_queue (u, td_first, NULL, actual);
+	  if (cdata->td_first)
+	    grub_free_queue (u, cdata->qh, cdata->td_first, NULL, &actual);
 
+	  grub_free (cdata);
 	  return GRUB_USB_ERR_INTERNAL;
 	}
 
-      if (! td_first)
-	td_first = td;
+      if (! cdata->td_first)
+	cdata->td_first = td;
       else
 	{
 	  td_prev->linkptr2 = (grub_uint32_t) (grub_addr_t) td;
@@ -497,81 +530,112 @@ grub_uhci_transfer (grub_usb_controller_t dev,
 
   /* Link it into the queue and terminate.  Now the transaction can
      take place.  */
-  qh->elinkptr = (grub_uint32_t) (grub_addr_t) td_first;
+  cdata->qh->elinkptr = (grub_uint32_t) (grub_addr_t) cdata->td_first;
 
   grub_dprintf ("uhci", "initiate transaction\n");
 
-  /* Wait until either the transaction completed or an error
-     occurred.  */
-  endtime = grub_get_time_ms () + timeout;
-  for (;;)
+  transfer->controller_data = cdata;
+
+  return GRUB_USB_ERR_NONE;
+}
+
+static grub_usb_err_t
+grub_uhci_check_transfer (grub_usb_controller_t dev,
+			  grub_usb_transfer_t transfer,
+			  grub_size_t *actual)
+{
+  struct grub_uhci *u = (struct grub_uhci *) dev->data;
+  grub_uhci_td_t errtd;
+  struct grub_uhci_transfer_controller_data *cdata = transfer->controller_data;
+
+  *actual = 0;
+
+  errtd = (grub_uhci_td_t) (grub_addr_t) (cdata->qh->elinkptr & ~0x0f);
+  
+  grub_dprintf ("uhci", ">t status=0x%02x data=0x%02x td=%p\n",
+		errtd->ctrl_status, errtd->buffer & (~15), errtd);
+
+  /* Check if the transaction completed.  */
+  if (cdata->qh->elinkptr & 1)
     {
-      grub_uhci_td_t errtd;
+      grub_dprintf ("uhci", "transaction complete\n");
 
-      errtd = (grub_uhci_td_t) (grub_addr_t) (qh->elinkptr & ~0x0f);
+      /* Place the QH back in the free list and deallocate the associated
+	 TDs.  */
+      cdata->qh->elinkptr = 1;
+      grub_free_queue (u, cdata->qh, cdata->td_first, transfer, actual);
+      grub_free (cdata);
+      return GRUB_USB_ERR_NONE;
+    }
 
-      grub_dprintf ("uhci", ">t status=0x%02x data=0x%02x td=%p\n",
-		    errtd->ctrl_status, errtd->buffer & (~15), errtd);
+  grub_dprintf ("uhci", "t status=0x%02x\n", errtd->ctrl_status);
 
-      /* Check if the transaction completed.  */
-      if (qh->elinkptr & 1)
-	break;
-
-      grub_dprintf ("uhci", "t status=0x%02x\n", errtd->ctrl_status);
+  if (!(errtd->ctrl_status & (1 << 23)))
+    {
+      grub_usb_err_t err = GRUB_USB_ERR_NONE;
 
       /* Check if the endpoint is stalled.  */
       if (errtd->ctrl_status & (1 << 22))
 	err = GRUB_USB_ERR_STALL;
-
+      
       /* Check if an error related to the data buffer occurred.  */
-      if (errtd->ctrl_status & (1 << 21))
+      else if (errtd->ctrl_status & (1 << 21))
 	err = GRUB_USB_ERR_DATA;
-
+      
       /* Check if a babble error occurred.  */
-      if (errtd->ctrl_status & (1 << 20))
+      else if (errtd->ctrl_status & (1 << 20))
 	err = GRUB_USB_ERR_BABBLE;
-
+      
       /* Check if a NAK occurred.  */
-      if (errtd->ctrl_status & (1 << 19))
+      else if (errtd->ctrl_status & (1 << 19))
 	err = GRUB_USB_ERR_NAK;
-
+      
       /* Check if a timeout occurred.  */
-      if (errtd->ctrl_status & (1 << 18))
+      else if (errtd->ctrl_status & (1 << 18))
 	err = GRUB_USB_ERR_TIMEOUT;
-
+      
       /* Check if a bitstuff error occurred.  */
-      if (errtd->ctrl_status & (1 << 17))
+      else if (errtd->ctrl_status & (1 << 17))
 	err = GRUB_USB_ERR_BITSTUFF;
-
+      
       if (err)
-	goto fail;
-
-      /* Fall through, no errors occurred, so the QH might be
-	 updated.  */
-      grub_dprintf ("uhci", "transaction fallthrough\n");
-
-      if (grub_get_time_ms () > endtime)
 	{
-	  err = GRUB_USB_ERR_STALL;
-	  grub_dprintf ("uhci", "transaction timed out\n");
-	  goto fail;
+	  grub_dprintf ("uhci", "transaction failed\n");
+
+	  /* Place the QH back in the free list and deallocate the associated
+	     TDs.  */
+	  cdata->qh->elinkptr = 1;
+	  grub_free_queue (u, cdata->qh, cdata->td_first, transfer, actual);
+	  grub_free (cdata);
+
+	  return err;
 	}
-      grub_cpu_idle ();
     }
 
-  grub_dprintf ("uhci", "transaction complete\n");
+  /* Fall through, no errors occurred, so the QH might be
+     updated.  */
+  grub_dprintf ("uhci", "transaction fallthrough\n");
 
- fail:
+  return GRUB_USB_ERR_WAIT;
+}
 
-  if (err != GRUB_USB_ERR_NONE)
-    grub_dprintf ("uhci", "transaction failed\n");
+static grub_usb_err_t
+grub_uhci_cancel_transfer (grub_usb_controller_t dev,
+			   grub_usb_transfer_t transfer)
+{
+  struct grub_uhci *u = (struct grub_uhci *) dev->data;
+  grub_size_t actual;
+  struct grub_uhci_transfer_controller_data *cdata = transfer->controller_data;
+
+  grub_dprintf ("uhci", "transaction cancel\n");
 
   /* Place the QH back in the free list and deallocate the associated
      TDs.  */
-  qh->elinkptr = 1;
-  grub_free_queue (u, td_first, transfer, actual);
+  cdata->qh->elinkptr = 1;
+  grub_free_queue (u, cdata->qh, cdata->td_first, transfer, &actual);
+  grub_free (cdata);
 
-  return err;
+  return GRUB_USB_ERR_NONE;
 }
 
 static int
@@ -622,7 +686,7 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
       endtime = grub_get_time_ms () + 1000;
       while ((grub_uhci_readreg16 (u, reg) & (1 << 2)))
         if (grub_get_time_ms () > endtime)
-          return grub_error (GRUB_ERR_IO, "UHCI Timed out");
+          return grub_error (GRUB_ERR_IO, "UHCI Timed out - disable");
 
       status = grub_uhci_readreg16 (u, reg);
       grub_dprintf ("uhci", ">3detect=0x%02x\n", status);
@@ -630,28 +694,37 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
     }
     
   /* Reset the port.  */
-  grub_uhci_writereg16 (u, reg, 1 << 9);
+  status = grub_uhci_readreg16 (u, reg) & ~GRUB_UHCI_PORTSC_RWC;
+  grub_uhci_writereg16 (u, reg, status | (1 << 9));
+  grub_uhci_readreg16 (u, reg); /* Ensure it is writen... */
 
   /* Wait for the reset to complete.  XXX: How long exactly?  */
   grub_millisleep (50); /* For root hub should be nominaly 50ms */
-  status = grub_uhci_readreg16 (u, reg);
+  status = grub_uhci_readreg16 (u, reg) & ~GRUB_UHCI_PORTSC_RWC;
   grub_uhci_writereg16 (u, reg, status & ~(1 << 9));
-  grub_dprintf ("uhci", "reset completed\n");
-  grub_millisleep (10);
+  grub_uhci_readreg16 (u, reg); /* Ensure it is writen... */
+
+  /* Note: some debug prints were removed because they affected reset/enable timing. */
+
+  grub_millisleep (1); /* Probably not needed at all or only few microsecs. */
+
+  /* Reset bits Connect & Enable Status Change */
+  status = grub_uhci_readreg16 (u, reg) & ~GRUB_UHCI_PORTSC_RWC;
+  grub_uhci_writereg16 (u, reg, status | (1 << 3) | GRUB_UHCI_REG_PORTSC_CONNECT_CHANGED);
+  grub_uhci_readreg16 (u, reg); /* Ensure it is writen... */
 
   /* Enable the port.  */
-  grub_uhci_writereg16 (u, reg, 1 << 2);
-  grub_millisleep (10);
-
-  grub_dprintf ("uhci", "waiting for the port to be enabled\n");
+  status = grub_uhci_readreg16 (u, reg) & ~GRUB_UHCI_PORTSC_RWC;
+  grub_uhci_writereg16 (u, reg, status | (1 << 2));
+  grub_uhci_readreg16 (u, reg); /* Ensure it is writen... */
 
   endtime = grub_get_time_ms () + 1000;
   while (! ((status = grub_uhci_readreg16 (u, reg)) & (1 << 2)))
     if (grub_get_time_ms () > endtime)
-      return grub_error (GRUB_ERR_IO, "UHCI Timed out");
+      return grub_error (GRUB_ERR_IO, "UHCI Timed out - enable");
 
-  /* Reset bit Connect Status Change */
-  grub_uhci_writereg16 (u, reg, status | (1 << 1));
+  /* Reset recovery time */
+  grub_millisleep (10);
 
   /* Read final port status */
   status = grub_uhci_readreg16 (u, reg);
@@ -683,7 +756,15 @@ grub_uhci_detect_dev (grub_usb_controller_t dev, int port, int *changed)
   grub_dprintf ("uhci", "detect=0x%02x port=%d\n", status, port);
 
   /* Connect Status Change bit - it detects change of connection */
-  *changed = ((status & (1 << 1)) != 0);
+  if (status & (1 << 1))
+    {
+      *changed = 1;
+      /* Reset bit Connect Status Change */
+      grub_uhci_writereg16 (u, reg, (status & GRUB_UHCI_REG_PORTSC_RW)
+			    | GRUB_UHCI_REG_PORTSC_CONNECT_CHANGED);
+    }
+  else
+    *changed = 0;
     
   if (! (status & 1))
     return GRUB_USB_SPEED_NONE;
@@ -705,7 +786,9 @@ static struct grub_usb_controller_dev usb_controller =
 {
   .name = "uhci",
   .iterate = grub_uhci_iterate,
-  .transfer = grub_uhci_transfer,
+  .setup_transfer = grub_uhci_setup_transfer,
+  .check_transfer = grub_uhci_check_transfer,
+  .cancel_transfer = grub_uhci_cancel_transfer,
   .hubports = grub_uhci_hubports,
   .portstatus = grub_uhci_portstatus,
   .detect_dev = grub_uhci_detect_dev

@@ -20,6 +20,7 @@
 #include <grub/loader.h>
 #include <grub/machine/loader.h>
 #include <grub/machine/chainloader.h>
+#include <grub/machine/memory.h>
 #include <grub/file.h>
 #include <grub/err.h>
 #include <grub/device.h>
@@ -27,7 +28,7 @@
 #include <grub/misc.h>
 #include <grub/types.h>
 #include <grub/partition.h>
-#include <grub/machine/memory.h>
+#include <grub/memory.h>
 #include <grub/dl.h>
 #include <grub/command.h>
 #include <grub/msdos_partition.h>

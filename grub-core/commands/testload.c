@@ -1,4 +1,4 @@
-/* minicmd.c - commands for the rescue mode */
+/* testload.c - load the same file in multiple ways */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003,2005,2006,2007,2009,2010  Free Software Foundation, Inc.

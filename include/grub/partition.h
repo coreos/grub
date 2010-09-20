@@ -77,6 +77,10 @@ struct grub_partition
 
   /* The type partition map.  */
   grub_partition_map_t partmap;
+
+  /* The type of partition whne it's on MSDOS.
+     Used for embedding detection.  */
+  grub_uint8_t msdostype;
 };
 
 grub_partition_t EXPORT_FUNC(grub_partition_probe) (struct grub_disk *disk,

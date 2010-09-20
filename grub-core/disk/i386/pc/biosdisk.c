@@ -17,8 +17,8 @@
  */
 
 #include <grub/machine/biosdisk.h>
-#include <grub/machine/memory.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/memory.h>
 #include <grub/machine/int.h>
 #include <grub/disk.h>
 #include <grub/dl.h>

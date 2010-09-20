@@ -576,61 +576,28 @@ FUNCTION(grub_console_putchar)
 	ret
 
 
+LOCAL(bypass_table):
+	.word 0x0100 | '\e',0x0f00 | '\t', 0x0e00 | '\b', 0x1c00 | '\r'
+	.word 0x1c00 | '\n'
+LOCAL(bypass_table_end):
+
 /*
  * int grub_console_getkey (void)
+ *	if there is a character pending, return it; otherwise return -1
+ * BIOS call "INT 16H Function 01H" to check whether a character is pending
+ *	Call with	%ah = 0x1
+ *	Return:
+ *		If key waiting to be input:
+ *			%ah = keyboard scan code
+ *			%al = ASCII character
+ *			Zero flag = clear
+ *		else
+ *			Zero flag = set
  * BIOS call "INT 16H Function 00H" to read character from keyboard
  *	Call with	%ah = 0x0
  *	Return:		%ah = keyboard scan code
  *			%al = ASCII character
  */
-
-/* this table is used in translate_keycode below */
-LOCAL (translation_table):
-	.word	GRUB_CONSOLE_KEY_LEFT, GRUB_TERM_LEFT
-	.word	GRUB_CONSOLE_KEY_RIGHT, GRUB_TERM_RIGHT
-	.word	GRUB_CONSOLE_KEY_UP, GRUB_TERM_UP
-	.word	GRUB_CONSOLE_KEY_DOWN, GRUB_TERM_DOWN
-	.word	GRUB_CONSOLE_KEY_HOME, GRUB_TERM_HOME
-	.word	GRUB_CONSOLE_KEY_END, GRUB_TERM_END
-	.word	GRUB_CONSOLE_KEY_DC, GRUB_TERM_DC
-	.word	GRUB_CONSOLE_KEY_BACKSPACE, GRUB_TERM_BACKSPACE
-	.word	GRUB_CONSOLE_KEY_PPAGE, GRUB_TERM_PPAGE
-	.word	GRUB_CONSOLE_KEY_NPAGE, GRUB_TERM_NPAGE
-	.word	0
-
-/*
- * translate_keycode translates the key code %dx to an ascii code.
- */
-	.code16
-
-translate_keycode:
-	pushw	%bx
-	pushw	%si
-
-#ifdef __APPLE__
-	movw	$(ABS(LOCAL (translation_table)) - 0x10000), %si
-#else
-	movw	$ABS(LOCAL (translation_table)), %si
-#endif
-
-1:	lodsw
-	/* check if this is the end */
-	testw	%ax, %ax
-	jz	2f
-	/* load the ascii code into %ax */
-	movw	%ax, %bx
-	lodsw
-	/* check if this matches the key code */
-	cmpw	%bx, %dx
-	jne	1b
-	/* translate %dx, if successful */
-	movw	%ax, %dx
-
-2:	popw	%si
-	popw	%bx
-	ret
-
-	.code32
 
 FUNCTION(grub_console_getkey)
 	pushl	%ebp
@@ -645,69 +612,53 @@ FUNCTION(grub_console_getkey)
 	 * INT 16/AH = 1 before calling INT 16/AH = 0.
 	 */
 
-1:
 	movb	$1, %ah
 	int	$0x16
-	jnz	2f
-	hlt
-	jmp	1b
-
-2:
+	jz	notpending
 
 	movb	$0, %ah
 	int	$0x16
 
+	xorl    %edx, %edx
 	movw	%ax, %dx		/* real_to_prot uses %eax */
-	call	translate_keycode
 
 	DATA32	call	real_to_prot
 	.code32
 
-	movw	%dx, %ax
+	movl    $0xff, %eax
+	testl   %eax, %edx
+	jz      1f
 
-	popl	%ebp
-	ret
-
-
-/*
- * int grub_console_checkkey (void)
- *	if there is a character pending, return it; otherwise return -1
- * BIOS call "INT 16H Function 01H" to check whether a character is pending
- *	Call with	%ah = 0x1
- *	Return:
- *		If key waiting to be input:
- *			%ah = keyboard scan code
- *			%al = ASCII character
- *			Zero flag = clear
- *		else
- *			Zero flag = set
- */
-FUNCTION(grub_console_checkkey)
-	pushl	%ebp
-	xorl	%edx, %edx
-
-	call	prot_to_real	/* enter real mode */
-	.code16
-
-	movb	$0x1, %ah
-	int	$0x16
-
-	jz	notpending
-
-	movw	%ax, %dx
-	DATA32	jmp	pending
-
-notpending:
-	decl	%edx
-
-pending:
-	DATA32	call	real_to_prot
-	.code32
-
+	andl	%edx, %eax
+	cmp     %eax, 0x20
+	ja      2f
 	movl	%edx, %eax
+	leal    LOCAL(bypass_table), %esi
+	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) / 2), %ecx
+	repne cmpsw
+	jz      3f
 
+	addl    $('a' - 1 | GRUB_TERM_CTRL), %eax
+	jmp     2f
+3:
+	andl    $0xff, %eax
+	jmp 2f
+
+1:	movl    %edx, %eax
+	shrl    $8, %eax
+	orl     $GRUB_TERM_EXTENDED, %eax
+2:	
 	popl	%ebp
 	ret
+
+notpending:	
+	.code16
+	DATA32	call	real_to_prot
+	.code32
+#if GRUB_TERM_NO_KEY != 0
+#error Fix this asm code
+#endif
+	jmp 2b
 
 
 /*

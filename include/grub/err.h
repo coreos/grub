@@ -67,6 +67,7 @@ void EXPORT_FUNC(grub_fatal) (const char *fmt, ...) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_error_push) (void);
 int EXPORT_FUNC(grub_error_pop) (void);
 void EXPORT_FUNC(grub_print_error) (void);
+extern int EXPORT_VAR(grub_err_printed_errors);
 int grub_err_printf (const char *fmt, ...)
      __attribute__ ((format (printf, 1, 2)));
 

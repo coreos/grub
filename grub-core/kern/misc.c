@@ -999,7 +999,7 @@ grub_abort (void)
 void abort (void) __attribute__ ((alias ("grub_abort")));
 #endif
 
-#if defined(NEED_ENABLE_EXECUTE_STACK) && !defined(GRUB_UTIL) && !defined(GRUB_MACHINE_EMU)
+#if NEED_ENABLE_EXECUTE_STACK && !defined(GRUB_UTIL) && !defined(GRUB_MACHINE_EMU)
 /* Some gcc versions generate a call to this function
    in trampolines for nested functions.  */
 void __enable_execute_stack (void *addr __attribute__ ((unused)))
@@ -1007,7 +1007,7 @@ void __enable_execute_stack (void *addr __attribute__ ((unused)))
 }
 #endif
 
-#if defined (NEED_REGISTER_FRAME_INFO) && !defined(GRUB_UTIL)
+#if NEED_REGISTER_FRAME_INFO && !defined(GRUB_UTIL)
 void __register_frame_info (void)
 {
 }

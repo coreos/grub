@@ -19,6 +19,9 @@
 #ifndef GRUB_EMU_MISC_H
 #define GRUB_EMU_MISC_H 1
 
+#include <config-util.h>
+#include <stdarg.h>
+
 #include <grub/symbol.h>
 #include <grub/types.h>
 #include <grub/util/libzfs.h>

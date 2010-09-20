@@ -1,5 +1,17 @@
 AutoGen definitions Makefile.tpl;
 
+script = {
+  installdir = noinst;
+  name = gensyminfo.sh;
+  common = gensyminfo.sh.in;
+};
+
+script = {
+  installdir = noinst;
+  name = genmod.sh;
+  common = genmod.sh.in;
+};
+
 kernel = {
   name = kernel;
 
@@ -138,6 +150,7 @@ kernel = {
   mips_yeeloong = term/serial.c;
   mips_yeeloong = video/sm712.c;
   extra_dist = video/sm712_init.c;
+  mips_yeeloong = commands/keylayouts.c;
 
   powerpc_ieee1275 = kern/ieee1275/init.c;
   powerpc_ieee1275 = kern/powerpc/cache.S;
@@ -173,6 +186,8 @@ kernel = {
   videoinkernel = video/fb/fbutil.c;
   videoinkernel = video/fb/video_fb.c;
   videoinkernel = video/video.c;
+
+  videoinkernel = commands/boot.c;
 
   extra_dist = kern/i386/realmode.S;
   extra_dist = kern/i386/pc/lzma_decode.S;
@@ -365,12 +380,6 @@ module = {
 library = {
   name = libgnulib.a;
   common = gnulib/regex.c;
-
-  extra_dist = gnulib/regcomp.c;
-  extra_dist = gnulib/regexec.c;
-  extra_dist = gnulib/fnmatch_loop.c;
-  extra_dist = gnulib/regex_internal.c;
-
   cflags = '$(CFLAGS_POSIX) $(CFLAGS_GNULIB)';
   cppflags = '$(CPPFLAGS_POSIX) $(CPPFLAGS_GNULIB)';
 };
@@ -439,6 +448,14 @@ module = {
 };
 
 module = {
+  name = lsefimmap;
+
+  common = commands/efi/lsefimmap.c;
+
+  enable = x86_efi;
+};
+
+module = {
   name = blocklist;
   common = commands/blocklist.c;
 };
@@ -447,6 +464,7 @@ module = {
   name = boot;
   common = commands/boot.c;
   i386_pc = lib/i386/pc/biosnum.c;
+  enable = videomodules;
 };
 
 module = {
@@ -468,12 +486,6 @@ module = {
   name = cpuid;
   x86 = commands/i386/cpuid.c;
   enable = x86;
-};
-
-module = {
-  name = crc;
-  common = commands/crc.c;
-  common = lib/crc.c;
 };
 
 module = {
@@ -729,8 +741,13 @@ module = {
 };
 
 module = {
-  name = mdraid;
+  name = mdraid09;
   common = disk/mdraid_linux.c;
+};
+
+module = {
+  name = mdraid1x;
+  common = disk/mdraid1x_linux.c;
 };
 
 module = {
@@ -1118,6 +1135,7 @@ module = {
 module = {
   name = linux;
   x86 = loader/i386/linux.c;
+  i386_pc = lib/i386/pc/vesa_modes_table.c;
   mips = loader/mips/linux.c;
   powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
   sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;
@@ -1414,6 +1432,15 @@ module = {
 };
 
 module = {
+  name = legacycfg;
+  common = commands/legacycfg.c;
+  common = lib/legacy_parse.c;
+  emu = lib/i386/pc/vesa_modes_table.c;
+  enable = i386_pc;
+  enable = emu;
+};
+
+module = {
   name = test_blockarg;
   common = tests/test_blockarg.c;
 };
@@ -1430,4 +1457,16 @@ module = {
 module = {
   name = testload;
   common = commands/testload.c;
+};
+
+module = {
+  name = lsapm;
+  common = commands/i386/pc/lsapm.c;
+  enable = i386_pc;
+};
+
+module = {
+  name = keylayouts;
+  common = commands/keylayouts.c;
+  enable = videomodules;
 };

@@ -34,6 +34,8 @@ dnl type.
 
 AC_INIT([GRUB],[1.98],[bug-grub@gnu.org])
 
+AC_CONFIG_AUX_DIR([build-aux])
+
 # We don't want -g -O2 by default in CFLAGS
 : ${CFLAGS=""}
 
@@ -44,7 +46,7 @@ AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE()
 AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADER([config-util.h])
 
 # Program name transformations
 AC_ARG_PROGRAM
@@ -164,7 +166,7 @@ case "$target_cpu" in
   mips)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS=1" ;;
   sparc64)      machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
-machine_CPPFLAGS="$machine_CPPFLAGS -DMACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
+machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
 
 HOST_CPPFLAGS="$HOST_CPPFLAGS $machine_CPPFLAGS"
 TARGET_CPPFLAGS="$TARGET_CPPFLAGS $machine_CPPFLAGS"
@@ -249,6 +251,7 @@ AC_PATH_PROG(MAKEINFO, makeinfo)
 #
 
 AC_PROG_CC
+gl_EARLY
 AM_PROG_CC_C_O
 AM_PROG_AS
 
@@ -308,6 +311,9 @@ AC_SUBST([LIBUTIL])
 HOST_CC=$CC
 AC_CHECK_PROGS(BUILD_CC, [gcc egcs cc],
                  [AC_MSG_ERROR([none of gcc, egcs and cc is found. set BUILD_CC manually.])])
+
+# For gnulib.
+gl_INIT
 
 #
 # Check for target programs.
@@ -431,10 +437,9 @@ AC_MSG_CHECKING([for command to convert module to ELF format])
 case "${host_os}" in
   cygwin) TARGET_OBJ2ELF='$(grub_utildir)/grub-pe2elf';
 # FIXME: put proper test here
-  AC_DEFINE([NEED_REGISTER_FRAME_INFO], 1,
-	    [Define to 1 if GCC generates calls to __register_frame_info()])
+  NEED_REGISTER_FRAME_INFO=1
   ;;
-  *) ;;
+  *) NEED_REGISTER_FRAME_INFO=0 ;;
 esac
 AC_MSG_RESULT([$TARGET_OBJ2ELF])
 
@@ -590,16 +595,7 @@ if test "x$target_cpu" = xi386; then
   CFLAGS="$TARGET_CFLAGS"
   grub_I386_ASM_PREFIX_REQUIREMENT
   grub_I386_ASM_ADDR32
-  grub_I386_ASM_ABSOLUTE_WITHOUT_ASTERISK
-else
-  AC_DEFINE([NESTED_FUNC_ATTR], [], [Catch gcc bug])
 fi
-
-AH_BOTTOM([#if defined(__i386__) && !defined(GRUB_UTIL)
-#define NESTED_FUNC_ATTR __attribute__ ((__regparm__ (1)))
-#else
-#define NESTED_FUNC_ATTR
-#endif])
 
 AC_ARG_ENABLE([efiemu],
 	      [AS_HELP_STRING([--enable-efiemu],
@@ -796,12 +792,12 @@ if test x"$grub_mkfont_excuse" = x ; then
   if test "x$FREETYPE" = x ; then
     grub_mkfont_excuse=["need freetype2 library"]
   fi
-  freetype_cflags=`freetype-config --cflags`
-  freetype_libs=`freetype-config --libs`
 fi
 
 if test x"$grub_mkfont_excuse" = x ; then
   # Check for freetype libraries.
+  freetype_cflags=`freetype-config --cflags`
+  freetype_libs=`freetype-config --libs`
   SAVED_CPPFLAGS="$CPPFLAGS"
   CPPFLAGS="$CPPFLAGS $freetype_cflags"
   AC_CHECK_HEADERS([ft2build.h], [],
@@ -872,6 +868,16 @@ AS_IF([test x$target_cpu = xi386 -a x$platform = xqemu],
 AS_IF([test x$TARGET_APPLE_CC = x1],
 	    [AC_SUBST([USE_APPLE_CC_FIXES], yes)])
 
+AC_SUBST(HAVE_ASM_USCORE)
+AC_SUBST(ADDR32)
+AC_SUBST(DATA32)
+AC_SUBST(BSS_START_SYMBOL)
+AC_SUBST(END_SYMBOL)
+AC_SUBST(PACKAGE)
+AC_SUBST(VERSION)
+AC_SUBST(NEED_ENABLE_EXECUTE_STACK)
+AC_SUBST(NEED_REGISTER_FRAME_INFO)
+
 #
 # Automake conditionals
 #
@@ -906,6 +912,8 @@ AM_CONDITIONAL([COND_GRUB_PE2ELF], [test x$TARGET_OBJ2ELF != x])
 AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
 
+AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
+
 # Output files.
 grub_CHECK_LINK_DIR
 if test x"$link_dir" = xyes ; then
@@ -925,10 +933,12 @@ fi
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([grub-core/Makefile])
+AC_CONFIG_FILES([grub-core/gnulib/Makefile])
 AC_CONFIG_FILES([po/Makefile])
 AC_CONFIG_FILES([docs/Makefile])
 AC_CONFIG_FILES([util/bash-completion.d/Makefile])
 AC_CONFIG_FILES([stamp-h], [echo timestamp > stamp-h])
+AC_CONFIG_FILES([config.h])
 
 AC_OUTPUT
 [

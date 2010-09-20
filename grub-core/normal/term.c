@@ -42,16 +42,8 @@ static struct term_state *term_states = NULL;
 /* If the more pager is active.  */
 static int grub_more;
 
-static int grub_normal_char_counter = 0;
-
 static void
 putcode_real (grub_uint32_t code, struct grub_term_output *term);
-
-int
-grub_normal_get_char_counter (void)
-{
-  return grub_normal_char_counter;
-}
 
 void
 grub_normal_reset_more (void)
@@ -408,8 +400,6 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
       .combining = 0,
       .estimated_width = 1
     };
-
-  grub_normal_char_counter++;
 
   if (c->base == '\t' && term->getxy)
     {

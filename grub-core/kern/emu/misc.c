@@ -16,6 +16,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config-util.h>
 #include <config.h>
 
 #include <errno.h>
@@ -160,7 +161,7 @@ vasprintf (char **buf, const char *fmt, va_list ap)
   /* Should be large enough.  */
   *buf = xmalloc (512);
 
-  return vsprintf (*buf, fmt, ap);
+  return vsnprintf (*buf, 512, fmt, ap);
 }
 
 #endif
@@ -174,7 +175,7 @@ asprintf (char **buf, const char *fmt, ...)
   va_list ap;
 
   va_start (ap, fmt);
-  status = vasprintf (*buf, fmt, ap);
+  status = vasprintf (buf, fmt, ap);
   va_end (ap);
 
   return status;

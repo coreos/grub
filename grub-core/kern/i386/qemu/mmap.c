@@ -16,12 +16,14 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/i386/memory.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/boot.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/cmos.h>
+#include <grub/offsets.h>
 
 #define QEMU_CMOS_MEMSIZE_HIGH		0x35
 #define QEMU_CMOS_MEMSIZE_LOW		0x34
@@ -60,38 +62,38 @@ grub_machine_mmap_init ()
 }
 
 grub_err_t
-grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t))
+grub_machine_mmap_iterate (grub_memory_hook_t hook)
 {
   if (hook (0x0,
 	    (grub_addr_t) _start,
-	    GRUB_MACHINE_MEMORY_AVAILABLE))
+	    GRUB_MEMORY_AVAILABLE))
     return 1;
 
   if (hook ((grub_addr_t) _end,
            0xa0000 - (grub_addr_t) _end,
-           GRUB_MACHINE_MEMORY_AVAILABLE))
+           GRUB_MEMORY_AVAILABLE))
     return 1;
 
   if (hook (GRUB_MEMORY_MACHINE_UPPER,
 	    0x100000 - GRUB_MEMORY_MACHINE_UPPER,
-	    GRUB_MACHINE_MEMORY_RESERVED))
+	    GRUB_MEMORY_RESERVED))
     return 1;
 
   /* Everything else is free.  */
   if (hook (0x100000,
 	    min (mem_size, (grub_uint32_t) -GRUB_BOOT_MACHINE_SIZE) - 0x100000,
-	    GRUB_MACHINE_MEMORY_AVAILABLE))
+	    GRUB_MEMORY_AVAILABLE))
     return 1;
 
   /* Protect boot.img, which contains the gdt.  It is mapped at the top of memory
      (it is also mapped below 0x100000, but we already reserved that area).  */
   if (hook ((grub_uint32_t) -GRUB_BOOT_MACHINE_SIZE,
 	    GRUB_BOOT_MACHINE_SIZE,
-	    GRUB_MACHINE_MEMORY_RESERVED))
+	    GRUB_MEMORY_RESERVED))
     return 1;
 
   if (above_4g != 0 && hook (0x100000000ULL, above_4g,
-			     GRUB_MACHINE_MEMORY_AVAILABLE))
+			     GRUB_MEMORY_AVAILABLE))
     return 1;
 
   return 0;

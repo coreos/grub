@@ -1379,11 +1379,13 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
 
   {
     int found = 0;
-    auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-    int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t sz, grub_uint32_t type)
+    auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+				    grub_memory_type_t);
+    int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t sz,
+			       grub_memory_type_t type)
     {
       grub_uint64_t candidate;
-      if (type != GRUB_MACHINE_MEMORY_AVAILABLE)
+      if (type != GRUB_MEMORY_AVAILABLE)
 	return 0;
       candidate = ALIGN_UP (addr, align);
       if (candidate < min_addr)
