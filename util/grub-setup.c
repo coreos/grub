@@ -50,7 +50,7 @@
 #include "progname.h"
 
 #define _GNU_SOURCE	1
-#include <getopt.h>
+#include <argp.h>
 
 /* On SPARC this program fills in various fields inside of the 'boot' and 'core'
  * image files.
@@ -643,54 +643,162 @@ unable_to_embed:
   grub_device_close (root_dev);
 }
 
-static struct option options[] =
-  {
-    {"boot-image", required_argument, 0, 'b'},
-    {"core-image", required_argument, 0, 'c'},
-    {"directory", required_argument, 0, 'd'},
-    {"device-map", required_argument, 0, 'm'},
-    {"root-device", required_argument, 0, 'r'},
-    {"force", no_argument, 0, 'f'},
-    {"skip-fs-probe", no_argument, 0, 's'},
-    {"help", no_argument, 0, 'h'},
-    {"version", no_argument, 0, 'V'},
-    {"verbose", no_argument, 0, 'v'},
-    {0, 0, 0, 0}
-  };
+static struct argp_option options[] = {
+  {"boot-image",  'b', N_("FILE"), 0,
+   N_("Use FILE as the boot image [default=%s]"), 0},
+  {"core-image",  'c', N_("FILE"), 0,
+   N_("Use FILE as the core image [default=%s]"), 0},
+  {"directory",   'd', N_("DIR"),  0,
+   N_("Use GRUB files in the directory DIR [default=%s]"), 0},
+  {"device-map",  'm', N_("FILE"), 0,
+   N_("Use FILE as the device map [default=%s]"), 0},
+  {"root-device", 'r', N_("DEV"),  0,
+   N_("Use DEV as the root device [default=guessed]"), 0},
+  {"force",       'f', 0,      0,
+   N_("Install even if problems are detected"), 0},
+  {"skip-fs-probe",'s',0,      0,
+   N_("Do not probe for filesystems in DEVICE"), 0},
+  {"verbose",     'v', 0,      0,
+   N_("Print verbose messages."), 0},
+  { 0, 0, 0, 0, 0, 0 }
+};
 
-static void
-usage (int status)
+static char *
+help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 {
-  if (status)
-    fprintf (stderr, _("Try `%s --help' for more information.\n"), program_name);
-  else
-    printf (_("\
-Usage: %s [OPTION]... DEVICE\n\
-\n\
-Set up images to boot from DEVICE.\n\
-DEVICE must be a GRUB device (e.g. `(hd0,1)').\n\
-\n\
-You should not normally run %s directly.  Use grub-install instead.\n\
-\n\
-  -b, --boot-image=FILE   use FILE as the boot image [default=%s]\n\
-  -c, --core-image=FILE   use FILE as the core image [default=%s]\n\
-  -d, --directory=DIR     use GRUB files in the directory DIR [default=%s]\n\
-  -m, --device-map=FILE   use FILE as the device map [default=%s]\n\
-  -r, --root-device=DEV   use DEV as the root device [default=guessed]\n\
-  -f, --force             install even if problems are detected\n\
-  -s, --skip-fs-probe     do not probe for filesystems in DEVICE\n\
-  -h, --help              display this message and exit\n\
-  -V, --version           print version information and exit\n\
-  -v, --verbose           print verbose messages\n\
-\n\
-Report bugs to <%s>.\n\
-"),
-	    program_name, program_name,
-	    DEFAULT_BOOT_FILE, DEFAULT_CORE_FILE, DEFAULT_DIRECTORY,
-	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
+  switch (key)
+    {
+      case 'b':
+        return xasprintf (text, DEFAULT_BOOT_FILE);
 
-  exit (status);
+      case 'c':
+        return xasprintf (text, DEFAULT_CORE_FILE);
+
+      case 'd':
+        return xasprintf (text, DEFAULT_DIRECTORY);
+
+      case 'm':
+        return xasprintf (text, DEFAULT_DEVICE_MAP);
+
+      default:
+        return (char *) text;
+    }
 }
+
+struct arguments
+{
+  char *boot_file;
+  char *core_file;
+  char *dir;
+  char *dev_map;
+  char *root_dev;
+  int  force;
+  int  fs_probe;
+  char *device;
+};
+
+/* Print the version information.  */
+static void
+print_version (FILE *stream, struct argp_state *state)
+{
+  fprintf (stream, "%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
+}
+void (*argp_program_version_hook) (FILE *, struct argp_state *) = print_version;
+
+/* Set the bug report address */
+const char *argp_program_bug_address = "<"PACKAGE_BUGREPORT">";
+
+static error_t
+argp_parser (int key, char *arg, struct argp_state *state)
+{
+  /* Get the input argument from argp_parse, which we
+     know is a pointer to our arguments structure. */
+  struct arguments *arguments = state->input;
+
+  char *p;
+
+  switch (key)
+    {
+      case 'b':
+        if (arguments->boot_file)
+          free (arguments->boot_file);
+
+        arguments->boot_file = xstrdup (arg);
+        break;
+
+      case 'c':
+        if (arguments->core_file)
+          free (arguments->core_file);
+
+        arguments->core_file = xstrdup (arg);
+        break;
+
+      case 'd':
+        if (arguments->dir)
+          free (arguments->dir);
+
+        arguments->dir = xstrdup (arg);
+        break;
+
+      case 'm':
+        if (arguments->dev_map)
+          free (arguments->dev_map);
+
+        arguments->dev_map = xstrdup (arg);
+        break;
+
+      case 'r':
+        if (arguments->root_dev)
+          free (arguments->root_dev);
+
+        arguments->root_dev = xstrdup (arg);
+        break;
+
+      case 'f':
+        arguments->force = 1;
+        break;
+
+      case 's':
+        arguments->fs_probe = 0;
+        break;
+
+      case 'v':
+        verbosity++;
+        break;
+
+      case ARGP_KEY_ARG:
+        if (state->arg_num == 0)
+          arguments->device = xstrdup(arg);
+        else
+          {
+            /* Too many arguments. */
+            fprintf (stderr, _("Unknown extra argument `%s'.\n"), arg);
+            argp_usage (state);
+          }
+        break;
+
+      case ARGP_KEY_NO_ARGS:
+          fprintf (stderr, _("No device is specified.\n"));
+          argp_usage (state);
+          break;
+
+      default:
+        return ARGP_ERR_UNKNOWN;
+    }
+
+  return 0;
+}
+
+static struct argp argp = {
+  options, argp_parser, N_("DEVICE"),
+  N_("\n\
+Set up images to boot from DEVICE.\n\
+\n\
+You should not normally run this program directly.  Use grub-install instead.\n\
+\v\
+DEVICE must be an OS device (e.g. /dev/sda1)."),
+  NULL, help_filter, NULL
+};
 
 static char *
 get_device_name (char *dev)
@@ -707,13 +815,10 @@ get_device_name (char *dev)
 int
 main (int argc, char *argv[])
 {
-  char *boot_file = NULL;
-  char *core_file = NULL;
-  char *dir = NULL;
-  char *dev_map = NULL;
   char *root_dev = NULL;
   char *dest_dev = NULL;
-  int must_embed = 0, force = 0, fs_probe = 1;
+  int must_embed = 0;
+  struct arguments arguments;
 
 #ifdef GRUB_MACHINE_IEEE1275
   force = 1;
@@ -723,95 +828,22 @@ main (int argc, char *argv[])
 
   grub_util_init_nls ();
 
-  /* Check for options.  */
-  while (1)
+  /* Default option values. */
+  memset (&arguments, 0, sizeof (struct arguments));
+  arguments.fs_probe  = 1;
+
+  /* Parse our arguments */
+  if (argp_parse (&argp, argc, argv, 0, 0, &arguments) != 0)
     {
-      int c = getopt_long (argc, argv, "b:c:d:m:r:hVvf", options, 0);
-
-      if (c == -1)
-	break;
-      else
-	switch (c)
-	  {
-	  case 'b':
-	    if (boot_file)
-	      free (boot_file);
-
-	    boot_file = xstrdup (optarg);
-	    break;
-
-	  case 'c':
-	    if (core_file)
-	      free (core_file);
-
-	    core_file = xstrdup (optarg);
-	    break;
-
-	  case 'd':
-	    if (dir)
-	      free (dir);
-
-	    dir = xstrdup (optarg);
-	    break;
-
-	  case 'm':
-	    if (dev_map)
-	      free (dev_map);
-
-	    dev_map = xstrdup (optarg);
-	    break;
-
-	  case 'r':
-	    if (root_dev)
-	      free (root_dev);
-
-	    root_dev = xstrdup (optarg);
-	    break;
-
-	  case 'f':
-	    force = 1;
-	    break;
-
-	  case 's':
-	    fs_probe = 0;
-	    break;
-
-	  case 'h':
-	    usage (0);
-	    break;
-
-	  case 'V':
-	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
-	    return 0;
-
-	  case 'v':
-	    verbosity++;
-	    break;
-
-	  default:
-	    usage (1);
-	    break;
-	  }
+      fprintf (stderr, _("Error in parsing command line arguments\n"));
+      exit(1);
     }
 
   if (verbosity > 1)
     grub_env_set ("debug", "all");
 
-  /* Obtain DEST_DEV.  */
-  if (optind >= argc)
-    {
-      fprintf (stderr, _("No device is specified.\n"));
-      usage (1);
-    }
-
-  if (optind + 1 != argc)
-    {
-      fprintf (stderr, _("Unknown extra argument `%s'.\n"), argv[optind + 1]);
-      usage (1);
-    }
-
   /* Initialize the emulated biosdisk driver.  */
-  grub_util_biosdisk_init (dev_map ? : DEFAULT_DEVICE_MAP);
+  grub_util_biosdisk_init (arguments.dev_map ? : DEFAULT_DEVICE_MAP);
 
   /* Initialize all modules. */
   grub_init_all ();
@@ -823,18 +855,21 @@ main (int argc, char *argv[])
   grub_mdraid_init ();
   grub_lvm_init ();
 
-  dest_dev = get_device_name (argv[optind]);
+  dest_dev = get_device_name (arguments.device);
   if (! dest_dev)
     {
       /* Possibly, the user specified an OS device file.  */
-      dest_dev = grub_util_get_grub_dev (argv[optind]);
+      dest_dev = grub_util_get_grub_dev (arguments.device);
       if (! dest_dev)
-	{
-	  fprintf (stderr, _("Invalid device `%s'.\n"), argv[optind]);
-	  usage (1);
-	}
+        {
+          char *program = xstrdup(program_name);
+          fprintf (stderr, _("Invalid device `%s'.\n"), arguments.device);
+          argp_help (&argp, stderr, ARGP_HELP_STD_USAGE, program);
+          free(program);
+          exit(1);
+        }
       grub_util_info ("transformed OS device `%s' into GRUB device `%s'",
-		      argv[optind], dest_dev);
+                      arguments.device, dest_dev);
     }
   else
     {
@@ -843,31 +878,31 @@ main (int argc, char *argv[])
       grub_util_info ("Using `%s' as GRUB device", dest_dev);
     }
 
-  if (root_dev)
+  if (arguments.root_dev)
     {
-      char *tmp = get_device_name (root_dev);
+      root_dev = get_device_name (arguments.root_dev);
 
-      if (! tmp)
-	grub_util_error (_("invalid root device `%s'"), root_dev);
+      if (! root_dev)
+        grub_util_error (_("invalid root device `%s'"), arguments.root_dev);
 
-      tmp = xstrdup (tmp);
-      free (root_dev);
-      root_dev = tmp;
+      root_dev = xstrdup (root_dev);
     }
   else
     {
-      char *root_device = grub_guess_root_device (dir ? : DEFAULT_DIRECTORY);
+      char *root_device =
+        grub_guess_root_device (arguments.dir ? : DEFAULT_DIRECTORY);
 
       root_dev = grub_util_get_grub_dev (root_device);
       if (! root_dev)
 	{
 	  grub_util_info ("guessing the root device failed, because of `%s'",
 			  grub_errmsg);
-	  grub_util_error (_("cannot guess the root device. Specify the option `--root-device'"));
+          grub_util_error (_("cannot guess the root device. Specify the option "
+                             "`--root-device'"));
 	}
       grub_util_info ("guessed root device `%s' and root_dev `%s' from "
-		      "dir `%s'", root_device, root_dev,
-		      dir ? : DEFAULT_DIRECTORY);
+                      "dir `%s'", root_device, root_dev,
+                      arguments.dir ? : DEFAULT_DIRECTORY);
     }
 
 #ifdef __linux__
@@ -890,29 +925,32 @@ main (int argc, char *argv[])
       devicelist = grub_util_raid_getmembers (dest_dev);
 
       for (i = 0; devicelist[i]; i++)
-	{
-	  setup (dir ? : DEFAULT_DIRECTORY,
-		 boot_file ? : DEFAULT_BOOT_FILE,
-		 core_file ? : DEFAULT_CORE_FILE,
-		 root_dev, grub_util_get_grub_dev (devicelist[i]), 1, force, fs_probe);
-	}
+        {
+          setup (arguments.dir ? : DEFAULT_DIRECTORY,
+                 arguments.boot_file ? : DEFAULT_BOOT_FILE,
+                 arguments.core_file ? : DEFAULT_CORE_FILE,
+                 root_dev, grub_util_get_grub_dev (devicelist[i]), 1,
+                 arguments.force, arguments.fs_probe);
+        }
     }
   else
 #endif
     /* Do the real work.  */
-    setup (dir ? : DEFAULT_DIRECTORY,
-	   boot_file ? : DEFAULT_BOOT_FILE,
-	   core_file ? : DEFAULT_CORE_FILE,
-	   root_dev, dest_dev, must_embed, force, fs_probe);
+    setup (arguments.dir ? : DEFAULT_DIRECTORY,
+           arguments.boot_file ? : DEFAULT_BOOT_FILE,
+           arguments.core_file ? : DEFAULT_CORE_FILE,
+           root_dev, dest_dev, must_embed, arguments.force, arguments.fs_probe);
 
   /* Free resources.  */
   grub_fini_all ();
   grub_util_biosdisk_fini ();
 
-  free (boot_file);
-  free (core_file);
-  free (dir);
-  free (dev_map);
+  free (arguments.boot_file);
+  free (arguments.core_file);
+  free (arguments.dir);
+  free (arguments.root_dev);
+  free (arguments.dev_map);
+  free (arguments.device);
   free (root_dev);
   free (dest_dev);
 
