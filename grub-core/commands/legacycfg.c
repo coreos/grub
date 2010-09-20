@@ -184,27 +184,33 @@ legacy_file (const char *filename)
 }
 
 static grub_err_t
-grub_cmd_legacy_source (struct grub_command *cmd __attribute__ ((unused)),
+grub_cmd_legacy_source (struct grub_command *cmd,
 			int argc, char **args)
 {
-  if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
-  return legacy_file (args[0]);
-}
-
-static grub_err_t
-grub_cmd_legacy_configfile (struct grub_command *cmd __attribute__ ((unused)),
-			    int argc, char **args)
-{
+  int new_env, extractor;
   grub_err_t ret;
+
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
-  grub_cls ();
-  grub_env_context_open (1);
+  extractor = (cmd->name[0] == 'e');
+  new_env = (cmd->name[extractor ? sizeof ("extract_legacy_entries_") - 1
+		       : sizeof ("legacy_") - 1] == 'c');
+
+  if (new_env)
+    grub_cls ();
+
+  if (new_env && !extractor)
+    grub_env_context_open ();
+  if (extractor)
+    grub_env_extractor_open (!new_env);
 
   ret = legacy_file (args[0]);
-  grub_env_context_close ();
+
+  if (new_env && !extractor)
+    grub_env_context_close ();
+  if (extractor)
+    grub_env_extractor_close (!new_env);
 
   return ret;
 }
@@ -730,18 +736,33 @@ grub_cmd_legacy_check_password (struct grub_command *mycmd __attribute__ ((unuse
   return GRUB_ERR_NONE;
 }
 
-static grub_command_t cmd_source, cmd_configfile, cmd_kernel, cmd_initrd;
-static grub_command_t cmd_password, cmd_check_password, cmd_initrdnounzip;
+static grub_command_t cmd_source, cmd_configfile;
+static grub_command_t cmd_source_extract, cmd_configfile_extract;
+static grub_command_t cmd_kernel, cmd_initrd, cmd_initrdnounzip;
+static grub_command_t cmd_password, cmd_check_password;
 
 GRUB_MOD_INIT(legacycfg)
 {
-  cmd_source = grub_register_command ("legacy_source",
-				      grub_cmd_legacy_source,
-				      N_("FILE"), N_("Parse legacy config"));
-  cmd_configfile = grub_register_command ("legacy_configfile",
-					  grub_cmd_legacy_configfile,
-					  N_("FILE"),
-					  N_("Parse legacy config"));
+  cmd_source
+    = grub_register_command ("legacy_source",
+			     grub_cmd_legacy_source,
+			     N_("FILE"),
+			     N_("Parse legacy config in same context"));
+  cmd_configfile
+    = grub_register_command ("legacy_configfile",
+			     grub_cmd_legacy_source,
+			     N_("FILE"),
+			     N_("Parse legacy config in new context"));
+  cmd_source_extract
+    = grub_register_command ("extract_legacy_entries_source",
+			     grub_cmd_legacy_source,
+			     N_("FILE"),
+			     N_("Parse legacy config in same context taking onl entries"));
+  cmd_configfile_extract
+    = grub_register_command ("extract_legacy_entries_configfile",
+			     grub_cmd_legacy_source,
+			     N_("FILE"),
+			     N_("Parse legacy config in new context taking onl entries"));
 
   cmd_kernel = grub_register_command ("legacy_kernel",
 				      grub_cmd_legacy_kernel,
@@ -773,9 +794,13 @@ GRUB_MOD_FINI(legacycfg)
 {
   grub_unregister_command (cmd_source);
   grub_unregister_command (cmd_configfile);
+  grub_unregister_command (cmd_source_extract);
+  grub_unregister_command (cmd_configfile_extract);
+
   grub_unregister_command (cmd_kernel);
   grub_unregister_command (cmd_initrd);
   grub_unregister_command (cmd_initrdnounzip);
+
   grub_unregister_command (cmd_password);
   grub_unregister_command (cmd_check_password);
 }

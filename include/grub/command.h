@@ -35,6 +35,8 @@ typedef enum grub_command_flags
     GRUB_COMMAND_ACCEPT_DASH = 0x80,
     /* This command accepts only options preceding direct arguments.  */
     GRUB_COMMAND_OPTIONS_AT_START = 0x100,
+    /* Can be executed in an entries extractor.  */
+    GRUB_COMMAND_FLAG_EXTRACTOR = 0x200
   } grub_command_flags_t;
 
 struct grub_command;

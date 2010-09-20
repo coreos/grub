@@ -1,5 +1,38 @@
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Menu entries extractor.
+
+	* grub-core/commands/configfile.c (grub_cmd_source): Implement extractor
+	variants.
+	(GRUB_MOD_INIT): Register new variants.
+	(GRUB_MOD_FINI): Unregister new variants.
+	* grub-core/commands/legacycfg.c (grub_cmd_legacy_configfile): Merge
+	into grub_cmd_legacy_source.
+	(grub_cmd_legacy_source): Implement extractor variants.
+	(GRUB_MOD_INIT): Register new variants.
+	(GRUB_MOD_FINI): Unregister new variants.
+	* grub-core/commands/menuentry.c (grub_menu_init): Declare menuentry
+	as an extractor.
+	* grub-core/commands/search_wrap.c (GRUB_MOD_INIT): Declare
+	search as an extractor.
+	* grub-core/commands/test.c (GRUB_MOD_INIT): Declare
+	test as an extractor.
+	* grub-core/kern/corecmd.c (grub_register_core_commands): Declare set
+	as an extractor.
+	* grub-core/normal/context.c (grub_env_context_open): Reorganised.
+	(grub_env_new_context): New function.
+	(grub_env_context_open): Likewise.
+	(grub_env_extractor_open): Likewise.
+	(grub_env_extractor_close): Likewise.
+	* grub-core/script/execute.c (grub_script_execute_cmdline): Handle
+	grub_extractor_level.
+	* include/grub/command.h (GRUB_COMMAND_FLAG_EXTRACTOR): New flag.
+	* include/grub/env.h (grub_env_extractor_open): New proto.
+	(grub_env_extractor_close): Likewise.
+	* include/grub/normal.h (grub_extractor_level): New external variable.
+
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make cutmem accept a region specification.
 	Suggested by: Samuel Thibault
 
