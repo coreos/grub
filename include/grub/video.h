@@ -38,20 +38,33 @@ struct grub_video_bitmap;
 /* If following is set render target contains currenly displayed image
    after swapping buffers (otherwise it contains previously displayed image).
  */
-#define GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP	0x00000080
-#define GRUB_VIDEO_MODE_TYPE_PURE_TEXT		0x00000040
-#define GRUB_VIDEO_MODE_TYPE_ALPHA		0x00000020
-#define GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED	0x00000010
-#define GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP	0x00000004
-#define GRUB_VIDEO_MODE_TYPE_INDEX_COLOR	0x00000002
-#define GRUB_VIDEO_MODE_TYPE_RGB		0x00000001
+typedef enum grub_video_mode_type
+  {
+    GRUB_VIDEO_MODE_TYPE_RGB              = 0x00000001,
+    GRUB_VIDEO_MODE_TYPE_INDEX_COLOR      = 0x00000002,
+    GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP      = 0x00000004,
+    GRUB_VIDEO_MODE_TYPE_YUV              = 0x00000008,
 
-/* Defines used to mask flags.  */
-#define GRUB_VIDEO_MODE_TYPE_COLOR_MASK		0x0000000F
+    /* Defines used to mask flags.  */
+    GRUB_VIDEO_MODE_TYPE_COLOR_MASK       = 0x0000000F,
 
-/* Defines used to specify requested bit depth.  */
-#define GRUB_VIDEO_MODE_TYPE_DEPTH_MASK		0x0000ff00
-#define GRUB_VIDEO_MODE_TYPE_DEPTH_POS		8
+    GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED  = 0x00000010,
+    GRUB_VIDEO_MODE_TYPE_ALPHA            = 0x00000020,
+    GRUB_VIDEO_MODE_TYPE_PURE_TEXT        = 0x00000040,
+    GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP    = 0x00000080,
+    GRUB_VIDEO_MODE_TYPE_OPERATIONAL_MASK = 0x000000F0,
+
+    /* Defines used to specify requested bit depth.  */
+    GRUB_VIDEO_MODE_TYPE_DEPTH_MASK       = 0x0000FF00,
+#define GRUB_VIDEO_MODE_TYPE_DEPTH_POS	  8
+
+    GRUB_VIDEO_MODE_TYPE_UNKNOWN          = 0x00010000,
+    GRUB_VIDEO_MODE_TYPE_HERCULES         = 0x00020000,
+    GRUB_VIDEO_MODE_TYPE_PLANAR           = 0x00040000,
+    GRUB_VIDEO_MODE_TYPE_NONCHAIN4        = 0x00080000,
+    GRUB_VIDEO_MODE_TYPE_CGA              = 0x00100000,
+    GRUB_VIDEO_MODE_TYPE_INFO_MASK        = 0x00FF0000,
+  } grub_video_mode_type_t;
 
 /* The basic render target representing the whole display.  This always
    renders to the back buffer when double-buffering is in use.  */
@@ -103,7 +116,7 @@ struct grub_video_mode_info
 
   /* Mode type bitmask.  Contains information like is it Index color or
      RGB mode.  */
-  unsigned int mode_type;
+  grub_video_mode_type_t mode_type;
 
   /* Bits per pixel.  */
   unsigned int bpp;
@@ -116,6 +129,9 @@ struct grub_video_mode_info
 
   /* In index color mode, number of colors.  In RGB mode this is 256.  */
   unsigned int number_of_colors;
+
+  unsigned int mode_number;
+#define GRUB_VIDEO_MODE_NUMBER_INVALID 0xffffffff
 
   /* Optimization hint how binary data is coded.  */
   enum grub_video_blit_format blit_format;
@@ -225,7 +241,8 @@ struct grub_video_adapter
   grub_err_t (*fini) (void);
 
   grub_err_t (*setup) (unsigned int width,  unsigned int height,
-                       unsigned int mode_type, unsigned int mode_mask);
+                       grub_video_mode_type_t mode_type,
+		       grub_video_mode_type_t mode_mask);
 
   grub_err_t (*get_info) (struct grub_video_mode_info *mode_info);
 
@@ -282,6 +299,10 @@ struct grub_video_adapter
   grub_err_t (*set_active_render_target) (struct grub_video_render_target *target);
 
   grub_err_t (*get_active_render_target) (struct grub_video_render_target **target);
+
+  int (*iterate) (int (*hook) (const struct grub_video_mode_info *info));
+
+  void (*print_adapter_specific_info) (void);
 };
 typedef struct grub_video_adapter *grub_video_adapter_t;
 
@@ -398,8 +419,9 @@ grub_err_t EXPORT_FUNC (grub_video_set_mode) (const char *modestring,
 					      unsigned int modevalue);
 
 static inline int
-grub_video_check_mode_flag (unsigned int flags, unsigned int mask,
-			    unsigned int flag, int def)
+grub_video_check_mode_flag (grub_video_mode_type_t flags,
+			    grub_video_mode_type_t mask,
+			    grub_video_mode_type_t flag, int def)
 {
   return (flag & mask) ? !! (flags & flag) : def;
 }

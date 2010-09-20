@@ -138,7 +138,12 @@ while [ "x$list" != "x" ] ; do
   esac
 
   case ${GRUB_FS} in
-    zfs)		kfreebsd_device=$(grub-probe -t fs_label --device ${GRUB_DEVICE}) ;;
+    zfs)
+			# zpool name
+			kfreebsd_device=$(grub-probe -t fs_label --device ${GRUB_DEVICE})
+			# filesystem name (empty string for the main filesystem)
+			kfreebsd_device="${kfreebsd_device}$(grub-mkrelpath / | sed -e "s,/*@$,,")"
+    ;;
     *)			kfreebsd_device=${GRUB_DEVICE} ;;
   esac
 

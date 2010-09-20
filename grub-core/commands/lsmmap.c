@@ -16,24 +16,39 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_MACHINE_EMU
-#include <grub/machine/memory.h>
-#endif
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/memory.h>
+
+static const char *names[] =
+  {
+    [GRUB_MEMORY_AVAILABLE] = "available", 
+    [GRUB_MEMORY_RESERVED] = "reserved",
+    [GRUB_MEMORY_ACPI] = "ACPI reclamaible",
+    [GRUB_MEMORY_NVS] = "NVS",
+    [GRUB_MEMORY_BADRAM] = "BadRAM",
+    [GRUB_MEMORY_CODE] = "firmware code",
+    [GRUB_MEMORY_HOLE] = "hole"
+  };
 
 static grub_err_t
 grub_cmd_lsmmap (grub_command_t cmd __attribute__ ((unused)),
-		 int argc __attribute__ ((unused)), char **args __attribute__ ((unused)))
+		 int argc __attribute__ ((unused)),
+		 char **args __attribute__ ((unused)))
 
 {
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_memory_type_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, 
+			     grub_memory_type_t type)
     {
-      grub_printf ("base_addr = 0x%llx, length = 0x%llx, type = 0x%x\n",
-		   (long long) addr, (long long) size, type);
+      if (type < ARRAY_SIZE (names) && names[type])
+	grub_printf ("base_addr = 0x%llx, length = 0x%llx, %s\n",
+		     (long long) addr, (long long) size, names[type]);
+      else
+	grub_printf ("base_addr = 0x%llx, length = 0x%llx, type = 0x%x\n",
+		     (long long) addr, (long long) size, type);
       return 0;
     }
 #ifndef GRUB_MACHINE_EMU

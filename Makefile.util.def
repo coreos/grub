@@ -23,7 +23,6 @@ library = {
   common = grub-core/kern/misc.c;
   common = grub-core/kern/emu/mm.c;
   common = grub-core/kern/emu/misc.c;
-  common = grub-core/kern/emu/hostfs.c;
   common = grub-core/kern/emu/getroot.c;
   common = grub-core/kern/emu/hostdisk.c;
 
@@ -31,7 +30,6 @@ library = {
   common = grub-core/commands/extcmd.c;
   common = grub-core/commands/ls.c;
   common = grub-core/disk/dmraid_nvidia.c;
-  common = grub-core/disk/host.c;
   common = grub-core/disk/loopback.c;
   common = grub-core/disk/lvm.c;
   common = grub-core/disk/mdraid_linux.c;
@@ -43,6 +41,7 @@ library = {
   common = grub-core/fs/afs.c;
   common = grub-core/fs/befs_be.c;
   common = grub-core/fs/befs.c;
+  common = grub-core/fs/btrfs.c;
   common = grub-core/fs/cpio.c;
   common = grub-core/fs/ext2.c;
   common = grub-core/fs/fat.c;
@@ -52,6 +51,7 @@ library = {
   common = grub-core/fs/iso9660.c;
   common = grub-core/fs/jfs.c;
   common = grub-core/fs/minix.c;
+  common = grub-core/fs/minix2.c;
   common = grub-core/fs/nilfs2.c;
   common = grub-core/fs/ntfs.c;
   common = grub-core/fs/ntfscomp.c;
@@ -72,11 +72,11 @@ library = {
   common = grub-core/kern/list.c;
   common = grub-core/kern/partition.c;
   common = grub-core/lib/arg.c;
-  common = grub-core/lib/crc.c;
   common = grub-core/lib/crypto.c;
   common = grub-core/lib/envblk.c;
   common = grub-core/lib/hexdump.c;
   common = grub-core/lib/libgcrypt-grub/cipher/sha512.c;
+  common = grub-core/lib/libgcrypt-grub/cipher/crc.c;
   common = grub-core/lib/LzFind.c;
   common = grub-core/lib/LzmaEnc.c;
   common = grub-core/lib/pbkdf2.c;
@@ -88,6 +88,7 @@ library = {
   common = grub-core/partmap/gpt.c;
   common = grub-core/partmap/msdos.c;
   common = grub-core/partmap/sun.c;
+  common = grub-core/partmap/sunpc.c;
   common = grub-core/script/function.c;
   common = grub-core/script/lexer.c;
   common = grub-core/script/main.c;
@@ -178,11 +179,15 @@ program = {
 program = {
   name = grub-fstest;
   mansection = 1;
+  common_nodist = grub_fstest_init.c;
   common = util/grub-fstest.c;
+  common = grub-core/kern/emu/hostfs.c;
+  common = grub-core/disk/host.c;
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
-  condition = COND_GRUB_FSTEST;
+  cflags = '$(CFLAGS_GCRY)';
+  cppflags = '$(CPPFLAGS_GCRY)';
 };
 
 program = {
@@ -229,14 +234,11 @@ program = {
   name = grub-setup;
   installdir = sbin;
   mansection = 8;
-  i386_pc = util/i386/pc/grub-setup.c;
-  i386_pc = util/raid.c;
-  i386_pc = util/lvm.c;
+  common = util/grub-setup.c;
+  common = util/raid.c;
+  common = util/lvm.c;
 
   sparc64_ieee1275 = util/ieee1275/ofpath.c;
-  sparc64_ieee1275 = util/sparc64/ieee1275/grub-setup.c;
-  sparc64_ieee1275 = util/raid.c;
-  sparc64_ieee1275 = util/lvm.c;
 
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
@@ -254,6 +256,16 @@ program = {
   ldadd = libgrub.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
   enable = sparc64_ieee1275;
+};
+
+program = {
+  name = grub-mklayout;
+  mansection = 1;
+
+  common = util/grub-mklayout.c;
+
+  ldadd = libgrub.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
 };
 
 data = {
@@ -345,18 +357,16 @@ script = {
   installdir = sbin;
   name = grub-install;
 
-  mips = util/grub-install.in;
-  i386_pc = util/grub-install.in;
-  i386_qemu = util/grub-install.in;
-  i386_coreboot = util/grub-install.in;
-  i386_multiboot = util/grub-install.in;
-  sparc64_ieee1275 = util/grub-install.in;
-
-  x86_efi = util/i386/efi/grub-install.in;
-  i386_ieee1275 = util/ieee1275/grub-install.in;
-  powerpc_ieee1275 = util/ieee1275/grub-install.in;
-
+  common = util/grub-install.in;
   enable = noemu;
+};
+
+script = {
+  mansection = 8;
+  installdir = sbin;
+  name = grub-mknetdir;
+
+  common = util/grub-mknetdir.in;
 };
 
 script = {
@@ -390,6 +400,11 @@ script = {
   name = update-grub_lib;
   common = util/update-grub_lib.in;
   installdir = noinst;
+};
+
+script = {
+  name = grub-kbdcomp;
+  common = util/grub-kbdcomp.in;
 };
 
 script = {
@@ -500,6 +515,54 @@ script = {
   common = tests/grub_script_shift.in;
 };
 
+script = {
+  testcase;
+  name = grub_script_blockarg;
+  common = tests/grub_script_blockarg.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_setparams;
+  common = tests/grub_script_setparams.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_return;
+  common = tests/grub_script_return.in;
+};
+
+script = {
+  testcase;
+  name = grub_cmd_regexp;
+  common = tests/grub_cmd_regexp.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_expansion;
+  common = tests/grub_script_expansion.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_not;
+  common = tests/grub_script_not.in;
+};
+
+script = {
+  testcase;
+  name = partmap_test;
+  common = tests/partmap_test.in;
+};
+
+script = {
+  testcase;
+  name = grub_cmd_echo;
+  common = tests/grub_cmd_echo.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;
@@ -511,4 +574,15 @@ program = {
   cflags = -Wno-format;
   ldadd = libgrub.a;
   ldadd = '$(LIBDEVMAPPER)';
+};
+
+program = {
+  name = grub-menulst2cfg;
+  mansection = 1;
+  common = util/grub-menulst2cfg.c;
+  common = grub-core/lib/legacy_parse.c;
+  common = grub-core/lib/i386/pc/vesa_modes_table.c;
+
+  ldadd = libgrub.a;
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
 };

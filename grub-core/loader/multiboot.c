@@ -21,17 +21,14 @@
  *  FIXME: The following features from the Multiboot specification still
  *         need to be implemented:
  *  - VBE support
- *  - symbol table
  *  - drives table
  *  - ROM configuration table
- *  - APM table
  */
 
 #include <grub/loader.h>
 #include <grub/command.h>
 #include <grub/multiboot.h>
 #include <grub/cpu/multiboot.h>
-#include <grub/machine/memory.h>
 #include <grub/elf.h>
 #include <grub/aout.h>
 #include <grub/file.h>
@@ -39,7 +36,6 @@
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
-#include <grub/gzio.h>
 #include <grub/env.h>
 #include <grub/cpu/relocator.h>
 #include <grub/video.h>
@@ -74,7 +70,7 @@ grub_get_multiboot_mmap_count (void)
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr __attribute__ ((unused)),
 			     grub_uint64_t size __attribute__ ((unused)),
-			     grub_uint32_t type __attribute__ ((unused)))
+			     grub_memory_type_t type __attribute__ ((unused)))
     {
       count++;
       return 0;
@@ -225,7 +221,7 @@ grub_cmd_multiboot (grub_command_t cmd __attribute__ ((unused)),
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if (! file)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
 
@@ -291,9 +287,9 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
 		       "you need to load the multiboot kernel first");
 
   if (nounzip)
-    file = grub_file_open (argv[0]);
-  else
-    file = grub_gzfile_open (argv[0], 1);
+    grub_file_filter_disable_compression ();
+
+  file = grub_file_open (argv[0]);
   if (! file)
     return grub_errno;
 

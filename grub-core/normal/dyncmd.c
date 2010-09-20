@@ -23,16 +23,21 @@
 #include <grub/misc.h>
 #include <grub/command.h>
 #include <grub/normal.h>
+#include <grub/extcmd.h>
+#include <grub/script_sh.h>
 #include <grub/i18n.h>
 
 static grub_err_t
-grub_dyncmd_dispatcher (struct grub_command *cmd,
+grub_dyncmd_dispatcher (struct grub_extcmd_context *ctxt,
 			int argc, char **args)
 {
-  char *modname = cmd->data;
+  char *modname;
   grub_dl_t mod;
   grub_err_t ret;
+  grub_extcmd_t extcmd = ctxt->extcmd;
+  grub_command_t cmd = extcmd->cmd;
 
+  modname = extcmd->data;
   mod = grub_dl_load (modname);
   if (mod)
     {
@@ -42,11 +47,17 @@ grub_dyncmd_dispatcher (struct grub_command *cmd,
       grub_dl_ref (mod);
 
       name = (char *) cmd->name;
-      grub_unregister_command (cmd);
+      grub_unregister_extcmd (extcmd);
 
       cmd = grub_command_find (name);
       if (cmd)
-	ret = (cmd->func) (cmd, argc, args);
+	{
+	  if (cmd->flags & GRUB_COMMAND_FLAG_BLOCKS &&
+	      cmd->flags & GRUB_COMMAND_FLAG_EXTCMD)
+	    ret = grub_extcmd_dispatcher (cmd, argc, args, ctxt->script);
+	  else
+	    ret = (cmd->func) (cmd, argc, args);
+	}
       else
 	ret = grub_errno;
 
@@ -81,13 +92,14 @@ read_command_list (const char *prefix)
 	      for (ptr = grub_command_list; ptr; ptr = next)
 		{
 		  next = ptr->next;
-		  if (ptr->func == grub_dyncmd_dispatcher)
+		  if (ptr->flags & GRUB_COMMAND_FLAG_DYNCMD)
 		    {
 		      if (last)
 			last->next = ptr->next;
 		      else
 			grub_command_list = ptr->next;
 		      grub_free (ptr);
+		      grub_free (ptr->data); /* extcmd struct */
 		    }
 		  else
 		    last = ptr;
@@ -96,7 +108,7 @@ read_command_list (const char *prefix)
 	      for (;; grub_free (buf))
 		{
 		  char *p, *name, *modname;
-		  grub_command_t cmd;
+		  grub_extcmd_t cmd;
 		  int prio = 0;
 
 		  buf = grub_file_getline (file);
@@ -139,16 +151,19 @@ read_command_list (const char *prefix)
 		      continue;
 		    }
 
-		  cmd = grub_register_command_prio (name,
-						    grub_dyncmd_dispatcher,
-						    0, N_("not loaded"), prio);
+		  cmd = grub_register_extcmd_prio (name,
+						   grub_dyncmd_dispatcher,
+						   GRUB_COMMAND_FLAG_BLOCKS
+						   | GRUB_COMMAND_FLAG_EXTCMD
+						   | GRUB_COMMAND_FLAG_DYNCMD,
+						   0, N_("not loaded"), 0,
+						   prio);
 		  if (! cmd)
 		    {
 		      grub_free (name);
 		      grub_free (modname);
 		      continue;
 		    }
-		  cmd->flags |= GRUB_COMMAND_FLAG_DYNCMD;
 		  cmd->data = modname;
 
 		  /* Update the active flag.  */

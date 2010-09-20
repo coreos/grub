@@ -1,8 +1,10 @@
 # -*- makefile -*-
 
+CFLAGS_PLATFORM=
+
 # Platform specific options
 if COND_i386_pc
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
+  CFLAGS_PLATFORM += -mrtd -mregparm=3
 endif
 if COND_i386_efi
   LDFLAGS_PLATFORM = -melf_i386
@@ -11,21 +13,24 @@ if COND_x86_64_efi
   LDFLAGS_PLATFORM = -melf_x86_64
 endif
 if COND_i386_qemu
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
+  CFLAGS_PLATFORM += -mrtd -mregparm=3
 endif
 if COND_i386_coreboot
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
+  CFLAGS_PLATFORM += -mrtd -mregparm=3
 endif
 if COND_i386_ieee1275
-  CFLAGS_PLATFORM = -mrtd -mregparm=3
+  CFLAGS_PLATFORM += -mrtd -mregparm=3
 endif
 if COND_mips_yeeloong
-  CFLAGS_PLATFORM = -march=mips3 -mexplicit-relocs -mflush-func=grub_cpu_flush_cache
+  CFLAGS_PLATFORM += -march=mips3 -mexplicit-relocs
   CPPFLAGS_PLATFORM = -DUSE_ASCII_FAILBACK
   CCASFLAGS_PLATFORM = -march=mips3
 endif
+if COND_mips
+  CFLAGS_PLATFORM += -mflush-func=grub_cpu_flush_cache
+endif
 if COND_sparc64_ieee1275
-  CFLAGS_PLATFORM = -mno-app-regs
+  CFLAGS_PLATFORM += -mno-app-regs
   LDFLAGS_PLATFORM = -melf64_sparc -mno-relax
 endif
 
@@ -83,20 +88,26 @@ CPPFLAGS_POSIX = -I$(top_srcdir)/grub-core/lib/posix_wrap
 
 CPPFLAGS_EFIEMU = -I$(top_srcdir)/grub-core/efiemu/runtime
 
+# List file macros for recognizing /interesting/ modules
+CPPFLAGS_FS_LIST = -Dgrub_fs_register=FS_LIST_MARKER
+CPPFLAGS_VIDEO_LIST= -Dgrub_video_register=VIDEO_LIST_MARKER
+CPPFLAGS_PARTMAP_LIST = -Dgrub_partition_map_register=PARTMAP_LIST_MARKER
+CPPFLAGS_PARTTOOL_LIST = -Dgrub_parttool_register=PARTTOOL_LIST_MARKER
+CPPFLAGS_TERMINAL_LIST = '-Dgrub_term_register_input(...)=INPUT_TERMINAL_LIST_MARKER(__VA_ARGS__)'
+CPPFLAGS_TERMINAL_LIST += '-Dgrub_term_register_output(...)=OUTPUT_TERMINAL_LIST_MARKER(__VA_ARGS__)'
+CPPFLAGS_COMMAND_LIST = '-Dgrub_register_command(...)=COMMAND_LIST_MARKER(__VA_ARGS__)'
+CPPFLAGS_COMMAND_LIST += '-Dgrub_register_extcmd(...)=EXTCOMMAND_LIST_MARKER(__VA_ARGS__)'
+CPPFLAGS_COMMAND_LIST += '-Dgrub_register_command_p1(...)=P1COMMAND_LIST_MARKER(__VA_ARGS__)'
+CPPFLAGS_MARKER = $(CPPFLAGS_FS_LIST) $(CPPFLAGS_VIDEO_LIST) \
+	$(CPPFLAGS_PARTTOOL_LIST) $(CPPFLAGS_PARTMAP_LIST) \
+	$(CPPFLAGS_TERMINAL_LIST) $(CPPFLAGS_COMMAND_LIST)
+
 # Define these variables to calm down automake
 
-FS_FILES =
-DEF_FILES =
-UND_FILES =
 IMG_FILES =
 MOD_FILES =
-VIDEO_FILES =
 MODULE_FILES =
-HANDLER_FILES =
-PARTMAP_FILES =
-COMMAND_FILES =
-PARTTOOL_FILES =
-TERMINAL_FILES =
+MARKER_FILES =
 KERNEL_HEADER_FILES =
 
 man_MANS =
@@ -115,6 +126,7 @@ pkglib_SCRIPTS =
 noinst_PROGRAMS =
 grubconf_SCRIPTS =
 noinst_LIBRARIES =
+dist_noinst_DATA =
 
 TESTS =
 EXTRA_DIST =

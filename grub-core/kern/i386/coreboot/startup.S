@@ -17,6 +17,8 @@
  */
 
 #include <grub/symbol.h>
+/* For stack parameters.  */
+#include <grub/i386/pc/memory.h>
 #include <grub/machine/memory.h>
 #include <grub/cpu/linux.h>
 #include <grub/offsets.h>
@@ -51,7 +53,7 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = _start + GRUB_KERNEL_MACHINE_DATA_END
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
 
 /*
  *  Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).

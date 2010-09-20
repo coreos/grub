@@ -17,7 +17,6 @@
  */
 
 #include <grub/loader.h>
-#include <grub/machine/memory.h>
 #include <grub/memory.h>
 #include <grub/normal.h>
 #include <grub/file.h>
@@ -34,6 +33,10 @@
 #include <grub/command.h>
 #include <grub/i386/relocator.h>
 #include <grub/i18n.h>
+
+#ifdef GRUB_MACHINE_PCBIOS
+#include <grub/i386/pc/vesa_modes_table.h>
+#endif
 
 #ifdef GRUB_MACHINE_EFI
 #include <grub/efi/efi.h>
@@ -86,175 +89,6 @@ static struct idt_descriptor idt_desc =
   {
     0,
     0
-  };
-#endif
-
-#ifdef GRUB_MACHINE_PCBIOS
-struct linux_vesafb_res
-{
-  grub_uint16_t width;
-  grub_uint16_t height;
-};
-
-struct linux_vesafb_mode
-{
-  grub_uint8_t res_index;
-  grub_uint8_t depth;
-};
-
-enum vga_modes
-  {
-    VGA_320_200,
-    VGA_640_400,
-    VGA_640_480,
-    VGA_800_500,
-    VGA_800_600,
-    VGA_896_672,
-    VGA_1024_640,
-    VGA_1024_768,
-    VGA_1152_720,
-    VGA_1280_1024,
-    VGA_1440_900,
-    VGA_1600_1200,
-  };
-
-static struct linux_vesafb_res linux_vesafb_res[] =
-  {
-    { 320, 200 },
-    { 640, 400 },
-    { 640, 480 },
-    { 800, 500 },
-    { 800, 600 },
-    { 896, 672 },
-    { 1024, 640 },
-    { 1024, 768 },
-    { 1152, 720 },
-    { 1280, 1024 },
-    { 1440, 900 },
-    { 1600, 1200 },
-  };
-
-/* This is the reverse of the table in [linux]/Documentation/fb/vesafb.txt
-   plus a few more modes based on the table in
-   http://en.wikipedia.org/wiki/VESA_BIOS_Extensions  */
-struct linux_vesafb_mode linux_vesafb_modes[] =
-  {
-    { VGA_640_400, 8 },		/* 0x300 */
-    { VGA_640_480, 8 },		/* 0x301 */
-    { VGA_800_600, 4 },		/* 0x302 */
-    { VGA_800_600, 8 },		/* 0x303 */
-    { VGA_1024_768, 4 },	/* 0x304 */
-    { VGA_1024_768, 8 },	/* 0x305 */
-    { VGA_1280_1024, 4 },	/* 0x306 */
-    { VGA_1280_1024, 8 },	/* 0x307 */
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { VGA_320_200, 15 },	/* 0x30d */
-    { VGA_320_200, 16 },	/* 0x30e */
-    { VGA_320_200, 24 },	/* 0x30f */
-    { VGA_640_480, 15 },	/* 0x310 */
-    { VGA_640_480, 16 },	/* 0x311 */
-    { VGA_640_480, 24 },	/* 0x312 */
-    { VGA_800_600, 15 },	/* 0x313 */
-    { VGA_800_600, 16 },	/* 0x314 */
-    { VGA_800_600, 24 },	/* 0x315 */
-    { VGA_1024_768, 15 },	/* 0x316 */
-    { VGA_1024_768, 16 },	/* 0x317 */
-    { VGA_1024_768, 24 },	/* 0x318 */
-    { VGA_1280_1024, 15 },	/* 0x319 */
-    { VGA_1280_1024, 16 },	/* 0x31a */
-    { VGA_1280_1024, 24 },	/* 0x31b */
-    { VGA_1600_1200, 8 },	/* 0x31c */
-    { VGA_1600_1200, 15 },	/* 0x31d */
-    { VGA_1600_1200, 16 },	/* 0x31e */
-    { VGA_1600_1200, 24 },	/* 0x31f */
-    { 0, 0 },
-    { VGA_640_400, 15 },	/* 0x321 */
-    { VGA_640_400, 16 },	/* 0x322 */
-    { VGA_640_400, 24 },	/* 0x323 */
-    { VGA_640_400, 32 },	/* 0x324 */
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { VGA_640_480, 32 },	/* 0x329 */
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { VGA_896_672, 8 },		/* 0x32f */
-    { VGA_896_672, 15 },	/* 0x330 */
-    { VGA_896_672, 16 },	/* 0x331 */
-    { VGA_896_672, 24 },	/* 0x332 */
-    { VGA_896_672, 32 },	/* 0x333 */
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { VGA_1600_1200, 32 },	/* 0x342 */
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
-    { VGA_1440_900, 8 },	/* 0x360 */
-    { VGA_1440_900, 15 },	/* 0x361 */
-    { VGA_1440_900, 16 },	/* 0x362 */
-    { VGA_1440_900, 24 },	/* 0x363 */
-    { VGA_1440_900, 32 },	/* 0x364 */
-    { VGA_1152_720, 8 },	/* 0x365 */
-    { VGA_1152_720, 15 },	/* 0x366 */
-    { VGA_1152_720, 16 },	/* 0x367 */
-    { VGA_1152_720, 24 },	/* 0x368 */
-    { VGA_1152_720, 32 },	/* 0x369 */
-    { VGA_1024_640, 8 },	/* 0x36a */
-    { VGA_1024_640, 15 },	/* 0x36b */
-    { VGA_1024_640, 16 },	/* 0x36c */
-    { VGA_1024_640, 24 },	/* 0x36d */
-    { VGA_1024_640, 32 },	/* 0x36e */
-    { VGA_800_500, 8 },		/* 0x36f */
-    { VGA_800_500, 15 },	/* 0x370 */
-    { VGA_800_500, 16 },	/* 0x371 */
-    { VGA_800_500, 24 },	/* 0x372 */
-    { VGA_800_500, 32 },	/* 0x373 */
   };
 #endif
 
@@ -312,10 +146,11 @@ find_mmap_size (void)
 {
   grub_size_t count = 0, mmap_size;
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+				  grub_memory_type_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr __attribute__ ((unused)),
 			     grub_uint64_t size __attribute__ ((unused)),
-			     grub_uint32_t type __attribute__ ((unused)))
+			     grub_memory_type_t type __attribute__ ((unused)))
     {
       count++;
       return 0;
@@ -379,12 +214,14 @@ allocate_pages (grub_size_t prot_size)
   /* FIXME: Should request low memory from the heap when this feature is
      implemented.  */
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+				  grub_memory_type_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size,
+			     grub_memory_type_t type)
     {
       /* We must put real mode code in the traditional space.  */
 
-      if (type == GRUB_MACHINE_MEMORY_AVAILABLE
+      if (type == GRUB_MEMORY_AVAILABLE
 	  && addr <= 0x90000)
 	{
 	  if (addr < 0x10000)
@@ -559,36 +396,32 @@ grub_linux_boot (void)
   grub_dprintf ("linux", "code32_start = %x\n",
 		(unsigned) params->code32_start);
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+				  grub_memory_type_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, 
+			     grub_memory_type_t type)
     {
       switch (type)
         {
-        case GRUB_MACHINE_MEMORY_AVAILABLE:
+        case GRUB_MEMORY_AVAILABLE:
 	  grub_e820_add_region (params->e820_map, &e820_num,
 				addr, size, GRUB_E820_RAM);
 	  break;
 
-#ifdef GRUB_MACHINE_MEMORY_ACPI
-        case GRUB_MACHINE_MEMORY_ACPI:
+        case GRUB_MEMORY_ACPI:
 	  grub_e820_add_region (params->e820_map, &e820_num,
 				addr, size, GRUB_E820_ACPI);
 	  break;
-#endif
 
-#ifdef GRUB_MACHINE_MEMORY_NVS
-        case GRUB_MACHINE_MEMORY_NVS:
+        case GRUB_MEMORY_NVS:
 	  grub_e820_add_region (params->e820_map, &e820_num,
 				addr, size, GRUB_E820_NVS);
 	  break;
-#endif
 
-#ifdef GRUB_MACHINE_MEMORY_CODE
-        case GRUB_MACHINE_MEMORY_CODE:
+        case GRUB_MEMORY_CODE:
 	  grub_e820_add_region (params->e820_map, &e820_num,
 				addr, size, GRUB_E820_EXEC_CODE);
 	  break;
-#endif
 
         default:
           grub_e820_add_region (params->e820_map, &e820_num,
@@ -716,7 +549,7 @@ grub_linux_boot (void)
 
   /* FIXME.  */
   /*  asm volatile ("lidt %0" : : "m" (idt_desc)); */
-  state.ebx = 0;
+  state.ebp = state.edi = state.ebx = 0;
   state.esi = real_mode_target;
   state.esp = real_mode_target;
   state.eip = params->code32_start;
@@ -882,7 +715,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	/* Video mode selection support.  */
 	char *val = argv[i] + 4;
 	unsigned vid_mode = GRUB_LINUX_VID_MODE_NORMAL;
-	struct linux_vesafb_mode *linux_mode;
+	struct grub_vesa_mode_table_entry *linux_mode;
 	grub_err_t err;
 	char *buf;
 
@@ -925,9 +758,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	    break;
 	  default:
 	    /* Ignore invalid values.  */
-	    if (vid_mode < GRUB_LINUX_VID_MODE_VESA_START ||
-		vid_mode >= GRUB_LINUX_VID_MODE_VESA_START +
-		ARRAY_SIZE (linux_vesafb_modes))
+	    if (vid_mode < GRUB_VESA_MODE_TABLE_START ||
+		vid_mode > GRUB_VESA_MODE_TABLE_END)
 	      {
 		grub_env_set ("gfxpayload", "text");
 		grub_printf ("%s is deprecated. Mode %d isn't recognized. "
@@ -941,15 +773,13 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	       is built-in because `vga=' parameter was used.  */
 	    params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
 
-	    linux_mode
-	      = &linux_vesafb_modes[vid_mode - GRUB_LINUX_VID_MODE_VESA_START];
+	    linux_mode = &grub_vesa_mode_table[vid_mode
+					       - GRUB_VESA_MODE_TABLE_START];
 
 	    buf = grub_xasprintf ("%ux%ux%u,%ux%u",
-				 linux_vesafb_res[linux_mode->res_index].width,
-				 linux_vesafb_res[linux_mode->res_index].height,
+				 linux_mode->width, linux_mode->height,
 				 linux_mode->depth,
-				 linux_vesafb_res[linux_mode->res_index].width,
-				 linux_vesafb_res[linux_mode->res_index].height);
+				 linux_mode->width, linux_mode->height);
 	    if (! buf)
 	      goto fail;
 
@@ -1069,6 +899,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (argv[0]);
   if (! file)
     goto fail;

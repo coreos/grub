@@ -103,7 +103,7 @@ grub_device_iterate (int (*hook) (const char *name))
 	  return 0;
 	}
 
-      if (dev->disk && dev->disk->has_partitions)
+      if (dev->disk)
 	{
 	  struct part_ent *p;
 	  int ret = 0;

@@ -30,9 +30,9 @@ static const struct grub_arg_option options[] =
   };
 
 static grub_err_t
-grub_cmd_echo (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_echo (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   int newline = 1;
   int i;
 
@@ -113,7 +113,9 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(echo)
 {
-  cmd = grub_register_extcmd ("echo", grub_cmd_echo, GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("echo", grub_cmd_echo,
+			      GRUB_COMMAND_ACCEPT_DASH
+			      | GRUB_COMMAND_OPTIONS_AT_START,
 			      N_("[-e|-n] STRING"), N_("Display a line of text."),
 			      options);
 }

@@ -25,7 +25,7 @@
 #define LOCAL(sym)	L_ ## sym
 
 /* Add an underscore to a C symbol in assembler code if needed. */
-#ifdef HAVE_ASM_USCORE
+#if HAVE_ASM_USCORE
 # define EXT_C(sym)	_ ## sym
 #else
 # define EXT_C(sym)	sym

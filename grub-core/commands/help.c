@@ -27,7 +27,7 @@
 #include <grub/charset.h>
 
 static grub_err_t
-grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
+grub_cmd_help (grub_extcmd_context_t ctxt __attribute__ ((unused)), int argc,
 	       char **args)
 {
   int cnt = 0;
@@ -38,8 +38,7 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
       grub_command_t cmd;
       FOR_COMMANDS(cmd)
       {
-	if ((cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE) &&
-	    (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE))
+	if ((cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE))
 	  {
 	    struct grub_term_output *term;
 	    const char *summary_translated = _(cmd->summary);
@@ -112,7 +111,8 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 		    if (cnt++ > 0)
 		      grub_printf ("\n\n");
 
-		    if (cmd->flags & GRUB_COMMAND_FLAG_EXTCMD)
+		    if ((cmd->flags & GRUB_COMMAND_FLAG_EXTCMD) &&
+			! (cmd->flags & GRUB_COMMAND_FLAG_DYNCMD))
 		      grub_arg_show_help ((grub_extcmd_t) cmd->data);
 		    else
 		      grub_printf ("%s %s %s\n%s\n", _("Usage:"), cmd->name, _(cmd->summary),
@@ -130,8 +130,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(help)
 {
-  cmd = grub_register_extcmd ("help", grub_cmd_help,
-			      GRUB_COMMAND_FLAG_CMDLINE,
+  cmd = grub_register_extcmd ("help", grub_cmd_help, 0,
 			      N_("[PATTERN ...]"),
 			      N_("Show a help message."), 0);
 }

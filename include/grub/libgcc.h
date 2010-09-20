@@ -16,7 +16,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
+/* We need to include config-util.h.in for HAVE_*.  */
+#include <config-util.h>
 
 /* On x86 these functions aren't really needed. Save some space.  */
 #if !defined (__i386__) && !defined (__x86_64__)

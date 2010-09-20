@@ -275,7 +275,7 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
 	  if (! parsed[j])
 	    {
 	      for (curarg = ptool->args; curarg->name; curarg++)
-		if (grub_strncmp (curarg->name, args[i],
+		if (grub_strncmp (curarg->name, args[j],
 				   grub_strlen (curarg->name)) == 0
 		    && ((curarg->type == GRUB_PARTTOOL_ARG_BOOL
 			 && (args[j][grub_strlen (curarg->name)] == '+'

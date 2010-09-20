@@ -40,7 +40,7 @@ grub_register_command_prio (const char *name,
   cmd->summary = (summary) ? summary : "";
   cmd->description = description;
 
-  cmd->flags = GRUB_COMMAND_FLAG_BOTH;
+  cmd->flags = 0;
   cmd->prio = prio;
 
   grub_prio_list_insert (GRUB_AS_PRIO_LIST_P (&grub_command_list),

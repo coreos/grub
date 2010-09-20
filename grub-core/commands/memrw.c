@@ -35,7 +35,7 @@ static const struct grub_arg_option options[] =
 
 
 static grub_err_t
-grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
+grub_cmd_read (grub_extcmd_context_t ctxt, int argc, char **argv)
 {
   grub_target_addr_t addr;
   grub_uint32_t value = 0;
@@ -45,7 +45,7 @@ grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid number of arguments");
 
   addr = grub_strtoul (argv[0], 0, 0);
-  switch (cmd->cmd->name[sizeof ("read_") - 1])
+  switch (ctxt->extcmd->cmd->name[sizeof ("read_") - 1])
     {
     case 'd':
       value = *((volatile grub_uint32_t *) addr);
@@ -60,10 +60,10 @@ grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
       break;
     }
 
-  if (cmd->state[0].set)
+  if (ctxt->state[0].set)
     {
       grub_snprintf (buf, sizeof (buf), "%x", value);
-      grub_env_set (cmd->state[0].arg, buf);
+      grub_env_set (ctxt->state[0].arg, buf);
     }
   else
     grub_printf ("0x%x\n", value);
@@ -119,13 +119,13 @@ grub_cmd_write (grub_command_t cmd, int argc, char **argv)
 GRUB_MOD_INIT(memrw)
 {
   cmd_read_byte =
-    grub_register_extcmd ("read_byte", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
+    grub_register_extcmd ("read_byte", grub_cmd_read, 0,
 			  N_("ADDR"), N_("Read byte from ADDR."), options);
   cmd_read_word =
-    grub_register_extcmd ("read_word", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
+    grub_register_extcmd ("read_word", grub_cmd_read, 0,
 			  N_("ADDR"), N_("Read word from ADDR."), options);
   cmd_read_dword =
-    grub_register_extcmd ("read_dword", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
+    grub_register_extcmd ("read_dword", grub_cmd_read, 0,
 			  N_("ADDR"), N_("Read dword from ADDR."), options);
   cmd_write_byte =
     grub_register_command ("write_byte", grub_cmd_write,

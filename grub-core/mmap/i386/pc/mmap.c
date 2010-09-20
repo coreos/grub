@@ -57,7 +57,7 @@ preboot (int noreturn __attribute__ ((unused)))
   auto int NESTED_FUNC_ATTR fill_hook (grub_uint64_t, grub_uint64_t,
 				       grub_uint32_t);
   int NESTED_FUNC_ATTR fill_hook (grub_uint64_t addr, grub_uint64_t size,
-				  grub_uint32_t type)
+				  grub_memory_type_t type)
   {
     grub_dprintf ("mmap", "mmap chunk %llx-%llx:%x\n", addr, addr + size, type);
     hookmmapcur->addr = addr;
@@ -135,7 +135,7 @@ malloc_hook (void)
 					grub_uint32_t);
   int NESTED_FUNC_ATTR count_hook (grub_uint64_t addr __attribute__ ((unused)),
 				   grub_uint64_t size __attribute__ ((unused)),
-				   grub_uint32_t type __attribute__ ((unused)))
+				   grub_memory_type_t type __attribute__ ((unused)))
   {
     regcount++;
     return 0;
@@ -172,7 +172,7 @@ malloc_hook (void)
   reentry = 1;
   hooktarget
     = grub_mmap_malign_and_register (16, hooksize, &mmapregion,
-				     GRUB_MACHINE_MEMORY_RESERVED,
+				     GRUB_MEMORY_RESERVED,
 				     GRUB_MMAP_MALLOC_LOW);
   reentry = 0;
 

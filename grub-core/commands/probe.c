@@ -45,9 +45,9 @@ static const struct grub_arg_option options[] =
   };
 
 static grub_err_t
-grub_cmd_probe (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_probe (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   grub_device_t dev;
   grub_fs_t fs;
   char *ptr;
@@ -150,8 +150,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT (probe)
 {
-  cmd = grub_register_extcmd ("probe", grub_cmd_probe, GRUB_COMMAND_FLAG_BOTH,
-			      N_("[DEVICE]"),
+  cmd = grub_register_extcmd ("probe", grub_cmd_probe, 0, N_("[DEVICE]"),
 			      N_("Retrieve device info."), options);
 }
 

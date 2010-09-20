@@ -19,6 +19,9 @@
 #ifndef GRUB_EMU_MISC_H
 #define GRUB_EMU_MISC_H 1
 
+#include <config-util.h>
+#include <stdarg.h>
+
 #include <grub/symbol.h>
 #include <grub/types.h>
 #include <grub/util/libzfs.h>
@@ -45,6 +48,7 @@ extern const char *program_name;
 void grub_emu_init (void);
 void grub_init_all (void);
 void grub_fini_all (void);
+void grub_emu_post_init (void);
 
 void grub_find_zpool_from_dir (const char *dir,
 			       char **poolname, char **poolfs);

@@ -42,7 +42,7 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = EXT_C(_start) + GRUB_KERNEL_MACHINE_DATA_END
+	. = EXT_C(_start) + GRUB_KERNEL_MACHINE_PREFIX_END
 
 codestart:
 	/* Copy the modules past the end of the kernel image.
@@ -61,9 +61,11 @@ codestart:
 	/* Save ieee1275 stack for future use by booter.  */
 	mov     %o6, %o1
 	/* Our future stack.  */
-	sethi	%hi(GRUB_KERNEL_MACHINE_STACK_SIZE - 2047), %o5
-	or	%o5, %lo(GRUB_KERNEL_MACHINE_STACK_SIZE - 2047), %o5
+	sethi	%hi(GRUB_KERNEL_MACHINE_STACK_SIZE), %o5
+	or	%o5, %lo(GRUB_KERNEL_MACHINE_STACK_SIZE), %o5
 	add     %o3, %o5, %o6
+	and     %o6, ~0xff, %o6
+	sub     %o6, 2047, %o6
 	
 	sub	%o2, 4, %o2
 	sub	%o3, 4, %o3

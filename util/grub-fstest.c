@@ -30,7 +30,7 @@
 #include <grub/term.h>
 #include <grub/mm.h>
 #include <grub/lib/hexdump.h>
-#include <grub/lib/crc.h>
+#include <grub/crypto.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
 
@@ -107,6 +107,7 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
       return;
     }
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (pathname);
   if (!file)
     {
@@ -238,19 +239,22 @@ cmd_hex (char *pathname)
 static void
 cmd_crc (char *pathname)
 {
-  grub_uint32_t crc = 0;
+  grub_uint8_t crc32_context[GRUB_MD_CRC32->contextsize];
+  GRUB_MD_CRC32->init(crc32_context);
 
   auto int crc_hook (grub_off_t ofs, char *buf, int len);
   int crc_hook (grub_off_t ofs, char *buf, int len)
   {
     (void) ofs;
 
-    crc = grub_getcrc32 (crc, buf, len);
+    GRUB_MD_CRC32->write(crc32_context, buf, len);
     return 0;
   }
 
   read_file (pathname, crc_hook);
-  printf ("%08x\n", crc);
+  GRUB_MD_CRC32->final(crc32_context);
+  printf ("%08x\n",
+      grub_be_to_cpu32(*(grub_uint32_t*)GRUB_MD_CRC32->read(crc32_context)));
 }
 
 static void
@@ -258,13 +262,11 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
 {
   char *host_file;
   char *loop_name;
-  char *argv[3];
   int i;
-
-  argv[0] = "-p";
 
   for (i = 0; i < num_disks; i++)
     {
+      char *argv[2];
       loop_name = grub_xasprintf ("loop%d", i);
       if (!loop_name)
 	grub_util_error (grub_errmsg);
@@ -273,10 +275,10 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
       if (!host_file)
 	grub_util_error (grub_errmsg);
 
-      argv[1] = loop_name;
-      argv[2] = host_file;
+      argv[0] = loop_name;
+      argv[1] = host_file;
 
-      if (execute_command ("loopback", 3, argv))
+      if (execute_command ("loopback", 2, argv))
         grub_util_error ("loopback command fails");
 
       grub_free (loop_name);
@@ -311,15 +313,16 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
       execute_command ("blocklist", n, args);
       grub_printf ("\n");
     }
-
-  argv[0] = "-d";
-
+    
   for (i = 0; i < num_disks; i++)
     {
+      char *argv[2];
+
       loop_name = grub_xasprintf ("loop%d", i);
       if (!loop_name)
 	grub_util_error (grub_errmsg);
 
+      argv[0] = "-d";      
       argv[1] = loop_name;
 
       execute_command ("loopback", 2, argv);

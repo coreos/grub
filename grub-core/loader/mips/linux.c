@@ -25,7 +25,7 @@
 #include <grub/misc.h>
 #include <grub/command.h>
 #include <grub/mips/relocator.h>
-#include <grub/machine/memory.h>
+#include <grub/memory.h>
 #include <grub/i18n.h>
 
 /* For frequencies.  */
@@ -344,6 +344,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   if (initrd_loaded)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "only one initrd can be loaded.");
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (argv[0]);
   if (! file)
     return grub_errno;

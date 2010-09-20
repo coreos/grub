@@ -657,7 +657,7 @@ put_glyphs_terminal (const struct grub_unicode_glyph *visual,
 	      >= (grub_ssize_t) grub_term_height (term) - 2)
 	    {
 	      state->backlog_glyphs = visual_ptr + 1;
-	      state->backlog_len = visual_len - (visual - visual_ptr) - 1;
+	      state->backlog_len = visual_len - (visual_ptr - visual) - 1;
 	      return 1;
 	    }
 
@@ -688,6 +688,7 @@ print_backlog (struct grub_term_output *term,
 	  grub_free (state->free);
 	  state->free = NULL;
 	  state->backlog_len = 0;
+	  state->backlog_ucs4 = 0;
 	}
       return ret;
     }
@@ -703,6 +704,7 @@ print_backlog (struct grub_term_output *term,
 	  grub_free (state->free);
 	  state->free = NULL;
 	  state->backlog_len = 0;
+	  state->backlog_glyphs = 0;
 	}
       return ret;
     }

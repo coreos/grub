@@ -403,34 +403,34 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
     static struct
     {
       char key;
-      char ascii;
+      unsigned ascii;
     }
     three_code_table[] =
       {
-	{'4', GRUB_TERM_DC},
-	{'A', GRUB_TERM_UP},
-	{'B', GRUB_TERM_DOWN},
-	{'C', GRUB_TERM_RIGHT},
-	{'D', GRUB_TERM_LEFT},
-	{'F', GRUB_TERM_END},
-	{'H', GRUB_TERM_HOME},
-	{'K', GRUB_TERM_END},
-	{'P', GRUB_TERM_DC},
-	{'?', GRUB_TERM_PPAGE},
-	{'/', GRUB_TERM_NPAGE}
+	{'4', GRUB_TERM_KEY_DC},
+	{'A', GRUB_TERM_KEY_UP},
+	{'B', GRUB_TERM_KEY_DOWN},
+	{'C', GRUB_TERM_KEY_RIGHT},
+	{'D', GRUB_TERM_KEY_LEFT},
+	{'F', GRUB_TERM_KEY_END},
+	{'H', GRUB_TERM_KEY_HOME},
+	{'K', GRUB_TERM_KEY_END},
+	{'P', GRUB_TERM_KEY_DC},
+	{'?', GRUB_TERM_KEY_PPAGE},
+	{'/', GRUB_TERM_KEY_NPAGE}
       };
 
     static struct
     {
       char key;
-      char ascii;
+      unsigned ascii;
     }
     four_code_table[] =
       {
-	{'1', GRUB_TERM_HOME},
-	{'3', GRUB_TERM_DC},
-	{'5', GRUB_TERM_PPAGE},
-	{'6', GRUB_TERM_NPAGE}
+	{'1', GRUB_TERM_KEY_HOME},
+	{'3', GRUB_TERM_KEY_DC},
+	{'5', GRUB_TERM_KEY_PPAGE},
+	{'6', GRUB_TERM_KEY_NPAGE}
       };
     unsigned i;
 
@@ -467,39 +467,30 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 #undef CONTINUE_READ
 }
 
-/* The terminfo version of checkkey.  */
-int
-grub_terminfo_checkkey (struct grub_term_input *termi)
-{
-  struct grub_terminfo_input_state *data
-    = (struct grub_terminfo_input_state *) (termi->data);
-  if (data->npending)
-    return data->input_buf[0];
-
-  grub_terminfo_readkey (termi, data->input_buf,
-			 &data->npending, data->readkey);
-
-  if (data->npending)
-    return data->input_buf[0];
-
-  return -1;
-}
-
 /* The terminfo version of getkey.  */
 int
 grub_terminfo_getkey (struct grub_term_input *termi)
 {
   struct grub_terminfo_input_state *data
     = (struct grub_terminfo_input_state *) (termi->data);
-  int ret;
-  while (! data->npending)
-    grub_terminfo_readkey (termi, data->input_buf, &data->npending,
-			   data->readkey);
+  if (data->npending)
+    {
+      data->npending--;
+      grub_memmove (data->input_buf, data->input_buf + 1, data->npending);
+      return data->input_buf[0];
+    }
 
-  ret = data->input_buf[0];
-  data->npending--;
-  grub_memmove (data->input_buf, data->input_buf + 1, data->npending);
-  return ret;
+  grub_terminfo_readkey (termi, data->input_buf,
+			 &data->npending, data->readkey);
+
+  if (data->npending)
+    {
+      data->npending--;
+      grub_memmove (data->input_buf, data->input_buf + 1, data->npending);
+      return data->input_buf[0];
+    }
+
+  return GRUB_TERM_NO_KEY;
 }
 
 grub_err_t

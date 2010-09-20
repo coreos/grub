@@ -99,9 +99,6 @@ struct grub_disk
   /* The total number of sectors.  */
   grub_uint64_t total_sectors;
 
-  /* If partitions can be stored.  */
-  int has_partitions;
-
   /* The id used by the disk cache manager.  */
   unsigned long id;
 
@@ -176,5 +173,14 @@ struct grub_disk_ata_pass_through_parms
 
 extern grub_err_t (* EXPORT_VAR(grub_disk_ata_pass_through)) (grub_disk_t,
 		   struct grub_disk_ata_pass_through_parms *);
+
+#if defined (GRUB_UTIL) || defined (GRUB_MACHINE_EMU)
+void grub_lvm_init (void);
+void grub_mdraid_init (void);
+void grub_raid_init (void);
+void grub_lvm_fini (void);
+void grub_mdraid_fini (void);
+void grub_raid_fini (void);
+#endif
 
 #endif /* ! GRUB_DISK_HEADER */

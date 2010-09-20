@@ -18,6 +18,7 @@
 
 #include <grub/cpu/io.h>
 #include <grub/misc.h>
+#include <grub/acpi.h>
 
 const char bochs_shutdown[] = "Shutdown";
 
@@ -39,6 +40,10 @@ void
 grub_halt (void)
 {
   unsigned int i;
+
+#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MULTIBOOT)
+  grub_acpi_halt ();
+#endif
 
   /* Disable interrupts.  */
   __asm__ __volatile__ ("cli");

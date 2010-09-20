@@ -16,14 +16,11 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/types.h>
 #include <grub/multiboot.h>
 #include <grub/err.h>
 #include <grub/misc.h>
-
-grub_size_t grub_lower_mem, grub_upper_mem;
 
 /* A pointer to the MBI in its initial location.  */
 struct multiboot_info *startup_multiboot_info;
@@ -57,21 +54,10 @@ grub_machine_mmap_init ()
     }
   grub_memmove (mmap_entries, (void *) kern_multiboot_info.mmap_addr, kern_multiboot_info.mmap_length);
   kern_multiboot_info.mmap_addr = (grub_uint32_t) mmap_entries;
-
-  if ((kern_multiboot_info.flags & MULTIBOOT_INFO_MEMORY) == 0)
-    {
-      grub_lower_mem = GRUB_MEMORY_MACHINE_LOWER_USABLE;
-      grub_upper_mem = 0;
-    }
-  else
-    {
-      grub_lower_mem = kern_multiboot_info.mem_lower * 1024;
-      grub_upper_mem = kern_multiboot_info.mem_upper * 1024;
-    }
 }
 
 grub_err_t
-grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t))
+grub_machine_mmap_iterate (grub_memory_hook_t hook)
 {
   struct multiboot_mmap_entry *entry = (void *) kern_multiboot_info.mmap_addr;
 

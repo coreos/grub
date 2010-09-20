@@ -270,9 +270,9 @@ static int get_int_arg (const struct grub_arg_list *state)
 }
 
 static grub_err_t
-grub_cmd_hdparm (grub_extcmd_t cmd, int argc, char **args) // state????
+grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
 
   /* Check command line.  */
   if (argc != 1)
@@ -409,8 +409,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(hdparm)
 {
-  cmd = grub_register_extcmd ("hdparm", grub_cmd_hdparm,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("hdparm", grub_cmd_hdparm, 0,
 			      N_("[OPTIONS] DISK"),
 			      N_("Get/set ATA disk parameters."), options);
 }

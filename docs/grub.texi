@@ -46,6 +46,8 @@ Invariant Sections.
 @subtitle The GRand Unified Bootloader, version @value{VERSION}, @value{UPDATED}.
 @author Gordon Matzigkeit
 @author Yoshinori K. Okuji
+@author Colin Watson
+@author Colin D. Bennett
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -77,6 +79,7 @@ This edition documents version @value{VERSION}.
 * Installation::                Installing GRUB on your drive
 * Booting::                     How to boot different operating systems
 * Configuration::               Writing your own configuration file
+* Theme file format::           Format of GRUB theme files
 * Network::                     Downloading OS images from a network
 * Serial terminal::             Using GRUB via a serial line
 * Vendor power-on keys::        Changing GRUB behaviour on vendor power-on keys
@@ -964,7 +967,6 @@ need to write the whole thing by hand.
 * Simple configuration::        Recommended for most users
 * Shell-like scripting::        For power users and developers
 * Embedded configuration::      Embedding a configuration file into GRUB
-* Themes::                      Graphical menu themes
 @end menu
 
 
@@ -1126,7 +1128,6 @@ The image will be scaled if necessary to fit the screen.
 
 @item GRUB_THEME
 Set a theme for use with the @samp{gfxterm} graphical terminal.
-@xref{Themes}.
 
 @item GRUB_GFXPAYLOAD_LINUX
 Set to @samp{text} to force the Linux kernel to boot in normal text mode,
@@ -1226,8 +1227,10 @@ The @samp{$} character retains its special meaning within double quotes.
 The backslash retains its special meaning only when followed by one of the
 following characters: @samp{$}, @samp{"}, @samp{\}, or newline.  A
 backslash-newline pair is treated as a line continuation (that is, it is
-removed from the input stream and effectively ignored).  A double quote may
-be quoted within double quotes by preceding it with a backslash.
+removed from the input stream and effectively ignored@footnote{Currently a
+backslash-newline pair within a variable name is not handled properly, so
+use this feature with some care.}).  A double quote may be quoted within
+double quotes by preceding it with a backslash.
 
 @heading Variable expansion
 
@@ -1239,11 +1242,15 @@ which could be interpreted as part of the name.
 Normal variable names begin with an alphabetic character, followed by zero
 or more alphanumeric characters.
 
-Positional variable names consist of one or more digits.  These are reserved
-for future expansion.
+Positional variable names consist of one or more digits.  They represent
+parameters passed to function calls, with @samp{$1} representing the first
+parameter, and so on.
 
 The special variable name @samp{?} expands to the exit status of the most
-recently executed command.
+recently executed command.  When positional variable names are active, other
+special variable names @samp{@@}, @samp{*} and @samp{#} are defined and they
+expand to all positional parameters with necessary quoting, positional
+parameters without any quoting, and positional parameter count respectively.
 
 @heading Comments
 
@@ -1304,6 +1311,45 @@ the body.
 @xref{menuentry}.
 @end table
 
+@heading Built-in Commands
+
+Some built-in commands are also provided by GRUB script to help script
+writers perform actions that are otherwise not possible.  For example, these
+include commands to jump out of a loop without fully completing it, etc.
+
+@table @asis
+@item break [@code{n}]
+Exit from within a @code{for}, @code{while}, or @code{until} loop.  If
+@code{n} is specified, break @code{n} levels.  @code{n} must be greater than
+or equal to 1.  If @code{n} is greater than the number of enclosing loops,
+all enclosing loops are exited.  The return value is 0 unless @code{n} is
+not greater than or equal to 1.
+
+@item continue [@code{n}]
+Resume the next iteration of the enclosing @code{for}, @code{while} or
+@code{until} loop.  If @code{n} is specified, resume at the @code{n}th
+enclosing loop.  @code{n} must be greater than or equal to 1.  If @code{n}
+is greater than the number of enclosing loops, the last enclosing loop (the
+@dfn{top-level} loop) is resumed.  The return value is 0 unless @code{n} is
+not greater than or equal to 1.
+
+@item return [@code{n}]
+Causes a function to exit with the return value specified by @code{n}.  If
+@code{n} is omitted, the return status is that of the last command executed
+in the function body.  If used outside a function the return status is
+false.
+
+@item shift [@code{n}]
+The positional parameters from @code{n}+1 @dots{} are renamed to
+@code{$1}@dots{}.  Parameters represented by the numbers @code{$#} down to
+@code{$#}-@code{n}+1 are unset.  @code{n} must be a non-negative number less
+than or equal to @code{$#}.  If @code{n} is 0, no parameters are changed.
+If @code{n} is not given, it is assumed to be 1.  If @code{n} is greater
+than @code{$#}, the positional parameters are not changed.  The return
+status is greater than zero if @code{n} is greater than @code{$#} or less
+than zero; otherwise 0.
+
+@end table
 
 @node Embedded configuration
 @section Embedding a configuration file into GRUB
@@ -1372,9 +1418,372 @@ fi
 The embedded configuration file may not contain menu entries directly, but
 may only read them from elsewhere using @command{configfile}.
 
+@node Theme file format
+@chapter Theme file format
+@section Introduction
+The GRUB graphical menu supports themes that can customize the layout and
+appearance of the GRUB boot menu.  The theme is configured through a plain
+text file that specifies the layout of the various GUI components (including
+the boot menu, timeout progress bar, and text messages) as well as the
+appearance using colors, fonts, and images. Example is available in docs/example_theme.txt
 
-@node Themes
-@section Graphical menu themes
+@section Theme Elements
+@subsection Colors
+
+Colors can be specified in several ways:
+
+@itemize
+@item HTML-style ``#RRGGBB'' or ``#RGB'' format, where *R*, *G*, and *B* are hexadecimal digits (e.g., ``#8899FF'')
+@item as comma-separated decimal RGB values (e.g., ``128, 128, 255'')
+@item with ``SVG 1.0 color names'' (e.g., ``cornflowerblue'') which must be specified in lowercase.
+@end itemize
+@subsection Fonts
+The fonts GRUB uses ``PFF2 font format'' bitmap fonts.  Fonts are specified
+with full font names.  Currently there is no
+provision for a preference list of fonts, or deriving one font from another.
+Fonts are loaded with the ``loadfont'' command in GRUB.  To see the list of
+loaded fonts, execute the ``lsfonts'' command.  If there are too many fonts to
+fit on screen, do ``set pager=1'' before executing ``lsfonts''.
+
+
+@subsection Progress Bar
+
+@float Figure, Pixmap-styled progress bar
+@c @image{Theme_progress_bar,,,,.png}
+@end float
+
+@float Figure, Plain progress bar, drawn with solid color.
+@c @image{Theme_progress_bar_filled,,,,.png}
+@end float
+
+Progress bars are used to display the remaining time before GRUB boots the
+default menu entry.  To create a progress bar that will display the remaining
+time before automatic boot, simply create a ``progress_bar'' component with
+the id ``__timeout__''.  This indicates to GRUB that the progress bar should
+be updated as time passes, and it should be made invisible if the countdown to
+automatic boot is interrupted by the user.
+
+Progress bars may optionally have text displayed on them.  This is controlled
+through the ``show_text'' property, which can be set to either ``true'' or
+``false'' to control whether text is displayed.  When GRUB is counting down to
+automatic boot, the text informs the user of the number of seconds remaining.
+
+
+@subsection Circular Progress Indicator
+
+@c @image{Theme_circular_progress,,,,.png}
+
+The circular progress indicator functions similarly to the progress bar.  When
+given an id of ``__timeout__'', GRUB updates the circular progress indicator's
+value to indicate the time remaining.  For the circular progress indicator,
+there are two images used to render it:  the *center* image, and the *tick*
+image.  The center image is rendered in the center of the component, while the
+tick image is used to render each mark along the circumference of the
+indicator.
+
+
+@subsection Labels
+
+Text labels can be placed on the boot screen.  The font, color, and horizontal
+alignment can be specified for labels.  If a label is given the id
+``__timeout__'', then the ``text'' property for that label is also updated
+with a message informing the user of the number of seconds remaining until
+automatic boot.  This is useful in case you want the text displayed somewhere
+else instead of directly on the progress bar.
+
+
+@subsection Boot Menu
+
+@c @image{Theme_boot_menu,,,,.png}
+
+The boot menu where GRUB displays the menu entries from the ``grub.cfg'' file.
+It is a list of items, where each item has a title and an optional icon.  The
+icon is selected based on the *classes* specified for the menu entry.  If
+there is a PNG file named ``myclass.png'' in the ``grub/themes/icons''
+directory, it will be displayed for items which have the class *myclass*.  The
+boot menu can be customized in several ways, such as the font and color used
+for the menu entry title, and by specifying styled boxes for the menu itself
+and for the selected item highlight.
+
+
+@subsection Styled Boxes
+
+One of the most important features for customizing the layout is the use of
+ *styled boxes*.  A styled box is composed of 9 rectangular (and potentially
+empty) regions, which are used to seamlessly draw the styled box on screen:
+
+@multitable @columnfractions 0.3 0.3 0.3
+@item Northwest (nw) @tab North (n)  @tab Northeast (ne)
+@item West (w)       @tab Center (c) @tab East (e)
+@item Southwest (sw) @tab South (s)  @tab Southeast (se)
+@end multitable
+
+To support any size of box on screen, the center slice and the slices for the
+top, bottom, and sides are all scaled to the correct size for the component on
+screen, using the following rules:
+
+@enumerate
+@item The edge slices (north, south, east, and west) are scaled in the direction of the edge they are adjacent to.  For instance, the west slice is scaled vertically.
+@item The corner slices (northwest, northeast, southeast, and southwest) are not scaled.
+@item The center slice is scaled to fill the remaining space in the middle.
+@end enumerate
+
+As an example of how an image might be sliced up, consider the styled box
+used for a terminal view.
+
+@float Figure, An example of the slices (in red) used for a terminal window. This drawing was created and sliced in Inkscape_, as the next section explains.
+@c @image{Box_slice_example_terminal,,,,.png}
+@end float
+   
+@subsection Creating Styled Box Images
+
+The Inkscape_ scalable vector graphics editor is a very useful tool for
+creating styled box images.  One process that works well for slicing a drawing
+into the necessary image slices is:
+
+@enumerate
+@item Create or open the drawing you'd like use.
+@item Create a new layer on the top of the layer stack.  Make it visible.  Select this layer as the current layer.
+@item Draw 9 rectangles on your drawing where you'd like the slices to be.  Clear the fill option, and set the stroke to 1 pixel wide solid stroke.  The corners of the slices must meet precisely; if it is off by a single pixel, it will probably be evident when the styled box is rendered in the GRUB menu.  You should probably go to File | Document Properties | Grids and enable a grid or create a guide (click on one of the rulers next to the drawing and drag over the drawing; release the mouse button to place the guide) to help place the rectangles precisely.
+@item Right click on the center slice rectangle and choose Object Properties. Change the "Id" to ``slice_c`` and click Set.  Repeat this for the remaining 8 rectangles, giving them Id values of ``slice_n``, ``slice_ne``, ``slice_e``, and so on according to the location.
+@item Save the drawing.
+@item Select all the slice rectangles.  With the slice layer selected, you can simply press Ctrl+A to select all rectangles.  The status bar should indicate that 9 rectangles are selected.
+@item Click the layer hide icon for the slice layer in the layer palette.  The rectangles will remain selected, even though they are hidden.
+@item Choose File | Export Bitmap and check the *Batch export 9 selected objects* box.  Make sure that *Hide all except selected* is unchecked. click *Export*.  This will create PNG files in the same directory as the drawing, named after the slices.  These can now be used for a styled box in a GRUB theme.
+@end enumerate
+
+@section Theme File Manual
+
+The theme file is a plain text file.  Lines that begin with ``#`` are ignored
+and considered comments.  (Note: This may not be the case if the previous line
+ended where a value was expected.)
+
+The theme file contains two types of statements:
+@enumerate
+@item Global properties.
+@item Component construction.
+@end enumerate
+
+@subsection Global Properties
+
+@subsection Format
+
+Global properties are specified with the simple format:
+@itemize
+@item name1: value1
+@item name2: "value which may contain spaces"
+@item name3: #88F
+@end itemize
+
+In this example, name3 is assigned a color value.
+
+
+@subsection Global Property List
+
+@multitable @columnfractions 0.3 0.6
+@item title-text @tab Specifies the text to display at the top center of the screen as a title.
+@item title-font @tab Defines the font used for the title message at the top of the screen.
+@item title-color @tab Defines the color of the title message.
+@item message-font @tab Defines the font used for messages, such as when GRUB is unable to automatically boot an entry.
+@item message-color @tab Defines the color of the message text.
+@item message-bg-color @tab Defines the background color of the message text area.
+@item desktop-image @tab Specifies the image to use as the background.  It will be scaled to fit the screen size.
+@item desktop-color @tab Specifies the color for the background if *desktop-image* is not specified.
+@item terminal-box @tab Specifies the file name pattern for the styled box slices used for the command line terminal window.  For example, ``terminal-box: terminal_*.png'' will use the images ``terminal_c.png`` as the center area, ``terminal_n.png`` as the north (top) edge, ``terminal_nw.png`` as the northwest (upper left) corner, and so on.  If the image for any slice is not found, it will simply be left empty.
+@end multitable
+
+
+@subsection Component Construction
+
+Greater customizability comes is provided by components.  A tree of components
+forms the user interface.  *Containers* are components that can contain other
+components, and there is always a single root component which is an instance
+of a *canvas* container.
+
+Components are created in the theme file by prefixing the type of component
+with a '+' sign:
+
+@code{   + label @{ text="GRUB" font="aqui 11" color="#8FF" @} }
+
+properties of a component are specified as "name = value" (whitespace
+surrounding tokens is optional and is ignored) where *value* may be:
+@itemize
+@item a single word (e.g., ``align = center``, ``color = #FF8080``),
+@item a quoted string (e.g., ``text = "Hello, World!"``), or
+@item a tuple (e.g., ``preferred_size = (120, 80)``).
+@end itemize
+
+@subsection Component List
+
+The following is a list of the components and the properties they support.
+
+@itemize
+@item label
+   A label displays a line of text.
+   
+   Properties:
+   @multitable @columnfractions 0.2 0.7
+   @item text @tab The text to display.
+   @item font @tab The font to use for text display.
+   @item color @tab The color of the text.
+   @item align @tab The horizontal alignment of the text within the component. Options are ``left``, ``center``, and ``right``.
+   @end multitable
+
+@item image
+   A component that displays an image.  The image is scaled to fit the
+   component, although the preferred size defaults to the image's original
+   size unless the ``preferred_size`` property is explicitly set.
+
+   Properties:
+
+   @multitable @columnfractions 0.2 0.7
+   @item file @tab The full path to the image file to load.
+   @end multitable
+
+@item progress_bar
+   Displays a horizontally oriented progress bar.  It can be rendered using
+   simple solid filled rectangles, or using a pair of pixmap styled boxes.
+
+   Properties:
+
+   @multitable @columnfractions 0.2 0.7
+   @item fg_color @tab The foreground color for plain solid color rendering.
+   @item bg_color @tab The background color for plain solid color rendering.
+   @item border_color @tab The border color for plain solid color rendering.
+   @item text_color @tab The text color.
+   @item show_text @tab Boolean value indicating whether or not text should be displayed on the progress bar.  If set to *false*, then no text will be displayed on the bar.  If set to any other value, text will be displayed on the bar.
+   @item bar_style @tab The styled box specification for the frame of the progress bar. Example: ``progress_frame_*.png``
+   @item highlight_style @tab The styled box specification for the highlighted region of the progress bar. This box will be used to paint just the highlighted region of the bar, and will be increased in size as the bar nears completion. Example: ``progress_hl_*.png``.
+   @item text @tab The text to display on the progress bar.  If the progress bar's ID is set to ``__timeout__``, then GRUB will updated this property with an informative message as the timeout approaches.
+   @item value @tab The progress bar current value.  Normally not set manually.
+   @item start @tab The progress bar start value.  Normally not set manually.
+   @item end @tab The progress bar end value.  Normally not set manually.
+   @end multitable
+
+@item circular_progress
+   Displays a circular progress indicator.  The appearance of this component
+   is determined by two images:  the *center* image and the *tick* image.  The
+   center image is generally larger and will be drawn in the center of the
+   component.  Around the circumference of a circle within the component, the
+   tick image will be drawn a certain number of times, depending on the
+   properties of the component.
+
+   Properties:
+
+   @multitable @columnfractions 0.3 0.6
+   @item center_bitmap
+      @tab The file name of the image to draw in the center of the component.
+   @item tick_bitmap
+      @tab The file name of the image to draw for the tick marks.
+   @item num_ticks
+      @tab The number of ticks that make up a full circle.
+   @item ticks_disappear
+      @tab Boolean value indicating whether tick marks should progressively appear,
+      or progressively disappear as *value* approaches *end*.  Specify
+      ``true`` or ``false``.
+   @item value
+      @tab The progress indicator current value.  Normally not set manually.
+   @item start
+      @tab The progress indicator start value.  Normally not set manually.
+   @item end
+      @tab The progress indicator end value.  Normally not set manually.
+   @end multitable
+@item boot_menu
+   Displays the GRUB boot menu.  It allows selecting items and executing them.
+
+   Properties:
+
+   @multitable @columnfractions 0.4 0.5
+   @item item_font
+      @tab The font to use for the menu item titles.
+   @item selected_item_font
+      @tab The font to use for the selected menu item, or ``inherit`` (the default)
+      to use ``item_font`` for the selected menu item as well.
+   @item item_color
+      @tab The color to use for the menu item titles.
+   @item selected_item_color
+      @tab The color to use for the selected menu item, or ``inherit`` (the default)
+      to use ``item_color`` for the selected menu item as well.
+   @item icon_width
+      @tab The width of menu item icons.  Icons are scaled to the specified size.
+   @item icon_height
+      @tab The height of menu item icons.
+   @item item_height
+      @tab The height of each menu item in pixels.
+   @item item_padding
+      @tab The amount of space in pixels to leave on each side of the menu item
+      contents.
+   @item item_icon_space
+      @tab The space between an item's icon and the title text, in pixels.
+   @item item_spacing
+      @tab The amount of space to leave between menu items, in pixels.
+   @item menu_pixmap_style
+      @tab The image file pattern for the menu frame styled box.
+      Example:  ``menu_*.png`` (this will use images such as ``menu_c.png``,
+      ``menu_w.png``, `menu_nw.png``, etc.)
+   @item selected_item_pixmap_style
+      @tab The image file pattern for the selected item highlight styled box.
+   @item scrollbar
+      @tab Boolean value indicating whether the scroll bar should be drawn if the
+      frame and thumb styled boxes are configured.
+   @item scrollbar_frame
+      @tab The image file pattern for the entire scroll bar.
+      Example:  ``scrollbar_*.png``
+   @item scrollbar_thumb
+      @tab The image file pattern for the scroll bar thumb (the part of the scroll
+      bar that moves as scrolling occurs).
+      Example:  ``scrollbar_thumb_*.png``
+   @item max_items_shown
+      @tab The maximum number of items to show on the menu.  If there are more than
+      *max_items_shown* items in the menu, the list will scroll to make all
+      items accessible.
+   @end multitable
+
+@item canvas
+   Canvas is a container that allows manual placement of components within it.
+   It does not alter the positions of its child components.  It assigns all
+   child components their preferred sizes.
+
+@item hbox
+   The *hbox* container lays out its children from left to right, giving each
+   one its preferred width.  The height of each child is set to the maximum of
+   the preferred heights of all children.
+   
+@item vbox
+   The *vbox* container lays out its children from top to bottom, giving each
+   one its preferred height.  The width of each child is set to the maximum of
+   the preferred widths of all children.
+@end itemize
+
+
+@subsection Common properties
+
+The following properties are supported by all components:
+@table @samp
+@item left
+     The distance from the left border of container to left border of the object in either of three formats:
+        @multitable @columnfractions 0.2 0.7
+             @item x @tab Value in pixels
+             @item p% @tab Percentage
+             @item p%+x @tab mixture of both
+        @end multitable
+@item top
+      The distance from the left border of container to left border of the object in same format.
+@item width
+      The width of object in same format.
+@item height
+      The height of object in same format.
+@item id 
+   The identifier for the component.  This can be any arbitrary string.
+   The ID can be used by scripts to refer to various components in the GUI
+   component tree.  Currently, there is one special ID value that GRUB
+   recognizes:
+
+   @multitable @columnfractions 0.2 0.7
+   @item ``__timeout__`` @tab Any component with this ID will have its *text*, *start*, *end*, *value*, and *visible* properties set by GRUB when it is counting down to an automatic boot of the default menu entry.
+   @end multitable
+@end table
+
 
 
 @node Network
@@ -2006,8 +2415,7 @@ The serial port is not used as a communication channel unless the
 @command{terminal_input} or @command{terminal_output} command is used
 (@pxref{terminal_input}, @pxref{terminal_output}).
 
-This command is only available if GRUB is compiled with serial
-support. See also @ref{Serial terminal}.
+See also @ref{Serial terminal}.
 @end deffn
 
 
@@ -2498,7 +2906,7 @@ This command is only available on x86 systems.
 @node ls
 @subsection ls
 
-@deffn Command ls [arg]
+@deffn Command ls [arg @dots{}]
 List devices or files.
 
 With no arguments, print all devices known to GRUB.

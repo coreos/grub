@@ -31,7 +31,6 @@
 #include <grub/charset.h>
 #include <grub/term.h>
 #include <grub/command.h>
-#include <grub/gzio.h>
 #include <grub/i18n.h>
 #include <grub/bitmap_scale.h>
 
@@ -535,7 +534,7 @@ grub_cmd_devprop_load (grub_command_t cmd __attribute__ ((unused)),
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
-  file = grub_gzfile_open (args[0], 1);
+  file = grub_file_open (args[0]);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
 		       "couldn't load device-propertie dump");
@@ -836,6 +835,7 @@ grub_xnu_boot_resume (void)
   struct grub_relocator32_state state;
 
   state.esp = grub_xnu_stack;
+  state.ebp = grub_xnu_stack;
   state.eip = grub_xnu_entry_point;
   state.eax = grub_xnu_arg1;
 
@@ -1114,6 +1114,7 @@ grub_xnu_boot (void)
   state.eip = grub_xnu_entry_point;
   state.eax = grub_xnu_arg1;
   state.esp = grub_xnu_stack;
+  state.ebp = grub_xnu_stack;
   return grub_relocator32_boot (grub_xnu_relocator, state);
 }
 
