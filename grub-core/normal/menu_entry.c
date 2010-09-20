@@ -1161,6 +1161,7 @@ run (struct screen *screen)
 {
   int currline = 0;
   char *nextline;
+  int errs_before;
 
   auto grub_err_t editor_getline (char **line, int cont);
   grub_err_t editor_getline (char **line, int cont __attribute__ ((unused)))
@@ -1194,6 +1195,7 @@ run (struct screen *screen)
   grub_printf_ (N_("Booting a command list"));
   grub_printf ("\n\n");
 
+  errs_before = grub_err_printed_errors;
 
   /* Execute the script, line for line.  */
   while (currline < screen->num_lines)
@@ -1202,6 +1204,9 @@ run (struct screen *screen)
       if (grub_normal_parse_line (nextline, editor_getline))
 	break;
     }
+
+  if (errs_before != grub_err_printed_errors)
+    grub_wait_after_message ();
 
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */
@@ -1382,13 +1387,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 
 	case GRUB_TERM_CTRL | 'x':
 	case GRUB_TERM_KEY_F10:
-	  {
-	    int chars_before = grub_normal_get_char_counter ();
-	    run (screen);
-
-	    if (chars_before != grub_normal_get_char_counter ())
-	      grub_wait_after_message ();
-	  }
+	  run (screen);
 	  goto refresh;
 
 	case GRUB_TERM_CTRL | 'r':

@@ -1,5 +1,22 @@
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Pause the execution (10s max) if any errors are displayed so the user
+	has a chance to see them.
+
+	* grub-core/kern/err.c (grub_err_printed_errors): New variable.
+	(grub_print_error): Increment grub_err_printed_errors.
+	* grub-core/normal/menu.c (grub_menu_execute_entry): Pause the
+	execution if any errors were displayed.
+	(show_menu): Remove old code for pause.
+	* grub-core/normal/menu_entry.c (run): Likewise.
+	* grub-core/normal/term.c (grub_normal_char_counter): Removed. All
+	users updated.
+	(grub_normal_get_char_counter): Likewise.
+	* include/grub/err.h (grub_err_printed_errors): New external variable.
+	* include/grub/normal.h (grub_normal_get_char_counter): Removed.
+
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support multiboot VBE info.
 
 	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_get_mbi_size):

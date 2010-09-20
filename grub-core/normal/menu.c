@@ -158,6 +158,7 @@ void
 grub_menu_execute_entry(grub_menu_entry_t entry)
 {
   grub_err_t err = GRUB_ERR_NONE;
+  int errs_before;
 
   if (entry->restricted)
     err = grub_auth_check_authentication (entry->users);
@@ -169,8 +170,13 @@ grub_menu_execute_entry(grub_menu_entry_t entry)
       return;
     }
 
+  errs_before = grub_err_printed_errors;
+
   grub_env_set ("chosen", entry->title);
   grub_script_execute_sourcecode (entry->sourcecode, entry->argc, entry->args);
+
+  if (errs_before != grub_err_printed_errors)
+    grub_wait_after_message ();
 
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */
@@ -583,20 +589,9 @@ show_menu (grub_menu_t menu, int nested)
       grub_cls ();
 
       if (auto_boot)
-        {
-          grub_menu_execute_with_fallback (menu, e, &execution_callback, 0);
-        }
+	grub_menu_execute_with_fallback (menu, e, &execution_callback, 0);
       else
-        {
-	  int chars_before = grub_normal_get_char_counter ();
-          grub_errno = GRUB_ERR_NONE;
-          grub_menu_execute_entry (e);
-	  grub_print_error ();
-	  grub_errno = GRUB_ERR_NONE;
-
-          if (chars_before != grub_normal_get_char_counter ())
-	    grub_wait_after_message ();
-        }
+	grub_menu_execute_entry (e);
     }
 
   return GRUB_ERR_NONE;
