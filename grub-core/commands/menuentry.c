@@ -68,9 +68,9 @@ static struct
 grub_err_t
 grub_normal_add_menu_entry (int argc, const char **args, char **classes,
 			    const char *users, const char *hotkey,
-			    const char *prefix, const char *sourcecode)
+			    const char *prefix, const char *sourcecode,
+			    int submenu)
 {
-  unsigned i;
   int menu_hotkey = 0;
   char **menu_args = NULL;
   char *menu_users = NULL;
@@ -93,6 +93,7 @@ grub_normal_add_menu_entry (int argc, const char **args, char **classes,
 
   if (classes)
     {
+      int i;
       for (i = 0; classes[i]; i++); /* count # of menuentry classes */
       menu_classes = grub_zalloc (sizeof (struct grub_menu_entry_class) * i);
       if (! menu_classes)
@@ -116,6 +117,7 @@ grub_normal_add_menu_entry (int argc, const char **args, char **classes,
 
   if (hotkey)
     {
+      unsigned i;
       for (i = 0; i < ARRAY_SIZE (hotkey_aliases); i++)
 	if (grub_strcmp (hotkey, hotkey_aliases[i].name) == 0)
 	  {
@@ -141,13 +143,16 @@ grub_normal_add_menu_entry (int argc, const char **args, char **classes,
   if (! menu_args)
     goto fail;
 
-  for (i = 0; i < argc; i++)
-    {
-      menu_args[i] = grub_strdup (args[i]);
-      if (! menu_args[i])
-	goto fail;
-    }
-  menu_args[argc] = NULL;
+  {
+    int i;
+    for (i = 0; i < argc; i++)
+      {
+	menu_args[i] = grub_strdup (args[i]);
+	if (! menu_args[i])
+	  goto fail;
+      }
+    menu_args[argc] = NULL;
+  }
 
   /* Add the menu entry at the end of the list.  */
   while (*last)
@@ -166,6 +171,7 @@ grub_normal_add_menu_entry (int argc, const char **args, char **classes,
   (*last)->argc = argc;
   (*last)->args = menu_args;
   (*last)->sourcecode = menu_sourcecode;
+  (*last)->submenu = submenu;
 
   menu->size++;
   return GRUB_ERR_NONE;
@@ -173,13 +179,19 @@ grub_normal_add_menu_entry (int argc, const char **args, char **classes,
  fail:
 
   grub_free (menu_sourcecode);
-  for (i = 0; menu_classes && menu_classes[i].name; i++)
-    grub_free (menu_classes[i].name);
-  grub_free (menu_classes);
+  {
+    int i;
+    for (i = 0; menu_classes && menu_classes[i].name; i++)
+      grub_free (menu_classes[i].name);
+    grub_free (menu_classes);
+  }
 
-  for (i = 0; menu_args && menu_args[i]; i++)
-    grub_free (menu_args[i]);
-  grub_free (menu_args);
+  {
+    int i;
+    for (i = 0; menu_args && menu_args[i]; i++)
+      grub_free (menu_args[i]);
+    grub_free (menu_args);
+  }
 
   grub_free (menu_users);
   grub_free (menu_title);
@@ -259,7 +271,8 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
     return grub_normal_add_menu_entry (argc, (const char **) args,
 				       ctxt->state[0].args, ctxt->state[1].arg,
 				       ctxt->state[2].arg, 0,
-				       ctxt->state[3].arg);
+				       ctxt->state[3].arg,
+				       ctxt->extcmd->cmd->name[0] == 's');
 
   src = args[argc - 1];
   args[argc - 1] = NULL;
@@ -274,7 +287,8 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
 
   r = grub_normal_add_menu_entry (argc - 1, (const char **) args,
 				  ctxt->state[0].args, ctxt->state[1].arg,
-				  ctxt->state[2].arg, prefix, src + 1);
+				  ctxt->state[2].arg, prefix, src + 1,
+				  ctxt->extcmd->cmd->name[0] == 's');
 
   src[len - 1] = ch;
   args[argc - 1] = src;
@@ -282,7 +296,7 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
   return r;
 }
 
-static grub_extcmd_t cmd;
+static grub_extcmd_t cmd, cmd_sub;
 
 void
 grub_menu_init (void)
@@ -291,10 +305,16 @@ grub_menu_init (void)
 			      GRUB_COMMAND_FLAG_BLOCKS
 			      | GRUB_COMMAND_FLAG_EXTRACTOR,
 			      N_("BLOCK"), N_("Define a menuentry."), options);
+  cmd_sub = grub_register_extcmd ("submenu", grub_cmd_menuentry,
+				  GRUB_COMMAND_FLAG_BLOCKS
+				  | GRUB_COMMAND_FLAG_EXTRACTOR,
+				  N_("BLOCK"), N_("Define a submenu."),
+				  options);
 }
 
 void
 grub_menu_fini (void)
 {
   grub_unregister_extcmd (cmd);
+  grub_unregister_extcmd (cmd_sub);
 }

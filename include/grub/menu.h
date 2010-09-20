@@ -53,6 +53,8 @@ struct grub_menu_entry
 
   int hotkey;
 
+  int submenu;
+
   /* The next element.  */
   struct grub_menu_entry *next;
 };

@@ -119,10 +119,13 @@ extern int grub_extractor_level;
 grub_err_t
 grub_normal_add_menu_entry (int argc, const char **args, char **classes,
 			    const char *users, const char *hotkey,
-			    const char *prefix, const char *sourcecode);
+			    const char *prefix, const char *sourcecode,
+			    int submenu);
 
 grub_err_t
 grub_normal_set_password (const char *user, const char *password);
+
+void grub_normal_free_menu (grub_menu_t menu);
 
 void grub_normal_auth_init (void);
 void grub_normal_auth_fini (void);

@@ -159,6 +159,7 @@ grub_menu_execute_entry(grub_menu_entry_t entry)
 {
   grub_err_t err = GRUB_ERR_NONE;
   int errs_before;
+  grub_menu_t menu;
 
   if (entry->restricted)
     err = grub_auth_check_authentication (entry->users);
@@ -172,6 +173,15 @@ grub_menu_execute_entry(grub_menu_entry_t entry)
 
   errs_before = grub_err_printed_errors;
 
+  if (entry->submenu)
+    {
+      grub_env_context_open ();
+      menu = grub_zalloc (sizeof (*menu));
+      if (! menu)
+	return;
+      grub_env_set_menu (menu);
+    }
+
   grub_env_set ("chosen", entry->title);
   grub_script_execute_sourcecode (entry->sourcecode, entry->argc, entry->args);
 
@@ -181,6 +191,16 @@ grub_menu_execute_entry(grub_menu_entry_t entry)
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */
     grub_command_execute ("boot", 0, 0);
+
+  if (entry->submenu)
+    {
+      if (menu && menu->size)
+	{
+	  grub_show_menu (menu, 1);
+	  grub_normal_free_menu (menu);
+	}
+      grub_env_context_close ();
+    }
 }
 
 /* Execute ENTRY from the menu MENU, falling back to entries specified

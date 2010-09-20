@@ -1,5 +1,21 @@
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support submenus.
+
+	* grub-core/commands/menuentry.c (grub_normal_add_menu_entry): New
+	parameter submenu. All users updated.
+	* grub-core/normal/main.c (free_menu): Rename to ...
+	(grub_normal_free_menu): ... this. Made global.
+	* grub-core/normal/menu.c (grub_menu_execute_entry): Open new context
+	if requested.
+	* grub-core/normal/menu_entry.c (screen): New field submenu.
+	(make_screen): Set submenu.
+	(run): Open new context if requested.
+	* include/grub/menu.h (grub_menu_entry): New field submenu.
+	* include/grub/normal.h (grub_normal_free_menu): New proto.
+
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Menu entries extractor.
 
 	* grub-core/commands/configfile.c (grub_cmd_source): Implement extractor

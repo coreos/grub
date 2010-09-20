@@ -71,6 +71,8 @@ struct screen
   /* The flag of a completion window.  */
   int completion_shown;
 
+  int submenu;
+
   struct per_term_screen *terms;
   unsigned nterms;
 };
@@ -495,6 +497,8 @@ make_screen (grub_menu_entry_t entry)
   screen = grub_zalloc (sizeof (*screen));
   if (! screen)
     return 0;
+
+  screen->submenu = entry->submenu;
 
   screen->num_lines = 1;
   screen->lines = grub_malloc (sizeof (struct line));
@@ -1162,6 +1166,7 @@ run (struct screen *screen)
   int currline = 0;
   char *nextline;
   int errs_before;
+  grub_menu_t menu;
 
   auto grub_err_t editor_getline (char **line, int cont);
   grub_err_t editor_getline (char **line, int cont __attribute__ ((unused)))
@@ -1197,6 +1202,15 @@ run (struct screen *screen)
 
   errs_before = grub_err_printed_errors;
 
+  if (screen->submenu)
+    {
+      grub_env_context_open ();
+      menu = grub_zalloc (sizeof (*menu));
+      if (! menu)
+	return;
+      grub_env_set_menu (menu);
+    }
+
   /* Execute the script, line for line.  */
   while (currline < screen->num_lines)
     {
@@ -1211,6 +1225,16 @@ run (struct screen *screen)
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */
     grub_command_execute ("boot", 0, 0);
+
+  if (screen->submenu)
+    {
+      if (menu && menu->size)
+	{
+	  grub_show_menu (menu, 1);
+	  grub_normal_free_menu (menu);
+	}
+      grub_env_context_close ();
+    }
 
   if (grub_errno != GRUB_ERR_NONE)
     {

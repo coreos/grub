@@ -123,8 +123,8 @@ grub_file_getline (grub_file_t file)
   return cmdline;
 }
 
-static void
-free_menu (grub_menu_t menu)
+void
+grub_normal_free_menu (grub_menu_t menu)
 {
   grub_menu_entry_t entry = menu->entry_list;
 
@@ -289,7 +289,7 @@ grub_normal_execute (const char *config, int nested, int batch)
 	{
 	  grub_show_menu (menu, nested);
 	  if (nested)
-	    free_menu (menu);
+	    grub_normal_free_menu (menu);
 	}
     }
 }
