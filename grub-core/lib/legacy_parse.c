@@ -273,7 +273,7 @@ struct legacy_command legacy_commands[] =
      " default values are COM1, 9600, 8N1."},
     /* FIXME: setkey unsupported.  */    /* NUL_TERMINATE */
     /* NOTE: setup unsupported.  */
-    /* FIXME: --no-echo, --no-edit, --lines, hercules unsupported.  */
+    /* FIXME: --no-echo, --no-edit, hercules unsupported.  */
     /* NOTE: both terminals are activated so --silent and --timeout
        are useless.  */
     {"terminal", NULL, NULL, 0, 0, {}, FLAG_TERMINAL | FLAG_IGNORE_REST,
@@ -558,20 +558,16 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 	}
       grub_strcpy (outptr, "; ");
       outptr += grub_strlen (outptr);
-      if (serial && dumb)
+      if (serial)
 	{
-	  grub_strcpy (outptr, "terminfo serial dumb; ");
-	  outptr += grub_strlen (outptr);
-	}
-
-      if (serial && !dumb)
-	{
-	  grub_strcpy (outptr, "terminfo serial vt100; ");
+	  grub_snprintf (outptr, outbuf + sizeof (outbuf) - outptr,
+			 "terminfo serial -g 80x%d %s; ",
+			 lines, dumb ? "dumb" : "vt100");
 	  outptr += grub_strlen (outptr);
 	}
 
       grub_strcpy (outptr, "\n");
-      
+
       return grub_strdup (outbuf);
     }
 

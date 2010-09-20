@@ -55,14 +55,6 @@ struct grub_serial_input_state
   struct grub_serial_port *port;
 };
 
-static grub_uint16_t
-grub_serial_getwh (struct grub_term_output *term __attribute__ ((unused)))
-{
-  const grub_uint8_t TEXT_WIDTH = 80;
-  const grub_uint8_t TEXT_HEIGHT = 24;
-  return (TEXT_WIDTH << 8) | TEXT_HEIGHT;
-}
-
 static void 
 serial_put (grub_term_output_t term, const int c)
 {
@@ -89,7 +81,9 @@ struct grub_serial_output_state grub_serial_terminfo_output =
   {
     .tinfo =
     {
-      .put = serial_put
+      .put = serial_put,
+      .width = 80,
+      .height = 24
     }
   };
 
@@ -107,7 +101,7 @@ static struct grub_term_output grub_serial_term_output =
 {
   .name = "serial",
   .putchar = grub_terminfo_putchar,
-  .getwh = grub_serial_getwh,
+  .getwh = grub_terminfo_getwh,
   .getxy = grub_terminfo_getxy,
   .gotoxy = grub_terminfo_gotoxy,
   .cls = grub_terminfo_cls,

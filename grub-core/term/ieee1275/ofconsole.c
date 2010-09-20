@@ -29,8 +29,7 @@
 static grub_ieee1275_ihandle_t stdout_ihandle;
 static grub_ieee1275_ihandle_t stdin_ihandle;
 
-static grub_uint8_t grub_ofconsole_width;
-static grub_uint8_t grub_ofconsole_height;
+extern struct grub_terminfo_output_state grub_ofconsole_terminfo_output;
 
 struct color
 {
@@ -91,7 +90,8 @@ grub_ofconsole_dimensions (void)
 
 	  if (! grub_ieee1275_get_property (options, "screen-#columns",
 					    val, lval, 0))
-	    grub_ofconsole_width = (grub_uint8_t) grub_strtoul (val, 0, 10);
+	    grub_ofconsole_terminfo_output->width
+	      = (grub_uint8_t) grub_strtoul (val, 0, 10);
 	}
       if (! grub_ieee1275_get_property_length (options, "screen-#rows", &lval)
 	  && lval >= 0 && lval < 1024)
@@ -99,21 +99,16 @@ grub_ofconsole_dimensions (void)
 	  char val[lval];
 	  if (! grub_ieee1275_get_property (options, "screen-#rows",
 					    val, lval, 0))
-	    grub_ofconsole_height = (grub_uint8_t) grub_strtoul (val, 0, 10);
+	    grub_ofconsole_terminfo_output->height
+	      = (grub_uint8_t) grub_strtoul (val, 0, 10);
 	}
     }
 
   /* Use a small console by default.  */
-  if (! grub_ofconsole_width)
-    grub_ofconsole_width = 80;
-  if (! grub_ofconsole_height)
-    grub_ofconsole_height = 24;
-}
-
-static grub_uint16_t
-grub_ofconsole_getwh (struct grub_term_output *term __attribute__ ((unused)))
-{
-  return (grub_ofconsole_width << 8) | grub_ofconsole_height;
+  if (! grub_ofconsole_terminfo_output->width)
+    grub_ofconsole_terminfo_output->width = 80;
+  if (! grub_ofconsole_terminfo_output->height)
+    grub_ofconsole_terminfo_output->height = 24;
 }
 
 static void
@@ -187,7 +182,9 @@ struct grub_terminfo_input_state grub_ofconsole_terminfo_input =
 
 struct grub_terminfo_output_state grub_ofconsole_terminfo_output =
   {
-    .put = put
+    .put = put,
+    .width = 80,
+    .height = 24
   };
 
 static struct grub_term_input grub_ofconsole_term_input =
@@ -204,7 +201,7 @@ static struct grub_term_output grub_ofconsole_term_output =
     .init = grub_ofconsole_init_output,
     .putchar = grub_terminfo_putchar,
     .getxy = grub_terminfo_getxy,
-    .getwh = grub_ofconsole_getwh,
+    .getwh = grub_terminfo_getwh,
     .gotoxy = grub_terminfo_gotoxy,
     .cls = grub_terminfo_cls,
     .setcolorstate = grub_terminfo_setcolorstate,

@@ -1,5 +1,24 @@
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Suport manual terminal geometry specification.
+
+	* grub-core/term/ieee1275/ofconsole.c (grub_ofconsole_dimensions):
+	Save state in grub_ofconsole_terminfo_output.
+	(grub_ofconsole_term): Use grub_terminfo_getwh.
+	(grub_ofconsole_getwh): Removed.
+	* grub-core/term/serial.c (grub_serial_getwh): Removed.
+	(grub_serial_term): Use grub_terminfo_getwh.
+	* grub-core/term/terminfo.c (grub_terminfo_getwh): New function.
+	(options): New struct.
+	(OPTION_*): New enum.
+	(grub_cmd_terminfo): Transform into extcmd and handle new parameters.
+	* include/grub/terminfo.h (grub_terminfo_output_state): New fields
+	width and height.
+	(grub_terminfo_getwh): New proto.
+	* grub-core/lib/legacy_parse.c (grub_legacy_parse): Handle --lines.
+
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Handle legacy "terminal" command.
 
 	* grub-core/lib/legacy_parse.c (legacy_command): New flags FLAG_TITLE
