@@ -1,3 +1,8 @@
+2010-09-20  Yves Blusseau  <blusseau@zetam.org>
+
+	* .bzrignore: Add grub-kbdcomp, grub-menulst2cfg, *.marker,
+	grub-core/genmod.sh and grub-core/gensyminfo.sh
+
 2010-09-20  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Add a test for echo command options.

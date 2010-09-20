@@ -40,7 +40,9 @@ grub-fstest
 grub_fstest_init.c
 grub_fstest_init.h
 grub-install
+grub-kbdcomp
 grub-macho2img
+grub-menulst2cfg
 grub-mk*
 grub-pbkdf2
 grub-pe2elf
@@ -69,6 +71,7 @@ install-sh
 lib/libgcrypt-grub
 libgrub_a_init.c
 *.lst
+*.marker
 Makefile
 *.mod
 mod-*.c
@@ -103,6 +106,8 @@ Makefile.util.am
 grub-core/Makefile.core.am
 grub-core/Makefile.gcry.am
 grub-core/Makefile.gcry.def
+grub-core/genmod.sh
+grub-core/gensyminfo.sh
 grub-core/*.module
 grub-core/*.pp
 util/bash-completion.d/grub
