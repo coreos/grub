@@ -139,11 +139,11 @@ grub_multiboot_load (grub_file_t file)
 	      case MULTIBOOT_TAG_TYPE_BOOTDEV:
 	      case MULTIBOOT_TAG_TYPE_MMAP:
 	      case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
-		break;
-
 	      case MULTIBOOT_TAG_TYPE_VBE:
 	      case MULTIBOOT_TAG_TYPE_ELF_SECTIONS:
 	      case MULTIBOOT_TAG_TYPE_APM:
+		break;
+
 	      default:
 		grub_free (buffer);
 		return grub_error (GRUB_ERR_UNKNOWN_OS,
@@ -274,12 +274,15 @@ grub_multiboot_get_mbi_size (void)
     + (sizeof (struct multiboot_tag_string)
        + ALIGN_UP (sizeof (PACKAGE_STRING), MULTIBOOT_TAG_ALIGN))
     + (modcnt * sizeof (struct multiboot_tag_module) + total_modcmd)
-    + sizeof (struct multiboot_tag_basic_meminfo)
+    + ALIGN_UP (sizeof (struct multiboot_tag_basic_meminfo),
+		MULTIBOOT_TAG_ALIGN)
     + ALIGN_UP (sizeof (struct multiboot_tag_bootdev), MULTIBOOT_TAG_ALIGN)
-    + sizeof (struct multiboot_tag_elf_sections)
-    + elf_sec_entsize * elf_sec_num
-    + (sizeof (struct multiboot_tag_mmap) + grub_get_multiboot_mmap_count ()
-       * sizeof (struct multiboot_mmap_entry))
+    + ALIGN_UP (sizeof (struct multiboot_tag_elf_sections), MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP (elf_sec_entsize * elf_sec_num, MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP ((sizeof (struct multiboot_tag_mmap)
+		 + grub_get_multiboot_mmap_count ()
+		 * sizeof (struct multiboot_mmap_entry)), MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP (sizeof (struct multiboot_tag_framebuffer), MULTIBOOT_TAG_ALIGN)
     + sizeof (struct multiboot_tag_vbe) + MULTIBOOT_TAG_ALIGN - 1
     + sizeof (struct multiboot_tag_apm) + MULTIBOOT_TAG_ALIGN - 1;
 }
@@ -328,6 +331,54 @@ grub_fill_multiboot_mmap (struct multiboot_tag_mmap *tag)
 
   grub_mmap_iterate (hook);
 }
+
+#if defined (GRUB_MACHINE_PCBIOS)
+static void
+fill_vbe_tag (struct multiboot_tag_vbe *tag)
+{
+  grub_vbe_status_t status;
+  void *scratch = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+
+  tag->type = MULTIBOOT_TAG_TYPE_VBE;
+  tag->size = 0;
+    
+  status = grub_vbe_bios_get_controller_info (scratch);
+  if (status != GRUB_VBE_STATUS_OK)
+    return;
+  
+  grub_memcpy (&tag->vbe_control_info, scratch,
+	       sizeof (struct grub_vbe_info_block));
+  
+  status = grub_vbe_bios_get_mode (scratch);
+  tag->vbe_mode = *(grub_uint32_t *) scratch;
+  if (status != GRUB_VBE_STATUS_OK)
+    return;
+
+  /* get_mode_info isn't available for mode 3.  */
+  if (tag->vbe_mode == 3)
+    {
+      struct grub_vbe_mode_info_block *mode_info = (void *) &tag->vbe_mode_info;
+      grub_memset (mode_info, 0,
+		   sizeof (struct grub_vbe_mode_info_block));
+      mode_info->memory_model = GRUB_VBE_MEMORY_MODEL_TEXT;
+      mode_info->x_resolution = 80;
+      mode_info->y_resolution = 25;
+    }
+  else
+    {
+      status = grub_vbe_bios_get_mode_info (tag->vbe_mode, scratch);
+      if (status != GRUB_VBE_STATUS_OK)
+	return;
+      grub_memcpy (&tag->vbe_mode_info, scratch,
+		   sizeof (struct grub_vbe_mode_info_block));
+    }      
+  grub_vbe_bios_get_pm_interface (&tag->vbe_interface_seg,
+				  &tag->vbe_interface_off,
+				  &tag->vbe_interface_len);
+
+  tag->size = sizeof (*tag);
+}
+#endif
 
 static grub_err_t
 retrieve_video_parameters (grub_uint8_t **ptrorig)
@@ -417,6 +468,16 @@ retrieve_video_parameters (grub_uint8_t **ptrorig)
     return GRUB_ERR_NONE;
 #endif
 
+#if GRUB_MACHINE_HAS_VBE
+  {
+    struct multiboot_tag_vbe *tag_vbe = (struct multiboot_tag_vbe *) *ptrorig;
+
+    fill_vbe_tag (tag_vbe);
+
+    *ptrorig += ALIGN_UP (tag_vbe->size, MULTIBOOT_TAG_ALIGN);
+  }
+#endif
+
   err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
   if (err)
     return err;
@@ -482,7 +543,7 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
 
   err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
 					  0, 0xffffffff - bufsize,
-					  bufsize, 4,
+					  bufsize, MULTIBOOT_TAG_ALIGN,
 					  GRUB_RELOCATOR_PREFERENCE_NONE);
   if (err)
     return err;

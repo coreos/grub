@@ -1,5 +1,28 @@
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support multiboot VBE info.
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_get_mbi_size):
+	Take VBE info into account.
+	(fill_vbe_info) [GRUB_MACHINE_HAS_VBE]: New function.
+	(retrieve_video_parameters) [GRUB_MACHINE_HAS_VBE]:
+	Call fill_vbe_info when appropriate.
+	(grub_multiboot_make_mbi): Account for the size occupied by VBE info.
+	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_load): Declare tags
+	as supported.
+	(grub_multiboot_get_mbi_size): Take new tags into account.
+	(fill_vbe_tag) [GRUB_MACHINE_HAS_VBE]: New function.
+	(retrieve_video_parameters) [GRUB_MACHINE_HAS_VBE]:
+	Call fill_vbe_tag when appropriate.
+	(grub_multiboot_make_mbi): Properly align tags.
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_get_pm_interface): New
+	function.
+	* include/grub/i386/pc/vbe.h (grub_vbe_bios_get_pm_interface): New
+	proto.
+	* include/grub/multiboot.h (GRUB_MACHINE_HAS_VBE): New definition.
+
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Suport manual terminal geometry specification.
 
 	* grub-core/term/ieee1275/ofconsole.c (grub_ofconsole_dimensions):

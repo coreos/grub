@@ -20,6 +20,7 @@
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>
 #include <grub/machine/apm.h>
+#include <grub/machine/memory.h>
 #endif
 #include <grub/multiboot.h>
 #include <grub/cpu/relocator.h>
@@ -195,6 +196,10 @@ grub_multiboot_get_mbi_size (void)
     + grub_get_multiboot_mmap_count () * sizeof (struct multiboot_mmap_entry)
     + elf_sec_entsize * elf_sec_num
     + 256 * sizeof (struct multiboot_color)
+#if GRUB_MACHINE_HAS_VBE
+    + sizeof (struct grub_vbe_info_block)
+    + sizeof (struct grub_vbe_mode_info_block)
+#endif
     + ALIGN_UP (sizeof (struct multiboot_apm_info), 4);
 }
 
@@ -238,6 +243,77 @@ grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
   grub_mmap_iterate (hook);
 }
 
+#if GRUB_MACHINE_HAS_VBE
+static grub_err_t
+fill_vbe_info (struct multiboot_info *mbi, grub_uint8_t *ptrorig,
+	       grub_uint32_t ptrdest, int fill_generic)
+{
+  grub_vbe_status_t status;
+  grub_uint32_t vbe_mode;
+  void *scratch = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+  struct grub_vbe_mode_info_block *mode_info;
+    
+  status = grub_vbe_bios_get_controller_info (scratch);
+  if (status != GRUB_VBE_STATUS_OK)
+    return grub_error (GRUB_ERR_IO, "Can't get controller info.");
+  
+  mbi->vbe_control_info = ptrdest;
+  grub_memcpy (ptrorig, scratch, sizeof (struct grub_vbe_info_block));
+  ptrorig += sizeof (struct grub_vbe_info_block);
+  ptrdest += sizeof (struct grub_vbe_info_block);
+  
+  status = grub_vbe_bios_get_mode (scratch);
+  vbe_mode = *(grub_uint32_t *) scratch;
+  if (status != GRUB_VBE_STATUS_OK)
+    return grub_error (GRUB_ERR_IO, "can't get VBE mode");
+  mbi->vbe_mode = vbe_mode;
+
+  mode_info = (struct grub_vbe_mode_info_block *) ptrorig;
+  mbi->vbe_mode_info = ptrdest;
+  /* get_mode_info isn't available for mode 3.  */
+  if (vbe_mode == 3)
+    {
+      grub_memset (mode_info, 0, sizeof (struct grub_vbe_mode_info_block));
+      mode_info->memory_model = GRUB_VBE_MEMORY_MODEL_TEXT;
+      mode_info->x_resolution = 80;
+      mode_info->y_resolution = 25;
+    }
+  else
+    {
+      status = grub_vbe_bios_get_mode_info (vbe_mode, scratch);
+      if (status != GRUB_VBE_STATUS_OK)
+	return grub_error (GRUB_ERR_IO, "can't get mode info");
+      grub_memcpy (mode_info, scratch,
+		   sizeof (struct grub_vbe_mode_info_block));
+    }
+  ptrorig += sizeof (struct grub_vbe_mode_info_block);
+  ptrdest += sizeof (struct grub_vbe_mode_info_block);
+      
+  grub_vbe_bios_get_pm_interface (&mbi->vbe_interface_seg,
+				  &mbi->vbe_interface_off,
+				  &mbi->vbe_interface_len);
+  
+  mbi->flags |= MULTIBOOT_INFO_VBE_INFO;
+
+  if (fill_generic && mode_info->memory_model == GRUB_VBE_MEMORY_MODEL_TEXT)
+    {
+      mbi->framebuffer_addr = 0xb8000;
+
+      mbi->framebuffer_pitch = 2 * mode_info->x_resolution;	
+      mbi->framebuffer_width = mode_info->x_resolution;
+      mbi->framebuffer_height = mode_info->y_resolution;
+
+      mbi->framebuffer_bpp = 16;
+
+      mbi->framebuffer_type = MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT;
+
+      mbi->flags |= MULTIBOOT_INFO_FRAMEBUFFER_INFO;
+    }
+
+  return GRUB_ERR_NONE;
+}
+#endif
+
 static grub_err_t
 retrieve_video_parameters (struct multiboot_info *mbi,
 			   grub_uint8_t *ptrorig, grub_uint32_t ptrdest)
@@ -258,8 +334,13 @@ retrieve_video_parameters (struct multiboot_info *mbi,
   grub_video_get_palette (0, ARRAY_SIZE (palette), palette);
 
   driv_id = grub_video_get_driver_id ();
+#if GRUB_MACHINE_HAS_VGA_TEXT
+  if (driv_id == GRUB_VIDEO_DRIVER_NONE)
+    return fill_vbe_info (mbi, ptrorig, ptrdest, 1);
+#else
   if (driv_id == GRUB_VIDEO_DRIVER_NONE)
     return GRUB_ERR_NONE;
+#endif
 
   err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
   if (err)
@@ -306,6 +387,11 @@ retrieve_video_parameters (struct multiboot_info *mbi,
     }
 
   mbi->flags |= MULTIBOOT_INFO_FRAMEBUFFER_INFO;
+
+#if GRUB_MACHINE_HAS_VBE
+  if (driv_id == GRUB_VIDEO_DRIVER_VBE)
+    return fill_vbe_info (mbi, ptrorig, ptrdest, 0);
+#endif
 
   return GRUB_ERR_NONE;
 }
@@ -440,6 +526,12 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
       grub_print_error ();
       grub_errno = GRUB_ERR_NONE;
     }
+#if GRUB_MACHINE_HAS_VBE
+  ptrorig += sizeof (struct grub_vbe_info_block);
+  ptrdest += sizeof (struct grub_vbe_info_block);
+  ptrorig += sizeof (struct grub_vbe_mode_info_block);
+  ptrdest += sizeof (struct grub_vbe_mode_info_block);
+#endif
 
   return GRUB_ERR_NONE;
 }

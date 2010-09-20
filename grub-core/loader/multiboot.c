@@ -20,7 +20,6 @@
 /*
  *  FIXME: The following features from the Multiboot specification still
  *         need to be implemented:
- *  - VBE support
  *  - drives table
  *  - ROM configuration table
  */
