@@ -1,5 +1,9 @@
 2010-09-20  Yves Blusseau  <blusseau@zetam.org>
 
+	* util/grub-editenv.c: Use argp instead of getopt.
+
+2010-09-20  Yves Blusseau  <blusseau@zetam.org>
+
 	* util/grub-setup.c: Use argp instead of getopt.
 
 2010-09-20  Yves Blusseau  <blusseau@zetam.org>
