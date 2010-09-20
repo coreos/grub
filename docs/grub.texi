@@ -1264,7 +1264,9 @@ and terminated by a semicolon or a newline.  The first word specifies the
 command to be executed.  The remaining words are passed as arguments to the
 invoked command.
 
-The return value of a simple command is its exit status.
+The return value of a simple command is its exit status.  If the reserved
+word @code{!} precedes the command, then the return value is instead the
+logical negation of the command's exit status.
 
 @heading Compound commands
 
@@ -1796,8 +1798,7 @@ To generate a PXE boot image, run:
 
 @example
 @group
-grub-mkimage --format=i386-pc --output=core.img --prefix='(pxe)/boot/grub' pxe pxecmd
-cat /boot/grub/pxeboot.img core.img >grub.pxe
+grub-mkimage --format=i386-pc-pxe --output=grub.pxe --prefix='(pxe)/boot/grub' pxe pxecmd
 @end group
 @end example
 
@@ -1806,6 +1807,9 @@ to the PXE (TFTP) server, ensuring that @file{*.mod} and @file{*.lst} are
 accessible via the @file{/boot/grub/} path from the TFTP server root.  Set
 the DHCP server configuration to offer @file{grub.pxe} as the boot file (the
 @samp{filename} option in ISC dhcpd).
+
+You can also use the @command{grub-mknetdir} utility to generate an image
+and a GRUB directory tree, rather than copying files around manually.
 
 After GRUB has started, files on the TFTP server will be accessible via the
 @samp{(pxe)} device.

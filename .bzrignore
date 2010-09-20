@@ -125,7 +125,10 @@ grub-core/gnulib/stdio.h
 grub-core/gnulib/stdlib.h
 grub-core/gnulib/string.h
 grub-core/gnulib/strings.h
+grub-core/gnulib/sys
 grub-core/gnulib/unistd.h
 grub-core/gnulib/warn-on-use.h
 grub-core/gnulib/wchar.h
 grub-core/gnulib/wctype.h
+widthspec.bin
+widthspec.h
