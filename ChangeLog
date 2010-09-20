@@ -1,3 +1,14 @@
+2010-09-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* kern/emu/hostdisk.c: Include <sys/ioctl.h> and <sys/disklabel.h>
+	on FreeBSD.  Define HAVE_DIOCGDINFO on NetBSD and FreeBSD to reduce
+	the verbosity of later #ifs.
+	(find_partition_start): Define this function on FreeBSD too.
+	(device_is_wholedisk) [__FreeBSD__ || __FreeBSD_kernel__]: New
+	function.
+	(grub_util_biosdisk_get_grub_dev): Use partition-start-sector logic
+	on FreeBSD.
+
 2010-09-20  Yves Blusseau  <blusseau@zetam.org>
 
 	* util/grub-editenv.c: Use argp instead of getopt.
