@@ -1,5 +1,36 @@
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support some annoying BSD and Minix subpartitions.
+
+	* Makefile.util.def (libgrub.a): Add grub-core/partmap/bsdlabel.c.
+	* grub-core/disk/efi/efidisk.c (grub_efidisk_get_device_name):
+	Properly handle concatenation.
+	* grub-core/kern/device.c (grub_device_iterate): Likewise.
+	* grub-core/normal/completion.c (iterate_partition): Likewise.
+	* grub-core/kern/disk.c (grub_disk_open): Make disk->name not
+	contain partition. All users updated.
+	* grub-core/partmap/bsdlabel.c (grub_netbsdlabel_partition_map): New
+	struct.
+	(grub_openbsdlabel_partition_map): Likewise.
+	(bsdlabel_partition_map_iterate): Rename to ..
+	(iterate_real): ... this. New arguments sector, freebsd and pmap.
+	(bsdlabel_partition_map_iterate): New function.
+	(netopenbsdlabel_partition_map_iterate): Likewise.
+	(netbsdlabel_partition_map_iterate): Likewise.
+	(openbsdlabel_partition_map_iterate): Likewise.
+	(GRUB_MOD_INIT): Register new partmaps.
+	(GRUB_MOD_FINI): Unregister new partmaps.
+	* grub-core/partmap/msdos.c (pc_partition_map_iterate): Rename to ...
+	(grub_partition_msdos_iterate): ... this. All users updated.
+	Don't support embedding other than in a minix partition.
+	* include/grub/msdos_partition.h (grub_partition_msdos_iterate): New
+	proto.
+	* include/grub/partition.h (grub_partition): New field msdostype.
+	* util/grub-install.in: Handle openbsd and netbsd types being in
+	part_bsd module.
+
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Split mdraid.mod into mdraid09.mod and mdraid1x.mod.
 
 	* Makefile.util.def (libgrub.a): Add grub-core/disk/mdraid1x_linux.c.

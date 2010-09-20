@@ -470,7 +470,12 @@ fi
 # filesystem will be accessible).
 partmap_module=
 for x in `$grub_probe --target=partmap --device ${grub_device} 2> /dev/null`; do
-   partmap_module="$partmap_module part_$x";
+   case "$x" in
+       netbsd | openbsd) 
+	   partmap_module="$partmap_module part_bsd";;
+       *)
+	   partmap_module="$partmap_module part_$x";;
+   esac
 done
 
 # Device abstraction module, if any (lvm, raid).
