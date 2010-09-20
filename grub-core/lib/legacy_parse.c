@@ -45,12 +45,14 @@ struct legacy_command
     TYPE_VBE_MODE
   } argt[4];
   enum {
-    FLAG_IGNORE_REST        =  1,
-    FLAG_FALLBACK_AVAILABLE =  4,
-    FLAG_FALLBACK           =  8,
-    FLAG_COLOR_INVERT       = 16,
-    FLAG_NO_MENUENTRY       = 32,
-    FLAG_MENUENTRY_ONLY     = 64,
+    FLAG_IGNORE_REST        =  0x001,
+    FLAG_FALLBACK_AVAILABLE =  0x004,
+    FLAG_FALLBACK           =  0x008,
+    FLAG_COLOR_INVERT       =  0x010,
+    FLAG_NO_MENUENTRY       =  0x020,
+    FLAG_MENUENTRY_ONLY     =  0x040,
+    FLAG_TERMINAL           =  0x080,
+    FLAG_TITLE              =  0x100,
   } flags;
   const char *shortdesc;
   const char *longdesc;
@@ -271,7 +273,22 @@ struct legacy_command legacy_commands[] =
      " default values are COM1, 9600, 8N1."},
     /* FIXME: setkey unsupported.  */    /* NUL_TERMINATE */
     /* NOTE: setup unsupported.  */
-    /* FIXME: terminal unsupported.  */    /* NUL_TERMINATE */
+    /* FIXME: --no-echo, --no-edit, --lines, hercules unsupported.  */
+    /* NOTE: both terminals are activated so --silent and --timeout
+       are useless.  */
+    {"terminal", NULL, NULL, 0, 0, {}, FLAG_TERMINAL | FLAG_IGNORE_REST,
+     "[--dumb] [--no-echo] [--no-edit] [--timeout=SECS] [--lines=LINES] "
+     "[--silent] [console] [serial] [hercules]",
+     "Select a terminal. When multiple terminals are specified, wait until"
+     " you push any key to continue. If both console and serial are specified,"
+     " the terminal to which you input a key first will be selected. If no"
+     " argument is specified, print current setting. The option --dumb"
+     " specifies that your terminal is dumb, otherwise, vt100-compatibility"
+     " is assumed. If you specify --no-echo, input characters won't be echoed."
+     " If you specify --no-edit, the BASH-like editing feature will be disabled."
+     " If --timeout is present, this command will wait at most for SECS"
+     " seconds. The option --lines specifies the maximum number of lines."
+     " The option --silent is used to suppress messages."},
     /* FIXME: terminfo unsupported.  */    /* NUL_TERMINATE */
     {"testload", "cat '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
      "Read the entire contents of FILE in several different ways and"
@@ -284,7 +301,9 @@ struct legacy_command legacy_commands[] =
     {"timeout", "set timeout=%s\n", NULL, 0, 1, {TYPE_INT}, 0, "SEC",
      "Set a timeout, in SEC seconds, before automatically booting the"
      " default entry (normally the first entry defined)."},
-    /* title is handled separately. */
+    {"title", NULL, NULL, 0, 0, {}, FLAG_TITLE, "NAME ...",
+     "Start a new boot entry, and set its name to the contents of the"
+     " rest of the line, starting with the first non-space character."},
     {"unhide", "parttool '%s' hidden-\n", NULL, 0,
      1, {TYPE_PARTITION}, 0, "PARTITION",
      "Unhide PARTITION by clearing the \"hidden\" bit in its"
@@ -418,6 +437,7 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
   const char *ptr;
   const char *cmdname;
   unsigned i, cmdnum;
+  char *args[ARRAY_SIZE (legacy_commands[0].argt)];
 
   *suffix = NULL;
 
@@ -441,18 +461,6 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
   cmdname = ptr;
   for (ptr = buf; *ptr && !grub_isspace (*ptr) && *ptr != '='; ptr++);
 
-  if (entryname && grub_strncmp ("title", cmdname, ptr - cmdname) == 0
-      && ptr - cmdname == sizeof ("title") - 1)
-    {
-      const char *ptr2;
-      for (; grub_isspace (*ptr) || *ptr == '='; ptr++);
-      ptr2 = ptr + grub_strlen (ptr);
-      while (ptr2 > ptr && grub_isspace (*(ptr2 - 1)))
-	ptr2--;
-      *entryname = grub_strndup (ptr, ptr2 - ptr);
-      return NULL;
-    }
-
   for (cmdnum = 0; cmdnum < ARRAY_SIZE (legacy_commands); cmdnum++)
     if (grub_strncmp (legacy_commands[cmdnum].name, cmdname, ptr - cmdname) == 0
 	&& legacy_commands[cmdnum].name[ptr - cmdname] == 0
@@ -466,7 +474,107 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 
   for (; grub_isspace (*ptr) || *ptr == '='; ptr++);
 
-  char *args[ARRAY_SIZE (legacy_commands[0].argt)];
+  if (legacy_commands[cmdnum].flags & FLAG_TITLE)
+    {
+      const char *ptr2;
+      ptr2 = ptr + grub_strlen (ptr);
+      while (ptr2 > ptr && grub_isspace (*(ptr2 - 1)))
+	ptr2--;
+      *entryname = grub_strndup (ptr, ptr2 - ptr);
+      return NULL;
+    }
+
+  if (legacy_commands[cmdnum].flags & FLAG_TERMINAL)
+    {
+      int dumb = 0, no_echo = 0, no_edit = 0, lines = 24;
+      int console = 0, serial = 0, hercules = 0;
+      /* Big enough for any possible resulting command. */
+      char outbuf[256] = "";
+      char *outptr;
+      while (*ptr)
+	{
+	  /*	  "[--timeout=SECS] [--silent]"
+		  " [console] [serial] [hercules]"*/
+	  if (grub_memcmp (ptr, "--dumb", sizeof ("--dumb") - 1) == 0)
+	    dumb = 1;
+
+	  if (grub_memcmp (ptr, "--no-echo", sizeof ("--no-echo") - 1) == 0)
+	    no_echo = 1;
+
+	  if (grub_memcmp (ptr, "--no-edit", sizeof ("--no-edit") - 1) == 0)
+	    no_edit = 1;
+
+	  if (grub_memcmp (ptr, "--lines=", sizeof ("--lines=") - 1) == 0)
+	    {
+	      lines = grub_strtoul (ptr + sizeof ("--lines=") - 1, 0, 0);
+	      if (grub_errno)
+		{
+		  lines = 24;
+		  grub_errno = GRUB_ERR_NONE;
+		}
+	    }
+
+	  if (grub_memcmp (ptr, "console", sizeof ("console") - 1) == 0)
+	    console = 1;
+
+	  if (grub_memcmp (ptr, "serial", sizeof ("serial") - 1) == 0)
+	    serial = 1;
+
+	  if (grub_memcmp (ptr, "hercules", sizeof ("hercules") - 1) == 0)
+	    hercules = 1;
+
+	  while (*ptr && !grub_isspace (*ptr))
+	    ptr++;
+	  while (*ptr && grub_isspace (*ptr))
+	    ptr++;
+	}
+
+      if (!console && !serial)
+	return grub_strdup ("terminal_input; terminal_output; terminfo\n");
+
+      grub_strcpy (outbuf, "terminal_input ");
+      outptr = outbuf + grub_strlen (outbuf);
+      if (serial)
+	{
+	  grub_strcpy (outptr, "serial ");
+	  outptr += grub_strlen (outptr);
+	}
+      if (console)
+	{
+	  grub_strcpy (outptr, "console ");
+	  outptr += grub_strlen (outptr);
+	}
+      grub_strcpy (outptr, "; terminal_output ");
+      outptr += grub_strlen (outptr);
+      if (serial)
+	{
+	  grub_strcpy (outptr, "serial ");
+	  outptr += grub_strlen (outptr);
+	}
+      if (console)
+	{
+	  grub_strcpy (outptr, "console ");
+	  outptr += grub_strlen (outptr);
+	}
+      grub_strcpy (outptr, "; ");
+      outptr += grub_strlen (outptr);
+      if (serial && dumb)
+	{
+	  grub_strcpy (outptr, "terminfo serial dumb; ");
+	  outptr += grub_strlen (outptr);
+	}
+
+      if (serial && !dumb)
+	{
+	  grub_strcpy (outptr, "terminfo serial vt100; ");
+	  outptr += grub_strlen (outptr);
+	}
+
+      grub_strcpy (outptr, "\n");
+      
+      return grub_strdup (outbuf);
+    }
+
   grub_memset (args, 0, sizeof (args));
 
   {

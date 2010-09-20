@@ -1,5 +1,14 @@
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Handle legacy "terminal" command.
+
+	* grub-core/lib/legacy_parse.c (legacy_command): New flags FLAG_TITLE
+	and FLAG_TERMINAL.
+	(legacy_commands): Add terminal and title.
+	(grub_legacy_parse): Handle terminal. Simplify title handling.
+
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/arg.c (grub_arg_show_help): Correctly handle
 	parameters overflow.
 
