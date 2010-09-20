@@ -557,6 +557,12 @@ script = {
   common = tests/partmap_test.in;
 };
 
+script = {
+  testcase;
+  name = grub_cmd_echo;
+  common = tests/grub_cmd_echo.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;

@@ -1,3 +1,10 @@
+2010-09-20  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Add a test for echo command options.
+
+	* tests/grub_cmd_echo.in: New test.
+	* Makefile.util.def: Rules for new test.
+
 2010-09-20  Szymon Janc <szymon@janc.net.pl>
 
 	Remove crc.mod and move crc command to hashsum.mod.
