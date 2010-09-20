@@ -1,4 +1,4 @@
-/* memmap.c  - Display memory map.  */
+/* lsefimemmap.c  - Display memory map.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2008  Free Software Foundation, Inc.

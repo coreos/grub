@@ -1,5 +1,10 @@
 2010-09-20  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/commands/efi/lsefimmap.c: Correct header.
+	* NEWS: Update.
+
+2010-09-20  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub-editenv.c (argp_parser): Don't pass translated strings
 	as printf format strings; the translations might contain '%' which
 	could cause a crash.

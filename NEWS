@@ -17,7 +17,7 @@ New in 1.99:
 * Extend `vbeinfo' and `vbetest' commands to non-VBE graphics, as
   `videoinfo' and `videotest'.
 
-* New `lsefisystab' and `lssal' commands on EFI platforms.
+* New `lsefisystab', `lssal', and `lsefimmap' commands on EFI platforms.
 
 * Support explicit user claim that a device is BIOS-visible.  Devices
   listed in device.map will be assumed to be readable using only BIOS
