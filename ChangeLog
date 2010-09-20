@@ -1,3 +1,8 @@
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/arg.c (grub_arg_show_help): Correctly handle
+	parameters overflow.
+
 2010-09-20  Colin Watson  <cjwatson@ubuntu.com>
 
 	* .bzrignore: Add grub-core/gnulib/sys, widthspec.bin, and
