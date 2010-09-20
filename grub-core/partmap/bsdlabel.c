@@ -145,32 +145,49 @@ netopenbsdlabel_partition_map_iterate (grub_disk_t disk, grub_uint8_t type,
 				       int (*hook) (grub_disk_t disk,
 						    const grub_partition_t partition))
 {
-  grub_err_t err;
+  int count = 0;
+
+  auto int check_msdos (grub_disk_t dsk,
+			const grub_partition_t partition);
+
+  int check_msdos (grub_disk_t dsk,
+		   const grub_partition_t partition)
+  {
+    grub_err_t err;
+
+    if (partition->msdostype != type)
+      return 0;
+
+    err = iterate_real (dsk, partition->start
+			+ GRUB_PC_PARTITION_BSD_LABEL_SECTOR, 0, pmap, hook);
+    if (err == GRUB_ERR_NONE)
+      {
+	count++;
+	return 1;
+      }
+    if (err == GRUB_ERR_BAD_PART_TABLE)
+      {
+	grub_errno = GRUB_ERR_NONE;
+	return 0;
+      }
+    grub_print_error ();
+    return 0;
+  }
 
   if (disk->partition && grub_strcmp (disk->partition->partmap->name, "msdos")
       == 0)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "no embedding supported");
 
   {
-    struct grub_msdos_partition_mbr mbr;
-    unsigned i;
+    grub_err_t err;
+    err = grub_partition_msdos_iterate (disk, check_msdos);
 
-    err = grub_disk_read (disk, 0, 0, sizeof (mbr), &mbr);
     if (err)
       return err;
-
-    for (i = 0; i < ARRAY_SIZE (mbr.entries); i++)
-      if (mbr.entries[i].type == type)
-	{
-	  err = iterate_real (disk, mbr.entries[i].start
-			      + GRUB_PC_PARTITION_BSD_LABEL_SECTOR, 0, pmap,
-			      hook);
-	  if (err != GRUB_ERR_BAD_PART_TABLE)
-	    return err;
-	}
+    if (!count)
+      return grub_error (GRUB_ERR_BAD_PART_TABLE, "no bsdlabel found");
   }
-
-  return grub_error (GRUB_ERR_BAD_PART_TABLE, "no bsdlabel found");
+  return GRUB_ERR_NONE;
 }
 
 static grub_err_t

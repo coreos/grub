@@ -27,10 +27,10 @@
 static struct grub_partition_map grub_msdos_partition_map;
 
 
-static grub_err_t
-pc_partition_map_iterate (grub_disk_t disk,
-			  int (*hook) (grub_disk_t disk,
-				       const grub_partition_t partition))
+grub_err_t
+grub_partition_msdos_iterate (grub_disk_t disk,
+			      int (*hook) (grub_disk_t disk,
+					   const grub_partition_t partition))
 {
   struct grub_partition p;
   struct grub_msdos_partition_mbr mbr;
@@ -148,7 +148,7 @@ pc_partition_map_iterate (grub_disk_t disk,
 static struct grub_partition_map grub_msdos_partition_map =
   {
     .name = "msdos",
-    .iterate = pc_partition_map_iterate,
+    .iterate = grub_partition_msdos_iterate,
   };
 
 GRUB_MOD_INIT(part_msdos)
