@@ -1,5 +1,13 @@
 2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make cutmem accept a region specification.
+	Suggested by: Samuel Thibault
+
+	* grub-core/mmap/mmap.c (parsemem): New function.
+	(grub_cmd_cutmem): Handle new arguments.
+
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	New command cutmem.
 
 	* grub-core/mmap/mmap.c (grub_cmd_cutmem): New function.

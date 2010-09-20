@@ -398,12 +398,33 @@ grub_cmd_badram (grub_command_t cmd __attribute__ ((unused)),
     }
 }
 
+static grub_uint64_t
+parsemem (const char *str)
+{
+  grub_uint64_t ret;
+  char *ptr;
+
+  ret = grub_strtoul (str, &ptr, 0);
+
+  switch (*ptr)
+    {
+    case 'K':
+      return ret << 10;
+    case 'M':
+      return ret << 20;
+    case 'G':
+      return ret << 30;
+    case 'T':
+      return ret << 40;
+    }
+  return ret;
+}
+
 static grub_err_t
 grub_cmd_cutmem (grub_command_t cmd __attribute__ ((unused)),
 		 int argc, char **args)
 {
-  grub_uint64_t cutmem;
-  char *ptr;
+  grub_uint64_t from, to;
 
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
 				 grub_memory_type_t);
@@ -413,36 +434,29 @@ grub_cmd_cutmem (grub_command_t cmd __attribute__ ((unused)),
   {
     grub_uint64_t end = addr + size;
 
-    if (end >= cutmem)
+    if (addr <= from)
+      addr = from;
+    if (end >= to)
+      end = to;
+
+    if (end <= addr)
       return 0;
-    if (addr < cutmem)
-      addr = cutmem;
 
     grub_mmap_register (addr, end - addr, GRUB_MEMORY_HOLE);
     return 0;
   }
 
-  if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "number required");
+  if (argc != 2)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "argements required");
 
-  cutmem = grub_strtoul (args[0], &ptr, 0);
+  from = parsemem (args[0]);
   if (grub_errno)
     return grub_errno;
-  switch (*ptr)
-    {
-    case 'K':
-      cutmem <<= 10;
-      break;
-    case 'M':
-      cutmem <<= 20;
-      break;
-    case 'G':
-      cutmem <<= 30;
-      break;
-    case 'T':
-      cutmem <<= 40;
-      break;
-    }
+
+  to = parsemem (args[1]);
+  if (grub_errno)
+    return grub_errno;
+
   grub_mmap_iterate (hook);
 
   return GRUB_ERR_NONE;
@@ -457,8 +471,8 @@ GRUB_MOD_INIT(mmap)
 			       N_("ADDR1,MASK1[,ADDR2,MASK2[,...]]"),
 			       N_("Declare memory regions as badram."));
   cmd_cut = grub_register_command ("cutmem", grub_cmd_cutmem,
-				   N_("ADDR[K|M|G]"),
-				   N_("Remove any memory regions above ADDR."));
+				   N_("FROM[K|M|G] TO[K|M|G]"),
+				   N_("Remove any memory regions in specified range."));
 
 }
 
