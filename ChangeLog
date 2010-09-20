@@ -1,3 +1,8 @@
+2010-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/misc.c (asprintf): Use vsnprintf instead of
+	vsprintf.
+
 2010-09-20  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/commands/efi/lsefimmap.c: Correct header.

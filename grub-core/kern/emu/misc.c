@@ -161,7 +161,7 @@ vasprintf (char **buf, const char *fmt, va_list ap)
   /* Should be large enough.  */
   *buf = xmalloc (512);
 
-  return vsprintf (*buf, fmt, ap);
+  return vsnprintf (*buf, 512, fmt, ap);
 }
 
 #endif
