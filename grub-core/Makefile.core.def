@@ -448,6 +448,14 @@ module = {
 };
 
 module = {
+  name = lsefimmap;
+
+  common = commands/efi/lsefimmap.c;
+
+  enable = x86_efi;
+};
+
+module = {
   name = blocklist;
   common = commands/blocklist.c;
 };
