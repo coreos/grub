@@ -201,7 +201,7 @@ grub_cmd_legacy_configfile (struct grub_command *cmd __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
   grub_cls ();
-  grub_env_context_open (1);
+  grub_env_context_open ();
 
   ret = legacy_file (args[0]);
   grub_env_context_close ();

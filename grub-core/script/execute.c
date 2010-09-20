@@ -611,8 +611,10 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   /* Execute the GRUB command or function.  */
   if (grubcmd)
     {
-      if (grub_jail_level && !(grubcmd->flags & GRUB_COMMAND_FLAG_UNJAILED))
-	ret = grub_error (GRUB_ERR_JAIL, "%s isn't allowed to execute in jail",
+      if (grub_extractor_level && !(grubcmd->flags
+				    & GRUB_COMMAND_FLAG_EXTRACTOR))
+	ret = grub_error (GRUB_ERR_EXTRACTOR,
+			  "%s isn't allowed to execute in an extractor",
 			  cmdname);
       else if ((grubcmd->flags & GRUB_COMMAND_FLAG_BLOCKS) &&
 	       (grubcmd->flags & GRUB_COMMAND_FLAG_EXTCMD))

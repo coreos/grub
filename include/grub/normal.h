@@ -114,7 +114,7 @@ void grub_normal_reset_more (void);
 
 void grub_xputs_normal (const char *str);
 
-extern int grub_jail_level;
+extern int grub_extractor_level;
 
 grub_err_t
 grub_normal_add_menu_entry (int argc, const char **args, char **classes,

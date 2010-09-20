@@ -183,7 +183,7 @@ grub_register_core_commands (void)
 			       N_("[ENVVAR=VALUE]"),
 			       N_("Set an environment variable."));
   if (cmd)
-    cmd->flags |= GRUB_COMMAND_FLAG_UNJAILED;
+    cmd->flags |= GRUB_COMMAND_FLAG_EXTRACTOR;
   grub_register_command ("unset", grub_core_cmd_unset,
 			 N_("ENVVAR"),
 			 N_("Remove an environment variable."));

@@ -99,12 +99,12 @@ grub_env_context_open (void)
   return grub_env_new_context (0);
 }
 
-int grub_jail_level = 0;
+int grub_extractor_level = 0;
 
 grub_err_t
-grub_env_jail_open (int source)
+grub_env_extractor_open (int source)
 {
-  grub_jail_level++;
+  grub_extractor_level++;
   return grub_env_new_context (source);
 }
 
@@ -146,7 +146,7 @@ grub_env_context_close (void)
 }
 
 grub_err_t
-grub_env_jail_close (int source)
+grub_env_extractor_close (int source)
 {
   grub_menu_t menu, menu2;
   grub_menu_entry_t *last;
@@ -171,7 +171,7 @@ grub_env_jail_close (int source)
       menu2->size += menu->size;
     }
 
-  grub_jail_level--;
+  grub_extractor_level--;
   return err;
 }
 

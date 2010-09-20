@@ -60,10 +60,10 @@ grub_menu_t grub_env_get_menu (void);
 void grub_env_set_menu (grub_menu_t nmenu);
 
 grub_err_t
-grub_env_jail_open (int source);
+grub_env_extractor_open (int source);
 
 grub_err_t
-grub_env_jail_close (int source);
+grub_env_extractor_close (int source);
 
 
 #endif /* ! GRUB_ENV_HEADER */
