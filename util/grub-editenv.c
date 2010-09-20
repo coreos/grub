@@ -72,7 +72,8 @@ error_t argp_parser (int key, char *arg, struct argp_state *state)
         break;
 
       case ARGP_KEY_NO_ARGS:
-        fprintf (stderr, _("You need to specify at least one command.\n"));
+        fprintf (stderr, "%s",
+		 _("You need to specify at least one command.\n"));
         argp_usage (state);
         break;
 
@@ -272,7 +273,7 @@ main (int argc, char *argv[])
   /* Parse our arguments */
   if (argp_parse (&argp, argc, argv, 0, &index, 0) != 0)
     {
-      fprintf (stderr, _("Error in parsing command line arguments\n"));
+      fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
       exit(1);
     }
 

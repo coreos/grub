@@ -394,12 +394,12 @@ argp_parser (int key, char *arg, struct argp_state *state)
       num_disks = grub_strtoul (arg, NULL, 0);
       if (num_disks < 1)
 	{
-	  fprintf (stderr, _("Invalid disk count.\n"));
+	  fprintf (stderr, "%s", _("Invalid disk count.\n"));
 	  argp_usage (state);
 	}
       if (args_count != 0)
 	{
-	  fprintf (stderr, _("Disk count must precede disks list.\n"));
+	  fprintf (stderr, "%s", _("Disk count must precede disks list.\n"));
 	  argp_usage (state);
 	}
       return 0;
@@ -415,12 +415,12 @@ argp_parser (int key, char *arg, struct argp_state *state)
     case ARGP_KEY_END:
       if (args_count < num_disks)
 	{
-	  fprintf (stderr, _("No command is specified.\n"));
+	  fprintf (stderr, "%s", _("No command is specified.\n"));
 	  argp_usage (state);
 	}
       if (args_count - 1 - num_disks < nparm)
 	{
-	  fprintf (stderr, _("Not enough parameters to command.\n"));
+	  fprintf (stderr, "%s", _("Not enough parameters to command.\n"));
 	  argp_usage (state);
 	}
       return 0;
@@ -436,7 +436,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
     {
       if (arg[0] != '/')
 	{
-	  fprintf (stderr, _("Must use absolute path.\n"));
+	  fprintf (stderr, "%s", _("Must use absolute path.\n"));
 	  argp_usage (state);
 	}
       if (args_count == 0)
