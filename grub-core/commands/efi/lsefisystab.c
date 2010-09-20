@@ -1,4 +1,4 @@
-/* systab.c  - Display EFI systab.  */
+/* lsefisystab.c  - Display EFI systab.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2008  Free Software Foundation, Inc.
