@@ -273,11 +273,7 @@ struct image_target_desc image_targets[] =
       .link_addr = GRUB_KERNEL_MIPS_YEELOONG_LINK_ADDR,
       .elf_target = EM_MIPS,
       .link_align = GRUB_KERNEL_MIPS_YEELOONG_LINK_ALIGN,
-#ifdef HAVE_LIBLZMA
-      .default_compression = COMPRESSION_XZ
-#else
       .default_compression = COMPRESSION_NONE
-#endif
     },
     {
       .name = "mipsel-yeeloong-elf",
@@ -744,13 +740,19 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       offset += config_size;
     }
 
+  if ((image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS)
+      && (image_target->total_module_size != TARGET_NO_FIELD))
+    *((grub_uint32_t *) (kernel_img + image_target->total_module_size))
+      = grub_host_to_target32 (total_module_size);
+
   grub_util_info ("kernel_img=%p, kernel_size=0x%x", kernel_img, kernel_size);
   compress_kernel (image_target, kernel_img, kernel_size + total_module_size,
 		   &core_img, &core_size, comp);
 
   grub_util_info ("the core size is 0x%x", core_size);
 
-  if (image_target->total_module_size != TARGET_NO_FIELD)
+  if (!(image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS) 
+      && image_target->total_module_size != TARGET_NO_FIELD)
     *((grub_uint32_t *) (core_img + image_target->total_module_size))
       = grub_host_to_target32 (total_module_size);
   if (image_target->kernel_image_size != TARGET_NO_FIELD)
