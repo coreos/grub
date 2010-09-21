@@ -19,7 +19,7 @@
 #ifndef GRUB_EMU_MISC_H
 #define GRUB_EMU_MISC_H 1
 
-#include <config-util.h>
+#include <config.h>
 #include <stdarg.h>
 
 #include <grub/symbol.h>
@@ -35,9 +35,9 @@
 
 #ifdef __NetBSD__
 /* NetBSD uses /boot for its boot block.  */
-# define DEFAULT_DIRECTORY	"/grub"
+# define DEFAULT_DIRECTORY	"/"GRUB_DIR_NAME
 #else
-# define DEFAULT_DIRECTORY	"/boot/grub"
+# define DEFAULT_DIRECTORY	"/"GRUB_BOOT_DIR_NAME"/"GRUB_DIR_NAME
 #endif
 
 #define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"

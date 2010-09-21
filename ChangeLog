@@ -1,3 +1,12 @@
+2010-09-21  Yves Blusseau  <blusseau@zetam.org>
+
+	Keep boot and grub directory names in sync with utils scripts
+
+	* configure.ac: Define GRUB_BOOT_DIR_NAME and GRUB_DIR_NAME macros.
+	* config.h.in: Add previous macros.
+	* include/grub/emu/misc.h (DEFAULT_DIRECTORY): Use previous macros.
+	* util/grub-install.in: Use $bootdir and $grubdir variables.
+
 2010-09-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/kern/emu/hostdisk.c (find_system_device): Only try to

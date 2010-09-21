@@ -561,9 +561,9 @@ $grub_mkimage ${config_opt} -d ${pkglibdir} -O ${mkimage_target} --output=${grub
 
 # Backward-compatibility kludges
 if [ "${target_cpu}-${platform}" = "mips-yeeloong" ]; then
-    cp ${grubdir}/core.${imgext} /boot/grub.elf
+    cp ${grubdir}/core.${imgext} ${bootdir}/grub.elf
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
-    cp ${grubdir}/core.${imgext} /boot/grub/grub
+    cp ${grubdir}/core.${imgext} ${grubdir}/grub
 elif [ "${target_cpu}-${platform}" = "i386-efi" ] || [ "${target_cpu}-${platform}" = "x86_64-efi" ]; then
     $grub_mkimage ${config_opt} -d ${pkglibdir} -O ${mkimage_target} --output=${grubdir}/grub.efi --prefix="" $modules || exit 1
 fi

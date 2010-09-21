@@ -187,9 +187,13 @@ case "$host_os" in
 esac
 bootdirname=`echo "$bootdirname" | sed "$program_transform_name"`
 AC_SUBST(bootdirname)
+AC_DEFINE_UNQUOTED(GRUB_BOOT_DIR_NAME, "$bootdirname",
+    [Default boot directory name]")
 
 grubdirname=`echo "$PACKAGE" | sed "$program_transform_name"`
 AC_SUBST(grubdirname)
+AC_DEFINE_UNQUOTED(GRUB_DIR_NAME, "$grubdirname",
+    [Default grub directory name])
 
 #
 # Checks for build programs.
