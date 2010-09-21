@@ -727,7 +727,7 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
     {
       /* This is a hard disk partition.  */
       grub_disk_t parent = 0;
-      const grub_partition_t tpart = NULL;
+      grub_partition_t tpart = NULL;
       char *device_name;
       grub_efi_device_path_t *dup_dp, *dup_ldp;
       grub_efi_hard_drive_device_path_t hd;
