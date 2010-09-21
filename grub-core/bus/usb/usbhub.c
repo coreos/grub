@@ -309,7 +309,7 @@ detach_device (grub_usb_device_t dev)
 static void
 poll_nonroot_hub (grub_usb_device_t dev)
 {
-  grub_err_t err;
+  grub_usb_err_t err;
   unsigned i;
   grub_uint8_t changed;
   grub_size_t actual;

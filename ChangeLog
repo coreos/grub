@@ -1,5 +1,11 @@
 2010-09-21  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/bus/usb/usbhub.c (poll_nonroot_hub): Change type of
+	`err' to grub_usb_err_t.
+	Reported and tested by: KESHAV P.R.
+
+2010-09-21  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/disk/efi/efidisk.c (grub_efidisk_get_device_name): Make
 	tpart non-const, so that we can assign to it.  (Since this is a
 	typedef, the constness refers to the pointer rather than what it
