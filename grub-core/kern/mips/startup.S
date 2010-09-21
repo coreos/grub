@@ -35,6 +35,10 @@ start:
 	bal cont
 	 nop
 
+	. = _start + GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE
+total_module_size:
+	.long 0
+
 	. = _start + GRUB_KERNEL_MACHINE_PREFIX
 
 VARIABLE(grub_prefix)
@@ -70,13 +74,13 @@ cont:
 #endif
 
 	/* Move the modules out of BSS.  */
-	lui $t2, %hi(_end)
-	addiu $t2, %lo(_end)
+	lui $t2, %hi(__bss_start)
+	addiu $t2, %lo(__bss_start)
 	
 	lui $t1, %hi(_end)
 	addiu $t1, %lo(_end)
-	addiu $t1, (GRUB_KERNEL_MACHINE_MOD_ALIGN-1)
-	li $t3, (GRUB_KERNEL_MACHINE_MOD_ALIGN-1)
+	addiu $t1, (GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
+	li $t3, (GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
 	nor $t3, $t3, $0
 	and $t1, $t1, $t3
 	
@@ -85,29 +89,33 @@ cont:
 	/* Backward copy.  */
 	add $t1, $t1, $t3
 	add $t2, $t2, $t3
-	addiu $t1, $t1, 0xffff
-	addiu $t2, $t2, 0xffff
+	addiu $t1, $t1, -1
+	addiu $t2, $t2, -1
 
 	/* $t2 is source. $t1 is destination. $t3 is size.  */
 modulesmovcont:
+	beq $t3, $0, modulesmovdone
+         nop
 	lb $t4, 0($t2)
 	sb $t4, 0($t1)
+	addiu $t2, $t2, -1
 	addiu $t1, $t1, -1
-	addiu $t3, $t3, -1
-	bne $t3, $0, modulesmovcont
-	 addiu $t2, $t2, -1
-	
+	b modulesmovcont
+	 addiu $t3, $t3, -1
+modulesmovdone:
+
 	/* Clean BSS.  */
 	
 	lui $t1, %hi(__bss_start)
-	addiu $t1, %lo(__bss_start)
+	addiu $t1, $t1, %lo(__bss_start)
 	lui $t2, %hi(_end)
-	addiu $t2, %lo(_end)
+	addiu $t2, $t2, %lo(_end)
 bsscont:
 	sb $0,0($t1)
+	addiu $t1, $t1, 1
 	sltu $t3, $t1, $t2
 	bne $t3, $0, bsscont
-	 addiu $t1, $t1, 1
+         nop
 
 	lui $t1, %hi(grub_main)
 	addiu $t1, %lo(grub_main)

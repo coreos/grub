@@ -67,10 +67,11 @@ argcont:
 #define DO_PARSE(str, reg) \
 	addiu $t2, $s0, (str-base);\
 	bal parsestr;\
+	 nop	    ;\
 	beq $v0, $zero, 1f;\
 	 nop		  ;\
 	b 2f;\
-	 move reg, $v0;	 
+	 move reg, $v0;	 \
 1:	
 	DO_PARSE (busclockstr, $s2)
 	DO_PARSE (cpuclockstr, $s3)
@@ -169,10 +170,10 @@ argdone:
 	*/
 	move $s6, $a3
 
-	lui $sp, %hi(_start)
+	lui $sp, %hi(_start - 256)
 
 	bal EXT_C(grub_decompress_core)
-	 addiu $sp, $sp, %lo(_start)
+	 addiu $sp, $sp, %lo(_start - 256)
 	
 	move $a0, $s1
 	move $a1, $s6
