@@ -80,12 +80,35 @@ void *memmove (void *dest, const void *src, grub_size_t n)
 void *memcpy (void *dest, const void *src, grub_size_t n)
   __attribute__ ((alias ("grub_memmove")));
 
+void *grub_decompressor_scratch;
+
+void
+find_scratch (void *src, void *dst, unsigned long srcsize,
+	      unsigned long dstsize)
+{
+#ifdef _mips
+  /* Decoding from ROM.  */
+  if (((grub_addr_t) src & 0x10000000))
+    {
+      grub_decompressor_scratch = (char *) dst + dstsize;
+      return;
+    }
+#endif
+  if ((char *) src + srcsize > (char *) dst + dstsize)
+    grub_decompressor_scratch = (char *) src + srcsize;
+  else
+    grub_decompressor_scratch = (char *) dst + dstsize;
+  return;
+}
+
 void
 grub_decompress_core (void *src, void *dst, unsigned long srcsize,
 		      unsigned long dstsize)
 {
   struct xz_dec *dec;
   struct xz_buf buf;
+
+  find_scratch (src, dst, srcsize, dstsize);
 
   dec = xz_dec_init (GRUB_DECOMPRESSOR_DICT_SIZE);
 

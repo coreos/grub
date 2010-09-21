@@ -109,10 +109,10 @@ bsscont:
 	bne $t3, $0, bsscont
 	 addiu $t1, $t1, 1
 
-	li $sp, GRUB_MACHINE_MEMORY_STACK_HIGH
 	lui $t1, %hi(grub_main)
 	addiu $t1, %lo(grub_main)
 
+	lui $sp, %hi(GRUB_MACHINE_MEMORY_STACK_HIGH)
 	jr $t1
-	 nop
+	 addiu $sp, $sp, %lo(GRUB_MACHINE_MEMORY_STACK_HIGH)
 

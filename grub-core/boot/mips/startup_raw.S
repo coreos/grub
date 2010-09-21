@@ -49,7 +49,7 @@ codestart:
 
 	/* Parse arguments. Has to be done before relocation.
 	So need to do it in asm.  */
-#if 0 // def GRUB_MACHINE_MIPS_YEELOONG
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
 	move $s2, $zero
 	move $s3, $zero
 	move $s4, $zero

@@ -1103,7 +1103,6 @@ enum xz_ret xz_dec_lzma2_run(
 #ifdef GRUB_EMBED_DECOMPRESSOR
 #include <grub/decompressor.h>
 static struct xz_dec_lzma2 lzma2;
-static char dict[GRUB_DECOMPRESSOR_DICT_SIZE];
 #endif
 
 struct xz_dec_lzma2 * xz_dec_lzma2_create(uint32_t dict_max)
@@ -1128,14 +1127,8 @@ struct xz_dec_lzma2 * xz_dec_lzma2_create(uint32_t dict_max)
 	}
 
 #else
-	if (dict_max > GRUB_DECOMPRESSOR_DICT_SIZE)
-		return NULL;
-
 	s = &lzma2;
-
-	if (dict_max > 0) {
-		s->dict.buf = (void *) &dict;
-	}
+	s->dict.buf = grub_decompressor_scratch;
 #endif
 
 	s->dict.allocated = dict_max;
@@ -1165,9 +1158,6 @@ enum xz_ret xz_dec_lzma2_reset(
 		s->dict.buf = newdict;
 		s->dict.allocated = s->dict.size;
 	}
-#else
-	if (s->dict.allocated > 0 && s->dict.allocated < s->dict.size)
-		return XZ_MEMLIMIT_ERROR;
 #endif
 	s->dict.end = s->dict.size;
 
