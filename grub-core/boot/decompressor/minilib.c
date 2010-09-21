@@ -87,13 +87,16 @@ find_scratch (void *src, void *dst, unsigned long srcsize,
   /* Decoding from ROM.  */
   if (((grub_addr_t) src & 0x10000000))
     {
-      grub_decompressor_scratch = (char *) dst + dstsize;
+      grub_decompressor_scratch = (void *) ALIGN_UP((grub_addr_t) dst + dstsize,
+						    256);
       return;
     }
 #endif
   if ((char *) src + srcsize > (char *) dst + dstsize)
-    grub_decompressor_scratch = (char *) src + srcsize;
+    grub_decompressor_scratch = (void *) ALIGN_UP ((grub_addr_t) src + srcsize,
+						   256);
   else
-    grub_decompressor_scratch = (char *) dst + dstsize;
+    grub_decompressor_scratch = (void *) ALIGN_UP ((grub_addr_t) dst + dstsize,
+						   256);
   return;
 }
