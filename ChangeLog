@@ -1,5 +1,9 @@
 2010-09-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Change version to 1.99~beta0.
+
+2010-09-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/multiboot_mbi.c (grub_fill_multiboot_mmap):
 	Add BADRAM.
 	* grub-core/loader/multiboot_mbi2.c (grub_fill_multiboot_mmap):
