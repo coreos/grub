@@ -142,6 +142,8 @@ grub_multiboot_load (grub_file_t file)
 	      case MULTIBOOT_TAG_TYPE_VBE:
 	      case MULTIBOOT_TAG_TYPE_ELF_SECTIONS:
 	      case MULTIBOOT_TAG_TYPE_APM:
+	      case MULTIBOOT_TAG_TYPE_EFI32:
+	      case MULTIBOOT_TAG_TYPE_EFI64:
 		break;
 
 	      default:
@@ -283,6 +285,8 @@ grub_multiboot_get_mbi_size (void)
 		 + grub_get_multiboot_mmap_count ()
 		 * sizeof (struct multiboot_mmap_entry)), MULTIBOOT_TAG_ALIGN)
     + ALIGN_UP (sizeof (struct multiboot_tag_framebuffer), MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP (sizeof (struct multiboot_tag_efi32), MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP (sizeof (struct multiboot_tag_efi64), MULTIBOOT_TAG_ALIGN)
     + sizeof (struct multiboot_tag_vbe) + MULTIBOOT_TAG_ALIGN - 1
     + sizeof (struct multiboot_tag_apm) + MULTIBOOT_TAG_ALIGN - 1;
 }
@@ -674,7 +678,27 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
 	grub_errno = GRUB_ERR_NONE;
       }
   }
-  
+
+#if defined (GRUB_MACHINE_EFI) && __x86_64__
+  {
+    struct multiboot_tag_efi64 *tag = (struct multiboot_tag_efi64 *) ptrorig;
+    tag->type = MULTIBOOT_TAG_TYPE_EFI64;
+    tag->size = sizeof (*tag);
+    tag->pointer = (grub_addr_t) grub_efi_system_table;
+    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
+  }
+#endif
+
+#if defined (GRUB_MACHINE_EFI) && __i386_
+  {
+    struct multiboot_tag_efi64 *tag = (struct multiboot_tag_efi32 *) ptrorig;
+    tag->type = MULTIBOOT_TAG_TYPE_EFI32;
+    tag->size = sizeof (*tag);
+    tag->pointer = (grub_addr_t) grub_efi_system_table;
+    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
+  }
+#endif
+
   {
     struct multiboot_tag *tag = (struct multiboot_tag *) ptrorig;
     tag->type = MULTIBOOT_TAG_TYPE_END;
