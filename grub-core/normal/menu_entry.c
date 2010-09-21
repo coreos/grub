@@ -1207,7 +1207,7 @@ run (struct screen *screen)
       grub_env_context_open ();
       menu = grub_zalloc (sizeof (*menu));
       if (! menu)
-	return;
+	return 0;
       grub_env_set_menu (menu);
     }
 
