@@ -45,6 +45,10 @@
 
 #define ALIGN_ADDR(x) (ALIGN_UP((x), image_target->voidp_sizeof))
 
+#ifdef HAVE_LIBLZMA
+#include <lzma.h>
+#endif
+
 #define TARGET_NO_FIELD 0xffffffff
 
 typedef enum {
@@ -269,7 +273,11 @@ struct image_target_desc image_targets[] =
       .link_addr = GRUB_KERNEL_MIPS_YEELOONG_LINK_ADDR,
       .elf_target = EM_MIPS,
       .link_align = GRUB_KERNEL_MIPS_YEELOONG_LINK_ALIGN,
+#ifdef HAVE_LIBLZMA
       .default_compression = COMPRESSION_XZ
+#else
+      .default_compression = COMPRESSION_NONE
+#endif
     },
     {
       .name = "mipsel-yeeloong-elf",
@@ -492,7 +500,7 @@ compress_kernel_lzma (char *kernel_img, size_t kernel_size,
   memcpy (*core_img, kernel_img, raw_size);
 
   *core_size = kernel_size - raw_size;
-  if (LzmaEncode ((unsigned char *) *core_img + raw_size, core_size - raw_size,
+  if (LzmaEncode ((unsigned char *) *core_img + raw_size, core_size,
 		  (unsigned char *) kernel_img + raw_size,
 		  kernel_size - raw_size,
 		  &props, out_props, &out_props_size,
@@ -506,30 +514,52 @@ static void
 compress_kernel_xz (char *kernel_img, size_t kernel_size,
 		    char **core_img, size_t *core_size, size_t raw_size)
 {
-  CLzmaEncProps props;
-  unsigned char out_props[5];
-  size_t out_props_size = 5;
-
-  LzmaEncProps_Init(&props);
-  props.dictSize = 1 << 16;
-  props.lc = 3;
-  props.lp = 0;
-  props.pb = 2;
-  props.numThreads = 1;
+  lzma_stream strm = LZMA_STREAM_INIT;
+  lzma_ret xzret;
+  lzma_options_lzma lzopts = {
+    .dict_size = 1 << 16,
+    .preset_dict = NULL,
+    .preset_dict_size = 0,
+    .lc = 3,
+    .lp = 0,
+    .pb = 2,
+    .mode = LZMA_MODE_NORMAL,
+    .nice_len = 64,
+    .mf = LZMA_MF_BT4,
+    .depth = 0,
+  };
+  lzma_filter fltrs[] = {
+    { .id = LZMA_FILTER_LZMA2, .options = &lzopts},
+    { .id = LZMA_VLI_UNKNOWN, .options = NULL}
+  };
 
   if (kernel_size < raw_size)
     grub_util_error (_("the core image is too small"));
+
+  xzret = lzma_stream_encoder (&strm, fltrs, LZMA_CHECK_NONE);
+  if (xzret != LZMA_OK)
+    grub_util_error (_("cannot compress the kernel image"));
 
   *core_img = xmalloc (kernel_size);
   memcpy (*core_img, kernel_img, raw_size);
 
   *core_size = kernel_size - raw_size;
-  if (LzmaEncode ((unsigned char *) *core_img + raw_size, core_size - raw_size,
-		  (unsigned char *) kernel_img + raw_size,
-		  kernel_size - raw_size,
-		  &props, out_props, &out_props_size,
-		  0, NULL, &g_Alloc, &g_Alloc) != SZ_OK)
-    grub_util_error (_("cannot compress the kernel image"));
+  strm.next_in = (unsigned char *) kernel_img + raw_size;
+  strm.avail_in = kernel_size - raw_size;
+  strm.next_out = (unsigned char *) *core_img + raw_size;
+  strm.avail_out = *core_size;
+
+  while (1)
+    {
+      xzret = lzma_code (&strm, LZMA_FINISH);
+      if (xzret == LZMA_OK)
+	continue;
+      if (xzret == LZMA_STREAM_END)
+	break;
+      grub_util_error (_("cannot compress the kernel image"));
+    }
+
+  *core_size -= strm.avail_out;
 
   *core_size += raw_size;
 }
@@ -546,6 +576,7 @@ compress_kernel (struct image_target_desc *image_target, char *kernel_img,
      return;
    }
 
+#ifdef HAVE_LIBLZMA
  if (image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS
      && (comp == COMPRESSION_XZ))
    {
@@ -553,6 +584,11 @@ compress_kernel (struct image_target_desc *image_target, char *kernel_img,
 			 core_size, image_target->raw_size);
      return;
    }
+#endif
+
+ if (image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS
+     && (comp != COMPRESSION_NONE))
+   grub_util_error ("unknown compression %d\n", comp);
 
   *core_img = xmalloc (kernel_size);
   memcpy (*core_img, kernel_img, kernel_size);
@@ -1457,7 +1493,14 @@ main (int argc, char *argv[])
 
 	  case 'C':
 	    if (grub_strcmp (optarg, "xz") == 0)
-	      comp = COMPRESSION_XZ;
+	      {
+#ifdef HAVE_LIBLZMA
+		comp = COMPRESSION_XZ;
+#else
+		grub_util_error ("grub-mkimage is compiled without XZ support",
+				 optarg);
+#endif
+	      }
 	    else if (grub_strcmp (optarg, "none") == 0)
 	      comp = COMPRESSION_NONE;
 	    else
