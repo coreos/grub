@@ -278,9 +278,14 @@ image = {
 image = {
   name = decompress;
   mips = boot/mips/startup_raw.S;
-  common = lib/LzmaDec.c;
+  common = boot/decompressor.c;
+  common = lib/xzembed/xz_dec_bcj.c;
+  common = lib/xzembed/xz_dec_lzma2.c;
+  common = lib/xzembed/xz_dec_stream.c;
 
-  mips_cppflags = '-DGRUB_MACHINE_LINK_ADDR=0x80200000';
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed';
+
+  mips_cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
 
   objcopyflags = '-O binary';
   ldflags = '-lgcc -static-libgcc -Wl,-Ttext,0x80100000';

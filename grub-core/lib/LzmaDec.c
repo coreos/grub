@@ -26,7 +26,14 @@
 
 #include <grub/lib/LzmaDec.h>
 
-#include <string.h>
+static void
+memcpy (void *a_, const void *b_, unsigned s)
+{
+  char *a = a_;
+  const char *b = b_;
+  while (s--)
+    *a++ = *b++;
+}
 
 #define kNumTopBits 24
 #define kTopValue ((UInt32)1 << kNumTopBits)
@@ -294,14 +301,14 @@ static int MY_FAST_CALL LzmaDec_DecodeReal(CLzmaDec *p, SizeT limit, const Byte 
         prob = probs + RepLenCoder;
       }
       {
-        unsigned limit, offset;
+        unsigned limit2, offset;
         CLzmaProb *probLen = prob + LenChoice;
         IF_BIT_0(probLen)
         {
           UPDATE_0(probLen);
           probLen = prob + LenLow + (posState << kLenNumLowBits);
           offset = 0;
-          limit = (1 << kLenNumLowBits);
+          limit2 = (1 << kLenNumLowBits);
         }
         else
         {
@@ -312,17 +319,17 @@ static int MY_FAST_CALL LzmaDec_DecodeReal(CLzmaDec *p, SizeT limit, const Byte 
             UPDATE_0(probLen);
             probLen = prob + LenMid + (posState << kLenNumMidBits);
             offset = kLenNumLowSymbols;
-            limit = (1 << kLenNumMidBits);
+            limit2 = (1 << kLenNumMidBits);
           }
           else
           {
             UPDATE_1(probLen);
             probLen = prob + LenHigh;
             offset = kLenNumLowSymbols + kLenNumMidSymbols;
-            limit = (1 << kLenNumHighBits);
+            limit2 = (1 << kLenNumHighBits);
           }
         }
-        TREE_DECODE(probLen, limit, len);
+        TREE_DECODE(probLen, limit2, len);
         len += offset;
       }
 
@@ -718,7 +725,7 @@ static void LzmaDec_InitRc(CLzmaDec *p, const Byte *data)
   p->needFlush = 0;
 }
 
-void LzmaDec_InitDicAndState(CLzmaDec *p, Bool initDic, Bool initState)
+static void LzmaDec_InitDicAndState(CLzmaDec *p, Bool initDic, Bool initState)
 {
   p->needFlush = 1;
   p->remainLen = 0;
@@ -915,6 +922,7 @@ SRes LzmaDec_DecodeToBuf(CLzmaDec *p, Byte *dest, SizeT *destLen, const Byte *sr
 
 void LzmaDec_FreeProbs(CLzmaDec *p, ISzAlloc *alloc)
 {
+  return ;
   alloc->Free(alloc, p->probs);
   p->probs = 0;
 }
@@ -957,13 +965,16 @@ SRes LzmaProps_Decode(CLzmaProps *p, const Byte *data, unsigned size)
   return SZ_OK;
 }
 
+static char sal[30000], *sptr = sal;
+
 static SRes LzmaDec_AllocateProbs2(CLzmaDec *p, const CLzmaProps *propNew, ISzAlloc *alloc)
 {
   UInt32 numProbs = LzmaProps_GetNumProbs(propNew);
   if (p->probs == 0 || numProbs != p->numProbs)
   {
     LzmaDec_FreeProbs(p, alloc);
-    p->probs = (CLzmaProb *)alloc->Alloc(alloc, numProbs * sizeof(CLzmaProb));
+    p->probs = (CLzmaProb *) sptr;
+    sptr +=  sizeof (CLzmaProb);
     p->numProbs = numProbs;
     if (p->probs == 0)
       return SZ_ERROR_MEM;
@@ -1033,3 +1044,16 @@ SRes LzmaDecode(Byte *dest, SizeT *destLen, const Byte *src, SizeT *srcLen,
   LzmaDec_FreeProbs(&p, alloc);
   return res;
 }
+
+void
+grub_decompress_core (void *src, void *dst, unsigned long srcsize, unsigned long dstsize);
+
+void
+grub_decompress_core (void *src, void *dst, unsigned long srcsize, unsigned long dstsize)
+{
+  char *src_ = src, *dst_ = dst;
+  (void) dstsize;
+  while (srcsize--)
+    *dst_++ = *src_++ ^ 0x5a;
+}
+
