@@ -1,3 +1,8 @@
+2010-09-21  Aleš Nesrsta <starous@volny.cz>
+
+	* grub-core/bus/usb/serial/common.c (grub_usbserial_attach):
+	Added missing configuration of USB device.
+
 2010-09-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/normal/menu_entry.c (run): Make sure we always return

@@ -44,6 +44,7 @@ grub_usbserial_attach (grub_usb_device_t usbdev, int configno, int interfno,
   struct grub_serial_port *port;
   int j;
   struct grub_usb_desc_if *interf;
+  grub_usb_err_t err = GRUB_USB_ERR_NONE;
 
   interf = usbdev->config[configno].interf[interfno].descif;
 
@@ -80,7 +81,12 @@ grub_usbserial_attach (grub_usb_device_t usbdev, int configno, int interfno,
 	  port->out_endp = endp;
 	}
     }
-  if (!port->out_endp || !port->in_endp)
+
+  /* Configure device */
+  if (port->out_endp && port->in_endp)
+    err = grub_usb_set_configuration (usbdev, configno + 1);
+  
+  if (!port->out_endp || !port->in_endp || err)
     {
       grub_free (port->name);
       grub_free (port);
