@@ -52,6 +52,12 @@
 #define MULTIBOOT_TAG_TYPE_FRAMEBUFFER       8
 #define MULTIBOOT_TAG_TYPE_ELF_SECTIONS      9
 #define MULTIBOOT_TAG_TYPE_APM               10
+#define MULTIBOOT_TAG_TYPE_EFI32             11
+#define MULTIBOOT_TAG_TYPE_EFI64             12
+#define MULTIBOOT_TAG_TYPE_SMBIOS            13
+#define MULTIBOOT_TAG_TYPE_ACPI_OLD          14
+#define MULTIBOOT_TAG_TYPE_ACPI_NEW          15
+#define MULTIBOOT_TAG_TYPE_NETWORK           16
 
 #define MULTIBOOT_HEADER_TAG_END  0
 #define MULTIBOOT_HEADER_TAG_INFORMATION_REQUEST  1
@@ -167,6 +173,7 @@ struct multiboot_mmap_entry
 #define MULTIBOOT_MEMORY_RESERVED		2
 #define MULTIBOOT_MEMORY_ACPI_RECLAIMABLE       3
 #define MULTIBOOT_MEMORY_NVS                    4
+#define MULTIBOOT_MEMORY_BADRAM                 5
   multiboot_uint32_t type;
   multiboot_uint32_t zero;
 } __attribute__((packed));
@@ -307,6 +314,51 @@ struct multiboot_tag_apm
   multiboot_uint16_t cseg_len;
   multiboot_uint16_t cseg_16_len;
   multiboot_uint16_t dseg_len;
+};
+
+struct multiboot_tag_efi32
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint32_t pointer;
+};
+
+struct multiboot_tag_efi64
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint64_t pointer;
+};
+
+struct multiboot_tag_smbios
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint8_t major;
+  multiboot_uint8_t minor;
+  multiboot_uint8_t reserved[6];
+  multiboot_uint8_t tables[0];
+};
+
+struct multiboot_tag_old_acpi
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint8_t rsdp[0];
+};
+
+struct multiboot_tag_new_acpi
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint8_t rsdp[0];
+};
+
+struct multiboot_tag_network
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint8_t dhcpack[0];
 };
 
 #endif /* ! ASM_FILE */

@@ -1,3 +1,12 @@
+2010-09-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_fill_multiboot_mmap):
+	Add BADRAM.
+	* grub-core/loader/multiboot_mbi2.c (grub_fill_multiboot_mmap):
+	Likewise.
+	* include/multiboot.h: Resynced with specification.
+	* include/multiboot2.h: Likewise.
+
 2010-09-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	Fix po directory handling.

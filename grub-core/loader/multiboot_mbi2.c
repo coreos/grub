@@ -313,7 +313,11 @@ grub_fill_multiboot_mmap (struct multiboot_tag_mmap *tag)
 	case GRUB_MEMORY_NVS:
  	  mmap_entry->type = MULTIBOOT_MEMORY_NVS;
  	  break;
-	  
+
+	case GRUB_MEMORY_BADRAM:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_BADRAM;
+ 	  break;
+
  	default:
  	  mmap_entry->type = MULTIBOOT_MEMORY_RESERVED;
  	  break;

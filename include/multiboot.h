@@ -1,5 +1,5 @@
 /*  multiboot.h - Multiboot header file.  */
-/*  Copyright (C) 1999,2003,2007,2008,2009  Free Software Foundation, Inc.
+/*  Copyright (C) 1999,2003,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to
@@ -236,6 +236,7 @@ struct multiboot_mmap_entry
 #define MULTIBOOT_MEMORY_RESERVED		2
 #define MULTIBOOT_MEMORY_ACPI_RECLAIMABLE       3
 #define MULTIBOOT_MEMORY_NVS                    4
+#define MULTIBOOT_MEMORY_BADRAM                 5
   multiboot_uint32_t type;
 } __attribute__((packed));
 typedef struct multiboot_mmap_entry multiboot_memory_map_t;
