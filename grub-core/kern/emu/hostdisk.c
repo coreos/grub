@@ -1378,12 +1378,15 @@ device_is_wholedisk (const char *os_dev)
 #endif /* defined(__FreeBSD__) || defined(__FreeBSD_kernel__) */
 
 static int
-find_system_device (const char *os_dev, struct stat *st, int add)
+find_system_device (const char *os_dev, struct stat *st, int convert, int add)
 {
   unsigned int i;
   char *os_disk;
 
-  os_disk = convert_system_partition_to_system_disk (os_dev, st);
+  if (convert)
+    os_disk = convert_system_partition_to_system_disk (os_dev, st);
+  else
+    os_disk = xstrdup (os_dev);
   if (! os_disk)
     return -1;
 
@@ -1416,7 +1419,7 @@ grub_util_biosdisk_is_present (const char *os_dev)
   if (stat (os_dev, &st) < 0)
     return 0;
 
-  return find_system_device (os_dev, &st, 0) != -1;
+  return find_system_device (os_dev, &st, 1, 0) != -1;
 }
 
 char *
@@ -1431,7 +1434,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       return 0;
     }
 
-  drive = find_system_device (os_dev, &st, 1);
+  drive = find_system_device (os_dev, &st, 1, 1);
   if (drive < 0)
     {
       grub_error (GRUB_ERR_UNKNOWN_DEVICE,
@@ -1514,7 +1517,32 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     free (name);
 
     if (! disk)
-      return 0;
+      {
+	/* We already know that the partition exists.  Given that we already
+	   checked the device map above, we can only get
+	   GRUB_ERR_UNKNOWN_DEVICE at this point if the disk does not exist.
+	   This can happen on Xen, where disk images in the host can be
+	   assigned to devices that have partition-like names in the guest
+	   but are really more like disks.  */
+	if (grub_errno == GRUB_ERR_UNKNOWN_DEVICE)
+	  {
+	    grub_util_warn
+	      ("disk does not exist, so falling back to partition device %s",
+	       os_dev);
+
+	    drive = find_system_device (os_dev, &st, 0, 1);
+	    if (drive < 0)
+	      {
+		grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+			    "no mapping exists for `%s'", os_dev);
+		return 0;
+	      }
+
+	    return make_device_name (drive, -1, -1);
+	  }
+	else
+	  return 0;
+      }
 
     partname = NULL;
     grub_partition_iterate (disk, find_partition);

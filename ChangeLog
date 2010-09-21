@@ -1,9 +1,17 @@
+2010-09-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/emu/hostdisk.c (find_system_device): Only try to
+	convert partition names to disk names if the new `convert' parameter
+	is set.
+	(grub_util_biosdisk_get_grub_dev): If opening the disk device
+	returns GRUB_ERR_UNKNOWN_DEVICE, treat the partition device as a
+	disk in its own right.  This can happen with Xen disk images.
+
 2010-09-21  Yves Blusseau  <blusseau@zetam.org>
 
 	* util/grub-editenv.c: Update strings to avoid warnings when generating
 	grub.pot file.
 	* util/grub-setup.c: Likewise.
-	
 
 2010-09-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
