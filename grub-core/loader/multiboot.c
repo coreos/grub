@@ -22,6 +22,8 @@
  *         need to be implemented:
  *  - drives table
  *  - ROM configuration table
+ *  - SMBIOS tables
+ *  - Networking information
  */
 
 #include <grub/loader.h>

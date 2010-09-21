@@ -32,6 +32,7 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/video.h>
+#include <grub/acpi.h>
 
 #if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_QEMU)
 #include <grub/i386/pc/vbe.h>
@@ -144,6 +145,8 @@ grub_multiboot_load (grub_file_t file)
 	      case MULTIBOOT_TAG_TYPE_APM:
 	      case MULTIBOOT_TAG_TYPE_EFI32:
 	      case MULTIBOOT_TAG_TYPE_EFI64:
+	      case MULTIBOOT_TAG_TYPE_ACPI_OLD:
+	      case MULTIBOOT_TAG_TYPE_ACPI_NEW:
 		break;
 
 	      default:
@@ -268,6 +271,18 @@ grub_multiboot_load (grub_file_t file)
 }
 
 static grub_size_t
+acpiv2_size (void)
+{
+  struct grub_acpi_rsdp_v20 *p = grub_acpi_get_rsdpv2 ();
+
+  if (!p)
+    return 0;
+
+  return ALIGN_UP (sizeof (struct multiboot_tag_old_acpi)
+		   + p->length, MULTIBOOT_TAG_ALIGN);
+}
+
+static grub_size_t
 grub_multiboot_get_mbi_size (void)
 {
   return 2 * sizeof (grub_uint32_t) + sizeof (struct multiboot_tag)
@@ -287,6 +302,9 @@ grub_multiboot_get_mbi_size (void)
     + ALIGN_UP (sizeof (struct multiboot_tag_framebuffer), MULTIBOOT_TAG_ALIGN)
     + ALIGN_UP (sizeof (struct multiboot_tag_efi32), MULTIBOOT_TAG_ALIGN)
     + ALIGN_UP (sizeof (struct multiboot_tag_efi64), MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP (sizeof (struct multiboot_tag_old_acpi)
+		+ sizeof (struct grub_acpi_rsdp_v10), MULTIBOOT_TAG_ALIGN)
+    + acpiv2_size ()
     + sizeof (struct multiboot_tag_vbe) + MULTIBOOT_TAG_ALIGN - 1
     + sizeof (struct multiboot_tag_apm) + MULTIBOOT_TAG_ALIGN - 1;
 }
@@ -698,6 +716,32 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
     ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   }
 #endif
+
+  {
+    struct multiboot_tag_old_acpi *tag = (struct multiboot_tag_old_acpi *)
+      ptrorig;
+    struct grub_acpi_rsdp_v10 *a = grub_acpi_get_rsdpv1 ();
+    if (a)
+      {
+	tag->type = MULTIBOOT_TAG_TYPE_ACPI_OLD;
+	tag->size = sizeof (*tag) + sizeof (*a);
+	grub_memcpy (tag->rsdp, a, sizeof (*a));
+	ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
+      }
+  }
+
+  {
+    struct multiboot_tag_new_acpi *tag = (struct multiboot_tag_new_acpi *)
+      ptrorig;
+    struct grub_acpi_rsdp_v20 *a = grub_acpi_get_rsdpv2 ();
+    if (a)
+      {
+	tag->type = MULTIBOOT_TAG_TYPE_ACPI_NEW;
+	tag->size = sizeof (*tag) + a->length;
+	grub_memcpy (tag->rsdp, a, a->length);
+	ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
+      }
+  }
 
   {
     struct multiboot_tag *tag = (struct multiboot_tag *) ptrorig;
