@@ -40,6 +40,7 @@ struct { const char *name; const char *hashname; } aliases[] =
   {
     {"sha256sum", "sha256"},
     {"sha512sum", "sha512"},
+    {"sha1sum", "sha1"},
     {"md5sum", "md5"},
     {"crc", "crc32"},
   };
@@ -249,7 +250,7 @@ grub_cmd_hashsum (struct grub_extcmd_context *ctxt,
   return GRUB_ERR_NONE;
 }
 
-static grub_extcmd_t cmd, cmd_md5, cmd_sha256, cmd_sha512 , cmd_crc;
+static grub_extcmd_t cmd, cmd_md5, cmd_sha1, cmd_sha256, cmd_sha512, cmd_crc;
 
 GRUB_MOD_INIT(hashsum)
 {
@@ -263,6 +264,11 @@ GRUB_MOD_INIT(hashsum)
 				     "[FILE1 [FILE2 ...]]"),
 				  N_("Compute or check hash checksum."),
 				  options);
+  cmd_sha1 = grub_register_extcmd ("sha1sum", grub_cmd_hashsum, 0,
+				   N_("[-c FILE [-p PREFIX]] "
+				      "[FILE1 [FILE2 ...]]"),
+				   "Compute or check hash checksum.",
+				   options);
   cmd_sha256 = grub_register_extcmd ("sha256sum", grub_cmd_hashsum, 0,
 				     N_("[-c FILE [-p PREFIX]] "
 					"[FILE1 [FILE2 ...]]"),
@@ -285,6 +291,7 @@ GRUB_MOD_FINI(hashsum)
 {
   grub_unregister_extcmd (cmd);
   grub_unregister_extcmd (cmd_md5);
+  grub_unregister_extcmd (cmd_sha1);
   grub_unregister_extcmd (cmd_sha256);
   grub_unregister_extcmd (cmd_sha512);
   grub_unregister_extcmd (cmd_crc);

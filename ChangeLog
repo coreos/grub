@@ -1,3 +1,9 @@
+2010-09-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/commands/hashsum.c (aliases): Add sha1sum alias.
+	(GRUB_MOD_INIT): Register sha1sum command.
+	(GRUB_MOD_FINI): Unregister sha1sum command.
+
 2010-09-21  Yves Blusseau  <blusseau@zetam.org>
 
 	Keep boot and grub directory names in sync with utils scripts
