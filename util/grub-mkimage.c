@@ -248,13 +248,13 @@ struct image_target_desc image_targets[] =
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_YEELOONG_FLASH, 
-      .flags = PLATFORM_FLAGS_NONE,
+      .flags = PLATFORM_FLAGS_LZMA,
       .prefix = GRUB_KERNEL_MIPS_YEELOONG_PREFIX,
       .prefix_end = GRUB_KERNEL_MIPS_YEELOONG_PREFIX_END,
-      .raw_size = GRUB_KERNEL_MIPS_YEELOONG_RAW_SIZE,
+      .raw_size = 0,
       .total_module_size = GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE,
-      .compressed_size = GRUB_KERNEL_MIPS_YEELOONG_COMPRESSED_SIZE,
-      .kernel_image_size = GRUB_KERNEL_MIPS_YEELOONG_KERNEL_IMAGE_SIZE,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
       .install_dos_part = TARGET_NO_FIELD,
@@ -268,13 +268,13 @@ struct image_target_desc image_targets[] =
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_YEELOONG_ELF, 
-      .flags = PLATFORM_FLAGS_NONE,
+      .flags = PLATFORM_FLAGS_LZMA,
       .prefix = GRUB_KERNEL_MIPS_YEELOONG_PREFIX,
       .prefix_end = GRUB_KERNEL_MIPS_YEELOONG_PREFIX_END,
-      .raw_size = GRUB_KERNEL_MIPS_YEELOONG_RAW_SIZE,
+      .raw_size = 0,
       .total_module_size = GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE,
-      .compressed_size = GRUB_KERNEL_MIPS_YEELOONG_COMPRESSED_SIZE,
-      .kernel_image_size = GRUB_KERNEL_MIPS_YEELOONG_KERNEL_IMAGE_SIZE,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
       .install_dos_part = TARGET_NO_FIELD,
@@ -678,6 +678,41 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	= grub_host_to_target32 (-2);
       *((grub_int32_t *) (core_img + image_target->install_bsd_part))
 	= grub_host_to_target32 (-2);
+    }
+
+  if (image_target->id == IMAGE_YEELOONG_FLASH
+      || image_target->id == IMAGE_YEELOONG_ELF)
+    {
+      char *full_img;
+      size_t full_size;
+      char *decompress_path, *decompress_img;
+      size_t decompress_size;
+      
+      decompress_path = grub_util_get_path (dir, "decompress.img");
+      decompress_size = grub_util_get_image_size (decompress_path);
+      decompress_img = grub_util_read_image (decompress_path);
+
+      *((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_YEELOONG_COMPRESSED_SIZE))
+	= grub_host_to_target32 (core_size);
+
+      *((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_YEELOONG_UNCOMPRESSED_SIZE))
+	= grub_host_to_target32 (kernel_size + total_module_size);
+
+      full_size = core_size + decompress_size;
+
+      full_img = xmalloc (full_size);
+      memset (full_img, 0, full_size); 
+
+      memcpy (full_img, decompress_img, decompress_size);
+
+      memcpy (full_img + decompress_size, core_img, core_size);
+
+      memset (full_img + decompress_size + core_size, 0,
+	      full_size - (decompress_size + core_size));
+
+      free (core_img);
+      core_img = full_img;
+      core_size = full_size;
     }
 
   switch (image_target->id)
