@@ -191,8 +191,8 @@ do
 
     --bootloader-id)
 	bootloader_id=`argument $option "$@"`; shift;;
-    --bootloader_id=*)
-	bootloader_id=`echo "$option" | sed 's/--bootloader_id=//'` ;;
+    --bootloader-id=*)
+	bootloader_id=`echo "$option" | sed 's/--bootloader-id=//'` ;;
 
     --grub-mkimage)
 	grub_mkimage=`argument $option "$@"`; shift;;

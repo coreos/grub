@@ -1,5 +1,11 @@
 2010-09-21  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub-install.in: Fix the bootloader ID option to be
+	consistently --bootloader-id, not --bootloader_id.
+	Reported by: KESHAV P.R.
+
+2010-09-21  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/commands/hashsum.c (GRUB_MOD_INIT): Make "Compute or
 	check hash checksum." consistently translatable.
 
