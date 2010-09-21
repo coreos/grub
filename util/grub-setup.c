@@ -791,11 +791,11 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
 static struct argp argp = {
   options, argp_parser, N_("DEVICE"),
-  N_("\n\
+  "\n"N_("\
 Set up images to boot from DEVICE.\n\
 \n\
-You should not normally run this program directly.  Use grub-install instead.\n\
-\v\
+You should not normally run this program directly.  Use grub-install instead.")
+"\v"N_("\
 DEVICE must be an OS device (e.g. /dev/sda1)."),
   NULL, help_filter, NULL
 };

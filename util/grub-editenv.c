@@ -99,10 +99,10 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 
 struct argp argp = {
   options, argp_parser, N_("FILENAME COMMAND"),
-  N_("\n\
-Tool to edit environment block.\n\
-\v\
-If FILENAME is '-', the default value %s is used.\n"),
+  "\n"N_("\
+Tool to edit environment block.")
+"\v"N_("\
+If FILENAME is '-', the default value %s is used."),
   NULL, help_filter, NULL
 };
 
