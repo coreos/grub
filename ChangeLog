@@ -1,3 +1,8 @@
+2010-09-21  Yves Blusseau  <blusseau@zetam.org>
+
+	* conf/Makefile.common (CPPFLAGS_GNULIB): Replace $(top_srcdir) with
+	$(top_builddir).
+
 2010-09-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/commands/hashsum.c (aliases): Add sha1sum alias.
