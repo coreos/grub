@@ -3,18 +3,21 @@
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/net.h>
 
-static
-grub_err_t card_open (struct grub_net_card *dev)
+static grub_err_t 
+card_open (struct grub_net_card *dev)
 {
-
+  int status;
   struct grub_ofnetcard_data *data = dev->data;
-  return  grub_ieee1275_open (data->path,&(data->handle)); 
+  status = grub_ieee1275_open (data->path,&(data->handle)); 
+
+  if (status)
+    return grub_error (GRUB_ERR_IO, "couldn't open network card");
+  return GRUB_ERR_NONE;
 }
 
-static
-grub_err_t card_close (struct grub_net_card *dev)
+static grub_err_t 
+card_close (struct grub_net_card *dev)
 {
-
   struct grub_ofnetcard_data *data = dev->data;
   
   if (data->handle)
@@ -22,18 +25,23 @@ grub_err_t card_close (struct grub_net_card *dev)
   return GRUB_ERR_NONE;
 }
 
-static
-grub_err_t send_card_buffer (struct grub_net_card *dev, struct grub_net_buff *pack)
-{
-  
+static grub_err_t 
+send_card_buffer (struct grub_net_card *dev, struct grub_net_buff *pack)
+{ 
   int actual;
+  int status;
   struct grub_ofnetcard_data *data = dev->data;
   
-  return grub_ieee1275_write (data->handle,pack->data,pack->tail - pack->data,&actual);
+  status = grub_ieee1275_write (data->handle, pack->data,
+				pack->tail - pack->data, &actual);
+
+  if (status)
+    return grub_error (GRUB_ERR_IO, "couldn't send network packet");
+  return GRUB_ERR_NONE;
 }
 
-static
-grub_err_t get_card_packet (struct grub_net_card *dev, struct grub_net_buff *pack)
+static grub_err_t
+get_card_packet (struct grub_net_card *dev, struct grub_net_buff *pack)
 {
 
   int actual, rc;
@@ -41,10 +49,8 @@ grub_err_t get_card_packet (struct grub_net_card *dev, struct grub_net_buff *pac
   grub_netbuff_clear(pack); 
 
   do
-  {
-    rc = grub_ieee1275_read (data->handle,pack->data,1500,&actual);
-
-  }while (actual <= 0 || rc < 0);
+    rc = grub_ieee1275_read (data->handle, pack->data, 1500, &actual);
+  while (actual <= 0 || rc < 0);
   grub_netbuff_put (pack, actual);
 
   return GRUB_ERR_NONE; 
