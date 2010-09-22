@@ -62,6 +62,12 @@ grub_err_t grub_multiboot_set_video_mode (void);
 #define GRUB_MACHINE_HAS_VBE 0
 #endif
 
+#if defined (GRUB_MACHINE_EFI) || defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MULTIBOOT)
+#define GRUB_MACHINE_HAS_ACPI 1
+#else
+#define GRUB_MACHINE_HAS_ACPI 0
+#endif
+
 #define GRUB_MULTIBOOT_CONSOLE_EGA_TEXT 1
 #define GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER 2 
 

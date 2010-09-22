@@ -1,3 +1,14 @@
+2010-09-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Implement EFI and ACPI multiboot2 extensions.	
+
+	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_load): Declare
+	new tags as supported.
+	(acpiv2_size): New function.
+	(grub_multiboot_get_mbi_size): Take new tags into account.
+	(grub_multiboot_make_mbi): Add new tags.
+	* include/grub/multiboot.h (GRUB_MACHINE_HAS_ACPI): New definition.
+	
 2010-09-21  Aleš Nesrsta <starous@volny.cz>
 
 	* grub-core/bus/usb/serial/common.c (grub_usbserial_attach):
