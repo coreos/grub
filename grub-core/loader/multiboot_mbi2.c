@@ -715,7 +715,7 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   }
 #endif
 
-#if defined (GRUB_MACHINE_EFI) && __i386_
+#if defined (GRUB_MACHINE_EFI) && __i386__
   {
     struct multiboot_tag_efi64 *tag = (struct multiboot_tag_efi32 *) ptrorig;
     tag->type = MULTIBOOT_TAG_TYPE_EFI32;
