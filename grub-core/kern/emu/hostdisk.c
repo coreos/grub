@@ -115,6 +115,9 @@ struct hd_geometry
 #  include <util.h>    /* getrawpartition */
 # endif /* HAVE_GETRAWPARTITION */
 # include <sys/fdio.h>
+# ifndef FLOPPY_MAJOR
+#  define FLOPPY_MAJOR	2
+# endif /* ! FLOPPY_MAJOR */
 # ifndef RAW_FLOPPY_MAJOR
 #  define RAW_FLOPPY_MAJOR	9
 # endif /* ! RAW_FLOPPY_MAJOR */

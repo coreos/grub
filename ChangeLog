@@ -1,3 +1,7 @@
+2010-09-22  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c [__NetBSD__]: Define FLOPPY_MAJOR.
+
 2010-09-22  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_make_mbi): Fix
