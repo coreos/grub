@@ -18,6 +18,7 @@
  */
 
 #include <grub/machine/memory.h>
+#include <grub/i386/memory.h>
 #include <grub/memory.h>
 #include <grub/err.h>
 #include <grub/misc.h>
@@ -33,12 +34,12 @@ grub_mmap_malign_and_register (grub_uint64_t align, grub_uint64_t size,
   grub_uint64_t highestlow = 0;
 
   auto int NESTED_FUNC_ATTR find_hook (grub_uint64_t, grub_uint64_t,
-				       grub_uint32_t);
+				       grub_memory_type_t);
   int NESTED_FUNC_ATTR find_hook (grub_uint64_t start, grub_uint64_t rangesize,
-				  grub_uint32_t memtype)
+				  grub_memory_type_t memtype)
   {
     grub_uint64_t end = start + rangesize;
-    if (memtype != GRUB_MACHINE_MEMORY_AVAILABLE)
+    if (memtype != GRUB_MEMORY_AVAILABLE)
       return 0;
     if (end > 0x100000)
       end = 0x100000;

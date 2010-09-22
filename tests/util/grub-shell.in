@@ -109,7 +109,7 @@ done
 if [ "x${source}" = x ] ; then
     tmpfile=`mktemp`
     while read REPLY; do
-	echo $REPLY >> ${tmpfile}
+	echo "$REPLY" >> ${tmpfile}
     done
     source=${tmpfile}
 fi

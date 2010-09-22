@@ -36,17 +36,16 @@ static const struct grub_arg_option options[] =
 
 
 static grub_err_t
-grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
+grub_cmd_read (grub_extcmd_context_t ctxt, int argc, char **argv)
 {
   grub_target_addr_t addr;
   grub_uint32_t value = 0;
-  char buf[sizeof ("XXXXXXXX")];
 
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid number of arguments");
 
   addr = grub_strtoul (argv[0], 0, 0);
-  switch (cmd->cmd->name[sizeof ("in") - 1])
+  switch (ctxt->extcmd->cmd->name[sizeof ("in") - 1])
     {
     case 'l':
       value = grub_inl (addr);
@@ -61,10 +60,11 @@ grub_cmd_read (grub_extcmd_t cmd, int argc, char **argv)
       break;
     }
 
-  if (cmd->state[0].set)
+  if (ctxt->state[0].set)
     {
+      char buf[sizeof ("XXXXXXXX")];
       grub_snprintf (buf, sizeof (buf), "%x", value);
-      grub_env_set (cmd->state[0].arg, buf);
+      grub_env_set (ctxt->state[0].arg, buf);
     }
   else
     grub_printf ("0x%x\n", value);
@@ -117,13 +117,13 @@ grub_cmd_write (grub_command_t cmd, int argc, char **argv)
 GRUB_MOD_INIT(memrw)
 {
   cmd_read_byte =
-    grub_register_extcmd ("inb", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
+    grub_register_extcmd ("inb", grub_cmd_read, 0,
 			  N_("PORT"), N_("Read byte from PORT."), options);
   cmd_read_word =
-    grub_register_extcmd ("inw", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
+    grub_register_extcmd ("inw", grub_cmd_read, 0,
 			  N_("PORT"), N_("Read word from PORT."), options);
   cmd_read_dword =
-    grub_register_extcmd ("inl", grub_cmd_read, GRUB_COMMAND_FLAG_BOTH,
+    grub_register_extcmd ("inl", grub_cmd_read, 0,
 			  N_("PORT"), N_("Read dword from PORT."), options);
   cmd_write_byte =
     grub_register_command ("outb", grub_cmd_write,

@@ -27,6 +27,7 @@
 
 grub_err_t grub_errno;
 char grub_errmsg[GRUB_MAX_ERRMSG];
+int grub_err_printed_errors;
 
 static struct
 {
@@ -122,7 +123,10 @@ grub_print_error (void)
   do
     {
       if (grub_errno != GRUB_ERR_NONE)
-        grub_err_printf (_("error: %s.\n"), grub_errmsg);
+	{
+	  grub_err_printf (_("error: %s.\n"), grub_errmsg);
+	  grub_err_printed_errors++;
+	}
     }
   while (grub_error_pop ());
 

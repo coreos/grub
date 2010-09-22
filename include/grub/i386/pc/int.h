@@ -20,6 +20,7 @@
 #define GRUB_INTERRUPT_MACHINE_HEADER	1
 
 #include <grub/symbol.h>
+#include <grub/types.h>
 
 struct grub_bios_int_registers
 {

@@ -28,8 +28,6 @@
 #define GRUB_MACHINE_MEMORY_STACK_HIGH       0x80f00000
 #define GRUB_MACHINE_MEMORY_USABLE       0x81000000
 
-#define GRUB_MACHINE_MEMORY_AVAILABLE        1
-
 #ifndef ASM_FILE
 grub_err_t EXPORT_FUNC (grub_machine_mmap_iterate)
 (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));

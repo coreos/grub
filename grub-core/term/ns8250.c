@@ -16,7 +16,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/memory.h>
 #include <grub/serial.h>
 #include <grub/ns8250.h>
 #include <grub/types.h>
@@ -26,6 +25,7 @@
 #include <grub/mm.h>
 
 #ifdef GRUB_MACHINE_PCBIOS
+#include <grub/machine/memory.h>
 static const unsigned short *serial_hw_io_addr = (const unsigned short *) GRUB_MEMORY_MACHINE_BIOS_DATA_AREA_ADDR;
 #define GRUB_SERIAL_PORT_NUM 4
 #else

@@ -52,17 +52,16 @@ grub_interruptible_millisleep (grub_uint32_t ms)
   start = grub_get_time_ms ();
 
   while (grub_get_time_ms () - start < ms)
-    if (grub_checkkey () >= 0 &&
-	GRUB_TERM_ASCII_CHAR (grub_getkey ()) == GRUB_TERM_ESC)
+    if (grub_checkkey () >= 0 && grub_getkey () == GRUB_TERM_ESC)
       return 1;
 
   return 0;
 }
 
 static grub_err_t
-grub_cmd_sleep (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_sleep (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   int n;
 
   if (argc != 1)
@@ -101,7 +100,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(sleep)
 {
-  cmd = grub_register_extcmd ("sleep", grub_cmd_sleep, GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("sleep", grub_cmd_sleep, 0,
 			      N_("NUMBER_OF_SECONDS"),
 			      N_("Wait for a specified number of seconds."),
 			      options);

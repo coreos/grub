@@ -22,20 +22,32 @@
 #include <grub/cmos.h>
 
 static grub_err_t
-grub_cmd_cmostest (struct grub_command *cmd __attribute__ ((unused)),
-		   int argc, char *argv[])
+parse_args (int argc, char *argv[], int *byte, int *bit)
 {
-  int byte, bit;
   char *rest;
 
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "Address required.");
 
-  byte = grub_strtoul (argv[0], &rest, 0);
+  *byte = grub_strtoul (argv[0], &rest, 0);
   if (*rest != ':')
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "Address required.");
 
-  bit = grub_strtoul (rest + 1, 0, 0);
+  *bit = grub_strtoul (rest + 1, 0, 0);
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_cmd_cmostest (struct grub_command *cmd __attribute__ ((unused)),
+		   int argc, char *argv[])
+{
+  int byte, bit;
+  grub_err_t err;
+
+  err = parse_args (argc, argv, &byte, &bit);
+  if (err)
+    return err;
 
   if (grub_cmos_read (byte) & (1 << bit))
     return GRUB_ERR_NONE;
@@ -43,7 +55,22 @@ grub_cmd_cmostest (struct grub_command *cmd __attribute__ ((unused)),
   return grub_error (GRUB_ERR_TEST_FAILURE, "false");
 }
 
-static grub_command_t cmd;
+static grub_err_t
+grub_cmd_cmosclean (struct grub_command *cmd __attribute__ ((unused)),
+		    int argc, char *argv[])
+{
+  int byte, bit;
+  grub_err_t err;
+
+  err = parse_args (argc, argv, &byte, &bit);
+  if (err)
+    return err;
+
+  grub_cmos_write (byte, grub_cmos_read (byte) & (~(1 << bit)));
+  return GRUB_ERR_NONE;
+}
+
+static grub_command_t cmd, cmd_clean;
 
 
 GRUB_MOD_INIT(cmostest)
@@ -51,9 +78,13 @@ GRUB_MOD_INIT(cmostest)
   cmd = grub_register_command ("cmostest", grub_cmd_cmostest,
 			       "cmostest BYTE:BIT",
 			       "Test bit at BYTE:BIT in CMOS.");
+  cmd_clean = grub_register_command ("cmosclean", grub_cmd_cmosclean,
+				     "cmosclean BYTE:BIT",
+				     "Clean bit at BYTE:BIT in CMOS.");
 }
 
 GRUB_MOD_FINI(cmostest)
 {
   grub_unregister_command (cmd);
+  grub_unregister_command (cmd_clean);
 }

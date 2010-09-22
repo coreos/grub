@@ -27,10 +27,10 @@ grub_relocator_firmware_get_max_events (void)
   int counter = 0;
   auto int NESTED_FUNC_ATTR count (grub_uint64_t addr __attribute__ ((unused)),
 				   grub_uint64_t len __attribute__ ((unused)),
-				   grub_uint32_t type __attribute__ ((unused)));
+				   grub_memory_type_t type __attribute__ ((unused)));
   int NESTED_FUNC_ATTR count (grub_uint64_t addr __attribute__ ((unused)), 
 			      grub_uint64_t len __attribute__ ((unused)), 
-			      grub_uint32_t type __attribute__ ((unused)))
+			      grub_memory_type_t type __attribute__ ((unused)))
   {
     counter++;
     return 0;
@@ -47,11 +47,11 @@ grub_relocator_firmware_fill_events (struct grub_relocator_mmap_event *events)
 {
   int counter = 0;
   auto int NESTED_FUNC_ATTR fill (grub_uint64_t addr, grub_uint64_t len,
-				  grub_uint32_t type);
+				  grub_memory_type_t type);
   int NESTED_FUNC_ATTR fill (grub_uint64_t addr, grub_uint64_t len,
-			     grub_uint32_t type)
+			     grub_memory_type_t type)
   {
-    if (type != GRUB_MACHINE_MEMORY_AVAILABLE)
+    if (type != GRUB_MEMORY_AVAILABLE)
       return 0;
 
     if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM))

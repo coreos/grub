@@ -42,16 +42,8 @@ static struct term_state *term_states = NULL;
 /* If the more pager is active.  */
 static int grub_more;
 
-static int grub_normal_char_counter = 0;
-
 static void
 putcode_real (grub_uint32_t code, struct grub_term_output *term);
-
-int
-grub_normal_get_char_counter (void)
-{
-  return grub_normal_char_counter;
-}
 
 void
 grub_normal_reset_more (void)
@@ -409,8 +401,6 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
       .estimated_width = 1
     };
 
-  grub_normal_char_counter++;
-
   if (c->base == '\t' && term->getxy)
     {
       int n;
@@ -657,7 +647,7 @@ put_glyphs_terminal (const struct grub_unicode_glyph *visual,
 	      >= (grub_ssize_t) grub_term_height (term) - 2)
 	    {
 	      state->backlog_glyphs = visual_ptr + 1;
-	      state->backlog_len = visual_len - (visual - visual_ptr) - 1;
+	      state->backlog_len = visual_len - (visual_ptr - visual) - 1;
 	      return 1;
 	    }
 
@@ -688,6 +678,7 @@ print_backlog (struct grub_term_output *term,
 	  grub_free (state->free);
 	  state->free = NULL;
 	  state->backlog_len = 0;
+	  state->backlog_ucs4 = 0;
 	}
       return ret;
     }
@@ -703,6 +694,7 @@ print_backlog (struct grub_term_output *term,
 	  grub_free (state->free);
 	  state->free = NULL;
 	  state->backlog_len = 0;
+	  state->backlog_glyphs = 0;
 	}
       return ret;
     }

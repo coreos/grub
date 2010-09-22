@@ -202,7 +202,7 @@ make_image ()
     mkdir -p ${memdisk_dir}/boot/grub
 
     cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
-search --fs-uuid --set ${iso_uuid}
+search --fs-uuid --set=root ${iso_uuid}
 set prefix=(\${root})/boot/grub/${platform}
 source \$prefix/grub.cfg
 EOF

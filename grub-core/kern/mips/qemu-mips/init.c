@@ -51,11 +51,8 @@ grub_reboot (void)
 }
 
 grub_err_t 
-grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, 
-							 grub_uint64_t, 
-							 grub_uint32_t))
+grub_machine_mmap_iterate (grub_memory_hook_t hook)
 {
-  hook (0, RAMSIZE,
-	GRUB_MACHINE_MEMORY_AVAILABLE);
+  hook (0, RAMSIZE, GRUB_MEMORY_AVAILABLE);
   return GRUB_ERR_NONE;
 }

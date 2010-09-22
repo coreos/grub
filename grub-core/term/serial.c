@@ -55,14 +55,6 @@ struct grub_serial_input_state
   struct grub_serial_port *port;
 };
 
-static grub_uint16_t
-grub_serial_getwh (struct grub_term_output *term __attribute__ ((unused)))
-{
-  const grub_uint8_t TEXT_WIDTH = 80;
-  const grub_uint8_t TEXT_HEIGHT = 24;
-  return (TEXT_WIDTH << 8) | TEXT_HEIGHT;
-}
-
 static void 
 serial_put (grub_term_output_t term, const int c)
 {
@@ -89,7 +81,9 @@ struct grub_serial_output_state grub_serial_terminfo_output =
   {
     .tinfo =
     {
-      .put = serial_put
+      .put = serial_put,
+      .width = 80,
+      .height = 24
     }
   };
 
@@ -99,7 +93,6 @@ static struct grub_term_input grub_serial_term_input =
 {
   .name = "serial",
   .init = grub_terminfo_input_init,
-  .checkkey = grub_terminfo_checkkey,
   .getkey = grub_terminfo_getkey,
   .data = &grub_serial_terminfo_input
 };
@@ -108,7 +101,7 @@ static struct grub_term_output grub_serial_term_output =
 {
   .name = "serial",
   .putchar = grub_terminfo_putchar,
-  .getwh = grub_serial_getwh,
+  .getwh = grub_terminfo_getwh,
   .getxy = grub_terminfo_getxy,
   .gotoxy = grub_terminfo_gotoxy,
   .cls = grub_terminfo_cls,
@@ -150,9 +143,9 @@ grub_serial_find (char *name)
 }
 
 static grub_err_t
-grub_cmd_serial (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   char pname[40];
   char *name = NULL;
   struct grub_serial_port *port;
@@ -341,8 +334,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(serial)
 {
-  cmd = grub_register_extcmd ("serial", grub_cmd_serial,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("serial", grub_cmd_serial, 0,
 			      N_("[OPTIONS...]"),
 			      N_("Configure serial port."), options);
 #ifndef GRUB_MACHINE_EMU

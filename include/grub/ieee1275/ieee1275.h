@@ -109,6 +109,9 @@ enum grub_ieee1275_flag
 
   /* OpenFirmware hangs on qemu if one requests any memory below 1.5 MiB.  */
   GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM,
+
+  /* OLPC / XO firmware has the cursor ON/OFF routines.  */
+  GRUB_IEEE1275_FLAG_HAS_CURSORONOFF,
 };
 
 extern int EXPORT_FUNC(grub_ieee1275_test_flag) (enum grub_ieee1275_flag flag);
@@ -194,4 +197,6 @@ int EXPORT_FUNC(grub_ieee1275_devices_iterate) (int (*hook)
 char *EXPORT_FUNC(grub_ieee1275_get_aliasdevname) (const char *path);
 void EXPORT_FUNC(grub_ofnet_findcards) (void);
 void EXPORT_FUNC(grub_ofnet_probecards) (void);
+char *EXPORT_FUNC(grub_ieee1275_canonicalise_devname) (const char *path);
+
 #endif /* ! GRUB_IEEE1275_HEADER */

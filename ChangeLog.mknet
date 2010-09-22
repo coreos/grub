@@ -1,7 +1,0 @@
-2010-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
-
-	grub-mknetdir script.
-
-	* Makefile.util.def (grub-mknetdir): New module.
-	* tests/util/grub-shell.in: Support boot=net
-	* util/grub-mknetdir.in: New file.

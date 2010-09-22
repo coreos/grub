@@ -120,6 +120,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 
 	  /* XXX: For ext2fs symlinks are detected as files while they
 	     should be reported as directories.  */
+	  grub_file_filter_disable_compression ();
 	  file = grub_file_open (pathname);
 	  if (! file)
 	    {
@@ -226,6 +227,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	  struct grub_dirhook_info info;
 	  grub_errno = 0;
 
+	  grub_file_filter_disable_compression ();
 	  file = grub_file_open (dirname);
 	  if (! file)
 	    goto fail;
@@ -263,15 +265,17 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 }
 
 static grub_err_t
-grub_cmd_ls (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_ls (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
+  int i;
 
   if (argc == 0)
     grub_ls_list_devices (state[0].set);
   else
-    grub_ls_list_files (args[0], state[0].set, state[2].set,
-			state[1].set);
+    for (i = 0; i < argc; i++)
+      grub_ls_list_files (args[i], state[0].set, state[2].set,
+			  state[1].set);
 
   return 0;
 }
@@ -280,8 +284,8 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(ls)
 {
-  cmd = grub_register_extcmd ("ls", grub_cmd_ls, GRUB_COMMAND_FLAG_BOTH,
-			      N_("[-l|-h|-a] [FILE]"),
+  cmd = grub_register_extcmd ("ls", grub_cmd_ls, 0,
+			      N_("[-l|-h|-a] [FILE ...]"),
 			      N_("List devices and files."), options);
 }
 

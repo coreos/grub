@@ -115,7 +115,7 @@ grub_device_iterate (int (*hook) (const char *name))
 	  return 0;
 	}
 
-      if (dev->disk && dev->disk->has_partitions)
+      if (dev->disk)
 	{
 	  struct part_ent *p;
 	  int ret = 0;
@@ -147,28 +147,28 @@ grub_device_iterate (int (*hook) (const char *name))
 
   int iterate_partition (grub_disk_t disk, const grub_partition_t partition)
     {
-      char *partition_name;
       struct part_ent *p;
-
-      partition_name = grub_partition_get_name (partition);
-      if (! partition_name)
-	return 1;
+      char *part_name;
 
       p = grub_malloc (sizeof (*p));
       if (!p)
 	{
-	  grub_free (partition_name);
 	  return 1;
 	}
 
-      p->name = grub_xasprintf ("%s,%s", disk->name, partition_name);
-      if (!p->name)
+      part_name = grub_partition_get_name (partition);
+      if (!part_name)
 	{
-	  grub_free (partition_name);
 	  grub_free (p);
 	  return 1;
 	}
-      grub_free (partition_name);
+      p->name = grub_xasprintf ("%s,%s", disk->name, part_name);
+      grub_free (part_name);
+      if (!p->name)
+	{
+	  grub_free (p);
+	  return 1;
+	}
 
       p->next = ents;
       ents = p;

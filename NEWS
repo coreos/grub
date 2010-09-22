@@ -1,5 +1,47 @@
 New in 1.99:
 
+* Keyboard layouts support.
+
+* New `lsapm' command (i386-pc only).
+
+* Parser for GRUB Legacy configuration files.
+
+* Support RAID on virtio devices.
+
+* Remove deprecated `root' command.
+
+* New `euro.pf2' font which supports most European languages.
+
+* Avoid opening the same device twice on Open Firmware platforms.
+
+* Extend `vbeinfo' and `vbetest' commands to non-VBE graphics, as
+  `videoinfo' and `videotest'.
+
+* New `lsefisystab', `lssal', and `lsefimmap' commands on EFI platforms.
+
+* Support explicit user claim that a device is BIOS-visible.  Devices
+  listed in device.map will be assumed to be readable using only BIOS
+  facilities, rather than anything more complex such as LVM or RAID.
+
+* New bash-completion script for GRUB utilities.
+
+* Use ACPI to shut down if possible.
+
+* New `lsacpi' command.
+
+* Basic btrfs support (detection and UUID).
+
+* New `--boot-directory' option to `grub-install', `grub-reboot', and
+  `grub-set-default', with clearer semantics than the previous
+  `--root-directory' option.
+
+* Rename CD-ROM device to "cd" on BIOS platforms.
+
+* Transparent decompression filters.
+
+* Simpler PXE image generation.  New `grub-mknetdir' utility to generate
+  netboot directory trees.
+
 * New relocator.  Allows for more kernel support and more
   straightforward loader writing.
 
@@ -60,7 +102,8 @@ New in 1.99:
 
 * `grub-mkrescue' support for EFI, coreboot, and QEMU platforms.
 
-* Unify `grub-mkimage' source code across platforms.
+* Unify `grub-mkimage', `grub-setup', and `grub-install' source code
+  across platforms.
 
 * Fix VGA (as opposed to VBE) video driver, formerly a terminal driver.
 
@@ -83,8 +126,9 @@ New in 1.99:
 * sunpc partition table support.
 
 * Add a number of new language features to GRUB script: `for', `while',
-  `until', `elif', function parameters, `break', `continue', and
-  `shift'.
+  `until', `elif', function parameters, `break', `continue', `shift',
+  multi-line quoted strings, positional parameters with `setparams',
+  `return', filename wildcard expansion, and `!'.
 
 * Support nested partition tables.  GRUB now prefers to name partitions
   in the form `(hd0,msdos1,bsd1)' rather than `(hd0,1,a)'.

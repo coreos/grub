@@ -18,6 +18,7 @@
 
 #include <config.h>
 #include <grub/symbol.h>
+#include <grub/i386/pc/memory.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>

@@ -26,6 +26,13 @@ struct grub_disk;
 
 typedef struct grub_partition *grub_partition_t;
 
+#ifdef GRUB_UTIL
+typedef enum
+{
+  GRUB_EMBED_PCBIOS
+} grub_embed_type_t;
+#endif
+
 /* Partition map type.  */
 struct grub_partition_map
 {
@@ -39,6 +46,11 @@ struct grub_partition_map
   grub_err_t (*iterate) (struct grub_disk *disk,
 			 int (*hook) (struct grub_disk *disk,
 				      const grub_partition_t partition));
+#ifdef GRUB_UTIL
+  /* Determine sectors available for embedding.  */
+  grub_err_t (*embed) (struct grub_disk *disk, unsigned int nsectors,
+		       grub_embed_type_t embed_type, grub_disk_addr_t *sectors);
+#endif
 };
 typedef struct grub_partition_map *grub_partition_map_t;
 
@@ -65,6 +77,10 @@ struct grub_partition
 
   /* The type partition map.  */
   grub_partition_map_t partmap;
+
+  /* The type of partition whne it's on MSDOS.
+     Used for embedding detection.  */
+  grub_uint8_t msdostype;
 };
 
 grub_partition_t EXPORT_FUNC(grub_partition_probe) (struct grub_disk *disk,

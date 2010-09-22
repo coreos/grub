@@ -209,6 +209,9 @@ grub_err_t grub_vbe_set_video_mode (grub_uint32_t mode,
 grub_err_t grub_vbe_get_video_mode (grub_uint32_t *mode);
 grub_err_t grub_vbe_get_video_mode_info (grub_uint32_t mode,
                                          struct grub_vbe_mode_info_block *mode_info);
+grub_vbe_status_t 
+grub_vbe_bios_get_pm_interface (grub_uint16_t *seg, grub_uint16_t *offset,
+				grub_uint16_t *length);
 
 
 #endif /* ! GRUB_VBE_MACHINE_HEADER */

@@ -196,6 +196,8 @@ grub_vprintf (const char *fmt, va_list args)
   grub_size_t s;
   static char buf[PREALLOC_SIZE + 1];
   char *curbuf = buf;
+  va_list ap2;
+  va_copy (ap2, args);
 
   s = grub_vsnprintf_real (buf, PREALLOC_SIZE, fmt, args);
   if (s > PREALLOC_SIZE)
@@ -210,7 +212,7 @@ grub_vprintf (const char *fmt, va_list args)
 	  buf[PREALLOC_SIZE] = 0;
 	}
       else
-	s = grub_vsnprintf_real (curbuf, s, fmt, args);
+	s = grub_vsnprintf_real (curbuf, s, fmt, ap2);
     }
 
   grub_xputs (curbuf);
@@ -947,11 +949,13 @@ grub_xvasprintf (const char *fmt, va_list ap)
 
   while (1)
     {
+      va_list ap2;
+      va_copy (ap2, ap);
       ret = grub_malloc (as + 1);
       if (!ret)
 	return NULL;
 
-      s = grub_vsnprintf_real (ret, as, fmt, ap);
+      s = grub_vsnprintf_real (ret, as, fmt, ap2);
       if (s <= as)
 	return ret;
 
@@ -990,12 +994,12 @@ grub_abort (void)
   grub_exit ();
 }
 
-#ifndef APPLE_CC
+#if ! defined (APPLE_CC) && !defined (GRUB_UTIL)
 /* GCC emits references to abort().  */
 void abort (void) __attribute__ ((alias ("grub_abort")));
 #endif
 
-#if defined(NEED_ENABLE_EXECUTE_STACK) && !defined(GRUB_UTIL) && !defined(GRUB_MACHINE_EMU)
+#if NEED_ENABLE_EXECUTE_STACK && !defined(GRUB_UTIL) && !defined(GRUB_MACHINE_EMU)
 /* Some gcc versions generate a call to this function
    in trampolines for nested functions.  */
 void __enable_execute_stack (void *addr __attribute__ ((unused)))
@@ -1003,7 +1007,7 @@ void __enable_execute_stack (void *addr __attribute__ ((unused)))
 }
 #endif
 
-#if defined (NEED_REGISTER_FRAME_INFO) && !defined(GRUB_UTIL)
+#if NEED_REGISTER_FRAME_INFO && !defined(GRUB_UTIL)
 void __register_frame_info (void)
 {
 }

@@ -276,75 +276,13 @@ def module(platform):
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
 
-    r += gvar_add("DEF_FILES", "def-[+ name +].lst")
-    r += gvar_add("UND_FILES", "und-[+ name +].lst")
     r += gvar_add("MOD_FILES", "[+ name +].mod")
-    r += gvar_add("platform_DATA", "[+ name +].mod")
-    r += gvar_add("CLEANFILES", "def-[+ name +].lst und-[+ name +].lst mod-[+ name +].c mod-[+ name +].o [+ name +].mod")
-
-    r += gvar_add("COMMAND_FILES", "command-[+ name +].lst")
-    r += gvar_add("FS_FILES", "fs-[+ name +].lst")
-    r += gvar_add("VIDEO_FILES", "video-[+ name +].lst")
-    r += gvar_add("PARTMAP_FILES", "partmap-[+ name +].lst")
-    r += gvar_add("HANDLER_FILES", "handler-[+ name +].lst")
-    r += gvar_add("PARTTOOL_FILES", "parttool-[+ name +].lst")
-    r += gvar_add("TERMINAL_FILES", "terminal-[+ name +].lst")
-    r += gvar_add("CLEANFILES", "command-[+ name +].lst fs-[+ name +].lst")
-    r += gvar_add("CLEANFILES", "handler-[+ name +].lst terminal-[+ name +].lst")
-    r += gvar_add("CLEANFILES", "video-[+ name +].lst partmap-[+ name +].lst parttool-[+ name +].lst")
-
-    r += gvar_add("CLEANFILES", "[+ name +].pp")
+    r += gvar_add("MARKER_FILES", "[+ name +].marker")
+    r += gvar_add("CLEANFILES", "[+ name +].marker")
     r += """
-[+ name +].pp: $(""" + cname() + """_SOURCES) $(nodist_""" + cname() + """_SOURCES)
-	$(TARGET_CPP) -DGRUB_LST_GENERATOR $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + cname() + """_CPPFLAGS) $(CPPFLAGS) $^ > $@ || (rm -f $@; exit 1)
-
-def-[+ name +].lst: [+ name +].module$(EXEEXT)
-	if test x$(USE_APPLE_CC_FIXES) = xyes; then \
-	  $(NM) -g -P -p $< | grep -E '^[a-zA-Z0-9_]* [TDS]' | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@; \
-	else \
-	  $(NM) -g --defined-only -P -p $< | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@; \
-	fi
-
-und-[+ name +].lst: [+ name +].module$(EXEEXT)
-	$(NM) -u -P -p $< | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@
-
-mod-[+ name +].c: [+ name +].module$(EXEEXT) moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh [+ name +] moddep.lst > $@ || (rm -f $@; exit 1)
-
-mod-[+ name +].o: mod-[+ name +].c
-	$(TARGET_CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + cname() + """_CPPFLAGS) $(CPPFLAGS) $(""" + cname() + """_CFLAGS) $(CFLAGS) -c -o $@ $<
-
-[+ name +].mod: [+ name +].module$(EXEEXT) mod-[+ name +].o
-	if test x$(USE_APPLE_CC_FIXES) = xyes; then \
-	  $(CCLD) $(""" + cname() + """_LDFLAGS) $(LDFLAGS) -o $@.bin $^; \
-	  $(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -wd1106 -nu -nd $@.bin $@; \
-	  rm -f $@.bin; \
-	else \
-	  $(CCLD) -o $@ $(""" + cname() + """_LDFLAGS) $(LDFLAGS) $^; \
-	  if test ! -z '$(TARGET_OBJ2ELF)'; then $(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi; \
-	  $(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@; \
-	fi
-
-command-[+ name +].lst: [+ name +].pp $(srcdir)/gencmdlist.sh
-	cat $< | sh $(srcdir)/gencmdlist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-fs-[+ name +].lst: [+ name +].pp $(srcdir)/genfslist.sh
-	cat $< | sh $(srcdir)/genfslist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-video-[+ name +].lst: [+ name +].pp $(srcdir)/genvideolist.sh
-	cat $< | sh $(srcdir)/genvideolist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-partmap-[+ name +].lst: [+ name +].pp $(srcdir)/genpartmaplist.sh
-	cat $< | sh $(srcdir)/genpartmaplist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-parttool-[+ name +].lst: [+ name +].pp $(srcdir)/genparttoollist.sh
-	cat $< | sh $(srcdir)/genparttoollist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-handler-[+ name +].lst: [+ name +].pp $(srcdir)/genhandlerlist.sh
-	cat $< | sh $(srcdir)/genhandlerlist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-terminal-[+ name +].lst: [+ name +].pp $(srcdir)/genterminallist.sh
-	cat $< | sh $(srcdir)/genterminallist.sh [+ name +] > $@ || (rm -f $@; exit 1)
+[+ name +].marker: $(""" + cname() + """_SOURCES) $(nodist_""" + cname() + """_SOURCES)
+	$(TARGET_CPP) -DGRUB_LST_GENERATOR $(CPPFLAGS_MARKER) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + cname() + """_CPPFLAGS) $(CPPFLAGS) $^ > $@.new || (rm -f $@; exit 1)
+	grep 'MARKER' $@.new > $@; rm -f $@.new
 """
     return r
 
@@ -471,14 +409,13 @@ def script(platform):
     r += "[+ IF mansection +]" + manpage() + "[+ ENDIF +]"
     r += "[+ ENDIF +]"
 
-    r += rule("[+ name +]", "$(top_builddir)/config.status " + platform_sources(platform), """
-$(top_builddir)/config.status --file=-:""" + platform_sources(platform) + """ \
-  | sed -e 's,@pkglib_DATA@,$(pkglib_DATA),g' > $@
+    r += rule("[+ name +]", platform_sources(platform) + " $(top_builddir)/config.status", """
+$(top_builddir)/config.status --file=-:$< | sed -e 's,@pkglib_DATA@,$(pkglib_DATA),g' > $@
 chmod a+x [+ name +]
 """)
 
     r += gvar_add("CLEANFILES", "[+ name +]")
-    r += gvar_add("EXTRA_DIST", platform_sources(platform))
+    r += gvar_add("dist_noinst_DATA", platform_sources(platform))
     return r
 
 def module_rules():

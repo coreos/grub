@@ -69,10 +69,16 @@ typedef long long		grub_int64_t;
 typedef unsigned char		grub_uint8_t;
 typedef unsigned short		grub_uint16_t;
 typedef unsigned		grub_uint32_t;
+# define PRIxGRUB_UINT32_T	"x"
+# define PRIuGRUB_UINT32_T	"u"
 #if GRUB_CPU_SIZEOF_LONG == 8
 typedef unsigned long		grub_uint64_t;
+# define PRIxGRUB_UINT64_T	"lx"
+# define PRIuGRUB_UINT64_T	"lu"
 #else
 typedef unsigned long long	grub_uint64_t;
+# define PRIxGRUB_UINT64_T	"llx"
+# define PRIuGRUB_UINT64_T	"llu"
 #endif
 
 /* Misc types.  */
@@ -95,8 +101,10 @@ typedef grub_int64_t	grub_ssize_t;
 
 # if GRUB_CPU_SIZEOF_LONG == 8
 #  define PRIxGRUB_SIZE	"lx"
+#  define PRIuGRUB_SIZE	"lu"
 # else
 #  define PRIxGRUB_SIZE	"llx"
+#  define PRIuGRUB_SIZE	"llu"
 # endif
 #else
 typedef grub_uint32_t	grub_addr_t;
@@ -104,6 +112,7 @@ typedef grub_uint32_t	grub_size_t;
 typedef grub_int32_t	grub_ssize_t;
 
 # define PRIxGRUB_SIZE	"x"
+# define PRIuGRUB_SIZE	"u"
 #endif
 
 #if GRUB_CPU_SIZEOF_LONG == 8

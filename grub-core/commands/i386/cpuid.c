@@ -43,7 +43,7 @@ static const struct grub_arg_option options[] =
 unsigned char grub_cpuid_has_longmode = 0;
 
 static grub_err_t
-grub_cmd_cpuid (grub_extcmd_t cmd __attribute__ ((unused)),
+grub_cmd_cpuid (grub_extcmd_context_t ctxt __attribute__ ((unused)),
 		int argc __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {
@@ -88,7 +88,7 @@ GRUB_MOD_INIT(cpuid)
 done:
 #endif
 
-  cmd = grub_register_extcmd ("cpuid", grub_cmd_cpuid, GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("cpuid", grub_cmd_cpuid, 0,
 			      "[-l]", N_("Check for CPU features."), options);
 }
 

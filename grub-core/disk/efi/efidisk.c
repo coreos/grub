@@ -514,16 +514,12 @@ grub_efidisk_open (const char *name, struct grub_disk *disk)
   switch (name[0])
     {
     case 'f':
-      disk->has_partitions = 0;
       d = get_device (fd_devices, num);
       break;
     case 'c':
-      /* FIXME: a CDROM should have partitions, but not implemented yet.  */
-      disk->has_partitions = 0;
       d = get_device (cd_devices, num);
       break;
     case 'h':
-      disk->has_partitions = 1;
       d = get_device (hd_devices, num);
       break;
     default:
@@ -731,7 +727,7 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
     {
       /* This is a hard disk partition.  */
       grub_disk_t parent = 0;
-      char *partition_name = 0;
+      grub_partition_t tpart = NULL;
       char *device_name;
       grub_efi_device_path_t *dup_dp, *dup_ldp;
       grub_efi_hard_drive_device_path_t hd;
@@ -770,7 +766,7 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 	  if (grub_partition_get_start (part) == hd.partition_start
 	      && grub_partition_get_len (part) == hd.partition_size)
 	    {
-	      partition_name = grub_partition_get_name (part);
+	      tpart = part;
 	      return 1;
 	    }
 
@@ -799,14 +795,17 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
       grub_memcpy (&hd, ldp, sizeof (hd));
       grub_partition_iterate (parent, find_partition);
 
-      if (! partition_name)
+      if (! tpart)
 	{
 	  grub_disk_close (parent);
 	  return 0;
 	}
 
-      device_name = grub_xasprintf ("%s,%s", parent->name, partition_name);
-      grub_free (partition_name);
+      {
+	char *partition_name = grub_partition_get_name (tpart);
+	device_name = grub_xasprintf ("%s,%s", parent->name, partition_name);
+	grub_free (partition_name);
+      }
       grub_disk_close (parent);
 
       return device_name;

@@ -284,9 +284,9 @@ grub_sendkey_preboot (int noret __attribute__ ((unused)))
 }
 
 static grub_err_t
-grub_cmd_sendkey (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_sendkey (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
 
   auto int find_key_code (char *key); 
   auto int find_ascii_code (char *key);
@@ -366,8 +366,7 @@ static void *preboot_hook;
 
 GRUB_MOD_INIT (sendkey)
 {
-  cmd = grub_register_extcmd ("sendkey", grub_cmd_sendkey, 
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("sendkey", grub_cmd_sendkey, 0,
 			      "sendkey [KEYSTROKE1] [KEYSTROKE2] ...",
 			      "Emulate a keystroke", options);
 
