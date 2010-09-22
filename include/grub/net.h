@@ -84,7 +84,11 @@ struct grub_net_card
   struct grub_net_card_driver *driver;
   grub_net_link_level_address_t default_address;
   grub_net_card_flags_t flags;
-  void *data;
+  union
+  {
+    void *data;
+    int data_num;
+  };
 };
 
 struct grub_net_network_level_interface;

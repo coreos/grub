@@ -1398,3 +1398,9 @@ module = {
   ieee1275 = net/drivers/ieee1275/ofnet.c;
   enable = ieee1275;
 };
+
+module = {
+  name = emunet;
+  emu = net/drivers/emu/emunet.c;
+  enable = ieee1275;
+};
