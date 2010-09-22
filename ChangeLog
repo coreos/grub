@@ -1,5 +1,10 @@
 2010-09-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/multiboot_mbi2.c (GRUB_MACHINE_EFI): Add missing
+	include.
+
+2010-09-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Implement EFI and ACPI multiboot2 extensions.	
 
 	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_load): Declare

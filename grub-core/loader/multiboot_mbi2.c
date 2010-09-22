@@ -34,6 +34,10 @@
 #include <grub/video.h>
 #include <grub/acpi.h>
 
+#if defined (GRUB_MACHINE_EFI)
+#include <grub/efi/efi.h>
+#endif
+
 #if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_QEMU)
 #include <grub/i386/pc/vbe.h>
 #define HAS_VGA_TEXT 1
