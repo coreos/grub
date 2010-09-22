@@ -38,10 +38,10 @@ grub_net_recv_ethernet_packet (struct grub_net_network_level_interface *inf,
 
   inf->card->driver->recv (inf->card, nb);
   eth = (struct etherhdr *) nb->data; 
-  type = eth->type;
+  type = grub_be_to_cpu16 (eth->type);
   grub_netbuff_pull(nb,sizeof (*eth));
     
-  if (eth->type <=1500)
+  if (type <= 1500)
     {
       llch = (struct llchdr *) nb->data;
       type = llch->dsap & LLCADDRMASK;
@@ -55,14 +55,10 @@ grub_net_recv_ethernet_packet (struct grub_net_network_level_interface *inf,
     }
 
     /* ARP packet */
-  if (type == ARP_ETHERTYPE)
-    {
-      grub_net_arp_receive(inf, nb);
-      if (ethertype == ARP_ETHERTYPE)
-	return GRUB_ERR_NONE;
-    }
+  if (type == GRUB_NET_ETHERTYPE_ARP)
+    grub_net_arp_receive(inf, nb);
   /* IP packet */
-  else if(type == IP_ETHERTYPE && ethertype == IP_ETHERTYPE)
+  if(type == GRUB_NET_ETHERTYPE_IP && ethertype == GRUB_NET_ETHERTYPE_IP)
     return GRUB_ERR_NONE;
 
   return GRUB_ERR_NONE; 

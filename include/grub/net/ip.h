@@ -2,8 +2,6 @@
 #define GRUB_NET_IP_HEADER	1
 #include <grub/misc.h>
 
-#define IP_ETHERTYPE 0x800 /* IANA Ethertype */
-
 struct iphdr {
   grub_uint8_t verhdrlen;
   grub_uint8_t service;

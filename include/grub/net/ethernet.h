@@ -38,6 +38,14 @@ struct snaphdr
   grub_uint16_t type;
 } __attribute__ ((packed));
 
+/* IANA Ethertype */
+enum
+{
+  GRUB_NET_ETHERTYPE_IP = 0x0800,
+  GRUB_NET_ETHERTYPE_ARP = 0x0806
+};
+
+
 grub_err_t 
 send_ethernet_packet (struct grub_net_network_level_interface *inf,
 		      struct grub_net_buff *nb,

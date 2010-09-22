@@ -3,13 +3,11 @@
 #include <grub/misc.h>
 #include <grub/net.h>
 
-/* IANA ARP constant to define hardware type as ethernet */
-#define ARPHRD_ETHERNET 1
-/* IANA Ethertype */
-#define ARP_ETHERTYPE 0x806
-
-/* Size for cache table */
-#define SIZE_ARP_TABLE 5
+enum
+{
+/* IANA ARP constant to define hardware type as ethernet. */
+  GRUB_NET_ARPHRD_ETHERNET = 1
+};
 
 /* ARP header operation codes */
 #define ARP_REQUEST 1

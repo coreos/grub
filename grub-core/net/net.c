@@ -92,7 +92,7 @@ parse_ip (const char *val, grub_uint32_t *ip, const char **rest)
   *ip = grub_cpu_to_le32 (newip);
   if (rest)
     *rest = ptr - 1;
-  return 0;
+  return 1;
 }
 
 static int
@@ -341,7 +341,7 @@ grub_cmd_addaddr (struct grub_command *cmd __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("three arguments expected"));
   
   FOR_NET_CARDS (card)
-    if (grub_strcmp (card->name, args[1]))
+    if (grub_strcmp (card->name, args[1]) == 0)
       break;
   if (card == NULL)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("card not found")); 
@@ -464,7 +464,7 @@ grub_cmd_addroute (struct grub_command *cmd __attribute__ ((unused)),
       struct grub_net_network_level_interface *inter;
 
       FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
-	if (grub_strcmp (inter->name, args[2]))
+	if (grub_strcmp (inter->name, args[2]) == 0)
 	  break;
 
       if (!inter)

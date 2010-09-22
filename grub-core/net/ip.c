@@ -54,7 +54,7 @@ grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
   if (err)
     return err;
 
-  return send_ethernet_packet (inf, nb, ll_target_addr, IP_ETHERTYPE);
+  return send_ethernet_packet (inf, nb, ll_target_addr, GRUB_NET_ETHERTYPE_IP);
 }
 
 static int
@@ -84,8 +84,11 @@ ip_filter (struct grub_net_buff *nb,
 grub_err_t 
 grub_net_recv_ip_packets (struct grub_net_network_level_interface *inf)
 {
-  struct grub_net_buff nb;
-  grub_net_recv_ethernet_packet (inf, &nb, IP_ETHERTYPE);
-  ip_filter (&nb, inf);
+  struct grub_net_buff *nb;
+  nb = grub_netbuff_alloc (2048);
+  if (!nb)
+    return grub_errno;
+  grub_net_recv_ethernet_packet (inf, nb, GRUB_NET_ETHERTYPE_IP);
+  ip_filter (nb, inf);
   return GRUB_ERR_NONE;
 }
