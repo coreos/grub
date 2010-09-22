@@ -4,7 +4,6 @@
 #include <grub/net/ip.h>
 #include <grub/net/arp.h>
 #include <grub/net/netbuff.h>
-#include <grub/net/interface.h>
 #include <grub/net.h>
 #include <grub/time.h>
 #include <grub/net/arp.h>

@@ -2,8 +2,6 @@
 #include <grub/misc.h>
 #include <grub/net/arp.h>
 #include <grub/net/ethernet.h>
-#include <grub/net/interface.h>
-#include <grub/net/type_net.h>
 #include <grub/net.h>
 #include <grub/net/netbuff.h>
 #include <grub/mm.h>

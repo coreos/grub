@@ -23,9 +23,8 @@
 #include <grub/err.h>
 #include <grub/list.h>
 #include <grub/fs.h>
+#include <grub/mm.h>
 #include <grub/net/netbuff.h>
-#include <grub/net/type_net.h>
-#include <grub/net/protocol.h>
 
 typedef struct grub_fs *grub_net_app_level_t;
 

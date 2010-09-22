@@ -2,7 +2,6 @@
 #define GRUB_NET_ARP_HEADER	1
 #include <grub/misc.h>
 #include <grub/net.h>
-#include <grub/net/protocol.h>
 
 /* IANA ARP constant to define hardware type as ethernet */
 #define ARPHRD_ETHERNET 1

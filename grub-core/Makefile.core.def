@@ -1438,7 +1438,6 @@ module = {
   common = net/udp.c;
   common = net/ethernet.c;
   common = net/arp.c;
-  common = net/interface.c;
   common = net/netbuff.c;
 };
 

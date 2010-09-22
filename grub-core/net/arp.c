@@ -1,6 +1,5 @@
 #include <grub/net/arp.h>
 #include <grub/net/netbuff.h>
-#include <grub/net/interface.h>
 #include <grub/mm.h>
 #include <grub/net.h>
 #include <grub/net/ethernet.h>
@@ -92,7 +91,7 @@ grub_net_arp_resolve(struct grub_net_network_level_interface *inf,
           return GRUB_ERR_NONE;
         }
       current_time =  grub_get_time_ms();
-      if (current_time -  start_time > TIMEOUT_TIME_MS)
+      if (current_time -  start_time > 3000)
         break;
     } while (! entry);
   grub_netbuff_clear(nb); 

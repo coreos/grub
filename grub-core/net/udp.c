@@ -1,10 +1,7 @@
 #include <grub/net.h>
 #include <grub/net/udp.h>
 #include <grub/net/ip.h>
-#include <grub/net/type_net.h>
 #include <grub/net/netbuff.h>
-#include <grub/net/protocol.h>
-#include <grub/net/interface.h>
 #include <grub/time.h>
 
 grub_err_t
