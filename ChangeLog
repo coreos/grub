@@ -1,3 +1,7 @@
+2010-09-23  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* grub-core/commands/acpihalt.c (get_sleep_type): Initialize prev.
+
 2010-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support xz compression on yeeloong.

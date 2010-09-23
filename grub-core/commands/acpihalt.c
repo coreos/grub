@@ -136,7 +136,7 @@ skip_ext_op (const grub_uint8_t *ptr, const grub_uint8_t *end)
 static int
 get_sleep_type (grub_uint8_t *table, grub_uint8_t *end)
 {
-  grub_uint8_t *ptr, *prev;
+  grub_uint8_t *ptr, *prev = table;
   int sleep_type = -1;
   
   ptr = table + sizeof (struct grub_acpi_table_header);
