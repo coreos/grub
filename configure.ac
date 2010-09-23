@@ -849,6 +849,12 @@ fi
 
 AC_SUBST([LIBDEVMAPPER])
 
+AC_CHECK_LIB([lzma], [lzma_code],
+             [LIBLZMA="-llzma"
+              AC_DEFINE([HAVE_LIBLZMA], [1],
+                        [Define to 1 if you have the LZMA library.])],)
+AC_SUBST([LIBLZMA])
+
 AC_CHECK_LIB([zfs], [libzfs_init],
              [LIBZFS="-lzfs"
               AC_DEFINE([HAVE_LIBZFS], [1],

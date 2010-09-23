@@ -31,7 +31,9 @@
 struct xz_dec_hash {
 	vli_type unpadded;
 	vli_type uncompressed;
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	uint8_t *crc32_context;
+#endif
 };
 
 struct xz_dec {
@@ -247,9 +249,11 @@ static enum xz_ret dec_block(struct xz_dec *s, struct xz_buf *b)
 				> s->block_header.uncompressed)
 		return XZ_DATA_ERROR;
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	if (s->has_crc32)
 	  GRUB_MD_CRC32->write(s->crc32_context,b->out + s->out_start,
 				b->out_pos - s->out_start);
+#endif
 
 	if (ret == XZ_STREAM_END) {
 		if (s->block_header.compressed != VLI_UNKNOWN
@@ -269,8 +273,10 @@ static enum xz_ret dec_block(struct xz_dec *s, struct xz_buf *b)
 
 		s->block.hash.uncompressed += s->block.uncompressed;
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 		GRUB_MD_CRC32->write(s->block.hash.crc32_context,
 				(const uint8_t *)&s->block.hash, 2 * sizeof(vli_type));
+#endif
 
 		++s->block.count;
 	}
@@ -283,7 +289,9 @@ static void index_update(struct xz_dec *s, const struct xz_buf *b)
 {
 	size_t in_used = b->in_pos - s->in_start;
 	s->index.size += in_used;
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	GRUB_MD_CRC32->write(s->crc32_context,b->in + s->in_start, in_used);
+#endif
 }
 
 /*
@@ -328,8 +336,10 @@ static enum xz_ret dec_index(struct xz_dec *s, struct xz_buf *b)
 		case SEQ_INDEX_UNCOMPRESSED:
 			s->index.hash.uncompressed += s->vli;
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 			GRUB_MD_CRC32->write(s->index.hash.crc32_context,
 					(const uint8_t *)&s->index.hash, 2 * sizeof(vli_type));
+#endif
 
 			--s->index.count;
 			s->index.sequence = SEQ_INDEX_UNPADDED;
@@ -346,24 +356,30 @@ static enum xz_ret dec_index(struct xz_dec *s, struct xz_buf *b)
  */
 static enum xz_ret crc32_validate(struct xz_dec *s, struct xz_buf *b)
 {
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	if(s->crc32_temp == 0)
 	{
 	  GRUB_MD_CRC32->final(s->crc32_context);
 		s->crc32_temp = get_unaligned_be32(GRUB_MD_CRC32->read(s->crc32_context));
 	}
+#endif
 
 	do {
 		if (b->in_pos == b->in_size)
 			return XZ_OK;
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 		if (((s->crc32_temp >> s->pos) & 0xFF) != b->in[b->in_pos++])
 			return XZ_DATA_ERROR;
+#endif
 
 		s->pos += 8;
 
 	} while (s->pos < 32);
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	GRUB_MD_CRC32->init(s->crc32_context);
+#endif
 	s->crc32_temp = 0;
 	s->pos = 0;
 
@@ -376,6 +392,7 @@ static enum xz_ret dec_stream_header(struct xz_dec *s)
 	if (! memeq(s->temp.buf, HEADER_MAGIC, HEADER_MAGIC_SIZE))
 		return XZ_FORMAT_ERROR;
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	uint8_t crc32_context[GRUB_MD_CRC32->contextsize];
 
 	GRUB_MD_CRC32->init(crc32_context);
@@ -387,6 +404,7 @@ static enum xz_ret dec_stream_header(struct xz_dec *s)
 
 	if(resultcrc != readcrc)
 		return XZ_DATA_ERROR;
+#endif
 
 	/*
 	 * Decode the Stream Flags field. Of integrity checks, we support
@@ -407,6 +425,7 @@ static enum xz_ret dec_stream_footer(struct xz_dec *s)
 	if (! memeq(s->temp.buf + 10, FOOTER_MAGIC, FOOTER_MAGIC_SIZE))
 		return XZ_DATA_ERROR;
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	uint8_t crc32_context[GRUB_MD_CRC32->contextsize];
 
 	GRUB_MD_CRC32->init(crc32_context);
@@ -418,6 +437,7 @@ static enum xz_ret dec_stream_footer(struct xz_dec *s)
 
 	if(resultcrc != readcrc)
 		return XZ_DATA_ERROR;
+#endif
 
 	/*
 	 * Validate Backward Size. Note that we never added the size of the
@@ -447,7 +467,7 @@ static enum xz_ret dec_block_header(struct xz_dec *s)
 	 * eight bytes so this is safe.
 	 */
 	s->temp.size -= 4;
-
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	uint8_t crc32_context[GRUB_MD_CRC32->contextsize];
 
 	GRUB_MD_CRC32->init(crc32_context);
@@ -459,6 +479,7 @@ static enum xz_ret dec_block_header(struct xz_dec *s)
 
 	if (resultcrc != readcrc)
 		return XZ_DATA_ERROR;
+#endif
 
 	s->temp.pos = 2;
 
@@ -669,6 +690,7 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 			/* Finish the CRC32 value and Index size. */
 			index_update(s, b);
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 			/* Compare the hashes to validate the Index field. */
 			GRUB_MD_CRC32->final(s->block.hash.crc32_context);
 			GRUB_MD_CRC32->final(s->index.hash.crc32_context);
@@ -681,6 +703,7 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 			{
 				return XZ_DATA_ERROR;
 			}
+#endif
 
 			s->sequence = SEQ_INDEX_CRC32;
 
@@ -764,12 +787,22 @@ enum xz_ret xz_dec_run(struct xz_dec *s, struct xz_buf *b)
 	return ret;
 }
 
+#ifdef GRUB_EMBED_DECOMPRESSOR
+struct xz_dec decoder;
+#endif
+
 struct xz_dec * xz_dec_init(uint32_t dict_max)
 {
-	struct xz_dec *s = kmalloc(sizeof(*s), GFP_KERNEL);
+	struct xz_dec *s;
+#ifdef GRUB_EMBED_DECOMPRESSOR
+	s = &decoder;
+#else
+	s = kmalloc(sizeof(*s), GFP_KERNEL);
 	if (s == NULL)
 		return NULL;
+#endif
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	/* prepare CRC32 calculators */
 	if(GRUB_MD_CRC32 == NULL)
 	{
@@ -803,10 +836,11 @@ struct xz_dec * xz_dec_init(uint32_t dict_max)
 
 
 	GRUB_MD_CRC32->init(s->crc32_context);
-	s->crc32_temp = 0;
 	GRUB_MD_CRC32->init(s->index.hash.crc32_context);
 	GRUB_MD_CRC32->init(s->block.hash.crc32_context);
+#endif
 
+	s->crc32_temp = 0;
 
 	s->single_call = dict_max == 0;
 
@@ -828,7 +862,9 @@ error_lzma2:
 	xz_dec_bcj_end(s->bcj);
 error_bcj:
 #endif
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	kfree(s);
+#endif
 	return NULL;
 }
 
@@ -839,34 +875,45 @@ void xz_dec_reset(struct xz_dec *s)
 	s->pos = 0;
 
 	{
+#ifndef GRUB_EMBED_DECOMPRESSOR
 		uint8_t *t;
 		t = s->block.hash.crc32_context;
+#endif
 		memzero(&s->block, sizeof(s->block));
+#ifndef GRUB_EMBED_DECOMPRESSOR
 		s->block.hash.crc32_context = t;
 		t = s->index.hash.crc32_context;
+#endif
 		memzero(&s->index, sizeof(s->index));
+#ifndef GRUB_EMBED_DECOMPRESSOR
 		s->index.hash.crc32_context = t;
+#endif
 	}
 	s->temp.pos = 0;
 	s->temp.size = STREAM_HEADER_SIZE;
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	GRUB_MD_CRC32->init(s->crc32_context);
-	s->crc32_temp = 0;
 	GRUB_MD_CRC32->init(s->index.hash.crc32_context);
 	GRUB_MD_CRC32->init(s->block.hash.crc32_context);
-
+#endif
+	s->crc32_temp = 0;
 }
 
 void xz_dec_end(struct xz_dec *s)
 {
 	if (s != NULL) {
 		xz_dec_lzma2_end(s->lzma2);
+#ifndef GRUB_EMBED_DECOMPRESSOR
 		kfree(s->index.hash.crc32_context);
 		kfree(s->block.hash.crc32_context);
 		kfree(s->crc32_context);
+#endif
 #ifdef XZ_DEC_BCJ
 		xz_dec_bcj_end(s->bcj);
 #endif
+#ifndef GRUB_EMBED_DECOMPRESSOR
 		kfree(s);
+#endif
 	}
 }

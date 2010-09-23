@@ -520,9 +520,18 @@ enum xz_ret xz_dec_bcj_run(struct xz_dec_bcj *s,
 	return s->ret;
 }
 
+#ifdef GRUB_EMBED_DECOMPRESSOR
+struct xz_dec_bcj bcj;
+#endif
+
 struct xz_dec_bcj * xz_dec_bcj_create(bool single_call)
 {
-	struct xz_dec_bcj *s = kmalloc(sizeof(*s), GFP_KERNEL);
+	struct xz_dec_bcj *s;
+#ifdef GRUB_EMBED_DECOMPRESSOR
+	s = &bcj;
+#else
+	s = kmalloc(sizeof(*s), GFP_KERNEL);
+#endif
 	if (s != NULL)
 		s->single_call = single_call;
 

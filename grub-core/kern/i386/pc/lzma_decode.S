@@ -77,69 +77,6 @@
 #define RepLenCoder (LenCoder + kNumLenProbs)
 #define Literal (RepLenCoder + kNumLenProbs)
 
-
-#if 0
-
-DbgOut:
-	pushf
-	pushl	%ebp
-	pushl	%edi
-	pushl	%esi
-	pushl	%edx
-	pushl	%ecx
-	pushl	%ebx
-	pushl	%eax
-
-	call	_DebugPrint
-
-	popl	%eax
-	popl	%ebx
-	popl	%ecx
-	popl	%edx
-	popl	%esi
-	popl	%edi
-	popl	%ebp
-	popf
-
-	ret
-
-
-/*
- * int LzmaDecodeProperties(CLzmaProperties *propsRes,
- *                          const unsigned char *propsData,
- *                          int size);
- */
-
-_LzmaDecodePropertiesA:
-	movb	(%edx), %dl
-
-	xorl	%ecx, %ecx
-1:
-	cmpb	$45, %dl
-	jb	2f
-	incl	%ecx
-	subb	$45, %dl
-	jmp	1b
-2:
-	movl	%ecx, 8(%eax)		/* pb */
-	xorl	%ecx, %ecx
-1:
-	cmpb	$9, %dl
-	jb	2f
-	incl	%ecx
-	subb	$9, %dl
-2:
-	movl	%ecx, 4(%eax)		/* lp */
-	movb	%dl, %cl
-	movl	%ecx, (%eax)		/* lc */
-
-#endif
-
-#ifndef ASM_FILE
-	xorl	%eax, %eax
-#endif
-	ret
-
 #define out_size	8(%ebp)
 
 #define now_pos		-4(%ebp)

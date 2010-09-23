@@ -1100,10 +1100,16 @@ enum xz_ret xz_dec_lzma2_run(
 	return XZ_OK;
 }
 
+#ifdef GRUB_EMBED_DECOMPRESSOR
+#include <grub/decompressor.h>
+static struct xz_dec_lzma2 lzma2;
+#endif
+
 struct xz_dec_lzma2 * xz_dec_lzma2_create(uint32_t dict_max)
 {
 	struct xz_dec_lzma2 *s;
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	/* Maximum supported dictionary by this implementation is 3 GiB. */
 	if (dict_max > ((uint32_t)3 << 30))
 		return NULL;
@@ -1120,6 +1126,11 @@ struct xz_dec_lzma2 * xz_dec_lzma2_create(uint32_t dict_max)
 		}
 	}
 
+#else
+	s = &lzma2;
+	s->dict.buf = grub_decompressor_scratch;
+#endif
+
 	s->dict.allocated = dict_max;
 
 	return s;
@@ -1135,6 +1146,7 @@ enum xz_ret xz_dec_lzma2_reset(
 	s->dict.size = 2 + (props & 1);
 	s->dict.size <<= (props >> 1) + 11;
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	if (s->dict.allocated > 0 && s->dict.allocated < s->dict.size)
 	{
 		/* enlarge dictionary buffer */
@@ -1146,7 +1158,7 @@ enum xz_ret xz_dec_lzma2_reset(
 		s->dict.buf = newdict;
 		s->dict.allocated = s->dict.size;
 	}
-
+#endif
 	s->dict.end = s->dict.size;
 
 	s->lzma.len = 0;
@@ -1159,10 +1171,12 @@ enum xz_ret xz_dec_lzma2_reset(
 	return XZ_OK;
 }
 
-void xz_dec_lzma2_end(struct xz_dec_lzma2 *s)
+void xz_dec_lzma2_end(struct xz_dec_lzma2 *s __attribute__ ((unused)))
 {
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	if (s->dict.allocated > 0)
 		vfree(s->dict.buf);
 
 	kfree(s);
+#endif
 }

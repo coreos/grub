@@ -1,3 +1,47 @@
+2010-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support xz compression on yeeloong.
+
+	* Makefile.util.def (grub-mkimage): Add $(LIBLZMA).
+	* configure.ac: Check for LZMA.
+	* grub-core/Makefile.core.def (xz_decompress): New target.
+	(none_decompress): Likewise.
+	* grub-core/boot/decompressor/minilib.c: New file.
+	* grub-core/boot/decompressor/none.c: Likewise.
+	* grub-core/boot/decompressor/xz.c: Likewise.
+	* grub-core/kern/mips/cache.S: Change to noreorder nomacro.
+	* grub-core/kern/mips/cache_flush.S: Likewise.
+	* grub-core/kern/i386/pc/lzma_decode.S: Remove dead code.
+	* grub-core/kern/mips/startup.S: Move first stage to ...
+	* grub-core/boot/mips/startup_raw.S: ...here. Change to noreorder
+	nomacro.
+	* grub-core/kern/mips/startup.S: Change to noreorder nomacro.
+	* grub-core/lib/mips/relocator_asm.S: Change to noreorder nomacro.
+	* grub-core/lib/xzembed/xz_dec_bcj.c [GRUB_EMBED_DECOMPRESSOR]:
+	Allocate statically.
+	* grub-core/lib/xzembed/xz_dec_lzma2.c [GRUB_EMBED_DECOMPRESSOR]:
+	Allocate statically or use scratch. Don't check CRC32.
+	* grub-core/lib/xzembed/xz_dec_stream.c [GRUB_EMBED_DECOMPRESSOR]:
+	Allocate statically. Don't check CRC32.
+	* include/grub/decompressor.h: New file.
+	* include/grub/offsets.h (GRUB_KERNEL_MIPS_YEELOONG_RAW_SIZE):
+	Removed.
+	(GRUB_KERNEL_MIPS_YEELOONG_UNCOMPRESSED_SIZE): New field.
+	(GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE): Adjusted.
+	(GRUB_KERNEL_MIPS_YEELOONG_PREFIX): Likewise.
+	(GRUB_KERNEL_MIPS_YEELOONG_PREFIX_END): Likewise.
+	(GRUB_KERNEL_MACHINE_UNCOMPRESSED_SIZE): New define.
+	* util/grub-mkimage.c (grub_compression_t): New type.
+	(PLATFORM_FLAGS_DECOMPRESSORS): New flag.
+	(image_target_desc): New field default_compression.
+	(image_targets): Adjust yeeloong targets.
+	(compress_kernel_xz) [HAVE_LIBLZMA]: New function.
+	(compress_kernel): New parameter comp.
+	(generate_image): Likewise. Handle new compression case.
+	(options): New option --compression
+	(help): Likewise.
+	(main): Handle new option.
+
 2010-09-22  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* grub-core/kern/emu/hostdisk.c [__NetBSD__]: Define FLOPPY_MAJOR.
@@ -14,7 +58,7 @@
 
 2010-09-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	Implement EFI and ACPI multiboot2 extensions.	
+	Implement EFI and ACPI multiboot2 extensions.
 
 	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_load): Declare
 	new tags as supported.
@@ -22,7 +66,7 @@
 	(grub_multiboot_get_mbi_size): Take new tags into account.
 	(grub_multiboot_make_mbi): Add new tags.
 	* include/grub/multiboot.h (GRUB_MACHINE_HAS_ACPI): New definition.
-	
+
 2010-09-21  Aleš Nesrsta <starous@volny.cz>
 
 	* grub-core/bus/usb/serial/common.c (grub_usbserial_attach):

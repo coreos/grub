@@ -108,6 +108,7 @@ program = {
   extra_dist = util/grub-mkimagexx.c;
 
   ldadd = libgrub.a;
+  ldadd = '$(LIBLZMA)';
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
   ldadd = grub-core/gnulib/libgnu.a;
   cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibrootdir)\"';
