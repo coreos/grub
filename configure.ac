@@ -235,6 +235,7 @@ AC_PROG_LEX
 AC_PROG_YACC
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
+AC_PROG_LN_S
 
 if test "x$LEX" = "x:"; then
   AC_MSG_ERROR([flex is not found])

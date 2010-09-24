@@ -1,3 +1,50 @@
+2010-09-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	Re-enable grub-extras.
+
+	* autogen.sh: Create symlinks to ${GRUB_CONTRIB} if necessary to
+	avoid confusing Automake.  Run autogen only twice, once for the top
+	level and once for grub-core.  Add Makefile.util.def and
+	Makefile.core.def from extra modules to the appropriate autogen
+	invocations.  If Makefile.common exists in an extra module, include
+	it in both Makefile.util.am and grub-core/Makefile.core.am;
+	similarly, include any Makefile.util.common file in Makefile.util.am
+	and any Makefile.core.common file in grub-core/Makefile.core.am.
+	* conf/Makefile.common ($(top_srcdir)/grub-core/Makefile.core.am):
+	Depend on $(top_srcdir)/grub-core/Makefile.gcry.def.
+	($(top_srcdir)/grub-core/Makefile.gcry.def): Remove.
+	* grub-core/Makefile.am: Remove inclusion of Makefile.gcry.am.
+
+	* gentpl.py (gvar_add): Turn GVARS into a set.
+	(global_variable_initializers): Sort global variables on output.
+	(vars_init): New function.
+	(first_time): Likewise.
+	(library): Ensure that non-global variable initialisations are
+	emitted before the first time we emit code for a library block.
+	Append to variables rather than setting them.  Only emit
+	noinst_LIBRARIES, BUILT_SOURCES, and CLEANFILES the first time for
+	each conditional path.
+	(program): installdir() emits an Autogen macro, so must be passed to
+	var_add rather than gvar_add.
+	(data): Likewise.
+	(script): Likewise.
+	(rules): New function, centralising handling for different target
+	types.  Set up Guile association lists for first_time and vars_init,
+	and send most output to a diversion so that variable initialisations
+	can be emitted first.
+	(module_rules): Use new rules function.
+	(kernel_rules): Likewise.
+	(image_rules): Likewise.
+	(library_rules): Likewise.
+	(program_rules): Likewise.
+	(script_rules): Likewise.
+	(data_rules): Likewise.
+
+	* configure.ac: Add AC_PROG_LN_S, for the benefit of ntldr-img.
+
+	* .bzrignore: Add contrib and grub-core/contrib.  Remove
+	grub-core/Makefile.gcry.am.
+
 2010-09-24  Yves Blusseau  <blusseau@zetam.org>
 
 	* grub-core/lib/LzFind.c: Add missing include.

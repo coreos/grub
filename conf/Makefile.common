@@ -146,11 +146,7 @@ $(top_srcdir)/Makefile.util.am: $(top_srcdir)/Makefile.util.def $(top_srcdir)/Ma
 	mv $@.new $@
 
 .PRECIOUS: $(top_srcdir)/grub-core/Makefile.core.am
-$(top_srcdir)/grub-core/Makefile.core.am: $(top_srcdir)/grub-core/Makefile.core.def $(top_srcdir)/Makefile.tpl
-	autogen -T $(top_srcdir)/Makefile.tpl $< | sed -e '/^$$/{N;/^\\n$$/D;}' > $@.new || (rm -f $@.new; exit 1)
-	mv $@.new $@
-
-.PRECIOUS: $(top_srcdir)/grub-core/Makefile.gcry.am
-$(top_srcdir)/grub-core/Makefile.gcry.am: $(top_srcdir)/grub-core/Makefile.gcry.def $(top_srcdir)/Makefile.tpl
-	autogen -T $(top_srcdir)/Makefile.tpl $< | sed -e '/^$$/{N;/^\\n$$/D;}' > $@.new || (rm -f $@.new; exit 1)
+$(top_srcdir)/grub-core/Makefile.core.am: $(top_srcdir)/grub-core/Makefile.core.def $(top_srcdir)/grub-core/Makefile.gcry.def $(top_srcdir)/Makefile.tpl
+	if [ "x$$GRUB_CONTRIB" != x ]; then echo "You need to run ./autogen.sh manually." >&2; exit 1; fi
+	autogen -T $(top_srcdir)/Makefile.tpl $(top_srcdir)/grub-core/Makefile.core.def $(top_srcdir)/grub-core/Makefile.gcry.def | sed -e '/^$$/{N;/^\\n$$/D;}' > $@.new || (rm -f $@.new; exit 1)
 	mv $@.new $@

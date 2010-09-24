@@ -70,22 +70,31 @@ for platform in GRUB_PLATFORMS:
 #
 # Global variables
 #
-GVARS = []
+GVARS = set()
 
 def gvar_add(var, value):
-    if var not in GVARS:
-        GVARS.append(var)
+    GVARS.add(var)
     return var + " += " + value + "\n"
 
 def global_variable_initializers():
     r = ""
-    for var in GVARS:
+    for var in sorted(GVARS):
         r += var + " ?= \n"
     return r
 
 #
 # Per PROGRAM/SCRIPT variables 
 #
+
+def vars_init(*var_list):
+    r = "[+ IF (if (not (assoc-ref seen-vars (get \".name\"))) \"seen\") +]"
+    r += "[+ (out-suspend \"v\") +]"
+    for var in var_list:
+        r += var + "  = \n"
+    r += "[+ (out-resume \"v\") +]"
+    r += "[+ (set! seen-vars (assoc-set! seen-vars (get \".name\") 0)) +]"
+    r += "[+ ENDIF +]"
+    return first_time(r)
 
 def var_set(var, value):
     return var + "  = " + value + "\n"
@@ -257,6 +266,15 @@ def platform_ccasflags(p): return platform_specific_values(p, "_ccasflags", "cca
 def platform_stripflags(p): return platform_specific_values(p, "_stripflags", "stripflags")
 def platform_objcopyflags(p): return platform_specific_values(p, "_objcopyflags", "objcopyflags")
 
+#
+# Emit snippet only the first time through for the current name.
+#
+def first_time(snippet):
+    r = "[+ IF (if (not (assoc-ref seen-target (get \".name\"))) \"seen\") +]"
+    r += snippet
+    r += "[+ ENDIF +]"
+    return r
+
 def module(platform):
     r = set_canonical_name_suffix(".module")
 
@@ -341,18 +359,25 @@ fi
 
 def library(platform):
     r = set_canonical_name_suffix("")
-    r += gvar_add("noinst_LIBRARIES", "[+ name +]")
-    r += var_set(cname() + "_SOURCES", platform_sources(platform))
-    r += var_set("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform))
-    r += var_set(cname() + "_CFLAGS", "$(AM_CFLAGS) $(CFLAGS_LIBRARY) " + platform_cflags(platform))
-    r += var_set(cname() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_LIBRARY) " + platform_cppflags(platform))
-    r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_LIBRARY) " + platform_ccasflags(platform))
-    # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
+
+    r += vars_init(cname() + "_SOURCES",
+                   "nodist_" + cname() + "_SOURCES",
+                   cname() + "_CFLAGS",
+                   cname() + "_CPPFLAGS",
+                   cname() + "_CCASFLAGS")
+    #              cname() + "_DEPENDENCIES")
+
+    r += first_time(gvar_add("noinst_LIBRARIES", "[+ name +]"))
+    r += var_add(cname() + "_SOURCES", platform_sources(platform))
+    r += var_add("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform))
+    r += var_add(cname() + "_CFLAGS", first_time("$(AM_CFLAGS) $(CFLAGS_LIBRARY) ") + platform_cflags(platform))
+    r += var_add(cname() + "_CPPFLAGS", first_time("$(AM_CPPFLAGS) $(CPPFLAGS_LIBRARY) ") + platform_cppflags(platform))
+    r += var_add(cname() + "_CCASFLAGS", first_time("$(AM_CCASFLAGS) $(CCASFLAGS_LIBRARY) ") + platform_ccasflags(platform))
+    # r += var_add(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
     r += gvar_add("EXTRA_DIST", extra_dist())
-    r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
-    r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
-
+    r += first_time(gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)"))
+    r += first_time(gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)"))
     return r
 
 def installdir(default="bin"):
@@ -376,7 +401,7 @@ def program(platform, test=False):
     r += gvar_add("check_PROGRAMS", "[+ name +]")
     r += gvar_add("TESTS", "[+ name +]")
     r += "[+ ELSE +]"
-    r += gvar_add(installdir() + "_PROGRAMS", "[+ name +]")
+    r += var_add(installdir() + "_PROGRAMS", "[+ name +]")
     r += "[+ IF mansection +]" + manpage() + "[+ ENDIF +]"
     r += "[+ ENDIF +]"
 
@@ -397,7 +422,7 @@ def program(platform, test=False):
 def data(platform):
     r  = gvar_add("EXTRA_DIST", platform_sources(platform))
     r += gvar_add("EXTRA_DIST", extra_dist())
-    r += gvar_add(installdir() + "_DATA", platform_sources(platform))
+    r += var_add(installdir() + "_DATA", platform_sources(platform))
     return r
 
 def script(platform):
@@ -405,7 +430,7 @@ def script(platform):
     r += gvar_add("check_SCRIPTS", "[+ name +]")
     r += gvar_add ("TESTS", "[+ name +]")
     r += "[+ ELSE +]"
-    r += gvar_add(installdir() + "_SCRIPTS", "[+ name +]")
+    r += var_add(installdir() + "_SCRIPTS", "[+ name +]")
     r += "[+ IF mansection +]" + manpage() + "[+ ENDIF +]"
     r += "[+ ENDIF +]"
 
@@ -418,33 +443,43 @@ chmod a+x [+ name +]
     r += gvar_add("dist_noinst_DATA", platform_sources(platform))
     return r
 
+def rules(target, closure):
+    # Create association lists for the benefit of first_time and vars_init.
+    r = "[+ (define seen-target '()) +]"
+    r += "[+ (define seen-vars '()) +]"
+    # Most output goes to a diversion.  This allows us to emit variable
+    # initializations before everything else.
+    r += "[+ (out-push-new) +]"
+
+    r += "[+ FOR " + target + " +]"
+    r += foreach_enabled_platform(
+        lambda p: under_platform_specific_conditionals(p, closure(p)))
+    # Remember that we've seen this target.
+    r += "[+ (set! seen-target (assoc-set! seen-target (get \".name\") 0)) +]"
+    r += "[+ ENDFOR +]"
+    r += "[+ (out-pop #t) +]"
+    return r
+
 def module_rules():
-    return "[+ FOR module +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, module(p))) + "[+ ENDFOR +]"
+    return rules("module", module)
 
 def kernel_rules():
-    return "[+ FOR kernel +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, kernel(p))) + "[+ ENDFOR +]"
+    return rules("kernel", kernel)
 
 def image_rules():
-    return "[+ FOR image +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, image(p))) + "[+ ENDFOR +]"
+    return rules("image", image)
 
 def library_rules():
-    return "[+ FOR library +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, library(p))) + "[+ ENDFOR +]"
+    return rules("library", library)
 
 def program_rules():
-    return "[+ FOR program +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, program(p))) + "[+ ENDFOR +]"
+    return rules("program", program)
 
 def script_rules():
-    return "[+ FOR script +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, script(p))) + "[+ ENDFOR +]"
+    return rules("script", script)
 
 def data_rules():
-    return "[+ FOR data +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, data(p))) + "[+ ENDFOR +]"
+    return rules("data", data)
 
 print "[+ AutoGen5 template +]\n"
 a = module_rules()
