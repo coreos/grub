@@ -583,6 +583,7 @@ program = {
   common = grub-core/tests/lib/test.c;
   cflags = -Wno-format;
   ldadd = libgrub.a;
+  ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBDEVMAPPER)';
 };
 

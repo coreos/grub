@@ -1,3 +1,8 @@
+2010-09-24  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* Makefile.util.def (example_unit_test): Add
+	grub-core/gnulib/libgnu.a.
+
 2010-09-23  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* grub-core/commands/acpihalt.c (get_sleep_type): Initialize prev.
