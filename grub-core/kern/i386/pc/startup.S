@@ -100,6 +100,8 @@ VARIABLE(grub_install_dos_part)
 	.long	0xFFFFFFFF
 VARIABLE(grub_install_bsd_part)
 	.long	0xFFFFFFFF
+reed_solomon_redundancy:
+	.long	0
 
 #ifdef APPLE_CC
 bss_start:

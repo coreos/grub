@@ -34,11 +34,16 @@
 /* The offset of GRUB_INSTALL_BSD_PART.  */
 #define GRUB_KERNEL_I386_PC_INSTALL_BSD_PART	0x18
 
+/* Offset of reed_solomon_redundancy.  */
+#define GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY	0x1c
+
 /* The offset of multiboot signature.  */
-#define GRUB_KERNEL_I386_PC_MULTIBOOT_SIGNATURE 0x1c
+#define GRUB_KERNEL_I386_PC_MULTIBOOT_SIGNATURE 0x20
 
 /* The size of the first region which won't be compressed.  */
-#define GRUB_KERNEL_I386_PC_RAW_SIZE		0x5D8
+#define GRUB_KERNEL_I386_PC_RAW_SIZE		0x5E0
+
+#define GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART 0x300
 
 /* The offset of GRUB_PREFIX.  */
 #define GRUB_KERNEL_I386_PC_PREFIX		GRUB_KERNEL_I386_PC_RAW_SIZE

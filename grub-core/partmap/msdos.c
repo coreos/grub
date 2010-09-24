@@ -145,9 +145,9 @@ grub_partition_msdos_iterate (grub_disk_t disk,
 
 #ifdef GRUB_UTIL
 static grub_err_t
-pc_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
+pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 			grub_embed_type_t embed_type,
-			grub_disk_addr_t *sectors)
+			grub_disk_addr_t **sectors)
 {
   grub_disk_addr_t end = ~0ULL;
   struct grub_msdos_partition_mbr mbr;
@@ -232,11 +232,15 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
 	break;
     }
 
-  if (end >= nsectors + 1)
+  if (end >= *nsectors + 1)
     {
       int i;
-      for (i = 0; i < nsectors; i++)
-	sectors[i] = 1 + i;
+      *nsectors = end - 1;
+      *sectors = grub_malloc (*nsectors * sizeof (**sectors));
+      if (!*sectors)
+	return grub_errno;
+      for (i = 0; i < *nsectors; i++)
+	(*sectors)[i] = 1 + i;
       return GRUB_ERR_NONE;
     }
 
@@ -245,7 +249,7 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
 		       "This msdos-style partition label has no "
 		       "post-MBR gap; embedding won't be possible!");
 
-  if (nsectors > 62)
+  if (*nsectors > 62)
     return grub_error (GRUB_ERR_OUT_OF_RANGE,
 		       "Your core.img is unusually large.  "
 		       "It won't fit in the embedding area.");
