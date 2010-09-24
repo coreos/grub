@@ -1,3 +1,16 @@
+2010-09-24  Yves Blusseau  <blusseau@zetam.org>
+
+	* grub-core/lib/LzFind.c: Add missing include.
+	* grub-core/lib/LzmaEnc.c: Likewise.
+	* grub-core/script/lexer.c: Likewise.
+	* grub-core/script/yylex.l: Likewise.
+	* util/grub-macho2img.c: Likewise.
+	* util/grub-menulst2cfg.c: Likewise.
+	* util/grub-mklayout.c: Likewise.
+	* util/grub-mkpasswd-pbkdf2.c
+	* util/grub-mkrelpath.c: Likewise.
+	* util/resolve.c: Likewise.
+
 2010-09-24  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* Makefile.util.def (example_unit_test): Add

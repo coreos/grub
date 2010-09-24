@@ -16,6 +16,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
+
 #include <grub/types.h>
 #include <grub/crypto.h>
 #include <grub/emu/misc.h>
