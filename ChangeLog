@@ -1,3 +1,11 @@
+2010-09-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix grub-emu build.
+
+	* grub-core/kern/emu/main.c: Remove #include <getopt.h>.
+	* grub-core/kern/emu/full.c: Split grub_mdraid_{init,fini} into
+	mdraid09 and mdraid1x.
+
 2010-09-24  Colin Watson  <cjwatson@ubuntu.com>
 
 	Re-enable grub-extras.
