@@ -50,7 +50,7 @@ grub_script.yy.h: script/yylex.l
 grub_script.yy.c: grub_script.yy.h
 
 rs_decoder.S: $(srcdir)/lib/reed_solomon.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -I$(top_builddir) -S -DSTANDALONE -o $@ $< -g0
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -I$(top_builddir) -S -DSTANDALONE -o $@ $< -g0 -mregparm=3
 
 CLEANFILES += grub_script.yy.c grub_script.yy.h
 
