@@ -412,8 +412,6 @@ grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
   gf_single_t *ptr = buffer;
   gf_single_t *rptr = ptr + s;
 
-  grub_printf ("solomon: %p, %x, %x\n", buffer, data_size, redundancy);
-
   while (s > 0)
     {
       grub_size_t tt;
