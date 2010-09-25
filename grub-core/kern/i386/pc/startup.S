@@ -206,6 +206,22 @@ LOCAL (codestart):
 	incl	%eax
 	call	grub_gate_a20
 
+	movl	EXT_C(grub_kernel_image_size), %eax
+	addl	EXT_C(grub_total_module_size), %eax
+	movl    reed_solomon_redundancy, %ecx
+	leal    _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART, %edx
+	testl   %eax, %eax
+	jz post_reed_solomon
+	call    EXT_C (grub_reed_solomon_recover)
+	jmp post_reed_solomon
+
+#include "/home/phcoder/compile/grub-core/rs_decoder.S"
+
+	.text
+
+	. = _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART
+post_reed_solomon:
+
 #ifdef ENABLE_LZMA
 	movl	$GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %edi
 	movl	$(_start + GRUB_KERNEL_MACHINE_RAW_SIZE), %esi

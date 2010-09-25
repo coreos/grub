@@ -48,6 +48,10 @@ CLEANFILES += grub_script.tab.c grub_script.tab.h
 grub_script.yy.h: script/yylex.l
 	$(LEX) -o grub_script.yy.c --header-file=grub_script.yy.h $<
 grub_script.yy.c: grub_script.yy.h
+
+rs_decoder.S: $(srcdir)/lib/reed_solomon.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -I$(top_builddir) -S -DSTANDALONE -o $@ $<
+
 CLEANFILES += grub_script.yy.c grub_script.yy.h
 
 include $(srcdir)/Makefile.core.am
