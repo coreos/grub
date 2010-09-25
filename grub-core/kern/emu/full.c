@@ -65,7 +65,7 @@ grub_emu_post_init (void)
   grub_mdraid1x_fini ();
   grub_raid_fini ();
   grub_raid_init ();
-  grub_mdraid09_fini ();
-  grub_mdraid1x_fini ();
+  grub_mdraid09_init ();
+  grub_mdraid1x_init ();
   grub_lvm_init ();
 }

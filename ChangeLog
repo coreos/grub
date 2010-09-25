@@ -1,5 +1,9 @@
 2010-09-25  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	* grub-core/kern/emu/full.c (grub_emu_post_init):  Fix typo.
+
+2010-09-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	Fix grub-emu build.
 
 	* grub-core/kern/emu/main.c: Remove #include <getopt.h>.
