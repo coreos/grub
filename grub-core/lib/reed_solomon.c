@@ -55,10 +55,12 @@ typedef grub_uint8_t gf_single_t;
 typedef grub_uint16_t gf_double_t;
 #define GF_POLYNOMIAL 0x1d
 #define GF_INVERT2 0x8e
-#ifdef STANDALONE
-static char *scratch __attribute__ ((section(".text"))) = (void *) 0x100000;
+#if defined (STANDALONE) && !defined (TEST)
+static char *gf_invert __attribute__ ((section(".text"))) = (void *) 0x100000;
+static char *scratch __attribute__ ((section(".text"))) = (void *) 0x100100;
 #else
 static char *scratch;
+static grub_uint8_t gf_invert[256];
 #endif
 
 #define SECTOR_SIZE 512
@@ -84,8 +86,6 @@ gf_mul (gf_single_t a, gf_single_t b)
       res ^= ((gf_double_t) a) << i;
   return gf_reduce (res);
 }
-
-static grub_uint8_t gf_invert[256];
 
 static void
 init_inverts (void)
@@ -113,7 +113,7 @@ pol_evaluate (gf_single_t *pol, grub_size_t degree, gf_single_t x)
   return s;
 }
 
-#if !defined (STANDALONE) || defined (TEST)
+#if !defined (STANDALONE)
 static void
 rs_encode (gf_single_t *data, grub_size_t s, grub_size_t rs)
 {
@@ -382,7 +382,7 @@ decode_block (gf_single_t *ptr, grub_size_t s,
     }
 }
 
-#if !defined (STANDALONE) || defined (TEST)
+#if !defined (STANDALONE)
 static void
 encode_block (gf_single_t *ptr, grub_size_t s,
 	      gf_single_t *rptr, grub_size_t rs)
@@ -402,7 +402,7 @@ encode_block (gf_single_t *ptr, grub_size_t s,
 }
 #endif
 
-#if !defined (STANDALONE) || defined (TEST)
+#if !defined (STANDALONE)
 void
 grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
 				  grub_size_t redundancy)
@@ -411,6 +411,8 @@ grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
   grub_size_t rs = redundancy;
   gf_single_t *ptr = buffer;
   gf_single_t *rptr = ptr + s;
+
+  grub_printf ("solomon: %p, %x, %x\n", buffer, data_size, redundancy);
 
   while (s > 0)
     {
@@ -439,7 +441,7 @@ grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs)
   gf_single_t *ptr = ptr_;
   gf_single_t *rptr = ptr + s;
 
-#if defined (STANDALONE) && !defined (TEST)
+#if defined (STANDALONE)
   init_inverts ();
 #endif
 
@@ -475,7 +477,9 @@ main (int argc, char **argv)
   scratch = xmalloc (1048576);
 #endif
 
+#ifndef STANDALONE
   init_inverts ();
+#endif
 
   in = fopen ("tst.bin", "rb");
   if (!in)
@@ -487,6 +491,10 @@ main (int argc, char **argv)
   buf = xmalloc (s + rs + SECTOR_SIZE);
   fread (buf, 1, s, in);
 
+  s = 0x5fbb;
+  rs = 0x6af9;
+
+#if 0
   grub_reed_solomon_add_redundancy (buf, s, rs);
 
   out = fopen ("tst_rs.bin", "wb");
@@ -498,7 +506,9 @@ main (int argc, char **argv)
   out = fopen ("tst_dam.bin", "wb");
   fwrite (buf, 1, s + rs, out);
   fclose (out);
-
+#endif
+  s = 0x5fbb;
+  rs = 0x6af9;
   grub_reed_solomon_recover (buf, s, rs);
 
   out = fopen ("tst_rec.bin", "wb");

@@ -438,7 +438,7 @@ setup (const char *dir,
 		       0, GRUB_DISK_SECTOR_SIZE);
 
     block = first_block;
-    for (i = 1; i < core_sectors; i++)
+    for (i = 1; i < nsec; i++)
       save_blocklists (sectors[i] + grub_partition_get_start (container),
 		       0, GRUB_DISK_SECTOR_SIZE);
 
