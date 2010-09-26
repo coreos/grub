@@ -109,7 +109,7 @@ program = {
 
   ldadd = libgrub.a;
   ldadd = '$(LIBLZMA)';
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
   ldadd = grub-core/gnulib/libgnu.a;
   cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibrootdir)\"';
 };
@@ -121,7 +121,7 @@ program = {
   common = util/grub-mkrelpath.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
   ldadd = grub-core/gnulib/libgnu.a;
 };
 
@@ -132,7 +132,7 @@ program = {
   common = util/grub-script-check.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
   ldadd = grub-core/gnulib/libgnu.a;
 };
 
@@ -143,7 +143,7 @@ program = {
   common = util/grub-editenv.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
   ldadd = grub-core/gnulib/libgnu.a;
 };
 
@@ -154,7 +154,7 @@ program = {
   common = util/grub-mkpasswd-pbkdf2.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
   ldadd = grub-core/gnulib/libgnu.a;
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
@@ -190,7 +190,7 @@ program = {
   cppflags = '$(CPPFLAGS_GCRY)';
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
   ldadd = grub-core/gnulib/libgnu.a;
 };
 
@@ -203,7 +203,7 @@ program = {
   cflags = '$(freetype_cflags)';
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(freetype_libs)';
   condition = COND_GRUB_MKFONT;
@@ -222,7 +222,7 @@ program = {
   sparc64_ieee1275 = util/ieee1275/devicemap.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR)';
   ldadd = grub-core/gnulib/libgnu.a;
 };
 
@@ -233,7 +233,7 @@ program = {
   common = util/grub-probe.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR)';
   ldadd = grub-core/gnulib/libgnu.a;
 };
 
@@ -248,7 +248,7 @@ program = {
   sparc64_ieee1275 = util/ieee1275/ofpath.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR)';
   ldadd = grub-core/gnulib/libgnu.a;
 
   enable = i386_pc;
@@ -274,7 +274,7 @@ program = {
   common = util/grub-mklayout.c;
 
   ldadd = libgrub.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
   ldadd = grub-core/gnulib/libgnu.a;
 };
 
@@ -595,6 +595,6 @@ program = {
   common = grub-core/lib/i386/pc/vesa_modes_table.c;
 
   ldadd = libgrub.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER)';
+  ldflags = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
   ldadd = grub-core/gnulib/libgnu.a;
 };

@@ -1,3 +1,12 @@
+2010-09-26  Robert Millan  <rmh@gnu.org>
+
+	Build fixes for GNU/kFreeBSD.
+
+	* Makefile.util.def: Add `$(LIBZFS) $(LIBNVPAIR)' library dependencies
+	to programs that require ZFS conversion.
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_is_floppy): Support
+	kernels that don't have FLOPPY_MAJOR.
+
 2010-09-25  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* grub-core/kern/emu/full.c (grub_emu_post_init):  Fix typo.
