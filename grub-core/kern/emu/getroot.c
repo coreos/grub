@@ -189,31 +189,40 @@ find_root_device_from_libzfs (const char *dir)
   {
     zpool_handle_t *zpool;
     libzfs_handle_t *libzfs;
-    nvlist_t *nvlist;
-    nvlist_t **nvlist_array;
+    nvlist_t *config, *vdev_tree;
+    nvlist_t **children, **path;
     unsigned int nvlist_count;
+    unsigned int i;
 
     libzfs = grub_get_libzfs_handle ();
     if (! libzfs)
       return NULL;
 
     zpool = zpool_open (libzfs, poolname);
-    nvlist = zpool_get_config (zpool, NULL);
+    config = zpool_get_config (zpool, NULL);
 
-    if (nvlist_lookup_nvlist (nvlist, "vdev_tree", &nvlist) != 0)
+    if (nvlist_lookup_nvlist (config, "vdev_tree", &vdev_tree) != 0)
       error (1, errno, "nvlist_lookup_nvlist (\"vdev_tree\")");
 
-    if (nvlist_lookup_nvlist_array (nvlist, "children", &nvlist_array, &nvlist_count) != 0)
+    if (nvlist_lookup_nvlist_array (vdev_tree, "children", &children, &nvlist_count) != 0)
       error (1, errno, "nvlist_lookup_nvlist_array (\"children\")");
+    assert (nvlist_count > 0);
 
-    do
+    while (nvlist_lookup_nvlist_array (children[0], "children",
+				       &children, &nvlist_count) == 0)
+      assert (nvlist_count > 0);
+
+    for (i = 0; i < nvlist_count; i++)
       {
-	assert (nvlist_count > 0);
-      } while (nvlist_lookup_nvlist_array (nvlist_array[0], "children",
-					   &nvlist_array, &nvlist_count) == 0);
+	if (nvlist_lookup_string (children[i], "path", &device) != 0)
+	  error (1, errno, "nvlist_lookup_string (\"path\")");
 
-    if (nvlist_lookup_string (nvlist_array[0], "path", &device) != 0)
-      error (1, errno, "nvlist_lookup_string (\"path\")");
+	struct stat st;
+	if (stat (device, &st) == 0)
+	  break;
+
+	device = NULL;
+      }
 
     zpool_close (zpool);
   }

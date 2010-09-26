@@ -1,5 +1,14 @@
 2010-09-26  Robert Millan  <rmh@gnu.org>
 
+	Support degraded ZFS arrays in "grub-probe -t device" resolution.
+
+	* grub-core/kern/emu/getroot.c (find_root_device_from_libzfs): When
+	the pool is an array of devices, iterate through it and return the
+	first device that passes a stat() test (instead of blindly returning
+	the first one).
+
+2010-09-26  Robert Millan  <rmh@gnu.org>
+
 	Build fixes for GNU/kFreeBSD.
 
 	* Makefile.util.def: Add `$(LIBZFS) $(LIBNVPAIR)' library dependencies
