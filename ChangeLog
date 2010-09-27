@@ -1,3 +1,10 @@
+2010-09-27  Yves Blusseau  <blusseau@zetam.org>
+
+	Fix generation of kernel_syms.lst
+
+	* grub-core/Makefile.am (kernel_syms.lst): Fix value and position of
+	ASM_PREFIX
+
 2010-09-26  Robert Millan  <rmh@gnu.org>
 
 	Support degraded ZFS arrays in "grub-probe -t device" resolution.
