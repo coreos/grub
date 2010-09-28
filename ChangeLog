@@ -1,3 +1,8 @@
+2010-09-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_make_mbi): Fix
+	i386 and x86-64 definedness tests.
+
 2010-09-27  Yves Blusseau  <blusseau@zetam.org>
 
 	Fix generation of kernel_syms.lst
