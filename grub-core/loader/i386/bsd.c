@@ -1559,6 +1559,9 @@ grub_cmd_netbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 	  grub_memset (&serial, 0, sizeof (serial));
 	  grub_strcpy (serial.devname, "com");
 
+	  serial.addr = grub_ns8250_hw_get_port (0);
+	  serial.speed = 9600;
+
 	  if (ctxt->state[NETBSD_SERIAL_ARG].arg)
 	    {
 	      ptr = ctxt->state[NETBSD_SERIAL_ARG].arg;
@@ -1581,7 +1584,7 @@ grub_cmd_netbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 		    return grub_errno;
 		}
 	    }
-	  
+
  	  grub_bsd_add_meta (NETBSD_BTINFO_CONSOLE, &serial, sizeof (serial));
 	}
       else
