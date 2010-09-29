@@ -1,5 +1,11 @@
 2010-09-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/i386/pc/lnxboot.S: Replace
+	GRUB_KERNEL_I386_PC_MULTIBOOT_SIGNATURE with
+	GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART.
+
+2010-09-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Write embedding zone using Reed-Solomon.
 
 	* Makefile.util.def (grub-setup): Add grub-core/lib/reed_solomon.c.
