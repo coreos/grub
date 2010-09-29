@@ -1,5 +1,10 @@
 2010-09-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_make_mbi]
+	[GRUB_MACHINE_EFI && __i386__]: Fix typo.
+
+2010-09-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix coreboot compilation.
 
 	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_get_mbi_size):
