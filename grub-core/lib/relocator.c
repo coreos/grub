@@ -586,8 +586,6 @@ malloc_in_range (struct grub_relocator *rel,
 	continue;
       do 
 	{
-	  grub_dprintf ("relocator", "free block %p+0x%lx\n",
-			p, (unsigned long) p->size);
 	  if (p->magic != GRUB_MM_FREE_MAGIC)
 	    grub_fatal (__FILE__":%d free magic broken at %p (0x%x)\n",
 			__LINE__, p, p->magic);
@@ -1504,7 +1502,8 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
 			grub_relocator_align,
 			rel->relocators_size, &movers_chunk, 1, 1))
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
-  rels = rels0 = grub_map_memory (movers_chunk.src, movers_chunk.size);
+  movers_chunk.srcv = rels = rels0
+    = grub_map_memory (movers_chunk.src, movers_chunk.size);
 
   if (relsize)
     *relsize = rel->relocators_size;

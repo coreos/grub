@@ -1,5 +1,11 @@
 2010-09-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/relocator.c (malloc_in_range): Trim too verbose
+	debug messages.
+	(grub_relocator_prepare_relocs): Set movers_chunk.srcv.
+
+2010-09-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/bsd.c (grub_cmd_netbsd): Provide default serial
 	parameters.
 
