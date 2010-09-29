@@ -1,5 +1,10 @@
 2010-09-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/arg.c (grub_arg_parse): Fix treating of all commands as
+	if they were BSD-style.
+
+2010-09-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/i386/pc/lnxboot.S: Replace
 	GRUB_KERNEL_I386_PC_MULTIBOOT_SIGNATURE with
 	GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART.
