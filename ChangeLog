@@ -1,5 +1,16 @@
 2010-09-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix coreboot compilation.
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_get_mbi_size):
+	Take VBE info into account even if only text is supported.
+	(fill_vbe_info): Take into account the case when only VGA text
+	is supported.
+	* include/grub/multiboot.h (GRUB_MACHINE_HAS_VBE): Set to zero
+	on coreboot, multiboot and qemu.
+
+2010-09-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/relocator.c (malloc_in_range): Trim too verbose
 	debug messages.
 	(grub_relocator_prepare_relocs): Set movers_chunk.srcv.

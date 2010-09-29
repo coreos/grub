@@ -187,6 +187,10 @@ grub_multiboot_load (grub_file_t file)
   return err;
 }
 
+#if GRUB_MACHINE_HAS_VBE || GRUB_MACHINE_HAS_VGA_TEXT
+#include <grub/i386/pc/vbe.h>
+#endif
+
 static grub_size_t
 grub_multiboot_get_mbi_size (void)
 {
@@ -196,7 +200,7 @@ grub_multiboot_get_mbi_size (void)
     + grub_get_multiboot_mmap_count () * sizeof (struct multiboot_mmap_entry)
     + elf_sec_entsize * elf_sec_num
     + 256 * sizeof (struct multiboot_color)
-#if GRUB_MACHINE_HAS_VBE
+#if GRUB_MACHINE_HAS_VBE || GRUB_MACHINE_HAS_VGA_TEXT
     + sizeof (struct grub_vbe_info_block)
     + sizeof (struct grub_vbe_mode_info_block)
 #endif
@@ -247,15 +251,17 @@ grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
   grub_mmap_iterate (hook);
 }
 
-#if GRUB_MACHINE_HAS_VBE
+#if GRUB_MACHINE_HAS_VBE || GRUB_MACHINE_HAS_VGA_TEXT
+
 static grub_err_t
 fill_vbe_info (struct multiboot_info *mbi, grub_uint8_t *ptrorig,
 	       grub_uint32_t ptrdest, int fill_generic)
 {
-  grub_vbe_status_t status;
   grub_uint32_t vbe_mode;
-  void *scratch = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
   struct grub_vbe_mode_info_block *mode_info;
+#if GRUB_MACHINE_HAS_VBE
+  grub_vbe_status_t status;
+  void *scratch = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
     
   status = grub_vbe_bios_get_controller_info (scratch);
   if (status != GRUB_VBE_STATUS_OK)
@@ -265,11 +271,18 @@ fill_vbe_info (struct multiboot_info *mbi, grub_uint8_t *ptrorig,
   grub_memcpy (ptrorig, scratch, sizeof (struct grub_vbe_info_block));
   ptrorig += sizeof (struct grub_vbe_info_block);
   ptrdest += sizeof (struct grub_vbe_info_block);
-  
+#else
+  mbi->vbe_control_info = 0;
+#endif
+
+#if GRUB_MACHINE_HAS_VBE  
   status = grub_vbe_bios_get_mode (scratch);
   vbe_mode = *(grub_uint32_t *) scratch;
   if (status != GRUB_VBE_STATUS_OK)
     return grub_error (GRUB_ERR_IO, "can't get VBE mode");
+#else
+  vbe_mode = 3;
+#endif
   mbi->vbe_mode = vbe_mode;
 
   mode_info = (struct grub_vbe_mode_info_block *) ptrorig;
@@ -284,18 +297,22 @@ fill_vbe_info (struct multiboot_info *mbi, grub_uint8_t *ptrorig,
     }
   else
     {
+#if GRUB_MACHINE_HAS_VBE  
       status = grub_vbe_bios_get_mode_info (vbe_mode, scratch);
       if (status != GRUB_VBE_STATUS_OK)
 	return grub_error (GRUB_ERR_IO, "can't get mode info");
       grub_memcpy (mode_info, scratch,
 		   sizeof (struct grub_vbe_mode_info_block));
+#endif
     }
   ptrorig += sizeof (struct grub_vbe_mode_info_block);
   ptrdest += sizeof (struct grub_vbe_mode_info_block);
-      
+
+#if GRUB_MACHINE_HAS_VBE        
   grub_vbe_bios_get_pm_interface (&mbi->vbe_interface_seg,
 				  &mbi->vbe_interface_off,
 				  &mbi->vbe_interface_len);
+#endif
   
   mbi->flags |= MULTIBOOT_INFO_VBE_INFO;
 

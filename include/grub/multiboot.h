@@ -53,13 +53,17 @@ grub_multiboot_add_elfsyms (grub_size_t num, grub_size_t entsize,
 grub_uint32_t grub_get_multiboot_mmap_count (void);
 grub_err_t grub_multiboot_set_video_mode (void);
 
-#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_QEMU)
-#include <grub/i386/pc/vbe.h>
-#define GRUB_MACHINE_HAS_VGA_TEXT 1
+/* FIXME: support coreboot as well.  */
+#if defined (GRUB_MACHINE_PCBIOS)
 #define GRUB_MACHINE_HAS_VBE 1
 #else
-#define GRUB_MACHINE_HAS_VGA_TEXT 0
 #define GRUB_MACHINE_HAS_VBE 0
+#endif
+
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_QEMU)
+#define GRUB_MACHINE_HAS_VGA_TEXT 1
+#else
+#define GRUB_MACHINE_HAS_VGA_TEXT 0
 #endif
 
 #if defined (GRUB_MACHINE_EFI) || defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MULTIBOOT)
