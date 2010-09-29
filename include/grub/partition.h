@@ -48,8 +48,9 @@ struct grub_partition_map
 				      const grub_partition_t partition));
 #ifdef GRUB_UTIL
   /* Determine sectors available for embedding.  */
-  grub_err_t (*embed) (struct grub_disk *disk, unsigned int nsectors,
-		       grub_embed_type_t embed_type, grub_disk_addr_t *sectors);
+  grub_err_t (*embed) (struct grub_disk *disk, unsigned int *nsectors,
+		       grub_embed_type_t embed_type,
+		       grub_disk_addr_t **sectors);
 #endif
 };
 typedef struct grub_partition_map *grub_partition_map_t;

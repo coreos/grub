@@ -124,9 +124,9 @@ gpt_partition_map_iterate (grub_disk_t disk,
 
 #ifdef GRUB_UTIL
 static grub_err_t
-gpt_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
+gpt_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 			 grub_embed_type_t embed_type,
-			 grub_disk_addr_t *sectors)
+			 grub_disk_addr_t **sectors)
 {
   grub_disk_addr_t start = 0, len = 0;
   unsigned i;
@@ -168,13 +168,17 @@ gpt_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
 		       "This GPT partition label has no BIOS Boot Partition;"
 		       " embedding won't be possible!");
 
-  if (len < nsectors)
+  if (len < *nsectors)
     return grub_error (GRUB_ERR_OUT_OF_RANGE,
 		       "Your BIOS Boot Partition is too small;"
 		       " embedding won't be possible!");
 
-  for (i = 0; i < nsectors; i++)
-    sectors[i] = start + i;
+  *nsectors = len;
+  *sectors = grub_malloc (*nsectors * sizeof (**sectors));
+  if (!*sectors)
+    return grub_errno;
+  for (i = 0; i < *nsectors; i++)
+    (*sectors)[i] = start + i;
 
   return GRUB_ERR_NONE;
 }

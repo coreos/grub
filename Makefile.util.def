@@ -244,6 +244,7 @@ program = {
   common = util/grub-setup.c;
   common = util/raid.c;
   common = util/lvm.c;
+  common = grub-core/lib/reed_solomon.c;
 
   sparc64_ieee1275 = util/ieee1275/ofpath.c;
 

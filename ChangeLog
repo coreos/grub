@@ -1,3 +1,27 @@
+2010-09-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Write embedding zone using Reed-Solomon.
+
+	* Makefile.util.def (grub-setup): Add grub-core/lib/reed_solomon.c.
+	* grub-core/Makefile.am (rs_decoder.S): New target.
+	(kern/i386/pc/startup.S): Depend on rs_decoder.S.
+	* grub-core/kern/i386/pc/startup.S (reed_solomon_redundancy): New field.
+	(multiboot): Move to RS part.
+	(post_reed_solomon): New label.
+	(grub_boot_drive): Move to non-RS part since it's modified in memory
+	on boot.
+	Include rs_decoder.S.
+	* grub-core/lib/reed_solomon.c: New file.
+	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY):
+	New definition.
+	(GRUB_KERNEL_I386_PC_MULTIBOOT_SIGNATURE): Removed.
+	(GRUB_KERNEL_I386_PC_RAW_SIZE): Updated.
+	(GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART): New definition.
+	* include/grub/partition.h (grub_partition_map): Change prototype of
+	embed to allow returning additional sectors.
+	* include/grub/reed_solomon.h: New file.
+	* util/grub-setup.c (setup): Handle Reed-Solomon.
+
 2010-09-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_make_mbi): Fix

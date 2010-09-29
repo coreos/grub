@@ -48,6 +48,7 @@
 #include <assert.h>
 #include <grub/emu/getroot.h>
 #include "progname.h"
+#include <grub/reed_solomon.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>
@@ -336,9 +337,10 @@ setup (const char *dir,
     grub_partition_t container = dest_dev->disk->partition;
     int multiple_partmaps = 0;
     grub_err_t err;
-    grub_disk_addr_t sectors[core_sectors];
+    grub_disk_addr_t *sectors;
     int i;
     grub_fs_t fs;
+    unsigned int nsec;
 
     /* Unlike root_dev, with dest_dev we're interested in the partition map even
        if dest_dev itself is a whole disk.  */
@@ -419,8 +421,11 @@ setup (const char *dir,
 	goto unable_to_embed;
       }
 
-    err = dest_partmap->embed (dest_dev->disk, core_sectors,
-			       GRUB_EMBED_PCBIOS, sectors);
+    nsec = core_sectors;
+    err = dest_partmap->embed (dest_dev->disk, &nsec,
+			       GRUB_EMBED_PCBIOS, &sectors);
+    if (nsec > 2 * core_sectors)
+      nsec = 2 * core_sectors;
     
     if (err)
       {
@@ -433,11 +438,25 @@ setup (const char *dir,
 		       0, GRUB_DISK_SECTOR_SIZE);
 
     block = first_block;
-    for (i = 1; i < core_sectors; i++)
+    for (i = 1; i < nsec; i++)
       save_blocklists (sectors[i] + grub_partition_get_start (container),
 		       0, GRUB_DISK_SECTOR_SIZE);
 
     write_rootdev (core_img, root_dev, boot_img, first_sector);
+
+    core_img = realloc (core_img, nsec * GRUB_DISK_SECTOR_SIZE);
+    first_block = (struct grub_boot_blocklist *) (core_img
+						  + GRUB_DISK_SECTOR_SIZE
+						  - sizeof (*block));
+
+    *(grub_uint32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
+			+ GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY)
+      = grub_host_to_target32 (nsec * GRUB_DISK_SECTOR_SIZE - core_size);
+
+    grub_reed_solomon_add_redundancy (core_img + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART + GRUB_DISK_SECTOR_SIZE,
+				      core_size - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART - GRUB_DISK_SECTOR_SIZE,
+				      nsec * GRUB_DISK_SECTOR_SIZE
+				      - core_size);
 
     /* Make sure that the second blocklist is a terminator.  */
     block = first_block - 1;
@@ -446,13 +465,12 @@ setup (const char *dir,
     block->segment = 0;
 
     /* Write the core image onto the disk.  */
-    for (i = 0; i < core_sectors; i++)
+    for (i = 0; i < nsec; i++)
       grub_disk_write (dest_dev->disk, sectors[i], 0,
-		       (core_size - i * GRUB_DISK_SECTOR_SIZE
-			< GRUB_DISK_SECTOR_SIZE) ? core_size
-		       - i * GRUB_DISK_SECTOR_SIZE
-		       : GRUB_DISK_SECTOR_SIZE,
+		       GRUB_DISK_SECTOR_SIZE,
 		       core_img + i * GRUB_DISK_SECTOR_SIZE);
+
+    grub_free (sectors);
 
     goto finish;
   }
