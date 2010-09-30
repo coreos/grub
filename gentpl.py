@@ -38,6 +38,11 @@ GROUPS["videoinkernel"] = ["mips_yeeloong"]
 GROUPS["videomodules"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["videoinkernel"]: GROUPS["videomodules"].remove(i)
 
+# Similar for terminfo
+GROUPS["terminfoinkernel"] = ["mips_yeeloong"] + GROUPS["ieee1275"];
+GROUPS["terminfomodule"]   = GRUB_PLATFORMS[:];
+for i in GROUPS["terminfoinkernel"]: GROUPS["terminfomodule"].remove(i)
+
 # Miscelaneous groups schedulded to disappear in future
 GROUPS["nosparc64"] = GRUB_PLATFORMS[:]; GROUPS["nosparc64"].remove("sparc64_ieee1275")
 GROUPS["i386_coreboot_multiboot_qemu"] = ["i386_coreboot", "i386_multiboot", "i386_qemu"]

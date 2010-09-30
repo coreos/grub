@@ -72,7 +72,7 @@ struct grub_extcmd;
 int grub_arg_parse (struct grub_extcmd *cmd, int argc, char **argv,
 		    struct grub_arg_list *usr, char ***args, int *argnum);
 
-void grub_arg_show_help (struct grub_extcmd *cmd);
+void EXPORT_FUNC(grub_arg_show_help) (struct grub_extcmd *cmd);
 struct grub_arg_list* grub_arg_list_alloc (struct grub_extcmd *cmd,
 					   int argc, char *argv[]);
 

@@ -1,3 +1,19 @@
+2010-09-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Put terminfo into core on ieee1275 and yeeloong (needed for console).
+
+	* gentpl.py: New groups terminfoinkernel and terminfomodule.
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Include extcmd.h, arg.h
+	and terminfo.h when needed.
+	* grub-core/Makefile.core.def (kernel): Include term/terminfo.c,
+	term/tparm.c, commands/extcmd.c, lib/arg.c on terminfokernel.
+	(terminfo): Enable only on terminfokernel.
+	(extcmd): Likewise.
+	* include/grub/extcmd.h: Add missing EXPORT_FUNC.
+	* include/grub/lib/arg.h: Likewise.
+	* grub-core/term/ieee1275/ofconsole.c (grub_ofconsole_dimensions): Fix
+	incorrect usage of ->.
+
 2010-09-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_make_mbi]

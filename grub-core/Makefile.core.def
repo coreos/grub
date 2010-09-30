@@ -92,10 +92,10 @@ kernel = {
   ieee1275 = kern/ieee1275/openfw.c;
   ieee1275 = term/ieee1275/ofconsole.c;
 
-  ieee1275 = term/terminfo.c;
-  ieee1275 = term/tparm.c;
-  mips = term/terminfo.c;
-  mips = term/tparm.c;
+  terminfoinkernel = term/terminfo.c;
+  terminfoinkernel = term/tparm.c;
+  terminfoinkernel = commands/extcmd.c;
+  terminfoinkernel = lib/arg.c;
 
   i386 = kern/i386/dl.c;
 
@@ -173,9 +173,7 @@ kernel = {
   emu = kern/emu/mm.c;
   emu = kern/emu/time.c;
 
-  videoinkernel = lib/arg.c;
   videoinkernel = term/gfxterm.c;
-  videoinkernel = commands/extcmd.c;
   videoinkernel = font/font.c;
   videoinkernel = font/font_cmd.c;
   videoinkernel = io/bufio.c;
@@ -542,6 +540,7 @@ module = {
   name = extcmd;
   common = commands/extcmd.c;
   common = lib/arg.c;
+  enable = terminfomodule;
 };
 
 module = {
@@ -1337,6 +1336,7 @@ module = {
   name = terminfo;
   common = term/terminfo.c;
   common = term/tparm.c;
+  enable = terminfomodule;
 };
 
 module = {
