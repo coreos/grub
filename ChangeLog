@@ -1,5 +1,10 @@
 2010-09-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gettext/gettext.c (grub_gettext_init_ext): Avoid using
+	mo_file after freeing.
+
+2010-09-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/term.c (read_terminal_list): Free in a right order.
 
 2010-09-30  Vladimir Serbinenko  <phcoder@gmail.com>

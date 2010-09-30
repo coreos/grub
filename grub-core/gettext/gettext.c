@@ -287,8 +287,10 @@ grub_gettext_init_ext (const char *lang)
   /* Will try adding .gz as well.  */
   if (fd_mo == NULL)
     {
-      grub_free (mo_file);
+      char *mo_file_old;
+      mo_file_old = mo_file;
       mo_file = grub_xasprintf ("%s.gz", mo_file);
+      grub_free (mo_file_old);
       if (!mo_file)
 	return;
       fd_mo = grub_mofile_open (mo_file);
