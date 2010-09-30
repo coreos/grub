@@ -1,5 +1,10 @@
 2010-09-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/script/execute.c (grub_script_execute_sourcecode): Set
+	flags.
+
+2010-09-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-setup.c (main) [GRUB_MACHINE_IEEE1275]: Propagate argp
 	usage.
 

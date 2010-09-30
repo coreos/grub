@@ -513,6 +513,7 @@ grub_script_execute_sourcecode (const char *source, int argc, char **args)
 
   new_scope.argv.argc = argc;
   new_scope.argv.args = args;
+  new_scope.flags = 0;
 
   old_scope = scope;
   scope = &new_scope;
