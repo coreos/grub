@@ -1,5 +1,9 @@
 2010-09-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/term.c (read_terminal_list): Free in a right order.
+
+2010-09-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/execute.c (grub_script_execute_sourcecode): Set
 	flags.
 

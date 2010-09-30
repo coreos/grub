@@ -376,8 +376,8 @@ read_terminal_list (const char *prefix)
       if (! cur->modname)
 	{
 	  grub_errno = GRUB_ERR_NONE;
-	  grub_free (cur);
 	  grub_free (cur->name);
+	  grub_free (cur);
 	  continue;
 	}
       cur->next = *target;
