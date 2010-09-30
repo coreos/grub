@@ -1,5 +1,10 @@
 2010-09-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-setup.c (main) [GRUB_MACHINE_IEEE1275]: Propagate argp
+	usage.
+
+2010-09-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Put terminfo into core on ieee1275 and yeeloong (needed for console).
 
 	* gentpl.py: New groups terminfoinkernel and terminfomodule.

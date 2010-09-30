@@ -838,10 +838,6 @@ main (int argc, char *argv[])
   int must_embed = 0;
   struct arguments arguments;
 
-#ifdef GRUB_MACHINE_IEEE1275
-  force = 1;
-#endif
-
   set_program_name (argv[0]);
 
   grub_util_init_nls ();
@@ -856,6 +852,10 @@ main (int argc, char *argv[])
       fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
       exit(1);
     }
+
+#ifdef GRUB_MACHINE_IEEE1275
+  arguments.force = 1;
+#endif
 
   if (verbosity > 1)
     grub_env_set ("debug", "all");
