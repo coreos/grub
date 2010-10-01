@@ -1,3 +1,8 @@
+2010-10-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/linux.c (DEFAULT_VIDEO_MODE) [GRUB_MACHINE_EFI]:
+	Set to "auto".
+
 2010-09-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/gettext/gettext.c (grub_gettext_init_ext): Avoid using

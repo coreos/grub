@@ -41,7 +41,7 @@
 #ifdef GRUB_MACHINE_EFI
 #include <grub/efi/efi.h>
 #define HAS_VGA_TEXT 0
-#define DEFAULT_VIDEO_MODE "800x600"
+#define DEFAULT_VIDEO_MODE "auto"
 #elif defined (GRUB_MACHINE_IEEE1275)
 #include <grub/ieee1275/ieee1275.h>
 #define HAS_VGA_TEXT 0
