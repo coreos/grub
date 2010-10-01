@@ -1,5 +1,17 @@
 2010-10-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Clear out 0x80 color bit on EFI.
+	Tested by: decoder
+	Reported by: decoder and meta tech.
+
+	* grub-core/term/efi/console.c (grub_console_standard_color): Removed.
+	(grub_console_setcolorstate): Clear out 0x80 bit.
+	Use GRUB_TERM_DEFAULT_STANDARD_COLOR.
+	(grub_console_output): Use GRUB_TERM_DEFAULT_NORMAL_COLOR.
+	Use GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR.
+
+2010-10-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/linux.c (DEFAULT_VIDEO_MODE) [GRUB_MACHINE_EFI]:
 	Set to "auto".
 
