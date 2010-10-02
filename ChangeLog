@@ -1,3 +1,10 @@
+2010-10-02  Aleš Nesrsta <starous@volny.cz>
+
+	* grub-core/bus/usb/ohci.c, grub-core/bus/usb/uhci.c:
+	Increased number of TDs.
+	* grub-core/bus/usb/usbtrans.c (grub_usb_bulk_setup_readwrite):
+	Corrected endpoint maxpacket size.
+
 2010-10-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Clear out 0x80 color bit on EFI.
