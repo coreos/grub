@@ -150,7 +150,7 @@ typedef enum
 #define GRUB_OHCI_RESET_CONNECT_CHANGE (1 << 16)
 #define GRUB_OHCI_CTRL_EDS 256
 #define GRUB_OHCI_BULK_EDS 510
-#define GRUB_OHCI_TDS 256
+#define GRUB_OHCI_TDS 640
 
 #define GRUB_OHCI_ED_ADDR_MASK 0x7ff
 
