@@ -1,3 +1,8 @@
+2010-10-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/i386/pc/startup.S (grub_console_getkey): Fix incorrect
+	handling of special keys.
+
 2010-10-02  Aleš Nesrsta <starous@volny.cz>
 
 	* include/grub/scsi.h (grub_make_scsi_id): Fix incorrect usgae of

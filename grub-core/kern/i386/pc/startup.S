@@ -615,6 +615,7 @@ LOCAL(bypass_table_end):
 
 FUNCTION(grub_console_getkey)
 	pushl	%ebp
+	pushl   %edi
 
 	call	prot_to_real
 	.code16
@@ -644,15 +645,16 @@ FUNCTION(grub_console_getkey)
 	jz      1f
 
 	andl	%edx, %eax
-	cmp     %eax, 0x20
+	cmpl    $0x20, %eax
 	ja      2f
 	movl	%edx, %eax
-	leal    LOCAL(bypass_table), %esi
+	leal    LOCAL(bypass_table), %edi
 	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) / 2), %ecx
-	repne cmpsw
+	repne scasw 
 	jz      3f
 
-	addl    $('a' - 1 | GRUB_TERM_CTRL), %eax
+	andl	$0xff, %eax
+	addl    $(('a' - 1) | GRUB_TERM_CTRL), %eax
 	jmp     2f
 3:
 	andl    $0xff, %eax
@@ -661,7 +663,8 @@ FUNCTION(grub_console_getkey)
 1:	movl    %edx, %eax
 	shrl    $8, %eax
 	orl     $GRUB_TERM_EXTENDED, %eax
-2:	
+2:
+	popl    %edi
 	popl	%ebp
 	ret
 
