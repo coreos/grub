@@ -669,6 +669,17 @@ AC_ARG_ENABLE([mm-debug],
               [AC_DEFINE([MM_DEBUG], [1],
                          [Define to 1 if you enable memory manager debugging.])])
 
+AC_ARG_ENABLE([cache-stats],
+	      AS_HELP_STRING([--enable-cache-stats],
+                             [enable disk cache statistics collection])])
+
+if test x$enable_cache_stats = xyes; then
+  DISK_CACHE_STATS=1
+else
+  DISK_CACHE_STATS=0
+fi
+AC_SUBST([DISK_CACHE_STATS])
+
 AC_ARG_ENABLE([grub-emu-usb],
 	      [AS_HELP_STRING([--enable-grub-emu-usb],
                              [build and install the `grub-emu' debugging utility with USB support (default=guessed)])])
@@ -922,6 +933,7 @@ AM_CONDITIONAL([COND_HAVE_FONT_SOURCE], [test x$FONT_SOURCE != x])
 AM_CONDITIONAL([COND_GRUB_PE2ELF], [test x$TARGET_OBJ2ELF != x])
 AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
+AM_CONDITIONAL([COND_ENABLE_CACHE_STATS], [test x$DISK_CACHE_STATS = x1])
 
 AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
 
@@ -982,6 +994,11 @@ if [ x"$enable_mm_debug" = xyes ]; then
 echo With memory debugging: Yes
 else
 echo With memory debugging: No
+fi
+if [ x"$enable_cache_stats" = xyes ]; then
+echo With disk cache statistics: Yes
+else
+echo With disk cache statistics: No
 fi
 if [ x"$efiemu_excuse" = x ]; then
 echo efiemu runtime: Yes

@@ -1502,3 +1502,9 @@ module = {
   common = commands/keylayouts.c;
   enable = videomodules;
 };
+
+module = {
+  name = cacheinfo;
+  common = commands/cacheinfo.c;
+  condition = COND_ENABLE_CACHE_STATS;
+};

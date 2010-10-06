@@ -50,7 +50,7 @@ grub_err_t (* grub_disk_ata_pass_through) (grub_disk_t,
 	    struct grub_disk_ata_pass_through_parms *);
 
 
-#if 0
+#if DISK_CACHE_STATS
 static unsigned long grub_disk_cache_hits;
 static unsigned long grub_disk_cache_misses;
 
@@ -123,13 +123,13 @@ grub_disk_cache_fetch (unsigned long dev_id, unsigned long disk_id,
       && cache->sector == sector)
     {
       cache->lock = 1;
-#if 0
+#if DISK_CACHE_STATS
       grub_disk_cache_hits++;
 #endif
       return cache->data;
     }
 
-#if 0
+#if DISK_CACHE_STATS
   grub_disk_cache_misses++;
 #endif
 
