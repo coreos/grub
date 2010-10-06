@@ -245,7 +245,10 @@ typedef enum
 
 typedef enum
   {
-    GRUB_USBMS_PROTOCOL_BULK = 0x50
+    GRUB_USBMS_PROTOCOL_BULK = 0x50,
+    /* Experimental support for Control/Bulk/Interrupt (CBI) devices */
+    GRUB_USBMS_PROTOCOL_CBI = 0x00, /* CBI with interrupt */
+    GRUB_USBMS_PROTOCOL_CB = 0x01  /* CBI wthout interrupt */
   } grub_usbms_protocol_t;
 
 static inline struct grub_usb_desc_if *
