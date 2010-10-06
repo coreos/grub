@@ -1,14 +1,15 @@
 2010-10-02  Aleš Nesrsta <starous@volny.cz>
 
-	* include/grub/scsi.h:
-	SCSI -  cache ID bug
+	* include/grub/scsi.h (grub_make_scsi_id): Fix incorrect usgae of
+	GRUB_SCSI_ID_BUS_SHIFT instead of GRUB_SCSI_ID_LUN_SHIFT.
 
 2010-10-02  Aleš Nesrsta <starous@volny.cz>
 
-	* grub-core/bus/usb/ohci.c, grub-core/bus/usb/uhci.c:
-	Increased number of TDs.
+	* grub-core/bus/usb/ohci.c (GRUB_OHCI_TDS): Increase.
+	* grub-core/bus/usb/uhci.c (N_TD): New definition. All previous implicit
+	users updated.
 	* grub-core/bus/usb/usbtrans.c (grub_usb_bulk_setup_readwrite):
-	Corrected endpoint maxpacket size.
+	Use right endpoint when querying descriptor.
 
 2010-10-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
