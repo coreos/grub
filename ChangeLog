@@ -1,3 +1,13 @@
+2010-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Correctly distinguish mdraid flavours.
+
+	* grub-core/disk/raid.c (grub_raid_getname) [GRUB_UTIL]: New function.
+	(insert_array): New argument raid.
+	* include/grub/disk.h (grub_disk_dev) [GRUB_UTIL]: New member raidname.
+	* include/grub/raid.h (grub_raid_array) [GRUB_UTIL]: New member driver.
+	* util/grub-probe.c (probe): PRint raidname instead of plainly "mdraid".
+
 2010-10-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/i386/pc/startup.S (grub_console_getkey): Fix incorrect

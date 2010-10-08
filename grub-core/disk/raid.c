@@ -107,6 +107,14 @@ grub_raid_memberlist (grub_disk_t disk)
 
   return list;
 }
+
+static const char *
+grub_raid_getname (struct grub_disk *disk)
+{
+  struct grub_raid_array *array = disk->data;
+
+  return array->driver->name;
+}
 #endif
 
 static grub_err_t
@@ -476,7 +484,8 @@ grub_raid_write (grub_disk_t disk __attribute ((unused)),
 
 static grub_err_t
 insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
-              grub_disk_addr_t start_sector, const char *scanner_name)
+              grub_disk_addr_t start_sector, const char *scanner_name,
+	      grub_raid_t raid __attribute__ ((unused)))
 {
   struct grub_raid_array *array = 0, *p;
 
@@ -524,6 +533,9 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 
       *array = *new_array;
       array->nr_devs = 0;
+#ifdef GRUB_UTIL
+      array->driver = raid;
+#endif
       grub_memset (&array->device, 0, sizeof (array->device));
       grub_memset (&array->start_sector, 0, sizeof (array->start_sector));
 
@@ -662,7 +674,8 @@ grub_raid_register (grub_raid_t raid)
 
       if ((disk->total_sectors != GRUB_ULONG_MAX) &&
 	  (! grub_raid_list->detect (disk, &array, &start_sector)) &&
-	  (! insert_array (disk, &array, start_sector, grub_raid_list->name)))
+	  (! insert_array (disk, &array, start_sector, grub_raid_list->name,
+			   grub_raid_list)))
 	return 0;
 
       /* This error usually means it's not raid, no need to display
@@ -706,6 +719,7 @@ static struct grub_disk_dev grub_raid_dev =
     .write = grub_raid_write,
 #ifdef GRUB_UTIL
     .memberlist = grub_raid_memberlist,
+    .raidname = grub_raid_getname,
 #endif
     .next = 0
   };
