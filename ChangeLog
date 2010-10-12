@@ -1,3 +1,11 @@
+2010-10-12  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-mkconfig.in: Merge `GRUB_DISABLE_LINUX_RECOVERY' and
+	`GRUB_DISABLE_NETBSD_RECOVERY' into a single `GRUB_DISABLE_RECOVERY'
+	variable.  All references updated.
+
+	* util/grub.d/10_kfreebsd.in: Support recovery boot entries.
+
 2010-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Correctly distinguish mdraid flavours.

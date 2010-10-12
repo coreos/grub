@@ -133,7 +133,7 @@ while [ "x${xen_list}" != "x" ] ; do
 
 	linux_entry "${OS}" "${version}" "${xen_version}" false \
 	    "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}" "${GRUB_CMDLINE_XEN} ${GRUB_CMDLINE_XEN_DEFAULT}"
-	if [ "x${GRUB_DISABLE_LINUX_RECOVERY}" != "xtrue" ]; then
+	if [ "x${GRUB_DISABLE_RECOVERY}" != "xtrue" ]; then
 	    linux_entry "${OS}" "${version}" "${xen_version}" true \
 		"single ${GRUB_CMDLINE_LINUX}" "${GRUB_CMDLINE_XEN}"
 	fi

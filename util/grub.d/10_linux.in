@@ -136,7 +136,7 @@ while [ "x$list" != "x" ] ; do
 
   linux_entry "${OS}" "${version}" false \
       "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
-  if [ "x${GRUB_DISABLE_LINUX_RECOVERY}" != "xtrue" ]; then
+  if [ "x${GRUB_DISABLE_RECOVERY}" != "xtrue" ]; then
     linux_entry "${OS}" "${version}" true \
 	"single ${GRUB_CMDLINE_LINUX}"
   fi

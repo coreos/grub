@@ -1073,7 +1073,7 @@ A command to configure the serial port when using the serial console.
 Command-line arguments to add to menu entries for the Linux kernel.
 
 @item GRUB_CMDLINE_LINUX_DEFAULT
-Unless @samp{GRUB_DISABLE_LINUX_RECOVERY} is set to @samp{true}, two menu
+Unless @samp{GRUB_DISABLE_RECOVERY} is set to @samp{true}, two menu
 entries will be generated for each Linux kernel: one default entry and one
 entry for recovery mode.  This option lists command-line arguments to add
 only to the default menu entry, after those listed in
@@ -1096,13 +1096,9 @@ the Linux kernel, using a @samp{root=UUID=...} kernel parameter.  This is
 usually more reliable, but in some cases it may not be appropriate.  To
 disable the use of UUIDs, set this option to @samp{true}.
 
-@item GRUB_DISABLE_LINUX_RECOVERY
+@item GRUB_DISABLE_RECOVERY
 If this option is set to @samp{true}, disable the generation of recovery
-mode menu entries for Linux.
-
-@item GRUB_DISABLE_NETBSD_RECOVERY
-If this option is set to @samp{true}, disable the generation of recovery
-mode menu entries for NetBSD.
+mode menu entries.
 
 @item GRUB_VIDEO_BACKEND
 If graphical video support is required, either because the @samp{gfxterm}
