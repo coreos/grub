@@ -591,7 +591,7 @@ FUNCTION(grub_console_putchar)
 
 
 LOCAL(bypass_table):
-	.word 0x0100 | '\e',0x0f00 | '\t', 0x0e00 | '\b', 0x1c00 | '\r'
+	.word 0x011b, 0x0f00 | '\t', 0x0e00 | '\b', 0x1c00 | '\r'
 	.word 0x1c00 | '\n'
 LOCAL(bypass_table_end):
 
@@ -646,7 +646,7 @@ FUNCTION(grub_console_getkey)
 
 	andl	%edx, %eax
 	cmpl    $0x20, %eax
-	ja      2f
+	jae     2f
 	movl	%edx, %eax
 	leal    LOCAL(bypass_table), %edi
 	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) / 2), %ecx

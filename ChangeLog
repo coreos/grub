@@ -1,3 +1,9 @@
+2010-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/i386/pc/startup.S (bypass_table): Use 0x1b explicitly
+	rather than 0x1b.
+	(grub_console_getkey): Use correct jae opcode rather than ja.
+
 2010-10-12  Robert Millan  <rmh@gnu.org>
 
 	* util/grub-mkconfig.in: Merge `GRUB_DISABLE_LINUX_RECOVERY' and
