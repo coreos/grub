@@ -1,5 +1,10 @@
 2010-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/efiemu/main.c (grub_efiemu_prepare): Handle errors from
+	grub_efiemu_autocore.
+
+2010-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/pc/startup.S (bypass_table): Use 0x1b explicitly
 	rather than 0x1b.
 	(grub_console_getkey): Use correct jae opcode rather than ja.
