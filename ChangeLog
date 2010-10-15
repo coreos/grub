@@ -1,3 +1,8 @@
+2010-10-15  Robert Millan  <rmh@gnu.org>
+
+	* util/grub.d/10_linux.in (list): Expand "vmlinu[zx]" instances to
+	guarantee compressed ones are processed first.
+
 2010-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/efiemu/main.c (grub_efiemu_prepare): Handle errors from
