@@ -72,7 +72,11 @@ struct grub_serial_port
    */
   union
   {
-    grub_port_t port;
+    struct
+    {
+      grub_port_t port;
+      int broken;
+    };
     struct
     {
       grub_usb_device_t usbdev;

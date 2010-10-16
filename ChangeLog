@@ -1,3 +1,10 @@
+2010-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/ns8250.c (do_real_config): Set port->broken to 0.
+	(serial_hw_put): Wait based on real time rather than port reads. Don't
+	roken ports.
+	* include/grub/serial.h (grub_serial_port): New field broken.
+
 2010-10-16  Robert Millan  <rmh@gnu.org>
 
 	* grub-core/kern/emu/misc.c
