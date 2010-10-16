@@ -820,6 +820,10 @@ FUNCTION(grub_console_setcursor)
 	DATA32	call	real_to_prot
 	.code32
 
+	cmp     %cl, %ch
+	jb      3f
+	movw    $0x0d0e, %cx
+3:	
 	movw	%cx, console_cursor_shape
 1:
 	/* set %cx to the designated cursor shape */

@@ -1,5 +1,10 @@
 2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/pc/startup.S (grub_console_setcursor): Check
+	cursor shape for sanity.
+
+2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Installation): Document buggy BIOS install.
 
 2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
