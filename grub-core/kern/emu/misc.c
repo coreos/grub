@@ -406,21 +406,7 @@ grub_make_system_path_relative_to_its_root (const char *path)
 
       /* buf is another filesystem; we found it.  */
       if (st.st_dev != num)
-	{
-	  /* offset == 0 means path given is the mount point.
-	     This works around special-casing of "/" in Un*x.  This function never
-	     prints trailing slashes (so that its output can be appended a slash
-	     unconditionally).  Each slash in is considered a preceding slash, and
-	     therefore the root directory is an empty string.  */
-	  if (offset == 0)
-	    {
-	      free (buf);
-	      free (buf2);
-	      return xstrdup ("");
-	    }
-	  else
-	    break;
-	}
+	break;
 
       offset = p - buf;
       /* offset == 1 means root directory.  */
@@ -448,7 +434,10 @@ grub_make_system_path_relative_to_its_root (const char *path)
     }
 #endif
 
-  /* Remove trailing slashes, return empty string if root directory.  */
+  /* This works around special-casing of "/" in Un*x.  This function never
+     prints trailing slashes (so that its output can be appended a slash
+     unconditionally).  Each slash in it is considered a preceding slash,
+     and therefore the root directory is an empty string.  */
   len = strlen (buf3);
   while (len > 0 && buf3[len - 1] == '/')
     {

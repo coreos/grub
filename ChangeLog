@@ -1,3 +1,9 @@
+2010-10-16  Robert Millan  <rmh@gnu.org>
+
+	* grub-core/kern/emu/misc.c
+	(grub_make_system_path_relative_to_its_root): Fix premature return
+	when processing non-root ZFS filesystems.
+
 2010-10-15  Robert Millan  <rmh@gnu.org>
 
 	* util/grub.d/10_linux.in (list): Expand "vmlinu[zx]" instances to
