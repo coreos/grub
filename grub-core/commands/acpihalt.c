@@ -142,6 +142,7 @@ skip_ext_op (const grub_uint8_t *ptr, const grub_uint8_t *end)
 	return 0;
       break;
     case GRUB_ACPI_EXTOPCODE_FIELD_OP:
+    case GRUB_ACPI_EXTOPCODE_INDEX_FIELD_OP:
       ptr++;
       ptr += decode_length (ptr, 0);
       break;
