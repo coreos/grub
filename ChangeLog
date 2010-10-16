@@ -1,5 +1,9 @@
 2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Handle partitionless disks.
+
+2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-setup.c (setup): Don't clean blocklists before readability
 	verfification.
 

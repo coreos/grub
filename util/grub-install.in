@@ -512,7 +512,7 @@ if [ "x${devabstraction_module}" = "x" ] ; then
     grub_drive="`$grub_probe --target=drive --device ${grub_device}`" || exit 1
 
     # Strip partition number
-    grub_partition="`echo ${grub_drive} | sed -e 's/^[^,]*,//; s/)$//'`"
+    grub_partition="`echo ${grub_drive} | sed -e 's/^[^,]*[,)]//; s/)$//'`"
     grub_drive="`echo ${grub_drive} | sed -e s/,[a-z0-9,]*//g`"
     if [ "$disk_module" = ata ] ; then
         # generic method (used on coreboot and ata mod)
@@ -537,7 +537,11 @@ if [ "x${devabstraction_module}" = "x" ] ; then
         modules="$modules search_fs_uuid"
     elif [ "x$platform" = xefi ] || [ "x$platform" = xpc ]; then
         # we need to hardcode the partition number in the core image's prefix.
-        prefix_drive="(,$grub_partition)"
+	if [ x"$grub_partition" = x ]; then
+            prefix_drive="()"
+	else
+            prefix_drive="(,$grub_partition)"
+	fi
     fi
 else
     prefix_drive=`$grub_probe --target=drive --device ${grub_device}` || exit 1
