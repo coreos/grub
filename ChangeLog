@@ -3,6 +3,7 @@
 	* grub-core/kern/emu/misc.c
 	(grub_make_system_path_relative_to_its_root): Fix premature return
 	when processing non-root ZFS filesystems.
+	Reported by Sergio Talens-Oliag.
 
 2010-10-15  Robert Millan  <rmh@gnu.org>
 
