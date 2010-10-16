@@ -1,5 +1,18 @@
 2010-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove dead grub_efi_mm_fini.
+
+	* grub-core/kern/efi/mm.c (allocated_page): Removed.
+	(ALLOCATED_PAGES_SIZE): Likewise.
+	(MAX_ALLOCATED_PAGES): Likewise.
+	(allocated_pages): Likewise.
+	(grub_efi_allocate_pages): Don't record allocated pages.
+	(grub_efi_free_pages): Likewise.
+	(grub_efi_mm_init): Likewise.
+	(grub_efi_mm_fini): Removed.
+
+2010-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/efi/mm.c (BYTES_TO_PAGES): Round up instead of down.
 	(grub_efi_mm_init): Take into account the memory map size increase.
 
