@@ -319,18 +319,6 @@ setup (const char *dir,
   }
 #endif
 
-  /* Clean out the blocklists.  */
-  block = first_block;
-  while (block->len)
-    {
-      grub_memset (block, 0, sizeof (block));
-
-      block--;
-
-      if ((char *) block <= core_img)
-	grub_util_error ("No terminator in the core image");
-    }
-
 #ifdef GRUB_MACHINE_PCBIOS
   {
     grub_partition_map_t dest_partmap = NULL;
@@ -432,6 +420,18 @@ setup (const char *dir,
 	grub_util_warn ("%s", grub_errmsg);
 	grub_errno = GRUB_ERR_NONE;
 	goto unable_to_embed;
+      }
+
+    /* Clean out the blocklists.  */
+    block = first_block;
+    while (block->len)
+      {
+	grub_memset (block, 0, sizeof (block));
+      
+	block--;
+
+	if ((char *) block <= core_img)
+	  grub_util_error ("No terminator in the core image");
       }
 
     save_first_sector (sectors[0] + grub_partition_get_start (container),

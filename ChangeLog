@@ -1,3 +1,8 @@
+2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-setup.c (setup): Don't clean blocklists before readability
+	verfification.
+
 2010-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi (Installation): Document embedding zone. Remove
