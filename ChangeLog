@@ -1,5 +1,10 @@
 2010-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/efi/mm.c (BYTES_TO_PAGES): Round up instead of down.
+	(grub_efi_mm_init): Take into account the memory map size increase.
+
+2010-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/ns8250.c (do_real_config): Set port->broken to 0.
 	(serial_hw_put): Wait based on real time rather than port reads. Don't
 	roken ports.

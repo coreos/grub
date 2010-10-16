@@ -25,7 +25,7 @@
 #define NEXT_MEMORY_DESCRIPTOR(desc, size)	\
   ((grub_efi_memory_descriptor_t *) ((char *) (desc) + (size)))
 
-#define BYTES_TO_PAGES(bytes)	((bytes) >> 12)
+#define BYTES_TO_PAGES(bytes)	(((bytes) + 0xfff) >> 12)
 #define PAGES_TO_BYTES(pages)	((pages) << 12)
 
 /* The size of a memory map obtained from the firmware. This must be
@@ -446,6 +446,9 @@ grub_efi_mm_init (void)
       grub_efi_free_pages
 	((grub_efi_physical_address_t) ((grub_addr_t) memory_map),
 	 2 * BYTES_TO_PAGES (MEMORY_MAP_SIZE));
+
+      /* Freeing/allocating operations may increase memory map size.  */
+      map_size += desc_size * 32;
 
       memory_map = grub_efi_allocate_pages (0, 2 * BYTES_TO_PAGES (map_size));
       if (! memory_map)
