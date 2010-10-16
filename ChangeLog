@@ -1,5 +1,9 @@
 2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Installation): Indent.
+
+2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-setup.c (setup): New parameter allow_floppy.
 	(arguments): New member allow_floppy.
 	(argp_parser): Handle --allow-floppy.

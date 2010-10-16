@@ -559,7 +559,12 @@ always. Therefore, GRUB provides you with a map file called the
 @dfn{device map}, which you must fix if it is wrong. @xref{Device
 map}, for more details.
 
-On BIOS platforms GRUB has to use a so called embedding zone. On msdos partition tables it's the space between MBR and first partition (called MBR gap), on GPT partition it uses a BIOS Boot Partition (a partition having type 21686148-6449-6e6f-744e656564454649). If you use GRUB on BIOS be sure to supply at least 31 KiB of embedding zone (512KiB or more recommended).
+On BIOS platforms GRUB has to use a so called embedding zone. On msdos
+partition tables it's the space between MBR and first partition (called
+MBR gap), on GPT partition it uses a BIOS Boot Partition (a partition
+having type 21686148-6449-6e6f-744e656564454649). If you use GRUB on
+BIOS be sure to supply at least 31 KiB of embedding zone (512KiB or more
+recommended).
 
 If you still do want to install GRUB under a UNIX-like OS (such
 as @sc{gnu}), invoke the program @command{grub-install} (@pxref{Invoking
