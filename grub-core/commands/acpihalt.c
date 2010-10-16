@@ -16,9 +16,28 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef GRUB_DSDT_TEST
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+
+#define grub_dprintf(cond, args...) printf ( args )
+#define grub_printf printf
+typedef uint64_t grub_uint64_t;
+typedef uint32_t grub_uint32_t;
+typedef uint16_t grub_uint16_t;
+typedef uint8_t grub_uint8_t;
+
+#endif
+
 #include <grub/acpi.h>
+
+#ifndef GRUB_DSDT_TEST
 #include <grub/misc.h>
 #include <grub/cpu/io.h>
+#endif
 
 static inline grub_uint32_t
 decode_length (const grub_uint8_t *ptr, int *numlen)
@@ -208,6 +227,47 @@ get_sleep_type (grub_uint8_t *table, grub_uint8_t *end)
   return sleep_type;
 }
 
+#ifdef GRUB_DSDT_TEST
+int
+main (int argc, char **argv)
+{
+  FILE *f;
+  size_t len;
+  unsigned char *buf;
+  if (argc < 2)
+    printf ("Usage: %s FILE\n", argv[0]);
+  f = fopen (argv[1], "rb");
+  if (!f)
+    {
+      printf ("Couldn't open file\n");
+      return 1;
+    }
+  fseek (f, 0, SEEK_END);
+  len = ftell (f);
+  fseek (f, 0, SEEK_SET);
+  buf = malloc (len);
+  if (!buf)
+    {
+      printf ("Couldn't malloc buffer\n");
+      fclose (f);
+      return 2;
+    }
+  if (fread (buf, 1, len, f) != len)
+    {
+      printf ("Read failed\n");
+      free (buf);
+      fclose (f);
+      return 2;
+    }
+
+  printf ("Sleep type = %d\n", get_sleep_type (buf, buf + len));
+  free (buf);
+  fclose (f);
+  return 0;
+}
+
+#else
+
 void
 grub_acpi_halt (void)
 {
@@ -264,3 +324,4 @@ grub_acpi_halt (void)
 
   grub_printf ("ACPI shutdown failed\n");
 }
+#endif

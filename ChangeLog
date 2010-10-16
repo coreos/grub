@@ -1,5 +1,15 @@
 2010-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Userspace ACPI parser debugging.
+
+	* grub-core/commands/acpihalt.c [GRUB_DSDT_TEST]: Include userspace
+	headers and add relevant defines. Don't include standard headers.
+	(main) [GRUB_DSDT_TEST]: New function.
+	* include/grub/acpi.h [GRUB_DSDT_TEST]: Don't include standard headers.
+	Don't declare functions.
+
+2010-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove dead grub_efi_mm_fini.
 
 	* grub-core/kern/efi/mm.c (allocated_page): Removed.
