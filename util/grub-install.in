@@ -107,6 +107,8 @@ Install GRUB on your drive.
   --grub-mkdevicemap=FILE use FILE as grub-mkdevicemap
   --grub-probe=FILE       use FILE as grub-probe
   --no-floppy             do not probe any floppy drive
+  --allow-floppy          Make the drive also bootable as floppy 
+                          (default for fdX devices). May break on some BIOSes.
   --recheck               probe a device map even if it already exists
   --force                 install even if problems are detected
 EOF
@@ -147,6 +149,8 @@ argument () {
   fi
   echo $1
 }
+
+allow_floppy=""
 
 # Check the arguments.
 while test $# -gt 0
@@ -220,6 +224,9 @@ do
 	recheck=yes ;;
     --removable)
 	removable=yes ;;
+
+    --allow-floppy)
+	allow_floppy="--allow-floppy" ;;
 
     --disk-module)
 	if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
@@ -576,7 +583,7 @@ fi
 # Perform the platform-dependent install
 if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
     # Now perform the installation.
-    $grub_setup ${setup_verbose} ${setup_force} --directory=${grubdir} \
+    $grub_setup ${allow_floppy} ${setup_verbose} ${setup_force} --directory=${grubdir} \
 	--device-map=${device_map} ${install_device} || exit 1
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
     if [ x"$update_nvram" = xyes ]; then

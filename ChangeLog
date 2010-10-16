@@ -1,5 +1,14 @@
 2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-setup.c (setup): New parameter allow_floppy.
+	(arguments): New member allow_floppy.
+	(argp_parser): Handle --allow-floppy.
+	(main): Pass allow_floppy.
+	* util/grub-install.in: New option --allow-floppy passed though to
+	grub-setup.
+
+2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Handle partitionless disks.
 
 2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>

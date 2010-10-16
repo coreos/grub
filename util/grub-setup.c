@@ -177,7 +177,7 @@ static void
 setup (const char *dir,
        const char *boot_file, const char *core_file,
        const char *root, const char *dest, int must_embed, int force,
-       int fs_probe)
+       int fs_probe, int allow_floppy)
 {
   char *boot_path, *core_path, *core_path_dev, *core_path_dev_full;
   char *boot_img, *core_img;
@@ -313,7 +313,7 @@ setup (const char *dir,
     /* If DEST_DRIVE is a hard disk, enable the workaround, which is
        for buggy BIOSes which don't pass boot drive correctly. Instead,
        they pass 0x00 or 0x01 even when booted from 0x80.  */
-    if (!grub_util_biosdisk_is_floppy (dest_dev->disk))
+    if (!allow_floppy && !grub_util_biosdisk_is_floppy (dest_dev->disk))
       /* Replace the jmp (2 bytes) with double nop's.  */
       *boot_drive_check = 0x9090;
   }
@@ -678,6 +678,9 @@ static struct argp_option options[] = {
    N_("Do not probe for filesystems in DEVICE"), 0},
   {"verbose",     'v', 0,      0,
    N_("Print verbose messages."), 0},
+  {"allow-floppy", 'a', 0,      0,
+   N_("Make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes."), 0},
+
   { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -712,6 +715,7 @@ struct arguments
   char *root_dev;
   int  force;
   int  fs_probe;
+  int allow_floppy;
   char *device;
 };
 
@@ -737,6 +741,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
   switch (key)
     {
+      case 'a':
+        arguments->allow_floppy = 1;
+        break;
+
       case 'b':
         if (arguments->boot_file)
           free (arguments->boot_file);
@@ -950,7 +958,8 @@ main (int argc, char *argv[])
                  arguments.boot_file ? : DEFAULT_BOOT_FILE,
                  arguments.core_file ? : DEFAULT_CORE_FILE,
                  root_dev, grub_util_get_grub_dev (devicelist[i]), 1,
-                 arguments.force, arguments.fs_probe);
+                 arguments.force, arguments.fs_probe,
+		 arguments.allow_floppy);
         }
     }
   else
@@ -959,7 +968,8 @@ main (int argc, char *argv[])
     setup (arguments.dir ? : DEFAULT_DIRECTORY,
            arguments.boot_file ? : DEFAULT_BOOT_FILE,
            arguments.core_file ? : DEFAULT_CORE_FILE,
-           root_dev, dest_dev, must_embed, arguments.force, arguments.fs_probe);
+           root_dev, dest_dev, must_embed, arguments.force,
+	   arguments.fs_probe, arguments.allow_floppy);
 
   /* Free resources.  */
   grub_fini_all ();
