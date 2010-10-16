@@ -309,10 +309,8 @@ redraw_menu_visit (grub_gui_component_t component,
   view = userdata;
   if (component->ops->is_instance (component, "list"))
     {
-      grub_gui_list_t list;
       grub_video_rect_t bounds;
 
-      list = (grub_gui_list_t) component;
       component->ops->get_bounds (component, &bounds);
       grub_gfxmenu_view_redraw (view, &bounds);
     }

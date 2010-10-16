@@ -579,7 +579,6 @@ malloc_in_range (struct grub_relocator *rel,
 
   for (ra = &base_saved, r = *ra; r; ra = &(r->next), r = *ra)
     {
-      int pre_added = 0;
       pa = r->first;
       p = pa->next;
       if (p->magic == GRUB_MM_ALLOC_MAGIC)
@@ -591,7 +590,6 @@ malloc_in_range (struct grub_relocator *rel,
 			__LINE__, p, p->magic);
 	  if (p == (grub_mm_header_t) (r + 1))
 	    {
-	      pre_added = 1;
 	      events[N].type = REG_BEG_START;
 	      events[N].pos = grub_vtop (r) - r->pre_size;
 	      events[N].reg = r;
@@ -667,7 +665,6 @@ malloc_in_range (struct grub_relocator *rel,
     const int nlefto = 0;
 #endif
     grub_addr_t starta = 0;
-    int numstarted;
     for (j = from_low_priv ? 0 : N - 1; from_low_priv ? j < N : (j + 1); 
 	 from_low_priv ? j++ : j--)
       {
@@ -725,11 +722,8 @@ malloc_in_range (struct grub_relocator *rel,
 	isinsideafter = (!ncollisions && (nstarted || ((nlefto || nstartedfw) 
 						       && !nblockfw)));
 	if (!isinsidebefore && isinsideafter)
-	  {
-	    starta = from_low_priv ? ALIGN_UP (events[j].pos, align)
-	      : ALIGN_DOWN (events[j].pos - size, align) + size;
-	    numstarted = j;
-	  }
+	  starta = from_low_priv ? ALIGN_UP (events[j].pos, align)
+	    : ALIGN_DOWN (events[j].pos - size, align) + size;
 	if (isinsidebefore && !isinsideafter && from_low_priv)
 	  {
 	    target = starta;

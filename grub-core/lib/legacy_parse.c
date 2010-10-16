@@ -486,8 +486,12 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 
   if (legacy_commands[cmdnum].flags & FLAG_TERMINAL)
     {
-      int dumb = 0, no_echo = 0, no_edit = 0, lines = 24;
-      int console = 0, serial = 0, hercules = 0;
+      int dumb = 0, lines = 24;
+#ifdef TODO
+      int no_echo = 0, no_edit = 0;
+      int hercules = 0;
+#endif
+      int console = 0, serial = 0;
       /* Big enough for any possible resulting command. */
       char outbuf[256] = "";
       char *outptr;
@@ -497,13 +501,13 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 		  " [console] [serial] [hercules]"*/
 	  if (grub_memcmp (ptr, "--dumb", sizeof ("--dumb") - 1) == 0)
 	    dumb = 1;
-
+#ifdef TODO
 	  if (grub_memcmp (ptr, "--no-echo", sizeof ("--no-echo") - 1) == 0)
 	    no_echo = 1;
 
 	  if (grub_memcmp (ptr, "--no-edit", sizeof ("--no-edit") - 1) == 0)
 	    no_edit = 1;
-
+#endif
 	  if (grub_memcmp (ptr, "--lines=", sizeof ("--lines=") - 1) == 0)
 	    {
 	      lines = grub_strtoul (ptr + sizeof ("--lines=") - 1, 0, 0);
@@ -519,10 +523,10 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 
 	  if (grub_memcmp (ptr, "serial", sizeof ("serial") - 1) == 0)
 	    serial = 1;
-
+#ifdef TODO
 	  if (grub_memcmp (ptr, "hercules", sizeof ("hercules") - 1) == 0)
 	    hercules = 1;
-
+#endif
 	  while (*ptr && !grub_isspace (*ptr))
 	    ptr++;
 	  while (*ptr && grub_isspace (*ptr))

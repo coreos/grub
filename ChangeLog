@@ -1,3 +1,23 @@
+2010-10-16  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/commands/legacycfg.c (grub_cmd_legacy_kernel):
+	Set-but-not-used variable ifdef'ed.
+	* grub-core/lib/legacy_parse.c (grub_legacy_parse): Likewise.
+	* grub-core/bus/usb/ohci.c (grub_ohci_pci_iter): Set-but-not-used
+	variable removed.
+	* grub-core/disk/lvm.c (grub_lvm_scan_device): Likewise.
+	* grub-core/fs/jfs.c (grub_jfs_find_file): Likewise.
+	* grub-core/fs/minix.c (grub_minix_dir): Likewise.
+	* grub-core/fs/sfs.c (grub_sfs_read_extent): Likewise.
+	* grub-core/fs/ufs.c (grub_ufs_dir): Likewise.
+	* grub-core/gfxmenu/gui_list.c (grub_gui_list_new): Likewise.
+	* grub-core/gfxmenu/view.c (redraw_menu_visit): Likewise.
+	* grub-core/gfxmenu/widget-box.c (draw): Likewise.
+	* grub-core/lib/relocator.c (malloc_in_range): Likewise.
+	* grub-core/loader/i386/bsdXX.c (grub_netbsd_load_elf_meta): Likewise.
+	* grub-core/loader/i386/bsd_pagetable.c (fill_bsd64_pagetable):
+	Likewise.
+
 2010-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/acpihalt.c (skip_ext_op): Skip index field op.
