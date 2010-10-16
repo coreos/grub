@@ -1,3 +1,8 @@
+2010-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Installation): Document embedding zone. Remove
+	obsolete grub-install example.
+
 2010-10-16  Szymon Janc <szymon@janc.net.pl>
 
 	* grub-core/commands/legacycfg.c (grub_cmd_legacy_kernel):
