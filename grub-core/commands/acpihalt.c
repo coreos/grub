@@ -175,11 +175,12 @@ get_sleep_type (grub_uint8_t *table, grub_uint8_t *end)
 	  break;
 	case GRUB_ACPI_OPCODE_NAME:
 	  ptr++;
-	  if (memcmp (ptr, "_S5_", 4) == 0)
+	  if (memcmp (ptr, "_S5_", 4) == 0 || memcmp (ptr, "\\_S5_", 4) == 0)
 	    {
 	      int ll;
 	      grub_uint8_t *ptr2 = ptr;
-	      ptr2 += 4;
+	      grub_dprintf ("acpi", "S5 found\n");
+	      ptr2 += skip_name_string (ptr, end);
 	      if (*ptr2 != 0x12)
 		{
 		  grub_printf ("Unknown opcode in _S5: 0x%x\n", *ptr2);

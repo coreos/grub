@@ -1,5 +1,10 @@
 2010-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/acpihalt.c (get_sleep_type): Accept \_S5_ as
+	synonym to _S5_. Needed for some DSDTs.
+
+2010-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Userspace ACPI parser debugging.
 
 	* grub-core/commands/acpihalt.c [GRUB_DSDT_TEST]: Include userspace
