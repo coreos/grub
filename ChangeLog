@@ -1,5 +1,9 @@
 2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Installation): Document buggy BIOS install.
+
+2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Installation): Indent.
 
 2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>

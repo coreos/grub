@@ -617,6 +617,19 @@ installation. The format is defined in @ref{Device map}. Please be
 quite careful. If the output is wrong, it is unlikely that your
 computer will be able to boot with no problem.
 
+Some BIOSes have a bug of exposing first partition of USB pendrive as a floppy
+instead of exposing pendrive as a hard disk (they call it ``USB-FDD'' boot)
+In such cases you need to install as following:
+
+@example
+# @kbd{losetup /dev/loop0 /dev/sdb1}
+# @kbd{mount /dev/loop0 /mnt/usb}
+# @kbd{grub-install --boot-directory=/mnt/usb/bugbios --force --allow-floppy /dev/loop0}
+@end example
+
+This install doesn't conflict with standard install as long as they are in
+separate directories.
+
 Note that @command{grub-install} is actually just a shell script and the
 real task is done by @command{grub-mkimage} and @command{grub-setup}.
 Therefore, you may run those commands directly to install GRUB, without
