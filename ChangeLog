@@ -1,5 +1,10 @@
 2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (GNU/Linux): Document APM unavailability with
+	32-bit linux protocol.
+
+2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/pc/startup.S (grub_console_setcursor): Check
 	cursor shape for sanity.
 

@@ -895,12 +895,26 @@ grub> @kbd{linux /vmlinuz root=/dev/sda1 acpi=off}
 See the documentation in the Linux source tree for complete information on
 the available options.
 
+With @command{linux} GRUB uses 32-bit protocol. Some BIOS services like APM
+or EDD aren't available with this protocol. In this case you need to use
+@command{linux16}
+
+@example
+grub> @kbd{linux16 /vmlinuz root=/dev/sda1 acpi=off}
+@end example 
+
 @item
 If you use an initrd, execute the command @command{initrd} (@pxref{initrd})
 after @command{linux}:
 
 @example
 grub> @kbd{initrd /initrd}
+@end example
+
+If you used @command{linux16} you need to use @command{initrd16}:
+
+@example
+grub> @kbd{initrd16 /initrd}
 @end example
 
 @item
