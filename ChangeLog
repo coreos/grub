@@ -1,3 +1,8 @@
+2010-10-17  Szymon Janc <szymon@janc.net.pl>
+
+       * grub-core/normal/auth.c (grub_auth_check_authentication):
+       Set-but-not-used variable removed.
+
 2010-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi (GNU/Linux): Document APM unavailability with

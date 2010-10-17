@@ -201,7 +201,6 @@ grub_auth_check_authentication (const char *userlist)
 {
   char login[1024];
   struct grub_auth_user *cur = NULL;
-  grub_err_t err;
   static unsigned long punishment_delay = 1;
   char entered[GRUB_AUTH_MAX_PASSLEN];
   struct grub_auth_user *user;
@@ -233,7 +232,7 @@ grub_auth_check_authentication (const char *userlist)
   if (!cur || ! cur->callback)
     goto access_denied;
 
-  err = cur->callback (login, entered, cur->arg);
+  cur->callback (login, entered, cur->arg);
   if (is_authenticated (userlist))
     {
       punishment_delay = 1;
