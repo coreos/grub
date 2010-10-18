@@ -127,10 +127,20 @@ while [ "x$list" != "x" ] ; do
       break
     fi
   done
+
+  initramfs=
+  for i in "config-${version}" "config-${alt_version}"; do
+    if test -e "${dirname}/${i}" ; then
+      initramfs=`grep CONFIG_INITRAMFS_SOURCE= "${dirname}/${i}" | cut -f2 -d= | tr -d \"`
+      break
+    fi
+  done
+
   if test -n "${initrd}" ; then
     echo "Found initrd image: ${dirname}/${initrd}" >&2
-  else
-    # "UUID=" magic is parsed by initrds.  Since there's no initrd, it can't work here.
+  elif test -z "${initramfs}" ; then
+    # "UUID=" magic is parsed by initrd or initramfs.  Since there's
+    # no initrd or builtin initramfs, it can't work here.
     linux_root_device_thisversion=${GRUB_DEVICE}
   fi
 

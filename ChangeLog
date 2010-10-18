@@ -1,3 +1,8 @@
+2010-10-18  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* util/grub.d/10_linux.in: Fix built-in initramfs image mode for
+	Linux kernel, reported by Dennis Schridde.
+
 2010-10-17  Szymon Janc <szymon@janc.net.pl>
 
        * grub-core/normal/auth.c (grub_auth_check_authentication):
