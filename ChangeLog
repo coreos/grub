@@ -1,3 +1,19 @@
+2010-10-18  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	Make mktemp invocations portable.
+
+	* grub-core/genmod.sh.in: Use mktemp with an explicit template, and
+	exit if mktemp fails.
+	* tests/grub_script_blockarg.in: Likewise.
+	* tests/partmap_test.in: Likewise.
+	* tests/util/grub-shell-tester.in: Likewise.
+	* tests/util/grub-shell.in: Likewise.
+	* util/powerpc/ieee1275/grub-mkrescue.in: Likewise.
+	* Makefile.am: Likewise, and chain shell commands with `&&'
+	instead of ';'.
+	* util/grub-mkrescue.in: Use the same explicit template as above, and
+	exit if mktemp fails.
+
 2010-10-18  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* util/grub.d/10_linux.in: Fix built-in initramfs image mode for

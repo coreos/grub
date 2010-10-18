@@ -51,8 +51,8 @@ list_parts () {
     echo
 }
 
-imgfile=`mktemp`
-outfile=`mktemp`
+imgfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
+outfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 
 #
 # MSDOS partition types
