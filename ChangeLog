@@ -1,3 +1,8 @@
+2010-10-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Installing GRUB using grub-install): Proofread.
+	(Supported kernels): Likewise.
+
 2010-10-18  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	Make mktemp invocations portable.
