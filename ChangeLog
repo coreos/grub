@@ -1,3 +1,9 @@
+2010-10-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/relocator.c (grub_relocator_subchunk): Remove now
+	useless field head. All users updated.
+	(free_subchunk): Correct handling of IN_REGION subchunk.
+
 2010-10-22  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Installing GRUB using grub-install): Proofread.

@@ -40,7 +40,6 @@ struct grub_relocator_subchunk
 #endif
   } type;
   grub_mm_region_t reg;
-  grub_mm_header_t head;
   grub_phys_addr_t start;
   grub_size_t size;
   grub_size_t pre_size;
@@ -355,11 +354,11 @@ free_subchunk (const struct grub_relocator_subchunk *subchu)
       }
     case CHUNK_TYPE_IN_REGION:
       {
-	grub_mm_header_t h = (grub_mm_header_t) ALIGN_DOWN ((grub_addr_t) subchu->head,
+	grub_mm_header_t h = (grub_mm_header_t) ALIGN_DOWN ((grub_addr_t) subchu->start,
 							    GRUB_MM_ALIGN);
 	h->size
 	  = ((subchu->start + subchu->size + GRUB_MM_ALIGN - 1) / GRUB_MM_ALIGN)
-	  - (subchu->start / GRUB_MM_ALIGN);
+	  - (subchu->start / GRUB_MM_ALIGN) - 1;
 	h->next = h;
 	h->magic = GRUB_MM_ALLOC_MAGIC;
 	grub_free (h + 1);
@@ -971,7 +970,6 @@ malloc_in_range (struct grub_relocator *rel,
 		    || typepre == CHUNK_TYPE_IN_REGION)
 		  {
 		    curschu->reg = events[last_start].reg;
-		    curschu->head = events[last_start].head;
 		    curschu->pre_size = alloc_start - events[j - 1].pos;
 		  }
 		if (!oom && (typepre == CHUNK_TYPE_REGION_START
