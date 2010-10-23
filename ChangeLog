@@ -1,5 +1,10 @@
 2010-10-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/misc.c
+	(grub_make_system_path_relative_to_its_root): Revert r2882.
+
+2010-10-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/relocator.c (grub_relocator_subchunk): Remove now
 	useless field head. All users updated.
 	(free_subchunk): Correct handling of IN_REGION subchunk.
