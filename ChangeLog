@@ -1,4 +1,10 @@
-2010-10-22  Vladimir Serbinenko  <phcoder@gmail.com>
+2010-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/misc.c
+	(grub_make_system_path_relative_to_its_root)
+	[HAVE_LIBZFS && HAVE_LIBNVPAIR]: Fix mountpoint return on ZFS.
+
+2010-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/misc.c
 	(grub_make_system_path_relative_to_its_root): Revert r2882.

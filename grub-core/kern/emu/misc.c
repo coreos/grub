@@ -416,6 +416,10 @@ grub_make_system_path_relative_to_its_root (const char *path)
 	    {
 	      free (buf);
 	      free (buf2);
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+	      if (poolfs)
+		return xasprintf ("/%s/@", poolfs);
+#endif
 	      return xstrdup ("");
 	    }
 	  else
