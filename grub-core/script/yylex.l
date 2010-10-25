@@ -71,6 +71,8 @@ static void  copy_string (struct grub_parser_param *, const char *,
 
 %top{
 
+#include <config.h>
+
 #include <sys/types.h>
 
 typedef size_t yy_size_t;

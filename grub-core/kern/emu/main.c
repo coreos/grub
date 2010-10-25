@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <setjmp.h>
 #include <sys/stat.h>
-#include <getopt.h>
 #include <string.h>
 #include <signal.h>
 #include <sys/types.h>

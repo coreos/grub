@@ -235,6 +235,7 @@ AC_PROG_LEX
 AC_PROG_YACC
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
+AC_PROG_LN_S
 
 if test "x$LEX" = "x:"; then
   AC_MSG_ERROR([flex is not found])
@@ -848,6 +849,12 @@ if test x"$device_mapper_excuse" = x ; then
 fi
 
 AC_SUBST([LIBDEVMAPPER])
+
+AC_CHECK_LIB([lzma], [lzma_code],
+             [LIBLZMA="-llzma"
+              AC_DEFINE([HAVE_LIBLZMA], [1],
+                        [Define to 1 if you have the LZMA library.])],)
+AC_SUBST([LIBLZMA])
 
 AC_CHECK_LIB([zfs], [libzfs_init],
              [LIBZFS="-lzfs"

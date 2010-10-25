@@ -38,10 +38,10 @@ rm -f $tmpfile $outfile
 objcopy -R .modname -R .moddeps $infile $tmpfile
 
 # Attach .modname and .moddeps sections
-t1=`mktemp`
+t1=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 printf "$modname\0" >$t1
 
-t2=`mktemp`
+t2=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 for dep in $deps; do printf "$dep\0" >> $t2; done
 
 if test -n "$deps"; then

@@ -17,6 +17,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
+
 #include <grub/parser.h>
 #include <grub/misc.h>
 #include <grub/mm.h>

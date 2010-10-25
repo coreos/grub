@@ -55,25 +55,25 @@ struct grub_extcmd_context
 };
 typedef struct grub_extcmd_context *grub_extcmd_context_t;
 
-grub_extcmd_t grub_register_extcmd (const char *name,
-				    grub_extcmd_func_t func,
-				    grub_command_flags_t flags,
-				    const char *summary,
-				    const char *description,
-				    const struct grub_arg_option *parser);
+grub_extcmd_t EXPORT_FUNC(grub_register_extcmd) (const char *name,
+						 grub_extcmd_func_t func,
+						 grub_command_flags_t flags,
+						 const char *summary,
+						 const char *description,
+						 const struct grub_arg_option *parser);
 
-grub_extcmd_t grub_register_extcmd_prio (const char *name,
-					 grub_extcmd_func_t func,
-					 grub_command_flags_t flags,
-					 const char *summary,
-					 const char *description,
-					 const struct grub_arg_option *parser,
-					 int prio);
+grub_extcmd_t EXPORT_FUNC(grub_register_extcmd_prio) (const char *name,
+						      grub_extcmd_func_t func,
+						      grub_command_flags_t flags,
+						      const char *summary,
+						      const char *description,
+						      const struct grub_arg_option *parser,
+						      int prio);
 
-void grub_unregister_extcmd (grub_extcmd_t cmd);
+void EXPORT_FUNC(grub_unregister_extcmd) (grub_extcmd_t cmd);
 
-grub_err_t
-grub_extcmd_dispatcher (struct grub_command *cmd, int argc, char **args,
-			struct grub_script *script);
+grub_err_t EXPORT_FUNC(grub_extcmd_dispatcher) (struct grub_command *cmd,
+						int argc, char **args,
+						struct grub_script *script);
 
 #endif /* ! GRUB_EXTCMD_HEADER */

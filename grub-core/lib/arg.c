@@ -260,7 +260,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
       char *option = 0;
 
       /* No option is used.  */
-      if ((num && GRUB_COMMAND_OPTIONS_AT_START)
+      if ((num && (cmd->cmd->flags & GRUB_COMMAND_OPTIONS_AT_START))
 	  || arg[0] != '-' || grub_strlen (arg) == 1)
 	{
 	  if (add_arg (arg) != 0)

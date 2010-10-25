@@ -92,10 +92,10 @@ kernel = {
   ieee1275 = kern/ieee1275/openfw.c;
   ieee1275 = term/ieee1275/ofconsole.c;
 
-  ieee1275 = term/terminfo.c;
-  ieee1275 = term/tparm.c;
-  mips = term/terminfo.c;
-  mips = term/tparm.c;
+  terminfoinkernel = term/terminfo.c;
+  terminfoinkernel = term/tparm.c;
+  terminfoinkernel = commands/extcmd.c;
+  terminfoinkernel = lib/arg.c;
 
   i386 = kern/i386/dl.c;
 
@@ -173,9 +173,7 @@ kernel = {
   emu = kern/emu/mm.c;
   emu = kern/emu/time.c;
 
-  videoinkernel = lib/arg.c;
   videoinkernel = term/gfxterm.c;
-  videoinkernel = commands/extcmd.c;
   videoinkernel = font/font.c;
   videoinkernel = font/font_cmd.c;
   videoinkernel = io/bufio.c;
@@ -288,6 +286,38 @@ image = {
 
   objcopyflags = '-O binary';
   enable = i386_pc;
+};
+
+image = {
+  name = xz_decompress;
+  mips = boot/mips/startup_raw.S;
+  common = boot/decompressor/minilib.c;
+  common = boot/decompressor/xz.c;
+  common = lib/xzembed/xz_dec_bcj.c;
+  common = lib/xzembed/xz_dec_lzma2.c;
+  common = lib/xzembed/xz_dec_stream.c;
+
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed';
+
+  mips_cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
+
+  objcopyflags = '-O binary';
+  ldflags = '-lgcc -static-libgcc -Wl,-Ttext,0x80100000';
+  cflags = '-static-libgcc';
+  enable = mips;
+};
+
+image = {
+  name = none_decompress;
+  mips = boot/mips/startup_raw.S;
+  common = boot/decompressor/none.c;
+
+  mips_cppflags = '-DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
+
+  objcopyflags = '-O binary';
+  ldflags = '-lgcc -static-libgcc -Wl,-Ttext,0x80100000';
+  cflags = '-static-libgcc';
+  enable = mips;
 };
 
 image = {
@@ -510,6 +540,7 @@ module = {
   name = extcmd;
   common = commands/extcmd.c;
   common = lib/arg.c;
+  enable = terminfomodule;
 };
 
 module = {
@@ -1305,6 +1336,7 @@ module = {
   name = terminfo;
   common = term/terminfo.c;
   common = term/tparm.c;
+  enable = terminfomodule;
 };
 
 module = {

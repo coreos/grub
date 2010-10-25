@@ -90,7 +90,7 @@ grub_ofconsole_dimensions (void)
 
 	  if (! grub_ieee1275_get_property (options, "screen-#columns",
 					    val, lval, 0))
-	    grub_ofconsole_terminfo_output->width
+	    grub_ofconsole_terminfo_output.width
 	      = (grub_uint8_t) grub_strtoul (val, 0, 10);
 	}
       if (! grub_ieee1275_get_property_length (options, "screen-#rows", &lval)
@@ -99,16 +99,16 @@ grub_ofconsole_dimensions (void)
 	  char val[lval];
 	  if (! grub_ieee1275_get_property (options, "screen-#rows",
 					    val, lval, 0))
-	    grub_ofconsole_terminfo_output->height
+	    grub_ofconsole_terminfo_output.height
 	      = (grub_uint8_t) grub_strtoul (val, 0, 10);
 	}
     }
 
   /* Use a small console by default.  */
-  if (! grub_ofconsole_terminfo_output->width)
-    grub_ofconsole_terminfo_output->width = 80;
-  if (! grub_ofconsole_terminfo_output->height)
-    grub_ofconsole_terminfo_output->height = 24;
+  if (! grub_ofconsole_terminfo_output.width)
+    grub_ofconsole_terminfo_output.width = 80;
+  if (! grub_ofconsole_terminfo_output.height)
+    grub_ofconsole_terminfo_output.height = 24;
 }
 
 static void

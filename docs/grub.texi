@@ -559,6 +559,14 @@ always. Therefore, GRUB provides you with a map file called the
 @dfn{device map}, which you must fix if it is wrong. @xref{Device
 map}, for more details.
 
+On BIOS platforms GRUB has to use a so-called embedding zone. On msdos
+partition tables, this is the space between the MBR and the first partition
+(called the MBR gap or the boot track), while on GPT partition tables it
+uses a BIOS Boot Partition (a partition with GUID
+21686148-6449-6e6f-744e656564454649). If you use GRUB on a BIOS system, make
+sure that the embedding zone is at least 31 KiB (512KiB or more
+recommended).
+
 If you still do want to install GRUB under a UNIX-like OS (such
 as @sc{gnu}), invoke the program @command{grub-install} (@pxref{Invoking
 grub-install}) as the superuser (@dfn{root}).
@@ -577,18 +585,6 @@ Likewise, under GNU/Hurd, this has the same effect:
 
 @example
 # @kbd{grub-install /dev/hd0}
-@end example
-
-If it is the first BIOS drive, this is the same as well:
-
-@example
-# @kbd{grub-install '(hd0)'}
-@end example
-
-Or you can omit the parentheses:
-
-@example
-# @kbd{grub-install hd0}
 @end example
 
 But all the above examples assume that GRUB should use images under
@@ -622,13 +618,25 @@ installation. The format is defined in @ref{Device map}. Please be
 quite careful. If the output is wrong, it is unlikely that your
 computer will be able to boot with no problem.
 
+Some BIOSes have a bug of exposing the first partition of a USB drive as a
+floppy instead of exposing the USB drive as a hard disk (they call it
+``USB-FDD'' boot). In such cases, you need to install like this:
+
+@example
+# @kbd{losetup /dev/loop0 /dev/sdb1}
+# @kbd{mount /dev/loop0 /mnt/usb}
+# @kbd{grub-install --boot-directory=/mnt/usb/bugbios --force --allow-floppy /dev/loop0}
+@end example
+
+This install doesn't conflict with standard install as long as they are in
+separate directories.
+
 Note that @command{grub-install} is actually just a shell script and the
 real task is done by @command{grub-mkimage} and @command{grub-setup}.
 Therefore, you may run those commands directly to install GRUB, without
 using @command{grub-install}. Don't do that, however, unless you are very
 familiar with the internals of GRUB. Installing a boot loader on a running
 OS may be extremely dangerous.
-
 
 @node Making a GRUB bootable CD-ROM
 @section Making a GRUB bootable CD-ROM
@@ -888,12 +896,26 @@ grub> @kbd{linux /vmlinuz root=/dev/sda1 acpi=off}
 See the documentation in the Linux source tree for complete information on
 the available options.
 
+With @command{linux} GRUB uses 32-bit protocol. Some BIOS services like APM
+or EDD aren't available with this protocol. In this case you need to use
+@command{linux16}
+
+@example
+grub> @kbd{linux16 /vmlinuz root=/dev/sda1 acpi=off}
+@end example 
+
 @item
 If you use an initrd, execute the command @command{initrd} (@pxref{initrd})
 after @command{linux}:
 
 @example
 grub> @kbd{initrd /initrd}
+@end example
+
+If you used @command{linux16} you need to use @command{initrd16}:
+
+@example
+grub> @kbd{initrd16 /initrd}
 @end example
 
 @item
@@ -1073,7 +1095,7 @@ A command to configure the serial port when using the serial console.
 Command-line arguments to add to menu entries for the Linux kernel.
 
 @item GRUB_CMDLINE_LINUX_DEFAULT
-Unless @samp{GRUB_DISABLE_LINUX_RECOVERY} is set to @samp{true}, two menu
+Unless @samp{GRUB_DISABLE_RECOVERY} is set to @samp{true}, two menu
 entries will be generated for each Linux kernel: one default entry and one
 entry for recovery mode.  This option lists command-line arguments to add
 only to the default menu entry, after those listed in
@@ -1096,13 +1118,9 @@ the Linux kernel, using a @samp{root=UUID=...} kernel parameter.  This is
 usually more reliable, but in some cases it may not be appropriate.  To
 disable the use of UUIDs, set this option to @samp{true}.
 
-@item GRUB_DISABLE_LINUX_RECOVERY
+@item GRUB_DISABLE_RECOVERY
 If this option is set to @samp{true}, disable the generation of recovery
-mode menu entries for Linux.
-
-@item GRUB_DISABLE_NETBSD_RECOVERY
-If this option is set to @samp{true}, disable the generation of recovery
-mode menu entries for NetBSD.
+mode menu entries.
 
 @item GRUB_VIDEO_BACKEND
 If graphical video support is required, either because the @samp{gfxterm}
@@ -3278,7 +3296,7 @@ commands.
 @node Supported kernels
 @chapter Supported boot targets
 
-X86 support is summarised in following table. ``Yes'' means that kernel works on the given platform, ``crashes'' means an early kernel crash which we hove will be fixed by concerned kernel developpers. ``no'' means GRUB doesn't load given kernel on a given platform. ``headless'' means that the kernel works but lacks console drivers (you can still use serial or network console).  In case of ``no'' and ``crashes'' the reason is given in footnote.
+X86 support is summarised in the following table. ``Yes'' means that the kernel works on the given platform, ``crashes'' means an early kernel crash which we hope will be fixed by concerned kernel developers. ``no'' means GRUB doesn't load the given kernel on a given platform. ``headless'' means that the kernel works but lacks console drivers (you can still use serial or network console).  In case of ``no'' and ``crashes'' the reason is given in footnote.
 @multitable @columnfractions .50 .22 .22
 @item                                @tab BIOS    @tab Coreboot
 @item BIOS chainloading              @tab yes     @tab no (1)

@@ -29,6 +29,7 @@
 #define GRUB_UHCI_IOMASK	(0x7FF << 5)
 
 #define N_QH  256
+#define N_TD  640
 
 typedef enum
   {
@@ -105,7 +106,7 @@ struct grub_uhci
   /* N_QH Queue Heads.  */
   grub_uhci_qh_t qh;
 
-  /* 256 Transfer Descriptors.  */
+  /* N_TD Transfer Descriptors.  */
   grub_uhci_td_t td;
 
   /* Free Transfer Descriptors.  */
@@ -213,7 +214,7 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
 
   /* The QH pointer of UHCI is only 32 bits, make sure this
      code works on on 64 bits architectures.  */
-  u->qh = (grub_uhci_qh_t) grub_memalign (4096, 4096);
+  u->qh = (grub_uhci_qh_t) grub_memalign (4096, sizeof(struct grub_uhci_qh)*N_QH);
   if (! u->qh)
     goto fail;
 
@@ -227,7 +228,7 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
 
   /* The TD pointer of UHCI is only 32 bits, make sure this
      code works on on 64 bits architectures.  */
-  u->td = (grub_uhci_td_t) grub_memalign (4096, 4096*2);
+  u->td = (grub_uhci_td_t) grub_memalign (4096, sizeof(struct grub_uhci_td)*N_TD);
   if (! u->td)
     goto fail;
 
@@ -244,9 +245,9 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
 
   /* Link all Transfer Descriptors in a list of available Transfer
      Descriptors.  */
-  for (i = 0; i < 256; i++)
+  for (i = 0; i < N_TD; i++)
     u->td[i].linkptr = (grub_uint32_t) (grub_addr_t) &u->td[i + 1];
-  u->td[255 - 1].linkptr = 0;
+  u->td[N_TD - 2].linkptr = 0;
   u->tdfree = u->td;
 
   /* Make sure UHCI is disabled!  */

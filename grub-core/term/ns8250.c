@@ -23,6 +23,7 @@
 #include <grub/misc.h>
 #include <grub/cpu/io.h>
 #include <grub/mm.h>
+#include <grub/time.h>
 
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/memory.h>
@@ -90,6 +91,8 @@ do_real_config (struct grub_serial_port *port)
   if (port->configured)
     return;
 
+  port->broken = 0;
+
   divisor = serial_get_divisor (port->config.speed);
 
   /* Turn off the interrupt.  */
@@ -145,17 +148,29 @@ serial_hw_fetch (struct grub_serial_port *port)
 static void
 serial_hw_put (struct grub_serial_port *port, const int c)
 {
-  unsigned int timeout = 100000;
+  grub_uint64_t endtime;
 
   do_real_config (port);
 
+  if (port->broken > 5)
+    endtime = grub_get_time_ms ();
+  else if (port->broken > 1)
+    endtime = grub_get_time_ms () + 50;
+  else
+    endtime = grub_get_time_ms () + 200;
   /* Wait until the transmitter holding register is empty.  */
   while ((grub_inb (port->port + UART_LSR) & UART_EMPTY_TRANSMITTER) == 0)
     {
-      if (--timeout == 0)
-        /* There is something wrong. But what can I do?  */
-        return;
+      if (grub_get_time_ms () > endtime)
+	{
+	  port->broken++;
+	  /* There is something wrong. But what can I do?  */
+	  return;
+	}
     }
+
+  if (port->broken)
+    port->broken--;
 
   grub_outb (c, port->port + UART_TX);
 }

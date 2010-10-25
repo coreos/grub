@@ -16,56 +16,45 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
-#include <grub/dl.h>
-#include <grub/env.h>
-#include <grub/kernel.h>
+#include <grub/types.h>
 #include <grub/misc.h>
-#include <grub/emu/misc.h>
-#include <grub/disk.h>
+#include <grub/decompressor.h>
+
+#include "xz.h"
+#include "xz_stream.h"
 
 void
-grub_register_exported_symbols (void)
+grub_decompress_core (void *src, void *dst, unsigned long srcsize,
+		      unsigned long dstsize)
 {
-}
+  struct xz_dec *dec;
+  struct xz_buf buf;
 
-grub_err_t
-grub_arch_dl_check_header (void *ehdr)
-{
-  (void) ehdr;
-  return GRUB_ERR_BAD_MODULE;
-}
+  find_scratch (src, dst, srcsize, dstsize);
 
-grub_err_t
-grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
-{
-  (void) mod;
-  (void) ehdr;
-  return GRUB_ERR_BAD_MODULE;
-}
+  dec = xz_dec_init (GRUB_DECOMPRESSOR_DICT_SIZE);
 
-void
-grub_emu_init (void)
-{
-  grub_no_autoload = 1;
-}
+  buf.in = src;
+  buf.in_pos = 0;
+  buf.in_size = srcsize;
+  buf.out = dst;
+  buf.out_pos = 0;
+  buf.out_size = dstsize;
 
-#ifdef GRUB_LINKER_HAVE_INIT
-void
-grub_arch_dl_init_linker (void)
-{
-}
-#endif
-
-void
-grub_emu_post_init (void)
-{
-  grub_lvm_fini ();
-  grub_mdraid09_fini ();
-  grub_mdraid1x_fini ();
-  grub_raid_fini ();
-  grub_raid_init ();
-  grub_mdraid09_init ();
-  grub_mdraid1x_init ();
-  grub_lvm_init ();
+  while (buf.in_pos != buf.in_size)
+    {
+      enum xz_ret xzret;
+      xzret = xz_dec_run (dec, &buf);
+      switch (xzret)
+	{
+	case XZ_MEMLIMIT_ERROR:
+	case XZ_FORMAT_ERROR:
+	case XZ_OPTIONS_ERROR:
+	case XZ_DATA_ERROR:
+	case XZ_BUF_ERROR:
+	  return;
+	default:
+	  break;
+	}
+    }
 }

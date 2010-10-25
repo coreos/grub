@@ -22,128 +22,23 @@
 #include <grub/machine/memory.h>
 #include <grub/offsets.h>
 
-#define BASE_ADDR 8
-	
-.extern __bss_start
-.extern _end
-	
+#define BASE_ADDR 8	
+
 	.globl __start, _start, start
+	.set noreorder
+	.set nomacro
 __start:
 _start:
-start:	
-	bal codestart
-base:	
-	. = _start + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE
-compressed_size:
-	.long 0
-	. = _start + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
+start:		
+.extern __bss_start
+.extern _end
+	bal cont
+	 nop
+
+	. = _start + GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE
 total_module_size:
 	.long 0
-	. = _start + GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE
-kernel_image_size:	
-	.long	0
-codestart:
-	/* Save our base.  */
-	move $s0, $ra
 
-	/* Parse arguments. Has to be done before relocation.
-	So need to do it in asm.  */
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
-	move $s2, $zero
-	move $s3, $zero
-	move $s4, $zero
-	move $s5, $zero
-
-	/* $a2 has the environment.  */
-	addiu $t0, $a2, 1
-	beq $t0, $zero, argdone
-	move $t0, $a2	
-argcont:	
-	lw $t1, 0($t0)
-	beq $t1, $zero, argdone
-#define DO_PARSE(str, reg) \
-	addiu $t2, $s0, (str-base);\
-	bal parsestr;\
-	beq $v0, $zero, 1f;\
-	move reg, $v0;\
-	b 2f;\
-1:	
-	DO_PARSE (busclockstr, $s2)
-	DO_PARSE (cpuclockstr, $s3)
-	DO_PARSE (memsizestr, $s4)
-	DO_PARSE (highmemsizestr, $s5)
-2:	
-	addiu $t0, $t0, 4
-	b argcont
-parsestr:
-	move $v0, $zero
-	move $t3, $t1
-3:	
-	lb $t4, 0($t2)
-	lb $t5, 0($t3)
-	addiu $t2, $t2, 1
-	addiu $t3, $t3, 1
-	beq $t5, $zero, 1f
-	beq $t5, $t4, 3b
-	bne $t4, $zero, 1f
-
-	addiu $t3, $t3, 0xffff
-digcont:	
-	lb $t5, 0($t3)
-	/* Substract '0' from digit.  */
-	addiu $t5, $t5, 0xffd0
-	bltz $t5, 1f
-	addiu $t4, $t5, 0xfff7
-	bgtz $t4, 1f
-	/* Multiply $v0 by 10 with bitshifts. */
-	sll $v0, $v0, 1
-	sll $t4, $v0, 2
-	addu $v0, $v0, $t4
-	addu $v0, $v0, $t5
-	addiu $t3, $t3, 1
-	b digcont
-1:
-	jr $ra
-busclockstr:	.asciiz "busclock="
-cpuclockstr:	.asciiz "cpuclock="
-memsizestr:	.asciiz "memsize="
-highmemsizestr:	.asciiz "highmemsize="
-	.p2align 2
-argdone:
-#endif
-
-	/* Decompress the payload. */
-	addiu $a0, $s0, GRUB_KERNEL_MACHINE_RAW_SIZE - BASE_ADDR
-	lui $a1, %hi(compressed)
-	addiu $a1, %lo(compressed)
-	lw $a2, (GRUB_KERNEL_MACHINE_COMPRESSED_SIZE - BASE_ADDR)($s0)
-	move $s1, $a1
-
-	/* $a0 contains source compressed address, $a1 is destination,
-	   $a2 is compressed size. FIXME: put LZMA here. Don't clober $s0,
-	   $s1, $s2, $s3, $s4 and $s5.
-	   On return $v0 contains uncompressed size.
-	*/
-	move $v0, $a2
-reloccont:
-	lb $t4, 0($a0)
-	sb $t4, 0($a1)
-	addiu $a1,$a1,1
-	addiu $a0,$a0,1
-	addiu $a2, 0xffff
-	bne $a2, $0, reloccont
-
-	move $a0, $s1
-	move $a1, $v0
-
-#include "cache_flush.S"
-
-	lui $t1, %hi(cont)
-	addiu $t1, %lo(cont)
-
-	jr $t1
-	. = _start + GRUB_KERNEL_MACHINE_RAW_SIZE
-compressed:	
 	. = _start + GRUB_KERNEL_MACHINE_PREFIX
 
 VARIABLE(grub_prefix)
@@ -166,6 +61,8 @@ VARIABLE (grub_arch_highmemsize)
 	.long 0
 #endif
 cont:
+	/* Save our base.  */
+	move $s0, $ra
 
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
 	lui $t1, %hi(grub_arch_busclock)
@@ -177,15 +74,13 @@ cont:
 #endif
 
 	/* Move the modules out of BSS.  */
-	lui $t1, %hi(_start)
-	addiu $t1, %lo(_start)
-	lw $t2, (GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE - BASE_ADDR)($s0)
-	addu $t2, $t1, $t2
+	lui $t2, %hi(__bss_start)
+	addiu $t2, %lo(__bss_start)
 	
 	lui $t1, %hi(_end)
 	addiu $t1, %lo(_end)
-	addiu $t1, (GRUB_KERNEL_MACHINE_MOD_ALIGN-1)
-	li $t3, (GRUB_KERNEL_MACHINE_MOD_ALIGN-1)
+	addiu $t1, (GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
+	li $t3, (GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
 	nor $t3, $t3, $0
 	and $t1, $t1, $t3
 	
@@ -194,33 +89,38 @@ cont:
 	/* Backward copy.  */
 	add $t1, $t1, $t3
 	add $t2, $t2, $t3
-	addiu $t1, $t1, 0xffff
-	addiu $t2, $t2, 0xffff
+	addiu $t1, $t1, -1
+	addiu $t2, $t2, -1
 
 	/* $t2 is source. $t1 is destination. $t3 is size.  */
 modulesmovcont:
+	beq $t3, $0, modulesmovdone
+         nop
 	lb $t4, 0($t2)
 	sb $t4, 0($t1)
-	addiu $t1,$t1,0xffff
-	addiu $t2,$t2,0xffff
-	addiu $t3, 0xffff
-	bne $t3, $0, modulesmovcont
+	addiu $t2, $t2, -1
+	addiu $t1, $t1, -1
+	b modulesmovcont
+	 addiu $t3, $t3, -1
+modulesmovdone:
 
 	/* Clean BSS.  */
 	
 	lui $t1, %hi(__bss_start)
-	addiu $t1, %lo(__bss_start)
+	addiu $t1, $t1, %lo(__bss_start)
 	lui $t2, %hi(_end)
-	addiu $t2, %lo(_end)
+	addiu $t2, $t2, %lo(_end)
 bsscont:
 	sb $0,0($t1)
-	addiu $t1,$t1,1
-	sltu $t3,$t1,$t2
+	addiu $t1, $t1, 1
+	sltu $t3, $t1, $t2
 	bne $t3, $0, bsscont
+         nop
 
-	li $sp, GRUB_MACHINE_MEMORY_STACK_HIGH
 	lui $t1, %hi(grub_main)
 	addiu $t1, %lo(grub_main)
 
+	lui $sp, %hi(GRUB_MACHINE_MEMORY_STACK_HIGH)
 	jr $t1
+	 addiu $sp, $sp, %lo(GRUB_MACHINE_MEMORY_STACK_HIGH)
 

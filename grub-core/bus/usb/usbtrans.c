@@ -228,7 +228,7 @@ grub_usb_bulk_setup_readwrite (grub_usb_device_t dev,
   if (dev->initialized)
     {
       struct grub_usb_desc_endp *endpdesc;
-      endpdesc = grub_usb_get_endpdescriptor (dev, 0);
+      endpdesc = grub_usb_get_endpdescriptor (dev, endpoint);
 
       if (endpdesc)
 	max = endpdesc->maxpacket;

@@ -150,7 +150,7 @@ typedef enum
 #define GRUB_OHCI_RESET_CONNECT_CHANGE (1 << 16)
 #define GRUB_OHCI_CTRL_EDS 256
 #define GRUB_OHCI_BULK_EDS 510
-#define GRUB_OHCI_TDS 256
+#define GRUB_OHCI_TDS 640
 
 #define GRUB_OHCI_ED_ADDR_MASK 0x7ff
 
@@ -220,7 +220,6 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
   grub_pci_address_t addr;
   struct grub_ohci *o;
   grub_uint32_t revision;
-  int cs5536;
   int j;
   
   /* Determine IO base address.  */
@@ -230,7 +229,6 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
     {
       grub_uint64_t basereg;
 
-      cs5536 = 1;
       basereg = grub_cs5536_read_msr (dev, GRUB_CS5536_MSR_USB_OHCI_BASE);
       if (!(basereg & GRUB_CS5536_MSR_USB_BASE_MEMORY_ENABLE))
 	{

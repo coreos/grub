@@ -100,6 +100,8 @@ VARIABLE(grub_install_dos_part)
 	.long	0xFFFFFFFF
 VARIABLE(grub_install_bsd_part)
 	.long	0xFFFFFFFF
+reed_solomon_redundancy:
+	.long	0
 
 #ifdef APPLE_CC
 bss_start:
@@ -107,7 +109,58 @@ bss_start:
 bss_end:
 	.long 0
 #endif
+/*
+ *  This is the area for all of the special variables.
+ */
 
+VARIABLE(grub_boot_drive)
+	.byte	0
+
+/* the real mode code continues... */
+LOCAL (codestart):
+	cli		/* we're not safe here! */
+
+	/* set up %ds, %ss, and %es */
+	xorw	%ax, %ax
+	movw	%ax, %ds
+	movw	%ax, %ss
+	movw	%ax, %es
+
+	/* set up the real mode/BIOS stack */
+	movl	$GRUB_MEMORY_MACHINE_REAL_STACK, %ebp
+	movl	%ebp, %esp
+
+	sti		/* we're safe again */
+
+	/* save the boot drive */
+	ADDR32	movb	%dl, EXT_C(grub_boot_drive)
+
+	/* reset disk system (%ah = 0) */
+	int	$0x13
+
+	/* transition to protected mode */
+	DATA32	call real_to_prot
+
+	/* The ".code32" directive takes GAS out of 16-bit mode. */
+	.code32
+
+	incl	%eax
+	call	grub_gate_a20
+
+	movl	EXT_C(grub_compressed_size), %edx
+	addl    $(GRUB_KERNEL_MACHINE_RAW_SIZE - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART), %edx
+	movl    reed_solomon_redundancy, %ecx
+	leal    _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART, %eax
+	testl   %edx, %edx
+	jz post_reed_solomon
+	call    EXT_C (grub_reed_solomon_recover)
+	jmp post_reed_solomon
+
+#include <rs_decoder.S>
+
+	.text
+
+	. = _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART
 /*
  * Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).
  * This uses the a.out kludge to load raw binary to the area starting at 1MB,
@@ -171,38 +224,8 @@ multiboot_trampoline:
         movb    $0xFF, %dh
 	/* enter the usual booting */
 	call	prot_to_real
-	.code16
 
-/* the real mode code continues... */
-LOCAL (codestart):
-	cli		/* we're not safe here! */
-
-	/* set up %ds, %ss, and %es */
-	xorw	%ax, %ax
-	movw	%ax, %ds
-	movw	%ax, %ss
-	movw	%ax, %es
-
-	/* set up the real mode/BIOS stack */
-	movl	$GRUB_MEMORY_MACHINE_REAL_STACK, %ebp
-	movl	%ebp, %esp
-
-	sti		/* we're safe again */
-
-	/* save the boot drive */
-	ADDR32	movb	%dl, EXT_C(grub_boot_drive)
-
-	/* reset disk system (%ah = 0) */
-	int	$0x13
-
-	/* transition to protected mode */
-	DATA32	call real_to_prot
-
-	/* The ".code32" directive takes GAS out of 16-bit mode. */
-	.code32
-
-	incl	%eax
-	call	grub_gate_a20
+post_reed_solomon:
 
 #ifdef ENABLE_LZMA
 	movl	$GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %edi
@@ -270,15 +293,6 @@ LOCAL (codestart):
 	 *  Call the start of main body of C code.
 	 */
 	call EXT_C(grub_main)
-
-/*
- *  This is the area for all of the special variables.
- */
-
-VARIABLE(grub_boot_drive)
-	.byte	0
-
-	.p2align	2	/* force 4-byte alignment */
 
 #include "../realmode.S"
 
@@ -577,7 +591,7 @@ FUNCTION(grub_console_putchar)
 
 
 LOCAL(bypass_table):
-	.word 0x0100 | '\e',0x0f00 | '\t', 0x0e00 | '\b', 0x1c00 | '\r'
+	.word 0x011b, 0x0f00 | '\t', 0x0e00 | '\b', 0x1c00 | '\r'
 	.word 0x1c00 | '\n'
 LOCAL(bypass_table_end):
 
@@ -601,6 +615,7 @@ LOCAL(bypass_table_end):
 
 FUNCTION(grub_console_getkey)
 	pushl	%ebp
+	pushl   %edi
 
 	call	prot_to_real
 	.code16
@@ -630,15 +645,16 @@ FUNCTION(grub_console_getkey)
 	jz      1f
 
 	andl	%edx, %eax
-	cmp     %eax, 0x20
-	ja      2f
+	cmpl    $0x20, %eax
+	jae     2f
 	movl	%edx, %eax
-	leal    LOCAL(bypass_table), %esi
+	leal    LOCAL(bypass_table), %edi
 	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) / 2), %ecx
-	repne cmpsw
+	repne scasw 
 	jz      3f
 
-	addl    $('a' - 1 | GRUB_TERM_CTRL), %eax
+	andl	$0xff, %eax
+	addl    $(('a' - 1) | GRUB_TERM_CTRL), %eax
 	jmp     2f
 3:
 	andl    $0xff, %eax
@@ -647,7 +663,8 @@ FUNCTION(grub_console_getkey)
 1:	movl    %edx, %eax
 	shrl    $8, %eax
 	orl     $GRUB_TERM_EXTENDED, %eax
-2:	
+2:
+	popl    %edi
 	popl	%ebp
 	ret
 
@@ -803,6 +820,10 @@ FUNCTION(grub_console_setcursor)
 	DATA32	call	real_to_prot
 	.code32
 
+	cmp     %cl, %ch
+	jb      3f
+	movw    $0x0d0e, %cx
+3:	
 	movw	%cx, console_cursor_shape
 1:
 	/* set %cx to the designated cursor shape */

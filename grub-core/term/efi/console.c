@@ -24,10 +24,6 @@
 #include <grub/efi/api.h>
 #include <grub/efi/console.h>
 
-static const grub_uint8_t
-grub_console_standard_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_YELLOW,
-						  GRUB_EFI_BACKGROUND_BLACK);
-
 static grub_uint32_t
 map_char (grub_uint32_t c)
 {
@@ -208,13 +204,14 @@ grub_console_setcolorstate (struct grub_term_output *term,
 
   switch (state) {
     case GRUB_TERM_COLOR_STANDARD:
-      efi_call_2 (o->set_attributes, o, grub_console_standard_color);
+      efi_call_2 (o->set_attributes, o, GRUB_TERM_DEFAULT_STANDARD_COLOR
+		  & 0x7f);
       break;
     case GRUB_TERM_COLOR_NORMAL:
-      efi_call_2 (o->set_attributes, o, term->normal_color);
+      efi_call_2 (o->set_attributes, o, term->normal_color & 0x7f);
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      efi_call_2 (o->set_attributes, o, term->highlight_color);
+      efi_call_2 (o->set_attributes, o, term->highlight_color & 0x7f);
       break;
     default:
       break;
@@ -266,10 +263,8 @@ static struct grub_term_output grub_console_term_output =
     .cls = grub_console_cls,
     .setcolorstate = grub_console_setcolorstate,
     .setcursor = grub_console_setcursor,
-    .normal_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_LIGHTGRAY,
-					GRUB_EFI_BACKGROUND_BLACK),
-    .highlight_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_BLACK,
-					   GRUB_EFI_BACKGROUND_LIGHTGRAY),
+    .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
+    .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
     .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS
   };
 

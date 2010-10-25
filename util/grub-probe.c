@@ -175,7 +175,8 @@ probe (const char *path, char *device_name)
 	    printf ("raid5rec ");
 	  if (is_raid6)
 	    printf ("raid6rec ");
-	  printf ("mdraid ");
+	  if (dev->disk->dev->raidname)
+	    printf ("%s ", dev->disk->dev->raidname (dev->disk));
 	}
 
       if (is_lvm)

@@ -225,7 +225,9 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 			int argc, char **args)
 {
   int i;
+#ifdef TODO
   int no_mem_option = 0;
+#endif
   struct grub_command *cmd;
   char **cutargs;
   int cutargc;
@@ -235,7 +237,9 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
       /* FIXME: really support this.  */
       if (argc >= 1 && grub_strcmp (args[0], "--no-mem-option") == 0)
 	{
+#ifdef TODO
 	  no_mem_option = 1;
+#endif
 	  argc--;
 	  args++;
 	  continue;

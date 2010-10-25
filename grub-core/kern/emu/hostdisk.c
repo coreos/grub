@@ -1,7 +1,7 @@
 /* hostdisk.c - emulate biosdisk */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -115,6 +115,9 @@ struct hd_geometry
 #  include <util.h>    /* getrawpartition */
 # endif /* HAVE_GETRAWPARTITION */
 # include <sys/fdio.h>
+# ifndef FLOPPY_MAJOR
+#  define FLOPPY_MAJOR	2
+# endif /* ! FLOPPY_MAJOR */
 # ifndef RAW_FLOPPY_MAJOR
 #  define RAW_FLOPPY_MAJOR	9
 # endif /* ! RAW_FLOPPY_MAJOR */
@@ -1624,7 +1627,16 @@ grub_util_biosdisk_is_floppy (grub_disk_t disk)
     return 1;
 #endif
 
+#if defined(FLOPPY_MAJOR)
   if (major(st.st_rdev) == FLOPPY_MAJOR)
+#else
+  /* Some kernels (e.g. kFreeBSD) don't have a static major number
+     for floppies, but they still use a "fd[0-9]" pathname.  */
+  if (map[disk->id].device[5] == 'f'
+      && map[disk->id].device[6] == 'd'
+      && map[disk->id].device[7] >= '0'
+      && map[disk->id].device[7] <= '9')
+#endif
     return 1;
 
   return 0;

@@ -54,6 +54,10 @@ struct grub_raid_array
   grub_disk_addr_t start_sector[GRUB_RAID_MAX_DEVICES];
 			   /* Start of each device, in 512 byte sectors. */
   struct grub_raid_array *next;
+
+#ifdef GRUB_UTIL
+  struct grub_raid *driver;
+#endif
 };
 
 struct grub_raid

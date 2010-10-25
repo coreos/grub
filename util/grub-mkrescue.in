@@ -152,15 +152,7 @@ else
     exit 1
 fi
 
-if test "x$TMP" != x; then
-  MKTEMP_TEMPLATE="$TMP/grub-mkrescue.XXXXXXXXXX"
-elif test "x$TEMP" != x; then
-  MKTEMP_TEMPLATE="$TEMP/grub-mkrescue.XXXXXXXXXX"
-else
-  MKTEMP_TEMPLATE="/tmp/grub-mkrescue.XXXXXXXXXX"
-fi
-
-iso9660_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
+iso9660_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 mkdir -p ${iso9660_dir}/boot/grub
 
 process_input_dir ()
@@ -197,8 +189,8 @@ make_image ()
 
     echo "Enabling $2 support ..."
 
-    memdisk_img=`mktemp "$MKTEMP_TEMPLATE"`
-    memdisk_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
+    memdisk_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
+    memdisk_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     mkdir -p ${memdisk_dir}/boot/grub
 
     cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
@@ -263,12 +255,12 @@ grub_mkisofs_arguments="${grub_mkisofs_arguments} --modification-date=$(echo ${i
 # build BIOS core.img
 if test -e "${pc_dir}" ; then
     echo "Enabling BIOS support ..."
-    core_img=`mktemp "$MKTEMP_TEMPLATE"`
+    core_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     $grub_mkimage -O i386-pc -d ${pc_dir}/ -o ${core_img} --prefix=/boot/grub/i386-pc \
         iso9660 biosdisk
     cat ${pc_dir}/cdboot.img ${core_img} > ${iso9660_dir}/boot/grub/i386-pc/eltorito.img
 
-    embed_img=`mktemp "$MKTEMP_TEMPLATE"`
+    embed_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     cat ${pc_dir}/boot.img ${core_img} > ${embed_img}
 
     rm -f ${core_img}
@@ -287,7 +279,7 @@ fi
 make_image "${multiboot_dir}" i386-multiboot "${iso9660_dir}/boot/multiboot.img" "ata at_keyboard"
 
 if test -e "${efi64_dir}" || test -e "${efi32_dir}"; then
-    efi_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
+    efi_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     mkdir -p "${efi_dir}/efi/boot"
 
     # build bootx64.efi

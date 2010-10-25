@@ -259,7 +259,7 @@ grub_lvm_scan_device (const char *name)
 {
   grub_err_t err;
   grub_disk_t disk;
-  grub_uint64_t da_offset, da_size, mda_offset, mda_size;
+  grub_uint64_t mda_offset, mda_size;
   char buf[GRUB_LVM_LABEL_SIZE];
   char vg_id[GRUB_LVM_ID_STRLEN+1];
   char pv_id[GRUB_LVM_ID_STRLEN+1];
@@ -319,8 +319,6 @@ grub_lvm_scan_device (const char *name)
   pv_id[j] = '\0';
 
   dlocn = pvh->disk_areas_xl;
-  da_offset = grub_le_to_cpu64 (dlocn->offset);
-  da_size = grub_le_to_cpu64 (dlocn->size);
 
   dlocn++;
   /* Is it possible to have multiple data/metadata areas? I haven't

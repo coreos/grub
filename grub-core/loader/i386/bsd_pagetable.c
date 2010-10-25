@@ -53,7 +53,7 @@ static void
 fill_bsd64_pagetable (grub_uint8_t *src, grub_addr_t target)
 {
   grub_uint64_t *pt2, *pt3, *pt4;
-  grub_addr_t pt2t, pt3t, pt4t;
+  grub_addr_t pt2t, pt3t;
   int i;
 
 #define PG_V		0x001
@@ -65,7 +65,6 @@ fill_bsd64_pagetable (grub_uint8_t *src, grub_addr_t target)
   pt3 = (grub_uint64_t *) (src + 4096);
   pt2 = (grub_uint64_t *) (src + 8192);
 
-  pt4t = target;
   pt3t = target + 4096;
   pt2t = target + 8192;
 

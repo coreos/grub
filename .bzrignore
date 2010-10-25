@@ -104,9 +104,10 @@ grub-core/lib/libgcrypt-grub
 **/.deps-core
 **/.dirstamp
 Makefile.util.am
+contrib
 grub-core/Makefile.core.am
-grub-core/Makefile.gcry.am
 grub-core/Makefile.gcry.def
+grub-core/contrib
 grub-core/genmod.sh
 grub-core/gensyminfo.sh
 grub-core/*.module

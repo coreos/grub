@@ -79,6 +79,7 @@ struct grub_disk_dev
 
 #ifdef GRUB_UTIL
   struct grub_disk_memberlist *(*memberlist) (struct grub_disk *disk);
+  const char * (*raidname) (struct grub_disk *disk);
 #endif
 
   /* The next disk device.  */

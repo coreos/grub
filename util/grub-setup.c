@@ -48,6 +48,7 @@
 #include <assert.h>
 #include <grub/emu/getroot.h>
 #include "progname.h"
+#include <grub/reed_solomon.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>
@@ -176,7 +177,7 @@ static void
 setup (const char *dir,
        const char *boot_file, const char *core_file,
        const char *root, const char *dest, int must_embed, int force,
-       int fs_probe)
+       int fs_probe, int allow_floppy)
 {
   char *boot_path, *core_path, *core_path_dev, *core_path_dev_full;
   char *boot_img, *core_img;
@@ -312,23 +313,11 @@ setup (const char *dir,
     /* If DEST_DRIVE is a hard disk, enable the workaround, which is
        for buggy BIOSes which don't pass boot drive correctly. Instead,
        they pass 0x00 or 0x01 even when booted from 0x80.  */
-    if (!grub_util_biosdisk_is_floppy (dest_dev->disk))
+    if (!allow_floppy && !grub_util_biosdisk_is_floppy (dest_dev->disk))
       /* Replace the jmp (2 bytes) with double nop's.  */
       *boot_drive_check = 0x9090;
   }
 #endif
-
-  /* Clean out the blocklists.  */
-  block = first_block;
-  while (block->len)
-    {
-      grub_memset (block, 0, sizeof (block));
-
-      block--;
-
-      if ((char *) block <= core_img)
-	grub_util_error ("No terminator in the core image");
-    }
 
 #ifdef GRUB_MACHINE_PCBIOS
   {
@@ -336,9 +325,10 @@ setup (const char *dir,
     grub_partition_t container = dest_dev->disk->partition;
     int multiple_partmaps = 0;
     grub_err_t err;
-    grub_disk_addr_t sectors[core_sectors];
+    grub_disk_addr_t *sectors;
     int i;
     grub_fs_t fs;
+    unsigned int nsec;
 
     /* Unlike root_dev, with dest_dev we're interested in the partition map even
        if dest_dev itself is a whole disk.  */
@@ -419,8 +409,11 @@ setup (const char *dir,
 	goto unable_to_embed;
       }
 
-    err = dest_partmap->embed (dest_dev->disk, core_sectors,
-			       GRUB_EMBED_PCBIOS, sectors);
+    nsec = core_sectors;
+    err = dest_partmap->embed (dest_dev->disk, &nsec,
+			       GRUB_EMBED_PCBIOS, &sectors);
+    if (nsec > 2 * core_sectors)
+      nsec = 2 * core_sectors;
     
     if (err)
       {
@@ -429,15 +422,41 @@ setup (const char *dir,
 	goto unable_to_embed;
       }
 
+    /* Clean out the blocklists.  */
+    block = first_block;
+    while (block->len)
+      {
+	grub_memset (block, 0, sizeof (block));
+      
+	block--;
+
+	if ((char *) block <= core_img)
+	  grub_util_error ("No terminator in the core image");
+      }
+
     save_first_sector (sectors[0] + grub_partition_get_start (container),
 		       0, GRUB_DISK_SECTOR_SIZE);
 
     block = first_block;
-    for (i = 1; i < core_sectors; i++)
+    for (i = 1; i < nsec; i++)
       save_blocklists (sectors[i] + grub_partition_get_start (container),
 		       0, GRUB_DISK_SECTOR_SIZE);
 
     write_rootdev (core_img, root_dev, boot_img, first_sector);
+
+    core_img = realloc (core_img, nsec * GRUB_DISK_SECTOR_SIZE);
+    first_block = (struct grub_boot_blocklist *) (core_img
+						  + GRUB_DISK_SECTOR_SIZE
+						  - sizeof (*block));
+
+    *(grub_uint32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
+			+ GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY)
+      = grub_host_to_target32 (nsec * GRUB_DISK_SECTOR_SIZE - core_size);
+
+    grub_reed_solomon_add_redundancy (core_img + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART + GRUB_DISK_SECTOR_SIZE,
+				      core_size - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART - GRUB_DISK_SECTOR_SIZE,
+				      nsec * GRUB_DISK_SECTOR_SIZE
+				      - core_size);
 
     /* Make sure that the second blocklist is a terminator.  */
     block = first_block - 1;
@@ -446,13 +465,12 @@ setup (const char *dir,
     block->segment = 0;
 
     /* Write the core image onto the disk.  */
-    for (i = 0; i < core_sectors; i++)
+    for (i = 0; i < nsec; i++)
       grub_disk_write (dest_dev->disk, sectors[i], 0,
-		       (core_size - i * GRUB_DISK_SECTOR_SIZE
-			< GRUB_DISK_SECTOR_SIZE) ? core_size
-		       - i * GRUB_DISK_SECTOR_SIZE
-		       : GRUB_DISK_SECTOR_SIZE,
+		       GRUB_DISK_SECTOR_SIZE,
 		       core_img + i * GRUB_DISK_SECTOR_SIZE);
+
+    grub_free (sectors);
 
     goto finish;
   }
@@ -660,6 +678,9 @@ static struct argp_option options[] = {
    N_("Do not probe for filesystems in DEVICE"), 0},
   {"verbose",     'v', 0,      0,
    N_("Print verbose messages."), 0},
+  {"allow-floppy", 'a', 0,      0,
+   N_("Make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes."), 0},
+
   { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -694,6 +715,7 @@ struct arguments
   char *root_dev;
   int  force;
   int  fs_probe;
+  int allow_floppy;
   char *device;
 };
 
@@ -719,6 +741,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
   switch (key)
     {
+      case 'a':
+        arguments->allow_floppy = 1;
+        break;
+
       case 'b':
         if (arguments->boot_file)
           free (arguments->boot_file);
@@ -820,10 +846,6 @@ main (int argc, char *argv[])
   int must_embed = 0;
   struct arguments arguments;
 
-#ifdef GRUB_MACHINE_IEEE1275
-  force = 1;
-#endif
-
   set_program_name (argv[0]);
 
   grub_util_init_nls ();
@@ -838,6 +860,10 @@ main (int argc, char *argv[])
       fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
       exit(1);
     }
+
+#ifdef GRUB_MACHINE_IEEE1275
+  arguments.force = 1;
+#endif
 
   if (verbosity > 1)
     grub_env_set ("debug", "all");
@@ -932,7 +958,8 @@ main (int argc, char *argv[])
                  arguments.boot_file ? : DEFAULT_BOOT_FILE,
                  arguments.core_file ? : DEFAULT_CORE_FILE,
                  root_dev, grub_util_get_grub_dev (devicelist[i]), 1,
-                 arguments.force, arguments.fs_probe);
+                 arguments.force, arguments.fs_probe,
+		 arguments.allow_floppy);
         }
     }
   else
@@ -941,7 +968,8 @@ main (int argc, char *argv[])
     setup (arguments.dir ? : DEFAULT_DIRECTORY,
            arguments.boot_file ? : DEFAULT_BOOT_FILE,
            arguments.core_file ? : DEFAULT_CORE_FILE,
-           root_dev, dest_dev, must_embed, arguments.force, arguments.fs_probe);
+           root_dev, dest_dev, must_embed, arguments.force,
+	   arguments.fs_probe, arguments.allow_floppy);
 
   /* Free resources.  */
   grub_fini_all ();
