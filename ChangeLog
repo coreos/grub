@@ -1,5 +1,10 @@
 2010-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-setup.c (argp): Remove misleading example of installing to
+	a partition.
+
+2010-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-setup.c (setup): Clarify the error message.
 
 2010-10-26  Vladimir Serbinenko  <phcoder@gmail.com>

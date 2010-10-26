@@ -822,7 +822,7 @@ Set up images to boot from DEVICE.\n\
 \n\
 You should not normally run this program directly.  Use grub-install instead.")
 "\v"N_("\
-DEVICE must be an OS device (e.g. /dev/sda1)."),
+DEVICE must be an OS device (e.g. /dev/sda)."),
   NULL, help_filter, NULL
 };
 
