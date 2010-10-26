@@ -1,5 +1,10 @@
 2010-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-setup.c (setup): Refuse to do a cross-disk embeddingless
+	install rather than creating a broken install.
+
+2010-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-setup.c (argp): Remove misleading example of installing to
 	a partition.
 

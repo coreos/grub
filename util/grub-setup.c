@@ -482,6 +482,12 @@ unable_to_embed:
     grub_util_error (_("embedding is not possible, but this is required when "
 		       "the root device is on a RAID array or LVM volume"));
 
+#ifdef GRUB_MACHINE_PCBIOS
+  if (dest_dev->disk->id != root_dev->disk->id)
+    grub_util_error (_("embedding is not possible, but this is required for "
+		       "cross-disk install"));
+#endif
+
   grub_util_warn (_("Embedding is not possible.  GRUB can only be installed in this "
 		    "setup by using blocklists.  However, blocklists are UNRELIABLE and "
 		    "their use is discouraged."));
