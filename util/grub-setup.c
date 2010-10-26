@@ -385,7 +385,7 @@ setup (const char *dir,
 
     if (! dest_partmap)
       {
-	grub_util_warn (_("Attempting to install GRUB to a partitionless disk.  This is a BAD idea."));
+	grub_util_warn (_("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
 	goto unable_to_embed;
       }
     if (multiple_partmaps || fs)
