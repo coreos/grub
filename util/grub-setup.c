@@ -385,7 +385,7 @@ setup (const char *dir,
 
     if (! dest_partmap)
       {
-	grub_util_warn (_("Attempting to install GRUB to a partitionless disk.  This is a BAD idea."));
+	grub_util_warn (_("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
 	goto unable_to_embed;
       }
     if (multiple_partmaps || fs)
@@ -481,6 +481,12 @@ unable_to_embed:
   if (must_embed)
     grub_util_error (_("embedding is not possible, but this is required when "
 		       "the root device is on a RAID array or LVM volume"));
+
+#ifdef GRUB_MACHINE_PCBIOS
+  if (dest_dev->disk->id != root_dev->disk->id)
+    grub_util_error (_("embedding is not possible, but this is required for "
+		       "cross-disk install"));
+#endif
 
   grub_util_warn (_("Embedding is not possible.  GRUB can only be installed in this "
 		    "setup by using blocklists.  However, blocklists are UNRELIABLE and "
@@ -822,7 +828,7 @@ Set up images to boot from DEVICE.\n\
 \n\
 You should not normally run this program directly.  Use grub-install instead.")
 "\v"N_("\
-DEVICE must be an OS device (e.g. /dev/sda1)."),
+DEVICE must be an OS device (e.g. /dev/sda)."),
   NULL, help_filter, NULL
 };
 

@@ -1,3 +1,43 @@
+2010-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-setup.c (setup): Refuse to do a cross-disk embeddingless
+	install rather than creating a broken install.
+
+2010-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-setup.c (argp): Remove misleading example of installing to
+	a partition.
+
+2010-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-setup.c (setup): Clarify the error message.
+
+2010-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/types.h (grub_target_off_t): Removed no longer used type.
+
+2010-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/misc.c
+	(grub_make_system_path_relative_to_its_root)
+	[HAVE_LIBZFS && HAVE_LIBNVPAIR]: Fix mountpoint return on ZFS.
+
+2010-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/misc.c
+	(grub_make_system_path_relative_to_its_root): Revert r2882.
+
+2010-10-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/relocator.c (grub_relocator_subchunk): Remove now
+	useless field head. All users updated.
+	(free_subchunk): Correct handling of IN_REGION subchunk.
+
+2010-10-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Installing GRUB using grub-install): Proofread.
+	(Supported kernels): Likewise.
+
 2010-10-18  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	Make mktemp invocations portable.

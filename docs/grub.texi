@@ -559,11 +559,12 @@ always. Therefore, GRUB provides you with a map file called the
 @dfn{device map}, which you must fix if it is wrong. @xref{Device
 map}, for more details.
 
-On BIOS platforms GRUB has to use a so called embedding zone. On msdos
-partition tables it's the space between MBR and first partition (called
-MBR gap), on GPT partition it uses a BIOS Boot Partition (a partition
-having type 21686148-6449-6e6f-744e656564454649). If you use GRUB on
-BIOS be sure to supply at least 31 KiB of embedding zone (512KiB or more
+On BIOS platforms GRUB has to use a so-called embedding zone. On msdos
+partition tables, this is the space between the MBR and the first partition
+(called the MBR gap or the boot track), while on GPT partition tables it
+uses a BIOS Boot Partition (a partition with GUID
+21686148-6449-6e6f-744e656564454649). If you use GRUB on a BIOS system, make
+sure that the embedding zone is at least 31 KiB (512KiB or more
 recommended).
 
 If you still do want to install GRUB under a UNIX-like OS (such
@@ -617,9 +618,9 @@ installation. The format is defined in @ref{Device map}. Please be
 quite careful. If the output is wrong, it is unlikely that your
 computer will be able to boot with no problem.
 
-Some BIOSes have a bug of exposing first partition of USB pendrive as a floppy
-instead of exposing pendrive as a hard disk (they call it ``USB-FDD'' boot)
-In such cases you need to install as following:
+Some BIOSes have a bug of exposing the first partition of a USB drive as a
+floppy instead of exposing the USB drive as a hard disk (they call it
+``USB-FDD'' boot). In such cases, you need to install like this:
 
 @example
 # @kbd{losetup /dev/loop0 /dev/sdb1}
@@ -3295,7 +3296,7 @@ commands.
 @node Supported kernels
 @chapter Supported boot targets
 
-X86 support is summarised in following table. ``Yes'' means that kernel works on the given platform, ``crashes'' means an early kernel crash which we hove will be fixed by concerned kernel developpers. ``no'' means GRUB doesn't load given kernel on a given platform. ``headless'' means that the kernel works but lacks console drivers (you can still use serial or network console).  In case of ``no'' and ``crashes'' the reason is given in footnote.
+X86 support is summarised in the following table. ``Yes'' means that the kernel works on the given platform, ``crashes'' means an early kernel crash which we hope will be fixed by concerned kernel developers. ``no'' means GRUB doesn't load the given kernel on a given platform. ``headless'' means that the kernel works but lacks console drivers (you can still use serial or network console).  In case of ``no'' and ``crashes'' the reason is given in footnote.
 @multitable @columnfractions .50 .22 .22
 @item                                @tab BIOS    @tab Coreboot
 @item BIOS chainloading              @tab yes     @tab no (1)
