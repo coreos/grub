@@ -1,3 +1,12 @@
+2010-10-29  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	NetBSD build fix for getline function conflict from gnulib.
+
+	* Makefile.util.def (libgrubkern.a): New library for grub kernel
+	components that depend on gnulib headers.
+	(libgrubmods.a): Renamed from earlier libgrub.a.
+	* conf/Makefile.common: Remove gnulib from *_LIBRARY flags.
+
 2010-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-setup.c (setup): Refuse to do a cross-disk embeddingless
