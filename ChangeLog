@@ -1,3 +1,7 @@
+2010-11-01  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* grub-core/partmap/bsdlabel.c (iterate_real): Fix an integer overflow.
+
 2010-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/linux.c (grub_cmd_linux): Autoload vbe.mod if

@@ -44,7 +44,7 @@ iterate_real (grub_disk_t disk, grub_disk_addr_t sector, int freebsd,
   struct grub_partition_bsd_disk_label label;
   struct grub_partition p;
   grub_disk_addr_t delta = 0;
-  unsigned pos;
+  grub_disk_addr_t pos;
 
   /* Read the BSD label.  */
   if (grub_disk_read (disk, sector, 0, sizeof (label), &label))
