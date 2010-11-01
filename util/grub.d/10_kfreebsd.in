@@ -76,7 +76,9 @@ kfreebsd_entry ()
     title="$(gettext_quoted "%s, with kFreeBSD %s")"
   fi
   printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${version}"
-  save_default_entry | sed -e "s/^/\t/"
+  if ! ${recovery} ; then
+      save_default_entry | sed -e "s/^/\t/"
+  fi
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi

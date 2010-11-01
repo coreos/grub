@@ -63,7 +63,9 @@ linux_entry ()
     title="$(gettext_quoted "%s, with Linux %s")"
   fi
   printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${version}"
-  save_default_entry | sed -e "s/^/\t/"
+  if ! ${recovery} ; then
+      save_default_entry | sed -e "s/^/\t/"
+  fi
 
   # Use ELILO's generic "efifb" when it's known to be available.
   # FIXME: We need an interface to select vesafb in case efifb can't be used.

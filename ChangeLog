@@ -1,5 +1,12 @@
 2010-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/10_hurd.in: Don't call savedefault on recovery entries.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+
+2010-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/arg.c (grub_arg_parse): Avoid interpreting direct
 	argument as an argument to no-argument option.
 
