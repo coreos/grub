@@ -1,5 +1,9 @@
 2010-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.am (libgrub.pp): Propagate the libgrub.a split.
+
+2010-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Do not put
 	elements with invlid index.
 	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Likewise.
