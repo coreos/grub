@@ -78,6 +78,11 @@ EOF
 EOF
       fi
   else
+      if [ "x$GRUB_GFXPAYLOAD_LINUX" != xtext ]; then
+	  cat << EOF
+	load_video
+EOF
+      fi
 	  cat << EOF
 	set gfxpayload=$GRUB_GFXPAYLOAD_LINUX
 EOF
