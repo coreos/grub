@@ -1,3 +1,8 @@
+2010-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/man/grub-set-default.h2m: Clarify that only saved default entry
+	is modified
+
 2010-10-29  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	NetBSD build fix for getline function conflict from gnulib.
