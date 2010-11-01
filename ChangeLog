@@ -1,5 +1,10 @@
 2010-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/arg.c (grub_arg_parse): Avoid interpreting direct
+	argument as an argument to no-argument option.
+
+2010-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/10_linux.in: Add missing load_video with explicit
 	GRUB_GFXPAYLOAD_LINUX.
 
