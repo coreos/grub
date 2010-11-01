@@ -1,5 +1,10 @@
 2010-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/linux.c (grub_cmd_linux): Autoload vbe.mod if
+	vga= option is supplied.
+
+2010-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/10_hurd.in: Don't call savedefault on recovery entries.
 	* util/grub.d/10_kfreebsd.in: Likewise.
 	* util/grub.d/10_linux.in: Likewise.

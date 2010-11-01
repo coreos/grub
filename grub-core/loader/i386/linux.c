@@ -719,6 +719,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	grub_err_t err;
 	char *buf;
 
+	grub_dl_load ("vbe");
+
 	if (grub_strcmp (val, "normal") == 0)
 	  vid_mode = GRUB_LINUX_VID_MODE_NORMAL;
 	else if (grub_strcmp (val, "ext") == 0)
