@@ -1,5 +1,17 @@
 2010-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Do not put
+	elements with invlid index.
+	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Likewise.
+	* grub-core/disk/raid.c (insert_array): Automatically reallocate
+	members.
+	* include/grub/raid.h (grub_raid_member): New struct.
+	(grub_raid_array): Transform devices and start_sector into usage of
+	grub_raid_member. All users updated
+	(allocated_devs): New member.
+
+2010-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/man/grub-set-default.h2m: Clarify that only saved default entry
 	is modified
 

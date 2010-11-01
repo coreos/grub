@@ -97,10 +97,10 @@ grub_raid_memberlist (grub_disk_t disk)
   unsigned int i;
 
   for (i = 0; i < array->total_devs; i++)
-    if (array->device[i])
+    if (array->members[i].device)
       {
         tmp = grub_malloc (sizeof (*tmp));
-        tmp->disk = array->device[i];
+        tmp->disk = array->members[i].device;
         tmp->next = list;
         list = tmp;
       }
@@ -255,13 +255,13 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
                 k = disknr;
                 for (j = 0; j < far; j++)
                   {
-                    if (array->device[k])
+                    if (array->members[k].device)
                       {
                         if (grub_errno == GRUB_ERR_READ_ERROR)
                           grub_errno = GRUB_ERR_NONE;
 
-                        err = grub_disk_read (array->device[k],
-                                              array->start_sector[k] +
+                        err = grub_disk_read (array->members[k].device,
+                                              array->members[k].start_sector +
                                                 read_sector + j * far_ofs + b,
                                               0,
                                               read_size << GRUB_DISK_SECTOR_BITS,
@@ -367,14 +367,14 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
               read_size = size;
 
             e = 0;
-            if (array->device[disknr])
+            if (array->members[disknr].device)
               {
                 /* Reset read error.  */
                 if (grub_errno == GRUB_ERR_READ_ERROR)
                   grub_errno = GRUB_ERR_NONE;
 
-                err = grub_disk_read (array->device[disknr],
-                                      array->start_sector[disknr] +
+                err = grub_disk_read (array->members[disknr].device,
+                                      array->members[disknr].start_sector +
                                         read_sector + b, 0,
                                       read_size << GRUB_DISK_SECTOR_BITS,
                                       buf);
@@ -500,6 +500,21 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 
         /* Do some checks before adding the device to the array.  */
 
+	if (new_array->index >= array->allocated_devs)
+	  {
+	    void *tmp;
+	    unsigned int newnum = 2 * (new_array->index + 1);
+	    tmp = grub_realloc (array->members, newnum
+				* sizeof (array->members[0]));
+	    if (!tmp)
+	      return grub_errno;
+	    array->members = tmp;
+	    grub_memset (array->members + array->allocated_devs,
+			 0, (newnum - array->allocated_devs)
+			 * sizeof (array->members[0]));
+	    array->allocated_devs = newnum;
+	  }
+
         /* FIXME: Check whether the update time of the superblocks are
            the same.  */
 
@@ -510,7 +525,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
           grub_dprintf ("raid", "array->nr_devs > array->total_devs (%d)?!?",
 			array->total_devs);
 
-        if (array->device[new_array->index] != NULL)
+        if (array->members[new_array->index].device != NULL)
           /* We found multiple devices with the same number. Again,
              this shouldn't happen.  */
           grub_dprintf ("raid", "Found two disks with the number %d?!?",
@@ -536,8 +551,18 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 #ifdef GRUB_UTIL
       array->driver = raid;
 #endif
-      grub_memset (&array->device, 0, sizeof (array->device));
-      grub_memset (&array->start_sector, 0, sizeof (array->start_sector));
+      array->allocated_devs = 32;
+      if (new_array->index >= array->allocated_devs)
+	array->allocated_devs = 2 * (new_array->index + 1);
+
+      array->members = grub_zalloc (array->allocated_devs
+				    * sizeof (array->members[0]));
+
+      if (!array->members)
+        {
+          grub_free (new_array->uuid);
+          return grub_errno;
+        }
 
       if (! array->name)
 	{
@@ -582,6 +607,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 	  array->name = grub_xasprintf ("md%d", array->number);
 	  if (! array->name)
 	    {
+	      grub_free (array->members);
 	      grub_free (array->uuid);
 	      grub_free (array);
 
@@ -597,6 +623,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 
 	  if (! new_name)
 	    {
+	      grub_free (array->members);
 	      grub_free (array->uuid);
 	      grub_free (array);
 
@@ -621,8 +648,8 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
     }
 
   /* Add the device to the array. */
-  array->device[new_array->index] = disk;
-  array->start_sector[new_array->index] = start_sector;
+  array->members[new_array->index].device = disk;
+  array->members[new_array->index].start_sector = start_sector;
   array->nr_devs++;
 
   return 0;
@@ -639,14 +666,15 @@ free_array (void)
   while (array)
     {
       struct grub_raid_array *p;
-      int i;
+      unsigned int i;
 
       p = array;
       array = array->next;
 
-      for (i = 0; i < GRUB_RAID_MAX_DEVICES; i++)
-        if (p->device[i])
-          grub_disk_close (p->device[i]);
+      for (i = 0; i < p->allocated_devs; i++)
+        if (p->members[i].device)
+          grub_disk_close (p->members[i].device);
+      grub_free (p->members);
 
       grub_free (p->uuid);
       grub_free (p->name);

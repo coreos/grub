@@ -22,8 +22,6 @@
 
 #include <grub/types.h>
 
-#define GRUB_RAID_MAX_DEVICES	32
-
 #define GRUB_RAID_LAYOUT_LEFT_ASYMMETRIC	0
 #define GRUB_RAID_LAYOUT_RIGHT_ASYMMETRIC	1
 #define GRUB_RAID_LAYOUT_LEFT_SYMMETRIC		2
@@ -31,6 +29,13 @@
 
 #define GRUB_RAID_LAYOUT_RIGHT_MASK		1
 #define GRUB_RAID_LAYOUT_SYMMETRIC_MASK		2
+
+struct grub_raid_member
+{
+  grub_disk_t device;  /* Array of total_devs devices. */
+  grub_disk_addr_t start_sector;
+  /* Start of each device, in 512 byte sectors. */
+};
 
 struct grub_raid_array
 {
@@ -43,16 +48,15 @@ struct grub_raid_array
   grub_size_t chunk_size;  /* The size of a chunk, in 512 byte sectors. */
   grub_uint64_t disk_size; /* Size of an individual disk, in 512 byte
 			      sectors. */
-  int index;               /* Index of current device.  */
+  unsigned int index;               /* Index of current device.  */
   int uuid_len;            /* The length of uuid.  */
   char *uuid;              /* The UUID of the device. */
 
   /* The following field is setup by the caller.  */
   char *name;              /* That will be "md<number>". */
   unsigned int nr_devs;    /* The number of devices we've found so far. */
-  grub_disk_t device[GRUB_RAID_MAX_DEVICES];  /* Array of total_devs devices. */
-  grub_disk_addr_t start_sector[GRUB_RAID_MAX_DEVICES];
-			   /* Start of each device, in 512 byte sectors. */
+  unsigned int allocated_devs;
+  struct grub_raid_member *members;
   struct grub_raid_array *next;
 
 #ifdef GRUB_UTIL

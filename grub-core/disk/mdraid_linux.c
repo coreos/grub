@@ -194,6 +194,9 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
       sb.level != 5 && sb.level != 6 && sb.level != 10)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "unsupported RAID level: %d", sb.level);
+  if (sb.this_disk.number == 0xffff || sb.this_disk.number == 0xfffe)
+    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		       "spares aren't implemented");
 
   array->name = NULL;
   array->number = sb.md_minor;

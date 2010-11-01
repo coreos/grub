@@ -188,12 +188,14 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
 	array->total_devs = grub_le_to_cpu32 (real_sb->raid_disks);
 	array->disk_size = grub_le_to_cpu64 (real_sb->size);
 	array->chunk_size = grub_le_to_cpu32 (real_sb->chunksize);
-	if (grub_le_to_cpu32 (real_sb->dev_number) <
+
+	if (grub_le_to_cpu32 (real_sb->dev_number) >=
 	    grub_le_to_cpu32 (real_sb->max_dev))
-	  array->index = grub_le_to_cpu16
-	    (real_sb->dev_roles[grub_le_to_cpu32 (real_sb->dev_number)]);
-	else
-	  array->index = 0xffff;  /* disk will be later not used! */
+	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			     "spares aren't implemented");
+
+	array->index = grub_le_to_cpu16
+	  (real_sb->dev_roles[grub_le_to_cpu32 (real_sb->dev_number)]);
 	array->uuid_len = 16;
 	array->uuid = grub_malloc (16);
 	if (!array->uuid)
