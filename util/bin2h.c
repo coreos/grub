@@ -96,7 +96,7 @@ main (int argc, char *argv[])
   if (b == EOF)
     goto abort;
 
-  printf ("/* THIS CHUNK OF BYTES IS AUTOMATICALY GENERATED */\n"
+  printf ("/* THIS CHUNK OF BYTES IS AUTOMATICALLY GENERATED */\n"
 	  "unsigned char %s[] =\n{\n", sym);
 
   while (1)

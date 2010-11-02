@@ -1,3 +1,7 @@
+2010-11-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/bin2h.c (main): Fix spelling error in generated output.
+
 2010-11-01  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* grub-core/partmap/bsdlabel.c (iterate_real): Fix an integer overflow.
