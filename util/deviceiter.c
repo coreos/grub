@@ -601,7 +601,7 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 #endif /* __linux__ */
 
   /* IDE disks.  */
-  for (i = 0; i < 26; i++)
+  for (i = 0; i < 96; i++)
     {
       char name[16];
 
@@ -655,7 +655,7 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 #endif /* __linux__ */
 
   /* The rest is SCSI disks.  */
-  for (i = 0; i < 26; i++)
+  for (i = 0; i < 48; i++)
     {
       char name[16];
 
