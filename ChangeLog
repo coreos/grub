@@ -1,5 +1,10 @@
 2010-11-05  Robert Millan  <rmh@gnu.org>
 
+	* util/grub-mkconfig.in: Remove gfxterm.mod probe (no longer
+	needed).
+
+2010-11-05  Robert Millan  <rmh@gnu.org>
+
 	On Yeeloong, pass machine type information to Linux.
 
 	* grub-core/loader/mips/linux.c [GRUB_MACHINE_MIPS_YEELOONG]
