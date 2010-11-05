@@ -1,3 +1,13 @@
+2010-11-05  Robert Millan  <rmh@gnu.org>
+
+	On Yeeloong, pass machine type information to Linux.
+
+	* grub-core/loader/mips/linux.c [GRUB_MACHINE_MIPS_YEELOONG]
+	(LOONGSON_MACHTYPE): New macro, set to
+	"machtype=lemote-yeeloong-2f-8.9inches".
+	[LOONGSON_MACHTYPE] (grub_cmd_linux): Pass LOONGSON_MACHTYPE as
+	additional argument to Linux.
+
 2010-11-04  Robert Millan  <rmh@gnu.org>
 
 	* util/deviceiter.c (grub_util_iterate_devices): Increase SCSI
