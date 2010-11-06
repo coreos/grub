@@ -24,7 +24,6 @@
 
 #include <grub/symbol.h>
 #include <grub/types.h>
-#include <grub/util/libzfs.h>
 
 #ifdef __CYGWIN__
 # include <sys/fcntl.h>
@@ -78,7 +77,5 @@ extern char * canonicalize_file_name (const char *path);
 #ifdef HAVE_DEVICE_MAPPER
 int grub_device_mapper_supported (void);
 #endif
-
-libzfs_handle_t *grub_get_libzfs_handle (void);
 
 #endif /* GRUB_EMU_MISC_H */

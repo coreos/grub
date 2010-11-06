@@ -1,5 +1,11 @@
 2010-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/emu/misc.h: Don't include grub/util/libzfs.h.
+	* include/grub/emu/misc.h (grub_get_libzfs_handle): Move from here ...
+	* include/grub/util/libzfs.h (grub_get_libzfs_handle): ... here.
+
+2010-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c (grub_ntfs_uuid): Make uppercase.
 
 2010-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
