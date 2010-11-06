@@ -1,5 +1,10 @@
 2010-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Replace useless recomendation to pass
+	--modules with a recomendation to report a bug.
+
+2010-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Properly register serial terminfo.
 	Reported by: Jordan Uggla
 
