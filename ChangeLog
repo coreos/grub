@@ -1,3 +1,8 @@
+2010-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c
+	(convert_system_partition_to_system_disk): Handle devices like "sdaa1".
+
 2010-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/emu/misc.h: Don't include grub/util/libzfs.h.

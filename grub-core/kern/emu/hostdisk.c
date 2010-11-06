@@ -1152,16 +1152,22 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	   || strncmp ("sd", p, 2) == 0)
 	  && p[2] >= 'a' && p[2] <= 'z')
 	{
-	  /* /dev/[hsv]d[a-z][0-9]* */
-	  p[3] = '\0';
+	  char *pp = p + 2;
+	  while (*pp >= 'a' && *pp <= 'z')
+	    pp++;
+	  /* /dev/[hsv]d[a-z]+[0-9]* */
+	  *pp = '\0';
 	  return path;
 	}
 
       /* If this is a Xen virtual block device.  */
       if ((strncmp ("xvd", p, 3) == 0) && p[3] >= 'a' && p[3] <= 'z')
 	{
-	  /* /dev/xvd[a-z][0-9]* */
-	  p[4] = '\0';
+	  char *pp = p + 3;
+	  while (*pp >= 'a' && *pp <= 'z')
+	    pp++;
+	  /* /dev/xvd[a-z]+[0-9]* */
+	  *pp = '\0';
 	  return path;
 	}
 
