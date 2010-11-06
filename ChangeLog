@@ -1,3 +1,15 @@
+2010-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Properly register serial terminfo.
+	Reported by: Jordan Uggla
+
+	* grub-core/term/serial.c (grub_serial_terminfo_input_template): New
+	const.
+	(grub_serial_terminfo_output_template): Likewise.
+	(grub_cmd_serial): Register "serial" with terminfo.
+	(GRUB_MOD_INIT(serial)): Fill grub_serial_terminfo_input and
+	grub_serial_terminfo_output.
+
 2010-11-05  Robert Millan  <rmh@gnu.org>
 
 	* util/grub-mkconfig.in: Remove gfxterm.mod probe (no longer
