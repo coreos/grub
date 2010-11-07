@@ -1,3 +1,12 @@
+2010-11-07  Robert Millan  <rmh@gnu.org>
+
+	On mips-yeeloong, build with -march=loongson2f when this flag is
+	available (GCC >= 4.4).
+	* conf/Makefile.common [COND_mips_yeeloong] (CFLAGS_PLATFORM): Remove
+	`-march=mips3'.
+	* configure.ac: For mips-yeeloong, add -march=loongson2f if available,
+	or otherwise add -march=mips3.
+
 2010-11-07  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Suppress shell expansion on echo '*' and echo "*" like cases.
