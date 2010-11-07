@@ -1,3 +1,12 @@
+2010-11-07  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Suppress shell expansion on echo '*' and echo "*" like cases,
+	reported by Jordan Uggla.
+
+	* grub-core/script/execute.c (grub_script_arglist_to_argv): Escape
+	string arguments before shell expansion.
+	* tests/grub_cmd_echo.in: New testcases.
+
 2010-11-01  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* grub-core/partmap/bsdlabel.c (iterate_real): Fix an integer overflow.
