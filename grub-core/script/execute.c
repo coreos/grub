@@ -374,7 +374,7 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 
 	    case GRUB_SCRIPT_ARG_TYPE_DQSTR:
 	    case GRUB_SCRIPT_ARG_TYPE_SQSTR:
-	      if (grub_script_argv_append (&result, arg->str))
+	      if (append (arg->str, 1))
 		goto fail;
 	      break;
 	    }
