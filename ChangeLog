@@ -1,11 +1,70 @@
 2010-11-07  BVK Chaitanya  <bvk.groups@gmail.com>
 
-	Suppress shell expansion on echo '*' and echo "*" like cases,
-	reported by Jordan Uggla.
+	Suppress shell expansion on echo '*' and echo "*" like cases.
+	Reported by: Jordan Uggla.
 
 	* grub-core/script/execute.c (grub_script_arglist_to_argv): Escape
 	string arguments before shell expansion.
 	* tests/grub_cmd_echo.in: New testcases.
+
+2010-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c
+	(convert_system_partition_to_system_disk): Handle devices like "sdaa1".
+
+2010-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/emu/misc.h: Don't include grub/util/libzfs.h.
+	* include/grub/emu/misc.h (grub_get_libzfs_handle): Move from here ...
+	* include/grub/util/libzfs.h (grub_get_libzfs_handle): ... here.
+
+2010-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/ntfs.c (grub_ntfs_uuid): Make uppercase.
+
+2010-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Replace useless recomendation to pass
+	--modules with a recomendation to report a bug.
+
+2010-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Properly register serial terminfo.
+	Reported by: Jordan Uggla
+
+	* grub-core/term/serial.c (grub_serial_terminfo_input_template): New
+	const.
+	(grub_serial_terminfo_output_template): Likewise.
+	(grub_cmd_serial): Register "serial" with terminfo.
+	(GRUB_MOD_INIT(serial)): Fill grub_serial_terminfo_input and
+	grub_serial_terminfo_output.
+
+2010-11-05  Robert Millan  <rmh@gnu.org>
+
+	* util/grub-mkconfig.in: Remove gfxterm.mod probe (no longer
+	needed).
+
+2010-11-05  Robert Millan  <rmh@gnu.org>
+
+	On Yeeloong, pass machine type information to Linux.
+
+	* grub-core/loader/mips/linux.c [GRUB_MACHINE_MIPS_YEELOONG]
+	(LOONGSON_MACHTYPE): New macro, set to
+	"machtype=lemote-yeeloong-2f-8.9inches".
+	[LOONGSON_MACHTYPE] (grub_cmd_linux): Pass LOONGSON_MACHTYPE as
+	additional argument to Linux.
+
+2010-11-04  Robert Millan  <rmh@gnu.org>
+
+	* util/deviceiter.c (grub_util_iterate_devices): Increase SCSI
+	limit to 48 (to cope with Sun Fire X4500), and IDE limit to 96
+	(its SATA disks are detected as slaveless IDE master drives on
+	kFreeBSD).
+	Reported by Carsten Aulbert.
+
+2010-11-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/bin2h.c (main): Fix spelling error in generated output.
 
 2010-11-01  Grégoire Sutre  <gregoire.sutre@gmail.com>
 

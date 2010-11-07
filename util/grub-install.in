@@ -466,9 +466,9 @@ fi
 
 # Create the core image. First, auto-detect the filesystem module.
 fs_module=`$grub_probe --target=fs --device ${grub_device}`
-if test "x$fs_module" = x -a "x$modules" = x; then
-    echo "Auto-detection of a filesystem module failed." 1>&2
-    echo "Please specify the module with the option \`--modules' explicitly." 1>&2
+if test "x$fs_module" = x ; then
+    echo "Auto-detection of a filesystem of ${grub_device} failed." 1>&2
+    echo "Please report this together with the output of \"$grub_probe --target=fs -v ${grubdir}\" to <bug-grub@gnu.org>" 1>&2
     exit 1
 fi
 

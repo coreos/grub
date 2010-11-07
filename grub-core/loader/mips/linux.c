@@ -32,6 +32,14 @@
 #include <grub/pci.h>
 #include <grub/machine/time.h>
 
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
+/* This can be detected on runtime from PMON, but:
+     a) it wouldn't work when GRUB is the firmware
+   and
+     b) for now we only support Yeeloong anyway.  */
+#define LOONGSON_MACHTYPE "machtype=lemote-yeeloong-2f-8.9inches"
+#endif
+
 static grub_dl_t my_mod;
 
 static int loaded;
@@ -214,6 +222,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   /* For arguments.  */
   linux_argc = argc;
+#ifdef LOONGSON_MACHTYPE
+  linux_argc++;
+#endif
   /* Main arguments.  */
   size = (linux_argc) * sizeof (grub_uint32_t); 
   /* Initrd address and size.  */
@@ -226,7 +237,10 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   /* Normal arguments.  */
   for (i = 1; i < argc; i++)
     size += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
-  
+#ifdef LOONGSON_MACHTYPE
+  size += ALIGN_UP (sizeof (LOONGSON_MACHTYPE), 4);
+#endif
+
   /* rd arguments.  */
   size += ALIGN_UP (sizeof ("rd_start=0xXXXXXXXXXXXXXXXX"), 4);
   size += ALIGN_UP (sizeof ("rd_size=0xXXXXXXXXXXXXXXXX"), 4);
@@ -262,6 +276,16 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     + target_addr;
   linux_argv++;
   linux_args += ALIGN_UP (sizeof ("a0"), 4);
+
+#ifdef LOONGSON_MACHTYPE
+  /* In Loongson platform, it is the responsibility of the bootloader/firmware
+     to supply the OS kernel with machine type information.  */
+  grub_memcpy (linux_args, LOONGSON_MACHTYPE, sizeof (LOONGSON_MACHTYPE));
+  *linux_argv = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground
+    + target_addr;
+  linux_argv++;
+  linux_args += ALIGN_UP (sizeof (LOONGSON_MACHTYPE), 4);
+#endif
 
   for (i = 1; i < argc; i++)
     {

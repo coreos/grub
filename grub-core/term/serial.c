@@ -69,7 +69,7 @@ serial_fetch (grub_term_input_t term)
   return data->port->driver->fetch (data->port);
 }
 
-struct grub_serial_input_state grub_serial_terminfo_input =
+const struct grub_serial_input_state grub_serial_terminfo_input_template =
   {
     .tinfo =
     {
@@ -77,7 +77,7 @@ struct grub_serial_input_state grub_serial_terminfo_input =
     }
   };
 
-struct grub_serial_output_state grub_serial_terminfo_output =
+const struct grub_serial_output_state grub_serial_terminfo_output_template =
   {
     .tinfo =
     {
@@ -86,6 +86,10 @@ struct grub_serial_output_state grub_serial_terminfo_output =
       .height = 24
     }
   };
+
+struct grub_serial_input_state grub_serial_terminfo_input;
+
+struct grub_serial_output_state grub_serial_terminfo_output;
 
 int registered = 0;
 
@@ -216,6 +220,8 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
     {
       if (!registered)
 	{
+	  grub_terminfo_output_register (&grub_serial_term_output, "vt100");
+
 	  grub_term_register_input ("serial", &grub_serial_term_input);
 	  grub_term_register_output ("serial", &grub_serial_term_output);
 	}
@@ -337,6 +343,14 @@ GRUB_MOD_INIT(serial)
   cmd = grub_register_extcmd ("serial", grub_cmd_serial, 0,
 			      N_("[OPTIONS...]"),
 			      N_("Configure serial port."), options);
+  grub_memcpy (&grub_serial_terminfo_output,
+	       &grub_serial_terminfo_output_template,
+	       sizeof (grub_serial_terminfo_output));
+
+  grub_memcpy (&grub_serial_terminfo_input,
+	       &grub_serial_terminfo_input_template,
+	       sizeof (grub_serial_terminfo_input));
+	       
 #ifndef GRUB_MACHINE_EMU
   grub_ns8250_init ();
 #endif
