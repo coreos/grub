@@ -1035,6 +1035,55 @@ make_device_name (int drive, int dos_part, int bsd_part)
   return ret;
 }
 
+#ifdef HAVE_DEVICE_MAPPER
+static int
+grub_util_get_dm_node_linear_info (const char *dev,
+				   int *maj, int *min)
+{
+  struct dm_task *dmt;
+  void *next = NULL;
+  uint64_t length, start;
+  char *target, *params;
+  const char *node_name;
+  char *ptr;
+  int major, minor;
+
+  dmt = dm_task_create(DM_DEVICE_TABLE);
+  if (!dmt)
+    return 0;
+  
+  if (!dm_task_set_name(dmt, dev))
+    return 0;
+  dm_task_no_open_count(dmt);
+  if (!dm_task_run(dmt))
+    return 0;
+  next = dm_get_next_target(dmt, next, &start, &length,
+			    &target, &params);
+  if (grub_strcmp (target, "linear") != 0)
+    return 0;
+  major = grub_strtoul (params, &ptr, 10);
+  if (grub_errno)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return 0;
+    }
+  if (*ptr != ':')
+    return 0;
+  ptr++;
+  minor = grub_strtoul (ptr, 0, 10);
+  if (grub_errno)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return 0;
+    }
+  if (maj)
+    *maj = major;
+  if (min)
+    *min = minor;
+  return 1;
+}
+#endif
+
 static char *
 convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 {
@@ -1211,9 +1260,29 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	      node = NULL;
 	      goto devmapper_out;
 	    }
-	  else if (strncmp (node_uuid, "DMRAID-", 7) != 0)
+	  if (strncmp (node_uuid, "LVM-", 4) == 0)
 	    {
+	      grub_dprintf ("hostdisk", "%s is an LVM\n", path);
+	      node = NULL;
+	      goto devmapper_out;
+	    }
+	  if (strncmp (node_uuid, "DMRAID-", 7) != 0)
+	    {
+	      int major, minor;
+	      const char *node_name;
 	      grub_dprintf ("hostdisk", "%s is not DM-RAID\n", path);
+
+	      if ((node_name = dm_tree_node_get_name (node))
+		  && grub_util_get_dm_node_linear_info (node_name,
+							&major, &minor))
+		{
+		  if (tree)
+		    dm_tree_free (tree);
+		  free (path);
+		  char *ret = grub_find_device (NULL, (major << 8) | minor);
+		  return ret;
+		}
+
 	      node = NULL;
 	      goto devmapper_out;
 	    }
