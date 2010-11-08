@@ -91,7 +91,7 @@ grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   /* Linux's entry point incorrectly contains a virtual address.  */
   entry_addr = elf->ehdr.ehdr32.e_entry;
 
-  linux_size = grub_elf32_size (elf, &base);
+  linux_size = grub_elf32_size (elf, &base, 0);
   if (linux_size == 0)
     return grub_errno;
   target_addr = base;
@@ -146,7 +146,7 @@ grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   /* Linux's entry point incorrectly contains a virtual address.  */
   entry_addr = elf->ehdr.ehdr64.e_entry;
 
-  linux_size = grub_elf64_size (elf, &base);
+  linux_size = grub_elf64_size (elf, &base, 0);
   if (linux_size == 0)
     return grub_errno;
   target_addr = base;
