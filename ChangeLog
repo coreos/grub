@@ -1,14 +1,21 @@
+2010-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/i386/pc/startup.S (multiboot_trampoline): Add missing
+	jump.
+
 2010-11-08  Manoel Rebelo Abranches <mrabran@br.ibm.com>
 
-	* include/grub/elfload.h (grub_elf32_size): New parameter. All users updated.
+	* include/grub/elfload.h (grub_elf32_size): New parameter.
+	All users updated.
 	Return maximum segments alignment.
 	(grub_elf64_size): Likewise.
 	* kern/elf.c (grub_elf32_size): New parameter. All users updated.
 	Return maximum segments alignment.
 	(grub_elf64_size): Likewise.
 	* grub-core/loader/powerpc/ieee1275/linux.c:
-	(grub_linux_claimmap_iterate): New function. Uses the "available"property 
-	in the "memory" node for memory allocation for kernel in the PowerPC loader.
+	(grub_linux_claimmap_iterate): New function. Uses the
+	"available" property in the "memory" node for memory allocation
+	for kernel in the PowerPC loader.
 	(grub_linux_load32): Correctly find linux entry point offset.
 	(grub_linux_load64): Likewise.
 

@@ -224,6 +224,7 @@ multiboot_trampoline:
         movb    $0xFF, %dh
 	/* enter the usual booting */
 	call	prot_to_real
+	jmp     LOCAL (codestart)
 
 post_reed_solomon:
 
