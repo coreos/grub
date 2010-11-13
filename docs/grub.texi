@@ -109,8 +109,8 @@ This edition documents version @value{VERSION}.
 @menu
 * Overview::                    What exactly GRUB is and how to use it
 * History::                     From maggot to house fly
-* Features::                    GRUB features
 * Changes from GRUB Legacy::    Differences from previous versions
+* Features::                    GRUB features
 * Role of a boot loader::       The role of a boot loader
 @end menu
 

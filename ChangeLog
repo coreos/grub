@@ -1,3 +1,8 @@
+2010-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (menu): Correct the order.
+	Reported by: D. Hugh Redelmeier.
+
 2010-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/i386/pc/startup.S (multiboot_trampoline): Add missing
