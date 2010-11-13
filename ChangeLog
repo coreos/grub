@@ -1,5 +1,16 @@
 2010-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support big ext2 files.
+
+	* grub-core/fs/ext2.c (grub_ext2_inode): Rename dir_acl to size_high.
+	(grub_ext2_read_block): Support triple indirect blocks.
+	(grub_ext2_read_file): Use 64-bit types and read size_high.
+	(grub_ext2_open): Read size_high.
+	Reported by: Ximin Luo.
+	Tested by: Manoel Rebelo Abranches.
+
+2010-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Handle filenames containing spaces.
 	Reported by: Jordan Uggla.
 	Tested by: Jordan Uggla.
