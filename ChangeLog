@@ -1,5 +1,11 @@
 2010-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkconfig.in (grub_script_check): New variable.
+	Use grub_script_check instead of grub-script-check.
+	Reported by: Barry Jackson.
+
+2010-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (menu): Correct the order.
 	Reported by: D. Hugh Redelmeier.
 
