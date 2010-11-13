@@ -36,7 +36,7 @@ grub_mkconfig_dir=${sysconfdir}/grub.d
 
 self=`basename $0`
 
-grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | "sed ${transform}"`
+grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed "${transform}"`
 grub_probe=${sbindir}/`echo grub-probe | sed "${transform}"`
 grub_script_check="${bindir}/`echo grub-script-check | sed "${transform}"`"
 

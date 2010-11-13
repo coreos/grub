@@ -1,5 +1,9 @@
 2010-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkconfig.in: Fix quoting.
+
+2010-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support big ext2 files.
 
 	* grub-core/fs/ext2.c (grub_ext2_inode): Rename dir_acl to size_high.
