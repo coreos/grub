@@ -1,5 +1,11 @@
 2010-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Handle filenames containing spaces.
+	Reported by: Jordan Uggla.
+	Tested by: Jordan Uggla.
+
+2010-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkconfig.in (grub_script_check): New variable.
 	Use grub_script_check instead of grub-script-check.
 	Reported by: Barry Jackson.
