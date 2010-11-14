@@ -1,3 +1,14 @@
+2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Properly define WORDS_BIGENDIAN in wrapped environments.
+
+	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h (WORDS_BIGENDIAN): New
+	definition.
+	* grub-core/lib/posix_wrap/sys/types.h (WORDS_BIGENDIAN): Likewise.
+
+	Reported by: Manoel Rebelo Abranches.
+	Tested by: Manoel Rebelo Abranches.
+
 2010-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkconfig.in: Fix quoting.
