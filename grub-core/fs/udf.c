@@ -729,57 +729,60 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
 	  return 0;
 	}
 
-      child = grub_malloc (sizeof (struct grub_fshelp_node));
-      if (!child)
-	return 0;
-
-      if (grub_udf_read_icb (dir->data, &dirent.icb, child))
-	return 0;
-
       offset += sizeof (dirent) + U16 (dirent.imp_use_length);
-      if (dirent.characteristics & GRUB_UDF_FID_CHAR_PARENT)
+      if (!(dirent.characteristics & GRUB_UDF_FID_CHAR_DELETED))
 	{
-	  /* This is the parent directory.  */
-	  if (hook ("..", GRUB_FSHELP_DIR, child))
-	    return 1;
-	}
-      else
-	{
-	  enum grub_fshelp_filetype type;
-	  grub_uint8_t raw[dirent.file_ident_length];
-	  grub_uint16_t utf16[dirent.file_ident_length - 1];
-	  grub_uint8_t filename[dirent.file_ident_length * 2];
-	  grub_size_t utf16len = 0;
-
-	  type = ((dirent.characteristics & GRUB_UDF_FID_CHAR_DIRECTORY) ?
-		  (GRUB_FSHELP_DIR) : (GRUB_FSHELP_REG));
-
-	  if ((grub_udf_read_file (dir, 0, offset,
-				   dirent.file_ident_length,
-				   (char *) raw))
-	      != dirent.file_ident_length)
+	  child = grub_malloc (sizeof (struct grub_fshelp_node));
+	  if (!child)
 	    return 0;
 
-	  if (raw[0] == 8)
+          if (grub_udf_read_icb (dir->data, &dirent.icb, child))
+	    return 0;
+
+          if (dirent.characteristics & GRUB_UDF_FID_CHAR_PARENT)
 	    {
-	      unsigned i;
-	      utf16len = dirent.file_ident_length - 1;
-	      for (i = 0; i < utf16len; i++)
-		utf16[i] = raw[i + 1];
+	      /* This is the parent directory.  */
+	      if (hook ("..", GRUB_FSHELP_DIR, child))
+	        return 1;
 	    }
-	  if (raw[0] == 16)
+          else
 	    {
-	      unsigned i;
-	      utf16len = (dirent.file_ident_length - 1) / 2;
-	      for (i = 0; i < utf16len; i++)
-		utf16[i] = (raw[2 * i + 1] << 8) | raw[2*i + 2];
-	    }
-	  if (raw[0] == 8 || raw[0] == 16)
-	    {
-	      *grub_utf16_to_utf8 (filename, utf16, utf16len) = '\0';
-	  
-	      if (hook ((char *) filename, type, child))
-		return 1;
+	      enum grub_fshelp_filetype type;
+	      grub_uint8_t raw[dirent.file_ident_length];
+	      grub_uint16_t utf16[dirent.file_ident_length - 1];
+	      grub_uint8_t filename[dirent.file_ident_length * 2];
+	      grub_size_t utf16len = 0;
+
+	      type = ((dirent.characteristics & GRUB_UDF_FID_CHAR_DIRECTORY) ?
+		      (GRUB_FSHELP_DIR) : (GRUB_FSHELP_REG));
+
+	      if ((grub_udf_read_file (dir, 0, offset,
+				       dirent.file_ident_length,
+				       (char *) raw))
+		  != dirent.file_ident_length)
+		return 0;
+
+	      if (raw[0] == 8)
+		{
+		  unsigned i;
+		  utf16len = dirent.file_ident_length - 1;
+		  for (i = 0; i < utf16len; i++)
+		    utf16[i] = raw[i + 1];
+		}
+	      if (raw[0] == 16)
+		{
+		  unsigned i;
+		  utf16len = (dirent.file_ident_length - 1) / 2;
+		  for (i = 0; i < utf16len; i++)
+		    utf16[i] = (raw[2 * i + 1] << 8) | raw[2*i + 2];
+		}
+	      if (raw[0] == 8 || raw[0] == 16)
+		{
+		  *grub_utf16_to_utf8 (filename, utf16, utf16len) = '\0';
+
+		  if (hook ((char *) filename, type, child))
+		    return 1;
+		}
 	    }
 	}
 

@@ -1,5 +1,13 @@
 2010-11-14  Giuseppe Caizzone <acaizzo@gmail.com>
 
+	Properly handle deleted files on UDF.
+
+	* grub-core/fs/udf.c (grub_udf_iterate_dir): Skip directory entries
+	whose "characteristics" field has the bit GRUB_UDF_FID_CHAR_DELETED
+	set.
+
+2010-11-14  Giuseppe Caizzone <acaizzo@gmail.com>
+
 	Support reading files larger than 2 GiB.
 
 	* grub-core/fs/udf.c (grub_udf_iterate_dir): Change type of variable
