@@ -471,7 +471,7 @@ grub_udf_read_file (grub_fshelp_node_t node,
 		    void NESTED_FUNC_ATTR
 		    (*read_hook) (grub_disk_addr_t sector,
 				  unsigned offset, unsigned length),
-		    int pos, grub_size_t len, char *buf)
+		    grub_off_t pos, grub_size_t len, char *buf)
 {
   switch (U16 (node->fe.icbtag.flags) & GRUB_UDF_ICBTAG_FLAG_AD_MASK)
     {
@@ -704,7 +704,7 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
 {
   grub_fshelp_node_t child;
   struct grub_udf_file_ident dirent;
-  grub_uint32_t offset = 0;
+  grub_off_t offset = 0;
 
   child = grub_malloc (sizeof (struct grub_fshelp_node));
   if (!child)

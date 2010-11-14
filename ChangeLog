@@ -1,3 +1,11 @@
+2010-11-14  Giuseppe Caizzone <acaizzo@gmail.com>
+
+	Support reading files larger than 2 GiB.
+
+	* grub-core/fs/udf.c (grub_udf_iterate_dir): Change type of variable
+	"offset" to grub_off_t.
+	(grub_udf_read_file): Likewise for parameter "pos".
+
 2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi (Changes from GRUB Legacy): Note when save_env is
