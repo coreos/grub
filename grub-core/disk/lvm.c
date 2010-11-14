@@ -762,5 +762,6 @@ GRUB_MOD_INIT(lvm)
 GRUB_MOD_FINI(lvm)
 {
   grub_disk_dev_unregister (&grub_lvm_dev);
+  vg_list = NULL;
   /* FIXME: free the lvm list. */
 }

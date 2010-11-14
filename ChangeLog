@@ -1,5 +1,10 @@
 2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/lvm.c (GRUB_MOD_FINI): Reset the vg_list. Fixes
+	LVM on RAID support.
+
+2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Properly define WORDS_BIGENDIAN in wrapped environments.
 
 	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h (WORDS_BIGENDIAN): New
