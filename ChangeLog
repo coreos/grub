@@ -1,5 +1,13 @@
 2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't add -lgcc on i386 and x86_64.
+
+	* configure.ac (LIBS): Don't add -lgcc on i386 and x86_64.
+	* conf/Makefile.common (LDADD_KERNEL): Likewise.
+	* grub-core/Makefile.core.def (kernel): Use LDADD_KERNEL.
+
+2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Add -Wno-trampolines when supported.
 
 2010-11-14  Modestas Vainius <modax@debian.org>

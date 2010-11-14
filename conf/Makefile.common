@@ -45,7 +45,24 @@ CPPFLAGS_DEFAULT += -I$(top_srcdir)/include
 CPPFLAGS_DEFAULT += -I$(top_builddir)/include
 CCASFLAGS_DEFAULT = -DASM_FILE=1
 
-LDADD_KERNEL = -lgcc
+LDADD_KERNEL =
+
+if ! COND_i386_pc
+if ! COND_i386_efi
+if ! COND_i386_qemu
+if ! COND_i386_coreboot
+if ! COND_i386_multiboot
+if ! COND_i386_ieee1275
+if ! COND_x86_64_efi
+LDADD_KERNEL += -lgcc
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+
 CFLAGS_KERNEL = $(CFLAGS_CPU) $(CFLAGS_PLATFORM) -ffreestanding
 LDFLAGS_KERNEL = $(LDFLAGS_CPU) $(LDFLAGS_PLATFORM) -nostdlib -Wl,-N -static-libgcc
 CPPFLAGS_KERNEL = $(CPPFLAGS_CPU) $(CPPFLAGS_PLATFORM)

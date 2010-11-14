@@ -579,8 +579,11 @@ else
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wno-error"
 fi
 CPPFLAGS="$TARGET_CPPFLAGS"
-LDFLAGS="$TARGET_LDFLAGS"
+if test x$target_cpu = xi386 || test x$target_cpu = xx86_64 ; then
+LIBS=
+else
 LIBS=-lgcc
+fi
 
 grub_ASM_USCORE
 if test x$grub_cv_asm_uscore = xyes; then
