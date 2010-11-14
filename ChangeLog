@@ -1,3 +1,7 @@
+2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Add -Wno-trampolines when supported.
+
 2010-11-14  Modestas Vainius <modax@debian.org>
 
 	* grub-core/kern/emu/getroot.c (grub_util_is_dmraid): Recognise ddf1_

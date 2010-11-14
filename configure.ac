@@ -668,6 +668,20 @@ if test x"$grub_cv_cc_isystem" = xyes ; then
 fi
 fi
 
+AC_CACHE_CHECK([whether -Wno-trampolines work], [grub_cv_cc_wnotrampolines], [
+  SAVED_CFLAGS="$CFLAGS"
+  CFLAGS="$TARGET_CFLAGS -Wno-trampolines"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
+int va_arg_func (int fixed, va_list args);]], [[]])],
+      [grub_cv_cc_wnotrampolines=yes],
+      [grub_cv_cc_wnotrampolines=no])
+  CFLAGS="$SAVED_CFLAGS"
+])
+
+if test x"$grub_cv_cc_wnotrampolines" = xyes ; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -Wno-trampolines"
+fi
+
 # Restore the flags.
 CC="$tmp_CC"
 CFLAGS="$tmp_CFLAGS"
