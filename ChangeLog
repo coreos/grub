@@ -1,3 +1,8 @@
+2010-11-14  Modestas Vainius <modax@debian.org>
+
+	* grub-core/kern/emu/getroot.c (grub_util_is_dmraid): Recognise ddf1_
+	fakeraid.
+
 2010-11-14  Giuseppe Caizzone <acaizzo@gmail.com>
 
 	Add generic logical block size support for UDF.
