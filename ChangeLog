@@ -1,5 +1,12 @@
 2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Changes from GRUB Legacy): Note when save_env is
+	unavailable.
+	(Simple configuration): Refer to Changes from GRUB Legacy about
+	save_env availability.
+
+2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Ignore empty partition table detection
 	instead of trying to include part_ module.
 
