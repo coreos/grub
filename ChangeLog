@@ -1,5 +1,10 @@
 2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Ignore empty partition table detection
+	instead of trying to include part_ module.
+
+2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/lvm.c (GRUB_MOD_FINI): Reset the vg_list. Fixes
 	LVM on RAID support.
 

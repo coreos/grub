@@ -477,6 +477,7 @@ for x in "`"$grub_probe" --device-map="${device_map}" --target=partmap --device 
    case "$x" in
        netbsd | openbsd) 
 	   partmap_module="$partmap_module part_bsd";;
+       "") ;;
        *)
 	   partmap_module="$partmap_module part_$x";;
    esac
