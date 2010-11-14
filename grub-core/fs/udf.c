@@ -333,6 +333,13 @@ struct grub_udf_lvd
   grub_uint8_t part_maps[1608];
 } __attribute__ ((packed));
 
+struct grub_udf_aed
+{
+  struct grub_udf_tag tag;
+  grub_uint32_t prev_ae;
+  grub_uint32_t ae_len;
+} __attribute__ ((packed));
+
 struct grub_udf_data
 {
   grub_disk_t disk;
@@ -403,19 +410,26 @@ grub_udf_read_icb (struct grub_udf_data *data,
 static grub_disk_addr_t
 grub_udf_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
+  char *buf = NULL;
   char *ptr;
-  int len;
+  grub_ssize_t len;
   grub_disk_addr_t filebytes;
 
-  if (U16 (node->fe.tag.tag_ident) == GRUB_UDF_TAG_IDENT_FE)
+  switch (U16 (node->fe.tag.tag_ident))
     {
+    case GRUB_UDF_TAG_IDENT_FE:
       ptr = (char *) &node->fe.ext_attr[0] + U32 (node->fe.ext_attr_length);
       len = U32 (node->fe.alloc_descs_length);
-    }
-  else
-    {
+      break;
+
+    case GRUB_UDF_TAG_IDENT_EFE:
       ptr = (char *) &node->efe.ext_attr[0] + U32 (node->efe.ext_attr_length);
       len = U32 (node->efe.alloc_descs_length);
+      break;
+
+    default:
+      grub_error (GRUB_ERR_BAD_FS, "invalid file entry");
+      return 0;
     }
 
   if ((U16 (node->fe.icbtag.flags) & GRUB_UDF_ICBTAG_FLAG_AD_MASK)
@@ -423,44 +437,114 @@ grub_udf_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
     {
       struct grub_udf_short_ad *ad = (struct grub_udf_short_ad *) ptr;
 
-      len /= sizeof (struct grub_udf_short_ad);
       filebytes = fileblock * U32 (node->data->lvd.bsize);
-      while (len > 0)
+      while (len >= (grub_ssize_t) sizeof (struct grub_udf_short_ad))
 	{
-	  if (filebytes < U32 (ad->length))
-	    return ((U32 (ad->position) & GRUB_UDF_EXT_MASK) ? 0 :
-                    (grub_udf_get_block (node->data,
-                                         node->part_ref,
-                                         ad->position)
-                     + (filebytes >> (GRUB_DISK_SECTOR_BITS
-				      + node->data->lbshift))));
+	  grub_uint32_t adlen = U32 (ad->length) & 0x3fffffff;
+	  grub_uint32_t adtype = U32 (ad->length) >> 30;
+	  if (adtype == 3)
+	    {
+	      struct grub_udf_aed *extension;
+	      grub_disk_addr_t sec = grub_udf_get_block(node->data,
+							node->part_ref,
+							ad->position);
+	      if (!buf)
+		{
+		  buf = grub_malloc (U32 (node->data->lvd.bsize));
+		  if (!buf)
+		    return 0;
+		}
+	      if (grub_disk_read (node->data->disk, sec << node->data->lbshift,
+				  0, adlen, buf))
+		goto fail;
 
-	  filebytes -= U32 (ad->length);
+	      extension = (struct grub_udf_aed *) buf;
+	      if (U16 (extension->tag.tag_ident) != GRUB_UDF_TAG_IDENT_AED)
+		{
+		  grub_error (GRUB_ERR_BAD_FS, "invalid aed tag");
+		  goto fail;
+		}
+
+	      len = U32 (extension->ae_len);
+	      ad = (struct grub_udf_short_ad *)
+		    (buf + sizeof (struct grub_udf_aed));
+	      continue;
+	    }
+
+	  if (filebytes < adlen)
+	    {
+	      grub_uint32_t ad_pos = ad->position;
+	      grub_free (buf);
+	      return ((U32 (ad_pos) & GRUB_UDF_EXT_MASK) ? 0 :
+		      (grub_udf_get_block (node->data, node->part_ref, ad_pos)
+		       + (filebytes >> (GRUB_DISK_SECTOR_BITS
+					+ node->data->lbshift))));
+	    }
+
+	  filebytes -= adlen;
 	  ad++;
-	  len--;
+	  len -= sizeof (struct grub_udf_short_ad);
 	}
     }
   else
     {
       struct grub_udf_long_ad *ad = (struct grub_udf_long_ad *) ptr;
 
-      len /= sizeof (struct grub_udf_long_ad);
       filebytes = fileblock * U32 (node->data->lvd.bsize);
-      while (len > 0)
+      while (len >= (grub_ssize_t) sizeof (struct grub_udf_long_ad))
 	{
-	  if (filebytes < U32 (ad->length))
-	    return ((U32 (ad->block.block_num) & GRUB_UDF_EXT_MASK) ?  0 :
-                    (grub_udf_get_block (node->data,
-                                         ad->block.part_ref,
-                                         ad->block.block_num)
-		     + (filebytes >> (GRUB_DISK_SECTOR_BITS
-				      + node->data->lbshift))));
+	  grub_uint32_t adlen = U32 (ad->length) & 0x3fffffff;
+	  grub_uint32_t adtype = U32 (ad->length) >> 30;
+	  if (adtype == 3)
+	    {
+	      struct grub_udf_aed *extension;
+	      grub_disk_addr_t sec = grub_udf_get_block(node->data,
+							ad->block.part_ref,
+							ad->block.block_num);
+	      if (!buf)
+		{
+		  buf = grub_malloc (U32 (node->data->lvd.bsize));
+		  if (!buf)
+		    return 0;
+		}
+	      if (grub_disk_read (node->data->disk, sec << node->data->lbshift,
+				  0, adlen, buf))
+		goto fail;
 
-	  filebytes -= U32 (ad->length);
+	      extension = (struct grub_udf_aed *) buf;
+	      if (U16 (extension->tag.tag_ident) != GRUB_UDF_TAG_IDENT_AED)
+		{
+		  grub_error (GRUB_ERR_BAD_FS, "invalid aed tag");
+		  goto fail;
+		}
+
+	      len = U32 (extension->ae_len);
+	      ad = (struct grub_udf_long_ad *)
+		    (buf + sizeof (struct grub_udf_aed));
+	      continue;
+	    }
+	      
+	  if (filebytes < adlen)
+	    {
+	      grub_uint32_t ad_block_num = ad->block.block_num;
+	      grub_uint32_t ad_part_ref = ad->block.part_ref;
+	      grub_free (buf);
+	      return ((U32 (ad_block_num) & GRUB_UDF_EXT_MASK) ?  0 :
+		      (grub_udf_get_block (node->data, ad_part_ref,
+					   ad_block_num)
+		       + (filebytes >> (GRUB_DISK_SECTOR_BITS
+				        + node->data->lbshift))));
+	    }
+
+	  filebytes -= adlen;
 	  ad++;
-	  len--;
+	  len -= sizeof (struct grub_udf_long_ad);
 	}
     }
+
+fail:
+  if (buf)
+    grub_free (buf);
 
   return 0;
 }
