@@ -34,9 +34,6 @@
 #define U32				grub_le_to_cpu32
 #define U64				grub_le_to_cpu64
 
-#define GRUB_UDF_LOG2_BLKSZ		2
-#define GRUB_UDF_BLKSZ			2048
-
 #define GRUB_UDF_TAG_IDENT_PVD		0x0001
 #define GRUB_UDF_TAG_IDENT_AVDP		0x0002
 #define GRUB_UDF_TAG_IDENT_VDP		0x0003
@@ -343,7 +340,7 @@ struct grub_udf_data
   struct grub_udf_pd pds[GRUB_UDF_MAX_PDS];
   struct grub_udf_partmap *pms[GRUB_UDF_MAX_PMS];
   struct grub_udf_long_ad root_icb;
-  int npd, npm;
+  int npd, npm, lbshift;
 };
 
 struct grub_fshelp_node
@@ -389,7 +386,7 @@ grub_udf_read_icb (struct grub_udf_data *data,
   if (grub_errno)
     return grub_errno;
 
-  if (grub_disk_read (data->disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
+  if (grub_disk_read (data->disk, block << data->lbshift, 0,
 		      sizeof (struct grub_udf_file_entry),
 		      &node->fe))
     return grub_errno;
@@ -427,7 +424,7 @@ grub_udf_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       struct grub_udf_short_ad *ad = (struct grub_udf_short_ad *) ptr;
 
       len /= sizeof (struct grub_udf_short_ad);
-      filebytes = fileblock * GRUB_UDF_BLKSZ;
+      filebytes = fileblock * U32 (node->data->lvd.bsize);
       while (len > 0)
 	{
 	  if (filebytes < U32 (ad->length))
@@ -435,7 +432,8 @@ grub_udf_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
                     (grub_udf_get_block (node->data,
                                          node->part_ref,
                                          ad->position)
-                     + (filebytes / GRUB_UDF_BLKSZ)));
+                     + (filebytes >> (GRUB_DISK_SECTOR_BITS
+				      + node->data->lbshift))));
 
 	  filebytes -= U32 (ad->length);
 	  ad++;
@@ -447,7 +445,7 @@ grub_udf_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       struct grub_udf_long_ad *ad = (struct grub_udf_long_ad *) ptr;
 
       len /= sizeof (struct grub_udf_long_ad);
-      filebytes = fileblock * GRUB_UDF_BLKSZ;
+      filebytes = fileblock * U32 (node->data->lvd.bsize);
       while (len > 0)
 	{
 	  if (filebytes < U32 (ad->length))
@@ -455,7 +453,8 @@ grub_udf_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
                     (grub_udf_get_block (node->data,
                                          ad->block.part_ref,
                                          ad->block.block_num)
-		     + (filebytes / GRUB_UDF_BLKSZ)));
+		     + (filebytes >> (GRUB_DISK_SECTOR_BITS
+				      + node->data->lbshift))));
 
 	  filebytes -= U32 (ad->length);
 	  ad++;
@@ -496,21 +495,21 @@ grub_udf_read_file (grub_fshelp_node_t node,
     }
 
   return  grub_fshelp_read_file (node->data->disk, node, read_hook,
-                                 pos, len, buf, grub_udf_read_block,
-                                 U64 (node->fe.file_size),
-                                 GRUB_UDF_LOG2_BLKSZ);
+				 pos, len, buf, grub_udf_read_block,
+				 U64 (node->fe.file_size),
+				 node->data->lbshift);
 }
 
-static int sblocklist[] = { 256, 512, 0 };
+static unsigned sblocklist[] = { 256, 512, 0 };
 
 static struct grub_udf_data *
 grub_udf_mount (grub_disk_t disk)
 {
   struct grub_udf_data *data = 0;
   struct grub_udf_fileset root_fs;
-  int *sblklist = sblocklist;
-  grub_uint32_t block;
-  int i;
+  unsigned *sblklist;
+  grub_uint32_t block, vblock;
+  int i, lbshift;
 
   data = grub_malloc (sizeof (struct grub_udf_data));
   if (!data)
@@ -518,12 +517,48 @@ grub_udf_mount (grub_disk_t disk)
 
   data->disk = disk;
 
+  /* Search for Anchor Volume Descriptor Pointer (AVDP)
+   * and determine logical block size.  */
+  block = 0;
+  for (lbshift = 0; lbshift < 4; lbshift++)
+    {
+      for (sblklist = sblocklist; *sblklist; sblklist++)
+        {
+	  struct grub_udf_avdp avdp;
+
+	  if (grub_disk_read (disk, *sblklist << lbshift, 0,
+			      sizeof (struct grub_udf_avdp), &avdp))
+	    {
+	      grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
+	      goto fail;
+	    }
+
+	  if (U16 (avdp.tag.tag_ident) == GRUB_UDF_TAG_IDENT_AVDP &&
+	      U32 (avdp.tag.tag_location) == *sblklist)
+	    {
+	      block = U32 (avdp.vds.start);
+	      break;
+	    }
+	}
+
+      if (block)
+	break;
+    }
+
+  if (!block)
+    {
+      grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
+      goto fail;
+    }
+  data->lbshift = lbshift;
+
   /* Search for Volume Recognition Sequence (VRS).  */
-  for (block = 16;; block++)
+  for (vblock = (32767 >> (lbshift + GRUB_DISK_SECTOR_BITS)) + 1;;
+       vblock += (2047 >> (lbshift + GRUB_DISK_SECTOR_BITS)) + 1)
     {
       struct grub_udf_vrs vrs;
 
-      if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
+      if (grub_disk_read (disk, vblock << lbshift, 0,
 			  sizeof (struct grub_udf_vrs), &vrs))
 	{
 	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
@@ -545,39 +580,13 @@ grub_udf_mount (grub_disk_t disk)
 	}
     }
 
-  /* Search for Anchor Volume Descriptor Pointer (AVDP).  */
-  while (1)
-    {
-      struct grub_udf_avdp avdp;
-
-      if (grub_disk_read (disk, *sblklist << GRUB_UDF_LOG2_BLKSZ, 0,
-			  sizeof (struct grub_udf_avdp), &avdp))
-	{
-	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
-	  goto fail;
-	}
-
-      if (U16 (avdp.tag.tag_ident) == GRUB_UDF_TAG_IDENT_AVDP)
-	{
-	  block = U32 (avdp.vds.start);
-	  break;
-	}
-
-      sblklist++;
-      if (*sblklist == 0)
-	{
-	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
-	  goto fail;
-	}
-    }
-
   data->npd = data->npm = 0;
   /* Locate Partition Descriptor (PD) and Logical Volume Descriptor (LVD).  */
   while (1)
     {
       struct grub_udf_tag tag;
 
-      if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
+      if (grub_disk_read (disk, block << lbshift, 0,
 			  sizeof (struct grub_udf_tag), &tag))
 	{
 	  grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");
@@ -593,7 +602,7 @@ grub_udf_mount (grub_disk_t disk)
 	      goto fail;
 	    }
 
-	  if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
+	  if (grub_disk_read (disk, block << lbshift, 0,
 			      sizeof (struct grub_udf_pd),
 			      &data->pds[data->npd]))
 	    {
@@ -609,7 +618,7 @@ grub_udf_mount (grub_disk_t disk)
 
 	  struct grub_udf_partmap *ppm;
 
-	  if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
+	  if (grub_disk_read (disk, block << lbshift, 0,
 			      sizeof (struct grub_udf_lvd),
 			      &data->lvd))
 	    {
@@ -673,7 +682,7 @@ grub_udf_mount (grub_disk_t disk)
   if (grub_errno)
     goto fail;
 
-  if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
+  if (grub_disk_read (disk, block << lbshift, 0,
 		      sizeof (struct grub_udf_fileset), &root_fs))
     {
       grub_error (GRUB_ERR_BAD_FS, "not an UDF filesystem");

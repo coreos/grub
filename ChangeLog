@@ -1,5 +1,22 @@
 2010-11-14  Giuseppe Caizzone <acaizzo@gmail.com>
 
+	Add generic logical block size support for UDF.
+
+	* grub-core/fs/udf.c (GRUB_UDF_LOG2_BLKSIZE): Removed.
+	(GRUB_UDF_BLKSZ): Removed.
+	(struct grub_udf_data): New field "lbshift" to hold the logical	block
+	size of the file system in log2 format. All users updated.
+	(sblocklist): Change type to unsigned.
+	(grub_udf_mount): Change type of "sblklist" to unsigned.
+	Move AVDP search before VRS recognition, because the latter requires
+	knowledge of the logical block size, which is detected during the
+	former.
+	Detect and validate logical block size during AVDP search, adding
+	support for block sizes 512, 1024 and 4096.
+	Make VRS recognition independent of block size.
+
+2010-11-14  Giuseppe Caizzone <acaizzo@gmail.com>
+
 	Properly handle deleted files on UDF.
 
 	* grub-core/fs/udf.c (grub_udf_iterate_dir): Skip directory entries
