@@ -326,16 +326,22 @@ grub_legacy_escape (const char *in, grub_size_t len)
   char *ret, *outptr;
   int overhead = 0;
   for (ptr = in; ptr < in + len && *ptr; ptr++)
-    if (*ptr == '\'' || *ptr == '\\')
-      overhead++;
+    if (*ptr == '\'')
+      overhead += 3;
   ret = grub_malloc (ptr - in + overhead + 1);
   if (!ret)
     return NULL;
   outptr = ret;
   for (ptr = in; ptr < in + len && *ptr; ptr++)
     {
-      if (*ptr == '\'' || *ptr == '\\')
-	*outptr++ = '\\';
+      if (*ptr == '\'')
+	{
+	  *outptr++ = '\'';
+	  *outptr++ = '\\';
+	  *outptr++ = '\'';
+	  *outptr++ = '\'';
+	  continue;
+	}
       
       *outptr++ = *ptr;
     }
@@ -622,12 +628,13 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 		{
 		  for (; *ptr && grub_isspace (*ptr); ptr++);
 		  for (; *ptr && !grub_isspace (*ptr); ptr++)
-		    if (*ptr == '\\' || *ptr == '\'')
-		      overhead++;
+		    if (*ptr == '\'')
+		      overhead += 3;
 		  if (*ptr)
 		    ptr++;
 		  overhead += 3;
 		}
+		
 	      outptr0 = args[i] = grub_malloc (overhead + (ptr - curarg));
 	      if (!outptr0)
 		return NULL;
@@ -641,9 +648,15 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 		  *outptr++ = '\'';
 		  for (; *ptr && !grub_isspace (*ptr); ptr++)
 		    {
-		      if (*ptr == '\\' || *ptr == '\'')
-			*outptr++ = '\\';
-		      *outptr++ = *ptr;
+		      if (*ptr == '\'')
+			{
+			  *outptr++ = '\'';
+			  *outptr++ = '\\';
+			  *outptr++ = '\'';
+			  *outptr++ = '\'';
+			}
+		      else
+			*outptr++ = *ptr;
 		    }
 		  *outptr++ = '\'';
 		  if (*ptr)

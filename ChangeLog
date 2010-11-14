@@ -1,5 +1,15 @@
 2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix quoting in legacy parser.
+
+	* grub-core/lib/legacy_parse.c (grub_legacy_escape): Correctly handle
+	single quotes.
+	(grub_legacy_parse): Likewise.
+	Reported by: Jordan Uggla.
+	Tested by: Jordan Uggla.
+
+2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't add -lgcc on i386 and x86_64.
 
 	* configure.ac (LIBS): Don't add -lgcc on i386 and x86_64.
