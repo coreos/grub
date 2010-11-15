@@ -1,3 +1,8 @@
+2010-11-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/relocator.c (malloc_in_range): Take into account that
+	allocate_regbeg may need to create new chunk header.
+
 2010-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix quoting in legacy parser.

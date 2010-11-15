@@ -597,7 +597,8 @@ malloc_in_range (struct grub_relocator *rel,
 	      events[N].hancestor = pa;
 	      N++;
 	      events[N].type = REG_BEG_END;
-	      events[N].pos = grub_vtop (p + p->size) - sizeof (*r);
+	      events[N].pos = grub_vtop (p + p->size) - sizeof (*r)
+		- sizeof (struct grub_mm_header);
 	      N++;
 	    }
 	  else
