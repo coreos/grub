@@ -257,6 +257,8 @@ grub_keyboard_controller_write (grub_uint8_t c)
   grub_outb (c, KEYBOARD_REG_DATA);
 }
 
+#if !defined (GRUB_MACHINE_MIPS_YEELOONG) && !defined (GRUB_MACHINE_QEMU)
+
 static grub_uint8_t
 grub_keyboard_controller_read (void)
 {
@@ -264,6 +266,8 @@ grub_keyboard_controller_read (void)
   keyboard_controller_wait_until_ready ();
   return grub_inb (KEYBOARD_REG_DATA);
 }
+
+#endif
 
 static int
 write_mode (int mode)
@@ -558,8 +562,13 @@ grub_keyboard_controller_init (struct grub_term_input *term __attribute__ ((unus
       keyboard_controller_wait_until_ready ();
       grub_inb (KEYBOARD_REG_DATA);
     }
+#if defined (GRUB_MACHINE_MIPS_YEELOONG) || defined (GRUB_MACHINE_QEMU)
+  grub_keyboard_controller_orig = 0;
+  grub_keyboard_orig_set = 2;
+#else
   grub_keyboard_controller_orig = grub_keyboard_controller_read ();
   grub_keyboard_orig_set = query_mode ();
+#endif
   set_scancodes ();
   keyboard_controller_led (led_status);
 
