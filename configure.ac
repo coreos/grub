@@ -673,7 +673,10 @@ fi
 
 AC_CACHE_CHECK([whether -Wno-trampolines work], [grub_cv_cc_wnotrampolines], [
   SAVED_CFLAGS="$CFLAGS"
-  CFLAGS="$TARGET_CFLAGS -Wno-trampolines"
+  # Test for -Wtrampolines rather than -Wno-trampolines to reduce confusion
+  # in the event of later failures (since -Wno-* is always accepted, but
+  # produces a diagnostic if something else is wrong).
+  CFLAGS="$TARGET_CFLAGS -Wtrampolines"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
 int va_arg_func (int fixed, va_list args);]], [[]])],
       [grub_cv_cc_wnotrampolines=yes],

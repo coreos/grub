@@ -1,3 +1,9 @@
+2010-11-16  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: Make error messages less confusing by testing for
+	-Wtrampolines rather than -Wno-trampolines (since -Wno-* is always
+	accepted, but produces a diagnostic if something else is wrong).
+
 2010-11-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/at_keyboard.c (grub_keyboard_controller_read)
