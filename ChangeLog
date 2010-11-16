@@ -1,3 +1,8 @@
+2010-11-16  Colin Watson  <cjwatson@debian.org>
+
+	* conf/Makefile.common (CFLAGS_GNULIB): Add -Wno-unused-parameter.
+	(-Wunused implies -Wunused-parameter, but not vice versa).
+
 2010-11-16  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac: Make error messages less confusing by testing for

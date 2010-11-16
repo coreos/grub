@@ -97,7 +97,7 @@ platformdir = $(pkglibrootdir)/$(target_cpu)-$(platform)
 CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers
 CPPFLAGS_GCRY = -I$(top_srcdir)/grub-core/lib/libgcrypt_wrap
 
-CFLAGS_GNULIB = -Wno-undef -Wno-sign-compare -Wno-unused
+CFLAGS_GNULIB = -Wno-undef -Wno-sign-compare -Wno-unused -Wno-unused-parameter
 CPPFLAGS_GNULIB = -I$(top_builddir)/grub-core/gnulib -I$(top_srcdir)/grub-core/gnulib
 
 CFLAGS_POSIX = -fno-builtin
