@@ -1,5 +1,17 @@
 2010-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make better UTF compliant.
+
+	* grub-core/normal/charset.c (grub_utf8_to_utf16): Handle 6- and 7-byte
+	sequences as incorrect.
+	(grub_is_valid_utf8): Likewise.
+	(grub_utf8_to_ucs4): Likewise.
+	(grub_ucs4_to_utf8): Handle codepoints outside of BMP.
+	(grub_ucs4_to_utf8_alloc): Likewise.
+	* include/grub/charset.h (grub_utf16_to_utf8): Likewise.
+
+2010-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make legacy_source behave like source.
 
 	* grub-core/commands/legacycfg.c (legacy_file): Don't call
