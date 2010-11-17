@@ -177,9 +177,6 @@ legacy_file (const char *filename)
   grub_free (suffix);
   grub_free (entrysrc);
 
-  if (menu && menu->size)
-    grub_show_menu (menu, 1);
-
   return GRUB_ERR_NONE;
 }
 
@@ -194,8 +191,8 @@ grub_cmd_legacy_source (struct grub_command *cmd,
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
   extractor = (cmd->name[0] == 'e');
-  new_env = (cmd->name[extractor ? sizeof ("extract_legacy_entries_") - 1
-		       : sizeof ("legacy_") - 1] == 'c');
+  new_env = (cmd->name[extractor ? (sizeof ("extract_legacy_entries_") - 1)
+		       : (sizeof ("legacy_") - 1)] == 'c');
 
   if (new_env)
     grub_cls ();
@@ -207,8 +204,15 @@ grub_cmd_legacy_source (struct grub_command *cmd,
 
   ret = legacy_file (args[0]);
 
-  if (new_env && !extractor)
-    grub_env_context_close ();
+  if (new_env)
+    {
+      grub_menu_t menu;
+      menu = grub_env_get_menu ();
+      if (menu && menu->size)
+	grub_show_menu (menu, 1);
+      if (!extractor)
+	grub_env_context_close ();
+    }
   if (extractor)
     grub_env_extractor_close (!new_env);
 
