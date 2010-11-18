@@ -1,3 +1,8 @@
+2010-11-18  Robert Millan  <rmh@gnu.org>
+
+	* grub-core/fs/btrfs.c (grub_btrfs_mount): Replace grub_strncmp()
+	with grub_memcmp().
+
 2010-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/menu_entry.c (print_up): Fix displacement of up
