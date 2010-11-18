@@ -172,7 +172,7 @@ static void
 print_up (int flag, struct per_term_screen *term_screen)
 {
   grub_term_gotoxy (term_screen->term, GRUB_TERM_LEFT_BORDER_X 
-		    + grub_term_entry_width (term_screen->term),
+		    + grub_term_border_width (term_screen->term),
 		    GRUB_TERM_FIRST_ENTRY_Y);
 
   if (flag)
