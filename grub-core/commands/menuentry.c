@@ -24,6 +24,7 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 #include <grub/normal.h>
+#include <grub/script_sh.h>
 
 static const struct grub_arg_option options[] =
   {
@@ -221,26 +222,17 @@ setparams_prefix (int argc, char **args)
     return 0;
 
   grub_strcpy (result, "setparams");
-  i = 9;
+  p = result + 9;
 
   for (j = 0; j < argc; j++)
     {
-      result[i++] = ' ';
-      result[i++] = '\'';
-      p = args[j];
-      while (*p) {
-	result[i++] = *p;
-	if (*p == '\'') {
-	  result[i++] = '\\';
-	  result[i++] = '\'';
-	  result[i++] = '\'';
-	}
-	p++;
-      }
-      result[i++] = '\'';
+      *p++ = ' ';
+      *p++ = '\'';
+      p = grub_script_escape_squotes (p, args[j], grub_strlen (args[j]));
+      *p++ = '\'';
     }
-  result[i++] = '\n';
-  result[i] = '\0';
+  *p++ = '\n';
+  *p = '\0';
   return result;
 }
 

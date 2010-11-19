@@ -382,6 +382,9 @@ grub_script_execute_arglist_to_argv (struct grub_script_arglist *arglist, int *c
 grub_err_t
 grub_normal_parse_line (char *line, grub_reader_getline_t getline);
 
+char *
+grub_script_escape_squotes (char *out, const char *in, grub_size_t len);
+
 static inline struct grub_script *
 grub_script_ref (struct grub_script *script)
 {

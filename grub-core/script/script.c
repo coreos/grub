@@ -22,6 +22,27 @@
 #include <grub/parser.h>
 #include <grub/mm.h>
 
+/* Escape single quotes in first `len' characters of `in' into a GRUB
+   script argument form into `out'; return address of the end in
+   `out'. */
+char *
+grub_script_escape_squotes (char *out, const char *in, grub_size_t len)
+{
+  while (*in && len--)
+    {
+      *out++ = *in;
+      if (*in == '\'')
+	{
+	  *out++ = '\\';
+	  *out++ = '\'';
+	  *out++ = '\'';
+	}
+      in++;
+    }
+  *out = '\0';
+  return out;
+}
+
 /* It is not possible to deallocate the memory when a syntax error was
    found.  Because of that it is required to keep track of all memory
    allocations.  The memory is freed in case of an error, or assigned
