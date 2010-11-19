@@ -1,3 +1,10 @@
+2010-11-19  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix quoting in setparams in handling menuentry command.
+
+	* grub-core/commands/menuentry.c (setparams_prefix): Use single
+	quotes for arguments.
+
 2010-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/menu_entry.c (print_up): Fix displacement of up
