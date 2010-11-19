@@ -1,5 +1,10 @@
 2010-11-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/linux.c (grub_cmd_linux): Pass correctly the
+	bootloader version instead of 0.
+
+2010-11-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Fix spurious
 	warning.
 
