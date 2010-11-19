@@ -123,6 +123,9 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
 
   for (minor_version = 0; minor_version < 3; ++minor_version)
     {
+      if (size == GRUB_DISK_SIZE_UNKNOWN && minor_version == 0)
+	continue;
+	
       switch (minor_version)
 	{
 	case 0:

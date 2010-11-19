@@ -170,6 +170,8 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
 
   /* The sector where the mdraid 0.90 superblock is stored, if available.  */
   size = grub_disk_get_size (disk);
+  if (size == GRUB_DISK_SIZE_UNKNOWN)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, "not 0.9x raid");
   sector = NEW_SIZE_SECTORS (size);
 
   if (grub_disk_read (disk, sector, 0, SB_BYTES, &sb))
