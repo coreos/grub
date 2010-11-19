@@ -206,20 +206,6 @@ setparams_prefix (int argc, char **args)
   char *p;
   char *result;
   grub_size_t len = 10;
-  static const char *escape_characters = "\"\\";
-
-  auto char *strescpy (char *, const char *, const char *);
-  char * strescpy (char *d, const char *s, const char *escapes)
-  {
-    while (*s)
-      {
-	if (grub_strchr (escapes, *s))
-	  *d++ = '\\';
-	*d++ = *s++;
-      }
-    *d = '\0';
-    return d;
-  }
 
   /* Count resulting string length */
   for (i = 0; i < argc; i++)
@@ -227,7 +213,7 @@ setparams_prefix (int argc, char **args)
       len += 3; /* 3 = 1 space + 2 quotes */
       p = args[i];
       while (*p)
-	len += grub_strchr (escape_characters, *p++) ? 2 : 1;
+	len += (*p++ == '\'' ? 3 : 1);
     }
 
   result = grub_malloc (len + 2);
@@ -240,9 +226,18 @@ setparams_prefix (int argc, char **args)
   for (j = 0; j < argc; j++)
     {
       result[i++] = ' ';
-      result[i++] = '"';
-      i = strescpy (result + i, args[j], escape_characters) - result;
-      result[i++] = '"';
+      result[i++] = '\'';
+      p = args[j];
+      while (*p) {
+	result[i++] = *p;
+	if (*p == '\'') {
+	  result[i++] = '\\';
+	  result[i++] = '\'';
+	  result[i++] = '\'';
+	}
+	p++;
+      }
+      result[i++] = '\'';
     }
   result[i++] = '\n';
   result[i] = '\0';
