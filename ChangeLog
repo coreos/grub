@@ -1,5 +1,10 @@
 2010-11-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Fix spurious
+	warning.
+
+2010-11-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Don't try to
 	retrieve the metadat sector if size isn't known.
 	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Likewise.
