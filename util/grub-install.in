@@ -205,7 +205,7 @@ do
 
     --grub-mkrelpath)
 	grub_mkrelpath="`argument "$option" "$@"`"; shift;;
-    --grub-mkimage=*)
+    --grub-mkrelpath=*)
 	grub_mkrelpath="`echo "$option" | sed 's/--grub-mkrelpath=//'`" ;;
 
     --grub-mkdevicemap)
