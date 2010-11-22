@@ -442,6 +442,13 @@ setup (const char *dir,
       save_blocklists (sectors[i] + grub_partition_get_start (container),
 		       0, GRUB_DISK_SECTOR_SIZE);
 
+    /* Make sure that the last blocklist is a terminator.  */
+    if (block == first_block)
+      block--;
+    block->start = 0;
+    block->len = 0;
+    block->segment = 0;
+
     write_rootdev (core_img, root_dev, boot_img, first_sector);
 
     core_img = realloc (core_img, nsec * GRUB_DISK_SECTOR_SIZE);
@@ -457,12 +464,6 @@ setup (const char *dir,
 				      core_size - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART - GRUB_DISK_SECTOR_SIZE,
 				      nsec * GRUB_DISK_SECTOR_SIZE
 				      - core_size);
-
-    /* Make sure that the second blocklist is a terminator.  */
-    block = first_block - 1;
-    block->start = 0;
-    block->len = 0;
-    block->segment = 0;
 
     /* Write the core image onto the disk.  */
     for (i = 0; i < nsec; i++)

@@ -27,6 +27,45 @@
 static struct grub_partition_map grub_msdos_partition_map;
 
 
+#ifdef GRUB_UTIL
+#include <grub/emu/misc.h>
+
+struct embed_signature
+{
+  const char *name;
+  const char *signature;
+  int signature_len;
+};
+
+/* Signatures of other software that may be using sectors in the embedding
+   area.  */
+struct embed_signature embed_signatures[] =
+  {
+    {
+      .name = "ZISD",
+      .signature = "ZISD",
+      .signature_len = 4
+    },
+    {
+      .name = "FlexNet",
+      .signature = "\xd4\x41\xa0\xf5\x03\x00\x03\x00",
+      .signature_len = 8
+    },
+    {
+      .name = "FlexNet",
+      .signature = "\xd8\x41\xa0\xf5\x02\x00\x02\x00",
+      .signature_len = 8
+    },
+    {
+      /* from Ryan Perkins */
+      .name = "HP Backup and Recovery Manager (?)",
+      .signature = "\x70\x8a\x5d\x46\x35\xc5\x1b\x93"
+		   "\xae\x3d\x86\xfd\xb1\x55\x3e\xe0",
+      .signature_len = 16
+    }
+  };
+#endif
+
 grub_err_t
 grub_partition_msdos_iterate (grub_disk_t disk,
 			      int (*hook) (grub_disk_t disk,
@@ -234,13 +273,56 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 
   if (end >= *nsectors + 1)
     {
-      int i;
+      int i, j;
+      char *embed_signature_check;
+      unsigned int orig_nsectors, extra_sectors = 0;
+
+      orig_nsectors = *nsectors;
       *nsectors = end - 1;
       *sectors = grub_malloc (*nsectors * sizeof (**sectors));
       if (!*sectors)
 	return grub_errno;
       for (i = 0; i < *nsectors; i++)
 	(*sectors)[i] = 1 + i;
+
+      /* Check for software that is already using parts of the embedding
+       * area.
+       */
+      embed_signature_check = grub_malloc (GRUB_DISK_SECTOR_SIZE);
+      for (i = 0; i < *nsectors; i++)
+	{
+	  if (grub_disk_read (disk, (*sectors)[i], 0, GRUB_DISK_SECTOR_SIZE,
+			      embed_signature_check))
+	    continue;
+
+	  for (j = 0; j < ARRAY_SIZE (embed_signatures); j++)
+	    if (! grub_memcmp (embed_signatures[j].signature,
+			       embed_signature_check,
+			       embed_signatures[j].signature_len))
+	      break;
+	  if (j == ARRAY_SIZE (embed_signatures))
+	    continue;
+	  grub_util_warn ("Sector %llu is already in use by %s; avoiding it.  "
+			  "This software may cause boot or other problems in "
+			  "future.  Please ask its authors not to store data "
+			  "in the boot track",
+			  (*sectors)[i], embed_signatures[j].name);
+	  extra_sectors++;
+
+	  /* Avoid this sector.  */
+	  for (j = i; j < *nsectors; j++)
+	    (*sectors)[j]++;
+	}
+      grub_free (embed_signature_check);
+
+      if (end + extra_sectors < orig_nsectors + 1)
+	return grub_error (GRUB_ERR_OUT_OF_RANGE,
+			   "Other software is using the embedding area, and "
+			   "there is not enough room for core.img.  Such "
+			   "software is often trying to store data in a way "
+			   "that avoids detection.  We recommend you "
+			   "investigate.");
+
       return GRUB_ERR_NONE;
     }
 

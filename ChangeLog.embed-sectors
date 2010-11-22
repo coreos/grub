@@ -1,0 +1,7 @@
+2010-11-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	* partmap/msdos.c (embed_signatures): New array.
+	(pc_partition_map_embed): Check for and avoid sectors matching any
+	of the signatures in embed_signatures.
+	* util/grub-setup.c (setup): Allow for the embedding area being
+	split into multiple blocklists.
