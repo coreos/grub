@@ -1,5 +1,12 @@
 2010-11-22  Colin Watson  <cjwatson@ubuntu.com>
 
+	Fix test program build on GNU/kFreeBSD.
+
+	* Makefile.util.def (example_unit_test): Add `$(LIBZFS)
+	$(LIBNVPAIR)' library dependencies.
+
+2010-11-22  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub-install.in: Fix parsing of --grub-mkrelpath= option.
 
 2010-11-22  Colin Watson  <cjwatson@ubuntu.com>

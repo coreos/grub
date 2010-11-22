@@ -607,7 +607,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBDEVMAPPER)';
+  ldadd = '$(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
 };
 
 program = {
