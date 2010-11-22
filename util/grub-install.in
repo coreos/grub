@@ -473,7 +473,7 @@ fi
 # this command is allowed to fail (--target=fs already grants us that the
 # filesystem will be accessible).
 partmap_module=
-for x in "`"$grub_probe" --device-map="${device_map}" --target=partmap --device "${grub_device}" 2> /dev/null`"; do
+for x in `"$grub_probe" --device-map="${device_map}" --target=partmap --device "${grub_device}" 2> /dev/null`; do
    case "$x" in
        netbsd | openbsd) 
 	   partmap_module="$partmap_module part_bsd";;
