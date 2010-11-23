@@ -30,7 +30,7 @@ CCASFLAGS_LIBRARY += $(CCASFLAGS_PLATFORM)
 
 # gentrigtables
 gentrigtables: gentrigtables.c
-	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(CPPFLAGS) -lm $<
+	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(CPPFLAGS) $< -lm
 CLEANFILES += gentrigtables
 
 # trigtables.c

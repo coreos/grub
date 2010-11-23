@@ -1,5 +1,10 @@
 2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/Makefile.am (gentrigtables): Put -lm after $<; some
+	linkers are picky about this.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/Makefile.am (command.lst): Adjust sed expression
 	ordering so that extended and priority commands aren't treated as
 	ordinary commands.
