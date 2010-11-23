@@ -1,5 +1,12 @@
 2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/deviceiter.c (compare_devices): If the by-id link for a
+	device couldn't be resolved, fall back to sorting by the by-id link
+	rather than segfaulting.
+	Reported and tested by: Daniel Mierswa.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
 	* Makefile.util.def (grub-menulst2cfg): List libraries in ldadd, not
 	ldflags, to fix link line ordering.
 
