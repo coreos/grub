@@ -36,7 +36,7 @@ typedef struct grub_gpt_part_type grub_gpt_part_type_t;
   }
 
 #define GRUB_GPT_PARTITION_TYPE_BIOS_BOOT \
-  { grub_cpu_to_le32 (0x21686148), grub_cpu_to_le16 (0x6449), grub_cpu_to_le16 (0x6e6f), \
+  { 0x21686148, 0x6449, 0x6e6f, \
     { 0x74, 0x4e, 0x65, 0x65, 0x64, 0x45, 0x46, 0x49 } \
   }
 

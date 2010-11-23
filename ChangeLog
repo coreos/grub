@@ -1,3 +1,13 @@
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/gpt_partition.h (GRUB_GPT_PARTITION_TYPE_BIOS_BOOT):
+	Remove byte-swapping function calls, which are not valid in
+	structure initialisers.
+	* grub-core/partmap/gpt.c (grub_gpt_partition_type_bios_boot): Make
+	non-const.
+	(GRUB_MOD_INIT): Byte-swap data1, data2, and data3 fields of
+	grub_gpt_partition_type_bios_boot.
+
 2010-11-22  Colin Watson  <cjwatson@ubuntu.com>
 
 	Fix test program build on GNU/kFreeBSD.
