@@ -1,5 +1,11 @@
 2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/Makefile.am (command.lst): Adjust sed expression
+	ordering so that extended and priority commands aren't treated as
+	ordinary commands.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
 	* include/grub/gpt_partition.h (GRUB_GPT_PARTITION_TYPE_BIOS_BOOT):
 	Remove byte-swapping function calls, which are not valid in
 	structure initialisers.
