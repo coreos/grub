@@ -162,6 +162,7 @@ kernel = {
   emu = disk/host.c;
   emu = gnulib/progname.c;
   emu = gnulib/error.c;
+  emu = kern/emu/cache.S;
   emu = kern/emu/console.c;
   emu = kern/emu/getroot.c;
   emu = kern/emu/hostdisk.c;
@@ -208,7 +209,6 @@ program = {
   name = grub-emu-lite;
 
   emu = kern/emu/lite.c;
-  emu = kern/emu/cache.S;
   emu_nodist = symlist.c;
 
   ldadd = 'kernel.img$(EXEEXT)';
