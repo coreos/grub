@@ -300,7 +300,8 @@ image = {
   mips_cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
 
   objcopyflags = '-O binary';
-  ldflags = '-lgcc -static-libgcc -Wl,-Ttext,0x80100000';
+  ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
+  ldadd = '-lgcc';
   cflags = '-static-libgcc';
   enable = mips;
 };
@@ -313,7 +314,8 @@ image = {
   mips_cppflags = '-DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
 
   objcopyflags = '-O binary';
-  ldflags = '-lgcc -static-libgcc -Wl,-Ttext,0x80100000';
+  ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
+  ldadd = '-lgcc';
   cflags = '-static-libgcc';
   enable = mips;
 };
