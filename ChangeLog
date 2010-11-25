@@ -1,3 +1,15 @@
+2010-11-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix cmdline argument quotes for setparams command of menuentry
+	definitions.
+
+	* grub-core/commands/menuentry.c (setparams_prefix): Use single
+	quotes for arguments.
+	* grub-core/lib/legacy_parse.c (grub_legacy_escape): Use
+	grub_strchrsub function instead.
+
+	* include/grub/misc.h (grub_strchrsub): New function.
+
 2010-11-24  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/deviceiter.c (grub_util_iterate_devices): Save a bit of
