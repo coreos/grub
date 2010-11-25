@@ -105,7 +105,7 @@ static grub_err_t
 grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
 		    grub_disk_addr_t *start_sector)
 {
-  grub_disk_addr_t sector;
+  grub_disk_addr_t sector = 0;
   grub_uint64_t size;
   struct grub_raid_super_1x sb;
   grub_uint8_t minor_version;
@@ -123,6 +123,9 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
 
   for (minor_version = 0; minor_version < 3; ++minor_version)
     {
+      if (size == GRUB_DISK_SIZE_UNKNOWN && minor_version == 0)
+	continue;
+	
       switch (minor_version)
 	{
 	case 0:

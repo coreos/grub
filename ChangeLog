@@ -1,4 +1,4 @@
-2010-11-19  BVK Chaitanya  <bvk.groups@gmail.com>
+2010-11-25  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Fix cmdline argument quotes for setparams command of menuentry
 	definitions.
@@ -9,6 +9,94 @@
 	grub_strchrsub function instead.
 
 	* include/grub/misc.h (grub_strchrsub): New function.
+
+2010-11-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/deviceiter.c (grub_util_iterate_devices): Save a bit of
+	effort by skipping "." and ".." entries up-front.
+	Suggested by: Michael Lazarev.
+
+2010-11-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/Makefile.core.def (xz_decompress): Move -lgcc from
+	ldflags to ldadd, to fix link line ordering.
+	(none_decompress): Likewise.
+
+2010-11-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/Makefile.core.def (kernel): Add kern/emu/cache.S for emu
+	platforms.
+	(grub-emu-lite): Remove kern/emu/cache.S.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/deviceiter.c (compare_devices): If the by-id link for a
+	device couldn't be resolved, fall back to sorting by the by-id link
+	rather than segfaulting.
+	Reported and tested by: Daniel Mierswa.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.util.def (grub-menulst2cfg): List libraries in ldadd, not
+	ldflags, to fix link line ordering.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/Makefile.am (gentrigtables): Put -lm after $<; some
+	linkers are picky about this.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/Makefile.am (command.lst): Adjust sed expression
+	ordering so that extended and priority commands aren't treated as
+	ordinary commands.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/gpt_partition.h (GRUB_GPT_PARTITION_TYPE_BIOS_BOOT):
+	Remove byte-swapping function calls, which are not valid in
+	structure initialisers.
+	* grub-core/partmap/gpt.c (grub_gpt_partition_type_bios_boot): Make
+	non-const.
+	(GRUB_MOD_INIT): Byte-swap data1, data2, and data3 fields of
+	grub_gpt_partition_type_bios_boot.
+
+2010-11-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix test program build on GNU/kFreeBSD.
+
+	* Makefile.util.def (example_unit_test): Add `$(LIBZFS)
+	$(LIBNVPAIR)' library dependencies.
+
+2010-11-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in: Fix parsing of --grub-mkrelpath= option.
+
+2010-11-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in: Remove excessive quoting that broke
+	installations to RAID devices.
+
+2010-11-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/linux.c (grub_cmd_linux): Pass correctly the
+	bootloader version instead of 0.
+
+2010-11-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Fix spurious
+	warning.
+
+2010-11-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Don't try to
+	retrieve the metadat sector if size isn't known.
+	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Likewise.
+
+2010-11-18  Robert Millan  <rmh@gnu.org>
+
+	* grub-core/fs/btrfs.c (grub_btrfs_mount): Replace grub_strncmp()
+	with grub_memcmp().
 
 2010-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 

@@ -30,7 +30,7 @@ CCASFLAGS_LIBRARY += $(CCASFLAGS_PLATFORM)
 
 # gentrigtables
 gentrigtables: gentrigtables.c
-	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(CPPFLAGS) -lm $<
+	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(CPPFLAGS) $< -lm
 CLEANFILES += gentrigtables
 
 # trigtables.c
@@ -237,9 +237,9 @@ command.lst: $(MARKER_FILES)
 	(for pp in $^; do \
 	  b=`basename $$pp .marker`; \
 	  sed -n \
-	    -e "/COMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/\1: $$b/;p;}" \
 	    -e "/EXTCOMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}" \
-	    -e "/P1COMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}" $$pp; \
+	    -e "/P1COMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}" \
+	    -e "/COMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/\1: $$b/;p;}" $$pp; \
 	done) | sort -u > $@
 platform_DATA += command.lst
 CLEANFILES += command.lst

@@ -655,7 +655,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  params->type_of_loader = (LINUX_LOADER_ID_GRUB << 4);
+  params->type_of_loader = GRUB_LINUX_BOOT_LOADER_TYPE;
 
   /* These two are used (instead of cmd_line_ptr) by older versions of Linux,
      and otherwise ignored.  */
