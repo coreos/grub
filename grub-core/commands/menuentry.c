@@ -228,7 +228,7 @@ setparams_prefix (int argc, char **args)
     {
       *p++ = ' ';
       *p++ = '\'';
-      p = grub_script_escape_squotes (p, args[j], grub_strlen (args[j]));
+      p = grub_strchrsub (p, args[j], '\'', "'\\''");
       *p++ = '\'';
     }
   *p++ = '\n';

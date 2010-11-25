@@ -323,16 +323,23 @@ struct legacy_command legacy_commands[] =
 char *
 grub_legacy_escape (const char *in, grub_size_t len)
 {
-  const char *ptr;
+  char saved;
+  char *ptr;
   char *outptr;
   int overhead = 0;
-  for (ptr = in; ptr < in + len && *ptr; ptr++)
+
+  for (ptr = (char*)in; ptr < in + len && *ptr; ptr++)
     if (*ptr == '\'')
       overhead += 3;
   outptr = grub_malloc (ptr - in + overhead + 1);
   if (!outptr)
     return NULL;
-  grub_script_escape_squotes (outptr, in, len);
+
+  ptr = (char*)in;
+  saved = ptr[len];
+  ptr[len] = '\0';
+  grub_strchrsub (outptr, in, '\'', "'\\''");
+  ptr[len] = saved;
   return outptr;
 }
 
