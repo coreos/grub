@@ -1,6 +1,7 @@
 2010-11-19  BVK Chaitanya  <bvk.groups@gmail.com>
 
-	Fix quoting in setparams in handling menuentry command.
+	Fix cmdline argument quotes for setparams command of menuentry
+	definitions.
 
 	* grub-core/commands/menuentry.c (setparams_prefix): Use single
 	quotes for arguments.
