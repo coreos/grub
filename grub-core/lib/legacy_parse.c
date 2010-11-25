@@ -323,8 +323,8 @@ char *
 grub_legacy_escape (const char *in, grub_size_t len)
 {
   char *ptr;
-  char saved;
   char *ret;
+  char saved;
   int overhead = 0;
 
   for (ptr = (char*)in; ptr < in + len && *ptr; ptr++)
