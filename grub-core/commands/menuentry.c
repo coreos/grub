@@ -24,7 +24,6 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 #include <grub/normal.h>
-#include <grub/script_sh.h>
 
 static const struct grub_arg_option options[] =
   {

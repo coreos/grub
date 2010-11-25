@@ -194,7 +194,7 @@ grub_strncasecmp (const char *s1, const char *s2, grub_size_t n)
 }
 
 /* Replace all `ch' characters of `input' with `with' and copy the
-   result into `output'; return address of the end in `output'. */
+   result into `output'; return EOS address of `output'. */
 static inline char *
 grub_strchrsub (char *output, const char *input, char ch, const char *with)
 {

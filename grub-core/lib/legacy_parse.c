@@ -20,7 +20,6 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/err.h>
-#include <grub/script_sh.h>
 #include <grub/legacy_parse.h>
 #include <grub/i386/pc/vesa_modes_table.h>
 
@@ -323,24 +322,24 @@ struct legacy_command legacy_commands[] =
 char *
 grub_legacy_escape (const char *in, grub_size_t len)
 {
-  char saved;
   char *ptr;
-  char *outptr;
+  char saved;
+  char *ret;
   int overhead = 0;
 
   for (ptr = (char*)in; ptr < in + len && *ptr; ptr++)
     if (*ptr == '\'')
       overhead += 3;
-  outptr = grub_malloc (ptr - in + overhead + 1);
-  if (!outptr)
+  ret = grub_malloc (ptr - in + overhead + 1);
+  if (!ret)
     return NULL;
 
   ptr = (char*)in;
   saved = ptr[len];
   ptr[len] = '\0';
-  grub_strchrsub (outptr, in, '\'', "'\\''");
+  grub_strchrsub (ret, ptr, '\'', "'\\''");
   ptr[len] = saved;
-  return outptr;
+  return ret;
 }
 
 static char *

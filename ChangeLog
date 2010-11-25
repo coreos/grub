@@ -6,12 +6,9 @@
 	* grub-core/commands/menuentry.c (setparams_prefix): Use single
 	quotes for arguments.
 	* grub-core/lib/legacy_parse.c (grub_legacy_escape): Use
-	grub_script_escape_squotes function instead.
+	grub_strchrsub function instead.
 
-	* include/grub/script_sh.h (grub_script_escape_squotes): New
-	prototype.
-	* grub-core/script/script.c (grub_script_escape_squotes): New
-	function.
+	* include/grub/misc.h (grub_strchrsub): New function.
 
 2010-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
