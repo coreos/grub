@@ -1,3 +1,8 @@
+2010-11-26  Robert Millan  <rmh@gnu.org>
+
+	* grub-core/term/i386/pc/vga_text.c (VGA_TEXT_SCREEN): Beautify.
+	Update all users.
+
 2010-11-26  Colin Watson  <cjwatson@ubuntu.com>
 
 	Fix LVM-on-RAID probing.
