@@ -33,7 +33,7 @@ static grub_uint8_t grub_gpt_magic[8] =
 static const grub_gpt_part_type_t grub_gpt_partition_type_empty = GRUB_GPT_PARTITION_TYPE_EMPTY;
 
 #ifdef GRUB_UTIL
-static grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_PARTITION_TYPE_BIOS_BOOT;
+static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_PARTITION_TYPE_BIOS_BOOT;
 #endif
 
 /* 512 << 7 = 65536 byte sectors.  */
@@ -198,14 +198,6 @@ static struct grub_partition_map grub_gpt_partition_map =
 GRUB_MOD_INIT(part_gpt)
 {
   grub_partition_map_register (&grub_gpt_partition_map);
-#ifdef GRUB_UTIL
-  grub_gpt_partition_type_bios_boot.data1 =
-    grub_cpu_to_le32 (grub_gpt_partition_type_bios_boot.data1);
-  grub_gpt_partition_type_bios_boot.data2 =
-    grub_cpu_to_le16 (grub_gpt_partition_type_bios_boot.data2);
-  grub_gpt_partition_type_bios_boot.data3 =
-    grub_cpu_to_le16 (grub_gpt_partition_type_bios_boot.data3);
-#endif
 }
 
 GRUB_MOD_FINI(part_gpt)

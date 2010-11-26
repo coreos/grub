@@ -1,5 +1,19 @@
 2010-11-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid using tricks for initialising endian variables.
+
+	* grub-core/partmap/gpt.c (grub_gpt_partition_type_bios_boot):
+	Make const.
+	(GRUB_MOD_INIT): Don't byte-swap.
+	* include/grub/gpt_partition.h (GRUB_GPT_PARTITION_TYPE_BIOS_BOOT):
+	Use grub_cpu_to_le16_compile_time and grub_cpu_to_le32_compile_time.
+	* include/grub/types.h (grub_swap_bytes16_compile_time): New macro.
+	(grub_swap_bytes32_compile_time): Likewise.
+	(grub_cpu_to_le32_compile_time): Likewise.
+	(grub_cpu_to_le16_compile_time): Likewise.
+
+2010-11-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-setup.c (setup): Stop recommending --force. People who
 	understand the dangers of blocklists are able to find this option
 	anyway and the ones who don't shouldn't use it anyway.
