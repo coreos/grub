@@ -1,3 +1,9 @@
+2010-11-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-setup.c (setup): Stop recommending --force. People who
+	understand the dangers of blocklists are able to find this option
+	anyway and the ones who don't shouldn't use it anyway.
+
 2010-11-26  Robert Millan  <rmh@gnu.org>
 
 	* grub-core/term/i386/pc/vga_text.c (VGA_TEXT_SCREEN): Beautify.
