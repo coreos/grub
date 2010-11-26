@@ -1,3 +1,11 @@
+2010-11-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix LVM-on-RAID probing.
+
+	* util/grub-probe.c (probe): Remember which disk was detected as
+	RAID (perhaps an LVM physical volume).  Use that disk's raidname
+	rather than that of the top-level disk.
+
 2010-11-25  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	Fix cmdline argument quotes for setparams command of menuentry
