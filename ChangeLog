@@ -1,3 +1,9 @@
+2010-11-30  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/commands/regexp.c (grub_cmd_regexp): Remove unused
+	variable.
+	* grub-core/commands/wildcard.c (match_files): Likewise.
+
 2010-11-30  Robert Millan  <rmh@gnu.org>
 
 	* grub-core/loader/i386/bsd.c
