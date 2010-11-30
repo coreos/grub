@@ -1,7 +1,7 @@
 2010-11-30  Robert Millan  <rmh@gnu.org>
 
-	* grub-core/commands/echo.c (grub_cmd_echo): Call grub_refresh()
-	after printing a message.
+	* grub-core/commands/echo.c: Include `<grub/term.h>'.
+	(grub_cmd_echo): Call grub_refresh() after printing a message.
 
 2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
 
