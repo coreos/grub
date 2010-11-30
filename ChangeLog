@@ -3,6 +3,67 @@
 	* grub-core/commands/echo.c: Include `<grub/term.h>'.
 	(grub_cmd_echo): Call grub_refresh() after printing a message.
 
+2010-11-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix LVM-on-RAID probing.
+
+	* util/grub-probe.c (probe): Remember which disk was detected as
+	RAID (perhaps an LVM physical volume).  Use that disk's raidname
+	rather than that of the top-level disk.
+
+2010-11-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix cmdline argument quotes for setparams command of menuentry
+	definitions.
+
+	* grub-core/commands/menuentry.c (setparams_prefix): Use single
+	quotes for arguments.
+	* grub-core/lib/legacy_parse.c (grub_legacy_escape): Use
+	grub_strchrsub function instead.
+
+	* include/grub/misc.h (grub_strchrsub): New function.
+
+2010-11-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/deviceiter.c (grub_util_iterate_devices): Save a bit of
+	effort by skipping "." and ".." entries up-front.
+	Suggested by: Michael Lazarev.
+
+2010-11-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/Makefile.core.def (xz_decompress): Move -lgcc from
+	ldflags to ldadd, to fix link line ordering.
+	(none_decompress): Likewise.
+
+2010-11-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/Makefile.core.def (kernel): Add kern/emu/cache.S for emu
+	platforms.
+	(grub-emu-lite): Remove kern/emu/cache.S.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/deviceiter.c (compare_devices): If the by-id link for a
+	device couldn't be resolved, fall back to sorting by the by-id link
+	rather than segfaulting.
+	Reported and tested by: Daniel Mierswa.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.util.def (grub-menulst2cfg): List libraries in ldadd, not
+	ldflags, to fix link line ordering.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/Makefile.am (gentrigtables): Put -lm after $<; some
+	linkers are picky about this.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/Makefile.am (command.lst): Adjust sed expression
+	ordering so that extended and priority commands aren't treated as
+	ordinary commands.
+
 2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
 
 	* include/grub/gpt_partition.h (GRUB_GPT_PARTITION_TYPE_BIOS_BOOT):
