@@ -1,5 +1,13 @@
 2010-11-30  Robert Millan  <rmh@gnu.org>
 
+	* grub-core/loader/i386/bsd.c
+	(grub_cmd_freebsd_loadenv, grub_cmd_freebsd_module_elf): Check
+	whether kernel is loaded using grub_loader_is_loaded(), rather
+	than `kernel_type', which may still be `KERNEL_TYPE_NONE' under
+	certain error conditions.
+
+2010-11-30  Robert Millan  <rmh@gnu.org>
+
 	* grub-core/commands/echo.c: Include `<grub/term.h>'.
 	(grub_cmd_echo): Call grub_refresh() after printing a message.
 

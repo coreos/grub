@@ -1611,7 +1611,7 @@ grub_cmd_freebsd_loadenv (grub_command_t cmd __attribute__ ((unused)),
   char *buf = 0, *curr, *next;
   int len;
 
-  if (kernel_type == KERNEL_TYPE_NONE)
+  if (! grub_loader_is_loaded ())
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "you need to load the kernel first");
 
@@ -1844,7 +1844,7 @@ grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
   grub_file_t file = 0;
   grub_err_t err;
 
-  if (kernel_type == KERNEL_TYPE_NONE)
+  if (! grub_loader_is_loaded ())
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "you need to load the kernel first");
 
