@@ -622,6 +622,8 @@ find_path (struct grub_btrfs_data *data,
   *type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
   *tree = data->sblock.root_tree;
   key->object_id = data->sblock.root_dir_objectid;
+  key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
+  key->offset = 0;
 
   while (1)
     {
