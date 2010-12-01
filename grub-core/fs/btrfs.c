@@ -987,7 +987,7 @@ grub_btrfs_read (grub_file_t file, char *buf, grub_size_t len)
 	default:
 	  grub_free (extent);
 	  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		      "unsupported extent type 0x%x\n", extent->type);	
+		      "unsupported extent type 0x%x", extent->type);	
 	  return -1;
 	}
       buf += csize;
