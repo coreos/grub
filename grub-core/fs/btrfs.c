@@ -334,7 +334,7 @@ lower_bound (struct grub_btrfs_data *data, grub_disk_t disk,
 	  unsigned i;
 	  struct grub_btrfs_internal_node node, node_last;
 	  int have_last = 0;
-	  grub_memset (node_last, 0, sizeof (node_last));
+	  grub_memset (&node_last, 0, sizeof (node_last));
 	  for (i = 0; i < grub_le_to_cpu32 (head.nitems); i++)
 	    {
 	      err = grub_btrfs_read_logical (data, disk, addr
