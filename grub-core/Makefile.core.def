@@ -905,6 +905,7 @@ module = {
 module = {
   name = btrfs;
   common = fs/btrfs.c;
+  common = lib/crc.c;
 };
 
 module = {
