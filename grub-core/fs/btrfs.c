@@ -726,9 +726,11 @@ find_path (struct grub_btrfs_data *data,
 	    break;
 	  }
 	case GRUB_BTRFS_ITEM_TYPE_INODE_ITEM:
-	  if (*slash)
+	  if (*slash && *type == GRUB_BTRFS_DIR_ITEM_TYPE_REGULAR)
 	    return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
 	  *key = cdirel->key;
+	  if (*type == GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY)
+	    key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;	    
 	  break;
 	default:
 	  return grub_error (GRUB_ERR_BAD_FS, "unrecognised object type 0x%x", 
