@@ -122,6 +122,9 @@ struct grub_btrfs_dir_item
   grub_uint8_t dummy[8];
   grub_uint16_t m;
   grub_uint16_t n;
+#define GRUB_BTRFS_DIR_ITEM_TYPE_REGULAR 1
+#define GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY 2
+#define GRUB_BTRFS_DIR_ITEM_TYPE_SYMLINK 7
   grub_uint8_t type;
   char name[0];
 } __attribute__ ((packed));
@@ -605,7 +608,7 @@ static grub_err_t
 find_path (struct grub_btrfs_data *data,
 	   grub_disk_t disk,
 	   const char *path, struct grub_btrfs_key *key,
-	   grub_uint64_t *tree)
+	   grub_uint64_t *tree, grub_uint8_t *type)
 {
   const char *slash;
   grub_err_t err;
@@ -615,17 +618,22 @@ find_path (struct grub_btrfs_data *data,
   struct grub_btrfs_dir_item *direl = NULL;
   struct grub_btrfs_key key_out;
 
+  *type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
   *tree = data->sblock.root_tree;
   key->object_id = data->sblock.root_dir_objectid;
 
   while (1)
     {
-      key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
-      key->offset = 0;
       while (path[0] == '/')
 	path++;
       if (!path[0])
 	break;
+
+      if (*type != GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY)
+      	return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+
+      key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
+      key->offset = 0;
       slash = grub_strchr (path, '/');
       if (!slash)
 	slash = path + grub_strlen (path);
@@ -684,6 +692,13 @@ find_path (struct grub_btrfs_data *data,
 	}
 
       path = slash;
+      *type = cdirel->type;
+      if (*type == GRUB_BTRFS_DIR_ITEM_TYPE_SYMLINK)
+	{
+	  grub_free (direl);
+	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			     "symlinks not supported");
+	}
 	
       switch (cdirel->key.type)
 	{
@@ -739,13 +754,16 @@ grub_btrfs_dir (grub_device_t device,
   struct grub_btrfs_leaf_descriptor desc;
   int r;
   grub_uint64_t tree;
+  grub_uint8_t type;
 
   if (!data)
     return grub_errno;
 
-  err = find_path (data, device->disk, path, &key_in, &tree);
+  err = find_path (data, device->disk, path, &key_in, &tree, &type);
   if (err)
     return err;
+  if (type != GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY)
+    return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");  
 
   err = lower_bound (data, device->disk, &key_in, &key_out, 
 		     tree,
@@ -800,7 +818,7 @@ grub_btrfs_dir (grub_device_t device,
 	  c = cdirel->name[grub_le_to_cpu16 (cdirel->n)];
 	  cdirel->name[grub_le_to_cpu16 (cdirel->n)] = 0;
 	  grub_memset (&info, 0, sizeof (info));
-	  info.dir = (cdirel->type == 2);
+	  info.dir = (cdirel->type == GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY);
 	  if (hook (cdirel->name, &info))
 	    goto out;
 	  cdirel->name[grub_le_to_cpu16 (cdirel->n)] = c;
@@ -827,16 +845,19 @@ grub_btrfs_open (struct grub_file *file, const char *name)
   grub_disk_addr_t elemaddr;
   grub_size_t elemsize;
   struct grub_btrfs_inode inode;
+  grub_uint8_t type;
 
   if (!data)
     return grub_errno;
 
-  err = find_path (data, file->device->disk, name, &key_in, &data->tree);
+  err = find_path (data, file->device->disk, name, &key_in, &data->tree, &type);
   if (err)
     {
       grub_free (data);
       return err;
     }
+  if (type != GRUB_BTRFS_DIR_ITEM_TYPE_REGULAR)
+    return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a regular file");
   data->inode = key_in.object_id;
   key_in.type = GRUB_BTRFS_ITEM_TYPE_INODE_ITEM;
 
