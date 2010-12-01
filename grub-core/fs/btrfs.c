@@ -109,6 +109,13 @@ struct grub_btrfs_leaf_node
   grub_uint32_t size;
 } __attribute__ ((packed));
 
+struct grub_btrfs_internal_node
+{
+  struct grub_btrfs_key key;
+  grub_uint64_t blockn;
+  grub_uint64_t dummy;
+} __attribute__ ((packed));
+
 struct grub_btrfs_dir_item
 {
   struct grub_btrfs_key key;
@@ -200,6 +207,28 @@ free_iterator (struct grub_btrfs_leaf_descriptor *desc)
   grub_free (desc->data);
 }
 
+static grub_err_t
+save_ref (struct grub_btrfs_leaf_descriptor *desc, 
+	  grub_disk_addr_t addr, unsigned i, unsigned m, int l)
+{
+  desc->depth++;
+  if (desc->allocated > desc->depth)
+    {
+      void *newdata;
+      desc->allocated *= 2;
+      newdata = grub_realloc (desc->data, sizeof (desc->data[0])
+			      * desc->allocated);
+      if (!newdata)
+	return grub_errno;
+      desc->data = newdata;
+    }
+  desc->data[desc->depth - 1].addr = addr;
+  desc->data[desc->depth - 1].iter = i;
+  desc->data[desc->depth - 1].maxiter = m;
+  desc->data[desc->depth - 1].leaf = l;
+  return GRUB_ERR_NONE;
+}
+
 static int
 next (struct grub_btrfs_data *data, grub_disk_t disk,
       struct grub_btrfs_leaf_descriptor *desc,
@@ -224,8 +253,26 @@ next (struct grub_btrfs_data *data, grub_disk_t disk,
     return 0;
   while (!desc->data[desc->depth - 1].leaf)
     {
-      grub_printf ("No trees\n");
-      return -grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "no trees yet");
+      struct grub_btrfs_internal_node node;
+      struct btrfs_header head;
+
+      err = grub_btrfs_read_logical (data, disk,
+				     desc->data[desc->depth - 1].iter
+				     * sizeof (node)
+				     + sizeof (struct btrfs_header)
+				     + desc->data[desc->depth - 1].addr, &node,
+				     sizeof (node));
+      if (err)
+	return -err;
+
+      err = grub_btrfs_read_logical (data, disk,
+				     grub_le_to_cpu64 (node.blockn), &head,
+				     sizeof (head));
+      if (err)
+	return -err;
+
+      save_ref (desc, grub_le_to_cpu64 (node.blockn), 0, 
+		grub_le_to_cpu32 (head.nitems), !head.level);
     }
   err = grub_btrfs_read_logical (data, disk,
 				 desc->data[desc->depth - 1].iter
@@ -243,27 +290,6 @@ next (struct grub_btrfs_data *data, grub_disk_t disk,
 }
 
 static grub_err_t
-save_ref (struct grub_btrfs_leaf_descriptor *desc, 
-	  grub_disk_addr_t addr, unsigned i, unsigned m, int l)
-{
-  desc->depth++;
-  if (desc->allocated > desc->depth)
-    {
-      void *newdata;
-      desc->allocated *= 2;
-      newdata = grub_realloc (desc->data, sizeof (desc->data[0])
-			      * desc->allocated);
-      if (!newdata)
-	return grub_errno;
-    }
-  desc->data[desc->depth - 1].addr = addr;
-  desc->data[desc->depth - 1].iter = i;
-  desc->data[desc->depth - 1].maxiter = m;
-  desc->data[desc->depth - 1].leaf = l;
-  return GRUB_ERR_NONE;
-}
-
-static grub_err_t
 lower_bound (struct grub_btrfs_data *data, grub_disk_t disk,
 	     const struct grub_btrfs_key *key_in, 
 	     struct grub_btrfs_key *key_out,
@@ -272,11 +298,7 @@ lower_bound (struct grub_btrfs_data *data, grub_disk_t disk,
 	     struct grub_btrfs_leaf_descriptor *desc)
 {
   grub_disk_addr_t addr = root;
-  struct btrfs_header head;
-  grub_err_t err;
-  unsigned i;
-  struct grub_btrfs_leaf_node leaf, leaf_last;
-  int have_last = 0;
+  int depth = -1;
 
   if (desc)
     {
@@ -287,65 +309,128 @@ lower_bound (struct grub_btrfs_data *data, grub_disk_t disk,
 	return grub_errno;
     }
 
+  grub_dprintf ("btrfs",
+		"retrieving %" PRIxGRUB_UINT64_T
+		" %x %" PRIxGRUB_UINT64_T "\n",
+		key_in->object_id, key_in->type, key_in->offset);
+
   while (1)
     {
-      /* FIXME: preread few leafs into buffer. */
+      grub_err_t err;
+      struct btrfs_header head;
+
+    reiter:
+      depth++;
+      /* FIXME: preread few nodes into buffer. */
       err = grub_btrfs_read_logical (data, disk, addr, &head, sizeof (head));
       if (err)
 	return err;
+      addr += sizeof (head);
       if (head.level)
 	{
-	  grub_printf ("No trees\n");
-	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			     "trees aren't implemented yet");
-	}
-      addr += sizeof (head);
-      for (i = 0; i < grub_le_to_cpu32 (head.nitems); i++)
-	{
-	  err = grub_btrfs_read_logical (data, disk, addr + i * sizeof (leaf),
-					 &leaf, sizeof (leaf));
-	  if (err)
-	    return err;
-
-	  grub_dprintf ("btrfs",
-			"%" PRIxGRUB_UINT64_T " %x %" PRIxGRUB_UINT64_T "\n",
-		       leaf.key.object_id, leaf.key.type, leaf.key.offset);
-
-	  if (key_cmp (&leaf.key, key_in) == 0)
+	  unsigned i;
+	  struct grub_btrfs_internal_node node, node_last;
+	  int have_last = 0;
+	  for (i = 0; i < grub_le_to_cpu32 (head.nitems); i++)
 	    {
-	      grub_memcpy (key_out, &leaf.key, sizeof(*key_out));
-	      *outsize = grub_le_to_cpu32 (leaf.size);
-	      *outaddr = addr + grub_le_to_cpu32 (leaf.offset);
-	      if (desc)
-		return save_ref (desc, addr - sizeof (head), i,
-				 grub_le_to_cpu32 (head.nitems), 1);
-	      return GRUB_ERR_NONE;	      
+	      err = grub_btrfs_read_logical (data, disk, addr
+					     + i * sizeof (node),
+					     &node, sizeof (node));
+	      if (err)
+		return err;
+
+	      grub_dprintf ("btrfs",
+			    "internal node (depth %d) %" PRIxGRUB_UINT64_T
+			    " %x %" PRIxGRUB_UINT64_T "\n", depth,
+			    node.key.object_id, node.key.type, node.key.offset);
+	      
+	      if (key_cmp (&node.key, key_in) == 0)
+		{
+		  err = GRUB_ERR_NONE;
+		  if (desc)
+		    err = save_ref (desc, addr - sizeof (head), i,
+				    grub_le_to_cpu32 (head.nitems), 0);
+		  if (err)
+		    return err;
+		  addr = grub_le_to_cpu64 (node.blockn);
+		  goto reiter;
+		}
+	      if (key_cmp (&node.key, key_in) > 0)
+		break;
+	      node_last = node;
+	      have_last = 1;
 	    }
-
-	  if (key_cmp (&leaf.key, key_in) > 0)
-	    break;
-	  
-	  have_last = 1;
-	  leaf_last = leaf;
-	}
-
-      if (have_last)
-	{
-	  grub_memcpy (key_out, &leaf_last.key, sizeof(*key_out));
-	  *outsize = grub_le_to_cpu32 (leaf_last.size);
-	  *outaddr = addr + grub_le_to_cpu32 (leaf_last.offset);
+	  if (have_last)
+	    {
+	      addr = grub_le_to_cpu64 (node_last.blockn);
+	      err = GRUB_ERR_NONE;
+	      if (desc)
+		err = save_ref (desc, addr - sizeof (head), i - 1,
+				 grub_le_to_cpu32 (head.nitems), 0);
+	      if (err)
+		return err;
+	      goto reiter;
+	    }
+	  *outsize = 0;
+	  *outaddr = 0;
+	  grub_memset (key_out, 0, sizeof (*key_out));
 	  if (desc)
-	    return save_ref (desc, addr - sizeof (head), i - 1,
-			     grub_le_to_cpu32 (head.nitems), 1);
-	  return GRUB_ERR_NONE;	      
+	    return save_ref (desc, addr - sizeof (head), -1,
+			     grub_le_to_cpu32 (head.nitems), 0);
+	  return GRUB_ERR_NONE;
 	}
-      *outsize = 0;
-      *outaddr = 0;
-      grub_memset (key_out, 0, sizeof (*key_out));
-      if (desc)
-	return save_ref (desc, addr - sizeof (head), -1,
-			 grub_le_to_cpu32 (head.nitems), 1);
-      return GRUB_ERR_NONE;
+      {
+	unsigned i;
+	struct grub_btrfs_leaf_node leaf, leaf_last;
+	int have_last = 0;
+	for (i = 0; i < grub_le_to_cpu32 (head.nitems); i++)
+	  {
+	    err = grub_btrfs_read_logical (data, disk, addr + i * sizeof (leaf),
+					   &leaf, sizeof (leaf));
+	    if (err)
+	      return err;
+	    
+	    grub_dprintf ("btrfs",
+			  "leaf (depth %d) %" PRIxGRUB_UINT64_T
+			  " %x %" PRIxGRUB_UINT64_T "\n", depth,
+			  leaf.key.object_id, leaf.key.type, leaf.key.offset);
+
+	    if (key_cmp (&leaf.key, key_in) == 0)
+	      {
+		grub_memcpy (key_out, &leaf.key, sizeof(*key_out));
+		*outsize = grub_le_to_cpu32 (leaf.size);
+		*outaddr = addr + grub_le_to_cpu32 (leaf.offset);
+		if (desc)
+		  return save_ref (desc, addr - sizeof (head), i,
+				   grub_le_to_cpu32 (head.nitems), 1);
+		return GRUB_ERR_NONE;	      
+	      }
+	    
+	    if (key_cmp (&leaf.key, key_in) > 0)
+	      break;
+	    
+	    have_last = 1;
+	    leaf_last = leaf;
+	  }
+
+	if (have_last)
+	  {
+	    grub_memcpy (key_out, &leaf_last.key, sizeof(*key_out));
+	    *outsize = grub_le_to_cpu32 (leaf_last.size);
+	    *outaddr = addr + grub_le_to_cpu32 (leaf_last.offset);
+	    if (desc)
+	      return save_ref (desc, addr - sizeof (head), i - 1,
+			       grub_le_to_cpu32 (head.nitems), 1);
+	    return GRUB_ERR_NONE;	      
+	  }
+	*outsize = 0;
+	*outaddr = 0;
+	grub_memset (key_out, 0, sizeof (*key_out));
+	if (desc)
+	  return save_ref (desc, addr - sizeof (head), -1,
+			   grub_le_to_cpu32 (head.nitems), 1);
+	return GRUB_ERR_NONE;
+      }
     }
 }
 
@@ -809,7 +894,6 @@ grub_btrfs_read (grub_file_t file, char *buf, grub_size_t len)
 	  || key_out.type != GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM)
 	{
 	  grub_error (GRUB_ERR_BAD_FS, "extent not found");
-	  grub_printf ("no extent\n");
 	  return -1;
 	}
       extent = grub_malloc (elemsize);
