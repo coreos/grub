@@ -103,8 +103,8 @@ xgetcwd (void)
    can't deal with the multiple-device case yet, but in the meantime, we can
    at least cope with the single-device case by scanning
    /proc/self/mountinfo.  */
-static char *
-find_root_device_from_mountinfo (const char *dir)
+char *
+grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
 {
   FILE *fp;
   char *buf = NULL;
@@ -114,6 +114,9 @@ find_root_device_from_mountinfo (const char *dir)
   fp = fopen ("/proc/self/mountinfo", "r");
   if (! fp)
     return NULL; /* fall through to other methods */
+
+  if (relroot)
+    *relroot = NULL;
 
   while (getline (&buf, &len, fp) > 0)
     {
@@ -131,9 +134,6 @@ find_root_device_from_mountinfo (const char *dir)
 		  &count) < 6)
 	continue;
 
-      if (strcmp (enc_root, "/") != 0)
-	continue; /* only a subtree is mounted */
-
       enc_path_len = strlen (enc_path);
       if (strncmp (dir, enc_path, enc_path_len) != 0 ||
 	  (dir[enc_path_len] && dir[enc_path_len] != '/'))
@@ -147,9 +147,6 @@ find_root_device_from_mountinfo (const char *dir)
       free (ret);
       ret = NULL;
 
-      if (major != 0)
-	continue; /* not a virtual device */
-
       sep = strstr (buf + count, " - ");
       if (!sep)
 	continue;
@@ -158,13 +155,9 @@ find_root_device_from_mountinfo (const char *dir)
       if (sscanf (sep, "%s %s", fstype, device) != 2)
 	continue;
 
-      if (stat (device, &st) < 0)
-	continue;
-
-      if (!S_ISBLK (st.st_mode))
-	continue; /* not a block device */
-
       ret = strdup (device);
+      if (relroot)
+	*relroot = strdup (enc_root);
     }
 
   free (buf);
@@ -531,7 +524,7 @@ grub_guess_root_device (const char *dir)
   struct stat st;
 
 #ifdef __linux__
-  os_dev = find_root_device_from_mountinfo (dir);
+  os_dev = grub_find_root_device_from_mountinfo (dir, NULL);
   if (os_dev)
     return os_dev;
 #endif /* __linux__ */
