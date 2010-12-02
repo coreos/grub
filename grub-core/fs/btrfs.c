@@ -611,13 +611,16 @@ find_path (struct grub_btrfs_data *data,
 	   const char *path, struct grub_btrfs_key *key,
 	   grub_uint64_t *tree, grub_uint8_t *type)
 {
-  const char *slash;
+  const char *slash = path;
   grub_err_t err;
   grub_disk_addr_t elemaddr;
   grub_size_t elemsize;
   grub_size_t allocated = 0;
   struct grub_btrfs_dir_item *direl = NULL;
   struct grub_btrfs_key key_out;
+  int skip_default = 1;
+  const char *ctoken;
+  grub_size_t ctokenlen;
 
   *type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
   *tree = data->sblock.root_tree;
@@ -627,20 +630,29 @@ find_path (struct grub_btrfs_data *data,
 
   while (1)
     {
-      while (path[0] == '/')
-	path++;
-      if (!path[0])
-	break;
+      if (!skip_default)
+	{
+	  while (path[0] == '/')
+	    path++;
+	  if (!path[0])
+	    break;
+	  slash = grub_strchr (path, '/');
+	  if (!slash)
+	    slash = path + grub_strlen (path);
+	  ctoken = path;
+	  ctokenlen = slash - path;
+	}
+      else
+	{
+	  ctoken = "default";
+	  ctokenlen = sizeof ("default") - 1;
+	}
 
       if (*type != GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY)
       	return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
 
       key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
-      key->offset = 0;
-      slash = grub_strchr (path, '/');
-      if (!slash)
-	slash = path + grub_strlen (path);
-      key->offset = grub_cpu_to_le64 (~grub_getcrc32c (1, path, slash - path));
+      key->offset = grub_cpu_to_le64 (~grub_getcrc32c (1, ctoken, ctokenlen));
       
       err = lower_bound (data, disk, key, &key_out, *tree,
 			 &elemaddr, &elemsize, NULL);
@@ -683,7 +695,7 @@ find_path (struct grub_btrfs_data *data,
 	  char c;
 	  c = cdirel->name[grub_le_to_cpu16 (cdirel->n)];
 	  cdirel->name[grub_le_to_cpu16 (cdirel->n)] = 0;
-	  if (grub_strncmp (cdirel->name, path, slash - path) == 0)
+	  if (grub_strncmp (cdirel->name, ctoken, ctokenlen) == 0)
 	    break;
 	  cdirel->name[grub_le_to_cpu16 (cdirel->n)] = c;
 	}
@@ -694,7 +706,9 @@ find_path (struct grub_btrfs_data *data,
 	  return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
 	}
 
-      path = slash;
+      if (!skip_default)
+	path = slash;
+      skip_default = 0;
       *type = cdirel->type;
       if (*type == GRUB_BTRFS_DIR_ITEM_TYPE_SYMLINK)
 	{
