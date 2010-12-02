@@ -215,7 +215,7 @@ save_ref (struct grub_btrfs_leaf_descriptor *desc,
 	  grub_disk_addr_t addr, unsigned i, unsigned m, int l)
 {
   desc->depth++;
-  if (desc->allocated > desc->depth)
+  if (desc->allocated < desc->depth)
     {
       void *newdata;
       desc->allocated *= 2;
@@ -238,21 +238,17 @@ next (struct grub_btrfs_data *data, grub_disk_t disk,
       grub_disk_addr_t *outaddr, grub_size_t *outsize,
       struct grub_btrfs_key *key_out)
 {
-  int i;
   grub_err_t err;
   struct grub_btrfs_leaf_node leaf;
 
-  if (desc->depth == 0)
-    return 0;
-  for (i = desc->depth - 1; i >= 0; i--)
+  for (; desc->depth > 0; desc->depth--)
     {
-      desc->data[i].iter++;
-      if (desc->data[i].iter
+      desc->data[desc->depth - 1].iter++;
+      if (desc->data[desc->depth - 1].iter
 	  < desc->data[desc->depth - 1].maxiter)
 	break;
-      desc->depth--;
     }
-  if (i == -1)
+  if (desc->depth == 0)
     return 0;
   while (!desc->data[desc->depth - 1].leaf)
     {
@@ -366,13 +362,13 @@ lower_bound (struct grub_btrfs_data *data, grub_disk_t disk,
 	    }
 	  if (have_last)
 	    {
-	      addr = grub_le_to_cpu64 (node_last.blockn);
 	      err = GRUB_ERR_NONE;
 	      if (desc)
 		err = save_ref (desc, addr - sizeof (head), i - 1,
 				 grub_le_to_cpu32 (head.nitems), 0);
 	      if (err)
 		return err;
+	      addr = grub_le_to_cpu64 (node_last.blockn);
 	      goto reiter;
 	    }
 	  *outsize = 0;
