@@ -702,13 +702,14 @@ find_path (struct grub_btrfs_data *data,
 	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 			     "symlinks not supported");
 	}
-	
+
       switch (cdirel->key.type)
 	{
 	case GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM:
 	  {
 	    struct grub_btrfs_root_item ri;
-	    err = lower_bound (data, disk, &cdirel->key, &key_out, *tree,
+	    err = lower_bound (data, disk, &cdirel->key, &key_out,
+			       data->sblock.root_tree,
 			       &elemaddr, &elemsize, NULL);
 	    if (err)
 	      return err;
