@@ -912,6 +912,7 @@ grub_btrfs_read (grub_file_t file, char *buf, grub_size_t len)
   grub_disk_addr_t elemaddr;
   grub_size_t elemsize;
   struct grub_btrfs_key key_in, key_out;
+  grub_off_t extoff;
 
   while (len)
     {
@@ -955,6 +956,7 @@ grub_btrfs_read (grub_file_t file, char *buf, grub_size_t len)
 		    grub_le_to_cpu64 (extent->size));
       csize = grub_le_to_cpu64 (extent->size)
 	+ grub_le_to_cpu64 (key_out.offset) - pos;
+      extoff = pos - grub_le_to_cpu64 (key_out.offset);
       if (csize > len)
 	csize = len;
 
@@ -983,7 +985,7 @@ grub_btrfs_read (grub_file_t file, char *buf, grub_size_t len)
       switch (extent->type)
 	{
 	case GRUB_BTRFS_EXTENT_INLINE:
-	  grub_memcpy (buf, extent->inl, csize);
+	  grub_memcpy (buf, extent->inl + extoff, csize);
 	  grub_free (extent);
 	  break;
 	case GRUB_BTRFS_EXTENT_REGULAR:
@@ -993,7 +995,8 @@ grub_btrfs_read (grub_file_t file, char *buf, grub_size_t len)
 	      break;
 	    }
 	  err = grub_btrfs_read_logical (data, file->device->disk,
-					 grub_le_to_cpu64 (extent->laddr),
+					 grub_le_to_cpu64 (extent->laddr)
+					 + extoff,
 					 buf, csize);
 	  grub_free (extent);
 	  if (err)
