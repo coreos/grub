@@ -759,8 +759,7 @@ find_path (struct grub_btrfs_data *data,
 }
 
 static grub_err_t
-grub_btrfs_dir (grub_device_t device,
-                const char *path __attribute__ ((unused)),
+grub_btrfs_dir (grub_device_t device, const char *path,
                 int (*hook) (const char *filename,
                              const struct grub_dirhook_info *info))
 {
