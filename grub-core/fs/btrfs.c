@@ -49,7 +49,7 @@ struct grub_btrfs_superblock
   grub_uint8_t dummy2[0x20];
   grub_uint64_t root_dir_objectid;
   grub_uint8_t dummy3[0x41];
-  struct grub_btrfs_device this_device; 
+  struct grub_btrfs_device this_device;
   char label[0x100];
   grub_uint8_t dummy4[0x100];
   grub_uint8_t bootstrap_mapping[0x800];
@@ -64,12 +64,21 @@ struct btrfs_header
   grub_uint8_t level;
 } __attribute__ ((packed));
 
+struct grub_btrfs_device_desc
+{
+  grub_device_t dev;
+  grub_uint64_t id;
+};
+
 struct grub_btrfs_data
 {
   struct grub_btrfs_superblock sblock;
-  unsigned int sblock_number;
   grub_uint64_t tree;
   grub_uint64_t inode;
+
+  struct grub_btrfs_device_desc *devices_attached;
+  unsigned n_devices_attached;
+  unsigned n_devices_allocated;
 
   /* Cached extent data.  */
   grub_uint64_t extstart;
@@ -96,9 +105,15 @@ struct grub_btrfs_chunk_item
   grub_uint64_t size;
   grub_uint64_t dummy;
   grub_uint64_t stripe_length;
-  grub_uint8_t dummy2[0x14];
+  grub_uint64_t type;
+#define GRUB_BTRFS_CHUNK_TYPE_BITS_DONTCARE 0x07
+#define GRUB_BTRFS_CHUNK_TYPE_SINGLE        0x00
+#define GRUB_BTRFS_CHUNK_TYPE_RAID0         0x08
+#define GRUB_BTRFS_CHUNK_TYPE_RAID1         0x10
+#define GRUB_BTRFS_CHUNK_TYPE_DUPLICATED    0x20
+  grub_uint8_t dummy2[0xc];
   grub_uint16_t nstripes;
-  grub_uint16_t dummy3;
+  grub_uint16_t nsubstripes;
 } __attribute__ ((packed));
 
 struct grub_btrfs_chunk_stripe
@@ -187,8 +202,37 @@ static grub_disk_addr_t superblock_sectors[] = { 64 * 2, 64 * 1024 * 2,
 
 static grub_err_t
 grub_btrfs_read_logical (struct grub_btrfs_data *data,
-			 grub_disk_t disk, grub_disk_addr_t addr,
-			 void *buf, grub_size_t size);
+			 grub_disk_addr_t addr, void *buf, grub_size_t size);
+
+static grub_err_t
+read_sblock (grub_disk_t disk, struct grub_btrfs_superblock *sb)
+{
+  unsigned i;
+  grub_err_t err = GRUB_ERR_NONE;
+  for (i = 0; i < ARRAY_SIZE (superblock_sectors); i++)
+    {
+      struct grub_btrfs_superblock sblock;
+      err = grub_disk_read (disk, superblock_sectors[i], 0,
+			    sizeof (sblock), &sblock);
+      if (err == GRUB_ERR_OUT_OF_RANGE)
+	break;
+
+      if (grub_memcmp ((char *) sblock.signature, GRUB_BTRFS_SIGNATURE,
+		       sizeof (GRUB_BTRFS_SIGNATURE) - 1) != 0)
+	break;
+      if (i == 0 || grub_le_to_cpu64 (sblock.generation)
+	  > grub_le_to_cpu64 (sb->generation))
+	grub_memcpy (sb, &sblock, sizeof (sblock));
+    }
+
+  if ((err == GRUB_ERR_OUT_OF_RANGE || !err) && i == 0)
+    return grub_error (GRUB_ERR_BAD_FS, "not a Btrfs filesystem");
+
+  if (err == GRUB_ERR_OUT_OF_RANGE)
+    grub_errno = err = GRUB_ERR_NONE;
+
+  return err;
+}
 
 static int
 key_cmp (const struct grub_btrfs_key *a, const struct grub_btrfs_key *b)
@@ -239,7 +283,7 @@ save_ref (struct grub_btrfs_leaf_descriptor *desc,
 }
 
 static int
-next (struct grub_btrfs_data *data, grub_disk_t disk,
+next (struct grub_btrfs_data *data,
       struct grub_btrfs_leaf_descriptor *desc,
       grub_disk_addr_t *outaddr, grub_size_t *outsize,
       struct grub_btrfs_key *key_out)
@@ -261,8 +305,7 @@ next (struct grub_btrfs_data *data, grub_disk_t disk,
       struct grub_btrfs_internal_node node;
       struct btrfs_header head;
 
-      err = grub_btrfs_read_logical (data, disk,
-				     desc->data[desc->depth - 1].iter
+      err = grub_btrfs_read_logical (data, desc->data[desc->depth - 1].iter
 				     * sizeof (node)
 				     + sizeof (struct btrfs_header)
 				     + desc->data[desc->depth - 1].addr, &node,
@@ -270,8 +313,7 @@ next (struct grub_btrfs_data *data, grub_disk_t disk,
       if (err)
 	return -err;
 
-      err = grub_btrfs_read_logical (data, disk,
-				     grub_le_to_cpu64 (node.addr), &head,
+      err = grub_btrfs_read_logical (data, grub_le_to_cpu64 (node.addr), &head,
 				     sizeof (head));
       if (err)
 	return -err;
@@ -279,8 +321,7 @@ next (struct grub_btrfs_data *data, grub_disk_t disk,
       save_ref (desc, grub_le_to_cpu64 (node.addr), 0, 
 		grub_le_to_cpu32 (head.nitems), !head.level);
     }
-  err = grub_btrfs_read_logical (data, disk,
-				 desc->data[desc->depth - 1].iter
+  err = grub_btrfs_read_logical (data, desc->data[desc->depth - 1].iter
 				 * sizeof (leaf)
 				 + sizeof (struct btrfs_header)
 				 + desc->data[desc->depth - 1].addr, &leaf,
@@ -295,7 +336,7 @@ next (struct grub_btrfs_data *data, grub_disk_t disk,
 }
 
 static grub_err_t
-lower_bound (struct grub_btrfs_data *data, grub_disk_t disk,
+lower_bound (struct grub_btrfs_data *data,
 	     const struct grub_btrfs_key *key_in, 
 	     struct grub_btrfs_key *key_out,
 	     grub_disk_addr_t root,
@@ -327,7 +368,7 @@ lower_bound (struct grub_btrfs_data *data, grub_disk_t disk,
     reiter:
       depth++;
       /* FIXME: preread few nodes into buffer. */
-      err = grub_btrfs_read_logical (data, disk, addr, &head, sizeof (head));
+      err = grub_btrfs_read_logical (data, addr, &head, sizeof (head));
       if (err)
 	return err;
       addr += sizeof (head);
@@ -339,8 +380,7 @@ lower_bound (struct grub_btrfs_data *data, grub_disk_t disk,
 	  grub_memset (&node_last, 0, sizeof (node_last));
 	  for (i = 0; i < grub_le_to_cpu32 (head.nitems); i++)
 	    {
-	      err = grub_btrfs_read_logical (data, disk, addr
-					     + i * sizeof (node),
+	      err = grub_btrfs_read_logical (data, addr + i * sizeof (node),
 					     &node, sizeof (node));
 	      if (err)
 		return err;
@@ -391,7 +431,7 @@ lower_bound (struct grub_btrfs_data *data, grub_disk_t disk,
 	int have_last = 0;
 	for (i = 0; i < grub_le_to_cpu32 (head.nitems); i++)
 	  {
-	    err = grub_btrfs_read_logical (data, disk, addr + i * sizeof (leaf),
+	    err = grub_btrfs_read_logical (data, addr + i * sizeof (leaf),
 					   &leaf, sizeof (leaf));
 	    if (err)
 	      return err;
@@ -440,9 +480,83 @@ lower_bound (struct grub_btrfs_data *data, grub_disk_t disk,
     }
 }
 
+static grub_device_t
+find_device (struct grub_btrfs_data *data, grub_uint64_t id)
+{
+  grub_device_t dev_found = NULL;
+  auto int hook (const char *name);
+  int hook (const char *name)
+  {
+    grub_device_t dev;
+    grub_err_t err;
+    struct grub_btrfs_superblock sb;
+    dev = grub_device_open (name);
+    if (!dev)
+      return 0;
+    if (!dev->disk)
+      {
+	grub_device_close (dev);
+	return 0;
+      }
+    err = read_sblock (dev->disk, &sb);
+    if (err == GRUB_ERR_BAD_FS)
+      {
+	grub_device_close (dev);
+	grub_errno = GRUB_ERR_NONE;
+	return 0;
+      }
+    if (err)
+      {
+	grub_device_close (dev);
+	grub_print_error ();
+	return 0;
+      }
+    if (grub_memcmp (data->sblock.uuid, sb.uuid, sizeof (sb.uuid)) != 0
+	|| sb.this_device.device_id != id)
+      {
+	grub_device_close (dev);
+	return 0;
+      }
+    
+    dev_found = dev;
+    return 1;
+  }
+
+  unsigned i;
+
+  for (i = 0; i < data->n_devices_attached; i++)
+    if (id == data->devices_attached[i].id)
+      return data->devices_attached[i].dev;
+  grub_device_iterate (hook);
+  if (!dev_found)
+    {
+      grub_error (GRUB_ERR_BAD_FS, "couldn't find a member device");
+      return NULL;
+    }
+  data->n_devices_attached++;
+  if (data->n_devices_attached > data->n_devices_allocated)
+    {
+      void *tmp;
+      data->n_devices_allocated = 2 * data->n_devices_attached + 1;
+      data->devices_attached
+	= grub_realloc (tmp = data->devices_attached,
+			data->n_devices_allocated
+			* sizeof (data->devices_attached[0]));
+      if (!data->devices_attached)
+	{
+	  grub_device_close (dev_found);
+	  data->devices_attached = tmp;
+	  return NULL;
+	}
+    }
+  data->devices_attached[data->n_devices_attached - 1].id = id;
+  data->devices_attached[data->n_devices_attached - 1].dev = dev_found;
+  return dev_found;
+}
+
 static grub_err_t
 grub_btrfs_read_logical (struct grub_btrfs_data *data,
-			 grub_disk_t disk, grub_disk_addr_t addr,
+			 grub_disk_addr_t addr,
 			 void *buf, grub_size_t size)
 {
   while (size > 0)
@@ -451,14 +565,11 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
       struct grub_btrfs_key *key;
       struct grub_btrfs_chunk_item *chunk;  
       struct grub_btrfs_chunk_stripe *stripe;
-      grub_size_t csize;
+      grub_ssize_t csize;
       grub_err_t err; 
-      grub_disk_addr_t paddr;
-      grub_uint64_t stripen;
-      grub_uint32_t stripe_length;
-      grub_uint32_t stripe_offset;
       struct grub_btrfs_key key_out;
       int challoc = 0;
+      grub_device_t dev;
       for (ptr = data->sblock.bootstrap_mapping;
 	   ptr < data->sblock.bootstrap_mapping
 	     + sizeof (data->sblock.bootstrap_mapping)
@@ -485,8 +596,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
       key_in.object_id = GRUB_BTRFS_OBJECT_ID_CHUNK;
       key_in.type = GRUB_BTRFS_ITEM_TYPE_CHUNK;
       key_in.offset = addr;
-      err = lower_bound (data, disk,
-			 &key_in, &key_out,
+      err = lower_bound (data, &key_in, &key_out,
 			 grub_le_to_cpu64 (data->sblock.chunk_tree),
 			 &chaddr, &chsize, NULL);
       if (err)
@@ -502,55 +612,99 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	return grub_errno;
 
       challoc = 1;
-      err = grub_btrfs_read_logical (data, disk, chaddr,
-				     chunk, chsize);
+      err = grub_btrfs_read_logical (data, chaddr, chunk, chsize);
       if (err)
 	{
 	  grub_free (chunk);
 	  return err;
 	}
-      
-      if (!(addr < grub_le_to_cpu64 (key->offset)
-	    + grub_le_to_cpu64 (chunk->size)))
-	return grub_error (GRUB_ERR_BAD_FS,
-			   "couldn't find the chunk descriptor");      
 
     chunk_found:
-      stripe_length = grub_divmod64 (grub_le_to_cpu64 (chunk->size),
-				     grub_le_to_cpu16 (chunk->nstripes),
-				     NULL);
-      stripen = grub_divmod64 (addr - grub_le_to_cpu64 (key->offset),
-			       stripe_length, &stripe_offset);
-      stripe = (struct grub_btrfs_chunk_stripe *) (chunk + 1);
-      stripe += stripen;
-      csize = grub_le_to_cpu64 (key->offset) + grub_le_to_cpu64 (chunk->size)
-	- addr;
-      if (csize > size)
-	csize = size;
-      if (grub_le_to_cpu64 (stripe->device_id) != grub_le_to_cpu64 (data->sblock.this_device.device_id))
-	{
-	  if (challoc)
-	    grub_free (chunk);
-	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			     "multidevice isn't implemented yet");
-	}
-      grub_dprintf ("btrfs", "chunk 0x%" PRIxGRUB_UINT64_T
-		    "+0x%" PRIxGRUB_UINT64_T " (%d stripes of %"
-		    PRIxGRUB_UINT64_T ") stripe %" PRIxGRUB_UINT64_T
-		    " maps to 0x%" PRIxGRUB_UINT64_T "\n",
-		    grub_le_to_cpu64 (key->offset),
-		    grub_le_to_cpu64 (chunk->size),
-		    grub_le_to_cpu16 (chunk->nstripes),
-		    grub_le_to_cpu64 (chunk->stripe_length),
-		    stripen,
-		    stripe->offset);
-      paddr = stripe->offset + stripe_offset;
+      {
+	grub_uint32_t stripen;
+	grub_uint32_t stripe_offset;
+	grub_uint64_t off = addr - grub_le_to_cpu64 (key->offset);
+	grub_disk_addr_t paddr;
 
-      grub_dprintf ("btrfs", "reading paddr 0x%" PRIxGRUB_UINT64_T
-		    " for laddr 0x%" PRIxGRUB_UINT64_T"\n", paddr,
-		    addr);      
-      err = grub_disk_read (disk, paddr >> GRUB_DISK_SECTOR_BITS, 
-			    paddr & (GRUB_DISK_SECTOR_SIZE - 1), csize, buf);
+	stripe = (struct grub_btrfs_chunk_stripe *) (chunk + 1);
+	switch (grub_le_to_cpu64 (chunk->type)
+		& ~GRUB_BTRFS_CHUNK_TYPE_BITS_DONTCARE)
+	  {
+	  case GRUB_BTRFS_CHUNK_TYPE_SINGLE:
+	    {
+	      grub_uint32_t stripe_length;
+	      stripe_length = grub_divmod64 (grub_le_to_cpu64 (chunk->size),
+					     grub_le_to_cpu16 (chunk->nstripes),
+					     NULL);
+	      stripen = grub_divmod64 (off, stripe_length, &stripe_offset);
+	      csize = (stripen + 1) * stripe_length - off;
+	      break;
+	    }
+	  case GRUB_BTRFS_CHUNK_TYPE_DUPLICATED:
+	  case GRUB_BTRFS_CHUNK_TYPE_RAID1:
+	    /* FIXME: Use redundancy.  */
+	    {
+	      grub_uint32_t stripe_length;
+	      stripe_length = grub_divmod64 (grub_le_to_cpu64 (chunk->size),
+					     grub_le_to_cpu16 (chunk->nstripes),
+					     NULL);
+	      stripen = 0;
+	      stripe_offset = off;
+	      csize = stripe_length - off;
+	      break;
+	    }
+	  case GRUB_BTRFS_CHUNK_TYPE_RAID0:
+	    {
+	      grub_uint64_t middle, high;
+	      grub_uint32_t low;
+	      middle = grub_divmod64 (off,
+				      grub_le_to_cpu64 (chunk->stripe_length),
+				      &low);
+	      
+	      high = grub_divmod64 (middle, grub_le_to_cpu16 (chunk->nstripes),
+				    &stripen);
+	      stripe_offset = low + grub_le_to_cpu64 (chunk->stripe_length)
+		* high;
+	      csize = grub_le_to_cpu64 (chunk->stripe_length) - low;
+	      break;
+	    }
+	  default:
+	    grub_printf ("unsupported RAID flags %" PRIxGRUB_UINT64_T "\n",
+			 grub_le_to_cpu64 (chunk->type));
+	    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			       "unsupported RAID flags %" PRIxGRUB_UINT64_T,
+			       grub_le_to_cpu64 (chunk->type));
+	  }
+	stripe += stripen;
+	if (csize <= 0)
+	  return grub_error (GRUB_ERR_BAD_FS,
+			     "couldn't find the chunk descriptor");
+	if ((grub_size_t) csize > size)
+	  csize = size;
+	dev = find_device (data, stripe->device_id);
+	if (!dev)
+	  return grub_errno;
+	grub_dprintf ("btrfs", "chunk 0x%" PRIxGRUB_UINT64_T
+		      "+0x%" PRIxGRUB_UINT64_T " (%d stripes (%d substripes) of %"
+		      PRIxGRUB_UINT64_T ") stripe %" PRIxGRUB_UINT32_T
+		      " maps to 0x%" PRIxGRUB_UINT64_T "\n",
+		      grub_le_to_cpu64 (key->offset),
+		      grub_le_to_cpu64 (chunk->size),
+		      grub_le_to_cpu16 (chunk->nstripes),
+		      grub_le_to_cpu16 (chunk->nsubstripes),
+		      grub_le_to_cpu64 (chunk->stripe_length),
+		      stripen,
+		      stripe->offset);
+	paddr = stripe->offset + stripe_offset;
+
+	grub_dprintf ("btrfs", "reading paddr 0x%" PRIxGRUB_UINT64_T
+		      " for laddr 0x%" PRIxGRUB_UINT64_T"\n", paddr,
+		      addr);      
+	err = grub_disk_read (dev->disk, paddr >> GRUB_DISK_SECTOR_BITS, 
+			      paddr & (GRUB_DISK_SECTOR_SIZE - 1), csize, buf);
+	if (err)
+	  return err;
+      }
       size -= csize;
       buf = (grub_uint8_t *) buf + csize;
       addr += csize;
@@ -561,54 +715,57 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 }
 
 static struct grub_btrfs_data *
-grub_btrfs_mount (grub_disk_t disk)
+grub_btrfs_mount (grub_device_t dev)
 {
-  struct grub_btrfs_data *data = grub_zalloc (sizeof (*data));
-  unsigned i;
-  grub_err_t err = GRUB_ERR_NONE;
+  struct grub_btrfs_data *data;
+  grub_err_t err;
 
+  if (!dev->disk)
+    {
+      grub_error (GRUB_ERR_BAD_FS, "not BtrFS");
+      return NULL;
+    }
+
+  data = grub_zalloc (sizeof (*data));
   if (! data)
     return NULL;
 
-  for (i = 0; i < ARRAY_SIZE (superblock_sectors); i++)
+  err = read_sblock (dev->disk, &data->sblock);
+  if (err)
     {
-      struct grub_btrfs_superblock sblock;
-      err = grub_disk_read (disk, superblock_sectors[i], 0,
-			    sizeof (sblock), &sblock);
-      if (err == GRUB_ERR_OUT_OF_RANGE)
-	break;
-
-      if (grub_memcmp ((char *) sblock.signature, GRUB_BTRFS_SIGNATURE,
-		       sizeof (GRUB_BTRFS_SIGNATURE) - 1))
-	break;
-      if (i == 0 || grub_le_to_cpu64 (sblock.generation)
-	  > grub_le_to_cpu64 (data->sblock.generation))
-	{
-	  grub_memcpy (&data->sblock, &sblock, sizeof (sblock));
-	  data->sblock_number = i;
-	}
+      grub_free (data);
+      return NULL;
     }
 
-  if ((err == GRUB_ERR_OUT_OF_RANGE || !err) && i == 0)
+  data->n_devices_allocated = 16;
+  data->devices_attached = grub_malloc (sizeof (data->devices_attached[0])
+					* data->n_devices_allocated);
+  if (!data->devices_attached)
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a Btrfs filesystem");
-      goto fail;
+      grub_free (data);
+      return NULL;
     }
-
-  if (err == GRUB_ERR_OUT_OF_RANGE)
-    grub_errno = err = GRUB_ERR_NONE;
-
-  grub_dprintf ("btrfs", "using superblock %d\n", data->sblock_number);
+  data->n_devices_attached = 1;
+  data->devices_attached[0].dev = dev;
+  data->devices_attached[0].id = data->sblock.this_device.device_id;
 
   return data;
+}
 
- fail:
+static void
+grub_btrfs_unmount (struct grub_btrfs_data *data)
+{
+  unsigned i;
+  /* The device 0 is closed one layer upper.  */
+  for (i = 1; i < data->n_devices_attached; i++)
+    grub_device_close (data->devices_attached[i].dev);
+  grub_free (data->devices_attached);
+  grub_free (data->extent);
   grub_free (data);
-  return NULL;
 }
 
 static grub_err_t
-grub_btrfs_read_inode (struct grub_btrfs_data *data, grub_disk_t disk,
+grub_btrfs_read_inode (struct grub_btrfs_data *data,
 		       struct grub_btrfs_inode *inode, grub_uint64_t num,
 		       grub_uint64_t tree)
 {
@@ -621,7 +778,7 @@ grub_btrfs_read_inode (struct grub_btrfs_data *data, grub_disk_t disk,
   key_in.type = GRUB_BTRFS_ITEM_TYPE_INODE_ITEM;
   key_in.offset = 0;
 
-  err = lower_bound (data,disk, &key_in, &key_out, tree,
+  err = lower_bound (data, &key_in, &key_out, tree,
 		     &elemaddr, &elemsize, NULL);
   if (err)
     return err;
@@ -629,11 +786,11 @@ grub_btrfs_read_inode (struct grub_btrfs_data *data, grub_disk_t disk,
       || key_out.type != GRUB_BTRFS_ITEM_TYPE_INODE_ITEM)
     return grub_error (GRUB_ERR_BAD_FS, "inode not found");
 
-  return grub_btrfs_read_logical (data, disk, elemaddr, inode, sizeof (*inode));
+  return grub_btrfs_read_logical (data, elemaddr, inode, sizeof (*inode));
 }
 
 static grub_ssize_t
-grub_btrfs_extent_read (struct grub_btrfs_data *data, grub_disk_t disk,
+grub_btrfs_extent_read (struct grub_btrfs_data *data,
 			grub_uint64_t ino, grub_uint64_t tree,
 			grub_off_t pos0, char *buf, grub_size_t len)
 {
@@ -654,7 +811,7 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data, grub_disk_t disk,
 	  key_in.object_id = ino;
 	  key_in.type = GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM;
 	  key_in.offset = grub_cpu_to_le64 (pos);
-	  err = lower_bound (data, disk, &key_in, &key_out, tree,
+	  err = lower_bound (data, &key_in, &key_out, tree,
 			     &elemaddr, &elemsize, NULL);
 	  if (err)
 	    return -1;
@@ -671,7 +828,7 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data, grub_disk_t disk,
 	  if (!data->extent)
 	    return grub_errno;
 
-	  err = grub_btrfs_read_logical (data, disk, elemaddr,
+	  err = grub_btrfs_read_logical (data, elemaddr,
 					 data->extent, elemsize);
 	  if (err)
 	    return err;
@@ -721,7 +878,7 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data, grub_disk_t disk,
 	      grub_memset (buf, 0, csize);
 	      break;
 	    }
-	  err = grub_btrfs_read_logical (data, disk,
+	  err = grub_btrfs_read_logical (data,
 					 grub_le_to_cpu64 (data->extent->laddr)
 					 + extoff,
 					 buf, csize);
@@ -742,7 +899,6 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data, grub_disk_t disk,
 
 static grub_err_t
 find_path (struct grub_btrfs_data *data,
-	   grub_disk_t disk,
 	   const char *path, struct grub_btrfs_key *key,
 	   grub_uint64_t *tree, grub_uint8_t *type)
 {
@@ -757,6 +913,7 @@ find_path (struct grub_btrfs_data *data,
   const char *ctoken;
   grub_size_t ctokenlen;
   char *path_alloc = NULL;
+  unsigned symlinks_max = 32;
 
   *type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
   *tree = data->sblock.root_tree;
@@ -794,7 +951,7 @@ find_path (struct grub_btrfs_data *data,
       key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
       key->offset = grub_cpu_to_le64 (~grub_getcrc32c (1, ctoken, ctokenlen));
       
-      err = lower_bound (data, disk, key, &key_out, *tree,
+      err = lower_bound (data, key, &key_out, *tree,
 			 &elemaddr, &elemsize, NULL);
       if (err)
 	{
@@ -822,8 +979,7 @@ find_path (struct grub_btrfs_data *data,
 	    }
 	}
 
-      err = grub_btrfs_read_logical (data, disk, elemaddr,
-				     direl, elemsize);
+      err = grub_btrfs_read_logical (data, elemaddr, direl, elemsize);
       if (err)
 	{
 	  grub_free (direl);
@@ -860,7 +1016,15 @@ find_path (struct grub_btrfs_data *data,
 	{
 	  struct grub_btrfs_inode inode;
 	  char *tmp;
-	  err = grub_btrfs_read_inode (data, disk, &inode,
+	  if (--symlinks_max == 0)
+	    {
+	      grub_free (direl);
+	      grub_free (path_alloc);
+	      return grub_error (GRUB_ERR_SYMLINK_LOOP,
+				 "too deep nesting of symlinks");
+	    }
+	    
+	  err = grub_btrfs_read_inode (data, &inode,
 				       cdirel->key.object_id, *tree);
 	  if (err)
 	    {
@@ -877,7 +1041,7 @@ find_path (struct grub_btrfs_data *data,
 	      return grub_errno;
 	    }
 
-	  if (grub_btrfs_extent_read (data, disk, cdirel->key.object_id,
+	  if (grub_btrfs_extent_read (data, cdirel->key.object_id,
 				      *tree, 0, tmp,
 				      grub_le_to_cpu64 (inode.size))
 	      != (grub_ssize_t) grub_le_to_cpu64 (inode.size))
@@ -909,7 +1073,7 @@ find_path (struct grub_btrfs_data *data,
 	case GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM:
 	  {
 	    struct grub_btrfs_root_item ri;
-	    err = lower_bound (data, disk, &cdirel->key, &key_out,
+	    err = lower_bound (data, &cdirel->key, &key_out,
 			       data->sblock.root_tree,
 			       &elemaddr, &elemsize, NULL);
 	    if (err)
@@ -925,7 +1089,7 @@ find_path (struct grub_btrfs_data *data,
 		grub_free (path_alloc);
 		return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
 	      }
-	    err = grub_btrfs_read_logical (data, disk, elemaddr,
+	    err = grub_btrfs_read_logical (data, elemaddr,
 					   &ri, sizeof (ri));
 	    if (err)
 	      {
@@ -967,7 +1131,7 @@ grub_btrfs_dir (grub_device_t device, const char *path,
                 int (*hook) (const char *filename,
                              const struct grub_dirhook_info *info))
 {
-  struct grub_btrfs_data *data = grub_btrfs_mount (device->disk);
+  struct grub_btrfs_data *data = grub_btrfs_mount (device);
   struct grub_btrfs_key key_in, key_out;
   grub_err_t err;
   grub_disk_addr_t elemaddr;
@@ -982,21 +1146,20 @@ grub_btrfs_dir (grub_device_t device, const char *path,
   if (!data)
     return grub_errno;
 
-  err = find_path (data, device->disk, path, &key_in, &tree, &type);
+  err = find_path (data, path, &key_in, &tree, &type);
   if (err)
     return err;
   if (type != GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY)
     return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");  
 
-  err = lower_bound (data, device->disk, &key_in, &key_out, 
-		     tree,
+  err = lower_bound (data, &key_in, &key_out, tree,
 		     &elemaddr, &elemsize, &desc);
   if (err)
     return err;
   if (key_out.type != GRUB_BTRFS_ITEM_TYPE_DIR_ITEM
       || key_out.object_id != key_in.object_id)
     {
-      r = next (data, device->disk, &desc, &elemaddr, &elemsize, &key_out);
+      r = next (data, &desc, &elemaddr, &elemsize, &key_out);
       if (r <= 0)
 	{
 	  free_iterator (&desc);
@@ -1025,8 +1188,7 @@ grub_btrfs_dir (grub_device_t device, const char *path,
 	    }
 	}
 
-      err = grub_btrfs_read_logical (data, device->disk, elemaddr,
-				     direl, elemsize);
+      err = grub_btrfs_read_logical (data, elemaddr, direl, elemsize);
       if (err)
 	return err;
 
@@ -1046,7 +1208,7 @@ grub_btrfs_dir (grub_device_t device, const char *path,
 	    goto out;
 	  cdirel->name[grub_le_to_cpu16 (cdirel->n)] = c;
 	}
-      r = next (data, device->disk, &desc, &elemaddr, &elemsize, &key_out);
+      r = next (data, &desc, &elemaddr, &elemsize, &key_out);
     }
   while (r > 0);
 
@@ -1054,7 +1216,7 @@ grub_btrfs_dir (grub_device_t device, const char *path,
   grub_free (direl);
 
   free_iterator (&desc);
-  grub_free (data);
+  grub_btrfs_unmount (data);
 
   return -r;
 }
@@ -1062,7 +1224,7 @@ grub_btrfs_dir (grub_device_t device, const char *path,
 static grub_err_t
 grub_btrfs_open (struct grub_file *file, const char *name)
 {
-  struct grub_btrfs_data *data = grub_btrfs_mount (file->device->disk);
+  struct grub_btrfs_data *data = grub_btrfs_mount (file->device);
   grub_err_t err;
   struct grub_btrfs_inode inode;
   grub_uint8_t type;
@@ -1071,24 +1233,23 @@ grub_btrfs_open (struct grub_file *file, const char *name)
   if (!data)
     return grub_errno;
 
-  err = find_path (data, file->device->disk, name, &key_in, &data->tree, &type);
+  err = find_path (data, name, &key_in, &data->tree, &type);
   if (err)
     {
-      grub_free (data);
+      grub_btrfs_unmount (data);
       return err;
     }
   if (type != GRUB_BTRFS_DIR_ITEM_TYPE_REGULAR)
     {
-      grub_free (data);
+      grub_btrfs_unmount (data);
       return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a regular file");
     }
 
   data->inode = key_in.object_id;
-  err = grub_btrfs_read_inode (data, file->device->disk, &inode, data->inode,
-			       data->tree);
+  err = grub_btrfs_read_inode (data, &inode, data->inode, data->tree);
   if (err)
     {
-      grub_free (data);
+      grub_btrfs_unmount (data);
       return err;
     }
 
@@ -1101,10 +1262,7 @@ grub_btrfs_open (struct grub_file *file, const char *name)
 static grub_err_t
 grub_btrfs_close (grub_file_t file)
 {
-  struct grub_btrfs_data *data = file->data;
-
-  grub_free (data->extent);
-  grub_free (data);
+  grub_btrfs_unmount (file->data);
 
   return GRUB_ERR_NONE;
 }
@@ -1114,7 +1272,7 @@ grub_btrfs_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_btrfs_data *data = file->data;
 
-  return grub_btrfs_extent_read (data, file->device->disk, data->inode,
+  return grub_btrfs_extent_read (data, data->inode,
 				 data->tree, file->offset, buf, len);
 }
 
@@ -1125,7 +1283,7 @@ grub_btrfs_uuid (grub_device_t device, char **uuid)
 
   *uuid = NULL;
 
-  data = grub_btrfs_mount (device->disk);
+  data = grub_btrfs_mount (device);
   if (! data)
     return grub_errno;
 
@@ -1139,7 +1297,7 @@ grub_btrfs_uuid (grub_device_t device, char **uuid)
 			  grub_be_to_cpu16 (data->sblock.uuid[6]),
 			  grub_be_to_cpu16 (data->sblock.uuid[7]));
 
-  grub_free (data);
+  grub_btrfs_unmount (data);
 
   return grub_errno;
 }
@@ -1151,13 +1309,13 @@ grub_btrfs_label (grub_device_t device, char **label)
 
   *label = NULL;
 
-  data = grub_btrfs_mount (device->disk);
+  data = grub_btrfs_mount (device);
   if (! data)
     return grub_errno;
 
   *label = grub_strndup (data->sblock.label, sizeof (data->sblock.label));
 
-  grub_free (data);
+  grub_btrfs_unmount (data);
 
   return grub_errno;
 }
