@@ -1,3 +1,51 @@
+2010-12-01  Robert Millan  <rmh@gnu.org>
+
+	* grub-core/fs/zfs/zfs.c: New file.
+	* grub-core/fs/zfs/zfs_fletcher.c: Likewise.
+	* grub-core/fs/zfs/zfs_lzjb.c: Likewise.
+	* grub-core/fs/zfs/zfs_sha256.c: Likewise.
+	* grub-core/fs/zfs/zfsinfo.c: Likewise.
+
+	* include/grub/zfs/dmu.h: Likewise.
+	* include/grub/zfs/dmu_objset.h: Likewise.
+	* include/grub/zfs/dnode.h: Likewise.
+	* include/grub/zfs/dsl_dataset.h: Likewise.
+	* include/grub/zfs/dsl_dir.h: Likewise.
+	* include/grub/zfs/sa_impl.h: Likewise.
+	* include/grub/zfs/spa.h: Likewise.
+	* include/grub/zfs/uberblock_impl.h: Likewise.
+	* include/grub/zfs/vdev_impl.h: Likewise.
+	* include/grub/zfs/zap_impl.h: Likewise.
+	* include/grub/zfs/zap_leaf.h: Likewise.
+	* include/grub/zfs/zfs.h: Likewise.
+	* include/grub/zfs/zfs_acl.h: Likewise.
+	* include/grub/zfs/zfs_znode.h: Likewise.
+	* include/grub/zfs/zil.h: Likewise.
+	* include/grub/zfs/zio.h: Likewise.
+	* include/grub/zfs/zio_checksum.h: Likewise.
+
+	* Makefile.util.def: Build ZFS into libgrubmods.
+	* grub-core/Makefile.core.def: Build zfs.mod.
+
+2010-11-30  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/commands/regexp.c (grub_cmd_regexp): Remove unused
+	variable.
+	* grub-core/commands/wildcard.c (match_files): Likewise.
+
+2010-11-30  Robert Millan  <rmh@gnu.org>
+
+	* grub-core/loader/i386/bsd.c
+	(grub_cmd_freebsd_loadenv, grub_cmd_freebsd_module_elf): Check
+	whether kernel is loaded using grub_loader_is_loaded(), rather
+	than `kernel_type', which may still be `KERNEL_TYPE_NONE' under
+	certain error conditions.
+
+2010-11-30  Robert Millan  <rmh@gnu.org>
+
+	* grub-core/commands/echo.c: Include `<grub/term.h>'.
+	(grub_cmd_echo): Call grub_refresh() after printing a message.
+
 2010-11-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Avoid using tricks for initialising endian variables.

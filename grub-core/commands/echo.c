@@ -1,7 +1,7 @@
 /* echo.c - Command to display a line of text  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <grub/misc.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
+#include <grub/term.h>
 
 static const struct grub_arg_option options[] =
   {
@@ -105,6 +106,8 @@ grub_cmd_echo (grub_extcmd_context_t ctxt, int argc, char **args)
 
   if (newline)
     grub_printf ("\n");
+
+  grub_refresh ();  
 
   return 0;
 }

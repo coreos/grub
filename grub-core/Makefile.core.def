@@ -1009,6 +1009,19 @@ module = {
 };
 
 module = {
+  name = zfs;
+  common = fs/zfs/zfs.c;
+  common = fs/zfs/zfs_lzjb.c;
+  common = fs/zfs/zfs_sha256.c;
+  common = fs/zfs/zfs_fletcher.c;
+};
+
+module = {
+  name = zfsinfo;
+  common = fs/zfs/zfsinfo.c;
+};
+
+module = {
   name = pxe;
   i386_pc = fs/i386/pc/pxe.c;
   enable = i386_pc;
