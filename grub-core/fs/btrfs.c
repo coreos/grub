@@ -111,6 +111,7 @@ struct grub_btrfs_chunk_item
 #define GRUB_BTRFS_CHUNK_TYPE_RAID0         0x08
 #define GRUB_BTRFS_CHUNK_TYPE_RAID1         0x10
 #define GRUB_BTRFS_CHUNK_TYPE_DUPLICATED    0x20
+#define GRUB_BTRFS_CHUNK_TYPE_RAID10        0x40
   grub_uint8_t dummy2[0xc];
   grub_uint16_t nstripes;
   grub_uint16_t nsubstripes;
@@ -668,9 +669,26 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	      csize = grub_le_to_cpu64 (chunk->stripe_length) - low;
 	      break;
 	    }
+	  case GRUB_BTRFS_CHUNK_TYPE_RAID10:
+	    /* FIXME: Use redundancy.  */
+	    {
+	      grub_uint64_t middle, high;
+	      grub_uint32_t low;
+	      middle = grub_divmod64 (off,
+				      grub_le_to_cpu64 (chunk->stripe_length),
+				      &low);
+	      
+	      high = grub_divmod64 (middle,
+				    grub_le_to_cpu16 (chunk->nsubstripes),
+				    &stripen);
+	      stripen *= grub_le_to_cpu16 (chunk->nstripes)
+		/ grub_le_to_cpu16 (chunk->nsubstripes);
+	      stripe_offset = low + grub_le_to_cpu64 (chunk->stripe_length)
+		* high;
+	      csize = grub_le_to_cpu64 (chunk->stripe_length) - low;
+	      break;
+	    }
 	  default:
-	    grub_printf ("unsupported RAID flags %" PRIxGRUB_UINT64_T "\n",
-			 grub_le_to_cpu64 (chunk->type));
 	    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 			       "unsupported RAID flags %" PRIxGRUB_UINT64_T,
 			       grub_le_to_cpu64 (chunk->type));
