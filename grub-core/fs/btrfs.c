@@ -70,7 +70,11 @@ struct grub_btrfs_data
   unsigned int sblock_number;
   grub_uint64_t tree;
   grub_uint64_t inode;
+
+  /* Cached extent data.  */
   grub_uint64_t extstart;
+  grub_uint64_t extino;
+  grub_uint64_t exttree;
   struct grub_btrfs_extent_data *extent;
 };
 
@@ -604,6 +608,139 @@ grub_btrfs_mount (grub_disk_t disk)
 }
 
 static grub_err_t
+grub_btrfs_read_inode (struct grub_btrfs_data *data, grub_disk_t disk,
+		       struct grub_btrfs_inode *inode, grub_uint64_t num,
+		       grub_uint64_t tree)
+{
+  struct grub_btrfs_key key_in, key_out;
+  grub_disk_addr_t elemaddr;
+  grub_size_t elemsize;
+  grub_err_t err;
+
+  key_in.object_id = num;
+  key_in.type = GRUB_BTRFS_ITEM_TYPE_INODE_ITEM;
+  key_in.offset = 0;
+
+  err = lower_bound (data,disk, &key_in, &key_out, tree,
+		     &elemaddr, &elemsize, NULL);
+  if (err)
+    return err;
+  if (num != key_out.object_id
+      || key_out.type != GRUB_BTRFS_ITEM_TYPE_INODE_ITEM)
+    return grub_error (GRUB_ERR_BAD_FS, "inode not found");
+
+  return grub_btrfs_read_logical (data, disk, elemaddr, inode, sizeof (*inode));
+}
+
+static grub_ssize_t
+grub_btrfs_extent_read (struct grub_btrfs_data *data, grub_disk_t disk,
+			grub_uint64_t ino, grub_uint64_t tree,
+			grub_off_t pos0, char *buf, grub_size_t len)
+{
+  grub_off_t pos = pos0;
+  while (len)
+    {
+      grub_size_t csize;
+      grub_err_t err;
+      grub_off_t extoff;
+      if (!data->extent || data->extstart > pos || data->extino != ino
+	  || data->exttree != tree
+	  || grub_le_to_cpu64 (data->extent->size) + data->extstart <= pos)
+	{
+	  struct grub_btrfs_key key_in, key_out;
+	  grub_disk_addr_t elemaddr;
+	  grub_size_t elemsize;
+	  grub_free (data->extent);
+	  key_in.object_id = ino;
+	  key_in.type = GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM;
+	  key_in.offset = grub_cpu_to_le64 (pos);
+	  err = lower_bound (data, disk, &key_in, &key_out, tree,
+			     &elemaddr, &elemsize, NULL);
+	  if (err)
+	    return -1;
+	  if (key_out.object_id != ino
+	      || key_out.type != GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM)
+	    {
+	      grub_error (GRUB_ERR_BAD_FS, "extent not found");
+	      return -1;
+	    }
+	  data->extstart = grub_le_to_cpu64 (key_out.offset);
+	  data->extent = grub_malloc (elemsize);
+	  data->extino = ino;
+	  data->exttree = tree;
+	  if (!data->extent)
+	    return grub_errno;
+
+	  err = grub_btrfs_read_logical (data, disk, elemaddr,
+					 data->extent, elemsize);
+	  if (err)
+	    return err;
+	  if (grub_le_to_cpu64 (data->extent->size) + data->extstart <= pos)
+	    return grub_error (GRUB_ERR_BAD_FS, "extent not found");
+	  grub_dprintf ("btrfs", "extent 0x%" PRIxGRUB_UINT64_T "+0x%"
+			PRIxGRUB_UINT64_T "\n",
+			grub_le_to_cpu64 (key_out.offset),
+			grub_le_to_cpu64 (data->extent->size));
+	}
+      csize = grub_le_to_cpu64 (data->extent->size)
+	+ grub_le_to_cpu64 (data->extstart) - pos;
+      extoff = pos - data->extstart;
+      if (csize > len)
+	csize = len;
+
+      if (data->extent->encryption)
+	{
+	  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		      "encryption not supported");
+	  return -1;
+	}
+
+      if (data->extent->compression)
+	{
+	  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		      "compression not supported");
+	  return -1;
+	}
+
+
+      if (data->extent->encoding)
+	{
+	  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		      "encoding not supported");	
+	  return -1;
+	}
+
+      switch (data->extent->type)
+	{
+	case GRUB_BTRFS_EXTENT_INLINE:
+	  grub_memcpy (buf, data->extent->inl + extoff, csize);
+	  break;
+	case GRUB_BTRFS_EXTENT_REGULAR:
+	  if (!data->extent->laddr)
+	    {
+	      grub_memset (buf, 0, csize);
+	      break;
+	    }
+	  err = grub_btrfs_read_logical (data, disk,
+					 grub_le_to_cpu64 (data->extent->laddr)
+					 + extoff,
+					 buf, csize);
+	  if (err)
+	    return -1;
+	  break;
+	default:
+	  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		      "unsupported extent type 0x%x", data->extent->type);	
+	  return -1;
+	}
+      buf += csize;
+      pos += csize;
+      len -= csize;
+    }
+  return pos - pos0;
+}
+
+static grub_err_t
 find_path (struct grub_btrfs_data *data,
 	   grub_disk_t disk,
 	   const char *path, struct grub_btrfs_key *key,
@@ -616,15 +753,17 @@ find_path (struct grub_btrfs_data *data,
   grub_size_t allocated = 0;
   struct grub_btrfs_dir_item *direl = NULL;
   struct grub_btrfs_key key_out;
-  int skip_default = 1;
+  int skip_default;
   const char *ctoken;
   grub_size_t ctokenlen;
+  char *path_alloc = NULL;
 
   *type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
   *tree = data->sblock.root_tree;
   key->object_id = data->sblock.root_dir_objectid;
   key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
   key->offset = 0;
+  skip_default = 1;
 
   while (1)
     {
@@ -647,7 +786,10 @@ find_path (struct grub_btrfs_data *data,
 	}
 
       if (*type != GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY)
-      	return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+	{
+	  grub_free (path_alloc);
+	  return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+	}
 
       key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
       key->offset = grub_cpu_to_le64 (~grub_getcrc32c (1, ctoken, ctokenlen));
@@ -657,11 +799,13 @@ find_path (struct grub_btrfs_data *data,
       if (err)
 	{
 	  grub_free (direl);
+	  grub_free (path_alloc);
 	  return err;
 	}
       if (key_cmp (key, &key_out) != 0)
 	{
 	  grub_free (direl);
+	  grub_free (path_alloc);
 	  return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
 	}
 
@@ -672,7 +816,10 @@ find_path (struct grub_btrfs_data *data,
 	  grub_free (direl);
 	  direl = grub_malloc (allocated + 1);
 	  if (!direl)
-	    return grub_errno;
+	    {
+	      grub_free (path_alloc);
+	      return grub_errno;
+	    }
 	}
 
       err = grub_btrfs_read_logical (data, disk, elemaddr,
@@ -680,6 +827,7 @@ find_path (struct grub_btrfs_data *data,
       if (err)
 	{
 	  grub_free (direl);
+	  grub_free (path_alloc);
 	  return err;
 	}
 
@@ -701,19 +849,60 @@ find_path (struct grub_btrfs_data *data,
 	  >= (grub_ssize_t) elemsize)
 	{
 	  grub_free (direl);
+	  grub_free (path_alloc);
 	  return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
 	}
 
       if (!skip_default)
 	path = slash;
       skip_default = 0;
-      *type = cdirel->type;
-      if (*type == GRUB_BTRFS_DIR_ITEM_TYPE_SYMLINK)
+      if (cdirel->type == GRUB_BTRFS_DIR_ITEM_TYPE_SYMLINK)
 	{
-	  grub_free (direl);
-	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			     "symlinks not supported");
+	  struct grub_btrfs_inode inode;
+	  char *tmp;
+	  err = grub_btrfs_read_inode (data, disk, &inode,
+				       cdirel->key.object_id, *tree);
+	  if (err)
+	    {
+	      grub_free (direl);
+	      grub_free (path_alloc);
+	      return err;
+	    }
+	  tmp = grub_malloc (grub_le_to_cpu64 (inode.size)
+			     + grub_strlen (path) + 1);
+	  if (!tmp)
+	    {
+	      grub_free (direl);
+	      grub_free (path_alloc);
+	      return grub_errno;
+	    }
+
+	  if (grub_btrfs_extent_read (data, disk, cdirel->key.object_id,
+				      *tree, 0, tmp,
+				      grub_le_to_cpu64 (inode.size))
+	      != (grub_ssize_t) grub_le_to_cpu64 (inode.size))
+	    {
+	      grub_free (direl);
+	      grub_free (path_alloc);
+	      grub_free (tmp);
+	      return grub_errno;
+	    }
+	  grub_memcpy (tmp + grub_le_to_cpu64 (inode.size), path, 
+		       grub_strlen (path) + 1);
+	  grub_free (path_alloc);
+	  path = path_alloc = tmp;
+	  if (path[0] == '/')
+	    {
+	      *type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
+	      *tree = data->sblock.root_tree;
+	      key->object_id = data->sblock.root_dir_objectid;
+	      key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
+	      key->offset = 0;
+	      skip_default = 1;
+	    }
+	  continue;
 	}
+      *type = cdirel->type;
 
       switch (cdirel->key.type)
 	{
@@ -724,14 +913,26 @@ find_path (struct grub_btrfs_data *data,
 			       data->sblock.root_tree,
 			       &elemaddr, &elemsize, NULL);
 	    if (err)
-	      return err;
+	      {
+		grub_free (direl);
+		grub_free (path_alloc);
+		return err;
+	      }
 	    if (cdirel->key.object_id != key_out.object_id
 		|| cdirel->key.type != key_out.type)
-	      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+	      {
+		grub_free (direl);
+		grub_free (path_alloc);
+		return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+	      }
 	    err = grub_btrfs_read_logical (data, disk, elemaddr,
 					   &ri, sizeof (ri));
 	    if (err)
-	      return err;
+	      {
+		grub_free (direl);
+		grub_free (path_alloc);
+		return err;
+	      }
 	    key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
 	    key->offset = 0;
 	    key->object_id = GRUB_BTRFS_OBJECT_ID_CHUNK;
@@ -740,19 +941,24 @@ find_path (struct grub_btrfs_data *data,
 	  }
 	case GRUB_BTRFS_ITEM_TYPE_INODE_ITEM:
 	  if (*slash && *type == GRUB_BTRFS_DIR_ITEM_TYPE_REGULAR)
-	    return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+	    {
+	      grub_free (direl);
+	      grub_free (path_alloc);
+	      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+	    }
 	  *key = cdirel->key;
 	  if (*type == GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY)
-	    key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;	    
+	    key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
 	  break;
 	default:
+	  grub_free (path_alloc);
+	  grub_free (direl);
 	  return grub_error (GRUB_ERR_BAD_FS, "unrecognised object type 0x%x", 
 			     cdirel->key.type);
 	}
     }
 
   grub_free (direl);
-
   return GRUB_ERR_NONE;
 }
 
@@ -857,12 +1063,10 @@ static grub_err_t
 grub_btrfs_open (struct grub_file *file, const char *name)
 {
   struct grub_btrfs_data *data = grub_btrfs_mount (file->device->disk);
-  struct grub_btrfs_key key_in, key_out;
   grub_err_t err;
-  grub_disk_addr_t elemaddr;
-  grub_size_t elemsize;
   struct grub_btrfs_inode inode;
   grub_uint8_t type;
+  struct grub_btrfs_key key_in;
 
   if (!data)
     return grub_errno;
@@ -874,28 +1078,24 @@ grub_btrfs_open (struct grub_file *file, const char *name)
       return err;
     }
   if (type != GRUB_BTRFS_DIR_ITEM_TYPE_REGULAR)
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a regular file");
+    {
+      grub_free (data);
+      return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a regular file");
+    }
+
   data->inode = key_in.object_id;
-  key_in.type = GRUB_BTRFS_ITEM_TYPE_INODE_ITEM;
-
-  err = lower_bound (data, file->device->disk, &key_in, &key_out, 
-		     data->tree,
-		     &elemaddr, &elemsize, NULL);
+  err = grub_btrfs_read_inode (data, file->device->disk, &inode, data->inode,
+			       data->tree);
   if (err)
-    return err;
-  if (data->inode != key_out.object_id
-      || key_out.type != GRUB_BTRFS_ITEM_TYPE_INODE_ITEM)
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a regular file");
-
-  err = grub_btrfs_read_logical (data, file->device->disk, elemaddr,
-				 &inode, sizeof (inode));
-  if (err)
-    return err;
+    {
+      grub_free (data);
+      return err;
+    }
 
   file->data = data;
   file->size = grub_le_to_cpu64 (inode.size);
 
-  return GRUB_ERR_NONE;
+  return err;
 }
 
 static grub_err_t
@@ -913,106 +1113,9 @@ static grub_ssize_t
 grub_btrfs_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_btrfs_data *data = file->data;
-  grub_off_t pos = file->offset;
 
-  while (len)
-    {
-      grub_size_t csize;
-      grub_err_t err;
-      grub_off_t extoff;
-      if (!data->extent || data->extstart > pos ||
-	  grub_le_to_cpu64 (data->extent->size) + data->extstart <= pos)
-	{
-	  struct grub_btrfs_key key_in, key_out;
-	  grub_disk_addr_t elemaddr;
-	  grub_size_t elemsize;
-	  grub_free (data->extent);
-	  key_in.object_id = data->inode;
-	  key_in.type = GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM;
-	  key_in.offset = grub_cpu_to_le64 (pos);
-	  err = lower_bound (data, file->device->disk, &key_in, &key_out, 
-			     data->tree,
-			     &elemaddr, &elemsize, NULL);
-	  if (err)
-	    return -1;
-	  if (key_out.object_id != data->inode
-	      || key_out.type != GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM)
-	    {
-	      grub_error (GRUB_ERR_BAD_FS, "extent not found");
-	      return -1;
-	    }
-	  data->extstart = grub_le_to_cpu64 (key_out.offset);
-	  data->extent = grub_malloc (elemsize);
-	  if (!data->extent)
-	    return grub_errno;
-
-	  err = grub_btrfs_read_logical (data, file->device->disk, elemaddr,
-					 data->extent, elemsize);
-	  if (err)
-	    return err;
-	  if (grub_le_to_cpu64 (data->extent->size) + data->extstart <= pos)
-	    return grub_error (GRUB_ERR_BAD_FS, "extent not found");
-	  grub_dprintf ("btrfs", "extent 0x%" PRIxGRUB_UINT64_T "+0x%"
-			PRIxGRUB_UINT64_T "\n",
-			grub_le_to_cpu64 (key_out.offset),
-			grub_le_to_cpu64 (data->extent->size));
-	}
-      csize = grub_le_to_cpu64 (data->extent->size)
-	+ grub_le_to_cpu64 (data->extstart) - pos;
-      extoff = pos - data->extstart;
-      if (csize > len)
-	csize = len;
-
-      if (data->extent->encryption)
-	{
-	  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		      "encryption not supported");
-	  return -1;
-	}
-
-      if (data->extent->compression)
-	{
-	  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		      "compression not supported");
-	  return -1;
-	}
-
-
-      if (data->extent->encoding)
-	{
-	  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		      "encoding not supported");	
-	  return -1;
-	}
-
-      switch (data->extent->type)
-	{
-	case GRUB_BTRFS_EXTENT_INLINE:
-	  grub_memcpy (buf, data->extent->inl + extoff, csize);
-	  break;
-	case GRUB_BTRFS_EXTENT_REGULAR:
-	  if (!data->extent->laddr)
-	    {
-	      grub_memset (buf, 0, csize);
-	      break;
-	    }
-	  err = grub_btrfs_read_logical (data, file->device->disk,
-					 grub_le_to_cpu64 (data->extent->laddr)
-					 + extoff,
-					 buf, csize);
-	  if (err)
-	    return -1;
-	  break;
-	default:
-	  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		      "unsupported extent type 0x%x", data->extent->type);	
-	  return -1;
-	}
-      buf += csize;
-      pos += csize;
-      len -= csize;
-    }
-  return pos - file->offset;
+  return grub_btrfs_extent_read (data, file->device->disk, data->inode,
+				 data->tree, file->offset, buf, len);
 }
 
 static grub_err_t
