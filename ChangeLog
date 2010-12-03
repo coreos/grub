@@ -1,3 +1,8 @@
+2010-12-03  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* util/grub-script-check.c (main): Print script line number on
+	error.
+
 2010-12-01  Robert Millan  <rmh@gnu.org>
 
 	* grub-core/fs/zfs/zfs.c: New file.
