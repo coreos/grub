@@ -25,6 +25,7 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/lib/crc.h>
+#include <grub/deflate.h>
 
 #define GRUB_BTRFS_SIGNATURE "_BHRfS_M"
 
@@ -84,6 +85,7 @@ struct grub_btrfs_data
   grub_uint64_t extstart;
   grub_uint64_t extino;
   grub_uint64_t exttree;
+  grub_size_t extsize;
   struct grub_btrfs_extent_data *extent;
 };
 
@@ -187,13 +189,20 @@ struct grub_btrfs_extent_data
   union
   {
     char inl[0];
-    grub_uint64_t laddr;
+    struct
+    {
+      grub_uint64_t laddr;
+      grub_uint64_t compressed_size;
+      grub_uint64_t offset;
+    };
   };
 } __attribute__ ((packed));
 
 #define GRUB_BTRFS_EXTENT_INLINE 0
 #define GRUB_BTRFS_EXTENT_REGULAR 1
 
+#define GRUB_BTRFS_COMPRESSION_NONE 0
+#define GRUB_BTRFS_COMPRESSION_ZLIB 1
 
 #define GRUB_BTRFS_OBJECT_ID_CHUNK 0x100
 
@@ -840,6 +849,7 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	      return -1;
 	    }
 	  data->extstart = grub_le_to_cpu64 (key_out.offset);
+	  data->extsize = elemsize;
 	  data->extent = grub_malloc (elemsize);
 	  data->extino = ino;
 	  data->exttree = tree;
@@ -870,13 +880,14 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	  return -1;
 	}
 
-      if (data->extent->compression)
+      if (data->extent->compression != GRUB_BTRFS_COMPRESSION_NONE
+	  && data->extent->compression != GRUB_BTRFS_COMPRESSION_ZLIB)
 	{
 	  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		      "compression not supported");
+		      "compression type 0x%x not supported",
+		      data->extent->compression);
 	  return -1;
 	}
-
 
       if (data->extent->encoding)
 	{
@@ -888,12 +899,48 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
       switch (data->extent->type)
 	{
 	case GRUB_BTRFS_EXTENT_INLINE:
-	  grub_memcpy (buf, data->extent->inl + extoff, csize);
+	  if (data->extent->compression == GRUB_BTRFS_COMPRESSION_ZLIB)
+	    {
+	      if (grub_zlib_decompress (data->extent->inl, data->extsize -
+					((grub_uint8_t *) data->extent->inl
+					 - (grub_uint8_t *) data->extent),
+					extoff, buf, csize)
+		  != (grub_ssize_t) csize)
+		return -1;
+	    }
+	  else
+	    grub_memcpy (buf, data->extent->inl + extoff, csize);
 	  break;
 	case GRUB_BTRFS_EXTENT_REGULAR:
 	  if (!data->extent->laddr)
 	    {
 	      grub_memset (buf, 0, csize);
+	      break;
+	    }
+	  if (data->extent->compression == GRUB_BTRFS_COMPRESSION_ZLIB)
+	    {
+	      char *tmp;
+	      grub_uint64_t zsize;
+	      zsize = grub_le_to_cpu64 (data->extent->compressed_size);
+	      tmp = grub_malloc (zsize);
+	      if (!tmp)
+		return -1;
+	      err = grub_btrfs_read_logical (data,
+					     grub_le_to_cpu64 (data->extent->laddr),
+					     tmp, zsize);
+	      if (err)
+		{
+		  grub_free (tmp);
+		  return -1;
+		}
+	      if (grub_zlib_decompress (tmp, zsize, extoff
+					+ grub_le_to_cpu64 (data->extent->offset),
+					buf, csize) != (grub_ssize_t) csize)
+		{
+		  grub_free (tmp);
+		  return -1;
+		}
+	      grub_free (tmp);
 	      break;
 	    }
 	  err = grub_btrfs_read_logical (data,

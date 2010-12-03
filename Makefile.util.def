@@ -95,6 +95,7 @@ library = {
   common = grub-core/script/main.c;
   common = grub-core/script/script.c;
   common = grub-core/script/argv.c;
+  common = grub-core/io/gzio.c;
 };
 
 program = {
