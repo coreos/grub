@@ -26,10 +26,10 @@
 #include <grub/types.h>
 #include <grub/lib/crc.h>
 
-#define BTRFS_SIGNATURE "_BHRfS_M"
+#define GRUB_BTRFS_SIGNATURE "_BHRfS_M"
 
-typedef grub_uint8_t btrfs_checksum_t[0x20];
-typedef grub_uint16_t btrfs_uuid_t[8];
+typedef grub_uint8_t grub_btrfs_checksum_t[0x20];
+typedef grub_uint16_t grub_btrfs_uuid_t[8];
 
 struct grub_btrfs_device
 {
@@ -37,12 +37,12 @@ struct grub_btrfs_device
   grub_uint8_t dummy[0x62 - 8];
 } __attribute__ ((packed));
 
-struct btrfs_superblock
+struct grub_btrfs_superblock
 { 
-  btrfs_checksum_t checksum;
-  btrfs_uuid_t uuid;
+  grub_btrfs_checksum_t checksum;
+  grub_btrfs_uuid_t uuid;
   grub_uint8_t dummy[0x10];
-  grub_uint8_t signature[sizeof (BTRFS_SIGNATURE) - 1];
+  grub_uint8_t signature[sizeof (GRUB_BTRFS_SIGNATURE) - 1];
   grub_uint64_t generation;
   grub_uint64_t root_tree;
   grub_uint64_t chunk_tree;
@@ -57,8 +57,8 @@ struct btrfs_superblock
 
 struct btrfs_header
 {
-  btrfs_checksum_t checksum;
-  btrfs_uuid_t uuid;
+  grub_btrfs_checksum_t checksum;
+  grub_btrfs_uuid_t uuid;
   grub_uint8_t dummy[0x30];
   grub_uint32_t nitems;
   grub_uint8_t level;
@@ -66,7 +66,7 @@ struct btrfs_header
 
 struct grub_btrfs_data
 {
-  struct btrfs_superblock sblock;
+  struct grub_btrfs_superblock sblock;
   unsigned int sblock_number;
   grub_uint64_t tree;
   grub_uint64_t inode;
@@ -105,7 +105,7 @@ struct grub_btrfs_chunk_stripe
 {
   grub_uint64_t device_id;
   grub_uint64_t offset;
-  btrfs_uuid_t device_uuid;
+  grub_btrfs_uuid_t device_uuid;
 } __attribute__ ((packed));
 
 struct grub_btrfs_leaf_node
@@ -118,7 +118,7 @@ struct grub_btrfs_leaf_node
 struct grub_btrfs_internal_node
 {
   struct grub_btrfs_key key;
-  grub_uint64_t blockn;
+  grub_uint64_t addr;
   grub_uint64_t dummy;
 } __attribute__ ((packed));
 
@@ -271,12 +271,12 @@ next (struct grub_btrfs_data *data, grub_disk_t disk,
 	return -err;
 
       err = grub_btrfs_read_logical (data, disk,
-				     grub_le_to_cpu64 (node.blockn), &head,
+				     grub_le_to_cpu64 (node.addr), &head,
 				     sizeof (head));
       if (err)
 	return -err;
 
-      save_ref (desc, grub_le_to_cpu64 (node.blockn), 0, 
+      save_ref (desc, grub_le_to_cpu64 (node.addr), 0, 
 		grub_le_to_cpu32 (head.nitems), !head.level);
     }
   err = grub_btrfs_read_logical (data, disk,
@@ -358,7 +358,7 @@ lower_bound (struct grub_btrfs_data *data, grub_disk_t disk,
 				    grub_le_to_cpu32 (head.nitems), 0);
 		  if (err)
 		    return err;
-		  addr = grub_le_to_cpu64 (node.blockn);
+		  addr = grub_le_to_cpu64 (node.addr);
 		  goto reiter;
 		}
 	      if (key_cmp (&node.key, key_in) > 0)
@@ -374,7 +374,7 @@ lower_bound (struct grub_btrfs_data *data, grub_disk_t disk,
 				 grub_le_to_cpu32 (head.nitems), 0);
 	      if (err)
 		return err;
-	      addr = grub_le_to_cpu64 (node_last.blockn);
+	      addr = grub_le_to_cpu64 (node_last.addr);
 	      goto reiter;
 	    }
 	  *outsize = 0;
@@ -572,14 +572,14 @@ grub_btrfs_mount (grub_disk_t disk)
 
   for (i = 0; i < ARRAY_SIZE (superblock_sectors); i++)
     {
-      struct btrfs_superblock sblock;
+      struct grub_btrfs_superblock sblock;
       err = grub_disk_read (disk, superblock_sectors[i], 0,
 			    sizeof (sblock), &sblock);
       if (err == GRUB_ERR_OUT_OF_RANGE)
 	break;
 
-      if (grub_memcmp ((char *) sblock.signature, BTRFS_SIGNATURE,
-		       sizeof (BTRFS_SIGNATURE) - 1))
+      if (grub_memcmp ((char *) sblock.signature, GRUB_BTRFS_SIGNATURE,
+		       sizeof (GRUB_BTRFS_SIGNATURE) - 1))
 	break;
       if (i == 0 || grub_le_to_cpu64 (sblock.generation)
 	  > grub_le_to_cpu64 (data->sblock.generation))
