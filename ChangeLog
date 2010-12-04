@@ -1,3 +1,9 @@
+2010-12-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/i386/pc/startup.S (grub_console_getkey): Use `>> 1'
+	rather than `/ 2', as the latter requires -Wa,--divide which would
+	require bumping our minimum binutils version.
+
 2010-12-03  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* util/grub-script-check.c (main): Print script line number on

@@ -650,7 +650,7 @@ FUNCTION(grub_console_getkey)
 	jae     2f
 	movl	%edx, %eax
 	leal    LOCAL(bypass_table), %edi
-	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) / 2), %ecx
+	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) >> 1), %ecx
 	repne scasw 
 	jz      3f
 
