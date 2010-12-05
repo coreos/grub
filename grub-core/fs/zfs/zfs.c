@@ -961,7 +961,8 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
       grub_error (GRUB_ERR_BAD_FS, "ZAP leaf is too small");
       return 0;
     }
-  for (idx = 0; idx < zap->zap_ptrtbl.zt_numblks; idx++)
+  for (idx = 0; idx < grub_zfs_to_cpu64 (zap->zap_num_leafs,
+					 zap_dnode->endian); idx++)
     {
       blkid = ((grub_uint64_t *) zap)[idx + (1 << (blksft - 3 - 1))];
 
@@ -2553,6 +2554,7 @@ static struct grub_fs grub_zfs_fs = {
 
 GRUB_MOD_INIT (zfs)
 {
+  COMPILE_TIME_ASSERT (sizeof (zap_leaf_chunk_t) == ZAP_LEAF_CHUNKSIZE);
   grub_fs_register (&grub_zfs_fs);
 #ifndef GRUB_UTIL
   my_mod = mod;
