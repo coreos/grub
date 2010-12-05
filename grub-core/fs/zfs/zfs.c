@@ -138,6 +138,15 @@ typedef struct dnode_end
   grub_zfs_endian_t endian;
 } dnode_end_t;
 
+struct grub_zfs_device_desc
+{
+  enum { DEVICE_LEAF } type;
+  grub_disk_t disk;
+  grub_uint64_t id;
+  grub_disk_addr_t vdev_phys_sector;
+  uberblock_t current_uberblock;
+};
+
 struct grub_zfs_data
 {
   /* cache for a file block of the currently zfs_open()-ed file */
@@ -152,14 +161,16 @@ struct grub_zfs_data
   grub_uint64_t dnode_end;
   grub_zfs_endian_t dnode_endian;
 
-  uberblock_t current_uberblock;
-  grub_disk_t disk;
-
   dnode_end_t mos;
   dnode_end_t mdn;
   dnode_end_t dnode;
 
-  grub_disk_addr_t vdev_phys_sector;
+  struct grub_zfs_device_desc *devices_attached;
+  unsigned n_devices_attached;
+  unsigned n_devices_allocated;
+
+  int mounted;
+  grub_uint64_t guid;
 };
 
 static grub_err_t 
@@ -408,7 +419,7 @@ get_psize (blkptr_t * bp, grub_zfs_endian_t endian)
 }
 
 static grub_uint64_t
-dva_get_offset (dva_t * dva, grub_zfs_endian_t endian)
+dva_get_offset (const dva_t *dva, grub_zfs_endian_t endian)
 {
   grub_dprintf ("zfs", "dva=%llx, %llx\n", 
 		(unsigned long long) dva->dva_word[0], 
@@ -417,6 +428,356 @@ dva_get_offset (dva_t * dva, grub_zfs_endian_t endian)
 			    endian) << SPA_MINBLOCKSHIFT;
 }
 
+static grub_err_t
+zfs_fetch_nvlist (struct grub_zfs_device_desc *diskdesc, char **nvlist)
+{
+  grub_err_t err;
+
+  *nvlist = grub_malloc (VDEV_PHYS_SIZE);
+  /* Read in the vdev name-value pair list (112K). */
+  err = grub_disk_read (diskdesc->disk, diskdesc->vdev_phys_sector, 0,
+			VDEV_PHYS_SIZE, *nvlist);
+  if (err)
+    {
+      grub_free (*nvlist);
+      *nvlist = 0;
+      return err;
+    }
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+fill_vdev_info (char *nvlist, struct grub_zfs_device_desc *diskdesc)
+{
+  char *type = 0;
+
+  type = grub_zfs_nvlist_lookup_string (nvlist, ZPOOL_CONFIG_TYPE);
+
+  if (!type)
+    return grub_errno;
+  if (grub_strcmp (type, VDEV_TYPE_DISK) == 0)
+    {
+      diskdesc->type = DEVICE_LEAF;
+      if (!grub_zfs_nvlist_lookup_uint64 (nvlist, "id", &diskdesc->id))
+	return grub_error (GRUB_ERR_BAD_FS, "couldn't find vdev id");
+
+      return GRUB_ERR_NONE;
+    }
+  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "vdev %s isn't supported",
+		     type);
+}
+
+/*
+ * Check the disk label information and retrieve needed vdev name-value pairs.
+ *
+ */
+static grub_err_t
+check_pool_label (struct grub_zfs_data *data,
+		  struct grub_zfs_device_desc *diskdesc,
+		  grub_uint64_t *id)
+{
+  grub_uint64_t pool_state, txg = 0;
+  char *nvlist;
+#if 0
+  char *nv;
+#endif
+  grub_uint64_t diskguid, poolguid;
+  grub_uint64_t version;
+  int found;
+  grub_err_t err;
+
+  err = zfs_fetch_nvlist (diskdesc, &nvlist);
+  if (err)
+    return err;
+
+  grub_dprintf ("zfs", "check 2 passed\n");
+
+  found = grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_POOL_STATE,
+					 &pool_state);
+  if (! found)
+    {
+      grub_free (nvlist);
+      if (! grub_errno)
+	grub_error (GRUB_ERR_BAD_FS, ZPOOL_CONFIG_POOL_STATE " not found");
+      return grub_errno;
+    }
+  grub_dprintf ("zfs", "check 3 passed\n");
+
+  if (pool_state == POOL_STATE_DESTROYED)
+    {
+      grub_free (nvlist);
+      return grub_error (GRUB_ERR_BAD_FS, "zpool is marked as destroyed");
+    }
+  grub_dprintf ("zfs", "check 4 passed\n");
+
+  found = grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_POOL_TXG, &txg);
+  if (!found)
+    {
+      grub_free (nvlist);
+      if (! grub_errno)
+	grub_error (GRUB_ERR_BAD_FS, ZPOOL_CONFIG_POOL_TXG " not found");
+      return grub_errno;
+    }
+  grub_dprintf ("zfs", "check 6 passed\n");
+
+  /* not an active device */
+  if (txg == 0)
+    {
+      grub_free (nvlist);
+      return grub_error (GRUB_ERR_BAD_FS, "zpool isn't active");
+    }
+  grub_dprintf ("zfs", "check 7 passed\n");
+
+  found = grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_VERSION,
+					 &version);
+  if (! found)
+    {
+      grub_free (nvlist);
+      if (! grub_errno)
+	grub_error (GRUB_ERR_BAD_FS, ZPOOL_CONFIG_VERSION " not found");
+      return grub_errno;
+    }
+  grub_dprintf ("zfs", "check 8 passed\n");
+
+  if (version > SPA_VERSION)
+    {
+      grub_free (nvlist);
+      return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			 "too new version %llu > %llu",
+			 (unsigned long long) version,
+			 (unsigned long long) SPA_VERSION);
+    }
+  grub_dprintf ("zfs", "check 9 passed\n");
+
+  {
+    char *nv;
+    nv = grub_zfs_nvlist_lookup_nvlist (nvlist, ZPOOL_CONFIG_VDEV_TREE);
+
+    if (!nv)
+      {
+	grub_free (nvlist);
+	return grub_error (GRUB_ERR_BAD_FS, "couldn't find vdev tree");
+      }
+    err = fill_vdev_info (nv, diskdesc);
+    if (err)
+      {
+	grub_free (nvlist);
+	return err;
+      }
+  }
+  grub_dprintf ("zfs", "check 10 passed\n");
+
+  found = grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_GUID, &diskguid);
+  if (! found)
+    {
+      grub_free (nvlist);
+      if (! grub_errno)
+	grub_error (GRUB_ERR_BAD_FS, ZPOOL_CONFIG_GUID " not found");
+      return grub_errno;
+    }
+
+  found = grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_POOL_GUID,
+					 &poolguid);
+  if (! found)
+    {
+      grub_free (nvlist);
+      if (! grub_errno)
+	grub_error (GRUB_ERR_BAD_FS, ZPOOL_CONFIG_POOL_GUID " not found");
+      return grub_errno;
+    }
+
+  grub_dprintf ("zfs", "check 11 passed\n");
+
+  if (data->mounted && data->guid != poolguid)
+    return grub_error (GRUB_ERR_BAD_FS, "another zpool");
+  else
+    data->guid = poolguid;
+  grub_free (nvlist);
+
+  data->n_devices_attached++;
+  if (data->n_devices_attached > data->n_devices_allocated)
+    {
+      void *tmp;
+      data->n_devices_allocated = 2 * data->n_devices_attached + 1;
+      data->devices_attached
+	= grub_realloc (tmp = data->devices_attached,
+			data->n_devices_allocated
+			* sizeof (data->devices_attached[0]));
+      if (!data->devices_attached)
+	{
+	  data->devices_attached = tmp;
+	  return grub_errno;
+	}
+    }
+
+  data->devices_attached[data->n_devices_attached - 1] = *diskdesc;
+  if (id)
+    *id = diskdesc->id;
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+scan_disk (grub_disk_t disk, struct grub_zfs_data *data,
+	   grub_uint64_t *id)
+{
+  int label = 0;
+  uberblock_phys_t *ub_array, *ubbest = NULL;
+  vdev_boot_header_t *bh;
+  grub_err_t err;
+  int vdevnum;
+  struct grub_zfs_device_desc desc;
+
+  ub_array = grub_malloc (VDEV_UBERBLOCK_RING);
+  if (!ub_array)
+    return grub_errno;
+
+  bh = grub_malloc (VDEV_BOOT_HEADER_SIZE);
+  if (!bh)
+    {
+      grub_free (ub_array);
+      return grub_errno;
+    }
+
+  vdevnum = VDEV_LABELS;
+
+  desc.disk = disk;
+
+  /* Don't check back labels on CDROM.  */
+  if (grub_disk_get_size (disk) == GRUB_DISK_SIZE_UNKNOWN)
+    vdevnum = VDEV_LABELS / 2;
+
+  for (label = 0; ubbest == NULL && label < vdevnum; label++)
+    {
+      grub_dprintf ("zfs", "label %d\n", label);
+
+      desc.vdev_phys_sector
+	= label * (sizeof (vdev_label_t) >> SPA_MINBLOCKSHIFT)
+	+ ((VDEV_SKIP_SIZE + VDEV_BOOT_HEADER_SIZE) >> SPA_MINBLOCKSHIFT)
+	+ (label < VDEV_LABELS / 2 ? 0 : grub_disk_get_size (disk)
+	   - VDEV_LABELS * (sizeof (vdev_label_t) >> SPA_MINBLOCKSHIFT));
+
+      /* Read in the uberblock ring (128K). */
+      err = grub_disk_read (disk, desc.vdev_phys_sector
+			    + (VDEV_PHYS_SIZE >> SPA_MINBLOCKSHIFT),
+			    0, VDEV_UBERBLOCK_RING, (char *) ub_array);
+      if (err)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
+      grub_dprintf ("zfs", "label ok %d\n", label);
+
+      ubbest = find_bestub (ub_array, desc.vdev_phys_sector);
+      if (!ubbest)
+	{
+	  grub_dprintf ("zfs", "No uberblock found\n");
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
+
+      grub_memmove (&(desc.current_uberblock),
+		    &ubbest->ubp_uberblock, sizeof (uberblock_t));
+
+      err = check_pool_label (data, &desc, id);
+      if (err)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
+#if 0
+      if (find_best_root &&
+	  vdev_uberblock_compare (&ubbest->ubp_uberblock,
+				  &(current_uberblock)) <= 0)
+	continue;
+#endif
+      grub_free (ub_array);
+      grub_free (bh);
+      return GRUB_ERR_NONE;
+    }
+  
+  grub_free (ub_array);
+  grub_free (bh);
+
+  return grub_error (GRUB_ERR_BAD_FS, "couldn't find a valid label");
+}
+
+static grub_err_t
+scan_devices (struct grub_zfs_data *data, grub_uint64_t id)
+{
+  grub_device_t dev_found = NULL;
+  auto int hook (const char *name);
+  int hook (const char *name)
+  {
+    grub_device_t dev;
+    grub_err_t err;
+    grub_uint64_t f_id = -1;
+    dev = grub_device_open (name);
+    if (!dev)
+      return 0;
+    if (!dev->disk)
+      {
+	grub_device_close (dev);
+	return 0;
+      }
+    err = scan_disk (dev->disk, data, &f_id);
+    if (err == GRUB_ERR_BAD_FS)
+      {
+	grub_device_close (dev);
+	grub_errno = GRUB_ERR_NONE;
+	return 0;
+      }
+    if (err)
+      {
+	grub_device_close (dev);
+	grub_print_error ();
+	return 0;
+      }
+    if (f_id != id)
+      {
+	grub_device_close (dev);
+	return 0;
+      }
+    
+    dev_found = dev;
+    return 1;
+  }
+  grub_device_iterate (hook);
+  if (!dev_found)
+    return grub_error (GRUB_ERR_BAD_FS,
+		       "couldn't find device 0x%" PRIxGRUB_UINT64_T, id);
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+read_dva (const dva_t *dva,
+	  grub_zfs_endian_t endian, struct grub_zfs_data *data,
+	  void *buf, grub_size_t len)
+{
+  grub_uint64_t offset, sector;
+  unsigned i;
+  grub_err_t err;
+  int try = 0;
+
+  for (try = 0; try < 1; try++)
+    {
+      for (i = 0; i < data->n_devices_attached; i++)
+	if (data->devices_attached[i].id == DVA_GET_VDEV (dva))
+	  {
+	    /* read in a data block */
+	    offset = dva_get_offset (dva, endian);
+	    sector = DVA_OFFSET_TO_PHYS_SECTOR (offset);
+	    return grub_disk_read (data->devices_attached[i].disk, sector,
+				   0, len, buf);
+      }
+      err = scan_devices (data, DVA_GET_VDEV (dva));
+      if (err)
+	return err;
+    }
+  return grub_error (GRUB_ERR_BAD_FS,
+		     "couldn't find device 0x%" PRIxGRUB_UINT64_T,
+		     DVA_GET_VDEV (dva));
+}
 
 /*
  * Read a block of data based on the gang block address dva,
@@ -428,7 +789,6 @@ zio_read_gang (blkptr_t * bp, grub_zfs_endian_t endian, dva_t * dva, void *buf,
 	       struct grub_zfs_data *data)
 {
   zio_gbh_phys_t *zio_gb;
-  grub_uint64_t offset, sector;
   unsigned i;
   grub_err_t err;
   zio_cksum_t zc;
@@ -440,13 +800,8 @@ zio_read_gang (blkptr_t * bp, grub_zfs_endian_t endian, dva_t * dva, void *buf,
     return grub_errno;
   grub_dprintf ("zfs", endian == LITTLE_ENDIAN ? "little-endian gang\n"
 		:"big-endian gang\n");
-  offset = dva_get_offset (dva, endian);
-  sector = DVA_OFFSET_TO_PHYS_SECTOR (offset);
-  grub_dprintf ("zfs", "offset=%llx\n", (unsigned long long) offset);
 
-  /* read in the gang block header */
-  err = grub_disk_read (data->disk, sector, 0, SPA_GANGBLOCKSIZE,
-			(char *) zio_gb);
+  err = read_dva (dva, endian, data, zio_gb, SPA_GANGBLOCKSIZE);
   if (err)
     {
       grub_free (zio_gb);
@@ -499,20 +854,13 @@ zio_read_data (blkptr_t * bp, grub_zfs_endian_t endian, void *buf,
   /* pick a good dva from the block pointer */
   for (i = 0; i < SPA_DVAS_PER_BP; i++)
     {
-      grub_uint64_t offset, sector;
-
       if (bp->blk_dva[i].dva_word[0] == 0 && bp->blk_dva[i].dva_word[1] == 0)
 	continue;
 
       if ((grub_zfs_to_cpu64 (bp->blk_dva[i].dva_word[1], endian)>>63) & 1)
 	err = zio_read_gang (bp, endian, &bp->blk_dva[i], buf, data);
       else
-	{
-	  /* read in a data block */
-	  offset = dva_get_offset (&bp->blk_dva[i], endian);
-	  sector = DVA_OFFSET_TO_PHYS_SECTOR (offset);
-	  err = grub_disk_read (data->disk, sector, 0, psize, buf); 
-	}
+	err = read_dva (&bp->blk_dva[i], endian, data, buf, psize);
       if (!err)
 	return GRUB_ERR_NONE;
       grub_errno = GRUB_ERR_NONE;
@@ -1888,128 +2236,6 @@ grub_zfs_nvlist_lookup_nvlist_array (char *nvlist, char *name,
   return ret;
 }
 
-static grub_err_t
-zfs_fetch_nvlist (struct grub_zfs_data * data, char **nvlist)
-{
-  grub_err_t err;
-
-  *nvlist = grub_malloc (VDEV_PHYS_SIZE);
-  /* Read in the vdev name-value pair list (112K). */
-  err = grub_disk_read (data->disk, data->vdev_phys_sector, 0,
-			VDEV_PHYS_SIZE, *nvlist);
-  if (err)
-    {
-      grub_free (*nvlist);
-      *nvlist = 0;
-      return err;
-    }
-  return GRUB_ERR_NONE;
-}
-
-/*
- * Check the disk label information and retrieve needed vdev name-value pairs.
- *
- */
-static grub_err_t
-check_pool_label (struct grub_zfs_data *data)
-{
-  grub_uint64_t pool_state, txg = 0;
-  char *nvlist;
-#if 0
-  char *nv;
-#endif
-  grub_uint64_t diskguid;
-  grub_uint64_t version;
-  int found;
-  grub_err_t err;
-
-  err = zfs_fetch_nvlist (data, &nvlist);
-  if (err)
-    return err;
-
-  grub_dprintf ("zfs", "check 2 passed\n");
-
-  found = grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_POOL_STATE,
-					 &pool_state);
-  if (! found)
-    {
-      grub_free (nvlist);
-      if (! grub_errno)
-	grub_error (GRUB_ERR_BAD_FS, ZPOOL_CONFIG_POOL_STATE " not found");
-      return grub_errno;
-    }
-  grub_dprintf ("zfs", "check 3 passed\n");
-
-  if (pool_state == POOL_STATE_DESTROYED)
-    {
-      grub_free (nvlist);
-      return grub_error (GRUB_ERR_BAD_FS, "zpool is marked as destroyed");
-    }
-  grub_dprintf ("zfs", "check 4 passed\n");
-
-  found = grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_POOL_TXG, &txg);
-  if (!found)
-    {
-      grub_free (nvlist);
-      if (! grub_errno)
-	grub_error (GRUB_ERR_BAD_FS, ZPOOL_CONFIG_POOL_TXG " not found");
-      return grub_errno;
-    }
-  grub_dprintf ("zfs", "check 6 passed\n");
-
-  /* not an active device */
-  if (txg == 0)
-    {
-      grub_free (nvlist);
-      return grub_error (GRUB_ERR_BAD_FS, "zpool isn't active");
-    }
-  grub_dprintf ("zfs", "check 7 passed\n");
-
-  found = grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_VERSION,
-					 &version);
-  if (! found)
-    {
-      grub_free (nvlist);
-      if (! grub_errno)
-	grub_error (GRUB_ERR_BAD_FS, ZPOOL_CONFIG_VERSION " not found");
-      return grub_errno;
-    }
-  grub_dprintf ("zfs", "check 8 passed\n");
-
-  if (version > SPA_VERSION)
-    {
-      grub_free (nvlist);
-      return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			 "too new version %llu > %llu",
-			 (unsigned long long) version,
-			 (unsigned long long) SPA_VERSION);
-    }
-  grub_dprintf ("zfs", "check 9 passed\n");
-#if 0
-  if (nvlist_lookup_value (nvlist, ZPOOL_CONFIG_VDEV_TREE, &nv,
-			   DATA_TYPE_NVLIST, NULL))
-    {
-      grub_free (vdev);
-      return (GRUB_ERR_BAD_FS);
-    }
-  grub_dprintf ("zfs", "check 10 passed\n");
-#endif
-
-  found = grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_GUID, &diskguid);
-  if (! found)
-    {
-      grub_free (nvlist);
-      if (! grub_errno)
-	grub_error (GRUB_ERR_BAD_FS, ZPOOL_CONFIG_GUID " not found");
-      return grub_errno;
-    }
-  grub_dprintf ("zfs", "check 11 passed\n");
-
-  grub_free (nvlist);
-
-  return GRUB_ERR_NONE;
-}
-
 static void
 zfs_unmount (struct grub_zfs_data *data)
 {
@@ -2028,13 +2254,11 @@ static struct grub_zfs_data *
 zfs_mount (grub_device_t dev)
 {
   struct grub_zfs_data *data = 0;
-  int label = 0;
-  uberblock_phys_t *ub_array, *ubbest = NULL;
-  vdev_boot_header_t *bh;
+  grub_err_t err;
   objset_phys_t *osp = 0;
   grub_size_t ospsize;
-  grub_err_t err;
-  int vdevnum;
+  grub_zfs_endian_t ub_endian = UNKNOWN_ENDIAN;
+  uberblock_t *ub;
 
   if (! dev->disk)
     {
@@ -2042,118 +2266,56 @@ zfs_mount (grub_device_t dev)
       return 0;
     }
 
-  data = grub_malloc (sizeof (*data));
+  data = grub_zalloc (sizeof (*data));
   if (!data)
     return 0;
-  grub_memset (data, 0, sizeof (*data));
 #if 0
   /* if it's our first time here, zero the best uberblock out */
   if (data->best_drive == 0 && data->best_part == 0 && find_best_root)
     grub_memset (&current_uberblock, 0, sizeof (uberblock_t));
 #endif
 
-  data->disk = dev->disk;
-
-  ub_array = grub_malloc (VDEV_UBERBLOCK_RING);
-  if (!ub_array)
+  data->n_devices_allocated = 16;
+  data->devices_attached = grub_malloc (sizeof (data->devices_attached[0])
+					* data->n_devices_allocated);
+  data->n_devices_attached = 0;
+  err = scan_disk (dev->disk, data, NULL);
+  if (err)
     {
       zfs_unmount (data);
-      return 0;
+      return NULL;
     }
 
-  bh = grub_malloc (VDEV_BOOT_HEADER_SIZE);
-  if (!bh)
+  ub = &(data->devices_attached[0].current_uberblock);
+  ub_endian = (grub_zfs_to_cpu64 (ub->ub_magic, 
+				  LITTLE_ENDIAN) == UBERBLOCK_MAGIC 
+	       ? LITTLE_ENDIAN : BIG_ENDIAN);
+
+  err = zio_read (&ub->ub_rootbp, ub_endian,
+		  (void **) &osp, &ospsize, data);
+  if (err)
     {
       zfs_unmount (data);
-      grub_free (ub_array);
-      return 0;
+      return NULL;
     }
 
-  vdevnum = VDEV_LABELS;
-
-  /* Don't check back labels on CDROM.  */
-  if (grub_disk_get_size (dev->disk) == GRUB_DISK_SIZE_UNKNOWN)
-    vdevnum = VDEV_LABELS / 2;
-
-  for (label = 0; ubbest == NULL && label < vdevnum; label++)
+  if (ospsize < OBJSET_PHYS_SIZE_V14)
     {
-      grub_zfs_endian_t ub_endian = UNKNOWN_ENDIAN;
-      grub_dprintf ("zfs", "label %d\n", label);
-
-      data->vdev_phys_sector
-	= label * (sizeof (vdev_label_t) >> SPA_MINBLOCKSHIFT)
-	+ ((VDEV_SKIP_SIZE + VDEV_BOOT_HEADER_SIZE) >> SPA_MINBLOCKSHIFT)
-	+ (label < VDEV_LABELS / 2 ? 0 : grub_disk_get_size (dev->disk)
-	   - VDEV_LABELS * (sizeof (vdev_label_t) >> SPA_MINBLOCKSHIFT));
-
-      /* Read in the uberblock ring (128K). */
-      err = grub_disk_read (data->disk, data->vdev_phys_sector
-			    + (VDEV_PHYS_SIZE >> SPA_MINBLOCKSHIFT),
-			    0, VDEV_UBERBLOCK_RING, (char *) ub_array);
-      if (err)
-	{
-	  grub_errno = GRUB_ERR_NONE;
-	  continue;
-	}
-      grub_dprintf ("zfs", "label ok %d\n", label);
-
-      ubbest = find_bestub (ub_array, data->vdev_phys_sector);
-      if (!ubbest)
-	{
-	  grub_dprintf ("zfs", "No uberblock found\n");
-	  grub_errno = GRUB_ERR_NONE;
-	  continue;
-	}
-      ub_endian = (grub_zfs_to_cpu64 (ubbest->ubp_uberblock.ub_magic, 
-				     LITTLE_ENDIAN) == UBERBLOCK_MAGIC 
-		   ? LITTLE_ENDIAN : BIG_ENDIAN);
-      err = zio_read (&ubbest->ubp_uberblock.ub_rootbp, 
-		      ub_endian,
-		      (void **) &osp, &ospsize, data);
-      if (err)
-	{
-	  grub_dprintf ("zfs", "couldn't zio_read\n"); 
-	  grub_errno = GRUB_ERR_NONE;
-	  continue;
-	}
-
-      if (ospsize < OBJSET_PHYS_SIZE_V14)
-	{
-	  grub_dprintf ("zfs", "osp too small\n"); 
-	  grub_free (osp);
-	  continue;
-	}
-      grub_dprintf ("zfs", "ubbest %p\n", ubbest);
-
-      err = check_pool_label (data);
-      if (err)
-	{
-	  grub_errno = GRUB_ERR_NONE;
-	  continue;
-	}
-#if 0
-      if (find_best_root &&
-	  vdev_uberblock_compare (&ubbest->ubp_uberblock,
-				  &(current_uberblock)) <= 0)
-	continue;
-#endif
-      /* Got the MOS. Save it at the memory addr MOS. */
-      grub_memmove (&(data->mos.dn), &osp->os_meta_dnode, DNODE_SIZE);
-      data->mos.endian = (grub_zfs_to_cpu64 (ubbest->ubp_uberblock.ub_rootbp.blk_prop, ub_endian) >> 63) & 1;
-      grub_memmove (&(data->current_uberblock),
-		    &ubbest->ubp_uberblock, sizeof (uberblock_t));
-      grub_free (ub_array);
-      grub_free (bh);
+      grub_error (GRUB_ERR_BAD_FS, "OSP too small");
       grub_free (osp);
-      return data;  
+      zfs_unmount (data);
+      return NULL;
     }
-  grub_error (GRUB_ERR_BAD_FS, "couldn't find a valid label");
-  zfs_unmount (data);
-  grub_free (ub_array);
-  grub_free (bh);
+
+  /* Got the MOS. Save it at the memory addr MOS. */
+  grub_memmove (&(data->mos.dn), &osp->os_meta_dnode, DNODE_SIZE);
+  data->mos.endian = (grub_zfs_to_cpu64 (ub->ub_rootbp.blk_prop,
+					 ub_endian) >> 63) & 1;
   grub_free (osp);
 
-  return 0;
+  data->mounted = 1;
+
+  return data;
 }
 
 grub_err_t
@@ -2165,7 +2327,7 @@ grub_zfs_fetch_nvlist (grub_device_t dev, char **nvlist)
   zfs = zfs_mount (dev);
   if (!zfs)
     return grub_errno;
-  err = zfs_fetch_nvlist (zfs, nvlist);
+  err = zfs_fetch_nvlist (&zfs->devices_attached[0], nvlist);
   zfs_unmount (zfs);
   return err;
 }
@@ -2181,7 +2343,7 @@ zfs_label (grub_device_t device, char **label)
   if (! data)
     return grub_errno;
 
-  err = zfs_fetch_nvlist (data, &nvlist);
+  err = zfs_fetch_nvlist (data->devices_attached, &nvlist);
   if (err)      
     {
       zfs_unmount (data);
@@ -2197,11 +2359,7 @@ zfs_label (grub_device_t device, char **label)
 static grub_err_t 
 zfs_uuid (grub_device_t device, char **uuid)
 {
-  char *nvlist;
-  int found;
   struct grub_zfs_data *data;
-  grub_uint64_t guid;
-  grub_err_t err;
 
   *uuid = 0;
 
@@ -2209,18 +2367,7 @@ zfs_uuid (grub_device_t device, char **uuid)
   if (! data)
     return grub_errno;
 
-  err = zfs_fetch_nvlist (data, &nvlist);
-  if (err)
-    {
-      zfs_unmount (data);
-      return err;
-    }
-
-  found = grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_POOL_GUID, &guid);
-  if (! found)
-    return grub_errno;
-  grub_free (nvlist);
-  *uuid = grub_xasprintf ("%016llx", (long long unsigned) guid);
+  *uuid = grub_xasprintf ("%016llx", (long long unsigned) data->guid);
   zfs_unmount (data);
   if (! *uuid)
     return grub_errno;

@@ -60,6 +60,7 @@ execute_command (char *name, int n, char **args)
 #define CMD_HEX         4
 #define CMD_CRC         6
 #define CMD_BLOCKLIST   7
+#define CMD_ZFSINFO     8
 
 #define BUF_SIZE  32256
 
@@ -309,6 +310,9 @@ fstest (int n, char **args)
     case CMD_LS:
       execute_command ("ls", n, args);
       break;
+    case CMD_ZFSINFO:
+      execute_command ("zfsinfo", n, args);
+      break;
     case CMD_CP:
       cmd_cp (args[0], args[1]);
       break;
@@ -453,6 +457,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
       if (!grub_strcmp (arg, "ls"))
         {
           cmd = CMD_LS;
+        }
+      else if (!grub_strcmp (arg, "zfsinfo"))
+        {
+          cmd = CMD_ZFSINFO;
         }
       else if (!grub_strcmp (arg, "cp"))
 	{
