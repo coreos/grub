@@ -831,7 +831,7 @@ zap_leaf_lookup (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
     return grub_error (GRUB_ERR_BAD_FS, "invalid leaf magic");
 
   for (chunk = grub_zfs_to_cpu16 (l->l_hash[LEAF_HASH (blksft, h)], endian);
-       chunk != CHAIN_END; chunk = le->le_next)
+       chunk != CHAIN_END; chunk = grub_zfs_to_cpu16 (le->le_next, endian))
     {
 
       if (chunk >= ZAP_LEAF_NUMCHUNKS (blksft))
@@ -856,7 +856,8 @@ zap_leaf_lookup (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
 	  struct zap_leaf_array *la;
 	  grub_uint8_t *ip;
 
-	  if (le->le_int_size != 8 || le->le_value_length != 1)
+	  if (le->le_int_size != 8 || grub_zfs_to_cpu16 (le->le_value_length,
+							 endian) != 1)
 	    return grub_error (GRUB_ERR_BAD_FS, "invalid leaf chunk entry");
 
 	  /* get the uint64_t property value */
@@ -875,9 +876,9 @@ zap_leaf_lookup (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
 
 /* Verify if this is a fat zap header block */
 static grub_err_t
-zap_verify (zap_phys_t *zap)
+zap_verify (zap_phys_t *zap, grub_zfs_endian_t endian)
 {
-  if (zap->zap_magic != (grub_uint64_t) ZAP_MAGIC)
+  if (grub_zfs_to_cpu64 (zap->zap_magic, endian) != (grub_uint64_t) ZAP_MAGIC)
     return grub_error (GRUB_ERR_BAD_FS, "bad ZAP magic");
 
   if (zap->zap_flags != 0)
@@ -905,7 +906,7 @@ fzap_lookup (dnode_end_t * zap_dnode, zap_phys_t * zap,
   grub_err_t err;
   grub_zfs_endian_t leafendian;
 
-  err = zap_verify (zap);
+  err = zap_verify (zap, zap_dnode->endian);
   if (err)
     return err;
 
@@ -916,7 +917,7 @@ fzap_lookup (dnode_end_t * zap_dnode, zap_phys_t * zap,
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, 
 		       "external pointer tables not supported");
   idx = ZAP_HASH_IDX (hash, zap->zap_ptrtbl.zt_shift);
-  blkid = ((grub_uint64_t *) zap)[idx + (1 << (blksft - 3 - 1))];
+  blkid = grub_zfs_to_cpu64 (((grub_uint64_t *) zap)[idx + (1 << (blksft - 3 - 1))], zap_dnode->endian);
 
   /* Get the leaf block */
   if ((1U << blksft) < sizeof (zap_leaf_phys_t))
@@ -945,7 +946,7 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
   grub_err_t err;
   grub_zfs_endian_t endian;
 
-  if (zap_verify (zap))
+  if (zap_verify (zap, zap_dnode->endian))
     return 0;
 
   /* get block id from index */
@@ -964,7 +965,8 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
   for (idx = 0; idx < grub_zfs_to_cpu64 (zap->zap_num_leafs,
 					 zap_dnode->endian); idx++)
     {
-      blkid = ((grub_uint64_t *) zap)[idx + (1 << (blksft - 3 - 1))];
+      blkid = grub_zfs_to_cpu64 (((grub_uint64_t *) zap)[idx + (1 << (blksft - 3 - 1))],
+					 zap_dnode->endian);
 
       err = dmu_read (zap_dnode, blkid, (void **) &l, &endian, data);
       if (err)
@@ -999,8 +1001,11 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
 
 	    buf = grub_malloc (grub_zfs_to_cpu16 (le->le_name_length, endian) 
 			       + 1);
-	    if (zap_leaf_array_get (l, endian, blksft, le->le_name_chunk,
-				    le->le_name_length, buf))
+	    if (zap_leaf_array_get (l, endian, blksft,
+				    grub_zfs_to_cpu16 (le->le_name_chunk,
+						       endian),
+				    grub_zfs_to_cpu16 (le->le_name_length,
+						       endian), buf))
 	      {
 		grub_free (buf);
 		continue;
@@ -1012,7 +1017,9 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
 	      continue;
 
 	    /* get the uint64_t property value */
-	    la = &ZAP_LEAF_CHUNK (l, blksft, le->le_value_chunk).l_array;
+	    la = &ZAP_LEAF_CHUNK (l, blksft,
+				  grub_zfs_to_cpu16 (le->le_value_chunk,
+						     endian)).l_array;
 	    val = grub_be_to_cpu64 (la->la_array64);
 	    if (hook (buf, val))
 	      return 1;
