@@ -1323,18 +1323,45 @@ dnode_get_path (dnode_end_t * mdn, const char *path_in, dnode_end_t * dn,
 	  if (bonuslen <= sizeof (znode_phys_t))
 	    err = grub_error (GRUB_ERR_BAD_FS,
 			      "incorrect or unsupported symlink");
-	  path = path_buf 
-	    = grub_malloc (bonuslen - sizeof (znode_phys_t)
-			   + grub_strlen (oldpath) + 1);
-	  if (!path_buf)
+	  if (dnode_path->dn.dn.dn_flags & 1)
 	    {
-	      grub_free (oldpathbuf);
-	      return grub_errno;
+	      void *sbuf;
+	      grub_size_t ssize;
+	      err = zio_read (dnode_path->dn.dn.dn_blkptr,
+			      dnode_path->dn.endian, &sbuf,
+			      &ssize, data);
+	      if (err)
+		{
+		  grub_free (oldpathbuf);
+		  return err;
+		}
+
+	      path = path_buf = grub_malloc (ssize+ grub_strlen (oldpath) + 1);
+	      if (!path_buf)
+		{
+		  grub_free (oldpathbuf);
+		  grub_free (sbuf);
+		  return grub_errno;
+		}
+	      grub_memcpy (path, sbuf, ssize);
+	      path[ssize] = 0;
+	      grub_free (sbuf);
 	    }
-	  grub_memcpy (path, (char *) DN_BONUS(&dnode_path->dn.dn)
-		       + sizeof (znode_phys_t),
-		       bonuslen - sizeof (znode_phys_t));
-	  path[bonuslen - sizeof (znode_phys_t)] = 0;
+	  else
+	    {
+	      path = path_buf
+		= grub_malloc (bonuslen - sizeof (znode_phys_t)
+			       + grub_strlen (oldpath) + 1);
+	      if (!path_buf)
+		{
+		  grub_free (oldpathbuf);
+		  return grub_errno;
+		}
+	      grub_memcpy (path, (char *) DN_BONUS(&dnode_path->dn.dn)
+			   + sizeof (znode_phys_t),
+			   bonuslen - sizeof (znode_phys_t));
+	      path[bonuslen - sizeof (znode_phys_t)] = 0;
+	    }
 	  grub_memcpy (path + grub_strlen (path), oldpath, 
 		       grub_strlen (oldpath) + 1);
 	  
