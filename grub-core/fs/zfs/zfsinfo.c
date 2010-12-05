@@ -139,7 +139,6 @@ print_vdev_info (char *nvlist, int tab)
 	}
       grub_printf ("Mirror VDEV with %d children\n", nelm);
       print_state (nvlist, tab);
-
       for (i = 0; i < nelm; i++)
 	{
 	  char *child;
@@ -159,6 +158,7 @@ print_vdev_info (char *nvlist, int tab)
 
 	  grub_free (child);
 	}
+      return GRUB_ERR_NONE;
     }
 
   print_tabs (tab);

@@ -1812,11 +1812,26 @@ grub_zfs_nvlist_lookup_nvlist_array_get_nelm (char *nvlist, char *name)
   grub_size_t nelm, size;
   int found;
 
-  found = nvlist_find_value (nvlist, name, DATA_TYPE_NVLIST, &nvpair,
+  found = nvlist_find_value (nvlist, name, DATA_TYPE_NVLIST_ARRAY, &nvpair,
 			     &size, &nelm);
   if (! found)
     return -1;
   return nelm;
+}
+
+static int
+get_nvlist_size (char *beg, char *limit)
+{
+  char *ptr;
+  grub_uint32_t encode_size;
+  
+  ptr = beg + 8;
+
+  while (ptr < limit
+	 && (encode_size = grub_be_to_cpu32 (*(grub_uint32_t *) ptr)))
+    ptr += encode_size;	/* goto the next nvpair */
+  ptr += 8;      
+  return (ptr > limit) ? -1 : (ptr - beg);
 }
 
 char *
@@ -1829,8 +1844,9 @@ grub_zfs_nvlist_lookup_nvlist_array (char *nvlist, char *name,
   grub_size_t size;
   unsigned i;
   grub_size_t nelm;
+  int elemsize = 0;
 
-  found = nvlist_find_value (nvlist, name, DATA_TYPE_NVLIST, &nvpair,
+  found = nvlist_find_value (nvlist, name, DATA_TYPE_NVLIST_ARRAY, &nvpair,
 			     &size, &nelm);
   if (!found)
     return 0;
@@ -1844,33 +1860,31 @@ grub_zfs_nvlist_lookup_nvlist_array (char *nvlist, char *name,
 
   for (i = 0; i < index; i++)
     {
-      grub_uint32_t encode_size;
+      int r;
+      r = get_nvlist_size (nvpairptr, nvpair + size);
 
-      /* skip the header, nvl_version, and nvl_nvflag */
-      nvpairptr = nvpairptr + 4 * 2;
-
-      while (nvpairptr < nvpair + size
-	     && (encode_size = grub_be_to_cpu32 (*(grub_uint32_t *) nvpairptr)))
-	nvlist += encode_size;	/* goto the next nvpair */
-
-      nvlist = nvlist + 4 * 2;	/* skip the ending 2 zeros - 8 bytes */
+      if (r < 0)
+	{
+	  grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist array");
+	  return NULL;
+	}
+      nvpairptr += r;
     }
 
-  if (nvpairptr >= nvpair + size
-      || nvpairptr + grub_be_to_cpu32 (*(grub_uint32_t *) (nvpairptr + 4 * 2))
-      >= nvpair + size)
+  elemsize = get_nvlist_size (nvpairptr, nvpair + size);
+
+  if (elemsize < 0)
     {
       grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist array");
       return 0;
     }
 
-  ret = grub_zalloc (grub_be_to_cpu32 (*(grub_uint32_t *) (nvpairptr + 4 * 2))
-		     + 3 * sizeof (grub_uint32_t));
+  ret = grub_zalloc (elemsize + sizeof (grub_uint32_t));
   if (!ret)
     return 0;
   grub_memcpy (ret, nvlist, sizeof (grub_uint32_t));
 
-  grub_memcpy (ret + sizeof (grub_uint32_t), nvpairptr, size);
+  grub_memcpy (ret + sizeof (grub_uint32_t), nvpairptr, elemsize);
   return ret;
 }
 
