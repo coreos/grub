@@ -491,7 +491,8 @@ lower_bound (struct grub_btrfs_data *data,
 }
 
 static grub_device_t
-find_device (struct grub_btrfs_data *data, grub_uint64_t id)
+find_device (struct grub_btrfs_data *data, grub_uint64_t id,
+	     int do_rescan)
 {
   grub_device_t dev_found = NULL;
   auto int hook (const char *name);
@@ -537,7 +538,8 @@ find_device (struct grub_btrfs_data *data, grub_uint64_t id)
   for (i = 0; i < data->n_devices_attached; i++)
     if (id == data->devices_attached[i].id)
       return data->devices_attached[i].dev;
-  grub_device_iterate (hook);
+  if (do_rescan)
+    grub_device_iterate (hook);
   if (!dev_found)
     {
       grub_error (GRUB_ERR_BAD_FS, "couldn't find a member device");
@@ -574,7 +576,6 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
       grub_uint8_t *ptr;
       struct grub_btrfs_key *key;
       struct grub_btrfs_chunk_item *chunk;  
-      struct grub_btrfs_chunk_stripe *stripe;
       grub_ssize_t csize;
       grub_err_t err; 
       struct grub_btrfs_key key_out;
@@ -598,7 +599,8 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	      + grub_le_to_cpu64 (chunk->size))
 	    goto chunk_found;
 	  ptr += sizeof (*key) + sizeof (*chunk)
-	    + sizeof (*stripe) * grub_le_to_cpu16 (chunk->nstripes);
+	    + sizeof (struct grub_btrfs_chunk_stripe)
+	    * grub_le_to_cpu16 (chunk->nstripes);
 	}
       struct grub_btrfs_key key_in;
       grub_size_t chsize;
@@ -634,9 +636,9 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	grub_uint32_t stripen;
 	grub_uint32_t stripe_offset;
 	grub_uint64_t off = addr - grub_le_to_cpu64 (key->offset);
-	grub_disk_addr_t paddr;
+	unsigned redundancy = 1;
+	unsigned i, j;
 
-	stripe = (struct grub_btrfs_chunk_stripe *) (chunk + 1);
 	switch (grub_le_to_cpu64 (chunk->type)
 		& ~GRUB_BTRFS_CHUNK_TYPE_BITS_DONTCARE)
 	  {
@@ -661,6 +663,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	      stripen = 0;
 	      stripe_offset = off;
 	      csize = stripe_length - off;
+	      redundancy = 2;
 	      break;
 	    }
 	  case GRUB_BTRFS_CHUNK_TYPE_RAID0:
@@ -692,6 +695,8 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 				    &stripen);
 	      stripen *= grub_le_to_cpu16 (chunk->nstripes)
 		/ grub_le_to_cpu16 (chunk->nsubstripes);
+	      redundancy = grub_le_to_cpu16 (chunk->nstripes)
+		/ grub_le_to_cpu16 (chunk->nsubstripes);
 	      stripe_offset = low + grub_le_to_cpu64 (chunk->stripe_length)
 		* high;
 	      csize = grub_le_to_cpu64 (chunk->stripe_length) - low;
@@ -702,35 +707,60 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 			       "unsupported RAID flags %" PRIxGRUB_UINT64_T,
 			       grub_le_to_cpu64 (chunk->type));
 	  }
-	stripe += stripen;
 	if (csize <= 0)
 	  return grub_error (GRUB_ERR_BAD_FS,
 			     "couldn't find the chunk descriptor");
 	if ((grub_size_t) csize > size)
 	  csize = size;
-	dev = find_device (data, stripe->device_id);
-	if (!dev)
-	  return grub_errno;
-	grub_dprintf ("btrfs", "chunk 0x%" PRIxGRUB_UINT64_T
-		      "+0x%" PRIxGRUB_UINT64_T " (%d stripes (%d substripes) of %"
-		      PRIxGRUB_UINT64_T ") stripe %" PRIxGRUB_UINT32_T
-		      " maps to 0x%" PRIxGRUB_UINT64_T "\n",
-		      grub_le_to_cpu64 (key->offset),
-		      grub_le_to_cpu64 (chunk->size),
-		      grub_le_to_cpu16 (chunk->nstripes),
-		      grub_le_to_cpu16 (chunk->nsubstripes),
-		      grub_le_to_cpu64 (chunk->stripe_length),
-		      stripen,
-		      stripe->offset);
-	paddr = stripe->offset + stripe_offset;
 
-	grub_dprintf ("btrfs", "reading paddr 0x%" PRIxGRUB_UINT64_T
-		      " for laddr 0x%" PRIxGRUB_UINT64_T"\n", paddr,
-		      addr);      
-	err = grub_disk_read (dev->disk, paddr >> GRUB_DISK_SECTOR_BITS, 
-			      paddr & (GRUB_DISK_SECTOR_SIZE - 1), csize, buf);
+	for (j = 0; j < 2; j++)
+	  {
+	    for (i = 0; i < redundancy; i++)
+	      {
+		struct grub_btrfs_chunk_stripe *stripe;
+		grub_disk_addr_t paddr;
+
+		stripe = (struct grub_btrfs_chunk_stripe *) (chunk + 1);
+		/* Right now the redundancy handlind is easy.
+		   With RAID5-like it will be more difficult.  */
+		stripe += stripen + i;
+
+		paddr = stripe->offset + stripe_offset;
+
+		grub_dprintf ("btrfs", "chunk 0x%" PRIxGRUB_UINT64_T
+			      "+0x%" PRIxGRUB_UINT64_T " (%d stripes (%d substripes) of %"
+			      PRIxGRUB_UINT64_T ") stripe %" PRIxGRUB_UINT32_T
+			      " maps to 0x%" PRIxGRUB_UINT64_T "\n",
+			      grub_le_to_cpu64 (key->offset),
+			      grub_le_to_cpu64 (chunk->size),
+			      grub_le_to_cpu16 (chunk->nstripes),
+			      grub_le_to_cpu16 (chunk->nsubstripes),
+			      grub_le_to_cpu64 (chunk->stripe_length),
+			      stripen, stripe->offset);
+		grub_dprintf ("btrfs", "reading paddr 0x%" PRIxGRUB_UINT64_T
+			      " for laddr 0x%" PRIxGRUB_UINT64_T"\n", paddr,
+			      addr);
+
+		dev = find_device (data, stripe->device_id, j);
+		if (!dev)
+		  {
+		    err = grub_errno;
+		    grub_errno = GRUB_ERR_NONE;
+		    continue;
+		  }
+
+		err = grub_disk_read (dev->disk, paddr >> GRUB_DISK_SECTOR_BITS,
+				      paddr & (GRUB_DISK_SECTOR_SIZE - 1),
+				      csize, buf);
+		if (!err)
+		  break;
+		grub_errno = GRUB_ERR_NONE;
+	      }
+	    if (i != redundancy)
+	      break;
+	  }
 	if (err)
-	  return err;
+	  return grub_errno = err;
       }
       size -= csize;
       buf = (grub_uint8_t *) buf + csize;
