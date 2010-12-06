@@ -112,12 +112,14 @@ grub_err_t grub_zfs_fetch_nvlist (grub_device_t dev, char **nvlist);
 grub_err_t grub_zfs_getmdnobj (grub_device_t dev, const char *fsfilename,
 			       grub_uint64_t *mdnobj);
 
-char *grub_zfs_nvlist_lookup_string (char *nvlist, char *name);
-char *grub_zfs_nvlist_lookup_nvlist (char *nvlist, char *name);
-int grub_zfs_nvlist_lookup_uint64 (char *nvlist, char *name,
+char *grub_zfs_nvlist_lookup_string (const char *nvlist, const char *name);
+char *grub_zfs_nvlist_lookup_nvlist (const char *nvlist, const char *name);
+int grub_zfs_nvlist_lookup_uint64 (const char *nvlist, const char *name,
 				   grub_uint64_t *out);
-char *grub_zfs_nvlist_lookup_nvlist_array (char *nvlist, char *name,
+char *grub_zfs_nvlist_lookup_nvlist_array (const char *nvlist,
+					   const char *name,
 					   grub_size_t index);
-int grub_zfs_nvlist_lookup_nvlist_array_get_nelm (char *nvlist, char *name);
+int grub_zfs_nvlist_lookup_nvlist_array_get_nelm (const char *nvlist,
+						  const char *name);
 
 #endif	/* ! GRUB_ZFS_HEADER */

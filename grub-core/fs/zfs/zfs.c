@@ -140,11 +140,19 @@ typedef struct dnode_end
 
 struct grub_zfs_device_desc
 {
-  enum { DEVICE_LEAF } type;
-  grub_disk_t disk;
+  enum { DEVICE_LEAF, DEVICE_MIRROR } type;
   grub_uint64_t id;
+  grub_uint64_t guid;
+
+  /* Valid only for non-leafs.  */
+  unsigned n_children;
+  struct grub_zfs_device_desc *children;
+
+  /* Valid only for leaf devices.  */
+  grub_device_t dev;
   grub_disk_addr_t vdev_phys_sector;
   uberblock_t current_uberblock;
+  int original;
 };
 
 struct grub_zfs_data
@@ -168,6 +176,8 @@ struct grub_zfs_data
   struct grub_zfs_device_desc *devices_attached;
   unsigned n_devices_attached;
   unsigned n_devices_allocated;
+
+  uberblock_t current_uberblock;
 
   int mounted;
   grub_uint64_t guid;
@@ -434,8 +444,11 @@ zfs_fetch_nvlist (struct grub_zfs_device_desc *diskdesc, char **nvlist)
   grub_err_t err;
 
   *nvlist = grub_malloc (VDEV_PHYS_SIZE);
+  if (!diskdesc->dev)
+    return grub_error (GRUB_ERR_BAD_FS, "member drive unknown");
+
   /* Read in the vdev name-value pair list (112K). */
-  err = grub_disk_read (diskdesc->disk, diskdesc->vdev_phys_sector, 0,
+  err = grub_disk_read (diskdesc->dev->disk, diskdesc->vdev_phys_sector, 0,
 			VDEV_PHYS_SIZE, *nvlist);
   if (err)
     {
@@ -447,24 +460,113 @@ zfs_fetch_nvlist (struct grub_zfs_device_desc *diskdesc, char **nvlist)
 }
 
 static grub_err_t
-fill_vdev_info (char *nvlist, struct grub_zfs_device_desc *diskdesc)
+fill_vdev_info_real (const char *nvlist,
+		     struct grub_zfs_device_desc *fill,
+		     struct grub_zfs_device_desc *insert)
 {
-  char *type = 0;
+  char *type;
 
   type = grub_zfs_nvlist_lookup_string (nvlist, ZPOOL_CONFIG_TYPE);
 
   if (!type)
     return grub_errno;
+
+  if (!grub_zfs_nvlist_lookup_uint64 (nvlist, "id", &(fill->id)))
+    return grub_error (GRUB_ERR_BAD_FS, "couldn't find vdev id");
+
+  if (!grub_zfs_nvlist_lookup_uint64 (nvlist, "guid", &(fill->guid)))
+    return grub_error (GRUB_ERR_BAD_FS, "couldn't find vdev id");
+
   if (grub_strcmp (type, VDEV_TYPE_DISK) == 0)
     {
-      diskdesc->type = DEVICE_LEAF;
-      if (!grub_zfs_nvlist_lookup_uint64 (nvlist, "id", &diskdesc->id))
-	return grub_error (GRUB_ERR_BAD_FS, "couldn't find vdev id");
+      fill->type = DEVICE_LEAF;
+
+      if (!fill->dev && fill->guid == insert->guid)
+	{
+	  fill->dev = insert->dev;
+	  fill->vdev_phys_sector = insert->vdev_phys_sector;
+	  fill->current_uberblock = insert->current_uberblock;
+	  fill->original = insert->original;
+	}
 
       return GRUB_ERR_NONE;
     }
+
+  if (grub_strcmp (type, VDEV_TYPE_MIRROR) == 0)
+    {
+      int nelm, i;
+
+      fill->type = DEVICE_MIRROR;
+
+      nelm = grub_zfs_nvlist_lookup_nvlist_array_get_nelm (nvlist, ZPOOL_CONFIG_CHILDREN);
+
+      if (nelm <= 0)
+	return grub_error (GRUB_ERR_BAD_FS, "incorrect mirror VDEV");
+
+      fill->n_children = nelm;
+
+      fill->children = grub_zalloc (fill->n_children
+				    * sizeof (fill->children[0]));
+
+      for (i = 0; i < nelm; i++)
+	{
+	  char *child;
+	  grub_err_t err;
+
+	  child = grub_zfs_nvlist_lookup_nvlist_array
+	    (nvlist, ZPOOL_CONFIG_CHILDREN, i);
+
+	  err = fill_vdev_info_real (child, &fill->children[i], insert);
+
+	  grub_free (child);
+
+	  if (err)
+	    return err;
+	}
+      return GRUB_ERR_NONE;
+    }
+
   return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "vdev %s isn't supported",
 		     type);
+}
+
+static grub_err_t
+fill_vdev_info (struct grub_zfs_data *data,
+		char *nvlist, struct grub_zfs_device_desc *diskdesc)
+{
+  grub_uint64_t id;
+  unsigned i;
+
+  if (!grub_zfs_nvlist_lookup_uint64 (nvlist, "id", &id))
+    return grub_error (GRUB_ERR_BAD_FS, "couldn't find vdev id");
+
+  for (i = 0; i < data->n_devices_attached; i++)
+    if (data->devices_attached[i].id == id)
+      return fill_vdev_info_real (nvlist, &data->devices_attached[i],
+				  diskdesc);
+
+  data->n_devices_attached++;
+  if (data->n_devices_attached > data->n_devices_allocated)
+    {
+      void *tmp;
+      data->n_devices_allocated = 2 * data->n_devices_attached + 1;
+      data->devices_attached
+	= grub_realloc (tmp = data->devices_attached,
+			data->n_devices_allocated
+			* sizeof (data->devices_attached[0]));
+      if (!data->devices_attached)
+	{
+	  data->devices_attached = tmp;
+	  return grub_errno;
+	}
+    }
+
+  grub_memset (&data->devices_attached[data->n_devices_attached - 1],
+	       0, sizeof (data->devices_attached[data->n_devices_attached - 1]));
+
+  return fill_vdev_info_real (nvlist,
+			      &data->devices_attached[data->n_devices_attached - 1],
+			      diskdesc);
 }
 
 /*
@@ -473,15 +575,14 @@ fill_vdev_info (char *nvlist, struct grub_zfs_device_desc *diskdesc)
  */
 static grub_err_t
 check_pool_label (struct grub_zfs_data *data,
-		  struct grub_zfs_device_desc *diskdesc,
-		  grub_uint64_t *id)
+		  struct grub_zfs_device_desc *diskdesc)
 {
   grub_uint64_t pool_state, txg = 0;
   char *nvlist;
 #if 0
   char *nv;
 #endif
-  grub_uint64_t diskguid, poolguid;
+  grub_uint64_t poolguid;
   grub_uint64_t version;
   int found;
   grub_err_t err;
@@ -549,25 +650,8 @@ check_pool_label (struct grub_zfs_data *data,
     }
   grub_dprintf ("zfs", "check 9 passed\n");
 
-  {
-    char *nv;
-    nv = grub_zfs_nvlist_lookup_nvlist (nvlist, ZPOOL_CONFIG_VDEV_TREE);
-
-    if (!nv)
-      {
-	grub_free (nvlist);
-	return grub_error (GRUB_ERR_BAD_FS, "couldn't find vdev tree");
-      }
-    err = fill_vdev_info (nv, diskdesc);
-    if (err)
-      {
-	grub_free (nvlist);
-	return err;
-      }
-  }
-  grub_dprintf ("zfs", "check 10 passed\n");
-
-  found = grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_GUID, &diskguid);
+  found = grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_GUID,
+					 &(diskdesc->guid));
   if (! found)
     {
       grub_free (nvlist);
@@ -592,34 +676,33 @@ check_pool_label (struct grub_zfs_data *data,
     return grub_error (GRUB_ERR_BAD_FS, "another zpool");
   else
     data->guid = poolguid;
+
+  {
+    char *nv;
+    nv = grub_zfs_nvlist_lookup_nvlist (nvlist, ZPOOL_CONFIG_VDEV_TREE);
+
+    if (!nv)
+      {
+	grub_free (nvlist);
+	return grub_error (GRUB_ERR_BAD_FS, "couldn't find vdev tree");
+      }
+    err = fill_vdev_info (data, nv, diskdesc);
+    if (err)
+      {
+	grub_free (nvlist);
+	return err;
+      }
+  }
+  grub_dprintf ("zfs", "check 10 passed\n");
+
   grub_free (nvlist);
-
-  data->n_devices_attached++;
-  if (data->n_devices_attached > data->n_devices_allocated)
-    {
-      void *tmp;
-      data->n_devices_allocated = 2 * data->n_devices_attached + 1;
-      data->devices_attached
-	= grub_realloc (tmp = data->devices_attached,
-			data->n_devices_allocated
-			* sizeof (data->devices_attached[0]));
-      if (!data->devices_attached)
-	{
-	  data->devices_attached = tmp;
-	  return grub_errno;
-	}
-    }
-
-  data->devices_attached[data->n_devices_attached - 1] = *diskdesc;
-  if (id)
-    *id = diskdesc->id;
 
   return GRUB_ERR_NONE;
 }
 
 static grub_err_t
-scan_disk (grub_disk_t disk, struct grub_zfs_data *data,
-	   grub_uint64_t *id)
+scan_disk (grub_device_t dev, struct grub_zfs_data *data,
+	   int original)
 {
   int label = 0;
   uberblock_phys_t *ub_array, *ubbest = NULL;
@@ -641,24 +724,23 @@ scan_disk (grub_disk_t disk, struct grub_zfs_data *data,
 
   vdevnum = VDEV_LABELS;
 
-  desc.disk = disk;
+  desc.dev = dev;
+  desc.original = original;
 
   /* Don't check back labels on CDROM.  */
-  if (grub_disk_get_size (disk) == GRUB_DISK_SIZE_UNKNOWN)
+  if (grub_disk_get_size (dev->disk) == GRUB_DISK_SIZE_UNKNOWN)
     vdevnum = VDEV_LABELS / 2;
 
   for (label = 0; ubbest == NULL && label < vdevnum; label++)
     {
-      grub_dprintf ("zfs", "label %d\n", label);
-
       desc.vdev_phys_sector
 	= label * (sizeof (vdev_label_t) >> SPA_MINBLOCKSHIFT)
 	+ ((VDEV_SKIP_SIZE + VDEV_BOOT_HEADER_SIZE) >> SPA_MINBLOCKSHIFT)
-	+ (label < VDEV_LABELS / 2 ? 0 : grub_disk_get_size (disk)
+	+ (label < VDEV_LABELS / 2 ? 0 : grub_disk_get_size (dev->disk)
 	   - VDEV_LABELS * (sizeof (vdev_label_t) >> SPA_MINBLOCKSHIFT));
 
       /* Read in the uberblock ring (128K). */
-      err = grub_disk_read (disk, desc.vdev_phys_sector
+      err = grub_disk_read (dev->disk, desc.vdev_phys_sector
 			    + (VDEV_PHYS_SIZE >> SPA_MINBLOCKSHIFT),
 			    0, VDEV_UBERBLOCK_RING, (char *) ub_array);
       if (err)
@@ -678,8 +760,11 @@ scan_disk (grub_disk_t disk, struct grub_zfs_data *data,
 
       grub_memmove (&(desc.current_uberblock),
 		    &ubbest->ubp_uberblock, sizeof (uberblock_t));
+      if (original)
+	grub_memmove (&(data->current_uberblock),
+		      &ubbest->ubp_uberblock, sizeof (uberblock_t));
 
-      err = check_pool_label (data, &desc, id);
+      err = check_pool_label (data, &desc);
       if (err)
 	{
 	  grub_errno = GRUB_ERR_NONE;
@@ -711,7 +796,6 @@ scan_devices (struct grub_zfs_data *data, grub_uint64_t id)
   {
     grub_device_t dev;
     grub_err_t err;
-    grub_uint64_t f_id = -1;
     dev = grub_device_open (name);
     if (!dev)
       return 0;
@@ -720,7 +804,7 @@ scan_devices (struct grub_zfs_data *data, grub_uint64_t id)
 	grub_device_close (dev);
 	return 0;
       }
-    err = scan_disk (dev->disk, data, &f_id);
+    err = scan_disk (dev, data, 0);
     if (err == GRUB_ERR_BAD_FS)
       {
 	grub_device_close (dev);
@@ -731,11 +815,6 @@ scan_devices (struct grub_zfs_data *data, grub_uint64_t id)
       {
 	grub_device_close (dev);
 	grub_print_error ();
-	return 0;
-      }
-    if (f_id != id)
-      {
-	grub_device_close (dev);
 	return 0;
       }
     
@@ -750,6 +829,36 @@ scan_devices (struct grub_zfs_data *data, grub_uint64_t id)
 }
 
 static grub_err_t
+read_device (grub_uint64_t sector, struct grub_zfs_device_desc *desc,
+	     grub_size_t len, void *buf)
+{
+  switch (desc->type)
+    {
+    case DEVICE_LEAF:
+      if (!desc->dev)
+	return grub_error (GRUB_ERR_BAD_FS, "member drive unknown");
+      /* read in a data block */
+      return grub_disk_read (desc->dev->disk, sector, 0, len, buf);
+    case DEVICE_MIRROR:
+      {
+	grub_err_t err;
+	unsigned i;
+	for (i = 0; i < desc->n_children; i++)
+	  {
+	    err = read_device (sector, &desc->children[i],
+			       len, buf);
+	    if (!err)
+	      break;
+	    grub_errno = GRUB_ERR_NONE;
+	  }
+	return (grub_errno = err);
+      }
+    default:
+      return grub_error (GRUB_ERR_BAD_FS, "unsupported device type");
+    }
+}
+
+static grub_err_t
 read_dva (const dva_t *dva,
 	  grub_zfs_endian_t endian, struct grub_zfs_data *data,
 	  void *buf, grub_size_t len)
@@ -758,18 +867,15 @@ read_dva (const dva_t *dva,
   unsigned i;
   grub_err_t err;
   int try = 0;
+  offset = dva_get_offset (dva, endian);
+  sector = DVA_OFFSET_TO_PHYS_SECTOR (offset);
 
   for (try = 0; try < 1; try++)
     {
       for (i = 0; i < data->n_devices_attached; i++)
 	if (data->devices_attached[i].id == DVA_GET_VDEV (dva))
-	  {
-	    /* read in a data block */
-	    offset = dva_get_offset (dva, endian);
-	    sector = DVA_OFFSET_TO_PHYS_SECTOR (offset);
-	    return grub_disk_read (data->devices_attached[i].disk, sector,
-				   0, len, buf);
-      }
+	  return read_device (sector, &data->devices_attached[i],
+			      len, buf);
       err = scan_devices (data, DVA_GET_VDEV (dva));
       if (err)
 	return err;
@@ -2026,11 +2132,12 @@ dnode_get_fullpath (const char *fullpath, dnode_end_t * mdn,
  */
 
 static int
-nvlist_find_value (char *nvlist, char *name, int valtype, char **val,
+nvlist_find_value (const char *nvlist, const char *name,
+		   int valtype, char **val,
 		   grub_size_t *size_out, grub_size_t *nelm_out)
 {
   int name_len, type, encode_size;
-  char *nvpair, *nvp_name;
+  const char *nvpair, *nvp_name;
 
   /* Verify if the 1st and 2nd byte in the nvlist are valid. */
   /* NOTE: independently of what endianness header announces all 
@@ -2072,7 +2179,7 @@ nvlist_find_value (char *nvlist, char *name, int valtype, char **val,
 
       if ((grub_strncmp (nvp_name, name, name_len) == 0) && type == valtype)
 	{
-	  *val = nvpair;
+	  *val = (char *) nvpair;
 	  *size_out = encode_size;
 	  if (nelm_out)
 	    *nelm_out = nelm;
@@ -2085,7 +2192,8 @@ nvlist_find_value (char *nvlist, char *name, int valtype, char **val,
 }
 
 int
-grub_zfs_nvlist_lookup_uint64 (char *nvlist, char *name, grub_uint64_t * out)
+grub_zfs_nvlist_lookup_uint64 (const char *nvlist, const char *name,
+			       grub_uint64_t * out)
 {
   char *nvpair;
   grub_size_t size;
@@ -2105,7 +2213,7 @@ grub_zfs_nvlist_lookup_uint64 (char *nvlist, char *name, grub_uint64_t * out)
 }
 
 char *
-grub_zfs_nvlist_lookup_string (char *nvlist, char *name)
+grub_zfs_nvlist_lookup_string (const char *nvlist, const char *name)
 {
   char *nvpair;
   char *ret;
@@ -2133,7 +2241,7 @@ grub_zfs_nvlist_lookup_string (char *nvlist, char *name)
 }
 
 char *
-grub_zfs_nvlist_lookup_nvlist (char *nvlist, char *name)
+grub_zfs_nvlist_lookup_nvlist (const char *nvlist, const char *name)
 {
   char *nvpair;
   char *ret;
@@ -2154,7 +2262,8 @@ grub_zfs_nvlist_lookup_nvlist (char *nvlist, char *name)
 }
 
 int
-grub_zfs_nvlist_lookup_nvlist_array_get_nelm (char *nvlist, char *name)
+grub_zfs_nvlist_lookup_nvlist_array_get_nelm (const char *nvlist,
+					      const char *name)
 {
   char *nvpair;
   grub_size_t nelm, size;
@@ -2168,9 +2277,9 @@ grub_zfs_nvlist_lookup_nvlist_array_get_nelm (char *nvlist, char *name)
 }
 
 static int
-get_nvlist_size (char *beg, char *limit)
+get_nvlist_size (const char *beg, const char *limit)
 {
-  char *ptr;
+  const char *ptr;
   grub_uint32_t encode_size;
   
   ptr = beg + 8;
@@ -2183,7 +2292,7 @@ get_nvlist_size (char *beg, char *limit)
 }
 
 char *
-grub_zfs_nvlist_lookup_nvlist_array (char *nvlist, char *name,
+grub_zfs_nvlist_lookup_nvlist_array (const char *nvlist, const char *name,
 				     grub_size_t index)
 {
   char *nvpair, *nvpairptr;
@@ -2237,8 +2346,28 @@ grub_zfs_nvlist_lookup_nvlist_array (char *nvlist, char *name,
 }
 
 static void
+unmount_device (struct grub_zfs_device_desc *desc)
+{
+  unsigned i;
+  switch (desc->type)
+    {
+    case DEVICE_LEAF:
+      if (!desc->original && desc->dev)
+	grub_device_close (desc->dev);
+      return;
+    case DEVICE_MIRROR:
+      for (i = 0; i < desc->n_children; i++)
+	unmount_device (&desc->children[i]);
+      return;
+    }
+}
+
+static void
 zfs_unmount (struct grub_zfs_data *data)
 {
+  unsigned i;
+  for (i = 0; i < data->n_devices_attached; i++)
+    unmount_device (&data->devices_attached[i]);
   grub_free (data->dnode_buf);
   grub_free (data->dnode_mdn);
   grub_free (data->file_buf);
@@ -2279,14 +2408,14 @@ zfs_mount (grub_device_t dev)
   data->devices_attached = grub_malloc (sizeof (data->devices_attached[0])
 					* data->n_devices_allocated);
   data->n_devices_attached = 0;
-  err = scan_disk (dev->disk, data, NULL);
+  err = scan_disk (dev, data, 1);
   if (err)
     {
       zfs_unmount (data);
       return NULL;
     }
 
-  ub = &(data->devices_attached[0].current_uberblock);
+  ub = &(data->current_uberblock);
   ub_endian = (grub_zfs_to_cpu64 (ub->ub_magic, 
 				  LITTLE_ENDIAN) == UBERBLOCK_MAGIC 
 	       ? LITTLE_ENDIAN : BIG_ENDIAN);
