@@ -140,13 +140,16 @@ typedef struct dnode_end
 
 struct grub_zfs_device_desc
 {
-  enum { DEVICE_LEAF, DEVICE_MIRROR } type;
+  enum { DEVICE_LEAF, DEVICE_MIRROR, DEVICE_RAIDZ } type;
   grub_uint64_t id;
   grub_uint64_t guid;
 
   /* Valid only for non-leafs.  */
   unsigned n_children;
   struct grub_zfs_device_desc *children;
+
+  /* Valid only for RAIDZ.  */
+  unsigned nparity;
 
   /* Valid only for leaf devices.  */
   grub_device_t dev;
@@ -290,13 +293,13 @@ zio_checksum_verify (zio_cksum_t zc, grub_uint32_t checksum,
       || (actual_cksum.zc_word[2] != zc.zc_word[2]) 
       || (actual_cksum.zc_word[3] != zc.zc_word[3]))
     {
-      grub_dprintf ("zfs", "checksum %d verification failed\n", checksum);
-      grub_dprintf ("zfs", "actual checksum %16llx %16llx %16llx %16llx\n",
+      grub_dprintf ("zfs", "checksum %s verification failed\n", ci->ci_name);
+      grub_dprintf ("zfs", "actual checksum %016llx %016llx %016llx %016llx\n",
 		    (unsigned long long) actual_cksum.zc_word[0], 
 		    (unsigned long long) actual_cksum.zc_word[1],
 		    (unsigned long long) actual_cksum.zc_word[2], 
 		    (unsigned long long) actual_cksum.zc_word[3]);
-      grub_dprintf ("zfs", "expected checksum %16llx %16llx %16llx %16llx\n",
+      grub_dprintf ("zfs", "expected checksum %016llx %016llx %016llx %016llx\n",
 		    (unsigned long long) zc.zc_word[0], 
 		    (unsigned long long) zc.zc_word[1],
 		    (unsigned long long) zc.zc_word[2], 
@@ -493,21 +496,34 @@ fill_vdev_info_real (const char *nvlist,
       return GRUB_ERR_NONE;
     }
 
-  if (grub_strcmp (type, VDEV_TYPE_MIRROR) == 0)
+  if (grub_strcmp (type, VDEV_TYPE_MIRROR) == 0
+      || grub_strcmp (type, VDEV_TYPE_RAIDZ) == 0)
     {
       int nelm, i;
 
-      fill->type = DEVICE_MIRROR;
+      if (grub_strcmp (type, VDEV_TYPE_MIRROR) == 0)
+	fill->type = DEVICE_MIRROR;
+      else
+	{
+	  grub_uint64_t par;
+	  fill->type = DEVICE_RAIDZ;
+	  if (!grub_zfs_nvlist_lookup_uint64 (nvlist, "nparity", &par))
+	    return grub_error (GRUB_ERR_BAD_FS, "couldn't find raidz parity");
+	  fill->nparity = par;
+	}
 
       nelm = grub_zfs_nvlist_lookup_nvlist_array_get_nelm (nvlist, ZPOOL_CONFIG_CHILDREN);
 
       if (nelm <= 0)
 	return grub_error (GRUB_ERR_BAD_FS, "incorrect mirror VDEV");
 
-      fill->n_children = nelm;
-
-      fill->children = grub_zalloc (fill->n_children
-				    * sizeof (fill->children[0]));
+      if (!fill->children)
+	{
+	  fill->n_children = nelm;
+	  
+	  fill->children = grub_zalloc (fill->n_children
+					* sizeof (fill->children[0]));
+	}
 
       for (i = 0; i < nelm; i++)
 	{
@@ -789,9 +805,8 @@ scan_disk (grub_device_t dev, struct grub_zfs_data *data,
 }
 
 static grub_err_t
-scan_devices (struct grub_zfs_data *data, grub_uint64_t id)
+scan_devices (struct grub_zfs_data *data)
 {
-  grub_device_t dev_found = NULL;
   auto int hook (const char *name);
   int hook (const char *name)
   {
@@ -819,27 +834,29 @@ scan_devices (struct grub_zfs_data *data, grub_uint64_t id)
 	return 0;
       }
     
-    dev_found = dev;
-    return 1;
+    return 0;
   }
   grub_device_iterate (hook);
-  if (!dev_found)
-    return grub_error (GRUB_ERR_BAD_FS,
-		       "couldn't find device 0x%" PRIxGRUB_UINT64_T, id);
   return GRUB_ERR_NONE;
 }
 
 static grub_err_t
-read_device (grub_uint64_t sector, struct grub_zfs_device_desc *desc,
+read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	     grub_size_t len, void *buf)
 {
   switch (desc->type)
     {
     case DEVICE_LEAF:
-      if (!desc->dev)
-	return grub_error (GRUB_ERR_BAD_FS, "member drive unknown");
-      /* read in a data block */
-      return grub_disk_read (desc->dev->disk, sector, 0, len, buf);
+      {
+	grub_uint64_t sector;
+	sector = DVA_OFFSET_TO_PHYS_SECTOR (offset);
+	if (!desc->dev)
+	  {
+	    return grub_error (GRUB_ERR_BAD_FS, "member drive unknown");
+	  }
+	/* read in a data block */
+	return grub_disk_read (desc->dev->disk, sector, 0, len, buf);
+      }
     case DEVICE_MIRROR:
       {
 	grub_err_t err;
@@ -849,7 +866,7 @@ read_device (grub_uint64_t sector, struct grub_zfs_device_desc *desc,
 			     "non-positive number of mirror children");
 	for (i = 0; i < desc->n_children; i++)
 	  {
-	    err = read_device (sector, &desc->children[i],
+	    err = read_device (offset, &desc->children[i],
 			       len, buf);
 	    if (!err)
 	      break;
@@ -857,9 +874,41 @@ read_device (grub_uint64_t sector, struct grub_zfs_device_desc *desc,
 	  }
 	return (grub_errno = err);
       }
-    default:
-      return grub_error (GRUB_ERR_BAD_FS, "unsupported device type");
+    case DEVICE_RAIDZ:
+      {
+	grub_uint64_t sector;
+	grub_uint64_t high;
+	grub_uint32_t devn;
+	if (desc->n_children <= 0)
+	  return grub_error (GRUB_ERR_BAD_FS,
+			     "non-positive number of mirror children");
+	offset += 512;
+
+	sector = offset >> 9;
+	high = grub_divmod64 (sector, desc->n_children, &devn);
+
+	while (len > 0)
+	  {
+	    grub_size_t csize;
+	    grub_err_t err;
+
+	    csize = 0x200 * desc->n_children - (offset & 0x1ff);
+	    if (csize > len)
+	      csize = len;
+
+	    err = read_device (high << 9, &desc->children[devn],
+			       csize, buf);
+	    if (err)
+	      return err;
+	    len -= csize;
+	    buf = (grub_uint8_t *) buf + csize;
+	    devn = (devn + 1) % desc->n_children;
+	    high++;
+	  }
+	}
+      return GRUB_ERR_NONE;
     }
+  return grub_error (GRUB_ERR_BAD_FS, "unsupported device type");
 }
 
 static grub_err_t
@@ -867,26 +916,30 @@ read_dva (const dva_t *dva,
 	  grub_zfs_endian_t endian, struct grub_zfs_data *data,
 	  void *buf, grub_size_t len)
 {
-  grub_uint64_t offset, sector;
+  grub_uint64_t offset;
   unsigned i;
   grub_err_t err;
   int try = 0;
   offset = dva_get_offset (dva, endian);
-  sector = DVA_OFFSET_TO_PHYS_SECTOR (offset);
 
-  for (try = 0; try < 1; try++)
+  for (try = 0; try < 2; try++)
     {
       for (i = 0; i < data->n_devices_attached; i++)
 	if (data->devices_attached[i].id == DVA_GET_VDEV (dva))
-	  return read_device (sector, &data->devices_attached[i],
-			      len, buf);
-      err = scan_devices (data, DVA_GET_VDEV (dva));
+	  {
+	    err = read_device (offset, &data->devices_attached[i],
+			       len, buf);
+	    if (!err)
+	      return GRUB_ERR_NONE;
+	    break;
+	  }
+      if (try == 1)
+	break;
+      err = scan_devices (data);
       if (err)
 	return err;
     }
-  return grub_error (GRUB_ERR_BAD_FS,
-		     "couldn't find device 0x%" PRIxGRUB_UINT64_T,
-		     DVA_GET_VDEV (dva));
+  return err;
 }
 
 /*
@@ -2359,6 +2412,7 @@ unmount_device (struct grub_zfs_device_desc *desc)
       if (!desc->original && desc->dev)
 	grub_device_close (desc->dev);
       return;
+    case DEVICE_RAIDZ:
     case DEVICE_MIRROR:
       for (i = 0; i < desc->n_children; i++)
 	unmount_device (&desc->children[i]);
