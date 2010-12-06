@@ -477,7 +477,8 @@ fill_vdev_info_real (const char *nvlist,
   if (!grub_zfs_nvlist_lookup_uint64 (nvlist, "guid", &(fill->guid)))
     return grub_error (GRUB_ERR_BAD_FS, "couldn't find vdev id");
 
-  if (grub_strcmp (type, VDEV_TYPE_DISK) == 0)
+  if (grub_strcmp (type, VDEV_TYPE_DISK) == 0
+      || grub_strcmp (type, VDEV_TYPE_FILE) == 0)
     {
       fill->type = DEVICE_LEAF;
 
