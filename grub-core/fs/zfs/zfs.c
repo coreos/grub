@@ -842,7 +842,7 @@ scan_devices (struct grub_zfs_data *data)
 
 static grub_err_t
 read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
-	     grub_size_t len, void *buf)
+	     grub_uint32_t asize, grub_size_t len, void *buf)
 {
   switch (desc->type)
     {
@@ -866,7 +866,7 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 			     "non-positive number of mirror children");
 	for (i = 0; i < desc->n_children; i++)
 	  {
-	    err = read_device (offset, &desc->children[i],
+	    err = read_device (offset, &desc->children[i], asize,
 			       len, buf);
 	    if (!err)
 	      break;
@@ -877,35 +877,35 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
     case DEVICE_RAIDZ:
       {
 	grub_uint64_t sector;
-	grub_uint64_t high;
-	grub_uint32_t devn;
-	if (desc->n_children <= 0)
-	  return grub_error (GRUB_ERR_BAD_FS,
-			     "non-positive number of mirror children");
-	offset += 512;
+	grub_uint32_t bsize;
+	unsigned c = 0;
 
+	bsize = (asize + desc->nparity) / desc->n_children;
 	sector = offset >> 9;
-	high = grub_divmod64 (sector, desc->n_children, &devn);
-
 	while (len > 0)
 	  {
 	    grub_size_t csize;
+	    grub_uint64_t high;
+	    grub_uint32_t devn;
 	    grub_err_t err;
-
-	    csize = 0x200 * desc->n_children - (offset & 0x1ff);
+	    high = grub_divmod64 (sector + (asize > 2) + c, desc->n_children,
+				  &devn);
+	    csize = bsize << 9;
 	    if (csize > len)
 	      csize = len;
-
+	    grub_dprintf ("zfs", "RAIDZ mapping 0x%" PRIxGRUB_UINT64_T
+			  "+%d+%u -> (0x%" PRIxGRUB_UINT64_T ", 0x%x)\n",
+			  sector,(asize > 2), c, high, devn);
 	    err = read_device (high << 9, &desc->children[devn],
-			       csize, buf);
+			       bsize, csize, buf);
 	    if (err)
 	      return err;
+	    c++;
+	    buf = (char *) buf + csize;
 	    len -= csize;
-	    buf = (grub_uint8_t *) buf + csize;
-	    devn = (devn + 1) % desc->n_children;
-	    high++;
 	  }
-	}
+	return GRUB_ERR_NONE;	    
+      }
       return GRUB_ERR_NONE;
     }
   return grub_error (GRUB_ERR_BAD_FS, "unsupported device type");
@@ -928,7 +928,7 @@ read_dva (const dva_t *dva,
 	if (data->devices_attached[i].id == DVA_GET_VDEV (dva))
 	  {
 	    err = read_device (offset, &data->devices_attached[i],
-			       len, buf);
+			       dva->dva_word[0] & 0xffffff, len, buf);
 	    if (!err)
 	      return GRUB_ERR_NONE;
 	    break;
