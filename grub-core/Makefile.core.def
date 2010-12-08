@@ -984,6 +984,11 @@ module = {
 };
 
 module = {
+  name = squash4;
+  common = fs/squash4.c;
+};
+
+module = {
   name = tar;
   common = fs/tar.c;
 };
