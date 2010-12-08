@@ -72,8 +72,7 @@ struct grub_squash_inode
   grub_uint32_t mtime;
   grub_uint16_t dummy2[6];
   grub_uint32_t offset;
-  grub_uint16_t size;
-  grub_uint16_t dummy3;
+  grub_uint32_t size;
 } __attribute__ ((packed));
 
 /* Chunk-based.  */
@@ -330,9 +329,10 @@ grub_squash_open (struct grub_file *file, const char *name)
       grub_free (data);
       return grub_errno;
     }
+
   file->data = data;
   data->ino = fdiro->ino;
-  file->size = grub_le_to_cpu16 (fdiro->ino.size);
+  file->size = grub_le_to_cpu32 (fdiro->ino.size);
   return GRUB_ERR_NONE;
 }
 
@@ -343,7 +343,8 @@ grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
   grub_uint64_t a;
   struct grub_squash_data *data = file->data;
 
-  a = sizeof (struct grub_squash_super) + grub_le_to_cpu32 (data->ino.offset);
+  a = sizeof (struct grub_squash_super) + grub_le_to_cpu32 (data->ino.offset)
+    + file->offset;
 
   err = grub_disk_read (file->device->disk, a >> GRUB_DISK_SECTOR_BITS,
 			a & (GRUB_DISK_SECTOR_SIZE - 1), len, buf);
