@@ -52,7 +52,8 @@ struct grub_squash_super
   grub_uint32_t creation_time;
   grub_uint32_t dummy2;
   grub_uint32_t dummy3[4];
-  grub_uint32_t dummy4[2];
+  grub_uint32_t root_ino;
+  grub_uint32_t dummy4;
   grub_uint64_t total_size;
   grub_uint64_t exttbloffset;
   grub_uint32_t dummy5[2];
@@ -258,10 +259,12 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
 static grub_err_t
 make_root_node (struct grub_squash_data *data, struct grub_fshelp_node *root)
 {
-  /* FIXME */
   grub_memset (root, 0, sizeof (*root));
   root->data = data;
-  return GRUB_ERR_NONE;
+
+  return read_chunk (data->disk, &root->ino, sizeof (root->ino),
+		     grub_le_to_cpu64 (data->sb.inodeoffset),
+		     grub_le_to_cpu32 (data->sb.root_ino));
 }
 
 static grub_err_t
