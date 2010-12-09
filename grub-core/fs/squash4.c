@@ -28,16 +28,16 @@
 #include <grub/deflate.h>
 
 /*
-  object       format      Pointed by
-  superblock   RAW         Fixed offset (0)
-  data         RAW ?       Fixed offset (60)
-  inode table  Chunk       superblock
-  dir table    Chunk       superblock
-  unk3         Chunk       unk1
-  unk1         RAW, Chunk  superblock
-  unk2         RAW         superblock
-  UID/GID      Chunk       exttblptr
-  exttblptr    RAW         superblock
+  object         format      Pointed by
+  superblock     RAW         Fixed offset (0)
+  data           RAW ?       Fixed offset (60)
+  inode table    Chunk       superblock
+  dir table      Chunk       superblock
+  fragment table Chunk       unk1
+  unk1           RAW, Chunk  superblock
+  unk2           RAW         superblock
+  UID/GID        Chunk       exttblptr
+  exttblptr      RAW         superblock
 
   UID/GID table is the array ot uint32_t
   unk1 contains pointer to unk3 followed by some chunk.
@@ -73,8 +73,8 @@ struct grub_squash_inode
   grub_uint16_t dummy1[3];
   grub_uint32_t mtime;
   grub_uint16_t dummy2[2];
-  grub_uint16_t chunk;
-  grub_uint16_t dummy3[3];
+  grub_uint32_t chunk;
+  grub_uint32_t fragment;
   grub_uint32_t offset;
   grub_uint32_t size;
 } __attribute__ ((packed));
@@ -105,9 +105,29 @@ struct grub_squash_dirent
   char name[0];
 };
 
+struct grub_squash_frag_desc
+{
+  grub_uint64_t offset;
+  grub_uint64_t dummy;
+};
+
 #define SQUASH_CHUNK_SIZE 0x2000
 #define SQUASH_CHUNK_FLAGS 0x8000
 #define SQUASH_CHUNK_UNCOMPRESSED 0x8000
+
+struct grub_squash_data
+{
+  grub_disk_t disk;
+  struct grub_squash_super sb;
+  struct grub_squash_inode ino;
+  grub_uint64_t fragments;
+};
+
+struct grub_fshelp_node
+{
+  struct grub_squash_data *data;
+  struct grub_squash_inode ino;
+};
 
 static grub_err_t
 read_chunk (grub_disk_t disk, void *buf, grub_size_t len,
@@ -161,25 +181,13 @@ read_chunk (grub_disk_t disk, void *buf, grub_size_t len,
   return GRUB_ERR_NONE;
 }
 
-struct grub_squash_data
-{
-  grub_disk_t disk;
-  struct grub_squash_super sb;
-  struct grub_squash_inode ino;
-};
-
-struct grub_fshelp_node
-{
-  struct grub_squash_data *data;
-  struct grub_squash_inode ino;
-};
-
 static struct grub_squash_data *
 squash_mount (grub_disk_t disk)
 {
   struct grub_squash_super sb;
   grub_err_t err;
   struct grub_squash_data *data;
+  grub_uint64_t frag;
 
   err = grub_disk_read (disk, 0, 0, sizeof (sb), &sb);
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
@@ -191,11 +199,22 @@ squash_mount (grub_disk_t disk)
       grub_error (GRUB_ERR_BAD_FS, "not squash4");
       return NULL;
     }
+
+  err = grub_disk_read (disk, grub_le_to_cpu32 (sb.unk1offset)
+			>> GRUB_DISK_SECTOR_BITS, 
+			grub_le_to_cpu32 (sb.unk1offset)
+			& (GRUB_DISK_SECTOR_SIZE - 1), sizeof (frag), &frag);
+  if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+    grub_error (GRUB_ERR_BAD_FS, "not a squash4");
+  if (err)
+    return NULL;
+
   data = grub_malloc (sizeof (*data));
   if (!data)
     return NULL;
   data->sb = sb;
   data->disk = disk;
+  data->fragments = frag;
 
   return data;
 }
@@ -356,6 +375,7 @@ grub_squash_open (struct grub_file *file, const char *name)
   file->data = data;
   data->ino = fdiro->ino;
   file->size = grub_le_to_cpu32 (fdiro->ino.size);
+
   return GRUB_ERR_NONE;
 }
 
@@ -366,8 +386,25 @@ grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
   grub_uint64_t a;
   struct grub_squash_data *data = file->data;
 
-  a = sizeof (struct grub_squash_super) + grub_le_to_cpu32 (data->ino.offset)
-    + file->offset;
+  a = grub_le_to_cpu32 (data->ino.offset) + file->offset;
+  if (grub_le_to_cpu16 (data->ino.fragment) == 0xffff)
+    {
+      if (grub_le_to_cpu32 (data->ino.chunk))
+	a += grub_le_to_cpu32 (data->ino.chunk);
+      else
+	a += sizeof (struct grub_squash_super);
+    }
+  else
+    {
+      struct grub_squash_frag_desc frag;
+      err = read_chunk (file->device->disk, &frag, sizeof (frag),
+			data->fragments, 0, sizeof (frag)
+			* grub_le_to_cpu16 (data->ino.fragment));
+      if (err)
+	return -1;
+      a += grub_le_to_cpu64 (frag.offset);
+      a += grub_le_to_cpu32 (data->ino.chunk);
+    }
 
   err = grub_disk_read (file->device->disk, a >> GRUB_DISK_SECTOR_BITS,
 			a & (GRUB_DISK_SECTOR_SIZE - 1), len, buf);
