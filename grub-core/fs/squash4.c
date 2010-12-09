@@ -402,13 +402,12 @@ grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
   grub_uint64_t a;
   struct grub_squash_data *data = file->data;
 
-  a = grub_le_to_cpu32 (data->ino.offset) + file->offset;
   if (grub_le_to_cpu16 (data->ino.fragment) == 0xffff)
     {
       if (grub_le_to_cpu32 (data->ino.chunk))
-	a += grub_le_to_cpu32 (data->ino.chunk);
+	a = grub_le_to_cpu32 (data->ino.chunk);
       else
-	a += sizeof (struct grub_squash_super);
+	a = sizeof (struct grub_squash_super);
     }
   else
     {
@@ -418,9 +417,10 @@ grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
 			* grub_le_to_cpu16 (data->ino.fragment));
       if (err)
 	return -1;
-      a += grub_le_to_cpu64 (frag.offset);
-      a += grub_le_to_cpu32 (data->ino.chunk);
+      a = grub_le_to_cpu64 (frag.offset) + grub_le_to_cpu32 (data->ino.chunk);
     }
+
+  a += grub_le_to_cpu32 (data->ino.offset) + file->offset;
 
   err = grub_disk_read (file->device->disk, a >> GRUB_DISK_SECTOR_BITS,
 			a & (GRUB_DISK_SECTOR_SIZE - 1), len, buf);
