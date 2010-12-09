@@ -351,11 +351,13 @@ grub_squash_dir (grub_device_t device, const char *path,
 
   int NESTED_FUNC_ATTR iterate (const char *filename,
 				enum grub_fshelp_filetype filetype,
-				grub_fshelp_node_t node __attribute__ ((unused)))
+				grub_fshelp_node_t node)
     {
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      info.mtimeset = 1;
+      info.mtime = grub_le_to_cpu32 (node->ino.mtime);
       return hook (filename, &info);
     }
 
