@@ -51,13 +51,18 @@ struct grub_squash_super
   grub_uint32_t dummy1;
   grub_uint32_t creation_time;
   grub_uint32_t dummy2;
-  grub_uint32_t dummy3[4];
+  grub_uint32_t dummy3[2];
+  grub_uint8_t flags;
+#define SQUASH_FLAG_UNCOMPRESSED_INODES 1
+#define SQUASH_FLAG_UNCOMPRESSED_DATA 2
+#define SQUASH_FLAG_UNCOMPRESSED_FRAGMENTS 8
+  grub_uint8_t dummy4[7];
   grub_uint16_t root_ino_offset;
   grub_uint16_t root_ino_chunk;
-  grub_uint32_t dummy4;
+  grub_uint32_t dummy5;
   grub_uint64_t total_size;
   grub_uint64_t exttbloffset;
-  grub_uint32_t dummy5[2];
+  grub_uint32_t dummy6[2];
   grub_uint64_t inodeoffset;
   grub_uint64_t diroffset;
   grub_uint64_t unk1offset;
@@ -399,8 +404,9 @@ static grub_ssize_t
 grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
 {
   grub_err_t err;
-  grub_uint64_t a;
+  grub_uint64_t a, b;
   struct grub_squash_data *data = file->data;
+  int compressed = 0;
 
   if (grub_le_to_cpu16 (data->ino.fragment) == 0xffff)
     {
@@ -408,6 +414,7 @@ grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
 	a = grub_le_to_cpu32 (data->ino.chunk);
       else
 	a = sizeof (struct grub_squash_super);
+      compressed = !(data->sb.flags & SQUASH_FLAG_UNCOMPRESSED_DATA);
     }
   else
     {
@@ -418,12 +425,17 @@ grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
       if (err)
 	return -1;
       a = grub_le_to_cpu64 (frag.offset) + grub_le_to_cpu32 (data->ino.chunk);
+      compressed = !(data->sb.flags & SQUASH_FLAG_UNCOMPRESSED_FRAGMENTS);
     }
 
-  a += grub_le_to_cpu32 (data->ino.offset) + file->offset;
+  b = grub_le_to_cpu32 (data->ino.offset) + file->offset;
 
-  err = grub_disk_read (file->device->disk, a >> GRUB_DISK_SECTOR_BITS,
-			a & (GRUB_DISK_SECTOR_SIZE - 1), len, buf);
+  /* FIXME: cache uncompressed chunks.  */
+  if (compressed)
+    err = grub_zlib_disk_read (file->device->disk, a, b, buf, len);
+  else
+    err = grub_disk_read (file->device->disk, (a + b) >> GRUB_DISK_SECTOR_BITS,
+			  (a + b) & (GRUB_DISK_SECTOR_SIZE - 1), len, buf);
   if (err)
     return -1;
   return len;
